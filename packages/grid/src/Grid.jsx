@@ -240,6 +240,8 @@ class Grid extends PureComponent {
       this.isStuckToRight = false;
     }
 
+    this.updateMetrics();
+
     this.requestUpdateCanvas();
 
     if (!this.metrics || !this.prevMetrics) {
@@ -454,12 +456,12 @@ class Grid extends PureComponent {
     this.animationFrame = requestAnimationFrame(() => {
       this.animationFrame = null;
 
-      this.updateCanvas();
+      this.updateCanvas(this.metrics);
     });
   }
 
-  updateCanvas() {
-    const metrics = this.updateMetrics();
+  updateCanvas(metrics = this.updateMetrics()) {
+    this.updateCanvasScale();
 
     const { onViewChanged } = this.props;
     onViewChanged(metrics);
