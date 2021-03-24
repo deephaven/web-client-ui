@@ -8,11 +8,7 @@ import { PromiseUtils } from '@deephaven/utils';
 import memoizeClear from '../include/memoizeClear';
 import TableUtils from './TableUtils';
 import Formatter from './Formatter';
-import {
-  DecimalColumnFormatter,
-  DateTimeColumnFormatter,
-  IntegerColumnFormatter,
-} from './formatters';
+import { TableColumnFormatter } from './formatters';
 import IrisGridModel from './IrisGridModel';
 import AggregationOperation from './sidebar/aggregations/AggregationOperation.ts';
 import IrisGridUtils from './IrisGridUtils';
@@ -277,13 +273,30 @@ class IrisGridTableModel extends IrisGridModel {
 
     // Use a separate cache from memoization just for the strings that are currently displayed
     if (this.formattedStringData[x]?.[y] === undefined) {
-      const data = this.dataForCell(x, y);
-      if (data == null) {
+      const value = this.valueForCell(x, y);
+      if (value == null) {
         return null;
       }
 
       const column = this.columns[x];
-      const text = this.displayString(data.value, column.type, column.name);
+      const hasCustomColumnFormat = this.getCachedCustomColumnFormatFlag(
+        this.formatter,
+        column.type,
+        column.name
+      );
+      let formatOverride = null;
+      if (!hasCustomColumnFormat) {
+        const formatForCell = this.formatForCell(x, y);
+        if (formatForCell?.formatString != null) {
+          formatOverride = formatForCell;
+        }
+      }
+      const text = this.displayString(
+        value,
+        column.type,
+        column.name,
+        formatOverride
+      );
       this.cacheFormattedValue(x, y, text);
     }
 
@@ -529,12 +542,13 @@ class IrisGridTableModel extends IrisGridModel {
     this.dispatchEvent(new CustomEvent(IrisGridModel.EVENT.FORMATTER_UPDATED));
   }
 
-  displayString(value, columnType, columnName = '') {
+  displayString(value, columnType, columnName = '', formatOverride = null) {
     return this.getCachedFormattedString(
       this.formatter,
       value,
       columnType,
-      columnName
+      columnName,
+      formatOverride
     );
   }
 
@@ -854,8 +868,25 @@ class IrisGridTableModel extends IrisGridModel {
   );
 
   getCachedFormattedString = memoizeClear(
-    (formatter, value, columnType, columnName) =>
-      formatter.getFormattedString(value, columnType, columnName),
+    (formatter, value, columnType, columnName, formatOverride) =>
+      formatter.getFormattedString(
+        value,
+        columnType,
+        columnName,
+        formatOverride
+      ),
+    { max: 10000 }
+  );
+
+  getCachedCustomColumnFormatFlag = memoizeClear(
+    (formatter, columnType, columnName) => {
+      const columnFormat = formatter.getColumnFormat(columnType, columnName);
+      return (
+        columnFormat != null &&
+        (columnFormat.type === TableColumnFormatter.TYPE_CONTEXT_PRESET ||
+          columnFormat.type === TableColumnFormatter.TYPE_CONTEXT_CUSTOM)
+      );
+    },
     { max: 10000 }
   );
 
@@ -869,54 +900,6 @@ class IrisGridTableModel extends IrisGridModel {
       bottom + viewHeight * IrisGridTableModel.ROW_BUFFER_PAGES;
     return [viewportTop, viewportBottom];
   });
-
-  columnFormatMap() {
-    return new Promise(resolve => {
-      const { table } = this;
-      let cleanup = null;
-      cleanup = table.addEventListener(dh.Table.EVENT_UPDATED, event => {
-        const { rows } = event.detail;
-        if (rows.length < 1) {
-          return;
-        }
-
-        const row = rows[0];
-        const map = new Map();
-        table.columns.forEach(column => {
-          const columnFormat = row.getFormat(column);
-          const { formatString } = columnFormat;
-          const { name, type } = column;
-          if (formatString) {
-            let format = null;
-            const normalizedType = TableUtils.getNormalizedType(type);
-            switch (normalizedType) {
-              case TableUtils.dataType.DECIMAL:
-                format = DecimalColumnFormatter.makeQueryFormat(formatString);
-                break;
-              case TableUtils.dataType.INT:
-                format = IntegerColumnFormatter.makeQueryFormat(formatString);
-                break;
-              case TableUtils.dataType.DATETIME:
-                format = DateTimeColumnFormatter.makeQueryFormat(formatString);
-                break;
-              default:
-            }
-            if (format) {
-              const columnFormattingRule = Formatter.makeColumnFormattingRule(
-                normalizedType,
-                name,
-                format
-              );
-              map.set(name, columnFormattingRule);
-            }
-          }
-        });
-
-        resolve(map);
-        cleanup();
-      });
-    });
-  }
 
   isColumnMovable(column) {
     return column >= (this.inputTable?.keyColumns.length ?? 0);

@@ -302,8 +302,6 @@ export class IrisGrid extends Component {
       isMenuShown: false,
       customColumnFormatMap: new Map(customColumnFormatMap),
 
-      queryColumnFormatMap: new Map(),
-
       // Column user is hovering over for selection
       hoverSelectColumn: null,
 
@@ -960,15 +958,13 @@ export class IrisGrid extends Component {
   }
 
   updateFormatter(updatedFormats, forceUpdate = true) {
-    const { customColumnFormatMap, queryColumnFormatMap } = this.state;
+    const { customColumnFormatMap } = this.state;
     const update = {
       customColumnFormatMap,
-      queryColumnFormatMap,
       ...updatedFormats,
     };
     const mergedColumnFormats = [
       ...this.globalColumnFormats,
-      ...update.queryColumnFormatMap.values(),
       ...update.customColumnFormatMap.values(),
     ];
     const formatter = new Formatter(
@@ -986,21 +982,8 @@ export class IrisGrid extends Component {
   }
 
   initFormatter() {
-    const { model, settings } = this.props;
-    this.updateFormatterSettings(settings, false);
-    this.pending
-      .add(model.columnFormatMap())
-      .then(queryColumnFormatMap => {
-        if (queryColumnFormatMap.size) {
-          this.updateFormatter({ queryColumnFormatMap });
-        }
-      })
-      .catch(error => {
-        if (PromiseUtils.isCanceled(error)) {
-          return;
-        }
-        log.error('getColumnFormatMap error', error);
-      });
+    const { settings } = this.props;
+    this.updateFormatterSettings(settings);
   }
 
   initState() {

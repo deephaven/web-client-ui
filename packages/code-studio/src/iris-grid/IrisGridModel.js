@@ -322,13 +322,6 @@ class IrisGridModel extends GridModel {
   }
 
   /**
-   * @returns {Promise<Map>} Map of column name to the formatting rule for them
-   */
-  async columnFormatMap() {
-    throw new Error('columnFormatMap not implemented');
-  }
-
-  /**
    * Close this model. It can no longer be used after being closed
    */
   close() {}
