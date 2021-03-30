@@ -79,11 +79,13 @@ $hr-bg-color: $gray-700;
       // firefox can misbehave with buttons as display: flex
       display: flex;
       align-items: center;
+      justify-content: flex-start;
     }
 
     .icon {
       margin-right: 0.5rem;
       width: 1rem;
+      flex-grow: 0;
       text-align: center;
     }
     .icon.outline {
@@ -92,17 +94,24 @@ $hr-bg-color: $gray-700;
     }
 
     .title {
-      flex-grow: 1;
+      flex: 1 1 auto;
+      text-align: left;
+      white-space: nowrap;
     }
 
     .shortcut {
       color: $text-muted;
       margin-left: 0.5rem;
+      justify-self: flex-end;
+      flex: 1 1 auto;
       text-align: right;
+      white-space: nowrap;
     }
 
     .submenu-indicator {
       color: $contextmenu-color;
+      flex-grow: 0;
+      justify-self: flex-end;
     }
     .submenu-indicator.disabled {
       color: $contextmenu-disabled-color;

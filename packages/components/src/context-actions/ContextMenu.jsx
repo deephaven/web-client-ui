@@ -38,13 +38,15 @@ class ContextMenu extends PureComponent {
     this.subMenuTimer = null;
     this.rAF = null;
 
+    this.initialPosition = { top: props.top, left: props.left };
+
     this.state = {
       menuItems: [],
       pendingItems: [],
       activeSubMenu: null,
       hasOverflow: false,
-      subMenuTop: 0,
-      subMenuLeft: 0,
+      subMenuTop: null,
+      subMenuLeft: null,
       subMenuParentWidth: null,
       subMenuParentHeight: null,
       keyboardIndex: -1,
@@ -75,19 +77,22 @@ class ContextMenu extends PureComponent {
     const { actions } = this.props;
     const { activeSubMenu } = this.state;
 
-    if (prevProps.actions !== actions) {
-      this.initMenu();
-      if (!this.container.contains(document.activeElement)) {
+    if (activeSubMenu !== prevState.activeSubMenu) {
+      if (activeSubMenu == null) {
+        // close sub menu, refocus parent menu
         this.container.focus();
+      } else {
+        // open sub menu, set its initial position
+        this.setActiveSubMenuPosition();
       }
     }
 
-    if (activeSubMenu !== prevState.activeSubMenu) {
-      this.setActiveSubMenuPosition();
-    }
+    if (prevProps.actions !== actions) {
+      this.initMenu();
 
-    if (prevState.activeSubMenu !== activeSubMenu) {
-      this.container.focus();
+      if (!this.container.contains(document.activeElement)) {
+        this.container.focus();
+      }
     }
 
     this.verifyPosition();
@@ -256,19 +261,22 @@ class ContextMenu extends PureComponent {
       updatePosition,
       subMenuParentWidth,
       subMenuParentHeight,
-      left: oldLeft,
       top: oldTop,
+      left: oldLeft,
     } = this.props;
 
     if (!this.container || options.doNotVerifyPosition) {
       return;
     }
 
-    let { top, left } = this.container.getBoundingClientRect();
+    // initial position is used rather than current position,
+    // as the number of menu items can change (actions can bubble)
+    // and menu should always be positioned relative to spawn point
+    let { top, left } = this.initialPosition;
     const { width, height } = this.container.getBoundingClientRect();
     const hasOverflow = this.container.scrollHeight > window.innerHeight;
 
-    if (height === 0 && width === 0) {
+    if (height === 0 || width === 0) {
       // We don't have a height or width yet, don't bother doing anything
       return;
     }
@@ -357,9 +365,9 @@ class ContextMenu extends PureComponent {
       }
     } else if (this.isEscapeKey(e.key)) {
       newFocus = null;
-    } else if (e.key === 'ArrowUp') {
+    } else if (e.key === 'ArrowUp' || (e.shiftKey && e.key === 'Tab')) {
       newFocus = ContextActionUtils.getNextMenuItem(newFocus, -1, menuItems);
-    } else if (e.key === 'ArrowDown') {
+    } else if (e.key === 'ArrowDown' || e.key === 'Tab') {
       newFocus = ContextActionUtils.getNextMenuItem(newFocus, 1, menuItems);
     }
 
@@ -386,9 +394,12 @@ class ContextMenu extends PureComponent {
   }
 
   openSubMenu(index) {
-    const { menuItems } = this.state;
+    const { menuItems, activeSubMenu } = this.state;
+    if (activeSubMenu === index) return;
     this.setState({
       activeSubMenu: menuItems[index].actions ? index : null,
+      subMenuTop: null,
+      subMenuLeft: null,
     });
   }
 
@@ -402,7 +413,9 @@ class ContextMenu extends PureComponent {
   }
 
   closeSubMenu() {
-    this.setState({ activeSubMenu: null });
+    this.setState({
+      activeSubMenu: null,
+    });
   }
 
   handleCloseSubMenu(closeAllMenus) {
@@ -504,6 +517,10 @@ class ContextMenu extends PureComponent {
 
     const { menuStyle } = this.props;
 
+    // don't show submenu until it has an position initialized
+    const showSubmenu =
+      activeSubMenu !== null && subMenuTop !== null && subMenuLeft !== null;
+
     return (
       <>
         <div
@@ -526,7 +543,7 @@ class ContextMenu extends PureComponent {
           {menuItemElements}
           {pendingElement}
         </div>
-        {activeSubMenu !== null && (
+        {showSubmenu && (
           <ContextMenu
             key={`sub-${activeSubMenu}`}
             actions={menuItems[activeSubMenu].actions}
