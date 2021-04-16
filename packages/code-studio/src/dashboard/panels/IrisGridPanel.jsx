@@ -35,12 +35,13 @@ import LayoutUtils from '../../layout/LayoutUtils';
 import IrisGridModel from '../../iris-grid/IrisGridModel';
 import AdvancedSettings from '../../iris-grid/sidebar/AdvancedSettings';
 import IrisGridTableModel from '../../iris-grid/IrisGridTableModel';
+import ContextMenuRoot from '../../context-actions/ContextMenuRoot';
 
 const log = Log.module('IrisGridPanel');
 
 const DEBOUNCE_PANEL_STATE_UPDATE = 500;
 
-const PLUGIN_COMPONENTS = { IrisGrid, IrisGridTableModel };
+const PLUGIN_COMPONENTS = { IrisGrid, IrisGridTableModel, ContextMenuRoot };
 
 export class IrisGridPanel extends PureComponent {
   constructor(props) {
