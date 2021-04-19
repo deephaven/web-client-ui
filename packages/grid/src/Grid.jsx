@@ -1238,8 +1238,6 @@ class Grid extends PureComponent {
       return;
     }
 
-    let { deltaX, deltaY } = e;
-
     const { metricCalculator, metrics } = this;
     const metricState = this.getMetricState();
 
@@ -1248,45 +1246,13 @@ class Grid extends PureComponent {
 
     const theme = this.getTheme();
 
-    // Flip scroll direction if shiftKey is held on windows/linux.
-    // On mac, deltaX/Y values are switched at the event level when shiftKey=true.
-    // Guard on strictly Y only changing, to ignore trackpad diagonal motion,
-    // through that guard may not be necessary, but it is difficult to determine for
-    // all platforms/browser/scroll method combos.
-    if (
-      !GridUtils.isMacPlatform() &&
-      e.shiftKey &&
-      e.deltaX === 0 &&
-      e.deltaY !== 0
-    ) {
-      deltaX = e.deltaY;
-      deltaY = e.deltaX;
-    }
-
-    // Normalize other deltaMode values to pixel units
-    // deltaMode 0, is already in pixel units
-    if (e?.deltaMode === WheelEvent.DOM_DELTA_PAGE) {
-      // Users can set OS to be in deltaMode page
-      // scrolly by page units as pixels
-      deltaX *= metrics.barWidth;
-      deltaY *= metrics.barHeight;
-    } else if (e?.deltaMode === WheelEvent.DOM_DELTA_LINE) {
-      // Firefox reports deltaMode line
-      // Normalize distance travelled between browsers
-      // but remain ~platform/browser combo consistent
-      if (GridUtils.isMacPlatform()) {
-        // for mac treat lines as a standard row height
-        // on mac, firefox travels less distance then chrome per tick
-        deltaX = Math.round(deltaX * metrics.rowHeight);
-        deltaY = Math.round(deltaY * metrics.rowHeight);
-      } else {
-        // for windows convert to pixels using the same method as chrome
-        // chrome goes 100 per 3 lines, and firefox would go 102 per 3 (17 lineheight * 3 lines * 2)
-        // make the behaviour the same between as it's close enough
-        deltaX = Math.round(deltaX * Grid.pixelsPerLine);
-        deltaY = Math.round(deltaY * Grid.pixelsPerLine);
-      }
-    }
+    let { deltaX, deltaY } = GridUtils.getScrollDelta(
+      e,
+      metrics.barWidth,
+      metrics.barHeight,
+      metrics.rowHeight,
+      metrics.rowHeight
+    );
 
     // iterate through each column to determine column width and figure out how far to scroll
     // get column width of next column to scroll to, and subract it from the remaining distance to travel

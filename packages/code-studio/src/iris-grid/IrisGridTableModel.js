@@ -61,11 +61,18 @@ class IrisGridTableModel extends IrisGridModel {
     this.viewportData = null;
     this.formattedStringData = [];
     this.pendingStringData = [];
+    this.isSaveInProgress = false;
 
     this.totalsTable = null;
     this.totalsTablePromise = null;
     this.totals = null;
     this.totalsDataMap = null;
+
+    // Map from new row index to their values. Only for input tables that can have new rows added.
+    // The index of these rows start at 0, and they are appended at the end of the regular table data.
+    // These rows can be sparse, so using a map instead of an array.
+    this.pendingNewDataMap = new Map();
+    this.pendingNewRowCount = 0;
   }
 
   close() {
@@ -189,7 +196,75 @@ class IrisGridTableModel extends IrisGridModel {
   }
 
   get rowCount() {
-    return this.table.size + (this.totals?.operationOrder?.length ?? 0);
+    return (
+      this.table.size +
+      (this.totals?.operationOrder?.length ?? 0) +
+      this.pendingNewRowCount
+    );
+  }
+
+  get pendingDataErrors() {
+    return this.getCachedPendingErrors(
+      this.pendingNewDataMap,
+      this.columns,
+      this.inputTable?.keyColumns.length ?? 0
+    );
+  }
+
+  get pendingDataMap() {
+    return this.pendingNewDataMap;
+  }
+
+  set pendingDataMap(map) {
+    if (map === this.pendingNewDataMap) {
+      return;
+    }
+
+    map.forEach((row, rowIndex) => {
+      if (!IrisGridUtils.isValidIndex(rowIndex)) {
+        throw new Error('Invalid rowIndex', rowIndex);
+      }
+
+      const { data } = row;
+      data.forEach((value, columnIndex) => {
+        if (!IrisGridUtils.isValidIndex(columnIndex)) {
+          throw new Error('Invalid columnIndex', columnIndex);
+        }
+      });
+    });
+
+    this.pendingNewDataMap = map;
+
+    this.pendingNewRowCount = Math.max(
+      this.pendingNewRowCount,
+      this.maxPendingDataRow
+    );
+
+    this.formattedStringData = [];
+
+    this.dispatchEvent(
+      new CustomEvent(IrisGridModel.EVENT.PENDING_DATA_UPDATED)
+    );
+  }
+
+  get pendingRowCount() {
+    return this.pendingNewRowCount;
+  }
+
+  set pendingRowCount(count) {
+    if (count === this.pendingNewRowCount) {
+      return;
+    }
+
+    this.pendingNewRowCount = Math.max(0, count, this.maxPendingDataRow);
+
+    this.dispatchEvent(new CustomEvent(IrisGridModel.EVENT.UPDATED));
+  }
+
+  get maxPendingDataRow() {
+    return this.pendingNewDataMap.size > 0
+      ? Math.max(...this.pendingNewDataMap.keys()) + 1
+      : 0;
   }
 
   get columnCount() {
@@ -241,7 +316,7 @@ class IrisGridTableModel extends IrisGridModel {
   }
 
   get isEditable() {
-    return this.inputTable != null;
+    return !this.isSaveInProgress && this.inputTable != null;
   }
 
   cacheFormattedValue(x, y, text) {
@@ -265,7 +340,7 @@ class IrisGridTableModel extends IrisGridModel {
     }
   }
 
-  textForCell(x, y) {
+  textValueForCell(x, y) {
     // First check if there's any pending values we should read from
     if (this.pendingStringData[x]?.[y] !== undefined) {
       return this.pendingStringData[x][y];
@@ -303,12 +378,29 @@ class IrisGridTableModel extends IrisGridModel {
     return this.formattedStringData[x][y];
   }
 
+  textForCell(x, y) {
+    const text = this.textValueForCell(x, y);
+    if (text == null && this.isKeyColumn(x)) {
+      const pendingRow = this.pendingRow(y);
+      if (this.pendingDataMap.has(pendingRow)) {
+        // Asterisk to show a value is required for a key column on a row that has some data entered
+        return '*';
+      }
+    }
+    return text;
+  }
+
   colorForCell(x, y, theme) {
     const data = this.dataForCell(x, y);
     if (data) {
       const { format } = data;
       if (format && format.color) {
         return format.color;
+      }
+
+      if (this.isPendingRow(y)) {
+        // Data entered in a pending row
+        return theme.pendingTextColor;
       }
 
       // Fallback to formatting based on the value/type of the cell
@@ -328,6 +420,8 @@ class IrisGridTableModel extends IrisGridModel {
           return theme.zeroNumberColor;
         }
       }
+    } else if (this.isPendingRow(y) && this.isKeyColumn(x)) {
+      return theme.errorTextColor;
     }
 
     return theme.textColor;
@@ -383,6 +477,10 @@ class IrisGridTableModel extends IrisGridModel {
       const operation = this.totals.operationOrder[totalsRow];
       return this.totalsDataMap?.get(operation) ?? null;
     }
+    const pendingRow = this.pendingRow(y);
+    if (pendingRow != null) {
+      return this.pendingNewDataMap.get(pendingRow) ?? null;
+    }
     const offset = this.viewportData?.offset ?? 0;
     const viewportY = (showOnTop ? y - totalsRowCount : y) - offset;
     return this.viewportData?.rows?.[viewportY] ?? null;
@@ -405,12 +503,36 @@ class IrisGridTableModel extends IrisGridModel {
   }
 
   /**
+   * Translate from the row in the model to a pending input row.
+   * If the row is not a pending input row, return null
+   * @param {number} y The row in the model to get the pending row for
+   * @returns {number|null} The row within the pending input rows if it's a pending row, null otherwise
+   */
+  pendingRow(y) {
+    const pendingRow = y - this.floatingTopRowCount - this.table.size;
+    if (pendingRow >= 0 && pendingRow < this.pendingNewRowCount) {
+      return pendingRow;
+    }
+
+    return null;
+  }
+
+  /**
    * Check if a row is a totals table row
    * @param {number} y The row in the model to check if it's a totals table row
    * @returns {boolean} True if the row is a totals row, false if not
    */
   isTotalsRow(y) {
     return this.totalsRow(y) != null;
+  }
+
+  /**
+   * Check if a row is a pending input row
+   * @param {number} y The row in the model to check if it's a pending new row
+   * @returns {boolean} True if the row is a pending new row, false if not
+   */
+  isPendingRow(y) {
+    return this.pendingRow(y) != null;
   }
 
   dataForCell(x, y) {
@@ -680,7 +802,7 @@ class IrisGridTableModel extends IrisGridModel {
   }
 
   applyBufferedViewport(viewportTop, viewportBottom, columns) {
-    log.debug2('applyBufferedViewport', columns);
+    log.debug2('applyBufferedViewport', viewportTop, viewportBottom, columns);
     if (this.subscription == null) {
       log.debug2('applyBufferedViewport creating new subscription');
       this.subscription = this.table.setViewport(
@@ -901,8 +1023,32 @@ class IrisGridTableModel extends IrisGridModel {
     return [viewportTop, viewportBottom];
   });
 
-  isColumnMovable(column) {
-    return column >= (this.inputTable?.keyColumns.length ?? 0);
+  getCachedPendingErrors = memoize(
+    (pendingDataMap, columns, keyColumnCount) => {
+      const map = new Map();
+      pendingDataMap.forEach((row, rowIndex) => {
+        const { data: rowData } = row;
+        for (let i = 0; i < keyColumnCount; i += 1) {
+          if (!rowData.has(i)) {
+            if (!map.has(rowIndex)) {
+              map.set(rowIndex, []);
+            }
+            map
+              .get(rowIndex)
+              .push(new MissingKeyError(rowIndex, columns[i].name));
+          }
+        }
+      });
+      return map;
+    }
+  );
+
+  isColumnMovable(x) {
+    return !this.isKeyColumn(x);
+  }
+
+  isKeyColumn(x) {
+    return x < (this.inputTable?.keyColumns.length ?? 0);
   }
 
   isRowMovable() {
@@ -913,16 +1059,60 @@ class IrisGridTableModel extends IrisGridModel {
     return (
       this.inputTable != null &&
       GridRange.isBounded(range) &&
-      range.startColumn >= this.inputTable.keyColumns.length &&
-      range.endColumn >= this.inputTable.keyColumns.length &&
+      ((this.isPendingRow(range.startRow) && this.isPendingRow(range.endRow)) ||
+        (range.startColumn >= this.inputTable.keyColumns.length &&
+          range.endColumn >= this.inputTable.keyColumns.length)) &&
       range.startRow >= this.floatingTopRowCount &&
-      range.startRow < this.floatingTopRowCount + this.table.size &&
-      range.endRow < this.floatingTopRowCount + this.table.size
+      range.startRow <
+        this.floatingTopRowCount + this.table.size + this.pendingRowCount &&
+      range.endRow <
+        this.floatingTopRowCount + this.table.size + this.pendingRowCount
+    );
+  }
+
+  isDeletableRange(range) {
+    return (
+      this.inputTable != null &&
+      range.startRow != null &&
+      range.endRow != null &&
+      range.startRow >= this.floatingTopRowCount &&
+      range.startRow <
+        this.floatingTopRowCount + this.table.size + this.pendingRowCount &&
+      range.endRow <
+        this.floatingTopRowCount + this.table.size + this.pendingRowCount
     );
   }
 
   isEditableRanges(ranges) {
     return ranges.every(range => this.isEditableRange(range));
+  }
+
+  isDeletableRanges(ranges) {
+    return ranges.every(range => this.isDeletableRange(range));
+  }
+
+  /**
+   * @returns {GridRange} A range corresponding to the underlying table
+   */
+  getTableAreaRange() {
+    return new GridRange(
+      null,
+      this.floatingTopRowCount,
+      null,
+      this.floatingTopRowCount + this.table.size - 1
+    );
+  }
+
+  /**
+   * @returns {GridRange} A range corresponding to the pending new rows
+   */
+  getPendingAreaRange() {
+    return new GridRange(
+      null,
+      this.floatingTopRowCount + this.table.size,
+      null,
+      this.floatingTopRowCount + this.table.size + this.pendingNewRowCount - 1
+    );
   }
 
   /**
@@ -960,40 +1150,94 @@ class IrisGridTableModel extends IrisGridModel {
         columnSet.add(column);
         if (formattedText[x] === undefined) {
           const value = TableUtils.makeValue(column.type, text);
-          formattedText[x] = this.displayString(
-            value,
-            column.type,
-            column.name
-          );
+          formattedText[x] =
+            value != null
+              ? this.displayString(value, column.type, column.name)
+              : null;
         }
         this.cachePendingValue(x, y, formattedText[x]);
       });
 
+      // Take care of updates to the pending new area first, as they can be updated synchronously
+      const pendingAreaRange = this.getPendingAreaRange();
+      const pendingRanges = ranges
+        .map(range => GridRange.intersection(pendingAreaRange, range))
+        .filter(range => range != null)
+        .map(range =>
+          GridRange.offset(
+            range,
+            0,
+            -(this.floatingTopRowCount + this.table.size)
+          )
+        );
+      if (pendingRanges.length > 0) {
+        const newDataMap = new Map(this.pendingNewDataMap);
+        GridRange.forEachCell(pendingRanges, (columnIndex, rowIndex) => {
+          if (!newDataMap.has(rowIndex)) {
+            newDataMap.set(rowIndex, { data: new Map() });
+          }
+
+          const column = this.columns[columnIndex];
+          const row = newDataMap.get(rowIndex);
+          const { data: rowData } = row;
+          const newRowData = new Map(rowData);
+          const value = TableUtils.makeValue(column.type, text);
+          if (value != null) {
+            newRowData.set(columnIndex, {
+              value: TableUtils.makeValue(column.type, text),
+            });
+          } else {
+            newRowData.delete(columnIndex);
+          }
+          if (newRowData.size > 0) {
+            newDataMap.set(rowIndex, { ...row, data: newRowData });
+          } else {
+            newDataMap.delete(rowIndex);
+          }
+        });
+        this.pendingDataMap = newDataMap;
+      }
+
       this.dispatchEvent(new CustomEvent(IrisGridModel.EVENT.UPDATED));
 
-      // Get a snapshot of the full rows, as we need to write a full row when editing
-      const data = await this.snapshot(
-        ranges.map(
-          range => new GridRange(null, range.startRow, null, range.endRow)
-        )
-      );
-      const newRows = data.map(row => {
-        const newRow = {};
-        for (let c = 0; c < this.columns.length; c += 1) {
-          newRow[this.columns[c].name] = row[c];
-        }
+      const tableAreaRange = this.getTableAreaRange();
+      const tableRanges = ranges
+        .map(range => GridRange.intersection(tableAreaRange, range))
+        .filter(range => range != null);
+      if (tableRanges.length > 0) {
+        // Get a snapshot of the full rows, as we need to write a full row when editing
+        const data = await this.snapshot(
+          tableRanges.map(
+            range => new GridRange(null, range.startRow, null, range.endRow)
+          )
+        );
+        const newRows = data.map(row => {
+          const newRow = {};
+          for (let c = 0; c < this.columns.length; c += 1) {
+            newRow[this.columns[c].name] = row[c];
+          }
 
-        columnSet.forEach(column => {
-          newRow[column.name] = TableUtils.makeValue(column.type, text);
+          columnSet.forEach(column => {
+            newRow[column.name] = TableUtils.makeValue(column.type, text);
+          });
+          return newRow;
         });
-        return newRow;
-      });
 
-      const result = await this.inputTable.addRows(newRows);
+        const result = await this.inputTable.addRows(newRows);
 
-      log.debug('setValueForRanges(', ranges, ',', text, ') result', result);
+        log.debug(
+          'setValueForRanges(',
+          ranges,
+          ',',
+          text,
+          ') set tableRanges',
+          tableRanges,
+          'result',
+          result
+        );
+      }
 
-      // Add it to the formatted cache so it's still displayed until the update event is received
+      // Add the changes to the formatted cache so it's still displayed until the update event is received
       // The update event could be received on the next tick, after the input rows have been committed,
       // so make sure we don't display stale data
       GridRange.forEachCell(ranges, (x, y) => {
@@ -1008,13 +1252,52 @@ class IrisGridTableModel extends IrisGridModel {
     }
   }
 
+  async commitPending() {
+    if (this.pendingNewDataMap.size <= 0) {
+      throw new Error('No pending changes to commit');
+    }
+
+    try {
+      this.isSaveInProgress = true;
+
+      const newRows = [];
+      this.pendingNewDataMap.forEach(row => {
+        const newRow = {};
+        row.data.forEach(({ value }, columnIndex) => {
+          const column = this.columns[columnIndex];
+          newRow[column.name] = value;
+        });
+        newRows.push(newRow);
+      });
+      const result = await this.inputTable.addRows(newRows);
+
+      log.debug('commitPending()', this.pendingNewDataMap, 'result', result);
+
+      this.pendingNewDataMap = new Map();
+      this.pendingNewDataErrors = new Map();
+      this.pendingNewRowCount = Math.max(
+        0,
+        (this.viewport?.bottom ?? 0) - this.table.size
+      );
+      this.formattedStringData = [];
+
+      this.dispatchEvent(
+        new CustomEvent(IrisGridModel.EVENT.PENDING_DATA_UPDATED)
+      );
+
+      return result;
+    } finally {
+      this.isSaveInProgress = false;
+    }
+  }
+
   editValueForCell(x, y) {
-    return this.textForCell(x, y);
+    return this.textValueForCell(x, y);
   }
 
   async delete(ranges) {
-    if (!this.isEditableRanges(ranges)) {
-      throw new Error('Uneditable ranges', ranges);
+    if (!this.isDeletableRanges(ranges)) {
+      throw new Error('Undeletable ranges', ranges);
     }
 
     const { keyColumns } = this.inputTable;
@@ -1022,10 +1305,48 @@ class IrisGridTableModel extends IrisGridModel {
       throw new Error('No key columns to allow deletion');
     }
 
+    const pendingAreaRange = this.getPendingAreaRange();
+    const pendingRanges = ranges
+      .map(range => GridRange.intersection(pendingAreaRange, range))
+      .filter(range => range != null)
+      .map(range =>
+        GridRange.offset(
+          range,
+          0,
+          -(this.floatingTopRowCount + this.table.size)
+        )
+      );
+
+    if (pendingRanges.length > 0) {
+      const newDataMap = new Map(this.pendingNewDataMap);
+      for (let i = 0; i < pendingRanges.length; i += 1) {
+        const pendingRange = pendingRanges[i];
+        for (let r = pendingRange.startRow; r <= pendingRange.endRow; r += 1) {
+          newDataMap.delete(r);
+        }
+      }
+      this.pendingNewDataMap = newDataMap;
+
+      this.formattedStringData = [];
+
+      this.dispatchEvent(
+        new CustomEvent(IrisGridModel.EVENT.PENDING_DATA_UPDATED)
+      );
+
+      this.dispatchEvent(new CustomEvent(IrisGridModel.EVENT.UPDATED));
+    }
+
+    const tableAreaRange = this.getTableAreaRange();
+    const tableRanges = ranges
+      .map(range => GridRange.intersection(tableAreaRange, range))
+      .filter(range => range != null);
+    if (tableRanges.length <= 0) {
+      return null;
+    }
     const [data, deleteTable] = await Promise.all([
       // Need to get the key values of each row
       this.snapshot(
-        ranges.map(
+        tableRanges.map(
           range =>
             new GridRange(
               0,

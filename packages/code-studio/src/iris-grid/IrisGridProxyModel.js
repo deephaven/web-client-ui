@@ -469,6 +469,30 @@ class IrisGridProxyModel extends IrisGridModel {
   delete(...args) {
     return this.model.delete(...args);
   }
+
+  get pendingDataMap() {
+    return this.model.pendingDataMap;
+  }
+
+  set pendingDataMap(map) {
+    this.model.pendingDataMap = map;
+  }
+
+  get pendingRowCount() {
+    return this.model.pendingRowCount;
+  }
+
+  set pendingRowCount(count) {
+    this.model.pendingRowCount = count;
+  }
+
+  get pendingDataErrors() {
+    return this.model.pendingDataErrors;
+  }
+
+  commitPending(...args) {
+    return this.model.commitPending(...args);
+  }
 }
 
 export default IrisGridProxyModel;

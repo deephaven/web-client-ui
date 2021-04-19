@@ -34,7 +34,7 @@ import {
   vsTools,
 } from '@deephaven/icons';
 import dh from '@deephaven/jsapi-shim';
-import { Pending, PromiseUtils } from '@deephaven/utils';
+import { Pending, PromiseUtils, ValidationError } from '@deephaven/utils';
 import throttle from 'lodash.throttle';
 import debounce from 'lodash.debounce';
 import IrisGridCopyHandler from './IrisGridCopyHandler';
@@ -47,6 +47,7 @@ import {
   IrisGridDataSelectMouseHandler,
   IrisGridFilterMouseHandler,
   IrisGridSortMouseHandler,
+  PendingMouseHandler,
 } from './mousehandlers';
 import IrisGridMetricCalculator from './IrisGridMetricCalculator';
 import IrisGridModelUpdater from './IrisGridModelUpdater';
@@ -154,6 +155,13 @@ export class IrisGrid extends Component {
     this.handleSelectDistinctChanged = this.handleSelectDistinctChanged.bind(
       this
     );
+    this.handlePendingDataUpdated = this.handlePendingDataUpdated.bind(this);
+    this.handlePendingCommitClicked = this.handlePendingCommitClicked.bind(
+      this
+    );
+    this.handlePendingDiscardClicked = this.handlePendingDiscardClicked.bind(
+      this
+    );
 
     this.handleDownloadTable = this.handleDownloadTable.bind(this);
     this.handleDownloadTableStart = this.handleDownloadTableStart.bind(this);
@@ -206,12 +214,24 @@ export class IrisGrid extends Component {
     };
     this.toggleSearchBarAction = {
       action: () => this.toggleSearchBar(),
+      shortcut: '⌃⇧F',
+      macShortcut: '⌘⇧F',
+    };
+    this.discardAction = {
+      action: () => this.discardPending().catch(log.error),
+      shortcut: '⌃⌥S',
+      macShortcut: '⌘⌥S',
+    };
+    this.commitAction = {
+      action: () => this.commitPending().catch(log.error),
       shortcut: '⌃S',
       macShortcut: '⌘S',
     };
     this.contextActions = [
       this.toggleFilterBarAction,
       this.toggleSearchBarAction,
+      this.discardAction,
+      this.commitAction,
     ];
 
     const keyHandlers = [new CopyKeyHandler(this), new ReverseKeyHandler(this)];
@@ -222,6 +242,7 @@ export class IrisGrid extends Component {
       new IrisGridFilterMouseHandler(this),
       new IrisGridContextMenuHandler(this),
       new IrisGridDataSelectMouseHandler(this),
+      new PendingMouseHandler(this),
     ];
     const {
       aggregationSettings,
@@ -243,6 +264,7 @@ export class IrisGrid extends Component {
       advancedFilters,
       quickFilters,
       selectDistinctColumns,
+      pendingDataMap,
     } = props;
     const metricCalculator = new IrisGridMetricCalculator({
       userColumnWidths: new Map(userColumnWidths),
@@ -323,6 +345,12 @@ export class IrisGrid extends Component {
       selectedAggregation: null,
 
       openOptions: [],
+
+      pendingRowCount: 0,
+      pendingDataMap,
+      pendingDataErrors: new Map(),
+      pendingSavePromise: null,
+      pendingSaveError: null,
     };
   }
 
@@ -1205,6 +1233,10 @@ export class IrisGrid extends Component {
       IrisGridModel.EVENT.COLUMNS_CHANGED,
       this.handleCustomColumnsChanged
     );
+    model.addEventListener(
+      IrisGridModel.EVENT.PENDING_DATA_UPDATED,
+      this.handlePendingDataUpdated
+    );
   }
 
   stopListening(model) {
@@ -1216,6 +1248,10 @@ export class IrisGrid extends Component {
     model.removeEventListener(
       IrisGridModel.EVENT.COLUMNS_CHANGED,
       this.handleCustomColumnsChanged
+    );
+    model.removeEventListener(
+      IrisGridModel.EVENT.PENDING_DATA_UPDATED,
+      this.handlePendingDataUpdated
     );
   }
 
@@ -1466,6 +1502,50 @@ export class IrisGrid extends Component {
     );
   }
 
+  async commitPending() {
+    const { pendingSavePromise } = this.state;
+    if (pendingSavePromise != null) {
+      throw new Error('Save already in progress');
+    }
+
+    if (document.activeElement.classList.contains('grid-cell-input-field')) {
+      if (document.activeElement.classList.contains('error')) {
+        throw new ValidationError('Current input is invalid');
+      }
+
+      // Focus the grid again to commit any pending input changes
+      this.grid.focus();
+    }
+
+    const { model } = this.props;
+    const newPendingSavePromise = this.pending
+      .add(model.commitPending())
+      .then(() => {
+        this.setState({ pendingSaveError: null, pendingSavePromise: null });
+      })
+      .catch(err => {
+        if (!PromiseUtils.isCanceled(err)) {
+          this.setState({ pendingSaveError: err, pendingSavePromise: null });
+        }
+      });
+    this.setState({ pendingSavePromise: newPendingSavePromise });
+    return newPendingSavePromise;
+  }
+
+  async discardPending() {
+    const { pendingSavePromise } = this.state;
+    if (pendingSavePromise != null) {
+      throw new Error('Cannot cancel a save in progress');
+    }
+
+    this.setState({
+      pendingSavePromise: null,
+      pendingSaveError: null,
+      pendingDataMap: new Map(),
+      pendingDataErrors: new Map(),
+    });
+  }
+
   /**
    * Select the passed in column and notify listener
    * @param {dh.Column} column The column in this table to link
@@ -1681,7 +1761,34 @@ export class IrisGrid extends Component {
   }
 
   handleViewChanged(metrics) {
-    this.setState({ metrics });
+    const { model } = this.props;
+    const { bottomViewport } = metrics;
+    const { selectionEndRow = 0 } = this.grid?.state ?? {};
+    let pendingRowCount = 0;
+    if (model.isEditable) {
+      // We have an editable table that we can add new rows to
+      // Display empty rows beneath the table rows that user can fill in
+      const bottomNonFloating = model.rowCount - model.floatingBottomRowCount;
+      if (selectionEndRow === bottomNonFloating - 1) {
+        // Selection is in the last row, add another blank row
+        pendingRowCount = model.pendingRowCount + 1;
+      } else if (selectionEndRow === bottomNonFloating - 2) {
+        // We may have just added a row based on selection moving, so just leave it as is
+        pendingRowCount = model.pendingRowCount;
+      } else {
+        // Otherwise fill up the viewport with empty cells
+        pendingRowCount = Math.max(
+          0,
+          bottomViewport -
+            (model.rowCount - model.pendingRowCount) -
+            model.floatingTopRowCount -
+            model.floatingBottomRowCount -
+            1
+        );
+      }
+    }
+
+    this.setState({ metrics, pendingRowCount });
   }
 
   handleSelectionChanged(selectedRanges) {
@@ -1792,6 +1899,22 @@ export class IrisGrid extends Component {
     } else {
       this.initState();
     }
+  }
+
+  handlePendingCommitClicked() {
+    return this.commitPending();
+  }
+
+  handlePendingDiscardClicked() {
+    return this.discardPending();
+  }
+
+  handlePendingDataUpdated() {
+    log.debug('pending data updated');
+    const { model } = this.props;
+    const { pendingDataMap, pendingDataErrors } = model;
+    this.setState({ pendingDataMap, pendingDataErrors });
+    this.grid.forceUpdate();
   }
 
   /**
@@ -2062,6 +2185,11 @@ export class IrisGrid extends Component {
       selectedAggregation,
       rollupConfig,
       openOptions,
+      pendingSavePromise,
+      pendingSaveError,
+      pendingRowCount,
+      pendingDataErrors,
+      pendingDataMap,
     } = this.state;
     if (!isReady) {
       return null;
@@ -2570,7 +2698,7 @@ export class IrisGrid extends Component {
               ref={grid => {
                 this.grid = grid;
               }}
-              isStickyBottom
+              isStickyBottom={!model.isEditable}
               metricCalculator={metricCalculator}
               model={model}
               keyHandlers={keyHandlers}
@@ -2611,6 +2739,8 @@ export class IrisGrid extends Component {
                   aggregationSettings
                 )}
                 selectDistinctColumns={selectDistinctColumns}
+                pendingRowCount={pendingRowCount}
+                pendingDataMap={pendingDataMap}
               />
             )}
             <div
@@ -2632,7 +2762,32 @@ export class IrisGrid extends Component {
             {columnTooltip}
             {advancedFilterMenus}
           </div>
-          <IrisGridCopyHandler model={model} copyOperation={copyOperation} />
+          <PendingDataBottomBar
+            error={pendingSaveError}
+            isSaving={pendingSavePromise != null}
+            saveTooltip={`Commit (${ContextActionUtils.getDisplayShortcut(
+              this.commitAction
+            )})`}
+            discardTooltip={`Discard (${ContextActionUtils.getDisplayShortcut(
+              this.discardAction
+            )})`}
+            pendingDataErrors={pendingDataErrors}
+            pendingDataMap={pendingDataMap}
+            onEntering={this.handleAnimationStart}
+            onEntered={this.handleAnimationEnd}
+            onExiting={this.handleAnimationStart}
+            onExited={this.handleAnimationEnd}
+            onSave={this.handlePendingCommitClicked}
+            onDiscard={this.handlePendingDiscardClicked}
+          />
+          <IrisGridCopyHandler
+            model={model}
+            copyOperation={copyOperation}
+            onEntering={this.handleAnimationStart}
+            onEntered={this.handleAnimationEnd}
+            onExiting={this.handleAnimationStart}
+            onExited={this.handleAnimationEnd}
+          />
           <TableSaver
             ref={tableSaver => {
               this.tableSaver = tableSaver;
@@ -2768,6 +2923,8 @@ IrisGrid.propTypes = {
 
   // eslint-disable-next-line react/no-unused-prop-types
   onContextMenu: PropTypes.func,
+
+  pendingDataMap: PropTypes.instanceOf(Map),
 };
 
 IrisGrid.defaultProps = {
@@ -2813,6 +2970,7 @@ IrisGrid.defaultProps = {
   selectedSearchColumns: null,
   invertSearchColumns: true,
   onContextMenu: () => [],
+  pendingDataMap: new Map(),
 };
 
 const mapStateToProps = state => ({

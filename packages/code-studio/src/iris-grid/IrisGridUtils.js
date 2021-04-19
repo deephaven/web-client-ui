@@ -101,6 +101,7 @@ class IrisGridUtils {
       selectedSearchColumns,
       sorts,
       invertSearchColumns,
+      pendingDataMap = new Map(),
     } = irisGridState;
     const { userColumnWidths, userRowHeights } = metrics;
 
@@ -133,6 +134,10 @@ class IrisGridUtils {
       selectDistinctColumns: [...selectDistinctColumns],
       selectedSearchColumns,
       invertSearchColumns,
+      pendingDataMap: IrisGridUtils.dehydratePendingDataMap(
+        columns,
+        pendingDataMap
+      ),
     };
   }
 
@@ -160,6 +165,7 @@ class IrisGridUtils {
       selectDistinctColumns,
       selectedSearchColumns,
       invertSearchColumns = true,
+      pendingDataMap = [],
     } = irisGridState;
 
     const { columns } = table;
@@ -199,6 +205,10 @@ class IrisGridUtils {
       selectDistinctColumns,
       selectedSearchColumns,
       invertSearchColumns,
+      pendingDataMap: IrisGridUtils.hydratePendingDataMap(
+        columns,
+        pendingDataMap
+      ),
     };
   }
 
@@ -350,6 +360,48 @@ class IrisGridUtils {
       ),
       ...otherOptions,
     };
+  }
+
+  static dehydratePendingDataMap(columns, pendingDataMap) {
+    return [...pendingDataMap].map(([rowIndex, { data }]) => [
+      rowIndex,
+      {
+        data: [...data].map(([c, value]) => [
+          columns[c].name,
+          IrisGridUtils.dehydrateValue(value, columns[c].type),
+        ]),
+      },
+    ]);
+  }
+
+  static hydratePendingDataMap(columns, pendingDataMap) {
+    const columnMap = new Map();
+    const getColumnIndex = columnName => {
+      if (!columnMap.has(columnName)) {
+        columnMap.set(
+          columnName,
+          columns.findIndex(({ name }) => name === columnName)
+        );
+      }
+      return columnMap.get(columnName);
+    };
+
+    return new Map(
+      pendingDataMap.map(([rowIndex, { data }]) => [
+        rowIndex,
+        {
+          data: new Map(
+            data.map(([columnName, value]) => [
+              getColumnIndex(columnName),
+              IrisGridUtils.hydrateValue(
+                value,
+                columns[getColumnIndex(columnName)].type
+              ),
+            ])
+          ),
+        },
+      ])
+    );
   }
 
   /**
@@ -845,6 +897,14 @@ class IrisGridUtils {
   }
 
   /**
+   * Check if the provided value is a valid table index
+   * @param {any} value A value to check if it's a valid table index
+   */
+  static isValidIndex(value) {
+    return Number.isInteger(value) && value >= 0;
+  }
+
+  /**
    * Returns all columns used in any of the ranges provided
    * @param {GridRange[]} ranges The model ranges to get columns for
    * @param {dh.Column[]} allColumns All the columns to pull from
@@ -958,6 +1018,25 @@ class IrisGridUtils {
       includeDescriptions,
       aggregations: aggregationMap,
     };
+  }
+
+  /**
+   * @param {Map} pendingDataMap Map of pending data
+   * @returns {Map} A map with the errors in the pending data
+   */
+  static getPendingErrors(pendingDataMap) {
+    pendingDataMap.forEach((row, rowIndex) => {
+      if (!IrisGridUtils.isValidIndex(rowIndex)) {
+        throw new Error('Invalid rowIndex', rowIndex);
+      }
+
+      const { data } = row;
+      data.forEach((value, columnIndex) => {
+        if (!IrisGridUtils.isValidIndex(columnIndex)) {
+          throw new Error('Invalid columnIndex', columnIndex);
+        }
+      });
+    });
   }
 }
 

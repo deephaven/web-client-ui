@@ -303,6 +303,7 @@ class IrisGridCopyHandler extends Component {
   }
 
   render() {
+    const { onEntering, onEntered, onExiting, onExited } = this.props;
     const { buttonState, copyState, isShown, rowCount, error } = this.state;
 
     const animation =
@@ -386,10 +387,18 @@ IrisGridCopyHandler.propTypes = {
     includeHeaders: PropTypes.bool,
     error: PropTypes.string,
   }),
+  onEntering: PropTypes.func,
+  onEntered: PropTypes.func,
+  onExiting: PropTypes.func,
+  onExited: PropTypes.func,
 };
 
 IrisGridCopyHandler.defaultProps = {
   copyOperation: null,
+  onEntering: () => {},
+  onEntered: () => {},
+  onExiting: () => {},
+  onExited: () => {},
 };
 
 export default IrisGridCopyHandler;

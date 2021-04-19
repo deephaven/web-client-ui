@@ -117,6 +117,7 @@ export class IrisGridPanel extends PureComponent {
       pluginFilters: [],
       pluginFetchColumns: [],
       modelQueue: [],
+      pendingDataMap: new Map(),
 
       // eslint-disable-next-line react/no-unused-state
       panelState, // Dehydrated panel state that can load this panel
@@ -235,7 +236,8 @@ export class IrisGridPanel extends PureComponent {
       userColumnWidths,
       userRowHeights,
       aggregationSettings,
-      advancedSettings
+      advancedSettings,
+      pendingDataMap
     ) =>
       IrisGridUtils.dehydrateIrisGridState(table, {
         advancedFilters,
@@ -257,6 +259,7 @@ export class IrisGridPanel extends PureComponent {
         selectedSearchColumns,
         sorts,
         invertSearchColumns,
+        pendingDataMap,
       })
   );
 
@@ -641,6 +644,7 @@ export class IrisGridPanel extends PureComponent {
         selectDistinctColumns,
         selectedSearchColumns,
         invertSearchColumns,
+        pendingDataMap,
       } = IrisGridUtils.hydrateIrisGridState(table, irisGridState);
       const { movedColumns, movedRows } = IrisGridUtils.hydrateGridState(
         table,
@@ -670,6 +674,7 @@ export class IrisGridPanel extends PureComponent {
         selectDistinctColumns,
         selectedSearchColumns,
         invertSearchColumns,
+        pendingDataMap,
       });
     } catch (error) {
       log.error('loadPanelState failed to load panelState', panelState, error);
@@ -702,6 +707,7 @@ export class IrisGridPanel extends PureComponent {
       sorts,
       invertSearchColumns,
       metrics,
+      pendingDataMap,
     } = irisGridState;
     const { userColumnWidths, userRowHeights } = metrics;
     const { movedColumns, movedRows } = gridState;
@@ -733,7 +739,8 @@ export class IrisGridPanel extends PureComponent {
         userColumnWidths,
         userRowHeights,
         aggregationSettings,
-        advancedSettings
+        advancedSettings,
+        pendingDataMap
       ),
       this.getDehydratedGridState(table, movedColumns, movedRows)
     );
@@ -800,6 +807,7 @@ export class IrisGridPanel extends PureComponent {
       Plugin,
       pluginFilters,
       pluginFetchColumns,
+      pendingDataMap,
     } = this.state;
     const errorMessage = error ? `Unable to open table. ${error}` : null;
     const { table: name, querySerial } = metadata;
@@ -872,6 +880,7 @@ export class IrisGridPanel extends PureComponent {
             onContextMenu={this.handleContextMenu}
             onAdvancedSettingsChange={this.handleAdvancedSettingsChange}
             customFilters={pluginFilters}
+            pendingDataMap={pendingDataMap}
             ref={this.irisGrid}
           >
             {childrenContent}
@@ -902,6 +911,7 @@ IrisGridPanel.propTypes = {
       rollupConfig: PropTypes.shape({
         columns: PropTypes.arrayOf(PropTypes.string).isRequired,
       }),
+      pendingDataMap: PropTypes.arrayOf(PropTypes.array),
     }),
     irisGridPanelState: PropTypes.shape({}),
   }),

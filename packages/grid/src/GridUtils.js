@@ -1,6 +1,10 @@
 import GridRange from './GridRange';
 
 class GridUtils {
+  // use same constant as chrome source for windows
+  // https://github.com/chromium/chromium/blob/973af9d461b6b5dc60208c8d3d66adc27e53da78/ui/events/blink/web_input_event_builders_win.cc#L285
+  static PIXELS_PER_LINE = 100 / 3;
+
   static getGridPointFromXY(x, y, metrics) {
     const column = GridUtils.getColumnAtX(x, metrics);
     const row = GridUtils.getRowAtY(y, metrics);
@@ -706,6 +710,68 @@ class GridUtils {
       }
     }
     return { x, y, x2, y2 };
+  }
+
+  /**
+   * Converts the delta coordinates from the provided wheel event to pixels
+   * Different platforms have different ways of providing the delta so this normalizes it
+   * @param {WheelEvent} wheelEvent The mouse wheel event to get the scrolling delta for
+   * @param {number?} pageWidth The width of the page that is scrolling
+   * @param {number?} pageHeight The height of the page that is scrolling
+   * @param {number?} lineWidth The width of the line scrolling in line mode
+   * @param {number?} lineHeight The height of the line scrolling in line mode
+   * @returns {{deltaX:number, deltaY: number}} The delta coordinates normalized to pixels
+   */
+  static getScrollDelta(
+    wheelEvent,
+    pageWidth = 1024,
+    pageHeight = 768,
+    lineWidth = 20,
+    lineHeight = 20
+  ) {
+    let { deltaX, deltaY } = wheelEvent;
+
+    // Flip scroll direction if shiftKey is held on windows/linux.
+    // On mac, deltaX/Y values are switched at the event level when shiftKey=true.
+    // Guard on strictly Y only changing, to ignore trackpad diagonal motion,
+    // through that guard may not be necessary, but it is difficult to determine for
+    // all platforms/browser/scroll method combos.
+    if (
+      !GridUtils.isMacPlatform() &&
+      wheelEvent.shiftKey &&
+      wheelEvent.deltaX === 0 &&
+      wheelEvent.deltaY !== 0
+    ) {
+      deltaX = wheelEvent.deltaY;
+      deltaY = wheelEvent.deltaX;
+    }
+
+    // Normalize other deltaMode values to pixel units
+    // deltaMode 0, is already in pixel units
+    if (wheelEvent?.deltaMode === WheelEvent.DOM_DELTA_PAGE) {
+      // Users can set OS to be in deltaMode page
+      // scrolly by page units as pixels
+      deltaX *= pageWidth;
+      deltaY *= pageHeight;
+    } else if (wheelEvent?.deltaMode === WheelEvent.DOM_DELTA_LINE) {
+      // Firefox reports deltaMode line
+      // Normalize distance travelled between browsers
+      // but remain ~platform/browser combo consistent
+      if (GridUtils.isMacPlatform()) {
+        // for mac treat lines as a standard row height
+        // on mac, firefox travels less distance then chrome per tick
+        deltaX = Math.round(deltaX * lineWidth);
+        deltaY = Math.round(deltaY * lineHeight);
+      } else {
+        // for windows convert to pixels using the same method as chrome
+        // chrome goes 100 per 3 lines, and firefox would go 102 per 3 (17 lineheight * 3 lines * 2)
+        // make the behaviour the same between as it's close enough
+        deltaX = Math.round(deltaX * this.PIXELS_PER_LINE);
+        deltaY = Math.round(deltaY * this.PIXELS_PER_LINE);
+      }
+    }
+
+    return { deltaX, deltaY };
   }
 }
 
