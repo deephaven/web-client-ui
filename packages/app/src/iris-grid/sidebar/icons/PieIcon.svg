@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="48px" height="48px" viewBox="0 0 48 48" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 53 (72520) - https://sketchapp.com -->
+    <title>Pie-Icon</title>
+    <desc>Created with Sketch.</desc>
+    <g id="Pie-Icon" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <path d="M10,24 C10,16.2680135 16.2680135,10 24,10 C31.7319865,10 38,16.2680135 38,24 C38,31.7319865 31.7319865,38 24,38 L24,24 L10,24 Z" id="Combined-Shape" fill="#80A6FF" transform="translate(24.000000, 24.000000) rotate(-270.000000) translate(-24.000000, -24.000000) "></path>
+        <path d="M10,10 C17.7319865,10 24,16.2680135 24,24 L10,24 L10,10 Z" id="Combined-Shape" fill="#C1C0C0" transform="translate(17.000000, 17.000000) rotate(-90.000000) translate(-17.000000, -17.000000) "></path>
+    </g>
+</svg>

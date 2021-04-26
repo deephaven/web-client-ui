@@ -1,0 +1,56 @@
+@import '../../scss/custom.scss';
+
+$navigation-menu-item-color: $gray-300;
+
+.btn-navigation-menu-item {
+  display: flex;
+  list-style: none;
+  color: $navigation-menu-item-color;
+  border-radius: 0;
+  text-align: left;
+  margin: 0;
+  padding: $spacer-2 $spacer-1 $spacer-2 $spacer;
+  width: 100%;
+  text-decoration: none;
+  border: $input-border-width solid transparent;
+
+  .icon {
+    width: 25px;
+  }
+
+  .shortcut {
+    color: $text-muted;
+    flex-grow: 0;
+    margin-left: 0.5rem;
+    display: inline-block;
+    text-align: right;
+  }
+
+  .accessory {
+    margin-left: auto;
+    margin-right: $spacer-2;
+  }
+
+  &:focus {
+    background: rgba($primary, $focus-bg-transparency);
+    border: $input-border-width solid $primary;
+    box-shadow: $input-btn-focus-box-shadow;
+    text-decoration: none;
+  }
+
+  &:hover {
+    background: $primary;
+    color: $foreground;
+    text-decoration: none;
+
+    .shortcut {
+      color: lighten($contextmenu-selected-bg, 25%);
+    }
+
+    .btn-switch.active {
+      // the hover state of the navigation menu list and the btn-switch are both $primary
+      // apply a visual outline to the btn-switch via box shadow to make it more distinct
+      box-shadow: 0 0 0 $border-width $gray-700;
+    }
+  }
+}

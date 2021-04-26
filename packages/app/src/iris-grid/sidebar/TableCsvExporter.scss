@@ -1,0 +1,37 @@
+@import '~@deephaven/components/scss/custom.scss';
+
+.table-csv-exporter {
+  padding: 0 $spacer-2;
+
+  .custom-radio:not(:last-child) {
+    margin-bottom: $spacer-2;
+  }
+
+  .radio-input-row {
+    display: flex;
+    align-items: center;
+
+    .form-control {
+      min-width: 0;
+    }
+
+    > *:not(:last-child) {
+      margin-right: $spacer-1;
+    }
+  }
+
+  .section-footer {
+    .error-message {
+      color: $danger;
+    }
+
+    .download-status {
+      margin-bottom: $spacer;
+    }
+
+    .btn-downloading {
+      align-self: flex-end;
+      min-width: 10rem;
+    }
+  }
+}

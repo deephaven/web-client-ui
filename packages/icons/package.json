@@ -1,0 +1,52 @@
+{
+  "name": "@deephaven/icons",
+  "version": "0.0.1",
+  "description": "Icons used in Deephaven client apps. Extends vscode-codicons to be font-awesome svg-core compatible and adds additional icons in a similar style.",
+  "main": "dist/index.js",
+  "module": "dist/index.es.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "clean": "rimraf ./dist",
+    "prestart": "npm run build",
+    "start": "npm run watch",
+    "watch": "chokidar \"src/**/*\" -c \"npm run build\"",
+    "svgo-dh": "svgo -q -f ./src/icons/ -o ./dist/svg/dh --config ./config.yml",
+    "svgo-vs": "svgo -q -f ../../node_modules/vscode-codicons/src/icons/ -o ./dist/svg/vs --config ./config.yml",
+    "prebuild": "npm run clean",
+    "build": "run-s build:icons build:js",
+    "build:icons": "run-p svgo-dh svgo-vs",
+    "build:js": "node ./scripts/build.js",
+    "prepublishOnly": "npm run build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/deephaven/core"
+  },
+  "keywords": [
+    "icons"
+  ],
+  "author": "Deephaven Data Labs LLC",
+  "license": "SEE LICENSE IN LICENSE.md",
+  "dependencies": {
+    "@fortawesome/fontawesome-common-types": "^0.2.34"
+  },
+  "devDependencies": {
+    "chokidar-cli": "^2.1.0",
+    "npm-run-all": "^4.1.5",
+    "rimraf": "^3.0.2",
+    "svg-parser": "^2.0.4",
+    "svg-path-tools": "^1.0.0",
+    "svgo": "^1.3.2",
+    "vscode-codicons": "0.0.14"
+  },
+  "peerDependencies": {
+    "@fortawesome/fontawesome-svg-core": "^1.2.34",
+    "@fortawesome/react-fontawesome": "^0.1.14"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  }
+}

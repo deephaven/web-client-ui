@@ -1,0 +1,56 @@
+@import '../scss/custom.scss';
+$item-list-bg: $secondary;
+$item-list-keyboard-selected-bg: rgba($primary, 0.5);
+$item-list-selected-bg: $primary;
+$item-list-selected-color: $white;
+
+.item-list-item {
+  border: none;
+  border-radius: 0;
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  padding: 0;
+  white-space: nowrap;
+  text-decoration: none;
+  background-color: transparent;
+  text-align: left;
+  user-select: none;
+}
+
+.item-list-item-content {
+  display: flex;
+  flex-direction: row;
+  flex-grow: 1;
+  padding: 0 $input-btn-padding-x;
+  justify-content: space-between;
+  cursor: pointer;
+
+  .title {
+    flex-grow: 1;
+  }
+}
+
+.item-list-item-content:hover {
+  background-color: $item-list-selected-bg;
+  color: $item-list-selected-color;
+}
+
+.item-list-item.keyboard-active {
+  .item-list-item-content {
+    background-color: $item-list-keyboard-selected-bg;
+    color: $item-list-selected-color;
+  }
+}
+
+.item-list-item.active {
+  .item-list-item-content {
+    background-color: $item-list-selected-bg;
+    color: $item-list-selected-color;
+  }
+}
+
+.item-list-item:focus {
+  outline: none;
+  box-shadow: none;
+}

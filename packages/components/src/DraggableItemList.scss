@@ -1,0 +1,155 @@
+@import '../scss/custom.scss';
+
+$draggable-item-hover-bg: $secondary;
+$draggable-item-selected-bg: rgba($primary, 0.4);
+$draggable-item-selected-hover-bg: $primary;
+$draggable-item-dragging-bg: $primary;
+$draggable-item-selected-dragged-bg: rgba($primary, 0.35);
+$draggable-item-border: $input-border-width solid transparent;
+$draggable-item-focus-border: $input-border-width solid
+  $input-focus-border-color;
+$draggable-item-grip-color: $mid;
+
+// The element that is currently being dragged with the mouse
+.draggable-item-list-dragging-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 0 $spacer-2;
+
+  .item-list-item-content {
+    background-color: $draggable-item-dragging-bg;
+    box-shadow: $box-shadow;
+    border-radius: $border-radius;
+    margin: 0 0 $spacer-1 0;
+    padding: $spacer-1 $spacer-2;
+    position: relative;
+  }
+
+  &:focus {
+    outline: 0;
+  }
+
+  &.two-dragged,
+  &.multiple-dragged {
+    .item-list-item-content {
+      @include drag-stack(before) {
+        top: 4px;
+        left: 2px;
+        opacity: 0.8;
+        z-index: -1;
+      }
+    }
+  }
+  &.multiple-dragged {
+    .item-list-item-content {
+      @include drag-stack(after) {
+        // It looked weird with 8px
+        top: 7px;
+        left: 4px;
+        opacity: 0.6;
+        z-index: -2;
+      }
+    }
+  }
+
+  .fa-grip-vertical {
+    color: $draggable-item-grip-color;
+  }
+
+  .title {
+    flex-grow: 1;
+  }
+
+  .number-badge {
+    padding: 0 $spacer-2;
+    border-radius: 1rem;
+    background-color: rgba($white, 0.25);
+    margin-right: $spacer-1;
+  }
+}
+
+.draggable-item-list {
+  .item-list-item {
+    padding: 0;
+    display: flex;
+
+    .draggable-item-list-item {
+      display: flex;
+      flex-grow: 1;
+      flex-direction: row;
+      outline: none;
+    }
+
+    .item-list-item-content {
+      border-radius: $border-radius;
+      margin: 0 $spacer-2 $spacer-1 $spacer-2;
+      padding: calc(#{$spacer-1} * 0.5) $spacer-1 0 $spacer-2;
+      border: $draggable-item-border;
+      line-height: $btn-line-height;
+
+      &:hover {
+        background-color: $draggable-item-hover-bg;
+      }
+    }
+
+    &.keyboard-active {
+      .item-list-item-content {
+        background-color: transparent;
+
+        &:hover {
+          background-color: $draggable-item-hover-bg;
+        }
+      }
+    }
+
+    &.active {
+      /* stylelint-disable-next-line no-descending-specificity */
+      .item-list-item-content {
+        background-color: $draggable-item-selected-bg;
+
+        &:hover {
+          background-color: $draggable-item-selected-hover-bg;
+        }
+      }
+    }
+  }
+
+  &.is-dragging-from-this,
+  &.is-dragging-over {
+    .item-list-item {
+      .draggable-item-list-item {
+        &:focus {
+          .item-list-item-content {
+            outline: 0;
+            border: $draggable-item-border;
+            box-shadow: none;
+          }
+        }
+        .item-list-item-content:hover {
+          background-color: transparent;
+        }
+      }
+    }
+
+    .item-list-item.active {
+      .draggable-item-list-item {
+        .item-list-item-content {
+          background-color: $draggable-item-selected-dragged-bg;
+        }
+      }
+    }
+  }
+
+  // Sometimes react-beautiful-dnd still adds the `is-dragging-over` class even though drop is disabled
+  // only show the ants if drop isn't disabled
+  &.is-dragging-over:not(.is-drop-disabled) {
+    .item-list-scroll-pane {
+      @include ants-base($foreground, $background);
+    }
+  }
+}
+
+.draggable-item-list-dragging-item-container:focus {
+  outline: 0;
+}

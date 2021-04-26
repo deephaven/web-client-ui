@@ -1,0 +1,45 @@
+@import '~@deephaven/components/scss/custom.scss';
+
+$init-dashboard-color: $gray-400;
+$init-dashboard-background-color: $gray-900;
+$init-dashboard-border-color: $gray-500;
+$init-dashboard-hint-box-width: 130px;
+
+.init-dashboard-container + div > .lm_goldenlayout {
+  // golden-layout is below empty-dash, but we don't want it visible
+  visibility: hidden;
+}
+
+.init-dashboard-container {
+  padding: 5px;
+  height: 100%;
+  width: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+
+  .init-dashboard {
+    height: 100%;
+    width: 100%;
+    border: dashed;
+    border-color: $init-dashboard-border-color;
+    border-width: 1px;
+    color: $init-dashboard-color;
+    background-color: $init-dashboard-background-color;
+    display: flex;
+    justify-content: center;
+  }
+  .add-panels-hint {
+    align-self: center;
+    font-size: 40px;
+    text-align: center;
+  }
+  .hint-container {
+    width: $init-dashboard-hint-box-width;
+    color: $init-dashboard-color;
+    line-height: normal;
+    text-align: center;
+    position: absolute;
+    padding-top: 10px;
+  }
+}

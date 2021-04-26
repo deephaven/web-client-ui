@@ -1,0 +1,123 @@
+@import '../scss/custom.scss';
+
+$switch-size: 15px;
+$switch-width: 40px;
+$switch-font-size: 0.6rem;
+$switch-handle-color: $gray-300;
+$switch-handle-hover-color: $gray-100;
+$switch-text-color: $gray-300;
+$switch-text-color-active: $gray-200;
+$switch-handle-padding: 1px;
+$switch-handle-size: $switch-size - ($switch-handle-padding * 2);
+$switch-background-color: $gray-800;
+$switch-background-active-color: $primary;
+
+.btn-switch {
+  font-size: $switch-font-size;
+  color: $gray-300;
+  background: $switch-background-color;
+  padding: 0;
+  min-width: $switch-width;
+  width: $switch-width;
+  overflow: hidden;
+  border: 1px solid $input-border-color;
+
+  .handle {
+    position: relative;
+    top: 0;
+    left: 0;
+    margin: 1px;
+    width: $switch-handle-size;
+    height: $switch-handle-size;
+    border-radius: $switch-handle-size;
+    background-color: $switch-handle-color;
+    transform: translateX(0);
+    transition: transform $transition ease-in, background-color $transition;
+  }
+
+  ::before,
+  ::after {
+    width: $switch-size;
+    text-align: center;
+    font-weight: 600;
+    text-transform: uppercase;
+    position: absolute;
+    bottom: 0;
+    line-height: $switch-handle-size;
+    color: $switch-text-color;
+    letter-spacing: 0.75px;
+    transition: opacity $transition;
+  }
+
+  ::before {
+    content: 'Off';
+    left: $switch-size + 2px;
+    text-align: right;
+  }
+
+  ::after {
+    content: 'On';
+    color: $switch-text-color-active;
+    left: -$switch-size - 1px;
+    text-align: left;
+    opacity: 0;
+  }
+
+  &:focus {
+    outline: none;
+    box-shadow: $input-btn-focus-box-shadow;
+    border-color: $input-focus-border-color;
+  }
+
+  &.active {
+    background: $switch-background-active-color;
+    transition: background-color $transition;
+    border-color: $switch-background-active-color;
+
+    &:focus {
+      border-color: $input-focus-border-color;
+    }
+
+    .handle {
+      transform: translateX(
+        $switch-width - $switch-size - $switch-handle-padding * 2
+      );
+      transition: transform $transition ease-in;
+    }
+    ::before {
+      opacity: 0;
+    }
+    ::after {
+      opacity: 1;
+    }
+  }
+
+  &:hover:not(:disabled) .handle {
+    background-color: $switch-handle-hover-color;
+  }
+
+  &.is-invalid,
+  &:focus.is-invalid {
+    border-color: $danger;
+  }
+
+  &.is-invalid.active,
+  &:focus.is-invalid.active {
+    border-color: $danger;
+    background-color: $danger;
+  }
+
+  &:disabled {
+    background-color: $gray-800;
+    border-color: $black;
+    cursor: not-allowed;
+  }
+
+  &:disabled.active {
+    border-color: $black;
+    // background-color: $gray-800;
+    .handle {
+      background-color: $gray-500;
+    }
+  }
+}

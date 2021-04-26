@@ -1,0 +1,8 @@
+@import '../scss/custom.scss';
+@import './TimeSlider.scss';
+
+/* stylelint-disable property-no-unknown */
+:export {
+  handle-size: $handle-size;
+  popover-width: $popover-width;
+}

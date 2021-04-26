@@ -1,0 +1,152 @@
+@import '~@deephaven/components/scss/custom.scss';
+
+.visibility-ordering-builder {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  max-height: 100%;
+  outline: 0;
+
+  .top-menu {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    background-color: $content-bg;
+    padding: $spacer-1;
+    z-index: 2;
+  }
+
+  .visibility-ordering-list {
+    overflow-y: auto;
+    flex-grow: 1;
+
+    &.isDragging {
+      @include ants-base($foreground, $background);
+    }
+
+    hr {
+      margin: $spacer-2 0;
+      background-color: $content-bg;
+    }
+  }
+
+  .visibility-ordering-list-item {
+    display: flex;
+    flex-direction: row;
+    margin-bottom: 2px;
+    padding-left: $spacer-1; // space for focus border
+
+    &:first-child {
+      padding-top: $spacer-1;
+    }
+
+    .column-item {
+      border-radius: $border-radius;
+      display: flex;
+      justify-content: space-between;
+      padding: 0 $spacer-2;
+      flex-grow: 2;
+      align-items: center;
+      user-select: none;
+      transition: $btn-transition;
+      border: $input-border-width solid transparent;
+      line-height: $btn-line-height;
+      max-width: calc(100% - #{$spacer} * 2);
+      .column-name {
+        overflow-x: hidden;
+        text-overflow: ellipsis;
+        padding-right: 2px;
+      }
+
+      &:focus {
+        outline: 0;
+        border: $input-border-width solid $input-focus-border-color;
+        box-shadow: $input-focus-box-shadow;
+      }
+
+      .fa-grip-vertical {
+        color: $gray-400;
+      }
+
+      &:hover {
+        background: $gray-500;
+        .fa-grip-vertical {
+          color: $gray-200;
+        }
+      }
+    }
+
+    &.immovable {
+      .column-item {
+        color: $text-muted;
+        padding-left: 32px;
+        &:hover {
+          background: transparent;
+        }
+      }
+    }
+
+    .isSelected {
+      background-color: rgba($primary, 0.4);
+
+      &:hover {
+        background-color: $primary;
+      }
+      &.isDragging {
+        opacity: 0.4;
+
+        &.isDragged {
+          opacity: 1;
+          color: $foreground;
+          background-color: $primary;
+          position: relative;
+          box-shadow: $box-shadow;
+
+          .fa-grip-vertical {
+            color: $gray-200;
+          }
+
+          &.two-dragged {
+            @include drag-stack(before) {
+              top: 4px;
+              left: 2px;
+              opacity: 0.8;
+              z-index: -1;
+            }
+          }
+          &.multiple-dragged {
+            @include drag-stack(before) {
+              top: 4px;
+              left: 2px;
+              opacity: 0.8;
+              z-index: -1;
+            }
+            @include drag-stack(after) {
+              top: 8px;
+              left: 4px;
+              opacity: 0.6;
+              z-index: -2;
+            }
+          }
+        }
+      }
+    }
+    .number-badge {
+      padding: 0 $spacer-2;
+      border-radius: 1rem;
+      background-color: rgba($white, 0.25);
+      margin-right: $spacer-1;
+    }
+  }
+
+  .vertical-divider {
+    border-left: 1px solid $black;
+    padding-right: $spacer-1;
+    margin-left: $spacer-1;
+    height: 1rem;
+  }
+
+  .list {
+    flex-grow: 2;
+  }
+}

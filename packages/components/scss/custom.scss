@@ -1,0 +1,282 @@
+// Styling overrides for bootstrap
+
+//Make bootstrap functions available for use in overrides
+@import 'bootstrap/scss/_functions.scss';
+
+// Override / set color variables
+$red: #f95d84;
+$orange: #f37e3f;
+$yellow: #fcd65b;
+$green: #9edc6f;
+$blue: #76d9e4;
+$purple: #aa9af4;
+
+//Define some UI colors
+$interfacegray: #2d2a2e;
+$interfaceblue: #4878ea;
+$interfacewhite: #f0f0ee; //same as gray-200
+$interfaceblack: #1a171a;
+
+//Define our Gray scale
+$white: $interfacewhite;
+$gray-100: #fcfcfa;
+$gray-200: $interfacewhite;
+$gray-300: #c0bfbf;
+$gray-400: #929192;
+$gray-500: #5b5a5c;
+$gray-600: #555356;
+$gray-700: #403e41;
+$gray-800: #373438;
+$gray-850: #322f33;
+$gray-900: #211f22;
+$black: $interfaceblack;
+$content-bg: $interfacegray;
+$background: $interfaceblack;
+$foreground: $interfacewhite;
+
+//Load colors into map
+$colors: ();
+$colors: map-merge(
+  (
+    'red': $red,
+    'orange': $orange,
+    'yellow': $yellow,
+    'green': $green,
+    'blue': $blue,
+    'purple': $purple,
+    'white': $white,
+    'black': $black,
+  ),
+  $colors
+);
+
+//Set default colors
+$body-bg: $black;
+$body-color: $interfacewhite;
+
+// Set brand colors
+$primary: $interfaceblue;
+$primary-hover: darken($primary, 8%);
+$primary-dark: mix($primary, $content-bg, 25%);
+$primary-light: scale-color($primary, $lightness: -25%);
+$secondary: $gray-500;
+$secondary-hover: darken($secondary, 8%);
+$success: $green;
+$info: $yellow;
+$warning: $orange;
+$danger: $red;
+$danger-hover: darken($danger, 8%);
+$light: $gray-100;
+$mid: $gray-400; //Added a mid color, useful for input styling
+$dark: $gray-800;
+$green-dark: scale-color($green, $lightness: -45%, $saturation: -10%);
+
+$theme-colors: () !default;
+$theme-colors: map-merge(
+  (
+    'primary': $primary,
+    'primary-hover': $primary-hover,
+    'primary-light': $primary-light,
+    'primary-dark': $primary-dark,
+    'secondary': $secondary,
+    'success': $success,
+    'info': $info,
+    'warning': $warning,
+    'danger': $danger,
+    'light': $light,
+    'dark': $dark,
+    'mid': $mid,
+    'content-bg': $interfacegray,
+    'background': $interfaceblack,
+    'foreground': $interfacewhite,
+  ),
+  $theme-colors
+);
+
+$component-active-bg: $primary;
+$theme-color-interval: 9%;
+$yiq-contrasted-threshold: 180;
+
+// Override fonts
+$font-family-sans-serif: 'Fira Sans', -apple-system, blinkmacsystemfont,
+  'Segoe UI', 'Roboto', 'Helvetica Neue', arial, sans-serif; //fira sans then native system ui fallbacks
+$font-family-monospace: 'Fira Mono', menlo, monaco, consolas, 'Liberation Mono',
+  'Courier New', monospace;
+$font-family-base: $font-family-sans-serif;
+
+$headings-font-weight: 400;
+
+//Text overides
+$text-muted: $gray-400;
+
+//Style Selection highlight color
+//so browsers add alpha to your color by default, ignoring opacity 1
+//by setting rgba with 0.99 it tricks browser into thinking there is alpha applied
+$text-select-color: $primary-hover;
+$text-select-color-editor: lighten(
+  $gray-700,
+  15%
+); //we lighten it abit to account for that 0.01 loss, and because it needs some anyways.
+
+//Grid variables, same value as default just making easily accessible
+$grid-gutter-width: 30px;
+
+//Visual Overrides
+$border-radius: 4px;
+$box-shadow: 0 0.1rem 1rem rgba($black, 0.45); //because our UI is so dark, we need darker default shadows
+$box-shadow-900: 0 0.1rem 1rem rgba(0, 0, 0, 0.45); //darkest shadow for $black popups over $black UI
+
+//Override Btn
+$btn-border-radius: 4rem;
+$btn-padding-x: 1.5rem;
+$btn-transition: color 0.12s ease-in-out, background-color 0.12s ease-in-out,
+  border-color 0.12s ease-in-out, box-shadow 0.12s ease-in-out; //default 0.15 is too long
+$btn-border-width: 2px;
+
+//Override Inputs
+$input-bg: $gray-600;
+$input-disabled-bg: $gray-800;
+$input-color: $interfacewhite;
+$input-border-color: $gray-400;
+$input-placeholder-color: $gray-400;
+$input-focus-border-color: rgba($primary, 0.85);
+
+$input-btn-focus-width: 0.2rem;
+$input-btn-focus-color: rgba($component-active-bg, 0.35);
+$input-btn-focus-box-shadow: 0 0 0 $input-btn-focus-width $input-btn-focus-color;
+
+//checkbox
+$custom-control-indicator-bg: $gray-600;
+$custom-control-indicator-bg-size: 75% 75%;
+$custom-control-indicator-disabled-bg: $gray-800;
+$custom-control-indicator-checked-disabled-bg: $gray-800;
+$custom-control-label-disabled-color: $gray-400;
+
+//Custom Select
+$custom-select-indicator-color: $gray-400;
+$custom-select-bg-size: 16px 16px;
+//dhSort icon encoded
+$custom-select-indicator: str-replace(
+  url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='#{$custom-select-indicator-color}' d='M4 7l-.4-.8 4-3.7h.8l4 3.7-.4.8H4zm0 2l-.4.8 4 3.7h.8l4-3.7L12 9H4z'/%3E%3C/svg%3E"),
+  '#',
+  '%23'
+);
+$custom-select-focus-box-shadow: $input-btn-focus-box-shadow;
+$custom-select-disabled-color: darken($gray-400, 5%);
+$custom-select-disabled-bg: $gray-800;
+
+//modal
+$modal-content-bg: $gray-200;
+$modal-content-border-width: 0;
+$modal-md: 550px;
+
+// Toast notification
+$toast-bg: $primary-dark;
+$toast-color: $foreground;
+$toast-error-bg: mix($danger, $content-bg, 15%);
+$toast-error-color: $foreground;
+
+//tooltips
+$tooltip-bg: $gray-700;
+$tooltip-color: $interfacewhite;
+$tooltip-box-shadow: 0 0.1rem 1.5rem 0.1rem rgba($black, 0.8);
+
+//drowdowns
+$dropdown-bg: $gray-600;
+$dropdown-link-color: $interfacewhite;
+$dropdown-link-hover-color: $interfacewhite;
+$dropdown-link-hover-bg: $primary;
+$dropdown-divider-bg: $gray-700;
+
+//context menus
+$contextmenu-bg: $gray-600;
+$contextmenu-color: $foreground;
+$contextmenu-disabled-color: $text-muted;
+$contextmenu-keyboard-selected-bg: rgba($primary, 0.5);
+$contextmenu-selected-bg: $primary;
+$contextmenu-selected-color: $foreground;
+
+//links
+$link-color: $gray-400;
+$link-hover-color: $interfacewhite;
+
+//progress-bar
+$progress-bg: $gray-600;
+$progress-border-radius: 1rem;
+
+// Set global options
+$enable-shadows: false;
+$enable-gradients: false;
+$enable-print-styles: false; //I don't think anyone should expect to "print" this app.
+
+// Transition times
+$transition: 0.15s;
+$transition-mid: 0.2s;
+$transition-long: 0.3s;
+$transition-slow: 1s;
+
+//form-validation icon, uses vsIssues icon encoded here as svg
+$form-feedback-icon-invalid-color: theme-color('danger');
+$form-feedback-icon-invalid: str-replace(
+  url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Cg fill='none'%3E%3Cg fill='#{$form-feedback-icon-invalid-color}'%3E%3Cpath d='M3.889 3.095a6.5 6.5 0 117.222 10.81A6.5 6.5 0 013.89 3.095zm.555 9.978a5.5 5.5 0 106.111-9.145 5.5 5.5 0 00-6.11 9.145zM8 5H7v5h1V5zm0 6H7v1h1v-1z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E "),
+  '#',
+  '%23'
+);
+
+//_variable imports come after bootstrap default overrides,
+// makes all other variables and mixins from bootstrap available
+/// with just importing customer.scss
+@import 'bootstrap/scss/_variables.scss';
+@import 'bootstrap/scss/_mixins.scss';
+
+//New variables come after imports
+//---------------------------------------
+
+//Set of spacer variables from the spacer map
+$spacer-0: map-get($spacers, 0); //0
+$spacer-1: map-get($spacers, 1);
+$spacer-2: map-get($spacers, 2);
+$spacer-3: map-get($spacers, 3);
+$spacer-4: map-get($spacers, 4);
+$spacer-5: map-get($spacers, 5);
+
+/* Marching Ants for golden layout dropzone and drag and drop */
+//top bottom, left right.
+//create 4 background images that are 50% color 1, 50% color 2 using graidents,  two veritical, two horizontal
+//size them to ant-size and thickness
+//position those images along the egdes and make top/bottom repeat-x and left/right repeat-y
+//then offest each of those background positions by ant-size in animation to make them march.
+$ant-size: 8px;
+$ant-thickness: 1px;
+
+@mixin ants-base($color-1: black, $color-2: white) {
+  background-image: linear-gradient(to right, $color-2 50%, $color-1 50%),
+    linear-gradient(to right, $color-2 50%, $color-1 50%),
+    linear-gradient(to bottom, $color-2 50%, $color-1 50%),
+    linear-gradient(to bottom, $color-2 50%, $color-1 50%);
+  background-size: $ant-size $ant-thickness, $ant-size $ant-thickness,
+    $ant-thickness $ant-size, $ant-thickness $ant-size;
+  background-position: 0 top, 0 bottom, left 0, right 0;
+  background-repeat: repeat-x, repeat-x, repeat-y, repeat-y;
+  animation: march 0.5s;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+@mixin drag-stack($pseudo-element) {
+  &::#{$pseudo-element} {
+    content: ' ';
+    background: $primary;
+    box-shadow: $box-shadow;
+    border-radius: $border-radius;
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    @content;
+  }
+}
+
+$focus-bg-transparency: 0.12;
+$hover-bg-transparency: 0.14;
+$active-bg-transparency: 0.28;
+$exception-transparency: 0.13;

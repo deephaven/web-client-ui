@@ -1,0 +1,11 @@
+{
+  "name": "@deephaven/tsconfig",
+  "version": "0.0.1",
+  "description": "Deephaven TypeScript configuration",
+  "repository": "https://github.com/deephaven/core",
+  "license" : "SEE LICENSE IN LICENSE.md",
+  "main": "tsconfig.json",
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  }
+}

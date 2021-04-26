@@ -1,0 +1,57 @@
+@import '../scss/custom.scss';
+
+.search-group {
+  position: relative;
+
+  .form-control {
+    padding-right: 1.75rem; // leave space for search icon and cancel button from browser
+  }
+
+  .search-icon {
+    pointer-events: none;
+    position: absolute;
+    right: $spacer-2;
+    top: 0;
+    bottom: 0;
+    height: 100%;
+    display: flex;
+    align-items: center;
+  }
+
+  ::-webkit-search-cancel-button {
+    $close-path: 'M8 8.707l3.646 3.647.708-.707L8.707 8l3.647-3.646-.707-.708L8 7.293 4.354 3.646l-.707.708L7.293 8l-3.646 3.646.707.708L8 8.707z';
+
+    -webkit-appearance: none;
+    height: 16px;
+    width: 16px;
+    background-repeat: no-repeat;
+    // vsClose icon
+    background-image: str-replace(
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='#{$gray-300}' d='#{$close-path}'/%3E%3C/svg%3E"),
+      '#',
+      '%23'
+    );
+    transition: background-image $transition;
+    &:hover {
+      background-image: str-replace(
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='#{$gray-100}' d='#{$close-path}' /%3E%3C/svg%3E"),
+        '#',
+        '%23'
+      );
+    }
+  }
+
+  .search-match {
+    pointer-events: none;
+    position: absolute;
+    right: $spacer-5;
+    top: 15%;
+    bottom: 15%;
+    height: 70%;
+    display: flex;
+    align-items: center;
+    padding: 0 $spacer-2;
+    border-radius: 1rem;
+    background-color: rgba($white, 0.25);
+  }
+}

@@ -1,0 +1,189 @@
+$speed: 1.4s;
+
+.dh-loader {
+  position: relative;
+  animation: dhOverallSpin $speed cubic-bezier(0.49, -0.56, 0.49, 1.42) infinite
+    both;
+  width: 200px;
+  margin: auto;
+  z-index: 20;
+  opacity: 0;
+  transform: scale(1.4);
+  transition: opacity 100ms linear; //fade out time
+  pointer-events: none;
+
+  svg {
+    transform: scale(1.4);
+    transition: transform 150ms linear;
+  }
+
+  &.show {
+    opacity: 1;
+    transition: opacity 150ms linear; //fade in time
+
+    svg {
+      transform: scale(1);
+      transition: transform 200ms linear;
+    }
+  }
+
+  svg.dh-loader-tile {
+    position: absolute;
+    top: 0;
+    left: 0;
+  }
+
+  .dh-loader-tile-3 {
+    animation: dhTileFade3 $speed linear infinite both;
+  }
+  .dh-loader-tile-2 {
+    animation: dhTileFade2 $speed linear infinite both;
+  }
+  .dh-loader-tile-5 {
+    animation: dhTileFade5 $speed linear infinite both;
+  }
+  .dh-loader-tile-6 {
+    animation: dhTileFade6 $speed linear infinite both;
+  }
+  .dh-loader-tile-7 {
+    animation: dhTileFade7 $speed linear infinite both;
+  }
+  .dh-loader-tile-4 {
+    animation: dhTileFade4 $speed linear infinite both;
+  }
+
+  @keyframes dhOverallSpin {
+    0% {
+      transform: rotate(0deg);
+    }
+    53.5714% {
+      transform: rotate(0deg);
+    }
+    92.8571% {
+      transform: rotate(180deg);
+    }
+    100% {
+      transform: rotate(180deg);
+    }
+  }
+  @keyframes dhTileFade3 {
+    0% {
+      opacity: 0;
+    }
+    25% {
+      opacity: 0;
+    }
+    42.8571% {
+      opacity: 1;
+    }
+    59.5238% {
+      opacity: 1;
+    }
+    77.3809% {
+      opacity: 0;
+    }
+    100% {
+      opacity: 0;
+    }
+  }
+  @keyframes dhTileFade2 {
+    0% {
+      opacity: 0;
+    }
+    20.2381% {
+      opacity: 0;
+    }
+    36.9048% {
+      opacity: 1;
+    }
+    54.7619% {
+      opacity: 1;
+    }
+    72.619% {
+      opacity: 0;
+    }
+    100% {
+      opacity: 0;
+    }
+  }
+  @keyframes dhTileFade5 {
+    0% {
+      opacity: 0;
+    }
+    15.4762% {
+      opacity: 0;
+    }
+    32.1429% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 1;
+    }
+    67.8571% {
+      opacity: 0;
+    }
+    100% {
+      opacity: 0;
+    }
+  }
+  @keyframes dhTileFade6 {
+    0% {
+      opacity: 0;
+    }
+    10.7143% {
+      opacity: 0;
+    }
+    27.3809% {
+      opacity: 1;
+    }
+    73.8095% {
+      opacity: 1;
+    }
+    91.6667% {
+      opacity: 0;
+    }
+    100% {
+      opacity: 0;
+    }
+  }
+  @keyframes dhTileFade7 {
+    0% {
+      opacity: 0;
+    }
+    5.9524% {
+      opacity: 0;
+    }
+    22.619% {
+      opacity: 1;
+    }
+    69.0476% {
+      opacity: 1;
+    }
+    86.9048% {
+      opacity: 0;
+    }
+    100% {
+      opacity: 0;
+    }
+  }
+  @keyframes dhTileFade4 {
+    0% {
+      opacity: 0;
+    }
+    1.1905% {
+      opacity: 0;
+    }
+    17.8571% {
+      opacity: 1;
+    }
+    64.2857% {
+      opacity: 1;
+    }
+    82.1429% {
+      opacity: 0;
+    }
+    100% {
+      opacity: 0;
+    }
+  }
+}

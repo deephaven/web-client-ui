@@ -1,0 +1,79 @@
+@import '../scss/custom.scss';
+
+$cs-option-btn-color: $dropdown-link-color;
+$cs-option-keyboard-selected-bg: rgba($primary, 0.5);
+$cs-option-hover-bg: $dropdown-link-hover-bg;
+$cs-option-hover-color: $dropdown-link-hover-color;
+
+.cs-container {
+  flex-wrap: nowrap;
+
+  .cs-dropdown .cs-btn {
+    display: flex;
+    direction: row;
+    justify-content: space-between;
+    border-radius: $border-radius;
+    border: $input-border-width solid $input-border-color;
+    min-width: 14rem;
+
+    .cs-caret {
+      color: $input-border-color;
+    }
+  }
+
+  .cs-dropdown-invalid .cs-btn-invalid {
+    border-color: $danger;
+  }
+
+  .cs-btn:focus {
+    border-color: $input-focus-border-color;
+  }
+}
+
+.cs-menu-container {
+  .cs-divider {
+    background-color: $black;
+  }
+
+  .cs-custom-container {
+    display: flex;
+    direction: row;
+  }
+
+  .custom-label {
+    padding: $input-btn-padding-y $input-btn-padding-x;
+  }
+  .cs-options {
+    max-height: 400px;
+    overflow: auto;
+  }
+  .cs-option-btn {
+    border: none;
+    width: 100%;
+    color: $cs-option-btn-color;
+    padding: $input-btn-padding-y $input-btn-padding-x;
+    white-space: nowrap;
+    text-decoration: none;
+    background-color: transparent;
+    text-align: left;
+    cursor: pointer;
+    user-select: none;
+    display: block;
+  }
+  .cs-option-btn.keyboard-active {
+    background-color: $cs-option-keyboard-selected-bg;
+  }
+
+  .cs-option-btn:hover {
+    color: $cs-option-hover-color;
+    background-color: $cs-option-hover-bg;
+  }
+  .cs-option-btn:focus {
+    outline: none;
+  }
+
+  .cs-options:first-child {
+    border-top-left-radius: $border-radius;
+    border-top-right-radius: $border-radius;
+  }
+}

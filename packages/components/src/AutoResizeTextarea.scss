@@ -1,0 +1,14 @@
+@import '../scss/custom.scss';
+
+textarea.auto-resize-textarea {
+  min-height: $input-height;
+  white-space: nowrap; // all on one line while collapsed
+}
+
+// After testing in firefox, nowrap doesn't allow new lines in firefox
+// So while focused, we need to change the whitespace mode so that we can
+// spread the variables over multiple lines
+// https://bugzilla.mozilla.org/show_bug.cgi?id=1137650
+textarea.auto-resize-textarea:focus {
+  white-space: pre;
+}

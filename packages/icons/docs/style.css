@@ -1,0 +1,170 @@
+:root {
+  --bg-color: #322f33;
+  --nav-bg-color: #2d2a2e;
+  --app-bg: #000;
+  --text: #f0f0ee;
+  --text-secondary: #c0bfbf;
+  --accent: #4878ea;
+  /* sizing scale */
+  --scale-6: 48px;
+  --scale-5: 26px;
+  --scale-4: 16px;
+  --scale-3: 11px;
+  --scale-2: 6px;
+  --scale-1: 4px;
+  --sidebar-size: 350px;
+  --shadow-color: rgba(0, 0, 0, 0.5);
+}
+
+.light {
+  --bg-color: #f0f0ee;
+  --nav-bg-color: #c0bfbf;
+  --app-bg: #fff;
+  --text: #2d2a2e;
+  --text-secondary: #322f33;
+  --accent: #4878ea;
+}
+
+* {
+  margin: 0;
+  box-sizing: border-box;
+}
+
+h1,
+p,
+input,
+button {
+  margin-bottom: var(--scale-3);
+}
+
+label {
+  user-select: none;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
+    Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  background-color: var(--bg-color);
+  color: var(--text);
+}
+
+#root {
+  display: flex;
+}
+
+header {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  width: var(--sidebar-size);
+  padding: var(--scale-3);
+  background-color: var(--nav-bg-color);
+}
+
+h1 {
+  font-size: var(--scale-5);
+}
+
+small {
+  font-size: var(--scale-3);
+  color: var(--text-secondary);
+}
+
+input[type='search'] {
+  padding: var(--scale-2);
+  font-size: var(--scale-4);
+  border-radius: var(--scale-1);
+  width: 100%;
+  border: 0;
+}
+
+header button {
+  background-color: transparent;
+  color: var(--text-secondary);
+  border-radius: var(--scale-1);
+  padding: var(--scale-1) var(--scale-2);
+  margin-right: var(--scale-2);
+  border: 1px solid var(--text-secondary);
+}
+
+header button.active {
+  color: var(--accent);
+  border: 1px solid var(--accent);
+}
+
+header p {
+  color: var(--text-secondary);
+}
+
+a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+.flash {
+  position: fixed;
+  top: var(--scale-3);
+  right: var(--scale-3);
+  opacity: 0;
+  padding: var(--scale-2);
+  border-radius: var(--scale-1);
+  color: var(--bg-color);
+  background-color: var(--text-secondary);
+  transition: opacity 0.2s;
+  box-shadow: 0 0 var(--scale-3) var(--shadow-color);
+}
+
+.flash.in {
+  opacity: 1;
+}
+
+main {
+  display: grid;
+  padding: var(--scale-3);
+  grid-template-columns: repeat(auto-fit, 80px);
+  grid-auto-rows: min-content;
+  gap: var(--scale-5);
+  flex-grow: 1;
+}
+
+.no-result {
+  width: 200px;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  border-radius: var(--scale-1);
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+.card:hover {
+  background-color: var(--accent);
+}
+
+.icon {
+  font-size: var(--scale-6);
+}
+
+.card label {
+  color: var(--text-secondary);
+  font-size: var(--scale-3);
+  max-width: 100%;
+  padding: 0 var(--scale-2) var(--scale-2) var(--scale-2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+}
+
+/* lol vsPulse gets class fa-pulse, that makes it spins */
+.fa-pulse {
+  animation: none;
+}

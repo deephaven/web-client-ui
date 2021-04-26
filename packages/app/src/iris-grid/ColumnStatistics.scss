@@ -1,0 +1,71 @@
+@import '~@deephaven/components/scss/custom.scss';
+
+.column-statistics {
+  min-width: 175px;
+  max-width: 350px;
+  color: $foreground;
+  text-align: left;
+  font-size: small;
+  font-weight: 300;
+}
+
+.column-statistics-title {
+  font-weight: 500;
+}
+
+.column-statistics-type {
+  font-style: italic;
+  color: $gray-400;
+  font-weight: normal;
+  user-select: none;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.column-statistics-grid {
+  display: grid;
+  grid-template-columns: auto auto;
+  row-gap: $spacer-1;
+  padding-top: $spacer-1;
+  > div {
+    border-bottom: 1px solid $gray-500;
+    &:last-child,
+    &:nth-last-child(2) {
+      border-bottom: none;
+    }
+  }
+
+  .column-statistics-unique-value {
+    margin-left: $spacer;
+  }
+
+  .column-statistic-operation {
+    flex-grow: 0;
+    padding-right: $spacer;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+
+  .column-statistic-value {
+    font-feature-settings: 'tnum';
+    text-align: right;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+}
+
+.column-statistics .btn-link {
+  text-decoration: underline;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+.column-statistics-loading,
+.column-statistics-loading .loading {
+  padding-bottom: 2px; //account for btn-link y-border size so content doesn't shift
+  display: inline-block;
+  color: $gray-400;
+}

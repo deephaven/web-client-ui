@@ -1,0 +1,58 @@
+{
+  "name": "@deephaven/jsapi-shim",
+  "version": "0.0.1",
+  "description": "Deephaven JSAPI Shim",
+  "author": "Deephaven Data Labs LLC",
+  "license": "Deephaven",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/deephaven/core"
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "source": "src/index.ts",
+  "engines": {
+    "node": ">=10"
+  },
+  "scripts": {
+    "build": "cross-env NODE_ENV=production run-s clean build-steps",
+    "build-dev": "cross-env NODE_ENV=development run-s clean build-steps",
+    "build-steps": "run-p build:*",
+    "babel": "babel ./src --out-dir ./dist --extensions \".ts,.tsx,.js,.jsx\" --source-maps --root-mode upward",
+    "types": "tsc",
+    "build:babel": "npm run babel",
+    "build:types": "npm run types -- --incremental",
+    "watch": "run-p watch:*",
+    "watch:babel": "npm run babel -- -w --skip-initial-build",
+    "watch:types": "npm run types -- -w --incremental --preserveWatchOutput",
+    "clean": "rimraf ./dist tsconfig.tsbuildinfo",
+    "prestart": "npm run build-dev",
+    "start": "cross-env NODE_ENV=development npm run watch",
+    "prepublishOnly": "run-s build",
+    "test": "jest --watch",
+    "test:ci": "jest --ci",
+    "predeploy": "cd example && npm install && npm run build",
+    "deploy": "gh-pages -d example/build"
+  },
+  "peerDependencies": {
+    "classnames": "^2.x",
+    "prop-types": "^15.x",
+    "react": "^16.x"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.13.14",
+    "@babel/core": "7.12.3",
+    "@types/jest": "^26.0.15",
+    "babel-loader": "8.1.0",
+    "classnames": "^2.2.6",
+    "cross-env": "^7.0.2",
+    "jest": "26.6.0",
+    "npm-run-all": "^4.1.5",
+    "prop-types": "^15.7.2",
+    "ts-jest": "^26.5.3",
+    "typescript": "^4.2.3"
+  },
+  "files": [
+    "dist"
+  ]
+}

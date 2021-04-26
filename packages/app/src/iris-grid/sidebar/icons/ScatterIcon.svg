@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="48px" height="48px" viewBox="0 0 48 48" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 53 (72520) - https://sketchapp.com -->
+    <title>Scatter-Icon</title>
+    <desc>Created with Sketch.</desc>
+    <g id="Scatter-Icon" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <rect id="Rectangle-Copy-6" fill="#C1C0C0" transform="translate(24.000000, 43.500000) rotate(-270.000000) translate(-24.000000, -43.500000) " x="23.5" y="23.5" width="1" height="40"></rect>
+        <rect id="Rectangle-Copy-7" fill="#939293" transform="translate(24.000000, 34.500000) rotate(-270.000000) translate(-24.000000, -34.500000) " x="23.5" y="14.5" width="1" height="40"></rect>
+        <rect id="Rectangle-Copy-8" fill="#939293" transform="translate(24.000000, 25.500000) rotate(-270.000000) translate(-24.000000, -25.500000) " x="23.5" y="5.5" width="1" height="40"></rect>
+        <rect id="Rectangle-Copy-9" fill="#939293" transform="translate(24.000000, 16.500000) rotate(-270.000000) translate(-24.000000, -16.500000) " x="23.5" y="-3.5" width="1" height="40"></rect>
+        <circle id="Oval" fill="#7DA4FF" cx="9.5" cy="37.5" r="1.5"></circle>
+        <circle id="Oval-Copy" fill="#7DA4FF" cx="16.5" cy="30.5" r="1.5"></circle>
+        <circle id="Oval-Copy-2" fill="#7DA4FF" cx="22.5" cy="36.5" r="1.5"></circle>
+        <circle id="Oval-Copy-8" fill="#7DA4FF" cx="28.5" cy="30.5" r="1.5"></circle>
+        <circle id="Oval-Copy-9" fill="#7DA4FF" cx="15.5" cy="38.5" r="1.5"></circle>
+        <circle id="Oval-Copy-3" fill="#7DA4FF" cx="23.5" cy="25.5" r="1.5"></circle>
+        <circle id="Oval-Copy-4" fill="#7DA4FF" cx="19.5" cy="19.5" r="1.5"></circle>
+        <circle id="Oval-Copy-5" fill="#7DA4FF" cx="29.5" cy="19.5" r="1.5"></circle>
+        <circle id="Oval-Copy-6" fill="#7DA4FF" cx="32.5" cy="26.5" r="1.5"></circle>
+        <circle id="Oval-Copy-7" fill="#7DA4FF" cx="36.5" cy="13.5" r="1.5"></circle>
+    </g>
+</svg>

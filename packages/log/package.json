@@ -1,0 +1,56 @@
+{
+  "name": "@deephaven/log",
+  "version": "0.0.1",
+  "description": "Deephaven Logger",
+  "author": "Deephaven Data Labs LLC",
+  "license": "SEE LICENSE IN LICENSE.md",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/deephaven/core"
+  },
+  "source": "src/index.ts",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "engines": {
+    "node": ">=10"
+  },
+  "scripts": {
+    "build": "cross-env NODE_ENV=production run-s clean build-steps",
+    "build-dev": "cross-env NODE_ENV=development run-s clean build-steps",
+    "build-steps": "run-p build:*",
+    "babel": "babel ./src --out-dir ./dist --extensions \".ts,.tsx,.js,.jsx\" --source-maps --root-mode upward",
+    "types": "tsc",
+    "build:babel": "npm run babel",
+    "build:types": "npm run types -- --incremental",
+    "watch": "run-p watch:*",
+    "watch:babel": "npm run babel -- -w --skip-initial-build",
+    "watch:types": "npm run types -- -w --incremental --preserveWatchOutput",
+    "clean": "rimraf ./dist tsconfig.tsbuildinfo",
+    "prestart": "npm run build-dev",
+    "start": "cross-env NODE_ENV=development npm run watch",
+    "prepublishOnly": "run-s build",
+    "test": "jest --watch",
+    "test:ci": "jest --ci",
+    "predeploy": "npm install && npm run build",
+    "deploy": "gh-pages -d example/build"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.13.14",
+    "@types/jest": "^26.0.15",
+    "@types/lodash.clamp": "^4.0.6",
+    "@types/prop-types": "^15.7.3",
+    "cross-env": "^7.0.2",
+    "gh-pages": "^2.2.0",
+    "identity-obj-proxy": "^3.0.0",
+    "jest": "26.6.0",
+    "npm-run-all": "^4.1.5",
+    "rimraf": "^3.0.2",
+    "sass": "^1.32.8",
+    "ts-jest": "^26.5.3",
+    "ts-loader": "^8.0.18",
+    "typescript": "^4.2.3"
+  },
+  "files": [
+    "dist"
+  ]
+}

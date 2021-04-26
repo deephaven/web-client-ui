@@ -1,0 +1,66 @@
+{
+  "name": "@deephaven/core",
+  "private": true,
+  "version": "0.0.1",
+  "workspaces": [
+    "./packages/*"
+  ],
+  "scripts": {
+    "postinstall": "npm run bootstrap",
+    "clean:build": "lerna run clean --stream",
+    "clean:modules": "lerna clean --yes",
+    "clean": "npm run clean:build && npm run clean:modules",
+    "bootstrap": "lerna bootstrap --hoist",
+    "build": "lerna run build --stream",
+    "build:app": "lerna run --scope=@deephaven/app build",
+    "build:packages": "lerna run --ignore=@deephaven/app build --stream",
+    "build:profile": "lerna run build --stream --profile",
+    "start": "run-p start:*",
+    "start:app": "lerna run start --scope=@deephaven/app --stream",
+    "start:packages": "lerna run watch --ignore=@deephaven/app --stream --parallel",
+    "prestart": "lerna run prestart --stream",
+    "pretest:ci": "npm run build:packages",
+    "test": "lerna run test --stream --parallel",
+    "test:ci": "lerna run test:ci --stream --parallel",
+    "sync-version": "lerna version ${DEEPHAVEN_VERSION:-error} --no-git-tag-version --yes",
+    "publish": "lerna publish from-package --no-git-tag-version --yes"
+  },
+  "repository": "https://github.com/deephaven/core",
+  "devDependencies": {
+    "@deephaven/babel-preset": "file:packages/babel-preset",
+    "@deephaven/eslint-config": "file:packages/eslint-config",
+    "@deephaven/prettier-config": "file:packages/prettier-config",
+    "@deephaven/stylelint-config": "file:packages/stylelint-config",
+    "@types/stylelint": "^9.10.1",
+    "@typescript-eslint/eslint-plugin": "^4.19.0",
+    "@typescript-eslint/parser": "^4.19.0",
+    "babel-eslint": "^10.1.0",
+    "eslint": "^7.22.0",
+    "eslint-config-airbnb": "^18.2.1",
+    "eslint-config-prettier": "^8.1.0",
+    "eslint-config-react-app": "^6.0.0",
+    "eslint-plugin-es": "^4.1.0",
+    "eslint-plugin-flowtype": "^5.4.0",
+    "eslint-plugin-import": "^2.22.1",
+    "eslint-plugin-jsx-a11y": "^6.4.1",
+    "eslint-plugin-prettier": "^3.3.1",
+    "eslint-plugin-react": "^7.22.0",
+    "eslint-plugin-react-hooks": "^4.2.0",
+    "lerna": "^4.0.0",
+    "npm-run-all": "^4.1.5",
+    "prettier": "^2.2.1",
+    "stylelint": "^13.12.0",
+    "typescript": "^4.2.3"
+  },
+  "prettier": "@deephaven/prettier-config",
+  "stylelint": {
+    "ignoreFiles": [
+      "node_modules",
+      "*.*",
+      "!*.scss"
+    ],
+    "extends": [
+      "@deephaven/stylelint-config"
+    ]
+  }
+}

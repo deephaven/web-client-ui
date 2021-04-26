@@ -1,0 +1,9 @@
+{
+  "extends": "@deephaven/tsconfig",
+  "include": [
+    "src"
+  ],
+  "compilerOptions": {
+    "noEmit": true
+  }
+}

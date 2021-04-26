@@ -1,0 +1,78 @@
+@import '~@deephaven/components/scss/custom.scss';
+
+.ui-title {
+  color: $gray-200;
+  border-bottom: 1px solid $gray-200;
+  padding-bottom: 10px;
+  margin: 1.5rem 0;
+}
+
+pre {
+  color: $gray-300;
+}
+
+.swatch {
+  height: 2.5rem;
+  width: 100%;
+  text-align: center;
+  line-height: 2.5rem;
+}
+
+.swatch-content-bg {
+  border: 1px solid $gray-600;
+  margin-top: 2.5rem;
+  position: relative;
+
+  &::before {
+    content: 'Semantic Colours';
+    display: block;
+    position: absolute;
+    font-size: 10px;
+    top: -2rem;
+  }
+}
+
+@each $theme-color, $value in $theme-colors {
+  .swatch-#{$theme-color} {
+    color: color-yiq($value);
+    background-color: #{$value};
+  }
+}
+
+@each $color, $value in $colors {
+  .swatch-#{$color} {
+    color: color-yiq($value);
+    background-color: #{$value};
+  }
+}
+
+@each $color, $value in $grays {
+  .gray-swatch-#{$color} {
+    color: color-yiq($value);
+    background-color: #{$value};
+  }
+}
+
+.style-guide-container {
+  background-color: $content-bg;
+  padding: 1rem;
+}
+
+h5.sub-title {
+  color: $gray-200;
+  padding-bottom: 10px;
+  margin: 2.5rem 0 1rem 0;
+}
+
+.style-guide-inputs {
+  .draggable-item-list {
+    height: 300px;
+  }
+}
+
+.navigations {
+  position: relative;
+  height: 400px;
+  width: 325px;
+  border: 1px solid $input-border-color;
+}

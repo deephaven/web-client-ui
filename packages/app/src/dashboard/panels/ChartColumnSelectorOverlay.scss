@@ -1,0 +1,18 @@
+@import '~@deephaven/components/scss/custom.scss';
+
+$chart-filter-column-valid-color: $green;
+$chart-filter-column-invalid-color: $gray-400;
+
+.chart-column-selector-overlay {
+  .chart-panel-overlay-content {
+    .waiting-column-select-list {
+      margin-top: $spacer-2;
+      margin-bottom: $spacer-4;
+
+      .btn-chart-column-selector {
+        margin-bottom: $spacer-3;
+        margin-right: $spacer-3;
+      }
+    }
+  }
+}

@@ -1,0 +1,30 @@
+@import '../scss/custom.scss';
+
+.hcm-btn {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  border-radius: $border-radius;
+  border: $input-border-width solid $input-border-color;
+  background-color: $input-bg;
+  padding: $custom-select-padding-y $custom-select-padding-x;
+
+  .hcm-icon {
+    margin-top: $spacer-1;
+    color: $input-border-color;
+  }
+}
+
+.hcm-btn:focus {
+  border-color: $input-focus-border-color;
+}
+
+.hcm-menu-container {
+  padding: $spacer-2;
+  .hcm-parent {
+    font-weight: bold;
+  }
+  .hcm-child {
+    margin-left: $spacer-3;
+  }
+}

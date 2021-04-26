@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>deephaven-app-icons</title>
+    <link href="style.css" rel="stylesheet" />
+  </head>
+  <body>
+    <div id="root"></div>
+
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://unpkg.com/react@17/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
+    <script data-type="module" type="text/babel">
+      // demo using cdn version
+      import { FontAwesomeIcon } from 'https://cdn.skypack.dev/@fortawesome/react-fontawesome';
+
+      import {
+        useDarkMode,
+        copyText,
+        getPrefixedName,
+        getClipboardContents,
+      } from './app-helpers.js';
+
+      // import your specific icon, so that bundle is smaller
+      // ex.  import { vsAccounts} from 'deephaven-app-icons';
+      // demo imports all icons, but you shouldn't.
+      import { dh as Icons } from '../dist/index.es.js';
+
+      const DH_PREFIX = 'dh';
+      const VS_PREFIX = 'vs';
+
+      const Flash = ({ message }) => {
+        const [show, setShow] = React.useState(false);
+        const timeout = React.useRef(null);
+
+        React.useEffect(() => {
+          if (!message.string) return;
+          setShow(true);
+          clearTimeout(timeout.current);
+          timeout.current = setTimeout(() => {
+            setShow(false);
+          }, 2000);
+        }, [message]);
+
+        return (
+          <p className={show ? 'flash in' : 'flash out'}>
+            <FontAwesomeIcon icon={Icons.vsOutput} /> Copied text:{' '}
+            <strong>{message.string}</strong>
+          </p>
+        );
+      };
+
+      const App = () => {
+        const [theme, toggleTheme] = useDarkMode();
+        const [dhFilter, setDhFilter] = React.useState(true);
+        const [vsFilter, setVsFilter] = React.useState(true);
+        const [search, setSearch] = React.useState('');
+        const [flashText, setFlashText] = React.useState('');
+
+        const renderIcons = Object.values(Icons)
+          .filter(icon => {
+            const matchesFilter =
+              (icon.prefix.toLowerCase() + icon.iconName.toLowerCase()).indexOf(
+                search.toLowerCase()
+              ) !== -1;
+            const isDH = dhFilter && icon.prefix == DH_PREFIX;
+            const isVS = vsFilter && icon.prefix == VS_PREFIX;
+            return matchesFilter && (isDH || isVS);
+          })
+          .map(icon => {
+            const prefixedName = getPrefixedName(icon.iconName, icon.prefix);
+            return (
+              <div
+                key={prefixedName}
+                className="card"
+                onClick={() => {
+                  // new object, so it always flashes even on same string
+                  setFlashText({ string: prefixedName });
+                  copyText(prefixedName);
+                }}
+              >
+                <div className="icon">
+                  <FontAwesomeIcon icon={icon} />
+                </div>
+                <label title={prefixedName}>{prefixedName}</label>
+              </div>
+            );
+          });
+
+        return (
+          <>
+            <header>
+              <h1>deephaven-icons</h1>
+              <input
+                type="search"
+                placeholder="Basic icon search..."
+                value={search}
+                onChange={event => {
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                  setSearch(event.target.value);
+                }}
+              />
+              <span>Show: </span>
+              <button
+                type="button"
+                className={vsFilter ? 'active' : 'inactive'}
+                onClick={() => setVsFilter(!vsFilter)}
+              >
+                {vsFilter ? (
+                  <FontAwesomeIcon icon={Icons.vsCheck} />
+                ) : (
+                  <FontAwesomeIcon icon={Icons.vsClose} />
+                )}{' '}
+                VS ICONS
+              </button>
+              <button
+                type="button"
+                className={dhFilter ? 'active' : 'inactive'}
+                onClick={() => setDhFilter(!dhFilter)}
+              >
+                {dhFilter ? (
+                  <FontAwesomeIcon icon={Icons.vsCheck} />
+                ) : (
+                  <FontAwesomeIcon icon={Icons.vsClose} />
+                )}{' '}
+                DH ICONS
+              </button>
+              <small>
+                ({renderIcons.length} icon{renderIcons.length == 1 ? '' : 's'})
+              </small>
+              <p>
+                <a href="https://github.com/microsoft/vscode-codicons">
+                  vscode-codicons
+                </a>{' '}
+                in a{' '}
+                <a href="https://github.com/FortAwesome/react-fontawesome">
+                  react-fontawesome
+                </a>{' '}
+                compatible format, with bonus matching Deephaven designed icons.
+              </p>
+              <p>
+                <a href="https://github.com/microsoft/vscode-codicons">
+                  vscode-codicons
+                </a>{' '}
+                by Microsoft are licensed under{' '}
+                <a href="https://github.com/microsoft/vscode-codicons/blob/master/LICENSE">
+                  CC BY 4.0.
+                </a>
+              </p>
+              <p>
+                <a href="https://github.com/deephaven/core/tree/web/main/web/client-ui/packages/icons">
+                  deephaven-icons
+                </a>{' '}
+                by Deephaven Data Labs are licensed under the Deephaven Community License.
+              </p>
+              <div>
+                <input
+                  type="checkbox"
+                  id="theme"
+                  name="theme"
+                  onChange={toggleTheme}
+                  checked={theme == 'dark' ? true : false}
+                />{' '}
+                <label htmlFor="theme">Dark Mode</label>
+              </div>
+            </header>
+            <main>
+              {renderIcons}
+              {renderIcons.length === 0 && (
+                <p className="no-result">No icons found.</p>
+              )}
+            </main>
+            <Flash message={flashText} />
+          </>
+        );
+      };
+
+      ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
+  </body>
+</html>

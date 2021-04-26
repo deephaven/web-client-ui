@@ -1,0 +1,141 @@
+@import '../scss/custom.scss';
+
+$socket-button-bg: $input-bg;
+$socket-button-hover-bg: $primary-hover;
+$socket-size: 18px;
+$socket-linked-color: $primary;
+$socket-linked-source-color: $purple;
+$socket-bg: $content-bg;
+
+.btn-socketed {
+  position: relative;
+  display: inline-block;
+  border: $input-border-width solid $input-border-color;
+  padding: $btn-padding-y $btn-padding-x;
+  color: $foreground;
+  background: $socket-button-bg;
+  line-height: $btn-line-height;
+  font-family: $btn-font-family;
+  user-select: none;
+  border-radius: $border-radius;
+  transition: $btn-transition;
+  cursor: pointer;
+
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: -$input-border-width; // absolute positioning doesn't include border
+    left: 50%;
+    transform: translate(-50%, 50%);
+    background: $socket-bg;
+    width: $socket-size;
+    height: $socket-size;
+    border-radius: 50%;
+    border: $input-border-width solid $input-border-color;
+    transition: $btn-transition;
+  }
+
+  &:focus {
+    border-color: $input-focus-border-color;
+    box-shadow: $input-btn-focus-box-shadow;
+    &::after {
+      border-color: $input-focus-border-color;
+    }
+  }
+
+  &:hover {
+    background-color: $socket-button-hover-bg;
+    border-color: $socket-button-hover-bg;
+    &::after {
+      border-color: $socket-button-hover-bg;
+    }
+  }
+
+  &:active {
+    border-color: $primary-light;
+    background-color: $primary-light;
+  }
+
+  .btn-socketed-icon {
+    display: none;
+  }
+
+  &:disabled,
+  &:disabled:hover {
+    cursor: not-allowed;
+    border-color: $black;
+    background-color: $input-disabled-bg;
+    &::after {
+      border-color: $black;
+    }
+  }
+}
+
+.btn-socketed.btn-socketed-linked {
+  &::after {
+    border-color: $socket-linked-color;
+    background-color: $socket-linked-color;
+  }
+
+  &.btn-socketed-linked-source::after {
+    border-color: $socket-linked-source-color;
+    background-color: $socket-linked-source-color;
+  }
+
+  .btn-socketed-icon.linked {
+    display: block;
+    position: absolute;
+    bottom: 1px; // looked slightly low
+    left: 50%;
+    transform: translate(-50%, $socket-size/2);
+    z-index: 1; // appear above the circle
+  }
+
+  &:disabled,
+  &:disabled:hover {
+    border-color: $black;
+    background-color: $input-disabled-bg;
+    &::after {
+      background-color: $primary-dark;
+      border-color: $black;
+    }
+  }
+}
+
+.btn-socketed.is-invalid,
+.btn-socketed.btn-socketed-linked.is-invalid {
+  border-color: rgba($danger, 0.85);
+
+  &::after {
+    border-color: $danger;
+    background-color: $danger;
+  }
+
+  .btn-socketed-icon.linked {
+    display: none;
+  }
+
+  .btn-socketed-icon.is-invalid {
+    color: $socket-button-bg;
+    display: block;
+    position: absolute;
+    bottom: 1px; // looked slightly low
+    left: 50%;
+    transform: translate(-50%, $socket-size/2);
+    z-index: 1; // appear above the circle
+  }
+
+  &:focus {
+    box-shadow: 0 0 0 $input-btn-focus-width rgba($danger, 0.35);
+  }
+
+  &:disabled,
+  &:disabled:hover {
+    border-color: $black;
+    background-color: $input-disabled-bg;
+    &::after {
+      background-color: $input-disabled-bg;
+      border-color: $black;
+    }
+  }
+}

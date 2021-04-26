@@ -1,0 +1,179 @@
+@import '../../scss/custom.scss';
+
+$hr-bg-color: $gray-700;
+
+.context-actions-listener {
+  display: none;
+}
+
+.context-menu-root {
+  position: fixed;
+  height: 100%;
+  width: 100%;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  z-index: $zindex-popover;
+
+  &.active {
+    pointer-events: all;
+  }
+}
+
+.context-menu-container {
+  pointer-events: auto;
+  position: fixed;
+  background-color: $contextmenu-bg;
+  color: $contextmenu-color;
+  z-index: initial;
+  min-width: 10rem;
+  max-width: 30rem;
+  text-align: left;
+  border-radius: $border-radius;
+  background-clip: border-box;
+  box-shadow: $box-shadow-900;
+  max-height: 100vh;
+  overflow-y: auto;
+
+  &.has-overflow {
+    // Fixes #IDS-7035. Intrinsic width of "overflow:auto"
+    // element doesn't grow to accomodate its scrollbar.
+    // https://bugzilla.mozilla.org/show_bug.cgi?id=764076
+    // class is added in the verifyPosition calc, forcing a redraw
+    // that will include a forced scrollbar as part of intrinsic width
+
+    //update: happens in safari as well
+    overflow-y: scroll;
+  }
+
+  hr {
+    margin-top: 0;
+    margin-bottom: 0;
+    background-color: $hr-bg-color;
+  }
+
+  .custom-menu-item {
+    width: 100%;
+    color: $contextmenu-color;
+    white-space: nowrap;
+    text-decoration: none;
+    background-color: transparent;
+    text-align: left;
+  }
+
+  .btn-context-menu {
+    border: none;
+    width: 100%;
+    // not sure exactly why, but safari is creating an uncessary scrollbar
+    // if these are rem units that cause a fractional pixel
+    // maybe calculating overflow with full precision when in fixed parent
+    padding: 4px 8px;
+    color: $contextmenu-color;
+    text-decoration: none;
+    background-color: transparent;
+    text-align: left;
+    cursor: pointer;
+    user-select: none;
+
+    .btn-context-menu-wrapper {
+      // firefox can misbehave with buttons as display: flex
+      display: flex;
+      align-items: center;
+    }
+
+    .icon {
+      margin-right: 0.5rem;
+      width: 1rem;
+      text-align: center;
+    }
+    .icon.outline {
+      stroke: $contextmenu-bg;
+      stroke-width: 60;
+    }
+
+    .title {
+      flex-grow: 1;
+    }
+
+    .shortcut {
+      color: $text-muted;
+      margin-left: 0.5rem;
+      text-align: right;
+    }
+
+    .submenu-indicator {
+      color: $contextmenu-color;
+    }
+    .submenu-indicator.disabled {
+      color: $contextmenu-disabled-color;
+    }
+  }
+
+  .btn-context-menu.menu-title {
+    user-select: none;
+    cursor: default;
+    background: $content-bg;
+  }
+
+  .btn-context-menu.keyboard-active {
+    background-color: $contextmenu-keyboard-selected-bg;
+  }
+
+  .btn-context-menu:focus,
+  .btn-context-menu.active {
+    background-color: $contextmenu-selected-bg;
+  }
+
+  .btn-context-menu:focus {
+    outline: none;
+  }
+
+  .btn-context-menu.active,
+  .btn-context-menu.keyboard-active,
+  .btn-context-menu:focus:not(.disabled) {
+    color: $contextmenu-selected-color;
+
+    .shortcut {
+      color: lighten($contextmenu-selected-bg, 20%);
+    }
+  }
+
+  .btn-context-menu.disabled {
+    color: $contextmenu-disabled-color;
+    background-color: $contextmenu-bg;
+  }
+
+  .context-menu-item:last-child > .btn-context-menu {
+    border-bottom-left-radius: $border-radius;
+    border-bottom-right-radius: $border-radius;
+  }
+
+  .context-menu-item:first-child > .btn-context-menu {
+    border-top-left-radius: $border-radius;
+    border-top-right-radius: $border-radius;
+  }
+
+  .context-menu-group-header {
+    margin: $spacer-2 $input-btn-padding-x $spacer-1 $input-btn-padding-x;
+    color: $gray-300;
+    white-space: nowrap;
+    text-decoration: none;
+    background-color: transparent;
+    text-align: left;
+    cursor: default;
+    user-select: none;
+    font-weight: 500;
+    border-bottom: 1px solid $gray-500;
+  }
+
+  .loading {
+    padding: 0.25rem 1.5rem;
+    width: 100%;
+    display: block;
+    text-align: center;
+  }
+}
+
+.context-menu-container:focus {
+  outline: none;
+}

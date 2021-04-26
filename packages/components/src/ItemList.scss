@@ -1,0 +1,12 @@
+@import '../scss/custom.scss';
+.item-list-scroll-pane {
+  border: 1px solid $input-border-color;
+  border-radius: $input-border-radius;
+  padding: $input-padding-y 0 $input-padding-y;
+  &:focus {
+    outline: none;
+  }
+  .item-list-inner-element {
+    position: relative;
+  }
+}

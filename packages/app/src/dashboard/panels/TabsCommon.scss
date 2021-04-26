@@ -1,0 +1,28 @@
+@import '~@deephaven/components/scss/custom.scss';
+
+.query-editor .tab-content {
+  .title-row {
+    margin-bottom: $spacer;
+  }
+
+  .settings-grid {
+    display: grid;
+    grid-template-columns: minmax(85px, max-content) minmax(auto, 350px);
+    column-gap: $spacer-3;
+    row-gap: $spacer-2;
+
+    .settings-error {
+      grid-column-start: 2;
+      margin-bottom: 0;
+    }
+
+    .settings-label {
+      padding-top: calc(#{$input-padding-y} + #{$input-height-border});
+    }
+
+    .form-text {
+      grid-column-start: 2;
+      margin-bottom: 0;
+    }
+  }
+}

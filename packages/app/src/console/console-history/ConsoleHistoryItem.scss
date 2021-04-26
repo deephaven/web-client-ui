@@ -1,0 +1,69 @@
+@import '~@deephaven/components/scss/custom.scss';
+
+$item-padding-top: 3px;
+$error-gutter-width: 15px;
+
+.console-history-item-command,
+.console-history-item-result {
+  display: flex;
+  min-height: 26px;
+}
+
+.console-history-item-command {
+  white-space: pre-line;
+  min-height: 26px;
+}
+
+.console-history-item-command .console-history-content,
+.console-history-item-result .log-message {
+  padding-top: $item-padding-top;
+}
+
+.console-history-item-result .log-message {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.console-history-item-result {
+  .error-message {
+    color: $danger;
+    display: flex;
+    overflow: hidden;
+    user-select: text;
+    padding-top: $item-padding-top;
+
+    .error-gutter {
+      padding: 0;
+      flex-basis: $error-gutter-width;
+
+      .error-btn-link {
+        min-width: $error-gutter-width;
+        background-color: transparent;
+        border: 0;
+        text-align: left;
+        padding-left: 0;
+        padding-right: 0;
+        color: rgba($danger, 0.5);
+        transition: $btn-transition;
+      }
+    }
+
+    &:hover {
+      .error-btn-link {
+        color: $danger;
+      }
+    }
+
+    .error-content {
+      flex-grow: 1;
+      white-space: normal;
+      cursor: default;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .error-content:focus {
+      outline: none;
+    }
+  }
+}

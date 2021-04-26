@@ -1,0 +1,18 @@
+$tooltip-container-width: 300px;
+$tooltip-title-width: 110px;
+
+.tab-tooltip-container {
+  padding: 5px 15px;
+  max-width: $tooltip-container-width;
+  text-align: left;
+
+  .tab-tooltip-title {
+    min-width: $tooltip-title-width;
+  }
+
+  .tab-tooltip-name {
+    max-width: $tooltip-container-width - $tooltip-title-width;
+    word-break: break-word;
+    padding-left: 5px;
+  }
+}

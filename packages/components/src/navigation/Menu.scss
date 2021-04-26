@@ -1,0 +1,13 @@
+@import '../../scss/custom.scss';
+
+.navigation-menu-view {
+  display: flex;
+  flex-direction: column;
+
+  .navigation-menu-list {
+    padding: $spacer-1 0;
+    text-align: left;
+    overflow: auto;
+    flex-grow: 1;
+  }
+}

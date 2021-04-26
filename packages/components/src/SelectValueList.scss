@@ -1,0 +1,39 @@
+@import '../scss/custom.scss';
+
+.select-value-list-scroll-pane {
+  overflow-x: hidden;
+  overflow-y: auto;
+  border: 1px solid $input-border-color;
+  border-radius: $input-border-radius;
+  padding: $input-padding-y 0 $input-padding-y;
+}
+
+.select-value-list {
+  position: relative;
+
+  .select-value-list-content {
+    width: 100%;
+    margin: 0;
+    list-style-type: none;
+    padding: 0;
+
+    li {
+      width: 100%;
+    }
+
+    .custom-control {
+      margin: 0;
+      display: flex;
+
+      &:hover {
+        background: $gray-500;
+      }
+
+      .custom-control-label {
+        margin-left: $input-padding-x;
+        flex-grow: 1;
+        cursor: pointer;
+      }
+    }
+  }
+}

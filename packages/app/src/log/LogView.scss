@@ -1,0 +1,82 @@
+@import '~@deephaven/components/scss/custom.scss';
+
+$log-pane-menu-color: $gray-400;
+$log-pane-menu-icons-color: $gray-500;
+$log-pane-menu-icons-hover-color: $white;
+$log-pane-menu-offset: 17px; //scrollbar width;
+$log-pane-buttons-width: 48px;
+
+.log-pane-menu {
+  position: absolute;
+  top: $spacer-1;
+  right: $log-pane-menu-offset;
+  z-index: 11; //monoco source sets find widget at 10
+
+  div {
+    display: inline-block;
+  }
+
+  .btn-link {
+    min-width: 1rem;
+    padding: 6px;
+  }
+}
+
+.log-pane-editor {
+  .monaco-editor .scroll-decoration {
+    box-shadow: $black 0 10px 10px -10px inset;
+    height: 10px;
+  }
+}
+
+.log-pane-editor .find-widget {
+  top: $spacer-1 !important;
+  box-shadow: none !important;
+  background: $content-bg !important;
+  margin-right: $log-pane-buttons-width;
+
+  .button[title*='Close' i],
+  .monaco-sash {
+    display: none;
+  }
+}
+
+.log-level-menu-popper {
+  .popper-content {
+    .context-menu-container {
+      background: $gray-700;
+      font-size: $font-size-sm;
+      min-width: 0;
+    }
+    .popper-arrow {
+      border-color: $gray-700;
+    }
+  }
+}
+
+.log-level-menu-title {
+  margin-left: $spacer-2;
+  margin-right: $spacer-5;
+  margin-bottom: $spacer-2;
+  padding-top: $spacer-2;
+  font-weight: 500;
+  user-select: none;
+}
+
+.log-level-menu-controls {
+  .btn-link {
+    font-size: 0.9rem;
+    padding: $spacer-1;
+    margin: $spacer-1;
+    margin-top: 0;
+  }
+
+  .btn-link.log-level-toggle-all {
+    color: $gray-300;
+    text-decoration: underline;
+
+    &:hover {
+      color: $white;
+    }
+  }
+}

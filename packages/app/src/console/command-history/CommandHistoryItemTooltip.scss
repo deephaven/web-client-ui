@@ -1,0 +1,23 @@
+@import '~@deephaven/components/scss/custom.scss';
+.command-history-item-popper {
+  padding: 0;
+  .command-history-item-tooltip {
+    max-height: 50vh;
+    max-width: 50vw;
+    overflow: auto;
+    text-align: left;
+    padding: $tooltip-padding-y $tooltip-padding-x;
+    .result-info {
+      text-align: right;
+    }
+    .time-string {
+      color: $text-muted;
+    }
+    hr {
+      background-color: $gray-400;
+    }
+    .error-message {
+      color: $danger;
+    }
+  }
+}

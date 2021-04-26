@@ -1,0 +1,78 @@
+{
+  "name": "@deephaven/grid",
+  "version": "0.0.1",
+  "description": "Deephaven React grid component",
+  "author": "Deephaven Data Labs LLC",
+  "license": "SEE LICENSE IN LICENSE.md",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/deephaven/core"
+  },
+  "main": "dist/index.js",
+  "module": "dist/index.modern",
+  "types": "dist/index.d.ts",
+  "source": "src/index.ts",
+  "engines": {
+    "node": ">=14"
+  },
+  "scripts": {
+    "build": "cross-env NODE_ENV=production run-s clean build-steps",
+    "build-dev": "cross-env NODE_ENV=development run-s clean build-steps",
+    "build-steps": "run-p build:*",
+    "babel": "babel ./src --out-dir ./dist --extensions \".ts,.tsx,.js,.jsx\" --source-maps --root-mode upward",
+    "sass": "sass ./src:./dist",
+    "types": "tsc",
+    "build:babel": "npm run babel",
+    "build:sass": "npm run sass",
+    "build:types": "npm run types -- --incremental",
+    "watch": "run-p watch:*",
+    "watch:babel": "npm run babel -- -w --skip-initial-build",
+    "watch:sass": "npm run sass -- --watch --update",
+    "watch:types": "npm run types -- -w --incremental --preserveWatchOutput",
+    "clean": "rimraf ./dist tsconfig.tsbuildinfo",
+    "prestart": "npm run build-dev",
+    "start": "cross-env NODE_ENV=development npm run watch",
+    "prepublishOnly": "run-s build",
+    "test": "jest --watch",
+    "test:ci": "jest --ci",
+    "predeploy": "cd example && npm install && npm run build",
+    "deploy": "gh-pages -d example/build"
+  },
+  "peerDependencies": {
+    "react": "^16.0.0"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.13.14",
+    "@deephaven/tsconfig": "^0.0.1",
+    "@types/jest": "^26.0.15",
+    "@types/lodash.clamp": "^4.0.6",
+    "@types/prop-types": "^15.7.3",
+    "@types/react": "^16.14.0",
+    "cross-env": "^7.0.2",
+    "gh-pages": "^2.2.0",
+    "identity-obj-proxy": "^3.0.0",
+    "jest": "26.6.0",
+    "npm-run-all": "^4.1.5",
+    "react": "^16.14.0",
+    "react-test-renderer": "^16.14.0",
+    "rimraf": "^3.0.2",
+    "sass": "^1.32.8",
+    "ts-jest": "^26.5.3",
+    "ts-loader": "^8.0.18",
+    "typescript": "^4.2.3"
+  },
+  "files": [
+    "dist"
+  ],
+  "dependencies": {
+    "classnames": "^2.2.6",
+    "event-target-shim": "^6.0.2",
+    "lodash.clamp": "^4.0.3",
+    "memoize-one": "^5.1.1",
+    "memoizee": "^0.4.15",
+    "prop-types": "^15.7.2"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  }
+}

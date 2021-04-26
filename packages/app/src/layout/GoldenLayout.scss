@@ -1,0 +1,357 @@
+@import '~@deephaven/components/scss/custom.scss';
+
+$tab-height: 28px;
+$drag-border-width: 5px;
+$close-button-height: 8px;
+$tab-font-size: 12px;
+
+$lm-tab-color: $gray-400;
+$lm-tab-hover-color: $gray-300;
+$lm-tab-active-color: $white;
+$lm-tab-icon-color: $gray-200;
+
+//make some subtle tab background colors relative to our defined color
+$lm-tab-active-background: $content-bg;
+$lm-tab-background: darken($lm-tab-active-background, 3.5);
+$lm-header-background: darken($lm-tab-active-background, 5);
+
+$lm-close-button-hover-color: $gray-100;
+$lm-close-button-active-color: $gray-400;
+
+$lm-splitter-hover-color: $gray-400;
+$lm-splitter-active-color: $gray-300;
+
+.lm_goldenlayout {
+  background: $background;
+  position: absolute;
+
+  .lm_header {
+    box-sizing: content-box; // golden-layout sets a js height using a content box model
+    height: $tab-height;
+    padding-top: 0;
+    overflow: hidden;
+    background: $lm-header-background;
+    box-shadow: inset 0 -1px 0 0 $background;
+    // inset box shadows with 0-blur used to draw borders without impacting spacing or GL size calculations.
+    // golden layout default styling doesnt have the same border styling we want
+    // this trick is used elsewhere in the header as well for the same purpose
+
+    .lm_controls {
+      > li {
+        height: 100%;
+        width: 24px;
+      }
+    }
+  }
+}
+
+.lm_maximised {
+  border: 15px solid rgba($black, 0.25);
+  height: 100% !important;
+  width: 100% !important;
+  .lm_items {
+    box-shadow: $box-shadow-900;
+  }
+}
+
+.lm_header .lm_controls .lm_tabpreviousbutton {
+  background-size: 16px;
+  // vsChevronLeft
+  background-image: str-replace(
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='#{$lm-tab-icon-color}' d='M5.928 7.976l4.357 4.357-.618.62L5 8.284v-.618L9.667 3l.618.619-4.357 4.357z'/%3E%3C/svg%3E"),
+    '#',
+    '%23'
+  );
+}
+
+.lm_header .lm_controls .lm_tabnextbutton {
+  background-size: 16px;
+  // vsChevronRight
+  background-image: str-replace(
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='#{$lm-tab-icon-color}' d='M10.072 8.024L5.715 3.667l.618-.62L11 7.716v.618L6.333 13l-.618-.619 4.357-4.357z'/%3E%3C/svg%3E"),
+    '#',
+    '%23'
+  );
+}
+
+.lm_header .lm_controls .lm_tabdropdown {
+  background-size: 16px;
+  // vsChevronDown
+  background-image: str-replace(
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='#{$lm-tab-icon-color}' d='M7.976 10.072l4.357-4.357.62.618L8.284 11h-.618L3 6.333l.619-.618 4.357 4.357z'/%3E%3C/svg%3E"),
+    '#',
+    '%23'
+  );
+
+  &::before {
+    display: none;
+  }
+}
+
+.lm_header .lm_controls .lm_maximise {
+  background-size: 16px;
+  // vsChromeMaximize
+  background-image: str-replace(
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='#{$lm-tab-icon-color}' d='M3 3v10h10V3H3zm9 9H4V4h8v8z'/%3E%3C/svg%3E"),
+    '#',
+    '%23'
+  );
+}
+
+.lm_tabs:empty + .lm_controls .lm_maximise {
+  display: none;
+}
+
+.lm_maximised .lm_header .lm_controls .lm_maximise {
+  opacity: 0.7;
+  // vsChromeMinimize
+  background-image: str-replace(
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='#{$gray-100}' d='M14 8v1H3V8h11z'/%3E%3C/svg%3E"),
+    '#',
+    '%23'
+  );
+
+  &:hover {
+    opacity: 1;
+  }
+}
+
+.lm_header .lm_tab {
+  display: flex;
+  align-items: center;
+  cursor: default;
+  font-family: $font-family-sans-serif;
+  background-color: $lm-tab-background;
+  color: $lm-tab-color;
+  height: $tab-height;
+  font-size: $tab-font-size;
+  min-width: 5rem;
+  margin: 0;
+  padding: 0 $spacer-1 0 $spacer-2;
+  box-shadow: inset -1px -1px 0 0 $background; // acting as bottom and right border
+  transition: color $transition, background-color $transition;
+  max-width: 12rem;
+  white-space: nowrap;
+  overflow: hidden;
+
+  .lm_title {
+    flex-grow: 1;
+    padding-right: $spacer-1;
+    // add equalized spacing for tabs without close buttons
+    // so that when a tab is longer then min-width it still
+    // is balanced with equal padding. Extra padding is then
+    // removed from tabs with close buttons via negative margin
+  }
+
+  .lm_title_before {
+    display: flex;
+    align-items: center;
+  }
+
+  .editor-unsaved-indicator {
+    display: none;
+    margin-right: 5px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: $primary;
+
+    &.is-unsaved {
+      display: inline-block;
+    }
+  }
+}
+
+.lm_header .lm_tab.lm_active,
+.lm_header .lm_tab.lm_active:hover {
+  height: $tab-height;
+  background-color: $lm-tab-active-background;
+  color: $lm-tab-active-color;
+  padding-bottom: 0;
+  box-shadow: inset -1px 0 0 0 $background; // act as right border only when active
+  // also kills the default shadow, doesn't work well with our design
+  &.lm_focusin {
+    box-shadow: inset 0 1px $primary, inset -1px 0 0 0 $background; // top focus indicator, right border
+  }
+}
+
+.lm_window_blur {
+  .lm_header .lm_tab.lm_active.lm_focusin {
+    box-shadow: none;
+  }
+}
+
+.lm_content {
+  background: $content-bg;
+  overflow: visible;
+}
+
+.lm_header .lm_tab .lm_close_tab {
+  $lm-close-button-padding: 4px;
+
+  cursor: pointer;
+  position: relative;
+  top: unset;
+  right: unset;
+  width: $close-button-height;
+  height: $close-button-height;
+  padding: $lm-close-button-padding;
+  margin-left: -$spacer-1; // undo padding on title
+  background-image: none; //remove the golden-layout image url
+  //fa-times-light url svg encoded as a background mask
+  background-color: $lm-tab-background; //set the backgroun color to nothing
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 320 512'%3E%3Cpath d='M193.94 256L296.5 153.44l21.15-21.15c3.12-3.12 3.12-8.19 0-11.31l-22.63-22.63c-3.12-3.12-8.19-3.12-11.31 0L160 222.06 36.29 98.34c-3.12-3.12-8.19-3.12-11.31 0L2.34 120.97c-3.12 3.12-3.12 8.19 0 11.31L126.06 256 2.34 379.71c-3.12 3.12-3.12 8.19 0 11.31l22.63 22.63c3.12 3.12 8.19 3.12 11.31 0L160 289.94 262.56 392.5l21.15 21.15c3.12 3.12 8.19 3.12 11.31 0l22.63-22.63c3.12-3.12 3.12-8.19 0-11.31L193.94 256z'/%3E%3C/svg%3E");
+  mask-position: center center;
+  mask-repeat: no-repeat;
+  mask-size: $close-button-height;
+  opacity: 1; //overide the opacity change
+  transition: background-color $transition;
+}
+
+.lm_splitter,
+.lm_splitter:hover {
+  background: $lm-splitter-hover-color;
+}
+
+.lm_splitter.lm_dragging {
+  background: $lm-splitter-active-color;
+}
+
+.lm_dragProxy {
+  .lm_content {
+    height: 100%;
+    width: 100%;
+    box-shadow: $box-shadow;
+  }
+
+  .lm_header {
+    height: $tab-height;
+
+    .lm_tab {
+      border: 0;
+    }
+  }
+}
+
+.lm_header .lm_tabdropdown_list {
+  z-index: $zindex-dropdown;
+  background: $lm-tab-background;
+  top: 22px;
+  right: 24px;
+  box-shadow: $box-shadow-900;
+  border-radius: $border-radius;
+  max-width: 12rem;
+
+  .lm_tabdropdown_search {
+    padding: $spacer-1;
+    input {
+      padding: $input-padding-y $input-padding-x;
+      line-height: $input-line-height;
+      color: $input-color;
+      background-color: $input-bg;
+      border: $input-border-width solid $input-border-color;
+      border-radius: $border-radius;
+      max-width: 100%;
+
+      &::placeholder {
+        color: $input-placeholder-color;
+        opacity: 1;
+      }
+
+      &:focus {
+        border-color: $input-focus-border-color;
+        box-shadow: $input-btn-focus-box-shadow;
+        outline: 0;
+      }
+    }
+  }
+
+  .lm_tab {
+    background: $lm-tab-background;
+    color: $lm-tab-hover-color;
+    box-shadow: none;
+
+    .editor-unsaved-indicator {
+      width: 10px;
+      height: 10px;
+      border: 1px solid $lm-tab-background;
+    }
+
+    &.lm_keyboard_active {
+      color: $lm-tab-hover-color;
+      background-color: $primary-dark;
+    }
+
+    &:hover {
+      color: $lm-tab-active-color;
+      background-color: $primary;
+    }
+  }
+}
+
+// disable hover styling during drag (pointer-events still needed)
+body:not(.lm_dragging) .lm_header .lm_tab:not(.lm_active):hover {
+  color: $lm-tab-hover-color;
+}
+
+.lm_header .lm_tab.lm_active .lm_close_tab {
+  background-color: $lm-tab-active-background;
+}
+
+body:not(.lm_dragging) .lm_header .lm_tab:hover .lm_close_tab {
+  background-color: $lm-close-button-active-color;
+}
+
+body:not(.lm_dragging) .lm_header .lm_tab .lm_close_tab:hover {
+  background-color: $lm-close-button-hover-color;
+}
+
+.lm_dropTargetIndicator {
+  @include ants-base($white, $black); //replace with ants
+
+  box-sizing: border-box;
+  outline: 0; //clear the normal dotted line
+  box-shadow: none; //get rid of standard dropshadow as it overlapps ants now, and re-apply to exsising inner element
+}
+
+.lm_dropTargetIndicator .lm_inner {
+  box-sizing: border-box;
+  border: $ant-thickness solid transparent; //offset shadow using a transparent border
+  box-shadow: inset 0 0 1rem 1px rgba(black, 0.45); //true black for this shadow
+  opacity: 1; //set opacity back to 1, default 0.2 and backroudn was solid.
+  background: rgba($primary, 0.1); //apply scrim as rgba background now instead
+}
+
+//is added to the body class, prevents overflow in our app context
+.lm_dragging {
+  overflow: hidden;
+}
+
+.lm_dragging .app {
+  pointer-events: none;
+
+  // disable other control buttons during drag
+  .lm_controls > li {
+    &.lm_tabpreviousbutton,
+    &.lm_tabnextbutton {
+      pointer-events: auto;
+    }
+
+    pointer-events: none;
+  }
+
+  //disable plotly pointer events while dragging golden layout
+  .js-plotly-plot .plotly {
+    svg,
+    g,
+    rect,
+    path {
+      pointer-events: none !important;
+    }
+  }
+
+  // we still need events on our header for scroll while dragging to work
+  .lm_header {
+    pointer-events: auto;
+  }
+}

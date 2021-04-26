@@ -1,0 +1,29 @@
+.grid-canvas:focus {
+  outline: none;
+}
+.grid-cursor-default {
+  cursor: default;
+}
+.grid-cursor-move {
+  cursor: move;
+  cursor: grabbing;
+}
+.grid-cursor-not-allowed {
+  cursor: not-allowed;
+}
+.grid-cursor-s-resize {
+  cursor: s-resize;
+}
+.grid-cursor-row-resize {
+  cursor: row-resize;
+}
+.grid-cursor-e-resize {
+  cursor: e-resize;
+}
+.grid-cursor-col-resize {
+  cursor: col-resize;
+}
+
+.grid-block-events {
+  pointer-events: none;
+}

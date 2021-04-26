@@ -1,0 +1,47 @@
+@import '~@deephaven/components/scss/custom.scss';
+
+$console-history-gutter-color: $gray-400;
+$console-gutter-width: 30px;
+
+.console-history,
+.console-history-footer {
+  font-family: $font-family-monospace;
+  font-size: 12px;
+  line-height: 18px;
+  padding: 0;
+
+  .console-history-gutter,
+  .error-gutter {
+    flex-shrink: 0;
+    flex-grow: 0;
+    flex-basis: $console-gutter-width;
+    text-align: right;
+    padding-top: 3px;
+    padding-right: 8px;
+    color: $console-history-gutter-color;
+    vertical-align: top;
+    user-select: none;
+  }
+
+  .console-history-content {
+    min-width: 0;
+    flex-grow: 1;
+    overflow-wrap: break-word;
+  }
+
+  .console-history-content .error-message.expanded {
+    .error-content {
+      user-select: text;
+      user-select: contain;
+      white-space: pre-wrap;
+      word-break: break-word;
+      overflow: auto;
+      text-overflow: clip;
+      cursor: default;
+    }
+  }
+}
+
+.console-history .container-fluid {
+  padding: 0;
+}

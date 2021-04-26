@@ -1,0 +1,79 @@
+@import '~@deephaven/components/scss/custom.scss';
+
+$item-list-selected-bg: rgba($primary, 0.4);
+$item-list-selected-color: $white;
+$item-list-hover-bg: $gray-500;
+$item-list-selected-hover-bg: $primary;
+
+.aggregation-edit {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+
+  .top-menu {
+    background-color: $gray-800;
+    padding: 0 $spacer-2;
+    .form-inline {
+      .custom-control {
+        padding-top: $spacer-2;
+        padding-bottom: $spacer-2;
+
+        label {
+          justify-content: left;
+        }
+      }
+      .spacer {
+        flex-grow: 1;
+      }
+    }
+
+    .btn-link-icon {
+      color: $gray-400;
+
+      &.active {
+        color: $foreground;
+      }
+    }
+  }
+  .aggregation-edit-item-list {
+    flex-grow: 1;
+
+    .item-list-scroll-pane {
+      border: none;
+
+      .item-list-item {
+        padding-left: $spacer-2;
+        padding-right: $spacer-2;
+        display: flex;
+
+        &:hover {
+          label {
+            background-color: $item-list-hover-bg;
+            color: $item-list-selected-color;
+          }
+        }
+
+        .custom-control {
+          flex-grow: 1;
+          display: flex;
+
+          label {
+            padding-top: 1px;
+            padding-left: $spacer-2;
+            padding-right: $spacer-2;
+            flex-grow: 1;
+            border-radius: $border-radius;
+            margin-bottom: $spacer-2;
+            border: $input-border-width solid transparent;
+          }
+
+          &:focus-within label,
+          input[type='checkbox']:active + label {
+            background-color: $item-list-selected-bg;
+            color: $item-list-selected-color;
+          }
+        }
+      }
+    }
+  }
+}

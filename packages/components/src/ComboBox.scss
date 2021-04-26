@@ -1,0 +1,61 @@
+@import '../scss/custom.scss';
+
+$cb-option-btn-color: $dropdown-link-color;
+$cb-option-keyboard-selected-bg: rgba($primary, 0.5);
+$cb-option-hover-bg: $dropdown-link-hover-bg;
+$cb-option-hover-color: $dropdown-link-hover-color;
+
+.cb-container {
+  flex-wrap: nowrap;
+
+  .cb-input.is-invalid + .cb-dropdown .btn {
+    border-color: $form-feedback-invalid-color;
+    color: $form-feedback-invalid-color;
+  }
+}
+
+.cb-menu-container {
+  .cb-search-input-container {
+    padding: $spacer-2;
+    width: 100%;
+    position: fixed;
+  }
+
+  .cb-options-container {
+    padding-top: calc(2.25rem + 2px + 1rem);
+    //2.25rem + 2px is bootstrap form-control height + 1rem spacer to account for fixed height element above
+  }
+  .cb-options {
+    max-height: 200px;
+    overflow: auto;
+  }
+  .cb-option-btn {
+    border: none;
+    width: 100%;
+    color: $cb-option-btn-color;
+    padding: $input-btn-padding-y $input-btn-padding-x;
+    white-space: nowrap;
+    text-decoration: none;
+    background-color: transparent;
+    text-align: left;
+    cursor: pointer;
+    user-select: none;
+    display: block;
+  }
+  .cb-option-btn.keyboard-active {
+    background-color: $cb-option-keyboard-selected-bg;
+  }
+
+  .cb-option-btn:hover {
+    color: $cb-option-hover-color;
+    background-color: $cb-option-hover-bg;
+  }
+  .cb-option-btn:focus {
+    outline: none;
+  }
+
+  .cb-options:last-child {
+    border-bottom-left-radius: $border-radius;
+    border-bottom-right-radius: $border-radius;
+  }
+}

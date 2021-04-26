@@ -1,0 +1,28 @@
+@import '../scss/custom.scss';
+
+$iris-panel-message-font-size: 1.2rem;
+$iris-panel-icon-font-size: 64px;
+$iris-panel-scrim-bg: rgba(black, 0.1);
+
+.iris-panel-message-overlay {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  white-space: pre-line;
+  overflow: hidden;
+
+  .message-content {
+    font-size: $iris-panel-message-font-size;
+    .message-icon {
+      font-size: $iris-panel-icon-font-size;
+      .svg-inline--fa {
+        font-size: inherit;
+      }
+    }
+  }
+}
+
+.iris-panel-scrim-background {
+  background: $iris-panel-scrim-bg;
+}

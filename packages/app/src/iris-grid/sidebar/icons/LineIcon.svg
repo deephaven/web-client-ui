@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="48px" height="48px" viewBox="0 0 48 48" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 53 (72520) - https://sketchapp.com -->
+    <title>Line-Icon</title>
+    <desc>Created with Sketch.</desc>
+    <g id="Line-Icon" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <rect id="Rectangle" fill="#C1C0C0" x="4" y="4" width="1" height="40"></rect>
+        <rect id="Rectangle-Copy" fill="#C1C0C0" transform="translate(24.500000, 43.500000) rotate(-270.000000) translate(-24.500000, -43.500000) " x="24" y="24" width="1" height="39"></rect>
+        <polyline id="Path-80" stroke="#7DA4FF" transform="translate(24.725911, 21.247396) rotate(-4.000000) translate(-24.725911, -21.247396) " points="7.24430339 31.2451172 16 20.4511719 21 24.5490723 31.683431 14.4313151 34.3702799 16.5177409 42.2075195 11.2496745"></polyline>
+        <polyline id="Path-81" stroke="#BECDEF" points="8.24430339 37.9257278 17 33.4951194 22 34.3664551 32.6374512 24.016708 43.2524414 22.6347656"></polyline>
+    </g>
+</svg>

@@ -1,0 +1,2841 @@
+import React, { Component } from 'react';
+import memoize from 'memoizee';
+import classNames from 'classnames';
+import { CSSTransition } from 'react-transition-group';
+import PropTypes from 'prop-types';
+import deepEqual from 'deep-equal';
+import { connect } from 'react-redux';
+import Log from '@deephaven/log';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import {
+  ContextActionUtils,
+  ContextActions,
+  DeephavenSpinner,
+  Stack,
+  Menu,
+  Page,
+  Popper,
+  ThemeExport,
+  Tooltip,
+} from '@deephaven/components';
+import { Grid, GridRange, GridUtils } from '@deephaven/grid';
+import {
+  dhEye,
+  dhFilterFilled,
+  dhGraphLineUp,
+  dhTriangleDownSquare,
+  vsCloudDownload,
+  vsFilter,
+  vsMenu,
+  vsRuby,
+  vsSearch,
+  vsSplitHorizontal,
+  vsSymbolOperator,
+  vsTools,
+} from '@deephaven/icons';
+import dh from '@deephaven/jsapi-shim';
+import { Pending, PromiseUtils } from '@deephaven/utils';
+import throttle from 'lodash.throttle';
+import debounce from 'lodash.debounce';
+import IrisGridCopyHandler from './IrisGridCopyHandler';
+import FilterInputField from './FilterInputField';
+import { CopyKeyHandler, ReverseKeyHandler } from './key-handlers';
+import {
+  IrisGridColumnSelectMouseHandler,
+  IrisGridColumnTooltipMouseHandler,
+  IrisGridContextMenuHandler,
+  IrisGridDataSelectMouseHandler,
+  IrisGridFilterMouseHandler,
+  IrisGridSortMouseHandler,
+} from './mousehandlers';
+import IrisGridMetricCalculator from './IrisGridMetricCalculator';
+import IrisGridModelUpdater from './IrisGridModelUpdater';
+import IrisGridRenderer from './IrisGridRenderer';
+import IrisGridTheme from './IrisGridTheme';
+import ColumnStatistics from './ColumnStatistics';
+import './IrisGrid.scss';
+import Formatter from './Formatter';
+import FormatterUtils from './FormatterUtils';
+import TableUtils from './TableUtils';
+import AdvancedFilterCreator from './AdvancedFilterCreator';
+import {
+  Aggregations,
+  AggregationEdit,
+  AggregationUtils,
+  ChartBuilder,
+  CustomColumnBuilder,
+  OptionType,
+  RollupRows,
+  TableCsvExporter,
+  TableSaver,
+  VisibilityOrderingBuilder,
+} from './sidebar';
+import { getSettings } from '../redux/selectors';
+import IrisGridUtils from './IrisGridUtils';
+import CrossColumnSearch from './CrossColumnSearch';
+import { IrisPropTypes } from '../include/prop-types';
+import IrisGridModel from './IrisGridModel';
+import IrisGridPartitionSelector from './IrisGridPartitionSelector';
+import SelectDistinctBuilder from './sidebar/SelectDistinctBuilder';
+import AdvancedSettingsType from './sidebar/AdvancedSettingsType';
+import AdvancedSettingsMenu from './sidebar/AdvancedSettingsMenu';
+
+const log = Log.module('IrisGrid');
+
+const UPDATE_DOWNLOAD_THROTTLE = 500;
+
+const SET_FILTER_DEBOUNCE = 250;
+
+function isEmptyConfig({
+  advancedFilters,
+  quickFilters,
+  sorts,
+  customColumns,
+  reverseType,
+  searchFilter,
+}) {
+  return (
+    advancedFilters.size === 0 &&
+    quickFilters.size === 0 &&
+    sorts.length === 0 &&
+    customColumns.length === 0 &&
+    reverseType === TableUtils.REVERSE_TYPE.NONE &&
+    searchFilter == null
+  );
+}
+
+export class IrisGrid extends Component {
+  static minDebounce = 150;
+
+  static maxDebounce = 500;
+
+  static loadingSpinnerDelay = 800;
+
+  constructor(props) {
+    super(props);
+
+    this.handleAdvancedFilterChange = this.handleAdvancedFilterChange.bind(
+      this
+    );
+    this.handleAdvancedFilterSortChange = this.handleAdvancedFilterSortChange.bind(
+      this
+    );
+    this.handleAdvancedFilterDone = this.handleAdvancedFilterDone.bind(this);
+    this.handleAdvancedMenuOpened = this.handleAdvancedMenuOpened.bind(this);
+    this.handleAdvancedMenuClosed = this.handleAdvancedMenuClosed.bind(this);
+    this.handleAggregationChange = this.handleAggregationChange.bind(this);
+    this.handleAggregationsChange = this.handleAggregationsChange.bind(this);
+    this.handleAggregationEdit = this.handleAggregationEdit.bind(this);
+    this.handleAnimationLoop = this.handleAnimationLoop.bind(this);
+    this.handleAnimationStart = this.handleAnimationStart.bind(this);
+    this.handleAnimationEnd = this.handleAnimationEnd.bind(this);
+    this.handleChartChange = this.handleChartChange.bind(this);
+    this.handleChartCreate = this.handleChartCreate.bind(this);
+    this.handleFilterBarChange = this.handleFilterBarChange.bind(this);
+    this.handleFilterBarDone = this.handleFilterBarDone.bind(this);
+    this.handleFilterBarTab = this.handleFilterBarTab.bind(this);
+    this.handleCancel = this.handleCancel.bind(this);
+    this.handleMenu = this.handleMenu.bind(this);
+    this.handleMenuClose = this.handleMenuClose.bind(this);
+    this.handleMenuSelect = this.handleMenuSelect.bind(this);
+    this.handleMenuBack = this.handleMenuBack.bind(this);
+    this.handleRequestFailed = this.handleRequestFailed.bind(this);
+    this.handleSelectionChanged = this.handleSelectionChanged.bind(this);
+    this.handleMovedColumnsChanged = this.handleMovedColumnsChanged.bind(this);
+    this.handleUpdate = this.handleUpdate.bind(this);
+    this.handleTooltipRef = this.handleTooltipRef.bind(this);
+    this.handleViewChanged = this.handleViewChanged.bind(this);
+    this.handleFormatSelection = this.handleFormatSelection.bind(this);
+
+    this.handleUpdateCustomColumns = this.handleUpdateCustomColumns.bind(this);
+    this.handleCustomColumnsChanged = this.handleCustomColumnsChanged.bind(
+      this
+    );
+    this.handleSelectDistinctChanged = this.handleSelectDistinctChanged.bind(
+      this
+    );
+
+    this.handleDownloadTable = this.handleDownloadTable.bind(this);
+    this.handleDownloadTableStart = this.handleDownloadTableStart.bind(this);
+    this.handleCancelDownloadTable = this.handleCancelDownloadTable.bind(this);
+    this.handleDownloadCanceled = this.handleDownloadCanceled.bind(this);
+    this.handleDownloadProgressUpdate = throttle(
+      this.handleDownloadProgressUpdate.bind(this),
+      UPDATE_DOWNLOAD_THROTTLE
+    );
+    this.handleDownloadCompleted = this.handleDownloadCompleted.bind(this);
+    this.handlePartitionAppend = this.handlePartitionAppend.bind(this);
+    this.handlePartitionChange = this.handlePartitionChange.bind(this);
+    this.handlePartitionFetchAll = this.handlePartitionFetchAll.bind(this);
+    this.handlePartitionDone = this.handlePartitionDone.bind(this);
+    this.handleColumnVisibilityChanged = this.handleColumnVisibilityChanged.bind(
+      this
+    );
+    this.handleCrossColumnSearch = this.handleCrossColumnSearch.bind(this);
+    this.handleRollupChange = this.handleRollupChange.bind(this);
+
+    this.updateSearchFilter = debounce(
+      this.updateSearchFilter.bind(this),
+      SET_FILTER_DEBOUNCE
+    );
+
+    this.grid = null;
+    this.gridWrapper = null;
+    this.lastFocusedFilterBarColumn = null;
+    this.lastLoadedConfig = null;
+    this.tooltip = null;
+    this.pending = new Pending();
+    this.globalColumnFormats = [];
+    this.dateTimeFormatterOptions = {};
+
+    // When the loading scrim started/when it should extend to the end of the screen.
+    this.loadingScrimStartTime = null;
+    this.loadingScrimFinishTime = null;
+    this.loadingTimer = null;
+    this.renderer = new IrisGridRenderer();
+    this.tableSaver = null;
+    this.crossColumnRef = React.createRef();
+    this.isAnimating = false;
+    this.animationFrame = null;
+    this.filterInputRef = React.createRef();
+
+    this.toggleFilterBarAction = {
+      action: () => this.toggleFilterBar(),
+      shortcut: '⌃F',
+      macShortcut: '⌘F',
+    };
+    this.toggleSearchBarAction = {
+      action: () => this.toggleSearchBar(),
+      shortcut: '⌃S',
+      macShortcut: '⌘S',
+    };
+    this.contextActions = [
+      this.toggleFilterBarAction,
+      this.toggleSearchBarAction,
+    ];
+
+    const keyHandlers = [new CopyKeyHandler(this), new ReverseKeyHandler(this)];
+    const mouseHandlers = [
+      new IrisGridColumnSelectMouseHandler(this),
+      new IrisGridColumnTooltipMouseHandler(this),
+      new IrisGridSortMouseHandler(this),
+      new IrisGridFilterMouseHandler(this),
+      new IrisGridContextMenuHandler(this),
+      new IrisGridDataSelectMouseHandler(this),
+    ];
+    const {
+      aggregationSettings,
+      customColumnFormatMap,
+      isFilterBarShown,
+      isSelectingPartition,
+      model,
+      movedColumns,
+      movedRows,
+      partition,
+      partitionColumn,
+      rollupConfig,
+      userColumnWidths,
+      userRowHeights,
+      showSearchBar,
+      searchValue,
+      selectedSearchColumns,
+      invertSearchColumns,
+      advancedFilters,
+      quickFilters,
+      selectDistinctColumns,
+    } = props;
+    const metricCalculator = new IrisGridMetricCalculator({
+      userColumnWidths: new Map(userColumnWidths),
+      userRowHeights: new Map(userRowHeights),
+    });
+    const searchColumns = selectedSearchColumns ?? [];
+    const searchFilter = CrossColumnSearch.createSearchFilter(
+      searchValue,
+      searchColumns,
+      model.columns,
+      invertSearchColumns
+    );
+
+    this.state = {
+      isFilterBarShown,
+      isSelectingPartition,
+      focusedFilterBarColumn: null,
+      metricCalculator,
+      metrics: null,
+      keyHandlers,
+      mouseHandlers,
+
+      partition,
+      partitionColumn,
+      partitionTable: null,
+      partitionFilters: [],
+      // setAdvancedFilter and setQuickFilter mutate the arguments
+      // so we want to always use map copies from the state instead of props
+      quickFilters: new Map(quickFilters),
+      advancedFilters: new Map(advancedFilters),
+      shownAdvancedFilter: null,
+      hoverAdvancedFilter: null,
+
+      filter: [],
+      sorts: [],
+      reverseType: TableUtils.REVERSE_TYPE.NONE,
+      customColumns: [],
+      selectDistinctColumns,
+
+      // selected range in table
+      selectedRanges: [],
+
+      // Current ongoing copy operation
+      copyOperation: null,
+
+      // The filter that is currently being applied. Reset after update is received
+      loadingText: null,
+      loadingScrimProgress: null,
+      loadingSpinnerShown: false,
+
+      movedColumns,
+      movedRows,
+
+      shownColumnTooltip: null,
+
+      formatter: new Formatter(),
+      isMenuShown: false,
+      customColumnFormatMap: new Map(customColumnFormatMap),
+
+      queryColumnFormatMap: new Map(),
+
+      // Column user is hovering over for selection
+      hoverSelectColumn: null,
+
+      isTableDownloading: false,
+      isReady: false,
+      tableDownloadStatus: '',
+      tableDownloadProgress: 0,
+      tableDownloadEstimatedTime: 0,
+
+      showSearchBar,
+      searchFilter,
+      searchValue,
+      selectedSearchColumns: searchColumns,
+      invertSearchColumns,
+
+      rollupConfig,
+      rollupSelectedColumns: [],
+      aggregationSettings,
+      selectedAggregation: null,
+
+      openOptions: [],
+    };
+  }
+
+  componentDidMount() {
+    const { partitionColumn, model } = this.props;
+    const column =
+      partitionColumn || model.columns.find(c => c.isPartitionColumn);
+    if (
+      model.isFilterRequired &&
+      model.isValuesTableAvailable &&
+      column != null
+    ) {
+      this.loadPartitionsTable(column);
+    } else {
+      this.initState();
+    }
+    this.startListening(model);
+  }
+
+  componentDidUpdate(prevProps) {
+    const {
+      inputFilters,
+      isSelectingColumn,
+      settings,
+      model,
+      customFilters,
+    } = this.props;
+
+    if (model !== prevProps.model) {
+      this.stopListening(prevProps.model);
+      this.startListening(model);
+    }
+
+    const changedInputFilters =
+      inputFilters !== prevProps.inputFilters
+        ? inputFilters.filter(
+            inputFilter => !prevProps.inputFilters.includes(inputFilter)
+          )
+        : [];
+    if (changedInputFilters.length > 0) {
+      const { advancedSettings } = this.props;
+      const replaceExistingFilters =
+        advancedSettings.get(
+          AdvancedSettingsType.FILTER_CONTROL_CHANGE_CLEARS_ALL_FILTERS
+        ) ?? false;
+      if (replaceExistingFilters) {
+        this.clearGridInputField();
+        this.clearCrossColumSearch();
+      }
+      this.applyInputFilters(changedInputFilters, replaceExistingFilters);
+    }
+
+    if (isSelectingColumn !== prevProps.isSelectingColumn) {
+      this.resetColumnSelection();
+    }
+    if (settings !== prevProps.settings) {
+      this.updateFormatterSettings(settings);
+    }
+    if (customFilters !== prevProps.customFilters) {
+      this.startLoading('Filtering...', true);
+    }
+
+    const { loadingScrimStartTime, loadingScrimFinishTime } = this;
+    if (loadingScrimStartTime != null && loadingScrimFinishTime != null) {
+      window.requestAnimationFrame(() => {
+        const now = Date.now();
+        const currentTime = now - loadingScrimStartTime;
+        const totalTime = loadingScrimFinishTime - loadingScrimStartTime;
+        const loadingScrimProgress = Math.min(currentTime / totalTime, 1);
+        if (loadingScrimFinishTime < now) {
+          this.loadingScrimStartTime = null;
+          this.loadingScrimFinishTime = null;
+        }
+
+        this.setState(state => {
+          if (state.loadingScrimProgress == null) {
+            log.debug2('Ignoring scrim update because loading cancelled.');
+            return null;
+          }
+
+          return { loadingScrimProgress };
+        });
+      });
+    }
+
+    this.sendStateChange();
+  }
+
+  componentWillUnmount() {
+    const { model } = this.props;
+    this.stopListening(model);
+    this.pending.cancel();
+    this.updateSearchFilter.cancel();
+
+    if (this.loadingTimer) {
+      clearTimeout(this.loadingTimer);
+    }
+    this.handleDownloadProgressUpdate.cancel();
+    cancelAnimationFrame(this.animationFrame);
+  }
+
+  getAdvancedMenuOpenedHandler = memoize(
+    column => this.handleAdvancedMenuOpened.bind(this, column),
+    { max: 100 }
+  );
+
+  getCachedAdvancedFilterMenuActions = memoize(
+    (model, column, advancedFilterOptions, sortDirection, formatter) => (
+      <AdvancedFilterCreator
+        model={model}
+        column={column}
+        onFilterChange={this.handleAdvancedFilterChange}
+        onSortChange={this.handleAdvancedFilterSortChange}
+        onDone={this.handleAdvancedFilterDone}
+        options={advancedFilterOptions}
+        sortDirection={sortDirection}
+        formatter={formatter}
+      />
+    ),
+    { max: 50 }
+  );
+
+  getCachedOptionItems = memoize(
+    (
+      isChartBuilderAvailable,
+      isCustomColumnsAvailable,
+      isRollupAvailable,
+      isTotalsAvailable,
+      isSelectDistinctAvailable,
+      isExportAvailable,
+      toggleFilterBarAction,
+      toggleSearchBarAction,
+      isFilterBarShown,
+      showSearchBar
+    ) => {
+      const optionItems = [];
+      if (isChartBuilderAvailable) {
+        optionItems.push({
+          type: OptionType.CHART_BUILDER,
+          title: 'Chart Builder',
+          icon: dhGraphLineUp,
+        });
+      }
+      optionItems.push({
+        type: OptionType.VISIBILITY_ORDERING_BUILDER,
+        title: 'Column Visibility & Ordering',
+        icon: dhEye,
+      });
+      if (isCustomColumnsAvailable) {
+        optionItems.push({
+          type: OptionType.CUSTOM_COLUMN_BUILDER,
+          title: 'Manage Custom Columns',
+          icon: vsSplitHorizontal,
+        });
+      }
+      if (isRollupAvailable) {
+        optionItems.push({
+          type: OptionType.ROLLUP_ROWS,
+          title: 'Rollup Rows',
+          icon: dhTriangleDownSquare,
+        });
+      }
+      if (isTotalsAvailable) {
+        optionItems.push({
+          type: OptionType.AGGREGATIONS,
+          title: 'Aggregate Columns',
+          icon: vsSymbolOperator,
+        });
+      }
+      if (isSelectDistinctAvailable) {
+        optionItems.push({
+          type: OptionType.SELECT_DISTINCT,
+          title: 'Select Distinct Values',
+          icon: vsRuby,
+        });
+      }
+      if (isExportAvailable) {
+        optionItems.push({
+          type: OptionType.TABLE_EXPORTER,
+          title: 'Download CSV',
+          icon: vsCloudDownload,
+        });
+      }
+      optionItems.push({
+        type: OptionType.ADVANCED_SETTINGS,
+        title: 'Advanced Settings',
+        icon: vsTools,
+      });
+      optionItems.push({
+        type: OptionType.QUICK_FILTERS,
+        title: 'Quick Filters',
+        subtitle: ContextActionUtils.getDisplayShortcut(toggleFilterBarAction),
+        icon: vsFilter,
+        isOn: isFilterBarShown,
+        onChange: toggleFilterBarAction.action,
+      });
+      optionItems.push({
+        type: OptionType.SEARCH_BAR,
+        title: 'Search Bar',
+        subtitle: ContextActionUtils.getDisplayShortcut(toggleSearchBarAction),
+        icon: vsSearch,
+        isOn: showSearchBar,
+        onChange: toggleSearchBarAction.action,
+      });
+
+      return optionItems;
+    },
+    { max: 1 }
+  );
+
+  getCachedHiddenColumns = memoize(hiddenColumns => hiddenColumns, {
+    max: 1,
+    normalizer: ([hiddenColumns]) => hiddenColumns.join(),
+  });
+
+  getAggregationMap = memoize((columns, aggregations) => {
+    const aggregationMap = {};
+    aggregations.forEach(({ operation, selected, invert }) => {
+      aggregationMap[operation] = AggregationUtils.getOperationColumnNames(
+        columns,
+        operation,
+        selected,
+        invert
+      );
+    });
+    return aggregationMap;
+  });
+
+  getOperationMap = memoize((columns, aggregations) => {
+    const operationMap = {};
+    aggregations
+      .filter(a => !AggregationUtils.isRollupOperation(a.operation))
+      .forEach(({ operation, selected, invert }) => {
+        AggregationUtils.getOperationColumnNames(
+          columns,
+          operation,
+          selected,
+          invert
+        ).forEach(name => {
+          const newOperations = [...(operationMap[name] ?? []), operation];
+          operationMap[name] = newOperations;
+        });
+      });
+    return operationMap;
+  });
+
+  getOperationOrder = memoize(aggregations =>
+    aggregations
+      .map(a => a.operation)
+      .filter(o => !AggregationUtils.isRollupOperation(o))
+  );
+
+  getModelRollupConfig = memoize(
+    (originalColumns, config, aggregationSettings) =>
+      IrisGridUtils.getModelRollupConfig(
+        originalColumns,
+        config,
+        aggregationSettings
+      )
+  );
+
+  getModelTotalsConfig = memoize((columns, config, aggregationSettings) => {
+    const { aggregations, showOnTop } = aggregationSettings;
+    // If we've got rollups, then aggregations are applied as part of that...
+    if (
+      (config?.columns?.length ?? 0) > 0 ||
+      (aggregations?.length ?? 0) === 0
+    ) {
+      return null;
+    }
+
+    const operationMap = this.getOperationMap(columns, aggregations);
+    const operationOrder = this.getOperationOrder(aggregations);
+
+    return { operationMap, operationOrder, showOnTop };
+  });
+
+  getCachedStateOverride = memoize(
+    (
+      hoverSelectColumn,
+      isFilterBarShown,
+      isSelectingColumn,
+      loadingScrimProgress,
+      quickFilters,
+      advancedFilters,
+      sorts,
+      reverseType,
+      rollupConfig
+    ) => ({
+      hoverSelectColumn,
+      isFilterBarShown,
+      isSelectingColumn,
+      loadingScrimProgress,
+      quickFilters,
+      advancedFilters,
+      sorts,
+      reverseType,
+      rollupConfig,
+    }),
+    { max: 1 }
+  );
+
+  getCachedFilter = memoize(
+    (
+      customFilters,
+      quickFilters,
+      advancedFilters,
+      partitionFilters,
+      searchFilter
+    ) => [
+      ...customFilters,
+      ...partitionFilters,
+      ...IrisGridUtils.getFiltersFromFilterMap(quickFilters),
+      ...IrisGridUtils.getFiltersFromFilterMap(advancedFilters),
+      ...(searchFilter ? [searchFilter] : []), // null check
+    ],
+    { max: 1 }
+  );
+
+  getCachedTheme = memoize(
+    isEditable => ({ ...IrisGridTheme, autoSelectRow: !isEditable }),
+    { max: 1 }
+  );
+
+  getValueForCell(columnIndex, rowIndex, rawValue = false) {
+    const { model } = this.props;
+    const modelColumn = this.getModelColumn(columnIndex);
+    const modelRow = this.getModelRow(rowIndex);
+    if (rawValue) {
+      return model.valueForCell(modelColumn, modelRow);
+    }
+    return model.textForCell(modelColumn, modelRow);
+  }
+
+  getModelColumn(columnIndex) {
+    const { metrics } = this.state;
+    const { modelColumns } = metrics;
+    if (!modelColumns) {
+      return null;
+    }
+
+    return modelColumns.get(columnIndex);
+  }
+
+  getModelRow(rowIndex) {
+    const { metrics } = this.state;
+    const { modelRows } = metrics;
+    if (!modelRows) {
+      return null;
+    }
+
+    return modelRows.get(rowIndex);
+  }
+
+  getTheme() {
+    const { model } = this.props;
+    return this.getCachedTheme(model.isEditable);
+  }
+
+  getVisibleColumn(modelIndex) {
+    const { movedColumns } = this.state;
+    return GridUtils.getVisibleIndex(modelIndex, movedColumns);
+  }
+
+  /**
+   * Applies the provided input filters as quick filters,
+   * and clears any existing quickFilters or advancedFilters on that column
+   * @param {inputFilter[]} inputFilters Array of input filters to apply
+   * @param {boolean} replaceExisting If true, new filters will replace the existing ones, instead of merging
+   */
+  applyInputFilters(inputFilters, replaceExisting = false) {
+    const { model } = this.props;
+    const { advancedFilters, quickFilters } = this.state;
+    const newAdvancedFilters = replaceExisting
+      ? new Map()
+      : new Map(advancedFilters);
+    const newQuickFilters = replaceExisting ? new Map() : new Map(quickFilters);
+
+    let isChanged = replaceExisting && advancedFilters.size > 0;
+    inputFilters.forEach(({ name, type, value }) => {
+      const modelIndex = model.columns.findIndex(
+        ({ name: columnName, type: columnType }) =>
+          columnName === name && columnType === type
+      );
+      if (modelIndex >= 0) {
+        isChanged = newAdvancedFilters.delete(modelIndex) || isChanged;
+        isChanged =
+          this.applyQuickFilter(modelIndex, value, newQuickFilters) ||
+          isChanged;
+      } else {
+        log.error('Unable to find column for inputFilter', name, type, value);
+      }
+    });
+    if (isChanged) {
+      this.setState({
+        quickFilters: newQuickFilters,
+        advancedFilters: newAdvancedFilters,
+      });
+    }
+  }
+
+  /**
+   * Applies a quick filter
+   * @param {number} modelIndex The index in the model of the column to set
+   * @param {string} value The string value to set to the quick filter
+   * @param {Map} quickFilters The quick filters map
+   * @returns {boolean} True if the filters have changed because this quick filter was applied
+   */
+  applyQuickFilter(modelIndex, value, quickFilters) {
+    const { model } = this.props;
+    const column = model.columns[modelIndex];
+
+    if (value != null && `${value}`.trim().length > 0) {
+      const quickFilter = quickFilters.get(modelIndex);
+      if (quickFilter != null) {
+        const { text } = quickFilter;
+        if (text === value) {
+          log.debug2('Ignoring change to existing filter');
+          return false;
+        }
+      }
+      let filter = null;
+      try {
+        filter = TableUtils.makeQuickFilter(column, value);
+      } catch (err) {
+        log.error('Error creating quick filter', err);
+      }
+      quickFilters.set(modelIndex, { filter, text: value });
+      return true;
+    }
+    return quickFilters.delete(modelIndex);
+  }
+
+  setAdvancedFilter(modelIndex, filter, options) {
+    if (modelIndex == null) {
+      log.error('Invalid model index to filter on');
+      return;
+    }
+
+    log.debug('Setting advanced filter', modelIndex, filter);
+
+    this.startLoading('Filtering...', true);
+
+    this.setState(({ advancedFilters }) => {
+      const newAdvancedFilters = new Map(advancedFilters);
+      if (filter == null) {
+        newAdvancedFilters.delete(modelIndex);
+      } else {
+        newAdvancedFilters.set(modelIndex, {
+          filter,
+          options,
+        });
+      }
+      return { advancedFilters: newAdvancedFilters };
+    });
+  }
+
+  /**
+   * Sets a quick filter against the provided column
+   * @param {Number} modelIndex The index in the model for the column this filter is applied to
+   * @param {dh.FilterCondition} filter A filter to apply to the column, or null if there was an error
+   * @param {String} text The original text the filter was created with
+   */
+  setQuickFilter(modelIndex, filter, text) {
+    log.debug('Setting quick filter', modelIndex, filter, text);
+
+    this.startLoading('Filtering...', true);
+
+    this.setState(({ quickFilters }) => {
+      const newQuickFilters = new Map(quickFilters);
+      newQuickFilters.set(modelIndex, { filter, text });
+      return { quickFilters: newQuickFilters };
+    });
+  }
+
+  /**
+   * Set grid filters based on the filter map
+   * @param {Map<string, Object>} filterMap Filter map
+   */
+  setFilterMap(filterMap) {
+    log.debug('setFilterMap', filterMap);
+
+    const { advancedSettings } = this.props;
+    const clearFiltersOnLinkerFilterUpdate =
+      advancedSettings.get(
+        AdvancedSettingsType.LINK_CHANGE_CLEARS_ALL_FILTERS
+      ) ?? false;
+    if (clearFiltersOnLinkerFilterUpdate) {
+      this.clearAllFilters();
+    }
+
+    const { model } = this.props;
+    filterMap.forEach(({ columnType, text, value }, columnName) => {
+      const column = model.columns.find(
+        c => c.name === columnName && c.type === columnType
+      );
+      if (column == null) {
+        return;
+      }
+      if (value === null) {
+        this.setQuickFilter(column.index, column.filter().isNull(), '=null');
+      } else {
+        const filterValue = TableUtils.isTextType(columnType)
+          ? dh.FilterValue.ofString(value)
+          : dh.FilterValue.ofNumber(value);
+        this.setQuickFilter(
+          column.index,
+          column.filter().eq(filterValue),
+          `${text}`
+        );
+      }
+    });
+  }
+
+  removeColumnFilter(modelColumn) {
+    this.startLoading('Filtering...', true);
+
+    this.setState(({ advancedFilters, quickFilters }) => {
+      const newAdvancedFilters = new Map(advancedFilters);
+      const newQuickFilters = new Map(quickFilters);
+      newQuickFilters.delete(modelColumn);
+      newAdvancedFilters.delete(modelColumn);
+
+      return {
+        quickFilters: newQuickFilters,
+        advancedFilters: newAdvancedFilters,
+      };
+    });
+  }
+
+  clearAllFilters() {
+    log.debug('Clearing all filters');
+
+    const { advancedFilters, quickFilters, searchFilter } = this.state;
+    if (
+      quickFilters.size === 0 &&
+      advancedFilters.size === 0 &&
+      searchFilter === null
+    ) {
+      return;
+    }
+
+    // if there is an active quick filter input field, reset it as well
+    this.clearGridInputField();
+
+    this.startLoading('Clearing Filters...', true);
+    this.setState({
+      quickFilters: new Map(),
+      advancedFilters: new Map(),
+      searchValue: '',
+      searchFilter: null,
+    });
+  }
+
+  clearCrossColumSearch() {
+    log.debug('Clearing cross-column search');
+
+    this.setState({
+      searchValue: '',
+      searchFilter: null,
+    });
+  }
+
+  clearGridInputField() {
+    if (this.filterInputRef.current != null) {
+      this.filterInputRef.current.setValue('');
+    }
+  }
+
+  /**
+   * Rebuilds all the current filters. Necessary if something like the time zone has changed.
+   */
+  rebuildFilters() {
+    log.debug('Rebuilding filters');
+
+    const { model } = this.props;
+    const { advancedFilters, quickFilters } = this.state;
+    const { columns } = model;
+
+    const newAdvancedFilters = new Map();
+    const newQuickFilters = new Map();
+
+    advancedFilters.forEach((value, key) => {
+      const { options } = value;
+      const column = columns[key];
+      const filter = TableUtils.makeAdvancedFilter(column, options);
+      newAdvancedFilters.set(key, {
+        options,
+        filter,
+      });
+    });
+
+    quickFilters.forEach((value, key) => {
+      const { text } = value;
+      const column = columns[key];
+      const filter = TableUtils.makeQuickFilter(column, text);
+      newQuickFilters.set(key, {
+        text,
+        filter,
+      });
+    });
+
+    this.startLoading('Rebuilding filters...', true);
+    this.setState({
+      quickFilters: newQuickFilters,
+      advancedFilter: newAdvancedFilters,
+    });
+  }
+
+  updateFormatterSettings(settings, forceUpdate = true) {
+    const globalColumnFormats = FormatterUtils.getColumnFormats(settings);
+    const dateTimeFormatterOptions = FormatterUtils.getDateTimeFormatterOptions(
+      settings
+    );
+
+    const isColumnFormatChanged = !deepEqual(
+      this.globalColumnFormats,
+      globalColumnFormats
+    );
+    const isDateFormattingChanged = !deepEqual(
+      this.dateTimeFormatterOptions,
+      dateTimeFormatterOptions
+    );
+    if (isColumnFormatChanged || isDateFormattingChanged) {
+      this.globalColumnFormats = globalColumnFormats;
+      this.dateTimeFormatterOptions = dateTimeFormatterOptions;
+      this.updateFormatter({}, forceUpdate);
+
+      if (isDateFormattingChanged && forceUpdate) {
+        this.rebuildFilters();
+      }
+    }
+  }
+
+  updateFormatter(updatedFormats, forceUpdate = true) {
+    const { customColumnFormatMap, queryColumnFormatMap } = this.state;
+    const update = {
+      customColumnFormatMap,
+      queryColumnFormatMap,
+      ...updatedFormats,
+    };
+    const mergedColumnFormats = [
+      ...this.globalColumnFormats,
+      ...update.queryColumnFormatMap.values(),
+      ...update.customColumnFormatMap.values(),
+    ];
+    const formatter = new Formatter(
+      mergedColumnFormats,
+      this.dateTimeFormatterOptions
+    );
+
+    log.debug('updateFormatter', this.globalColumnFormats, mergedColumnFormats);
+
+    this.setState({ ...update, formatter }, () => {
+      if (forceUpdate && this.grid) {
+        this.grid.forceUpdate();
+      }
+    });
+  }
+
+  initFormatter() {
+    const { model, settings } = this.props;
+    this.updateFormatterSettings(settings, false);
+    this.pending
+      .add(model.columnFormatMap())
+      .then(queryColumnFormatMap => {
+        if (queryColumnFormatMap.size) {
+          this.updateFormatter({ queryColumnFormatMap });
+        }
+      })
+      .catch(error => {
+        if (PromiseUtils.isCanceled(error)) {
+          return;
+        }
+        log.error('getColumnFormatMap error', error);
+      });
+  }
+
+  initState() {
+    const {
+      applyInputFiltersOnInit,
+      inputFilters,
+      sorts,
+      model,
+      reverseType,
+      customColumns,
+      searchValue,
+      selectedSearchColumns,
+      invertSearchColumns,
+    } = this.props;
+
+    const searchColumns = selectedSearchColumns ?? [];
+    const searchFilter = CrossColumnSearch.createSearchFilter(
+      searchValue,
+      searchColumns,
+      model.columns,
+      invertSearchColumns
+    );
+
+    if (applyInputFiltersOnInit) {
+      // There may be more than one input filter on the same column with value === '' applied last
+      // We don't want to skip it here, so only excluding the ones that were never applied (null)
+      const inputFiltersWithValues = inputFilters.filter(
+        inputFilter => inputFilter.value != null
+      );
+      this.applyInputFilters(inputFiltersWithValues);
+    }
+
+    this.setState({
+      sorts,
+      reverseType,
+      customColumns,
+      isReady: true,
+      searchFilter,
+    });
+    this.initFormatter();
+  }
+
+  async loadPartitionsTable(partitionColumn) {
+    const { model } = this.props;
+    this.setState({ isSelectingPartition: true });
+
+    try {
+      const partitionTable = await this.pending.add(
+        model.valuesTable(partitionColumn),
+        resolved => resolved.close()
+      );
+
+      const column = partitionTable.columns[0];
+      const sort = column.sort().desc();
+      partitionTable.applySort([sort]);
+      partitionTable.setViewport(0, 0, [column]);
+
+      const data = await this.pending.add(partitionTable.getViewportData());
+      if (data.rows.length > 0) {
+        const row = data.rows[0];
+        const value = row.get(column);
+
+        this.updatePartition(value, partitionColumn);
+
+        this.setState({ isSelectingPartition: true });
+      } else {
+        log.info('Table does not have any data, just fetching all');
+        this.setState({ isSelectingPartition: false });
+        this.handlePartitionFetchAll();
+      }
+      this.setState({ partitionTable, partitionColumn }, () => {
+        this.initState();
+      });
+    } catch (error) {
+      this.handleTableLoadError(error);
+    }
+  }
+
+  updatePartition(partition, partitionColumn) {
+    const partitionFilter = partitionColumn
+      .filter()
+      .eq(dh.FilterValue.ofString(partition));
+    const partitionFilters = [partitionFilter];
+    this.setState({
+      partition,
+      partitionFilters,
+    });
+  }
+
+  copyCell(columnIndex, rowIndex, rawValue = false) {
+    const value = this.getValueForCell(columnIndex, rowIndex, rawValue);
+    ContextActionUtils.copyToClipboard(value).catch(e =>
+      log.error('Unable to copy cell', e)
+    );
+  }
+
+  copyRanges(
+    ranges,
+    includeHeaders = false,
+    formatValues = true,
+    error = null
+  ) {
+    const { model } = this.props;
+    const { metricCalculator, movedColumns } = this.state;
+    const { userColumnWidths } = metricCalculator;
+
+    const copyOperation = {
+      ranges: GridRange.boundedRanges(
+        ranges,
+        model.columnCount,
+        model.rowCount
+      ),
+      includeHeaders,
+      formatValues,
+      movedColumns,
+      userColumnWidths,
+      error,
+    };
+
+    this.setState({ copyOperation });
+  }
+
+  startLoading(loadingText, resetRanges = false) {
+    this.setState({ loadingText });
+
+    const theme = this.getTheme();
+
+    if (resetRanges && this.grid) {
+      this.grid.clearSelectedRanges();
+      this.grid.setViewState({ top: 0 }, true);
+    }
+
+    if (this.loadingScrimStartTime == null) {
+      const { minScrimTransitionTime, maxScrimTransitionTime } = theme;
+      const height = this.gridWrapper?.getBoundingClientRect().height ?? 0;
+      const scrimTransitionTime = Math.max(
+        minScrimTransitionTime,
+        Math.min(height / 2, maxScrimTransitionTime)
+      );
+      this.loadingScrimStartTime = Date.now();
+      this.loadingScrimFinishTime =
+        this.loadingScrimStartTime + scrimTransitionTime;
+      this.setState({
+        loadingScrimProgress: 0,
+      });
+      this.loadingTimer = setTimeout(() => {
+        this.setState({
+          loadingSpinnerShown: true,
+        });
+      }, IrisGrid.loadingSpinnerDelay);
+    }
+  }
+
+  stopLoading() {
+    this.loadingScrimStartTime = null;
+    this.loadingScrimFinishTime = null;
+    this.setState({
+      loadingText: null,
+      loadingScrimProgress: null,
+      loadingSpinnerShown: false,
+    });
+
+    if (this.loadingTimer) {
+      clearTimeout(this.loadingTimer);
+      this.loadingTimer = null;
+    }
+  }
+
+  /**
+   * Rolls back the table state to the last known safe state, or if that's not available then clears all sorts/filters/custom columns.
+   */
+  rollback() {
+    if (this.lastLoadedConfig) {
+      log.debug('loading last loading config', this.lastLoadedConfig);
+      const {
+        advancedFilters,
+        customColumns,
+        quickFilters,
+        reverseType,
+        searchFilter,
+        sorts,
+      } = this.lastLoadedConfig;
+      this.lastLoadedConfig = null;
+      this.setState({
+        advancedFilters,
+        customColumns,
+        quickFilters,
+        reverseType,
+        searchFilter,
+        sorts,
+      });
+    } else {
+      log.debug('remove all sorts, filters, and custom columns');
+      this.setState({
+        advancedFilters: new Map(),
+        quickFilters: new Map(),
+        sorts: [],
+        customColumns: [],
+        reverseType: TableUtils.REVERSE_TYPE.NONE,
+      });
+    }
+  }
+
+  /**
+   * Check if we can rollback the current state to a safe state.
+   * @returns {boolean} true if there's a previously known safe state or if some of the current state isn't empty.
+   */
+  canRollback() {
+    return this.lastLoadedConfig != null || !isEmptyConfig(this.state);
+  }
+
+  startListening(model) {
+    model.addEventListener(IrisGridModel.EVENT.UPDATED, this.handleUpdate);
+    model.addEventListener(
+      IrisGridModel.EVENT.REQUEST_FAILED,
+      this.handleRequestFailed
+    );
+    model.addEventListener(
+      IrisGridModel.EVENT.COLUMNS_CHANGED,
+      this.handleCustomColumnsChanged
+    );
+  }
+
+  stopListening(model) {
+    model.removeEventListener(IrisGridModel.EVENT.UPDATED, this.handleUpdate);
+    model.removeEventListener(
+      IrisGridModel.EVENT.REQUEST_FAILED,
+      this.handleRequestFailed
+    );
+    model.removeEventListener(
+      IrisGridModel.EVENT.COLUMNS_CHANGED,
+      this.handleCustomColumnsChanged
+    );
+  }
+
+  focusFilterBar(column) {
+    const { model } = this.props;
+    const { columnCount } = model;
+    const modelColumn = this.getModelColumn(column);
+
+    if (
+      column == null ||
+      column < 0 ||
+      columnCount <= column ||
+      !model.isFilterable(modelColumn)
+    ) {
+      this.setState({ focusedFilterBarColumn: null });
+      return;
+    }
+
+    const { metricCalculator, metrics } = this.state;
+    const { gridX, left, rightVisible, lastLeft } = metrics;
+    if (column < left) {
+      this.grid.setViewState({ left: column }, true);
+    } else if (rightVisible < column) {
+      const metricState = this.grid.getMetricState();
+      const newLeft = metricCalculator.getLastLeft(metricState, column, gridX);
+      this.grid.setViewState({ left: Math.min(newLeft, lastLeft) }, true);
+    }
+    this.lastFocusedFilterBarColumn = column;
+    this.setState({ focusedFilterBarColumn: column, isFilterBarShown: true });
+  }
+
+  hideColumnByVisibleIndex(columnVisibleIndex) {
+    const { metricCalculator, movedColumns } = this.state;
+    metricCalculator.setColumnWidth(
+      GridUtils.getModelIndex(columnVisibleIndex, movedColumns),
+      0
+    );
+
+    this.grid.forceUpdate();
+  }
+
+  handleColumnVisibilityChanged(modelIndexes, visibilityOption) {
+    const { metricCalculator } = this.state;
+    if (
+      visibilityOption === VisibilityOrderingBuilder.VISIBILITY_OPTIONS.SHOW
+    ) {
+      modelIndexes.forEach(modelIndex => {
+        metricCalculator.resetColumnWidth(modelIndex);
+      });
+    } else {
+      modelIndexes.forEach(modelIndex => {
+        metricCalculator.setColumnWidth(modelIndex, 0);
+      });
+    }
+    this.grid.forceUpdate();
+  }
+
+  handleCrossColumnSearch(
+    searchValue,
+    selectedSearchColumns,
+    invertSearchColumns
+  ) {
+    const { model } = this.props;
+
+    this.updateSearchFilter(
+      searchValue,
+      selectedSearchColumns,
+      model.columns,
+      invertSearchColumns
+    );
+
+    this.setState({
+      searchValue,
+      selectedSearchColumns,
+      invertSearchColumns,
+    });
+  }
+
+  updateSearchFilter(
+    searchValue,
+    selectedSearchColumns,
+    columns,
+    invertSearchColumns
+  ) {
+    const searchFilter = CrossColumnSearch.createSearchFilter(
+      searchValue,
+      selectedSearchColumns,
+      columns,
+      invertSearchColumns
+    );
+    this.setState({ searchFilter });
+  }
+
+  handleAnimationLoop() {
+    this.grid.updateCanvasScale();
+    this.grid.updateCanvas();
+
+    if (this.isAnimating) {
+      this.animationFrame = requestAnimationFrame(this.handleAnimationLoop);
+    }
+  }
+
+  handleAnimationStart() {
+    log.debug2('handleAnimationStart');
+
+    this.isAnimating = true;
+
+    this.animationFrame = requestAnimationFrame(this.handleAnimationLoop);
+  }
+
+  handleAnimationEnd() {
+    log.debug2('handleAnimationEnd');
+
+    this.isAnimating = false;
+  }
+
+  handlePartitionAppend(value) {
+    const { onPartitionAppend } = this.props;
+    const { partitionColumn } = this.state;
+    onPartitionAppend(partitionColumn, value);
+  }
+
+  handlePartitionChange(partition) {
+    const { partitionColumn } = this.state;
+    this.updatePartition(partition, partitionColumn);
+  }
+
+  handlePartitionFetchAll() {
+    this.setState({
+      partitionFilters: [],
+      isSelectingPartition: false,
+    });
+  }
+
+  handlePartitionDone() {
+    this.setState({ isSelectingPartition: false });
+  }
+
+  handleTableLoadError(error) {
+    if (PromiseUtils.isCanceled(error)) {
+      return;
+    }
+
+    log.error(error);
+
+    const { onError } = this.props;
+    onError(error);
+  }
+
+  showAllColumns() {
+    const { metricCalculator } = this.state;
+    const { userColumnWidths } = metricCalculator;
+    const entries = [...userColumnWidths.entries()];
+    for (let i = 0; i < entries.length; i += 1) {
+      const [modelIndex, columnWidth] = entries[i];
+      if (columnWidth === 0) {
+        metricCalculator.resetColumnWidth(modelIndex);
+      }
+    }
+    this.grid.forceUpdate();
+  }
+
+  toggleSort(columnIndex, addToExisting) {
+    log.info('Toggling sort for column', columnIndex);
+
+    const { model } = this.props;
+    const { sorts: currentSorts } = this.state;
+    const modelColumn = this.getModelColumn(columnIndex);
+    const sorts = TableUtils.toggleSortForColumn(
+      currentSorts,
+      model.table,
+      modelColumn,
+      addToExisting
+    );
+    this.startLoading('Sorting...');
+    this.setState({ sorts });
+    this.grid.forceUpdate();
+  }
+
+  sortColumn(modelColumn, direction, isAbs = false, addToExisting = false) {
+    const { model } = this.props;
+    const sorts = TableUtils.sortColumn(
+      model.table,
+      modelColumn,
+      direction,
+      isAbs,
+      addToExisting
+    );
+    this.startLoading('Sorting...');
+    this.setState({ sorts });
+    this.grid.forceUpdate();
+  }
+
+  reverse(reverseType) {
+    this.startLoading('Reversing...');
+    this.setState({ reverseType });
+    this.grid.forceUpdate();
+  }
+
+  isReversible() {
+    const { model } = this.props;
+    return model.isReversible;
+  }
+
+  toggleFilterBar(focusIndex = this.lastFocusedFilterBarColumn) {
+    let { isFilterBarShown } = this.state;
+    isFilterBarShown = !isFilterBarShown;
+    this.setState({ isFilterBarShown });
+
+    if (isFilterBarShown) {
+      if (focusIndex != null) {
+        this.focusFilterBar(focusIndex);
+      } else {
+        let columnIndex = 0;
+        const { model } = this.props;
+        const { columnCount } = model;
+        for (let i = 0; i < columnCount; i += 1) {
+          const modelColumn = this.getModelColumn(i);
+          if (modelColumn != null) {
+            const column = model.columns[modelColumn];
+            if (column != null && TableUtils.isTextType(column.type)) {
+              columnIndex = i;
+              break;
+            }
+          }
+        }
+        this.focusFilterBar(columnIndex);
+      }
+    } else {
+      this.grid.focus();
+    }
+  }
+
+  toggleSearchBar() {
+    const { showSearchBar } = this.state;
+    const update = !showSearchBar;
+    this.setState(
+      {
+        showSearchBar: update,
+      },
+      () => {
+        if (update && this.crossColumnRef.current) {
+          this.crossColumnRef.current.focus();
+        } else {
+          this.grid.focus();
+        }
+      }
+    );
+  }
+
+  /**
+   * Select the passed in column and notify listener
+   * @param {dh.Column} column The column in this table to link
+   */
+  selectColumn(column) {
+    const { onColumnSelected } = this.props;
+    onColumnSelected(column);
+  }
+
+  /**
+   * Select all the data for a given row and notify listener
+   */
+  selectData(columnIndex, rowIndex) {
+    const { model } = this.props;
+    const { columns } = model;
+    const dataMap = {};
+    for (let i = 0; i < columns.length; i += 1) {
+      const column = columns[i];
+      const { name, type } = column;
+      const value = model.valueForCell(i, rowIndex);
+      const text = model.textForCell(i, rowIndex);
+      dataMap[name] = { value, text, type };
+    }
+
+    const { onDataSelected } = this.props;
+    onDataSelected(rowIndex, dataMap);
+  }
+
+  handleAdvancedFilterChange(column, filter, options) {
+    this.setAdvancedFilter(column.index, filter, options);
+  }
+
+  handleAdvancedFilterSortChange(column, direction, addToExisting = false) {
+    const { model } = this.props;
+    const columnIndex = column.index;
+    const oldSort = TableUtils.getSortForColumn(model.sort, columnIndex);
+    let newSort = null;
+
+    if (oldSort == null || oldSort.direction !== direction) {
+      if (direction === TableUtils.sortDirection.descending) {
+        newSort = column.sort().desc();
+      } else {
+        newSort = column.sort().asc();
+      }
+    }
+
+    const sorts = TableUtils.setSortForColumn(
+      model.sort,
+      columnIndex,
+      newSort,
+      addToExisting
+    );
+    log.info('Setting table sorts', sorts);
+
+    this.startLoading('Sorting...');
+    this.setState({ sorts });
+
+    this.grid.forceUpdate();
+  }
+
+  handleAdvancedFilterDone() {
+    this.grid.focus();
+  }
+
+  handleAdvancedMenuOpened(column) {
+    this.setState({ shownAdvancedFilter: column });
+  }
+
+  handleAdvancedMenuClosed(columnIndex) {
+    const { focusedFilterBarColumn, isFilterBarShown } = this.state;
+    if (
+      isFilterBarShown &&
+      focusedFilterBarColumn === columnIndex &&
+      this.filterInputRef.current !== null
+    ) {
+      this.filterInputRef.current.focus();
+      this.setState({ shownAdvancedFilter: null });
+    } else {
+      this.setState({
+        focusedFilterBarColumn: null,
+        shownAdvancedFilter: null,
+      });
+    }
+  }
+
+  handleCancel() {
+    this.rollback();
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  handleChartChange() {
+    // TODO: IDS-4242 Update Chart Preview
+  }
+
+  handleChartCreate(settings) {
+    const { model, onCreateChart } = this.props;
+    onCreateChart(settings, model.table);
+  }
+
+  handleFilterBarChange(value) {
+    this.startLoading('Filtering...', true);
+
+    this.setState(({ focusedFilterBarColumn, quickFilters }) => {
+      const newQuickFilters = new Map(quickFilters);
+      const modelIndex = this.getModelColumn(focusedFilterBarColumn);
+      this.applyQuickFilter(modelIndex, value, newQuickFilters);
+      return { quickFilters: newQuickFilters };
+    });
+  }
+
+  handleFilterBarDone(setGridFocus = true, defocusInput = true) {
+    if (setGridFocus) {
+      this.grid.focus();
+    }
+    if (defocusInput) {
+      this.setState({ focusedFilterBarColumn: null });
+    }
+  }
+
+  handleFilterBarTab(backward) {
+    const { focusedFilterBarColumn } = this.state;
+    if (backward) {
+      this.focusFilterBar(focusedFilterBarColumn - 1);
+    } else {
+      this.focusFilterBar(focusedFilterBarColumn + 1);
+    }
+  }
+
+  handleFormatSelection(modelIndex, selectedFormat) {
+    const { model } = this.props;
+    const column = model.columns[modelIndex];
+    const { customColumnFormatMap: prevCustomColumnFormatMap } = this.state;
+    const customColumnFormatMap = new Map(prevCustomColumnFormatMap);
+
+    if (selectedFormat) {
+      const normalizedType = TableUtils.getNormalizedType(column.type);
+      const columnFormattingRule = Formatter.makeColumnFormattingRule(
+        normalizedType,
+        column.name,
+        selectedFormat
+      );
+
+      customColumnFormatMap.set(column.name, columnFormattingRule);
+    } else {
+      customColumnFormatMap.delete(column.name);
+    }
+
+    this.updateFormatter({ customColumnFormatMap });
+  }
+
+  handleMenu() {
+    this.setState({ isMenuShown: true });
+  }
+
+  handleMenuClose() {
+    this.setState({ isMenuShown: false, openOptions: [] });
+  }
+
+  handleMenuBack() {
+    this.setState(({ openOptions }) => {
+      const newOptions = [...openOptions];
+      newOptions.pop();
+      return { openOptions: newOptions };
+    });
+  }
+
+  handleMenuSelect(option) {
+    this.setState(({ openOptions }) => ({
+      openOptions: [...openOptions, option],
+    }));
+  }
+
+  handleRequestFailed(event) {
+    log.error('request failed:', event.detail);
+    this.stopLoading();
+    if (this.canRollback()) {
+      this.startLoading('Rolling back changes...', true);
+      this.rollback();
+    } else {
+      log.error('Table failed and unable to rollback');
+      const { onError } = this.props;
+      onError(new Error('Error displaying table.'));
+    }
+  }
+
+  handleUpdate() {
+    this.stopLoading();
+    log.debug2('Received model update');
+
+    const {
+      advancedFilters,
+      customColumns,
+      quickFilters,
+      reverseType,
+      searchFilter,
+      sorts,
+    } = this.state;
+    const config = {
+      advancedFilters,
+      customColumns,
+      reverseType,
+      quickFilters,
+      searchFilter,
+      sorts,
+    };
+    if (!isEmptyConfig(config)) {
+      this.lastLoadedConfig = config;
+    } else {
+      this.lastLoadedConfig = null;
+    }
+
+    this.grid.forceUpdate();
+  }
+
+  handleViewChanged(metrics) {
+    this.setState({ metrics });
+  }
+
+  handleSelectionChanged(selectedRanges) {
+    const { onSelectionChanged } = this.props;
+    const { copyOperation } = this.state;
+    this.setState({ selectedRanges });
+    if (copyOperation != null) {
+      this.setState({ copyOperation: null });
+    }
+    onSelectionChanged(selectedRanges);
+  }
+
+  handleMovedColumnsChanged(movedColumns, onChangeApplied = () => {}) {
+    this.setState({ movedColumns }, onChangeApplied);
+  }
+
+  handleTooltipRef(tooltip) {
+    // Need to start the timer right away, since we're creating the tooltip when we want the timer to start
+    if (tooltip) {
+      tooltip.startTimer();
+    }
+
+    this.tooltip = tooltip;
+  }
+
+  handleUpdateCustomColumns(customColumns) {
+    log.info(`handleUpdateCustomColumns:`, customColumns);
+
+    const { model } = this.props;
+    const {
+      movedColumns,
+      sorts,
+      quickFilters,
+      advancedFilters,
+      selectDistinctColumns,
+    } = this.state;
+
+    const { columns, customColumns: oldCustomColumns } = model;
+
+    const removedColumnNames = IrisGridUtils.getRemovedCustomColumnNames(
+      oldCustomColumns,
+      customColumns
+    );
+    if (removedColumnNames.length > 0) {
+      const newSorts = IrisGridUtils.removeSortsInColumns(
+        sorts,
+        removedColumnNames
+      );
+      const newQuickFilters = IrisGridUtils.removeFiltersInColumns(
+        columns,
+        quickFilters,
+        removedColumnNames
+      );
+      const newAdvancedFilters = IrisGridUtils.removeFiltersInColumns(
+        columns,
+        advancedFilters,
+        removedColumnNames
+      );
+      const newMovedColumns = IrisGridUtils.removeColumnFromMovedColumns(
+        columns,
+        movedColumns,
+        removedColumnNames
+      );
+      const newSelectDistinctColumns = IrisGridUtils.removeColumnsFromSelectDistinctColumns(
+        selectDistinctColumns,
+        removedColumnNames
+      );
+      if (newSorts.length !== sorts) {
+        log.debug('removing sorts from removed custom columns...');
+        this.setState({ sorts: newSorts });
+      }
+      if (
+        newQuickFilters.size !== quickFilters.size ||
+        newAdvancedFilters.size !== advancedFilters.size
+      ) {
+        log.debug(`removing filters from removed custom columns...`);
+        this.setState({
+          quickFilters: newQuickFilters,
+          advancedFilters: newAdvancedFilters,
+        });
+      }
+      if (!deepEqual(movedColumns, newMovedColumns)) {
+        log.debug(
+          `change moved columns for removed custom columns`,
+          newMovedColumns
+        );
+        this.setState({ movedColumns: newMovedColumns });
+      }
+      if (!deepEqual(selectDistinctColumns, newSelectDistinctColumns)) {
+        log.debug(
+          `change selectDistinct columns for removed custom columns`,
+          newMovedColumns
+        );
+        this.setState({ selectDistinctColumns: newSelectDistinctColumns });
+      }
+    }
+
+    this.setState({ customColumns, top: 0 });
+    this.startLoading('Applying custom columns...');
+  }
+
+  handleCustomColumnsChanged() {
+    log.debug('custom columns changed');
+    const { isReady } = this.state;
+    if (isReady) {
+      this.stopLoading();
+      this.grid.forceUpdate();
+    } else {
+      this.initState();
+    }
+  }
+
+  /**
+   * User added, removed, or changed the order of aggregations, or position
+   * @param {AggregationSettings} aggregationSettings The new aggregation settings
+   */
+  handleAggregationsChange(aggregationSettings) {
+    log.debug('handleAggregationsChange', aggregationSettings);
+
+    this.startLoading(
+      `Aggregating ${aggregationSettings.aggregations
+        .map(a => a.operation)
+        .join(', ')}...`
+    );
+    this.setState({ aggregationSettings });
+  }
+
+  /**
+   * A specific aggregation has been modified
+   * @param {Aggregation} aggregation The new aggregation
+   */
+  handleAggregationChange(aggregation) {
+    log.debug('handleAggregationChange', aggregation);
+
+    this.startLoading(`Aggregating ${aggregation.operation}...`);
+    this.setState(({ aggregationSettings }) => ({
+      selectedAggregation: aggregation,
+      aggregationSettings: {
+        ...aggregationSettings,
+        aggregations: aggregationSettings.aggregations.map(a =>
+          a.operation === aggregation.operation ? aggregation : a
+        ),
+      },
+    }));
+  }
+
+  /**
+   * An aggregations has been selected for editing
+   * @param {Aggregation} aggregation The aggregation to edit
+   */
+  handleAggregationEdit(aggregation) {
+    log.debug('handleAggregationEdit', aggregation);
+
+    const { openOptions } = this.state;
+
+    this.setState({
+      openOptions: [
+        ...openOptions,
+        {
+          type: OptionType.AGGREGATION_EDIT,
+          title: `Edit Columns to ${aggregation.operation}`,
+        },
+      ],
+      selectedAggregation: aggregation,
+    });
+  }
+
+  handleRollupChange(rollupConfig) {
+    log.info('Rollup change', rollupConfig);
+
+    this.resetGridViewState();
+    this.showAllColumns();
+    this.clearAllFilters();
+
+    this.startLoading(
+      `Grouping by columns ${rollupConfig?.columns?.join(', ') ?? ''}...`
+    );
+
+    // Have to clear select distinct since rollup uses the original columns, not the current ones.
+    // IrisGridProxyModel has a check to prevent model update
+    // when selectDistinctModel is cleared and the rollupConfig is set on the model.
+    this.setState({
+      rollupConfig,
+      movedColumns: [],
+      sorts: [],
+      reverseType: TableUtils.REVERSE_TYPE.NONE,
+      selectDistinctColumns: [],
+    });
+  }
+
+  handleSelectDistinctChanged(columnNames) {
+    log.debug('SelectDistinct change', columnNames);
+
+    this.resetGridViewState();
+
+    this.showAllColumns();
+    this.clearAllFilters();
+
+    this.startLoading(
+      `Selecting distinct values in ${
+        columnNames.length > 0 ? columnNames.join(', ') : ''
+      }...`
+    );
+
+    this.setState({
+      selectDistinctColumns: columnNames,
+      movedColumns: [],
+      sorts: [],
+      reverseType: TableUtils.REVERSE_TYPE.NONE,
+    });
+  }
+
+  handleDownloadTableStart() {
+    this.setState({
+      isTableDownloading: true,
+      tableDownloadProgress: 0,
+      tableDownloadEstimatedTime: null,
+      tableDownloadStatus: TableCsvExporter.DOWNLOAD_STATUS.INITIATING,
+    });
+  }
+
+  handleDownloadTable(...args) {
+    log.info('start table downloading', ...args);
+    this.setState(() => {
+      if (this.tableSaver) {
+        this.tableSaver.startDownload(...args);
+      }
+      return {
+        tableDownloadStatus: TableCsvExporter.DOWNLOAD_STATUS.DOWNLOADING,
+      };
+    });
+  }
+
+  handleCancelDownloadTable() {
+    this.tableSaver.cancelDownload();
+    this.setState({ isTableDownloading: false });
+  }
+
+  handleDownloadProgressUpdate(
+    tableDownloadProgress,
+    tableDownloadEstimatedTime
+  ) {
+    const { tableDownloadStatus } = this.state;
+    if (tableDownloadStatus === TableCsvExporter.DOWNLOAD_STATUS.DOWNLOADING) {
+      this.setState({
+        tableDownloadProgress,
+        tableDownloadEstimatedTime,
+      });
+    }
+  }
+
+  handleDownloadCompleted() {
+    this.setState({
+      isTableDownloading: false,
+      tableDownloadProgress: 100,
+      tableDownloadStatus: TableCsvExporter.DOWNLOAD_STATUS.FINISHED,
+    });
+  }
+
+  handleDownloadCanceled() {
+    this.setState({
+      isTableDownloading: false,
+      tableDownloadProgress: 0,
+      tableDownloadStatus: TableCsvExporter.DOWNLOAD_STATUS.CANCELED,
+    });
+  }
+
+  /**
+   * Delete the specified ranges from the table.
+   * @param {GridRange[]} ranges The ranges to delete
+   */
+  deleteRanges(ranges) {
+    const { model } = this.props;
+    this.pending.add(model.delete(ranges)).catch(e => {
+      if (!PromiseUtils.isCanceled(e)) {
+        log.error('Unable to delete ranges', ranges, e);
+      }
+    });
+  }
+
+  resetColumnSelection() {
+    if (this.grid == null) {
+      return;
+    }
+    const { isSelectingColumn } = this.props;
+    if (isSelectingColumn) {
+      const { columnAllowedCursor } = this.props;
+      this.grid.setState({ cursor: columnAllowedCursor });
+    } else {
+      this.grid.setState({ cursor: Grid.CURSOR_TYPE_DEFAULT });
+      this.setState({ hoverSelectColumn: null });
+    }
+  }
+
+  resetGridViewState(forceUpdate = true) {
+    if (!this.grid) {
+      return;
+    }
+
+    this.grid.clearSelectedRanges();
+    this.grid.setViewState(
+      { left: 0, top: 0, topOffset: 0, leftOffset: 0 },
+      forceUpdate
+    );
+  }
+
+  sendStateChange() {
+    if (!this.grid) {
+      return;
+    }
+    const { state: irisGridState } = this;
+    const { state: gridState } = this.grid;
+    const { onStateChange } = this.props;
+
+    onStateChange(irisGridState, gridState);
+  }
+
+  render() {
+    const {
+      children,
+      customFilters,
+      isSelectingColumn,
+      model,
+      name,
+      onlyFetchVisibleColumns,
+      alwaysFetchColumns,
+      advancedSettings,
+      onAdvancedSettingsChange,
+    } = this.props;
+    const {
+      metricCalculator,
+      metrics,
+      isFilterBarShown,
+      isSelectingPartition,
+      isMenuShown,
+      isReady,
+      copyOperation,
+      focusedFilterBarColumn,
+      loadingText,
+      loadingScrimProgress,
+      loadingSpinnerShown,
+      keyHandlers,
+      mouseHandlers,
+      shownColumnTooltip,
+      hoverAdvancedFilter,
+      shownAdvancedFilter,
+      hoverSelectColumn,
+      quickFilters,
+      advancedFilters,
+      partition,
+      partitionFilters,
+      partitionTable,
+      partitionColumn,
+      searchFilter,
+      selectDistinctColumns,
+
+      movedColumns,
+      movedRows,
+
+      formatter,
+
+      sorts,
+      reverseType,
+      customColumns,
+
+      selectedRanges,
+      isTableDownloading,
+      tableDownloadStatus,
+      tableDownloadProgress,
+      tableDownloadEstimatedTime,
+
+      showSearchBar,
+      searchValue,
+      selectedSearchColumns,
+      invertSearchColumns,
+
+      aggregationSettings,
+      selectedAggregation,
+      rollupConfig,
+      openOptions,
+    } = this.state;
+    if (!isReady) {
+      return null;
+    }
+
+    const theme = this.getTheme();
+
+    const filter = this.getCachedFilter(
+      customFilters,
+      quickFilters,
+      advancedFilters,
+      partitionFilters,
+      searchFilter
+    );
+
+    const { userColumnWidths } = metricCalculator;
+    const stateOverride = this.getCachedStateOverride(
+      hoverSelectColumn,
+      isFilterBarShown,
+      isSelectingColumn,
+      loadingScrimProgress,
+      quickFilters,
+      advancedFilters,
+      sorts,
+      reverseType,
+      rollupConfig
+    );
+    const top = metrics ? metrics.top : 0;
+    const bottom = metrics ? metrics.bottomViewport : 0;
+    let left = null;
+    let right = null;
+    if (onlyFetchVisibleColumns) {
+      left = metrics ? metrics.left : 0;
+      right = metrics ? metrics.right : 0;
+    }
+    const isVisible =
+      metrics != null && metrics.width > 0 && metrics.height > 0;
+    const isRollup = (rollupConfig?.columns?.length ?? 0) > 0;
+
+    let focusField = null;
+
+    const debounceMs = metrics
+      ? Math.min(
+          Math.max(IrisGrid.minDebounce, Math.round(metrics.rowCount / 200)),
+          IrisGrid.maxDebounce
+        )
+      : IrisGrid.maxDebounce;
+
+    if (isFilterBarShown && focusedFilterBarColumn != null && metrics != null) {
+      const { gridX, gridY, visibleColumnXs, visibleColumnWidths } = metrics;
+      const columnX = visibleColumnXs.get(focusedFilterBarColumn);
+      const columnWidth = visibleColumnWidths.get(focusedFilterBarColumn);
+      if (columnX != null && columnWidth != null) {
+        const x = gridX + columnX;
+        const y = gridY - theme.filterBarHeight;
+        const fieldWidth = columnWidth + 1; // cover right border
+        const fieldHeight = theme.filterBarHeight - 1; // remove bottom border
+        const style = {
+          top: y,
+          left: x,
+          minWidth: fieldWidth,
+          height: fieldHeight,
+        };
+        let value = '';
+        let isValid = true;
+        const modelColumn = this.getModelColumn(focusedFilterBarColumn);
+        const quickFilter = quickFilters.get(modelColumn);
+        const advancedFilter = advancedFilters.get(modelColumn);
+        if (quickFilter != null) {
+          value = quickFilter.text;
+          isValid = quickFilter.filter != null;
+        }
+        const isBarFiltered =
+          quickFilters.size !== 0 || advancedFilters.size !== 0;
+        focusField = (
+          <FilterInputField
+            ref={this.filterInputRef}
+            style={style}
+            className={classNames({
+              error: !isValid,
+              active: value !== '' || advancedFilter != null,
+              'iris-grid-has-filter': isBarFiltered,
+            })}
+            isAdvancedFilterSet={advancedFilter != null}
+            onAdvancedFiltersTriggered={() => {
+              this.setState({ shownAdvancedFilter: focusedFilterBarColumn });
+            }}
+            key={focusedFilterBarColumn}
+            onChange={this.handleFilterBarChange}
+            onDone={this.handleFilterBarDone}
+            onTab={this.handleFilterBarTab}
+            onContextMenu={this.grid.handleContextMenu}
+            debounceMs={debounceMs}
+            value={value}
+          />
+        );
+      }
+    }
+
+    let loadingElement = null;
+    if (loadingText != null) {
+      const loadingStatus = (
+        <div className="iris-grid-loading-status">{loadingText}</div>
+      );
+      const loader = <DeephavenSpinner show={loadingSpinnerShown} />;
+      const cancelButton = (
+        <button
+          type="button"
+          onClick={this.handleCancel}
+          className={classNames(
+            'btn btn-secondary btn-cancelable iris-grid-btn-cancel',
+            {
+              show: loadingSpinnerShown,
+            }
+          )}
+        >
+          Cancel
+        </button>
+      );
+
+      const gridY = metrics ? metrics.gridY : 0;
+      loadingElement = (
+        <div className="iris-grid-loading" style={{ top: gridY }}>
+          {loadingStatus}
+          {loader}
+          {cancelButton}
+        </div>
+      );
+    }
+
+    let columnTooltip = null;
+    if (shownColumnTooltip != null && metrics) {
+      const {
+        columnHeaderHeight,
+        visibleColumnXs,
+        visibleColumnWidths,
+      } = metrics;
+      const columnX = visibleColumnXs.get(shownColumnTooltip);
+      const columnWidth = visibleColumnWidths.get(shownColumnTooltip);
+      const wrapperStyle = {
+        position: 'absolute',
+        top: 0,
+        left: columnX,
+        width: columnWidth,
+        height: columnHeaderHeight,
+        pointerEvents: 'none',
+      };
+
+      const popperOptions = {
+        placement: 'bottom',
+        modifiers: {
+          flip: {
+            behavior: ['bottom', 'top'],
+          },
+        },
+      };
+
+      const modelColumn = this.getModelColumn(shownColumnTooltip);
+      const column = model.columns[modelColumn];
+
+      if (column != null) {
+        columnTooltip = (
+          <div style={wrapperStyle}>
+            <Tooltip
+              key={column.name}
+              timeout={400}
+              interactive
+              options={popperOptions}
+              ref={this.handleTooltipRef}
+            >
+              <ColumnStatistics
+                model={model}
+                column={column}
+                onStatistics={() => {
+                  if (this.tooltip) this.tooltip.update();
+                }}
+              />
+            </Tooltip>
+          </div>
+        );
+      }
+    }
+
+    const filterBar = [];
+    if (metrics && isFilterBarShown) {
+      const {
+        gridX,
+        gridY,
+        visibleColumns,
+        visibleColumnXs,
+        visibleColumnWidths,
+      } = metrics;
+      const { filterBarHeight } = theme;
+
+      for (let i = 0; i < visibleColumns.length; i += 1) {
+        const columnIndex = visibleColumns[i];
+
+        const columnX = visibleColumnXs.get(columnIndex);
+        const columnWidth = visibleColumnWidths.get(columnIndex);
+        const modelColumn = this.getModelColumn(columnIndex);
+        const isFilterable = model.isFilterable(modelColumn);
+        if (
+          isFilterable &&
+          columnX != null &&
+          columnWidth != null &&
+          columnWidth > 0
+        ) {
+          const x = gridX + columnX + columnWidth - 24;
+          const y = gridY - filterBarHeight + 2; // 2 acts as top margin for the button
+          const style = {
+            position: 'absolute',
+            top: y,
+            left: x,
+          };
+          const advancedFilter = advancedFilters.get(modelColumn);
+          const isFilterSet = advancedFilter != null;
+          const isFilterVisible =
+            columnIndex === hoverAdvancedFilter ||
+            columnIndex === focusedFilterBarColumn ||
+            isFilterSet;
+          const element = (
+            <div
+              className={classNames('advanced-filter-button-container', {
+                hidden: !isFilterVisible,
+              })}
+              key={columnIndex}
+              style={style}
+            >
+              {isFilterVisible && (
+                <button
+                  type="button"
+                  className={classNames(
+                    'btn btn-link btn-link-icon advanced-filter-button',
+                    {
+                      'filter-set': isFilterSet,
+                    }
+                  )}
+                  onClick={() => {
+                    this.setState({ shownAdvancedFilter: columnIndex });
+                  }}
+                  onContextMenu={event => {
+                    this.grid.handleContextMenu(event);
+                  }}
+                  onMouseEnter={() => {
+                    this.setState({ hoverAdvancedFilter: columnIndex });
+                  }}
+                  onMouseLeave={() => {
+                    this.setState({ hoverAdvancedFilter: null });
+                  }}
+                >
+                  <div className="fa-layers">
+                    <FontAwesomeIcon
+                      icon={dhFilterFilled}
+                      className="filter-solid"
+                    />
+                    <FontAwesomeIcon icon={vsFilter} className="filter-light" />
+                  </div>
+                </button>
+              )}
+            </div>
+          );
+          filterBar.push(element);
+        }
+      }
+    }
+    const advancedFilterMenus = [];
+    if (metrics) {
+      const {
+        gridX,
+        visibleColumns,
+        visibleColumnXs,
+        visibleColumnWidths,
+        columnHeaderHeight,
+      } = metrics;
+      for (let i = 0; i < visibleColumns.length; i += 1) {
+        const columnIndex = visibleColumns[i];
+        const columnX = visibleColumnXs.get(columnIndex);
+        const columnWidth = visibleColumnWidths.get(columnIndex);
+        if (columnX != null && columnWidth != null && columnWidth > 0) {
+          const xColumnHeader = gridX + columnX;
+          const xFilterBar = gridX + columnX + columnWidth - 20;
+          const style = isFilterBarShown
+            ? {
+                position: 'absolute',
+                top: columnHeaderHeight,
+                left: xFilterBar,
+                width: 20,
+                height: theme.filterBarHeight,
+              }
+            : {
+                position: 'absolute',
+                top: 0,
+                left: xColumnHeader,
+                width: columnWidth,
+                height: columnHeaderHeight,
+              };
+          const modelColumn = this.getModelColumn(columnIndex);
+          const column = model.columns[modelColumn];
+          const advancedFilter = advancedFilters.get(modelColumn);
+          const { options: advancedFilterOptions } = advancedFilter || {};
+          const sort = TableUtils.getSortForColumn(model.sort, modelColumn);
+          const sortDirection = sort ? sort.direction : null;
+          const element = (
+            <div
+              key={columnIndex}
+              className="advanced-filter-menu-container"
+              style={style}
+            >
+              <Popper
+                className="advanced-filter-menu-popper"
+                onEntered={this.getAdvancedMenuOpenedHandler(columnIndex)}
+                onExited={() => {
+                  this.handleAdvancedMenuClosed(columnIndex);
+                }}
+                isShown={shownAdvancedFilter === columnIndex}
+                interactive
+                closeOnBlur
+              >
+                {this.getCachedAdvancedFilterMenuActions(
+                  model,
+                  column,
+                  advancedFilterOptions,
+                  sortDirection,
+                  formatter
+                )}
+              </Popper>
+            </div>
+          );
+          advancedFilterMenus.push(element);
+        }
+      }
+    }
+
+    const optionItems = this.getCachedOptionItems(
+      model.isChartBuilderAvailable,
+      model.isCustomColumnsAvailable,
+      model.isRollupAvailable,
+      model.isTotalsAvailable,
+      model.isSelectDistinctAvailable,
+      model.isExportAvailable,
+      this.toggleFilterBarAction,
+      this.toggleSearchBarAction,
+      isFilterBarShown,
+      showSearchBar
+    );
+
+    const openOptionsStack = openOptions.map(option => {
+      switch (option.type) {
+        case OptionType.CHART_BUILDER:
+          return (
+            <ChartBuilder
+              model={model}
+              onChange={this.handleChartChange}
+              onSubmit={this.handleChartCreate}
+              key={OptionType.CHART_BUILDER}
+            />
+          );
+        case OptionType.VISIBILITY_ORDERING_BUILDER:
+          return (
+            <VisibilityOrderingBuilder
+              model={model}
+              movedColumns={movedColumns}
+              userColumnWidths={userColumnWidths}
+              onColumnVisibilityChanged={this.handleColumnVisibilityChanged}
+              onMovedColumnsChanged={this.handleMovedColumnsChanged}
+              key={OptionType.VISIBILITY_ORDERING_BUILDER}
+            />
+          );
+        case OptionType.CUSTOM_COLUMN_BUILDER:
+          return (
+            <CustomColumnBuilder
+              model={model}
+              customColumns={customColumns}
+              onSave={this.handleUpdateCustomColumns}
+              onCancel={this.handleMenuBack}
+              key={OptionType.CUSTOM_COLUMN_BUILDER}
+            />
+          );
+        case OptionType.ROLLUP_ROWS:
+          return (
+            <RollupRows
+              metrics={metrics}
+              model={model}
+              onChange={this.handleRollupChange}
+              config={rollupConfig}
+              key={OptionType.ROLLUP_ROWS}
+            />
+          );
+        case OptionType.AGGREGATIONS:
+          return (
+            <Aggregations
+              settings={aggregationSettings}
+              isRollup={isRollup}
+              onChange={this.handleAggregationsChange}
+              onEdit={this.handleAggregationEdit}
+            />
+          );
+        case OptionType.AGGREGATION_EDIT:
+          return (
+            <AggregationEdit
+              aggregation={selectedAggregation}
+              columns={model.originalColumns}
+              onChange={this.handleAggregationChange}
+            />
+          );
+        case OptionType.TABLE_EXPORTER:
+          return (
+            <TableCsvExporter
+              model={model}
+              name={name}
+              isDownloading={isTableDownloading}
+              tableDownloadStatus={tableDownloadStatus}
+              tableDownloadProgress={tableDownloadProgress}
+              tableDownloadEstimatedTime={tableDownloadEstimatedTime}
+              onDownload={this.handleDownloadTable}
+              onDownloadStart={this.handleDownloadTableStart}
+              onCancel={this.handleCancelDownloadTable}
+              selectedRanges={selectedRanges}
+              key={OptionType.TABLE_EXPORTER}
+            />
+          );
+        case OptionType.SELECT_DISTINCT:
+          return (
+            <SelectDistinctBuilder
+              model={model}
+              selectDistinctColumns={selectDistinctColumns}
+              onChange={this.handleSelectDistinctChanged}
+            />
+          );
+        case OptionType.ADVANCED_SETTINGS:
+          return (
+            <AdvancedSettingsMenu
+              items={advancedSettings}
+              onChange={onAdvancedSettingsChange}
+            />
+          );
+
+        default:
+          throw Error('Unexpected option type', option.type);
+      }
+    });
+
+    const hiddenColumns = this.getCachedHiddenColumns(
+      IrisGridUtils.getHiddenColumns(userColumnWidths)
+    );
+
+    return (
+      <div className="iris-grid" role="presentation">
+        <div className="iris-grid-column">
+          {children && <div className="iris-grid-bar">{children}</div>}
+          <CSSTransition
+            in={isSelectingPartition}
+            timeout={ThemeExport.transitionSlowMs}
+            classNames="iris-grid-bar-horizontal"
+            onEnter={this.handleAnimationStart}
+            onEntered={this.handleAnimationEnd}
+            onExit={this.handleAnimationStart}
+            onExited={this.handleAnimationEnd}
+            mountOnEnter
+            unmountOnExit
+          >
+            <div className="iris-grid-partition-selector-wrapper iris-grid-bar iris-grid-bar-primary">
+              {partitionTable && partitionColumn && (
+                <IrisGridPartitionSelector
+                  table={partitionTable}
+                  getFormattedString={(...args) => model.displayString(...args)}
+                  columnName={partitionColumn.name}
+                  partition={partition}
+                  onChange={this.handlePartitionChange}
+                  onFetchAll={this.handlePartitionFetchAll}
+                  onAppend={this.handlePartitionAppend}
+                  onDone={this.handlePartitionDone}
+                />
+              )}
+            </div>
+          </CSSTransition>
+          <CSSTransition
+            in={showSearchBar}
+            timeout={ThemeExport.transitionSlowMs}
+            classNames="iris-grid-bar-horizontal"
+            onEnter={this.handleAnimationStart}
+            onEntered={this.handleAnimationEnd}
+            onExit={this.handleAnimationStart}
+            onExited={this.handleAnimationEnd}
+            mountOnEnter
+            unmountOnExit
+          >
+            <div className="iris-grid-bar">
+              <CrossColumnSearch
+                value={searchValue}
+                selectedColumns={selectedSearchColumns}
+                invertSelection={invertSearchColumns}
+                onChange={this.handleCrossColumnSearch}
+                columns={model.columns}
+                ref={this.crossColumnRef}
+              />
+            </div>
+          </CSSTransition>
+          <div
+            className="grid-wrapper"
+            ref={gridWrapper => {
+              this.gridWrapper = gridWrapper;
+            }}
+          >
+            <Grid
+              ref={grid => {
+                this.grid = grid;
+              }}
+              isStickyBottom
+              metricCalculator={metricCalculator}
+              model={model}
+              keyHandlers={keyHandlers}
+              mouseHandlers={mouseHandlers}
+              movedColumns={movedColumns}
+              movedRows={movedRows}
+              onViewChanged={this.handleViewChanged}
+              onSelectionChanged={this.handleSelectionChanged}
+              onMovedColumnsChanged={this.handleMovedColumnsChanged}
+              renderer={this.renderer}
+              stateOverride={stateOverride}
+              theme={theme}
+            />
+            {isVisible && (
+              <IrisGridModelUpdater
+                model={model}
+                modelColumns={model.columns}
+                top={top}
+                bottom={bottom}
+                left={left}
+                right={right}
+                filter={filter}
+                formatter={formatter}
+                sorts={sorts}
+                reverseType={reverseType}
+                movedColumns={movedColumns}
+                customColumns={customColumns}
+                hiddenColumns={hiddenColumns}
+                alwaysFetchColumns={alwaysFetchColumns}
+                rollupConfig={this.getModelRollupConfig(
+                  model.originalColumns,
+                  rollupConfig,
+                  aggregationSettings
+                )}
+                totalsConfig={this.getModelTotalsConfig(
+                  model.columns,
+                  rollupConfig,
+                  aggregationSettings
+                )}
+                selectDistinctColumns={selectDistinctColumns}
+              />
+            )}
+            <div
+              className={classNames('grid-settings-button', {
+                'is-menu-shown': isMenuShown,
+              })}
+            >
+              <button
+                type="button"
+                className="btn btn-link btn-link-icon"
+                onClick={this.handleMenu}
+              >
+                <FontAwesomeIcon icon={vsMenu} transform="up-1" />
+              </button>
+            </div>
+            {focusField}
+            {loadingElement}
+            {filterBar}
+            {columnTooltip}
+            {advancedFilterMenus}
+          </div>
+          <IrisGridCopyHandler model={model} copyOperation={copyOperation} />
+          <TableSaver
+            ref={tableSaver => {
+              this.tableSaver = tableSaver;
+            }}
+            onDownloadCompleted={this.handleDownloadCompleted}
+            onDownloadCanceled={this.handleDownloadCanceled}
+            onDownloadProgressUpdate={this.handleDownloadProgressUpdate}
+            isDownloading={
+              tableDownloadStatus ===
+              TableCsvExporter.DOWNLOAD_STATUS.DOWNLOADING
+            }
+            formatter={formatter}
+          />
+        </div>
+        <CSSTransition
+          in={isMenuShown}
+          timeout={ThemeExport.transitionMidMs}
+          classNames="slide-left"
+          onEntering={this.handleAnimationStart}
+          onEntered={this.handleAnimationEnd}
+          onExiting={this.handleAnimationStart}
+          onExited={this.handleAnimationEnd}
+          mountOnEnter
+          unmountOnExit
+        >
+          <div className="table-sidebar">
+            <Stack>
+              <Page title="Table Options" onClose={this.handleMenuClose}>
+                <Menu
+                  onSelect={i => this.handleMenuSelect(optionItems[i])}
+                  items={optionItems}
+                />
+              </Page>
+              {openOptionsStack.map((option, i) => (
+                <Page
+                  title={openOptions[i].title}
+                  onBack={this.handleMenuBack}
+                  onClose={this.handleMenuClose}
+                  key={openOptions[i].type}
+                >
+                  {option}
+                </Page>
+              ))}
+            </Stack>
+          </div>
+        </CSSTransition>
+        <ContextActions actions={this.contextActions} />
+      </div>
+    );
+  }
+}
+
+IrisGrid.propTypes = {
+  children: PropTypes.node,
+  advancedFilters: PropTypes.instanceOf(Map),
+  advancedSettings: PropTypes.instanceOf(Map),
+  alwaysFetchColumns: PropTypes.arrayOf(PropTypes.string),
+  isFilterBarShown: PropTypes.bool,
+  applyInputFiltersOnInit: PropTypes.bool,
+  customColumnFormatMap: PropTypes.instanceOf(Map),
+  movedColumns: PropTypes.arrayOf(
+    PropTypes.shape({
+      from: PropTypes.number.isRequired,
+      to: PropTypes.number.isRequired,
+    })
+  ),
+  movedRows: PropTypes.arrayOf(
+    PropTypes.shape({
+      from: PropTypes.number.isRequired,
+      to: PropTypes.number.isRequired,
+    })
+  ),
+  inputFilters: PropTypes.arrayOf(
+    PropTypes.shape({
+      name: PropTypes.string.isRequired,
+      type: PropTypes.string.isRequired,
+      value: PropTypes.string.isRequired,
+    })
+  ),
+  customFilters: PropTypes.arrayOf(PropTypes.shape({})),
+  model: PropTypes.instanceOf(IrisGridModel).isRequired,
+  onCreateChart: PropTypes.func,
+  onColumnSelected: PropTypes.func,
+  onError: PropTypes.func,
+  onDataSelected: PropTypes.func,
+  onStateChange: PropTypes.func,
+  onPartitionAppend: PropTypes.func,
+  onAdvancedSettingsChange: PropTypes.func,
+  partition: PropTypes.string,
+  partitionColumn: IrisPropTypes.Column,
+  sorts: PropTypes.arrayOf(PropTypes.shape({})),
+  reverseType: PropTypes.string,
+  quickFilters: PropTypes.instanceOf(Map),
+  customColumns: PropTypes.arrayOf(PropTypes.string),
+  selectDistinctColumns: PropTypes.arrayOf(PropTypes.string),
+  settings: PropTypes.shape({}).isRequired,
+  userColumnWidths: PropTypes.instanceOf(Map),
+  userRowHeights: PropTypes.instanceOf(Map),
+  onSelectionChanged: PropTypes.func,
+  rollupConfig: PropTypes.shape({
+    columns: PropTypes.arrayOf(PropTypes.string),
+    showConstituents: PropTypes.bool,
+    showNonAggregatedColumns: PropTypes.bool,
+    includeDescriptions: PropTypes.bool,
+  }),
+  aggregationSettings: PropTypes.shape({
+    aggregations: PropTypes.arrayOf(
+      PropTypes.shape({
+        operation: PropTypes.string.isRequired,
+        selected: PropTypes.arrayOf(PropTypes.string).isRequired,
+        invert: PropTypes.bool.isRequired,
+      })
+    ),
+    showOnTop: PropTypes.bool,
+  }),
+
+  isSelectingColumn: PropTypes.bool,
+  isSelectingPartition: PropTypes.bool,
+
+  // eslint-disable-next-line react/no-unused-prop-types
+  columnSelectionValidator: PropTypes.func,
+  columnAllowedCursor: PropTypes.string,
+
+  // eslint-disable-next-line react/no-unused-prop-types
+  columnNotAllowedCursor: PropTypes.string,
+  name: PropTypes.string,
+  onlyFetchVisibleColumns: PropTypes.bool,
+
+  showSearchBar: PropTypes.bool,
+  searchValue: PropTypes.string,
+  selectedSearchColumns: PropTypes.arrayOf(PropTypes.string),
+  invertSearchColumns: PropTypes.bool,
+
+  // eslint-disable-next-line react/no-unused-prop-types
+  onContextMenu: PropTypes.func,
+};
+
+IrisGrid.defaultProps = {
+  children: null,
+  advancedFilters: new Map(),
+  advancedSettings: new Map(),
+  alwaysFetchColumns: [],
+  customColumnFormatMap: new Map(),
+  isFilterBarShown: false,
+  applyInputFiltersOnInit: false,
+  movedColumns: [],
+  movedRows: [],
+  inputFilters: [],
+  customFilters: [],
+  onCreateChart: () => {},
+  onColumnSelected: () => {},
+  onDataSelected: () => {},
+  onError: () => {},
+  onStateChange: () => {},
+  onPartitionAppend: () => {},
+  onAdvancedSettingsChange: () => {},
+  partition: null,
+  partitionColumn: null,
+  quickFilters: new Map(),
+  selectDistinctColumns: [],
+  sorts: [],
+  reverseType: TableUtils.REVERSE_TYPE.NONE,
+  customColumns: [],
+  aggregationSettings: { aggregations: [], showOnTop: false },
+  rollupConfig: null,
+  userColumnWidths: new Map(),
+  userRowHeights: new Map(),
+  onSelectionChanged: () => {},
+  isSelectingColumn: false,
+  isSelectingPartition: false,
+  columnSelectionValidator: null,
+  columnAllowedCursor: null,
+  columnNotAllowedCursor: null,
+  name: 'table',
+  onlyFetchVisibleColumns: true,
+  showSearchBar: false,
+  searchValue: '',
+  selectedSearchColumns: null,
+  invertSearchColumns: true,
+  onContextMenu: () => [],
+};
+
+const mapStateToProps = state => ({
+  settings: getSettings(state),
+});
+
+export default connect(mapStateToProps, null, null, { forwardRef: true })(
+  IrisGrid
+);

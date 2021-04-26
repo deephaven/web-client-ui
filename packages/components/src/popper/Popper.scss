@@ -1,0 +1,141 @@
+@import '../../scss/custom.scss';
+
+$arrow-width: 5px;
+$popper-shadow: 0 0.1rem 1.5rem 0.25rem rgba($black, 0.45);
+$animation-scale: 0.92;
+$animation-offset: 10px;
+
+.popper-container {
+  position: absolute;
+  z-index: 5000;
+}
+
+.popper {
+  background: $tooltip-bg;
+  color: $tooltip-color;
+  border-radius: $border-radius;
+  transition: visibility $transition, opacity $transition;
+  pointer-events: none;
+  outline: 0;
+
+  .popper-content {
+    position: relative;
+    box-shadow: $popper-shadow;
+
+    .tooltip-content {
+      text-align: center;
+      padding: $tooltip-padding-y $tooltip-padding-x;
+    }
+  }
+
+  .popper-arrow {
+    width: 0;
+    height: 0;
+    border-style: solid;
+    position: absolute;
+    margin: $arrow-width;
+    border-color: $tooltip-bg;
+  }
+}
+
+.popper.interactive {
+  pointer-events: auto;
+}
+
+.popper-transition-enter {
+  opacity: 0;
+  transition: none;
+}
+
+.popper-transition-exit {
+  opacity: 0;
+  transition: all $transition;
+}
+
+.popper-container[x-placement^='top'] > .popper-transition-enter,
+.popper-container[x-placement^='top'] > .popper-transition-exit {
+  transform: scale($animation-scale) translate(0, $animation-offset);
+}
+
+.popper-container[x-placement^='right'] > .popper-transition-enter,
+.popper-container[x-placement^='right'] > .popper-transition-exit {
+  transform: scale($animation-scale) translate(-$animation-offset, 0);
+}
+
+.popper-container[x-placement^='bottom'] > .popper-transition-enter,
+.popper-container[x-placement^='bottom'] > .popper-transition-exit {
+  transform: scale($animation-scale) translate(0, -$animation-offset);
+}
+
+.popper-container[x-placement^='left'] > .popper-transition-enter,
+.popper-container[x-placement^='left'] > .popper-transition-exit {
+  transform: scale($animation-scale) translate($animation-offset, 0);
+}
+
+.popper-container[x-placement^='top'] > .popper-transition-enter-active.popper,
+.popper-container[x-placement^='right']
+  > .popper-transition-enter-active.popper,
+.popper-container[x-placement^='bottom']
+  > .popper-transition-enter-active.popper,
+.popper-container[x-placement^='left']
+  > .popper-transition-enter-active.popper {
+  opacity: 1;
+  transform: none;
+  transition: all $transition ease-out;
+}
+
+.popper-container[x-placement^='top'] > .popper {
+  margin-bottom: $arrow-width;
+
+  .popper-arrow {
+    border-width: $arrow-width $arrow-width 0 $arrow-width;
+    border-left-color: transparent;
+    border-right-color: transparent;
+    border-bottom-color: transparent;
+    bottom: -$arrow-width;
+    margin-top: 0;
+    margin-bottom: 0;
+  }
+}
+
+.popper-container[x-placement^='bottom'] > .popper {
+  margin-top: $arrow-width;
+
+  .popper-arrow {
+    border-width: 0 $arrow-width $arrow-width $arrow-width;
+    border-left-color: transparent;
+    border-right-color: transparent;
+    border-top-color: transparent;
+    top: -$arrow-width;
+    margin-top: 0;
+    margin-bottom: 0;
+  }
+}
+
+.popper-container[x-placement^='right'] > .popper {
+  margin-left: $arrow-width;
+
+  .popper-arrow {
+    border-width: $arrow-width $arrow-width $arrow-width 0;
+    border-left-color: transparent;
+    border-top-color: transparent;
+    border-bottom-color: transparent;
+    left: -$arrow-width;
+    margin-left: 0;
+    margin-right: 0;
+  }
+}
+
+.popper-container[x-placement^='left'] > .popper {
+  margin-right: $arrow-width;
+
+  .popper-arrow {
+    border-width: $arrow-width 0 $arrow-width $arrow-width;
+    border-top-color: transparent;
+    border-right-color: transparent;
+    border-bottom-color: transparent;
+    right: -$arrow-width;
+    margin-left: 0;
+    margin-right: 0;
+  }
+}

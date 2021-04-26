@@ -1,0 +1,182 @@
+@import '~@deephaven/components/scss/custom.scss';
+
+$settings-menu-bg: $gray-700;
+$settings-menu-width: 400px;
+$settings-menu-header-min-height: 60px;
+$settings-menu-padding: $spacer-3;
+$settings-menu-header-user-image-size: 40px;
+$settings-menu-header-color: $foreground;
+
+$settings-menu-collapse-trigger-color: $foreground;
+
+$settings-menu-rule-bg: $gray-600;
+$settings-menu-rule-button-color: $gray-300;
+$settings-menu-rule-border: $gray-400;
+$settings-menu-rule-focused-border: $primary;
+
+$focus-over-primary-color: $foreground;
+$input-btn-focus-box-shadow-over-primary: 0 0 0 0.2rem
+  rgba($focus-over-primary-color, 0.35);
+
+$settings-menu-z-index: $zindex-modal;
+
+.app-settings-menu {
+  display: flex;
+  flex-direction: column;
+  background: $settings-menu-bg;
+  box-shadow: $box-shadow;
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: $settings-menu-width;
+  z-index: $settings-menu-z-index;
+
+  .btn-delete-format-rule {
+    font-size: 18px;
+    margin-top: -7px;
+    padding-right: $spacer-2;
+    padding-left: $spacer-2;
+  }
+
+  .format-rule-container {
+    background: $settings-menu-rule-bg;
+    border-left: 2px solid $settings-menu-rule-border;
+    border-radius: $border-radius;
+    padding: 0.5rem;
+    margin-bottom: 0.5rem;
+    &:focus-within {
+      border-color: $settings-menu-rule-focused-border;
+    }
+
+    .custom-select {
+      // force select to shrink in Firefox flexbox
+      min-width: 0;
+    }
+  }
+}
+
+.app-settings-menu-header {
+  display: flex;
+  justify-content: space-between;
+  background: $primary;
+  min-height: $settings-menu-header-min-height;
+  color: $settings-menu-header-color;
+
+  .btn-close-settings-menu {
+    color: $interfacewhite;
+    font-size: 18px;
+    // we want the close button to occupy at least
+    // as much space as the triggering button below
+    line-height: 28px;
+    padding: 2px 12px;
+    align-self: flex-start;
+
+    &:focus {
+      &::after {
+        background: rgba($focus-over-primary-color, $focus-bg-transparency);
+        border: 1px solid $focus-over-primary-color;
+        box-shadow: $input-btn-focus-box-shadow-over-primary;
+      }
+    }
+
+    &:hover {
+      &::after {
+        background: rgba($focus-over-primary-color, $hover-bg-transparency);
+      }
+    }
+
+    &:active {
+      &::after {
+        content: '';
+        background: rgba($focus-over-primary-color, $active-bg-transparency);
+      }
+    }
+  }
+
+  .user-info {
+    display: flex;
+    align-items: center;
+
+    .user-image {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: $settings-menu-header-user-image-size;
+      width: $settings-menu-header-user-image-size;
+      margin: $spacer $spacer-2 $spacer $spacer;
+      background: $gray-400;
+      border-radius: $border-radius;
+    }
+
+    .user-name {
+      padding-top: $spacer-1;
+      padding-left: $spacer-1;
+      font-weight: 600;
+    }
+
+    .operating-as-user {
+      border-radius: $border-radius;
+      background-color: $warning;
+      padding: $spacer-1 $spacer-2;
+      margin-left: $spacer-1;
+    }
+
+    .btn-link {
+      color: $settings-menu-header-color;
+      text-decoration: underline;
+      font-size: smaller;
+      padding: 0 $spacer-1;
+
+      &:focus {
+        background: rgba($focus-over-primary-color, $focus-bg-transparency);
+        border: 1px solid $focus-over-primary-color;
+        box-shadow: $input-btn-focus-box-shadow-over-primary;
+      }
+
+      &:hover {
+        background: rgba($focus-over-primary-color, $hover-bg-transparency);
+      }
+
+      &:active {
+        content: '';
+        background: rgba($focus-over-primary-color, $active-bg-transparency);
+      }
+    }
+  }
+}
+
+.app-settings-menu-content {
+  overflow-y: auto;
+  padding: $settings-menu-padding;
+  .btn-collapse-trigger {
+    display: block;
+    display: flex;
+    text-align: left;
+    margin-top: $spacer-1;
+    margin-bottom: $spacer-1;
+    padding-top: $spacer-2;
+    padding-bottom: $spacer-2;
+    width: 100%;
+    color: $settings-menu-collapse-trigger-color;
+    &:focus,
+    &:hover {
+      text-decoration: none;
+    }
+  }
+}
+
+.app-settings-menu-description {
+  color: $gray-400;
+  font-size: small;
+}
+
+.app-settings-footer {
+  .app-settings-footer-section {
+    padding: $settings-menu-padding 0;
+    border-top: 1px solid $gray-800;
+    .app-settings-footer-item:not(:last-child) {
+      padding-bottom: $settings-menu-padding;
+    }
+  }
+}

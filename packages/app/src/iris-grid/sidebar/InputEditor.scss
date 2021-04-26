@@ -1,0 +1,43 @@
+@import '~@deephaven/components/scss/custom.scss';
+
+$editor-line-height: 19px;
+$editor-padding: 6px;
+
+.input-editor-wrapper {
+  position: relative;
+  border: $input-border-width solid $input-border-color;
+  background: $input-bg;
+  border-radius: $border-radius;
+
+  &.focused {
+    border-color: $input-focus-border-color;
+    box-shadow: $input-btn-focus-box-shadow;
+  }
+
+  &.invalid {
+    border-color: $form-feedback-invalid-color;
+  }
+
+  .editor-container {
+    min-height: $editor-line-height * 3 + $editor-padding * 2;
+
+    .monaco-editor .margin {
+      background-color: $input-bg;
+    }
+
+    .monaco-editor,
+    .monaco-editor-background,
+    .monaco-editor .inputarea.ime-input {
+      background-color: $input-bg;
+    }
+  }
+
+  .editor-placeholder {
+    position: absolute;
+    left: 8px;
+    top: 10px;
+    font-size: 1rem;
+    color: $foreground;
+    user-select: none;
+  }
+}

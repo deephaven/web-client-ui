@@ -1,0 +1,44 @@
+@import '../../scss/custom.scss';
+$menu-bg: $gray-700;
+$arrow-width: 5px;
+$dropdownmenu-max-height: 80vh;
+
+.menu-actions-listener {
+  display: none;
+}
+
+.popper-container[x-placement^='top'] .context-menu-container {
+  margin-bottom: $arrow-width;
+}
+
+.popper-container[x-placement^='right'] .context-menu-container {
+  margin-left: $arrow-width;
+}
+
+.popper-container[x-placement^='bottom'] .context-menu-container {
+  margin-top: $arrow-width;
+}
+
+.popper-container[x-placement^='left'] .context-menu-container {
+  margin-right: $arrow-width;
+}
+
+.menu-popper {
+  padding: 0;
+  .popper-content {
+    .context-menu-container {
+      background-color: $menu-bg;
+      position: relative;
+      box-shadow: none;
+      max-height: $dropdownmenu-max-height;
+      overflow: auto;
+
+      .context-menu-container {
+        position: absolute;
+      }
+    }
+    .popper-arrow {
+      border-color: $menu-bg;
+    }
+  }
+}

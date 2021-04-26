@@ -1,0 +1,10 @@
+@import '~@deephaven/components/scss/custom.scss';
+@import './Chart.scss';
+
+/* stylelint-disable property-no-unknown */
+:export {
+  title-downsampling-in-progress: unquote($title-downsampling-in-progress);
+  title-downsampling-failed: unquote($title-downsampling-failed);
+  title-downsampling-enabled: unquote($title-downsampling-enabled);
+  title-downsampling-disabled: unquote($title-downsampling-disabled);
+}

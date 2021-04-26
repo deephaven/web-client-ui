@@ -1,0 +1,39 @@
+@import '../../scss/custom.scss';
+
+.navigation-page {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  max-height: 100%;
+
+  //reset font back to default, otherwise we get styling intended for table
+  font-family: $font-family-sans-serif;
+  font-size: $font-size-base;
+  font-weight: $font-weight-base;
+  line-height: $line-height-base;
+
+  .navigation-title-bar {
+    display: flex;
+
+    .navigation-title {
+      font-weight: 500;
+      flex-grow: 1;
+      text-align: center;
+      padding-top: 0.6em;
+    }
+
+    .btn-back {
+      font-size: 0.9rem;
+      text-decoration: none;
+      padding: $spacer-1;
+      margin: $spacer-1;
+    }
+  }
+
+  .navigation-content {
+    background-color: transparent;
+    overflow: hidden;
+    flex-grow: 1;
+    position: relative;
+  }
+}

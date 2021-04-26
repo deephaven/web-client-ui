@@ -1,0 +1,94 @@
+import FormatContextMenuUtils from './FormatContextMenuUtils';
+import { DecimalColumnFormatter } from '../formatters';
+
+class DecimalFormatContextMenu {
+  static defaultGroup = 10;
+
+  static presetGroup = 20;
+
+  static presetRoundGroup = 30;
+
+  static customGroup = 40;
+
+  /**
+   * Creates list of formatting options for Decimal context menu
+   * @param {Object} selectedFormat Selected format object, null for no selected format
+   * @param {function} onCustomFormatChange Callback to call when the custom format is changed
+   * @returns {Array} Array of formatting options for the context menu
+   */
+  static getOptions(selectedFormat, onCustomFormatChange) {
+    const formatItems = [
+      {
+        format: DecimalColumnFormatter.FORMAT_PERCENT,
+        group: DecimalFormatContextMenu.presetGroup,
+      },
+      {
+        format: DecimalColumnFormatter.FORMAT_BASIS_POINTS,
+        group: DecimalFormatContextMenu.presetGroup,
+      },
+      {
+        format: DecimalColumnFormatter.FORMAT_MILLIONS,
+        group: DecimalFormatContextMenu.presetGroup,
+      },
+      {
+        format: DecimalColumnFormatter.FORMAT_ROUND,
+        group: DecimalFormatContextMenu.presetRoundGroup,
+      },
+      {
+        format: DecimalColumnFormatter.FORMAT_ROUND_TWO_DECIMALS,
+        group: DecimalFormatContextMenu.presetRoundGroup,
+      },
+      {
+        format: DecimalColumnFormatter.FORMAT_ROUND_FOUR_DECIMALS,
+        group: DecimalFormatContextMenu.presetRoundGroup,
+      },
+    ];
+
+    const defaultFormatOption = FormatContextMenuUtils.makeOption(
+      'Default',
+      null,
+      DecimalFormatContextMenu.defaultGroup,
+      FormatContextMenuUtils.isDefaultSelected(selectedFormat)
+    );
+
+    const presetFormatOptions = formatItems.map(item =>
+      FormatContextMenuUtils.makeOption(
+        item.format.label,
+        item.format,
+        item.group,
+        DecimalColumnFormatter.isSameFormat(item.format, selectedFormat)
+      )
+    );
+
+    const isCustomSelected = FormatContextMenuUtils.isCustomSelected(
+      selectedFormat
+    );
+
+    const customFormat = isCustomSelected
+      ? selectedFormat
+      : DecimalColumnFormatter.makeCustomFormat();
+
+    const customFormatOption = FormatContextMenuUtils.makeCustomFormatOption(
+      customFormat,
+      DecimalFormatContextMenu.customGroup,
+      DecimalColumnFormatter.DEFAULT_FORMAT_STRING,
+      isCustomSelected,
+      formatString => {
+        if (formatString) {
+          const newCustomFormat = DecimalColumnFormatter.makeCustomFormat(
+            formatString
+          );
+          if (DecimalColumnFormatter.isValid(newCustomFormat)) {
+            onCustomFormatChange(newCustomFormat);
+          }
+        } else {
+          onCustomFormatChange(null);
+        }
+      }
+    );
+
+    return [defaultFormatOption, ...presetFormatOptions, customFormatOption];
+  }
+}
+
+export default DecimalFormatContextMenu;

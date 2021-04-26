@@ -1,0 +1,831 @@
+//Import our custom variables and bootstrap
+@import '~@deephaven/components/scss/custom.scss';
+@import '~bootstrap/scss/bootstrap';
+
+//Various non-variable css overides
+//Overide default size from 16px to 14px. We need density.
+html {
+  font-size: 14px;
+  min-height: 100%;
+}
+
+// deephaven-icons are designed on a 16px grid
+// and look best at that size. Default icon size back to 16px
+// vertical alignment changed to best match icon set against 14px text
+.svg-inline--fa {
+  font-size: 16px;
+  vertical-align: -3px;
+}
+
+body {
+  min-height: 100%;
+  background-color: $background;
+  color: $foreground;
+  margin: 0;
+  padding: 0;
+  overscroll-behavior: none;
+  -ms-scroll-chaining: none;
+  scrollbar-color: rgba($white, 0.1) rgba($black, 0.1); //applies to firefox only
+}
+
+#root {
+  background-color: $background;
+
+  .app {
+    height: 100vh;
+    width: 100vw;
+  }
+}
+
+#preload-fonts {
+  // Need to preload any monaco and Deephaven grid fonts.
+  // We hide text with all the fonts we need on the root app.jsx page
+  // Load the Fira Mono font so that Monaco calculates word wrapping properly.
+  // This element doesn't need to be visible, just load the font and stay hidden.
+  // https://github.com/microsoft/vscode/issues/88689
+  // Can be replaced with a rel="preload" when firefox adds support
+  // https://developer.mozilla.org/en-US/docs/Web/HTML/Preloading_content
+  visibility: hidden;
+  position: absolute;
+  top: -10000px;
+}
+
+/** Convenience **/
+
+.fill-parent-absolute {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+hr {
+  background-color: $gray-400;
+}
+
+.scroll-pane,
+.scroll-pane-x,
+.scroll-pane-y {
+  height: 100%;
+  width: 100%;
+  overflow: auto;
+}
+
+.no-scroll-x {
+  overflow-x: hidden;
+}
+
+.no-scroll-y {
+  overflow-y: hidden;
+}
+
+.drag-pointer-events-none {
+  pointer-events: none;
+  cursor: grabbing;
+}
+
+a.btn-link,
+a.btn-link-icon,
+a.custom-link,
+.markdown-editor-container a {
+  outline: 0;
+  position: relative;
+
+  &:focus {
+    &::after {
+      content: '';
+      box-sizing: content-box;
+      position: absolute;
+      background: rgba($primary, $focus-bg-transparency);
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border-radius: $border-radius;
+      border: 1px solid $primary;
+      box-shadow: $input-btn-focus-box-shadow;
+    }
+  }
+}
+
+/********** BUTTONS *********/
+
+button:focus {
+  outline: 0; // it's fine, we've set our own focus states.
+}
+
+//Make btns a minumum size
+.btn {
+  min-width: 7rem;
+}
+
+.btn-link {
+  min-width: unset;
+  padding: $spacer-1;
+
+  svg {
+    margin-right: $spacer-1;
+  }
+
+  &:not(.btn-link-icon) {
+    border: $input-border-width solid transparent;
+    border-radius: $border-radius;
+
+    &:focus {
+      background: rgba($primary, $focus-bg-transparency);
+      border: $input-border-width solid $primary;
+      box-shadow: $input-btn-focus-box-shadow;
+    }
+
+    &:hover {
+      background: rgba($primary, $hover-bg-transparency);
+    }
+
+    &:active {
+      content: '';
+      background: rgba($primary, $active-bg-transparency);
+    }
+  }
+}
+
+// can be set on other btn-modifiers, be more specific to override
+.btn.btn-cancelable:hover {
+  background-color: $danger;
+  border-color: $danger;
+
+  &:focus {
+    box-shadow: 0 0 0 $btn-focus-width
+      rgba(mix(color-yiq($background), $danger, 15%), 0.5);
+  }
+
+  &:not(:disabled):not(.disabled):active {
+    background: darken($danger, 10%);
+    border-color: darken($danger, 10%);
+    box-shadow: 0 0 0 $btn-focus-width
+      rgba(mix(color-yiq($background), $danger, 15%), 0.5);
+  }
+}
+
+.btn .btn-hover-content,
+.btn:hover .btn-normal-content {
+  display: none;
+}
+
+.btn:hover .btn-hover-content {
+  display: inline-block;
+}
+
+.btn-spinner {
+  padding: $btn-padding-y 1rem;
+  .fa-layers {
+    margin-right: 0.5rem;
+  }
+}
+
+.btn-link.no-underline,
+.btn-link.no-underline:hover {
+  text-decoration: none;
+}
+
+.btn-small {
+  min-width: 0;
+  padding: 4px;
+}
+
+.btn-link-icon {
+  position: relative;
+  border: 0;
+  padding-left: $spacer-1;
+  padding-right: $spacer-1;
+
+  svg {
+    margin-right: 0;
+  }
+
+  &::after {
+    content: '';
+    box-sizing: border-box;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border: $input-border-width solid transparent;
+    border-radius: $border-radius;
+    height: 100%;
+    padding-left: calc(100% - #{$input-border-width} * 2);
+    // padding used in place of width, still need to account for border width
+    transition: $btn-transition;
+  }
+
+  &:focus {
+    outline: none;
+    text-decoration: none;
+    &::after {
+      background: rgba($primary, $focus-bg-transparency);
+      border: $input-border-width solid $primary;
+      box-shadow: $input-btn-focus-box-shadow;
+    }
+  }
+
+  &:hover {
+    &::after {
+      background: rgba($primary, $hover-bg-transparency);
+    }
+  }
+
+  &:active {
+    &::after {
+      content: '';
+      background: rgba($primary, $active-bg-transparency);
+    }
+  }
+}
+
+.btn-icon {
+  text-align: center;
+  padding: 0;
+  min-width: 0;
+  font-size: small;
+  text-overflow: ellipsis;
+  border-radius: 0;
+
+  svg,
+  img {
+    display: block;
+    background: $gray-500;
+    margin: auto;
+    border-radius: 2px;
+    margin-bottom: 2px;
+    filter: saturate(0%);
+    transition: filter 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    pointer-events: none;
+  }
+
+  &:hover,
+  &:focus,
+  &.active {
+    svg,
+    img {
+      box-shadow: 0 0 0 2px $input-border-color;
+      filter: saturate(100%);
+    }
+  }
+
+  &:focus,
+  &.active {
+    outline: none;
+    box-shadow: none;
+    color: $primary;
+
+    svg,
+    img {
+      box-shadow: 0 0 0 2px $input-focus-border-color;
+    }
+  }
+}
+
+.btn-inline {
+  min-width: 2.75rem;
+  padding-left: $spacer-1;
+  padding-right: $spacer-1;
+  border-radius: $border-radius;
+  background: $gray-600;
+  border: 1px solid $input-border-color;
+  color: $gray-300;
+
+  &.active {
+    border-color: $primary;
+    background: $primary;
+    color: $gray-100;
+
+    &:focus {
+      border: 1px solid $input-focus-border-color;
+    }
+
+    &:not(:disabled):not(.disabled):hover {
+      background: $primary;
+    }
+  }
+
+  &.disabled,
+  &:disabled {
+    border: 1px solid $black;
+    color: $gray-300;
+    cursor: not-allowed;
+  }
+
+  &:focus {
+    border: 1px solid $input-focus-border-color;
+  }
+
+  &:not(:disabled):not(.disabled):hover {
+    background-color: $gray-500;
+    color: $gray-200;
+  }
+
+  &:not(:disabled):not(.disabled):active {
+    background: $gray-700;
+  }
+}
+
+.btn-secondary:hover {
+  // steal primary hover state to look more hovered, less disabled
+  background-color: $primary-hover;
+  border-color: $primary-hover;
+}
+
+.btn-secondary.disabled,
+.btn-secondary:disabled {
+  // look more disabled
+  background-color: $secondary;
+  border-color: $secondary;
+  opacity: 0.35;
+}
+
+.btn-group {
+  /* stylelint-disable-next-line no-descending-specificity -- keep btn-group together */
+  > .btn-inline:not(:first-child) {
+    margin-left: -1px;
+  }
+
+  > .btn-ghost:not(:first-child) {
+    margin-left: 0;
+  }
+
+  > .btn:not(:first-child):not(:hover):not(:focus) {
+    &.btn-primary {
+      border-left: $btn-border-width solid $primary-hover;
+    }
+    &.btn-secondary {
+      border-left: $btn-border-width solid $gray-600;
+    }
+    &.btn-danger {
+      border-left: $btn-border-width solid $danger-hover;
+    }
+  }
+}
+
+/********** TABLES *********/
+
+//Tabular numbers apply to tables only
+table,
+.table {
+  font-feature-settings: 'tnum';
+}
+
+/********** FORMS *********/
+
+form label {
+  color: $gray-200;
+}
+
+form label small {
+  color: $gray-400;
+}
+
+.form-control.focus {
+  border: 1px solid $primary;
+}
+.form-control.btn:focus {
+  box-shadow: $input-btn-focus-box-shadow;
+}
+
+.form-control:disabled {
+  border-color: $black;
+  color: darken($gray-400, 5%);
+  cursor: not-allowed;
+}
+
+.form-control:disabled::placeholder {
+  color: darken($gray-400, 5%);
+}
+
+.form-control[type='password'] {
+  letter-spacing: 0.2rem;
+}
+
+//Select, Checkboxes and Radios
+.custom-control-label {
+  user-select: none; //checkboxs are label pseudo elements, clicking can toggle text selection otherwise
+}
+
+.custom-control-label::before {
+  border: 1px solid $gray-400;
+  top: 0.24rem;
+}
+
+.custom-control-label::after {
+  top: 0.24rem;
+}
+
+.custom-control-input:active ~ .custom-control-label::before {
+  background-color: $primary-dark;
+}
+
+.custom-control-input:focus ~ .custom-control-label::before {
+  box-shadow: $input-btn-focus-box-shadow;
+  border-color: $input-focus-border-color;
+}
+
+.custom-control-input:disabled ~ .custom-control-label::before {
+  background-color: $gray-500;
+  border: 1px solid $black;
+  cursor: not-allowed;
+}
+
+.custom-checkbox .custom-control-input:checked ~ .custom-control-label::before {
+  border: 1px solid $primary;
+}
+
+.custom-checkbox
+  .custom-control-input:disabled
+  ~ .custom-control-label::before {
+  border-color: $black;
+  cursor: not-allowed;
+}
+
+.custom-select:disabled {
+  border-color: $black;
+  cursor: not-allowed;
+}
+
+input[type='number'] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+input[type='number']::-webkit-outer-spin-button,
+input[type='number']::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  appearance: none;
+  margin: 0;
+}
+
+//Dropdowns on text inputs
+/* stylelint-disable no-descending-specificity -- keep with input section */
+.input-group-append .btn {
+  background-color: $input-bg;
+  padding: $btn-padding-y 0.5rem;
+}
+
+.input-group > .input-group-append > .btn {
+  min-width: auto;
+  border-top-right-radius: $border-radius;
+  border-bottom-right-radius: $border-radius;
+}
+
+.input-group > .input-group-append.cb-dropdown > .btn {
+  color: $gray-400;
+  border: 1px solid $gray-400;
+  &:hover {
+    color: $white;
+  }
+  &:focus {
+    border-color: $input-focus-border-color;
+  }
+  &:disabled {
+    border-color: $black;
+    cursor: not-allowed;
+  }
+}
+/* stylelint-enable no-descending-specificity */
+
+//Hide the default dropdown caret, in favor of implicitly adding our own via svg and fontawesome
+.input-group-append .dropdown-toggle::after {
+  display: none;
+}
+
+//Add extra
+.search-group.console-menu {
+  padding: $spacer-1;
+
+  .search-icon {
+    right: $spacer-3;
+  }
+}
+
+/********** Modal Styling *********/
+.modal-dialog.theme-bg-light {
+  .modal-content {
+    //This isn't a variable wtf bootstrap
+    color: $black;
+    background: $gray-100;
+  }
+
+  .form-control {
+    background: $gray-200;
+    color: $black;
+  }
+
+  .custom-checkbox {
+    .custom-control-label::before {
+      background-color: $gray-100;
+    }
+
+    .custom-control-input:checked ~ .custom-control-label::before {
+      background-color: $primary;
+    }
+
+    .custom-control-input:active ~ .custom-control-label::before {
+      background-color: $primary-light;
+      border-color: $primary;
+    }
+    .custom-control-input:disabled ~ .custom-control-label::before {
+      border-color: $black;
+      background-color: $gray-300;
+      cursor: not-allowed;
+    }
+  }
+
+  .custom-select {
+    background-color: $gray-200;
+    color: $black;
+  }
+
+  .modal-header {
+    border-bottom-color: transparent;
+    .close {
+      outline: 0;
+    }
+  }
+
+  .modal-footer {
+    border-top-color: transparent;
+  }
+
+  .btn-link {
+    color: $gray-700;
+    &:hover {
+      color: $black;
+    }
+  }
+
+  .btn-outline-secondary {
+    color: $gray-300;
+    background-color: transparent;
+    background-image: none;
+    border-color: $gray-300;
+    &:focus,
+    &.focus {
+      box-shadow: 0 0 0 0.2rem rgba(91, 90, 92, 0.2);
+    }
+  }
+}
+
+.modal-dialog.theme-bg-dark {
+  .modal-title {
+    color: $interfacewhite;
+  }
+  .modal-header {
+    .close {
+      color: $interfacewhite;
+      text-shadow: 0 1px 0 $interfaceblack;
+    }
+  }
+  .modal-content {
+    background: $interfacegray;
+  }
+}
+
+/********** Browser Default Overides *********/
+::selection {
+  //blink/webkit
+  color: $foreground;
+  background: rgba($text-select-color, 0.99);
+  opacity: 1;
+}
+
+::-moz-selection {
+  //moz
+  color: $foreground;
+  background: rgba($text-select-color, 0.99);
+  opacity: 1;
+}
+
+.masked-input::selection {
+  //blink/webkit
+  background: rgba($primary, 0.7);
+  opacity: 1;
+}
+
+.masked-input::-moz-selection {
+  //moz
+  background: rgba($primary, 0.7);
+  opacity: 1;
+}
+
+// Scroll Bar styling for webkit and firefox.
+::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+  background-color: rgba($black, 0.1);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-corner {
+  background-color: rgba($white, 0.1);
+}
+
+::-webkit-scrollbar-track {
+  border-radius: 10px;
+  background-color: rgba($black, 0.1);
+}
+
+::-webkit-scrollbar-thumb {
+  border-radius: 10px;
+  background-color: rgba($white, 0.3);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  border-radius: 10px;
+  background-color: rgba($white, 0.6);
+}
+
+/********** Monaco Overides *********/
+//Note many monaco style are set inline, making overrides require !important
+
+// fixes IDS-7262 where 'hidden' aria-container impacts firefox layout, remove if resolved
+// https://github.com/microsoft/monaco-editor/issues/2168
+.monaco-aria-container {
+  display: none;
+}
+
+//hide the "Loading..." and "No suggestions" message in the suggest widget in monaco to make it feel faster
+.monaco-editor {
+  .editor-widget.suggest-widget {
+    .message {
+      display: none;
+    }
+  }
+
+  .find-widget {
+    &.visible {
+      // For some reason the height of this is set improperly in 0.18.1
+      min-height: 34px;
+      textarea.input {
+        min-height: 23px;
+      }
+    }
+
+    .button {
+      box-sizing: border-box;
+      border: 1px solid transparent;
+    }
+
+    :focus:not(.input) {
+      outline: 0;
+      border: 1px solid $input-focus-border-color !important;
+      box-shadow: $input-btn-focus-box-shadow;
+    }
+
+    .monaco-checkbox:focus {
+      border: none !important;
+      box-shadow: $input-btn-focus-box-shadow,
+        0 0 0 1px $input-focus-border-color; //can't use regular border due to position of checkbox
+    }
+  }
+
+  .monaco-inputbox {
+    border-radius: $border-radius;
+
+    &.synthetic-focus {
+      border: 1px solid $input-focus-border-color !important;
+      outline: 0 !important;
+    }
+
+    .input {
+      outline: 0 !important;
+    }
+  }
+}
+
+/********** Browser Hacks *********/
+
+//Moz specific hacks
+@-moz-document url-prefix() {
+  //Selection box in mozilla loses default styling on options list if you apply a background color other then #FFF or inheirt...
+  //Hack: turn the background to inheirt, then apply a background gradient that is inputbg color to inputbg color
+  //for crossbrowser consistency this gradient is stacked bellow the svg used to get a caret (indicator) looking the same
+  .custom-select {
+    background-color: inherit !important;
+    color: $interfacewhite;
+    background-image: escape-svg($custom-select-indicator),
+      linear-gradient(0deg, $input-bg, $input-bg);
+    background-size: $custom-select-bg-size, cover;
+    background-repeat: no-repeat;
+    background-position: bottom 50% right $custom-select-padding-x, center;
+    //make the dotted duplicate focus line on firefox go away
+    &:-moz-focusring {
+      color: rgba(0, 0, 0, 0);
+      text-shadow: 0 0 0 $white !important;
+    }
+  }
+
+  .console-creator .custom-select {
+    background-image: escape-svg($custom-select-indicator),
+      linear-gradient(0deg, $gray-700, $gray-700);
+    &:-moz-focusring {
+      color: rgba(0, 0, 0, 0);
+      text-shadow: 0 0 0 $white !important;
+    }
+  }
+
+  .modal-dialog.theme-bg-light .custom-select {
+    background-image: escape-svg($custom-select-indicator),
+      linear-gradient(0deg, $gray-200, $gray-200);
+    &:-moz-focusring {
+      color: rgba(0, 0, 0, 0);
+      text-shadow: 0 0 0 $black !important;
+    }
+  }
+
+  .custom-select option {
+    color: #3a4148;
+  }
+}
+
+/** Generic Animations **/
+.fade-enter {
+  opacity: 0.01;
+}
+
+.fade-enter-active {
+  opacity: 1;
+  transition: opacity $transition ease-out;
+}
+
+.fade-exit {
+  opacity: 1;
+}
+
+.fade-exit-active {
+  opacity: 0.01;
+  transition: opacity $transition ease-out;
+}
+
+.slide-left-enter {
+  transform: translate3d(100%, 0, 0);
+}
+
+.slide-left-enter-active {
+  transform: none;
+  transition: transform $transition-mid ease-out;
+}
+
+.slide-left-exit {
+  transform: none;
+}
+
+.slide-left-exit-active {
+  transform: translate3d(100%, 0, 0);
+  transition: transform $transition-mid ease-out;
+}
+
+.slide-right-enter {
+  transform: translate3d(-100%, 0, 0);
+}
+
+.slide-right-enter-active {
+  transform: none;
+  transition: transform $transition-mid ease-out;
+}
+
+.slide-right-exit {
+  transform: none;
+}
+
+.slide-right-exit-active {
+  transform: translate3d(-100%, 0, 0);
+  transition: transform $transition-mid ease-out;
+}
+
+/// used by marching ants animation
+@keyframes march {
+  from {
+    background-position: 0 top, 0 bottom, left 0, right 0;
+  }
+
+  to {
+    background-position: $ant-size top, $ant-size bottom, left $ant-size,
+      right $ant-size;
+  }
+}
+
+/** Preload some fonts for grid metric calculations, loaded in App.jsx */
+/* stylelint-disable */
+.fira-sans-regular {
+  font-family: 'Fira Sans';
+  font-weight: 400;
+}
+
+.fira-sans-semibold {
+  font-family: 'Fira Sans';
+  font-weight: 600;
+}
+
+.fira-mono {
+  font-family: 'Fira Mono';
+  font-weight: 400;
+}
+/* stylelint-enable */

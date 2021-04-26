@@ -1,0 +1,42 @@
+/* stylelint-disable */
+@import '../scss/custom.scss';
+
+:export {
+  gray-100: $gray-100;
+  gray-200: $gray-200;
+  gray-300: $gray-300;
+  gray-400: $gray-400;
+  gray-500: $gray-500;
+  gray-600: $gray-600;
+  gray-700: $gray-700;
+  gray-800: $gray-800;
+  gray-850: $gray-850;
+  gray-900: $gray-900;
+  black: $black;
+  white: $white;
+  yellow: $yellow;
+  green: $green;
+  blue: $blue;
+  purple: $purple;
+  orange: $orange;
+  red: $red;
+  primary: $primary;
+  primary-hover: $primary-hover;
+  primary-dark: $primary-dark;
+  secondary: $secondary;
+  success: $success;
+  info: $info;
+  warning: $warning;
+  danger: $danger;
+  light: $light;
+  mid: $mid;
+  dark: $dark;
+  text-muted: $text-muted;
+  interfacewhite: $interfacewhite;
+  interfaceblack: $interfaceblack;
+  interfacegray: $interfacegray;
+  content-bg: $content-bg;
+  background: $background;
+  foreground: $foreground;
+  transition: $transition;
+}

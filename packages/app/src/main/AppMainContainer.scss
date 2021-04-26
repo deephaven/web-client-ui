@@ -1,0 +1,346 @@
+@import '~@deephaven/components/scss/custom.scss';
+
+$tab-height: 32px;
+$tab-drag-border-width: 1px;
+$tab-font-size: 1rem;
+$tab-link-max-width: 200px;
+
+$tab-link-side-padding: 24px;
+$tab-link-underline-spacing: 6px;
+
+$tab-close-right: 0.25rem;
+$tab-close-bottom: 6px;
+$tab-close-padding-x: 1px;
+$tab-close-padding-y: 2px;
+$tab-close-color: $gray-500;
+$tab-close-hover-color: $gray-200;
+
+$tab-button-side-padding: 9px;
+$tab-button-separator-height: 16px;
+
+$tab-link-color: $gray-400;
+
+$tab-link-hover-color: $gray-300;
+$tab-link-hover-underline-color: $gray-400;
+
+$tab-link-active-color: $gray-200;
+$tab-link-active-underline-color: $primary;
+
+$tab-link-active-hover-color: $gray-200;
+$tab-link-active-hover-underline-color: $primary;
+
+$tab-link-disabled-color: $gray-600;
+
+$tab-button-hover-color: $gray-200;
+$tab-button-separator-color: $gray-600;
+
+$tab-dragging-bg-color: $primary-dark;
+$tab-dragging-ant-color: $gray-300;
+
+$tab-control-btn-width: 25px;
+$tab-control-btn-offset: -8px;
+$tab-control-gradient-width: 12px;
+
+$nav-space: 4px; // give a gap around some buttons for focus area that are in nav bar
+
+$panels-menu-list-color: $gray-200;
+$panels-menu-list-hover-color: $foreground;
+$panels-menu-list-background-hover-color: $primary;
+
+$panels-menu-list-owner-color: $gray-400;
+$panels-menu-list-owner-hover-color: $gray-200;
+
+@mixin underlined-nav-link($pseudo-element, $underline-color) {
+  &::#{$pseudo-element} {
+    content: '';
+    position: absolute;
+    height: 1px;
+    left: $tab-link-side-padding;
+    right: $tab-link-side-padding;
+    bottom: $tab-link-underline-spacing;
+    background: $underline-color;
+    transition: all $transition-mid ease-out;
+    @content;
+  }
+}
+
+.nav-container {
+  display: flex;
+  flex-shrink: 0;
+
+  .nav-tabs {
+    border: none;
+    height: $tab-height;
+    font-size: $tab-font-size;
+    flex-wrap: nowrap;
+    overflow-x: hidden;
+    position: relative;
+
+    &.dragging {
+      @include ants-base($tab-dragging-ant-color, $background);
+    }
+
+    .btn-nav-tab {
+      color: $tab-link-color;
+      border: $tab-drag-border-width solid transparent;
+      line-height: $tab-height - $tab-drag-border-width * 2; // subtract top and bottom borders, and focus border
+      width: auto;
+      max-width: $tab-link-max-width;
+      overflow: hidden;
+      padding: 0 $tab-link-side-padding;
+      position: relative;
+      text-overflow: ellipsis;
+      user-select: none;
+      white-space: nowrap;
+      flex-shrink: 0;
+      background: none;
+      background-clip: padding-box;
+
+      .btn-nav-tab-close {
+        position: absolute;
+        line-height: $tab-font-size;
+        right: $tab-close-right;
+        bottom: $tab-close-bottom;
+        padding: $tab-close-padding-y $tab-close-padding-x;
+        color: $tab-close-color;
+        opacity: 0;
+        transition: opacity $transition ease-out;
+
+        &:hover {
+          color: $tab-button-hover-color;
+        }
+
+        &:focus {
+          opacity: 1;
+          color: $tab-button-hover-color;
+        }
+      }
+
+      //hover line is drawn as a before element
+      @include underlined-nav-link(before, transparent) {
+        transform: translateY($tab-link-underline-spacing);
+      }
+
+      //active is drawn animated overtop as after element
+      @include underlined-nav-link(after, $tab-link-active-underline-color) {
+        transform: scaleX(0);
+      }
+
+      &:focus {
+        // these seem like something that shouldn't have a regular focus state
+        box-shadow: none;
+        border-color: transparent;
+        &::before {
+          box-shadow: 0 1px 0 1px $input-btn-focus-color;
+        }
+      }
+
+      &:hover,
+      &:focus {
+        color: $tab-link-hover-color;
+        text-decoration: none;
+
+        .btn-nav-tab-close {
+          opacity: 1;
+        }
+
+        &::before {
+          background: $tab-link-hover-underline-color;
+          transform: translateY(0);
+        }
+      }
+
+      &.active {
+        color: $tab-link-active-color;
+
+        .btn-nav-tab-close {
+          opacity: 1;
+        }
+
+        &::after {
+          background: $tab-link-active-underline-color;
+          transform: scaleX(1);
+        }
+        &::before {
+          transform: translateY(0);
+        }
+      }
+
+      &.dragging {
+        color: $tab-link-active-color;
+        background-color: $tab-dragging-bg-color;
+
+        .btn-nav-tab-close {
+          opacity: 0;
+        }
+
+        &::before {
+          box-shadow: none;
+        }
+
+        &::after {
+          background: $tab-dragging-bg-color;
+        }
+      }
+    }
+  }
+
+  .tab-controls-backward {
+    flex-shrink: 0;
+    background-image: linear-gradient(
+      270deg,
+      rgba($background, 0) 0%,
+      $background $tab-control-gradient-width
+    );
+    background-clip: content-box;
+    height: auto;
+    width: $tab-control-btn-width;
+    padding: 0;
+    margin-right: $tab-control-btn-offset;
+    border-radius: $border-radius;
+    border: 0;
+    min-width: unset;
+    z-index: 2;
+  }
+
+  .tab-controls-forward {
+    background-image: linear-gradient(
+      90deg,
+      rgba($background, 0) 0%,
+      $background $tab-control-gradient-width
+    );
+    background-clip: content-box;
+    height: 100%;
+    border-radius: $border-radius;
+    width: $tab-control-btn-width;
+    padding: 0;
+    margin-left: $tab-control-btn-offset;
+  }
+
+  .tab-controls {
+    margin-right: auto;
+    white-space: nowrap;
+    z-index: 2;
+
+    .btn {
+      min-width: unset;
+      height: $tab-height;
+    }
+
+    .btn-new-tab {
+      min-width: auto;
+      padding: 0 $tab-button-side-padding;
+      position: relative;
+      white-space: nowrap;
+      height: $tab-height - $nav-space;
+      line-height: $tab-height - $nav-space - $input-border-width * 2;
+      margin: $nav-space/2 0 $nav-space/2 $tab-button-side-padding;
+
+      &::before {
+        content: '';
+        position: absolute;
+        left: -$tab-button-side-padding;
+        width: 1px;
+        top: ($tab-height - $tab-button-separator-height)/2 - $nav-space/2 -
+          $input-border-width;
+        height: $tab-button-separator-height;
+        background: $tab-button-separator-color;
+      }
+      &:hover,
+      &:focus {
+        color: $tab-button-hover-color;
+        text-decoration: none;
+      }
+    }
+  }
+}
+
+.app-main-top-nav-menus {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+
+  .btn-link {
+    font-size: $tab-font-size;
+    text-decoration: none;
+    height: $tab-height - $nav-space;
+    line-height: $tab-height - $nav-space;
+    padding: 0 $tab-button-side-padding;
+    cursor: pointer;
+    margin: $nav-space/2 0 $nav-space/2 0;
+
+    &.btn-settings-menu {
+      margin-right: $input-border-width;
+    }
+
+    &[disabled] {
+      color: $tab-link-disabled-color;
+    }
+  }
+}
+
+.tab-content {
+  height: calc(100% - #{$tab-height});
+}
+
+.tab-pane {
+  width: 100%;
+}
+
+.panels-menu-container {
+  height: 25.6rem;
+  padding: 0 0.5rem;
+  text-align: left;
+  width: 23rem;
+
+  &:focus {
+    outline: none;
+  }
+
+  .panels-menu-query-list,
+  .panels-menu-table-list {
+    margin: 0.5rem -0.5rem 0;
+    padding: 0;
+    text-align: left;
+    overflow: auto;
+    li {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .btn {
+      border: none;
+      border-radius: 0;
+      display: block;
+      text-align: left;
+      margin: 0;
+      padding: 0.35rem 0.5rem;
+      width: 100%;
+      color: $panels-menu-list-color;
+      .query-owner {
+        color: $panels-menu-list-owner-color;
+      }
+      .query-arrow-icon {
+        color: $panels-menu-list-owner-color;
+      }
+      &:hover,
+      &:focus {
+        color: $panels-menu-list-hover-color;
+        background-color: $panels-menu-list-background-hover-color;
+        text-decoration: none;
+        .query-owner {
+          color: $panels-menu-list-owner-hover-color;
+        }
+        .query-arrow-icon {
+          color: $panels-menu-list-owner-hover-color;
+        }
+      }
+    }
+  }
+}
+
+.app-main-tabs {
+  &:focus {
+    outline: none;
+  }
+}

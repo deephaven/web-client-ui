@@ -1,0 +1,102 @@
+@import '~@deephaven/components/scss/custom.scss';
+
+$chart-bg: $interfacegray;
+$plotly-notifier-margin-right: 15px;
+$plotly-notifier-note-bg: $gray-600;
+$plotly-notifier-note-border-radius: 2px;
+$plotly-color-btn-active: rgba(255, 255, 255, 0.7);
+$title-downsampling-in-progress: 'Downsampling in progress...';
+$title-downsampling-failed: 'Downsampling failed';
+$title-downsampling-enabled: 'Downsampling enabled, click to disable';
+$title-downsampling-disabled: 'Downsampling disabled, click to enable';
+
+.plotly-notifier {
+  margin-right: $plotly-notifier-margin-right;
+}
+
+.plotly-notifier .notifier-note {
+  // Mark these properties as !important because plotly css can be loaded in a different order in production
+  // See comments on IDS-4808
+  // https://illumon.aha.io/comments/6737799632463662636
+  border: 0 !important;
+  border-radius: $plotly-notifier-note-border-radius !important;
+  background: $plotly-notifier-note-bg !important;
+}
+
+.chart-wrapper {
+  background: $chart-bg;
+
+  .plot-container {
+    .cartesianlayer text {
+      user-select: none;
+    }
+
+    .hovertext path,
+    .axistext path {
+      stroke: none !important;
+    }
+
+    .axistext path {
+      fill: $gray-600 !important;
+      box-shadow: 4px 4px $black;
+    }
+
+    .zoomlayer .zoombox {
+      fill: rgba(0, 0, 0, 0.5) !important;
+    }
+
+    .zoomlayer .zoombox-corners {
+      fill: $white;
+      stroke: $gray-900;
+    }
+  }
+
+  // Tooltip arrow
+  .js-plotly-plot .plotly [data-title]::before {
+    border-color: transparent transparent $tooltip-bg;
+
+    // Make the arrow appear above the box shadow of the body
+    z-index: 1002;
+  }
+  // Tooltip body
+  .js-plotly-plot .plotly [data-title]::after {
+    border-radius: $border-radius;
+    background: $tooltip-bg;
+    color: $tooltip-color;
+    padding: $tooltip-padding-y $tooltip-padding-x;
+    box-shadow: $tooltip-box-shadow;
+
+    // Already set by plotly, just setting again in case it changes in the future so body shadow appears under arrow tip
+    z-index: 1001;
+  }
+
+  .js-plotly-plot .plotly .modebar {
+    //aggressive set as 1001 by plotly, no need for it to be explicitly above anything
+    z-index: auto;
+
+    // Can't add a custom class to the button, so we need to match on the title
+    .modebar-btn {
+      &[data-title='#{$title-downsampling-in-progress}'] {
+        svg {
+          animation: fa-spin 2s infinite linear;
+        }
+      }
+
+      &[data-title='#{$title-downsampling-enabled}'] {
+        svg {
+          path {
+            fill: $plotly-color-btn-active !important;
+          }
+        }
+      }
+
+      &[data-title^='#{$title-downsampling-failed}'] {
+        svg {
+          path {
+            fill: $warning !important;
+          }
+        }
+      }
+    }
+  }
+}

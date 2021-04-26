@@ -1,0 +1,42 @@
+@import '../scss/custom.scss';
+
+$aci-option-btn-color: $foreground;
+$aci-option-keyboard-selected-bg: rgba($primary, 0.5);
+$aci-option-hover-bg: $dropdown-link-hover-bg;
+$aci-option-hover-color: $dropdown-link-hover-color;
+
+.aci-container {
+  flex-grow: 1;
+}
+
+.aci-options {
+  max-height: 200px;
+  border-radius: $border-radius;
+  overflow: auto;
+  user-select: none;
+
+  .no-match {
+    padding: $input-btn-padding-y $input-btn-padding-x;
+  }
+
+  .aci-option-btn {
+    border: none;
+    width: 100%;
+    color: $aci-option-btn-color;
+    padding: $input-btn-padding-y $input-btn-padding-x;
+    white-space: nowrap;
+    background: none;
+    text-align: left;
+  }
+  .aci-option-btn.keyboard-active {
+    background-color: $aci-option-keyboard-selected-bg;
+  }
+
+  .aci-option-btn:hover {
+    color: $aci-option-hover-color;
+    background-color: $aci-option-hover-bg;
+  }
+  .aci-option-btn:focus {
+    outline: none;
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "name": "@deephaven/eslint-config",
+  "version": "0.0.1",
+  "description": "Deephaven ESLint configuration",
+  "repository": "https://github.com/deephaven/core",
+  "license" : "SEE LICENSE IN LICENSE.md",
+  "main": "index.js",
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
+  "dependencies": {
+    "eslint-config-airbnb": "^18.2.1",
+    "eslint-config-prettier": "^8.1.0",
+    "eslint-config-react-app": "^6.0.0"
+  },
+  "peerDependencies": {
+    "eslint": "^7.22.0",
+    "eslint-plugin-es": "^4.1.0"
+  },
+  "devDependencies": {}
+}

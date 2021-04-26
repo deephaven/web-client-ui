@@ -1,0 +1,23 @@
+.grid-cell-input-field {
+  color: #e5e5e5;
+  background: #393939;
+  border: none;
+  width: 100%;
+  height: 100%;
+  padding: 2px 5px 3px 5px;
+  border-radius: 2px;
+  resize: none;
+
+  &:focus {
+    outline: none;
+    border: none;
+    box-shadow: 0 0 0 2px blue;
+  }
+
+  &.error {
+    color: red;
+    &:focus {
+      box-shadow: 0 0 0 2px red;
+    }
+  }
+}

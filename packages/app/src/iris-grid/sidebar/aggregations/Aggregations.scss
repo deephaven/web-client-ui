@@ -1,0 +1,53 @@
+@import '~@deephaven/components/scss/custom.scss';
+
+.aggregations {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+
+  hr {
+    margin: $spacer-2 $spacer-2;
+    background-color: $gray-900;
+  }
+
+  .form-inline {
+    padding: $spacer-2;
+
+    .btn-add {
+      margin-left: $spacer-1;
+    }
+
+    .custom-radio {
+      margin-right: $spacer-3;
+      &:first-of-type {
+        margin-left: $spacer-2;
+      }
+    }
+  }
+
+  .draggable-item-list {
+    flex-grow: 1;
+    .item-list-scroll-pane {
+      border: none;
+    }
+
+    .draggable-item-list-item-content {
+      margin-right: 0;
+
+      .title {
+        span {
+          margin-left: $spacer-2;
+        }
+      }
+    }
+
+    .btn-link-icon {
+      padding: 0 $spacer-2 0;
+      margin: -1px 0 $spacer-1 $spacer-1;
+
+      &:last-child {
+        margin-right: $spacer-1;
+      }
+    }
+  }
+}
