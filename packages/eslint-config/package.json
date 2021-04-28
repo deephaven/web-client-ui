@@ -1,9 +1,9 @@
 {
   "name": "@deephaven/eslint-config",
-  "version": "0.0.1",
+  "version": "0.0.2-alpha.0",
   "description": "Deephaven ESLint configuration",
   "repository": "https://github.com/deephaven/core",
-  "license" : "SEE LICENSE IN LICENSE.md",
+  "license": "SEE LICENSE IN LICENSE.md",
   "main": "index.js",
   "publishConfig": {
     "registry": "https://npm.pkg.github.com"
@@ -16,6 +16,5 @@
   "peerDependencies": {
     "eslint": "^7.22.0",
     "eslint-plugin-es": "^4.1.0"
-  },
-  "devDependencies": {}
+  }
 }
