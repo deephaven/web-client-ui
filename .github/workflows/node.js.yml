@@ -25,14 +25,6 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
 
-      - name: Cache node_modules
-        id: cache-node-modules
-        uses: actions/cache@v2
-        with:
-          # If no package-locks have changed, it should be safe to restore all node_modules as they were
-          path: '**/node_modules'
-          key: ${{ runner.os }}-modules-${{ hashFiles('**/package-lock.json') }}
-
       - name: Cache npm cache
         uses: actions/cache@v2
         env:
@@ -56,9 +48,7 @@ jobs:
             ${{ runner.os }}-eslintcache-
             ${{ runner.os }}-
 
-      # Only need to install and bootstrap deps if package-locks changed
       - name: Install dependencies
-        if: steps.cache-node-modules.outputs.cache-hit != 'true'
         run: npm ci
 
       - name: Test

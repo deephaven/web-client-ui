@@ -10,7 +10,7 @@
     "clean:build": "lerna run clean --stream",
     "clean:modules": "lerna clean --yes",
     "clean": "npm run clean:build && npm run clean:modules",
-    "bootstrap": "lerna bootstrap --hoist",
+    "bootstrap": "lerna bootstrap",
     "build": "lerna run build --stream",
     "build:app": "lerna run --scope=@deephaven/code-studio build",
     "build:packages": "lerna run --ignore=@deephaven/code-studio build --stream",
@@ -21,7 +21,7 @@
     "prestart": "lerna run prestart --stream",
     "pretest:ci": "npm run build:packages",
     "test": "lerna run test --stream --parallel",
-    "test:ci": "lerna run test:ci --stream --parallel",
+    "test:ci": "lerna run test:ci --stream",
     "sync-version": "lerna version ${DEEPHAVEN_VERSION:-error} --no-git-tag-version --yes",
     "publish": "lerna publish"
   },
