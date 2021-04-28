@@ -6,9 +6,6 @@
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
   "main": "./index.js",
-  "publishConfig": {
-    "registry": "https://npm.pkg.github.com"
-  },
   "dependencies": {
     "@babel/core": "7.12.3",
     "@babel/plugin-proposal-class-properties": "7.12.1",

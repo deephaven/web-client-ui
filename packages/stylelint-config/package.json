@@ -5,9 +5,6 @@
   "repository": "https://github.com/deephaven/web-client-ui",
   "license": "Apache-2.0",
   "main": "index.js",
-  "publishConfig": {
-    "registry": "https://npm.pkg.github.com"
-  },
   "dependencies": {
     "stylelint-config-prettier": "^8.0.2",
     "stylelint-config-standard": "^20.0.0"

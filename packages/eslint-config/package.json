@@ -5,9 +5,6 @@
   "repository": "https://github.com/deephaven/web-client-ui",
   "license": "Apache-2.0",
   "main": "index.js",
-  "publishConfig": {
-    "registry": "https://npm.pkg.github.com"
-  },
   "dependencies": {
     "eslint-config-airbnb": "^18.2.1",
     "eslint-config-prettier": "^8.1.0",

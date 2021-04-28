@@ -71,9 +71,5 @@
     "memoize-one": "^5.1.1",
     "memoizee": "^0.4.15",
     "prop-types": "^15.7.2"
-  },
-  "publishConfig": {
-    "registry": "https://npm.pkg.github.com"
-  },
-  "gitHead": "dda75cf786e7baa5b3b4ca3c1fb8a8cc53612c9f"
+  }
 }
