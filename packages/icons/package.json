@@ -30,7 +30,6 @@
   ],
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
-  "private": true,
   "dependencies": {
     "@fortawesome/fontawesome-common-types": "^0.2.34"
   },
