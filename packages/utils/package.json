@@ -1,12 +1,13 @@
 {
   "name": "@deephaven/utils",
-  "version": "0.0.2-alpha.0",
+  "version": "0.0.3-alpha.0",
   "description": "Deephaven Utils",
   "author": "Deephaven Data Labs LLC",
-  "license": "Deephaven",
+  "license": "Apache-2.0",
+  "private": true,
   "repository": {
     "type": "git",
-    "url": "https://github.com/deephaven/core"
+    "url": "https://github.com/deephaven/web-client-ui"
   },
   "source": "src/index.js",
   "main": "dist/index.js",
@@ -34,7 +35,7 @@
   "devDependencies": {
     "@babel/cli": "^7.13.14",
     "@babel/core": "7.12.3",
-    "@deephaven/tsconfig": "^0.0.2-alpha.0",
+    "@deephaven/tsconfig": "^0.0.3-alpha.0",
     "@types/jest": "^26.0.15",
     "babel-loader": "8.1.0",
     "cross-env": "^7.0.2",

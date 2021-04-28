@@ -75,4 +75,4 @@ If `Component.propTypes` is omitted in TS, it is still possible to pass the lint
 
 # Legal Notices
 
-Deephaven Data Labs and any contributors grant you a license to the content of this repository under the Deephaven License, see the [LICENSE](LICENSE.md) file.
+Deephaven Data Labs and any contributors grant you a license to the content of this repository under the Apache 2.0 License, see the [LICENSE](../../LICENSE) file.

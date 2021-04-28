@@ -18,4 +18,4 @@ Add to your tsconfig.json:
 
 # Legal Notices
 
-Deephaven Data Labs and any contributors grant you a license to the content of this repository under the Deephaven License, see the [LICENSE](LICENSE.md) file.
+Deephaven Data Labs and any contributors grant you a license to the content of this repository under the Apache 2.0 License, see the [LICENSE](../../LICENSE) file.

@@ -3,11 +3,11 @@
   "version": "0.0.1",
   "description": "Deephaven React component template",
   "author": "Deephaven Data Labs LLC",
-  "license": "SEE LICENSE IN LICENSE.md",
+  "license": "Apache-2.0",
   "private": true,
   "repository": {
     "type": "git",
-    "url": "https://github.com/deephaven/core"
+    "url": "https://github.com/deephaven/web-client-ui"
   },
   "source": "src/index.ts",
   "main": "dist/index.js",

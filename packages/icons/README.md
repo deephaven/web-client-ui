@@ -25,7 +25,7 @@ import {vsAccount, dhTruck} from `@deephaven/icons';
 
 ## Development
 
-This is part of the deephaven/core monorepo, and published as a package via lerna from the web/client-ui folder. Develop the icons locally by running `npm install` within the `core/web/client-ui/packages/icons` folder.
+This is part of the deephaven/web-client-ui monorepo, and published as a package via lerna from the root folder. Develop the icons locally by running `npm install` within the `core/web/client-ui/packages/icons` folder.
 
 Build with `npm run build`. The build step will perform a command line svg optimization step on both the dh and vs icons. It attempts to merge all paths, which can be bad if you have intersecting shapes. Don't have intersecting shapes. Both svg sets are copied to the dist folder. Then we use the build.js script to transform the svg files into the exported .js and .ts files needed by react-fontawesome.
 
@@ -33,7 +33,7 @@ Deephaven icons are .svg files in `/src/icons` folder, and will be added as `dh`
 
 # Legal Notices
 
-Deephaven Data Labs and any contributors grant you a license to the content of this repository under the Deephaven License, see the [LICENSE](LICENSE.md) file.
+Deephaven Data Labs and any contributors grant you a license to the content of this repository under the Apache 2.0 License, see the [LICENSE](../../LICENSE) file.
 
 Icons included from [vscode-codicons](https://github.com/microsoft/vscode-codicons) during the build process are licensed under the [Creative Commons Attribution 4.0 International Public License](https://creativecommons.org/licenses/by/4.0/legalcode).  
 

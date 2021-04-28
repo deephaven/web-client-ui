@@ -1,5 +1,5 @@
 {
-  "name": "@deephaven/core",
+  "name": "@deephaven/web-client-ui",
   "private": true,
   "version": "0.0.1",
   "workspaces": [
@@ -25,7 +25,7 @@
     "sync-version": "lerna version ${DEEPHAVEN_VERSION:-error} --no-git-tag-version --yes",
     "publish": "lerna publish"
   },
-  "repository": "https://github.com/deephaven/core",
+  "repository": "https://github.com/deephaven/web-client-ui",
   "devDependencies": {
     "@deephaven/babel-preset": "file:packages/babel-preset",
     "@deephaven/eslint-config": "file:packages/eslint-config",
