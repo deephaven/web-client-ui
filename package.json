@@ -23,7 +23,7 @@
     "test": "lerna run test --stream --parallel",
     "test:ci": "lerna run test:ci --stream --parallel",
     "sync-version": "lerna version ${DEEPHAVEN_VERSION:-error} --no-git-tag-version --yes",
-    "publish": "lerna publish from-package --no-git-tag-version --yes"
+    "publish": "lerna publish"
   },
   "repository": "https://github.com/deephaven/core",
   "devDependencies": {
