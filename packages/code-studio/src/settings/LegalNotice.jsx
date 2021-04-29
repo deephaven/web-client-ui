@@ -26,6 +26,10 @@ const LegalNotice = () => {
             10,565,206; 10,572,474; 10,621,168; 10,642,829; 10,657,184;
             10,678,787; 10,691,686; and 10,783,191. Other patents pending.
           </p>
+          <p>
+            © 2016-{new Date().getFullYear()} Deephaven Data Labs LLC. Patent
+            Pending.
+          </p>
         </ModalBody>
       </Modal>
     </button>
