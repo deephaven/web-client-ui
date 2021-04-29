@@ -7,6 +7,7 @@ it('eslint', async () => {
   const eslint = new ESLint({
     extensions: ['js', 'jsx', 'ts', 'tsx'],
     cache: true,
+    cacheStrategy: 'content',
   });
   const results = await eslint.lintFiles('./src');
   const formatter = await eslint.loadFormatter();

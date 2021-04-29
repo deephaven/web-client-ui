@@ -25,6 +25,15 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
 
+      - name: Cache node_modules
+        id: cache-node-modules
+        uses: actions/cache@v2
+        with:
+          # If no package-locks or the main package.json have changed, it should be safe to restore all node_modules as they were
+          # Changing the main package.json may change the postinstall scripts, so it should be unchanged to cache install results
+          path: '**/node_modules'
+          key: ${{ runner.os }}-modules-${{ hashFiles('**/package-lock.json', 'package.json') }}
+
       - name: Cache npm cache
         uses: actions/cache@v2
         env:
@@ -39,16 +48,20 @@ jobs:
             ${{ runner.os }}-build-
             ${{ runner.os }}-
 
-      - name: Cache eslint cache
+      - name: Cache linter caches
         uses: actions/cache@v2
         with:
-          path: '**/.eslintcache'
-          key: ${{ runner.os }}-eslintcache-${{ github.head_ref }}
+          path: |
+            '**/.eslintcache'
+            '**/.stylelintcache'
+          key: ${{ runner.os }}-lintcache-${{ github.head_ref }}
           restore-keys: |
-            ${{ runner.os }}-eslintcache-
+            ${{ runner.os }}-lintcache-
             ${{ runner.os }}-
 
+      # Only need to install and bootstrap deps if package-locks changed
       - name: Install dependencies
+        if: steps.cache-node-modules.outputs.cache-hit != 'true'
         run: npm ci
 
       - name: Test
