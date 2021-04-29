@@ -14,13 +14,11 @@ npm install --save @deephaven/grid
 
 ```jsx
 import React, { Component } from 'react'
-
-import MyComponent from '@deephaven/grid'
-import '@deephaven/grid/dist/index.css'
+import { Grid } from '@deephaven/grid'
 
 class Example extends Component {
   render() {
-    return <MyComponent />
+    return <Grid />
   }
 }
 ```
