@@ -52,8 +52,8 @@ jobs:
         uses: actions/cache@v2
         with:
           path: |
-            '**/.eslintcache'
-            '**/.stylelintcache'
+            **/.eslintcache
+            **/.stylelintcache
           key: ${{ runner.os }}-lintcache-${{ github.head_ref }}
           restore-keys: |
             ${{ runner.os }}-lintcache-
