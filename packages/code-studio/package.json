@@ -136,5 +136,8 @@
       "^monaco-editor/esm/vs/editor/editor.api$": "<rootDir>/src/__mocks__/monaco-editor.js",
       "^monaco-editor/esm/vs/editor/(.*)": "<rootDir>/src/__mocks__/monaco-editor-empty.js"
     }
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

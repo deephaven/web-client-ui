@@ -13,5 +13,8 @@
     "@babel/preset-react": "^7.13.13",
     "@babel/preset-typescript": "^7.13.0",
     "babel-plugin-transform-rename-import": "^2.3.0"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }
