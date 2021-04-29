@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/grid",
-  "version": "0.0.4-alpha.4",
+  "version": "0.0.4-alpha.5",
   "description": "Deephaven React grid component",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
@@ -43,7 +43,7 @@
   },
   "devDependencies": {
     "@babel/cli": "^7.13.14",
-    "@deephaven/tsconfig": "^0.0.4-alpha.4",
+    "@deephaven/tsconfig": "^0.0.4-alpha.5",
     "@types/jest": "^26.0.15",
     "@types/lodash.clamp": "^4.0.6",
     "@types/prop-types": "^15.7.3",
