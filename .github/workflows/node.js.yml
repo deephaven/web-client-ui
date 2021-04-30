@@ -19,26 +19,56 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v2
         with:
           node-version: ${{ matrix.node-version }}
-      - name: Cache node modules
+
+      - name: Cache node_modules
+        id: cache-node-modules
+        uses: actions/cache@v2
+        with:
+          # If no package-lock.json or package.json files have changed, it should be safe to restore all node_modules as they were
+          path: |
+            node_modules
+            packages/*/node_modules
+          key: ${{ runner.os }}-modules-${{ hashFiles('package.json', 'packages/*/package.json', 'package-lock.json', 'packages/*/package-lock.json') }}
+
+      - name: Cache npm cache
         uses: actions/cache@v2
         env:
-          cache-name: cache-node-modules
+          cache-name: cache-npm-cache
         with:
           # npm cache files are stored in `~/.npm` on Linux/macOS
           path: ~/.npm
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ matrix.node-version }}-${{ hashFiles('**/package-lock.json') }}
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ matrix.node-version }}-${{ hashFiles('package-lock.json', 'packages/*/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-build-${{ env.cache-name }}-${{ matrix.node-version }}
             ${{ runner.os }}-build-${{ env.cache-name }}-
             ${{ runner.os }}-build-
             ${{ runner.os }}-
+
+      - name: Cache linter caches
+        uses: actions/cache@v2
+        with:
+          path: |
+            .eslintcache
+            packages/*/.eslintcache
+            .stylelintcache
+            packages/*/.stylelintcache
+          key: ${{ runner.os }}-lintcache-${{ github.head_ref }}
+          restore-keys: |
+            ${{ runner.os }}-lintcache-
+            ${{ runner.os }}-
+
+      # Only need to install and bootstrap deps if package-locks changed
       - name: Install dependencies
+        if: steps.cache-node-modules.outputs.cache-hit != 'true'
         run: npm ci
-      - name: Test
-        run: npm run test:ci
+
       - name: Build
         run: npm run build
+
+      - name: Test
+        run: npm run test:ci
