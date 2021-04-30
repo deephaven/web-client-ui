@@ -40,7 +40,7 @@ The reason we use Babel and TSC is Babel doesn't actually type check TypeScript.
 
 ## Test
 
-`npm test` will run Jest tests in watch mode. There are tests which run ESLint and Stylelint on all applicable files already included in `src/test`
+`npm test` will run Jest tests in watch mode. There are tests which run ESLint and Stylelint on all applicable files already included in `src/test`. Remove the Stylelint test if there is no Sass usage in the package.
 
 ## Linting
 
