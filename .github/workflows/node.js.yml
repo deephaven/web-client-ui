@@ -64,8 +64,8 @@ jobs:
         if: steps.cache-node-modules.outputs.cache-hit != 'true'
         run: npm ci
 
-      - name: Test
-        run: npm run test:ci
-
       - name: Build
         run: npm run build
+
+      - name: Test
+        run: npm run test:ci

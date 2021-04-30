@@ -19,7 +19,6 @@
     "start:app": "lerna run start --scope=@deephaven/code-studio --stream",
     "start:packages": "lerna run watch --ignore=@deephaven/code-studio --stream --parallel",
     "prestart": "lerna run prestart --stream",
-    "pretest:ci": "npm run build:packages",
     "test": "lerna run test --stream --parallel",
     "test:ci": "lerna run test:ci --stream",
     "sync-version": "lerna version ${DEEPHAVEN_VERSION:-error} --no-git-tag-version --yes",
