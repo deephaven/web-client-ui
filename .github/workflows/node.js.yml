@@ -29,12 +29,11 @@ jobs:
         id: cache-node-modules
         uses: actions/cache@v2
         with:
-          # If no package-locks or the main package.json have changed, it should be safe to restore all node_modules as they were
-          # Changing the main package.json may change the postinstall scripts, so it should be unchanged to cache install results
+          # If no package-lock.json or package.json files have changed, it should be safe to restore all node_modules as they were
           path: |
             node_modules
             packages/*/node_modules
-          key: ${{ runner.os }}-modules-${{ hashFiles('package.json', 'package-lock.json', 'packages/*/package-lock.json') }}
+          key: ${{ runner.os }}-modules-${{ hashFiles('package.json', 'packages/*/package.json', 'package-lock.json', 'packages/*/package-lock.json') }}
 
       - name: Cache npm cache
         uses: actions/cache@v2
