@@ -1,5 +1,5 @@
 /* eslint class-methods-use-this: "off" */
-import { GridMouseHandler, GridUtils } from '../../grid';
+import { GridMouseHandler, GridUtils } from '@deephaven/grid';
 
 /**
  * Handles sending data selected via double click

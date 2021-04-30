@@ -12,6 +12,7 @@ import { TableColumnFormatter } from './formatters';
 import IrisGridModel from './IrisGridModel';
 import AggregationOperation from './sidebar/aggregations/AggregationOperation.ts';
 import IrisGridUtils from './IrisGridUtils';
+import MissingKeyError from './MissingKeyError';
 
 const log = Log.module('IrisGridTableModel');
 

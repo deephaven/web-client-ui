@@ -1,7 +1,7 @@
 import React from 'react';
 import classNames from 'classnames';
 import { CSSTransition } from 'react-transition-group';
-import ThemeExport from '../ThemeExport';
+import { ThemeExport } from '@deephaven/components';
 import './IrisGridBottomBar.scss';
 
 export type IrisGridBottomBarProps = {
@@ -26,29 +26,27 @@ export const IrisGridBottomBar = ({
   onEntered,
   onExiting,
   onExited,
-}: IrisGridBottomBarProps): JSX.Element => {
-  return (
-    <CSSTransition
-      in={isShown}
-      timeout={ThemeExport.transitionMs}
-      classNames={animation}
-      onEntering={onEntering}
-      onEntered={onEntered}
-      onExiting={onExiting}
-      onExited={onExited}
-      mountOnEnter
-      unmountOnExit
+}: IrisGridBottomBarProps): JSX.Element => (
+  <CSSTransition
+    in={isShown}
+    timeout={ThemeExport.transitionMs}
+    classNames={animation}
+    onEntering={onEntering}
+    onEntered={onEntered}
+    onExiting={onExiting}
+    onExited={onExited}
+    mountOnEnter
+    unmountOnExit
+  >
+    <div
+      className={classNames('iris-grid-bottom-bar', className)}
+      role="presentation"
+      onClick={onClick}
+      onKeyPress={onClick}
     >
-      <div
-        className={classNames('iris-grid-bottom-bar', className)}
-        role="presentation"
-        onClick={onClick}
-        onKeyPress={onClick}
-      >
-        {children}
-      </div>
-    </CSSTransition>
-  );
-};
+      {children}
+    </div>
+  </CSSTransition>
+);
 
 export default IrisGridBottomBar;

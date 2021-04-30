@@ -1,14 +1,10 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import {
-  faCheckCircle,
-  faExclamationTriangle,
-} from '@fortawesome/pro-light-svg-icons';
-import { faCircle, faSpinnerThird } from '@fortawesome/pro-regular-svg-icons';
+import { dhCheckSquare, vsWarning } from '@deephaven/icons';
+import { Button, LoadingSpinner } from '@deephaven/components';
+import { usePrevious } from '@deephaven/react-hooks';
 import IrisGridBottomBar from './IrisGridBottomBar';
-import { Button } from '../components';
 import './PendingDataBottomBar.scss';
-import { usePrevious } from '../react-hooks';
 
 const HIDE_TIMEOUT = 3000;
 
@@ -76,22 +72,18 @@ export const PendingDataBottomBar = ({
     }
   }, [pendingDataMap]);
 
-  useEffect(() => {
-    return () =>
-      successTimeout.current ? clearTimeout(successTimeout.current) : undefined;
-  }, []);
+  useEffect(
+    () => () =>
+      successTimeout.current ? clearTimeout(successTimeout.current) : undefined,
+    []
+  );
 
   const pendingRowCount = pendingDataMap.size;
   let commitIcon;
   if (isSaving) {
-    commitIcon = (
-      <div className="fa-md fa-layers">
-        <FontAwesomeIcon icon={faCircle} className="text-black-50" />
-        <FontAwesomeIcon icon={faSpinnerThird} className="text-white" spin />
-      </div>
-    );
+    commitIcon = <LoadingSpinner />;
   } else if (wasSuccessShown) {
-    commitIcon = faCheckCircle;
+    commitIcon = dhCheckSquare;
   }
 
   return (
@@ -110,7 +102,7 @@ export const PendingDataBottomBar = ({
     >
       {error && (
         <div className="error-message">
-          <FontAwesomeIcon icon={faExclamationTriangle} />
+          <FontAwesomeIcon icon={vsWarning} />
           <span>{`${error}`}</span>
         </div>
       )}

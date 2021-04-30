@@ -37,6 +37,7 @@ import dh from '@deephaven/jsapi-shim';
 import { Pending, PromiseUtils, ValidationError } from '@deephaven/utils';
 import throttle from 'lodash.throttle';
 import debounce from 'lodash.debounce';
+import PendingDataBottomBar from './PendingDataBottomBar';
 import IrisGridCopyHandler from './IrisGridCopyHandler';
 import FilterInputField from './FilterInputField';
 import { CopyKeyHandler, ReverseKeyHandler } from './key-handlers';

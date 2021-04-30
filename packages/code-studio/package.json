@@ -14,6 +14,7 @@
     "@deephaven/icons": "^0.1.0",
     "@deephaven/jsapi-shim": "^0.1.0",
     "@deephaven/log": "^0.1.0",
+    "@deephaven/react-hooks": "^0.1.0",
     "@deephaven/utils": "^0.1.0",
     "@fortawesome/fontawesome-svg-core": "^1.2.32",
     "@fortawesome/react-fontawesome": "^0.1.12",

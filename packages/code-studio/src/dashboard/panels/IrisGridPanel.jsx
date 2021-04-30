@@ -7,6 +7,7 @@ import { connect } from 'react-redux';
 import debounce from 'lodash.debounce';
 import Log from '@deephaven/log';
 import { PromiseUtils } from '@deephaven/utils';
+import { ContextMenuRoot } from '@deephaven/components';
 import { IrisGridUtils, IrisGrid } from '../../iris-grid';
 import { ChartUtils, ChartModelFactory } from '../../chart';
 import {
@@ -35,7 +36,6 @@ import LayoutUtils from '../../layout/LayoutUtils';
 import IrisGridModel from '../../iris-grid/IrisGridModel';
 import AdvancedSettings from '../../iris-grid/sidebar/AdvancedSettings';
 import IrisGridTableModel from '../../iris-grid/IrisGridTableModel';
-import ContextMenuRoot from '../../context-actions/ContextMenuRoot';
 
 const log = Log.module('IrisGridPanel');
 
