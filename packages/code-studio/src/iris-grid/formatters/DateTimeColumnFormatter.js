@@ -32,14 +32,6 @@ class DateTimeColumnFormatter extends TableColumnFormatter {
     };
   }
 
-  static makeQueryFormat(formatString = null) {
-    return DateTimeColumnFormatter.makeFormat(
-      'Query Format',
-      formatString,
-      TableColumnFormatter.TYPE_QUERY
-    );
-  }
-
   /**
    * Check if the given formats match
    * @param {?Object} formatA format object to check

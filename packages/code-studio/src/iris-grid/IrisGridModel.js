@@ -23,6 +23,7 @@ class IrisGridModel extends GridModel {
     DISCONNECT: 'DISCONNECT',
     RECONNECT: 'RECONNECT',
     TOTALS_UPDATED: 'TOTALS_UPDATED',
+    PENDING_DATA_UPDATED: 'PENDING_DATA_UPDATED',
   });
 
   constructor() {
@@ -259,6 +260,52 @@ class IrisGridModel extends GridModel {
   }
 
   /**
+   * The pending data for this model
+   * @returns {Map<number, Map<string, value>>} A map of row index to a map of column name/value pairs
+   */
+  get pendingDataMap() {
+    throw new Error('get pendingDataMap not implemented');
+  }
+
+  /**
+   * Set the pending data for this model
+   * @param {Map<number, Map<string, value>>} A map of row index to a map of column name/value pairs
+   */
+  set pendingDataMap(map) {
+    throw new Error('set pendingDataMap not implemented');
+  }
+
+  /**
+   * @returns {number} The count of pending rows to show
+   */
+  get pendingRowCount() {
+    throw new Error('get pendingRowCount not implemented');
+  }
+
+  /**
+   * Set the count of pending rows to show
+   * @param {number} count The count of pending rows to show
+   */
+  set pendingRowCount(count) {
+    throw new Error('set pendingRowCount not implemented');
+  }
+
+  /**
+   * Errors for the pending data
+   * @returns {Map<number, Error>} Map from row number to the error
+   */
+  get pendingDataErrors() {
+    throw new Error('get pendingDataErrors not implemented');
+  }
+
+  /**
+   * Commit pending data and save all data to the table
+   */
+  async commitPending() {
+    throw new Error('commitPending not implemented');
+  }
+
+  /**
    * Check if a column is filterable
    * @param columnIndex {number} The column index to check for filterability
    * @returns {boolean} True if the current provided column index is filterable, false otherwise
@@ -271,11 +318,9 @@ class IrisGridModel extends GridModel {
    * Set the indices of the viewport
    * @param {number} top Top of viewport
    * @param {number} bottom Bottom of viewport
-   * @param {number} left Left of viewport
-   * @param {number} right Right of viewport
-   * @param {number[][]} movedColumns The movedColumns in the viewport
+   * @param {Iris.Column[]} columns The columns in the viewport. `null` for all columns
    */
-  setViewport(top, bottom, left, right, movedColumns) {
+  setViewport(top, bottom, columns) {
     throw new Error('setViewport not implemented');
   }
 
@@ -319,13 +364,6 @@ class IrisGridModel extends GridModel {
    */
   async columnStatistics(column) {
     throw new Error('columnStatistics not implemented');
-  }
-
-  /**
-   * @returns {Promise<Map>} Map of column name to the formatting rule for them
-   */
-  async columnFormatMap() {
-    throw new Error('columnFormatMap not implemented');
   }
 
   /**

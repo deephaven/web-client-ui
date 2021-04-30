@@ -119,9 +119,6 @@ exports[`renders a promise returning menu items properly 1`] = `
             >
               Test1
             </span>
-            <span
-              className="shortcut"
-            />
           </div>
         </button>
       </div>
@@ -147,9 +144,6 @@ exports[`renders a promise returning menu items properly 1`] = `
             >
               Test2
             </span>
-            <span
-              className="shortcut"
-            />
           </div>
         </button>
       </div>
@@ -175,9 +169,6 @@ exports[`renders a promise returning menu items properly 1`] = `
             >
               Test3
             </span>
-            <span
-              className="shortcut"
-            />
           </div>
         </button>
       </div>

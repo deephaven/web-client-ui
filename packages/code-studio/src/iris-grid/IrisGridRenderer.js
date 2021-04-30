@@ -77,6 +77,8 @@ class IrisGridRenderer extends GridRenderer {
     super.drawGridLines(context, state);
 
     this.drawGroupedColumnLine(context, state);
+
+    this.drawPendingRowLine(context, state);
   }
 
   drawGroupedColumnLine(context, state) {
@@ -105,6 +107,33 @@ class IrisGridRenderer extends GridRenderer {
     context.moveTo(x, 0);
     context.lineTo(x, maxY);
     context.stroke();
+  }
+
+  drawPendingRowLine(context, state) {
+    const { metrics, model, theme } = state;
+    const { visibleRowYs, maxX } = metrics;
+    const { pendingRowCount } = model;
+    if (pendingRowCount <= 0) {
+      return;
+    }
+
+    const firstPendingRow =
+      model.rowCount - model.pendingRowCount - model.floatingBottomRowCount;
+    let y = visibleRowYs.get(firstPendingRow);
+    if (y == null) {
+      return;
+    }
+
+    y -= 0.5;
+    context.save();
+    context.setLineDash([4, 2]);
+    context.strokeStyle = theme.pendingTextColor;
+    context.lineWidth = 1;
+    context.beginPath();
+    context.moveTo(0, y);
+    context.lineTo(maxX, y);
+    context.stroke();
+    context.restore();
   }
 
   drawMouseColumnHover(context, state) {

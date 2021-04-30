@@ -160,6 +160,77 @@ describe('sort exporting/importing', () => {
   });
 });
 
+describe('pendingDataMap hydration/dehydration', () => {
+  it('dehydrates/hydrates empty map', () => {
+    const pendingDataMap = new Map();
+    const columns = makeColumns();
+    const dehydratedMap = IrisGridUtils.dehydratePendingDataMap(
+      columns,
+      pendingDataMap
+    );
+    expect(dehydratedMap).toEqual([]);
+
+    const hydratedMap = IrisGridUtils.hydratePendingDataMap(
+      columns,
+      dehydratedMap
+    );
+    expect(hydratedMap.size).toBe(0);
+  });
+
+  it('dehydrates/hydrates pending data', () => {
+    const pendingDataMap = new Map([
+      [
+        1,
+        {
+          data: new Map([
+            [3, 'Foo'],
+            [4, 'Bar'],
+          ]),
+        },
+      ],
+      [
+        10,
+        {
+          data: new Map([[7, 'Baz']]),
+        },
+      ],
+    ]);
+    const columns = makeColumns();
+    const dehydratedMap = IrisGridUtils.dehydratePendingDataMap(
+      columns,
+      pendingDataMap
+    );
+    expect(dehydratedMap).toEqual([
+      [
+        1,
+        expect.objectContaining({
+          data: [
+            ['3', 'Foo'],
+            ['4', 'Bar'],
+          ],
+        }),
+      ],
+      [
+        10,
+        expect.objectContaining({
+          data: [['7', 'Baz']],
+        }),
+      ],
+    ]);
+
+    const hydratedMap = IrisGridUtils.hydratePendingDataMap(
+      columns,
+      dehydratedMap
+    );
+    expect(hydratedMap.size).toBe(2);
+    expect(hydratedMap.get(1).data.size).toBe(2);
+    expect(hydratedMap.get(1).data.get(3)).toEqual('Foo');
+    expect(hydratedMap.get(1).data.get(4)).toEqual('Bar');
+    expect(hydratedMap.get(10).data.size).toBe(1);
+    expect(hydratedMap.get(10).data.get(7)).toEqual('Baz');
+  });
+});
+
 describe('remove columns in moved columns', () => {
   it('delete the move when the move origin column is removed', () => {
     const table = makeTable();

@@ -32,6 +32,8 @@ const IrisGridModelUpdater = React.memo(
     rollupConfig,
     totalsConfig,
     selectDistinctColumns,
+    pendingRowCount,
+    pendingDataMap,
   }) => {
     const columns = useMemo(
       () =>
@@ -90,6 +92,12 @@ const IrisGridModelUpdater = React.memo(
         model.totalsConfig = totalsConfig;
       }
     }, [model, model.isTotalsAvailable, totalsConfig]);
+    useEffect(() => {
+      model.pendingRowCount = pendingRowCount;
+    }, [model, pendingRowCount]);
+    useEffect(() => {
+      model.pendingDataMap = pendingDataMap;
+    }, [model, pendingDataMap]);
 
     return null;
   }
@@ -115,6 +123,8 @@ IrisGridModelUpdater.propTypes = {
   rollupConfig: IrisPropTypes.RollupConfig,
   totalsConfig: PropTypes.shape({}),
   selectDistinctColumns: PropTypes.arrayOf(PropTypes.string),
+  pendingRowCount: PropTypes.number,
+  pendingDataMap: PropTypes.instanceOf(Map),
 };
 
 IrisGridModelUpdater.defaultProps = {
@@ -124,6 +134,8 @@ IrisGridModelUpdater.defaultProps = {
   rollupConfig: null,
   totalsConfig: null,
   selectDistinctColumns: [],
+  pendingRowCount: 0,
+  pendingDataMap: new Map(),
 };
 
 export default IrisGridModelUpdater;

@@ -1,5 +1,6 @@
 import { TestUtils } from '@deephaven/utils';
 import dh from '@deephaven/jsapi-shim';
+import Formatter from './Formatter';
 import IrisGridModel from './IrisGridModel';
 import IrisGridTestUtils from './IrisGridTestUtils';
 
@@ -200,5 +201,68 @@ describe('totals table tests', () => {
     await TestUtils.flushPromises();
 
     expect(listener).toHaveBeenCalled();
+  });
+});
+
+describe('pending new rows tests', () => {
+  const TABLE_SIZE = 100;
+  const PENDING_ROW_COUNT = 50;
+  let table = null;
+  let inputTable = null;
+  let model = null;
+
+  beforeEach(() => {
+    table = IrisGridTestUtils.makeTable(
+      IrisGridTestUtils.makeColumns(),
+      TABLE_SIZE
+    );
+    table.close = jest.fn();
+
+    inputTable = IrisGridTestUtils.makeInputTable(table.columns.slice(0, 3));
+
+    model = IrisGridTestUtils.makeModel(table, new Formatter(), inputTable);
+    model.pendingRowCount = PENDING_ROW_COUNT;
+  });
+
+  it('has the correct number of total rows', () => {
+    expect(model.rowCount).toBe(TABLE_SIZE + PENDING_ROW_COUNT);
+    model.pendingRowCount = 250;
+    expect(model.rowCount).toBe(TABLE_SIZE + 250);
+  });
+
+  describe('setting values', () => {
+    const x = 3;
+    const pendingY = 4;
+    const y = TABLE_SIZE + pendingY;
+    const value = 'Testing';
+
+    beforeEach(() => {
+      model.setValueForCell(x, y, value);
+    });
+
+    it('updates the pending data map when setting pending ranges', () => {
+      expect(model.pendingDataMap.get(pendingY).data.get(x)).toEqual({ value });
+    });
+
+    it('writes pending data to the input table', async () => {
+      inputTable.addRows = jest.fn();
+      await model.commitPending();
+      expect(inputTable.addRows).toHaveBeenCalledWith(
+        expect.arrayContaining([expect.objectContaining({ 3: value })])
+      );
+      expect(model.pendingDataMap.size).toBe(0);
+    });
+  });
+
+  it('validates pendingDataMap when being set', () => {
+    expect(() => {
+      model.pendingDataMap = new Map();
+    }).not.toThrow();
+    expect(() => {
+      model.pendingDataMap = new Map([[4, { data: new Map([[5, 'value']]) }]]);
+    }).not.toThrow();
+    expect(() => {
+      model.pendingDataMap = new Map([['invalid', 'data']]);
+    }).toThrow();
   });
 });

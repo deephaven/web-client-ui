@@ -51,10 +51,17 @@ class IrisGridTestUtils {
     return new dh.Sort();
   }
 
-  static makeTable(columns = IrisGridTestUtils.makeColumns()) {
-    const table = new dh.Table({ columns });
+  static makeTable(
+    columns = IrisGridTestUtils.makeColumns(),
+    size = 1000000000
+  ) {
+    const table = new dh.Table({ columns, size });
     table.copy = jest.fn(() => Promise.resolve(table));
     return table;
+  }
+
+  static makeInputTable(keyColumns = []) {
+    return new dh.InputTable(keyColumns);
   }
 
   static makeSubscription(table = IrisGridTestUtils.makeTable()) {
@@ -63,9 +70,10 @@ class IrisGridTestUtils {
 
   static makeModel(
     table = IrisGridTestUtils.makeTable(),
-    formatter = new Formatter()
+    formatter = new Formatter(),
+    inputTable = null
   ) {
-    return new IrisGridProxyModel(table, formatter);
+    return new IrisGridProxyModel(table, formatter, inputTable);
   }
 }
 

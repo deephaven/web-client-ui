@@ -31,6 +31,8 @@ export default Object.freeze({
   negativeNumberColor: IrisGridTheme['negative-number-color'],
   zeroNumberColor: IrisGridTheme['zero-number-color'],
   dateColor: IrisGridTheme['date-color'],
+  pendingTextColor: IrisGridTheme['pending-text-color'],
+  errorTextColor: IrisGridTheme['error-text-color'],
   filterBarActiveBackgroundColor: IrisGridTheme['filter-bar-active-bg'],
   filterBarExpandedBackgroundColor: IrisGridTheme['filter-bar-expanded-bg'],
   filterBarExpandedActiveBackgroundColor:

@@ -9,6 +9,7 @@ const BUTTON_KINDS = [
   'primary',
   'secondary',
   'tertiary',
+  'success',
   'danger',
   'inline',
   'ghost',
@@ -54,6 +55,8 @@ function getClassName(kind: ButtonKind, iconOnly: boolean): string {
       return 'btn-outline-primary';
     case 'tertiary':
       return 'btn-secondary';
+    case 'success':
+      return 'btn-success';
     case 'danger':
       return 'btn-danger';
     case 'inline':

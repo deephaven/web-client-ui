@@ -44,15 +44,6 @@ class IntegerColumnFormatter extends TableColumnFormatter {
     );
   }
 
-  static makeQueryFormat(formatString = null, multiplier = null) {
-    return IntegerColumnFormatter.makeFormat(
-      'Query Format',
-      formatString,
-      multiplier,
-      TableColumnFormatter.TYPE_QUERY
-    );
-  }
-
   /**
    * Check if the given formats match
    * @param {?Object} formatA format object to check

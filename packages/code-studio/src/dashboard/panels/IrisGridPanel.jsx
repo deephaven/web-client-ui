@@ -7,6 +7,7 @@ import { connect } from 'react-redux';
 import debounce from 'lodash.debounce';
 import Log from '@deephaven/log';
 import { PromiseUtils } from '@deephaven/utils';
+import { ContextMenuRoot } from '@deephaven/components';
 import { IrisGridUtils, IrisGrid } from '../../iris-grid';
 import { ChartUtils, ChartModelFactory } from '../../chart';
 import {
@@ -40,7 +41,7 @@ const log = Log.module('IrisGridPanel');
 
 const DEBOUNCE_PANEL_STATE_UPDATE = 500;
 
-const PLUGIN_COMPONENTS = { IrisGrid, IrisGridTableModel };
+const PLUGIN_COMPONENTS = { IrisGrid, IrisGridTableModel, ContextMenuRoot };
 
 export class IrisGridPanel extends PureComponent {
   constructor(props) {
@@ -116,6 +117,7 @@ export class IrisGridPanel extends PureComponent {
       pluginFilters: [],
       pluginFetchColumns: [],
       modelQueue: [],
+      pendingDataMap: new Map(),
 
       // eslint-disable-next-line react/no-unused-state
       panelState, // Dehydrated panel state that can load this panel
@@ -234,7 +236,8 @@ export class IrisGridPanel extends PureComponent {
       userColumnWidths,
       userRowHeights,
       aggregationSettings,
-      advancedSettings
+      advancedSettings,
+      pendingDataMap
     ) =>
       IrisGridUtils.dehydrateIrisGridState(table, {
         advancedFilters,
@@ -256,6 +259,7 @@ export class IrisGridPanel extends PureComponent {
         selectedSearchColumns,
         sorts,
         invertSearchColumns,
+        pendingDataMap,
       })
   );
 
@@ -299,20 +303,31 @@ export class IrisGridPanel extends PureComponent {
       } = irisGridState;
 
       if (customColumns.length > 0) {
-        modelQueue.push({ customColumns });
+        modelQueue.push(m => {
+          // eslint-disable-next-line no-param-reassign
+          m.customColumns = customColumns;
+        });
       }
 
       if (rollupConfig != null && rollupConfig.columns.length > 0) {
-        const rollupModelConfig = IrisGridUtils.getModelRollupConfig(
-          model.originalColumns,
-          rollupConfig,
-          aggregationSettings
-        );
-        modelQueue.push({ rollupConfig: rollupModelConfig });
+        // originalColumns might change by the time this model queue item is applied.
+        // Instead of pushing a static object, push the function
+        // that calculates the config based on the updated model state.
+        modelQueue.push(m => {
+          // eslint-disable-next-line no-param-reassign
+          m.rollupConfig = IrisGridUtils.getModelRollupConfig(
+            m.originalColumns,
+            rollupConfig,
+            aggregationSettings
+          );
+        });
       }
 
       if (selectDistinctColumns.length > 0) {
-        modelQueue.push({ selectDistinctColumns });
+        modelQueue.push(m => {
+          // eslint-disable-next-line no-param-reassign
+          m.selectDistinctColumns = selectDistinctColumns;
+        });
       }
     }
 
@@ -328,10 +343,8 @@ export class IrisGridPanel extends PureComponent {
     }
     const modelChange = modelQueue.shift();
     log.debug('initModelQueue', modelChange);
-    // Model update triggers columnschanged event
-    Object.keys(modelChange).forEach(key => {
-      model[key] = modelChange[key];
-    });
+    // Apply next model change. Triggers columnschanged event.
+    modelChange(model);
     this.setState({ modelQueue });
   }
 
@@ -631,6 +644,7 @@ export class IrisGridPanel extends PureComponent {
         selectDistinctColumns,
         selectedSearchColumns,
         invertSearchColumns,
+        pendingDataMap,
       } = IrisGridUtils.hydrateIrisGridState(table, irisGridState);
       const { movedColumns, movedRows } = IrisGridUtils.hydrateGridState(
         table,
@@ -660,6 +674,7 @@ export class IrisGridPanel extends PureComponent {
         selectDistinctColumns,
         selectedSearchColumns,
         invertSearchColumns,
+        pendingDataMap,
       });
     } catch (error) {
       log.error('loadPanelState failed to load panelState', panelState, error);
@@ -692,6 +707,7 @@ export class IrisGridPanel extends PureComponent {
       sorts,
       invertSearchColumns,
       metrics,
+      pendingDataMap,
     } = irisGridState;
     const { userColumnWidths, userRowHeights } = metrics;
     const { movedColumns, movedRows } = gridState;
@@ -723,7 +739,8 @@ export class IrisGridPanel extends PureComponent {
         userColumnWidths,
         userRowHeights,
         aggregationSettings,
-        advancedSettings
+        advancedSettings,
+        pendingDataMap
       ),
       this.getDehydratedGridState(table, movedColumns, movedRows)
     );
@@ -790,6 +807,7 @@ export class IrisGridPanel extends PureComponent {
       Plugin,
       pluginFilters,
       pluginFetchColumns,
+      pendingDataMap,
     } = this.state;
     const errorMessage = error ? `Unable to open table. ${error}` : null;
     const { table: name, querySerial } = metadata;
@@ -862,6 +880,7 @@ export class IrisGridPanel extends PureComponent {
             onContextMenu={this.handleContextMenu}
             onAdvancedSettingsChange={this.handleAdvancedSettingsChange}
             customFilters={pluginFilters}
+            pendingDataMap={pendingDataMap}
             ref={this.irisGrid}
           >
             {childrenContent}
@@ -892,6 +911,7 @@ IrisGridPanel.propTypes = {
       rollupConfig: PropTypes.shape({
         columns: PropTypes.arrayOf(PropTypes.string).isRequired,
       }),
+      pendingDataMap: PropTypes.arrayOf(PropTypes.array),
     }),
     irisGridPanelState: PropTypes.shape({}),
   }),

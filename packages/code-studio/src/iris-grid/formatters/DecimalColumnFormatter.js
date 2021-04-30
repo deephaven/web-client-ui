@@ -43,15 +43,6 @@ class DecimalTableColumnFormatter extends TableColumnFormatter {
     );
   }
 
-  static makeQueryFormat(formatString = null, multiplier = null) {
-    return DecimalTableColumnFormatter.makeFormat(
-      'Query Format',
-      formatString,
-      multiplier,
-      TableColumnFormatter.TYPE_QUERY
-    );
-  }
-
   static DEFAULT_FORMAT_STRING = '###,##0.0000';
 
   static FORMAT_PERCENT = DecimalTableColumnFormatter.makeFormat(

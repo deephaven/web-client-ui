@@ -92,7 +92,9 @@ const ContextMenuItem = React.forwardRef((props, ref) => {
             {icon}
           </span>
           <span className="title">{menuItem.title}</span>
-          <span className="shortcut">{displayShortcut}</span>
+          {displayShortcut && (
+            <span className="shortcut">{displayShortcut}</span>
+          )}
           {subMenuIndicator && (
             <span
               className={classNames('submenu-indicator', {

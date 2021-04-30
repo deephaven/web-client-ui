@@ -11,8 +11,6 @@ class TableColumnFormatter {
 
   static TYPE_CONTEXT_CUSTOM = 'type-context-custom';
 
-  static TYPE_QUERY = 'type-query';
-
   /**
    * Validates format object
    * @param {Object} format Format object

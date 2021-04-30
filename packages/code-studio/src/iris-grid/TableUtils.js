@@ -1036,7 +1036,7 @@ class TableUtils {
       return dh.LongWrapper.ofString(TableUtils.removeCommas(text));
     }
     if (TableUtils.isBooleanType(columnType)) {
-      return TableUtils.makeBooleanValue(text);
+      return TableUtils.makeBooleanValue(text, true);
     }
     if (TableUtils.isDateType(columnType)) {
       const [date] = DateUtils.parseDateRange(text);
@@ -1051,7 +1051,11 @@ class TableUtils {
     return null;
   }
 
-  static makeBooleanValue(text) {
+  static makeBooleanValue(text, allowEmpty = false) {
+    if (text === '' && allowEmpty) {
+      return null;
+    }
+
     switch (text?.toLowerCase()) {
       case 'null':
         return null;
@@ -1079,7 +1083,7 @@ class TableUtils {
   }
 
   static makeNumberValue(text) {
-    if (text == null || text === 'null') {
+    if (text == null || text === 'null' || text === '') {
       return null;
     }
 

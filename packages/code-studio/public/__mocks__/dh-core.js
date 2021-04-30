@@ -962,6 +962,22 @@ TotalsTableConfig.FIRST = 'First';
 TotalsTableConfig.LAST = 'Last';
 TotalsTableConfig.SKIP = 'Skip';
 
+class InputTable extends DeephavenObject {
+  constructor({ keyColumns = [] } = {}) {
+    super();
+
+    this.keyColumns = keyColumns;
+  }
+
+  addRows() {
+    return Promise.resolve();
+  }
+
+  deleteTable() {
+    return Promise.resolve();
+  }
+}
+
 class RollupTableConfig {}
 
 class Client extends DeephavenObject {
@@ -1727,6 +1743,7 @@ const dh = {
   RollupTableConfig: RollupTableConfig,
   Table: Table,
   TotalsTable: TotalsTable,
+  InputTable: InputTable,
   TotalsTableConfig: TotalsTableConfig,
   TableViewportSubscription,
   TableSubscription,

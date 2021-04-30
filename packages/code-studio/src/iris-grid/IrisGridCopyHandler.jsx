@@ -12,6 +12,7 @@ import { CanceledPromiseError, PromiseUtils } from '@deephaven/utils';
 import Log from '@deephaven/log';
 import IrisGridModel from './IrisGridModel';
 import IrisGridUtils from './IrisGridUtils';
+import IrisGridBottomBar from './IrisGridBottomBar';
 import './IrisGridCopyHandler.scss';
 
 const log = Log.module('IrisGridCopyHandler');
@@ -303,6 +304,7 @@ class IrisGridCopyHandler extends Component {
   }
 
   render() {
+    const { onEntering, onEntered, onExiting, onExited } = this.props;
     const { buttonState, copyState, isShown, rowCount, error } = this.state;
 
     const animation =
@@ -319,56 +321,52 @@ class IrisGridCopyHandler extends Component {
     const isDone = copyState === IrisGridCopyHandler.COPY_STATES.DONE;
 
     return (
-      <CSSTransition
-        in={isShown}
-        timeout={ThemeExport.transitionMs}
-        classNames={animation}
-        mountOnEnter
-        unmountOnExit
+      <IrisGridBottomBar
+        animation={animation}
+        isShown={isShown}
+        className={classNames('iris-grid-copy-handler', {
+          'copy-done': isDone,
+        })}
+        onClick={this.handleBackgroundClick}
+        onEntering={onEntering}
+        onEntered={onEntered}
+        onExiting={onExiting}
+        onExited={onExited}
       >
-        <div
-          className={classNames('iris-grid-copy-handler', {
-            'copy-done': isDone,
-          })}
-          role="presentation"
-          onClick={this.handleBackgroundClick}
-          onKeyPress={this.handleBackgroundClick}
-        >
-          <div className="status-message">
-            <span>{statusMessageText}</span>
-          </div>
-          <CSSTransition
-            in={isButtonContainerVisible}
-            timeout={ThemeExport.transitionMs}
-            classNames="fade"
-            mountOnEnter
-            unmountOnExit
-          >
-            <div className="buttons-container">
-              <button
-                type="button"
-                className="btn btn-outline-secondary btn-cancel"
-                onClick={this.handleCancelClick}
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                className={classNames('btn', 'btn-copy', {
-                  'btn-primary': !isFetching,
-                  'btn-secondary': isFetching,
-                  'btn-spinner': isFetching,
-                })}
-                onClick={this.handleCopyClick}
-                disabled={isFetching}
-              >
-                {isFetching && <LoadingSpinner />}
-                {copyButtonText}
-              </button>
-            </div>
-          </CSSTransition>
+        <div className="status-message">
+          <span>{statusMessageText}</span>
         </div>
-      </CSSTransition>
+        <CSSTransition
+          in={isButtonContainerVisible}
+          timeout={ThemeExport.transitionMs}
+          classNames="fade"
+          mountOnEnter
+          unmountOnExit
+        >
+          <div className="buttons-container">
+            <button
+              type="button"
+              className="btn btn-outline-secondary btn-cancel"
+              onClick={this.handleCancelClick}
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              className={classNames('btn', 'btn-copy', {
+                'btn-primary': !isFetching,
+                'btn-secondary': isFetching,
+                'btn-spinner': isFetching,
+              })}
+              onClick={this.handleCopyClick}
+              disabled={isFetching}
+            >
+              {isFetching && <LoadingSpinner />}
+              {copyButtonText}
+            </button>
+          </div>
+        </CSSTransition>
+      </IrisGridBottomBar>
     );
   }
 }
@@ -386,10 +384,18 @@ IrisGridCopyHandler.propTypes = {
     includeHeaders: PropTypes.bool,
     error: PropTypes.string,
   }),
+  onEntering: PropTypes.func,
+  onEntered: PropTypes.func,
+  onExiting: PropTypes.func,
+  onExited: PropTypes.func,
 };
 
 IrisGridCopyHandler.defaultProps = {
   copyOperation: null,
+  onEntering: () => {},
+  onEntered: () => {},
+  onExiting: () => {},
+  onExited: () => {},
 };
 
 export default IrisGridCopyHandler;
