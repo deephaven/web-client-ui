@@ -4,20 +4,34 @@ import PropTypes from 'prop-types';
 import ButtonGroup from './ButtonGroup';
 import Button from './Button';
 
+interface BasicModalProps {
+  isOpen: boolean;
+  headerText: string;
+  bodyText: string | (() => string);
+  onCancel?: () => void;
+  onConfirm: () => void;
+  onDiscard?: () => void;
+  onModalDisable?: () => void;
+  cancelButtonText?: string;
+  confirmButtonText?: string;
+  discardButtonText?: string;
+  children?: React.ReactNode;
+}
+
 /**
  * A basic modal dialog with two buttons: cancel / confirm.
  *
- * @param {boolean} isOpen indicates if the modal dialog is open
- * @param {string} headerText text displayed in the modal header
- * @param {string} bodyText text displayed in the modal body
- * @param {func} onCancel callback for the cancel button; if not provided, button not shown
- * @param {func} onConfirm callback for the confirm button
- * @param {func} onDiscard callback for the discard button; if not provided, button not shown
- * @param {string} cancelButtonText optional text for the cancel button, defaults to 'Cancel'
- * @param {string} confirmButtonText optional text for the confirm button, defaults to 'Okay'
- * @param {string} discardButtonText optional text for the discard button, defaults to 'Discard'
+ * @param isOpen indicates if the modal dialog is open
+ * @param headerText text displayed in the modal header
+ * @param bodyText text displayed in the modal body
+ * @param onCancel callback for the cancel button; if not provided, button not shown
+ * @param onConfirm callback for the confirm button
+ * @param onDiscard callback for the discard button; if not provided, button not shown
+ * @param cancelButtonText optional text for the cancel button, defaults to 'Cancel'
+ * @param confirmButtonText optional text for the confirm button, defaults to 'Okay'
+ * @param discardButtonText optional text for the discard button, defaults to 'Discard'
  */
-const BasicModal = props => {
+const BasicModal: React.FC<BasicModalProps> = props => {
   const {
     isOpen,
     headerText,
@@ -26,18 +40,18 @@ const BasicModal = props => {
     onConfirm,
     onDiscard,
     onModalDisable,
-    cancelButtonText,
-    confirmButtonText,
-    discardButtonText,
+    cancelButtonText = 'Cancel',
+    confirmButtonText = 'Okay',
+    discardButtonText = 'Discard',
     children,
   } = props;
 
-  const confirmButton = useRef(null);
+  const confirmButton = useRef<HTMLButtonElement>(null);
 
-  const disableModalCheckbox = useRef(null);
+  const disableModalCheckbox = useRef<HTMLInputElement>(null);
 
   const onConfirmClicked = useCallback(() => {
-    if (disableModalCheckbox.current && disableModalCheckbox.current.checked) {
+    if (disableModalCheckbox.current?.checked && onModalDisable) {
       onModalDisable();
     }
     onConfirm();
@@ -53,7 +67,7 @@ const BasicModal = props => {
       isOpen={isOpen}
       className="theme-bg-light"
       onOpened={() => {
-        confirmButton.current.focus();
+        confirmButton.current?.focus();
       }}
     >
       <ModalHeader>{headerText}</ModalHeader>
@@ -126,10 +140,9 @@ BasicModal.defaultProps = {
   cancelButtonText: 'Cancel',
   confirmButtonText: 'Okay',
   discardButtonText: 'Discard',
-
-  onCancel: null,
-  onDiscard: null,
-  onModalDisable: null,
+  onCancel: undefined,
+  onDiscard: undefined,
+  onModalDisable: undefined,
 };
 
 export default BasicModal;
