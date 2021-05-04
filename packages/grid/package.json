@@ -66,6 +66,7 @@
   ],
   "dependencies": {
     "classnames": "^2.2.6",
+    "color-convert": "^2.0.1",
     "event-target-shim": "^6.0.2",
     "lodash.clamp": "^4.0.3",
     "memoize-one": "^5.1.1",
