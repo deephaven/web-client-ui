@@ -4,25 +4,30 @@ class ColorUtils {
    *
    * @param {string} background the background color
    */
-  static isDark(background) {
+  static isDark(background: string): boolean {
     const d = document.createElement('div');
     d.style.display = 'none';
     d.style.color = background;
-    const color = getComputedStyle(document.body.appendChild(d))
-      .color.match(/\d+/g)
-      .map(a => parseInt(a, 10));
+    const colorTokens = getComputedStyle(
+      document.body.appendChild(d)
+    ).color.match(/\d+/g);
+    let color: number[] = [];
+    if (colorTokens) {
+      color = colorTokens.map(a => parseInt(a, 10));
+    } else {
+      throw new Error(
+        'Invalid color received. Expected something like ["123", "123", "123"].'
+      );
+    }
     document.body.removeChild(d);
     const brightness = ColorUtils.getBrightness(color);
     return brightness < 125;
   }
 
-  static getBrightness(color) {
+  static getBrightness(color: number[]): number {
     // http://www.w3.org/TR/AERT#color-contrast
     return Math.round(
-      (parseInt(color[0], 10) * 299 +
-        parseInt(color[1], 10) * 587 +
-        parseInt(color[2], 10) * 114) /
-        1000
+      (color[0] * 299 + color[1] * 587 + color[2] * 114) / 1000
     );
   }
 }
