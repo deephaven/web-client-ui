@@ -73,7 +73,13 @@ const STERILE_COLUMN_AND_QUERY_REGEX = /[^A-Za-z0-9_$]/g;
  * Table and Column names.
  */
 class DbNameValidator {
-  static legalize = (name, prefix, regex, checkReserved, i) => {
+  static legalize = (
+    name: string,
+    prefix: string,
+    regex: RegExp,
+    checkReserved: boolean,
+    i: number
+  ): string => {
     // Replace all dashes and spaces with underscores
     let legalName = name.trim().replace(/[- ]/g, '_');
 
@@ -95,16 +101,14 @@ class DbNameValidator {
     }
 
     // If name starts with a number, append prefix to the front
-    // Intentionally using isNaN rather than Number.isNaN
-    // eslint-disable-next-line no-restricted-globals
-    if (!isNaN(legalName.charAt(0))) {
+    if (!Number.isNaN(Number(legalName.charAt(0)))) {
       legalName = prefix + legalName;
     }
 
     return legalName;
   };
 
-  static legalizeTableName = name =>
+  static legalizeTableName = (name: string): string =>
     DbNameValidator.legalize(
       name,
       TABLE_PREFIX,
@@ -113,8 +117,8 @@ class DbNameValidator {
       0
     );
 
-  static legalizeColumnNames = headers => {
-    const legalHeaders = [];
+  static legalizeColumnNames = (headers: string[]): string[] => {
+    const legalHeaders: string[] = [];
     headers.forEach((header, i) => {
       let legalHeader = DbNameValidator.legalizeColumnName(header, i);
 
@@ -128,7 +132,7 @@ class DbNameValidator {
     return legalHeaders;
   };
 
-  static legalizeColumnName = (header, i = 0) =>
+  static legalizeColumnName = (header: string, i = 0): string =>
     // Replace all dashes and spaces with underscores
     DbNameValidator.legalize(
       header,
@@ -138,10 +142,10 @@ class DbNameValidator {
       i
     );
 
-  static isValidTableName = name =>
+  static isValidTableName = (name: string): boolean =>
     DbNameValidator.legalizeTableName(name) === name;
 
-  static isValidColumnName = name =>
+  static isValidColumnName = (name: string): boolean =>
     DbNameValidator.legalizeColumnName(name) === name;
 }
 
