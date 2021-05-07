@@ -1,5 +1,5 @@
 class RangeUtils {
-  static isValidRange(range) {
+  static isValidRange(range: [number, number]): boolean {
     return (
       range != null &&
       range.length === 2 &&
@@ -9,13 +9,13 @@ class RangeUtils {
     );
   }
 
-  static validateRange(range) {
+  static validateRange(range: [number, number]): void {
     if (!RangeUtils.isValidRange(range)) {
       throw new Error(`Invalid range! ${range}`);
     }
   }
 
-  static isSelected(selectedRanges, index) {
+  static isSelected(selectedRanges: number[][], index: number): boolean {
     for (let i = 0; i < selectedRanges.length; i += 1) {
       const range = selectedRanges[i];
       const start = range[0];
@@ -28,7 +28,10 @@ class RangeUtils {
     return false;
   }
 
-  static selectRange(selectedRanges, range) {
+  static selectRange(
+    selectedRanges: number[][],
+    range: [number, number]
+  ): number[][] {
     let [start, end] = range;
     const ranges = [...selectedRanges];
 
@@ -56,7 +59,10 @@ class RangeUtils {
     return ranges;
   }
 
-  static deselectRange(selectedRanges, range) {
+  static deselectRange(
+    selectedRanges: number[][],
+    range: [number, number]
+  ): number[][] {
     const [start, end] = range;
     const ranges = [...selectedRanges];
     // Need to consolidate the range with previous ranges
@@ -91,7 +97,7 @@ class RangeUtils {
    *
    * @param {Array} ranges The ranges to count
    */
-  static count(ranges) {
+  static count(ranges: number[][]): number {
     return ranges.reduce((sum, range) => sum + (range[1] - range[0] + 1), 0);
   }
 }
