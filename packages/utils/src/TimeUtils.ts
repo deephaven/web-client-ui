@@ -1,3 +1,6 @@
+type TimeInSeconds = number;
+type TimeString = `${string}:${string}:${string}`;
+
 class TimeUtils {
   static TIME_ZONES = Object.freeze([
     { label: 'Tokyo UTC+9 No DST', value: 'Asia/Tokyo' },
@@ -27,9 +30,9 @@ class TimeUtils {
    * Pretty prints a time in seconds as a format like "1h 3m 23s", "32s"
    * Seconds are padded after 60s, has elapsed to reduce width changes
    * Minutes aren't paded, as thats a slower change
-   * @param {integer} time in seconds
+   * @param time in seconds
    */
-  static formatElapsedTime(time: number): string {
+  static formatElapsedTime(time: TimeInSeconds): string {
     if (!Number.isInteger(time)) {
       throw new Error(
         `${time} is not a number that can be expressed as a formatted time`
@@ -49,9 +52,9 @@ class TimeUtils {
 
   /**
    * Format the time into hh:mm:ss format, eg. '12:34:56'
-   * @param {integer} timeInSeconds in seconds
+   * @param timeInSeconds in seconds
    */
-  static formatTime(timeInSeconds: number): string {
+  static formatTime(timeInSeconds: TimeInSeconds): string {
     if (!Number.isInteger(timeInSeconds) || timeInSeconds < 0) {
       throw new Error(
         `${timeInSeconds} is not a number that can be expressed as a formatted time`
@@ -74,9 +77,9 @@ class TimeUtils {
 
   /**
    * Parse time in seconds from the provided time string
-   * @param {string} timeString Time string in hh:mm:ss format
+   * @param timeString Time string in hh:mm:ss format
    */
-  static parseTime(timeString: string): number {
+  static parseTime(timeString: TimeString): TimeInSeconds {
     if (!timeString || typeof timeString !== 'string') {
       throw new Error(`${timeString} is not a valid string`);
     }
