@@ -8,22 +8,22 @@ class ColorUtils {
     const d = document.createElement('div');
     d.style.display = 'none';
     d.style.color = background;
-    const colorTokens = getComputedStyle(
-      document.body.appendChild(d)
-    ).color.match(/\d+/g);
+
+    const computedColor = getComputedStyle(document.body.appendChild(d)).color;
+    const colorTokens = computedColor.match(/\d+/g);
     let color: number[] = [];
+
     if (colorTokens) {
       color = colorTokens.map(a => parseInt(a, 10));
     } else {
-      throw new Error(
-        'Invalid color received. Expected something like ["123", "123", "123"].'
-      );
+      throw new Error(`Invalid color received. Got ${computedColor}`);
     }
     document.body.removeChild(d);
     const brightness = ColorUtils.getBrightness(color);
     return brightness < 125;
   }
 
+  // Note: leaving this as arbitrary length number[] in case of RGBA().
   static getBrightness(color: number[]): number {
     // http://www.w3.org/TR/AERT#color-contrast
     return Math.round(
