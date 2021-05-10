@@ -8,14 +8,14 @@
  * @returns DOM element matching the given class or null if not found
  */
 
-export function getClosestByClassName(element, className) {
+export function getClosestByClassName(
+  element: Element | null,
+  className: string
+): Element | null {
   if (!element) {
     return null;
   }
-  if (element.classList && element.classList.contains(className)) {
-    return element;
-  }
-  return getClosestByClassName(element.parentNode, className);
+  return element.closest(`.${className}`);
 }
 
 export default { getClosestByClassName };
