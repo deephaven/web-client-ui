@@ -29,7 +29,7 @@ class TimeUtils {
    * Minutes aren't paded, as thats a slower change
    * @param {integer} time in seconds
    */
-  static formatElapsedTime(time) {
+  static formatElapsedTime(time: number): string {
     if (!Number.isInteger(time)) {
       throw new Error(
         `${time} is not a number that can be expressed as a formatted time`
@@ -43,7 +43,7 @@ class TimeUtils {
     return (
       `${hours > 0 ? `${hours}h ` : ''}` +
       `${mins > 0 || hours > 0 ? `${mins}m ` : ''}` +
-      `${time >= 60 ? `${seconds}s`.padStart(3, 0) : `${seconds}s`}`
+      `${time >= 60 ? `${seconds}s`.padStart(3, '0') : `${seconds}s`}`
     );
   }
 
@@ -51,20 +51,23 @@ class TimeUtils {
    * Format the time into hh:mm:ss format, eg. '12:34:56'
    * @param {integer} timeInSeconds in seconds
    */
-  static formatTime(timeInSeconds) {
+  static formatTime(timeInSeconds: number): string {
     if (!Number.isInteger(timeInSeconds) || timeInSeconds < 0) {
       throw new Error(
         `${timeInSeconds} is not a number that can be expressed as a formatted time`
       );
     }
 
-    const hours = String(Math.floor(timeInSeconds / (60 * 60))).padStart(2, 0);
+    const hours = String(Math.floor(timeInSeconds / (60 * 60))).padStart(
+      2,
+      '0'
+    );
 
     const divisorForMinutes = timeInSeconds % (60 * 60);
-    const minutes = String(Math.floor(divisorForMinutes / 60)).padStart(2, 0);
+    const minutes = String(Math.floor(divisorForMinutes / 60)).padStart(2, '0');
 
     const divisorForSeconds = divisorForMinutes % 60;
-    const seconds = String(Math.ceil(divisorForSeconds)).padStart(2, 0);
+    const seconds = String(Math.ceil(divisorForSeconds)).padStart(2, '0');
 
     return `${hours}:${minutes}:${seconds}`;
   }
@@ -73,7 +76,7 @@ class TimeUtils {
    * Parse time in seconds from the provided time string
    * @param {string} timeString Time string in hh:mm:ss format
    */
-  static parseTime(timeString) {
+  static parseTime(timeString: string): number {
     if (!timeString || typeof timeString !== 'string') {
       throw new Error(`${timeString} is not a valid string`);
     }
