@@ -11,6 +11,7 @@ import {
   StorageTableListener,
   StorageItemSuccessErrorListener,
   StorageItemSuccessListener,
+  StorageSnapshot,
 } from './StorageTable';
 
 const log = Log.module('PouchStorageTable');
@@ -251,6 +252,58 @@ export class PouchStorageTable<T extends StorageItem = StorageItem>
     }
 
     return item;
+  }
+
+  async getSnapshot(
+    sortedRanges: [number, number][]
+  ): Promise<StorageSnapshot<T>> {
+    if (!this.currentViewport) {
+      throw new Error('Viewport not set');
+    }
+    const { currentViewport: viewport } = this;
+
+    const itemMap: Map<number, T> = new Map();
+    const indexes: number[] = [];
+    let lastIndex = -1;
+
+    await Promise.all(
+      sortedRanges.map(async ([from, to]) => {
+        const limit = to - from + 1;
+        return this.db
+          .find({
+            selector: selectorWithSearch(viewport.search),
+            skip: from,
+            limit,
+            sort: this.sort,
+            fields: ['id', 'name'],
+          })
+          .then(findSnapshotResult => {
+            for (let i = 0; i < limit; i += 1) {
+              const index = from + i;
+              indexes.push(index);
+              itemMap.set(index, findSnapshotResult.docs[i]);
+            }
+          });
+      })
+    );
+
+    function iterator() {
+      return {
+        hasNext: () => lastIndex + 1 < indexes.length,
+        next: () => {
+          lastIndex += 1;
+          return {
+            value: indexes[lastIndex],
+            done: lastIndex >= indexes.length,
+          };
+        },
+      };
+    }
+
+    return {
+      added: { [Symbol.iterator]: iterator },
+      get: (index: number) => itemMap.get(index),
+    };
   }
 }
 

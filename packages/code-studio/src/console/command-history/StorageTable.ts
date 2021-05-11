@@ -36,6 +36,11 @@ export type StorageTableListener = () => void;
 
 export type StorageListenerRemover = () => void;
 
+export type StorageSnapshot<T> = {
+  added: Iterable<number>;
+  get(index: number): T | undefined;
+};
+
 /**
  * A table for getting a list of items from storage, with id/name pairs
  * Can search the table with a case insensitive search
@@ -57,6 +62,7 @@ export interface StorageTable<T extends StorageItem = StorageItem> {
     id: string,
     listener: StorageItemListener<T>
   ): StorageListenerRemover;
+  getSnapshot(sortedRanges: [number, number][]): Promise<StorageSnapshot<T>>;
   close(): void;
 }
 

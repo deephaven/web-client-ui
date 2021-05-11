@@ -156,30 +156,23 @@ class CommandHistory extends Component {
    * If they're not within the current viewport, will fetch them from the table
    * @returns {Promise<string[]>} Array of selected commands
    */
-  getSelectedCommands() {
+  async getSelectedCommands() {
     const { items, offset, selectedRanges } = this.state;
     const ranges = selectedRanges.slice().sort((a, b) => a[0] - b[0]);
 
-    return this.pending.add(
-      new Promise((resolve, reject) => {
-        if (ranges.length === 0) {
-          resolve([]);
-        } else if (
-          ranges[0][0] >= offset &&
-          ranges[ranges.length - 1][1] < offset + items.length
-        ) {
-          // All ranges are in the current viewport, just copy the data we've already got
-          resolve(
-            CommandHistory.getCommandsFromViewport(items, offset, ranges)
-          );
-        } else {
-          // TODO: core#376 Allow copying outside of current viewport
-          reject(
-            new Error('Unable to copy commands outside of current viewport')
-          );
-        }
-      })
-    );
+    if (ranges.length === 0) {
+      return [];
+    }
+    if (
+      ranges[0][0] >= offset &&
+      ranges[ranges.length - 1][1] < offset + items.length
+    ) {
+      // All ranges are in the current viewport, just copy the data we've already got
+      return CommandHistory.getCommandsFromViewport(items, offset, ranges);
+    }
+    const { table } = this.props;
+    const snapshot = await this.pending.add(table.getSnapshot(ranges));
+    return [...snapshot.added].map(index => snapshot.get(index)?.name ?? '');
   }
 
   /**
@@ -353,7 +346,10 @@ CommandHistory.propTypes = {
   language: PropTypes.string.isRequired,
   sendToConsole: PropTypes.func.isRequired,
   sendToNotebook: PropTypes.func.isRequired,
-  table: PropTypes.shape({ size: PropTypes.number }).isRequired,
+  table: PropTypes.shape({
+    size: PropTypes.number,
+    getSnapshot: PropTypes.func.isRequired,
+  }).isRequired,
 };
 
 export default CommandHistory;
