@@ -6,6 +6,13 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import debounce from 'lodash.debounce';
 import Log from '@deephaven/log';
+import {
+  getInputFiltersForDashboard,
+  getLinksForDashboard,
+  getColumnSelectionValidatorForDashboard,
+  getUser,
+  getWorkspace,
+} from '@deephaven/redux';
 import { PromiseUtils } from '@deephaven/utils';
 import { ContextMenuRoot } from '@deephaven/components';
 import { IrisGridUtils, IrisGrid } from '../../iris-grid';
@@ -23,13 +30,6 @@ import {
 } from '../../include/prop-types';
 import { PluginUtils } from '../../plugins';
 import WidgetPanel from './WidgetPanel';
-import {
-  getInputFiltersForDashboard,
-  getLinksForDashboard,
-  getColumnSelectionValidatorForDashboard,
-  getUser,
-  getWorkspace,
-} from '../../redux/selectors';
 import './IrisGridPanel.scss';
 import TableUtils from '../../iris-grid/TableUtils';
 import LayoutUtils from '../../layout/LayoutUtils';
@@ -44,6 +44,8 @@ const DEBOUNCE_PANEL_STATE_UPDATE = 500;
 const PLUGIN_COMPONENTS = { IrisGrid, IrisGridTableModel, ContextMenuRoot };
 
 export class IrisGridPanel extends PureComponent {
+  static COMPONENT = 'IrisGridPanel';
+
   constructor(props) {
     super(props);
 

@@ -6,8 +6,6 @@ import deepEqual from 'deep-equal';
 import memoize from 'memoize-one';
 import dh from '@deephaven/jsapi-shim';
 import Log from '@deephaven/log';
-import { Pending, PromiseUtils } from '@deephaven/utils';
-import DropdownFilter from '../../controls/dropdown-filter/DropdownFilter';
 import {
   getActiveTool,
   getColumnsForDashboard,
@@ -16,7 +14,9 @@ import {
   getLinksForDashboard,
   getSettings,
   getTableMapForDashboard,
-} from '../../redux/selectors';
+} from '@deephaven/redux';
+import { Pending, PromiseUtils } from '@deephaven/utils';
+import DropdownFilter from '../../controls/dropdown-filter/DropdownFilter';
 import { InputFilterEvent } from '../events';
 import './DropdownFilterPanel.scss';
 import { GLPropTypes, UIPropTypes } from '../../include/prop-types';

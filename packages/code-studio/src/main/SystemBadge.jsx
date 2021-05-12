@@ -3,8 +3,8 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import classNames from 'classnames';
 import { Tooltip } from '@deephaven/components';
+import { getServerConfigValues } from '@deephaven/redux';
 import { ColorUtils } from '@deephaven/utils';
-import { getServerConfigValues } from '../redux/selectors';
 import './SystemBadge.scss';
 
 const SystemBadge = ({ systemName, hostName, systemType, systemColor }) => (

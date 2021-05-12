@@ -17,7 +17,11 @@ function makeItems(count = 10) {
 const defaultItems = makeItems();
 
 function mountItems(items) {
-  const table = { size: items.length, onUpdate: () => {} };
+  const table = {
+    size: items.length,
+    onUpdate: () => {},
+    getSnapshot: () => {},
+  };
   const wrapper = mount(
     <CommandHistory
       table={table}

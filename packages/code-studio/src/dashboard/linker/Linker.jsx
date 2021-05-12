@@ -11,15 +11,13 @@ import {
   getTimeZone,
   getIsolatedLinkerPanelIdForDashboard,
   getLinksForDashboard,
-} from '../../redux/selectors';
-import {
   setActiveTool as setActiveToolAction,
   setDashboardLinks as setDashboardLinksAction,
   addDashboardLinks as addDashboardLinksAction,
   deleteDashboardLinks as deleteDashboardLinksAction,
   setDashboardIsolatedLinkerPanelId as setDashboardIsolatedLinkerPanelIdAction,
   setDashboardColumnSelectionValidator as setDashboardColumnSelectionValidatorAction,
-} from '../../redux/actions';
+} from '@deephaven/redux';
 import ToolType from '../../tools/ToolType';
 import {
   ChartEvent,

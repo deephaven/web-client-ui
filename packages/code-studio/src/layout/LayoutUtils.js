@@ -213,23 +213,21 @@ class LayoutUtils {
   /**
    * Removes dynamic props from components in the given config so this config could be serialized
    * @param {Array} config Config object
-   * @param {Object} mapComponentConfig Map of component names to functions mapping their props and state
+   * @param {(name: string, config: PanelConfig) => PanelConfig | null} dehydrateComponent Function to dehydrate the component. Returns null if it shouldn't be saved
    * @returns {Array} Dehydrated config
    */
-  static dehydrateLayoutConfig(config, mapComponentConfig) {
+  static dehydrateLayoutConfig(config, dehydrateComponent) {
     if (!config || !config.length) {
       return [];
     }
-    const mappedComponents = Object.keys(mapComponentConfig);
     const dehydratedConfig = [];
 
     for (let i = 0; i < config.length; i += 1) {
       const itemConfig = config[i];
       const { component, content } = itemConfig;
       if (component) {
-        if (mappedComponents.includes(component)) {
-          const mapConfig = mapComponentConfig[component];
-          const componentConfig = mapConfig(itemConfig);
+        const componentConfig = dehydrateComponent(component, itemConfig);
+        if (componentConfig) {
           dehydratedConfig.push(componentConfig);
         } else {
           log.debug2(
@@ -241,7 +239,7 @@ class LayoutUtils {
           ...itemConfig,
           content: LayoutUtils.dehydrateLayoutConfig(
             content,
-            mapComponentConfig
+            dehydrateComponent
           ),
         };
         dehydratedConfig.push(layoutItemConfig);
@@ -316,35 +314,28 @@ class LayoutUtils {
   /**
    * Adds dynamic props to components in the given config so this config could be used to initialize a layout
    * @param {Array} config Dehydrated config object
-   * @param {Object} hydrateComponentPropsMap Props to be injected into component props
+   * @param {(name: string, config: PanelProps) => PanelProps} hydrateComponent Function to hydrate the component
    * @returns {Array} Hydrated config
    */
-  static hydrateLayoutConfig(config, hydrateComponentPropsMap) {
+  static hydrateLayoutConfig(config, hydrateComponent) {
     if (!config || !config.length) {
       return [];
     }
-    const componentsToUpdate = Object.keys(hydrateComponentPropsMap);
     const hydratedConfig = [];
 
     for (let i = 0; i < config.length; i += 1) {
       const itemConfig = config[i];
       const { component, content, props, type } = itemConfig;
       if (type === 'react-component') {
-        // Need to make sure every panel has an ID
-        const id = itemConfig.id ? itemConfig.id : shortid();
-        if (componentsToUpdate.includes(component)) {
-          hydratedConfig.push({
-            ...itemConfig,
-            id,
-            props: hydrateComponentPropsMap[component](props),
-          });
-        } else {
-          hydratedConfig.push({ ...itemConfig, id });
-        }
+        hydratedConfig.push({
+          ...itemConfig,
+          id: itemConfig?.id ?? shortid(),
+          props: hydrateComponent(component, props),
+        });
       } else if (content) {
         const contentConfig = LayoutUtils.hydrateLayoutConfig(
           content,
-          hydrateComponentPropsMap
+          hydrateComponent
         );
         if (
           itemConfig.activeItemIndex != null &&

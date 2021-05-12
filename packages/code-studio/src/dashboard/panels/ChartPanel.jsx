@@ -8,13 +8,6 @@ import debounce from 'lodash.debounce';
 import dh from '@deephaven/jsapi-shim';
 import { ThemeExport } from '@deephaven/components';
 import Log from '@deephaven/log';
-import { Pending, PromiseUtils, TextUtils } from '@deephaven/utils';
-import WidgetPanel from './WidgetPanel';
-import Chart from '../../chart/Chart';
-import {
-  setActiveTool as setActiveToolAction,
-  setDashboardIsolatedLinkerPanelId as setDashboardIsolatedLinkerPanelIdAction,
-} from '../../redux/actions';
 import {
   getActiveTool,
   getColumnSelectionValidatorForDashboard,
@@ -23,7 +16,12 @@ import {
   getLinksForDashboard,
   getOpenedPanelMapForDashboard,
   getTableMapForDashboard,
-} from '../../redux/selectors';
+  setActiveTool as setActiveToolAction,
+  setDashboardIsolatedLinkerPanelId as setDashboardIsolatedLinkerPanelIdAction,
+} from '@deephaven/redux';
+import { Pending, PromiseUtils, TextUtils } from '@deephaven/utils';
+import WidgetPanel from './WidgetPanel';
+import Chart from '../../chart/Chart';
 import ToolType from '../../tools/ToolType';
 import {
   GLPropTypes,
@@ -43,6 +41,8 @@ const log = Log.module('ChartPanel');
 const UPDATE_MODEL_DEBOUNCE = 150;
 
 export class ChartPanel extends Component {
+  static COMPONENT = 'ChartPanel';
+
   constructor(props) {
     super(props);
 

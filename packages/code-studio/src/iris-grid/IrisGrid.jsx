@@ -34,6 +34,7 @@ import {
   vsTools,
 } from '@deephaven/icons';
 import dh from '@deephaven/jsapi-shim';
+import { getSettings } from '@deephaven/redux';
 import { Pending, PromiseUtils, ValidationError } from '@deephaven/utils';
 import throttle from 'lodash.throttle';
 import debounce from 'lodash.debounce';
@@ -72,7 +73,6 @@ import {
   TableSaver,
   VisibilityOrderingBuilder,
 } from './sidebar';
-import { getSettings } from '../redux/selectors';
 import IrisGridUtils from './IrisGridUtils';
 import CrossColumnSearch from './CrossColumnSearch';
 import { IrisPropTypes } from '../include/prop-types';

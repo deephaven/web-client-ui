@@ -9,8 +9,8 @@ class PanelManager {
 
   constructor(
     layout,
-    hydrateComponentPropMap = {},
-    dehydrateComponentConfigMap = {},
+    hydrateComponent = (name, props) => props,
+    dehydrateComponent = (name, config) => config,
     openedMap = new Map(),
     closed = [],
     onPanelsUpdated = () => {}
@@ -26,8 +26,8 @@ class PanelManager {
     this.handleClosed = this.handleClosed.bind(this);
 
     this.layout = layout;
-    this.hydrateComponentPropMap = hydrateComponentPropMap;
-    this.dehydrateComponentConfigMap = dehydrateComponentConfigMap;
+    this.hydrateComponent = hydrateComponent;
+    this.dehydrateComponent = dehydrateComponent;
     this.onPanelsUpdated = onPanelsUpdated;
 
     // Store the opened and closed panels
@@ -226,10 +226,11 @@ class PanelManager {
 
   addClosedPanel(glContainer) {
     const config = LayoutUtils.getComponentConfigFromContainer(glContainer);
-    if (config && this.dehydrateComponentConfigMap[config.component]) {
-      const dehydratedConfig = this.dehydrateComponentConfigMap[
-        config.component
-      ](config);
+    if (config) {
+      const dehydratedConfig = this.dehydrateComponent(
+        config.component,
+        config
+      );
       if (dehydratedConfig) {
         this.closed.push(dehydratedConfig);
       }

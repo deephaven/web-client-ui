@@ -3,12 +3,12 @@ import ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
 import 'bootstrap';
 import 'fira';
+import { store } from '@deephaven/redux';
 import './index.scss';
 import AppRouter from './main/AppRouter';
 import DownloadServiceWorkerUtils from './DownloadServiceWorkerUtils';
 import logInit from './log/LogInit.ts';
 import MonacoUtils from './monaco/MonacoUtils';
-import store from './redux/store';
 import { unregister } from './serviceWorker';
 
 logInit();

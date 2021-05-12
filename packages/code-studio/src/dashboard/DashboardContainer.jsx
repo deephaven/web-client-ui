@@ -3,35 +3,8 @@ import PropTypes from 'prop-types';
 import { connect, Provider, ReactReduxContext } from 'react-redux';
 import throttle from 'lodash.throttle';
 import Log from '@deephaven/log';
-import GoldenLayout from 'golden-layout';
-import '../layout/golden-layout';
 import {
-  ChartPanel,
-  CommandHistoryPanel,
-  ConsolePanel,
-  DropdownFilterPanel,
-  InputFilterPanel,
-  IrisGridPanel,
-  LogPanel,
-  MarkdownPanel,
-  NotebookPanel,
-  PandasPanel,
-  PanelManager,
-} from './panels';
-import MarkdownUtils from '../controls/markdown/MarkdownUtils';
-import {
-  ChartEventHandler,
-  ConsoleEventHandler,
-  ControlEventHandler,
-  InputFilterEventHandler,
-  IrisGridEventHandler,
-  LayoutEventHandler,
-  NotebookEventHandler,
-  PandasEventHandler,
-} from './event-handlers';
-import LayoutUtils from '../layout/LayoutUtils';
-import { getActiveTool } from '../redux/selectors';
-import {
+  getActiveTool,
   setActiveTool as setActiveToolAction,
   setDashboardColumns as setDashboardColumnsAction,
   setDashboardInputFilters as setDashboardInputFiltersAction,
@@ -42,7 +15,12 @@ import {
   setDashboardColumnSelectionValidator as setDashboardColumnSelectionValidatorAction,
   setDashboardConsoleCreatorSettings as setDashboardConsoleCreatorSettingsAction,
   setDashboardLinks as setDashboardLinksAction,
-} from '../redux/actions';
+} from '@deephaven/redux';
+import GoldenLayout from 'golden-layout';
+import '../layout/golden-layout';
+import { PanelManager } from './panels';
+import { LayoutEventHandler } from './event-handlers';
+import LayoutUtils from '../layout/LayoutUtils';
 import Linker from './linker/Linker';
 import './DashboardContainer.scss';
 import { UIPropTypes } from '../include/prop-types';
@@ -52,39 +30,14 @@ const log = Log.module('DashboardContainer');
 const RESIZE_THROTTLE = 100;
 
 export class DashboardContainer extends Component {
-  static dehydratePanelConfig(config) {
-    const { props, componentState } = config;
-    const { metadata } = props;
-    let { panelState = null } = props;
-    if (componentState) {
-      ({ panelState } = componentState);
-    }
-    const newProps = {};
-    if (metadata) {
-      newProps.metadata = metadata;
-    }
-    if (panelState) {
-      newProps.panelState = panelState;
-    }
-
-    return {
-      ...config,
-      componentState: null,
-      props: newProps,
-      type: 'react-component',
-    };
-  }
-
   constructor(props) {
     super(props);
 
     this.handleLayoutStateChanged = this.handleLayoutStateChanged.bind(this);
-    this.handleInputFiltersChanged = this.handleInputFiltersChanged.bind(this);
-    this.handleConsoleSettingsChanged = this.handleConsoleSettingsChanged.bind(
-      this
-    );
     this.handlePanelsChanged = this.handlePanelsChanged.bind(this);
     this.handleResize = throttle(this.handleResize.bind(this), RESIZE_THROTTLE);
+    this.hydrateComponent = this.hydrateComponent.bind(this);
+    this.dehydrateComponent = this.dehydrateComponent.bind(this);
 
     this.eventHandlers = [];
     this.isInitialised = false;
@@ -129,98 +82,11 @@ export class DashboardContainer extends Component {
     setDashboardIsolatedLinkerPanelId(id, null);
   }
 
-  makeHydrateComponentPropsMap() {
-    const { id: localDashboardId } = this.props;
-
-    return {
-      ChartPanel: props => ({
-        ...props,
-        localDashboardId,
-      }),
-      ConsolePanel: props => ({
-        metadata: {},
-        ...props,
-        localDashboardId,
-      }),
-      CommandHistoryPanel: props => ({
-        metadata: {},
-        ...props,
-        localDashboardId,
-      }),
-      DropdownFilterPanel: props => ({
-        ...props,
-        localDashboardId,
-      }),
-      InputFilterPanel: props => ({
-        ...props,
-        localDashboardId,
-      }),
-      IrisGridPanel: props => ({
-        ...props,
-        localDashboardId,
-      }),
-      LogPanel: props => ({
-        ...props,
-      }),
-      MarkdownPanel: props => ({
-        ...props,
-        localDashboardId,
-      }),
-      NotebookPanel: props => ({
-        ...props,
-      }),
-      PandasPanel: props => ({
-        ...props,
-        localDashboardId,
-      }),
-    };
-  }
-
-  makeComponentTemplateMap(panelManager) {
-    return {
-      DropdownFilterPanel: config => this.makeComponentTemplate(config),
-      InputFilterPanel: config => this.makeComponentTemplate(config),
-      MarkdownPanel: config => this.makeMarkdownTemplate(config, panelManager),
-    };
-  }
-
-  makeComponentTemplate(config) {
-    // Just a default that populates the localDashboardId prop properly
-    const { id } = this.props;
-    return {
-      ...config,
-      props: {
-        ...config.props,
-        localDashboardId: id,
-      },
-    };
-  }
-
-  makeMarkdownTemplate(config, panelManager) {
-    const openedMarkdowns = panelManager.getOpenedPanelConfigsOfType(
-      ControlEventHandler.MARKDOWN_COMPONENT
-    );
-    const closedMarkdowns = panelManager.getClosedPanelConfigsOfType(
-      ControlEventHandler.MARKDOWN_COMPONENT
-    );
-    const usedTitles = openedMarkdowns.map(markdown => markdown.title);
-    const title = MarkdownUtils.getNewMarkdownTitle(usedTitles);
-    const content =
-      closedMarkdowns.length > 0 ? null : MarkdownUtils.DEFAULT_CONTENT;
-    return this.makeComponentTemplate({
-      ...config,
-      props: {
-        ...config.props,
-        panelState: { content },
-      },
-      title,
-    });
-  }
-
   init() {
     this.initData();
     const layout = this.initLayout();
     this.initEventHandlers(layout);
+    this.initPlugins(layout);
     this.isInitialised = true;
   }
 
@@ -231,15 +97,14 @@ export class DashboardContainer extends Component {
   }
 
   initLayout() {
-    const { layoutConfig, data, onGoldenLayoutChange } = this.props;
+    const { layoutConfig, data, onGoldenLayoutChange, plugins } = this.props;
     const { layoutSettings = {} } = data;
     this.setState({
       dashboardIsEmpty: layoutConfig.length === 0,
     });
-    const hydrateComponentPropsMap = this.makeHydrateComponentPropsMap();
     const content = LayoutUtils.hydrateLayoutConfig(
       layoutConfig,
-      hydrateComponentPropsMap
+      this.hydrateComponent
     );
     const config = {
       ...LayoutUtils.makeDefaultLayout(),
@@ -250,25 +115,12 @@ export class DashboardContainer extends Component {
     log.debug('InitLayout', content);
 
     const layout = new GoldenLayout(config, this.layoutElement.current);
-
-    this.registerComponent(layout, 'ChartPanel', ChartPanel);
-    this.registerComponent(layout, ConsolePanel.COMPONENT, ConsolePanel);
-    this.registerComponent(
-      layout,
-      CommandHistoryPanel.COMPONENT,
-      CommandHistoryPanel
-    );
-    this.registerComponent(
-      layout,
-      DropdownFilterPanel.COMPONENT,
-      DropdownFilterPanel
-    );
-    this.registerComponent(layout, 'InputFilterPanel', InputFilterPanel);
-    this.registerComponent(layout, 'IrisGridPanel', IrisGridPanel);
-    this.registerComponent(layout, LogPanel.COMPONENT, LogPanel);
-    this.registerComponent(layout, NotebookPanel.COMPONENT, NotebookPanel);
-    this.registerComponent(layout, 'PandasPanel', PandasPanel);
-    this.registerComponent(layout, 'MarkdownPanel', MarkdownPanel);
+    for (let i = 0; i < plugins.length; i += 1) {
+      const { panels } = plugins[i] ?? [];
+      for (let j = 0; j < panels.length; j += 1) {
+        this.registerComponent(layout, panels[j].name, panels[j].definition);
+      }
+    }
 
     // Need to initialize the panelmanager to listen for events before actually initializing the layout
     // Other we may miss some mount events from a panel on a dashboard reload
@@ -309,32 +161,10 @@ export class DashboardContainer extends Component {
 
   initPanelManager(layout) {
     const { data } = this.props;
-    const hydrateComponentPropsMap = this.makeHydrateComponentPropsMap();
-    const dehydrateClosedComponentConfigMap = {
-      // If we want panel manager to save other types of closed panels, update dehydrater here
-      MarkdownPanel: config => {
-        const { title, componentState, props } = config;
-        let { panelState = null } = props;
-        if (componentState) {
-          ({ panelState } = componentState);
-        }
-        if (
-          !title ||
-          !panelState ||
-          !panelState.content ||
-          panelState.content.length === 0 ||
-          panelState.content === MarkdownUtils.DEFAULT_CONTENT
-        ) {
-          // We don't want to save it if there's no content
-          return null;
-        }
-        return DashboardContainer.dehydratePanelConfig(config);
-      },
-    };
     const panelManager = new PanelManager(
       layout,
-      hydrateComponentPropsMap,
-      dehydrateClosedComponentConfigMap,
+      this.hydrateComponent,
+      this.dehydrateComponent,
       new Map(),
       data.closed ?? [],
       this.handlePanelsChanged
@@ -345,60 +175,37 @@ export class DashboardContainer extends Component {
   }
 
   initEventHandlers(layout) {
-    const { id } = this.props;
+    const { id, plugins } = this.props;
     const { panelManager } = this;
 
-    const dehydrateComponentConfigMap = {
-      ChartPanel: DashboardContainer.dehydratePanelConfig,
-      ConsolePanel: DashboardContainer.dehydratePanelConfig,
-      CommandHistoryPanel: DashboardContainer.dehydratePanelConfig,
-      DropdownFilterPanel: DashboardContainer.dehydratePanelConfig,
-      IrisGridPanel: DashboardContainer.dehydratePanelConfig,
-      InputFilterPanel: DashboardContainer.dehydratePanelConfig,
-      LogPanel: DashboardContainer.dehydratePanelConfig,
-      MarkdownPanel: DashboardContainer.dehydratePanelConfig,
-      NotebookPanel: DashboardContainer.dehydratePanelConfig,
-      PandasPanel: DashboardContainer.dehydratePanelConfig,
-    };
+    const config = { id, layout, panelManager };
 
-    const componentTemplateMap = this.makeComponentTemplateMap(panelManager);
+    for (let i = 0; i < plugins.length; i += 1) {
+      plugins[i].initialize?.(config);
+    }
 
-    const gridEventHandler = new IrisGridEventHandler(layout, id);
     const layoutEventHandler = new LayoutEventHandler(
       layout,
-      dehydrateComponentConfigMap,
+      this.dehydrateComponent,
       this.handleLayoutStateChanged
     );
-    const chartEventHandler = new ChartEventHandler(layout, id);
-    const controlEventHandler = new ControlEventHandler(
-      layout,
-      componentTemplateMap
-    );
-    const inputFilterEventHandler = new InputFilterEventHandler(
-      layout,
-      this.handleInputFiltersChanged
-    );
-    const consoleEventHandler = new ConsoleEventHandler(
-      layout,
-      panelManager,
-      this.handleConsoleSettingsChanged
-    );
-    const notebookEventHandler = new NotebookEventHandler(layout, panelManager);
-    const pandasEventHandler = new PandasEventHandler(layout, id);
 
-    this.eventHandlers = [
-      consoleEventHandler,
-      gridEventHandler,
-      layoutEventHandler,
-      notebookEventHandler,
-      chartEventHandler,
-      controlEventHandler,
-      inputFilterEventHandler,
-      pandasEventHandler,
-    ];
+    this.eventHandlers = [layoutEventHandler];
+  }
+
+  initPlugins(layout) {
+    const { id, plugins } = this.props;
+    const { panelManager } = this;
+
+    const config = { id, layout, panelManager };
+
+    for (let i = 0; i < plugins.length; i += 1) {
+      plugins[i].initialize?.(config);
+    }
   }
 
   deinit(updateState = true) {
+    this.deinitPlugins();
     this.deinitEventHandlers();
     this.deinitLayout(updateState);
     this.isInitialised = false;
@@ -431,6 +238,35 @@ export class DashboardContainer extends Component {
       const handler = this.eventHandlers[i];
       handler.stopListening();
     }
+  }
+
+  deinitPlugins() {
+    const { id, plugins } = this.props;
+    const { layout } = this.state;
+    const { panelManager } = this;
+
+    const config = { id, layout, panelManager };
+
+    for (let i = 0; i < plugins.length; i += 1) {
+      plugins[i].deinitialize?.(config);
+    }
+  }
+
+  hydrateComponent(name, initialProps) {
+    const { plugins } = this.props;
+    return plugins.reduce(
+      (props, plugin) => plugin.hydrateComponent(name, props),
+      initialProps
+    );
+  }
+
+  dehydrateComponent(name, initialConfig) {
+    const { plugins } = this.props;
+    return plugins.reduce(
+      (config, plugin) =>
+        config ? plugin.dehydrateComponent(name, config) : config,
+      initialConfig
+    );
   }
 
   handleResize() {
@@ -468,23 +304,6 @@ export class DashboardContainer extends Component {
     }
 
     onLayoutConfigChange(newLayoutConfig);
-  }
-
-  handleInputFiltersChanged({ columns, filters, tableMap }) {
-    const { id } = this.props;
-    const {
-      setDashboardPanelTableMap,
-      setDashboardColumns,
-      setDashboardInputFilters,
-    } = this.props;
-    setDashboardPanelTableMap(id, tableMap);
-    setDashboardColumns(id, columns);
-    setDashboardInputFilters(id, filters);
-  }
-
-  handleConsoleSettingsChanged({ consoleCreatorSettings }) {
-    const { setDashboardConsoleCreatorSettings, id } = this.props;
-    setDashboardConsoleCreatorSettings(id, consoleCreatorSettings);
   }
 
   handlePanelsChanged({ closed, openedMap }) {
@@ -548,6 +367,17 @@ DashboardContainer.propTypes = {
   setDashboardColumnSelectionValidator: PropTypes.func.isRequired,
   setDashboardConsoleCreatorSettings: PropTypes.func.isRequired,
   setDashboardLinks: PropTypes.func.isRequired,
+  plugins: PropTypes.arrayOf(
+    PropTypes.shape({
+      panels: PropTypes.arrayOf(
+        PropTypes.shape({ name: PropTypes.string, definition: PropTypes.any })
+      ),
+      hydrateComponent: PropTypes.func,
+      dehydrateComponent: PropTypes.func,
+      initialize: PropTypes.func,
+      deinitialize: PropTypes.func,
+    })
+  ),
 };
 
 DashboardContainer.defaultProps = {
@@ -556,6 +386,7 @@ DashboardContainer.defaultProps = {
   onDataChange: () => {},
   onLayoutConfigChange: () => {},
   onGoldenLayoutChange: () => {},
+  plugins: [],
 };
 
 DashboardContainer.contextType = ReactReduxContext;
