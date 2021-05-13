@@ -19,13 +19,56 @@ import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
 import classNames from 'classnames';
 import { CSSTransition } from 'react-transition-group';
-import PopperJs from 'popper.js';
+import PopperJs, { PopperOptions } from 'popper.js';
 import PropTypes from 'prop-types';
 import ThemeExport from '../ThemeExport';
 import './Popper.scss';
 
-class Popper extends Component {
-  constructor(props) {
+interface PopperProps {
+  options: PopperOptions;
+  className: string;
+  timeout: number;
+  onEntered: () => void;
+  onExited: () => void;
+  isShown: boolean;
+  closeOnBlur: boolean;
+  interactive: boolean;
+}
+
+interface PopperState {
+  show: boolean;
+  popper: PopperJs | null;
+}
+
+class Popper extends Component<PopperProps, PopperState> {
+  static propTypes = {
+    children: PropTypes.node.isRequired,
+    options: PropTypes.shape({}),
+    className: PropTypes.string,
+    timeout: PropTypes.number,
+    onEntered: PropTypes.func,
+    onExited: PropTypes.func,
+    isShown: PropTypes.bool,
+    closeOnBlur: PropTypes.bool,
+    interactive: PropTypes.bool,
+  };
+
+  static defaultProps = {
+    options: {},
+    className: '',
+    timeout: ThemeExport.transitionMs,
+    onEntered(): void {
+      // no-op
+    },
+    onExited(): void {
+      // no-op
+    },
+    isShown: false,
+    interactive: false,
+    closeOnBlur: false,
+  };
+
+  constructor(props: PopperProps) {
     super(props);
 
     this.handleEnter = this.handleEnter.bind(this);
@@ -33,20 +76,23 @@ class Popper extends Component {
     this.handleBlur = this.handleBlur.bind(this);
     this.element = document.createElement('div');
     this.element.className = 'popper-container';
-    this.container = null;
+    this.container = React.createRef<HTMLDivElement>();
 
     this.isExiting = false;
-    this.rAF = null;
+
+    // cancelAnimationFrame does nothing if the handle isn't recognized
+    // requestAnimationFrame provides a non-zero number, so 0 as a default should be safe
+    this.rAF = 0;
 
     const { isShown } = this.props;
 
     this.state = {
-      show: isShown || false,
+      show: isShown,
       popper: null,
     };
   }
 
-  componentDidUpdate(prevProps) {
+  componentDidUpdate(prevProps: PopperProps): void {
     const { isShown } = this.props;
 
     if (prevProps.isShown !== isShown) {
@@ -61,13 +107,22 @@ class Popper extends Component {
     }
   }
 
-  componentWillUnmount() {
+  componentWillUnmount(): void {
     this.destroyPopper(false);
     this.isExiting = false;
   }
 
+  element: HTMLDivElement;
+
+  container: React.RefObject<HTMLDivElement>;
+
+  isExiting: boolean;
+
+  // This is the request animation frame handle number
+  rAF: number;
+
   /** Goes through an element and it's parents until the first visible element is found */
-  getVisibleElement(element) {
+  getVisibleElement(element: HTMLElement | null): HTMLElement | null {
     if (
       element == null ||
       element.clientHeight > 0 ||
@@ -76,14 +131,18 @@ class Popper extends Component {
       return element;
     }
 
-    return this.getVisibleElement(element.parentNode);
+    return this.getVisibleElement(element.parentElement);
   }
 
-  initPopper() {
+  initPopper(): void {
     let { popper } = this.state;
     const { closeOnBlur } = this.props;
 
     if (popper) {
+      return;
+    }
+
+    if (this.container.current === null) {
       return;
     }
 
@@ -94,9 +153,9 @@ class Popper extends Component {
     };
     document.body.appendChild(this.element);
 
-    let parent = this.getVisibleElement(this.container);
+    let parent = this.getVisibleElement(this.container.current);
     if (parent == null) {
-      parent = this.container;
+      parent = this.container.current;
     }
 
     popper = new PopperJs(parent, this.element, options);
@@ -106,15 +165,19 @@ class Popper extends Component {
     cancelAnimationFrame(this.rAF);
     this.rAF = window.requestAnimationFrame(() => {
       // for blur on close to work, focus needs to be on or within the popper
-      if (closeOnBlur && !this.element.contains(document.activeElement))
+      if (closeOnBlur && !this.element.contains(document.activeElement)) {
         // only set focus, if a focus isn't already set within
-        this.element.firstChild.focus(); // first child of the portal element
+        const elem = this.element.firstElementChild;
+        if (elem instanceof HTMLElement) {
+          elem.focus(); // first child of the portal element
+        }
+      }
     });
 
     this.setState({ popper });
   }
 
-  destroyPopper(updateState = true) {
+  destroyPopper(updateState = true): void {
     this.isExiting = false;
     cancelAnimationFrame(this.rAF);
 
@@ -132,32 +195,35 @@ class Popper extends Component {
     }
   }
 
-  show() {
+  show(): void {
     this.initPopper();
     this.setState({ show: true });
   }
 
-  hide() {
+  hide(): void {
     this.setState({ show: false });
   }
 
-  scheduleUpdate() {
+  scheduleUpdate(): void {
     const { popper } = this.state;
     if (popper) popper.scheduleUpdate();
   }
 
-  handleBlur(e) {
+  handleBlur(e: React.FocusEvent): void {
+    if (!(e.relatedTarget instanceof HTMLElement)) {
+      return;
+    }
     if (!this.element.contains(e.relatedTarget)) {
       this.hide();
     }
   }
 
-  handleEnter() {
+  handleEnter(): void {
     const { onEntered } = this.props;
     onEntered(); // trigger any parent component waiting for enter handler
   }
 
-  handleExit() {
+  handleExit(): void {
     const { onExited } = this.props;
     onExited(); // trigger any parent component waiting for exited handler
 
@@ -169,7 +235,7 @@ class Popper extends Component {
     this.isExiting = false;
   }
 
-  renderContent() {
+  renderContent(): JSX.Element {
     const {
       className,
       children,
@@ -212,14 +278,12 @@ class Popper extends Component {
     );
   }
 
-  render() {
+  render(): JSX.Element {
     const { popper } = this.state;
     return (
       <div
         className="popper-parent-container"
-        ref={container => {
-          this.container = container;
-        }}
+        ref={this.container}
         style={{ display: 'none' }}
       >
         {popper && ReactDOM.createPortal(this.renderContent(), this.element)}
@@ -227,28 +291,5 @@ class Popper extends Component {
     );
   }
 }
-
-Popper.propTypes = {
-  children: PropTypes.node.isRequired,
-  options: PropTypes.shape({}),
-  className: PropTypes.string,
-  timeout: PropTypes.number,
-  onEntered: PropTypes.func,
-  onExited: PropTypes.func,
-  isShown: PropTypes.bool,
-  closeOnBlur: PropTypes.bool,
-  interactive: PropTypes.bool,
-};
-
-Popper.defaultProps = {
-  options: {},
-  className: '',
-  timeout: ThemeExport.transitionMs,
-  onEntered: () => {},
-  onExited: () => {},
-  isShown: null,
-  interactive: false,
-  closeOnBlur: false,
-};
 
 export default Popper;

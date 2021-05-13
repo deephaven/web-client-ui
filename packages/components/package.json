@@ -82,7 +82,11 @@
     "@types/react": "^16.14.0",
     "@types/react-beautiful-dnd": "^13.0.0",
     "@types/react-dom": "^16.9.8",
+<<<<<<< HEAD
     "@types/react-transition-group": "^4.4.0",
+=======
+    "@types/react-transition-group": "^2.x",
+>>>>>>> MPopper conversion to TS
     "@types/shortid": "0.0.29",
     "bootstrap": "4.4.1",
     "classnames": "^2.2.6",
