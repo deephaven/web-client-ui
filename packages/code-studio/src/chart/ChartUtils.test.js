@@ -1,7 +1,7 @@
 import dh from '@deephaven/jsapi-shim';
+import { Formatter } from '@deephaven/iris-grid';
 import ChartUtils from './ChartUtils';
 import ChartTestUtils from './ChartTestUtils';
-import Formatter from '../iris-grid/Formatter';
 
 function makeFormatter() {
   return new Formatter();

@@ -4,6 +4,8 @@ import { connect } from 'react-redux';
 import debounce from 'lodash.debounce';
 import deepEqual from 'deep-equal';
 import memoize from 'memoize-one';
+import { Formatter, FormatterUtils, TableUtils } from '@deephaven/iris-grid';
+import { DateTimeColumnFormatter } from '@deephaven/iris-grid/dist/formatters';
 import dh from '@deephaven/jsapi-shim';
 import Log from '@deephaven/log';
 import {
@@ -20,11 +22,7 @@ import DropdownFilter from '../../controls/dropdown-filter/DropdownFilter';
 import { InputFilterEvent } from '../events';
 import './DropdownFilterPanel.scss';
 import { GLPropTypes, UIPropTypes } from '../../include/prop-types';
-import Formatter from '../../iris-grid/Formatter';
-import FormatterUtils from '../../iris-grid/FormatterUtils';
-import { DateTimeColumnFormatter } from '../../iris-grid/formatters';
 import LayoutUtils from '../../layout/LayoutUtils';
-import TableUtils from '../../iris-grid/TableUtils';
 import ToolType from '../../tools/ToolType';
 import WidgetPanel from './WidgetPanel';
 

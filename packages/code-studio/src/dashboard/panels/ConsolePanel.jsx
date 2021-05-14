@@ -7,6 +7,7 @@ import shortid from 'shortid';
 import debounce from 'lodash.debounce';
 import memoize from 'memoize-one';
 import { connect } from 'react-redux';
+import { IrisGridModelFactory } from '@deephaven/iris-grid';
 import dh from '@deephaven/jsapi-shim';
 import { ContextActions, ThemeExport } from '@deephaven/components';
 import Log from '@deephaven/log';
@@ -23,7 +24,6 @@ import {
 } from '../events';
 import { FigureChartModel } from '../../chart';
 import { GLPropTypes } from '../../include/prop-types';
-import IrisGridModelFactory from '../../iris-grid/IrisGridModelFactory';
 import ConsoleUtils from '../../console/common/ConsoleUtils';
 import './ConsolePanel.scss';
 import Panel from './Panel';

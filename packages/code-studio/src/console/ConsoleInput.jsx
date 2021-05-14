@@ -3,13 +3,13 @@ import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import { connect } from 'react-redux';
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
+import { TableUtils } from '@deephaven/iris-grid';
 import Log from '@deephaven/log';
 import { PromiseUtils } from '@deephaven/utils';
 import { getCommandHistoryStorage } from '@deephaven/redux';
 import MonacoUtils from '../monaco/MonacoUtils';
 import MonacoTheme from '../monaco/MonacoTheme.module.scss';
 import './ConsoleInput.scss';
-import TableUtils from '../iris-grid/TableUtils';
 
 const log = Log.module('ConsoleInput');
 

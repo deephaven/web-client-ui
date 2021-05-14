@@ -8,6 +8,12 @@ import { CSSTransition, TransitionGroup } from 'react-transition-group';
 import debounce from 'lodash.debounce';
 import classNames from 'classnames';
 import { Checkbox, ThemeExport } from '@deephaven/components';
+import { Formatter, TableUtils } from '@deephaven/iris-grid';
+import {
+  DateTimeColumnFormatter,
+  IntegerColumnFormatter,
+  DecimalColumnFormatter,
+} from '@deephaven/iris-grid/dist/formatters';
 import Log from '@deephaven/log';
 import {
   getDefaultDateTimeFormat,
@@ -19,14 +25,6 @@ import {
   saveSettings as saveSettingsAction,
 } from '@deephaven/redux';
 import { DbNameValidator, TimeUtils } from '@deephaven/utils';
-import Formatter from '../iris-grid/Formatter';
-import TableUtils from '../iris-grid/TableUtils';
-
-import {
-  DateTimeColumnFormatter,
-  IntegerColumnFormatter,
-  DecimalColumnFormatter,
-} from '../iris-grid/formatters';
 
 const log = Log.module('FormattingSectionContent');
 

@@ -1,6 +1,6 @@
 import React, { PureComponent } from 'react';
 import { Grid, MockGridModel, MockTreeGridModel } from '@deephaven/grid';
-import { IrisGrid } from '../iris-grid';
+import { IrisGrid } from '@deephaven/iris-grid/dist/IrisGrid';
 import MockIrisGridTreeModel from './MockIrisGridTreeModel';
 
 class Grids extends PureComponent {

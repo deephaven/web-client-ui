@@ -5,6 +5,8 @@ import shortid from 'shortid';
 import memoize from 'memoize-one';
 import { CSSTransition } from 'react-transition-group';
 import { ThemeExport } from '@deephaven/components';
+import { DateUtils, TableUtils } from '@deephaven/iris-grid';
+import { DateTimeColumnFormatter } from '@deephaven/iris-grid/dist/formatters';
 import Log from '@deephaven/log';
 import {
   getActiveTool,
@@ -31,9 +33,6 @@ import LinkerUtils from './LinkerUtils';
 import LinkType from './LinkType';
 import { PanelManager } from '../panels';
 import { UIPropTypes } from '../../include/prop-types';
-import TableUtils from '../../iris-grid/TableUtils';
-import { DateTimeColumnFormatter } from '../../iris-grid/formatters';
-import DateUtils from '../../iris-grid/DateUtils';
 
 const log = Log.module('Linker');
 

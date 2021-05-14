@@ -4,7 +4,7 @@ import {
   MockGridModel,
   MockTreeGridModel,
 } from '@deephaven/grid';
-import { IrisGrid as IrisGridComponent } from '../iris-grid';
+import { IrisGrid as IrisGridComponent } from '@deephaven/iris-grid/dist/IrisGrid';
 import MockIrisGridTreeModel from './MockIrisGridTreeModel';
 
 const irisGridModel = new MockIrisGridTreeModel(new MockTreeGridModel());

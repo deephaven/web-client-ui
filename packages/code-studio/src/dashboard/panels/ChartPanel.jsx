@@ -5,6 +5,7 @@ import memoize from 'memoize-one';
 import { connect } from 'react-redux';
 import { CSSTransition } from 'react-transition-group';
 import debounce from 'lodash.debounce';
+import { IrisGridUtils } from '@deephaven/iris-grid';
 import dh from '@deephaven/jsapi-shim';
 import { ThemeExport } from '@deephaven/components';
 import Log from '@deephaven/log';
@@ -33,7 +34,6 @@ import ChartFilterOverlay from './ChartFilterOverlay';
 import ChartColumnSelectorOverlay from './ChartColumnSelectorOverlay';
 import ControlType from '../../controls/ControlType';
 import { ChartUtils } from '../../chart';
-import { IrisGridUtils } from '../../iris-grid';
 import './ChartPanel.scss';
 import LayoutUtils from '../../layout/LayoutUtils';
 

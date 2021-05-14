@@ -3,11 +3,13 @@ import classNames from 'classnames';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { ButtonOld, SocketedButton } from '@deephaven/components';
 import { dhTruck } from '@deephaven/icons';
-import { ReactComponent as BarIcon } from '../iris-grid/sidebar/icons/BarIcon.svg';
-import { ReactComponent as ScatterIcon } from '../iris-grid/sidebar/icons/ScatterIcon.svg';
-import { ReactComponent as LineIcon } from '../iris-grid/sidebar/icons/LineIcon.svg';
-import { ReactComponent as PieIcon } from '../iris-grid/sidebar/icons/PieIcon.svg';
-import { ReactComponent as HistogramIcon } from '../iris-grid/sidebar/icons/HistogramIcon.svg';
+// import {
+//   BarIcon,
+//   HistogramIcon,
+//   LineIcon,
+//   PieIcon,
+//   ScatterIcon,
+// } from '@deephaven/iris-grid/src/sidebar/icons';
 
 class Buttons extends Component {
   static renderButtonBrand(type, brand) {
@@ -56,18 +58,18 @@ class Buttons extends Component {
     );
   }
 
-  static renderIconButtons() {
-    return (
-      <div>
-        <h5>Icon Buttons</h5>
-        {Buttons.renderIconButton(<BarIcon />, 'Bar')}
-        {Buttons.renderIconButton(<LineIcon />, 'Line')}
-        {Buttons.renderIconButton(<ScatterIcon />, 'Scatter')}
-        {Buttons.renderIconButton(<PieIcon />, 'Pie')}
-        {Buttons.renderIconButton(<HistogramIcon />, 'Histogram')}
-      </div>
-    );
-  }
+  // static renderIconButtons() {
+  //   return (
+  //     <div>
+  //       <h5>Icon Buttons</h5>
+  //       {Buttons.renderIconButton(<BarIcon />, 'Bar')}
+  //       {Buttons.renderIconButton(<LineIcon />, 'Line')}
+  //       {Buttons.renderIconButton(<ScatterIcon />, 'Scatter')}
+  //       {Buttons.renderIconButton(<PieIcon />, 'Pie')}
+  //       {Buttons.renderIconButton(<HistogramIcon />, 'Histogram')}
+  //     </div>
+  //   );
+  // }
 
   static renderSocketedButtons() {
     return (

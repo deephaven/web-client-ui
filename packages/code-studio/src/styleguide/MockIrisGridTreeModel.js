@@ -3,7 +3,7 @@
 /* eslint no-empty-function: "off" */
 import memoize from 'memoize-one';
 import { GridRange, MockTreeGridModel } from '@deephaven/grid';
-import IrisGridModel from '../iris-grid/IrisGridModel';
+import { IrisGridModel } from '@deephaven/iris-grid';
 
 const EMPTY_ARRAY = [];
 
