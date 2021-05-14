@@ -1,12 +1,19 @@
 /* eslint func-names: "off" */
 import React from 'react';
 import { mount } from 'enzyme';
+import { IrisGridModelFactory } from '@deephaven/iris-grid';
 import dh from '@deephaven/jsapi-shim';
 import { TestUtils } from '@deephaven/utils';
 import { IrisGridPanel } from './IrisGridPanel';
-import IrisGridModelFactory from '../../iris-grid/IrisGridModelFactory';
 
-jest.mock('../../iris-grid/IrisGrid');
+jest.mock('@deephaven/iris-grid', () => {
+  const MockReact = jest.requireActual('react');
+  return {
+    ...jest.requireActual('@deephaven/iris-grid'),
+    IrisGrid: MockReact.forwardRef(() => null),
+  };
+});
+
 jest.mock('../../layout/LayoutUtils', () => ({
   getIdFromPanel: jest.fn(() => 'TEST_ID'),
   getTitleFromContainer: jest.fn(() => 'TEST_PANEL_TITLE'),

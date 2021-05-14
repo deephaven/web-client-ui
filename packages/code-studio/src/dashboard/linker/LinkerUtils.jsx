@@ -1,8 +1,8 @@
 import shortid from 'shortid';
+import { TableUtils } from '@deephaven/iris-grid';
 import Log from '@deephaven/log';
 import { ChartPanel, IrisGridPanel, DropdownFilterPanel } from '../panels';
 import LayoutUtils from '../../layout/LayoutUtils';
-import TableUtils from '../../iris-grid/TableUtils';
 import LinkType from './LinkType';
 
 const log = Log.module('LinkerLink');

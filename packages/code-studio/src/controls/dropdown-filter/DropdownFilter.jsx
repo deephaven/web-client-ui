@@ -8,12 +8,12 @@ import ReactCardFlip from 'react-card-flip';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { SocketedButton } from '@deephaven/components';
 import { vsGear } from '@deephaven/icons';
+import { TableUtils } from '@deephaven/iris-grid';
 import memoizee from 'memoizee';
 import memoize from 'memoize-one';
 import debounce from 'lodash.debounce';
 import Log from '@deephaven/log';
 import { IrisPropTypes, UIPropTypes } from '../../include/prop-types';
-import TableUtils from '../../iris-grid/TableUtils';
 import './DropdownFilter.scss';
 
 const log = Log.module('DropdownFilter');

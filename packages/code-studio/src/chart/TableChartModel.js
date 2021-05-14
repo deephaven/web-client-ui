@@ -1,9 +1,9 @@
 /* eslint class-methods-use-this: "off" */
 /* eslint no-unused-vars: "off" */
+import { TableUtils } from '@deephaven/iris-grid';
 import dh from '@deephaven/jsapi-shim';
 import Log from '@deephaven/log';
 import ChartModel from './ChartModel';
-import TableUtils from '../iris-grid/TableUtils';
 import ChartUtils from './ChartUtils';
 
 const log = Log.module('TableChartModel');

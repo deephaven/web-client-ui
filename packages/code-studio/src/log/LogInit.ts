@@ -1,4 +1,4 @@
-import { LogProxy, LogHistory, Logger, Log, LoggerLevel } from '@deephaven/log';
+import { LogProxy, LogHistory, Logger, Log } from '@deephaven/log';
 
 declare global {
   interface Window {
@@ -16,13 +16,6 @@ export default function logInit(): void {
     logProxy.enable();
     logHistory.enable();
   }
-
-  let level = parseInt(process.env.REACT_APP_LOG_LEVEL ?? '', 10);
-  if (Number.isNaN(level)) {
-    level = LoggerLevel.INFO;
-  }
-
-  Log.setLogLevel(level);
 
   if (process.env.NODE_ENV === 'development' && window) {
     // In development environment, expose the default logger so that log level can be changed dynamically

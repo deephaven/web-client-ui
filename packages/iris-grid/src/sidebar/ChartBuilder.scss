@@ -1,0 +1,65 @@
+@import '@deephaven/components/scss/custom.scss';
+
+.chart-builder {
+  padding-left: 1.5em;
+  padding-right: 1.5em;
+  user-select: none;
+
+  label {
+    font-weight: 500;
+    padding-right: 0.5em;
+  }
+
+  .label-left {
+    justify-content: left;
+    padding-left: 0;
+  }
+
+  .label-right {
+    justify-content: right;
+    padding-right: 0;
+  }
+
+  .chart-builder-link {
+    margin-top: 0.5em;
+    margin-bottom: -0.5em;
+    .label-right {
+      color: $text-muted;
+      svg {
+        margin-right: -1em;
+      }
+    }
+  }
+
+  .chart-builder-link-info {
+    color: $text-muted;
+    font-size: $small-font-size;
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  hr {
+    margin-left: -2em;
+    margin-right: -2em;
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
+    background: $gray-800;
+  }
+
+  .col-chart-type {
+    padding-left: 2px;
+    padding-right: 2px;
+  }
+
+  .btn-chart-type {
+    font-size: smaller;
+  }
+
+  .btn-reset {
+    margin-right: 0.5em;
+  }
+
+  .form-series-item:not(:first-child) {
+    margin-top: 0.5em;
+  }
+}

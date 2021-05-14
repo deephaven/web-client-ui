@@ -12,6 +12,7 @@
     "@deephaven/components": "^0.1.0",
     "@deephaven/grid": "^0.1.0",
     "@deephaven/icons": "^0.1.0",
+    "@deephaven/iris-grid": "^0.1.0",
     "@deephaven/jsapi-shim": "^0.1.0",
     "@deephaven/log": "^0.1.0",
     "@deephaven/react-hooks": "^0.1.0",
@@ -98,6 +99,7 @@
   "devDependencies": {
     "@babel/core": "7.12.3",
     "@deephaven/eslint-config": "^0.1.0",
+    "@deephaven/mocks": "^0.1.0",
     "@deephaven/prettier-config": "^0.1.0",
     "@deephaven/stylelint-config": "^0.1.0",
     "@deephaven/tsconfig": "^0.1.0",

@@ -1,6 +1,6 @@
 /* eslint-disable class-methods-use-this */
-import { DateTimeColumnFormatter } from '../iris-grid/formatters';
-import Formatter from '../iris-grid/Formatter';
+import { DateTimeColumnFormatter } from '@deephaven/iris-grid/dist/formatters';
+import { Formatter } from '@deephaven/iris-grid';
 
 const unimplementedFunction = name => {
   throw new Error(`${name} not implemented`);
