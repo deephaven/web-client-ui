@@ -15,9 +15,15 @@ function mountAggregations({
   settings = { aggregations: [] as Aggregation[], showOnTop: false },
   onChange = jest.fn(),
   onEdit = jest.fn(),
+  isRollup = false,
 } = {}): ReactWrapper {
   return mount(
-    <Aggregations settings={settings} onChange={onChange} onEdit={onEdit} />
+    <Aggregations
+      settings={settings}
+      onChange={onChange}
+      onEdit={onEdit}
+      isRollup={isRollup}
+    />
   );
 }
 

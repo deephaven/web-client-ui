@@ -6,7 +6,14 @@ import dh from '@deephaven/jsapi-shim';
 import { TestUtils } from '@deephaven/utils';
 import { IrisGridPanel } from './IrisGridPanel';
 
-jest.mock('@deephaven/iris-grid');
+jest.mock('@deephaven/iris-grid', () => {
+  const MockReact = jest.requireActual('react');
+  return {
+    ...jest.requireActual('@deephaven/iris-grid'),
+    IrisGrid: MockReact.forwardRef(() => null),
+  };
+});
+
 jest.mock('../../layout/LayoutUtils', () => ({
   getIdFromPanel: jest.fn(() => 'TEST_ID'),
   getTitleFromContainer: jest.fn(() => 'TEST_PANEL_TITLE'),
