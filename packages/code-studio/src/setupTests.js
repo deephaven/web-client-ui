@@ -1,6 +1,5 @@
 /* eslint import/no-extraneous-dependencies: "off" */
 import { configure } from 'enzyme';
-import { Log, LoggerLevel } from '@deephaven/log';
 import { TestUtils } from '@deephaven/utils';
 import Adapter from 'enzyme-adapter-react-16';
 import '../public/__mocks__/dh-core';
@@ -19,10 +18,3 @@ window.URL.createObjectURL = () => {};
 window['__react-beautiful-dnd-disable-dev-warnings'] = true;
 
 HTMLCanvasElement.prototype.getContext = jest.fn(TestUtils.makeMockContext);
-
-let level = parseInt(process.env.REACT_APP_LOG_LEVEL ?? '', 10);
-if (Number.isNaN(level)) {
-  level = LoggerLevel.INFO;
-}
-
-Log.setLogLevel(level);
