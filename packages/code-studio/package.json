@@ -99,6 +99,7 @@
   "devDependencies": {
     "@babel/core": "7.12.3",
     "@deephaven/eslint-config": "^0.1.0",
+    "@deephaven/mocks": "^0.1.0",
     "@deephaven/prettier-config": "^0.1.0",
     "@deephaven/stylelint-config": "^0.1.0",
     "@deephaven/tsconfig": "^0.1.0",

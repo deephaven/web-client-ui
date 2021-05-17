@@ -70,6 +70,7 @@
     "@deephaven/icons": "^0.1.0",
     "@deephaven/jsapi-shim": "^0.1.0",
     "@deephaven/log": "^0.1.0",
+    "@deephaven/mocks": "^0.1.0",
     "@deephaven/react-hooks": "^0.1.0",
     "@deephaven/redux": "^0.x",
     "@deephaven/tsconfig": "^0.1.0",
