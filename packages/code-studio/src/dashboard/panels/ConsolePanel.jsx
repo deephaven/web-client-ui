@@ -10,8 +10,8 @@ import { connect } from 'react-redux';
 import dh from '@deephaven/jsapi-shim';
 import { ContextActions, ThemeExport } from '@deephaven/components';
 import Log from '@deephaven/log';
+import { getCommandHistoryStorage } from '@deephaven/redux';
 import { Pending, PromiseUtils } from '@deephaven/utils';
-import { getCommandHistoryStorage } from '../../redux/selectors';
 import Console from '../../console/Console';
 import {
   ChartEvent,

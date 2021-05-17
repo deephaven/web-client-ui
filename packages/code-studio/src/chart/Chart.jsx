@@ -4,8 +4,8 @@ import deepEqual from 'deep-equal';
 import { connect } from 'react-redux';
 import memoize from 'memoize-one';
 import { vsLoading, dhGraphLineDown, dhWarningFilled } from '@deephaven/icons';
-
 import Log from '@deephaven/log';
+import { getSettings } from '@deephaven/redux';
 import Plotly from './plotly/Plotly';
 import Plot from './plotly/Plot';
 
@@ -15,7 +15,6 @@ import Formatter from '../iris-grid/Formatter';
 import FormatterUtils from '../iris-grid/FormatterUtils';
 import ChartConstants from './Chart.module.scss';
 import './Chart.scss';
-import { getSettings } from '../redux/selectors';
 
 const log = Log.module('Chart');
 

@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import memoize from 'memoize-one';
 import { connect } from 'react-redux';
 import Log from '@deephaven/log';
-import { getClosedPanelsForDashboard } from '../../redux/selectors';
+import { getClosedPanelsForDashboard } from '@deephaven/redux';
 import { PanelEvent } from '../events';
 import Panel from './Panel';
 import LayoutUtils from '../../layout/LayoutUtils';
@@ -17,6 +17,8 @@ import { GLPropTypes } from '../../include/prop-types';
 const log = Log.module('MarkdownPanel');
 
 export class MarkdownPanel extends Component {
+  static COMPONENT = 'MarkdownPanel';
+
   constructor(props) {
     super(props);
 

@@ -3,6 +3,19 @@ import PropTypes from 'prop-types';
 import { connect, Provider, ReactReduxContext } from 'react-redux';
 import throttle from 'lodash.throttle';
 import Log from '@deephaven/log';
+import {
+  getActiveTool,
+  setActiveTool as setActiveToolAction,
+  setDashboardColumns as setDashboardColumnsAction,
+  setDashboardInputFilters as setDashboardInputFiltersAction,
+  setDashboardIsolatedLinkerPanelId as setDashboardIsolatedLinkerPanelIdAction,
+  setDashboardClosedPanels as setDashboardClosedPanelsAction,
+  setDashboardOpenedPanelMap as setDashboardOpenedPanelMapAction,
+  setDashboardPanelTableMap as setDashboardPanelTableMapAction,
+  setDashboardColumnSelectionValidator as setDashboardColumnSelectionValidatorAction,
+  setDashboardConsoleCreatorSettings as setDashboardConsoleCreatorSettingsAction,
+  setDashboardLinks as setDashboardLinksAction,
+} from '@deephaven/redux';
 import GoldenLayout from 'golden-layout';
 import '../layout/golden-layout';
 import {
@@ -30,19 +43,6 @@ import {
   PandasEventHandler,
 } from './event-handlers';
 import LayoutUtils from '../layout/LayoutUtils';
-import { getActiveTool } from '../redux/selectors';
-import {
-  setActiveTool as setActiveToolAction,
-  setDashboardColumns as setDashboardColumnsAction,
-  setDashboardInputFilters as setDashboardInputFiltersAction,
-  setDashboardIsolatedLinkerPanelId as setDashboardIsolatedLinkerPanelIdAction,
-  setDashboardClosedPanels as setDashboardClosedPanelsAction,
-  setDashboardOpenedPanelMap as setDashboardOpenedPanelMapAction,
-  setDashboardPanelTableMap as setDashboardPanelTableMapAction,
-  setDashboardColumnSelectionValidator as setDashboardColumnSelectionValidatorAction,
-  setDashboardConsoleCreatorSettings as setDashboardConsoleCreatorSettingsAction,
-  setDashboardLinks as setDashboardLinksAction,
-} from '../redux/actions';
 import Linker from './linker/Linker';
 import './DashboardContainer.scss';
 import { UIPropTypes } from '../include/prop-types';

@@ -4,10 +4,10 @@ import { connect } from 'react-redux';
 import debounce from 'lodash.debounce';
 import memoize from 'memoizee';
 import { LoadingSpinner } from '@deephaven/components';
+import { getCommandHistoryStorage } from '@deephaven/redux';
 import { TimeUtils } from '@deephaven/utils';
 import Code from '../common/Code';
 import './CommandHistoryItemTooltip.scss';
-import { getCommandHistoryStorage } from '../../redux/selectors';
 import { UIPropTypes } from '../../include/prop-types';
 
 const LOAD_DATA_DEBOUNCE = 250;

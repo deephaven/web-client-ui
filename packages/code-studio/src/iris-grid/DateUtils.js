@@ -1,6 +1,5 @@
 import dh from '@deephaven/jsapi-shim';
-import store from '../redux/store';
-import { getTimeZone } from '../redux/selectors';
+import { getTimeZone, store } from '@deephaven/redux';
 
 class DateUtils {
   static FULL_DATE_FORMAT = 'yyyy-MM-dd HH:mm:ss.SSSSSSSSS';

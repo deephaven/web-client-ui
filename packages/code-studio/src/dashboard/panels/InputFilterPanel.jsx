@@ -2,9 +2,9 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import debounce from 'lodash.debounce';
+import { getColumnsForDashboard } from '@deephaven/redux';
 import Panel from './Panel';
 import InputFilter from '../../controls/input-filter/InputFilter';
-import { getColumnsForDashboard } from '../../redux/selectors';
 import { InputFilterEvent } from '../events';
 import './InputFilterPanel.scss';
 import { GLPropTypes } from '../../include/prop-types';
@@ -12,6 +12,8 @@ import { GLPropTypes } from '../../include/prop-types';
 const INPUT_FILTER_DEBOUNCE = 250;
 
 class InputFilterPanel extends Component {
+  static COMPONENT = 'InputFilterPanel';
+
   constructor(props) {
     super(props);
 

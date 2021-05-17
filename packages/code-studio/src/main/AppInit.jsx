@@ -2,13 +2,14 @@ import React, { useCallback, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import {
+  getWorkspace,
+  getWorkspaceStorage,
   setActiveTool as setActiveToolAction,
   setCommandHistoryStorage as setCommandHistoryStorageAction,
   setUser as setUserAction,
   setWorkspace as setWorkspaceAction,
   setWorkspaceStorage as setWorkspaceStorageAction,
-} from '../redux/actions';
-import { getWorkspace, getWorkspaceStorage } from '../redux/selectors';
+} from '@deephaven/redux';
 import App from './App';
 import ToolType from '../tools/ToolType';
 import WorkspaceStorage from '../dashboard/WorkspaceStorage';

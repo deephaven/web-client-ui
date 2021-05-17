@@ -9,9 +9,6 @@ import debounce from 'lodash.debounce';
 import classNames from 'classnames';
 import { Checkbox, ThemeExport } from '@deephaven/components';
 import Log from '@deephaven/log';
-import { DbNameValidator, TimeUtils } from '@deephaven/utils';
-import Formatter from '../iris-grid/Formatter';
-import TableUtils from '../iris-grid/TableUtils';
 import {
   getDefaultDateTimeFormat,
   getFormatter,
@@ -19,8 +16,11 @@ import {
   getShowTimeZone,
   getShowTSeparator,
   getSettings,
-} from '../redux/selectors';
-import { saveSettings as saveSettingsAction } from '../redux/actions';
+  saveSettings as saveSettingsAction,
+} from '@deephaven/redux';
+import { DbNameValidator, TimeUtils } from '@deephaven/utils';
+import Formatter from '../iris-grid/Formatter';
+import TableUtils from '../iris-grid/TableUtils';
 
 import {
   DateTimeColumnFormatter,
