@@ -7,13 +7,13 @@ import shortid from 'shortid';
 import debounce from 'lodash.debounce';
 import memoize from 'memoize-one';
 import { connect } from 'react-redux';
+import { Console, ConsoleConstants, ConsoleUtils } from '@deephaven/console';
 import { IrisGridModelFactory } from '@deephaven/iris-grid';
 import dh from '@deephaven/jsapi-shim';
 import { ContextActions, ThemeExport } from '@deephaven/components';
 import Log from '@deephaven/log';
 import { getCommandHistoryStorage } from '@deephaven/redux';
 import { Pending, PromiseUtils } from '@deephaven/utils';
-import Console from '../../console/Console';
 import {
   ChartEvent,
   ConsoleEvent,
@@ -24,10 +24,8 @@ import {
 } from '../events';
 import { FigureChartModel } from '../../chart';
 import { GLPropTypes } from '../../include/prop-types';
-import ConsoleUtils from '../../console/common/ConsoleUtils';
 import './ConsolePanel.scss';
 import Panel from './Panel';
-import ConsoleConstants from '../../console/common/ConsoleConstants';
 
 const log = Log.module('ConsolePanel');
 

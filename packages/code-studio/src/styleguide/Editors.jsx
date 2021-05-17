@@ -1,6 +1,6 @@
 import React from 'react';
+import { Editor } from '@deephaven/console';
 import Constants from './StyleConstants';
-import Editor from '../console/notebook/Editor';
 
 const Editors = () => (
   <div>

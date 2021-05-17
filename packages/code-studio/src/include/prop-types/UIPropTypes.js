@@ -33,18 +33,12 @@ const Link = PropTypes.shape({
 
 const Links = PropTypes.arrayOf(Link);
 
-const CommandHistoryItem = PropTypes.shape({
-  id: PropTypes.string.isRequired,
-  name: PropTypes.string.isRequired,
-});
-
 const UIPropTypes = Object.freeze({
   InputFilter,
   LinkPoint,
   Link,
   Links,
   Panel,
-  CommandHistoryItem,
 });
 
 export default UIPropTypes;

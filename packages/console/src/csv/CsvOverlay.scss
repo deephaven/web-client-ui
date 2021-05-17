@@ -1,0 +1,53 @@
+@import '@deephaven/components/scss/custom.scss';
+
+.csv-overlay {
+  margin: $spacer-2;
+  background: rgba($content-bg, 0.7);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  white-space: pre-line;
+  outline: none;
+
+  .message-content {
+    font-size: 1.2rem;
+    .message-icon {
+      font-size: 80px;
+      .svg-inline--fa {
+        font-size: inherit;
+      }
+    }
+    .message-small {
+      font-size: 0.8rem;
+    }
+    .btn {
+      align-self: center;
+      max-width: 10rem;
+    }
+  }
+
+  .selected-content {
+    display: flex;
+    flex-direction: row;
+    align-self: center;
+    .selected-icon {
+      font-size: 64px;
+      .svg-inline--fa {
+        font-size: inherit;
+      }
+    }
+    .selected-text {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      margin: 15px;
+      font-size: 1rem;
+    }
+    .selected-name {
+      font-size: 1.2rem;
+    }
+  }
+
+  @include ants-base($foreground, $background);
+}

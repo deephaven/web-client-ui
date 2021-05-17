@@ -1,0 +1,62 @@
+@import '@deephaven/components/scss/custom.scss';
+$console-pane-status-color: $gray-400;
+$console-pane-status-icon-connected-color: $gray-400;
+$console-pane-status-icon-disconnected-color: $red;
+
+.console-pane-status-bar {
+  flex-grow: 0;
+  width: 100%;
+  font-size: small;
+  text-align: right;
+  color: $console-pane-status-color;
+
+  div {
+    display: inline-block;
+  }
+}
+
+.console-pane-status-details {
+  text-align: left;
+  max-width: 400px;
+  max-height: 80vh;
+  overflow: auto;
+
+  dd {
+    white-space: pre-line;
+  }
+}
+
+.console-status-icon {
+  height: 9px;
+  position: relative;
+  width: 9px;
+  &::before {
+    border-radius: 50%;
+    border-style: solid;
+    border-width: 2px;
+    content: '';
+    display: block;
+    height: 100%;
+    position: absolute;
+    width: 100%;
+  }
+}
+
+.console-status-icon-idle {
+  &::before {
+    border-color: $console-pane-status-icon-connected-color;
+  }
+}
+
+.console-status-icon-pending {
+  &::before {
+    border-color: $console-pane-status-icon-connected-color;
+    background: $console-pane-status-icon-connected-color;
+  }
+}
+
+.console-status-icon-disconnected {
+  &::before {
+    border-color: $console-pane-status-icon-disconnected-color;
+  }
+}

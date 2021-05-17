@@ -1,0 +1,68 @@
+/* stylelint-disable */
+@import '@deephaven/components/scss/custom.scss';
+
+:export {
+  // iris dark theme
+  error-foreground: $red;
+  background: $content-bg;
+  foreground: $gray-100;
+  line-height: 19px; // 19 is the line height in the default monaco theme
+
+  //code rules
+  //more nuanced grays required in a few spots
+  string: $yellow;
+  string-delim: $gray-400;
+  delimiter: mix($gray-400, $gray-300, 30%);
+  predefined: $green;
+  keyword: $blue;
+  storage: $red;
+  number: $purple;
+  operator: $red;
+  identifier: $gray-100;
+  namespace-identifier: $red;
+  identifier-js: $yellow;
+  comment: mix($gray-500, $gray-400, 40%);
+
+  //input
+  input-option-active-border: $input-border-color;
+  focus-border: $input-focus-border-color;
+  input-background: $input-bg;
+  input-foreground: $input-color;
+  input-border: $input-border-color;
+
+  //editor
+  editor-line-number-foreground: $gray-400;
+  editor-selection-background: $text-select-color-editor;
+  editor-line-highlight-bg: $gray-800;
+
+  //context menu
+  context-menu-background: $contextmenu-bg;
+  context-menu-foreground: $contextmenu-color;
+  menu-selection-background: $contextmenu-selected-bg;
+
+  //log items
+  log-date: $gray-400;
+  log-error: $danger;
+  log-info: $blue;
+  log-stdout: $interfacewhite;
+  log-warn: $yellow;
+  log-debug: $purple;
+  log-trace: $green;
+
+  // find matches
+  editor-find-match-background: mix($primary, $content-bg, 55%);
+  editor-find-match-highlight-background: mix($primary, $content-bg, 25%);
+
+  // find widget
+  editor-widget-background: $gray-700;
+  input-option-active-background: $primary;
+  input-option-active-foreground: $foreground;
+
+  // suggest widget
+  editor-suggest-widget-background: $gray-700;
+  editor-suggest-widget-border: $gray-500;
+  editor-suggest-widget-foreground: $white;
+  editor-suggest-widget-selected-background: mix($primary, $gray-700, 15%);
+  editor-suggest-widget-highlightForeground: $primary;
+  list-hover-background: $gray-600;
+}

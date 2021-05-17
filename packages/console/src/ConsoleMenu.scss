@@ -1,0 +1,33 @@
+@import '@deephaven/components/scss/custom.scss';
+$console-pane-menu-color: $gray-300;
+$console-pane-menu-hover-color: $white;
+$console-pane-menu-icons-color: $gray-400;
+$console-pane-arrow-stroke-color: $black;
+$console-pane-arrow-stroke-width: 30;
+
+.console-pane-menu {
+  .btn-link {
+    border: 0;
+    min-width: 2rem;
+    padding: 4px; //must use pixels for buttons with svg icons or risk half pixel issues
+    color: $console-pane-menu-icons-color;
+    z-index: 15; // so focus ring appears above tab header bar
+
+    svg.fa-caret-down g g path {
+      color: $console-pane-menu-color;
+      stroke: $console-pane-arrow-stroke-color;
+      stroke-width: $console-pane-arrow-stroke-width;
+    }
+
+    &:hover {
+      color: $console-pane-menu-hover-color;
+      svg.fa-caret-down g g path {
+        color: $console-pane-menu-hover-color;
+      }
+    }
+  }
+  .btn-overflow {
+    color: $console-pane-menu-color;
+    padding-right: 0;
+  }
+}

@@ -10,6 +10,7 @@ import {
   DropdownMenu,
   Tooltip,
 } from '@deephaven/components';
+import { ScriptEditor, ScriptEditorUtils } from '@deephaven/console';
 import {
   vsSave,
   vsKebabVertical,
@@ -22,8 +23,6 @@ import debounce from 'lodash.debounce';
 import Log from '@deephaven/log';
 import { Pending, PromiseUtils } from '@deephaven/utils';
 import { ConsoleEvent, NotebookEvent } from '../events';
-import ScriptEditor from '../../console/notebook/ScriptEditor';
-import ScriptEditorUtils from '../../console/notebook/ScriptEditorUtils';
 
 import './NotebookPanel.scss';
 import Panel from './Panel';

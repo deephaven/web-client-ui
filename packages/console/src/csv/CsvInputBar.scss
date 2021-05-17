@@ -1,0 +1,33 @@
+@import '@deephaven/components/scss/custom.scss';
+
+.csv-input-bar-container {
+  display: flex;
+  padding: 5px 10px 0;
+  background-color: $primary-dark;
+  .csv-input-form {
+    flex-grow: 1;
+  }
+  .csv-input-buttons {
+    flex-flow: row-reverse wrap;
+    flex-grow: 1;
+    align-self: end;
+    .btn {
+      margin: 0 0 0 5px;
+    }
+  }
+  .firstRowHeaders {
+    margin: 0 0 5px;
+  }
+}
+
+.csv-progress-container {
+  display: grid;
+  grid-template-columns: max-content 1fr max-content max-content;
+  grid-gap: 10px;
+  align-items: center;
+  padding: 5px 10px;
+  background-color: $primary-dark;
+  .progress {
+    margin: 5px 0;
+  }
+}
