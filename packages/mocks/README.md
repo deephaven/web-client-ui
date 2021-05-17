@@ -13,5 +13,5 @@ Then in your `__mocks__` directory, add files as necessary to mock out modules:
 
 ```
 // File: __mocks__/lodash.debounce.js
-export { lodashDebounce as default } from '@deephaven/mocks';
+export { default } from '@deephaven/mocks/lodash.debounce';
 ```
