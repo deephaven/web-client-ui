@@ -5,17 +5,49 @@ import classNames from 'classnames';
 import PropTypes from 'prop-types';
 import './SearchInput.scss';
 
-class SearchInput extends PureComponent {
-  constructor(props) {
+interface SearchInputProps {
+  value: string;
+  placeholder: string;
+  onChange: React.ChangeEventHandler<HTMLInputElement>;
+  onKeyDown: React.KeyboardEventHandler<HTMLInputElement>;
+  className: string;
+  matchCount: number;
+  id: string;
+}
+
+class SearchInput extends PureComponent<SearchInputProps> {
+  static propTypes = {
+    value: PropTypes.string.isRequired,
+    placeholder: PropTypes.string,
+    onChange: PropTypes.func.isRequired,
+    onKeyDown: PropTypes.func,
+    className: PropTypes.string,
+    matchCount: PropTypes.number,
+    id: PropTypes.string,
+  };
+
+  static defaultProps = {
+    placeholder: 'Search',
+    className: '',
+    matchCount: null,
+    onKeyDown(): void {
+      // no-op
+    },
+    id: '',
+  };
+
+  constructor(props: SearchInputProps) {
     super(props);
     this.inputField = React.createRef();
   }
 
-  focus() {
-    this.inputField.current.focus();
+  inputField: React.RefObject<HTMLInputElement>;
+
+  focus(): void {
+    this.inputField.current?.focus();
   }
 
-  render() {
+  render(): JSX.Element {
     const {
       value,
       placeholder,
@@ -47,23 +79,5 @@ class SearchInput extends PureComponent {
     );
   }
 }
-
-SearchInput.propTypes = {
-  value: PropTypes.string.isRequired,
-  placeholder: PropTypes.string,
-  onChange: PropTypes.func.isRequired,
-  onKeyDown: PropTypes.func,
-  className: PropTypes.string,
-  matchCount: PropTypes.number,
-  id: PropTypes.string,
-};
-
-SearchInput.defaultProps = {
-  placeholder: 'Search',
-  className: '',
-  matchCount: null,
-  onKeyDown: () => {},
-  id: '',
-};
 
 export default SearchInput;
