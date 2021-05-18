@@ -18,17 +18,87 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { vsTriangleDown } from '@deephaven/icons';
 import memoize from 'memoizee';
 import classNames from 'classnames';
+import { PopperOptions } from 'popper.js';
 import SearchInput from './SearchInput';
 import { Popper } from './popper';
 
 import './ComboBox.scss';
 
-class ComboBox extends Component {
-  static MENU_NAVIGATION_DIRECTION = { UP: 'UP', DOWN: 'DOWN' };
+interface ComboBoxOption {
+  title: string;
+  value: string;
+}
+
+interface ComboBoxProps {
+  options: ComboBoxOption[];
+  popperOptions: PopperOptions;
+  onChange(value: string): void;
+  inputPlaceholder: string;
+  searchPlaceholder: string;
+  disabled: boolean;
+  className: string;
+  defaultValue: string;
+  spellCheck: boolean;
+  onEnter(): void;
+}
+
+interface ComboBoxState {
+  value: string;
+  filter: string;
+  filteredOptions: ComboBoxOption[];
+  keyboardOptionIndex: number;
+  menuIsOpen: boolean;
+  inputWidth: number;
+}
+
+enum MENU_NAVIGATION_DIRECTION {
+  UP = 'UP',
+  DOWN = 'DOWN',
+}
+
+class ComboBox extends Component<ComboBoxProps, ComboBoxState> {
+  static MENU_NAVIGATION_DIRECTION = MENU_NAVIGATION_DIRECTION;
 
   static DROP_DOWN_MENU_HEIGHT = 200;
 
-  constructor(props) {
+  static propTypes = {
+    options: PropTypes.arrayOf(
+      PropTypes.shape({
+        title: PropTypes.string.isRequired,
+        value: PropTypes.string.isRequired,
+      })
+    ).isRequired,
+    popperOptions: PropTypes.shape({
+      title: PropTypes.string.isRequired,
+      value: PropTypes.string.isRequired,
+    }),
+    onChange: PropTypes.func,
+    inputPlaceholder: PropTypes.string,
+    searchPlaceholder: PropTypes.string,
+    disabled: PropTypes.bool,
+    className: PropTypes.string,
+    defaultValue: PropTypes.string,
+    spellCheck: PropTypes.bool,
+    onEnter: PropTypes.func,
+  };
+
+  static defaultProps = {
+    onChange(): void {
+      // no-op
+    },
+    inputPlaceholder: '',
+    searchPlaceholder: 'Search',
+    disabled: false,
+    className: '',
+    defaultValue: '',
+    popperOptions: null,
+    spellCheck: true,
+    onEnter(): void {
+      // no-op
+    },
+  };
+
+  constructor(props: ComboBoxProps) {
     super(props);
     this.state = {
       value: '',
@@ -55,51 +125,62 @@ class ComboBox extends Component {
     this.handleMenuOpened = this.handleMenuOpened.bind(this);
     this.handleMenuExited = this.handleMenuExited.bind(this);
 
-    this.popper = null;
-    this.cbContainer = null;
-    this.toggleButton = null;
-    this.menuContainer = null;
-    this.input = null;
-    this.searchInput = null;
+    this.popper = React.createRef();
+    this.cbContainer = React.createRef();
+    this.toggleButton = React.createRef();
+    this.menuContainer = React.createRef();
+    this.input = React.createRef();
+    this.searchInput = React.createRef();
   }
 
-  setInputWidth() {
-    if (this.cbContainer) {
+  popper: React.RefObject<Popper>;
+
+  cbContainer: React.RefObject<HTMLDivElement>;
+
+  toggleButton: React.RefObject<HTMLButtonElement>;
+
+  menuContainer: React.RefObject<HTMLDivElement>;
+
+  input: React.RefObject<HTMLInputElement>;
+
+  searchInput: React.RefObject<SearchInput>;
+
+  setInputWidth(): void {
+    if (this.cbContainer.current) {
       this.setState({
-        inputWidth: this.cbContainer.getBoundingClientRect().width,
+        inputWidth: this.cbContainer.current.getBoundingClientRect().width,
       });
     }
   }
 
-  getCachedFilteredOptions = memoize((options, input) =>
-    options.filter(
-      option =>
-        option.title.toLowerCase().indexOf(input.toLowerCase()) >= 0 ||
-        option.value.toLowerCase().indexOf(input.toLowerCase()) >= 0
-    )
+  getCachedFilteredOptions = memoize(
+    (options: ComboBoxOption[], input: string) =>
+      options.filter(
+        option =>
+          option.title.toLowerCase().indexOf(input.toLowerCase()) >= 0 ||
+          option.value.toLowerCase().indexOf(input.toLowerCase()) >= 0
+      )
   );
 
-  focus() {
-    if (this.input) {
-      this.input.focus();
-    }
+  focus(): void {
+    this.input.current?.focus();
   }
 
-  resetValue() {
+  resetValue(): void {
     this.setState({ value: '' });
   }
 
-  updateInputValue(value) {
+  updateInputValue(value: string): void {
     const { onChange } = this.props;
     this.setState({ value });
     onChange(value);
   }
 
-  handleResize() {
+  handleResize(): void {
     this.setInputWidth();
   }
 
-  handleMenuKeyDown(event) {
+  handleMenuKeyDown(event: React.KeyboardEvent): void {
     const { filter, filteredOptions, keyboardOptionIndex } = this.state;
     const { options } = this.props;
     const menuOptions = filter ? filteredOptions : options;
@@ -108,7 +189,7 @@ class ComboBox extends Component {
       case 'Enter':
         this.updateInputValue(menuOptions[keyboardOptionIndex].value);
         this.closeMenu();
-        this.input.focus();
+        this.input.current?.focus();
         event.stopPropagation();
         event.preventDefault();
         break;
@@ -133,7 +214,7 @@ class ComboBox extends Component {
     }
   }
 
-  handleMenuNavigation(direction) {
+  handleMenuNavigation(direction: MENU_NAVIGATION_DIRECTION): void {
     const { filter, filteredOptions, keyboardOptionIndex } = this.state;
     const { options } = this.props;
     const menuOptions = filter ? filteredOptions : options;
@@ -163,7 +244,7 @@ class ComboBox extends Component {
     }
   }
 
-  handleInputKeyDown(event) {
+  handleInputKeyDown(event: React.KeyboardEvent): void {
     const { onEnter } = this.props;
     const { menuIsOpen } = this.state;
     if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
@@ -177,67 +258,72 @@ class ComboBox extends Component {
     }
   }
 
-  handleInputChange(event) {
+  handleInputChange(event: React.ChangeEvent<HTMLInputElement>): void {
     this.updateInputValue(event.target.value);
   }
 
-  handleOptionClick(event) {
-    const optionIndex = Number(event.target.value);
+  handleOptionClick(event: React.MouseEvent<HTMLButtonElement>): void {
+    const optionIndex = Number(event.currentTarget.value);
     const { filter, filteredOptions } = this.state;
     const { options } = this.props;
     const menuOptions = filter ? filteredOptions : options;
 
     this.updateInputValue(menuOptions[optionIndex].value);
     this.closeMenu();
-    this.input.focus();
+    this.input.current?.focus();
   }
 
-  handleOptionFocus(event) {
+  handleOptionFocus(event: React.FocusEvent<HTMLButtonElement>): void {
     this.setState({ keyboardOptionIndex: Number(event.target.value) });
   }
 
-  handleFilterChange(event) {
+  handleFilterChange(event: React.ChangeEvent<HTMLInputElement>): void {
     const { options } = this.props;
     const filter = event.target.value;
     const filteredOptions = this.getCachedFilteredOptions(options, filter);
     this.setState({ filter, filteredOptions, keyboardOptionIndex: 0 });
-    this.popper.scheduleUpdate();
+    this.popper.current?.scheduleUpdate();
   }
 
-  handleMenuBlur(event) {
+  handleMenuBlur(event: React.FocusEvent): void {
     // close if menu blurs, unless its an internal option or the toggleButton which triggers close via click
     if (
-      this.popper.element.contains(event.relatedTarget) ||
-      event.relatedTarget === this.toggleButton
+      (event.relatedTarget instanceof Element &&
+        this.popper.current?.element.contains(event.relatedTarget)) ||
+      event.relatedTarget === this.toggleButton.current
     ) {
       return;
     }
     this.closeMenu(false);
   }
 
-  handleInputBlur(event) {
+  handleInputBlur(event: React.FocusEvent<HTMLInputElement>): void {
     // if blur event is caused by focusing on search input or open menu by keyboard, don't close the menu
     const { menuIsOpen } = this.state;
-    if (menuIsOpen && this.popper.element.contains(event.relatedTarget)) {
+    if (
+      menuIsOpen &&
+      event.relatedTarget instanceof Element &&
+      this.popper.current?.element.contains(event.relatedTarget)
+    ) {
       return;
     }
     this.closeMenu(false);
   }
 
-  handleMenuOpened() {
+  handleMenuOpened(): void {
     this.scrollOptionIntoView();
-    this.searchInput.focus();
+    this.searchInput.current?.focus();
   }
 
-  handleMenuExited() {
+  handleMenuExited(): void {
     const { menuIsOpen } = this.state;
     if (menuIsOpen) {
       this.setState({ menuIsOpen: false, keyboardOptionIndex: 0 });
-      this.popper.hide();
+      this.popper.current?.hide();
     }
   }
 
-  toggleMenu(event) {
+  toggleMenu(event: React.MouseEvent<HTMLButtonElement>): void {
     const { menuIsOpen } = this.state;
     if (menuIsOpen) {
       this.closeMenu();
@@ -247,40 +333,41 @@ class ComboBox extends Component {
     event.stopPropagation();
   }
 
-  openMenu() {
+  openMenu(): void {
     this.updateKeyboardIndex();
     this.setInputWidth();
     this.setState({ menuIsOpen: true });
 
     window.requestAnimationFrame(() => {
-      this.popper.show();
+      this.popper.current?.show();
     });
   }
 
-  closeMenu(focusInput = true) {
+  closeMenu(focusInput = true): void {
     this.setState({ menuIsOpen: false, keyboardOptionIndex: 0 });
     if (focusInput) {
-      this.input.focus();
+      this.input.current?.focus();
     }
-    this.popper.hide();
+    this.popper.current?.hide();
   }
 
-  updateKeyboardIndex() {
+  updateKeyboardIndex(): void {
     const { value } = this.state;
     const { options } = this.props;
-    const valueIndex = options.indexOf(value);
+    const valueIndex = options.findIndex(option => option.value === value);
     if (valueIndex > 0) {
       this.setState({ keyboardOptionIndex: valueIndex });
     }
   }
 
-  scrollOptionIntoView() {
-    const options = this.menuContainer.querySelector('.cb-options');
-    const activeOption = this.menuContainer.querySelector(
+  scrollOptionIntoView(): void {
+    const options = this.menuContainer.current?.querySelector('.cb-options');
+    const activeOption = this.menuContainer.current?.querySelector(
       '.cb-option-btn.keyboard-active'
     );
     if (
-      activeOption &&
+      options instanceof HTMLElement &&
+      activeOption instanceof HTMLElement &&
       activeOption.offsetTop > ComboBox.DROP_DOWN_MENU_HEIGHT
     ) {
       options.scrollTop =
@@ -288,15 +375,13 @@ class ComboBox extends Component {
     }
   }
 
-  renderMenuElement() {
+  renderMenuElement(): JSX.Element {
     const { searchPlaceholder } = this.props;
     const { filter, inputWidth } = this.state;
     return (
       <div
         className="cb-menu-container"
-        ref={menuContainer => {
-          this.menuContainer = menuContainer;
-        }}
+        ref={this.menuContainer}
         role="presentation"
         onKeyDown={this.handleMenuKeyDown}
         onClick={event => {
@@ -308,9 +393,7 @@ class ComboBox extends Component {
         <div className="cb-search-input-container">
           <SearchInput
             value={filter}
-            ref={searchInput => {
-              this.searchInput = searchInput;
-            }}
+            ref={this.searchInput}
             onChange={this.handleFilterChange}
             className="cb-search-input"
             placeholder={searchPlaceholder}
@@ -323,7 +406,7 @@ class ComboBox extends Component {
     );
   }
 
-  renderOptions() {
+  renderOptions(): React.ReactNode {
     const { options } = this.props;
     const { keyboardOptionIndex, filter, filteredOptions } = this.state;
     const menuOptions = filter ? filteredOptions : options;
@@ -347,7 +430,7 @@ class ComboBox extends Component {
     });
   }
 
-  render() {
+  render(): JSX.Element {
     const {
       options,
       inputPlaceholder,
@@ -367,18 +450,11 @@ class ComboBox extends Component {
     };
 
     return (
-      <div
-        className="input-group cb-container"
-        ref={cbContainer => {
-          this.cbContainer = cbContainer;
-        }}
-      >
+      <div className="input-group cb-container" ref={this.cbContainer}>
         <input
           value={value || defaultValue}
           className={classNames('form-control', className, 'cb-input')}
-          ref={input => {
-            this.input = input;
-          }}
+          ref={this.input}
           onChange={this.handleInputChange}
           placeholder={inputPlaceholder || (options[0] && options[0].title)}
           disabled={disabled}
@@ -390,18 +466,14 @@ class ComboBox extends Component {
           <button
             type="button"
             className="btn cb-btn form-control"
-            ref={toggleButton => {
-              this.toggleButton = toggleButton;
-            }}
+            ref={this.toggleButton}
             onClick={this.toggleMenu}
             onKeyDown={this.handleInputKeyDown}
             disabled={disabled}
           >
             <FontAwesomeIcon icon={vsTriangleDown} />
             <Popper
-              ref={popper => {
-                this.popper = popper;
-              }}
+              ref={this.popper}
               options={popperOptions}
               className={classNames('combobox interactive')}
               onEntered={this.handleMenuOpened}
@@ -416,36 +488,4 @@ class ComboBox extends Component {
   }
 }
 
-ComboBox.propTypes = {
-  options: PropTypes.arrayOf(
-    PropTypes.shape({
-      title: PropTypes.string.isRequired,
-      value: PropTypes.string.isRequired,
-    })
-  ).isRequired,
-  popperOptions: PropTypes.shape({
-    title: PropTypes.string.isRequired,
-    value: PropTypes.string.isRequired,
-  }),
-  onChange: PropTypes.func,
-  inputPlaceholder: PropTypes.string,
-  searchPlaceholder: PropTypes.string,
-  disabled: PropTypes.bool,
-  className: PropTypes.string,
-  defaultValue: PropTypes.string,
-  spellCheck: PropTypes.bool,
-  onEnter: PropTypes.func,
-};
-
-ComboBox.defaultProps = {
-  onChange: () => {},
-  inputPlaceholder: '',
-  searchPlaceholder: 'Search',
-  disabled: false,
-  className: '',
-  defaultValue: '',
-  popperOptions: null,
-  spellCheck: true,
-  onEnter: () => {},
-};
 export default ComboBox;
