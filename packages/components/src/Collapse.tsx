@@ -4,52 +4,74 @@ import classNames from 'classnames';
 import PropTypes from 'prop-types';
 import { CSSTransition } from 'react-transition-group';
 
-class Collapse extends Component {
-  static handleEnter(elemParam) {
+interface CollapseProps {
+  className?: string;
+  in: boolean;
+  children: React.ReactNode;
+  autoFocusOnShow?: boolean;
+}
+
+class Collapse extends Component<CollapseProps> {
+  static propTypes = {
+    className: PropTypes.string,
+    in: PropTypes.bool.isRequired,
+    children: PropTypes.node.isRequired,
+    autoFocusOnShow: PropTypes.bool,
+  };
+
+  static defaultProps = {
+    className: '',
+    autoFocusOnShow: false,
+  };
+
+  static handleEnter(elemParam: HTMLElement): void {
     const elem = elemParam;
-    elem.style.height = 0;
+    elem.style.height = '0';
   }
 
-  static handleEntering(elemParam) {
+  static handleEntering(elemParam: HTMLElement): void {
     const elem = elemParam;
     elem.style.height = `${Collapse.getHeight(elem)}px`;
   }
 
-  static handleExiting(elemParam) {
+  static handleExiting(elemParam: HTMLElement): void {
     const elem = elemParam;
-    elem.style.height = 0;
+    elem.style.height = '0';
   }
 
-  static handleExit(elemParam) {
+  static handleExit(elemParam: HTMLElement): void {
     const elem = elemParam;
     elem.style.height = `${Collapse.getHeight(elem)}px`;
   }
 
-  static getHeight(elem) {
+  static getHeight(elem: HTMLElement): number {
     const scrollBarWidth = elem.scrollWidth - elem.clientWidth;
     return elem.scrollHeight - scrollBarWidth;
   }
 
-  constructor(props) {
+  constructor(props: CollapseProps) {
     super(props);
 
     this.handleEntered = this.handleEntered.bind(this);
   }
 
-  handleEntered(elemParam) {
+  handleEntered(elemParam: HTMLElement): void {
     const elem = elemParam;
-    elem.style.height = null;
+    elem.style.height = '';
 
     const { autoFocusOnShow } = this.props;
     if (autoFocusOnShow) {
-      const input = elem.querySelector('input, select, textarea');
+      const input = elem.querySelector(
+        'input, select, textarea'
+      ) as HTMLInputElement;
+
       if (input) {
         input.focus();
       }
     }
   }
 
-  render() {
+  render(): JSX.Element {
     const { children, className, in: inTransition } = this.props;
     return (
       <CSSTransition
@@ -78,17 +100,5 @@ class Collapse extends Component {
     );
   }
 }
-
-Collapse.propTypes = {
-  className: PropTypes.string,
-  in: PropTypes.bool.isRequired,
-  children: PropTypes.node.isRequired,
-  autoFocusOnShow: PropTypes.bool,
-};
-
-Collapse.defaultProps = {
-  className: '',
-  autoFocusOnShow: false,
-};
 
 export default Collapse;

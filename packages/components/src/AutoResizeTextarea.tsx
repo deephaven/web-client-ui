@@ -4,34 +4,43 @@ import classNames from 'classnames';
 
 import './AutoResizeTextarea.scss';
 
+interface AutoResizeTextareaProps {
+  value: string;
+  onChange: (val: string) => void;
+  className?: string;
+  spellCheck?: boolean;
+  placeholder?: string;
+  disabled?: boolean;
+  delimiter?: string;
+  id?: string;
+}
+
 /**
  * Makes a textarea that auto resizes based on contents, its height grows with new lines.
  * If a delimeter is set, such as " -" or " ", as used by jvm args or env vars
  * then the field will also "explode" the value by the delimiter over new lines
  * on focus, and implode on blur. By default, it doesn't word wrap.
  */
-const AutoResizeTextarea = props => {
-  const {
-    className,
-    value: propsValue,
-    onChange,
-    spellCheck,
-    placeholder,
-    disabled,
-    delimiter,
-    id,
-  } = props;
-
+const AutoResizeTextarea = ({
+  className = '',
+  value: propsValue,
+  onChange,
+  spellCheck = false,
+  placeholder = '',
+  disabled = false,
+  delimiter = '',
+  id = '',
+}: AutoResizeTextareaProps): JSX.Element => {
   const [value, setValue] = useState(propsValue);
   const [isPastedChange, setIsPastedChange] = useState(false);
-  const element = useRef(null);
+  const element = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     // keep state value in sync with prop changes
     setValue(propsValue);
   }, [propsValue]);
 
-  function explode(input) {
+  function explode(input: string) {
     // split by delimiter, commonly " " or " -"
     // strip empty strings (if delimiter is space, and there are multiple spaces in a row)
     // and join with new line and a trimmed delimeter (get rid of leading spaces)
@@ -42,7 +51,7 @@ const AutoResizeTextarea = props => {
       .join(`\n${delimiter.trim()}`);
   }
 
-  function implode(input) {
+  function implode(input: string) {
     return input
       .split('\n')
       .map(string => string.trim())
@@ -50,6 +59,9 @@ const AutoResizeTextarea = props => {
   }
 
   function reCalculateLayout() {
+    if (!element.current) {
+      return;
+    }
     element.current.style.height = 'auto'; // needed to allow component to shrink
     const resizedHeight =
       element.current.scrollHeight +
@@ -58,7 +70,7 @@ const AutoResizeTextarea = props => {
     if (resizedHeight > 0) element.current.style.height = `${resizedHeight}px`;
   }
 
-  function handleChange(event) {
+  function handleChange(event: React.ChangeEvent<HTMLTextAreaElement>) {
     let newValue = event.target.value;
     if (isPastedChange) {
       if (delimiter) newValue = explode(newValue);
@@ -69,6 +81,9 @@ const AutoResizeTextarea = props => {
   }
 
   function handleFocus() {
+    if (!element.current) {
+      return;
+    }
     if (delimiter) {
       setValue(explode(value));
       reCalculateLayout();
@@ -99,7 +114,7 @@ const AutoResizeTextarea = props => {
       className={classNames(className, 'auto-resize-textarea form-control')}
       placeholder={placeholder}
       value={value}
-      rows="1"
+      rows={1}
       onChange={handleChange}
       onFocus={handleFocus}
       onBlur={handleBlur}
