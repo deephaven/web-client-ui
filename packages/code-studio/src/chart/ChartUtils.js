@@ -1,7 +1,7 @@
 import Log from '@deephaven/log';
+import { TableUtils } from '@deephaven/iris-grid';
 import dh from '@deephaven/jsapi-shim';
 import ChartTheme from './ChartTheme';
-import TableUtils from '../iris-grid/TableUtils';
 
 const log = Log.module('ChartUtils');
 

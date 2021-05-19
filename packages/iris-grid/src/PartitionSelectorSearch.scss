@@ -1,0 +1,25 @@
+@import '@deephaven/components/scss/custom.scss';
+$partition-selector-search-input-bg: $gray-500;
+.iris-grid-partition-selector-search {
+  .iris-grid-partition-selector-search-list {
+    .item-list-scroll-pane {
+      border: none;
+    }
+  }
+  .iris-grid-partition-selector-search-empty {
+    color: $text-muted;
+    padding: $input-padding-y $input-btn-padding-x;
+    text-align: center;
+  }
+  .iris-grid-partition-selector-loading {
+    color: $text-muted;
+    padding: $input-padding-y $input-btn-padding-x;
+    text-align: center;
+  }
+  .search-container {
+    padding: $tooltip-padding-y $tooltip-padding-x;
+    .form-control {
+      background-color: $partition-selector-search-input-bg;
+    }
+  }
+}

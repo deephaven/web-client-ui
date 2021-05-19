@@ -5,6 +5,14 @@ import memoize from 'memoize-one';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import debounce from 'lodash.debounce';
+import {
+  IrisGrid,
+  IrisGridModel,
+  IrisGridUtils,
+  IrisGridTableModel,
+  TableUtils,
+} from '@deephaven/iris-grid';
+import AdvancedSettings from '@deephaven/iris-grid/dist/sidebar/AdvancedSettings';
 import Log from '@deephaven/log';
 import {
   getInputFiltersForDashboard,
@@ -15,7 +23,6 @@ import {
 } from '@deephaven/redux';
 import { PromiseUtils } from '@deephaven/utils';
 import { ContextMenuRoot } from '@deephaven/components';
-import { IrisGridUtils, IrisGrid } from '../../iris-grid';
 import { ChartUtils, ChartModelFactory } from '../../chart';
 import {
   ChartEvent,
@@ -31,11 +38,8 @@ import {
 import { PluginUtils } from '../../plugins';
 import WidgetPanel from './WidgetPanel';
 import './IrisGridPanel.scss';
-import TableUtils from '../../iris-grid/TableUtils';
 import LayoutUtils from '../../layout/LayoutUtils';
-import IrisGridModel from '../../iris-grid/IrisGridModel';
-import AdvancedSettings from '../../iris-grid/sidebar/AdvancedSettings';
-import IrisGridTableModel from '../../iris-grid/IrisGridTableModel';
+import DownloadServiceWorkerUtils from '../../DownloadServiceWorkerUtils';
 
 const log = Log.module('IrisGridPanel');
 
@@ -884,6 +888,7 @@ export class IrisGridPanel extends PureComponent {
             customFilters={pluginFilters}
             pendingDataMap={pendingDataMap}
             ref={this.irisGrid}
+            getDownloadWorker={DownloadServiceWorkerUtils.getServiceWorker}
           >
             {childrenContent}
           </IrisGrid>

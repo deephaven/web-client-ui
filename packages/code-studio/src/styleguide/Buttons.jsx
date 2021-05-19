@@ -3,11 +3,6 @@ import classNames from 'classnames';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { ButtonOld, SocketedButton } from '@deephaven/components';
 import { dhTruck } from '@deephaven/icons';
-import { ReactComponent as BarIcon } from '../iris-grid/sidebar/icons/BarIcon.svg';
-import { ReactComponent as ScatterIcon } from '../iris-grid/sidebar/icons/ScatterIcon.svg';
-import { ReactComponent as LineIcon } from '../iris-grid/sidebar/icons/LineIcon.svg';
-import { ReactComponent as PieIcon } from '../iris-grid/sidebar/icons/PieIcon.svg';
-import { ReactComponent as HistogramIcon } from '../iris-grid/sidebar/icons/HistogramIcon.svg';
 
 class Buttons extends Component {
   static renderButtonBrand(type, brand) {
@@ -36,35 +31,6 @@ class Buttons extends Component {
       <div key={type}>
         <h5>{type.length ? 'Outline' : 'Regular'}</h5>
         {brands}
-      </div>
-    );
-  }
-
-  static renderIconButton(icon, text) {
-    return (
-      <ButtonOld
-        className="btn-icon"
-        style={{
-          marginBottom: '1rem',
-          marginRight: '1rem',
-          fontSize: 'smaller',
-        }}
-      >
-        {icon}
-        {text}
-      </ButtonOld>
-    );
-  }
-
-  static renderIconButtons() {
-    return (
-      <div>
-        <h5>Icon Buttons</h5>
-        {Buttons.renderIconButton(<BarIcon />, 'Bar')}
-        {Buttons.renderIconButton(<LineIcon />, 'Line')}
-        {Buttons.renderIconButton(<ScatterIcon />, 'Scatter')}
-        {Buttons.renderIconButton(<PieIcon />, 'Pie')}
-        {Buttons.renderIconButton(<HistogramIcon />, 'Histogram')}
       </div>
     );
   }
@@ -157,7 +123,6 @@ class Buttons extends Component {
 
   render() {
     const buttons = ['', 'outline'].map(type => Buttons.renderButtons(type));
-    const iconButtons = Buttons.renderIconButtons();
     const inlineButtons = this.renderInlineButtons();
     const socketedButtons = Buttons.renderSocketedButtons();
 
@@ -166,7 +131,6 @@ class Buttons extends Component {
         <h2 className="ui-title">Buttons</h2>
         <div style={{ padding: '1rem 0' }}>
           {buttons}
-          {iconButtons}
           {inlineButtons}
           {socketedButtons}
         </div>
