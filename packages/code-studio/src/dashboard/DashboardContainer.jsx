@@ -217,9 +217,9 @@ export class DashboardContainer extends Component {
     });
   }
 
-  init() {
+  async init() {
     this.initData();
-    const layout = this.initLayout();
+    const layout = await this.initLayout();
     this.initEventHandlers(layout);
     this.isInitialised = true;
   }
@@ -230,7 +230,7 @@ export class DashboardContainer extends Component {
     setDashboardLinks(id, [...links]);
   }
 
-  initLayout() {
+  async initLayout() {
     const { layoutConfig, data, onGoldenLayoutChange } = this.props;
     const { layoutSettings = {} } = data;
     this.setState({
@@ -275,6 +275,17 @@ export class DashboardContainer extends Component {
     this.initPanelManager(layout);
 
     layout.init();
+
+    await new Promise(resolve => {
+      if (layout.isInitialised) {
+        resolve();
+        return;
+      }
+      layout.on('initialised', () => {
+        log.debug('layout initialized');
+        resolve();
+      });
+    });
 
     window.addEventListener('resize', this.handleResize);
 
