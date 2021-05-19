@@ -1,8 +1,12 @@
 import CanceledPromiseError from './CanceledPromiseError';
 import TimeoutError from './TimeoutError';
 
+interface CancelablePromise<T> extends Promise<T> {
+  cancel: () => void;
+}
+
 class PromiseUtils {
-  static isCancelablePromise(promise) {
+  static isCancelablePromise(promise: CancelablePromise<unknown>): boolean {
     return (
       this.isPromise(promise) &&
       promise.cancel != null &&
@@ -10,7 +14,7 @@ class PromiseUtils {
     );
   }
 
-  static isPromise(promise) {
+  static isPromise(promise: Promise<unknown>): boolean {
     return (
       promise != null &&
       promise.then != null &&
@@ -21,12 +25,15 @@ class PromiseUtils {
   /**
    * Creates a promise that can be canceled by calling the `cancel` function
    * Pass an optional `cleanupFunc` to perform actions on the resolved item after promise is cancelled.
-   * @param {Any} promise The item to resolve
-   * @param {Function} cleanup Function to cleanup the resolved item after cancelation. Called after both this promise is cancelled and the wrapped item was resolved (order does not matter).
+   * @param promise The item to resolve
+   * @param cleanup Function to cleanup the resolved item after cancelation. Called after both this promise is cancelled and the wrapped item was resolved (order does not matter).
    */
-  static makeCancelable(promise, cleanup = null) {
+  static makeCancelable<T>(
+    promise: Promise<T>,
+    cleanup: (val: T) => void | null
+  ): CancelablePromise<T> {
     let hasCanceled = false;
-    let resolved = null;
+    let resolved: T | undefined;
 
     const wrappedPromise = new Promise((resolve, reject) => {
       Promise.resolve(promise).then(
@@ -46,7 +53,8 @@ class PromiseUtils {
       );
     });
 
-    wrappedPromise.cancel = () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (wrappedPromise as any).cancel = () => {
       hasCanceled = true;
 
       if (resolved != null && cleanup) {
@@ -54,14 +62,14 @@ class PromiseUtils {
       }
     };
 
-    return wrappedPromise;
+    return wrappedPromise as CancelablePromise<T>;
   }
 
-  static isCanceled(error) {
+  static isCanceled(error: Error): boolean {
     return error instanceof CanceledPromiseError;
   }
 
-  static isTimedOut(error) {
+  static isTimedOut(error: Error): boolean {
     return error instanceof TimeoutError;
   }
 }
