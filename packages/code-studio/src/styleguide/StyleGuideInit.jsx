@@ -1,8 +1,10 @@
 import React, { useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { setWorkspace as setWorkspaceAction } from '../redux/actions';
-import { getWorkspace } from '../redux/selectors';
+import {
+  getWorkspace,
+  setWorkspace as setWorkspaceAction,
+} from '@deephaven/redux';
 import StyleGuide from './StyleGuide';
 import WorkspaceStorage from '../dashboard/WorkspaceStorage';
 

@@ -12,6 +12,8 @@ import './PandasPanel.scss';
  * Wraps and IrisGridPanel to add a refresh button for Pandas.
  */
 class PandasPanel extends Component {
+  static COMPONENT = 'PandasPanel';
+
   constructor(props) {
     super(props);
 

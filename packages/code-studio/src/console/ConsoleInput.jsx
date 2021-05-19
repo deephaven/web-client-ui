@@ -5,7 +5,7 @@ import { connect } from 'react-redux';
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
 import Log from '@deephaven/log';
 import { PromiseUtils } from '@deephaven/utils';
-import { getCommandHistoryStorage } from '../redux/selectors';
+import { getCommandHistoryStorage } from '@deephaven/redux';
 import MonacoUtils from '../monaco/MonacoUtils';
 import MonacoTheme from '../monaco/MonacoTheme.module.scss';
 import './ConsoleInput.scss';

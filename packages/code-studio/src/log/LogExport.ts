@@ -1,7 +1,7 @@
 /* eslint-disable import/prefer-default-export */
 import JSZip from 'jszip';
 import dh from '@deephaven/jsapi-shim';
-import store from '../redux/store';
+import { store } from '@deephaven/redux';
 import { logHistory } from './LogInit';
 
 const FILENAME_DATE_FORMAT = 'yyyy-MM-dd-HHmmss';

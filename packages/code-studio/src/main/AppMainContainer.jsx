@@ -7,6 +7,11 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { vsGear, dhShapes } from '@deephaven/icons';
 import { ContextActions, Tooltip, ThemeExport } from '@deephaven/components';
 import Log from '@deephaven/log';
+import {
+  getActiveTool,
+  getUser,
+  setActiveTool as setActiveToolAction,
+} from '@deephaven/redux';
 import { PromiseUtils } from '@deephaven/utils';
 import SettingsMenu from '../settings/SettingsMenu';
 import {
@@ -14,8 +19,6 @@ import {
   ControlEvent,
   InputFilterEvent,
 } from '../dashboard/events';
-import { getActiveTool, getUser } from '../redux/selectors';
-import { setActiveTool as setActiveToolAction } from '../redux/actions';
 import ToolType from '../tools/ToolType';
 import { IrisPropTypes } from '../include/prop-types';
 import AppControlsMenu from './AppControlsMenu';

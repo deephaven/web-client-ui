@@ -5,11 +5,11 @@ import classNames from 'classnames';
 import JSZip from 'jszip';
 import { Checkbox } from '@deephaven/components';
 import Log from '@deephaven/log';
+import { getTimeZone } from '@deephaven/redux';
 import { DbNameValidator } from '@deephaven/utils';
 import CsvOverlay from './CsvOverlay';
 import CsvParser from './CsvParser';
 import CsvFormats from './CsvFormats';
-import { getTimeZone } from '../../redux/selectors';
 import './CsvInputBar.scss';
 
 const log = Log.module('CsvInputBar');
