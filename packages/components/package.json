@@ -69,6 +69,7 @@
     "@babel/cli": "^7.13.14",
     "@deephaven/icons": "^0.1.0",
     "@deephaven/log": "^0.1.0",
+    "@deephaven/mocks": "^0.1.0",
     "@deephaven/react-hooks": "^0.1.0",
     "@deephaven/tsconfig": "^0.1.0",
     "@deephaven/utils": "^0.1.0",
