@@ -7,6 +7,7 @@ import Log from '@deephaven/log';
 import { PromiseUtils } from '@deephaven/utils';
 import { getCommandHistoryStorage } from '@deephaven/redux';
 import MonacoUtils from './monaco/MonacoUtils';
+import MonacoCompletionProvider from './MonacoCompletionProvider';
 import MonacoTheme from './monaco/MonacoTheme.module.scss';
 import './ConsoleInput.scss';
 import StoragePropTypes from './StoragePropTypes';
@@ -42,7 +43,7 @@ export class ConsoleInput extends PureComponent {
     this.state = {
       commandEditorHeight: LINE_HEIGHT,
       isFocused: false,
-      // model: null,
+      model: null,
     };
   }
 
@@ -89,7 +90,7 @@ export class ConsoleInput extends PureComponent {
   }
 
   initCommandEditor() {
-    const { language } = this.props;
+    const { language, session } = this.props;
     const commandSettings = {
       copyWithSyntaxHighlighting: 'false',
       cursorStyle: 'block',
@@ -124,7 +125,7 @@ export class ConsoleInput extends PureComponent {
     );
 
     MonacoUtils.setEOL(this.commandEditor);
-    // MonacoUtils.openDocument(this.commandEditor, session);
+    MonacoUtils.openDocument(this.commandEditor, session);
 
     this.commandEditor.onDidChangeModelContent(() => {
       this.isCommandModified = true;
@@ -214,13 +215,13 @@ export class ConsoleInput extends PureComponent {
 
     this.updateDimensions();
 
-    // this.setState({ model: this.commandEditor.getModel() });
+    this.setState({ model: this.commandEditor.getModel() });
   }
 
   destroyCommandEditor() {
-    // const { session } = this.props;
+    const { session } = this.props;
     if (this.commandEditor) {
-      // MonacoUtils.closeDocument(this.commandEditor, session);
+      MonacoUtils.closeDocument(this.commandEditor, session);
       this.commandEditor.dispose();
       this.commandEditor = null;
     }
@@ -379,7 +380,8 @@ export class ConsoleInput extends PureComponent {
   }
 
   render() {
-    const { commandEditorHeight, isFocused } = this.state;
+    const { language, session } = this.props;
+    const { commandEditorHeight, isFocused, model } = this.state;
     return (
       <div className="console-input-wrapper">
         <div
@@ -392,6 +394,13 @@ export class ConsoleInput extends PureComponent {
             ref={this.commandContainer}
             style={{ height: commandEditorHeight }}
           />
+          {model && (
+            <MonacoCompletionProvider
+              model={model}
+              language={language}
+              session={session}
+            />
+          )}
         </div>
       </div>
     );
