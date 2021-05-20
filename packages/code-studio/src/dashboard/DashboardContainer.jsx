@@ -281,10 +281,12 @@ export class DashboardContainer extends Component {
         resolve();
         return;
       }
-      layout.on('initialised', () => {
+      const onInit = () => {
         log.debug('layout initialized');
+        layout.off('initialised', onInit);
         resolve();
-      });
+      };
+      layout.on('initialised', onInit);
     });
 
     window.addEventListener('resize', this.handleResize);
