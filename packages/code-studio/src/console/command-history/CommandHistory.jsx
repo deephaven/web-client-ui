@@ -172,7 +172,7 @@ class CommandHistory extends Component {
     }
     const { table } = this.props;
     const snapshot = await this.pending.add(table.getSnapshot(ranges));
-    return [...snapshot.added].map(index => snapshot.get(index)?.name ?? '');
+    return [...snapshot.values()].map(item => item.name);
   }
 
   /**

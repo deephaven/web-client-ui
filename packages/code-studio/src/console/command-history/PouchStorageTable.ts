@@ -260,11 +260,9 @@ export class PouchStorageTable<T extends StorageItem = StorageItem>
     if (!this.currentViewport) {
       throw new Error('Viewport not set');
     }
-    const { currentViewport: viewport } = this;
 
-    const itemMap: Map<number, T> = new Map();
-    const indexes: number[] = [];
-    let lastIndex = -1;
+    const { currentViewport: viewport } = this;
+    const itemMap = new Map();
 
     await Promise.all(
       sortedRanges.map(async ([from, to]) => {
@@ -280,30 +278,13 @@ export class PouchStorageTable<T extends StorageItem = StorageItem>
           .then(findSnapshotResult => {
             for (let i = 0; i < limit; i += 1) {
               const index = from + i;
-              indexes.push(index);
               itemMap.set(index, findSnapshotResult.docs[i]);
             }
           });
       })
     );
 
-    function iterator() {
-      return {
-        hasNext: () => lastIndex + 1 < indexes.length,
-        next: () => {
-          lastIndex += 1;
-          return {
-            value: indexes[lastIndex],
-            done: lastIndex >= indexes.length,
-          };
-        },
-      };
-    }
-
-    return {
-      added: { [Symbol.iterator]: iterator },
-      get: (index: number) => itemMap.get(index),
-    };
+    return itemMap;
   }
 }
 

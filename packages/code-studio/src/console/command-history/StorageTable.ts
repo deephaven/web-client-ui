@@ -36,10 +36,7 @@ export type StorageTableListener = () => void;
 
 export type StorageListenerRemover = () => void;
 
-export type StorageSnapshot<T> = {
-  added: Iterable<number>;
-  get(index: number): T | undefined;
-};
+export type StorageSnapshot<T> = Map<number, T>;
 
 /**
  * A table for getting a list of items from storage, with id/name pairs
