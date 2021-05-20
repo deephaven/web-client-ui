@@ -2,18 +2,18 @@
  * An Input component that pops and filters auto complete options as you type.
  *
  * props:
- * @param {array} options :[{
+ * @param options :[{
  *    title: 'option title for display',
  *    value: 'option value' //option value
  * }]
- * @param {object} popperOptions options for the Popper
- * @param {func} onChange called when the value is changed from the pulldown
- * @param {string} inputPlaceholder place holder for the input box
- * @param {boolean} disabled disable both input & drop down
- * @param {string} className an optional class name applied to the input element
- * @param {string} defaultTitle the default title to display
- * @param {bool} spellCheck flag to disable spell checking, defaults to true
- * @param {func} onEnter called when the Enter key is typed in the input element
+ * @param popperOptions options for the Popper
+ * @param onChange called when the value is changed from the pulldown
+ * @param inputPlaceholder place holder for the input box
+ * @param disabled disable both input & drop down
+ * @param className an optional class name applied to the input element
+ * @param defaultTitle the default title to display
+ * @param spellCheck flag to disable spell checking, defaults to true
+ * @param onEnter called when the Enter key is typed in the input element
  *
  */
 import React, { Component } from 'react';
@@ -21,16 +21,87 @@ import PropTypes from 'prop-types';
 import memoize from 'memoizee';
 import classNames from 'classnames';
 import debounce from 'lodash.debounce';
+import { PopperOptions } from 'popper.js';
 import { Popper } from './popper';
 
 import './AutoCompleteInput.scss';
 
 const DEBOUNCE_DELAY = 100;
 
-class AutoCompleteInput extends Component {
-  static MENU_NAVIGATION_DIRECTION = { UP: 'UP', DOWN: 'DOWN' };
+enum MENU_NAVIGATION_DIRECTION {
+  UP = 'UP',
+  DOWN = 'DOWN',
+}
 
-  constructor(props) {
+interface AutoCompleteOption {
+  title: string;
+  value: string;
+}
+
+interface AutoCompleteInputProps {
+  options: AutoCompleteOption[];
+  popperOptions: PopperOptions;
+  onChange(value: string, isValid: boolean): void;
+  inputPlaceholder: string;
+  disabled: boolean;
+  className: string;
+  defaultTitle: string;
+  spellCheck: boolean;
+  onEnter(): void;
+  noMatchText: string;
+}
+
+interface AutoCompleteInputState {
+  title: string;
+  filteredOptions: AutoCompleteOption[];
+  keyboardOptionIndex: number;
+  menuIsOpen: boolean;
+  inputWidth: number;
+  invalid: boolean;
+  popperOptions: PopperOptions;
+}
+
+class AutoCompleteInput extends Component<
+  AutoCompleteInputProps,
+  AutoCompleteInputState
+> {
+  static propTypes = {
+    options: PropTypes.arrayOf(
+      PropTypes.shape({
+        title: PropTypes.string.isRequired,
+        value: PropTypes.string.isRequired,
+      })
+    ).isRequired,
+    popperOptions: PropTypes.shape({}),
+    onChange: PropTypes.func,
+    inputPlaceholder: PropTypes.string,
+    disabled: PropTypes.bool,
+    className: PropTypes.string,
+    defaultTitle: PropTypes.string,
+    spellCheck: PropTypes.bool,
+    onEnter: PropTypes.func,
+    noMatchText: PropTypes.string,
+  };
+
+  static defaultProps = {
+    onChange(): void {
+      // no-op
+    },
+    inputPlaceholder: '',
+    disabled: false,
+    className: '',
+    defaultTitle: '',
+    popperOptions: null,
+    spellCheck: true,
+    onEnter(): void {
+      // no-op
+    },
+    noMatchText: 'No matching items found',
+  };
+
+  static MENU_NAVIGATION_DIRECTION = MENU_NAVIGATION_DIRECTION;
+
+  constructor(props: AutoCompleteInputProps) {
     super(props);
 
     let { popperOptions } = this.props;
@@ -68,29 +139,38 @@ class AutoCompleteInput extends Component {
     this.handleMenuOpened = this.handleMenuOpened.bind(this);
     this.handleMenuExited = this.handleMenuExited.bind(this);
 
-    this.popper = null;
-    this.cbContainer = null;
-    this.menuContainer = null;
-    this.input = null;
+    this.popper = React.createRef();
+    this.cbContainer = React.createRef();
+    this.menuContainer = React.createRef();
+    this.input = React.createRef();
   }
 
-  setInputWidth() {
-    if (this.cbContainer) {
+  popper: React.RefObject<Popper>;
+
+  cbContainer: React.RefObject<HTMLDivElement>;
+
+  menuContainer: React.RefObject<HTMLDivElement>;
+
+  input: React.RefObject<HTMLInputElement>;
+
+  setInputWidth(): void {
+    if (this.cbContainer.current) {
       this.setState({
-        inputWidth: this.cbContainer.getBoundingClientRect().width,
+        inputWidth: this.cbContainer.current.getBoundingClientRect().width,
       });
     }
   }
 
-  getCachedFilteredOptions = memoize((options, input) =>
-    options.filter(
-      // supports partial match
-      option => option.title.toLowerCase().indexOf(input.toLowerCase()) >= 0
-    )
+  getCachedFilteredOptions = memoize(
+    (options: AutoCompleteOption[], input: string) =>
+      options.filter(
+        // supports partial match
+        option => option.title.toLowerCase().indexOf(input.toLowerCase()) >= 0
+      )
   );
 
   // validation needs to be an exact case-sensitve match on value
-  getValueAndValidate(title) {
+  getValueAndValidate(title: string): { value: string; isValid: boolean } {
     if (!title) {
       this.setState({ invalid: false });
       return { value: title, isValid: false };
@@ -111,19 +191,19 @@ class AutoCompleteInput extends Component {
   }
 
   // validate typed entries emit change event using value
-  updateInputValue(title) {
+  updateInputValue(title: string): void {
     const { menuIsOpen } = this.state;
     const { value, isValid } = this.getValueAndValidate(title);
     if (menuIsOpen) this.processFilterChange(title);
     this.fireOnChange(value, isValid);
   }
 
-  fireOnChange(value, isValid = true) {
+  fireOnChange(value: string, isValid = true): void {
     const { onChange } = this.props;
     onChange(value, isValid);
   }
 
-  processFilterChange(filter) {
+  processFilterChange(filter: string): void {
     const { options } = this.props;
     const { menuIsOpen } = this.state;
     const filteredOptions = filter
@@ -139,19 +219,19 @@ class AutoCompleteInput extends Component {
       this.closeMenu();
       return;
     }
-    this.popper.scheduleUpdate(); // filtered options list can change size, may need to be repositioned
+    this.popper.current?.scheduleUpdate(); // filtered options list can change size, may need to be repositioned
   }
 
-  resetValue() {
+  resetValue(): void {
     this.setState({ title: '' });
     this.fireOnChange('');
   }
 
-  handleResize() {
+  handleResize(): void {
     this.setInputWidth();
   }
 
-  handleMenuKeyDown(event) {
+  handleMenuKeyDown(event: React.KeyboardEvent): void {
     const { filteredOptions, keyboardOptionIndex } = this.state;
     const option = filteredOptions[keyboardOptionIndex];
 
@@ -165,7 +245,7 @@ class AutoCompleteInput extends Component {
           this.fireOnChange(option.value);
         }
         this.closeMenu();
-        this.input.focus();
+        this.input.current?.focus();
         break;
       case 'ArrowUp':
         event.stopPropagation();
@@ -196,7 +276,7 @@ class AutoCompleteInput extends Component {
     }
   }
 
-  navigateMenu(direction) {
+  navigateMenu(direction: MENU_NAVIGATION_DIRECTION): void {
     const { filteredOptions, keyboardOptionIndex } = this.state;
     let newKeyboardOptionIndex = keyboardOptionIndex;
     if (direction === AutoCompleteInput.MENU_NAVIGATION_DIRECTION.UP) {
@@ -224,7 +304,7 @@ class AutoCompleteInput extends Component {
     this.scrollOptionIntoView(newKeyboardOptionIndex);
   }
 
-  handleInputKeyDown(event) {
+  handleInputKeyDown(event: React.KeyboardEvent): void {
     const { onEnter } = this.props;
     const { menuIsOpen } = this.state;
 
@@ -248,63 +328,68 @@ class AutoCompleteInput extends Component {
     }
   }
 
-  handleInputChange(event) {
+  handleInputChange(event: React.ChangeEvent<HTMLInputElement>): void {
     this.setState({ title: event.target.value });
     this.updateInputValue(event.target.value);
   }
 
-  handleOptionClick(option) {
+  handleOptionClick(option: AutoCompleteOption): void {
     this.setState({ title: option.title, invalid: false });
     this.fireOnChange(option.value);
     this.closeMenu();
-    this.input.focus();
+    this.input.current?.focus();
   }
 
-  handelInputFocus() {
+  handelInputFocus(): void {
     const { menuIsOpen } = this.state;
     if (!menuIsOpen) {
       this.openMenu();
     }
   }
 
-  handleInputClick() {
+  handleInputClick(): void {
     const { menuIsOpen } = this.state;
     if (!menuIsOpen) {
       this.openMenu();
     }
   }
 
-  handleInputBlur(event) {
+  handleInputBlur(event: React.FocusEvent<HTMLInputElement>): void {
     const { menuIsOpen } = this.state;
-    if (menuIsOpen && this.popper.element.contains(event.relatedTarget)) {
-      return;
-    }
-    this.closeMenu(false);
-  }
-
-  handleMenuBlur(event) {
-    // if blur event is caused by focusing on the input or focus on options don't close menu
     if (
-      event.relatedTarget === this.input ||
-      this.popper.element.contains(event.relatedTarget)
+      menuIsOpen &&
+      event.relatedTarget instanceof Element &&
+      this.popper.current?.element.contains(event.relatedTarget)
     ) {
       return;
     }
     this.closeMenu(false);
   }
 
-  handleMenuOpened() {
-    this.input.focus();
+  handleMenuBlur(event: React.FocusEvent<HTMLDivElement>): void {
+    // if blur event is caused by focusing on the input or focus on options don't close menu
+    if (
+      event.relatedTarget === this.input.current ||
+      (event.relatedTarget instanceof Element &&
+        this.popper.current?.element.contains(event.relatedTarget))
+    ) {
+      return;
+    }
+    this.closeMenu(false);
   }
 
-  handleMenuExited() {
+  handleMenuOpened(): void {
+    this.input.current?.focus();
+  }
+
+  handleMenuExited(): void {
     const { menuIsOpen } = this.state;
     if (menuIsOpen) {
       this.setState({ menuIsOpen: false, keyboardOptionIndex: 0 });
     }
   }
 
-  openMenu() {
+  openMenu(): void {
     const { title } = this.state;
     this.processFilterChange(title);
     this.setInputWidth();
@@ -312,35 +397,33 @@ class AutoCompleteInput extends Component {
 
     // https://github.com/reactjs/react-transition-group/issues/382
     window.requestAnimationFrame(() => {
-      this.popper.show();
+      this.popper.current?.show();
     });
   }
 
-  closeMenu(focusInput = true) {
+  closeMenu(focusInput = true): void {
     this.setState({ menuIsOpen: false, keyboardOptionIndex: 0 });
     if (focusInput) {
-      this.input.focus();
+      this.input.current?.focus();
     }
-    this.popper.hide();
+    this.popper.current?.hide();
   }
 
-  scrollOptionIntoView(index) {
-    if (this.menuContainer) {
-      this.menuContainer.children.item(index).scrollIntoView({
+  scrollOptionIntoView(index: number): void {
+    if (this.menuContainer.current) {
+      this.menuContainer.current.children.item(index)?.scrollIntoView({
         behavior: 'smooth',
         block: 'nearest',
       });
     }
   }
 
-  renderMenuElement() {
+  renderMenuElement(): JSX.Element {
     const { inputWidth } = this.state;
     return (
       <div
         className={classNames('aci-options')}
-        ref={menuContainer => {
-          this.menuContainer = menuContainer;
-        }}
+        ref={this.menuContainer}
         role="presentation"
         onKeyDown={this.handleMenuKeyDown}
         style={{ width: inputWidth }}
@@ -351,7 +434,7 @@ class AutoCompleteInput extends Component {
     );
   }
 
-  renderOptions() {
+  renderOptions(): React.ReactNode {
     const { noMatchText } = this.props;
     const { title, filteredOptions } = this.state;
 
@@ -364,7 +447,7 @@ class AutoCompleteInput extends Component {
     );
   }
 
-  renderOption(option, index) {
+  renderOption(option: AutoCompleteOption, index: number): JSX.Element {
     const { keyboardOptionIndex } = this.state;
     const key = `option-${index}-${option.value}`;
     return (
@@ -382,7 +465,7 @@ class AutoCompleteInput extends Component {
     );
   }
 
-  render() {
+  render(): JSX.Element {
     const {
       options,
       inputPlaceholder,
@@ -394,20 +477,13 @@ class AutoCompleteInput extends Component {
     const { title, menuIsOpen, popperOptions, invalid } = this.state;
 
     return (
-      <div
-        className="aci-container"
-        ref={cbContainer => {
-          this.cbContainer = cbContainer;
-        }}
-      >
+      <div className="aci-container" ref={this.cbContainer}>
         <input
           value={title || defaultTitle}
           className={classNames('form-control', className, 'aci-input', {
             'is-invalid': invalid && !menuIsOpen,
           })}
-          ref={input => {
-            this.input = input;
-          }}
+          ref={this.input}
           onChange={this.handleInputChange}
           placeholder={inputPlaceholder || options[0].title}
           disabled={disabled}
@@ -415,13 +491,10 @@ class AutoCompleteInput extends Component {
           onClick={this.handleInputClick}
           onBlur={this.handleInputBlur}
           onKeyDown={this.handleInputKeyDown}
-          onKeyUp={this.handleInputKeyUp}
           spellCheck={spellCheck}
         />
         <Popper
-          ref={popper => {
-            this.popper = popper;
-          }}
+          ref={this.popper}
           options={popperOptions}
           className={classNames('aci-options-popper interactive')}
           onEntered={this.handleMenuOpened}
@@ -434,33 +507,4 @@ class AutoCompleteInput extends Component {
   }
 }
 
-AutoCompleteInput.propTypes = {
-  options: PropTypes.arrayOf(
-    PropTypes.shape({
-      title: PropTypes.string.isRequired,
-      value: PropTypes.string.isRequired,
-    })
-  ).isRequired,
-  popperOptions: PropTypes.shape({}),
-  onChange: PropTypes.func,
-  inputPlaceholder: PropTypes.string,
-  disabled: PropTypes.bool,
-  className: PropTypes.string,
-  defaultTitle: PropTypes.string,
-  spellCheck: PropTypes.bool,
-  onEnter: PropTypes.func,
-  noMatchText: PropTypes.string,
-};
-
-AutoCompleteInput.defaultProps = {
-  onChange: () => {},
-  inputPlaceholder: '',
-  disabled: false,
-  className: '',
-  defaultTitle: '',
-  popperOptions: null,
-  spellCheck: true,
-  onEnter: () => {},
-  noMatchText: 'No matching items found',
-};
 export default AutoCompleteInput;
