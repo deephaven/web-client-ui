@@ -5,9 +5,9 @@ class TextUtils {
    * One
    * One and Two
    * One, Two, and Three
-   * @param {String[]} items The items to join in a list
+   * @param items The items to join in a list
    */
-  static join(items) {
+  static join(items: string[] | null): string {
     if (items == null || items.length === 0) {
       return '';
     }
@@ -27,10 +27,10 @@ class TextUtils {
 
   /**
    * Converts text to lower case, handling null if necessary and returning an empty string
-   * @param {String} text The text to convert to lower case
-   * @param {Boolean} isNullAllowed True if a null string should return an empty string from this function. If false an error is thrown if null is passed in.
+   * @param text The text to convert to lower case
+   * @param isNullAllowed True if a null string should return an empty string from this function. If false an error is thrown if null is passed in.
    */
-  static toLower(text, isNullAllowed = true) {
+  static toLower(text: string | null, isNullAllowed = true): string {
     if (text == null) {
       if (isNullAllowed) {
         return '';
@@ -44,11 +44,11 @@ class TextUtils {
 
   /**
    *
-   * @param {String} a The string to sort
-   * @param {String} b Second string to sort
-   * @param {boolean} isAscending Whether to sort ascending or descending
+   * @param a The string to sort
+   * @param b Second string to sort
+   * @param isAscending Whether to sort ascending or descending
    */
-  static sort(a, b, isAscending = true) {
+  static sort(a: string, b: string, isAscending = true): number {
     if (a < b) {
       return isAscending ? -1 : 1;
     }
