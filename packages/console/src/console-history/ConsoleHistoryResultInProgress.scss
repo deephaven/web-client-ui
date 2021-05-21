@@ -1,0 +1,27 @@
+@import '@deephaven/components/scss/custom.scss';
+
+.console-history-result-in-progress {
+  user-select: none;
+
+  .badge {
+    background-color: $gray-600;
+    color: $white;
+    font-size: small;
+    font-weight: lighter;
+    height: 2em;
+    border-radius: 1em;
+    padding: 0.5em 0.5em;
+    margin-top: $spacer-1;
+    margin-bottom: $spacer-1;
+
+    button {
+      color: $white;
+      cursor: pointer;
+      margin: 0;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      font-size: inherit;
+    }
+  }
+}

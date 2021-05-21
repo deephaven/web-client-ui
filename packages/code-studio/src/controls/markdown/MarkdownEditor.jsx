@@ -1,8 +1,7 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import Markdown from 'react-markdown';
-import Editor from '../../console/notebook/Editor';
-import Code from '../../console/common/Code';
+import { Code, Editor } from '@deephaven/console';
 
 export default class MarkdownEditor extends PureComponent {
   constructor(props) {

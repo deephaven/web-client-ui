@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { ContextActions } from '@deephaven/components';
+import { CommandHistory } from '@deephaven/console';
 import Log from '@deephaven/log';
 import { getCommandHistoryStorage } from '@deephaven/redux';
 import { Pending } from '@deephaven/utils';
@@ -9,7 +10,6 @@ import { ConsoleEvent, NotebookEvent } from '../events';
 import './CommandHistoryPanel.scss';
 import { GLPropTypes } from '../../include/prop-types';
 import Panel from './Panel';
-import CommandHistory from '../../console/command-history/CommandHistory';
 
 const log = Log.module('CommandHistoryPanel');
 

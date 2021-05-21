@@ -13,7 +13,7 @@ import {
 import App from './App';
 import ToolType from '../tools/ToolType';
 import WorkspaceStorage from '../dashboard/WorkspaceStorage';
-import PouchCommandHistoryStorage from '../console/command-history/PouchCommandHistoryStorage';
+import PouchCommandHistoryStorage from '../storage/PouchCommandHistoryStorage';
 
 // Default values used
 // TODO: core#11, core#8

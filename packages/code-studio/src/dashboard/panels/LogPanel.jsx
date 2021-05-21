@@ -2,7 +2,7 @@
 // Will probably need to handle window popping out from golden layout here.
 import React, { PureComponent } from 'react';
 import Log from '@deephaven/log';
-import LogView from '../../log/LogView';
+import { LogView } from '@deephaven/console';
 import './LogPanel.scss';
 import Panel from './Panel';
 import { GLPropTypes, IrisPropTypes } from '../../include/prop-types';
