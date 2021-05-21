@@ -103,8 +103,8 @@ class ComboBox extends Component<ComboBoxProps, ComboBoxState> {
     this.state = {
       value: '',
       filter: '',
-      filteredOptions: [],
-      keyboardOptionIndex: 0,
+      filteredOptions: props.options,
+      keyboardOptionIndex: -1,
       menuIsOpen: false,
       inputWidth: 100,
     };
@@ -131,6 +131,13 @@ class ComboBox extends Component<ComboBoxProps, ComboBoxState> {
     this.menuContainer = React.createRef();
     this.input = React.createRef();
     this.searchInput = React.createRef();
+  }
+
+  componentDidUpdate(): void {
+    const { menuIsOpen, keyboardOptionIndex } = this.state;
+    if (menuIsOpen && keyboardOptionIndex >= 0) {
+      this.scrollOptionIntoView();
+    }
   }
 
   popper: React.RefObject<Popper>;
@@ -187,7 +194,9 @@ class ComboBox extends Component<ComboBoxProps, ComboBoxState> {
 
     switch (event.key) {
       case 'Enter':
-        this.updateInputValue(menuOptions[keyboardOptionIndex].value);
+        if (menuOptions[keyboardOptionIndex]?.value) {
+          this.updateInputValue(menuOptions[keyboardOptionIndex].value);
+        }
         this.closeMenu();
         this.input.current?.focus();
         event.stopPropagation();
@@ -196,10 +205,12 @@ class ComboBox extends Component<ComboBoxProps, ComboBoxState> {
       case 'ArrowUp':
         this.handleMenuNavigation(ComboBox.MENU_NAVIGATION_DIRECTION.UP);
         event.stopPropagation();
+        event.preventDefault();
         break;
       case 'ArrowDown':
         this.handleMenuNavigation(ComboBox.MENU_NAVIGATION_DIRECTION.DOWN);
         event.stopPropagation();
+        event.preventDefault();
         break;
       case 'Escape':
         this.closeMenu();
@@ -223,21 +234,19 @@ class ComboBox extends Component<ComboBoxProps, ComboBoxState> {
     switch (direction) {
       case ComboBox.MENU_NAVIGATION_DIRECTION.UP:
         if (keyboardOptionIndex > 0) {
-          newKeyboardOptionIndex =
-            (newKeyboardOptionIndex - 1) % menuOptionsLength;
           this.setState({
-            keyboardOptionIndex: newKeyboardOptionIndex,
+            keyboardOptionIndex: keyboardOptionIndex - 1,
           });
+        } else {
+          this.setState({ keyboardOptionIndex: menuOptionsLength - 1 });
         }
         break;
       case ComboBox.MENU_NAVIGATION_DIRECTION.DOWN:
-        if (keyboardOptionIndex < menuOptionsLength) {
-          newKeyboardOptionIndex =
-            (newKeyboardOptionIndex + 1) % menuOptionsLength;
-          this.setState({
-            keyboardOptionIndex: newKeyboardOptionIndex,
-          });
-        }
+        newKeyboardOptionIndex =
+          (newKeyboardOptionIndex + 1) % menuOptionsLength;
+        this.setState({
+          keyboardOptionIndex: newKeyboardOptionIndex,
+        });
         break;
       default:
         break;
@@ -279,9 +288,21 @@ class ComboBox extends Component<ComboBoxProps, ComboBoxState> {
 
   handleFilterChange(event: React.ChangeEvent<HTMLInputElement>): void {
     const { options } = this.props;
+    const { keyboardOptionIndex, filteredOptions: oldOptions } = this.state;
     const filter = event.target.value;
     const filteredOptions = this.getCachedFilteredOptions(options, filter);
-    this.setState({ filter, filteredOptions, keyboardOptionIndex: 0 });
+
+    // Make the active element match the previously highlighted value
+    const matchValue = oldOptions[keyboardOptionIndex]?.value;
+    const activeIndex = filteredOptions.findIndex(
+      option => option.value === matchValue
+    );
+
+    this.setState({
+      filter,
+      filteredOptions,
+      keyboardOptionIndex: activeIndex,
+    });
     this.popper.current?.scheduleUpdate();
   }
 
@@ -318,7 +339,7 @@ class ComboBox extends Component<ComboBoxProps, ComboBoxState> {
   handleMenuExited(): void {
     const { menuIsOpen } = this.state;
     if (menuIsOpen) {
-      this.setState({ menuIsOpen: false, keyboardOptionIndex: 0 });
+      this.setState({ menuIsOpen: false });
       this.popper.current?.hide();
     }
   }
@@ -344,7 +365,7 @@ class ComboBox extends Component<ComboBoxProps, ComboBoxState> {
   }
 
   closeMenu(focusInput = true): void {
-    this.setState({ menuIsOpen: false, keyboardOptionIndex: 0 });
+    this.setState({ menuIsOpen: false });
     if (focusInput) {
       this.input.current?.focus();
     }
@@ -352,26 +373,22 @@ class ComboBox extends Component<ComboBoxProps, ComboBoxState> {
   }
 
   updateKeyboardIndex(): void {
-    const { value } = this.state;
+    const { value, filter, filteredOptions } = this.state;
     const { options } = this.props;
-    const valueIndex = options.findIndex(option => option.value === value);
-    if (valueIndex > 0) {
-      this.setState({ keyboardOptionIndex: valueIndex });
-    }
+    const menuOptions = filter ? filteredOptions : options;
+    const valueIndex = menuOptions.findIndex(option => option.value === value);
+    this.setState({ keyboardOptionIndex: valueIndex });
   }
 
   scrollOptionIntoView(): void {
-    const options = this.menuContainer.current?.querySelector('.cb-options');
     const activeOption = this.menuContainer.current?.querySelector(
       '.cb-option-btn.keyboard-active'
     );
-    if (
-      options instanceof HTMLElement &&
-      activeOption instanceof HTMLElement &&
-      activeOption.offsetTop > ComboBox.DROP_DOWN_MENU_HEIGHT
-    ) {
-      options.scrollTop =
-        activeOption.offsetTop - ComboBox.DROP_DOWN_MENU_HEIGHT;
+    if (activeOption instanceof HTMLElement) {
+      activeOption.scrollIntoView({
+        block: 'nearest',
+        inline: 'nearest',
+      });
     }
   }
 
