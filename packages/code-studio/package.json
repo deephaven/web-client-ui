@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@deephaven/components": "^0.1.0",
+    "@deephaven/chart": "^0.1.0",
     "@deephaven/console": "^0.1.0",
     "@deephaven/grid": "^0.1.0",
     "@deephaven/icons": "^0.1.0",
@@ -41,7 +42,6 @@
     "npm-license": "^0.3.3",
     "npm-run-all": "^4.1.5",
     "papaparse": "^5.2.0",
-    "plotly.js": "^1.54.7",
     "popper.js": "^1.16.1",
     "pouchdb-browser": "^7.2.2",
     "pouchdb-find": "^7.2.2",
@@ -51,7 +51,6 @@
     "react-card-flip": "^0.7.2",
     "react-dom": "^16.14.0",
     "react-markdown": "^4.3.1",
-    "react-plotly.js": "^2.4.0",
     "react-redux": "^6.0.1",
     "react-router-dom": "^5.1.2",
     "react-scripts": "4.0.3",

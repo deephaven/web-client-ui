@@ -5,6 +5,7 @@ import memoize from 'memoize-one';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import debounce from 'lodash.debounce';
+import { ChartModelFactory, ChartUtils } from '@deephaven/chart';
 import {
   IrisGrid,
   IrisGridModel,
@@ -23,7 +24,6 @@ import {
 } from '@deephaven/redux';
 import { PromiseUtils } from '@deephaven/utils';
 import { ContextMenuRoot } from '@deephaven/components';
-import { ChartUtils, ChartModelFactory } from '../../chart';
 import {
   ChartEvent,
   ConsoleEvent,

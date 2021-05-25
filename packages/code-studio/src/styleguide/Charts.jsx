@@ -1,6 +1,5 @@
 import React, { PureComponent } from 'react';
-import { Chart } from '../chart';
-import MockChartModel from '../chart/MockChartModel';
+import { Chart, MockChartModel } from '@deephaven/chart';
 
 class Charts extends PureComponent {
   constructor(props) {
