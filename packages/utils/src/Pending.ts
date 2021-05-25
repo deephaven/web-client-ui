@@ -1,8 +1,4 @@
-import PromiseUtils from './PromiseUtils';
-
-interface CancelablePromise<T> extends Promise<T> {
-  cancel: () => void;
-}
+import PromiseUtils, { CancelablePromise } from './PromiseUtils';
 
 /**
  * Helper class for managing pending promises.
@@ -20,14 +16,11 @@ class Pending {
    * @param cleanup The cleanup function to use when the promise is cancelled
    * @returns CancelablePromise Returns a cancelable promise.
    */
-  add(
-    item: unknown,
-    cleanup: (val: unknown) => void | null
-  ): CancelablePromise<unknown> {
-    const promise = PromiseUtils.makeCancelable(
-      item,
-      cleanup
-    ) as CancelablePromise<unknown>;
+  add<T>(
+    item: Promise<T> | T,
+    cleanup: (val: T) => void | null
+  ): CancelablePromise<T> {
+    const promise = PromiseUtils.makeCancelable(item, cleanup);
     this.pending.push(promise);
     promise.then(
       () => {
@@ -42,7 +35,7 @@ class Pending {
 
   /**
    * Remove a promise from tracking.
-   * @param {Promise} promise Promise to stop tracking
+   * @param promise Promise to stop tracking
    */
   remove(promise: Promise<unknown>): void {
     for (let i = 0; i < this.pending.length; i += 1) {
