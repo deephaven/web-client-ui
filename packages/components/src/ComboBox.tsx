@@ -368,7 +368,6 @@ class ComboBox extends Component<ComboBoxProps, ComboBoxState> {
   }
 
   closeMenu(focusInput = true): void {
-    console.log();
     this.setState({ menuIsOpen: false });
     if (focusInput) {
       this.input.current?.focus();
