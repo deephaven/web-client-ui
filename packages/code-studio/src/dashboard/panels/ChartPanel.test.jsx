@@ -2,15 +2,21 @@
 import React from 'react';
 import { mount } from 'enzyme';
 import dh from '@deephaven/jsapi-shim';
+import { Chart, MockChartModel } from '@deephaven/chart';
 import { ChartPanel } from './ChartPanel';
-import MockChartModel from '../../chart/MockChartModel';
 import ChartColumnSelectorOverlay from './ChartColumnSelectorOverlay';
-import Chart from '../../chart/Chart';
 
 const DASHBOARD_ID = 'TEST_DASHBOARD_ID';
 const PANEL_ID = 'TEST_PANEL_ID';
 
-jest.mock('../../chart/Chart');
+jest.mock('@deephaven/chart', () => {
+  const MockReact = jest.requireActual('react');
+  return {
+    ...jest.requireActual('@deephaven/chart'),
+    Chart: MockReact.forwardRef(() => null),
+  };
+});
+
 jest.mock('../../layout/LayoutUtils', () => ({
   getIdFromPanel: jest.fn(() => 'TEST_PANEL_ID'),
   getTitleFromContainer: jest.fn(() => 'TEST_PANEL_TITLE'),

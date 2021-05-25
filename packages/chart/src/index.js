@@ -3,4 +3,5 @@ export { default as ChartModelFactory } from './ChartModelFactory';
 export { default as ChartModel } from './ChartModel';
 export { default as ChartUtils } from './ChartUtils';
 export { default as FigureChartModel } from './FigureChartModel';
+export { default as MockChartModel } from './MockChartModel';
 export { default as TableChartModel } from './TableChartModel';

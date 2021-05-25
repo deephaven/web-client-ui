@@ -8,6 +8,7 @@ import debounce from 'lodash.debounce';
 import memoize from 'memoize-one';
 import { connect } from 'react-redux';
 import { Console, ConsoleConstants, ConsoleUtils } from '@deephaven/console';
+import { FigureChartModel } from '@deephaven/chart';
 import { IrisGridModelFactory } from '@deephaven/iris-grid';
 import dh from '@deephaven/jsapi-shim';
 import { ContextActions, ThemeExport } from '@deephaven/components';
@@ -22,7 +23,6 @@ import {
   PandasEvent,
   PanelEvent,
 } from '../events';
-import { FigureChartModel } from '../../chart';
 import { GLPropTypes } from '../../include/prop-types';
 import './ConsolePanel.scss';
 import Panel from './Panel';
