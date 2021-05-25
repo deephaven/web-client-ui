@@ -213,7 +213,12 @@ class ComboBox extends Component<ComboBoxProps, ComboBoxState> {
         event.preventDefault();
         break;
       case 'Escape':
-        this.closeMenu();
+        if (filter !== '') {
+          this.setState({ filter: '' });
+          event.stopPropagation(); // Don't trigger blur on input element
+        } else {
+          this.closeMenu();
+        }
         break;
       case 'Tab':
         if (!event.shiftKey && keyboardOptionIndex === menuOptions.length - 1) {
@@ -260,8 +265,6 @@ class ComboBox extends Component<ComboBoxProps, ComboBoxState> {
       if (!menuIsOpen) {
         this.openMenu();
       }
-    } else if (event.key === 'Escape') {
-      this.closeMenu();
     } else if (event.key === 'Enter') {
       onEnter();
     }
@@ -365,6 +368,7 @@ class ComboBox extends Component<ComboBoxProps, ComboBoxState> {
   }
 
   closeMenu(focusInput = true): void {
+    console.log();
     this.setState({ menuIsOpen: false });
     if (focusInput) {
       this.input.current?.focus();
