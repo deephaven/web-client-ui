@@ -37,7 +37,7 @@ class Pending {
    * Remove a promise from tracking.
    * @param promise Promise to stop tracking
    */
-  remove(promise: Promise<unknown>): void {
+  remove(promise: CancelablePromise<unknown>): void {
     for (let i = 0; i < this.pending.length; i += 1) {
       if (this.pending[i] === promise) {
         this.pending.splice(i, 1);
