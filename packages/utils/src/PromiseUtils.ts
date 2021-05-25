@@ -6,25 +6,6 @@ export interface CancelablePromise<T> extends Promise<T> {
 }
 
 class PromiseUtils {
-  static isCancelablePromise(
-    promise: unknown
-  ): promise is CancelablePromise<unknown> {
-    const cancelablePromise = promise as CancelablePromise<unknown>;
-    return (
-      this.isPromise(promise) &&
-      cancelablePromise.cancel != null &&
-      typeof cancelablePromise.cancel === 'function'
-    );
-  }
-
-  static isPromise(promise: unknown): promise is Promise<unknown> {
-    return (
-      promise != null &&
-      (promise as Promise<unknown>).then != null &&
-      typeof (promise as Promise<unknown>).then === 'function'
-    );
-  }
-
   /**
    * Creates a promise that can be canceled by calling the `cancel` function
    * Pass an optional `cleanupFunc` to perform actions on the resolved item after promise is cancelled.
