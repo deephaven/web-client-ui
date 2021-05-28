@@ -32,7 +32,6 @@
     "clean": "rimraf ./dist tsconfig.tsbuildinfo",
     "prestart": "npm run build-dev",
     "start": "cross-env NODE_ENV=development npm run watch",
-    "prepublishOnly": "run-s build",
     "test": "jest --watch",
     "test:ci": "jest --ci",
     "predeploy": "cd example && npm install && npm run build",
