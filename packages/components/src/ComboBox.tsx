@@ -291,20 +291,13 @@ class ComboBox extends Component<ComboBoxProps, ComboBoxState> {
 
   handleFilterChange(event: React.ChangeEvent<HTMLInputElement>): void {
     const { options } = this.props;
-    const { keyboardOptionIndex, filteredOptions: oldOptions } = this.state;
     const filter = event.target.value;
     const filteredOptions = this.getCachedFilteredOptions(options, filter);
-
-    // Make the active element match the previously highlighted value
-    const matchValue = oldOptions[keyboardOptionIndex]?.value;
-    const activeIndex = filteredOptions.findIndex(
-      option => option.value === matchValue
-    );
 
     this.setState({
       filter,
       filteredOptions,
-      keyboardOptionIndex: activeIndex,
+      keyboardOptionIndex: 0,
     });
     this.popper.current?.scheduleUpdate();
   }
@@ -345,6 +338,7 @@ class ComboBox extends Component<ComboBoxProps, ComboBoxState> {
       this.setState({ menuIsOpen: false });
       this.popper.current?.hide();
     }
+    this.setState({ filter: '' });
   }
 
   toggleMenu(event: React.MouseEvent<HTMLButtonElement>): void {
