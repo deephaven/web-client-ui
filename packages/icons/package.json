@@ -18,8 +18,7 @@
     "prebuild": "npm run clean",
     "build": "run-s build:icons build:js",
     "build:icons": "run-p svgo-dh svgo-vs",
-    "build:js": "node ./scripts/build.js",
-    "prepublishOnly": "npm run build"
+    "build:js": "node ./scripts/build.js"
   },
   "repository": {
     "type": "git",
