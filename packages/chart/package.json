@@ -36,7 +36,7 @@
     "deploy": "gh-pages -d example/build"
   },
   "dependencies": {
-    "plotly.js": "^1.54.7",
+    "plotly.js": "git+https://github.com/deephaven/plotly.js.git#68b8f3ca4916194c3ffb10c7cc91d9fde788a734",
     "react-plotly.js": "^2.4.0"
   },
   "peerDependencies": {
