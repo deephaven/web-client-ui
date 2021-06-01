@@ -235,7 +235,6 @@ class ComboBox extends Component<ComboBoxProps, ComboBoxState> {
     const { options } = this.props;
     const menuOptions = filter ? filteredOptions : options;
     const menuOptionsLength = menuOptions.length;
-    let newKeyboardOptionIndex = keyboardOptionIndex;
     let delta = 0;
     switch (direction) {
       case ComboBox.MENU_NAVIGATION_DIRECTION.UP:
