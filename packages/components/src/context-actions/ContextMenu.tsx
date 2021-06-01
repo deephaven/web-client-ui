@@ -215,16 +215,15 @@ class ContextMenu extends PureComponent<ContextMenuProps, ContextMenuState> {
     for (let i = menuItems.length - 1; i >= 0; i -= 1) {
       const menuItem = menuItems[i];
       if (menuItem instanceof Promise) {
-        this.initMenuPromise(menuItem);
+        this.initMenuPromise(menuItem as Promise<ContextAction[]>);
       } else {
-        nonPromiseItems.push(menuItem);
+        nonPromiseItems.push(menuItem as ContextAction);
       }
     }
 
     this.setState({
       mouseIndex: -1,
       keyboardIndex,
-      pendingItems: [],
       activeSubMenu: null,
       menuItems: ContextActionUtils.sortActions(nonPromiseItems),
     });
@@ -321,7 +320,7 @@ class ContextMenu extends PureComponent<ContextMenuProps, ContextMenuState> {
       left: oldLeft,
     } = this.props;
 
-    if (!this.container || options.doNotVerifyPosition) {
+    if (!this.container.current || options.doNotVerifyPosition) {
       return;
     }
 
@@ -370,23 +369,20 @@ class ContextMenu extends PureComponent<ContextMenuProps, ContextMenuState> {
 
   // since window resize doesn't trigger blur, listen and close the menu
   handleWindowResize(): void {
-    if (!this.container) {
+    if (!this.container.current) {
       return;
     }
     this.closeMenu(true);
   }
 
   handleBlur(e: React.FocusEvent<HTMLDivElement>): void {
-    if (!this.container) {
+    if (!this.container.current) {
       log.warn('Container is null!');
       return;
     }
 
-    if (
-      e.relatedTarget instanceof HTMLElement &&
-      !this.container.current?.contains(e.relatedTarget)
-    ) {
-      let element: HTMLElement | null = e.relatedTarget;
+    if (!this.container.current.contains(e.relatedTarget as Node)) {
+      let element: HTMLElement | null = e.relatedTarget as HTMLElement;
       let isContextMenuChild = false;
       while (element && element.nodeType === 1 && !isContextMenuChild) {
         isContextMenuChild = element.hasAttribute('data-dh-context-menu');
@@ -452,7 +448,7 @@ class ContextMenu extends PureComponent<ContextMenuProps, ContextMenuState> {
         this.setKeyboardIndex(newFocus);
       } else {
         this.closeMenu();
-        if (this.oldFocus instanceof HTMLElement && this.oldFocus.focus) {
+        if (this.oldFocus instanceof HTMLElement) {
           this.oldFocus.focus();
         }
       }

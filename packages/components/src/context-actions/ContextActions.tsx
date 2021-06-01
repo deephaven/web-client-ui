@@ -132,12 +132,12 @@ class ContextActions extends Component<
   }
 
   componentDidMount(): void {
-    if (this.container.current?.parentNode) {
-      this.container.current.parentElement?.addEventListener(
+    if (this.container.current?.parentElement) {
+      this.container.current.parentElement.addEventListener(
         'contextmenu',
         this.handleContextMenu
       );
-      this.container.current.parentElement?.addEventListener(
+      this.container.current.parentElement.addEventListener(
         'keydown',
         this.handleKeyDown
       );
@@ -145,12 +145,12 @@ class ContextActions extends Component<
   }
 
   componentWillUnmount(): void {
-    if (this.container.current?.parentNode) {
-      this.container.current.parentElement?.removeEventListener(
+    if (this.container.current?.parentElement) {
+      this.container.current.parentElement.removeEventListener(
         'contextmenu',
         this.handleContextMenu
       );
-      this.container.current.parentElement?.removeEventListener(
+      this.container.current.parentElement.removeEventListener(
         'keydown',
         this.handleKeyDown
       );
@@ -159,13 +159,13 @@ class ContextActions extends Component<
 
   container: React.RefObject<HTMLDivElement>;
 
-  handleContextMenu(e: Event): void {
+  handleContextMenu(e: MouseEvent): void {
     if (!ContextActionUtils.isContextActionEvent(e)) {
-      return;
+      (e as ContextActionEvent).contextActions = [];
     }
 
-    if (!e.contextActions) {
-      e.contextActions = [];
+    if (!ContextActionUtils.isContextActionEvent(e)) {
+      return;
     }
 
     const { actions } = this.props;

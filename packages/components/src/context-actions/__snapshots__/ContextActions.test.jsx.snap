@@ -27,7 +27,7 @@ exports[`renders a menu from a promise returned from a function 1`] = `
           "top": NaN,
         }
       }
-      tabIndex="0"
+      tabIndex={0}
     >
       <div
         className="loading"
@@ -95,7 +95,7 @@ exports[`renders a promise returning menu items properly 1`] = `
           "top": NaN,
         }
       }
-      tabIndex="0"
+      tabIndex={0}
     >
       <div
         className="context-menu-item"
@@ -196,7 +196,7 @@ exports[`renders an empty menu for a rejected promise 1`] = `
           "top": NaN,
         }
       }
-      tabIndex="0"
+      tabIndex={0}
     >
       <div
         className="loading"

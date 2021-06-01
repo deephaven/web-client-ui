@@ -2,6 +2,7 @@ import { Component } from 'react';
 import Log from '@deephaven/log';
 import ContextActionUtils, {
   ContextAction,
+  ContextActionEvent,
   KeyState,
 } from './ContextActionUtils';
 
@@ -49,7 +50,11 @@ class GlobalContextAction extends Component<
     document.body.removeEventListener('keydown', this.handleKeyDown, true);
   }
 
-  handleContextMenu(e: Event): void {
+  handleContextMenu(e: MouseEvent): void {
+    if (!ContextActionUtils.isContextActionEvent(e)) {
+      (e as ContextActionEvent).contextActions = [];
+    }
+
     if (!ContextActionUtils.isContextActionEvent(e)) {
       return;
     }

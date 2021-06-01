@@ -33,7 +33,7 @@ export interface ContextAction {
   iconOutline?: boolean;
 }
 
-export interface ContextActionEvent extends Event {
+export interface ContextActionEvent extends MouseEvent {
   contextActions: ResolvableContextAction[];
 }
 
@@ -56,7 +56,7 @@ class ContextActionUtils {
 
   static BACKSPACE_KEY = '⌫';
 
-  static isContextActionEvent(e: Event): e is ContextActionEvent {
+  static isContextActionEvent(e: MouseEvent): e is ContextActionEvent {
     return Array.isArray((e as ContextActionEvent).contextActions);
   }
 
