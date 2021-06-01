@@ -4,6 +4,7 @@ export { default as DbNameValidator } from './DbNameValidator';
 export { default as DOMUtils } from './DOMUtils';
 export { default as Pending } from './Pending';
 export { default as PromiseUtils } from './PromiseUtils';
+export * from './PromiseUtils';
 export { default as RangeUtils } from './RangeUtils';
 export { default as TextUtils } from './TextUtils';
 export { default as TimeoutError } from './TimeoutError';

@@ -2,13 +2,28 @@
  * Just a simple utility class for displaying a popup menu.
  */
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
 import Log from '@deephaven/log';
-import ContextActionUtils from './ContextActionUtils';
+import ContextActionUtils, {
+  KeyState,
+  ContextAction,
+  ContextActionEvent,
+} from './ContextActionUtils';
 import GlobalContextActions from './GlobalContextActions';
 import './ContextActions.scss';
 
 const log = Log.module('ContextActions');
+
+interface ContextActionsProps {
+  actions: ContextAction[] | (() => ContextAction[]);
+}
+
+interface ContextActionsState {
+  globalActions: ContextAction[];
+  keyboardActions: {
+    action: ContextAction;
+    keyState: KeyState;
+  }[];
+}
 
 /**
  * ContextActions that you add onto any component.
@@ -37,35 +52,64 @@ const log = Log.module('ContextActions');
  * Right clicking the container will then build the context menu, bubbling up until an element with a ContextMenuRoot is on it.
  * You should generally have a ContextMenuRoot on the root node of your document.
  */
-class ContextActions extends Component {
-  static triggerMenu(element, clientX, clientY, actions) {
+class ContextActions extends Component<
+  ContextActionsProps,
+  ContextActionsState
+> {
+  /**
+   * Group you can assign to context menu actions to group them together.
+   * Lower group IDs appear at the top of the list.
+   * Groups are separated by a separator item.
+   * Items within groups are ordered by their order property, then by their title.
+   */
+  static groups = {
+    default: null,
+    high: 100,
+    medium: 5000,
+    low: 10000,
+    global: 100000,
+
+    edit: 100,
+  };
+
+  static triggerMenu(
+    element: Element,
+    clientX: number,
+    clientY: number,
+    actions: ContextAction[]
+  ): void {
     if (!element || !clientX || !clientY || !actions) {
       return;
     }
 
-    const mouseEvent = new MouseEvent('contextmenu', {
-      clientX,
-      clientY,
-      bubbles: true,
-      cancelable: true,
-    });
+    const mouseEvent: Partial<ContextActionEvent> = new MouseEvent(
+      'contextmenu',
+      {
+        clientX,
+        clientY,
+        bubbles: true,
+        cancelable: true,
+      }
+    );
     mouseEvent.contextActions = actions;
 
-    element.dispatchEvent(mouseEvent);
+    element.dispatchEvent(mouseEvent as ContextActionEvent);
   }
 
-  constructor(props) {
+  constructor(props: ContextActionsProps) {
     super(props);
 
     this.handleContextMenu = this.handleContextMenu.bind(this);
     this.handleKeyDown = this.handleKeyDown.bind(this);
 
-    this.container = null;
+    this.container = React.createRef();
 
-    this.state = { globalActions: [] };
+    this.state = { globalActions: [], keyboardActions: [] };
   }
 
-  static getDerivedStateFromProps(props) {
+  static getDerivedStateFromProps(
+    props: ContextActionsProps
+  ): ContextActionsState {
     if (!props.actions || !Array.isArray(props.actions)) {
       return { globalActions: [], keyboardActions: [] };
     }
@@ -87,30 +131,39 @@ class ContextActions extends Component {
     return { globalActions, keyboardActions };
   }
 
-  componentDidMount() {
-    if (this.container.parentNode) {
-      this.container.parentNode.addEventListener(
+  componentDidMount(): void {
+    if (this.container.current?.parentNode) {
+      this.container.current.parentElement?.addEventListener(
         'contextmenu',
         this.handleContextMenu
       );
-      this.container.parentNode.addEventListener('keydown', this.handleKeyDown);
-    }
-  }
-
-  componentWillUnmount() {
-    if (this.container.parentNode) {
-      this.container.parentNode.removeEventListener(
-        'contextmenu',
-        this.handleContextMenu
-      );
-      this.container.parentNode.removeEventListener(
+      this.container.current.parentElement?.addEventListener(
         'keydown',
         this.handleKeyDown
       );
     }
   }
 
-  handleContextMenu(e) {
+  componentWillUnmount(): void {
+    if (this.container.current?.parentNode) {
+      this.container.current.parentElement?.removeEventListener(
+        'contextmenu',
+        this.handleContextMenu
+      );
+      this.container.current.parentElement?.removeEventListener(
+        'keydown',
+        this.handleKeyDown
+      );
+    }
+  }
+
+  container: React.RefObject<HTMLDivElement>;
+
+  handleContextMenu(e: Event): void {
+    if (!ContextActionUtils.isContextActionEvent(e)) {
+      return;
+    }
+
     if (!e.contextActions) {
       e.contextActions = [];
     }
@@ -131,14 +184,14 @@ class ContextActions extends Component {
     );
   }
 
-  handleKeyDown(e) {
+  handleKeyDown(e: KeyboardEvent): void {
     const { keyboardActions } = this.state;
     for (let i = 0; i < keyboardActions.length; i += 1) {
       const keyboardAction = keyboardActions[i];
       if (ContextActionUtils.isEventForKeyState(e, keyboardAction.keyState)) {
         log.debug('Context hotkey matched!', e);
 
-        const result = keyboardAction.action.action(e);
+        const result = keyboardAction.action.action?.(e);
 
         if (result || result === undefined) {
           e.stopPropagation();
@@ -151,39 +204,14 @@ class ContextActions extends Component {
     }
   }
 
-  render() {
+  render(): JSX.Element {
     const { globalActions } = this.state;
     return (
-      <div
-        className="context-actions-listener"
-        ref={container => {
-          this.container = container;
-        }}
-      >
+      <div className="context-actions-listener" ref={this.container}>
         <GlobalContextActions actions={globalActions} />
       </div>
     );
   }
 }
-
-/**
- * Group you can assign to context menu actions to group them together.
- * Lower group IDs appear at the top of the list.
- * Groups are separated by a separator item.
- * Items within groups are ordered by their order property, then by their title.
- */
-ContextActions.groups = {
-  default: null,
-  high: 100,
-  medium: 5000,
-  low: 10000,
-  global: 100000,
-
-  edit: 100,
-};
-
-ContextActions.propTypes = {
-  actions: PropTypes.oneOfType([PropTypes.array, PropTypes.func]).isRequired,
-};
 
 export default ContextActions;

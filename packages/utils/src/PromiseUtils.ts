@@ -14,7 +14,7 @@ class PromiseUtils {
    */
   static makeCancelable<T>(
     promise: Promise<T> | T,
-    cleanup: (val: T) => void | null
+    cleanup?: (val: T) => void | null
   ): CancelablePromise<T> {
     let hasCanceled = false;
     let resolved: T | undefined;
