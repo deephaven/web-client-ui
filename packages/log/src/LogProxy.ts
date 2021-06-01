@@ -1,4 +1,5 @@
 /* eslint-disable no-console */
+import { EventTarget } from 'event-target-shim';
 import Log from './Log';
 
 export enum LOG_PROXY_TYPE {
