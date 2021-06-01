@@ -78,6 +78,10 @@ module.exports = {
         'no-use-before-define': 'off',
         '@typescript-eslint/no-use-before-define': 'error',
         'react/static-property-placement': ['error', 'static public field'],
+        'react/require-default-props': [
+          'error',
+          { ignoreFunctionalComponents: true },
+        ],
       },
     },
   ],
