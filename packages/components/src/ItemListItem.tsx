@@ -1,18 +1,90 @@
 import React, { Component } from 'react';
 import classNames from 'classnames';
-import PropTypes from 'prop-types';
 import './ItemListItem.scss';
 import Log from '@deephaven/log';
 
 const log = Log.module('ItemListItem');
 
-class ItemListItem extends Component {
-  static handleKeyDown() {
+interface ItemListItemProps {
+  isDraggable: boolean;
+  isKeyboardSelected: boolean;
+  isSelected: boolean;
+  itemIndex: number;
+  disableSelect: boolean;
+  onBlur(index: number, e: React.FocusEvent<HTMLDivElement>): void;
+  onClick(index: number, e: React.MouseEvent<HTMLDivElement>): void;
+  onDragStart(index: number, e: React.DragEvent<HTMLDivElement>): void;
+  onDrag(index: number, e: React.DragEvent<HTMLDivElement>): void;
+  onDragOver(index: number, e: React.DragEvent<HTMLDivElement>): void;
+  onDragEnd(index: number, e: React.DragEvent<HTMLDivElement>): void;
+  onDrop(index: number, e: React.DragEvent<HTMLDivElement>): void;
+  onDoubleClick(index: number, e: React.MouseEvent<HTMLDivElement>): void;
+  onFocus(index: number, e: React.FocusEvent<HTMLDivElement>): void;
+  onKeyboardSelect(index: number, item: HTMLDivElement): void;
+  onMouseDown(index: number, e: React.MouseEvent<HTMLDivElement>): void;
+  onMouseMove(index: number, e: React.MouseEvent<HTMLDivElement>): void;
+  onMouseUp(index: number, e: React.MouseEvent<HTMLDivElement>): void;
+  style: React.CSSProperties;
+  children: React.ReactNode;
+}
+
+class ItemListItem extends Component<ItemListItemProps, Record<string, never>> {
+  static defaultProps = {
+    children: null,
+    isDraggable: false,
+    isKeyboardSelected: false,
+    isSelected: false,
+    itemIndex: 0,
+    disableSelect: false,
+
+    onBlur(): void {
+      // no-op
+    },
+    onClick(): void {
+      // no-op
+    },
+    onDragStart(): void {
+      // no-op
+    },
+    onDrag(): void {
+      // no-op
+    },
+    onDragOver(): void {
+      // no-op
+    },
+    onDragEnd(): void {
+      // no-op
+    },
+    onDrop(): void {
+      // no-op
+    },
+    onDoubleClick(): void {
+      // no-op
+    },
+    onFocus(): void {
+      // no-op
+    },
+    onKeyboardSelect(): void {
+      // no-op
+    },
+    onMouseDown(): void {
+      // no-op
+    },
+    onMouseMove(): void {
+      // no-op
+    },
+    onMouseUp(): void {
+      // no-op
+    },
+    style: {},
+  };
+
+  static handleKeyDown(): boolean {
     log.log('ItemListItem.handleKeyDown false');
     return false;
   }
 
-  constructor(props) {
+  constructor(props: ItemListItemProps) {
     super(props);
 
     this.handleBlur = this.handleBlur.bind(this);
@@ -31,14 +103,14 @@ class ItemListItem extends Component {
     this.itemRef = React.createRef();
   }
 
-  componentDidMount() {
+  componentDidMount(): void {
     const { isKeyboardSelected, itemIndex, onKeyboardSelect } = this.props;
     if (isKeyboardSelected && this.itemRef.current) {
       onKeyboardSelect(itemIndex, this.itemRef.current);
     }
   }
 
-  componentDidUpdate(prevProps) {
+  componentDidUpdate(prevProps: ItemListItemProps): void {
     const { isKeyboardSelected: oldIsKeyboardSelected } = prevProps;
     const {
       isKeyboardSelected,
@@ -57,69 +129,71 @@ class ItemListItem extends Component {
     }
   }
 
-  handleBlur(e) {
+  itemRef: React.RefObject<HTMLDivElement>;
+
+  handleBlur(e: React.FocusEvent<HTMLDivElement>): void {
     const { itemIndex, onBlur } = this.props;
     onBlur(itemIndex, e);
   }
 
-  handleFocus(e) {
+  handleFocus(e: React.FocusEvent<HTMLDivElement>): void {
     const { itemIndex, onFocus } = this.props;
     onFocus(itemIndex, e);
   }
 
-  handleClick(e) {
+  handleClick(e: React.MouseEvent<HTMLDivElement>): void {
     const { itemIndex, onClick } = this.props;
     onClick(itemIndex, e);
   }
 
-  handleDragStart(e) {
+  handleDragStart(e: React.DragEvent<HTMLDivElement>): void {
     const { itemIndex, onDragStart } = this.props;
     onDragStart(itemIndex, e);
   }
 
-  handleDrag(e) {
+  handleDrag(e: React.DragEvent<HTMLDivElement>): void {
     const { itemIndex, onDrag } = this.props;
     onDrag(itemIndex, e);
   }
 
-  handleDragOver(e) {
+  handleDragOver(e: React.DragEvent<HTMLDivElement>): void {
     // Have to call preventDefault otherwise onDrop won't get triggered
     e.preventDefault();
     const { itemIndex, onDragOver } = this.props;
     onDragOver(itemIndex, e);
   }
 
-  handleDragEnd(e) {
+  handleDragEnd(e: React.DragEvent<HTMLDivElement>): void {
     const { itemIndex, onDragEnd } = this.props;
     onDragEnd(itemIndex, e);
   }
 
-  handleDrop(e) {
+  handleDrop(e: React.DragEvent<HTMLDivElement>): void {
     const { itemIndex, onDrop } = this.props;
     onDrop(itemIndex, e);
   }
 
-  handleDoubleClick(e) {
+  handleDoubleClick(e: React.MouseEvent<HTMLDivElement>): void {
     const { itemIndex, onDoubleClick } = this.props;
     onDoubleClick(itemIndex, e);
   }
 
-  handleMouseMove(e) {
+  handleMouseMove(e: React.MouseEvent<HTMLDivElement>): void {
     const { itemIndex, onMouseMove } = this.props;
     onMouseMove(itemIndex, e);
   }
 
-  handleMouseDown(e) {
+  handleMouseDown(e: React.MouseEvent<HTMLDivElement>): void {
     const { itemIndex, onMouseDown } = this.props;
     onMouseDown(itemIndex, e);
   }
 
-  handleMouseUp(e) {
+  handleMouseUp(e: React.MouseEvent<HTMLDivElement>): void {
     const { itemIndex, onMouseUp } = this.props;
     onMouseUp(itemIndex, e);
   }
 
-  render() {
+  render(): JSX.Element {
     const {
       isDraggable,
       isKeyboardSelected,
@@ -159,53 +233,5 @@ class ItemListItem extends Component {
     );
   }
 }
-
-ItemListItem.propTypes = {
-  isDraggable: PropTypes.bool,
-  isKeyboardSelected: PropTypes.bool,
-  isSelected: PropTypes.bool,
-  itemIndex: PropTypes.number,
-  disableSelect: PropTypes.bool,
-  onBlur: PropTypes.func,
-  onClick: PropTypes.func,
-  onDragStart: PropTypes.func,
-  onDrag: PropTypes.func,
-  onDragOver: PropTypes.func,
-  onDragEnd: PropTypes.func,
-  onDrop: PropTypes.func,
-  onDoubleClick: PropTypes.func,
-  onFocus: PropTypes.func,
-  onKeyboardSelect: PropTypes.func,
-  onMouseDown: PropTypes.func,
-  onMouseMove: PropTypes.func,
-  onMouseUp: PropTypes.func,
-  style: PropTypes.shape({}),
-  children: PropTypes.node,
-};
-
-ItemListItem.defaultProps = {
-  children: null,
-  isDraggable: false,
-  isKeyboardSelected: false,
-  isSelected: false,
-  itemIndex: 0,
-  disableSelect: false,
-
-  onBlur: () => {},
-  onClick: () => {},
-  onDragStart: () => {},
-  onDrag: () => {},
-  onDragOver: () => {},
-  onDragEnd: () => {},
-  onDrop: () => {},
-  onDoubleClick: () => {},
-  onFocus: () => {},
-  onKeyboardSelect: () => {},
-  onMouseDown: () => {},
-  onMouseMove: () => {},
-  onMouseUp: () => {},
-
-  style: {},
-};
 
 export default ItemListItem;
