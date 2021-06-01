@@ -194,7 +194,7 @@ class ComboBox extends Component<ComboBoxProps, ComboBoxState> {
 
     switch (event.key) {
       case 'Enter':
-        if (menuOptions[keyboardOptionIndex]?.value) {
+        if (menuOptions[keyboardOptionIndex]?.value != null) {
           this.updateInputValue(menuOptions[keyboardOptionIndex].value);
         }
         this.closeMenu();
@@ -236,25 +236,21 @@ class ComboBox extends Component<ComboBoxProps, ComboBoxState> {
     const menuOptions = filter ? filteredOptions : options;
     const menuOptionsLength = menuOptions.length;
     let newKeyboardOptionIndex = keyboardOptionIndex;
+    let delta = 0;
     switch (direction) {
       case ComboBox.MENU_NAVIGATION_DIRECTION.UP:
-        if (keyboardOptionIndex > 0) {
-          this.setState({
-            keyboardOptionIndex: keyboardOptionIndex - 1,
-          });
-        } else {
-          this.setState({ keyboardOptionIndex: menuOptionsLength - 1 });
-        }
+        delta = -1;
         break;
       case ComboBox.MENU_NAVIGATION_DIRECTION.DOWN:
-        newKeyboardOptionIndex =
-          (newKeyboardOptionIndex + 1) % menuOptionsLength;
-        this.setState({
-          keyboardOptionIndex: newKeyboardOptionIndex,
-        });
+        delta = 1;
         break;
-      default:
-        break;
+    }
+
+    if (delta !== 0) {
+      this.setState({
+        keyboardOptionIndex:
+          (keyboardOptionIndex + delta + menuOptionsLength) % menuOptionsLength,
+      });
     }
   }
 
