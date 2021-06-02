@@ -117,6 +117,12 @@ class ChartUtils {
     }
 
     switch (sourceType) {
+      case dh.plot.SourceType.X:
+        return 'x';
+      case dh.plot.SourceType.Y:
+        return 'y';
+      case dh.plot.SourceType.Z:
+        return 'z';
       case dh.plot.SourceType.X_LOW:
         return 'xLow';
       case dh.plot.SourceType.X_HIGH:
@@ -125,11 +131,25 @@ class ChartUtils {
         return 'yLow';
       case dh.plot.SourceType.Y_HIGH:
         return 'yHigh';
+      case dh.plot.SourceType.TIME:
+        return 'time';
+      case dh.plot.SourceType.OPEN:
+        return 'open';
+      case dh.plot.SourceType.HIGH:
+        return 'high';
+      case dh.plot.SourceType.LOW:
+        return 'low';
+      case dh.plot.SourceType.CLOSE:
+        return 'shape';
+      case dh.plot.SourceType.SIZE:
+        return 'size';
+      case dh.plot.SourceType.LABEL:
+        return 'label';
+      case dh.plot.SourceType.COLOR:
+        return 'color';
       default:
-        break;
+        throw new Error('Unrecognized source type', sourceType);
     }
-
-    return `${sourceType}`.toLowerCase();
   }
 
   static getPlotlySeriesOrientation(series) {
