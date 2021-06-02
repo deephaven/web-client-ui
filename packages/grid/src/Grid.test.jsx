@@ -627,6 +627,19 @@ it('handles escape to clear current ranges', () => {
   expect(component.state.selectedRanges.length).toBe(0);
 });
 
+it('selects all with ctrl+a', () => {
+  const model = new MockGridModel();
+  const { columnCount, rowCount } = model;
+  const component = makeGridComponent(model);
+
+  keyDown('a', component, { ctrlKey: true });
+
+  expect(component.state.selectedRanges.length).toBe(1);
+  expect(component.state.selectedRanges[0]).toEqual(
+    new GridRange(0, 0, columnCount - 1, rowCount - 1)
+  );
+});
+
 it('auto selects the row with the autoselect row option set', () => {
   const model = new MockGridModel();
   const theme = { ...defaultTheme, autoSelectRow: true };
