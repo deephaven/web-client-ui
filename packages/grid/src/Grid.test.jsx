@@ -172,6 +172,25 @@ function mouseClick(
   mouseUp(column, row, component, extraMouseArgs, clientX, clientY);
 }
 
+function mouseDoubleClick(
+  column,
+  row,
+  component,
+  extraMouseArgs = {},
+  clientX,
+  clientY
+) {
+  mouseEvent(
+    column,
+    row,
+    component.handleDoubleClick,
+    'dblclick',
+    extraMouseArgs,
+    clientX,
+    clientY
+  );
+}
+
 function keyDown(key, component, extraArgs) {
   const args = { key, ...extraArgs };
   component.handleKeyDown(new KeyboardEvent('keydown', args));
@@ -454,6 +473,27 @@ it('handles ctrl+shift click to extend range in both direcitons', () => {
   expect(component.state.selectedRanges[0]).toEqual(
     new GridRange(2, 3, 10, 12)
   );
+});
+
+it('handles double clicking a cell to edit', () => {
+  const model = new MockGridModel({ isEditable: true });
+  const component = makeGridComponent(model);
+  const column = 5;
+  const row = 7;
+  const value = 'TEST';
+
+  mouseDoubleClick(column, row, component);
+
+  expect(component.state.cursorColumn).toBe(column);
+  expect(component.state.cursorRow).toBe(row);
+
+  component.handleEditCellCommit(value);
+
+  expect(model.textForCell(column, row)).toBe(value);
+
+  // Cursor should have moved down by one after committing the value
+  expect(component.state.cursorColumn).toBe(column);
+  expect(component.state.cursorRow).toBe(row + 1);
 });
 
 it('handles keyboard arrow to update selection with no previous selection', () => {

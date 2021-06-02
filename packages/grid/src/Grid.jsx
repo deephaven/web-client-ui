@@ -167,6 +167,7 @@ class Grid extends PureComponent {
       movedColumns,
       movedRows,
 
+      // Cursor (highlighted cell) location and active selected range
       cursorRow: null,
       cursorColumn: null,
       selectionStartRow: null,
@@ -174,11 +175,18 @@ class Grid extends PureComponent {
       selectionEndRow: null,
       selectionEndColumn: null,
 
+      // Currently selected ranges and previously selected ranges
+      // Store the previously selected ranges to determine if the new selection should
+      // deselect again (if it's the same range)
       selectedRanges: [],
       lastSelectedRanges: [],
 
-      // The cursor style to use for the grid element
+      // The mouse cursor style to use when hovering over the grid element
       cursor: null,
+
+      // { column: number, row: number, selectionRange: [number, number], value: string | null, isQuickEdit?: boolean }
+      // The cell that is currently being edited
+      editingCell: null,
     };
   }
 
@@ -754,11 +762,12 @@ class Grid extends PureComponent {
     const { model } = this.props;
     const { columnCount, rowCount } = model;
     const { cursorRow, cursorColumn, selectedRanges } = this.state;
+    const ranges =
+      selectedRanges.length > 0
+        ? selectedRanges
+        : [GridRange.makeCell(cursorColumn, cursorRow)];
     let nextCursor = null;
-    if (
-      selectedRanges.length === 1 &&
-      GridRange.cellCount(selectedRanges) === 1
-    ) {
+    if (ranges.length === 1 && GridRange.cellCount(ranges) === 1) {
       // If we only have one cell selected, we want to update the cursor and we want to update the selected cells
       const gridRange = new GridRange(0, 0, columnCount - 1, rowCount - 1);
       nextCursor =
@@ -766,7 +775,7 @@ class Grid extends PureComponent {
         gridRange.startCell(direction);
     } else {
       nextCursor = GridRange.nextCell(
-        GridRange.boundedRanges(selectedRanges, columnCount, rowCount),
+        GridRange.boundedRanges(ranges, columnCount, rowCount),
         cursorColumn,
         cursorRow,
         direction
@@ -782,7 +791,7 @@ class Grid extends PureComponent {
 
       if (!GridRange.containsCell(selectedRanges, column, row)) {
         this.setState({
-          selectedRanges: [new GridRange(column, row, column, row)],
+          selectedRanges: [GridRange.makeCell(column, row)],
           selectionStartColumn: column,
           selectionStartRow: row,
           selectionEndColumn: column,
@@ -889,7 +898,7 @@ class Grid extends PureComponent {
    * @param {number} column The visible column index to start editing
    * @param {number} row The visible row index to start editing
    * @param {boolean} isQuickEdit If this is a quick edit (the arrow keys can commit)
-   * @param {number[]|null} selectionRange The tuple [start,end] selection range to select when editing
+   * @param {number[]|null} selectionRange The tuple [start,end] text selection range of the value to select when editing
    * @param {string?} value The value to start with in the edit field. Leave undefined to use the current value.
    */
   startEditing(
@@ -912,7 +921,8 @@ class Grid extends PureComponent {
           : model.editValueForCell(modelColumn, modelRow),
       isQuickEdit,
     };
-    this.setState({ editingCell: cell });
+
+    this.setState({ editingCell: cell, cursorColumn: column, cursorRow: row });
     this.moveViewToCell(column, row);
   }
 

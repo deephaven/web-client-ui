@@ -112,7 +112,7 @@ class GridModel extends EventTarget {
    * @returns {string} The value to use for editing
    */
   editValueForCell(x, y) {
-    throw new Error('editTextForCell not implemented');
+    throw new Error('editValueForCell not implemented');
   }
 
   /**
