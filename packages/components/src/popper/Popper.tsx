@@ -293,3 +293,4 @@ class Popper extends Component<PopperProps, PopperState> {
 }
 
 export default Popper;
+export type { PopperOptions };
