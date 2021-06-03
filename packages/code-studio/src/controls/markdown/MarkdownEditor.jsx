@@ -10,11 +10,18 @@ export default class MarkdownEditor extends PureComponent {
   }
 
   renderMarkdown = props => {
-    const { value, language } = props;
+    const { children, className } = props;
+    const language = className?.startsWith('language-')
+      ? className.substring(9)
+      : 'plaintext';
     return (
       <pre>
         <code>
-          <Code language={language || 'plaintext'}>{value}</Code>
+          <Code language={language}>
+            {React.Children.map(children, child =>
+              typeof child === 'string' ? child.trim() : child
+            )}
+          </Code>
         </code>
       </pre>
     );
@@ -40,10 +47,11 @@ export default class MarkdownEditor extends PureComponent {
           />
         ) : (
           <Markdown
-            source={content}
             escapeHtml={false}
-            renderers={{ code: this.renderMarkdown }}
-          />
+            components={{ code: this.renderMarkdown }}
+          >
+            {content}
+          </Markdown>
         )}
       </div>
     );
