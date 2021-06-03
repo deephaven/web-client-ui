@@ -129,7 +129,7 @@ it('renders a promise returning menu items properly', async () => {
 
 it('renders an empty menu for a rejected promise', () => {
   const mock = DEFAULT_MOCK();
-  const promise = new Promise((resolve, reject) => reject());
+  const promise = Promise.reject();
 
   const tree = TestRenderer.create(
     <div>
@@ -151,7 +151,7 @@ it('renders an empty menu for a rejected promise', () => {
 
 it('renders a menu from a promise returned from a function', () => {
   const mock = DEFAULT_MOCK();
-  const promise = new Promise(resolve => resolve());
+  const promise = Promise.resolve();
   const fn = () => promise;
 
   const tree = TestRenderer.create(

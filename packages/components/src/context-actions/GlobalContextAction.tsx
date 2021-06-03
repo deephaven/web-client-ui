@@ -12,9 +12,10 @@ interface GlobalContextActionProps {
   action: ContextAction;
 }
 
+type GlobalContextActionState = KeyState;
 class GlobalContextAction extends Component<
   GlobalContextActionProps,
-  KeyState
+  GlobalContextActionState
 > {
   constructor(props: GlobalContextActionProps) {
     super(props);
@@ -50,13 +51,10 @@ class GlobalContextAction extends Component<
     document.body.removeEventListener('keydown', this.handleKeyDown, true);
   }
 
-  handleContextMenu(e: MouseEvent): void {
-    if (!ContextActionUtils.isContextActionEvent(e)) {
-      (e as ContextActionEvent).contextActions = [];
-    }
-
-    if (!ContextActionUtils.isContextActionEvent(e)) {
-      return;
+  handleContextMenu(evt: MouseEvent): void {
+    const e = evt as ContextActionEvent;
+    if (!e.contextActions) {
+      e.contextActions = [];
     }
 
     const { action } = this.props;

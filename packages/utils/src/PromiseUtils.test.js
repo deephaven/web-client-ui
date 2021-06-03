@@ -1,4 +1,4 @@
-import PromiseUtils from './PromiseUtils';
+import { PromiseUtils } from './PromiseUtils';
 
 it('wraps promises properly', () => {
   const makeCancelable = item => {

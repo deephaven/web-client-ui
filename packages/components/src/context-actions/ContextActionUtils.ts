@@ -75,26 +75,24 @@ class ContextActionUtils {
 
     const shortcut = shortcutParam.replace('^', ContextActionUtils.CTRL_KEY);
 
-    if (shortcut) {
-      if (shortcut.indexOf(ContextActionUtils.CTRL_KEY) >= 0) {
-        keyState.ctrlKey = true;
-      }
-      if (shortcut.indexOf(ContextActionUtils.META_KEY) >= 0) {
-        keyState.metaKey = true;
-      }
-      if (shortcut.indexOf(ContextActionUtils.SHIFT_KEY) >= 0) {
-        keyState.shiftKey = true;
-      }
-      if (shortcut.indexOf(ContextActionUtils.ALT_KEY) >= 0) {
-        keyState.altKey = true;
-      }
-
-      let key = shortcut.charAt(shortcut.length - 1);
-      key = key.replace(/[⏎↵↩]/, 'Enter');
-      key = key.replace(/[⎋]/, 'Escape');
-      key = key.replace(/[⌫]/, 'Backspace');
-      keyState.key = key;
+    if (shortcut.indexOf(ContextActionUtils.CTRL_KEY) >= 0) {
+      keyState.ctrlKey = true;
     }
+    if (shortcut.indexOf(ContextActionUtils.META_KEY) >= 0) {
+      keyState.metaKey = true;
+    }
+    if (shortcut.indexOf(ContextActionUtils.SHIFT_KEY) >= 0) {
+      keyState.shiftKey = true;
+    }
+    if (shortcut.indexOf(ContextActionUtils.ALT_KEY) >= 0) {
+      keyState.altKey = true;
+    }
+
+    let key = shortcut.charAt(shortcut.length - 1);
+    key = key.replace(/[⏎↵↩]/, 'Enter');
+    key = key.replace(/[⎋]/, 'Escape');
+    key = key.replace(/[⌫]/, 'Backspace');
+    keyState.key = key;
 
     return keyState;
   }

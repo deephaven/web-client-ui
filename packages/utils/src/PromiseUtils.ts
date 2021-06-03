@@ -5,7 +5,7 @@ export interface CancelablePromise<T> extends Promise<T> {
   cancel: () => void;
 }
 
-class PromiseUtils {
+export class PromiseUtils {
   /**
    * Creates a promise that can be canceled by calling the `cancel` function
    * Pass an optional `cleanupFunc` to perform actions on the resolved item after promise is cancelled.
@@ -57,5 +57,3 @@ class PromiseUtils {
     return error instanceof TimeoutError;
   }
 }
-
-export default PromiseUtils;

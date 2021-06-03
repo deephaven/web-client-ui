@@ -21,9 +21,9 @@ class ContextMenuRoot extends Component<
   constructor(props: ContextMenuRootProps) {
     super(props);
 
-    this.container = React.createRef();
     this.handleMenuClose = this.handleMenuClose.bind(this);
     this.handleContextMenu = this.handleContextMenu.bind(this);
+    this.container = React.createRef();
     this.openMenu = React.createRef();
 
     this.state = {
