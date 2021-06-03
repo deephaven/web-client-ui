@@ -57,7 +57,7 @@
     "react-test-renderer": "^16.x"
   },
   "devDependencies": {
-    "@babel/cli": "^7.13.14",
+    "@babel/cli": "^7.14.3",
     "@deephaven/components": "^0.1.1",
     "@deephaven/icons": "^0.1.0",
     "@deephaven/iris-grid": "^0.1.1",
@@ -67,12 +67,12 @@
     "@deephaven/redux": "^0.1.1",
     "@deephaven/tsconfig": "^0.1.0",
     "@deephaven/utils": "^0.1.1",
-    "@testing-library/react": "^11.2.5",
+    "@testing-library/react": "^11.2.7",
     "@types/enzyme": "^3.10.7",
     "@types/enzyme-adapter-react-16": "^1.0.6",
-    "@types/jest": "^26.0.15",
-    "@types/react": "^16.14.0",
-    "@types/react-dom": "^16.9.8",
+    "@types/jest": "^26.0.23",
+    "@types/react": "^16.14.8",
+    "@types/react-dom": "^16.9.13",
     "bootstrap": "4.4.1",
     "cross-env": "^7.0.2",
     "enzyme": "^3.11.0",
@@ -82,7 +82,7 @@
     "lodash.debounce": "^4.0.8",
     "memoize-one": "^5.1.1",
     "memoizee": "^0.4.15",
-    "mini-css-extract-plugin": "^1.3.9",
+    "mini-css-extract-plugin": "^1.6.0",
     "npm-run-all": "^4.1.5",
     "prop-types": "^15.7.2",
     "react": "^16.14.0",
@@ -90,9 +90,9 @@
     "react-test-renderer": "^16.14.0",
     "regenerator-runtime": "^0.13.7",
     "rimraf": "^3.0.2",
-    "sass": "^1.32.8",
-    "ts-jest": "^26.5.3",
-    "typescript": "^4.2.3"
+    "sass": "^1.34.1",
+    "ts-jest": "^26.5.6",
+    "typescript": "^4.3.2"
   },
   "files": [
     "dist"
