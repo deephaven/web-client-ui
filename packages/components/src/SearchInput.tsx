@@ -2,7 +2,6 @@ import React, { PureComponent } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { vsSearch } from '@deephaven/icons';
 import classNames from 'classnames';
-import PropTypes from 'prop-types';
 import './SearchInput.scss';
 
 interface SearchInputProps {
@@ -16,16 +15,6 @@ interface SearchInputProps {
 }
 
 class SearchInput extends PureComponent<SearchInputProps> {
-  static propTypes = {
-    value: PropTypes.string.isRequired,
-    placeholder: PropTypes.string,
-    onChange: PropTypes.func.isRequired,
-    onKeyDown: PropTypes.func,
-    className: PropTypes.string,
-    matchCount: PropTypes.number,
-    id: PropTypes.string,
-  };
-
   static defaultProps = {
     placeholder: 'Search',
     className: '',

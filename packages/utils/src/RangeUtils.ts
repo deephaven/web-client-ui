@@ -1,5 +1,5 @@
 // A number pair representing [start, end].
-type Range = [number, number];
+export type Range = [number, number];
 
 class RangeUtils {
   static isValidRange(range: Range): boolean {

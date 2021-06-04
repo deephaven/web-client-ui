@@ -185,7 +185,9 @@ class ContextActionUtils {
    * Returns true if the modifier key for the current platform is down for the event (Ctrl for windows/linux, Command (meta) for mac)
    * @param event The event to get the meta key status from
    */
-  static isModifierKeyDown(event: KeyboardEvent): boolean {
+  static isModifierKeyDown(
+    event: KeyboardEvent | MouseEvent | React.KeyboardEvent | React.MouseEvent
+  ): boolean {
     const modifierKey = ContextActionUtils.getModifierKey();
     return event[modifierKey];
   }

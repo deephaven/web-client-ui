@@ -1,10 +1,22 @@
 import React, { Component } from 'react';
 import classNames from 'classnames';
-import PropTypes from 'prop-types';
 import Log from '@deephaven/log';
-import Popper from './Popper';
+import Popper, { PopperOptions } from './Popper';
 
 const log = Log.module('Tooltip');
+
+interface TooltipProps {
+  interactive: boolean;
+  options: PopperOptions;
+  timeout: number;
+  reshowTimeout: number;
+  children: React.ReactNode;
+  popperClassName: string;
+}
+
+interface TooltipState {
+  isShown: boolean;
+}
 
 /**
  * Component that can be added to an element to automatically display a tooltip.
@@ -18,7 +30,7 @@ const log = Log.module('Tooltip');
  *   </Tooltip>
  * </div>
  */
-class Tooltip extends Component {
+class Tooltip extends Component<TooltipProps, TooltipState> {
   static defaultTimeout = 500;
 
   static defaultReshowTimeout = 100;
@@ -29,7 +41,15 @@ class Tooltip extends Component {
 
   static lastHiddenTime = Date.now();
 
-  static handleHidden() {
+  static defaultProps = {
+    interactive: false,
+    options: {},
+    popperClassName: '',
+    reshowTimeout: Tooltip.defaultReshowTimeout,
+    timeout: Tooltip.defaultTimeout,
+  };
+
+  static handleHidden(): void {
     Tooltip.shownTooltipCount -= 1;
 
     if (Tooltip.shownTooltipCount === 0) {
@@ -37,11 +57,11 @@ class Tooltip extends Component {
     }
   }
 
-  static handleShown() {
+  static handleShown(): void {
     Tooltip.shownTooltipCount += 1;
   }
 
-  constructor(props) {
+  constructor(props: TooltipProps) {
     super(props);
 
     this.handleMouseMove = this.handleMouseMove.bind(this);
@@ -52,8 +72,8 @@ class Tooltip extends Component {
     this.handleExited = this.handleExited.bind(this);
     this.stopShowingTooltip = this.stopShowingTooltip.bind(this);
 
-    this.container = null;
-    this.popper = null;
+    this.container = React.createRef();
+    this.popper = React.createRef();
     this.parent = null;
     this.timer = null;
 
@@ -62,7 +82,7 @@ class Tooltip extends Component {
     };
   }
 
-  componentDidMount() {
+  componentDidMount(): void {
     this.startListening();
 
     const { timeout } = this.props;
@@ -71,7 +91,7 @@ class Tooltip extends Component {
     }
   }
 
-  componentDidUpdate(prevProps, prevState) {
+  componentDidUpdate(prevProps: TooltipProps, prevState: TooltipState): void {
     const { isShown: oldIsShown } = prevState;
     const { isShown } = this.state;
 
@@ -84,7 +104,7 @@ class Tooltip extends Component {
     }
   }
 
-  componentWillUnmount() {
+  componentWillUnmount(): void {
     this.stopListening();
     this.stopListeningWindow();
     this.stopTimer();
@@ -96,19 +116,29 @@ class Tooltip extends Component {
     }
   }
 
-  startListening() {
-    if (!this.container || !this.container.parentNode) {
+  container: React.RefObject<HTMLDivElement>;
+
+  popper: React.RefObject<Popper>;
+
+  parent: HTMLElement | null;
+
+  // This is platform dependent of Node/DOM
+  // Jest requires Node types
+  timer: number | null;
+
+  startListening(): void {
+    if (!this.container.current || !this.container.current.parentElement) {
       log.error("Tooltip doesn't have a container or a parent set!");
       return;
     }
 
-    this.parent = this.container.parentNode;
+    this.parent = this.container.current.parentElement;
     this.parent.addEventListener('mousemove', this.handleMouseMove);
     this.parent.addEventListener('mouseleave', this.handleMouseLeave);
     this.parent.addEventListener('mousedown', this.stopShowingTooltip);
   }
 
-  stopListening() {
+  stopListening(): void {
     if (!this.parent) {
       return;
     }
@@ -118,27 +148,27 @@ class Tooltip extends Component {
     this.parent.removeEventListener('mousedown', this.stopShowingTooltip);
   }
 
-  startListeningWindow() {
+  startListeningWindow(): void {
     window.addEventListener('mousemove', this.handleWindowMouseMove, true);
     window.addEventListener('contextmenu', this.stopShowingTooltip, true);
     window.addEventListener('wheel', this.handleWheel);
   }
 
-  stopListeningWindow() {
+  stopListeningWindow(): void {
     window.removeEventListener('mousemove', this.handleWindowMouseMove, true);
     window.removeEventListener('contextmenu', this.stopShowingTooltip, true);
     window.removeEventListener('wheel', this.handleWheel);
   }
 
-  handleMouseMove() {
+  handleMouseMove(): void {
     this.startTimer();
   }
 
-  handleWheel() {
+  handleWheel(): void {
     const { isShown } = this.state;
-    if (this.popper && this.parent && isShown) {
+    if (this.popper.current && this.parent && isShown) {
       if (
-        !this.popper.element.matches(':hover') &&
+        !this.popper.current.element.matches(':hover') &&
         !this.parent.matches(':hover')
       ) {
         this.stopTimer();
@@ -147,7 +177,7 @@ class Tooltip extends Component {
     }
   }
 
-  handleMouseLeave() {
+  handleMouseLeave(): void {
     const { isShown } = this.state;
     this.stopTimer();
 
@@ -157,16 +187,19 @@ class Tooltip extends Component {
     }
   }
 
-  handleTimeout() {
+  handleTimeout(): void {
     this.show();
   }
 
-  handleWindowMouseMove(event) {
+  handleWindowMouseMove(event: MouseEvent): void {
     const mouseX = event.clientX;
     const mouseY = event.clientY;
     const { isShown } = this.state;
 
-    const popperRect = this.popper.element.getBoundingClientRect();
+    if (!this.popper.current || !this.parent) {
+      return;
+    }
+    const popperRect = this.popper.current.element.getBoundingClientRect();
     const parentRect = this.parent.getBoundingClientRect();
 
     if (
@@ -189,7 +222,7 @@ class Tooltip extends Component {
     }
   }
 
-  startTimer() {
+  startTimer(): void {
     this.stopTimer();
 
     const { timeout, reshowTimeout } = this.props;
@@ -200,22 +233,22 @@ class Tooltip extends Component {
     ) {
       timerTimeout = reshowTimeout;
     }
-    this.timer = setTimeout(this.handleTimeout, timerTimeout);
+    this.timer = window.setTimeout(this.handleTimeout, timerTimeout);
   }
 
-  stopTimer() {
+  stopTimer(): void {
     if (this.timer) {
       clearTimeout(this.timer);
       this.timer = null;
     }
   }
 
-  show() {
+  show(): void {
     const { isShown } = this.state;
     this.stopTimer();
 
     if (!isShown) {
-      this.popper.show();
+      this.popper.current?.show();
       this.setState({ isShown: true });
 
       const { interactive } = this.props;
@@ -225,20 +258,20 @@ class Tooltip extends Component {
     }
   }
 
-  hide() {
-    this.popper.hide();
+  hide(): void {
+    this.popper.current?.hide();
     this.stopListeningWindow();
   }
 
-  update() {
-    this.popper.scheduleUpdate();
+  update(): void {
+    this.popper.current?.scheduleUpdate();
   }
 
-  handleExited() {
+  handleExited(): void {
     this.setState({ isShown: false });
   }
 
-  stopShowingTooltip() {
+  stopShowingTooltip(): void {
     const { isShown } = this.state;
     this.stopTimer();
     if (isShown) {
@@ -246,22 +279,15 @@ class Tooltip extends Component {
     }
   }
 
-  render() {
+  render(): JSX.Element {
     const { interactive, children, options, popperClassName } = this.props;
     const { isShown } = this.state;
     return (
-      <div
-        ref={container => {
-          this.container = container;
-        }}
-        style={{ display: 'none' }}
-      >
+      <div ref={this.container} style={{ display: 'none' }}>
         <Popper
           className={classNames(popperClassName)}
           options={options}
-          ref={popper => {
-            this.popper = popper;
-          }}
+          ref={this.popper}
           onExited={this.handleExited}
           interactive={interactive}
         >
@@ -271,22 +297,5 @@ class Tooltip extends Component {
     );
   }
 }
-
-Tooltip.propTypes = {
-  interactive: PropTypes.bool,
-  options: PropTypes.shape({}),
-  timeout: PropTypes.number,
-  reshowTimeout: PropTypes.number,
-  children: PropTypes.node.isRequired,
-  popperClassName: PropTypes.string,
-};
-
-Tooltip.defaultProps = {
-  interactive: false,
-  options: {},
-  popperClassName: '',
-  reshowTimeout: Tooltip.reshowTimeout,
-  timeout: Tooltip.defaultTimeout,
-};
 
 export default Tooltip;
