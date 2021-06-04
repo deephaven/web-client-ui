@@ -1,6 +1,5 @@
 import React from 'react';
 import { CSSTransition } from 'react-transition-group';
-import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { vsWarning } from '@deephaven/icons';
@@ -8,10 +7,20 @@ import ThemeExport from './ThemeExport';
 import LoadingSpinner from './LoadingSpinner';
 import './LoadingOverlay.scss';
 
+type LoadingOverlayProps = {
+  isLoaded: boolean;
+  isLoading: boolean;
+  errorMessage: string | null;
+};
+
 /**
  * A loading overlay that handles displaying a loading spinner or an error message
  */
-const LoadingOverlay = ({ isLoaded, isLoading, errorMessage }) => (
+const LoadingOverlay = ({
+  isLoaded = false,
+  isLoading = true,
+  errorMessage = null,
+}: LoadingOverlayProps): JSX.Element => (
   <CSSTransition
     in={!!errorMessage || !isLoaded || isLoading}
     timeout={ThemeExport.transitionMs}
@@ -38,17 +47,5 @@ const LoadingOverlay = ({ isLoaded, isLoading, errorMessage }) => (
     </div>
   </CSSTransition>
 );
-
-LoadingOverlay.propTypes = {
-  errorMessage: PropTypes.string,
-  isLoaded: PropTypes.bool,
-  isLoading: PropTypes.bool,
-};
-
-LoadingOverlay.defaultProps = {
-  isLoaded: false,
-  isLoading: true,
-  errorMessage: null,
-};
 
 export default LoadingOverlay;

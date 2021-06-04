@@ -5,7 +5,7 @@ import { vsCircleLargeOutline, vsLoading } from '@deephaven/icons';
 import './LoadingSpinner.scss';
 
 type LoadingSpinnerProps = {
-  className: string;
+  className?: string;
 };
 
 const LoadingSpinner = ({
