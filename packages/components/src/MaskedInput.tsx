@@ -18,7 +18,7 @@ const SELECTION_DIRECTION = {
  */
 const FIXED_WIDTH_SPACE = '\u2007';
 
-type SelectionSegment = {
+export type SelectionSegment = {
   selectionStart: number;
   selectionEnd: number;
   selectionDirection?: typeof SELECTION_DIRECTION[keyof typeof SELECTION_DIRECTION];

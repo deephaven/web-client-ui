@@ -75,6 +75,11 @@ class TimeUtils {
     return `${hours}:${minutes}:${seconds}`;
   }
 
+  static isTimeString(s: string): s is TimeString {
+    const TIME_PATTERN = '([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]';
+    return new RegExp(TIME_PATTERN).test(s);
+  }
+
   /**
    * Parse time in seconds from the provided time string
    * @param timeString Time string in hh:mm:ss format
