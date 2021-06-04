@@ -14,12 +14,22 @@ import './ItemList.scss';
 
 const log = Log.module('ItemList');
 
-interface Item {
-  value: string;
-  displayValue: string;
+export interface DefaultListItem {
+  value?: string;
+  displayValue?: string;
 }
 
-interface ItemListProps {
+export type RenderItemProps<T> = {
+  item: T;
+  itemIndex: number;
+  isKeyboardSelected: boolean;
+  isSelected: boolean;
+  style: React.CSSProperties;
+};
+
+type RenderItemFn<T> = (props: RenderItemProps<T>) => React.ReactNode;
+
+type ItemListProps<T> = {
   // Total item count
   itemCount: number;
   rowHeight: number;
@@ -29,7 +39,7 @@ interface ItemListProps {
   // Can be anything as long as it's supported by the renderItem
   // Default renderItem will look for a `displayValue` property, fallback
   // to the `value` property, or stringify the object if neither are defined
-  items: Item[];
+  items: T[];
   // Whether to allow dragging to change the selection after clicking
   isDragSelect: boolean;
   // Whether to allow multiple selections in this item list
@@ -45,11 +55,11 @@ interface ItemListProps {
   overscanCount: number;
   selectedRanges: Range[];
   disableSelect: boolean;
-  renderItem(): void;
+  renderItem: RenderItemFn<T>;
   focusSelector: string;
-}
+};
 
-interface ItemListState {
+type ItemListState = {
   keyboardIndex: number | null;
   mouseDownIndex: number | null;
   selectedRanges: Range[];
@@ -58,13 +68,13 @@ interface ItemListState {
   isDragging: boolean;
   isStuckToBottom: boolean;
   scrollOffset: number | null;
-}
+};
 
 /**
  * Show items in a long scrollable list.
  * Can be navigated via keyboard or mouse.
  */
-class ItemList extends PureComponent<ItemListProps, ItemListState> {
+class ItemList<T> extends PureComponent<ItemListProps<T>, ItemListState> {
   static CACHE_SIZE = 1000;
 
   static DEFAULT_ROW_HEIGHT = 20;
@@ -106,15 +116,17 @@ class ItemList extends PureComponent<ItemListProps, ItemListState> {
     focusSelector: '.item-list-item',
   };
 
-  static renderItem({ item }: { item: Item }): JSX.Element {
+  static renderItem<P extends DefaultListItem>({
+    item,
+  }: RenderItemProps<P>): JSX.Element {
     return (
       <div className="item-list-item-content">
-        {item && (item.displayValue || item.value || item)}
+        {item && (item.displayValue || item.value || `${item}`)}
       </div>
     );
   }
 
-  constructor(props: ItemListProps) {
+  constructor(props: ItemListProps<T>) {
     super(props);
 
     this.handleItemBlur = this.handleItemBlur.bind(this);
@@ -155,7 +167,10 @@ class ItemList extends PureComponent<ItemListProps, ItemListState> {
     }
   }
 
-  componentDidUpdate(prevProps: ItemListProps, prevState: ItemListState): void {
+  componentDidUpdate(
+    prevProps: ItemListProps<T>,
+    prevState: ItemListState
+  ): void {
     const { selectedRanges: propSelectedRanges } = this.props;
     const {
       isStuckToBottom,
@@ -198,21 +213,22 @@ class ItemList extends PureComponent<ItemListProps, ItemListState> {
   }
 
   getItemSelected = memoize(
-    (index, selectedRanges) => RangeUtils.isSelected(selectedRanges, index),
+    (index: number, selectedRanges: Range[]) =>
+      RangeUtils.isSelected(selectedRanges, index),
     { max: ItemList.CACHE_SIZE }
   );
 
   getCachedItem = memoize(
     (
-      itemIndex,
-      key,
-      item,
-      isKeyboardSelected,
-      isSelected,
-      renderItem,
-      style,
-      onKeyboardSelect,
-      disableSelect
+      itemIndex: number,
+      key: number,
+      item: T,
+      isKeyboardSelected: boolean,
+      isSelected: boolean,
+      renderItem: RenderItemFn<T>,
+      style: React.CSSProperties,
+      onKeyboardSelect: (i: number, item: HTMLDivElement) => void,
+      disableSelect: boolean
     ) => {
       const content = renderItem({
         item,
@@ -245,7 +261,7 @@ class ItemList extends PureComponent<ItemListProps, ItemListState> {
     { max: ItemList.CACHE_SIZE }
   );
 
-  getOuterElement = memoize(onKeyDown => {
+  getOuterElement = memoize((onKeyDown: React.KeyboardEventHandler) => {
     const component = React.forwardRef<HTMLDivElement>((props, ref) => (
       // We need to add the tabIndex to make sure it is focusable, otherwise we can't get key events
       <div
@@ -274,7 +290,10 @@ class ItemList extends PureComponent<ItemListProps, ItemListState> {
     return component;
   });
 
-  getItemData = memoize((items, selectedRanges) => ({ items, selectedRanges }));
+  getItemData = memoize((items: T[], selectedRanges: Range[]) => ({
+    items,
+    selectedRanges,
+  }));
 
   focus(): void {
     if (this.listContainer.current != null) {

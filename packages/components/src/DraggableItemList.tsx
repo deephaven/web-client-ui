@@ -1,14 +1,59 @@
 import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import memoize from 'memoizee';
-import { Draggable, Droppable } from 'react-beautiful-dnd';
+import { Draggable, Droppable, DraggableChildrenFn } from 'react-beautiful-dnd';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { vsGripper } from '@deephaven/icons';
-import { RangeUtils } from '@deephaven/utils';
-import ItemList from './ItemList';
+import { RangeUtils, Range } from '@deephaven/utils';
+import ItemList, { RenderItemProps, DefaultListItem } from './ItemList';
 import { Tooltip } from './popper';
 import './DraggableItemList.scss';
+
+type DraggableRenderItemProps<T> = RenderItemProps<T> & {
+  isClone?: boolean;
+  selectedCount?: number;
+};
+
+type DraggableRenderItemFn<T> = (
+  props: DraggableRenderItemProps<T>
+) => React.ReactNode;
+
+type DraggableItemListProps<T> = {
+  className: string;
+  draggingItemClassName: string;
+  // Total item count
+  itemCount: number;
+  rowHeight: number;
+  // Offset of the top item in the items array
+  offset: number;
+  // Item object format expected by the default renderItem function
+  // Can be anything as long as it's supported by the renderItem
+  items: T[];
+  // Whether to allow dropping items in this list
+  isDropDisabled: boolean;
+  // Whether to allow dragging items from this list
+  isDragDisabled: boolean;
+  // Whether to allow multiple selections in this item list
+  isMultiSelect: boolean;
+  // Set to true if you want the list to scroll when new items are added and it's already at the bottom
+  isStickyBottom: boolean;
+  // Fired when an item is clicked. With multiple selection, fired on double click.
+  onSelect(): void;
+  onSelectionChange(ranges: Range[]): void;
+  onViewportChange(): void;
+  selectedRanges: Range[];
+  disableSelect: boolean;
+  renderItem: DraggableRenderItemFn<T>;
+  style: React.CSSProperties;
+  // The prefix to add to all draggable item IDs
+  draggablePrefix: string;
+  // The ID to give the droppable list
+  droppableId: string;
+};
+
+type DraggableItemListState = {
+  selectedCount: number;
+};
 
 /**
  * Show a draggable item list. It _must_ be used within a `DragDropContext`.
@@ -17,10 +62,40 @@ import './DraggableItemList.scss';
  * One caveat with the use of react-beautiful-dnd is that it doesn't allow a drag to be initiated while
  * using a modifier key: https://github.com/atlassian/react-beautiful-dnd/issues/1678
  */
-class DraggableItemList extends PureComponent {
+class DraggableItemList<T> extends PureComponent<
+  DraggableItemListProps<T>,
+  DraggableItemListState
+> {
   static DEFAULT_ROW_HEIGHT = 30;
 
-  static renderHandle() {
+  static defaultProps = {
+    className: '',
+    draggingItemClassName: '',
+    offset: 0,
+    items: [],
+    rowHeight: DraggableItemList.DEFAULT_ROW_HEIGHT,
+    isDropDisabled: false,
+    isDragDisabled: false,
+    isMultiSelect: false,
+    isStickyBottom: false,
+    disableSelect: false,
+    style: null,
+    onSelect(): void {
+      // no-op
+    },
+    onSelectionChange(): void {
+      // no-op
+    },
+    onViewportChange(): void {
+      // no-op
+    },
+    renderItem: DraggableItemList.renderItem,
+    selectedRanges: [],
+    draggablePrefix: 'draggable-item',
+    droppableId: 'droppable-item-list',
+  };
+
+  static renderHandle(): JSX.Element {
     return (
       <div>
         <Tooltip>Drag to re-order</Tooltip>
@@ -29,11 +104,19 @@ class DraggableItemList extends PureComponent {
     );
   }
 
-  static renderBadge({ text }) {
+  static renderBadge({ text }: { text: string }): React.ReactNode {
     return text ? <span className="number-badge">{text}</span> : null;
   }
 
-  static renderTextItem({ text, badgeText = '', className = '' }) {
+  static renderTextItem({
+    text,
+    badgeText = '',
+    className = '',
+  }: {
+    text: string;
+    badgeText: string;
+    className: string;
+  }): JSX.Element {
     return (
       <div
         className={classNames(
@@ -49,22 +132,26 @@ class DraggableItemList extends PureComponent {
     );
   }
 
-  static renderItem({ item, isClone, selectedCount }) {
-    const text = item && (item.displayValue || item.value || item);
-    const badgeText = isClone ? `${selectedCount}` : null;
+  static renderItem<P extends DefaultListItem>({
+    item,
+    isClone,
+    selectedCount,
+  }: DraggableRenderItemProps<P>): JSX.Element {
+    const text = item && (item.displayValue || item.value || `${item}`);
+    const badgeText = isClone ? `${selectedCount}` : '';
     const className = isClone ? 'item-list-item-clone' : '';
     return DraggableItemList.renderTextItem({ text, badgeText, className });
   }
 
-  static getDraggableId(draggablePrefix, itemIndex) {
+  static getDraggableId(draggablePrefix: string, itemIndex: number): string {
     return `${draggablePrefix}/${itemIndex}`;
   }
 
-  static getDraggableIndex(draggableId) {
-    return parseInt(draggableId.split('/').pop(), 10);
+  static getDraggableIndex(draggableId: string): number {
+    return parseInt(draggableId.split('/').pop() || '', 10);
   }
 
-  constructor(props) {
+  constructor(props: DraggableItemListProps<T>) {
     super(props);
 
     this.handleSelectionChange = this.handleSelectionChange.bind(this);
@@ -76,13 +163,15 @@ class DraggableItemList extends PureComponent {
     };
   }
 
-  focusItem(itemIndex) {
+  itemList: React.RefObject<ItemList<T>>;
+
+  focusItem(itemIndex: number): void {
     if (this.itemList.current) {
       this.itemList.current.focusItem(itemIndex);
     }
   }
 
-  scrollToItem(itemIndex) {
+  scrollToItem(itemIndex: number): void {
     if (this.itemList.current) {
       this.itemList.current.scrollToItem(itemIndex);
     }
@@ -90,14 +179,14 @@ class DraggableItemList extends PureComponent {
 
   getCachedDraggableItem = memoize(
     (
-      draggablePrefix,
-      renderItem,
-      item,
-      itemIndex,
-      isKeyboardSelected,
-      isSelected,
-      isDragDisabled,
-      style
+      draggablePrefix: string,
+      renderItem: DraggableRenderItemFn<T>,
+      item: T,
+      itemIndex: number,
+      isKeyboardSelected: boolean,
+      isSelected: boolean,
+      isDragDisabled: boolean,
+      style: React.CSSProperties
     ) => (
       <Draggable
         key={itemIndex}
@@ -134,7 +223,7 @@ class DraggableItemList extends PureComponent {
     { max: ItemList.CACHE_SIZE }
   );
 
-  handleSelectionChange(selectedRanges) {
+  handleSelectionChange(selectedRanges: Range[]): void {
     this.setState({ selectedCount: RangeUtils.count(selectedRanges) });
 
     const { onSelectionChange } = this.props;
@@ -142,13 +231,17 @@ class DraggableItemList extends PureComponent {
   }
 
   getCachedRenderDraggableItem = memoize(
-    (draggablePrefix, isDragDisabled, renderItem) => ({
+    (
+      draggablePrefix: string,
+      isDragDisabled: boolean,
+      renderItem: DraggableRenderItemFn<T>
+    ) => ({
       item,
       itemIndex,
       isKeyboardSelected,
       isSelected,
       style,
-    }) =>
+    }: RenderItemProps<T>) =>
       this.getCachedDraggableItem(
         draggablePrefix,
         renderItem,
@@ -163,11 +256,12 @@ class DraggableItemList extends PureComponent {
   );
 
   getCachedRenderClone = memoize(
-    (draggingItemClassName, items, offset, renderItem) => (
-      provided,
-      snapshot,
-      rubric
-    ) => {
+    (
+      draggingItemClassName: string,
+      items: T[],
+      offset: number,
+      renderItem: DraggableRenderItemFn<T>
+    ): DraggableChildrenFn => (provided, snapshot, rubric) => {
       const { selectedCount } = this.state;
       const { index: itemIndex } = rubric.source;
       const item = items[itemIndex - offset];
@@ -206,7 +300,7 @@ class DraggableItemList extends PureComponent {
     { max: 1 }
   );
 
-  render() {
+  render(): JSX.Element {
     const {
       className,
       draggablePrefix,
@@ -279,81 +373,5 @@ class DraggableItemList extends PureComponent {
     );
   }
 }
-
-DraggableItemList.propTypes = {
-  className: PropTypes.string,
-  draggingItemClassName: PropTypes.string,
-
-  // Total item count
-  itemCount: PropTypes.number.isRequired,
-  rowHeight: PropTypes.number,
-
-  // Offset of the top item in the items array
-  offset: PropTypes.number,
-  // Item object format expected by the default renderItem function
-  // Can be anything as long as it's supported by the renderItem
-  items: PropTypes.arrayOf(PropTypes.any),
-
-  // Whether to allow dropping items in this list
-  isDropDisabled: PropTypes.bool,
-
-  // Whether to allow dragging items from this list
-  isDragDisabled: PropTypes.bool,
-
-  // Whether to allow multiple selections in this item list
-  isMultiSelect: PropTypes.bool,
-
-  // Set to true if you want the list to scroll when new items are added and it's already at the bottom
-  isStickyBottom: PropTypes.bool,
-
-  // Fired when an item is clicked. With multiple selection, fired on double click.
-  onSelect: PropTypes.func,
-  onSelectionChange: PropTypes.func,
-  onViewportChange: PropTypes.func,
-
-  selectedRanges: PropTypes.arrayOf(PropTypes.arrayOf(PropTypes.number)),
-
-  disableSelect: PropTypes.bool,
-
-  renderItem: PropTypes.func,
-
-  style: PropTypes.oneOfType([PropTypes.string, PropTypes.shape({})]),
-
-  // The prefix to add to all draggable item IDs
-  draggablePrefix: PropTypes.string,
-
-  // The ID to give the droppable list
-  droppableId: PropTypes.string,
-};
-
-DraggableItemList.defaultProps = {
-  className: '',
-  draggingItemClassName: '',
-
-  offset: 0,
-  items: [],
-  rowHeight: DraggableItemList.DEFAULT_ROW_HEIGHT,
-
-  isDropDisabled: false,
-
-  isDragDisabled: false,
-
-  isMultiSelect: false,
-
-  isStickyBottom: false,
-
-  disableSelect: false,
-
-  style: null,
-
-  onSelect: () => {},
-  onSelectionChange: () => {},
-  onViewportChange: () => {},
-  renderItem: DraggableItemList.renderItem,
-  selectedRanges: [],
-
-  draggablePrefix: 'draggable-item',
-  droppableId: 'droppable-item-list',
-};
 
 export default DraggableItemList;
