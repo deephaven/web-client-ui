@@ -31,32 +31,59 @@
  */
 import React, { PureComponent } from 'react';
 import classNames from 'classnames';
-import PropTypes from 'prop-types';
+import { PopperOptions } from 'popper.js';
 import { Popper } from '../popper';
-import Menu from './Menu';
+import Menu, { MenuOptions } from './Menu';
+import { ContextAction } from '../context-actions/ContextActionUtils';
 import './DropdownMenu.scss';
 
-class DropdownMenu extends PureComponent {
-  constructor(props) {
+type DropdownMenuProps = {
+  // Override to prevent nested lists
+  actions: (ContextAction & { actions: undefined })[];
+  isShown: boolean | null;
+  onMenuClosed(): void;
+  onMenuOpened(): void;
+  options: MenuOptions;
+  popperOptions: PopperOptions;
+  popperClassName: string;
+  menuStyle: React.CSSProperties;
+};
+
+class DropdownMenu extends PureComponent<DropdownMenuProps> {
+  static defaultProps = {
+    isShown: null,
+    onMenuClosed(): void {
+      // no-op
+    },
+    onMenuOpened(): void {
+      // no-op
+    },
+    options: {},
+    popperOptions: {},
+    popperClassName: '',
+    menuStyle: {},
+  };
+
+  constructor(props: DropdownMenuProps) {
     super(props);
 
     this.handleClick = this.handleClick.bind(this);
     this.handleCloseMenu = this.handleCloseMenu.bind(this);
     this.handleExited = this.handleExited.bind(this);
 
-    this.container = null;
+    this.container = React.createRef();
     this.parent = null;
-    this.popper = null;
+    this.popper = React.createRef();
 
     this.isOpen = false;
   }
 
-  componentDidMount() {
+  componentDidMount(): void {
     const { isShown } = this.props;
 
     if (isShown === null) {
-      if (this.container.parentNode) {
-        this.parent = this.container.parentNode;
+      if (this.container.current?.parentElement) {
+        this.parent = this.container.current.parentElement;
         this.parent.addEventListener('click', this.handleClick);
       }
     } else if (isShown) {
@@ -64,7 +91,7 @@ class DropdownMenu extends PureComponent {
     }
   }
 
-  componentDidUpdate(prevProps) {
+  componentDidUpdate(prevProps: DropdownMenuProps): void {
     const { isShown } = this.props;
 
     if (prevProps.isShown !== isShown) {
@@ -79,50 +106,54 @@ class DropdownMenu extends PureComponent {
     }
   }
 
-  componentWillUnmount() {
+  componentWillUnmount(): void {
     if (this.parent) {
       this.parent.removeEventListener('click', this.handleClick);
     }
   }
 
-  closeMenu() {
-    if (this.popper) {
-      this.popper.hide();
-    }
+  container: React.RefObject<HTMLDivElement>;
+
+  parent: Element | null;
+
+  popper: React.RefObject<Popper>;
+
+  isOpen: boolean;
+
+  closeMenu(): void {
+    this.popper.current?.hide();
   }
 
-  openMenu() {
-    if (this.popper && !this.isOpen) {
-      this.popper.show();
+  openMenu(): void {
+    if (this.popper.current && !this.isOpen) {
+      this.popper.current.show();
       this.isOpen = true;
     }
   }
 
-  scheduleUpdate() {
-    if (this.popper) {
-      this.popper.scheduleUpdate();
-    }
+  scheduleUpdate(): void {
+    this.popper.current?.scheduleUpdate();
   }
 
-  handleClick(e) {
+  handleClick(e: Event): void {
     e.preventDefault();
     e.stopPropagation();
 
     this.openMenu();
   }
 
-  handleCloseMenu() {
+  handleCloseMenu(): void {
     this.closeMenu();
   }
 
-  handleExited() {
+  handleExited(): void {
     this.isOpen = false;
 
     const { onMenuClosed } = this.props;
     onMenuClosed();
   }
 
-  render() {
+  render(): JSX.Element {
     const { actions, onMenuOpened, popperClassName } = this.props;
     const { menuStyle } = this.props;
     let { options, popperOptions } = this.props;
@@ -132,16 +163,9 @@ class DropdownMenu extends PureComponent {
       ...options,
     };
     return (
-      <div
-        className="menu-actions-listener"
-        ref={container => {
-          this.container = container;
-        }}
-      >
+      <div className="menu-actions-listener" ref={this.container}>
         <Popper
-          ref={popper => {
-            this.popper = popper;
-          }}
+          ref={this.popper}
           options={popperOptions}
           className={classNames('menu-popper', popperClassName)}
           onExited={this.handleExited}
@@ -160,30 +184,5 @@ class DropdownMenu extends PureComponent {
     );
   }
 }
-
-DropdownMenu.propTypes = {
-  actions: PropTypes.oneOfType([
-    PropTypes.array,
-    PropTypes.func,
-    PropTypes.shape({}),
-  ]).isRequired,
-  isShown: PropTypes.bool,
-  onMenuClosed: PropTypes.func,
-  onMenuOpened: PropTypes.func,
-  options: PropTypes.shape({}),
-  popperOptions: PropTypes.shape({}),
-  popperClassName: PropTypes.string,
-  menuStyle: PropTypes.shape({}),
-};
-
-DropdownMenu.defaultProps = {
-  isShown: null,
-  onMenuClosed: () => {},
-  onMenuOpened: () => {},
-  options: {},
-  popperOptions: {},
-  popperClassName: '',
-  menuStyle: {},
-};
 
 export default DropdownMenu;
