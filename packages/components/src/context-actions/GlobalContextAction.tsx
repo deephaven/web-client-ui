@@ -1,12 +1,23 @@
 import { Component } from 'react';
-import PropTypes from 'prop-types';
 import Log from '@deephaven/log';
-import ContextActionUtils from './ContextActionUtils';
+import ContextActionUtils, {
+  ContextAction,
+  ContextActionEvent,
+  KeyState,
+} from './ContextActionUtils';
 
 const log = Log.module('GlobalContextAction');
 
-class GlobalContextAction extends Component {
-  constructor(props) {
+interface GlobalContextActionProps {
+  action: ContextAction;
+}
+
+type GlobalContextActionState = KeyState;
+class GlobalContextAction extends Component<
+  GlobalContextActionProps,
+  GlobalContextActionState
+> {
+  constructor(props: GlobalContextActionProps) {
     super(props);
 
     this.handleContextMenu = this.handleContextMenu.bind(this);
@@ -21,17 +32,17 @@ class GlobalContextAction extends Component {
     };
   }
 
-  static getDerivedStateFromProps(props) {
+  static getDerivedStateFromProps(props: GlobalContextActionProps): KeyState {
     const shortcut = ContextActionUtils.getShortcutFromAction(props.action);
     return ContextActionUtils.getKeyStateFromShortcut(shortcut);
   }
 
-  componentDidMount() {
+  componentDidMount(): void {
     document.body.addEventListener('contextmenu', this.handleContextMenu, true);
     document.body.addEventListener('keydown', this.handleKeyDown, true);
   }
 
-  componentWillUnmount() {
+  componentWillUnmount(): void {
     document.body.removeEventListener(
       'contextmenu',
       this.handleContextMenu,
@@ -40,8 +51,14 @@ class GlobalContextAction extends Component {
     document.body.removeEventListener('keydown', this.handleKeyDown, true);
   }
 
-  handleContextMenu(e) {
+  handleContextMenu(evt: MouseEvent): void {
+    const e = evt as ContextActionEvent;
+    if (!e.contextActions) {
+      e.contextActions = [];
+    }
+
     const { action } = this.props;
+
     if (!action.title && !action.menuElement) {
       return;
     }
@@ -58,12 +75,12 @@ class GlobalContextAction extends Component {
     );
   }
 
-  handleKeyDown(e) {
+  handleKeyDown(e: KeyboardEvent): void {
     if (ContextActionUtils.isEventForKeyState(e, this.state)) {
       log.debug('Global hotkey matched!', e);
 
       const { action } = this.props;
-      const result = action.action(e);
+      const result = action.action?.(e);
 
       if (result || result === undefined) {
         e.preventDefault();
@@ -72,19 +89,9 @@ class GlobalContextAction extends Component {
     }
   }
 
-  render() {
+  render(): null {
     return null;
   }
 }
-
-GlobalContextAction.propTypes = {
-  action: PropTypes.shape({
-    title: PropTypes.string,
-    shortcut: PropTypes.string,
-    macShortcut: PropTypes.string,
-    action: PropTypes.func,
-    menuElement: PropTypes.node,
-  }).isRequired,
-};
 
 export default GlobalContextAction;

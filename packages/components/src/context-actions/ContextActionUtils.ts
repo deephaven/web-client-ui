@@ -1,6 +1,67 @@
+import { IconDefinition } from '@deephaven/icons';
+import React from 'react';
+
+export interface KeyState {
+  key: string | null;
+  metaKey: boolean;
+  shiftKey: boolean;
+  altKey: boolean;
+  ctrlKey: boolean;
+}
+
+export type ResolvableContextAction =
+  | ContextAction
+  | Promise<ContextAction[]>
+  | (() => Promise<ContextAction[]> | ContextAction[] | ContextAction);
+
+export type MenuItem = ContextAction | Promise<ContextAction[]>;
+
+export interface ContextAction {
+  title?: string;
+  description?: string;
+  action?(event?: KeyboardEvent): void;
+  actions?: ResolvableContextAction[];
+  icon?: IconDefinition | React.ReactElement;
+  iconColor?: string;
+  shortcut?: string;
+  macShortcut?: string;
+  isGlobal?: boolean;
+  group?: number;
+  order?: number;
+  disabled?: boolean;
+  menuElement?: React.ReactElement;
+  iconOutline?: boolean;
+}
+
+export interface ContextActionEvent extends MouseEvent {
+  contextActions: ResolvableContextAction[];
+}
+
 class ContextActionUtils {
-  static getKeyStateFromShortcut(shortcutParam) {
-    const keyState = {
+  /**
+   * Use these chars for defining shortcuts
+   * Order should be Ctrl/Alt/Shift/Meta for modifiers
+   */
+  static SHIFT_KEY = '⇧';
+
+  static META_KEY = '⌘';
+
+  static ALT_KEY = '⌥';
+
+  static CTRL_KEY = '⌃';
+
+  static ENTER_KEY = '⏎';
+
+  static ESCAPE_KEY = '⎋'; // https://en.wikipedia.org/wiki/Esc_key
+
+  static BACKSPACE_KEY = '⌫';
+
+  static isContextActionEvent(e: MouseEvent): e is ContextActionEvent {
+    return Array.isArray((e as ContextActionEvent).contextActions);
+  }
+
+  static getKeyStateFromShortcut(shortcutParam: string | undefined): KeyState {
+    const keyState: KeyState = {
       key: null,
       metaKey: false,
       shiftKey: false,
@@ -8,43 +69,45 @@ class ContextActionUtils {
       ctrlKey: false,
     };
 
+    if (shortcutParam === '' || shortcutParam === undefined) {
+      return keyState;
+    }
+
     const shortcut = shortcutParam.replace('^', ContextActionUtils.CTRL_KEY);
 
-    if (shortcut) {
-      if (shortcut.indexOf(ContextActionUtils.CTRL_KEY) >= 0) {
-        keyState.ctrlKey = true;
-      }
-      if (shortcut.indexOf(ContextActionUtils.META_KEY) >= 0) {
-        keyState.metaKey = true;
-      }
-      if (shortcut.indexOf(ContextActionUtils.SHIFT_KEY) >= 0) {
-        keyState.shiftKey = true;
-      }
-      if (shortcut.indexOf(ContextActionUtils.ALT_KEY) >= 0) {
-        keyState.altKey = true;
-      }
-
-      let key = shortcut.charAt(shortcut.length - 1);
-      key = key.replace(/[⏎↵↩]/, 'Enter');
-      key = key.replace(/[⎋]/, 'Escape');
-      key = key.replace(/[⌫]/, 'Backspace');
-      keyState.key = key;
+    if (shortcut.indexOf(ContextActionUtils.CTRL_KEY) >= 0) {
+      keyState.ctrlKey = true;
     }
+    if (shortcut.indexOf(ContextActionUtils.META_KEY) >= 0) {
+      keyState.metaKey = true;
+    }
+    if (shortcut.indexOf(ContextActionUtils.SHIFT_KEY) >= 0) {
+      keyState.shiftKey = true;
+    }
+    if (shortcut.indexOf(ContextActionUtils.ALT_KEY) >= 0) {
+      keyState.altKey = true;
+    }
+
+    let key = shortcut.charAt(shortcut.length - 1);
+    key = key.replace(/[⏎↵↩]/, 'Enter');
+    key = key.replace(/[⎋]/, 'Escape');
+    key = key.replace(/[⌫]/, 'Backspace');
+    keyState.key = key;
 
     return keyState;
   }
 
   /**
    * Returns true if the shortcut matches the keyboard event
-   * @param {KeyboardEvent} event The event to compare against the shortcut
-   * @param {string} shortcut The string representation of the keyboard shortcut
+   * @param event The event to compare against the shortcut
+   * @param shortcut The string representation of the keyboard shortcut
    */
-  static isEventForShortcut(event, shortcut) {
+  static isEventForShortcut(event: KeyboardEvent, shortcut: string): boolean {
     const keyState = ContextActionUtils.getKeyStateFromShortcut(shortcut);
     return ContextActionUtils.isEventForKeyState(event, keyState);
   }
 
-  static isEventForKeyState(event, keyState) {
+  static isEventForKeyState(event: KeyboardEvent, keyState: KeyState): boolean {
     if (!event || !event.key || !keyState || !keyState.key) {
       return false;
     }
@@ -65,10 +128,10 @@ class ContextActionUtils {
 
   /**
    * Compare two action items. Useful in Array.sort
-   * @param {ContextAction} a First context action to compare
-   * @param {ContextAction} b Second context action to compare
+   * @param a First context action to compare
+   * @param b Second context action to compare
    */
-  static compareActions(a, b) {
+  static compareActions(a: ContextAction, b: ContextAction): number {
     if (a.group !== b.group) {
       return (a.group || 0) > (b.group || 0) ? 1 : -1;
     }
@@ -90,9 +153,9 @@ class ContextActionUtils {
 
   /**
    *
-   * @param {Array<ContextAction>} actions The array of actions to sort
+   * @param actions The array of actions to sort
    */
-  static sortActions(actions) {
+  static sortActions(actions: ContextAction[]): ContextAction[] {
     if (!actions || !Array.isArray(actions)) {
       return [];
     }
@@ -102,7 +165,7 @@ class ContextActionUtils {
     return sortedActions;
   }
 
-  static isMacPlatform() {
+  static isMacPlatform(): boolean {
     const { platform } = window.navigator;
     return platform.startsWith('Mac');
   }
@@ -110,7 +173,7 @@ class ContextActionUtils {
   /**
    * Retrieve the preferred modifier key based on the current platform
    */
-  static getModifierKey() {
+  static getModifierKey(): 'metaKey' | 'ctrlKey' {
     if (ContextActionUtils.isMacPlatform()) {
       return 'metaKey';
     }
@@ -120,26 +183,26 @@ class ContextActionUtils {
 
   /**
    * Returns true if the modifier key for the current platform is down for the event (Ctrl for windows/linux, Command (meta) for mac)
-   * @param {KeyEvent} event The event to get the meta key status from
+   * @param event The event to get the meta key status from
    */
-  static isModifierKeyDown(event) {
+  static isModifierKeyDown(event: KeyboardEvent): boolean {
     const modifierKey = ContextActionUtils.getModifierKey();
     return event[modifierKey];
   }
 
-  static getShortcutFromAction(action) {
+  static getShortcutFromAction(action: ContextAction): string | undefined {
     if (ContextActionUtils.isMacPlatform()) {
       return action.macShortcut;
     }
     return action.shortcut;
   }
 
-  static getDisplayShortcut(action) {
+  static getDisplayShortcut(action: ContextAction): string | null {
     const shortcut = ContextActionUtils.getShortcutFromAction(action);
     return ContextActionUtils.getDisplayShortcutText(shortcut);
   }
 
-  static getDisplayShortcutText(shortcut) {
+  static getDisplayShortcutText(shortcut?: string): string | null {
     if (shortcut == null) {
       return null;
     }
@@ -157,10 +220,10 @@ class ContextActionUtils {
 
   /**
    * Copy the passed in text to the clipboard.
-   * @param {string} text The text to copy
+   * @param text The text to copy
    * @returns Promise Resolved on success, rejected on failure
    */
-  static async copyToClipboard(text) {
+  static async copyToClipboard(text: string): Promise<void> {
     try {
       const permissions = await navigator.permissions.query({
         name: 'clipboard-write',
@@ -180,9 +243,9 @@ class ContextActionUtils {
   /**
    * Copy the passed in text to the clipboard using the `execCommand` functionality
    * Throws on error/failure
-   * @param {string} text The text to copy
+   * @param text The text to copy
    */
-  static copyToClipboardExecCommand(text) {
+  static copyToClipboardExecCommand(text: string): void {
     const oldFocus = document.activeElement;
     const textArea = document.createElement('textarea');
     textArea.value = text;
@@ -196,31 +259,40 @@ class ContextActionUtils {
 
     document.body.removeChild(textArea);
 
-    if (oldFocus != null) {
+    if (oldFocus instanceof HTMLElement) {
       oldFocus.focus();
     }
   }
 
   /**
    * Returns the menu items for the provided context actions, or empty array if none found.
-   * @param {ContextAction[]} actionsParam The actions to get menu items for
-   * @param {boolean} includePromises Whether or not to include promises in the returned menu items
+   * @param actionsParam The actions to get menu items for
+   * @param includePromises Whether or not to include promises in the returned menu items
    */
-  static getMenuItems(actionsParam, includePromises = true) {
-    let menuItems = [];
+  static getMenuItems(
+    actionsParam: ResolvableContextAction[],
+    includePromises = true
+  ): MenuItem[] {
+    let menuItems: MenuItem[] = [];
     let actions = actionsParam;
     if (!Array.isArray(actions)) {
       actions = [actions];
     }
 
     for (let i = 0; i < actions.length; i += 1) {
-      let newMenuItems = actions[i];
-      if (typeof newMenuItems === 'function') {
-        newMenuItems = newMenuItems();
+      const action = actions[i];
+      let newMenuItems:
+        | ContextAction
+        | ContextAction[]
+        | Promise<ContextAction[]>;
+      if (typeof action === 'function') {
+        newMenuItems = action();
+      } else {
+        newMenuItems = action;
       }
 
       if (newMenuItems != null) {
-        if (newMenuItems.then && typeof newMenuItems.then === 'function') {
+        if (newMenuItems instanceof Promise) {
           if (includePromises) {
             menuItems.push(newMenuItems);
           }
@@ -233,19 +305,26 @@ class ContextActionUtils {
     }
 
     menuItems = menuItems.filter(
-      action => action.title || action.then || action.menuElement
+      action =>
+        (action as ContextAction).title ||
+        (action as Promise<ContextAction[]>).then ||
+        (action as ContextAction).menuElement
     );
 
     return menuItems;
   }
 
   /**
-   * Returns the next menu item in a list that doesn't have a disabled=true prop
-   * @param {number} startIndex the starting position for the iteration
-   * @param {number} delta the direction of travel, -1 or 1
-   * @param {menuItems[]} menuItems an array of menuItems
+   * Returns the index of the next menu item in a list that doesn't have a disabled=true prop
+   * @param startIndex the starting position for the iteration
+   * @param delta the direction of travel, -1 or 1
+   * @param menuItems an array of menuItems
    */
-  static getNextMenuItem(startIndex, delta, menuItems) {
+  static getNextMenuItem(
+    startIndex: number,
+    delta: -1 | 1,
+    menuItems: MenuItem[]
+  ): number {
     let firstIndex = startIndex;
     if (firstIndex < 0 && delta < 0) {
       // if menu index is -1 and delta -1 manually set start point
@@ -255,24 +334,13 @@ class ContextActionUtils {
     for (let i = 1; i < menuItems.length + 1; i += 1) {
       const menuIndex =
         (firstIndex + delta * i + menuItems.length) % menuItems.length;
-      if (menuItems[menuIndex].disabled !== true) {
+      const item = menuItems[menuIndex];
+      if (!(item instanceof Promise) && item.disabled !== true) {
         return menuIndex;
       }
     }
     return startIndex;
   }
 }
-
-/**
- * Use these chars for defining shortcuts
- * Order should be Ctrl/Alt/Shift/Meta for modifiers
- */
-ContextActionUtils.SHIFT_KEY = '⇧';
-ContextActionUtils.META_KEY = '⌘';
-ContextActionUtils.ALT_KEY = '⌥';
-ContextActionUtils.CTRL_KEY = '⌃';
-ContextActionUtils.ENTER_KEY = '⏎';
-ContextActionUtils.ESCAPE_KEY = '⎋'; // https://en.wikipedia.org/wiki/Esc_key
-ContextActionUtils.BACKSPACE_KEY = '⌫';
 
 export default ContextActionUtils;
