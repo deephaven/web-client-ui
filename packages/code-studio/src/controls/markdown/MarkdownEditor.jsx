@@ -46,10 +46,7 @@ export default class MarkdownEditor extends PureComponent {
             onEditorInitialized={onEditorInitialized}
           />
         ) : (
-          <Markdown
-            escapeHtml={false}
-            components={{ code: this.renderMarkdown }}
-          >
+          <Markdown components={{ code: this.renderMarkdown }}>
             {content}
           </Markdown>
         )}

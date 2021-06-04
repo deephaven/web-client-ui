@@ -39,7 +39,7 @@ export const PendingDataBottomBar = ({
 }: PendingDataBottomBarProps): JSX.Element => {
   const [isSuccessShown, setIsSuccessShown] = useState(false);
   const [wasSuccessShown, setWasSuccessShown] = useState(false);
-  const successTimeout = useRef<NodeJS.Timeout>();
+  const successTimeout = useRef<ReturnType<typeof setTimeout>>();
   const prevIsSaving = usePrevious(isSaving);
   const error = useMemo(() => {
     if (pendingDataErrors.size === 0) {

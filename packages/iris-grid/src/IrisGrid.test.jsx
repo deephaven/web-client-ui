@@ -1,7 +1,7 @@
 import React from 'react';
 import TestRenderer from 'react-test-renderer';
+import { TestUtils } from '@deephaven/utils';
 import { IrisGrid } from './IrisGrid';
-import TestUtils from '../test/TestUtils';
 import IrisGridTestUtils from './IrisGridTestUtils';
 
 class MockPath2D {}
