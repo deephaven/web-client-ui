@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
+import { PopperOptions } from 'popper.js';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { vsCheck, dhSort } from '@deephaven/icons';
+import { vsCheck, dhSort, IconDefinition } from '@deephaven/icons';
 import { TimeUtils } from '@deephaven/utils';
 import classNames from 'classnames';
 import TimeInput from './TimeInput';
@@ -11,12 +11,61 @@ import './context-actions/ContextActions.scss';
 
 const CUSTOM_OPTION = -1;
 
-class CustomTimeSelect extends Component {
-  static MENU_NAVIGATION_DIRECTION = { UP: 'UP', DOWN: 'DOWN' };
+enum MENU_NAVIGATION_DIRECTION {
+  UP = 'UP',
+  DOWN = 'DOWN',
+}
+
+type CustomTimeSelectProps = {
+  options: { title: string; value: number }[];
+  popperOptions: PopperOptions;
+  value: number | null;
+  onChange(value: number): void;
+  disabled: boolean;
+  icon: IconDefinition;
+  placeholder: string;
+  customText: string;
+  // Defaults to converting the value in milliseconds to time in seconds
+  valueToTime(val: number | null): number;
+  // Defaults to converting the time in seconds to value in milliseconds
+  timeToValue(time: number): number;
+  invalid: boolean;
+};
+
+type TimeInSeconds = number;
+
+type CustomTimeSelectState = {
+  keyboardOptionIndex: number;
+  menuIsOpen: boolean;
+  inputWidth: number;
+  customTime: TimeInSeconds;
+  inputFocused: boolean;
+};
+
+class CustomTimeSelect extends Component<
+  CustomTimeSelectProps,
+  CustomTimeSelectState
+> {
+  static MENU_NAVIGATION_DIRECTION = MENU_NAVIGATION_DIRECTION;
 
   static DROP_DOWN_MENU_HEIGHT = 125;
 
-  constructor(props) {
+  static defaultProps: Partial<CustomTimeSelectProps> = {
+    onChange(): void {
+      // no-op
+    },
+    value: null,
+    disabled: false,
+    popperOptions: {},
+    icon: vsCheck,
+    customText: 'Custom',
+    placeholder: 'Select a time',
+    valueToTime: value => (value === null ? 0 : Math.round(value / 1000)),
+    timeToValue: time => time * 1000,
+    invalid: false,
+  };
+
+  constructor(props: CustomTimeSelectProps) {
     super(props);
 
     const { value, valueToTime } = props;
@@ -46,7 +95,15 @@ class CustomTimeSelect extends Component {
     };
   }
 
-  getSelectedText() {
+  csContainer: React.RefObject<HTMLDivElement>;
+
+  menuContainer: React.RefObject<HTMLDivElement>;
+
+  button: React.RefObject<HTMLButtonElement>;
+
+  input: React.RefObject<HTMLInputElement>;
+
+  getSelectedText(): string {
     const { options, value, placeholder } = this.props;
     const { customTime } = this.state;
 
@@ -64,7 +121,7 @@ class CustomTimeSelect extends Component {
     return TimeUtils.formatTime(customTime);
   }
 
-  setInputWidth() {
+  setInputWidth(): void {
     if (this.csContainer.current) {
       this.setState({
         inputWidth: this.csContainer.current.getBoundingClientRect().width,
@@ -72,22 +129,20 @@ class CustomTimeSelect extends Component {
     }
   }
 
-  focus() {
-    if (this.button.current) {
-      this.button.current.focus();
-    }
+  focus(): void {
+    this.button.current?.focus();
   }
 
-  updateInputValue(value) {
+  updateInputValue(value: number): void {
     const { onChange } = this.props;
     onChange(value);
   }
 
-  handleResize() {
+  handleResize(): void {
     this.setInputWidth();
   }
 
-  handleMenuKeyDown(event) {
+  handleMenuKeyDown(event: React.KeyboardEvent<HTMLDivElement>): void {
     const { keyboardOptionIndex, inputFocused } = this.state;
     const { options } = this.props;
 
@@ -100,7 +155,7 @@ class CustomTimeSelect extends Component {
           this.updateInputValue(options[keyboardOptionIndex].value);
         }
         this.closeMenu();
-        this.button.current.focus();
+        this.button.current?.focus();
         event.stopPropagation();
         event.preventDefault();
         break;
@@ -139,7 +194,7 @@ class CustomTimeSelect extends Component {
     }
   }
 
-  handleMenuNavigation(direction) {
+  handleMenuNavigation(direction: MENU_NAVIGATION_DIRECTION): void {
     const { keyboardOptionIndex, inputFocused } = this.state;
     const { options } = this.props;
     const menuOptionsLength = options.length;
@@ -192,8 +247,8 @@ class CustomTimeSelect extends Component {
     }
   }
 
-  handleOptionClick(event) {
-    const optionIndex = Number(event.target.value);
+  handleOptionClick(event: React.MouseEvent<HTMLButtonElement>): void {
+    const optionIndex = Number(event.currentTarget.value);
     const { options, timeToValue } = this.props;
     const { customTime } = this.state;
 
@@ -205,57 +260,59 @@ class CustomTimeSelect extends Component {
     }
   }
 
-  updateAndClose(update) {
+  updateAndClose(update: number): void {
     this.updateInputValue(update);
     this.closeMenu();
-    this.button.current.focus();
+    this.button.current?.focus();
   }
 
-  handleOptionFocus(event) {
+  handleOptionFocus(event: React.FocusEvent<HTMLButtonElement>): void {
     this.setState({ keyboardOptionIndex: Number(event.target.value) });
   }
 
-  handleMenuOpened() {
+  handleMenuOpened(): void {
     const { options, value } = this.props;
     const { keyboardOptionIndex } = this.state;
     this.scrollOptionIntoView(keyboardOptionIndex);
-    const activeOption = this.menuContainer.current.querySelector(
+    const activeOption = this.menuContainer.current?.querySelector(
       '.cs-option-btn.keyboard-active'
     );
-    if (activeOption) {
+    if (activeOption instanceof HTMLElement) {
       activeOption.focus();
     }
+
+    if (value === null) {
+      return;
+    }
     const valueIndex = options.map(option => option.value).indexOf(value);
-    if (valueIndex < 0 && value !== null) {
+    if (valueIndex < 0) {
       // The custom option should be selected
       this.focusInput();
     }
   }
 
-  focusInput() {
-    if (this.input.current) {
-      this.input.current.focus();
-    }
+  focusInput(): void {
+    this.input.current?.focus();
   }
 
-  focusOption(index) {
-    const options = this.menuContainer.current.querySelector('.cs-options');
+  focusOption(index: number): void {
+    const options = this.menuContainer.current?.querySelector('.cs-options');
     if (options && options.children) {
       const option = options.children.item(index);
-      if (option) {
+      if (option instanceof HTMLElement) {
         option.focus();
       }
     }
   }
 
-  handleMenuExited() {
+  handleMenuExited(): void {
     const { menuIsOpen } = this.state;
     if (menuIsOpen) {
       this.setState({ menuIsOpen: false, keyboardOptionIndex: 0 });
     }
   }
 
-  handleCustomInput(value) {
+  handleCustomInput(value: number): void {
     const { timeToValue } = this.props;
 
     const update = timeToValue(value);
@@ -265,7 +322,7 @@ class CustomTimeSelect extends Component {
     });
   }
 
-  updateFromCustom() {
+  updateFromCustom(): void {
     const { timeToValue } = this.props;
     const { customTime } = this.state;
 
@@ -273,7 +330,7 @@ class CustomTimeSelect extends Component {
     this.updateInputValue(update);
   }
 
-  toggleMenu(event) {
+  toggleMenu(event: React.MouseEvent<HTMLButtonElement>): void {
     const { menuIsOpen } = this.state;
     if (menuIsOpen) {
       this.closeMenu();
@@ -283,44 +340,50 @@ class CustomTimeSelect extends Component {
     event.stopPropagation();
   }
 
-  openMenu() {
+  openMenu(): void {
     this.updateKeyboardIndex();
     this.setInputWidth();
     this.setState({ menuIsOpen: true });
   }
 
-  closeMenu(focusButton = true) {
+  closeMenu(focusButton = true): void {
     this.setState({ menuIsOpen: false });
     if (focusButton) {
-      this.button.current.focus();
+      this.button.current?.focus();
     }
   }
 
-  updateKeyboardIndex() {
+  updateKeyboardIndex(): void {
     const { options, value } = this.props;
+    if (value === null) {
+      return;
+    }
     const valueIndex = options.map(option => option.value).indexOf(value);
     if (valueIndex > 0) {
       this.setState({ keyboardOptionIndex: valueIndex });
     }
   }
 
-  scrollOptionIntoView(index) {
-    const options = this.menuContainer.current.querySelector('.cs-options');
+  scrollOptionIntoView(index: number): void {
+    const options = this.menuContainer.current?.querySelector('.cs-options');
     if (options && options.children) {
       const activeOption = options.children.item(index);
       if (
-        activeOption &&
+        activeOption instanceof HTMLElement &&
         activeOption.offsetTop > CustomTimeSelect.DROP_DOWN_MENU_HEIGHT
       ) {
         options.scrollTop =
           activeOption.offsetTop - CustomTimeSelect.DROP_DOWN_MENU_HEIGHT;
-      } else if ((activeOption && activeOption.offsetTop < 0) || index === 0) {
+      } else if (
+        (activeOption instanceof HTMLElement && activeOption.offsetTop < 0) ||
+        index === 0
+      ) {
         options.scrollTop = 0;
       }
     }
   }
 
-  renderMenuElement() {
+  renderMenuElement(): JSX.Element {
     const { inputWidth } = this.state;
     return (
       <div
@@ -340,12 +403,12 @@ class CustomTimeSelect extends Component {
     );
   }
 
-  renderOptions() {
+  renderOptions(): React.ReactNode {
     const { options, value, icon, customText } = this.props;
     const { keyboardOptionIndex, customTime, inputFocused } = this.state;
 
     let matchFound = false;
-    const optionArray = [];
+    const optionArray: JSX.Element[] = [];
     for (let index = 0; index < options.length; index += 1) {
       const option = options[index];
       const key = `option-${index}-${option.value}`;
@@ -412,7 +475,7 @@ class CustomTimeSelect extends Component {
     return optionArray;
   }
 
-  render() {
+  render(): JSX.Element {
     const { disabled, invalid, value } = this.props;
     const { menuIsOpen } = this.state;
     let { popperOptions } = this.props;
@@ -469,38 +532,4 @@ class CustomTimeSelect extends Component {
   }
 }
 
-CustomTimeSelect.propTypes = {
-  options: PropTypes.arrayOf(
-    PropTypes.shape({
-      title: PropTypes.string.isRequired,
-      value: PropTypes.any.isRequired,
-    })
-  ).isRequired,
-  popperOptions: PropTypes.shape({
-    title: PropTypes.string.isRequired,
-    value: PropTypes.string.isRequired,
-  }),
-  value: PropTypes.number,
-  onChange: PropTypes.func,
-  disabled: PropTypes.bool,
-  icon: PropTypes.shape({}),
-  placeholder: PropTypes.string,
-  customText: PropTypes.string,
-  valueToTime: PropTypes.func,
-  timeToValue: PropTypes.func,
-  invalid: PropTypes.bool,
-};
-
-CustomTimeSelect.defaultProps = {
-  onChange: () => {},
-  value: null,
-  disabled: false,
-  popperOptions: null,
-  icon: vsCheck,
-  customText: 'Custom',
-  placeholder: 'Select a time',
-  valueToTime: value => value,
-  timeToValue: time => time,
-  invalid: false,
-};
 export default CustomTimeSelect;

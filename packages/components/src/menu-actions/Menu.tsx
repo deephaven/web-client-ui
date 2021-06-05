@@ -11,7 +11,7 @@ export type MenuOptions = {
 };
 
 type MenuProps = {
-  actions: ContextAction[];
+  actions: ContextAction | ContextAction[];
   closeMenu(closeAll: boolean): void;
   onMenuClosed(menu: Menu): void;
   onMenuOpened(menu: Menu): void;

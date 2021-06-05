@@ -272,18 +272,18 @@ class ContextActionUtils {
    * @param includePromises Whether or not to include promises in the returned menu items
    */
   static getMenuItems(
-    actionsParam: ResolvableContextAction[],
+    actionsParam: ResolvableContextAction | ResolvableContextAction[],
     includePromises?: true
   ): MenuItem[];
 
   // If ignoring promises, then the return type is narrowed
   static getMenuItems(
-    actionsParam: ResolvableContextAction[],
+    actionsParam: ResolvableContextAction | ResolvableContextAction[],
     includePromises: false
   ): ContextAction[];
 
   static getMenuItems(
-    actionsParam: ResolvableContextAction[],
+    actionsParam: ResolvableContextAction | ResolvableContextAction[],
     includePromises = true
   ): MenuItem[] {
     let menuItems: MenuItem[] = [];

@@ -39,7 +39,9 @@ import './DropdownMenu.scss';
 
 type DropdownMenuProps = {
   // Override to prevent nested lists
-  actions: (ContextAction & { actions: undefined })[];
+  actions:
+    | (ContextAction & { actions?: never })
+    | (ContextAction & { actions?: never })[];
   isShown: boolean | null;
   onMenuClosed(): void;
   onMenuOpened(): void;
