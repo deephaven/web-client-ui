@@ -1,20 +1,22 @@
 import flatten from 'lodash.flatten';
 
+type Range = [number, number];
+
 class DragUtils {
   /**
    * Re-orders the provided item lists in place based on the selectedRanges and destinationIndex provided
-   * @param {Array} sourceList Array of the source items
-   * @param {Array} selectedRanges Array of the selected ranges in the source list
-   * @param {Array} destinationList Destination items. If dragging within the same list, set it to sourceItems
-   * @param {Number} destinationIndex The index items are being dropped in the destinationList, adjusted for the removed items
-   * @returns {Array} The items that were dragged
+   * @param sourceList Array of the source items
+   * @param selectedRanges Array of the selected ranges in the source list
+   * @param destinationList Destination items. If dragging within the same list, set it to sourceItems
+   * @param destinationIndex The index items are being dropped in the destinationList, adjusted for the removed items
+   * @returns The items that were dragged
    */
-  static reorder(
-    sourceList,
-    selectedRanges,
-    destinationList,
-    destinationIndex
-  ) {
+  static reorder<T>(
+    sourceList: T[],
+    selectedRanges: Range[],
+    destinationList: T[],
+    destinationIndex: number
+  ): T[] {
     const insertIndex =
       sourceList === destinationList
         ? DragUtils.adjustDestinationIndex(destinationIndex, selectedRanges)
@@ -26,11 +28,11 @@ class DragUtils {
 
   /**
    * Removes the provided ranges from the list in place
-   * @param {Array} list Array of items to remove the ranges.
-   * @param {Array} ranges Array of the ranges to remove.
-   * @returns {Array} The removed items, in the order of the ranges removed.
+   * @param list Array of items to remove the ranges.
+   * @param ranges Array of the ranges to remove.
+   * @returns The removed items, in the order of the ranges removed.
    */
-  static removeItems(list, ranges) {
+  static removeItems<T>(list: T[], ranges: Range[]): T[] {
     const items = [];
 
     // Sort them in reverse, so we don't screw up the range indexes
@@ -48,11 +50,14 @@ class DragUtils {
 
   /**
    * Adjusts the destination index for when dropping into the same list you're dragging from.
-   * @param {Number} destinationIndex The original destination index
-   * @param {Array} ranges The ranges that are moving
-   * @returns {Number} Index where item should be inserted after all ranges are removed
+   * @param destinationIndex The original destination index
+   * @param ranges The ranges that are moving
+   * @returns Index where item should be inserted after all ranges are removed
    */
-  static adjustDestinationIndex(destinationIndex, ranges) {
+  static adjustDestinationIndex(
+    destinationIndex: number,
+    ranges: Range[]
+  ): number {
     let adjustedIndex = destinationIndex;
     for (let i = 0; i < ranges.length; i += 1) {
       const [start, end] = ranges[i];
@@ -65,11 +70,11 @@ class DragUtils {
     return adjustedIndex;
   }
 
-  static startDragging() {
+  static startDragging(): void {
     document.documentElement.classList.add('drag-pointer-events-none');
   }
 
-  static stopDragging() {
+  static stopDragging(): void {
     document.documentElement.classList.remove('drag-pointer-events-none');
   }
 }
