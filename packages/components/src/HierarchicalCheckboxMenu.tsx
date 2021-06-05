@@ -1,11 +1,25 @@
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { dhSort } from '@deephaven/icons';
+import { dhSort, IconDefinition } from '@deephaven/icons';
 import classNames from 'classnames';
 import Checkbox from './Checkbox';
 import Popper from './popper/Popper';
 import './HierarchicalCheckboxMenu.scss';
+
+type HierarchicalCheckboxValueMap = Map<string, boolean | Map<string, boolean>>;
+
+type HierarchicalCheckboxMenuProps = {
+  className: string;
+  menuText: string;
+  valueMap: HierarchicalCheckboxValueMap;
+  onUpdateValueMap(map: HierarchicalCheckboxValueMap): void;
+  icon: IconDefinition | null;
+  id: string;
+};
+
+type HierarchicalCheckboxMenuState = {
+  menuIsOpen: boolean;
+};
 
 /**
  * A pull down menu that displays a hierarchy of checkboxes.
@@ -33,9 +47,24 @@ import './HierarchicalCheckboxMenu.scss';
  * with the appropriate booleans changed. It will then call onUpdateValueMap
  * with the new Map.
  */
-class HierarchicalCheckboxMenu extends Component {
-  static isParentSelected(parent, valueMap) {
+class HierarchicalCheckboxMenu extends Component<
+  HierarchicalCheckboxMenuProps,
+  HierarchicalCheckboxMenuState
+> {
+  static defaultProps: Partial<HierarchicalCheckboxMenuProps> = {
+    className: '',
+    icon: null,
+    id: '',
+  };
+
+  static isParentSelected(
+    parent: string,
+    valueMap: HierarchicalCheckboxValueMap
+  ): boolean | null {
     const children = valueMap.get(parent);
+    if (children === undefined) {
+      return false;
+    }
     if (typeof children === 'boolean') {
       // This parent has no children
       return children;
@@ -49,7 +78,7 @@ class HierarchicalCheckboxMenu extends Component {
     return includesTrue;
   }
 
-  constructor(props) {
+  constructor(props: HierarchicalCheckboxMenuProps) {
     super(props);
 
     this.toggleMenu = this.toggleMenu.bind(this);
@@ -62,7 +91,7 @@ class HierarchicalCheckboxMenu extends Component {
     };
   }
 
-  toggleMenu(event) {
+  toggleMenu(event: React.MouseEvent<HTMLButtonElement>): void {
     event.stopPropagation();
     event.preventDefault();
     this.setState(state => {
@@ -71,7 +100,7 @@ class HierarchicalCheckboxMenu extends Component {
     });
   }
 
-  toggleValueFor(parent, child) {
+  toggleValueFor(parent: string, child?: string): void {
     const { valueMap, onUpdateValueMap } = this.props;
 
     // Make a deep copy of the Map and toggle the boolean for parent / child
@@ -94,8 +123,12 @@ class HierarchicalCheckboxMenu extends Component {
     }
 
     // The parent was clicked so all children must be toggled
-    if (child === undefined && typeof map.get(parent) !== 'boolean') {
-      const currentChildren = map.get(parent);
+    const currentChildren = map.get(parent);
+    if (
+      child === undefined &&
+      currentChildren !== undefined &&
+      typeof currentChildren !== 'boolean'
+    ) {
       if (HierarchicalCheckboxMenu.isParentSelected(parent, valueMap)) {
         currentChildren.forEach((_, key) => currentChildren.set(key, false));
       } else {
@@ -107,7 +140,7 @@ class HierarchicalCheckboxMenu extends Component {
     onUpdateValueMap(map);
   }
 
-  setAllValues(value) {
+  setAllValues(value: boolean): void {
     const { valueMap, onUpdateValueMap } = this.props;
 
     // Make a deep copy of the Map and set everything
@@ -125,19 +158,19 @@ class HierarchicalCheckboxMenu extends Component {
     onUpdateValueMap(copy);
   }
 
-  selectAll() {
+  selectAll(): void {
     this.setAllValues(true);
   }
 
-  clear() {
+  clear(): void {
     this.setAllValues(false);
   }
 
-  renderMenuElement() {
+  renderMenuElement(): React.ReactNode {
     const { valueMap } = this.props;
     return (
       <div className="hcm-menu-container">
-        {Array.from(valueMap.keys()).map(parent => (
+        {Array.from(valueMap.entries()).map(([parent, children]) => (
           <div key={parent}>
             <Checkbox
               className="hcm-parent"
@@ -149,19 +182,18 @@ class HierarchicalCheckboxMenu extends Component {
             >
               {parent}
             </Checkbox>
-            {typeof valueMap.get(parent) !== 'boolean' &&
-              Array.from(valueMap.get(parent).entries()).map(
-                ([child, value]) => (
-                  <Checkbox
-                    className="hcm-child"
-                    key={child}
-                    checked={value}
-                    onChange={() => this.toggleValueFor(parent, child)}
-                  >
-                    {child}
-                  </Checkbox>
-                )
-              )}
+            {children !== undefined &&
+              typeof children !== 'boolean' &&
+              Array.from(children.entries()).map(([child, value]) => (
+                <Checkbox
+                  className="hcm-child"
+                  key={child}
+                  checked={value}
+                  onChange={() => this.toggleValueFor(parent, child)}
+                >
+                  {child}
+                </Checkbox>
+              ))}
           </div>
         ))}
         <button type="button" className="btn btn-link" onClick={this.selectAll}>
@@ -174,7 +206,7 @@ class HierarchicalCheckboxMenu extends Component {
     );
   }
 
-  render() {
+  render(): JSX.Element {
     const { menuText, className, icon, id } = this.props;
     const { menuIsOpen } = this.state;
 
@@ -205,20 +237,5 @@ class HierarchicalCheckboxMenu extends Component {
     );
   }
 }
-
-HierarchicalCheckboxMenu.propTypes = {
-  className: PropTypes.string,
-  menuText: PropTypes.string.isRequired,
-  valueMap: PropTypes.shape(Map).isRequired,
-  onUpdateValueMap: PropTypes.func.isRequired,
-  icon: PropTypes.shape({}),
-  id: PropTypes.string,
-};
-
-HierarchicalCheckboxMenu.defaultProps = {
-  className: '',
-  icon: null,
-  id: '',
-};
 
 export default HierarchicalCheckboxMenu;
