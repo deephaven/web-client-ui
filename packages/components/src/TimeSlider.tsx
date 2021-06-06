@@ -8,7 +8,6 @@ import React, {
   useState,
   useEffect,
 } from 'react';
-import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import TimeInput from './TimeInput';
 import StyleExports from './TimeSlider.module.scss';
@@ -19,22 +18,29 @@ const POPOVER_WIDTH = parseInt(StyleExports['popover-width'], 10);
 const SECONDS_IN_DAY = 24 * 60 * 60 - 1; // Max is actually 23:59:59
 const SNAP_NEAREST_MINUTES = 5 * 60; // rounds in 5 minute intervals
 
+type TimeSliderProps = {
+  startTime: number;
+  endTime: number;
+  onChange(value: { startTime: number; endTime: number }): void;
+  isStartModified?: boolean;
+  isEndModified?: boolean;
+};
+
 /**
  * Creates a time slider for setting a start and end time, that can also run overnight
  * @param {startTime, endTime, onChange} props takes times in seconds 0 - 86399 and a callback
  */
-const TimeSlider = props => {
-  const {
-    startTime: propStartTime,
-    endTime: propEndTime,
-    onChange,
-    isStartModified,
-    isEndModified,
-  } = props;
+const TimeSlider = ({
+  startTime: propStartTime,
+  endTime: propEndTime,
+  onChange,
+  isStartModified = false,
+  isEndModified = false,
+}: TimeSliderProps): JSX.Element => {
   const [startTime, setStartTime] = useState(propStartTime);
   const [endTime, setEndTime] = useState(propEndTime);
 
-  const track = useRef(null); // we need the track width while calulculating time from handle drag
+  const track = useRef<HTMLDivElement>(null); // we need the track width while calulculating time from handle drag
 
   // updates state if props change
   useEffect(() => {
@@ -43,7 +49,7 @@ const TimeSlider = props => {
   }, [propStartTime, propEndTime]);
 
   const updateTime = useCallback(
-    (newStartTime, newEndTime) => {
+    (newStartTime: number, newEndTime: number) => {
       let start = newStartTime;
       let end = newEndTime;
       if (start === end) {
@@ -62,14 +68,14 @@ const TimeSlider = props => {
   );
 
   const handleStartTimeChange = useCallback(
-    newStartTime => {
+    (newStartTime: number) => {
       updateTime(newStartTime, endTime);
     },
     [updateTime, endTime]
   );
 
   const handleEndTimeChange = useCallback(
-    newEndTime => {
+    (newEndTime: number) => {
       updateTime(startTime, newEndTime);
     },
     [updateTime, startTime]
@@ -116,7 +122,16 @@ const TimeSlider = props => {
   );
 };
 
-const PopOvers = props => {
+type PopOversProps = {
+  startTime: number;
+  endTime: number;
+  onStartTimeChange(time: number): void;
+  onEndTimeChange(time: number): void;
+  isStartModified: boolean;
+  isEndModified: boolean;
+};
+
+const PopOvers = (props: PopOversProps): JSX.Element => {
   const {
     startTime,
     endTime,
@@ -138,7 +153,7 @@ const PopOvers = props => {
     setSecondTime(startTime > endTime ? startTime : endTime);
   }, [startTime, endTime]);
 
-  function onFirstTimeChange(value) {
+  function onFirstTimeChange(value: number) {
     if (startTime <= endTime) {
       onStartTimeChange(value);
     } else {
@@ -146,7 +161,7 @@ const PopOvers = props => {
     }
   }
 
-  function onSecondTimeChange(value) {
+  function onSecondTimeChange(value: number) {
     if (startTime <= endTime) {
       onEndTimeChange(value);
     } else {
@@ -205,10 +220,15 @@ const PopOvers = props => {
   );
 };
 
+type TrackFillsProps = {
+  startTime: number;
+  endTime: number;
+};
+
 /**
  * Shades the area between or outside of handles according to if start or endtime is greater.
  */
-const TrackFills = props => {
+const TrackFills = (props: TrackFillsProps): JSX.Element => {
   const { startTime, endTime } = props;
   return (
     <div className="track-fills">
@@ -242,10 +262,16 @@ const TrackFills = props => {
   );
 };
 
+type HandleProps = {
+  track: React.RefObject<HTMLDivElement>;
+  time: number;
+  setTime(time: number): void;
+};
+
 /**
  * Creates a draggable handle the sets the time
  */
-const Handle = props => {
+const Handle = (props: HandleProps): JSX.Element => {
   const { track, time, setTime } = props;
 
   /**
@@ -273,7 +299,10 @@ const Handle = props => {
   }, [time]);
 
   const calculatePositionAsTime = useCallback(
-    clientX => {
+    (clientX: number) => {
+      if (!track.current) {
+        return 0;
+      }
       const trackRect = track.current.getBoundingClientRect();
       const leftEdge = Math.max(clientX - trackRect.left, 0);
       // get position as 0-1 on slider and mulitply by seconds in a day to convert to time
@@ -290,14 +319,14 @@ const Handle = props => {
   );
 
   const handleMouseMove = useCallback(
-    ({ clientX }) => {
+    ({ clientX }: MouseEvent) => {
       setTime(calculatePositionAsTime(clientX));
     },
     [setTime, calculatePositionAsTime]
   );
 
   const handleMouseUp = useCallback(
-    ({ clientX }) => {
+    ({ clientX }: MouseEvent) => {
       setTime(calculatePositionAsTime(clientX));
 
       window.removeEventListener('mousemove', handleMouseMove);
@@ -340,39 +369,6 @@ const Handle = props => {
       />
     </div>
   );
-};
-
-TimeSlider.propTypes = {
-  startTime: PropTypes.number.isRequired,
-  endTime: PropTypes.number.isRequired,
-  onChange: PropTypes.func.isRequired,
-  isStartModified: PropTypes.bool,
-  isEndModified: PropTypes.bool,
-};
-
-TimeSlider.defaultProps = {
-  isStartModified: false,
-  isEndModified: false,
-};
-
-TrackFills.propTypes = {
-  startTime: PropTypes.number.isRequired,
-  endTime: PropTypes.number.isRequired,
-};
-
-PopOvers.propTypes = {
-  startTime: PropTypes.number.isRequired,
-  endTime: PropTypes.number.isRequired,
-  onStartTimeChange: PropTypes.func.isRequired,
-  onEndTimeChange: PropTypes.func.isRequired,
-  isStartModified: PropTypes.bool.isRequired,
-  isEndModified: PropTypes.bool.isRequired,
-};
-
-Handle.propTypes = {
-  track: PropTypes.shape({ current: PropTypes.instanceOf(Element) }).isRequired,
-  time: PropTypes.number.isRequired,
-  setTime: PropTypes.func.isRequired,
 };
 
 export default TimeSlider;

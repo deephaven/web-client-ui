@@ -1,4 +1,4 @@
-{ 
+{
   "extends": "@deephaven/tsconfig",
   "compilerOptions": {
     "declarationDir": "dist/",
