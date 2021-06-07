@@ -1,6 +1,7 @@
 /* eslint class-methods-use-this: "off" */
 /* eslint no-unused-vars: "off" */
 import GridModel from './GridModel';
+import GridRange from './GridRange';
 
 class MockGridModel extends GridModel {
   constructor({
@@ -10,6 +11,7 @@ class MockGridModel extends GridModel {
     floatingBottomRowCount = 0,
     floatingLeftColumnCount = 0,
     floatingRightColumnCount = 0,
+    isEditable = false,
   } = {}) {
     super();
 
@@ -19,6 +21,8 @@ class MockGridModel extends GridModel {
     this.floatingBottom = floatingBottomRowCount;
     this.floatingLeft = floatingLeftColumnCount;
     this.floatingRight = floatingRightColumnCount;
+    this.editedData = [];
+    this.editable = isEditable;
   }
 
   get rowCount() {
@@ -45,8 +49,12 @@ class MockGridModel extends GridModel {
     return this.floatingRight;
   }
 
+  get isEditable() {
+    return this.editable;
+  }
+
   textForCell(column, row) {
-    return `${column},${row}`;
+    return this.editedData[column]?.[row] ?? `${column},${row}`;
   }
 
   colorForCell(column, row, theme) {
@@ -63,6 +71,27 @@ class MockGridModel extends GridModel {
 
   textForRowFooter(row) {
     return `${row}`;
+  }
+
+  async setValueForCell(x, y, value) {
+    if (this.editedData[x] == null) {
+      this.editedData[x] = [];
+    }
+    this.editedData[x][y] = `${value}`;
+  }
+
+  async setValueForRanges(ranges, text) {
+    GridRange.forEachCell(ranges, (x, y) => {
+      this.setValueForCell(x, y, text);
+    });
+  }
+
+  editValueForCell(x, y) {
+    return this.textForCell(x, y);
+  }
+
+  isValidForCell(x, y, value) {
+    return true;
   }
 }
 

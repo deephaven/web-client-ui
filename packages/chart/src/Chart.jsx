@@ -72,6 +72,7 @@ export class Chart extends Component {
       layout: {
         datarevision: 0,
       },
+      revision: 0,
     };
   }
 
@@ -228,13 +229,12 @@ export class Chart extends Component {
     switch (type) {
       case ChartModel.EVENT_UPDATED: {
         this.setState(state => {
-          const { layout } = state;
+          const { layout, revision } = state;
+          layout.datarevision += 1;
           return {
             data: detail,
-            layout: {
-              ...layout,
-              datarevision: layout.datarevision + 1,
-            },
+            layout,
+            revision: revision + 1,
           };
         });
 
@@ -419,6 +419,7 @@ export class Chart extends Component {
       isDownsampleInProgress,
       isDownsamplingDisabled,
       layout,
+      revision,
     } = this.state;
     const config = this.getCachedConfig(
       downsamplingError,
@@ -434,6 +435,7 @@ export class Chart extends Component {
             ref={this.plot}
             data={data}
             layout={layout}
+            revision={revision}
             config={config}
             onAfterPlot={this.handleAfterPlot}
             onRelayout={this.handleRelayout}

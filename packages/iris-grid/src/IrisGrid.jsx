@@ -41,7 +41,11 @@ import debounce from 'lodash.debounce';
 import PendingDataBottomBar from './PendingDataBottomBar';
 import IrisGridCopyHandler from './IrisGridCopyHandler';
 import FilterInputField from './FilterInputField';
-import { CopyKeyHandler, ReverseKeyHandler } from './key-handlers';
+import {
+  ClearFilterKeyHandler,
+  CopyKeyHandler,
+  ReverseKeyHandler,
+} from './key-handlers';
 import {
   IrisGridColumnSelectMouseHandler,
   IrisGridColumnTooltipMouseHandler,
@@ -234,7 +238,11 @@ export class IrisGrid extends Component {
       this.commitAction,
     ];
 
-    const keyHandlers = [new CopyKeyHandler(this), new ReverseKeyHandler(this)];
+    const keyHandlers = [
+      new CopyKeyHandler(this),
+      new ReverseKeyHandler(this),
+      new ClearFilterKeyHandler(this),
+    ];
     const mouseHandlers = [
       new IrisGridColumnSelectMouseHandler(this),
       new IrisGridColumnTooltipMouseHandler(this),

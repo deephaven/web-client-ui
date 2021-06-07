@@ -9,6 +9,7 @@ import React, {
 export { default as Option } from './Option';
 export { default as Select } from './Select';
 export { default as Button } from './Button';
+export { LoadingSpinner } from './LoadingSpinner';
 export { Menu, MenuItem, Page, Stack } from './navigation';
 export type {
   SwitchMenuItemDef,
