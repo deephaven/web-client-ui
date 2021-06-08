@@ -1,5 +1,4 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import { CSSTransition } from 'react-transition-group';
 import { vsClose } from '@deephaven/icons';
@@ -7,17 +6,26 @@ import Button from './Button';
 import ThemeExport from './ThemeExport';
 import './ToastNotification.scss';
 
-const ToastNotification = props => {
-  const {
-    buttons,
-    isShown,
-    classNames: classNamesProp,
-    message,
-    type,
-    onClick,
-    onDismiss,
-  } = props;
+type ToastNotificationProps = {
+  buttons?: typeof Button[];
+  classNames?: string;
+  isShown?: boolean;
+  message?: string;
+  type?: string;
 
+  onClick?: React.EventHandler<React.MouseEvent | React.KeyboardEvent>;
+  onDismiss?(): void;
+};
+
+const ToastNotification = ({
+  buttons,
+  isShown = false,
+  classNames: classNamesProp,
+  message,
+  type,
+  onClick,
+  onDismiss,
+}: ToastNotificationProps): JSX.Element => {
   const hasButtons = buttons && buttons.length !== 0;
 
   return (
@@ -63,27 +71,5 @@ const ToastNotification = props => {
 ToastNotification.TYPE = Object.freeze({
   ERROR: 'error',
 });
-
-ToastNotification.propTypes = {
-  buttons: PropTypes.node,
-  classNames: PropTypes.arrayOf(PropTypes.string),
-  isShown: PropTypes.bool,
-  message: PropTypes.string,
-  type: PropTypes.string,
-
-  onClick: PropTypes.func,
-  onDismiss: PropTypes.func,
-};
-
-ToastNotification.defaultProps = {
-  buttons: null,
-  classNames: null,
-  isShown: false,
-  message: null,
-  type: null,
-
-  onClick: () => {},
-  onDismiss: null,
-};
 
 export default ToastNotification;
