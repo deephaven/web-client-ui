@@ -13,8 +13,10 @@ type ToastNotificationProps = {
   message?: string;
   type?: string;
 
-  onClick?: React.EventHandler<React.MouseEvent | React.KeyboardEvent>;
-  onDismiss?(): void;
+  onClick?: React.EventHandler<
+    React.MouseEvent<HTMLDivElement> | React.KeyboardEvent<HTMLDivElement>
+  >;
+  onDismiss?: React.MouseEventHandler<HTMLButtonElement>;
 };
 
 const ToastNotification = ({
