@@ -63,10 +63,7 @@ class Menu extends PureComponent<MenuProps, MenuState> {
     this.rAF = 0;
 
     const { options } = props;
-    let keyboardIndex = options.initialKeyboardIndex || -1;
-    if (!Number.isInteger(keyboardIndex)) {
-      keyboardIndex = -1;
-    }
+    const keyboardIndex = options.initialKeyboardIndex ?? -1;
 
     this.state = {
       menuItems: [],
@@ -171,7 +168,7 @@ class Menu extends PureComponent<MenuProps, MenuState> {
       (e.key === 'Tab' && e.shiftKey === true)
     ) {
       newFocus = ContextActionUtils.getNextMenuItem(
-        newFocus || 0,
+        newFocus ?? 0,
         -1,
         menuItems
       );
@@ -180,7 +177,7 @@ class Menu extends PureComponent<MenuProps, MenuState> {
       (e.key === 'Tab' && e.shiftKey === false)
     ) {
       newFocus = ContextActionUtils.getNextMenuItem(
-        newFocus || 0,
+        newFocus ?? 0,
         1,
         menuItems
       );

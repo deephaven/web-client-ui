@@ -2,6 +2,8 @@ type TimeInSeconds = number;
 type TimeString = `${string}:${string}:${string}`;
 
 class TimeUtils {
+  static TIME_PATTERN = '([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]';
+
   static TIME_ZONES = Object.freeze([
     { label: 'Tokyo UTC+9 No DST', value: 'Asia/Tokyo' },
     { label: 'Seoul UTC+9 No DST', value: 'Asia/Seoul' },
@@ -76,8 +78,7 @@ class TimeUtils {
   }
 
   static isTimeString(s: string): s is TimeString {
-    const TIME_PATTERN = '([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]';
-    return new RegExp(TIME_PATTERN).test(s);
+    return new RegExp(TimeUtils.TIME_PATTERN).test(s);
   }
 
   /**
