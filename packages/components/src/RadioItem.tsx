@@ -7,7 +7,7 @@ type RadioItemProps = {
   checked?: boolean;
 
   /** The node/text to put in the label of this radio item */
-  children: React.ReactChildren;
+  children: React.ReactNode;
 
   /** An extra class name to add to the outer div component */
   className?: string;
@@ -28,7 +28,7 @@ type RadioItemProps = {
   name?: string;
 
   /** Triggered when the input is checked/unchecked. Provided by the parent Radio component. */
-  onChange?: React.ChangeEventHandler;
+  onChange?: React.ChangeEventHandler<HTMLInputElement>;
 
   /** The value to associate with this radio item */
   value: string;
