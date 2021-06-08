@@ -2,6 +2,13 @@ import 'bootstrap';
 /** Shim for using jquery in frameworks included by react (such as bootstrap) */
 import * as $ from 'jquery';
 
+declare global {
+  interface Window {
+    $: typeof $;
+    jQuery: typeof $;
+  }
+}
+
 window.$ = $;
 window.jQuery = $;
 

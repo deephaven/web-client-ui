@@ -11,7 +11,7 @@
   "main": "dist/index.js",
   "module": "dist/index.modern",
   "source": "src/index.js",
-  "types": "src/index.d.ts",
+  "types": "dist/index.d.ts",
   "engines": {
     "node": ">=10"
   },
@@ -75,9 +75,11 @@
     "@fortawesome/fontawesome-svg-core": "^1.2.32",
     "@fortawesome/react-fontawesome": "^0.1.12",
     "@testing-library/react": "^11.2.5",
+    "@types/bootstrap": "^4.4.1",
     "@types/enzyme": "^3.10.7",
     "@types/enzyme-adapter-react-16": "^1.0.6",
     "@types/jest": "^26.0.15",
+    "@types/jquery": "^3.5.1",
     "@types/lodash.flatten": "^4.4.0",
     "@types/memoizee": "^0.4.5",
     "@types/react": "^16.14.8",
