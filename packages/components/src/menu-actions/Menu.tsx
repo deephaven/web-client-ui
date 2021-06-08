@@ -1,7 +1,29 @@
 import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
-import ContextActionUtils from '../context-actions/ContextActionUtils';
+import ContextActionUtils, {
+  ContextAction,
+} from '../context-actions/ContextActionUtils';
 import ContextMenuItem from '../context-actions/ContextMenuItem';
+
+export type MenuOptions = {
+  doNotVerifyPosition?: boolean;
+  separateKeyboardMouse?: boolean;
+  initialKeyboardIndex?: number;
+};
+
+type MenuProps = {
+  actions: ContextAction | ContextAction[];
+  closeMenu(closeAll: boolean): void;
+  onMenuClosed(menu: Menu): void;
+  onMenuOpened(menu: Menu): void;
+  options: MenuOptions;
+  menuStyle: React.CSSProperties;
+};
+
+type MenuState = {
+  menuItems: ContextAction[];
+  keyboardIndex: number;
+  mouseIndex: number;
+};
 
 /**
  *  Do not use this class directly. Use DropdownMenu instead.
@@ -12,8 +34,22 @@ import ContextMenuItem from '../context-actions/ContextMenuItem';
  *
  */
 
-class Menu extends PureComponent {
-  constructor(props) {
+class Menu extends PureComponent<MenuProps, MenuState> {
+  static defaultProps = {
+    closeMenu(): void {
+      // no-op
+    },
+    onMenuOpened(): void {
+      // no-op
+    },
+    onMenuClosed(): void {
+      // no-op
+    },
+    options: {},
+    menuStyle: {},
+  };
+
+  constructor(props: MenuProps) {
     super(props);
 
     this.handleKeyDown = this.handleKeyDown.bind(this);
@@ -22,15 +58,12 @@ class Menu extends PureComponent {
     this.handleMouseLeave = this.handleMouseLeave.bind(this);
     this.handleCloseMenu = this.handleCloseMenu.bind(this);
 
-    this.container = null;
+    this.container = React.createRef();
     this.oldFocus = document.activeElement;
-    this.rAF = null;
+    this.rAF = 0;
 
     const { options } = props;
-    let keyboardIndex = options.initialKeyboardIndex;
-    if (!Number.isInteger(keyboardIndex)) {
-      keyboardIndex = -1;
-    }
+    const keyboardIndex = options.initialKeyboardIndex ?? -1;
 
     this.state = {
       menuItems: [],
@@ -39,30 +72,36 @@ class Menu extends PureComponent {
     };
   }
 
-  componentDidMount() {
+  componentDidMount(): void {
     this.initMenu();
 
     this.rAF = window.requestAnimationFrame(() => {
       // set initial focus to container so keyboard navigation works
       // components can still override focus in onMenuOpened callback
-      this.container.focus();
+      this.container.current?.focus();
       const { onMenuOpened } = this.props;
       onMenuOpened(this);
     });
   }
 
-  componentDidUpdate(prevProps) {
+  componentDidUpdate(prevProps: MenuProps): void {
     const { actions } = this.props;
     if (prevProps.actions !== actions) {
       this.initMenu();
     }
   }
 
-  componentWillUnmount() {
+  componentWillUnmount(): void {
     cancelAnimationFrame(this.rAF);
   }
 
-  getKeyboardIndex() {
+  container: React.RefObject<HTMLDivElement>;
+
+  oldFocus: Element | null;
+
+  rAF: number;
+
+  getKeyboardIndex(): number | null {
     const { options } = this.props;
     if (options.separateKeyboardMouse) {
       const { keyboardIndex } = this.state;
@@ -72,7 +111,7 @@ class Menu extends PureComponent {
     return this.getMouseIndex();
   }
 
-  setKeyboardIndex(index) {
+  setKeyboardIndex(index: number): void {
     const { options } = this.props;
     if (options.separateKeyboardMouse) {
       this.setState({ keyboardIndex: index });
@@ -81,16 +120,16 @@ class Menu extends PureComponent {
     }
   }
 
-  getMouseIndex() {
+  getMouseIndex(): number {
     const { mouseIndex } = this.state;
     return mouseIndex;
   }
 
-  setMouseIndex(index) {
+  setMouseIndex(index: number): void {
     this.setState({ mouseIndex: index });
   }
 
-  initMenu() {
+  initMenu(): void {
     // cancel any pending close
     cancelAnimationFrame(this.rAF);
 
@@ -99,28 +138,24 @@ class Menu extends PureComponent {
     });
 
     const { actions } = this.props;
-    const menuItems = ContextActionUtils.getMenuItems(actions);
+    const menuItems = ContextActionUtils.getMenuItems(actions, false);
 
-    this.setState(state => {
-      const newState = {};
-
-      if (menuItems.length > 0) {
-        newState.menuItems = ContextActionUtils.sortActions(
+    if (menuItems.length > 0) {
+      this.setState(state => ({
+        menuItems: ContextActionUtils.sortActions(
           state.menuItems.concat(menuItems)
-        );
-      }
-
-      return newState;
-    });
+        ),
+      }));
+    }
   }
 
-  handleKeyDown(e) {
+  handleKeyDown(e: React.KeyboardEvent): void {
     const { menuItems } = this.state;
     const oldFocus = this.getKeyboardIndex();
     let newFocus = oldFocus;
 
     if (e.key === 'Enter' || e.key === ' ') {
-      if (oldFocus >= 0 && oldFocus < menuItems.length) {
+      if (oldFocus != null && oldFocus >= 0 && oldFocus < menuItems.length) {
         this.handleMenuItemClick(menuItems[oldFocus], e);
       }
       return;
@@ -132,12 +167,20 @@ class Menu extends PureComponent {
       e.key === 'ArrowUp' ||
       (e.key === 'Tab' && e.shiftKey === true)
     ) {
-      newFocus = ContextActionUtils.getNextMenuItem(newFocus, -1, menuItems);
+      newFocus = ContextActionUtils.getNextMenuItem(
+        newFocus ?? 0,
+        -1,
+        menuItems
+      );
     } else if (
       e.key === 'ArrowDown' ||
       (e.key === 'Tab' && e.shiftKey === false)
     ) {
-      newFocus = ContextActionUtils.getNextMenuItem(newFocus, 1, menuItems);
+      newFocus = ContextActionUtils.getNextMenuItem(
+        newFocus ?? 0,
+        1,
+        menuItems
+      );
     }
 
     if (oldFocus !== newFocus) {
@@ -145,7 +188,7 @@ class Menu extends PureComponent {
         this.setKeyboardIndex(newFocus);
       } else {
         this.closeMenu();
-        if (this.oldFocus && this.oldFocus.focus) {
+        if (this.oldFocus instanceof HTMLElement) {
           this.oldFocus.focus();
         }
       }
@@ -155,20 +198,20 @@ class Menu extends PureComponent {
     }
   }
 
-  closeMenu() {
+  closeMenu(closeAll = false): void {
     const { closeMenu, onMenuClosed } = this.props;
     cancelAnimationFrame(this.rAF);
     this.rAF = window.requestAnimationFrame(() => {
-      closeMenu();
+      closeMenu(closeAll);
       onMenuClosed(this);
     });
   }
 
-  handleCloseMenu() {
+  handleCloseMenu(): void {
     this.closeMenu();
   }
 
-  handleMenuItemClick(menuItem, e) {
+  handleMenuItemClick(menuItem: ContextAction, e: React.SyntheticEvent): void {
     e.preventDefault();
     e.stopPropagation();
 
@@ -178,17 +221,17 @@ class Menu extends PureComponent {
     }
   }
 
-  handleMenuItemMouseMove(menuItem) {
+  handleMenuItemMouseMove(menuItem: ContextAction): void {
     const { menuItems } = this.state;
     const focusIndex = menuItems.indexOf(menuItem);
     this.setMouseIndex(focusIndex);
   }
 
-  handleMouseLeave() {
+  handleMouseLeave(): void {
     this.setMouseIndex(-1);
   }
 
-  render() {
+  render(): JSX.Element {
     const menuItemElements = [];
     const { keyboardIndex, menuItems, mouseIndex } = this.state;
     for (let i = 0; i < menuItems.length; i += 1) {
@@ -207,7 +250,7 @@ class Menu extends PureComponent {
           closeMenu={this.handleCloseMenu}
           onMenuItemClick={this.handleMenuItemClick}
           onMenuItemMouseMove={this.handleMenuItemMouseMove}
-          onMenuItemContextMenu={() => {}}
+          onMenuItemContextMenu={() => false}
         />
       );
 
@@ -220,43 +263,16 @@ class Menu extends PureComponent {
       <div
         className="context-menu-container"
         style={{ ...menuStyle }}
-        ref={container => {
-          this.container = container;
-        }}
+        ref={this.container}
         onKeyDown={this.handleKeyDown}
         onMouseLeave={this.handleMouseLeave}
         role="menuitem"
-        tabIndex="0"
+        tabIndex={0}
       >
         {menuItemElements}
       </div>
     );
   }
 }
-
-Menu.propTypes = {
-  actions: PropTypes.oneOfType([
-    PropTypes.array,
-    PropTypes.func,
-    PropTypes.shape({}),
-  ]).isRequired,
-  closeMenu: PropTypes.func,
-  onMenuClosed: PropTypes.func,
-  onMenuOpened: PropTypes.func,
-  options: PropTypes.shape({
-    doNotVerifyPosition: PropTypes.bool,
-    separateKeyboardMouse: PropTypes.bool,
-    initialKeyboardIndex: PropTypes.number,
-  }),
-  menuStyle: PropTypes.shape({}),
-};
-
-Menu.defaultProps = {
-  closeMenu: () => {},
-  onMenuOpened: () => {},
-  onMenuClosed: () => {},
-  options: {},
-  menuStyle: {},
-};
 
 export default Menu;

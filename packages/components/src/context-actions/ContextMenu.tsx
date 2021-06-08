@@ -384,7 +384,7 @@ class ContextMenu extends PureComponent<ContextMenuProps, ContextMenuState> {
     if (!this.container.current.contains(e.relatedTarget as Node)) {
       let element: HTMLElement | null = e.relatedTarget as HTMLElement;
       let isContextMenuChild = false;
-      while (element && element.nodeType === 1 && !isContextMenuChild) {
+      while (element && !isContextMenuChild) {
         isContextMenuChild = element.hasAttribute('data-dh-context-menu');
         element = element.parentElement;
       }
