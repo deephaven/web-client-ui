@@ -76,31 +76,29 @@ class ContextMenuRoot extends Component<
     const left = e.clientX - parentRect.left;
 
     if (contextActions.length === 0) {
+      // This code path seems to only exist for Chrome on Mac
+      // Mac appears to trigger contextmenu events on mousedown vs. mouseup on Windows
+      // Mouseup on Windows triggers blur before contextmenu which effectively does what this path does
       if (e.target === this.container.current) {
         // re-emit right clicks that hit the context-root blocking layer
         e.preventDefault();
 
-        this.container.current.style.setProperty('pointer-events', 'none'); // temporarily allow clickthrough of the blocking layer
-        const element = document.elementFromPoint(left, top); // x y
-        this.container.current.style.removeProperty('pointer-events');
+        // Set actions to null removes the menu
+        // That allows a new menu to be opened on a different element so initial position is set properly
+        // Otherwise the instance of this menu may be reused
+        // A new contextmenu event is triggered on the element at the location the user clicked on the blocking layer
+        this.setState({ actions: null }, () => {
+          const element = document.elementFromPoint(left, top); // x y
 
-        const mouseEvent = new MouseEvent('contextmenu', {
-          clientX: e.clientX,
-          clientY: e.clientY,
-          bubbles: true,
-          cancelable: true,
+          const mouseEvent = new MouseEvent('contextmenu', {
+            clientX: e.clientX,
+            clientY: e.clientY,
+            bubbles: true,
+            cancelable: true,
+          });
+
+          element?.dispatchEvent(mouseEvent);
         });
-
-        element?.dispatchEvent(mouseEvent);
-
-        return;
-      }
-
-      const { actions } = this.state;
-      if (actions && !this.container.current.contains(e.target as Node)) {
-        // Clear re-emitted events to targets with no contextmenu actions
-        e.preventDefault();
-        this.setState({ actions: null });
         return;
       }
 
