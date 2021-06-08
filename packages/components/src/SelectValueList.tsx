@@ -1,35 +1,73 @@
 import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
 import './SelectValueList.scss';
 import memoize from 'memoizee';
 import Checkbox from './Checkbox';
+
+interface SelectItem<T> {
+  value: T;
+  displayValue?: string;
+  isSelected: boolean;
+}
+
+type SelectValueListProps<T> = {
+  disabled: boolean;
+  // Total item count
+  itemCount: number;
+  rowHeight: number;
+
+  // Offset of the top item in the items array
+  offset: number;
+  items: SelectItem<T>[];
+
+  onSelect(itemIndex: number, value: T | null): void;
+  onViewportChange(topRow: number, bottomRow: number): void;
+};
 
 /**
  * Select values from a long scrollable list.
  * Swaps items in and out for infinite scrolling
  */
-class SelectValueList extends PureComponent {
-  constructor(props) {
+class SelectValueList<T> extends PureComponent<SelectValueListProps<T>> {
+  static defaultProps = {
+    disabled: false,
+    rowHeight: 21,
+  };
+
+  constructor(props: SelectValueListProps<T>) {
     super(props);
 
     this.handleScroll = this.handleScroll.bind(this);
     this.handleSelect = this.handleSelect.bind(this);
 
-    this.list = null;
+    this.list = React.createRef();
     this.topRow = null;
     this.bottomRow = null;
   }
 
-  componentDidMount() {
+  componentDidMount(): void {
     this.sendViewportUpdate();
   }
 
-  componentDidUpdate() {
+  componentDidUpdate(): void {
     this.sendViewportUpdate();
   }
+
+  list: React.RefObject<HTMLDivElement>;
+
+  topRow: number | null;
+
+  bottomRow: number | null;
 
   getCachedItem = memoize(
-    (itemIndex, key, value, displayValue, rowHeight, isSelected, disabled) => {
+    (
+      itemIndex: number,
+      key: number,
+      value: T,
+      displayValue: string | undefined,
+      rowHeight: number,
+      isSelected: boolean,
+      disabled: boolean
+    ): JSX.Element => {
       const style = {
         height: rowHeight,
       };
@@ -51,8 +89,13 @@ class SelectValueList extends PureComponent {
   );
 
   getCachedItems = memoize(
-    (items, rowHeight, offset, disabled) => {
-      const itemElements = [];
+    (
+      items: SelectItem<T>[],
+      rowHeight: number,
+      offset: number,
+      disabled: boolean
+    ): React.ReactNode => {
+      const itemElements: JSX.Element[] = [];
       for (let i = 0; i < items.length; i += 1) {
         const item = items[i];
         const { value, displayValue, isSelected } = item;
@@ -74,11 +117,11 @@ class SelectValueList extends PureComponent {
     { max: 1 }
   );
 
-  handleScroll() {
+  handleScroll(): void {
     this.sendViewportUpdate();
   }
 
-  handleSelect(itemIndex) {
+  handleSelect(itemIndex: number): void {
     const { items, offset, onSelect } = this.props;
     const visibleItemIndex = itemIndex - offset;
     if (visibleItemIndex >= 0 && visibleItemIndex < items.length) {
@@ -90,14 +133,14 @@ class SelectValueList extends PureComponent {
     }
   }
 
-  sendViewportUpdate() {
-    if (this.list.clientHeight === 0) {
+  sendViewportUpdate(): void {
+    if (!this.list.current || this.list.current.clientHeight === 0) {
       return;
     }
 
     const { onViewportChange, rowHeight } = this.props;
-    const top = this.list.scrollTop;
-    const bottom = top + this.list.clientHeight;
+    const top = this.list.current.scrollTop;
+    const bottom = top + this.list.current.clientHeight;
 
     const topRow = Math.floor(top / rowHeight);
     const bottomRow = Math.ceil(bottom / rowHeight);
@@ -109,7 +152,7 @@ class SelectValueList extends PureComponent {
     }
   }
 
-  render() {
+  render(): JSX.Element {
     const { disabled, items, itemCount, offset, rowHeight } = this.props;
     const itemElements = this.getCachedItems(
       items,
@@ -122,9 +165,7 @@ class SelectValueList extends PureComponent {
       <div
         className="select-value-list-scroll-pane h-100 w-100"
         onScroll={this.handleScroll}
-        ref={list => {
-          this.list = list;
-        }}
+        ref={this.list}
       >
         <div
           className="select-value-list"
@@ -146,30 +187,5 @@ class SelectValueList extends PureComponent {
     );
   }
 }
-
-SelectValueList.propTypes = {
-  disabled: PropTypes.bool,
-  // Total item count
-  itemCount: PropTypes.number.isRequired,
-  rowHeight: PropTypes.number,
-
-  // Offset of the top item in the items array
-  offset: PropTypes.number.isRequired,
-  items: PropTypes.arrayOf(
-    PropTypes.shape({
-      value: PropTypes.any.isRequired,
-      displayValue: PropTypes.string,
-      isSelected: PropTypes.bool.isRequired,
-    })
-  ).isRequired,
-
-  onSelect: PropTypes.func.isRequired,
-  onViewportChange: PropTypes.func.isRequired,
-};
-
-SelectValueList.defaultProps = {
-  disabled: false,
-  rowHeight: 21,
-};
 
 export default SelectValueList;
