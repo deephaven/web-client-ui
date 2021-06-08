@@ -1,0 +1,64 @@
+{
+  "name": "@deephaven/storage",
+  "version": "0.1.1",
+  "description": "Deephaven Storage abstract classes for storing app data",
+  "author": "Deephaven Data Labs LLC",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/deephaven/web-client-ui"
+  },
+  "source": "src/index.js",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "engines": {
+    "node": ">=10"
+  },
+  "scripts": {
+    "build": "cross-env NODE_ENV=production run-s clean build-steps",
+    "build-dev": "cross-env NODE_ENV=development run-s clean build-steps",
+    "build-steps": "run-p build:*",
+    "babel": "babel ./src --out-dir ./dist --extensions \".ts,.tsx,.js,.jsx\" --source-maps --root-mode upward",
+    "types": "tsc",
+    "build:babel": "npm run babel",
+    "build:types": "npm run types -- --incremental",
+    "watch": "run-p watch:*",
+    "watch:babel": "npm run babel -- -w --skip-initial-build",
+    "watch:types": "npm run types -- -w --incremental --preserveWatchOutput",
+    "clean": "rimraf ./dist tsconfig.tsbuildinfo",
+    "prestart": "npm run build-dev",
+    "start": "cross-env NODE_ENV=development npm run watch",
+    "test": "jest --watch",
+    "test:ci": "jest --ci",
+    "predeploy": "cd example && npm install && npm run build",
+    "deploy": "gh-pages -d example/build"
+  },
+  "peerDependencies": {
+    "@deephaven/iris-grid": "^0.1.x",
+    "lodash.throttle": "^4.x"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.14.3",
+    "@babel/core": "7.12.3",
+    "@deephaven/iris-grid": "^0.1.1",
+    "@deephaven/tsconfig": "^0.1.0",
+    "@types/jest": "^26.0.23",
+    "babel-loader": "8.1.0",
+    "cross-env": "^7.0.2",
+    "jest": "26.6.0",
+    "lodash.throttle": "^4.1.1",
+    "npm-run-all": "^4.1.5",
+    "rimraf": "^3.0.2",
+    "ts-jest": "^26.5.6",
+    "typescript": "^4.2.3"
+  },
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "@deephaven/log": "^0.1.1"
+  }
+}
