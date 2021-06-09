@@ -10,10 +10,11 @@ export interface CommandHistoryStorageData {
   command: string;
   startTime: string;
   endTime?: string;
-  result?: unknown;
+  result?: { error?: string };
 }
 
 export interface CommandHistoryStorageItem extends StorageItem {
+  name: string;
   data: CommandHistoryStorageData;
 }
 
@@ -35,7 +36,7 @@ export interface CommandHistoryStorage {
     language: string,
     scope: string,
     timestamp: number
-  ): Promise<CommandHistoryStorageTable>;
+  ): Promise<CommandHistoryTable>;
 
   /**
    * Add a command to the command history

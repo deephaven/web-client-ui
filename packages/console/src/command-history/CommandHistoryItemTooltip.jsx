@@ -9,6 +9,7 @@ import { TimeUtils } from '@deephaven/utils';
 import Code from '../common/Code';
 import './CommandHistoryItemTooltip.scss';
 import ConsolePropTypes from '../ConsolePropTypes';
+import StoragePropTypes from '../StoragePropTypes';
 
 const LOAD_DATA_DEBOUNCE = 250;
 const MAX_NUMBER_OF_LINES = 2500;
@@ -112,7 +113,7 @@ export class CommandHistoryItemTooltip extends Component {
   }
 
   handleUpdate(item) {
-    const { data } = item;
+    const { data = null } = item ?? {};
     this.setState({ data });
 
     const { onUpdate } = this.props;
@@ -171,9 +172,7 @@ CommandHistoryItemTooltip.propTypes = {
   item: ConsolePropTypes.CommandHistoryItem.isRequired,
   language: PropTypes.string.isRequired,
   onUpdate: PropTypes.func,
-  commandHistoryStorage: PropTypes.shape({
-    listenItem: PropTypes.func.isRequired,
-  }).isRequired,
+  commandHistoryStorage: StoragePropTypes.CommandHistoryStorage.isRequired,
 };
 
 CommandHistoryItemTooltip.defaultProps = {
