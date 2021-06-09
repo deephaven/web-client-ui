@@ -13,14 +13,16 @@ import {
   vsPlay,
   vsTerminal,
 } from '@deephaven/icons';
+import { StorageTableViewportUpdater } from '@deephaven/storage';
 import { Pending } from '@deephaven/utils';
 import Log from '@deephaven/log';
 import CommandHistoryItem from './CommandHistoryItem';
 import CommandHistoryActions from './CommandHistoryActions';
 import ConsoleConstants from '../common/ConsoleConstants';
-import StorageTableViewportUpdater from './StorageTableViewportUpdater';
 
 import './CommandHistory.scss';
+import StoragePropTypes from '../StoragePropTypes';
+import CommandHistoryViewportUpdater from './CommandHistoryViewportUpdater';
 
 const log = Log.module('CommandHistory');
 
@@ -45,6 +47,11 @@ class CommandHistory extends Component {
       }
     }
     return commands;
+  }
+
+  static async getCommandsFromSnapshot(table, sortedRanges) {
+    const items = await table.getSnapshot(sortedRanges);
+    return [...items.values()].map(item => item.name);
   }
 
   constructor(props) {
@@ -171,8 +178,9 @@ class CommandHistory extends Component {
       return CommandHistory.getCommandsFromViewport(items, offset, ranges);
     }
     const { table } = this.props;
-    const snapshot = await this.pending.add(table.getSnapshot(ranges));
-    return [...snapshot.values()].map(item => item.name);
+    return this.pending.add(
+      CommandHistory.getCommandsFromSnapshot(table, ranges)
+    );
   }
 
   /**
@@ -265,7 +273,9 @@ class CommandHistory extends Component {
     this.setState({ searchText: e.target.value });
   }
 
-  handleViewportUpdate({ items, itemCount, offset }) {
+  handleViewportUpdate({ items, offset }) {
+    const { table } = this.props;
+    const itemCount = table.size;
     this.setState({ items, itemCount, offset });
   }
 
@@ -328,7 +338,7 @@ class CommandHistory extends Component {
             isMultiSelect
             isStickyBottom
           />
-          <StorageTableViewportUpdater
+          <CommandHistoryViewportUpdater
             table={table}
             top={top}
             bottom={bottom}
@@ -346,10 +356,7 @@ CommandHistory.propTypes = {
   language: PropTypes.string.isRequired,
   sendToConsole: PropTypes.func.isRequired,
   sendToNotebook: PropTypes.func.isRequired,
-  table: PropTypes.shape({
-    size: PropTypes.number,
-    getSnapshot: PropTypes.func.isRequired,
-  }).isRequired,
+  table: StoragePropTypes.CommandHistoryTable.isRequired,
 };
 
 export default CommandHistory;

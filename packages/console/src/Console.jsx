@@ -20,6 +20,7 @@ import CsvOverlay from './csv/CsvOverlay';
 import CsvInputBar from './csv/CsvInputBar';
 import './Console.scss';
 import ConsoleStatusBar from './ConsoleStatusBar';
+import StoragePropTypes from './StoragePropTypes';
 
 const log = Log.module('Console');
 
@@ -944,10 +945,7 @@ Console.propTypes = {
   closeObject: PropTypes.func.isRequired,
   session: APIPropTypes.IdeSession.isRequired,
   language: PropTypes.string.isRequired,
-  commandHistoryStorage: PropTypes.shape({
-    addItem: PropTypes.func,
-    updateItem: PropTypes.func,
-  }).isRequired,
+  commandHistoryStorage: StoragePropTypes.CommandHistoryStorage.isRequired,
   onSettingsChange: PropTypes.func,
   scope: PropTypes.string,
   actions: PropTypes.arrayOf(PropTypes.shape({})),

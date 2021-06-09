@@ -4,7 +4,7 @@ import {
   StorageItemListener,
   StorageListenerRemover,
   StorageErrorListener,
-} from './StorageTable';
+} from '@deephaven/storage';
 
 export interface CommandHistoryStorageData {
   command: string;
@@ -17,7 +17,10 @@ export interface CommandHistoryStorageItem extends StorageItem {
   data: CommandHistoryStorageData;
 }
 
-export type CommandHistoryStorageTable = StorageTable<CommandHistoryStorageItem>;
+export interface CommandHistoryTable
+  extends StorageTable<CommandHistoryStorageItem> {
+  setSearch(search: string): void;
+}
 
 export interface CommandHistoryStorage {
   /**

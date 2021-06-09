@@ -6,6 +6,7 @@ import { Console } from './Console';
 function makeMockCommandHistoryStorage() {
   return {
     addItem: jest.fn(),
+    getTable: jest.fn(),
     updateItem: jest.fn(),
   };
 }

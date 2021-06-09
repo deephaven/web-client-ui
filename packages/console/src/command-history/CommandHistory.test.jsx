@@ -16,12 +16,19 @@ function makeItems(count = 10) {
 
 const defaultItems = makeItems();
 
-function mountItems(items) {
-  const table = {
+function makeCommandHistoryTable(items) {
+  return {
+    onUpdate: jest.fn(),
+    setSearch: jest.fn(),
+    setReversed: jest.fn(),
+    setViewport: jest.fn(),
+    getSnapshot: jest.fn(),
     size: items.length,
-    onUpdate: () => {},
-    getSnapshot: () => {},
   };
+}
+
+function mountItems(items) {
+  const table = makeCommandHistoryTable(items);
   const wrapper = mount(
     <CommandHistory
       table={table}
