@@ -9,7 +9,7 @@ import ItemList, { RenderItemProps, DefaultListItem } from './ItemList';
 import { Tooltip } from './popper';
 import './DraggableItemList.scss';
 
-type DraggableRenderItemProps<T> = RenderItemProps<T> & {
+export type DraggableRenderItemProps<T> = RenderItemProps<T> & {
   isClone?: boolean;
   selectedCount?: number;
 };
