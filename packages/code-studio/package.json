@@ -65,7 +65,7 @@
     "shell-quote": "^1.7.2",
     "shortid": "^2.2.15",
     "source-map-explorer": "^2.5.2",
-    "typescript": "^4.2.3",
+    "typescript": "^4.3.2",
     "web-streams-polyfill": "^2.1.0"
   },
   "dependenciesComments": {
@@ -110,7 +110,7 @@
     "@storybook/react": "^6.0.22",
     "@types/enzyme": "^3.10.7",
     "@types/enzyme-adapter-react-16": "^1.0.6",
-    "@types/jest": "^26.0.15",
+    "@types/jest": "^26.0.23",
     "@types/jszip": "3.1.7",
     "@types/lodash.clamp": "^4.0.6",
     "@types/lodash.debounce": "^4.0.6",
@@ -118,7 +118,7 @@
     "@types/pouchdb-browser": "^6.1.3",
     "@types/react": "^16.14.8",
     "@types/react-beautiful-dnd": "^13.0.0",
-    "@types/react-dom": "^16.9.8",
+    "@types/react-dom": "^16.9.13",
     "@types/react-transition-group": "^4.4.0",
     "enzyme": "^3.11.0",
     "enzyme-adapter-react-16": "^1.15.2",

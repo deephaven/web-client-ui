@@ -87,7 +87,7 @@ Checkbox.displayName = 'Checkbox';
 Checkbox.propTypes = {
   /** Current value of the checkbox. */
   checked: (props, propName) => {
-    const { propName: checkedType } = props;
+    const { [propName]: checkedType } = props;
     if (checkedType !== null && typeof checkedType !== 'boolean') {
       return new Error('Checked must be a boolean or null for indeterminate');
     }

@@ -11,7 +11,7 @@
   "main": "dist/index.js",
   "module": "dist/index.modern",
   "source": "src/index.js",
-  "types": "src/index.d.ts",
+  "types": "dist/index.d.ts",
   "engines": {
     "node": ">=10"
   },

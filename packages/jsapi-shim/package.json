@@ -41,7 +41,7 @@
   "devDependencies": {
     "@babel/cli": "^7.14.3",
     "@babel/core": "7.12.3",
-    "@types/jest": "^26.0.15",
+    "@types/jest": "^26.0.23",
     "babel-loader": "8.1.0",
     "classnames": "^2.3.1",
     "cross-env": "^7.0.2",
