@@ -133,7 +133,7 @@ const Aggregations = ({
         destinationIndex,
         selectedRanges
       );
-      const newSelectedRanges = [
+      const newSelectedRanges: Range[] = [
         [insertIndex, insertIndex + draggedItems.length - 1],
       ];
       changeAggregations(newAggregations);

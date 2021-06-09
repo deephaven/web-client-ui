@@ -38,7 +38,7 @@ type DraggableItemListProps<T> = {
   // Set to true if you want the list to scroll when new items are added and it's already at the bottom
   isStickyBottom: boolean;
   // Fired when an item is clicked. With multiple selection, fired on double click.
-  onSelect(): void;
+  onSelect(index: number): void;
   onSelectionChange(ranges: Range[]): void;
   onViewportChange(): void;
   selectedRanges: Range[];
@@ -104,7 +104,7 @@ class DraggableItemList<T> extends PureComponent<
     );
   }
 
-  static renderBadge({ text }: { text: string }): React.ReactNode {
+  static renderBadge({ text }: { text?: string }): React.ReactNode {
     return text ? <span className="number-badge">{text}</span> : null;
   }
 
