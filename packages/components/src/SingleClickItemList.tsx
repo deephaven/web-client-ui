@@ -1,11 +1,79 @@
 import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
 import memoize from 'memoizee';
 import Log from '@deephaven/log';
-import { RangeUtils } from '@deephaven/utils';
+import { RangeUtils, Range } from '@deephaven/utils';
 import { ContextActionUtils } from './context-actions';
 import ItemListItem from './ItemListItem';
 import './SingleClickItemList.scss';
+
+type SingleClickRenderItemBase = {
+  itemName: string;
+};
+
+type SingleClickRenderItemProps<T extends SingleClickRenderItemBase> = {
+  item: T;
+  itemIndex: number;
+  isKeyboardSelected: boolean;
+  isSelected: boolean;
+  isDragInProgress: boolean;
+  isDragged: boolean;
+  isDropTargetValid: boolean;
+  dragOverItem: T;
+};
+
+type SingleClickRenterItemFn<T extends SingleClickRenderItemBase> = (
+  props: SingleClickRenderItemProps<T>
+) => React.ReactNode;
+
+type SingleClickItemListProps<T extends SingleClickRenderItemBase> = {
+  // Total item count
+  itemCount: number;
+  rowHeight: number;
+
+  // Offset of the top item in the items array
+  offset: number;
+  // Item object format expected by the default renderItem function
+  // Can be anything as long as it's supported by the renderItem
+  items: T[];
+
+  isDraggable: boolean;
+
+  // Whether to allow multiple selections in this item list
+  isMultiSelect: boolean;
+
+  // Set to true if you want the list to scroll when new items are added and it's already at the bottom
+  isStickyBottom: boolean;
+
+  onDrop(ranges: Range[], index: number): void;
+
+  // Fired when an item gets selected via keyboard
+  onKeyboardSelect(): void;
+
+  // Fired when an item is clicked. With multiple selection, fired on double click.
+  onSelect(index: number): void;
+  onSelectionChange(
+    selectedRanges: Range[],
+    keyboardIndex: number | null
+  ): void;
+  onViewportChange(topRow: number, bottomRow: number): void;
+
+  disableSelect: boolean;
+
+  renderItem: SingleClickRenterItemFn<T>;
+  validateDropTarget(): void;
+};
+
+type SingleClickItemListState = {
+  keyboardIndex: number | null;
+  selectedRanges: Range[];
+  draggedRanges: Range[];
+  dragOverIndex: number | null;
+  shiftRange: Range | null;
+  topRow: number | null;
+  bottomRow: number | null;
+  isStuckToBottom: boolean;
+  isDropTargetValid: boolean;
+};
 
 const log = Log.module('SingleClickItemList');
 
@@ -13,14 +81,45 @@ const log = Log.module('SingleClickItemList');
  * Show items in a long scrollable list.
  * Can be navigated via keyboard or mouse.
  */
-class SingleClickItemList extends PureComponent {
+class SingleClickItemList<
+  T extends SingleClickRenderItemBase
+> extends PureComponent<SingleClickItemListProps<T>, SingleClickItemListState> {
   static CACHE_SIZE = 1000;
 
   static DEFAULT_ROW_HEIGHT = 20;
 
   static DRAG_PLACEHOLDER_OFFSET_X = 20;
 
-  constructor(props) {
+  static defaultProps = {
+    items: [],
+    rowHeight: SingleClickItemList.DEFAULT_ROW_HEIGHT,
+    isDraggable: false,
+    isMultiSelect: false,
+    isStickyBottom: false,
+    disableSelect: false,
+    onKeyboardSelect(): void {
+      // no-op
+    },
+    onSelect(): void {
+      // no-op
+    },
+    onSelectionChange(): void {
+      // no-op
+    },
+    onDrop(): void {
+      // no-op
+    },
+    renderItem: SingleClickItemList.renderItem,
+    validateDropTarget: undefined,
+  };
+
+  static renderItem<P extends SingleClickRenderItemBase>({
+    item,
+  }: SingleClickRenderItemProps<P>): React.ReactNode {
+    return item.itemName;
+  }
+
+  constructor(props: SingleClickItemListProps<T>) {
     super(props);
 
     this.handleItemBlur = this.handleItemBlur.bind(this);
@@ -34,7 +133,7 @@ class SingleClickItemList extends PureComponent {
     this.handleKeyDown = this.handleKeyDown.bind(this);
     this.handleScroll = this.handleScroll.bind(this);
 
-    this.list = null;
+    this.list = React.createRef();
     this.dragPlaceholder = null;
 
     const { isStickyBottom } = props;
@@ -52,12 +151,12 @@ class SingleClickItemList extends PureComponent {
     };
   }
 
-  componentDidMount() {
+  componentDidMount(): void {
     const { isStickyBottom } = this.props;
     if (
       isStickyBottom &&
-      this.list &&
-      this.list.scrollHeight > this.list.clientHeight
+      this.list.current &&
+      this.list.current.scrollHeight > this.list.current.clientHeight
     ) {
       this.scrollToBottom();
     } else {
@@ -65,7 +164,10 @@ class SingleClickItemList extends PureComponent {
     }
   }
 
-  componentDidUpdate(prevProps, prevState) {
+  componentDidUpdate(
+    prevProps: SingleClickItemListProps<T>,
+    prevState: SingleClickItemListState
+  ): void {
     const {
       isStuckToBottom,
       keyboardIndex,
@@ -93,16 +195,21 @@ class SingleClickItemList extends PureComponent {
     this.updateViewport();
   }
 
-  setKeyboardIndex(keyboardIndex) {
+  list: React.RefObject<HTMLDivElement>;
+
+  dragPlaceholder: HTMLDivElement | null;
+
+  setKeyboardIndex(keyboardIndex: number | null): void {
     this.setState({ keyboardIndex });
   }
 
-  setShiftRange(shiftRange) {
+  setShiftRange(shiftRange: Range | null): void {
     this.setState({ shiftRange });
   }
 
   getItemSelected = memoize(
-    (index, selectedRanges) => RangeUtils.isSelected(selectedRanges, index),
+    (index: number, selectedRanges: Range[]): boolean =>
+      RangeUtils.isSelected(selectedRanges, index),
     { max: SingleClickItemList.CACHE_SIZE }
   );
 
@@ -201,7 +308,7 @@ class SingleClickItemList extends PureComponent {
     { max: 1 }
   );
 
-  getDragPlaceholder(draggedRanges) {
+  getDragPlaceholder(draggedRanges: Range[]): string | null {
     const count = draggedRanges.reduce(
       (acc, next) => acc + next[1] - next[0] + 1,
       0
@@ -223,13 +330,11 @@ class SingleClickItemList extends PureComponent {
       : false
   );
 
-  focus() {
-    if (this.list != null) {
-      this.list.focus();
-    }
+  focus(): void {
+    this.list.current?.focus();
   }
 
-  handleItemClick(index, e) {
+  handleItemClick(index: number, e: React.MouseEvent<HTMLDivElement>): void {
     // This happens after handleItemMouseDown, so shouldn't contain overlapping functionality
     const { isMultiSelect, onSelect } = this.props;
     const { selectedRanges, keyboardIndex: oldFocus, shiftRange } = this.state;
@@ -244,7 +349,10 @@ class SingleClickItemList extends PureComponent {
     );
 
     if (isMultiSelect && e.shiftKey) {
-      const range = [Math.min(oldFocus, index), Math.max(oldFocus, index)];
+      const range: Range = [
+        Math.min(oldFocus ?? index, index),
+        Math.max(oldFocus ?? index, index),
+      ];
       if (shiftRange != null) {
         this.deselectRange(shiftRange);
       }
@@ -267,10 +375,10 @@ class SingleClickItemList extends PureComponent {
     }
   }
 
-  handleItemDragStart(index, e) {
+  handleItemDragStart(index: number, e: React.DragEvent<HTMLDivElement>): void {
     const { selectedRanges } = this.state;
     log.debug('handleItemDragStart', index, selectedRanges);
-    let draggedRanges = null;
+    let draggedRanges: Range[];
     if (this.getItemSelected(index, selectedRanges)) {
       // Dragging selected ranges
       draggedRanges = [...selectedRanges];
@@ -291,7 +399,7 @@ class SingleClickItemList extends PureComponent {
     this.dragPlaceholder = dragPlaceholder;
   }
 
-  handleItemDragOver(index) {
+  handleItemDragOver(index: number): void {
     this.setState(({ dragOverIndex, draggedRanges }) => {
       if (index === dragOverIndex) {
         return null;
@@ -310,8 +418,10 @@ class SingleClickItemList extends PureComponent {
     });
   }
 
-  handleItemDragEnd(index) {
-    document.body.removeChild(this.dragPlaceholder);
+  handleItemDragEnd(index: number): void {
+    if (this.dragPlaceholder) {
+      document.body.removeChild(this.dragPlaceholder);
+    }
     log.debug('handleItemDragEnd', index);
     // Drag end is triggered after drop
     // Also drop isn't triggered if drag end is outside of the list
@@ -321,14 +431,17 @@ class SingleClickItemList extends PureComponent {
     });
   }
 
-  handleItemDrop(index) {
+  handleItemDrop(index: number): void {
     const { draggedRanges } = this.state;
     log.debug('handleItemDrop', index, draggedRanges);
     const { onDrop } = this.props;
     onDrop(draggedRanges, index);
   }
 
-  handleItemMouseDown(index, e) {
+  handleItemMouseDown(
+    index: number,
+    e: React.MouseEvent<HTMLDivElement>
+  ): void {
     const { selectedRanges } = this.state;
     log.debug('handleItemMouseDown', index, e.button);
     if (e.button === 2) {
@@ -341,11 +454,15 @@ class SingleClickItemList extends PureComponent {
     }
   }
 
-  handleItemBlur(itemIndex, { currentTarget, relatedTarget }) {
+  handleItemBlur(
+    itemIndex: number,
+    { currentTarget, relatedTarget }: React.FocusEvent<HTMLDivElement>
+  ): void {
     log.debug2('item blur', itemIndex, currentTarget, relatedTarget);
     if (
       !relatedTarget ||
-      (!this.list?.contains(relatedTarget) &&
+      (relatedTarget instanceof Element &&
+        !this.list.current?.contains(relatedTarget) &&
         !relatedTarget.classList?.contains('context-menu-container'))
     ) {
       // Next focused element is outside of the SingleClickItemList
@@ -353,7 +470,10 @@ class SingleClickItemList extends PureComponent {
     }
   }
 
-  handleItemFocus(itemIndex, e) {
+  handleItemFocus(
+    itemIndex: number,
+    e: React.FocusEvent<HTMLDivElement>
+  ): void {
     log.debug2('item focus', itemIndex, e.target);
     this.setState(state => {
       const { keyboardIndex } = state;
@@ -364,7 +484,7 @@ class SingleClickItemList extends PureComponent {
     });
   }
 
-  handleKeyDown(e) {
+  handleKeyDown(e: React.KeyboardEvent<HTMLDivElement>): void {
     const { itemCount, isMultiSelect, onSelect } = this.props;
     const { keyboardIndex: oldFocus } = this.state;
     let newFocus = oldFocus;
@@ -374,7 +494,7 @@ class SingleClickItemList extends PureComponent {
     if (e.key === ' ') {
       this.deselectAll();
       this.setShiftRange(null);
-      onSelect(oldFocus);
+      onSelect(oldFocus ?? 0);
       return;
     }
 
@@ -395,6 +515,8 @@ class SingleClickItemList extends PureComponent {
       } else if (newFocus < itemCount - 1) {
         newFocus += 1;
       }
+    } else {
+      return;
     }
 
     if (oldFocus !== newFocus) {
@@ -411,22 +533,26 @@ class SingleClickItemList extends PureComponent {
     }
   }
 
-  handleScroll() {
+  handleScroll(): void {
     this.updateStickyBottom();
     this.updateViewport();
   }
 
-  scrollToBottom() {
+  scrollToBottom(): void {
     window.requestAnimationFrame(() => {
-      if (this.list) {
-        this.list.scrollTop = this.list.scrollHeight;
+      if (this.list.current) {
+        this.list.current.scrollTop = this.list.current.scrollHeight;
       }
     });
   }
 
-  scrollIntoView(itemIndex) {
+  scrollIntoView(itemIndex: number): void {
+    if (!this.list.current) {
+      return;
+    }
+
     const { itemCount, rowHeight } = this.props;
-    const { clientHeight, scrollTop } = this.list;
+    const { clientHeight, scrollTop } = this.list.current;
 
     const itemTop = itemIndex * rowHeight;
     const itemBottom = itemTop + rowHeight;
@@ -448,28 +574,28 @@ class SingleClickItemList extends PureComponent {
 
     if (newTop !== scrollTop) {
       window.requestAnimationFrame(() => {
-        if (this.list) {
-          this.list.scrollTop = newTop;
+        if (this.list.current) {
+          this.list.current.scrollTop = newTop;
         }
       });
     }
   }
 
-  resetSelection() {
+  resetSelection(): void {
     this.deselectAll();
     this.setShiftRange(null);
     this.setKeyboardIndex(null);
   }
 
-  deselectAll() {
+  deselectAll(): void {
     this.setState({ selectedRanges: [] });
   }
 
-  deselectItem(index) {
+  deselectItem(index: number): void {
     this.deselectRange([index, index]);
   }
 
-  deselectRange(range) {
+  deselectRange(range: Range): void {
     RangeUtils.validateRange(range);
 
     this.setState(({ selectedRanges }) => ({
@@ -477,7 +603,7 @@ class SingleClickItemList extends PureComponent {
     }));
   }
 
-  toggleItem(index) {
+  toggleItem(index: number): void {
     this.setState(({ selectedRanges }) => {
       if (this.getItemSelected(index, selectedRanges)) {
         return {
@@ -493,11 +619,11 @@ class SingleClickItemList extends PureComponent {
     });
   }
 
-  selectItem(index) {
+  selectItem(index: number): void {
     this.selectRange([index, index]);
   }
 
-  selectRange(range) {
+  selectRange(range: Range): void {
     RangeUtils.validateRange(range);
 
     this.setState(({ selectedRanges }) => ({
@@ -505,7 +631,7 @@ class SingleClickItemList extends PureComponent {
     }));
   }
 
-  sendViewportUpdate() {
+  sendViewportUpdate(): void {
     const { topRow, bottomRow } = this.state;
     if (topRow != null && bottomRow != null) {
       const { onViewportChange } = this.props;
@@ -513,13 +639,15 @@ class SingleClickItemList extends PureComponent {
     }
   }
 
-  isListAtBottom() {
+  isListAtBottom(): boolean {
     return (
-      this.list.scrollTop >= this.list.scrollHeight - this.list.offsetHeight
+      this.list.current !== null &&
+      this.list.current.scrollTop >=
+        this.list.current.scrollHeight - this.list.current.offsetHeight
     );
   }
 
-  updateStickyBottom() {
+  updateStickyBottom(): void {
     const { isStickyBottom } = this.props;
 
     const isStuckToBottom = isStickyBottom && this.isListAtBottom();
@@ -527,14 +655,14 @@ class SingleClickItemList extends PureComponent {
     this.setState({ isStuckToBottom });
   }
 
-  updateViewport() {
-    if (this.list.clientHeight === 0) {
+  updateViewport(): void {
+    if (!this.list.current || this.list.current.clientHeight === 0) {
       return;
     }
 
     const { rowHeight } = this.props;
-    const top = this.list.scrollTop;
-    const bottom = top + this.list.clientHeight;
+    const top = this.list.current.scrollTop;
+    const bottom = top + this.list.current.clientHeight;
 
     const topRow = Math.floor(top / rowHeight);
     const bottomRow = Math.ceil(bottom / rowHeight);
@@ -542,7 +670,7 @@ class SingleClickItemList extends PureComponent {
     this.setState({ topRow, bottomRow });
   }
 
-  render() {
+  render(): JSX.Element {
     const { items, itemCount, offset, rowHeight, renderItem } = this.props;
     const {
       isDropTargetValid,
@@ -569,10 +697,8 @@ class SingleClickItemList extends PureComponent {
         onScroll={this.handleScroll}
         onKeyDown={this.handleKeyDown}
         role="presentation"
-        ref={list => {
-          this.list = list;
-        }}
-        tabIndex="-1"
+        ref={this.list}
+        tabIndex={-1}
       >
         <div
           className="single-click-item-list"
@@ -594,62 +720,5 @@ class SingleClickItemList extends PureComponent {
     );
   }
 }
-
-SingleClickItemList.propTypes = {
-  // Total item count
-  itemCount: PropTypes.number.isRequired,
-  rowHeight: PropTypes.number,
-
-  // Offset of the top item in the items array
-  offset: PropTypes.number.isRequired,
-  // Item object format expected by the default renderItem function
-  // Can be anything as long as it's supported by the renderItem
-  items: PropTypes.arrayOf(
-    PropTypes.shape({
-      itemName: PropTypes.string,
-    })
-  ),
-
-  isDraggable: PropTypes.bool,
-
-  // Whether to allow multiple selections in this item list
-  isMultiSelect: PropTypes.bool,
-
-  // Set to true if you want the list to scroll when new items are added and it's already at the bottom
-  isStickyBottom: PropTypes.bool,
-
-  onDrop: PropTypes.func,
-
-  // Fired when an item gets selected via keyboard
-  onKeyboardSelect: PropTypes.func,
-
-  // Fired when an item is clicked. With multiple selection, fired on double click.
-  onSelect: PropTypes.func,
-  onSelectionChange: PropTypes.func,
-  onViewportChange: PropTypes.func.isRequired,
-
-  disableSelect: PropTypes.bool,
-
-  renderItem: PropTypes.func,
-  validateDropTarget: PropTypes.func,
-};
-
-SingleClickItemList.defaultProps = {
-  items: [],
-  rowHeight: SingleClickItemList.DEFAULT_ROW_HEIGHT,
-
-  isDraggable: false,
-  isMultiSelect: false,
-  isStickyBottom: false,
-
-  disableSelect: false,
-
-  onKeyboardSelect: () => {},
-  onSelect: () => {},
-  onSelectionChange: () => {},
-  onDrop: () => {},
-  renderItem: ({ item }) => item && (item.displayValue || item.value),
-  validateDropTarget: null,
-};
 
 export default SingleClickItemList;
