@@ -14,7 +14,7 @@ export {
   CommandHistoryStorage,
   CommandHistoryStorageData,
   CommandHistoryStorageItem,
-  CommandHistoryStorageTable,
+  CommandHistoryTable,
 } from './command-history/CommandHistoryStorage';
 export { default as LogView } from './log/LogView';
 

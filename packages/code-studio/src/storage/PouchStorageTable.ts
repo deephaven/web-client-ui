@@ -1,18 +1,23 @@
 import PouchDB from 'pouchdb-browser';
 import PouchDBFind from 'pouchdb-find';
+import { FilterOperator, FilterType } from '@deephaven/iris-grid/dist/filters';
 import Log from '@deephaven/log';
 import {
+  FilterConfig,
+  FilterValue,
+  SortConfig,
   StorageItem,
   StorageTable,
   StorageListenerRemover,
   StorageTableViewport,
-  StorageTableViewportData,
   StorageItemListener,
-  StorageTableListener,
   StorageItemSuccessErrorListener,
   StorageItemSuccessListener,
   StorageSnapshot,
+  ViewportData,
+  ViewportUpdateCallback,
 } from '@deephaven/storage';
+import { CancelablePromise, PromiseUtils } from '@deephaven/utils';
 
 const log = Log.module('PouchStorageTable');
 
@@ -28,13 +33,69 @@ export type PouchDBSort = Array<
   string | { [propName: string]: 'asc' | 'desc' }
 >;
 
-function selectorWithSearch(search = ''): PouchDB.Find.Selector {
+function makePouchFilter(type: string, value: FilterValue | FilterValue[]) {
+  switch (type) {
+    case FilterType.in:
+    case FilterType.contains:
+      return { $regex: new RegExp(value) };
+    case FilterType.inIgnoreCase:
+      return { $regex: new RegExp(value, 'i') };
+    case FilterType.eq:
+      return { $eq: value };
+    case FilterType.notEq:
+      return { $neq: value };
+    case FilterType.greaterThan:
+      return { $gt: value };
+    case FilterType.greaterThanOrEqualTo:
+      return { $gte: value };
+    case FilterType.lessThan:
+      return { $lt: value };
+    case FilterType.lessThanOrEqualTo:
+      return { $lte: value };
+    case FilterType.startsWith:
+      return { $regex: new RegExp(`^(?${value}).*`) };
+    default:
+      throw new Error(`Unsupported type: ${type}`);
+  }
+}
+
+function makePouchSelectorFromConfig(
+  config: FilterConfig
+): PouchDB.Find.Selector {
+  const { filterItems, filterOperators } = config;
+  let filter = null;
+  for (let i = 0; i < filterItems.length; i += 1) {
+    const filterItem = filterItems[i];
+    const { columnName, type, value } = filterItem;
+    const newFilter = { [columnName]: makePouchFilter(type, value) };
+    if (i === 0) {
+      filter = newFilter;
+    } else if (filter !== null && i - 1 < filterOperators.length) {
+      const filterOperator = filterOperators[i - 1];
+      if (filterOperator === FilterOperator.and) {
+        filter = { $and: [filter, newFilter] };
+      } else if (filterOperator === FilterOperator.or) {
+        filter = { $or: [filter, newFilter] };
+      } else {
+        throw new Error(
+          `Unexpected filter operator ${filterOperator}, ${newFilter}`
+        );
+      }
+    }
+  }
+  if (filter == null) {
+    throw new Error(`Invalid filter config ${config}`);
+  }
+  return filter;
+}
+
+function selectorWithFilters(
+  filters: FilterConfig[] = []
+): PouchDB.Find.Selector {
   return {
     $and: [
-      { name: { $regex: new RegExp(search, 'i') } },
+      ...filters.map(filter => makePouchSelectorFromConfig(filter)),
       { name: { $gt: null } },
-      // Filter out all IDs starting with _, these are used by PouchDB for indexes
-      { id: { $regex: new RegExp('^(?!_).*') } },
       { id: { $gt: null } },
     ],
   };
@@ -44,7 +105,7 @@ export class PouchStorageTable<T extends StorageItem = StorageItem>
   implements StorageTable<T> {
   private db: PouchDB.Database<T & PouchStorageItem>;
 
-  private listeners: StorageTableListener[] = [];
+  private listeners: ViewportUpdateCallback<T>[] = [];
 
   private itemListeners: Map<string, StorageItemListener<T>[]> = new Map();
 
@@ -52,11 +113,21 @@ export class PouchStorageTable<T extends StorageItem = StorageItem>
 
   private currentViewport?: StorageTableViewport;
 
-  private currentViewportData?: StorageTableViewportData<T>;
+  private currentReverse = false;
 
-  private sort: PouchDBSort;
+  private currentFilter: FilterConfig[] | null = null;
 
-  constructor(databaseName: string, sort: PouchDBSort = [{ id: 'asc' }]) {
+  private currentSort: SortConfig[] | null = null;
+
+  private infoUpdatePromise?: CancelablePromise<
+    PouchDB.Find.FindResponse<T & PouchStorageItem>
+  >;
+
+  private viewportUpdatePromise?: CancelablePromise<ViewportData<T>>;
+
+  private currentViewportData?: ViewportData<T>;
+
+  constructor(databaseName: string) {
     this.db = new PouchDB<T & PouchStorageItem>(`${DB_PREFIX}${databaseName}`);
 
     this.db
@@ -65,20 +136,13 @@ export class PouchStorageTable<T extends StorageItem = StorageItem>
 
     this.db.createIndex({ index: { fields: ['id', 'name'] } });
 
-    this.sort = sort;
-
     this.refreshInfo();
   }
 
-  setReversed(reversed: boolean): void {
-    this.sort = [{ id: reversed ? 'desc' : 'asc' }];
-    this.refreshData();
-  }
-
-  onUpdate(listener: StorageListenerRemover): StorageListenerRemover {
-    this.listeners = [...this.listeners, listener];
+  onUpdate(callback: ViewportUpdateCallback<T>): StorageListenerRemover {
+    this.listeners = [...this.listeners, callback];
     return () => {
-      this.listeners = this.listeners.filter(other => other !== listener);
+      this.listeners = this.listeners.filter(other => other !== callback);
     };
   }
 
@@ -119,22 +183,49 @@ export class PouchStorageTable<T extends StorageItem = StorageItem>
     return this.currentViewport;
   }
 
-  async setViewport(
-    viewport: StorageTableViewport | undefined
-  ): Promise<StorageTableViewportData<T> | undefined> {
-    if (this.currentViewport?.search !== viewport?.search) {
-      this.currentViewportData = undefined;
-    }
+  setReversed(reversed: boolean): void {
+    this.currentReverse = reversed;
 
+    this.currentViewportData = undefined;
+
+    this.refreshData();
+  }
+
+  setViewport(viewport: StorageTableViewport | undefined): void {
     this.currentViewport = viewport;
 
     this.refreshInfo();
 
-    return this.refreshData();
+    this.refreshData();
   }
 
-  get data(): StorageTableViewportData<T> | undefined {
+  setSorts(config: SortConfig[] | null): void {
+    this.currentSort = config;
+
+    this.currentViewportData = undefined;
+
+    this.refreshData();
+  }
+
+  setFilters(config: FilterConfig[] | null): void {
+    this.currentFilter = config;
+
+    this.currentViewportData = undefined;
+
+    this.refreshInfo();
+
+    this.refreshData();
+  }
+
+  get data(): ViewportData<T> | undefined {
     return this.currentViewportData;
+  }
+
+  async getViewportData(): Promise<ViewportData<T>> {
+    if (!this.viewportUpdatePromise) {
+      this.refreshData();
+    }
+    return this.viewportUpdatePromise;
   }
 
   async put(item: T): Promise<T> {
@@ -153,8 +244,9 @@ export class PouchStorageTable<T extends StorageItem = StorageItem>
   private sendUpdate() {
     // Retain a reference to it in case a listener gets removed while sending an update
     const { listeners } = this;
+    const data = this.currentViewportData ?? { items: [], offset: 0 };
     for (let i = 0; i < listeners.length; i += 1) {
-      listeners[i]();
+      listeners[i](data);
     }
   }
 
@@ -187,56 +279,69 @@ export class PouchStorageTable<T extends StorageItem = StorageItem>
   }
 
   private async refreshInfo() {
-    const currentSearch = this.currentViewport?.search;
+    try {
+      this.infoUpdatePromise?.cancel();
 
-    const findResult = await this.db.find({
-      selector: selectorWithSearch(currentSearch),
-      fields: [],
-    });
-
-    if (this.currentViewport?.search !== currentSearch) {
-      log.debug2(
-        'refreshInfo ignoring update, changed before response received'
+      this.infoUpdatePromise = PromiseUtils.makeCancelable(
+        this.db.find({
+          selector: selectorWithFilters(this.currentFilter ?? []),
+          fields: [],
+        })
       );
+
+      const findResult = await this.infoUpdatePromise;
+
+      this.currentSize = findResult.docs.length;
+
+      this.sendUpdate();
+    } catch (e) {
+      if (!PromiseUtils.isCanceled(e)) {
+        log.error('Unable to refreshInfo', e);
+        throw e;
+      }
     }
-
-    this.currentSize = findResult.docs.length;
-
-    this.sendUpdate();
   }
 
-  private async refreshData(): Promise<
-    StorageTableViewportData<T> | undefined
-  > {
+  private async refreshData(): Promise<ViewportData<T> | undefined> {
     if (!this.currentViewport) {
       return;
     }
 
-    const { currentViewport: viewport } = this;
+    try {
+      const { currentViewport: viewport } = this;
 
-    const findResult = await this.db.find({
-      selector: selectorWithSearch(viewport.search),
-      skip: viewport.top,
-      limit: viewport.bottom - viewport.top + 1,
-      sort: this.sort,
-      fields: ['id', 'name'],
-    });
+      const sort: PouchDBSort = [{ id: this.currentReverse ? 'asc' : 'desc' }];
 
-    const viewportData = {
-      viewport,
-      items: findResult.docs,
-    };
+      this.viewportUpdatePromise?.cancel();
 
-    if (this.currentViewport !== viewport) {
-      log.debug2('Viewport changed before update received');
+      this.viewportUpdatePromise = PromiseUtils.makeCancelable(
+        this.db
+          .find({
+            selector: selectorWithFilters(this.currentFilter ?? []),
+            skip: viewport.top,
+            limit: viewport.bottom - viewport.top + 1,
+            sort,
+            fields: ['id', 'name'],
+          })
+          .then(findResult => ({
+            items: findResult.docs,
+            viewport,
+          }))
+      );
+
+      const viewportData = await this.viewportUpdatePromise;
+
+      this.currentViewportData = viewportData;
+
+      this.sendUpdate();
+
       return viewportData;
+    } catch (e) {
+      if (!PromiseUtils.isCanceled(e)) {
+        log.error('Unable to refreshData', e);
+        throw e;
+      }
     }
-
-    this.currentViewportData = viewportData;
-
-    this.sendUpdate();
-
-    return viewportData;
   }
 
   async refreshItem(id: string): Promise<T | undefined> {
@@ -257,22 +362,19 @@ export class PouchStorageTable<T extends StorageItem = StorageItem>
   async getSnapshot(
     sortedRanges: [number, number][]
   ): Promise<StorageSnapshot<T>> {
-    if (!this.currentViewport) {
-      throw new Error('Viewport not set');
-    }
-
-    const { currentViewport: viewport } = this;
     const itemMap = new Map();
+
+    const sort: PouchDBSort = [{ id: this.currentReverse ? 'asc' : 'desc' }];
 
     await Promise.all(
       sortedRanges.map(async ([from, to]) => {
         const limit = to - from + 1;
         return this.db
           .find({
-            selector: selectorWithSearch(viewport.search),
+            selector: selectorWithFilters(this.currentFilter ?? []),
             skip: from,
             limit,
-            sort: this.sort,
+            sort,
             fields: ['id', 'name'],
           })
           .then(findSnapshotResult => {
