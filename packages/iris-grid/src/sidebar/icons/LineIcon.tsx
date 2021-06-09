@@ -1,7 +1,10 @@
 import * as React from 'react';
 
-function SvgLineIcon(props) {
+function SvgLineIcon(
+  props: JSX.IntrinsicAttributes & React.SVGProps<SVGSVGElement>
+): JSX.Element {
   return (
+    // eslint-disable-next-line react/jsx-props-no-spreading
     <svg width={48} height={48} xmlns="http://www.w3.org/2000/svg" {...props}>
       <g fill="none" fillRule="evenodd">
         <path fill="#C1C0C0" d="M4 4h1v40H4zM44 43v1H5v-1z" />

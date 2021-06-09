@@ -1,7 +1,10 @@
 import * as React from 'react';
 
-function SvgPieIcon(props) {
+function SvgPieIcon(
+  props: JSX.IntrinsicAttributes & React.SVGProps<SVGSVGElement>
+): JSX.Element {
   return (
+    // eslint-disable-next-line react/jsx-props-no-spreading
     <svg width={48} height={48} xmlns="http://www.w3.org/2000/svg" {...props}>
       <g fill="none" fillRule="evenodd">
         <path

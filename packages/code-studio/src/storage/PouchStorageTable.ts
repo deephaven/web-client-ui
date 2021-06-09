@@ -12,7 +12,7 @@ import {
   StorageItemSuccessErrorListener,
   StorageItemSuccessListener,
   StorageSnapshot,
-} from '@deephaven/console';
+} from '@deephaven/storage';
 
 const log = Log.module('PouchStorageTable');
 

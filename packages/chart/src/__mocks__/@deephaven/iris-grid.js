@@ -1,3 +1,4 @@
+/* eslint-disable class-methods-use-this */
 /* eslint-disable max-classes-per-file */
 export class Formatter {
   getColumnTypeFormatter() {

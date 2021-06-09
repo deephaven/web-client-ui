@@ -28,7 +28,7 @@ const ROW_BUFFER_PAGES = 3;
 
 const log = Log.module('StorageTableViewportUpdater');
 
-function StorageTableViewportUpdater({
+export function StorageTableViewportUpdater({
   table,
   columns,
   top = 0,
