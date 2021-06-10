@@ -310,7 +310,7 @@ export class PouchStorageTable<T extends StorageItem = StorageItem>
     try {
       const { currentViewport: viewport } = this;
 
-      const sort: PouchDBSort = [{ id: this.currentReverse ? 'asc' : 'desc' }];
+      const sort: PouchDBSort = [{ id: this.currentReverse ? 'desc' : 'asc' }];
 
       this.viewportUpdatePromise?.cancel();
 
