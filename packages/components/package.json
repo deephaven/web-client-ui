@@ -20,7 +20,7 @@
     "build-dev": "cross-env NODE_ENV=development run-s clean build-steps",
     "build-steps": "run-p build:*",
     "babel": "babel ./src --out-dir ./dist --extensions \".ts,.tsx,.js,.jsx\" --source-maps --root-mode upward --verbose",
-    "sass": "sass --load-path=../../node_modules ./src:./dist",
+    "sass": "sass ./src:./dist",
     "types": "tsc",
     "build:babel": "npm run babel",
     "build:sass": "npm run sass",

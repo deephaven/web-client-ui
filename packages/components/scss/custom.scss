@@ -1,7 +1,7 @@
 // Styling overrides for bootstrap
 
 //Make bootstrap functions available for use in overrides
-@import 'bootstrap/scss/_functions.scss';
+@import '../../../node_modules/bootstrap/scss/_functions.scss';
 
 // Override / set color variables
 $red: #f95d84;
@@ -226,8 +226,8 @@ $form-feedback-icon-invalid: str-replace(
 //_variable imports come after bootstrap default overrides,
 // makes all other variables and mixins from bootstrap available
 /// with just importing customer.scss
-@import 'bootstrap/scss/_variables.scss';
-@import 'bootstrap/scss/_mixins.scss';
+@import '../../../node_modules/bootstrap/scss/_variables.scss';
+@import '../../../node_modules/bootstrap/scss/_mixins.scss';
 
 //New variables come after imports
 //---------------------------------------
