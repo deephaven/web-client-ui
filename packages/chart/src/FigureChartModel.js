@@ -48,6 +48,7 @@ class FigureChartModel extends ChartModel {
     this.filterColumnMap = new Map();
     this.lastFilter = new Map();
     this.isConnected = true; // Assume figure is connected to start
+    this.seriesToProcess = new Set();
 
     this.setTitle(this.getDefaultTitle());
     this.initAllSeries();
@@ -95,6 +96,7 @@ class FigureChartModel extends ChartModel {
       const seriesName = inactiveSeriesNames[i];
       this.seriesDataMap.delete(seriesName);
     }
+    this.seriesToProcess = new Set([...this.seriesDataMap.keys()]);
   }
 
   addSeries(series) {
@@ -357,6 +359,11 @@ class FigureChartModel extends ChartModel {
           valueTranslator
         );
         this.setDataArrayForSeries(series, type, dataArray);
+      }
+
+      this.seriesToProcess.delete(series.name);
+      if (this.seriesToProcess.size === 0) {
+        this.fireLoadFinished();
       }
 
       this.cleanSeries(series);

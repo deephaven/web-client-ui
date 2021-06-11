@@ -4,32 +4,28 @@ import {
   CommandHistoryStorage,
   CommandHistoryStorageData,
   CommandHistoryStorageItem,
-  CommandHistoryStorageTable,
+} from '@deephaven/console';
+import {
   StorageItemListener,
   StorageListenerRemover,
-} from '@deephaven/console';
-import PouchStorageTable from './PouchStorageTable';
+} from '@deephaven/storage';
+import PouchCommandHistoryTable from './PouchCommandHistoryTable';
 
 const log = Log.module('PouchCommandHistoryStorage');
 
-function createTable(language: string): CommandHistoryStorageTable {
-  return new PouchStorageTable<CommandHistoryStorageItem>(
-    `CommandHistoryStorage.${language}`
-  );
-}
 export class PouchCommandHistoryStorage implements CommandHistoryStorage {
-  private updateTableMap = new Map<string, CommandHistoryStorageTable>();
+  private updateTableMap = new Map<string, PouchCommandHistoryTable>();
 
-  private getUpdateTable(language: string): CommandHistoryStorageTable {
+  private getUpdateTable(language: string): PouchCommandHistoryTable {
     if (!this.updateTableMap.has(language)) {
-      this.updateTableMap.set(language, createTable(language));
+      this.updateTableMap.set(language, new PouchCommandHistoryTable(language));
     }
 
-    return this.updateTableMap.get(language) as CommandHistoryStorageTable;
+    return this.updateTableMap.get(language) as PouchCommandHistoryTable;
   }
 
-  async getTable(language: string): Promise<CommandHistoryStorageTable> {
-    return createTable(language);
+  async getTable(language: string): Promise<PouchCommandHistoryTable> {
+    return new PouchCommandHistoryTable(language);
   }
 
   async addItem(

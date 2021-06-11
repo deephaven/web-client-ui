@@ -62,6 +62,7 @@ export class Chart extends Component {
     this.rect = null;
     this.ranges = null;
     this.isSubscribed = false;
+    this.isLoadedFired = false;
 
     this.state = {
       data: null,
@@ -228,6 +229,7 @@ export class Chart extends Component {
 
     switch (type) {
       case ChartModel.EVENT_UPDATED: {
+        this.currentSeries += 1;
         this.setState(state => {
           const { layout, revision } = state;
           layout.datarevision += 1;
@@ -239,7 +241,13 @@ export class Chart extends Component {
         });
 
         const { onUpdate } = this.props;
-        onUpdate(detail);
+        onUpdate({ isLoading: !this.isLoadedFired });
+        break;
+      }
+      case ChartModel.EVENT_LOADFINISHED: {
+        const { onUpdate } = this.props;
+        this.isLoadedFired = true;
+        onUpdate({ isLoading: false });
         break;
       }
       case ChartModel.EVENT_DISCONNECT: {

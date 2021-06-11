@@ -5,7 +5,12 @@ import { CommandHistoryItemTooltip } from './CommandHistoryItemTooltip';
 jest.mock('../common/Code', () => () => 'Code');
 
 function makeCommandHistoryStorage() {
-  return { listenItem: jest.fn() };
+  return {
+    addItem: jest.fn(),
+    getTable: jest.fn(),
+    listenItem: jest.fn(),
+    updateItem: jest.fn(),
+  };
 }
 
 function makeItem(id = 'TestId', name = 'Test command') {

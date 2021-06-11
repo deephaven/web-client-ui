@@ -20,6 +20,8 @@ class ChartModel {
 
   static EVENT_DOWNSAMPLENEEDED = 'ChartModel.EVENT_DOWNSAMPLENEEDED';
 
+  static EVENT_LOADFINISHED = 'ChartModel.EVENT_LOADFINISHED';
+
   constructor() {
     this.listeners = [];
     this.formatter = null;
@@ -135,6 +137,10 @@ class ChartModel {
     this.fireEvent(
       new CustomEvent(ChartModel.EVENT_DOWNSAMPLENEEDED, { detail })
     );
+  }
+
+  fireLoadFinished() {
+    this.fireEvent(new CustomEvent(ChartModel.EVENT_LOADFINISHED));
   }
 }
 

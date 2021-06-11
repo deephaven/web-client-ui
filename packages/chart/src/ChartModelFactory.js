@@ -1,13 +1,11 @@
 import dh from '@deephaven/jsapi-shim';
 import ChartUtils from './ChartUtils';
 import FigureChartModel from './FigureChartModel';
-import TableChartModel from './TableChartModel';
 
 class ChartModelFactory {
   /**
    * Creates a model from the settings provided.
-   * Tries to create a Figure in the API with it, but falls back
-   * to a TableChartModel in some cases (like Histogram).
+   * Tries to create a Figure in the API with it.
    * @param {Object} settings The chart builder settings
    * @param {boolean} settings.isLinked Whether the newly created chart should stay linked with the original table, update when filters are updated
    * @param {string[]} settings.series The column names to use for creating the series of this chart
@@ -19,14 +17,6 @@ class ChartModelFactory {
    * @returns {Promise<FigureChartModel>} The FigureChartModel representing the figure
    */
   static async makeModelFromSettings(settings, table) {
-    const { type } = settings;
-    if (type === dh.plot.SeriesPlotStyle.HISTOGRAM) {
-      // Histogram plots aren't supported by the way we're create the charts in the API yet
-      // Right now preserve legacy behaviour rather than break it completely.
-      // TODO: Need to expose/use histogram function in API?
-      return Promise.resolve(new TableChartModel(settings, table));
-    }
-
     // Copy the table first and then re-apply the filters from the original table
     // When we add table linking we'll want to listen to the original table and update
     // the copied table with any changes that occur.

@@ -9,6 +9,7 @@ import { getCommandHistoryStorage } from '@deephaven/redux';
 import MonacoUtils from './monaco/MonacoUtils';
 import MonacoTheme from './monaco/MonacoTheme.module.scss';
 import './ConsoleInput.scss';
+import StoragePropTypes from './StoragePropTypes';
 
 const log = Log.module('ConsoleInput');
 
@@ -309,13 +310,14 @@ export class ConsoleInput extends PureComponent {
 
       const table = await this.loadingPromise;
       table.setReversed(true);
+      table.setViewport({
+        top: this.bufferIndex,
+        bottom: this.bufferIndex + BUFFER_SIZE - 1,
+      });
 
       this.loadingPromise = PromiseUtils.makeCancelable(
-        table.setViewport({
-          top: this.bufferIndex,
-          bottom: this.bufferIndex + BUFFER_SIZE - 1,
-          search: '',
-        })
+        table.getViewportData(),
+        () => table.close()
       );
       const viewportData = await this.loadingPromise;
       this.bufferIndex += BUFFER_SIZE;
@@ -400,8 +402,7 @@ ConsoleInput.propTypes = {
   session: PropTypes.shape({}).isRequired,
   language: PropTypes.string.isRequired,
   scope: PropTypes.string,
-  commandHistoryStorage: PropTypes.shape({ getTable: PropTypes.func })
-    .isRequired,
+  commandHistoryStorage: StoragePropTypes.CommandHistoryStorage.isRequired,
   onSubmit: PropTypes.func.isRequired,
   maxHeight: PropTypes.number,
 };

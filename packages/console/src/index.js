@@ -14,20 +14,8 @@ export {
   CommandHistoryStorage,
   CommandHistoryStorageData,
   CommandHistoryStorageItem,
-  CommandHistoryStorageTable,
+  CommandHistoryTable,
 } from './command-history/CommandHistoryStorage';
-export {
-  StorageItem,
-  StorageItemListener,
-  StorageItemSuccessErrorListener,
-  StorageItemSuccessListener,
-  StorageListenerRemover,
-  StorageTable,
-  StorageTableListener,
-  StorageTableViewport,
-  StorageTableViewportData,
-  StorageSnapshot,
-} from './command-history/StorageTable';
 export { default as LogView } from './log/LogView';
 
 export { default } from './Console';
