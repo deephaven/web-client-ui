@@ -1,9 +1,9 @@
-# @deephaven/utils
+# @deephaven/storage
 
-A library with some utility functions used by Deephaven.
+A library with some abstract storage classes for storing application data from Deephaven.
 
 ## Install
 
 ```bash
-npm install --save @deephaven/utils
+npm install --save @deephaven/storage
 ```

@@ -11,8 +11,6 @@ import {
   StorageListenerRemover,
   StorageTableViewport,
   StorageItemListener,
-  StorageItemSuccessErrorListener,
-  StorageItemSuccessListener,
   StorageSnapshot,
   ViewportData,
   ViewportUpdateCallback,
@@ -37,9 +35,9 @@ function makePouchFilter(type: string, value: FilterValue | FilterValue[]) {
   switch (type) {
     case FilterType.in:
     case FilterType.contains:
-      return { $regex: new RegExp(value) };
+      return { $regex: new RegExp(`${value}`) };
     case FilterType.inIgnoreCase:
-      return { $regex: new RegExp(value, 'i') };
+      return { $regex: new RegExp(`${value}`, 'i') };
     case FilterType.eq:
       return { $eq: value };
     case FilterType.notEq:
@@ -101,6 +99,16 @@ function selectorWithFilters(
   };
 }
 
+function sortWithConfigs(
+  sorts: SortConfig[] | null,
+  reverse = false
+): PouchDBSort {
+  return [
+    { id: reverse ? 'desc' : 'asc' },
+    ...(sorts?.map(sort => ({ [sort.column]: sort.direction })) ?? []),
+  ];
+}
+
 export class PouchStorageTable<T extends StorageItem = StorageItem>
   implements StorageTable<T> {
   private db: PouchDB.Database<T & PouchStorageItem>;
@@ -155,7 +163,7 @@ export class PouchStorageTable<T extends StorageItem = StorageItem>
     }
 
     this.itemListeners.set(id, [
-      ...(this.itemListeners.get(id) as StorageItemListener[]),
+      ...(this.itemListeners.get(id) as StorageItemListener<T>[]),
       listener,
     ]);
 
@@ -164,7 +172,7 @@ export class PouchStorageTable<T extends StorageItem = StorageItem>
     return () => {
       this.itemListeners.set(
         id,
-        (this.itemListeners.get(id) as StorageItemListener[]).filter(
+        (this.itemListeners.get(id) as StorageItemListener<T>[]).filter(
           other => other !== listener
         )
       );
@@ -225,7 +233,9 @@ export class PouchStorageTable<T extends StorageItem = StorageItem>
     if (!this.viewportUpdatePromise) {
       this.refreshData();
     }
-    return this.viewportUpdatePromise;
+    return (
+      this.viewportUpdatePromise ?? Promise.resolve({ items: [], offset: 0 })
+    );
   }
 
   async put(item: T): Promise<T> {
@@ -254,14 +264,7 @@ export class PouchStorageTable<T extends StorageItem = StorageItem>
     const listeners = this.itemListeners.get(item.id);
     if (listeners !== undefined) {
       for (let i = 0; i < listeners.length; i += 1) {
-        const listener = listeners[i];
-        const successErrorListener = listener as StorageItemSuccessErrorListener<T>;
-        const successListener = listener as StorageItemSuccessListener<T>;
-        if (successErrorListener.onUpdate) {
-          successErrorListener.onUpdate(item);
-        } else {
-          successListener(item);
-        }
+        listeners[i](item);
       }
     }
   }
@@ -310,7 +313,7 @@ export class PouchStorageTable<T extends StorageItem = StorageItem>
     try {
       const { currentViewport: viewport } = this;
 
-      const sort: PouchDBSort = [{ id: this.currentReverse ? 'desc' : 'asc' }];
+      const sort = sortWithConfigs(this.currentSort, this.currentReverse);
 
       this.viewportUpdatePromise?.cancel();
 
@@ -325,7 +328,7 @@ export class PouchStorageTable<T extends StorageItem = StorageItem>
           })
           .then(findResult => ({
             items: findResult.docs,
-            viewport,
+            offset: viewport.top,
           }))
       );
 
@@ -364,7 +367,7 @@ export class PouchStorageTable<T extends StorageItem = StorageItem>
   ): Promise<StorageSnapshot<T>> {
     const itemMap = new Map();
 
-    const sort: PouchDBSort = [{ id: this.currentReverse ? 'asc' : 'desc' }];
+    const sort: PouchDBSort = [{ id: this.currentReverse ? 'desc' : 'asc' }];
 
     await Promise.all(
       sortedRanges.map(async ([from, to]) => {

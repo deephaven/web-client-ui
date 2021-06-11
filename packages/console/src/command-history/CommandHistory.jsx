@@ -13,7 +13,6 @@ import {
   vsPlay,
   vsTerminal,
 } from '@deephaven/icons';
-import { StorageTableViewportUpdater } from '@deephaven/storage';
 import { Pending } from '@deephaven/utils';
 import Log from '@deephaven/log';
 import CommandHistoryItem from './CommandHistoryItem';
