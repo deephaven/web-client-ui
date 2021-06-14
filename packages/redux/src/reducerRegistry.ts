@@ -3,6 +3,9 @@ import { Reducer, ReducersMapObject } from 'redux';
 export type ReducerRegistryListener = (reducers: ReducersMapObject) => void;
 
 /**
+ * A registry for registering reducers. Whenever a new reducer is added,
+ * the reducers should be replaced in the store.
+ *
  * See this blog post for some notes on redux modules/code splitting
  * http://nicolasgallagher.com/redux-modules-and-code-splitting/
  */
