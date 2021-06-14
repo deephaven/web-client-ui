@@ -1,3 +1,11 @@
+import reducers from './reducers';
+import reducerRegistry from './reducerRegistry';
+
+// TODO #70: Separate all reducers into their respective modules, register from there
+Object.entries(reducers).map(([name, reducer]) =>
+  reducerRegistry.register(name, reducer)
+);
+
 export {
   getActiveTool,
   getClosedPanelsForDashboard,
@@ -63,4 +71,6 @@ export {
   setWorkspaceStorage,
   updateWorkspaceData,
 } from './actions';
+export { default as reducers } from './reducers';
+export { default as reducerRegistry } from './reducerRegistry';
 export { default as store } from './store';
