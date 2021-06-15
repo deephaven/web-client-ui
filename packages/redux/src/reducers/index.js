@@ -1,6 +1,3 @@
-import { combineReducers } from 'redux';
-import reduceReducer from 'reduce-reducers';
-
 import activeTool from './activeTool';
 import dashboardClosedPanels from './dashboardClosedPanels';
 import dashboardOpenedPanelMaps from './dashboardOpenedPanelMaps';
@@ -19,8 +16,7 @@ import controllerConfiguration from './controllerConfiguration';
 import draftManager from './draftManager';
 import serverConfigValues from './serverConfigValues';
 
-// Reducers that work on one part of the state
-const childReducers = combineReducers({
+const reducers = {
   activeTool,
   dashboardClosedPanels,
   dashboardOpenedPanelMaps,
@@ -38,9 +34,6 @@ const childReducers = combineReducers({
   controllerConfiguration,
   draftManager,
   serverConfigValues,
-});
+};
 
-// Reducers that work on multiple parts of the state (get the whole state)
-const stateReducers = [];
-
-export default reduceReducer(childReducers, ...stateReducers);
+export default reducers;
