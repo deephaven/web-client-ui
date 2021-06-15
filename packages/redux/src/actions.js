@@ -19,6 +19,7 @@ import {
   SET_CONTROLLER_CONFIGURATION,
   SET_DRAFT_MANAGER,
   SET_SERVER_CONFIG_VALUES,
+  SET_FILE_STORAGE,
 } from './actionTypes';
 
 export const setIsLoggedIn = isLoggedIn => ({
@@ -44,6 +45,11 @@ export const setWorkspaceStorage = workspaceStorage => ({
 export const setCommandHistoryStorage = commandHistoryStorage => ({
   type: SET_COMMAND_HISTORY_STORAGE,
   payload: commandHistoryStorage,
+});
+
+export const setFileStorage = fileStorage => ({
+  type: SET_FILE_STORAGE,
+  payload: fileStorage,
 });
 
 /**

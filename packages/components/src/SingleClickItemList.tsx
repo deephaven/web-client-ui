@@ -6,11 +6,11 @@ import { ContextActionUtils } from './context-actions';
 import ItemListItem from './ItemListItem';
 import './SingleClickItemList.scss';
 
-type SingleClickRenderItemBase = {
+export type SingleClickRenderItemBase = {
   itemName: string;
 };
 
-type SingleClickRenderItemProps<T extends SingleClickRenderItemBase> = {
+export type SingleClickRenderItemProps<T extends SingleClickRenderItemBase> = {
   item: T;
   itemIndex: number;
   isKeyboardSelected: boolean;
@@ -60,7 +60,7 @@ type SingleClickItemListProps<T extends SingleClickRenderItemBase> = {
   disableSelect: boolean;
 
   renderItem: SingleClickRenterItemFn<T>;
-  validateDropTarget(): void;
+  validateDropTarget(draggedRanges: Range[], targetIndex: number): boolean;
 };
 
 type SingleClickItemListState = {
@@ -81,7 +81,7 @@ const log = Log.module('SingleClickItemList');
  * Show items in a long scrollable list.
  * Can be navigated via keyboard or mouse.
  */
-class SingleClickItemList<
+export class SingleClickItemList<
   T extends SingleClickRenderItemBase
 > extends PureComponent<SingleClickItemListProps<T>, SingleClickItemListState> {
   static CACHE_SIZE = 1000;

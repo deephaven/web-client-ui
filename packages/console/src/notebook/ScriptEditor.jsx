@@ -277,8 +277,10 @@ class ScriptEditor extends Component {
     const { model } = this.state;
     const errorMessage = error ? `Unable to open document. ${error}` : null;
     const editorLanguage = settings ? settings.language : null;
-    const completionProviderEnabled =
-      model && session && editorLanguage === sessionLanguage;
+    // const completionProviderEnabled =
+    //   model && session && editorLanguage === sessionLanguage;
+    // TODO: Re-enable when completion provider is enabled
+    const completionProviderEnabled = false;
 
     return (
       <>

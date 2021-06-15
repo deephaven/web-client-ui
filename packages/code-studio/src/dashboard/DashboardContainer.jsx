@@ -47,6 +47,7 @@ import Linker from './linker/Linker';
 import './DashboardContainer.scss';
 import { UIPropTypes } from '../include/prop-types';
 import PanelErrorBoundary from './panels/PanelErrorBoundary';
+import FileExplorerPanel from './panels/FileExplorerPanel';
 
 const log = Log.module('DashboardContainer');
 const RESIZE_THROTTLE = 100;
@@ -262,6 +263,11 @@ export class DashboardContainer extends Component {
       layout,
       DropdownFilterPanel.COMPONENT,
       DropdownFilterPanel
+    );
+    this.registerComponent(
+      layout,
+      FileExplorerPanel.COMPONENT,
+      FileExplorerPanel
     );
     this.registerComponent(layout, 'InputFilterPanel', InputFilterPanel);
     this.registerComponent(layout, 'IrisGridPanel', IrisGridPanel);

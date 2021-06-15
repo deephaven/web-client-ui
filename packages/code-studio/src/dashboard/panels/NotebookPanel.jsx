@@ -3,6 +3,7 @@ import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
 import memoize from 'memoize-one';
+import { connect } from 'react-redux';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   ContextActions,
@@ -10,6 +11,7 @@ import {
   DropdownMenu,
   Tooltip,
 } from '@deephaven/components';
+import { FileUtils } from '@deephaven/file-explorer';
 import { ScriptEditor, ScriptEditorUtils } from '@deephaven/console';
 import {
   vsSave,
@@ -18,6 +20,7 @@ import {
   vsPlay,
   vsRunAll,
 } from '@deephaven/icons';
+import { getFileStorage } from '@deephaven/redux';
 import classNames from 'classnames';
 import debounce from 'lodash.debounce';
 import Log from '@deephaven/log';
@@ -46,20 +49,42 @@ class NotebookPanel extends Component {
     log.error(error);
   }
 
+  static languageFromFileName(fileName) {
+    const extension = FileUtils.getExtension(fileName);
+    switch (extension) {
+      case 'py':
+      case 'python':
+        return 'python';
+      case 'groovy':
+        return 'groovy';
+      default:
+        return null;
+    }
+  }
+
   constructor(props) {
     super(props);
 
     this.handleBlur = this.handleBlur.bind(this);
+    this.handleEditorChange = this.handleEditorChange.bind(this);
     this.handleFind = this.handleFind.bind(this);
     this.handleFocus = this.handleFocus.bind(this);
+    this.handleLoadSuccess = this.handleLoadSuccess.bind(this);
+    this.handleLoadError = this.handleLoadError.bind(this);
     this.handleResize = this.handleResize.bind(this);
     this.handleRunCommand = this.handleRunCommand.bind(this);
     this.handleRunAll = this.handleRunAll.bind(this);
     this.handleRunSelected = this.handleRunSelected.bind(this);
+    this.handleSave = this.handleSave.bind(this);
+    this.handleSaveAsCancel = this.handleSaveAsCancel.bind(this);
+    this.handleSaveAsSubmit = this.handleSaveAsSubmit.bind(this);
+    this.handleSaveError = this.handleSaveError.bind(this);
+    this.handleSaveSuccess = this.handleSaveSuccess.bind(this);
     this.handleSessionOpened = this.handleSessionOpened.bind(this);
     this.handleSessionClosed = this.handleSessionClosed.bind(this);
 
     this.handleShow = this.handleShow.bind(this);
+    this.handleShowRename = this.handleShowRename.bind(this);
     this.handleTab = this.handleTab.bind(this);
     this.handleTabFocus = this.handleTabFocus.bind(this);
     this.handleTabBlur = this.handleTabBlur.bind(this);
@@ -68,6 +93,11 @@ class NotebookPanel extends Component {
 
     this.debouncedSavePanelState = debounce(
       this.savePanelState.bind(this),
+      DEBOUNCE_PANEL_STATE_UPDATE
+    );
+
+    this.debouncedLoad = debounce(
+      this.load.bind(this),
       DEBOUNCE_PANEL_STATE_UPDATE
     );
 
@@ -107,8 +137,8 @@ class NotebookPanel extends Component {
       error: null,
       isDashboardActive,
       isFocused: false,
-      isLoading: false,
-      isLoaded: true,
+      isLoading: true,
+      isLoaded: false,
       isPreview,
 
       savedChangeCount: 0,
@@ -124,6 +154,10 @@ class NotebookPanel extends Component {
         fileMetadata,
         settings,
       },
+
+      showCloseModal: false,
+      showDeleteModal: false,
+      showSaveAsModal: false,
 
       scriptCode: '',
     };
@@ -190,10 +224,12 @@ class NotebookPanel extends Component {
     if (fileMetadata && fileMetadata.id) {
       log.debug('Init content from file');
       this.registerFileMetadata(fileMetadata, isPreview);
+      this.load();
       return;
     }
     if (settings.value != null) {
       log.debug('Use content passed in the settings prop');
+      this.handleLoadSuccess();
       return;
     }
     // No settings, no metadata
@@ -221,6 +257,74 @@ class NotebookPanel extends Component {
   renameTab(id, title) {
     const { glEventHub } = this.props;
     glEventHub.emit(NotebookEvent.RENAME, id, title);
+  }
+
+  load() {
+    const { fileMetadata, settings } = this.state;
+    const { id } = fileMetadata;
+    const { fileStorage } = this.props;
+    this.pending
+      .add(fileStorage.loadFile(id))
+      .then(loadedFile => {
+        log.debug('Loaded file', loadedFile);
+        const { name: itemName } = loadedFile;
+        const { itemName: prevItemName } = this.state;
+        if (itemName !== prevItemName) {
+          const { metadata } = this.props;
+          const { id: tabId } = metadata;
+          this.renameTab(tabId, itemName);
+        }
+        const updatedSettings = {
+          ...settings,
+          language: NotebookPanel.languageFromFileName(itemName),
+        };
+        if (settings.value == null) {
+          updatedSettings.value = loadedFile.content;
+        }
+        this.setState({
+          fileMetadata: { id: loadedFile.id, itemName },
+          settings: updatedSettings,
+        });
+        this.debouncedSavePanelState();
+      })
+      .then(this.handleLoadSuccess)
+      .catch(this.handleLoadError);
+  }
+
+  /**
+   * Attempts to save the notebook.
+   * @returns {boolean} Returns true if save has begun, false if user needed to be prompted
+   */
+  save() {
+    const { fileMetadata } = this.state;
+    if (fileMetadata && fileMetadata.id) {
+      const content = this.getNotebookValue();
+      this.saveContent(fileMetadata.id, fileMetadata.itemName, content);
+      return true;
+    }
+
+    this.setState({ showSaveAsModal: true });
+    return false;
+  }
+
+  /**
+   * Update existing file content
+   * @param {string} id Item id to update
+   * @param {string} name The name of the file
+   * @param {string} content New file content
+   */
+  saveContent(id, name, content) {
+    log.debug('saveContent', id, content);
+    this.updateSavedChangeCount();
+    const { fileStorage } = this.props;
+    this.pending
+      .add(fileStorage.saveFile({ id, name, content }, true))
+      .then(this.handleSaveSuccess)
+      .catch(this.handleSaveError);
+  }
+
+  updateSavedChangeCount() {
+    this.setState(({ changeCount }) => ({ savedChangeCount: changeCount }));
   }
 
   setPreviewStatus() {
@@ -283,6 +387,37 @@ class NotebookPanel extends Component {
     });
   }
 
+  handleEditorChange(e) {
+    log.debug2('handleEditorChanged', e);
+
+    this.setState(({ isPreview }) => {
+      if (isPreview) {
+        const { fileMetadata } = this.state;
+        this.registerFileMetadata(fileMetadata, false);
+        return { isPreview: false };
+      }
+      return null;
+    });
+
+    this.setState(({ changeCount, savedChangeCount }) => {
+      const { isUndoing, isRedoing } = e;
+      if (isUndoing) {
+        // Note that it's possible to undo past where the user last saved, if they save and then undo for example
+        return { changeCount: changeCount - 1 };
+      }
+
+      if (!isRedoing && changeCount < savedChangeCount) {
+        // We made another change after undoing some changes from the previous save
+        // Just reset the saved counter to zero and increase the unchanged saves
+        // It'll be set correctly on the next save
+        return { changeCount: changeCount + 1, savedChangeCount: 0 };
+      }
+
+      return { changeCount: changeCount + 1 };
+    });
+    this.debouncedSavePanelState();
+  }
+
   handleFind() {
     if (this.notebook) {
       this.notebook.toggleFind();
@@ -297,6 +432,106 @@ class NotebookPanel extends Component {
   handleFocus() {
     log.debug('handleFocus');
     this.setState({ isFocused: true });
+  }
+
+  handleLoadSuccess() {
+    this.setState({
+      error: null,
+      isLoaded: true,
+      isLoading: false,
+    });
+  }
+
+  handleLoadError(errorParam) {
+    let error = errorParam;
+    if (PromiseUtils.isCanceled(error)) {
+      return;
+    }
+    if (PromiseUtils.isTimedOut(error)) {
+      error = new Error('File not found.');
+    }
+    log.error(error);
+    this.setState({ error, isLoading: false });
+  }
+
+  handleSave() {
+    log.debug('handleSave');
+    this.save();
+  }
+
+  handleSaveSuccess(file) {
+    const fileMetadata = { id: file.id, itemName: file.name };
+    const language = NotebookPanel.languageFromFileName(file.name);
+    this.setState(state => {
+      const settings = {
+        ...state.settings,
+        language,
+      };
+      log.debug('handleSaveSuccess', fileMetadata, settings);
+      return {
+        fileMetadata,
+        settings,
+        isPreview: false,
+      };
+    });
+    this.debouncedSavePanelState();
+    this.registerFileMetadata(fileMetadata, false);
+  }
+
+  handleSaveError(error) {
+    if (PromiseUtils.isCanceled(error)) {
+      return;
+    }
+    // There was an error saving, just reset the savedChangeCount
+    // It's possible if they undo changes they'll be back at the spot where it was last saved successfully,
+    // But we may as well continue showing the error until they actually save again
+    this.setState({ savedChangeCount: 0 });
+    log.error(error);
+  }
+
+  handleSaveAsCancel() {
+    this.setState({
+      showSaveAsModal: false,
+    });
+  }
+
+  handleSaveAsSubmit(newParentId, newItemName, overwriteId = null) {
+    log.debug('handleSaveAsSubmit', newParentId, newItemName, overwriteId);
+    const { fileMetadata } = this.state;
+    const { id, parentId: prevParentId, itemName: prevItemName } = fileMetadata;
+    const content = this.getNotebookValue();
+    this.setState({
+      showSaveAsModal: false,
+    });
+    if (prevItemName !== newItemName) {
+      const { metadata } = this.props;
+      const { id: tabId } = metadata;
+      this.renameTab(tabId, newItemName);
+    }
+    // Delete overwriteId before saving new file with the same name
+    // otherwise the duplicate shows up in the file list for a second
+    const cleanupPromise = this.pending.add(
+      overwriteId ? this.deleteFileById(overwriteId) : Promise.resolve()
+    );
+
+    if (id == null) {
+      // Saving new file
+      cleanupPromise
+        .then(() => {
+          this.createNewFile(newParentId, newItemName, content);
+        })
+        .catch(NotebookPanel.handleError);
+    } else if (prevParentId !== newParentId || prevItemName !== newItemName) {
+      // Saving existing file with new name and/or in new folder
+      cleanupPromise
+        .then(() => {
+          this.saveContentAndMetadata(id, newParentId, newItemName, content);
+        })
+        .catch(NotebookPanel.handleError);
+    } else {
+      // Save existing file
+      this.saveContent(id, content);
+    }
   }
 
   handleResize() {
@@ -348,6 +583,10 @@ class NotebookPanel extends Component {
     requestAnimationFrame(() => {
       this.notebook.focus();
     });
+  }
+
+  handleShowRename() {
+    this.setState({ showSaveAsModal: true });
   }
 
   handleTab(tab) {
@@ -536,6 +775,7 @@ class NotebookPanel extends Component {
             isLoaded={isLoaded}
             isLoading={isLoading}
             error={error}
+            onChange={this.handleEditorChange}
             onRunCommand={this.handleRunCommand}
             session={session}
             sessionLanguage={sessionLanguage}
@@ -553,6 +793,10 @@ class NotebookPanel extends Component {
 }
 
 NotebookPanel.propTypes = {
+  fileStorage: PropTypes.shape({
+    loadFile: PropTypes.func.isRequired,
+    saveFile: PropTypes.func.isRequired,
+  }).isRequired,
   glContainer: GLPropTypes.Container.isRequired,
   glEventHub: GLPropTypes.EventHub.isRequired,
   isDashboardActive: PropTypes.bool,
@@ -575,4 +819,10 @@ NotebookPanel.defaultProps = {
   sessionLanguage: null,
 };
 
-export default NotebookPanel;
+const mapStateToProps = state => ({
+  fileStorage: getFileStorage(state),
+});
+
+export default connect(mapStateToProps, null, null, { forwardRef: true })(
+  NotebookPanel
+);
