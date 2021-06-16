@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/utils",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Deephaven Utils",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
@@ -36,7 +36,7 @@
   "devDependencies": {
     "@babel/cli": "^7.14.3",
     "@babel/core": "7.12.3",
-    "@deephaven/tsconfig": "^0.1.2",
+    "@deephaven/tsconfig": "^0.1.3",
     "@types/jest": "^26.0.23",
     "babel-loader": "8.1.0",
     "cross-env": "^7.0.2",
