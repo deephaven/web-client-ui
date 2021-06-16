@@ -497,6 +497,19 @@ class GridRange {
   }
 
   /**
+   * Count the number of columns in the provided grid ranges
+   * @param {GridRange[]} ranges The ranges to count the columns of
+   * @returns {number|NaN} The number of columns in the ranges, or `NaN` if any of the ranges were unbounded
+   */
+  static columnCount(ranges) {
+    return ranges.reduce(
+      (columnCount, range) =>
+        columnCount + (range.endColumn ?? NaN) - (range.startColumn ?? NaN) + 1,
+      0
+    );
+  }
+
+  /**
    * Check if the provided ranges contain the provided cell
    * @param {GridRange[]} ranges The ranges to check
    * @param {number} column The column index

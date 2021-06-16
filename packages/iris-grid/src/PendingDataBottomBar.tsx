@@ -137,4 +137,4 @@ export const PendingDataBottomBar = ({
   );
 };
 
-export default IrisGridBottomBar;
+export default PendingDataBottomBar;

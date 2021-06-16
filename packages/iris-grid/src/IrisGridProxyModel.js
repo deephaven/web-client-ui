@@ -462,6 +462,10 @@ class IrisGridProxyModel extends IrisGridModel {
     return this.model.setValueForRanges(...args);
   }
 
+  setValues(...args) {
+    return this.model.setValues(...args);
+  }
+
   isValidForCell(...args) {
     return this.model.isValidForCell(...args);
   }

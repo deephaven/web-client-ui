@@ -42,6 +42,8 @@ const defaultTheme = { ...GridTheme, autoSizeColumns: false };
 
 const VIEW_SIZE = 5000;
 
+const DEFAULT_PASTE_DATA = 'TEST_PASTE_DATA';
+
 function makeMockCanvas() {
   return {
     clientWidth: VIEW_SIZE,
@@ -218,6 +220,10 @@ function pageUp(component, extraArgs) {
 
 function pageDown(component, extraArgs) {
   keyDown('PageDown', component, extraArgs);
+}
+
+function paste(component, data = DEFAULT_PASTE_DATA) {
+  component.pasteValue(data);
 }
 
 it('renders default model without crashing', () => {
@@ -753,5 +759,55 @@ describe('truncate to width', () => {
   it('handles long strings', () => {
     expectTruncate(MockGridData.LOREM_IPSUM, 'Lorem ips…');
     expectTruncate(MockGridData.JSON, '{"command…');
+  });
+});
+
+describe('paste tests', () => {
+  describe('non-editable', () => {
+    it('does nothing if table is not editable', () => {
+      const model = new MockGridModel();
+      model.setValues = jest.fn();
+
+      const component = makeGridComponent(model);
+      paste(component);
+      expect(model.setValues).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('editable', () => {
+    let model = null;
+    let component = null;
+
+    beforeEach(() => {
+      model = new MockGridModel({ isEditable: true });
+      model.setValues = jest.fn();
+
+      component = makeGridComponent(model);
+    });
+
+    it('does nothing if no selection', () => {
+      paste(component);
+      expect(model.setValues).not.toHaveBeenCalled();
+    });
+
+    it('modifies a single cell if only one selection', () => {
+      mouseClick(5, 7, component);
+      paste(component);
+      expect(model.setValues).toHaveBeenCalledTimes(1);
+      expect(model.setValues).toHaveBeenCalledWith([
+        expect.objectContaining({
+          x: 5,
+          y: 7,
+          text: DEFAULT_PASTE_DATA,
+        }),
+      ]);
+    });
+
+    it('does the whole selected range', () => {
+      mouseClick(5, 7, component);
+      mouseClick(3, 2, component, { shiftKey: true });
+      paste(component);
+      expect(model.setValues).toHaveBeenCalledTimes(1);
+    });
   });
 });

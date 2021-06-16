@@ -27,10 +27,12 @@ import './Grid.scss';
 import KeyHandler from './KeyHandler';
 import {
   EditKeyHandler,
+  PasteKeyHandler,
   SelectionKeyHandler,
   TreeKeyHandler,
 } from './key-handlers';
 import CellInputField from './CellInputField';
+import PasteError from './errors/PasteError';
 
 /**
  * High performance, extendible, themeable grid component.
@@ -115,6 +117,7 @@ class Grid extends PureComponent {
     // specify handler ordering, such that any extensions can insert handlers in between
     this.keyHandlers = [
       new EditKeyHandler(400),
+      new PasteKeyHandler(450),
       new SelectionKeyHandler(500),
       new TreeKeyHandler(900),
     ];
@@ -934,6 +937,100 @@ class Grid extends PureComponent {
     return model.isValidForCell(modelColumn, modelRow, value);
   }
 
+  /**
+   * Paste a value with the current selection
+   * It first needs to validate that the pasted table is valid for the given selection.
+   * Also may update selection if single cells are selected and a table is pasted.
+   * @param {string[][] | string} value Table or a string that is being pasted
+   */
+  async pasteValue(value) {
+    const { model } = this.props;
+    const { movedColumns, movedRows, selectedRanges } = this.state;
+
+    try {
+      if (
+        !model.isEditable ||
+        !selectedRanges.every(range => model.isEditableRange(range))
+      ) {
+        throw new PasteError("Can't paste in to read-only area.");
+      }
+
+      if (selectedRanges.length <= 0) {
+        throw new PasteError('Select an area to paste to.');
+      }
+
+      if (typeof value === 'string') {
+        // Just paste the value into all the selected cells
+        const edits = [];
+
+        const modelRanges = GridUtils.getModelRanges(
+          selectedRanges,
+          movedColumns,
+          movedRows
+        );
+        GridRange.forEachCell(modelRanges, (x, y) => {
+          edits.push({ x, y, text: value });
+        });
+        await model.setValues(edits);
+        return;
+      }
+
+      // Otherwise it's a table of data
+      const tableHeight = value.length;
+      const tableWidth = value[0].length;
+      const { columnCount, rowCount } = model;
+      let ranges = selectedRanges;
+      // If each cell is a single selection, we need to update the selection to map to the newly pasted data
+      if (
+        ranges.every(
+          range =>
+            GridRange.cellCount([range]) === 1 &&
+            range.startColumn + tableWidth <= columnCount &&
+            range.startRow + tableHeight <= rowCount
+        )
+      ) {
+        // Remap the selected ranges
+        ranges = ranges.map(
+          range =>
+            new GridRange(
+              range.startColumn,
+              range.startRow,
+              range.startColumn + tableWidth - 1,
+              range.startRow + tableHeight - 1
+            )
+        );
+        this.setSelectedRanges(ranges);
+      }
+
+      if (
+        !ranges.every(
+          range =>
+            GridRange.rowCount([range]) === tableHeight &&
+            GridRange.columnCount([range]) === tableWidth
+        )
+      ) {
+        throw new PasteError('Copy and paste area are not same size.');
+      }
+
+      const edits = [];
+      ranges.forEach(range => {
+        for (let x = 0; x < tableWidth; x += 1) {
+          for (let y = 0; y < tableHeight; y += 1) {
+            edits.push({
+              x: range.startColumn + x,
+              y: range.startRow + y,
+              text: value[y][x],
+            });
+          }
+        }
+      });
+      await model.setValues(edits);
+    } catch (e) {
+      const { onError } = this.props;
+      onError(e);
+    }
+  }
+
   setValueForCell(column, row, value) {
     const { model } = this.props;
 
@@ -1117,8 +1214,8 @@ class Grid extends PureComponent {
       const keyHandler = keyHandlers[i];
       const result = keyHandler.onDown(e, this);
       if (result) {
-        e.stopPropagation();
-        e.preventDefault();
+        if (result?.stopPropagation ?? true) e.stopPropagation();
+        if (result?.preventDefault ?? true) e.preventDefault();
         break;
       }
     }
@@ -1494,7 +1591,7 @@ class Grid extends PureComponent {
           onMouseDown={this.handleMouseDown}
           onMouseMove={this.handleMouseMove}
           onMouseLeave={this.handleMouseLeave}
-          tabIndex="0"
+          tabIndex={0}
         >
           Your browser does not support HTML canvas. Update your browser?
         </canvas>
@@ -1524,6 +1621,7 @@ Grid.propTypes = {
       to: PropTypes.number.isRequired,
     })
   ),
+  onError: PropTypes.func,
   onSelectionChanged: PropTypes.func,
   onMovedColumnsChanged: PropTypes.func,
   onMoveColumnComplete: PropTypes.func,
@@ -1545,6 +1643,7 @@ Grid.defaultProps = {
   mouseHandlers: [],
   movedColumns: [],
   movedRows: [],
+  onError: () => {},
   onSelectionChanged: () => {},
   onMovedColumnsChanged: () => {},
   onMoveColumnComplete: () => {},

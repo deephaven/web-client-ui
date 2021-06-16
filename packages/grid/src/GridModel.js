@@ -137,6 +137,18 @@ class GridModel extends EventTarget {
   }
 
   /**
+   * Apply edits to the model
+   * @param {{
+   *   x: number,
+   *   y: number,
+   *   text: string,
+   * }[]} edits The edits to apply to the model
+   */
+  async setValues(edits) {
+    throw new Error('setValues not implemented');
+  }
+
+  /**
    * Check if a text value is a valid edit for a cell
    * @param {number} x The column to check
    * @param {number} y The row to check
