@@ -376,6 +376,15 @@ class TableUtils {
   }
 
   /**
+   * Get base column type
+   * @param {string} columnType Column type
+   * @returns {string} Element type for array columns, original type for non-array columns
+   */
+  static getBaseType(columnType) {
+    return columnType.split('[]')[0];
+  }
+
+  /**
    * Check if the column types are compatible
    * @param {string} type1 Column type to check
    * @param {string} type2 Column type to check
@@ -989,10 +998,11 @@ class TableUtils {
    * @returns {dh.FilterValue} The FilterValue item for this column/value combination
    */
   static makeFilterValue(columnType, value) {
-    if (TableUtils.isTextType(columnType)) {
+    const type = TableUtils.getBaseType(columnType);
+    if (TableUtils.isTextType(type)) {
       return dh.FilterValue.ofString(value);
     }
-    if (TableUtils.isLongType(columnType)) {
+    if (TableUtils.isLongType(type)) {
       return dh.FilterValue.ofNumber(
         dh.LongWrapper.ofString(TableUtils.removeCommas(value))
       );

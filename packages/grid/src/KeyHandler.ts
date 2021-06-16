@@ -8,6 +8,12 @@
 // eslint-disable-next-line import/no-cycle
 import Grid from './Grid';
 
+// True if consumed and to stop event propagation/prevent default, false if not consumed.
+// OR an object if consumed with boolean properties to control whether to stopPropagation/preventDefault
+export type KeyHandlerResponse =
+  | boolean
+  | { stopPropagation?: boolean; preventDefault?: boolean };
+
 class KeyHandler {
   private order;
 
@@ -21,9 +27,9 @@ class KeyHandler {
    * Handle a keydown event on the grid.
    * @param event The keyboard event
    * @param grid The grid component the key press is on
-   * @returns True if consumed and to stop event propagation/prevent default, false if not consumed.
+   * @returns Response indicating if the key was consumed
    */
-  onDown(event: KeyboardEvent, grid: Grid): boolean {
+  onDown(event: KeyboardEvent, grid: Grid): KeyHandlerResponse {
     return false;
   }
 }

@@ -1131,7 +1131,7 @@ class IrisGridTableModel extends IrisGridModel {
   /**
    * Set value in an editable table
    * @param {GridRange[]} ranges The ranges to set
-   * @param {string} value The value to set
+   * @param {string} value The values to set
    * @returns {Promise<void>} A promise that resolves successfully when the operation is complete, or rejects if there's an error
    */
   async setValueForRanges(ranges, text) {
@@ -1184,9 +1184,7 @@ class IrisGridTableModel extends IrisGridModel {
           const newRowData = new Map(rowData);
           const value = TableUtils.makeValue(column.type, text);
           if (value != null) {
-            newRowData.set(columnIndex, {
-              value: TableUtils.makeValue(column.type, text),
-            });
+            newRowData.set(columnIndex, { value });
           } else {
             newRowData.delete(columnIndex);
           }
@@ -1249,6 +1247,141 @@ class IrisGridTableModel extends IrisGridModel {
     } finally {
       GridRange.forEachCell(ranges, (x, y) => {
         this.clearPendingValue(x, y);
+      });
+    }
+  }
+
+  async setValues(edits = []) {
+    log.debug('setValues(', edits, ')');
+    if (
+      !edits.every(edit =>
+        this.isEditableRange(GridRange.makeCell(edit.x, edit.y))
+      )
+    ) {
+      throw new Error('Uneditable ranges', edits);
+    }
+
+    try {
+      const newDataMap = new Map(this.pendingNewDataMap);
+
+      // Cache the display values
+      edits.forEach(edit => {
+        const { x, y, text } = edit;
+        const column = this.columns[x];
+        const value = TableUtils.makeValue(column.type, text);
+        const formattedText =
+          value != null
+            ? this.displayString(value, column.type, column.name)
+            : null;
+        this.cachePendingValue(x, y, formattedText);
+
+        // Take care of updates to the pending new area as well, as that can be updated synchronously
+        const pendingRow = this.pendingRow(y);
+        if (pendingRow != null) {
+          if (!newDataMap.has(pendingRow)) {
+            newDataMap.set(pendingRow, { data: new Map() });
+          }
+
+          const row = newDataMap.get(pendingRow);
+          const { data: rowData } = row;
+          const newRowData = new Map(rowData);
+          if (value != null) {
+            newRowData.set(x, { value });
+          } else {
+            newRowData.delete(x);
+          }
+          if (newRowData.size > 0) {
+            newDataMap.set(pendingRow, { ...row, data: newRowData });
+          } else {
+            newDataMap.delete(pendingRow);
+          }
+        }
+      });
+
+      this.pendingDataMap = newDataMap;
+
+      // Send an update right after setting the pending map so the values are displayed immediately
+      this.dispatchEvent(new CustomEvent(IrisGridModel.EVENT.UPDATED));
+
+      // Need to group by row...
+      const rowEditMap = edits.reduce((rowMap, edit) => {
+        if (!rowMap.has(edit.y)) {
+          rowMap.set(edit.y, []);
+        }
+        rowMap.get(edit.y).push(edit);
+        return rowMap;
+      }, new Map());
+
+      const ranges = GridRange.consolidate(
+        edits.map(edit => GridRange.makeCell(edit.x, edit.y))
+      );
+      const tableAreaRange = this.getTableAreaRange();
+      const tableRanges = ranges
+        .map(range => GridRange.intersection(tableAreaRange, range))
+        .filter(range => range != null);
+
+      if (tableRanges.length > 0) {
+        // Get a snapshot of the full rows, as we need to write a full row when editing
+        const data = await this.snapshot(
+          tableRanges.map(
+            range => new GridRange(null, range.startRow, null, range.endRow)
+          )
+        );
+        const newRows = data.map((row, dataIndex) => {
+          let rowIndex = null;
+          let r = dataIndex;
+          for (let i = 0; i < tableRanges.length; i += 1) {
+            const range = tableRanges[i];
+            const rangeRowCount = GridRange.rowCount([range]);
+            if (r < rangeRowCount) {
+              rowIndex = range.startRow + r;
+              break;
+            }
+            r -= rangeRowCount;
+          }
+
+          const newRow = {};
+          for (let c = 0; c < this.columns.length; c += 1) {
+            newRow[this.columns[c].name] = row[c];
+          }
+
+          const rowEdits = rowEditMap.get(rowIndex);
+          if (rowEdits != null) {
+            rowEdits.forEach(edit => {
+              const column = this.columns[edit.x];
+              newRow[column.name] = TableUtils.makeValue(
+                column.type,
+                edit.text
+              );
+            });
+          }
+          return newRow;
+        });
+
+        log.info('setValues setting tableRanges', tableRanges);
+
+        const result = await this.inputTable.addRows(newRows);
+
+        log.info('setValues set tableRanges', tableRanges, 'SUCCESS', result);
+      }
+
+      // We've sent the changes to the server, but have not yet got an update with those changes committed
+      // Add the changes to the formatted cache so it's still displayed until the update event is received
+      // The update event could be received on the next tick, after the input rows have been committed,
+      // so make sure we don't display stale data
+      edits.forEach(edit => {
+        const { x, y, text } = edit;
+        const column = this.columns[x];
+        const value = TableUtils.makeValue(column.type, text);
+        const formattedText =
+          value != null
+            ? this.displayString(value, column.type, column.name)
+            : null;
+        this.cacheFormattedValue(x, y, formattedText);
+      });
+    } finally {
+      edits.forEach(edit => {
+        this.clearPendingValue(edit.x, edit.y);
       });
     }
   }

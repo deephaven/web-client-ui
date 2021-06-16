@@ -55,6 +55,7 @@ import {
   IrisGridSortMouseHandler,
   PendingMouseHandler,
 } from './mousehandlers';
+import ToastBottomBar from './ToastBottomBar';
 import IrisGridMetricCalculator from './IrisGridMetricCalculator';
 import IrisGridModelUpdater from './IrisGridModelUpdater';
 import IrisGridRenderer from './IrisGridRenderer';
@@ -136,6 +137,7 @@ export class IrisGrid extends Component {
     this.handleAnimationEnd = this.handleAnimationEnd.bind(this);
     this.handleChartChange = this.handleChartChange.bind(this);
     this.handleChartCreate = this.handleChartCreate.bind(this);
+    this.handleGridError = this.handleGridError.bind(this);
     this.handleFilterBarChange = this.handleFilterBarChange.bind(this);
     this.handleFilterBarDone = this.handleFilterBarDone.bind(this);
     this.handleFilterBarTab = this.handleFilterBarTab.bind(this);
@@ -359,6 +361,8 @@ export class IrisGrid extends Component {
       pendingDataErrors: new Map(),
       pendingSavePromise: null,
       pendingSaveError: null,
+
+      toastMessage: null,
     };
   }
 
@@ -1653,6 +1657,13 @@ export class IrisGrid extends Component {
     onCreateChart(settings, model.table);
   }
 
+  handleGridError(error) {
+    log.warn('Grid Error', error);
+    this.setState({
+      toastMessage: <div className="error-message">{`${error}`}</div>,
+    });
+  }
+
   handleFilterBarChange(value) {
     this.startLoading('Filtering...', true);
 
@@ -2199,6 +2210,7 @@ export class IrisGrid extends Component {
       pendingRowCount,
       pendingDataErrors,
       pendingDataMap,
+      toastMessage,
     } = this.state;
     if (!isReady) {
       return null;
@@ -2714,6 +2726,7 @@ export class IrisGrid extends Component {
               mouseHandlers={mouseHandlers}
               movedColumns={movedColumns}
               movedRows={movedRows}
+              onError={this.handleGridError}
               onViewChanged={this.handleViewChanged}
               onSelectionChanged={this.handleSelectionChanged}
               onMovedColumnsChanged={this.handleMovedColumnsChanged}
@@ -2789,6 +2802,7 @@ export class IrisGrid extends Component {
             onSave={this.handlePendingCommitClicked}
             onDiscard={this.handlePendingDiscardClicked}
           />
+          <ToastBottomBar>{toastMessage}</ToastBottomBar>
           <IrisGridCopyHandler
             model={model}
             copyOperation={copyOperation}

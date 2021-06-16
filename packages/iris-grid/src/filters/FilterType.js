@@ -39,6 +39,8 @@ class FilterType {
   static startsWith = 'startsWith';
 
   static endsWith = 'endsWith';
+
+  static containsAny = 'containsAny';
 }
 
 export default FilterType;

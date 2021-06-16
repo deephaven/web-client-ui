@@ -10,3 +10,6 @@ export { default as GridUtils } from './GridUtils';
 export { default as KeyHandler } from './KeyHandler';
 export { default as MockGridModel } from './MockGridModel';
 export { default as MockTreeGridModel } from './MockTreeGridModel';
+export * from './key-handlers';
+export * from './mouse-handlers';
+export * from './errors';
