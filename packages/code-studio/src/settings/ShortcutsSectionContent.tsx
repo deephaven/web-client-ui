@@ -1,11 +1,7 @@
 import React, { useState } from 'react';
 import classNames from 'classnames';
-import {
-  Tooltip,
-  Shortcut,
-  ShortcutRegistry,
-  KeyState,
-} from '@deephaven/components';
+import { Shortcut, Tooltip, ShortcutRegistry } from '@deephaven/components';
+import type { KeyState } from '@deephaven/components';
 import Shortcuts from './Shortcuts';
 import './ShortcutsSectionContent.scss';
 
@@ -32,7 +28,7 @@ type ShortcutItemProps = {
 };
 
 function ShortcutItem({ shortcut }: ShortcutItemProps): JSX.Element {
-  const [keyDisplay, setKeyDisplay] = useState(shortcut.keyDisplay);
+  const [displayText, setDisplayText] = useState(shortcut.getDisplayText());
   const [keyState, setKeyState] = useState<KeyState>(shortcut.getKeyState());
   const [error, setError] = useState('');
 
@@ -43,7 +39,7 @@ function ShortcutItem({ shortcut }: ShortcutItemProps): JSX.Element {
     if (shortcut.isEditable && !e.repeat) {
       const newKeyState = Shortcut.getKeyStateFromEvent(e);
       setKeyState(newKeyState);
-      setKeyDisplay(Shortcut.getKeyDisplay(newKeyState));
+      setDisplayText(Shortcut.getDisplayText(newKeyState));
     }
   }
 
@@ -80,13 +76,13 @@ function ShortcutItem({ shortcut }: ShortcutItemProps): JSX.Element {
           {shortcut.tooltip && <Tooltip>{shortcut.tooltip}</Tooltip>}
         </label>
         <input
-          className={classNames('form-control', 'shortcut-item-input', {
+          className={classNames('form-control', {
             'is-invalid': error,
           })}
           onKeyDown={handleInputKeyDown}
           onKeyUp={handleInputKeyUp}
           disabled={!shortcut.isEditable}
-          value={keyDisplay}
+          value={displayText}
           readOnly
         />
       </div>

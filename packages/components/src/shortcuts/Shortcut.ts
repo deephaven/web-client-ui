@@ -1,5 +1,6 @@
 /* eslint-disable no-underscore-dangle */
 import React from 'react';
+import { ContextActionUtils } from '../context-actions';
 
 export enum MODIFIER {
   CTRL = 'MODIFIER_CTRL',
@@ -52,7 +53,7 @@ export interface KeyState {
    * KeyboardEvents need some processing to get the actual value
    * Use Shortcut.getKeyStateFromEvent to get the right KeyState from an event
    */
-  keyValue: string;
+  keyValue: string | null;
   altKey: boolean;
   ctrlKey: boolean;
   metaKey: boolean;
@@ -81,7 +82,7 @@ export default class Shortcut {
    * @param keyCode The keyCode to check. This should be the charCode of the key
    * @returns Type predicate asserting the key is an allowed KEY
    */
-  static isAllowedKey(key: string): key is KEY {
+  static isAllowedKey(key: string | null): key is KEY {
     return Object.values(KEY).includes(key as KEY);
   }
 
@@ -102,7 +103,7 @@ export default class Shortcut {
     );
   }
 
-  static isMacPlatform = window.navigator.platform.startsWith('Mac');
+  static isMacPlatform = ContextActionUtils.isMacPlatform();
 
   /**
    * Creates a KeyState from a valid array of modifier and key constants
@@ -167,7 +168,7 @@ export default class Shortcut {
    * @param keyState KeyState to get the display for
    * @returns The string to display on Windows/non-Mac OS
    */
-  private static getWindowsKeyDisplay(keyState: KeyState): string {
+  private static getWindowsDisplayText(keyState: KeyState): string {
     let display = '';
 
     if (keyState.ctrlKey) {
@@ -195,7 +196,7 @@ export default class Shortcut {
    * @param keyState KeyState to get the display for
    * @returns The string to display on Mac OS
    */
-  private static getMacKeyDisplay(keyState: KeyState): string {
+  private static getMacDisplayText(keyState: KeyState): string {
     let display = '';
 
     if (keyState.ctrlKey) {
@@ -238,10 +239,10 @@ export default class Shortcut {
    * @param keyState KeyState to get the display for
    * @returns Display string for the current OS
    */
-  static getKeyDisplay(keyState: KeyState): string {
+  static getDisplayText(keyState: KeyState): string {
     return Shortcut.isMacPlatform
-      ? Shortcut.getMacKeyDisplay(keyState)
-      : Shortcut.getWindowsKeyDisplay(keyState);
+      ? Shortcut.getMacDisplayText(keyState)
+      : Shortcut.getWindowsDisplayText(keyState);
   }
 
   constructor({
@@ -273,8 +274,8 @@ export default class Shortcut {
   /**
    * Gets the display string for the current OS
    */
-  get keyDisplay(): string {
-    return Shortcut.getKeyDisplay(this.keyState);
+  getDisplayText(): string {
+    return Shortcut.getDisplayText(this.keyState);
   }
 
   /**
@@ -301,6 +302,7 @@ export default class Shortcut {
    */
   matchesKeyState(keyState: KeyState): boolean {
     return (
+      keyState.keyValue !== null &&
       keyState.keyValue.toUpperCase() ===
         this.keyState.keyValue.toUpperCase() &&
       keyState.altKey === this.keyState.altKey &&
