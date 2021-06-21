@@ -1,18 +1,26 @@
+import Log from '@deephaven/log';
 import Shortcut, { KeyState } from './Shortcut';
 
+const log = Log.module('ShortcutRegistry');
 export default class ShortcutRegistry {
+  static readonly GLOBAL_CATEGORY = 'Global';
+
   static readonly shortcutMap = new Map<string, Shortcut>();
+
+  static readonly shortcutsByCategory = new Map<string, Shortcut[]>();
 
   /**
    * Creates a Shortcut and adds it to the registry
    * @param params The constructor params for the {@link Shortcut}
+   * @param category The category this will show up under in the settings menu. If omitted, shortcut will be hidden in settings
    * @returns The created Shortcut
    */
   static createAndAdd(
-    ...params: ConstructorParameters<typeof Shortcut>
+    params: ConstructorParameters<typeof Shortcut>[0],
+    category?: string
   ): Shortcut {
-    const shortcut = new Shortcut(...params);
-    ShortcutRegistry.add(shortcut);
+    const shortcut = new Shortcut(params);
+    ShortcutRegistry.add(shortcut, category);
     return shortcut;
   }
 
@@ -20,13 +28,25 @@ export default class ShortcutRegistry {
    * Adds a shortcut to the registry. Throws if a shortcut with the same ID already exists
    * @param shortcut Shortcut to add to the registry
    */
-  static add(shortcut: Shortcut): void {
+  static add(shortcut: Shortcut, category?: string): void {
     if (ShortcutRegistry.shortcutMap.has(shortcut.id)) {
-      throw new Error(
-        `Trying to add duplicate shortcut to registry ${shortcut.id}`
+      log.error(
+        `Skipping attempt to add duplicate shortcut ID to registry: ${shortcut.id}`,
+        shortcut
       );
+      return;
     }
     ShortcutRegistry.shortcutMap.set(shortcut.id, shortcut);
+    if (category) {
+      console.log('Should add');
+      if (ShortcutRegistry.shortcutsByCategory.has(category)) {
+        console.log('pushing');
+        ShortcutRegistry.shortcutsByCategory.get(category)?.push(shortcut);
+      } else {
+        console.log('adding');
+        ShortcutRegistry.shortcutsByCategory.set(category, [shortcut]);
+      }
+    }
   }
 
   /**

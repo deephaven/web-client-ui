@@ -2,16 +2,17 @@ import React, { useState } from 'react';
 import classNames from 'classnames';
 import { Shortcut, Tooltip, ShortcutRegistry } from '@deephaven/components';
 import type { KeyState } from '@deephaven/components';
-import Shortcuts from './Shortcuts';
 import './ShortcutsSectionContent.scss';
 
 export default function ShortcutSectionContent(): JSX.Element[] {
-  const categories = Object.values(Shortcuts)
-    .map(category => {
-      const { name, ...shortcuts } = category;
-      return { name, shortcuts: Object.values(shortcuts) };
-    })
-    .filter(category => category.shortcuts.length > 0);
+  const categories = Array.from(
+    ShortcutRegistry.shortcutsByCategory.entries()
+  ).map(([name, shortcuts]) => ({
+    name,
+    shortcuts,
+  }));
+
+  console.log(categories);
 
   return categories.map(category => (
     <div key={category.name} className="mt-3 font-weight-bolder">
