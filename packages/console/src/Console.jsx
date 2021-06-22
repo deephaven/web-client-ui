@@ -12,6 +12,7 @@ import dh, { PropTypes as APIPropTypes } from '@deephaven/jsapi-shim';
 import Log from '@deephaven/log';
 import { Pending } from '@deephaven/utils';
 import ConsoleHistory from './console-history/ConsoleHistory';
+import SHORTCUTS from './ConsoleShortcuts';
 import ConsoleHistoryItemResult from './console-history/ConsoleHistoryItemResult';
 import LogLevel from './log/LogLevel';
 import ConsoleInput from './ConsoleInput';
@@ -104,30 +105,26 @@ export class Console extends PureComponent {
     const contextActions = [
       {
         action: this.handleClearShortcut,
-        shortcut: '⌃L',
-        macShortcut: '⌃C',
+        shortcut: SHORTCUTS.CONSOLE.CLEAR,
         order: 10,
       },
       {
         action: this.handleFocusHistory,
-        shortcut: '⌃H',
-        macShortcut: '⌃⌥H', // cmd+H is a system level shortcut on Mac, so use something else
+        shortcut: SHORTCUTS.CONSOLE.FOCUS_HISTORY,
         order: 40,
       },
     ];
     if (restartSession != null) {
       contextActions.push({
         action: restartSession,
-        shortcut: '⌃D',
-        macShortcut: '⌘D',
+        shortcut: SHORTCUTS.CODE_STUDIO.RESTART_CONSOLE,
         order: 20,
       });
     }
     if (closeSession != null) {
       contextActions.push({
         action: closeSession,
-        shortcut: '⌃⇧D',
-        macShortcut: '⌘⇧D',
+        shortcut: SHORTCUTS.CODE_STUDIO.DISCONNECT_CONSOLE,
         order: 30,
       });
     }
