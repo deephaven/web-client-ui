@@ -6,9 +6,7 @@ import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
 import Log from '@deephaven/log';
 import { PromiseUtils } from '@deephaven/utils';
 import { getCommandHistoryStorage } from '@deephaven/redux';
-import MonacoUtils from './monaco/MonacoUtils';
-import MonacoCompletionProvider from './MonacoCompletionProvider';
-import MonacoTheme from './monaco/MonacoTheme.module.scss';
+import { MonacoCompletionProvider, MonacoTheme, MonacoUtils } from './monaco';
 import './ConsoleInput.scss';
 import StoragePropTypes from './StoragePropTypes';
 

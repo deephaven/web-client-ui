@@ -7,9 +7,7 @@ import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
 import { LoadingOverlay } from '@deephaven/components';
 import Log from '@deephaven/log';
 import Editor from './Editor';
-import MonacoCompletionProvider from '../MonacoCompletionProvider';
-import MonacoUtils from '../monaco/MonacoUtils';
-
+import { MonacoCompletionProvider, MonacoUtils, MonacoTheme } from '../monaco';
 import './ScriptEditor.scss';
 
 const log = Log.module('ScriptEditor');
@@ -206,7 +204,7 @@ class ScriptEditor extends Component {
     const { session } = this.props;
     log.debug('initCodeCompletion', this.editor, session);
     if (this.editor && session) {
-      // this.completionCleanup = MonacoUtils.openDocument(this.editor, session);
+      this.completionCleanup = MonacoUtils.openDocument(this.editor, session);
     }
   }
 
@@ -218,7 +216,7 @@ class ScriptEditor extends Component {
       this.completionCleanup = null;
     }
     if (this.editor && session) {
-      // MonacoUtils.closeDocument(this.editor, session);
+      MonacoUtils.closeDocument(this.editor, session);
     }
   }
 
