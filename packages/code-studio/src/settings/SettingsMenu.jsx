@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { vsClose, vsWatch, vsRecordKeys } from '@deephaven/icons';
+import { ContextActionUtils } from '@deephaven/components';
 import Logo from './LogoDark.svg';
 import FormattingSectionContent from './FormattingSectionContent';
 import LegalNotice from './LegalNotice';
@@ -35,6 +36,9 @@ class SettingsMenu extends Component {
     this.handleClose = this.handleClose.bind(this);
     this.handleScrollTo = this.handleScrollTo.bind(this);
     this.handleSectionToggle = this.handleSectionToggle.bind(this);
+    this.handleShortcutSectionToggle = this.handleShortcutSectionToggle.bind(
+      this
+    );
 
     this.menuContentRef = React.createRef();
 
@@ -63,7 +67,19 @@ class SettingsMenu extends Component {
     }));
   }
 
+  handleShortcutSectionToggle(sectionKey) {
+    const { expandedSectionKey } = this.state;
+    if (expandedSectionKey !== sectionKey) {
+      // Shortcut section is being expanded. Disable all context actions
+      ContextActionUtils.disableAllActions();
+    } else {
+      ContextActionUtils.enableAllActions();
+    }
+    this.handleSectionToggle(sectionKey);
+  }
+
   handleClose() {
+    ContextActionUtils.enableAllActions();
     const { onDone } = this.props;
     onDone();
   }
@@ -121,7 +137,7 @@ class SettingsMenu extends Component {
                 Keyboard Shortcuts
               </>
             }
-            onToggle={this.handleSectionToggle}
+            onToggle={this.handleShortcutSectionToggle}
           >
             <ShortcutSectionContent />
           </SettingsMenuSection>

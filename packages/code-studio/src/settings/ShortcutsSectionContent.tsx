@@ -5,14 +5,24 @@ import type { KeyState } from '@deephaven/components';
 import './ShortcutsSectionContent.scss';
 
 export default function ShortcutSectionContent(): JSX.Element[] {
-  const categories = Array.from(
+  function formatCategoryName(name: string): string {
+    return name
+      .split('_')
+      .map(word => `${word[0].toUpperCase()}${word.slice(1).toLowerCase()}`)
+      .join(' ');
+  }
+  let categories = Array.from(
     ShortcutRegistry.shortcutsByCategory.entries()
   ).map(([name, shortcuts]) => ({
-    name,
+    name: formatCategoryName(name),
     shortcuts,
   }));
 
-  console.log(categories);
+  const globalCategoryIndex = categories.findIndex(
+    category => category.name.toUpperCase() === 'GLOBAL'
+  );
+  const globalCategory = categories.splice(globalCategoryIndex, 1);
+  categories = categories.concat(globalCategory);
 
   return categories.map(category => (
     <div key={category.name} className="mt-3 font-weight-bolder">
