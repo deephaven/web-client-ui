@@ -3,7 +3,13 @@
 import React, { Component } from 'react';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { ContextActions, DropdownMenu } from '@deephaven/components';
+import {
+  ContextActions,
+  DropdownMenu,
+  KEY,
+  MODIFIER,
+  Shortcut,
+} from '@deephaven/components';
 import {
   vsBell,
   dhFilePrint,
@@ -28,8 +34,12 @@ class DropdownMenus extends Component {
         action: () => {
           alert(`Alert!`);
         },
-        shortcut: '⌃A',
-        macShortcut: '⌘A',
+        shortcut: new Shortcut({
+          id: 'STYLEGUIDE.SHOW_ALERT',
+          name: 'Show Alert',
+          shortcut: [MODIFIER.CTRL, KEY.A],
+          macShortcut: [MODIFIER.CMD, KEY.A],
+        }),
       },
       {
         title: `Log Message`,
@@ -37,8 +47,12 @@ class DropdownMenus extends Component {
         action: () => {
           console.log(`Logging a message!`);
         },
-        shortcut: '⌃L',
-        macShortcut: '⌘L',
+        shortcut: new Shortcut({
+          id: 'STYLEGUIDE.LOW_MESSAGE',
+          name: 'Log Message',
+          shortcut: [MODIFIER.CTRL, KEY.L],
+          macShortcut: [MODIFIER.CMD, KEY.L],
+        }),
       },
     ];
 
@@ -49,8 +63,12 @@ class DropdownMenus extends Component {
         action: () => {
           alert('Show keyboard shortcuts!');
         },
-        shortcut: '⌃/',
-        macShortcut: '⌘/',
+        shortcut: new Shortcut({
+          id: 'STYLEGUIDE.SHOW_SHORTCUTS',
+          name: 'Show Shortcuts',
+          shortcut: [MODIFIER.CTRL, KEY.SLASH],
+          macShortcut: [MODIFIER.CMD, KEY.SLASH],
+        }),
         group: ContextActions.groups.global,
       },
     ];

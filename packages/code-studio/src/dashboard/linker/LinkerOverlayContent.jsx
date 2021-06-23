@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
-import { ContextActions, ContextActionUtils } from '@deephaven/components';
+import { ContextActions, GLOBAL_SHORTCUTS } from '@deephaven/components';
 import Log from '@deephaven/log';
 import { PanelManager } from '../panels';
 import { UIPropTypes } from '../../include/prop-types';
@@ -159,8 +159,7 @@ export class LinkerOverlayContent extends Component {
           actions={[
             {
               action: this.handleEscapePressed,
-              shortcut: ContextActionUtils.ESCAPE_KEY,
-              macShortcut: ContextActionUtils.ESCAPE_KEY,
+              shortcut: GLOBAL_SHORTCUTS.LINKER_CLOSE,
               isGlobal: true,
             },
           ]}

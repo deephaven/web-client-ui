@@ -1,7 +1,7 @@
 /* eslint no-alert: "off" */
 /* eslint no-console: "off" */
 import React, { Component } from 'react';
-import { ContextActions } from '@deephaven/components';
+import { ContextActions, KEY, MODIFIER, Shortcut } from '@deephaven/components';
 import { vsBell, dhFilePrint, vsQuestion } from '@deephaven/icons';
 
 class ContextMenus extends Component {
@@ -20,8 +20,12 @@ class ContextMenus extends Component {
         action: () => {
           alert(`Alert${suffix}!`);
         },
-        shortcut: '⌃A',
-        macShortcut: '⌘A',
+        shortcut: new Shortcut({
+          id: 'STYLEGUIDE.SHOW_ALERT',
+          name: 'Show Alert',
+          shortcut: [MODIFIER.CTRL, KEY.A],
+          macShortcut: [MODIFIER.CMD, KEY.A],
+        }),
       },
       {
         title: `Log Message${suffix}`,
@@ -29,8 +33,12 @@ class ContextMenus extends Component {
         action: () => {
           console.log(`Logging a message${suffix}!`);
         },
-        shortcut: '⌃L',
-        macShortcut: '⌘L',
+        shortcut: new Shortcut({
+          id: 'STYLEGUIDE.LOW_MESSAGE',
+          name: 'Log Message',
+          shortcut: [MODIFIER.CTRL, KEY.L],
+          macShortcut: [MODIFIER.CMD, KEY.L],
+        }),
       },
       {
         title: 'Sub-menu',
@@ -56,8 +64,12 @@ class ContextMenus extends Component {
         action: () => {
           alert('Show keyboard shortcuts!');
         },
-        shortcut: '⌃/',
-        macShortcut: '⌘/',
+        shortcut: new Shortcut({
+          id: 'STYLEGUIDE.SHOW_SHORTCUTS',
+          name: 'Show Shortcuts',
+          shortcut: [MODIFIER.CTRL, KEY.SLASH],
+          macShortcut: [MODIFIER.CMD, KEY.SLASH],
+        }),
         group: ContextActions.groups.global,
       },
     ];

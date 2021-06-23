@@ -5,7 +5,13 @@ import { CSSTransition } from 'react-transition-group';
 import { connect } from 'react-redux';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { vsGear, dhShapes } from '@deephaven/icons';
-import { ContextActions, Tooltip, ThemeExport } from '@deephaven/components';
+import {
+  ContextActions,
+  Tooltip,
+  ThemeExport,
+  GLOBAL_SHORTCUTS,
+} from '@deephaven/components';
+import { SHORTCUTS as CONSOLE_SHORTCUTS } from '@deephaven/console';
 import Log from '@deephaven/log';
 import {
   getActiveTool,
@@ -220,8 +226,7 @@ export class AppMainContainer extends Component {
         action: () => {
           this.handleToolSelect(ToolType.LINKER);
         },
-        shortcut: '⌃L',
-        macShortcut: '⌘L',
+        shortcut: GLOBAL_SHORTCUTS.LINKER,
         isGlobal: true,
       },
       {
@@ -231,29 +236,25 @@ export class AppMainContainer extends Component {
           this.sendClearFilter();
         },
         order: 50,
-        shortcut: '⌃E',
-        macShortcut: '⌘E',
+        shortcut: GLOBAL_SHORTCUTS.CLEAR_ALL_FILTERS,
       },
       {
         action: () => {
           log.debug('Consume unhandled save shortcut');
         },
-        shortcut: '⌃S',
-        macShortcut: '⌘S',
+        shortcut: GLOBAL_SHORTCUTS.SAVE,
       },
       {
         action: () => {
           this.sendRestartSession();
         },
-        shortcut: '⌃D',
-        macShortcut: '⌘D',
+        shortcut: CONSOLE_SHORTCUTS.CODE_STUDIO.RESTART_CONSOLE,
       },
       {
         action: () => {
           this.sendDisconnectSession();
         },
-        shortcut: '⌃⇧D',
-        macShortcut: '⌘⇧D',
+        shortcut: CONSOLE_SHORTCUTS.CODE_STUDIO.DISCONNECT_CONSOLE,
       },
     ];
 
