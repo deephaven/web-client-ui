@@ -7,7 +7,7 @@ import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
 import { LoadingOverlay } from '@deephaven/components';
 import Log from '@deephaven/log';
 import Editor from './Editor';
-import { MonacoCompletionProvider, MonacoUtils, MonacoTheme } from '../monaco';
+import { MonacoCompletionProvider, MonacoUtils } from '../monaco';
 import './ScriptEditor.scss';
 
 const log = Log.module('ScriptEditor');
