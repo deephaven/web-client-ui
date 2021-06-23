@@ -43,6 +43,7 @@ export enum KEY {
   ESCAPE = 'Escape',
   ENTER = 'Enter',
   DELETE = 'Delete',
+  SLASH = '/',
 }
 
 type ShortcutKeys = [...MODIFIER[], KEY];
