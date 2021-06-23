@@ -9,8 +9,7 @@
  *   title: 'My Action',
  *   action: () => { alert('My Action Clicked!') }
  *   icon: faPrint,         // Limited to FontAwesome icons for now.
- *   shortcut: '⌃M',        // Defaults to null.  Modifiers must be first.
- *   macShortcut: '⌘M',     // Mac specific shortcut. Defaults to null.
+ *   shortcut: Shortcut,        // Shortcut class instance
  *   group: ContextActions.groups.default,  // What group to group the context action with
  *   order: null                            // Int where to order within group
  * }];
