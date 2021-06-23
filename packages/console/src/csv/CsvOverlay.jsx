@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { ContextActions } from '@deephaven/components';
+import { ContextActions, GLOBAL_SHORTCUTS } from '@deephaven/components';
 import {
   dhFileCsv,
   dhFileDownload,
@@ -176,8 +176,7 @@ class CsvOverlay extends Component {
         title: 'Paste',
         icon: vsClippy,
         action: this.handleMenuPaste,
-        shortcut: '⌃V',
-        macShortcut: '⌘V',
+        shortcut: GLOBAL_SHORTCUTS.PASTE,
         disabled: uploadInProgress,
       },
     ];
