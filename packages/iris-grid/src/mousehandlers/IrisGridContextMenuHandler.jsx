@@ -3,7 +3,11 @@ import React from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { dhFilterFilled, vsRemove, vsCheck, vsFilter } from '@deephaven/icons';
 import debounce from 'lodash.debounce';
-import { ContextActions, ContextActionUtils } from '@deephaven/components';
+import {
+  ContextActions,
+  ContextActionUtils,
+  GLOBAL_SHORTCUTS,
+} from '@deephaven/components';
 import { GridMouseHandler } from '@deephaven/grid';
 import dh from '@deephaven/jsapi-shim';
 import Log from '@deephaven/log';
@@ -15,6 +19,7 @@ import {
 import './IrisGridContextMenuHandler.scss';
 import TableUtils from '../TableUtils';
 import { TableColumnFormatter, DateTimeColumnFormatter } from '../formatters';
+import { SHORTCUTS } from '..';
 
 const log = Log.module('IrisGridContextMenuHandler');
 
@@ -217,8 +222,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
           title: 'Quick Filters',
           icon: vsRemove,
           iconColor: filterBarActiveColor,
-          shortcut: '⌃F',
-          macShortcut: '⌘F',
+          shortcut: SHORTCUTS.TABLE.TOGGLE_QUICK_FILTER,
           group: IrisGridContextMenuHandler.GROUP_FILTER,
           order: 10,
           action: () => {
@@ -240,8 +244,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
           group: IrisGridContextMenuHandler.GROUP_FILTER,
           order: 40,
           // this just displays the shortcut, the actual listener is in irisgrid handleKeyDown
-          shortcut: '⌃⇧E',
-          macShortcut: '⌘⇧E',
+          shortcut: SHORTCUTS.TABLE.CLEAR_FILTERS,
           action: () => {
             this.irisGrid.clearAllFilters();
           },
@@ -303,8 +306,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
           order: 40,
           disabled: !model.isReversible,
           // this just displays the shortcut, the actual listener is in irisgrid handleKeyDown
-          shortcut: '⌃I',
-          macShortcut: '⌘I',
+          shortcut: SHORTCUTS.TABLE.REVERSE,
           action: () => {
             if (reverseType === TableUtils.REVERSE_TYPE.NONE) {
               this.irisGrid.reverse(TableUtils.REVERSE_TYPE.POST_SORT);
@@ -449,8 +451,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
       if (selectedRanges.length > 0) {
         actions.push({
           title: 'Copy Selection',
-          shortcut: '⌃C',
-          macShortcut: '⌘C',
+          shortcut: GLOBAL_SHORTCUTS.COPY,
           group: IrisGridContextMenuHandler.GROUP_COPY,
           order: 30,
           action: () => {

@@ -2784,12 +2784,8 @@ export class IrisGrid extends Component {
           <PendingDataBottomBar
             error={pendingSaveError}
             isSaving={pendingSavePromise != null}
-            saveTooltip={`Commit (${ContextActionUtils.getDisplayShortcut(
-              this.commitAction
-            )})`}
-            discardTooltip={`Discard (${ContextActionUtils.getDisplayShortcut(
-              this.discardAction
-            )})`}
+            saveTooltip={`Commit (${this.commitAction.shortcut.getDisplayText()})`}
+            discardTooltip={`Discard (${this.discardAction.shortcut.getDisplayText()})`}
             pendingDataErrors={pendingDataErrors}
             pendingDataMap={pendingDataMap}
             onEntering={this.handleAnimationStart}
