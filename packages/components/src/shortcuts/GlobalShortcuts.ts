@@ -36,6 +36,13 @@ const GLOBAL_SHORTCUTS = {
     shortcut: [MODIFIER.CTRL, KEY.L],
     macShortcut: [MODIFIER.CMD, KEY.L],
   }),
+  LINKER_CLOSE: ShortcutRegistry.createAndAdd({
+    id: 'GLOBAL.LINKER_CLOSE',
+    name: 'Close Linker Overlay',
+    shortcut: [KEY.ESCAPE],
+    macShortcut: [KEY.ESCAPE],
+    isEditable: false,
+  }),
 };
 
 export default GLOBAL_SHORTCUTS;
