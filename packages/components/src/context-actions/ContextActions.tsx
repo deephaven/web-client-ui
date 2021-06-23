@@ -3,10 +3,8 @@
  */
 import React, { Component } from 'react';
 import Log from '@deephaven/log';
-import ContextActionUtils, {
-  ContextAction,
-  ContextActionEvent,
-} from './ContextActionUtils';
+import ContextActionUtils from './ContextActionUtils';
+import type { ContextAction, ContextActionEvent } from './ContextActionUtils';
 import GlobalContextActions from './GlobalContextActions';
 import './ContextActions.scss';
 
@@ -173,7 +171,10 @@ class ContextActions extends Component<
     const { keyboardActions } = this.state;
     for (let i = 0; i < keyboardActions.length; i += 1) {
       const keyboardAction = keyboardActions[i];
-      if (keyboardAction.shortcut?.matchesEvent(e)) {
+      if (
+        !ContextActionUtils.actionsDisabled &&
+        keyboardAction.shortcut?.matchesEvent(e)
+      ) {
         log.debug('Context hotkey matched!', e);
 
         const result = keyboardAction.action?.(e);

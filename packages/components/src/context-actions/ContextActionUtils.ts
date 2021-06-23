@@ -30,6 +30,16 @@ export interface ContextActionEvent extends MouseEvent {
 }
 
 class ContextActionUtils {
+  static actionsDisabled = false;
+
+  static disableAllActions(): void {
+    ContextActionUtils.actionsDisabled = true;
+  }
+
+  static enableAllActions(): void {
+    ContextActionUtils.actionsDisabled = false;
+  }
+
   static isContextActionEvent(e: MouseEvent): e is ContextActionEvent {
     return Array.isArray((e as ContextActionEvent).contextActions);
   }

@@ -1,5 +1,6 @@
 import { Component } from 'react';
 import Log from '@deephaven/log';
+import ContextActionUtils from './ContextActionUtils';
 import type { ContextAction, ContextActionEvent } from './ContextActionUtils';
 
 const log = Log.module('GlobalContextAction');
@@ -51,7 +52,10 @@ class GlobalContextAction extends Component<GlobalContextActionProps> {
 
   handleKeyDown(e: KeyboardEvent): void {
     const { action } = this.props;
-    if (action.shortcut?.matchesEvent(e)) {
+    if (
+      !ContextActionUtils.actionsDisabled &&
+      action.shortcut?.matchesEvent(e)
+    ) {
       log.debug('Global hotkey matched!', e);
 
       const result = action.action?.(e);
