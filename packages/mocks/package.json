@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/mocks",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Deephaven Mocks for common libraries",
   "repository": "https://github.com/deephaven/web-client-ui",
   "author": "Deephaven Data Labs LLC",
