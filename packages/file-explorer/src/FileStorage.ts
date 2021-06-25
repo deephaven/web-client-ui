@@ -19,20 +19,6 @@ export interface File extends FileMetadata {
   content: string;
 }
 
-/**
- * A draft file may not have an id until it is saved
- */
-export interface DraftFile extends File {
-  id?: string;
-}
-
-/**
- * A loaded file must always have an id
- */
-export interface LoadedFile extends File {
-  id: string;
-}
-
 export interface FileStorageTable extends StorageTable<FileStorageItem> {
   setSearch(search: string): void;
 }
@@ -50,19 +36,25 @@ export interface FileStorage {
    * Save a file
    * @param file The file to save
    */
-  saveFile(file: DraftFile): Promise<LoadedFile>;
+  saveFile(file: File): Promise<File>;
 
   /**
    * Load the contents of a file
-   * @param id The file to load
+   * @param name The file to load, including the full path
    */
-  loadFile(id: string): Promise<LoadedFile>;
+  loadFile(name: string): Promise<File>;
 
   /**
    * Delete a file
-   * @param id The file id to delete
+   * @param name The full name of the file to delete
    */
-  deleteFile(id: string): Promise<void>;
+  deleteFile(name: string): Promise<void>;
+
+  /**
+   * Create the directory at the given path
+   * @param name The full directory path
+   */
+  createDirectory(name: string): Promise<FileStorageItem>;
 }
 
 export default FileStorage;

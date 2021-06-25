@@ -13,5 +13,7 @@ $file-list-height: 250px;
     border-radius: $input-border-radius;
     overflow: hidden;
     height: $file-list-height;
+    display: flex;
+    flex-direction: column;
   }
 }

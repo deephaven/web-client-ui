@@ -1,11 +1,17 @@
 import Log from '@deephaven/log';
 import { getFileStorage } from '@deephaven/redux';
-import FileExplorer, { FileInfo, FileStorage } from '@deephaven/file-explorer';
+import FileExplorer, {
+  FileExplorerToolbar,
+  FileInfo,
+  FileStorage,
+  NewItemModal,
+} from '@deephaven/file-explorer';
 import GoldenLayout from 'golden-layout';
 import React, { ReactNode } from 'react';
 import { connect } from 'react-redux';
 import Panel from './Panel';
 import { NotebookEvent } from '../events';
+import './FileExplorerPanel.scss';
 
 const log = Log.module('FileExplorerPanel');
 
@@ -25,6 +31,8 @@ export interface FileExplorerPanelProps {
 export interface FileExplorerPanelState {
   language?: string;
   session?: DhSession;
+  showCreateFolder: boolean;
+  newItemPath?: string;
 }
 
 /**
@@ -38,11 +46,22 @@ export class FileExplorerPanel extends React.Component<
 
   static TITLE = 'File Explorer';
 
+  static handleError(error: Error): void {
+    log.error(error);
+  }
+
   constructor(props: FileExplorerPanelProps) {
     super(props);
 
-    this.handleOpen = this.handleOpen.bind(this);
+    this.handleFileSelect = this.handleFileSelect.bind(this);
     this.handleCreateFile = this.handleCreateFile.bind(this);
+    this.handleCreateDirectory = this.handleCreateDirectory.bind(this);
+    this.handleCreateDirectoryCancel = this.handleCreateDirectoryCancel.bind(
+      this
+    );
+    this.handleCreateDirectorySubmit = this.handleCreateDirectorySubmit.bind(
+      this
+    );
     this.handleSessionOpened = this.handleSessionOpened.bind(this);
     this.handleSessionClosed = this.handleSessionClosed.bind(this);
 
@@ -50,10 +69,11 @@ export class FileExplorerPanel extends React.Component<
     this.state = {
       language,
       session,
+      showCreateFolder: false,
     };
   }
 
-  handleCreateFile() {
+  handleCreateFile(): void {
     const { glEventHub } = this.props;
     const { session, language } = this.state;
     const notebookSettings = {
@@ -69,9 +89,34 @@ export class FileExplorerPanel extends React.Component<
     );
   }
 
-  handleOpen(file: FileInfo): void {
-    log.debug('handleOpen', file);
-    const fileMetadata = { id: file.name };
+  handleCreateDirectory(path?: string): void {
+    this.setState({
+      showCreateFolder: true,
+      newItemPath: path,
+    });
+  }
+
+  handleCreateDirectoryCancel(): void {
+    log.debug('handleCreateDirectoryCancel');
+    this.setState({
+      showCreateFolder: false,
+    });
+  }
+
+  handleCreateDirectorySubmit(path: string): void {
+    log.debug('handleCreateDirectorySubmit', path);
+    this.setState({ showCreateFolder: false });
+    const { fileStorage } = this.props;
+    fileStorage.createDirectory(path).catch(FileExplorerPanel.handleError);
+  }
+
+  handleFileSelect(file: FileInfo): void {
+    log.debug('fileSelect', file);
+    if (file.type === 'directory') {
+      return;
+    }
+
+    const fileMetadata = { id: file.filename, itemName: file.filename };
     const { glEventHub } = this.props;
     const { session, language } = this.state;
     const notebookSettings = {
@@ -107,6 +152,7 @@ export class FileExplorerPanel extends React.Component<
   render(): ReactNode {
     // TODO: Pass a FileStorage instance instead to a FileExplorer, then WebdavExplorer can just use that client...
     const { fileStorage, glContainer, glEventHub } = this.props;
+    const { newItemPath, showCreateFolder } = this.state;
     return (
       <Panel
         className="file-explorer-panel"
@@ -116,10 +162,21 @@ export class FileExplorerPanel extends React.Component<
         onSessionOpen={this.handleSessionOpened}
         onSessionClose={this.handleSessionClosed}
       >
-        <FileExplorer
+        <div className="file-explorer-toolbar">
+          <FileExplorerToolbar
+            createFile={this.handleCreateFile}
+            createFolder={this.handleCreateDirectory}
+          />
+        </div>
+        <FileExplorer storage={fileStorage} onSelect={this.handleFileSelect} />
+        <NewItemModal
+          isOpen={showCreateFolder}
+          // defaultValue={'/'}
+          type="directory"
+          title="Create New Folder"
           storage={fileStorage}
-          onCreateFile={this.handleCreateFile}
-          onOpen={this.handleOpen}
+          onSubmit={this.handleCreateDirectorySubmit}
+          onCancel={this.handleCreateDirectoryCancel}
         />
       </Panel>
     );

@@ -1,23 +1,21 @@
 import {
-  Button,
   SingleClickItemList,
   SingleClickRenderItemBase,
 } from '@deephaven/components';
 import Log from '@deephaven/log';
 import { CancelablePromise, PromiseUtils } from '@deephaven/utils';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import FileExplorerToolbar from './FileExplorerToolbar';
+import React, { useCallback, useEffect, useState } from 'react';
 import FileStorage, { FileStorageTable } from './FileStorage';
 import './FileExplorer.scss';
 
 const log = Log.module('FileExplorer');
 
+export type FileType = 'file' | 'directory';
+
 export type FileInfo = {
   /** Full path of the file */
   name: string;
-
-  /** Type of file, whether it's a file or directory */
-  type: 'file' | 'directory';
+  type: FileType;
 };
 
 export type FileListItem = SingleClickRenderItemBase & FileInfo;
@@ -36,8 +34,7 @@ export type ListViewport = {
 export interface FileExplorerProps {
   storage: FileStorage;
 
-  onOpen: (file: FileInfo) => void;
-  onCreateFile: () => void;
+  onSelect: (file: FileInfo) => void;
 
   /** Height of each item in the list */
   rowHeight?: number;
@@ -48,8 +45,7 @@ export interface FileExplorerProps {
  */
 export const FileExplorer = ({
   storage,
-  onCreateFile,
-  onOpen,
+  onSelect,
   rowHeight = SingleClickItemList.DEFAULT_ROW_HEIGHT,
 }: FileExplorerProps): JSX.Element => {
   const [loadedViewport, setLoadedViewport] = useState<LoadedViewport>(() => ({
@@ -60,10 +56,6 @@ export const FileExplorer = ({
   const [table, setTable] = useState<FileStorageTable>();
   const [viewport, setViewport] = useState<ListViewport>({ top: 0, bottom: 0 });
 
-  const handleCreateFolder = useCallback(() => {
-    log.debug('TODO: Wire up create folder');
-  }, []);
-
   const handleItemDrop = useCallback(() => {
     log.debug('handleItemDrop');
   }, []);
@@ -73,10 +65,14 @@ export const FileExplorer = ({
       const item = loadedViewport.items[itemIndex];
       if (item !== undefined) {
         log.debug('handleItemSelect', item);
-        onOpen(item);
+
+        onSelect(item);
+        if (item.type !== 'directory') {
+          onSelect(item);
+        }
       }
     },
-    [loadedViewport, onOpen]
+    [loadedViewport, onSelect]
   );
 
   const handleSelectionChange = useCallback(e => {
@@ -134,12 +130,6 @@ export const FileExplorer = ({
 
   return (
     <div className="file-explorer">
-      <div className="file-explorer-toolbar">
-        <FileExplorerToolbar
-          createFile={onCreateFile}
-          createFolder={handleCreateFolder}
-        />
-      </div>
       <SingleClickItemList
         items={loadedViewport.items}
         itemCount={loadedViewport.itemCount}

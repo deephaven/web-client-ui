@@ -1,16 +1,6 @@
 .file-explorer {
   position: relative;
-  display: flex;
-  flex-direction: column;
   flex-grow: 1;
-  height: 100%;
-
-  .file-explorer-toolbar {
-    flex-grow: 0;
-    flex-shrink: 1;
-    width: 100%;
-    position: relative;
-  }
 
   .single-click-item-list-scroll-pane {
     flex-grow: 1;

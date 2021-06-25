@@ -8,13 +8,8 @@ import {
   IndexRange,
   StorageSnapshot,
 } from '@deephaven/storage';
-import {
-  DraftFile,
-  FileStorageTable,
-  FileStorageItem,
-  LoadedFile,
-} from './FileStorage';
-import { CancelablePromise, PromiseUtils } from '../../utils/dist';
+import { CancelablePromise, PromiseUtils } from '@deephaven/utils';
+import { FileStorageTable, FileStorageItem } from './FileStorage';
 
 const log = Log.module('PouchStorageTable');
 
@@ -72,7 +67,7 @@ export class WebdavFileStorageTable implements FileStorageTable {
     throw new Error('Method not implemented.');
   }
 
-  setViewport(viewport: StorageTableViewport) {
+  setViewport(viewport: StorageTableViewport): void {
     this.currentViewport = viewport;
 
     this.refreshData();
@@ -103,9 +98,7 @@ export class WebdavFileStorageTable implements FileStorageTable {
     };
   }
 
-  private async refreshData(): Promise<
-    ViewportData<FileStorageItem> | undefined
-  > {
+  async refreshData(): Promise<ViewportData<FileStorageItem> | undefined> {
     if (!this.currentViewport) {
       return;
     }
@@ -117,11 +110,13 @@ export class WebdavFileStorageTable implements FileStorageTable {
 
       this.viewportUpdatePromise = PromiseUtils.makeCancelable(
         this.client.getDirectoryContents(this.root).then(dirContents => ({
-          items: (dirContents as FileStat[]).map(file => ({
-            ...file,
-            id: file.filename,
-            name: file.basename,
-          })),
+          items: (dirContents as FileStat[])
+            .map(file => ({
+              ...file,
+              id: file.filename,
+              name: file.basename,
+            }))
+            .sort((a, b) => a.filename.localeCompare(b.filename)),
           offset: viewport.top,
         }))
       );

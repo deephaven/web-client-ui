@@ -11,7 +11,7 @@ import {
   DropdownMenu,
   Tooltip,
 } from '@deephaven/components';
-import { FileUtils } from '@deephaven/file-explorer';
+import { FileUtils, NewItemModal } from '@deephaven/file-explorer';
 import { ScriptEditor, ScriptEditorUtils } from '@deephaven/console';
 import {
   vsSave,
@@ -125,7 +125,8 @@ class NotebookPanel extends Component {
 
     // Not showing the unsaved indicator for null file id and editor content === '',
     // may need to implement some other indication that this notebook has never been saved
-    const hasFileId = fileMetadata && !!fileMetadata.id;
+    const hasFileId =
+      fileMetadata.itemName && FileUtils.isFullPath(fileMetadata.itemName);
 
     // Unsaved if file id != null and content != null
     // OR file id is null AND content is not null or ''
@@ -272,7 +273,7 @@ class NotebookPanel extends Component {
         if (itemName !== prevItemName) {
           const { metadata } = this.props;
           const { id: tabId } = metadata;
-          this.renameTab(tabId, itemName);
+          this.renameTab(tabId, FileUtils.getFileName(itemName));
         }
         const updatedSettings = {
           ...settings,
@@ -297,9 +298,9 @@ class NotebookPanel extends Component {
    */
   save() {
     const { fileMetadata } = this.state;
-    if (fileMetadata && fileMetadata.id) {
+    if (fileMetadata && FileUtils.isFullPath(fileMetadata.itemName)) {
       const content = this.getNotebookValue();
-      this.saveContent(fileMetadata.id, fileMetadata.itemName, content);
+      this.saveContent(fileMetadata.itemName, content);
       return true;
     }
 
@@ -309,16 +310,15 @@ class NotebookPanel extends Component {
 
   /**
    * Update existing file content
-   * @param {string} id Item id to update
    * @param {string} name The name of the file
    * @param {string} content New file content
    */
-  saveContent(id, name, content) {
-    log.debug('saveContent', id, content);
+  saveContent(name, content) {
+    log.debug('saveContent', name, content);
     this.updateSavedChangeCount();
     const { fileStorage } = this.props;
     this.pending
-      .add(fileStorage.saveFile({ id, name, content }, true))
+      .add(fileStorage.saveFile({ name, content }))
       .then(this.handleSaveSuccess)
       .catch(this.handleSaveError);
   }
@@ -460,14 +460,25 @@ class NotebookPanel extends Component {
   }
 
   handleSaveSuccess(file) {
+    const { fileStorage } = this.props;
     const fileMetadata = { id: file.id, itemName: file.name };
     const language = NotebookPanel.languageFromFileName(file.name);
     this.setState(state => {
+      const { fileMetadata: oldMetadata } = state;
       const settings = {
         ...state.settings,
         language,
       };
-      log.debug('handleSaveSuccess', fileMetadata, settings);
+      log.debug('handleSaveSuccess', fileMetadata, oldMetadata, settings);
+      if (
+        FileUtils.isFullPath(oldMetadata.itemName) &&
+        oldMetadata.itemName !== fileMetadata.itemName
+      ) {
+        log.debug('handleSaveSuccess deleting old file', oldMetadata.itemName);
+        fileStorage
+          .deleteFile(oldMetadata.itemName)
+          .catch(NotebookPanel.handleError);
+      }
       return {
         fileMetadata,
         settings,
@@ -490,48 +501,25 @@ class NotebookPanel extends Component {
   }
 
   handleSaveAsCancel() {
-    this.setState({
-      showSaveAsModal: false,
-    });
+    this.setState({ showSaveAsModal: false });
   }
 
-  handleSaveAsSubmit(newParentId, newItemName, overwriteId = null) {
-    log.debug('handleSaveAsSubmit', newParentId, newItemName, overwriteId);
+  handleSaveAsSubmit(name) {
+    log.debug('handleSaveAsSubmit', name);
     const { fileMetadata } = this.state;
-    const { id, parentId: prevParentId, itemName: prevItemName } = fileMetadata;
+    const { itemName: prevItemName } = fileMetadata;
     const content = this.getNotebookValue();
     this.setState({
       showSaveAsModal: false,
     });
-    if (prevItemName !== newItemName) {
+
+    if (FileUtils.getFileName(prevItemName) !== FileUtils.getFileName(name)) {
       const { metadata } = this.props;
       const { id: tabId } = metadata;
-      this.renameTab(tabId, newItemName);
+      this.renameTab(tabId, FileUtils.getFileName(name));
     }
-    // Delete overwriteId before saving new file with the same name
-    // otherwise the duplicate shows up in the file list for a second
-    const cleanupPromise = this.pending.add(
-      overwriteId ? this.deleteFileById(overwriteId) : Promise.resolve()
-    );
 
-    if (id == null) {
-      // Saving new file
-      cleanupPromise
-        .then(() => {
-          this.createNewFile(newParentId, newItemName, content);
-        })
-        .catch(NotebookPanel.handleError);
-    } else if (prevParentId !== newParentId || prevItemName !== newItemName) {
-      // Saving existing file with new name and/or in new folder
-      cleanupPromise
-        .then(() => {
-          this.saveContentAndMetadata(id, newParentId, newItemName, content);
-        })
-        .catch(NotebookPanel.handleError);
-    } else {
-      // Save existing file
-      this.saveContent(id, content);
-    }
+    this.saveContent(name, content);
   }
 
   handleResize() {
@@ -581,7 +569,9 @@ class NotebookPanel extends Component {
     }
     this.notebook.updateDimensions();
     requestAnimationFrame(() => {
-      this.notebook.focus();
+      if (this.notebook) {
+        this.notebook.focus();
+      }
     });
   }
 
@@ -624,6 +614,12 @@ class NotebookPanel extends Component {
 
   render() {
     const {
+      fileStorage,
+      glContainer,
+      glContainer: { tab },
+      glEventHub,
+    } = this.props;
+    const {
       changeCount,
       savedChangeCount,
       error,
@@ -634,12 +630,8 @@ class NotebookPanel extends Component {
       session,
       sessionLanguage,
       settings: initialSettings,
+      showSaveAsModal,
     } = this.state;
-    const {
-      glContainer,
-      glContainer: { tab },
-      glEventHub,
-    } = this.props;
     const itemName = fileMetadata?.itemName ?? NotebookPanel.DEFAULT_NAME;
     const isExistingItem = fileMetadata?.id != null;
     const overflowActions = this.getOverflowActions();
@@ -785,6 +777,16 @@ class NotebookPanel extends Component {
               this.notebook = notebook;
             }}
           />
+          <NewItemModal
+            isOpen={showSaveAsModal}
+            type="file"
+            defaultValue={itemName}
+            title={isExistingItem ? 'Rename' : 'Save file as'}
+            onSubmit={this.handleSaveAsSubmit}
+            onCancel={this.handleSaveAsCancel}
+            notifyOnExtensionChange
+            storage={fileStorage}
+          />
           <ContextActions actions={contextActions} />
         </Panel>
       </>
@@ -794,6 +796,7 @@ class NotebookPanel extends Component {
 
 NotebookPanel.propTypes = {
   fileStorage: PropTypes.shape({
+    deleteFile: PropTypes.func.isRequired,
     loadFile: PropTypes.func.isRequired,
     saveFile: PropTypes.func.isRequired,
   }).isRequired,
