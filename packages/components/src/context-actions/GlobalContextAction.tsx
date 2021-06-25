@@ -8,6 +8,7 @@ const log = Log.module('GlobalContextAction');
 interface GlobalContextActionProps {
   action: ContextAction;
 }
+
 class GlobalContextAction extends Component<GlobalContextActionProps> {
   constructor(props: GlobalContextActionProps) {
     super(props);
@@ -17,13 +18,17 @@ class GlobalContextAction extends Component<GlobalContextActionProps> {
   }
 
   componentDidMount(): void {
-    window.addEventListener('contextmenu', this.handleContextMenu);
-    window.addEventListener('keydown', this.handleKeyDown);
+    document.body.addEventListener('contextmenu', this.handleContextMenu, true);
+    document.body.addEventListener('keydown', this.handleKeyDown, true);
   }
 
   componentWillUnmount(): void {
-    window.removeEventListener('contextmenu', this.handleContextMenu);
-    window.removeEventListener('keydown', this.handleKeyDown);
+    document.body.removeEventListener(
+      'contextmenu',
+      this.handleContextMenu,
+      true
+    );
+    document.body.removeEventListener('keydown', this.handleKeyDown, true);
   }
 
   handleContextMenu(evt: MouseEvent): void {

@@ -16,7 +16,7 @@ class GlobalContextActions extends Component<GlobalContextActionsProps> {
       if (action.title || action.menuElement || shortcut) {
         const actionElement = (
           <GlobalContextAction
-            key={`${action.title}.${shortcut?.name}`}
+            key={`${action.title}.${shortcut?.id}`}
             action={action}
           />
         );
