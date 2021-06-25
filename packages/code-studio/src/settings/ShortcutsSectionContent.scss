@@ -7,8 +7,8 @@
   justify-content: space-between;
   align-items: center;
 
-  label {
-    font-weight: $font-weight-light;
+  label.shortcut-item-name {
+    margin: 0;
   }
 
   input {
@@ -16,7 +16,23 @@
   }
 }
 
-.shortcut-item-conflicts {
-  text-align: right;
-  color: $danger;
+.shortcut-item-message-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 0.5rem;
+  border-radius: $border-radius;
+
+  &.is-invalid {
+    color: $danger;
+    background-color: $toast-error-bg;
+  }
+
+  .shortcut-item-message {
+    flex-shrink: 1;
+  }
+  .shortcut-item-message-buttons {
+    flex-shrink: 0;
+  }
 }

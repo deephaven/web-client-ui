@@ -39,11 +39,54 @@ export enum KEY {
   X = 'X',
   Y = 'Y',
   Z = 'Z',
+  ZERO = '0',
+  ONE = '1',
+  TWO = '2',
+  THREE = '3',
+  FOUR = '4',
+  FIVE = '5',
+  SIX = '6',
+  SEVEN = '7',
+  EIGHT = '8',
+  NINE = '9',
   BACKSPACE = 'Backspace',
   ESCAPE = 'Escape',
   ENTER = 'Enter',
   DELETE = 'Delete',
   SLASH = '/',
+  QUESTION_MARK = '?',
+  BACKSLASH = '\\',
+  PIPE = '|',
+  MINUS = '-',
+  UNDERSCORE = '_',
+  EQUALS = '=',
+  PLUS = '+',
+  BACKTICK = '`',
+  TILDE = '~',
+  COMMA = ',',
+  LEFT_CHEVRON = '<',
+  PERIOD = '.',
+  RIGHT_CHEVRON = '>',
+  SEMICOLON = ';',
+  COLON = ':',
+  SINGLE_QUOTE = "'",
+  DOUBLE_QUOTE = '"',
+  LEFT_BRACKET = '[',
+  RIGHT_BRACKET = ']',
+  LEFT_CURLY = '{',
+  RIGHT_CURLY = '}',
+  F1 = 'F1',
+  F2 = 'F2',
+  F3 = 'F3',
+  F4 = 'F4',
+  F5 = 'F5',
+  F6 = 'F6',
+  F7 = 'F7',
+  F8 = 'F8',
+  F9 = 'F9',
+  F10 = 'F10',
+  F11 = 'F11',
+  F12 = 'F12',
 }
 
 type ShortcutKeys = [...MODIFIER[], KEY];
@@ -95,6 +138,7 @@ export default class Shortcut {
   static isValidKeyState(state: KeyState): state is ValidKeyState {
     return (
       Shortcut.isAllowedKey(state.keyValue) &&
+      (Shortcut.isMacPlatform || !state.metaKey) && // MetaKey not allowed in windows
       (state.altKey ||
         state.ctrlKey ||
         state.metaKey ||
@@ -148,10 +192,20 @@ export default class Shortcut {
   ): KeyState {
     const { key: eventKey, keyCode } = e;
     let key = '';
-    if (Shortcut.isAllowedKey(eventKey)) {
-      key = eventKey;
-    } else if (Shortcut.isAllowedKey(String.fromCharCode(keyCode))) {
+    if (
+      eventKey === 'Shift' ||
+      eventKey === 'Meta' ||
+      eventKey === 'Control' ||
+      eventKey === 'Alt'
+    ) {
+      key = '';
+    } else if (
+      !Shortcut.isAllowedKey(eventKey) &&
+      Shortcut.isAllowedKey(String.fromCharCode(keyCode))
+    ) {
       key = String.fromCharCode(keyCode);
+    } else {
+      key = eventKey;
     }
 
     return {
@@ -184,7 +238,7 @@ export default class Shortcut {
 
     if (keyState.keyValue === KEY.ESCAPE) {
       display += 'Esc';
-    } else if (Shortcut.isAllowedKey(keyState.keyValue)) {
+    } else {
       display += keyState.keyValue;
     }
 
@@ -227,9 +281,7 @@ export default class Shortcut {
         display += '⌦';
         break;
       default:
-        if (Shortcut.isAllowedKey(keyState.keyValue)) {
-          display += keyState.keyValue;
-        }
+        display += keyState.keyValue;
     }
 
     return display;

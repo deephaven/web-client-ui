@@ -1,6 +1,12 @@
 import React, { useState } from 'react';
 import classNames from 'classnames';
-import { Shortcut, Tooltip, ShortcutRegistry } from '@deephaven/components';
+import {
+  Shortcut,
+  Tooltip,
+  ShortcutRegistry,
+  ContextActionUtils,
+  Button,
+} from '@deephaven/components';
 import type { KeyState } from '@deephaven/components';
 import './ShortcutsSectionContent.scss';
 
@@ -25,8 +31,8 @@ export default function ShortcutSectionContent(): JSX.Element[] {
   categories = categories.concat(globalCategory);
 
   return categories.map(category => (
-    <div key={category.name} className="mt-3 font-weight-bolder">
-      {category.name}
+    <div key={category.name} className="mt-3">
+      <div className="font-weight-bold"> {category.name}</div>
       {category.shortcuts.map(shortcut => (
         <ShortcutItem key={shortcut.id} shortcut={shortcut} />
       ))}
@@ -41,6 +47,7 @@ type ShortcutItemProps = {
 function ShortcutItem({ shortcut }: ShortcutItemProps): JSX.Element {
   const [displayText, setDisplayText] = useState(shortcut.getDisplayText());
   const [keyState, setKeyState] = useState<KeyState>(shortcut.getKeyState());
+  const [isChanging, setIsChanging] = useState(false);
   const [error, setError] = useState('');
 
   function handleInputKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
@@ -58,11 +65,13 @@ function ShortcutItem({ shortcut }: ShortcutItemProps): JSX.Element {
     e.stopPropagation();
     e.preventDefault();
 
+    setIsChanging(true);
+
     if (!Shortcut.isValidKeyState(keyState)) {
-      if (keyState.keyValue) {
-        setError('Shortcut must contain a modifier key');
+      if (Shortcut.isAllowedKey(keyState.keyValue)) {
+        setError('Must contain a modifier key');
       } else {
-        setError('Shortcut must contain a non-modifier key');
+        setError('Must contain an allowed action key');
       }
       return;
     }
@@ -75,14 +84,34 @@ function ShortcutItem({ shortcut }: ShortcutItemProps): JSX.Element {
       setError(`Conflicts with ${conflictNames.join(', ')}`);
       return;
     }
+    setError('');
+  }
+
+  function handleInputFocus() {
+    ContextActionUtils.disableAllActions();
+  }
+
+  function handleInputBlur() {
+    ContextActionUtils.enableAllActions();
+  }
+
+  function handleConfirm() {
     shortcut.setKeyState(keyState);
+    setIsChanging(false);
+  }
+
+  function handleUndo() {
+    const originalKeyState = shortcut.getKeyState();
+    setKeyState(originalKeyState);
+    setDisplayText(Shortcut.getDisplayText(originalKeyState));
+    setIsChanging(false);
     setError('');
   }
 
   return (
     <>
       <div className="shortcut-item-container">
-        <label>
+        <label className="shortcut-item-name">
           {shortcut.name}
           {shortcut.tooltip && <Tooltip>{shortcut.tooltip}</Tooltip>}
         </label>
@@ -92,12 +121,32 @@ function ShortcutItem({ shortcut }: ShortcutItemProps): JSX.Element {
           })}
           onKeyDown={handleInputKeyDown}
           onKeyUp={handleInputKeyUp}
+          onFocus={handleInputFocus}
+          onBlur={handleInputBlur}
           disabled={!shortcut.isEditable}
           value={displayText}
           readOnly
         />
       </div>
-      {error && <div className="shortcut-item-conflicts">{error}</div>}
+      {isChanging && (
+        <div
+          className={classNames('shortcut-item-message-container', {
+            'is-invalid': error,
+          })}
+        >
+          <div className="shortcut-item-message">{error}</div>
+          <div className="shortcut-item-message-buttons">
+            {Shortcut.isValidKeyState(keyState) && (
+              <Button kind="ghost" onClick={handleConfirm}>
+                Confirm
+              </Button>
+            )}
+            <Button kind="ghost" onClick={handleUndo}>
+              Undo
+            </Button>
+          </div>
+        </div>
+      )}
     </>
   );
 }

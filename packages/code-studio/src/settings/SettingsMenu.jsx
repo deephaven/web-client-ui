@@ -36,9 +36,6 @@ class SettingsMenu extends Component {
     this.handleClose = this.handleClose.bind(this);
     this.handleScrollTo = this.handleScrollTo.bind(this);
     this.handleSectionToggle = this.handleSectionToggle.bind(this);
-    this.handleShortcutSectionToggle = this.handleShortcutSectionToggle.bind(
-      this
-    );
 
     this.menuContentRef = React.createRef();
 
@@ -65,17 +62,6 @@ class SettingsMenu extends Component {
       expandedSectionKey:
         state.expandedSectionKey === sectionKey ? null : sectionKey,
     }));
-  }
-
-  handleShortcutSectionToggle(sectionKey) {
-    const { expandedSectionKey } = this.state;
-    if (expandedSectionKey !== sectionKey) {
-      // Shortcut section is being expanded. Disable all context actions
-      ContextActionUtils.disableAllActions();
-    } else {
-      ContextActionUtils.enableAllActions();
-    }
-    this.handleSectionToggle(sectionKey);
   }
 
   handleClose() {
@@ -137,7 +123,7 @@ class SettingsMenu extends Component {
                 Keyboard Shortcuts
               </>
             }
-            onToggle={this.handleShortcutSectionToggle}
+            onToggle={this.handleSectionToggle}
           >
             <ShortcutSectionContent />
           </SettingsMenuSection>
