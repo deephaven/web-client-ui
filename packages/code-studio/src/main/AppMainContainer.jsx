@@ -11,7 +11,6 @@ import {
   ThemeExport,
   GLOBAL_SHORTCUTS,
 } from '@deephaven/components';
-import { SHORTCUTS as CONSOLE_SHORTCUTS } from '@deephaven/console';
 import Log from '@deephaven/log';
 import {
   getActiveTool,
@@ -248,13 +247,11 @@ export class AppMainContainer extends Component {
         action: () => {
           this.sendRestartSession();
         },
-        shortcut: CONSOLE_SHORTCUTS.CODE_STUDIO.RESTART_CONSOLE,
       },
       {
         action: () => {
           this.sendDisconnectSession();
         },
-        shortcut: CONSOLE_SHORTCUTS.CODE_STUDIO.DISCONNECT_CONSOLE,
       },
     ];
 

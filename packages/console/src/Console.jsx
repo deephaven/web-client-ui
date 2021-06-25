@@ -117,14 +117,12 @@ export class Console extends PureComponent {
     if (restartSession != null) {
       contextActions.push({
         action: restartSession,
-        shortcut: SHORTCUTS.CODE_STUDIO.RESTART_CONSOLE,
         order: 20,
       });
     }
     if (closeSession != null) {
       contextActions.push({
         action: closeSession,
-        shortcut: SHORTCUTS.CODE_STUDIO.DISCONNECT_CONSOLE,
         order: 30,
       });
     }
