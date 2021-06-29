@@ -50,7 +50,7 @@ class NotebookPanel extends Component {
   }
 
   static languageFromFileName(fileName) {
-    const extension = FileUtils.getExtension(fileName);
+    const extension = FileUtils.getExtension(fileName).toLowerCase();
     switch (extension) {
       case 'py':
       case 'python':
@@ -273,7 +273,7 @@ class NotebookPanel extends Component {
         if (itemName !== prevItemName) {
           const { metadata } = this.props;
           const { id: tabId } = metadata;
-          this.renameTab(tabId, FileUtils.getFileName(itemName));
+          this.renameTab(tabId, FileUtils.getBaseName(itemName));
         }
         const updatedSettings = {
           ...settings,
@@ -513,10 +513,10 @@ class NotebookPanel extends Component {
       showSaveAsModal: false,
     });
 
-    if (FileUtils.getFileName(prevItemName) !== FileUtils.getFileName(name)) {
+    if (FileUtils.getBaseName(prevItemName) !== FileUtils.getBaseName(name)) {
       const { metadata } = this.props;
       const { id: tabId } = metadata;
-      this.renameTab(tabId, FileUtils.getFileName(name));
+      this.renameTab(tabId, FileUtils.getBaseName(name));
     }
 
     this.saveContent(name, content);

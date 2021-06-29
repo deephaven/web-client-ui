@@ -1,5 +1,6 @@
 import { createClient, FileStat, WebDAVClient } from 'webdav/web';
 import WebdavFileStorageTable from './WebdavFileStorageTable';
+import FileUtils from './FileUtils';
 
 jest.mock('webdav');
 jest.mock('webdav/web', () => ({
@@ -64,7 +65,7 @@ describe('directory expansion tests', () => {
 
   beforeEach(() => {
     client.getDirectoryContents = jest.fn(async path => {
-      const depth = path.match(/\//g)?.length ?? 0;
+      const depth = FileUtils.getDepth(path) + 1;
       return makeDirectoryContents(path, 5 - depth, 10 - depth);
     });
   });

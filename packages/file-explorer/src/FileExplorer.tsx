@@ -1,9 +1,14 @@
 import {
   SingleClickItemList,
   SingleClickRenderItemBase,
+  SingleClickRenderItemProps,
 } from '@deephaven/components';
+import { dhPython, vsCode, vsFolder, vsFolderOpened } from '@deephaven/icons';
 import Log from '@deephaven/log';
 import { CancelablePromise, PromiseUtils } from '@deephaven/utils';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { IconDefinition } from '@fortawesome/fontawesome-svg-core';
+import classNames from 'classnames';
 import React, { useCallback, useEffect, useState } from 'react';
 import FileStorage, {
   DirectoryStorageItem,
@@ -12,6 +17,7 @@ import FileStorage, {
   isDirectory,
 } from './FileStorage';
 import './FileExplorer.scss';
+import FileUtils, { MIME_TYPE } from './FileUtils';
 
 const log = Log.module('FileExplorer');
 
@@ -37,6 +43,24 @@ export interface FileExplorerProps {
 
   /** Height of each item in the list */
   rowHeight?: number;
+}
+
+/**
+ * Get the icon definition for a file or folder item
+ * @param {FileListItem} item Item to get the icon for
+ * @returns {IconDefinition} Icon definition to pass in the FontAwesomeIcon icon prop
+ */
+export function getItemIcon(item: FileListItem): IconDefinition {
+  if (isDirectory(item)) {
+    return item.isExpanded ? vsFolderOpened : vsFolder;
+  }
+  const mimeType = FileUtils.getMimeType(item.basename);
+  switch (mimeType) {
+    case MIME_TYPE.PYTHON:
+      return dhPython;
+    default:
+      return vsCode;
+  }
 }
 
 /**
@@ -127,6 +151,45 @@ export const FileExplorer = ({
     };
   }, [storage]);
 
+  const renderItem = useCallback(
+    (props: SingleClickRenderItemProps<FileListItem>) => {
+      const {
+        isDragged,
+        // isDropTargetValid,
+        isSelected,
+        item,
+        // renameItem,
+        // dragOverItem,
+      } = props;
+
+      const icon = getItemIcon(item);
+      const depth = FileUtils.getDepth(item.filename);
+      const depthLines = Array(depth)
+        .fill(null)
+        .map((value, index) => (
+          // eslint-disable-next-line react/no-array-index-key
+          <span className="file-list-depth-line" key={index} />
+        ));
+
+      return (
+        <div
+          className={classNames('d-flex w-100 align-items-center', {
+            'is-dragged': isDragged,
+            // 'is-exact-drop-target': isExactDropTarget,
+            // 'is-in-drop-target': isInDropTarget,
+            // 'is-invalid-drop-target': isInvalidDropTarget,
+            'is-selected': isSelected,
+          })}
+        >
+          {depthLines}{' '}
+          <FontAwesomeIcon icon={icon} className="item-icon" fixedWidth />{' '}
+          {item.basename}
+        </div>
+      );
+    },
+    []
+  );
+
   return (
     <div className="file-explorer">
       <SingleClickItemList
@@ -137,7 +200,7 @@ export const FileExplorer = ({
         onSelect={handleItemSelect}
         onSelectionChange={handleSelectionChange}
         onViewportChange={handleViewportChange}
-        // renderItem={cachedRenderItem}
+        renderItem={renderItem}
         rowHeight={rowHeight}
         isDraggable
         isMultiSelect

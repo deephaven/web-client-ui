@@ -2,7 +2,7 @@ import Log from '@deephaven/log';
 import { getFileStorage } from '@deephaven/redux';
 import FileExplorer, {
   FileExplorerToolbar,
-  FileInfo,
+  FileListItem,
   FileStorage,
   NewItemModal,
 } from '@deephaven/file-explorer';
@@ -29,6 +29,7 @@ export interface FileExplorerPanelProps {
 }
 
 export interface FileExplorerPanelState {
+  isShown: boolean;
   language?: string;
   session?: DhSession;
   showCreateFolder: boolean;
@@ -112,7 +113,7 @@ export class FileExplorerPanel extends React.Component<
     fileStorage.createDirectory(path).catch(FileExplorerPanel.handleError);
   }
 
-  handleFileSelect(file: FileInfo): void {
+  handleFileSelect(file: FileListItem): void {
     log.debug('fileSelect', file);
     if (file.type === 'directory') {
       return;

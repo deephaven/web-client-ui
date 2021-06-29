@@ -56,7 +56,7 @@ class NewItemModal extends PureComponent<NewItemModalProps, NewItemModalState> {
 
   static defaultProps = {
     isOpen: false,
-    defaultValue: '',
+    defaultValue: '/',
     notifyOnExtensionChange: false,
     placeholder: '',
     onSubmit: (name: string): void => undefined,
@@ -94,7 +94,7 @@ class NewItemModal extends PureComponent<NewItemModalProps, NewItemModalState> {
       prevExtension: FileUtils.getExtension(defaultValue),
       showExtensionChangeModal: false,
       showOverwriteModal: false,
-      value: FileUtils.getFileName(defaultValue),
+      value: FileUtils.getBaseName(defaultValue),
     };
   }
 
@@ -139,7 +139,7 @@ class NewItemModal extends PureComponent<NewItemModalProps, NewItemModalState> {
     const { defaultValue } = this.props as NewItemModalProps;
     this.setState({
       path: FileUtils.getPath(defaultValue),
-      value: FileUtils.getFileName(defaultValue),
+      value: FileUtils.getBaseName(defaultValue),
       validationError: undefined,
       prevExtension: FileUtils.getExtension(defaultValue),
     });
@@ -191,7 +191,7 @@ class NewItemModal extends PureComponent<NewItemModalProps, NewItemModalState> {
       this.setState({ path: item.name });
     } else {
       // Use selected item name and folder and focus the input
-      const value = FileUtils.getFileName(item.name);
+      const value = FileUtils.getBaseName(item.name);
       const path = FileUtils.getPath(item.name);
       this.setState({ value, path }, () => {
         this.focusRenameInput();
