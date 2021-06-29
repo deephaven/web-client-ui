@@ -56,8 +56,8 @@ export default class ShortcutRegistry {
    * @returns Array of conflicting shortcuts. Empty array if none conflict
    */
   static getConflictingShortcuts(keyState: KeyState): Shortcut[] {
-    return Array.from(ShortcutRegistry.shortcutMap.values()).filter(shortcut =>
-      shortcut.matchesKeyState(keyState)
+    return Array.from(ShortcutRegistry.shortcutMap.values()).filter(
+      shortcut => !shortcut.isNull() && shortcut.matchesKeyState(keyState)
     );
   }
 }

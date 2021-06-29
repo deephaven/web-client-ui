@@ -6,6 +6,7 @@ import {
   ShortcutRegistry,
   ContextActionUtils,
   Button,
+  KEY,
 } from '@deephaven/components';
 import type { KeyState } from '@deephaven/components';
 import { vsRefresh } from '@deephaven/icons';
@@ -57,7 +58,12 @@ function ShortcutCategory({
   // Since shortcuts are singletons, React doesn't detect changes for a re-render as easily
   function handleShortcutChange(shortcut: Shortcut) {
     shortcuts
-      .filter(s => s !== shortcut && s.matchesKeyState(shortcut.getKeyState()))
+      .filter(
+        s =>
+          s !== shortcut &&
+          !s.isNull() &&
+          s.matchesKeyState(shortcut.getKeyState())
+      )
       .forEach(conflict => conflict.setToNull());
     setShortcuts(s => [...s]);
   }
@@ -132,10 +138,12 @@ function ShortcutItem({
             conflict.id.startsWith(categoryName) && conflict !== shortcut
         )
         .map(conflict => conflict.name);
+
       if (conflictNames.length) {
         setError(`Conflicts with ${conflictNames.join(', ')}`);
         return;
       }
+
       setError('');
     } else {
       setError('');
@@ -149,7 +157,14 @@ function ShortcutItem({
 
     if (shortcut.isEditable && !e.repeat) {
       const newKeyState = Shortcut.getKeyStateFromEvent(e);
-      setKeyState(newKeyState);
+      const backspaceKeyState = Shortcut.createKeyState([KEY.BACKSPACE]);
+
+      // Backspace clears the shortcut
+      if (Shortcut.doKeyStatesMatch(newKeyState, backspaceKeyState)) {
+        setKeyState(Shortcut.NULL_KEY_STATE);
+      } else {
+        setKeyState(newKeyState);
+      }
     }
   }
 
@@ -157,7 +172,10 @@ function ShortcutItem({
   function handleInputKeyUp(e: React.KeyboardEvent<HTMLInputElement>) {
     e.stopPropagation();
     e.preventDefault();
-    setIsPending(true);
+
+    if (!shortcut.matchesKeyState(keyState)) {
+      setIsPending(true);
+    }
   }
 
   function handleInputFocus() {
@@ -205,20 +223,24 @@ function ShortcutItem({
             value={displayText}
             readOnly
           />
-          {keyState !== shortcut.getDefaultKeyState() && !error && (
-            <Button
-              className="reset-to-default-button"
-              kind="ghost"
-              icon={
-                <FontAwesomeIcon
-                  icon={vsRefresh}
-                  transform={{ rotate: 90, flipX: true }}
-                />
-              }
-              tooltip="Reset to default"
-              onClick={handleResetToDefaultClick}
-            />
-          )}
+          {!Shortcut.doKeyStatesMatch(
+            keyState,
+            shortcut.getDefaultKeyState()
+          ) &&
+            !error && (
+              <Button
+                className="reset-to-default-button"
+                kind="ghost"
+                icon={
+                  <FontAwesomeIcon
+                    icon={vsRefresh}
+                    transform={{ rotate: 90, flipX: true }}
+                  />
+                }
+                tooltip="Reset to default"
+                onClick={handleResetToDefaultClick}
+              />
+            )}
         </div>
       </div>
       {isPending && (

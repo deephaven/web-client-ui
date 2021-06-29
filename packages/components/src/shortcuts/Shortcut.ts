@@ -121,6 +121,14 @@ export default class Shortcut {
 
   private keyState: ValidKeyState;
 
+  static NULL_KEY_STATE: ValidKeyState = {
+    metaKey: false,
+    shiftKey: false,
+    altKey: false,
+    ctrlKey: false,
+    keyValue: null,
+  };
+
   /**
    * Use to check if a keyCode corresponds to an allowed key for a shortcut
    * @param keyCode The keyCode to check. This should be the charCode of the key
@@ -291,6 +299,22 @@ export default class Shortcut {
   }
 
   /**
+   * Checks if 2 KeyStates match
+   * @param state1 First KeyState to compare
+   * @param state2 Second KeyState to compare
+   * @returns True if the KeyStates match and have non-null keyValues
+   */
+  static doKeyStatesMatch(state1: KeyState, state2: KeyState): boolean {
+    return (
+      state1.keyValue?.toUpperCase() === state2.keyValue?.toUpperCase() &&
+      state1.altKey === state2.altKey &&
+      state1.ctrlKey === state2.ctrlKey &&
+      state1.metaKey === state2.metaKey &&
+      state1.shiftKey === state2.shiftKey
+    );
+  }
+
+  /**
    * Gets the display string for the current OS from a KeyState.
    * @param keyState KeyState to get the display for
    * @returns Display string for the current OS
@@ -366,13 +390,11 @@ export default class Shortcut {
    * Sets the shortcut to have null keyValue
    */
   setToNull(): void {
-    this.setKeyState({
-      metaKey: false,
-      shiftKey: false,
-      altKey: false,
-      ctrlKey: false,
-      keyValue: null,
-    });
+    this.setKeyState(Shortcut.NULL_KEY_STATE);
+  }
+
+  isNull(): boolean {
+    return Shortcut.doKeyStatesMatch(this.keyState, Shortcut.NULL_KEY_STATE);
   }
 
   /**
@@ -388,15 +410,7 @@ export default class Shortcut {
    * @returns True if the passed KeyState matches the Shortcut's KeyState
    */
   matchesKeyState(keyState: KeyState): boolean {
-    return (
-      keyState.keyValue !== null &&
-      keyState.keyValue.toUpperCase() ===
-        this.keyState.keyValue?.toUpperCase() &&
-      keyState.altKey === this.keyState.altKey &&
-      keyState.ctrlKey === this.keyState.ctrlKey &&
-      keyState.metaKey === this.keyState.metaKey &&
-      keyState.shiftKey === this.keyState.shiftKey
-    );
+    return Shortcut.doKeyStatesMatch(keyState, this.keyState);
   }
 
   /**
