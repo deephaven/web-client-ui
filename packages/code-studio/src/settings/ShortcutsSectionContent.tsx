@@ -13,7 +13,7 @@ import { vsRefresh } from '@deephaven/icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import './ShortcutsSectionContent.scss';
 
-export default function ShortcutSectionContent(): JSX.Element[] {
+export default function ShortcutSectionContent(): JSX.Element {
   let categories = Array.from(
     ShortcutRegistry.shortcutsByCategory.entries()
   ).map(([name, shortcuts]) => ({
@@ -27,13 +27,21 @@ export default function ShortcutSectionContent(): JSX.Element[] {
   const globalCategory = categories.splice(globalCategoryIndex, 1);
   categories = categories.concat(globalCategory);
 
-  return categories.map(category => (
-    <ShortcutCategory
-      key={category.name}
-      name={category.name}
-      shortcuts={category.shortcuts}
-    />
-  ));
+  return (
+    <>
+      <div className="app-settings-menu-description">
+        Customize shortcuts below. Assigning shortcuts that conflict with the
+        browser or IDE shortcuts may cause unintended behavior
+      </div>
+      {categories.map(category => (
+        <ShortcutCategory
+          key={category.name}
+          name={category.name}
+          shortcuts={category.shortcuts}
+        />
+      ))}
+    </>
+  );
 }
 
 type ShortcutCategoryProps = {
