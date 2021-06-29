@@ -11,7 +11,7 @@ import {
 import { CancelablePromise, PromiseUtils } from '@deephaven/utils';
 import { FileStorageTable, FileStorageItem } from './FileStorage';
 
-const log = Log.module('PouchStorageTable');
+const log = Log.module('WebdavFileStorageTable');
 
 /**
  * Implementation of FileStorageTable for WebDAV.
@@ -35,6 +35,13 @@ export class WebdavFileStorageTable implements FileStorageTable {
   private currentViewportData?: ViewportData<FileStorageItem>;
 
   /**
+   * Map of expanded directory paths to the tables that manage that path.
+   * We use a tree of tables to query the server so we just get the directories that are expanded.
+   * Also the nginx module we are using does not support a depth of infinity: https://github.com/arut/nginx-dav-ext-module/blob/f5e30888a256136d9c550bf1ada77d6ea78a48af/ngx_http_dav_ext_module.c#L757
+   */
+  private childTables: Map<string, WebdavFileStorageTable> = new Map();
+
+  /**
    * @param client The WebDAV client instance to use
    * @param root The root path for this storage table
    */
@@ -45,13 +52,14 @@ export class WebdavFileStorageTable implements FileStorageTable {
 
   getViewportData(): Promise<ViewportData<FileStorageItem>> {
     if (!this.viewportUpdatePromise) {
-      this.refreshData();
+      this.refreshData().catch(() => undefined);
     }
     return (
       this.viewportUpdatePromise ?? Promise.resolve({ items: [], offset: 0 })
     );
   }
 
+  // eslint-disable-next-line class-methods-use-this
   getSnapshot(
     sortedRanges: IndexRange[]
   ): Promise<StorageSnapshot<FileStorageItem>> {
@@ -62,6 +70,41 @@ export class WebdavFileStorageTable implements FileStorageTable {
     return this.currentSize;
   }
 
+  async setExpanded(path: string, expanded: boolean): Promise<void> {
+    const paths = path.split('/');
+    let nextPath = paths.shift();
+    if (!nextPath) {
+      nextPath = paths.shift();
+    }
+    if (!nextPath) {
+      throw new Error(`Invalid path: ${path}`);
+    }
+    const remainingPath = paths.join('/');
+    if (expanded) {
+      if (!this.childTables.has(nextPath)) {
+        const childTable = new WebdavFileStorageTable(
+          this.client,
+          `${this.root}${nextPath}/`
+        );
+        this.childTables.set(nextPath, childTable);
+      }
+      if (remainingPath) {
+        const childTable = this.childTables.get(nextPath);
+        childTable?.setExpanded(remainingPath, expanded);
+      }
+    } else if (this.childTables.has(nextPath)) {
+      if (remainingPath) {
+        const childTable = this.childTables.get(nextPath);
+        childTable?.setExpanded(remainingPath, expanded);
+      } else {
+        this.childTables.delete(nextPath);
+      }
+    }
+    if (this.currentViewport) {
+      this.refreshData().catch(() => undefined);
+    }
+  }
+
   // eslint-disable-next-line class-methods-use-this
   setSearch(search: string): void {
     throw new Error('Method not implemented.');
@@ -70,17 +113,20 @@ export class WebdavFileStorageTable implements FileStorageTable {
   setViewport(viewport: StorageTableViewport): void {
     this.currentViewport = viewport;
 
-    this.refreshData();
+    this.refreshData().catch(() => undefined);
   }
 
+  // eslint-disable-next-line class-methods-use-this
   setFilters(): void {
     throw new Error('Method not implemented.');
   }
 
+  // eslint-disable-next-line class-methods-use-this
   setSorts(): void {
     throw new Error('Method not implemented.');
   }
 
+  // eslint-disable-next-line class-methods-use-this
   setReversed(): void {
     throw new Error('Method not implemented.');
   }
@@ -98,27 +144,13 @@ export class WebdavFileStorageTable implements FileStorageTable {
     };
   }
 
-  async refreshData(): Promise<ViewportData<FileStorageItem> | undefined> {
-    if (!this.currentViewport) {
-      return;
-    }
-
+  async refreshData(): Promise<ViewportData<FileStorageItem>> {
+    log.debug2(this.root, 'refreshData');
     try {
-      const { currentViewport: viewport } = this;
-
       this.viewportUpdatePromise?.cancel();
 
       this.viewportUpdatePromise = PromiseUtils.makeCancelable(
-        this.client.getDirectoryContents(this.root).then(dirContents => ({
-          items: (dirContents as FileStat[])
-            .map(file => ({
-              ...file,
-              id: file.filename,
-              name: file.basename,
-            }))
-            .sort((a, b) => a.filename.localeCompare(b.filename)),
-          offset: viewport.top,
-        }))
+        this.fetchData()
       );
 
       const viewportData = await this.viewportUpdatePromise;
@@ -131,9 +163,60 @@ export class WebdavFileStorageTable implements FileStorageTable {
     } catch (e) {
       if (!PromiseUtils.isCanceled(e)) {
         log.error('Unable to refreshData', e);
-        throw e;
+      }
+      throw e;
+    }
+  }
+
+  private async fetchData(): Promise<ViewportData<FileStorageItem>> {
+    const { currentViewport: viewport } = this;
+    if (!viewport) {
+      throw new Error('No viewport set');
+    }
+
+    // First get the root directory contents
+    let items = await this.client.getDirectoryContents(this.root).then(
+      dirContents =>
+        (dirContents as FileStat[])
+          .map(file => ({
+            ...file,
+            id: file.filename,
+            isExpanded:
+              file.type === 'directory'
+                ? this.childTables.has(file.basename)
+                : undefined,
+          }))
+          .sort((a, b) => {
+            if (a.type !== b.type) {
+              return a.type === 'directory' ? -1 : 1;
+            }
+            return a.basename.localeCompare(b.basename);
+          }) as FileStorageItem[]
+    );
+
+    // Get the data from all expanded directories
+    for (let i = 0; i < items.length; i += 1) {
+      const item = items[i];
+      const { basename, filename } = item;
+      if (filename === `${this.root}${basename}` && item.type === 'directory') {
+        const childTable = this.childTables.get(basename);
+        if (childTable != null) {
+          childTable.setViewport({ top: 0, bottom: viewport.bottom - i });
+          // eslint-disable-next-line no-await-in-loop
+          const childViewportData = await childTable.getViewportData();
+          items.splice(i + 1, 0, ...childViewportData.items);
+        }
       }
     }
+
+    this.currentSize = items.length;
+
+    log.debug2(this.root, 'items', items, viewport);
+
+    // Slice it to the correct viewport
+    items = items.slice(viewport.top, viewport.bottom);
+
+    return { items, offset: viewport.top };
   }
 
   private sendUpdate() {

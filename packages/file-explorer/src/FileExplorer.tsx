@@ -5,20 +5,19 @@ import {
 import Log from '@deephaven/log';
 import { CancelablePromise, PromiseUtils } from '@deephaven/utils';
 import React, { useCallback, useEffect, useState } from 'react';
-import FileStorage, { FileStorageTable } from './FileStorage';
+import FileStorage, {
+  DirectoryStorageItem,
+  FileStorageItem,
+  FileStorageTable,
+  isDirectory,
+} from './FileStorage';
 import './FileExplorer.scss';
 
 const log = Log.module('FileExplorer');
 
-export type FileType = 'file' | 'directory';
+export type FileListItem = SingleClickRenderItemBase & FileStorageItem;
 
-export type FileInfo = {
-  /** Full path of the file */
-  name: string;
-  type: FileType;
-};
-
-export type FileListItem = SingleClickRenderItemBase & FileInfo;
+export type DirectoryListItem = FileListItem & DirectoryStorageItem;
 
 export type LoadedViewport = {
   items: FileListItem[];
@@ -34,7 +33,7 @@ export type ListViewport = {
 export interface FileExplorerProps {
   storage: FileStorage;
 
-  onSelect: (file: FileInfo) => void;
+  onSelect: (file: FileListItem) => void;
 
   /** Height of each item in the list */
   rowHeight?: number;
@@ -67,12 +66,12 @@ export const FileExplorer = ({
         log.debug('handleItemSelect', item);
 
         onSelect(item);
-        if (item.type !== 'directory') {
-          onSelect(item);
+        if (isDirectory(item)) {
+          table?.setExpanded(item.filename, !item.isExpanded);
         }
       }
     },
-    [loadedViewport, onSelect]
+    [loadedViewport, onSelect, table]
   );
 
   const handleSelectionChange = useCallback(e => {
@@ -112,7 +111,7 @@ export const FileExplorer = ({
         setLoadedViewport({
           items: newViewport.items.map(item => ({
             ...item,
-            itemName: item.name,
+            itemName: item.basename,
           })),
           offset: newViewport.offset,
           itemCount: t.size,

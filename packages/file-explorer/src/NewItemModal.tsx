@@ -21,7 +21,6 @@ const log = Log.module('NewItemModal');
 export type NewItemModalProps = typeof NewItemModal.defaultProps & {
   isOpen: boolean;
   title: string;
-  defaultPath: string;
   defaultValue: string;
   type: FileType;
   onSubmit: (name: string) => void;

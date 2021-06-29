@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button, DebouncedSearchInput, Tooltip } from '@deephaven/components';
+import { Button, DebouncedSearchInput } from '@deephaven/components';
 import { vsNewFile, vsNewFolder } from '@deephaven/icons';
 import './FileExplorerToolbar.scss';
 

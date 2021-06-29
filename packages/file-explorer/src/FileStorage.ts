@@ -1,15 +1,29 @@
 import { StorageTable, StorageItem } from '@deephaven/storage';
 
-export interface FileStorageItem extends StorageItem, FileMetadata {
-  type: 'file' | 'directory';
-}
-
 /**
  * Basic metadata of the file
  */
 export interface FileMetadata {
   /** Full path of the file */
-  name: string;
+  filename: string;
+
+  /** Just the file name part of the file (no path) */
+  basename: string;
+}
+
+export interface FileStorageItem extends StorageItem, FileMetadata {
+  type: 'file' | 'directory';
+}
+
+export interface DirectoryStorageItem extends FileStorageItem {
+  type: 'directory';
+  isExpanded: boolean;
+}
+
+export function isDirectory(
+  file: FileStorageItem
+): file is DirectoryStorageItem {
+  return file.type === 'directory';
 }
 
 /**
@@ -21,6 +35,12 @@ export interface File extends FileMetadata {
 
 export interface FileStorageTable extends StorageTable<FileStorageItem> {
   setSearch(search: string): void;
+
+  /**
+   * @param path The path to expand
+   * @param expanded What expanded state to set
+   */
+  setExpanded(path: string, expanded: boolean): Promise<void>;
 }
 
 /**

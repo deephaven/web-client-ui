@@ -64,9 +64,11 @@ export class FileExplorerPanel extends React.Component<
     );
     this.handleSessionOpened = this.handleSessionOpened.bind(this);
     this.handleSessionClosed = this.handleSessionClosed.bind(this);
+    this.handleShow = this.handleShow.bind(this);
 
     const { session, language } = props;
     this.state = {
+      isShown: false,
       language,
       session,
       showCreateFolder: false,
@@ -149,10 +151,14 @@ export class FileExplorerPanel extends React.Component<
     });
   }
 
+  handleShow() {
+    this.setState({ isShown: true });
+  }
+
   render(): ReactNode {
     // TODO: Pass a FileStorage instance instead to a FileExplorer, then WebdavExplorer can just use that client...
     const { fileStorage, glContainer, glEventHub } = this.props;
-    const { newItemPath, showCreateFolder } = this.state;
+    const { isShown, newItemPath, showCreateFolder } = this.state;
     return (
       <Panel
         className="file-explorer-panel"
@@ -161,6 +167,7 @@ export class FileExplorerPanel extends React.Component<
         glEventHub={glEventHub}
         onSessionOpen={this.handleSessionOpened}
         onSessionClose={this.handleSessionClosed}
+        onShow={this.handleShow}
       >
         <div className="file-explorer-toolbar">
           <FileExplorerToolbar
@@ -168,7 +175,12 @@ export class FileExplorerPanel extends React.Component<
             createFolder={this.handleCreateDirectory}
           />
         </div>
-        <FileExplorer storage={fileStorage} onSelect={this.handleFileSelect} />
+        {isShown && (
+          <FileExplorer
+            storage={fileStorage}
+            onSelect={this.handleFileSelect}
+          />
+        )}
         <NewItemModal
           isOpen={showCreateFolder}
           // defaultValue={'/'}
