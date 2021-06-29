@@ -71,6 +71,7 @@ class NotebookPanel extends Component {
     this.handleFocus = this.handleFocus.bind(this);
     this.handleLoadSuccess = this.handleLoadSuccess.bind(this);
     this.handleLoadError = this.handleLoadError.bind(this);
+    this.handleRenameFile = this.handleRenameFile.bind(this);
     this.handleResize = this.handleResize.bind(this);
     this.handleRunCommand = this.handleRunCommand.bind(this);
     this.handleRunAll = this.handleRunAll.bind(this);
@@ -126,7 +127,7 @@ class NotebookPanel extends Component {
     // Not showing the unsaved indicator for null file id and editor content === '',
     // may need to implement some other indication that this notebook has never been saved
     const hasFileId =
-      fileMetadata.itemName && FileUtils.isFullPath(fileMetadata.itemName);
+      fileMetadata.itemName && FileUtils.hasPath(fileMetadata.itemName);
 
     // Unsaved if file id != null and content != null
     // OR file id is null AND content is not null or ''
@@ -169,9 +170,12 @@ class NotebookPanel extends Component {
   componentDidMount() {
     const {
       glContainer: { tab },
+      glEventHub,
     } = this.props;
+    // TODO: Update panel fileMetadata on rename...
     if (tab) this.initTab(tab);
     this.initNotebookContent();
+    glEventHub.on(NotebookEvent.RENAME_FILE, this.handleRenameFile);
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -188,6 +192,7 @@ class NotebookPanel extends Component {
     const { glEventHub } = this.props;
 
     const { fileMetadata, isPreview } = this.state;
+    glEventHub.off(NotebookEvent.RENAME_FILE, this.handleRenameFile);
     glEventHub.emit(NotebookEvent.UNREGISTER_FILE, fileMetadata, isPreview);
   }
 
@@ -268,7 +273,7 @@ class NotebookPanel extends Component {
       .add(fileStorage.loadFile(id))
       .then(loadedFile => {
         log.debug('Loaded file', loadedFile);
-        const { name: itemName } = loadedFile;
+        const { filename: itemName } = loadedFile;
         const { itemName: prevItemName } = this.state;
         if (itemName !== prevItemName) {
           const { metadata } = this.props;
@@ -283,7 +288,7 @@ class NotebookPanel extends Component {
           updatedSettings.value = loadedFile.content;
         }
         this.setState({
-          fileMetadata: { id: loadedFile.id, itemName },
+          fileMetadata: { id: itemName, itemName },
           settings: updatedSettings,
         });
         this.debouncedSavePanelState();
@@ -298,7 +303,7 @@ class NotebookPanel extends Component {
    */
   save() {
     const { fileMetadata } = this.state;
-    if (fileMetadata && FileUtils.isFullPath(fileMetadata.itemName)) {
+    if (fileMetadata && FileUtils.hasPath(fileMetadata.itemName)) {
       const content = this.getNotebookValue();
       this.saveContent(fileMetadata.itemName, content);
       return true;
@@ -310,15 +315,15 @@ class NotebookPanel extends Component {
 
   /**
    * Update existing file content
-   * @param {string} name The name of the file
+   * @param {string} filename The name of the file
    * @param {string} content New file content
    */
-  saveContent(name, content) {
-    log.debug('saveContent', name, content);
+  saveContent(filename, content) {
+    log.debug('saveContent', filename, content);
     this.updateSavedChangeCount();
     const { fileStorage } = this.props;
     this.pending
-      .add(fileStorage.saveFile({ name, content }))
+      .add(fileStorage.saveFile({ filename, content }))
       .then(this.handleSaveSuccess)
       .catch(this.handleSaveError);
   }
@@ -461,8 +466,8 @@ class NotebookPanel extends Component {
 
   handleSaveSuccess(file) {
     const { fileStorage } = this.props;
-    const fileMetadata = { id: file.id, itemName: file.name };
-    const language = NotebookPanel.languageFromFileName(file.name);
+    const fileMetadata = { id: file.filename, itemName: file.filename };
+    const language = NotebookPanel.languageFromFileName(file.filename);
     this.setState(state => {
       const { fileMetadata: oldMetadata } = state;
       const settings = {
@@ -471,7 +476,7 @@ class NotebookPanel extends Component {
       };
       log.debug('handleSaveSuccess', fileMetadata, oldMetadata, settings);
       if (
-        FileUtils.isFullPath(oldMetadata.itemName) &&
+        FileUtils.hasPath(oldMetadata.itemName) &&
         oldMetadata.itemName !== fileMetadata.itemName
       ) {
         log.debug('handleSaveSuccess deleting old file', oldMetadata.itemName);
@@ -520,6 +525,13 @@ class NotebookPanel extends Component {
     }
 
     this.saveContent(name, content);
+  }
+
+  handleRenameFile(oldName, newName) {
+    const { fileMetadata } = this.state;
+    if (fileMetadata.id === oldName) {
+      this.setState({ fileMetadata: { id: newName, itemName: newName } });
+    }
   }
 
   handleResize() {

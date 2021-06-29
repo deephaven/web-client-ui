@@ -5,6 +5,7 @@ import FileStorage, {
   FileStorageItem,
   FileStorageTable,
 } from './FileStorage';
+import FileUtils from './FileUtils';
 import WebdavFileStorageTable from './WebdavFileStorageTable';
 
 export class WebdavFileStorage implements FileStorage {
@@ -19,7 +20,12 @@ export class WebdavFileStorage implements FileStorage {
   async createDirectory(path: string): Promise<FileStorageItem> {
     await this.client.createDirectory(path);
     this.refreshTables();
-    return { type: 'directory', id: path, name: path };
+    return {
+      type: 'directory',
+      id: path,
+      filename: path,
+      basename: FileUtils.getBaseName(path),
+    };
   }
 
   async getTable(): Promise<FileStorageTable> {
@@ -29,7 +35,10 @@ export class WebdavFileStorage implements FileStorage {
   }
 
   async saveFile(file: File): Promise<File> {
-    const success = await this.client.putFileContents(file.name, file.content);
+    const success = await this.client.putFileContents(
+      file.filename,
+      file.content
+    );
     if (!success) {
       throw new Error('Unable to write file');
     }
@@ -41,11 +50,20 @@ export class WebdavFileStorage implements FileStorage {
     const content = (await this.client.getFileContents(name, {
       format: 'text',
     })) as string;
-    return { name, content };
+    return {
+      filename: name,
+      basename: FileUtils.getBaseName(name),
+      content,
+    };
   }
 
   async deleteFile(name: string): Promise<void> {
     await this.client.deleteFile(name);
+    this.refreshTables();
+  }
+
+  async moveFile(name: string, newName: string): Promise<void> {
+    await this.client.moveFile(name, newName);
     this.refreshTables();
   }
 

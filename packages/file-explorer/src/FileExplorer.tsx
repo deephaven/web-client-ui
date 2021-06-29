@@ -1,44 +1,20 @@
-import {
-  SingleClickItemList,
-  SingleClickRenderItemBase,
-  SingleClickRenderItemProps,
-} from '@deephaven/components';
-import { dhPython, vsCode, vsFolder, vsFolderOpened } from '@deephaven/icons';
+import { SingleClickItemList } from '@deephaven/components';
 import Log from '@deephaven/log';
 import { CancelablePromise, PromiseUtils } from '@deephaven/utils';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { IconDefinition } from '@fortawesome/fontawesome-svg-core';
-import classNames from 'classnames';
 import React, { useCallback, useEffect, useState } from 'react';
-import FileStorage, {
-  DirectoryStorageItem,
-  FileStorageItem,
-  FileStorageTable,
-  isDirectory,
-} from './FileStorage';
+import { FileListItem } from './FileList';
+import FileStorage, { FileStorageTable, isDirectory } from './FileStorage';
 import './FileExplorer.scss';
-import FileUtils, { MIME_TYPE } from './FileUtils';
+import FileListContainer from './FileListContainer';
+import FileUtils from './FileUtils';
 
 const log = Log.module('FileExplorer');
-
-export type FileListItem = SingleClickRenderItemBase & FileStorageItem;
-
-export type DirectoryListItem = FileListItem & DirectoryStorageItem;
-
-export type LoadedViewport = {
-  items: FileListItem[];
-  offset: number;
-  itemCount: number;
-};
-
-export type ListViewport = {
-  top: number;
-  bottom: number;
-};
 
 export interface FileExplorerProps {
   storage: FileStorage;
 
+  onDelete?: (files: FileListItem[]) => void;
+  onRename?: (oldName: string, newName: string) => void;
   onSelect: (file: FileListItem) => void;
 
   /** Height of each item in the list */
@@ -46,76 +22,16 @@ export interface FileExplorerProps {
 }
 
 /**
- * Get the icon definition for a file or folder item
- * @param {FileListItem} item Item to get the icon for
- * @returns {IconDefinition} Icon definition to pass in the FontAwesomeIcon icon prop
- */
-export function getItemIcon(item: FileListItem): IconDefinition {
-  if (isDirectory(item)) {
-    return item.isExpanded ? vsFolderOpened : vsFolder;
-  }
-  const mimeType = FileUtils.getMimeType(item.basename);
-  switch (mimeType) {
-    case MIME_TYPE.PYTHON:
-      return dhPython;
-    default:
-      return vsCode;
-  }
-}
-
-/**
  * Component that displays and allows interaction with the file system in the provided FileStorage.
  */
 export const FileExplorer = ({
   storage,
+  onDelete = () => undefined,
+  onRename = () => undefined,
   onSelect,
   rowHeight = SingleClickItemList.DEFAULT_ROW_HEIGHT,
 }: FileExplorerProps): JSX.Element => {
-  const [loadedViewport, setLoadedViewport] = useState<LoadedViewport>(() => ({
-    items: [],
-    offset: 0,
-    itemCount: 0,
-  }));
   const [table, setTable] = useState<FileStorageTable>();
-  const [viewport, setViewport] = useState<ListViewport>({ top: 0, bottom: 0 });
-
-  const handleItemDrop = useCallback(() => {
-    log.debug('handleItemDrop');
-  }, []);
-
-  const handleItemSelect = useCallback(
-    itemIndex => {
-      const item = loadedViewport.items[itemIndex];
-      if (item !== undefined) {
-        log.debug('handleItemSelect', item);
-
-        onSelect(item);
-        if (isDirectory(item)) {
-          table?.setExpanded(item.filename, !item.isExpanded);
-        }
-      }
-    },
-    [loadedViewport, onSelect, table]
-  );
-
-  const handleSelectionChange = useCallback(e => {
-    log.debug('handleSelectionChange', e);
-  }, []);
-
-  const handleViewportChange = useCallback((top: number, bottom: number) => {
-    log.debug('handleViewportChange', top, bottom);
-    setViewport({ top, bottom });
-  }, []);
-
-  const handleValidateDropTarget = useCallback(() => {
-    log.debug('handleValidateDropTarget');
-    return false;
-  }, []);
-
-  useEffect(() => {
-    log.debug('updating table viewport', viewport);
-    table?.setViewport(viewport);
-  }, [table, viewport]);
 
   useEffect(() => {
     let tablePromise: CancelablePromise<FileStorageTable>;
@@ -126,24 +42,13 @@ export const FileExplorer = ({
         t.close()
       );
 
-      const t = await tablePromise;
-
-      log.debug('adding listening');
-
-      t.onUpdate(newViewport => {
-        log.debug('t.onUpdate');
-        setLoadedViewport({
-          items: newViewport.items.map(item => ({
-            ...item,
-            itemName: item.basename,
-          })),
-          offset: newViewport.offset,
-          itemCount: t.size,
-        });
-      });
-
-      log.debug('initTable end calling setTable');
-      setTable(t);
+      try {
+        setTable(await tablePromise);
+      } catch (e) {
+        if (!PromiseUtils.isCanceled(e)) {
+          log.error('Unable to initialize table', e);
+        }
+      }
     }
     initTable();
     return () => {
@@ -151,61 +56,51 @@ export const FileExplorer = ({
     };
   }, [storage]);
 
-  const renderItem = useCallback(
-    (props: SingleClickRenderItemProps<FileListItem>) => {
-      const {
-        isDragged,
-        // isDropTargetValid,
-        isSelected,
-        item,
-        // renameItem,
-        // dragOverItem,
-      } = props;
+  const handleError = useCallback((e: Error) => {
+    if (!PromiseUtils.isCanceled(e)) {
+      log.error(e);
+    }
+  }, []);
 
-      const icon = getItemIcon(item);
-      const depth = FileUtils.getDepth(item.filename);
-      const depthLines = Array(depth)
-        .fill(null)
-        .map((value, index) => (
-          // eslint-disable-next-line react/no-array-index-key
-          <span className="file-list-depth-line" key={index} />
-        ));
-
-      return (
-        <div
-          className={classNames('d-flex w-100 align-items-center', {
-            'is-dragged': isDragged,
-            // 'is-exact-drop-target': isExactDropTarget,
-            // 'is-in-drop-target': isInDropTarget,
-            // 'is-invalid-drop-target': isInvalidDropTarget,
-            'is-selected': isSelected,
-          })}
-        >
-          {depthLines}{' '}
-          <FontAwesomeIcon icon={icon} className="item-icon" fixedWidth />{' '}
-          {item.basename}
-        </div>
-      );
+  const handleDelete = useCallback(
+    (files: FileListItem[]) => {
+      files.forEach(file => storage.deleteFile(file.filename));
+      onDelete(files);
     },
-    []
+    [onDelete, storage]
+  );
+
+  const handleRename = useCallback(
+    (item: FileListItem, newName: string) => {
+      let name = item.filename;
+      const isDir = isDirectory(item);
+      if (isDir && !name.endsWith('/')) {
+        name = `${name}/`;
+      }
+      let destination = `${FileUtils.getParent(name)}${newName}`;
+      if (isDir && !destination.endsWith('/')) {
+        destination = `${destination}/`;
+      }
+      log.debug2('handleRename', name, destination);
+      storage.moveFile(name, destination).catch(handleError);
+      onRename(name, destination);
+    },
+    [handleError, onRename, storage]
   );
 
   return (
     <div className="file-explorer">
-      <SingleClickItemList
-        items={loadedViewport.items}
-        itemCount={loadedViewport.itemCount}
-        offset={loadedViewport.offset}
-        onDrop={handleItemDrop}
-        onSelect={handleItemSelect}
-        onSelectionChange={handleSelectionChange}
-        onViewportChange={handleViewportChange}
-        renderItem={renderItem}
-        rowHeight={rowHeight}
-        isDraggable
-        isMultiSelect
-        validateDropTarget={handleValidateDropTarget}
-      />
+      {table && (
+        <FileListContainer
+          isMultiSelect
+          showContextMenu
+          onDelete={handleDelete}
+          onRename={handleRename}
+          onSelect={onSelect}
+          rowHeight={rowHeight}
+          table={table}
+        />
+      )}
     </div>
   );
 };

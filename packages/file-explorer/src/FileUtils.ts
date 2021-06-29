@@ -1,3 +1,6 @@
+/**
+ * A basic list of some common MIME types.
+ */
 export enum MIME_TYPE {
   GROOVY = 'text/x-groovy',
   PLAIN_TEXT = 'text/plain',
@@ -6,6 +9,9 @@ export enum MIME_TYPE {
   UNKNOWN = '',
 }
 
+/**
+ * Collection of utils for operating on file names
+ */
 export class FileUtils {
   /**
    * Format file extension
@@ -17,23 +23,11 @@ export class FileUtils {
   }
 
   /**
-   * Focus rename input and select name part for files, select all text for folders
-   * @param input Input element to select text in
-   * @param isFolder True if the input value is a folder name
-   */
-  static focusRenameInput(input: HTMLInputElement, isFolder = false): void {
-    const { value } = input;
-    const selectionEnd = isFolder ? value.length : value.lastIndexOf('.');
-    input.focus();
-    input.setSelectionRange(0, selectionEnd > 0 ? selectionEnd : value.length);
-  }
-
-  /**
    * Get the depth (how many directories deep it is) of the provided filename with path.
    * @param name The full file name to get the depth of
    */
   static getDepth(name: string): number {
-    if (!FileUtils.isFullPath(name)) {
+    if (!FileUtils.hasPath(name)) {
       throw new Error(`Invalid path provided: ${name}`);
     }
     const matches = name.match(/\//g) ?? [];
@@ -63,6 +57,11 @@ export class FileUtils {
     return name.split('/').pop() ?? '';
   }
 
+  /**
+   * Return a MIME type for the provided file
+   * @param name The file name to get the type for
+   * @returns A known MIME type if recognized
+   */
   static getMimeType(name: string): MIME_TYPE {
     const basename = this.getBaseName(name).toLowerCase();
     switch (basename) {
@@ -80,12 +79,29 @@ export class FileUtils {
   }
 
   /**
+   * Pop the last part of the filename component to return the parent path
+   * @param name The file name to get the parent path of
+   */
+  static getParent(name: string): string {
+    if (!FileUtils.hasPath(name)) {
+      throw new Error(`Invalid name provided: ${name}`);
+    }
+
+    const parts = name.split('/');
+    while (parts.pop() === '');
+    if (parts.length === 0) {
+      throw new Error(`No parent for path provided: ${name}`);
+    }
+    return `${parts.join('/')}/`;
+  }
+
+  /**
    * Get the path name portion of the file
    * @param name The full path with or without filename to get the path of
    * @returns Just the path with out the file name part, including trailing slash
    */
   static getPath(name: string): string {
-    if (!FileUtils.isFullPath(name)) {
+    if (!FileUtils.hasPath(name)) {
       throw new Error(`Invalid filename provided: ${name}`);
     }
     const parts = name.split('/');
@@ -98,8 +114,17 @@ export class FileUtils {
    * @param name The file name to check
    * @returns True if it's a full path, false otherwise
    */
-  static isFullPath(name: string): boolean {
+  static hasPath(name: string): boolean {
     return name.startsWith('/');
+  }
+
+  /**
+   * Check a given file name is a path
+   * @param name The file name to check
+   * @returns True if it's a full path, false otherwise
+   */
+  static isPath(name: string): boolean {
+    return name.startsWith('/') && name.endsWith('/');
   }
 
   /**

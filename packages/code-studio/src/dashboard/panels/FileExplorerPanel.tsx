@@ -63,6 +63,8 @@ export class FileExplorerPanel extends React.Component<
     this.handleCreateDirectorySubmit = this.handleCreateDirectorySubmit.bind(
       this
     );
+    this.handleDelete = this.handleDelete.bind(this);
+    this.handleRename = this.handleRename.bind(this);
     this.handleSessionOpened = this.handleSessionOpened.bind(this);
     this.handleSessionClosed = this.handleSessionClosed.bind(this);
     this.handleShow = this.handleShow.bind(this);
@@ -113,6 +115,16 @@ export class FileExplorerPanel extends React.Component<
     fileStorage.createDirectory(path).catch(FileExplorerPanel.handleError);
   }
 
+  handleDelete(files: FileListItem[]): void {
+    const { glEventHub } = this.props;
+    files.forEach(file => {
+      glEventHub.emit(NotebookEvent.CLOSE_FILE, {
+        id: file.filename,
+        itemName: file.filename,
+      });
+    });
+  }
+
   handleFileSelect(file: FileListItem): void {
     log.debug('fileSelect', file);
     if (file.type === 'directory') {
@@ -135,6 +147,12 @@ export class FileExplorerPanel extends React.Component<
     );
   }
 
+  handleRename(oldName: string, newName: string): void {
+    const { glEventHub } = this.props;
+    log.debug('handleRename', oldName, newName);
+    glEventHub.emit(NotebookEvent.RENAME_FILE, oldName, newName);
+  }
+
   handleSessionOpened(
     session: DhSession,
     { language }: { language: string }
@@ -152,14 +170,13 @@ export class FileExplorerPanel extends React.Component<
     });
   }
 
-  handleShow() {
+  handleShow(): void {
     this.setState({ isShown: true });
   }
 
   render(): ReactNode {
-    // TODO: Pass a FileStorage instance instead to a FileExplorer, then WebdavExplorer can just use that client...
     const { fileStorage, glContainer, glEventHub } = this.props;
-    const { isShown, newItemPath, showCreateFolder } = this.state;
+    const { isShown, showCreateFolder } = this.state;
     return (
       <Panel
         className="file-explorer-panel"
@@ -179,6 +196,8 @@ export class FileExplorerPanel extends React.Component<
         {isShown && (
           <FileExplorer
             storage={fileStorage}
+            onDelete={this.handleDelete}
+            onRename={this.handleRename}
             onSelect={this.handleFileSelect}
           />
         )}

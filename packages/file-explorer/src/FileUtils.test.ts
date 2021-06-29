@@ -34,6 +34,27 @@ it('gets the path', () => {
   testError('invalid/path');
 });
 
+it('gets the parent', () => {
+  function testName(name: string, expectedPath: string) {
+    expect(FileUtils.getParent(name)).toBe(expectedPath);
+  }
+
+  function testError(name: string) {
+    expect(() => FileUtils.getParent(name)).toThrow();
+  }
+
+  testName('/foo.txt', '/');
+  testName('/foo/', '/');
+  testName('/foo/bar.txt', '/foo/');
+  testName('/foo/bar/', '/foo/');
+  testName('/foo/bar/baz.txt', '/foo/bar/');
+
+  testError('/');
+  testError('nopath.txt');
+  testError('nopath');
+  testError('invalid/path');
+});
+
 it('gets the filename', () => {
   function testName(name: string, expectedName: string) {
     expect(FileUtils.getBaseName(name)).toBe(expectedName);

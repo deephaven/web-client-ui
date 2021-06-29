@@ -276,11 +276,21 @@ class NewItemModal extends PureComponent<NewItemModalProps, NewItemModalState> {
     return Promise.resolve(null);
   }
 
+  /**
+   * Focus rename input and select name part for files, select all text for folders
+   */
   focusRenameInput(): void {
     const input = this.inputRef.current;
     if (input) {
       const { type } = this.props;
-      FileUtils.focusRenameInput(input, type === 'directory');
+      const { value } = input;
+      const selectionEnd =
+        type === 'directory' ? value.length : value.lastIndexOf('.');
+      input.focus();
+      input.setSelectionRange(
+        0,
+        selectionEnd > 0 ? selectionEnd : value.length
+      );
     }
   }
 

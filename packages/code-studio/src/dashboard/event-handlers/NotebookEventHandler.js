@@ -1,4 +1,5 @@
 import shortid from 'shortid';
+import { FileUtils } from '@deephaven/file-explorer';
 import Log from '@deephaven/log';
 import LayoutUtils from '../../layout/LayoutUtils';
 import { NotebookEvent } from '../events';
@@ -70,7 +71,7 @@ class NotebookEventHandler {
   // eslint-disable-next-line class-methods-use-this
   getNotebookTitle(fileMetadata) {
     const { itemName } = fileMetadata;
-    return itemName;
+    return FileUtils.getBaseName(itemName);
   }
 
   getNotebookFileName({ language }) {
@@ -253,7 +254,7 @@ class NotebookEventHandler {
       if (tabId === existingTabId) {
         log.debug(`Update tab title for file ${id}`);
         const { itemName } = fileMetadata;
-        this.renameFileTab(id, itemName);
+        this.renameFileTab(id, FileUtils.getBaseName(itemName));
       } else {
         log.error(
           `File ${id} already associated with a different tab ${existingTabId}`
@@ -274,14 +275,26 @@ class NotebookEventHandler {
     LayoutUtils.renameComponent(this.layout.root, { id }, newTitle);
   }
 
-  renameFileTab(fileId, newTitle) {
-    log.debug('Rename file tab', fileId, newTitle);
-    if (!this.openFileMap.has(fileId)) {
-      log.debug(`File ${fileId} isn't open, no need to rename the tab`);
+  renameFileTab(oldName, newName) {
+    log.debug('Rename file tab', oldName, newName);
+    let tabId;
+    if (this.openFileMap.has(oldName)) {
+      tabId = this.openFileMap.get(oldName);
+      this.openFileMap.delete(oldName);
+      this.openFileMap.set(newName, tabId);
+    }
+    if (this.previewFileMap.has(oldName)) {
+      tabId = this.previewFileMap.get(oldName);
+      this.previewFileMap.delete(oldName);
+      this.previewFileMap.set(newName, tabId);
+    }
+
+    if (!tabId) {
+      log.debug2(`File ${oldName} isn't open, no need to rename the tab`);
       return;
     }
-    const id = this.openFileMap.get(fileId);
-    this.renameTab(id, newTitle);
+
+    this.renameTab(tabId, FileUtils.getBaseName(newName));
   }
 
   unregisterFileTab(fileMetadata, isPreview) {

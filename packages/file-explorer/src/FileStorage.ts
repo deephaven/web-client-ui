@@ -71,6 +71,13 @@ export interface FileStorage {
   deleteFile(name: string): Promise<void>;
 
   /**
+   * Move a file to a new location
+   * @param name Source file name
+   * @param newName The new file name, including path
+   */
+  moveFile(name: string, newName: string): Promise<void>;
+
+  /**
    * Create the directory at the given path
    * @param name The full directory path
    */
