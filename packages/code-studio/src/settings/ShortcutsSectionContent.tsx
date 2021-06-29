@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import classNames from 'classnames';
 import {
   Shortcut,
@@ -31,25 +31,72 @@ export default function ShortcutSectionContent(): JSX.Element[] {
   categories = categories.concat(globalCategory);
 
   return categories.map(category => (
-    <div key={category.name} className="mt-3">
-      <div className="font-weight-bold"> {category.name}</div>
-      {category.shortcuts.map(shortcut => (
-        <ShortcutItem key={shortcut.id} shortcut={shortcut} />
+    <ShortcutCategory
+      key={category.name}
+      name={category.name}
+      shortcuts={category.shortcuts}
+    />
+  ));
+}
+
+type ShortcutCategoryProps = {
+  name: string;
+  shortcuts: Shortcut[];
+};
+
+function ShortcutCategory({
+  name,
+  shortcuts: propsShortcuts,
+}: ShortcutCategoryProps): JSX.Element {
+  const [shortcuts, setShortcuts] = useState(propsShortcuts);
+
+  // Used to trigger a re-render when a shortcut is changed
+  // Since shortcuts are singletons, React doesn't detect changes for a re-render as easily
+  function handleShortcutChange() {
+    setShortcuts(s => [...s]);
+  }
+
+  const displayTexts = useMemo(() => shortcuts.map(s => s.getDisplayText()), [
+    shortcuts,
+  ]);
+
+  return (
+    <div className="mt-3">
+      <div className="font-weight-bold">{name}</div>
+      {shortcuts.map((shortcut, i) => (
+        <ShortcutItem
+          key={shortcut.id}
+          shortcut={shortcut}
+          displayText={displayTexts[i]}
+          onChange={handleShortcutChange}
+        />
       ))}
     </div>
-  ));
+  );
 }
 
 type ShortcutItemProps = {
   shortcut: Shortcut;
+  displayText: string;
+  onChange(): void;
 };
 
-function ShortcutItem({ shortcut }: ShortcutItemProps): JSX.Element {
-  const [displayText, setDisplayText] = useState(shortcut.getDisplayText());
+function ShortcutItem({
+  shortcut,
+  displayText: propsDisplayText,
+  onChange,
+}: ShortcutItemProps): JSX.Element {
+  const [displayText, setDisplayText] = useState(propsDisplayText);
   const [keyState, setKeyState] = useState<KeyState>(shortcut.getKeyState());
   const [isChanging, setIsChanging] = useState(false);
   const [error, setError] = useState('');
 
+  // Updates the displayText state if the props change
+  useEffect(() => {
+    setDisplayText(propsDisplayText);
+  }, [propsDisplayText]);
+
+  // Updates pending key state and sets input display text
   function handleInputKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
     e.stopPropagation();
     e.preventDefault();
@@ -61,6 +108,7 @@ function ShortcutItem({ shortcut }: ShortcutItemProps): JSX.Element {
     }
   }
 
+  // Set this shortcut to changing state, check key state validity and set errors
   function handleInputKeyUp(e: React.KeyboardEvent<HTMLInputElement>) {
     e.stopPropagation();
     e.preventDefault();
@@ -96,8 +144,16 @@ function ShortcutItem({ shortcut }: ShortcutItemProps): JSX.Element {
   }
 
   function handleConfirm() {
+    const conflicts = ShortcutRegistry.getConflictingShortcuts(keyState).filter(
+      s => s !== shortcut
+    );
+    if (conflicts.length) {
+      conflicts.forEach(conflict => conflict.setToNull());
+      setError('');
+    }
     shortcut.setKeyState(keyState);
     setIsChanging(false);
+    onChange();
   }
 
   function handleUndo() {

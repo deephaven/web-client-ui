@@ -105,7 +105,7 @@ export interface KeyState {
 }
 
 interface ValidKeyState extends KeyState {
-  keyValue: KEY;
+  keyValue: KEY | null;
 }
 
 export default class Shortcut {
@@ -137,14 +137,15 @@ export default class Shortcut {
    */
   static isValidKeyState(state: KeyState): state is ValidKeyState {
     return (
-      Shortcut.isAllowedKey(state.keyValue) &&
-      (Shortcut.isMacPlatform || !state.metaKey) && // MetaKey not allowed in windows
-      (state.altKey ||
-        state.ctrlKey ||
-        state.metaKey ||
-        state.shiftKey ||
-        state.keyValue === KEY.ENTER ||
-        state.keyValue === KEY.DELETE)
+      state.keyValue === null ||
+      (Shortcut.isAllowedKey(state.keyValue) &&
+        (Shortcut.isMacPlatform || !state.metaKey) && // MetaKey not allowed in windows
+        (state.altKey ||
+          state.ctrlKey ||
+          state.metaKey ||
+          state.shiftKey ||
+          state.keyValue === KEY.ENTER ||
+          state.keyValue === KEY.DELETE))
     );
   }
 
@@ -238,7 +239,7 @@ export default class Shortcut {
 
     if (keyState.keyValue === KEY.ESCAPE) {
       display += 'Esc';
-    } else {
+    } else if (keyState.keyValue !== null) {
       display += keyState.keyValue;
     }
 
@@ -280,6 +281,8 @@ export default class Shortcut {
       case KEY.DELETE:
         display += '⌦';
         break;
+      case null:
+        break;
       default:
         display += keyState.keyValue;
     }
@@ -293,6 +296,9 @@ export default class Shortcut {
    * @returns Display string for the current OS
    */
   static getDisplayText(keyState: KeyState): string {
+    if (keyState.keyValue === null) {
+      return '';
+    }
     return Shortcut.isMacPlatform
       ? Shortcut.getMacDisplayText(keyState)
       : Shortcut.getWindowsDisplayText(keyState);
@@ -349,6 +355,19 @@ export default class Shortcut {
   }
 
   /**
+   * Sets the shortcut to have null keyValue
+   */
+  setToNull(): void {
+    this.setKeyState({
+      metaKey: false,
+      shiftKey: false,
+      altKey: false,
+      ctrlKey: false,
+      keyValue: null,
+    });
+  }
+
+  /**
    * Checks if a KeyState matches the KeyState for the shortcut
    * @param keyState KeyState to check
    * @returns True if the passed KeyState matches the Shortcut's KeyState
@@ -357,7 +376,7 @@ export default class Shortcut {
     return (
       keyState.keyValue !== null &&
       keyState.keyValue.toUpperCase() ===
-        this.keyState.keyValue.toUpperCase() &&
+        this.keyState.keyValue?.toUpperCase() &&
       keyState.altKey === this.keyState.altKey &&
       keyState.ctrlKey === this.keyState.ctrlKey &&
       keyState.metaKey === this.keyState.metaKey &&
