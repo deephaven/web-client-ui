@@ -88,9 +88,13 @@ class NewItemModal extends PureComponent<NewItemModalProps, NewItemModalState> {
 
     const { defaultValue } = props;
 
+    const path = FileUtils.hasPath(defaultValue)
+      ? FileUtils.getPath(defaultValue)
+      : '/';
+
     this.state = {
       disableSubmit: false,
-      path: FileUtils.getPath(defaultValue),
+      path,
       prevExtension: FileUtils.getExtension(defaultValue),
       showExtensionChangeModal: false,
       showOverwriteModal: false,
@@ -137,8 +141,11 @@ class NewItemModal extends PureComponent<NewItemModalProps, NewItemModalState> {
 
   resetValue(): void {
     const { defaultValue } = this.props as NewItemModalProps;
+    const path = FileUtils.hasPath(defaultValue)
+      ? FileUtils.getPath(defaultValue)
+      : '/';
     this.setState({
-      path: FileUtils.getPath(defaultValue),
+      path,
       value: FileUtils.getBaseName(defaultValue),
       validationError: undefined,
       prevExtension: FileUtils.getExtension(defaultValue),
