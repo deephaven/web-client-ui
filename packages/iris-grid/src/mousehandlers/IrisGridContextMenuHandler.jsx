@@ -19,7 +19,7 @@ import {
 import './IrisGridContextMenuHandler.scss';
 import TableUtils from '../TableUtils';
 import { TableColumnFormatter, DateTimeColumnFormatter } from '../formatters';
-import { SHORTCUTS } from '..';
+import SHORTCUTS from '../IrisGridShortcuts';
 
 const log = Log.module('IrisGridContextMenuHandler');
 

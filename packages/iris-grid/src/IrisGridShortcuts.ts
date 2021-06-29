@@ -42,7 +42,9 @@ const INPUT_TABLE = {
   }),
 };
 
-export default {
+const IRIS_GRID_SHORTCUTS = {
   TABLE,
   INPUT_TABLE,
 };
+
+export default IRIS_GRID_SHORTCUTS;
