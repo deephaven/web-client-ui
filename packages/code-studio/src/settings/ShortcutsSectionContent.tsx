@@ -8,19 +8,15 @@ import {
   Button,
 } from '@deephaven/components';
 import type { KeyState } from '@deephaven/components';
+import { vsRefresh } from '@deephaven/icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import './ShortcutsSectionContent.scss';
 
 export default function ShortcutSectionContent(): JSX.Element[] {
-  function formatCategoryName(name: string): string {
-    return name
-      .split('_')
-      .map(word => `${word[0].toUpperCase()}${word.slice(1).toLowerCase()}`)
-      .join(' ');
-  }
   let categories = Array.from(
     ShortcutRegistry.shortcutsByCategory.entries()
   ).map(([name, shortcuts]) => ({
-    name: formatCategoryName(name),
+    name,
     shortcuts,
   }));
 
@@ -48,11 +44,21 @@ function ShortcutCategory({
   name,
   shortcuts: propsShortcuts,
 }: ShortcutCategoryProps): JSX.Element {
+  function formatCategoryName(categoryName: string): string {
+    return categoryName
+      .split('_')
+      .map(word => `${word[0].toUpperCase()}${word.slice(1).toLowerCase()}`)
+      .join(' ');
+  }
+
   const [shortcuts, setShortcuts] = useState(propsShortcuts);
 
   // Used to trigger a re-render when a shortcut is changed
   // Since shortcuts are singletons, React doesn't detect changes for a re-render as easily
-  function handleShortcutChange() {
+  function handleShortcutChange(shortcut: Shortcut) {
+    shortcuts
+      .filter(s => s !== shortcut && s.matchesKeyState(shortcut.getKeyState()))
+      .forEach(conflict => conflict.setToNull());
     setShortcuts(s => [...s]);
   }
 
@@ -62,12 +68,13 @@ function ShortcutCategory({
 
   return (
     <div className="mt-3">
-      <div className="font-weight-bold">{name}</div>
+      <div className="font-weight-bold">{formatCategoryName(name)}</div>
       {shortcuts.map((shortcut, i) => (
         <ShortcutItem
           key={shortcut.id}
           shortcut={shortcut}
           displayText={displayTexts[i]}
+          categoryName={name}
           onChange={handleShortcutChange}
         />
       ))}
@@ -78,23 +85,62 @@ function ShortcutCategory({
 type ShortcutItemProps = {
   shortcut: Shortcut;
   displayText: string;
-  onChange(): void;
+  categoryName: string;
+  onChange(shortcut: Shortcut): void;
 };
 
 function ShortcutItem({
   shortcut,
   displayText: propsDisplayText,
+  categoryName,
   onChange,
 }: ShortcutItemProps): JSX.Element {
   const [displayText, setDisplayText] = useState(propsDisplayText);
   const [keyState, setKeyState] = useState<KeyState>(shortcut.getKeyState());
-  const [isChanging, setIsChanging] = useState(false);
+  const [isPending, setIsPending] = useState(false);
   const [error, setError] = useState('');
 
-  // Updates the displayText state if the props change
+  // If propsDisplayText changes, the shortcut was altered from a conflict state by the parent component
   useEffect(() => {
     setDisplayText(propsDisplayText);
-  }, [propsDisplayText]);
+    setKeyState(shortcut.getKeyState());
+  }, [propsDisplayText, shortcut]);
+
+  // Updates displayText when keyState is changed
+  useEffect(() => {
+    setDisplayText(Shortcut.getDisplayText(keyState));
+    if (shortcut.matchesKeyState(keyState)) {
+      setIsPending(false);
+    }
+  }, [keyState, shortcut]);
+
+  // Sets error state based on isPending
+  useEffect(() => {
+    if (isPending) {
+      if (!Shortcut.isValidKeyState(keyState)) {
+        if (Shortcut.isAllowedKey(keyState.keyValue)) {
+          setError('Must contain a modifier key');
+        } else {
+          setError('Must contain an allowed action key');
+        }
+        return;
+      }
+
+      const conflictNames = ShortcutRegistry.getConflictingShortcuts(keyState)
+        .filter(
+          conflict =>
+            conflict.id.startsWith(categoryName) && conflict !== shortcut
+        )
+        .map(conflict => conflict.name);
+      if (conflictNames.length) {
+        setError(`Conflicts with ${conflictNames.join(', ')}`);
+        return;
+      }
+      setError('');
+    } else {
+      setError('');
+    }
+  }, [isPending, keyState, categoryName, shortcut]);
 
   // Updates pending key state and sets input display text
   function handleInputKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
@@ -104,7 +150,6 @@ function ShortcutItem({
     if (shortcut.isEditable && !e.repeat) {
       const newKeyState = Shortcut.getKeyStateFromEvent(e);
       setKeyState(newKeyState);
-      setDisplayText(Shortcut.getDisplayText(newKeyState));
     }
   }
 
@@ -112,27 +157,7 @@ function ShortcutItem({
   function handleInputKeyUp(e: React.KeyboardEvent<HTMLInputElement>) {
     e.stopPropagation();
     e.preventDefault();
-
-    setIsChanging(true);
-
-    if (!Shortcut.isValidKeyState(keyState)) {
-      if (Shortcut.isAllowedKey(keyState.keyValue)) {
-        setError('Must contain a modifier key');
-      } else {
-        setError('Must contain an allowed action key');
-      }
-      return;
-    }
-
-    const context = shortcut.id.split('.')[0];
-    const conflictNames = ShortcutRegistry.getConflictingShortcuts(keyState)
-      .filter(s => s.id.startsWith(context) && s.id !== shortcut.id)
-      .map(s => s.name);
-    if (conflictNames.length) {
-      setError(`Conflicts with ${conflictNames.join(', ')}`);
-      return;
-    }
-    setError('');
+    setIsPending(true);
   }
 
   function handleInputFocus() {
@@ -144,24 +169,20 @@ function ShortcutItem({
   }
 
   function handleConfirm() {
-    const conflicts = ShortcutRegistry.getConflictingShortcuts(keyState).filter(
-      s => s !== shortcut
-    );
-    if (conflicts.length) {
-      conflicts.forEach(conflict => conflict.setToNull());
-      setError('');
-    }
     shortcut.setKeyState(keyState);
-    setIsChanging(false);
-    onChange();
+    setIsPending(false);
+    onChange(shortcut);
   }
 
   function handleUndo() {
     const originalKeyState = shortcut.getKeyState();
     setKeyState(originalKeyState);
-    setDisplayText(Shortcut.getDisplayText(originalKeyState));
-    setIsChanging(false);
-    setError('');
+    setIsPending(false);
+  }
+
+  function handleResetToDefaultClick() {
+    setIsPending(true);
+    setKeyState(shortcut.getDefaultKeyState());
   }
 
   return (
@@ -171,20 +192,36 @@ function ShortcutItem({
           {shortcut.name}
           {shortcut.tooltip && <Tooltip>{shortcut.tooltip}</Tooltip>}
         </label>
-        <input
-          className={classNames('form-control', {
-            'is-invalid': error,
-          })}
-          onKeyDown={handleInputKeyDown}
-          onKeyUp={handleInputKeyUp}
-          onFocus={handleInputFocus}
-          onBlur={handleInputBlur}
-          disabled={!shortcut.isEditable}
-          value={displayText}
-          readOnly
-        />
+        <div className="shortcut-item-input-container">
+          <input
+            className={classNames('form-control', {
+              'is-invalid': error,
+            })}
+            onKeyDown={handleInputKeyDown}
+            onKeyUp={handleInputKeyUp}
+            onFocus={handleInputFocus}
+            onBlur={handleInputBlur}
+            disabled={!shortcut.isEditable}
+            value={displayText}
+            readOnly
+          />
+          {keyState !== shortcut.getDefaultKeyState() && !error && (
+            <Button
+              className="reset-to-default-button"
+              kind="ghost"
+              icon={
+                <FontAwesomeIcon
+                  icon={vsRefresh}
+                  transform={{ rotate: 90, flipX: true }}
+                />
+              }
+              tooltip="Reset to default"
+              onClick={handleResetToDefaultClick}
+            />
+          )}
+        </div>
       </div>
-      {isChanging && (
+      {isPending && (
         <div
           className={classNames('shortcut-item-message-container', {
             'is-invalid': error,

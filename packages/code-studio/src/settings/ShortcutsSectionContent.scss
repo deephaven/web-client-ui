@@ -10,9 +10,22 @@
   label.shortcut-item-name {
     margin: 0;
   }
+}
 
-  input {
-    width: 40%;
+.shortcut-item-input-container {
+  width: 40%;
+  position: relative;
+
+  & > input {
+    display: inline-block;
+    padding-right: 2rem;
+  }
+
+  & > button.reset-to-default-button {
+    position: absolute;
+    right: 0;
+    padding: calc(#{$input-padding-y} + #{$input-border-width})
+      calc(#{$input-padding-x} + #{$input-border-width});
   }
 }
 

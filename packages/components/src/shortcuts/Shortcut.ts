@@ -355,6 +355,14 @@ export default class Shortcut {
   }
 
   /**
+   * Gets the default key state of the shortcut
+   * @returns Default key state
+   */
+  getDefaultKeyState(): ValidKeyState {
+    return this.defaultKeyState;
+  }
+
+  /**
    * Sets the shortcut to have null keyValue
    */
   setToNull(): void {
@@ -365,6 +373,13 @@ export default class Shortcut {
       ctrlKey: false,
       keyValue: null,
     });
+  }
+
+  /**
+   * Sets the shortcut to its default key state
+   */
+  setToDefault(): void {
+    this.setKeyState(this.defaultKeyState);
   }
 
   /**

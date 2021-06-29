@@ -52,7 +52,6 @@ export default class ShortcutRegistry {
   /**
    * Gets an array of any registered shortcuts with conflicting key states.
    * Only checks the key states of the current OS (Mac or Windows/Linux)
-   * Note that a keyboard event satisfies the KeyState interface
    * @param keyState
    * @returns Array of conflicting shortcuts. Empty array if none conflict
    */
