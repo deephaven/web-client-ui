@@ -66,9 +66,7 @@ export const FileExplorer = ({
     (files: FileListItem[]) => {
       files.forEach(file =>
         storage.deleteFile(
-          isDirectory(file) && !file.filename.endsWith('/')
-            ? `${file.filename}/`
-            : file.filename
+          isDirectory(file) ? FileUtils.makePath(file.filename) : file.filename
         )
       );
       onDelete(files);

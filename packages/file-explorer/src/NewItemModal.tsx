@@ -10,8 +10,9 @@ import {
   ValidationError,
 } from '@deephaven/utils';
 import Log from '@deephaven/log';
-import FileExplorer, { FileInfo, FileType } from './FileExplorer';
-import FileStorage from './FileStorage';
+import FileExplorer from './FileExplorer';
+import { FileListItem } from './FileList';
+import FileStorage, { FileType } from './FileStorage';
 import FileUtils from './FileUtils';
 
 import './NewItemModal.scss';
@@ -73,7 +74,7 @@ class NewItemModal extends PureComponent<NewItemModalProps, NewItemModalState> {
     super(props);
     this.handleModalSubmit = this.handleModalSubmit.bind(this);
     this.handleModalOpened = this.handleModalOpened.bind(this);
-    this.handleItemSelect = this.handleItemSelect.bind(this);
+    this.handleSelect = this.handleSelect.bind(this);
     this.handleChange = this.handleChange.bind(this);
     this.handleKeyDown = this.handleKeyDown.bind(this);
     this.handleValidationError = this.handleValidationError.bind(this);
@@ -109,12 +110,10 @@ class NewItemModal extends PureComponent<NewItemModalProps, NewItemModalState> {
     const { isOpen } = this.props;
     const { isOpen: prevIsOpen } = prevProps;
     const { value, path } = this.state;
-    log.debug('update modal', isOpen, prevIsOpen);
     if (!prevIsOpen && isOpen) {
       this.resetValue();
     }
     if (path !== prevState.path || value !== prevState.value) {
-      this.updateValidationStatus(path, value);
       this.updateValidationStatus(path, value);
     }
   }
@@ -133,7 +132,7 @@ class NewItemModal extends PureComponent<NewItemModalProps, NewItemModalState> {
 
   private cancelableValidatePromise?: CancelablePromise<string>;
 
-  private cancelableExistingItemPromise?: CancelablePromise<FileInfo | null>;
+  private cancelableExistingItemPromise?: CancelablePromise<FileListItem | null>;
 
   private pending = new Pending();
 
@@ -149,6 +148,7 @@ class NewItemModal extends PureComponent<NewItemModalProps, NewItemModalState> {
       value: FileUtils.getBaseName(defaultValue),
       validationError: undefined,
       prevExtension: FileUtils.getExtension(defaultValue),
+      disableSubmit: false,
     });
   }
 
@@ -192,14 +192,14 @@ class NewItemModal extends PureComponent<NewItemModalProps, NewItemModalState> {
     this.setState({ value });
   }
 
-  handleItemSelect(item: FileInfo): void {
-    log.debug('handleItemSelect', item);
+  handleSelect(item: FileListItem): void {
+    log.debug('handleSelect', item);
     if (item.type === 'directory') {
-      this.setState({ path: item.name });
+      this.setState({ path: FileUtils.makePath(item.filename) });
     } else {
       // Use selected item name and folder and focus the input
-      const value = FileUtils.getBaseName(item.name);
-      const path = FileUtils.getPath(item.name);
+      const value = item.basename;
+      const path = FileUtils.getPath(item.filename);
       this.setState({ value, path }, () => {
         this.focusRenameInput();
       });
@@ -209,8 +209,6 @@ class NewItemModal extends PureComponent<NewItemModalProps, NewItemModalState> {
   // eslint-disable-next-line class-methods-use-this
   handleKeyDown(e: KeyboardEvent): void {
     const { key } = e;
-    log.debug(key);
-
     e.stopPropagation();
 
     switch (key) {
@@ -274,7 +272,7 @@ class NewItemModal extends PureComponent<NewItemModalProps, NewItemModalState> {
     this.submitModal(true);
   }
 
-  checkForExistingItem(fileName: string): Promise<FileInfo | null> {
+  checkForExistingItem(fileName: string): Promise<FileListItem | null> {
     const { type } = this.props;
     const { path } = this.state;
     const isFolder = type === 'directory';
@@ -320,7 +318,7 @@ class NewItemModal extends PureComponent<NewItemModalProps, NewItemModalState> {
       }
 
       this.getValidationPromise(path, value)
-        .then(newItemName => {
+        .then((newItemName: string) => {
           if (this.cancelableExistingItemPromise) {
             this.cancelableExistingItemPromise.cancel();
           }
@@ -337,7 +335,7 @@ class NewItemModal extends PureComponent<NewItemModalProps, NewItemModalState> {
           });
         })
         .catch(e => {
-          if (!PromiseUtils.isCanceled(e)) {
+          if (PromiseUtils.isCanceled(e)) {
             this.setState({ disableSubmit: false });
           }
           throw e;
@@ -413,7 +411,7 @@ class NewItemModal extends PureComponent<NewItemModalProps, NewItemModalState> {
                 </div>
                 <div className="flex-grow-1 file-explorer-container">
                   <FileExplorer
-                    onSelect={this.handleItemSelect}
+                    onSelect={this.handleSelect}
                     storage={storage}
                   />
                 </div>

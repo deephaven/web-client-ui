@@ -52,7 +52,7 @@ export class WebdavFileStorageTable implements FileStorageTable {
 
   getViewportData(): Promise<ViewportData<FileStorageItem>> {
     if (!this.viewportUpdatePromise) {
-      this.refreshData().catch(() => undefined);
+      this.refreshInternal();
     }
     return (
       this.viewportUpdatePromise ?? Promise.resolve({ items: [], offset: 0 })
@@ -101,7 +101,7 @@ export class WebdavFileStorageTable implements FileStorageTable {
       }
     }
     if (this.currentViewport) {
-      this.refreshData().catch(() => undefined);
+      await this.refreshInternal();
     }
   }
 
@@ -113,7 +113,7 @@ export class WebdavFileStorageTable implements FileStorageTable {
   setViewport(viewport: StorageTableViewport): void {
     this.currentViewport = viewport;
 
-    this.refreshData().catch(() => undefined);
+    this.refreshInternal();
   }
 
   // eslint-disable-next-line class-methods-use-this
@@ -144,27 +144,32 @@ export class WebdavFileStorageTable implements FileStorageTable {
     };
   }
 
-  async refreshData(): Promise<ViewportData<FileStorageItem>> {
+  async refresh(): Promise<ViewportData<FileStorageItem>> {
     log.debug2(this.root, 'refreshData');
+
+    this.viewportUpdatePromise?.cancel();
+
+    this.viewportUpdatePromise = PromiseUtils.makeCancelable(this.fetchData());
+
+    const viewportData = await this.viewportUpdatePromise;
+
+    this.currentViewportData = viewportData;
+
+    this.sendUpdate();
+
+    return viewportData;
+  }
+
+  /**
+   * Refreshes data, but catches any errors and logs them
+   */
+  private async refreshInternal(): Promise<void> {
     try {
-      this.viewportUpdatePromise?.cancel();
-
-      this.viewportUpdatePromise = PromiseUtils.makeCancelable(
-        this.fetchData()
-      );
-
-      const viewportData = await this.viewportUpdatePromise;
-
-      this.currentViewportData = viewportData;
-
-      this.sendUpdate();
-
-      return viewportData;
+      await this.refresh();
     } catch (e) {
       if (!PromiseUtils.isCanceled(e)) {
-        log.error('Unable to refreshData', e);
+        log.error('Unable to refresh data', e);
       }
-      throw e;
     }
   }
 

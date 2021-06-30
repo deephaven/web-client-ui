@@ -128,6 +128,17 @@ export class FileUtils {
   }
 
   /**
+   * Turns a directory file name into a path. Basically ensures there's a trailing slash
+   * @param name The directory name to make a path
+   */
+  static makePath(name: string): string {
+    if (!name.endsWith('/')) {
+      return `${name}/`;
+    }
+    return name;
+  }
+
+  /**
    * Replace extension in the item name
    * @param name Name to replace the extension in
    * @param newExtension New extension, defaults to no extension

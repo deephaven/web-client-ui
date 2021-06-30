@@ -67,9 +67,8 @@ export class WebdavFileStorage implements FileStorage {
     this.refreshTables();
   }
 
-  // TODO: Should change how tables listen for file storage changes
   private refreshTables(): void {
-    this.tables.every(table => table.refreshData());
+    this.tables.every(table => table.refresh().catch(() => undefined));
   }
 }
 

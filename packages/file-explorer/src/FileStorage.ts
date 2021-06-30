@@ -11,8 +11,10 @@ export interface FileMetadata {
   basename: string;
 }
 
+export type FileType = 'file' | 'directory';
+
 export interface FileStorageItem extends StorageItem, FileMetadata {
-  type: 'file' | 'directory';
+  type: FileType;
 }
 
 export interface DirectoryStorageItem extends FileStorageItem {
