@@ -17,6 +17,8 @@ export const getStorage = store => store.storage;
 export const getCommandHistoryStorage = store =>
   getStorage(store).commandHistoryStorage;
 
+export const getFileStorage = store => getStorage(store).fileStorage;
+
 export const getWorkspaceStorage = store => getStorage(store).workspaceStorage;
 
 // Workspace

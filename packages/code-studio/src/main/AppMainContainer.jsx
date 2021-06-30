@@ -27,6 +27,7 @@ import DashboardContainer from '../dashboard/DashboardContainer';
 import ControlType from '../controls/ControlType';
 import Logo from '../settings/LogoMiniDark.svg';
 import './AppMainContainer.scss';
+import FileExplorerPanel from '../dashboard/panels/FileExplorerPanel';
 
 const log = Log.module('AppMainContainer');
 
@@ -56,6 +57,12 @@ const DEFAULT_LAYOUT_CONFIG = [
                 type: 'react-component',
                 component: CommandHistoryPanel.COMPONENT,
                 title: CommandHistoryPanel.TITLE,
+                isClosable: false,
+              },
+              {
+                type: 'react-component',
+                component: FileExplorerPanel.COMPONENT,
+                title: FileExplorerPanel.TITLE,
                 isClosable: false,
               },
             ],

@@ -1,0 +1,37 @@
+@import '../../components/scss/custom.scss';
+
+$item-list-item-height: 26px;
+
+.file-list-item-editor {
+  z-index: 1;
+  width: 100%;
+  display: inline-block;
+  position: relative;
+
+  .file-list-item-editor-input {
+    padding: 0;
+    border: none;
+    border-radius: 0;
+    height: $item-list-item-height;
+    line-height: $item-list-item-height;
+
+    &.is-invalid {
+      border-bottom-left-radius: 0;
+      border-bottom-right-radius: 0;
+      // Don't overlap the error icon
+      padding-right: 2rem;
+    }
+  }
+  .invalid-feedback {
+    color: $interfacewhite;
+    background-color: $danger;
+    font-size: 0.9rem;
+    margin-top: 0;
+    padding: $spacer-1 $spacer-2;
+    border-bottom-left-radius: 4px;
+    border-bottom-right-radius: 4px;
+    position: absolute;
+    top: 100%;
+    left: 0;
+  }
+}

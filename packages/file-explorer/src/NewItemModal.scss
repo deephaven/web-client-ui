@@ -1,0 +1,19 @@
+@import '../../components/scss/custom.scss';
+
+$min-modal-content-height: 250px;
+$file-list-height: 250px;
+
+.new-file-modal-content {
+  .new-item-destination {
+    color: $text-muted;
+  }
+
+  .file-explorer-container {
+    border: 1px solid $input-border-color;
+    border-radius: $input-border-radius;
+    overflow: hidden;
+    height: $file-list-height;
+    display: flex;
+    flex-direction: column;
+  }
+}

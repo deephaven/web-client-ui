@@ -57,7 +57,7 @@ export type StorageTableViewport = {
 export type StorageSnapshot<T extends StorageItem> = Map<number, T>;
 
 export type ViewportData<T extends StorageItem> = {
-  items: Partial<T>[];
+  items: T[];
   offset: number;
 };
 

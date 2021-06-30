@@ -1,0 +1,42 @@
+@import '../../components/scss/custom.scss';
+
+$toolbar-font-size: 17px;
+$toolbar-width: 36px;
+$toolbar-height: 36px;
+$toolbar-bg: $content-bg;
+$file-list-search-bg: $gray-800;
+$item-list-color: $foreground;
+
+.file-explorer-toolbar {
+  background: $toolbar-bg;
+  border-bottom: 2px solid $background;
+  display: flex;
+  flex-basis: $toolbar-height;
+  flex-direction: row;
+  flex-grow: 0;
+  flex-shrink: 1;
+  width: 100%;
+  position: relative;
+  align-items: center;
+  padding: $spacer-1;
+  .file-explorer-toolbar-buttons {
+    display: flex;
+    padding-right: $spacer-1;
+  }
+  .file-explorer-toolbar-search {
+    display: flex;
+    flex-grow: 1;
+    .search-group {
+      width: 100%;
+      input {
+        background-color: $file-list-search-bg;
+      }
+    }
+  }
+  .btn {
+    min-width: $toolbar-width;
+    padding-left: 0;
+    padding-right: 0;
+    font-size: $toolbar-font-size;
+  }
+}

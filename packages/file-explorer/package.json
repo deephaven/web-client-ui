@@ -1,7 +1,7 @@
 {
-  "name": "@deephaven/component-template",
-  "version": "0.0.1",
-  "description": "Deephaven React component template",
+  "name": "@deephaven/file-explorer",
+  "version": "0.1.5",
+  "description": "Deephaven File Explorer React component",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
   "repository": {
@@ -19,7 +19,7 @@
     "build-dev": "cross-env NODE_ENV=development run-s clean build-steps",
     "build-steps": "run-p build:*",
     "babel": "babel ./src --out-dir ./dist --extensions \".ts,.tsx,.js,.jsx\" --source-maps --root-mode upward",
-    "sass": "sass ./src:./dist",
+    "sass": "sass --load-path=node_modules ./src:./dist",
     "types": "tsc",
     "build:babel": "npm run babel",
     "build:sass": "npm run sass",
@@ -43,12 +43,29 @@
     "prop-types": "^15.7.2"
   },
   "peerDependencies": {
+    "@deephaven/components": "^0.1.4",
+    "@deephaven/icons": "^0.1.4",
+    "@deephaven/log": "^0.1.4",
+    "@deephaven/storage": "^0.1.4",
+    "@deephaven/utils": "^0.1.4",
+    "@fortawesome/fontawesome-svg-core": "^1.2.32",
+    "@fortawesome/react-fontawesome": "^0.1.12",
+    "classnames": "^2.3.1",
     "react": "^16.0.0",
-    "react-dom": "^16.0.0"
+    "react-dom": "^16.0.0",
+    "reactstrap": "^8.4.1",
+    "webdav": "^4.6.0"
   },
   "devDependencies": {
     "@babel/cli": "^7.14.3",
+    "@deephaven/components": "^0.1.4",
+    "@deephaven/icons": "^0.1.4",
+    "@deephaven/log": "^0.1.4",
+    "@deephaven/storage": "^0.1.4",
     "@deephaven/tsconfig": "^0.1.4",
+    "@deephaven/utils": "^0.1.4",
+    "@fortawesome/fontawesome-svg-core": "^1.2.32",
+    "@fortawesome/react-fontawesome": "^0.1.12",
     "@storybook/addon-actions": "^6.2.3",
     "@storybook/addon-essentials": "^6.2.3",
     "@storybook/addon-links": "^6.2.3",
@@ -56,6 +73,7 @@
     "@testing-library/react": "^11.2.7",
     "@types/jest": "^26.0.23",
     "@types/react": "^16.14.8",
+    "classnames": "^2.3.1",
     "cross-env": "^7.0.2",
     "gh-pages": "^2.2.0",
     "identity-obj-proxy": "^3.0.0",
@@ -63,10 +81,13 @@
     "npm-run-all": "^4.1.5",
     "react": "^16.14.0",
     "react-dom": "^16.14.0",
+    "reactstrap": "^8.4.1",
+    "regenerator-runtime": "^0.13.7",
     "sass": "1.32.13",
     "ts-jest": "^26.5.6",
     "ts-loader": "^8.3.0",
-    "typescript": "^4.3.2"
+    "typescript": "^4.3.2",
+    "webdav": "^4.6.0"
   },
   "files": [
     "dist"

@@ -1,0 +1,20 @@
+@import '../../components/scss/custom.scss';
+
+$depth-line-color: $gray-600;
+$depth-margin: 5px;
+$depth-indentation: 9px;
+
+.file-list {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+
+  .file-list-depth-line {
+    margin-left: $depth-margin;
+    width: $depth-indentation;
+    height: 100%;
+    border-left: 1px solid $depth-line-color;
+  }
+}

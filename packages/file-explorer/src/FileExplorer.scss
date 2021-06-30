@@ -1,0 +1,24 @@
+.file-explorer {
+  position: relative;
+  flex-grow: 1;
+
+  .single-click-item-list-scroll-pane {
+    flex-grow: 1;
+    flex-shrink: 1;
+    width: 100%;
+    padding: 0;
+    position: relative;
+  }
+
+  .spinner-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-content: center;
+  }
+}
