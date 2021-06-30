@@ -183,12 +183,10 @@ export class FileExplorerPanel extends React.Component<
         onSessionClose={this.handleSessionClosed}
         onShow={this.handleShow}
       >
-        <div className="file-explorer-toolbar">
-          <FileExplorerToolbar
-            createFile={this.handleCreateFile}
-            createFolder={this.handleCreateDirectory}
-          />
-        </div>
+        <FileExplorerToolbar
+          createFile={this.handleCreateFile}
+          createFolder={this.handleCreateDirectory}
+        />
         {isShown && (
           <FileExplorer
             storage={fileStorage}

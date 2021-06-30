@@ -36,12 +36,12 @@ export interface FileListContainerProps {
 export const FileListContainer = ({
   isMultiSelect = false,
   showContextMenu = false,
-  onCreateFile = () => undefined,
-  onCreateFolder = () => undefined,
-  onCopy = () => undefined,
-  onDelete = () => undefined,
+  onCreateFile,
+  onCreateFolder,
+  onCopy,
+  onDelete,
   onMove = () => undefined,
-  onRename = () => undefined,
+  onRename,
   onSelect,
   table,
   rowHeight = SingleClickItemList.DEFAULT_ROW_HEIGHT,
@@ -64,23 +64,23 @@ export const FileListContainer = ({
 
   const handleCopyAction = useCallback(() => {
     if (keyboardSelectedItem) {
-      onCopy(keyboardSelectedItem);
+      onCopy?.(keyboardSelectedItem);
     }
   }, [keyboardSelectedItem, onCopy]);
 
   const handleDeleteAction = useCallback(() => {
     if (selectedItems.length > 0) {
-      onDelete(selectedItems);
+      onDelete?.(selectedItems);
     }
   }, [onDelete, selectedItems]);
 
   const handleNewFileAction = useCallback(() => {
-    onCreateFile();
+    onCreateFile?.();
   }, [onCreateFile]);
 
   const handleNewFolderAction = useCallback(() => {
     if (keyboardSelectedItem) {
-      onCreateFolder(FileUtils.getPath(keyboardSelectedItem.filename));
+      onCreateFolder?.(FileUtils.getPath(keyboardSelectedItem.filename));
     }
   }, [keyboardSelectedItem, onCreateFolder]);
 
@@ -97,7 +97,7 @@ export const FileListContainer = ({
   const handleRenameSubmit = useCallback(
     (newName: string): void => {
       if (renameItem) {
-        onRename(renameItem, newName);
+        onRename?.(renameItem, newName);
         setRenameItem(undefined);
       }
     },
@@ -111,27 +111,33 @@ export const FileListContainer = ({
     }
 
     const result = [] as ContextAction[];
-    result.push({
-      title: 'New File',
-      description: 'Create new file',
-      action: handleNewFileAction,
-      group: ContextActions.groups.medium,
-    });
-    result.push({
-      title: 'New Folder',
-      description: 'Create new folder',
-      action: handleNewFolderAction,
-      group: ContextActions.groups.medium,
-    });
-    result.push({
-      title: 'Copy',
-      description: 'Copy',
-      action: handleCopyAction,
-      group: ContextActions.groups.low,
-      disabled:
-        keyboardSelectedItem == null || isDirectory(keyboardSelectedItem),
-    });
-    if (selectedItems.length > 0) {
+    if (onCreateFile) {
+      result.push({
+        title: 'New File',
+        description: 'Create new file',
+        action: handleNewFileAction,
+        group: ContextActions.groups.medium,
+      });
+    }
+    if (onCreateFolder) {
+      result.push({
+        title: 'New Folder',
+        description: 'Create new folder',
+        action: handleNewFolderAction,
+        group: ContextActions.groups.medium,
+      });
+    }
+    if (onCopy) {
+      result.push({
+        title: 'Copy',
+        description: 'Copy',
+        action: handleCopyAction,
+        group: ContextActions.groups.low,
+        disabled:
+          keyboardSelectedItem == null || isDirectory(keyboardSelectedItem),
+      });
+    }
+    if (onDelete && selectedItems.length > 0) {
       result.push({
         title: 'Delete',
         description: 'Delete',
@@ -141,15 +147,17 @@ export const FileListContainer = ({
         group: ContextActions.groups.low,
       });
     }
-    result.push({
-      title: 'Rename',
-      description: 'Rename',
-      shortcut: ContextActionUtils.ENTER_KEY,
-      macShortcut: ContextActionUtils.ENTER_KEY,
-      action: handleRenameAction,
-      group: ContextActions.groups.low,
-      disabled: keyboardSelectedItem == null,
-    });
+    if (onRename) {
+      result.push({
+        title: 'Rename',
+        description: 'Rename',
+        shortcut: ContextActionUtils.ENTER_KEY,
+        macShortcut: ContextActionUtils.ENTER_KEY,
+        action: handleRenameAction,
+        group: ContextActions.groups.low,
+        disabled: keyboardSelectedItem == null,
+      });
+    }
     return result;
   }, [
     handleCopyAction,
@@ -158,6 +166,11 @@ export const FileListContainer = ({
     handleNewFolderAction,
     handleRenameAction,
     keyboardSelectedItem,
+    onCopy,
+    onCreateFile,
+    onCreateFolder,
+    onDelete,
+    onRename,
     selectedItems,
     renameItem,
   ]);
