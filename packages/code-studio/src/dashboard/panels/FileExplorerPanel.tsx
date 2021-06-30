@@ -5,6 +5,7 @@ import FileExplorer, {
   FileListItem,
   FileStorage,
   NewItemModal,
+  UpdateableComponent,
 } from '@deephaven/file-explorer';
 import GoldenLayout from 'golden-layout';
 import React, { ReactNode } from 'react';
@@ -64,6 +65,7 @@ export class FileExplorerPanel extends React.Component<
     );
     this.handleDelete = this.handleDelete.bind(this);
     this.handleRename = this.handleRename.bind(this);
+    this.handleResize = this.handleResize.bind(this);
     this.handleSessionOpened = this.handleSessionOpened.bind(this);
     this.handleSessionClosed = this.handleSessionClosed.bind(this);
     this.handleShow = this.handleShow.bind(this);
@@ -76,6 +78,8 @@ export class FileExplorerPanel extends React.Component<
       showCreateFolder: false,
     };
   }
+
+  private fileExplorer = React.createRef<UpdateableComponent>();
 
   handleCreateFile(): void {
     const { glEventHub } = this.props;
@@ -149,6 +153,10 @@ export class FileExplorerPanel extends React.Component<
     glEventHub.emit(NotebookEvent.RENAME_FILE, oldName, newName);
   }
 
+  handleResize(): void {
+    this.fileExplorer.current?.updateDimensions();
+  }
+
   handleSessionOpened(
     session: DhSession,
     { language }: { language: string }
@@ -168,6 +176,7 @@ export class FileExplorerPanel extends React.Component<
 
   handleShow(): void {
     this.setState({ isShown: true });
+    this.fileExplorer.current?.updateDimensions();
   }
 
   render(): ReactNode {
@@ -181,6 +190,7 @@ export class FileExplorerPanel extends React.Component<
         glEventHub={glEventHub}
         onSessionOpen={this.handleSessionOpened}
         onSessionClose={this.handleSessionClosed}
+        onResize={this.handleResize}
         onShow={this.handleShow}
       >
         <FileExplorerToolbar
@@ -189,6 +199,8 @@ export class FileExplorerPanel extends React.Component<
         />
         {isShown && (
           <FileExplorer
+            isMultiSelect
+            ref={this.fileExplorer}
             storage={fileStorage}
             onDelete={this.handleDelete}
             onRename={this.handleRename}
