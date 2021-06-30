@@ -159,11 +159,7 @@ class NewItemModal extends PureComponent<NewItemModalProps, NewItemModalState> {
     if (this.cancelableValidatePromise) {
       this.cancelableValidatePromise.cancel();
     }
-    // TODO: Re-enable validation
-    // const { fileStorage, type } = this.props;
-    // const isFolder = type === 'directory';
-    // // Don't allow using existing names for folders
-    // const allowExistingName = !isFolder;
+    // TODO: web-client-ui#91 Re-enable validation
     this.cancelableValidatePromise = PromiseUtils.makeCancelable(
       Promise.resolve(newName)
     );
