@@ -1,7 +1,7 @@
-import { SingleClickItemList } from '@deephaven/components';
+import { BasicModal, SingleClickItemList } from '@deephaven/components';
 import Log from '@deephaven/log';
 import { CancelablePromise, PromiseUtils } from '@deephaven/utils';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { FileListItem } from './FileList';
 import FileStorage, { FileStorageTable, isDirectory } from './FileStorage';
 import './FileExplorer.scss';
@@ -31,6 +31,7 @@ export const FileExplorer = ({
   onSelect,
   rowHeight = SingleClickItemList.DEFAULT_ROW_HEIGHT,
 }: FileExplorerProps): JSX.Element => {
+  const [itemsToDelete, setItemsToDelete] = useState<FileListItem[]>([]);
   const [table, setTable] = useState<FileStorageTable>();
 
   useEffect(() => {
@@ -62,17 +63,26 @@ export const FileExplorer = ({
     }
   }, []);
 
-  const handleDelete = useCallback(
-    (files: FileListItem[]) => {
-      files.forEach(file =>
-        storage.deleteFile(
-          isDirectory(file) ? FileUtils.makePath(file.filename) : file.filename
-        )
-      );
-      onDelete(files);
-    },
-    [onDelete, storage]
-  );
+  const handleDelete = useCallback((files: FileListItem[]) => {
+    log.debug('handleDelete, pending confirmation', itemsToDelete);
+    setItemsToDelete(files);
+  }, []);
+
+  const handleDeleteConfirm = useCallback(() => {
+    log.debug('handleDeleteConfirm', itemsToDelete);
+    itemsToDelete.forEach(file =>
+      storage.deleteFile(
+        isDirectory(file) ? FileUtils.makePath(file.filename) : file.filename
+      )
+    );
+    onDelete(itemsToDelete);
+    setItemsToDelete([]);
+  }, [itemsToDelete, onDelete, storage]);
+
+  const handleDeleteCancel = useCallback(() => {
+    log.debug('handleDeleteCancel');
+    setItemsToDelete([]);
+  }, []);
 
   const handleRename = useCallback(
     (item: FileListItem, newName: string) => {
@@ -92,6 +102,14 @@ export const FileExplorer = ({
     [handleError, onRename, storage]
   );
 
+  const isDeleteConfirmationShown = itemsToDelete.length > 0;
+  const deleteConfirmationMessage = useMemo(() => {
+    if (itemsToDelete.length === 1) {
+      return `Are you sure you want to delete "${itemsToDelete[0].itemName}"?`;
+    }
+    return `Are you sure you want to delete the selected files?`;
+  }, [itemsToDelete]);
+
   return (
     <div className="file-explorer">
       {table && (
@@ -105,6 +123,14 @@ export const FileExplorer = ({
           table={table}
         />
       )}
+      <BasicModal
+        isOpen={isDeleteConfirmationShown}
+        headerText={deleteConfirmationMessage}
+        bodyText="You cannot undo this action."
+        onCancel={handleDeleteCancel}
+        onConfirm={handleDeleteConfirm}
+        confirmButtonText="Delete"
+      />
     </div>
   );
 };
