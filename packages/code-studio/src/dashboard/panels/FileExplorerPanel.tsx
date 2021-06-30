@@ -33,7 +33,6 @@ export interface FileExplorerPanelState {
   language?: string;
   session?: DhSession;
   showCreateFolder: boolean;
-  newItemPath?: string;
 }
 
 /**
@@ -95,10 +94,7 @@ export class FileExplorerPanel extends React.Component<
   }
 
   handleCreateDirectory(path?: string): void {
-    this.setState({
-      showCreateFolder: true,
-      newItemPath: path,
-    });
+    this.setState({ showCreateFolder: true });
   }
 
   handleCreateDirectoryCancel(): void {
@@ -203,7 +199,6 @@ export class FileExplorerPanel extends React.Component<
         )}
         <NewItemModal
           isOpen={showCreateFolder}
-          // defaultValue={'/'}
           type="directory"
           title="Create New Folder"
           storage={fileStorage}

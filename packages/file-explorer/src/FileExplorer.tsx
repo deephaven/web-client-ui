@@ -64,7 +64,7 @@ export const FileExplorer = ({
   }, []);
 
   const handleDelete = useCallback((files: FileListItem[]) => {
-    log.debug('handleDelete, pending confirmation', itemsToDelete);
+    log.debug('handleDelete, pending confirmation', files);
     setItemsToDelete(files);
   }, []);
 
