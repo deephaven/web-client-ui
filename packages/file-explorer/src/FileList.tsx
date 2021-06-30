@@ -55,14 +55,7 @@ export interface FileListProps {
 export const DEFAULT_RENDER_ITEM = (
   props: SingleClickRenderItemProps<FileListItem>
 ): JSX.Element => {
-  const {
-    isDragged,
-    // isDropTargetValid,
-    isSelected,
-    item,
-    // renameItem,
-    // dragOverItem,
-  } = props;
+  const { isDragged, isSelected, item } = props;
 
   const icon = getItemIcon(item);
   const depth = FileUtils.getDepth(item.filename);
@@ -77,9 +70,6 @@ export const DEFAULT_RENDER_ITEM = (
     <div
       className={classNames('d-flex w-100 align-items-center', {
         'is-dragged': isDragged,
-        // 'is-exact-drop-target': isExactDropTarget,
-        // 'is-in-drop-target': isInDropTarget,
-        // 'is-invalid-drop-target': isInvalidDropTarget,
         'is-selected': isSelected,
       })}
     >
@@ -242,7 +232,8 @@ export const FileList = ({
         onViewportChange={handleViewportChange}
         renderItem={renderItem}
         rowHeight={rowHeight}
-        isDraggable
+        // TODO: web-client-ui#86, re-enable drag and drop to move
+        // isDraggable
         isMultiSelect
         validateDropTarget={handleValidateDropTarget}
       />
