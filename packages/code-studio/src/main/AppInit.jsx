@@ -27,9 +27,6 @@ const WORKSPACE_STORAGE = new WorkspaceStorage();
 const COMMAND_HISTORY_STORAGE = new PouchCommandHistoryStorage();
 const FILE_STORAGE = new WebdavFileStorage(webdavClient);
 
-// TODO: Remove this, just for testing
-window.webdavClient = webdavClient;
-
 /**
  * Component that sets some default values needed
  */
