@@ -184,7 +184,7 @@ export const FileList = React.forwardRef(
 
     const handleItemSelect = useCallback(
       itemIndex => {
-        const item = loadedViewport.items[itemIndex];
+        const item = loadedViewport.items[itemIndex - loadedViewport.offset];
         if (item !== undefined) {
           log.debug('handleItemSelect', item);
 
