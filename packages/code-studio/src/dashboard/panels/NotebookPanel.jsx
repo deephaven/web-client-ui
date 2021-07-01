@@ -6,7 +6,12 @@ import memoize from 'memoize-one';
 import { connect } from 'react-redux';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { FileUtils, NewItemModal } from '@deephaven/file-explorer';
-import { ContextActions, DropdownMenu, Tooltip } from '@deephaven/components';
+import {
+  ContextActions,
+  DropdownMenu,
+  Tooltip,
+  GLOBAL_SHORTCUTS,
+} from '@deephaven/components';
 import { ScriptEditor, ScriptEditorUtils } from '@deephaven/console';
 import {
   vsSave,
@@ -653,7 +658,7 @@ class NotebookPanel extends Component {
     const contextActions = [
       {
         action: this.handleSave,
-        shortcut: SHORTCUTS.GLOBAL.SAVE,
+        shortcut: GLOBAL_SHORTCUTS.SAVE,
       },
     ];
     const disabledRunButtonTooltip = ScriptEditorUtils.getDisabledRunTooltip(

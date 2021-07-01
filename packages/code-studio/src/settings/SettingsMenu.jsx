@@ -65,7 +65,6 @@ class SettingsMenu extends Component {
   }
 
   handleClose() {
-    ContextActionUtils.enableAllActions();
     const { onDone } = this.props;
     onDone();
   }

@@ -48,7 +48,7 @@ class DropdownMenus extends Component {
           console.log(`Logging a message!`);
         },
         shortcut: new Shortcut({
-          id: 'STYLEGUIDE.LOW_MESSAGE',
+          id: 'STYLEGUIDE.LOG_MESSAGE',
           name: 'Log Message',
           shortcut: [MODIFIER.CTRL, KEY.L],
           macShortcut: [MODIFIER.CMD, KEY.L],
