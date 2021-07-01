@@ -1,7 +1,6 @@
 import {
   ContextAction,
   ContextActions,
-  ContextActionUtils,
   SingleClickItemList,
   SingleClickRenderItemProps,
 } from '@deephaven/components';
@@ -19,6 +18,7 @@ import FileList, {
   UpdateableComponent,
 } from './FileList';
 import { FileStorageTable, isDirectory } from './FileStorage';
+import SHORTCUTS from './FileExplorerShortcuts';
 import './FileExplorer.scss';
 import FileUtils from './FileUtils';
 import FileListItemEditor from './FileListItemEditor';
@@ -156,8 +156,7 @@ export const FileListContainer = React.forwardRef(
         result.push({
           title: 'Delete',
           description: 'Delete',
-          shortcut: '⌃⌫',
-          macShortcut: '⌘⌫',
+          shortcut: SHORTCUTS.FILE_EXPLORER.DELETE,
           action: handleDeleteAction,
           group: ContextActions.groups.low,
         });
@@ -166,8 +165,7 @@ export const FileListContainer = React.forwardRef(
         result.push({
           title: 'Rename',
           description: 'Rename',
-          shortcut: ContextActionUtils.ENTER_KEY,
-          macShortcut: ContextActionUtils.ENTER_KEY,
+          shortcut: SHORTCUTS.FILE_EXPLORER.RENAME,
           action: handleRenameAction,
           group: ContextActions.groups.low,
           disabled: keyboardSelectedItem == null,
