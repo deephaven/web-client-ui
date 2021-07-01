@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { vsClose, vsWatch, vsRecordKeys } from '@deephaven/icons';
-import { ContextActionUtils } from '@deephaven/components';
 import Logo from './LogoDark.svg';
 import FormattingSectionContent from './FormattingSectionContent';
 import LegalNotice from './LegalNotice';
