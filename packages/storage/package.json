@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/storage",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "Deephaven Storage abstract classes for storing app data",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
@@ -43,10 +43,10 @@
   "devDependencies": {
     "@babel/cli": "^7.14.3",
     "@babel/core": "7.12.3",
-    "@deephaven/iris-grid": "^0.1.6",
-    "@deephaven/log": "^0.1.6",
-    "@deephaven/tsconfig": "^0.1.6",
-    "@deephaven/utils": "^0.1.6",
+    "@deephaven/iris-grid": "^0.1.7",
+    "@deephaven/log": "^0.1.7",
+    "@deephaven/tsconfig": "^0.1.7",
+    "@deephaven/utils": "^0.1.7",
     "@types/jest": "^26.0.23",
     "@types/lodash.throttle": "^4.1.1",
     "babel-loader": "8.1.0",
