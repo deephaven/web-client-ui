@@ -61,7 +61,7 @@ export const saveWorkspace = workspace => (dispatch, getState) => {
 
   const { storage } = getState();
   const { workspaceStorage } = storage;
-  return workspaceStorage.saveWorkspace(workspace);
+  return workspaceStorage.save(workspace);
 };
 
 /**

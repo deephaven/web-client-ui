@@ -3,8 +3,7 @@ import { shallow } from 'enzyme';
 import dh from '@deephaven/jsapi-shim';
 import { AppMainContainer } from './AppMainContainer';
 import ToolType from '../tools/ToolType';
-
-import WorkspaceStorage from '../dashboard/WorkspaceStorage';
+import LocalWorkspaceStorage from '../dashboard/LocalWorkspaceStorage';
 
 function makeAppMainContainer({
   user = {
@@ -17,7 +16,7 @@ function makeAppMainContainer({
   saveWorkspace = jest.fn(() => Promise.resolve()),
   updateWorkspaceData = jest.fn(() => Promise.resolve()),
   workspace = { data: {} },
-  workspaceStorage = new WorkspaceStorage(new dh.Client({})),
+  workspaceStorage = new LocalWorkspaceStorage(),
   activeTool = ToolType.DEFAULT,
   setActiveTool = jest.fn(),
   setDashboardIsolatedLinkerPanelId = jest.fn(),
