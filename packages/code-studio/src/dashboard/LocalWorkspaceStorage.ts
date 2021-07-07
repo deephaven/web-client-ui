@@ -6,7 +6,7 @@ import WorkspaceStorage, { Workspace, WorkspaceData } from './WorkspaceStorage';
 const log = Log.module('LocalWorkspaceStorage');
 
 /**
- * Implementation of WorkspaceStorage that just storage the workspace data in localStorage
+ * Implementation of WorkspaceStorage that just stores the workspace data in localStorage
  */
 export class LocalWorkspaceStorage implements WorkspaceStorage {
   static readonly STORAGE_KEY = 'deephaven.WorkspaceStorage';
