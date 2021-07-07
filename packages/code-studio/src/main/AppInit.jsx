@@ -15,15 +15,14 @@ import {
 import { createClient } from 'webdav/web';
 import App from './App';
 import ToolType from '../tools/ToolType';
-import WorkspaceStorage from '../dashboard/WorkspaceStorage';
 import PouchCommandHistoryStorage from '../storage/PouchCommandHistoryStorage';
+import LocalWorkspaceStorage from '../dashboard/LocalWorkspaceStorage';
 
 // Default values used
 const webdavClient = createClient(process.env.REACT_APP_NOTEBOOKS_URL ?? '');
 const NAME = 'user';
 const USER = { name: NAME, operateAs: NAME };
-const WORKSPACE = WorkspaceStorage.makeDefaultWorkspace();
-const WORKSPACE_STORAGE = new WorkspaceStorage();
+const WORKSPACE_STORAGE = new LocalWorkspaceStorage();
 const COMMAND_HISTORY_STORAGE = new PouchCommandHistoryStorage();
 const FILE_STORAGE = new WebdavFileStorage(webdavClient);
 
@@ -41,12 +40,13 @@ const AppInit = props => {
     setWorkspaceStorage,
   } = props;
 
-  const initClient = useCallback(() => {
+  const initClient = useCallback(async () => {
+    const loadedWorkspace = await WORKSPACE_STORAGE.load();
     setActiveTool(ToolType.DEFAULT);
     setCommandHistoryStorage(COMMAND_HISTORY_STORAGE);
     setFileStorage(FILE_STORAGE);
     setUser(USER);
-    setWorkspace(WORKSPACE);
+    setWorkspace(loadedWorkspace);
     setWorkspaceStorage(WORKSPACE_STORAGE);
   }, [
     setActiveTool,
