@@ -1,5 +1,28 @@
+interface MockContext {
+  arc: () => void;
+  beginPath: () => void;
+  clip: () => void;
+  closePath: () => void;
+  createLinearGradient: () => void;
+  fill: () => void;
+  fillRect: () => void;
+  fillText: () => void;
+  lineTo: () => void;
+  measureText: (s: string) => { width: number };
+  moveTo: () => void;
+  rect: () => void;
+  restore: () => void;
+  setTransform: () => void;
+  save: () => void;
+  stroke: () => void;
+  strokeRect: () => void;
+  translate: () => void;
+  scale: () => void;
+  createPattern: () => void;
+}
+
 class TestUtils {
-  static makeMockContext() {
+  static makeMockContext(): MockContext {
     return {
       arc: jest.fn(),
       beginPath: jest.fn(),
@@ -26,7 +49,7 @@ class TestUtils {
     };
   }
 
-  static async flushPromises() {
+  static async flushPromises(): Promise<void> {
     await new Promise(setImmediate);
   }
 
