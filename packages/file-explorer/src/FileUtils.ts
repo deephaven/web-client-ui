@@ -59,7 +59,8 @@ export class FileUtils {
 
   /**
    * Create copy file name, used for copying unsaved files so doesn't have to be unique
-   * @param {string} nameParam File name
+   * @param originalName File name
+   * @returns The file name of the copy
    */
   static getCopyFileName(originalName: string): string {
     const extensionPosition = originalName.lastIndexOf('.');
