@@ -152,6 +152,9 @@ export class DashboardContainer extends Component {
         ...props,
         localDashboardId,
       }),
+      FileExplorerPanel: props => ({
+        ...props,
+      }),
       InputFilterPanel: props => ({
         ...props,
         localDashboardId,
@@ -159,6 +162,9 @@ export class DashboardContainer extends Component {
       IrisGridPanel: props => ({
         ...props,
         localDashboardId,
+        makeModel: async () => {
+          throw new Error('Re-hydration not yet implemented.');
+        },
       }),
       LogPanel: props => ({
         ...props,
@@ -220,7 +226,7 @@ export class DashboardContainer extends Component {
 
   async init() {
     this.initData();
-    const layout = await this.initLayout();
+    const layout = this.initLayout();
     this.initEventHandlers(layout);
     this.isInitialised = true;
   }
@@ -231,7 +237,7 @@ export class DashboardContainer extends Component {
     setDashboardLinks(id, [...links]);
   }
 
-  async initLayout() {
+  initLayout() {
     const { layoutConfig, data, onGoldenLayoutChange } = this.props;
     const { layoutSettings = {} } = data;
     this.setState({
@@ -281,19 +287,6 @@ export class DashboardContainer extends Component {
     this.initPanelManager(layout);
 
     layout.init();
-
-    await new Promise(resolve => {
-      if (layout.isInitialised) {
-        resolve();
-        return;
-      }
-      const onInit = () => {
-        log.debug('layout initialized');
-        layout.off('initialised', onInit);
-        resolve();
-      };
-      layout.on('initialised', onInit);
-    });
 
     window.addEventListener('resize', this.handleResize);
 
@@ -372,6 +365,7 @@ export class DashboardContainer extends Component {
       ConsolePanel: DashboardContainer.dehydratePanelConfig,
       CommandHistoryPanel: DashboardContainer.dehydratePanelConfig,
       DropdownFilterPanel: DashboardContainer.dehydratePanelConfig,
+      FileExplorerPanel: DashboardContainer.dehydratePanelConfig,
       IrisGridPanel: DashboardContainer.dehydratePanelConfig,
       InputFilterPanel: DashboardContainer.dehydratePanelConfig,
       LogPanel: DashboardContainer.dehydratePanelConfig,

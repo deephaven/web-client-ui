@@ -69,7 +69,9 @@ class LayoutEventHandler {
     this.onLayoutChange(dehydratedLayoutConfig);
   }
 
-  updateLayoutCss() {
+  async updateLayoutCss() {
+    await LayoutUtils.onInitialized(this.layout);
+
     const items = this.layout.root.getItemsByFilter(item => item.isComponent);
     for (let i = 0; i < items.length; i += 1) {
       LayoutEventHandler.updateComponentCss(items[i]);

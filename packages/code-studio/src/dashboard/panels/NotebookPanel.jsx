@@ -6,6 +6,7 @@ import memoize from 'memoize-one';
 import { connect } from 'react-redux';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
+  BasicModal,
   ContextActions,
   ContextActionUtils,
   DropdownMenu,
@@ -66,6 +67,10 @@ class NotebookPanel extends Component {
     super(props);
 
     this.handleBlur = this.handleBlur.bind(this);
+    this.handleCloseCancel = this.handleCloseCancel.bind(this);
+    this.handleCloseDiscard = this.handleCloseDiscard.bind(this);
+    this.handleCloseSave = this.handleCloseSave.bind(this);
+    this.handleCopy = this.handleCopy.bind(this);
     this.handleEditorChange = this.handleEditorChange.bind(this);
     this.handleFind = this.handleFind.bind(this);
     this.handleFocus = this.handleFocus.bind(this);
@@ -158,7 +163,6 @@ class NotebookPanel extends Component {
       },
 
       showCloseModal: false,
-      showDeleteModal: false,
       showSaveAsModal: false,
 
       scriptCode: '',
@@ -172,7 +176,6 @@ class NotebookPanel extends Component {
       glContainer: { tab },
       glEventHub,
     } = this.props;
-    // TODO: Update panel fileMetadata on rename...
     if (tab) this.initTab(tab);
     this.initNotebookContent();
     glEventHub.on(NotebookEvent.RENAME_FILE, this.handleRenameFile);
@@ -201,8 +204,23 @@ class NotebookPanel extends Component {
   initTab(tab) {
     if (!this.tabInitOnce) {
       this.tabInitOnce = true;
+      this.initTabCloseOverride();
     }
     this.initTabClasses(tab);
+  }
+
+  // override glContainer.close() with a custom closure that checks if needs saving
+  initTabCloseOverride() {
+    const { glContainer } = this.props;
+    const close = glContainer.close.bind(glContainer);
+    glContainer.close = () => {
+      const { changeCount, savedChangeCount } = this.state;
+      if (changeCount !== savedChangeCount && this.shouldPromptClose) {
+        this.setState({ showCloseModal: true });
+      } else {
+        close();
+      }
+    };
   }
 
   initTabClasses(tab) {
@@ -390,6 +408,37 @@ class NotebookPanel extends Component {
         panelState,
       };
     });
+  }
+
+  handleCloseDiscard() {
+    this.shouldPromptClose = false;
+    this.setState({ showCloseModal: false });
+    const { glContainer } = this.props;
+    glContainer.close();
+  }
+
+  handleCloseSave() {
+    this.shouldPromptClose = false;
+    this.setState({ showCloseModal: false });
+    if (this.save()) {
+      const { glContainer } = this.props;
+      glContainer.close();
+    }
+  }
+
+  handleCloseCancel() {
+    this.shouldPromptClose = true;
+    this.setState({ showCloseModal: false });
+  }
+
+  handleCopy() {
+    const { fileMetadata, settings } = this.state;
+    const content = this.getNotebookValue();
+    const { language } = settings;
+    const { itemName } = fileMetadata;
+    const copyName = FileUtils.getCopyFileName(itemName);
+    log.debug('handleCopy', fileMetadata, itemName, copyName);
+    this.createNotebook(copyName, language, content);
   }
 
   handleEditorChange(e) {
@@ -615,6 +664,34 @@ class NotebookPanel extends Component {
     });
   }
 
+  createNotebook(itemName, language, content) {
+    const { glEventHub } = this.props;
+    const { session, sessionLanguage, settings } = this.state;
+    const notebookSettings = {
+      ...settings,
+      language,
+      value: content,
+    };
+    const fileMetadata = {
+      id: null,
+      itemName,
+    };
+    log.debug(
+      'handleCreateNotebook',
+      session,
+      sessionLanguage,
+      notebookSettings,
+      fileMetadata
+    );
+    glEventHub.emit(
+      NotebookEvent.CREATE_NOTEBOOK,
+      session,
+      sessionLanguage,
+      notebookSettings,
+      fileMetadata
+    );
+  }
+
   runCommand(command) {
     if (!command) {
       log.debug('Ignoring empty command.');
@@ -642,6 +719,7 @@ class NotebookPanel extends Component {
       session,
       sessionLanguage,
       settings: initialSettings,
+      showCloseModal,
       showSaveAsModal,
     } = this.state;
     const itemName = fileMetadata?.itemName ?? NotebookPanel.DEFAULT_NAME;
@@ -798,6 +876,16 @@ class NotebookPanel extends Component {
             onCancel={this.handleSaveAsCancel}
             notifyOnExtensionChange
             storage={fileStorage}
+          />
+          <BasicModal
+            isOpen={showCloseModal}
+            headerText={`Do you want to save the changes you made to ${itemName}?`}
+            bodyText="Your changes will be lost if you don't save them."
+            onCancel={this.handleCloseCancel}
+            onDiscard={this.handleCloseDiscard}
+            onConfirm={this.handleCloseSave}
+            discardButtonText="Discard Changes"
+            confirmButtonText="Save"
           />
           <ContextActions actions={contextActions} />
         </Panel>

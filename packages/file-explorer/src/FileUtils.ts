@@ -58,6 +58,25 @@ export class FileUtils {
   }
 
   /**
+   * Create copy file name, used for copying unsaved files so doesn't have to be unique
+   * @param {string} nameParam File name
+   */
+  static getCopyFileName(originalName: string): string {
+    const extensionPosition = originalName.lastIndexOf('.');
+    let extension = null;
+    let name = null;
+    if (extensionPosition < 0) {
+      // No extension
+      name = originalName;
+    } else {
+      name = originalName.substring(0, extensionPosition);
+      extension = originalName.substring(extensionPosition + 1);
+    }
+    const copyName = name ? `${name}-copy` : 'Copy';
+    return extension !== null ? `${copyName}.${extension}` : copyName;
+  }
+
+  /**
    * Return a MIME type for the provided file
    * @param name The file name to get the type for
    * @returns A known MIME type if recognized
