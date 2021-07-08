@@ -67,6 +67,10 @@ export class WebdavFileStorage implements FileStorage {
     this.refreshTables();
   }
 
+  async exists(name: string): Promise<boolean> {
+    return this.client.exists(name);
+  }
+
   private refreshTables(): void {
     this.tables.every(table => table.refresh().catch(() => undefined));
   }

@@ -15,6 +15,7 @@ import FileStorage, { FileStorageTable, isDirectory } from './FileStorage';
 import './FileExplorer.scss';
 import FileListContainer from './FileListContainer';
 import FileUtils from './FileUtils';
+import FileExistsError from './FileExistsError';
 
 const log = Log.module('FileExplorer');
 
@@ -116,6 +117,23 @@ export const FileExplorer = React.forwardRef(
       [handleError, onRename, storage]
     );
 
+    const handleValidateRename = useCallback(
+      async (renameItem: FileListItem, newName: string): Promise<void> => {
+        if (newName === renameItem.basename) {
+          // Same name is fine
+          return undefined;
+        }
+        FileUtils.validateName(newName);
+
+        const newValue = `${FileUtils.getPath(renameItem.filename)}${newName}`;
+        const isExistingFile = await storage.exists(newValue);
+        if (isExistingFile) {
+          throw new FileExistsError();
+        }
+      },
+      [storage]
+    );
+
     useImperativeHandle(ref, () => ({
       updateDimensions: () => {
         fileListContainer.current?.updateDimensions();
@@ -142,6 +160,7 @@ export const FileExplorer = React.forwardRef(
             onSelect={onSelect}
             rowHeight={rowHeight}
             table={table}
+            validateRename={handleValidateRename}
           />
         )}
         <BasicModal

@@ -62,9 +62,9 @@ export interface FileListProps {
 }
 
 export const DEFAULT_RENDER_ITEM = (
-  props: SingleClickRenderItemProps<FileListItem>
+  props: SingleClickRenderItemProps<FileListItem> & { children?: JSX.Element }
 ): JSX.Element => {
-  const { isDragged, isSelected, item } = props;
+  const { children, isDragged, isSelected, item } = props;
 
   const icon = getItemIcon(item);
   const depth = FileUtils.getDepth(item.filename);
@@ -84,7 +84,7 @@ export const DEFAULT_RENDER_ITEM = (
     >
       {depthLines}{' '}
       <FontAwesomeIcon icon={icon} className="item-icon" fixedWidth />{' '}
-      {item.basename}
+      {children ?? item.basename}
     </div>
   );
 };
