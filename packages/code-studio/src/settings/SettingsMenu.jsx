@@ -1,11 +1,12 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { vsClose, vsWatch } from '@deephaven/icons';
+import { vsClose, vsWatch, vsRecordKeys } from '@deephaven/icons';
 import Logo from './LogoDark.svg';
 import FormattingSectionContent from './FormattingSectionContent';
 import LegalNotice from './LegalNotice';
 import SettingsMenuSection from './SettingsMenuSection';
+import ShortcutSectionContent from './ShortcutsSectionContent';
 import { exportLogs } from '../log/LogExport';
 
 import './SettingsMenu.scss';
@@ -14,6 +15,8 @@ class SettingsMenu extends Component {
   static FORMATTING_SECTION_KEY = 'SettingsMenu.formatting';
 
   static APPLICATION_SECTION_KEY = 'ApplicationMenu.settings';
+
+  static SHORTCUT_SECTION_KEY = 'SettingsMenu.shortcuts';
 
   static focusFirstInputInContainer(container) {
     const input = container.querySelector('input, select, textarea');
@@ -105,6 +108,22 @@ class SettingsMenu extends Component {
             onToggle={this.handleSectionToggle}
           >
             <FormattingSectionContent scrollTo={this.handleScrollTo} />
+          </SettingsMenuSection>
+
+          <SettingsMenuSection
+            sectionKey={SettingsMenu.SHORTCUT_SECTION_KEY}
+            isExpanded={this.isSectionExpanded(
+              SettingsMenu.SHORTCUT_SECTION_KEY
+            )}
+            title={
+              <>
+                <FontAwesomeIcon icon={vsRecordKeys} transform="grow-2" />{' '}
+                Keyboard Shortcuts
+              </>
+            }
+            onToggle={this.handleSectionToggle}
+          >
+            <ShortcutSectionContent />
           </SettingsMenuSection>
 
           <div className="app-settings-footer">

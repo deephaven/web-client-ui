@@ -1,0 +1,51 @@
+@import '~@deephaven/components/scss/custom.scss';
+
+.shortcut-item-container {
+  margin: 0.5rem 0;
+  padding: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  label.shortcut-item-name {
+    margin: 0;
+  }
+}
+
+.shortcut-item-input-container {
+  width: 40%;
+  position: relative;
+
+  & > input {
+    display: inline-block;
+    padding-right: 2rem;
+  }
+
+  & > button.reset-to-default-button {
+    position: absolute;
+    right: 0;
+    padding: calc(#{$input-padding-y} + #{$input-border-width})
+      calc(#{$input-padding-x} + #{$input-border-width});
+  }
+}
+
+.shortcut-item-message-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 0.5rem;
+  border-radius: $border-radius;
+
+  &.is-invalid {
+    color: $danger;
+    background-color: $toast-error-bg;
+  }
+
+  .shortcut-item-message {
+    flex-shrink: 1;
+  }
+  .shortcut-item-message-buttons {
+    flex-shrink: 0;
+  }
+}

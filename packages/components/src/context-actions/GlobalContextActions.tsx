@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import GlobalContextAction from './GlobalContextAction';
-import ContextActionUtils, { ContextAction } from './ContextActionUtils';
+import type { ContextAction } from './ContextActionUtils';
 
 interface GlobalContextActionsProps {
   actions: ContextAction[];
@@ -12,11 +12,11 @@ class GlobalContextActions extends Component<GlobalContextActionsProps> {
     const actionElements = [];
     for (let i = 0; i < actions.length; i += 1) {
       const action = actions[i];
-      const shortcut = ContextActionUtils.getShortcutFromAction(action);
+      const { shortcut } = action;
       if (action.title || action.menuElement || shortcut) {
         const actionElement = (
           <GlobalContextAction
-            key={`${action.title}.${shortcut}`}
+            key={`${action.title}.${shortcut?.id}`}
             action={action}
           />
         );

@@ -85,6 +85,7 @@ import IrisGridPartitionSelector from './IrisGridPartitionSelector';
 import SelectDistinctBuilder from './sidebar/SelectDistinctBuilder';
 import AdvancedSettingsType from './sidebar/AdvancedSettingsType';
 import AdvancedSettingsMenu from './sidebar/AdvancedSettingsMenu';
+import SHORTCUTS from './IrisGridShortcuts';
 
 const log = Log.module('IrisGrid');
 
@@ -215,23 +216,19 @@ export class IrisGrid extends Component {
 
     this.toggleFilterBarAction = {
       action: () => this.toggleFilterBar(),
-      shortcut: '⌃F',
-      macShortcut: '⌘F',
+      shortcut: SHORTCUTS.TABLE.TOGGLE_QUICK_FILTER,
     };
     this.toggleSearchBarAction = {
       action: () => this.toggleSearchBar(),
-      shortcut: '⌃⇧F',
-      macShortcut: '⌘⇧F',
+      shortcut: SHORTCUTS.TABLE.TOGGLE_SEARCH,
     };
     this.discardAction = {
       action: () => this.discardPending().catch(log.error),
-      shortcut: '⌃⌥S',
-      macShortcut: '⌘⌥S',
+      shortcut: SHORTCUTS.INPUT_TABLE.DISCARD,
     };
     this.commitAction = {
       action: () => this.commitPending().catch(log.error),
-      shortcut: '⌃S',
-      macShortcut: '⌘S',
+      shortcut: SHORTCUTS.INPUT_TABLE.COMMIT,
     };
     this.contextActions = [
       this.toggleFilterBarAction,
@@ -554,7 +551,7 @@ export class IrisGrid extends Component {
       optionItems.push({
         type: OptionType.QUICK_FILTERS,
         title: 'Quick Filters',
-        subtitle: ContextActionUtils.getDisplayShortcut(toggleFilterBarAction),
+        subtitle: toggleFilterBarAction.shortcut.getDisplayText(),
         icon: vsFilter,
         isOn: isFilterBarShown,
         onChange: toggleFilterBarAction.action,
@@ -562,7 +559,7 @@ export class IrisGrid extends Component {
       optionItems.push({
         type: OptionType.SEARCH_BAR,
         title: 'Search Bar',
-        subtitle: ContextActionUtils.getDisplayShortcut(toggleSearchBarAction),
+        subtitle: toggleSearchBarAction.shortcut.getDisplayText(),
         icon: vsSearch,
         isOn: showSearchBar,
         onChange: toggleSearchBarAction.action,
@@ -2787,12 +2784,8 @@ export class IrisGrid extends Component {
           <PendingDataBottomBar
             error={pendingSaveError}
             isSaving={pendingSavePromise != null}
-            saveTooltip={`Commit (${ContextActionUtils.getDisplayShortcut(
-              this.commitAction
-            )})`}
-            discardTooltip={`Discard (${ContextActionUtils.getDisplayShortcut(
-              this.discardAction
-            )})`}
+            saveTooltip={`Commit (${this.commitAction.shortcut.getDisplayText()})`}
+            discardTooltip={`Discard (${this.discardAction.shortcut.getDisplayText()})`}
             pendingDataErrors={pendingDataErrors}
             pendingDataMap={pendingDataMap}
             onEntering={this.handleAnimationStart}

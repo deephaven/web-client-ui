@@ -3,11 +3,8 @@
  */
 import React, { Component } from 'react';
 import Log from '@deephaven/log';
-import ContextActionUtils, {
-  KeyState,
-  ContextAction,
-  ContextActionEvent,
-} from './ContextActionUtils';
+import ContextActionUtils from './ContextActionUtils';
+import type { ContextAction, ContextActionEvent } from './ContextActionUtils';
 import GlobalContextActions from './GlobalContextActions';
 import './ContextActions.scss';
 
@@ -19,10 +16,7 @@ interface ContextActionsProps {
 
 interface ContextActionsState {
   globalActions: ContextAction[];
-  keyboardActions: {
-    action: ContextAction;
-    keyState: KeyState;
-  }[];
+  keyboardActions: ContextAction[];
 }
 
 /**
@@ -35,8 +29,7 @@ interface ContextActionsState {
  *   actions: []            // Submenu of actions
  *   icon: faPrint,         // Limited to FontAwesome icons for now.
  *   iconColor: '#ff0000,   // Color to use for the icon
- *   shortcut: '⌃M',        // Defaults to null. Modifiers must be first.
- *   macShortcut: '⌘M',     // Specific shortcut for mac platforms. Defaults to null. Falls back to shortcut.
+ *   shortcut: Shortcut,    // Defaults to null
  *   isGlobal: false,       // Global context action. Defaults to false.
  *   group: ContextActions.groups.default,  // What group to group the context action with
  *   order: null,                           // Int where to order within group
@@ -114,19 +107,9 @@ class ContextActions extends Component<
       return { globalActions: [], keyboardActions: [] };
     }
     const globalActions = props.actions.filter(action => action.isGlobal);
-    const keyboardActions = props.actions
-      .filter(
-        action =>
-          !action.isGlobal &&
-          ContextActionUtils.getShortcutFromAction(action) != null
-      )
-      .map(action => {
-        const shortcut = ContextActionUtils.getShortcutFromAction(action);
-        return {
-          action,
-          keyState: ContextActionUtils.getKeyStateFromShortcut(shortcut),
-        };
-      });
+    const keyboardActions = props.actions.filter(
+      action => !action.isGlobal && action.shortcut != null
+    );
 
     return { globalActions, keyboardActions };
   }
@@ -188,10 +171,13 @@ class ContextActions extends Component<
     const { keyboardActions } = this.state;
     for (let i = 0; i < keyboardActions.length; i += 1) {
       const keyboardAction = keyboardActions[i];
-      if (ContextActionUtils.isEventForKeyState(e, keyboardAction.keyState)) {
+      if (
+        !ContextActionUtils.actionsDisabled &&
+        keyboardAction.shortcut?.matchesEvent(e)
+      ) {
         log.debug('Context hotkey matched!', e);
 
-        const result = keyboardAction.action.action?.(e);
+        const result = keyboardAction.action?.(e);
 
         if (result || result === undefined) {
           e.stopPropagation();

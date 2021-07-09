@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { ContextActions } from '@deephaven/components';
-import { CommandHistory } from '@deephaven/console';
+import { CommandHistory, SHORTCUTS } from '@deephaven/console';
 import Log from '@deephaven/log';
 import { getCommandHistoryStorage } from '@deephaven/redux';
 import { Pending } from '@deephaven/utils';
@@ -50,8 +50,7 @@ class CommandHistoryPanel extends Component {
       contextActions: [
         {
           action: this.handleFocusHistory,
-          shortcut: '⌃H',
-          macShortcut: '⌃H',
+          shortcut: SHORTCUTS.COMMAND_HISTORY.FOCUS_HISTORY,
         },
       ],
     };

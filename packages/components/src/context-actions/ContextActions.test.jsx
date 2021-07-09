@@ -222,26 +222,3 @@ it('sorts groups/orders properly', () => {
   const sortedActions = ContextActionUtils.sortActions(actions);
   expect(sortedActions).toEqual(expectedResult);
 });
-
-it('retrieves key states from shortcut', () => {
-  const getKeyState = shortcut =>
-    ContextActionUtils.getKeyStateFromShortcut(shortcut);
-
-  expect(getKeyState('⌘⏎')).toMatchObject({
-    key: 'Enter',
-    metaKey: true,
-    shiftKey: false,
-    altKey: false,
-    ctrlKey: false,
-  });
-});
-
-it('displays the proper text for shortcuts', () => {
-  const getDisplay = shortcut =>
-    ContextActionUtils.getDisplayShortcut({ shortcut });
-
-  expect(getDisplay('^C')).toEqual('Ctrl+C');
-  expect(getDisplay('⌃⇧D')).toEqual('Ctrl+Shift+D');
-  expect(getDisplay('⌥Y')).toEqual('Alt+Y');
-  expect(getDisplay('⌃⌥H')).toEqual('Ctrl+Alt+H');
-});

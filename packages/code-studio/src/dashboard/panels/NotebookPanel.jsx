@@ -5,13 +5,13 @@ import PropTypes from 'prop-types';
 import memoize from 'memoize-one';
 import { connect } from 'react-redux';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { FileUtils, NewItemModal } from '@deephaven/file-explorer';
 import {
   ContextActions,
-  ContextActionUtils,
   DropdownMenu,
   Tooltip,
+  GLOBAL_SHORTCUTS,
 } from '@deephaven/components';
-import { FileUtils, NewItemModal } from '@deephaven/file-explorer';
 import { ScriptEditor, ScriptEditorUtils } from '@deephaven/console';
 import {
   vsSave,
@@ -30,6 +30,7 @@ import { ConsoleEvent, NotebookEvent } from '../events';
 import './NotebookPanel.scss';
 import Panel from './Panel';
 import { GLPropTypes } from '../../include/prop-types';
+import SHORTCUTS from '../../settings/Shortcuts';
 
 const log = Log.module('NotebookPanel');
 
@@ -351,8 +352,7 @@ class NotebookPanel extends Component {
       icon: dhFileSearch,
       action: this.handleFind,
       group: ContextActions.groups.high,
-      shortcut: '⌃F',
-      macShortcut: '⌘F',
+      shortcut: SHORTCUTS.NOTEBOOK.FIND,
       order: 10,
     },
   ]);
@@ -658,8 +658,7 @@ class NotebookPanel extends Component {
     const contextActions = [
       {
         action: this.handleSave,
-        shortcut: '⌃S',
-        macShortcut: '⌘S',
+        shortcut: GLOBAL_SHORTCUTS.SAVE,
       },
     ];
     const disabledRunButtonTooltip = ScriptEditorUtils.getDisabledRunTooltip(
@@ -728,9 +727,7 @@ class NotebookPanel extends Component {
                 disabled={runButtonsDisabled}
               >
                 <FontAwesomeIcon icon={vsRunAll} transform="grow-4" />
-                <Tooltip>
-                  Run {ContextActionUtils.getDisplayShortcutText('⌥R')}
-                </Tooltip>
+                <Tooltip>Run {SHORTCUTS.NOTEBOOK.RUN.getDisplayText()}</Tooltip>
               </button>
               {disabledRunButtonTooltip && (
                 <Tooltip>{disabledRunButtonTooltip}</Tooltip>
@@ -746,7 +743,7 @@ class NotebookPanel extends Component {
                 <FontAwesomeIcon icon={vsPlay} transform="grow-4" />
                 <Tooltip>
                   Run Selected{' '}
-                  {ContextActionUtils.getDisplayShortcutText('⇧⌥R')}
+                  {SHORTCUTS.NOTEBOOK.RUN_SELECTED.getDisplayText()}
                 </Tooltip>
               </button>
               {disabledRunSelectedButtonTooltip && (

@@ -1,10 +1,7 @@
 import { Component } from 'react';
 import Log from '@deephaven/log';
-import ContextActionUtils, {
-  ContextAction,
-  ContextActionEvent,
-  KeyState,
-} from './ContextActionUtils';
+import ContextActionUtils from './ContextActionUtils';
+import type { ContextAction, ContextActionEvent } from './ContextActionUtils';
 
 const log = Log.module('GlobalContextAction');
 
@@ -12,29 +9,12 @@ interface GlobalContextActionProps {
   action: ContextAction;
 }
 
-type GlobalContextActionState = KeyState;
-class GlobalContextAction extends Component<
-  GlobalContextActionProps,
-  GlobalContextActionState
-> {
+class GlobalContextAction extends Component<GlobalContextActionProps> {
   constructor(props: GlobalContextActionProps) {
     super(props);
 
     this.handleContextMenu = this.handleContextMenu.bind(this);
     this.handleKeyDown = this.handleKeyDown.bind(this);
-
-    this.state = {
-      key: null,
-      metaKey: false,
-      shiftKey: false,
-      altKey: false,
-      ctrlKey: false,
-    };
-  }
-
-  static getDerivedStateFromProps(props: GlobalContextActionProps): KeyState {
-    const shortcut = ContextActionUtils.getShortcutFromAction(props.action);
-    return ContextActionUtils.getKeyStateFromShortcut(shortcut);
   }
 
   componentDidMount(): void {
@@ -76,10 +56,13 @@ class GlobalContextAction extends Component<
   }
 
   handleKeyDown(e: KeyboardEvent): void {
-    if (ContextActionUtils.isEventForKeyState(e, this.state)) {
+    const { action } = this.props;
+    if (
+      !ContextActionUtils.actionsDisabled &&
+      action.shortcut?.matchesEvent(e)
+    ) {
       log.debug('Global hotkey matched!', e);
 
-      const { action } = this.props;
       const result = action.action?.(e);
 
       if (result || result === undefined) {

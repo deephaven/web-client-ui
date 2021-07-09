@@ -1,13 +1,6 @@
 import { IconDefinition } from '@deephaven/icons';
 import React from 'react';
-
-export interface KeyState {
-  key: string | null;
-  metaKey: boolean;
-  shiftKey: boolean;
-  altKey: boolean;
-  ctrlKey: boolean;
-}
+import type { Shortcut } from '../shortcuts';
 
 export type ResolvableContextAction =
   | ContextAction
@@ -23,8 +16,7 @@ export interface ContextAction {
   actions?: ResolvableContextAction[];
   icon?: IconDefinition | React.ReactElement;
   iconColor?: string;
-  shortcut?: string;
-  macShortcut?: string;
+  shortcut?: Shortcut;
   isGlobal?: boolean;
   group?: number;
   order?: number;
@@ -38,92 +30,18 @@ export interface ContextActionEvent extends MouseEvent {
 }
 
 class ContextActionUtils {
-  /**
-   * Use these chars for defining shortcuts
-   * Order should be Ctrl/Alt/Shift/Meta for modifiers
-   */
-  static SHIFT_KEY = '⇧';
+  static actionsDisabled = false;
 
-  static META_KEY = '⌘';
+  static disableAllActions(): void {
+    ContextActionUtils.actionsDisabled = true;
+  }
 
-  static ALT_KEY = '⌥';
-
-  static CTRL_KEY = '⌃';
-
-  static ENTER_KEY = '⏎';
-
-  static ESCAPE_KEY = '⎋'; // https://en.wikipedia.org/wiki/Esc_key
-
-  static BACKSPACE_KEY = '⌫';
+  static enableAllActions(): void {
+    ContextActionUtils.actionsDisabled = false;
+  }
 
   static isContextActionEvent(e: MouseEvent): e is ContextActionEvent {
     return Array.isArray((e as ContextActionEvent).contextActions);
-  }
-
-  static getKeyStateFromShortcut(shortcutParam: string | undefined): KeyState {
-    const keyState: KeyState = {
-      key: null,
-      metaKey: false,
-      shiftKey: false,
-      altKey: false,
-      ctrlKey: false,
-    };
-
-    if (shortcutParam === '' || shortcutParam === undefined) {
-      return keyState;
-    }
-
-    const shortcut = shortcutParam.replace('^', ContextActionUtils.CTRL_KEY);
-
-    if (shortcut.indexOf(ContextActionUtils.CTRL_KEY) >= 0) {
-      keyState.ctrlKey = true;
-    }
-    if (shortcut.indexOf(ContextActionUtils.META_KEY) >= 0) {
-      keyState.metaKey = true;
-    }
-    if (shortcut.indexOf(ContextActionUtils.SHIFT_KEY) >= 0) {
-      keyState.shiftKey = true;
-    }
-    if (shortcut.indexOf(ContextActionUtils.ALT_KEY) >= 0) {
-      keyState.altKey = true;
-    }
-
-    let key = shortcut.charAt(shortcut.length - 1);
-    key = key.replace(/[⏎↵↩]/, 'Enter');
-    key = key.replace(/[⎋]/, 'Escape');
-    key = key.replace(/[⌫]/, 'Backspace');
-    keyState.key = key;
-
-    return keyState;
-  }
-
-  /**
-   * Returns true if the shortcut matches the keyboard event
-   * @param event The event to compare against the shortcut
-   * @param shortcut The string representation of the keyboard shortcut
-   */
-  static isEventForShortcut(event: KeyboardEvent, shortcut: string): boolean {
-    const keyState = ContextActionUtils.getKeyStateFromShortcut(shortcut);
-    return ContextActionUtils.isEventForKeyState(event, keyState);
-  }
-
-  static isEventForKeyState(event: KeyboardEvent, keyState: KeyState): boolean {
-    if (!event || !event.key || !keyState || !keyState.key) {
-      return false;
-    }
-
-    const keyMatches =
-      event.key.toUpperCase() === keyState.key.toUpperCase() ||
-      String.fromCharCode(event.keyCode).toUpperCase() ===
-        keyState.key.toUpperCase();
-
-    return (
-      keyMatches &&
-      event.metaKey === keyState.metaKey &&
-      event.shiftKey === keyState.shiftKey &&
-      event.altKey === keyState.altKey &&
-      event.ctrlKey === keyState.ctrlKey
-    );
   }
 
   /**
@@ -190,34 +108,6 @@ class ContextActionUtils {
   ): boolean {
     const modifierKey = ContextActionUtils.getModifierKey();
     return event[modifierKey];
-  }
-
-  static getShortcutFromAction(action: ContextAction): string | undefined {
-    if (ContextActionUtils.isMacPlatform()) {
-      return action.macShortcut;
-    }
-    return action.shortcut;
-  }
-
-  static getDisplayShortcut(action: ContextAction): string | null {
-    const shortcut = ContextActionUtils.getShortcutFromAction(action);
-    return ContextActionUtils.getDisplayShortcutText(shortcut);
-  }
-
-  static getDisplayShortcutText(shortcut?: string): string | null {
-    if (shortcut == null) {
-      return null;
-    }
-
-    if (ContextActionUtils.isMacPlatform()) {
-      return shortcut;
-    }
-
-    return shortcut
-      .replace(/[\^⌃]/, 'Ctrl+')
-      .replace(/[⌥]/, 'Alt+')
-      .replace(/[⇧]/, 'Shift+')
-      .replace(/[⏎↵↩]/, 'Enter');
   }
 
   /**

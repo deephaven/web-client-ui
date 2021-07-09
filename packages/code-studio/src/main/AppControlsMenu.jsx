@@ -6,7 +6,8 @@ import React, {
   useMemo,
 } from 'react';
 import classNames from 'classnames';
-import { DropdownMenu } from '@deephaven/components';
+import { DropdownMenu, GLOBAL_SHORTCUTS } from '@deephaven/components';
+import { SHORTCUTS as GRID_SHORTCUTS } from '@deephaven/iris-grid';
 import {
   dhInput,
   dhFilterSlash,
@@ -154,8 +155,7 @@ const AppControlsMenu = props => {
           handleToolSelect(ToolType.LINKER);
         },
         order: 40,
-        shortcut: '⌃L',
-        macShortcut: '⌘L',
+        shortcut: GLOBAL_SHORTCUTS.LINKER,
       },
       {
         disabled: true,
@@ -169,8 +169,7 @@ const AppControlsMenu = props => {
           onClearFilter();
         },
         order: 60,
-        shortcut: '⌃E',
-        macShortcut: '⌘E',
+        shortcut: GRID_SHORTCUTS.TABLE.CLEAR_FILTERS,
       },
     ],
     [handleControlSelect, handleToolSelect, onClearFilter]

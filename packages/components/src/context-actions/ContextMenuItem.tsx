@@ -2,7 +2,7 @@ import React from 'react';
 import classNames from 'classnames';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { vsChevronRight, IconDefinition } from '@deephaven/icons';
-import ContextActionUtils, { ContextAction } from './ContextActionUtils';
+import type { ContextAction } from './ContextActionUtils';
 
 interface ContextMenuItemProps {
   children?: React.ReactNode;
@@ -35,7 +35,7 @@ const ContextMenuItem = React.forwardRef<HTMLDivElement, ContextMenuItemProps>(
     function renderCustomMenuElement(
       element: React.ReactElement,
       iconElement: IconDefinition | React.ReactElement | null,
-      displayShortcut: string | null
+      displayShortcut: string | undefined
     ): JSX.Element {
       // Don't pass forwardedProps if menuElement is a native DOM node
       if (typeof element.type === 'string') {
@@ -62,7 +62,7 @@ const ContextMenuItem = React.forwardRef<HTMLDivElement, ContextMenuItemProps>(
 
     const { children, menuItem, isKeyboardSelected, isMouseSelected } = props;
 
-    const displayShortcut = ContextActionUtils.getDisplayShortcut(menuItem);
+    const displayShortcut = menuItem.shortcut?.getDisplayText();
     let icon: IconDefinition | React.ReactElement | null = null;
     if (menuItem.icon) {
       const menuItemIcon = menuItem.icon;

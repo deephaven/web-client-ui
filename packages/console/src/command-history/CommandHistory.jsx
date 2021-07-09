@@ -5,6 +5,7 @@ import {
   ContextActionUtils,
   ItemList,
   SearchInput,
+  GLOBAL_SHORTCUTS,
 } from '@deephaven/components';
 import {
   vsFileCode,
@@ -22,6 +23,7 @@ import ConsoleConstants from '../common/ConsoleConstants';
 import './CommandHistory.scss';
 import StoragePropTypes from '../StoragePropTypes';
 import CommandHistoryViewportUpdater from './CommandHistoryViewportUpdater';
+import SHORTCUTS from '../ConsoleShortcuts';
 
 const log = Log.module('CommandHistory');
 
@@ -73,8 +75,7 @@ class CommandHistory extends Component {
         title: 'Copy Selection',
         description: 'Copy selected commands to clipboard',
         icon: vsFiles,
-        shortcut: '⌃C',
-        macShortcut: '⌘C',
+        shortcut: GLOBAL_SHORTCUTS.COPY,
         action: this.copySelectedCommands,
         group: ContextActions.groups.edit,
       },
@@ -82,8 +83,7 @@ class CommandHistory extends Component {
         title: 'Send to Console',
         description: 'Open selected commands in the console',
         icon: vsTerminal,
-        shortcut: '⏎',
-        macShortcut: '⏎',
+        shortcut: SHORTCUTS.COMMAND_HISTORY.SEND_TO_CONSOLE,
         action: this.sendToConsole,
         group: CommandHistory.menuGroups.send,
         order: 10,
@@ -92,8 +92,7 @@ class CommandHistory extends Component {
         title: 'Run in Console',
         description: 'Run selected commands in the console',
         icon: vsPlay,
-        shortcut: '⌥R',
-        macShortcut: '⌥R',
+        shortcut: SHORTCUTS.COMMAND_HISTORY.RUN,
         action: this.runInConsole,
         group: CommandHistory.menuGroups.send,
         order: 10,
@@ -102,8 +101,7 @@ class CommandHistory extends Component {
         title: 'Send to Active Notebook',
         description: 'Open selected commands in a notebook',
         icon: vsFileCode,
-        shortcut: '⌃⏎',
-        macShortcut: '⌘⏎',
+        shortcut: SHORTCUTS.COMMAND_HISTORY.SEND_TO_NOTEBOOK,
         action: this.sendToNotebook,
         group: CommandHistory.menuGroups.send,
         order: 20,

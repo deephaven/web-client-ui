@@ -1,28 +1,28 @@
 import Shortcut, { KEY, MODIFIER } from './Shortcut';
 import ShortcutRegistry from './ShortcutRegistry';
 
-const SINGLE_KEY_PARAMS = {
+const SINGLE_KEY_PARAMS: ConstructorParameters<typeof Shortcut>[0] = {
   id: 'Test single key',
   name: '',
   shortcut: [KEY.A],
   macShortcut: [KEY.B],
 };
 
-const DIFF_LEN_PARAMS = {
+const DIFF_LEN_PARAMS: ConstructorParameters<typeof Shortcut>[0] = {
   id: 'Test diff length shortcuts',
   name: '',
   shortcut: [MODIFIER.CTRL, KEY.A],
   macShortcut: [MODIFIER.CMD, MODIFIER.SHIFT, KEY.B],
 };
 
-const SINGLE_MOD_PARAMS = {
+const SINGLE_MOD_PARAMS: ConstructorParameters<typeof Shortcut>[0] = {
   id: 'Test single mod',
   name: '',
   shortcut: [MODIFIER.CTRL, KEY.A],
   macShortcut: [MODIFIER.CMD, KEY.B],
 };
 
-const MULTI_MOD_PARAMS = {
+const MULTI_MOD_PARAMS: ConstructorParameters<typeof Shortcut>[0] = {
   id: 'Test multi mod',
   name: '',
   shortcut: [MODIFIER.CTRL, MODIFIER.SHIFT, KEY.A],
@@ -44,38 +44,40 @@ describe('Windows shortcuts', () => {
 
   it('Creates a valid single key shortcut', () => {
     const s = new Shortcut(SINGLE_KEY_PARAMS);
-    expect(s.key).toBe(KEY.A);
-    expect(s.modifierState).toEqual(DEFAULT_MODIFIER_STATE);
-    expect(s.keyDisplay).toBe('A');
+    expect(s.getKeyState()).toEqual({
+      ...DEFAULT_MODIFIER_STATE,
+      keyValue: KEY.A,
+    });
+    expect(s.getDisplayText()).toBe('A');
   });
 
   it('Creates a valid shortcut with a single modifier', () => {
     const s = new Shortcut(SINGLE_MOD_PARAMS);
-    expect(s.key).toBe(KEY.A);
-    expect(s.modifierState).toEqual({
+    expect(s.getKeyState()).toEqual({
       ...DEFAULT_MODIFIER_STATE,
       ctrlKey: true,
+      keyValue: KEY.A,
     });
-    expect(s.keyDisplay).toBe('Ctrl+A');
+    expect(s.getDisplayText()).toBe('Ctrl+A');
   });
 
   it('Creates a valid shortcut with multiple modifiers', () => {
     const s = new Shortcut(MULTI_MOD_PARAMS);
-    expect(s.key).toBe(KEY.A);
-    expect(s.modifierState).toEqual({
+    expect(s.getKeyState()).toEqual({
       ...DEFAULT_MODIFIER_STATE,
       ctrlKey: true,
       shiftKey: true,
+      keyValue: KEY.A,
     });
-    expect(s.keyDisplay).toBe('Ctrl+Shift+A');
+    expect(s.getDisplayText()).toBe('Ctrl+Shift+A');
   });
 
   it('Creates the right shortcut when the 2 platform shortcuts are different lengths', () => {
     const s = new Shortcut(DIFF_LEN_PARAMS);
-    expect(s.key).toBe(KEY.A);
-    expect(s.modifierState).toEqual({
+    expect(s.getKeyState()).toEqual({
       ...DEFAULT_MODIFIER_STATE,
       ctrlKey: true,
+      keyValue: KEY.A,
     });
   });
 
@@ -85,7 +87,7 @@ describe('Windows shortcuts', () => {
       id: 'esc_test',
       shortcut: [KEY.ESCAPE],
     });
-    expect(a.keyDisplay).toBe('Esc');
+    expect(a.getDisplayText()).toBe('Esc');
   });
 });
 
@@ -97,39 +99,41 @@ describe('Mac shortcuts', () => {
 
   it('Creates a valid single key shortcut', () => {
     const s = new Shortcut(SINGLE_KEY_PARAMS);
-    expect(s.key).toBe(KEY.B);
-    expect(s.modifierState).toEqual(DEFAULT_MODIFIER_STATE);
-    expect(s.keyDisplay).toBe('B');
+    expect(s.getKeyState()).toEqual({
+      ...DEFAULT_MODIFIER_STATE,
+      keyValue: KEY.B,
+    });
+    expect(s.getDisplayText()).toBe('B');
   });
 
   it('Creates a valid shortcut with a single modifier', () => {
     const s = new Shortcut(SINGLE_MOD_PARAMS);
-    expect(s.key).toBe(KEY.B);
-    expect(s.modifierState).toEqual({
+    expect(s.getKeyState()).toEqual({
       ...DEFAULT_MODIFIER_STATE,
       metaKey: true,
+      keyValue: KEY.B,
     });
-    expect(s.keyDisplay).toBe('⌘B');
+    expect(s.getDisplayText()).toBe('⌘B');
   });
 
   it('Creates a valid shortcut with multiple modifiers', () => {
     const s = new Shortcut(MULTI_MOD_PARAMS);
-    expect(s.key).toBe(KEY.B);
-    expect(s.modifierState).toEqual({
+    expect(s.getKeyState()).toEqual({
       ...DEFAULT_MODIFIER_STATE,
       metaKey: true,
       shiftKey: true,
+      keyValue: KEY.B,
     });
-    expect(s.keyDisplay).toBe('⇧⌘B');
+    expect(s.getDisplayText()).toBe('⇧⌘B');
   });
 
   it('Creates the right shortcut when the 2 platform shortcuts are different lengths', () => {
     const s = new Shortcut(DIFF_LEN_PARAMS);
-    expect(s.key).toBe(KEY.B);
-    expect(s.modifierState).toEqual({
+    expect(s.getKeyState()).toEqual({
       ...DEFAULT_MODIFIER_STATE,
       metaKey: true,
       shiftKey: true,
+      keyValue: KEY.B,
     });
   });
 
@@ -139,7 +143,7 @@ describe('Mac shortcuts', () => {
       id: 'enter_test',
       macShortcut: [KEY.ENTER],
     });
-    expect(a.keyDisplay).toBe('⏎');
+    expect(a.getDisplayText()).toBe('⏎');
   });
 
   it('Replaces the escape key display', () => {
@@ -148,7 +152,7 @@ describe('Mac shortcuts', () => {
       id: 'escape_test',
       macShortcut: [KEY.ESCAPE],
     });
-    expect(a.keyDisplay).toBe('⎋');
+    expect(a.getDisplayText()).toBe('⎋');
   });
 
   it('Replaces the backspace key display', () => {
@@ -157,16 +161,6 @@ describe('Mac shortcuts', () => {
       id: 'backspace_test',
       macShortcut: [KEY.BACKSPACE],
     });
-    expect(a.keyDisplay).toBe('⌫');
+    expect(a.getDisplayText()).toBe('⌫');
   });
 });
-
-/* eslint-disable @typescript-eslint/no-unused-vars */
-it('Throws an error when creating/registering a shortcut with a duplicate id', () => {
-  ShortcutRegistry.shortcutMap.clear();
-  const a = new Shortcut(SINGLE_KEY_PARAMS);
-  expect(ShortcutRegistry.shortcutMap.size).toBe(1);
-  expect(() => new Shortcut(SINGLE_KEY_PARAMS)).toThrow();
-  expect(ShortcutRegistry.shortcutMap.size).toBe(1);
-});
-/* eslint-enable @typescript-eslint/no-unused-vars */
