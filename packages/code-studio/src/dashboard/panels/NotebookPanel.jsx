@@ -609,10 +609,10 @@ class NotebookPanel extends Component {
     this.runCommand(this.notebook.getSelectedCommand());
   }
 
-  handleSessionOpened(config, sessionLanguage, ide, console, session) {
+  handleSessionOpened(session, { language }) {
     this.setState({
       session,
-      sessionLanguage,
+      sessionLanguage: language,
     });
   }
 
