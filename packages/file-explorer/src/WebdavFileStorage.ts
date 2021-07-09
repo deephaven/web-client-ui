@@ -1,5 +1,6 @@
 /* eslint-disable class-methods-use-this */
-import { WebDAVClient } from 'webdav/web';
+import { FileStat, WebDAVClient } from 'webdav/web';
+import FileNotFoundError from './FileNotFoundError';
 import FileStorage, {
   File,
   FileStorageItem,
@@ -65,6 +66,20 @@ export class WebdavFileStorage implements FileStorage {
   async moveFile(name: string, newName: string): Promise<void> {
     await this.client.moveFile(name, newName);
     this.refreshTables();
+  }
+
+  async info(name: string): Promise<FileStorageItem> {
+    try {
+      const stat = (await this.client.stat(name)) as FileStat;
+      return {
+        filename: stat.filename,
+        basename: stat.basename,
+        id: stat.filename,
+        type: stat.type,
+      };
+    } catch (e) {
+      throw new FileNotFoundError();
+    }
   }
 
   private refreshTables(): void {

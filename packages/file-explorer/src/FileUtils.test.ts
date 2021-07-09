@@ -1,5 +1,20 @@
 import FileUtils from './FileUtils';
 
+function testValidFileName(name: string): void {
+  return expect(() => FileUtils.validateName(name)).not.toThrow();
+}
+
+function testInvalidFileName(name: string): void {
+  return expect(() => FileUtils.validateName(name)).toThrow();
+}
+
+function testInvalidFileNameMessage(name: string, message: string): void {
+  // toThrowError with an error object tests for exact message match
+  return expect(() => FileUtils.validateName(name)).toThrowError(
+    new Error(message)
+  );
+}
+
 it('gets extension', () => {
   function testName(name: string, expectedExtension: string) {
     expect(FileUtils.getExtension(name)).toBe(expectedExtension);
@@ -85,4 +100,46 @@ it('gets the depth', () => {
   testError('invalid/file');
   testError('nopath');
   testError('nopath.txt');
+});
+
+describe('validateItemName for files', () => {
+  it('rejects for invalid names', () => {
+    testInvalidFileName('');
+    testInvalidFileName('test/test');
+    testInvalidFileName('test\\test');
+    testInvalidFileName('test\0test');
+  });
+
+  it('rejects with correct error messages', () => {
+    // Prints invalid char only once for all matches
+    testInvalidFileNameMessage(
+      '/test/test/',
+      'Invalid characters in name: "/"'
+    );
+    // Prints all invalid chars
+    testInvalidFileNameMessage(
+      '\\test\\test/',
+      'Invalid characters in name: "\\", "/"'
+    );
+    // Prints "null" for invisible "\0" char
+    testInvalidFileNameMessage(
+      '\0test\0test',
+      'Invalid characters in name: "null"'
+    );
+  });
+
+  it('rejects for reserved names', () => {
+    testInvalidFileName('.');
+    testInvalidFileName('..');
+  });
+
+  it('resolves for valid name', () => {
+    testValidFileName('Currencies $ € 円 ₽ £ ₤');
+    testValidFileName('Special chars , . * % # @ ↹ <>');
+    testValidFileName('Iñtërnâtiônàližætiøn');
+    testValidFileName('♈ ♉ ♊ ♋ ♌ ♍ ♎ ♏ ♐ ♑ ♒ ♓');
+    testValidFileName('name.extension');
+    testValidFileName('name-no-extension');
+    testValidFileName('.extension-no-name');
+  });
 });

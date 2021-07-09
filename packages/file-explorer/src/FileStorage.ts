@@ -80,6 +80,14 @@ export interface FileStorage {
   moveFile(name: string, newName: string): Promise<void>;
 
   /**
+   * Get the info for the file at the specified path.
+   * If the file does not exists, rejects with a FileNotFoundError
+   * @param name The file name to check, including path
+   * @returns The FileStorageItem for the path specified, or reject with a FileNotFoundError if it does not exist.
+   */
+  info(name: string): Promise<FileStorageItem>;
+
+  /**
    * Create the directory at the given path
    * @param name The full directory path
    */

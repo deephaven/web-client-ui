@@ -16,6 +16,8 @@ import FileStorage, { FileType } from './FileStorage';
 import FileUtils from './FileUtils';
 
 import './NewItemModal.scss';
+import FileExistsError from './FileExistsError';
+import FileNotFoundError from './FileNotFoundError';
 
 const log = Log.module('NewItemModal');
 
@@ -33,7 +35,7 @@ export type NewItemModalProps = typeof NewItemModal.defaultProps & {
 
 export type NewItemModalState = {
   path: string;
-  disableSubmit: boolean;
+  isSubmitting: boolean;
   showExtensionChangeModal: boolean;
   showOverwriteModal: boolean;
   validationError?: ValidationError;
@@ -63,6 +65,13 @@ class NewItemModal extends PureComponent<NewItemModalProps, NewItemModalState> {
     onSubmit: (name: string): void => undefined,
     onCancel: (): void => undefined,
   };
+
+  static getValidationMessage(err: Error): string {
+    if (err instanceof FileExistsError && err.info.type === 'directory') {
+      return 'Error: Cannot overwrite existing directory';
+    }
+    return `${err}`;
+  }
 
   static handleError(err: Error): void {
     if (!PromiseUtils.isCanceled(err)) {
@@ -94,7 +103,7 @@ class NewItemModal extends PureComponent<NewItemModalProps, NewItemModalState> {
       : '/';
 
     this.state = {
-      disableSubmit: false,
+      isSubmitting: false,
       path,
       prevExtension: FileUtils.getExtension(defaultValue),
       showExtensionChangeModal: false,
@@ -148,22 +157,48 @@ class NewItemModal extends PureComponent<NewItemModalProps, NewItemModalState> {
       value: FileUtils.getBaseName(defaultValue),
       validationError: undefined,
       prevExtension: FileUtils.getExtension(defaultValue),
-      disableSubmit: false,
+      isSubmitting: false,
     });
   }
 
   getValidationPromise(
     path: string,
-    newName: string
+    name: string,
+    checkExisting = false
   ): CancelablePromise<string> {
     if (this.cancelableValidatePromise) {
       this.cancelableValidatePromise.cancel();
     }
-    // TODO: web-client-ui#91 Re-enable validation
     this.cancelableValidatePromise = PromiseUtils.makeCancelable(
-      Promise.resolve(newName)
+      this.validateName(path, name, checkExisting)
     );
     return this.cancelableValidatePromise;
+  }
+
+  async validateName(
+    path: string,
+    name: string,
+    checkExisting: boolean
+  ): Promise<string> {
+    FileUtils.validateName(name);
+
+    const { defaultValue, storage } = this.props;
+    if (checkExisting) {
+      const value = `${path}${name}`;
+      if (value !== defaultValue) {
+        try {
+          const existingFile = await storage.info(value);
+          throw new FileExistsError(existingFile);
+        } catch (e) {
+          if (!(e instanceof FileNotFoundError)) {
+            throw e;
+          }
+          // There is no existing file, ignore
+        }
+      }
+    }
+
+    return name;
   }
 
   updateValidationStatus(path: string, newName: string): void {
@@ -235,18 +270,16 @@ class NewItemModal extends PureComponent<NewItemModalProps, NewItemModalState> {
   handleOverwriteCancel(): void {
     this.setState({
       showOverwriteModal: false,
-      disableSubmit: false,
+      isSubmitting: false,
     });
   }
 
-  // eslint-disable-next-line class-methods-use-this
   handleOverwriteConfirm(): void {
-    // TODO: Make this overwrite correctly
-    // this.setState({ showOverwriteModal: false });
-    // const { onSubmit } = this.props;
-    // const { path, value: newItemName } = this.state;
-    // log.debug('handleOverwriteConfirm', path, newItemName);
-    // onSubmit(path, newItemName);
+    this.setState({ showOverwriteModal: false });
+    const { onSubmit } = this.props;
+    const { path, value } = this.state;
+    log.debug('handleOverwriteConfirm', path, value);
+    onSubmit(`${path}${value}`);
   }
 
   handleExtensionChangeCancel(): void {
@@ -266,15 +299,6 @@ class NewItemModal extends PureComponent<NewItemModalProps, NewItemModalState> {
     log.debug('handleExtensionChangeConfirm');
     this.setState({ showExtensionChangeModal: false });
     this.submitModal(true);
-  }
-
-  checkForExistingItem(fileName: string): Promise<FileListItem | null> {
-    const { type } = this.props;
-    const { path } = this.state;
-    const isFolder = type === 'directory';
-    log.debug('checkForExistingItem', path, fileName, isFolder);
-    // TODO: Actually check for an existing item
-    return Promise.resolve(null);
   }
 
   /**
@@ -297,7 +321,7 @@ class NewItemModal extends PureComponent<NewItemModalProps, NewItemModalState> {
 
   submitModal(skipExtensionCheck = false): void {
     this.setState(({ prevExtension, value, path }) => {
-      const { notifyOnExtensionChange } = this.props;
+      const { notifyOnExtensionChange, type } = this.props;
       log.debug('submitModal', prevExtension, value);
       const newExtension = FileUtils.getExtension(value);
       if (
@@ -307,32 +331,31 @@ class NewItemModal extends PureComponent<NewItemModalProps, NewItemModalState> {
         prevExtension !== newExtension
       ) {
         return {
-          disableSubmit: false,
+          isSubmitting: false,
           showExtensionChangeModal: true,
           newExtension,
         };
       }
 
-      this.getValidationPromise(path, value)
+      this.getValidationPromise(path, value, true)
         .then((newItemName: string) => {
-          if (this.cancelableExistingItemPromise) {
-            this.cancelableExistingItemPromise.cancel();
-          }
-          this.cancelableExistingItemPromise = PromiseUtils.makeCancelable(
-            this.checkForExistingItem(newItemName)
-          );
-          return this.cancelableExistingItemPromise.then(existingFile => {
-            if (!existingFile) {
-              const { onSubmit } = this.props;
-              onSubmit(`${path}${value}`);
-            } else {
+          const { onSubmit } = this.props;
+          onSubmit(`${path}${value}`);
+        })
+        .catch(e => {
+          // Don't allow using existing names for folders
+          // For files, prompt if they want to overwrite existing file
+          if (e instanceof FileExistsError) {
+            if (type !== 'directory' && e.info.type !== 'directory') {
               this.setState({ showOverwriteModal: true });
+              return;
             }
-          });
+          }
+          throw e;
         })
         .catch(e => {
           if (PromiseUtils.isCanceled(e)) {
-            this.setState({ disableSubmit: false });
+            this.setState({ isSubmitting: false });
           }
           throw e;
         })
@@ -340,7 +363,7 @@ class NewItemModal extends PureComponent<NewItemModalProps, NewItemModalState> {
         .catch(NewItemModal.handleError);
 
       return {
-        disableSubmit: true,
+        isSubmitting: true,
         showExtensionChangeModal: false,
         newExtension: undefined,
       };
@@ -350,7 +373,7 @@ class NewItemModal extends PureComponent<NewItemModalProps, NewItemModalState> {
   render(): React.ReactNode {
     const { storage, isOpen, onCancel, placeholder, title, type } = this.props;
     const {
-      disableSubmit,
+      isSubmitting,
       path,
       showExtensionChangeModal,
       showOverwriteModal,
@@ -397,7 +420,9 @@ class NewItemModal extends PureComponent<NewItemModalProps, NewItemModalState> {
                     onChange={this.handleChange}
                   />
                   {validationError && (
-                    <div className="invalid-feedback">{validationError}</div>
+                    <div className="invalid-feedback">
+                      {NewItemModal.getValidationMessage(validationError)}
+                    </div>
                   )}
                 </div>
                 <div className="flex-grow-0">
@@ -425,7 +450,7 @@ class NewItemModal extends PureComponent<NewItemModalProps, NewItemModalState> {
             </button>
             <button
               className="btn btn-primary"
-              disabled={disableSubmit}
+              disabled={isSubmitting}
               onClick={this.handleModalSubmit}
               type="button"
             >
@@ -433,17 +458,15 @@ class NewItemModal extends PureComponent<NewItemModalProps, NewItemModalState> {
             </button>
           </ModalFooter>
         </Modal>
-
         <BasicModal
           isOpen={showOverwriteModal}
           headerText="Confirm overwrite"
-          bodyText="File or folder with this name already exists, are you sure you want to overwrite it?"
+          bodyText="File with this name already exists, are you sure you want to overwrite it?"
           onCancel={this.handleOverwriteCancel}
           onConfirm={this.handleOverwriteConfirm}
           cancelButtonText="Cancel"
           confirmButtonText="Overwrite"
         />
-
         <BasicModal
           isOpen={showExtensionChangeModal}
           headerText="Confirm extension change"

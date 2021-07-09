@@ -1,3 +1,5 @@
+import { ValidationError } from '@deephaven/utils';
+
 /**
  * A basic list of some common MIME types.
  */
@@ -148,6 +150,39 @@ export class FileUtils {
     const nameWithoutExtension = index > -1 ? name.substring(0, index) : name;
     const extensionString = FileUtils.fileExtensionToString(newExtension);
     return `${nameWithoutExtension}${extensionString}`;
+  }
+
+  /**
+   * Validate the provided name. Throws an error if validation fails
+   * @param name The item name to validate
+   */
+  static validateName(name: string): void {
+    // Static checks
+    const reservedNames = ['.', '..'];
+    // Global flag to show all invalid chars, not just the first match
+    const invalidCharsRegex = /[\\/\0]/g;
+    const invalidCharLabels = new Map([['\0', 'null']]);
+
+    if (!name) {
+      throw new ValidationError(`Name cannot be empty`);
+    }
+    if (reservedNames.includes(name)) {
+      throw new ValidationError(`"${name}" is a reserved name`);
+    }
+    if (invalidCharsRegex.test(name)) {
+      throw new ValidationError(
+        `Invalid characters in name: "${(name.match(invalidCharsRegex) ?? [])
+          // Filter out duplicates
+          .reduce(
+            (acc, next) => (acc.includes(next) ? acc : [...acc, next]),
+            [] as string[]
+          )
+          .map(char =>
+            invalidCharLabels.has(char) ? invalidCharLabels.get(char) : char
+          )
+          .join('", "')}"`
+      );
+    }
   }
 }
 

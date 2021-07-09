@@ -204,14 +204,17 @@ export const FileListContainer = React.forwardRef(
       (itemProps: SingleClickRenderItemProps<FileListItem>): JSX.Element => {
         const { item } = itemProps;
         if (renameItem && renameItem.filename === item.filename) {
-          return (
-            <FileListItemEditor
-              item={item}
-              validate={validateRenameItem}
-              onSubmit={handleRenameSubmit}
-              onCancel={handleRenameCancel}
-            />
-          );
+          return DEFAULT_RENDER_ITEM({
+            ...itemProps,
+            children: (
+              <FileListItemEditor
+                item={item}
+                validate={validateRenameItem}
+                onSubmit={handleRenameSubmit}
+                onCancel={handleRenameCancel}
+              />
+            ),
+          });
         }
         return DEFAULT_RENDER_ITEM(itemProps);
       },

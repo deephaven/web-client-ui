@@ -46,9 +46,11 @@ export const FileListItemEditor = ({
   );
 
   const validateAndSubmit = useCallback(() => {
-    validationPromise.then(() => {
-      onSubmit(value);
-    });
+    validationPromise
+      .then(() => {
+        onSubmit(value);
+      })
+      .catch(e => log.info('Unable to validate name', e));
   }, [onSubmit, value, validationPromise]);
 
   useEffect(() => {
@@ -116,7 +118,7 @@ export const FileListItemEditor = ({
       />
 
       {validationError && (
-        <div className="invalid-feedback">{validationError}</div>
+        <div className="invalid-feedback">{`${validationError}`}</div>
       )}
     </div>
   );
