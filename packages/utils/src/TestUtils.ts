@@ -1,24 +1,24 @@
 interface MockContext {
-  arc: () => void;
-  beginPath: () => void;
-  clip: () => void;
-  closePath: () => void;
-  createLinearGradient: () => void;
-  fill: () => void;
-  fillRect: () => void;
-  fillText: () => void;
-  lineTo: () => void;
-  measureText: (s: string) => { width: number };
-  moveTo: () => void;
-  rect: () => void;
-  restore: () => void;
-  setTransform: () => void;
-  save: () => void;
-  stroke: () => void;
-  strokeRect: () => void;
-  translate: () => void;
-  scale: () => void;
-  createPattern: () => void;
+  arc: jest.Mock<void>;
+  beginPath: jest.Mock<void>;
+  clip: jest.Mock<void>;
+  closePath: jest.Mock<void>;
+  createLinearGradient: jest.Mock<{ addColorStop: jest.Mock<void> }>;
+  fill: jest.Mock<void>;
+  fillRect: jest.Mock<void>;
+  fillText: jest.Mock<void>;
+  lineTo: jest.Mock<void>;
+  measureText: jest.Mock<{ width: number }, [string]>;
+  moveTo: jest.Mock<void>;
+  rect: jest.Mock<void>;
+  restore: jest.Mock<void>;
+  setTransform: jest.Mock<void>;
+  save: jest.Mock<void>;
+  stroke: jest.Mock<void>;
+  strokeRect: jest.Mock<void>;
+  translate: jest.Mock<void>;
+  scale: jest.Mock<void>;
+  createPattern: jest.Mock<void>;
 }
 
 class TestUtils {
@@ -35,7 +35,7 @@ class TestUtils {
       fillRect: jest.fn(),
       fillText: jest.fn(),
       lineTo: jest.fn(),
-      measureText: jest.fn(str => ({ width: str.length * 10 })),
+      measureText: jest.fn((str: string) => ({ width: str.length * 10 })),
       moveTo: jest.fn(),
       rect: jest.fn(),
       restore: jest.fn(),
