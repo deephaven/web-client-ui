@@ -460,9 +460,10 @@ class ContextMenu extends PureComponent<ContextMenuProps, ContextMenuState> {
 
   openSubMenu(index: number): void {
     const { menuItems, activeSubMenu } = this.state;
-    if (activeSubMenu === index) return;
+    const newSubMenu = menuItems[index].actions ? index : null;
+    if (activeSubMenu === newSubMenu) return;
     this.setState({
-      activeSubMenu: menuItems[index].actions ? index : null,
+      activeSubMenu: newSubMenu,
       subMenuTop: null,
       subMenuLeft: null,
     });
@@ -609,23 +610,26 @@ class ContextMenu extends PureComponent<ContextMenuProps, ContextMenuState> {
           {menuItemElements}
           {pendingElement}
         </div>
-        {showSubmenu && activeSubMenu && subMenuTop && subMenuLeft && (
-          <ContextMenu
-            key={`sub-${activeSubMenu}`}
-            actions={menuItems[activeSubMenu].actions || []}
-            closeMenu={this.handleCloseSubMenu}
-            top={subMenuTop}
-            left={subMenuLeft}
-            updatePosition={(verifiedTop, verifiedLeft) => {
-              this.setState({
-                subMenuTop: verifiedTop,
-                subMenuLeft: verifiedLeft,
-              });
-            }}
-            subMenuParentWidth={subMenuParentWidth}
-            subMenuParentHeight={subMenuParentHeight}
-          />
-        )}
+        {showSubmenu &&
+          activeSubMenu !== null &&
+          subMenuTop !== null &&
+          subMenuLeft !== null && (
+            <ContextMenu
+              key={`sub-${activeSubMenu}`}
+              actions={menuItems[activeSubMenu].actions || []}
+              closeMenu={this.handleCloseSubMenu}
+              top={subMenuTop}
+              left={subMenuLeft}
+              updatePosition={(verifiedTop, verifiedLeft) => {
+                this.setState({
+                  subMenuTop: verifiedTop,
+                  subMenuLeft: verifiedLeft,
+                });
+              }}
+              subMenuParentWidth={subMenuParentWidth}
+              subMenuParentHeight={subMenuParentHeight}
+            />
+          )}
       </>
     );
   }
