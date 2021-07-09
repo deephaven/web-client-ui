@@ -204,6 +204,19 @@ export class FileUtils {
       );
     }
   }
+
+  /**
+   * Reduce the provided paths to the minimum selection.
+   * Removes any nested files or directories if a parent is already selected.
+   * @param paths The paths to reduce
+   */
+  static reducePaths(paths: string[]): string[] {
+    const folders = paths.filter(path => FileUtils.isPath(path));
+    return paths.filter(
+      path =>
+        !folders.some(folder => path !== folder && path.startsWith(folder))
+    );
+  }
 }
 
 export default FileUtils;

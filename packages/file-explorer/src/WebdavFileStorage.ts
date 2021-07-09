@@ -1,5 +1,7 @@
 /* eslint-disable class-methods-use-this */
+
 import { FileStat, WebDAVClient } from 'webdav/web';
+import throttle from 'lodash.throttle';
 import FileNotFoundError from './FileNotFoundError';
 import FileStorage, {
   File,
@@ -10,6 +12,8 @@ import FileUtils from './FileUtils';
 import WebdavFileStorageTable from './WebdavFileStorageTable';
 
 export class WebdavFileStorage implements FileStorage {
+  private static readonly REFRESH_THROTTLE = 150;
+
   readonly client;
 
   private tables = [] as WebdavFileStorageTable[];
@@ -83,9 +87,9 @@ export class WebdavFileStorage implements FileStorage {
     }
   }
 
-  private refreshTables(): void {
+  private refreshTables = throttle(() => {
     this.tables.every(table => table.refresh().catch(() => undefined));
-  }
+  }, WebdavFileStorage.REFRESH_THROTTLE);
 }
 
 export default WebdavFileStorage;

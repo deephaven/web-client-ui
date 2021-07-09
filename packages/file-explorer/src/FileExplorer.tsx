@@ -100,6 +100,19 @@ export const FileExplorer = React.forwardRef(
       setItemsToDelete([]);
     }, []);
 
+    const handleMove = useCallback(
+      (files: FileListItem[], path: string) => {
+        const filesToMove = FileUtils.reducePaths(
+          files.map(file => file.filename)
+        );
+        const movePromises = filesToMove.map(file =>
+          storage.moveFile(file, `${path}${FileUtils.getBaseName(file)}`)
+        );
+        Promise.all(movePromises).catch(handleError);
+      },
+      [storage]
+    );
+
     const handleRename = useCallback(
       (item: FileListItem, newName: string) => {
         let name = item.filename;
@@ -161,6 +174,7 @@ export const FileExplorer = React.forwardRef(
             ref={fileListContainer}
             isMultiSelect={isMultiSelect}
             showContextMenu
+            onMove={handleMove}
             onDelete={handleDelete}
             onRename={handleRename}
             onSelect={onSelect}

@@ -3,6 +3,7 @@
 $depth-line-color: $gray-600;
 $depth-margin: 5px;
 $depth-indentation: 9px;
+$item-list-color: $text-muted;
 
 .file-list {
   position: absolute;
@@ -10,11 +11,20 @@ $depth-indentation: 9px;
   bottom: 0;
   left: 0;
   right: 0;
+  color: $item-list-color;
 
   .file-list-depth-line {
     margin-left: $depth-margin;
     width: $depth-indentation;
     height: 100%;
     border-left: 1px solid $depth-line-color;
+  }
+
+  .item-list-item {
+    padding: 0 $input-btn-padding-x;
+  }
+
+  .item-icon {
+    margin-right: $spacer-1;
   }
 }

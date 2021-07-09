@@ -410,7 +410,7 @@ export class SingleClickItemList<
         draggedRanges,
         index
       );
-      log.debug('handleItemDragOver', index);
+      log.debug('handleItemDragOver', index, isDropTargetValid);
       return {
         dragOverIndex: index,
         isDropTargetValid,

@@ -61,10 +61,36 @@ export interface FileListProps {
   rowHeight?: number;
 }
 
+export const getPathFromItem = (file: FileListItem): string =>
+  isDirectory(file)
+    ? FileUtils.makePath(file.filename)
+    : FileUtils.getPath(file.filename);
+
 export const DEFAULT_RENDER_ITEM = (
   props: SingleClickRenderItemProps<FileListItem> & { children?: JSX.Element }
 ): JSX.Element => {
-  const { children, isDragged, isSelected, item } = props;
+  const {
+    children,
+    isDragged,
+    isDropTargetValid,
+    isSelected,
+    item,
+    dragOverItem,
+  } = props;
+  const { isDragInProgress } = props;
+  const itemPath = getPathFromItem(item);
+  const dropTargetPath =
+    isDragInProgress && dragOverItem ? getPathFromItem(dragOverItem) : null;
+
+  const isExactDropTarget =
+    isDragInProgress &&
+    isDropTargetValid &&
+    isDirectory(item) &&
+    dropTargetPath === FileUtils.makePath(item.filename);
+  const isInDropTarget =
+    isDragInProgress && isDropTargetValid && dropTargetPath === itemPath;
+  const isInvalidDropTarget =
+    isDragInProgress && !isDropTargetValid && dropTargetPath === itemPath;
 
   const icon = getItemIcon(item);
   const depth = FileUtils.getDepth(item.filename);
@@ -79,6 +105,9 @@ export const DEFAULT_RENDER_ITEM = (
     <div
       className={classNames('d-flex w-100 align-items-center', {
         'is-dragged': isDragged,
+        'is-exact-drop-target': isExactDropTarget,
+        'is-in-drop-target': isInDropTarget,
+        'is-invalid-drop-target': isInvalidDropTarget,
         'is-selected': isSelected,
       })}
     >
@@ -159,27 +188,45 @@ export const FileList = React.forwardRef(
       [loadedViewport]
     );
 
+    const getMoveOperation = useCallback(
+      (
+        ranges: Range[],
+        targetIndex: number
+      ): { files: FileListItem[]; targetPath: string } => {
+        const draggedItems = getSelectedItems(ranges);
+        const [targetItem] = getSelectedItems([[targetIndex, targetIndex]]);
+        if (draggedItems.length === 0 || !targetItem) {
+          throw new Error('No items to move');
+        }
+
+        const targetPath = isDirectory(targetItem)
+          ? FileUtils.makePath(targetItem.filename)
+          : FileUtils.getPath(targetItem.filename);
+        if (
+          draggedItems.some(
+            ({ filename }) => FileUtils.getPath(filename) === targetPath
+          )
+        ) {
+          // Cannot drop if target is one of the dragged items is already in the target folder
+          throw new Error('File already in the destination folder');
+        }
+        return { files: draggedItems, targetPath };
+      },
+      [getSelectedItems]
+    );
+
     const handleItemDrop = useCallback(
       (ranges: Range[], targetIndex: number) => {
         log.debug2('handleItemDrop', ranges, targetIndex);
 
-        const draggedItems = getSelectedItems(ranges);
-        const [targetItem] = getSelectedItems([[targetIndex, targetIndex]]);
-        if (draggedItems.length === 0 || !targetItem) {
-          return;
+        try {
+          const { files, targetPath } = getMoveOperation(ranges, targetIndex);
+          onMove(files, targetPath);
+        } catch (e) {
+          log.error('Unable to complete move', e);
         }
-
-        const targetPath = FileUtils.getPath(targetItem.filename);
-        if (
-          draggedItems.some(({ filename }) => filename.startsWith(targetPath))
-        ) {
-          // Cannot drop if target is one of the dragged items
-          // or at least one of the dragged items is already in the target folder
-          return;
-        }
-        onMove(draggedItems, targetPath);
       },
-      [getSelectedItems, onMove]
+      [getMoveOperation, onMove]
     );
 
     const handleItemSelect = useCallback(
@@ -214,10 +261,19 @@ export const FileList = React.forwardRef(
       setViewport({ top, bottom });
     }, []);
 
-    const handleValidateDropTarget = useCallback(() => {
-      log.debug('handleValidateDropTarget');
-      return false;
-    }, []);
+    const handleValidateDropTarget = useCallback(
+      (draggedRanges: Range[], targetIndex: number) => {
+        try {
+          getMoveOperation(draggedRanges, targetIndex);
+          log.debug('handleValidateDropTarget true');
+          return true;
+        } catch (e) {
+          log.debug('handleValidateDropTarget false');
+          return false;
+        }
+      },
+      [getMoveOperation]
+    );
 
     useEffect(() => {
       log.debug('updating table viewport', viewport);
@@ -260,9 +316,8 @@ export const FileList = React.forwardRef(
           onSelectionChange={handleSelectionChange}
           onViewportChange={handleViewportChange}
           renderItem={renderItem}
-          rowHeight={rowHeight}
-          // TODO: web-client-ui#86, re-enable drag and drop to move
-          // isDraggable
+          rowHeight={26}
+          isDraggable
           isMultiSelect={isMultiSelect}
           validateDropTarget={handleValidateDropTarget}
         />
