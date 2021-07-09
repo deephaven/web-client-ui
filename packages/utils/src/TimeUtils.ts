@@ -1,5 +1,5 @@
 type TimeInSeconds = number;
-type TimeString = `${string}:${string}:${string}`;
+export type TimeString = `${string}:${string}:${string}`;
 
 class TimeUtils {
   static TIME_PATTERN = '([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]';
@@ -34,8 +34,8 @@ class TimeUtils {
    * Minutes aren't paded, as thats a slower change
    * @param time in seconds
    */
-  static formatElapsedTime(time: TimeInSeconds): string {
-    if (!Number.isInteger(time)) {
+  static formatElapsedTime(time: unknown): string {
+    if (typeof time !== 'number' || !Number.isInteger(time)) {
       throw new Error(
         `${time} is not a number that can be expressed as a formatted time`
       );
@@ -56,8 +56,12 @@ class TimeUtils {
    * Format the time into hh:mm:ss format, eg. '12:34:56'
    * @param timeInSeconds in seconds
    */
-  static formatTime(timeInSeconds: TimeInSeconds): string {
-    if (!Number.isInteger(timeInSeconds) || timeInSeconds < 0) {
+  static formatTime(timeInSeconds: unknown): string {
+    if (
+      typeof timeInSeconds !== 'number' ||
+      !Number.isInteger(timeInSeconds) ||
+      timeInSeconds < 0
+    ) {
       throw new Error(
         `${timeInSeconds} is not a number that can be expressed as a formatted time`
       );
@@ -85,7 +89,7 @@ class TimeUtils {
    * Parse time in seconds from the provided time string
    * @param timeString Time string in hh:mm:ss format
    */
-  static parseTime(timeString: TimeString): TimeInSeconds {
+  static parseTime(timeString: unknown): TimeInSeconds {
     if (!timeString || typeof timeString !== 'string') {
       throw new Error(`${timeString} is not a valid string`);
     }

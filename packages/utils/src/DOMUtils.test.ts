@@ -1,7 +1,7 @@
 import { getClosestByClassName } from './DOMUtils';
 
 describe('getClosestByClassName', () => {
-  let originalBodyHTML;
+  let originalBodyHTML = document.body.innerHTML;
   beforeAll(() => {
     const sampleDOM = `
       <div class="level-0">

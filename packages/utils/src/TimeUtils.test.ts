@@ -1,12 +1,12 @@
-import TimeUtils from './TimeUtils';
+import TimeUtils, { TimeString } from './TimeUtils';
 
 describe('formatElapsedTime parsing tests', () => {
-  function testFormatElapsedTime(time, expectedResult) {
+  function testFormatElapsedTime(time: number, expectedResult: string) {
     const result = TimeUtils.formatElapsedTime(time);
     expect(result).toBe(expectedResult);
   }
 
-  function testFormatElapsedTimeThrows(time) {
+  function testFormatElapsedTimeThrows(time: unknown) {
     expect(() => {
       TimeUtils.formatElapsedTime(time);
     }).toThrow();
@@ -60,12 +60,12 @@ describe('formatElapsedTime parsing tests', () => {
 });
 
 describe('formatTime tests', () => {
-  function testFormatTime(time, expectedResult) {
+  function testFormatTime(time: number, expectedResult: TimeString) {
     const result = TimeUtils.formatTime(time);
     expect(result).toBe(expectedResult);
   }
 
-  function testFormatTimeThrows(time) {
+  function testFormatTimeThrows(time: unknown) {
     expect(() => {
       TimeUtils.formatTime(time);
     }).toThrow();
@@ -120,12 +120,12 @@ describe('formatTime tests', () => {
 });
 
 describe('parseTime tests', () => {
-  function testParseTime(time, expectedResult) {
+  function testParseTime(time: TimeString, expectedResult: number) {
     const result = TimeUtils.parseTime(time);
     expect(result).toBe(expectedResult);
   }
 
-  function testParseTimeThrows(time) {
+  function testParseTimeThrows(time: unknown) {
     expect(() => {
       TimeUtils.parseTime(time);
     }).toThrow();
