@@ -1,5 +1,5 @@
 /* eslint-disable class-methods-use-this */
-import { WebDAVClient } from 'webdav/web';
+import { FileStat, WebDAVClient } from 'webdav/web';
 import FileStorage, {
   File,
   FileStorageItem,
@@ -67,8 +67,15 @@ export class WebdavFileStorage implements FileStorage {
     this.refreshTables();
   }
 
-  async exists(name: string): Promise<boolean> {
-    return this.client.exists(name);
+  async info(name: string): Promise<FileStorageItem> {
+    const stat = (await this.client.stat(name)) as FileStat;
+
+    return {
+      filename: stat.filename,
+      basename: stat.basename,
+      id: stat.filename,
+      type: stat.type,
+    };
   }
 
   private refreshTables(): void {

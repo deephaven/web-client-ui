@@ -16,6 +16,7 @@ import './FileExplorer.scss';
 import FileListContainer from './FileListContainer';
 import FileUtils from './FileUtils';
 import FileExistsError from './FileExistsError';
+import FileNotFoundError from './FileNotFoundError';
 
 const log = Log.module('FileExplorer');
 
@@ -126,9 +127,14 @@ export const FileExplorer = React.forwardRef(
         FileUtils.validateName(newName);
 
         const newValue = `${FileUtils.getPath(renameItem.filename)}${newName}`;
-        const isExistingFile = await storage.exists(newValue);
-        if (isExistingFile) {
-          throw new FileExistsError();
+        try {
+          const fileInfo = await storage.info(newValue);
+          throw new FileExistsError(fileInfo);
+        } catch (e) {
+          if (!(e instanceof FileNotFoundError)) {
+            throw e;
+          }
+          // The file does not exist, fine to save at that path
         }
       },
       [storage]
