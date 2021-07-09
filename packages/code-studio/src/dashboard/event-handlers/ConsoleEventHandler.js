@@ -3,6 +3,7 @@ import Log from '@deephaven/log';
 import { ConsoleEvent } from '../events';
 import LayoutUtils from '../../layout/LayoutUtils';
 import { CommandHistoryPanel, ConsolePanel, LogPanel } from '../panels';
+import FileExplorerPanel from '../panels/FileExplorerPanel';
 
 const log = Log.module('ConsoleEventHandler');
 
@@ -17,7 +18,14 @@ class ConsoleEventHandler {
     this.handleDisconnectSession = this.handleDisconnectSession.bind(this);
     this.handleRestartSession = this.handleRestartSession.bind(this);
 
+    this.initialize();
+  }
+
+  async initialize() {
     this.startListening();
+
+    await LayoutUtils.onInitialized(this.layout);
+
     this.addMissingPanels();
     this.activateConsolePanel();
   }
@@ -60,7 +68,7 @@ class ConsoleEventHandler {
       return;
     }
 
-    const panels = [CommandHistoryPanel];
+    const panels = [CommandHistoryPanel, FileExplorerPanel];
     const componentTypes = panels.map(panel => panel.COMPONENT);
 
     const stack = LayoutUtils.getStackForComponentTypes(
