@@ -1,7 +1,6 @@
 import {
   ContextAction,
   ContextActions,
-  SingleClickItemList,
   SingleClickRenderItemProps,
 } from '@deephaven/components';
 import React, {
