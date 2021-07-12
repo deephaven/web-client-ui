@@ -580,6 +580,7 @@ class NotebookPanel extends Component {
     const { fileMetadata } = this.state;
     if (fileMetadata.id === oldName) {
       this.setState({ fileMetadata: { id: newName, itemName: newName } });
+      this.debouncedSavePanelState();
     }
   }
 

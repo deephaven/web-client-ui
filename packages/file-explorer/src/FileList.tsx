@@ -66,7 +66,9 @@ export const getPathFromItem = (file: FileListItem): string =>
     ? FileUtils.makePath(file.filename)
     : FileUtils.getPath(file.filename);
 
-export const DEFAULT_RENDER_ITEM = (
+export const DEFAULT_ROW_HEIGHT = 26;
+
+export const renderFileListItem = (
   props: SingleClickRenderItemProps<FileListItem> & { children?: JSX.Element }
 ): JSX.Element => {
   const {
@@ -149,8 +151,8 @@ export const FileList = React.forwardRef(
       onMove,
       onSelect,
       onSelectionChange = () => undefined,
-      renderItem = DEFAULT_RENDER_ITEM,
-      rowHeight = SingleClickItemList.DEFAULT_ROW_HEIGHT,
+      renderItem = renderFileListItem,
+      rowHeight = DEFAULT_ROW_HEIGHT,
     } = props;
     const [loadedViewport, setLoadedViewport] = useState<LoadedViewport>(
       () => ({
@@ -321,7 +323,7 @@ export const FileList = React.forwardRef(
           onSelectionChange={handleSelectionChange}
           onViewportChange={handleViewportChange}
           renderItem={renderItem}
-          rowHeight={26}
+          rowHeight={rowHeight}
           isDraggable
           isMultiSelect={isMultiSelect}
           validateDropTarget={handleValidateDropTarget}

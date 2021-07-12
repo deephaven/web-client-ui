@@ -13,9 +13,10 @@ import React, {
   useState,
 } from 'react';
 import FileList, {
-  DEFAULT_RENDER_ITEM,
+  renderFileListItem,
   FileListItem,
   UpdateableComponent,
+  DEFAULT_ROW_HEIGHT,
 } from './FileList';
 import { FileStorageTable, isDirectory } from './FileStorage';
 import SHORTCUTS from './FileExplorerShortcuts';
@@ -58,7 +59,7 @@ export const FileListContainer = React.forwardRef(
       onRename,
       onSelect,
       table,
-      rowHeight = SingleClickItemList.DEFAULT_ROW_HEIGHT,
+      rowHeight = DEFAULT_ROW_HEIGHT,
       validateRename = () => Promise.resolve(),
     } = props;
     const [renameItem, setRenameItem] = useState<FileListItem>();
@@ -202,7 +203,7 @@ export const FileListContainer = React.forwardRef(
       (itemProps: SingleClickRenderItemProps<FileListItem>): JSX.Element => {
         const { item } = itemProps;
         if (renameItem && renameItem.filename === item.filename) {
-          return DEFAULT_RENDER_ITEM({
+          return renderFileListItem({
             ...itemProps,
             children: (
               <FileListItemEditor
@@ -214,7 +215,7 @@ export const FileListContainer = React.forwardRef(
             ),
           });
         }
-        return DEFAULT_RENDER_ITEM(itemProps);
+        return renderFileListItem(itemProps);
       },
       [handleRenameCancel, handleRenameSubmit, renameItem, validateRenameItem]
     );
