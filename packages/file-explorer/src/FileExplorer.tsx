@@ -105,12 +105,20 @@ export const FileExplorer = React.forwardRef(
         const filesToMove = FileUtils.reducePaths(
           files.map(file => file.filename)
         );
-        const movePromises = filesToMove.map(file =>
-          storage.moveFile(file, `${path}${FileUtils.getBaseName(file)}`)
-        );
-        Promise.all(movePromises).catch(handleError);
+
+        filesToMove.forEach(file => {
+          const newFile = `${path}${FileUtils.getBaseName(file)}`;
+          storage
+            .moveFile(file, newFile)
+            .then(() => {
+              // Each moved file triggers a rename so parent knows something has happened
+              // We signal each individually if for some reason there's an error moving one of the files
+              onRename(file, newFile);
+            })
+            .catch(handleError);
+        });
       },
-      [storage]
+      [handleError, onRename, storage]
     );
 
     const handleRename = useCallback(

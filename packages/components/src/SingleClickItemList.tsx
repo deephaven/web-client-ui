@@ -122,14 +122,11 @@ export class SingleClickItemList<
   constructor(props: SingleClickItemListProps<T>) {
     super(props);
 
-    this.handleItemBlur = this.handleItemBlur.bind(this);
-    this.handleItemFocus = this.handleItemFocus.bind(this);
     this.handleItemClick = this.handleItemClick.bind(this);
     this.handleItemDragStart = this.handleItemDragStart.bind(this);
     this.handleItemDragOver = this.handleItemDragOver.bind(this);
     this.handleItemDragEnd = this.handleItemDragEnd.bind(this);
     this.handleItemDrop = this.handleItemDrop.bind(this);
-    this.handleItemMouseDown = this.handleItemMouseDown.bind(this);
     this.handleKeyDown = this.handleKeyDown.bind(this);
     this.handleScroll = this.handleScroll.bind(this);
 
@@ -247,9 +244,6 @@ export class SingleClickItemList<
           onDragOver={this.handleItemDragOver}
           onDragEnd={this.handleItemDragEnd}
           onDrop={this.handleItemDrop}
-          onMouseDown={this.handleItemMouseDown}
-          onFocus={this.handleItemFocus}
-          onBlur={this.handleItemBlur}
           onKeyboardSelect={onKeyboardSelect}
           disableSelect={disableSelect}
           isDraggable={isDraggable}
@@ -348,7 +342,7 @@ export class SingleClickItemList<
       ContextActionUtils.isModifierKeyDown(e)
     );
 
-    if (isMultiSelect && e.shiftKey) {
+    if (isMultiSelect && e.shiftKey && oldFocus != null) {
       const range: Range = [
         Math.min(oldFocus ?? index, index),
         Math.max(oldFocus ?? index, index),
@@ -436,52 +430,6 @@ export class SingleClickItemList<
     log.debug('handleItemDrop', index, draggedRanges);
     const { onDrop } = this.props;
     onDrop(draggedRanges, index);
-  }
-
-  handleItemMouseDown(
-    index: number,
-    e: React.MouseEvent<HTMLDivElement>
-  ): void {
-    const { selectedRanges } = this.state;
-    log.debug('handleItemMouseDown', index, e.button);
-    if (e.button === 2) {
-      this.setKeyboardIndex(index);
-      this.setShiftRange(null);
-      if (!this.getItemSelected(index, selectedRanges)) {
-        this.deselectAll();
-        this.selectItem(index);
-      }
-    }
-  }
-
-  handleItemBlur(
-    itemIndex: number,
-    { currentTarget, relatedTarget }: React.FocusEvent<HTMLDivElement>
-  ): void {
-    log.debug2('item blur', itemIndex, currentTarget, relatedTarget);
-    if (
-      !relatedTarget ||
-      (relatedTarget instanceof Element &&
-        !this.list.current?.contains(relatedTarget) &&
-        !relatedTarget.classList?.contains('context-menu-container'))
-    ) {
-      // Next focused element is outside of the SingleClickItemList
-      this.setKeyboardIndex(null);
-    }
-  }
-
-  handleItemFocus(
-    itemIndex: number,
-    e: React.FocusEvent<HTMLDivElement>
-  ): void {
-    log.debug2('item focus', itemIndex, e.target);
-    this.setState(state => {
-      const { keyboardIndex } = state;
-      if (keyboardIndex !== itemIndex) {
-        return { keyboardIndex: itemIndex };
-      }
-      return null;
-    });
   }
 
   handleKeyDown(e: React.KeyboardEvent<HTMLDivElement>): void {
@@ -679,6 +627,7 @@ export class SingleClickItemList<
       draggedRanges,
       dragOverIndex,
     } = this.state;
+
     const itemElements = this.getCachedItems(
       items,
       rowHeight,

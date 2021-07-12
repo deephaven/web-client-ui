@@ -222,6 +222,11 @@ export const FileList = React.forwardRef(
         try {
           const { files, targetPath } = getMoveOperation(ranges, targetIndex);
           onMove(files, targetPath);
+          itemList.current?.deselectAll();
+          itemList.current?.selectItem(targetIndex);
+          itemList.current?.setKeyboardIndex(null);
+          itemList.current?.setShiftRange(null);
+          itemList.current?.focus();
         } catch (e) {
           log.error('Unable to complete move', e);
         }
