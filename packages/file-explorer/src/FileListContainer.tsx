@@ -1,9 +1,4 @@
-import {
-  ContextAction,
-  ContextActions,
-  SingleClickItemList,
-  SingleClickRenderItemProps,
-} from '@deephaven/components';
+import { ContextAction, ContextActions } from '@deephaven/components';
 import React, {
   Ref,
   useCallback,
@@ -14,11 +9,11 @@ import React, {
 } from 'react';
 import FileList, {
   renderFileListItem,
-  FileListItem,
   UpdateableComponent,
   DEFAULT_ROW_HEIGHT,
+  FileListRenderItemProps,
 } from './FileList';
-import { FileStorageTable, isDirectory } from './FileStorage';
+import { FileStorageItem, FileStorageTable, isDirectory } from './FileStorage';
 import SHORTCUTS from './FileExplorerShortcuts';
 import './FileExplorer.scss';
 import FileUtils from './FileUtils';
@@ -32,12 +27,12 @@ export interface FileListContainerProps {
 
   onCreateFile?: (path?: string) => void;
   onCreateFolder?: (path?: string) => void;
-  onCopy?: (file: FileListItem) => void;
-  onDelete?: (files: FileListItem[]) => void;
-  onMove?: (files: FileListItem[], path: string) => void;
-  onRename?: (file: FileListItem, newName: string) => void;
-  onSelect: (file: FileListItem) => void;
-  validateRename?: (file: FileListItem, newName: string) => Promise<void>;
+  onCopy?: (file: FileStorageItem) => void;
+  onDelete?: (files: FileStorageItem[]) => void;
+  onMove?: (files: FileStorageItem[], path: string) => void;
+  onRename?: (file: FileStorageItem, newName: string) => void;
+  onSelect: (file: FileStorageItem) => void;
+  validateRename?: (file: FileStorageItem, newName: string) => Promise<void>;
 
   /** Height of each item in the list */
   rowHeight?: number;
@@ -62,27 +57,24 @@ export const FileListContainer = React.forwardRef(
       rowHeight = DEFAULT_ROW_HEIGHT,
       validateRename = () => Promise.resolve(),
     } = props;
-    const [renameItem, setRenameItem] = useState<FileListItem>();
-    const [selectedItems, setSelectedItems] = useState([] as FileListItem[]);
-    const [
-      keyboardSelectedItem,
-      setKeyboardSelectedItem,
-    ] = useState<FileListItem>();
+    const [renameItem, setRenameItem] = useState<FileStorageItem>();
+    const [selectedItems, setSelectedItems] = useState([] as FileStorageItem[]);
+    const [focusedItem, setFocusedItem] = useState<FileStorageItem>();
     const fileList = useRef<UpdateableComponent>(null);
 
-    const handleSelectionChange = useCallback(
-      (newSelectedItems, newKeyboardSelectedItem) => {
-        setSelectedItems(newSelectedItems);
-        setKeyboardSelectedItem(newKeyboardSelectedItem);
-      },
-      []
-    );
+    const handleSelectionChange = useCallback(newSelectedItems => {
+      setSelectedItems(newSelectedItems);
+    }, []);
+
+    const handleFocusChange = useCallback(newFocusedItem => {
+      setFocusedItem(newFocusedItem);
+    }, []);
 
     const handleCopyAction = useCallback(() => {
-      if (keyboardSelectedItem) {
-        onCopy?.(keyboardSelectedItem);
+      if (focusedItem) {
+        onCopy?.(focusedItem);
       }
-    }, [keyboardSelectedItem, onCopy]);
+    }, [focusedItem, onCopy]);
 
     const handleDeleteAction = useCallback(() => {
       if (selectedItems.length > 0) {
@@ -95,16 +87,16 @@ export const FileListContainer = React.forwardRef(
     }, [onCreateFile]);
 
     const handleNewFolderAction = useCallback(() => {
-      if (keyboardSelectedItem) {
-        onCreateFolder?.(FileUtils.getPath(keyboardSelectedItem.filename));
+      if (focusedItem) {
+        onCreateFolder?.(FileUtils.getPath(focusedItem.filename));
       }
-    }, [keyboardSelectedItem, onCreateFolder]);
+    }, [focusedItem, onCreateFolder]);
 
     const handleRenameAction = useCallback(() => {
-      if (keyboardSelectedItem) {
-        setRenameItem(keyboardSelectedItem);
+      if (focusedItem) {
+        setRenameItem(focusedItem);
       }
-    }, [keyboardSelectedItem]);
+    }, [focusedItem]);
 
     const handleRenameCancel = useCallback((): void => {
       setRenameItem(undefined);
@@ -149,8 +141,7 @@ export const FileListContainer = React.forwardRef(
           description: 'Copy',
           action: handleCopyAction,
           group: ContextActions.groups.low,
-          disabled:
-            keyboardSelectedItem == null || isDirectory(keyboardSelectedItem),
+          disabled: focusedItem == null || isDirectory(focusedItem),
         });
       }
       if (onDelete && selectedItems.length > 0) {
@@ -169,7 +160,7 @@ export const FileListContainer = React.forwardRef(
           shortcut: SHORTCUTS.FILE_EXPLORER.RENAME,
           action: handleRenameAction,
           group: ContextActions.groups.low,
-          disabled: keyboardSelectedItem == null,
+          disabled: focusedItem == null,
         });
       }
       return result;
@@ -179,7 +170,7 @@ export const FileListContainer = React.forwardRef(
       handleNewFileAction,
       handleNewFolderAction,
       handleRenameAction,
-      keyboardSelectedItem,
+      focusedItem,
       onCopy,
       onCreateFile,
       onCreateFolder,
@@ -200,7 +191,7 @@ export const FileListContainer = React.forwardRef(
     );
 
     const renderItem = useCallback(
-      (itemProps: SingleClickRenderItemProps<FileListItem>): JSX.Element => {
+      (itemProps: FileListRenderItemProps): JSX.Element => {
         const { item } = itemProps;
         if (renameItem && renameItem.filename === item.filename) {
           return renderFileListItem({
@@ -234,6 +225,7 @@ export const FileListContainer = React.forwardRef(
             onMove={onMove}
             onSelect={onSelect}
             onSelectionChange={handleSelectionChange}
+            onFocusChange={handleFocusChange}
             renderItem={renderItem}
             rowHeight={rowHeight}
             table={table}

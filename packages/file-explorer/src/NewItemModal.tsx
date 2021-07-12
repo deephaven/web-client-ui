@@ -11,8 +11,7 @@ import {
 } from '@deephaven/utils';
 import Log from '@deephaven/log';
 import FileExplorer from './FileExplorer';
-import { FileListItem } from './FileList';
-import FileStorage, { FileType } from './FileStorage';
+import FileStorage, { FileStorageItem, FileType } from './FileStorage';
 import FileUtils from './FileUtils';
 
 import './NewItemModal.scss';
@@ -141,7 +140,7 @@ class NewItemModal extends PureComponent<NewItemModalProps, NewItemModalState> {
 
   private cancelableValidatePromise?: CancelablePromise<string>;
 
-  private cancelableExistingItemPromise?: CancelablePromise<FileListItem | null>;
+  private cancelableExistingItemPromise?: CancelablePromise<FileStorageItem | null>;
 
   private pending = new Pending();
 
@@ -223,7 +222,7 @@ class NewItemModal extends PureComponent<NewItemModalProps, NewItemModalState> {
     this.setState({ value });
   }
 
-  handleSelect(item: FileListItem): void {
+  handleSelect(item: FileStorageItem): void {
     log.debug('handleSelect', item);
     if (item.type === 'directory') {
       this.setState({ path: FileUtils.makePath(item.filename) });

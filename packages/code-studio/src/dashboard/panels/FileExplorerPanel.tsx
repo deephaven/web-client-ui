@@ -2,8 +2,8 @@ import Log from '@deephaven/log';
 import { getFileStorage } from '@deephaven/redux';
 import FileExplorer, {
   FileExplorerToolbar,
-  FileListItem,
   FileStorage,
+  FileStorageItem,
   NewItemModal,
   UpdateableComponent,
 } from '@deephaven/file-explorer';
@@ -121,7 +121,7 @@ export class FileExplorerPanel extends React.Component<
     fileStorage.createDirectory(path).catch(FileExplorerPanel.handleError);
   }
 
-  handleDelete(files: FileListItem[]): void {
+  handleDelete(files: FileStorageItem[]): void {
     const { glEventHub } = this.props;
     files.forEach(file => {
       glEventHub.emit(NotebookEvent.CLOSE_FILE, {
@@ -131,7 +131,7 @@ export class FileExplorerPanel extends React.Component<
     });
   }
 
-  handleFileSelect(file: FileListItem): void {
+  handleFileSelect(file: FileStorageItem): void {
     log.debug('fileSelect', file);
     if (file.type === 'directory') {
       return;

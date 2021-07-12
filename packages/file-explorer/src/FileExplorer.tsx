@@ -1,4 +1,4 @@
-import { BasicModal, SingleClickItemList } from '@deephaven/components';
+import { BasicModal } from '@deephaven/components';
 import Log from '@deephaven/log';
 import { CancelablePromise, PromiseUtils } from '@deephaven/utils';
 import React, {
@@ -10,8 +10,12 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { FileListItem, UpdateableComponent } from './FileList';
-import FileStorage, { FileStorageTable, isDirectory } from './FileStorage';
+import { DEFAULT_ROW_HEIGHT, UpdateableComponent } from './FileList';
+import FileStorage, {
+  FileStorageItem,
+  FileStorageTable,
+  isDirectory,
+} from './FileStorage';
 import './FileExplorer.scss';
 import FileListContainer from './FileListContainer';
 import FileUtils from './FileUtils';
@@ -25,9 +29,9 @@ export interface FileExplorerProps {
 
   isMultiSelect?: boolean;
 
-  onDelete?: (files: FileListItem[]) => void;
+  onDelete?: (files: FileStorageItem[]) => void;
   onRename?: (oldName: string, newName: string) => void;
-  onSelect: (file: FileListItem) => void;
+  onSelect: (file: FileStorageItem) => void;
 
   /** Height of each item in the list */
   rowHeight?: number;
@@ -44,10 +48,10 @@ export const FileExplorer = React.forwardRef(
       onDelete = () => undefined,
       onRename = () => undefined,
       onSelect,
-      rowHeight = SingleClickItemList.DEFAULT_ROW_HEIGHT,
+      rowHeight = DEFAULT_ROW_HEIGHT,
     } = props;
     const fileListContainer = useRef<UpdateableComponent>(null);
-    const [itemsToDelete, setItemsToDelete] = useState<FileListItem[]>([]);
+    const [itemsToDelete, setItemsToDelete] = useState<FileStorageItem[]>([]);
     const [table, setTable] = useState<FileStorageTable>();
 
     useEffect(() => {
@@ -79,7 +83,7 @@ export const FileExplorer = React.forwardRef(
       }
     }, []);
 
-    const handleDelete = useCallback((files: FileListItem[]) => {
+    const handleDelete = useCallback((files: FileStorageItem[]) => {
       log.debug('handleDelete, pending confirmation', files);
       setItemsToDelete(files);
     }, []);
@@ -101,7 +105,7 @@ export const FileExplorer = React.forwardRef(
     }, []);
 
     const handleMove = useCallback(
-      (files: FileListItem[], path: string) => {
+      (files: FileStorageItem[], path: string) => {
         const filesToMove = FileUtils.reducePaths(
           files.map(file => file.filename)
         );
@@ -122,7 +126,7 @@ export const FileExplorer = React.forwardRef(
     );
 
     const handleRename = useCallback(
-      (item: FileListItem, newName: string) => {
+      (item: FileStorageItem, newName: string) => {
         let name = item.filename;
         const isDir = isDirectory(item);
         if (isDir && !name.endsWith('/')) {
@@ -140,7 +144,7 @@ export const FileExplorer = React.forwardRef(
     );
 
     const handleValidateRename = useCallback(
-      async (renameItem: FileListItem, newName: string): Promise<void> => {
+      async (renameItem: FileStorageItem, newName: string): Promise<void> => {
         if (newName === renameItem.basename) {
           // Same name is fine
           return undefined;
@@ -170,7 +174,7 @@ export const FileExplorer = React.forwardRef(
     const isDeleteConfirmationShown = itemsToDelete.length > 0;
     const deleteConfirmationMessage = useMemo(() => {
       if (itemsToDelete.length === 1) {
-        return `Are you sure you want to delete "${itemsToDelete[0].itemName}"?`;
+        return `Are you sure you want to delete "${itemsToDelete[0].filename}"?`;
       }
       return `Are you sure you want to delete the selected files?`;
     }, [itemsToDelete]);

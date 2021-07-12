@@ -11,12 +11,12 @@ import classNames from 'classnames';
 import Log from '@deephaven/log';
 import { PromiseUtils } from '@deephaven/utils';
 import './FileListItemEditor.scss';
-import { FileListItem } from './FileList';
+import { FileStorageItem } from './FileStorage';
 
 const log = Log.module('FileListItemEditor');
 
 export interface FileListItemEditorProps {
-  item: FileListItem;
+  item: FileStorageItem;
   onCancel: () => void;
   onSubmit: (newName: string) => void;
   validate?: (newName: string) => Promise<void>;

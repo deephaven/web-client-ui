@@ -32,7 +32,7 @@ $selection-hover-color: $interfacewhite;
     border: 1px solid transparent; //we need a spacer border so stuff doesn't move on us when we apply a border-color
   }
 
-  .item-list-item.keyboard-active {
+  .item-list-item.is-focused {
     // We don't want the keyboard selection to appear, only items that are actually selected
     background-color: transparent;
     color: $text-muted;

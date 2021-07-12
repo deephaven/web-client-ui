@@ -44,7 +44,6 @@ export { default as RadioItem } from './RadioItem';
 export { default as Select } from './Select';
 export { default as SearchInput } from './SearchInput';
 export { default as SelectValueList } from './SelectValueList';
-export * from './SingleClickItemList';
 export * from './shortcuts';
 export { default as SocketedButton } from './SocketedButton';
 export { default as ThemeExport } from './ThemeExport';

@@ -4,6 +4,7 @@ $depth-line-color: $gray-600;
 $depth-margin: 5px;
 $depth-indentation: 9px;
 $item-list-color: $text-muted;
+$item-list-selected-bg: $primary;
 
 .file-list {
   position: absolute;
@@ -12,6 +13,7 @@ $item-list-color: $text-muted;
   left: 0;
   right: 0;
   color: $item-list-color;
+  display: flex;
 
   .file-list-depth-line {
     margin-left: $depth-margin;
@@ -20,8 +22,16 @@ $item-list-color: $text-muted;
     border-left: 1px solid $depth-line-color;
   }
 
+  .draggable-item-list {
+    flex-grow: 1;
+  }
+
   .item-list-item {
     padding: 0 $input-btn-padding-x;
+
+    &.active {
+      background-color: $item-list-selected-bg;
+    }
   }
 
   .item-icon {

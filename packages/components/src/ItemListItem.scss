@@ -36,7 +36,7 @@ $item-list-selected-color: $white;
   color: $item-list-selected-color;
 }
 
-.item-list-item.keyboard-active {
+.item-list-item.is-focused {
   .item-list-item-content {
     background-color: $item-list-keyboard-selected-bg;
     color: $item-list-selected-color;

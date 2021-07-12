@@ -22,14 +22,14 @@ export interface DefaultListItem {
 export type RenderItemProps<T> = {
   item: T;
   itemIndex: number;
-  isKeyboardSelected: boolean;
+  isFocused: boolean;
   isSelected: boolean;
   style: React.CSSProperties;
 };
 
-type RenderItemFn<T> = (props: RenderItemProps<T>) => React.ReactNode;
+export type RenderItemFn<T> = (props: RenderItemProps<T>) => React.ReactNode;
 
-type ItemListProps<T> = {
+export type ItemListProps<T> = {
   // Total item count
   itemCount: number;
   rowHeight: number;
@@ -46,8 +46,8 @@ type ItemListProps<T> = {
   isMultiSelect: boolean;
   // Set to true if you want the list to scroll when new items are added and it's already at the bottom
   isStickyBottom: boolean;
-  // Fired when an item gets selected via keyboard
-  onKeyboardSelect(): void;
+  // Fired when an item gets focused
+  onFocusChange(index: number | null): void;
   // Fired when an item is clicked. With multiple selection, fired on double click.
   onSelect(index: number): void;
   onSelectionChange(ranges: Range[]): void;
@@ -60,7 +60,7 @@ type ItemListProps<T> = {
 };
 
 type ItemListState = {
-  keyboardIndex: number | null;
+  focusIndex: number | null;
   mouseDownIndex: number | null;
   selectedRanges: Range[];
   overscanStartIndex: number;
@@ -95,7 +95,7 @@ class ItemList<T> extends PureComponent<ItemListProps<T>, ItemListState> {
 
     disableSelect: false,
 
-    onKeyboardSelect(): void {
+    onFocusChange(): void {
       // no-op
     },
     onSelect(): void {
@@ -149,7 +149,7 @@ class ItemList<T> extends PureComponent<ItemListProps<T>, ItemListState> {
     const { isStickyBottom, selectedRanges } = props;
 
     this.state = {
-      keyboardIndex: null,
+      focusIndex: null,
       mouseDownIndex: null,
       selectedRanges,
       overscanStartIndex: 0,
@@ -173,6 +173,7 @@ class ItemList<T> extends PureComponent<ItemListProps<T>, ItemListState> {
   ): void {
     const { selectedRanges: propSelectedRanges } = this.props;
     const {
+      focusIndex,
       isStuckToBottom,
       scrollOffset,
       height,
@@ -198,6 +199,11 @@ class ItemList<T> extends PureComponent<ItemListProps<T>, ItemListState> {
       const { onSelectionChange } = this.props;
       onSelectionChange(selectedRanges);
     }
+
+    if (focusIndex !== prevState.focusIndex) {
+      const { onFocusChange } = this.props;
+      onFocusChange(focusIndex);
+    }
   }
 
   componentWillUnmount(): void {
@@ -207,10 +213,6 @@ class ItemList<T> extends PureComponent<ItemListProps<T>, ItemListState> {
   list: React.RefObject<List>;
 
   listContainer: React.RefObject<HTMLDivElement>;
-
-  setKeyboardIndex(keyboardIndex: number | null): void {
-    this.setState({ keyboardIndex });
-  }
 
   getItemSelected = memoize(
     (index: number, selectedRanges: Range[]) =>
@@ -223,17 +225,16 @@ class ItemList<T> extends PureComponent<ItemListProps<T>, ItemListState> {
       itemIndex: number,
       key: number,
       item: T,
-      isKeyboardSelected: boolean,
+      isFocused: boolean,
       isSelected: boolean,
       renderItem: RenderItemFn<T>,
       style: React.CSSProperties,
-      onKeyboardSelect: (i: number, item: HTMLDivElement) => void,
       disableSelect: boolean
     ) => {
       const content = renderItem({
         item,
         itemIndex,
-        isKeyboardSelected,
+        isFocused,
         isSelected,
         style,
       });
@@ -244,11 +245,10 @@ class ItemList<T> extends PureComponent<ItemListProps<T>, ItemListState> {
           onMouseDown={this.handleItemMouseDown}
           onFocus={this.handleItemFocus}
           onBlur={this.handleItemBlur}
-          onKeyboardSelect={onKeyboardSelect}
           disableSelect={disableSelect}
           onMouseMove={this.handleItemMouseMove}
           onMouseUp={this.handleItemMouseUp}
-          isKeyboardSelected={isKeyboardSelected}
+          isFocused={isFocused}
           isSelected={isSelected}
           itemIndex={itemIndex}
           style={style}
@@ -296,9 +296,7 @@ class ItemList<T> extends PureComponent<ItemListProps<T>, ItemListState> {
   }));
 
   focus(): void {
-    if (this.listContainer.current != null) {
-      this.listContainer.current.focus();
-    }
+    this.listContainer.current?.focus();
   }
 
   getElement(itemIndex: number): Element | null {
@@ -371,7 +369,7 @@ class ItemList<T> extends PureComponent<ItemListProps<T>, ItemListState> {
       return;
     }
 
-    this.setState({ keyboardIndex: index, mouseDownIndex: index });
+    this.setState({ mouseDownIndex: index });
 
     window.addEventListener('mouseup', this.handleWindowMouseUp);
 
@@ -387,16 +385,16 @@ class ItemList<T> extends PureComponent<ItemListProps<T>, ItemListState> {
         !this.listContainer.current.contains(e.relatedTarget))
     ) {
       // Next focused element is outside of the ItemList
-      this.setKeyboardIndex(null);
+      this.setState({ focusIndex: null });
     }
   }
 
   handleItemFocus(itemIndex: number, e: React.FocusEvent): void {
     log.debug2('item focus', itemIndex, e.target);
     this.setState(state => {
-      const { keyboardIndex } = state;
-      if (keyboardIndex !== itemIndex) {
-        return { keyboardIndex: itemIndex };
+      const { focusIndex } = state;
+      if (focusIndex !== itemIndex) {
+        return { focusIndex: itemIndex };
       }
       return null;
     });
@@ -408,7 +406,7 @@ class ItemList<T> extends PureComponent<ItemListProps<T>, ItemListState> {
 
     if (mouseDownIndex == null || disableSelect) return;
 
-    this.setState({ keyboardIndex: itemIndex, isDragging: true });
+    this.setState({ isDragging: true });
 
     if (isDragSelect || mouseDownIndex === itemIndex) {
       this.focusItem(itemIndex);
@@ -483,7 +481,7 @@ class ItemList<T> extends PureComponent<ItemListProps<T>, ItemListState> {
 
   handleKeyDown(e: React.KeyboardEvent): void {
     const { isMultiSelect, itemCount, onSelect } = this.props;
-    const { keyboardIndex: oldFocus } = this.state;
+    const { focusIndex: oldFocus } = this.state;
     let newFocus = oldFocus;
 
     if (e.key === 'Enter' || e.key === ' ') {
@@ -518,8 +516,6 @@ class ItemList<T> extends PureComponent<ItemListProps<T>, ItemListState> {
       e.preventDefault();
 
       this.focusItem(newFocus);
-
-      this.setState({ keyboardIndex: newFocus });
 
       const { selectedRanges } = this.state;
       if (e.shiftKey && selectedRanges.length > 0) {
@@ -685,14 +681,8 @@ class ItemList<T> extends PureComponent<ItemListProps<T>, ItemListState> {
     index: number;
     style: React.CSSProperties;
   }): React.ReactElement | null {
-    const {
-      items,
-      offset,
-      renderItem,
-      onKeyboardSelect,
-      disableSelect,
-    } = this.props;
-    const { keyboardIndex, selectedRanges } = this.state;
+    const { items, offset, renderItem, disableSelect } = this.props;
+    const { focusIndex, selectedRanges } = this.state;
     if (itemIndex < offset || itemIndex >= offset + items.length) {
       return null;
     }
@@ -702,11 +692,10 @@ class ItemList<T> extends PureComponent<ItemListProps<T>, ItemListState> {
       itemIndex,
       itemIndex,
       item,
-      itemIndex === keyboardIndex && !disableSelect,
+      itemIndex === focusIndex && !disableSelect,
       this.getItemSelected(itemIndex, selectedRanges),
       renderItem,
       style,
-      onKeyboardSelect,
       disableSelect
     );
   }

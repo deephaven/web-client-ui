@@ -1,11 +1,11 @@
 import {
+  DraggableItemList,
+  DraggableRenderItemProps,
   Range,
-  SingleClickItemList,
-  SingleClickRenderItemBase,
-  SingleClickRenderItemProps,
 } from '@deephaven/components';
 import { dhPython, vsCode, vsFolder, vsFolderOpened } from '@deephaven/icons';
 import Log from '@deephaven/log';
+import { RangeUtils } from '@deephaven/utils';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { IconDefinition } from '@fortawesome/fontawesome-svg-core';
 import classNames from 'classnames';
@@ -14,26 +14,24 @@ import React, {
   useCallback,
   useEffect,
   useImperativeHandle,
+  useMemo,
   useRef,
   useState,
 } from 'react';
 import {
-  DirectoryStorageItem,
-  FileStorageItem,
-  FileStorageTable,
-  isDirectory,
-} from './FileStorage';
+  DragDropContext,
+  DragStart,
+  DragUpdate,
+  DropResult,
+} from 'react-beautiful-dnd';
+import { FileStorageItem, FileStorageTable, isDirectory } from './FileStorage';
 import './FileList.scss';
 import FileUtils, { MIME_TYPE } from './FileUtils';
 
 const log = Log.module('FileList');
 
-export type FileListItem = SingleClickRenderItemBase & FileStorageItem;
-
-export type DirectoryListItem = FileListItem & DirectoryStorageItem;
-
 export type LoadedViewport = {
-  items: FileListItem[];
+  items: FileStorageItem[];
   offset: number;
   itemCount: number;
 };
@@ -43,25 +41,31 @@ export type ListViewport = {
   bottom: number;
 };
 
+export type FileListRenderItemProps = DraggableRenderItemProps<FileStorageItem> & {
+  children?: JSX.Element;
+  dropTargetItem?: FileStorageItem;
+  isDragged: boolean;
+  isDragInProgress: boolean;
+  isDropTargetValid: boolean;
+  onClick(index: number, e: React.MouseEvent<HTMLDivElement>): void;
+};
 export interface FileListProps {
   table: FileStorageTable;
 
   isMultiSelect?: boolean;
 
-  onMove: (files: FileListItem[], path: string) => void;
-  onSelect: (file: FileListItem) => void;
-  onSelectionChange?: (
-    selectedItems: FileListItem[],
-    keyboardSelectedItem?: FileListItem
-  ) => void;
+  onFocusChange?: (focusedItem?: FileStorageItem) => void;
+  onMove: (files: FileStorageItem[], path: string) => void;
+  onSelect: (file: FileStorageItem) => void;
+  onSelectionChange?: (selectedItems: FileStorageItem[]) => void;
 
-  renderItem?: (props: SingleClickRenderItemProps<FileListItem>) => JSX.Element;
+  renderItem?: (props: FileListRenderItemProps) => JSX.Element;
 
   /** Height of each item in the list */
   rowHeight?: number;
 }
 
-export const getPathFromItem = (file: FileListItem): string =>
+export const getPathFromItem = (file: FileStorageItem): string =>
   isDirectory(file)
     ? FileUtils.makePath(file.filename)
     : FileUtils.getPath(file.filename);
@@ -69,20 +73,22 @@ export const getPathFromItem = (file: FileListItem): string =>
 export const DEFAULT_ROW_HEIGHT = 26;
 
 export const renderFileListItem = (
-  props: SingleClickRenderItemProps<FileListItem> & { children?: JSX.Element }
+  props: FileListRenderItemProps
 ): JSX.Element => {
   const {
     children,
     isDragged,
+    isDragInProgress,
     isDropTargetValid,
     isSelected,
     item,
-    dragOverItem,
+    itemIndex,
+    dropTargetItem,
+    onClick,
   } = props;
-  const { isDragInProgress } = props;
   const itemPath = getPathFromItem(item);
   const dropTargetPath =
-    isDragInProgress && dragOverItem ? getPathFromItem(dragOverItem) : null;
+    isDragInProgress && dropTargetItem ? getPathFromItem(dropTargetItem) : null;
 
   const isExactDropTarget =
     isDragInProgress &&
@@ -112,6 +118,7 @@ export const renderFileListItem = (
         'is-invalid-drop-target': isInvalidDropTarget,
         'is-selected': isSelected,
       })}
+      onClick={e => onClick(itemIndex, e)}
     >
       {depthLines}{' '}
       <FontAwesomeIcon icon={icon} className="item-icon" fixedWidth />{' '}
@@ -122,10 +129,10 @@ export const renderFileListItem = (
 
 /**
  * Get the icon definition for a file or folder item
- * @param {FileListItem} item Item to get the icon for
+ * @param {FileStorageItem} item Item to get the icon for
  * @returns {IconDefinition} Icon definition to pass in the FontAwesomeIcon icon prop
  */
-export function getItemIcon(item: FileListItem): IconDefinition {
+export function getItemIcon(item: FileStorageItem): IconDefinition {
   if (isDirectory(item)) {
     return item.isExpanded ? vsFolderOpened : vsFolder;
   }
@@ -148,6 +155,7 @@ export const FileList = React.forwardRef(
     const {
       isMultiSelect = false,
       table,
+      onFocusChange = () => undefined,
       onMove,
       onSelect,
       onSelectionChange = () => undefined,
@@ -165,15 +173,19 @@ export const FileList = React.forwardRef(
       top: 0,
       bottom: 0,
     });
-    const itemList = useRef<SingleClickItemList<FileListItem>>(null);
+
+    const [dropTargetIndex, setDropTargetIndex] = useState<number>();
+    const [isDragging, setIsDragging] = useState(false);
+    const [selectedRanges, setSelectedRanges] = useState([] as Range[]);
+    const itemList = useRef<DraggableItemList<FileStorageItem>>(null);
 
     const getSelectedItems = useCallback(
-      (ranges: Range[]): FileListItem[] => {
+      (ranges: Range[]): FileStorageItem[] => {
         if (ranges.length === 0 || !loadedViewport) {
           return [];
         }
 
-        const items = [] as FileListItem[];
+        const items = [] as FileStorageItem[];
         for (let i = 0; i < ranges.length; i += 1) {
           const range = ranges[i];
           for (let j = range[0]; j <= range[1]; j += 1) {
@@ -190,11 +202,21 @@ export const FileList = React.forwardRef(
       [loadedViewport]
     );
 
+    const getSelectedItem = useCallback(
+      (itemIndex: number): FileStorageItem | undefined => {
+        const items = getSelectedItems([[itemIndex, itemIndex]]);
+        if (items.length > 0) {
+          return items[0];
+        }
+      },
+      [getSelectedItems]
+    );
+
     const getMoveOperation = useCallback(
       (
         ranges: Range[],
         targetIndex: number
-      ): { files: FileListItem[]; targetPath: string } => {
+      ): { files: FileStorageItem[]; targetPath: string } => {
         const draggedItems = getSelectedItems(ranges);
         const [targetItem] = getSelectedItems([[targetIndex, targetIndex]]);
         if (draggedItems.length === 0 || !targetItem) {
@@ -217,30 +239,61 @@ export const FileList = React.forwardRef(
       [getSelectedItems]
     );
 
-    const handleItemDrop = useCallback(
-      (ranges: Range[], targetIndex: number) => {
-        log.debug2('handleItemDrop', ranges, targetIndex);
+    const handleDragStart = useCallback(
+      (e: DragStart) => {
+        log.debug('handleDragStart', e);
+        setIsDragging(true);
 
-        try {
-          const { files, targetPath } = getMoveOperation(ranges, targetIndex);
-          onMove(files, targetPath);
-          itemList.current?.deselectAll();
-          itemList.current?.selectItem(targetIndex);
-          itemList.current?.setKeyboardIndex(null);
-          itemList.current?.setShiftRange(null);
-          itemList.current?.focus();
-        } catch (e) {
-          log.error('Unable to complete move', e);
+        const startIndex = e.source.index;
+        if (!RangeUtils.isSelected(selectedRanges, startIndex)) {
+          setSelectedRanges([[startIndex, startIndex]]);
         }
       },
-      [getMoveOperation, onMove]
+      [selectedRanges]
     );
 
-    const handleItemSelect = useCallback(
-      itemIndex => {
+    const handleDragUpdate = useCallback((e: DragUpdate) => {
+      log.debug('handleDragUpdate', e);
+      setDropTargetIndex(e.destination?.index);
+    }, []);
+
+    const handleDragEnd = useCallback(
+      (e: DropResult) => {
+        log.debug('handleDragEnd', e);
+        setIsDragging(false);
+        const targetIndex = e.destination?.index;
+        if (e.reason === 'CANCEL' || targetIndex == null) {
+          return;
+        }
+
+        log.debug('Dropping items', selectedRanges, 'to', targetIndex);
+
+        try {
+          const { files, targetPath } = getMoveOperation(
+            selectedRanges,
+            targetIndex
+          );
+          onMove(files, targetPath);
+          setSelectedRanges([[targetIndex, targetIndex]]);
+          itemList.current?.focusItem(targetIndex);
+        } catch (err) {
+          log.error('Unable to complete move', err);
+        }
+      },
+      [getMoveOperation, onMove, selectedRanges]
+    );
+
+    const handleItemClick = useCallback(
+      (itemIndex: number, e: React.MouseEvent<HTMLDivElement>) => {
+        if (e.button !== 0 || e.shiftKey || e.metaKey || e.altKey) {
+          return;
+        }
+
+        e.stopPropagation();
+
         const item = loadedViewport.items[itemIndex - loadedViewport.offset];
         if (item !== undefined) {
-          log.debug('handleItemSelect', item);
+          log.debug('handleItemClick', item);
 
           onSelect(item);
           if (isDirectory(item)) {
@@ -252,35 +305,28 @@ export const FileList = React.forwardRef(
     );
 
     const handleSelectionChange = useCallback(
-      (selectedRanges, keyboardIndex) => {
-        log.debug2('handleSelectionChange', selectedRanges, keyboardIndex);
-        const selectedItems = getSelectedItems(selectedRanges);
-        const [keyboardSelectedItem] = getSelectedItems([
-          [keyboardIndex, keyboardIndex],
-        ]);
-        onSelectionChange(selectedItems, keyboardSelectedItem);
+      newSelectedRanges => {
+        log.debug2('handleSelectionChange', newSelectedRanges);
+        setSelectedRanges(newSelectedRanges);
+        const selectedItems = getSelectedItems(newSelectedRanges);
+        onSelectionChange(selectedItems);
       },
       [getSelectedItems, onSelectionChange]
+    );
+
+    const handleFocusChange = useCallback(
+      focusIndex => {
+        log.debug2('handleFocusChange', focusIndex);
+        const [focusedItem] = getSelectedItems([[focusIndex, focusIndex]]);
+        onFocusChange(focusedItem);
+      },
+      [getSelectedItems, onFocusChange]
     );
 
     const handleViewportChange = useCallback((top: number, bottom: number) => {
       log.debug('handleViewportChange', top, bottom);
       setViewport({ top, bottom });
     }, []);
-
-    const handleValidateDropTarget = useCallback(
-      (draggedRanges: Range[], targetIndex: number) => {
-        try {
-          getMoveOperation(draggedRanges, targetIndex);
-          log.debug('handleValidateDropTarget true');
-          return true;
-        } catch (e) {
-          log.debug('handleValidateDropTarget false');
-          return false;
-        }
-      },
-      [getMoveOperation]
-    );
 
     useEffect(() => {
       log.debug('updating table viewport', viewport);
@@ -306,28 +352,65 @@ export const FileList = React.forwardRef(
     useImperativeHandle(ref, () => ({
       updateDimensions: () => {
         requestAnimationFrame(() => {
-          itemList.current?.updateViewport();
+          // TODO: still needed??
+          // itemList.current?.updateViewport();
         });
       },
     }));
 
+    const dropTargetItem = useMemo(
+      () =>
+        dropTargetIndex != null ? getSelectedItem(dropTargetIndex) : undefined,
+      [getSelectedItem, dropTargetIndex]
+    );
+
+    const isDropTargetValid = useMemo(() => {
+      if (dropTargetIndex == null) {
+        return false;
+      }
+
+      try {
+        getMoveOperation(selectedRanges, dropTargetIndex);
+        log.debug('handleValidateDropTarget true');
+        return true;
+      } catch (e) {
+        log.debug('handleValidateDropTarget false');
+        return false;
+      }
+    }, [dropTargetIndex, getMoveOperation, selectedRanges]);
+
     return (
       <div className="file-list">
-        <SingleClickItemList
-          ref={itemList}
-          items={loadedViewport.items}
-          itemCount={loadedViewport.itemCount}
-          offset={loadedViewport.offset}
-          onDrop={handleItemDrop}
-          onSelect={handleItemSelect}
-          onSelectionChange={handleSelectionChange}
-          onViewportChange={handleViewportChange}
-          renderItem={renderItem}
-          rowHeight={rowHeight}
-          isDraggable
-          isMultiSelect={isMultiSelect}
-          validateDropTarget={handleValidateDropTarget}
-        />
+        <DragDropContext
+          onDragStart={handleDragStart}
+          onDragUpdate={handleDragUpdate}
+          onDragEnd={handleDragEnd}
+        >
+          <DraggableItemList
+            ref={itemList}
+            items={loadedViewport.items}
+            itemCount={loadedViewport.itemCount}
+            offset={loadedViewport.offset}
+            onFocusChange={handleFocusChange}
+            onSelectionChange={handleSelectionChange}
+            onViewportChange={handleViewportChange}
+            renderItem={itemProps =>
+              renderItem({
+                ...itemProps,
+                isDragInProgress: isDragging,
+                dropTargetItem,
+                isDragged: RangeUtils.isSelected(
+                  selectedRanges,
+                  itemProps.itemIndex
+                ),
+                isDropTargetValid,
+                onClick: handleItemClick,
+              })
+            }
+            rowHeight={rowHeight}
+            isMultiSelect={isMultiSelect}
+          />
+        </DragDropContext>
       </div>
     );
   }
