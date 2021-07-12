@@ -48,13 +48,14 @@ export class WebdavFileStorage implements FileStorage {
   }
 
   async loadFile(name: string): Promise<File> {
-    const content = (await this.client.getFileContents(name, {
+    const content = await this.client.getFileContents(name, {
       format: 'text',
-    })) as string;
+    });
     return {
       filename: name,
       basename: FileUtils.getBaseName(name),
-      content,
+      // If the file is just a number, it can come back as just a number
+      content: typeof content === 'string' ? content : `${content}`,
     };
   }
 

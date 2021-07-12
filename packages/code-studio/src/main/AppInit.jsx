@@ -46,8 +46,8 @@ const AppInit = props => {
     setCommandHistoryStorage(COMMAND_HISTORY_STORAGE);
     setFileStorage(FILE_STORAGE);
     setUser(USER);
-    setWorkspace(loadedWorkspace);
     setWorkspaceStorage(WORKSPACE_STORAGE);
+    setWorkspace(loadedWorkspace);
   }, [
     setActiveTool,
     setCommandHistoryStorage,

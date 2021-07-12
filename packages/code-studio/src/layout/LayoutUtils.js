@@ -684,6 +684,25 @@ class LayoutUtils {
     focusElement.focus();
     return focusElement;
   }
+
+  /**
+   * Get a promise that initializes when layout is initialized
+   * @param {GoldenLayout} layout The layout to await initialization on
+   * @returns Promise that resolves when layout is initialized
+   */
+  static onInitialized(layout) {
+    return new Promise(resolve => {
+      if (layout.isInitialised) {
+        resolve();
+        return;
+      }
+      const onInit = () => {
+        layout.off('initialised', onInit);
+        resolve();
+      };
+      layout.on('initialised', onInit);
+    });
+  }
 }
 
 export default LayoutUtils;

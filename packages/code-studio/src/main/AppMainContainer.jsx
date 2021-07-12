@@ -14,8 +14,10 @@ import {
 import Log from '@deephaven/log';
 import {
   getActiveTool,
+  getWorkspace,
   getUser,
   setActiveTool as setActiveToolAction,
+  updateWorkspaceData as updateWorkspaceDataAction,
 } from '@deephaven/redux';
 import { PromiseUtils } from '@deephaven/utils';
 import SettingsMenu from '../settings/SettingsMenu';
@@ -97,15 +99,14 @@ export class AppMainContainer extends Component {
     this.handleControlSelect = this.handleControlSelect.bind(this);
     this.handleToolSelect = this.handleToolSelect.bind(this);
     this.handleClearFilter = this.handleClearFilter.bind(this);
-    this.handleGoldenLayoutChanged = this.handleGoldenLayoutChanged.bind(this);
+    this.handleDataChange = this.handleDataChange.bind(this);
+    this.handleGoldenLayoutChange = this.handleGoldenLayoutChange.bind(this);
+    this.handleLayoutConfigChange = this.handleLayoutConfigChange.bind(this);
     this.handlePaste = this.handlePaste.bind(this);
 
     this.goldenLayout = null;
 
-    this.state = {
-      showSettingsMenu: false,
-      layoutConfig: DEFAULT_LAYOUT_CONFIG,
-    };
+    this.state = { showSettingsMenu: false };
   }
 
   sendClearFilter() {
@@ -187,8 +188,18 @@ export class AppMainContainer extends Component {
     this.sendClearFilter();
   }
 
-  handleGoldenLayoutChanged(goldenLayout) {
+  handleDataChange(data) {
+    const { updateWorkspaceData } = this.props;
+    updateWorkspaceData({ data });
+  }
+
+  handleGoldenLayoutChange(goldenLayout) {
     this.goldenLayout = goldenLayout;
+  }
+
+  handleLayoutConfigChange(layoutConfig) {
+    const { updateWorkspaceData } = this.props;
+    updateWorkspaceData({ layoutConfig });
   }
 
   // eslint-disable-next-line class-methods-use-this
@@ -218,8 +229,10 @@ export class AppMainContainer extends Component {
   }
 
   render() {
-    const { activeTool, user } = this.props;
-    const { layoutConfig, showSettingsMenu } = this.state;
+    const { activeTool, user, workspace } = this.props;
+    const { data: workspaceData = {} } = workspace;
+    const { data = {}, layoutConfig = DEFAULT_LAYOUT_CONFIG } = workspaceData;
+    const { showSettingsMenu } = this.state;
     const contextActions = [
       {
         action: () => {
@@ -305,9 +318,11 @@ export class AppMainContainer extends Component {
           </div>
         </nav>
         <DashboardContainer
-          data={{}}
+          data={data}
           layoutConfig={layoutConfig}
-          onGoldenLayoutChange={this.handleGoldenLayoutChanged}
+          onDataChange={this.handleDataChange}
+          onGoldenLayoutChange={this.handleGoldenLayoutChange}
+          onLayoutConfigChange={this.handleLayoutConfigChange}
         />
         <CSSTransition
           in={showSettingsMenu}
@@ -327,14 +342,23 @@ export class AppMainContainer extends Component {
 AppMainContainer.propTypes = {
   activeTool: PropTypes.string.isRequired,
   setActiveTool: PropTypes.func.isRequired,
+  updateWorkspaceData: PropTypes.func.isRequired,
   user: IrisPropTypes.User.isRequired,
+  workspace: PropTypes.shape({
+    data: PropTypes.shape({
+      data: PropTypes.shape({}),
+      layoutConfig: PropTypes.arrayOf(PropTypes.shape({})),
+    }),
+  }).isRequired,
 };
 
 const mapStateToProps = state => ({
   activeTool: getActiveTool(state),
   user: getUser(state),
+  workspace: getWorkspace(state),
 });
 
 export default connect(mapStateToProps, {
   setActiveTool: setActiveToolAction,
+  updateWorkspaceData: updateWorkspaceDataAction,
 })(AppMainContainer);

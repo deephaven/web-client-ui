@@ -79,6 +79,12 @@ export class FileExplorerPanel extends React.Component<
     };
   }
 
+  componentDidMount(): void {
+    if (!this.isHidden()) {
+      this.setState({ isShown: true });
+    }
+  }
+
   private fileExplorer = React.createRef<UpdateableComponent>();
 
   handleCreateFile(): void {
@@ -177,6 +183,12 @@ export class FileExplorerPanel extends React.Component<
   handleShow(): void {
     this.setState({ isShown: true });
     this.fileExplorer.current?.updateDimensions();
+  }
+
+  isHidden(): boolean {
+    const { glContainer } = this.props;
+    const { isHidden } = glContainer;
+    return isHidden;
   }
 
   render(): ReactNode {
