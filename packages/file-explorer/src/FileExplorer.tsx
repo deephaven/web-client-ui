@@ -107,11 +107,19 @@ export const FileExplorer = React.forwardRef(
     const handleMove = useCallback(
       (files: FileStorageItem[], path: string) => {
         const filesToMove = FileUtils.reducePaths(
-          files.map(file => file.filename)
+          files.map(file =>
+            isDirectory(file)
+              ? FileUtils.makePath(file.filename)
+              : file.filename
+          )
         );
 
         filesToMove.forEach(file => {
-          const newFile = `${path}${FileUtils.getBaseName(file)}`;
+          const newFile = FileUtils.isPath(file)
+            ? `${path}${FileUtils.getBaseName(
+                file.substring(0, file.length - 1)
+              )}/`
+            : `${path}${FileUtils.getBaseName(file)}`;
           storage
             .moveFile(file, newFile)
             .then(() => {
