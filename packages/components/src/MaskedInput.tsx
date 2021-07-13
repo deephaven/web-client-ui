@@ -452,6 +452,7 @@ const MaskedInput = React.forwardRef<HTMLInputElement, MaskedInputProps>(
         type="text"
         pattern={pattern}
         value={value}
+        onChange={() => undefined}
         onKeyDown={handleKeyDown}
         onSelect={handleSelect}
         onSelectCapture={handleSelectCapture}
