@@ -18,7 +18,7 @@ class Pending {
    */
   add<T>(
     item: Promise<T> | T,
-    cleanup: (val: T) => void | null
+    cleanup?: (val: T) => void | null
   ): CancelablePromise<T> {
     const promise = PromiseUtils.makeCancelable(item, cleanup);
     this.pending.push(promise);

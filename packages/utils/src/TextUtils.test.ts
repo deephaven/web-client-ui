@@ -1,7 +1,7 @@
 import TextUtils from './TextUtils';
 
 describe('join string array', () => {
-  function testJoin(items, expectedValue) {
+  function testJoin(items: string[] | null, expectedValue: string) {
     expect(TextUtils.join(items)).toBe(expectedValue);
   }
 
@@ -32,7 +32,11 @@ describe('join string array', () => {
 });
 
 describe('toLower text', () => {
-  function testLower(text, expectedValue, isNullAllowed = true) {
+  function testLower(
+    text: string | null,
+    expectedValue: string,
+    isNullAllowed = true
+  ) {
     expect(TextUtils.toLower(text, isNullAllowed)).toBe(expectedValue);
   }
 
