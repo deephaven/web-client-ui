@@ -34,7 +34,7 @@ export type ListViewport = {
 export type FileListRenderItemProps = RenderItemProps<FileStorageItem> & {
   children?: JSX.Element;
   dropTargetItem?: FileStorageItem;
-  isDragged: boolean;
+  draggedItems?: FileStorageItem[];
   isDragInProgress: boolean;
   isDropTargetValid: boolean;
 
@@ -69,12 +69,15 @@ export const getPathFromItem = (file: FileStorageItem): string =>
 
 export const DEFAULT_ROW_HEIGHT = 26;
 
+// How long you need to hover over a directory before it expands
+export const DRAG_HOVER_TIMEOUT = 500;
+
 export const renderFileListItem = (
   props: FileListRenderItemProps
 ): JSX.Element => {
   const {
     children,
-    isDragged,
+    draggedItems,
     isDragInProgress,
     isDropTargetValid,
     isSelected,
@@ -87,6 +90,8 @@ export const renderFileListItem = (
     onDrop,
   } = props;
 
+  const isDragged =
+    draggedItems?.some(draggedItem => draggedItem.id === item.id) ?? false;
   const itemPath = getPathFromItem(item);
   const dropTargetPath =
     isDragInProgress && dropTargetItem ? getPathFromItem(dropTargetItem) : null;
@@ -155,6 +160,31 @@ export function getItemIcon(item: FileStorageItem): IconDefinition {
   }
 }
 
+/**
+ * Get the move operation for the current selection and the given target. Throws if the operation is invalid.
+ */
+export function getMoveOperation(
+  draggedItems: FileStorageItem[],
+  targetItem: FileStorageItem
+): { files: FileStorageItem[]; targetPath: string } {
+  if (draggedItems.length === 0 || !targetItem) {
+    throw new Error('No items to move');
+  }
+
+  const targetPath = isDirectory(targetItem)
+    ? FileUtils.makePath(targetItem.filename)
+    : FileUtils.getPath(targetItem.filename);
+  if (
+    draggedItems.some(
+      ({ filename }) => FileUtils.getPath(filename) === targetPath
+    )
+  ) {
+    // Cannot drop if target is one of the dragged items is already in the target folder
+    throw new Error('File already in the destination folder');
+  }
+  return { files: draggedItems, targetPath };
+}
+
 export type UpdateableComponent = { updateDimensions: () => void };
 
 /**
@@ -185,8 +215,8 @@ export const FileList = React.forwardRef(
       bottom: 0,
     });
 
-    const [dropTargetIndex, setDropTargetIndex] = useState<number>();
-    const [isDragging, setIsDragging] = useState(false);
+    const [dropTargetItem, setDropTargetItem] = useState<FileStorageItem>();
+    const [draggedItems, setDraggedItems] = useState<FileStorageItem[]>();
     const [dragPlaceholder, setDragPlaceholder] = useState<HTMLDivElement>();
     const [selectedRanges, setSelectedRanges] = useState([] as Range[]);
     const itemList = useRef<ItemList<FileStorageItem>>(null);
@@ -243,40 +273,8 @@ export const FileList = React.forwardRef(
       return `${count} items`;
     }, [getItem, selectedRanges]);
 
-    /**
-     * Get the move operation for the current selection and the given target. Throws if the operation is invalid.
-     */
-    const getMoveOperation = useCallback(
-      (
-        ranges: Range[],
-        targetIndex: number
-      ): { files: FileStorageItem[]; targetPath: string } => {
-        const draggedItems = getItems(ranges);
-        const [targetItem] = getItems([[targetIndex, targetIndex]]);
-        if (draggedItems.length === 0 || !targetItem) {
-          throw new Error('No items to move');
-        }
-
-        const targetPath = isDirectory(targetItem)
-          ? FileUtils.makePath(targetItem.filename)
-          : FileUtils.getPath(targetItem.filename);
-        if (
-          draggedItems.some(
-            ({ filename }) => FileUtils.getPath(filename) === targetPath
-          )
-        ) {
-          // Cannot drop if target is one of the dragged items is already in the target folder
-          throw new Error('File already in the destination folder');
-        }
-        return { files: draggedItems, targetPath };
-      },
-      [getItems]
-    );
-
     const handleSelect = useCallback(
       (itemIndex: number) => {
-        setSelectedRanges([[itemIndex, itemIndex]]);
-
         const item = loadedViewport.items[itemIndex - loadedViewport.offset];
         if (item !== undefined) {
           log.debug('handleItemClick', item);
@@ -294,31 +292,33 @@ export const FileList = React.forwardRef(
       (itemIndex: number, e: React.DragEvent<HTMLDivElement>) => {
         log.debug2('handleItemDragStart', itemIndex, selectedRanges);
 
+        let draggedRanges = selectedRanges;
         if (!RangeUtils.isSelected(selectedRanges, itemIndex)) {
-          setSelectedRanges([[itemIndex, itemIndex]]);
+          draggedRanges = [[itemIndex, itemIndex]];
+          setSelectedRanges(draggedRanges);
         }
 
-        setIsDragging(true);
+        setDraggedItems(getItems(draggedRanges));
 
         // We need to reset reset the mouse state since we steal the drag
         itemList.current?.resetMouseState();
 
         const newDragPlaceholder = document.createElement('div');
         newDragPlaceholder.innerHTML = `<div class="dnd-placeholder-content">${getDragPlaceholderText()}</div>`;
-        newDragPlaceholder.className = 'single-click-item-list-dnd-placeholder';
+        newDragPlaceholder.className = 'file-list-dnd-placeholder';
         document.body.appendChild(newDragPlaceholder);
         e.dataTransfer.setDragImage(newDragPlaceholder, 0, 0);
         setDragPlaceholder(newDragPlaceholder);
       },
-      [getDragPlaceholderText, selectedRanges]
+      [getDragPlaceholderText, getItems, selectedRanges]
     );
 
     const handleItemDragOver = useCallback(
       (itemIndex: number, e: React.DragEvent<HTMLDivElement>) => {
         log.debug2('handleItemDragOver', e);
-        setDropTargetIndex(itemIndex);
+        setDropTargetItem(getItem(itemIndex));
       },
-      []
+      [getItem]
     );
 
     const handleItemDragEnd = useCallback(
@@ -329,8 +329,8 @@ export const FileList = React.forwardRef(
 
         // Drag end is triggered after drop
         // Also drop isn't triggered if drag end is outside of the list
-        setIsDragging(false);
-        setDropTargetIndex(undefined);
+        setDraggedItems(undefined);
+        setDropTargetItem(undefined);
         setDragPlaceholder(undefined);
       },
       [dragPlaceholder]
@@ -338,12 +338,16 @@ export const FileList = React.forwardRef(
 
     const handleItemDrop = useCallback(
       (itemIndex: number, e: React.DragEvent<HTMLDivElement>) => {
-        log.debug('handleItemDrop', selectedRanges, 'to', itemIndex);
+        if (!draggedItems || !dropTargetItem) {
+          return;
+        }
+
+        log.debug('handleItemDrop', draggedItems, 'to', itemIndex);
 
         try {
           const { files, targetPath } = getMoveOperation(
-            selectedRanges,
-            itemIndex
+            draggedItems,
+            dropTargetItem
           );
           onMove(files, targetPath);
           setSelectedRanges([[itemIndex, itemIndex]]);
@@ -352,7 +356,7 @@ export const FileList = React.forwardRef(
           log.error('Unable to complete move', err);
         }
       },
-      [getMoveOperation, onMove, selectedRanges]
+      [draggedItems, dropTargetItem, onMove]
     );
 
     const handleSelectionChange = useCallback(
@@ -390,6 +394,21 @@ export const FileList = React.forwardRef(
       [viewport]
     );
 
+    const isDropTargetValid = useMemo(() => {
+      if (!draggedItems || !dropTargetItem) {
+        return false;
+      }
+
+      try {
+        getMoveOperation(draggedItems, dropTargetItem);
+        log.debug('handleValidateDropTarget true');
+        return true;
+      } catch (e) {
+        log.debug('handleValidateDropTarget false');
+        return false;
+      }
+    }, [draggedItems, dropTargetItem]);
+
     useEffect(() => {
       log.debug('updating table viewport', viewport);
       table?.setViewport({
@@ -398,6 +417,7 @@ export const FileList = React.forwardRef(
       });
     }, [overscanCount, table, viewport]);
 
+    // Listen for table updates
     useEffect(() => {
       const listenerRemover = table.onUpdate(newViewport => {
         setLoadedViewport({
@@ -414,6 +434,18 @@ export const FileList = React.forwardRef(
       };
     }, [table]);
 
+    // Expand a folder if hovering over it
+    useEffect(() => {
+      if (dropTargetItem != null && isDirectory(dropTargetItem)) {
+        const timeout = setTimeout(() => {
+          if (!dropTargetItem.isExpanded) {
+            table?.setExpanded(dropTargetItem.filename, true);
+          }
+        }, DRAG_HOVER_TIMEOUT);
+        return () => clearTimeout(timeout);
+      }
+    }, [dropTargetItem, table]);
+
     useImperativeHandle(ref, () => ({
       updateDimensions: () => {
         requestAnimationFrame(() => {
@@ -423,30 +455,37 @@ export const FileList = React.forwardRef(
       },
     }));
 
-    const dropTargetItem = useMemo(
-      () => (dropTargetIndex != null ? getItem(dropTargetIndex) : undefined),
-      [getItem, dropTargetIndex]
+    const renderWrapper = useCallback(
+      itemProps =>
+        renderItem({
+          ...itemProps,
+          isDragInProgress: draggedItems != null,
+          dropTargetItem,
+          draggedItems,
+          isDropTargetValid,
+          onDragStart: handleItemDragStart,
+          onDragEnd: handleItemDragEnd,
+          onDragOver: handleItemDragOver,
+          onDrop: handleItemDrop,
+        }),
+      [
+        handleItemDragEnd,
+        handleItemDragOver,
+        handleItemDragStart,
+        handleItemDrop,
+        draggedItems,
+        dropTargetItem,
+        isDropTargetValid,
+        renderItem,
+      ]
     );
 
-    const isDropTargetValid = useMemo(() => {
-      if (dropTargetIndex == null) {
-        return false;
-      }
-
-      try {
-        getMoveOperation(selectedRanges, dropTargetIndex);
-        log.debug('handleValidateDropTarget true');
-        return true;
-      } catch (e) {
-        log.debug('handleValidateDropTarget false');
-        return false;
-      }
-    }, [dropTargetIndex, getMoveOperation, selectedRanges]);
-
-    // console.log('MJB dropTargetItem', dropTargetItem);
-
     return (
-      <div className={classNames('file-list', { 'is-dragging': isDragging })}>
+      <div
+        className={classNames('file-list', {
+          'is-dragging': draggedItems != null,
+        })}
+      >
         <ItemList
           ref={itemList}
           items={loadedViewport.items}
@@ -457,22 +496,7 @@ export const FileList = React.forwardRef(
           onSelectionChange={handleSelectionChange}
           onViewportChange={handleViewportChange}
           selectedRanges={selectedRanges}
-          renderItem={itemProps =>
-            renderItem({
-              ...itemProps,
-              isDragInProgress: isDragging,
-              dropTargetItem,
-              // TODO: Memoize
-              isDragged: isDragging
-                ? RangeUtils.isSelected(selectedRanges, itemProps.itemIndex)
-                : false,
-              isDropTargetValid,
-              onDragStart: handleItemDragStart,
-              onDragEnd: handleItemDragEnd,
-              onDragOver: handleItemDragOver,
-              onDrop: handleItemDrop,
-            })
-          }
+          renderItem={renderWrapper}
           rowHeight={rowHeight}
           isMultiSelect={isMultiSelect}
           isDragSelect={false}

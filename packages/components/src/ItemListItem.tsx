@@ -118,7 +118,6 @@ class ItemListItem extends Component<ItemListItemProps, Record<string, never>> {
 
   handleDragStart(e: React.DragEvent<HTMLDivElement>): void {
     const { itemIndex, onDragStart } = this.props;
-    // console.log('MJB handleDragStart', itemIndex);
     onDragStart(itemIndex, e);
   }
 

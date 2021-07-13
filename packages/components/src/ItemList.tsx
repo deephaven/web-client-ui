@@ -318,10 +318,13 @@ export class ItemList<T> extends PureComponent<
     return component;
   });
 
-  getItemData = memoize((items: T[], selectedRanges: Range[]) => ({
-    items,
-    selectedRanges,
-  }));
+  getItemData = memoize(
+    (items: T[], selectedRanges: Range[], renderItem: RenderItemFn<T>) => ({
+      items,
+      selectedRanges,
+      renderItem,
+    })
+  );
 
   focus(): void {
     this.listContainer.current?.focus();
@@ -746,7 +749,13 @@ export class ItemList<T> extends PureComponent<
   }
 
   render(): JSX.Element {
-    const { items, itemCount, overscanCount, rowHeight } = this.props;
+    const {
+      items,
+      itemCount,
+      overscanCount,
+      renderItem,
+      rowHeight,
+    } = this.props;
     const { selectedRanges } = this.state;
     return (
       <AutoSizer className="item-list-auto-sizer" onResize={this.handleResize}>
@@ -759,8 +768,8 @@ export class ItemList<T> extends PureComponent<
             itemSize={rowHeight}
             // This prop isn't actually used by us, it is passed to the render function by react-window
             // Used here to force a re-render of the List component.
-            // Otherwise it doesn't know to call the render again when selection changes
-            itemData={this.getItemData(items, selectedRanges)}
+            // Otherwise it doesn't know to call the render again when selection or renderItem changes
+            itemData={this.getItemData(items, selectedRanges, renderItem)}
             onScroll={this.handleScroll}
             onItemsRendered={this.handleItemsRendered}
             ref={this.list}
