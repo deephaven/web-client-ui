@@ -110,18 +110,6 @@ export class ItemList<T> extends PureComponent<
 
     disableSelect: false,
 
-    onItemDragStart(): void {
-      // no-op
-    },
-    onItemDragOver(): void {
-      // no-op
-    },
-    onItemDragEnd(): void {
-      // no-op
-    },
-    onItemDrop(): void {
-      // no-op
-    },
     onFocusChange(): void {
       // no-op
     },
@@ -257,10 +245,10 @@ export class ItemList<T> extends PureComponent<
       renderItem: RenderItemFn<T>,
       style: React.CSSProperties,
       disableSelect: boolean,
-      onItemDragStart: ItemDragEventHandler,
-      onItemDragOver: ItemDragEventHandler,
-      onItemDragEnd: ItemDragEventHandler,
-      onItemDrop: ItemDragEventHandler
+      onItemDragStart?: ItemDragEventHandler,
+      onItemDragOver?: ItemDragEventHandler,
+      onItemDragEnd?: ItemDragEventHandler,
+      onItemDrop?: ItemDragEventHandler
     ) => {
       const content = renderItem({
         item,
@@ -288,6 +276,7 @@ export class ItemList<T> extends PureComponent<
           itemIndex={itemIndex}
           style={style}
           key={key}
+          isDraggable={onItemDragStart != null}
         >
           {content}
         </ItemListItem>

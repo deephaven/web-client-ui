@@ -5,6 +5,9 @@ $depth-margin: 5px;
 $depth-indentation: 9px;
 $item-list-color: $text-muted;
 $item-list-selected-bg: $primary;
+$item-list-focused-bg: rgba($primary, 0.75);
+$item-list-selected-color: $white;
+$item-list-drop-target-color: $white;
 
 .file-list {
   position: absolute;
@@ -21,15 +24,44 @@ $item-list-selected-bg: $primary;
     border-left: 1px solid $depth-line-color;
   }
 
+  .item-list-scroll-pane {
+    border: none;
+  }
+
   .item-list-item {
     padding: 0 $input-btn-padding-x;
 
+    &.is-focused {
+      background-color: $item-list-focused-bg;
+    }
+
     &.active {
       background-color: $item-list-selected-bg;
+    }
+
+    &:focus,
+    &.active,
+    &:hover,
+    &.is-focused {
+      color: $item-list-selected-color;
     }
   }
 
   .item-icon {
     margin-right: $spacer-1;
+  }
+
+  &.is-dragging {
+    cursor: move;
+    cursor: grabbing;
+
+    .item-list-item.active {
+      opacity: 0.5;
+    }
+
+    .is-in-drop-target,
+    .is-exact-drop-target {
+      color: $item-list-drop-target-color;
+    }
   }
 }
