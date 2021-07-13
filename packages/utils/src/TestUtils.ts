@@ -1,5 +1,28 @@
+interface MockContext {
+  arc: jest.Mock<void>;
+  beginPath: jest.Mock<void>;
+  clip: jest.Mock<void>;
+  closePath: jest.Mock<void>;
+  createLinearGradient: jest.Mock<{ addColorStop: jest.Mock<void> }>;
+  fill: jest.Mock<void>;
+  fillRect: jest.Mock<void>;
+  fillText: jest.Mock<void>;
+  lineTo: jest.Mock<void>;
+  measureText: jest.Mock<{ width: number }, [string]>;
+  moveTo: jest.Mock<void>;
+  rect: jest.Mock<void>;
+  restore: jest.Mock<void>;
+  setTransform: jest.Mock<void>;
+  save: jest.Mock<void>;
+  stroke: jest.Mock<void>;
+  strokeRect: jest.Mock<void>;
+  translate: jest.Mock<void>;
+  scale: jest.Mock<void>;
+  createPattern: jest.Mock<void>;
+}
+
 class TestUtils {
-  static makeMockContext() {
+  static makeMockContext(): MockContext {
     return {
       arc: jest.fn(),
       beginPath: jest.fn(),
@@ -12,7 +35,7 @@ class TestUtils {
       fillRect: jest.fn(),
       fillText: jest.fn(),
       lineTo: jest.fn(),
-      measureText: jest.fn(str => ({ width: str.length * 10 })),
+      measureText: jest.fn((str: string) => ({ width: str.length * 10 })),
       moveTo: jest.fn(),
       rect: jest.fn(),
       restore: jest.fn(),
@@ -26,7 +49,7 @@ class TestUtils {
     };
   }
 
-  static async flushPromises() {
+  static async flushPromises(): Promise<void> {
     await new Promise(setImmediate);
   }
 
