@@ -345,6 +345,9 @@ export class ItemList<T> extends PureComponent<
   focusItem(itemIndex: number): void {
     const { disableSelect } = this.props;
     if (disableSelect) return;
+
+    this.setState({ focusIndex: itemIndex });
+
     const element = this.getElement(itemIndex);
     if (element instanceof HTMLElement) {
       element.focus();
