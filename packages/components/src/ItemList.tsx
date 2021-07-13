@@ -56,12 +56,6 @@ export type ItemListProps<T> = {
   // Fired when an item gets focused
   onFocusChange(index: number | null): void;
 
-  // Events fired when an item has drag events
-  onItemDragStart?: ItemDragEventHandler;
-  onItemDragOver?: ItemDragEventHandler;
-  onItemDragEnd?: ItemDragEventHandler;
-  onItemDrop?: ItemDragEventHandler;
-
   // Fired when an item is clicked. With multiple selection, fired on double click.
   onSelect(index: number): void;
   onSelectionChange(ranges: Range[]): void;
@@ -248,11 +242,7 @@ export class ItemList<T> extends PureComponent<
       isSelected: boolean,
       renderItem: RenderItemFn<T>,
       style: React.CSSProperties,
-      disableSelect: boolean,
-      onItemDragStart?: ItemDragEventHandler,
-      onItemDragOver?: ItemDragEventHandler,
-      onItemDragEnd?: ItemDragEventHandler,
-      onItemDrop?: ItemDragEventHandler
+      disableSelect: boolean
     ) => {
       const content = renderItem({
         item,
@@ -266,10 +256,6 @@ export class ItemList<T> extends PureComponent<
         <ItemListItem
           onDoubleClick={this.handleItemDoubleClick}
           onMouseDown={this.handleItemMouseDown}
-          onDragStart={onItemDragStart}
-          onDragOver={onItemDragOver}
-          onDragEnd={onItemDragEnd}
-          onDrop={onItemDrop}
           onFocus={this.handleItemFocus}
           onBlur={this.handleItemBlur}
           disableSelect={disableSelect}
@@ -280,7 +266,6 @@ export class ItemList<T> extends PureComponent<
           itemIndex={itemIndex}
           style={style}
           key={key}
-          isDraggable={onItemDragStart != null}
         >
           {content}
         </ItemListItem>
@@ -719,16 +704,7 @@ export class ItemList<T> extends PureComponent<
     index: number;
     style: React.CSSProperties;
   }): React.ReactElement | null {
-    const {
-      items,
-      offset,
-      renderItem,
-      disableSelect,
-      onItemDragStart,
-      onItemDragOver,
-      onItemDragEnd,
-      onItemDrop,
-    } = this.props;
+    const { items, offset, renderItem, disableSelect } = this.props;
     const { focusIndex, selectedRanges } = this.state;
     if (itemIndex < offset || itemIndex >= offset + items.length) {
       return null;
@@ -743,11 +719,7 @@ export class ItemList<T> extends PureComponent<
       this.getItemSelected(itemIndex, selectedRanges),
       renderItem,
       style,
-      disableSelect,
-      onItemDragStart,
-      onItemDragOver,
-      onItemDragEnd,
-      onItemDrop
+      disableSelect
     );
   }
 
