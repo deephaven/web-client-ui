@@ -64,6 +64,7 @@ class DraggableItemList<T> extends PureComponent<
     offset: 0,
     items: [],
     rowHeight: DraggableItemList.DEFAULT_ROW_HEIGHT,
+    isDoubleClickSelect: true,
     isDropDisabled: false,
     isDragDisabled: false,
     isMultiSelect: false,
@@ -299,6 +300,7 @@ class DraggableItemList<T> extends PureComponent<
       draggablePrefix,
       draggingItemClassName,
       droppableId,
+      isDoubleClickSelect,
       isDragDisabled,
       isDropDisabled,
       isMultiSelect,
@@ -343,7 +345,7 @@ class DraggableItemList<T> extends PureComponent<
           >
             <ItemList
               focusSelector=".draggable-item-list-item"
-              isDoubleClickSelect
+              isDoubleClickSelect={isDoubleClickSelect}
               isDragSelect={false}
               isMultiSelect={isMultiSelect}
               isStickyBottom={isStickyBottom}
