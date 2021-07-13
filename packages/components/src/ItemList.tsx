@@ -29,6 +29,11 @@ export type RenderItemProps<T> = {
 
 export type RenderItemFn<T> = (props: RenderItemProps<T>) => React.ReactNode;
 
+export type ItemDragEventHandler = (
+  index: number,
+  event: React.DragEvent<HTMLDivElement>
+) => void;
+
 export type ItemListProps<T> = {
   // Total item count
   itemCount: number;
@@ -48,6 +53,13 @@ export type ItemListProps<T> = {
   isStickyBottom: boolean;
   // Fired when an item gets focused
   onFocusChange(index: number | null): void;
+
+  // Events fired when an item has drag events
+  onItemDragStart?: ItemDragEventHandler;
+  onItemDragOver?: ItemDragEventHandler;
+  onItemDragEnd?: ItemDragEventHandler;
+  onItemDrop?: ItemDragEventHandler;
+
   // Fired when an item is clicked. With multiple selection, fired on double click.
   onSelect(index: number): void;
   onSelectionChange(ranges: Range[]): void;
@@ -74,7 +86,10 @@ type ItemListState = {
  * Show items in a long scrollable list.
  * Can be navigated via keyboard or mouse.
  */
-class ItemList<T> extends PureComponent<ItemListProps<T>, ItemListState> {
+export class ItemList<T> extends PureComponent<
+  ItemListProps<T>,
+  ItemListState
+> {
   static CACHE_SIZE = 1000;
 
   static DEFAULT_ROW_HEIGHT = 20;
@@ -95,6 +110,18 @@ class ItemList<T> extends PureComponent<ItemListProps<T>, ItemListState> {
 
     disableSelect: false,
 
+    onItemDragStart(): void {
+      // no-op
+    },
+    onItemDragOver(): void {
+      // no-op
+    },
+    onItemDragEnd(): void {
+      // no-op
+    },
+    onItemDrop(): void {
+      // no-op
+    },
     onFocusChange(): void {
       // no-op
     },
@@ -229,7 +256,11 @@ class ItemList<T> extends PureComponent<ItemListProps<T>, ItemListState> {
       isSelected: boolean,
       renderItem: RenderItemFn<T>,
       style: React.CSSProperties,
-      disableSelect: boolean
+      disableSelect: boolean,
+      onItemDragStart: ItemDragEventHandler,
+      onItemDragOver: ItemDragEventHandler,
+      onItemDragEnd: ItemDragEventHandler,
+      onItemDrop: ItemDragEventHandler
     ) => {
       const content = renderItem({
         item,
@@ -243,6 +274,10 @@ class ItemList<T> extends PureComponent<ItemListProps<T>, ItemListState> {
         <ItemListItem
           onDoubleClick={this.handleItemDoubleClick}
           onMouseDown={this.handleItemMouseDown}
+          onDragStart={onItemDragStart}
+          onDragOver={onItemDragOver}
+          onDragEnd={onItemDragEnd}
+          onDrop={onItemDrop}
           onFocus={this.handleItemFocus}
           onBlur={this.handleItemBlur}
           disableSelect={disableSelect}
@@ -681,7 +716,16 @@ class ItemList<T> extends PureComponent<ItemListProps<T>, ItemListState> {
     index: number;
     style: React.CSSProperties;
   }): React.ReactElement | null {
-    const { items, offset, renderItem, disableSelect } = this.props;
+    const {
+      items,
+      offset,
+      renderItem,
+      disableSelect,
+      onItemDragStart,
+      onItemDragOver,
+      onItemDragEnd,
+      onItemDrop,
+    } = this.props;
     const { focusIndex, selectedRanges } = this.state;
     if (itemIndex < offset || itemIndex >= offset + items.length) {
       return null;
@@ -696,7 +740,11 @@ class ItemList<T> extends PureComponent<ItemListProps<T>, ItemListState> {
       this.getItemSelected(itemIndex, selectedRanges),
       renderItem,
       style,
-      disableSelect
+      disableSelect,
+      onItemDragStart,
+      onItemDragOver,
+      onItemDragEnd,
+      onItemDrop
     );
   }
 

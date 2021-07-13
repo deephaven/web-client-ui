@@ -13,17 +13,12 @@ $item-list-selected-bg: $primary;
   left: 0;
   right: 0;
   color: $item-list-color;
-  display: flex;
 
   .file-list-depth-line {
     margin-left: $depth-margin;
     width: $depth-indentation;
     height: 100%;
     border-left: 1px solid $depth-line-color;
-  }
-
-  .draggable-item-list {
-    flex-grow: 1;
   }
 
   .item-list-item {

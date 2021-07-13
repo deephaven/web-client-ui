@@ -30,7 +30,7 @@ export { default as DraggableItemList } from './DraggableItemList';
 export * from './DraggableItemList';
 export { default as DragUtils } from './DragUtils';
 export { default as HierarchicalCheckboxMenu } from './HierarchicalCheckboxMenu';
-export { default as ItemList } from './ItemList';
+export * from './ItemList';
 export { default as ItemListItem } from './ItemListItem';
 export { default as LoadingOverlay } from './LoadingOverlay';
 export { default as LoadingSpinner } from './LoadingSpinner';
