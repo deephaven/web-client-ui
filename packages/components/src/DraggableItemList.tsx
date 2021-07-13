@@ -343,6 +343,7 @@ class DraggableItemList<T> extends PureComponent<
           >
             <ItemList
               focusSelector=".draggable-item-list-item"
+              isDoubleClickSelect
               isDragSelect={false}
               isMultiSelect={isMultiSelect}
               isStickyBottom={isStickyBottom}

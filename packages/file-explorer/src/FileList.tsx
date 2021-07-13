@@ -38,7 +38,6 @@ export type FileListRenderItemProps = RenderItemProps<FileStorageItem> & {
   isDragInProgress: boolean;
   isDropTargetValid: boolean;
 
-  onClick(index: number, e: React.MouseEvent<HTMLDivElement>): void;
   onDragStart(index: number, e: React.DragEvent<HTMLDivElement>): void;
   onDragOver(index: number, e: React.DragEvent<HTMLDivElement>): void;
   onDragEnd(index: number, e: React.DragEvent<HTMLDivElement>): void;
@@ -82,10 +81,11 @@ export const renderFileListItem = (
     item,
     itemIndex,
     dropTargetItem,
-    onClick,
+    onDragStart,
+    onDragOver,
+    onDragEnd,
+    onDrop,
   } = props;
-
-  console.log('MJB renderFileListItem dropTargetItem', dropTargetItem);
 
   const itemPath = getPathFromItem(item);
   const dropTargetPath =
@@ -123,7 +123,12 @@ export const renderFileListItem = (
           'is-selected': isSelected,
         }
       )}
-      onClick={e => onClick(itemIndex, e)}
+      onDragStart={e => onDragStart(itemIndex, e)}
+      onDragOver={e => onDragOver(itemIndex, e)}
+      onDragEnd={e => onDragEnd(itemIndex, e)}
+      onDrop={e => onDrop(itemIndex, e)}
+      draggable
+      role="presentation"
     >
       {depthLines}{' '}
       <FontAwesomeIcon icon={icon} className="item-icon" fixedWidth />{' '}
@@ -236,7 +241,7 @@ export const FileList = React.forwardRef(
         }
       }
       return `${count} items`;
-    }, [selectedRanges]);
+    }, [getItem, selectedRanges]);
 
     /**
      * Get the move operation for the current selection and the given target. Throws if the operation is invalid.
@@ -268,13 +273,9 @@ export const FileList = React.forwardRef(
       [getItems]
     );
 
-    const handleItemClick = useCallback(
-      (itemIndex: number, e: React.MouseEvent<HTMLDivElement>) => {
-        if (e.button !== 0 || e.shiftKey || e.metaKey || e.altKey) {
-          return;
-        }
-
-        e.stopPropagation();
+    const handleSelect = useCallback(
+      (itemIndex: number) => {
+        setSelectedRanges([[itemIndex, itemIndex]]);
 
         const item = loadedViewport.items[itemIndex - loadedViewport.offset];
         if (item !== undefined) {
@@ -299,14 +300,17 @@ export const FileList = React.forwardRef(
 
         setIsDragging(true);
 
-        const dragPlaceholder = document.createElement('div');
-        dragPlaceholder.innerHTML = `<div class="dnd-placeholder-content">${getDragPlaceholderText()}</div>`;
-        dragPlaceholder.className = 'single-click-item-list-dnd-placeholder';
-        document.body.appendChild(dragPlaceholder);
-        e.dataTransfer.setDragImage(dragPlaceholder, 0, 0);
-        setDragPlaceholder(dragPlaceholder);
+        // We need to reset reset the mouse state since we steal the drag
+        itemList.current?.resetMouseState();
+
+        const newDragPlaceholder = document.createElement('div');
+        newDragPlaceholder.innerHTML = `<div class="dnd-placeholder-content">${getDragPlaceholderText()}</div>`;
+        newDragPlaceholder.className = 'single-click-item-list-dnd-placeholder';
+        document.body.appendChild(newDragPlaceholder);
+        e.dataTransfer.setDragImage(newDragPlaceholder, 0, 0);
+        setDragPlaceholder(newDragPlaceholder);
       },
-      [selectedRanges]
+      [getDragPlaceholderText, selectedRanges]
     );
 
     const handleItemDragOver = useCallback(
@@ -314,8 +318,9 @@ export const FileList = React.forwardRef(
         log.debug2('handleItemDragOver', e);
         setDropTargetIndex(itemIndex);
       },
-      [dropTargetIndex]
+      []
     );
+
     const handleItemDragEnd = useCallback(
       (itemIndex: number, e: React.DragEvent<HTMLDivElement>) => {
         log.debug('handleItemDragEnd', itemIndex);
@@ -330,6 +335,7 @@ export const FileList = React.forwardRef(
       },
       [dragPlaceholder]
     );
+
     const handleItemDrop = useCallback(
       (itemIndex: number, e: React.DragEvent<HTMLDivElement>) => {
         log.debug('handleItemDrop', selectedRanges, 'to', itemIndex);
@@ -346,7 +352,7 @@ export const FileList = React.forwardRef(
           log.error('Unable to complete move', err);
         }
       },
-      [itemList, onMove, selectedRanges]
+      [getMoveOperation, onMove, selectedRanges]
     );
 
     const handleSelectionChange = useCallback(
@@ -358,7 +364,7 @@ export const FileList = React.forwardRef(
           onSelectionChange(selectedItems);
         }
       },
-      [getItems, onSelectionChange]
+      [getItems, onSelectionChange, selectedRanges]
     );
 
     const handleFocusChange = useCallback(
@@ -390,7 +396,7 @@ export const FileList = React.forwardRef(
         top: Math.max(0, viewport.top - overscanCount),
         bottom: viewport.bottom + overscanCount,
       });
-    }, [table, viewport]);
+    }, [overscanCount, table, viewport]);
 
     useEffect(() => {
       const listenerRemover = table.onUpdate(newViewport => {
@@ -437,9 +443,7 @@ export const FileList = React.forwardRef(
       }
     }, [dropTargetIndex, getMoveOperation, selectedRanges]);
 
-    const renderWrapper = useCallback(() => {}, []);
-
-    console.log('MJB dropTargetItem', dropTargetItem);
+    // console.log('MJB dropTargetItem', dropTargetItem);
 
     return (
       <div className={classNames('file-list', { 'is-dragging': isDragging })}>
@@ -449,12 +453,9 @@ export const FileList = React.forwardRef(
           itemCount={loadedViewport.itemCount}
           offset={loadedViewport.offset}
           onFocusChange={handleFocusChange}
+          onSelect={handleSelect}
           onSelectionChange={handleSelectionChange}
           onViewportChange={handleViewportChange}
-          onItemDragStart={handleItemDragStart}
-          onItemDragOver={handleItemDragOver}
-          onItemDragEnd={handleItemDragEnd}
-          onItemDrop={handleItemDrop}
           selectedRanges={selectedRanges}
           renderItem={itemProps =>
             renderItem({
@@ -466,7 +467,6 @@ export const FileList = React.forwardRef(
                 ? RangeUtils.isSelected(selectedRanges, itemProps.itemIndex)
                 : false,
               isDropTargetValid,
-              onClick: handleItemClick,
               onDragStart: handleItemDragStart,
               onDragEnd: handleItemDragEnd,
               onDragOver: handleItemDragOver,

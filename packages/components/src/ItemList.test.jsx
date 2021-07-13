@@ -53,22 +53,22 @@ it('Sends the proper signal when an item is clicked', () => {
 it('handles keyboard up and down properly', () => {
   const itemList = makeItemList();
 
-  expect(itemList.state('keyboardIndex')).toBe(null);
+  expect(itemList.state('focusIndex')).toBe(null);
 
   itemList.simulate('keydown', { key: 'ArrowDown' });
 
-  expect(itemList.state('keyboardIndex')).toBe(0);
+  expect(itemList.state('focusIndex')).toBe(0);
 
   itemList.simulate('keydown', { key: 'ArrowDown' });
   itemList.simulate('keydown', { key: 'ArrowDown' });
   itemList.simulate('keydown', { key: 'ArrowDown' });
 
-  expect(itemList.state('keyboardIndex')).toBe(3);
+  expect(itemList.state('focusIndex')).toBe(3);
 
   itemList.simulate('keydown', { key: 'ArrowUp' });
   itemList.simulate('keydown', { key: 'ArrowUp' });
 
-  expect(itemList.state('keyboardIndex')).toBe(1);
+  expect(itemList.state('focusIndex')).toBe(1);
 
   itemList.unmount();
 });

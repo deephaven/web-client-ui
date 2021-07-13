@@ -45,6 +45,8 @@ export type ItemListProps<T> = {
   // Default renderItem will look for a `displayValue` property, fallback
   // to the `value` property, or stringify the object if neither are defined
   items: T[];
+  // Whether selection requires a double click or not
+  isDoubleClickSelect: boolean;
   // Whether to allow dragging to change the selection after clicking
   isDragSelect: boolean;
   // Whether to allow multiple selections in this item list
@@ -101,6 +103,8 @@ export class ItemList<T> extends PureComponent<
     offset: 0,
     items: [],
     rowHeight: ItemList.DEFAULT_ROW_HEIGHT,
+
+    isDoubleClickSelect: false,
 
     isDragSelect: true,
 
@@ -352,9 +356,9 @@ export class ItemList<T> extends PureComponent<
   }
 
   handleItemDoubleClick(itemIndex: number): void {
-    const { isMultiSelect, onSelect } = this.props;
+    const { isDoubleClickSelect, onSelect } = this.props;
 
-    if (isMultiSelect) {
+    if (isDoubleClickSelect) {
       this.setState(
         ({ selectedRanges }) => ({
           selectedRanges: RangeUtils.selectRange(selectedRanges, [
@@ -459,7 +463,7 @@ export class ItemList<T> extends PureComponent<
   }
 
   handleItemMouseUp(index: number, e: React.MouseEvent): void {
-    const { isMultiSelect, onSelect } = this.props;
+    const { isDoubleClickSelect, onSelect } = this.props;
     const { mouseDownIndex, isDragging } = this.state;
 
     if (
@@ -478,12 +482,12 @@ export class ItemList<T> extends PureComponent<
         e.shiftKey,
         ContextActionUtils.isModifierKeyDown(e)
       );
-      if (!isMultiSelect) {
+      if (!isDoubleClickSelect) {
         onSelect(index);
       }
     }
 
-    this.setState({ mouseDownIndex: null, isDragging: false });
+    this.resetMouseState();
   }
 
   handleItemsRendered({ overscanStartIndex }: ListOnItemsRenderedProps): void {
@@ -499,7 +503,7 @@ export class ItemList<T> extends PureComponent<
   }
 
   handleWindowMouseUp(): void {
-    this.setState({ mouseDownIndex: null, isDragging: false });
+    this.resetMouseState();
     window.removeEventListener('mouseup', this.handleWindowMouseUp);
   }
 
@@ -579,6 +583,10 @@ export class ItemList<T> extends PureComponent<
         isStickyBottom && this.isListAtBottom({ scrollOffset, height });
       return { isStuckToBottom, scrollOffset } as ItemListState;
     });
+  }
+
+  resetMouseState(): void {
+    this.setState({ mouseDownIndex: null, isDragging: false });
   }
 
   scrollToBottom(): void {
