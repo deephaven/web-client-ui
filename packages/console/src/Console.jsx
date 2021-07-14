@@ -729,18 +729,6 @@ export class Console extends PureComponent {
 
   getObjects = memoize(objectMap => [...objectMap.values()]);
 
-  getContextActions = memoize(actions => [
-    ...actions,
-    {
-      action: this.handleClearShortcut,
-      shortcut: SHORTCUTS.CONSOLE.CLEAR,
-    },
-    {
-      action: this.handleFocusHistory,
-      shortcut: SHORTCUTS.CONSOLE.FOCUS_HISTORY,
-    },
-  ]);
-
   addCommand(command, focus = true, execute = false) {
     if (!this.consoleInput.current) {
       return;
