@@ -10,13 +10,8 @@ export { default as MonacoUtils } from './monaco/MonacoUtils';
 export { default as Editor } from './notebook/Editor';
 export { default as ScriptEditor } from './notebook/ScriptEditor';
 export { default as ScriptEditorUtils } from './notebook/ScriptEditorUtils';
-export { default as CommandHistory } from './command-history/CommandHistory';
-export {
-  CommandHistoryStorage,
-  CommandHistoryStorageData,
-  CommandHistoryStorageItem,
-  CommandHistoryTable,
-} from './command-history/CommandHistoryStorage';
+export * from './command-history';
+export * from './console-history';
 export { default as LogView } from './log/LogView';
 
 export { default } from './Console';
