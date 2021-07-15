@@ -8,21 +8,15 @@ In the application directory, run `npm install` to install dependencies, then us
 
 ### `npm start`
 
-Start the project in development mode, open at http://localhost:3000. Page automatically updates when changes are saved.
+Start the project in development mode, open at http://localhost:4000. Page automatically updates when changes are saved.
 
 ### `npm run start-rewired`
 
-Start the project in development mode with experimental fast refresh enabled. Open at http://localhost:3000. Page should automatically refresh on changes while keeping state and not requiring you to login after each change.
+Start the project in development mode with experimental fast refresh enabled. Open at http://localhost:4000. Page should automatically refresh on changes while keeping state and not requiring you to login after each change.
 
 ### `npm test`
 
 Start continuous unit tests. We use [Jest](https://jestjs.io) to run end-to-end tests. Tests will rerun on changed files, or you can change modes by pressing 'a' to run ALL tests continuously.
-
-### `npm run test:e2e`
-
-Start the end-to-end testing UI. We use [Cypress](https://cypress.io) to run end-to-end tests. This defaults to testing http://localhost:3000, as specified in `cypress.json`. You should start your test server using `npm start` first. You can override these values in your own `cypress.env.json` file to point to a remote server if you wish.
-
-To run a smoke test in headless mode, run `npm run test:e2e:smoke`. The current smoke test requires dashboards/workspace to already be created. In the future, we should refine the smoke tests to reset the database to an expected state before running the tests. More detail in [Cypress Best Practices](https://docs.cypress.io/guides/references/best-practices.html#Dangling-state-is-your-friend).
 
 ### `npm run build`
 
@@ -93,7 +87,7 @@ VSCode Typescript Version Settings
 
 ## Data Storage
 
-There is the data for the current session stored in the local redux state (Redux Data), and data stored remotely in the `workspaceData` table in the `WebClientData` PQ on the server.
+There is the data for the current session stored in the local redux state (Redux Data), and data persisted between sessions is stored in browser storage.
 
 ### Redux Data
 
@@ -118,18 +112,11 @@ The styleguide uses [Storybook](https://storybook.js.org/) and can be accessed u
 
 ### Legacy Style Guide
 
-When running in development mode (`npm run start`), a style guide is served up at http://localhost:3000/styleguide. This is for legacy purposes now while everything is ported over to Storybook. Do NOT add new components to this styleguide, only use it for reference if things are missing in Storybook.
+When running in development mode (`npm run start`), a style guide is served up at http://localhost:4000/styleguide. This is for legacy purposes now while everything is ported over to Storybook. Do NOT add new components to this styleguide, only use it for reference if things are missing in Storybook.
 
 ## Architecture
 
-At a high level, the Web UI uses the Iris API to communicate with the servers/workers necessary. For details on the Iris API,see the [Web Developers Guide](../WebDevelopersGuide.md). For more details on the sockets and ports used, see [Network Services](https://docs.deephaven.io/latest/Content/runbook/OpsGuide.htm?Highlight=socket%20ports#Network_Services) and [Web API](https://docs.deephaven.io/latest/Content/systemAdmin/sec_webAPI.htm) in our docs.
-
-```mermaid
-graph TD
-A[Web UI] -->B[Iris API]
-B --> |Websocket| C[Web API Server]
-B --> |Websockets| D[Query Workers]
-```
+For more details on the sockets and ports used, see [Network Services](https://docs.deephaven.io/latest/Content/runbook/OpsGuide.htm?Highlight=socket%20ports#Network_Services) and [Web API](https://docs.deephaven.io/latest/Content/systemAdmin/sec_webAPI.htm) in our docs.
 
 ### Dashboards
 
