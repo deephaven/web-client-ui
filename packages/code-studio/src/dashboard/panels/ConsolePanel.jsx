@@ -409,7 +409,12 @@ class ConsolePanel extends PureComponent {
                 commandHistoryStorage={commandHistoryStorage}
                 onSettingsChange={this.handleSettingsChange}
                 language={language}
-                name={name}
+                statusBarChildren={
+                  <>
+                    <div>&nbsp;</div>
+                    <div>{name}</div>
+                  </>
+                }
                 scope={sessionId}
                 actions={actions}
               />

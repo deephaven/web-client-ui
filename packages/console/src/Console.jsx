@@ -13,7 +13,6 @@ import Log from '@deephaven/log';
 import { Pending } from '@deephaven/utils';
 import ConsoleHistory from './console-history/ConsoleHistory';
 import SHORTCUTS from './ConsoleShortcuts';
-import ConsoleHistoryItemResult from './console-history/ConsoleHistoryItemResult';
 import LogLevel from './log/LogLevel';
 import ConsoleInput from './ConsoleInput';
 import ConsoleUtils from './common/ConsoleUtils';
@@ -65,7 +64,6 @@ export class Console extends PureComponent {
     this.handleCommandStarted = this.handleCommandStarted.bind(this);
     this.handleCommandSubmit = this.handleCommandSubmit.bind(this);
     this.handleClearShortcut = this.handleClearShortcut.bind(this);
-    this.handleDisconnect = this.handleDisconnect.bind(this);
     this.handleFocusHistory = this.handleFocusHistory.bind(this);
     this.handleLogMessage = this.handleLogMessage.bind(this);
     this.handleOverflowActions = this.handleOverflowActions.bind(this);
@@ -101,42 +99,15 @@ export class Console extends PureComponent {
     this.pending = new Pending();
     this.queuedLogMessages = [];
 
-    const { closeSession, restartSession, settings } = this.props;
-    const contextActions = [
-      {
-        action: this.handleClearShortcut,
-        shortcut: SHORTCUTS.CONSOLE.CLEAR,
-        order: 10,
-      },
-      {
-        action: this.handleFocusHistory,
-        shortcut: SHORTCUTS.CONSOLE.FOCUS_HISTORY,
-        order: 40,
-      },
-    ];
-    if (restartSession != null) {
-      contextActions.push({
-        action: restartSession,
-        order: 20,
-      });
-    }
-    if (closeSession != null) {
-      contextActions.push({
-        action: closeSession,
-        order: 30,
-      });
-    }
+    const { settings } = this.props;
 
     this.state = {
       // Need separate histories as console history has stdout/stderr output
       consoleHistory: [],
 
-      contextActions,
-
       // Height of the viewport of the console input and history
       consoleHeight: 0,
 
-      isDisconnected: false,
       isScrollDecorationShown: false,
 
       // Location of objects in the console history
@@ -171,6 +142,13 @@ export class Console extends PureComponent {
   componentDidUpdate(prevProps, prevState) {
     const { state } = this;
     this.sendSettingsChange(prevState, state);
+
+    if (
+      state.disconnectedChildren != null &&
+      prevState.disconnectedChildren == null
+    ) {
+      this.disconnect();
+    }
   }
 
   componentWillUnmount() {
@@ -197,6 +175,27 @@ export class Console extends PureComponent {
       this.cancelListener();
       this.cancelListener = null;
     }
+  }
+
+  disconnect() {
+    this.setState(({ consoleHistory }) => ({
+      // Reset any pending commands with an empty result, disable all tables/widgets
+      consoleHistory: consoleHistory.map(item => {
+        if (item.result == null) {
+          return { ...item, endTime: Date.now(), result: {} };
+        }
+        const { result } = item;
+        if (result.changes) {
+          const disabledItems = []
+            .concat(result.changes.created)
+            .concat(result.changes.updated);
+          return { ...item, disabledItems };
+        }
+        return item;
+      }),
+      objectHistoryMap: new Map(),
+      objectMap: new Map(),
+    }));
   }
 
   handleClearShortcut(event) {
@@ -302,29 +301,6 @@ export class Console extends PureComponent {
         consoleHistory: history,
       };
     });
-  }
-
-  handleDisconnect() {
-    this.setState(({ consoleHistory }) => ({
-      isDisconnected: true,
-
-      // Reset any pending commands with an empty result, disable all tables/widgets
-      consoleHistory: consoleHistory.map(item => {
-        if (item.result == null) {
-          return { ...item, endTime: Date.now(), result: {} };
-        }
-        const { result } = item;
-        if (result.changes) {
-          const disabledItems = []
-            .concat(result.changes.created)
-            .concat(result.changes.updated);
-          return { ...item, disabledItems };
-        }
-        return item;
-      }),
-      objectHistoryMap: new Map(),
-      objectMap: new Map(),
-    }));
   }
 
   handleFocusHistory(event) {
@@ -753,6 +729,18 @@ export class Console extends PureComponent {
 
   getObjects = memoize(objectMap => [...objectMap.values()]);
 
+  getContextActions = memoize(actions => [
+    ...actions,
+    {
+      action: this.handleClearShortcut,
+      shortcut: SHORTCUTS.CONSOLE.CLEAR,
+    },
+    {
+      action: this.handleFocusHistory,
+      shortcut: SHORTCUTS.CONSOLE.FOCUS_HISTORY,
+    },
+  ]);
+
   addCommand(command, focus = true, execute = false) {
     if (!this.consoleInput.current) {
       return;
@@ -801,20 +789,17 @@ export class Console extends PureComponent {
 
   render() {
     const {
-      closeSession,
-      restartSession,
+      actions,
+      disconnectedChildren,
       language,
-      name,
       statusBarChildren,
       openObject,
       session,
       scope,
     } = this.props;
     const {
-      contextActions,
       consoleHeight,
       consoleHistory,
-      isDisconnected,
       isScrollDecorationShown,
       objectMap,
       showCsvOverlay,
@@ -825,6 +810,9 @@ export class Console extends PureComponent {
     } = this.state;
     const consoleMenuObjects = this.getObjects(objectMap);
     const inputMaxHeight = Math.round(consoleHeight * 0.7);
+    const isDisconnected = disconnectedChildren != null;
+    const contextActions = this.getContextActions(actions);
+
     return (
       <div
         role="presentation"
@@ -834,13 +822,13 @@ export class Console extends PureComponent {
       >
         <div className="console-pane" ref={this.consolePane}>
           <ConsoleStatusBar
-            name={name}
-            statusBarChildren={statusBarChildren}
             session={session}
             overflowActions={this.handleOverflowActions}
             openObject={openObject}
             objects={consoleMenuObjects}
-          />
+          >
+            {statusBarChildren}
+          </ConsoleStatusBar>
           <div
             className="console-csv-container"
             onDragOver={CsvOverlay.handleDragOver}
@@ -871,33 +859,7 @@ export class Console extends PureComponent {
                 openObject={openObject}
                 language={language}
               />
-              {isDisconnected && (
-                <div className="console-history-footer">
-                  <ConsoleHistoryItemResult>
-                    <div className="console-disconnected-info">
-                      <div className="console-disconnected-info-message">
-                        Console session disconnected
-                      </div>
-                      <div className="console-disconnected-info-button">
-                        <button
-                          type="button"
-                          className="btn btn-primary btn-console"
-                          onClick={restartSession}
-                        >
-                          Restart Session
-                        </button>
-                        <button
-                          type="button"
-                          className="btn btn-outline-primary btn-console"
-                          onClick={closeSession}
-                        >
-                          End Session
-                        </button>
-                      </div>
-                    </div>
-                  </ConsoleHistoryItemResult>
-                </div>
-              )}
+              {isDisconnected && disconnectedChildren}
             </div>
           </div>
           {!isDisconnected && !showCsvOverlay && (
@@ -930,11 +892,8 @@ export class Console extends PureComponent {
 }
 
 Console.propTypes = {
-  name: PropTypes.string,
   statusBarChildren: PropTypes.node,
   settings: PropTypes.shape({}),
-  closeSession: PropTypes.func,
-  restartSession: PropTypes.func,
   focusCommandHistory: PropTypes.func.isRequired,
   openObject: PropTypes.func.isRequired,
   closeObject: PropTypes.func.isRequired,
@@ -944,17 +903,18 @@ Console.propTypes = {
   onSettingsChange: PropTypes.func,
   scope: PropTypes.string,
   actions: PropTypes.arrayOf(PropTypes.shape({})),
+
+  // Message shown when the session has disconnected. Setting this value removes the input bar and disables old tables
+  disconnectedChildren: PropTypes.node,
 };
 
 Console.defaultProps = {
-  name: 'Default',
   statusBarChildren: null,
   settings: {},
   onSettingsChange: () => {},
-  restartSession: null,
-  closeSession: null,
   scope: null,
   actions: [],
+  disconnectedChildren: null,
 };
 
 export default Console;
