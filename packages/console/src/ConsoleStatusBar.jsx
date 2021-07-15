@@ -74,7 +74,7 @@ export class ConsoleStatusBar extends PureComponent {
   }
 
   render() {
-    const { children, name, openObject, overflowActions, objects } = this.props;
+    const { children, openObject, overflowActions, objects } = this.props;
     const { isDisconnected, isCommandRunning } = this.state;
 
     let statusIconClass = null;
@@ -97,8 +97,6 @@ export class ConsoleStatusBar extends PureComponent {
       <div className="console-pane-status-bar">
         <div>
           <div className={classNames('console-status-icon', statusIconClass)} />
-          <div>&nbsp;</div>
-          <div>{name}</div>
           <Tooltip>{tooltipText}</Tooltip>
         </div>
         {children}
@@ -114,7 +112,6 @@ export class ConsoleStatusBar extends PureComponent {
 
 ConsoleStatusBar.propTypes = {
   children: PropTypes.node,
-  name: PropTypes.string,
   session: APIPropTypes.IdeSession.isRequired,
   openObject: PropTypes.func.isRequired,
   objects: PropTypes.arrayOf(APIPropTypes.VariableDefinition).isRequired,
@@ -126,7 +123,6 @@ ConsoleStatusBar.propTypes = {
 
 ConsoleStatusBar.defaultProps = {
   children: null,
-  name: 'Default',
 };
 
 export default ConsoleStatusBar;

@@ -729,6 +729,18 @@ export class Console extends PureComponent {
 
   getObjects = memoize(objectMap => [...objectMap.values()]);
 
+  getContextActions = memoize(actions => [
+    ...actions,
+    {
+      action: this.handleClearShortcut,
+      shortcut: SHORTCUTS.CONSOLE.CLEAR,
+    },
+    {
+      action: this.handleFocusHistory,
+      shortcut: SHORTCUTS.CONSOLE.FOCUS_HISTORY,
+    },
+  ]);
+
   addCommand(command, focus = true, execute = false) {
     if (!this.consoleInput.current) {
       return;
@@ -777,9 +789,9 @@ export class Console extends PureComponent {
 
   render() {
     const {
+      actions,
       disconnectedChildren,
       language,
-      name,
       statusBarChildren,
       openObject,
       session,
@@ -799,6 +811,7 @@ export class Console extends PureComponent {
     const consoleMenuObjects = this.getObjects(objectMap);
     const inputMaxHeight = Math.round(consoleHeight * 0.7);
     const isDisconnected = disconnectedChildren != null;
+    const contextActions = this.getContextActions(actions);
 
     return (
       <div
@@ -809,13 +822,13 @@ export class Console extends PureComponent {
       >
         <div className="console-pane" ref={this.consolePane}>
           <ConsoleStatusBar
-            name={name}
-            statusBarChildren={statusBarChildren}
             session={session}
             overflowActions={this.handleOverflowActions}
             openObject={openObject}
             objects={consoleMenuObjects}
-          />
+          >
+            {statusBarChildren}
+          </ConsoleStatusBar>
           <div
             className="console-csv-container"
             onDragOver={CsvOverlay.handleDragOver}
@@ -872,13 +885,13 @@ export class Console extends PureComponent {
             />
           )}
         </div>
+        <ContextActions actions={contextActions} />
       </div>
     );
   }
 }
 
 Console.propTypes = {
-  name: PropTypes.string,
   statusBarChildren: PropTypes.node,
   settings: PropTypes.shape({}),
   focusCommandHistory: PropTypes.func.isRequired,
@@ -891,12 +904,11 @@ Console.propTypes = {
   scope: PropTypes.string,
   actions: PropTypes.arrayOf(PropTypes.shape({})),
 
-  // Message shown when the session has disconnected
+  // Message shown when the session has disconnected. Setting this value removes the input bar and disables old tables
   disconnectedChildren: PropTypes.node,
 };
 
 Console.defaultProps = {
-  name: 'Default',
   statusBarChildren: null,
   settings: {},
   onSettingsChange: () => {},
