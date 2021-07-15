@@ -1,11 +1,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
-import 'bootstrap';
 import 'fira';
-// This must be before MonacoUtils so MenuItem styling is correct
-// Best guess is something to do with webpack/CRA order of resolution/deduping
-import './index.scss';
+import '@deephaven/components/dist/BaseStyleSheet.css';
 import { MonacoUtils } from '@deephaven/console';
 import { store } from '@deephaven/redux';
 import AppRouter from './main/AppRouter';
