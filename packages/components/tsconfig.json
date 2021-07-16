@@ -12,8 +12,8 @@
   ],
   "exclude": [
     "node_modules",
-    // "src/**/*.test.*",
+    "src/**/*.test.*",
     "src/**/*.stories.*",
-    // "src/__mocks__/*"
+    "src/__mocks__/*"
   ]
 }
