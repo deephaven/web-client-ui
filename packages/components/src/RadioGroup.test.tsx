@@ -4,7 +4,7 @@ import RadioGroup from './RadioGroup';
 import RadioItem from './RadioItem';
 
 it('shows no markup with no children', () => {
-  const radio = mount(<RadioGroup onChange={jest.fn()}>{null}</RadioGroup>);
+  const radio = mount(<RadioGroup onChange={jest.fn()} />);
   expect(radio.html()).toBe(null);
   radio.unmount();
 });

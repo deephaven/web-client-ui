@@ -1,7 +1,11 @@
 import React from 'react';
 import { mount } from 'enzyme';
+import type { ReactWrapper } from 'enzyme';
 import { TimeUtils } from '@deephaven/utils';
+import type { SelectionSegment } from './MaskedInput';
 import TimeInput from './TimeInput';
+
+type SelectionDirection = SelectionSegment['selectionDirection'];
 
 const DEFAULT_VALUE = TimeUtils.parseTime('12:34:56');
 
@@ -12,23 +16,26 @@ function makeTimeInput({ value = DEFAULT_VALUE, onChange = jest.fn() } = {}) {
 function makeSelection(
   selectionStart = 0,
   selectionEnd = 0,
-  selectionDirection = 'none'
-) {
+  selectionDirection: SelectionDirection = 'none'
+): SelectionSegment {
   return { selectionStart, selectionEnd, selectionDirection };
 }
 
-function typeString(timeInput, str) {
+function typeString(timeInput: ReactWrapper, str: string) {
   const inputField = timeInput.find('input');
   for (let i = 0; i < str.length; i += 1) {
     inputField.simulate('keydown', { key: str.charAt(i) });
   }
 }
 
-function selectRange(timeInput, selectionRange) {
+function selectRange(
+  timeInput: ReactWrapper,
+  selectionRange: SelectionSegment
+) {
   timeInput.find('input').simulate('select', { target: selectionRange });
 }
 
-function selectCursorPosition(timeInput, cursorPosition) {
+function selectCursorPosition(timeInput: ReactWrapper, cursorPosition: number) {
   selectRange(timeInput, makeSelection(cursorPosition, cursorPosition));
 }
 
@@ -38,7 +45,7 @@ it('mounts and unmounts properly', () => {
 });
 
 describe('typing in matches mask', () => {
-  function testInput(text, expectedResult = text) {
+  function testInput(text: string, expectedResult = text) {
     const timeInput = makeTimeInput({ value: 0 });
     selectCursorPosition(timeInput, 0);
     typeString(timeInput, text);
@@ -69,16 +76,17 @@ describe('typing in matches mask', () => {
 
 describe('selection', () => {
   function testSelectSegment(
-    cursorPosition,
-    expectedStart,
-    expectedEnd,
-    expectedDirection = 'backward'
+    cursorPosition: number,
+    expectedStart: number,
+    expectedEnd: number,
+    expectedDirection: SelectionDirection = 'backward'
   ) {
     const timeInput = makeTimeInput();
 
     selectCursorPosition(timeInput, cursorPosition);
 
-    const domInput = timeInput.find('input').getDOMNode();
+    const domInput = timeInput.find('input').getDOMNode() as HTMLInputElement;
+    expect(domInput).toBeInstanceOf(HTMLInputElement);
     expect(domInput.selectionStart).toEqual(expectedStart);
     expect(domInput.selectionEnd).toEqual(expectedEnd);
     expect(domInput.selectionDirection).toEqual(expectedDirection);
@@ -87,9 +95,9 @@ describe('selection', () => {
   }
 
   function testSelectRange(
-    selectionStart,
-    selectionEnd,
-    selectionDirection = 'forward'
+    selectionStart: number,
+    selectionEnd: number,
+    selectionDirection: SelectionDirection = 'forward'
   ) {
     const timeInput = makeTimeInput();
 
@@ -100,7 +108,8 @@ describe('selection', () => {
     );
     timeInput.find('input').simulate('select', { target: selection });
 
-    const domInput = timeInput.find('input').getDOMNode();
+    const domInput = timeInput.find('input').getDOMNode() as HTMLInputElement;
+    expect(domInput).toBeInstanceOf(HTMLInputElement);
     expect(domInput.selectionStart).toEqual(selectionStart);
     expect(domInput.selectionEnd).toEqual(selectionEnd);
     expect(domInput.selectionDirection).toEqual(selectionDirection);
@@ -129,7 +138,11 @@ describe('selection', () => {
 });
 
 describe('select and type', () => {
-  function testSelectAndType(cursorPosition, str, expectedResult) {
+  function testSelectAndType(
+    cursorPosition: number,
+    str: string,
+    expectedResult: string
+  ) {
     const timeInput = makeTimeInput();
     selectCursorPosition(timeInput, cursorPosition);
 
@@ -160,12 +173,16 @@ describe('arrow left and right jumps segments', () => {
    * @param {number|Array<number>} movement Keyboard movement to simulate, positive for right, negative for left. Eg. 2 means 2 right arrow presses, -3 means 3 left arrow presses
    * @param {object} expectedSelection The selection to expect
    */
-  function testArrowNavigation(cursorPosition, movement, expectedSelection) {
+  function testArrowNavigation(
+    cursorPosition: number,
+    movement: number | number[],
+    expectedSelection: SelectionSegment
+  ) {
     const timeInput = makeTimeInput();
 
     selectRange(timeInput, makeSelection(cursorPosition, cursorPosition));
 
-    const movements = [].concat(movement);
+    const movements: number[] = ([] as number[]).concat(movement);
     const inputField = timeInput.find('input');
     for (let i = 0; i < movements.length; i += 1) {
       const arrowMovement = movements[i];
@@ -183,7 +200,8 @@ describe('arrow left and right jumps segments', () => {
       selectionEnd,
       selectionDirection,
     } = expectedSelection;
-    const domInput = timeInput.find('input').getDOMNode();
+    const domInput = timeInput.find('input').getDOMNode() as HTMLInputElement;
+    expect(domInput).toBeInstanceOf(HTMLInputElement);
     expect(domInput.selectionStart).toEqual(selectionStart);
     expect(domInput.selectionEnd).toEqual(selectionEnd);
     expect(domInput.selectionDirection).toEqual(selectionDirection);
@@ -217,16 +235,16 @@ describe('arrow left and right jumps segments', () => {
 
 describe('arrow up and down updates values in segments', () => {
   function testArrowValue(
-    cursorPosition,
-    movement,
-    expectedValue,
+    cursorPosition: number,
+    movement: number | number[],
+    expectedValue: string,
     value = DEFAULT_VALUE
   ) {
     const timeInput = makeTimeInput({ value });
 
     selectRange(timeInput, makeSelection(cursorPosition, cursorPosition));
 
-    const movements = [].concat(movement);
+    const movements: number[] = ([] as number[]).concat(movement);
     const inputField = timeInput.find('input');
     for (let i = 0; i < movements.length; i += 1) {
       const arrowMovement = movements[i];
