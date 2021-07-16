@@ -40,6 +40,7 @@ export const isValidOperation = (
         TableUtils.isTextType(columnType)
       );
     case AggregationOperation.SUM:
+    case AggregationOperation.ABS_SUM:
     case AggregationOperation.VAR:
     case AggregationOperation.AVG:
     case AggregationOperation.STD:
