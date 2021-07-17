@@ -10,7 +10,7 @@
     "clean:build": "lerna run clean --stream",
     "clean:modules": "lerna clean --yes",
     "clean": "npm run clean:build && npm run clean:modules",
-    "bootstrap": "lerna bootstrap --hoist --nohoist=bootstrap -- --no-audit --prefer-offline",
+    "bootstrap": "lerna bootstrap --hoist -- --no-audit --prefer-offline",
     "build": "lerna run build --stream",
     "build:app": "lerna run --scope=@deephaven/code-studio build",
     "build:packages": "lerna run --ignore=@deephaven/code-studio build --stream",
