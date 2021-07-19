@@ -72,6 +72,8 @@ export const DEFAULT_ROW_HEIGHT = 26;
 // How long you need to hover over a directory before it expands
 export const DRAG_HOVER_TIMEOUT = 500;
 
+const ITEM_LIST_CLASS_NAME = 'item-list-scroll-pane';
+
 export const renderFileListItem = (
   props: FileListRenderItemProps
 ): JSX.Element => {
@@ -220,6 +222,7 @@ export const FileList = React.forwardRef(
     const [dragPlaceholder, setDragPlaceholder] = useState<HTMLDivElement>();
     const [selectedRanges, setSelectedRanges] = useState([] as Range[]);
     const itemList = useRef<ItemList<FileStorageItem>>(null);
+    const fileList = useRef<HTMLDivElement>(null);
 
     const getItems = useCallback(
       (ranges: Range[]): FileStorageItem[] => {
@@ -273,6 +276,35 @@ export const FileList = React.forwardRef(
       return `${count} items`;
     }, [getItem, selectedRanges]);
 
+    /**
+     * Drop the currently dragged items at the currently set drop target.
+     * If an itemIndex is provided, focus that index after the drop.
+     */
+    const dropItems = useCallback(
+      (itemIndex?: number) => {
+        if (!draggedItems || !dropTargetItem) {
+          return;
+        }
+
+        log.debug('dropItems', draggedItems, 'to', itemIndex);
+
+        try {
+          const { files, targetPath } = getMoveOperation(
+            draggedItems,
+            dropTargetItem
+          );
+          onMove(files, targetPath);
+          if (itemIndex != null) {
+            setSelectedRanges([[itemIndex, itemIndex]]);
+            itemList.current?.focusItem(itemIndex);
+          }
+        } catch (err) {
+          log.error('Unable to complete move', err);
+        }
+      },
+      [draggedItems, dropTargetItem, onMove]
+    );
+
     const handleSelect = useCallback(
       (itemIndex: number) => {
         const item = loadedViewport.items[itemIndex - loadedViewport.offset];
@@ -315,6 +347,8 @@ export const FileList = React.forwardRef(
 
     const handleItemDragOver = useCallback(
       (itemIndex: number, e: React.DragEvent<HTMLDivElement>) => {
+        e.preventDefault();
+
         log.debug2('handleItemDragOver', e);
         setDropTargetItem(getItem(itemIndex));
       },
@@ -338,25 +372,49 @@ export const FileList = React.forwardRef(
 
     const handleItemDrop = useCallback(
       (itemIndex: number, e: React.DragEvent<HTMLDivElement>) => {
-        if (!draggedItems || !dropTargetItem) {
-          return;
-        }
+        dropItems(itemIndex);
+      },
+      [dropItems]
+    );
 
-        log.debug('handleItemDrop', draggedItems, 'to', itemIndex);
+    const handleItemDragExit = useCallback(() => {
+      log.debug2('handleItemDragExit');
+      setDropTargetItem(undefined);
+    }, []);
 
-        try {
-          const { files, targetPath } = getMoveOperation(
-            draggedItems,
-            dropTargetItem
-          );
-          onMove(files, targetPath);
-          setSelectedRanges([[itemIndex, itemIndex]]);
-          itemList.current?.focusItem(itemIndex);
-        } catch (err) {
-          log.error('Unable to complete move', err);
+    const handleListDragOver = useCallback(
+      (e: React.DragEvent<HTMLDivElement>) => {
+        if (
+          e.target instanceof Element &&
+          e.target.classList.contains(ITEM_LIST_CLASS_NAME)
+        ) {
+          // Need to prevent default to enable drop
+          // https://developer.mozilla.org/en-US/docs/Web/API/HTML_Drag_and_Drop_API/Drag_operations#droptargets
+          e.preventDefault();
+
+          log.debug2('handleListDragOver', e);
+          setDropTargetItem({
+            type: 'directory',
+            filename: '/',
+            basename: '/',
+            id: '/',
+          });
         }
       },
-      [draggedItems, dropTargetItem, onMove]
+      []
+    );
+
+    const handleListDrop = useCallback(
+      (e: React.DragEvent<HTMLDivElement>) => {
+        if (
+          e.target instanceof Element &&
+          e.target.classList.contains(ITEM_LIST_CLASS_NAME)
+        ) {
+          log.debug('handleListDrop');
+          dropItems();
+        }
+      },
+      [dropItems]
     );
 
     const handleSelectionChange = useCallback(
@@ -436,7 +494,11 @@ export const FileList = React.forwardRef(
 
     // Expand a folder if hovering over it
     useEffect(() => {
-      if (dropTargetItem != null && isDirectory(dropTargetItem)) {
+      if (
+        dropTargetItem != null &&
+        isDirectory(dropTargetItem) &&
+        dropTargetItem.filename !== '/'
+      ) {
         const timeout = setTimeout(() => {
           if (!dropTargetItem.isExpanded) {
             table?.setExpanded(dropTargetItem.filename, true);
@@ -466,10 +528,12 @@ export const FileList = React.forwardRef(
           onDragStart: handleItemDragStart,
           onDragEnd: handleItemDragEnd,
           onDragOver: handleItemDragOver,
+          onDragExit: handleItemDragExit,
           onDrop: handleItemDrop,
         }),
       [
         handleItemDragEnd,
+        handleItemDragExit,
         handleItemDragOver,
         handleItemDragStart,
         handleItemDrop,
@@ -482,9 +546,12 @@ export const FileList = React.forwardRef(
 
     return (
       <div
+        ref={fileList}
         className={classNames('file-list', {
           'is-dragging': draggedItems != null,
         })}
+        onDragOver={handleListDragOver}
+        onDrop={handleListDrop}
       >
         <ItemList
           ref={itemList}
