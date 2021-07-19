@@ -5,13 +5,12 @@ import { CSSTransition } from 'react-transition-group';
 import PropTypes from 'prop-types';
 import shortid from 'shortid';
 import debounce from 'lodash.debounce';
-import memoize from 'memoize-one';
 import { connect } from 'react-redux';
 import { Console, ConsoleConstants, ConsoleUtils } from '@deephaven/console';
 import { FigureChartModel } from '@deephaven/chart';
 import { IrisGridModelFactory } from '@deephaven/iris-grid';
 import dh from '@deephaven/jsapi-shim';
-import { ContextActions, ThemeExport } from '@deephaven/components';
+import { ThemeExport } from '@deephaven/components';
 import Log from '@deephaven/log';
 import { getCommandHistoryStorage } from '@deephaven/redux';
 import { Pending, PromiseUtils } from '@deephaven/utils';
@@ -128,16 +127,24 @@ class ConsolePanel extends PureComponent {
         window.location
       );
 
-      log.info('Starting session with language', language);
+      log.info('Starting connection...');
 
-      const session = await this.pending.add(
-        dh.Ide.getExistingSession(
-          `${baseUrl.protocol}//${baseUrl.host}`,
-          '',
-          null,
-          language
-        )
-      );
+      const connection = new dh.IdeConnection({
+        websocketUrl: `${baseUrl.protocol}//${baseUrl.host}`,
+      });
+
+      log.info('Getting console types...');
+
+      const types = await this.pending.add(connection.getConsoleTypes());
+
+      log.info('Available types:', types);
+
+      const type = types[0];
+
+      log.info('Starting session with type', type);
+
+      const session = await this.pending.add(connection.startSession(type));
+
       const sessionId = shortid.generate();
 
       log.info('Console session established');
@@ -148,9 +155,12 @@ class ConsolePanel extends PureComponent {
         sessionId,
       });
 
-      this.setState({ isLoading: false, session, sessionId }, () => {
-        this.consoleRef.current?.focus();
-      });
+      this.setState(
+        { isLoading: false, language: type, session, sessionId },
+        () => {
+          this.consoleRef.current?.focus();
+        }
+      );
     } catch (error) {
       if (PromiseUtils.isCanceled(error)) {
         return;
@@ -169,18 +179,6 @@ class ConsolePanel extends PureComponent {
       return { itemIds: newItemIds };
     });
   }
-
-  getCachedActions = memoize(language => {
-    const languages = Array.from(ConsoleConstants.LANGUAGE_MAP.keys()).filter(
-      l => l !== language
-    );
-    return languages.map(newLanguage => ({
-      title: `Switch to ${ConsoleConstants.LANGUAGE_MAP.get(newLanguage)}`,
-      action: () => this.switchLanguage(newLanguage),
-      group: ContextActions.groups.medium,
-      order: 100,
-    }));
-  });
 
   getItemId(name, createIfNecessary = true) {
     const { itemIds } = this.state;
@@ -376,7 +374,6 @@ class ConsolePanel extends PureComponent {
       sessionId,
     } = this.state;
     const name = ConsoleConstants.LANGUAGE_MAP.get(language);
-    const actions = this.getCachedActions(language);
     return (
       <Panel
         componentPanel={this}
@@ -416,7 +413,6 @@ class ConsolePanel extends PureComponent {
                   </>
                 }
                 scope={sessionId}
-                actions={actions}
               />
             )}
           </>
