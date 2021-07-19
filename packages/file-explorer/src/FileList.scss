@@ -4,8 +4,9 @@ $depth-line-color: $gray-600;
 $depth-margin: 5px;
 $depth-indentation: 9px;
 $item-list-color: $text-muted;
-$item-list-selected-bg: $primary;
+$item-list-selected-bg: mix($primary, $gray-700, 35%);
 $item-list-focused-bg: rgba($primary, 0.75);
+$item-list-hover-bg: $primary;
 $item-list-selected-color: $white;
 $item-list-drop-target-color: $white;
 
@@ -45,6 +46,10 @@ $item-list-drop-target-color: $white;
     &.is-focused {
       color: $item-list-selected-color;
     }
+
+    &:hover {
+      background-color: $item-list-hover-bg;
+    }
   }
 
   .item-icon {
@@ -55,8 +60,15 @@ $item-list-drop-target-color: $white;
     cursor: move;
     cursor: grabbing;
 
-    .item-list-item.active {
-      opacity: 0.5;
+    .item-list-item {
+      &.active {
+        opacity: 0.5;
+      }
+
+      &:hover {
+        // Sometimes when a drag starts, the hover background gets stuck. Just reset it
+        background-color: transparent;
+      }
     }
 
     .is-in-drop-target,
