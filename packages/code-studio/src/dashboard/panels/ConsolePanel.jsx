@@ -68,13 +68,9 @@ class ConsolePanel extends PureComponent {
     };
     const { consoleSettings, itemIds } = panelState;
 
-    const language =
-      process.env.REACT_APP_SESSION_LANGUAGE ??
-      Array.from(ConsoleConstants.LANGUAGE_MAP.keys())[0];
-
     this.state = {
       consoleSettings,
-      language,
+      language: null,
       itemIds: new Map(itemIds),
 
       isLoading: true,
@@ -120,8 +116,6 @@ class ConsolePanel extends PureComponent {
 
   async initSession() {
     try {
-      const { language } = this.state;
-
       const baseUrl = new URL(
         process.env.REACT_APP_CORE_API_URL,
         window.location
@@ -151,7 +145,7 @@ class ConsolePanel extends PureComponent {
 
       const { glEventHub } = this.props;
       glEventHub.emit(ConsoleEvent.SESSION_OPENED, session, {
-        language,
+        language: type,
         sessionId,
       });
 
@@ -259,30 +253,6 @@ class ConsolePanel extends PureComponent {
     glEventHub.emit(ConsoleEvent.SETTINGS_CHANGED, consoleSettings);
   }
 
-  switchLanguage(newLanguage) {
-    const { language, session, sessionId } = this.state;
-
-    log.debug('Switching language to', newLanguage);
-
-    session.close();
-    const { glEventHub } = this.props;
-    glEventHub.emit(ConsoleEvent.SESSION_CLOSED, session, {
-      language,
-      sessionId,
-    });
-    this.setState(
-      {
-        language: newLanguage,
-        isLoading: true,
-        session: null,
-        sessionId: null,
-      },
-      () => {
-        this.initSession();
-      }
-    );
-  }
-
   openTable(object, session) {
     const { name } = object;
     const id = this.getItemId(name);
@@ -373,7 +343,6 @@ class ConsolePanel extends PureComponent {
       session,
       sessionId,
     } = this.state;
-    const name = ConsoleConstants.LANGUAGE_MAP.get(language);
     return (
       <Panel
         componentPanel={this}
@@ -409,7 +378,7 @@ class ConsolePanel extends PureComponent {
                 statusBarChildren={
                   <>
                     <div>&nbsp;</div>
-                    <div>{name}</div>
+                    <div>{ConsoleConstants.LANGUAGE_MAP.get(language)}</div>
                   </>
                 }
                 scope={sessionId}
