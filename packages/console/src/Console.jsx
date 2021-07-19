@@ -582,7 +582,11 @@ export class Console extends PureComponent {
   }
 
   handleDragEnter(e) {
-    if (!e.dataTransfer || !e.dataTransfer.items) {
+    if (
+      !e.dataTransfer ||
+      !e.dataTransfer.items ||
+      e.dataTransfer.items.length === 0
+    ) {
       return;
     }
     e.preventDefault();
