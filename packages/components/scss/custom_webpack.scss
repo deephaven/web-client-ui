@@ -1,14 +1,15 @@
-// Use this import within OSS for anything that isn't bundled by Webpack
+// Use this import for anything that is bundled by Webpack
+// It should be able to resolve ~ to node_modules
 
 //Make bootstrap functions available for use in overrides
-@import '../../../node_modules/bootstrap/scss/_functions.scss';
+@import '~bootstrap/scss/_functions.scss';
 @import './bootstrap_overrides.scss';
 
 //_variable imports come after bootstrap default overrides,
 // makes all other variables and mixins from bootstrap available
 /// with just importing customer.scss
-@import '../../../node_modules/bootstrap/scss/_variables.scss';
-@import '../../../node_modules/bootstrap/scss/_mixins.scss';
+@import '~bootstrap/scss/_variables.scss';
+@import '~bootstrap/scss/_mixins.scss';
 
 //New variables come after imports
 @import './new_variables.scss';

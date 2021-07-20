@@ -1,0 +1,48 @@
+//Set of spacer variables from the spacer map
+$spacer-0: map-get($spacers, 0); //0
+$spacer-1: map-get($spacers, 1);
+$spacer-2: map-get($spacers, 2);
+$spacer-3: map-get($spacers, 3);
+$spacer-4: map-get($spacers, 4);
+$spacer-5: map-get($spacers, 5);
+
+/* Marching Ants for golden layout dropzone and drag and drop */
+//top bottom, left right.
+//create 4 background images that are 50% color 1, 50% color 2 using graidents,  two veritical, two horizontal
+//size them to ant-size and thickness
+//position those images along the egdes and make top/bottom repeat-x and left/right repeat-y
+//then offest each of those background positions by ant-size in animation to make them march.
+$ant-size: 8px;
+$ant-thickness: 1px;
+
+@mixin ants-base($color-1: black, $color-2: white) {
+  background-image: linear-gradient(to right, $color-2 50%, $color-1 50%),
+    linear-gradient(to right, $color-2 50%, $color-1 50%),
+    linear-gradient(to bottom, $color-2 50%, $color-1 50%),
+    linear-gradient(to bottom, $color-2 50%, $color-1 50%);
+  background-size: $ant-size $ant-thickness, $ant-size $ant-thickness,
+    $ant-thickness $ant-size, $ant-thickness $ant-size;
+  background-position: 0 top, 0 bottom, left 0, right 0;
+  background-repeat: repeat-x, repeat-x, repeat-y, repeat-y;
+  animation: march 0.5s;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+@mixin drag-stack($pseudo-element) {
+  &::#{$pseudo-element} {
+    content: ' ';
+    background: $primary;
+    box-shadow: $box-shadow;
+    border-radius: $border-radius;
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    @content;
+  }
+}
+
+$focus-bg-transparency: 0.12;
+$hover-bg-transparency: 0.14;
+$active-bg-transparency: 0.28;
+$exception-transparency: 0.13;
