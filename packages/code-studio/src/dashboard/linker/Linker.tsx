@@ -1,5 +1,5 @@
 import React, { Component, ErrorInfo } from 'react';
-import { connect } from 'react-redux';
+import { connect, ConnectedProps } from 'react-redux';
 import shortid from 'shortid';
 import GoldenLayout from 'golden-layout';
 import memoize from 'memoize-one';
@@ -66,28 +66,41 @@ export function isLinkablePanel(panel: Panel): panel is LinkablePanel {
   return (panel as LinkablePanel).setFilterMap != null;
 }
 
-export type LinkerProps = {
-  layout: GoldenLayout;
+interface StateProps {
   activeTool: string;
-  panelManager: PanelManager;
-  links: Link[];
   isolatedLinkerPanelId?: string;
-  localDashboardId: string;
+  links: Link[];
   timeZone: string;
+}
 
-  setActiveTool: (activeTool: string) => void;
-  setDashboardLinks: (dashboardId: string, links: Link[]) => void;
-  addDashboardLinks: (dashboardId: string, links: Link[]) => void;
-  deleteDashboardLinks: (dashboardId: string, linkIds: string[]) => void;
-  setDashboardIsolatedLinkerPanelId: (
-    dashboardId: string,
-    panelId: string | null
-  ) => void;
-  setDashboardColumnSelectionValidator: (
-    dashboardId: string,
-    columnValidator: ((panel: Panel, column?: LinkColumn) => boolean) | null
-  ) => void;
-};
+interface OwnProps {
+  layout: GoldenLayout;
+  panelManager: PanelManager;
+  localDashboardId: string;
+}
+
+const mapState = (state: LinkerState, ownProps: OwnProps) => ({
+  activeTool: getActiveTool(state),
+  isolatedLinkerPanelId: getIsolatedLinkerPanelIdForDashboard(
+    state,
+    ownProps.localDashboardId
+  ),
+  links: getLinksForDashboard(state, ownProps.localDashboardId),
+  timeZone: getTimeZone(state),
+});
+
+const connector = connect(mapState, {
+  setActiveTool: setActiveToolAction,
+  setDashboardLinks: setDashboardLinksAction,
+  addDashboardLinks: addDashboardLinksAction,
+  deleteDashboardLinks: deleteDashboardLinksAction,
+  setDashboardIsolatedLinkerPanelId: setDashboardIsolatedLinkerPanelIdAction,
+  setDashboardColumnSelectionValidator: setDashboardColumnSelectionValidatorAction,
+});
+
+export type LinkerProps = OwnProps &
+  StateProps &
+  ConnectedProps<typeof connector>;
 
 export type LinkerState = {
   linkInProgress?: Link;
@@ -647,21 +660,4 @@ class Linker extends Component<LinkerProps, LinkerState> {
   }
 }
 
-const mapStateToProps = (state: LinkerState, ownProps: LinkerProps) => ({
-  activeTool: getActiveTool(state),
-  isolatedLinkerPanelId: getIsolatedLinkerPanelIdForDashboard(
-    state,
-    ownProps.localDashboardId
-  ),
-  links: getLinksForDashboard(state, ownProps.localDashboardId),
-  timeZone: getTimeZone(state),
-});
-
-export default connect(mapStateToProps, {
-  setActiveTool: setActiveToolAction,
-  setDashboardLinks: setDashboardLinksAction,
-  addDashboardLinks: addDashboardLinksAction,
-  deleteDashboardLinks: deleteDashboardLinksAction,
-  setDashboardIsolatedLinkerPanelId: setDashboardIsolatedLinkerPanelIdAction,
-  setDashboardColumnSelectionValidator: setDashboardColumnSelectionValidatorAction,
-})(Linker);
+export default connector(Linker);
