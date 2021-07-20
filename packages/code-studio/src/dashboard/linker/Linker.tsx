@@ -1,6 +1,5 @@
 import React, { Component, ErrorInfo } from 'react';
 import { connect } from 'react-redux';
-import PropTypes from 'prop-types';
 import shortid from 'shortid';
 import GoldenLayout from 'golden-layout';
 import memoize from 'memoize-one';
@@ -32,7 +31,6 @@ import LayoutUtils from '../../layout/LayoutUtils';
 import LinkerOverlayContent from './LinkerOverlayContent';
 import LinkerUtils, { Link, LinkColumn, LinkType } from './LinkerUtils';
 import { PanelManager } from '../panels';
-import { UIPropTypes } from '../../include/prop-types';
 
 const log = Log.module('Linker');
 
