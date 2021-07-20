@@ -17,9 +17,9 @@ const CONSOLE = {
 
 const COMMAND_HISTORY = {
   name: 'Command History',
-  FOCUS_SEARCH: ShortcutRegistry.createAndAdd({
-    id: 'COMMAND_HISTORY.FOCUS_SEARCH',
-    name: 'Focus Search',
+  FOCUS_HISTORY: ShortcutRegistry.createAndAdd({
+    id: 'COMMAND_HISTORY.FOCUS_HISTORY',
+    name: 'Focus History Search',
     shortcut: [MODIFIER.CTRL, KEY.H],
     macShortcut: [MODIFIER.CTRL, MODIFIER.OPTION, KEY.H],
   }),
