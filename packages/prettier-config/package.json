@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/prettier-config",
-  "version": "0.1.7",
+  "version": "0.2.0",
   "description": "Deephaven Prettier configuration",
   "repository": "https://github.com/deephaven/web-client-ui",
   "license": "Apache-2.0",
