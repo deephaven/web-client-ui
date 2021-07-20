@@ -21,11 +21,7 @@ import {
 } from '@deephaven/redux';
 import { PromiseUtils } from '@deephaven/utils';
 import SettingsMenu from '../settings/SettingsMenu';
-import {
-  ConsoleEvent,
-  ControlEvent,
-  InputFilterEvent,
-} from '../dashboard/events';
+import { ControlEvent, InputFilterEvent } from '../dashboard/events';
 import ToolType from '../tools/ToolType';
 import { IrisPropTypes } from '../include/prop-types';
 import AppControlsMenu from './AppControlsMenu';
@@ -91,6 +87,14 @@ const DEFAULT_LAYOUT_CONFIG = [
 ];
 
 export class AppMainContainer extends Component {
+  static handleWindowBeforeUnload(event) {
+    event.preventDefault();
+    // returnValue is required for beforeReload event prompt
+    // https://developer.mozilla.org/en-US/docs/Web/API/WindowEventHandlers/onbeforeunload#example
+    // eslint-disable-next-line no-param-reassign
+    event.returnValue = '';
+  }
+
   constructor(props) {
     super(props);
     this.handleSettingsMenuHide = this.handleSettingsMenuHide.bind(this);
@@ -109,16 +113,22 @@ export class AppMainContainer extends Component {
     this.state = { showSettingsMenu: false };
   }
 
+  componentDidMount() {
+    window.addEventListener(
+      'beforeunload',
+      AppMainContainer.handleWindowBeforeUnload
+    );
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener(
+      'beforeunload',
+      AppMainContainer.handleWindowBeforeUnload
+    );
+  }
+
   sendClearFilter() {
     this.emitLayoutEvent(InputFilterEvent.CLEAR_ALL_FILTERS);
-  }
-
-  sendDisconnectSession() {
-    this.emitLayoutEvent(ConsoleEvent.DISCONNECT_SESSION);
-  }
-
-  sendRestartSession() {
-    this.emitLayoutEvent(ConsoleEvent.RESTART_SESSION);
   }
 
   emitLayoutEvent(event, data = undefined) {
@@ -255,16 +265,6 @@ export class AppMainContainer extends Component {
           log.debug('Consume unhandled save shortcut');
         },
         shortcut: GLOBAL_SHORTCUTS.SAVE,
-      },
-      {
-        action: () => {
-          this.sendRestartSession();
-        },
-      },
-      {
-        action: () => {
-          this.sendDisconnectSession();
-        },
       },
     ];
 

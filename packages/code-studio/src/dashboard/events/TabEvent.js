@@ -10,10 +10,6 @@ class TabEvent {
   static reload = 'TabEvent.reload';
 
   static clearAllFilters = 'TabEvent.clearAllFilters';
-
-  static DISCONNECT_SESSION = 'TabEvent.DISCONNECT_SESSION';
-
-  static RESTART_SESSION = 'TabEvent.RESTART_SESSION';
 }
 
 export default TabEvent;
