@@ -1,5 +1,4 @@
-import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
+import React, { MouseEvent, PureComponent } from 'react';
 
 import './LinkerLink.scss';
 
@@ -15,20 +14,44 @@ const TRIANGLE_HYPOTENUSE = Math.sqrt(
 const TRIANGLE_THETA = Math.asin((TRIANGLE_BASE * 0.5) / TRIANGLE_HEIGHT);
 const CLIP_RADIUS = 15;
 
-export class LinkerLink extends PureComponent {
-  static makeCirclePath(x, y, r) {
+export type LinkerLinkProps = {
+  x1: number;
+  y1: number;
+  x2: number;
+  y2: number;
+  id: string;
+  className: string;
+  onClick: (id: string) => void;
+};
+
+export class LinkerLink extends PureComponent<LinkerLinkProps> {
+  static defaultProps = {
+    className: '',
+    onClick(): void {
+      // no-op
+    },
+  };
+
+  /**
+   * Make an SVG path for a circle at the specified coordinates.
+   * @param x The x coordinate for the centre of the circle
+   * @param y The y coordinate for the centre of the circle
+   * @param r Radius of the circle
+   * @returns The SVG string path
+   */
+  static makeCirclePath(x: number, y: number, r: number): string {
     return `M ${x} ${y} m -${r},0 a ${r},${r} 0 1,0 ${
       r * 2
     },0 a ${r},${r} 0 1,0 -${r * 2},0 z`;
   }
 
-  constructor(props) {
+  constructor(props: LinkerLinkProps) {
     super(props);
 
     this.handleClick = this.handleClick.bind(this);
   }
 
-  handleClick(event) {
+  handleClick(event: MouseEvent<SVGPathElement>): void {
     event.stopPropagation();
     event.preventDefault();
 
@@ -36,7 +59,7 @@ export class LinkerLink extends PureComponent {
     onClick(id);
   }
 
-  render() {
+  render(): JSX.Element {
     const { className, x1, y1, x2, y2, id } = this.props;
 
     // Path between the two points
@@ -102,20 +125,5 @@ export class LinkerLink extends PureComponent {
     );
   }
 }
-
-LinkerLink.propTypes = {
-  x1: PropTypes.number.isRequired,
-  y1: PropTypes.number.isRequired,
-  x2: PropTypes.number.isRequired,
-  y2: PropTypes.number.isRequired,
-  id: PropTypes.string.isRequired,
-  onClick: PropTypes.func,
-  className: PropTypes.string,
-};
-
-LinkerLink.defaultProps = {
-  className: null,
-  onClick: () => {},
-};
 
 export default LinkerLink;
