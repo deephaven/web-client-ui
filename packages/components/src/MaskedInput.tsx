@@ -472,11 +472,7 @@ MaskedInput.defaultProps = {
     // no-op
   },
   getNextSegmentValue: (range, delta, segmentValue) => segmentValue,
-  selection: {
-    selectionStart: 0,
-    selectionEnd: 0,
-    selectionDirection: SELECTION_DIRECTION.NONE,
-  },
+  selection: undefined,
   onFocus(): void {
     // no-op
   },
