@@ -17,8 +17,6 @@ function makeConsoleWrapper() {
   const wrapper = shallow(
     <Console
       commandHistoryStorage={commandHistoryStorage}
-      closeSession={() => {}}
-      restartSession={() => {}}
       focusCommandHistory={() => {}}
       openObject={() => {}}
       closeObject={() => {}}

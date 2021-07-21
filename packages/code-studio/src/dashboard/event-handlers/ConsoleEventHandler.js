@@ -15,8 +15,6 @@ class ConsoleEventHandler {
 
     this.handleSendCommand = this.handleSendCommand.bind(this);
     this.handleSettingsChanged = this.handleSettingsChanged.bind(this);
-    this.handleDisconnectSession = this.handleDisconnectSession.bind(this);
-    this.handleRestartSession = this.handleRestartSession.bind(this);
 
     this.initialize();
   }
@@ -150,34 +148,16 @@ class ConsoleEventHandler {
     this.onSettingsChanged({ consoleCreatorSettings, consoleSettings });
   }
 
-  handleDisconnectSession() {
-    const consolePanel = this.getConsolePanel();
-    if (consolePanel && consolePanel.consoleContainerRef) {
-      consolePanel.consoleContainerRef.closeSessionAndUpdateState();
-    }
-  }
-
-  handleRestartSession() {
-    const consolePanel = this.getConsolePanel();
-    if (consolePanel && consolePanel.consoleContainerRef) {
-      consolePanel.consoleContainerRef.restartSession();
-    }
-  }
-
   startListening() {
     const { eventHub } = this.layout;
     eventHub.on(ConsoleEvent.SEND_COMMAND, this.handleSendCommand);
     eventHub.on(ConsoleEvent.SETTINGS_CHANGED, this.handleSettingsChanged);
-    eventHub.on(ConsoleEvent.DISCONNECT_SESSION, this.handleDisconnectSession);
-    eventHub.on(ConsoleEvent.RESTART_SESSION, this.handleRestartSession);
   }
 
   stopListening() {
     const { eventHub } = this.layout;
     eventHub.off(ConsoleEvent.SEND_COMMAND, this.handleSendCommand);
     eventHub.off(ConsoleEvent.SETTINGS_CHANGED, this.handleSettingsChanged);
-    eventHub.off(ConsoleEvent.DISCONNECT_SESSION, this.handleDisconnectSession);
-    eventHub.off(ConsoleEvent.RESTART_SESSION, this.handleRestartSession);
   }
 }
 

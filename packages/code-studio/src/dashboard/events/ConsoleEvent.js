@@ -8,10 +8,6 @@ class ConsoleEvent {
   static SEND_COMMAND = 'ConsoleEvent.SEND_COMMAND';
 
   static SETTINGS_CHANGED = 'ConsoleEvent.SETTINGS_CHANGED';
-
-  static DISCONNECT_SESSION = 'ConsoleEvent.DISCONNECT_SESSION';
-
-  static RESTART_SESSION = 'ConsoleEvent.RESTART_SESSION';
 }
 
 export default ConsoleEvent;
