@@ -31,7 +31,9 @@ const TimeInput = React.forwardRef<HTMLInputElement, TimeInputProps>(
       onBlur = () => false,
     } = props;
     const [value, setValue] = useState(TimeUtils.formatTime(propsValue));
-    const [selection, setSelection] = useState<SelectionSegment | null>(null);
+    const [selection, setSelection] = useState<SelectionSegment | undefined>(
+      undefined
+    );
     useEffect(() => {
       setValue(TimeUtils.formatTime(propsValue));
     }, [propsValue]);

@@ -17,8 +17,8 @@ function makeItemList({
   rowHeight = 20,
   offset = 0,
   items = makeItems(),
-  onSelect = () => false,
-  onViewportChange = () => false,
+  onSelect = () => undefined,
+  onViewportChange = () => undefined,
 } = {}) {
   return mount(
     <ItemList

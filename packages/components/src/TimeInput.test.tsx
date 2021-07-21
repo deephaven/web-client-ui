@@ -169,9 +169,9 @@ describe('select and type', () => {
 describe('arrow left and right jumps segments', () => {
   /**
    *
-   * @param {number} cursorPosition The initial cursor position to start at
-   * @param {number|Array<number>} movement Keyboard movement to simulate, positive for right, negative for left. Eg. 2 means 2 right arrow presses, -3 means 3 left arrow presses
-   * @param {object} expectedSelection The selection to expect
+   * @param cursorPosition The initial cursor position to start at
+   * @param movement Keyboard movement to simulate, positive for right, negative for left. Eg. 2 means 2 right arrow presses, -3 means 3 left arrow presses
+   * @param expectedSelection The selection to expect
    */
   function testArrowNavigation(
     cursorPosition: number,
