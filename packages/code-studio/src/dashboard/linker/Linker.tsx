@@ -1,7 +1,7 @@
 import React, { Component, ErrorInfo } from 'react';
 import { connect, ConnectedProps } from 'react-redux';
 import shortid from 'shortid';
-import GoldenLayout from 'golden-layout';
+import type GoldenLayout from 'golden-layout';
 import memoize from 'memoize-one';
 import { CSSTransition } from 'react-transition-group';
 import { ThemeExport } from '@deephaven/components';
@@ -41,10 +41,10 @@ export type PanelProps = {
 
 export type Panel = Component<PanelProps>;
 
-export type LinkFilterMapValue = {
+export type LinkFilterMapValue<T = unknown> = {
   columnType: string;
   text: string;
-  value: unknown;
+  value: T;
 };
 
 export type LinkFilterMap = Map<string, LinkFilterMapValue>;
@@ -63,7 +63,11 @@ export type LinkablePanel = Panel & {
 };
 
 export function isLinkablePanel(panel: Panel): panel is LinkablePanel {
-  return (panel as LinkablePanel).setFilterMap != null;
+  const p = panel as LinkablePanel;
+  return (
+    typeof p.setFilterMap === 'function' &&
+    typeof p.unsetFilterValue === 'function'
+  );
 }
 
 interface StateProps {
@@ -518,7 +522,7 @@ class Linker extends Component<LinkerProps, LinkerState> {
 
   /**
    * Delete all links for a provided panel ID. Needs to be done whenever a panel is closed or unmounted.
-   * @param {String} panelId The panel ID to delete links for
+   * @param panelId The panel ID to delete links for
    */
   deleteLinksForPanelId(panelId: string) {
     const { links } = this.props;

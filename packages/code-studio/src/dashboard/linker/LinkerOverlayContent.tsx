@@ -4,7 +4,7 @@ import { ContextActions, GLOBAL_SHORTCUTS } from '@deephaven/components';
 import Log from '@deephaven/log';
 import { PanelManager } from '../panels';
 import LayoutUtils from '../../layout/LayoutUtils';
-import { Link, LinkPointUntyped } from './LinkerUtils';
+import { Link, LinkPoint } from './LinkerUtils';
 import LinkerLink from './LinkerLink';
 import './LinkerOverlayContent.scss';
 
@@ -72,7 +72,7 @@ export class LinkerOverlayContent extends Component<
   }
 
   /** Gets the on screen points for a link start or end spec */
-  getPointFromLinkPoint(linkPoint: LinkPointUntyped): LinkerCoordinate {
+  getPointFromLinkPoint(linkPoint: LinkPoint): LinkerCoordinate {
     const { panelManager } = this.props;
     const { panelId, columnName } = linkPoint;
     const panel = panelManager.getOpenedPanelById(panelId);

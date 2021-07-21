@@ -6,13 +6,10 @@ import LayoutUtils from '../../layout/LayoutUtils';
 
 export type LinkType = 'invalid' | 'filterSource' | 'tableLink';
 
-export type LinkPointUntyped = {
+export type LinkPoint = {
   panelId: string;
   panelComponent?: string;
   columnName: string;
-};
-
-export type LinkPoint = LinkPointUntyped & {
   columnType: string;
 };
 
@@ -134,17 +131,17 @@ class LinkerUtils {
 
   /**
    * Clone links for a given panel id
-   * @param {object[]} links Original links array
-   * @param {string} panelId Original panel id
-   * @param {string} cloneId Cloned panel id
-   * @returns {object[]} Cloned links array or empty array if no new links added
+   * @param links Original links array
+   * @param panelId Original panel id
+   * @param cloneId Cloned panel id
+   * @returns Cloned links array or empty array if no new links added
    */
   static cloneLinksForPanel(
     links: Link[],
     panelId: string,
     cloneId: string
   ): Link[] {
-    const clonedLinks = [] as Link[];
+    const clonedLinks: Link[] = [];
     links.forEach(link => {
       if (link.start.panelId === panelId && link.type !== 'filterSource') {
         clonedLinks.push({

@@ -39,7 +39,7 @@ class TableColumnFormatter {
 
   /**
    * @param {Object} value The value to format
-   * @param {number} format Optional format object with value transformation options
+   * @param {Object} format Optional format object with value transformation options
    * @returns String the formatted text string of the value passed in.
    */
   format(value, format) {
