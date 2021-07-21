@@ -83,7 +83,7 @@ interface OwnProps {
   localDashboardId: string;
 }
 
-const mapState = (state: LinkerState, ownProps: OwnProps) => ({
+const mapState = (state: LinkerState, ownProps: OwnProps): StateProps => ({
   activeTool: getActiveTool(state),
   isolatedLinkerPanelId: getIsolatedLinkerPanelIdForDashboard(
     state,
@@ -93,7 +93,22 @@ const mapState = (state: LinkerState, ownProps: OwnProps) => ({
   timeZone: getTimeZone(state),
 });
 
-const connector = connect(mapState, {
+type DispatchProps = {
+  setActiveTool: (activeTool: string) => void;
+  setDashboardLinks: (dashboardId: string, links: Link[]) => void;
+  addDashboardLinks: (dashboardId: string, links: Link[]) => void;
+  deleteDashboardLinks: (dashboardId: string, linkIds: string[]) => void;
+  setDashboardIsolatedLinkerPanelId: (
+    dashboardId: string,
+    panelId: string | null
+  ) => void;
+  setDashboardColumnSelectionValidator: (
+    dashboardId: string,
+    columnValidator: ((panel: Panel, column?: LinkColumn) => boolean) | null
+  ) => void;
+};
+
+const connector = connect<StateProps, DispatchProps, OwnProps>(mapState, {
   setActiveTool: setActiveToolAction,
   setDashboardLinks: setDashboardLinksAction,
   addDashboardLinks: addDashboardLinksAction,
@@ -102,9 +117,7 @@ const connector = connect(mapState, {
   setDashboardColumnSelectionValidator: setDashboardColumnSelectionValidatorAction,
 });
 
-export type LinkerProps = OwnProps &
-  StateProps &
-  ConnectedProps<typeof connector>;
+export type LinkerProps = OwnProps & ConnectedProps<typeof connector>;
 
 export type LinkerState = {
   linkInProgress?: Link;
@@ -150,7 +163,7 @@ class Linker extends Component<LinkerProps, LinkerState> {
     }
   }
 
-  componentDidCatch?(error: Error, info: ErrorInfo): void {
+  componentDidCatch(error: Error, info: ErrorInfo): void {
     log.error('componentDidCatch', error, info);
   }
 
@@ -281,7 +294,7 @@ class Linker extends Component<LinkerProps, LinkerState> {
     column: LinkColumn,
     isAlwaysEndPoint = false,
     overrideIsolatedLinkerPanelId?: string
-  ) {
+  ): void {
     if (overrideIsolatedLinkerPanelId == null && !this.isOverlayShown()) {
       return;
     }
@@ -325,23 +338,27 @@ class Linker extends Component<LinkerProps, LinkerState> {
         overrideIsolatedLinkerPanelId ?? isolatedLinkerPanelId
       );
 
-      if (type === 'invalid') {
-        log.debug('Ignore invalid link connection', linkInProgress, end);
-        return;
-      }
-
-      // filterSource links have a limit of 1 link per target
-      // New link validation passed, delete existing links before adding the new one
-      if (type === 'filterSource') {
-        const { links } = this.props;
-        const existingLinkPanelId = isReversed ? start.panelId : end.panelId;
-        // In cases with multiple targets per panel (i.e. chart filters)
-        // links would have to be filtered by panelId and columnName and columnType
-        const linksToDelete = links.filter(
-          ({ end: panelLinkEnd }) =>
-            panelLinkEnd?.panelId === existingLinkPanelId
-        );
-        this.deleteLinks(linksToDelete);
+      switch (type) {
+        case 'invalid':
+          log.debug('Ignore invalid link connection', linkInProgress, end);
+          return;
+        case 'filterSource': {
+          // filterSource links have a limit of 1 link per target
+          // New link validation passed, delete existing links before adding the new one
+          const { links } = this.props;
+          const existingLinkPanelId = isReversed ? start.panelId : end.panelId;
+          // In cases with multiple targets per panel (i.e. chart filters)
+          // links would have to be filtered by panelId and columnName and columnType
+          const linksToDelete = links.filter(
+            ({ end: panelLinkEnd }) =>
+              panelLinkEnd?.panelId === existingLinkPanelId
+          );
+          this.deleteLinks(linksToDelete);
+          break;
+        }
+        case 'tableLink':
+          // No-op
+          break;
       }
 
       // Create a completed link from link in progress

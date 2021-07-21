@@ -63,7 +63,7 @@ export class LinkerOverlayContent extends Component<
   }
 
   // eslint-disable-next-line react/sort-comp
-  componentDidCatch?(error: Error, info: ErrorInfo): void {
+  componentDidCatch(error: Error, info: ErrorInfo): void {
     log.error('componentDidCatch', error, info);
   }
 
