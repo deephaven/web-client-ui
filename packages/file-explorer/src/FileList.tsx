@@ -102,7 +102,7 @@ export const renderFileListItem = (
     isDragInProgress &&
     isDropTargetValid &&
     isDirectory(item) &&
-    dropTargetPath === FileUtils.makePath(item.filename);
+    dropTargetPath === itemPath;
   const isInDropTarget =
     isDragInProgress && isDropTargetValid && dropTargetPath === itemPath;
   const isInvalidDropTarget =
