@@ -173,9 +173,7 @@ export function getMoveOperation(
     throw new Error('No items to move');
   }
 
-  const targetPath = isDirectory(targetItem)
-    ? FileUtils.makePath(targetItem.filename)
-    : FileUtils.getPath(targetItem.filename);
+  const targetPath = getPathFromItem(targetItem);
   if (
     draggedItems.some(
       ({ filename }) => FileUtils.getPath(filename) === targetPath
