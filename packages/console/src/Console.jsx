@@ -140,12 +140,12 @@ export class Console extends PureComponent {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    const { state } = this;
+    const { props, state } = this;
     this.sendSettingsChange(prevState, state);
 
     if (
-      state.disconnectedChildren != null &&
-      prevState.disconnectedChildren == null
+      props.disconnectedChildren != null &&
+      prevProps.disconnectedChildren == null
     ) {
       this.disconnect();
     }
