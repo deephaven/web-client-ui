@@ -1,17 +1,21 @@
 import React, { Component } from 'react';
+import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import Log from '@deephaven/log';
 import { vsClose, vsWatch, vsRecordKeys } from '@deephaven/icons';
+import dh from '@deephaven/jsapi-shim';
+import { getWorkspace } from '@deephaven/redux';
 import Logo from './LogoDark.svg';
 import FormattingSectionContent from './FormattingSectionContent';
 import LegalNotice from './LegalNotice';
 import SettingsMenuSection from './SettingsMenuSection';
 import ShortcutSectionContent from './ShortcutsSectionContent';
 import { exportLogs } from '../log/LogExport';
-
 import './SettingsMenu.scss';
 
-class SettingsMenu extends Component {
+const log = Log.module('SettingsMenu');
+export class SettingsMenu extends Component {
   static FORMATTING_SECTION_KEY = 'SettingsMenu.formatting';
 
   static APPLICATION_SECTION_KEY = 'ApplicationMenu.settings';
@@ -33,6 +37,8 @@ class SettingsMenu extends Component {
     super(props);
 
     this.handleClose = this.handleClose.bind(this);
+    this.handleExportLayout = this.handleExportLayout.bind(this);
+    this.handleImportLayout = this.handleImportLayout.bind(this);
     this.handleScrollTo = this.handleScrollTo.bind(this);
     this.handleSectionToggle = this.handleSectionToggle.bind(this);
 
@@ -66,6 +72,54 @@ class SettingsMenu extends Component {
   handleClose() {
     const { onDone } = this.props;
     onDone();
+  }
+
+  handleExportLayout() {
+    try {
+      const { workspace } = this.props;
+      const { data } = workspace;
+      const { layoutConfig } = data;
+
+      log.info('Exporting layoutConfig', layoutConfig);
+
+      const blob = new Blob([JSON.stringify(layoutConfig)], {
+        mimeType: 'application/json',
+      });
+      const timestamp = dh.i18n.DateTimeFormat.format(
+        'yyyy-MM-dd-HHmmss',
+        new Date()
+      );
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = `deephaven-app-layout-${timestamp}.json`;
+      link.click();
+    } catch (e) {
+      log.error('Unable to export layout', e);
+    }
+  }
+
+  handleImportLayout() {
+    try {
+      const { workspace } = this.props;
+      const { data } = workspace;
+      const { layoutConfig } = data;
+
+      log.info('Exporting layoutConfig', layoutConfig);
+
+      const blob = new Blob([JSON.stringify(layoutConfig)], {
+        mimeType: 'application/json',
+      });
+      const timestamp = dh.i18n.DateTimeFormat.format(
+        'yyyy-MM-dd-HHmmss',
+        new Date()
+      );
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = `deephaven-app-layout-${timestamp}.json`;
+      link.click();
+    } catch (e) {
+      log.error('Unable to export layout', e);
+    }
   }
 
   render() {
@@ -148,6 +202,20 @@ class SettingsMenu extends Component {
                 >
                   Export Logs
                 </button>
+                <button
+                  type="button"
+                  className="btn btn-secondary mt-2 py-2"
+                  onClick={this.handleExportLayout}
+                >
+                  Export Layout
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-secondary mt-2 py-2"
+                  onClick={this.handleImportLayout}
+                >
+                  Import Layout
+                </button>
               </div>
               <div className="app-settings-footer-item">
                 <div className="font-weight-bold">Documentation</div>
@@ -188,10 +256,19 @@ class SettingsMenu extends Component {
 
 SettingsMenu.propTypes = {
   onDone: PropTypes.func,
+  workspace: PropTypes.shape({
+    data: PropTypes.shape({
+      layoutConfig: PropTypes.arrayOf(PropTypes.shape({})),
+    }),
+  }).isRequired,
 };
 
 SettingsMenu.defaultProps = {
   onDone: () => {},
 };
 
-export default SettingsMenu;
+const mapState = state => ({
+  workspace: getWorkspace(state),
+});
+
+export default connect(mapState)(SettingsMenu);
