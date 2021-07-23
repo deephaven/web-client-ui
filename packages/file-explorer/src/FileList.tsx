@@ -341,6 +341,7 @@ export const FileList = (props: FileListProps): JSX.Element => {
       newDragPlaceholder.className = 'file-list-dnd-placeholder';
       document.body.appendChild(newDragPlaceholder);
       e.dataTransfer.setDragImage(newDragPlaceholder, 0, 0);
+      e.dataTransfer.effectAllowed = 'move';
       setDragPlaceholder(newDragPlaceholder);
     },
     [getDragPlaceholderText, getItems, selectedRanges]
