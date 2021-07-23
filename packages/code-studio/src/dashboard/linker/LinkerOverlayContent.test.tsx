@@ -6,7 +6,7 @@ import LinkerOverlayContent from './LinkerOverlayContent';
 const LINKER_OVERLAY_MESSAGE = 'TEST_MESSAGE';
 
 function makeEventHub() {
-  const callbacks = {};
+  const callbacks: Record<string, (arg: unknown) => void> = {};
   return {
     on: jest.fn((eventName, callback) => {
       callbacks[eventName] = callback;

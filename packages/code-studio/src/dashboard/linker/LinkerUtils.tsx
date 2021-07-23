@@ -3,10 +3,34 @@ import { TableUtils } from '@deephaven/iris-grid';
 import Log from '@deephaven/log';
 import { ChartPanel, IrisGridPanel, DropdownFilterPanel } from '../panels';
 import LayoutUtils from '../../layout/LayoutUtils';
-import LinkType from './LinkType';
 
-const log = Log.module('LinkerLink');
+export type LinkType = 'invalid' | 'filterSource' | 'tableLink';
 
+export type LinkPoint = {
+  panelId: string;
+  panelComponent?: string;
+  columnName: string;
+  columnType: string;
+};
+
+export type Link = {
+  start: LinkPoint;
+  end?: LinkPoint;
+  id: string;
+  isReversed?: boolean;
+  type: LinkType;
+};
+
+export type LinkColumn = {
+  name: string;
+  type: string;
+};
+
+const log = Log.module('LinkerUtils');
+
+/**
+ * Collection of utility functions for use with the Linker
+ */
 class LinkerUtils {
   static ALLOWED_LINKS = new Map([
     [
@@ -19,7 +43,18 @@ class LinkerUtils {
     ],
   ]);
 
-  static getLinkType(start = null, end = null, isolatedLinkerPanelId = null) {
+  /**
+   * Retrieve the type of link given parameters.
+   * @param start The link start
+   * @param end The link end
+   * @param isolatedLinkerPanelId Whether there's an isolated linker
+   * @returns The type of link, or invalid if there's an error
+   */
+  static getLinkType(
+    start?: LinkPoint,
+    end?: LinkPoint,
+    isolatedLinkerPanelId?: string
+  ): LinkType {
     // Panel compatibility checks:
     // Link ends should point to different non-null panelIds
     // For isolated linker one of the panels should match isolated panel id
@@ -32,12 +67,12 @@ class LinkerUtils {
         isolatedLinkerPanelId !== end.panelId)
     ) {
       log.debug2('Incompatible panel ids', start, end, isolatedLinkerPanelId);
-      return LinkType.INVALID;
+      return 'invalid';
     }
 
     if (start.panelComponent == null || end.panelComponent == null) {
       log.error('PanelComponent should not be null', start, end);
-      return LinkType.INVALID;
+      return 'invalid';
     }
 
     const isCompatibleComponent = LinkerUtils.ALLOWED_LINKS.get(
@@ -46,7 +81,7 @@ class LinkerUtils {
 
     if (!isCompatibleComponent) {
       log.debug2('Incompatible panel components', start, end);
-      return LinkType.INVALID;
+      return 'invalid';
     }
 
     // Check column type compatibility
@@ -60,32 +95,35 @@ class LinkerUtils {
 
     if (!isCompatibleType) {
       log.debug2('Incompatible type', startColumnType, endColumnType);
-      return LinkType.INVALID;
+      return 'invalid';
     }
 
     // If all checks pass, link type is determined by the target panel component
     switch (end.panelComponent) {
       case LayoutUtils.getComponentName(ChartPanel):
       case LayoutUtils.getComponentName(IrisGridPanel):
-        return LinkType.TABLE_LINK;
+        return 'tableLink';
       case LayoutUtils.getComponentName(DropdownFilterPanel):
-        return LinkType.FILTER_SOURCE;
+        return 'filterSource';
       default:
     }
 
     log.debug2('Incompatible target panel component', end.panelComponent);
-    return LinkType.INVALID;
+    return 'invalid';
   }
 
   /**
    * Find column matching the link point
-   * @param {Array} columns Columns to search in
-   * @param {Object} linkPoint Link point to find column for
-   * @param {string} linkPoint.columnName Column name to find
-   * @param {string} linkPoint.columnType Column type to find
-   * @returns {Column} Column matching the link point, null if not found
+   * @param columns Columns to search in
+   * @param linkPoint Link point to find column for
+   * @param linkPoint.columnName Column name to find
+   * @param linkPoint.columnType Column type to find
+   * @returns Column matching the link point, undefined if not found
    */
-  static findColumn(columns, { columnName, columnType }) {
+  static findColumn(
+    columns: LinkColumn[],
+    { columnName, columnType }: LinkPoint
+  ): LinkColumn | undefined {
     return columns.find(
       ({ name, type }) => name === columnName && type === columnType
     );
@@ -93,18 +131,19 @@ class LinkerUtils {
 
   /**
    * Clone links for a given panel id
-   * @param {object[]} links Original links array
-   * @param {string} panelId Original panel id
-   * @param {string} cloneId Cloned panel id
-   * @returns {object[]} Cloned links array or empty array if no new links added
+   * @param links Original links array
+   * @param panelId Original panel id
+   * @param cloneId Cloned panel id
+   * @returns Cloned links array or empty array if no new links added
    */
-  static cloneLinksForPanel(links, panelId, cloneId) {
-    const clonedLinks = [];
+  static cloneLinksForPanel(
+    links: Link[],
+    panelId: string,
+    cloneId: string
+  ): Link[] {
+    const clonedLinks: Link[] = [];
     links.forEach(link => {
-      if (
-        link.start?.panelId === panelId &&
-        link.type !== LinkType.FILTER_SOURCE
-      ) {
+      if (link.start.panelId === panelId && link.type !== 'filterSource') {
         clonedLinks.push({
           ...link,
           id: shortid.generate(),

@@ -1,17 +1,19 @@
 /* eslint class-methods-use-this: "off" */
 import dh from '@deephaven/jsapi-shim';
 import Log from '@deephaven/log';
-import TableColumnFormatter from './TableColumnFormatter';
+import TableColumnFormatter, {
+  TableColumnFormat,
+} from './TableColumnFormatter';
 
 const log = Log.module('DateTimeColumnFormatter');
 
 class DateTimeColumnFormatter extends TableColumnFormatter {
   /**
    * Validates format object
-   * @param {Object} format Format object
-   * @returns {boolean} true for valid object
+   * @param format Format object
+   * @returns true for valid object
    */
-  static isValid(format) {
+  static isValid(format: TableColumnFormat): boolean {
     try {
       dh.i18n.DateTimeFormat.format(format.formatString, new Date());
       return true;
@@ -21,10 +23,10 @@ class DateTimeColumnFormatter extends TableColumnFormatter {
   }
 
   static makeFormat(
-    label,
-    formatString,
+    label: string,
+    formatString: string,
     type = TableColumnFormatter.TYPE_CONTEXT_PRESET
-  ) {
+  ): TableColumnFormat {
     return {
       label,
       formatString,
@@ -34,11 +36,14 @@ class DateTimeColumnFormatter extends TableColumnFormatter {
 
   /**
    * Check if the given formats match
-   * @param {?Object} formatA format object to check
-   * @param {?Object} formatB format object to check
-   * @returns {boolean} True if the formats match
+   * @param formatA format object to check
+   * @param formatB format object to check
+   * @returns True if the formats match
    */
-  static isSameFormat(formatA, formatB) {
+  static isSameFormat(
+    formatA?: TableColumnFormat,
+    formatB?: TableColumnFormat
+  ): boolean {
     return (
       formatA === formatB ||
       (formatA != null &&
@@ -52,7 +57,10 @@ class DateTimeColumnFormatter extends TableColumnFormatter {
 
   static DEFAULT_TIME_ZONE_ID = 'America/New_York';
 
-  static makeGlobalFormatStringMap(showTimeZone, showTSeparator) {
+  static makeGlobalFormatStringMap(
+    showTimeZone: boolean,
+    showTSeparator: boolean
+  ): Map<string, string> {
     const separator = showTSeparator ? `'T'` : ' ';
     const tz = showTimeZone ? ' z' : '';
     return new Map([
@@ -65,7 +73,10 @@ class DateTimeColumnFormatter extends TableColumnFormatter {
     ]);
   }
 
-  static getGlobalFormats(showTimeZone, showTSeparator) {
+  static getGlobalFormats(
+    showTimeZone: boolean,
+    showTSeparator: boolean
+  ): string[] {
     const formatStringMap = DateTimeColumnFormatter.makeGlobalFormatStringMap(
       showTimeZone,
       showTSeparator
@@ -73,7 +84,10 @@ class DateTimeColumnFormatter extends TableColumnFormatter {
     return [...formatStringMap.keys()];
   }
 
-  static makeFormatStringMap(showTimeZone, showTSeparator) {
+  static makeFormatStringMap(
+    showTimeZone: boolean,
+    showTSeparator: boolean
+  ): Map<string, string> {
     const separator = showTSeparator ? `'T'` : ' ';
     const tz = showTimeZone ? ' z' : '';
     return new Map([
@@ -91,7 +105,7 @@ class DateTimeColumnFormatter extends TableColumnFormatter {
     ]);
   }
 
-  static getFormats(showTimeZone, showTSeparator) {
+  static getFormats(showTimeZone: boolean, showTSeparator: boolean): string[] {
     const formatStringMap = DateTimeColumnFormatter.makeFormatStringMap(
       showTimeZone,
       showTSeparator
@@ -99,11 +113,26 @@ class DateTimeColumnFormatter extends TableColumnFormatter {
     return [...formatStringMap.keys()];
   }
 
+  dhTimeZone: unknown;
+
+  defaultDateTimeFormatString: string;
+
+  showTimeZone: boolean;
+
+  showTSeparator: boolean;
+
+  formatStringMap: Map<string, string>;
+
   constructor({
-    timeZone: timeZoneParam,
+    timeZone: timeZoneParam = '',
     showTimeZone = true,
     showTSeparator = false,
     defaultDateTimeFormatString = DateTimeColumnFormatter.DEFAULT_DATETIME_FORMAT_STRING,
+  }: {
+    timeZone?: string;
+    showTimeZone?: boolean;
+    showTSeparator?: boolean;
+    defaultDateTimeFormatString?: string;
   } = {}) {
     super();
 
@@ -128,11 +157,11 @@ class DateTimeColumnFormatter extends TableColumnFormatter {
     );
   }
 
-  getEffectiveFormatString(baseFormatString) {
+  getEffectiveFormatString(baseFormatString: string): string {
     return this.formatStringMap.get(baseFormatString) || baseFormatString;
   }
 
-  format(value, format) {
+  format(value: unknown, format?: TableColumnFormat): string {
     const baseFormatString =
       (format && format.formatString) || this.defaultDateTimeFormatString;
     const formatString = this.getEffectiveFormatString(baseFormatString);
