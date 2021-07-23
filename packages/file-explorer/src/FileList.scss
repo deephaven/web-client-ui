@@ -4,6 +4,7 @@ $depth-line-color: $gray-600;
 $depth-margin: 5px;
 $depth-indentation: 8px;
 $item-list-color: $text-muted;
+$item-list-selected-nofocus-bg: mix($primary, $gray-700, 12%);
 $item-list-selected-bg: mix($primary, $gray-700, 35%);
 $item-list-selection-border-color: mix($primary, $gray-700, 55%);
 $item-list-focused-bg: rgba($primary, 0.75);
@@ -39,11 +40,11 @@ $item-list-drop-target-color: $white;
     -webkit-user-drag: none; // we need to disable webkit-user-drag or else Chrome switches to a Copy icon when dragging on Mac
 
     &.is-focused {
-      background-color: $item-list-focused-bg;
+      background-color: $item-list-selected-nofocus-bg;
     }
 
     &.active {
-      background-color: $item-list-selected-bg;
+      background-color: $item-list-selected-nofocus-bg;
     }
 
     &:focus,
@@ -58,12 +59,18 @@ $item-list-drop-target-color: $white;
     margin-right: $spacer-1;
   }
 
-  //for selected items, apply border on left and right
-  &:focus-within .item-list-item.active {
-    background-color: $item-list-selected-bg;
-    color: $item-list-selected-color;
-    border-left-color: $item-list-selection-border-color;
-    border-right-color: $item-list-selection-border-color;
+  &:focus-within {
+    &.item-list-item.is-focused {
+      background-color: $item-list-focused-bg;
+    }
+
+    //for selected items, apply border on left and right
+    .item-list-item.active {
+      background-color: $item-list-selected-bg;
+      color: $item-list-selected-color;
+      border-left-color: $item-list-selection-border-color;
+      border-right-color: $item-list-selection-border-color;
+    }
   }
 
   &.is-dragging {
