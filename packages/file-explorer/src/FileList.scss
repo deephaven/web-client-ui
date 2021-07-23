@@ -78,7 +78,7 @@ $item-list-drop-target-color: $white;
         opacity: 0.5;
       }
 
-      &:hover {
+      &:hover &:not(.active) {
         // Sometimes when a drag starts, the hover background gets stuck. Just reset it
         background-color: transparent;
       }
