@@ -47,7 +47,7 @@ export type LinkFilterMapValue<T = unknown> = {
   value: T;
 };
 
-export type LinkFilterMap = Map<string, LinkFilterMapValue>;
+export type LinkFilterMap<T = unknown> = Map<string, LinkFilterMapValue<T>>;
 
 export type LinkDataMapValue = {
   type: string;
