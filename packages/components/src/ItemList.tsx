@@ -467,13 +467,11 @@ export class ItemList<T> extends PureComponent<
     }
 
     if (mouseDownIndex === index && !isDragging) {
+      const isShiftDown = e.shiftKey;
+      const isModifierDown = ContextActionUtils.isModifierKeyDown(e);
       this.focusItem(index);
-      this.toggleSelect(
-        index,
-        e.shiftKey,
-        ContextActionUtils.isModifierKeyDown(e)
-      );
-      if (!isDoubleClickSelect) {
+      this.toggleSelect(index, isShiftDown, isModifierDown);
+      if (!isDoubleClickSelect && !isShiftDown && !isModifierDown) {
         onSelect(index);
       }
     }
