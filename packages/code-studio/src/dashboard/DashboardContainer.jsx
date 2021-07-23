@@ -95,6 +95,7 @@ export class DashboardContainer extends Component {
     this.state = {
       dashboardIsEmpty: true,
       layout: null,
+      layoutConfig: null,
       panelManager: null,
     };
   }
@@ -105,9 +106,12 @@ export class DashboardContainer extends Component {
 
   componentDidUpdate(prevProps) {
     const { layoutConfig } = this.props;
-    if (prevProps.layoutConfig !== layoutConfig) {
-      log.info('RELOADING LAYOUT CONFIG');
-      // this.reloadLayoutConfig();
+    const { layoutConfig: currentLayoutConfig } = this.state;
+    if (
+      prevProps.layoutConfig !== layoutConfig &&
+      layoutConfig !== currentLayoutConfig
+    ) {
+      this.reloadLayoutConfig();
     }
   }
 
@@ -315,12 +319,17 @@ export class DashboardContainer extends Component {
       hydrateComponentPropsMap
     );
 
+    if (content.length !== 1) {
+      log.error('Unexpected content when reloading layout config', content);
+      return;
+    }
+
     // Remove the old layout before add the new one
     while (layout.root.contentItems.length > 0) {
       layout.root.contentItems[0].remove();
     }
 
-    layout.root.addChild(content);
+    layout.root.addChild(content[0]);
   }
 
   registerComponent(layout, name, ComponentType) {
@@ -505,6 +514,8 @@ export class DashboardContainer extends Component {
     } else if (newLayoutConfig !== 0 && dashboardIsEmpty) {
       this.setState({ dashboardIsEmpty: false });
     }
+
+    this.setState({ layoutConfig: newLayoutConfig });
 
     onLayoutConfigChange(newLayoutConfig);
   }

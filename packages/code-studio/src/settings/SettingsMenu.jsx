@@ -207,9 +207,12 @@ export class SettingsMenu extends Component {
                 >
                   Export Logs
                 </button>
+              </div>
+              <div className="app-settings-footer-item">
+                <div className="font-weight-bold">Layout</div>
                 <button
                   type="button"
-                  className="btn btn-secondary mt-2 py-2"
+                  className="btn btn-secondary mt-2 py-2 mr-2"
                   onClick={this.handleExportLayoutClick}
                 >
                   Export Layout
