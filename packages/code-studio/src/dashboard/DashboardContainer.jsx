@@ -103,6 +103,14 @@ export class DashboardContainer extends Component {
     this.init();
   }
 
+  componentDidUpdate(prevProps) {
+    const { layoutConfig } = this.props;
+    if (prevProps.layoutConfig !== layoutConfig) {
+      log.info('RELOADING LAYOUT CONFIG');
+      // this.reloadLayoutConfig();
+    }
+  }
+
   componentWillUnmount() {
     if (this.isInitialised) {
       this.deinit(false);
@@ -295,6 +303,24 @@ export class DashboardContainer extends Component {
     onGoldenLayoutChange(layout);
 
     return layout;
+  }
+
+  reloadLayoutConfig() {
+    const { layoutConfig } = this.props;
+    const { layout } = this.state;
+
+    const hydrateComponentPropsMap = this.makeHydrateComponentPropsMap();
+    const content = LayoutUtils.hydrateLayoutConfig(
+      layoutConfig,
+      hydrateComponentPropsMap
+    );
+
+    // Remove the old layout before add the new one
+    while (layout.root.contentItems.length > 0) {
+      layout.root.contentItems[0].remove();
+    }
+
+    layout.root.addChild(content);
   }
 
   registerComponent(layout, name, ComponentType) {
