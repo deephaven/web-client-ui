@@ -18,10 +18,6 @@ describe('getMoveOperation', () => {
     return file;
   }
 
-  const DEFAULT_FILE = makeFile('foo.txt');
-
-  const DEFAULT_DIR = makeDirectory('bar');
-
   it('succeeds if moving files from root to within a directory', () => {
     const targetPath = '/target/';
     const targetDirectory = makeDirectory('target');
@@ -49,7 +45,7 @@ describe('getMoveOperation', () => {
   });
 
   it('fails if no items selected to move', () => {
-    expect(() => getMoveOperation([], DEFAULT_FILE)).toThrow();
+    expect(() => getMoveOperation([], makeFile('foo.txt'))).toThrow();
   });
 
   it('fails if trying to move files within same directory', () => {

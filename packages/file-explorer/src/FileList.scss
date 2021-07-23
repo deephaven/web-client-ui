@@ -52,10 +52,6 @@ $item-list-drop-target-color: $white;
     &.is-focused {
       color: $item-list-selected-color;
     }
-
-    &:hover {
-      background-color: $item-list-hover-bg;
-    }
   }
 
   .item-icon {
@@ -77,11 +73,6 @@ $item-list-drop-target-color: $white;
       &.active {
         opacity: 0.5;
       }
-
-      &:hover &:not(.active) {
-        // Sometimes when a drag starts, the hover background gets stuck. Just reset it
-        background-color: transparent;
-      }
     }
 
     .is-in-drop-target,
@@ -90,11 +81,14 @@ $item-list-drop-target-color: $white;
     }
   }
 
-  .item-list-item:hover &:not(.is-dragging),
-  &:focus-within .item-list-item.active:hover {
-    background-color: $item-list-hover-bg;
-    color: $item-list-selected-color;
-    transition: none; //to make things feel more responsive don't trasinition the hover in
+  /* stylelint-disable no-descending-specificity */
+  &:not(.is-dragging) {
+    .item-list-item:hover,
+    &:focus-within .item-list-item.active:hover {
+      background-color: $item-list-hover-bg;
+      color: $item-list-selected-color;
+      transition: none; //to make things feel more responsive don't transition the hover in
+    }
   }
 
   //apply border to top of the first item in the list if its selected, and the first selected after a non-selected item
@@ -105,7 +99,7 @@ $item-list-drop-target-color: $white;
 
   //there's no easy way to get the last select item in a grouping, so we apply the end border
   //to the TOP of the first non-selected item, ie. the previous selection group
-  &:focus-within .active + .item-list-item:not(.active) {
+  &:focus-within .item-list-item.active + .item-list-item:not(.active) {
     border-top: 1px solid $item-list-selection-border-color;
   }
 
@@ -113,6 +107,7 @@ $item-list-drop-target-color: $white;
   &:focus-within .item-list-item.active:last-of-type {
     border-bottom: 1px solid $item-list-selection-border-color;
   }
+  /* stylelint-enable no-descending-specificity */
 }
 
 .file-list-dnd-placeholder {
