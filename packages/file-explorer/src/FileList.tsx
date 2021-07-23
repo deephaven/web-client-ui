@@ -180,6 +180,16 @@ export function getMoveOperation(
     // Cannot drop if target is one of the dragged items is already in the target folder
     throw new Error('File already in the destination folder');
   }
+  if (
+    draggedItems.some(
+      item =>
+        isDirectory(item) &&
+        targetPath.startsWith(FileUtils.makePath(item.filename))
+    )
+  ) {
+    // Cannot drop if target is a child of one of the directories being moved
+    throw new Error('Destination folder cannot be a child of a dragged folder');
+  }
   return { files: draggedItems, targetPath };
 }
 
