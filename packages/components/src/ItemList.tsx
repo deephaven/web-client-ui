@@ -22,14 +22,19 @@ export interface DefaultListItem {
 export type RenderItemProps<T> = {
   item: T;
   itemIndex: number;
-  isKeyboardSelected: boolean;
+  isFocused: boolean;
   isSelected: boolean;
   style: React.CSSProperties;
 };
 
-type RenderItemFn<T> = (props: RenderItemProps<T>) => React.ReactNode;
+export type RenderItemFn<T> = (props: RenderItemProps<T>) => React.ReactNode;
 
-type ItemListProps<T> = {
+export type ItemDragEventHandler = (
+  index: number,
+  event: React.DragEvent<HTMLDivElement>
+) => void;
+
+export type ItemListProps<T> = {
   // Total item count
   itemCount: number;
   rowHeight: number;
@@ -40,14 +45,17 @@ type ItemListProps<T> = {
   // Default renderItem will look for a `displayValue` property, fallback
   // to the `value` property, or stringify the object if neither are defined
   items: T[];
+  // Whether selection requires a double click or not
+  isDoubleClickSelect: boolean;
   // Whether to allow dragging to change the selection after clicking
   isDragSelect: boolean;
   // Whether to allow multiple selections in this item list
   isMultiSelect: boolean;
   // Set to true if you want the list to scroll when new items are added and it's already at the bottom
   isStickyBottom: boolean;
-  // Fired when an item gets selected via keyboard
-  onKeyboardSelect(): void;
+  // Fired when an item gets focused
+  onFocusChange(index: number | null): void;
+
   // Fired when an item is clicked. With multiple selection, fired on double click.
   onSelect(index: number): void;
   onSelectionChange(ranges: Range[]): void;
@@ -60,7 +68,7 @@ type ItemListProps<T> = {
 };
 
 type ItemListState = {
-  keyboardIndex: number | null;
+  focusIndex: number | null;
   mouseDownIndex: number | null;
   selectedRanges: Range[];
   overscanStartIndex: number;
@@ -74,7 +82,10 @@ type ItemListState = {
  * Show items in a long scrollable list.
  * Can be navigated via keyboard or mouse.
  */
-class ItemList<T> extends PureComponent<ItemListProps<T>, ItemListState> {
+export class ItemList<T> extends PureComponent<
+  ItemListProps<T>,
+  ItemListState
+> {
   static CACHE_SIZE = 1000;
 
   static DEFAULT_ROW_HEIGHT = 20;
@@ -87,6 +98,8 @@ class ItemList<T> extends PureComponent<ItemListProps<T>, ItemListState> {
     items: [],
     rowHeight: ItemList.DEFAULT_ROW_HEIGHT,
 
+    isDoubleClickSelect: false,
+
     isDragSelect: true,
 
     isMultiSelect: false,
@@ -95,7 +108,7 @@ class ItemList<T> extends PureComponent<ItemListProps<T>, ItemListState> {
 
     disableSelect: false,
 
-    onKeyboardSelect(): void {
+    onFocusChange(): void {
       // no-op
     },
     onSelect(): void {
@@ -149,7 +162,7 @@ class ItemList<T> extends PureComponent<ItemListProps<T>, ItemListState> {
     const { isStickyBottom, selectedRanges } = props;
 
     this.state = {
-      keyboardIndex: null,
+      focusIndex: null,
       mouseDownIndex: null,
       selectedRanges,
       overscanStartIndex: 0,
@@ -173,6 +186,7 @@ class ItemList<T> extends PureComponent<ItemListProps<T>, ItemListState> {
   ): void {
     const { selectedRanges: propSelectedRanges } = this.props;
     const {
+      focusIndex,
       isStuckToBottom,
       scrollOffset,
       height,
@@ -198,6 +212,11 @@ class ItemList<T> extends PureComponent<ItemListProps<T>, ItemListState> {
       const { onSelectionChange } = this.props;
       onSelectionChange(selectedRanges);
     }
+
+    if (focusIndex !== prevState.focusIndex) {
+      const { onFocusChange } = this.props;
+      onFocusChange(focusIndex);
+    }
   }
 
   componentWillUnmount(): void {
@@ -207,10 +226,6 @@ class ItemList<T> extends PureComponent<ItemListProps<T>, ItemListState> {
   list: React.RefObject<List>;
 
   listContainer: React.RefObject<HTMLDivElement>;
-
-  setKeyboardIndex(keyboardIndex: number | null): void {
-    this.setState({ keyboardIndex });
-  }
 
   getItemSelected = memoize(
     (index: number, selectedRanges: Range[]) =>
@@ -223,17 +238,16 @@ class ItemList<T> extends PureComponent<ItemListProps<T>, ItemListState> {
       itemIndex: number,
       key: number,
       item: T,
-      isKeyboardSelected: boolean,
+      isFocused: boolean,
       isSelected: boolean,
       renderItem: RenderItemFn<T>,
       style: React.CSSProperties,
-      onKeyboardSelect: (i: number, item: HTMLDivElement) => void,
       disableSelect: boolean
     ) => {
       const content = renderItem({
         item,
         itemIndex,
-        isKeyboardSelected,
+        isFocused,
         isSelected,
         style,
       });
@@ -244,11 +258,10 @@ class ItemList<T> extends PureComponent<ItemListProps<T>, ItemListState> {
           onMouseDown={this.handleItemMouseDown}
           onFocus={this.handleItemFocus}
           onBlur={this.handleItemBlur}
-          onKeyboardSelect={onKeyboardSelect}
           disableSelect={disableSelect}
           onMouseMove={this.handleItemMouseMove}
           onMouseUp={this.handleItemMouseUp}
-          isKeyboardSelected={isKeyboardSelected}
+          isFocused={isFocused}
           isSelected={isSelected}
           itemIndex={itemIndex}
           style={style}
@@ -290,15 +303,16 @@ class ItemList<T> extends PureComponent<ItemListProps<T>, ItemListState> {
     return component;
   });
 
-  getItemData = memoize((items: T[], selectedRanges: Range[]) => ({
-    items,
-    selectedRanges,
-  }));
+  getItemData = memoize(
+    (items: T[], selectedRanges: Range[], renderItem: RenderItemFn<T>) => ({
+      items,
+      selectedRanges,
+      renderItem,
+    })
+  );
 
   focus(): void {
-    if (this.listContainer.current != null) {
-      this.listContainer.current.focus();
-    }
+    this.listContainer.current?.focus();
   }
 
   getElement(itemIndex: number): Element | null {
@@ -316,6 +330,9 @@ class ItemList<T> extends PureComponent<ItemListProps<T>, ItemListState> {
   focusItem(itemIndex: number): void {
     const { disableSelect } = this.props;
     if (disableSelect) return;
+
+    this.setState({ focusIndex: itemIndex });
+
     const element = this.getElement(itemIndex);
     if (element instanceof HTMLElement) {
       element.focus();
@@ -330,9 +347,9 @@ class ItemList<T> extends PureComponent<ItemListProps<T>, ItemListState> {
   }
 
   handleItemDoubleClick(itemIndex: number): void {
-    const { isMultiSelect, onSelect } = this.props;
+    const { isDoubleClickSelect, onSelect } = this.props;
 
-    if (isMultiSelect) {
+    if (isDoubleClickSelect) {
       this.setState(
         ({ selectedRanges }) => ({
           selectedRanges: RangeUtils.selectRange(selectedRanges, [
@@ -371,7 +388,7 @@ class ItemList<T> extends PureComponent<ItemListProps<T>, ItemListState> {
       return;
     }
 
-    this.setState({ keyboardIndex: index, mouseDownIndex: index });
+    this.setState({ mouseDownIndex: index });
 
     window.addEventListener('mouseup', this.handleWindowMouseUp);
 
@@ -387,16 +404,16 @@ class ItemList<T> extends PureComponent<ItemListProps<T>, ItemListState> {
         !this.listContainer.current.contains(e.relatedTarget))
     ) {
       // Next focused element is outside of the ItemList
-      this.setKeyboardIndex(null);
+      this.setState({ focusIndex: null });
     }
   }
 
   handleItemFocus(itemIndex: number, e: React.FocusEvent): void {
     log.debug2('item focus', itemIndex, e.target);
     this.setState(state => {
-      const { keyboardIndex } = state;
-      if (keyboardIndex !== itemIndex) {
-        return { keyboardIndex: itemIndex };
+      const { focusIndex } = state;
+      if (focusIndex !== itemIndex) {
+        return { focusIndex: itemIndex };
       }
       return null;
     });
@@ -408,7 +425,7 @@ class ItemList<T> extends PureComponent<ItemListProps<T>, ItemListState> {
 
     if (mouseDownIndex == null || disableSelect) return;
 
-    this.setState({ keyboardIndex: itemIndex, isDragging: true });
+    this.setState({ isDragging: true });
 
     if (isDragSelect || mouseDownIndex === itemIndex) {
       this.focusItem(itemIndex);
@@ -437,7 +454,7 @@ class ItemList<T> extends PureComponent<ItemListProps<T>, ItemListState> {
   }
 
   handleItemMouseUp(index: number, e: React.MouseEvent): void {
-    const { isMultiSelect, onSelect } = this.props;
+    const { isDoubleClickSelect, onSelect } = this.props;
     const { mouseDownIndex, isDragging } = this.state;
 
     if (
@@ -450,18 +467,17 @@ class ItemList<T> extends PureComponent<ItemListProps<T>, ItemListState> {
     }
 
     if (mouseDownIndex === index && !isDragging) {
+      const isShiftDown = e.shiftKey;
+      const isModifierDown = ContextActionUtils.isModifierKeyDown(e);
       this.focusItem(index);
-      this.toggleSelect(
-        index,
-        e.shiftKey,
-        ContextActionUtils.isModifierKeyDown(e)
-      );
-      if (!isMultiSelect) {
+      this.toggleSelect(index, isShiftDown, isModifierDown);
+
+      if (!isDoubleClickSelect && !isShiftDown && !isModifierDown) {
         onSelect(index);
       }
     }
 
-    this.setState({ mouseDownIndex: null, isDragging: false });
+    this.resetMouseState();
   }
 
   handleItemsRendered({ overscanStartIndex }: ListOnItemsRenderedProps): void {
@@ -477,13 +493,13 @@ class ItemList<T> extends PureComponent<ItemListProps<T>, ItemListState> {
   }
 
   handleWindowMouseUp(): void {
-    this.setState({ mouseDownIndex: null, isDragging: false });
+    this.resetMouseState();
     window.removeEventListener('mouseup', this.handleWindowMouseUp);
   }
 
   handleKeyDown(e: React.KeyboardEvent): void {
     const { isMultiSelect, itemCount, onSelect } = this.props;
-    const { keyboardIndex: oldFocus } = this.state;
+    const { focusIndex: oldFocus } = this.state;
     let newFocus = oldFocus;
 
     if (e.key === 'Enter' || e.key === ' ') {
@@ -518,8 +534,6 @@ class ItemList<T> extends PureComponent<ItemListProps<T>, ItemListState> {
       e.preventDefault();
 
       this.focusItem(newFocus);
-
-      this.setState({ keyboardIndex: newFocus });
 
       const { selectedRanges } = this.state;
       if (e.shiftKey && selectedRanges.length > 0) {
@@ -559,6 +573,10 @@ class ItemList<T> extends PureComponent<ItemListProps<T>, ItemListState> {
         isStickyBottom && this.isListAtBottom({ scrollOffset, height });
       return { isStuckToBottom, scrollOffset } as ItemListState;
     });
+  }
+
+  resetMouseState(): void {
+    this.setState({ mouseDownIndex: null, isDragging: false });
   }
 
   scrollToBottom(): void {
@@ -685,14 +703,8 @@ class ItemList<T> extends PureComponent<ItemListProps<T>, ItemListState> {
     index: number;
     style: React.CSSProperties;
   }): React.ReactElement | null {
-    const {
-      items,
-      offset,
-      renderItem,
-      onKeyboardSelect,
-      disableSelect,
-    } = this.props;
-    const { keyboardIndex, selectedRanges } = this.state;
+    const { items, offset, renderItem, disableSelect } = this.props;
+    const { focusIndex, selectedRanges } = this.state;
     if (itemIndex < offset || itemIndex >= offset + items.length) {
       return null;
     }
@@ -702,17 +714,22 @@ class ItemList<T> extends PureComponent<ItemListProps<T>, ItemListState> {
       itemIndex,
       itemIndex,
       item,
-      itemIndex === keyboardIndex && !disableSelect,
+      itemIndex === focusIndex && !disableSelect,
       this.getItemSelected(itemIndex, selectedRanges),
       renderItem,
       style,
-      onKeyboardSelect,
       disableSelect
     );
   }
 
   render(): JSX.Element {
-    const { items, itemCount, overscanCount, rowHeight } = this.props;
+    const {
+      items,
+      itemCount,
+      overscanCount,
+      renderItem,
+      rowHeight,
+    } = this.props;
     const { selectedRanges } = this.state;
     return (
       <AutoSizer className="item-list-auto-sizer" onResize={this.handleResize}>
@@ -725,8 +742,8 @@ class ItemList<T> extends PureComponent<ItemListProps<T>, ItemListState> {
             itemSize={rowHeight}
             // This prop isn't actually used by us, it is passed to the render function by react-window
             // Used here to force a re-render of the List component.
-            // Otherwise it doesn't know to call the render again when selection changes
-            itemData={this.getItemData(items, selectedRanges)}
+            // Otherwise it doesn't know to call the render again when selection or renderItem changes
+            itemData={this.getItemData(items, selectedRanges, renderItem)}
             onScroll={this.handleScroll}
             onItemsRendered={this.handleItemsRendered}
             ref={this.list}

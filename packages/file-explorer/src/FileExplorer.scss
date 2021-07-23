@@ -1,4 +1,9 @@
+@import '../../components/scss/custom.scss';
+
+$file-explorer-bg: $gray-900;
+
 .file-explorer {
+  background: $file-explorer-bg;
   position: relative;
   flex-grow: 1;
 

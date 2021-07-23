@@ -5,7 +5,11 @@ import { Draggable, Droppable, DraggableChildrenFn } from 'react-beautiful-dnd';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { vsGripper } from '@deephaven/icons';
 import { RangeUtils, Range } from '@deephaven/utils';
-import ItemList, { RenderItemProps, DefaultListItem } from './ItemList';
+import ItemList, {
+  RenderItemProps,
+  DefaultListItem,
+  ItemListProps,
+} from './ItemList';
 import { Tooltip } from './popper';
 import './DraggableItemList.scss';
 
@@ -18,33 +22,19 @@ type DraggableRenderItemFn<T> = (
   props: DraggableRenderItemProps<T>
 ) => React.ReactNode;
 
-type DraggableItemListProps<T> = {
+type DraggableItemListProps<T> = Omit<
+  ItemListProps<T>,
+  'overscanCount' | 'focusSelector' | 'isDragSelect'
+> & {
   className: string;
   draggingItemClassName: string;
-  // Total item count
-  itemCount: number;
-  rowHeight: number;
-  // Offset of the top item in the items array
-  offset: number;
-  // Item object format expected by the default renderItem function
-  // Can be anything as long as it's supported by the renderItem
-  items: T[];
-  // Whether to allow dropping items in this list
   isDropDisabled: boolean;
   // Whether to allow dragging items from this list
   isDragDisabled: boolean;
-  // Whether to allow multiple selections in this item list
-  isMultiSelect: boolean;
-  // Set to true if you want the list to scroll when new items are added and it's already at the bottom
-  isStickyBottom: boolean;
-  // Fired when an item is clicked. With multiple selection, fired on double click.
-  onSelect(index: number): void;
-  onSelectionChange(ranges: Range[]): void;
-  onViewportChange(): void;
-  selectedRanges: Range[];
-  disableSelect: boolean;
+
   renderItem: DraggableRenderItemFn<T>;
   style: React.CSSProperties;
+
   // The prefix to add to all draggable item IDs
   draggablePrefix: string;
   // The ID to give the droppable list
@@ -74,12 +64,16 @@ class DraggableItemList<T> extends PureComponent<
     offset: 0,
     items: [],
     rowHeight: DraggableItemList.DEFAULT_ROW_HEIGHT,
+    isDoubleClickSelect: true,
     isDropDisabled: false,
     isDragDisabled: false,
     isMultiSelect: false,
     isStickyBottom: false,
     disableSelect: false,
     style: null,
+    onFocusChange(): void {
+      // no-op
+    },
     onSelect(): void {
       // no-op
     },
@@ -165,16 +159,16 @@ class DraggableItemList<T> extends PureComponent<
 
   itemList: React.RefObject<ItemList<T>>;
 
+  selectItem(itemIndex: number): void {
+    this.itemList.current?.selectItem(itemIndex);
+  }
+
   focusItem(itemIndex: number): void {
-    if (this.itemList.current) {
-      this.itemList.current.focusItem(itemIndex);
-    }
+    this.itemList.current?.focusItem(itemIndex);
   }
 
   scrollToItem(itemIndex: number): void {
-    if (this.itemList.current) {
-      this.itemList.current.scrollToItem(itemIndex);
-    }
+    this.itemList.current?.scrollToItem(itemIndex);
   }
 
   getCachedDraggableItem = memoize(
@@ -183,7 +177,7 @@ class DraggableItemList<T> extends PureComponent<
       renderItem: DraggableRenderItemFn<T>,
       item: T,
       itemIndex: number,
-      isKeyboardSelected: boolean,
+      isFocused: boolean,
       isSelected: boolean,
       isDragDisabled: boolean,
       style: React.CSSProperties
@@ -211,7 +205,7 @@ class DraggableItemList<T> extends PureComponent<
             {renderItem({
               item,
               itemIndex,
-              isKeyboardSelected,
+              isFocused,
               isSelected,
               style,
               isClone: false,
@@ -238,7 +232,7 @@ class DraggableItemList<T> extends PureComponent<
     ) => ({
       item,
       itemIndex,
-      isKeyboardSelected,
+      isFocused,
       isSelected,
       style,
     }: RenderItemProps<T>) =>
@@ -247,7 +241,7 @@ class DraggableItemList<T> extends PureComponent<
         renderItem,
         item,
         itemIndex,
-        isKeyboardSelected,
+        isFocused,
         isSelected,
         isDragDisabled,
         style
@@ -287,7 +281,7 @@ class DraggableItemList<T> extends PureComponent<
             {renderItem({
               item,
               itemIndex,
-              isKeyboardSelected: false,
+              isFocused: false,
               isSelected: true,
               style: {},
               isClone: true,
@@ -306,18 +300,20 @@ class DraggableItemList<T> extends PureComponent<
       draggablePrefix,
       draggingItemClassName,
       droppableId,
+      isDoubleClickSelect,
       isDragDisabled,
       isDropDisabled,
       isMultiSelect,
       isStickyBottom,
       itemCount,
       items,
-      onViewportChange,
       offset,
+      onFocusChange,
+      onSelect,
+      onViewportChange,
       renderItem,
       rowHeight,
       selectedRanges,
-      onSelect,
       style,
     } = this.props;
     return (
@@ -349,11 +345,13 @@ class DraggableItemList<T> extends PureComponent<
           >
             <ItemList
               focusSelector=".draggable-item-list-item"
+              isDoubleClickSelect={isDoubleClickSelect}
               isDragSelect={false}
               isMultiSelect={isMultiSelect}
               isStickyBottom={isStickyBottom}
               itemCount={itemCount}
               items={items}
+              onFocusChange={onFocusChange}
               onSelect={onSelect}
               onSelectionChange={this.handleSelectionChange}
               onViewportChange={onViewportChange}

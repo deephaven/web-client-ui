@@ -1,23 +1,11 @@
-import {
-  ContextAction,
-  ContextActions,
-  SingleClickItemList,
-  SingleClickRenderItemProps,
-} from '@deephaven/components';
-import React, {
-  Ref,
-  useCallback,
-  useImperativeHandle,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import { ContextAction, ContextActions } from '@deephaven/components';
+import React, { useCallback, useMemo, useState } from 'react';
 import FileList, {
-  DEFAULT_RENDER_ITEM,
-  FileListItem,
-  UpdateableComponent,
+  renderFileListItem,
+  DEFAULT_ROW_HEIGHT,
+  FileListRenderItemProps,
 } from './FileList';
-import { FileStorageTable, isDirectory } from './FileStorage';
+import { FileStorageItem, FileStorageTable, isDirectory } from './FileStorage';
 import SHORTCUTS from './FileExplorerShortcuts';
 import './FileExplorer.scss';
 import FileUtils from './FileUtils';
@@ -31,12 +19,12 @@ export interface FileListContainerProps {
 
   onCreateFile?: (path?: string) => void;
   onCreateFolder?: (path?: string) => void;
-  onCopy?: (file: FileListItem) => void;
-  onDelete?: (files: FileListItem[]) => void;
-  onMove?: (files: FileListItem[], path: string) => void;
-  onRename?: (file: FileListItem, newName: string) => void;
-  onSelect: (file: FileListItem) => void;
-  validateRename?: (file: FileListItem, newName: string) => Promise<void>;
+  onCopy?: (file: FileStorageItem) => void;
+  onDelete?: (files: FileStorageItem[]) => void;
+  onMove?: (files: FileStorageItem[], path: string) => void;
+  onRename?: (file: FileStorageItem, newName: string) => void;
+  onSelect: (file: FileStorageItem) => void;
+  validateRename?: (file: FileStorageItem, newName: string) => Promise<void>;
 
   /** Height of each item in the list */
   rowHeight?: number;
@@ -45,205 +33,194 @@ export interface FileListContainerProps {
 /**
  * Component that displays and allows interaction with the file system in the provided FileStorage.
  */
-export const FileListContainer = React.forwardRef(
-  (props: FileListContainerProps, ref: Ref<UpdateableComponent>) => {
-    const {
-      isMultiSelect = false,
-      showContextMenu = false,
-      onCreateFile,
-      onCreateFolder,
-      onCopy,
-      onDelete,
-      onMove = () => undefined,
-      onRename,
-      onSelect,
-      table,
-      rowHeight = SingleClickItemList.DEFAULT_ROW_HEIGHT,
-      validateRename = () => Promise.resolve(),
-    } = props;
-    const [renameItem, setRenameItem] = useState<FileListItem>();
-    const [selectedItems, setSelectedItems] = useState([] as FileListItem[]);
-    const [
-      keyboardSelectedItem,
-      setKeyboardSelectedItem,
-    ] = useState<FileListItem>();
-    const fileList = useRef<UpdateableComponent>(null);
+export const FileListContainer = (
+  props: FileListContainerProps
+): JSX.Element => {
+  const {
+    isMultiSelect = false,
+    showContextMenu = false,
+    onCreateFile,
+    onCreateFolder,
+    onCopy,
+    onDelete,
+    onMove = () => undefined,
+    onRename,
+    onSelect,
+    table,
+    rowHeight = DEFAULT_ROW_HEIGHT,
+    validateRename = () => Promise.resolve(),
+  } = props;
+  const [renameItem, setRenameItem] = useState<FileStorageItem>();
+  const [selectedItems, setSelectedItems] = useState([] as FileStorageItem[]);
+  const [focusedItem, setFocusedItem] = useState<FileStorageItem>();
 
-    const handleSelectionChange = useCallback(
-      (newSelectedItems, newKeyboardSelectedItem) => {
-        setSelectedItems(newSelectedItems);
-        setKeyboardSelectedItem(newKeyboardSelectedItem);
-      },
-      []
-    );
+  const handleSelectionChange = useCallback(newSelectedItems => {
+    setSelectedItems(newSelectedItems);
+  }, []);
 
-    const handleCopyAction = useCallback(() => {
-      if (keyboardSelectedItem) {
-        onCopy?.(keyboardSelectedItem);
-      }
-    }, [keyboardSelectedItem, onCopy]);
+  const handleFocusChange = useCallback(newFocusedItem => {
+    setFocusedItem(newFocusedItem);
+  }, []);
 
-    const handleDeleteAction = useCallback(() => {
-      if (selectedItems.length > 0) {
-        onDelete?.(selectedItems);
-      }
-    }, [onDelete, selectedItems]);
+  const handleCopyAction = useCallback(() => {
+    if (focusedItem) {
+      onCopy?.(focusedItem);
+    }
+  }, [focusedItem, onCopy]);
 
-    const handleNewFileAction = useCallback(() => {
-      onCreateFile?.();
-    }, [onCreateFile]);
+  const handleDeleteAction = useCallback(() => {
+    if (selectedItems.length > 0) {
+      onDelete?.(selectedItems);
+    }
+  }, [onDelete, selectedItems]);
 
-    const handleNewFolderAction = useCallback(() => {
-      if (keyboardSelectedItem) {
-        onCreateFolder?.(FileUtils.getPath(keyboardSelectedItem.filename));
-      }
-    }, [keyboardSelectedItem, onCreateFolder]);
+  const handleNewFileAction = useCallback(() => {
+    onCreateFile?.();
+  }, [onCreateFile]);
 
-    const handleRenameAction = useCallback(() => {
-      if (keyboardSelectedItem) {
-        setRenameItem(keyboardSelectedItem);
-      }
-    }, [keyboardSelectedItem]);
+  const handleNewFolderAction = useCallback(() => {
+    if (focusedItem) {
+      onCreateFolder?.(FileUtils.getPath(focusedItem.filename));
+    }
+  }, [focusedItem, onCreateFolder]);
 
-    const handleRenameCancel = useCallback((): void => {
-      setRenameItem(undefined);
-    }, []);
+  const handleRenameAction = useCallback(() => {
+    if (focusedItem) {
+      setRenameItem(focusedItem);
+    }
+  }, [focusedItem]);
 
-    const handleRenameSubmit = useCallback(
-      (newName: string): void => {
-        if (renameItem) {
-          onRename?.(renameItem, newName);
-          setRenameItem(undefined);
-        }
-      },
-      [onRename, renameItem]
-    );
+  const handleRenameCancel = useCallback((): void => {
+    setRenameItem(undefined);
+  }, []);
 
-    const actions = useMemo(() => {
+  const handleRenameSubmit = useCallback(
+    (newName: string): void => {
       if (renameItem) {
-        // While renaming, we don't want to enable any of the context actions or it may interfere with renaming input
-        return [];
+        onRename?.(renameItem, newName);
+        setRenameItem(undefined);
       }
+    },
+    [onRename, renameItem]
+  );
 
-      const result = [] as ContextAction[];
-      if (onCreateFile) {
-        result.push({
-          title: 'New File',
-          description: 'Create new file',
-          action: handleNewFileAction,
-          group: ContextActions.groups.medium,
+  const actions = useMemo(() => {
+    if (renameItem) {
+      // While renaming, we don't want to enable any of the context actions or it may interfere with renaming input
+      return [];
+    }
+
+    const result = [] as ContextAction[];
+    if (onCreateFile) {
+      result.push({
+        title: 'New File',
+        description: 'Create new file',
+        action: handleNewFileAction,
+        group: ContextActions.groups.medium,
+      });
+    }
+    if (onCreateFolder) {
+      result.push({
+        title: 'New Folder',
+        description: 'Create new folder',
+        action: handleNewFolderAction,
+        group: ContextActions.groups.medium,
+      });
+    }
+    if (onCopy) {
+      result.push({
+        title: 'Copy',
+        description: 'Copy',
+        action: handleCopyAction,
+        group: ContextActions.groups.low,
+        disabled: focusedItem == null || isDirectory(focusedItem),
+      });
+    }
+    if (onDelete && selectedItems.length > 0) {
+      result.push({
+        title: 'Delete',
+        description: 'Delete',
+        shortcut: SHORTCUTS.FILE_EXPLORER.DELETE,
+        action: handleDeleteAction,
+        group: ContextActions.groups.low,
+      });
+    }
+    if (onRename) {
+      result.push({
+        title: 'Rename',
+        description: 'Rename',
+        shortcut: SHORTCUTS.FILE_EXPLORER.RENAME,
+        action: handleRenameAction,
+        group: ContextActions.groups.low,
+        disabled: focusedItem == null,
+      });
+    }
+    return result;
+  }, [
+    handleCopyAction,
+    handleDeleteAction,
+    handleNewFileAction,
+    handleNewFolderAction,
+    handleRenameAction,
+    focusedItem,
+    onCopy,
+    onCreateFile,
+    onCreateFolder,
+    onDelete,
+    onRename,
+    selectedItems,
+    renameItem,
+  ]);
+
+  const validateRenameItem = useCallback(
+    (newName: string): Promise<void> => {
+      if (renameItem) {
+        return validateRename(renameItem, newName);
+      }
+      return Promise.reject(new Error('No rename item'));
+    },
+    [renameItem, validateRename]
+  );
+
+  const renderItem = useCallback(
+    (itemProps: FileListRenderItemProps): JSX.Element => {
+      const { item } = itemProps;
+      if (renameItem && renameItem.filename === item.filename) {
+        return renderFileListItem({
+          ...itemProps,
+          children: (
+            <FileListItemEditor
+              item={item}
+              validate={validateRenameItem}
+              onSubmit={handleRenameSubmit}
+              onCancel={handleRenameCancel}
+            />
+          ),
         });
       }
-      if (onCreateFolder) {
-        result.push({
-          title: 'New Folder',
-          description: 'Create new folder',
-          action: handleNewFolderAction,
-          group: ContextActions.groups.medium,
-        });
-      }
-      if (onCopy) {
-        result.push({
-          title: 'Copy',
-          description: 'Copy',
-          action: handleCopyAction,
-          group: ContextActions.groups.low,
-          disabled:
-            keyboardSelectedItem == null || isDirectory(keyboardSelectedItem),
-        });
-      }
-      if (onDelete && selectedItems.length > 0) {
-        result.push({
-          title: 'Delete',
-          description: 'Delete',
-          shortcut: SHORTCUTS.FILE_EXPLORER.DELETE,
-          action: handleDeleteAction,
-          group: ContextActions.groups.low,
-        });
-      }
-      if (onRename) {
-        result.push({
-          title: 'Rename',
-          description: 'Rename',
-          shortcut: SHORTCUTS.FILE_EXPLORER.RENAME,
-          action: handleRenameAction,
-          group: ContextActions.groups.low,
-          disabled: keyboardSelectedItem == null,
-        });
-      }
-      return result;
-    }, [
-      handleCopyAction,
-      handleDeleteAction,
-      handleNewFileAction,
-      handleNewFolderAction,
-      handleRenameAction,
-      keyboardSelectedItem,
-      onCopy,
-      onCreateFile,
-      onCreateFolder,
-      onDelete,
-      onRename,
-      selectedItems,
-      renameItem,
-    ]);
+      return renderFileListItem(itemProps);
+    },
+    [handleRenameCancel, handleRenameSubmit, renameItem, validateRenameItem]
+  );
 
-    const validateRenameItem = useCallback(
-      (newName: string): Promise<void> => {
-        if (renameItem) {
-          return validateRename(renameItem, newName);
-        }
-        return Promise.reject(new Error('No rename item'));
-      },
-      [renameItem, validateRename]
-    );
-
-    const renderItem = useCallback(
-      (itemProps: SingleClickRenderItemProps<FileListItem>): JSX.Element => {
-        const { item } = itemProps;
-        if (renameItem && renameItem.filename === item.filename) {
-          return DEFAULT_RENDER_ITEM({
-            ...itemProps,
-            children: (
-              <FileListItemEditor
-                item={item}
-                validate={validateRenameItem}
-                onSubmit={handleRenameSubmit}
-                onCancel={handleRenameCancel}
-              />
-            ),
-          });
-        }
-        return DEFAULT_RENDER_ITEM(itemProps);
-      },
-      [handleRenameCancel, handleRenameSubmit, renameItem, validateRenameItem]
-    );
-
-    useImperativeHandle(ref, () => ({
-      updateDimensions: () => {
-        fileList.current?.updateDimensions();
-      },
-    }));
-
-    return (
-      <div className="file-list-container">
-        {table && (
-          <FileList
-            ref={fileList}
-            onMove={onMove}
-            onSelect={onSelect}
-            onSelectionChange={handleSelectionChange}
-            renderItem={renderItem}
-            rowHeight={rowHeight}
-            table={table}
-            isMultiSelect={isMultiSelect}
-          />
-        )}
-        {showContextMenu && <ContextActions actions={actions} />}
-      </div>
-    );
-  }
-);
+  return (
+    <div className="file-list-container">
+      {table && (
+        <FileList
+          onMove={onMove}
+          onSelect={onSelect}
+          onSelectionChange={handleSelectionChange}
+          onFocusChange={handleFocusChange}
+          renderItem={renderItem}
+          rowHeight={rowHeight}
+          table={table}
+          isMultiSelect={isMultiSelect}
+        />
+      )}
+      {showContextMenu && <ContextActions actions={actions} />}
+    </div>
+  );
+};
 
 FileListContainer.displayName = 'FileListContainer';
 

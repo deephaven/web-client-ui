@@ -580,6 +580,7 @@ class NotebookPanel extends Component {
     const { fileMetadata } = this.state;
     if (fileMetadata.id === oldName) {
       this.setState({ fileMetadata: { id: newName, itemName: newName } });
+      this.debouncedSavePanelState();
     }
   }
 
@@ -715,6 +716,7 @@ class NotebookPanel extends Component {
       isDashboardActive,
       isLoaded,
       isLoading,
+      isPreview,
       fileMetadata,
       session,
       sessionLanguage,
@@ -722,6 +724,9 @@ class NotebookPanel extends Component {
       showCloseModal,
       showSaveAsModal,
     } = this.state;
+    // We don't want to steal focus if this isn't shown or it's just a preview
+    const focusOnMount =
+      isDashboardActive && !glContainer.isHidden && !isPreview;
     const itemName = fileMetadata?.itemName ?? NotebookPanel.DEFAULT_NAME;
     const isExistingItem = fileMetadata?.id != null;
     const overflowActions = this.getOverflowActions();
@@ -859,7 +864,7 @@ class NotebookPanel extends Component {
             session={session}
             sessionLanguage={sessionLanguage}
             settings={settings}
-            focusOnMount={isDashboardActive && !glContainer.isHidden}
+            focusOnMount={focusOnMount}
             ref={notebook => {
               this.notebook = notebook;
             }}

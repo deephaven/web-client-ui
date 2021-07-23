@@ -96,8 +96,7 @@ class PartitionSelectorSearch extends Component {
       }
       case 'ArrowDown':
         if (itemCount > 0) {
-          this.itemList.setKeyboardIndex(1);
-          this.itemList.focus();
+          this.itemList.focusItem(1);
         }
         event.stopPropagation();
         event.preventDefault();
@@ -128,7 +127,7 @@ class PartitionSelectorSearch extends Component {
 
   handleInputFocus() {
     if (this.itemList) {
-      this.itemList.setKeyboardIndex(0);
+      this.itemList.focusItem(0);
     }
   }
 

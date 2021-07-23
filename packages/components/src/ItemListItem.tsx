@@ -7,7 +7,7 @@ const log = Log.module('ItemListItem');
 
 interface ItemListItemProps {
   isDraggable: boolean;
-  isKeyboardSelected: boolean;
+  isFocused: boolean;
   isSelected: boolean;
   itemIndex: number;
   disableSelect: boolean;
@@ -20,7 +20,6 @@ interface ItemListItemProps {
   onDrop(index: number, e: React.DragEvent<HTMLDivElement>): void;
   onDoubleClick(index: number, e: React.MouseEvent<HTMLDivElement>): void;
   onFocus(index: number, e: React.FocusEvent<HTMLDivElement>): void;
-  onKeyboardSelect(index: number, item: HTMLDivElement): void;
   onMouseDown(index: number, e: React.MouseEvent<HTMLDivElement>): void;
   onMouseMove(index: number, e: React.MouseEvent<HTMLDivElement>): void;
   onMouseUp(index: number, e: React.MouseEvent<HTMLDivElement>): void;
@@ -32,7 +31,7 @@ class ItemListItem extends Component<ItemListItemProps, Record<string, never>> {
   static defaultProps = {
     children: null,
     isDraggable: false,
-    isKeyboardSelected: false,
+    isFocused: false,
     isSelected: false,
     itemIndex: 0,
     disableSelect: false,
@@ -62,9 +61,6 @@ class ItemListItem extends Component<ItemListItemProps, Record<string, never>> {
       // no-op
     },
     onFocus(): void {
-      // no-op
-    },
-    onKeyboardSelect(): void {
       // no-op
     },
     onMouseDown(): void {
@@ -101,32 +97,6 @@ class ItemListItem extends Component<ItemListItemProps, Record<string, never>> {
     this.handleMouseUp = this.handleMouseUp.bind(this);
 
     this.itemRef = React.createRef();
-  }
-
-  componentDidMount(): void {
-    const { isKeyboardSelected, itemIndex, onKeyboardSelect } = this.props;
-    if (isKeyboardSelected && this.itemRef.current) {
-      onKeyboardSelect(itemIndex, this.itemRef.current);
-    }
-  }
-
-  componentDidUpdate(prevProps: ItemListItemProps): void {
-    const { isKeyboardSelected: oldIsKeyboardSelected } = prevProps;
-    const {
-      isKeyboardSelected,
-      itemIndex,
-      onKeyboardSelect,
-      disableSelect,
-    } = this.props;
-
-    if (
-      isKeyboardSelected &&
-      !oldIsKeyboardSelected &&
-      this.itemRef.current &&
-      !disableSelect
-    ) {
-      onKeyboardSelect(itemIndex, this.itemRef.current);
-    }
   }
 
   itemRef: React.RefObject<HTMLDivElement>;
@@ -194,19 +164,13 @@ class ItemListItem extends Component<ItemListItemProps, Record<string, never>> {
   }
 
   render(): JSX.Element {
-    const {
-      isDraggable,
-      isKeyboardSelected,
-      isSelected,
-      style,
-      children,
-    } = this.props;
+    const { isDraggable, isFocused, isSelected, style, children } = this.props;
     return (
       <div
         className={classNames(
           'item-list-item',
           { active: isSelected },
-          { 'keyboard-active': isKeyboardSelected },
+          { 'is-focused': isFocused },
           { 'is-draggable': isDraggable }
         )}
         onKeyDown={ItemListItem.handleKeyDown}

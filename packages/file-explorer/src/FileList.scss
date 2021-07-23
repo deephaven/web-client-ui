@@ -2,7 +2,15 @@
 
 $depth-line-color: $gray-600;
 $depth-margin: 5px;
-$depth-indentation: 9px;
+$depth-indentation: 8px;
+$item-list-color: $text-muted;
+$item-list-selected-nofocus-bg: mix($primary, $gray-700, 12%);
+$item-list-selected-bg: mix($primary, $gray-700, 35%);
+$item-list-selection-border-color: mix($primary, $gray-700, 55%);
+$item-list-focused-bg: rgba($primary, 0.75);
+$item-list-hover-bg: $primary;
+$item-list-selected-color: $white;
+$item-list-drop-target-color: $white;
 
 .file-list {
   position: absolute;
@@ -13,8 +21,111 @@ $depth-indentation: 9px;
 
   .file-list-depth-line {
     margin-left: $depth-margin;
+    padding-bottom: 2px;
     width: $depth-indentation;
     height: 100%;
     border-left: 1px solid $depth-line-color;
+    box-sizing: content-box;
+  }
+
+  .item-list-scroll-pane {
+    border: none;
+  }
+
+  .item-list-item {
+    padding: 0 $input-btn-padding-x;
+    color: $item-list-color;
+    transition: $btn-transition;
+    border: 1px solid transparent; // we need a spacer border so stuff doesn't move on us when we apply a border-color
+    -webkit-user-drag: none; // we need to disable webkit-user-drag or else Chrome switches to a Copy icon when dragging on Mac
+
+    &.is-focused {
+      background-color: $item-list-selected-nofocus-bg;
+    }
+
+    &.active {
+      background-color: $item-list-selected-nofocus-bg;
+    }
+
+    &:focus,
+    &.active,
+    &:hover,
+    &.is-focused {
+      color: $item-list-selected-color;
+    }
+  }
+
+  .item-icon {
+    margin-right: $spacer-1;
+  }
+
+  &:focus-within {
+    &.item-list-item.is-focused {
+      background-color: $item-list-focused-bg;
+    }
+
+    //for selected items, apply border on left and right
+    .item-list-item.active {
+      background-color: $item-list-selected-bg;
+      color: $item-list-selected-color;
+      border-left-color: $item-list-selection-border-color;
+      border-right-color: $item-list-selection-border-color;
+    }
+  }
+
+  &.is-dragging {
+    cursor: grabbing;
+
+    .item-list-item {
+      &.active {
+        opacity: 0.5;
+      }
+    }
+
+    .is-in-drop-target,
+    .is-exact-drop-target {
+      color: $item-list-drop-target-color;
+    }
+  }
+
+  /* stylelint-disable no-descending-specificity */
+  &:not(.is-dragging) {
+    .item-list-item:hover,
+    &:focus-within .item-list-item.active:hover {
+      background-color: $item-list-hover-bg;
+      color: $item-list-selected-color;
+      transition: none; //to make things feel more responsive don't transition the hover in
+    }
+  }
+
+  //apply border to top of the first item in the list if its selected, and the first selected after a non-selected item
+  &:focus-within .item-list-item:not(.active) + .active,
+  &:focus-within .item-list-item.active:first-of-type {
+    border-top: 1px solid $item-list-selection-border-color;
+  }
+
+  //there's no easy way to get the last select item in a grouping, so we apply the end border
+  //to the TOP of the first non-selected item, ie. the previous selection group
+  &:focus-within .item-list-item.active + .item-list-item:not(.active) {
+    border-top: 1px solid $item-list-selection-border-color;
+  }
+
+  //since there is no item after the last item in teh selection, we apply the border to the bottom of the last selected element
+  &:focus-within .item-list-item.active:last-of-type {
+    border-bottom: 1px solid $item-list-selection-border-color;
+  }
+  /* stylelint-enable no-descending-specificity */
+}
+
+.file-list-dnd-placeholder {
+  position: absolute;
+  top: -100px;
+  right: 0;
+
+  .dnd-placeholder-content {
+    padding: $spacer-1 $spacer-3;
+    background: $primary-dark;
+    color: $foreground;
+    border-radius: $border-radius;
   }
 }

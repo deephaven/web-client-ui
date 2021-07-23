@@ -41,6 +41,18 @@ class MockIrisGridTreeModel extends IrisGridModel {
     return true;
   }
 
+  get pendingRowCount() {
+    return 0;
+  }
+
+  set pendingRowCount(count) {}
+
+  get pendingDataMap() {
+    return new Map();
+  }
+
+  set pendingDataMap(value) {}
+
   textForCell(column, row) {
     return (
       this.editedData[column]?.[row] ?? this.model.textForCell(column, row)

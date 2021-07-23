@@ -2,10 +2,9 @@ import Log from '@deephaven/log';
 import { getFileStorage } from '@deephaven/redux';
 import FileExplorer, {
   FileExplorerToolbar,
-  FileListItem,
   FileStorage,
+  FileStorageItem,
   NewItemModal,
-  UpdateableComponent,
 } from '@deephaven/file-explorer';
 import GoldenLayout from 'golden-layout';
 import React, { ReactNode } from 'react';
@@ -65,7 +64,6 @@ export class FileExplorerPanel extends React.Component<
     );
     this.handleDelete = this.handleDelete.bind(this);
     this.handleRename = this.handleRename.bind(this);
-    this.handleResize = this.handleResize.bind(this);
     this.handleSessionOpened = this.handleSessionOpened.bind(this);
     this.handleSessionClosed = this.handleSessionClosed.bind(this);
     this.handleShow = this.handleShow.bind(this);
@@ -84,8 +82,6 @@ export class FileExplorerPanel extends React.Component<
       this.setState({ isShown: true });
     }
   }
-
-  private fileExplorer = React.createRef<UpdateableComponent>();
 
   handleCreateFile(): void {
     const { glEventHub } = this.props;
@@ -121,7 +117,7 @@ export class FileExplorerPanel extends React.Component<
     fileStorage.createDirectory(path).catch(FileExplorerPanel.handleError);
   }
 
-  handleDelete(files: FileListItem[]): void {
+  handleDelete(files: FileStorageItem[]): void {
     const { glEventHub } = this.props;
     files.forEach(file => {
       glEventHub.emit(NotebookEvent.CLOSE_FILE, {
@@ -131,7 +127,7 @@ export class FileExplorerPanel extends React.Component<
     });
   }
 
-  handleFileSelect(file: FileListItem): void {
+  handleFileSelect(file: FileStorageItem): void {
     log.debug('fileSelect', file);
     if (file.type === 'directory') {
       return;
@@ -159,10 +155,6 @@ export class FileExplorerPanel extends React.Component<
     glEventHub.emit(NotebookEvent.RENAME_FILE, oldName, newName);
   }
 
-  handleResize(): void {
-    this.fileExplorer.current?.updateDimensions();
-  }
-
   handleSessionOpened(
     session: DhSession,
     { language }: { language: string }
@@ -182,7 +174,6 @@ export class FileExplorerPanel extends React.Component<
 
   handleShow(): void {
     this.setState({ isShown: true });
-    this.fileExplorer.current?.updateDimensions();
   }
 
   isHidden(): boolean {
@@ -202,7 +193,6 @@ export class FileExplorerPanel extends React.Component<
         glEventHub={glEventHub}
         onSessionOpen={this.handleSessionOpened}
         onSessionClose={this.handleSessionClosed}
-        onResize={this.handleResize}
         onShow={this.handleShow}
       >
         <FileExplorerToolbar
@@ -212,7 +202,6 @@ export class FileExplorerPanel extends React.Component<
         {isShown && (
           <FileExplorer
             isMultiSelect
-            ref={this.fileExplorer}
             storage={fileStorage}
             onDelete={this.handleDelete}
             onRename={this.handleRename}

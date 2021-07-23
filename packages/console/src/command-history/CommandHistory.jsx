@@ -332,6 +332,7 @@ class CommandHistory extends Component {
             onViewportChange={this.handleViewportChange}
             renderItem={this.renderItem}
             rowHeight={CommandHistory.ITEM_HEIGHT}
+            isDoubleClickSelect
             isMultiSelect
             isStickyBottom
           />

@@ -143,3 +143,18 @@ describe('validateItemName for files', () => {
     testValidFileName('.extension-no-name');
   });
 });
+
+it('reduces a selection', () => {
+  function testReduction(paths: string[], expectedPaths: string[]) {
+    expect(FileUtils.reducePaths(paths)).toEqual(expectedPaths);
+  }
+
+  testReduction([], []);
+  testReduction(['/'], ['/']);
+  testReduction(['/', '/foo/', '/foo/bar.txt'], ['/']);
+  testReduction(['/foo/', '/foo/bar.txt'], ['/foo/']);
+  testReduction(
+    ['/foo/baz.txt', '/foo/bar.txt'],
+    ['/foo/baz.txt', '/foo/bar.txt']
+  );
+});
