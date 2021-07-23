@@ -1,5 +1,4 @@
 /* eslint class-methods-use-this: "off" */
-/* eslint no-unused-vars: "off" */
 /**
  * Default column data formatter. Just interpolates the value as a string and returns.
  * Extend this class and register with TableUtils to make use of it.
@@ -46,7 +45,11 @@ export class TableColumnFormatter<T = unknown> {
   }
 
   /**
-   * Returns format object
+   * Create and return a Format object
+   * @param label The label of the format object
+   * @param formatString Format string to use for the format
+   * @param type The type of column to use for this format
+   * @returns A format object
    */
   static makeFormat(
     label: string,
