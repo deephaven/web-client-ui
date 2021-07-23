@@ -108,10 +108,41 @@ describe('mouse', () => {
     expect(onSelect).toHaveBeenCalledWith(3);
     expect(onSelectionChange).toHaveBeenCalledWith([[3, 3]]);
 
+    onSelectionChange.mockClear();
+    onSelect.mockClear();
+
     clickItem(itemList, 6, { shiftKey: true });
 
-    expect(onSelect).toHaveBeenCalledWith(6);
+    expect(onSelect).not.toHaveBeenCalled();
     expect(onSelectionChange).toHaveBeenCalledWith([[3, 6]]);
+
+    itemList.unmount();
+  });
+
+  it('selects multiple items with Ctrl+Click', () => {
+    const onSelect = jest.fn();
+    const onSelectionChange = jest.fn();
+    const itemList = makeItemList({
+      isMultiSelect: true,
+      onSelect,
+      onSelectionChange,
+    });
+
+    clickItem(itemList, 3);
+
+    expect(onSelect).toHaveBeenCalledWith(3);
+    expect(onSelectionChange).toHaveBeenCalledWith([[3, 3]]);
+
+    onSelectionChange.mockClear();
+    onSelect.mockClear();
+
+    clickItem(itemList, 6, { ctrlKey: true });
+
+    expect(onSelect).not.toHaveBeenCalled();
+    expect(onSelectionChange).toHaveBeenCalledWith([
+      [3, 3],
+      [6, 6],
+    ]);
 
     itemList.unmount();
   });

@@ -471,6 +471,7 @@ export class ItemList<T> extends PureComponent<
       const isModifierDown = ContextActionUtils.isModifierKeyDown(e);
       this.focusItem(index);
       this.toggleSelect(index, isShiftDown, isModifierDown);
+
       if (!isDoubleClickSelect && !isShiftDown && !isModifierDown) {
         onSelect(index);
       }
