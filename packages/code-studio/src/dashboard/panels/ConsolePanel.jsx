@@ -121,11 +121,11 @@ class ConsolePanel extends PureComponent {
         window.location
       );
 
-      log.info('Starting connection...');
+      const websocketUrl = `${baseUrl.protocol}//${baseUrl.host}`;
 
-      const connection = new dh.IdeConnection({
-        websocketUrl: `${baseUrl.protocol}//${baseUrl.host}`,
-      });
+      log.info(`Starting connection to '${websocketUrl}'...`);
+
+      const connection = new dh.IdeConnection(websocketUrl);
 
       log.info('Getting console types...');
 
