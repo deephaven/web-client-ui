@@ -133,6 +133,10 @@ class ConsolePanel extends PureComponent {
 
       log.info('Available types:', types);
 
+      if (types.length === 0) {
+        throw new Error('No console types available');
+      }
+
       const type = types[0];
 
       log.info('Starting session with type', type);
