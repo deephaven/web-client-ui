@@ -15,6 +15,6 @@ jobs:
           registry-url: 'https://npm.pkg.github.com'
       - run: npm install
       - run: npm run build
-      - run: ./node_modules/.bin/lerna publish --canary
+      - run: ./node_modules/.bin/lerna publish --canary --registry https://npm.pkg.github.com --yes
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
