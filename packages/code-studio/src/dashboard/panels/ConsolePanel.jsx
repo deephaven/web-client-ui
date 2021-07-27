@@ -5,13 +5,12 @@ import { CSSTransition } from 'react-transition-group';
 import PropTypes from 'prop-types';
 import shortid from 'shortid';
 import debounce from 'lodash.debounce';
-import memoize from 'memoize-one';
 import { connect } from 'react-redux';
 import { Console, ConsoleConstants, ConsoleUtils } from '@deephaven/console';
 import { FigureChartModel } from '@deephaven/chart';
 import { IrisGridModelFactory } from '@deephaven/iris-grid';
 import dh from '@deephaven/jsapi-shim';
-import { ContextActions, ThemeExport } from '@deephaven/components';
+import { ThemeExport } from '@deephaven/components';
 import Log from '@deephaven/log';
 import { getCommandHistoryStorage } from '@deephaven/redux';
 import { Pending, PromiseUtils } from '@deephaven/utils';
@@ -69,13 +68,9 @@ class ConsolePanel extends PureComponent {
     };
     const { consoleSettings, itemIds } = panelState;
 
-    const language =
-      process.env.REACT_APP_SESSION_LANGUAGE ??
-      Array.from(ConsoleConstants.LANGUAGE_MAP.keys())[0];
-
     this.state = {
       consoleSettings,
-      language,
+      language: null,
       itemIds: new Map(itemIds),
 
       isLoading: true,
@@ -121,36 +116,49 @@ class ConsolePanel extends PureComponent {
 
   async initSession() {
     try {
-      const { language } = this.state;
-
       const baseUrl = new URL(
         process.env.REACT_APP_CORE_API_URL,
         window.location
       );
 
-      log.info('Starting session with language', language);
+      const websocketUrl = `${baseUrl.protocol}//${baseUrl.host}`;
 
-      const session = await this.pending.add(
-        dh.Ide.getExistingSession(
-          `${baseUrl.protocol}//${baseUrl.host}`,
-          '',
-          null,
-          language
-        )
-      );
+      log.info(`Starting connection to '${websocketUrl}'...`);
+
+      const connection = new dh.IdeConnection(websocketUrl);
+
+      log.info('Getting console types...');
+
+      const types = await this.pending.add(connection.getConsoleTypes());
+
+      log.info('Available types:', types);
+
+      if (types.length === 0) {
+        throw new Error('No console types available');
+      }
+
+      const type = types[0];
+
+      log.info('Starting session with type', type);
+
+      const session = await this.pending.add(connection.startSession(type));
+
       const sessionId = shortid.generate();
 
       log.info('Console session established');
 
       const { glEventHub } = this.props;
       glEventHub.emit(ConsoleEvent.SESSION_OPENED, session, {
-        language,
+        language: type,
         sessionId,
       });
 
-      this.setState({ isLoading: false, session, sessionId }, () => {
-        this.consoleRef.current?.focus();
-      });
+      this.setState(
+        { isLoading: false, language: type, session, sessionId },
+        () => {
+          this.consoleRef.current?.focus();
+        }
+      );
     } catch (error) {
       if (PromiseUtils.isCanceled(error)) {
         return;
@@ -169,18 +177,6 @@ class ConsolePanel extends PureComponent {
       return { itemIds: newItemIds };
     });
   }
-
-  getCachedActions = memoize(language => {
-    const languages = Array.from(ConsoleConstants.LANGUAGE_MAP.keys()).filter(
-      l => l !== language
-    );
-    return languages.map(newLanguage => ({
-      title: `Switch to ${ConsoleConstants.LANGUAGE_MAP.get(newLanguage)}`,
-      action: () => this.switchLanguage(newLanguage),
-      group: ContextActions.groups.medium,
-      order: 100,
-    }));
-  });
 
   getItemId(name, createIfNecessary = true) {
     const { itemIds } = this.state;
@@ -259,30 +255,6 @@ class ConsolePanel extends PureComponent {
       consoleSettings,
     });
     glEventHub.emit(ConsoleEvent.SETTINGS_CHANGED, consoleSettings);
-  }
-
-  switchLanguage(newLanguage) {
-    const { language, session, sessionId } = this.state;
-
-    log.debug('Switching language to', newLanguage);
-
-    session.close();
-    const { glEventHub } = this.props;
-    glEventHub.emit(ConsoleEvent.SESSION_CLOSED, session, {
-      language,
-      sessionId,
-    });
-    this.setState(
-      {
-        language: newLanguage,
-        isLoading: true,
-        session: null,
-        sessionId: null,
-      },
-      () => {
-        this.initSession();
-      }
-    );
   }
 
   openTable(object, session) {
@@ -375,8 +347,6 @@ class ConsolePanel extends PureComponent {
       session,
       sessionId,
     } = this.state;
-    const name = ConsoleConstants.LANGUAGE_MAP.get(language);
-    const actions = this.getCachedActions(language);
     return (
       <Panel
         componentPanel={this}
@@ -412,11 +382,10 @@ class ConsolePanel extends PureComponent {
                 statusBarChildren={
                   <>
                     <div>&nbsp;</div>
-                    <div>{name}</div>
+                    <div>{ConsoleConstants.LANGUAGE_MAP.get(language)}</div>
                   </>
                 }
                 scope={sessionId}
-                actions={actions}
               />
             )}
           </>
