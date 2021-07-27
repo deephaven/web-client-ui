@@ -124,6 +124,7 @@
     "enzyme-adapter-react-16": "^1.15.2",
     "jest-junit": "^7.0.0",
     "react-is": "^16.13.1",
+    "regenerator-runtime": "^0.13.7",
     "sass": "1.32.13",
     "webpack": "4.44.2"
   },
@@ -133,13 +134,6 @@
     "not ie <= 10",
     "not op_mini all"
   ],
-  "jest": {
-    "resetMocks": false,
-    "moduleNameMapper": {
-      "^monaco-editor/esm/vs/editor/editor.api$": "<rootDir>/src/__mocks__/monaco-editor.js",
-      "^monaco-editor/esm/vs/editor/(.*)": "<rootDir>/src/__mocks__/monaco-editor-empty.js"
-    }
-  },
   "publishConfig": {
     "access": "public"
   }

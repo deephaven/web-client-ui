@@ -5,7 +5,7 @@ import stylelint from 'stylelint';
  */
 it('stylelint', async () => {
   const lintResults = await stylelint.lint({
-    files: './src/**/*.scss',
+    files: './packages/**/src/**/*.scss',
     cache: true,
   });
 
