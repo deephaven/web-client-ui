@@ -5,11 +5,11 @@ import stylelint from 'stylelint';
  */
 it('stylelint', async () => {
   const lintResults = await stylelint.lint({
-    files: './src/**/*.scss',
+    files: './packages/**/src/**/*.scss',
     cache: true,
   });
 
-  const formatResult = result => {
+  const formatResult = (result: stylelint.LintResult): string => {
     const { warnings, source } = result;
     const warningMessages = warnings.map(
       ({ line, column, text }) => `${line}:${column}\t${text}`

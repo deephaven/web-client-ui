@@ -3,6 +3,7 @@ const packageJson = require('./package');
 
 module.exports = {
   ...baseConfig,
+  resetMocks: false,
   displayName: packageJson.name,
   moduleNameMapper: {
     ...baseConfig.moduleNameMapper,
