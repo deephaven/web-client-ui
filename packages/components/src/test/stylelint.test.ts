@@ -9,7 +9,7 @@ it('stylelint', async () => {
     cache: true,
   });
 
-  const formatResult = result => {
+  const formatResult = (result: stylelint.LintResult): string => {
     const { warnings, source } = result;
     const warningMessages = warnings.map(
       ({ line, column, text }) => `${line}:${column}\t${text}`

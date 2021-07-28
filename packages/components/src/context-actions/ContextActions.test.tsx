@@ -3,6 +3,21 @@ import TestRenderer from 'react-test-renderer';
 import { TestUtils } from '@deephaven/utils';
 import { ContextMenuRoot, ContextActionUtils } from '.';
 
+type ContextMenuMock = {
+  addEventListener: jest.Mock<void>;
+  removeEventListener: jest.Mock<void>;
+  getBoundingClientRect: jest.Mock<{
+    top: number;
+    left: number;
+    width: number;
+    height: number;
+  }>;
+  focus: jest.Mock<void>;
+  setAttribute: jest.Mock<void>;
+  offsetParent: ContextMenuMock | null;
+  parentElement: ContextMenuMock | null;
+};
+
 jest.mock('react-transition-group', () => ({
   CSSTransition: 'cssTransition',
   TransitionGroup: 'transitionGroup',
@@ -14,7 +29,10 @@ const TEST_MENU_1 = [
   { title: 'Test3' },
 ];
 
-function contextMenuMock(mock, element) {
+function contextMenuMock(
+  mock: ContextMenuMock,
+  element: JSX.Element
+): ContextMenuMock | null {
   if (element.props && element.props.className) {
     if (element.props.className.indexOf('context-menu') !== -1) {
       return mock;
@@ -24,7 +42,7 @@ function contextMenuMock(mock, element) {
   return null;
 }
 
-function DEFAULT_MOCK(mockParent = true) {
+function DEFAULT_MOCK(mockParent = true): ContextMenuMock {
   return {
     addEventListener: jest.fn(),
     removeEventListener: jest.fn(),
@@ -53,19 +71,19 @@ it('renders without crashing', () => {
     }
   );
 
-  expect(mock.parentElement.addEventListener.mock.calls.length).toBe(1);
-  expect(mock.parentElement.addEventListener.mock.calls[0][0]).toBe(
+  expect(mock.parentElement?.addEventListener.mock.calls.length).toBe(1);
+  expect(mock.parentElement?.addEventListener.mock.calls[0][0]).toBe(
     'contextmenu'
   );
-  expect(mock.parentElement.addEventListener.mock.calls[0][1]).not.toBeNull();
-  expect(mock.parentElement.removeEventListener.mock.calls.length).toBe(0);
+  expect(mock.parentElement?.addEventListener.mock.calls[0][1]).not.toBeNull();
+  expect(mock.parentElement?.removeEventListener.mock.calls.length).toBe(0);
 
   expect(tree).toMatchSnapshot();
 
   tree.unmount();
 
-  expect(mock.parentElement.addEventListener.mock.calls.length).toBe(1);
-  expect(mock.parentElement.removeEventListener.mock.calls.length).toBe(1);
+  expect(mock.parentElement?.addEventListener.mock.calls.length).toBe(1);
+  expect(mock.parentElement?.removeEventListener.mock.calls.length).toBe(1);
 });
 
 it('handles the context menu event on the parent, renders an array of menu items', () => {
@@ -80,12 +98,12 @@ it('handles the context menu event on the parent, renders an array of menu items
     }
   );
 
-  expect(mock.parentElement.addEventListener.mock.calls.length).toBe(1);
-  expect(mock.parentElement.addEventListener.mock.calls[0][0]).toBe(
+  expect(mock.parentElement?.addEventListener.mock.calls.length).toBe(1);
+  expect(mock.parentElement?.addEventListener.mock.calls[0][0]).toBe(
     'contextmenu'
   );
-  expect(mock.parentElement.addEventListener.mock.calls[0][1]).not.toBeNull();
-  expect(mock.parentElement.removeEventListener.mock.calls.length).toBe(0);
+  expect(mock.parentElement?.addEventListener.mock.calls[0][1]).not.toBeNull();
+  expect(mock.parentElement?.removeEventListener.mock.calls.length).toBe(0);
 
   expect(tree.root.findAllByType('button').length).toBe(0);
 
@@ -93,15 +111,15 @@ it('handles the context menu event on the parent, renders an array of menu items
 
   const mockEvent = { preventDefault: jest.fn(), contextActions: TEST_MENU_1 };
   const handleContextMenu =
-    mock.parentElement.addEventListener.mock.calls[0][1];
+    mock.parentElement?.addEventListener.mock.calls[0][1];
   handleContextMenu(mockEvent);
 
   expect(tree.root.findAllByType('button').length).toBe(TEST_MENU_1.length);
 
   tree.unmount();
 
-  expect(mock.parentElement.addEventListener.mock.calls.length).toBe(1);
-  expect(mock.parentElement.removeEventListener.mock.calls.length).toBe(1);
+  expect(mock.parentElement?.addEventListener.mock.calls.length).toBe(1);
+  expect(mock.parentElement?.removeEventListener.mock.calls.length).toBe(1);
 });
 
 it('renders a promise returning menu items properly', async () => {
@@ -119,7 +137,7 @@ it('renders a promise returning menu items properly', async () => {
 
   const mockEvent = { preventDefault: jest.fn(), contextActions: [promise] };
   const handleContextMenu =
-    mock.parentElement.addEventListener.mock.calls[0][1];
+    mock.parentElement?.addEventListener.mock.calls[0][1];
   handleContextMenu(mockEvent);
   await TestUtils.flushPromises();
 
@@ -142,7 +160,7 @@ it('renders an empty menu for a rejected promise', () => {
 
   const mockEvent = { preventDefault: jest.fn(), contextActions: [promise] };
   const handleContextMenu =
-    mock.parentElement.addEventListener.mock.calls[0][1];
+    mock.parentElement?.addEventListener.mock.calls[0][1];
   handleContextMenu(mockEvent);
 
   expect(tree.root.findAllByType('button').length).toBe(0);
@@ -165,7 +183,7 @@ it('renders a menu from a promise returned from a function', () => {
 
   const mockEvent = { preventDefault: jest.fn(), contextActions: [fn] };
   const handleContextMenu =
-    mock.parentElement.addEventListener.mock.calls[0][1];
+    mock.parentElement?.addEventListener.mock.calls[0][1];
   handleContextMenu(mockEvent);
 
   expect(tree.root.findAllByType('button').length).toBe(0);

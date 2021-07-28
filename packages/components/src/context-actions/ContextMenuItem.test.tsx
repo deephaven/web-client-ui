@@ -2,7 +2,8 @@ import React, { Component } from 'react';
 import { mount } from 'enzyme';
 import ContextMenuItem from './ContextMenuItem';
 
-class ClassComponent extends Component {
+type ClassComponentProps = { closeMenu?(): void };
+class ClassComponent extends Component<ClassComponentProps> {
   render() {
     return 'Default';
   }
@@ -10,14 +11,14 @@ class ClassComponent extends Component {
 
 function mountContextMenuItem(propsParam = {}) {
   const defaultProps = {
-    closeMenu: () => {},
+    closeMenu: () => false,
     menuItem: {
       title: 'Default',
-      menuElement: null,
+      menuElement: undefined,
     },
-    onMenuItemClick: () => {},
-    onMenuItemMouseMove: () => {},
-    onMenuItemContextMenu: () => {},
+    onMenuItemClick: () => false,
+    onMenuItemMouseMove: () => false,
+    onMenuItemContextMenu: () => false,
   };
   const props = { ...defaultProps, ...propsParam };
 
@@ -37,7 +38,7 @@ describe('menuElement', () => {
   });
 
   it('passes forwardedProps prop to a functional component', () => {
-    const FunctionalComponent = () => 'Default';
+    const FunctionalComponent = () => <>Default</>;
     const wrapper = mountContextMenuItem({
       menuItem: {
         menuElement: <FunctionalComponent />,
@@ -58,8 +59,8 @@ describe('menuElement', () => {
   });
 
   it('does not override props with conflicting names and passes contextMenuItem props in forwardedProps', () => {
-    const menuElementCloseMenuProp = () => {};
-    const contextMenuItemCloseMenuProp = () => {};
+    const menuElementCloseMenuProp = () => false;
+    const contextMenuItemCloseMenuProp = () => false;
     const wrapper = mountContextMenuItem({
       menuItem: {
         menuElement: <ClassComponent closeMenu={menuElementCloseMenuProp} />,
@@ -76,8 +77,8 @@ describe('menuElement', () => {
     expect(wrapper.prop('closeMenu')).toBe(contextMenuItemCloseMenuProp);
     expect(wrapper.prop('closeMenu')).not.toBe(menuElementCloseMenuProp);
 
-    expect(element.prop('forwardedProps').closeMenu).toBe(
-      contextMenuItemCloseMenuProp
-    );
+    expect(
+      (element.prop('forwardedProps') as ClassComponentProps).closeMenu
+    ).toBe(contextMenuItemCloseMenuProp);
   });
 });

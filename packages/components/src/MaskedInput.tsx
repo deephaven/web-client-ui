@@ -34,10 +34,10 @@ type MaskedInputProps = {
   /** One or more examples of valid values. Used when deciding if next keystroke is valid (as rest of the current value may be incomplete) */
   example: string | string[];
   /** The current selection to use for the input */
-  selection: SelectionSegment | null;
+  selection?: SelectionSegment;
   /** Called when the value changes. Note the value may still be incomplete. */
   onChange?(value: string): void;
-  /** Called when  selection changes */
+  /** Called when selection changes */
   onSelect?(segment: SelectionSegment): void;
   /** Retrieve the next value for a provided segment */
   getNextSegmentValue?(
@@ -254,7 +254,7 @@ const MaskedInput = React.forwardRef<HTMLInputElement, MaskedInputProps>(
         selectionDirection
       );
       if (
-        selection !== null &&
+        selection != null &&
         selectionStart === selection.selectionStart &&
         selectionEnd === selection.selectionEnd
       ) {
@@ -472,6 +472,7 @@ MaskedInput.defaultProps = {
     // no-op
   },
   getNextSegmentValue: (range, delta, segmentValue) => segmentValue,
+  selection: undefined,
   onFocus(): void {
     // no-op
   },

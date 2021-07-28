@@ -29,6 +29,7 @@
     "@deephaven/eslint-config": "file:packages/eslint-config",
     "@deephaven/prettier-config": "file:packages/prettier-config",
     "@deephaven/stylelint-config": "file:packages/stylelint-config",
+    "@types/eslint": "^7.22.0",
     "@types/stylelint": "^9.10.1",
     "@typescript-eslint/eslint-plugin": "^4.19.0",
     "@typescript-eslint/parser": "^4.19.0",
