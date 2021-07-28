@@ -36,12 +36,13 @@
     <script
       src="%REACT_APP_CORE_API_URL%/%REACT_APP_CORE_API_NAME%"
       type="text/javascript"
+      onerror="document.write('Unable to load API. Ensure the server is running and you are able to reach %REACT_APP_CORE_API_URL%/%REACT_APP_CORE_API_NAME%, then refresh the page')"
     ></script>
     <title>Deephaven</title>
   </head>
-  <body style="background:black">
+  <body>
     <noscript> You need to enable JavaScript to run this app. </noscript>
-    <div id="root">Broken</div>
+    <div id="root"></div>
     <!--
       This HTML file is a template.
       If you open it directly in the browser, you will see an empty page.
