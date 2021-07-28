@@ -271,7 +271,8 @@ AdvancedFilterCreatorSelectValueList.propTypes = {
   invertSelection: PropTypes.bool,
   selectedValues: PropTypes.arrayOf(PropTypes.any),
   onChange: PropTypes.func,
-  filters: PropTypes.arrayOf(PropTypes.shape({})).isRequired,
+  filters: PropTypes.arrayOf(PropTypes.instanceOf(dh.FilterCondition))
+    .isRequired,
   formatter: PropTypes.instanceOf(Formatter).isRequired,
 };
 
