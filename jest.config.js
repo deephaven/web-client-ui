@@ -1,4 +1,4 @@
-const baseConfig = require('./jest.config.base');
+// const baseConfig = require('./jest.config.base');
 
 module.exports = {
   // ...baseConfig,
@@ -10,6 +10,12 @@ module.exports = {
       testMatch: ['<rootDir>/packages/*/src/**/*.{js,jsx,ts,tsx}'],
       // ...baseConfig,
       // testMatch: ['<rootDir>/test/*.test.*'],
+    },
+    {
+      displayName: 'stylelint',
+      runner: 'jest-runner-stylelint',
+      testMatch: ['<rootDir>/packages/*/src/**/*.scss'],
+      moduleFileExtensions: ['scss'],
     },
   ],
   watchPlugins: ['jest-runner-eslint/watch-fix'],
