@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect, Provider, ReactReduxContext } from 'react-redux';
 import throttle from 'lodash.throttle';
+import { IrisGridModelFactory } from '@deephaven/iris-grid';
 import Log from '@deephaven/log';
 import {
   getActiveTool,
@@ -48,6 +49,7 @@ import './DashboardContainer.scss';
 import { UIPropTypes } from '../include/prop-types';
 import PanelErrorBoundary from './panels/PanelErrorBoundary';
 import FileExplorerPanel from './panels/FileExplorerPanel';
+import { ConsoleEvent } from './events';
 
 const log = Log.module('DashboardContainer');
 const RESIZE_THROTTLE = 100;
@@ -174,9 +176,19 @@ export class DashboardContainer extends Component {
       IrisGridPanel: props => ({
         ...props,
         localDashboardId,
-        makeModel: async () => {
-          throw new Error('Re-hydration not yet implemented.');
-        },
+        makeModel: async () =>
+          new Promise(resolve => {
+            const { layout } = this.state;
+            const { eventHub } = layout;
+            const onSessionOpened = async session => {
+              eventHub.off(ConsoleEvent.SESSION_OPENED, onSessionOpened);
+
+              const { table: tableName } = props.metadata;
+              const table = await session.getTable(tableName);
+              resolve(IrisGridModelFactory.makeModel(table, false));
+            };
+            eventHub.on(ConsoleEvent.SESSION_OPENED, onSessionOpened);
+          }),
       }),
       LogPanel: props => ({
         ...props,
@@ -266,7 +278,8 @@ export class DashboardContainer extends Component {
       content,
     };
 
-    log.debug('InitLayout', content);
+    log.debug('layout LayoutConfig', layoutConfig);
+    log.debug('layout InitLayout', content);
 
     const layout = new GoldenLayout(config, this.layoutElement.current);
 

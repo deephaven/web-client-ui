@@ -44,10 +44,17 @@ const AppInit = props => {
 
   const initClient = useCallback(async () => {
     const loadedWorkspace = await WORKSPACE_STORAGE.load();
-    const layouts = await LAYOUT_STORAGE.getLayouts();
-    if (layouts.length > 0) {
-      const layoutConfig = await LAYOUT_STORAGE.getLayout(layouts[0]);
-      loadedWorkspace.data.layoutConfig = layoutConfig;
+    try {
+      const layouts = await LAYOUT_STORAGE.getLayouts();
+      console.log('Found layouts', layouts);
+      if (layouts.length > 0) {
+        const layoutConfig = await LAYOUT_STORAGE.getLayout(layouts[0]);
+        console.log('Layout loaded!', layoutConfig);
+        loadedWorkspace.data.layoutConfig = layoutConfig;
+      }
+    } catch (e) {
+      console.error('Unable to get layouts!', e);
+      // TODO: Clean this up
     }
 
     setActiveTool(ToolType.DEFAULT);
