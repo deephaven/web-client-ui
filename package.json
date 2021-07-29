@@ -25,7 +25,7 @@
   },
   "repository": "https://github.com/deephaven/web-client-ui",
   "devDependencies": {
-    "@babel/core": "^7.12.3",
+    "@babel/core": "7.12.3",
     "@deephaven/babel-preset": "file:packages/babel-preset",
     "@deephaven/eslint-config": "file:packages/eslint-config",
     "@deephaven/prettier-config": "file:packages/prettier-config",
