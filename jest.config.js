@@ -1,15 +1,10 @@
-// const baseConfig = require('./jest.config.base');
-
 module.exports = {
-  // ...baseConfig,
   projects: [
     '<rootDir>/packages/*/jest.config.js',
     {
       displayName: 'eslint',
       runner: 'jest-runner-eslint',
       testMatch: ['<rootDir>/packages/*/src/**/*.{js,jsx,ts,tsx}'],
-      // ...baseConfig,
-      // testMatch: ['<rootDir>/test/*.test.*'],
     },
     {
       displayName: 'stylelint',
@@ -19,6 +14,7 @@ module.exports = {
     },
   ],
   watchPlugins: ['jest-runner-eslint/watch-fix'],
-  // coverageDirectory: '<rootDir>/coverage/',
-  // collectCoverageFrom: ['<rootDir>/packages/*/src/**/*.{js,ts,jsx,tsx}'],
+  collectCoverage: false,
+  coverageDirectory: '<rootDir>/coverage/', // This is relative to monorepo root
+  collectCoverageFrom: ['./src/**/*.{js,ts,jsx,tsx}'], // This is relative to individual project root due to how Jest handles it
 };

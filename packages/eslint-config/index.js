@@ -47,6 +47,7 @@ module.exports = {
     },
   },
   settings: {
+    'import/external-module-folders': ['node_modules', 'packages'],
     'import/resolver': {
       node: {
         extensions: ['.js', '.jsx', '.ts', '.tsx'],
