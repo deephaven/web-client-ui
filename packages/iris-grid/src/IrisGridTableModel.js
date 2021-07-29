@@ -313,7 +313,7 @@ class IrisGridTableModel extends IrisGridModel {
   }
 
   get isTotalsAvailable() {
-    return true;
+    return this.table.getTotalsTable != null;
   }
 
   get isEditable() {
