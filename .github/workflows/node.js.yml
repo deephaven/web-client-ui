@@ -20,7 +20,7 @@ jobs:
 
       - name: Fetch base branch
         run: |
-          git fetch --no-tags --depth=0 origin ${{ github.event.pull_request.base.ref }}
+          git fetch --no-tags origin ${{ github.event.pull_request.base.ref }}
 
       - name: Use Node.js
         uses: actions/setup-node@v2
