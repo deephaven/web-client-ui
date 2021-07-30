@@ -26,9 +26,9 @@ jobs:
         run: |
           git fetch --no-tags --depth=10 origin main
 
-      - name: Let git try to find the merge base
-        run: |
-          git merge-base origin/${{ github.event.pull_request.base.ref }} HEAD
+      # - name: Let git try to find the merge base
+      #   run: |
+      #     git merge-base origin/${{ github.event.pull_request.base.ref }} HEAD
 
       - name: Use Node.js
         uses: actions/setup-node@v2
