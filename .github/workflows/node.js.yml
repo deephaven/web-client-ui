@@ -16,8 +16,11 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Print the current branch name
-        run: git rev-parse --abbrev-ref HEAD
+      - name: Print some debug info
+        run: |
+          git rev-parse --abbrev-ref HEAD
+          git status
+          git branch --show-current
 
       - name: Print what should be the merge base
         run: echo ${{ github.event.pull_request.base.sha }}
