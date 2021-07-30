@@ -16,7 +16,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
         with:
-          fetch-depth: '0'
+          fetch-depth: '0' # This action defaults to only getting the latest commit. Setting to 0 makes it retrieve the full git commit history
 
       - name: Fetch base branch
         run: |
@@ -69,8 +69,8 @@ jobs:
         if: steps.cache-node-modules.outputs.cache-hit != 'true'
         run: npm ci
 
-      # - name: Build
-      #   run: npm run build
+      - name: Build
+        run: npm run build
 
       - name: Test
         run: npm run test:ci origin/${{ github.event.pull_request.base.ref }}
