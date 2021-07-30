@@ -16,6 +16,12 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - name: Print what should be the merge base
+        run: echo ${{ github.event.pull_request.base.sha }}
+
+      - name: Let git try to find the merge base
+        run: git merge-base --fork-point origin/${{ github.event.pull_request.base.ref }} origin/${{ github.event.pull_request.head.ref }}
+
       - name: Fetch base branch
         run: |
           git fetch --no-tags --depth=100 origin main
