@@ -6,7 +6,7 @@ $spacer-3: map-get($spacers, 3);
 $spacer-4: map-get($spacers, 4);
 $spacer-5: map-get($spacers, 5);
 
-/* Marching Ants for golden layout dropzone and drag and drop */
+//Marching Ants for golden layout dropzone and drag and drop
 //top bottom, left right.
 //create 4 background images that are 50% color 1, 50% color 2 using graidents,  two veritical, two horizontal
 //size them to ant-size and thickness

@@ -2,7 +2,7 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import { CSSTransition } from 'react-transition-group';
-import dh from '@deephaven/jsapi-shim';
+import dh, { PropTypes as APIPropTypes } from '@deephaven/jsapi-shim';
 import { LoadingSpinner, SelectValueList } from '@deephaven/components';
 import Log from '@deephaven/log';
 import Formatter from './Formatter';
@@ -271,8 +271,7 @@ AdvancedFilterCreatorSelectValueList.propTypes = {
   invertSelection: PropTypes.bool,
   selectedValues: PropTypes.arrayOf(PropTypes.any),
   onChange: PropTypes.func,
-  filters: PropTypes.arrayOf(PropTypes.instanceOf(dh.FilterCondition))
-    .isRequired,
+  filters: PropTypes.arrayOf(APIPropTypes.FilterCondition).isRequired,
   formatter: PropTypes.instanceOf(Formatter).isRequired,
 };
 
