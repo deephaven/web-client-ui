@@ -16,24 +16,11 @@ jobs:
     steps:
       - uses: actions/checkout@v2
         with:
-          fetch-depth: '100'
-
-      - name: Print some debug info
-        run: |
-          git rev-parse --abbrev-ref HEAD
-          git status
-          git branch --show-current
-
-      - name: Print what should be the merge base
-        run: echo ${{ github.event.pull_request.base.sha }}
+          fetch-depth: '0'
 
       - name: Fetch base branch
         run: |
-          git fetch --no-tags --depth=10 origin main
-
-      # - name: Let git try to find the merge base
-      #   run: |
-      #     git merge-base origin/${{ github.event.pull_request.base.ref }} HEAD
+          git fetch --no-tags --depth=0 origin ${{ github.event.pull_request.base.ref }}
 
       - name: Use Node.js
         uses: actions/setup-node@v2
@@ -86,4 +73,4 @@ jobs:
       #   run: npm run build
 
       - name: Test
-        run: npm run test:ci origin/main
+        run: npm run test:ci ${{ github.event.pull_request.base.ref }}
