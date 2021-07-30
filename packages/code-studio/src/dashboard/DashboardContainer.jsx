@@ -2,7 +2,8 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect, Provider, ReactReduxContext } from 'react-redux';
 import throttle from 'lodash.throttle';
-import { IrisGridModelFactory } from '@deephaven/iris-grid';
+import { ChartModelFactory } from '@deephaven/chart';
+import { IrisGridModelFactory, IrisGridUtils } from '@deephaven/iris-grid';
 import Log from '@deephaven/log';
 import {
   getActiveTool,
@@ -147,10 +148,46 @@ export class DashboardContainer extends Component {
   makeHydrateComponentPropsMap() {
     const { id: localDashboardId } = this.props;
 
+    const getSessionPromise = () =>
+      new Promise(resolve => {
+        const { layout } = this.state;
+        const { eventHub } = layout;
+        const onSessionOpened = async session => {
+          eventHub.off(ConsoleEvent.SESSION_OPENED, onSessionOpened);
+
+          resolve(session);
+        };
+        eventHub.on(ConsoleEvent.SESSION_OPENED, onSessionOpened);
+      });
+
     return {
       ChartPanel: props => ({
         ...props,
         localDashboardId,
+        makeModel: async () => {
+          const { metadata, panelState } = props;
+          if (panelState) {
+            if (panelState.tableSettings) {
+              metadata.tableSettings = panelState.tableSettings;
+            }
+            if (panelState.settings) {
+              metadata.settings = {
+                ...(metadata.settings ?? {}),
+                ...panelState.settings,
+              };
+            }
+          }
+
+          const { settings, table: tableName, tableSettings } = metadata;
+
+          const session = await getSessionPromise();
+
+          const table = await session.getTable(tableName);
+
+          IrisGridUtils.applyTableSettings(table, tableSettings);
+
+          return ChartModelFactory.makeModelFromSettings(settings, table);
+        },
       }),
       ConsolePanel: props => ({
         metadata: {},
@@ -176,19 +213,12 @@ export class DashboardContainer extends Component {
       IrisGridPanel: props => ({
         ...props,
         localDashboardId,
-        makeModel: async () =>
-          new Promise(resolve => {
-            const { layout } = this.state;
-            const { eventHub } = layout;
-            const onSessionOpened = async session => {
-              eventHub.off(ConsoleEvent.SESSION_OPENED, onSessionOpened);
-
-              const { table: tableName } = props.metadata;
-              const table = await session.getTable(tableName);
-              resolve(IrisGridModelFactory.makeModel(table, false));
-            };
-            eventHub.on(ConsoleEvent.SESSION_OPENED, onSessionOpened);
-          }),
+        makeModel: async () => {
+          const session = await getSessionPromise();
+          const { table: tableName } = props.metadata;
+          const table = await session.getTable(tableName);
+          return IrisGridModelFactory.makeModel(table, false);
+        },
       }),
       LogPanel: props => ({
         ...props,

@@ -153,9 +153,6 @@ class ConsolePanel extends PureComponent {
         sessionId,
       });
 
-      log.debug('MJB setting deephavenSession', session);
-      window.deephavenSession = session;
-
       this.setState(
         { isLoading: false, language: type, session, sessionId },
         () => {
