@@ -17,7 +17,8 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: Fetch base branch
-        run: git fetch --no-tags --depth=1 $GITHUB_SERVER_URL/$GITHUB_REPOSITORY $GITHUB_BASE_REF
+        run: git fetch --no-tags --depth=1 origin main
+        # run: git fetch --no-tags --depth=1 $GITHUB_SERVER_URL/$GITHUB_REPOSITORY $GITHUB_BASE_REF
 
       - name: Use Node.js
         uses: actions/setup-node@v2
@@ -70,4 +71,4 @@ jobs:
         run: npm run build
 
       - name: Test
-        run: npm run test:ci $GITHUB_BASE_REF
+        run: npm run test:ci origin/main
