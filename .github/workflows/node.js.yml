@@ -15,6 +15,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+        run: git fetch --no-tags --depth=1 GITHUB_BASE_REF
 
       - name: Use Node.js
         uses: actions/setup-node@v2
