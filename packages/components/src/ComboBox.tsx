@@ -153,8 +153,7 @@ class ComboBox extends Component<ComboBoxProps, ComboBoxState> {
   searchInput: React.RefObject<SearchInput>;
 
   setInputWidth(): void {
-    if (this.cbContainer.current) {
-      this.setState({
+    if (this.cbContainer.current) { this.setState({
         inputWidth: this.cbContainer.current.getBoundingClientRect().width,
       });
     }
