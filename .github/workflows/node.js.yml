@@ -16,15 +16,19 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - name: Print the current branch name
+        run: git rev-parse --abbrev-ref HEAD
+
       - name: Print what should be the merge base
         run: echo ${{ github.event.pull_request.base.sha }}
 
-      - name: Let git try to find the merge base
-        run: git merge-base --fork-point origin/${{ github.event.pull_request.base.ref }}
-
       - name: Fetch base branch
         run: |
-          git fetch --no-tags --depth=100 origin main
+          git fetch --no-tags --depth=10 origin main
+
+      - name: Let git try to find the merge base
+        run: |
+          git merge-base --fork-point origin/${{ github.event.pull_request.base.ref }}
 
       - name: Use Node.js
         uses: actions/setup-node@v2
