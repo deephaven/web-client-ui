@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/react-hooks",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Deephaven React hooks library",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
@@ -39,7 +39,7 @@
   "devDependencies": {
     "@babel/cli": "^7.14.3",
     "@babel/core": "7.12.3",
-    "@deephaven/tsconfig": "^0.2.0",
+    "@deephaven/tsconfig": "^0.2.1",
     "@types/jest": "^26.0.23",
     "@types/react": "^16.14.8",
     "cross-env": "^7.0.2",
