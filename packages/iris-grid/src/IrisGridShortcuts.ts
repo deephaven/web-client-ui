@@ -7,9 +7,15 @@ const TABLE = {
     shortcut: [MODIFIER.CTRL, KEY.F],
     macShortcut: [MODIFIER.CMD, KEY.F],
   }),
+  CLEAR_ALL_FILTERS: ShortcutRegistry.createAndAdd({
+    id: 'TABLE.CLEAR_ALL_FILTERS',
+    name: 'Clear All Table Filters',
+    shortcut: [MODIFIER.CTRL, KEY.E],
+    macShortcut: [MODIFIER.CMD, KEY.E],
+  }),
   CLEAR_FILTERS: ShortcutRegistry.createAndAdd({
     id: 'TABLE.CLEAR_FILTERS',
-    name: 'Clear Filters',
+    name: 'Clear Active Table Filters',
     shortcut: [MODIFIER.CTRL, MODIFIER.SHIFT, KEY.E],
     macShortcut: [MODIFIER.CMD, MODIFIER.SHIFT, KEY.E],
   }),
@@ -22,8 +28,8 @@ const TABLE = {
   TOGGLE_SEARCH: ShortcutRegistry.createAndAdd({
     id: 'TABLE.TOGGLE_SEARCH',
     name: 'Toggle Search',
-    shortcut: [MODIFIER.CTRL, KEY.S],
-    macShortcut: [MODIFIER.CMD, KEY.S],
+    shortcut: [MODIFIER.CTRL, MODIFIER.SHIFT, KEY.F],
+    macShortcut: [MODIFIER.CMD, MODIFIER.SHIFT, KEY.F],
   }),
 };
 

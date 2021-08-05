@@ -18,17 +18,13 @@ class GlobalContextAction extends Component<GlobalContextActionProps> {
   }
 
   componentDidMount(): void {
-    document.body.addEventListener('contextmenu', this.handleContextMenu, true);
-    document.body.addEventListener('keydown', this.handleKeyDown, true);
+    document.body.addEventListener('contextmenu', this.handleContextMenu);
+    document.body.addEventListener('keydown', this.handleKeyDown);
   }
 
   componentWillUnmount(): void {
-    document.body.removeEventListener(
-      'contextmenu',
-      this.handleContextMenu,
-      true
-    );
-    document.body.removeEventListener('keydown', this.handleKeyDown, true);
+    document.body.removeEventListener('contextmenu', this.handleContextMenu);
+    document.body.removeEventListener('keydown', this.handleKeyDown);
   }
 
   handleContextMenu(evt: MouseEvent): void {

@@ -169,7 +169,7 @@ const AppControlsMenu = props => {
           onClearFilter();
         },
         order: 60,
-        shortcut: GRID_SHORTCUTS.TABLE.CLEAR_FILTERS,
+        shortcut: GRID_SHORTCUTS.TABLE.CLEAR_ALL_FILTERS,
       },
     ],
     [handleControlSelect, handleToolSelect, onClearFilter]

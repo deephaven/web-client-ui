@@ -11,6 +11,7 @@ import {
   ThemeExport,
   GLOBAL_SHORTCUTS,
 } from '@deephaven/components';
+import { SHORTCUTS as IRIS_GRID_SHORTCUTS } from '@deephaven/iris-grid';
 import Log from '@deephaven/log';
 import {
   getActiveTool,
@@ -258,7 +259,7 @@ export class AppMainContainer extends Component {
           this.sendClearFilter();
         },
         order: 50,
-        shortcut: GLOBAL_SHORTCUTS.CLEAR_ALL_FILTERS,
+        shortcut: IRIS_GRID_SHORTCUTS.TABLE.CLEAR_ALL_FILTERS,
       },
       {
         action: () => {
