@@ -644,7 +644,7 @@ DashboardContainer.contextType = ReactReduxContext;
 
 const mapStateToProps = state => ({
   activeTool: getActiveTool(state),
-  session: getSession(state),
+  session: getSession(state).session,
 });
 
 export default connect(mapStateToProps, {
