@@ -4,6 +4,7 @@ import { connect, Provider, ReactReduxContext } from 'react-redux';
 import throttle from 'lodash.throttle';
 import { ChartModelFactory } from '@deephaven/chart';
 import { IrisGridModelFactory, IrisGridUtils } from '@deephaven/iris-grid';
+import { PropTypes as APIPropTypes } from '@deephaven/jsapi-shim';
 import Log from '@deephaven/log';
 import {
   getActiveTool,
@@ -50,7 +51,7 @@ import './DashboardContainer.scss';
 import { UIPropTypes } from '../include/prop-types';
 import PanelErrorBoundary from './panels/PanelErrorBoundary';
 import FileExplorerPanel from './panels/FileExplorerPanel';
-import { ConsoleEvent } from './events';
+import { getSession } from '../redux';
 
 const log = Log.module('DashboardContainer');
 const RESIZE_THROTTLE = 100;
@@ -148,23 +149,12 @@ export class DashboardContainer extends Component {
   makeHydrateComponentPropsMap() {
     const { id: localDashboardId } = this.props;
 
-    const getSessionPromise = () =>
-      new Promise(resolve => {
-        const { layout } = this.state;
-        const { eventHub } = layout;
-        const onSessionOpened = async session => {
-          eventHub.off(ConsoleEvent.SESSION_OPENED, onSessionOpened);
-
-          resolve(session);
-        };
-        eventHub.on(ConsoleEvent.SESSION_OPENED, onSessionOpened);
-      });
-
     return {
       ChartPanel: props => ({
         ...props,
         localDashboardId,
         makeModel: async () => {
+          const { session } = this.props;
           const { metadata, panelState } = props;
           if (panelState) {
             if (panelState.tableSettings) {
@@ -179,8 +169,6 @@ export class DashboardContainer extends Component {
           }
 
           const { settings, table: tableName, tableSettings } = metadata;
-
-          const session = await getSessionPromise();
 
           const table = await session.getTable(tableName);
 
@@ -214,7 +202,7 @@ export class DashboardContainer extends Component {
         ...props,
         localDashboardId,
         makeModel: async () => {
-          const session = await getSessionPromise();
+          const { session } = this.props;
           const { table: tableName } = props.metadata;
           const table = await session.getTable(tableName);
           return IrisGridModelFactory.makeModel(table, false);
@@ -631,6 +619,7 @@ DashboardContainer.propTypes = {
   onDataChange: PropTypes.func,
   onLayoutConfigChange: PropTypes.func,
   onGoldenLayoutChange: PropTypes.func,
+  session: APIPropTypes.IdeSession.isRequired,
   setActiveTool: PropTypes.func.isRequired,
   setDashboardColumns: PropTypes.func.isRequired,
   setDashboardInputFilters: PropTypes.func.isRequired,
@@ -655,6 +644,7 @@ DashboardContainer.contextType = ReactReduxContext;
 
 const mapStateToProps = state => ({
   activeTool: getActiveTool(state),
+  session: getSession(state),
 });
 
 export default connect(mapStateToProps, {

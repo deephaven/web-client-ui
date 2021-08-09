@@ -12,6 +12,7 @@ import { connect } from 'react-redux';
 import Panel from './Panel';
 import { NotebookEvent } from '../events';
 import './FileExplorerPanel.scss';
+import { getSession } from '../../redux';
 
 const log = Log.module('FileExplorerPanel');
 
@@ -221,9 +222,18 @@ export class FileExplorerPanel extends React.Component<
   }
 }
 
-const mapStateToProps = (state: unknown) => ({
-  fileStorage: getFileStorage(state),
-});
+const mapStateToProps = (state: unknown) => {
+  const fileStorage = getFileStorage(state);
+  const loadedSession = getSession(state);
+  const { session, config: sessionConfig } = loadedSession;
+  const language = sessionConfig.type;
+
+  return {
+    fileStorage,
+    language,
+    session,
+  };
+};
 
 export default connect(mapStateToProps, null, null, { forwardRef: true })(
   FileExplorerPanel

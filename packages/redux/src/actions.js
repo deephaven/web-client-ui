@@ -16,6 +16,7 @@ import {
   SET_ACTIVE_TOOL,
   SET_DASHBOARD_COLUMN_SELECTION_VALIDATOR,
   SET_DASHBOARD_CONSOLE_CREATOR_SETTINGS,
+  SET_DASHBOARD_SESSION,
   SET_CONTROLLER_CONFIGURATION,
   SET_DRAFT_MANAGER,
   SET_SERVER_CONFIG_VALUES,
@@ -157,6 +158,12 @@ export const setDashboardConsoleCreatorSettings = (
 ) => ({
   type: SET_DASHBOARD_CONSOLE_CREATOR_SETTINGS,
   payload: consoleCreatorSettings,
+  id,
+});
+
+export const setDashboardSession = (id, session) => ({
+  type: SET_DASHBOARD_SESSION,
+  payload: session,
   id,
 });
 

@@ -52,6 +52,8 @@ export const getDashboardIsolatedLinkerPanelIds = store =>
 
 export const getDashboardLinks = store => store.dashboardLinks;
 
+export const getDashboardSessions = store => store.dashboardSessions;
+
 export const getColumnsForDashboard = (store, dashboardId) =>
   getDashboardColumns(store)[dashboardId] || EMPTY_ARRAY;
 
@@ -63,6 +65,9 @@ export const getIsolatedLinkerPanelIdForDashboard = (store, dashboardId) =>
 
 export const getLinksForDashboard = (store, dashboardId) =>
   getDashboardLinks(store)[dashboardId] || EMPTY_ARRAY;
+
+export const getSessionForDashboard = (store, dashboardId) =>
+  getDashboardSessions(store)[dashboardId] || EMPTY_ARRAY;
 
 export const getDashboardClosedPanels = store => store.dashboardClosedPanels;
 

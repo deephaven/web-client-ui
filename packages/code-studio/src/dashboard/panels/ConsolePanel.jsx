@@ -9,11 +9,10 @@ import { connect } from 'react-redux';
 import { Console, ConsoleConstants, ConsoleUtils } from '@deephaven/console';
 import { FigureChartModel } from '@deephaven/chart';
 import { IrisGridModelFactory } from '@deephaven/iris-grid';
-import dh from '@deephaven/jsapi-shim';
+import { PropTypes as APIPropTypes } from '@deephaven/jsapi-shim';
 import { ThemeExport } from '@deephaven/components';
 import Log from '@deephaven/log';
 import { getCommandHistoryStorage } from '@deephaven/redux';
-import { Pending, PromiseUtils } from '@deephaven/utils';
 import {
   ChartEvent,
   ConsoleEvent,
@@ -25,6 +24,7 @@ import {
 import { GLPropTypes } from '../../include/prop-types';
 import './ConsolePanel.scss';
 import Panel from './Panel';
+import { getSession } from '../../redux';
 
 const log = Log.module('ConsolePanel');
 
@@ -59,7 +59,6 @@ class ConsolePanel extends PureComponent {
     );
 
     this.consoleRef = React.createRef();
-    this.pending = new Pending();
 
     const { panelState: initialPanelState } = props;
     const panelState = {
@@ -70,13 +69,7 @@ class ConsolePanel extends PureComponent {
 
     this.state = {
       consoleSettings,
-      language: null,
       itemIds: new Map(itemIds),
-
-      isLoading: true,
-
-      session: null,
-      sessionId: null,
 
       // eslint-disable-next-line react/no-unused-state
       panelState, // Dehydrated panel state that can load this panel
@@ -89,8 +82,6 @@ class ConsolePanel extends PureComponent {
     // as they may have been saved with the dashboard
     this.closeDisconnectedPanels();
     glEventHub.on(PanelEvent.MOUNT, this.handlePanelMount);
-
-    this.initSession();
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -107,67 +98,6 @@ class ConsolePanel extends PureComponent {
     const { glEventHub } = this.props;
     this.savePanelState.flush();
     glEventHub.off(PanelEvent.MOUNT, this.handlePanelMount);
-
-    this.pending.cancel();
-
-    const { session } = this.state;
-    session?.close();
-  }
-
-  async initSession() {
-    try {
-      const baseUrl = new URL(
-        process.env.REACT_APP_CORE_API_URL,
-        window.location
-      );
-
-      const websocketUrl = `${baseUrl.protocol}//${baseUrl.host}`;
-
-      log.info(`Starting connection to '${websocketUrl}'...`);
-
-      const connection = new dh.IdeConnection(websocketUrl);
-
-      log.info('Getting console types...');
-
-      const types = await this.pending.add(connection.getConsoleTypes());
-
-      log.info('Available types:', types);
-
-      if (types.length === 0) {
-        throw new Error('No console types available');
-      }
-
-      const type = types[0];
-
-      log.info('Starting session with type', type);
-
-      const session = await this.pending.add(connection.startSession(type));
-
-      const sessionId = shortid.generate();
-
-      log.info('Console session established');
-
-      const { glEventHub } = this.props;
-      glEventHub.emit(ConsoleEvent.SESSION_OPENED, session, {
-        language: type,
-        sessionId,
-      });
-
-      this.setState(
-        { isLoading: false, language: type, session, sessionId },
-        () => {
-          this.consoleRef.current?.focus();
-        }
-      );
-    } catch (error) {
-      if (PromiseUtils.isCanceled(error)) {
-        return;
-      }
-
-      log.error('Error Creating Console: ', error);
-
-      this.setState({ isLoading: false, error });
-    }
   }
 
   setItemId(name, id) {
@@ -228,7 +158,8 @@ class ConsolePanel extends PureComponent {
   }
 
   handleOpenObject(object) {
-    const { session } = this.state;
+    const { loadedSession } = this.props;
+    const { session } = loadedSession;
     const { type } = object;
     if (ConsoleUtils.isTableType(type)) {
       this.openTable(object, session);
@@ -338,15 +269,16 @@ class ConsolePanel extends PureComponent {
   }
 
   render() {
-    const { commandHistoryStorage, glContainer, glEventHub } = this.props;
     const {
-      consoleSettings,
-      error,
-      isLoading,
-      language,
-      session,
-      sessionId,
-    } = this.state;
+      commandHistoryStorage,
+      glContainer,
+      glEventHub,
+      loadedSession,
+    } = this.props;
+    const { consoleSettings, error } = this.state;
+    const { config, session } = loadedSession;
+    const { id: sessionId, type: language } = config;
+
     return (
       <Panel
         componentPanel={this}
@@ -356,7 +288,6 @@ class ConsolePanel extends PureComponent {
         onShow={this.handleShow}
         onTabFocus={this.handleTabFocus}
         onTabBlur={this.handleTabBlur}
-        isLoading={isLoading}
         isLoaded={session != null}
         errorMessage={error != null ? `${error}` : null}
       >
@@ -405,6 +336,11 @@ ConsolePanel.propTypes = {
     consoleSettings: PropTypes.shape({}),
     itemIds: PropTypes.array,
   }),
+
+  loadedSession: PropTypes.shape({
+    session: APIPropTypes.IdeSession,
+    config: PropTypes.shape({ type: PropTypes.string, id: PropTypes.string }),
+  }).isRequired,
 };
 
 ConsolePanel.defaultProps = {
@@ -413,6 +349,7 @@ ConsolePanel.defaultProps = {
 
 const mapStateToProps = state => ({
   commandHistoryStorage: getCommandHistoryStorage(state),
+  loadedSession: getSession(state),
 });
 
 export default connect(mapStateToProps, null, null, { forwardRef: true })(

@@ -78,6 +78,7 @@ const IdeSession = PropTypes.shape({
   addEventListener: PropTypes.func.isRequired,
   removeEventListener: PropTypes.func.isRequired,
   onLogMessage: PropTypes.func,
+  getTable: PropTypes.func.isRequired,
   runCode: PropTypes.func.isRequired,
 });
 

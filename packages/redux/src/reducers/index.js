@@ -7,6 +7,7 @@ import dashboardColumns from './dashboardColumns';
 import dashboardColumnSelectionValidators from './dashboardColumnSelectionValidators';
 import dashboardConsoleCreatorSettings from './dashboardConsoleCreatorSettings';
 import dashboardLinks from './dashboardLinks';
+import dashboardSessions from './dashboardSessions';
 import dashboardPanelTableMaps from './dashboardPanelTableMaps';
 import isLoggedIn from './isLoggedIn';
 import storage from './storage';
@@ -27,6 +28,7 @@ const reducers = {
   dashboardColumns,
   dashboardLinks,
   dashboardPanelTableMaps,
+  dashboardSessions,
   isLoggedIn,
   storage,
   user,
