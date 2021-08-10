@@ -13,7 +13,11 @@ module.exports = {
       moduleFileExtensions: ['scss'],
     },
   ],
-  watchPlugins: ['jest-runner-eslint/watch-fix'],
+  watchPlugins: [
+    'jest-watch-typeahead/filename',
+    'jest-watch-typeahead/testname',
+    'jest-watch-select-projects',
+  ],
   collectCoverage: false,
   coverageDirectory: '<rootDir>/coverage/', // This is relative to monorepo root
   collectCoverageFrom: ['./src/**/*.{js,ts,jsx,tsx}'], // This is relative to individual project root due to how Jest handles it
