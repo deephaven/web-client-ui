@@ -12,7 +12,6 @@ import {
   GLOBAL_SHORTCUTS,
   Popper,
 } from '@deephaven/components';
-import { SHORTCUTS as IRIS_GRID_SHORTCUTS } from '@deephaven/iris-grid';
 import { vsGear, dhShapes, dhPanels } from '@deephaven/icons';
 import dh, { PropTypes as APIPropTypes } from '@deephaven/jsapi-shim';
 import Log from '@deephaven/log';
@@ -34,7 +33,7 @@ import {
 import ToolType from '../tools/ToolType';
 import { IrisPropTypes } from '../include/prop-types';
 import AppControlsMenu from './AppControlsMenu';
-import DashboardContainer from '../dashboard/DashboardContainer';
+import Dashboard from '../dashboard/Dashboard';
 import ControlType from '../controls/ControlType';
 import { getLayoutStorage, getSessionWrapper } from '../redux';
 import Logo from '../settings/LogoMiniDark.svg';
@@ -43,6 +42,7 @@ import WidgetList from './WidgetList';
 import { createChartModel, createGridModel } from './WidgetUtils';
 import EmptyDashboard from './EmptyDashboard';
 import UserLayoutUtils from './UserLayoutUtils';
+import DashboardCorePlugin from './dashboard-plugins/DashboardCorePlugin';
 
 const log = Log.module('AppMainContainer');
 
@@ -81,6 +81,40 @@ export class AppMainContainer extends Component {
     this.widgetListenerRemover = null;
 
     this.state = {
+      contextActions: [
+        {
+          action: () => {
+            this.handleToolSelect(ToolType.LINKER);
+          },
+          shortcut: GLOBAL_SHORTCUTS.LINKER,
+          isGlobal: true,
+        },
+        {
+          action: () => {
+            // triggers clear all filters tab event, which in turn triggers a glEventhub event
+            // widget panels can subscribe to his event, and execute their own clearing logic
+            this.sendClearFilter();
+          },
+          order: 50,
+          shortcut: GLOBAL_SHORTCUTS.CLEAR_ALL_FILTERS,
+        },
+        {
+          action: () => {
+            log.debug('Consume unhandled save shortcut');
+          },
+          shortcut: GLOBAL_SHORTCUTS.SAVE,
+        },
+        {
+          action: () => {
+            this.sendRestartSession();
+          },
+        },
+        {
+          action: () => {
+            this.sendDisconnectSession();
+          },
+        },
+      ],
       isPanelsMenuShown: false,
       isSettingsMenuShown: false,
       widgets: [],
@@ -107,6 +141,13 @@ export class AppMainContainer extends Component {
 
   initWidgets() {
     const { session } = this.props;
+    if (!session.connection.subscribeToFieldUpdates) {
+      log.warn(
+        'subscribeToFieldUpdates not supported, not initializing widgets'
+      );
+      return;
+    }
+
     this.widgetListenerRemover = session.connection.subscribeToFieldUpdates(
       updates => {
         log.debug('Got updates', updates);
@@ -404,84 +445,12 @@ export class AppMainContainer extends Component {
     const { activeTool, user, workspace } = this.props;
     const { data: workspaceData = {} } = workspace;
     const { data = {}, layoutConfig } = workspaceData;
-    const { isPanelsMenuShown, isSettingsMenuShown, widgets } = this.state;
-    const contextActions = [
-      {
-        action: () => {
-          this.handleToolSelect(ToolType.LINKER);
-        },
-        shortcut: GLOBAL_SHORTCUTS.LINKER,
-        isGlobal: true,
-      },
-      {
-        action: () => {
-          // triggers clear all filters tab event, which in turn triggers a glEventhub event
-          // widget panels can subscribe to his event, and execute their own clearing logic
-          this.sendClearFilter();
-        },
-        order: 50,
-        shortcut: IRIS_GRID_SHORTCUTS.TABLE.CLEAR_ALL_FILTERS,
-      },
-      {
-        action: () => {
-          log.debug('Consume unhandled save shortcut');
-        },
-        shortcut: GLOBAL_SHORTCUTS.SAVE,
-      },
-    ];
-
-    const tabBarMenu = (
-      <div>
-        <button type="button" className="btn btn-link btn-panels-menu">
-          <FontAwesomeIcon icon={dhShapes} />
-          Controls
-          <AppControlsMenu
-            handleControlSelect={this.handleControlSelect}
-            handleToolSelect={this.handleToolSelect}
-            onClearFilter={this.handleClearFilter}
-          />
-        </button>
-        <button
-          type="button"
-          className="btn btn-link btn-panels-menu btn-show-panels"
-          data-testid="app-main-panels-button"
-          onClick={this.handleWidgetMenuClick}
-        >
-          <FontAwesomeIcon icon={dhPanels} />
-          Panels
-          <Popper
-            isShown={isPanelsMenuShown}
-            className="panels-menu-popper"
-            onExited={this.handleWidgetsMenuClose}
-            closeOnBlur
-            interactive
-          >
-            <WidgetList
-              widgets={widgets}
-              onExportLayout={this.handleExportLayoutClick}
-              onImportLayout={this.handleImportLayoutClick}
-              onResetLayout={this.handleResetLayoutClick}
-              onSelect={this.handleWidgetSelect}
-            />
-          </Popper>
-        </button>
-        <button
-          type="button"
-          className={classNames(
-            'btn btn-link btn-link-icon btn-settings-menu',
-            { 'text-warning': user.operateAs !== user.name }
-          )}
-          onClick={this.handleSettingsMenuShow}
-        >
-          <FontAwesomeIcon icon={vsGear} transform="grow-3 right-1 down-1" />
-          <Tooltip>User Settings</Tooltip>
-        </button>
-      </div>
-    );
-
-    const toolClassName = activeTool
-      ? `active-tool-${activeTool.toLowerCase()}`
-      : '';
+    const {
+      contextActions,
+      isPanelsMenuShown,
+      isSettingsMenuShown,
+      widgets,
+    } = this.state;
 
     return (
       <div
@@ -491,7 +460,7 @@ export class AppMainContainer extends Component {
           'h-100',
           'd-flex',
           'flex-column',
-          toolClassName
+          activeTool ? `active-tool-${activeTool.toLowerCase()}` : ''
         )}
         onPaste={this.handlePaste}
         tabIndex={-1}
@@ -499,10 +468,58 @@ export class AppMainContainer extends Component {
         <nav className="nav-container">
           <div className="app-main-top-nav-menus">
             <img src={Logo} alt="Deephaven Data Labs" width="152px" />
-            {tabBarMenu}
+            <div>
+              <button type="button" className="btn btn-link btn-panels-menu">
+                <FontAwesomeIcon icon={dhShapes} />
+                Controls
+                <AppControlsMenu
+                  handleControlSelect={this.handleControlSelect}
+                  handleToolSelect={this.handleToolSelect}
+                  onClearFilter={this.handleClearFilter}
+                />
+              </button>
+              <button
+                type="button"
+                className="btn btn-link btn-panels-menu btn-show-panels"
+                data-testid="app-main-panels-button"
+                onClick={this.handleWidgetMenuClick}
+              >
+                <FontAwesomeIcon icon={dhPanels} />
+                Panels
+                <Popper
+                  isShown={isPanelsMenuShown}
+                  className="panels-menu-popper"
+                  onExited={this.handleWidgetsMenuClose}
+                  closeOnBlur
+                  interactive
+                >
+                  <WidgetList
+                    widgets={widgets}
+                    onExportLayout={this.handleExportLayoutClick}
+                    onImportLayout={this.handleImportLayoutClick}
+                    onResetLayout={this.handleResetLayoutClick}
+                    onSelect={this.handleWidgetSelect}
+                  />
+                </Popper>
+              </button>
+              <button
+                type="button"
+                className={classNames(
+                  'btn btn-link btn-link-icon btn-settings-menu',
+                  { 'text-warning': user.operateAs !== user.name }
+                )}
+                onClick={this.handleSettingsMenuShow}
+              >
+                <FontAwesomeIcon
+                  icon={vsGear}
+                  transform="grow-3 right-1 down-1"
+                />
+                <Tooltip>User Settings</Tooltip>
+              </button>
+            </div>
           </div>
         </nav>
-        <DashboardContainer
+        <Dashboard
           data={data}
           emptyDashboard={
             <EmptyDashboard onAutoFillClick={this.handleAutoFillClick} />
@@ -511,7 +528,9 @@ export class AppMainContainer extends Component {
           onDataChange={this.handleDataChange}
           onGoldenLayoutChange={this.handleGoldenLayoutChange}
           onLayoutConfigChange={this.handleLayoutConfigChange}
-        />
+        >
+          <DashboardCorePlugin />
+        </Dashboard>
         <CSSTransition
           in={isSettingsMenuShown}
           timeout={ThemeExport.transitionMidMs}

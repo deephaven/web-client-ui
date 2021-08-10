@@ -325,36 +325,29 @@ class LayoutUtils {
 
   /**
    * Adds dynamic props to components in the given config so this config could be used to initialize a layout
-   * @param {Array} config Dehydrated config object
-   * @param {Object} hydrateComponentPropsMap Props to be injected into component props
+   * @param {GoldenLayout.Config} config Dehydrated config object
+   * @param {(name: string, config: PanelProps) => PanelProps} hydrateComponent Function to hydrate the component
    * @returns {Array} Hydrated config
    */
-  static hydrateLayoutConfig(config, hydrateComponentPropsMap) {
+  static hydrateLayoutConfig(config, hydrateComponent) {
     if (!config || !config.length) {
       return [];
     }
-    const componentsToUpdate = Object.keys(hydrateComponentPropsMap);
     const hydratedConfig = [];
 
     for (let i = 0; i < config.length; i += 1) {
       const itemConfig = config[i];
       const { component, content, props, type } = itemConfig;
       if (type === 'react-component') {
-        // Need to make sure every panel has an ID
-        const id = itemConfig.id ? itemConfig.id : shortid();
-        if (componentsToUpdate.includes(component)) {
-          hydratedConfig.push({
-            ...itemConfig,
-            id,
-            props: hydrateComponentPropsMap[component](props),
-          });
-        } else {
-          hydratedConfig.push({ ...itemConfig, id });
-        }
+        hydratedConfig.push({
+          ...itemConfig,
+          id: itemConfig?.id ?? shortid(),
+          props: hydrateComponent(component, props),
+        });
       } else if (content) {
         const contentConfig = LayoutUtils.hydrateLayoutConfig(
           content,
-          hydrateComponentPropsMap
+          hydrateComponent
         );
         if (
           itemConfig.activeItemIndex != null &&

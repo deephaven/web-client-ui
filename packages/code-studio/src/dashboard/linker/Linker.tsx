@@ -117,7 +117,9 @@ const connector = connect<StateProps, DispatchProps, OwnProps>(mapState, {
   setDashboardColumnSelectionValidator: setDashboardColumnSelectionValidatorAction,
 });
 
-export type LinkerProps = OwnProps & ConnectedProps<typeof connector>;
+export type LinkerProps = OwnProps &
+  StateProps &
+  ConnectedProps<typeof connector>;
 
 export type LinkerState = {
   linkInProgress?: Link;
