@@ -1,6 +1,5 @@
 module.exports = {
   projects: [
-    '<rootDir>/packages/*/jest.config.js',
     {
       displayName: 'eslint',
       runner: 'jest-runner-eslint',
@@ -12,6 +11,7 @@ module.exports = {
       testMatch: ['<rootDir>/packages/*/src/**/*.scss'],
       moduleFileExtensions: ['scss'],
     },
+    '<rootDir>/packages/*/jest.config.js',
   ],
   watchPlugins: [
     'jest-watch-typeahead/filename',
