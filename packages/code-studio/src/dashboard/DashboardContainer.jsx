@@ -52,6 +52,7 @@ import { UIPropTypes } from '../include/prop-types';
 import PanelErrorBoundary from './panels/PanelErrorBoundary';
 import FileExplorerPanel from './panels/FileExplorerPanel';
 import { getSession } from '../redux';
+import { createChartModel, createGridModel } from '../main/WidgetUtils';
 
 const log = Log.module('DashboardContainer');
 const RESIZE_THROTTLE = 100;
@@ -153,28 +154,10 @@ export class DashboardContainer extends Component {
       ChartPanel: props => ({
         ...props,
         localDashboardId,
-        makeModel: async () => {
+        makeModel: () => {
           const { session } = this.props;
           const { metadata, panelState } = props;
-          if (panelState) {
-            if (panelState.tableSettings) {
-              metadata.tableSettings = panelState.tableSettings;
-            }
-            if (panelState.settings) {
-              metadata.settings = {
-                ...(metadata.settings ?? {}),
-                ...panelState.settings,
-              };
-            }
-          }
-
-          const { settings, table: tableName, tableSettings } = metadata;
-
-          const table = await session.getTable(tableName);
-
-          IrisGridUtils.applyTableSettings(table, tableSettings);
-
-          return ChartModelFactory.makeModelFromSettings(settings, table);
+          return createChartModel(session, metadata, panelState);
         },
       }),
       ConsolePanel: props => ({
@@ -201,11 +184,9 @@ export class DashboardContainer extends Component {
       IrisGridPanel: props => ({
         ...props,
         localDashboardId,
-        makeModel: async () => {
+        makeModel: () => {
           const { session } = this.props;
-          const { table: tableName } = props.metadata;
-          const table = await session.getTable(tableName);
-          return IrisGridModelFactory.makeModel(table, false);
+          return createGridModel(session, props.metadata);
         },
       }),
       LogPanel: props => ({

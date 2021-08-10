@@ -20,7 +20,7 @@ import ToolType from '../tools/ToolType';
 import PouchCommandHistoryStorage from '../storage/PouchCommandHistoryStorage';
 import LocalWorkspaceStorage from '../dashboard/LocalWorkspaceStorage';
 import WebdavLayoutStorage from './WebdavLayoutStorage';
-import initSession from './initSession';
+import { createSession } from './SessionUtils';
 
 // Default values used
 const webdavClient = createClient(process.env.REACT_APP_NOTEBOOKS_URL ?? '');
@@ -56,7 +56,7 @@ const AppInit = props => {
         const layoutConfig = await LAYOUT_STORAGE.getLayout(layouts[0]);
         loadedWorkspace.data.layoutConfig = layoutConfig;
       }
-      const loadedSession = await initSession();
+      const loadedSession = await createSession();
 
       setActiveTool(ToolType.DEFAULT);
       setCommandHistoryStorage(COMMAND_HISTORY_STORAGE);

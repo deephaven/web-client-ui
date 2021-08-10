@@ -2,7 +2,12 @@ import dh from '@deephaven/jsapi-shim';
 import Log from '@deephaven/log';
 import shortid from 'shortid';
 
-const log = Log.module('initSession');
+const log = Log.module('SessionUtils');
+
+export type DhSession = {
+  getTable: (tableName: string) => Promise<unknown>;
+  getFigure: (figureName: string) => Promise<unknown>;
+};
 
 export type SessionConfig = {
   id: string;
@@ -10,11 +15,15 @@ export type SessionConfig = {
 };
 
 export type LoadedSession = {
-  session: unknown;
+  session: DhSession;
   config: SessionConfig;
 };
 
-export const initSession = async (): Promise<LoadedSession> => {
+/**
+ * Create a new session using the default URL
+ * @returns {Promise<LoadedSession>} A session and config that is ready to use
+ */
+export const createSession = async (): Promise<LoadedSession> => {
   const baseUrl = new URL(
     process.env.REACT_APP_CORE_API_URL ?? '',
     `${window.location}`
@@ -49,4 +58,4 @@ export const initSession = async (): Promise<LoadedSession> => {
   return { session, config };
 };
 
-export default initSession;
+export default { createSession };

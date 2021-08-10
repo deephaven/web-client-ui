@@ -4,14 +4,16 @@ import PropTypes from 'prop-types';
 import { CSSTransition } from 'react-transition-group';
 import { connect } from 'react-redux';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { vsGear, dhShapes } from '@deephaven/icons';
 import {
   ContextActions,
   Tooltip,
   ThemeExport,
   GLOBAL_SHORTCUTS,
+  Popper,
 } from '@deephaven/components';
 import { SHORTCUTS as IRIS_GRID_SHORTCUTS } from '@deephaven/iris-grid';
+import { vsGear, dhShapes, dhPanels } from '@deephaven/icons';
+import dh, { PropTypes as APIPropTypes } from '@deephaven/jsapi-shim';
 import Log from '@deephaven/log';
 import {
   getActiveTool,
@@ -22,16 +24,25 @@ import {
 } from '@deephaven/redux';
 import { PromiseUtils } from '@deephaven/utils';
 import SettingsMenu from '../settings/SettingsMenu';
-import { ControlEvent, InputFilterEvent } from '../dashboard/events';
+import {
+  ChartEvent,
+  ControlEvent,
+  InputFilterEvent,
+  IrisGridEvent,
+} from '../dashboard/events';
 import ToolType from '../tools/ToolType';
 import { IrisPropTypes } from '../include/prop-types';
 import AppControlsMenu from './AppControlsMenu';
 import { CommandHistoryPanel, ConsolePanel } from '../dashboard/panels';
 import DashboardContainer from '../dashboard/DashboardContainer';
 import ControlType from '../controls/ControlType';
+import { getSession } from '../redux';
 import Logo from '../settings/LogoMiniDark.svg';
 import './AppMainContainer.scss';
 import FileExplorerPanel from '../dashboard/panels/FileExplorerPanel';
+import PanelList from './WidgetList';
+import { createGridModel } from './WidgetUtils';
+import shortid from 'shortid';
 
 const log = Log.module('AppMainContainer');
 
@@ -107,11 +118,15 @@ export class AppMainContainer extends Component {
     this.handleDataChange = this.handleDataChange.bind(this);
     this.handleGoldenLayoutChange = this.handleGoldenLayoutChange.bind(this);
     this.handleLayoutConfigChange = this.handleLayoutConfigChange.bind(this);
+    this.handleWidgetMenuClick = this.handleWidgetMenuClick.bind(this);
+    this.handleWidgetsMenuClose = this.handleWidgetsMenuClose.bind(this);
+    this.handleWidgetsMenuOpen = this.handleWidgetsMenuOpen.bind(this);
+    this.handleWidgetSelect = this.handleWidgetSelect.bind(this);
     this.handlePaste = this.handlePaste.bind(this);
 
     this.goldenLayout = null;
 
-    this.state = { showSettingsMenu: false };
+    this.state = { isSettingsMenuShown: false };
   }
 
   componentDidMount() {
@@ -132,8 +147,8 @@ export class AppMainContainer extends Component {
     this.emitLayoutEvent(InputFilterEvent.CLEAR_ALL_FILTERS);
   }
 
-  emitLayoutEvent(event, data = undefined) {
-    this.goldenLayout?.eventHub.emit(event, data);
+  emitLayoutEvent(event, ...args) {
+    this.goldenLayout?.eventHub.emit(event, ...args);
   }
 
   // eslint-disable-next-line class-methods-use-this
@@ -145,11 +160,11 @@ export class AppMainContainer extends Component {
   }
 
   handleSettingsMenuHide() {
-    this.setState({ showSettingsMenu: false });
+    this.setState({ isSettingsMenuShown: false });
   }
 
   handleSettingsMenuShow() {
-    this.setState({ showSettingsMenu: true });
+    this.setState({ isSettingsMenuShown: true });
   }
 
   handleControlSelect(type, dragEvent = null) {
@@ -213,6 +228,61 @@ export class AppMainContainer extends Component {
     updateWorkspaceData({ layoutConfig });
   }
 
+  handleWidgetMenuClick() {
+    this.setState(({ isPanelsMenuShown }) => ({
+      isPanelsMenuShown: !isPanelsMenuShown,
+    }));
+  }
+
+  handleWidgetSelect(widget, dragEvent) {
+    this.setState({ isPanelsMenuShown: false });
+
+    log.debug('handleWidgetSelect', widget, dragEvent);
+
+    switch (widget.type) {
+      case dh.VariableType.TABLE: {
+        const metadata = { table: widget.name };
+        this.emitLayoutEvent(
+          IrisGridEvent.OPEN_GRID,
+          widget.name,
+          () => {
+            const { session } = this.props;
+            return createGridModel(session, metadata);
+          },
+          metadata,
+          shortid.generate(),
+          dragEvent
+        );
+        break;
+      }
+      case dh.VariableType.FIGURE: {
+        const metadata = { table: widget.name };
+        this.emitLayoutEvent(
+          ChartEvent.OPEN,
+          widget.name,
+          () => {
+            const { session } = this.props;
+            return createGridModel(session, metadata);
+          },
+          metadata,
+          shortid.generate(),
+          dragEvent
+        );
+        break;
+      }
+      default:
+        log.error('Unexpected widget type', widget);
+    }
+  }
+
+  handleWidgetsMenuClose() {
+    this.setState({ isPanelsMenuShown: false });
+  }
+
+  handleWidgetsMenuOpen() {
+    // Reset any state? Cancel any state resets?
+  }
+
   // eslint-disable-next-line class-methods-use-this
   handlePaste(event) {
     let element = event.target.parentElement;
@@ -243,7 +313,7 @@ export class AppMainContainer extends Component {
     const { activeTool, user, workspace } = this.props;
     const { data: workspaceData = {} } = workspace;
     const { data = {}, layoutConfig = DEFAULT_LAYOUT_CONFIG } = workspaceData;
-    const { showSettingsMenu } = this.state;
+    const { isPanelsMenuShown, isSettingsMenuShown } = this.state;
     const contextActions = [
       {
         action: () => {
@@ -280,7 +350,33 @@ export class AppMainContainer extends Component {
             onClearFilter={this.handleClearFilter}
           />
         </button>
-
+        <button
+          type="button"
+          className="btn btn-link btn-panels-menu btn-show-panels"
+          data-testid="app-main-panels-button"
+          onClick={this.handleWidgetMenuClick}
+        >
+          <FontAwesomeIcon icon={dhPanels} />
+          Panels
+          <Popper
+            isShown={isPanelsMenuShown}
+            className="panels-menu-popper"
+            onExited={this.handleWidgetsMenuClose}
+            onEntered={this.handleWidgetsMenuOpen}
+            closeOnBlur
+            interactive
+          >
+            <PanelList
+              widgets={[
+                { name: 'miami', type: dh.VariableType.TABLE },
+                { name: 'honolulu', type: dh.VariableType.TABLE },
+              ]}
+              onExportLayout={() => {}}
+              onImportLayout={() => {}}
+              onSelect={this.handleWidgetSelect}
+            />
+          </Popper>
+        </button>
         <button
           type="button"
           className={classNames(
@@ -326,7 +422,7 @@ export class AppMainContainer extends Component {
           onLayoutConfigChange={this.handleLayoutConfigChange}
         />
         <CSSTransition
-          in={showSettingsMenu}
+          in={isSettingsMenuShown}
           timeout={ThemeExport.transitionMidMs}
           classNames="slide-left"
           mountOnEnter
@@ -342,6 +438,7 @@ export class AppMainContainer extends Component {
 
 AppMainContainer.propTypes = {
   activeTool: PropTypes.string.isRequired,
+  session: APIPropTypes.IdeSession.isRequired,
   setActiveTool: PropTypes.func.isRequired,
   updateWorkspaceData: PropTypes.func.isRequired,
   user: IrisPropTypes.User.isRequired,
@@ -355,6 +452,7 @@ AppMainContainer.propTypes = {
 
 const mapStateToProps = state => ({
   activeTool: getActiveTool(state),
+  session: getSession(state).session,
   user: getUser(state),
   workspace: getWorkspace(state),
 });
