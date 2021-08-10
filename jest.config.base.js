@@ -16,4 +16,5 @@ module.exports = {
       './__mocks__/monaco-editor-empty.js'
     ),
   },
+  setupFilesAfterEnv: [path.resolve('./jest.setup.js')],
 };

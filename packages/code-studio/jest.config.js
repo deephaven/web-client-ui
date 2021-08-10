@@ -8,5 +8,4 @@ module.exports = {
   transform: {
     '.(ts|tsx|js|jsx)': '<rootDir>/jestBabelTransform.js',
   },
-  setupFilesAfterEnv: ['./jest.setup.js'],
 };
