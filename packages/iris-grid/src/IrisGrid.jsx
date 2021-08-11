@@ -965,7 +965,14 @@ export class IrisGrid extends Component {
     this.startLoading('Rebuilding filters...', true);
     this.setState({
       quickFilters: newQuickFilters,
-      advancedFilter: newAdvancedFilters,
+      advancedFilters: newAdvancedFilters,
+    });
+  }
+
+  setFilters({ quickFilters, advancedFilters }) {
+    this.setState({
+      quickFilters,
+      advancedFilters,
     });
   }
 
