@@ -71,7 +71,6 @@ export class AppMainContainer extends Component {
     this.handleImportLayoutFiles = this.handleImportLayoutFiles.bind(this);
     this.handleWidgetMenuClick = this.handleWidgetMenuClick.bind(this);
     this.handleWidgetsMenuClose = this.handleWidgetsMenuClose.bind(this);
-    this.handleWidgetsMenuOpen = this.handleWidgetsMenuOpen.bind(this);
     this.handleWidgetSelect = this.handleWidgetSelect.bind(this);
     this.handlePaste = this.handlePaste.bind(this);
 
@@ -204,10 +203,6 @@ export class AppMainContainer extends Component {
 
   handleWidgetsMenuClose() {
     this.setState({ isPanelsMenuShown: false });
-  }
-
-  handleWidgetsMenuOpen() {
-    // TODO: Debounce clear the search value
   }
 
   handleAutoFillClick() {
@@ -394,7 +389,6 @@ export class AppMainContainer extends Component {
             isShown={isPanelsMenuShown}
             className="panels-menu-popper"
             onExited={this.handleWidgetsMenuClose}
-            onEntered={this.handleWidgetsMenuOpen}
             closeOnBlur
             interactive
           >

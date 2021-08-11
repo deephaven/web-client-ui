@@ -5,6 +5,15 @@ import { AppMainContainer } from './AppMainContainer';
 import ToolType from '../tools/ToolType';
 import LocalWorkspaceStorage from '../dashboard/LocalWorkspaceStorage';
 
+function makeSession() {
+  return {
+    addEventListener: jest.fn(),
+    removeEventListener: jest.fn(),
+    getTable: jest.fn(),
+    runCode: jest.fn(),
+  };
+}
+
 function makeAppMainContainer({
   user = {
     name: 'name',
@@ -23,6 +32,7 @@ function makeAppMainContainer({
   client = new dh.Client({}),
   serverConfigValues = {},
   dashboardOpenedPanelMaps = {},
+  session = makeSession(),
 } = {}) {
   return shallow(
     <AppMainContainer
@@ -37,6 +47,7 @@ function makeAppMainContainer({
       client={client}
       serverConfigValues={serverConfigValues}
       dashboardOpenedPanelMaps={dashboardOpenedPanelMaps}
+      session={session}
     />
   );
 }

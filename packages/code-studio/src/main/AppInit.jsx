@@ -110,18 +110,18 @@ const AppInit = props => {
       const loadedSession = await createSession();
       const { data } = loadedWorkspace;
       if (data.layoutConfig == null) {
-        // There's no layout store already, try to load one from the server
-        // const layouts = await LAYOUT_STORAGE.getLayouts();
-        // if (layouts.length > 0) {
-        //   const layoutConfig = await LAYOUT_STORAGE.getLayout(layouts[0]);
-        //   data.layoutConfig = layoutConfig;
-        // } else if (layouts.length === 0) {
-        // TODO: Should check if the session already has variables as well, and just do an empty layout as per spec
-        data.layoutConfig = [];
-        // } else {
-        //   // Otherwise, do the default layout
-        //   data.layoutConfig = DEFAULT_LAYOUT_CONFIG;
-        // }
+        // There's no layout already, try to load one from the server
+        const layouts = await LAYOUT_STORAGE.getLayouts();
+        if (layouts.length > 0) {
+          const layoutConfig = await LAYOUT_STORAGE.getLayout(layouts[0]);
+          data.layoutConfig = layoutConfig;
+        } else if (layouts.length === 0) {
+          // TODO: Should check if the session already has variables as well, and just do an empty layout as per spec
+          data.layoutConfig = [];
+        } else {
+          // Otherwise, do the default layout
+          data.layoutConfig = DEFAULT_LAYOUT_CONFIG;
+        }
       }
 
       setActiveTool(ToolType.DEFAULT);

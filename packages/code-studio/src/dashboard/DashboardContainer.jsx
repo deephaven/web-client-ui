@@ -2,8 +2,6 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect, Provider, ReactReduxContext } from 'react-redux';
 import throttle from 'lodash.throttle';
-import { ChartModelFactory } from '@deephaven/chart';
-import { IrisGridModelFactory, IrisGridUtils } from '@deephaven/iris-grid';
 import { PropTypes as APIPropTypes } from '@deephaven/jsapi-shim';
 import Log from '@deephaven/log';
 import {

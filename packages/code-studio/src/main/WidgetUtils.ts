@@ -4,12 +4,7 @@ import {
   IrisGridModelFactory,
   IrisGridUtils,
 } from '@deephaven/iris-grid';
-import dh from '@deephaven/jsapi-shim';
-import Log from '@deephaven/log';
-import shortid from 'shortid';
 import { DhSession } from './SessionUtils';
-
-const log = Log.module('SessionUtils');
 
 export type ChartPanelMetadata = {
   settings: Record<string, unknown>;
