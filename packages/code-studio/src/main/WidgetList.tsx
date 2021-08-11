@@ -9,10 +9,9 @@ import React, {
 } from 'react';
 import { Button, SearchInput } from '@deephaven/components';
 import { ObjectIcon } from '@deephaven/console';
-import Log from '@deephaven/log';
+import { vsArrowSmallDown, vsArrowSmallUp, vsPreview } from '@deephaven/icons';
 import './WidgetList.scss';
-
-const log = Log.module('WidgetList');
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 const MINIMUM_DRAG_DISTANCE = 10;
 
@@ -158,12 +157,14 @@ export const WidgetList = (props: WidgetListProps): JSX.Element => {
 
   return (
     <div className="widget-list-container d-flex flex-column">
-      <SearchInput
-        value={searchText}
-        placeholder="Find Table, Plot or Widget"
-        onChange={handleSearchChange}
-        ref={searchField}
-      />
+      <div className="widget-list-header">
+        <SearchInput
+          value={searchText}
+          placeholder="Find Table, Plot or Widget"
+          onChange={handleSearchChange}
+          ref={searchField}
+        />
+      </div>
       <ul className="widget-list flex-grow-1">
         {errorElement && (
           <li className="widget-list-message">{errorElement}</li>
@@ -175,9 +176,28 @@ export const WidgetList = (props: WidgetListProps): JSX.Element => {
       </div>
       <div className="widget-list-footer">
         <Button kind="ghost" onClick={onExportLayout}>
+          <div className="fa-md fa-layers">
+            <FontAwesomeIcon
+              mask={vsPreview}
+              icon={vsArrowSmallDown}
+              transform="right-5 down-5"
+            />
+            <FontAwesomeIcon
+              icon={vsArrowSmallDown}
+              transform="right-8 down-6"
+            />
+          </div>
           Export Layout
         </Button>
         <Button kind="ghost" onClick={onImportLayout}>
+          <div className="fa-md fa-layers">
+            <FontAwesomeIcon
+              mask={vsPreview}
+              icon={vsArrowSmallUp}
+              transform="right-5 down-5"
+            />
+            <FontAwesomeIcon icon={vsArrowSmallUp} transform="right-8 down-6" />
+          </div>
           Import Layout
         </Button>
       </div>

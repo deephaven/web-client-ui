@@ -54,5 +54,9 @@ $widget-list-owner-hover-color: $gray-200;
   .widget-list-footer {
     padding-top: $spacer-2;
     padding-bottom: $spacer-2;
+
+    .btn .fa-md {
+      margin-right: $spacer-2;
+    }
   }
 }
