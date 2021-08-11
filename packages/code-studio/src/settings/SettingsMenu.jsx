@@ -1,14 +1,7 @@
 import React, { Component } from 'react';
-import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import Log from '@deephaven/log';
 import { vsClose, vsWatch, vsRecordKeys } from '@deephaven/icons';
-import dh from '@deephaven/jsapi-shim';
-import {
-  getWorkspace,
-  updateWorkspaceData as updateWorkspaceDataAction,
-} from '@deephaven/redux';
 import Logo from './LogoDark.svg';
 import FormattingSectionContent from './FormattingSectionContent';
 import LegalNotice from './LegalNotice';
@@ -17,7 +10,6 @@ import ShortcutSectionContent from './ShortcutsSectionContent';
 import { exportLogs } from '../log/LogExport';
 import './SettingsMenu.scss';
 
-const log = Log.module('SettingsMenu');
 export class SettingsMenu extends Component {
   static FORMATTING_SECTION_KEY = 'SettingsMenu.formatting';
 
@@ -40,14 +32,10 @@ export class SettingsMenu extends Component {
     super(props);
 
     this.handleClose = this.handleClose.bind(this);
-    this.handleExportLayoutClick = this.handleExportLayoutClick.bind(this);
-    this.handleImportLayoutClick = this.handleImportLayoutClick.bind(this);
-    this.handleImportLayoutFiles = this.handleImportLayoutFiles.bind(this);
     this.handleScrollTo = this.handleScrollTo.bind(this);
     this.handleSectionToggle = this.handleSectionToggle.bind(this);
 
     this.menuContentRef = React.createRef();
-    this.importElement = React.createRef();
 
     this.state = {
       expandedSectionKey: SettingsMenu.FORMATTING_SECTION_KEY,
@@ -77,54 +65,6 @@ export class SettingsMenu extends Component {
   handleClose() {
     const { onDone } = this.props;
     onDone();
-  }
-
-  handleExportLayoutClick() {
-    try {
-      const { workspace } = this.props;
-      const { data } = workspace;
-      const { layoutConfig } = data;
-
-      log.info('Exporting layoutConfig', layoutConfig);
-
-      const blob = new Blob([JSON.stringify(layoutConfig)], {
-        mimeType: 'application/json',
-      });
-      const timestamp = dh.i18n.DateTimeFormat.format(
-        'yyyy-MM-dd-HHmmss',
-        new Date()
-      );
-      const link = document.createElement('a');
-      link.href = URL.createObjectURL(blob);
-      link.download = `deephaven-app-layout-${timestamp}.json`;
-      link.click();
-    } catch (e) {
-      log.error('Unable to export layout', e);
-    }
-  }
-
-  handleImportLayoutClick() {
-    this.importElement.current.value = null;
-    this.importElement.current.click();
-  }
-
-  handleImportLayoutFiles(event) {
-    event.stopPropagation();
-    event.preventDefault();
-
-    this.importLayoutFile(event.target.files[0]);
-  }
-
-  async importLayoutFile(file) {
-    try {
-      const fileText = await file.text();
-      const newLayoutConfig = JSON.parse(fileText);
-
-      const { updateWorkspaceData } = this.props;
-      updateWorkspaceData({ layoutConfig: newLayoutConfig });
-    } catch (e) {
-      log.error('Unable to export layout', e);
-    }
   }
 
   render() {
@@ -209,30 +149,6 @@ export class SettingsMenu extends Component {
                 </button>
               </div>
               <div className="app-settings-footer-item">
-                <div className="font-weight-bold">Layout</div>
-                <button
-                  type="button"
-                  className="btn btn-secondary mt-2 py-2 mr-2"
-                  onClick={this.handleExportLayoutClick}
-                >
-                  Export Layout
-                </button>
-                <button
-                  type="button"
-                  className="btn btn-secondary mt-2 py-2"
-                  onClick={this.handleImportLayoutClick}
-                >
-                  Import Layout
-                </button>
-                <input
-                  ref={this.importElement}
-                  type="file"
-                  accept=".json"
-                  style={{ display: 'none' }}
-                  onChange={this.handleImportLayoutFiles}
-                />
-              </div>
-              <div className="app-settings-footer-item">
                 <div className="font-weight-bold">Documentation</div>
                 <a
                   target="_blank"
@@ -271,22 +187,10 @@ export class SettingsMenu extends Component {
 
 SettingsMenu.propTypes = {
   onDone: PropTypes.func,
-  updateWorkspaceData: PropTypes.func.isRequired,
-  workspace: PropTypes.shape({
-    data: PropTypes.shape({
-      layoutConfig: PropTypes.arrayOf(PropTypes.shape({})),
-    }),
-  }).isRequired,
 };
 
 SettingsMenu.defaultProps = {
   onDone: () => {},
 };
 
-const mapState = state => ({
-  workspace: getWorkspace(state),
-});
-
-export default connect(mapState, {
-  updateWorkspaceData: updateWorkspaceDataAction,
-})(SettingsMenu);
+export default SettingsMenu;

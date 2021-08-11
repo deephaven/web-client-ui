@@ -3,6 +3,7 @@ import classNames from 'classnames';
 import PropTypes from 'prop-types';
 import { CSSTransition } from 'react-transition-group';
 import { connect } from 'react-redux';
+import shortid from 'shortid';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   ContextActions,
@@ -40,9 +41,8 @@ import { getSession } from '../redux';
 import Logo from '../settings/LogoMiniDark.svg';
 import './AppMainContainer.scss';
 import FileExplorerPanel from '../dashboard/panels/FileExplorerPanel';
-import PanelList from './WidgetList';
+import WidgetList from './WidgetList';
 import { createGridModel } from './WidgetUtils';
-import shortid from 'shortid';
 
 const log = Log.module('AppMainContainer');
 
@@ -118,6 +118,9 @@ export class AppMainContainer extends Component {
     this.handleDataChange = this.handleDataChange.bind(this);
     this.handleGoldenLayoutChange = this.handleGoldenLayoutChange.bind(this);
     this.handleLayoutConfigChange = this.handleLayoutConfigChange.bind(this);
+    this.handleExportLayoutClick = this.handleExportLayoutClick.bind(this);
+    this.handleImportLayoutClick = this.handleImportLayoutClick.bind(this);
+    this.handleImportLayoutFiles = this.handleImportLayoutFiles.bind(this);
     this.handleWidgetMenuClick = this.handleWidgetMenuClick.bind(this);
     this.handleWidgetsMenuClose = this.handleWidgetsMenuClose.bind(this);
     this.handleWidgetsMenuOpen = this.handleWidgetsMenuOpen.bind(this);
@@ -125,6 +128,7 @@ export class AppMainContainer extends Component {
     this.handlePaste = this.handlePaste.bind(this);
 
     this.goldenLayout = null;
+    this.importElement = React.createRef();
 
     this.state = { isSettingsMenuShown: false };
   }
@@ -280,7 +284,60 @@ export class AppMainContainer extends Component {
   }
 
   handleWidgetsMenuOpen() {
-    // Reset any state? Cancel any state resets?
+    // TODO: Debounce clear the search value
+  }
+
+  handleExportLayoutClick() {
+    this.setState({ isPanelsMenuShown: false });
+
+    try {
+      const { workspace } = this.props;
+      const { data } = workspace;
+      const { layoutConfig } = data;
+
+      log.info('Exporting layoutConfig', layoutConfig);
+
+      const blob = new Blob([JSON.stringify(layoutConfig)], {
+        mimeType: 'application/json',
+      });
+      const timestamp = dh.i18n.DateTimeFormat.format(
+        'yyyy-MM-dd-HHmmss',
+        new Date()
+      );
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = `deephaven-app-layout-${timestamp}.json`;
+      link.click();
+    } catch (e) {
+      log.error('Unable to export layout', e);
+    }
+  }
+
+  handleImportLayoutClick() {
+    this.setState({ isPanelsMenuShown: false });
+
+    // Reset the file list on the import element, otherwise user won't be prompted again
+    this.importElement.current.value = '';
+    this.importElement.current.click();
+  }
+
+  handleImportLayoutFiles(event) {
+    event.stopPropagation();
+    event.preventDefault();
+
+    this.importLayoutFile(event.target.files[0]);
+  }
+
+  async importLayoutFile(file) {
+    try {
+      const fileText = await file.text();
+      const newLayoutConfig = JSON.parse(fileText);
+
+      const { updateWorkspaceData } = this.props;
+      updateWorkspaceData({ layoutConfig: newLayoutConfig });
+    } catch (e) {
+      log.error('Unable to export layout', e);
+    }
   }
 
   // eslint-disable-next-line class-methods-use-this
@@ -366,13 +423,14 @@ export class AppMainContainer extends Component {
             closeOnBlur
             interactive
           >
-            <PanelList
+            <WidgetList
+              // TODO: Get the actual list of widgets available
               widgets={[
                 { name: 'miami', type: dh.VariableType.TABLE },
                 { name: 'honolulu', type: dh.VariableType.TABLE },
               ]}
-              onExportLayout={() => {}}
-              onImportLayout={() => {}}
+              onExportLayout={this.handleExportLayoutClick}
+              onImportLayout={this.handleImportLayoutClick}
               onSelect={this.handleWidgetSelect}
             />
           </Popper>
@@ -431,6 +489,13 @@ export class AppMainContainer extends Component {
           <SettingsMenu onDone={this.handleSettingsMenuHide} />
         </CSSTransition>
         <ContextActions actions={contextActions} />
+        <input
+          ref={this.importElement}
+          type="file"
+          accept=".json"
+          style={{ display: 'none' }}
+          onChange={this.handleImportLayoutFiles}
+        />
       </div>
     );
   }

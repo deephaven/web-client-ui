@@ -7,8 +7,12 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { SearchInput } from '@deephaven/components';
+import { Button, SearchInput } from '@deephaven/components';
 import { ObjectIcon } from '@deephaven/console';
+import Log from '@deephaven/log';
+import './WidgetList.scss';
+
+const log = Log.module('WidgetList');
 
 const MINIMUM_DRAG_DISTANCE = 10;
 
@@ -31,7 +35,7 @@ export interface WidgetListProps {
 }
 
 export const WidgetList = (props: WidgetListProps): JSX.Element => {
-  const { onSelect, widgets = [] } = props;
+  const { onExportLayout, onImportLayout, onSelect, widgets = [] } = props;
   const [disableDoubleClick, setDisableDoubleClick] = useState(false);
   const [searchText, setSearchText] = useState('');
   const searchField = useRef<SearchInput>(null);
@@ -153,19 +157,30 @@ export const WidgetList = (props: WidgetListProps): JSX.Element => {
   );
 
   return (
-    <div className="panels-menu-container d-flex flex-column">
+    <div className="widget-list-container d-flex flex-column">
       <SearchInput
         value={searchText}
         placeholder="Find Table, Plot or Widget"
         onChange={handleSearchChange}
         ref={searchField}
       />
-      <ul className="panels-menu-table-list flex-grow-1">
+      <ul className="widget-list flex-grow-1">
         {errorElement && (
-          <li className="panels-menu-message">{errorElement}</li>
+          <li className="widget-list-message">{errorElement}</li>
         )}
         {!errorElement && widgetElements}
       </ul>
+      <div>
+        <hr />
+      </div>
+      <div className="widget-list-footer">
+        <Button kind="ghost" onClick={onExportLayout}>
+          Export Layout
+        </Button>
+        <Button kind="ghost" onClick={onImportLayout}>
+          Import Layout
+        </Button>
+      </div>
     </div>
   );
 };
