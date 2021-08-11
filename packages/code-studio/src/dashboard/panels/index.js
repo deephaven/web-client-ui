@@ -2,6 +2,7 @@ export { default as ChartPanel } from './ChartPanel';
 export { default as CommandHistoryPanel } from './CommandHistoryPanel';
 export { default as ConsolePanel } from './ConsolePanel';
 export { default as DropdownFilterPanel } from './DropdownFilterPanel';
+export { default as FileExplorerPanel } from './FileExplorerPanel';
 export { default as InputFilterPanel } from './InputFilterPanel';
 export { default as IrisGridPanel } from './IrisGridPanel';
 export { default as LogPanel } from './LogPanel';

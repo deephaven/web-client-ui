@@ -21,6 +21,11 @@ import PouchCommandHistoryStorage from '../storage/PouchCommandHistoryStorage';
 import LocalWorkspaceStorage from '../dashboard/LocalWorkspaceStorage';
 import WebdavLayoutStorage from './WebdavLayoutStorage';
 import { createSession } from './SessionUtils';
+import {
+  CommandHistoryPanel,
+  ConsolePanel,
+  FileExplorerPanel,
+} from '../dashboard/panels';
 
 // Default values used
 const webdavClient = createClient(process.env.REACT_APP_NOTEBOOKS_URL ?? '');
@@ -30,6 +35,57 @@ const WORKSPACE_STORAGE = new LocalWorkspaceStorage();
 const COMMAND_HISTORY_STORAGE = new PouchCommandHistoryStorage();
 const FILE_STORAGE = new WebdavFileStorage(webdavClient);
 const LAYOUT_STORAGE = new WebdavLayoutStorage(webdavClient);
+const DEFAULT_LAYOUT_CONFIG = [
+  {
+    type: 'column',
+    content: [
+      {
+        type: 'row',
+        content: [
+          {
+            type: 'stack',
+            content: [
+              {
+                type: 'react-component',
+                component: ConsolePanel.COMPONENT,
+                title: ConsolePanel.TITLE,
+                isClosable: false,
+              },
+            ],
+          },
+          {
+            type: 'stack',
+            width: 25,
+            content: [
+              {
+                type: 'react-component',
+                component: CommandHistoryPanel.COMPONENT,
+                title: CommandHistoryPanel.TITLE,
+                isClosable: false,
+              },
+              {
+                type: 'react-component',
+                component: FileExplorerPanel.COMPONENT,
+                title: FileExplorerPanel.TITLE,
+                isClosable: false,
+              },
+            ],
+          },
+        ],
+      },
+      {
+        type: 'row',
+        content: [
+          {
+            type: 'stack',
+            title: 'Notebooks',
+            content: [],
+          },
+        ],
+      },
+    ],
+  },
+];
 
 /**
  * Component that sets some default values needed
@@ -51,12 +107,20 @@ const AppInit = props => {
   const initClient = useCallback(async () => {
     try {
       const loadedWorkspace = await WORKSPACE_STORAGE.load();
-      const layouts = await LAYOUT_STORAGE.getLayouts();
-      if (layouts.length > 0) {
-        const layoutConfig = await LAYOUT_STORAGE.getLayout(layouts[0]);
-        loadedWorkspace.data.layoutConfig = layoutConfig;
-      }
       const loadedSession = await createSession();
+      const { data } = loadedWorkspace;
+      if (data.layoutConfig == null) {
+        // There's no layout store already, try to load one from the server
+        const layouts = await LAYOUT_STORAGE.getLayouts();
+        if (layouts.length > 0) {
+          const layoutConfig = await LAYOUT_STORAGE.getLayout(layouts[0]);
+          data.layoutConfig = layoutConfig;
+        } else {
+          // TODO: Should check if the session already has variables as well, and just do an empty layout as per spec
+          // Otherwise, do the default layout
+          data.layoutConfig = DEFAULT_LAYOUT_CONFIG;
+        }
+      }
 
       setActiveTool(ToolType.DEFAULT);
       setCommandHistoryStorage(COMMAND_HISTORY_STORAGE);

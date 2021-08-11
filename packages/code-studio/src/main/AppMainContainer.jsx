@@ -34,69 +34,15 @@ import {
 import ToolType from '../tools/ToolType';
 import { IrisPropTypes } from '../include/prop-types';
 import AppControlsMenu from './AppControlsMenu';
-import { CommandHistoryPanel, ConsolePanel } from '../dashboard/panels';
 import DashboardContainer from '../dashboard/DashboardContainer';
 import ControlType from '../controls/ControlType';
 import { getSession } from '../redux';
 import Logo from '../settings/LogoMiniDark.svg';
 import './AppMainContainer.scss';
-import FileExplorerPanel from '../dashboard/panels/FileExplorerPanel';
 import WidgetList from './WidgetList';
 import { createGridModel } from './WidgetUtils';
 
 const log = Log.module('AppMainContainer');
-
-const DEFAULT_LAYOUT_CONFIG = [
-  {
-    type: 'column',
-    content: [
-      {
-        type: 'row',
-        content: [
-          {
-            type: 'stack',
-            content: [
-              {
-                type: 'react-component',
-                component: ConsolePanel.COMPONENT,
-                title: ConsolePanel.TITLE,
-                isClosable: false,
-              },
-            ],
-          },
-          {
-            type: 'stack',
-            width: 25,
-            content: [
-              {
-                type: 'react-component',
-                component: CommandHistoryPanel.COMPONENT,
-                title: CommandHistoryPanel.TITLE,
-                isClosable: false,
-              },
-              {
-                type: 'react-component',
-                component: FileExplorerPanel.COMPONENT,
-                title: FileExplorerPanel.TITLE,
-                isClosable: false,
-              },
-            ],
-          },
-        ],
-      },
-      {
-        type: 'row',
-        content: [
-          {
-            type: 'stack',
-            title: 'Notebooks',
-            content: [],
-          },
-        ],
-      },
-    ],
-  },
-];
 
 export class AppMainContainer extends Component {
   static handleWindowBeforeUnload(event) {
@@ -369,7 +315,7 @@ export class AppMainContainer extends Component {
   render() {
     const { activeTool, user, workspace } = this.props;
     const { data: workspaceData = {} } = workspace;
-    const { data = {}, layoutConfig = DEFAULT_LAYOUT_CONFIG } = workspaceData;
+    const { data = {}, layoutConfig } = workspaceData;
     const { isPanelsMenuShown, isSettingsMenuShown } = this.state;
     const contextActions = [
       {
