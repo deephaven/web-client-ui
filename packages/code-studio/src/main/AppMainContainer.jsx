@@ -41,6 +41,7 @@ import Logo from '../settings/LogoMiniDark.svg';
 import './AppMainContainer.scss';
 import WidgetList from './WidgetList';
 import { createGridModel } from './WidgetUtils';
+import EmptyDashboard from './EmptyDashboard';
 
 const log = Log.module('AppMainContainer');
 
@@ -62,6 +63,7 @@ export class AppMainContainer extends Component {
     this.handleToolSelect = this.handleToolSelect.bind(this);
     this.handleClearFilter = this.handleClearFilter.bind(this);
     this.handleDataChange = this.handleDataChange.bind(this);
+    this.handleAutoFillClick = this.handleAutoFillClick.bind(this);
     this.handleGoldenLayoutChange = this.handleGoldenLayoutChange.bind(this);
     this.handleLayoutConfigChange = this.handleLayoutConfigChange.bind(this);
     this.handleExportLayoutClick = this.handleExportLayoutClick.bind(this);
@@ -76,7 +78,15 @@ export class AppMainContainer extends Component {
     this.goldenLayout = null;
     this.importElement = React.createRef();
 
-    this.state = { isSettingsMenuShown: false };
+    this.state = {
+      isPanelsMenuShown: false,
+      isSettingsMenuShown: false,
+      // TODO: get widgets from the session... or redux?
+      widgets: [
+        { name: 'miami', type: dh.VariableType.TABLE },
+        { name: 'honolulu', type: dh.VariableType.TABLE },
+      ],
+    };
   }
 
   componentDidMount() {
@@ -189,40 +199,7 @@ export class AppMainContainer extends Component {
 
     log.debug('handleWidgetSelect', widget, dragEvent);
 
-    switch (widget.type) {
-      case dh.VariableType.TABLE: {
-        const metadata = { table: widget.name };
-        this.emitLayoutEvent(
-          IrisGridEvent.OPEN_GRID,
-          widget.name,
-          () => {
-            const { session } = this.props;
-            return createGridModel(session, metadata);
-          },
-          metadata,
-          shortid.generate(),
-          dragEvent
-        );
-        break;
-      }
-      case dh.VariableType.FIGURE: {
-        const metadata = { table: widget.name };
-        this.emitLayoutEvent(
-          ChartEvent.OPEN,
-          widget.name,
-          () => {
-            const { session } = this.props;
-            return createGridModel(session, metadata);
-          },
-          metadata,
-          shortid.generate(),
-          dragEvent
-        );
-        break;
-      }
-      default:
-        log.error('Unexpected widget type', widget);
-    }
+    this.openWidget(widget, dragEvent);
   }
 
   handleWidgetsMenuClose() {
@@ -233,13 +210,23 @@ export class AppMainContainer extends Component {
     // TODO: Debounce clear the search value
   }
 
+  handleAutoFillClick() {
+    const { widgets } = this.state;
+
+    log.debug('handleAutoFillClick', widgets);
+
+    for (let i = 0; i < widgets.length; i += 1) {
+      this.openWidget(widgets[i]);
+    }
+  }
+
   handleExportLayoutClick() {
     this.setState({ isPanelsMenuShown: false });
 
     try {
       const { workspace } = this.props;
       const { data } = workspace;
-      const { layoutConfig } = data;
+      const { layoutConfig = [] } = data;
 
       log.info('Exporting layoutConfig', layoutConfig);
 
@@ -312,11 +299,53 @@ export class AppMainContainer extends Component {
     }
   }
 
+  /**
+   * Open a widget up, using a drag event if specified.
+   * @param {WidgetDefinition} widget The widget to
+   * @param {DragEvent} dragEvent The mouse drag event that trigger it, undefined if it was not triggered by a drag
+   */
+  openWidget(widget, dragEvent) {
+    switch (widget.type) {
+      case dh.VariableType.TABLE: {
+        const metadata = { table: widget.name };
+        this.emitLayoutEvent(
+          IrisGridEvent.OPEN_GRID,
+          widget.name,
+          () => {
+            const { session } = this.props;
+            return createGridModel(session, metadata);
+          },
+          metadata,
+          shortid.generate(),
+          dragEvent
+        );
+        break;
+      }
+      case dh.VariableType.FIGURE: {
+        const metadata = { table: widget.name };
+        this.emitLayoutEvent(
+          ChartEvent.OPEN,
+          widget.name,
+          () => {
+            const { session } = this.props;
+            return createGridModel(session, metadata);
+          },
+          metadata,
+          shortid.generate(),
+          dragEvent
+        );
+        break;
+      }
+      default:
+        log.error('Unexpected widget type', widget);
+    }
+  }
+
   render() {
     const { activeTool, user, workspace } = this.props;
     const { data: workspaceData = {} } = workspace;
     const { data = {}, layoutConfig } = workspaceData;
-    const { isPanelsMenuShown, isSettingsMenuShown } = this.state;
+    const { isPanelsMenuShown, isSettingsMenuShown, widgets } = this.state;
     const contextActions = [
       {
         action: () => {
@@ -370,11 +399,7 @@ export class AppMainContainer extends Component {
             interactive
           >
             <WidgetList
-              // TODO: Get the actual list of widgets available
-              widgets={[
-                { name: 'miami', type: dh.VariableType.TABLE },
-                { name: 'honolulu', type: dh.VariableType.TABLE },
-              ]}
+              widgets={widgets}
               onExportLayout={this.handleExportLayoutClick}
               onImportLayout={this.handleImportLayoutClick}
               onSelect={this.handleWidgetSelect}
@@ -420,6 +445,9 @@ export class AppMainContainer extends Component {
         </nav>
         <DashboardContainer
           data={data}
+          emptyDashboard={
+            <EmptyDashboard onAutoFillClick={this.handleAutoFillClick} />
+          }
           layoutConfig={layoutConfig}
           onDataChange={this.handleDataChange}
           onGoldenLayoutChange={this.handleGoldenLayoutChange}
