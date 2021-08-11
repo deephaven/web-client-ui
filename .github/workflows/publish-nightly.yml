@@ -4,9 +4,26 @@ on:
   # Note: this will set GITHUB_SHA to the latest commit on the default branch.
   schedule:
     # 2AM EST == 6AM UTC
-    - cron:  '0 6 * * *'
+    - cron: '0 6 * * *'
 jobs:
+  check_date:
+    runs-on: ubuntu-latest
+    name: Check latest commit
+    outputs:
+      should_run: ${{ steps.should_run.outputs.should_run }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: print latest_commit
+        run: echo ${{ github.sha }}
+
+      - id: should_run
+        continue-on-error: true
+        name: check latest commit is less than a day
+        if: ${{ github.event_name == 'schedule' }}
+        run: test -z $(git rev-list  --after="24 hours"  ${{ github.sha }}) && echo "::set-output name=should_run::false"
   build:
+    needs: check_date
+    if: ${{ needs.check_date.outputs.should_run != 'false' }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -20,6 +37,6 @@ jobs:
           registry-url: 'https://npm.pkg.github.com'
       - run: npm install
       - run: npm run build
-      - run: ./node_modules/.bin/lerna publish --preid beta --dist-tag nightly --registry https://npm.pkg.github.com --yes
+      - run: ./node_modules/.bin/lerna publish --canary --preid beta --dist-tag nightly --registry https://npm.pkg.github.com --yes
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
