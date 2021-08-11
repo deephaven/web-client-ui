@@ -1,5 +1,8 @@
 import { ItemConfigType } from 'golden-layout';
 
+/**
+ * Interface for accessing layouts from whereever they are stored.
+ */
 export interface LayoutStorage {
   /**
    * Get the name of the layouts available

@@ -275,8 +275,7 @@ export class DashboardContainer extends Component {
       content,
     };
 
-    log.debug('layout LayoutConfig', layoutConfig);
-    log.debug('layout InitLayout', content);
+    log.debug('initLayout layoutConfig', layoutConfig, 'content', content);
 
     const layout = new GoldenLayout(config, this.layoutElement.current);
 
@@ -329,17 +328,15 @@ export class DashboardContainer extends Component {
       hydrateComponentPropsMap
     );
 
-    if (content.length !== 1) {
-      log.error('Unexpected content when reloading layout config', content);
-      return;
-    }
-
     // Remove the old layout before add the new one
     while (layout.root.contentItems.length > 0) {
       layout.root.contentItems[0].remove();
     }
 
-    layout.root.addChild(content[0]);
+    // Add the new content. It is usally just one item from the root
+    for (let i = 0; i < content.length; i += 1) {
+      layout.root.addChild(content[i]);
+    }
   }
 
   registerComponent(layout, name, ComponentType) {

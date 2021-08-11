@@ -1,4 +1,3 @@
-// Displays a list of widgets, table, plot, and widget(not yet implemented)) from a persistent query
 import React, {
   ChangeEvent,
   MouseEvent,
@@ -33,6 +32,11 @@ export interface WidgetListProps {
   widgets?: WidgetDefinition[];
 }
 
+/**
+ * Display a search field and a list of widgets, as well as layout export/import buttons.
+ * @param props The widgets and handlers to use for this list
+ * @returns A JSX element for the list of widgets, along with search
+ */
 export const WidgetList = (props: WidgetListProps): JSX.Element => {
   const { onExportLayout, onImportLayout, onSelect, widgets = [] } = props;
   const [disableDoubleClick, setDisableDoubleClick] = useState(false);

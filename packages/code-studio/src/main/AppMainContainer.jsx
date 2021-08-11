@@ -256,6 +256,10 @@ export class AppMainContainer extends Component {
     this.importLayoutFile(event.target.files[0]);
   }
 
+  /**
+   * Import the provided file and set it in the workspace data (which should then load it in the dashboard)
+   * @param {File} file JSON file to import
+   */
   async importLayoutFile(file) {
     try {
       const fileText = await file.text();

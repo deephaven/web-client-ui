@@ -25,7 +25,7 @@ class ConsoleEventHandler {
     await LayoutUtils.onInitialized(this.layout);
 
     this.addMissingPanels();
-    // this.activateConsolePanel();
+    this.activateConsolePanel();
   }
 
   getStackForComponentType(component) {
