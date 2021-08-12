@@ -14,18 +14,17 @@ import {
   setWorkspaceStorage as setWorkspaceStorageAction,
 } from '@deephaven/redux';
 import { createClient } from 'webdav/web';
-import { setSession as setSessionAction } from '../redux/actions';
+import {
+  setLayoutStorage as setLayoutStorageAction,
+  setSession as setSessionAction,
+} from '../redux/actions';
 import App from './App';
 import ToolType from '../tools/ToolType';
 import PouchCommandHistoryStorage from '../storage/PouchCommandHistoryStorage';
 import LocalWorkspaceStorage from '../dashboard/LocalWorkspaceStorage';
 import WebdavLayoutStorage from './WebdavLayoutStorage';
 import { createSession } from './SessionUtils';
-import {
-  CommandHistoryPanel,
-  ConsolePanel,
-  FileExplorerPanel,
-} from '../dashboard/panels';
+import UserLayoutUtils from './UserLayoutUtils';
 
 // Default values used
 const NAME = 'user';
@@ -38,58 +37,6 @@ const FILE_STORAGE = new WebdavFileStorage(
 const LAYOUT_STORAGE = new WebdavLayoutStorage(
   createClient(process.env.REACT_APP_LAYOUTS_URL ?? '')
 );
-const DEFAULT_LAYOUT_CONFIG = [
-  {
-    type: 'column',
-    content: [
-      {
-        type: 'row',
-        content: [
-          {
-            type: 'stack',
-            content: [
-              {
-                type: 'react-component',
-                component: ConsolePanel.COMPONENT,
-                title: ConsolePanel.TITLE,
-                isClosable: false,
-              },
-            ],
-          },
-          {
-            type: 'stack',
-            width: 25,
-            content: [
-              {
-                type: 'react-component',
-                component: CommandHistoryPanel.COMPONENT,
-                title: CommandHistoryPanel.TITLE,
-                isClosable: false,
-              },
-              {
-                type: 'react-component',
-                component: FileExplorerPanel.COMPONENT,
-                title: FileExplorerPanel.TITLE,
-                isClosable: false,
-              },
-            ],
-          },
-        ],
-      },
-      {
-        type: 'row',
-        content: [
-          {
-            type: 'stack',
-            title: 'Notebooks',
-            content: [],
-          },
-        ],
-      },
-    ],
-  },
-];
-
 /**
  * Component that sets some default values needed
  */
@@ -99,6 +46,7 @@ const AppInit = props => {
     setActiveTool,
     setCommandHistoryStorage,
     setFileStorage,
+    setLayoutStorage,
     setSession,
     setUser,
     setWorkspace,
@@ -113,23 +61,15 @@ const AppInit = props => {
       const loadedSession = await createSession();
       const { data } = loadedWorkspace;
       if (data.layoutConfig == null) {
-        // There's no layout already, try to load one from the server
-        const layouts = await LAYOUT_STORAGE.getLayouts();
-        if (layouts.length > 0) {
-          const layoutConfig = await LAYOUT_STORAGE.getLayout(layouts[0]);
-          data.layoutConfig = layoutConfig;
-        } else if (layouts.length === 0) {
-          // TODO: Should check if the session already has variables as well, and just do an empty layout as per spec
-          data.layoutConfig = [];
-        } else {
-          // Otherwise, do the default layout
-          data.layoutConfig = DEFAULT_LAYOUT_CONFIG;
-        }
+        // User doesn't have a saved layout yet, load the default
+        const layoutConfig = await UserLayoutUtils.getDefaultLayout();
+        data.layoutConfig = layoutConfig;
       }
 
       setActiveTool(ToolType.DEFAULT);
       setCommandHistoryStorage(COMMAND_HISTORY_STORAGE);
       setFileStorage(FILE_STORAGE);
+      setLayoutStorage(LAYOUT_STORAGE);
       setSession(loadedSession);
       setUser(USER);
       setWorkspaceStorage(WORKSPACE_STORAGE);
@@ -141,6 +81,7 @@ const AppInit = props => {
     setActiveTool,
     setCommandHistoryStorage,
     setFileStorage,
+    setLayoutStorage,
     setSession,
     setUser,
     setWorkspace,
@@ -174,6 +115,7 @@ AppInit.propTypes = {
   setActiveTool: PropTypes.func.isRequired,
   setCommandHistoryStorage: PropTypes.func.isRequired,
   setFileStorage: PropTypes.func.isRequired,
+  setLayoutStorage: PropTypes.func.isRequired,
   setSession: PropTypes.func.isRequired,
   setUser: PropTypes.func.isRequired,
   setWorkspace: PropTypes.func.isRequired,
@@ -194,6 +136,7 @@ export default connect(mapStateToProps, {
   setActiveTool: setActiveToolAction,
   setCommandHistoryStorage: setCommandHistoryStorageAction,
   setFileStorage: setFileStorageAction,
+  setLayoutStorage: setLayoutStorageAction,
   setSession: setSessionAction,
   setUser: setUserAction,
   setWorkspace: setWorkspaceAction,

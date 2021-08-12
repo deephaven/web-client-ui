@@ -36,12 +36,13 @@ import { IrisPropTypes } from '../include/prop-types';
 import AppControlsMenu from './AppControlsMenu';
 import DashboardContainer from '../dashboard/DashboardContainer';
 import ControlType from '../controls/ControlType';
-import { getSession } from '../redux';
+import { getLayoutStorage, getSession } from '../redux';
 import Logo from '../settings/LogoMiniDark.svg';
 import './AppMainContainer.scss';
 import WidgetList from './WidgetList';
 import { createGridModel } from './WidgetUtils';
 import EmptyDashboard from './EmptyDashboard';
+import UserLayoutUtils from './UserLayoutUtils';
 
 const log = Log.module('AppMainContainer');
 
@@ -69,6 +70,7 @@ export class AppMainContainer extends Component {
     this.handleExportLayoutClick = this.handleExportLayoutClick.bind(this);
     this.handleImportLayoutClick = this.handleImportLayoutClick.bind(this);
     this.handleImportLayoutFiles = this.handleImportLayoutFiles.bind(this);
+    this.handleResetLayoutClick = this.handleResetLayoutClick.bind(this);
     this.handleWidgetMenuClick = this.handleWidgetMenuClick.bind(this);
     this.handleWidgetsMenuClose = this.handleWidgetsMenuClose.bind(this);
     this.handleWidgetSelect = this.handleWidgetSelect.bind(this);
@@ -216,6 +218,8 @@ export class AppMainContainer extends Component {
   }
 
   handleExportLayoutClick() {
+    log.info('handleExportLayoutClick');
+
     this.setState({ isPanelsMenuShown: false });
 
     try {
@@ -242,11 +246,21 @@ export class AppMainContainer extends Component {
   }
 
   handleImportLayoutClick() {
+    log.info('handleImportLayoutClick');
+
     this.setState({ isPanelsMenuShown: false });
 
     // Reset the file list on the import element, otherwise user won't be prompted again
     this.importElement.current.value = '';
     this.importElement.current.click();
+  }
+
+  handleResetLayoutClick() {
+    log.info('handleResetLayoutClick');
+
+    this.setState({ isPanelsMenuShown: false });
+
+    this.resetLayout();
   }
 
   handleImportLayoutFiles(event) {
@@ -263,13 +277,24 @@ export class AppMainContainer extends Component {
   async importLayoutFile(file) {
     try {
       const fileText = await file.text();
-      const newLayoutConfig = JSON.parse(fileText);
+      const layoutConfig = JSON.parse(fileText);
 
       const { updateWorkspaceData } = this.props;
-      updateWorkspaceData({ layoutConfig: newLayoutConfig });
+      updateWorkspaceData({ layoutConfig });
     } catch (e) {
       log.error('Unable to export layout', e);
     }
+  }
+
+  /**
+   * Resets the users layout to the default layout
+   */
+  async resetLayout() {
+    const { layoutStorage } = this.props;
+    const layoutConfig = await UserLayoutUtils.getDefaultLayout(layoutStorage);
+
+    const { updateWorkspaceData } = this.props;
+    updateWorkspaceData({ layoutConfig });
   }
 
   // eslint-disable-next-line class-methods-use-this
@@ -400,6 +425,7 @@ export class AppMainContainer extends Component {
               widgets={widgets}
               onExportLayout={this.handleExportLayoutClick}
               onImportLayout={this.handleImportLayoutClick}
+              onResetLayout={this.handleResetLayoutClick}
               onSelect={this.handleWidgetSelect}
             />
           </Popper>
@@ -475,6 +501,7 @@ export class AppMainContainer extends Component {
 
 AppMainContainer.propTypes = {
   activeTool: PropTypes.string.isRequired,
+  layoutStorage: PropTypes.shape({}).isRequired,
   session: APIPropTypes.IdeSession.isRequired,
   setActiveTool: PropTypes.func.isRequired,
   updateWorkspaceData: PropTypes.func.isRequired,
@@ -489,6 +516,7 @@ AppMainContainer.propTypes = {
 
 const mapStateToProps = state => ({
   activeTool: getActiveTool(state),
+  layoutStorage: getLayoutStorage(state),
   session: getSession(state).session,
   user: getUser(state),
   workspace: getWorkspace(state),

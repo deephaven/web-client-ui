@@ -4,5 +4,11 @@
  * @param {Store} store The redux store that is used
  * @returns {{ session: dh.IdeSession, config: { type: string }}} The active session and it's options
  */
-// eslint-disable-next-line import/prefer-default-export
 export const getSession = store => store.session;
+
+/**
+ * Get the layout storage used by the app
+ * @param {Store} store The redux store
+ * @returns {LayoutStorage} The layout storage instance
+ */
+export const getLayoutStorage = store => store.layoutStorage;

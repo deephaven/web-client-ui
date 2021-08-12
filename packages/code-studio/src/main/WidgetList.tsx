@@ -8,9 +8,14 @@ import React, {
 } from 'react';
 import { Button, SearchInput } from '@deephaven/components';
 import { ObjectIcon } from '@deephaven/console';
-import { vsArrowSmallDown, vsArrowSmallUp, vsPreview } from '@deephaven/icons';
-import './WidgetList.scss';
+import {
+  vsArrowSmallDown,
+  vsArrowSmallUp,
+  vsPreview,
+  vsRefresh,
+} from '@deephaven/icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import './WidgetList.scss';
 
 const MINIMUM_DRAG_DISTANCE = 10;
 
@@ -29,6 +34,7 @@ export interface WidgetListProps {
   onSelect: (widget: WidgetDefinition, e?: _MouseEvent) => undefined;
   onExportLayout: () => undefined;
   onImportLayout: () => undefined;
+  onResetLayout: () => undefined;
   widgets?: WidgetDefinition[];
 }
 
@@ -38,7 +44,13 @@ export interface WidgetListProps {
  * @returns A JSX element for the list of widgets, along with search
  */
 export const WidgetList = (props: WidgetListProps): JSX.Element => {
-  const { onExportLayout, onImportLayout, onSelect, widgets = [] } = props;
+  const {
+    onExportLayout,
+    onImportLayout,
+    onResetLayout,
+    onSelect,
+    widgets = [],
+  } = props;
   const [disableDoubleClick, setDisableDoubleClick] = useState(false);
   const [searchText, setSearchText] = useState('');
   const searchField = useRef<SearchInput>(null);
@@ -204,6 +216,12 @@ export const WidgetList = (props: WidgetListProps): JSX.Element => {
           </div>
           Import Layout
         </Button>
+        <Button
+          kind="ghost"
+          icon={vsRefresh}
+          onClick={onResetLayout}
+          tooltip="Reset Layout"
+        ></Button>
       </div>
     </div>
   );

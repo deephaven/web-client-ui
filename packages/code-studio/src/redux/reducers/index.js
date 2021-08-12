@@ -1,3 +1,4 @@
+import layoutStorage from './layoutStorage';
 import session from './session';
 
-export default { session };
+export default { layoutStorage, session };
