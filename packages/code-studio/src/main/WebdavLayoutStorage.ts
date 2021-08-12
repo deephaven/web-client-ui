@@ -12,7 +12,7 @@ export class WebdavLayoutStorage implements LayoutStorage {
    * @param client The WebDAV client instance to use
    * @param root The root path where the layouts are stored
    */
-  constructor(client: WebDAVClient, root = '/layouts/') {
+  constructor(client: WebDAVClient, root = '/') {
     this.client = client;
     this.root = root;
   }

@@ -28,13 +28,16 @@ import {
 } from '../dashboard/panels';
 
 // Default values used
-const webdavClient = createClient(process.env.REACT_APP_NOTEBOOKS_URL ?? '');
 const NAME = 'user';
 const USER = { name: NAME, operateAs: NAME };
 const WORKSPACE_STORAGE = new LocalWorkspaceStorage();
 const COMMAND_HISTORY_STORAGE = new PouchCommandHistoryStorage();
-const FILE_STORAGE = new WebdavFileStorage(webdavClient);
-const LAYOUT_STORAGE = new WebdavLayoutStorage(webdavClient);
+const FILE_STORAGE = new WebdavFileStorage(
+  createClient(process.env.REACT_APP_NOTEBOOKS_URL ?? '')
+);
+const LAYOUT_STORAGE = new WebdavLayoutStorage(
+  createClient(process.env.REACT_APP_LAYOUTS_URL ?? '')
+);
 const DEFAULT_LAYOUT_CONFIG = [
   {
     type: 'column',
