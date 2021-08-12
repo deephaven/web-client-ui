@@ -78,4 +78,4 @@ jobs:
 
       - name: Test (Push)
         if: ${{ github.event_name == 'push' }}
-        run: npm run test:ci -- --onlyChanged
+        run: npm run test:ci -- --lastCommit
