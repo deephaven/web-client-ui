@@ -352,10 +352,6 @@ class MonacoUtils {
       {
         windows: 'ctrl+H',
       },
-      {
-        windows: 'ctrl+L',
-        mac: 'meta+L',
-      },
     ];
 
     try {
