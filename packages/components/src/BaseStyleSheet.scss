@@ -651,12 +651,10 @@ input[type='number']::-webkit-inner-spin-button {
   display: none;
 }
 
-//hide the "Loading..." and "No suggestions" message in the suggest widget in monaco to make it feel faster
 .monaco-editor {
-  .editor-widget.suggest-widget {
-    .message {
-      display: none;
-    }
+  // Hide the "Loading..." and "No suggestions" message in the suggest widget in monaco to make it feel faster
+  .editor-widget.suggest-widget.message {
+    display: none;
   }
 
   .find-widget {
