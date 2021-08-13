@@ -13,6 +13,7 @@ interface ItemListItemProps {
   disableSelect: boolean;
   onBlur(index: number, e: React.FocusEvent<HTMLDivElement>): void;
   onClick(index: number, e: React.MouseEvent<HTMLDivElement>): void;
+  onContextMenu(index: number, e: React.MouseEvent<HTMLDivElement>): void;
   onDragStart(index: number, e: React.DragEvent<HTMLDivElement>): void;
   onDrag(index: number, e: React.DragEvent<HTMLDivElement>): void;
   onDragOver(index: number, e: React.DragEvent<HTMLDivElement>): void;
@@ -40,6 +41,9 @@ class ItemListItem extends Component<ItemListItemProps, Record<string, never>> {
       // no-op
     },
     onClick(): void {
+      // no-op
+    },
+    onContextMenu(): void {
       // no-op
     },
     onDragStart(): void {
@@ -86,6 +90,7 @@ class ItemListItem extends Component<ItemListItemProps, Record<string, never>> {
     this.handleBlur = this.handleBlur.bind(this);
     this.handleFocus = this.handleFocus.bind(this);
     this.handleClick = this.handleClick.bind(this);
+    this.handleContextMenu = this.handleContextMenu.bind(this);
     this.handleDragStart = this.handleDragStart.bind(this);
     this.handleDrag = this.handleDrag.bind(this);
     this.handleDragOver = this.handleDragOver.bind(this);
@@ -114,6 +119,11 @@ class ItemListItem extends Component<ItemListItemProps, Record<string, never>> {
   handleClick(e: React.MouseEvent<HTMLDivElement>): void {
     const { itemIndex, onClick } = this.props;
     onClick(itemIndex, e);
+  }
+
+  handleContextMenu(e: React.MouseEvent<HTMLDivElement>): void {
+    const { itemIndex, onContextMenu } = this.props;
+    onContextMenu(itemIndex, e);
   }
 
   handleDragStart(e: React.DragEvent<HTMLDivElement>): void {
@@ -174,6 +184,7 @@ class ItemListItem extends Component<ItemListItemProps, Record<string, never>> {
           { 'is-draggable': isDraggable }
         )}
         onKeyDown={ItemListItem.handleKeyDown}
+        onContextMenu={this.handleContextMenu}
         onClick={this.handleClick}
         onDrag={this.handleDrag}
         onDragStart={this.handleDragStart}
