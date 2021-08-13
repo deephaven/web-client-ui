@@ -62,7 +62,9 @@ const AppInit = props => {
       const { data } = loadedWorkspace;
       if (data.layoutConfig == null) {
         // User doesn't have a saved layout yet, load the default
-        const layoutConfig = await UserLayoutUtils.getDefaultLayout();
+        const layoutConfig = await UserLayoutUtils.getDefaultLayout(
+          LAYOUT_STORAGE
+        );
         data.layoutConfig = layoutConfig;
       }
 
