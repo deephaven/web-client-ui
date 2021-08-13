@@ -8,9 +8,11 @@ $log-pane-buttons-width: 48px;
 
 .log-pane-menu {
   position: absolute;
-  top: $spacer-1;
   right: $log-pane-menu-offset;
-  z-index: 11; //monoco source sets find widget at 10
+  padding-left: 3px; // padding to align it with find widget box
+  padding-bottom: 1px;
+  z-index: 11; // monaco source sets find widget at 10
+  background: $content-bg;
 
   div {
     display: inline-block;
@@ -30,7 +32,6 @@ $log-pane-buttons-width: 48px;
 }
 
 .log-pane-editor .find-widget {
-  top: $spacer-1 !important;
   box-shadow: none !important;
   background: $content-bg !important;
   margin-right: $log-pane-buttons-width;
