@@ -1,7 +1,7 @@
 import React from 'react';
 import { mount, ReactWrapper } from 'enzyme';
-import ItemList from './ItemList';
 import { Range } from '@deephaven/utils';
+import ItemList from './ItemList';
 
 function makeItems(count = 20) {
   const items = [];
