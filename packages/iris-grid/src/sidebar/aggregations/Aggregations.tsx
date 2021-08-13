@@ -51,6 +51,7 @@ export type AggregationsProps = {
 
 export const SELECTABLE_OPTIONS = [
   AggregationOperation.SUM,
+  AggregationOperation.ABS_SUM,
   AggregationOperation.MIN,
   AggregationOperation.MAX,
   AggregationOperation.VAR,

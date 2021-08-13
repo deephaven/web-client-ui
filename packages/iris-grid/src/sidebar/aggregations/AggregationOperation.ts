@@ -3,6 +3,7 @@ enum AggregationOperation {
   MIN = 'Min',
   MAX = 'Max',
   SUM = 'Sum',
+  ABS_SUM = 'AbsSum',
   VAR = 'Var',
   AVG = 'Avg',
   STD = 'Std',
