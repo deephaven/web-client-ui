@@ -1,25 +1,20 @@
-// Deprecated but left here for now; use the gulp tasks in the Gruntfile.
-var gulp = require("gulp");
-var concat = require("gulp-concat");
-var uglify = require("gulp-uglify");
-var insert = require("gulp-insert");
-var path = require("path");
+const gulp = require('gulp');
+const concat = require('gulp-concat');
+const uglify = require('gulp-uglify');
+const insert = require('gulp-insert');
+const path = require('path');
 
 const srcFiles = [
-  "./build/ns.js",
-  "./src/js/utils/utils.js",
-  "./src/js/utils/EventEmitter.js",
-  "./src/js/utils/DragListener.js",
-  "./src/js/**",
+  './src/js/base.js',
+  './src/js/utils/utils.js',
+  './src/js/utils/EventEmitter.js',
+  './src/js/utils/DragListener.js',
+  './src/js/**',
 ];
 
-const outputFile = "goldenlayout.js";
-const outputMinFile = "goldenlayout.min.js";
-const outputFolder = "./dist";
-
-function watch() {
-  return gulp.watch(srcFiles, combine);
-}
+const outputFile = 'goldenlayout.js';
+const outputMinFile = 'goldenlayout.min.js';
+const outputFolder = './dist';
 
 function combine() {
   return (
@@ -29,9 +24,13 @@ function combine() {
       // Concatenate to goldenLayout.js
       .pipe(concat(outputFile))
       // These are a prefix and suffix added to the concatenated file
-      .pipe(insert.wrap("(function($){", "})(window.$);"))
+      .pipe(insert.wrap('(function($){', '})(window.$);'))
       .pipe(gulp.dest(outputFolder))
   );
+}
+
+function watch() {
+  return gulp.watch(srcFiles, combine);
 }
 
 function minify() {

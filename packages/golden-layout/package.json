@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/golden-layout",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
   "devDependencies": {
@@ -31,7 +31,7 @@
     "build": "cross-env NODE_ENV=production run-s clean build-steps",
     "build-dev": "cross-env NODE_ENV=development run-s clean build-steps",
     "build-steps": "run-p build:*",
-    "sass": "sass ./src/scss:./src/css -s compressed",
+    "sass": "sass ./src/scss:./dist/css -s compressed",
     "build:gulp": "gulp build",
     "build:sass": "npm run sass",
     "watch": "run-p watch:*",

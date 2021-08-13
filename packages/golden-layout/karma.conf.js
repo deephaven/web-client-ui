@@ -13,7 +13,7 @@ module.exports = function (config) {
     // list of files / patterns to load in the browser
     files: [
       './lib/jquery.js',
-      './build/ns.js',
+      './src/js/base.js',
       './src/js/utils/utils.js',
       './src/js/**',
       './test/**',
