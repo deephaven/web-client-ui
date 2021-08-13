@@ -15,6 +15,12 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+        with:
+          fetch-depth: '0' # This action defaults to only getting the latest commit. Setting to 0 makes it retrieve the full git commit history
+
+      - name: Fetch base branch
+        run: |
+          git fetch --no-tags origin ${{ github.event.pull_request.base.ref }}
 
       - name: Use Node.js
         uses: actions/setup-node@v2
@@ -66,5 +72,10 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Test
-        run: npm run test:ci
+      - name: Test (Pull Request)
+        if: ${{ github.event_name == 'pull_request' }}
+        run: npm run test:ci -- --changedSince origin/${{ github.event.pull_request.base.ref }}
+
+      - name: Test (Push)
+        if: ${{ github.event_name == 'push' }}
+        run: npm run test:ci -- --lastCommit

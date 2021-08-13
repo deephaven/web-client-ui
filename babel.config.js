@@ -1,9 +1,13 @@
-module.exports = {
-  presets: ['@deephaven/babel-preset'],
-  ignore: [
-    /\.test.(tsx?|jsx?)$/,
-    /\.stories.(tsx?|jsx?|mdx?)$/,
-    '**/__mocks__/*',
-    '**/*.scss',
-  ],
+module.exports = api => {
+  const isTest = api.env('test');
+  return {
+    presets: ['@deephaven/babel-preset'],
+    babelrcRoots: ['.', 'packages/*'],
+    ignore: [
+      !isTest ? /\.test.(tsx?|jsx?)$/ : false,
+      !isTest ? '**/__mocks__/*' : false,
+      /\.stories.(tsx?|jsx?|mdx?)$/,
+      '**/*.scss',
+    ].filter(Boolean),
+  };
 };
