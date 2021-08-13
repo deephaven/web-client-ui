@@ -53,6 +53,9 @@
     "layout",
     "popouts"
   ],
+  "files": [
+    "dist"
+  ],
   "npmFileMap": [
     {
       "basePath": "/dist/",
