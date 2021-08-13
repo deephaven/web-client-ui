@@ -221,7 +221,7 @@ export const WidgetList = (props: WidgetListProps): JSX.Element => {
           icon={vsRefresh}
           onClick={onResetLayout}
           tooltip="Reset Layout"
-        ></Button>
+        />
       </div>
     </div>
   );

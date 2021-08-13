@@ -1,10 +1,10 @@
+import { ItemConfigType } from 'golden-layout';
 import LayoutStorage from './LayoutStorage';
 import {
   CommandHistoryPanel,
   ConsolePanel,
   FileExplorerPanel,
 } from '../dashboard/panels';
-import { ItemConfigType } from 'golden-layout';
 
 export const DEFAULT_LAYOUT_CONFIG = [
   {
