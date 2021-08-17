@@ -66,7 +66,7 @@
     "shortid": "^2.2.15",
     "source-map-explorer": "^2.5.2",
     "typescript": "^4.3.2",
-    "webdav": "^4.6.0"
+    "webdav": "^4.6.1"
   },
   "dependenciesComments": {
     "@types/jszip": "3.1.7 is the closest to 3.2.2 available. JSZip adds official typings in 3.4.0, so remove if going past JSZip 3.4.0",
