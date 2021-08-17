@@ -58,7 +58,6 @@ export class WebdavFileStorage implements FileStorage {
     return {
       filename: name,
       basename: FileUtils.getBaseName(name),
-      // If the file is just a number, it can come back as just a number
       content,
     };
   }
