@@ -2,5 +2,8 @@
   "root": true,
   "extends": [
     "@deephaven/eslint-config"
-  ]
+  ],
+  "ignorePatterns": [
+    "packages/golden-layout/*"
+  ],
 }

@@ -1,7 +1,7 @@
 import React, { Component, ErrorInfo } from 'react';
 import { connect, ConnectedProps } from 'react-redux';
 import shortid from 'shortid';
-import type GoldenLayout from 'golden-layout';
+import type GoldenLayout from '@deephaven/golden-layout';
 import memoize from 'memoize-one';
 import { CSSTransition } from 'react-transition-group';
 import { ThemeExport } from '@deephaven/components';

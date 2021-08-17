@@ -21,6 +21,7 @@
     "prestart": "lerna run prestart --stream",
     "test": "jest --watch --changedSince origin/main",
     "test:ci": "jest --maxWorkers=2",
+    "test:golden-layout": "lerna run test:ci --scope=@deephaven/golden-layout --stream",
     "sync-version": "lerna version ${DEEPHAVEN_VERSION:-error} --no-git-tag-version --yes"
   },
   "repository": "https://github.com/deephaven/web-client-ui",

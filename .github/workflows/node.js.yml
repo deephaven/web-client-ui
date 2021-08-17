@@ -19,8 +19,7 @@ jobs:
           fetch-depth: '0' # This action defaults to only getting the latest commit. Setting to 0 makes it retrieve the full git commit history
 
       - name: Fetch base branch
-        run: |
-          git fetch --no-tags origin ${{ github.event.pull_request.base.ref }}
+        run: git fetch --no-tags origin ${{ github.event.pull_request.base.ref }}
 
       - name: Use Node.js
         uses: actions/setup-node@v2
@@ -74,8 +73,12 @@ jobs:
 
       - name: Test (Pull Request)
         if: ${{ github.event_name == 'pull_request' }}
-        run: npm run test:ci -- --changedSince origin/${{ github.event.pull_request.base.ref }}
+        run: |
+          npm run test:ci -- --changedSince origin/${{ github.event.pull_request.base.ref }}
+          npm run test:golden-layout
 
       - name: Test (Push)
         if: ${{ github.event_name == 'push' }}
-        run: npm run test:ci -- --lastCommit
+        run: |
+          npm run test:ci -- --lastCommit
+          npm run test:golden-layout

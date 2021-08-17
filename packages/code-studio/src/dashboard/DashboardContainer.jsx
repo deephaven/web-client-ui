@@ -16,7 +16,7 @@ import {
   setDashboardConsoleCreatorSettings as setDashboardConsoleCreatorSettingsAction,
   setDashboardLinks as setDashboardLinksAction,
 } from '@deephaven/redux';
-import GoldenLayout from 'golden-layout';
+import GoldenLayout from '@deephaven/golden-layout';
 import '../layout/golden-layout';
 import {
   ChartPanel,

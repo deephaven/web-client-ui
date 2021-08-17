@@ -6,7 +6,7 @@ import FileExplorer, {
   FileStorageItem,
   NewItemModal,
 } from '@deephaven/file-explorer';
-import GoldenLayout from 'golden-layout';
+import GoldenLayout from '@deephaven/golden-layout';
 import React, { ReactNode } from 'react';
 import { connect } from 'react-redux';
 import Panel from './Panel';
