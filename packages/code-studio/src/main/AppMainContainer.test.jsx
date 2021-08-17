@@ -8,6 +8,9 @@ import LocalWorkspaceStorage from '../dashboard/LocalWorkspaceStorage';
 function makeSession() {
   return {
     addEventListener: jest.fn(),
+    connection: {
+      subscribeFieldDefinitionUpdates: jest.fn(),
+    },
     removeEventListener: jest.fn(),
     getTable: jest.fn(),
     runCode: jest.fn(),
@@ -15,6 +18,7 @@ function makeSession() {
 }
 
 function makeAppMainContainer({
+  layoutStorage = {},
   user = {
     name: 'name',
     operateAs: 'operateAs',
@@ -36,6 +40,7 @@ function makeAppMainContainer({
 } = {}) {
   return shallow(
     <AppMainContainer
+      layoutStorage={layoutStorage}
       saveWorkspace={saveWorkspace}
       updateWorkspaceData={updateWorkspaceData}
       user={user}

@@ -78,19 +78,18 @@ export class AppMainContainer extends Component {
 
     this.goldenLayout = null;
     this.importElement = React.createRef();
+    this.widgetListenerRemover = null;
 
     this.state = {
       isPanelsMenuShown: false,
       isSettingsMenuShown: false,
-      // TODO: get widgets from the session... or redux?
-      widgets: [
-        { name: 'miami', type: dh.VariableType.TABLE },
-        { name: 'honolulu', type: dh.VariableType.TABLE },
-      ],
+      widgets: [],
     };
   }
 
   componentDidMount() {
+    this.initWidgets();
+
     window.addEventListener(
       'beforeunload',
       AppMainContainer.handleWindowBeforeUnload
@@ -98,10 +97,48 @@ export class AppMainContainer extends Component {
   }
 
   componentWillUnmount() {
+    this.deinitWidgets();
+
     window.removeEventListener(
       'beforeunload',
       AppMainContainer.handleWindowBeforeUnload
     );
+  }
+
+  initWidgets() {
+    const { session } = this.props;
+    this.widgetListenerRemover = session.connection.subscribeFieldDefinitionUpdates(
+      updates => {
+        log.debug('Got updates', updates);
+        this.setState(({ widgets }) => {
+          const { modifiedFields, newFields, removedFields } = updates;
+
+          // Remove from the array if it's been removed OR modified. We'll add it back after if it was modified.
+          const fieldsToRemove = [...modifiedFields, removedFields];
+          const newWidgets = widgets.filter(
+            widget =>
+              !fieldsToRemove.some(
+                field => field.definition.name === widget.name
+              )
+          );
+
+          // Now add all the modified and updated fields back in
+          const fieldsToAdd = [...modifiedFields, ...newFields];
+          fieldsToAdd.forEach(field => {
+            const { definition } = field;
+            if (definition.name) {
+              newWidgets.push(definition);
+            }
+          });
+
+          return { widgets: newWidgets };
+        });
+      }
+    );
+  }
+
+  deinitWidgets() {
+    this.widgetListenerRemover?.();
   }
 
   sendClearFilter() {
