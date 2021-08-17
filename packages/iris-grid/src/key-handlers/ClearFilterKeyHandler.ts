@@ -1,7 +1,6 @@
-/* eslint class-methods-use-this: "off" */
-import { ContextActionUtils } from '@deephaven/components';
 import { KeyHandler } from '@deephaven/grid';
 import { IrisGrid } from '../IrisGrid';
+import { SHORTCUTS } from '..';
 
 class ClearFilterKeyHandler extends KeyHandler {
   private irisGrid: IrisGrid;
@@ -13,11 +12,7 @@ class ClearFilterKeyHandler extends KeyHandler {
   }
 
   onDown(e: KeyboardEvent): boolean {
-    if (
-      e.key.toLowerCase() === 'e' &&
-      ContextActionUtils.isModifierKeyDown(e) &&
-      e.shiftKey
-    ) {
+    if (SHORTCUTS.TABLE.CLEAR_FILTERS.matchesEvent(e)) {
       this.irisGrid.clearAllFilters();
       return true;
     }

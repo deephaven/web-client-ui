@@ -1,8 +1,7 @@
-/* eslint class-methods-use-this: "off" */
-import { ContextActionUtils } from '@deephaven/components';
 import { KeyHandler } from '@deephaven/grid';
 import { IrisGrid } from '../IrisGrid';
 import TableUtils from '../TableUtils';
+import { SHORTCUTS } from '..';
 
 class ReverseKeyHandler extends KeyHandler {
   private irisGrid: IrisGrid;
@@ -14,7 +13,7 @@ class ReverseKeyHandler extends KeyHandler {
   }
 
   onDown(e: KeyboardEvent): boolean {
-    if (e.key === 'i' && ContextActionUtils.isModifierKeyDown(e)) {
+    if (SHORTCUTS.TABLE.REVERSE.matchesEvent(e)) {
       if (!this.irisGrid.isReversible()) {
         return false;
       }
