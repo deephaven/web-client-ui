@@ -29,7 +29,6 @@ $lm-splitter-active-color: $gray-300;
     box-sizing: content-box; // golden-layout sets a js height using a content box model
     height: $tab-height;
     padding-top: 0;
-    overflow: hidden;
     background: $lm-header-background;
     box-shadow: inset 0 -1px 0 0 $background;
     // inset box shadows with 0-blur used to draw borders without impacting spacing or GL size calculations.
