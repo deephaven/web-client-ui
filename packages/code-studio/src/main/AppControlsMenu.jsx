@@ -7,7 +7,7 @@ import React, {
 } from 'react';
 import classNames from 'classnames';
 import { DropdownMenu, GLOBAL_SHORTCUTS } from '@deephaven/components';
-import { SHORTCUTS as GRID_SHORTCUTS } from '@deephaven/iris-grid';
+import { SHORTCUTS as IRIS_GRID_SHORTCUTS } from '@deephaven/iris-grid';
 import {
   dhInput,
   dhFilterSlash,
@@ -169,7 +169,7 @@ const AppControlsMenu = props => {
           onClearFilter();
         },
         order: 60,
-        shortcut: GRID_SHORTCUTS.TABLE.CLEAR_ALL_FILTERS,
+        shortcut: IRIS_GRID_SHORTCUTS.TABLE.CLEAR_ALL_FILTERS,
       },
     ],
     [handleControlSelect, handleToolSelect, onClearFilter]
