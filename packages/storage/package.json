@@ -39,7 +39,7 @@
     "react": "^16.14.0"
   },
   "devDependencies": {
-    "@babel/cli": "^7.14.3",
+    "@babel/cli": "^7.14.8",
     "@babel/core": "7.12.3",
     "@deephaven/iris-grid": "^0.2.1",
     "@deephaven/log": "^0.2.1",

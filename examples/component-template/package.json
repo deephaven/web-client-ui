@@ -46,7 +46,7 @@
     "react-dom": "^16.0.0"
   },
   "devDependencies": {
-    "@babel/cli": "^7.14.3",
+    "@babel/cli": "^7.14.8",
     "@deephaven/tsconfig": "^0.1.4",
     "@storybook/addon-actions": "^6.2.3",
     "@storybook/addon-essentials": "^6.2.3",
