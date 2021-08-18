@@ -65,7 +65,7 @@
     "shortid": "^2.x"
   },
   "devDependencies": {
-    "@babel/cli": "^7.14.3",
+    "@babel/cli": "^7.14.8",
     "@deephaven/icons": "^0.2.1",
     "@deephaven/log": "^0.2.1",
     "@deephaven/mocks": "^0.2.1",
