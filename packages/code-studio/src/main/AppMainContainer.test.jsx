@@ -9,7 +9,7 @@ function makeSession() {
   return {
     addEventListener: jest.fn(),
     connection: {
-      subscribeFieldDefinitionUpdates: jest.fn(),
+      subscribeToFieldUpdates: jest.fn(),
     },
     removeEventListener: jest.fn(),
     getTable: jest.fn(),
@@ -59,5 +59,57 @@ function makeAppMainContainer({
 
 it('mounts and unmounts AppMainContainer without crashing', () => {
   const wrapper = makeAppMainContainer();
+  wrapper.unmount();
+});
+
+it('listens for widgets properly', () => {
+  const TABLE_A = { name: 'a', type: 'Table' };
+  const TABLE_B = { name: 'b', type: 'Table' };
+  let callback = null;
+
+  const session = makeSession();
+  session.connection.subscribeToFieldUpdates = jest.fn(cb => {
+    callback = cb;
+  });
+
+  const wrapper = makeAppMainContainer({ session });
+
+  expect(wrapper.state('widgets')).toEqual(expect.arrayContaining([]));
+  expect(session.connection.subscribeToFieldUpdates).toHaveBeenCalled();
+
+  callback({
+    created: [{ definition: TABLE_A }],
+    removed: [],
+    updated: [],
+  });
+
+  expect(wrapper.state('widgets')).toEqual(expect.arrayContaining([TABLE_A]));
+
+  callback({
+    created: [{ definition: TABLE_B }],
+    removed: [],
+    updated: [{ definition: TABLE_A }],
+  });
+
+  expect(wrapper.state('widgets')).toEqual(
+    expect.arrayContaining([TABLE_A, TABLE_B])
+  );
+
+  callback({
+    created: [],
+    removed: [{ definition: TABLE_A }],
+    updated: [],
+  });
+
+  expect(wrapper.state('widgets')).toEqual(expect.arrayContaining([TABLE_B]));
+
+  callback({
+    created: [{ definition: TABLE_A }],
+    removed: [{ definition: TABLE_B }],
+    updated: [],
+  });
+
+  expect(wrapper.state('widgets')).toEqual(expect.arrayContaining([TABLE_A]));
+
   wrapper.unmount();
 });

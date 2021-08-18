@@ -107,14 +107,14 @@ export class AppMainContainer extends Component {
 
   initWidgets() {
     const { session } = this.props;
-    this.widgetListenerRemover = session.connection.subscribeFieldDefinitionUpdates(
+    this.widgetListenerRemover = session.connection.subscribeToFieldUpdates(
       updates => {
         log.debug('Got updates', updates);
         this.setState(({ widgets }) => {
-          const { modifiedFields, newFields, removedFields } = updates;
+          const { updated, created, removed } = updates;
 
           // Remove from the array if it's been removed OR modified. We'll add it back after if it was modified.
-          const fieldsToRemove = [...modifiedFields, removedFields];
+          const fieldsToRemove = [...updated, ...removed];
           const newWidgets = widgets.filter(
             widget =>
               !fieldsToRemove.some(
@@ -123,7 +123,7 @@ export class AppMainContainer extends Component {
           );
 
           // Now add all the modified and updated fields back in
-          const fieldsToAdd = [...modifiedFields, ...newFields];
+          const fieldsToAdd = [...updated, ...created];
           fieldsToAdd.forEach(field => {
             const { definition } = field;
             if (definition.name) {
