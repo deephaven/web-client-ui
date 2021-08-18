@@ -68,7 +68,6 @@ export class Console extends PureComponent {
     this.handleLogMessage = this.handleLogMessage.bind(this);
     this.handleOverflowActions = this.handleOverflowActions.bind(this);
     this.handleScrollPaneScroll = this.handleScrollPaneScroll.bind(this);
-    this.handleScrollPaneClick = this.handleScrollPaneClick.bind(this);
     this.handleToggleAutoLaunchPanels = this.handleToggleAutoLaunchPanels.bind(
       this
     );
@@ -507,12 +506,6 @@ export class Console extends PureComponent {
     }
   }
 
-  handleScrollPaneClick(e) {
-    if (e.target === e.currentTarget && this.consoleInput.current != null) {
-      this.consoleInput.current.focus();
-    }
-  }
-
   handleToggleAutoLaunchPanels() {
     this.setState(state => ({
       isAutoLaunchPanelsEnabled: !state.isAutoLaunchPanelsEnabled,
@@ -854,7 +847,6 @@ export class Console extends PureComponent {
               className={classNames('scroll-pane no-scroll-x', {
                 'scroll-decoration': isScrollDecorationShown,
               })}
-              onClick={this.handleScrollPaneClick}
               onScroll={this.handleScrollPaneScroll}
               ref={this.consoleHistoryScrollPane}
             >

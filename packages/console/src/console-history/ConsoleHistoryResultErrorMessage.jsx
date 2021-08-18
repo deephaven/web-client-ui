@@ -21,7 +21,7 @@ class ConsoleHistoryResultErrorMessage extends PureComponent {
 
     this.mouseX = null;
     this.mouseY = null;
-    this.isDragging = false;
+    this.isClicking = false;
 
     this.state = {
       isExpanded: false,
@@ -45,7 +45,7 @@ class ConsoleHistoryResultErrorMessage extends PureComponent {
   handleMouseDown(event) {
     this.mouseX = event.clientX;
     this.mouseY = event.clientY;
-    this.isDragging = false;
+    this.isClicking = true;
   }
 
   handleMouseMove(event) {
@@ -56,18 +56,23 @@ class ConsoleHistoryResultErrorMessage extends PureComponent {
         Math.abs(event.clientY - this.mouseY) >=
           ConsoleHistoryResultErrorMessage.mouseDragThreshold
       ) {
-        this.isDragging = true;
+        this.isClicking = false;
       }
+    } else if (this.isClicking) {
+      // Rare case - could happen if you mouse down, switch window focus, release the mouse, then come back, mouse down outside of the error, drag into the error, then release the mouse
+      this.isClicking = false;
     }
   }
 
-  handleMouseUp() {
-    if (!this.isDragging) {
+  handleMouseUp(event) {
+    // We don't want to expand/collapse the error if user is holding shift or an alt key
+    // They may be trying to adjust their selection
+    if (this.isClicking && !event.shiftKey && !event.metaKey && !event.altKey) {
       this.handleToggleError();
     }
     this.mouseX = null;
     this.mouseY = null;
-    this.isDragging = false;
+    this.isClicking = false;
   }
 
   handleToggleError() {
