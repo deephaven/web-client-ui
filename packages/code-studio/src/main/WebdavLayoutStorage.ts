@@ -26,19 +26,9 @@ export class WebdavLayoutStorage implements LayoutStorage {
   }
 
   async getLayout(name: string): Promise<ItemConfigType[]> {
-    let content = await this.client.getFileContents(`${this.root}${name}`, {
+    const content = (await this.client.getFileContents(`${this.root}${name}`, {
       format: 'text',
-    });
-
-    // For some reason, even though we specify the format as 'text', it comes back as whatever it wants
-    // Just being safe here.
-    if (Array.isArray(content)) {
-      return content;
-    }
-
-    if (typeof content !== 'string') {
-      content = `${content}`;
-    }
+    })) as string;
 
     return JSON.parse(content);
   }
