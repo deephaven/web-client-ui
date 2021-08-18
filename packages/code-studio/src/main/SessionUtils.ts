@@ -14,16 +14,16 @@ export type SessionConfig = {
   type: string;
 };
 
-export type LoadedSession = {
+export type SessionWrapper = {
   session: DhSession;
   config: SessionConfig;
 };
 
 /**
  * Create a new session using the default URL
- * @returns {Promise<LoadedSession>} A session and config that is ready to use
+ * @returns {Promise<SessionWrapper>} A session and config that is ready to use
  */
-export const createSession = async (): Promise<LoadedSession> => {
+export const createSessionWrapper = async (): Promise<SessionWrapper> => {
   const baseUrl = new URL(
     process.env.REACT_APP_CORE_API_URL ?? '',
     `${window.location}`
@@ -58,4 +58,4 @@ export const createSession = async (): Promise<LoadedSession> => {
   return { session, config };
 };
 
-export default { createSession };
+export default { createSessionWrapper };

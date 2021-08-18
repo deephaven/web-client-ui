@@ -36,7 +36,7 @@ import { IrisPropTypes } from '../include/prop-types';
 import AppControlsMenu from './AppControlsMenu';
 import DashboardContainer from '../dashboard/DashboardContainer';
 import ControlType from '../controls/ControlType';
-import { getLayoutStorage, getSession } from '../redux';
+import { getLayoutStorage, getSessionWrapper } from '../redux';
 import Logo from '../settings/LogoMiniDark.svg';
 import './AppMainContainer.scss';
 import WidgetList from './WidgetList';
@@ -554,7 +554,7 @@ AppMainContainer.propTypes = {
 const mapStateToProps = state => ({
   activeTool: getActiveTool(state),
   layoutStorage: getLayoutStorage(state),
-  session: getSession(state).session,
+  session: getSessionWrapper(state).session,
   user: getUser(state),
   workspace: getWorkspace(state),
 });

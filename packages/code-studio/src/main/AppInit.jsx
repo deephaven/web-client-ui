@@ -16,14 +16,14 @@ import {
 import { createClient } from 'webdav/web';
 import {
   setLayoutStorage as setLayoutStorageAction,
-  setSession as setSessionAction,
+  setSessionWrapper as setSessionWrapperAction,
 } from '../redux/actions';
 import App from './App';
 import ToolType from '../tools/ToolType';
 import PouchCommandHistoryStorage from '../storage/PouchCommandHistoryStorage';
 import LocalWorkspaceStorage from '../dashboard/LocalWorkspaceStorage';
 import WebdavLayoutStorage from './WebdavLayoutStorage';
-import { createSession } from './SessionUtils';
+import { createSessionWrapper } from './SessionUtils';
 import UserLayoutUtils from './UserLayoutUtils';
 
 // Default values used
@@ -47,7 +47,7 @@ const AppInit = props => {
     setCommandHistoryStorage,
     setFileStorage,
     setLayoutStorage,
-    setSession,
+    setSessionWrapper,
     setUser,
     setWorkspace,
     setWorkspaceStorage,
@@ -58,7 +58,7 @@ const AppInit = props => {
   const initClient = useCallback(async () => {
     try {
       const loadedWorkspace = await WORKSPACE_STORAGE.load();
-      const loadedSession = await createSession();
+      const sessionWrapper = await createSessionWrapper();
       const { data } = loadedWorkspace;
       if (data.layoutConfig == null) {
         // User doesn't have a saved layout yet, load the default
@@ -72,7 +72,7 @@ const AppInit = props => {
       setCommandHistoryStorage(COMMAND_HISTORY_STORAGE);
       setFileStorage(FILE_STORAGE);
       setLayoutStorage(LAYOUT_STORAGE);
-      setSession(loadedSession);
+      setSessionWrapper(sessionWrapper);
       setUser(USER);
       setWorkspaceStorage(WORKSPACE_STORAGE);
       setWorkspace(loadedWorkspace);
@@ -84,7 +84,7 @@ const AppInit = props => {
     setCommandHistoryStorage,
     setFileStorage,
     setLayoutStorage,
-    setSession,
+    setSessionWrapper,
     setUser,
     setWorkspace,
     setWorkspaceStorage,
@@ -118,7 +118,7 @@ AppInit.propTypes = {
   setCommandHistoryStorage: PropTypes.func.isRequired,
   setFileStorage: PropTypes.func.isRequired,
   setLayoutStorage: PropTypes.func.isRequired,
-  setSession: PropTypes.func.isRequired,
+  setSessionWrapper: PropTypes.func.isRequired,
   setUser: PropTypes.func.isRequired,
   setWorkspace: PropTypes.func.isRequired,
   setWorkspaceStorage: PropTypes.func.isRequired,
@@ -139,7 +139,7 @@ export default connect(mapStateToProps, {
   setCommandHistoryStorage: setCommandHistoryStorageAction,
   setFileStorage: setFileStorageAction,
   setLayoutStorage: setLayoutStorageAction,
-  setSession: setSessionAction,
+  setSessionWrapper: setSessionWrapperAction,
   setUser: setUserAction,
   setWorkspace: setWorkspaceAction,
   setWorkspaceStorage: setWorkspaceStorageAction,

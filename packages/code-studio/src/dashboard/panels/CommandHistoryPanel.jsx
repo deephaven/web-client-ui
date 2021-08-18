@@ -10,7 +10,7 @@ import { ConsoleEvent, NotebookEvent } from '../events';
 import './CommandHistoryPanel.scss';
 import { GLPropTypes } from '../../include/prop-types';
 import Panel from './Panel';
-import { getSession } from '../../redux';
+import { getSessionWrapper } from '../../redux';
 
 const log = Log.module('CommandHistoryPanel');
 
@@ -192,8 +192,8 @@ CommandHistoryPanel.defaultProps = {
 
 const mapStateToProps = state => {
   const commandHistoryStorage = getCommandHistoryStorage(state);
-  const loadedSession = getSession(state);
-  const { session, config: sessionConfig } = loadedSession;
+  const sessionWrapper = getSessionWrapper(state);
+  const { session, config: sessionConfig } = sessionWrapper;
   const { type: language, id: sessionId } = sessionConfig;
 
   return {

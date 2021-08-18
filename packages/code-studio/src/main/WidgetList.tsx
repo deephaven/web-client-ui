@@ -19,6 +19,10 @@ import './WidgetList.scss';
 
 const MINIMUM_DRAG_DISTANCE = 10;
 
+// When we're listening on the window, it emits a `globalThis.MouseEvent`
+// `WindowMouseEvent` is just a convenience alias
+export type WindowMouseEvent = globalThis.MouseEvent;
+
 export type WidgetDefinition = {
   name: string;
   type: string;
@@ -31,7 +35,7 @@ export type SelectStartEvent = {
 };
 
 export interface WidgetListProps {
-  onSelect: (widget: WidgetDefinition, e?: _MouseEvent) => undefined;
+  onSelect: (widget: WidgetDefinition, e?: WindowMouseEvent) => undefined;
   onExportLayout: () => undefined;
   onImportLayout: () => undefined;
   onResetLayout: () => undefined;
@@ -61,10 +65,10 @@ export const WidgetList = (props: WidgetListProps): JSX.Element => {
    * is treated as createDragSourceFromEvent in golden-layout
    * and uses the event as the starting location for the drag.
    * @param {WidgetDefintion} widget
-   * @param {_MouseEvent?} event
+   * @param {WindowMouseEvent?} event
    */
   const sendSelect = useCallback(
-    (widget: WidgetDefinition, event?: _MouseEvent) => {
+    (widget: WidgetDefinition, event?: WindowMouseEvent) => {
       if (widget) onSelect(widget, event);
     },
     [onSelect]
@@ -75,7 +79,7 @@ export const WidgetList = (props: WidgetListProps): JSX.Element => {
   }, []);
 
   const handleMouseMove = useCallback(
-    (e: _MouseEvent) => {
+    (e: WindowMouseEvent) => {
       if (selectStartEvent.current == null) {
         return;
       }
@@ -124,7 +128,9 @@ export const WidgetList = (props: WidgetListProps): JSX.Element => {
   const filteredWidgets = useMemo(
     () =>
       widgets.filter(widget =>
-        searchText ? widget.name.includes(searchText) : true
+        searchText
+          ? widget.name.toLowerCase().includes(searchText.toLowerCase())
+          : true
       ),
     [searchText, widgets]
   );

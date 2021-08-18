@@ -8,7 +8,7 @@ import { PropTypes as APIPropTypes } from '@deephaven/jsapi-shim';
 import './LogPanel.scss';
 import Panel from './Panel';
 import { GLPropTypes } from '../../include/prop-types';
-import { getSession } from '../../redux';
+import { getSessionWrapper } from '../../redux';
 
 const log = Log.module('LogPanel');
 
@@ -115,7 +115,7 @@ LogPanel.defaultProps = {
 };
 
 const mapStateToProps = state => ({
-  session: getSession(state).session,
+  session: getSessionWrapper(state).session,
 });
 
 export default connect(mapStateToProps, null, null, { forwardRef: true })(

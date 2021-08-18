@@ -1,8 +1,8 @@
-import { SET_LAYOUT_STORAGE, SET_SESSION } from './actionTypes';
+import { SET_LAYOUT_STORAGE, SET_SESSION_WRAPPER } from './actionTypes';
 
-export const setSession = session => ({
-  type: SET_SESSION,
-  payload: session,
+export const setSessionWrapper = sessionWrapper => ({
+  type: SET_SESSION_WRAPPER,
+  payload: sessionWrapper,
 });
 
 export const setLayoutStorage = layoutStorage => ({

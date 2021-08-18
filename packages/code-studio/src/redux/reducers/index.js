@@ -1,4 +1,4 @@
 import layoutStorage from './layoutStorage';
-import session from './session';
+import sessionWrapper from './sessionWrapper';
 
-export default { layoutStorage, session };
+export default { layoutStorage, sessionWrapper };

@@ -48,6 +48,10 @@ $widget-list-owner-hover-color: $gray-200;
         text-decoration: none;
       }
     }
+
+    .widget-list-message {
+      padding: 0 $spacer-2;
+    }
   }
 
   .widget-list-header,

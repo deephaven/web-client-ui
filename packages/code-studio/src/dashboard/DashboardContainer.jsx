@@ -49,7 +49,7 @@ import './DashboardContainer.scss';
 import { UIPropTypes } from '../include/prop-types';
 import PanelErrorBoundary from './panels/PanelErrorBoundary';
 import FileExplorerPanel from './panels/FileExplorerPanel';
-import { getSession } from '../redux';
+import { getSessionWrapper } from '../redux';
 import { createChartModel, createGridModel } from '../main/WidgetUtils';
 
 const log = Log.module('DashboardContainer');
@@ -620,7 +620,7 @@ DashboardContainer.contextType = ReactReduxContext;
 
 const mapStateToProps = state => ({
   activeTool: getActiveTool(state),
-  session: getSession(state).session,
+  session: getSessionWrapper(state).session,
 });
 
 export default connect(mapStateToProps, {

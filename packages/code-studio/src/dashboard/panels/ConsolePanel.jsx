@@ -24,7 +24,7 @@ import {
 import { GLPropTypes } from '../../include/prop-types';
 import './ConsolePanel.scss';
 import Panel from './Panel';
-import { getSession } from '../../redux';
+import { getSessionWrapper } from '../../redux';
 
 const log = Log.module('ConsolePanel');
 
@@ -158,8 +158,8 @@ class ConsolePanel extends PureComponent {
   }
 
   handleOpenObject(object) {
-    const { loadedSession } = this.props;
-    const { session } = loadedSession;
+    const { sessionWrapper } = this.props;
+    const { session } = sessionWrapper;
     const { type } = object;
     if (ConsoleUtils.isTableType(type)) {
       this.openTable(object, session);
@@ -273,10 +273,10 @@ class ConsolePanel extends PureComponent {
       commandHistoryStorage,
       glContainer,
       glEventHub,
-      loadedSession,
+      sessionWrapper,
     } = this.props;
     const { consoleSettings, error } = this.state;
-    const { config, session } = loadedSession;
+    const { config, session } = sessionWrapper;
     const { id: sessionId, type: language } = config;
 
     return (
@@ -337,7 +337,7 @@ ConsolePanel.propTypes = {
     itemIds: PropTypes.array,
   }),
 
-  loadedSession: PropTypes.shape({
+  sessionWrapper: PropTypes.shape({
     session: APIPropTypes.IdeSession,
     config: PropTypes.shape({ type: PropTypes.string, id: PropTypes.string }),
   }).isRequired,
@@ -349,7 +349,7 @@ ConsolePanel.defaultProps = {
 
 const mapStateToProps = state => ({
   commandHistoryStorage: getCommandHistoryStorage(state),
-  loadedSession: getSession(state),
+  sessionWrapper: getSessionWrapper(state),
 });
 
 export default connect(mapStateToProps, null, null, { forwardRef: true })(
