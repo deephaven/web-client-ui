@@ -219,6 +219,42 @@ describe('mouse', () => {
     it('extends selection when shift+right-click outside current selection', () => {
       testContextMenu(3, 6, [[3, 6]], { shiftKey: true });
     });
+
+    it('maintains selection if right-clicked item is selected', () => {
+      const onSelect = jest.fn();
+      const onSelectionChange = jest.fn();
+      const itemList = makeItemList({
+        isMultiSelect: true,
+        onSelect,
+        onSelectionChange,
+      });
+
+      clickItem(itemList, 3);
+
+      expect(onSelect).toHaveBeenCalledWith(3);
+      expect(onSelectionChange).toHaveBeenCalledWith([[3, 3]]);
+
+      onSelectionChange.mockClear();
+      onSelect.mockClear();
+
+      clickItem(itemList, 5, { ctrlKey: true });
+
+      expect(onSelect).not.toHaveBeenCalled();
+      expect(onSelectionChange).toHaveBeenCalledWith([
+        [3, 3],
+        [5, 5],
+      ]);
+
+      onSelectionChange.mockClear();
+      onSelect.mockClear();
+
+      rightClickItem(itemList, 5);
+
+      expect(onSelect).not.toHaveBeenCalled();
+      expect(onSelectionChange).not.toHaveBeenCalled();
+
+      itemList.unmount();
+    });
   });
 });
 

@@ -353,7 +353,12 @@ export class ItemList<T> extends PureComponent<
     e: React.MouseEvent<HTMLDivElement>
   ): void {
     // Update the selection, but don't consume the mouse event - it will trigger the context menu
-    const isModifierDown = ContextActionUtils.isModifierKeyDown(e);
+    const { selectedRanges } = this.state;
+    const isSelected = RangeUtils.isSelected(selectedRanges, itemIndex);
+
+    // When right-clicking, we want to maintain the current selection if the right click happened within the selection even if the modifier key isn't down
+    const isModifierDown =
+      isSelected || ContextActionUtils.isModifierKeyDown(e);
     this.toggleSelect(itemIndex, e.shiftKey, isModifierDown, false);
   }
 
