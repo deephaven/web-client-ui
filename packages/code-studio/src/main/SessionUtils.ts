@@ -4,9 +4,17 @@ import shortid from 'shortid';
 
 const log = Log.module('SessionUtils');
 
+export type VariableDefinition = {
+  id: string;
+  type: string;
+  title?: string;
+  description?: string;
+};
+
 export type DhSession = {
   getTable: (tableName: string) => Promise<unknown>;
   getFigure: (figureName: string) => Promise<unknown>;
+  getObject: (definition: VariableDefinition) => Promise<unknown>;
 };
 
 export type SessionConfig = {

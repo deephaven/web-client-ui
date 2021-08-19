@@ -78,7 +78,7 @@ it('listens for widgets properly', () => {
   expect(session.connection.subscribeToFieldUpdates).toHaveBeenCalled();
 
   callback({
-    created: [{ definition: TABLE_A }],
+    created: [TABLE_A],
     removed: [],
     updated: [],
   });
@@ -86,9 +86,9 @@ it('listens for widgets properly', () => {
   expect(wrapper.state('widgets')).toEqual(expect.arrayContaining([TABLE_A]));
 
   callback({
-    created: [{ definition: TABLE_B }],
+    created: [TABLE_B],
     removed: [],
-    updated: [{ definition: TABLE_A }],
+    updated: [TABLE_A],
   });
 
   expect(wrapper.state('widgets')).toEqual(
@@ -97,15 +97,15 @@ it('listens for widgets properly', () => {
 
   callback({
     created: [],
-    removed: [{ definition: TABLE_A }],
+    removed: [TABLE_A],
     updated: [],
   });
 
   expect(wrapper.state('widgets')).toEqual(expect.arrayContaining([TABLE_B]));
 
   callback({
-    created: [{ definition: TABLE_A }],
-    removed: [{ definition: TABLE_B }],
+    created: [TABLE_A],
+    removed: [TABLE_B],
     updated: [],
   });
 

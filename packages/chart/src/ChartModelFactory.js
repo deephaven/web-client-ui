@@ -31,6 +31,23 @@ class ChartModelFactory {
       ).then(figure => new FigureChartModel(figure, settings));
     });
   }
+
+  /**
+   * Creates a model from the settings provided.
+   * Tries to create a Figure in the API with it.
+   * @param {Object} settings The chart builder settings
+   * @param {boolean} settings.isLinked Whether the newly created chart should stay linked with the original table, update when filters are updated
+   * @param {string[]} settings.series The column names to use for creating the series of this chart
+   * @param {string} settings.sourcePanelId The panel ID the chart was created from
+   * @param {string} settings.type Chart builder type, from ChartBuilder.types
+   * @param {string} settings.xAxis The column name to use for the x-axis
+   * @param {string[]} settings.hiddenSeries Array of hidden series names
+   * @param {dh.Figure} figure The figure to build the model for
+   * @returns {Promise<FigureChartModel>} The FigureChartModel representing the figure
+   */
+  static async makeModel(settings, figure) {
+    return new FigureChartModel(settings, figure);
+  }
 }
 
 export default ChartModelFactory;

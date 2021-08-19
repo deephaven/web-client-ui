@@ -114,20 +114,17 @@ export class AppMainContainer extends Component {
           const { updated, created, removed } = updates;
 
           // Remove from the array if it's been removed OR modified. We'll add it back after if it was modified.
-          const fieldsToRemove = [...updated, ...removed];
+          const widgetsToRemove = [...updated, ...removed];
           const newWidgets = widgets.filter(
             widget =>
-              !fieldsToRemove.some(
-                field => field.definition.name === widget.name
-              )
+              !widgetsToRemove.some(toRemove => toRemove.name === widget.name)
           );
 
-          // Now add all the modified and updated fields back in
-          const fieldsToAdd = [...updated, ...created];
-          fieldsToAdd.forEach(field => {
-            const { definition } = field;
-            if (definition.name) {
-              newWidgets.push(definition);
+          // Now add all the modified and updated widgets back in
+          const widgetsToAdd = [...updated, ...created];
+          widgetsToAdd.forEach(toAdd => {
+            if (toAdd.name) {
+              newWidgets.push(toAdd);
             }
           });
 
@@ -368,7 +365,7 @@ export class AppMainContainer extends Component {
   openWidget(widget, dragEvent) {
     switch (widget.type) {
       case dh.VariableType.TABLE: {
-        const metadata = { table: widget.name };
+        const metadata = { table: widget.id };
         this.emitLayoutEvent(
           IrisGridEvent.OPEN_GRID,
           widget.name,
@@ -383,7 +380,7 @@ export class AppMainContainer extends Component {
         break;
       }
       case dh.VariableType.FIGURE: {
-        const metadata = { table: widget.name };
+        const metadata = { table: widget.id };
         this.emitLayoutEvent(
           ChartEvent.OPEN,
           widget.name,
