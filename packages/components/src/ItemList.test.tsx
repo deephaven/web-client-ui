@@ -1,5 +1,6 @@
 import React from 'react';
 import { mount, ReactWrapper } from 'enzyme';
+import { Range } from '@deephaven/utils';
 import ItemList from './ItemList';
 
 function makeItems(count = 20) {
@@ -66,6 +67,17 @@ describe('mouse', () => {
       .find('.item-list-item')
       .at(itemIndex)
       .simulate('dblclick', options);
+  }
+
+  function rightClickItem(
+    itemList: ReactWrapper,
+    itemIndex: number,
+    options = {}
+  ): void {
+    itemList
+      .find('.item-list-item')
+      .at(itemIndex)
+      .simulate('contextmenu', options);
   }
 
   it('sends onSelect when an item is clicked', () => {
@@ -145,6 +157,104 @@ describe('mouse', () => {
     ]);
 
     itemList.unmount();
+  });
+
+  describe('context menu', () => {
+    function testContextMenu(
+      firstIndex: number,
+      secondIndex: number,
+      expectedSelectionChange: Range[] | null = [[secondIndex, secondIndex]],
+      mouseOptions = {}
+    ) {
+      const onSelect = jest.fn();
+      const onSelectionChange = jest.fn();
+      const itemList = makeItemList({
+        isMultiSelect: true,
+        onSelect,
+        onSelectionChange,
+      });
+
+      clickItem(itemList, firstIndex);
+
+      expect(onSelect).toHaveBeenCalledWith(firstIndex);
+      expect(onSelectionChange).toHaveBeenCalledWith([
+        [firstIndex, firstIndex],
+      ]);
+
+      onSelectionChange.mockClear();
+      onSelect.mockClear();
+
+      rightClickItem(itemList, secondIndex, mouseOptions);
+
+      expect(onSelect).not.toHaveBeenCalled();
+      if (expectedSelectionChange != null) {
+        expect(onSelectionChange).toHaveBeenCalledWith(expectedSelectionChange);
+      } else {
+        expect(onSelectionChange).not.toHaveBeenCalled();
+      }
+
+      itemList.unmount();
+    }
+
+    it('keeps selection when right-click in current selection', () => {
+      testContextMenu(3, 3, null);
+    });
+
+    it('updates selection when right-click outside current selection', () => {
+      testContextMenu(3, 6);
+    });
+
+    it('adds selection when ctrl+right-click outside current selection', () => {
+      testContextMenu(
+        3,
+        6,
+        [
+          [3, 3],
+          [6, 6],
+        ],
+        { ctrlKey: true }
+      );
+    });
+
+    it('extends selection when shift+right-click outside current selection', () => {
+      testContextMenu(3, 6, [[3, 6]], { shiftKey: true });
+    });
+
+    it('maintains selection if right-clicked item is selected', () => {
+      const onSelect = jest.fn();
+      const onSelectionChange = jest.fn();
+      const itemList = makeItemList({
+        isMultiSelect: true,
+        onSelect,
+        onSelectionChange,
+      });
+
+      clickItem(itemList, 3);
+
+      expect(onSelect).toHaveBeenCalledWith(3);
+      expect(onSelectionChange).toHaveBeenCalledWith([[3, 3]]);
+
+      onSelectionChange.mockClear();
+      onSelect.mockClear();
+
+      clickItem(itemList, 5, { ctrlKey: true });
+
+      expect(onSelect).not.toHaveBeenCalled();
+      expect(onSelectionChange).toHaveBeenCalledWith([
+        [3, 3],
+        [5, 5],
+      ]);
+
+      onSelectionChange.mockClear();
+      onSelect.mockClear();
+
+      rightClickItem(itemList, 5);
+
+      expect(onSelect).not.toHaveBeenCalled();
+      expect(onSelectionChange).not.toHaveBeenCalled();
+
+      itemList.unmount();
+    });
   });
 });
 

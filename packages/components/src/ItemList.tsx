@@ -143,6 +143,7 @@ export class ItemList<T> extends PureComponent<
     super(props);
 
     this.handleItemBlur = this.handleItemBlur.bind(this);
+    this.handleItemContextMenu = this.handleItemContextMenu.bind(this);
     this.handleItemFocus = this.handleItemFocus.bind(this);
     this.handleItemDoubleClick = this.handleItemDoubleClick.bind(this);
     this.handleItemMouseDown = this.handleItemMouseDown.bind(this);
@@ -254,6 +255,7 @@ export class ItemList<T> extends PureComponent<
 
       return (
         <ItemListItem
+          onContextMenu={this.handleItemContextMenu}
           onDoubleClick={this.handleItemDoubleClick}
           onMouseDown={this.handleItemMouseDown}
           onFocus={this.handleItemFocus}
@@ -344,6 +346,20 @@ export class ItemList<T> extends PureComponent<
     if (element != null) {
       element.scrollIntoView({ block: 'center' });
     }
+  }
+
+  handleItemContextMenu(
+    itemIndex: number,
+    e: React.MouseEvent<HTMLDivElement>
+  ): void {
+    // Update the selection, but don't consume the mouse event - it will trigger the context menu
+    const { selectedRanges } = this.state;
+    const isSelected = RangeUtils.isSelected(selectedRanges, itemIndex);
+
+    // When right-clicking, we want to maintain the current selection if the right click happened within the selection even if the modifier key isn't down
+    const isModifierDown =
+      isSelected || ContextActionUtils.isModifierKeyDown(e);
+    this.toggleSelect(itemIndex, e.shiftKey, isModifierDown, false);
   }
 
   handleItemDoubleClick(itemIndex: number): void {
