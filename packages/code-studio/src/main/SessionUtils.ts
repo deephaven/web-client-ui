@@ -17,6 +17,15 @@ export type DhSession = {
   getObject: (definition: VariableDefinition) => Promise<unknown>;
 };
 
+export type ListenerRemover = () => void;
+
+export type DhIdeConnection = {
+  addEventListener: (
+    name: string,
+    callback: (event: CustomEvent) => undefined
+  ) => ListenerRemover;
+};
+
 export type SessionConfig = {
   id: string;
   type: string;
@@ -25,6 +34,7 @@ export type SessionConfig = {
 export type SessionWrapper = {
   session: DhSession;
   config: SessionConfig;
+  connection: DhIdeConnection;
 };
 
 /**
@@ -63,7 +73,7 @@ export const createSessionWrapper = async (): Promise<SessionWrapper> => {
 
   log.info('Console session established', config);
 
-  return { session, config };
+  return { session, config, connection };
 };
 
 export default { createSessionWrapper };

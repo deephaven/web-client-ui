@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { LoadingOverlay } from '@deephaven/components';
 import { WebdavFileStorage } from '@deephaven/file-explorer';
+import dh from '@deephaven/jsapi-shim';
 import {
   getWorkspace,
   getWorkspaceStorage,
@@ -59,6 +60,14 @@ const AppInit = props => {
     try {
       const loadedWorkspace = await WORKSPACE_STORAGE.load();
       const sessionWrapper = await createSessionWrapper();
+      sessionWrapper.connection.addEventListener(
+        dh.IdeConnection.HACK_CONNECTION_FAILURE,
+        event => {
+          const { detail } = event;
+          setError(detail.details);
+        }
+      );
+
       const { data } = loadedWorkspace;
       if (data.layoutConfig == null) {
         // User doesn't have a saved layout yet, load the default
