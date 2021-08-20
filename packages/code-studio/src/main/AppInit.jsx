@@ -58,6 +58,7 @@ const AppInit = props => {
   } = props;
 
   const [error, setError] = useState();
+  const [isFontLoading, setIsFontLoading] = useState(true);
 
   const initClient = useCallback(async () => {
     try {
@@ -103,11 +104,23 @@ const AppInit = props => {
     setWorkspaceStorage,
   ]);
 
+  const initFonts = useCallback(() => {
+    if (document.fonts) {
+      document.fonts.ready.then(() => {
+        setIsFontLoading(false);
+      });
+    } else {
+      // If document.fonts isn't supported, just best guess assume they're loaded
+      setIsFontLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     initClient();
-  }, [initClient]);
+    initFonts();
+  }, [initClient, initFonts]);
 
-  const isLoading = !workspace && !error;
+  const isLoading = (!workspace && !error) || isFontLoading;
   const isLoaded = !isLoading && !error;
   const errorMessage = error ? `${error}` : null;
 
@@ -119,6 +132,24 @@ const AppInit = props => {
         isLoaded={isLoaded}
         errorMessage={errorMessage}
       />
+      {/*
+      Need to preload any monaco and Deephaven grid fonts.
+      We hide text with all the fonts we need on the root app.jsx page
+      Load the Fira Mono font so that Monaco calculates word wrapping properly.
+      This element doesn't need to be visible, just load the font and stay hidden.
+      https://github.com/microsoft/vscode/issues/88689
+      Can be replaced with a rel="preload" when firefox adds support
+      https://developer.mozilla.org/en-US/docs/Web/HTML/Preloading_content
+       */}
+      <div
+        id="preload-fonts"
+        style={{ visibility: 'hidden', position: 'absolute', top: -10000 }}
+      >
+        {/* trigger loading of fonts needed by monaco and iris grid */}
+        <p className="fira-sans-regular">preload</p>
+        <p className="fira-sans-semibold">preload</p>
+        <p className="fira-mono">preload</p>
+      </div>
     </>
   );
 };

@@ -37,19 +37,6 @@ body {
   }
 }
 
-#preload-fonts {
-  // Need to preload any monaco and Deephaven grid fonts.
-  // We hide text with all the fonts we need on the root app.jsx page
-  // Load the Fira Mono font so that Monaco calculates word wrapping properly.
-  // This element doesn't need to be visible, just load the font and stay hidden.
-  // https://github.com/microsoft/vscode/issues/88689
-  // Can be replaced with a rel="preload" when firefox adds support
-  // https://developer.mozilla.org/en-US/docs/Web/HTML/Preloading_content
-  visibility: hidden;
-  position: absolute;
-  top: -10000px;
-}
-
 /** Convenience **/
 
 .fill-parent-absolute {
