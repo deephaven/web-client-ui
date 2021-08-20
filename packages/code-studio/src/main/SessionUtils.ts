@@ -12,8 +12,6 @@ export type VariableDefinition = {
 };
 
 export type DhSession = {
-  getTable: (tableName: string) => Promise<unknown>;
-  getFigure: (figureName: string) => Promise<unknown>;
   getObject: (definition: VariableDefinition) => Promise<unknown>;
 };
 
