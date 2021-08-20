@@ -4,6 +4,7 @@ import { connect } from 'react-redux';
 import { LoadingOverlay } from '@deephaven/components';
 import { WebdavFileStorage } from '@deephaven/file-explorer';
 import dh from '@deephaven/jsapi-shim';
+import Log from '@deephaven/log';
 import {
   getWorkspace,
   getWorkspaceStorage,
@@ -26,6 +27,8 @@ import LocalWorkspaceStorage from '../dashboard/LocalWorkspaceStorage';
 import WebdavLayoutStorage from './WebdavLayoutStorage';
 import { createSessionWrapper } from './SessionUtils';
 import UserLayoutUtils from './UserLayoutUtils';
+
+const log = Log.module('AppInit');
 
 // Default values used
 const NAME = 'user';
@@ -64,7 +67,8 @@ const AppInit = props => {
         dh.IdeConnection.HACK_CONNECTION_FAILURE,
         event => {
           const { detail } = event;
-          setError(detail.details);
+          log.error('Connection failure', detail);
+          setError(`Unable to connect:  ${detail.details ?? 'Unknown Error'}`);
         }
       );
 
