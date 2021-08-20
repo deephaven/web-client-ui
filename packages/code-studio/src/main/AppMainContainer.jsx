@@ -246,8 +246,9 @@ export class AppMainContainer extends Component {
 
     log.debug('handleAutoFillClick', widgets);
 
-    for (let i = 0; i < widgets.length; i += 1) {
-      this.openWidget(widgets[i]);
+    const sortedWidgets = widgets.sort((a, b) => a.name.localeCompare(b.name));
+    for (let i = 0; i < sortedWidgets.length; i += 1) {
+      this.openWidget(sortedWidgets[i]);
     }
   }
 

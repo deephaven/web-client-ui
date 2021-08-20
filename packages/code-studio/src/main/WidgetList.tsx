@@ -133,7 +133,7 @@ export const WidgetList = (props: WidgetListProps): JSX.Element => {
           : true
       ),
     [searchText, widgets]
-  );
+  ).sort((a, b) => a.name.localeCompare(b.name));
 
   const widgetElements = useMemo(
     () =>

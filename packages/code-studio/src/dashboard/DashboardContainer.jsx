@@ -337,6 +337,10 @@ export class DashboardContainer extends Component {
     for (let i = 0; i < content.length; i += 1) {
       layout.root.addChild(content[i]);
     }
+
+    this.setState({
+      dashboardIsEmpty: layoutConfig.length === 0,
+    });
   }
 
   registerComponent(layout, name, ComponentType) {
