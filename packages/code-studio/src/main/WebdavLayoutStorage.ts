@@ -1,4 +1,4 @@
-import { ItemConfigType } from 'golden-layout';
+import { ItemConfigType } from '@deephaven/golden-layout';
 import { FileStat, WebDAVClient } from 'webdav/web';
 import LayoutStorage from './LayoutStorage';
 

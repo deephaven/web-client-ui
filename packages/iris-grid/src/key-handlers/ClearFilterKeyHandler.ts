@@ -1,6 +1,6 @@
 import { KeyHandler } from '@deephaven/grid';
 import { IrisGrid } from '../IrisGrid';
-import { SHORTCUTS } from '..';
+import IrisGridShortcuts from '../IrisGridShortcuts';
 
 class ClearFilterKeyHandler extends KeyHandler {
   private irisGrid: IrisGrid;
@@ -12,7 +12,7 @@ class ClearFilterKeyHandler extends KeyHandler {
   }
 
   onDown(e: KeyboardEvent): boolean {
-    if (SHORTCUTS.TABLE.CLEAR_FILTERS.matchesEvent(e)) {
+    if (IrisGridShortcuts.TABLE.CLEAR_FILTERS.matchesEvent(e)) {
       this.irisGrid.clearAllFilters();
       return true;
     }

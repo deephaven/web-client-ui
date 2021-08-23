@@ -1,7 +1,7 @@
 import { KeyHandler } from '@deephaven/grid';
 import { IrisGrid } from '../IrisGrid';
 import TableUtils from '../TableUtils';
-import { SHORTCUTS } from '..';
+import IrisGridShortcuts from '../IrisGridShortcuts';
 
 class ReverseKeyHandler extends KeyHandler {
   private irisGrid: IrisGrid;
@@ -13,7 +13,7 @@ class ReverseKeyHandler extends KeyHandler {
   }
 
   onDown(e: KeyboardEvent): boolean {
-    if (SHORTCUTS.TABLE.REVERSE.matchesEvent(e)) {
+    if (IrisGridShortcuts.TABLE.REVERSE.matchesEvent(e)) {
       if (!this.irisGrid.isReversible()) {
         return false;
       }

@@ -1,4 +1,4 @@
-import { ItemConfigType } from 'golden-layout';
+import { ItemConfigType } from '@deephaven/golden-layout';
 
 /**
  * Interface for accessing layouts from wherever they are stored.

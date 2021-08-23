@@ -1,4 +1,4 @@
-import { ItemConfigType } from 'golden-layout';
+import { ItemConfigType } from '@deephaven/golden-layout';
 import LayoutStorage from './LayoutStorage';
 import {
   CommandHistoryPanel,
