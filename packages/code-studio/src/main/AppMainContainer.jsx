@@ -40,7 +40,7 @@ import { getLayoutStorage, getSessionWrapper } from '../redux';
 import Logo from '../settings/LogoMiniDark.svg';
 import './AppMainContainer.scss';
 import WidgetList from './WidgetList';
-import { createGridModel } from './WidgetUtils';
+import { createChartModel, createGridModel } from './WidgetUtils';
 import EmptyDashboard from './EmptyDashboard';
 import UserLayoutUtils from './UserLayoutUtils';
 
@@ -381,13 +381,13 @@ export class AppMainContainer extends Component {
         break;
       }
       case dh.VariableType.FIGURE: {
-        const metadata = { table: widget.id };
+        const metadata = { figure: widget.id };
         this.emitLayoutEvent(
           ChartEvent.OPEN,
           widget.name,
           () => {
             const { session } = this.props;
-            return createGridModel(session, metadata);
+            return createChartModel(session, metadata);
           },
           metadata,
           shortid.generate(),
