@@ -46,7 +46,7 @@ class ChartModelFactory {
    * @returns {Promise<FigureChartModel>} The FigureChartModel representing the figure
    */
   static async makeModel(settings, figure) {
-    return new FigureChartModel(settings, figure);
+    return new FigureChartModel(figure, settings);
   }
 }
 
