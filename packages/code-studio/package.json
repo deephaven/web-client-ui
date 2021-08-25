@@ -47,6 +47,9 @@
     "react-scripts": "4.0.3",
     "react-transition-group": "^2.3.1",
     "reactstrap": "^8.4.1",
+    "redux": "^4.0.5",
+    "redux-thunk": "^2.3.0",
+    "remark-gfm": "1.0.0",
     "shortid": "^2.2.15",
     "webdav": "^4.6.1"
   },

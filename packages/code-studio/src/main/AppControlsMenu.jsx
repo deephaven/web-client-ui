@@ -17,6 +17,7 @@ import {
   vsLink,
   vsMarkdown,
   vsDeviceCamera,
+  vsNotebook,
 } from '@deephaven/icons';
 import PropTypes from 'prop-types';
 
@@ -152,6 +153,16 @@ const AppControlsMenu = props => {
           handleControlSelect(ControlType.FILTER_SET_MANAGER, dragEvent);
         },
         order: 25,
+      },
+      // TODO: Only have enabled when markdown notebook widgets are editable
+      {
+        title: 'Markdown Notebook Widget',
+        icon: vsNotebook,
+        menuElement: <DragSourceMenuItem />,
+        action: (dragEvent = null) => {
+          handleControlSelect(ControlType.MARKDOWN_NOTEBOOK, dragEvent);
+        },
+        order: 20,
       },
       {
         disabled: true,

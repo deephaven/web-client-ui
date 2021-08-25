@@ -455,10 +455,7 @@ class LayoutUtils {
   static openComponentInStack(stack, config, replaceExisting = true) {
     const maintainFocusElement = document.activeElement; // attempt to retain focus after dom manipulation, which can break focus
 
-    const searchConfig = {
-      id: config.id,
-      component: config.component,
-    };
+    const searchConfig = { id: config.id };
 
     const oldContentItem = LayoutUtils.getContentItemInStack(
       stack,
