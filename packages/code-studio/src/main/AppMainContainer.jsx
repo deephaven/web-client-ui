@@ -35,6 +35,7 @@ import {
   UIPropTypes,
   ControlType,
   ToolType,
+  NotebookEvent,
 } from '@deephaven/dashboard-core-plugins';
 import { vsGear, dhShapes, dhPanels } from '@deephaven/icons';
 import dh, { PropTypes as APIPropTypes } from '@deephaven/jsapi-shim';
@@ -64,6 +65,8 @@ const log = Log.module('AppMainContainer');
 const EMPTY_OBJECT = Object.freeze({});
 
 export class AppMainContainer extends Component {
+  static markdownNotebookIndex = 0;
+
   static handleWindowBeforeUnload(event) {
     event.preventDefault();
     // returnValue is required for beforeReload event prompt
@@ -259,6 +262,8 @@ export class AppMainContainer extends Component {
   }
 
   handleControlSelect(type, dragEvent = null) {
+    const { session, sessionConfig } = this.props;
+    const { type: sessionLanguage } = sessionConfig;
     log.debug('handleControlSelect', type);
 
     switch (type) {
@@ -291,6 +296,20 @@ export class AppMainContainer extends Component {
           type,
           dragEvent,
         });
+        break;
+      case ControlType.MARKDOWN_NOTEBOOK:
+        // TODO: Should be the proper event...
+        this.emitLayoutEvent(
+          NotebookEvent.CREATE_NOTEBOOK,
+          session,
+          sessionLanguage,
+          { language: sessionLanguage },
+          {
+            id: null,
+            itemName: `Untitled-${AppMainContainer.markdownNotebookIndex}.md`,
+          }
+        );
+        AppMainContainer.markdownNotebookIndex += 1;
         break;
       default:
         throw new Error('Unrecognized control type', type);
@@ -691,6 +710,7 @@ AppMainContainer.propTypes = {
     type: PropTypes.string,
     id: PropTypes.string,
   }).isRequired,
+  sessionLanguage: PropTypes.string.isRequired,
   setActiveTool: PropTypes.func.isRequired,
   updateDashboardData: PropTypes.func.isRequired,
   updateWorkspaceData: PropTypes.func.isRequired,
@@ -715,6 +735,24 @@ const mapStateToProps = state => ({
   user: getUser(state),
   workspace: getWorkspace(state),
 });
+const mapStateToProps = state => {
+  const sessionWrapper = getDashboardSessionWrapper(
+    state,
+    DEFAULT_DASHBOARD_ID
+  );
+  const { session, config: sessionConfig } = sessionWrapper ?? {};
+  const { type: sessionLanguage } = sessionConfig ?? {};
+  return {
+    activeTool: getActiveTool(state),
+    dashboardData: getDashboardData(state, DEFAULT_DASHBOARD_ID),
+    layoutStorage: getLayoutStorage(state),
+    session,
+    sessionConfig,
+    sessionLanguage,
+    user: getUser(state),
+    workspace: getWorkspace(state),
+  };
+};
 
 export default connect(mapStateToProps, {
   setActiveTool: setActiveToolAction,

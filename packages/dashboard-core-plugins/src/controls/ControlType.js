@@ -6,6 +6,8 @@ class ControlType {
   static MARKDOWN = 'ControlType.MARKDOWN';
 
   static FILTER_SET_MANAGER = 'ControlType.FILTER_SET_MANAGER';
+
+  static MARKDOWN_NOTEBOOK = 'ControlType.MARKDOWN_NOTEBOOK';
 }
 
 export default ControlType;

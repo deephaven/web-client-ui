@@ -18,6 +18,7 @@ import {
   LogPanel,
   NotebookPanel,
 } from './panels';
+import MarkdownNotebookPanel from './panels/MarkdownNotebookPanel';
 import { setDashboardConsoleSettings } from './redux';
 
 const log = Log.module('ConsolePlugin');
@@ -293,12 +294,17 @@ export const ConsolePlugin = ({
         settings,
         fileMetadata,
       };
+      // KLUDGE: show a different component type for markdown notebooks
+      const component = fileMetadata?.itemName?.endsWith('.md')
+        ? MarkdownNotebookPanel.COMPONENT
+        : NotebookPanel.COMPONENT;
       const title = getNotebookTitle(fileMetadata);
       return {
         type: 'react-component',
-        component: NotebookPanel.COMPONENT,
+        component,
         isFocusOnShow: false,
         props: {
+          id: panelId,
           localDashboardId: id,
           metadata: { id: panelId },
           session,
@@ -381,7 +387,7 @@ export const ConsolePlugin = ({
       if (previewTabId != null) {
         panelId = previewTabId;
         stack = LayoutUtils.getStackForConfig(layout.root, {
-          component: NotebookPanel.COMPONENT,
+          // component: NotebookPanel.COMPONENT,
           id: panelId,
         });
       }
@@ -389,6 +395,7 @@ export const ConsolePlugin = ({
         panelId = getPanelIdForFileMetadata(fileMetadata);
         stack = LayoutUtils.getStackForComponentTypes(layout.root, [
           NotebookPanel.COMPONENT,
+          MarkdownNotebookPanel.COMPONENT,
         ]);
       }
       const config = makeConfig({
@@ -434,11 +441,16 @@ export const ConsolePlugin = ({
 
   useEffect(() => {
     const cleanups = [
+<<<<<<< HEAD
       registerComponent(ConsolePanel.COMPONENT, ConsolePanel),
       registerComponent(CommandHistoryPanel.COMPONENT, CommandHistoryPanel),
       registerComponent(FileExplorerPanel.COMPONENT, FileExplorerPanel),
       registerComponent(LogPanel.COMPONENT, LogPanel),
       registerComponent(NotebookPanel.COMPONENT, NotebookPanel),
+      registerComponent(
+        MarkdownNotebookPanel.COMPONENT,
+        MarkdownNotebookPanel
+      ),
     ];
 
     return () => {
