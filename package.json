@@ -22,7 +22,8 @@
     "test": "jest --watch --changedSince origin/main",
     "test:ci": "jest --maxWorkers=2",
     "test:golden-layout": "lerna run test:ci --scope=@deephaven/golden-layout --stream",
-    "sync-version": "lerna version ${DEEPHAVEN_VERSION:-error} --no-git-tag-version --yes"
+    "version-bump": "lerna version --no-git-tag-version --no-push",
+    "publish-all": "lerna publish from-package"
   },
   "repository": "https://github.com/deephaven/web-client-ui",
   "devDependencies": {

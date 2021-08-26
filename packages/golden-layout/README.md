@@ -1,4 +1,4 @@
-# @deephaven/goldenlayout
+# @deephaven/golden-layout
 
 This is a fork of [https://golden-layout.com/](https://golden-layout.com/) from their v1.5.9 with bug fixes and improvements.
 
