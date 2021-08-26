@@ -10,8 +10,17 @@ We are still using node 14.x and npm 6.x. If you are [using nvm](https://github.
 - `npm start`: Start building all packages and watching them (when possible). Use when you're developing, and your changes will be picked up automatically.
 - `npm test`: Start running tests in all packages and watching (when possible). Use when you're developing, and any breaking changes will be printed out automatically.
 - `npm run build`: Create a production build of all packages. Mainly used by CI when packaging up a production version of the app.
-- `npm run sync-version`: Update the version of all packages to match `DEEPHAVEN_VERSION`. Used when updating/tagging new versions. It does not commit the changes.
-- `npm run publish`: Publish the current versions of the packages that have not yet been published. If all packages with the current version have already been published, does nothing. Should be done after doing an `npm sync-version` and committing/tagging the release.
+- `npm run version-bump`: Update the version of all packages. Used when updating/tagging new versions. You'll need to select whether to do a [patch, minor, or major version](https://semver.org/). It does not commit the changes.
+- `npm run publish-all`: Publish the current versions of the packages that have not yet been published. If all packages with the current version have already been published, does nothing. Should be done after doing an `npm version-bump` and committing/tagging the release.
+
+## Package Overview
+
+There are many packages located in the [packages](./packages) directory. A few of the more important ones are:
+
+- [@deephaven/code-studio](./packages/code-studio): Main web UI used with the [deephaven-core](https://github.com/deephaven/deephaven-core/) backend.
+- [@deephaven/components](./packages/components): Component library used within the web UI.
+- [@deephaven/grid](./packages/grid): High-performance grid component used to display large tables of data.
+- [@deephaven/golden-layout](./packages/golden-layout): Layout framework used in [@deephaven/code-studio](./packages/code-studio).
 
 ## Creating a New Package
 

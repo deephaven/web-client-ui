@@ -1,30 +1,10 @@
-# Quick Start
+# Introduction
 
-A few notes to get developers quickly up and running.
+Code Studio is a web application that connects to a running [deephaven-core](https://github.com/deephaven/deephaven-core/) instance. A few notes to get developers quickly up and running.
 
 ## Running
 
-In the application directory, run `npm install` to install dependencies, then use the following commands.
-
-### `npm start`
-
-Start the project in development mode, open at http://localhost:4000. Page automatically updates when changes are saved.
-
-### `npm run start-rewired`
-
-Start the project in development mode with experimental fast refresh enabled. Open at http://localhost:4000. Page should automatically refresh on changes while keeping state and not requiring you to login after each change.
-
-### `npm test`
-
-Start continuous unit tests. We use [Jest](https://jestjs.io) to run end-to-end tests. Tests will rerun on changed files, or you can change modes by pressing 'a' to run ALL tests continuously.
-
-### `npm run build`
-
-Build a production build. Output goes to the `./build` folder. Start up production server after build with `serve -s build` (may need to install `serve` first, with `npm install -g serve`)
-
-### `npm run mock`
-
-Runs in development mode with the mock server. This overrides the `REACT_APP_CORE_API_URL` setting. See [Mock API](##mock-api) for details.
+To start the Code Studio, run `npm install` and `npm start` in the root directory of this repository. See the [Getting Started](../../README.md#getting-started) section for more details.
 
 ## Project Settings
 
@@ -42,21 +22,29 @@ One common setup is to override the API server URL to point to another server. F
 REACT_APP_CORE_API_URL=https://www.myserver.com/jsapi
 ```
 
-### REACT_APP_LOG_LEVEL
+### REACT_APP_NOTEBOOKS_URL
+
+One common setup is to override the API server URL to point to another server. For example, add the following block to `.env.development.local` to have `npm start` point to a remote server for the API:
+
+```shell
+REACT_APP_CORE_API_URL=https://www.myserver.com/notebooks
+```
+
+### DEEPHAVEN_LOG_LEVEL
 
 Printing detailed logs when debugging can be handy. To enable the highest level of logging, set the log level in your `.env.development.local` file:
 
 ```shell
-REACT_APP_LOG_LEVEL=4
+DEEPHAVEN_LOG_LEVEL=4
 ```
 
 When running the unit tests, you often do not want any logs to be printed out. To disable the logs while running the unit tests, set the log level in your `.env.test.local` file:
 
 ```shell
-REACT_APP_LOG_LEVEL=-1
+DEEPHAVEN_LOG_LEVEL=-1
 ```
 
-See `Log.js` for different log levels.
+See [@deephaven/log](../log) for more details on the logger.
 
 ### REACT_APP_ENABLE_LOG_PROXY
 
@@ -99,7 +87,7 @@ The state transitions are also logged in the browser developer console in develo
 
 ### Workspace Data
 
-Data is stored remotely on the server in a Persistent Query named `WebClientData`, in one table `workspaceData`. Take a look at [WorkspaceStorage.js](src/dashboard/WorkspaceStorage.js) for details on how it is stored.
+Workspace data is stored in the browsers localStorage. See [LocalWorkspaceStorage](./src/dashboard/LocalWorkspaceStorage.ts) for implementation details.
 
 ## Mock API
 
