@@ -4,7 +4,7 @@ Code Studio is a web application that connects to a running [deephaven-core](htt
 
 ## Running
 
-To start the Code Studio, run `npm install` and `npm start` in the root directory of this repository. See the [Getting Started](../../#getting-started) section for more details.
+To start the Code Studio, run `npm install` and `npm start` in the root directory of this repository. See the [Getting Started](../../README.md#getting-started) section for more details.
 
 ## Project Settings
 
