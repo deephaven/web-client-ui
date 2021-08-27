@@ -6,5 +6,4 @@ export { default as IrisGridEvent } from './IrisGridEvent';
 export { default as NotebookEvent } from './NotebookEvent';
 export { default as PandasEvent } from './PandasEvent';
 export { default as PanelEvent } from './PanelEvent';
-export { default as PQEvent } from './PQEvent';
 export { default as TabEvent } from './TabEvent';
