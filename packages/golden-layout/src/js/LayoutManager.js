@@ -111,7 +111,7 @@ lm.utils.copy(lm.LayoutManager.prototype, {
    * @param   {String} name
    * @param   {Function} constructor
    *
-   * @returns {void}
+   * @returns {Function} cleanup function to deregister component
    */
   registerComponent: function (name, constructor) {
     if (
@@ -128,6 +128,14 @@ lm.utils.copy(lm.LayoutManager.prototype, {
     }
 
     this._components[name] = constructor;
+
+    return () => {
+      if (this._components[name] === undefined) {
+        throw new Error('Component ' + name + ' is not registered');
+      }
+
+      delete this._components[name];
+    };
   },
 
   /**
@@ -222,6 +230,12 @@ lm.utils.copy(lm.LayoutManager.prototype, {
    * @returns {Function}
    */
   getComponent: function (name) {
+    if (this._components[name] === undefined) {
+      throw new lm.errors.ConfigurationError(
+        'Unknown component "' + name + '"'
+      );
+    }
+
     return this._components[name];
   },
 

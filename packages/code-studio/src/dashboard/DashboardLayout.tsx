@@ -59,9 +59,10 @@ export const DashboardLayout = ({
       }
 
       const wrappedComponent = React.forwardRef(renderComponent);
-      layout.registerComponent(name, wrappedComponent);
+      const cleanup = layout.registerComponent(name, wrappedComponent);
       hydrateMap.set(name, hydrate);
       dehydrateMap.set(name, dehydrate);
+      return cleanup;
     },
     [hydrateMap, dehydrateMap, layout, store]
   );

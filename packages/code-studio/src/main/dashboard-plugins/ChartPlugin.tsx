@@ -11,24 +11,6 @@ export const ChartPlugin = ({
   layout,
   registerComponent,
 }: DashboardPluginComponentProps): JSX.Element => {
-  const hydrate = useCallback(
-    props => ({
-      ...props,
-      localDashboardId: id,
-    }),
-    [id]
-  );
-  const dehydrate = useCallback(props => null, []);
-
-  const registerComponents = useCallback(() => {
-    registerComponent(
-      ChartPanel.COMPONENT,
-      (ChartPanel as unknown) as ComponentType,
-      hydrate,
-      dehydrate
-    );
-  }, [dehydrate, hydrate, registerComponent]);
-
   const handleOpen = useCallback(
     (
       title: string,
@@ -66,8 +48,16 @@ export const ChartPlugin = ({
   );
 
   useEffect(() => {
-    registerComponents();
-  }, [registerComponents]);
+    const cleanups = [
+      registerComponent(
+        ChartPanel.COMPONENT,
+        (ChartPanel as unknown) as ComponentType
+      ),
+    ];
+    return () => {
+      cleanups.forEach(cleanup => cleanup());
+    };
+  }, [registerComponent]);
 
   useEffect(() => {
     layout.eventHub.on(ChartEvent.OPEN, handleOpen);

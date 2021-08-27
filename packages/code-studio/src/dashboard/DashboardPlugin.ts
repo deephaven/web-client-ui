@@ -24,6 +24,8 @@ export interface DashboardPanelDefinition {
   definition: ComponentType;
 }
 
+export type DeregisterComponentFn = () => void;
+
 export type DashboardPluginComponentProps = {
   id: string;
   layout: GoldenLayout;
@@ -33,7 +35,7 @@ export type DashboardPluginComponentProps = {
     ComponentType: ComponentType,
     hydrate?: (props: PanelProps) => PanelProps,
     dehydrate?: (config: PanelConfig) => PanelConfig | null
-  ) => void;
+  ) => DeregisterComponentFn;
 };
 
 export interface DashboardPlugin {

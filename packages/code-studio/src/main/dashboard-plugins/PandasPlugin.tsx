@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { DashboardPluginComponentProps } from '../../dashboard/DashboardPlugin';
 import { PandasPanel } from '../../dashboard/panels';
 
@@ -7,13 +7,13 @@ export const PandasPlugin = ({
   layout,
   registerComponent,
 }: DashboardPluginComponentProps): JSX.Element => {
-  const registerComponents = useCallback(() => {
-    registerComponent(PandasPanel.COMPONENT, PandasPanel);
-  }, [registerComponent]);
-
   useEffect(() => {
-    registerComponents();
-  }, [registerComponents]);
+    const cleanups = [registerComponent(PandasPanel.COMPONENT, PandasPanel)];
+
+    return () => {
+      cleanups.forEach(cleanup => cleanup());
+    };
+  }, [registerComponent]);
 
   return <></>;
 };

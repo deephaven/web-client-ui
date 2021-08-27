@@ -32,18 +32,20 @@ export const MarkdownPlugin = ({
     return dehydrate(config);
   }, []);
 
-  const registerComponents = useCallback(() => {
-    registerComponent(
-      MarkdownPanel.COMPONENT,
-      (MarkdownPanel as unknown) as ComponentType,
-      hydrate,
-      dehydrateMarkdown
-    );
-  }, [dehydrateMarkdown, registerComponent]);
-
   useEffect(() => {
-    registerComponents();
-  }, [registerComponents]);
+    const cleanups = [
+      registerComponent(
+        MarkdownPanel.COMPONENT,
+        (MarkdownPanel as unknown) as ComponentType,
+        hydrate,
+        dehydrateMarkdown
+      ),
+    ];
+
+    return () => {
+      cleanups.forEach(cleanup => cleanup());
+    };
+  }, [dehydrateMarkdown, registerComponent]);
 
   return <></>;
 };

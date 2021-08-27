@@ -1,7 +1,10 @@
 import React, { ComponentType, DragEvent, useCallback, useEffect } from 'react';
 import { IrisGridModel } from '@deephaven/iris-grid';
 import shortid from 'shortid';
-import { DashboardPluginComponentProps } from '../../dashboard/DashboardPlugin';
+import {
+  DashboardPluginComponentProps,
+  DeregisterComponentFn,
+} from '../../dashboard/DashboardPlugin';
 import { IrisGridPanel } from '../../dashboard/panels';
 import { IrisGridEvent } from '../../dashboard/events';
 import LayoutUtils from '../../layout/LayoutUtils';
@@ -11,7 +14,7 @@ export const GridPlugin = ({
   layout,
   registerComponent,
 }: DashboardPluginComponentProps): JSX.Element => {
-  const hydrate = useCallback(
+  const hydrateGrid = useCallback(
     props => ({
       ...props,
       localDashboardId: id,
@@ -21,17 +24,6 @@ export const GridPlugin = ({
     }),
     [id]
   );
-  // TODO: Actually dehydrate correctly
-  const dehydrate = useCallback(props => null, []);
-
-  const registerComponents = useCallback(() => {
-    registerComponent(
-      IrisGridPanel.COMPONENT,
-      (IrisGridPanel as unknown) as ComponentType,
-      hydrate,
-      dehydrate
-    );
-  }, [dehydrate, hydrate, registerComponent]);
 
   const handleOpen = useCallback(
     (
@@ -51,7 +43,7 @@ export const GridPlugin = ({
           makeModel,
         },
         title,
-        id,
+        id: panelId,
       };
 
       const { root } = layout;
@@ -70,8 +62,17 @@ export const GridPlugin = ({
   );
 
   useEffect(() => {
-    registerComponents();
-  }, [registerComponents]);
+    const cleanups = [
+      registerComponent(
+        IrisGridPanel.COMPONENT,
+        (IrisGridPanel as unknown) as ComponentType,
+        hydrateGrid
+      ),
+    ];
+    return () => {
+      cleanups.forEach(cleanup => cleanup());
+    };
+  }, [hydrateGrid, registerComponent]);
 
   useEffect(() => {
     layout.eventHub.on(IrisGridEvent.OPEN_GRID, handleOpen);
