@@ -5,6 +5,7 @@ import {
   CommandHistoryPanel,
   FileExplorerPanel,
   LogPanel,
+  NotebookPanel,
 } from '../../dashboard/panels';
 
 export const ConsolePlugin = ({
@@ -12,52 +13,28 @@ export const ConsolePlugin = ({
   layout,
   registerComponent,
 }: DashboardPluginComponentProps): JSX.Element => {
-  const hydrate = useCallback(
-    props => ({
-      ...props,
-      localDashboardId: id,
-    }),
-    [id]
-  );
-
-  const hydrateWithMetadata = useCallback(
-    props => ({
-      metadata: {},
-      ...props,
-      localDashboardId: id,
-    }),
-    [id]
-  );
-
-  // TODO: Actually dehydrate correctly
-  const dehydrate = useCallback(props => null, []);
-
   const registerComponents = useCallback(() => {
     registerComponent(
       ConsolePanel.COMPONENT,
-      (ConsolePanel as unknown) as ComponentType,
-      hydrateWithMetadata,
-      dehydrate
+      (ConsolePanel as unknown) as ComponentType
     );
     registerComponent(
       CommandHistoryPanel.COMPONENT,
-      (CommandHistoryPanel as unknown) as ComponentType,
-      hydrate,
-      dehydrate
+      (CommandHistoryPanel as unknown) as ComponentType
     );
     registerComponent(
       FileExplorerPanel.COMPONENT,
-      (FileExplorerPanel as unknown) as ComponentType,
-      hydrate,
-      dehydrate
+      (FileExplorerPanel as unknown) as ComponentType
     );
     registerComponent(
       LogPanel.COMPONENT,
-      (LogPanel as unknown) as ComponentType,
-      hydrate,
-      dehydrate
+      (LogPanel as unknown) as ComponentType
     );
-  }, [dehydrate, hydrate, hydrateWithMetadata, registerComponent]);
+    registerComponent(
+      NotebookPanel.COMPONENT,
+      (NotebookPanel as unknown) as ComponentType
+    );
+  }, [registerComponent]);
 
   useEffect(() => {
     registerComponents();

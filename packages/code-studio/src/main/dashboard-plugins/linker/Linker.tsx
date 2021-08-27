@@ -20,17 +20,17 @@ import {
   setDashboardIsolatedLinkerPanelId as setDashboardIsolatedLinkerPanelIdAction,
   setDashboardColumnSelectionValidator as setDashboardColumnSelectionValidatorAction,
 } from '@deephaven/redux';
-import ToolType from '../../tools/ToolType';
+import ToolType from '../../../tools/ToolType';
 import {
   ChartEvent,
   IrisGridEvent,
   PanelEvent,
   InputFilterEvent,
-} from '../events';
-import LayoutUtils from '../../layout/LayoutUtils';
+} from '../../../dashboard/events';
+import LayoutUtils from '../../../layout/LayoutUtils';
 import LinkerOverlayContent from './LinkerOverlayContent';
 import LinkerUtils, { Link, LinkColumn, LinkType } from './LinkerUtils';
-import { PanelManager } from '../panels';
+import { PanelManager } from '../../../dashboard/panels';
 
 const log = Log.module('Linker');
 

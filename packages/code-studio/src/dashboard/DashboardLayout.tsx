@@ -6,6 +6,10 @@ import Log from '@deephaven/log';
 import { PanelManager } from './panels';
 import PanelErrorBoundary from './panels/PanelErrorBoundary';
 import LayoutUtils from '../layout/LayoutUtils';
+import {
+  dehydrate as dehydrateDefault,
+  hydrate as hydrateDefault,
+} from './DashboardUtils';
 
 const log = Log.module('DashboardLayout');
 
@@ -26,8 +30,13 @@ export const DashboardLayout = ({
   const dehydrateMap = useMemo(() => new Map(), []);
   const store = useStore();
   const registerComponent = useCallback(
-    (name, ComponentType, hydrate, dehydrate) => {
-      log.debug2('registerComponent', name);
+    (
+      name,
+      ComponentType,
+      hydrate = hydrateDefault,
+      dehydrate = dehydrateDefault
+    ) => {
+      log.debug2('registerComponent', name, ComponentType, hydrate, dehydrate);
 
       function renderComponent(
         props: { glContainer: unknown; glEventHub: unknown },
@@ -106,11 +115,10 @@ export const DashboardLayout = ({
 DashboardLayout.propTypes = {
   id: PropTypes.string.isRequired,
   children: PropTypes.node,
-  layout: {
-    root: {
-      addChild: PropTypes.func,
-    },
-  },
+  layout: PropTypes.shape({
+    registerComponent: PropTypes.func,
+    root: PropTypes.shape({ addChild: PropTypes.func }),
+  }).isRequired,
   layoutConfig: PropTypes.arrayOf(PropTypes.shape({})),
 };
 
