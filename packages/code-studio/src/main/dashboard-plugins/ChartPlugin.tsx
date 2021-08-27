@@ -29,7 +29,7 @@ export const ChartPlugin = ({
           makeModel,
         },
         title,
-        id,
+        id: panelId,
       };
 
       const { root } = layout;
