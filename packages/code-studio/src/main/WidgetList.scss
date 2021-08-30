@@ -1,0 +1,66 @@
+@import '~@deephaven/components/scss/custom.scss';
+
+$widget-list-color: $gray-200;
+$widget-list-hover-color: $foreground;
+$widget-list-background-hover-color: $primary;
+
+$widget-list-owner-color: $gray-400;
+$widget-list-owner-hover-color: $gray-200;
+
+.widget-list-container {
+  height: 25.6rem;
+  padding: 0 0.5rem;
+  text-align: left;
+  width: 23rem;
+
+  hr {
+    margin-top: 0;
+    margin-bottom: 0;
+  }
+
+  &:focus {
+    outline: none;
+  }
+
+  .widget-list {
+    margin: 0.5rem -0.5rem 0;
+    padding: 0;
+    text-align: left;
+    overflow: auto;
+    li {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .btn {
+      border: none;
+      border-radius: 0;
+      display: block;
+      text-align: left;
+      margin: 0;
+      padding: 0.35rem 0.5rem;
+      width: 100%;
+      color: $widget-list-color;
+      &:hover,
+      &:focus {
+        color: $widget-list-hover-color;
+        background-color: $widget-list-background-hover-color;
+        text-decoration: none;
+      }
+    }
+
+    .widget-list-message {
+      padding: 0 $spacer-2;
+    }
+  }
+
+  .widget-list-header,
+  .widget-list-footer {
+    padding-top: $spacer-2;
+    padding-bottom: $spacer-2;
+
+    .btn .fa-md {
+      margin-right: $spacer-2;
+    }
+  }
+}

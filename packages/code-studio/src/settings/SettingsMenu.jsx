@@ -8,10 +8,9 @@ import LegalNotice from './LegalNotice';
 import SettingsMenuSection from './SettingsMenuSection';
 import ShortcutSectionContent from './ShortcutsSectionContent';
 import { exportLogs } from '../log/LogExport';
-
 import './SettingsMenu.scss';
 
-class SettingsMenu extends Component {
+export class SettingsMenu extends Component {
   static FORMATTING_SECTION_KEY = 'SettingsMenu.formatting';
 
   static APPLICATION_SECTION_KEY = 'ApplicationMenu.settings';

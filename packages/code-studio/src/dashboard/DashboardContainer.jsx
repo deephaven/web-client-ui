@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect, Provider, ReactReduxContext } from 'react-redux';
 import throttle from 'lodash.throttle';
+import { PropTypes as APIPropTypes } from '@deephaven/jsapi-shim';
 import Log from '@deephaven/log';
 import {
   getActiveTool,
@@ -48,6 +49,8 @@ import './DashboardContainer.scss';
 import { UIPropTypes } from '../include/prop-types';
 import PanelErrorBoundary from './panels/PanelErrorBoundary';
 import FileExplorerPanel from './panels/FileExplorerPanel';
+import { getSessionWrapper } from '../redux';
+import { createChartModel, createGridModel } from '../main/WidgetUtils';
 
 const log = Log.module('DashboardContainer');
 const RESIZE_THROTTLE = 100;
@@ -95,12 +98,24 @@ export class DashboardContainer extends Component {
     this.state = {
       dashboardIsEmpty: true,
       layout: null,
+      layoutConfig: null,
       panelManager: null,
     };
   }
 
   componentDidMount() {
     this.init();
+  }
+
+  componentDidUpdate(prevProps) {
+    const { layoutConfig } = this.props;
+    const { layoutConfig: currentLayoutConfig } = this.state;
+    if (
+      prevProps.layoutConfig !== layoutConfig &&
+      layoutConfig !== currentLayoutConfig
+    ) {
+      this.reloadLayoutConfig();
+    }
   }
 
   componentWillUnmount() {
@@ -137,6 +152,11 @@ export class DashboardContainer extends Component {
       ChartPanel: props => ({
         ...props,
         localDashboardId,
+        makeModel: () => {
+          const { session } = this.props;
+          const { metadata, panelState } = props;
+          return createChartModel(session, metadata, panelState);
+        },
       }),
       ConsolePanel: props => ({
         metadata: {},
@@ -162,8 +182,9 @@ export class DashboardContainer extends Component {
       IrisGridPanel: props => ({
         ...props,
         localDashboardId,
-        makeModel: async () => {
-          throw new Error('Re-hydration not yet implemented.');
+        makeModel: () => {
+          const { session } = this.props;
+          return createGridModel(session, props.metadata);
         },
       }),
       LogPanel: props => ({
@@ -254,7 +275,7 @@ export class DashboardContainer extends Component {
       content,
     };
 
-    log.debug('InitLayout', content);
+    log.debug('initLayout layoutConfig', layoutConfig, 'content', content);
 
     const layout = new GoldenLayout(config, this.layoutElement.current);
 
@@ -295,6 +316,31 @@ export class DashboardContainer extends Component {
     onGoldenLayoutChange(layout);
 
     return layout;
+  }
+
+  reloadLayoutConfig() {
+    const { layoutConfig } = this.props;
+    const { layout } = this.state;
+
+    const hydrateComponentPropsMap = this.makeHydrateComponentPropsMap();
+    const content = LayoutUtils.hydrateLayoutConfig(
+      layoutConfig,
+      hydrateComponentPropsMap
+    );
+
+    // Remove the old layout before add the new one
+    while (layout.root.contentItems.length > 0) {
+      layout.root.contentItems[0].remove();
+    }
+
+    // Add the new content. It is usally just one item from the root
+    for (let i = 0; i < content.length; i += 1) {
+      layout.root.addChild(content[i]);
+    }
+
+    this.setState({
+      dashboardIsEmpty: layoutConfig.length === 0,
+    });
   }
 
   registerComponent(layout, name, ComponentType) {
@@ -480,6 +526,8 @@ export class DashboardContainer extends Component {
       this.setState({ dashboardIsEmpty: false });
     }
 
+    this.setState({ layoutConfig: newLayoutConfig });
+
     onLayoutConfigChange(newLayoutConfig);
   }
 
@@ -551,6 +599,7 @@ DashboardContainer.propTypes = {
   onDataChange: PropTypes.func,
   onLayoutConfigChange: PropTypes.func,
   onGoldenLayoutChange: PropTypes.func,
+  session: APIPropTypes.IdeSession.isRequired,
   setActiveTool: PropTypes.func.isRequired,
   setDashboardColumns: PropTypes.func.isRequired,
   setDashboardInputFilters: PropTypes.func.isRequired,
@@ -575,6 +624,7 @@ DashboardContainer.contextType = ReactReduxContext;
 
 const mapStateToProps = state => ({
   activeTool: getActiveTool(state),
+  session: getSessionWrapper(state).session,
 });
 
 export default connect(mapStateToProps, {

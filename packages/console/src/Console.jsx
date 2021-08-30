@@ -693,7 +693,9 @@ export class Console extends PureComponent {
     } else if (command.length > 0) {
       // Result is handled in this.handleCommandStarted
       const { session } = this.props;
-      session.runCode(command);
+      session.runCode(command).catch(error => {
+        log.error('There was an error initiating the command', error);
+      });
     } else {
       // Empty command, just pump a blank line out to history
       const historyItem = {

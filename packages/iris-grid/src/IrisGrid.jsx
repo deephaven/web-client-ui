@@ -1750,7 +1750,7 @@ export class IrisGrid extends Component {
     } else {
       log.error('Table failed and unable to rollback');
       const { onError } = this.props;
-      onError(new Error('Error displaying table.'));
+      onError(new Error(`Error displaying table: ${event.detail}`));
     }
   }
 

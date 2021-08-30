@@ -3,15 +3,18 @@ import classNames from 'classnames';
 import PropTypes from 'prop-types';
 import { CSSTransition } from 'react-transition-group';
 import { connect } from 'react-redux';
+import shortid from 'shortid';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { vsGear, dhShapes } from '@deephaven/icons';
 import {
   ContextActions,
   Tooltip,
   ThemeExport,
   GLOBAL_SHORTCUTS,
+  Popper,
 } from '@deephaven/components';
 import { SHORTCUTS as IRIS_GRID_SHORTCUTS } from '@deephaven/iris-grid';
+import { vsGear, dhShapes, dhPanels } from '@deephaven/icons';
+import dh, { PropTypes as APIPropTypes } from '@deephaven/jsapi-shim';
 import Log from '@deephaven/log';
 import {
   getActiveTool,
@@ -22,70 +25,26 @@ import {
 } from '@deephaven/redux';
 import { PromiseUtils } from '@deephaven/utils';
 import SettingsMenu from '../settings/SettingsMenu';
-import { ControlEvent, InputFilterEvent } from '../dashboard/events';
+import {
+  ChartEvent,
+  ControlEvent,
+  InputFilterEvent,
+  IrisGridEvent,
+} from '../dashboard/events';
 import ToolType from '../tools/ToolType';
 import { IrisPropTypes } from '../include/prop-types';
 import AppControlsMenu from './AppControlsMenu';
-import { CommandHistoryPanel, ConsolePanel } from '../dashboard/panels';
 import DashboardContainer from '../dashboard/DashboardContainer';
 import ControlType from '../controls/ControlType';
+import { getLayoutStorage, getSessionWrapper } from '../redux';
 import Logo from '../settings/LogoMiniDark.svg';
 import './AppMainContainer.scss';
-import FileExplorerPanel from '../dashboard/panels/FileExplorerPanel';
+import WidgetList from './WidgetList';
+import { createChartModel, createGridModel } from './WidgetUtils';
+import EmptyDashboard from './EmptyDashboard';
+import UserLayoutUtils from './UserLayoutUtils';
 
 const log = Log.module('AppMainContainer');
-
-const DEFAULT_LAYOUT_CONFIG = [
-  {
-    type: 'column',
-    content: [
-      {
-        type: 'row',
-        content: [
-          {
-            type: 'stack',
-            content: [
-              {
-                type: 'react-component',
-                component: ConsolePanel.COMPONENT,
-                title: ConsolePanel.TITLE,
-                isClosable: false,
-              },
-            ],
-          },
-          {
-            type: 'stack',
-            width: 25,
-            content: [
-              {
-                type: 'react-component',
-                component: CommandHistoryPanel.COMPONENT,
-                title: CommandHistoryPanel.TITLE,
-                isClosable: false,
-              },
-              {
-                type: 'react-component',
-                component: FileExplorerPanel.COMPONENT,
-                title: FileExplorerPanel.TITLE,
-                isClosable: false,
-              },
-            ],
-          },
-        ],
-      },
-      {
-        type: 'row',
-        content: [
-          {
-            type: 'stack',
-            title: 'Notebooks',
-            content: [],
-          },
-        ],
-      },
-    ],
-  },
-];
 
 export class AppMainContainer extends Component {
   static handleWindowBeforeUnload(event) {
@@ -105,16 +64,32 @@ export class AppMainContainer extends Component {
     this.handleToolSelect = this.handleToolSelect.bind(this);
     this.handleClearFilter = this.handleClearFilter.bind(this);
     this.handleDataChange = this.handleDataChange.bind(this);
+    this.handleAutoFillClick = this.handleAutoFillClick.bind(this);
     this.handleGoldenLayoutChange = this.handleGoldenLayoutChange.bind(this);
     this.handleLayoutConfigChange = this.handleLayoutConfigChange.bind(this);
+    this.handleExportLayoutClick = this.handleExportLayoutClick.bind(this);
+    this.handleImportLayoutClick = this.handleImportLayoutClick.bind(this);
+    this.handleImportLayoutFiles = this.handleImportLayoutFiles.bind(this);
+    this.handleResetLayoutClick = this.handleResetLayoutClick.bind(this);
+    this.handleWidgetMenuClick = this.handleWidgetMenuClick.bind(this);
+    this.handleWidgetsMenuClose = this.handleWidgetsMenuClose.bind(this);
+    this.handleWidgetSelect = this.handleWidgetSelect.bind(this);
     this.handlePaste = this.handlePaste.bind(this);
 
     this.goldenLayout = null;
+    this.importElement = React.createRef();
+    this.widgetListenerRemover = null;
 
-    this.state = { showSettingsMenu: false };
+    this.state = {
+      isPanelsMenuShown: false,
+      isSettingsMenuShown: false,
+      widgets: [],
+    };
   }
 
   componentDidMount() {
+    this.initWidgets();
+
     window.addEventListener(
       'beforeunload',
       AppMainContainer.handleWindowBeforeUnload
@@ -122,18 +97,53 @@ export class AppMainContainer extends Component {
   }
 
   componentWillUnmount() {
+    this.deinitWidgets();
+
     window.removeEventListener(
       'beforeunload',
       AppMainContainer.handleWindowBeforeUnload
     );
   }
 
+  initWidgets() {
+    const { session } = this.props;
+    this.widgetListenerRemover = session.connection.subscribeToFieldUpdates(
+      updates => {
+        log.debug('Got updates', updates);
+        this.setState(({ widgets }) => {
+          const { updated, created, removed } = updates;
+
+          // Remove from the array if it's been removed OR modified. We'll add it back after if it was modified.
+          const widgetsToRemove = [...updated, ...removed];
+          const newWidgets = widgets.filter(
+            widget =>
+              !widgetsToRemove.some(toRemove => toRemove.name === widget.name)
+          );
+
+          // Now add all the modified and updated widgets back in
+          const widgetsToAdd = [...updated, ...created];
+          widgetsToAdd.forEach(toAdd => {
+            if (toAdd.name) {
+              newWidgets.push(toAdd);
+            }
+          });
+
+          return { widgets: newWidgets };
+        });
+      }
+    );
+  }
+
+  deinitWidgets() {
+    this.widgetListenerRemover?.();
+  }
+
   sendClearFilter() {
     this.emitLayoutEvent(InputFilterEvent.CLEAR_ALL_FILTERS);
   }
 
-  emitLayoutEvent(event, data = undefined) {
-    this.goldenLayout?.eventHub.emit(event, data);
+  emitLayoutEvent(event, ...args) {
+    this.goldenLayout?.eventHub.emit(event, ...args);
   }
 
   // eslint-disable-next-line class-methods-use-this
@@ -145,11 +155,11 @@ export class AppMainContainer extends Component {
   }
 
   handleSettingsMenuHide() {
-    this.setState({ showSettingsMenu: false });
+    this.setState({ isSettingsMenuShown: false });
   }
 
   handleSettingsMenuShow() {
-    this.setState({ showSettingsMenu: true });
+    this.setState({ isSettingsMenuShown: true });
   }
 
   handleControlSelect(type, dragEvent = null) {
@@ -213,6 +223,115 @@ export class AppMainContainer extends Component {
     updateWorkspaceData({ layoutConfig });
   }
 
+  handleWidgetMenuClick() {
+    this.setState(({ isPanelsMenuShown }) => ({
+      isPanelsMenuShown: !isPanelsMenuShown,
+    }));
+  }
+
+  handleWidgetSelect(widget, dragEvent) {
+    this.setState({ isPanelsMenuShown: false });
+
+    log.debug('handleWidgetSelect', widget, dragEvent);
+
+    this.openWidget(widget, dragEvent);
+  }
+
+  handleWidgetsMenuClose() {
+    this.setState({ isPanelsMenuShown: false });
+  }
+
+  handleAutoFillClick() {
+    const { widgets } = this.state;
+
+    log.debug('handleAutoFillClick', widgets);
+
+    const sortedWidgets = widgets.sort((a, b) => a.name.localeCompare(b.name));
+    for (let i = 0; i < sortedWidgets.length; i += 1) {
+      this.openWidget(sortedWidgets[i]);
+    }
+  }
+
+  handleExportLayoutClick() {
+    log.info('handleExportLayoutClick');
+
+    this.setState({ isPanelsMenuShown: false });
+
+    try {
+      const { workspace } = this.props;
+      const { data } = workspace;
+      const { layoutConfig = [] } = data;
+
+      log.info('Exporting layoutConfig', layoutConfig);
+
+      const blob = new Blob([JSON.stringify(layoutConfig)], {
+        mimeType: 'application/json',
+      });
+      const timestamp = dh.i18n.DateTimeFormat.format(
+        'yyyy-MM-dd-HHmmss',
+        new Date()
+      );
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = `deephaven-app-layout-${timestamp}.json`;
+      link.click();
+    } catch (e) {
+      log.error('Unable to export layout', e);
+    }
+  }
+
+  handleImportLayoutClick() {
+    log.info('handleImportLayoutClick');
+
+    this.setState({ isPanelsMenuShown: false });
+
+    // Reset the file list on the import element, otherwise user won't be prompted again
+    this.importElement.current.value = '';
+    this.importElement.current.click();
+  }
+
+  handleResetLayoutClick() {
+    log.info('handleResetLayoutClick');
+
+    this.setState({ isPanelsMenuShown: false });
+
+    this.resetLayout();
+  }
+
+  handleImportLayoutFiles(event) {
+    event.stopPropagation();
+    event.preventDefault();
+
+    this.importLayoutFile(event.target.files[0]);
+  }
+
+  /**
+   * Import the provided file and set it in the workspace data (which should then load it in the dashboard)
+   * @param {File} file JSON file to import
+   */
+  async importLayoutFile(file) {
+    try {
+      const fileText = await file.text();
+      const layoutConfig = JSON.parse(fileText);
+
+      const { updateWorkspaceData } = this.props;
+      updateWorkspaceData({ layoutConfig });
+    } catch (e) {
+      log.error('Unable to export layout', e);
+    }
+  }
+
+  /**
+   * Resets the users layout to the default layout
+   */
+  async resetLayout() {
+    const { layoutStorage } = this.props;
+    const layoutConfig = await UserLayoutUtils.getDefaultLayout(layoutStorage);
+
+    const { updateWorkspaceData } = this.props;
+    updateWorkspaceData({ layoutConfig });
+  }
+
   // eslint-disable-next-line class-methods-use-this
   handlePaste(event) {
     let element = event.target.parentElement;
@@ -239,11 +358,53 @@ export class AppMainContainer extends Component {
     }
   }
 
+  /**
+   * Open a widget up, using a drag event if specified.
+   * @param {WidgetDefinition} widget The widget to
+   * @param {DragEvent} dragEvent The mouse drag event that trigger it, undefined if it was not triggered by a drag
+   */
+  openWidget(widget, dragEvent) {
+    switch (widget.type) {
+      case dh.VariableType.TABLE: {
+        const metadata = { table: widget.id };
+        this.emitLayoutEvent(
+          IrisGridEvent.OPEN_GRID,
+          widget.name,
+          () => {
+            const { session } = this.props;
+            return createGridModel(session, metadata);
+          },
+          metadata,
+          shortid.generate(),
+          dragEvent
+        );
+        break;
+      }
+      case dh.VariableType.FIGURE: {
+        const metadata = { figure: widget.id };
+        this.emitLayoutEvent(
+          ChartEvent.OPEN,
+          widget.name,
+          () => {
+            const { session } = this.props;
+            return createChartModel(session, metadata);
+          },
+          metadata,
+          shortid.generate(),
+          dragEvent
+        );
+        break;
+      }
+      default:
+        log.error('Unexpected widget type', widget);
+    }
+  }
+
   render() {
     const { activeTool, user, workspace } = this.props;
     const { data: workspaceData = {} } = workspace;
-    const { data = {}, layoutConfig = DEFAULT_LAYOUT_CONFIG } = workspaceData;
-    const { showSettingsMenu } = this.state;
+    const { data = {}, layoutConfig } = workspaceData;
+    const { isPanelsMenuShown, isSettingsMenuShown, widgets } = this.state;
     const contextActions = [
       {
         action: () => {
@@ -280,7 +441,30 @@ export class AppMainContainer extends Component {
             onClearFilter={this.handleClearFilter}
           />
         </button>
-
+        <button
+          type="button"
+          className="btn btn-link btn-panels-menu btn-show-panels"
+          data-testid="app-main-panels-button"
+          onClick={this.handleWidgetMenuClick}
+        >
+          <FontAwesomeIcon icon={dhPanels} />
+          Panels
+          <Popper
+            isShown={isPanelsMenuShown}
+            className="panels-menu-popper"
+            onExited={this.handleWidgetsMenuClose}
+            closeOnBlur
+            interactive
+          >
+            <WidgetList
+              widgets={widgets}
+              onExportLayout={this.handleExportLayoutClick}
+              onImportLayout={this.handleImportLayoutClick}
+              onResetLayout={this.handleResetLayoutClick}
+              onSelect={this.handleWidgetSelect}
+            />
+          </Popper>
+        </button>
         <button
           type="button"
           className={classNames(
@@ -320,13 +504,16 @@ export class AppMainContainer extends Component {
         </nav>
         <DashboardContainer
           data={data}
+          emptyDashboard={
+            <EmptyDashboard onAutoFillClick={this.handleAutoFillClick} />
+          }
           layoutConfig={layoutConfig}
           onDataChange={this.handleDataChange}
           onGoldenLayoutChange={this.handleGoldenLayoutChange}
           onLayoutConfigChange={this.handleLayoutConfigChange}
         />
         <CSSTransition
-          in={showSettingsMenu}
+          in={isSettingsMenuShown}
           timeout={ThemeExport.transitionMidMs}
           classNames="slide-left"
           mountOnEnter
@@ -335,6 +522,13 @@ export class AppMainContainer extends Component {
           <SettingsMenu onDone={this.handleSettingsMenuHide} />
         </CSSTransition>
         <ContextActions actions={contextActions} />
+        <input
+          ref={this.importElement}
+          type="file"
+          accept=".json"
+          style={{ display: 'none' }}
+          onChange={this.handleImportLayoutFiles}
+        />
       </div>
     );
   }
@@ -342,6 +536,8 @@ export class AppMainContainer extends Component {
 
 AppMainContainer.propTypes = {
   activeTool: PropTypes.string.isRequired,
+  layoutStorage: PropTypes.shape({}).isRequired,
+  session: APIPropTypes.IdeSession.isRequired,
   setActiveTool: PropTypes.func.isRequired,
   updateWorkspaceData: PropTypes.func.isRequired,
   user: IrisPropTypes.User.isRequired,
@@ -355,6 +551,8 @@ AppMainContainer.propTypes = {
 
 const mapStateToProps = state => ({
   activeTool: getActiveTool(state),
+  layoutStorage: getLayoutStorage(state),
+  session: getSessionWrapper(state).session,
   user: getUser(state),
   workspace: getWorkspace(state),
 });

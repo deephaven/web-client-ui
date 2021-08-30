@@ -43,13 +43,6 @@ $tab-control-gradient-width: 12px;
 
 $nav-space: 4px; // give a gap around some buttons for focus area that are in nav bar
 
-$panels-menu-list-color: $gray-200;
-$panels-menu-list-hover-color: $foreground;
-$panels-menu-list-background-hover-color: $primary;
-
-$panels-menu-list-owner-color: $gray-400;
-$panels-menu-list-owner-hover-color: $gray-200;
-
 @mixin underlined-nav-link($pseudo-element, $underline-color) {
   &::#{$pseudo-element} {
     content: '';
@@ -285,58 +278,6 @@ $panels-menu-list-owner-hover-color: $gray-200;
 
 .tab-pane {
   width: 100%;
-}
-
-.panels-menu-container {
-  height: 25.6rem;
-  padding: 0 0.5rem;
-  text-align: left;
-  width: 23rem;
-
-  &:focus {
-    outline: none;
-  }
-
-  .panels-menu-query-list,
-  .panels-menu-table-list {
-    margin: 0.5rem -0.5rem 0;
-    padding: 0;
-    text-align: left;
-    overflow: auto;
-    li {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-    }
-    .btn {
-      border: none;
-      border-radius: 0;
-      display: block;
-      text-align: left;
-      margin: 0;
-      padding: 0.35rem 0.5rem;
-      width: 100%;
-      color: $panels-menu-list-color;
-      .query-owner {
-        color: $panels-menu-list-owner-color;
-      }
-      .query-arrow-icon {
-        color: $panels-menu-list-owner-color;
-      }
-      &:hover,
-      &:focus {
-        color: $panels-menu-list-hover-color;
-        background-color: $panels-menu-list-background-hover-color;
-        text-decoration: none;
-        .query-owner {
-          color: $panels-menu-list-owner-hover-color;
-        }
-        .query-arrow-icon {
-          color: $panels-menu-list-owner-hover-color;
-        }
-      }
-    }
-  }
 }
 
 .app-main-tabs {

@@ -1,11 +1,14 @@
 // Wrapper for the Console for use in a golden layout container
 // Will probably need to handle window popping out from golden layout here.
 import React, { PureComponent } from 'react';
+import { connect } from 'react-redux';
 import Log from '@deephaven/log';
 import { LogView } from '@deephaven/console';
+import { PropTypes as APIPropTypes } from '@deephaven/jsapi-shim';
 import './LogPanel.scss';
 import Panel from './Panel';
-import { GLPropTypes, IrisPropTypes } from '../../include/prop-types';
+import { GLPropTypes } from '../../include/prop-types';
+import { getSessionWrapper } from '../../redux';
 
 const log = Log.module('LogPanel');
 
@@ -104,11 +107,17 @@ class LogPanel extends PureComponent {
 LogPanel.propTypes = {
   glContainer: GLPropTypes.Container.isRequired,
   glEventHub: GLPropTypes.EventHub.isRequired,
-  session: IrisPropTypes.IdeSession,
+  session: APIPropTypes.IdeSession,
 };
 
 LogPanel.defaultProps = {
   session: null,
 };
 
-export default LogPanel;
+const mapStateToProps = state => ({
+  session: getSessionWrapper(state).session,
+});
+
+export default connect(mapStateToProps, null, null, { forwardRef: true })(
+  LogPanel
+);

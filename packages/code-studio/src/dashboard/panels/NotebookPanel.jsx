@@ -32,6 +32,7 @@ import './NotebookPanel.scss';
 import Panel from './Panel';
 import { GLPropTypes } from '../../include/prop-types';
 import SHORTCUTS from '../../settings/Shortcuts';
+import { getSessionWrapper } from '../../redux';
 
 const log = Log.module('NotebookPanel');
 
@@ -924,9 +925,17 @@ NotebookPanel.defaultProps = {
   sessionLanguage: null,
 };
 
-const mapStateToProps = state => ({
-  fileStorage: getFileStorage(state),
-});
+const mapStateToProps = state => {
+  const fileStorage = getFileStorage(state);
+  const sessionWrapper = getSessionWrapper(state);
+  const { session, config: sessionConfig } = sessionWrapper;
+  const { type: sessionLanguage } = sessionConfig;
+  return {
+    fileStorage,
+    session,
+    sessionLanguage,
+  };
+};
 
 export default connect(mapStateToProps, null, null, { forwardRef: true })(
   NotebookPanel
