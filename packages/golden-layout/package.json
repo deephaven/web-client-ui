@@ -91,5 +91,8 @@
         "jquery"
       ]
     }
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }
