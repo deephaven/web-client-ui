@@ -1,6 +1,4 @@
 class ControlEvent {
-  static OPEN = 'ControlEvent.OPEN';
-
   static CLOSE = 'ControlEvent.CLOSE';
 }
 

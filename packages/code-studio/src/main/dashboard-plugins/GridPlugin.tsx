@@ -1,10 +1,7 @@
 import React, { ComponentType, DragEvent, useCallback, useEffect } from 'react';
 import { IrisGridModel } from '@deephaven/iris-grid';
 import shortid from 'shortid';
-import {
-  DashboardPluginComponentProps,
-  DeregisterComponentFn,
-} from '../../dashboard/DashboardPlugin';
+import { DashboardPluginComponentProps } from '../../dashboard/DashboardPlugin';
 import { IrisGridPanel } from '../../dashboard/panels';
 import { IrisGridEvent } from '../../dashboard/events';
 import LayoutUtils from '../../layout/LayoutUtils';

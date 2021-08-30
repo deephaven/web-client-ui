@@ -1,5 +1,5 @@
 import Log from '@deephaven/log';
-import { PanelEvent } from '../events';
+import { ControlEvent, PanelEvent } from '../events';
 import LayoutUtils from '../../layout/LayoutUtils';
 
 const log = Log.module('PanelManager');
@@ -24,6 +24,7 @@ class PanelManager {
     this.handleReopen = this.handleReopen.bind(this);
     this.handleDeleted = this.handleDeleted.bind(this);
     this.handleClosed = this.handleClosed.bind(this);
+    this.handleControlClose = this.handleControlClose.bind(this);
 
     this.layout = layout;
     this.hydrateComponent = hydrateComponent;
@@ -47,6 +48,7 @@ class PanelManager {
     eventHub.on(PanelEvent.REOPEN, this.handleReopen);
     eventHub.on(PanelEvent.DELETE, this.handleDeleted);
     eventHub.on(PanelEvent.CLOSED, this.handleClosed);
+    eventHub.on(ControlEvent.CLOSE, this.handleControlClose);
   }
 
   stopListening() {
@@ -57,6 +59,7 @@ class PanelManager {
     eventHub.off(PanelEvent.REOPEN, this.handleReopen);
     eventHub.off(PanelEvent.DELETE, this.handleDeleted);
     eventHub.off(PanelEvent.CLOSED, this.handleClosed);
+    eventHub.off(ControlEvent.CLOSE, this.handleControlClose);
   }
 
   getClosedPanelConfigsOfType(typeString) {
@@ -222,6 +225,12 @@ class PanelManager {
     log.debug2('Closed: ', panelId);
     this.addClosedPanel(glContainer);
     this.sendUpdate();
+  }
+
+  handleControlClose(id) {
+    const config = { id };
+    const { root } = this.layout;
+    LayoutUtils.closeComponent(root, config);
   }
 
   addClosedPanel(glContainer) {
