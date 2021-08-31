@@ -25,7 +25,6 @@ body {
   padding: 0;
   overscroll-behavior: none;
   -ms-scroll-chaining: none;
-  scrollbar-color: rgba($white, 0.1) rgba($black, 0.1); //applies to firefox only
 }
 
 #root {
@@ -602,31 +601,55 @@ input[type='number']::-webkit-inner-spin-button {
   opacity: 1;
 }
 
-// Scroll Bar styling for webkit and firefox.
+// Scroll Bar styling for firefox.
+body {
+  scrollbar-color: auto; //applies to firefox only
+}
+
+// make width same as monaco scrollbar
 ::-webkit-scrollbar {
-  width: 12px;
-  height: 12px;
-  background-color: rgba($black, 0.1);
-  border-radius: 10px;
+  width: 14px;
+  height: 14px;
 }
 
-::-webkit-scrollbar-corner {
-  background-color: rgba($white, 0.1);
+:root {
+  --scrollbar-color: 255, 255, 255;
 }
 
-::-webkit-scrollbar-track {
-  border-radius: 10px;
-  background-color: rgba($black, 0.1);
+// used in inverted color sections, like light modals
+.theme-bg-light {
+  --scrollbar-color: 0, 0, 0;
 }
 
+// style the same as monaco scrollbar
 ::-webkit-scrollbar-thumb {
-  border-radius: 10px;
-  background-color: rgba($white, 0.3);
+  background: rgba(var(--scrollbar-color), 0.18);
+  border-radius: 0px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  border-radius: 10px;
-  background-color: rgba($white, 0.6);
+  background: rgba(var(--scrollbar-color), 0.25);
+}
+
+::-webkit-scrollbar-thumb:active {
+  background: rgba(var(--scrollbar-color), 0.35);
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 0px;
+}
+
+::-webkit-scrollbar-track:horizontal {
+  border-top: 1px solid rgba(var(--scrollbar-color), 0.15);
+}
+
+::-webkit-scrollbar-track:vertical {
+  border-left: 1px solid rgba(var(--scrollbar-color), 0.15);
+}
+
+::-webkit-scrollbar-corner {
+  background: rgba(0, 0, 0, 0.1);
 }
 
 /********** Monaco Overides *********/

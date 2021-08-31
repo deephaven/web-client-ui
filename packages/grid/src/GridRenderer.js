@@ -2069,19 +2069,18 @@ class GridRenderer {
       context.fillRect(
         width - rowHeaderWidth - scrollBarSize + scrollBarCasingWidth,
         height - columnHeaderHeight - scrollBarSize + scrollBarCasingWidth,
-        scrollBarSize - scrollBarCasingWidth * 2,
-        scrollBarSize - scrollBarCasingWidth * 2
+        scrollBarSize - scrollBarCasingWidth,
+        scrollBarSize - scrollBarCasingWidth
       );
     }
 
     if (hasHorizontalBar) {
       const x = scrollX;
       const y = height - columnHeaderHeight - hScrollBarSize;
-      const radius = hScrollBarSize * 0.5 - scrollBarCasingWidth;
 
       // scrollbar casing
       context.fillStyle = scrollBarCasingColor;
-      context.fillRect(0, y, barWidth, hScrollBarSize);
+      context.fillRect(0, y, barWidth, hScrollBarSize - scrollBarCasingWidth);
 
       // scrollbar track
       context.fillStyle = isHorizontalBarHover
@@ -2091,7 +2090,7 @@ class GridRenderer {
         0,
         y + scrollBarCasingWidth,
         barWidth,
-        hScrollBarSize - scrollBarCasingWidth * 2
+        hScrollBarSize - scrollBarCasingWidth
       );
 
       // scrollbar thumb
@@ -2102,32 +2101,22 @@ class GridRenderer {
       } else {
         context.fillStyle = scrollBarColor;
       }
-      context.beginPath();
-      context.arc(
-        x + radius,
-        y + radius + scrollBarCasingWidth,
-        radius,
-        Math.PI * 0.5,
-        Math.PI * 1.5
+
+      context.fillRect(
+        x,
+        y + scrollBarCasingWidth,
+        handleWidth,
+        barHeight - scrollBarCasingWidth * 2
       );
-      context.arc(
-        x + handleWidth - radius,
-        y + radius + scrollBarCasingWidth,
-        radius,
-        Math.PI * 1.5,
-        Math.PI * 0.5
-      );
-      context.fill();
     }
 
     if (hasVerticalBar) {
       const x = width - rowHeaderWidth - vScrollBarSize;
       const y = scrollY;
-      const radius = vScrollBarSize * 0.5 - scrollBarCasingWidth;
 
       // scrollbar casing
       context.fillStyle = scrollBarCasingColor;
-      context.fillRect(x, 0, vScrollBarSize, barHeight);
+      context.fillRect(x, 0, vScrollBarSize - scrollBarCasingWidth, barHeight);
 
       // scrollbar track
       context.fillStyle = isVerticalBarHover
@@ -2136,7 +2125,7 @@ class GridRenderer {
       context.fillRect(
         x + scrollBarCasingWidth,
         0,
-        vScrollBarSize - scrollBarCasingWidth * 2,
+        vScrollBarSize - scrollBarCasingWidth,
         barHeight
       );
 
@@ -2148,22 +2137,13 @@ class GridRenderer {
       } else {
         context.fillStyle = scrollBarColor;
       }
-      context.beginPath();
-      context.arc(
-        x + radius + scrollBarCasingWidth,
-        y + radius,
-        radius,
-        Math.PI,
-        0
+
+      context.fillRect(
+        x + scrollBarCasingWidth,
+        y,
+        barWidth - scrollBarCasingWidth * 2,
+        handleHeight
       );
-      context.arc(
-        x + radius + scrollBarCasingWidth,
-        y + handleHeight - radius,
-        radius,
-        0,
-        Math.PI
-      );
-      context.fill();
     }
 
     context.translate(-rowHeaderWidth, -columnHeaderHeight);
