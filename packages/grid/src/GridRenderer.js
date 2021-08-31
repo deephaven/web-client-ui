@@ -2106,7 +2106,7 @@ class GridRenderer {
         x,
         y + scrollBarCasingWidth,
         handleWidth,
-        barHeight - scrollBarCasingWidth * 2
+        hScrollBarSize - scrollBarCasingWidth
       );
     }
 
@@ -2141,7 +2141,7 @@ class GridRenderer {
       context.fillRect(
         x + scrollBarCasingWidth,
         y,
-        barWidth - scrollBarCasingWidth * 2,
+        vScrollBarSize - scrollBarCasingWidth,
         handleHeight
       );
     }
