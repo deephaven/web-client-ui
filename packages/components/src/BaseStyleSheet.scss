@@ -25,6 +25,7 @@ body {
   padding: 0;
   overscroll-behavior: none;
   -ms-scroll-chaining: none;
+  scrollbar-color: auto; //applies to firefox only
 }
 
 #root {
@@ -601,43 +602,25 @@ input[type='number']::-webkit-inner-spin-button {
   opacity: 1;
 }
 
-// Scroll Bar styling for firefox.
-body {
-  scrollbar-color: auto; //applies to firefox only
-}
-
 // make width same as monaco scrollbar
 ::-webkit-scrollbar {
   width: 14px;
   height: 14px;
 }
 
-:root {
-  --scrollbar-color: 255, 255, 255;
-}
-
-// used in inverted color sections, like light modals
-.theme-bg-light {
-  --scrollbar-color: 0, 0, 0;
-}
-
 // style the same as monaco scrollbar
 ::-webkit-scrollbar-thumb {
   background: rgba(var(--scrollbar-color), 0.18);
-  border-radius: 0px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(var(--scrollbar-color), 0.25);
-}
-
-::-webkit-scrollbar-thumb:active {
-  background: rgba(var(--scrollbar-color), 0.35);
+  border-radius: 0;
 }
 
 ::-webkit-scrollbar-track {
   background: transparent;
-  border-radius: 0px;
+  border-radius: 0;
+}
+
+::-webkit-scrollbar-corner {
+  background: rgba(0, 0, 0, 0.1);
 }
 
 ::-webkit-scrollbar-track:horizontal {
@@ -648,8 +631,23 @@ body {
   border-left: 1px solid rgba(var(--scrollbar-color), 0.15);
 }
 
-::-webkit-scrollbar-corner {
-  background: rgba(0, 0, 0, 0.1);
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(var(--scrollbar-color), 0.25);
+}
+
+::-webkit-scrollbar-thumb:active {
+  background: rgba(var(--scrollbar-color), 0.35);
+}
+
+/* stylelint-disable no-descending-specificity */
+:root {
+  --scrollbar-color: 255, 255, 255;
+}
+/* stylelint-enable no-descending-specificity */
+
+// used in inverted color sections, like light modals
+.theme-bg-light {
+  --scrollbar-color: 0, 0, 0;
 }
 
 /********** Monaco Overides *********/
