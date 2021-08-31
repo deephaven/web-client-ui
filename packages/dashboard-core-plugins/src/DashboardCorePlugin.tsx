@@ -6,6 +6,7 @@ import ConsolePlugin from './ConsolePlugin';
 import FilterPlugin from './FilterPlugin';
 import PandasPlugin from './PandasPlugin';
 import LinkerPlugin from './LinkerPlugin';
+import MarkdownPlugin from './MarkdownPlugin';
 
 export const DashboardCorePlugin = ({
   id,
@@ -39,6 +40,12 @@ export const DashboardCorePlugin = ({
       registerComponent={registerComponent}
     />
     <PandasPlugin
+      layout={layout}
+      id={id}
+      panelManager={panelManager}
+      registerComponent={registerComponent}
+    />
+    <MarkdownPlugin
       layout={layout}
       id={id}
       panelManager={panelManager}
