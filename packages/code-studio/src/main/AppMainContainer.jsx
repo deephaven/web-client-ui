@@ -43,6 +43,7 @@ import { createChartModel, createGridModel } from './WidgetUtils';
 import EmptyDashboard from './EmptyDashboard';
 import UserLayoutUtils from './UserLayoutUtils';
 import DashboardCorePlugin from './dashboard-plugins/DashboardCorePlugin';
+import MarkdownEvent from './dashboard-plugins/MarkdownEvent';
 
 const log = Log.module('AppMainContainer');
 
@@ -208,7 +209,7 @@ export class AppMainContainer extends Component {
 
     switch (type) {
       case ControlType.DROPDOWN_FILTER:
-        this.emitLayoutEvent(ControlEvent.OPEN, {
+        this.emitLayoutEvent(InputFilterEvent.OPEN_DROPDOWN, {
           title: 'DropdownFilter',
           type,
           createNewStack: true,
@@ -216,7 +217,7 @@ export class AppMainContainer extends Component {
         });
         break;
       case ControlType.INPUT_FILTER:
-        this.emitLayoutEvent(ControlEvent.OPEN, {
+        this.emitLayoutEvent(InputFilterEvent.OPEN_INPUT, {
           title: 'InputFilter',
           type,
           createNewStack: true,
@@ -224,7 +225,7 @@ export class AppMainContainer extends Component {
         });
         break;
       case ControlType.MARKDOWN:
-        this.emitLayoutEvent(ControlEvent.OPEN, {
+        this.emitLayoutEvent(MarkdownEvent.OPEN, {
           title: 'Markdown',
           type,
           dragEvent,

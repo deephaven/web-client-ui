@@ -1,8 +1,11 @@
 import React, { ComponentType, useCallback, useEffect } from 'react';
+import shortid from 'shortid';
 import { DashboardPluginComponentProps } from '../../dashboard/DashboardPlugin';
 import { MarkdownPanel } from '../../dashboard/panels';
 import MarkdownUtils from '../../controls/markdown/MarkdownUtils';
 import { dehydrate, hydrate } from '../../dashboard/DashboardUtils';
+import MarkdownEvent from './MarkdownEvent';
+import LayoutUtils from '../../layout/LayoutUtils';
 
 type MarkdownComponentState = {
   panelState?: { content: string } | null;
@@ -11,6 +14,7 @@ type MarkdownComponentState = {
 export const MarkdownPlugin = ({
   id,
   layout,
+  panelManager,
   registerComponent,
 }: DashboardPluginComponentProps): JSX.Element => {
   const dehydrateMarkdown = useCallback(config => {
@@ -32,6 +36,50 @@ export const MarkdownPlugin = ({
     return dehydrate(config);
   }, []);
 
+  const handleOpen = useCallback(
+    ({
+      title = '',
+      metadata = {},
+      id: panelId = shortid.generate(),
+      focusElement = LayoutUtils.DEFAULT_FOCUS_SELECTOR,
+      createNewStack = false,
+      dragEvent = null,
+    } = {}) => {
+      const openedMarkdowns = panelManager.getOpenedPanelConfigsOfType(
+        MarkdownPanel.COMPONENT
+      );
+      const closedMarkdowns = panelManager.getClosedPanelConfigsOfType(
+        MarkdownPanel.COMPONENT
+      );
+      const usedTitles = openedMarkdowns.map(markdown => markdown.title);
+      const panelTitle = title ?? MarkdownUtils.getNewMarkdownTitle(usedTitles);
+      const content =
+        closedMarkdowns.length > 0 ? null : MarkdownUtils.DEFAULT_CONTENT;
+      const config = {
+        type: 'react-component',
+        component: MarkdownPanel.COMPONENT,
+        props: {
+          id: panelId,
+          metadata,
+          panelState: { content },
+          localDashboardId: id,
+        },
+        title: panelTitle,
+        id: panelId,
+      };
+
+      const { root } = layout;
+      LayoutUtils.openComponent({
+        root,
+        config,
+        focusElement,
+        createNewStack,
+        dragEvent,
+      });
+    },
+    [id, layout, panelManager]
+  );
+
   useEffect(() => {
     const cleanups = [
       registerComponent(
@@ -46,6 +94,13 @@ export const MarkdownPlugin = ({
       cleanups.forEach(cleanup => cleanup());
     };
   }, [dehydrateMarkdown, registerComponent]);
+
+  useEffect(() => {
+    layout.eventHub.on(MarkdownEvent.OPEN, handleOpen);
+    return () => {
+      layout.eventHub.off(MarkdownEvent.OPEN, handleOpen);
+    };
+  }, [handleOpen, layout]);
 
   return <></>;
 };

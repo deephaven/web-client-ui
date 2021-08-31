@@ -29,10 +29,9 @@ import {
   IrisPropTypes,
   UIPropTypes,
 } from '../../include/prop-types';
-import { ControlEvent, InputFilterEvent, ChartEvent } from '../events';
+import { InputFilterEvent, ChartEvent } from '../events';
 import ChartFilterOverlay from './ChartFilterOverlay';
 import ChartColumnSelectorOverlay from './ChartColumnSelectorOverlay';
-import ControlType from '../../controls/ControlType';
 import './ChartPanel.scss';
 import LayoutUtils from '../../layout/LayoutUtils';
 
@@ -535,9 +534,8 @@ export class ChartPanel extends Component {
   openInputFilter(column) {
     const { glEventHub } = this.props;
     const { name, type } = column;
-    glEventHub.emit(ControlEvent.OPEN, {
+    glEventHub.emit(InputFilterEvent.OPEN_INPUT, {
       title: `${name} Filter`,
-      type: ControlType.INPUT_FILTER,
       panelState: {
         name,
         type,

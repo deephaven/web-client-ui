@@ -7,6 +7,7 @@ import React, {
   useState,
 } from 'react';
 import { TextUtils } from '@deephaven/utils';
+import shortid from 'shortid';
 import { DashboardPluginComponentProps } from '../../dashboard/DashboardPlugin';
 import { InputFilterEvent, PanelEvent } from '../../dashboard/events';
 import { DropdownFilterPanel, InputFilterPanel } from '../../dashboard/panels';
@@ -14,27 +15,35 @@ import LayoutUtils from '../../layout/LayoutUtils';
 
 const log = Log.module('FilterPlugin');
 
-export function flattenArray<T>(accumulator: T[], currentValue: T | T[]): T[] {
-  return accumulator.concat(currentValue);
-}
-
 type Column = {
   name: string;
   type: string;
 };
 
+export type FilterChangeEvent = Column & {
+  value: string;
+  timestamp: number;
+  excludePanelIds?: string[];
+};
+
+function flattenArray<T>(accumulator: T[], currentValue: T | T[]): T[] {
+  return accumulator.concat(currentValue);
+}
+
 export const FilterPlugin = ({
-  id,
+  id: localDashboardId,
   layout,
   registerComponent,
 }: DashboardPluginComponentProps): JSX.Element => {
-  const [panelColumns] = useState(() => new Map<Component, Column>());
-  const [panelFilters] = useState(() => new Map());
+  const [panelColumns] = useState(() => new Map<Component, Column[]>());
+  const [panelFilters] = useState(
+    () => new Map<Component, FilterChangeEvent[]>()
+  );
   const [panelTables] = useState(() => new Map());
 
   const sendUpdate = useCallback(() => {
     const columns = Array.from(panelColumns.values())
-      .reduce(flattenArray, [])
+      .reduce(flattenArray, [] as Column[])
       .sort((a, b) => {
         const aName = TextUtils.toLower(a.name);
         const bName = TextUtils.toLower(b.name);
@@ -62,10 +71,10 @@ export const FilterPlugin = ({
         }
 
         return array;
-      }, []);
+      }, [] as Column[]);
 
-    const filters = [...panelFilters.values()]
-      .reduce(flattenArray, [])
+    const filters = Array.from(panelFilters.values())
+      .reduce(flattenArray, [] as FilterChangeEvent[])
       .sort((a, b) => a.timestamp - b.timestamp);
     const tableMap = new Map(panelTables);
 
@@ -82,7 +91,7 @@ export const FilterPlugin = ({
   const handleColumnsChanged = useCallback(
     (panel: Component, columns) => {
       log.debug2('handleColumnsChanged', panel, columns);
-      panelColumns.set(panel, [].concat(columns));
+      panelColumns.set(panel, [].concat(columns) as Column[]);
       sendUpdate();
     },
     [panelColumns, sendUpdate]
@@ -91,12 +100,12 @@ export const FilterPlugin = ({
   /**
    * Handler for the FILTERS_CHANGED event.
    * @param {Component} panel The component that's emitting the filter change
-   * @param {InputFilter|Array<InputFilter>} filters The input filters set by the panel
+   * @param {FilterChangeEvent|Array<FilterChangeEvent>} filters The input filters set by the panel
    */
   const handleFiltersChanged = useCallback(
     (panel, filters) => {
       log.debug2('handleFiltersChanged', panel, filters);
-      panelFilters.set(panel, [].concat(filters));
+      panelFilters.set(panel, [].concat(filters) as FilterChangeEvent[]);
       sendUpdate();
     },
     [panelFilters, sendUpdate]
@@ -122,6 +131,66 @@ export const FilterPlugin = ({
     [panelColumns, panelFilters, panelTables, sendUpdate]
   );
 
+  const handleOpenDropdown = useCallback(
+    ({
+      title = 'DropdownFilter',
+      metadata = {},
+      panelState = null,
+      id = shortid.generate(),
+      focusElement = LayoutUtils.DEFAULT_FOCUS_SELECTOR,
+      createNewStack = false,
+      dragEvent = null,
+    }) => {
+      const config = {
+        type: 'react-component',
+        component: DropdownFilterPanel.COMPONENT,
+        props: { id, metadata, panelState, localDashboardId },
+        title,
+        id,
+      };
+
+      const { root } = layout;
+      LayoutUtils.openComponent({
+        root,
+        config,
+        focusElement,
+        createNewStack,
+        dragEvent,
+      });
+    },
+    [layout, localDashboardId]
+  );
+
+  const handleOpenInput = useCallback(
+    ({
+      title = 'InputFilter',
+      metadata = {},
+      panelState = null,
+      id = shortid.generate(),
+      focusElement = LayoutUtils.DEFAULT_FOCUS_SELECTOR,
+      createNewStack = false,
+      dragEvent = null,
+    }) => {
+      const config = {
+        type: 'react-component',
+        component: InputFilterPanel.COMPONENT,
+        props: { id, metadata, panelState, localDashboardId },
+        title,
+        id,
+      };
+
+      const { root } = layout;
+      LayoutUtils.openComponent({
+        root,
+        config,
+        focusElement,
+        createNewStack,
+        dragEvent,
+      });
+    },
+    [layout, localDashboardId]
+  );
+
   useEffect(() => {
     const cleanups = [
       registerComponent(
@@ -143,6 +212,8 @@ export const FilterPlugin = ({
     layout.eventHub.on(InputFilterEvent.COLUMNS_CHANGED, handleColumnsChanged);
     layout.eventHub.on(InputFilterEvent.FILTERS_CHANGED, handleFiltersChanged);
     layout.eventHub.on(InputFilterEvent.TABLE_CHANGED, handleTableChanged);
+    layout.eventHub.on(InputFilterEvent.OPEN_DROPDOWN, handleOpenDropdown);
+    layout.eventHub.on(InputFilterEvent.OPEN_INPUT, handleOpenInput);
     layout.eventHub.on(PanelEvent.UNMOUNT, handlePanelUnmount);
     return () => {
       layout.eventHub.off(
@@ -155,9 +226,13 @@ export const FilterPlugin = ({
       );
       layout.eventHub.off(InputFilterEvent.TABLE_CHANGED, handleTableChanged);
       layout.eventHub.off(PanelEvent.UNMOUNT, handlePanelUnmount);
+      layout.eventHub.off(InputFilterEvent.OPEN_DROPDOWN, handleOpenDropdown);
+      layout.eventHub.off(InputFilterEvent.OPEN_INPUT, handleOpenInput);
     };
   }, [
     handleColumnsChanged,
+    handleOpenDropdown,
+    handleOpenInput,
     handleFiltersChanged,
     handlePanelUnmount,
     handleTableChanged,

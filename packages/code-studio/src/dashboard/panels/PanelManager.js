@@ -4,6 +4,9 @@ import LayoutUtils from '../../layout/LayoutUtils';
 
 const log = Log.module('PanelManager');
 
+/**
+ * Class to keep track of which panels are open, have been closed, and also events to close panels.
+ */
 class PanelManager {
   static MAX_CLOSED_PANEL_COUNT = 100;
 
