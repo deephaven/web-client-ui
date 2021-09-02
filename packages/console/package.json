@@ -36,7 +36,7 @@
     "deploy": "gh-pages -d example/build"
   },
   "dependencies": {
-    "monaco-editor": "^0.22.3",
+    "monaco-editor": "^0.27.0",
     "shell-quote": "^1.7.2"
   },
   "peerDependencies": {
@@ -57,7 +57,7 @@
     "lodash.throttle": "^4.x",
     "memoize-one": "^5.x",
     "memoizee": "^0.x",
-    "monaco-editor": "^0.22.x",
+    "monaco-editor": "^0.27.0",
     "papaparse": "^5.2.0",
     "prop-types": "^15.x",
     "react": "^16.x",

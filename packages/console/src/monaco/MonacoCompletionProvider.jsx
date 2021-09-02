@@ -99,8 +99,10 @@ class MonacoCompletionProvider extends PureComponent {
           };
         });
 
+        log.debug('Returning suggestions: ', params, suggestions);
+
         return {
-          incomplete: true,
+          incomplete: false,
           suggestions,
         };
       })
