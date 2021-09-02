@@ -25,7 +25,7 @@ body {
   padding: 0;
   overscroll-behavior: none;
   -ms-scroll-chaining: none;
-  scrollbar-color: auto; //applies to firefox only
+  scrollbar-color: rgba($white, 0.1) rgba($black, 0.1); //applies to firefox only
 }
 
 #root {
@@ -648,6 +648,7 @@ input[type='number']::-webkit-inner-spin-button {
 // used in inverted color sections, like light modals
 .theme-bg-light {
   --scrollbar-color: 0, 0, 0;
+  scrollbar-color: rgba($black, 0.5) rgba($black, 0.3); // firefox
 }
 
 /********** Monaco Overides *********/
