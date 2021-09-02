@@ -32,6 +32,7 @@
     "cross-env": "^7.0.2",
     "deep-equal": "^2.0.4",
     "fira": "github:mozilla/fira#4.202",
+    "http-proxy-middleware": "^2.0.1",
     "jquery": "^3.5.1",
     "jszip": "3.2.2",
     "lodash.clamp": "^4.0.3",
@@ -110,7 +111,6 @@
     "@types/react-beautiful-dnd": "^13.0.0",
     "@types/react-dom": "^16.9.13",
     "@types/react-transition-group": "^4.4.0",
-    "http-proxy-middleware": "^2.0.1",
     "react-is": "^16.13.1",
     "sass": "1.32.13",
     "webpack": "4.44.2"
