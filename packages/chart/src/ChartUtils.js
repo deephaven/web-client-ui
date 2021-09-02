@@ -918,6 +918,14 @@ class ChartUtils {
       );
       layoutAxis.domain = [bottom, top];
     }
+    const { minRange, maxRange } = axis;
+    if (!Number.isNaN(minRange) && !Number.isNaN(maxRange)) {
+      if (axis.log) {
+        layoutAxis.range = [Math.log(minRange), Math.log(maxRange)];
+      } else {
+        layoutAxis.range = [minRange, maxRange];
+      }
+    }
   }
 
   /**
