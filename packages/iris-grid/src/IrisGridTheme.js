@@ -54,8 +54,8 @@ export default Object.freeze({
   groupedColumnDividerColor: IrisGridTheme['grouped-column-divider-color'],
   columnHoverBackgroundColor: null,
   headerHorizontalPadding: 12,
-  scrollBarSize: 11,
-  scrollBarHoverSize: 15, // system default scrollbar width is 17
+  scrollBarSize: 13,
+  scrollBarHoverSize: 16, // system default scrollbar width is 17
   minScrollHandleSize: 24,
   rowHeight: 19,
   columnWidth: 100,
