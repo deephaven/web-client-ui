@@ -14,7 +14,7 @@ lm.config.defaultConfig = {
     responsiveMode: 'onload', // Can be onload, always, or none.
     tabOverlapAllowance: 0, // maximum pixel overlap per tab
     // reorderOnTabMenuClick: true, // illumon disabled
-    tabControlOffset: 10
+    tabControlOffset: 10,
   },
   dimensions: {
     borderWidth: 5,
@@ -23,7 +23,7 @@ lm.config.defaultConfig = {
     minItemWidth: 10,
     headerHeight: 20,
     dragProxyWidth: 300,
-    dragProxyHeight: 200
+    dragProxyHeight: 200,
   },
   labels: {
     close: 'Close',
@@ -33,6 +33,6 @@ lm.config.defaultConfig = {
     popin: 'Pop in',
     tabDropdown: 'Additional tabs',
     tabNextLabel: 'Next',
-    tabPreviousLabel: 'Previous'
-  }
+    tabPreviousLabel: 'Previous',
+  },
 };

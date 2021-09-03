@@ -1,21 +1,12 @@
 {
   "rules": {
-    "align": [
-      true,
-      "statements"
-    ],
+    "align": [true, "statements"],
     "class-name": false,
-    "comment-format": [
-      true,
-      "check-space"
-    ],
+    "comment-format": [true, "check-space"],
     "curly": true,
     "eofline": true,
     "forin": false,
-    "indent": [
-      true,
-      "spaces"
-    ],
+    "indent": [true, "spaces"],
     "interface-name": [true, "never-prefix"],
     "jsdoc-format": true,
     "label-position": true,
@@ -58,21 +49,10 @@
     "no-var-keyword": true,
     "no-var-requires": true,
     "object-literal-sort-keys": false,
-    "one-line": [
-      true,
-      "check-open-brace",
-      "check-whitespace"
-    ],
-    "quotemark": [
-      true,
-      "single",
-      "avoid-escape"
-    ],
+    "one-line": [true, "check-open-brace", "check-whitespace"],
+    "quotemark": [true, "single", "avoid-escape"],
     "radix": false,
-    "semicolon": [
-      true,
-      "always"
-    ],
+    "semicolon": [true, "always"],
     "switch-default": true,
     "trailing-comma": [
       true,
@@ -80,16 +60,9 @@
         "singleline": "never"
       }
     ],
-    "triple-equals": [
-      true,
-      "allow-null-check"
-    ],
-    "typedef": [
-      false
-    ],
-    "typedef-whitespace": [
-      false
-    ],
+    "triple-equals": [true, "allow-null-check"],
+    "typedef": [false],
+    "typedef-whitespace": [false],
     "use-strict": [false],
     "variable-name": [
       true,
@@ -97,8 +70,6 @@
       "allow-leading-underscore",
       "ban-keywords"
     ],
-    "whitespace": [
-      false
-    ]
+    "whitespace": [false]
   }
 }

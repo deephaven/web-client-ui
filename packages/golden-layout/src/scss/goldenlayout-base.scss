@@ -99,7 +99,7 @@ $height6: 15px; // Appears 1 time
     z-index: 22; //above other lm_headers and lm_splitter
   }
 
-  [class^="lm_"] {
+  [class^='lm_'] {
     box-sizing: content-box !important;
   }
 
@@ -260,7 +260,7 @@ $height6: 15px; // Appears 1 time
 // Dropdown arrow for additional tabs when too many to be displayed
 .lm_header {
   .lm_controls .lm_tabdropdown:before {
-    content: "";
+    content: '';
     width: 0;
     height: 0;
     vertical-align: middle;
