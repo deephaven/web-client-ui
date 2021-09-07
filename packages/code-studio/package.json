@@ -122,5 +122,6 @@
   ],
   "publishConfig": {
     "access": "public"
-  }
+  },
+  "proxy": "http://localhost:10000"
 }
