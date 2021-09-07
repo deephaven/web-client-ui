@@ -32,7 +32,6 @@
     "cross-env": "^7.0.2",
     "deep-equal": "^2.0.4",
     "fira": "github:mozilla/fira#4.202",
-    "http-proxy-middleware": "^2.0.1",
     "jquery": "^3.5.1",
     "jszip": "3.2.2",
     "lodash.clamp": "^4.0.3",
@@ -123,5 +122,6 @@
   ],
   "publishConfig": {
     "access": "public"
-  }
+  },
+  "proxy": "http://localhost:10000"
 }
