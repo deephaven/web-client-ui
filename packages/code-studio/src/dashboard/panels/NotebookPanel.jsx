@@ -60,6 +60,8 @@ class NotebookPanel extends Component {
         return 'python';
       case 'groovy':
         return 'groovy';
+      case 'scala':
+        return 'scala';
       default:
         return null;
     }

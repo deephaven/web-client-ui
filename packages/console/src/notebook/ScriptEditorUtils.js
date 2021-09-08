@@ -1,4 +1,4 @@
-const LANGUAGES = { groovy: 'Groovy', python: 'Python' };
+const LANGUAGES = { groovy: 'Groovy', python: 'Python', scala: 'Scala' };
 
 class ScriptEditorUtils {
   /** Get PQ script language from Monaco language

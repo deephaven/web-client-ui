@@ -8,6 +8,7 @@ export enum MIME_TYPE {
   PLAIN_TEXT = 'text/plain',
   PYTHON = 'text/x-python',
   PYTHON_COMPILED = 'application/x-python-code',
+  SCALA = 'text/x-scala',
   UNKNOWN = '',
 }
 
@@ -93,6 +94,8 @@ export class FileUtils {
         return MIME_TYPE.PYTHON;
       case 'pyc':
         return MIME_TYPE.PYTHON_COMPILED;
+      case 'scala':
+        return MIME_TYPE.SCALA;
       case 'txt':
         return MIME_TYPE.PLAIN_TEXT;
       default:

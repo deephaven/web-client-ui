@@ -60,6 +60,7 @@ import Log from '@deephaven/log';
 import MonacoTheme from './MonacoTheme.module.scss';
 import PyLang from './lang/python';
 import GroovyLang from './lang/groovy';
+import ScalaLang from './lang/scala';
 import DbLang from './lang/db';
 import LogLang from './lang/log';
 
@@ -179,7 +180,7 @@ class MonacoUtils {
     log.debug2('monaco theme: ', MonacoTheme);
     monaco.editor.setTheme('dh-dark');
 
-    registerLanguages([DbLang, PyLang, GroovyLang, LogLang]);
+    registerLanguages([DbLang, PyLang, GroovyLang, LogLang, ScalaLang]);
 
     log.debug('Monaco initialized.');
   }
