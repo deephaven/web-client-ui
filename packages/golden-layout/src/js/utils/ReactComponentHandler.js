@@ -13,6 +13,7 @@ lm.utils.ReactComponentHandler = function (container, state) {
   this._container = container;
   this._initialState = state;
   this._reactClass = this._getReactClass();
+  console.log('ReactComponentHandler', this._reactClass, container, state);
   this._container.on('open', this._render, this);
   this._container.on('destroy', this._destroy, this);
 };
@@ -100,7 +101,9 @@ lm.utils.copy(lm.utils.ReactComponentHandler.prototype, {
       );
     }
 
-    reactClass = this._container.layoutManager.getComponent(componentName);
+    reactClass =
+      this._container.layoutManager.getComponent(componentName) ||
+      this._container.layoutManager.getFallbackComponent();
 
     if (!reactClass) {
       throw new Error(

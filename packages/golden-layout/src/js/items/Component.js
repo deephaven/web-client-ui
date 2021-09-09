@@ -6,11 +6,16 @@
 lm.items.Component = function (layoutManager, config, parent) {
   lm.items.AbstractContentItem.call(this, layoutManager, config, parent);
 
-  var ComponentConstructor = layoutManager.getComponent(
-      this.config.componentName
-    ),
+  var ComponentConstructor =
+      layoutManager.getComponent(this.config.componentName) ||
+      layoutManager.getFallbackComponent(),
     componentConfig = $.extend(true, {}, this.config.componentState || {});
 
+  if (ComponentConstructor == null) {
+    throw new lm.errors.ConfigurationError(
+      'Unknown component "' + this.config.componentName + '"'
+    );
+  }
   componentConfig.componentName = this.config.componentName;
   this.componentName = this.config.componentName;
 

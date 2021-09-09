@@ -22,6 +22,7 @@ lm.LayoutManager = function (config, container) {
   this._isFullPage = false;
   this._resizeTimeoutId = null;
   this._components = { 'lm-react-component': lm.utils.ReactComponentHandler };
+  this._fallbackComponent = undefined;
   this._itemAreas = [];
   this._resizeFunction = lm.utils.fnBind(this._onResize, this);
   this._unloadFunction = lm.utils.fnBind(this._onUnload, this);
@@ -130,6 +131,18 @@ lm.utils.copy(lm.LayoutManager.prototype, {
   },
 
   /**
+   * Set a fallback component to be rendered in place of unregistered components
+   *
+   * @public
+   * @param   {Function} constructor
+   *
+   * @returns {void}
+   */
+  setFallbackComponent: function (constructor) {
+    this._fallbackComponent = constructor;
+  },
+
+  /**
    * Creates a layout configuration object based on the the current state
    *
    * @public
@@ -209,13 +222,19 @@ lm.utils.copy(lm.LayoutManager.prototype, {
    * @returns {Function}
    */
   getComponent: function (name) {
-    if (this._components[name] === undefined) {
-      throw new lm.errors.ConfigurationError(
-        'Unknown component "' + name + '"'
-      );
-    }
-
+    console.log('getComponent', name);
     return this._components[name];
+  },
+
+  /**
+   * Returns a fallback component to render in place of unregistered components
+   *
+   * @public
+   *
+   * @returns {Function}
+   */
+  getFallbackComponent: function () {
+    return this._fallbackComponent;
   },
 
   /**

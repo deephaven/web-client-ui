@@ -73,6 +73,17 @@ declare module 'golden-layout' {
      */
     registerComponent(name: String, component: any): void;
 
+    /*
+     * @param component 	A constructor or factory function. Will be invoked with new and two arguments, a
+     *                    container object and a component state
+     */
+    setFallbackComponent(component: any): void;
+
+    /*
+     * Returns the component to be rendered in place of unregistered components.
+     */
+    getFallbackComponent(): any;
+
     /**
      * Renders the layout into the container. If init() is called before the document is ready it attaches itself as
      * a listener to the document and executes once it becomes ready.

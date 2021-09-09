@@ -26,13 +26,12 @@ class LayoutEventHandler {
     LayoutEventHandler.updateComponentCss(item);
   }
 
-  constructor(layout, dehydrateComponentConfigMap, onLayoutChange) {
+  constructor(layout, onLayoutChange) {
     this.handleLayoutStateChanged = this.handleLayoutStateChanged.bind(this);
     this.handleLayoutItemPickedUp = this.handleLayoutItemPickedUp.bind(this);
     this.handleLayoutItemDropped = this.handleLayoutItemDropped.bind(this);
 
     this.layout = layout;
-    this.dehydrateComponentConfigMap = dehydrateComponentConfigMap;
     this.onLayoutChange = onLayoutChange;
 
     this.isItemDragging = false;
@@ -57,8 +56,7 @@ class LayoutEventHandler {
     const glConfig = this.layout.toConfig();
     const contentConfig = glConfig.content;
     const dehydratedLayoutConfig = LayoutUtils.dehydrateLayoutConfig(
-      contentConfig,
-      this.dehydrateComponentConfigMap
+      contentConfig
     );
     log.debug(
       'handleLayoutStateChanged',
