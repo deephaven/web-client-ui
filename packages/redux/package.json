@@ -4,6 +4,7 @@
   "description": "Deephaven Redux",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
+  "type": "module",
   "repository": {
     "type": "git",
     "url": "https://github.com/deephaven/web-client-ui"
@@ -48,7 +49,7 @@
     "typescript": "^4.3.2"
   },
   "peerDependencies": {
-    "@deephaven/log": "^0.1.0",
+    "@deephaven/log": "^0.3.1",
     "redux": "^4.0.5"
   },
   "files": [

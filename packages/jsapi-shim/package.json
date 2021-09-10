@@ -4,6 +4,7 @@
   "description": "Deephaven JSAPI Shim",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
+  "type": "module",
   "repository": {
     "type": "git",
     "url": "https://github.com/deephaven/web-client-ui"

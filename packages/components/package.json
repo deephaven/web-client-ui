@@ -4,6 +4,7 @@
   "description": "Deephaven React component library",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
+  "type": "module",
   "repository": {
     "type": "git",
     "url": "https://github.com/deephaven/web-client-ui"
@@ -39,10 +40,10 @@
     "bootstrap": "4.4.1"
   },
   "peerDependencies": {
-    "@deephaven/icons": "^0.x",
-    "@deephaven/log": "^0.x",
-    "@deephaven/react-hooks": "^0.x",
-    "@deephaven/utils": "^0.x",
+    "@deephaven/icons": "^0.3.1",
+    "@deephaven/log": "^0.3.1",
+    "@deephaven/react-hooks": "^0.3.1",
+    "@deephaven/utils": "^0.3.1",
     "@fortawesome/fontawesome-svg-core": "^1.x",
     "@fortawesome/react-fontawesome": "^0.x",
     "@types/react": "^16.x",
