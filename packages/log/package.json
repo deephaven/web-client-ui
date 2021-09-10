@@ -50,9 +50,5 @@
   ],
   "publishConfig": {
     "access": "public"
-  },
-  "dependencies": {
-    "custom-event-polyfill": "^1.0.7",
-    "event-target-shim": "^6.0.2"
   }
 }
