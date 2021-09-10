@@ -20,6 +20,6 @@ module.exports = api => ({
       },
     ],
     '@babel/plugin-proposal-class-properties',
-    'babel-plugin-add-import-extension'
+    ["babel-plugin-add-import-extension", { extension: "js", replace: true, observedScriptExtensions: ['js','ts','jsx','tsx'] }],
   ],
 });
