@@ -13,7 +13,6 @@ lm.utils.ReactComponentHandler = function (container, state) {
   this._container = container;
   this._initialState = state;
   this._reactClass = this._getReactClass();
-  console.log('ReactComponentHandler', this._reactClass, container, state);
   this._container.on('open', this._render, this);
   this._container.on('destroy', this._destroy, this);
 };
