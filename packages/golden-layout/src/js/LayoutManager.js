@@ -222,7 +222,6 @@ lm.utils.copy(lm.LayoutManager.prototype, {
    * @returns {Function}
    */
   getComponent: function (name) {
-    console.log('getComponent', name);
     return this._components[name];
   },
 
