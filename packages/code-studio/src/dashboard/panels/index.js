@@ -13,3 +13,4 @@ export { default as Panel } from './Panel';
 export { default as PanelManager } from './PanelManager';
 export { default as WidgetPanel } from './WidgetPanel';
 export { default as WidgetPanelTooltip } from './WidgetPanelTooltip';
+export { default as PanelPlaceholder } from './PanelPlaceholder';

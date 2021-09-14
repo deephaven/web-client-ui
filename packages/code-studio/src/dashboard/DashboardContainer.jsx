@@ -31,6 +31,7 @@ import {
   NotebookPanel,
   PandasPanel,
   PanelManager,
+  PanelPlaceholder,
 } from './panels';
 import MarkdownUtils from '../controls/markdown/MarkdownUtils';
 import {
@@ -56,29 +57,6 @@ const log = Log.module('DashboardContainer');
 const RESIZE_THROTTLE = 100;
 
 export class DashboardContainer extends Component {
-  static dehydratePanelConfig(config) {
-    const { props, componentState } = config;
-    const { metadata } = props;
-    let { panelState = null } = props;
-    if (componentState) {
-      ({ panelState } = componentState);
-    }
-    const newProps = {};
-    if (metadata) {
-      newProps.metadata = metadata;
-    }
-    if (panelState) {
-      newProps.panelState = panelState;
-    }
-
-    return {
-      ...config,
-      componentState: null,
-      props: newProps,
-      type: 'react-component',
-    };
-  }
-
   constructor(props) {
     super(props);
 
@@ -303,6 +281,8 @@ export class DashboardContainer extends Component {
     this.registerComponent(layout, 'PandasPanel', PandasPanel);
     this.registerComponent(layout, 'MarkdownPanel', MarkdownPanel);
 
+    layout.setFallbackComponent(PanelPlaceholder);
+
     // Need to initialize the panelmanager to listen for events before actually initializing the layout
     // Other we may miss some mount events from a panel on a dashboard reload
     this.initPanelManager(layout);
@@ -386,7 +366,7 @@ export class DashboardContainer extends Component {
           // We don't want to save it if there's no content
           return null;
         }
-        return DashboardContainer.dehydratePanelConfig(config);
+        return LayoutUtils.dehydratePanelConfig(config);
       },
     };
     const panelManager = new PanelManager(
@@ -406,26 +386,11 @@ export class DashboardContainer extends Component {
     const { id } = this.props;
     const { panelManager } = this;
 
-    const dehydrateComponentConfigMap = {
-      ChartPanel: DashboardContainer.dehydratePanelConfig,
-      ConsolePanel: DashboardContainer.dehydratePanelConfig,
-      CommandHistoryPanel: DashboardContainer.dehydratePanelConfig,
-      DropdownFilterPanel: DashboardContainer.dehydratePanelConfig,
-      FileExplorerPanel: DashboardContainer.dehydratePanelConfig,
-      IrisGridPanel: DashboardContainer.dehydratePanelConfig,
-      InputFilterPanel: DashboardContainer.dehydratePanelConfig,
-      LogPanel: DashboardContainer.dehydratePanelConfig,
-      MarkdownPanel: DashboardContainer.dehydratePanelConfig,
-      NotebookPanel: DashboardContainer.dehydratePanelConfig,
-      PandasPanel: DashboardContainer.dehydratePanelConfig,
-    };
-
     const componentTemplateMap = this.makeComponentTemplateMap(panelManager);
 
     const gridEventHandler = new IrisGridEventHandler(layout, id);
     const layoutEventHandler = new LayoutEventHandler(
       layout,
-      dehydrateComponentConfigMap,
       this.handleLayoutStateChanged
     );
     const chartEventHandler = new ChartEventHandler(layout, id);

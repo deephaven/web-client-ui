@@ -210,39 +210,49 @@ class LayoutUtils {
     return null;
   }
 
+  static dehydratePanelConfig(config) {
+    const { props = {}, componentState } = config;
+    const { metadata = null } = props;
+    let { panelState = null } = props;
+    if (componentState) {
+      ({ panelState } = componentState);
+    }
+    const newProps = {};
+    if (metadata) {
+      newProps.metadata = metadata;
+    }
+    if (panelState) {
+      newProps.panelState = panelState;
+    }
+
+    return {
+      ...config,
+      componentState: null,
+      props: newProps,
+      type: 'react-component',
+    };
+  }
+
   /**
    * Removes dynamic props from components in the given config so this config could be serialized
    * @param {Array} config Config object
-   * @param {Object} mapComponentConfig Map of component names to functions mapping their props and state
    * @returns {Array} Dehydrated config
    */
-  static dehydrateLayoutConfig(config, mapComponentConfig) {
+  static dehydrateLayoutConfig(config) {
     if (!config || !config.length) {
       return [];
     }
-    const mappedComponents = Object.keys(mapComponentConfig);
     const dehydratedConfig = [];
 
     for (let i = 0; i < config.length; i += 1) {
       const itemConfig = config[i];
       const { component, content } = itemConfig;
       if (component) {
-        if (mappedComponents.includes(component)) {
-          const mapConfig = mapComponentConfig[component];
-          const componentConfig = mapConfig(itemConfig);
-          dehydratedConfig.push(componentConfig);
-        } else {
-          log.debug2(
-            `dehydrateLayoutConfig: skipping unmapped component "${component}"`
-          );
-        }
+        dehydratedConfig.push(LayoutUtils.dehydratePanelConfig(itemConfig));
       } else if (content) {
         const layoutItemConfig = {
           ...itemConfig,
-          content: LayoutUtils.dehydrateLayoutConfig(
-            content,
-            mapComponentConfig
-          ),
+          content: LayoutUtils.dehydrateLayoutConfig(content),
         };
         dehydratedConfig.push(layoutItemConfig);
       } else {
