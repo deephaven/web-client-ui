@@ -1,11 +1,14 @@
 import React, { ComponentType, useCallback, useEffect } from 'react';
 import shortid from 'shortid';
-import { DashboardPluginComponentProps } from '../../dashboard/DashboardPlugin';
-import { MarkdownPanel } from '../../dashboard/panels';
-import MarkdownUtils from '../../controls/markdown/MarkdownUtils';
-import { dehydrate, hydrate } from '../../dashboard/DashboardUtils';
-import MarkdownEvent from './MarkdownEvent';
-import LayoutUtils from '../../layout/LayoutUtils';
+import {
+  DashboardPluginComponentProps,
+  dehydrate,
+  hydrate,
+  LayoutUtils,
+} from '@deephaven/dashboard';
+import { MarkdownPanel } from './panels';
+import MarkdownUtils from './controls/markdown/MarkdownUtils';
+import MarkdownEvent from './events/MarkdownEvent';
 
 type MarkdownComponentState = {
   panelState?: { content: string } | null;

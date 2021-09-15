@@ -1,10 +1,12 @@
 import React, { ComponentType, DragEvent, useCallback, useEffect } from 'react';
 import { ChartModel } from '@deephaven/chart';
+import {
+  DashboardPluginComponentProps,
+  LayoutUtils,
+} from '@deephaven/dashboard';
 import shortid from 'shortid';
-import { DashboardPluginComponentProps } from '../../dashboard/DashboardPlugin';
-import { ChartPanel } from '../../dashboard/panels';
-import { ChartEvent } from '../../dashboard/events';
-import LayoutUtils from '../../layout/LayoutUtils';
+import { ChartPanel } from './panels';
+import { ChartEvent } from './events';
 
 export const ChartPlugin = ({
   id,

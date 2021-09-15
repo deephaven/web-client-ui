@@ -1,4 +1,3 @@
-import Log from '@deephaven/log';
 import React, {
   Component,
   ComponentType,
@@ -6,12 +5,15 @@ import React, {
   useEffect,
   useState,
 } from 'react';
-import { TextUtils } from '@deephaven/utils';
 import shortid from 'shortid';
-import { DashboardPluginComponentProps } from '../../dashboard/DashboardPlugin';
-import { InputFilterEvent, PanelEvent } from '../../dashboard/events';
-import { DropdownFilterPanel, InputFilterPanel } from '../../dashboard/panels';
-import LayoutUtils from '../../layout/LayoutUtils';
+import {
+  DashboardPluginComponentProps,
+  LayoutUtils,
+} from '@deephaven/dashboard';
+import Log from '@deephaven/log';
+import { TextUtils } from '@deephaven/utils';
+import { InputFilterEvent, PanelEvent } from './events';
+import { DropdownFilterPanel, InputFilterPanel } from './panels';
 
 const log = Log.module('FilterPlugin');
 

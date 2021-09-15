@@ -12,6 +12,8 @@
     "@deephaven/chart": "^0.4.0",
     "@deephaven/components": "^0.4.0",
     "@deephaven/console": "^0.4.0",
+    "@deephaven/dashboard": "^0.4.0",
+    "@deephaven/dashboard-core-plugins": "^0.4.0",
     "@deephaven/file-explorer": "^0.4.0",
     "@deephaven/golden-layout": "^0.4.0",
     "@deephaven/grid": "^0.4.0",

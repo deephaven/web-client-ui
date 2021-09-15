@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
-import { DashboardPluginComponentProps } from '../../dashboard/DashboardPlugin';
-import { PandasPanel } from '../../dashboard/panels';
+import { DashboardPluginComponentProps } from '@deephaven/dashboard';
+import { PandasPanel } from './panels';
 
 export const PandasPlugin = ({
   id,

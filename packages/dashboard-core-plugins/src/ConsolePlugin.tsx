@@ -1,17 +1,19 @@
+import {
+  DashboardPluginComponentProps,
+  LayoutUtils,
+} from '@deephaven/dashboard';
 import Log from '@deephaven/log';
 import { string } from 'prop-types';
 import React, { ComponentType, useCallback, useEffect } from 'react';
 import shortid from 'shortid';
-import { DashboardPluginComponentProps } from '../../dashboard/DashboardPlugin';
-import { ConsoleEvent } from '../../dashboard/events';
+import { ConsoleEvent } from './events';
 import {
   ConsolePanel,
   CommandHistoryPanel,
   FileExplorerPanel,
   LogPanel,
   NotebookPanel,
-} from '../../dashboard/panels';
-import LayoutUtils from '../../layout/LayoutUtils';
+} from './panels';
 
 const log = Log.module('ConsolePlugin');
 

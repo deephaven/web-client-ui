@@ -1,5 +1,5 @@
 import React from 'react';
-import { DashboardPluginComponentProps } from '../../dashboard/DashboardPlugin';
+import { DashboardPluginComponentProps } from '@deephaven/dashboard';
 import Linker from './linker/Linker';
 
 export const LinkerPlugin = ({

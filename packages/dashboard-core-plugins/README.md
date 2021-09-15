@@ -1,27 +1,27 @@
-# @deephaven/file-explorer
+# @deephaven/dashboard-core-plugins
 
-React component for browsing a file explorer server. Has a WebDAV implementation included.
+Core Deephaven plugins for use with @deephaven/dashboard. Provides grids, charts, input filter, and linker functionality.
 
 ## Install
 
 ```bash
-npm install --save @deephaven/file-explorer
+npm install --save @deephaven/dashboard-core-plugins
 ```
 
 ## Usage
 
-## Usage
-
 ```jsx
-import React, { Component } from 'react'
-import FileExplorer, { WebdavFileStorage } from '@deephaven/file-explorer'
-
-const client = createClient('https://www.example.com/');
-const storage = new WebdavFileStorage(client);
+import React, { Component } from 'react';
+import Dashboard from '@deephaven/dashboard';
+import DashboardCorePlugin from '@deephaven/dashboard-core-plugins';
 
 class Example extends Component {
   render() {
-    return <FileExplorer storage={storage} onSelect={item => console.log('Item selected', item)} />
+    return (
+      <Dashboard>
+        <DashboardCorePlugin />
+      </Dashboard>
+    );
   }
 }
 ```

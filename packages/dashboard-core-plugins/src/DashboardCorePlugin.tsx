@@ -1,5 +1,5 @@
 import React from 'react';
-import { DashboardPluginComponentProps } from '../../dashboard/DashboardPlugin';
+import { DashboardPluginComponentProps } from '@deephaven/dashboard';
 import GridPlugin from './GridPlugin';
 import ChartPlugin from './ChartPlugin';
 import ConsolePlugin from './ConsolePlugin';

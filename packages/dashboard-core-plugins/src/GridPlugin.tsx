@@ -1,10 +1,12 @@
 import React, { ComponentType, DragEvent, useCallback, useEffect } from 'react';
+import {
+  DashboardPluginComponentProps,
+  LayoutUtils,
+} from '@deephaven/dashboard';
 import { IrisGridModel } from '@deephaven/iris-grid';
 import shortid from 'shortid';
-import { DashboardPluginComponentProps } from '../../dashboard/DashboardPlugin';
-import { IrisGridPanel } from '../../dashboard/panels';
-import { IrisGridEvent } from '../../dashboard/events';
-import LayoutUtils from '../../layout/LayoutUtils';
+import { IrisGridPanel } from './panels';
+import { IrisGridEvent } from './events';
 
 export const GridPlugin = ({
   id,

@@ -26,7 +26,6 @@ import { PromiseUtils } from '@deephaven/utils';
 import SettingsMenu from '../settings/SettingsMenu';
 import {
   ChartEvent,
-  ControlEvent,
   InputFilterEvent,
   IrisGridEvent,
 } from '../dashboard/events';

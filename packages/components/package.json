@@ -47,7 +47,7 @@
     "@fortawesome/react-fontawesome": "^0.x",
     "@types/react": "^16.x",
     "classnames": "^2.x",
-    "jquery": "^3.x",
+    "jquery": "^3.5.1",
     "lodash.debounce": "^4.x",
     "lodash.flatten": "^4.x",
     "memoize-one": "^5.x",
