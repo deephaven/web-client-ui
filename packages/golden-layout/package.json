@@ -39,6 +39,7 @@
     "watch:sass": "npm run sass -- --watch --update",
     "clean": "rimraf ./dist ./src/css",
     "start": "cross-env NODE_ENV=development npm run watch",
+    "prestart": "npm run build-dev",
     "test": "karma start karma.conf.js",
     "test:ci": "karma start karma.conf.js --single-run"
   },
