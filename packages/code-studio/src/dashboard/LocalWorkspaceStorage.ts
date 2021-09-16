@@ -1,5 +1,4 @@
 import Log from '@deephaven/log';
-import { Formatter } from '@deephaven/iris-grid';
 import { DateTimeColumnFormatter } from '@deephaven/iris-grid/dist/formatters';
 import WorkspaceStorage, { Workspace, WorkspaceData } from './WorkspaceStorage';
 
@@ -16,7 +15,7 @@ export class LocalWorkspaceStorage implements WorkspaceStorage {
       settings: {
         defaultDateTimeFormat:
           DateTimeColumnFormatter.DEFAULT_DATETIME_FORMAT_STRING,
-        formatter: Formatter.getDefaultFormattingRules(),
+        formatter: [],
         timeZone: DateTimeColumnFormatter.DEFAULT_TIME_ZONE_ID,
         showTimeZone: false,
         showTSeparator: true,
