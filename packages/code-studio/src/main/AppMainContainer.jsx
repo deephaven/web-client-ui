@@ -12,6 +12,11 @@ import {
   GLOBAL_SHORTCUTS,
   Popper,
 } from '@deephaven/components';
+import Dashboard from '@deephaven/dashboard';
+import {
+  DashboardCorePlugin,
+  getSessionWrapper,
+} from '@deephaven/dashboard-core-plugins';
 import { vsGear, dhShapes, dhPanels } from '@deephaven/icons';
 import dh, { PropTypes as APIPropTypes } from '@deephaven/jsapi-shim';
 import Log from '@deephaven/log';
@@ -32,16 +37,14 @@ import {
 import ToolType from '../tools/ToolType';
 import { IrisPropTypes } from '../include/prop-types';
 import AppControlsMenu from './AppControlsMenu';
-import Dashboard from '../dashboard/Dashboard';
 import ControlType from '../controls/ControlType';
-import { getLayoutStorage, getSessionWrapper } from '../redux';
+import { getLayoutStorage } from '../redux';
 import Logo from '../settings/LogoMiniDark.svg';
 import './AppMainContainer.scss';
 import WidgetList from './WidgetList';
 import { createChartModel, createGridModel } from './WidgetUtils';
 import EmptyDashboard from './EmptyDashboard';
 import UserLayoutUtils from './UserLayoutUtils';
-import DashboardCorePlugin from './dashboard-plugins/DashboardCorePlugin';
 import MarkdownEvent from './dashboard-plugins/MarkdownEvent';
 
 const log = Log.module('AppMainContainer');

@@ -8,5 +8,8 @@ export { default as LinkerPlugin } from './LinkerPlugin';
 export { default as MarkdownEvent } from './events/MarkdownEvent';
 export { default as MarkdownPlugin } from './MarkdownPlugin';
 export { default as PandasPlugin } from './PandasPlugin';
+export { default as DashboardCorePlugin } from './DashboardCorePlugin';
+
+export * from './redux';
 
 export default DashboardCorePlugin;

@@ -1,9 +1,8 @@
 import React, { Component, ErrorInfo } from 'react';
 import classNames from 'classnames';
 import { ContextActions, GLOBAL_SHORTCUTS } from '@deephaven/components';
+import { LayoutUtils, PanelManager } from '@deephaven/dashboard';
 import Log from '@deephaven/log';
-import { PanelManager } from '../../../dashboard/panels';
-import LayoutUtils from '../../../layout/LayoutUtils';
 import { Link, LinkPoint } from './LinkerUtils';
 import LinkerLink from './LinkerLink';
 import './LinkerOverlayContent.scss';

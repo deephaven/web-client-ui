@@ -32,7 +32,7 @@ import './NotebookPanel.scss';
 import Panel from './Panel';
 import { GLPropTypes } from '../../include/prop-types';
 import SHORTCUTS from '../../settings/Shortcuts';
-import { getSessionWrapper } from '../../redux';
+import { getSessionWrapper } from '../redux';
 
 const log = Log.module('NotebookPanel');
 

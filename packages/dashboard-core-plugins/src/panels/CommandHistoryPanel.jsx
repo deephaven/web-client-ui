@@ -10,7 +10,7 @@ import { ConsoleEvent, NotebookEvent } from '../events';
 import './CommandHistoryPanel.scss';
 import { GLPropTypes } from '../../include/prop-types';
 import Panel from './Panel';
-import { getSessionWrapper } from '../../redux';
+import { getSessionWrapper } from '../redux';
 
 const log = Log.module('CommandHistoryPanel');
 

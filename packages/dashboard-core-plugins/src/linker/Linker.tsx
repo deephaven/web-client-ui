@@ -2,6 +2,7 @@ import React, { Component, ErrorInfo } from 'react';
 import { connect, ConnectedProps } from 'react-redux';
 import shortid from 'shortid';
 import type GoldenLayout from '@deephaven/golden-layout';
+import { LayoutUtils, PanelManager } from '@deephaven/dashboard';
 import memoize from 'memoize-one';
 import { CSSTransition } from 'react-transition-group';
 import { ThemeExport } from '@deephaven/components';
@@ -20,17 +21,15 @@ import {
   setDashboardIsolatedLinkerPanelId as setDashboardIsolatedLinkerPanelIdAction,
   setDashboardColumnSelectionValidator as setDashboardColumnSelectionValidatorAction,
 } from '@deephaven/redux';
-import ToolType from '../../../tools/ToolType';
+import ToolType from './ToolType';
 import {
   ChartEvent,
   IrisGridEvent,
   PanelEvent,
   InputFilterEvent,
-} from '../../../dashboard/events';
-import LayoutUtils from '../../../layout/LayoutUtils';
+} from '../events';
 import LinkerOverlayContent from './LinkerOverlayContent';
 import LinkerUtils, { Link, LinkColumn, LinkType } from './LinkerUtils';
-import { PanelManager } from '../../../dashboard/panels';
 
 const log = Log.module('Linker');
 

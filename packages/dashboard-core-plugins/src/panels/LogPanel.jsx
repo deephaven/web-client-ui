@@ -8,7 +8,7 @@ import { PropTypes as APIPropTypes } from '@deephaven/jsapi-shim';
 import './LogPanel.scss';
 import Panel from './Panel';
 import { GLPropTypes } from '../../include/prop-types';
-import { getSessionWrapper } from '../../redux';
+import { getSessionWrapper } from '../redux';
 
 const log = Log.module('LogPanel');
 

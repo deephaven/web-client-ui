@@ -12,7 +12,7 @@ import { connect } from 'react-redux';
 import Panel from './Panel';
 import { NotebookEvent } from '../events';
 import './FileExplorerPanel.scss';
-import { getSessionWrapper } from '../../redux';
+import { getSessionWrapper } from '../redux';
 
 const log = Log.module('FileExplorerPanel');
 

@@ -1,12 +1,8 @@
 import shortid from 'shortid';
+import { LayoutUtils } from '@deephaven/dashboard';
 import { TableUtils } from '@deephaven/iris-grid';
 import Log from '@deephaven/log';
-import {
-  ChartPanel,
-  IrisGridPanel,
-  DropdownFilterPanel,
-} from '../../../dashboard/panels';
-import LayoutUtils from '../../../layout/LayoutUtils';
+import { ChartPanel, IrisGridPanel, DropdownFilterPanel } from '../panels';
 
 export type LinkType = 'invalid' | 'filterSource' | 'tableLink';
 
