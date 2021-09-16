@@ -278,6 +278,10 @@ class IrisGridProxyModel extends IrisGridModel {
     return this.model.columns;
   }
 
+  get layoutHints() {
+    return this.model.layoutHints;
+  }
+
   get originalColumns() {
     return this.originalModel.columns;
   }

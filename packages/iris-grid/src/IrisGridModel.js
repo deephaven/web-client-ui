@@ -199,6 +199,10 @@ class IrisGridModel extends GridModel {
     throw new Error('set totalsConfig not implemented');
   }
 
+  get layoutHints() {
+    throw new Error('get layoutHints not implemented');
+  }
+
   /**
    * @returns {boolean} True if this model requires a filter to be set
    */

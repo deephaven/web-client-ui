@@ -462,6 +462,10 @@ class IrisGridTableModel extends IrisGridModel {
     return this.table.columns;
   }
 
+  get layoutHints() {
+    return this.table.layoutHints;
+  }
+
   get groupedColumns() {
     return [];
   }
