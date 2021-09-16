@@ -53,6 +53,7 @@ import FileExplorerPanel from './panels/FileExplorerPanel';
 import { getSessionWrapper } from '../redux';
 import { createChartModel, createGridModel } from '../main/WidgetUtils';
 
+// TODO: DELETE THIS FILE!
 const log = Log.module('DashboardContainer');
 const RESIZE_THROTTLE = 100;
 

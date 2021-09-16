@@ -2,14 +2,14 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import memoize from 'memoize-one';
 import { connect } from 'react-redux';
+import { LayoutUtils } from '@deephaven/dashboard';
 import Log from '@deephaven/log';
 import { getClosedPanelsForDashboard } from '@deephaven/redux';
 import { PanelEvent } from '../events';
 import Panel from './Panel';
-import LayoutUtils from '../../layout/LayoutUtils';
-import MarkdownContainer from '../../controls/markdown/MarkdownContainer';
-import MarkdownStartPage from '../../controls/markdown/MarkdownStartPage';
-import MarkdownEditor from '../../controls/markdown/MarkdownEditor';
+import MarkdownContainer from '../controls/markdown/MarkdownContainer';
+import MarkdownStartPage from '../controls/markdown/MarkdownStartPage';
+import MarkdownEditor from '../controls/markdown/MarkdownEditor';
 
 import './MarkdownPanel.scss';
 import { GLPropTypes } from '../../include/prop-types';
