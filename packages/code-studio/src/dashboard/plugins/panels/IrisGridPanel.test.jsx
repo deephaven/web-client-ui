@@ -14,9 +14,12 @@ jest.mock('@deephaven/iris-grid', () => {
   };
 });
 
-jest.mock('../../layout/LayoutUtils', () => ({
-  getIdFromPanel: jest.fn(() => 'TEST_ID'),
-  getTitleFromContainer: jest.fn(() => 'TEST_PANEL_TITLE'),
+jest.mock('@deephaven/dashboard', () => ({
+  ...jest.requireActual('@deephaven/dashboard'),
+  LayoutUtils: {
+    getIdFromPanel: jest.fn(() => 'TEST_ID'),
+    getTitleFromContainer: jest.fn(() => 'TEST_PANEL_TITLE'),
+  },
 }));
 
 function makeTable() {

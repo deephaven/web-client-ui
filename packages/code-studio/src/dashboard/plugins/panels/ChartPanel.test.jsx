@@ -17,10 +17,14 @@ jest.mock('@deephaven/chart', () => {
   };
 });
 
-jest.mock('../../layout/LayoutUtils', () => ({
-  getIdFromPanel: jest.fn(() => 'TEST_PANEL_ID'),
-  getTitleFromContainer: jest.fn(() => 'TEST_PANEL_TITLE'),
+jest.mock('@deephaven/dashboard', () => ({
+  ...jest.requireActual('@deephaven/dashboard'),
+  LayoutUtils: {
+    getIdFromPanel: jest.fn(() => 'TEST_PANEL_ID'),
+    getTitleFromContainer: jest.fn(() => 'TEST_PANEL_TITLE'),
+  },
 }));
+
 // Disable CSSTransition delays to make testing simpler
 jest.mock('react-transition-group', () => ({
   // eslint-disable-next-line react/display-name, react/prop-types

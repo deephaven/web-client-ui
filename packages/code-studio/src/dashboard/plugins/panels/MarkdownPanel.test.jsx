@@ -2,8 +2,11 @@ import React from 'react';
 import { mount } from 'enzyme';
 import { MarkdownPanel } from './MarkdownPanel';
 
-jest.mock('../../layout/LayoutUtils', () => ({
-  getTitleFromContainer: jest.fn(() => 'TEST_PANEL_TITLE'),
+jest.mock('@deephaven/dashboard', () => ({
+  ...jest.requireActual('@deephaven/dashboard'),
+  LayoutUtils: {
+    getTitleFromContainer: jest.fn(() => 'TEST_PANEL_TITLE'),
+  },
 }));
 
 function makeGlComponent() {
