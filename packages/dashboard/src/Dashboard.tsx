@@ -24,7 +24,7 @@ export type DashboardProps = {
   layoutConfig?: ItemConfigType[];
   onDataChange?: () => void;
   onLayoutConfigChange?: () => void;
-  onGoldenLayoutChange?: () => void;
+  onGoldenLayoutChange?: (goldenLayout: GoldenLayout) => void;
   fallbackComponent?: ComponentType;
 };
 
@@ -73,10 +73,12 @@ export const Dashboard = ({
 
     setLayout(newLayout);
 
+    onGoldenLayoutChange(newLayout);
+
     return () => {
       newLayout.destroy();
     };
-  }, [data, setIsInitialized, setLayout]);
+  }, [data, onGoldenLayoutChange, setIsInitialized, setLayout]);
 
   const handleResize = useMemo(
     () =>
