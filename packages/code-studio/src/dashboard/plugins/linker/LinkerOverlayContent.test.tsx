@@ -1,6 +1,6 @@
 import React from 'react';
 import { mount } from 'enzyme';
-import { PanelManager } from '../panels';
+import { PanelManager } from '@deephaven/dashboard';
 import LinkerOverlayContent from './LinkerOverlayContent';
 
 const LINKER_OVERLAY_MESSAGE = 'TEST_MESSAGE';

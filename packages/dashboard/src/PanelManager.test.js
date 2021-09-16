@@ -4,7 +4,7 @@
 
 import { Component } from 'react';
 import PanelManager from './PanelManager';
-import { PanelEvent } from '../events';
+import PanelEvent from './PanelEvent';
 
 class TestComponentA extends Component {
   constructor(id = 'A') {

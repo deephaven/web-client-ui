@@ -78,7 +78,13 @@ export const Dashboard = ({
     return () => {
       newLayout.destroy();
     };
-  }, [data, onGoldenLayoutChange, setIsInitialized, setLayout]);
+  }, [
+    data,
+    fallbackComponent,
+    onGoldenLayoutChange,
+    setIsInitialized,
+    setLayout,
+  ]);
 
   const handleResize = useMemo(
     () =>

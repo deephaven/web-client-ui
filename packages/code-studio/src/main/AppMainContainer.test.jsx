@@ -2,7 +2,7 @@ import React from 'react';
 import { shallow } from 'enzyme';
 import dh from '@deephaven/jsapi-shim';
 import { AppMainContainer } from './AppMainContainer';
-import ToolType from '../tools/ToolType';
+import ToolType from '../dashboard/plugins/linker/ToolType';
 import LocalWorkspaceStorage from '../dashboard/LocalWorkspaceStorage';
 
 function makeSession() {
