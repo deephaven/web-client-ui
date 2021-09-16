@@ -44,54 +44,6 @@ class Formatter {
   }
 
   /**
-   * Creates default column formatting rules
-   * @returns Column formatting rules array
-   */
-  static getDefaultFormattingRules() {
-    const globalFormatsArray = [
-      Formatter.makeColumnFormattingRule(
-        TableUtils.dataType.DATETIME,
-        'Expiry',
-        DateTimeColumnFormatter.makeFormat(
-          '',
-          'yyyy-MM-dd',
-          DateTimeColumnFormatter.TYPE_GLOBAL
-        )
-      ),
-      Formatter.makeColumnFormattingRule(
-        TableUtils.dataType.DATETIME,
-        'Timestamp',
-        DateTimeColumnFormatter.makeFormat(
-          '',
-          'HH:mm:ss.SSS',
-          DateTimeColumnFormatter.TYPE_GLOBAL
-        )
-      ),
-      Formatter.makeColumnFormattingRule(
-        TableUtils.dataType.DECIMAL,
-        'Bid',
-        DecimalColumnFormatter.makeFormat(
-          '',
-          '###,##0.00###',
-          null,
-          DecimalColumnFormatter.TYPE_GLOBAL
-        )
-      ),
-      Formatter.makeColumnFormattingRule(
-        TableUtils.dataType.DECIMAL,
-        'Ask',
-        DecimalColumnFormatter.makeFormat(
-          '',
-          '###,##0.00###',
-          null,
-          DecimalColumnFormatter.TYPE_GLOBAL
-        )
-      ),
-    ];
-    return globalFormatsArray;
-  }
-
-  /**
    * @param {Array} columnFormattingRules Optional array of column formatting rules
    * @param {Object} dateTimeOptions Optional object with DateTime configuration
    * @param {string} dateTimeOptions.timeZone Time zone

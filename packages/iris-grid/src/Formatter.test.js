@@ -14,14 +14,6 @@ function makeFormatter(...settings) {
 }
 
 const TYPE_DATETIME = 'io.deephaven.db.tables.utils.DBDateTime';
-const TYPE_FLOAT = 'float';
-
-const columnsWithDefaultFormats = [
-  { type: TYPE_DATETIME, name: 'Timestamp' },
-  { type: TYPE_DATETIME, name: 'Expiry' },
-  { type: TYPE_FLOAT, name: 'Ask' },
-  { type: TYPE_FLOAT, name: 'Bid' },
-];
 
 describe('makeColumnFormatMap', () => {
   const conflictingColumnName = 'Conflicting name';
@@ -92,17 +84,6 @@ it('uses default formatter for types that have no custom formatter', () => {
   expect(
     makeFormatter().getColumnTypeFormatter('randomTypeWithNoCustomFormatter')
   ).toBeInstanceOf(DefaultColumnFormatter);
-});
-
-describe('getDefaultFormattingRules', () => {
-  it('returns default rules for a given list of columns', () => {
-    const defaultFormattingRules = Formatter.getDefaultFormattingRules();
-    const formatter = makeFormatter(defaultFormattingRules);
-    columnsWithDefaultFormats.forEach(column => {
-      const columnFormat = formatter.getColumnFormat(column.type, column.name);
-      expect(columnFormat).toBeDefined();
-    });
-  });
 });
 
 describe('getColumnFormat', () => {
