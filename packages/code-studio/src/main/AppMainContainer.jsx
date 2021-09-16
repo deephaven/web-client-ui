@@ -13,10 +13,6 @@ import {
   Popper,
 } from '@deephaven/components';
 import Dashboard from '@deephaven/dashboard';
-import {
-  DashboardCorePlugin,
-  getSessionWrapper,
-} from '@deephaven/dashboard-core-plugins';
 import { vsGear, dhShapes, dhPanels } from '@deephaven/icons';
 import dh, { PropTypes as APIPropTypes } from '@deephaven/jsapi-shim';
 import Log from '@deephaven/log';
@@ -31,21 +27,21 @@ import { PromiseUtils } from '@deephaven/utils';
 import SettingsMenu from '../settings/SettingsMenu';
 import {
   ChartEvent,
+  DashboardCorePlugin,
   InputFilterEvent,
   IrisGridEvent,
-} from '../dashboard/events';
-import ToolType from '../tools/ToolType';
-import { IrisPropTypes } from '../include/prop-types';
+} from '../dashboard/plugins';
+import ToolType from '../dashboard/plugins/linker/ToolType';
 import AppControlsMenu from './AppControlsMenu';
-import ControlType from '../controls/ControlType';
-import { getLayoutStorage } from '../redux';
+import ControlType from '../dashboard/plugins/controls/ControlType';
+import { getLayoutStorage, getSessionWrapper } from '../redux';
 import Logo from '../settings/LogoMiniDark.svg';
 import './AppMainContainer.scss';
 import WidgetList from './WidgetList';
 import { createChartModel, createGridModel } from './WidgetUtils';
 import EmptyDashboard from './EmptyDashboard';
 import UserLayoutUtils from './UserLayoutUtils';
-import MarkdownEvent from './dashboard-plugins/MarkdownEvent';
+import MarkdownEvent from '../dashboard/plugins/events/MarkdownEvent';
 
 const log = Log.module('AppMainContainer');
 
@@ -562,7 +558,7 @@ AppMainContainer.propTypes = {
   session: APIPropTypes.IdeSession.isRequired,
   setActiveTool: PropTypes.func.isRequired,
   updateWorkspaceData: PropTypes.func.isRequired,
-  user: IrisPropTypes.User.isRequired,
+  user: APIPropTypes.User.isRequired,
   workspace: PropTypes.shape({
     data: PropTypes.shape({
       data: PropTypes.shape({}),

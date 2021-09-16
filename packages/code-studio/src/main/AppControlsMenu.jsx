@@ -16,8 +16,8 @@ import {
   vsMarkdown,
 } from '@deephaven/icons';
 import PropTypes from 'prop-types';
-import ControlType from '../controls/ControlType';
-import ToolType from '../tools/ToolType';
+import ControlType from '../dashboard/plugins/controls/ControlType';
+import ToolType from '../dashboard/plugins/linker/ToolType';
 
 const MINIMUM_DRAG_DISTANCE = 10;
 

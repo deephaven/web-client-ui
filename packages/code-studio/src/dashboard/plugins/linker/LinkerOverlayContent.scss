@@ -1,0 +1,44 @@
+@import '~@deephaven/components/scss/custom.scss';
+
+.linker-overlay {
+  z-index: $zindex-fixed;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+
+  svg {
+    width: 100%;
+    height: 100%;
+  }
+
+  .linker-toast-dialog {
+    $toast-inner-padding: $spacer-3;
+    $toast-outer-padding: $spacer-3;
+
+    position: absolute;
+    right: $toast-outer-padding;
+    bottom: $toast-outer-padding;
+    background: $modal-content-bg;
+    max-width: 400px;
+    color: $interfaceblack;
+    pointer-events: auto;
+    box-shadow: $tooltip-box-shadow;
+    z-index: $zindex-popover;
+
+    .toast-body {
+      padding: $toast-inner-padding;
+    }
+
+    .toast-footer {
+      padding: $toast-inner-padding;
+      display: flex;
+      justify-content: flex-end;
+      .btn:not(:last-child) {
+        margin-right: $spacer-3;
+      }
+    }
+  }
+}

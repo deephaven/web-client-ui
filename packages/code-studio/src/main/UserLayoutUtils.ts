@@ -5,7 +5,7 @@ import {
   CommandHistoryPanel,
   ConsolePanel,
   FileExplorerPanel,
-} from '../dashboard/panels';
+} from '../dashboard/plugins/panels';
 
 const log = Log.module('UserLayoutUtils');
 
