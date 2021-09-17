@@ -7,8 +7,9 @@ import React, {
 } from 'react';
 import PropTypes from 'prop-types';
 import GoldenLayout, { ItemConfigType } from '@deephaven/golden-layout';
-import { Provider, useStore } from 'react-redux';
 import Log from '@deephaven/log';
+import { usePrevious } from '@deephaven/react-hooks';
+import { Provider, useStore } from 'react-redux';
 import PanelManager from './PanelManager';
 import PanelErrorBoundary from './PanelErrorBoundary';
 import LayoutUtils from './layout/LayoutUtils';
@@ -19,17 +20,19 @@ import {
 import PanelEvent from './PanelEvent';
 import { GLPropTypes, useListener } from './layout';
 
+export type DashboardLayoutConfig = ItemConfigType[];
+
 const log = Log.module('DashboardLayout');
 
-const DEFAULT_LAYOUT_CONFIG: ItemConfigType[] = [];
+const DEFAULT_LAYOUT_CONFIG: DashboardLayoutConfig = [];
 
 const DEFAULT_CALLBACK = () => undefined;
 
 export type DashboardLayoutProps = {
   id: string;
   layout: GoldenLayout;
-  layoutConfig?: ItemConfigType[];
-  onLayoutChange?: (dehydratedLayout: ItemConfigType[]) => void;
+  layoutConfig?: DashboardLayoutConfig;
+  onLayoutChange?: (dehydratedLayout: DashboardLayoutConfig) => void;
   children?: React.ReactNode | React.ReactNode[];
 };
 
@@ -44,6 +47,7 @@ export const DashboardLayout = ({
   onLayoutChange = DEFAULT_CALLBACK,
 }: DashboardLayoutProps): JSX.Element => {
   const [isItemDragging, setIsItemDragging] = useState(false);
+  const [lastConfig, setLastConfig] = useState<DashboardLayoutConfig>();
 
   const hydrateMap = useMemo(() => new Map(), []);
   const dehydrateMap = useMemo(() => new Map(), []);
@@ -123,6 +127,8 @@ export const DashboardLayout = ({
       dehydratedLayoutConfig
     );
 
+    setLastConfig(dehydratedLayoutConfig);
+
     onLayoutChange(dehydratedLayoutConfig);
   }, [isItemDragging, layout, onLayoutChange]);
 
@@ -158,16 +164,34 @@ export const DashboardLayout = ({
     handleLayoutStateChanged
   );
 
+  const previousLayoutConfig = usePrevious(layoutConfig);
   useEffect(() => {
-    log.debug('Mounted, setting content...');
-    const content = LayoutUtils.hydrateLayoutConfig(
-      layoutConfig,
-      hydrateComponent
-    );
-    if (content.length > 0) {
-      layout.root.addChild(content[0]);
+    if (previousLayoutConfig !== layoutConfig && layoutConfig !== lastConfig) {
+      log.debug('Setting new layout content...');
+      const content = LayoutUtils.hydrateLayoutConfig(
+        layoutConfig,
+        hydrateComponent
+      );
+      // Remove the old layout before add the new one
+      while (layout.root.contentItems.length > 0) {
+        layout.root.contentItems[0].remove();
+      }
+
+      // Add the new content. It is usally just one item from the root
+      for (let i = 0; i < content.length; i += 1) {
+        layout.root.addChild(content[i]);
+      }
+
+      // TODO: Wire up empty dashboard?
     }
-  }, [hydrateComponent, layout, layoutConfig, panelManager]);
+  }, [
+    hydrateComponent,
+    layout,
+    layoutConfig,
+    lastConfig,
+    panelManager,
+    previousLayoutConfig,
+  ]);
 
   return (
     <>

@@ -112,7 +112,12 @@ export const Dashboard = ({
     <div className="dashboard-container w-100 h-100">
       <div className="w-100 h-100" ref={layoutElement} />
       {isInitialized && layout && (
-        <DashboardLayout id={id} layout={layout} layoutConfig={layoutConfig}>
+        <DashboardLayout
+          id={id}
+          layout={layout}
+          layoutConfig={layoutConfig}
+          onLayoutChange={onLayoutConfigChange}
+        >
           {children}
         </DashboardLayout>
       )}
