@@ -1,4 +1,10 @@
-import React, { ReactElement, useCallback, useEffect, useMemo } from 'react';
+import React, {
+  ReactElement,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 import PropTypes from 'prop-types';
 import GoldenLayout, { ItemConfigType } from '@deephaven/golden-layout';
 import { Provider, useStore } from 'react-redux';
@@ -10,24 +16,35 @@ import {
   dehydrate as dehydrateDefault,
   hydrate as hydrateDefault,
 } from './DashboardUtils';
+import PanelEvent from './PanelEvent';
+import { GLPropTypes, useListener } from './layout';
 
 const log = Log.module('DashboardLayout');
 
 const DEFAULT_LAYOUT_CONFIG: ItemConfigType[] = [];
 
+const DEFAULT_CALLBACK = () => undefined;
+
 export type DashboardLayoutProps = {
   id: string;
   layout: GoldenLayout;
   layoutConfig?: ItemConfigType[];
+  onLayoutChange?: (dehydratedLayout: ItemConfigType[]) => void;
   children?: React.ReactNode | React.ReactNode[];
 };
 
+/**
+ * DashboardLayout component. Handles hydrating, dehydrating components, listening for dragging panels.
+ */
 export const DashboardLayout = ({
   id,
   children,
   layout,
   layoutConfig = DEFAULT_LAYOUT_CONFIG,
+  onLayoutChange = DEFAULT_CALLBACK,
 }: DashboardLayoutProps): JSX.Element => {
+  const [isItemDragging, setIsItemDragging] = useState(false);
+
   const hydrateMap = useMemo(() => new Map(), []);
   const dehydrateMap = useMemo(() => new Map(), []);
   const store = useStore();
@@ -90,6 +107,57 @@ export const DashboardLayout = ({
     [dehydrateComponent, hydrateComponent, layout]
   );
 
+  const handleLayoutStateChanged = useCallback(() => {
+    // we don't want to emit stateChanges that happen during item drags or else
+    // we risk the last saved state being one without that panel in the layout entirely
+    if (isItemDragging) return;
+
+    const glConfig = layout.toConfig();
+    const contentConfig = glConfig.content;
+    const dehydratedLayoutConfig = LayoutUtils.dehydrateLayoutConfig(
+      contentConfig
+    );
+    log.debug(
+      'handleLayoutStateChanged',
+      contentConfig,
+      dehydratedLayoutConfig
+    );
+
+    onLayoutChange(dehydratedLayoutConfig);
+  }, [isItemDragging, layout, onLayoutChange]);
+
+  const handleLayoutItemPickedUp = useCallback(() => {
+    setIsItemDragging(true);
+  }, []);
+
+  const handleLayoutItemDropped = useCallback(() => {
+    setIsItemDragging(false);
+  }, []);
+
+  const handleComponentCreated = useCallback(item => {
+    log.debug2('handleComponentCreated', item);
+
+    if (!item || !item.config || !item.config.component || !item.element) {
+      return;
+    }
+
+    const cssComponent = item.config.component
+      .replace(/([a-z])([A-Z])/g, '$1-$2')
+      .toLowerCase();
+    const cssClass = `${cssComponent}-component`;
+    item.element.addClass(cssClass);
+  }, []);
+
+  useListener(layout, 'stateChanged', handleLayoutStateChanged);
+  useListener(layout, 'itemPickedUp', handleLayoutItemPickedUp);
+  useListener(layout, 'itemDropped', handleLayoutItemDropped);
+  useListener(layout, 'componentCreated', handleComponentCreated);
+  useListener(
+    layout.eventHub,
+    PanelEvent.TITLE_CHANGED,
+    handleLayoutStateChanged
+  );
+
   useEffect(() => {
     log.debug('Mounted, setting content...');
     const content = LayoutUtils.hydrateLayoutConfig(
@@ -120,11 +188,9 @@ export const DashboardLayout = ({
 DashboardLayout.propTypes = {
   id: PropTypes.string.isRequired,
   children: PropTypes.node,
-  layout: PropTypes.shape({
-    registerComponent: PropTypes.func,
-    root: PropTypes.shape({ addChild: PropTypes.func }),
-  }).isRequired,
+  layout: GLPropTypes.Layout.isRequired,
   layoutConfig: PropTypes.arrayOf(PropTypes.shape({})),
+  onLayoutChange: PropTypes.func,
 };
 
 export default DashboardLayout;

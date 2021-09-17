@@ -24,6 +24,14 @@ const EventHub = PropTypes.shape({
   emit: PropTypes.func,
 });
 
-const GLPropTypes = Object.freeze({ Container, EventHub });
+const Layout = PropTypes.shape({
+  registerComponent: PropTypes.func,
+  root: PropTypes.shape({ addChild: PropTypes.func }),
+  on: PropTypes.func,
+  off: PropTypes.func,
+  eventHub: EventHub,
+});
+
+const GLPropTypes = Object.freeze({ Container, EventHub, Layout });
 
 export default GLPropTypes;
