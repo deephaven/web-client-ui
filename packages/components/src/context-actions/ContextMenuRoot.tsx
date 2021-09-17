@@ -56,6 +56,14 @@ class ContextMenuRoot extends Component<
   openMenu: React.RefObject<ContextMenu>;
 
   handleContextMenu(e: MouseEvent): void {
+    let el = e.target as Element | null;
+    while (el != null) {
+      if (el.classList.contains('monaco-editor')) {
+        return;
+      }
+      el = el.parentElement;
+    }
+
     if (!ContextActionUtils.isContextActionEvent(e)) {
       return;
     }
