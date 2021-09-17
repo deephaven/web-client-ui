@@ -3,7 +3,9 @@ import classNames from 'classnames';
 import ContextMenu from './ContextMenu';
 import ContextActionUtils, { MenuItem } from './ContextActionUtils';
 
-type ContextMenuRootProps = Record<string, never>;
+type ContextMenuRootProps = {
+  ignoreClassNames?: string[];
+};
 
 interface ContextMenuRootState {
   actions: MenuItem[] | null;
@@ -56,12 +58,16 @@ class ContextMenuRoot extends Component<
   openMenu: React.RefObject<ContextMenu>;
 
   handleContextMenu(e: MouseEvent): void {
-    let el = e.target as Element | null;
-    while (el != null) {
-      if (el.classList.contains('monaco-editor')) {
-        return;
+    const { ignoreClassNames = [] } = this.props;
+    if (ignoreClassNames.length > 0) {
+      let el = e.target as Element | null;
+      while (el != null) {
+        const { classList } = el;
+        if (ignoreClassNames.some(className => classList.contains(className))) {
+          return;
+        }
+        el = el.parentElement;
       }
-      el = el.parentElement;
     }
 
     if (!ContextActionUtils.isContextActionEvent(e)) {
