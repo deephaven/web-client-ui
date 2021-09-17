@@ -13,6 +13,8 @@ import {
 
 const log = Log.module('DashboardLayout');
 
+const DEFAULT_LAYOUT_CONFIG: ItemConfigType[] = [];
+
 export type DashboardLayoutProps = {
   id: string;
   layout: GoldenLayout;
@@ -24,7 +26,7 @@ export const DashboardLayout = ({
   id,
   children,
   layout,
-  layoutConfig = [],
+  layoutConfig = DEFAULT_LAYOUT_CONFIG,
 }: DashboardLayoutProps): JSX.Element => {
   const hydrateMap = useMemo(() => new Map(), []);
   const dehydrateMap = useMemo(() => new Map(), []);
@@ -94,7 +96,9 @@ export const DashboardLayout = ({
       layoutConfig,
       hydrateComponent
     );
-    layout.root.addChild(content[0]);
+    if (content.length > 0) {
+      layout.root.addChild(content[0]);
+    }
   }, [hydrateComponent, layout, layoutConfig, panelManager]);
 
   return (

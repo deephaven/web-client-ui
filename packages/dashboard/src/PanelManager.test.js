@@ -3,6 +3,7 @@
 /* eslint max-classes-per-file: "off" */
 
 import { Component } from 'react';
+import './layout/jquery';
 import PanelManager from './PanelManager';
 import PanelEvent from './PanelEvent';
 
@@ -59,6 +60,7 @@ it('handles panels mounting and unmounting', () => {
   layout.eventHub.emit(PanelEvent.MOUNT, panel);
 
   let opened = panelManager.getOpenedPanels();
+
   expect(opened.length).toBe(1);
   expect(opened[0]).toBe(panel);
 

@@ -70,7 +70,7 @@ class PanelManager {
   }
 
   getOpenedPanels() {
-    return [...this.openedMap.values()];
+    return Array.from(this.openedMap.values());
   }
 
   getOpenedPanelConfigs() {

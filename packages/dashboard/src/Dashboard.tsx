@@ -13,6 +13,10 @@ import DashboardLayout from './DashboardLayout';
 
 const RESIZE_THROTTLE = 100;
 
+const DEFAULT_DATA = {};
+
+const DEFAULT_CALLBACK = () => {};
+
 export type DashboardData = {
   layoutSettings?: Record<string, unknown>;
 };
@@ -31,11 +35,11 @@ export type DashboardProps = {
 export const Dashboard = ({
   id = 'default',
   children,
-  data = {},
+  data = DEFAULT_DATA,
   layoutConfig,
-  onDataChange = () => undefined,
-  onLayoutConfigChange = () => undefined,
-  onGoldenLayoutChange = () => undefined,
+  onDataChange = DEFAULT_CALLBACK,
+  onLayoutConfigChange = DEFAULT_CALLBACK,
+  onGoldenLayoutChange = DEFAULT_CALLBACK,
   fallbackComponent = undefined,
 }: DashboardProps): JSX.Element => {
   const layoutElement = useRef<HTMLDivElement>(null);

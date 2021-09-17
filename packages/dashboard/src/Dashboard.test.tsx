@@ -2,6 +2,11 @@ import React from 'react';
 import { mount, ReactWrapper } from 'enzyme';
 import Dashboard, { DashboardProps } from './Dashboard';
 
+jest.mock('react-redux', () => ({
+  ...jest.requireActual('react-redux'),
+  useStore: () => ({}),
+}));
+
 function makeDashboard({
   id,
   fallbackComponent,
