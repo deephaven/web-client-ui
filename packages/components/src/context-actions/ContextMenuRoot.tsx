@@ -3,9 +3,7 @@ import classNames from 'classnames';
 import ContextMenu from './ContextMenu';
 import ContextActionUtils, { MenuItem } from './ContextActionUtils';
 
-type ContextMenuRootProps = {
-  ignoreClassNames?: string[];
-};
+type ContextMenuRootProps = Record<string, never>;
 
 interface ContextMenuRootState {
   actions: MenuItem[] | null;
@@ -58,18 +56,6 @@ class ContextMenuRoot extends Component<
   openMenu: React.RefObject<ContextMenu>;
 
   handleContextMenu(e: MouseEvent): void {
-    const { ignoreClassNames = [] } = this.props;
-    if (ignoreClassNames.length > 0) {
-      let el = e.target as Element | null;
-      while (el != null) {
-        const { classList } = el;
-        if (ignoreClassNames.some(className => classList.contains(className))) {
-          return;
-        }
-        el = el.parentElement;
-      }
-    }
-
     if (!ContextActionUtils.isContextActionEvent(e)) {
       return;
     }

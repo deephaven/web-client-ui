@@ -22,6 +22,8 @@ const BUFFER_SIZE = 100;
  * Component for input in a console session. Handles loading the recent command history
  */
 export class ConsoleInput extends PureComponent {
+  static INPUT_CLASS_NAME = 'console-input';
+
   constructor(props) {
     super(props);
 
@@ -388,7 +390,7 @@ export class ConsoleInput extends PureComponent {
           })}
         >
           <div
-            className="console-input"
+            className={ConsoleInput.INPUT_CLASS_NAME}
             ref={this.commandContainer}
             style={{ height: commandEditorHeight }}
           />
