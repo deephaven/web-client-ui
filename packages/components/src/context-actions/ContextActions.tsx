@@ -150,6 +150,7 @@ class ContextActions extends Component<
       while (el != null) {
         const { classList } = el;
         if (ignoreClassNames.some(className => classList.contains(className))) {
+          log.debug2('Contextmenu event ignored based on the target className');
           return;
         }
         el = el.parentElement;
