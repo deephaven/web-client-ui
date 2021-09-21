@@ -13,12 +13,22 @@ class EventHub {
       listener => listener.name !== name || listener.callback !== callback
     );
   });
+
+  emit = jest.fn((name, ...args) => {
+    this.listeners.forEach(listener => {
+      if (listener.name === name) {
+        listener.callback(...args);
+      }
+    });
+  });
 }
 
 class LayoutRoot extends EventHub {
   addChild = jest.fn();
 
   removeChild = jest.fn();
+
+  contentItems = [];
 }
 
 export class GoldenLayout extends EventHub {

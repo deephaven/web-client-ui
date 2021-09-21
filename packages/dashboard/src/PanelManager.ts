@@ -1,4 +1,4 @@
-import { Component, ComponentType } from 'react';
+import { Component } from 'react';
 import { ConnectedComponent } from 'react-redux';
 import GoldenLayout, { ReactComponentConfig } from '@deephaven/golden-layout';
 import Log from '@deephaven/log';
@@ -178,14 +178,13 @@ class PanelManager {
   getLastUsedPanelOfType(
     type: typeof Component | ConnectedComponentType
   ): OpenedPanel | undefined {
-    const isConnected = isConnectedType(type);
-    return this.getLastUsedPanel(
-      panel =>
-        (!isConnected && panel instanceof type) ||
-        (isConnected &&
-          type.WrappedComponent &&
-          panel instanceof type.WrappedComponent)
-    );
+    if (isConnectedType(type)) {
+      return this.getLastUsedPanel(
+        panel => type.WrappedComponent && panel instanceof type.WrappedComponent
+      );
+    }
+
+    return this.getLastUsedPanel(panel => panel instanceof type);
   }
 
   updatePanel(panel: OpenedPanel): void {
