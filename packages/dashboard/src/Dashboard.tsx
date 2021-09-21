@@ -13,20 +13,15 @@ import DashboardLayout from './DashboardLayout';
 
 const RESIZE_THROTTLE = 100;
 
-const DEFAULT_DATA = {};
+const DEFAULT_CALLBACK = () => undefined;
 
-const DEFAULT_CALLBACK = () => {};
-
-export type DashboardData = {
-  layoutSettings?: Record<string, unknown>;
-};
+const EMPTY_OBJECT = Object.freeze({});
 
 export type DashboardProps = {
   id?: string;
-  data?: DashboardData;
   children?: React.ReactNode | React.ReactNode[];
   layoutConfig?: ItemConfigType[];
-  onDataChange?: () => void;
+  layoutSettings?: Record<string, unknown>;
   onLayoutConfigChange?: () => void;
   onGoldenLayoutChange?: (goldenLayout: GoldenLayout) => void;
   fallbackComponent?: ComponentType;
@@ -35,9 +30,8 @@ export type DashboardProps = {
 export const Dashboard = ({
   id = 'default',
   children,
-  data = DEFAULT_DATA,
   layoutConfig,
-  onDataChange = DEFAULT_CALLBACK,
+  layoutSettings = EMPTY_OBJECT,
   onLayoutConfigChange = DEFAULT_CALLBACK,
   onGoldenLayoutChange = DEFAULT_CALLBACK,
   fallbackComponent = undefined,
@@ -51,7 +45,6 @@ export const Dashboard = ({
       setLayout(undefined);
       return;
     }
-    const { layoutSettings = {} } = data;
     const newLayout = new GoldenLayout(
       {
         ...LayoutUtils.makeDefaultLayout(),
@@ -83,7 +76,7 @@ export const Dashboard = ({
       newLayout.destroy();
     };
   }, [
-    data,
+    layoutSettings,
     fallbackComponent,
     onGoldenLayoutChange,
     setIsInitialized,

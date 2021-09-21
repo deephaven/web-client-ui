@@ -129,7 +129,7 @@ lm.utils.copy(lm.LayoutManager.prototype, {
 
     this._components[name] = constructor;
 
-    return function () {
+    return () => {
       if (this._components[name] === undefined) {
         throw new Error('Component ' + name + ' is not registered');
       }

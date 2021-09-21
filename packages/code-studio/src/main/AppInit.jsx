@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { LoadingOverlay } from '@deephaven/components';
+import { setDashboardData as setDashboardDataAction } from '@deephaven/dashboard';
 import { WebdavFileStorage } from '@deephaven/file-explorer';
 import dh from '@deephaven/jsapi-shim';
 import Log from '@deephaven/log';
@@ -49,6 +50,7 @@ const AppInit = props => {
     workspace,
     setActiveTool,
     setCommandHistoryStorage,
+    setDashboardData,
     setFileStorage,
     setLayoutStorage,
     setSessionWrapper,
@@ -84,6 +86,7 @@ const AppInit = props => {
 
       setActiveTool(ToolType.DEFAULT);
       setCommandHistoryStorage(COMMAND_HISTORY_STORAGE);
+      setDashboardData(data);
       setFileStorage(FILE_STORAGE);
       setLayoutStorage(LAYOUT_STORAGE);
       setSessionWrapper(sessionWrapper);
@@ -96,6 +99,7 @@ const AppInit = props => {
   }, [
     setActiveTool,
     setCommandHistoryStorage,
+    setDashboardData,
     setFileStorage,
     setLayoutStorage,
     setSessionWrapper,
@@ -160,6 +164,7 @@ AppInit.propTypes = {
 
   setActiveTool: PropTypes.func.isRequired,
   setCommandHistoryStorage: PropTypes.func.isRequired,
+  setDashboardData: PropTypes.func.isRequired,
   setFileStorage: PropTypes.func.isRequired,
   setLayoutStorage: PropTypes.func.isRequired,
   setSessionWrapper: PropTypes.func.isRequired,
@@ -181,6 +186,7 @@ const mapStateToProps = state => ({
 export default connect(mapStateToProps, {
   setActiveTool: setActiveToolAction,
   setCommandHistoryStorage: setCommandHistoryStorageAction,
+  setDashboardData: setDashboardDataAction,
   setFileStorage: setFileStorageAction,
   setLayoutStorage: setLayoutStorageAction,
   setSessionWrapper: setSessionWrapperAction,

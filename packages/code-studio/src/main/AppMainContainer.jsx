@@ -12,7 +12,7 @@ import {
   GLOBAL_SHORTCUTS,
   Popper,
 } from '@deephaven/components';
-import Dashboard from '@deephaven/dashboard';
+import Dashboard, { getDashboardData } from '@deephaven/dashboard';
 import { vsGear, dhShapes, dhPanels } from '@deephaven/icons';
 import dh, { PropTypes as APIPropTypes } from '@deephaven/jsapi-shim';
 import Log from '@deephaven/log';
@@ -44,6 +44,10 @@ import UserLayoutUtils from './UserLayoutUtils';
 import MarkdownEvent from '../dashboard/plugins/events/MarkdownEvent';
 
 const log = Log.module('AppMainContainer');
+
+const EMPTY_OBJECT = Object.freeze({});
+
+const DASHBOARD_ID = 'default';
 
 export class AppMainContainer extends Component {
   static handleWindowBeforeUnload(event) {
@@ -127,6 +131,13 @@ export class AppMainContainer extends Component {
       'beforeunload',
       AppMainContainer.handleWindowBeforeUnload
     );
+  }
+
+  componentDidUpdate(prevProps) {
+    const { dashboardData } = this.props;
+    if (prevProps.dashboardData !== dashboardData) {
+      this.handleDataChange(dashboardData);
+    }
   }
 
   componentWillUnmount() {
@@ -251,7 +262,10 @@ export class AppMainContainer extends Component {
 
   handleDataChange(data) {
     const { updateWorkspaceData } = this.props;
-    updateWorkspaceData({ data });
+
+    // Only save the data that is serializable/we want to persist to the workspace
+    const { closed, links } = data;
+    updateWorkspaceData({ closed, links });
   }
 
   handleGoldenLayoutChange(goldenLayout) {
@@ -443,7 +457,8 @@ export class AppMainContainer extends Component {
   render() {
     const { activeTool, user, workspace } = this.props;
     const { data: workspaceData = {} } = workspace;
-    const { data = {}, layoutConfig } = workspaceData;
+    const { data = EMPTY_OBJECT, layoutConfig } = workspaceData;
+    const { layoutSettings = EMPTY_OBJECT } = data;
     const {
       contextActions,
       isPanelsMenuShown,
@@ -519,12 +534,12 @@ export class AppMainContainer extends Component {
           </div>
         </nav>
         <Dashboard
-          data={data}
           emptyDashboard={
             <EmptyDashboard onAutoFillClick={this.handleAutoFillClick} />
           }
+          id={DASHBOARD_ID}
           layoutConfig={layoutConfig}
-          onDataChange={this.handleDataChange}
+          layoutSettings={layoutSettings}
           onGoldenLayoutChange={this.handleGoldenLayoutChange}
           onLayoutConfigChange={this.handleLayoutConfigChange}
         >
@@ -554,6 +569,7 @@ export class AppMainContainer extends Component {
 
 AppMainContainer.propTypes = {
   activeTool: PropTypes.string.isRequired,
+  dashboardData: PropTypes.shape({}).isRequired,
   layoutStorage: PropTypes.shape({}).isRequired,
   session: APIPropTypes.IdeSession.isRequired,
   setActiveTool: PropTypes.func.isRequired,
@@ -569,6 +585,7 @@ AppMainContainer.propTypes = {
 
 const mapStateToProps = state => ({
   activeTool: getActiveTool(state),
+  dashboardData: getDashboardData(state, DASHBOARD_ID),
   layoutStorage: getLayoutStorage(state),
   session: getSessionWrapper(state).session,
   user: getUser(state),

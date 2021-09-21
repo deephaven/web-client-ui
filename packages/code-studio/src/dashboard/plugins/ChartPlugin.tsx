@@ -1,18 +1,34 @@
 import React, { ComponentType, DragEvent, useCallback, useEffect } from 'react';
+import { useSelector } from 'react-redux';
 import { ChartModel } from '@deephaven/chart';
 import {
   DashboardPluginComponentProps,
   LayoutUtils,
+  useListener,
 } from '@deephaven/dashboard';
 import shortid from 'shortid';
 import { ChartPanel } from './panels';
 import { ChartEvent } from './events';
+import { getSessionWrapper } from '../../redux';
+import { createChartModel } from '../../main/WidgetUtils';
 
 export const ChartPlugin = ({
   id,
   layout,
   registerComponent,
 }: DashboardPluginComponentProps): JSX.Element => {
+  const { session } = useSelector(getSessionWrapper);
+  const hydrateChart = useCallback(
+    props => ({
+      ...props,
+      localDashboardId: id,
+      makeModel: () => {
+        const { metadata, panelState } = props;
+        createChartModel(session, metadata, panelState);
+      },
+    }),
+    [id, session]
+  );
   const handleOpen = useCallback(
     (
       title: string,
@@ -53,22 +69,17 @@ export const ChartPlugin = ({
     const cleanups = [
       registerComponent(
         ChartPanel.COMPONENT,
-        (ChartPanel as unknown) as ComponentType
+        (ChartPanel as unknown) as ComponentType,
+        hydrateChart
       ),
     ];
     return () => {
       cleanups.forEach(cleanup => cleanup());
     };
-  }, [registerComponent]);
+  }, [hydrateChart, registerComponent]);
 
-  useEffect(() => {
-    layout.eventHub.on(ChartEvent.OPEN, handleOpen);
-    layout.eventHub.on(ChartEvent.CLOSE, handleClose);
-    return () => {
-      layout.eventHub.off(ChartEvent.OPEN, handleOpen);
-      layout.eventHub.off(ChartEvent.CLOSE, handleClose);
-    };
-  }, [handleClose, handleOpen, layout]);
+  useListener(layout.eventHub, ChartEvent.OPEN, handleOpen);
+  useListener(layout.eventHub, ChartEvent.CLOSE, handleClose);
 
   return <></>;
 };

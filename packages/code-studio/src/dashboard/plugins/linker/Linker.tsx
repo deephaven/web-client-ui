@@ -119,7 +119,7 @@ export type LinkerState = {
   linkInProgress?: Link;
 };
 
-class Linker extends Component<LinkerProps, LinkerState> {
+export class Linker extends Component<LinkerProps, LinkerState> {
   constructor(props: LinkerProps) {
     super(props);
 
