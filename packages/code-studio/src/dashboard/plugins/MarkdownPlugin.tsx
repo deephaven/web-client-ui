@@ -5,6 +5,7 @@ import {
   dehydrate,
   hydrate,
   LayoutUtils,
+  useListener,
 } from '@deephaven/dashboard';
 import { MarkdownPanel } from './panels';
 import MarkdownUtils from './controls/markdown/MarkdownUtils';
@@ -98,12 +99,7 @@ export const MarkdownPlugin = ({
     };
   }, [dehydrateMarkdown, registerComponent]);
 
-  useEffect(() => {
-    layout.eventHub.on(MarkdownEvent.OPEN, handleOpen);
-    return () => {
-      layout.eventHub.off(MarkdownEvent.OPEN, handleOpen);
-    };
-  }, [handleOpen, layout]);
+  useListener(layout.eventHub, MarkdownEvent.OPEN, handleOpen);
 
   return <></>;
 };

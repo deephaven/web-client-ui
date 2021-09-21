@@ -10,6 +10,7 @@ import {
   DashboardPluginComponentProps,
   LayoutUtils,
   PanelEvent,
+  useListener,
 } from '@deephaven/dashboard';
 import Log from '@deephaven/log';
 import { TextUtils } from '@deephaven/utils';
@@ -211,36 +212,28 @@ export const FilterPlugin = ({
     };
   }, [registerComponent]);
 
-  useEffect(() => {
-    layout.eventHub.on(InputFilterEvent.COLUMNS_CHANGED, handleColumnsChanged);
-    layout.eventHub.on(InputFilterEvent.FILTERS_CHANGED, handleFiltersChanged);
-    layout.eventHub.on(InputFilterEvent.TABLE_CHANGED, handleTableChanged);
-    layout.eventHub.on(InputFilterEvent.OPEN_DROPDOWN, handleOpenDropdown);
-    layout.eventHub.on(InputFilterEvent.OPEN_INPUT, handleOpenInput);
-    layout.eventHub.on(PanelEvent.UNMOUNT, handlePanelUnmount);
-    return () => {
-      layout.eventHub.off(
-        InputFilterEvent.COLUMNS_CHANGED,
-        handleColumnsChanged
-      );
-      layout.eventHub.off(
-        InputFilterEvent.FILTERS_CHANGED,
-        handleFiltersChanged
-      );
-      layout.eventHub.off(InputFilterEvent.TABLE_CHANGED, handleTableChanged);
-      layout.eventHub.off(PanelEvent.UNMOUNT, handlePanelUnmount);
-      layout.eventHub.off(InputFilterEvent.OPEN_DROPDOWN, handleOpenDropdown);
-      layout.eventHub.off(InputFilterEvent.OPEN_INPUT, handleOpenInput);
-    };
-  }, [
-    handleColumnsChanged,
-    handleOpenDropdown,
-    handleOpenInput,
-    handleFiltersChanged,
-    handlePanelUnmount,
-    handleTableChanged,
+  useListener(
     layout.eventHub,
-  ]);
+    InputFilterEvent.COLUMNS_CHANGED,
+    handleColumnsChanged
+  );
+  useListener(
+    layout.eventHub,
+    InputFilterEvent.FILTERS_CHANGED,
+    handleFiltersChanged
+  );
+  useListener(
+    layout.eventHub,
+    InputFilterEvent.TABLE_CHANGED,
+    handleTableChanged
+  );
+  useListener(
+    layout.eventHub,
+    InputFilterEvent.OPEN_DROPDOWN,
+    handleOpenDropdown
+  );
+  useListener(layout.eventHub, InputFilterEvent.OPEN_INPUT, handleOpenInput);
+  useListener(layout.eventHub, PanelEvent.UNMOUNT, handlePanelUnmount);
 
   return <></>;
 };
