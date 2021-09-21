@@ -3,6 +3,7 @@
 /* eslint max-classes-per-file: "off" */
 
 import { Component } from 'react';
+import GoldenLayout from '@deephaven/golden-layout';
 import './layout/jquery';
 import PanelManager from './PanelManager';
 import PanelEvent from './PanelEvent';
@@ -27,23 +28,8 @@ class TestComponentB extends Component {
   }
 }
 
-function makeEventHub() {
-  const callbacks = {};
-  return {
-    on: jest.fn((eventName, callback) => {
-      callbacks[eventName] = callback;
-    }),
-    emit: jest.fn((eventName, arg) => {
-      callbacks[eventName](arg);
-    }),
-    off: jest.fn(eventName => {
-      delete callbacks[eventName];
-    }),
-  };
-}
-
 function makeLayout() {
-  return { eventHub: makeEventHub() };
+  return new GoldenLayout({});
 }
 
 it('creates without crashing', () => {

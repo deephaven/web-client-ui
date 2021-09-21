@@ -15,7 +15,7 @@ class EventHub {
   });
 }
 
-class LayoutRoot {
+class LayoutRoot extends EventHub {
   addChild = jest.fn();
 
   removeChild = jest.fn();
@@ -34,7 +34,7 @@ export class GoldenLayout extends EventHub {
 
   eventHub = new EventHub();
 
-  // root = new LayoutRoot();
+  root = new LayoutRoot();
 }
 
 export default GoldenLayout;

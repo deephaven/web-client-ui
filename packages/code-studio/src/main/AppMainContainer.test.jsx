@@ -26,6 +26,7 @@ function makeAppMainContainer({
     isQueryViewOnly: false,
     isSuperUser: false,
   },
+  dashboardData = {},
   saveWorkspace = jest.fn(() => Promise.resolve()),
   updateWorkspaceData = jest.fn(() => Promise.resolve()),
   workspace = { data: {} },
@@ -40,6 +41,7 @@ function makeAppMainContainer({
 } = {}) {
   return shallow(
     <AppMainContainer
+      dashboardData={dashboardData}
       layoutStorage={layoutStorage}
       saveWorkspace={saveWorkspace}
       updateWorkspaceData={updateWorkspaceData}

@@ -32,6 +32,17 @@ export type PanelsUpdateData = {
 
 export type PanelsUpdateCallback = (panelUpdateData: PanelsUpdateData) => void;
 
+type ConnectedComponentType = ConnectedComponent<
+  typeof Component,
+  Record<string, unknown>
+>;
+
+function isConnectedType(
+  type: typeof Component | ConnectedComponentType
+): type is ConnectedComponentType {
+  return (type as ConnectedComponentType).WrappedComponent !== undefined;
+}
+
 /**
  * Class to keep track of which panels are open, have been closed, and also events to close panels.
  */
@@ -165,12 +176,15 @@ class PanelManager {
   }
 
   getLastUsedPanelOfType(
-    type: ConnectedComponent<ComponentType, Record<string, unknown>>
+    type: typeof Component | ConnectedComponentType
   ): OpenedPanel | undefined {
+    const isConnected = isConnectedType(type);
     return this.getLastUsedPanel(
       panel =>
-        panel instanceof type ||
-        (type.WrappedComponent && panel instanceof type.WrappedComponent)
+        (!isConnected && panel instanceof type) ||
+        (isConnected &&
+          type.WrappedComponent &&
+          panel instanceof type.WrappedComponent)
     );
   }
 

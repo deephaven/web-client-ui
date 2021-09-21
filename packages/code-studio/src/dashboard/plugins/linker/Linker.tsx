@@ -202,7 +202,7 @@ export class Linker extends Component<LinkerProps, LinkerState> {
     eventHub.off(PanelEvent.CLOSED, this.handlePanelClosed);
   }
 
-  handleCancel() {
+  handleCancel(): void {
     const { linkInProgress } = this.state;
     if (linkInProgress == null) {
       const { setActiveTool } = this.props;
@@ -211,7 +211,7 @@ export class Linker extends Component<LinkerProps, LinkerState> {
     this.setState({ linkInProgress: undefined });
   }
 
-  handleDone() {
+  handleDone(): void {
     const { setActiveTool } = this.props;
     setActiveTool(ToolType.DEFAULT);
     this.setState({ linkInProgress: undefined });
@@ -399,7 +399,7 @@ export class Linker extends Component<LinkerProps, LinkerState> {
    * @param panelId ID of panel to set filters on
    * @param filterMap Map of column name to column type, text, and value
    */
-  setPanelFilterMap(panelId: string, filterMap: LinkFilterMap) {
+  setPanelFilterMap(panelId: string, filterMap: LinkFilterMap): void {
     log.debug('Set filter data for panel:', panelId, filterMap);
     const { panelManager } = this.props;
     const panel = panelManager.getOpenedPanelById(panelId);
@@ -412,12 +412,12 @@ export class Linker extends Component<LinkerProps, LinkerState> {
     }
   }
 
-  addLinks(links: Link[]) {
+  addLinks(links: Link[]): void {
     const { addDashboardLinks, localDashboardId } = this.props;
     addDashboardLinks(localDashboardId, links);
   }
 
-  deleteLinks(links: Link[], clearAll = false) {
+  deleteLinks(links: Link[], clearAll = false): void {
     const { localDashboardId } = this.props;
     links.forEach(link => this.unsetFilterValueForLink(link));
     if (clearAll) {
@@ -447,7 +447,7 @@ export class Linker extends Component<LinkerProps, LinkerState> {
     this.setState({ linkInProgress: undefined });
   }
 
-  handleLinkDeleted(linkId: string) {
+  handleLinkDeleted(linkId: string): void {
     const { links } = this.props;
     const link = links.find(l => l.id === linkId);
     if (link) {
@@ -457,7 +457,7 @@ export class Linker extends Component<LinkerProps, LinkerState> {
     }
   }
 
-  handleUpdateValues(panel: Panel, dataMap: LinkDataMap) {
+  handleUpdateValues(panel: Panel, dataMap: LinkDataMap): void {
     const panelId = LayoutUtils.getIdFromPanel(panel);
     const { links, timeZone } = this.props;
     // Map of panel ID to filterMap
@@ -498,7 +498,7 @@ export class Linker extends Component<LinkerProps, LinkerState> {
     });
   }
 
-  handlePanelCloned(panel: Panel, cloneConfig: { id: string }) {
+  handlePanelCloned(panel: Panel, cloneConfig: { id: string }): void {
     const { links } = this.props;
     const panelId = LayoutUtils.getIdFromPanel(panel);
     const cloneId = cloneConfig.id;
@@ -519,15 +519,15 @@ export class Linker extends Component<LinkerProps, LinkerState> {
     this.deleteLinksForPanelId(panelId);
   }
 
-  handleLayoutStateChanged() {
+  handleLayoutStateChanged(): void {
     this.forceUpdate();
   }
 
-  handleStateChange() {
+  handleStateChange(): void {
     this.forceUpdate();
   }
 
-  handleExited() {
+  handleExited(): void {
     // Has to be done after linker exit animation to avoid flashing non-isolated links
     const { localDashboardId, setDashboardIsolatedLinkerPanelId } = this.props;
     setDashboardIsolatedLinkerPanelId(localDashboardId, null);
@@ -537,7 +537,7 @@ export class Linker extends Component<LinkerProps, LinkerState> {
    * Delete all links for a provided panel ID. Needs to be done whenever a panel is closed or unmounted.
    * @param panelId The panel ID to delete links for
    */
-  deleteLinksForPanelId(panelId: string) {
+  deleteLinksForPanelId(panelId: string): void {
     const { links } = this.props;
     for (let i = 0; i < links.length; i += 1) {
       const link = links[i];
@@ -567,12 +567,12 @@ export class Linker extends Component<LinkerProps, LinkerState> {
     return combinedLinks;
   });
 
-  isOverlayShown() {
+  isOverlayShown(): boolean {
     const { activeTool } = this.props;
     return activeTool === ToolType.LINKER;
   }
 
-  updateSelectionValidators() {
+  updateSelectionValidators(): void {
     const {
       activeTool,
       setDashboardColumnSelectionValidator,
@@ -591,7 +591,10 @@ export class Linker extends Component<LinkerProps, LinkerState> {
     }
   }
 
-  updateLinkInProgressType(linkInProgress: Link, type: LinkType = 'invalid') {
+  updateLinkInProgressType(
+    linkInProgress: Link,
+    type: LinkType = 'invalid'
+  ): void {
     this.setState({
       linkInProgress: {
         ...linkInProgress,
@@ -637,7 +640,7 @@ export class Linker extends Component<LinkerProps, LinkerState> {
     return type !== 'invalid';
   }
 
-  render() {
+  render(): JSX.Element {
     const { links, isolatedLinkerPanelId, panelManager } = this.props;
     const { linkInProgress } = this.state;
 

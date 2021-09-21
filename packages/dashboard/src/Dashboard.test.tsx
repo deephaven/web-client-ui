@@ -11,9 +11,8 @@ function makeDashboard({
   id,
   fallbackComponent,
   children,
-  data,
   layoutConfig,
-  onDataChange,
+  layoutSettings,
   onGoldenLayoutChange,
   onLayoutConfigChange,
 }: DashboardProps = {}): ReactWrapper {
@@ -21,9 +20,8 @@ function makeDashboard({
     <Dashboard
       id={id}
       fallbackComponent={fallbackComponent}
-      data={data}
+      layoutSettings={layoutSettings}
       layoutConfig={layoutConfig}
-      onDataChange={onDataChange}
       onLayoutConfigChange={onLayoutConfigChange}
       onGoldenLayoutChange={onGoldenLayoutChange}
     >
