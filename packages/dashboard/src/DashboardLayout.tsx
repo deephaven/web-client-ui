@@ -108,12 +108,12 @@ export const DashboardLayout = ({
     [hydrateMap, dehydrateMap, layout, store]
   );
   const hydrateComponent = useCallback(
-    (name, props) => hydrateMap.get(name)?.(props),
-    [hydrateMap]
+    (name, props) => hydrateMap.get(name)?.(props, id),
+    [hydrateMap, id]
   );
   const dehydrateComponent = useCallback(
-    (name, props) => dehydrateMap.get(name)?.(props),
-    [dehydrateMap]
+    (name, props) => dehydrateMap.get(name)?.(props, id),
+    [dehydrateMap, id]
   );
   const panelManager = useMemo(
     () =>

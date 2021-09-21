@@ -1,7 +1,7 @@
 import React, { ComponentType, DragEvent, useCallback, useEffect } from 'react';
-import { useSelector } from 'react-redux';
 import {
   DashboardPluginComponentProps,
+  DashboardUtils,
   LayoutUtils,
   useListener,
 } from '@deephaven/dashboard';
@@ -9,24 +9,13 @@ import { IrisGridModel } from '@deephaven/iris-grid';
 import shortid from 'shortid';
 import { IrisGridPanel } from './panels';
 import { IrisGridEvent } from './events';
-import { getSessionWrapper } from '../../redux';
-import { createGridModel } from '../../main/WidgetUtils';
 
 export const GridPlugin = ({
   id,
   layout,
   registerComponent,
+  hydrate = DashboardUtils.hydrate,
 }: DashboardPluginComponentProps): JSX.Element => {
-  const { session } = useSelector(getSessionWrapper);
-  const hydrateGrid = useCallback(
-    props => ({
-      ...props,
-      localDashboardId: id,
-      makeModel: () => createGridModel(session, props.metadata),
-    }),
-    [id, session]
-  );
-
   const handleOpen = useCallback(
     (
       title: string,
@@ -68,13 +57,13 @@ export const GridPlugin = ({
       registerComponent(
         IrisGridPanel.COMPONENT,
         (IrisGridPanel as unknown) as ComponentType,
-        hydrateGrid
+        hydrate
       ),
     ];
     return () => {
       cleanups.forEach(cleanup => cleanup());
     };
-  }, [hydrateGrid, registerComponent]);
+  }, [hydrate, registerComponent]);
 
   useListener(layout.eventHub, IrisGridEvent.OPEN_GRID, handleOpen);
   useListener(layout.eventHub, IrisGridEvent.CLOSE_GRID, handleClose);

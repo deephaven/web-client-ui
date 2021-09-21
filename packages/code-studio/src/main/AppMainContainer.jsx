@@ -27,9 +27,15 @@ import { PromiseUtils } from '@deephaven/utils';
 import SettingsMenu from '../settings/SettingsMenu';
 import {
   ChartEvent,
-  DashboardCorePlugin,
+  ChartPlugin,
+  ConsolePlugin,
+  FilterPlugin,
+  GridPlugin,
   InputFilterEvent,
   IrisGridEvent,
+  LinkerPlugin,
+  MarkdownPlugin,
+  PandasPlugin,
 } from '../dashboard/plugins';
 import ToolType from '../dashboard/plugins/linker/ToolType';
 import AppControlsMenu from './AppControlsMenu';
@@ -78,6 +84,8 @@ export class AppMainContainer extends Component {
     this.handleWidgetsMenuClose = this.handleWidgetsMenuClose.bind(this);
     this.handleWidgetSelect = this.handleWidgetSelect.bind(this);
     this.handlePaste = this.handlePaste.bind(this);
+    this.hydrateChart = this.hydrateChart.bind(this);
+    this.hydrateGrid = this.hydrateGrid.bind(this);
 
     this.goldenLayout = null;
     this.importElement = React.createRef();
@@ -412,6 +420,27 @@ export class AppMainContainer extends Component {
     }
   }
 
+  hydrateGrid(props, id) {
+    const { session } = this.props;
+    return {
+      ...props,
+      localDashboardId: id,
+      makeModel: () => createGridModel(session, props.metadata),
+    };
+  }
+
+  hydrateChart(props, id) {
+    const { session } = this.props;
+    return {
+      ...props,
+      localDashboardId: id,
+      makeModel: () => {
+        const { metadata, panelState } = props;
+        return createChartModel(session, metadata, panelState);
+      },
+    };
+  }
+
   /**
    * Open a widget up, using a drag event if specified.
    * @param {WidgetDefinition} widget The widget to
@@ -543,7 +572,13 @@ export class AppMainContainer extends Component {
           onGoldenLayoutChange={this.handleGoldenLayoutChange}
           onLayoutConfigChange={this.handleLayoutConfigChange}
         >
-          <DashboardCorePlugin />
+          <GridPlugin hydrate={this.hydrateGrid} />
+          <ChartPlugin hydrate={this.hydrateChart} />
+          <ConsolePlugin />
+          <FilterPlugin />
+          <PandasPlugin />
+          <MarkdownPlugin />
+          <LinkerPlugin />
         </Dashboard>
         <CSSTransition
           in={isSettingsMenuShown}
