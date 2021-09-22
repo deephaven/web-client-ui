@@ -23,6 +23,10 @@
   white-space: nowrap;
 }
 
+.column-statistics-status {
+  margin: $spacer-1 0;
+}
+
 .column-statistics-grid {
   display: grid;
   grid-template-columns: auto auto;

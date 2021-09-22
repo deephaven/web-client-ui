@@ -458,8 +458,32 @@ class IrisGridTableModel extends IrisGridModel {
     return '';
   }
 
+  getColumnsWithLayoutHints = memoize((columns, hints) => {
+    if (hints) {
+      const frontColumns = new Array(hints.frontColumns.length);
+      const backColumns = new Array(hints.backColumns.length);
+      const middleColumns = [];
+
+      columns.forEach(col => {
+        if (hints.frontColumns.includes(col.name)) {
+          frontColumns[hints.frontColumns.indexOf(col.name)] = col;
+        } else if (hints.backColumns.includes(col.name)) {
+          backColumns[hints.backColumns.indexOf(col.name)] = col;
+        } else {
+          middleColumns.push(col);
+        }
+      });
+
+      return [...frontColumns, ...middleColumns, ...backColumns];
+    }
+    return columns;
+  });
+
   get columns() {
-    return this.table.columns;
+    return this.getColumnsWithLayoutHints(
+      this.table.columns,
+      this.table.layoutHints
+    );
   }
 
   get layoutHints() {
@@ -1048,8 +1072,17 @@ class IrisGridTableModel extends IrisGridModel {
     }
   );
 
-  isColumnMovable(x) {
-    return !this.isKeyColumn(x);
+  isColumnMovable(column) {
+    const columnName = Number.isInteger(column)
+      ? this.columns[column].name
+      : column;
+    if (
+      this.layoutHints?.frontColumns?.includes(columnName) ||
+      this.layoutHints?.backColumns?.includes(columnName)
+    ) {
+      return false;
+    }
+    return !this.isKeyColumn(column);
   }
 
   isKeyColumn(x) {
