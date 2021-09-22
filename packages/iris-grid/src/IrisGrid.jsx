@@ -223,11 +223,25 @@ export class IrisGrid extends Component {
       shortcut: SHORTCUTS.TABLE.TOGGLE_SEARCH,
     };
     this.discardAction = {
-      action: () => this.discardPending().catch(log.error),
+      action: () => {
+        const { model } = this.props;
+        if (model.isEditable && model.pendingDataMap.size > 0) {
+          this.discardPending().catch(log.error);
+        }
+      },
       shortcut: SHORTCUTS.INPUT_TABLE.DISCARD,
     };
     this.commitAction = {
-      action: () => this.commitPending().catch(log.error),
+      action: () => {
+        const { model } = this.props;
+        if (
+          model.isEditable &&
+          model.pendingDataMap.size > 0 &&
+          model.pendingDataErrors.size === 0
+        ) {
+          this.commitPending().catch(log.error);
+        }
+      },
       shortcut: SHORTCUTS.INPUT_TABLE.COMMIT,
     };
     this.contextActions = [
@@ -1519,6 +1533,11 @@ export class IrisGrid extends Component {
   }
 
   async commitPending() {
+    const { model } = this.props;
+    if (!model.isEditable) {
+      throw new Error('Cannot save, table is not editable');
+    }
+
     const { pendingSavePromise } = this.state;
     if (pendingSavePromise != null) {
       throw new Error('Save already in progress');
@@ -1533,7 +1552,6 @@ export class IrisGrid extends Component {
       this.grid.focus();
     }
 
-    const { model } = this.props;
     const newPendingSavePromise = this.pending
       .add(model.commitPending())
       .then(() => {
@@ -1936,7 +1954,11 @@ export class IrisGrid extends Component {
     log.debug('pending data updated');
     const { model } = this.props;
     const { pendingDataMap, pendingDataErrors } = model;
-    this.setState({ pendingDataMap, pendingDataErrors });
+    this.setState({
+      pendingDataMap,
+      pendingDataErrors,
+      pendingSaveError: null,
+    });
     this.grid.forceUpdate();
   }
 
