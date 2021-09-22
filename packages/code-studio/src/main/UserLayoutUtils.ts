@@ -1,11 +1,11 @@
-import { ItemConfigType } from '@deephaven/golden-layout';
-import Log from '@deephaven/log';
-import LayoutStorage from './LayoutStorage';
 import {
   CommandHistoryPanel,
   ConsolePanel,
   FileExplorerPanel,
-} from '../dashboard/plugins/panels';
+} from '@deephaven/dashboard-core-plugins';
+import { ItemConfigType } from '@deephaven/golden-layout';
+import Log from '@deephaven/log';
+import LayoutStorage from './LayoutStorage';
 
 const log = Log.module('UserLayoutUtils');
 

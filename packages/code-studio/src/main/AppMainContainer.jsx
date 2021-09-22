@@ -13,6 +13,21 @@ import {
   Popper,
 } from '@deephaven/components';
 import Dashboard, { getDashboardData } from '@deephaven/dashboard';
+import {
+  ChartEvent,
+  ChartPlugin,
+  ConsolePlugin,
+  ControlType,
+  FilterPlugin,
+  GridPlugin,
+  InputFilterEvent,
+  IrisGridEvent,
+  LinkerPlugin,
+  MarkdownEvent,
+  MarkdownPlugin,
+  PandasPlugin,
+  ToolType,
+} from '@deephaven/dashboard-core-plugins';
 import { vsGear, dhShapes, dhPanels } from '@deephaven/icons';
 import dh, { PropTypes as APIPropTypes } from '@deephaven/jsapi-shim';
 import Log from '@deephaven/log';
@@ -25,21 +40,7 @@ import {
 } from '@deephaven/redux';
 import { PromiseUtils } from '@deephaven/utils';
 import SettingsMenu from '../settings/SettingsMenu';
-import {
-  ChartEvent,
-  ChartPlugin,
-  ConsolePlugin,
-  FilterPlugin,
-  GridPlugin,
-  InputFilterEvent,
-  IrisGridEvent,
-  LinkerPlugin,
-  MarkdownPlugin,
-  PandasPlugin,
-} from '../dashboard/plugins';
-import ToolType from '../dashboard/plugins/linker/ToolType';
 import AppControlsMenu from './AppControlsMenu';
-import ControlType from '../dashboard/plugins/controls/ControlType';
 import { getLayoutStorage, getSessionWrapper } from '../redux';
 import Logo from '../settings/LogoMiniDark.svg';
 import './AppMainContainer.scss';
@@ -47,7 +48,6 @@ import WidgetList from './WidgetList';
 import { createChartModel, createGridModel } from './WidgetUtils';
 import EmptyDashboard from './EmptyDashboard';
 import UserLayoutUtils from './UserLayoutUtils';
-import MarkdownEvent from '../dashboard/plugins/events/MarkdownEvent';
 
 const log = Log.module('AppMainContainer');
 
