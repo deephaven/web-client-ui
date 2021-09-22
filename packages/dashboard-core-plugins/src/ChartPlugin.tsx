@@ -4,18 +4,23 @@ import {
   DashboardPluginComponentProps,
   DashboardUtils,
   LayoutUtils,
+  PanelHydrateFunction,
   useListener,
 } from '@deephaven/dashboard';
 import shortid from 'shortid';
 import { ChartPanel } from './panels';
 import { ChartEvent } from './events';
 
+export type ChartPluginComponentProps = DashboardPluginComponentProps & {
+  hydrate: PanelHydrateFunction;
+};
+
 export const ChartPlugin = ({
   id,
   layout,
   registerComponent,
   hydrate = DashboardUtils.hydrate,
-}: DashboardPluginComponentProps): JSX.Element => {
+}: ChartPluginComponentProps): JSX.Element => {
   const handleOpen = useCallback(
     (
       title: string,

@@ -1,5 +1,5 @@
 import shortid from 'shortid';
-import { LayoutUtils } from '@deephaven/dashboard';
+import { LayoutUtils, PanelComponent } from '@deephaven/dashboard';
 import { TableUtils } from '@deephaven/iris-grid';
 import Log from '@deephaven/log';
 import { ChartPanel, IrisGridPanel, DropdownFilterPanel } from '../panels';
@@ -25,6 +25,50 @@ export type LinkColumn = {
   name: string;
   type: string;
 };
+
+export type LinkFilterMapValue<T = unknown> = {
+  columnType: string;
+  text: string;
+  value: T;
+};
+
+export type LinkFilterMap<T = unknown> = Map<string, LinkFilterMapValue<T>>;
+
+export type LinkDataMapValue = {
+  type: string;
+  text: string;
+  value: string;
+};
+
+export type LinkDataMap = Record<string, LinkDataMapValue>;
+
+// [x,y] screen coordinates used by the Linker
+export type LinkerCoordinate = [number, number];
+
+export type LinkableFromPanel = PanelComponent & {
+  getCoordinateForColumn: (name: string) => LinkerCoordinate;
+};
+
+export type LinkablePanel = LinkableFromPanel & {
+  setFilterMap: (filterMap: LinkFilterMap) => void;
+  unsetFilterValue: (name: string, type: string) => void;
+};
+
+export function isLinkableFromPanel(
+  panel: PanelComponent
+): panel is LinkableFromPanel {
+  const p = panel as LinkableFromPanel;
+  return typeof p.getCoordinateForColumn === 'function';
+}
+
+export function isLinkablePanel(panel: PanelComponent): panel is LinkablePanel {
+  const p = panel as LinkablePanel;
+  return (
+    isLinkableFromPanel(panel) &&
+    typeof p.setFilterMap === 'function' &&
+    typeof p.unsetFilterValue === 'function'
+  );
+}
 
 const log = Log.module('LinkerUtils');
 

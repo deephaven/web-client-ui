@@ -1,5 +1,10 @@
 import { PanelConfig, PanelProps } from './DashboardPlugin';
 
+export type DashboardPanelProps = PanelProps & {
+  localDashboardId: string;
+  metadata?: Record<string, unknown>;
+};
+
 /**
  * Dehydrate an existing panel to allow it to be serialized/saved.
  * Just takes what's in the panels `metadata` in the props and `panelState` in
@@ -37,7 +42,10 @@ export function dehydrate(config: PanelConfig): PanelConfig | null {
  * @param localDashboardId The local dashboard ID to hydrate the panel with
  * @returns The hydrated panel props
  */
-export function hydrate(props: PanelProps, localDashboardId = ''): PanelProps {
+export function hydrate(
+  props: PanelProps,
+  localDashboardId = ''
+): DashboardPanelProps {
   return {
     metadata: {},
     ...props,

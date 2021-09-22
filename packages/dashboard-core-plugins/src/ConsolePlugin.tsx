@@ -3,7 +3,6 @@ import {
   LayoutUtils,
 } from '@deephaven/dashboard';
 import Log from '@deephaven/log';
-import { string } from 'prop-types';
 import React, { ComponentType, useCallback, useEffect } from 'react';
 import shortid from 'shortid';
 import { ConsoleEvent } from './events';
@@ -43,7 +42,7 @@ export const ConsolePlugin = ({
   );
 
   const getConsolePanel = useCallback(
-    () => panelManager.getLastUsedPanelOfType(ConsolePanel),
+    () => panelManager.getLastUsedPanelOfType(ConsolePanel.WrappedComponent),
     [panelManager]
   );
 
@@ -129,13 +128,16 @@ export const ConsolePlugin = ({
   }, [getConsoleStack, getStackForComponentType, layout]);
 
   const handleSendCommand = useCallback(
-    (command = string, focus = true, execute = true) => {
+    (command: string, focus = true, execute = true) => {
       const trimmedCommand = command && command.trim();
       if (!trimmedCommand) {
         log.info('Ignoring empty code');
       } else {
         const consolePanel = getConsolePanel();
-        if (!consolePanel) {
+        if (
+          !consolePanel ||
+          !(consolePanel instanceof ConsolePanel.WrappedComponent)
+        ) {
           log.error('Console panel not found');
           return;
         }

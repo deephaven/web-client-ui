@@ -33,8 +33,12 @@
     "start": "cross-env NODE_ENV=development npm run watch"
   },
   "peerDependencies": {
+    "@deephaven/chart": "^0.3.2",
     "@deephaven/components": "^0.3.2",
+    "@deephaven/dashboard": "^0.3.2",
+    "@deephaven/file-explorer": "^0.3.2",
     "@deephaven/golden-layout": "^0.3.2",
+    "@deephaven/iris-grid": "^0.3.2",
     "@deephaven/log": "^0.3.2",
     "@deephaven/react-hooks": "^0.3.2",
     "@deephaven/redux": "^0.3.2",
@@ -47,8 +51,12 @@
   },
   "devDependencies": {
     "@babel/cli": "^7.14.8",
+    "@deephaven/chart": "^0.3.2",
     "@deephaven/components": "^0.3.2",
+    "@deephaven/dashboard": "^0.3.2",
+    "@deephaven/file-explorer": "^0.3.2",
     "@deephaven/golden-layout": "^0.3.2",
+    "@deephaven/iris-grid": "^0.3.2",
     "@deephaven/log": "^0.3.2",
     "@deephaven/react-hooks": "^0.3.2",
     "@deephaven/redux": "^0.3.2",

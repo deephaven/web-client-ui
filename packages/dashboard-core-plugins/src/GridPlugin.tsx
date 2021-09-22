@@ -3,6 +3,7 @@ import {
   DashboardPluginComponentProps,
   DashboardUtils,
   LayoutUtils,
+  PanelHydrateFunction,
   useListener,
 } from '@deephaven/dashboard';
 import { IrisGridModel } from '@deephaven/iris-grid';
@@ -10,12 +11,16 @@ import shortid from 'shortid';
 import { IrisGridPanel } from './panels';
 import { IrisGridEvent } from './events';
 
+export type GridPluginComponentProps = DashboardPluginComponentProps & {
+  hydrate: PanelHydrateFunction;
+};
+
 export const GridPlugin = ({
   id,
   layout,
   registerComponent,
   hydrate = DashboardUtils.hydrate,
-}: DashboardPluginComponentProps): JSX.Element => {
+}: GridPluginComponentProps): JSX.Element => {
   const handleOpen = useCallback(
     (
       title: string,

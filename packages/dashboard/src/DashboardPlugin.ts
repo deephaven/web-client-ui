@@ -1,15 +1,15 @@
-import { ComponentType } from 'react';
-import GoldenLayout from '@deephaven/golden-layout';
+import { Component, ComponentType } from 'react';
+import GoldenLayout, { ReactComponentConfig } from '@deephaven/golden-layout';
 import PanelManager from './PanelManager';
 
 export type PanelProps = {
-  [keys: string]: unknown;
+  glContainer: GoldenLayout.Container;
+  glEventHub: GoldenLayout.EventEmitter;
 };
 
-export type PanelConfig = {
-  title: string;
-  type: string;
-  props: PanelProps;
+export type PanelComponent<T extends PanelProps = PanelProps> = Component<T>;
+
+export type PanelConfig = ReactComponentConfig & {
   componentState?: Record<string, unknown> | null;
 };
 
@@ -24,7 +24,17 @@ export interface DashboardPanelDefinition {
   definition: ComponentType;
 }
 
-export type DeregisterComponentFn = () => void;
+export type DeregisterComponentFunction = () => void;
+
+export type PanelHydrateFunction = (
+  props: PanelProps,
+  dashboardId: string
+) => PanelProps;
+
+export type PanelDehydrateFunction = (
+  config: PanelConfig,
+  dashboardId: string
+) => PanelConfig | null;
 
 export type DashboardPluginComponentProps = {
   id: string;
@@ -33,9 +43,9 @@ export type DashboardPluginComponentProps = {
   registerComponent: (
     name: string,
     ComponentType: ComponentType,
-    hydrate?: (props: PanelProps, dashboardId: string) => PanelProps,
-    dehydrate?: (config: PanelConfig, dashboardId: string) => PanelConfig | null
-  ) => DeregisterComponentFn;
+    hydrate?: PanelHydrateFunction,
+    dehydrate?: PanelDehydrateFunction
+  ) => DeregisterComponentFunction;
 };
 
 export interface DashboardPlugin {

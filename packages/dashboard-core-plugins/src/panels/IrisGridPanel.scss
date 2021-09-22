@@ -1,4 +1,4 @@
-@import '~@deephaven/components/scss/custom.scss';
+@import '../../../components/scss/custom.scss';
 
 $panel-message-overlay-top: 30px;
 
@@ -29,5 +29,5 @@ $panel-message-overlay-top: 30px;
 }
 
 .grid-cursor-linker {
-  cursor: url('../../../assets/svg/cursor-linker.svg') 8 8, crosshair;
+  cursor: url('../linker/cursor-linker.svg') 8 8, crosshair;
 }

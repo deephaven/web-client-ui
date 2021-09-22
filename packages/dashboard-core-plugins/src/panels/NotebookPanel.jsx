@@ -28,11 +28,10 @@ import debounce from 'lodash.debounce';
 import Log from '@deephaven/log';
 import { Pending, PromiseUtils } from '@deephaven/utils';
 import { ConsoleEvent, NotebookEvent } from '../events';
-
-import './NotebookPanel.scss';
+import { getSessionWrapper } from '../redux';
 import Panel from './Panel';
-import SHORTCUTS from '../../../settings/Shortcuts';
-import { getSessionWrapper } from '../../../redux';
+import SHORTCUTS from './Shortcuts';
+import './NotebookPanel.scss';
 
 const log = Log.module('NotebookPanel');
 

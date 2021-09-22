@@ -8,8 +8,10 @@ import './layout/jquery';
 import PanelManager from './PanelManager';
 import PanelEvent from './PanelEvent';
 
+type TestComponentProps = { id?: string };
+
 class TestComponentA extends Component {
-  constructor(id = 'A') {
+  constructor({ id = 'A' }: TestComponentProps = {}) {
     super({ glContainer: { tab: { contentItem: { config: { id } } } } });
   }
 
@@ -19,7 +21,7 @@ class TestComponentA extends Component {
 }
 
 class TestComponentB extends Component {
-  constructor(id = 'B') {
+  constructor({ id = 'B' }: TestComponentProps = {}) {
     super({ glContainer: { tab: { contentItem: { config: { id } } } } });
   }
 

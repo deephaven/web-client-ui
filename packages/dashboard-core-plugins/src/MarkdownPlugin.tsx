@@ -55,8 +55,8 @@ export const MarkdownPlugin = ({
       const closedMarkdowns = panelManager.getClosedPanelConfigsOfType(
         MarkdownPanel.COMPONENT
       );
-      const usedTitles = openedMarkdowns.map(markdown => markdown.title);
-      const panelTitle = title ?? MarkdownUtils.getNewMarkdownTitle(usedTitles);
+      const usedTitles = openedMarkdowns.map(markdown => markdown.title ?? '');
+      const panelTitle = title || MarkdownUtils.getNewMarkdownTitle(usedTitles);
       const content =
         closedMarkdowns.length > 0 ? null : MarkdownUtils.DEFAULT_CONTENT;
       const config = {

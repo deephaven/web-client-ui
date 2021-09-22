@@ -4,7 +4,12 @@ import shortid from 'shortid';
 import memoize from 'memoize-one';
 import { CSSTransition } from 'react-transition-group';
 import { ThemeExport } from '@deephaven/components';
-import { LayoutUtils, PanelEvent, PanelManager } from '@deephaven/dashboard';
+import {
+  LayoutUtils,
+  PanelComponent,
+  PanelEvent,
+  PanelManager,
+} from '@deephaven/dashboard';
 import type GoldenLayout from '@deephaven/golden-layout';
 import { DateUtils, TableUtils } from '@deephaven/iris-grid';
 import { DateTimeColumnFormatter } from '@deephaven/iris-grid/dist/formatters';
@@ -24,45 +29,16 @@ import {
 import ToolType from './ToolType';
 import { ChartEvent, IrisGridEvent, InputFilterEvent } from '../events';
 import LinkerOverlayContent from './LinkerOverlayContent';
-import LinkerUtils, { Link, LinkColumn, LinkType } from './LinkerUtils';
+import LinkerUtils, {
+  isLinkablePanel,
+  Link,
+  LinkColumn,
+  LinkDataMap,
+  LinkFilterMap,
+  LinkType,
+} from './LinkerUtils';
 
 const log = Log.module('Linker');
-
-export type PanelProps = {
-  glContainer: GoldenLayout.Container;
-  glEventHub: GoldenLayout.EventEmitter;
-};
-
-export type Panel = Component<PanelProps>;
-
-export type LinkFilterMapValue<T = unknown> = {
-  columnType: string;
-  text: string;
-  value: T;
-};
-
-export type LinkFilterMap<T = unknown> = Map<string, LinkFilterMapValue<T>>;
-
-export type LinkDataMapValue = {
-  type: string;
-  text: string;
-  value: string;
-};
-
-export type LinkDataMap = Record<string, LinkDataMapValue>;
-
-export type LinkablePanel = Panel & {
-  setFilterMap: (filterMap: LinkFilterMap) => void;
-  unsetFilterValue: () => void;
-};
-
-export function isLinkablePanel(panel: Panel): panel is LinkablePanel {
-  const p = panel as LinkablePanel;
-  return (
-    typeof p.setFilterMap === 'function' &&
-    typeof p.unsetFilterValue === 'function'
-  );
-}
 
 interface StateProps {
   activeTool: string;
@@ -98,7 +74,9 @@ type DispatchProps = {
   ) => void;
   setDashboardColumnSelectionValidator: (
     dashboardId: string,
-    columnValidator: ((panel: Panel, column?: LinkColumn) => boolean) | null
+    columnValidator:
+      | ((panel: PanelComponent, column?: LinkColumn) => boolean)
+      | null
   ) => void;
 };
 
@@ -217,11 +195,11 @@ export class Linker extends Component<LinkerProps, LinkerState> {
     this.setState({ linkInProgress: undefined });
   }
 
-  handleChartColumnSelect(panel: Panel, column: LinkColumn): void {
+  handleChartColumnSelect(panel: PanelComponent, column: LinkColumn): void {
     this.columnSelected(panel, column, true);
   }
 
-  handleFilterColumnSelect(panel: Panel, column: LinkColumn): void {
+  handleFilterColumnSelect(panel: PanelComponent, column: LinkColumn): void {
     log.debug('handleFilterColumnSelect', this.isOverlayShown());
     const {
       links,
@@ -254,7 +232,7 @@ export class Linker extends Component<LinkerProps, LinkerState> {
     this.columnSelected(panel, column, true);
   }
 
-  handleColumnsChanged(panel: Panel, columns: LinkColumn[]): void {
+  handleColumnsChanged(panel: PanelComponent, columns: LinkColumn[]): void {
     log.debug('handleColumnsChanged', panel, columns);
     const { links } = this.props;
     const panelId = LayoutUtils.getIdFromPanel(panel);
@@ -274,7 +252,7 @@ export class Linker extends Component<LinkerProps, LinkerState> {
     this.deleteLinks(linksToDelete);
   }
 
-  handleGridColumnSelect(panel: Panel, column: LinkColumn): void {
+  handleGridColumnSelect(panel: PanelComponent, column: LinkColumn): void {
     this.columnSelected(panel, column);
   }
 
@@ -286,7 +264,7 @@ export class Linker extends Component<LinkerProps, LinkerState> {
    * @param overrideIsolatedLinkerPanelId isolatedLinkerPanelId to use when method is called before prop changes propagate
    */
   columnSelected(
-    panel: Panel,
+    panel: PanelComponent,
     column: LinkColumn,
     isAlwaysEndPoint = false,
     overrideIsolatedLinkerPanelId?: string
@@ -381,13 +359,13 @@ export class Linker extends Component<LinkerProps, LinkerState> {
       const { end } = link;
       const { panelId, columnName, columnType } = end;
       const endPanel = panelManager.getOpenedPanelById(panelId);
-      if (endPanel && endPanel.unsetFilterValue) {
-        endPanel.unsetFilterValue(columnName, columnType);
-      } else if (!endPanel) {
+      if (!endPanel) {
         log.debug(
           'endPanel no longer exists, ignoring unsetFilterValue',
           panelId
         );
+      } else if (isLinkablePanel(endPanel)) {
+        endPanel.unsetFilterValue(columnName, columnType);
       } else {
         log.debug('endPanel.unsetFilterValue not implemented', endPanel);
       }
@@ -403,10 +381,10 @@ export class Linker extends Component<LinkerProps, LinkerState> {
     log.debug('Set filter data for panel:', panelId, filterMap);
     const { panelManager } = this.props;
     const panel = panelManager.getOpenedPanelById(panelId);
-    if (isLinkablePanel(panel)) {
-      panel.setFilterMap(filterMap);
-    } else if (!panel) {
+    if (!panel) {
       log.debug('panel no longer exists, ignoring setFilterMap', panelId);
+    } else if (isLinkablePanel(panel)) {
+      panel.setFilterMap(filterMap);
     } else {
       log.debug('panel.setFilterMap not implemented', panelId, panel);
     }
@@ -457,7 +435,7 @@ export class Linker extends Component<LinkerProps, LinkerState> {
     }
   }
 
-  handleUpdateValues(panel: Panel, dataMap: LinkDataMap): void {
+  handleUpdateValues(panel: PanelComponent, dataMap: LinkDataMap): void {
     const panelId = LayoutUtils.getIdFromPanel(panel);
     const { links, timeZone } = this.props;
     // Map of panel ID to filterMap
@@ -498,7 +476,7 @@ export class Linker extends Component<LinkerProps, LinkerState> {
     });
   }
 
-  handlePanelCloned(panel: Panel, cloneConfig: { id: string }): void {
+  handlePanelCloned(panel: PanelComponent, cloneConfig: { id: string }): void {
     const { links } = this.props;
     const panelId = LayoutUtils.getIdFromPanel(panel);
     const cloneId = cloneConfig.id;
@@ -603,7 +581,10 @@ export class Linker extends Component<LinkerProps, LinkerState> {
     });
   }
 
-  isColumnSelectionValid(panel: Panel, tableColumn?: LinkColumn): boolean {
+  isColumnSelectionValid(
+    panel: PanelComponent,
+    tableColumn?: LinkColumn
+  ): boolean {
     const { linkInProgress } = this.state;
     const { isolatedLinkerPanelId } = this.props;
 

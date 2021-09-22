@@ -23,7 +23,7 @@ import {
 } from '../events';
 import './ConsolePanel.scss';
 import Panel from './Panel';
-import { getSessionWrapper } from '../../../redux';
+import { getSessionWrapper } from '../redux';
 
 const log = Log.module('ConsolePanel');
 

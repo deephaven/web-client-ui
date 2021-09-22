@@ -3,7 +3,8 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { LoadingOverlay } from '@deephaven/components';
 import { setDashboardData as setDashboardDataAction } from '@deephaven/dashboard';
-import { ToolType } from '@deephaven/dashboard-core-plugins';
+import { setSessionWrapper as setSessionWrapperAction } from '@deephaven/dashboard-core-plugins';
+import ToolType from '@deephaven/dashboard-core-plugins/dist/linker/ToolType';
 import { WebdavFileStorage } from '@deephaven/file-explorer';
 import dh from '@deephaven/jsapi-shim';
 import Log from '@deephaven/log';
@@ -18,10 +19,7 @@ import {
   setWorkspaceStorage as setWorkspaceStorageAction,
 } from '@deephaven/redux';
 import { createClient } from 'webdav/web';
-import {
-  setLayoutStorage as setLayoutStorageAction,
-  setSessionWrapper as setSessionWrapperAction,
-} from '../redux/actions';
+import { setLayoutStorage as setLayoutStorageAction } from '../redux/actions';
 import App from './App';
 import PouchCommandHistoryStorage from '../storage/PouchCommandHistoryStorage';
 import LocalWorkspaceStorage from '../storage/LocalWorkspaceStorage';

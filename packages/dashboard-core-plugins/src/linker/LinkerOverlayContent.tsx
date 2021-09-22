@@ -3,14 +3,16 @@ import classNames from 'classnames';
 import { ContextActions, GLOBAL_SHORTCUTS } from '@deephaven/components';
 import { LayoutUtils, PanelManager } from '@deephaven/dashboard';
 import Log from '@deephaven/log';
-import { Link, LinkPoint } from './LinkerUtils';
+import {
+  isLinkableFromPanel,
+  Link,
+  LinkerCoordinate,
+  LinkPoint,
+} from './LinkerUtils';
 import LinkerLink from './LinkerLink';
 import './LinkerOverlayContent.scss';
 
 const log = Log.module('LinkerOverlayContent');
-
-// [x,y] screen coordinates used by the Linker
-export type LinkerCoordinate = [number, number];
 
 export type VisibleLink = {
   x1: number;
@@ -76,7 +78,7 @@ export class LinkerOverlayContent extends Component<
     const { panelId, columnName } = linkPoint;
     const panel = panelManager.getOpenedPanelById(panelId);
     if (panel != null) {
-      if (!panel.getCoordinateForColumn) {
+      if (!isLinkableFromPanel(panel)) {
         throw new Error(
           `Panel does not have getCoordinateForColumn method: ${panelId}`
         );

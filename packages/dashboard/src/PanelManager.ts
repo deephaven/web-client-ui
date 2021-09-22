@@ -1,18 +1,18 @@
-import { Component } from 'react';
-import { ConnectedComponent } from 'react-redux';
+import { ComponentType } from 'react';
 import GoldenLayout, { ReactComponentConfig } from '@deephaven/golden-layout';
 import Log from '@deephaven/log';
 import PanelEvent from './PanelEvent';
 import LayoutUtils from './layout/LayoutUtils';
+import { PanelComponent, PanelProps } from './DashboardPlugin';
 
 const log = Log.module('PanelManager');
 
-export type HydrateFunction = (
+export type PanelHydraterFunction = (
   name: string,
-  props: Record<string, unknown>
-) => Record<string, unknown>;
+  props: PanelProps
+) => PanelProps;
 
-export type DehydrateFunction = (
+export type PanelDehydraterFunction = (
   name: string,
   config: ReactComponentConfig
 ) => ReactComponentConfig;
@@ -21,9 +21,7 @@ export type ClosedPanel = ReactComponentConfig;
 
 export type ClosedPanels = ClosedPanel[];
 
-export type OpenedPanel = Component<{ glContainer: GoldenLayout.Container }>;
-
-export type OpenedPanelMap = Map<string, OpenedPanel>;
+export type OpenedPanelMap = Map<string, PanelComponent>;
 
 export type PanelsUpdateData = {
   closed: ClosedPanels;
@@ -31,17 +29,6 @@ export type PanelsUpdateData = {
 };
 
 export type PanelsUpdateCallback = (panelUpdateData: PanelsUpdateData) => void;
-
-type ConnectedComponentType = ConnectedComponent<
-  typeof Component,
-  Record<string, unknown>
->;
-
-function isConnectedType(
-  type: typeof Component | ConnectedComponentType
-): type is ConnectedComponentType {
-  return (type as ConnectedComponentType).WrappedComponent !== undefined;
-}
 
 /**
  * Class to keep track of which panels are open, have been closed, and also events to close panels.
@@ -51,9 +38,9 @@ class PanelManager {
 
   layout: GoldenLayout;
 
-  hydrateComponent: HydrateFunction;
+  hydrateComponent: PanelHydraterFunction;
 
-  dehydrateComponent: DehydrateFunction;
+  dehydrateComponent: PanelDehydraterFunction;
 
   onPanelsUpdated: PanelsUpdateCallback;
 
@@ -71,8 +58,8 @@ class PanelManager {
    */
   constructor(
     layout: GoldenLayout,
-    hydrateComponent: HydrateFunction = (name, props) => props,
-    dehydrateComponent: DehydrateFunction = (name, config) => config,
+    hydrateComponent: PanelHydraterFunction = (name, props) => props,
+    dehydrateComponent: PanelDehydraterFunction = (name, config) => config,
     openedMap: OpenedPanelMap = new Map(),
     closed: ClosedPanel[] = [],
     onPanelsUpdated: PanelsUpdateCallback = () => undefined
@@ -128,7 +115,7 @@ class PanelManager {
     return this.closed.filter(panel => panel.component === typeString);
   }
 
-  getOpenedPanels(): OpenedPanel[] {
+  getOpenedPanels(): PanelComponent[] {
     return Array.from(this.openedMap.values());
   }
 
@@ -147,7 +134,7 @@ class PanelManager {
     );
   }
 
-  getOpenedPanelById(panelId: string): OpenedPanel | undefined {
+  getOpenedPanelById(panelId: string): PanelComponent | undefined {
     return this.openedMap.get(panelId);
   }
 
@@ -161,33 +148,25 @@ class PanelManager {
     );
   }
 
-  getLastUsedPanel(
-    matcher: (panel: OpenedPanel) => boolean
-  ): OpenedPanel | undefined {
+  getLastUsedPanel<T extends PanelComponent = PanelComponent>(
+    matcher: (panel: PanelComponent) => boolean
+  ): T | undefined {
     const opened = this.getOpenedPanels();
     for (let i = opened.length - 1; i >= 0; i -= 1) {
       const panel = opened[i];
       if (matcher == null || matcher(panel)) {
-        return panel;
+        return panel as T;
       }
     }
 
     return undefined;
   }
 
-  getLastUsedPanelOfType(
-    type: typeof Component | ConnectedComponentType
-  ): OpenedPanel | undefined {
-    if (isConnectedType(type)) {
-      return this.getLastUsedPanel(
-        panel => type.WrappedComponent && panel instanceof type.WrappedComponent
-      );
-    }
-
+  getLastUsedPanelOfType(type: ComponentType): PanelComponent | undefined {
     return this.getLastUsedPanel(panel => panel instanceof type);
   }
 
-  updatePanel(panel: OpenedPanel): void {
+  updatePanel(panel: PanelComponent): void {
     const panelId = LayoutUtils.getIdFromPanel(panel);
     if (!panelId) {
       log.error('updatePanel Panel did not have an ID', panel);
@@ -201,7 +180,7 @@ class PanelManager {
     this.openedMap.set(panelId, panel);
   }
 
-  removePanel(panel: OpenedPanel): void {
+  removePanel(panel: PanelComponent): void {
     const panelId = LayoutUtils.getIdFromPanel(panel);
     if (!panelId) {
       log.error('removePanel Panel did not have an ID', panel);
@@ -237,18 +216,18 @@ class PanelManager {
     }
   }
 
-  handleFocus(panel: OpenedPanel): void {
+  handleFocus(panel: PanelComponent): void {
     log.debug2('Focus: ', panel);
     this.updatePanel(panel);
   }
 
-  handleMount(panel: OpenedPanel): void {
+  handleMount(panel: PanelComponent): void {
     log.debug2('Mount: ', panel);
     this.updatePanel(panel);
     this.sendUpdate();
   }
 
-  handleUnmount(panel: OpenedPanel): void {
+  handleUnmount(panel: PanelComponent): void {
     log.debug2('Unmount: ', panel);
     this.removePanel(panel);
     this.sendUpdate();
