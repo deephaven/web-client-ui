@@ -17,7 +17,7 @@ const ChartFilterOverlay = ({
   waitingInputMap,
 }) => {
   const inputMessage = useMemo(() => {
-    const waitingColumns = [...waitingInputMap.keys()];
+    const waitingColumns = Array.from(waitingInputMap.keys());
     const needsInputFilterValue = waitingColumns.find(
       columnName => inputFilterMap.get(columnName) != null
     );
@@ -34,14 +34,14 @@ const ChartFilterOverlay = ({
     return `Double click a row in a linked table to set a value for ${columnsText}`;
   }, [inputFilterMap, linkedColumnMap, waitingInputMap]);
 
-  const columns = useMemo(() => [...columnMap.values()], [columnMap]);
+  const columns = useMemo(() => Array.from(columnMap.values()), [columnMap]);
 
   const handleAddClick = useCallback(
     event => {
       event.stopPropagation();
       event.preventDefault();
 
-      onAdd([...waitingFilterMap.values()]);
+      onAdd(Array.from(waitingFilterMap.values()));
     },
     [onAdd, waitingFilterMap]
   );

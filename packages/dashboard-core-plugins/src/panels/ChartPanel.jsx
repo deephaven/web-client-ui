@@ -258,7 +258,7 @@ export class ChartPanel extends Component {
 
   getSelectorColumns = memoize(
     (columnMap, linkedColumnMap, columnSelectionValidator) =>
-      [...columnMap.values()].map(column => ({
+      Array.from(columnMap.values()).map(column => ({
         name: column.name,
         type: column.type,
         isValid: columnSelectionValidator
@@ -466,7 +466,7 @@ export class ChartPanel extends Component {
       panelState: {
         settings,
         tableSettings,
-        filterValueMap: [...filterValueMap],
+        filterValueMap: Array.from(filterValueMap),
       },
     });
   }
@@ -557,9 +557,11 @@ export class ChartPanel extends Component {
       return;
     }
     const { glEventHub } = this.props;
-    glEventHub.emit(InputFilterEvent.COLUMNS_CHANGED, this, [
-      ...model.getFilterColumnMap().values(),
-    ]);
+    glEventHub.emit(
+      InputFilterEvent.COLUMNS_CHANGED,
+      this,
+      Array.from(model.getFilterColumnMap().values())
+    );
   }
 
   getCoordinateForColumn(columnName) {
@@ -759,7 +761,9 @@ export class ChartPanel extends Component {
     if (filterMap.size > 0 && waitingInputMap.size === 0) {
       const defaultTitle = model.getDefaultTitle();
       const filterTitle = TextUtils.join(
-        [...filterMap.entries()].map(([name, value]) => `${name}: ${value}`)
+        Array.from(filterMap.entries()).map(
+          ([name, value]) => `${name}: ${value}`
+        )
       );
       if (defaultTitle) {
         model.setTitle(

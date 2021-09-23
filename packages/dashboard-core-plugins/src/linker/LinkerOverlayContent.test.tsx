@@ -1,27 +1,13 @@
 import React from 'react';
 import { mount } from 'enzyme';
 import { PanelManager } from '@deephaven/dashboard';
+import GoldenLayout from '@deephaven/golden-layout';
 import LinkerOverlayContent from './LinkerOverlayContent';
 
 const LINKER_OVERLAY_MESSAGE = 'TEST_MESSAGE';
 
-function makeEventHub() {
-  const callbacks: Record<string, (arg: unknown) => void> = {};
-  return {
-    on: jest.fn((eventName, callback) => {
-      callbacks[eventName] = callback;
-    }),
-    emit: jest.fn((eventName, arg) => {
-      callbacks[eventName](arg);
-    }),
-    off: jest.fn(eventName => {
-      delete callbacks[eventName];
-    }),
-  };
-}
-
 function makeLayout() {
-  return { eventHub: makeEventHub() };
+  return new GoldenLayout({});
 }
 
 function makePanelManager(layout = makeLayout()) {
