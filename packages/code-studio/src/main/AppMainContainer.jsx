@@ -427,6 +427,7 @@ export class AppMainContainer extends Component {
     const { session } = this.props;
     return {
       ...props,
+      getDownloadWorker: DownloadServiceWorkerUtils.getServiceWorker,
       localDashboardId: id,
       makeModel: () => createGridModel(session, props.metadata),
     };
