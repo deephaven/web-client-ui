@@ -12,10 +12,14 @@ import { IrisGridPanel } from './panels';
 import { IrisGridEvent } from './events';
 
 export type GridPluginComponentProps = DashboardPluginComponentProps & {
+  getDownloadWorker?: () => Promise<ServiceWorker>;
+  loadPlugin?: (name: string) => ReturnType<typeof React.forwardRef>;
   hydrate: PanelHydrateFunction;
 };
 
 export const GridPlugin = ({
+  getDownloadWorker,
+  loadPlugin,
   id,
   layout,
   registerComponent,
@@ -33,6 +37,8 @@ export const GridPlugin = ({
         type: 'react-component',
         component: IrisGridPanel.COMPONENT,
         props: {
+          getDownloadWorker,
+          loadPlugin,
           localDashboardId: id,
           id: panelId,
           metadata,
@@ -45,7 +51,7 @@ export const GridPlugin = ({
       const { root } = layout;
       LayoutUtils.openComponent({ root, config, dragEvent });
     },
-    [id, layout]
+    [getDownloadWorker, id, layout, loadPlugin]
   );
 
   const handleClose = useCallback(

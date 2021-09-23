@@ -33,10 +33,8 @@ import {
   IrisGridEvent,
 } from '../events';
 import { UIPropTypes } from '../prop-types';
-import { PluginUtils } from '../../../plugins';
 import WidgetPanel from './WidgetPanel';
 import './IrisGridPanel.scss';
-import DownloadServiceWorkerUtils from '../../../DownloadServiceWorkerUtils';
 
 const log = Log.module('IrisGridPanel');
 
@@ -495,7 +493,7 @@ export class IrisGridPanel extends PureComponent {
   }
 
   modelInitialized(model) {
-    const { glEventHub } = this.props;
+    const { glEventHub, loadPlugin } = this.props;
 
     this.modelPromise = null;
 
@@ -506,8 +504,8 @@ export class IrisGridPanel extends PureComponent {
 
     const { table } = model;
     const { pluginName } = table;
-    if (pluginName) {
-      const Plugin = PluginUtils.loadPlugin(pluginName);
+    if (loadPlugin && pluginName) {
+      const Plugin = loadPlugin(pluginName);
       this.setState({ Plugin });
     }
     glEventHub.emit(InputFilterEvent.TABLE_CHANGED, this, table);
@@ -770,9 +768,10 @@ export class IrisGridPanel extends PureComponent {
       glContainer,
       glEventHub,
       columnSelectionValidator,
-      metadata,
+      getDownloadWorker,
       inputFilters,
       links,
+      metadata,
       panelState,
       user,
       workspace,
@@ -885,7 +884,7 @@ export class IrisGridPanel extends PureComponent {
             customFilters={pluginFilters}
             pendingDataMap={pendingDataMap}
             ref={this.irisGrid}
-            getDownloadWorker={DownloadServiceWorkerUtils.getServiceWorker}
+            getDownloadWorker={getDownloadWorker}
           >
             {childrenContent}
           </IrisGrid>
@@ -927,6 +926,12 @@ IrisGridPanel.propTypes = {
   onPanelStateUpdate: PropTypes.func,
   user: APIPropTypes.User.isRequired,
   workspace: PropTypes.shape({}).isRequired,
+
+  // Retrieve a download worker for optimizing exporting tables
+  getDownloadWorker: PropTypes.func,
+
+  // Load a plugin defined by the table
+  loadPlugin: PropTypes.func,
 };
 
 IrisGridPanel.defaultProps = {
@@ -935,6 +940,8 @@ IrisGridPanel.defaultProps = {
   columnSelectionValidator: null,
   onStateChange: () => {},
   onPanelStateUpdate: () => {},
+  getDownloadWorker: undefined,
+  loadPlugin: undefined,
 };
 
 IrisGridPanel.displayName = 'IrisGridPanel';

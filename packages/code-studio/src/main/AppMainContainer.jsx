@@ -49,6 +49,8 @@ import WidgetList from './WidgetList';
 import { createChartModel, createGridModel } from './WidgetUtils';
 import EmptyDashboard from './EmptyDashboard';
 import UserLayoutUtils from './UserLayoutUtils';
+import DownloadServiceWorkerUtils from '../DownloadServiceWorkerUtils';
+import { PluginUtils } from '../plugins';
 
 const log = Log.module('AppMainContainer');
 
@@ -573,7 +575,11 @@ export class AppMainContainer extends Component {
           onGoldenLayoutChange={this.handleGoldenLayoutChange}
           onLayoutConfigChange={this.handleLayoutConfigChange}
         >
-          <GridPlugin hydrate={this.hydrateGrid} />
+          <GridPlugin
+            hydrate={this.hydrateGrid}
+            getDownloadWorker={DownloadServiceWorkerUtils.getServiceWorker}
+            loadPlugin={PluginUtils.loadPlugin}
+          />
           <ChartPlugin hydrate={this.hydrateChart} />
           <ConsolePlugin />
           <FilterPlugin />

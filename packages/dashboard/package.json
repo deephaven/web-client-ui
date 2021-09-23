@@ -50,6 +50,7 @@
     "@deephaven/components": "^0.3.2",
     "@deephaven/golden-layout": "^0.3.2",
     "@deephaven/log": "^0.3.2",
+    "@deephaven/mocks": "^0.3.2",
     "@deephaven/react-hooks": "^0.3.2",
     "@deephaven/redux": "^0.3.2",
     "@deephaven/tsconfig": "^0.3.2",

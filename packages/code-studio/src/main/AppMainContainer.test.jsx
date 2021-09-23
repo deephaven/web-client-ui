@@ -1,6 +1,6 @@
 import React from 'react';
 import { shallow } from 'enzyme';
-import { ToolType } from '@deephaven/dashboard-core-plugins';
+import ToolType from '@deephaven/dashboard-core-plugins/dist/linker/ToolType';
 import dh from '@deephaven/jsapi-shim';
 import { AppMainContainer } from './AppMainContainer';
 import LocalWorkspaceStorage from '../storage/LocalWorkspaceStorage';

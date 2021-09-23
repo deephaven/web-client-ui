@@ -37,7 +37,7 @@ $dash-size: 10;
     fill: transparent;
     stroke: transparent;
     pointer-events: stroke;
-    cursor: url('./cursor-unlinker.svg') 8 8, pointer;
+    cursor: pointer;
   }
 
   .link-filter-source {
