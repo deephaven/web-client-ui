@@ -18,17 +18,17 @@ jobs:
       - name: Get changelog
         env: 
           GITHUB_AUTH: ${{ secrets.GITHUB_TOKEN }}
-        run: npx lerna-changelog --next-version=${{ github.event.inputs.version }} > /tmp/changelog.md
+        run: npx lerna-changelog --next-version=${{ github.event.inputs.version }} # > /tmp/changelog.md
         # lerna version will bump the version, tag it and push the branch
-      - name: Bump version
-        run: npx lerna version ${{ github.event.inputs.version }} --yes
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          # With a tag_name specified, it creates a release pointing to that commit
-          tag_name: ${{ github.event.inputs.version }}
-          release_name: ${{ github.event.inputs.version }}
-          body_path: /tmp/changelog.md
+      # - name: Bump version
+      #   run: npx lerna version ${{ github.event.inputs.version }} --yes
+      # - name: Create Release
+      #   id: create_release
+      #   uses: actions/create-release@v1
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #   with:
+      #     # With a tag_name specified, it creates a release pointing to that commit
+      #     tag_name: ${{ github.event.inputs.version }}
+      #     release_name: ${{ github.event.inputs.version }}
+      #     body_path: /tmp/changelog.md
