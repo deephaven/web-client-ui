@@ -1,7 +1,7 @@
-name: Node.js Publish Packages
+name: Publish Packages
 on: workflow_dispatch
 jobs:
-  build:
+  publish-packages:
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -13,6 +13,7 @@ jobs:
       - uses: actions/setup-node@v2
         with:
           node-version: '12.x'
+          registry-url: 'https://registry.npmjs.org'
       - run: npm install
       - run: npm run build
       - run: ./node_modules/.bin/lerna publish --yes

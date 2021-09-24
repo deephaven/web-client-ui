@@ -1,0 +1,34 @@
+name: Create Release
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version number for this release (eg. v0.1.2)'
+        required: true
+jobs:
+  create-release:
+    runs-on: ubuntu-latest
+    name: Create Release
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        env:
+          # lerna-changelog uses the env var GITHUB_AUTH for authentication
+          GITHUB_AUTH: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          node-version: '12.x'
+        # Get the changelog and write it out to a file so it can be used by the create-release step later
+      - run: npx lerna-changelog --next-version=${{ github.event.inputs.version }} > /tmp/changelog.md
+        # lerna version will bump the version, tag it and push the branch
+      - run: npx lerna version ${{ github.event.inputs.version }} --yes
+      - name: Create Release
+        id: create_release
+        uses: actions/checkout@v2
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          # With a tag_name specified, it creates a release pointing to that commit
+          tag_name: ${{ github.event.inputs.version }}
+          release_name: ${{ github.event.inputs.version }}
+          body_path: /tmp/changelog.md
