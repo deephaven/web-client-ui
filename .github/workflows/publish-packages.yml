@@ -1,4 +1,4 @@
-name: Node.js Publish Packages
+name: Publish Packages
 on: workflow_dispatch
 jobs:
   publish-packages:
