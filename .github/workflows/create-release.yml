@@ -12,13 +12,10 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v2
-        env:
-          # lerna-changelog uses the env var GITHUB_AUTH for authentication
-          GITHUB_AUTH: ${{ secrets.GITHUB_TOKEN }}
         with:
           node-version: '12.x'
         # Get the changelog and write it out to a file so it can be used by the create-release step later
-      - run: npx lerna-changelog --next-version=${{ github.event.inputs.version }} # > /tmp/changelog.md
+      - run: GITHUB_AUTH=${{ secrets.GITHUB_TOKEN }} npx lerna-changelog --next-version=${{ github.event.inputs.version }} # > /tmp/changelog.md
         # lerna version will bump the version, tag it and push the branch
       # - run: npx lerna version ${{ github.event.inputs.version }} --yes
       # - name: Create Release
