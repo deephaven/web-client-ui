@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { dhCheckSquare, vsWarning } from '@deephaven/icons';
+import { vsPass, vsWarning } from '@deephaven/icons';
 import { Button, LoadingSpinner } from '@deephaven/components';
 import { usePrevious } from '@deephaven/react-hooks';
 import IrisGridBottomBar from './IrisGridBottomBar';
@@ -16,6 +16,7 @@ export type PendingDataBottomBarProps = {
   discardTooltip?: string;
   saveTooltip?: string;
   isSaving?: boolean;
+  error?: string;
   pendingDataErrors: Map<number, Error[]>;
   pendingDataMap: Map<number, { data: Map<number, { value: unknown }> }>;
   onEntering?: () => void;
@@ -30,6 +31,7 @@ export const PendingDataBottomBar = ({
   onDiscard,
   discardTooltip,
   saveTooltip,
+  error,
   pendingDataErrors,
   pendingDataMap,
   onEntering,
@@ -41,9 +43,9 @@ export const PendingDataBottomBar = ({
   const [wasSuccessShown, setWasSuccessShown] = useState(false);
   const successTimeout = useRef<ReturnType<typeof setTimeout>>();
   const prevIsSaving = usePrevious(isSaving);
-  const error = useMemo(() => {
+  const errorMessage = useMemo(() => {
     if (pendingDataErrors.size === 0) {
-      return null;
+      return error;
     }
     if (pendingDataErrors.size <= MAX_NUMBER_ROWS_SHOWN) {
       return `Key can't be empty (on pending row${
@@ -51,17 +53,17 @@ export const PendingDataBottomBar = ({
       } ${Array.from(pendingDataErrors.keys()).join(', ').trim()})`;
     }
     return `Key can't be empty (on ${pendingDataErrors.size} rows)`;
-  }, [pendingDataErrors]);
+  }, [error, pendingDataErrors]);
 
   useEffect(() => {
-    if (prevIsSaving && !isSaving && error == null) {
+    if (prevIsSaving && !isSaving && errorMessage == null) {
       setIsSuccessShown(true);
       setWasSuccessShown(true);
       successTimeout.current = setTimeout(() => {
         setIsSuccessShown(false);
       }, HIDE_TIMEOUT);
     }
-  }, [error, isSaving, prevIsSaving]);
+  }, [errorMessage, isSaving, prevIsSaving]);
 
   useEffect(() => {
     if (successTimeout.current && pendingDataMap.size > 0) {
@@ -83,13 +85,13 @@ export const PendingDataBottomBar = ({
   if (isSaving) {
     commitIcon = <LoadingSpinner />;
   } else if (wasSuccessShown) {
-    commitIcon = dhCheckSquare;
+    commitIcon = vsPass;
   }
 
   return (
     <IrisGridBottomBar
       className="pending-data-bottom-bar"
-      isShown={pendingRowCount > 0 || isSuccessShown}
+      isShown={pendingRowCount > 0 || isSuccessShown || errorMessage != null}
       onEntering={onEntering}
       onEntered={onEntered}
       onExiting={onExiting}
@@ -100,13 +102,13 @@ export const PendingDataBottomBar = ({
         }
       }}
     >
-      {error && (
+      {errorMessage && (
         <div className="error-message">
           <FontAwesomeIcon icon={vsWarning} />
-          <span>{`${error}`}</span>
+          <span>{`${errorMessage}`}</span>
         </div>
       )}
-      {!error && (
+      {!errorMessage && (
         <div className="status-message">
           {pendingRowCount > 0 && (
             <span>{`${pendingRowCount} row${
@@ -125,7 +127,7 @@ export const PendingDataBottomBar = ({
           kind={wasSuccessShown ? 'success' : 'primary'}
           onClick={onSave}
           icon={commitIcon}
-          disabled={isSaving || wasSuccessShown || error != null}
+          disabled={isSaving || wasSuccessShown || errorMessage != null}
           tooltip={saveTooltip}
         >
           {isSaving && `Committing...`}
