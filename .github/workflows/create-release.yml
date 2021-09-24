@@ -11,6 +11,8 @@ jobs:
     name: Create Release
     steps:
       - uses: actions/checkout@v2
+        with:
+          fetch-depth: '0' # This action defaults to only getting the latest commit. Setting to 0 makes it retrieve the full git commit history
       - uses: actions/setup-node@v2
         with:
           node-version: '12.x'
