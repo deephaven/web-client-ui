@@ -1,6 +1,6 @@
 import React from 'react';
 import './PanelPlaceholder.scss';
-import { LayoutUtils } from '@deephaven/dashboard';
+import LayoutUtils from './layout/LayoutUtils';
 
 /**
  * Displays a placeholder for unregistered panel types.

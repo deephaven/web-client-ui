@@ -232,12 +232,6 @@ lm.utils.copy(lm.LayoutManager.prototype, {
    * @returns {Function}
    */
   getComponent: function (name) {
-    if (this._components[name] === undefined) {
-      throw new lm.errors.ConfigurationError(
-        'Unknown component "' + name + '"'
-      );
-    }
-
     return this._components[name];
   },
 

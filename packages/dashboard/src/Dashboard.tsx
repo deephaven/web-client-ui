@@ -9,6 +9,7 @@ import throttle from 'lodash.throttle';
 import GoldenLayout, { ItemConfigType } from '@deephaven/golden-layout';
 import './layout/golden-layout';
 import LayoutUtils from './layout/LayoutUtils';
+import PanelPlaceholder from './PanelPlaceholder';
 import DashboardLayout from './DashboardLayout';
 
 const RESIZE_THROTTLE = 100;
@@ -34,7 +35,7 @@ export const Dashboard = ({
   layoutSettings = EMPTY_OBJECT,
   onLayoutConfigChange = DEFAULT_CALLBACK,
   onGoldenLayoutChange = DEFAULT_CALLBACK,
-  fallbackComponent = undefined,
+  fallbackComponent = PanelPlaceholder,
 }: DashboardProps): JSX.Element => {
   const layoutElement = useRef<HTMLDivElement>(null);
   const [isInitialized, setIsInitialized] = useState(false);
