@@ -12,6 +12,7 @@ const log = Log.module('ContextActions');
 
 interface ContextActionsProps {
   actions: ContextAction[] | (() => ContextAction[]);
+  ignoreClassNames?: string[];
 }
 
 interface ContextActionsState {
@@ -143,6 +144,23 @@ class ContextActions extends Component<
   container: React.RefObject<HTMLDivElement>;
 
   handleContextMenu(e: MouseEvent): void {
+    const { ignoreClassNames = [] } = this.props;
+    if (ignoreClassNames.length > 0) {
+      let el = e.target as Element | null;
+      while (el != null) {
+        const { classList } = el;
+        const ignoredClassName = ignoreClassNames.find(className =>
+          classList.contains(className)
+        );
+        if (ignoredClassName !== undefined) {
+          log.debug2(
+            `Contextmenu event ignored based on the target className "${ignoredClassName}"`
+          );
+          return;
+        }
+        el = el.parentElement;
+      }
+    }
     if (!ContextActionUtils.isContextActionEvent(e)) {
       (e as ContextActionEvent).contextActions = [];
     }

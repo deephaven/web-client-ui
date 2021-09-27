@@ -883,7 +883,10 @@ export class Console extends PureComponent {
             />
           )}
         </div>
-        <ContextActions actions={contextActions} />
+        <ContextActions
+          actions={contextActions}
+          ignoreClassNames={[ConsoleInput.INPUT_CLASS_NAME]}
+        />
       </div>
     );
   }
