@@ -1,5 +1,6 @@
 import React, {
-  ComponentType,
+  ForwardRefExoticComponent,
+  RefAttributes,
   useEffect,
   useMemo,
   useRef,
@@ -25,7 +26,7 @@ export type DashboardProps = {
   layoutSettings?: Record<string, unknown>;
   onLayoutConfigChange?: () => void;
   onGoldenLayoutChange?: (goldenLayout: GoldenLayout) => void;
-  fallbackComponent?: ComponentType;
+  fallbackComponent?: ForwardRefExoticComponent<RefAttributes<unknown>>;
 };
 
 export const Dashboard = ({
