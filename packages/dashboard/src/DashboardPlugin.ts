@@ -33,8 +33,8 @@ export type DashboardPluginComponentProps = {
   registerComponent: (
     name: string,
     ComponentType: ComponentType,
-    hydrate?: (props: PanelProps) => PanelProps,
-    dehydrate?: (config: PanelConfig) => PanelConfig | null
+    hydrate?: (props: PanelProps, dashboardId: string) => PanelProps,
+    dehydrate?: (config: PanelConfig, dashboardId: string) => PanelConfig | null
   ) => DeregisterComponentFn;
 };
 

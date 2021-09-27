@@ -112,7 +112,7 @@ export const DashboardLayout = ({
     [hydrateMap, id]
   );
   const dehydrateComponent = useCallback(
-    (name, props) => dehydrateMap.get(name)?.(props, id),
+    (name, config) => dehydrateMap.get(name)?.(config, id),
     [dehydrateMap, id]
   );
   const panelManager = useMemo(
@@ -145,7 +145,8 @@ export const DashboardLayout = ({
     const glConfig = layout.toConfig();
     const contentConfig = glConfig.content;
     const dehydratedLayoutConfig = LayoutUtils.dehydrateLayoutConfig(
-      contentConfig
+      contentConfig,
+      dehydrateComponent
     );
     const hasChanged =
       lastConfig == null ||
@@ -163,7 +164,7 @@ export const DashboardLayout = ({
 
       onLayoutChange(dehydratedLayoutConfig);
     }
-  }, [isItemDragging, lastConfig, layout, onLayoutChange]);
+  }, [dehydrateComponent, isItemDragging, lastConfig, layout, onLayoutChange]);
 
   const handleLayoutItemPickedUp = useCallback(() => {
     setIsItemDragging(true);

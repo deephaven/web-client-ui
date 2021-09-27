@@ -210,35 +210,13 @@ class LayoutUtils {
     return null;
   }
 
-  static dehydratePanelConfig(config) {
-    const { props = {}, componentState } = config;
-    const { metadata = null } = props;
-    let { panelState = null } = props;
-    if (componentState) {
-      ({ panelState } = componentState);
-    }
-    const newProps = {};
-    if (metadata) {
-      newProps.metadata = metadata;
-    }
-    if (panelState) {
-      newProps.panelState = panelState;
-    }
-
-    return {
-      ...config,
-      componentState: null,
-      props: newProps,
-      type: 'react-component',
-    };
-  }
-
   /**
    * Removes dynamic props from components in the given config so this config could be serialized
    * @param {Array} config Config object
+   * @param {(name: string, config: PanelConfig) => PanelConfig | null}
    * @returns {Array} Dehydrated config
    */
-  static dehydrateLayoutConfig(config) {
+  static dehydrateLayoutConfig(config, dehydrateComponent) {
     if (!config || !config.length) {
       return [];
     }
@@ -248,11 +226,21 @@ class LayoutUtils {
       const itemConfig = config[i];
       const { component, content } = itemConfig;
       if (component) {
-        dehydratedConfig.push(LayoutUtils.dehydratePanelConfig(itemConfig));
+        const dehydratedComponent = dehydrateComponent(component, itemConfig);
+        if (dehydratedComponent) {
+          dehydratedConfig.push(dehydratedComponent);
+        } else {
+          log.debug2(
+            `dehydrateLayoutConfig: skipping unmapped component "${component}"`
+          );
+        }
       } else if (content) {
         const layoutItemConfig = {
           ...itemConfig,
-          content: LayoutUtils.dehydrateLayoutConfig(content),
+          content: LayoutUtils.dehydrateLayoutConfig(
+            content,
+            dehydrateComponent
+          ),
         };
         dehydratedConfig.push(layoutItemConfig);
       } else {
