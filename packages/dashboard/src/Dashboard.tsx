@@ -12,6 +12,7 @@ import './layout/golden-layout';
 import LayoutUtils from './layout/LayoutUtils';
 import PanelPlaceholder from './PanelPlaceholder';
 import DashboardLayout from './DashboardLayout';
+import './Dashboard.scss';
 
 const RESIZE_THROTTLE = 100;
 
@@ -22,6 +23,7 @@ const EMPTY_OBJECT = Object.freeze({});
 export type DashboardProps = {
   id?: string;
   children?: React.ReactNode | React.ReactNode[];
+  emptyDashboard?: React.ReactNode;
   layoutConfig?: ItemConfigType[];
   layoutSettings?: Record<string, unknown>;
   onLayoutConfigChange?: () => void;
@@ -32,6 +34,7 @@ export type DashboardProps = {
 export const Dashboard = ({
   id = 'default',
   children,
+  emptyDashboard,
   layoutConfig,
   layoutSettings = EMPTY_OBJECT,
   onLayoutConfigChange = DEFAULT_CALLBACK,
@@ -107,6 +110,7 @@ export const Dashboard = ({
       <div className="w-100 h-100" ref={layoutElement} />
       {isInitialized && layout && (
         <DashboardLayout
+          emptyDashboard={emptyDashboard}
           id={id}
           layout={layout}
           layoutConfig={layoutConfig}

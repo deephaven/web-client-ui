@@ -38,6 +38,7 @@ const FALLBACK_CALLBACK = (props: unknown) => props;
 type DashboardData = {
   closed?: ClosedPanels;
 };
+
 interface DashboardLayoutProps {
   id: string;
   layout: GoldenLayout;
@@ -45,6 +46,7 @@ interface DashboardLayoutProps {
   onLayoutChange?: (dehydratedLayout: DashboardLayoutConfig) => void;
   data?: DashboardData;
   children?: React.ReactNode | React.ReactNode[];
+  emptyDashboard?: React.ReactNode;
 }
 
 /**
@@ -53,6 +55,7 @@ interface DashboardLayoutProps {
 export const DashboardLayout = ({
   id,
   children,
+  emptyDashboard = <div>Dashboard is empty.</div>,
   layout,
   layoutConfig = DEFAULT_LAYOUT_CONFIG,
   onLayoutChange = DEFAULT_CALLBACK,
@@ -61,6 +64,7 @@ export const DashboardLayout = ({
   const data =
     useSelector(state => getDashboardData(state, id)) ?? EMPTY_OBJECT;
 
+  const [isDashboardEmpty, setIsDashboardEmpty] = useState(false);
   const [isItemDragging, setIsItemDragging] = useState(false);
   const [lastConfig, setLastConfig] = useState<DashboardLayoutConfig>();
   const [initialClosedPanels] = useState(data?.closed ?? []);
@@ -163,6 +167,8 @@ export const DashboardLayout = ({
     );
 
     if (hasChanged) {
+      setIsDashboardEmpty(layout.root.contentItems.length === 0);
+
       setLastConfig(dehydratedLayoutConfig);
 
       onLayoutChange(dehydratedLayoutConfig);
@@ -219,7 +225,7 @@ export const DashboardLayout = ({
         layout.root.addChild(content[i]);
       }
 
-      // TODO: Wire up empty dashboard?
+      setIsDashboardEmpty(layout.root.contentItems.length === 0);
     }
   }, [
     hydrateComponent,
@@ -232,6 +238,7 @@ export const DashboardLayout = ({
 
   return (
     <>
+      {isDashboardEmpty && emptyDashboard}
       {React.Children.map(children, child =>
         child
           ? React.cloneElement(child as ReactElement, {
@@ -250,6 +257,7 @@ DashboardLayout.propTypes = {
   id: PropTypes.string.isRequired,
   children: PropTypes.node,
   data: PropTypes.shape({}),
+  emptyDashboard: PropTypes.node,
   layout: GLPropTypes.Layout.isRequired,
   layoutConfig: PropTypes.arrayOf(PropTypes.shape({})),
   onLayoutChange: PropTypes.func,
