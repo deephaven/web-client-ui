@@ -17,19 +17,21 @@ import { ThemeExport } from '@deephaven/components';
 import Log from '@deephaven/log';
 import {
   getActiveTool,
-  getColumnSelectionValidatorForDashboard,
-  getInputFiltersForDashboard,
-  getIsolatedLinkerPanelIdForDashboard,
-  getLinksForDashboard,
-  getTableMapForDashboard,
   setActiveTool as setActiveToolAction,
-  setDashboardIsolatedLinkerPanelId as setDashboardIsolatedLinkerPanelIdAction,
 } from '@deephaven/redux';
 import { Pending, PromiseUtils, TextUtils } from '@deephaven/utils';
 import WidgetPanel from './WidgetPanel';
 import ToolType from '../linker/ToolType';
 import { UIPropTypes } from '../prop-types';
 import { InputFilterEvent, ChartEvent } from '../events';
+import {
+  getColumnSelectionValidatorForDashboard,
+  getInputFiltersForDashboard,
+  getIsolatedLinkerPanelIdForDashboard,
+  getLinksForDashboard,
+  getTableMapForDashboard,
+  setDashboardIsolatedLinkerPanelId as setDashboardIsolatedLinkerPanelIdAction,
+} from '../redux';
 import ChartFilterOverlay from './ChartFilterOverlay';
 import ChartColumnSelectorOverlay from './ChartColumnSelectorOverlay';
 import './ChartPanel.scss';

@@ -28,7 +28,7 @@ import debounce from 'lodash.debounce';
 import Log from '@deephaven/log';
 import { Pending, PromiseUtils } from '@deephaven/utils';
 import { ConsoleEvent, NotebookEvent } from '../events';
-import { getSessionWrapper } from '../redux';
+import { getDashboardSessionWrapper } from '../redux';
 import Panel from './Panel';
 import SHORTCUTS from './Shortcuts';
 import './NotebookPanel.scss';
@@ -926,9 +926,12 @@ NotebookPanel.defaultProps = {
   sessionLanguage: null,
 };
 
-const mapStateToProps = state => {
+const mapStateToProps = (state, ownProps) => {
   const fileStorage = getFileStorage(state);
-  const sessionWrapper = getSessionWrapper(state);
+  const sessionWrapper = getDashboardSessionWrapper(
+    state,
+    ownProps.localDashboardId
+  );
   const { session, config: sessionConfig } = sessionWrapper;
   const { type: sessionLanguage } = sessionConfig;
   return {

@@ -8,7 +8,7 @@ import { PropTypes as APIPropTypes } from '@deephaven/jsapi-shim';
 import Log from '@deephaven/log';
 import './LogPanel.scss';
 import Panel from './Panel';
-import { getSessionWrapper } from '../redux';
+import { getDashboardSessionWrapper } from '../redux';
 
 const log = Log.module('LogPanel');
 
@@ -114,8 +114,8 @@ LogPanel.defaultProps = {
   session: null,
 };
 
-const mapStateToProps = state => ({
-  session: getSessionWrapper(state).session,
+const mapStateToProps = (state, ownProps) => ({
+  session: getDashboardSessionWrapper(state, ownProps.localDashboardId).session,
 });
 
 export default connect(mapStateToProps, null, null, { forwardRef: true })(

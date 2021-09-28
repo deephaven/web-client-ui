@@ -4,7 +4,7 @@ import {
 } from '@deephaven/dashboard';
 import Log from '@deephaven/log';
 import React, { ComponentType, useCallback, useEffect } from 'react';
-import shortid from 'shortid';
+import { useDispatch } from 'react-redux';
 import { ConsoleEvent } from './events';
 import {
   ConsolePanel,
@@ -13,6 +13,7 @@ import {
   LogPanel,
   NotebookPanel,
 } from './panels';
+import { setDashboardConsoleSettings } from './redux';
 
 const log = Log.module('ConsolePlugin');
 
@@ -22,6 +23,7 @@ export const ConsolePlugin = ({
   panelManager,
   registerComponent,
 }: DashboardPluginComponentProps): JSX.Element => {
+  const dispatch = useDispatch();
   const getStackForComponentType = useCallback(
     component => {
       const config = { component };
@@ -55,78 +57,6 @@ export const ConsolePlugin = ({
     LayoutUtils.activateTab(consoleStack, config);
   }, [getConsoleStack]);
 
-  /**
-   * All panels should normally be a part of config used to initialize the layout
-   * This method adds panels if they are missing in the layout config
-   */
-  const addMissingPanels = useCallback(() => {
-    const consoleStack = getConsoleStack();
-    if (!consoleStack) {
-      return;
-    }
-
-    const panels = [CommandHistoryPanel, FileExplorerPanel];
-    const componentTypes = panels.map(panel => panel.COMPONENT);
-
-    const stack = LayoutUtils.getStackForComponentTypes(
-      layout.root,
-      componentTypes
-    );
-
-    const activeItem = stack.getActiveContentItem();
-    let itemsAdded = false;
-
-    panels.forEach(panel => {
-      const component = panel.COMPONENT;
-      const title = panel.TITLE;
-      // getContentItemInStack wouldn't work because panels in the layout config can be in separate stacks
-      if (
-        // Look for stack with matching component type, don't allow empty and don't create new
-        !LayoutUtils.getStackForComponentTypes(
-          layout.root,
-          [component],
-          false,
-          true,
-          false
-        )
-      ) {
-        itemsAdded = true;
-        log.debug(`${component} not found - creating new`);
-        const config = {
-          component,
-          isClosable: false,
-          props: { metadata: {} },
-          title,
-          type: 'react-component',
-        };
-        stack.addChild(config);
-      }
-    });
-
-    if (itemsAdded) {
-      // Last added item becomes active, restore activeItem
-      // Fall back to first item in stack
-      stack.setActiveContentItem(
-        activeItem != null ? activeItem : stack.contentItems[0]
-      );
-    }
-
-    const logStack = getStackForComponentType(LogPanel.COMPONENT);
-
-    if (!logStack) {
-      log.debug('LogPanel not found - creating new');
-      const config = {
-        component: LogPanel.COMPONENT,
-        isClosable: false,
-        title: LogPanel.TITLE,
-        type: 'react-component',
-        props: { session: null },
-        id: shortid.generate(),
-      };
-      consoleStack.addChild(config);
-    }
-  }, [getConsoleStack, getStackForComponentType, layout]);
-
   const handleSendCommand = useCallback(
     (command: string, focus = true, execute = true) => {
       const trimmedCommand = command && command.trim();
@@ -148,10 +78,12 @@ export const ConsolePlugin = ({
     [getConsolePanel]
   );
 
-  const handleSettingsChanged = useCallback(() => {
-    // TODO: needs to store data with the dashboard itself
-    log.warn('handleSettingsChanged not implemented yet!!');
-  }, []);
+  const handleSettingsChanged = useCallback(
+    consoleSettings => {
+      dispatch(setDashboardConsoleSettings(id, consoleSettings));
+    },
+    [dispatch, id]
+  );
 
   useEffect(() => {
     const cleanups = [
@@ -183,9 +115,8 @@ export const ConsolePlugin = ({
   }, [registerComponent]);
 
   useEffect(() => {
-    addMissingPanels();
     activateConsolePanel();
-  }, [activateConsolePanel, addMissingPanels]);
+  }, [activateConsolePanel]);
 
   useEffect(() => {
     layout.eventHub.on(ConsoleEvent.SEND_COMMAND, handleSendCommand);

@@ -17,15 +17,17 @@ import Log from '@deephaven/log';
 import {
   getActiveTool,
   getTimeZone,
+  setActiveTool as setActiveToolAction,
+} from '@deephaven/redux';
+import {
   getIsolatedLinkerPanelIdForDashboard,
   getLinksForDashboard,
-  setActiveTool as setActiveToolAction,
   setDashboardLinks as setDashboardLinksAction,
   addDashboardLinks as addDashboardLinksAction,
   deleteDashboardLinks as deleteDashboardLinksAction,
   setDashboardIsolatedLinkerPanelId as setDashboardIsolatedLinkerPanelIdAction,
   setDashboardColumnSelectionValidator as setDashboardColumnSelectionValidatorAction,
-} from '@deephaven/redux';
+} from '../redux';
 import ToolType from './ToolType';
 import { ChartEvent, IrisGridEvent, InputFilterEvent } from '../events';
 import LinkerOverlayContent from './LinkerOverlayContent';
@@ -70,13 +72,13 @@ type DispatchProps = {
   deleteDashboardLinks: (dashboardId: string, linkIds: string[]) => void;
   setDashboardIsolatedLinkerPanelId: (
     dashboardId: string,
-    panelId: string | null
+    panelId: string | undefined
   ) => void;
   setDashboardColumnSelectionValidator: (
     dashboardId: string,
     columnValidator:
       | ((panel: PanelComponent, column?: LinkColumn) => boolean)
-      | null
+      | undefined
   ) => void;
 };
 
@@ -508,7 +510,7 @@ export class Linker extends Component<LinkerProps, LinkerState> {
   handleExited(): void {
     // Has to be done after linker exit animation to avoid flashing non-isolated links
     const { localDashboardId, setDashboardIsolatedLinkerPanelId } = this.props;
-    setDashboardIsolatedLinkerPanelId(localDashboardId, null);
+    setDashboardIsolatedLinkerPanelId(localDashboardId, undefined);
   }
 
   /**
@@ -564,7 +566,7 @@ export class Linker extends Component<LinkerProps, LinkerState> {
         );
         break;
       default:
-        setDashboardColumnSelectionValidator(localDashboardId, null);
+        setDashboardColumnSelectionValidator(localDashboardId, undefined);
         break;
     }
   }

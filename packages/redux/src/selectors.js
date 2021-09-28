@@ -1,15 +1,9 @@
-const EMPTY_MAP = new Map();
-
-const EMPTY_ARRAY = Object.freeze([]);
-
 // User
 export const getUser = store => store.user;
 
 export const getUserName = store => getUser(store).name;
 
 export const getUserGroups = store => getUserGroups(store).groups;
-
-export const getIsLoggedIn = store => store.isLoggedIn;
 
 // Storage
 export const getStorage = store => store.storage;
@@ -43,61 +37,4 @@ export const getDisableMoveConfirmation = store =>
 
 export const getShowSystemBadge = store => getSettings(store).showSystemBadge;
 
-export const getDashboardColumns = store => store.dashboardColumns;
-
-export const getDashboardInputFilters = store => store.dashboardInputFilters;
-
-export const getDashboardIsolatedLinkerPanelIds = store =>
-  store.dashboardIsolatedLinkerPanelIds;
-
-export const getDashboardLinks = store => store.dashboardLinks;
-
-export const getColumnsForDashboard = (store, dashboardId) =>
-  getDashboardColumns(store)[dashboardId] || EMPTY_ARRAY;
-
-export const getInputFiltersForDashboard = (store, dashboardId) =>
-  getDashboardInputFilters(store)[dashboardId] || EMPTY_ARRAY;
-
-export const getIsolatedLinkerPanelIdForDashboard = (store, dashboardId) =>
-  getDashboardIsolatedLinkerPanelIds(store)[dashboardId] || null;
-
-export const getLinksForDashboard = (store, dashboardId) =>
-  getDashboardLinks(store)[dashboardId] || EMPTY_ARRAY;
-
-export const getDashboardClosedPanels = store => store.dashboardClosedPanels;
-
-export const getDashboardOpenedPanelMaps = store =>
-  store.dashboardOpenedPanelMaps;
-
-export const getDashboardPanelTableMaps = store =>
-  store.dashboardPanelTableMaps;
-
-export const getClosedPanelsForDashboard = (store, dashboardId) =>
-  getDashboardClosedPanels(store)[dashboardId] || EMPTY_ARRAY;
-
-export const getOpenedPanelMapForDashboard = (store, dashboardId) =>
-  getDashboardOpenedPanelMaps(store)[dashboardId] || EMPTY_MAP;
-
-export const getTableMapForDashboard = (store, dashboardId) =>
-  getDashboardPanelTableMaps(store)[dashboardId] || EMPTY_MAP;
-
-export const getDashboardColumnSelectionValidators = store =>
-  store.dashboardColumnSelectionValidators;
-
-export const getDashboardConsoleCreatorSettings = store =>
-  store.dashboardConsoleCreatorSettings;
-
-export const getColumnSelectionValidatorForDashboard = (store, dashboardId) =>
-  getDashboardColumnSelectionValidators(store)[dashboardId];
-
-export const getConsoleCreatorSettingsForDashboard = (store, dashboardId) =>
-  getDashboardConsoleCreatorSettings(store)[dashboardId];
-
 export const getActiveTool = store => store.activeTool;
-
-export const getControllerConfiguration = store =>
-  store.controllerConfiguration;
-
-export const getDraftManager = store => store.draftManager;
-
-export const getServerConfigValues = store => store.serverConfigValues;

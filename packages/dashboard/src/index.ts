@@ -1,4 +1,5 @@
 export * from './Dashboard';
+export * from './DashboardConstants';
 export * from './DashboardPlugin';
 export * from './DashboardLayout';
 export * from './DashboardUtils';

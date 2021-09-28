@@ -12,7 +12,10 @@ import {
   GLOBAL_SHORTCUTS,
   Popper,
 } from '@deephaven/components';
-import Dashboard, { getDashboardData } from '@deephaven/dashboard';
+import Dashboard, {
+  DEFAULT_DASHBOARD_ID,
+  getDashboardData,
+} from '@deephaven/dashboard';
 import {
   ChartEvent,
   ChartPlugin,
@@ -25,7 +28,7 @@ import {
   MarkdownEvent,
   MarkdownPlugin,
   PandasPlugin,
-  getSessionWrapper,
+  getDashboardSessionWrapper,
 } from '@deephaven/dashboard-core-plugins';
 import ControlType from '@deephaven/dashboard-core-plugins/dist/controls/ControlType';
 import ToolType from '@deephaven/dashboard-core-plugins/dist/linker/ToolType';
@@ -55,8 +58,6 @@ import { PluginUtils } from '../plugins';
 const log = Log.module('AppMainContainer');
 
 const EMPTY_OBJECT = Object.freeze({});
-
-const DASHBOARD_ID = 'default';
 
 export class AppMainContainer extends Component {
   static handleWindowBeforeUnload(event) {
@@ -570,7 +571,7 @@ export class AppMainContainer extends Component {
           emptyDashboard={
             <EmptyDashboard onAutoFillClick={this.handleAutoFillClick} />
           }
-          id={DASHBOARD_ID}
+          id={DEFAULT_DASHBOARD_ID}
           layoutConfig={layoutConfig}
           layoutSettings={layoutSettings}
           onGoldenLayoutChange={this.handleGoldenLayoutChange}
@@ -628,9 +629,9 @@ AppMainContainer.propTypes = {
 
 const mapStateToProps = state => ({
   activeTool: getActiveTool(state),
-  dashboardData: getDashboardData(state, DASHBOARD_ID),
+  dashboardData: getDashboardData(state, DEFAULT_DASHBOARD_ID),
   layoutStorage: getLayoutStorage(state),
-  session: getSessionWrapper(state).session,
+  session: getDashboardSessionWrapper(state, DEFAULT_DASHBOARD_ID).session,
   user: getUser(state),
   workspace: getWorkspace(state),
 });

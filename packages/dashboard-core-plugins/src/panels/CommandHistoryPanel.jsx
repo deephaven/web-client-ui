@@ -10,7 +10,7 @@ import { Pending } from '@deephaven/utils';
 import { ConsoleEvent, NotebookEvent } from '../events';
 import './CommandHistoryPanel.scss';
 import Panel from './Panel';
-import { getSessionWrapper } from '../redux';
+import { getDashboardSessionWrapper } from '../redux';
 
 const log = Log.module('CommandHistoryPanel');
 
@@ -190,9 +190,12 @@ CommandHistoryPanel.defaultProps = {
   language: null,
 };
 
-const mapStateToProps = state => {
+const mapStateToProps = (state, ownProps) => {
   const commandHistoryStorage = getCommandHistoryStorage(state);
-  const sessionWrapper = getSessionWrapper(state);
+  const sessionWrapper = getDashboardSessionWrapper(
+    state,
+    ownProps.localDashboardId
+  );
   const { session, config: sessionConfig } = sessionWrapper;
   const { type: language, id: sessionId } = sessionConfig;
 

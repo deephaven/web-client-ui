@@ -17,13 +17,7 @@ import {
 import AdvancedSettings from '@deephaven/iris-grid/dist/sidebar/AdvancedSettings';
 import { PropTypes as APIPropTypes } from '@deephaven/jsapi-shim';
 import Log from '@deephaven/log';
-import {
-  getInputFiltersForDashboard,
-  getLinksForDashboard,
-  getColumnSelectionValidatorForDashboard,
-  getUser,
-  getWorkspace,
-} from '@deephaven/redux';
+import { getUser, getWorkspace } from '@deephaven/redux';
 import { PromiseUtils } from '@deephaven/utils';
 import { ContextMenuRoot } from '@deephaven/components';
 import {
@@ -32,6 +26,11 @@ import {
   InputFilterEvent,
   IrisGridEvent,
 } from '../events';
+import {
+  getInputFiltersForDashboard,
+  getLinksForDashboard,
+  getColumnSelectionValidatorForDashboard,
+} from '../redux';
 import { UIPropTypes } from '../prop-types';
 import WidgetPanel from './WidgetPanel';
 import './IrisGridPanel.scss';

@@ -9,18 +9,17 @@ import { Formatter, FormatterUtils, TableUtils } from '@deephaven/iris-grid';
 import { DateTimeColumnFormatter } from '@deephaven/iris-grid/dist/formatters';
 import dh from '@deephaven/jsapi-shim';
 import Log from '@deephaven/log';
+import { getActiveTool, getSettings } from '@deephaven/redux';
+import { Pending, PromiseUtils } from '@deephaven/utils';
+import DropdownFilter from '../controls/dropdown-filter/DropdownFilter';
+import { InputFilterEvent } from '../events';
 import {
-  getActiveTool,
   getColumnsForDashboard,
   getColumnSelectionValidatorForDashboard,
   getIsolatedLinkerPanelIdForDashboard,
   getLinksForDashboard,
-  getSettings,
   getTableMapForDashboard,
-} from '@deephaven/redux';
-import { Pending, PromiseUtils } from '@deephaven/utils';
-import DropdownFilter from '../controls/dropdown-filter/DropdownFilter';
-import { InputFilterEvent } from '../events';
+} from '../redux';
 import './DropdownFilterPanel.scss';
 import { UIPropTypes } from '../prop-types';
 import ToolType from '../linker/ToolType';

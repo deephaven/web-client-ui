@@ -23,7 +23,7 @@ import {
 } from '../events';
 import './ConsolePanel.scss';
 import Panel from './Panel';
-import { getSessionWrapper } from '../redux';
+import { getDashboardSessionWrapper } from '../redux';
 
 const log = Log.module('ConsolePanel');
 
@@ -346,9 +346,9 @@ ConsolePanel.defaultProps = {
   panelState: null,
 };
 
-const mapStateToProps = state => ({
+const mapStateToProps = (state, ownProps) => ({
   commandHistoryStorage: getCommandHistoryStorage(state),
-  sessionWrapper: getSessionWrapper(state),
+  sessionWrapper: getDashboardSessionWrapper(state, ownProps.localDashboardId),
 });
 
 export default connect(mapStateToProps, null, null, { forwardRef: true })(

@@ -3,10 +3,10 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import debounce from 'lodash.debounce';
 import { GLPropTypes } from '@deephaven/dashboard';
-import { getColumnsForDashboard } from '@deephaven/redux';
 import Panel from './Panel';
 import InputFilter from '../controls/input-filter/InputFilter';
 import { InputFilterEvent } from '../events';
+import { getColumnsForDashboard } from '../redux';
 import './InputFilterPanel.scss';
 
 const INPUT_FILTER_DEBOUNCE = 250;

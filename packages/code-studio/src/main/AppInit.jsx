@@ -2,8 +2,11 @@ import React, { useCallback, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { LoadingOverlay } from '@deephaven/components';
-import { setDashboardData as setDashboardDataAction } from '@deephaven/dashboard';
-import { setSessionWrapper as setSessionWrapperAction } from '@deephaven/dashboard-core-plugins';
+import {
+  DEFAULT_DASHBOARD_ID,
+  setDashboardData as setDashboardDataAction,
+} from '@deephaven/dashboard';
+import { setDashboardSessionWrapper as setDashboardSessionWrapperAction } from '@deephaven/dashboard-core-plugins';
 import ToolType from '@deephaven/dashboard-core-plugins/dist/linker/ToolType';
 import { WebdavFileStorage } from '@deephaven/file-explorer';
 import dh from '@deephaven/jsapi-shim';
@@ -51,7 +54,7 @@ const AppInit = props => {
     setDashboardData,
     setFileStorage,
     setLayoutStorage,
-    setSessionWrapper,
+    setDashboardSessionWrapper,
     setUser,
     setWorkspace,
     setWorkspaceStorage,
@@ -87,7 +90,7 @@ const AppInit = props => {
       setDashboardData(data);
       setFileStorage(FILE_STORAGE);
       setLayoutStorage(LAYOUT_STORAGE);
-      setSessionWrapper(sessionWrapper);
+      setDashboardSessionWrapper(DEFAULT_DASHBOARD_ID, sessionWrapper);
       setUser(USER);
       setWorkspaceStorage(WORKSPACE_STORAGE);
       setWorkspace(loadedWorkspace);
@@ -100,7 +103,7 @@ const AppInit = props => {
     setDashboardData,
     setFileStorage,
     setLayoutStorage,
-    setSessionWrapper,
+    setDashboardSessionWrapper,
     setUser,
     setWorkspace,
     setWorkspaceStorage,
@@ -165,7 +168,7 @@ AppInit.propTypes = {
   setDashboardData: PropTypes.func.isRequired,
   setFileStorage: PropTypes.func.isRequired,
   setLayoutStorage: PropTypes.func.isRequired,
-  setSessionWrapper: PropTypes.func.isRequired,
+  setDashboardSessionWrapper: PropTypes.func.isRequired,
   setUser: PropTypes.func.isRequired,
   setWorkspace: PropTypes.func.isRequired,
   setWorkspaceStorage: PropTypes.func.isRequired,
@@ -187,7 +190,7 @@ export default connect(mapStateToProps, {
   setDashboardData: setDashboardDataAction,
   setFileStorage: setFileStorageAction,
   setLayoutStorage: setLayoutStorageAction,
-  setSessionWrapper: setSessionWrapperAction,
+  setDashboardSessionWrapper: setDashboardSessionWrapperAction,
   setUser: setUserAction,
   setWorkspace: setWorkspaceAction,
   setWorkspaceStorage: setWorkspaceStorageAction,
