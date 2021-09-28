@@ -1,6 +1,6 @@
 import {
   DashboardPluginComponentProps,
-  LayoutUtils,
+  useListener,
 } from '@deephaven/dashboard';
 import Log from '@deephaven/log';
 import React, { ComponentType, useCallback, useEffect } from 'react';
@@ -24,38 +24,11 @@ export const ConsolePlugin = ({
   registerComponent,
 }: DashboardPluginComponentProps): JSX.Element => {
   const dispatch = useDispatch();
-  const getStackForComponentType = useCallback(
-    component => {
-      const config = { component };
-      return LayoutUtils.getStackForRoot(
-        layout.root,
-        config,
-        false,
-        true,
-        false
-      );
-    },
-    [layout.root]
-  );
-
-  const getConsoleStack = useCallback(
-    () => getStackForComponentType(ConsolePanel.COMPONENT),
-    [getStackForComponentType]
-  );
 
   const getConsolePanel = useCallback(
     () => panelManager.getLastUsedPanelOfType(ConsolePanel.WrappedComponent),
     [panelManager]
   );
-
-  const activateConsolePanel = useCallback(() => {
-    const consoleStack = getConsoleStack();
-    if (!consoleStack) {
-      return;
-    }
-    const config = { component: ConsolePanel.COMPONENT };
-    LayoutUtils.activateTab(consoleStack, config);
-  }, [getConsoleStack]);
 
   const handleSendCommand = useCallback(
     (command: string, focus = true, execute = true) => {
@@ -114,18 +87,12 @@ export const ConsolePlugin = ({
     };
   }, [registerComponent]);
 
-  useEffect(() => {
-    activateConsolePanel();
-  }, [activateConsolePanel]);
-
-  useEffect(() => {
-    layout.eventHub.on(ConsoleEvent.SEND_COMMAND, handleSendCommand);
-    layout.eventHub.on(ConsoleEvent.SETTINGS_CHANGED, handleSettingsChanged);
-    return () => {
-      layout.eventHub.off(ConsoleEvent.SEND_COMMAND, handleSendCommand);
-      layout.eventHub.off(ConsoleEvent.SETTINGS_CHANGED, handleSettingsChanged);
-    };
-  }, [handleSendCommand, handleSettingsChanged, layout.eventHub]);
+  useListener(layout.eventHub, ConsoleEvent.SEND_COMMAND, handleSendCommand);
+  useListener(
+    layout.eventHub,
+    ConsoleEvent.SETTINGS_CHANGED,
+    handleSettingsChanged
+  );
 
   return <></>;
 };
