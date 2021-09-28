@@ -6,7 +6,11 @@ import { connect } from 'react-redux';
 import { CSSTransition } from 'react-transition-group';
 import debounce from 'lodash.debounce';
 import { Chart, ChartUtils } from '@deephaven/chart';
-import { GLPropTypes, LayoutUtils } from '@deephaven/dashboard';
+import {
+  getOpenedPanelMapForDashboard,
+  GLPropTypes,
+  LayoutUtils,
+} from '@deephaven/dashboard';
 import { IrisGridUtils } from '@deephaven/iris-grid';
 import dh, { PropTypes as APIPropTypes } from '@deephaven/jsapi-shim';
 import { ThemeExport } from '@deephaven/components';
@@ -17,7 +21,6 @@ import {
   getInputFiltersForDashboard,
   getIsolatedLinkerPanelIdForDashboard,
   getLinksForDashboard,
-  getOpenedPanelMapForDashboard,
   getTableMapForDashboard,
   setActiveTool as setActiveToolAction,
   setDashboardIsolatedLinkerPanelId as setDashboardIsolatedLinkerPanelIdAction,

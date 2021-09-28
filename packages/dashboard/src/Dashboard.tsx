@@ -88,7 +88,6 @@ export const Dashboard = ({
   const handleResize = useMemo(
     () =>
       throttle(() => {
-        // TODO: This doesn't seem to be throttling
         if (layout?.isInitialised) {
           layout?.updateSize();
         }
