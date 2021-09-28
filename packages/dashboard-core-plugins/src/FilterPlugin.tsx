@@ -5,11 +5,13 @@ import React, {
   useEffect,
   useState,
 } from 'react';
+import { useDispatch } from 'react-redux';
 import shortid from 'shortid';
 import {
   DashboardPluginComponentProps,
   LayoutUtils,
   PanelEvent,
+  updateDashboardData,
   useListener,
 } from '@deephaven/dashboard';
 import Log from '@deephaven/log';
@@ -39,6 +41,7 @@ export const FilterPlugin = ({
   layout,
   registerComponent,
 }: DashboardPluginComponentProps): JSX.Element => {
+  const dispatch = useDispatch();
   const [panelColumns] = useState(() => new Map<Component, Column[]>());
   const [panelFilters] = useState(
     () => new Map<Component, FilterChangeEvent[]>()
@@ -83,9 +86,10 @@ export const FilterPlugin = ({
     const tableMap = new Map(panelTables);
 
     log.debug('sendUpdate', { columns, filters, tableMap });
-    // TODO: Not yet implemented, need to update dashboard data
-    log.warn('sendUpdate not implemented yet');
-  }, [panelColumns, panelFilters, panelTables]);
+    dispatch(
+      updateDashboardData(localDashboardId, { columns, filters, tableMap })
+    );
+  }, [dispatch, localDashboardId, panelColumns, panelFilters, panelTables]);
 
   /**
    * Handler for the COLUMNS_CHANGED event.
