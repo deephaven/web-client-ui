@@ -16,10 +16,11 @@ class IrisGridMetricCalculator extends GridMetricCalculator {
   ) {
     const { model } = state;
     const hiddenColumns = model.layoutHints?.hiddenColumns ?? [];
+    const modelColumn = this.getModelColumn(column, state);
 
-    if (this.userColumnWidths.has(column)) {
-      return this.userColumnWidths.get(column);
-    } else if (hiddenColumns.includes(model.columns[column].name)) {
+    if (this.userColumnWidths.has(modelColumn)) {
+      return this.userColumnWidths.get(modelColumn);
+    } else if (hiddenColumns.includes(model.columns[modelColumn].name)) {
       return 0;
     }
     return super.getVisibleColumnWidth(

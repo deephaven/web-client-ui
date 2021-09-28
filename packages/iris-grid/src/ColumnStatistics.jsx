@@ -160,6 +160,9 @@ class ColumnStatistics extends Component {
       ? 'Expanded Rows'
       : 'Number of Rows';
     const formattedRowCount = model.displayString(numRows, 'long');
+    const columnIndex = model.columns.findIndex(
+      col => col.name === column.name
+    );
     return (
       <div className="column-statistics">
         <div className="column-statistics-title">
@@ -169,7 +172,7 @@ class ColumnStatistics extends Component {
         {description && (
           <div className="column-statistics-description">{description}</div>
         )}
-        {!model.isColumnMovable(column.name) && (
+        {!model.isColumnMovable(columnIndex) && (
           <div className="column-statistics-status">
             <FontAwesomeIcon icon={vsLock} className="mr-1" />
             Not movable
@@ -188,7 +191,7 @@ class ColumnStatistics extends Component {
         {showGenerateStatistics && (
           <button
             type="button"
-            className="btn btn-link"
+            className="btn btn-link px-0"
             onClick={this.handleGenerateStatistics}
           >
             Generate Stats

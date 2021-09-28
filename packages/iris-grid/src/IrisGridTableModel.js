@@ -269,7 +269,7 @@ class IrisGridTableModel extends IrisGridModel {
   }
 
   get columnCount() {
-    return this.table.columns.length;
+    return this.columns.length;
   }
 
   get floatingBottomRowCount() {
@@ -460,20 +460,19 @@ class IrisGridTableModel extends IrisGridModel {
 
   getColumnsWithLayoutHints = memoize((columns, hints) => {
     if (hints) {
-      const frontColumns = new Array(hints.frontColumns.length);
-      const backColumns = new Array(hints.backColumns.length);
-      const middleColumns = [];
-
-      columns.forEach(col => {
-        if (hints.frontColumns.includes(col.name)) {
-          frontColumns[hints.frontColumns.indexOf(col.name)] = col;
-        } else if (hints.backColumns.includes(col.name)) {
-          backColumns[hints.backColumns.indexOf(col.name)] = col;
-        } else {
-          middleColumns.push(col);
-        }
-      });
-
+      const columnMap = new Map();
+      columns.forEach(col => columnMap.set(col.name, col));
+      const frontColumns = hints.frontColumns
+        .map(name => columnMap.get(name))
+        .filter(Boolean);
+      const backColumns = hints.backColumns
+        .map(name => columnMap.get(name))
+        .filter(Boolean);
+      const frontColumnSet = new Set(frontColumns);
+      const backColumnSet = new Set(backColumns);
+      const middleColumns = columns.filter(
+        col => !frontColumnSet.has(col) && !backColumnSet.has(col)
+      );
       return [...frontColumns, ...middleColumns, ...backColumns];
     }
     return columns;
@@ -615,9 +614,7 @@ class IrisGridTableModel extends IrisGridModel {
         dataMap.set(operation, { data: new Map() });
       }
       const { data: rowData } = dataMap.get(operation);
-      const columnIndex = this.table.columns.findIndex(
-        col => col.name === name
-      );
+      const columnIndex = this.columns.findIndex(col => col.name === name);
       rowData.set(columnIndex, {
         value: row.get(column),
         format: row.getFormat(column),
@@ -1072,17 +1069,15 @@ class IrisGridTableModel extends IrisGridModel {
     }
   );
 
-  isColumnMovable(column) {
-    const columnName = Number.isInteger(column)
-      ? this.columns[column].name
-      : column;
+  isColumnMovable(x) {
+    const columnName = this.columns[x].name;
     if (
       this.layoutHints?.frontColumns?.includes(columnName) ||
       this.layoutHints?.backColumns?.includes(columnName)
     ) {
       return false;
     }
-    return !this.isKeyColumn(column);
+    return !this.isKeyColumn(x);
   }
 
   isKeyColumn(x) {
