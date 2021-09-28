@@ -32,6 +32,9 @@ const DEFAULT_LAYOUT_CONFIG: DashboardLayoutConfig = [];
 
 const DEFAULT_CALLBACK = () => undefined;
 
+// If a component isn't registered, just pass through the props so they are saved if a plugin is loaded later
+const FALLBACK_CALLBACK = (props: unknown) => props;
+
 type DashboardData = {
   closed?: ClosedPanels;
 };
@@ -108,11 +111,11 @@ export const DashboardLayout = ({
     [hydrateMap, dehydrateMap, layout, store]
   );
   const hydrateComponent = useCallback(
-    (name, props) => hydrateMap.get(name)?.(props, id),
+    (name, props) => (hydrateMap.get(name) ?? FALLBACK_CALLBACK)(props, id),
     [hydrateMap, id]
   );
   const dehydrateComponent = useCallback(
-    (name, config) => dehydrateMap.get(name)?.(config, id),
+    (name, config) => (dehydrateMap.get(name) ?? FALLBACK_CALLBACK)(config, id),
     [dehydrateMap, id]
   );
   const panelManager = useMemo(
