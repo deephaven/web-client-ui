@@ -20,7 +20,8 @@ class IrisGridMetricCalculator extends GridMetricCalculator {
 
     if (this.userColumnWidths.has(modelColumn)) {
       return this.userColumnWidths.get(modelColumn);
-    } else if (hiddenColumns.includes(model.columns[modelColumn].name)) {
+    }
+    if (hiddenColumns.includes(model.columns[modelColumn].name)) {
       return 0;
     }
     return super.getVisibleColumnWidth(

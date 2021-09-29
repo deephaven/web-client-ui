@@ -12,14 +12,14 @@ const log = Log.module('IrisGridUtils');
 class IrisGridUtils {
   /**
    * Exports the state from Grid component to a JSON stringifiable object
-   * @param {dh.Table} table The table to export the Grid state for
+   * @param {IrisGridTableModel} model The table model to export the Grid state for
    * @param {Object} gridState The state of the Grid to export
    * @returns {Object} An object that can be stringified and imported with {{@link hydrateGridState}}
    */
-  static dehydrateGridState(table, gridState) {
+  static dehydrateGridState(model, gridState) {
     const { movedColumns, movedRows } = gridState;
 
-    const { columns } = table;
+    const { columns } = model;
     return {
       movedColumns: [...movedColumns]
         .filter(
@@ -36,14 +36,14 @@ class IrisGridUtils {
 
   /**
    * Import a state for Grid that was exported with {{@link dehydrateGridState}}
-   * @param {dh.Table} table The table to import the state for
+   * @param {IrisGridTableModel} model The table model to import the state for
    * @param {Object} gridState The state of the panel that was saved
    * @returns {Object} The gridState props to set on the Grid
    */
-  static hydrateGridState(table, gridState, customColumns = []) {
+  static hydrateGridState(model, gridState, customColumns = []) {
     const { movedColumns, movedRows } = gridState;
 
-    const { columns } = table;
+    const { columns } = model;
     const customColumnNames = IrisGridUtils.parseCustomColumnNames(
       customColumns
     );
@@ -80,10 +80,10 @@ class IrisGridUtils {
 
   /**
    * Exports the state from IrisGrid to a JSON stringifiable object
-   * @param {dh.Table} table The table to export the state for
+   * @param {IrisGridTableModel} model The table model to export the state for
    * @param {Object} irisGridState The current state of the IrisGrid
    */
-  static dehydrateIrisGridState(table, irisGridState) {
+  static dehydrateIrisGridState(model, irisGridState) {
     const {
       aggregationSettings = { aggregations: [], showOnTop: false },
       advancedSettings = [],
@@ -105,17 +105,17 @@ class IrisGridUtils {
     } = irisGridState;
     const { userColumnWidths, userRowHeights } = metrics;
 
-    const { columns } = table;
+    const { columns } = model;
     return {
       advancedFilters: IrisGridUtils.dehydrateAdvancedFilters(
-        table,
+        model,
         advancedFilters
       ),
       advancedSettings: [...advancedSettings],
       aggregationSettings,
       customColumnFormatMap: [...customColumnFormatMap],
       isFilterBarShown,
-      quickFilters: IrisGridUtils.dehydrateQuickFilters(table, quickFilters),
+      quickFilters: IrisGridUtils.dehydrateQuickFilters(model, quickFilters),
       sorts: IrisGridUtils.dehydrateSort(sorts),
       userColumnWidths: [...userColumnWidths]
         .filter(
@@ -143,10 +143,10 @@ class IrisGridUtils {
 
   /**
    * Import a state for IrisGrid that was exported with {{@link dehydrateIrisGridState}}
-   * @param {dh.Table} table The table to import the state with
+   * @param {IrisGridTableModel} model The table model to import the state with
    * @param {Object} irisGridState The saved IrisGrid state
    */
-  static hydrateIrisGridState(table, irisGridState) {
+  static hydrateIrisGridState(model, irisGridState) {
     const {
       advancedFilters,
       advancedSettings = [],
@@ -168,10 +168,10 @@ class IrisGridUtils {
       pendingDataMap = [],
     } = irisGridState;
 
-    const { columns } = table;
+    const { columns } = model;
     return {
       advancedFilters: IrisGridUtils.hydrateAdvancedFilters(
-        table,
+        model,
         advancedFilters
       ),
       advancedSettings: new Map([
@@ -181,8 +181,8 @@ class IrisGridUtils {
       aggregationSettings,
       customColumnFormatMap: new Map(customColumnFormatMap),
       isFilterBarShown,
-      quickFilters: IrisGridUtils.hydrateQuickFilters(table, quickFilters),
-      sorts: IrisGridUtils.hydrateSort(table, sorts),
+      quickFilters: IrisGridUtils.hydrateQuickFilters(model, quickFilters),
+      sorts: IrisGridUtils.hydrateSort(model, sorts),
       userColumnWidths: new Map(
         userColumnWidths
           .map(([column, width]) => {
@@ -214,11 +214,11 @@ class IrisGridUtils {
 
   /**
    * Export the IrisGridPanel state.
-   * @param {dh.Table} table The table the state is being dehydrated with
+   * @param {IrisGridTableModel} model The table model the state is being dehydrated with
    * @param {Object} irisGridPanelState The current IrisGridPanel state
    * @returns {Object} The dehydrated IrisGridPanel state
    */
-  static dehydrateIrisGridPanelState(table, irisGridPanelState) {
+  static dehydrateIrisGridPanelState(model, irisGridPanelState) {
     const {
       isSelectingPartition,
       partition,
@@ -234,11 +234,11 @@ class IrisGridUtils {
 
   /**
    * Import the saved IrisGridPanel state.
-   * @param {dh.Table} table The table the state is being hydrated with
+   * @param {IrisGridTableModel} model The table model the state is being hydrated with
    * @param {Object} irisGridPanelState Exported IrisGridPanel state
    * @returns {Object} The state to apply to the IrisGridPanel
    */
-  static hydrateIrisGridPanelState(table, irisGridPanelState) {
+  static hydrateIrisGridPanelState(model, irisGridPanelState) {
     const {
       isSelectingPartition,
       partition,
@@ -249,18 +249,18 @@ class IrisGridUtils {
       partition,
       partitionColumn:
         partitionColumn != null
-          ? TableUtils.getColumnByName(table, partitionColumn)
+          ? TableUtils.getColumnByName(model, partitionColumn)
           : null,
     };
   }
 
   /**
    * Export the quick filters from the provided table to JSON striginfiable object
-   * @param {dh.Table} table The table with the filters
+   * @param {IrisGridTableModel} model The table with the filters
    * @param {AdvancedFilter[]} quickFilters The quick filters to dehydrate
    * @returns {Object} The dehydrated quick filters
    */
-  static dehydrateQuickFilters(table, quickFilters) {
+  static dehydrateQuickFilters(model, quickFilters) {
     return [...quickFilters].map(([columnIndex, quickFilter]) => {
       const { text } = quickFilter;
       return [columnIndex, { text }];
@@ -269,18 +269,18 @@ class IrisGridUtils {
 
   /**
    * Import the saved quick filters to apply to the table. Does not actually apply the filters.
-   * @param {dh.Table} table The table the filters will be applied to
+   * @param {IrisGridTableModel} model The table the filters will be applied to
    * @param {Object[]} savedQuickFilters Exported quick filters definitions
    * @returns {QuickFilter[]} The quick filters to apply to the table
    */
-  static hydrateQuickFilters(table, savedQuickFilters) {
+  static hydrateQuickFilters(model, savedQuickFilters) {
     const importedFilters = savedQuickFilters.map(
       ([columnIndex, quickFilter]) => {
         const { text } = quickFilter;
 
         let filter = null;
         try {
-          const column = TableUtils.getColumn(table, columnIndex);
+          const column = TableUtils.getColumn(model, columnIndex);
           if (column != null) {
             filter = TableUtils.makeQuickFilter(column, text);
           }
@@ -297,14 +297,14 @@ class IrisGridUtils {
 
   /**
    * Export the advanced filters from the provided table to JSON striginfiable object
-   * @param {dh.Table} table The table with the filters
+   * @param {IrisGridTableModel} model The table model with the filters
    * @param {AdvancedFilter[]} advancedFilters The advanced filters to dehydrate
    * @returns {Object} The dehydrated advanced filters
    */
-  static dehydrateAdvancedFilters(table, advancedFilters) {
+  static dehydrateAdvancedFilters(model, advancedFilters) {
     return [...advancedFilters].map(([columnIndex, advancedFilter]) => {
       const options = IrisGridUtils.dehydrateAdvancedFilterOptions(
-        TableUtils.getColumn(table, columnIndex),
+        TableUtils.getColumn(model, columnIndex),
         advancedFilter.options
       );
       return [columnIndex, { options }];
@@ -313,21 +313,21 @@ class IrisGridUtils {
 
   /**
    * Import the saved advanced filters to apply to the table. Does not actually apply the filters.
-   * @param {dh.Table} table The table the filters will be applied to
+   * @param {IrisGridTableModel} model The table the filters will be applied to
    * @param {Object[]} savedAdvancedFilters Exported advanced filters definitions
    * @returns {AdvancedFilter[]} The advanced filters to apply to the table
    */
-  static hydrateAdvancedFilters(table, savedAdvancedFilters) {
+  static hydrateAdvancedFilters(model, savedAdvancedFilters) {
     const importedFilters = savedAdvancedFilters.map(
       ([columnIndex, advancedFilter]) => {
         const options = IrisGridUtils.hydrateAdvancedFilterOptions(
-          TableUtils.getColumn(table, columnIndex),
+          TableUtils.getColumn(model, columnIndex),
           advancedFilter.options
         );
         let filter = null;
 
         try {
-          const column = TableUtils.getColumn(table, columnIndex);
+          const column = TableUtils.getColumn(model, columnIndex);
           if (column != null) {
             filter = TableUtils.makeAdvancedFilter(column, options);
           }
@@ -472,11 +472,11 @@ class IrisGridUtils {
 
   /**
    * Import the saved sorts to apply to the table. Does not actually apply the sort.
-   * @param {dh.Table} table The table the sorts will be applied to
+   * @param {IrisGridTableModel} model The table model the sorts will be applied to
    * @param {Object[]} sort Exported sort definitions
    * @returns {dh.Sort[]} The sorts to apply to the table
    */
-  static hydrateSort(table, sorts) {
+  static hydrateSort(model, sorts) {
     return (
       sorts
         .map(sort => {
@@ -484,7 +484,7 @@ class IrisGridUtils {
           if (direction === TableUtils.sortDirection.reverse) {
             return dh.Table.reverse();
           }
-          const column = TableUtils.getColumn(table, columnIndex);
+          const column = TableUtils.getColumn(model, columnIndex);
           if (column != null) {
             let columnSort = column.sort();
             if (isAbs) {
@@ -532,27 +532,27 @@ class IrisGridUtils {
 
   /**
    * Applies the passed in table settings directly to the provided table
-   * @param {dh.Table} table The table to apply the settings to
+   * @param {IrisGridTableModel} model The table model to apply the settings to
    * @param {Object} tableSettings Dehydrated table settings extracted with `extractTableSettings`
    */
-  static applyTableSettings(table, tableSettings) {
+  static applyTableSettings(model, tableSettings) {
     const quickFilters = IrisGridUtils.getFiltersFromFilterMap(
-      IrisGridUtils.hydrateQuickFilters(table, tableSettings.quickFilters)
+      IrisGridUtils.hydrateQuickFilters(model, tableSettings.quickFilters)
     );
     const advancedFilters = IrisGridUtils.getFiltersFromFilterMap(
-      IrisGridUtils.hydrateAdvancedFilters(table, tableSettings.advancedFilters)
+      IrisGridUtils.hydrateAdvancedFilters(model, tableSettings.advancedFilters)
     );
     const inputFilters = IrisGridUtils.getFiltersFromInputFilters(
-      table.columns,
+      model.columns,
       tableSettings.inputFilters
     );
-    const sorts = IrisGridUtils.hydrateSort(table, tableSettings.sorts);
+    const sorts = IrisGridUtils.hydrateSort(model, tableSettings.sorts);
 
     let filters = [...quickFilters, ...advancedFilters];
     const { partition, partitionColumn: partitionColumnName } = tableSettings;
     if (partition && partitionColumnName) {
       const partitionColumn = TableUtils.getColumnByName(
-        table,
+        model,
         partitionColumnName
       );
       if (partitionColumn) {
@@ -564,8 +564,8 @@ class IrisGridUtils {
     }
     filters = [...inputFilters, ...filters];
 
-    table.applyFilter(filters);
-    table.applySort(sorts);
+    model.applyFilter(filters);
+    model.applySort(sorts);
   }
 
   static getInputFiltersForColumns(columns, inputFilters = []) {

@@ -209,8 +209,8 @@ export class IrisGridPanel extends PureComponent {
   });
 
   getDehydratedIrisGridPanelState = memoize(
-    (table, isSelectingPartition, partition, partitionColumn) =>
-      IrisGridUtils.dehydrateIrisGridPanelState(table, {
+    (model, isSelectingPartition, partition, partitionColumn) =>
+      IrisGridUtils.dehydrateIrisGridPanelState(model, {
         isSelectingPartition,
         partition,
         partitionColumn,
@@ -219,7 +219,7 @@ export class IrisGridPanel extends PureComponent {
 
   getDehydratedIrisGridState = memoize(
     (
-      table,
+      model,
       sorts,
       advancedFilters,
       customColumnFormatMap,
@@ -239,7 +239,7 @@ export class IrisGridPanel extends PureComponent {
       advancedSettings,
       pendingDataMap
     ) =>
-      IrisGridUtils.dehydrateIrisGridState(table, {
+      IrisGridUtils.dehydrateIrisGridState(model, {
         advancedFilters,
         advancedSettings,
         aggregationSettings,
@@ -712,17 +712,15 @@ export class IrisGridPanel extends PureComponent {
     const { userColumnWidths, userRowHeights } = metrics;
     const { movedColumns, movedRows } = gridState;
 
-    const { table } = model;
-
     const panelState = this.getCachedPanelState(
       this.getDehydratedIrisGridPanelState(
-        table,
+        model,
         isSelectingPartition,
         partition,
         partitionColumn
       ),
       this.getDehydratedIrisGridState(
-        table,
+        model,
         sorts,
         advancedFilters,
         customColumnFormatMap,
@@ -742,7 +740,7 @@ export class IrisGridPanel extends PureComponent {
         advancedSettings,
         pendingDataMap
       ),
-      this.getDehydratedGridState(table, movedColumns, movedRows)
+      this.getDehydratedGridState(model, movedColumns, movedRows)
     );
 
     if (panelState !== oldPanelState) {
