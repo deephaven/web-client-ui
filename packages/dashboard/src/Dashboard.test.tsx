@@ -1,11 +1,10 @@
 import React from 'react';
-import * as ReactReduxType from 'react-redux';
 import { mount, ReactWrapper } from 'enzyme';
 import Dashboard, { DashboardProps } from './Dashboard';
 
 const mockDispatch = jest.fn();
 jest.mock('react-redux', () => ({
-  ...(jest.requireActual('react-redux') as typeof ReactReduxType),
+  ...(jest.requireActual('react-redux') as Record<string, unknown>),
   useDispatch: () => mockDispatch,
   useSelector: jest.fn(),
   useStore: () => ({}),
