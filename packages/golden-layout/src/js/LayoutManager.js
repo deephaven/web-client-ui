@@ -191,6 +191,11 @@ lm.utils.copy(lm.LayoutManager.prototype, {
         }
       }
 
+      if (configNode.componentName === 'lm-react-component') {
+        // We change the type in `createContentItem`, so change it back here
+        configNode.type = 'react-component';
+      }
+
       if (item.contentItems.length) {
         configNode.content = [];
 
