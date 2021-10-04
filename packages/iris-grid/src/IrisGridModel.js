@@ -199,6 +199,9 @@ class IrisGridModel extends GridModel {
     throw new Error('set totalsConfig not implemented');
   }
 
+  /**
+   * @returns {dh.LayoutHints} The LayoutHints to use for the columns of this table model
+   */
   get layoutHints() {
     throw new Error('get layoutHints not implemented');
   }

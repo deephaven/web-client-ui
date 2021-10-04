@@ -462,17 +462,36 @@ class IrisGridTableModel extends IrisGridModel {
     if (hints) {
       const columnMap = new Map();
       columns.forEach(col => columnMap.set(col.name, col));
-      const frontColumns = hints.frontColumns
-        .map(name => columnMap.get(name))
-        .filter(Boolean);
-      const backColumns = hints.backColumns
-        .map(name => columnMap.get(name))
-        .filter(Boolean);
+
+      let frontColumns = [];
+      let backColumns = [];
+
+      if (hints.frontColumns) {
+        frontColumns = hints.frontColumns
+          .map(name => columnMap.get(name))
+          .filter(Boolean);
+      }
+      if (hints.backColumns) {
+        backColumns = hints.backColumns
+          .map(name => columnMap.get(name))
+          .filter(Boolean);
+      }
+
+      if (
+        frontColumns.length !== (hints.frontColumns?.length ?? 0) ||
+        backColumns.length !== (hints.backColumns?.length ?? 0)
+      ) {
+        throw new Error(
+          'Layout hints are invalid (contain invalid column names)'
+        );
+      }
+
       const frontColumnSet = new Set(frontColumns);
       const backColumnSet = new Set(backColumns);
       const middleColumns = columns.filter(
         col => !frontColumnSet.has(col) && !backColumnSet.has(col)
       );
+
       return [...frontColumns, ...middleColumns, ...backColumns];
     }
     return columns;
