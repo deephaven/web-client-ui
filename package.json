@@ -33,6 +33,7 @@
     "@deephaven/eslint-config": "file:packages/eslint-config",
     "@deephaven/prettier-config": "file:packages/prettier-config",
     "@deephaven/stylelint-config": "file:packages/stylelint-config",
+    "@deephaven/tsconfig": "file:packages/tsconfig",
     "@deephaven/utils": "file:packages/utils",
     "@jest/types": "^26.0.23",
     "@types/enzyme": "^3.10.7",
