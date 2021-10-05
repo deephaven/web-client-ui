@@ -12,14 +12,15 @@ module.exports = api => ({
     '@babel/preset-typescript',
   ],
   plugins: [
+    '@babel/plugin-proposal-class-properties',
+    ['babel-plugin-add-import-extension'],
     [
       'transform-rename-import',
       {
-        original: '^(.+?)\\.scss$',
+        // The babel-plugin-add-import-extension adds the .js to .scss imports, just convert them back to .css
+        original: '^(.+?)\\.scss.js$',
         replacement: '$1.css',
       },
     ],
-    '@babel/plugin-proposal-class-properties',
-    ["babel-plugin-add-import-extension", { extension: "js", replace: true, observedScriptExtensions: ['js','ts','jsx','tsx'] }],
   ],
 });
