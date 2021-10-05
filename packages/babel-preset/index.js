@@ -6,6 +6,9 @@ module.exports = api => ({
         // Setting false will NOT convert ES6 to CJS modules
         // Test env must set to auto since Jest ESM support is experimental
         modules: api.env('test') ? 'auto' : false,
+        targets: {
+          esmodules: true,
+        },
       },
     ],
     '@babel/preset-react',
