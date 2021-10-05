@@ -263,8 +263,8 @@ export class IrisGridPanel extends PureComponent {
       })
   );
 
-  getDehydratedGridState = memoize((table, movedColumns, movedRows) =>
-    IrisGridUtils.dehydrateGridState(table, { movedColumns, movedRows })
+  getDehydratedGridState = memoize((model, movedColumns, movedRows) =>
+    IrisGridUtils.dehydrateGridState(model, { movedColumns, movedRows })
   );
 
   getCachedPanelState = memoize(

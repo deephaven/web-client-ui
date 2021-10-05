@@ -45,47 +45,6 @@ class TableUtils {
   }
 
   /**
-   * Retrieves a column from the provided table at the index, or `null` and logs an error if it's invalid
-   *
-   * @param {dh.Table} table The table to get the column for
-   * @param {Number} columnIndex The column index to get
-   */
-  static getColumn(table, columnIndex) {
-    if (columnIndex < table.columns.length) {
-      return table.columns[columnIndex];
-    }
-
-    log.error(
-      'Unable to retrieve column',
-      columnIndex,
-      '>=',
-      table.columns.length
-    );
-
-    return null;
-  }
-
-  /**
-   * Retrieves a column from the provided table matching the name, or `null` and log an error if not found
-   * @param {dh.Table} table The table to get the column for
-   * @param {String} columnName The column name to retrieve
-   */
-  static getColumnByName(table, columnName) {
-    const column = table.columns.find(
-      tableColumn => tableColumn.name === columnName
-    );
-    if (column == null) {
-      log.error(
-        'Unable to retrieve column by name',
-        columnName,
-        table.columns.map(tableColumn => tableColumn.name)
-      );
-    }
-
-    return column;
-  }
-
-  /**
    * @param {dh.Sort[]} tableSort The sorts from the table to get the sort from
    * @param {number} columnIndex The index of the column to get the sort for
    * @return {dh.Sort} The sort for the column, or null if it's not sorted

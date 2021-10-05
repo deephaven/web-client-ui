@@ -249,7 +249,7 @@ class IrisGridUtils {
       partition,
       partitionColumn:
         partitionColumn != null
-          ? TableUtils.getColumnByName(model, partitionColumn)
+          ? IrisGridUtils.getColumnByName(model, partitionColumn)
           : null,
     };
   }
@@ -280,7 +280,7 @@ class IrisGridUtils {
 
         let filter = null;
         try {
-          const column = TableUtils.getColumn(model, columnIndex);
+          const column = IrisGridUtils.getColumn(model, columnIndex);
           if (column != null) {
             filter = TableUtils.makeQuickFilter(column, text);
           }
@@ -304,7 +304,7 @@ class IrisGridUtils {
   static dehydrateAdvancedFilters(model, advancedFilters) {
     return [...advancedFilters].map(([columnIndex, advancedFilter]) => {
       const options = IrisGridUtils.dehydrateAdvancedFilterOptions(
-        TableUtils.getColumn(model, columnIndex),
+        IrisGridUtils.getColumn(model, columnIndex),
         advancedFilter.options
       );
       return [columnIndex, { options }];
@@ -321,13 +321,13 @@ class IrisGridUtils {
     const importedFilters = savedAdvancedFilters.map(
       ([columnIndex, advancedFilter]) => {
         const options = IrisGridUtils.hydrateAdvancedFilterOptions(
-          TableUtils.getColumn(model, columnIndex),
+          IrisGridUtils.getColumn(model, columnIndex),
           advancedFilter.options
         );
         let filter = null;
 
         try {
-          const column = TableUtils.getColumn(model, columnIndex);
+          const column = IrisGridUtils.getColumn(model, columnIndex);
           if (column != null) {
             filter = TableUtils.makeAdvancedFilter(column, options);
           }
@@ -484,7 +484,7 @@ class IrisGridUtils {
           if (direction === TableUtils.sortDirection.reverse) {
             return dh.Table.reverse();
           }
-          const column = TableUtils.getColumn(model, columnIndex);
+          const column = IrisGridUtils.getColumn(model, columnIndex);
           if (column != null) {
             let columnSort = column.sort();
             if (isAbs) {
@@ -551,7 +551,7 @@ class IrisGridUtils {
     let filters = [...quickFilters, ...advancedFilters];
     const { partition, partitionColumn: partitionColumnName } = tableSettings;
     if (partition && partitionColumnName) {
-      const partitionColumn = TableUtils.getColumnByName(
+      const partitionColumn = IrisGridUtils.getColumnByName(
         model,
         partitionColumnName
       );
@@ -1037,6 +1037,47 @@ class IrisGridUtils {
         }
       });
     });
+  }
+
+  /**
+   * Retrieves a column from the provided table at the index, or `null` and logs an error if it's invalid
+   *
+   * @param {IrisGridTableModel} model The table model to get the column for
+   * @param {Number} columnIndex The column index to get
+   */
+  static getColumn(model, columnIndex) {
+    if (columnIndex < model.columns.length) {
+      return model.columns[columnIndex];
+    }
+
+    log.error(
+      'Unable to retrieve column',
+      columnIndex,
+      '>=',
+      model.columns.length
+    );
+
+    return null;
+  }
+
+  /**
+   * Retrieves a column from the provided table matching the name, or `null` and log an error if not found
+   * @param {IrisGridTableModel} model The table model to get the column for
+   * @param {String} columnName The column name to retrieve
+   */
+  static getColumnByName(model, columnName) {
+    const column = model.columns.find(
+      tableColumn => tableColumn.name === columnName
+    );
+    if (column == null) {
+      log.error(
+        'Unable to retrieve column by name',
+        columnName,
+        model.columns.map(tableColumn => tableColumn.name)
+      );
+    }
+
+    return column;
   }
 }
 
