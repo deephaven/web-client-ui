@@ -1,14 +1,10 @@
-exports.indexdts = (files, sources) => {
+export const indexdts = (files, sources) => {
   const top = files
-    .map(file => {
-      return `export const ${file.prefixedName}: IconDefinition;`;
-    })
+    .map(file => `export const ${file.prefixedName}: IconDefinition;`)
     .join('\n');
 
   const bottom = sources
-    .map(src => {
-      return `export const ${src.prefix}: IconPack;`;
-    })
+    .map(src => `export const ${src.prefix}: IconPack;`)
     .join('\n');
 
   return ` 
@@ -20,28 +16,24 @@ ${bottom}
 `;
 };
 
-exports.indexjs = files => {
+export const indexjs = files => {
   const iconVar = files
-    .map(file => {
-      return `
+    .map(
+      file => `
   var ${file.prefixedName} = {
     prefix: "${file.prefix}",
     iconName: "${file.name}",
     icon: [${file.width}, ${file.height}, [], "f000", "${file.path}"]
-  };`;
-    })
+  };`
+    )
     .join('');
 
   const cache = files
-    .map(file => {
-      return `    ${file.prefixedName}:${file.prefixedName},`;
-    })
+    .map(file => `    ${file.prefixedName}:${file.prefixedName},`)
     .join('\n');
 
   const exps = files
-    .map(file => {
-      return `  exports.${file.prefixedName} = ${file.prefixedName};`;
-    })
+    .map(file => `  exports.${file.prefixedName} = ${file.prefixedName};`)
     .join('\n');
 
   return `(function (global, factory) {
@@ -65,29 +57,23 @@ ${exps}
 `;
 };
 
-exports.indexesjs = files => {
+export const indexesjs = files => {
   const iconVar = files
-    .map(file => {
-      return `
+    .map(
+      file => `
 var ${file.prefixedName} = {
   prefix: "${file.prefix}",
   iconName: "${file.name}",
   icon: [${file.width}, ${file.height}, [], "f000", "${file.path}"]
-};`;
-    })
+};`
+    )
     .join('');
 
   const cache = files
-    .map(file => {
-      return `  ${file.prefixedName}:${file.prefixedName},`;
-    })
+    .map(file => `  ${file.prefixedName}:${file.prefixedName},`)
     .join('\n');
 
-  const exps = files
-    .map(file => {
-      return `${file.prefixedName}, `;
-    })
-    .join('');
+  const exps = files.map(file => `${file.prefixedName}, `).join('');
 
   return `
 var prefix = "dh";${iconVar}
