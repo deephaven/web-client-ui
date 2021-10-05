@@ -1,3 +1,5 @@
+import { EventTarget } from 'event-target-shim';
+
 /* eslint class-methods-use-this: "off" */
 /* eslint no-unused-vars: "off" */
 /**
