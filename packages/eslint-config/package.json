@@ -4,7 +4,6 @@
   "description": "Deephaven ESLint configuration",
   "repository": "https://github.com/deephaven/web-client-ui",
   "license": "Apache-2.0",
-  "type": "module",
   "main": "index.js",
   "dependencies": {
     "eslint-config-airbnb": "^18.2.1",

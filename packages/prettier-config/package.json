@@ -4,7 +4,6 @@
   "description": "Deephaven Prettier configuration",
   "repository": "https://github.com/deephaven/web-client-ui",
   "license": "Apache-2.0",
-  "type": "module",
   "main": "index.js",
   "peerDependencies": {
     "prettier": "^2.1.2"

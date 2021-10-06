@@ -13,7 +13,7 @@ module.exports = {
       testPathIgnorePatterns: ['<rootDir>/packages/golden-layout/*'],
       moduleFileExtensions: ['scss'],
     },
-    '<rootDir>/packages/*/jest.config.js',
+    '<rootDir>/packages/*/jest.config.cjs',
   ],
   watchPlugins: [
     'jest-watch-typeahead/filename',
