@@ -492,7 +492,14 @@ class IrisGridTableModel extends IrisGridModel {
         col => !frontColumnSet.has(col) && !backColumnSet.has(col)
       );
 
-      return [...frontColumns, ...middleColumns, ...backColumns];
+      const resultColumns = [...frontColumns, ...middleColumns, ...backColumns];
+      // TODO: This is hacky but we don't have a way to set index on Column.
+      resultColumns.forEach((col, i) => {
+        // eslint-disable-next-line no-param-reassign
+        col.overrideIndex = i;
+      });
+
+      return resultColumns;
     }
     return columns;
   });
@@ -669,7 +676,10 @@ class IrisGridTableModel extends IrisGridModel {
     const data = new Map();
     for (let c = 0; c < columns.length; c += 1) {
       const column = columns[c];
-      data.set(column.index, {
+      const modelIndex = this.columns.findIndex(
+        col => col.name === column.name
+      );
+      data.set(modelIndex, {
         value: row.get(column),
         format: row.getFormat(column),
       });
@@ -931,7 +941,10 @@ class IrisGridTableModel extends IrisGridModel {
     for (let i = 0; i < topFloatingRows.length; i += 1) {
       const row = topFloatingRows[i];
       const rowData = columns.map(column =>
-        formatValue(this.valueForCell(column.index, row), column)
+        formatValue(
+          this.valueForCell(column.overrideIndex ?? column.index, row),
+          column
+        )
       );
       if (includeHeaders) {
         rowData.push(this.textForRowFooter(row));
@@ -953,7 +966,10 @@ class IrisGridTableModel extends IrisGridModel {
     for (let i = 0; i < bottomFloatingRows.length; i += 1) {
       const row = bottomFloatingRows[i];
       const rowData = columns.map(column =>
-        formatValue(this.valueForCell(column.index, row), column)
+        formatValue(
+          this.valueForCell(column.overrideIndex ?? column.index, row),
+          column
+        )
       );
       if (includeHeaders) {
         rowData.push(this.textForRowFooter(row));
