@@ -1,4 +1,4 @@
-name: Publish nightly packages
+name: Publish Nightly
 on:
   # https://docs.github.com/en/actions/reference/events-that-trigger-workflows#schedule
   # Note: this will set GITHUB_SHA to the latest commit on the default branch.
