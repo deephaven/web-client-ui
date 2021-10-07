@@ -24,6 +24,7 @@ jobs:
         with:
           node-version: '12.x'
           registry-url: 'https://registry.npmjs.org'
+      - run: npm whoami
       - run: npm install
       - run: npm run build
       - run: ./node_modules/.bin/lerna publish --canary --preid ${{ github.event.inputs.preid }} --yes
