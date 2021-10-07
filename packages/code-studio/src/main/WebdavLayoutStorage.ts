@@ -18,9 +18,9 @@ export class WebdavLayoutStorage implements LayoutStorage {
   }
 
   async getLayouts(): Promise<string[]> {
-    const files = (await this.client.getDirectoryContents(
-      this.root
-    )) as FileStat[];
+    const files = (await this.client.getDirectoryContents(this.root, {
+      glob: '*.json',
+    })) as FileStat[];
 
     return files.map(file => file.basename);
   }

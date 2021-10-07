@@ -1,10 +1,13 @@
 import { ItemConfigType } from '@deephaven/golden-layout';
+import Log from '@deephaven/log';
 import LayoutStorage from './LayoutStorage';
 import {
   CommandHistoryPanel,
   ConsolePanel,
   FileExplorerPanel,
 } from '../dashboard/panels';
+
+const log = Log.module('UserLayoutUtils');
 
 export const DEFAULT_LAYOUT_CONFIG = [
   {
@@ -68,8 +71,14 @@ export const getDefaultLayout = async (
 ): Promise<ItemConfigType[]> => {
   const layouts = await layoutStorage.getLayouts();
   if (layouts.length > 0) {
-    // We found a layout on the server, use it. It could be an empty layout if they want user to build their own
-    return layoutStorage.getLayout(layouts[0]);
+    try {
+      // We found a layout on the server, use it. It could be an empty layout if they want user to build their own
+      const layout = await layoutStorage.getLayout(layouts[0]);
+      return layout;
+    } catch (err) {
+      log.error('Unable to load layout', layouts[0], ':', err);
+      log.warn('No valid layouts found, falling back to default layout');
+    }
   }
   // Otherwise, do the default layout
   return DEFAULT_LAYOUT_CONFIG;
