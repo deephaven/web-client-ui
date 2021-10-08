@@ -210,7 +210,7 @@ $enable-print-styles: false; //I don't think anyone should expect to "print" thi
 $transition: 0.15s;
 $transition-mid: 0.2s;
 $transition-long: 0.3s;
-$transition-slow: 1s;
+$transition-slow: 0.6s;
 
 //form-validation icon, uses vsIssues icon encoded here as svg
 $form-feedback-icon-invalid-color: theme-color('danger');

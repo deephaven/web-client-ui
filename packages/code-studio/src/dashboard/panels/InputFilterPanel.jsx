@@ -154,16 +154,14 @@ class InputFilterPanel extends Component {
         isClonable
         isRenamable
       >
-        <div className="input-filter-container h-100 w-100 container">
-          <InputFilter
-            ref={this.inputFilterRef}
-            column={column}
-            columns={columns}
-            onChange={this.handleChange}
-            isValueShown={isValueShown}
-            value={value}
-          />
-        </div>
+        <InputFilter
+          ref={this.inputFilterRef}
+          column={column}
+          columns={columns}
+          onChange={this.handleChange}
+          isValueShown={isValueShown}
+          value={value}
+        />
       </Panel>
     );
   }

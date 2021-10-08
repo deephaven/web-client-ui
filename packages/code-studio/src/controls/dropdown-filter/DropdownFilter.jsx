@@ -4,9 +4,9 @@
 
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import ReactCardFlip from 'react-card-flip';
+import classNames from 'classnames';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { SocketedButton } from '@deephaven/components';
+import { Button, SocketedButton } from '@deephaven/components';
 import { vsGear } from '@deephaven/icons';
 import { TableUtils } from '@deephaven/iris-grid';
 import memoizee from 'memoizee';
@@ -310,16 +310,17 @@ class DropdownFilter extends Component {
     const selectedOption = this.getSelectedOptionIndex(values, value);
     const disableSave = !isLinked || selectedColumn == null;
 
+    const isFlipped = isValueShown && !isLinkerActive;
+
     return (
-      <div className="dropdown-filter fill-parent-absolute">
-        <ReactCardFlip
-          isFlipped={isValueShown && !isLinkerActive}
-          containerStyle={{ width: '100%', height: '100%' }}
-        >
-          <div
-            className="dropdown-filter-settings-card fill-parent-absolute"
-            key="front"
-          >
+      <div
+        className={classNames('dropdown-filter fill-parent-absolute', {
+          'flip-front': isFlipped,
+          'flip-back': !isFlipped,
+        })}
+      >
+        <div className="back">
+          <div className="dropdown-filter-settings-card">
             <div className="dropdown-filter-card-content">
               <div className="dropdown-filter-settings-grid">
                 <label>Source Column</label>
@@ -352,36 +353,44 @@ class DropdownFilter extends Component {
                   matching this name in this dashboard.
                 </div>
               </div>
-
               {settingsError && (
                 <div className="error-message text-center">{settingsError}</div>
               )}
-
-              {isLinked && !isValueShown && !isLinkerActive && (
+              {isLinked && (
                 <div className="form-row justify-content-end dropdown-filter-settings-buttons">
-                  <button
+                  <Button
+                    kind="secondary"
                     type="button"
-                    className="btn btn-outline-primary"
                     onClick={this.handleSettingsCancel}
-                    disabled={disableCancel}
+                    disabled={disableCancel || isValueShown || isLinkerActive}
+                    tooltip={
+                      isLinkerActive
+                        ? 'Cancel disabled while linker open'
+                        : null
+                    }
                   >
                     Cancel
-                  </button>
-                  <button
+                  </Button>
+                  <Button
+                    kind="primary"
                     type="button"
-                    className="btn btn-primary ml-2"
+                    className="ml-2"
                     onClick={this.handleSettingsSave}
-                    disabled={disableSave}
+                    disabled={disableSave || isValueShown || isLinkerActive}
+                    tooltip={
+                      isLinkerActive ? 'Save disabled while linker open' : null
+                    }
                   >
                     Save
-                  </button>
+                  </Button>
                 </div>
               )}
             </div>
           </div>
+        </div>
+        <div className="front">
           <div
-            className="dropdown-filter-value-card fill-parent-absolute"
-            key="back"
+            className="dropdown-filter-value-card"
             onClick={this.handleBackgroundClick}
           >
             {isLoaded && (
@@ -421,7 +430,7 @@ class DropdownFilter extends Component {
               </>
             )}
           </div>
-        </ReactCardFlip>
+        </div>
       </div>
     );
   }

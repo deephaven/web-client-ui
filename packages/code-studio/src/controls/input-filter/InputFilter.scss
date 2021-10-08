@@ -8,34 +8,60 @@ $input-filter-icon-size: 31px;
     z-index: 15;
     overflow: visible;
   }
-
-  .react-card-front,
-  .react-card-back {
-    // Still want the content of the card to clip though
-    overflow: hidden;
-  }
 }
 
 .input-filter {
   background: $background;
+  display: grid;
+  height: 100%;
+  width: 100%;
+  perspective: 1000px;
+
+  .front,
+  .back {
+    grid-area: 1/1/2/2;
+    transform-style: flat;
+    backface-visibility: hidden;
+    transition: transform $transition-slow ease-in-out;
+    overflow: hidden;
+  }
+
+  &.flip-back {
+    .front {
+      transform: rotateY(180deg);
+    }
+    .back {
+      transform: rotateY(0);
+    }
+  }
+
+  &.flip-front {
+    .front {
+      transform: rotateY(0);
+    }
+    .back {
+      transform: rotateY(-180deg);
+    }
+  }
 
   .input-filter-settings-card,
   .input-filter-value-card {
+    position: relative;
+    overflow: auto;
+    height: 100%;
     background: $content-bg;
   }
 
   // Settings side
   .input-filter-settings-card {
-    overflow: auto;
     display: flex;
     justify-content: center;
+    align-items: center;
   }
 
-  .input-filter-settings {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    padding: $spacer;
+  .input-filter-settings-content {
+    margin: auto;
+    padding: $spacer-1;
   }
 
   .input-filter-settings-grid {

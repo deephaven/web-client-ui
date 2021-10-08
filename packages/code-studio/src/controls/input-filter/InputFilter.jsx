@@ -4,7 +4,7 @@
 
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import ReactCardFlip from 'react-card-flip';
+import classNames from 'classnames';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { vsGear } from '@deephaven/icons';
 import memoizee from 'memoizee';
@@ -173,16 +173,15 @@ class InputFilter extends Component {
     }
 
     return (
-      <div className="input-filter fill-parent-absolute">
-        <ReactCardFlip
-          isFlipped={isValueShown}
-          containerStyle={{ width: '100%', height: '100%' }}
-        >
-          <div
-            className="input-filter-settings-card fill-parent-absolute"
-            key="front"
-          >
-            <div className="input-filter-settings">
+      <div
+        className={classNames('input-filter fill-parent-absolute', {
+          'flip-front': isValueShown,
+          'flip-back': !isValueShown,
+        })}
+      >
+        <div className="back">
+          <div className="input-filter-settings-card">
+            <div className="input-filter-settings-content">
               <div className="input-filter-settings-grid">
                 <label>Filter Column</label>
                 <select
@@ -233,9 +232,11 @@ class InputFilter extends Component {
               </div>
             </div>
           </div>
+        </div>
+
+        <div className="front">
           <div
-            className="input-filter-value-card h-100 w-100"
-            key="back"
+            className="input-filter-value-card"
             onClick={this.handleBackgroundClick}
           >
             <div className="input-filter-column">
@@ -267,7 +268,7 @@ class InputFilter extends Component {
               </button>
             </div>
           </div>
-        </ReactCardFlip>
+        </div>
       </div>
     );
   }
