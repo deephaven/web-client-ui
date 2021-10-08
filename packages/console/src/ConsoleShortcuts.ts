@@ -1,6 +1,7 @@
 import { ShortcutRegistry, KEY, MODIFIER } from '@deephaven/components';
 
 const CONSOLE = {
+  name: 'Console',
   CLEAR: ShortcutRegistry.createAndAdd({
     id: 'CONSOLE.CLEAR',
     name: 'Clear',

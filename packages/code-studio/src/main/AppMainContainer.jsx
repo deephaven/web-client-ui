@@ -12,7 +12,26 @@ import {
   GLOBAL_SHORTCUTS,
   Popper,
 } from '@deephaven/components';
-import { SHORTCUTS as IRIS_GRID_SHORTCUTS } from '@deephaven/iris-grid';
+import Dashboard, {
+  DEFAULT_DASHBOARD_ID,
+  getDashboardData,
+} from '@deephaven/dashboard';
+import {
+  ChartEvent,
+  ChartPlugin,
+  ConsolePlugin,
+  FilterPlugin,
+  GridPlugin,
+  InputFilterEvent,
+  IrisGridEvent,
+  LinkerPlugin,
+  MarkdownEvent,
+  MarkdownPlugin,
+  PandasPlugin,
+  getDashboardSessionWrapper,
+} from '@deephaven/dashboard-core-plugins';
+import ControlType from '@deephaven/dashboard-core-plugins/dist/controls/ControlType';
+import ToolType from '@deephaven/dashboard-core-plugins/dist/linker/ToolType';
 import { vsGear, dhShapes, dhPanels } from '@deephaven/icons';
 import dh, { PropTypes as APIPropTypes } from '@deephaven/jsapi-shim';
 import Log from '@deephaven/log';
@@ -25,26 +44,20 @@ import {
 } from '@deephaven/redux';
 import { PromiseUtils } from '@deephaven/utils';
 import SettingsMenu from '../settings/SettingsMenu';
-import {
-  ChartEvent,
-  ControlEvent,
-  InputFilterEvent,
-  IrisGridEvent,
-} from '../dashboard/events';
-import ToolType from '../tools/ToolType';
-import { IrisPropTypes } from '../include/prop-types';
 import AppControlsMenu from './AppControlsMenu';
-import DashboardContainer from '../dashboard/DashboardContainer';
-import ControlType from '../controls/ControlType';
-import { getLayoutStorage, getSessionWrapper } from '../redux';
+import { getLayoutStorage } from '../redux';
 import Logo from '../settings/LogoMiniDark.svg';
 import './AppMainContainer.scss';
 import WidgetList from './WidgetList';
 import { createChartModel, createGridModel } from './WidgetUtils';
 import EmptyDashboard from './EmptyDashboard';
 import UserLayoutUtils from './UserLayoutUtils';
+import DownloadServiceWorkerUtils from '../DownloadServiceWorkerUtils';
+import { PluginUtils } from '../plugins';
 
 const log = Log.module('AppMainContainer');
+
+const EMPTY_OBJECT = Object.freeze({});
 
 export class AppMainContainer extends Component {
   static handleWindowBeforeUnload(event) {
@@ -75,12 +88,48 @@ export class AppMainContainer extends Component {
     this.handleWidgetsMenuClose = this.handleWidgetsMenuClose.bind(this);
     this.handleWidgetSelect = this.handleWidgetSelect.bind(this);
     this.handlePaste = this.handlePaste.bind(this);
+    this.hydrateChart = this.hydrateChart.bind(this);
+    this.hydrateGrid = this.hydrateGrid.bind(this);
 
     this.goldenLayout = null;
     this.importElement = React.createRef();
     this.widgetListenerRemover = null;
 
     this.state = {
+      contextActions: [
+        {
+          action: () => {
+            this.handleToolSelect(ToolType.LINKER);
+          },
+          shortcut: GLOBAL_SHORTCUTS.LINKER,
+          isGlobal: true,
+        },
+        {
+          action: () => {
+            // triggers clear all filters tab event, which in turn triggers a glEventhub event
+            // widget panels can subscribe to his event, and execute their own clearing logic
+            this.sendClearFilter();
+          },
+          order: 50,
+          shortcut: GLOBAL_SHORTCUTS.CLEAR_ALL_FILTERS,
+        },
+        {
+          action: () => {
+            log.debug('Consume unhandled save shortcut');
+          },
+          shortcut: GLOBAL_SHORTCUTS.SAVE,
+        },
+        {
+          action: () => {
+            this.sendRestartSession();
+          },
+        },
+        {
+          action: () => {
+            this.sendDisconnectSession();
+          },
+        },
+      ],
       isPanelsMenuShown: false,
       isSettingsMenuShown: false,
       widgets: [],
@@ -96,6 +145,13 @@ export class AppMainContainer extends Component {
     );
   }
 
+  componentDidUpdate(prevProps) {
+    const { dashboardData } = this.props;
+    if (prevProps.dashboardData !== dashboardData) {
+      this.handleDataChange(dashboardData);
+    }
+  }
+
   componentWillUnmount() {
     this.deinitWidgets();
 
@@ -107,6 +163,13 @@ export class AppMainContainer extends Component {
 
   initWidgets() {
     const { session } = this.props;
+    if (!session.connection.subscribeToFieldUpdates) {
+      log.warn(
+        'subscribeToFieldUpdates not supported, not initializing widgets'
+      );
+      return;
+    }
+
     this.widgetListenerRemover = session.connection.subscribeToFieldUpdates(
       updates => {
         log.debug('Got updates', updates);
@@ -167,7 +230,7 @@ export class AppMainContainer extends Component {
 
     switch (type) {
       case ControlType.DROPDOWN_FILTER:
-        this.emitLayoutEvent(ControlEvent.OPEN, {
+        this.emitLayoutEvent(InputFilterEvent.OPEN_DROPDOWN, {
           title: 'DropdownFilter',
           type,
           createNewStack: true,
@@ -175,7 +238,7 @@ export class AppMainContainer extends Component {
         });
         break;
       case ControlType.INPUT_FILTER:
-        this.emitLayoutEvent(ControlEvent.OPEN, {
+        this.emitLayoutEvent(InputFilterEvent.OPEN_INPUT, {
           title: 'InputFilter',
           type,
           createNewStack: true,
@@ -183,7 +246,7 @@ export class AppMainContainer extends Component {
         });
         break;
       case ControlType.MARKDOWN:
-        this.emitLayoutEvent(ControlEvent.OPEN, {
+        this.emitLayoutEvent(MarkdownEvent.OPEN, {
           title: 'Markdown',
           type,
           dragEvent,
@@ -211,7 +274,10 @@ export class AppMainContainer extends Component {
 
   handleDataChange(data) {
     const { updateWorkspaceData } = this.props;
-    updateWorkspaceData({ data });
+
+    // Only save the data that is serializable/we want to persist to the workspace
+    const { closed, links } = data;
+    updateWorkspaceData({ closed, links });
   }
 
   handleGoldenLayoutChange(goldenLayout) {
@@ -358,6 +424,28 @@ export class AppMainContainer extends Component {
     }
   }
 
+  hydrateGrid(props, id) {
+    const { session } = this.props;
+    return {
+      ...props,
+      getDownloadWorker: DownloadServiceWorkerUtils.getServiceWorker,
+      localDashboardId: id,
+      makeModel: () => createGridModel(session, props.metadata),
+    };
+  }
+
+  hydrateChart(props, id) {
+    const { session } = this.props;
+    return {
+      ...props,
+      localDashboardId: id,
+      makeModel: () => {
+        const { metadata, panelState } = props;
+        return createChartModel(session, metadata, panelState);
+      },
+    };
+  }
+
   /**
    * Open a widget up, using a drag event if specified.
    * @param {WidgetDefinition} widget The widget to
@@ -403,85 +491,14 @@ export class AppMainContainer extends Component {
   render() {
     const { activeTool, user, workspace } = this.props;
     const { data: workspaceData = {} } = workspace;
-    const { data = {}, layoutConfig } = workspaceData;
-    const { isPanelsMenuShown, isSettingsMenuShown, widgets } = this.state;
-    const contextActions = [
-      {
-        action: () => {
-          this.handleToolSelect(ToolType.LINKER);
-        },
-        shortcut: GLOBAL_SHORTCUTS.LINKER,
-        isGlobal: true,
-      },
-      {
-        action: () => {
-          // triggers clear all filters tab event, which in turn triggers a glEventhub event
-          // widget panels can subscribe to his event, and execute their own clearing logic
-          this.sendClearFilter();
-        },
-        order: 50,
-        shortcut: IRIS_GRID_SHORTCUTS.TABLE.CLEAR_ALL_FILTERS,
-      },
-      {
-        action: () => {
-          log.debug('Consume unhandled save shortcut');
-        },
-        shortcut: GLOBAL_SHORTCUTS.SAVE,
-      },
-    ];
-
-    const tabBarMenu = (
-      <div>
-        <button type="button" className="btn btn-link btn-panels-menu">
-          <FontAwesomeIcon icon={dhShapes} />
-          Controls
-          <AppControlsMenu
-            handleControlSelect={this.handleControlSelect}
-            handleToolSelect={this.handleToolSelect}
-            onClearFilter={this.handleClearFilter}
-          />
-        </button>
-        <button
-          type="button"
-          className="btn btn-link btn-panels-menu btn-show-panels"
-          data-testid="app-main-panels-button"
-          onClick={this.handleWidgetMenuClick}
-        >
-          <FontAwesomeIcon icon={dhPanels} />
-          Panels
-          <Popper
-            isShown={isPanelsMenuShown}
-            className="panels-menu-popper"
-            onExited={this.handleWidgetsMenuClose}
-            closeOnBlur
-            interactive
-          >
-            <WidgetList
-              widgets={widgets}
-              onExportLayout={this.handleExportLayoutClick}
-              onImportLayout={this.handleImportLayoutClick}
-              onResetLayout={this.handleResetLayoutClick}
-              onSelect={this.handleWidgetSelect}
-            />
-          </Popper>
-        </button>
-        <button
-          type="button"
-          className={classNames(
-            'btn btn-link btn-link-icon btn-settings-menu',
-            { 'text-warning': user.operateAs !== user.name }
-          )}
-          onClick={this.handleSettingsMenuShow}
-        >
-          <FontAwesomeIcon icon={vsGear} transform="grow-3 right-1 down-1" />
-          <Tooltip>User Settings</Tooltip>
-        </button>
-      </div>
-    );
-
-    const toolClassName = activeTool
-      ? `active-tool-${activeTool.toLowerCase()}`
-      : '';
+    const { data = EMPTY_OBJECT, layoutConfig } = workspaceData;
+    const { layoutSettings = EMPTY_OBJECT } = data;
+    const {
+      contextActions,
+      isPanelsMenuShown,
+      isSettingsMenuShown,
+      widgets,
+    } = this.state;
 
     return (
       <div
@@ -491,7 +508,7 @@ export class AppMainContainer extends Component {
           'h-100',
           'd-flex',
           'flex-column',
-          toolClassName
+          activeTool ? `active-tool-${activeTool.toLowerCase()}` : ''
         )}
         onPaste={this.handlePaste}
         tabIndex={-1}
@@ -499,19 +516,79 @@ export class AppMainContainer extends Component {
         <nav className="nav-container">
           <div className="app-main-top-nav-menus">
             <img src={Logo} alt="Deephaven Data Labs" width="152px" />
-            {tabBarMenu}
+            <div>
+              <button type="button" className="btn btn-link btn-panels-menu">
+                <FontAwesomeIcon icon={dhShapes} />
+                Controls
+                <AppControlsMenu
+                  handleControlSelect={this.handleControlSelect}
+                  handleToolSelect={this.handleToolSelect}
+                  onClearFilter={this.handleClearFilter}
+                />
+              </button>
+              <button
+                type="button"
+                className="btn btn-link btn-panels-menu btn-show-panels"
+                data-testid="app-main-panels-button"
+                onClick={this.handleWidgetMenuClick}
+              >
+                <FontAwesomeIcon icon={dhPanels} />
+                Panels
+                <Popper
+                  isShown={isPanelsMenuShown}
+                  className="panels-menu-popper"
+                  onExited={this.handleWidgetsMenuClose}
+                  closeOnBlur
+                  interactive
+                >
+                  <WidgetList
+                    widgets={widgets}
+                    onExportLayout={this.handleExportLayoutClick}
+                    onImportLayout={this.handleImportLayoutClick}
+                    onResetLayout={this.handleResetLayoutClick}
+                    onSelect={this.handleWidgetSelect}
+                  />
+                </Popper>
+              </button>
+              <button
+                type="button"
+                className={classNames(
+                  'btn btn-link btn-link-icon btn-settings-menu',
+                  { 'text-warning': user.operateAs !== user.name }
+                )}
+                onClick={this.handleSettingsMenuShow}
+              >
+                <FontAwesomeIcon
+                  icon={vsGear}
+                  transform="grow-3 right-1 down-1"
+                />
+                <Tooltip>User Settings</Tooltip>
+              </button>
+            </div>
           </div>
         </nav>
-        <DashboardContainer
-          data={data}
+        <Dashboard
           emptyDashboard={
             <EmptyDashboard onAutoFillClick={this.handleAutoFillClick} />
           }
+          id={DEFAULT_DASHBOARD_ID}
           layoutConfig={layoutConfig}
-          onDataChange={this.handleDataChange}
+          layoutSettings={layoutSettings}
           onGoldenLayoutChange={this.handleGoldenLayoutChange}
           onLayoutConfigChange={this.handleLayoutConfigChange}
-        />
+        >
+          <GridPlugin
+            hydrate={this.hydrateGrid}
+            getDownloadWorker={DownloadServiceWorkerUtils.getServiceWorker}
+            loadPlugin={PluginUtils.loadPlugin}
+          />
+          <ChartPlugin hydrate={this.hydrateChart} />
+          <ConsolePlugin />
+          <FilterPlugin />
+          <PandasPlugin />
+          <MarkdownPlugin />
+          <LinkerPlugin />
+        </Dashboard>
         <CSSTransition
           in={isSettingsMenuShown}
           timeout={ThemeExport.transitionMidMs}
@@ -536,11 +613,12 @@ export class AppMainContainer extends Component {
 
 AppMainContainer.propTypes = {
   activeTool: PropTypes.string.isRequired,
+  dashboardData: PropTypes.shape({}).isRequired,
   layoutStorage: PropTypes.shape({}).isRequired,
   session: APIPropTypes.IdeSession.isRequired,
   setActiveTool: PropTypes.func.isRequired,
   updateWorkspaceData: PropTypes.func.isRequired,
-  user: IrisPropTypes.User.isRequired,
+  user: APIPropTypes.User.isRequired,
   workspace: PropTypes.shape({
     data: PropTypes.shape({
       data: PropTypes.shape({}),
@@ -551,8 +629,9 @@ AppMainContainer.propTypes = {
 
 const mapStateToProps = state => ({
   activeTool: getActiveTool(state),
+  dashboardData: getDashboardData(state, DEFAULT_DASHBOARD_ID),
   layoutStorage: getLayoutStorage(state),
-  session: getSessionWrapper(state).session,
+  session: getDashboardSessionWrapper(state, DEFAULT_DASHBOARD_ID).session,
   user: getUser(state),
   workspace: getWorkspace(state),
 });

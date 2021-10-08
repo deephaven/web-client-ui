@@ -24,9 +24,11 @@
     "types": "tsc",
     "build:babel": "npm run babel",
     "build:sass": "npm run sass",
+    "build:types": "npm run types -- --incremental",
     "watch": "run-p watch:*",
     "watch:babel": "npm run babel -- -w --skip-initial-build",
     "watch:sass": "npm run sass -- --watch --update",
+    "watch:types": "npm run types -- -w --incremental --preserveWatchOutput",
     "clean": "rimraf ./dist tsconfig.tsbuildinfo",
     "prestart": "npm run build-dev",
     "start": "cross-env NODE_ENV=development npm run watch",
@@ -52,7 +54,7 @@
     "memoizee": "^0.x",
     "prop-types": "^15.x",
     "react": "^16.x",
-    "react-redux": "^6.x"
+    "react-redux": "^7.2.4"
   },
   "devDependencies": {
     "@babel/cli": "^7.14.8",
@@ -78,7 +80,7 @@
     "npm-run-all": "^4.1.5",
     "prop-types": "^15.7.2",
     "react": "^16.14.0",
-    "react-redux": "^6.0.1",
+    "react-redux": "^7.2.4",
     "rimraf": "^3.0.2",
     "sass": "1.32.13",
     "typescript": "^4.3.2"

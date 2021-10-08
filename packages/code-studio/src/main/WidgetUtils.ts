@@ -1,4 +1,5 @@
 import { ChartModel, ChartModelFactory } from '@deephaven/chart';
+import dh from '@deephaven/jsapi-shim';
 import {
   IrisGridModel,
   IrisGridModelFactory,

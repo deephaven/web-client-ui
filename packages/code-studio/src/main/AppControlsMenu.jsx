@@ -7,6 +7,8 @@ import React, {
 } from 'react';
 import classNames from 'classnames';
 import { DropdownMenu, GLOBAL_SHORTCUTS } from '@deephaven/components';
+import ControlType from '@deephaven/dashboard-core-plugins/dist/controls/ControlType';
+import ToolType from '@deephaven/dashboard-core-plugins/dist/linker/ToolType';
 import { SHORTCUTS as IRIS_GRID_SHORTCUTS } from '@deephaven/iris-grid';
 import {
   dhInput,
@@ -16,8 +18,6 @@ import {
   vsMarkdown,
 } from '@deephaven/icons';
 import PropTypes from 'prop-types';
-import ControlType from '../controls/ControlType';
-import ToolType from '../tools/ToolType';
 
 const MINIMUM_DRAG_DISTANCE = 10;
 

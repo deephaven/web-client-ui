@@ -1,0 +1,33 @@
+@import '../../../components/scss/custom.scss';
+
+$panel-message-overlay-top: 30px;
+
+.iris-grid-panel.disconnected {
+  .iris-grid {
+    filter: grayscale(100%);
+    opacity: 0.18;
+  }
+}
+
+.iris-grid-panel.inactive {
+  .iris-grid {
+    filter: grayscale(100%);
+  }
+}
+
+.iris-grid-panel {
+  .iris-panel-message-overlay {
+    padding-top: $panel-message-overlay-top;
+  }
+}
+
+.iris-grid-plugin {
+  .error-message {
+    padding: $spacer-1;
+    color: $danger;
+  }
+}
+
+.grid-cursor-linker {
+  cursor: crosshair;
+}

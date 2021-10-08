@@ -1,5 +1,7 @@
 /* eslint-disable no-console */
-import { EventTarget } from 'event-target-shim';
+// eslint-disable-next-line max-classes-per-file
+import { Event, EventTarget } from 'event-target-shim';
+import 'custom-event-polyfill';
 import Log from './Log';
 
 export enum LOG_PROXY_TYPE {
@@ -8,6 +10,19 @@ export enum LOG_PROXY_TYPE {
   WARN = 'W',
   ERROR = 'E',
   UNCAUGHT_ERROR = 'U',
+}
+
+// We need to cast our CustomEvent so it's happy with event-target-shim
+type CustomEventType = EventTarget.EventData<
+  Record<string, Event>,
+  'standard',
+  'CustomEvent'
+>;
+
+function makeEvent(type: LOG_PROXY_TYPE, detail: unknown): CustomEventType {
+  return new CustomEvent(type, {
+    detail,
+  }) as CustomEventType;
 }
 
 export class LogProxy {
@@ -32,9 +47,7 @@ export class LogProxy {
       messages.push(event.message);
     }
     this.eventTarget.dispatchEvent(
-      new CustomEvent(LOG_PROXY_TYPE.UNCAUGHT_ERROR, {
-        detail: messages,
-      })
+      makeEvent(LOG_PROXY_TYPE.UNCAUGHT_ERROR, messages)
     );
   };
 
@@ -52,30 +65,22 @@ export class LogProxy {
     }
 
     console.debug = (...args: unknown[]): void => {
-      this.eventTarget.dispatchEvent(
-        new CustomEvent(LOG_PROXY_TYPE.DEBUG, { detail: args })
-      );
+      this.eventTarget.dispatchEvent(makeEvent(LOG_PROXY_TYPE.DEBUG, args));
       this.debug.apply(console, args);
     };
 
     console.log = (...args: unknown[]): void => {
-      this.eventTarget.dispatchEvent(
-        new CustomEvent(LOG_PROXY_TYPE.LOG, { detail: args })
-      );
+      this.eventTarget.dispatchEvent(makeEvent(LOG_PROXY_TYPE.LOG, args));
       this.log.apply(console, args);
     };
 
     console.warn = (...args: unknown[]): void => {
-      this.eventTarget.dispatchEvent(
-        new CustomEvent(LOG_PROXY_TYPE.WARN, { detail: args })
-      );
+      this.eventTarget.dispatchEvent(makeEvent(LOG_PROXY_TYPE.WARN, args));
       this.warn.apply(console, args);
     };
 
     console.error = (...args: unknown[]): void => {
-      this.eventTarget.dispatchEvent(
-        new CustomEvent(LOG_PROXY_TYPE.ERROR, { detail: args })
-      );
+      this.eventTarget.dispatchEvent(makeEvent(LOG_PROXY_TYPE.ERROR, args));
       this.error.apply(console, args);
     };
 

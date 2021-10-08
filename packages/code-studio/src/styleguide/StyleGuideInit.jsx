@@ -6,7 +6,7 @@ import {
   setWorkspace as setWorkspaceAction,
 } from '@deephaven/redux';
 import StyleGuide from './StyleGuide';
-import LocalWorkspaceStorage from '../dashboard/LocalWorkspaceStorage';
+import LocalWorkspaceStorage from '../storage/LocalWorkspaceStorage';
 
 /**
  * Initialize data needed for the styleguide

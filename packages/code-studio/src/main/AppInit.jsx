@@ -2,6 +2,12 @@ import React, { useCallback, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { LoadingOverlay } from '@deephaven/components';
+import {
+  DEFAULT_DASHBOARD_ID,
+  setDashboardData as setDashboardDataAction,
+} from '@deephaven/dashboard';
+import { setDashboardSessionWrapper as setDashboardSessionWrapperAction } from '@deephaven/dashboard-core-plugins';
+import ToolType from '@deephaven/dashboard-core-plugins/dist/linker/ToolType';
 import { WebdavFileStorage } from '@deephaven/file-explorer';
 import dh from '@deephaven/jsapi-shim';
 import Log from '@deephaven/log';
@@ -16,14 +22,10 @@ import {
   setWorkspaceStorage as setWorkspaceStorageAction,
 } from '@deephaven/redux';
 import { createClient } from 'webdav/web';
-import {
-  setLayoutStorage as setLayoutStorageAction,
-  setSessionWrapper as setSessionWrapperAction,
-} from '../redux/actions';
+import { setLayoutStorage as setLayoutStorageAction } from '../redux/actions';
 import App from './App';
-import ToolType from '../tools/ToolType';
 import PouchCommandHistoryStorage from '../storage/PouchCommandHistoryStorage';
-import LocalWorkspaceStorage from '../dashboard/LocalWorkspaceStorage';
+import LocalWorkspaceStorage from '../storage/LocalWorkspaceStorage';
 import WebdavLayoutStorage from './WebdavLayoutStorage';
 import { createSessionWrapper } from './SessionUtils';
 import UserLayoutUtils from './UserLayoutUtils';
@@ -49,9 +51,10 @@ const AppInit = props => {
     workspace,
     setActiveTool,
     setCommandHistoryStorage,
+    setDashboardData,
     setFileStorage,
     setLayoutStorage,
-    setSessionWrapper,
+    setDashboardSessionWrapper,
     setUser,
     setWorkspace,
     setWorkspaceStorage,
@@ -84,9 +87,10 @@ const AppInit = props => {
 
       setActiveTool(ToolType.DEFAULT);
       setCommandHistoryStorage(COMMAND_HISTORY_STORAGE);
+      setDashboardData(data);
       setFileStorage(FILE_STORAGE);
       setLayoutStorage(LAYOUT_STORAGE);
-      setSessionWrapper(sessionWrapper);
+      setDashboardSessionWrapper(DEFAULT_DASHBOARD_ID, sessionWrapper);
       setUser(USER);
       setWorkspaceStorage(WORKSPACE_STORAGE);
       setWorkspace(loadedWorkspace);
@@ -96,9 +100,10 @@ const AppInit = props => {
   }, [
     setActiveTool,
     setCommandHistoryStorage,
+    setDashboardData,
     setFileStorage,
     setLayoutStorage,
-    setSessionWrapper,
+    setDashboardSessionWrapper,
     setUser,
     setWorkspace,
     setWorkspaceStorage,
@@ -160,9 +165,10 @@ AppInit.propTypes = {
 
   setActiveTool: PropTypes.func.isRequired,
   setCommandHistoryStorage: PropTypes.func.isRequired,
+  setDashboardData: PropTypes.func.isRequired,
   setFileStorage: PropTypes.func.isRequired,
   setLayoutStorage: PropTypes.func.isRequired,
-  setSessionWrapper: PropTypes.func.isRequired,
+  setDashboardSessionWrapper: PropTypes.func.isRequired,
   setUser: PropTypes.func.isRequired,
   setWorkspace: PropTypes.func.isRequired,
   setWorkspaceStorage: PropTypes.func.isRequired,
@@ -181,9 +187,10 @@ const mapStateToProps = state => ({
 export default connect(mapStateToProps, {
   setActiveTool: setActiveToolAction,
   setCommandHistoryStorage: setCommandHistoryStorageAction,
+  setDashboardData: setDashboardDataAction,
   setFileStorage: setFileStorageAction,
   setLayoutStorage: setLayoutStorageAction,
-  setSessionWrapper: setSessionWrapperAction,
+  setDashboardSessionWrapper: setDashboardSessionWrapperAction,
   setUser: setUserAction,
   setWorkspace: setWorkspaceAction,
   setWorkspaceStorage: setWorkspaceStorageAction,
