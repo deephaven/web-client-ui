@@ -79,7 +79,7 @@ class VisibilityOrderingBuilder extends Component {
     const { columns } = model;
 
     onColumnVisibilityChanged(
-      columns.map(column => column.index),
+      columns.map(column => model.columnIndicesByName.get(column.name)),
       VisibilityOrderingBuilder.VISIBILITY_OPTIONS.SHOW
     );
     this.setState({

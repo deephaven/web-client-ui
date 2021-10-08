@@ -116,7 +116,7 @@ class IrisGridUtils {
       customColumnFormatMap: [...customColumnFormatMap],
       isFilterBarShown,
       quickFilters: IrisGridUtils.dehydrateQuickFilters(model, quickFilters),
-      sorts: IrisGridUtils.dehydrateSort(sorts),
+      sorts: IrisGridUtils.dehydrateSort(sorts, model),
       userColumnWidths: [...userColumnWidths]
         .filter(
           ([columnIndex]) =>
@@ -466,7 +466,11 @@ class IrisGridUtils {
   static dehydrateSort(sorts) {
     return sorts.map(sort => {
       const { column, isAbs, direction } = sort;
-      return { column: column.index, isAbs, direction };
+      return {
+        column: column.index,
+        isAbs,
+        direction,
+      };
     });
   }
 

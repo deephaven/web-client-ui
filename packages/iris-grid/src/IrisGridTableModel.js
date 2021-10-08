@@ -492,14 +492,7 @@ class IrisGridTableModel extends IrisGridModel {
         col => !frontColumnSet.has(col) && !backColumnSet.has(col)
       );
 
-      const resultColumns = [...frontColumns, ...middleColumns, ...backColumns];
-      // TODO: This is hacky but we don't have a way to set index on Column.
-      resultColumns.forEach((col, i) => {
-        // eslint-disable-next-line no-param-reassign
-        col.overrideIndex = i;
-      });
-
-      return resultColumns;
+      return [...frontColumns, ...middleColumns, ...backColumns];
     }
     return columns;
   });
@@ -653,6 +646,20 @@ class IrisGridTableModel extends IrisGridModel {
   }
 
   /**
+   * Use this as the canonical column index since things like layoutHints could have
+   * changed the column order.
+   */
+  get columnIndicesByName() {
+    return this.getColumnIndicesByNameMap(this.columns);
+  }
+
+  getColumnIndicesByNameMap = memoize(columns => {
+    const indices = new Map();
+    columns.forEach(({ name }, i) => indices.set(name, i));
+    return indices;
+  });
+
+  /**
    * Copies all the viewport data into an object that we can reference later.
    * @param {ViewportData} data The data to copy from
    */
@@ -676,10 +683,8 @@ class IrisGridTableModel extends IrisGridModel {
     const data = new Map();
     for (let c = 0; c < columns.length; c += 1) {
       const column = columns[c];
-      const modelIndex = this.columns.findIndex(
-        col => col.name === column.name
-      );
-      data.set(modelIndex, {
+
+      data.set(this.columnIndicesByName.get(column.name), {
         value: row.get(column),
         format: row.getFormat(column),
       });
@@ -942,7 +947,7 @@ class IrisGridTableModel extends IrisGridModel {
       const row = topFloatingRows[i];
       const rowData = columns.map(column =>
         formatValue(
-          this.valueForCell(column.overrideIndex ?? column.index, row),
+          this.valueForCell(this.columnIndicesByName.get(column.name), row),
           column
         )
       );
@@ -967,7 +972,7 @@ class IrisGridTableModel extends IrisGridModel {
       const row = bottomFloatingRows[i];
       const rowData = columns.map(column =>
         formatValue(
-          this.valueForCell(column.overrideIndex ?? column.index, row),
+          this.valueForCell(this.columnIndicesByName.get(column.name), row),
           column
         )
       );

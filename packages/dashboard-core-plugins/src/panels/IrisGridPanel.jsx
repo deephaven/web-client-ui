@@ -581,8 +581,9 @@ export class IrisGridPanel extends PureComponent {
       visibleColumnWidths,
       right,
     } = metrics;
-    const column = model.columns.find(c => c.name === columnName);
-    const visibleIndex = irisGrid.getVisibleColumn(column.index);
+    const visibleIndex = irisGrid.getVisibleColumn(
+      model.columnIndicesByName.get(columnName)
+    );
     const columnX = visibleColumnXs.get(visibleIndex) || 0;
     const columnWidth = visibleColumnWidths.get(visibleIndex) || 0;
 

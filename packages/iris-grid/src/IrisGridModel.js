@@ -71,6 +71,14 @@ class IrisGridModel extends GridModel {
   }
 
   /**
+   * Gets the columns for this model
+   * @returns {Map} All columns in the model with column name mapped to its index.
+   */
+  get columnsIndicesByName() {
+    throw new Error('get columnIndicesByName not implemented');
+  }
+
+  /**
    * Gets the columns for the model before any transformations (such as rollups) are applied.
    * @returns {dh.Column[]} All original columns in the model.
    */

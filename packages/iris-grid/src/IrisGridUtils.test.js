@@ -138,7 +138,7 @@ describe('sort exporting/importing', () => {
     const columns = makeColumns();
     const sort = [columns[3].sort(), columns[7].sort().abs().desc()];
     const table = makeTable({ columns, sort });
-    const exportedSort = IrisGridUtils.dehydrateSort(sort);
+    const exportedSort = IrisGridUtils.dehydrateSort(sort, table);
     expect(exportedSort).toEqual([
       { column: 3, isAbs: false, direction: 'ASC' },
       { column: 7, isAbs: true, direction: 'DESC' },

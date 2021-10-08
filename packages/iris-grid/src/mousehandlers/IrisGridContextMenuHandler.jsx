@@ -516,7 +516,10 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
         group,
         order: i,
         action: () => {
-          this.irisGrid.handleFormatSelection(column.index, format);
+          this.irisGrid.handleFormatSelection(
+            model.columnIndicesByName.get(column.name),
+            format
+          );
         },
       });
     }
@@ -528,18 +531,19 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
     const { formatter } = model;
     const selectedFormat = formatter.getColumnFormat(column.type, column.name);
     let formatOptions;
+    const columnIndex = model.columnIndicesByName.get(column.name);
     if (TableUtils.isDecimalType(column.type)) {
       formatOptions = DecimalFormatContextMenu.getOptions(
         selectedFormat,
         format => {
-          this.debouncedUpdateCustomFormat(column.index, format);
+          this.debouncedUpdateCustomFormat(columnIndex, format);
         }
       );
     } else if (TableUtils.isIntegerType(column.type)) {
       formatOptions = IntegerFormatContextMenu.getOptions(
         selectedFormat,
         format => {
-          this.debouncedUpdateCustomFormat(column.index, format);
+          this.debouncedUpdateCustomFormat(columnIndex, format);
         }
       );
     } else {
@@ -562,7 +566,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
           ) {
             return;
           }
-          this.irisGrid.handleFormatSelection(column.index, format);
+          this.irisGrid.handleFormatSelection(columnIndex, format);
         },
       });
     }
@@ -579,6 +583,8 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
     const filterValue = dh.FilterValue.ofString(value);
     const { filter, text: filterText } = quickFilter;
     const actions = [];
+    const { model } = this.irisGrid.props;
+    const columnIndex = model.columnIndicesByName.get(column.name);
 
     actions.push({
       menuElement: (
@@ -594,7 +600,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
       description: `Show only rows where ${column.name} is ${value} (case sensitive)`,
       action: () => {
         this.irisGrid.setQuickFilter(
-          column.index,
+          columnIndex,
           IrisGridContextMenuHandler.getQuickFilterCondition(
             filter,
             column.filter().eq(filterValue),
@@ -614,7 +620,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
       description: `Show only rows where ${column.name} is not ${valueText} (case sensitive)`,
       action: () => {
         this.irisGrid.setQuickFilter(
-          column.index,
+          columnIndex,
           IrisGridContextMenuHandler.getQuickFilterCondition(
             filter,
             column.filter().notEq(filterValue),
@@ -634,7 +640,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
       description: `Show only rows where ${column.name} contains ${valueText}`,
       action: () => {
         this.irisGrid.setQuickFilter(
-          column.index,
+          columnIndex,
           IrisGridContextMenuHandler.getQuickFilterCondition(
             filter,
             column.filter().contains(filterValue),
@@ -654,7 +660,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
       description: `Show only rows where ${column.name} does not contain ${value}`,
       action: () => {
         this.irisGrid.setQuickFilter(
-          column.index,
+          columnIndex,
           IrisGridContextMenuHandler.getQuickFilterCondition(
             filter,
             column.filter().contains(filterValue).not(),
@@ -674,7 +680,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
       description: `Show only rows where ${column.name} starts with ${valueText}`,
       action: () => {
         this.irisGrid.setQuickFilter(
-          column.index,
+          columnIndex,
           IrisGridContextMenuHandler.getQuickFilterCondition(
             filter,
             column.filter().invoke('startsWith', filterValue),
@@ -694,7 +700,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
       description: `Show only rows where ${column.name} ends with ${valueText}`,
       action: () => {
         this.irisGrid.setQuickFilter(
-          column.index,
+          columnIndex,
           IrisGridContextMenuHandler.getQuickFilterCondition(
             quickFilter,
             column.filter().invoke('endsWith', filterValue),
@@ -726,6 +732,8 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
       value !== Number.POSITIVE_INFINITY &&
       value !== Number.NEGATIVE_INFINITY &&
       !Number.isNaN(value);
+    const { model } = this.irisGrid.props;
+    const columnIndex = model.columnIndicesByName.get(column.name);
 
     actions.push({
       menuElement: (
@@ -744,7 +752,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
           value
         );
         this.irisGrid.setQuickFilter(
-          column.index,
+          columnIndex,
           IrisGridContextMenuHandler.getQuickFilterCondition(
             filter,
             valueFilter,
@@ -768,7 +776,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
           value
         ).not();
         this.irisGrid.setQuickFilter(
-          column.index,
+          columnIndex,
           IrisGridContextMenuHandler.getQuickFilterCondition(
             filter,
             valueFilter,
@@ -791,7 +799,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
         description: `Show only rows where ${column.name} is greater than ${valueText}`,
         action: () => {
           this.irisGrid.setQuickFilter(
-            column.index,
+            columnIndex,
             IrisGridContextMenuHandler.getQuickFilterCondition(
               filter,
               column.filter().greaterThan(filterValue),
@@ -811,7 +819,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
         description: `Show only rows where ${column.name} is greater than or equal to ${valueText}`,
         action: () => {
           this.irisGrid.setQuickFilter(
-            column.index,
+            columnIndex,
             IrisGridContextMenuHandler.getQuickFilterCondition(
               filter,
               column.filter().greaterThanOrEqualTo(filterValue),
@@ -831,7 +839,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
         description: `Show only rows where ${column.name} is less than ${valueText}`,
         action: () => {
           this.irisGrid.setQuickFilter(
-            column.index,
+            columnIndex,
             IrisGridContextMenuHandler.getQuickFilterCondition(
               filter,
               column.filter().lessThan(filterValue),
@@ -851,7 +859,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
         description: `Show only rows where ${column.name} is less than or equal to ${valueText}`,
         action: () => {
           this.irisGrid.setQuickFilter(
-            column.index,
+            columnIndex,
             IrisGridContextMenuHandler.getQuickFilterCondition(
               filter,
               column.filter().lessThanOrEqualTo(filterValue),
@@ -873,6 +881,8 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
   booleanFilterActions(column, valueText, quickFilter = {}, additive = false) {
     const actions = [];
     const { filter, text: filterText } = quickFilter;
+    const { model } = this.irisGrid.props;
+    const columnIndex = model.columnIndicesByName.get(column.name);
 
     actions.push({
       menuElement: (
@@ -887,7 +897,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
       description: `Show only rows where ${column.name} is true`,
       action: () => {
         this.irisGrid.setQuickFilter(
-          column.index,
+          columnIndex,
           IrisGridContextMenuHandler.getQuickFilterCondition(
             filter,
             column.filter().isTrue(),
@@ -907,7 +917,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
       description: `Show only rows where ${column.name} is false`,
       action: () => {
         this.irisGrid.setQuickFilter(
-          column.index,
+          columnIndex,
           IrisGridContextMenuHandler.getQuickFilterCondition(
             filter,
             column.filter().isFalse(),
@@ -927,7 +937,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
       description: `Show only rows where ${column.name} is null`,
       action: () => {
         this.irisGrid.setQuickFilter(
-          column.index,
+          columnIndex,
           IrisGridContextMenuHandler.getQuickFilterCondition(
             quickFilter,
             column.filter().isNull(),
@@ -956,6 +966,8 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
   ) {
     const filterValue = dh.FilterValue.ofNumber(value);
     const { filter, text: filterText } = quickFilter;
+    const { model } = this.irisGrid.props;
+    const columnIndex = model.columnIndicesByName.get(column.name);
 
     const actions = [];
 
@@ -972,7 +984,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
       description: `Show only rows where ${column.name} is ${previewValue}`,
       action: () => {
         this.irisGrid.setQuickFilter(
-          column.index,
+          columnIndex,
           IrisGridContextMenuHandler.getQuickFilterCondition(
             filter,
             column.filter().eq(filterValue),
@@ -992,7 +1004,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
       description: `Show only rows where ${column.name} is not ${previewValue}`,
       action: () => {
         this.irisGrid.setQuickFilter(
-          column.index,
+          columnIndex,
           IrisGridContextMenuHandler.getQuickFilterCondition(
             filter,
             column.filter().notEq(filterValue),
@@ -1012,7 +1024,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
       description: `Show only rows where ${column.name} is before ${previewValue}`,
       action: () => {
         this.irisGrid.setQuickFilter(
-          column.index,
+          columnIndex,
           IrisGridContextMenuHandler.getQuickFilterCondition(
             filter,
             column.filter().lessThan(filterValue),
@@ -1032,7 +1044,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
       description: `Show only rows where ${column.name} is before or equal to ${previewValue}`,
       action: () => {
         this.irisGrid.setQuickFilter(
-          column.index,
+          columnIndex,
           IrisGridContextMenuHandler.getQuickFilterCondition(
             filter,
             column.filter().lessThanOrEqualTo(filterValue),
@@ -1052,7 +1064,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
       description: `Show only rows where ${column.name} is greater than ${previewValue}`,
       action: () => {
         this.irisGrid.setQuickFilter(
-          column.index,
+          columnIndex,
           IrisGridContextMenuHandler.getQuickFilterCondition(
             filter,
             column.filter().greaterThan(filterValue),
@@ -1072,7 +1084,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
       description: `Show only rows where ${column.name} is after or equal to ${previewValue}`,
       action: () => {
         this.irisGrid.setQuickFilter(
-          column.index,
+          columnIndex,
           IrisGridContextMenuHandler.getQuickFilterCondition(
             filter,
             column.filter().greaterThanOrEqualTo(filterValue),
@@ -1093,6 +1105,8 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
   nullFilterActions(column, quickFilter = {}, additive = false) {
     const { filter, text: filterText } = quickFilter;
     const actions = [];
+    const { model } = this.irisGrid.props;
+    const columnIndex = model.columnIndicesByName.get(column.name);
 
     actions.push({
       menuElement: (
@@ -1107,7 +1121,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
       description: `Show only rows where ${column.name} is null`,
       action: () => {
         this.irisGrid.setQuickFilter(
-          column.index,
+          columnIndex,
           IrisGridContextMenuHandler.getQuickFilterCondition(
             filter,
             column.filter().isNull(),
@@ -1127,7 +1141,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
       description: `Show only rows where ${column.name} is not null`,
       action: () => {
         this.irisGrid.setQuickFilter(
-          column.index,
+          columnIndex,
           IrisGridContextMenuHandler.getQuickFilterCondition(
             filter,
             column.filter().isNull().not(),
