@@ -137,7 +137,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       </button>
     );
 
-    // disabled buttons tooltips need a wrapped element to recieve pointer events
+    // disabled buttons tooltips need a wrapped element to receive pointer events
     // https://jakearchibald.com/2017/events-and-disabled-form-fields/
 
     return disabled ? (
