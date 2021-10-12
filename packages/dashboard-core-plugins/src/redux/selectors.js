@@ -26,7 +26,7 @@ export const getInputFiltersForDashboard = (store, dashboardId) =>
  * @returns {Map<string, Table>} Map from panel ID to the table used in that panel
  */
 export const getTableMapForDashboard = (store, dashboardId) =>
-  getDashboardData(store, dashboardId) ?? EMPTY_MAP;
+  getDashboardData(store, dashboardId).tableMap ?? EMPTY_MAP;
 
 /**
  * @param {Store} store The redux store
