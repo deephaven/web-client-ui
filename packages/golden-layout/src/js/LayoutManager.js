@@ -111,7 +111,7 @@ lm.utils.copy(lm.LayoutManager.prototype, {
    * @param   {String} name
    * @param   {Function} constructor
    *
-   * @returns {void}
+   * @returns {Function} cleanup function to deregister component
    */
   registerComponent: function (name, constructor) {
     if (
@@ -128,6 +128,16 @@ lm.utils.copy(lm.LayoutManager.prototype, {
     }
 
     this._components[name] = constructor;
+
+    function cleanup() {
+      if (this._components[name] === undefined) {
+        throw new Error('Component ' + name + ' is not registered');
+      }
+
+      delete this._components[name];
+    }
+
+    return cleanup.bind(this);
   },
 
   /**
@@ -179,6 +189,11 @@ lm.utils.copy(lm.LayoutManager.prototype, {
         if (key !== 'content') {
           configNode[key] = item.config[key];
         }
+      }
+
+      if (configNode.componentName === 'lm-react-component') {
+        // We change the type in `createContentItem`, so change it back here
+        configNode.type = 'react-component';
       }
 
       if (item.contentItems.length) {

@@ -1,0 +1,10 @@
+@import '../../components/scss/custom.scss';
+
+.panel-placeholder {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: $spacer-3;
+  min-height: 100%;
+  text-align: center;
+}

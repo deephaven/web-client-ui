@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/stylelint-config",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "Deephaven Stylelint configuration",
   "repository": "https://github.com/deephaven/web-client-ui",
   "license": "Apache-2.0",

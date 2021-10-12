@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/golden-layout",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
   "devDependencies": {
@@ -16,7 +16,7 @@
     "karma-jasmine": "~0.1.5",
     "npm-run-all": "^4.1.5",
     "rimraf": "^3.0.2",
-    "sass": "^1.32.13"
+    "sass": "1.32.13"
   },
   "description": "A multi-screen javascript Layout manager",
   "main": "./dist/goldenlayout.js",
@@ -39,6 +39,7 @@
     "watch:sass": "npm run sass -- --watch --update",
     "clean": "rimraf ./dist ./src/css",
     "start": "cross-env NODE_ENV=development npm run watch",
+    "prestart": "npm run build-dev",
     "test": "karma start karma.conf.js",
     "test:ci": "karma start karma.conf.js --single-run"
   },
