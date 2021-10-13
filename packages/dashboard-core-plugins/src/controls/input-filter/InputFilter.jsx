@@ -4,7 +4,7 @@
 
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import classNames from 'classnames';
+import { CardFlip } from '@deephaven/components';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { vsGear } from '@deephaven/icons';
 import { PropTypes as APIPropTypes } from '@deephaven/jsapi-shim';
@@ -173,103 +173,95 @@ class InputFilter extends Component {
     }
 
     return (
-      <div
-        className={classNames('input-filter fill-parent-absolute', {
-          'flip-front': isValueShown,
-          'flip-back': !isValueShown,
-        })}
+      <CardFlip
+        className="input-filter fill-parent-absolute"
+        isFlipped={isValueShown}
       >
-        <div className="back">
-          <div className="input-filter-settings-card">
-            <div className="input-filter-settings-content">
-              <div className="input-filter-settings-grid">
-                <label>Filter Column</label>
-                <select
-                  value={columns.findIndex(
-                    item =>
-                      item.name === selectedColumn?.name &&
-                      item.type === selectedColumn?.type
-                  )}
-                  className="custom-select"
-                  onChange={this.handleColumnChange}
-                >
-                  {columns.map((columnItem, index) => (
-                    <option
-                      key={`${columnItem.name}/${columnItem.type}`}
-                      value={index}
-                    >
-                      {this.getItemLabel(columns, index)}
-                    </option>
-                  ))}
-                  {columns.length === 0 && (
-                    <option value="-1" disabled>
-                      No Available Columns
-                    </option>
-                  )}
-                </select>
-                <div className="text-muted small">
-                  Input filter control will apply its filter to all columns
-                  matching this name in this dashboard.
-                </div>
-              </div>
-              <div className="input-filter-settings-buttons">
-                <button
-                  type="button"
-                  className="btn btn-outline-primary"
-                  onClick={this.handleSettingsCancel}
-                  disabled={column == null}
-                >
-                  Cancel
-                </button>
-                <button
-                  type="button"
-                  className="btn btn-primary ml-2"
-                  onClick={this.handleSettingsSave}
-                  disabled={selectedColumn == null}
-                >
-                  Save
-                </button>
+        <div className="input-filter-settings-card">
+          <div className="input-filter-settings-content">
+            <div className="input-filter-settings-grid">
+              <label>Filter Column</label>
+              <select
+                value={columns.findIndex(
+                  item =>
+                    item.name === selectedColumn?.name &&
+                    item.type === selectedColumn?.type
+                )}
+                className="custom-select"
+                onChange={this.handleColumnChange}
+              >
+                {columns.map((columnItem, index) => (
+                  <option
+                    key={`${columnItem.name}/${columnItem.type}`}
+                    value={index}
+                  >
+                    {this.getItemLabel(columns, index)}
+                  </option>
+                ))}
+                {columns.length === 0 && (
+                  <option value="-1" disabled>
+                    No Available Columns
+                  </option>
+                )}
+              </select>
+              <div className="text-muted small">
+                Input filter control will apply its filter to all columns
+                matching this name in this dashboard.
               </div>
             </div>
-          </div>
-        </div>
-
-        <div className="front">
-          <div
-            className="input-filter-value-card"
-            onClick={this.handleBackgroundClick}
-          >
-            <div className="input-filter-column">
-              <div className="input-filter-column-title">
-                {titleLabel} Filter
-              </div>
-            </div>
-            <div className="d-flex justify-content-center align-items-center h-100 w-100">
-              <div className="input-filter-value-input d-flex flex-column justify-content-center">
-                <input
-                  type="text"
-                  ref={this.inputRef}
-                  placeholder={InputFilter.PLACEHOLDER}
-                  value={value ?? ''}
-                  onChange={this.handleValueChange}
-                  onKeyPress={this.handleInputKeyPress}
-                  style={{ width: `${inputLength + 3}ch` }}
-                  spellCheck="false"
-                />
-              </div>
-            </div>
-            <div className="input-filter-menu">
+            <div className="input-filter-settings-buttons">
               <button
                 type="button"
-                className="btn btn-link btn-link-icon m-2 px-2"
-                onClick={this.handleSettingsClick}
+                className="btn btn-outline-primary"
+                onClick={this.handleSettingsCancel}
+                disabled={column == null}
               >
-                <FontAwesomeIcon icon={vsGear} transform="grow-4" />
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="btn btn-primary ml-2"
+                onClick={this.handleSettingsSave}
+                disabled={selectedColumn == null}
+              >
+                Save
               </button>
             </div>
           </div>
         </div>
-      </div>
+
+        <div
+          className="input-filter-value-card"
+          onClick={this.handleBackgroundClick}
+        >
+          <div className="input-filter-column">
+            <div className="input-filter-column-title">{titleLabel} Filter</div>
+          </div>
+          <div className="d-flex justify-content-center align-items-center h-100 w-100">
+            <div className="input-filter-value-input d-flex flex-column justify-content-center">
+              <input
+                type="text"
+                ref={this.inputRef}
+                placeholder={InputFilter.PLACEHOLDER}
+                value={value ?? ''}
+                onChange={this.handleValueChange}
+                onKeyPress={this.handleInputKeyPress}
+                style={{ width: `${inputLength + 3}ch` }}
+                spellCheck="false"
+              />
+            </div>
+          </div>
+          <div className="input-filter-menu">
+            <button
+              type="button"
+              className="btn btn-link btn-link-icon m-2 px-2"
+              onClick={this.handleSettingsClick}
+            >
+              <FontAwesomeIcon icon={vsGear} transform="grow-4" />
+            </button>
+          </div>
+        </div>
+      </CardFlip>
     );
   }
 }

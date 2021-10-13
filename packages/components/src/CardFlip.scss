@@ -1,0 +1,49 @@
+@import '../scss/custom.scss';
+
+.card-flip {
+  &--is-flipping {
+    // this is applied to body during transitions
+    // so that the perspective transform doesn't cause overflow
+    overflow: hidden;
+    .card-flip--show-front,
+    .card-flip--show-back {
+      z-index: $zindex-popover;
+    }
+  }
+
+  &--show-front,
+  &--show-back {
+    display: grid;
+    height: 100%;
+    width: 100%;
+    isolation: isolate;
+    perspective: 1000px;
+  }
+
+  &--front,
+  &--back {
+    grid-area: 1/1/2/2;
+    transform-style: flat;
+    backface-visibility: hidden;
+    transition: transform $transition-slow ease-in-out;
+    overflow: hidden;
+  }
+
+  &--show-back {
+    .card-flip--front {
+      transform: rotateY(180deg);
+    }
+    .card-flip--back {
+      transform: rotateY(0);
+    }
+  }
+
+  &--show-front {
+    .card-flip--front {
+      transform: rotateY(0);
+    }
+    .card-flip--back {
+      transform: rotateY(-180deg);
+    }
+  }
+}
