@@ -4,12 +4,14 @@
   "description": "Deephaven Dashboard Core Plugins",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
+  "type": "module",
   "repository": {
     "type": "git",
     "url": "https://github.com/deephaven/web-client-ui"
   },
   "source": "src/index.ts",
   "main": "dist/index.js",
+  "module": "dist/index.modern",
   "types": "dist/index.d.ts",
   "engines": {
     "node": ">=10"
