@@ -5,7 +5,6 @@ $dropdown-filter-icon-size: 31px;
 .dropdown-filter-panel-component {
   .lm_content {
     // Allow content to overflow above headers, so flip animation works properly
-    z-index: 15;
     overflow: visible;
   }
 }
