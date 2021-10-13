@@ -59,6 +59,7 @@ $dropdown-filter-icon-size: 31px;
   .dropdown-filter-settings-buttons {
     display: flex;
     justify-content: flex-end;
+    flex-wrap: wrap;
   }
 
   // Filter side

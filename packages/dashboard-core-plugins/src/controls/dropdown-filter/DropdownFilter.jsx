@@ -354,7 +354,7 @@ class DropdownFilter extends Component {
               <div className="error-message text-center">{settingsError}</div>
             )}
             {isLinked && (
-              <div className="form-row justify-content-end dropdown-filter-settings-buttons">
+              <div className="dropdown-filter-settings-buttons">
                 <Button
                   kind="secondary"
                   type="button"
