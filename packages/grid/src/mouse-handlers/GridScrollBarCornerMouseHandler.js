@@ -13,7 +13,8 @@ class GridScrollBarCornerMouseHandler extends GridMouseHandler {
     const { lastLeft, lastTop, width, height } = metrics;
     return (
       scrollBarSize > 0 &&
-      (lastTop > 0 || lastLeft > 0) &&
+      lastTop > 0 &&
+      lastLeft > 0 &&
       x >= width - scrollBarSize &&
       y >= height - scrollBarSize &&
       x <= width &&

@@ -2032,7 +2032,8 @@ class GridRenderer {
 
     const isVerticalBarHover =
       isDraggingVerticalScrollBar ||
-      (!isDraggingHorizontalScrollBar &&
+      (hasVerticalBar &&
+        !isDraggingHorizontalScrollBar &&
         !isDragging &&
         mouseX >= width - scrollBarHoverSize &&
         mouseY <= barHeight + columnHeaderHeight &&
@@ -2040,7 +2041,8 @@ class GridRenderer {
 
     const isHorizontalBarHover =
       isDraggingHorizontalScrollBar ||
-      (!isDraggingVerticalScrollBar &&
+      (hasHorizontalBar &&
+        !isDraggingVerticalScrollBar &&
         !isDragging &&
         !isVerticalBarHover && // vert bar gets priorty in overlapped corner hover area
         mouseY >= height - scrollBarHoverSize &&

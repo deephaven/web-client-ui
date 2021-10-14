@@ -13,14 +13,15 @@ class GridHorizontalScrollBarMouseHandler extends GridMouseHandler {
     const { scrollBarSize, scrollBarHoverSize } = theme;
     const { metrics } = grid;
     const { x, y } = gridPoint;
-    const { lastLeft, rowHeaderWidth, width, height } = metrics;
+    const { lastLeft, lastTop, rowHeaderWidth, width, height } = metrics;
+    const scrollBarWidth = lastTop > 0 ? width - scrollBarSize : width;
     return (
       scrollBarSize > 0 &&
       lastLeft > 0 &&
       y >= height - scrollBarHoverSize &&
       y < height &&
       x > rowHeaderWidth &&
-      x < width - scrollBarSize
+      x < scrollBarWidth
     );
   }
 
