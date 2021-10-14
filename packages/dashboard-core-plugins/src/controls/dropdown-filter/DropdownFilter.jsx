@@ -4,9 +4,8 @@
 
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import ReactCardFlip from 'react-card-flip';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { SocketedButton } from '@deephaven/components';
+import { Button, CardFlip, SocketedButton } from '@deephaven/components';
 import { vsGear } from '@deephaven/icons';
 import { TableUtils } from '@deephaven/iris-grid';
 import { PropTypes as APIPropTypes } from '@deephaven/jsapi-shim';
@@ -311,119 +310,121 @@ class DropdownFilter extends Component {
     const selectedOption = this.getSelectedOptionIndex(values, value);
     const disableSave = !isLinked || selectedColumn == null;
 
+    const isFlipped = isValueShown && !isLinkerActive;
+
     return (
-      <div className="dropdown-filter fill-parent-absolute">
-        <ReactCardFlip
-          isFlipped={isValueShown && !isLinkerActive}
-          containerStyle={{ width: '100%', height: '100%' }}
-        >
-          <div
-            className="dropdown-filter-settings-card fill-parent-absolute"
-            key="front"
-          >
-            <div className="dropdown-filter-card-content">
-              <div className="dropdown-filter-settings-grid">
-                <label>Source Column</label>
-                <SocketedButton
-                  isLinked={isLinked}
-                  onClick={onColumnSelected}
-                  onMouseEnter={onSourceMouseEnter}
-                  onMouseLeave={onSourceMouseLeave}
-                  className={DropdownFilter.SOURCE_BUTTON_CLASS_NAME}
-                  disabled={disableLinking}
-                >
-                  {sourceButtonLabel}
-                </SocketedButton>
+      <CardFlip
+        className="dropdown-filter fill-parent-absolute"
+        isFlipped={isFlipped}
+      >
+        <div className="dropdown-filter-settings-card">
+          <div className="dropdown-filter-card-content">
+            <div className="dropdown-filter-settings-grid">
+              <label>Source Column</label>
+              <SocketedButton
+                isLinked={isLinked}
+                onClick={onColumnSelected}
+                onMouseEnter={onSourceMouseEnter}
+                onMouseLeave={onSourceMouseLeave}
+                className={DropdownFilter.SOURCE_BUTTON_CLASS_NAME}
+                disabled={disableLinking}
+              >
+                {sourceButtonLabel}
+              </SocketedButton>
 
-                <div className="text-muted small">
-                  Select a source column for the list by linking to a table.
-                </div>
-
-                <label>Filter Column</label>
-                <select
-                  value={selectedIndex}
-                  className="custom-select"
-                  onChange={this.handleColumnChange}
-                  disabled={columnSelectionDisabled}
-                >
-                  {columnOptions}
-                </select>
-                <div className="text-muted small">
-                  Dropdown filter control will apply its filter to all columns
-                  matching this name in this dashboard.
-                </div>
+              <div className="text-muted small">
+                Select a source column for the list by linking to a table.
               </div>
 
-              {settingsError && (
-                <div className="error-message text-center">{settingsError}</div>
-              )}
-
-              {isLinked && !isValueShown && !isLinkerActive && (
-                <div className="form-row justify-content-end dropdown-filter-settings-buttons">
-                  <button
-                    type="button"
-                    className="btn btn-outline-primary"
-                    onClick={this.handleSettingsCancel}
-                    disabled={disableCancel}
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="button"
-                    className="btn btn-primary ml-2"
-                    onClick={this.handleSettingsSave}
-                    disabled={disableSave}
-                  >
-                    Save
-                  </button>
-                </div>
-              )}
+              <label>Filter Column</label>
+              <select
+                value={selectedIndex}
+                className="custom-select"
+                onChange={this.handleColumnChange}
+                disabled={columnSelectionDisabled}
+              >
+                {columnOptions}
+              </select>
+              <div className="text-muted small">
+                Dropdown filter control will apply its filter to all columns
+                matching this name in this dashboard.
+              </div>
             </div>
-          </div>
-          <div
-            className="dropdown-filter-value-card fill-parent-absolute"
-            key="back"
-            onClick={this.handleBackgroundClick}
-          >
-            {isLoaded && (
-              <>
-                <div className="dropdown-filter-column">
-                  <div className="dropdown-filter-column-title">
-                    {filterTitle}
-                  </div>
-                </div>
-                <div className="dropdown-filter-card-content">
-                  <div className="dropdown-filter-value-input d-flex flex-column justify-content-center">
-                    <select
-                      className="custom-select"
-                      value={selectedOption}
-                      ref={this.dropdownRef}
-                      onChange={this.handleValueChange}
-                      onKeyPress={this.handleDropdownKeyPress}
-                    >
-                      {valueOptions}
-                    </select>
-                  </div>
-                  {settingsError && (
-                    <div className="error-message mt-3 text-center">
-                      {settingsError}
-                    </div>
-                  )}
-                </div>
-                <div className="dropdown-filter-menu">
-                  <button
-                    type="button"
-                    className="btn btn-link btn-link-icon m-2 px-2"
-                    onClick={this.handleSettingsClick}
-                  >
-                    <FontAwesomeIcon icon={vsGear} transform="grow-4" />
-                  </button>
-                </div>
-              </>
+            {settingsError && (
+              <div className="error-message text-center">{settingsError}</div>
+            )}
+            {isLinked && (
+              <div className="dropdown-filter-settings-buttons">
+                <Button
+                  kind="secondary"
+                  type="button"
+                  onClick={this.handleSettingsCancel}
+                  disabled={disableCancel || isValueShown || isLinkerActive}
+                  tooltip={
+                    isLinkerActive ? 'Cancel disabled while linker open' : null
+                  }
+                >
+                  Cancel
+                </Button>
+                <Button
+                  kind="primary"
+                  type="button"
+                  className="ml-2"
+                  onClick={this.handleSettingsSave}
+                  disabled={disableSave || isValueShown || isLinkerActive}
+                  tooltip={
+                    isLinkerActive ? 'Save disabled while linker open' : null
+                  }
+                >
+                  Save
+                </Button>
+              </div>
             )}
           </div>
-        </ReactCardFlip>
-      </div>
+        </div>
+
+        <div
+          className="dropdown-filter-value-card"
+          onClick={this.handleBackgroundClick}
+        >
+          {isLoaded && (
+            <>
+              <div className="dropdown-filter-column">
+                <div className="dropdown-filter-column-title">
+                  {filterTitle}
+                </div>
+              </div>
+              <div className="dropdown-filter-card-content">
+                <div className="dropdown-filter-value-input d-flex flex-column justify-content-center">
+                  <select
+                    className="custom-select"
+                    value={selectedOption}
+                    ref={this.dropdownRef}
+                    onChange={this.handleValueChange}
+                    onKeyPress={this.handleDropdownKeyPress}
+                  >
+                    {valueOptions}
+                  </select>
+                </div>
+                {settingsError && (
+                  <div className="error-message mt-3 text-center">
+                    {settingsError}
+                  </div>
+                )}
+              </div>
+              <div className="dropdown-filter-menu">
+                <button
+                  type="button"
+                  className="btn btn-link btn-link-icon m-2 px-2"
+                  onClick={this.handleSettingsClick}
+                >
+                  <FontAwesomeIcon icon={vsGear} transform="grow-4" />
+                </button>
+              </div>
+            </>
+          )}
+        </div>
+      </CardFlip>
     );
   }
 }

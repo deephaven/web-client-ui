@@ -5,14 +5,7 @@ $dropdown-filter-icon-size: 31px;
 .dropdown-filter-panel-component {
   .lm_content {
     // Allow content to overflow above headers, so flip animation works properly
-    z-index: 15;
     overflow: visible;
-  }
-
-  .react-card-front,
-  .react-card-back {
-    // Still want the content of the card to clip though
-    overflow: hidden;
   }
 }
 
@@ -27,24 +20,22 @@ $dropdown-filter-icon-size: 31px;
 
   .dropdown-filter-settings-card,
   .dropdown-filter-value-card {
+    position: relative;
+    overflow: auto;
+    height: 100%;
     background: $content-bg;
   }
 
   .dropdown-filter-card-content {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    padding: $spacer;
-    max-width: 500px;
-    min-width: 250px;
-    margin: 0 auto;
-    width: 100%;
-    min-height: 100%;
+    margin: auto;
+    padding: $spacer-1;
   }
 
   // Settings side
   .dropdown-filter-settings-card {
-    overflow: auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }
 
   .dropdown-filter-settings-grid {
@@ -67,14 +58,14 @@ $dropdown-filter-icon-size: 31px;
   .dropdown-filter-settings-buttons {
     display: flex;
     justify-content: flex-end;
+    flex-wrap: wrap;
   }
 
   // Filter side
   .dropdown-filter-value-card {
-    overflow: auto;
-    .dropdown-filter-card-content {
-      align-items: center;
-    }
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }
 
   .dropdown-filter-column {

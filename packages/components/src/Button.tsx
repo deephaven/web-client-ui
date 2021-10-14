@@ -115,7 +115,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         typeof tooltip === 'string' ? <Tooltip>{tooltip}</Tooltip> : tooltip;
     }
 
-    return (
+    const button = (
       <button
         ref={ref}
         // eslint-disable-next-line react/button-has-type
@@ -133,8 +133,20 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       >
         {icon && iconElem}
         {children}
-        {tooltip && tooltipElem}
+        {tooltip && !disabled && tooltipElem}
       </button>
+    );
+
+    // disabled buttons tooltips need a wrapped element to receive pointer events
+    // https://jakearchibald.com/2017/events-and-disabled-form-fields/
+
+    return disabled ? (
+      <span className="btn-disabled-wrapper">
+        {button}
+        {tooltip && tooltipElem}
+      </span>
+    ) : (
+      button
     );
   }
 );

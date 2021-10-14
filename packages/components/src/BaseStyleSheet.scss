@@ -107,6 +107,13 @@ button:focus {
   min-width: 7rem;
 }
 
+span.btn-disabled-wrapper {
+  .btn.disabled,
+  .btn:disabled {
+    pointer-events: none;
+  }
+}
+
 .btn-link {
   min-width: unset;
   padding: $spacer-1;

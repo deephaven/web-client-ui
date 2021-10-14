@@ -18,6 +18,7 @@ export { default as BasicModal } from './BasicModal';
 export { default as Button } from './Button';
 export { default as ButtonGroup } from './ButtonGroup';
 export { default as ButtonOld } from './ButtonOld';
+export { default as CardFlip } from './CardFlip';
 export * from './context-actions';
 export { default as Collapse } from './Collapse';
 export { default as Checkbox } from './Checkbox';

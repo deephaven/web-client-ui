@@ -5,14 +5,7 @@ $input-filter-icon-size: 31px;
 .input-filter-panel-component {
   .lm_content {
     // Allow content to overflow above headers, so flip animation works properly
-    z-index: 15;
     overflow: visible;
-  }
-
-  .react-card-front,
-  .react-card-back {
-    // Still want the content of the card to clip though
-    overflow: hidden;
   }
 }
 
@@ -21,21 +14,22 @@ $input-filter-icon-size: 31px;
 
   .input-filter-settings-card,
   .input-filter-value-card {
+    position: relative;
+    overflow: auto;
+    height: 100%;
     background: $content-bg;
   }
 
   // Settings side
   .input-filter-settings-card {
-    overflow: auto;
     display: flex;
     justify-content: center;
+    align-items: center;
   }
 
-  .input-filter-settings {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    padding: $spacer;
+  .input-filter-settings-content {
+    margin: auto;
+    padding: $spacer-1;
   }
 
   .input-filter-settings-grid {

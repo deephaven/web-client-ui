@@ -52,7 +52,6 @@
     "prop-types": "^15.7.2",
     "react": "^16.14.0",
     "react-beautiful-dnd": "^13.0.0",
-    "react-card-flip": "^0.7.2",
     "react-dom": "^16.14.0",
     "react-markdown": "^6.0.2",
     "react-redux": "^7.2.4",
