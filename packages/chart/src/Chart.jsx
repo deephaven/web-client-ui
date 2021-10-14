@@ -1,12 +1,10 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import deepEqual from 'deep-equal';
-import { connect } from 'react-redux';
 import memoize from 'memoize-one';
 import { vsLoading, dhGraphLineDown, dhWarningFilled } from '@deephaven/icons';
 import { Formatter, FormatterUtils } from '@deephaven/iris-grid';
 import Log from '@deephaven/log';
-import { getSettings } from '@deephaven/redux';
 import Plotly from './plotly/Plotly';
 import Plot from './plotly/Plot';
 
@@ -478,10 +476,4 @@ Chart.defaultProps = {
   onSettingsChanged: () => {},
 };
 
-const mapStateToProps = state => ({
-  settings: getSettings(state),
-});
-
-export default connect(mapStateToProps, null, null, { forwardRef: true })(
-  Chart
-);
+export default Chart;
