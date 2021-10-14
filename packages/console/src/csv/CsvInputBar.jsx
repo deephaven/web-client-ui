@@ -1,11 +1,9 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
 import classNames from 'classnames';
 import JSZip from 'jszip';
 import { Checkbox } from '@deephaven/components';
 import Log from '@deephaven/log';
-import { getTimeZone } from '@deephaven/redux';
 import { DbNameValidator } from '@deephaven/utils';
 import CsvOverlay from './CsvOverlay';
 import CsvParser from './CsvParser';
@@ -362,8 +360,4 @@ CsvInputBar.defaultProps = {
   paste: null,
 };
 
-const mapStateToProps = state => ({
-  timeZone: getTimeZone(state),
-});
-
-export default connect(mapStateToProps)(CsvInputBar);
+export default CsvInputBar;

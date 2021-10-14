@@ -277,13 +277,14 @@ class CommandHistory extends Component {
   }
 
   renderItem({ item, itemIndex, isSelected }) {
-    const { language } = this.props;
+    const { language, commandHistoryStorage } = this.props;
     return (
       <CommandHistoryItem
         itemIndex={itemIndex}
         isSelected={isSelected}
         item={item}
         language={language}
+        commandHistoryStorage={commandHistoryStorage}
       />
     );
   }
@@ -355,6 +356,21 @@ CommandHistory.propTypes = {
   sendToConsole: PropTypes.func.isRequired,
   sendToNotebook: PropTypes.func.isRequired,
   table: StoragePropTypes.CommandHistoryTable.isRequired,
+  commandHistoryStorage: StoragePropTypes.CommandHistoryStorage,
+};
+
+CommandHistory.defaultProps = {
+  commandHistoryStorage: {
+    addItem() {
+      log.error('commandHistoryStorage not provided');
+    },
+    updateItem() {
+      log.error('commandHistoryStorage not provided');
+    },
+    getTable() {
+      log.error('commandHistoryStorage not provided');
+    },
+  },
 };
 
 export default CommandHistory;

@@ -795,6 +795,8 @@ export class Console extends PureComponent {
       openObject,
       session,
       scope,
+      commandHistoryStorage,
+      timeZone,
     } = this.props;
     const {
       consoleHeight,
@@ -868,6 +870,7 @@ export class Console extends PureComponent {
               scope={scope}
               onSubmit={this.handleCommandSubmit}
               maxHeight={inputMaxHeight}
+              commandHistoryStorage={commandHistoryStorage}
             />
           )}
           {!isDisconnected && showCsvOverlay && (
@@ -880,6 +883,7 @@ export class Console extends PureComponent {
               file={csvFile}
               paste={csvPaste}
               onInProgress={this.handleCsvInProgress}
+              timeZone={timeZone}
             />
           )}
         </div>
@@ -904,6 +908,7 @@ Console.propTypes = {
   onSettingsChange: PropTypes.func,
   scope: PropTypes.string,
   actions: PropTypes.arrayOf(PropTypes.shape({})),
+  timeZone: PropTypes.string,
 
   // Message shown when the session has disconnected. Setting this value removes the input bar and disables old tables
   disconnectedChildren: PropTypes.node,
@@ -916,6 +921,7 @@ Console.defaultProps = {
   scope: null,
   actions: [],
   disconnectedChildren: null,
+  timeZone: 'America/New_York',
 };
 
 export default Console;
