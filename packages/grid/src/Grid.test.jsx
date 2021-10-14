@@ -718,7 +718,7 @@ it('handles Shift+Home/End to extend selection to beginning/end column', () => {
 
   end(component, { shiftKey: true, ctrlKey: true });
 
-  expect(component.state.selectionEndColumn).toBe(columnCount - 1);
+  expect(component.state.selectionEndColumn).toBe(5);
   expect(component.state.selectionEndRow).toBe(rowCount - 1);
   expect(component.state.selectedRanges.length).toBe(1);
   expect(component.state.selectedRanges[0]).toEqual(
@@ -726,51 +726,51 @@ it('handles Shift+Home/End to extend selection to beginning/end column', () => {
   );
 });
 
-it('handles Ctrl+Home/End to go to beginning/end cell', () => {
+it('handles Ctrl+Home/End to go to beginning/end row', () => {
   const model = new MockGridModel();
-  const { columnCount, rowCount } = model;
+  const { rowCount } = model;
   const component = makeGridComponent(model);
 
   mouseClick(5, 5, component);
 
   home(component, { ctrlKey: true });
 
-  expect(component.state.selectionEndColumn).toBe(0);
+  expect(component.state.selectionEndColumn).toBe(5);
   expect(component.state.selectionEndRow).toBe(0);
   expect(component.state.selectedRanges.length).toBe(1);
-  expect(component.state.selectedRanges[0]).toEqual(new GridRange(0, 0, 0, 0));
+  expect(component.state.selectedRanges[0]).toEqual(new GridRange(5, 0, 5, 0));
 
   end(component, { ctrlKey: true });
 
-  expect(component.state.selectionEndColumn).toBe(columnCount - 1);
+  expect(component.state.selectionEndColumn).toBe(5);
   expect(component.state.selectionEndRow).toBe(rowCount - 1);
   expect(component.state.selectedRanges.length).toBe(1);
   expect(component.state.selectedRanges[0]).toEqual(
-    new GridRange(columnCount - 1, rowCount - 1, columnCount - 1, rowCount - 1)
+    new GridRange(5, rowCount - 1, 5, rowCount - 1)
   );
 });
 
-it('handles Ctrl+Shift+Home/End to go to beginning/end cell and extend selection', () => {
+it('handles Ctrl+Shift+Home/End to go to beginning/end row and extend selection', () => {
   const model = new MockGridModel();
-  const { columnCount, rowCount } = model;
+  const { rowCount } = model;
   const component = makeGridComponent(model);
 
   mouseClick(5, 5, component);
 
   home(component, { shiftKey: true, ctrlKey: true });
 
-  expect(component.state.selectionEndColumn).toBe(0);
+  expect(component.state.selectionEndColumn).toBe(5);
   expect(component.state.selectionEndRow).toBe(0);
   expect(component.state.selectedRanges.length).toBe(1);
-  expect(component.state.selectedRanges[0]).toEqual(new GridRange(0, 0, 5, 5));
+  expect(component.state.selectedRanges[0]).toEqual(new GridRange(5, 0, 5, 5));
 
   end(component, { shiftKey: true, ctrlKey: true });
 
-  expect(component.state.selectionEndColumn).toBe(columnCount - 1);
+  expect(component.state.selectionEndColumn).toBe(5);
   expect(component.state.selectionEndRow).toBe(rowCount - 1);
   expect(component.state.selectedRanges.length).toBe(1);
   expect(component.state.selectedRanges[0]).toEqual(
-    new GridRange(0, 0, columnCount - 1, rowCount - 1)
+    new GridRange(5, 0, 5, rowCount - 1)
   );
 });
 
