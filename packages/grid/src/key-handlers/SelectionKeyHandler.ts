@@ -45,7 +45,7 @@ class SelectionKeyHandler extends KeyHandler {
         }
         grid.moveCursorToPosition(
           0,
-          e.ctrlKey ? 0 : grid.state.cursorRow,
+          GridUtils.isModifierKeyDown(e) ? 0 : grid.state.cursorRow,
           e.shiftKey,
           true,
           true
@@ -59,7 +59,7 @@ class SelectionKeyHandler extends KeyHandler {
         }
         grid.moveCursorToPosition(
           columnCount - 1,
-          e.ctrlKey ? rowCount - 1 : grid.state.cursorRow,
+          GridUtils.isModifierKeyDown(e) ? rowCount - 1 : grid.state.cursorRow,
           e.shiftKey,
           true,
           true
