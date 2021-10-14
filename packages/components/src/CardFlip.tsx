@@ -23,9 +23,7 @@ const CardFlip = ({
 }: CardFlipProps): JSX.Element => {
   const getComponent = (key: 0 | 1) => {
     if (children.length !== 2) {
-      throw new Error(
-        'Component ReactCardFlip requires 2 children to function'
-      );
+      throw new Error('CardFlip requires 2 children to function');
     }
     return children[key];
   };
