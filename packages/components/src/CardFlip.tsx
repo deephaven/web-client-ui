@@ -10,10 +10,10 @@ type CardFlipProps = {
 
 /**
  * Card flip component, switches between a front and back face being visible.
- * Has logic to handle oveflow on body, caused by perspective transforms
+ * Has logic to handle overflow on body, caused by perspective transforms
  * and moves z-index to top during transition.
  * @param isFlipped true shows second child, false shows first child
- *  @param children Expects exactly two children
+ * @param children Expects exactly two children
  * @returns
  */
 const CardFlip = ({
