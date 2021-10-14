@@ -71,11 +71,12 @@ class IrisGridModel extends GridModel {
   }
 
   /**
-   * Gets the columns for this model
-   * @returns {Map} All columns in the model with column name mapped to its index.
+   * Gets the column index for this model
+   * @param {String} name The model column name.
+   * @returns {Number} The numeric index of the requested column.
    */
-  get columnsIndicesByName() {
-    throw new Error('get columnIndicesByName not implemented');
+  getColumnIndexByName(name) {
+    throw new Error('getColumnIndexByName not implemented');
   }
 
   /**

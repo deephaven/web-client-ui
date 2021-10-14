@@ -649,8 +649,8 @@ class IrisGridTableModel extends IrisGridModel {
    * Use this as the canonical column index since things like layoutHints could have
    * changed the column order.
    */
-  get columnIndicesByName() {
-    return this.getColumnIndicesByNameMap(this.columns);
+  getColumnIndexByName(name) {
+    return this.getColumnIndicesByNameMap(this.columns).get(name);
   }
 
   getColumnIndicesByNameMap = memoize(columns => {
@@ -684,7 +684,7 @@ class IrisGridTableModel extends IrisGridModel {
     for (let c = 0; c < columns.length; c += 1) {
       const column = columns[c];
 
-      data.set(this.columnIndicesByName.get(column.name), {
+      data.set(this.getColumnIndexByName(column.name), {
         value: row.get(column),
         format: row.getFormat(column),
       });
@@ -947,7 +947,7 @@ class IrisGridTableModel extends IrisGridModel {
       const row = topFloatingRows[i];
       const rowData = columns.map(column =>
         formatValue(
-          this.valueForCell(this.columnIndicesByName.get(column.name), row),
+          this.valueForCell(this.getColumnIndexByName(column.name), row),
           column
         )
       );
@@ -972,7 +972,7 @@ class IrisGridTableModel extends IrisGridModel {
       const row = bottomFloatingRows[i];
       const rowData = columns.map(column =>
         formatValue(
-          this.valueForCell(this.columnIndicesByName.get(column.name), row),
+          this.valueForCell(this.getColumnIndexByName(column.name), row),
           column
         )
       );

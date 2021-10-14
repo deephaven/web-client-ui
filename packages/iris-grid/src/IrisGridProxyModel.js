@@ -501,6 +501,10 @@ class IrisGridProxyModel extends IrisGridModel {
   commitPending(...args) {
     return this.model.commitPending(...args);
   }
+
+  getColumnIndexByName(name) {
+    return this.model.getColumnIndexByName(name);
+  }
 }
 
 export default IrisGridProxyModel;

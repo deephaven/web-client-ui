@@ -12,7 +12,7 @@ const log = Log.module('IrisGridUtils');
 class IrisGridUtils {
   /**
    * Exports the state from Grid component to a JSON stringifiable object
-   * @param {IrisGridTableModel} model The table model to export the Grid state for
+   * @param {IrisGridModel} model The table model to export the Grid state for
    * @param {Object} gridState The state of the Grid to export
    * @returns {Object} An object that can be stringified and imported with {{@link hydrateGridState}}
    */
@@ -36,7 +36,7 @@ class IrisGridUtils {
 
   /**
    * Import a state for Grid that was exported with {{@link dehydrateGridState}}
-   * @param {IrisGridTableModel} model The table model to import the state for
+   * @param {IrisGridModel} model The table model to import the state for
    * @param {Object} gridState The state of the panel that was saved
    * @returns {Object} The gridState props to set on the Grid
    */
@@ -80,7 +80,7 @@ class IrisGridUtils {
 
   /**
    * Exports the state from IrisGrid to a JSON stringifiable object
-   * @param {IrisGridTableModel} model The table model to export the state for
+   * @param {IrisGridModel} model The table model to export the state for
    * @param {Object} irisGridState The current state of the IrisGrid
    */
   static dehydrateIrisGridState(model, irisGridState) {
@@ -143,7 +143,7 @@ class IrisGridUtils {
 
   /**
    * Import a state for IrisGrid that was exported with {{@link dehydrateIrisGridState}}
-   * @param {IrisGridTableModel} model The table model to import the state with
+   * @param {IrisGridModel} model The table model to import the state with
    * @param {Object} irisGridState The saved IrisGrid state
    */
   static hydrateIrisGridState(model, irisGridState) {
@@ -214,7 +214,7 @@ class IrisGridUtils {
 
   /**
    * Export the IrisGridPanel state.
-   * @param {IrisGridTableModel} model The table model the state is being dehydrated with
+   * @param {IrisGridModel} model The table model the state is being dehydrated with
    * @param {Object} irisGridPanelState The current IrisGridPanel state
    * @returns {Object} The dehydrated IrisGridPanel state
    */
@@ -234,7 +234,7 @@ class IrisGridUtils {
 
   /**
    * Import the saved IrisGridPanel state.
-   * @param {IrisGridTableModel} model The table model the state is being hydrated with
+   * @param {IrisGridModel} model The table model the state is being hydrated with
    * @param {Object} irisGridPanelState Exported IrisGridPanel state
    * @returns {Object} The state to apply to the IrisGridPanel
    */
@@ -256,7 +256,7 @@ class IrisGridUtils {
 
   /**
    * Export the quick filters from the provided table to JSON striginfiable object
-   * @param {IrisGridTableModel} model The table with the filters
+   * @param {IrisGridModel} model The table with the filters
    * @param {AdvancedFilter[]} quickFilters The quick filters to dehydrate
    * @returns {Object} The dehydrated quick filters
    */
@@ -269,7 +269,7 @@ class IrisGridUtils {
 
   /**
    * Import the saved quick filters to apply to the table. Does not actually apply the filters.
-   * @param {IrisGridTableModel} model The table the filters will be applied to
+   * @param {IrisGridModel} model The table the filters will be applied to
    * @param {Object[]} savedQuickFilters Exported quick filters definitions
    * @returns {QuickFilter[]} The quick filters to apply to the table
    */
@@ -297,7 +297,7 @@ class IrisGridUtils {
 
   /**
    * Export the advanced filters from the provided table to JSON striginfiable object
-   * @param {IrisGridTableModel} model The table model with the filters
+   * @param {IrisGridModel} model The table model with the filters
    * @param {AdvancedFilter[]} advancedFilters The advanced filters to dehydrate
    * @returns {Object} The dehydrated advanced filters
    */
@@ -313,7 +313,7 @@ class IrisGridUtils {
 
   /**
    * Import the saved advanced filters to apply to the table. Does not actually apply the filters.
-   * @param {IrisGridTableModel} model The table the filters will be applied to
+   * @param {IrisGridModel} model The table the filters will be applied to
    * @param {Object[]} savedAdvancedFilters Exported advanced filters definitions
    * @returns {AdvancedFilter[]} The advanced filters to apply to the table
    */
@@ -476,7 +476,7 @@ class IrisGridUtils {
 
   /**
    * Import the saved sorts to apply to the table. Does not actually apply the sort.
-   * @param {IrisGridTableModel} model The table model the sorts will be applied to
+   * @param {IrisGridModel} model The table model the sorts will be applied to
    * @param {Object[]} sort Exported sort definitions
    * @returns {dh.Sort[]} The sorts to apply to the table
    */
@@ -536,7 +536,7 @@ class IrisGridUtils {
 
   /**
    * Applies the passed in table settings directly to the provided table
-   * @param {IrisGridTableModel} model The table model to apply the settings to
+   * @param {IrisGridModel} model The table model to apply the settings to
    * @param {Object} tableSettings Dehydrated table settings extracted with `extractTableSettings`
    */
   static applyTableSettings(model, tableSettings) {
@@ -1046,7 +1046,7 @@ class IrisGridUtils {
   /**
    * Retrieves a column from the provided table at the index, or `null` and logs an error if it's invalid
    *
-   * @param {IrisGridTableModel} model The table model to get the column for
+   * @param {IrisGridModel} model The table model to get the column for
    * @param {Number} columnIndex The column index to get
    */
   static getColumn(model, columnIndex) {
@@ -1066,7 +1066,7 @@ class IrisGridUtils {
 
   /**
    * Retrieves a column from the provided table matching the name, or `null` and log an error if not found
-   * @param {IrisGridTableModel} model The table model to get the column for
+   * @param {IrisGridModel} model The table model to get the column for
    * @param {String} columnName The column name to retrieve
    */
   static getColumnByName(model, columnName) {

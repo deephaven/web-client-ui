@@ -495,7 +495,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
   }
 
   dateFormatActions(column) {
-    const { model } = this.irisGrid.props;
+    const { model } = this.irisGrid.props.model;
     const { formatter } = model;
     const selectedFormat = formatter.getColumnFormat(column.type, column.name);
     const formatOptions = DateTimeFormatContextMenu.getOptions(
@@ -517,7 +517,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
         order: i,
         action: () => {
           this.irisGrid.handleFormatSelection(
-            model.columnIndicesByName.get(column.name),
+            model.getColumnIndexByName(column.name),
             format
           );
         },
@@ -527,11 +527,12 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
   }
 
   numberFormatActions(column) {
-    const { model } = this.irisGrid.props;
+    const { model } = this.irisGrid.props.model;
     const { formatter } = model;
     const selectedFormat = formatter.getColumnFormat(column.type, column.name);
     let formatOptions;
-    const columnIndex = model.columnIndicesByName.get(column.name);
+
+    const columnIndex = model.getColumnIndexByName(column.name);
     if (TableUtils.isDecimalType(column.type)) {
       formatOptions = DecimalFormatContextMenu.getOptions(
         selectedFormat,
@@ -583,8 +584,8 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
     const filterValue = dh.FilterValue.ofString(value);
     const { filter, text: filterText } = quickFilter;
     const actions = [];
-    const { model } = this.irisGrid.props;
-    const columnIndex = model.columnIndicesByName.get(column.name);
+    const { model } = this.irisGrid.props.model;
+    const columnIndex = model.getColumnIndexByName(column.name);
 
     actions.push({
       menuElement: (
@@ -732,8 +733,8 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
       value !== Number.POSITIVE_INFINITY &&
       value !== Number.NEGATIVE_INFINITY &&
       !Number.isNaN(value);
-    const { model } = this.irisGrid.props;
-    const columnIndex = model.columnIndicesByName.get(column.name);
+    const { model } = this.irisGrid.props.model;
+    const columnIndex = model.getColumnIndexByName(column.name);
 
     actions.push({
       menuElement: (
@@ -881,8 +882,8 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
   booleanFilterActions(column, valueText, quickFilter = {}, additive = false) {
     const actions = [];
     const { filter, text: filterText } = quickFilter;
-    const { model } = this.irisGrid.props;
-    const columnIndex = model.columnIndicesByName.get(column.name);
+    const { model } = this.irisGrid.props.model;
+    const columnIndex = model.getColumnIndexByName(column.name);
 
     actions.push({
       menuElement: (
@@ -966,8 +967,8 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
   ) {
     const filterValue = dh.FilterValue.ofNumber(value);
     const { filter, text: filterText } = quickFilter;
-    const { model } = this.irisGrid.props;
-    const columnIndex = model.columnIndicesByName.get(column.name);
+    const { model } = this.irisGrid.props.model;
+    const columnIndex = model.getColumnIndexByName(column.name);
 
     const actions = [];
 
@@ -1105,8 +1106,8 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
   nullFilterActions(column, quickFilter = {}, additive = false) {
     const { filter, text: filterText } = quickFilter;
     const actions = [];
-    const { model } = this.irisGrid.props;
-    const columnIndex = model.columnIndicesByName.get(column.name);
+    const { model } = this.irisGrid.props.model;
+    const columnIndex = model.getColumnIndexByName(column.name);
 
     actions.push({
       menuElement: (

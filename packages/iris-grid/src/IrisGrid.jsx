@@ -873,7 +873,7 @@ export class IrisGrid extends Component {
       if (column == null) {
         return;
       }
-      const columnIndex = model.columnIndicesByName.get(column.name);
+      const columnIndex = model.getColumnIndexByName(column.name);
       if (value === null) {
         this.setQuickFilter(columnIndex, column.filter().isNull(), '=null');
       } else {
@@ -1619,7 +1619,7 @@ export class IrisGrid extends Component {
   handleAdvancedFilterChange(column, filter, options) {
     const { model } = this.props;
     this.setAdvancedFilter(
-      model.columnIndicesByName.get(column.name),
+      model.getColumnIndexByName(column.name),
       filter,
       options
     );
@@ -1627,7 +1627,7 @@ export class IrisGrid extends Component {
 
   handleAdvancedFilterSortChange(column, direction, addToExisting = false) {
     const { model } = this.props;
-    const columnIndex = model.columnIndicesByName.get(column.name);
+    const columnIndex = model.getColumnIndexByName(column.name);
     const oldSort = TableUtils.getSortForColumn(model.sort, columnIndex);
     let newSort = null;
 
