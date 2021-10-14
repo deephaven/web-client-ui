@@ -258,10 +258,10 @@ export const ConsolePlugin = ({
   const fileIsOpenAsPreview = useCallback(
     fileMetadata => {
       const { id: fileId } = fileMetadata;
-      log.debug('fileIsOpenAsPreview', fileMetadata, fileId, openFileMap);
+      log.debug('fileIsOpenAsPreview', fileMetadata, fileId, previewFileMap);
       return fileId && previewFileMap.has(fileId);
     },
-    [openFileMap, previewFileMap]
+    [previewFileMap]
   );
 
   const fileIsActive = useCallback(
@@ -378,7 +378,7 @@ export const ConsolePlugin = ({
         panelId = previewTabId;
         stack = LayoutUtils.getStackForConfig(layout.root, {
           component: NotebookPanel.COMPONENT,
-          id,
+          id: panelId,
         });
       }
       if (stack == null) {
@@ -408,7 +408,6 @@ export const ConsolePlugin = ({
       fileIsOpen,
       fileIsOpenAsPreview,
       getPanelIdForFileMetadata,
-      id,
       layout.root,
       makeConfig,
       previewFileMap,
