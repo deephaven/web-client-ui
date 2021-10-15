@@ -15,7 +15,6 @@ import ConsoleHistory from './console-history/ConsoleHistory';
 import SHORTCUTS from './ConsoleShortcuts';
 import LogLevel from './log/LogLevel';
 import ConsoleInput from './ConsoleInput';
-import ConsoleUtils from './common/ConsoleUtils';
 import CsvOverlay from './csv/CsvOverlay';
 import CsvInputBar from './csv/CsvInputBar';
 import './Console.scss';
@@ -365,9 +364,9 @@ export class Console extends PureComponent {
     }
 
     const { openObject } = this.props;
-    [...changes.created, ...changes.updated]
-      .filter(object => ConsoleUtils.isOpenableType(object.type))
-      .forEach(object => openObject(object));
+    [...changes.created, ...changes.updated].forEach(object =>
+      openObject(object)
+    );
   }
 
   closeRemovedItems(changes) {
@@ -377,9 +376,7 @@ export class Console extends PureComponent {
 
     const { closeObject } = this.props;
     const { removed } = changes;
-    removed
-      .filter(object => ConsoleUtils.isOpenableType(object.type))
-      .forEach(object => closeObject(object));
+    removed.forEach(object => closeObject(object));
   }
 
   updateHistory(result, historyItemParam) {

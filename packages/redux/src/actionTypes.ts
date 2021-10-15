@@ -8,6 +8,8 @@ export const SET_DASHBOARD_STORAGE = 'SET_DASHBOARD_STORAGE';
 
 export const SET_FILE_STORAGE = 'SET_FILE_STORAGE';
 
+export const SET_PLUGINS = 'SET_PLUGINS';
+
 export const SET_USER = 'SET_USER';
 
 export const SET_WORKSPACE = 'SET_WORKSPACE';

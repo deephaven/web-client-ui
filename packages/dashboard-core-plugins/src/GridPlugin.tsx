@@ -3,10 +3,12 @@ import {
   assertIsDashboardPluginProps,
   DashboardPluginComponentProps,
   LayoutUtils,
+  PanelEvent,
   PanelHydrateFunction,
   useListener,
 } from '@deephaven/dashboard';
-import { IrisGridModel, IrisGridThemeType } from '@deephaven/iris-grid';
+import { IrisGridModelFactory, IrisGridThemeType } from '@deephaven/iris-grid';
+import { Table, VariableDefinition } from '@deephaven/jsapi-shim';
 import shortid from 'shortid';
 import { IrisGridPanel } from './panels';
 import { IrisGridEvent } from './events';
@@ -29,14 +31,26 @@ export const GridPlugin = (props: GridPluginProps): JSX.Element => {
     hydrate,
     theme,
   } = props;
-  const handleOpen = useCallback(
-    (
-      title: string,
-      makeModel: () => IrisGridModel,
-      metadata: Record<string, unknown> = {},
+  const handlePanelOpen = useCallback(
+    ({
+      dragEvent,
+      fetch,
       panelId = shortid.generate(),
-      dragEvent?: DragEvent
-    ) => {
+      widget,
+    }: {
+      dragEvent?: DragEvent;
+      fetch: () => Promise<Table>;
+      panelId?: string;
+      widget: VariableDefinition;
+    }) => {
+      const { name, type } = widget;
+      if (type !== dh.VariableType.TABLE) {
+        return;
+      }
+
+      const metadata = { name, table: name };
+      const makeModel = () =>
+        fetch().then((table: Table) => IrisGridModelFactory.makeModel(table));
       const config = {
         type: 'react-component',
         component: IrisGridPanel.COMPONENT,
@@ -49,7 +63,7 @@ export const GridPlugin = (props: GridPluginProps): JSX.Element => {
           makeModel,
           theme,
         },
-        title,
+        title: name,
         id: panelId,
       };
 
@@ -57,15 +71,6 @@ export const GridPlugin = (props: GridPluginProps): JSX.Element => {
       LayoutUtils.openComponent({ root, config, dragEvent });
     },
     [getDownloadWorker, id, layout, loadPlugin, theme]
-  );
-
-  const handleClose = useCallback(
-    (panelId: string) => {
-      const config = { component: IrisGridPanel.COMPONENT, id: panelId };
-      const { root } = layout;
-      LayoutUtils.closeComponent(root, config);
-    },
-    [layout]
   );
 
   useEffect(() => {
@@ -77,8 +82,7 @@ export const GridPlugin = (props: GridPluginProps): JSX.Element => {
     };
   }, [hydrate, registerComponent]);
 
-  useListener(layout.eventHub, IrisGridEvent.OPEN_GRID, handleOpen);
-  useListener(layout.eventHub, IrisGridEvent.CLOSE_GRID, handleClose);
+  useListener(layout.eventHub, PanelEvent.OPEN, handlePanelOpen);
 
   return <></>;
 };

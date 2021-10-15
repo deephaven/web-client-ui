@@ -9,6 +9,4 @@ const App = () => (
   </div>
 );
 
-App.propTypes = {};
-
 export default App;

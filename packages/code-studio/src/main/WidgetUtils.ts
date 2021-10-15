@@ -78,7 +78,7 @@ export const createGridModel = async (
   const { table: tableName } = metadata;
   const definition = { name: tableName, type: dh.VariableType.TABLE };
   const table = await session.getObject(definition);
-  return IrisGridModelFactory.makeModel(table, false);
+  return IrisGridModelFactory.makeModel(table);
 };
 
 export default { createChartModel, createGridModel };

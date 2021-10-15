@@ -1,6 +1,8 @@
 class IrisGridEvent {
+  /** @deprecated Use PanelEvent.OPEN instead */
   static OPEN_GRID = 'IrisGridEvent.OPEN_GRID';
 
+  /** @deprecated Use PanelEvent.CLOSE instead */
   static CLOSE_GRID = 'IrisGridEvent.CLOSE_GRID';
 
   static DATA_SELECTED = 'IrisGridEvent.DATA_SELECTED';

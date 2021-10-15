@@ -10,18 +10,7 @@ class IrisGridModelFactory {
    * @param {Formatter} formatter The formatter to use
    * @returns {Promise<IrisGridModel>} An IrisGridModel that uses the table provided
    */
-  static async makeModel(
-    table,
-    isConsoleTable = false,
-    formatter = new Formatter()
-  ) {
-    if (!isConsoleTable && table.isUncoalesced) {
-      table.close();
-      throw new Error(
-        'Table is uncoalesced. Tables must contain a where clause when part of persistent queries to be viewable.'
-      );
-    }
-
+  static async makeModel(table, formatter = new Formatter()) {
     let inputTable = null;
     if (table.hasInputTable) {
       inputTable = await table.inputTable();

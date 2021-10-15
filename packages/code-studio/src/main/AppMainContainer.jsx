@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import classNames from 'classnames';
 import PropTypes from 'prop-types';
+import memoize from 'memoize-one';
 import { CSSTransition } from 'react-transition-group';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
@@ -16,6 +17,7 @@ import {
 import Dashboard, {
   DEFAULT_DASHBOARD_ID,
   getDashboardData,
+  PanelEvent,
   updateDashboardData as updateDashboardDataAction,
 } from '@deephaven/dashboard';
 import {
@@ -45,6 +47,7 @@ import {
   getUser,
   setActiveTool as setActiveToolAction,
   updateWorkspaceData as updateWorkspaceDataAction,
+  getPlugins,
 } from '@deephaven/redux';
 import { PromiseUtils } from '@deephaven/utils';
 import SettingsMenu from '../settings/SettingsMenu';
@@ -484,6 +487,7 @@ export class AppMainContainer extends Component {
     return {
       ...props,
       getDownloadWorker: DownloadServiceWorkerUtils.getServiceWorker,
+      loadPlugin: PluginUtils.loadComponentPlugin,
       localDashboardId: id,
       makeModel: () => createGridModel(session, props.metadata),
     };
@@ -503,48 +507,28 @@ export class AppMainContainer extends Component {
 
   /**
    * Open a widget up, using a drag event if specified.
-   * @param {WidgetDefinition} widget The widget to
+   * @param {VariableDefinition} widget The widget to
    * @param {DragEvent} dragEvent The mouse drag event that trigger it, undefined if it was not triggered by a drag
    */
   openWidget(widget, dragEvent) {
-    switch (widget.type) {
-      case dh.VariableType.TABLE: {
-        const metadata = { table: widget.name };
-        this.emitLayoutEvent(
-          IrisGridEvent.OPEN_GRID,
-          widget.name,
-          () => {
-            const { session } = this.props;
-            return createGridModel(session, metadata);
-          },
-          metadata,
-          shortid.generate(),
-          dragEvent
-        );
-        break;
-      }
-      case dh.VariableType.FIGURE: {
-        const metadata = { figure: widget.name };
-        this.emitLayoutEvent(
-          ChartEvent.OPEN,
-          widget.name,
-          () => {
-            const { session } = this.props;
-            return createChartModel(session, metadata);
-          },
-          metadata,
-          shortid.generate(),
-          dragEvent
-        );
-        break;
-      }
-      default:
-        log.error('Unexpected widget type', widget);
-    }
+    const { session } = this.props;
+    this.emitLayoutEvent(PanelEvent.OPEN, {
+      dragEvent,
+      fetch: () => session.getObject(widget),
+      widget,
+    });
   }
 
+  getDashboardPlugins = memoize(plugins =>
+    [...plugins.entries()]
+      .filter(([, { DashboardPlugin }]) => DashboardPlugin)
+      .map(([name, { DashboardPlugin }]) =>
+        DashboardPlugin ? <DashboardPlugin key={name} /> : null
+      )
+  );
+
   render() {
-    const { activeTool, user, workspace } = this.props;
+    const { activeTool, plugins, user, workspace } = this.props;
     const { data: workspaceData = {} } = workspace;
     const { layoutConfig } = workspaceData;
     const { permissions } = user;
@@ -555,6 +539,7 @@ export class AppMainContainer extends Component {
       isSettingsMenuShown,
       widgets,
     } = this.state;
+    const dashboardPlugins = this.getDashboardPlugins(plugins);
 
     return (
       <div
@@ -643,7 +628,7 @@ export class AppMainContainer extends Component {
           <GridPlugin
             hydrate={this.hydrateGrid}
             getDownloadWorker={DownloadServiceWorkerUtils.getServiceWorker}
-            loadPlugin={PluginUtils.loadPlugin}
+            loadPlugin={PluginUtils.loadComponentPlugin}
           />
           <ChartPlugin hydrate={this.hydrateChart} />
           <ConsolePlugin />
@@ -651,6 +636,7 @@ export class AppMainContainer extends Component {
           <PandasPlugin />
           <MarkdownPlugin />
           <LinkerPlugin />
+          {dashboardPlugins}
         </Dashboard>
         <CSSTransition
           in={isSettingsMenuShown}
@@ -699,12 +685,14 @@ AppMainContainer.propTypes = {
       links: PropTypes.arrayOf(PropTypes.shape({})),
     }),
   }).isRequired,
+  plugins: PropTypes.instanceOf(Map).isRequired,
 };
 
 const mapStateToProps = state => ({
   activeTool: getActiveTool(state),
   dashboardData: getDashboardData(state, DEFAULT_DASHBOARD_ID),
   layoutStorage: getLayoutStorage(state),
+  plugins: getPlugins(state),
   session: getDashboardSessionWrapper(state, DEFAULT_DASHBOARD_ID).session,
   sessionConfig: getDashboardSessionWrapper(state, DEFAULT_DASHBOARD_ID).config,
   user: getUser(state),

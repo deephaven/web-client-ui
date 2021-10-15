@@ -3,10 +3,12 @@ import {
   assertIsDashboardPluginProps,
   DashboardPluginComponentProps,
   LayoutUtils,
+  PanelEvent,
   PanelHydrateFunction,
   useListener,
 } from '@deephaven/dashboard';
-import { IrisGridModel } from '@deephaven/iris-grid';
+import { IrisGridModel, IrisGridModelFactory } from '@deephaven/iris-grid';
+import { Table } from '@deephaven/jsapi-shim';
 import shortid from 'shortid';
 import { PandasPanel } from './panels';
 import { PandasEvent } from './events';
@@ -45,6 +47,35 @@ export const PandasPlugin = (props: PandasPluginProps): JSX.Element => {
     [id, layout]
   );
 
+  const handlePanelOpen = useCallback(
+    ({ dragEvent, fetch, panelId = shortid.generate(), widget }) => {
+      const { name, type } = widget;
+      if (type !== dh.VariableType.PANDAS) {
+        return;
+      }
+
+      const metadata = { name, table: name };
+      const makeModel = () =>
+        fetch().then((table: Table) => IrisGridModelFactory.makeModel(table));
+      const config = {
+        type: 'react-component',
+        component: PandasPanel.COMPONENT,
+        props: {
+          localDashboardId: id,
+          id: panelId,
+          metadata,
+          makeModel,
+        },
+        title: name,
+        id: panelId,
+      };
+
+      const { root } = layout;
+      LayoutUtils.openComponent({ root, config, dragEvent });
+    },
+    [id, layout]
+  );
+
   const handleClose = useCallback(
     (panelId: string) => {
       const config = { component: PandasPanel.COMPONENT, id: panelId };
@@ -66,6 +97,7 @@ export const PandasPlugin = (props: PandasPluginProps): JSX.Element => {
 
   useListener(layout.eventHub, PandasEvent.OPEN, handleOpen);
   useListener(layout.eventHub, PandasEvent.CLOSE, handleClose);
+  useListener(layout.eventHub, PanelEvent.OPEN, handlePanelOpen);
 
   return <></>;
 };

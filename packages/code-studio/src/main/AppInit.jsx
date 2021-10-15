@@ -27,6 +27,7 @@ import {
   setActiveTool as setActiveToolAction,
   setCommandHistoryStorage as setCommandHistoryStorageAction,
   setFileStorage as setFileStorageAction,
+  setPlugins as setPluginsAction,
   setUser as setUserAction,
   setWorkspace as setWorkspaceAction,
   setWorkspaceStorage as setWorkspaceStorageAction,
@@ -39,6 +40,7 @@ import LocalWorkspaceStorage from '../storage/LocalWorkspaceStorage';
 import WebdavLayoutStorage from './WebdavLayoutStorage';
 import { createSessionWrapper } from './SessionUtils';
 import UserLayoutUtils from './UserLayoutUtils';
+import { PluginUtils } from '../plugins';
 
 const log = Log.module('AppInit');
 
@@ -80,6 +82,7 @@ const AppInit = props => {
     setFileStorage,
     setLayoutStorage,
     setDashboardSessionWrapper,
+    setPlugins,
     setUser,
     setWorkspace,
     setWorkspaceStorage,
@@ -88,8 +91,43 @@ const AppInit = props => {
   const [error, setError] = useState();
   const [isFontLoading, setIsFontLoading] = useState(true);
 
+  /**
+   * Load all plugin modules available.
+   * @returns {Promise<Map<string, DeephavenPlugin>>} A map from the name of the plugin to the plugin module that was loaded
+   */
+  const loadPlugins = useCallback(async () => {
+    log.debug('Loading plugins...');
+    try {
+      const manifest = await PluginUtils.loadJson(
+        `${process.env.REACT_APP_MODULE_PLUGINS_URL}/manifest.json`
+      );
+
+      log.debug('Plugin manifest loaded:', manifest);
+      const pluginPromises = [];
+      for (let i = 0; i < manifest.plugins.length; i += 1) {
+        const { main } = manifest.plugins[i];
+        const pluginMainUrl = `${process.env.REACT_APP_MODULE_PLUGINS_URL}/${main}`;
+        pluginPromises.push(PluginUtils.loadModulePlugin(pluginMainUrl));
+      }
+      const pluginModules = await Promise.all(pluginPromises);
+
+      const pluginMap = new Map();
+      for (let i = 0; i < pluginModules.length; i += 1) {
+        const { name } = manifest.plugins[i];
+        pluginMap.set(name, pluginModules[i]);
+      }
+      log.info('Plugins loaded:', pluginMap);
+
+      return pluginMap;
+    } catch (e) {
+      log.error('Unable to load plugins:', e);
+      return [];
+    }
+  }, []);
+
   const initClient = useCallback(async () => {
     try {
+      const newPlugins = await loadPlugins();
       const loadedWorkspace = await WORKSPACE_STORAGE.load();
       const sessionWrapper = await createSessionWrapper();
       sessionWrapper.connection.addEventListener(
@@ -147,19 +185,23 @@ const AppInit = props => {
       setFileStorage(FILE_STORAGE);
       setLayoutStorage(LAYOUT_STORAGE);
       setDashboardSessionWrapper(DEFAULT_DASHBOARD_ID, sessionWrapper);
+      setPlugins(newPlugins);
       setUser(USER);
       setWorkspaceStorage(WORKSPACE_STORAGE);
       setWorkspace(loadedWorkspace);
     } catch (e) {
+      log.error(e);
       setError(e);
     }
   }, [
+    loadPlugins,
     setActiveTool,
     setCommandHistoryStorage,
     setDashboardData,
     setFileStorage,
     setLayoutStorage,
     setDashboardSessionWrapper,
+    setPlugins,
     setUser,
     setWorkspace,
     setWorkspaceStorage,
@@ -225,6 +267,7 @@ AppInit.propTypes = {
   setFileStorage: PropTypes.func.isRequired,
   setLayoutStorage: PropTypes.func.isRequired,
   setDashboardSessionWrapper: PropTypes.func.isRequired,
+  setPlugins: PropTypes.func.isRequired,
   setUser: PropTypes.func.isRequired,
   setWorkspace: PropTypes.func.isRequired,
   setWorkspaceStorage: PropTypes.func.isRequired,
@@ -247,6 +290,7 @@ export default connect(mapStateToProps, {
   setFileStorage: setFileStorageAction,
   setLayoutStorage: setLayoutStorageAction,
   setDashboardSessionWrapper: setDashboardSessionWrapperAction,
+  setPlugins: setPluginsAction,
   setUser: setUserAction,
   setWorkspace: setWorkspaceAction,
   setWorkspaceStorage: setWorkspaceStorageAction,

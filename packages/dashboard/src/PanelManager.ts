@@ -103,6 +103,7 @@ class PanelManager {
     eventHub.on(PanelEvent.DELETE, this.handleDeleted);
     eventHub.on(PanelEvent.CLOSED, this.handleClosed);
     eventHub.on(PanelEvent.CLOSE, this.handleControlClose);
+    // PanelEvent.OPEN should be listened to by plugins to open a panel
   }
 
   stopListening(): void {

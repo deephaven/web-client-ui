@@ -61,24 +61,22 @@ class ConsoleHistoryItem extends PureComponent {
 
       if (changes) {
         const { created, updated } = changes;
-        [...created, ...updated]
-          .filter(({ type }) => ConsoleUtils.isOpenableType(type))
-          .forEach(object => {
-            const { name } = object;
-            const key = `${name}`;
-            const disabled = (disabledObjects ?? []).indexOf(name) >= 0;
-            const element = (
-              <ButtonOld
-                key={key}
-                onClick={() => this.handleObjectClick(object)}
-                className="btn-primary btn-console"
-                disabled={disabled}
-              >
-                <ObjectIcon type={object.type} /> {name}
-              </ButtonOld>
-            );
-            resultElements.push(element);
-          });
+        [...created, ...updated].forEach(object => {
+          const { name } = object;
+          const key = `${name}`;
+          const disabled = (disabledObjects ?? []).indexOf(name) >= 0;
+          const element = (
+            <ButtonOld
+              key={key}
+              onClick={() => this.handleObjectClick(object)}
+              className="btn-primary btn-console"
+              disabled={disabled}
+            >
+              <ObjectIcon type={object.type} /> {name}
+            </ButtonOld>
+          );
+          resultElements.push(element);
+        });
       }
 
       // If the error has an associated command, we'll actually get a separate ERROR item printed out, so only print an error if there isn't an associated command

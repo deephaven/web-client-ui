@@ -39,7 +39,7 @@ class ChartModelFactory {
   /**
    * Creates a model from the settings provided.
    * Tries to create a Figure in the API with it.
-   * @param {Object} settings The chart builder settings
+   * @param {Object|undefined} settings The chart builder settings
    * @param {boolean} settings.isLinked Whether the newly created chart should stay linked with the original table, update when filters are updated
    * @param {string[]} settings.series The column names to use for creating the series of this chart
    * @param {string} settings.sourcePanelId The panel ID the chart was created from
