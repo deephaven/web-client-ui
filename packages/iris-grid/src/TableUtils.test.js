@@ -8,13 +8,6 @@ const EXPECT_TIME_ZONE_PARAM = expect.objectContaining({
   id: DEFAULT_TIME_ZONE_ID,
 });
 
-jest.mock('@deephaven/redux', () => ({
-  getTimeZone: jest.fn(() => 'America/New_York'),
-  store: {
-    getState: () => ({}),
-  },
-}));
-
 function makeColumns(count = 5) {
   const columns = [];
 

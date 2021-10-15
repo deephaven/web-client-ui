@@ -1,7 +1,8 @@
 import dh from '@deephaven/jsapi-shim';
-import { getTimeZone, store } from '@deephaven/redux';
 
 class DateUtils {
+  static USER_TIME_ZONE = 'America/New_York';
+
   static FULL_DATE_FORMAT = 'yyyy-MM-dd HH:mm:ss.SSSSSSSSS';
 
   static months = [
@@ -50,8 +51,7 @@ class DateUtils {
 
     let timeZone = dhTimeZone;
     if (!timeZone) {
-      const formatterTimeZone = getTimeZone(store.getState());
-      timeZone = dh.i18n.TimeZone.getTimeZone(formatterTimeZone);
+      timeZone = dh.i18n.TimeZone.getTimeZone(DateUtils.USER_TIME_ZONE);
     }
 
     const dateString = `${yearString}-${monthString}-${dayString} ${hourString}:${minuteString}:${secondString}.${nanoString}`;

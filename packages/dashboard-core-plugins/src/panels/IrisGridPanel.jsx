@@ -17,7 +17,7 @@ import {
 import AdvancedSettings from '@deephaven/iris-grid/dist/sidebar/AdvancedSettings';
 import { PropTypes as APIPropTypes } from '@deephaven/jsapi-shim';
 import Log from '@deephaven/log';
-import { getUser, getWorkspace } from '@deephaven/redux';
+import { getSettings, getUser, getWorkspace } from '@deephaven/redux';
 import { PromiseUtils } from '@deephaven/utils';
 import { ContextMenuRoot } from '@deephaven/components';
 import {
@@ -772,6 +772,7 @@ export class IrisGridPanel extends PureComponent {
       panelState,
       user,
       workspace,
+      settings,
     } = this.props;
     const {
       advancedFilters,
@@ -860,6 +861,7 @@ export class IrisGridPanel extends PureComponent {
             quickFilters={quickFilters}
             reverseType={reverseType}
             rollupConfig={rollupConfig}
+            settings={settings}
             sorts={sorts}
             userColumnWidths={userColumnWidths}
             userRowHeights={userRowHeights}
@@ -923,6 +925,7 @@ IrisGridPanel.propTypes = {
   onPanelStateUpdate: PropTypes.func,
   user: APIPropTypes.User.isRequired,
   workspace: PropTypes.shape({}).isRequired,
+  settings: PropTypes.shape({}),
 
   // Retrieve a download worker for optimizing exporting tables
   getDownloadWorker: PropTypes.func,
@@ -939,6 +942,7 @@ IrisGridPanel.defaultProps = {
   onPanelStateUpdate: () => {},
   getDownloadWorker: undefined,
   loadPlugin: undefined,
+  settings: undefined,
 };
 
 IrisGridPanel.displayName = 'IrisGridPanel';
@@ -954,6 +958,7 @@ const mapStateToProps = (state, ownProps) => {
     ),
     user: getUser(state),
     workspace: getWorkspace(state),
+    settings: getSettings(state),
   };
 };
 

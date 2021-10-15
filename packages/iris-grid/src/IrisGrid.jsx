@@ -4,7 +4,6 @@ import classNames from 'classnames';
 import { CSSTransition } from 'react-transition-group';
 import PropTypes from 'prop-types';
 import deepEqual from 'deep-equal';
-import { connect } from 'react-redux';
 import Log from '@deephaven/log';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -34,7 +33,6 @@ import {
   vsTools,
 } from '@deephaven/icons';
 import dh, { PropTypes as APIPropTypes } from '@deephaven/jsapi-shim';
-import { getSettings } from '@deephaven/redux';
 import { Pending, PromiseUtils, ValidationError } from '@deephaven/utils';
 import throttle from 'lodash.throttle';
 import debounce from 'lodash.debounce';
@@ -86,6 +84,7 @@ import SelectDistinctBuilder from './sidebar/SelectDistinctBuilder';
 import AdvancedSettingsType from './sidebar/AdvancedSettingsType';
 import AdvancedSettingsMenu from './sidebar/AdvancedSettingsMenu';
 import SHORTCUTS from './IrisGridShortcuts';
+import DateUtils from './DateUtils';
 
 const log = Log.module('IrisGrid');
 
@@ -401,6 +400,10 @@ export class IrisGrid extends Component {
       model,
       customFilters,
     } = this.props;
+
+    if (settings.timeZone) {
+      DateUtils.USER_TIME_ZONE = settings.timeZone;
+    }
 
     if (model !== prevProps.model) {
       this.stopListening(prevProps.model);
@@ -2942,7 +2945,7 @@ IrisGrid.propTypes = {
   quickFilters: PropTypes.instanceOf(Map),
   customColumns: PropTypes.arrayOf(PropTypes.string),
   selectDistinctColumns: PropTypes.arrayOf(PropTypes.string),
-  settings: PropTypes.shape({}).isRequired,
+  settings: PropTypes.shape({ timeZone: PropTypes.string }),
   userColumnWidths: PropTypes.instanceOf(Map),
   userRowHeights: PropTypes.instanceOf(Map),
   onSelectionChanged: PropTypes.func,
@@ -3032,12 +3035,13 @@ IrisGrid.defaultProps = {
   onContextMenu: () => [],
   pendingDataMap: new Map(),
   getDownloadWorker: undefined,
+  settings: {
+    timeZone: DateUtils.USER_TIME_ZONE,
+    defaultDateTimeFormat: DateUtils.FULL_DATE_FORMAT,
+    showTimeZone: false,
+    showTSeparator: true,
+    formatter: [],
+  },
 };
 
-const mapStateToProps = state => ({
-  settings: getSettings(state),
-});
-
-export default connect(mapStateToProps, null, null, { forwardRef: true })(
-  IrisGrid
-);
+export default IrisGrid;
