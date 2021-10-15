@@ -27,6 +27,7 @@ import {
   LinkerPlugin,
   MarkdownEvent,
   MarkdownPlugin,
+  MatPlotLibPlugin,
   PandasPlugin,
   getDashboardSessionWrapper,
 } from '@deephaven/dashboard-core-plugins';
@@ -587,6 +588,7 @@ export class AppMainContainer extends Component {
           <FilterPlugin />
           <PandasPlugin />
           <MarkdownPlugin />
+          <MatPlotLibPlugin />
           <LinkerPlugin />
         </Dashboard>
         <CSSTransition

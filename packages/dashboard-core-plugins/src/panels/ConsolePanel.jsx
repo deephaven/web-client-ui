@@ -24,6 +24,7 @@ import {
 import './ConsolePanel.scss';
 import Panel from './Panel';
 import { getDashboardSessionWrapper } from '../redux';
+import { MatPlotLibEvent } from '../../dist/events';
 
 const log = Log.module('ConsolePanel');
 
@@ -166,6 +167,8 @@ class ConsolePanel extends PureComponent {
       this.openFigure(object, session);
     } else if (ConsoleUtils.isPandas(type)) {
       this.openPandas(object, session);
+    } else if (ConsoleUtils.isDataStringType(type) && object.name === 'data') {
+      this.openDataString(object, session);
     } else {
       log.error('Unknown object', object);
     }
@@ -197,7 +200,7 @@ class ConsolePanel extends PureComponent {
         .getObject(object)
         .then(table => IrisGridModelFactory.makeModel(table, true));
 
-    log.debug('handleOpenTable', id);
+    log.debug('openTable', id);
 
     glEventHub.emit(IrisGridEvent.OPEN_GRID, name, makeModel, metadata, id);
   }
@@ -223,9 +226,21 @@ class ConsolePanel extends PureComponent {
         .getObject(object)
         .then(table => IrisGridModelFactory.makeModel(table, true));
 
-    log.debug('handleOpenTable', id);
+    log.debug('openPandas', id);
 
     glEventHub.emit(PandasEvent.OPEN, name, makeModel, metadata, id);
+  }
+
+  openDataString(object, session) {
+    const { name } = object;
+    const id = this.getItemId(name);
+    const metadata = { name };
+    const { glEventHub } = this.props;
+    const makeModel = () => session.getObject(object);
+
+    log.debug('openDataString', id);
+
+    glEventHub.emit(MatPlotLibEvent.OPEN, name, makeModel, metadata, id);
   }
 
   addCommand(command, focus = true, execute = false) {
