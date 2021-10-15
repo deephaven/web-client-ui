@@ -37,7 +37,7 @@ class SelectionKeyHandler extends KeyHandler {
         const { columnCount } = model;
         grid.clearSelectedRanges();
         grid.moveCursorToPosition(columnCount - 1, grid.state.cursorRow);
-        break;
+        return true;
       }
       case 'Home':
         if (!e.shiftKey) {
@@ -66,7 +66,7 @@ class SelectionKeyHandler extends KeyHandler {
           true,
           true
         );
-        break;
+        return true;
       }
       case 'Escape':
         grid.clearSelectedRanges();
