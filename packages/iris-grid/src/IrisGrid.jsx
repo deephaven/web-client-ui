@@ -873,14 +873,15 @@ export class IrisGrid extends Component {
       if (column == null) {
         return;
       }
+      const columnIndex = model.getColumnIndexByName(column.name);
       if (value === null) {
-        this.setQuickFilter(column.index, column.filter().isNull(), '=null');
+        this.setQuickFilter(columnIndex, column.filter().isNull(), '=null');
       } else {
         const filterValue = TableUtils.isTextType(columnType)
           ? dh.FilterValue.ofString(value)
           : dh.FilterValue.ofNumber(value);
         this.setQuickFilter(
-          column.index,
+          columnIndex,
           column.filter().eq(filterValue),
           `${text}`
         );
@@ -1616,12 +1617,17 @@ export class IrisGrid extends Component {
   }
 
   handleAdvancedFilterChange(column, filter, options) {
-    this.setAdvancedFilter(column.index, filter, options);
+    const { model } = this.props;
+    this.setAdvancedFilter(
+      model.getColumnIndexByName(column.name),
+      filter,
+      options
+    );
   }
 
   handleAdvancedFilterSortChange(column, direction, addToExisting = false) {
     const { model } = this.props;
-    const columnIndex = column.index;
+    const columnIndex = model.getColumnIndexByName(column.name);
     const oldSort = TableUtils.getSortForColumn(model.sort, columnIndex);
     let newSort = null;
 

@@ -8,6 +8,30 @@ import TableUtils from './TableUtils';
  * Call getMetrics() with the state to get metrics
  */
 class IrisGridMetricCalculator extends GridMetricCalculator {
+  getVisibleColumnWidth(
+    column,
+    state,
+    firstColumn = this.getFirstColumn(state),
+    treePaddingX = this.calculateTreePaddingX(state)
+  ) {
+    const { model } = state;
+    const hiddenColumns = model.layoutHints?.hiddenColumns ?? [];
+    const modelColumn = this.getModelColumn(column, state);
+
+    if (this.userColumnWidths.has(modelColumn)) {
+      return this.userColumnWidths.get(modelColumn);
+    }
+    if (hiddenColumns.includes(model.columns[modelColumn].name)) {
+      return 0;
+    }
+    return super.getVisibleColumnWidth(
+      column,
+      state,
+      firstColumn,
+      treePaddingX
+    );
+  }
+
   getGridY(state) {
     let gridY = super.getGridY(state);
     const {

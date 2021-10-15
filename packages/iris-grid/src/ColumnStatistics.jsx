@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { LoadingSpinner } from '@deephaven/components';
-import { dhRefresh } from '@deephaven/icons';
+import { dhRefresh, vsLock } from '@deephaven/icons';
 import { PropTypes as APIPropTypes } from '@deephaven/jsapi-shim';
 import Log from '@deephaven/log';
 import { PromiseUtils } from '@deephaven/utils';
@@ -160,6 +160,9 @@ class ColumnStatistics extends Component {
       ? 'Expanded Rows'
       : 'Number of Rows';
     const formattedRowCount = model.displayString(numRows, 'long');
+    const columnIndex = model.columns.findIndex(
+      col => col.name === column.name
+    );
     return (
       <div className="column-statistics">
         <div className="column-statistics-title">
@@ -168,6 +171,12 @@ class ColumnStatistics extends Component {
         </div>
         {description && (
           <div className="column-statistics-description">{description}</div>
+        )}
+        {!model.isColumnMovable(columnIndex) && (
+          <div className="column-statistics-status">
+            <FontAwesomeIcon icon={vsLock} className="mr-1" />
+            Not movable
+          </div>
         )}
         <div className="column-statistics-grid">
           {statistics == null && (
@@ -182,7 +191,7 @@ class ColumnStatistics extends Component {
         {showGenerateStatistics && (
           <button
             type="button"
-            className="btn btn-link"
+            className="btn btn-link px-0"
             onClick={this.handleGenerateStatistics}
           >
             Generate Stats

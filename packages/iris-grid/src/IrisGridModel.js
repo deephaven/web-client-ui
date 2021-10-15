@@ -71,6 +71,15 @@ class IrisGridModel extends GridModel {
   }
 
   /**
+   * Gets the column index for this model
+   * @param {String} name The model column name.
+   * @returns {Number} The numeric index of the requested column.
+   */
+  getColumnIndexByName(name) {
+    throw new Error('getColumnIndexByName not implemented');
+  }
+
+  /**
    * Gets the columns for the model before any transformations (such as rollups) are applied.
    * @returns {dh.Column[]} All original columns in the model.
    */
@@ -197,6 +206,13 @@ class IrisGridModel extends GridModel {
 
   set totalsConfig(totalsConfig) {
     throw new Error('set totalsConfig not implemented');
+  }
+
+  /**
+   * @returns {dh.LayoutHints} The LayoutHints to use for the columns of this table model
+   */
+  get layoutHints() {
+    throw new Error('get layoutHints not implemented');
   }
 
   /**

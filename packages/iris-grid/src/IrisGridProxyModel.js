@@ -278,6 +278,10 @@ class IrisGridProxyModel extends IrisGridModel {
     return this.model.columns;
   }
 
+  get layoutHints() {
+    return this.model.layoutHints;
+  }
+
   get originalColumns() {
     return this.originalModel.columns;
   }
@@ -496,6 +500,10 @@ class IrisGridProxyModel extends IrisGridModel {
 
   commitPending(...args) {
     return this.model.commitPending(...args);
+  }
+
+  getColumnIndexByName(name) {
+    return this.model.getColumnIndexByName(name);
   }
 }
 
