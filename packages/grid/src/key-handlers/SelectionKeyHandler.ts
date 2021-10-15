@@ -28,18 +28,45 @@ class SelectionKeyHandler extends KeyHandler {
       case 'j':
       case 'PageDown':
         return this.handlePageDown(e, grid);
-      case 'Home':
       case 'h':
         grid.clearSelectedRanges();
         grid.moveCursorToPosition(0, grid.state.cursorRow);
         return true;
-      case 'l':
-      case 'End': {
+      case 'l': {
         const { model } = grid.props;
         const { columnCount } = model;
         grid.clearSelectedRanges();
         grid.moveCursorToPosition(columnCount - 1, grid.state.cursorRow);
-        break;
+        return true;
+      }
+      case 'Home':
+        if (!e.shiftKey) {
+          grid.clearSelectedRanges();
+        }
+        grid.moveCursorToPosition(
+          GridUtils.isModifierKeyDown(e) ? grid.state.cursorColumn : 0,
+          GridUtils.isModifierKeyDown(e) ? 0 : grid.state.cursorRow,
+          e.shiftKey,
+          true,
+          true
+        );
+        return true;
+      case 'End': {
+        const { model } = grid.props;
+        const { columnCount, rowCount } = model;
+        if (!e.shiftKey) {
+          grid.clearSelectedRanges();
+        }
+        grid.moveCursorToPosition(
+          GridUtils.isModifierKeyDown(e)
+            ? grid.state.cursorColumn
+            : columnCount - 1,
+          GridUtils.isModifierKeyDown(e) ? rowCount - 1 : grid.state.cursorRow,
+          e.shiftKey,
+          true,
+          true
+        );
+        return true;
       }
       case 'Escape':
         grid.clearSelectedRanges();
