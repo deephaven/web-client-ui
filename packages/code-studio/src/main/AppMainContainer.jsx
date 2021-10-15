@@ -30,6 +30,7 @@ import {
   MarkdownEvent,
   NotebookEvent,
   MarkdownPlugin,
+  MatPlotLibPlugin,
   PandasPlugin,
   getDashboardSessionWrapper,
   UIPropTypes,
@@ -655,6 +656,7 @@ export class AppMainContainer extends Component {
           <FilterPlugin />
           <PandasPlugin />
           <MarkdownPlugin />
+          <MatPlotLibPlugin />
           <LinkerPlugin />
         </Dashboard>
         <CSSTransition

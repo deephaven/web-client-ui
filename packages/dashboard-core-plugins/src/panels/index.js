@@ -8,6 +8,7 @@ export { default as InputFilterPanel } from './InputFilterPanel';
 export { default as IrisGridPanel } from './IrisGridPanel';
 export { default as LogPanel } from './LogPanel';
 export { default as MarkdownPanel } from './MarkdownPanel';
+export { default as MatPlotLibPanel } from './MatPlotLibPanel';
 export { default as NotebookPanel } from './NotebookPanel';
 export { default as PandasPanel } from './PandasPanel';
 export { default as Panel } from './Panel';

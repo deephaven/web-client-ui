@@ -4,6 +4,7 @@ export { default as FilterPlugin } from './FilterPlugin';
 export { default as GridPlugin } from './GridPlugin';
 export { default as LinkerPlugin } from './LinkerPlugin';
 export { default as MarkdownPlugin } from './MarkdownPlugin';
+export { default as MatPlotLibPlugin } from './MatPlotLibPlugin';
 export { default as PandasPlugin } from './PandasPlugin';
 export { default as ControlType } from './controls/ControlType';
 export { default as ToolType } from './linker/ToolType';

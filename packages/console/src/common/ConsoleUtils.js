@@ -55,8 +55,16 @@ class ConsoleUtils {
     );
   }
 
+  static isDataStringType(type) {
+    return type === dh.VariableType.DATA_STRING;
+  }
+
   static isOpenableType(type) {
-    return ConsoleUtils.isTableType(type) || ConsoleUtils.isWidgetType(type);
+    return (
+      ConsoleUtils.isTableType(type) ||
+      ConsoleUtils.isWidgetType(type) ||
+      ConsoleUtils.isMatPlotLib(type)
+    );
   }
 
   static isFigureType(type) {
@@ -65,6 +73,10 @@ class ConsoleUtils {
 
   static isPandas(type) {
     return type === dh.VariableType.PANDAS;
+  }
+
+  static isMatPlotLib(type) {
+    return type.startsWith('matplotlib');
   }
 }
 
