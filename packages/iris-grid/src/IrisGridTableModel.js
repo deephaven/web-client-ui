@@ -465,6 +465,7 @@ class IrisGridTableModel extends IrisGridModel {
 
       let frontColumns = [];
       let backColumns = [];
+      let frozenColumns = [];
 
       if (hints.frontColumns) {
         frontColumns = hints.frontColumns
@@ -476,10 +477,16 @@ class IrisGridTableModel extends IrisGridModel {
           .map(name => columnMap.get(name))
           .filter(Boolean);
       }
+      if (hints.frozenColumns) {
+        frozenColumns = hints.frozenColumns
+          .map(name => columnMap.get(name))
+          .filter(Boolean);
+      }
 
       if (
         frontColumns.length !== (hints.frontColumns?.length ?? 0) ||
-        backColumns.length !== (hints.backColumns?.length ?? 0)
+        backColumns.length !== (hints.backColumns?.length ?? 0) ||
+        frozenColumns.length !== (hints.frozenColumns?.length ?? 0)
       ) {
         throw new Error(
           'Layout hints are invalid (contain invalid column names)'
@@ -488,11 +495,20 @@ class IrisGridTableModel extends IrisGridModel {
 
       const frontColumnSet = new Set(frontColumns);
       const backColumnSet = new Set(backColumns);
+      const frozenColumnSet = new Set(frozenColumns);
       const middleColumns = columns.filter(
-        col => !frontColumnSet.has(col) && !backColumnSet.has(col)
+        col =>
+          !frontColumnSet.has(col) &&
+          !backColumnSet.has(col) &&
+          !frozenColumnSet.has(col)
       );
 
-      return [...frontColumns, ...middleColumns, ...backColumns];
+      return [
+        ...frozenColumns,
+        ...frontColumns,
+        ...middleColumns,
+        ...backColumns,
+      ];
     }
     return columns;
   });
@@ -506,6 +522,10 @@ class IrisGridTableModel extends IrisGridModel {
 
   get layoutHints() {
     return this.table.layoutHints;
+  }
+
+  get floatingLeftColumnCount() {
+    return this.layoutHints?.frozenColumns?.length ?? 0;
   }
 
   get groupedColumns() {
@@ -1113,11 +1133,19 @@ class IrisGridTableModel extends IrisGridModel {
     const columnName = this.columns[x].name;
     if (
       this.layoutHints?.frontColumns?.includes(columnName) ||
-      this.layoutHints?.backColumns?.includes(columnName)
+      this.layoutHints?.backColumns?.includes(columnName) ||
+      this.layoutHints?.frozenColumns?.includes(columnName)
     ) {
       return false;
     }
     return !this.isKeyColumn(x);
+  }
+
+  isColumnFrozen(x) {
+    if (this.layoutHints?.frozenColumns?.includes(this.columns[x].name)) {
+      return true;
+    }
+    return false;
   }
 
   isKeyColumn(x) {
