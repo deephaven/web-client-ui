@@ -10,7 +10,6 @@
     "url": "https://github.com/deephaven/web-client-ui"
   },
   "main": "dist/index.js",
-  "module": "dist/index.modern",
   "source": "src/index.js",
   "types": "dist/index.d.ts",
   "engines": {
