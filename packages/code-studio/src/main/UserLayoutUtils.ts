@@ -2,6 +2,7 @@ import {
   CommandHistoryPanel,
   ConsolePanel,
   FileExplorerPanel,
+  LogPanel,
 } from '@deephaven/dashboard-core-plugins';
 import { ItemConfigType } from '@deephaven/golden-layout';
 import Log from '@deephaven/log';
@@ -23,6 +24,12 @@ export const DEFAULT_LAYOUT_CONFIG = [
                 type: 'react-component',
                 component: ConsolePanel.COMPONENT,
                 title: ConsolePanel.TITLE,
+                isClosable: false,
+              },
+              {
+                type: 'react-component',
+                component: LogPanel.COMPONENT,
+                title: LogPanel.TITLE,
                 isClosable: false,
               },
             ],
