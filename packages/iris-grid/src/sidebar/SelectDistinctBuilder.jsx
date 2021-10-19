@@ -6,19 +6,12 @@ import { dhNewCircleLargeFilled, vsTrash } from '@deephaven/icons';
 import { Tooltip } from '@deephaven/components';
 import Log from '@deephaven/log';
 import IrisGridModel from '../IrisGridModel';
-import TableUtils from '../TableUtils';
 
 import './SelectDistinctBuilder.scss';
 
 const log = Log.module('SelectDistinctBuilder');
 
 class SelectDistinctBuilder extends Component {
-  static getInputColumns(model) {
-    return model.originalColumns.filter(
-      ({ type }) => !TableUtils.isDateType(type)
-    );
-  }
-
   constructor(props) {
     super(props);
 
@@ -31,7 +24,7 @@ class SelectDistinctBuilder extends Component {
     this.state = {
       inputs:
         selectDistinctColumns.length > 0 ? [...selectDistinctColumns] : [''],
-      columns: SelectDistinctBuilder.getInputColumns(model),
+      columns: model.originalColumns,
     };
   }
 
