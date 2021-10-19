@@ -356,21 +356,7 @@ CommandHistory.propTypes = {
   sendToConsole: PropTypes.func.isRequired,
   sendToNotebook: PropTypes.func.isRequired,
   table: StoragePropTypes.CommandHistoryTable.isRequired,
-  commandHistoryStorage: StoragePropTypes.CommandHistoryStorage,
-};
-
-CommandHistory.defaultProps = {
-  commandHistoryStorage: {
-    addItem() {
-      log.error('commandHistoryStorage not provided');
-    },
-    updateItem() {
-      log.error('commandHistoryStorage not provided');
-    },
-    getTable() {
-      log.error('commandHistoryStorage not provided');
-    },
-  },
+  commandHistoryStorage: StoragePropTypes.CommandHistoryStorage.isRequired,
 };
 
 export default CommandHistory;

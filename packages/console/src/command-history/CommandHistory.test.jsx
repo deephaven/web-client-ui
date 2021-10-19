@@ -35,6 +35,7 @@ function mountItems(items) {
       language="test"
       sendToConsole={() => {}}
       sendToNotebook={() => {}}
+      commandHistoryStorage={{ addItem() {}, updateItem() {}, getTable() {} }}
     />
   );
 

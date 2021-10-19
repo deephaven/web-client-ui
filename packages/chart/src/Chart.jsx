@@ -458,7 +458,7 @@ export class Chart extends Component {
 
 Chart.propTypes = {
   model: PropTypes.instanceOf(ChartModel).isRequired,
-  settings: PropTypes.shape({}).isRequired,
+  settings: PropTypes.shape({}),
   isActive: PropTypes.bool,
   onDisconnect: PropTypes.func,
   onReconnect: PropTypes.func,
@@ -469,6 +469,7 @@ Chart.propTypes = {
 
 Chart.defaultProps = {
   isActive: true,
+  settings: {},
   onDisconnect: () => {},
   onReconnect: () => {},
   onUpdate: () => {},
