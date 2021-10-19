@@ -1,9 +1,9 @@
 {
   "short_name": "Deephaven",
-  "name": "Deephaven App",
+  "name": "Deephaven Community App",
   "icons": [
     {
-      "src": "favicon-app.svg",
+      "src": "favicon-cc-app.svg",
       "sizes": "any",
       "type": "image/svg+xml"
     }
