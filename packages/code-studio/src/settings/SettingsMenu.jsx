@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { vsClose, vsWatch, vsRecordKeys } from '@deephaven/icons';
-import Logo from './LogoDark.svg';
+import Logo from './community-wordmark-app.svg';
 import FormattingSectionContent from './FormattingSectionContent';
 import LegalNotice from './LegalNotice';
 import SettingsMenuSection from './SettingsMenuSection';
@@ -174,7 +174,7 @@ export class SettingsMenu extends Component {
                   href="https://deephaven.io"
                   className="d-inline-block custom-link p-1"
                 >
-                  <img src={Logo} alt="Deephaven Data Labs" width="225px" />
+                  <img src={Logo} alt="Deephaven Data Labs" width="230px" />
                 </a>
               </div>
             </div>
