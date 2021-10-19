@@ -46,7 +46,7 @@ import { PromiseUtils } from '@deephaven/utils';
 import SettingsMenu from '../settings/SettingsMenu';
 import AppControlsMenu from './AppControlsMenu';
 import { getLayoutStorage } from '../redux';
-import Logo from '../settings/LogoMiniDark.svg';
+import Logo from '../settings/community-wordmark-app.svg';
 import './AppMainContainer.scss';
 import WidgetList from './WidgetList';
 import { createChartModel, createGridModel } from './WidgetUtils';
@@ -515,7 +515,12 @@ export class AppMainContainer extends Component {
       >
         <nav className="nav-container">
           <div className="app-main-top-nav-menus">
-            <img src={Logo} alt="Deephaven Data Labs" width="152px" />
+            <img
+              src={Logo}
+              alt="Deephaven Data Labs"
+              width="115px"
+              className="ml-1"
+            />
             <div>
               <button type="button" className="btn btn-link btn-panels-menu">
                 <FontAwesomeIcon icon={dhShapes} />

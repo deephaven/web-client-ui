@@ -10,13 +10,18 @@
       name="viewport"
       content="width=device-width, initial-scale=1, shrink-to-fit=no"
     />
-    <meta name="theme-color" content="#000000" />
+    <meta name="theme-color" content="#2d2a2e" />
     <!--
       manifest.json provides metadata used when your web app is added to the
       homescreen on Android. See https://developers.google.com/web/fundamentals/engage-and-retain/web-app-manifest/
     -->
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
-    <link rel="shortcut icon" href="%PUBLIC_URL%/favicon.ico" />
+
+    <% if (process.env.NODE_ENV === 'development') { %>
+    <link rel="icon" href="%PUBLIC_URL%/favicon-cc-app-dev.svg" />
+    <% } else { %>
+    <link rel="icon" href="%PUBLIC_URL%/favicon-cc-app.svg" />
+    <% } %>
 
     <!--
       Notice the use of %PUBLIC_URL% in the tags above.
@@ -39,7 +44,7 @@
     ></script>
     <script>
       (function () {
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
           // If for some reason the API doesn't load, our app will not work. Write out a message to help the user.
           if (!window.dh) {
             document.getElementById('root').insertAdjacentHTML(
