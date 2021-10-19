@@ -17,7 +17,7 @@ class Charts extends PureComponent {
       <div>
         <h2 className="ui-title">Chart</h2>
         <div style={{ height: 500 }}>
-          <Chart model={model} settings={{}} />
+          <Chart model={model} />
         </div>
       </div>
     );
