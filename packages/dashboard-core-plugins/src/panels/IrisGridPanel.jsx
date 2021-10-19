@@ -128,8 +128,10 @@ export class IrisGridPanel extends PureComponent {
     this.initModel();
   }
 
-  componentDidUpdate(_, prevState) {
+  componentDidUpdate(prevProps, prevState) {
     const { model } = this.state;
+    const { settings } = this.props;
+    const { settings: prevSettings } = prevProps;
     if (model !== prevState.model) {
       if (prevState.model != null) {
         this.stopModelListening(prevState.model);
@@ -138,6 +140,11 @@ export class IrisGridPanel extends PureComponent {
       if (model != null) {
         this.startModelListening(model);
       }
+    }
+
+    // Update the model time zone to match the user's time zone in settings
+    if (settings.timeZone !== prevSettings.timeZone) {
+      model.timeZone = settings.timeZone;
     }
   }
 
@@ -359,9 +366,11 @@ export class IrisGridPanel extends PureComponent {
 
   handlePluginFilter(filters) {
     const { model } = this.state;
+    const { settings } = this.props;
     const pluginFilters = IrisGridUtils.getFiltersFromInputFilters(
       model.columns,
-      filters
+      filters,
+      settings.timeZone
     );
     this.setState({ pluginFilters });
   }
@@ -614,7 +623,7 @@ export class IrisGridPanel extends PureComponent {
   }
 
   loadPanelState(model) {
-    const { panelState } = this.props;
+    const { panelState, settings } = this.props;
     if (panelState == null) {
       return;
     }
@@ -645,7 +654,11 @@ export class IrisGridPanel extends PureComponent {
         selectedSearchColumns,
         invertSearchColumns,
         pendingDataMap,
-      } = IrisGridUtils.hydrateIrisGridState(model, irisGridState);
+      } = IrisGridUtils.hydrateIrisGridState(
+        model,
+        irisGridState,
+        settings.timeZone
+      );
       const { movedColumns, movedRows } = IrisGridUtils.hydrateGridState(
         model,
         gridState,
@@ -925,7 +938,8 @@ IrisGridPanel.propTypes = {
   onPanelStateUpdate: PropTypes.func,
   user: APIPropTypes.User.isRequired,
   workspace: PropTypes.shape({}).isRequired,
-  settings: PropTypes.shape({}),
+  settings: PropTypes.shape({ timeZone: PropTypes.string.isRequired })
+    .isRequired,
 
   // Retrieve a download worker for optimizing exporting tables
   getDownloadWorker: PropTypes.func,
@@ -942,7 +956,6 @@ IrisGridPanel.defaultProps = {
   onPanelStateUpdate: () => {},
   getDownloadWorker: undefined,
   loadPlugin: undefined,
-  settings: undefined,
 };
 
 IrisGridPanel.displayName = 'IrisGridPanel';

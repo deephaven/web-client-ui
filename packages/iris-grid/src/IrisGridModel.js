@@ -149,6 +149,14 @@ class IrisGridModel extends GridModel {
     throw new Error('set formatter not implemented');
   }
 
+  get timeZone() {
+    return this.timeZone;
+  }
+
+  set timeZone(timeZone) {
+    this.timeZone = timeZone;
+  }
+
   /**
    * @param {Any} value The value to format
    * @param {String} columnType The column type to format

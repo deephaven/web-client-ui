@@ -183,6 +183,7 @@ class AdvancedFilterCreatorSelectValue extends PureComponent {
 
   updateTableFilter() {
     const { table, searchText } = this.state;
+    const { timeZone } = this.props;
     const column = table.columns[0];
     const filters = [];
     let error = null;
@@ -190,11 +191,15 @@ class AdvancedFilterCreatorSelectValue extends PureComponent {
       let filter = null;
       if (TableUtils.isTextType(column.type)) {
         // case insensitive & contains search text
-        filter = TableUtils.makeQuickFilter(column, `~${searchText}`);
+        filter = TableUtils.makeQuickFilter(column, `~${searchText}`, timeZone);
       } else {
         // greater than or equal search for everything else
         // we may want to be smarter with some other types (like dates)
-        filter = TableUtils.makeQuickFilter(column, `>=${searchText}`);
+        filter = TableUtils.makeQuickFilter(
+          column,
+          `>=${searchText}`,
+          timeZone
+        );
       }
 
       if (filter != null) {
@@ -292,6 +297,7 @@ AdvancedFilterCreatorSelectValue.propTypes = {
   formatter: PropTypes.instanceOf(Formatter).isRequired,
   onChange: PropTypes.func,
   showSearch: PropTypes.bool,
+  timeZone: PropTypes.string.isRequired,
 };
 
 AdvancedFilterCreatorSelectValue.defaultProps = {

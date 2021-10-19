@@ -401,10 +401,6 @@ export class IrisGrid extends Component {
       customFilters,
     } = this.props;
 
-    if (settings.timeZone) {
-      DateUtils.USER_TIME_ZONE = settings.timeZone;
-    }
-
     if (model !== prevProps.model) {
       this.stopListening(prevProps.model);
       this.startListening(model);
@@ -484,18 +480,22 @@ export class IrisGrid extends Component {
   );
 
   getCachedAdvancedFilterMenuActions = memoize(
-    (model, column, advancedFilterOptions, sortDirection, formatter) => (
-      <AdvancedFilterCreator
-        model={model}
-        column={column}
-        onFilterChange={this.handleAdvancedFilterChange}
-        onSortChange={this.handleAdvancedFilterSortChange}
-        onDone={this.handleAdvancedFilterDone}
-        options={advancedFilterOptions}
-        sortDirection={sortDirection}
-        formatter={formatter}
-      />
-    ),
+    (model, column, advancedFilterOptions, sortDirection, formatter) => {
+      const { settings } = this.props;
+      return (
+        <AdvancedFilterCreator
+          model={model}
+          column={column}
+          onFilterChange={this.handleAdvancedFilterChange}
+          onSortChange={this.handleAdvancedFilterSortChange}
+          onDone={this.handleAdvancedFilterDone}
+          options={advancedFilterOptions}
+          sortDirection={sortDirection}
+          formatter={formatter}
+          timeZone={settings.timeZone}
+        />
+      );
+    },
     { max: 50 }
   );
 
@@ -786,7 +786,7 @@ export class IrisGrid extends Component {
    * @returns {boolean} True if the filters have changed because this quick filter was applied
    */
   applyQuickFilter(modelIndex, value, quickFilters) {
-    const { model } = this.props;
+    const { model, settings } = this.props;
     const column = model.columns[modelIndex];
 
     if (value != null && `${value}`.trim().length > 0) {
@@ -800,7 +800,7 @@ export class IrisGrid extends Component {
       }
       let filter = null;
       try {
-        filter = TableUtils.makeQuickFilter(column, value);
+        filter = TableUtils.makeQuickFilter(column, value, settings.timeZone);
       } catch (err) {
         log.error('Error creating quick filter', err);
       }
@@ -953,7 +953,7 @@ export class IrisGrid extends Component {
   rebuildFilters() {
     log.debug('Rebuilding filters');
 
-    const { model } = this.props;
+    const { model, settings } = this.props;
     const { advancedFilters, quickFilters } = this.state;
     const { columns } = model;
 
@@ -963,7 +963,11 @@ export class IrisGrid extends Component {
     advancedFilters.forEach((value, key) => {
       const { options } = value;
       const column = columns[key];
-      const filter = TableUtils.makeAdvancedFilter(column, options);
+      const filter = TableUtils.makeAdvancedFilter(
+        column,
+        options,
+        settings.timeZone
+      );
       newAdvancedFilters.set(key, {
         options,
         filter,
@@ -973,7 +977,11 @@ export class IrisGrid extends Component {
     quickFilters.forEach((value, key) => {
       const { text } = value;
       const column = columns[key];
-      const filter = TableUtils.makeQuickFilter(column, text);
+      const filter = TableUtils.makeQuickFilter(
+        column,
+        text,
+        settings.timeZone
+      );
       newQuickFilters.set(key, {
         text,
         filter,
@@ -3036,7 +3044,7 @@ IrisGrid.defaultProps = {
   pendingDataMap: new Map(),
   getDownloadWorker: undefined,
   settings: {
-    timeZone: DateUtils.USER_TIME_ZONE,
+    timeZone: 'America/New_York',
     defaultDateTimeFormat: DateUtils.FULL_DATE_FORMAT,
     showTimeZone: false,
     showTSeparator: true,

@@ -44,7 +44,8 @@ function makeIrisGridPanelWrapper(
   links = [],
   user = TestUtils.REGULAR_USER,
   client = new dh.Client(),
-  workspace = {}
+  workspace = {},
+  settings = { timeZone: 'America/New_York' }
 ) {
   return mount(
     <IrisGridPanel
@@ -57,6 +58,7 @@ function makeIrisGridPanelWrapper(
       inputFilters={inputFilters}
       links={links}
       workspace={workspace}
+      settings={settings}
     />
   );
 }

@@ -146,7 +146,7 @@ class IrisGridUtils {
    * @param {IrisGridModel} model The table model to import the state with
    * @param {Object} irisGridState The saved IrisGrid state
    */
-  static hydrateIrisGridState(model, irisGridState) {
+  static hydrateIrisGridState(model, irisGridState, timeZone) {
     const {
       advancedFilters,
       advancedSettings = [],
@@ -172,7 +172,8 @@ class IrisGridUtils {
     return {
       advancedFilters: IrisGridUtils.hydrateAdvancedFilters(
         columns,
-        advancedFilters
+        advancedFilters,
+        timeZone
       ),
       advancedSettings: new Map([
         ...AdvancedSettings.DEFAULTS,
@@ -181,7 +182,11 @@ class IrisGridUtils {
       aggregationSettings,
       customColumnFormatMap: new Map(customColumnFormatMap),
       isFilterBarShown,
-      quickFilters: IrisGridUtils.hydrateQuickFilters(columns, quickFilters),
+      quickFilters: IrisGridUtils.hydrateQuickFilters(
+        columns,
+        quickFilters,
+        timeZone
+      ),
       sorts: IrisGridUtils.hydrateSort(columns, sorts),
       userColumnWidths: new Map(
         userColumnWidths
@@ -272,9 +277,10 @@ class IrisGridUtils {
    * Import the saved quick filters to apply to the columns. Does not actually apply the filters.
    * @param {dh.Column[]} columns The columns the filters will be applied to
    * @param {Object[]} savedQuickFilters Exported quick filters definitions
+   * @param {string} timeZone The time zone to make this value in if it is a date type. E.g. America/New_York
    * @returns {QuickFilter[]} The quick filters to apply to the columns
    */
-  static hydrateQuickFilters(columns, savedQuickFilters) {
+  static hydrateQuickFilters(columns, savedQuickFilters, timeZone) {
     const importedFilters = savedQuickFilters.map(
       ([columnIndex, quickFilter]) => {
         const { text } = quickFilter;
@@ -283,7 +289,7 @@ class IrisGridUtils {
         try {
           const column = IrisGridUtils.getColumn(columns, columnIndex);
           if (column != null) {
-            filter = TableUtils.makeQuickFilter(column, text);
+            filter = TableUtils.makeQuickFilter(column, text, timeZone);
           }
         } catch (error) {
           log.error('hydrateQuickFilters error with', text, error);
@@ -316,9 +322,10 @@ class IrisGridUtils {
    * Import the saved advanced filters to apply to the columns. Does not actually apply the filters.
    * @param {dh.Columns[]} columns The columns the filters will be applied to
    * @param {Object[]} savedAdvancedFilters Exported advanced filters definitions
+   * @param {string} timeZone The time zone to make this filter in if it is a date type. E.g. America/New_York
    * @returns {AdvancedFilter[]} The advanced filters to apply to the columns
    */
-  static hydrateAdvancedFilters(columns, savedAdvancedFilters) {
+  static hydrateAdvancedFilters(columns, savedAdvancedFilters, timeZone) {
     const importedFilters = savedAdvancedFilters.map(
       ([columnIndex, advancedFilter]) => {
         const options = IrisGridUtils.hydrateAdvancedFilterOptions(
@@ -330,7 +337,7 @@ class IrisGridUtils {
         try {
           const column = IrisGridUtils.getColumn(columns, columnIndex);
           if (column != null) {
-            filter = TableUtils.makeAdvancedFilter(column, options);
+            filter = TableUtils.makeAdvancedFilter(column, options, timeZone);
           }
         } catch (error) {
           log.error('hydrateAdvancedFilters error with', options, error);
@@ -539,21 +546,28 @@ class IrisGridUtils {
    * Applies the passed in table settings directly to the provided table
    * @param {dh.Table} table The table to apply the settings to
    * @param {Object} tableSettings Dehydrated table settings extracted with `extractTableSettings`
+   * @param {string} timeZone The time zone to make this value in if it is a date type. E.g. America/New_York
    */
-  static applyTableSettings(table, tableSettings) {
+  static applyTableSettings(table, tableSettings, timeZone) {
     const { columns } = table;
     const quickFilters = IrisGridUtils.getFiltersFromFilterMap(
-      IrisGridUtils.hydrateQuickFilters(columns, tableSettings.quickFilters)
+      IrisGridUtils.hydrateQuickFilters(
+        columns,
+        tableSettings.quickFilters,
+        timeZone
+      )
     );
     const advancedFilters = IrisGridUtils.getFiltersFromFilterMap(
       IrisGridUtils.hydrateAdvancedFilters(
         columns,
-        tableSettings.advancedFilters
+        tableSettings.advancedFilters,
+        timeZone
       )
     );
     const inputFilters = IrisGridUtils.getFiltersFromInputFilters(
       columns,
-      tableSettings.inputFilters
+      tableSettings.inputFilters,
+      timeZone
     );
     const sorts = IrisGridUtils.hydrateSort(columns, tableSettings.sorts);
 
@@ -586,7 +600,7 @@ class IrisGridUtils {
     );
   }
 
-  static getFiltersFromInputFilters(columns, inputFilters = []) {
+  static getFiltersFromInputFilters(columns, inputFilters = [], timeZone) {
     return inputFilters
       .map(({ name, type, value }) => {
         const column = columns.find(
@@ -595,7 +609,7 @@ class IrisGridUtils {
         );
         if (column) {
           try {
-            return TableUtils.makeQuickFilter(column, value);
+            return TableUtils.makeQuickFilter(column, value, timeZone);
           } catch (e) {
             // It may be unable to create it because user hasn't completed their input
             log.debug('Unable to create input filter', e);

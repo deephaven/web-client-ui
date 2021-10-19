@@ -318,6 +318,14 @@ class IrisGridProxyModel extends IrisGridModel {
     this.model.formatter = formatter;
   }
 
+  get timeZone() {
+    return this.model.timeZone;
+  }
+
+  set timeZone(timeZone) {
+    this.model.timeZone = timeZone;
+  }
+
   displayString(...args) {
     return this.model.displayString(...args);
   }

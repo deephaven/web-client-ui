@@ -5,6 +5,7 @@ import {
   IrisGridModelFactory,
   IrisGridUtils,
 } from '@deephaven/iris-grid';
+import { getTimeZone, store } from '@deephaven/redux';
 import { DhSession } from './SessionUtils';
 
 export type ChartPanelMetadata = {
@@ -59,7 +60,11 @@ export const createChartModel = async (
   const definition = { id: tableName, type: dh.VariableType.TABLE };
   const table = await session.getObject(definition);
 
-  IrisGridUtils.applyTableSettings(table, tableSettings);
+  IrisGridUtils.applyTableSettings(
+    table,
+    tableSettings,
+    getTimeZone(store.getState())
+  );
 
   return ChartModelFactory.makeModelFromSettings(settings, table);
 };

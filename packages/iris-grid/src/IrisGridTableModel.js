@@ -54,6 +54,7 @@ class IrisGridTableModel extends IrisGridModel {
     );
 
     this.irisFormatter = formatter;
+    this.timeZone = 'America/New_York';
     this.inputTable = inputTable;
     this.listenerCount = 0;
     this.subscription = null;
@@ -724,6 +725,14 @@ class IrisGridTableModel extends IrisGridModel {
     this.dispatchEvent(new CustomEvent(IrisGridModel.EVENT.FORMATTER_UPDATED));
   }
 
+  get timeZone() {
+    return this.userTimeZone;
+  }
+
+  set timeZone(timeZone) {
+    this.userTimeZone = timeZone;
+  }
+
   displayString(value, columnType, columnName = '', formatOverride = null) {
     return this.getCachedFormattedString(
       this.formatter,
@@ -1222,7 +1231,7 @@ class IrisGridTableModel extends IrisGridModel {
         const column = this.columns[x];
         columnSet.add(column);
         if (formattedText[x] === undefined) {
-          const value = TableUtils.makeValue(column.type, text);
+          const value = TableUtils.makeValue(column.type, text, this.timeZone);
           formattedText[x] =
             value != null
               ? this.displayString(value, column.type, column.name)
@@ -1254,7 +1263,7 @@ class IrisGridTableModel extends IrisGridModel {
           const row = newDataMap.get(rowIndex);
           const { data: rowData } = row;
           const newRowData = new Map(rowData);
-          const value = TableUtils.makeValue(column.type, text);
+          const value = TableUtils.makeValue(column.type, text, this.timeZone);
           if (value != null) {
             newRowData.set(columnIndex, { value });
           } else {
@@ -1289,7 +1298,11 @@ class IrisGridTableModel extends IrisGridModel {
           }
 
           columnSet.forEach(column => {
-            newRow[column.name] = TableUtils.makeValue(column.type, text);
+            newRow[column.name] = TableUtils.makeValue(
+              column.type,
+              text,
+              this.timeZone
+            );
           });
           return newRow;
         });
@@ -1340,7 +1353,7 @@ class IrisGridTableModel extends IrisGridModel {
       edits.forEach(edit => {
         const { x, y, text } = edit;
         const column = this.columns[x];
-        const value = TableUtils.makeValue(column.type, text);
+        const value = TableUtils.makeValue(column.type, text, this.timeZone);
         const formattedText =
           value != null
             ? this.displayString(value, column.type, column.name)
@@ -1423,7 +1436,8 @@ class IrisGridTableModel extends IrisGridModel {
               const column = this.columns[edit.x];
               newRow[column.name] = TableUtils.makeValue(
                 column.type,
-                edit.text
+                edit.text,
+                this.timeZone
               );
             });
           }
@@ -1444,7 +1458,7 @@ class IrisGridTableModel extends IrisGridModel {
       edits.forEach(edit => {
         const { x, y, text } = edit;
         const column = this.columns[x];
-        const value = TableUtils.makeValue(column.type, text);
+        const value = TableUtils.makeValue(column.type, text, this.timeZone);
         const formattedText =
           value != null
             ? this.displayString(value, column.type, column.name)
@@ -1589,7 +1603,7 @@ class IrisGridTableModel extends IrisGridModel {
   isValidForCell(x, y, value) {
     try {
       const column = this.columns[x];
-      TableUtils.makeValue(column.type, value);
+      TableUtils.makeValue(column.type, value, this.timeZone);
       return true;
     } catch (e) {
       return false;

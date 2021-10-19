@@ -153,7 +153,13 @@ describe('quick filter tests', () => {
     expect(result).toBe(expectedResult);
   }
 
-  function testMultiFilter(columnType, testFunction, text, expectedFilters) {
+  function testMultiFilter(
+    columnType,
+    testFunction,
+    text,
+    timeZone,
+    expectedFilters
+  ) {
     const column = makeFilterColumn(columnType);
 
     const columnFilter = column.filter();
@@ -177,7 +183,7 @@ describe('quick filter tests', () => {
       }
     }
 
-    const result = TableUtils[testFunction](column, text);
+    const result = TableUtils[testFunction](column, text, timeZone);
 
     for (let i = 0; i < expectedFilters.length; i += 1) {
       const [expectedFn, expectedOperator, ...args] = expectedFilters[i];
@@ -466,6 +472,7 @@ describe('quick filter tests', () => {
         'boolean',
         'makeQuickBooleanFilter',
         text,
+        'America/New_York',
         expectedFilters
       );
     }
@@ -573,6 +580,7 @@ describe('quick filter tests', () => {
         'io.deephaven.db.tables.utils.DBDateTime',
         'makeQuickDateFilter',
         text,
+        'America/New_York',
         expectedFilters
       );
     }
@@ -597,6 +605,11 @@ describe('quick filter tests', () => {
         TableUtils.makeQuickDateFilter(column, '302-111-303')
       ).toThrow();
       expect(() => TableUtils.makeQuickDateFilter(column, 4)).toThrow();
+
+      // Missing time zone
+      expect(() =>
+        TableUtils.makeQuickDateFilter(column, '2021-10-19').toThrow()
+      );
     });
 
     it('handles year', () => {
@@ -1203,25 +1216,43 @@ describe('quick filter tests', () => {
 
   describe('multiple conditionals', () => {
     it('handles && multi filter case', () => {
-      testMultiFilter('int', 'makeQuickFilter', '>10 && <20', [
-        [FilterType.greaterThan, FilterOperator.and, 10],
-        [FilterType.lessThan, null, 20],
-      ]);
+      testMultiFilter(
+        'int',
+        'makeQuickFilter',
+        '>10 && <20',
+        'America/New_York',
+        [
+          [FilterType.greaterThan, FilterOperator.and, 10],
+          [FilterType.lessThan, null, 20],
+        ]
+      );
     });
 
     it('handles || multi filter case', () => {
-      testMultiFilter('int', 'makeQuickFilter', '>30 || <20', [
-        [FilterType.greaterThan, FilterOperator.or, 30],
-        [FilterType.lessThan, null, 20],
-      ]);
+      testMultiFilter(
+        'int',
+        'makeQuickFilter',
+        '>30 || <20',
+        'America/New_York',
+        [
+          [FilterType.greaterThan, FilterOperator.or, 30],
+          [FilterType.lessThan, null, 20],
+        ]
+      );
     });
 
     it('handles && and || case', () => {
-      testMultiFilter('int', 'makeQuickFilter', '>10 && < 20 || =50', [
-        [FilterType.greaterThan, FilterOperator.and, 10],
-        [FilterType.lessThan, FilterOperator.or, 20],
-        [FilterType.eq, null, 50],
-      ]);
+      testMultiFilter(
+        'int',
+        'makeQuickFilter',
+        '>10 && < 20 || =50',
+        'America/New_York',
+        [
+          [FilterType.greaterThan, FilterOperator.and, 10],
+          [FilterType.lessThan, FilterOperator.or, 20],
+          [FilterType.eq, null, 50],
+        ]
+      );
     });
   });
 });

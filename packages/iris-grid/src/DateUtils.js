@@ -1,8 +1,6 @@
 import dh from '@deephaven/jsapi-shim';
 
 class DateUtils {
-  static USER_TIME_ZONE = 'America/New_York';
-
   static FULL_DATE_FORMAT = 'yyyy-MM-dd HH:mm:ss.SSSSSSSSS';
 
   static months = [
@@ -22,6 +20,7 @@ class DateUtils {
 
   /**
    *
+   * @param {string} timeZone The time zone to parse this time in. E.g. America/New_York
    * @param {Number} year The year for the date
    * @param {Number} month The month, starting at 0
    * @param {Number} day The day, starting at 1
@@ -29,17 +28,16 @@ class DateUtils {
    * @param {Number} minute The minutes
    * @param {Number} second The seconds
    * @param {Number} ns The nanoseconds
-   * @param {dh.i18n.TimeZone} dhTimeZone The time zone to parse this time in. Defaults to the users set time zone.
    */
   static makeDateWrapper(
+    timeZone,
     year,
     month = 0,
     day = 1,
     hour = 0,
     minute = 0,
     second = 0,
-    ns = 0,
-    dhTimeZone = null
+    ns = 0
   ) {
     const yearString = `${year}`.padStart(4, '0');
     const monthString = `${month + 1}`.padStart(2, '0');
@@ -49,16 +47,11 @@ class DateUtils {
     const secondString = `${second}`.padStart(2, '0');
     const nanoString = `${ns}`.padStart(9, '0');
 
-    let timeZone = dhTimeZone;
-    if (!timeZone) {
-      timeZone = dh.i18n.TimeZone.getTimeZone(DateUtils.USER_TIME_ZONE);
-    }
-
     const dateString = `${yearString}-${monthString}-${dayString} ${hourString}:${minuteString}:${secondString}.${nanoString}`;
     return dh.i18n.DateTimeFormat.parse(
       DateUtils.FULL_DATE_FORMAT,
       dateString,
-      timeZone
+      dh.i18n.TimeZone.getTimeZone(timeZone)
     );
   }
 
@@ -78,9 +71,10 @@ class DateUtils {
   /**
    * @param {Object} components The string components that were parsed from the original string
    * @param {Object} values The values that were parsed from the components
+   * @param {string} timeZone The time zone to parse the date in. E.g. America/New_York
    * @returns {dh.DateWrapper} Returns the DateWrapper for the next date, or null if a full date was passed in
    */
-  static getNextDate(components, values) {
+  static getNextDate(components, values, timeZone) {
     let { year, month, date, hours, minutes, seconds, nanos } = values;
 
     if (components.nanos != null) {
@@ -113,6 +107,7 @@ class DateUtils {
     // Still need to add nanos after, and the overflow from that is already added to seconds above
     const jsDate = new Date(year, month, date, hours, minutes, seconds);
     return DateUtils.makeDateWrapper(
+      timeZone,
       jsDate.getFullYear(),
       jsDate.getMonth(),
       jsDate.getDate(),
@@ -236,10 +231,11 @@ class DateUtils {
 
   /**
    * Parses the date range provided from a string of text.
-   * @param {string} dateString The string to parse the date from. Can be a keyword like "today", or in the format "2018-08-04"
+   * @param {string} text The string to parse the date from. Can be a keyword like "today", or in the format "2018-08-04"
+   * @param {string} timeZone The time zone to parse this range in. E.g. America/New_York
    * @returns {[DateWrapper, DateWrapper]} A tuple with the start/end values for that date range
    */
-  static parseDateRange(text) {
+  static parseDateRange(text, timeZone) {
     const cleanText = text.trim().toLowerCase();
     if (cleanText.length === 0) {
       throw new Error('Cannot parse date range from empty string');
@@ -252,11 +248,13 @@ class DateUtils {
     if (cleanText === 'today') {
       const now = new Date(Date.now());
       const startDate = DateUtils.makeDateWrapper(
+        timeZone,
         now.getFullYear(),
         now.getMonth(),
         now.getDate()
       );
       const endDate = DateUtils.makeDateWrapper(
+        timeZone,
         now.getFullYear(),
         now.getMonth(),
         now.getDate() + 1
@@ -267,11 +265,13 @@ class DateUtils {
     if (cleanText === 'yesterday') {
       const now = new Date(Date.now());
       const startDate = DateUtils.makeDateWrapper(
+        timeZone,
         now.getFullYear(),
         now.getMonth(),
         now.getDate() - 1
       );
       const endDate = DateUtils.makeDateWrapper(
+        timeZone,
         now.getFullYear(),
         now.getMonth(),
         now.getDate()
@@ -305,6 +305,7 @@ class DateUtils {
     );
 
     const startDate = DateUtils.makeDateWrapper(
+      timeZone,
       values.year,
       values.month,
       values.date,
@@ -314,7 +315,7 @@ class DateUtils {
       values.nanos
     );
 
-    const endDate = DateUtils.getNextDate(components, values);
+    const endDate = DateUtils.getNextDate(components, values, timeZone);
     return [startDate, endDate];
   }
 
