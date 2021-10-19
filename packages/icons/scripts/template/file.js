@@ -1,7 +1,6 @@
 // Used to build iconName.d.ts files
 // Based on font-awesome exports
-exports.dtsFile = prefixedName => {
-  return `
+export const dtsFile = prefixedName => `
     import { IconDefinition, IconPrefix, IconName } from "@fortawesome/fontawesome-common-types";
     export const definition: IconDefinition;
     export const ${prefixedName}: IconDefinition;
@@ -12,11 +11,9 @@ exports.dtsFile = prefixedName => {
     export const ligatures: string[];
     export const unicode: string;
     export const svgPathData: string;`;
-};
 
 // Based on font-awesome exports
-exports.jsFile = (file, width, height, path) => {
-  return `
+export const jsFile = (file, width, height, path) => `
     'use strict';
     Object.defineProperty(exports, '__esModule', { value: true });
     var prefix = '${file.prefix}';
@@ -46,4 +43,3 @@ exports.jsFile = (file, width, height, path) => {
     exports.ligatures = ligatures;
     exports.unicode = unicode;
     exports.svgPathData = svgPathData;`;
-};

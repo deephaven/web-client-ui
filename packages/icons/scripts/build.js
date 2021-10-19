@@ -1,13 +1,13 @@
-const fs = require('fs').promises;
-const path = require('path');
-const { parse } = require('svg-parser');
-
-const { parse: parsePath, scale, stringify } = require('svg-path-tools');
-
+import { promises as fs } from 'fs';
+import path from 'path';
+import parser from 'svg-parser';
+import svgPathTools from 'svg-path-tools';
 // template shape based on fortawesome/fontawesome-free export file shape
-const { dtsFile, jsFile } = require('./template/file');
-const { indexdts, indexjs, indexesjs } = require('./template/indicies');
+import { dtsFile, jsFile } from './template/file.js';
+import { indexdts, indexjs, indexesjs } from './template/indicies.js';
 
+const { parse } = parser;
+const { parse: parsePath, scale, stringify } = svgPathTools;
 const BUILD_DIR = 'dist';
 
 // sets output viewbox height, and scales width accordingly

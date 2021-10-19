@@ -4,6 +4,7 @@
   "description": "Deephaven Logger",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
+  "type": "module",
   "repository": {
     "type": "git",
     "url": "https://github.com/deephaven/web-client-ui"
@@ -33,6 +34,7 @@
   },
   "devDependencies": {
     "@babel/cli": "^7.14.8",
+    "@deephaven/tsconfig": "^0.4.0",
     "@types/lodash.clamp": "^4.0.6",
     "@types/prop-types": "^15.7.3",
     "cross-env": "^7.0.2",
@@ -51,7 +53,6 @@
     "access": "public"
   },
   "dependencies": {
-    "custom-event-polyfill": "^1.0.7",
     "event-target-shim": "^6.0.2"
   }
 }

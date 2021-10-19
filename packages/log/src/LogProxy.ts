@@ -1,7 +1,5 @@
 /* eslint-disable no-console */
-// eslint-disable-next-line max-classes-per-file
-import { Event, EventTarget } from 'event-target-shim';
-import 'custom-event-polyfill';
+import { EventTarget } from 'event-target-shim';
 import Log from './Log';
 
 export enum LOG_PROXY_TYPE {

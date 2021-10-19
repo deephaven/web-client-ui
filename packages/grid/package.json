@@ -4,12 +4,12 @@
   "description": "Deephaven React grid component",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
+  "type": "module",
   "repository": {
     "type": "git",
     "url": "https://github.com/deephaven/web-client-ui"
   },
   "main": "dist/index.js",
-  "module": "dist/index.modern",
   "types": "dist/index.d.ts",
   "source": "src/index.ts",
   "engines": {
