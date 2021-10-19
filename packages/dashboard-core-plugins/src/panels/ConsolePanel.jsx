@@ -167,7 +167,7 @@ class ConsolePanel extends PureComponent {
       this.openFigure(object, session);
     } else if (ConsoleUtils.isPandas(type)) {
       this.openPandas(object, session);
-    } else if (ConsoleUtils.isDataStringType(type) && object.name === 'data') {
+    } else if (ConsoleUtils.isMatPlotLib(type)) {
       this.openDataString(object, session);
     } else {
       log.error('Unknown object', object);
