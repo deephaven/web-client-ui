@@ -415,12 +415,9 @@ class FilterSetManager extends Component<
   }
 
   isRenamingExistingSet = memoizeOne(
-    (filterSets: FilterSet[], renameSet?: FilterSet): boolean => {
-      return (
-        renameSet !== undefined &&
-        filterSets.some(({ id }) => id === renameSet.id)
-      );
-    }
+    (filterSets: FilterSet[], renameSet?: FilterSet): boolean =>
+      renameSet !== undefined &&
+      filterSets.some(({ id }) => id === renameSet.id)
   );
 
   applyFilterSet(selectedId?: string): void {
