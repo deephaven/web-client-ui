@@ -27,7 +27,7 @@ $selection-hover-color: $interfacewhite;
     text-align: left;
     cursor: pointer;
     user-select: none;
-    line-height: 1.75rem;
+    line-height: 27px; // CommandHistory.ITEM_HEIGHT - borders
     transition: $btn-transition;
     border: 1px solid transparent; //we need a spacer border so stuff doesn't move on us when we apply a border-color
   }
