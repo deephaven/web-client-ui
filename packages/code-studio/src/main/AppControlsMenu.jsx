@@ -16,6 +16,7 @@ import {
   dhTriangleDownSquare,
   vsLink,
   vsMarkdown,
+  vsDeviceCamera,
 } from '@deephaven/icons';
 import PropTypes from 'prop-types';
 
@@ -142,6 +143,15 @@ const AppControlsMenu = props => {
           handleControlSelect(ControlType.MARKDOWN, dragEvent);
         },
         order: 20,
+      },
+      {
+        title: 'Filter Sets',
+        icon: vsDeviceCamera,
+        menuElement: <DragSourceMenuItem />,
+        action: (dragEvent = null) => {
+          handleControlSelect(ControlType.FILTER_SET_MANAGER, dragEvent);
+        },
+        order: 25,
       },
       {
         disabled: true,

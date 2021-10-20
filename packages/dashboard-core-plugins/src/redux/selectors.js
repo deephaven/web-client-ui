@@ -13,6 +13,15 @@ export const getColumnsForDashboard = (store, dashboardId) =>
   getDashboardData(store, dashboardId).columns ?? EMPTY_ARRAY;
 
 /**
+ * Get the known filter sets for the dashboard.
+ * @param {Store} store The redux store
+ * @param {string} dashboardId The dashboard ID to get data for
+ * @returns {FilterSet[]} The filter sets set on this dashboard
+ */
+export const getFilterSetsForDashboard = (store, dashboardId) =>
+  getDashboardData(store, dashboardId).filterSets ?? EMPTY_ARRAY;
+
+/**
  * @param {Store} store The redux store
  * @param {string} dashboardId The dashboard ID to get data for
  * @returns {FilterChangeEvent[]} The filters set on this dashboard

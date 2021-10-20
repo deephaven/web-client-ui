@@ -85,6 +85,7 @@ class DropdownFilterPanel extends Component {
       values: [],
       isValueShown,
       wasFlipped: false,
+      skipUpdate: false,
 
       // eslint-disable-next-line react/no-unused-state
       panelState, // Dehydrated panel state that can load this panel
@@ -313,7 +314,7 @@ class DropdownFilterPanel extends Component {
     let sendUpdate = true;
     let timestamp = Date.now();
     this.setState(
-      ({ panelState, timestamp: prevTimestamp, wasFlipped }) => {
+      ({ panelState, timestamp: prevTimestamp, wasFlipped, skipUpdate }) => {
         // If the user had a value set, and they flip the card over and flip it back without changing any settings, ignore it
         const isFlip =
           panelState != null &&
@@ -321,7 +322,7 @@ class DropdownFilterPanel extends Component {
           name === panelState.name &&
           type === panelState.type &&
           value === panelState.value;
-        sendUpdate = isValueShown && (!isFlip || !wasFlipped);
+        sendUpdate = !skipUpdate && isValueShown && (!isFlip || !wasFlipped);
 
         if (!sendUpdate) {
           timestamp = prevTimestamp;
@@ -337,6 +338,7 @@ class DropdownFilterPanel extends Component {
           },
           timestamp,
           wasFlipped: isFlip,
+          skipUpdate: false,
         };
       },
       () => {
@@ -383,6 +385,24 @@ class DropdownFilterPanel extends Component {
 
   handleClearAllFilters() {
     this.dropdownFilterRef.current.clearFilter();
+  }
+
+  /**
+   * Set the filter value, card side, selected column
+   * @param {Object} state Filter state to set
+   * @param {boolean} sendUpdate Emit filters changed event if true
+   */
+  setPanelState(state, sendUpdate = false) {
+    if (this.getSource() == null) {
+      log.debug('Ignore state update for unlinked filter', state);
+      return;
+    }
+    // Set the skipUpdate flag so the next onChange handler call doesn't emit the FILTERS_CHANGED event
+    this.setState({ skipUpdate: !sendUpdate });
+
+    // Changing the inputFilter state via props doesn't quite work because of the delays on manual input changes
+    // Setting the ref state directly triggers the onChange handler and updates the panelState
+    this.dropdownFilterRef.current?.setFilterState(state);
   }
 
   sendUpdate(name, type, value, timestamp) {

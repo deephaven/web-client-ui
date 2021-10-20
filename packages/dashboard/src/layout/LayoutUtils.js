@@ -533,11 +533,7 @@ class LayoutUtils {
       log.error('Could not find stack for config', config);
       return null;
     }
-    let { panelState = null } = config.props;
-    const { componentState } = config;
-    if (componentState) {
-      ({ panelState } = componentState);
-    }
+    const panelState = LayoutUtils.getPanelComponentState(config);
     const cloneConfig = {
       type: 'react-component',
       component: config.component,
@@ -550,6 +546,18 @@ class LayoutUtils {
     };
     LayoutUtils.openComponentInStack(stack, cloneConfig);
     return cloneConfig;
+  }
+
+  /**
+   * Get panel component state for the given config
+   * @param {Object} config Panel config
+   * @returns {Object} Panel state
+   */
+  static getPanelComponentState(config) {
+    return (
+      // Fallback to props.panelState for uninitialized panels
+      config.componentState?.panelState ?? config.props?.panelState ?? null
+    );
   }
 
   static makeDefaultLayout() {

@@ -18,6 +18,7 @@ import Log from '@deephaven/log';
 import { TextUtils } from '@deephaven/utils';
 import { InputFilterEvent } from './events';
 import { DropdownFilterPanel, InputFilterPanel } from './panels';
+import FilterSetManagerPanel from './panels/FilterSetManagerPanel';
 
 const log = Log.module('FilterPlugin');
 
@@ -199,6 +200,36 @@ export const FilterPlugin = ({
     [layout, localDashboardId]
   );
 
+  const handleOpenFilterSetManager = useCallback(
+    ({
+      title = 'FilterSets',
+      metadata = {},
+      panelState = null,
+      id = shortid.generate(),
+      focusElement = LayoutUtils.DEFAULT_FOCUS_SELECTOR,
+      createNewStack = false,
+      dragEvent = null,
+    }) => {
+      const config = {
+        type: 'react-component',
+        component: FilterSetManagerPanel.COMPONENT,
+        props: { id, metadata, panelState, localDashboardId },
+        title,
+        id,
+      };
+
+      const { root } = layout;
+      LayoutUtils.openComponent({
+        root,
+        config,
+        focusElement,
+        createNewStack,
+        dragEvent,
+      });
+    },
+    [layout, localDashboardId]
+  );
+
   useEffect(() => {
     const cleanups = [
       registerComponent(
@@ -208,6 +239,10 @@ export const FilterPlugin = ({
       registerComponent(
         InputFilterPanel.COMPONENT,
         (InputFilterPanel as unknown) as ComponentType
+      ),
+      registerComponent(
+        FilterSetManagerPanel.COMPONENT,
+        (FilterSetManagerPanel as unknown) as ComponentType
       ),
     ];
 
@@ -237,6 +272,11 @@ export const FilterPlugin = ({
     handleOpenDropdown
   );
   useListener(layout.eventHub, InputFilterEvent.OPEN_INPUT, handleOpenInput);
+  useListener(
+    layout.eventHub,
+    InputFilterEvent.OPEN_FILTER_SET_MANAGER,
+    handleOpenFilterSetManager
+  );
   useListener(layout.eventHub, PanelEvent.UNMOUNT, handlePanelUnmount);
 
   return <></>;

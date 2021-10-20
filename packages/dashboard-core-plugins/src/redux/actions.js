@@ -75,3 +75,11 @@ export const setDashboardColumnSelectionValidator = (
  */
 export const setDashboardConsoleSettings = (id, consoleSettings) => dispatch =>
   dispatch(updateDashboardData(id, { consoleSettings }));
+
+/**
+ * Set the filter sets for a specific dashboard
+ * @param {string} id The ID of the dashboard to set the filter sets for
+ * @param {FilterSet[]} filterSets The filter sets to set
+ */
+export const setDashboardFilterSets = (id, filterSets) => dispatch =>
+  dispatch(updateDashboardData(id, { filterSets }));

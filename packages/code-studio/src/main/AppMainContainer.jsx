@@ -252,8 +252,15 @@ export class AppMainContainer extends Component {
           dragEvent,
         });
         break;
-      default:
+      case ControlType.FILTER_SET_MANAGER:
+        this.emitLayoutEvent(InputFilterEvent.OPEN_FILTER_SET_MANAGER, {
+          title: 'FilterSets',
+          type,
+          dragEvent,
+        });
         break;
+      default:
+        throw new Error('Unrecognized control type', type);
     }
   }
 

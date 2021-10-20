@@ -36,6 +36,7 @@ class InputFilterPanel extends Component {
       timestamp,
       isValueShown,
       wasFlipped: false,
+      skipUpdate: false,
       // eslint-disable-next-line react/no-unused-state
       panelState, // Dehydrated panel state that can load this panel
     };
@@ -63,7 +64,7 @@ class InputFilterPanel extends Component {
     let sendUpdate = true;
     let timestamp = Date.now();
     this.setState(
-      ({ panelState, timestamp: prevTimestamp, wasFlipped }) => {
+      ({ panelState, timestamp: prevTimestamp, wasFlipped, skipUpdate }) => {
         // If the user had a value set, and they flip the card over and flip it back without changing any settings, ignore it
         const isFlip =
           panelState != null &&
@@ -71,7 +72,7 @@ class InputFilterPanel extends Component {
           name === panelState.name &&
           type === panelState.type &&
           value === panelState.value;
-        sendUpdate = isValueShown && (!isFlip || !wasFlipped);
+        sendUpdate = !skipUpdate && isValueShown && (!isFlip || !wasFlipped);
 
         if (!sendUpdate) {
           timestamp = prevTimestamp;
@@ -87,6 +88,7 @@ class InputFilterPanel extends Component {
           },
           timestamp,
           wasFlipped: isFlip,
+          skipUpdate: false,
         };
       },
       () => {
@@ -109,6 +111,20 @@ class InputFilterPanel extends Component {
       value,
       timestamp,
     });
+  }
+
+  /**
+   * Set the filter value, card side, selected column
+   * @param {Object} state Filter state to set
+   * @param {boolean} sendUpdate Emit filters changed event if true
+   */
+  setPanelState(state, sendUpdate = false) {
+    // Set the skipUpdate flag so the next onChange handler call doesn't emit the FILTERS_CHANGED event
+    this.setState({ skipUpdate: !sendUpdate });
+
+    // Changing the inputFilter state via props doesn't quite work because of the delays on manual input changes
+    // Setting the ref state directly triggers the onChange handler and updates the panelState
+    this.inputFilterRef.current?.setFilterState(state);
   }
 
   updateColumns() {
@@ -181,6 +197,10 @@ InputFilterPanel.propTypes = {
 InputFilterPanel.defaultProps = {
   panelState: null,
 };
+
+// Have to explicitly specify displayName
+// otherwise it gets minified and breaks LayoutUtils.getComponentName
+InputFilterPanel.displayName = 'InputFilterPanel';
 
 const mapStateToProps = (state, ownProps) => {
   const { localDashboardId } = ownProps;

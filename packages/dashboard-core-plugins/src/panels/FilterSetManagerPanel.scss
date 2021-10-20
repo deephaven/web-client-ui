@@ -1,0 +1,35 @@
+@import '../../../components/scss/custom.scss';
+
+.filter-set-manager-panel {
+  padding-top: $spacer-3;
+}
+
+.screen-flash-overlay {
+  z-index: $zindex-tooltip;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: #fff;
+  opacity: 0;
+  mix-blend-mode: color-dodge;
+  pointer-events: none;
+  animation-duration: 0.4s;
+  animation-name: flash;
+  animation-timing-function: ease-out;
+}
+
+@keyframes flash {
+  0% {
+    opacity: 0%;
+  }
+
+  10% {
+    opacity: 100%;
+  }
+
+  100% {
+    opacity: 0%;
+  }
+}

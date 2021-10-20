@@ -608,6 +608,28 @@ export class IrisGridPanel extends PureComponent {
     }
   }
 
+  setAdvancedFilterMap(filterMap) {
+    const irisGrid = this.irisGrid.current;
+    if (irisGrid != null) {
+      irisGrid.setAdvancedFilterMap(filterMap);
+    }
+  }
+
+  setFilters({ quickFilters, advancedFilters }) {
+    const irisGrid = this.irisGrid.current;
+    const { model, isDisconnected } = this.state;
+    if (irisGrid != null && !isDisconnected) {
+      irisGrid.clearAllFilters();
+      irisGrid.setFilters({
+        quickFilters: IrisGridUtils.hydrateQuickFilters(model, quickFilters),
+        advancedFilters: IrisGridUtils.hydrateAdvancedFilters(
+          model,
+          advancedFilters
+        ),
+      });
+    }
+  }
+
   // eslint-disable-next-line class-methods-use-this
   unsetFilterValue() {
     // IrisGridPanel retains the set value after the link is broken
