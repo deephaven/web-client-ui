@@ -209,10 +209,10 @@ class IrisGridModel extends GridModel {
   }
 
   /**
-   * @returns {dh.LayoutHints} The LayoutHints to use for the columns of this table model
+   * @returns {dh.LayoutHints|null} The LayoutHints to use for the columns of this table model
    */
   get layoutHints() {
-    throw new Error('get layoutHints not implemented');
+    return null;
   }
 
   /**
