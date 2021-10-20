@@ -86,8 +86,8 @@ export class FileUtils {
    * @returns A known MIME type if recognized
    */
   static getMimeType(name: string): MIME_TYPE {
-    const basename = this.getBaseName(name).toLowerCase();
-    switch (basename) {
+    const extension = this.getExtension(name).toLowerCase();
+    switch (extension) {
       case 'groovy':
         return MIME_TYPE.GROOVY;
       case 'py':
