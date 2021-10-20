@@ -15,8 +15,14 @@ class IrisGridMetricCalculator extends GridMetricCalculator {
     treePaddingX = this.calculateTreePaddingX(state)
   ) {
     const { model } = state;
-    const hiddenColumns = model.layoutHints?.hiddenColumns ?? [];
+    let hiddenColumns;
     const modelColumn = this.getModelColumn(column, state);
+
+    try {
+      hiddenColumns = model.layoutHints.hiddenColumns;
+    } catch (e) {
+      hiddenColumns = [];
+    }
 
     if (this.userColumnWidths.has(modelColumn)) {
       return this.userColumnWidths.get(modelColumn);
