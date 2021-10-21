@@ -146,7 +146,7 @@ class IrisGridUtils {
    * @param {IrisGridModel} model The table model to import the state with
    * @param {Object} irisGridState The saved IrisGrid state
    */
-  static hydrateIrisGridState(model, irisGridState, timeZone) {
+  static hydrateIrisGridState(model, irisGridState) {
     const {
       advancedFilters,
       advancedSettings = [],
@@ -168,7 +168,7 @@ class IrisGridUtils {
       pendingDataMap = [],
     } = irisGridState;
 
-    const { columns } = model;
+    const { columns, timeZone } = model;
     return {
       advancedFilters: IrisGridUtils.hydrateAdvancedFilters(
         columns,

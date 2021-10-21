@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import deepEqual from 'deep-equal';
 import memoize from 'memoize-one';
 import { vsLoading, dhGraphLineDown, dhWarningFilled } from '@deephaven/icons';
-import { Formatter, FormatterUtils } from '@deephaven/iris-grid';
+import { Formatter, FormatterUtils, DateUtils } from '@deephaven/iris-grid';
 import Log from '@deephaven/log';
 import Plotly from './plotly/Plotly';
 import Plot from './plotly/Plot';
@@ -458,7 +458,14 @@ export class Chart extends Component {
 
 Chart.propTypes = {
   model: PropTypes.instanceOf(ChartModel).isRequired,
-  settings: PropTypes.shape({}),
+  // These settings come from the redux store
+  settings: PropTypes.shape({
+    timeZone: PropTypes.string.isRequired,
+    defaultDateTimeFormat: PropTypes.string.isRequired,
+    showTimeZone: PropTypes.bool.isRequired,
+    showTSeparator: PropTypes.bool.isRequired,
+    formatter: PropTypes.arrayOf(PropTypes.shape({})).isRequired,
+  }),
   isActive: PropTypes.bool,
   onDisconnect: PropTypes.func,
   onReconnect: PropTypes.func,
@@ -469,7 +476,13 @@ Chart.propTypes = {
 
 Chart.defaultProps = {
   isActive: true,
-  settings: {},
+  settings: {
+    timeZone: 'America/New_York',
+    defaultDateTimeFormat: DateUtils.FULL_DATE_FORMAT,
+    showTimeZone: false,
+    showTSeparator: true,
+    formatter: [],
+  },
   onDisconnect: () => {},
   onReconnect: () => {},
   onUpdate: () => {},

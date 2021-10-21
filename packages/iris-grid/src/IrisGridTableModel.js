@@ -54,7 +54,6 @@ class IrisGridTableModel extends IrisGridModel {
     );
 
     this.irisFormatter = formatter;
-    this.timeZone = 'America/New_York';
     this.inputTable = inputTable;
     this.listenerCount = 0;
     this.subscription = null;
@@ -725,12 +724,13 @@ class IrisGridTableModel extends IrisGridModel {
     this.dispatchEvent(new CustomEvent(IrisGridModel.EVENT.FORMATTER_UPDATED));
   }
 
+  /**
+   * Gets the timeZone name from the formatter. E.g. America/New_York
+   */
   get timeZone() {
-    return this.userTimeZone;
-  }
-
-  set timeZone(timeZone) {
-    this.userTimeZone = timeZone;
+    return this.irisFormatter?.typeFormatterMap?.get(
+      TableUtils.dataType.DATETIME
+    )?.dhTimeZone?.id;
   }
 
   displayString(value, columnType, columnName = '', formatOverride = null) {

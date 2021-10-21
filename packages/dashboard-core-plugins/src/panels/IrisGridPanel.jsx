@@ -128,10 +128,8 @@ export class IrisGridPanel extends PureComponent {
     this.initModel();
   }
 
-  componentDidUpdate(prevProps, prevState) {
+  componentDidUpdate(_, prevState) {
     const { model } = this.state;
-    const { settings } = this.props;
-    const { settings: prevSettings } = prevProps;
     if (model !== prevState.model) {
       if (prevState.model != null) {
         this.stopModelListening(prevState.model);
@@ -140,11 +138,6 @@ export class IrisGridPanel extends PureComponent {
       if (model != null) {
         this.startModelListening(model);
       }
-    }
-
-    // Update the model time zone to match the user's time zone in settings
-    if (settings.timeZone !== prevSettings.timeZone) {
-      model.timeZone = settings.timeZone;
     }
   }
 
@@ -366,11 +359,11 @@ export class IrisGridPanel extends PureComponent {
 
   handlePluginFilter(filters) {
     const { model } = this.state;
-    const { settings } = this.props;
+    const { columns, timeZone } = model;
     const pluginFilters = IrisGridUtils.getFiltersFromInputFilters(
-      model.columns,
+      columns,
       filters,
-      settings.timeZone
+      timeZone
     );
     this.setState({ pluginFilters });
   }
@@ -623,7 +616,7 @@ export class IrisGridPanel extends PureComponent {
   }
 
   loadPanelState(model) {
-    const { panelState, settings } = this.props;
+    const { panelState } = this.props;
     if (panelState == null) {
       return;
     }
@@ -654,11 +647,7 @@ export class IrisGridPanel extends PureComponent {
         selectedSearchColumns,
         invertSearchColumns,
         pendingDataMap,
-      } = IrisGridUtils.hydrateIrisGridState(
-        model,
-        irisGridState,
-        settings.timeZone
-      );
+      } = IrisGridUtils.hydrateIrisGridState(model, irisGridState);
       const { movedColumns, movedRows } = IrisGridUtils.hydrateGridState(
         model,
         gridState,
