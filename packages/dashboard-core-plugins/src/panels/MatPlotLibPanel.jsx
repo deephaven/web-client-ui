@@ -2,6 +2,7 @@
 /* eslint-disable react/no-unused-state */
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import './MatPlotLibPanel.scss';
 
 /**
  * Wraps and IrisGridPanel to add a refresh button for Pandas.
