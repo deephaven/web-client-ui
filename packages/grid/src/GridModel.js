@@ -79,6 +79,9 @@ class GridModel extends EventTarget {
     return this.isEditable;
   }
 
+  /**
+   * @param {number} column The column to check
+   */
   isColumnMovable(column) {
     return true;
   }
