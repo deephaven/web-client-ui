@@ -614,7 +614,6 @@ export class IrisGridPanel extends PureComponent {
   }
 
   loadPanelState(model) {
-    const { table } = model;
     const { panelState } = this.props;
     if (panelState == null) {
       return;
@@ -626,7 +625,7 @@ export class IrisGridPanel extends PureComponent {
         isSelectingPartition,
         partition,
         partitionColumn,
-      } = IrisGridUtils.hydrateIrisGridPanelState(table, irisGridPanelState);
+      } = IrisGridUtils.hydrateIrisGridPanelState(model, irisGridPanelState);
       const {
         advancedFilters,
         advancedSettings,
@@ -646,9 +645,9 @@ export class IrisGridPanel extends PureComponent {
         selectedSearchColumns,
         invertSearchColumns,
         pendingDataMap,
-      } = IrisGridUtils.hydrateIrisGridState(table, irisGridState);
+      } = IrisGridUtils.hydrateIrisGridState(model, irisGridState);
       const { movedColumns, movedRows } = IrisGridUtils.hydrateGridState(
-        table,
+        model,
         gridState,
         irisGridState.customColumns
       );

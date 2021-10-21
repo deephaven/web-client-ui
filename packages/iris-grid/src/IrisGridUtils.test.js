@@ -25,11 +25,11 @@ describe('quickfilters tests', () => {
   it('exports/imports empty list', () => {
     const table = makeTable();
     const filters = new Map();
-    const exportedFilters = IrisGridUtils.dehydrateQuickFilters(table, filters);
+    const exportedFilters = IrisGridUtils.dehydrateQuickFilters(filters);
     expect(exportedFilters).toEqual([]);
 
     const importedFilters = IrisGridUtils.hydrateQuickFilters(
-      table,
+      table.columns,
       exportedFilters
     );
     expect(importedFilters).toEqual(filters);
@@ -42,16 +42,13 @@ describe('quickfilters tests', () => {
     const filter = makeFilter();
     const quickFilters = new Map([[column, { text, filter }]]);
 
-    const exportedFilters = IrisGridUtils.dehydrateQuickFilters(
-      table,
-      quickFilters
-    );
+    const exportedFilters = IrisGridUtils.dehydrateQuickFilters(quickFilters);
     expect(exportedFilters).toEqual([
       [column, expect.objectContaining({ text })],
     ]);
 
     const importedFilters = IrisGridUtils.hydrateQuickFilters(
-      table,
+      table.columns,
       exportedFilters
     );
     expect(importedFilters).toEqual(
@@ -73,13 +70,13 @@ describe('advanced filter tests', () => {
     const table = makeTable();
     const filters = new Map();
     const exportedFilters = IrisGridUtils.dehydrateAdvancedFilters(
-      table,
+      table.columns,
       filters
     );
     expect(exportedFilters).toEqual([]);
 
     const importedFilters = IrisGridUtils.hydrateAdvancedFilters(
-      table,
+      table.columns,
       exportedFilters
     );
     expect(importedFilters).toEqual(filters);
@@ -98,7 +95,7 @@ describe('advanced filter tests', () => {
     const filters = new Map([[column, { filter, options }]]);
 
     const exportedFilters = IrisGridUtils.dehydrateAdvancedFilters(
-      table,
+      table.columns,
       filters
     );
     expect(exportedFilters).toEqual([
@@ -106,7 +103,7 @@ describe('advanced filter tests', () => {
     ]);
 
     const importedFilters = IrisGridUtils.hydrateAdvancedFilters(
-      table,
+      table.columns,
       exportedFilters
     );
     expect(importedFilters).toEqual(
@@ -130,7 +127,7 @@ describe('sort exporting/importing', () => {
     const exportedSort = IrisGridUtils.dehydrateSort(sort);
     expect(exportedSort).toEqual([]);
 
-    const importedSort = IrisGridUtils.hydrateSort(table, exportedSort);
+    const importedSort = IrisGridUtils.hydrateSort(table.columns, exportedSort);
     expect(importedSort).toEqual(sort);
   });
 
@@ -144,7 +141,7 @@ describe('sort exporting/importing', () => {
       { column: 7, isAbs: true, direction: 'DESC' },
     ]);
 
-    const importedSort = IrisGridUtils.hydrateSort(table, exportedSort);
+    const importedSort = IrisGridUtils.hydrateSort(table.columns, exportedSort);
     expect(importedSort).toEqual([
       expect.objectContaining({
         column: columns[3],
