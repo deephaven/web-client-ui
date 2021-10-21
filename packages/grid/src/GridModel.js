@@ -80,7 +80,7 @@ class GridModel extends EventTarget {
   }
 
   /**
-   * @param {number|null} column The column to check
+   * @param {number} column The column to check
    */
   isColumnMovable(column) {
     return true;

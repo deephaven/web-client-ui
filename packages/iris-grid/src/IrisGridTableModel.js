@@ -1110,9 +1110,6 @@ class IrisGridTableModel extends IrisGridModel {
   );
 
   isColumnMovable(x) {
-    if (x === null) {
-      return super.isColumnMovable(x);
-    }
     const columnName = this.columns[x].name;
     if (
       this.layoutHints?.frontColumns?.includes(columnName) ||

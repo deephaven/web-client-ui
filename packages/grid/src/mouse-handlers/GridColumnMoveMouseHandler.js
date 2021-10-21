@@ -22,7 +22,11 @@ class GridColumnMoveMouseHandler extends GridMouseHandler {
     this.sloppyClickThreshold = false;
     this.cursor = null;
 
-    if (y <= columnHeaderHeight && model.isColumnMovable(column)) {
+    if (
+      column != null &&
+      y <= columnHeaderHeight &&
+      model.isColumnMovable(column)
+    ) {
       const columnX = visibleColumnXs.get(column);
       this.draggingOffset = x - columnX - rowHeaderWidth;
       grid.setState({ draggingColumnOffset: this.draggingOffset });
