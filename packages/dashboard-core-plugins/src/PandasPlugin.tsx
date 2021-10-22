@@ -1,19 +1,28 @@
 import React, { useEffect } from 'react';
-import { DashboardPluginComponentProps } from '@deephaven/dashboard';
+import {
+  DashboardPluginComponentProps,
+  DashboardUtils,
+  PanelHydrateFunction,
+} from '@deephaven/dashboard';
 import { PandasPanel } from './panels';
 
+export type PandasPluginComponentProps = DashboardPluginComponentProps & {
+  hydrate: PanelHydrateFunction;
+};
+
 export const PandasPlugin = ({
-  id,
-  layout,
+  hydrate = DashboardUtils.hydrate,
   registerComponent,
-}: DashboardPluginComponentProps): JSX.Element => {
+}: PandasPluginComponentProps): JSX.Element => {
   useEffect(() => {
-    const cleanups = [registerComponent(PandasPanel.COMPONENT, PandasPanel)];
+    const cleanups = [
+      registerComponent(PandasPanel.COMPONENT, PandasPanel, hydrate),
+    ];
 
     return () => {
       cleanups.forEach(cleanup => cleanup());
     };
-  }, [registerComponent]);
+  }, [hydrate, registerComponent]);
 
   return <></>;
 };
