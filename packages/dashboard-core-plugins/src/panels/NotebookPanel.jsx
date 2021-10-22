@@ -633,7 +633,6 @@ class NotebookPanel extends Component {
     }
     this.notebook.updateDimensions();
 
-    // TODO: We don't want to focus here I don't think??
     requestAnimationFrame(() => {
       if (this.notebook) {
         this.notebook.focus();

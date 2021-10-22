@@ -86,7 +86,7 @@ describe('mouse', () => {
 
     clickItem(itemList, 3);
 
-    expect(onSelect).toHaveBeenCalledWith(3);
+    expect(onSelect).toHaveBeenCalledWith(3, expect.anything());
 
     itemList.unmount();
   });
@@ -101,7 +101,7 @@ describe('mouse', () => {
 
     doubleClickItem(itemList, 3);
 
-    expect(onSelect).toHaveBeenCalledWith(3);
+    expect(onSelect).toHaveBeenCalledWith(3, expect.anything());
 
     itemList.unmount();
   });
@@ -117,7 +117,7 @@ describe('mouse', () => {
 
     clickItem(itemList, 3);
 
-    expect(onSelect).toHaveBeenCalledWith(3);
+    expect(onSelect).toHaveBeenCalledWith(3, expect.anything());
     expect(onSelectionChange).toHaveBeenCalledWith([[3, 3]]);
 
     onSelectionChange.mockClear();
@@ -142,7 +142,7 @@ describe('mouse', () => {
 
     clickItem(itemList, 3);
 
-    expect(onSelect).toHaveBeenCalledWith(3);
+    expect(onSelect).toHaveBeenCalledWith(3, expect.anything());
     expect(onSelectionChange).toHaveBeenCalledWith([[3, 3]]);
 
     onSelectionChange.mockClear();
@@ -176,7 +176,7 @@ describe('mouse', () => {
 
       clickItem(itemList, firstIndex);
 
-      expect(onSelect).toHaveBeenCalledWith(firstIndex);
+      expect(onSelect).toHaveBeenCalledWith(firstIndex, expect.anything());
       expect(onSelectionChange).toHaveBeenCalledWith([
         [firstIndex, firstIndex],
       ]);
@@ -231,7 +231,7 @@ describe('mouse', () => {
 
       clickItem(itemList, 3);
 
-      expect(onSelect).toHaveBeenCalledWith(3);
+      expect(onSelect).toHaveBeenCalledWith(3, expect.anything());
       expect(onSelectionChange).toHaveBeenCalledWith([[3, 3]]);
 
       onSelectionChange.mockClear();

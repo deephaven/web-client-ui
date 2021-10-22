@@ -264,16 +264,6 @@ export const ConsolePlugin = ({
     [previewFileMap]
   );
 
-  const fileIsActive = useCallback(
-    fileMetadata => {
-      const panelId = getPanelIdForFileMetadata(fileMetadata, false);
-      return (
-        panelId != null && LayoutUtils.isActiveTab(layout.root, { id: panelId })
-      );
-    },
-    [getPanelIdForFileMetadata, layout.root]
-  );
-
   const makeConfig = useCallback(
     ({
       id: panelId,
@@ -352,7 +342,10 @@ export const ConsolePlugin = ({
       if (isFileOpen || (isFileOpenAsPreview && !shouldFocus)) {
         activateFilePanel(fileMetadata);
         if (!shouldFocus) {
-          (maintainFocusElement as HTMLElement)?.focus();
+          // Need to request the animation frame because it may have been in the background before being shown
+          requestAnimationFrame(() => {
+            (maintainFocusElement as HTMLElement)?.focus();
+          });
         }
         return;
       }
