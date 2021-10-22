@@ -57,7 +57,7 @@ export type ItemListProps<T> = {
   onFocusChange(index: number | null): void;
 
   // Fired when an item is clicked. With multiple selection, fired on double click.
-  onSelect(index: number): void;
+  onSelect(index: number, event: React.SyntheticEvent): void;
   onSelectionChange(ranges: Range[]): void;
   onViewportChange(topRow: number, bottomRow: number): void;
   overscanCount: number;
@@ -362,7 +362,7 @@ export class ItemList<T> extends PureComponent<
     this.toggleSelect(itemIndex, e.shiftKey, isModifierDown, false);
   }
 
-  handleItemDoubleClick(itemIndex: number): void {
+  handleItemDoubleClick(itemIndex: number, e: React.MouseEvent): void {
     const { isDoubleClickSelect, onSelect } = this.props;
 
     if (isDoubleClickSelect) {
@@ -374,7 +374,7 @@ export class ItemList<T> extends PureComponent<
           ]),
         }),
         () => {
-          onSelect(itemIndex);
+          onSelect(itemIndex, e);
         }
       );
     }
@@ -489,7 +489,7 @@ export class ItemList<T> extends PureComponent<
       this.toggleSelect(index, isShiftDown, isModifierDown);
 
       if (!isDoubleClickSelect && !isShiftDown && !isModifierDown) {
-        onSelect(index);
+        onSelect(index, e);
       }
     }
 
@@ -522,7 +522,7 @@ export class ItemList<T> extends PureComponent<
       if (!isMultiSelect && newFocus != null) {
         this.setState({ selectedRanges: [[newFocus, newFocus]] }, () => {
           if (newFocus != null) {
-            onSelect(newFocus);
+            onSelect(newFocus, e);
           }
         });
       }

@@ -343,35 +343,21 @@ export const ConsolePlugin = ({
   );
 
   const selectNotebook = useCallback(
-    (session, sessionLanguage, settings, fileMetadata) => {
-      log.debug('selectNotebook', fileMetadata);
-      let previewTabId = null;
-      let isPreview = true;
+    (session, sessionLanguage, settings, fileMetadata, shouldFocus = false) => {
+      log.debug('selectNotebook', fileMetadata, shouldFocus);
       const isFileOpen = fileIsOpen(fileMetadata);
       const isFileOpenAsPreview = fileIsOpenAsPreview(fileMetadata);
+      const maintainFocusElement = document.activeElement;
 
-      if (!isFileOpen && !isFileOpenAsPreview) {
-        log.debug('selectNotebook, file not open');
-        if (previewFileMap.size > 0) {
-          log.debug('selectNotebook, file not open, previewFileMap not empty');
-          // Existing preview tab id to reuse
-          [previewTabId] = Array.from(previewFileMap.values());
+      if (isFileOpen || (isFileOpenAsPreview && !shouldFocus)) {
+        activateFilePanel(fileMetadata);
+        if (!shouldFocus) {
+          (maintainFocusElement as HTMLElement)?.focus();
         }
-      } else {
-        // File already open in background
-        if (!fileIsActive(fileMetadata)) {
-          activateFilePanel(fileMetadata);
-          return;
-        }
-        // File already open in foreground, not in preview mode
-        if (!isFileOpenAsPreview) {
-          activateFilePanel(fileMetadata);
-          return;
-        }
-        // File already open in foreground in preview mode
-        [previewTabId] = Array.from(previewFileMap.values());
-        isPreview = false;
+        return;
       }
+
+      const [previewTabId] = Array.from(previewFileMap.values());
       let panelId = null;
       let stack = null;
       if (previewTabId != null) {
@@ -393,18 +379,17 @@ export const ConsolePlugin = ({
         fileMetadata,
         session,
         sessionLanguage,
-        isPreview,
+        isPreview: !shouldFocus,
       });
       LayoutUtils.openComponentInStack(stack, config);
       // openComponentInStack attempts to maintain the focus
       // Focus open tab if it's editable
-      if (!isPreview) {
+      if (shouldFocus) {
         LayoutUtils.activateTab(layout.root, { id: panelId });
       }
     },
     [
       activateFilePanel,
-      fileIsActive,
       fileIsOpen,
       fileIsOpenAsPreview,
       getPanelIdForFileMetadata,

@@ -632,6 +632,8 @@ class NotebookPanel extends Component {
       return;
     }
     this.notebook.updateDimensions();
+
+    // TODO: We don't want to focus here I don't think??
     requestAnimationFrame(() => {
       if (this.notebook) {
         this.notebook.focus();
@@ -648,15 +650,14 @@ class NotebookPanel extends Component {
     this.initTab(tab);
   }
 
-  handleTabFocus() {
-    log.debug('handleTabFocus');
+  handleTabFocus(...args) {
+    log.debug('handleTabFocus', ...args);
     const { glContainer } = this.props;
     this.setState({
       isDashboardActive: true,
     });
     if (this.notebook && !glContainer.isHidden) {
       this.notebook.updateDimensions();
-      this.notebook.focus();
     }
   }
 

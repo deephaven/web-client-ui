@@ -23,7 +23,7 @@ export interface FileListContainerProps {
   onDelete?: (files: FileStorageItem[]) => void;
   onMove?: (files: FileStorageItem[], path: string) => void;
   onRename?: (file: FileStorageItem, newName: string) => void;
-  onSelect: (file: FileStorageItem) => void;
+  onSelect: (file: FileStorageItem, event: React.SyntheticEvent) => void;
   validateRename?: (file: FileStorageItem, newName: string) => Promise<void>;
 
   /** Height of each item in the list */

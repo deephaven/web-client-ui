@@ -23,7 +23,7 @@ export interface FileExplorerProps {
 
   onDelete?: (files: FileStorageItem[]) => void;
   onRename?: (oldName: string, newName: string) => void;
-  onSelect: (file: FileStorageItem) => void;
+  onSelect: (file: FileStorageItem, event: React.SyntheticEvent) => void;
 
   /** Height of each item in the list */
   rowHeight?: number;
