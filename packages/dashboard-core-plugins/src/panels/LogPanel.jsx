@@ -115,7 +115,8 @@ LogPanel.defaultProps = {
 };
 
 const mapStateToProps = (state, ownProps) => ({
-  session: getDashboardSessionWrapper(state, ownProps.localDashboardId).session,
+  session: getDashboardSessionWrapper(state, ownProps.localDashboardId)
+    ?.session,
 });
 
 export default connect(mapStateToProps, null, null, { forwardRef: true })(

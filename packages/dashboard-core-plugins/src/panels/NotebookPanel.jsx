@@ -932,8 +932,8 @@ const mapStateToProps = (state, ownProps) => {
     state,
     ownProps.localDashboardId
   );
-  const { session, config: sessionConfig } = sessionWrapper;
-  const { type: sessionLanguage } = sessionConfig;
+  const { session, config: sessionConfig } = sessionWrapper ?? {};
+  const { type: sessionLanguage } = sessionConfig ?? {};
   return {
     fileStorage,
     session,

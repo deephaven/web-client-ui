@@ -196,8 +196,8 @@ const mapStateToProps = (state, ownProps) => {
     state,
     ownProps.localDashboardId
   );
-  const { session, config: sessionConfig } = sessionWrapper;
-  const { type: language, id: sessionId } = sessionConfig;
+  const { session, config: sessionConfig } = sessionWrapper ?? {};
+  const { type: language, id: sessionId } = sessionConfig ?? {};
 
   return {
     commandHistoryStorage,
