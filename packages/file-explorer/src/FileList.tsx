@@ -307,7 +307,7 @@ export const FileList = (props: FileListProps): JSX.Element => {
   );
 
   const handleSelect = useCallback(
-    (itemIndex: number, event: React.UIEvent) => {
+    (itemIndex: number, event: React.SyntheticEvent) => {
       const item = loadedViewport.items[itemIndex - loadedViewport.offset];
       if (item !== undefined) {
         log.debug('handleItemClick', item);

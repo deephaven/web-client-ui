@@ -79,6 +79,7 @@ class NotebookPanel extends Component {
     this.handleFocus = this.handleFocus.bind(this);
     this.handleLoadSuccess = this.handleLoadSuccess.bind(this);
     this.handleLoadError = this.handleLoadError.bind(this);
+    this.handlePanelTabClick = this.handlePanelTabClick.bind(this);
     this.handleRenameFile = this.handleRenameFile.bind(this);
     this.handleResize = this.handleResize.bind(this);
     this.handleRunCommand = this.handleRunCommand.bind(this);
@@ -91,7 +92,6 @@ class NotebookPanel extends Component {
     this.handleSaveSuccess = this.handleSaveSuccess.bind(this);
     this.handleSessionOpened = this.handleSessionOpened.bind(this);
     this.handleSessionClosed = this.handleSessionClosed.bind(this);
-
     this.handleShow = this.handleShow.bind(this);
     this.handleShowRename = this.handleShowRename.bind(this);
     this.handleTab = this.handleTab.bind(this);
@@ -175,13 +175,12 @@ class NotebookPanel extends Component {
   }
 
   componentDidMount() {
-    const {
-      glContainer: { tab },
-      glEventHub,
-    } = this.props;
+    const { glContainer, glEventHub } = this.props;
+    const { tab } = glContainer;
     if (tab) this.initTab(tab);
     this.initNotebookContent();
     glEventHub.on(NotebookEvent.RENAME_FILE, this.handleRenameFile);
+    glContainer.on('tabClicked', this.handlePanelTabClick);
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -195,10 +194,11 @@ class NotebookPanel extends Component {
     this.debouncedSavePanelState.flush();
     this.pending.cancel();
 
-    const { glEventHub } = this.props;
+    const { glContainer, glEventHub } = this.props;
 
     const { fileMetadata, isPreview } = this.state;
     glEventHub.off(NotebookEvent.RENAME_FILE, this.handleRenameFile);
+    glContainer.off('tabClicked', this.handlePanelTabClick);
     glEventHub.emit(NotebookEvent.UNREGISTER_FILE, fileMetadata, isPreview);
   }
 
@@ -632,12 +632,6 @@ class NotebookPanel extends Component {
       return;
     }
     this.notebook.updateDimensions();
-
-    requestAnimationFrame(() => {
-      if (this.notebook) {
-        this.notebook.focus();
-      }
-    });
   }
 
   handleShowRename() {
@@ -664,6 +658,19 @@ class NotebookPanel extends Component {
     log.debug('handleTabBlur');
     this.setState({
       isDashboardActive: false,
+    });
+  }
+
+  handlePanelTabClick() {
+    log.debug('handlePanelTabClick');
+    this.focus();
+  }
+
+  focus() {
+    requestAnimationFrame(() => {
+      if (this.notebook) {
+        this.notebook.focus();
+      }
     });
   }
 

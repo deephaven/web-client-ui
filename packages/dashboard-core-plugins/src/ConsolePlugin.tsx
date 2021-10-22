@@ -150,7 +150,11 @@ export const ConsolePlugin = ({
     [openFileMap, previewFileMap, renamePanel]
   );
 
-  const activateFilePanel = useCallback(
+  /**
+   * Show the panel for the given file metadata.
+   * If the panel is not already open, then it just logs an error and does nothing.
+   */
+  const showFilePanel = useCallback(
     fileMetadata => {
       const panelId = getPanelIdForFileMetadata(fileMetadata, false);
       if (panelId == null) {
@@ -305,8 +309,8 @@ export const ConsolePlugin = ({
     ) => {
       const panelId = getPanelIdForFileMetadata(fileMetadata);
       if (fileIsOpen(fileMetadata)) {
-        log.debug('File is already open, focus tab');
-        LayoutUtils.activateTab(layout.root, { id: panelId });
+        log.debug('File is already open, focus panel');
+        panelManager.getOpenedPanelById(panelId)?.focus();
         return;
       }
       const stack = LayoutUtils.getStackForComponentTypes(layout.root, [
@@ -329,6 +333,7 @@ export const ConsolePlugin = ({
       layout.root,
       makeConfig,
       openFileMap,
+      panelManager,
     ]
   );
 
@@ -337,15 +342,14 @@ export const ConsolePlugin = ({
       log.debug('selectNotebook', fileMetadata, shouldFocus);
       const isFileOpen = fileIsOpen(fileMetadata);
       const isFileOpenAsPreview = fileIsOpenAsPreview(fileMetadata);
-      const maintainFocusElement = document.activeElement;
 
+      // If the file is already open, or if it's open as a preview and we don't need to focus it, then we just need to show it
+      // If the file is open as a preview, we need to show it AND change it to a non-preview panel
       if (isFileOpen || (isFileOpenAsPreview && !shouldFocus)) {
-        activateFilePanel(fileMetadata);
-        if (!shouldFocus) {
-          // Need to request the animation frame because it may have been in the background before being shown
-          requestAnimationFrame(() => {
-            (maintainFocusElement as HTMLElement)?.focus();
-          });
+        showFilePanel(fileMetadata);
+        if (shouldFocus) {
+          const panelId = getPanelIdForFileMetadata(fileMetadata);
+          panelManager.getOpenedPanelById(panelId)?.focus();
         }
         return;
       }
@@ -375,19 +379,19 @@ export const ConsolePlugin = ({
         isPreview: !shouldFocus,
       });
       LayoutUtils.openComponentInStack(stack, config);
-      // openComponentInStack attempts to maintain the focus
-      // Focus open tab if it's editable
       if (shouldFocus) {
-        LayoutUtils.activateTab(layout.root, { id: panelId });
+        // Focus the tab we just opened if we're supposed to
+        panelManager.getOpenedPanelById(panelId)?.focus();
       }
     },
     [
-      activateFilePanel,
+      showFilePanel,
       fileIsOpen,
       fileIsOpenAsPreview,
       getPanelIdForFileMetadata,
       layout.root,
       makeConfig,
+      panelManager,
       previewFileMap,
     ]
   );
