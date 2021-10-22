@@ -30,6 +30,7 @@ const log = Log.module('ConsolePlugin');
 
 type NotebookPanelComponent = PanelComponent & {
   notebook: ScriptEditor;
+  focus: () => void;
 };
 
 function isNotebookPanel(
@@ -268,6 +269,23 @@ export const ConsolePlugin = ({
     [previewFileMap]
   );
 
+  /**
+   * Attempts to focus the panel with the provided panelId
+   */
+  const focusPanelById = useCallback(
+    panelId => {
+      if (!panelId) {
+        return;
+      }
+
+      const panel = panelManager.getOpenedPanelById(panelId);
+      if (panel && isNotebookPanel(panel)) {
+        panel.focus();
+      }
+    },
+    [panelManager]
+  );
+
   const makeConfig = useCallback(
     ({
       id: panelId,
@@ -308,9 +326,9 @@ export const ConsolePlugin = ({
       fileMetadata = { id: null, itemName: getNotebookFileName(settings) }
     ) => {
       const panelId = getPanelIdForFileMetadata(fileMetadata);
-      if (fileIsOpen(fileMetadata)) {
+      if (fileIsOpen(fileMetadata) && panelId) {
         log.debug('File is already open, focus panel');
-        panelManager.getOpenedPanelById(panelId)?.focus();
+        focusPanelById(panelId);
         return;
       }
       const stack = LayoutUtils.getStackForComponentTypes(layout.root, [
@@ -328,12 +346,12 @@ export const ConsolePlugin = ({
     },
     [
       fileIsOpen,
+      focusPanelById,
       getNotebookFileName,
       getPanelIdForFileMetadata,
       layout.root,
       makeConfig,
       openFileMap,
-      panelManager,
     ]
   );
 
@@ -349,7 +367,7 @@ export const ConsolePlugin = ({
         showFilePanel(fileMetadata);
         if (shouldFocus) {
           const panelId = getPanelIdForFileMetadata(fileMetadata);
-          panelManager.getOpenedPanelById(panelId)?.focus();
+          focusPanelById(panelId);
         }
         return;
       }
@@ -381,17 +399,17 @@ export const ConsolePlugin = ({
       LayoutUtils.openComponentInStack(stack, config);
       if (shouldFocus) {
         // Focus the tab we just opened if we're supposed to
-        panelManager.getOpenedPanelById(panelId)?.focus();
+        focusPanelById(panelId);
       }
     },
     [
       showFilePanel,
       fileIsOpen,
       fileIsOpenAsPreview,
+      focusPanelById,
       getPanelIdForFileMetadata,
       layout.root,
       makeConfig,
-      panelManager,
       previewFileMap,
     ]
   );
