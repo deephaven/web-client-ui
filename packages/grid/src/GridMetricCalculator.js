@@ -62,7 +62,6 @@ class GridMetricCalculator {
       x -= sizeMap.get(totalCount - i - 1);
       coordinates.set(totalCount - i - 1, x);
     }
-
     return coordinates;
   }
 
@@ -718,10 +717,7 @@ class GridMetricCalculator {
 
     const columnWidths = new Map();
     for (let i = 0; i < floatingLeftColumnCount && i < columnCount; i += 1) {
-      columnWidths.set(
-        i,
-        this.getVisibleColumnWidth(i, state, firstColumn, treePaddingX)
-      );
+      columnWidths.set(i, this.getVisibleColumnWidth(i, state, firstColumn, 0));
     }
 
     for (
@@ -732,7 +728,7 @@ class GridMetricCalculator {
       const column = columnCount - i - 1;
       columnWidths.set(
         column,
-        this.getVisibleColumnWidth(column, state, firstColumn, treePaddingX)
+        this.getVisibleColumnWidth(column, state, firstColumn, 0)
       );
     }
 
