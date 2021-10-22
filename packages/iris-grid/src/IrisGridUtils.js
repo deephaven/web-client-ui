@@ -168,12 +168,12 @@ class IrisGridUtils {
       pendingDataMap = [],
     } = irisGridState;
 
-    const { columns, timeZone } = model;
+    const { columns, formatter } = model;
     return {
       advancedFilters: IrisGridUtils.hydrateAdvancedFilters(
         columns,
         advancedFilters,
-        timeZone
+        formatter.timeZone
       ),
       advancedSettings: new Map([
         ...AdvancedSettings.DEFAULTS,
@@ -185,7 +185,7 @@ class IrisGridUtils {
       quickFilters: IrisGridUtils.hydrateQuickFilters(
         columns,
         quickFilters,
-        timeZone
+        formatter.timeZone
       ),
       sorts: IrisGridUtils.hydrateSort(columns, sorts),
       userColumnWidths: new Map(

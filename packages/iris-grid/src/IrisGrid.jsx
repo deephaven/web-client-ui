@@ -783,7 +783,7 @@ export class IrisGrid extends Component {
    */
   applyQuickFilter(modelIndex, value, quickFilters) {
     const { model } = this.props;
-    const { timeZone } = model;
+    const { formatter } = model;
     const column = model.columns[modelIndex];
 
     if (value != null && `${value}`.trim().length > 0) {
@@ -797,7 +797,7 @@ export class IrisGrid extends Component {
       }
       let filter = null;
       try {
-        filter = TableUtils.makeQuickFilter(column, value, timeZone);
+        filter = TableUtils.makeQuickFilter(column, value, formatter.timeZone);
       } catch (err) {
         log.error('Error creating quick filter', err);
       }
@@ -952,7 +952,7 @@ export class IrisGrid extends Component {
 
     const { model } = this.props;
     const { advancedFilters, quickFilters } = this.state;
-    const { columns, timeZone } = model;
+    const { columns, formatter } = model;
 
     const newAdvancedFilters = new Map();
     const newQuickFilters = new Map();
@@ -960,7 +960,11 @@ export class IrisGrid extends Component {
     advancedFilters.forEach((value, key) => {
       const { options } = value;
       const column = columns[key];
-      const filter = TableUtils.makeAdvancedFilter(column, options, timeZone);
+      const filter = TableUtils.makeAdvancedFilter(
+        column,
+        options,
+        formatter.timeZone
+      );
       newAdvancedFilters.set(key, {
         options,
         filter,
@@ -970,7 +974,11 @@ export class IrisGrid extends Component {
     quickFilters.forEach((value, key) => {
       const { text } = value;
       const column = columns[key];
-      const filter = TableUtils.makeQuickFilter(column, text, timeZone);
+      const filter = TableUtils.makeQuickFilter(
+        column,
+        text,
+        formatter.timeZone
+      );
       newQuickFilters.set(key, {
         text,
         filter,

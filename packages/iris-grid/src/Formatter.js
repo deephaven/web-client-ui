@@ -134,6 +134,14 @@ class Formatter {
 
     return formatter.format(value, format);
   }
+
+  /**
+   * Gets the timeZone name. E.g. America/New_York
+   */
+  get timeZone() {
+    return this.typeFormatterMap.get(TableUtils.dataType.DATETIME)?.dhTimeZone
+      ?.id;
+  }
 }
 
 export default Formatter;

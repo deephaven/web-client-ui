@@ -359,11 +359,11 @@ export class IrisGridPanel extends PureComponent {
 
   handlePluginFilter(filters) {
     const { model } = this.state;
-    const { columns, timeZone } = model;
+    const { columns, formatter } = model;
     const pluginFilters = IrisGridUtils.getFiltersFromInputFilters(
       columns,
       filters,
-      timeZone
+      formatter.timeZone
     );
     this.setState({ pluginFilters });
   }
