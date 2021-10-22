@@ -17,8 +17,7 @@ import {
 import Log from '@deephaven/log';
 import { TextUtils } from '@deephaven/utils';
 import { InputFilterEvent } from './events';
-import { DropdownFilterPanel, InputFilterPanel } from './panels';
-import FilterSetManagerPanel from './panels/FilterSetManagerPanel';
+import { DropdownFilterPanel, FilterSetManagerPanel, InputFilterPanel } from './panels';
 
 const log = Log.module('FilterPlugin');
 
