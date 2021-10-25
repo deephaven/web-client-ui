@@ -762,7 +762,20 @@ class GridRenderer {
 
   drawGridLinesForRows(context, state, rows) {
     const { metrics } = state;
-    const { visibleRowYs, maxX } = metrics;
+    const {
+      visibleRowYs,
+      maxX: metricsMaxX,
+      floatingLeftColumnCount,
+      visibleColumnXs,
+      visibleColumnWidths,
+    } = metrics;
+    let maxX = metricsMaxX;
+
+    if (floatingLeftColumnCount) {
+      maxX =
+        visibleColumnXs.get(floatingLeftColumnCount - 1) +
+        visibleColumnWidths.get(floatingLeftColumnCount - 1);
+    }
 
     // Draw row lines
     for (let i = 0; i < rows.length; i += 1) {
@@ -1754,7 +1767,7 @@ class GridRenderer {
       context.fillStyle = theme.selectionColor;
       context.fill();
 
-      /* 
+      /*
       draw an "inner stroke" that's clipped to just inside of the rects
       to act as a casing to the outer stroke. 3px width because 1px is outside
       the rect (but clipped), 1px is "on" the rect (technically this pixel is
