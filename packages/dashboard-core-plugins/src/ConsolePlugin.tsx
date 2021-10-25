@@ -328,6 +328,7 @@ export const ConsolePlugin = ({
       const panelId = getPanelIdForFileMetadata(fileMetadata);
       if (fileIsOpen(fileMetadata) && panelId) {
         log.debug('File is already open, focus panel');
+        showFilePanel(fileMetadata);
         focusPanelById(panelId);
         return;
       }
@@ -352,6 +353,7 @@ export const ConsolePlugin = ({
       layout.root,
       makeConfig,
       openFileMap,
+      showFilePanel,
     ]
   );
 
@@ -361,14 +363,20 @@ export const ConsolePlugin = ({
       const isFileOpen = fileIsOpen(fileMetadata);
       const isFileOpenAsPreview = fileIsOpenAsPreview(fileMetadata);
 
-      // If the file is already open, or if it's open as a preview and we don't need to focus it, then we just need to show it
-      // If the file is open as a preview, we need to show it AND change it to a non-preview panel
-      if (isFileOpen || (isFileOpenAsPreview && !shouldFocus)) {
+      // If the file is already open, just show and focus it if necessary
+      if (isFileOpen) {
         showFilePanel(fileMetadata);
         if (shouldFocus) {
           const panelId = getPanelIdForFileMetadata(fileMetadata);
           focusPanelById(panelId);
         }
+        return;
+      }
+
+      // If the file is already open as a preview and we're not focusing it, just show it
+      // If we're focusing it, that means we need to replace the panel anyway with a non-preview panel, so just fall into the logic below
+      if (isFileOpenAsPreview && !shouldFocus) {
+        showFilePanel(fileMetadata);
         return;
       }
 
