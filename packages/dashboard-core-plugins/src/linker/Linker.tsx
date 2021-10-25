@@ -535,7 +535,7 @@ export class Linker extends Component<LinkerProps, LinkerState> {
       combinedLinks.push(linkInProgress);
     }
 
-    if (isolateForPanelId !== null) {
+    if (isolateForPanelId != null) {
       return combinedLinks.filter(
         link =>
           link?.start?.panelId === isolateForPanelId ||
