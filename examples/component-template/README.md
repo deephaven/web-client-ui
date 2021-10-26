@@ -64,8 +64,6 @@ If not using sass, you can remove the dev dependency for sass and also remove th
 
 `@testing-library/react` is a react component testing library. We currently use `enzyme` in several packages. Or you may not need this at all.
 
-`gh-pages` is currently listed but not used by any scripts in this template.
-
 ### PropTypes
 
 While prop-types is only truly needed for JS components, you should still keep and use the package for TS components.
