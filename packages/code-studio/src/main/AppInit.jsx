@@ -87,7 +87,7 @@ const AppInit = props => {
 
       setActiveTool(ToolType.DEFAULT);
       setCommandHistoryStorage(COMMAND_HISTORY_STORAGE);
-      setDashboardData(data);
+      setDashboardData(DEFAULT_DASHBOARD_ID, data);
       setFileStorage(FILE_STORAGE);
       setLayoutStorage(LAYOUT_STORAGE);
       setDashboardSessionWrapper(DEFAULT_DASHBOARD_ID, sessionWrapper);

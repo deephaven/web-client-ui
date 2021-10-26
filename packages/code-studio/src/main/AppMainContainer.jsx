@@ -252,8 +252,15 @@ export class AppMainContainer extends Component {
           dragEvent,
         });
         break;
-      default:
+      case ControlType.FILTER_SET_MANAGER:
+        this.emitLayoutEvent(InputFilterEvent.OPEN_FILTER_SET_MANAGER, {
+          title: 'FilterSets',
+          type,
+          dragEvent,
+        });
         break;
+      default:
+        throw new Error('Unrecognized control type', type);
     }
   }
 
@@ -276,8 +283,8 @@ export class AppMainContainer extends Component {
     const { updateWorkspaceData } = this.props;
 
     // Only save the data that is serializable/we want to persist to the workspace
-    const { closed, links } = data;
-    updateWorkspaceData({ closed, links });
+    const { closed, filterSets, links } = data;
+    updateWorkspaceData({ closed, filterSets, links });
   }
 
   handleGoldenLayoutChange(goldenLayout) {

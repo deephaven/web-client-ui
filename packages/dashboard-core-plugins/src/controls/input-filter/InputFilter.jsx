@@ -148,6 +148,11 @@ class InputFilter extends Component {
     this.setState({ value: '' });
   }
 
+  setFilterState({ name, type, value, isValueShown }) {
+    const column = name != null && type != null ? { name, type } : null;
+    this.setState({ column, value, isValueShown });
+  }
+
   sendUpdate() {
     const { onChange } = this.props;
     const { column, value, isValueShown } = this.state;

@@ -19,6 +19,9 @@ class InputFilterEvent {
 
   /** Open an input filter panel */
   static OPEN_INPUT = 'InputFilterEvent.OPEN_INPUT';
+
+  /** Open a filter set manager panel */
+  static OPEN_FILTER_SET_MANAGER = 'InputFilterEvent.OPEN_FILTER_SET_MANAGER';
 }
 
 export default InputFilterEvent;
