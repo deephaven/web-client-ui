@@ -136,7 +136,8 @@ class Formatter {
   }
 
   /**
-   * Gets the timeZone name. E.g. America/New_York
+   * Gets the timeZone name
+   * @returns {string} The time zone name E.g. America/New_York
    */
   get timeZone() {
     return this.typeFormatterMap.get(TableUtils.dataType.DATETIME)?.dhTimeZone
