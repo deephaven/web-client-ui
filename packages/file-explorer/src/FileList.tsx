@@ -560,6 +560,7 @@ export const FileList = (props: FileListProps): JSX.Element => {
         rowHeight={rowHeight}
         isMultiSelect={isMultiSelect}
         isDragSelect={false}
+        isDeselectOnClick={false}
       />
     </div>
   );

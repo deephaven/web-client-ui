@@ -45,6 +45,8 @@ export type ItemListProps<T> = {
   // Default renderItem will look for a `displayValue` property, fallback
   // to the `value` property, or stringify the object if neither are defined
   items: T[];
+  // Whether clicking a selected item should deselect in the item list or not. Defaults to true
+  isDeselectOnClick: boolean;
   // Whether selection requires a double click or not
   isDoubleClickSelect: boolean;
   // Whether to allow dragging to change the selection after clicking
@@ -97,6 +99,8 @@ export class ItemList<T> extends PureComponent<
     offset: 0,
     items: [],
     rowHeight: ItemList.DEFAULT_ROW_HEIGHT,
+
+    isDeselectOnClick: true,
 
     isDoubleClickSelect: false,
 
@@ -463,14 +467,15 @@ export class ItemList<T> extends PureComponent<
         this.toggleSelect(
           itemIndex,
           e.shiftKey,
-          ContextActionUtils.isModifierKeyDown(e)
+          ContextActionUtils.isModifierKeyDown(e),
+          false
         );
       }
     }
   }
 
   handleItemMouseUp(index: number, e: React.MouseEvent): void {
-    const { isDoubleClickSelect, onSelect } = this.props;
+    const { isDeselectOnClick, isDoubleClickSelect, onSelect } = this.props;
     const { mouseDownIndex, isDragging } = this.state;
 
     if (
@@ -486,7 +491,7 @@ export class ItemList<T> extends PureComponent<
       const isShiftDown = e.shiftKey;
       const isModifierDown = ContextActionUtils.isModifierKeyDown(e);
       this.focusItem(index);
-      this.toggleSelect(index, isShiftDown, isModifierDown);
+      this.toggleSelect(index, isShiftDown, isModifierDown, isDeselectOnClick);
 
       if (!isDoubleClickSelect && !isShiftDown && !isModifierDown) {
         onSelect(index, e);
