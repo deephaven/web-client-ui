@@ -327,7 +327,8 @@ class AdvancedFilterCreator extends PureComponent {
       invertSelection,
       selectedValues,
     } = this.state;
-    const { column, onFilterChange } = this.props;
+    const { column, onFilterChange, model } = this.props;
+    const { formatter } = model;
 
     const options = {
       filterItems,
@@ -336,7 +337,11 @@ class AdvancedFilterCreator extends PureComponent {
       selectedValues,
     };
 
-    const filter = TableUtils.makeAdvancedFilter(column, options);
+    const filter = TableUtils.makeAdvancedFilter(
+      column,
+      options,
+      formatter.timeZone
+    );
 
     onFilterChange(column, filter, options);
   }
@@ -498,6 +503,7 @@ class AdvancedFilterCreator extends PureComponent {
                   selectedValues={selectedValues}
                   formatter={formatter}
                   showSearch={!isDateType}
+                  timeZone={formatter.timeZone}
                 />
               </div>
             </>

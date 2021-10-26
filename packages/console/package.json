@@ -43,7 +43,6 @@
     "@deephaven/icons": "^0.3.1",
     "@deephaven/jsapi-shim": "^0.3.1",
     "@deephaven/log": "^0.3.1",
-    "@deephaven/redux": "^0.3.1",
     "@deephaven/storage": "^0.3.1",
     "@deephaven/utils": "^0.3.1",
     "@fortawesome/fontawesome-svg-core": "^1.x",
@@ -61,8 +60,6 @@
     "prop-types": "^15.x",
     "react": "^16.x",
     "react-dom": "^16.x",
-    "react-redux": "^7.2.4",
-    "redux": "^4.x",
     "shortid": "^2.x"
   },
   "devDependencies": {
@@ -72,7 +69,6 @@
     "@deephaven/jsapi-shim": "^0.5.0",
     "@deephaven/log": "^0.5.0",
     "@deephaven/mocks": "^0.5.0",
-    "@deephaven/redux": "^0.5.0",
     "@deephaven/storage": "^0.5.1",
     "@deephaven/tsconfig": "^0.5.0",
     "@deephaven/utils": "^0.5.0",
@@ -97,7 +93,6 @@
     "prop-types": "^15.7.2",
     "react": "^16.14.0",
     "react-dom": "^16.14.0",
-    "react-redux": "^7.2.4",
     "rimraf": "^3.0.2",
     "sass": "1.32.13",
     "shortid": "^2.2.15",

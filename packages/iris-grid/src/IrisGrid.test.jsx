@@ -3,6 +3,7 @@ import TestRenderer from 'react-test-renderer';
 import { TestUtils } from '@deephaven/utils';
 import { IrisGrid } from './IrisGrid';
 import IrisGridTestUtils from './IrisGridTestUtils';
+import DateUtils from './DateUtils';
 
 class MockPath2D {}
 
@@ -10,7 +11,13 @@ window.Path2D = MockPath2D;
 
 const VIEW_SIZE = 5000;
 
-const DEFAULT_SETTINGS = { formatter: [] };
+const DEFAULT_SETTINGS = {
+  timeZone: 'America/New_York',
+  defaultDateTimeFormat: DateUtils.FULL_DATE_FORMAT,
+  showTimeZone: false,
+  showTSeparator: true,
+  formatter: [],
+};
 
 function makeMockCanvas() {
   return {

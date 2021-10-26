@@ -361,10 +361,11 @@ class TableUtils {
   /**
    * Create filter with the provided column and text. Handles multiple filters joined with && or ||
    * @param {dh.Column} column The column to set the filter on
-   * @param {String} text The text string to create the filter from
+   * @param {string} text The text string to create the filter from
+   * @param {string} timeZone The time zone to make this value in if it is a date type. E.g. America/New_York
    * @returns {dh.FilterCondition} Returns the created filter, null if text could not be parsed
    */
-  static makeQuickFilter(column, text) {
+  static makeQuickFilter(column, text, timeZone) {
     const orComponents = text.split('||');
     let orFilter = null;
     for (let i = 0; i < orComponents.length; i += 1) {
@@ -376,7 +377,8 @@ class TableUtils {
         if (andComponent.length > 0) {
           const filter = TableUtils.makeQuickFilterFromComponent(
             column,
-            andComponent
+            andComponent,
+            timeZone
           );
           if (filter) {
             if (andFilter) {
@@ -403,10 +405,11 @@ class TableUtils {
   /**
    * Create filter with the provided column and text of one component (no multiple conditions)
    * @param {dh.Column} column The column to set the filter on
-   * @param {String} text The text string to create the filter from
+   * @param {string} text The text string to create the filter from
+   * @param {string} timeZone The time zone to make this filter in if it is a date type. E.g. America/New_York
    * @returns {dh.FilterCondition} Returns the created filter, null if text could not be parsed
    */
-  static makeQuickFilterFromComponent(column, text) {
+  static makeQuickFilterFromComponent(column, text, timeZone) {
     const { type } = column;
     if (TableUtils.isNumberType(type)) {
       return this.makeQuickNumberFilter(column, text);
@@ -415,7 +418,7 @@ class TableUtils {
       return this.makeQuickBooleanFilter(column, text);
     }
     if (TableUtils.isDateType(type)) {
-      return this.makeQuickDateFilter(column, text);
+      return this.makeQuickDateFilter(column, text, timeZone);
     }
     return this.makeQuickTextFilter(column, text);
   }
@@ -707,7 +710,7 @@ class TableUtils {
    * @param {Column} column The column to build the filter from, with or without a leading operator.
    * @param {string} text The date string text to parse.
    */
-  static makeQuickDateFilter(column, text) {
+  static makeQuickDateFilter(column, text, timeZone) {
     const cleanText = text.trim();
     const regex = /\s*(>=|<=|=>|=<|>|<|!=|!|=)?(.*)/;
     const result = regex.exec(cleanText);
@@ -750,7 +753,8 @@ class TableUtils {
     return TableUtils.makeQuickDateFilterWithOperation(
       column,
       dateText,
-      filterOperation
+      filterOperation,
+      timeZone
     );
   }
 
@@ -759,17 +763,19 @@ class TableUtils {
    * @param {Column} column The column to build the filter from.
    * @param {string} text The date string text to parse, without an operator.
    * @param {FilterType} operation The filter operation to use.
+   * @param {string} timeZone The time zone to make this filter with. E.g. America/New_York
    */
   static makeQuickDateFilterWithOperation(
     column,
     text,
-    operation = FilterType.eq
+    operation = FilterType.eq,
+    timeZone
   ) {
     if (column == null) {
       throw new Error('Column is null');
     }
 
-    const [startDate, endDate] = DateUtils.parseDateRange(text);
+    const [startDate, endDate] = DateUtils.parseDateRange(text, timeZone);
 
     const startValue =
       startDate != null ? dh.FilterValue.ofNumber(startDate) : null;
@@ -881,7 +887,7 @@ class TableUtils {
     return wrappedPromise;
   }
 
-  static makeAdvancedFilter(column, options) {
+  static makeAdvancedFilter(column, options, timeZone) {
     const {
       filterItems,
       filterOperators,
@@ -902,7 +908,8 @@ class TableUtils {
           const newFilter = TableUtils.makeAdvancedValueFilter(
             column,
             selectedType,
-            value
+            value,
+            timeZone
           );
           if (newFilter != null) {
             if (i === 0) {
@@ -995,8 +1002,9 @@ class TableUtils {
    * Converts a string value to a value appropriate for the column
    * @param {string} columnType The column type to make the value for
    * @param {string} text The string value to make a type for
+   * @param {string} timeZone The time zone to make this value in if it is a date type. E.g. America/New_York
    */
-  static makeValue(columnType, text) {
+  static makeValue(columnType, text, timeZone) {
     if (text == null || text === 'null') {
       return null;
     }
@@ -1010,7 +1018,7 @@ class TableUtils {
       return TableUtils.makeBooleanValue(text, true);
     }
     if (TableUtils.isDateType(columnType)) {
-      const [date] = DateUtils.parseDateRange(text);
+      const [date] = DateUtils.parseDateRange(text, timeZone);
       return date;
     }
 
@@ -1078,12 +1086,13 @@ class TableUtils {
     throw new Error(`Invalid number '${text}'`);
   }
 
-  static makeAdvancedValueFilter(column, operation, value) {
+  static makeAdvancedValueFilter(column, operation, value, timeZone) {
     if (TableUtils.isDateType(column.type)) {
       return TableUtils.makeQuickDateFilterWithOperation(
         column,
         value,
-        operation
+        operation,
+        timeZone
       );
     }
 

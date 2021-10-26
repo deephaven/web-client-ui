@@ -1,11 +1,9 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
-import { connect } from 'react-redux';
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
 import Log from '@deephaven/log';
 import { PromiseUtils } from '@deephaven/utils';
-import { getCommandHistoryStorage } from '@deephaven/redux';
 import { MonacoCompletionProvider, MonacoTheme, MonacoUtils } from './monaco';
 import './ConsoleInput.scss';
 import StoragePropTypes from './StoragePropTypes';
@@ -421,10 +419,4 @@ ConsoleInput.defaultProps = {
   scope: null,
 };
 
-const mapStateToProps = state => ({
-  commandHistoryStorage: getCommandHistoryStorage(state),
-});
-
-export default connect(mapStateToProps, null, null, { forwardRef: true })(
-  ConsoleInput
-);
+export default ConsoleInput;

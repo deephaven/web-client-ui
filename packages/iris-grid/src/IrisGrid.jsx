@@ -4,7 +4,6 @@ import classNames from 'classnames';
 import { CSSTransition } from 'react-transition-group';
 import PropTypes from 'prop-types';
 import deepEqual from 'deep-equal';
-import { connect } from 'react-redux';
 import Log from '@deephaven/log';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -34,7 +33,6 @@ import {
   vsTools,
 } from '@deephaven/icons';
 import dh, { PropTypes as APIPropTypes } from '@deephaven/jsapi-shim';
-import { getSettings } from '@deephaven/redux';
 import { Pending, PromiseUtils, ValidationError } from '@deephaven/utils';
 import throttle from 'lodash.throttle';
 import debounce from 'lodash.debounce';
@@ -86,6 +84,7 @@ import SelectDistinctBuilder from './sidebar/SelectDistinctBuilder';
 import AdvancedSettingsType from './sidebar/AdvancedSettingsType';
 import AdvancedSettingsMenu from './sidebar/AdvancedSettingsMenu';
 import SHORTCUTS from './IrisGridShortcuts';
+import DateUtils from './DateUtils';
 
 const log = Log.module('IrisGrid');
 
@@ -784,6 +783,7 @@ export class IrisGrid extends Component {
    */
   applyQuickFilter(modelIndex, value, quickFilters) {
     const { model } = this.props;
+    const { formatter } = model;
     const column = model.columns[modelIndex];
 
     if (value != null && `${value}`.trim().length > 0) {
@@ -797,7 +797,7 @@ export class IrisGrid extends Component {
       }
       let filter = null;
       try {
-        filter = TableUtils.makeQuickFilter(column, value);
+        filter = TableUtils.makeQuickFilter(column, value, formatter.timeZone);
       } catch (err) {
         log.error('Error creating quick filter', err);
       }
@@ -952,7 +952,7 @@ export class IrisGrid extends Component {
 
     const { model } = this.props;
     const { advancedFilters, quickFilters } = this.state;
-    const { columns } = model;
+    const { columns, formatter } = model;
 
     const newAdvancedFilters = new Map();
     const newQuickFilters = new Map();
@@ -960,7 +960,11 @@ export class IrisGrid extends Component {
     advancedFilters.forEach((value, key) => {
       const { options } = value;
       const column = columns[key];
-      const filter = TableUtils.makeAdvancedFilter(column, options);
+      const filter = TableUtils.makeAdvancedFilter(
+        column,
+        options,
+        formatter.timeZone
+      );
       newAdvancedFilters.set(key, {
         options,
         filter,
@@ -970,7 +974,11 @@ export class IrisGrid extends Component {
     quickFilters.forEach((value, key) => {
       const { text } = value;
       const column = columns[key];
-      const filter = TableUtils.makeQuickFilter(column, text);
+      const filter = TableUtils.makeQuickFilter(
+        column,
+        text,
+        formatter.timeZone
+      );
       newQuickFilters.set(key, {
         text,
         filter,
@@ -2942,7 +2950,14 @@ IrisGrid.propTypes = {
   quickFilters: PropTypes.instanceOf(Map),
   customColumns: PropTypes.arrayOf(PropTypes.string),
   selectDistinctColumns: PropTypes.arrayOf(PropTypes.string),
-  settings: PropTypes.shape({}).isRequired,
+  // These settings come from the redux store
+  settings: PropTypes.shape({
+    timeZone: PropTypes.string.isRequired,
+    defaultDateTimeFormat: PropTypes.string.isRequired,
+    showTimeZone: PropTypes.bool.isRequired,
+    showTSeparator: PropTypes.bool.isRequired,
+    formatter: PropTypes.arrayOf(PropTypes.shape({})).isRequired,
+  }),
   userColumnWidths: PropTypes.instanceOf(Map),
   userRowHeights: PropTypes.instanceOf(Map),
   onSelectionChanged: PropTypes.func,
@@ -3032,12 +3047,13 @@ IrisGrid.defaultProps = {
   onContextMenu: () => [],
   pendingDataMap: new Map(),
   getDownloadWorker: undefined,
+  settings: {
+    timeZone: 'America/New_York',
+    defaultDateTimeFormat: DateUtils.FULL_DATE_FORMAT,
+    showTimeZone: false,
+    showTSeparator: true,
+    formatter: [],
+  },
 };
 
-const mapStateToProps = state => ({
-  settings: getSettings(state),
-});
-
-export default connect(mapStateToProps, null, null, { forwardRef: true })(
-  IrisGrid
-);
+export default IrisGrid;

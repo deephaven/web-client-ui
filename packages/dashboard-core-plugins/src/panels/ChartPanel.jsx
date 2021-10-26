@@ -17,6 +17,7 @@ import { ThemeExport } from '@deephaven/components';
 import Log from '@deephaven/log';
 import {
   getActiveTool,
+  getSettings,
   setActiveTool as setActiveToolAction,
 } from '@deephaven/redux';
 import { Pending, PromiseUtils, TextUtils } from '@deephaven/utils';
@@ -831,6 +832,7 @@ export class ChartPanel extends Component {
       isLinkerActive,
       links,
       metadata,
+      settings,
     } = this.props;
     const {
       columnMap,
@@ -902,6 +904,7 @@ export class ChartPanel extends Component {
               <Chart
                 isActive={isActive}
                 model={model}
+                settings={settings}
                 ref={this.chart}
                 onDisconnect={this.handleDisconnect}
                 onReconnect={this.handleReconnect}
@@ -979,6 +982,7 @@ ChartPanel.propTypes = {
   setDashboardIsolatedLinkerPanelId: PropTypes.func.isRequired,
 
   panelState: PropTypes.shape({}),
+  settings: PropTypes.shape({}),
 };
 
 ChartPanel.defaultProps = {
@@ -987,6 +991,7 @@ ChartPanel.defaultProps = {
   source: null,
   sourcePanel: null,
   panelState: null,
+  settings: {},
 };
 
 ChartPanel.displayName = 'ChartPanel';
@@ -1013,6 +1018,7 @@ const mapStateToProps = (state, ownProps) => {
     links: getLinksForDashboard(state, localDashboardId),
     source: panelTableMap.get(sourcePanelId),
     sourcePanel: openedPanelMap.get(sourcePanelId),
+    settings: getSettings(state),
   };
 };
 

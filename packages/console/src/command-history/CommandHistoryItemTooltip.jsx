@@ -1,10 +1,8 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
 import debounce from 'lodash.debounce';
 import memoize from 'memoizee';
 import { LoadingSpinner } from '@deephaven/components';
-import { getCommandHistoryStorage } from '@deephaven/redux';
 import { TimeUtils } from '@deephaven/utils';
 import Code from '../common/Code';
 import './CommandHistoryItemTooltip.scss';
@@ -179,10 +177,4 @@ CommandHistoryItemTooltip.defaultProps = {
   onUpdate: () => {},
 };
 
-const mapStateToProps = state => ({
-  commandHistoryStorage: getCommandHistoryStorage(state),
-});
-
-export default connect(mapStateToProps, null, null, { forwardRef: true })(
-  CommandHistoryItemTooltip
-);
+export default CommandHistoryItemTooltip;

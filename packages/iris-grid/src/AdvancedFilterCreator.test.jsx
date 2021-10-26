@@ -11,6 +11,7 @@ function makeAdvancedFilterCreatorWrapper({
   model = IrisGridTestUtils.makeModel(),
   column = IrisGridTestUtils.makeColumn(),
   formatter = new Formatter(),
+  timeZone = 'America/New_York',
 } = {}) {
   const wrapper = mount(
     <AdvancedFilterCreator
@@ -21,6 +22,7 @@ function makeAdvancedFilterCreatorWrapper({
       onSortChange={() => {}}
       onDone={() => {}}
       options={options}
+      timeZone={timeZone}
     />
   );
 

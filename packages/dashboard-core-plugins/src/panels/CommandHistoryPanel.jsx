@@ -139,7 +139,7 @@ class CommandHistoryPanel extends Component {
   }
 
   render() {
-    const { glContainer, glEventHub } = this.props;
+    const { glContainer, glEventHub, commandHistoryStorage } = this.props;
     const { language, contextActions, table } = this.state;
     return (
       <Panel
@@ -163,6 +163,7 @@ class CommandHistoryPanel extends Component {
               sendToNotebook={this.handleSendToNotebook}
               sendToConsole={this.handleSendToConsole}
               table={table}
+              commandHistoryStorage={commandHistoryStorage}
             />
             <ContextActions actions={contextActions} />
           </>

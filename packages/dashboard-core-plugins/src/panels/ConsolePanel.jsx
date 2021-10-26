@@ -13,7 +13,7 @@ import { GLPropTypes, PanelEvent } from '@deephaven/dashboard';
 import { IrisGridModelFactory } from '@deephaven/iris-grid';
 import { PropTypes as APIPropTypes } from '@deephaven/jsapi-shim';
 import Log from '@deephaven/log';
-import { getCommandHistoryStorage } from '@deephaven/redux';
+import { getCommandHistoryStorage, getTimeZone } from '@deephaven/redux';
 import {
   ChartEvent,
   ConsoleEvent,
@@ -273,6 +273,7 @@ class ConsolePanel extends PureComponent {
       glContainer,
       glEventHub,
       sessionWrapper,
+      timeZone,
     } = this.props;
     const { consoleSettings, error } = this.state;
     const { config, session } = sessionWrapper;
@@ -316,6 +317,7 @@ class ConsolePanel extends PureComponent {
                   </>
                 }
                 scope={sessionId}
+                timeZone={timeZone}
               />
             )}
           </>
@@ -340,6 +342,8 @@ ConsolePanel.propTypes = {
     session: APIPropTypes.IdeSession,
     config: PropTypes.shape({ type: PropTypes.string, id: PropTypes.string }),
   }).isRequired,
+
+  timeZone: PropTypes.string.isRequired,
 };
 
 ConsolePanel.defaultProps = {
@@ -349,6 +353,7 @@ ConsolePanel.defaultProps = {
 const mapStateToProps = (state, ownProps) => ({
   commandHistoryStorage: getCommandHistoryStorage(state),
   sessionWrapper: getDashboardSessionWrapper(state, ownProps.localDashboardId),
+  timeZone: getTimeZone(state),
 });
 
 export default connect(mapStateToProps, null, null, { forwardRef: true })(
