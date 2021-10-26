@@ -30,13 +30,16 @@ $command-history-search-toolbar-bg: $content-bg;
   background: $command-history-search-toolbar-bg;
   border-bottom: 2px solid $background;
   width: 100%;
-  padding: $spacer-1;
+  padding: $spacer-1 $spacer-1 0 $spacer-1;
   display: flex;
-  flex-grow: 0;
   flex-wrap: wrap;
+  flex-shrink: 0;
+  overflow: hidden;
 
   .search-group {
     flex-grow: 1;
+    margin-right: $spacer-1;
+    margin-bottom: $spacer-1;
     input {
       background-color: $command-history-search-bg;
     }

@@ -2,8 +2,8 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { Tooltip } from '@deephaven/components';
-import { vsArrowLeft } from '@deephaven/icons';
+import { Button } from '@deephaven/components';
+import { vsArrowLeft, vsCircleLargeFilled } from '@deephaven/icons';
 import './CommandHistoryActions.scss';
 
 class CommandHistoryActions extends Component {
@@ -15,10 +15,14 @@ class CommandHistoryActions extends Component {
     if (item.selectionRequired && item.icon) {
       return (
         <div className="fa-md fa-layers">
-          <FontAwesomeIcon icon={item.icon} />
+          <FontAwesomeIcon
+            icon={vsCircleLargeFilled}
+            mask={item.icon}
+            transform="right-5 down-5 shrink-4"
+          />
           <FontAwesomeIcon
             icon={vsArrowLeft}
-            transform="shrink-3 right-12 up-9"
+            transform="shrink-3 right-7 down-6"
           />
         </div>
       );
@@ -37,18 +41,15 @@ class CommandHistoryActions extends Component {
     return (
       <div className="command-history-actions">
         {actions.map((item, index) => (
-          <button
-            className={classNames('btn btn-inline ml-1', item.className)}
+          <Button
+            kind="inline"
+            className={classNames(item.className)}
             key={CommandHistoryActions.itemKey(index, item)}
             onClick={item.action}
-            type="button"
+            tooltip={item.description}
             disabled={item.selectionRequired && !hasSelection}
-          >
-            {CommandHistoryActions.renderContent(item)}
-            <Tooltip options={{ placement: 'bottom' }}>
-              {item.description}
-            </Tooltip>
-          </button>
+            icon={CommandHistoryActions.renderContent(item)}
+          />
         ))}
       </div>
     );
