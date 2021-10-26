@@ -2,4 +2,9 @@
 
 .command-history-actions {
   flex-shrink: 0;
+  margin-bottom: $spacer-1;
+
+  > *:first-child {
+    margin: 0 $spacer-1 0 0;
+  }
 }

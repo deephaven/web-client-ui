@@ -267,7 +267,8 @@ class CommandHistory extends Component {
   }
 
   handleSearchChange(e) {
-    this.setState({ searchText: e.target.value });
+    // clear selected range, as old selection could be filtered from list
+    this.setState({ searchText: e.target.value, selectedRanges: [] });
   }
 
   handleViewportUpdate({ items, offset }) {
@@ -327,6 +328,7 @@ class CommandHistory extends Component {
             itemCount={itemCount}
             items={items}
             offset={offset}
+            selectedRanges={selectedRanges}
             onSelect={this.handleSelect}
             onSelectionChange={this.handleSelectionChange}
             onViewportChange={this.handleViewportChange}
