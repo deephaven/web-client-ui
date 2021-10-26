@@ -1,5 +1,18 @@
 @import '../../../components/scss/custom.scss';
 
+.csv-progress-container {
+  display: grid;
+  grid-template-columns: max-content 1fr max-content max-content;
+  grid-gap: 10px;
+  align-items: center;
+  padding: $spacer-2;
+  background-color: $primary-dark;
+
+  label {
+    margin-bottom: 0;
+  }
+}
+
 .csv-input-bar-container {
   display: flex;
   background-color: $primary-dark;
@@ -22,18 +35,5 @@
     > *:first-child {
       margin-right: $spacer-1;
     }
-  }
-}
-
-.csv-progress-container {
-  display: grid;
-  grid-template-columns: max-content 1fr max-content max-content;
-  grid-gap: 10px;
-  align-items: center;
-  padding: $spacer-2;
-  background-color: $primary-dark;
-
-  label {
-    margin-bottom: 0;
   }
 }
