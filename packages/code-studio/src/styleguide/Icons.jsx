@@ -5,11 +5,10 @@ import { Button } from '@deephaven/components';
 import PropTypes from 'prop-types';
 
 async function copyText(text) {
-  try {
-    await navigator.clipboard.writeText(text);
-  } catch (err) {
-    // meh
-  }
+  return navigator.clipboard
+    .writeText(text)
+    .then(() => text)
+    .catch(err => err.message);
 }
 
 const DH_PREFIX = 'dh';
@@ -22,30 +21,34 @@ const getPrefixedName = (name, prefix) =>
     .map(str => str.charAt(0).toUpperCase() + str.slice(1))
     .join('');
 
-const Flash = ({ message: { string } }) => {
+const Flash = ({ message, message: { text } }) => {
   const [show, setShow] = useState(false);
   const timeout = useRef(null);
 
   useEffect(() => {
-    if (!string) return;
+    if (!text) return;
     setShow(true);
     clearTimeout(timeout.current);
     timeout.current = setTimeout(() => {
       setShow(false);
     }, 2000);
-  }, [string]);
+    // eslint-disable-next-line consistent-return
+    return () => {
+      clearTimeout(timeout);
+    };
+  }, [message, text]);
 
   return (
     <p className={show ? 'flash in' : 'flash out'}>
       <FontAwesomeIcon icon={dh.vsOutput} /> Copied text:{' '}
-      <strong>{string}</strong>
+      <strong>{text}</strong>
     </p>
   );
 };
 
 Flash.propTypes = {
   message: PropTypes.shape({
-    string: PropTypes.string.isRequired,
+    text: PropTypes.string,
   }).isRequired,
 };
 
@@ -53,7 +56,7 @@ const Icons = () => {
   const [dhFilter, setDhFilter] = useState(true);
   const [vsFilter, setVsFilter] = useState(true);
   const [search, setSearch] = useState('');
-  const [flashText, setFlashText] = useState('');
+  const [flashText, setFlashText] = useState({ text: '' });
 
   const renderIcons = Object.values(dh)
     .filter(icon => {
@@ -74,8 +77,7 @@ const Icons = () => {
           className="card"
           onClick={() => {
             // new object, so it always flashes even on same string
-            setFlashText({ string: prefixedName });
-            copyText(prefixedName);
+            copyText(prefixedName).then(text => setFlashText({ text }));
           }}
         >
           <FontAwesomeIcon icon={icon} className="icon" />
@@ -125,10 +127,10 @@ const Icons = () => {
           </div>
           <div className="icons">
             {renderIcons}
-            <Flash message={flashText} />
             {renderIcons.length === 0 && (
               <p className="no-result">No icons found.</p>
             )}
+            <Flash message={flashText} />
           </div>
         </div>
       </div>
