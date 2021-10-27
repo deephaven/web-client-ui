@@ -14,10 +14,23 @@ class GridMetricCalculator {
   /** The maximum column width as a percentage of the full grid */
   static MAX_COLUMN_WIDTH = 0.8;
 
-  static trimMap(map) {
-    if (map.size > GridMetricCalculator.CACHE_SIZE) {
-      const keys = map.keys();
-      map.delete(keys[0]);
+  /**
+   * Trim the provided map in place. Trims oldest inserted items down to the target size if the cache size is exceeded.
+   * Instead of trimming one item on every tick, we trim half the items so there isn't a cache clear on every new item.
+   * @param {Map} map The map to trim
+   * @param {number} cacheSize The maximum number of elements to cache
+   * @param {number} targetSize The number of elements to reduce the cache down to if `cacheSize` is exceeded
+   */
+  static trimMap(
+    map,
+    cacheSize = GridMetricCalculator.CACHE_SIZE,
+    targetSize = Math.floor(cacheSize / 2)
+  ) {
+    if (map.size > cacheSize) {
+      const iter = map.keys();
+      while (map.size > targetSize) {
+        map.delete(iter.next().value);
+      }
     }
   }
 
