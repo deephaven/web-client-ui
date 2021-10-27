@@ -15,7 +15,7 @@ class GridMetricCalculator {
   static MAX_COLUMN_WIDTH = 0.8;
 
   /**
-   * Trim the provided map in place. Trims down to the target size if the cache size is exceeded.
+   * Trim the provided map in place. Trims oldest inserted items down to the target size if the cache size is exceeded.
    * Instead of trimming one item on every tick, we trim half the items so there isn't a cache clear on every new item.
    * @param {Map} map The map to trim
    * @param {number} cacheSize The maximum number of elements to cache
