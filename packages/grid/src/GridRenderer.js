@@ -325,7 +325,6 @@ class GridRenderer {
         state,
         {
           left: 0,
-          right: floatingLeftColumnCount,
           maxX:
             visibleColumnXs.get(floatingLeftColumnCount - 1) +
             visibleColumnWidths.get(floatingLeftColumnCount - 1),
@@ -1184,21 +1183,20 @@ class GridRenderer {
       this.drawColumnHeader(context, state, column, x, columnWidth);
     }
 
-    // Draw the separators
-    // TODO: Refactor this draw separator code so you can draw all the
-    // visibleColumns, then all the floatingColumns
+    // Draw the separators, visible columns then floating columns.
     if (headerSeparatorColor) {
       context.strokeStyle = headerSeparatorColor;
       context.beginPath();
       const hiddenColumns = [];
+
+      // Draw visible column separators.
       let isPreviousColumnHidden = false;
       for (let i = 0; i < visibleColumns.length; i += 1) {
         const column = visibleColumns[i];
         const columnX = visibleColumnXs.get(column);
         const columnWidth = visibleColumnWidths.get(column);
-        const isUnderFloatingColumns = columnX < frozenColumnsWidth;
 
-        if (!isUnderFloatingColumns) {
+        if (!(columnX < frozenColumnsWidth - columnWidth)) {
           if (columnWidth > 0) {
             const x = gridX + columnX + columnWidth + 0.5;
             context.moveTo(x, 0);
@@ -1260,7 +1258,8 @@ class GridRenderer {
           mouseX,
           mouseY,
           metrics,
-          theme
+          theme,
+          frozenColumnsWidth
         );
       }
 

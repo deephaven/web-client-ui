@@ -237,14 +237,14 @@ class GridUtils {
    * @param {Number} y Mouse y coordinate
    * @param {GridMetrics} metrics The GridMetricCalculator metrics
    * @param {GridTheme} theme The grid theme with potantial user overrides
+   * @param {Number} floatingColumnsWidth The total width of the frozen columns
    * @returns {Number|null} Column index or null
    */
-  static getColumnSeparatorIndex(x, y, metrics, theme) {
+  static getColumnSeparatorIndex(x, y, metrics, theme, floatingColumnsWidth) {
     const {
       rowHeaderWidth,
       columnHeaderHeight,
       floatingColumns,
-      floatingLeftColumnCount,
       visibleColumns,
       visibleColumnXs,
       visibleColumnWidths,
@@ -262,14 +262,7 @@ class GridUtils {
     const gridX = x - rowHeaderWidth;
     const halfSeparatorSize = headerSeparatorHandleSize * 0.5;
 
-    // TODO: Remove this.
-    // We calculate this in the calling function -> can pass the width as a param.
-    const floatingColumnsWidth =
-      visibleColumnXs.get(floatingLeftColumnCount - 1) +
-      visibleColumnWidths.get(floatingLeftColumnCount - 1);
-
-    // TODO: Iterate through the floatingColumns similar to below, need to
-    // iterate through them first as they're on top
+    // Iterate through the floating columns first since they're on top
     let isPreviousColumnHidden = false;
     for (let i = floatingColumns.length - 1; i >= 0; i -= 1) {
       const column = floatingColumns[i];
@@ -299,14 +292,11 @@ class GridUtils {
     for (let i = visibleColumns.length - 1; i >= 0; i -= 1) {
       const column = visibleColumns[i];
       const columnX = visibleColumnXs.get(column);
-      // TODO: Check if this columnX is <= floatingleft width and ignore it
-      // if so, otherwise could have a separator from below in the middle
-      // of the column header picked up
       const columnWidth = visibleColumnWidths.get(column);
       const isColumnHidden = columnWidth === 0;
 
-      // We're under the floating columns. Terminate early.
-      if (columnX <= floatingColumnsWidth) {
+      // If this column is under the floating columns "layer". Terminate early.
+      if (columnX < floatingColumnsWidth - columnWidth) {
         return null;
       }
 
