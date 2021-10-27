@@ -231,11 +231,20 @@ class GridUtils {
     );
   }
 
-  // Returns the column index if the x/y coordinates provided are close enough to the separator, otherwise false
+  /**
+   * Gets the column index if the x/y coordinated provided are close enough
+   * @param {Number} x Mouse x coordinate
+   * @param {Number} y Mouse y coordinate
+   * @param {GridMetrics} metrics The GridMetricCalculator metrics
+   * @param {GridTheme} theme The grid theme with potantial user overrides
+   * @returns {Number|null} Column index or null
+   */
   static getColumnSeparatorIndex(x, y, metrics, theme) {
     const {
       rowHeaderWidth,
       columnHeaderHeight,
+      floatingColumns,
+      floatingLeftColumnCount,
       visibleColumns,
       visibleColumnXs,
       visibleColumnWidths,
@@ -253,13 +262,54 @@ class GridUtils {
     const gridX = x - rowHeaderWidth;
     const halfSeparatorSize = headerSeparatorHandleSize * 0.5;
 
-    // Iterate backward so that you can reveal hidden columns properly
+    // TODO: Remove this.
+    // We calculate this in the calling function -> can pass the width as a param.
+    const floatingColumnsWidth =
+      visibleColumnXs.get(floatingLeftColumnCount - 1) +
+      visibleColumnWidths.get(floatingLeftColumnCount - 1);
+
+    // TODO: Iterate through the floatingColumns similar to below, need to
+    // iterate through them first as they're on top
     let isPreviousColumnHidden = false;
-    for (let i = visibleColumns.length - 1; i >= 0; i -= 1) {
-      const column = visibleColumns[i];
+    for (let i = floatingColumns.length - 1; i >= 0; i -= 1) {
+      const column = floatingColumns[i];
       const columnX = visibleColumnXs.get(column);
       const columnWidth = visibleColumnWidths.get(column);
       const isColumnHidden = columnWidth === 0;
+      if (!isPreviousColumnHidden || !isColumnHidden) {
+        let midX = columnX + columnWidth;
+        if (isColumnHidden) {
+          midX += halfSeparatorSize;
+        } else if (isPreviousColumnHidden) {
+          midX -= halfSeparatorSize;
+        }
+
+        const minX = midX - halfSeparatorSize;
+        const maxX = midX + halfSeparatorSize;
+        if (minX <= gridX && gridX <= maxX) {
+          return column;
+        }
+
+        isPreviousColumnHidden = isColumnHidden;
+      }
+    }
+
+    // Iterate backward so that you can reveal hidden columns properly
+    isPreviousColumnHidden = false;
+    for (let i = visibleColumns.length - 1; i >= 0; i -= 1) {
+      const column = visibleColumns[i];
+      const columnX = visibleColumnXs.get(column);
+      // TODO: Check if this columnX is <= floatingleft width and ignore it
+      // if so, otherwise could have a separator from below in the middle
+      // of the column header picked up
+      const columnWidth = visibleColumnWidths.get(column);
+      const isColumnHidden = columnWidth === 0;
+
+      // We're under the floating columns. Terminate early.
+      if (columnX <= floatingColumnsWidth) {
+        return null;
+      }
+
       if (!isPreviousColumnHidden || !isColumnHidden) {
         let midX = columnX + columnWidth;
         if (isColumnHidden) {

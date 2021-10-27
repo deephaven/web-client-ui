@@ -1126,11 +1126,13 @@ class GridRenderer {
     } = state;
     const {
       columnHeaderHeight,
+      floatingColumns,
       gridX,
       width,
       visibleColumns,
       visibleColumnWidths,
       visibleColumnXs,
+      floatingLeftColumnCount,
     } = metrics;
     if (columnHeaderHeight <= 0) {
       return;
@@ -1155,7 +1157,36 @@ class GridRenderer {
     context.fillStyle = headerBackgroundColor;
     context.fillRect(0, 0, width, columnHeaderHeight);
 
+    context.fillStyle = headerColor;
+
+    // Visible columns.
+    for (let i = 0; i < visibleColumns.length; i += 1) {
+      const column = visibleColumns[i];
+      const columnWidth = visibleColumnWidths.get(column);
+      const x = visibleColumnXs.get(column) + gridX;
+      this.drawColumnHeader(context, state, column, x, columnWidth);
+    }
+
+    const frozenColumnsWidth =
+      visibleColumnXs.get(floatingLeftColumnCount - 1) +
+      visibleColumnWidths.get(floatingLeftColumnCount - 1);
+
+    // Frozen columns' background
+    context.fillStyle = headerBackgroundColor;
+    context.fillRect(0, 0, frozenColumnsWidth, columnHeaderHeight);
+
+    // Frozen columns.
+    context.fillStyle = headerColor;
+    for (let i = 0; i < floatingColumns.length; i += 1) {
+      const column = floatingColumns[i];
+      const columnWidth = visibleColumnWidths.get(column);
+      const x = visibleColumnXs.get(column) + gridX;
+      this.drawColumnHeader(context, state, column, x, columnWidth);
+    }
+
     // Draw the separators
+    // TODO: Refactor this draw separator code so you can draw all the
+    // visibleColumns, then all the floatingColumns
     if (headerSeparatorColor) {
       context.strokeStyle = headerSeparatorColor;
       context.beginPath();
@@ -1163,6 +1194,27 @@ class GridRenderer {
       let isPreviousColumnHidden = false;
       for (let i = 0; i < visibleColumns.length; i += 1) {
         const column = visibleColumns[i];
+        const columnX = visibleColumnXs.get(column);
+        const columnWidth = visibleColumnWidths.get(column);
+        const isUnderFloatingColumns = columnX < frozenColumnsWidth;
+
+        if (!isUnderFloatingColumns) {
+          if (columnWidth > 0) {
+            const x = gridX + columnX + columnWidth + 0.5;
+            context.moveTo(x, 0);
+            context.lineTo(x, columnHeaderHeight - 0.5);
+            isPreviousColumnHidden = false;
+          } else if (!isPreviousColumnHidden) {
+            isPreviousColumnHidden = true;
+            hiddenColumns.push(column);
+          }
+        }
+      }
+
+      // Draw floating column separators.
+      isPreviousColumnHidden = false;
+      for (let i = 0; i < floatingColumns.length; i += 1) {
+        const column = floatingColumns[i];
         const columnX = visibleColumnXs.get(column);
         const columnWidth = visibleColumnWidths.get(column);
         if (columnWidth > 0) {
@@ -1258,15 +1310,6 @@ class GridRenderer {
       }
     }
 
-    context.fillStyle = headerColor;
-
-    for (let i = 0; i < visibleColumns.length; i += 1) {
-      const column = visibleColumns[i];
-      const columnWidth = visibleColumnWidths.get(column);
-      const x = visibleColumnXs.get(column) + gridX;
-      this.drawColumnHeader(context, state, column, x, columnWidth);
-    }
-
     context.restore();
   }
 
@@ -1277,10 +1320,10 @@ class GridRenderer {
     const { metrics, model, theme } = state;
     const { modelColumns } = metrics;
     const modelColumn = modelColumns.get(column);
-    let text = model.textForColumnHeader(modelColumn);
-    if (!text) {
+    if (modelColumn === undefined) {
       return;
     }
+    let text = model.textForColumnHeader(modelColumn);
 
     const { headerHorizontalPadding } = theme;
     const { columnHeaderHeight, fontWidths } = metrics;
