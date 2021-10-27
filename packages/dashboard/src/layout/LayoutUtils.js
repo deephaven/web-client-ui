@@ -54,6 +54,8 @@ class LayoutUtils {
       if (!isCorrectType) {
         parent.removeChild(child, true);
         parent.addChild({ type });
+
+        // TODO: This is changing the fous to the body for some reason. Why???
         parent.contentItems[0].addChild(child);
       }
 

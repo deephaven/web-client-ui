@@ -303,6 +303,7 @@ export const ConsolePlugin = ({
       return {
         type: 'react-component',
         component: NotebookPanel.COMPONENT,
+        isFocusOnShow: false,
         props: {
           localDashboardId: id,
           metadata: { id: panelId },
