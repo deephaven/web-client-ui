@@ -224,6 +224,7 @@ lm.utils.copy(lm.controls.Tab.prototype, {
       var activeContentItem = this.header.parent.getActiveContentItem();
       if (this.contentItem !== activeContentItem) {
         this.header.parent.setActiveContentItem(this.contentItem);
+        this.contentItem.container.emit('tabClicked');
       } else if (
         this.contentItem.isComponent &&
         !this.contentItem.container._contentElement[0].contains(

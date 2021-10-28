@@ -49,7 +49,7 @@ export interface FileListProps {
 
   onFocusChange?: (focusedItem?: FileStorageItem) => void;
   onMove: (files: FileStorageItem[], path: string) => void;
-  onSelect: (file: FileStorageItem) => void;
+  onSelect: (file: FileStorageItem, event: React.SyntheticEvent) => void;
   onSelectionChange?: (selectedItems: FileStorageItem[]) => void;
 
   renderItem?: (props: FileListRenderItemProps) => JSX.Element;
@@ -307,12 +307,12 @@ export const FileList = (props: FileListProps): JSX.Element => {
   );
 
   const handleSelect = useCallback(
-    (itemIndex: number) => {
+    (itemIndex: number, event: React.SyntheticEvent) => {
       const item = loadedViewport.items[itemIndex - loadedViewport.offset];
       if (item !== undefined) {
         log.debug('handleItemClick', item);
 
-        onSelect(item);
+        onSelect(item, event);
         if (isDirectory(item)) {
           table?.setExpanded(item.filename, !item.isExpanded);
         }
@@ -560,6 +560,7 @@ export const FileList = (props: FileListProps): JSX.Element => {
         rowHeight={rowHeight}
         isMultiSelect={isMultiSelect}
         isDragSelect={false}
+        isDeselectOnClick={false}
       />
     </div>
   );

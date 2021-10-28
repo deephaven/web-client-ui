@@ -45,6 +45,8 @@ export type ItemListProps<T> = {
   // Default renderItem will look for a `displayValue` property, fallback
   // to the `value` property, or stringify the object if neither are defined
   items: T[];
+  // Whether clicking a selected item should deselect in the item list or not. Defaults to true
+  isDeselectOnClick: boolean;
   // Whether selection requires a double click or not
   isDoubleClickSelect: boolean;
   // Whether to allow dragging to change the selection after clicking
@@ -57,7 +59,7 @@ export type ItemListProps<T> = {
   onFocusChange(index: number | null): void;
 
   // Fired when an item is clicked. With multiple selection, fired on double click.
-  onSelect(index: number): void;
+  onSelect(index: number, event: React.SyntheticEvent): void;
   onSelectionChange(ranges: Range[]): void;
   onViewportChange(topRow: number, bottomRow: number): void;
   overscanCount: number;
@@ -97,6 +99,8 @@ export class ItemList<T> extends PureComponent<
     offset: 0,
     items: [],
     rowHeight: ItemList.DEFAULT_ROW_HEIGHT,
+
+    isDeselectOnClick: true,
 
     isDoubleClickSelect: false,
 
@@ -362,7 +366,7 @@ export class ItemList<T> extends PureComponent<
     this.toggleSelect(itemIndex, e.shiftKey, isModifierDown, false);
   }
 
-  handleItemDoubleClick(itemIndex: number): void {
+  handleItemDoubleClick(itemIndex: number, e: React.MouseEvent): void {
     const { isDoubleClickSelect, onSelect } = this.props;
 
     if (isDoubleClickSelect) {
@@ -374,7 +378,7 @@ export class ItemList<T> extends PureComponent<
           ]),
         }),
         () => {
-          onSelect(itemIndex);
+          onSelect(itemIndex, e);
         }
       );
     }
@@ -463,14 +467,15 @@ export class ItemList<T> extends PureComponent<
         this.toggleSelect(
           itemIndex,
           e.shiftKey,
-          ContextActionUtils.isModifierKeyDown(e)
+          ContextActionUtils.isModifierKeyDown(e),
+          false
         );
       }
     }
   }
 
   handleItemMouseUp(index: number, e: React.MouseEvent): void {
-    const { isDoubleClickSelect, onSelect } = this.props;
+    const { isDeselectOnClick, isDoubleClickSelect, onSelect } = this.props;
     const { mouseDownIndex, isDragging } = this.state;
 
     if (
@@ -486,10 +491,10 @@ export class ItemList<T> extends PureComponent<
       const isShiftDown = e.shiftKey;
       const isModifierDown = ContextActionUtils.isModifierKeyDown(e);
       this.focusItem(index);
-      this.toggleSelect(index, isShiftDown, isModifierDown);
+      this.toggleSelect(index, isShiftDown, isModifierDown, isDeselectOnClick);
 
       if (!isDoubleClickSelect && !isShiftDown && !isModifierDown) {
-        onSelect(index);
+        onSelect(index, e);
       }
     }
 
@@ -522,7 +527,7 @@ export class ItemList<T> extends PureComponent<
       if (!isMultiSelect && newFocus != null) {
         this.setState({ selectedRanges: [[newFocus, newFocus]] }, () => {
           if (newFocus != null) {
-            onSelect(newFocus);
+            onSelect(newFocus, e);
           }
         });
       }

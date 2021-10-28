@@ -64,6 +64,7 @@ class DraggableItemList<T> extends PureComponent<
     offset: 0,
     items: [],
     rowHeight: DraggableItemList.DEFAULT_ROW_HEIGHT,
+    isDeselectOnClick: true,
     isDoubleClickSelect: true,
     isDropDisabled: false,
     isDragDisabled: false,

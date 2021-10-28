@@ -36,6 +36,11 @@ export interface FileExplorerPanelState {
   showCreateFolder: boolean;
 }
 
+function isMouseEvent<T>(e: React.SyntheticEvent<T>): e is React.MouseEvent<T> {
+  const mouseEvent = e as React.MouseEvent<T>;
+  return mouseEvent && typeof mouseEvent.button === 'number';
+}
+
 /**
  * Panel for showing a FileExplorer in a Dashboard.
  */
@@ -49,6 +54,20 @@ export class FileExplorerPanel extends React.Component<
 
   static handleError(error: Error): void {
     log.error(error);
+  }
+
+  /**
+   * Return true if the event should open a file and focus it, otherwise false
+   * @param event The event to check
+   */
+  static isFocusEvent(event: React.SyntheticEvent): boolean {
+    if (isMouseEvent(event)) {
+      // If it's not a double click, then it's a preview event
+      return event.detail >= 2;
+    }
+
+    // Keyboard event should always open with focus
+    return true;
   }
 
   constructor(props: FileExplorerPanelProps) {
@@ -128,12 +147,13 @@ export class FileExplorerPanel extends React.Component<
     });
   }
 
-  handleFileSelect(file: FileStorageItem): void {
+  handleFileSelect(file: FileStorageItem, event: React.SyntheticEvent): void {
     log.debug('fileSelect', file);
     if (file.type === 'directory') {
       return;
     }
 
+    const shouldFocus = FileExplorerPanel.isFocusEvent(event);
     const fileMetadata = { id: file.filename, itemName: file.filename };
     const { glEventHub } = this.props;
     const { session, language } = this.state;
@@ -146,7 +166,8 @@ export class FileExplorerPanel extends React.Component<
       session,
       language,
       notebookSettings,
-      fileMetadata
+      fileMetadata,
+      shouldFocus
     );
   }
 

@@ -30,6 +30,7 @@ const log = Log.module('ConsolePlugin');
 
 type NotebookPanelComponent = PanelComponent & {
   notebook: ScriptEditor;
+  focus: () => void;
 };
 
 function isNotebookPanel(
@@ -150,7 +151,11 @@ export const ConsolePlugin = ({
     [openFileMap, previewFileMap, renamePanel]
   );
 
-  const activateFilePanel = useCallback(
+  /**
+   * Show the panel for the given file metadata.
+   * If the panel is not already open, then it just logs an error and does nothing.
+   */
+  const showFilePanel = useCallback(
     fileMetadata => {
       const panelId = getPanelIdForFileMetadata(fileMetadata, false);
       if (panelId == null) {
@@ -264,14 +269,21 @@ export const ConsolePlugin = ({
     [previewFileMap]
   );
 
-  const fileIsActive = useCallback(
-    fileMetadata => {
-      const panelId = getPanelIdForFileMetadata(fileMetadata, false);
-      return (
-        panelId != null && LayoutUtils.isActiveTab(layout.root, { id: panelId })
-      );
+  /**
+   * Attempts to focus the panel with the provided panelId
+   */
+  const focusPanelById = useCallback(
+    panelId => {
+      if (!panelId) {
+        return;
+      }
+
+      const panel = panelManager.getOpenedPanelById(panelId);
+      if (panel && isNotebookPanel(panel)) {
+        panel.focus();
+      }
     },
-    [getPanelIdForFileMetadata, layout.root]
+    [panelManager]
   );
 
   const makeConfig = useCallback(
@@ -291,6 +303,7 @@ export const ConsolePlugin = ({
       return {
         type: 'react-component',
         component: NotebookPanel.COMPONENT,
+        isFocusOnShow: false,
         props: {
           localDashboardId: id,
           metadata: { id: panelId },
@@ -314,9 +327,10 @@ export const ConsolePlugin = ({
       fileMetadata = { id: null, itemName: getNotebookFileName(settings) }
     ) => {
       const panelId = getPanelIdForFileMetadata(fileMetadata);
-      if (fileIsOpen(fileMetadata)) {
-        log.debug('File is already open, focus tab');
-        LayoutUtils.activateTab(layout.root, { id: panelId });
+      if (fileIsOpen(fileMetadata) && panelId) {
+        log.debug('File is already open, focus panel');
+        showFilePanel(fileMetadata);
+        focusPanelById(panelId);
         return;
       }
       const stack = LayoutUtils.getStackForComponentTypes(layout.root, [
@@ -334,44 +348,40 @@ export const ConsolePlugin = ({
     },
     [
       fileIsOpen,
+      focusPanelById,
       getNotebookFileName,
       getPanelIdForFileMetadata,
       layout.root,
       makeConfig,
       openFileMap,
+      showFilePanel,
     ]
   );
 
   const selectNotebook = useCallback(
-    (session, sessionLanguage, settings, fileMetadata) => {
-      log.debug('selectNotebook', fileMetadata);
-      let previewTabId = null;
-      let isPreview = true;
+    (session, sessionLanguage, settings, fileMetadata, shouldFocus = false) => {
+      log.debug('selectNotebook', fileMetadata, shouldFocus);
       const isFileOpen = fileIsOpen(fileMetadata);
       const isFileOpenAsPreview = fileIsOpenAsPreview(fileMetadata);
 
-      if (!isFileOpen && !isFileOpenAsPreview) {
-        log.debug('selectNotebook, file not open');
-        if (previewFileMap.size > 0) {
-          log.debug('selectNotebook, file not open, previewFileMap not empty');
-          // Existing preview tab id to reuse
-          [previewTabId] = Array.from(previewFileMap.values());
+      // If the file is already open, just show and focus it if necessary
+      if (isFileOpen) {
+        showFilePanel(fileMetadata);
+        if (shouldFocus) {
+          const panelId = getPanelIdForFileMetadata(fileMetadata);
+          focusPanelById(panelId);
         }
-      } else {
-        // File already open in background
-        if (!fileIsActive(fileMetadata)) {
-          activateFilePanel(fileMetadata);
-          return;
-        }
-        // File already open in foreground, not in preview mode
-        if (!isFileOpenAsPreview) {
-          activateFilePanel(fileMetadata);
-          return;
-        }
-        // File already open in foreground in preview mode
-        [previewTabId] = Array.from(previewFileMap.values());
-        isPreview = false;
+        return;
       }
+
+      // If the file is already open as a preview and we're not focusing it, just show it
+      // If we're focusing it, that means we need to replace the panel anyway with a non-preview panel, so just fall into the logic below
+      if (isFileOpenAsPreview && !shouldFocus) {
+        showFilePanel(fileMetadata);
+        return;
+      }
+
+      const [previewTabId] = Array.from(previewFileMap.values());
       let panelId = null;
       let stack = null;
       if (previewTabId != null) {
@@ -393,20 +403,19 @@ export const ConsolePlugin = ({
         fileMetadata,
         session,
         sessionLanguage,
-        isPreview,
+        isPreview: !shouldFocus,
       });
       LayoutUtils.openComponentInStack(stack, config);
-      // openComponentInStack attempts to maintain the focus
-      // Focus open tab if it's editable
-      if (!isPreview) {
-        LayoutUtils.activateTab(layout.root, { id: panelId });
+      if (shouldFocus) {
+        // Focus the tab we just opened if we're supposed to
+        focusPanelById(panelId);
       }
     },
     [
-      activateFilePanel,
-      fileIsActive,
+      showFilePanel,
       fileIsOpen,
       fileIsOpenAsPreview,
+      focusPanelById,
       getPanelIdForFileMetadata,
       layout.root,
       makeConfig,
