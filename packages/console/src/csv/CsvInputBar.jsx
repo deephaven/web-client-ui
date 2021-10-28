@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import JSZip from 'jszip';
-import { Checkbox } from '@deephaven/components';
+import { Button, Checkbox } from '@deephaven/components';
 import Log from '@deephaven/log';
 import { DbNameValidator } from '@deephaven/utils';
 import CsvOverlay from './CsvOverlay';
@@ -256,67 +256,57 @@ class CsvInputBar extends Component {
         {!showProgress && (
           <form
             onSubmit={this.handleUpload}
-            className="csv-input-bar-container"
+            className="csv-input-bar-container form-inline"
           >
-            <div className="csv-input-form form-inline">
-              <div className="form-group">
-                <label className="mr-sm-2 mb-1" htmlFor="tableNameInput">
-                  Table name
-                </label>
-                <input
-                  ref={this.inputRef}
-                  id="tableNameInput"
-                  type="text"
-                  className={classNames('form-control mb-2 mr-sm-2', {
-                    'is-invalid': isNameInvalid,
-                  })}
-                  value={tableName}
-                  onChange={this.handleTableName}
-                />
-              </div>
-              <div className="form-group">
-                <label className="mr-sm-2 mb-1" htmlFor="formatSelect">
-                  File format
-                </label>
-                <select
-                  id="formatSelect"
-                  className="custom-select mb-2 mr-sm-2"
-                  value={type}
-                  onChange={this.handleQueryTypeChange}
-                >
-                  {TYPE_OPTIONS}
-                </select>
-              </div>
-              <Checkbox
-                className="firstRowHeaders"
-                checked={isFirstRowHeaders}
-                onChange={this.toggleFirstRowHeaders}
+            <div className="form-group">
+              <label htmlFor="tableNameInput">Table name</label>
+              <input
+                ref={this.inputRef}
+                id="tableNameInput"
+                type="text"
+                className={classNames('form-control', {
+                  'is-invalid': isNameInvalid,
+                })}
+                value={tableName}
+                onChange={this.handleTableName}
+              />
+            </div>
+            <div className="form-group">
+              <label htmlFor="formatSelect">File format</label>
+              <select
+                id="formatSelect"
+                className="custom-select"
+                value={type}
+                onChange={this.handleQueryTypeChange}
               >
-                First row is column headers
-              </Checkbox>
-              <div className="csv-input-buttons form-group">
-                <button
-                  type="submit"
-                  className="btn btn-primary"
-                  disabled={!(file || paste) || !tableName}
-                >
-                  Upload
-                </button>
-                <button
-                  type="button"
-                  className="btn btn-outline-primary"
-                  onClick={this.handleCancel}
-                >
-                  Cancel
-                </button>
-              </div>
+                {TYPE_OPTIONS}
+              </select>
+            </div>
+            <Checkbox
+              className="firstRowHeaders"
+              checked={isFirstRowHeaders}
+              onChange={this.toggleFirstRowHeaders}
+            >
+              First row is column headers
+            </Checkbox>
+            <div className="csv-input-buttons form-group">
+              <Button kind="secondary" onClick={this.handleCancel}>
+                Cancel
+              </Button>
+              <Button
+                kind="primary"
+                type="submit"
+                disabled={!(file || paste) || !tableName}
+              >
+                Upload
+              </Button>
             </div>
           </form>
         )}
         {showProgress && (
           <div className="csv-progress-container">
             <label>Uploading Table</label>
-            <div className="progress" style={{ marginBottom: '1rem' }}>
+            <div className="progress">
               <div
                 className="progress-bar bg-primary"
                 style={{ width: `${progressValue}%` }}
