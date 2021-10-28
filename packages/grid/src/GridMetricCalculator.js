@@ -703,11 +703,7 @@ class GridMetricCalculator {
     return rowHeights;
   }
 
-  getFloatingColumnWidths(
-    state,
-    firstColumn = this.getFirstColumn(state),
-    treePaddingX = this.calculateTreePaddingX(state)
-  ) {
+  getFloatingColumnWidths(state, firstColumn = this.getFirstColumn(state)) {
     const { model } = state;
     const {
       columnCount,
