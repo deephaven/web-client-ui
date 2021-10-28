@@ -10,6 +10,7 @@ import Dialog from './Dialog';
 import DropdownMenus from './DropdownMenus';
 import Editors from './Editors';
 import Grids from './Grids';
+import Icons from './Icons';
 import Inputs from './Inputs';
 import ItemListInputs from './ItemListInputs';
 import Modals from './Modals';
@@ -56,6 +57,8 @@ const StyleGuide = () => (
     <Navigations />
 
     <Tooltips />
+
+    <Icons />
 
     <Editors />
 

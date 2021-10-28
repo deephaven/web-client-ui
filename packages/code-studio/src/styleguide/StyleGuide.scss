@@ -76,3 +76,64 @@ h5.sub-title {
   width: 325px;
   border: 1px solid $input-border-color;
 }
+
+.icons {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, 62px);
+  grid-auto-rows: min-content;
+  gap: 8px;
+  flex-grow: 1;
+
+  .flash {
+    position: fixed;
+    top: $spacer;
+    right: $spacer;
+    opacity: 0;
+    padding: $spacer;
+    border-radius: $border-radius;
+    color: $foreground;
+    background-color: $content-bg;
+    transition: opacity 0.2s;
+    box-shadow: 0 0 4px $black;
+    pointer-events: none;
+  }
+
+  .flash.in {
+    opacity: 1;
+  }
+
+  .no-result {
+    width: 200px;
+  }
+
+  .card {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-color: $content-bg;
+    border-color: transparent;
+    &:focus {
+      border-color: $primary;
+    }
+  }
+
+  .icon {
+    font-size: 36px;
+  }
+
+  .card label {
+    max-width: 100%;
+    font-size: 0.8rem;
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    cursor: pointer;
+  }
+
+  /* lol vsPulse gets class fa-pulse, that makes it spins */
+  .fa-pulse {
+    animation: none;
+  }
+}
