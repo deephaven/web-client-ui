@@ -59,7 +59,7 @@ lm.utils.copy(lm.items.Component.prototype, {
 
   _$show: function () {
     this.container.show();
-    if (this.container._config.isFocusOnShow ?? true) {
+    if (this.container._config.isFocusOnShow) {
       // focus the shown container element on show
       // preventScroll isn't supported in safari, but also doesn't matter for illumon when 100% window
       this.container._contentElement[0].focus({ preventScroll: true });

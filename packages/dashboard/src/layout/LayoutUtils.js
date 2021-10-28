@@ -55,8 +55,11 @@ class LayoutUtils {
         parent.removeChild(child, true);
         parent.addChild({ type });
 
-        // TODO: This is changing the fous to the body for some reason. Why???
+        // The addChild may cause the element that has focus to be removed from the DOM, which changes focus to the body
+        // Try and maintain the focus as best we can. The unfocused element may still send a blur/focus event so that needs to be handled correctly.
+        const maintainFocusElement = document.activeElement;
         parent.contentItems[0].addChild(child);
+        maintainFocusElement?.focus();
       }
 
       return this.addStack(parent.contentItems[0], columnPreferred);
