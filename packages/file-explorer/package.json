@@ -36,7 +36,6 @@
     "build-storybook": "build-storybook"
   },
   "dependencies": {
-    "@deephaven/components": "^0.6.0",
     "@deephaven/icons": "^0.6.0",
     "@deephaven/storage": "^0.6.0",
     "@deephaven/utils": "^0.6.0",
@@ -49,11 +48,13 @@
     "webdav": "^4.6.1"
   },
   "peerDependencies": {
+    "@deephaven/components": "^0.3.1",
     "@deephaven/log": "^0.3.1",
     "react": "^16.0.0"
   },
   "devDependencies": {
     "@babel/cli": "^7.14.8",
+    "@deephaven/components": "^0.6.0",
     "@deephaven/log": "^0.6.0",
     "@deephaven/tsconfig": "^0.6.0",
     "@storybook/addon-actions": "^6.2.3",

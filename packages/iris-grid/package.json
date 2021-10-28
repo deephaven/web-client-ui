@@ -34,7 +34,6 @@
     "start": "cross-env NODE_ENV=development npm run watch"
   },
   "dependencies": {
-    "@deephaven/components": "^0.6.0",
     "@deephaven/grid": "^0.6.0",
     "@deephaven/icons": "^0.6.0",
     "@deephaven/jsapi-shim": "^0.6.0",
@@ -55,11 +54,13 @@
     "web-streams-polyfill": "^2.1.0"
   },
   "peerDependencies": {
+    "@deephaven/components": "^0.3.1",
     "@deephaven/log": "^0.3.1",
     "react": "^16.x"
   },
   "devDependencies": {
     "@babel/cli": "^7.14.8",
+    "@deephaven/components": "^0.6.0",
     "@deephaven/log": "^0.6.0",
     "@deephaven/mocks": "^0.6.0",
     "@deephaven/tsconfig": "^0.6.0",

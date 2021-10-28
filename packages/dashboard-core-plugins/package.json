@@ -35,7 +35,6 @@
   },
   "dependencies": {
     "@deephaven/chart": "^0.6.0",
-    "@deephaven/components": "^0.6.0",
     "@deephaven/console": "^0.6.0",
     "@deephaven/dashboard": "^0.6.0",
     "@deephaven/file-explorer": "^0.6.0",
@@ -58,6 +57,7 @@
     "shortid": "^2.2.15"
   },
   "peerDependencies": {
+    "@deephaven/components": "^0.4.0",
     "@deephaven/log": "^0.4.0",
     "@deephaven/redux": "^0.4.0",
     "react": "^16.0.0",
@@ -66,6 +66,7 @@
   },
   "devDependencies": {
     "@babel/cli": "^7.14.8",
+    "@deephaven/components": "^0.6.0",
     "@deephaven/log": "^0.6.0",
     "@deephaven/mocks": "^0.6.0",
     "@deephaven/redux": "^0.6.0",
