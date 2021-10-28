@@ -50,16 +50,12 @@ export const Dashboard = ({
       setLayout(undefined);
       return;
     }
-    const newLayout = new GoldenLayout(
-      {
-        ...LayoutUtils.makeDefaultLayout(),
-        ...layoutSettings,
+    const config: GoldenLayout.Config = { ...LayoutUtils.makeDefaultLayout() };
+    Object.assign(config.settings, layoutSettings);
+    // Load our content later after plugins have registered
+    config.content = [];
 
-        // Load our content later after plugins have registered
-        content: [],
-      },
-      layoutElement.current
-    );
+    const newLayout = new GoldenLayout(config, layoutElement.current);
 
     const onInit = () => {
       newLayout.off('initialised', onInit);
