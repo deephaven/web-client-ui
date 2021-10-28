@@ -1,14 +1,15 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { dh } from '@deephaven/icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Button } from '@deephaven/components';
 import PropTypes from 'prop-types';
 
 async function copyText(text) {
-  return navigator.clipboard
-    .writeText(text)
-    .then(() => text)
-    .catch(err => err.message);
+  try {
+    return await navigator.clipboard.writeText(text);
+  } catch (error) {
+    throw new Error(`unable to copy: ${error.message}`);
+  }
 }
 
 const DH_PREFIX = 'dh';
@@ -23,13 +24,11 @@ const getPrefixedName = (name, prefix) =>
 
 const Flash = ({ message, message: { text } }) => {
   const [show, setShow] = useState(false);
-  const timeout = useRef(null);
 
   useEffect(() => {
     if (!text) return;
     setShow(true);
-    clearTimeout(timeout.current);
-    timeout.current = setTimeout(() => {
+    const timeout = setTimeout(() => {
       setShow(false);
     }, 2000);
     // eslint-disable-next-line consistent-return
@@ -38,17 +37,12 @@ const Flash = ({ message, message: { text } }) => {
     };
   }, [message, text]);
 
-  return (
-    <p className={show ? 'flash in' : 'flash out'}>
-      <FontAwesomeIcon icon={dh.vsOutput} /> Copied text:{' '}
-      <strong>{text}</strong>
-    </p>
-  );
+  return <p className={show ? 'flash in' : 'flash out'}>{text}</p>;
 };
 
 Flash.propTypes = {
   message: PropTypes.shape({
-    text: PropTypes.string,
+    text: PropTypes.node,
   }).isRequired,
 };
 
@@ -77,7 +71,22 @@ const Icons = () => {
           className="card"
           onClick={() => {
             // new object, so it always flashes even on same string
-            copyText(prefixedName).then(text => setFlashText({ text }));
+            copyText(prefixedName)
+              .then(() => {
+                setFlashText({
+                  text: (
+                    <span>
+                      <FontAwesomeIcon icon={dh.vsOutput} /> Copied text:{' '}
+                      <strong>{prefixedName}</strong>
+                    </span>
+                  ),
+                });
+              })
+              .catch(err => {
+                setFlashText({
+                  text: <span className="text-danger">{err.message}</span>,
+                });
+              });
           }}
         >
           <FontAwesomeIcon icon={icon} className="icon" />
