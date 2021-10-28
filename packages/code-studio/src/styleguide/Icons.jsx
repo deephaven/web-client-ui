@@ -8,7 +8,7 @@ async function copyText(text) {
   try {
     return await navigator.clipboard.writeText(text);
   } catch (error) {
-    throw new Error(`unable to copy: ${error.message}`);
+    throw new Error(`Unable to copy: ${error.message}`);
   }
 }
 
