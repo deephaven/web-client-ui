@@ -1024,6 +1024,18 @@ export class IrisGrid extends Component {
     }
   }
 
+  getAlwaysFetchColumns = memoize((alwaysFetchColumns, model) => {
+    const columnSet = new Set(alwaysFetchColumns);
+
+    model.columns.forEach(({ name }) => {
+      if (model.isColumnFrozen(model.getColumnIndexByName(name))) {
+        columnSet.add(name);
+      }
+    });
+
+    return [...columnSet];
+  });
+
   updateFormatter(updatedFormats, forceUpdate = true) {
     const { customColumnFormatMap } = this.state;
     const update = {
@@ -2796,7 +2808,10 @@ export class IrisGrid extends Component {
                 movedColumns={movedColumns}
                 customColumns={customColumns}
                 hiddenColumns={hiddenColumns}
-                alwaysFetchColumns={alwaysFetchColumns}
+                alwaysFetchColumns={this.getAlwaysFetchColumns(
+                  alwaysFetchColumns,
+                  model
+                )}
                 rollupConfig={this.getModelRollupConfig(
                   model.originalColumns,
                   rollupConfig,
