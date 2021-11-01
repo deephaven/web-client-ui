@@ -61,6 +61,7 @@ export class IrisGridPanel extends PureComponent {
     this.handleDataSelected = this.handleDataSelected.bind(this);
     this.handleError = this.handleError.bind(this);
     this.handleGridStateChange = this.handleGridStateChange.bind(this);
+    this.handlePluginStateChange = this.handlePluginStateChange.bind(this);
     this.handlePartitionAppend = this.handlePartitionAppend.bind(this);
     this.handleCreateChart = this.handleCreateChart.bind(this);
     this.handleResize = this.handleResize.bind(this);
@@ -81,6 +82,10 @@ export class IrisGridPanel extends PureComponent {
 
     const { panelState, metadata } = props;
     const queryName = metadata.query;
+
+    this.irisGridState = null;
+    this.gridState = null;
+    this.pluginState = null;
 
     this.state = {
       error: null,
@@ -187,7 +192,7 @@ export class IrisGridPanel extends PureComponent {
     return [...columnSet];
   });
 
-  getPluginContent = memoize((Plugin, table, user, workspace) => {
+  getPluginContent = memoize((Plugin, table, user, workspace, pluginState) => {
     if (Plugin == null || table == null) {
       return null;
     }
@@ -203,6 +208,8 @@ export class IrisGridPanel extends PureComponent {
           panel={this}
           workspace={workspace}
           components={PLUGIN_COMPONENTS}
+          onStateChange={this.handlePluginStateChange}
+          pluginState={pluginState}
         />
       </div>
     );
@@ -268,10 +275,11 @@ export class IrisGridPanel extends PureComponent {
   );
 
   getCachedPanelState = memoize(
-    (irisGridPanelState, irisGridState, gridState) => ({
+    (irisGridPanelState, irisGridState, gridState, pluginState) => ({
       irisGridPanelState,
       irisGridState,
       gridState,
+      pluginState,
     })
   );
 
@@ -385,14 +393,27 @@ export class IrisGridPanel extends PureComponent {
   }
 
   handleGridStateChange(irisGridState, gridState) {
+    this.irisGridState = irisGridState;
+    this.gridState = gridState;
+
     // Grid sends it's first state change after it's finished loading
     this.setState({ isLoaded: true, isLoading: false });
 
-    this.savePanelState(irisGridState, gridState);
+    this.savePanelState();
 
     const { glEventHub, onStateChange } = this.props;
     glEventHub.emit(IrisGridEvent.STATE_CHANGED, this);
     onStateChange(irisGridState, gridState);
+  }
+
+  handlePluginStateChange(pluginState) {
+    const { irisGridState, gridState } = this;
+    this.pluginState = pluginState;
+    // Do not save if there is null state
+    // The save will happen when the grid loads
+    if (irisGridState !== null && gridState !== null) {
+      this.savePanelState();
+    }
   }
 
   handleColumnsChanged(event) {
@@ -705,7 +726,8 @@ export class IrisGridPanel extends PureComponent {
     }
   }
 
-  savePanelState(irisGridState, gridState) {
+  savePanelState() {
+    const { irisGridState, gridState, pluginState } = this;
     const { onPanelStateUpdate } = this.props;
     const {
       model,
@@ -764,7 +786,8 @@ export class IrisGridPanel extends PureComponent {
         advancedSettings,
         pendingDataMap
       ),
-      this.getDehydratedGridState(model, movedColumns, movedRows)
+      this.getDehydratedGridState(model, movedColumns, movedRows),
+      pluginState
     );
 
     if (panelState !== oldPanelState) {
@@ -836,8 +859,10 @@ export class IrisGridPanel extends PureComponent {
     const errorMessage = error ? `Unable to open table. ${error}` : null;
     const { table: name, querySerial } = metadata;
     const description = model?.description ?? null;
+    const pluginState = panelState?.pluginState ?? null;
     const childrenContent =
-      children ?? this.getPluginContent(Plugin, model?.table, user, workspace);
+      children ??
+      this.getPluginContent(Plugin, model?.table, user, workspace, pluginState);
 
     return (
       <WidgetPanel
@@ -940,6 +965,7 @@ IrisGridPanel.propTypes = {
       pendingDataMap: PropTypes.arrayOf(PropTypes.array),
     }),
     irisGridPanelState: PropTypes.shape({}),
+    pluginState: PropTypes.shape({}),
   }),
   makeModel: PropTypes.func.isRequired,
   inputFilters: PropTypes.arrayOf(UIPropTypes.InputFilter).isRequired,
