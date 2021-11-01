@@ -432,6 +432,9 @@ class TableUtils {
     if (TableUtils.isDateType(type)) {
       return this.makeQuickDateFilter(column, text, timeZone);
     }
+    if (TableUtils.isCharType(type)) {
+      return this.makeQuickCharFilter(column, text);
+    }
     return this.makeQuickTextFilter(column, text);
   }
 
@@ -525,25 +528,7 @@ class TableUtils {
 
     filter = column.filter();
 
-    switch (operation) {
-      case '=':
-        return filter.eq(value);
-      case '<':
-        return filter.lessThan(value);
-      case '<=':
-      case '=<':
-        return filter.lessThanOrEqualTo(value);
-      case '>':
-        return filter.greaterThan(value);
-      case '>=':
-      case '=>':
-        return filter.greaterThanOrEqualTo(value);
-      case '!=':
-      case '!':
-        return filter.notEq(value);
-      default:
-        return null;
-    }
+    return TableUtils.makeRangeFilterWithOperation(filter, operation, value);
   }
 
   static makeQuickTextFilter(column, text) {
@@ -837,6 +822,83 @@ class TableUtils {
 
       default:
         throw new Error(`Invalid operator: ${operation}`);
+    }
+  }
+
+  static makeQuickCharFilter(column, text) {
+    if (text == null) {
+      return null;
+    }
+
+    const cleanText = `${text}`.trim();
+    const regex = /^(!=|=|!)?(null|.)?(.*)/;
+    const result = regex.exec(cleanText);
+
+    let operation = null;
+    let value = null;
+    let overflow = null;
+    if (result.length > 3) {
+      [, operation, value, overflow] = result;
+    }
+    if (overflow != null && overflow.trim().length > 0) {
+      // Some bad characters after the number, bail out!
+      return null;
+    }
+
+    if (value == null || value.length === 0) {
+      return null;
+    }
+
+    if (operation == null) {
+      operation = '=';
+    }
+
+    const filter = column.filter();
+    if (value.toLowerCase() === 'null') {
+      // Null is a special case!
+      switch (operation) {
+        case '=':
+          return filter.isNull();
+        case '!=':
+        case '!':
+          return filter.isNull().not();
+        default:
+          return null;
+      }
+    }
+
+    return TableUtils.makeRangeFilterWithOperation(
+      filter,
+      operation,
+      dh.FilterValue.ofString(value)
+    );
+  }
+
+  /**
+   * @param {dh.FilterValue} filter The column filter to apply the range operation to
+   * @param {string} operation The range operation to run
+   * @param {dh.FilterValue} value The value to use for the operation
+   * @returns {dh.FilterCondition} The condition with the specified operation
+   */
+  static makeRangeFilterWithOperation(filter, operation, value) {
+    switch (operation) {
+      case '=':
+        return filter.eq(value);
+      case '<':
+        return filter.lessThan(value);
+      case '<=':
+      case '=<':
+        return filter.lessThanOrEqualTo(value);
+      case '>':
+        return filter.greaterThan(value);
+      case '>=':
+      case '=>':
+        return filter.greaterThanOrEqualTo(value);
+      case '!=':
+      case '!':
+        return filter.notEq(value);
+      default:
+        return null;
     }
   }
 
