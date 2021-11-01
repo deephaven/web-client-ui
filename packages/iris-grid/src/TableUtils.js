@@ -70,6 +70,8 @@ class TableUtils {
       return [FilterType.isTrue, FilterType.isFalse, FilterType.isNull];
     }
     if (
+      // TODO: Double check this actually works...
+      TableUtils.isCharType(columnType) ||
       TableUtils.isNumberType(columnType) ||
       TableUtils.isDateType(columnType)
     ) {
@@ -319,6 +321,16 @@ class TableUtils {
     switch (columnType) {
       case 'boolean':
       case 'java.lang.Boolean':
+        return true;
+      default:
+        return false;
+    }
+  }
+
+  static isCharType(columnType) {
+    switch (columnType) {
+      case 'char':
+      case 'java.lang.Character':
         return true;
       default:
         return false;
@@ -1193,7 +1205,8 @@ class TableUtils {
       let value = null;
 
       if (TableUtils.isTextType(column.type)) {
-        value = dh.FilterValue.ofString('');
+        // Use 'a' so that it can work for String or Character types
+        value = dh.FilterValue.ofString('a');
       } else if (TableUtils.isBooleanType(column.type)) {
         value = dh.FilterValue.ofBoolean(true);
       } else if (TableUtils.isDateType(column.type)) {
@@ -1214,7 +1227,11 @@ class TableUtils {
       if (value == null) {
         isNullSelected = true;
       } else if (TableUtils.isTextType(column.type)) {
-        values.push(dh.FilterValue.ofString(value));
+        values.push(
+          dh.FilterValue.ofString(
+            typeof value === 'number' ? String.fromCharCode(value) : value
+          )
+        );
       } else if (TableUtils.isBooleanType(column.type)) {
         values.push(dh.FilterValue.ofBoolean(!!value));
       } else {

@@ -189,7 +189,10 @@ class AdvancedFilterCreatorSelectValue extends PureComponent {
     let error = null;
     if (searchText.length > 0) {
       let filter = null;
-      if (TableUtils.isTextType(column.type)) {
+      if (TableUtils.isCharType(column.type)) {
+        // Just exact match for char
+        filter = TableUtils.makeQuickFilter(column, searchText);
+      } else if (TableUtils.isTextType(column.type)) {
         // case insensitive & contains search text
         filter = TableUtils.makeQuickFilter(column, `~${searchText}`, timeZone);
       } else {

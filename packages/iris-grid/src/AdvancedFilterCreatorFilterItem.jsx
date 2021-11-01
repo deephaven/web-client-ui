@@ -91,13 +91,16 @@ class AdvancedFilterCreatorFilterItem extends PureComponent {
   }
 
   static getLabelForFilter(columnType, filterType) {
-    if (TableUtils.isTextType(columnType)) {
-      return AdvancedFilterCreatorFilterItem.getLabelForTextFilter(filterType);
-    }
-    if (TableUtils.isNumberType(columnType)) {
+    if (
+      TableUtils.isNumberType(columnType) ||
+      TableUtils.isCharType(columnType)
+    ) {
       return AdvancedFilterCreatorFilterItem.getLabelForNumberFilter(
         filterType
       );
+    }
+    if (TableUtils.isTextType(columnType)) {
+      return AdvancedFilterCreatorFilterItem.getLabelForTextFilter(filterType);
     }
     if (TableUtils.isDateType(columnType)) {
       return AdvancedFilterCreatorFilterItem.getLabelForDateFilter(filterType);
