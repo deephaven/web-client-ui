@@ -816,8 +816,9 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
     });
 
     // IDS-6092 Less/greater than filters don't make sense for Infinite/NaN
-    // TODO: Make sure this works with Chars!
-    if (isFinite) {
+    // TODO (DH-11799): These char filters should work in Bard, with the merge for DH-11040: https://gitlab.eng.illumon.com/illumon/iris/merge_requests/5801
+    // They do not work in Powell though, so disable them.
+    if (isFinite && !TableUtils.isCharType(column.type)) {
       actions.push({
         title: 'greater than',
         description: `Show only rows where ${column.name} is greater than ${valueText}`,

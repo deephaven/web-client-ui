@@ -69,9 +69,13 @@ class TableUtils {
     if (TableUtils.isBooleanType(columnType)) {
       return [FilterType.isTrue, FilterType.isFalse, FilterType.isNull];
     }
+    // TODO (DH-11799): In Bard (and beyond), we should use the same types as numbers
+    // It should just work after the merge for DH-11040: https://gitlab.eng.illumon.com/illumon/iris/merge_requests/5801
+    // In Powell though, just support equals/not equals
+    if (TableUtils.isCharType(columnType)) {
+      return [FilterType.eq, FilterType.notEq];
+    }
     if (
-      // TODO: Double check this actually works...
-      TableUtils.isCharType(columnType) ||
       TableUtils.isNumberType(columnType) ||
       TableUtils.isDateType(columnType)
     ) {
