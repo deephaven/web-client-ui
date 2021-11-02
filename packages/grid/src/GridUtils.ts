@@ -1,11 +1,19 @@
 import GridRange from './GridRange';
+import type { GridMetrics } from './GridMetricCalculator';
 
 class GridUtils {
   // use same constant as chrome source for windows
   // https://github.com/chromium/chromium/blob/973af9d461b6b5dc60208c8d3d66adc27e53da78/ui/events/blink/web_input_event_builders_win.cc#L285
   static PIXELS_PER_LINE = 100 / 3;
 
-  static getGridPointFromXY(x, y, metrics) {
+  /**
+   *
+   * @param x
+   * @param y
+   * @param metrics
+   * @returns
+   */
+  static getGridPointFromXY(x: number, y: number, metrics: GridMetrics) {
     const column = GridUtils.getColumnAtX(x, metrics);
     const row = GridUtils.getRowAtY(y, metrics);
 
