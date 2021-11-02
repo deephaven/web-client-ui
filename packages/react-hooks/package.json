@@ -28,23 +28,20 @@
     "watch:types": "npm run types -- -w --incremental --preserveWatchOutput",
     "clean": "rimraf ./dist tsconfig.tsbuildinfo",
     "prestart": "npm run build-dev",
-    "start": "cross-env NODE_ENV=development npm run watch",
-    "predeploy": "npm install && npm run build",
-    "deploy": "gh-pages -d example/build"
+    "start": "cross-env NODE_ENV=development npm run watch"
   },
   "peerDependencies": {
     "react": "^16.0.0"
   },
   "devDependencies": {
     "@babel/cli": "^7.14.8",
-    "@babel/core": "7.12.3",
     "@deephaven/tsconfig": "^0.6.0",
     "@types/react": "^16.14.8",
     "cross-env": "^7.0.2",
     "npm-run-all": "^4.1.5",
     "react": "^16.14.0",
     "rimraf": "^3.0.2",
-    "typescript": "^4.3.2"
+    "typescript": "~4.3.2"
   },
   "files": [
     "dist"
