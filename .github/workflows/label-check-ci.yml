@@ -25,3 +25,4 @@ jobs:
           # Make sure we have at least one of the lerna-changelog labels
           # https://github.com/lerna/lerna-changelog#usage
           one_of: bug,enhancement,internal,documentation
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
