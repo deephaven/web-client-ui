@@ -100,7 +100,17 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
       return dh.FilterCondition.invoke('isNaN', columnFilter);
     }
 
-    return columnFilter.eq(dh.FilterValue.ofNumber(value));
+    const filterValue = IrisGridContextMenuHandler.getFilterValueForNumberOrChar(
+      column.type,
+      value
+    );
+    return columnFilter.eq(filterValue);
+  }
+
+  static getFilterValueForNumberOrChar(columnType, value) {
+    return TableUtils.isCharType(columnType)
+      ? dh.FilterValue.ofString(String.fromCharCode(value))
+      : dh.FilterValue.ofNumber(value);
   }
 
   constructor(irisGrid) {
@@ -355,15 +365,24 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
           };
 
           if (value != null) {
-            if (TableUtils.isNumberType(column.type)) {
+            // Chars get treated like numbers in terms of which filters are available
+            if (
+              TableUtils.isNumberType(column.type) ||
+              TableUtils.isCharType(column.type)
+            ) {
+              // We want to show the full unformatted value if it's a number, so user knows which value they are matching
+              // If it's a Char we just show the char
+              const numberValueText = TableUtils.isCharType(column.type)
+                ? String.fromCharCode(value)
+                : `${value}`;
               filterMenu.actions = this.numberFilterActions(
                 column,
-                `${value}`,
+                numberValueText,
                 value
               );
               andFilterMenu.actions = this.numberFilterActions(
                 column,
-                `${value}`,
+                numberValueText,
                 value,
                 quickFilters.get(modelColumn),
                 true
@@ -726,7 +745,10 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
     quickFilter = {},
     additive = false
   ) {
-    const filterValue = dh.FilterValue.ofNumber(value);
+    const filterValue = IrisGridContextMenuHandler.getFilterValueForNumberOrChar(
+      column.type,
+      value
+    );
     const { filter, text: filterText } = quickFilter;
     const actions = [];
     const isFinite =
@@ -794,7 +816,9 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
     });
 
     // IDS-6092 Less/greater than filters don't make sense for Infinite/NaN
-    if (isFinite) {
+    // TODO (DH-11799): These char filters should work in Bard, with the merge for DH-11040: https://gitlab.eng.illumon.com/illumon/iris/merge_requests/5801
+    // They do not work in Powell though, so disable them.
+    if (isFinite && !TableUtils.isCharType(column.type)) {
       actions.push({
         title: 'greater than',
         description: `Show only rows where ${column.name} is greater than ${valueText}`,

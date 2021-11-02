@@ -69,6 +69,12 @@ class TableUtils {
     if (TableUtils.isBooleanType(columnType)) {
       return [FilterType.isTrue, FilterType.isFalse, FilterType.isNull];
     }
+    // TODO (DH-11799): In Bard (and beyond), we should use the same types as numbers
+    // It should just work after the merge for DH-11040: https://gitlab.eng.illumon.com/illumon/iris/merge_requests/5801
+    // In Powell though, just support equals/not equals
+    if (TableUtils.isCharType(columnType)) {
+      return [FilterType.eq, FilterType.notEq];
+    }
     if (
       TableUtils.isNumberType(columnType) ||
       TableUtils.isDateType(columnType)
@@ -325,6 +331,16 @@ class TableUtils {
     }
   }
 
+  static isCharType(columnType) {
+    switch (columnType) {
+      case 'char':
+      case 'java.lang.Character':
+        return true;
+      default:
+        return false;
+    }
+  }
+
   static isTextType(columnType) {
     switch (columnType) {
       case 'char':
@@ -420,6 +436,9 @@ class TableUtils {
     if (TableUtils.isDateType(type)) {
       return this.makeQuickDateFilter(column, text, timeZone);
     }
+    if (TableUtils.isCharType(type)) {
+      return this.makeQuickCharFilter(column, text);
+    }
     return this.makeQuickTextFilter(column, text);
   }
 
@@ -513,25 +532,7 @@ class TableUtils {
 
     filter = column.filter();
 
-    switch (operation) {
-      case '=':
-        return filter.eq(value);
-      case '<':
-        return filter.lessThan(value);
-      case '<=':
-      case '=<':
-        return filter.lessThanOrEqualTo(value);
-      case '>':
-        return filter.greaterThan(value);
-      case '>=':
-      case '=>':
-        return filter.greaterThanOrEqualTo(value);
-      case '!=':
-      case '!':
-        return filter.notEq(value);
-      default:
-        return null;
-    }
+    return TableUtils.makeRangeFilterWithOperation(filter, operation, value);
   }
 
   static makeQuickTextFilter(column, text) {
@@ -825,6 +826,83 @@ class TableUtils {
 
       default:
         throw new Error(`Invalid operator: ${operation}`);
+    }
+  }
+
+  static makeQuickCharFilter(column, text) {
+    if (text == null) {
+      return null;
+    }
+
+    const cleanText = `${text}`.trim();
+    const regex = /^(!=|=|!)?(null|.)?(.*)/;
+    const result = regex.exec(cleanText);
+
+    let operation = null;
+    let value = null;
+    let overflow = null;
+    if (result.length > 3) {
+      [, operation, value, overflow] = result;
+    }
+    if (overflow != null && overflow.trim().length > 0) {
+      // Some bad characters after the number, bail out!
+      return null;
+    }
+
+    if (value == null || value.length === 0) {
+      return null;
+    }
+
+    if (operation == null) {
+      operation = '=';
+    }
+
+    const filter = column.filter();
+    if (value.toLowerCase() === 'null') {
+      // Null is a special case!
+      switch (operation) {
+        case '=':
+          return filter.isNull();
+        case '!=':
+        case '!':
+          return filter.isNull().not();
+        default:
+          return null;
+      }
+    }
+
+    return TableUtils.makeRangeFilterWithOperation(
+      filter,
+      operation,
+      dh.FilterValue.ofString(value)
+    );
+  }
+
+  /**
+   * @param {dh.FilterValue} filter The column filter to apply the range operation to
+   * @param {string} operation The range operation to run
+   * @param {dh.FilterValue} value The value to use for the operation
+   * @returns {dh.FilterCondition} The condition with the specified operation
+   */
+  static makeRangeFilterWithOperation(filter, operation, value) {
+    switch (operation) {
+      case '=':
+        return filter.eq(value);
+      case '<':
+        return filter.lessThan(value);
+      case '<=':
+      case '=<':
+        return filter.lessThanOrEqualTo(value);
+      case '>':
+        return filter.greaterThan(value);
+      case '>=':
+      case '=>':
+        return filter.greaterThanOrEqualTo(value);
+      case '!=':
+      case '!':
+        return filter.notEq(value);
+      default:
+        return null;
     }
   }
 
@@ -1193,7 +1271,8 @@ class TableUtils {
       let value = null;
 
       if (TableUtils.isTextType(column.type)) {
-        value = dh.FilterValue.ofString('');
+        // Use 'a' so that it can work for String or Character types
+        value = dh.FilterValue.ofString('a');
       } else if (TableUtils.isBooleanType(column.type)) {
         value = dh.FilterValue.ofBoolean(true);
       } else if (TableUtils.isDateType(column.type)) {
@@ -1214,7 +1293,11 @@ class TableUtils {
       if (value == null) {
         isNullSelected = true;
       } else if (TableUtils.isTextType(column.type)) {
-        values.push(dh.FilterValue.ofString(value));
+        values.push(
+          dh.FilterValue.ofString(
+            typeof value === 'number' ? String.fromCharCode(value) : value
+          )
+        );
       } else if (TableUtils.isBooleanType(column.type)) {
         values.push(dh.FilterValue.ofBoolean(!!value));
       } else {

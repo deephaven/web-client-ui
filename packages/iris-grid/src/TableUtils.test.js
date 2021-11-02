@@ -1255,6 +1255,47 @@ describe('quick filter tests', () => {
       );
     });
   });
+
+  describe('quick char filters', () => {
+    function testCharFilter(text, expectedFn, ...args) {
+      testFilter('makeQuickCharFilter', text, expectedFn, ...args);
+    }
+
+    it('handles default operation', () => {
+      testCharFilter('c', FilterType.eq, 'c');
+    });
+
+    it('handles empty cases', () => {
+      const column = makeFilterColumn();
+
+      expect(TableUtils.makeQuickCharFilter(column, null)).toBe(null);
+      expect(TableUtils.makeQuickCharFilter(column, undefined)).toBe(null);
+      expect(TableUtils.makeQuickCharFilter(column, '')).toBe(null);
+    });
+
+    it('handles invalid cases', () => {
+      const column = makeFilterColumn();
+
+      expect(TableUtils.makeQuickCharFilter(column, 'j*($%U#@(')).toBe(null);
+      expect(TableUtils.makeQuickCharFilter(column, '<=')).toBe(null);
+      expect(TableUtils.makeQuickCharFilter(column, '<=> c')).toBe(null);
+      expect(TableUtils.makeQuickCharFilter(column, '== c')).toBe(null);
+      expect(TableUtils.makeQuickCharFilter(column, 'c>')).toBe(null);
+    });
+
+    it('handles default operation', () => {
+      testCharFilter('d', FilterType.eq, 'd');
+      testCharFilter('F', FilterType.eq, 'F');
+    });
+
+    it('handles = operation', () => {
+      testCharFilter('=c', FilterType.eq, 'c');
+    });
+
+    it('handles null', () => {
+      testCharFilter('null', FilterType.isNull);
+    });
+  });
 });
 
 describe('makeCancelableTableEventPromise', () => {
