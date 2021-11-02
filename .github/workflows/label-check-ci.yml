@@ -20,7 +20,7 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Check Change Labels
-        uses: agilepathway/label-checker@v1
+        uses: agilepathway/label-checker@v1.0.103
         with:
           # Make sure we have at least one of the lerna-changelog labels
           # https://github.com/lerna/lerna-changelog#usage
