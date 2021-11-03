@@ -64,12 +64,7 @@ class ConsoleHistoryResultErrorMessage extends PureComponent {
     }
   }
 
-  handleMouseUp(event) {
-    // We don't want to expand/collapse the error if user is holding shift or an alt key
-    // They may be trying to adjust their selection
-    if (this.isClicking && !event.shiftKey && !event.metaKey && !event.altKey) {
-      this.handleToggleError();
-    }
+  handleMouseUp() {
     this.mouseX = null;
     this.mouseY = null;
     this.isClicking = false;
