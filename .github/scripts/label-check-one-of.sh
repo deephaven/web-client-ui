@@ -21,3 +21,4 @@ if [ $COUNT_TRUE -eq 1 ] ; then
 fi
 
 >&2 echo "Expected only one of the following labels, instead found ${COUNT_TRUE}:${ALL_LABELS}"
+exit 1
