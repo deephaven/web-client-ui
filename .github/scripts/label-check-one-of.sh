@@ -10,7 +10,7 @@ COUNT_TRUE=0
 ALL_LABELS=""
 
 for label in ${!LABEL_*}; do
-  ALL_LABELS+=" ${label#*_}"
+  ALL_LABELS+=", ${label#*_}"
   if [ "${!label}" == "true" ] ; then
     COUNT_TRUE=$((COUNT_TRUE + 1))
   fi
@@ -20,5 +20,5 @@ if [ $COUNT_TRUE -eq 1 ] ; then
   exit 0
 fi
 
->&2 echo "Expected only one of the following labels, instead found ${COUNT_TRUE}:${ALL_LABELS}"
+>&2 echo "Expected only one of the following labels, instead found ${COUNT_TRUE}: ${ALL_LABELS:2}"
 exit 1
