@@ -65,10 +65,14 @@ export class MarkdownNotebookPanel extends Component {
   componentWillUnmount() {
     this.pending.cancel();
 
-    const { glEventHub, metadata } = this.props;
+    const { glEventHub, panelState } = this.props;
     const { isPreview } = this.state;
-    if (metadata) {
-      glEventHub.emit(NotebookEvent.UNREGISTER_FILE, metadata, isPreview);
+    if (panelState.fileMetadata) {
+      glEventHub.emit(
+        NotebookEvent.UNREGISTER_FILE,
+        panelState.fileMetadata,
+        isPreview
+      );
     }
   }
 
@@ -130,8 +134,13 @@ export class MarkdownNotebookPanel extends Component {
   }
 
   registerFileMetadata(fileMetadata, isPreview) {
-    const { glEventHub, metadata, id: tabId } = this.props;
-    glEventHub.emit(NotebookEvent.REGISTER_FILE, tabId, metadata, isPreview);
+    const { glEventHub, id: tabId } = this.props;
+    glEventHub.emit(
+      NotebookEvent.REGISTER_FILE,
+      tabId,
+      fileMetadata,
+      isPreview
+    );
   }
 
   setEditorPosition(clickPositionY) {
