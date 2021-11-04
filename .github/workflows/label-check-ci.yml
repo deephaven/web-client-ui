@@ -1,0 +1,28 @@
+name: Label Check CI
+
+on:
+  pull_request:
+    # The default pull_request trigger only happens on opened, synchronize, and reopened types.
+    # We are adding labeled and unlabeled here, so that changes to labels will cause this action to
+    # be re-run.
+    #
+    # Note: we need to rerun this action on new commits (synchronize events) even though it doesn't
+    # effect the labels because the merge requirements need checks to pass against the most recent
+    # commit.
+    types: [opened, synchronize, reopened, labeled, unlabeled]
+    branches: [main]
+
+jobs:
+  doc-labels:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Check Documentation Labels
+        env:
+          LABEL_bug: ${{ contains(github.event.pull_request.labels.*.name, 'bug') }}
+          LABEL_enhancement: ${{ contains(github.event.pull_request.labels.*.name, 'enhancement') }}
+          LABEL_internal: ${{ contains(github.event.pull_request.labels.*.name, 'internal') }}
+          LABEL_documentation: ${{ contains(github.event.pull_request.labels.*.name, 'documentation') }}
+        run: .github/scripts/label-check-one-of.sh
