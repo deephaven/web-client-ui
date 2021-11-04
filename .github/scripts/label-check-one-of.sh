@@ -16,9 +16,7 @@ for label in ${!LABEL_*}; do
   fi
 done
 
-if [ $COUNT_TRUE -eq 1 ] ; then
-  exit 0
+if [ $COUNT_TRUE -ne 1 ] ; then
+  >&2 echo "Expected only one of the following labels, instead found ${COUNT_TRUE}: ${ALL_LABELS:2}"
+  exit 1
 fi
-
->&2 echo "Expected only one of the following labels, instead found ${COUNT_TRUE}: ${ALL_LABELS:2}"
-exit 1
