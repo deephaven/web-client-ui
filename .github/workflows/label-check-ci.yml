@@ -19,10 +19,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Check Change Labels
-        uses: agilepathway/label-checker@v1.0.103
-        with:
-          # Make sure we have at least one of the lerna-changelog labels
-          # https://github.com/lerna/lerna-changelog#usage
-          one_of: bug,enhancement,internal,documentation
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Check Documentation Labels
+        env:
+          LABEL_bug: ${{ contains(github.event.pull_request.labels.*.name, 'bug') }}
+          LABEL_enhancement: ${{ contains(github.event.pull_request.labels.*.name, 'enhancement') }}
+          LABEL_internal: ${{ contains(github.event.pull_request.labels.*.name, 'internal') }}
+          LABEL_documentation: ${{ contains(github.event.pull_request.labels.*.name, 'documentation') }}
+        run: .github/scripts/label-check-one-of.sh
