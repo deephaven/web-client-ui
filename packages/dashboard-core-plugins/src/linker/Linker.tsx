@@ -18,6 +18,7 @@ import {
   getActiveTool,
   getTimeZone,
   setActiveTool as setActiveToolAction,
+  RootState,
 } from '@deephaven/redux';
 import {
   getIsolatedLinkerPanelIdForDashboard,
@@ -55,7 +56,7 @@ interface OwnProps {
   localDashboardId: string;
 }
 
-const mapState = (state: LinkerState, ownProps: OwnProps): StateProps => ({
+const mapState = (state: RootState, ownProps: OwnProps): StateProps => ({
   activeTool: getActiveTool(state),
   isolatedLinkerPanelId: getIsolatedLinkerPanelIdForDashboard(
     state,
@@ -65,24 +66,7 @@ const mapState = (state: LinkerState, ownProps: OwnProps): StateProps => ({
   timeZone: getTimeZone(state),
 });
 
-type DispatchProps = {
-  setActiveTool: (activeTool: string) => void;
-  setDashboardLinks: (dashboardId: string, links: Link[]) => void;
-  addDashboardLinks: (dashboardId: string, links: Link[]) => void;
-  deleteDashboardLinks: (dashboardId: string, linkIds: string[]) => void;
-  setDashboardIsolatedLinkerPanelId: (
-    dashboardId: string,
-    panelId: string | undefined
-  ) => void;
-  setDashboardColumnSelectionValidator: (
-    dashboardId: string,
-    columnValidator:
-      | ((panel: PanelComponent, column?: LinkColumn) => boolean)
-      | undefined
-  ) => void;
-};
-
-const connector = connect<StateProps, DispatchProps, OwnProps>(mapState, {
+const connector = connect(mapState, {
   setActiveTool: setActiveToolAction,
   setDashboardLinks: setDashboardLinksAction,
   addDashboardLinks: addDashboardLinksAction,

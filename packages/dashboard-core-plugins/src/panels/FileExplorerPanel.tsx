@@ -1,5 +1,5 @@
 import Log from '@deephaven/log';
-import { getFileStorage } from '@deephaven/redux';
+import { getFileStorage, RootState } from '@deephaven/redux';
 import FileExplorer, {
   FileExplorerToolbar,
   FileStorage,
@@ -244,7 +244,7 @@ export class FileExplorerPanel extends React.Component<
 }
 
 const mapStateToProps = (
-  state: unknown,
+  state: RootState,
   ownProps: { localDashboardId: string }
 ) => {
   const fileStorage = getFileStorage(state);

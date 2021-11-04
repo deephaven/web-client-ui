@@ -36,8 +36,11 @@
   },
   "devDependencies": {
     "@babel/cli": "^7.14.8",
+    "@deephaven/console": "^0.6.0",
+    "@deephaven/file-explorer": "^0.6.0",
     "@deephaven/log": "^0.6.0",
     "@deephaven/tsconfig": "^0.6.0",
+    "@types/deep-equal": "^1.0.1",
     "cross-env": "^7.0.2",
     "npm-run-all": "^4.1.5",
     "redux": "^4.0.5",
