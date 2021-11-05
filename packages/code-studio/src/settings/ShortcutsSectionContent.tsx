@@ -13,7 +13,7 @@ type ShortcutSectionContentProps = ReturnType<typeof mapStateToProps> &
   typeof mapDispatchToProps;
 
 function ShortcutSectionContent({
-  shortcutOverrides,
+  shortcutOverrides = {},
   settings,
   saveSettings,
 }: ShortcutSectionContentProps): JSX.Element {
