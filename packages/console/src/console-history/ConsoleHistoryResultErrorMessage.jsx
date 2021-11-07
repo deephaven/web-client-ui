@@ -64,7 +64,12 @@ class ConsoleHistoryResultErrorMessage extends PureComponent {
     }
   }
 
-  handleMouseUp() {
+  handleMouseUp(event) {
+    // We don't want to expand/collapse the error if user is holding shift or an alt key
+    // They may be trying to adjust their selection
+    if (this.isClicking && !event.shiftKey && !event.metaKey && !event.altKey) {
+      this.handleToggleError();
+    }
     this.mouseX = null;
     this.mouseY = null;
     this.isClicking = false;
@@ -79,12 +84,8 @@ class ConsoleHistoryResultErrorMessage extends PureComponent {
     const { message: messageProp } = this.props;
     const lineBreakIndex = messageProp.indexOf('\n');
     const isMultiline = lineBreakIndex > -1;
-    let message = '';
-    if (isMultiline && !isExpanded) {
-      message = messageProp.slice(0, lineBreakIndex);
-    } else {
-      message = messageProp;
-    }
+    const topLineOfMessage = messageProp.slice(0, lineBreakIndex);
+    const remainderOfMessage = messageProp.slice(lineBreakIndex);
 
     return (
       <div
@@ -107,16 +108,18 @@ class ConsoleHistoryResultErrorMessage extends PureComponent {
             </button>
           </div>
         )}
-        <div
-          role="button"
-          tabIndex="0"
-          className="error-content"
-          onKeyPress={this.handleKeyPress}
-          onMouseDown={this.handleMouseDown}
-          onMouseMove={this.handleMouseMove}
-          onMouseUp={this.handleMouseUp}
-        >
-          {message}
+        <div className="error-content">
+          <button
+            className="console-error-text-btn"
+            type="button"
+            onKeyPress={this.handleKeyPress}
+            onMouseDown={this.handleMouseDown}
+            onMouseMove={this.handleMouseMove}
+            onMouseUp={this.handleMouseUp}
+          >
+            {topLineOfMessage}
+          </button>
+          {isExpanded ? remainderOfMessage : ''}
         </div>
       </div>
     );

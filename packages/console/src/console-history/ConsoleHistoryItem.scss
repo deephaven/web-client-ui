@@ -2,6 +2,7 @@
 
 $item-padding-top: 3px;
 $error-gutter-width: 15px;
+$hover-item-fade: 0.85;
 
 .console-history-item-command,
 .console-history-item-result {
@@ -43,7 +44,7 @@ $error-gutter-width: 15px;
         text-align: left;
         padding-left: 0;
         padding-right: 0;
-        color: rgba($danger, 0.5);
+        color: rgba($danger, $hover-item-fade);
         transition: $btn-transition;
       }
     }
@@ -64,6 +65,20 @@ $error-gutter-width: 15px;
 
     .error-content:focus {
       outline: none;
+    }
+
+    .console-error-text-btn {
+      border: 0;
+      background: transparent;
+      color: rgba($danger, $hover-item-fade);
+
+      &:hover {
+        color: $danger;
+      }
+    }
+
+    &.expanded .console-error-text-btn {
+      color: $danger;
     }
   }
 }
