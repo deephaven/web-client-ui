@@ -70,6 +70,7 @@ $hover-item-fade: 0.85;
     .console-error-text-btn {
       border: 0;
       background: transparent;
+      padding: 0;
       color: rgba($danger, $hover-item-fade);
 
       &:hover {
