@@ -854,11 +854,11 @@ describe('truncate to width', () => {
   }
 
   it('handles the empty string', () => {
-    expectTruncate('', null);
+    expectTruncate('', '');
   });
 
   it('handles zero width', () => {
-    expectTruncate('TEST', null, 0);
+    expectTruncate('TEST', '', 0);
   });
 
   it('returns str if not truncated', () => {
@@ -872,6 +872,12 @@ describe('truncate to width', () => {
   it('handles long strings', () => {
     expectTruncate(MockGridData.LOREM_IPSUM, 'Lorem ips…');
     expectTruncate(MockGridData.JSON, '{"command…');
+  });
+
+  it('handles narrow width', () => {
+    expectTruncate(MockGridData.LOREM_IPSUM, 'L…', 20);
+    expectTruncate(MockGridData.LOREM_IPSUM, '…', 10);
+    expectTruncate(MockGridData.LOREM_IPSUM, '…', 5);
   });
 });
 
