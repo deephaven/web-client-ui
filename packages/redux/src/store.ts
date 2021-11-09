@@ -60,7 +60,6 @@ export interface RootState {
   activeTool: string;
 }
 
-// TODO #70: Separate all reducers into their respective modules, register from there
 Object.entries(reducers).map(([name, reducer]) =>
   reducerRegistry.register(name, reducer)
 );
