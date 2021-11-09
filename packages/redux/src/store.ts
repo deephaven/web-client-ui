@@ -36,7 +36,7 @@ export interface WorkspaceSettings {
   showTSeparator: boolean;
   disableMoveConfirmation: boolean;
   showSystemBadge: boolean;
-  shortcutOverrides: {
+  shortcutOverrides?: {
     windows?: { [id: string]: ValidKeyState };
     mac?: { [id: string]: ValidKeyState };
   };
