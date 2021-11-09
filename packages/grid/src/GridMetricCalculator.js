@@ -703,7 +703,11 @@ class GridMetricCalculator {
     return rowHeights;
   }
 
-  getFloatingColumnWidths(state, firstColumn = this.getFirstColumn(state)) {
+  getFloatingColumnWidths(
+    state,
+    firstColumn = this.getFirstColumn(state),
+    treePaddingX = this.calculateTreePaddingX(state)
+  ) {
     const { model } = state;
     const {
       columnCount,
@@ -713,7 +717,10 @@ class GridMetricCalculator {
 
     const columnWidths = new Map();
     for (let i = 0; i < floatingLeftColumnCount && i < columnCount; i += 1) {
-      columnWidths.set(i, this.getVisibleColumnWidth(i, state, firstColumn, 0));
+      columnWidths.set(
+        i,
+        this.getVisibleColumnWidth(i, state, firstColumn, treePaddingX)
+      );
     }
 
     for (
@@ -724,7 +731,7 @@ class GridMetricCalculator {
       const column = columnCount - i - 1;
       columnWidths.set(
         column,
-        this.getVisibleColumnWidth(column, state, firstColumn, 0)
+        this.getVisibleColumnWidth(column, state, firstColumn, treePaddingX)
       );
     }
 
@@ -1190,7 +1197,9 @@ class GridMetricCalculator {
   calculateTreePaddingX(state) {
     const { top, height, model, theme } = state;
     const { rowHeight, treeDepthIndent } = theme;
-
+    if (!model.hasExpandableRows) {
+      return 0;
+    }
     let treePadding = 0;
 
     const rowsPerPage = height / rowHeight;

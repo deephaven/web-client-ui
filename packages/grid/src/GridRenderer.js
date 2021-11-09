@@ -1147,6 +1147,8 @@ class GridRenderer {
     } = theme;
     const hiddenSeparatorHeight = columnHeaderHeight * 0.5;
     const hiddenY = columnHeaderHeight * 0.5 - hiddenSeparatorHeight * 0.5;
+    const containsFrozenColumns = floatingLeftColumnCount > 0;
+    let floatingLeftColumnsWidth = 0;
 
     context.save();
 
@@ -1166,21 +1168,23 @@ class GridRenderer {
       this.drawColumnHeader(context, state, column, x, columnWidth);
     }
 
-    const frozenColumnsWidth =
-      visibleColumnXs.get(floatingLeftColumnCount - 1) +
-      visibleColumnWidths.get(floatingLeftColumnCount - 1);
+    if (containsFrozenColumns) {
+      floatingLeftColumnsWidth =
+        visibleColumnXs.get(floatingLeftColumnCount - 1) +
+        visibleColumnWidths.get(floatingLeftColumnCount - 1);
 
-    // Frozen columns' background
-    context.fillStyle = headerBackgroundColor;
-    context.fillRect(0, 0, frozenColumnsWidth, columnHeaderHeight);
+      // Frozen columns' background
+      context.fillStyle = headerBackgroundColor;
+      context.fillRect(0, 0, floatingLeftColumnsWidth, columnHeaderHeight);
 
-    // Frozen columns.
-    context.fillStyle = headerColor;
-    for (let i = 0; i < floatingColumns.length; i += 1) {
-      const column = floatingColumns[i];
-      const columnWidth = visibleColumnWidths.get(column);
-      const x = visibleColumnXs.get(column) + gridX;
-      this.drawColumnHeader(context, state, column, x, columnWidth);
+      // Frozen columns.
+      context.fillStyle = headerColor;
+      for (let i = 0; i < floatingColumns.length; i += 1) {
+        const column = floatingColumns[i];
+        const columnWidth = visibleColumnWidths.get(column);
+        const x = visibleColumnXs.get(column) + gridX;
+        this.drawColumnHeader(context, state, column, x, columnWidth);
+      }
     }
 
     // Draw the separators, visible columns then floating columns.
@@ -1196,7 +1200,7 @@ class GridRenderer {
         const columnX = visibleColumnXs.get(column);
         const columnWidth = visibleColumnWidths.get(column);
 
-        if (!(columnX < frozenColumnsWidth - columnWidth)) {
+        if (!(columnX < floatingLeftColumnsWidth - columnWidth)) {
           if (columnWidth > 0) {
             const x = gridX + columnX + columnWidth + 0.5;
             context.moveTo(x, 0);
@@ -1258,8 +1262,7 @@ class GridRenderer {
           mouseX,
           mouseY,
           metrics,
-          theme,
-          frozenColumnsWidth
+          theme
         );
       }
 
@@ -1319,9 +1322,6 @@ class GridRenderer {
     const { metrics, model, theme } = state;
     const { modelColumns } = metrics;
     const modelColumn = modelColumns.get(column);
-    if (modelColumn === undefined) {
-      return;
-    }
     let text = model.textForColumnHeader(modelColumn);
 
     const { headerHorizontalPadding } = theme;
@@ -1809,13 +1809,13 @@ class GridRenderer {
       context.fillStyle = theme.selectionColor;
       context.fill();
 
-      /*
-      draw an "inner stroke" that's clipped to just inside of the rects
-      to act as a casing to the outer stroke. 3px width because 1px is outside
-      the rect (but clipped), 1px is "on" the rect (technically this pixel is
-      a half pixel clip as well due to rects offset, but we are immediately painting
-      over it), and then the 1px inside (which is the desired pixel).
-      */
+      /**
+       * draw an "inner stroke" that's clipped to just inside of the rects
+       * to act as a casing to the outer stroke. 3px width because 1px is outside
+       * the rect (but clipped), 1px is "on" the rect (technically this pixel is
+       * a half pixel clip as well due to rects offset, but we are immediately painting
+       * over it), and then the 1px inside (which is the desired pixel).
+       */
       context.save();
       context.clip();
       context.strokeStyle = theme.selectionOutlineCasingColor;

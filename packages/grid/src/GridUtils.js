@@ -237,10 +237,9 @@ class GridUtils {
    * @param {Number} y Mouse y coordinate
    * @param {GridMetrics} metrics The GridMetricCalculator metrics
    * @param {GridTheme} theme The grid theme with potantial user overrides
-   * @param {Number} floatingColumnsWidth The total width of the frozen columns
    * @returns {Number|null} Column index or null
    */
-  static getColumnSeparatorIndex(x, y, metrics, theme, floatingColumnsWidth) {
+  static getColumnSeparatorIndex(x, y, metrics, theme) {
     const {
       rowHeaderWidth,
       columnHeaderHeight,
@@ -248,8 +247,12 @@ class GridUtils {
       visibleColumns,
       visibleColumnXs,
       visibleColumnWidths,
+      floatingLeftColumnCount,
     } = metrics;
     const { allowColumnResize, headerSeparatorHandleSize } = theme;
+    const floatingLeftColumnsWidth =
+      visibleColumnXs.get(floatingLeftColumnCount - 1) +
+      visibleColumnWidths.get(floatingLeftColumnCount - 1);
 
     if (
       columnHeaderHeight < y ||
@@ -296,7 +299,7 @@ class GridUtils {
       const isColumnHidden = columnWidth === 0;
 
       // If this column is under the floating columns "layer". Terminate early.
-      if (columnX < floatingColumnsWidth - columnWidth) {
+      if (columnX < floatingLeftColumnsWidth - columnWidth) {
         return null;
       }
 
