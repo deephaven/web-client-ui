@@ -97,6 +97,9 @@ class GridRenderer {
       return '';
     }
 
+    // Estimate the possible low and high boundaries for truncating the text
+    // Use the width of the space divided by the estimated width of each character,
+    // and take half that as the low (minus 5 just to be extra safe), and double that as the high.
     const lo = Math.min(
       Math.max(0, Math.floor(width / fontWidth / 2) - 5),
       str.length
