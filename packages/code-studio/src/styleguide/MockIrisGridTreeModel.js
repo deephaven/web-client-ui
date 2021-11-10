@@ -156,7 +156,9 @@ class MockIrisGridTreeModel extends IrisGridModel {
     return null;
   }
 
-  setViewport() {}
+  setViewport() {
+    this.dispatchEvent(new CustomEvent(IrisGridModel.EVENT.UPDATED));
+  }
 
   async setValueForCell(x, y, value) {
     if (this.editedData[x] == null) {

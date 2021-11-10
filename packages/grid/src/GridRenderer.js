@@ -56,7 +56,7 @@ class GridRenderer {
     let lo = start;
     let hi = Math.min(str.length - 1, end);
     let result = str;
-    while (hi > lo) {
+    while (hi >= lo) {
       const mid = Math.ceil((hi + lo) / 2);
       const truncatedStr = GridRenderer.truncate(str, mid);
       if (context.measureText(truncatedStr).width <= width) {
@@ -65,6 +65,10 @@ class GridRenderer {
           break;
         }
         lo = mid;
+      } else if (mid === 0) {
+        // We already truncated to zero chars and it still doesn't fit, no need to keep looking
+        result = truncatedStr;
+        break;
       } else {
         hi = mid - 1;
       }
@@ -81,6 +85,7 @@ class GridRenderer {
    * @param {string} str The string to calculate max length for
    * @param {number} width The width to truncate within
    * @param {number} fontWidth The estimated width of each character
+   * @returns {string} The truncated string that fits within the width provided
    */
   static truncateToWidth(
     context,
@@ -89,10 +94,16 @@ class GridRenderer {
     fontWidth = GridRenderer.DEFAULT_FONT_WIDTH
   ) {
     if (width <= 0 || str.length <= 0) {
-      return null;
+      return '';
     }
 
-    const lo = Math.min(Math.floor(width / fontWidth / 2), str.length);
+    // Estimate the possible low and high boundaries for truncating the text
+    // Use the width of the space divided by the estimated width of each character,
+    // and take half that as the low (minus 5 just to be extra safe), and double that as the high.
+    const lo = Math.min(
+      Math.max(0, Math.floor(width / fontWidth / 2) - 5),
+      str.length
+    );
     const hi = Math.min(Math.ceil((width / fontWidth) * 2), str.length);
 
     return GridRenderer.binaryTruncateToWidth(context, str, width, lo, hi);
@@ -938,7 +949,7 @@ class GridRenderer {
         textWidth - cellHorizontalPadding * 2,
         fontWidth
       );
-      if (truncatedText != null) {
+      if (truncatedText) {
         context.fillText(truncatedText, textX, textY);
       }
     }
