@@ -2,7 +2,7 @@
 // Create a partial plot with only the kinds of charts we need
 // https://github.com/plotly/plotly.js/#modules
 
-const Plotly = require('plotly.js/lib/core');
+import Plotly from 'plotly.js/lib/core.js';
 
 // Load in the trace types we need/support
 Plotly.register([
@@ -13,4 +13,4 @@ Plotly.register([
   require('plotly.js/lib/scattergl'),
 ]);
 
-module.exports = Plotly;
+export default Plotly;

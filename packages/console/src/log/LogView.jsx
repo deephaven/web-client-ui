@@ -3,7 +3,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { DropdownMenu, Tooltip } from '@deephaven/components';
 import { vsGear, dhTrashUndo } from '@deephaven/icons';
 import { PropTypes as APIPropTypes } from '@deephaven/jsapi-shim';
-import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
+import * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js';
 import ConsoleUtils from '../common/ConsoleUtils';
 import LogLevel from './LogLevel';
 import './LogView.scss';

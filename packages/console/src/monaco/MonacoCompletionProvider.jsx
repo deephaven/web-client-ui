@@ -3,7 +3,7 @@
  */
 import { PureComponent } from 'react';
 import PropTypes from 'prop-types';
-import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
+import * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js';
 import Log from '@deephaven/log';
 
 const log = Log.module('MonacoCompletionProvider');

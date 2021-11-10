@@ -1,6 +1,6 @@
 import React from 'react';
 import { mount } from 'enzyme';
-import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
+import * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js';
 import dh from '@deephaven/jsapi-shim';
 import MonacoCompletionProvider from './MonacoCompletionProvider';
 

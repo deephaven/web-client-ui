@@ -1,7 +1,7 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
-import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
+import * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js';
 import Log from '@deephaven/log';
 import { PromiseUtils } from '@deephaven/utils';
 import { MonacoCompletionProvider, MonacoTheme, MonacoUtils } from './monaco';

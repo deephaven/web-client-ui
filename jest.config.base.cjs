@@ -12,7 +12,7 @@ module.exports = {
       __dirname,
       './__mocks__/fileMock.js'
     ),
-    '^monaco-editor/esm/vs/editor/editor.api$': path.join(
+    '^monaco-editor/esm/vs/editor/editor.api.js$': path.join(
       __dirname,
       './__mocks__/monaco-editor.js'
     ),

@@ -1,6 +1,6 @@
 import { PureComponent } from 'react';
 import PropTypes from 'prop-types';
-import { WritableStream as ponyfillWritableStream } from 'web-streams-polyfill/ponyfill';
+import { WritableStream as ponyfillWritableStream } from 'web-streams-polyfill/dist/ponyfill.js';
 import dh from '@deephaven/jsapi-shim';
 import Log from '@deephaven/log';
 import { PromiseUtils } from '@deephaven/utils';
