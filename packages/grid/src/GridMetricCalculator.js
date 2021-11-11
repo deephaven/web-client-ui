@@ -62,7 +62,6 @@ class GridMetricCalculator {
       x -= sizeMap.get(totalCount - i - 1);
       coordinates.set(totalCount - i - 1, x);
     }
-
     return coordinates;
   }
 
@@ -1198,7 +1197,9 @@ class GridMetricCalculator {
   calculateTreePaddingX(state) {
     const { top, height, model, theme } = state;
     const { rowHeight, treeDepthIndent } = theme;
-
+    if (!model.hasExpandableRows) {
+      return 0;
+    }
     let treePadding = 0;
 
     const rowsPerPage = height / rowHeight;

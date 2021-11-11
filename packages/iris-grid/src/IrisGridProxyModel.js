@@ -203,6 +203,10 @@ class IrisGridProxyModel extends IrisGridModel {
     return this.model.isColumnMovable(...args);
   }
 
+  isColumnFrozen(...args) {
+    return this.model.isColumnFrozen(...args);
+  }
+
   get hasExpandableRows() {
     return this.model.hasExpandableRows;
   }

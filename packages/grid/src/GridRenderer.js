@@ -282,6 +282,7 @@ class GridRenderer {
       visibleColumnXs,
       visibleColumnWidths,
       width,
+      height,
     } = metrics;
 
     if (floatingColumns.length === 0) {
@@ -311,6 +312,12 @@ class GridRenderer {
       this.drawFloatingMouseRowHover(context, state);
     }
 
+    // Clip floated column grid lines.
+    context.save();
+    context.beginPath();
+    context.rect(0, 0, floatingLeftWidth, height);
+    context.clip();
+
     this.drawGridLinesForItems(
       context,
       state,
@@ -319,6 +326,8 @@ class GridRenderer {
       theme.floatingGridColumnColor,
       theme.floatingGridRowColor
     );
+
+    context.restore();
 
     this.drawCellBackgroundsForItems(
       context,
@@ -336,7 +345,6 @@ class GridRenderer {
         state,
         {
           left: 0,
-          right: floatingLeftColumnCount,
           maxX:
             visibleColumnXs.get(floatingLeftColumnCount - 1) +
             visibleColumnWidths.get(floatingLeftColumnCount - 1),
@@ -773,7 +781,8 @@ class GridRenderer {
 
   drawGridLinesForRows(context, state, rows) {
     const { metrics } = state;
-    const { visibleRowYs, maxX } = metrics;
+    const { visibleRowYs, maxX: metricsMaxX } = metrics;
+    const maxX = metricsMaxX;
 
     // Draw row lines
     for (let i = 0; i < rows.length; i += 1) {
@@ -1124,11 +1133,13 @@ class GridRenderer {
     } = state;
     const {
       columnHeaderHeight,
+      floatingColumns,
       gridX,
       width,
       visibleColumns,
       visibleColumnWidths,
       visibleColumnXs,
+      floatingLeftColumnCount,
     } = metrics;
     if (columnHeaderHeight <= 0) {
       return;
@@ -1144,6 +1155,8 @@ class GridRenderer {
     } = theme;
     const hiddenSeparatorHeight = columnHeaderHeight * 0.5;
     const hiddenY = columnHeaderHeight * 0.5 - hiddenSeparatorHeight * 0.5;
+    const containsFrozenColumns = floatingLeftColumnCount > 0;
+    let floatingLeftColumnsWidth = 0;
 
     context.save();
 
@@ -1153,14 +1166,65 @@ class GridRenderer {
     context.fillStyle = headerBackgroundColor;
     context.fillRect(0, 0, width, columnHeaderHeight);
 
-    // Draw the separators
+    context.fillStyle = headerColor;
+
+    // Visible columns.
+    for (let i = 0; i < visibleColumns.length; i += 1) {
+      const column = visibleColumns[i];
+      const columnWidth = visibleColumnWidths.get(column);
+      const x = visibleColumnXs.get(column) + gridX;
+      this.drawColumnHeader(context, state, column, x, columnWidth);
+    }
+
+    if (containsFrozenColumns) {
+      floatingLeftColumnsWidth =
+        visibleColumnXs.get(floatingLeftColumnCount - 1) +
+        visibleColumnWidths.get(floatingLeftColumnCount - 1);
+
+      // Frozen columns' background
+      context.fillStyle = headerBackgroundColor;
+      context.fillRect(gridX, 0, floatingLeftColumnsWidth, columnHeaderHeight);
+
+      // Frozen columns.
+      context.fillStyle = headerColor;
+      for (let i = 0; i < floatingColumns.length; i += 1) {
+        const column = floatingColumns[i];
+        const columnWidth = visibleColumnWidths.get(column);
+        const x = visibleColumnXs.get(column) + gridX;
+        this.drawColumnHeader(context, state, column, x, columnWidth);
+      }
+    }
+
+    // Draw the separators, visible columns then floating columns.
     if (headerSeparatorColor) {
       context.strokeStyle = headerSeparatorColor;
       context.beginPath();
       const hiddenColumns = [];
+
+      // Draw visible column separators.
       let isPreviousColumnHidden = false;
       for (let i = 0; i < visibleColumns.length; i += 1) {
         const column = visibleColumns[i];
+        const columnX = visibleColumnXs.get(column);
+        const columnWidth = visibleColumnWidths.get(column);
+
+        if (!(columnX < floatingLeftColumnsWidth - columnWidth)) {
+          if (columnWidth > 0) {
+            const x = gridX + columnX + columnWidth + 0.5;
+            context.moveTo(x, 0);
+            context.lineTo(x, columnHeaderHeight - 0.5);
+            isPreviousColumnHidden = false;
+          } else if (!isPreviousColumnHidden) {
+            isPreviousColumnHidden = true;
+            hiddenColumns.push(column);
+          }
+        }
+      }
+
+      // Draw floating column separators.
+      isPreviousColumnHidden = false;
+      for (let i = 0; i < floatingColumns.length; i += 1) {
+        const column = floatingColumns[i];
         const columnX = visibleColumnXs.get(column);
         const columnWidth = visibleColumnWidths.get(column);
         if (columnWidth > 0) {
@@ -1256,15 +1320,6 @@ class GridRenderer {
       }
     }
 
-    context.fillStyle = headerColor;
-
-    for (let i = 0; i < visibleColumns.length; i += 1) {
-      const column = visibleColumns[i];
-      const columnWidth = visibleColumnWidths.get(column);
-      const x = visibleColumnXs.get(column) + gridX;
-      this.drawColumnHeader(context, state, column, x, columnWidth);
-    }
-
     context.restore();
   }
 
@@ -1276,9 +1331,6 @@ class GridRenderer {
     const { modelColumns } = metrics;
     const modelColumn = modelColumns.get(column);
     let text = model.textForColumnHeader(modelColumn);
-    if (!text) {
-      return;
-    }
 
     const { headerHorizontalPadding } = theme;
     const { columnHeaderHeight, fontWidths } = metrics;
@@ -1765,13 +1817,13 @@ class GridRenderer {
       context.fillStyle = theme.selectionColor;
       context.fill();
 
-      /* 
-      draw an "inner stroke" that's clipped to just inside of the rects
-      to act as a casing to the outer stroke. 3px width because 1px is outside
-      the rect (but clipped), 1px is "on" the rect (technically this pixel is
-      a half pixel clip as well due to rects offset, but we are immediately painting
-      over it), and then the 1px inside (which is the desired pixel).
-      */
+      /**
+       * draw an "inner stroke" that's clipped to just inside of the rects
+       * to act as a casing to the outer stroke. 3px width because 1px is outside
+       * the rect (but clipped), 1px is "on" the rect (technically this pixel is
+       * a half pixel clip as well due to rects offset, but we are immediately painting
+       * over it), and then the 1px inside (which is the desired pixel).
+       */
       context.save();
       context.clip();
       context.strokeStyle = theme.selectionOutlineCasingColor;
