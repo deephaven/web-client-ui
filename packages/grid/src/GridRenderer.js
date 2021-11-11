@@ -1172,7 +1172,7 @@ class GridRenderer {
 
       // Frozen columns' background
       context.fillStyle = headerBackgroundColor;
-      context.fillRect(0, 0, floatingLeftColumnsWidth, columnHeaderHeight);
+      context.fillRect(gridX, 0, floatingLeftColumnsWidth, columnHeaderHeight);
 
       // Frozen columns.
       context.fillStyle = headerColor;
