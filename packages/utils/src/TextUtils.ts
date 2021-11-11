@@ -6,8 +6,9 @@ class TextUtils {
    * One and Two
    * One, Two, and Three
    * @param items The items to join in a list
+   * @param conjunction Conjunction to use between the last two items
    */
-  static join(items: string[] | null): string {
+  static join(items: string[] | null, conjunction = 'and'): string {
     if (items == null || items.length === 0) {
       return '';
     }
@@ -17,12 +18,12 @@ class TextUtils {
     }
 
     if (items.length === 2) {
-      return `${items[0]} and ${items[1]}`;
+      return `${items[0]} ${conjunction} ${items[1]}`;
     }
 
     const itemText = items.slice(0, items.length - 1).join(', ');
     const lastItem = items[items.length - 1];
-    return `${itemText}, and ${lastItem}`;
+    return `${itemText}, ${conjunction} ${lastItem}`;
   }
 
   /**

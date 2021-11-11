@@ -104,7 +104,7 @@ export interface KeyState {
   shiftKey: boolean;
 }
 
-interface ValidKeyState extends KeyState {
+export interface ValidKeyState extends KeyState {
   keyValue: KEY | null;
 }
 
@@ -384,6 +384,13 @@ export default class Shortcut {
    */
   getDefaultKeyState(): ValidKeyState {
     return this.defaultKeyState;
+  }
+
+  isDefault(): boolean {
+    return Shortcut.doKeyStatesMatch(
+      this.getDefaultKeyState(),
+      this.getKeyState()
+    );
   }
 
   /**

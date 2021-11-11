@@ -1,8 +1,50 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
+import { connect } from 'react-redux';
 import { Shortcut, ShortcutRegistry } from '@deephaven/components';
+import {
+  getSettings,
+  getShortcutOverrides,
+  RootState,
+  saveSettings as saveSettingsAction,
+} from '@deephaven/redux';
 import ShortcutItem from './ShortcutItem';
 
-export default function ShortcutSectionContent(): JSX.Element {
+type ShortcutSectionContentProps = ReturnType<typeof mapStateToProps> &
+  typeof mapDispatchToProps;
+
+function ShortcutSectionContent({
+  shortcutOverrides = {},
+  settings,
+  saveSettings,
+}: ShortcutSectionContentProps): JSX.Element {
+  const saveShortcutOverrides = useCallback(
+    (modifiedShortcuts: Shortcut[]) => {
+      const isMac = Shortcut.isMacPlatform;
+
+      // This ensures mac and windows objects both exist
+      const newOverrides: Required<typeof shortcutOverrides> = {
+        mac: { ...shortcutOverrides.mac },
+        windows: { ...shortcutOverrides.windows },
+      };
+      const platformOverrides = isMac ? newOverrides.mac : newOverrides.windows;
+
+      modifiedShortcuts.forEach(shortcut => {
+        if (shortcut.isDefault()) {
+          // No need to save overrides that are the default value
+          delete platformOverrides[shortcut.id];
+        } else {
+          platformOverrides[shortcut.id] = shortcut.getKeyState();
+        }
+      });
+
+      saveSettings({
+        ...settings,
+        shortcutOverrides: newOverrides,
+      });
+    },
+    [settings, saveSettings, shortcutOverrides]
+  );
+
   let categories = Array.from(
     ShortcutRegistry.shortcutsByCategory.entries()
   ).map(([name, shortcuts]) => ({
@@ -10,6 +52,7 @@ export default function ShortcutSectionContent(): JSX.Element {
     shortcuts,
   }));
 
+  // Move global category to the end
   const globalCategoryIndex = categories.findIndex(
     category => category.name.toUpperCase() === 'GLOBAL'
   );
@@ -27,6 +70,7 @@ export default function ShortcutSectionContent(): JSX.Element {
           key={category.name}
           name={category.name}
           shortcuts={category.shortcuts}
+          saveShortcutOverrides={saveShortcutOverrides}
         />
       ))}
     </>
@@ -36,11 +80,13 @@ export default function ShortcutSectionContent(): JSX.Element {
 type ShortcutCategoryProps = {
   name: string;
   shortcuts: Shortcut[];
+  saveShortcutOverrides(shortcuts: Shortcut[]): void;
 };
 
 function ShortcutCategory({
   name,
   shortcuts: propsShortcuts,
+  saveShortcutOverrides,
 }: ShortcutCategoryProps): JSX.Element {
   function formatCategoryName(categoryName: string): string {
     return categoryName
@@ -49,19 +95,22 @@ function ShortcutCategory({
       .join(' ');
   }
 
-  const [shortcuts, setShortcuts] = useState(propsShortcuts);
-
   // Used to trigger a re-render when a shortcut is changed
   // Since shortcuts are singletons, React doesn't detect changes for a re-render as easily
+  const [shortcuts, setShortcuts] = useState(propsShortcuts);
+
   function handleShortcutChange(shortcut: Shortcut) {
-    shortcuts
-      .filter(
-        s =>
-          s !== shortcut &&
-          !s.isNull() &&
-          s.matchesKeyState(shortcut.getKeyState())
-      )
-      .forEach(conflict => conflict.setToNull());
+    const conflictingShortcuts = shortcuts.filter(
+      s =>
+        s !== shortcut &&
+        !s.isNull() &&
+        s.matchesKeyState(shortcut.getKeyState())
+    );
+
+    // Set conflicting shortcuts to null
+    conflictingShortcuts.forEach(conflict => conflict.setToNull());
+
+    saveShortcutOverrides([shortcut, ...conflictingShortcuts]);
     setShortcuts(s => [...s]);
   }
 
@@ -84,3 +133,15 @@ function ShortcutCategory({
     </div>
   );
 }
+
+const mapStateToProps = (state: RootState) => ({
+  settings: getSettings(state),
+  shortcutOverrides: getShortcutOverrides(state),
+});
+
+const mapDispatchToProps = { saveSettings: saveSettingsAction };
+
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(ShortcutSectionContent);

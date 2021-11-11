@@ -8,7 +8,6 @@ export default class ShortcutRegistry {
   /**
    * Creates a Shortcut and adds it to the registry
    * @param params The constructor params for the {@link Shortcut}
-   * @param category The category this will show up under in the settings menu. If omitted, shortcut will be hidden in settings
    * @returns The created Shortcut
    */
   static createAndAdd(

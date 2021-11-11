@@ -216,6 +216,14 @@ class IrisGridModel extends GridModel {
   }
 
   /**
+   * @param {Number} index The column index to check
+   * @returns {Boolean} Whether the column is one of LayoutHints' frozen columns
+   */
+  isColumnFrozen(index) {
+    return false;
+  }
+
+  /**
    * @returns {boolean} True if this model requires a filter to be set
    */
   get isFilterRequired() {

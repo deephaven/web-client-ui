@@ -7,7 +7,7 @@ import {
   ContextActionUtils,
   LoadingSpinner,
 } from '@deephaven/components';
-import { dhRefresh, vsCopy, vsLock, vsPassFilled } from '@deephaven/icons';
+import { dhFreeze, dhRefresh, vsCopy, vsLock, vsPassFilled } from '@deephaven/icons';
 import { PropTypes as APIPropTypes } from '@deephaven/jsapi-shim';
 import Log from '@deephaven/log';
 import { PromiseUtils } from '@deephaven/utils';
@@ -170,9 +170,7 @@ class ColumnStatistics extends Component {
       ? 'Expanded Rows'
       : 'Number of Rows';
     const formattedRowCount = model.displayString(numRows, 'long');
-    const columnIndex = model.columns.findIndex(
-      col => col.name === column.name
-    );
+    const columnIndex = model.getColumnIndexByName(column.name);
     return (
       <div className="column-statistics">
         <div className="column-statistics-title">
@@ -195,8 +193,11 @@ class ColumnStatistics extends Component {
         )}
         {!model.isColumnMovable(columnIndex) && (
           <div className="column-statistics-status">
-            <FontAwesomeIcon icon={vsLock} className="mr-1" />
-            Not movable
+            <FontAwesomeIcon
+              icon={model.isColumnFrozen(columnIndex) ? dhFreeze : vsLock}
+              className="mr-1"
+            />
+            {model.isColumnFrozen(columnIndex) ? 'Frozen' : 'Not movable'}
           </div>
         )}
         <div className="column-statistics-grid">

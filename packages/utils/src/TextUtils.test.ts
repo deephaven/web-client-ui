@@ -1,8 +1,12 @@
 import TextUtils from './TextUtils';
 
 describe('join string array', () => {
-  function testJoin(items: string[] | null, expectedValue: string) {
-    expect(TextUtils.join(items)).toBe(expectedValue);
+  function testJoin(
+    items: string[] | null,
+    expectedValue: string,
+    conjunction?: string
+  ) {
+    expect(TextUtils.join(items, conjunction)).toBe(expectedValue);
   }
 
   it('handles the null case', () => {
@@ -28,6 +32,10 @@ describe('join string array', () => {
 
   it('handles a 5 element array', () => {
     testJoin(['A', 'B', 'C', 'D', 'E'], 'A, B, C, D, and E');
+  });
+
+  it('handles optional conjunction', () => {
+    testJoin(['A', 'B', 'C'], 'A, B, or C', 'or');
   });
 });
 

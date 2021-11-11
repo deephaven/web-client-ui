@@ -63,5 +63,9 @@ export const getShowSystemBadge: Selector<
   WorkspaceSettings['showSystemBadge']
 > = store => getSettings(store).showSystemBadge;
 
+export const getShortcutOverrides: Selector<
+  WorkspaceSettings['shortcutOverrides']
+> = store => getSettings(store).shortcutOverrides;
+
 export const getActiveTool: Selector<RootState['activeTool']> = store =>
   store.activeTool;

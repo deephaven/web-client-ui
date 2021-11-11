@@ -83,10 +83,6 @@ class MockIrisGridTreeModel extends IrisGridModel {
     return this.model.isRowExpanded(row);
   }
 
-  getColumnIndexByName(name) {
-    return this.model.getColumnIndexByName(name);
-  }
-
   setRowExpanded(row, isExpanded) {
     this.model.setRowExpanded(row, isExpanded);
   }
