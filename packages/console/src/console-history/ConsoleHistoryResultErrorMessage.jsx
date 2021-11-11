@@ -18,6 +18,8 @@ class ConsoleHistoryResultErrorMessage extends PureComponent {
     this.handleMouseMove = this.handleMouseMove.bind(this);
     this.handleMouseUp = this.handleMouseUp.bind(this);
     this.handleToggleError = this.handleToggleError.bind(this);
+    this.handleMouseEnter = this.handleMouseEnter.bind(this);
+    this.handleMouseLeave = this.handleMouseLeave.bind(this);
 
     this.mouseX = null;
     this.mouseY = null;
@@ -25,6 +27,7 @@ class ConsoleHistoryResultErrorMessage extends PureComponent {
 
     this.state = {
       isExpanded: false,
+      isTriggerHovered: false,
     };
   }
 
@@ -79,13 +82,24 @@ class ConsoleHistoryResultErrorMessage extends PureComponent {
     this.setState(state => ({ isExpanded: !state.isExpanded }));
   }
 
+  handleMouseEnter() {
+    this.setState({ isTriggerHovered: true });
+  }
+
+  handleMouseLeave() {
+    this.setState({ isTriggerHovered: false });
+  }
+
   render() {
-    const { isExpanded } = this.state;
+    const { isExpanded, isTriggerHovered } = this.state;
     const { message: messageProp } = this.props;
     const lineBreakIndex = messageProp.indexOf('\n');
     const isMultiline = lineBreakIndex > -1;
     const topLineOfMessage = messageProp.slice(0, lineBreakIndex);
     const remainderOfMessage = messageProp.slice(lineBreakIndex);
+    const arrowBtnClasses = isTriggerHovered
+      ? 'error-btn-link error-btn-link--active'
+      : 'error-btn-link';
 
     return (
       <div
@@ -99,7 +113,7 @@ class ConsoleHistoryResultErrorMessage extends PureComponent {
             <button
               type="button"
               onClick={this.handleToggleError}
-              className="error-btn-link"
+              className={arrowBtnClasses}
             >
               <FontAwesomeIcon
                 icon={isExpanded ? vsTriangleDown : vsTriangleRight}
@@ -109,16 +123,19 @@ class ConsoleHistoryResultErrorMessage extends PureComponent {
           </div>
         )}
         <div className="error-content">
-          <button
-            className="console-error-text-btn"
-            type="button"
+          <div
+            className="console-error-text-trigger"
+            role="button"
+            tabIndex="0"
             onKeyPress={this.handleKeyPress}
             onMouseDown={this.handleMouseDown}
             onMouseMove={this.handleMouseMove}
+            onMouseEnter={this.handleMouseEnter}
+            onMouseLeave={this.handleMouseLeave}
             onMouseUp={this.handleMouseUp}
           >
             {topLineOfMessage}
-          </button>
+          </div>
           {isExpanded ? remainderOfMessage : ''}
         </div>
       </div>
