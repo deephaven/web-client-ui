@@ -42,8 +42,12 @@ class IrisGridColumnTooltipMouseHandler extends GridMouseHandler {
     const theme = this.irisGrid.getTheme();
     let newTooltip = null;
     if (column !== null && row === null) {
-      if (y >= 0 && y <= theme.columnHeaderHeight - 2) {
-        // -2 account for borders
+      /**
+       * one would expect at y == theme.columnHeaderHeight, row == null
+       * however, gridY also == theme.columnHeaderHeight, so row still has a value
+       * so this tooltip won't actually show until row is null at columnHeaderHeight - 1
+       */
+      if (y >= 0 && y <= theme.columnHeaderHeight) {
         newTooltip = column;
       }
     }

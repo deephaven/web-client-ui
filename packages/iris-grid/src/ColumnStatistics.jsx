@@ -2,8 +2,12 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { LoadingSpinner } from '@deephaven/components';
-import { dhRefresh, vsLock } from '@deephaven/icons';
+import {
+  Button,
+  ContextActionUtils,
+  LoadingSpinner,
+} from '@deephaven/components';
+import { dhRefresh, vsCopy, vsLock, vsPassFilled } from '@deephaven/icons';
 import { PropTypes as APIPropTypes } from '@deephaven/jsapi-shim';
 import Log from '@deephaven/log';
 import { PromiseUtils } from '@deephaven/utils';
@@ -35,6 +39,7 @@ class ColumnStatistics extends Component {
     this.handleError = this.handleError.bind(this);
     this.handleGenerateStatistics = this.handleGenerateStatistics.bind(this);
     this.handleStatistics = this.handleStatistics.bind(this);
+    this.handleCopyHeader = this.handleCopyHeader.bind(this);
 
     this.cancelablePromise = null;
 
@@ -43,6 +48,7 @@ class ColumnStatistics extends Component {
       loading: false,
       statistics: null,
       numRows: 0,
+      copied: false,
     };
   }
 
@@ -54,6 +60,10 @@ class ColumnStatistics extends Component {
     if (this.cancelablePromise) {
       this.cancelablePromise.cancel();
     }
+  }
+
+  handleCopyHeader() {
+    this.setState({ copied: true });
   }
 
   maybeGenerateStatistics() {
@@ -128,7 +138,7 @@ class ColumnStatistics extends Component {
 
   render() {
     const { column, model } = this.props;
-    const { error, loading, statistics, numRows } = this.state;
+    const { error, loading, statistics, numRows, copied } = this.state;
     const showGenerateStatistics =
       !loading &&
       error == null &&
@@ -168,6 +178,17 @@ class ColumnStatistics extends Component {
         <div className="column-statistics-title">
           {column.name}&nbsp;
           <span className="column-statistics-type">({columnType})</span>
+          <Button
+            kind="ghost"
+            className="column-statistics-copy"
+            icon={copied ? vsPassFilled : vsCopy}
+            onClick={() => {
+              ContextActionUtils.copyToClipboard(column.name)
+                .then(() => this.handleCopyHeader())
+                .catch(e => log.error('Unable to column name', e));
+            }}
+            tooltip={copied ? 'Copied text' : 'Copy column name'}
+          />
         </div>
         {description && (
           <div className="column-statistics-description">{description}</div>
