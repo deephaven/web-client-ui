@@ -272,7 +272,6 @@ class GridRenderer {
       visibleColumnWidths,
       width,
       height,
-      columnHeaderHeight,
     } = metrics;
 
     if (floatingColumns.length === 0) {
