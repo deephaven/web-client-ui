@@ -48,6 +48,7 @@ $hover-item-fade: 0.5;
         transition: $btn-transition;
       }
 
+      .error-btn-link:hover,
       .error-btn-link--active {
         color: $danger;
       }
