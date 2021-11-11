@@ -271,6 +271,8 @@ class GridRenderer {
       visibleColumnXs,
       visibleColumnWidths,
       width,
+      height,
+      columnHeaderHeight,
     } = metrics;
 
     if (floatingColumns.length === 0) {
@@ -300,6 +302,12 @@ class GridRenderer {
       this.drawFloatingMouseRowHover(context, state);
     }
 
+    // Clip floated column grid lines.
+    context.save();
+    context.beginPath();
+    context.rect(0, 0, floatingLeftWidth, height);
+    context.clip();
+
     this.drawGridLinesForItems(
       context,
       state,
@@ -308,6 +316,8 @@ class GridRenderer {
       theme.floatingGridColumnColor,
       theme.floatingGridRowColor
     );
+
+    context.restore();
 
     this.drawCellBackgroundsForItems(
       context,
@@ -761,20 +771,8 @@ class GridRenderer {
 
   drawGridLinesForRows(context, state, rows) {
     const { metrics } = state;
-    const {
-      visibleRowYs,
-      maxX: metricsMaxX,
-      floatingLeftColumnCount,
-      visibleColumnXs,
-      visibleColumnWidths,
-    } = metrics;
-    let maxX = metricsMaxX;
-
-    if (floatingLeftColumnCount) {
-      maxX =
-        visibleColumnXs.get(floatingLeftColumnCount - 1) +
-        visibleColumnWidths.get(floatingLeftColumnCount - 1);
-    }
+    const { visibleRowYs, maxX: metricsMaxX } = metrics;
+    const maxX = metricsMaxX;
 
     // Draw row lines
     for (let i = 0; i < rows.length; i += 1) {
