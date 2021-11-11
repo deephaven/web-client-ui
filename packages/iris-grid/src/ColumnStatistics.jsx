@@ -7,7 +7,13 @@ import {
   ContextActionUtils,
   LoadingSpinner,
 } from '@deephaven/components';
-import { dhFreeze, dhRefresh, vsCopy, vsLock, vsPassFilled } from '@deephaven/icons';
+import {
+  dhFreeze,
+  dhRefresh,
+  vsCopy,
+  vsLock,
+  vsPassFilled,
+} from '@deephaven/icons';
 import { PropTypes as APIPropTypes } from '@deephaven/jsapi-shim';
 import Log from '@deephaven/log';
 import { PromiseUtils } from '@deephaven/utils';
