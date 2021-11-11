@@ -17,7 +17,6 @@ import { getCommandHistoryStorage, getTimeZone } from '@deephaven/redux';
 import {
   ChartEvent,
   ConsoleEvent,
-  ControlEvent,
   IrisGridEvent,
   PandasEvent,
 } from '../events';
@@ -175,7 +174,7 @@ class ConsolePanel extends PureComponent {
     const { name } = object;
     const id = this.getItemId(name, false);
     const { glEventHub } = this.props;
-    glEventHub.emit(ControlEvent.CLOSE, id);
+    glEventHub.emit(PanelEvent.CLOSE, id);
   }
 
   handleSettingsChange(consoleSettings) {
@@ -246,7 +245,7 @@ class ConsolePanel extends PureComponent {
     const panelIdsToClose = [...itemIds.values()];
     const { glEventHub } = this.props;
     panelIdsToClose.forEach(panelId => {
-      glEventHub.emit(ControlEvent.CLOSE, panelId);
+      glEventHub.emit(PanelEvent.CLOSE, panelId);
     });
 
     this.setState({ itemIds: new Map() });
