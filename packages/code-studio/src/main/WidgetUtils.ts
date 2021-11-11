@@ -51,13 +51,13 @@ export const createChartModel = async (
   }
 
   if (figureName) {
-    const definition = { id: figureName, type: dh.VariableType.FIGURE };
+    const definition = { name: figureName, type: dh.VariableType.FIGURE };
     const figure = await session.getObject(definition);
 
     return ChartModelFactory.makeModel(settings, figure);
   }
 
-  const definition = { id: tableName, type: dh.VariableType.TABLE };
+  const definition = { name: tableName, type: dh.VariableType.TABLE };
   const table = await session.getObject(definition);
 
   IrisGridUtils.applyTableSettings(
@@ -74,7 +74,7 @@ export const createGridModel = async (
   metadata: GridPanelMetadata
 ): Promise<IrisGridModel> => {
   const { table: tableName } = metadata;
-  const definition = { id: tableName, type: dh.VariableType.TABLE };
+  const definition = { name: tableName, type: dh.VariableType.TABLE };
   const table = await session.getObject(definition);
   return IrisGridModelFactory.makeModel(table, false);
 };
