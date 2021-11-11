@@ -36,6 +36,7 @@
   },
   "devDependencies": {
     "@babel/cli": "^7.14.8",
+    "@deephaven/components": "^0.6.0",
     "@deephaven/console": "^0.6.0",
     "@deephaven/file-explorer": "^0.6.0",
     "@deephaven/log": "^0.6.0",

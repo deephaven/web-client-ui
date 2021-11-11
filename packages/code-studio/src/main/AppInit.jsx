@@ -1,7 +1,11 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { LoadingOverlay } from '@deephaven/components';
+import {
+  LoadingOverlay,
+  Shortcut,
+  ShortcutRegistry,
+} from '@deephaven/components';
 import {
   DEFAULT_DASHBOARD_ID,
   setDashboardData as setDashboardDataAction,
@@ -84,6 +88,18 @@ const AppInit = props => {
         );
         data.layoutConfig = layoutConfig;
       }
+
+      // Set any shortcuts that user has overridden on this platform
+      const { settings } = data;
+      const { shortcutOverrides = {} } = settings;
+      const isMac = Shortcut.isMacPlatform;
+      const platformOverrides = isMac
+        ? shortcutOverrides.mac ?? {}
+        : shortcutOverrides.windows ?? {};
+
+      Object.entries(platformOverrides).forEach(([id, keyState]) => {
+        ShortcutRegistry.get(id)?.setKeyState(keyState);
+      });
 
       setActiveTool(ToolType.DEFAULT);
       setCommandHistoryStorage(COMMAND_HISTORY_STORAGE);
