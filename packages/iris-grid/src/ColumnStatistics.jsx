@@ -180,15 +180,15 @@ class ColumnStatistics extends Component {
     return (
       <div className="column-statistics">
         <div className="column-statistics-title">
-          {column.name}&nbsp;
-          <span className="column-statistics-type">({columnType})</span>
+          {column.name}
+          <span className="column-statistics-type">&nbsp;({columnType})</span>
           <Button
             kind="ghost"
             className="column-statistics-copy"
             icon={copied ? vsPassFilled : vsCopy}
             onClick={() => {
               ContextActionUtils.copyToClipboard(column.name)
-                .then(() => this.handleCopyHeader())
+                .then(this.handleCopyHeader)
                 .catch(e => log.error('Unable to column name', e));
             }}
             tooltip={copied ? 'Copied text' : 'Copy column name'}
