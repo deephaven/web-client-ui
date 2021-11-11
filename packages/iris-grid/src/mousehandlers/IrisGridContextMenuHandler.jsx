@@ -325,6 +325,15 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
             }
           },
         });
+        actions.push({
+          title: 'Copy Column Name',
+          group: IrisGridContextMenuHandler.GROUP_COPY,
+          action: () => {
+            ContextActionUtils.copyToClipboard(
+              model.textForColumnHeader(modelColumn)
+            ).catch(e => log.error('Unable to copy header', e));
+          },
+        });
 
         if (TableUtils.isDateType(column.type)) {
           actions.push({
