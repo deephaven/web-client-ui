@@ -10,7 +10,12 @@ import LoggerLevel, { DEBUG2, INFO, SILENT } from './LoggerLevel';
  * @returns {number} The default log level to use
  */
 function getDefaultLevel() {
-  const envValue = process.env.DEEPHAVEN_LOG_LEVEL;
+  let envValue = '';
+  try {
+    envValue = process.env.DEEPHAVEN_LOG_LEVEL;
+  } catch {
+    // no-op. Environment without process defined
+  }
   if (envValue && LoggerLevel[envValue]) {
     return LoggerLevel[envValue];
   }
@@ -18,11 +23,16 @@ function getDefaultLevel() {
   if (!Number.isNaN(envLevel)) {
     return envLevel;
   }
-  if (process.env.NODE_ENV === 'test') {
-    return SILENT;
-  }
-  if (process.env.NODE_ENV === 'development') {
-    return DEBUG2;
+
+  try {
+    if (process.env.NODE_ENV === 'test') {
+      return SILENT;
+    }
+    if (process.env.NODE_ENV === 'development') {
+      return DEBUG2;
+    }
+  } catch {
+    // no-op. Environment without process defined
   }
 
   return INFO;
