@@ -18,10 +18,10 @@ jobs:
           git config --global user.name "GitHub CI"
       - uses: actions/setup-node@v2
         with:
-          node-version: '12.x'
+          node-version: '14.x'
         # Get the changelog and write it out to a file so it can be used by the create-release step later
       - name: Get changelog
-        env: 
+        env:
           GITHUB_AUTH: ${{ secrets.GITHUB_TOKEN }}
         run: npx lerna-changelog --next-version=${{ github.event.inputs.version }} > /tmp/changelog.md
         # lerna version will bump the version, tag it and push the branch
