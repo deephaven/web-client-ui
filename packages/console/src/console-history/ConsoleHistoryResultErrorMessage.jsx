@@ -114,6 +114,7 @@ class ConsoleHistoryResultErrorMessage extends PureComponent {
               type="button"
               onClick={this.handleToggleError}
               className={arrowBtnClasses}
+              tabIndex="-1"
             >
               <FontAwesomeIcon
                 icon={isExpanded ? vsTriangleDown : vsTriangleRight}

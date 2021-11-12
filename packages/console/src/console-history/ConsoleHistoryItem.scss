@@ -58,18 +58,25 @@ $hover-item-fade: 0.5;
       flex-grow: 1;
       white-space: normal;
       cursor: default;
-      overflow: hidden;
+      overflow: visible;
       text-overflow: ellipsis;
-    }
-
-    .error-content:focus {
-      outline: none;
     }
 
     .console-error-text-trigger {
       cursor: pointer;
       color: $danger;
       display: inline-block;
+      margin-right: $spacer-1;
+      border: 1px solid transparent;
+      border-radius: $border-radius;
+      overflow: visible;
+      // keyboard navigation only focus state
+      &:focus {
+        outline: 0;
+      }
+      &:focus-visible {
+        border: 1px solid rgba($danger, $hover-item-fade);
+      }
     }
   }
 }
