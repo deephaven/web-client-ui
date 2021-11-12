@@ -140,6 +140,8 @@ class ChartUtils {
       case dh.plot.SourceType.LOW:
         return 'low';
       case dh.plot.SourceType.CLOSE:
+        return 'close';
+      case dh.plot.SourceType.SHAPE:
         return 'shape';
       case dh.plot.SourceType.SIZE:
         return 'size';
