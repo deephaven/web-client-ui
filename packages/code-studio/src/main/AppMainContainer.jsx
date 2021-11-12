@@ -461,7 +461,7 @@ export class AppMainContainer extends Component {
   openWidget(widget, dragEvent) {
     switch (widget.type) {
       case dh.VariableType.TABLE: {
-        const metadata = { table: widget.id };
+        const metadata = { table: widget.name };
         this.emitLayoutEvent(
           IrisGridEvent.OPEN_GRID,
           widget.name,
@@ -476,7 +476,7 @@ export class AppMainContainer extends Component {
         break;
       }
       case dh.VariableType.FIGURE: {
-        const metadata = { figure: widget.id };
+        const metadata = { figure: widget.name };
         this.emitLayoutEvent(
           ChartEvent.OPEN,
           widget.name,
