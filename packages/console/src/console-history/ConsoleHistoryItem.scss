@@ -70,6 +70,7 @@ $hover-item-fade: 0.5;
       border: 1px solid transparent;
       border-radius: $border-radius;
       overflow: visible;
+      white-space: pre-wrap;
       // keyboard navigation only focus state
       &:focus {
         outline: 0;
