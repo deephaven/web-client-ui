@@ -2,6 +2,7 @@
 
 $item-padding-top: 3px;
 $error-gutter-width: 15px;
+$hover-item-fade: 0.5;
 
 .console-history-item-command,
 .console-history-item-result {
@@ -43,13 +44,12 @@ $error-gutter-width: 15px;
         text-align: left;
         padding-left: 0;
         padding-right: 0;
-        color: rgba($danger, 0.5);
+        color: rgba($danger, $hover-item-fade);
         transition: $btn-transition;
       }
-    }
 
-    &:hover {
-      .error-btn-link {
+      .error-btn-link:hover,
+      .error-btn-link--active {
         color: $danger;
       }
     }
@@ -58,12 +58,25 @@ $error-gutter-width: 15px;
       flex-grow: 1;
       white-space: normal;
       cursor: default;
-      overflow: hidden;
+      overflow: visible;
       text-overflow: ellipsis;
     }
 
-    .error-content:focus {
-      outline: none;
+    .console-error-text-trigger {
+      cursor: pointer;
+      color: $danger;
+      display: inline-block;
+      margin-right: $spacer-1;
+      border: 1px solid transparent;
+      border-radius: $border-radius;
+      overflow: visible;
+      // keyboard navigation only focus state
+      &:focus {
+        outline: 0;
+      }
+      &:focus-visible {
+        border: 1px solid rgba($danger, $hover-item-fade);
+      }
     }
   }
 }
