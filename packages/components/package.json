@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/components",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "description": "Deephaven React component library",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
@@ -34,12 +34,12 @@
     "start": "cross-env NODE_ENV=development npm run watch"
   },
   "dependencies": {
-    "bootstrap": "4.4.1",
     "@deephaven/icons": "^0.6.0",
-    "@deephaven/react-hooks": "^0.6.0",
-    "@deephaven/utils": "^0.6.0",
+    "@deephaven/react-hooks": "^0.6.1",
+    "@deephaven/utils": "^0.6.1",
     "@fortawesome/fontawesome-svg-core": "^1.2.32",
     "@fortawesome/react-fontawesome": "^0.1.12",
+    "bootstrap": "4.4.1",
     "classnames": "^2.3.1",
     "jquery": "^3.5.1",
     "lodash.debounce": "^4.0.8",
@@ -61,7 +61,7 @@
   },
   "devDependencies": {
     "@babel/cli": "^7.14.8",
-    "@deephaven/log": "^0.6.0",
+    "@deephaven/log": "^0.6.1",
     "@deephaven/mocks": "^0.6.0",
     "@deephaven/tsconfig": "^0.6.0",
     "@types/bootstrap": "^4.4.1",
