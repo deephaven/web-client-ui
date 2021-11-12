@@ -33,7 +33,7 @@ jobs:
       - uses: actions/setup-node@v2
         with:
           fetch-depth: '0' # Need the history to properly select the canary version number
-          node-version: '12.x'
+          node-version: '14.x'
           registry-url: 'https://registry.npmjs.org'
       - run: npm install
       - run: npm run build
