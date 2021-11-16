@@ -20,7 +20,16 @@ module.exports = {
     'jest-watch-typeahead/testname',
     'jest-watch-select-projects',
   ],
-  collectCoverage: false,
+  collectCoverage: true,
   coverageDirectory: '<rootDir>/coverage/', // This is relative to monorepo root
   collectCoverageFrom: ['./src/**/*.{js,ts,jsx,tsx}'], // This is relative to individual project root due to how Jest handles it
+  coverageThreshold: {
+    // These global thresholds were taken as the baseline when code coverage initiative began. Should be increased over time.
+    global: {
+      statements: 40,
+      branches: 30,
+      functions: 30,
+      lines: 40,
+    },
+  },
 };
