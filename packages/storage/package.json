@@ -39,7 +39,7 @@
     "react": "^16.14.0"
   },
   "devDependencies": {
-    "@babel/cli": "^7.14.8",
+    "@babel/cli": "^7.16.0",
     "@deephaven/log": "^0.6.2",
     "@deephaven/tsconfig": "^0.6.0",
     "@types/lodash.throttle": "^4.1.1",
