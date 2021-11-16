@@ -71,7 +71,7 @@
     "build-storybook": "build-storybook -s public"
   },
   "devDependencies": {
-    "@babel/core": "7.12.3",
+    "@babel/core": "^7.16.0",
     "@deephaven/eslint-config": "^0.6.0",
     "@deephaven/mocks": "^0.6.0",
     "@deephaven/prettier-config": "^0.6.0",

@@ -59,7 +59,7 @@
     "react": "^16.x"
   },
   "devDependencies": {
-    "@babel/cli": "^7.14.8",
+    "@babel/cli": "^7.16.0",
     "@deephaven/components": "^0.6.2",
     "@deephaven/log": "^0.6.2",
     "@deephaven/mocks": "^0.6.0",

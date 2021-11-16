@@ -35,7 +35,7 @@
     "redux-thunk": "^2.3.0"
   },
   "devDependencies": {
-    "@babel/cli": "^7.14.8",
+    "@babel/cli": "^7.16.0",
     "@deephaven/components": "^0.6.2",
     "@deephaven/console": "^0.6.2",
     "@deephaven/file-explorer": "^0.6.2",

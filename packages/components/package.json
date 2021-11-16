@@ -60,7 +60,7 @@
     "react-dom": "^16.x"
   },
   "devDependencies": {
-    "@babel/cli": "^7.14.8",
+    "@babel/cli": "^7.16.0",
     "@deephaven/log": "^0.6.2",
     "@deephaven/mocks": "^0.6.0",
     "@deephaven/tsconfig": "^0.6.0",
