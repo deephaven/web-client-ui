@@ -178,6 +178,7 @@ class IrisGridTableModel extends IrisGridModel {
 
   handleTotalsUpdate(event) {
     this.copyTotalsData(event.detail);
+    this.applyViewport();
 
     this.dispatchEvent(new CustomEvent(IrisGridModel.EVENT.UPDATED));
   }
