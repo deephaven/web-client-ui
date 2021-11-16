@@ -21,13 +21,16 @@ module.exports = {
     'jest-watch-select-projects',
   ],
   collectCoverage: true,
-  coverageDirectory: '<rootDir>/coverage/', // This is relative to monorepo root
   collectCoverageFrom: ['./src/**/*.{js,ts,jsx,tsx}'], // This is relative to individual project root due to how Jest handles it
+  coverageReporters: ['text'],
   coverageThreshold: {
-    // These global thresholds were taken as the baseline when code coverage initiative began. Should be increased over time.
+    // These global thresholds were taken as the baseline of the overall project when code coverage initiative began.
+    // In CI, these thresholds will be measures against only the files you have changed.
+    // We may want to increase/decrease the thresholds for specific projects, and we can do that:
+    // https://jestjs.io/docs/configuration#coveragethreshold-object
     global: {
       statements: 40,
-      branches: 80,
+      branches: 30,
       functions: 30,
       lines: 40,
     },
