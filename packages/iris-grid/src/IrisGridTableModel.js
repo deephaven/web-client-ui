@@ -663,6 +663,7 @@ class IrisGridTableModel extends IrisGridModel {
     log.debug2('copyTotalsData', dataMap);
 
     this.totalsDataMap = dataMap;
+    this.formattedStringData = [];
   }
 
   /**
