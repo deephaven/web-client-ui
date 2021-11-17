@@ -618,7 +618,7 @@ class GridMetricCalculator {
       y += rowHeight;
 
       if (y >= visibleHeight) {
-        return Math.min(lastTop + 1, rowCount - 1);
+        return Math.min(lastTop + floatingBottomRowCount, rowCount - 1);
       }
 
       lastTop -= 1;
