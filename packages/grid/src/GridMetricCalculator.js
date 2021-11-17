@@ -191,6 +191,11 @@ class GridMetricCalculator {
     const maxX = columnWidthValues.reduce((x, w) => x + w, 0) - leftOffset;
     const maxY = rowHeightValues.reduce((y, h) => y + h, 0) - topOffset;
 
+    const floatingBottomHeight = this.getFloatingBottomHeight(
+      state,
+      visibleRowHeights
+    );
+
     const lastLeft = this.getLastLeft(
       state,
       null,
@@ -199,7 +204,7 @@ class GridMetricCalculator {
     const lastTop = this.getLastTop(
       state,
       null,
-      height - gridY - scrollBarSize
+      height - gridY - scrollBarSize - floatingBottomHeight
     );
 
     // Calculate some metrics for the scroll bars
@@ -336,10 +341,6 @@ class GridMetricCalculator {
         : right;
 
     const floatingTopHeight = this.getFloatingTopHeight(
-      state,
-      visibleRowHeights
-    );
-    const floatingBottomHeight = this.getFloatingBottomHeight(
       state,
       visibleRowHeights
     );
@@ -618,7 +619,7 @@ class GridMetricCalculator {
       y += rowHeight;
 
       if (y >= visibleHeight) {
-        return Math.min(lastTop + floatingBottomRowCount, rowCount - 1);
+        return Math.min(lastTop + 1, rowCount - 1);
       }
 
       lastTop -= 1;
