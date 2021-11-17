@@ -1,127 +1,45 @@
+import GridModel from './GridModel';
+import GridMetrics, {
+  Coordinate,
+  Index,
+  ModelIndex,
+  MoveOperation,
+} from './GridMetrics';
 import GridUtils from './GridUtils';
-
-type Coordinate = number;
-type Index = number;
-type ModelIndex = number;
+import { GridTheme } from './GridTheme';
 
 /* eslint class-methods-use-this: "off" */
 /* eslint react/destructuring-assignment: "off" */
 
-export type GridMetrics = {
-  // Row/Column metrics from model
-  rowHeight: number;
-  rowHeaderWidth: number;
-  rowFooterWidth: number;
-  rowCount: number;
-  columnWidth: number;
-  columnCount: number;
-  columnHeaderHeight: number;
-
-  // Floating row and column counts
-  floatingTopRowCount: number;
-  floatingBottomRowCount: number;
-  floatingLeftColumnCount: number;
-  floatingRightColumnCount: number;
-
-  // The grid offset from the top left
-  gridX: Coordinate;
-  gridY: Coordinate;
-
-  // Index of non-hidden row/columns
-  firstRow: Index;
-  firstColumn: Index;
-
-  // The amount of padding for tree (if applicable)
-  treePaddingX: number;
-  treePaddingY: number;
-
-  // What viewport is currently visible, limited by data size
+export type GridMetricState = {
+  // The top/left cell of the scrolled viewport
   left: Index;
   top: Index;
-  bottom: Index;
-  right: Index;
-  topOffset: Coordinate;
+
+  // The scroll offset within the top/left of the viewport
   leftOffset: Coordinate;
+  topOffset: Coordinate;
 
-  // Bottom and right that are fully visible, not overlapped by scroll bars or anything
-  topVisible: Index;
-  leftVisible: Index;
-  bottomVisible: Index;
-  rightVisible: Index;
-
-  // Bottom and right of the viewport, not limited by data size
-  bottomViewport: Index;
-  rightViewport: Index;
-
-  // Canvas width/height
+  // Width and height of the total canvas area
   width: number;
   height: number;
 
-  // Max x/y coordinate of the grid (does not include headers)
-  maxX: Coordinate;
-  maxY: Coordinate;
+  // The canvas context
+  context: CanvasRenderingContext2D;
 
-  // Last valid column/row that can be the left/top of the grid
-  lastLeft: Index;
-  lastTop: Index;
+  // The grid theme
+  theme: GridTheme;
 
-  // Scroll bar metrics
-  barHeight: number;
-  barWidth: number;
-  handleHeight: number;
-  handleWidth: number;
-  hasHorizontalBar: boolean;
-  hasVerticalBar: boolean;
-  verticalBarWidth: number;
-  horizontalBarHeight: number;
+  // The model used by the grid
+  model: GridModel;
 
-  // The vertical x/y scroll amount
-  scrollX: number;
-  scrollY: number;
+  // Moved columns/rows in the grid
+  movedColumns: MoveOperation[];
+  movedRows: MoveOperation[];
 
-  // Array of visible rows/columns, by grid index
-  visibleRows: Index[];
-  visibleColumns: Index[];
-
-  // Array of floating rows/columns, by grid index
-  floatingRows: Index[];
-  floatingColumns: Index[];
-
-  // Array of all rows/columns, visible and floating, by grid index
-  allRows: Index[];
-  allColumns: Index[];
-
-  // Map of the height/width of visible rows/columns
-  visibleRowHeights: Map<Index, number>;
-  visibleColumnWidths: Map<Index, number>;
-
-  // Floating metrics
-  floatingTopHeight: number;
-  floatingBottomHeight: number;
-  floatingLeftWidth: number;
-  floatingRightWidth: number;
-
-  // Map of the X/Y coordinates of the rows/columns, from the top left of the grid
-  visibleRowYs: Map<Index, Coordinate>;
-  visibleColumnXs: Map<Index, Coordinate>;
-
-  // The boxes user can click on for expanding/collapsing tree rows
-  visibleRowTreeBoxes: unknown;
-
-  // Mapping from visible row indexes to the model row/columns they pull from
-  modelRows: Map<Index, ModelIndex>;
-  modelColumns: Map<Index, ModelIndex>;
-
-  // Map of the width of the fonts
-  fontWidths: number;
-
-  // Map of user set column/row width/height
-  userColumnWidths: Map<Index, number>;
-  userRowHeights: Map<Index, number>;
-
-  // Map of calculated row/column height/width
-  calculatedRowHeights: Map<Index, number>;
-  calculatedColumnWidths: Map<Index, number>;
+  // Whether the scrollbars are currently being dragged
+  isDraggingHorizontalScrollBar: boolean;
+  isDraggingVerticalScrollBar: boolean;
 };
 
 /**
@@ -159,44 +77,73 @@ class GridMetricCalculator {
   /**
    * Get the coordinates of floating items in one dimension.
    * Can be used for getting the y coordinates of floating rows, or x coordinates of floating columns, calculated using the `sizeMap` passed in.
-   * @param {number} startCount The number of floating items at the start (ie. `floatingTopRowCount` for rows, `floatingLeftColumnCount` for columns)
-   * @param {number} endCount The number of floating items at the end (ie. `floatingBottomRowCount` for rows, `floatingRightColumnCount` for columns)
-   * @param {number} totalCount Total number of items in this dimension (ie. `rowCount` for rows, `columnCount` for columns)
-   * @param {number} max The max coordinate value (ie. `maxY` for rows, `maxX` for columns)
-   * @param {Map<number, number>} sizeMap Map from index to size of item (ie. `rowHeightMap` for rows, `columnWidthMap` for columns)
+   * @param startCount The number of floating items at the start (ie. `floatingTopRowCount` for rows, `floatingLeftColumnCount` for columns)
+   * @param endCount The number of floating items at the end (ie. `floatingBottomRowCount` for rows, `floatingRightColumnCount` for columns)
+   * @param totalCount Total number of items in this dimension (ie. `rowCount` for rows, `columnCount` for columns)
+   * @param max The max coordinate value (ie. `maxY` for rows, `maxX` for columns)
+   * @param sizeMap Map from index to size of item (ie. `rowHeightMap` for rows, `columnWidthMap` for columns)
    */
   static getFloatingCoordinates(
-    startCount,
-    endCount,
-    totalCount,
-    max,
-    sizeMap
-  ) {
+    startCount: number,
+    endCount: number,
+    totalCount: number,
+    max: number,
+    sizeMap: Map<Index, number>
+  ): Map<Index, number> {
     const coordinates = new Map();
     let x = 0;
     for (let i = 0; i < startCount && i < totalCount; i += 1) {
       coordinates.set(i, x);
-      x += sizeMap.get(i);
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      x += sizeMap.get(i)!;
     }
 
     x = max;
     for (let i = 0; i < endCount && totalCount - i - 1 >= 0; i += 1) {
-      x -= sizeMap.get(totalCount - i - 1);
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      x -= sizeMap.get(totalCount - i - 1)!;
       coordinates.set(totalCount - i - 1, x);
     }
     return coordinates;
   }
 
+  /** User set column widths */
+  private userColumnWidths: Map<ModelIndex, number>;
+
+  /** User set row heights */
+  private userRowHeights: Map<ModelIndex, number>;
+
+  /** Calculated column widths based on cell contents */
+  private calculatedColumnWidths: Map<ModelIndex, number>;
+
+  /** Calculated row heights based on cell contents */
+  private calculatedRowHeights: Map<ModelIndex, number>;
+
+  /** Cache of fonts to estimated width of one char */
+  private fontWidths: Map<string, number>;
+
+  /** Map from visible index to model index for rows (eg. reversing movedRows operations) */
+  private modelRows: Map<Index, ModelIndex>;
+
+  /** Map from visible index to model index for columns (eg. reversing movedColumns operations) */
+  private modelColumns: Map<Index, ModelIndex>;
+
+  /** List of moved row operations. Need to track the previous value so we know if modelRows needs to be cleared. */
+  private movedRows: MoveOperation[];
+
+  /** List of moved column operations. Need to track the previous value so we know if modelColumns needs to be cleared. */
+  private movedColumns: MoveOperation[];
+
   constructor({
     userColumnWidths = new Map(),
     userRowHeights = new Map(),
-    calculatedRowHeights = new Map(),
     calculatedColumnWidths = new Map(),
+    calculatedRowHeights = new Map(),
     fontWidths = new Map(),
     modelRows = new Map(),
     modelColumns = new Map(),
-    movedRows = null,
-    movedColumns = null,
+    movedRows = [],
+    movedColumns = [],
   } = {}) {
     this.userColumnWidths = userColumnWidths;
     this.userRowHeights = userRowHeights;
@@ -211,8 +158,12 @@ class GridMetricCalculator {
     this.movedColumns = movedColumns;
   }
 
-  /** update the calculated metrics from the model/canvas that are useful for many functions */
-  getMetrics(state) {
+  /**
+   * Get the metrics for the provided metric state
+   * @params state The state to get metrics for
+   * @returns The updated metrics
+   */
+  getMetrics(state: GridMetricState): GridMetrics {
     const {
       left,
       top,
@@ -373,7 +324,7 @@ class GridMetricCalculator {
         : 0;
 
     // Now add the floating sections
-    let floatingRows = [];
+    let floatingRows: ModelIndex[] = [];
     if (floatingTopRowCount > 0 || floatingBottomRowCount > 0) {
       floatingRows = [
         ...Array(floatingTopRowCount).keys(),
@@ -393,7 +344,7 @@ class GridMetricCalculator {
       ]);
     }
 
-    let floatingColumns = [];
+    let floatingColumns: ModelIndex[] = [];
     if (floatingLeftColumnCount > 0 || floatingRightColumnCount > 0) {
       floatingColumns = [
         ...Array(floatingLeftColumnCount).keys(),
@@ -431,15 +382,13 @@ class GridMetricCalculator {
       state,
       visibleRowYs,
       visibleRowHeights,
-      visibleRows,
-      gridY
+      visibleRows
     );
     const leftVisible = this.getLeftVisible(
       state,
       visibleColumnXs,
       visibleColumnWidths,
-      visibleColumns,
-      gridX
+      visibleColumns
     );
     const bottomVisible =
       lastTop > 0
@@ -601,24 +550,40 @@ class GridMetricCalculator {
     };
   }
 
-  getGridX(state) {
+  /**
+   * The x offset of the grid
+   * @param state The current grid state
+   * @returns x value of the left side of the first cell
+   */
+  getGridX(state: GridMetricState): number {
     const { theme } = state;
     const { rowHeaderWidth } = theme;
 
     return rowHeaderWidth;
   }
 
-  getGridY(state) {
+  /**
+   * The y offset of the grid
+   * @param state The current grid state
+   * @returns y value of the top side of the first cell
+   */
+  getGridY(state: GridMetricState): number {
     const { theme } = state;
     const { columnHeaderHeight } = theme;
 
     return columnHeaderHeight;
   }
 
+  /**
+   * The height of the "visible" area (excludes floating areas)
+   * @param state The current grid state
+   * @param visibleRowHeights All the visible row heights
+   * @returns The visible height in pixels
+   */
   getVisibleHeight(
-    state,
-    visibleRowHeights = this.getFloatingRowHeights(state)
-  ) {
+    state: GridMetricState,
+    visibleRowHeights: Map<Index, number> = this.getFloatingRowHeights(state)
+  ): number {
     const { height, theme } = state;
     const { scrollBarSize } = theme;
     const gridY = this.getGridY(state);
@@ -636,10 +601,18 @@ class GridMetricCalculator {
     );
   }
 
+  /**
+   * The width of the "visible" area (excludes floating areas)
+   * @param state The current grid state
+   * @param visibleColumnWidths All the visible column widths
+   * @returns The visible height in pixels
+   */
   getVisibleWidth(
-    state,
-    visibleColumnWidths = this.getFloatingColumnWidths(state)
-  ) {
+    state: GridMetricState,
+    visibleColumnWidths: Map<Index, number> = this.getFloatingColumnWidths(
+      state
+    )
+  ): number {
     const { width, theme } = state;
     const { scrollBarSize, rowFooterWidth } = theme;
     const gridX = this.getGridX(state);
@@ -662,7 +635,18 @@ class GridMetricCalculator {
     );
   }
 
-  getFirstIndex(itemSizes, getModelIndex, state) {
+  /**
+   * Retrieve the index of the first non-hidden item
+   * @param itemSizes The size of the items in this dimension
+   * @param getModelIndex A function to map from the Index to the ModelIndex
+   * @param state The current grid state
+   * @returns The first item that is not hidden
+   */
+  getFirstIndex(
+    itemSizes: Map<ModelIndex, number>,
+    getModelIndex: (visibleIndex: Index, state: GridMetricState) => ModelIndex,
+    state: GridMetricState
+  ): Index {
     // We only need to check at the very most the number of items the user has hidden + 1
     const max = itemSizes.size + 1;
     for (let i = 0; i < max; i += 1) {
@@ -674,8 +658,12 @@ class GridMetricCalculator {
     return 0;
   }
 
-  /** Get the first column index that isn't hidden */
-  getFirstColumn(state) {
+  /**
+   * Get the first column index that isn't hidden
+   * @param state The current grid state
+   * @returns The first column that is not hidden
+   */
+  getFirstColumn(state: GridMetricState): Index {
     return this.getFirstIndex(
       this.userColumnWidths,
       this.getModelColumn.bind(this),
@@ -683,8 +671,12 @@ class GridMetricCalculator {
     );
   }
 
-  /** Get the first row index that isn't hidden */
-  getFirstRow(state) {
+  /**
+   * Get the first row index that isn't hidden
+   * @param state The current grid state
+   * @returns The first row that is not hidden
+   */
+  getFirstRow(state: GridMetricState): Index {
     return this.getFirstIndex(
       this.userRowHeights,
       this.getModelRow.bind(this),
@@ -695,8 +687,16 @@ class GridMetricCalculator {
   /**
    * Get the last column that can be the left most column (eg. scrolled to the right)
    * If no right column is provided, then the last column is used.
+   * @param state The current grid state
+   * @param right The right-most column to be visible, or null to default to last cell
+   * @param visibleWidth The width of the "visible" area (excluding floating items)
+   * @returns The index of the last left visible column
    */
-  getLastLeft(state, right = null, visibleWidth = this.getVisibleWidth(state)) {
+  getLastLeft(
+    state: GridMetricState,
+    right: Index | null = null,
+    visibleWidth: number = this.getVisibleWidth(state)
+  ): Index {
     const { model } = state;
     const { columnCount } = model;
 
@@ -723,11 +723,20 @@ class GridMetricCalculator {
    * The last row that can be the top row (eg. scrolled to the bottom)
    * If no bottom row is provided, then the last row that is not floating is used
    */
+
+  /**
+   * The last row that can be the top row (eg. scrolled to the bottom)
+   * If no bottom row is provided, then the last row that is not floating is used
+   * @param state The current grid state
+   * @param bottom The bottom-most row to be visible, or null to default to last cell
+   * @param visibleWidth The width of the "visible" area (excluding floating items)
+   * @returns The index of the last left visible column
+   */
   getLastTop(
-    state,
-    bottom = null,
-    visibleHeight = this.getVisibleHeight(state)
-  ) {
+    state: GridMetricState,
+    bottom: Index | null = null,
+    visibleHeight: number = this.getVisibleHeight(state)
+  ): Index {
     const { model } = state;
     const { rowCount, floatingBottomRowCount } = model;
 
@@ -750,6 +759,7 @@ class GridMetricCalculator {
     return 0;
   }
 
+  // TODO: Continue from here.
   getTopForTopVisible(state, topVisible) {
     const floatingTopHeight = this.getFloatingTopHeight(state);
     let top = topVisible;
