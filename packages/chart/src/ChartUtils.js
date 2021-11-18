@@ -1,7 +1,6 @@
 import Log from '@deephaven/log';
-import { TableUtils } from '@deephaven/iris-grid';
+import TableUtils from '@deephaven/iris-grid/dist/TableUtils.js';
 import dh from '@deephaven/jsapi-shim';
-import ChartTheme from './ChartTheme';
 
 const log = Log.module('ChartUtils');
 
@@ -406,9 +405,15 @@ class ChartUtils {
    * @param {dh.plot.Series} series The series to create the series data with
    * @param {Map<dh.plot.AxisType, dh.plot.Axis[]>} axisTypeMap The map of axes grouped by type
    * @param {boolean|string} seriesVisibility Visibility setting for the series
+   * @param {Object} theme The theme properties for the plot. See ChartTheme.js for an example
    * @returns {Object} The series data (trace) object for use with plotly.
    */
-  static makeSeriesDataFromSeries(series, axisTypeMap, seriesVisibility) {
+  static makeSeriesDataFromSeries(
+    series,
+    axisTypeMap,
+    seriesVisibility,
+    theme
+  ) {
     const { name, plotStyle, lineColor, shapeColor, sources } = series;
 
     const isBusinessTime = sources.some(source => source.axis.businessCalendar);
@@ -428,6 +433,7 @@ class ChartUtils {
     ChartUtils.addStylingToSeriesData(
       seriesData,
       plotStyle,
+      theme,
       lineColor,
       shapeColor,
       seriesVisibility
@@ -466,6 +472,7 @@ class ChartUtils {
   static addStylingToSeriesData(
     seriesDataParam,
     plotStyle,
+    theme = {},
     lineColor = null,
     shapeColor = null,
     seriesVisibility = null
@@ -488,19 +495,19 @@ class ChartUtils {
       // Since it's converted to bar, just set the widths of each bar
       seriesData.width = [];
       Object.assign(seriesData.marker.line, {
-        color: ChartTheme.paper_bgcolor,
+        color: theme.paper_bgcolor,
         width: 1,
       });
     } else if (plotStyle === dh.plot.SeriesPlotStyle.OHLC) {
       seriesData.increasing = {
-        line: { color: ChartTheme.ohlc_increasing },
+        line: { color: theme.ohlc_increasing },
       };
       seriesData.decreasing = {
-        line: { color: ChartTheme.ohlc_decreasing },
+        line: { color: theme.ohlc_decreasing },
       };
     } else if (plotStyle === dh.plot.SeriesPlotStyle.PIE) {
       seriesData.textinfo = 'label+percent';
-      seriesData.outsidetextfont = { color: ChartTheme.title_color };
+      seriesData.outsidetextfont = { color: theme.title_color };
     }
 
     if (lineColor != null) {
@@ -727,7 +734,8 @@ class ChartUtils {
     axes,
     plotWidth = 0,
     plotHeight = 0,
-    getRangeParser = null
+    getRangeParser = null,
+    theme = {}
   ) {
     const xAxisSize =
       plotWidth > 0
@@ -794,7 +802,10 @@ class ChartUtils {
             axisIndex
           );
           if (layout[axisLayoutProperty] == null) {
-            layout[axisLayoutProperty] = ChartUtils.makeLayoutAxis(axisType);
+            layout[axisLayoutProperty] = ChartUtils.makeLayoutAxis(
+              axisType,
+              theme
+            );
           }
 
           const layoutAxis = layout[axisLayoutProperty];
@@ -1181,21 +1192,21 @@ class ChartUtils {
     return value;
   }
 
-  static makeLayoutAxis(type) {
+  static makeLayoutAxis(type, theme = {}) {
     const axis = {
       automargin: true,
-      gridcolor: ChartTheme.gridcolor,
-      linecolor: ChartTheme.linecolor,
+      gridcolor: theme.gridcolor,
+      linecolor: theme.linecolor,
       rangeslider: { visible: false },
       showline: true,
       ticklen: 5, // act as padding, can't find a tick padding
-      tickcolor: ChartTheme.paper_bgcolor, // hide ticks as padding
+      tickcolor: theme.paper_bgcolor, // hide ticks as padding
       tickfont: {
-        color: ChartTheme.zerolinecolor,
+        color: theme.zerolinecolor,
       },
       title: {
         font: {
-          color: ChartTheme.title_color,
+          color: theme.title_color,
         },
       },
     };
@@ -1206,7 +1217,7 @@ class ChartUtils {
       });
     } else if (type === dh.plot.AxisType.Y) {
       Object.assign(axis, {
-        zerolinecolor: ChartTheme.zerolinecolor,
+        zerolinecolor: theme.zerolinecolor,
         zerolinewidth: 2,
       });
     }
@@ -1214,31 +1225,41 @@ class ChartUtils {
     return axis;
   }
 
-  static makeDefaultLayout() {
+  static makeDefaultLayout(theme = {}) {
+    let colorway = [];
+    if (theme.colorway) {
+      if (Array.isArray(theme.colorway)) {
+        colorway = theme.colorway;
+      } else if (typeof theme.colorway === 'string') {
+        colorway = theme.colorway.split(' ');
+      } else {
+        log.warn(`Unable to handle colorway property: ${theme.colorway}`);
+      }
+    }
+
     const layout = {
-      ...ChartTheme,
+      ...theme,
       autosize: true,
-      colorway: ChartTheme.colorway ? ChartTheme.colorway.split(' ') : [],
+      colorway,
       font: {
         family: "'Fira Sans', sans-serif",
       },
       title: {
         font: {
-          color: ChartTheme.title_color,
+          color: theme.title_color,
         },
         yanchor: 'top',
         pad: { ...ChartUtils.DEFAULT_TITLE_PADDING },
         y: 1,
-        text: 'Untitled',
       },
       legend: {
         font: {
-          color: ChartTheme.title_color,
+          color: theme.title_color,
         },
       },
       margin: { ...ChartUtils.DEFAULT_MARGIN },
-      xaxis: ChartUtils.makeLayoutAxis(dh.plot.AxisType.X),
-      yaxis: ChartUtils.makeLayoutAxis(dh.plot.AxisType.Y),
+      xaxis: ChartUtils.makeLayoutAxis(dh.plot.AxisType.X, theme),
+      yaxis: ChartUtils.makeLayoutAxis(dh.plot.AxisType.Y, theme),
     };
     layout.datarevision = 0;
     return layout;

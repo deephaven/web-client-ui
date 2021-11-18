@@ -6,7 +6,7 @@ import PropTypes from 'prop-types';
 import shortid from 'shortid';
 import debounce from 'lodash.debounce';
 import { connect } from 'react-redux';
-import { FigureChartModel } from '@deephaven/chart';
+import { ChartModelFactory } from '@deephaven/chart';
 import { ThemeExport } from '@deephaven/components';
 import { Console, ConsoleConstants, ConsoleUtils } from '@deephaven/console';
 import { GLPropTypes, PanelEvent } from '@deephaven/dashboard';
@@ -206,7 +206,9 @@ class ConsolePanel extends PureComponent {
     const id = this.getItemId(name);
     const metadata = { figure: name };
     const makeModel = () =>
-      session.getObject(object).then(result => new FigureChartModel(result));
+      session
+        .getObject(object)
+        .then(result => ChartModelFactory.makeModel(undefined, result));
 
     const { glEventHub } = this.props;
     glEventHub.emit(ChartEvent.OPEN, name, makeModel, metadata, id);

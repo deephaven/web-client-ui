@@ -2,6 +2,7 @@ import dh from '@deephaven/jsapi-shim';
 import { Formatter } from '@deephaven/iris-grid';
 import ChartUtils from './ChartUtils';
 import ChartTestUtils from './ChartTestUtils';
+import ChartTheme from './ChartTheme';
 
 function makeFormatter() {
   return new Formatter();
@@ -32,8 +33,8 @@ it('groups the axes by type properly', () => {
 });
 
 it('returns a newly composed layout object each time', () => {
-  const layout1 = ChartUtils.makeDefaultLayout();
-  const layout2 = ChartUtils.makeDefaultLayout();
+  const layout1 = ChartUtils.makeDefaultLayout(ChartTheme);
+  const layout2 = ChartUtils.makeDefaultLayout(ChartTheme);
 
   expect(layout1).not.toBe(layout2);
   expect(layout1.xaxis).not.toBe(layout2.xaxis);
@@ -287,7 +288,7 @@ describe('updating layout axes', () => {
 describe('returns the axis layout ranges properly', () => {
   function makeLayout(layout) {
     return {
-      ...ChartUtils.makeDefaultLayout(),
+      ...ChartUtils.makeDefaultLayout(ChartTheme),
       ...layout,
     };
   }

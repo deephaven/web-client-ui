@@ -18,7 +18,7 @@ class FigureChartModel extends ChartModel {
    * @param {dh.plot.Figure} figure The figure object created by the API
    * @param {Object} settings Chart settings
    */
-  constructor(figure, settings = {}) {
+  constructor(figure, settings = {}, theme = {}) {
     super();
 
     this.handleFigureUpdated = this.handleFigureUpdated.bind(this);
@@ -40,8 +40,9 @@ class FigureChartModel extends ChartModel {
 
     this.figure = figure;
     this.settings = settings;
+    this.theme = theme;
     this.data = [];
-    this.layout = ChartUtils.makeDefaultLayout();
+    this.layout = ChartUtils.makeDefaultLayout(theme);
     this.seriesDataMap = new Map();
     this.pendingSeries = [];
     this.oneClicks = [];
@@ -111,7 +112,8 @@ class FigureChartModel extends ChartModel {
     const seriesData = ChartUtils.makeSeriesDataFromSeries(
       series,
       axisTypeMap,
-      ChartUtils.getSeriesVisibility(series.name, this.settings)
+      ChartUtils.getSeriesVisibility(series.name, this.settings),
+      this.theme
     );
 
     this.seriesDataMap.set(series.name, seriesData);
@@ -494,7 +496,8 @@ class FigureChartModel extends ChartModel {
         chart.axes,
         plotWidth,
         plotHeight,
-        axisRangeParser
+        axisRangeParser,
+        this.theme
       );
     }
   }
