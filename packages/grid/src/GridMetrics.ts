@@ -1,6 +1,9 @@
 /** A grid coordinate value */
 export type Coordinate = number;
 
+/** Coordinates of a box [x1, y1, x2, y2] */
+export type BoxCoordinates = [Coordinate, Coordinate, Coordinate, Coordinate];
+
 /** The visible index of the item, eg. after moves are applied */
 export type Index = number;
 
@@ -112,7 +115,7 @@ export type GridMetrics = {
   visibleColumnXs: Map<Index, Coordinate>;
 
   // The boxes user can click on for expanding/collapsing tree rows
-  visibleRowTreeBoxes: unknown;
+  visibleRowTreeBoxes: Map<Index, BoxCoordinates>;
 
   // Mapping from visible row indexes to the model row/columns they pull from
   modelRows: Map<Index, ModelIndex>;

@@ -1,5 +1,6 @@
 import GridRange from './GridRange';
-import type { GridMetrics } from './GridMetricCalculator';
+import { Index, ModelIndex, MoveOperation } from './GridMetrics';
+import type { GridMetrics } from './GridMetrics';
 
 class GridUtils {
   // use same constant as chrome source for windows
@@ -61,13 +62,13 @@ class GridUtils {
   }
 
   static iterateAllItems(
-    visibleStart,
-    visibleEnd,
-    floatingStartCount,
-    floatingEndCount,
-    totalCount,
-    callback
-  ) {
+    visibleStart: Index,
+    visibleEnd: Index,
+    floatingStartCount: number,
+    floatingEndCount: number,
+    totalCount: number,
+    callback: (itemIndex: Index) => void
+  ): void {
     const visibleStartIndex = Math.max(visibleStart, floatingStartCount);
     const visibleEndIndex = Math.min(
       visibleEnd,
@@ -500,11 +501,14 @@ class GridUtils {
 
   /**
    * Retrieve the model index given the currently moved items
-   * @param {Number} visibleIndex The visible index of the item to get the model index for
-   * @param {Array} movedItems The moved items
-   * @returns {Number} The model index of the item
+   * @param visibleIndex The visible index of the item to get the model index for
+   * @param movedItems The moved items
+   * @returns The model index of the item
    */
-  static getModelIndex(visibleIndex, movedItems = []) {
+  static getModelIndex(
+    visibleIndex: Index,
+    movedItems: MoveOperation[] = []
+  ): ModelIndex {
     let modelIndex = visibleIndex;
 
     for (let i = movedItems.length - 1; i >= 0; i -= 1) {
