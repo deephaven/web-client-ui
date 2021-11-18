@@ -1,6 +1,31 @@
-import GridRange from './GridRange';
-import { Index, ModelIndex, MoveOperation } from './GridMetrics';
+import React from 'react';
+import GridRange, { GridRangeIndex } from './GridRange';
+import {
+  BoxCoordinates,
+  Coordinate,
+  CoordinateMap,
+  Index,
+  IndexModelMap,
+  ModelIndex,
+  ModelSizeMap,
+  MoveOperation,
+  SizeMap,
+} from './GridMetrics';
 import type { GridMetrics } from './GridMetrics';
+import { GridTheme } from './GridTheme';
+
+export type AxisRange = [start: Index, end: Index];
+
+export type GridAxisRange = [start: GridRangeIndex, end: GridRangeIndex];
+
+export type GridPoint = {
+  x: Coordinate;
+  y: Coordinate;
+  column: GridRangeIndex;
+  row: GridRangeIndex;
+};
+
+export type IndexCallback<T> = (itemIndex: Index) => T | undefined;
 
 class GridUtils {
   // use same constant as chrome source for windows
@@ -8,20 +33,35 @@ class GridUtils {
   static PIXELS_PER_LINE = 100 / 3;
 
   /**
-   *
-   * @param x
-   * @param y
-   * @param metrics
-   * @returns
+   * Get the GridPoint for the coordinates provided
+   * @param x The grid x coordinate
+   * @param y The grid y coordinate
+   * @param metrics The grid metrics
+   * @returns The GridPoint including the column/row information
    */
-  static getGridPointFromXY(x: number, y: number, metrics: GridMetrics) {
+  static getGridPointFromXY(
+    x: Coordinate,
+    y: Coordinate,
+    metrics: GridMetrics
+  ): GridPoint {
     const column = GridUtils.getColumnAtX(x, metrics);
     const row = GridUtils.getRowAtY(y, metrics);
 
     return { x, y, row, column };
   }
 
-  static iterateFloatingStart(start, total, callback) {
+  /**
+   * Iterate through each floating item at the start and call a callback, returning the first result
+   * @param start The count of floating items at the start
+   * @param total The total number of items
+   * @param callback Function to call for each item
+   * @returns The result from the callback
+   */
+  static iterateFloatingStart<T>(
+    start: number,
+    total: number,
+    callback: IndexCallback<T>
+  ): T | undefined {
     for (let i = 0; i < start && i < total; i += 1) {
       const result = callback(i);
       if (result !== undefined) {
@@ -34,8 +74,16 @@ class GridUtils {
 
   /**
    * Iterate through floating items at the end. Iterates in increasing order.
+   * @param end The count of floating items at the end
+   * @param total The total number of items
+   * @param callback Function to call for each item
+   * @returns The result from the callback
    */
-  static iterateFloatingEnd(end, total, callback) {
+  static iterateFloatingEnd<T>(
+    end: number,
+    total: number,
+    callback: IndexCallback<T>
+  ): T | undefined {
     for (let i = 0; i < end && total - (end - i) >= 0; i += 1) {
       const result = callback(total - (end - i));
       if (result !== undefined) {
@@ -48,12 +96,17 @@ class GridUtils {
 
   /**
    * Iterate through all floating items in increasing order, starting with the top items.
-   * @param {number} start Count of start floating rows, eg. floatingTopRowCount
-   * @param {number} end Count of end floating rows, eg. floatingBottomRowCount
-   * @param {number} total Total number of items
-   * @param {(itemIndex:number) => any | undefined} callback Callback called for each value, stopping the iterating and returning the value if one is returned
+   * @param start Count of start floating rows, eg. floatingTopRowCount
+   * @param end Count of end floating rows, eg. floatingBottomRowCount
+   * @param total Total number of items
+   * @param callback Callback called for each value, stopping the iterating and returning the value if one is returned
    */
-  static iterateFloating(start, end, total, callback) {
+  static iterateFloating<T>(
+    start: number,
+    end: number,
+    total: number,
+    callback: IndexCallback<T>
+  ): T | undefined {
     const result = GridUtils.iterateFloatingStart(start, total, callback);
     if (result !== undefined) {
       return result;
@@ -61,14 +114,25 @@ class GridUtils {
     return GridUtils.iterateFloatingEnd(end, total, callback);
   }
 
-  static iterateAllItems(
+  /**
+   * Iterate through all items in one dimension on the grid - first floating, then visible.
+   * Call the callback for each item, break if a result is returned and return that result.
+   * @param visibleStart Index of the start of the visible viewport
+   * @param visibleEnd Index of the end of the visible viewport
+   * @param floatingStartCount Number of items floating at the start
+   * @param floatingEndCount Number of items floating at the end
+   * @param totalCount Total number of items
+   * @param callback Callback to call for each item
+   * @returns The first result from the callback called, or undefined
+   */
+  static iterateAllItems<T>(
     visibleStart: Index,
     visibleEnd: Index,
     floatingStartCount: number,
     floatingEndCount: number,
     totalCount: number,
-    callback: (itemIndex: Index) => void
-  ): void {
+    callback: IndexCallback<T>
+  ): T | undefined {
     const visibleStartIndex = Math.max(visibleStart, floatingStartCount);
     const visibleEndIndex = Math.min(
       visibleEnd,
@@ -94,21 +158,45 @@ class GridUtils {
     return undefined;
   }
 
-  static isInItem(itemIndex, itemXs, itemSizes, x) {
-    const itemX = itemXs.get(itemIndex);
-    const itemSize = itemSizes.get(itemIndex);
+  /**
+   * Check if the coordinate is within the item specified in this dimension
+   * @param itemIndex Index of the item to check
+   * @param itemXs Coordinate of all items in this dimension
+   * @param itemSizes Size of all items in this dimension
+   * @param x The coordinate to check
+   * @returns True if the coordinate is within the item specified, false otherwise
+   */
+  static isInItem(
+    itemIndex: Index,
+    itemXs: CoordinateMap,
+    itemSizes: SizeMap,
+    x: Coordinate
+  ): boolean {
+    const itemX = itemXs.get(itemIndex) ?? 0;
+    const itemSize = itemSizes.get(itemIndex) ?? 0;
     return itemX <= x && x <= itemX + itemSize;
   }
 
+  /**
+   * Get the Index of the item at the provided offset
+   * @param offset Coordinate of the offset to get the item of
+   * @param itemCount The total count of items
+   * @param floatingStart Count of floating items at the start
+   * @param floatingEnd Count of floating items at the end
+   * @param items Index of all items
+   * @param itemXs The coordinate of each item
+   * @param itemSizes The size of each item
+   * @returns The item index, or null if no item matches
+   */
   static getItemAtOffset(
-    offset,
-    itemCount,
-    floatingStart,
-    floatingEnd,
-    items,
-    itemXs,
-    itemSizes
-  ) {
+    offset: Coordinate,
+    itemCount: number,
+    floatingStart: number,
+    floatingEnd: number,
+    items: Index[],
+    itemXs: CoordinateMap,
+    itemSizes: SizeMap
+  ): Index | null {
     const floatingItem = GridUtils.iterateFloating(
       floatingStart,
       floatingEnd,
@@ -134,7 +222,13 @@ class GridUtils {
     return null;
   }
 
-  static getColumnAtX(x, metrics) {
+  /**
+   * Get the index of the column at the specified x coordinate
+   * @param x Coordinate to get the item of
+   * @param metrics Grid metrics
+   * @returns Index of the column at that coordinate, or null if no column matches
+   */
+  static getColumnAtX(x: Coordinate, metrics: GridMetrics): Index | null {
     const {
       columnCount,
       floatingLeftColumnCount,
@@ -160,7 +254,13 @@ class GridUtils {
     );
   }
 
-  static getRowAtY(y, metrics) {
+  /**
+   * Get the index of the row at the specified y coordinate
+   * @param y Coordinate to get the item of
+   * @param metrics Grid metrics
+   * @returns Index of the row at that coordinate, or null if no row matches
+   */
+  static getRowAtY(y: Coordinate, metrics: GridMetrics): Index | null {
     const {
       floatingTopRowCount,
       floatingBottomRowCount,
@@ -192,15 +292,21 @@ class GridUtils {
    * @param {Map} modelIndexes The mapping of model indexes
    * @param {Number[]} visibleItems The visible items
    * @param {Map} userSizes The user set sizes
+   * @returns Index of the next visible item, or null if no more are visible
    */
-  static getNextShownItem(startIndex, modelIndexes, visibleItems, userSizes) {
+  static getNextShownItem(
+    startIndex: Index,
+    modelIndexes: IndexModelMap,
+    visibleItems: Index[],
+    userSizes: ModelSizeMap
+  ): Index | null {
     let visibleItemIndex =
       visibleItems.findIndex(value => value === startIndex) || 0;
     visibleItemIndex -= 1;
     while (visibleItemIndex != null && visibleItemIndex >= 0) {
       const item = visibleItems[visibleItemIndex];
       const modelIndex = modelIndexes.get(item);
-      if (userSizes.get(modelIndex) !== 0) {
+      if (modelIndex != null && userSizes.get(modelIndex) !== 0) {
         return item;
       }
 
@@ -212,10 +318,14 @@ class GridUtils {
 
   /**
    * Iterate backward through the visible columns until a shown column is hit
-   * @param {Number} columnIndex The column index to start iterating backward from
-   * @param {GridMetrics} metrics The GridMetricCalculator metrics
+   * @param columnIndex The column index to start iterating backward from
+   * @param metrics The GridMetricCalculator metrics
+   * @returns Index of the next visible item, or null if no more are visible
    */
-  static getNextShownColumn(startIndex, metrics) {
+  static getNextShownColumn(
+    startIndex: Index,
+    metrics: GridMetrics
+  ): Index | null {
     const { modelColumns, visibleColumns, userColumnWidths } = metrics;
     return GridUtils.getNextShownItem(
       startIndex,
@@ -229,8 +339,12 @@ class GridUtils {
    * Iterate backward through the visible rows until a shown row is hit
    * @param {Number} rowIndex The row index to start iterating backward from
    * @param {GridMetrics} metrics The GridMetricCalculator metrics
+   * @returns Index of the next visible item, or null if no more are visible
    */
-  static getNextShownRow(startIndex, metrics) {
+  static getNextShownRow(
+    startIndex: Index,
+    metrics: GridMetrics
+  ): Index | null {
     const { modelRows, visibleRows, userRowHeights } = metrics;
     return GridUtils.getNextShownItem(
       startIndex,
@@ -241,27 +355,29 @@ class GridUtils {
   }
 
   /**
-   * Gets the column index if the x/y coordinated provided are close enough
-   * @param {Number} x Mouse x coordinate
-   * @param {Number} y Mouse y coordinate
-   * @param {GridMetrics} metrics The GridMetricCalculator metrics
-   * @param {GridTheme} theme The grid theme with potantial user overrides
-   * @returns {Number|null} Column index or null
+   * Gets the column index if the x/y coordinates provided are close enough to the separator, otherwise null
+   * @param x Mouse x coordinate
+   * @param y Mouse y coordinate
+   * @param metrics The grid metrics
+   * @param theme The grid theme with potential user overrides
+   * @returns Index of the column separator at the coordinates provided, or null if none match
    */
-  static getColumnSeparatorIndex(x, y, metrics, theme) {
+  static getColumnSeparatorIndex(
+    x: Coordinate,
+    y: Coordinate,
+    metrics: GridMetrics,
+    theme: GridTheme
+  ): Index | null {
     const {
       rowHeaderWidth,
       columnHeaderHeight,
       floatingColumns,
+      floatingLeftWidth,
       visibleColumns,
       visibleColumnXs,
       visibleColumnWidths,
-      floatingLeftColumnCount,
     } = metrics;
     const { allowColumnResize, headerSeparatorHandleSize } = theme;
-    const floatingLeftColumnsWidth =
-      visibleColumnXs.get(floatingLeftColumnCount - 1) +
-      visibleColumnWidths.get(floatingLeftColumnCount - 1);
 
     if (
       columnHeaderHeight < y ||
@@ -278,8 +394,8 @@ class GridUtils {
     let isPreviousColumnHidden = false;
     for (let i = floatingColumns.length - 1; i >= 0; i -= 1) {
       const column = floatingColumns[i];
-      const columnX = visibleColumnXs.get(column);
-      const columnWidth = visibleColumnWidths.get(column);
+      const columnX = visibleColumnXs.get(column) ?? 0;
+      const columnWidth = visibleColumnWidths.get(column) ?? 0;
       const isColumnHidden = columnWidth === 0;
       if (!isPreviousColumnHidden || !isColumnHidden) {
         let midX = columnX + columnWidth;
@@ -303,12 +419,12 @@ class GridUtils {
     isPreviousColumnHidden = false;
     for (let i = visibleColumns.length - 1; i >= 0; i -= 1) {
       const column = visibleColumns[i];
-      const columnX = visibleColumnXs.get(column);
-      const columnWidth = visibleColumnWidths.get(column);
+      const columnX = visibleColumnXs.get(column) ?? 0;
+      const columnWidth = visibleColumnWidths.get(column) ?? 0;
       const isColumnHidden = columnWidth === 0;
 
       // If this column is under the floating columns "layer". Terminate early.
-      if (columnX < floatingLeftColumnsWidth - columnWidth) {
+      if (columnX < floatingLeftWidth - columnWidth) {
         return null;
       }
 
@@ -333,11 +449,23 @@ class GridUtils {
     return null;
   }
 
-  static isItemHidden(itemIndex, visibleSizes) {
+  /**
+   * Check if the item specified is hidden
+   * @param itemIndex Index of the item to check
+   * @param visibleSizes Sizes of all visible items
+   * @returns True if the item is hidden, false otherwise
+   */
+  static isItemHidden(itemIndex: Index, visibleSizes: SizeMap): boolean {
     return visibleSizes.get(itemIndex) === 0;
   }
 
-  static isColumnHidden(columnIndex, metrics) {
+  /**
+   * Check if the column specified is hidden
+   * @param columnIndex Index of the column to check
+   * @param metrics Grid metrics
+   * @returns True if the column is hidden, false otherwise
+   */
+  static isColumnHidden(columnIndex: Index, metrics: GridMetrics): boolean {
     const { visibleColumnWidths } = metrics;
     return GridUtils.isItemHidden(columnIndex, visibleColumnWidths);
   }
@@ -346,8 +474,9 @@ class GridUtils {
    * Check if the provided row is a floating row
    * @param {number} row The row index to check
    * @param {GridMetrics} metrics The grid metrics to check against
+   * @returns True if it's a floating row, false otherwise
    */
-  static isFloatingRow(row, metrics) {
+  static isFloatingRow(row: Index, metrics: GridMetrics): boolean {
     if (row == null) {
       return false;
     }
@@ -360,10 +489,11 @@ class GridUtils {
 
   /**
    * Check if the provided column is a floating column
-   * @param {number} column The column index to check
-   * @param {GridMetrics} metrics The grid metrics to check against
+   * @param column The column index to check
+   * @param metrics The grid metrics to check against
+   * @returns True if it's a floating column, false otherwise
    */
-  static isFloatingColumn(column, metrics) {
+  static isFloatingColumn(column: Index, metrics: GridMetrics): boolean {
     if (column == null) {
       return false;
     }
@@ -379,7 +509,19 @@ class GridUtils {
     );
   }
 
-  static getHiddenItems(itemIndex, visibleSizes, visibleItems) {
+  /**
+   * Get all the items that are hidden under the same Index
+   * Eg. If columns are 1, 2, 3, 4, 5, and column 2, 3, 4 are hidden, and we check for item 4, the return will be [2, 3, 4]
+   * @param itemIndex Index of the item to start at
+   * @param visibleSizes Visible size map
+   * @param visibleItems Visible items
+   * @returns Array of items that are hidden
+   */
+  static getHiddenItems(
+    itemIndex: Index,
+    visibleSizes: SizeMap,
+    visibleItems: Index[]
+  ): Index[] {
     if (!GridUtils.isItemHidden(itemIndex, visibleSizes)) {
       return [];
     }
@@ -400,7 +542,13 @@ class GridUtils {
     return hiddenItems;
   }
 
-  static getHiddenColumns(columnIndex, metrics) {
+  /**
+   * Get all the columns that are hidden under the same Index
+   * @param columnIndex Index of the item to start at
+   * @param metrics Grid metrics
+   * @returns Array of items that are hidden
+   */
+  static getHiddenColumns(columnIndex: Index, metrics: GridMetrics): Index[] {
     const { visibleColumns, visibleColumnWidths } = metrics;
     return GridUtils.getHiddenItems(
       columnIndex,
@@ -409,8 +557,20 @@ class GridUtils {
     );
   }
 
-  // Returns the row index if the x/y coordinates provided are close enough to the separator, otherwise false
-  static getRowSeparatorIndex(x, y, metrics, theme) {
+  /**
+   * Returns the row index if the x/y coordinates provided are close enough to the separator, otherwise null
+   * @param x X coordinate to check
+   * @param y Y coordinate to check
+   * @param metrics The grid metrics
+   * @param theme The grid theme
+   * @returns Index of the row separator at the coordinates provided, or null if none match
+   */
+  static getRowSeparatorIndex(
+    x: Coordinate,
+    y: Coordinate,
+    metrics: GridMetrics,
+    theme: GridTheme
+  ): Index | null {
     const {
       rowHeaderWidth,
       columnHeaderHeight,
@@ -435,8 +595,8 @@ class GridUtils {
     let isPreviousRowHidden = false;
     for (let i = visibleRows.length - 1; i >= 0; i -= 1) {
       const row = visibleRows[i];
-      const rowY = visibleRowYs.get(row);
-      const rowHeight = visibleRowHeights.get(row);
+      const rowY = visibleRowYs.get(row) ?? 0;
+      const rowHeight = visibleRowHeights.get(row) ?? 0;
       const isRowHidden = rowHeight === 0;
       if (!isPreviousRowHidden || !isRowHidden) {
         let midY = rowY + rowHeight;
@@ -460,29 +620,45 @@ class GridUtils {
     return null;
   }
 
-  static isRowHidden(rowIndex, metrics) {
+  /**
+   * Check if the row specified is hidden
+   * @param rowIndex Index of the row to check
+   * @param metrics Grid metrics
+   * @returns True if the row is hidden, false otherwise
+   */
+  static isRowHidden(rowIndex: Index, metrics: GridMetrics): boolean {
     const { visibleRowHeights } = metrics;
     return GridUtils.isItemHidden(rowIndex, visibleRowHeights);
   }
 
-  static getHiddenRows(rowIndex, metrics) {
+  /**
+   * Get all the rows that are hidden under the same Index
+   * @param rowIndex Index of the item to start at
+   * @param metrics Grid metrics
+   * @returns Array of items that are hidden
+   */
+  static getHiddenRows(rowIndex: Index, metrics: GridMetrics): Index[] {
     const { visibleRows, visibleRowHeights } = metrics;
     return GridUtils.getHiddenItems(rowIndex, visibleRowHeights, visibleRows);
   }
 
   /**
    * Set a new order for items in the grid
-   * @param {Number} from The visible index to move from
-   * @param {Number} to The visible index to move the itme to
-   * @param {Array} oldMovedItems The old reordered items
-   * @returns {Number} The new reordered items
+   * @param from The visible index to move from
+   * @param to The visible index to move the itme to
+   * @param oldMovedItems The old reordered items
+   * @returns The new reordered items
    */
-  static moveItem(from, to, oldMovedItems = []) {
+  static moveItem(
+    from: Index,
+    to: Index,
+    oldMovedItems: MoveOperation[] = []
+  ): MoveOperation[] {
     if (from === to) {
       return oldMovedItems;
     }
 
-    const movedItems = [].concat(oldMovedItems);
+    const movedItems: MoveOperation[] = [...oldMovedItems];
 
     if (
       movedItems.length > 0 &&
@@ -529,13 +705,21 @@ class GridUtils {
    * Translate the provided UI start/end indexes to the model start/end indexes by applying the `movedItems` transformations.
    * Since moved items can split apart a range, multiple pairs of indexes are returned
    *
-   * @param {number} start Start item in one dimension
-   * @param {number} end End item in one dimension
-   * @param {MovedItem[]} movedItems Moved item pairs in this dimension
-   * @returns {AxisRange[]} Array of start/end pairs of the indexes after transformations applied.
+   * @param start Start item in one dimension
+   * @param end End item in one dimension
+   * @param movedItems Moved item pairs in this dimension
+   * @returns Array of start/end pairs of the indexes after transformations applied.
    */
-  static getModelRangeIndexes(start, end, movedItems) {
-    let result = [[start, end]];
+  static getModelRangeIndexes(
+    start: GridRangeIndex,
+    end: GridRangeIndex,
+    movedItems: MoveOperation[]
+  ): GridAxisRange[] {
+    if (start == null || end == null) {
+      return [[start, end]];
+    }
+
+    let result: [Index, Index][] = [[start, end]];
     if (start == null) {
       return result;
     }
@@ -546,7 +730,7 @@ class GridUtils {
     // the transformations starting at the end of the chain backward to find the appropriate model indexes
     for (let i = movedItems.length - 1; i >= 0; i -= 1) {
       const { from, to } = movedItems[i];
-      const nextResult = [];
+      const nextResult: [Index, Index][] = [];
       for (let j = 0; j < result.length; j += 1) {
         const [currentStart, currentEnd] = result[j];
         const startLength = nextResult.length;
@@ -614,12 +798,16 @@ class GridUtils {
    * Translate the provided UI range into model range, using the `movedColumns` and `movedRows` to apply the necessary transforms.
    * `movedColumns` and `movedRows` are array of operations done to the UI indexes to re-order items
    *
-   * @param {GridRange} uiRange The currently selected UI ranges
-   * @param {Array} movedColumns The moved column pairs
-   * @param {Array} movedRows The moved row pairs
-   * @returns {GridRange[]} The model ranges after translation.
+   * @param uiRange The currently selected UI ranges
+   * @param movedColumns The moved column pairs
+   * @param movedRows The moved row pairs
+   * @returns The model ranges after translation.
    */
-  static getModelRange(uiRange, movedColumns = [], movedRows = []) {
+  static getModelRange(
+    uiRange: GridRange,
+    movedColumns: MoveOperation[] = [],
+    movedRows: MoveOperation[] = []
+  ): GridRange[] {
     const columnRanges = GridUtils.getModelRangeIndexes(
       uiRange.startColumn,
       uiRange.endColumn,
@@ -630,7 +818,7 @@ class GridUtils {
       uiRange.endRow,
       movedRows
     );
-    const ranges = [];
+    const ranges: GridRange[] = [];
     for (let i = 0; i < columnRanges.length; i += 1) {
       const c = columnRanges[i];
       for (let j = 0; j < rowRanges.length; j += 1) {
@@ -645,12 +833,16 @@ class GridUtils {
    * Translate the provided UI range into model ranges, using the `movedColumns` and `movedRows` to apply the necessary transforms.
    * `movedColumns` and `movedRows` are array of operations done to the UI indexes to re-order items
    *
-   * @param {GridRange[]} uiRanges The currently selected UI ranges
-   * @param {Array} movedColumns The moved column pairs
-   * @param {Array} movedRows The moved row pairs
-   * @returns {GridRange[]} The model ranges after translation.
+   * @param uiRanges The currently selected UI ranges
+   * @param movedColumns The moved column pairs
+   * @param movedRows The moved row pairs
+   * @returns The model ranges after translation.
    */
-  static getModelRanges(uiRanges, movedColumns = [], movedRows = []) {
+  static getModelRanges(
+    uiRanges: GridRange[],
+    movedColumns: MoveOperation[] = [],
+    movedRows: MoveOperation[] = []
+  ): GridRange[] {
     const modelRanges = [];
     for (let i = 0; i < uiRanges.length; i += 1) {
       modelRanges.push(
@@ -662,11 +854,14 @@ class GridUtils {
 
   /**
    * Retrieve the visible index given the currently moved items
-   * @param {Number} modelIndex The model index to get the visible index for
-   * @param {Array} movedItems Moved items
-   * @returns {Number} The visible index of the item
+   * @param modelIndex The model index to get the visible index for
+   * @param movedItems Moved items
+   * @returns The visible index of the item
    */
-  static getVisibleIndex(modelIndex, movedItems = []) {
+  static getVisibleIndex(
+    modelIndex: ModelIndex,
+    movedItems: MoveOperation[] = []
+  ): Index {
     let visibleIndex = modelIndex;
 
     for (let i = 0; i < movedItems.length; i += 1) {
@@ -689,12 +884,20 @@ class GridUtils {
     return visibleIndex;
   }
 
-  static isMacPlatform() {
+  /**
+   * Check if the current platform is Mac
+   * @returns True if this platform is a Mac, false otherwise
+   */
+  static isMacPlatform(): boolean {
     const { platform } = window.navigator;
     return platform.startsWith('Mac');
   }
 
-  static getModifierKey() {
+  /**
+   * Get the modifier key for the current platform
+   * @returns The modifier key for the current platform
+   */
+  static getModifierKey(): 'metaKey' | 'ctrlKey' {
     if (GridUtils.isMacPlatform()) {
       return 'metaKey';
     }
@@ -702,16 +905,41 @@ class GridUtils {
     return 'ctrlKey';
   }
 
-  static isModifierKeyDown(event) {
+  /**
+   * Check if the modifier key is down for the given event
+   * @param event The event to check
+   * @returns True if the modifier key is down, false otherwise
+   */
+  static isModifierKeyDown(
+    event: MouseEvent | KeyboardEvent | React.KeyboardEvent | React.MouseEvent
+  ): boolean {
     const modifierKey = GridUtils.getModifierKey();
     return event[modifierKey];
   }
 
-  static checkColumnHidden(modelIndex, userColumnWidths) {
+  /**
+   * Check if the user has hidden the specified column
+   * @param modelIndex The model index to check
+   * @param userColumnWidths The user set column widths
+   * @returns True if the user has hidden the column
+   */
+  static checkColumnHidden(
+    modelIndex: ModelIndex,
+    userColumnWidths: ModelSizeMap
+  ): boolean {
     return userColumnWidths.get(modelIndex) === 0;
   }
 
-  static checkAllColumnsHidden(columns, userColumnWidths) {
+  /**
+   * Check if all the columns specified are hidden
+   * @param columns Columns to check
+   * @param userColumnWidths The user set column widths
+   * @returns True if the user has hidden all of the columns
+   */
+  static checkAllColumnsHidden(
+    columns: ModelIndex[],
+    userColumnWidths: ModelSizeMap
+  ): boolean {
     if (userColumnWidths.size === 0) {
       return false;
     }
@@ -726,7 +954,11 @@ class GridUtils {
    * @param {number} column The column they started the drag from
    * @returns Dimensions of the drag area in relation to the canvas they need to drag outside of to start scrolling
    */
-  static getScrollDragBounds(metrics, row, column) {
+  static getScrollDragBounds(
+    metrics: GridMetrics,
+    row: GridRangeIndex,
+    column: GridRangeIndex
+  ): BoxCoordinates {
     const {
       gridX,
       gridY,
@@ -743,13 +975,13 @@ class GridUtils {
       columnCount,
       rowCount,
     } = metrics;
-    let x = gridX;
-    let y = gridY;
+    let x1 = gridX;
+    let y1 = gridY;
     let x2 = width;
     let y2 = height;
     if (column != null) {
       if (column > floatingLeftColumnCount) {
-        x += floatingLeftWidth;
+        x1 += floatingLeftWidth;
       }
       if (column < columnCount - floatingRightColumnCount) {
         x2 -= floatingRightWidth;
@@ -758,32 +990,32 @@ class GridUtils {
 
     if (row != null) {
       if (row > floatingTopRowCount) {
-        y += floatingTopHeight;
+        y1 += floatingTopHeight;
       }
       if (row < rowCount - floatingBottomRowCount) {
         y2 -= floatingBottomHeight;
       }
     }
-    return { x, y, x2, y2 };
+    return { x1, y1, x2, y2 };
   }
 
   /**
    * Converts the delta coordinates from the provided wheel event to pixels
    * Different platforms have different ways of providing the delta so this normalizes it
-   * @param {WheelEvent} wheelEvent The mouse wheel event to get the scrolling delta for
-   * @param {number?} pageWidth The width of the page that is scrolling
-   * @param {number?} pageHeight The height of the page that is scrolling
-   * @param {number?} lineWidth The width of the line scrolling in line mode
-   * @param {number?} lineHeight The height of the line scrolling in line mode
-   * @returns {{deltaX:number, deltaY: number}} The delta coordinates normalized to pixels
+   * @param wheelEvent The mouse wheel event to get the scrolling delta for
+   * @param pageWidth The width of the page that is scrolling
+   * @param pageHeight The height of the page that is scrolling
+   * @param lineWidth The width of the line scrolling in line mode
+   * @param lineHeight The height of the line scrolling in line mode
+   * @returns The delta coordinates normalized to pixels
    */
   static getScrollDelta(
-    wheelEvent,
+    wheelEvent: WheelEvent,
     pageWidth = 1024,
     pageHeight = 768,
     lineWidth = 20,
     lineHeight = 20
-  ) {
+  ): { deltaX: number; deltaY: number } {
     let { deltaX, deltaY } = wheelEvent;
 
     // Flip scroll direction if shiftKey is held on windows/linux.

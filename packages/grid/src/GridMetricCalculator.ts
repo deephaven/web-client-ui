@@ -2,9 +2,13 @@ import GridModel from './GridModel';
 import GridMetrics, {
   BoxCoordinates,
   Coordinate,
+  CoordinateMap,
   Index,
+  IndexModelMap,
   ModelIndex,
+  ModelSizeMap,
   MoveOperation,
+  SizeMap,
 } from './GridMetrics';
 import GridUtils from './GridUtils';
 import { GridFont, GridTheme } from './GridTheme';
@@ -89,8 +93,8 @@ class GridMetricCalculator {
     endCount: number,
     totalCount: number,
     max: number,
-    sizeMap: Map<Index, number>
-  ): Map<Index, Coordinate> {
+    sizeMap: SizeMap
+  ): CoordinateMap {
     const coordinates = new Map();
     let x = 0;
     for (let i = 0; i < startCount && i < totalCount; i += 1) {
@@ -109,25 +113,25 @@ class GridMetricCalculator {
   }
 
   /** User set column widths */
-  private userColumnWidths: Map<ModelIndex, number>;
+  private userColumnWidths: ModelSizeMap;
 
   /** User set row heights */
-  private userRowHeights: Map<ModelIndex, number>;
+  private userRowHeights: ModelSizeMap;
 
   /** Calculated column widths based on cell contents */
-  private calculatedColumnWidths: Map<ModelIndex, number>;
+  private calculatedColumnWidths: ModelSizeMap;
 
   /** Calculated row heights based on cell contents */
-  private calculatedRowHeights: Map<ModelIndex, number>;
+  private calculatedRowHeights: ModelSizeMap;
 
   /** Cache of fonts to estimated width of one char */
   private fontWidths: Map<string, number>;
 
   /** Map from visible index to model index for rows (eg. reversing movedRows operations) */
-  private modelRows: Map<Index, ModelIndex>;
+  private modelRows: IndexModelMap;
 
   /** Map from visible index to model index for columns (eg. reversing movedColumns operations) */
-  private modelColumns: Map<Index, ModelIndex>;
+  private modelColumns: IndexModelMap;
 
   /** List of moved row operations. Need to track the previous value so we know if modelRows needs to be cleared. */
   private movedRows: MoveOperation[];
@@ -583,7 +587,7 @@ class GridMetricCalculator {
    */
   getVisibleHeight(
     state: GridMetricState,
-    visibleRowHeights: Map<Index, number> = this.getFloatingRowHeights(state)
+    visibleRowHeights: SizeMap = this.getFloatingRowHeights(state)
   ): number {
     const { height, theme } = state;
     const { scrollBarSize } = theme;
@@ -610,9 +614,7 @@ class GridMetricCalculator {
    */
   getVisibleWidth(
     state: GridMetricState,
-    visibleColumnWidths: Map<Index, number> = this.getFloatingColumnWidths(
-      state
-    )
+    visibleColumnWidths: SizeMap = this.getFloatingColumnWidths(state)
   ): number {
     const { width, theme } = state;
     const { scrollBarSize, rowFooterWidth } = theme;
@@ -644,7 +646,7 @@ class GridMetricCalculator {
    * @returns The first item that is not hidden
    */
   getFirstIndex(
-    itemSizes: Map<ModelIndex, number>,
+    itemSizes: ModelSizeMap,
     getModelIndex: (visibleIndex: Index, state: GridMetricState) => ModelIndex,
     state: GridMetricState
   ): Index {
@@ -830,7 +832,7 @@ class GridMetricCalculator {
    * @param state The grid metric state
    * @returns The heights of all the floating rows
    */
-  getFloatingRowHeights(state: GridMetricState): Map<Index, number> {
+  getFloatingRowHeights(state: GridMetricState): SizeMap {
     const { model } = state;
     const { floatingTopRowCount, floatingBottomRowCount, rowCount } = model;
 
@@ -856,7 +858,7 @@ class GridMetricCalculator {
    * @param state The grid metric state
    * @returns The heights of all the visible rows
    */
-  getVisibleRowHeights(state: GridMetricState): Map<Index, number> {
+  getVisibleRowHeights(state: GridMetricState): SizeMap {
     const { top, topOffset, height, model } = state;
 
     let y = 0;
@@ -884,7 +886,7 @@ class GridMetricCalculator {
     state: GridMetricState,
     firstColumn: Index = this.getFirstColumn(state),
     treePaddingX: number = this.calculateTreePaddingX(state)
-  ): Map<Index, number> {
+  ): SizeMap {
     const { model } = state;
     const {
       columnCount,
@@ -924,7 +926,7 @@ class GridMetricCalculator {
     state: GridMetricState,
     firstColumn: Index = this.getFirstColumn(state),
     treePaddingX: number = this.calculateTreePaddingX(state)
-  ): Map<Index, number> {
+  ): SizeMap {
     const { left, leftOffset, width, model } = state;
 
     let x = 0;
@@ -955,9 +957,9 @@ class GridMetricCalculator {
    */
   getFloatingColumnXs(
     state: GridMetricState,
-    columnWidthMap: Map<Index, number>,
+    columnWidthMap: SizeMap,
     maxX: Coordinate
-  ): Map<Index, Coordinate> {
+  ): CoordinateMap {
     const { model } = state;
     const {
       columnCount,
@@ -984,10 +986,10 @@ class GridMetricCalculator {
    * @returns Map of the x coordinate of all visible columns
    */
   getVisibleColumnXs(
-    visibleColumnWidths: Map<Index, number>,
+    visibleColumnWidths: SizeMap,
     visibleColumns: Index[],
     leftOffset: number
-  ): Map<Index, Coordinate> {
+  ): CoordinateMap {
     const visibleColumnXs = new Map();
     let x = -leftOffset;
     for (let i = 0; i < visibleColumns.length; i += 1) {
@@ -1009,9 +1011,9 @@ class GridMetricCalculator {
    */
   getFloatingRowYs(
     state: GridMetricState,
-    rowHeightMap: Map<Index, number>,
+    rowHeightMap: SizeMap,
     maxY: Coordinate
-  ): Map<Index, Coordinate> {
+  ): CoordinateMap {
     const { model } = state;
     const { floatingTopRowCount, floatingBottomRowCount, rowCount } = model;
 
@@ -1034,10 +1036,10 @@ class GridMetricCalculator {
    * @returns Map of the y coordinate of all visible rows
    */
   getVisibleRowYs(
-    visibleRowHeights: Map<Index, number>,
+    visibleRowHeights: SizeMap,
     visibleRows: Index[],
     topOffset: number
-  ): Map<Index, Coordinate> {
+  ): CoordinateMap {
     const visibleRowYs = new Map();
     let y = -topOffset;
     for (let i = 0; i < visibleRows.length; i += 1) {
@@ -1058,8 +1060,8 @@ class GridMetricCalculator {
    * @returns Coordinates of tree boxes for each row
    */
   getVisibleRowTreeBoxes(
-    visibleRowHeights: Map<Index, number>,
-    modelRows: Map<Index, ModelIndex>,
+    visibleRowHeights: SizeMap,
+    modelRows: IndexModelMap,
     state: GridMetricState
   ): Map<Index, BoxCoordinates> {
     const visibleRowTreeBoxes = new Map();
@@ -1075,7 +1077,7 @@ class GridMetricCalculator {
           const x2 = (depth + 1) * treeDepthIndent + treeHorizontalPadding;
           const y1 = 0;
           const y2 = rowHeight;
-          visibleRowTreeBoxes.set(row, [x1, y1, x2, y2]);
+          visibleRowTreeBoxes.set(row, { x1, y1, x2, y2 });
         }
       });
     }
@@ -1091,7 +1093,7 @@ class GridMetricCalculator {
    */
   getFloatingLeftWidth(
     state: GridMetricState,
-    columnWidths: Map<Index, number> = this.getFloatingColumnWidths(state)
+    columnWidths: SizeMap = this.getFloatingColumnWidths(state)
   ): number {
     const { model } = state;
     const { floatingLeftColumnCount } = model;
@@ -1110,7 +1112,7 @@ class GridMetricCalculator {
    */
   getFloatingRightWidth(
     state: GridMetricState,
-    columnWidths: Map<Index, number> = this.getFloatingColumnWidths(state)
+    columnWidths: SizeMap = this.getFloatingColumnWidths(state)
   ): number {
     const { model } = state;
     const { floatingRightColumnCount, columnCount } = model;
@@ -1130,7 +1132,7 @@ class GridMetricCalculator {
    */
   getFloatingTopHeight(
     state: GridMetricState,
-    rowHeights: Map<Index, number> = this.getFloatingRowHeights(state)
+    rowHeights: SizeMap = this.getFloatingRowHeights(state)
   ): number {
     const { model } = state;
     const { floatingTopRowCount } = model;
@@ -1149,7 +1151,7 @@ class GridMetricCalculator {
    */
   getFloatingBottomHeight(
     state: GridMetricState,
-    rowHeights: Map<Index, number> = this.getFloatingRowHeights(state)
+    rowHeights: SizeMap = this.getFloatingRowHeights(state)
   ): number {
     const { model } = state;
     const { floatingBottomRowCount, rowCount } = model;
@@ -1171,8 +1173,8 @@ class GridMetricCalculator {
    */
   getTopVisible(
     state: GridMetricState,
-    visibleRowYs: Map<Index, number>,
-    visibleRowHeights: Map<Index, number>,
+    visibleRowYs: CoordinateMap,
+    visibleRowHeights: SizeMap,
     visibleRows: Index[]
   ): Index {
     const floatingHeight = this.getFloatingTopHeight(state, visibleRowHeights);
@@ -1197,8 +1199,8 @@ class GridMetricCalculator {
    */
   getLeftVisible(
     state: GridMetricState,
-    visibleColumnXs: Map<Index, number>,
-    visibleColumnWidths: Map<Index, number>,
+    visibleColumnXs: CoordinateMap,
+    visibleColumnWidths: SizeMap,
     visibleColumns: Index[]
   ): Index {
     const floatingWidth = this.getFloatingLeftWidth(state, visibleColumnWidths);
@@ -1224,8 +1226,8 @@ class GridMetricCalculator {
    */
   getBottomVisible(
     state: GridMetricState,
-    visibleRowYs: Map<Index, Coordinate>,
-    visibleRowHeights: Map<Index, number>,
+    visibleRowYs: CoordinateMap,
+    visibleRowHeights: SizeMap,
     visibleRows: Index[],
     gridY: Coordinate
   ): Index {
@@ -1259,8 +1261,8 @@ class GridMetricCalculator {
    */
   getRightVisible(
     state: GridMetricState,
-    visibleColumnXs: Map<Index, Coordinate>,
-    visibleColumnWidths: Map<Index, number>,
+    visibleColumnXs: CoordinateMap,
+    visibleColumnWidths: SizeMap,
     visibleColumns: Index[],
     gridX: Coordinate
   ): Index {
@@ -1294,8 +1296,8 @@ class GridMetricCalculator {
   getBottomViewport(
     state: GridMetricState,
     visibleRows: Index[],
-    visibleRowYs: Map<Index, Coordinate>,
-    visibleRowHeights: Map<Index, number>
+    visibleRowYs: CoordinateMap,
+    visibleRowHeights: SizeMap
   ): Index {
     const { height, theme } = state;
     const { rowHeight } = theme;
@@ -1320,8 +1322,8 @@ class GridMetricCalculator {
   getRightViewport(
     state: GridMetricState,
     visibleColumns: Index[],
-    visibleColumnXs: Map<Index, Coordinate>,
-    visibleColumnWidths: Map<Index, number>
+    visibleColumnXs: CoordinateMap,
+    visibleColumnWidths: SizeMap
   ): Index {
     const { width, theme } = state;
     const { columnWidth } = theme;
@@ -1346,8 +1348,8 @@ class GridMetricCalculator {
    */
   getLastIndexViewport(
     items: Index[],
-    itemXs: Map<Index, number>,
-    itemSizes: Map<Index, number>,
+    itemXs: CoordinateMap,
+    itemSizes: SizeMap,
     maxSize: number,
     defaultItemSize: number
   ): Index {
@@ -1374,7 +1376,7 @@ class GridMetricCalculator {
    */
   getVisibleItemSize(
     modelIndex: ModelIndex,
-    userSizes: Map<ModelIndex, number>,
+    userSizes: ModelSizeMap,
     calculateSize: () => number
   ): number {
     return userSizes.get(modelIndex) ?? calculateSize();
@@ -1427,10 +1429,7 @@ class GridMetricCalculator {
    * @param state The grid metric state
    * @returns Map of Index to ModelIndex
    */
-  getModelRows(
-    visibleRows: Index[],
-    state: GridMetricState
-  ): Map<Index, ModelIndex> {
+  getModelRows(visibleRows: Index[], state: GridMetricState): IndexModelMap {
     const modelRows = new Map();
     for (let i = 0; i < visibleRows.length; i += 1) {
       const visibleRow = visibleRows[i];
@@ -1465,7 +1464,7 @@ class GridMetricCalculator {
   getModelColumns(
     visibleColumns: Index[],
     state: GridMetricState
-  ): Map<Index, ModelIndex> {
+  ): IndexModelMap {
     const modelColumns = new Map();
     for (let i = 0; i < visibleColumns.length; i += 1) {
       const visibleColumn = visibleColumns[i];

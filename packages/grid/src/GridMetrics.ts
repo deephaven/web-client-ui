@@ -1,14 +1,31 @@
 /** A grid coordinate value */
 export type Coordinate = number;
 
-/** Coordinates of a box [x1, y1, x2, y2] */
-export type BoxCoordinates = [Coordinate, Coordinate, Coordinate, Coordinate];
+/** Coordinates of a box */
+export type BoxCoordinates = {
+  x1: Coordinate;
+  y1: Coordinate;
+  x2: Coordinate;
+  y2: Coordinate;
+};
 
 /** The visible index of the item, eg. after moves are applied */
 export type Index = number;
 
 /** The model index of the item, eg. moves are not applied */
 export type ModelIndex = number;
+
+/** Map from an item index to it's coordinate */
+export type CoordinateMap = Map<Index, Coordinate>;
+
+/** Map from an item index to it's size */
+export type SizeMap = Map<Index, number>;
+
+/** Map from a ModelIndex to it's size */
+export type ModelSizeMap = Map<ModelIndex, number>;
+
+/** Map from visible Index to ModelIndex */
+export type IndexModelMap = Map<Index, ModelIndex>;
 
 /** Represents a move operation from one index to another */
 export type MoveOperation = {
@@ -101,8 +118,8 @@ export type GridMetrics = {
   allColumns: Index[];
 
   // Map of the height/width of visible rows/columns
-  visibleRowHeights: Map<Index, number>;
-  visibleColumnWidths: Map<Index, number>;
+  visibleRowHeights: SizeMap;
+  visibleColumnWidths: SizeMap;
 
   // Floating metrics
   floatingTopHeight: number;
@@ -111,26 +128,26 @@ export type GridMetrics = {
   floatingRightWidth: number;
 
   // Map of the X/Y coordinates of the rows/columns, from the top left of the grid
-  visibleRowYs: Map<Index, Coordinate>;
-  visibleColumnXs: Map<Index, Coordinate>;
+  visibleRowYs: CoordinateMap;
+  visibleColumnXs: CoordinateMap;
 
   // The boxes user can click on for expanding/collapsing tree rows
   visibleRowTreeBoxes: Map<Index, BoxCoordinates>;
 
   // Mapping from visible row indexes to the model row/columns they pull from
-  modelRows: Map<Index, ModelIndex>;
-  modelColumns: Map<Index, ModelIndex>;
+  modelRows: IndexModelMap;
+  modelColumns: IndexModelMap;
 
   // Map of the width of the fonts
   fontWidths: Map<string, number>;
 
   // Map of user set column/row width/height
-  userColumnWidths: Map<ModelIndex, number>;
-  userRowHeights: Map<ModelIndex, number>;
+  userColumnWidths: ModelSizeMap;
+  userRowHeights: ModelSizeMap;
 
   // Map of calculated row/column height/width
-  calculatedRowHeights: Map<ModelIndex, number>;
-  calculatedColumnWidths: Map<ModelIndex, number>;
+  calculatedRowHeights: ModelSizeMap;
+  calculatedColumnWidths: ModelSizeMap;
 };
 
 export default GridMetrics;
