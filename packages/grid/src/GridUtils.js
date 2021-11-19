@@ -257,7 +257,7 @@ class GridUtils {
     if (
       columnHeaderHeight < y ||
       !allowColumnResize ||
-      headerSeparatorHandleSize <= 0
+      headerSeparatorHandleSize <= 5
     ) {
       return null;
     }

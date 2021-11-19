@@ -1222,7 +1222,7 @@ class Grid extends PureComponent {
   }
 
   /**
-   * Notify all of the mouse handlers for this grid of a mouse event.
+   * Notify all of the mouse handlers for this grid of a mouse event
    * @param {String} functionName The name of the function in the mouse handler to call
    * @param {MouseEvent} event The mouse event to notify
    * @param {Boolean} updateCoordinates Whether to update the mouse coordinates

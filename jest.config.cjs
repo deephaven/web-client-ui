@@ -29,7 +29,7 @@ module.exports = {
     // We may want to increase/decrease the thresholds for specific projects, and we can do that:
     // https://jestjs.io/docs/configuration#coveragethreshold-object
     global: {
-      statements: 40,
+      statements: 80,
       branches: 30,
       functions: 30,
       lines: 40,
