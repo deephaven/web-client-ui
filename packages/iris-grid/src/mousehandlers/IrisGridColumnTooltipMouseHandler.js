@@ -58,14 +58,6 @@ class IrisGridColumnTooltipMouseHandler extends GridMouseHandler {
 
     return false;
   }
-
-  onLeave(gridPoint) {
-    const { y } = gridPoint;
-    if (y < 0) {
-      this.destroyColumnTooltip();
-    }
-    return false;
-  }
 }
 
 export default IrisGridColumnTooltipMouseHandler;
