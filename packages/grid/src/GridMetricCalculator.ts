@@ -608,7 +608,7 @@ class GridMetricCalculator {
    * The width of the "visible" area (excludes floating areas)
    * @param state The current grid state
    * @param visibleColumnWidths All the visible column widths
-   * @returns The visible height in pixels
+   * @returns The visible width in pixels
    */
   getVisibleWidth(
     state: GridMetricState,
@@ -733,7 +733,7 @@ class GridMetricCalculator {
    * If no bottom row is provided, then the last row that is not floating is used
    * @param state The current grid state
    * @param bottom The bottom-most row to be visible, or null to default to last cell
-   * @param visibleWidth The width of the "visible" area (excluding floating items)
+   * @param visibleHeight The height of the "visible" area (excluding floating items)
    * @returns The index of the last left visible column
    */
   getLastTop(
@@ -765,6 +765,8 @@ class GridMetricCalculator {
 
   /**
    * Retrieve the top row to scroll to so the passed in `topVisible` is completely visible, taking the floating rows into account.
+   * The `top` row is at the top underneath any floating rows, whereas `topVisible` is visible below the floating rows.
+   * If there are no floating rows, they should be the same value.
    * @param state The grid metric state
    * @param topVisible The top row to be visible
    * @returns The index of the top row to scroll to (under the floating top rows)
@@ -824,7 +826,7 @@ class GridMetricCalculator {
 
   /**
    * Retrieve the left column to scroll to so the passed in `rightVisible` is completely visible
-   * at the left of the visible viewport, taking the floating columns into account.
+   * at the right of the visible viewport, taking the floating columns into account.
    * @param state The grid metric state
    * @param rightVisible The right column to be visible
    * @returns The index of the left column to scroll to (under the floating left columns)
@@ -1381,11 +1383,11 @@ class GridMetricCalculator {
   }
 
   /**
-   * Get the size of the specified item
+   * Get the size (width or height) of the specified item
    * @param modelIndex The model index to get the size for
    * @param userSizes The user set sizes
    * @param calculateSize Method to calculate the size for this item
-   * @returns The size of the specified item
+   * @returns The size (width or height) of the specified item
    */
   getVisibleItemSize(
     modelIndex: ModelIndex,
@@ -1710,11 +1712,11 @@ class GridMetricCalculator {
   /**
    * Sets the width for the specified column
    * @param column The column model index to set
-   * @param size The size to set it to, or null to reset the column size
+   * @param size The size to set it to, or undefined to reset the column size
    */
   setColumnWidth(column: ModelIndex, size?: number): void {
     const userColumnWidths = new Map(this.userColumnWidths);
-    if (size != null) {
+    if (size !== undefined) {
       userColumnWidths.set(column, Math.ceil(size));
       GridMetricCalculator.trimMap(userColumnWidths);
     } else {
@@ -1735,11 +1737,11 @@ class GridMetricCalculator {
   /**
    * Sets the width for the specified row
    * @param row The row model index to set
-   * @param size The size to set it to, or null to reset the row size
+   * @param size The size to set it to, or undefined to reset the row size
    */
   setRowHeight(row: ModelIndex, size?: number): void {
     const userRowHeights = new Map(this.userRowHeights);
-    if (size != null) {
+    if (size !== undefined) {
       userRowHeights.set(row, Math.ceil(size));
       GridMetricCalculator.trimMap(userRowHeights);
     } else {
