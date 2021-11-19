@@ -87,12 +87,12 @@ export const getFloatingCoordinates = (
   let x = 0;
   for (let i = 0; i < startCount && i < totalCount; i += 1) {
     coordinates.set(i, x);
-    x += sizeMap.get(i) ?? 0;
+    x += mapGet(sizeMap, i);
   }
 
   x = max;
   for (let i = 0; i < endCount && totalCount - i - 1 >= 0; i += 1) {
-    x -= sizeMap.get(totalCount - i - 1) ?? 0;
+    x -= mapGet(sizeMap, totalCount - i - 1);
     coordinates.set(totalCount - i - 1, x);
   }
   return coordinates;
@@ -321,8 +321,8 @@ class GridMetricCalculator {
           )
         : 0;
 
-    const leftColumnWidth = visibleColumnWidths.get(left) ?? 0;
-    const topRowHeight = visibleRowHeights.get(top) ?? 0;
+    const leftColumnWidth = mapGet(visibleColumnWidths, left);
+    const topRowHeight = mapGet(visibleRowHeights, top);
     const leftOffsetPercent =
       leftColumnWidth > 0 ? leftOffset / leftColumnWidth : 0;
     const topOffsetPercent = topRowHeight > 0 ? topOffset / topRowHeight : 0;
@@ -1018,7 +1018,7 @@ class GridMetricCalculator {
     let x = -leftOffset;
     for (let i = 0; i < visibleColumns.length; i += 1) {
       const column = visibleColumns[i];
-      const columnWidth = visibleColumnWidths.get(column) ?? 0;
+      const columnWidth = mapGet(visibleColumnWidths, column);
       visibleColumnXs.set(column, x);
       x += columnWidth;
     }
@@ -1068,7 +1068,7 @@ class GridMetricCalculator {
     let y = -topOffset;
     for (let i = 0; i < visibleRows.length; i += 1) {
       const row = visibleRows[i];
-      const rowHeight = visibleRowHeights.get(row) ?? 0;
+      const rowHeight = mapGet(visibleRowHeights, row);
       visibleRowYs.set(row, y);
       y += rowHeight;
     }
@@ -1123,7 +1123,7 @@ class GridMetricCalculator {
     const { floatingLeftColumnCount } = model;
     let floatingWidth = 0;
     for (let i = 0; i < floatingLeftColumnCount; i += 1) {
-      floatingWidth += columnWidths.get(i) ?? 0;
+      floatingWidth += mapGet(columnWidths, i);
     }
     return floatingWidth;
   }
@@ -1142,7 +1142,7 @@ class GridMetricCalculator {
     const { floatingRightColumnCount, columnCount } = model;
     let floatingWidth = 0;
     for (let i = 0; i < floatingRightColumnCount; i += 1) {
-      floatingWidth += columnWidths.get(columnCount - i - 1) ?? 0;
+      floatingWidth += mapGet(columnWidths, columnCount - i - 1);
     }
 
     return floatingWidth;
@@ -1162,7 +1162,7 @@ class GridMetricCalculator {
     const { floatingTopRowCount } = model;
     let floatingHeight = 0;
     for (let i = 0; i < floatingTopRowCount; i += 1) {
-      floatingHeight += rowHeights.get(i) ?? 0;
+      floatingHeight += mapGet(rowHeights, i);
     }
     return floatingHeight;
   }
@@ -1181,7 +1181,7 @@ class GridMetricCalculator {
     const { floatingBottomRowCount, rowCount } = model;
     let floatingHeight = 0;
     for (let i = 0; i < floatingBottomRowCount; i += 1) {
-      floatingHeight += rowHeights.get(rowCount - i - 1) ?? 0;
+      floatingHeight += mapGet(rowHeights, rowCount - i - 1);
     }
     return floatingHeight;
   }
@@ -1204,7 +1204,7 @@ class GridMetricCalculator {
     const floatingHeight = this.getFloatingTopHeight(state, visibleRowHeights);
     for (let i = 0; i < visibleRows.length; i += 1) {
       const row = visibleRows[i];
-      const y = visibleRowYs.get(row) ?? 0;
+      const y = mapGet(visibleRowYs, row);
       if (y >= floatingHeight) {
         return row;
       }
@@ -1230,7 +1230,7 @@ class GridMetricCalculator {
     const floatingWidth = this.getFloatingLeftWidth(state, visibleColumnWidths);
     for (let i = 0; i < visibleColumns.length; i += 1) {
       const column = visibleColumns[i];
-      const x = visibleColumnXs.get(column) ?? 0;
+      const x = mapGet(visibleColumnXs, column);
       if (x >= floatingWidth) {
         return column;
       }
@@ -1264,8 +1264,8 @@ class GridMetricCalculator {
     const visibleHeight = height - gridY - scrollBarSize - floatingHeight;
     for (let i = visibleRows.length - 1; i >= 0; i -= 1) {
       const row = visibleRows[i];
-      const rowY = visibleRowYs.get(row) ?? 0;
-      const rowHeight = visibleRowHeights.get(row) ?? 0;
+      const rowY = mapGet(visibleRowYs, row);
+      const rowHeight = mapGet(visibleRowHeights, row);
       if (rowY + rowHeight <= visibleHeight) {
         return row;
       }
@@ -1299,8 +1299,8 @@ class GridMetricCalculator {
     const visibleWidth = width - gridX - scrollBarSize - floatingWidth;
     for (let i = visibleColumns.length - 1; i >= 0; i -= 1) {
       const column = visibleColumns[i];
-      const columnX = visibleColumnXs.get(column) ?? 0;
-      const columnWidth = visibleColumnWidths.get(column) ?? 0;
+      const columnX = mapGet(visibleColumnXs, column);
+      const columnWidth = mapGet(visibleColumnWidths, column);
       if (columnX + columnWidth <= visibleWidth) {
         return column;
       }
@@ -1381,7 +1381,7 @@ class GridMetricCalculator {
     let dataSize = 0;
     if (items.length > 0) {
       lastIndex = items[items.length - 1];
-      dataSize = (itemXs.get(lastIndex) ?? 0) + (itemSizes.get(lastIndex) ?? 0);
+      dataSize = mapGet(itemXs, lastIndex) + mapGet(itemSizes, lastIndex);
     }
 
     if (dataSize < maxSize) {
@@ -1392,11 +1392,11 @@ class GridMetricCalculator {
   }
 
   /**
-   * Get the size (width or height) of the specified item
+   * Get the size from the provided size map of the specified item
    * @param modelIndex The model index to get the size for
    * @param userSizes The user set sizes
    * @param calculateSize Method to calculate the size for this item
-   * @returns The size (width or height) of the specified item
+   * @returns The size from the provided size map of the specified item
    */
   getVisibleItemSize(
     modelIndex: ModelIndex,
@@ -1474,7 +1474,7 @@ class GridMetricCalculator {
    */
   getModelRow(visibleRow: VisibleIndex, state: GridMetricState): ModelIndex {
     if (this.modelRows.has(visibleRow)) {
-      return this.modelRows.get(visibleRow) ?? 0;
+      return mapGet(this.modelRows, visibleRow);
     }
     const { movedRows } = state;
     const modelRow = GridUtils.getModelIndex(visibleRow, movedRows);
@@ -1512,7 +1512,7 @@ class GridMetricCalculator {
     state: GridMetricState
   ): ModelIndex {
     if (this.modelColumns.has(visibleColumn)) {
-      return this.modelColumns.get(visibleColumn) ?? 0;
+      return mapGet(this.modelColumns, visibleColumn);
     }
     const { movedColumns } = state;
     const modelColumn = GridUtils.getModelIndex(visibleColumn, movedColumns);
@@ -1703,7 +1703,7 @@ class GridMetricCalculator {
    */
   getWidthForFont(font: GridFont, state: GridMetricState): number {
     if (this.fontWidths.has(font)) {
-      return this.fontWidths.get(font) ?? 0;
+      return mapGet(this.fontWidths, font);
     }
     const { context } = state;
     context.font = font;
@@ -1723,14 +1723,10 @@ class GridMetricCalculator {
    * @param column The column model index to set
    * @param size The size to set it to, or undefined to reset the column size
    */
-  setColumnWidth(column: ModelIndex, size?: number): void {
+  setColumnWidth(column: ModelIndex, size: number): void {
     const userColumnWidths = new Map(this.userColumnWidths);
-    if (size !== undefined) {
-      userColumnWidths.set(column, Math.ceil(size));
-      trimMap(userColumnWidths);
-    } else {
-      userColumnWidths.delete(column);
-    }
+    userColumnWidths.set(column, Math.ceil(size));
+    trimMap(userColumnWidths);
     this.userColumnWidths = userColumnWidths;
   }
 
@@ -1739,7 +1735,9 @@ class GridMetricCalculator {
    * @param column The column model index to reset
    */
   resetColumnWidth(column: ModelIndex): void {
-    this.setColumnWidth(column, undefined);
+    const userColumnWidths = new Map(this.userColumnWidths);
+    userColumnWidths.delete(column);
+    this.userColumnWidths = userColumnWidths;
     this.calculatedColumnWidths.delete(column);
   }
 
@@ -1748,14 +1746,10 @@ class GridMetricCalculator {
    * @param row The row model index to set
    * @param size The size to set it to, or undefined to reset the row size
    */
-  setRowHeight(row: ModelIndex, size?: number): void {
+  setRowHeight(row: ModelIndex, size: number): void {
     const userRowHeights = new Map(this.userRowHeights);
-    if (size !== undefined) {
-      userRowHeights.set(row, Math.ceil(size));
-      trimMap(userRowHeights);
-    } else {
-      userRowHeights.delete(row);
-    }
+    userRowHeights.set(row, Math.ceil(size));
+    trimMap(userRowHeights);
     this.userRowHeights = userRowHeights;
   }
 
@@ -1764,7 +1758,9 @@ class GridMetricCalculator {
    * @param row The row model index to reset
    */
   resetRowHeight(row: ModelIndex): void {
-    this.setRowHeight(row, undefined);
+    const userRowHeights = new Map(this.userRowHeights);
+    userRowHeights.delete(row);
+    this.userRowHeights = userRowHeights;
     this.calculatedRowHeights.delete(row);
   }
 }
