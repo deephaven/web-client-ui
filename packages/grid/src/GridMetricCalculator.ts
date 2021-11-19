@@ -48,6 +48,66 @@ export type GridMetricState = {
 };
 
 /**
+ * Trim the provided map in place. Trims oldest inserted items down to the target size if the cache size is exceeded.
+ * Instead of trimming one item on every tick, we trim half the items so there isn't a cache clear on every new item.
+ * @param map The map to trim
+ * @param cacheSize The maximum number of elements to cache
+ * @param targetSize The number of elements to reduce the cache down to if `cacheSize` is exceeded
+ */
+export const trimMap = (
+  map: Map<unknown, unknown>,
+  cacheSize = GridMetricCalculator.CACHE_SIZE,
+  targetSize = Math.floor(cacheSize / 2)
+): void => {
+  if (map.size > cacheSize) {
+    const iter = map.keys();
+    while (map.size > targetSize) {
+      map.delete(iter.next().value);
+    }
+  }
+};
+
+/**
+ * Get the coordinates of floating items in one dimension.
+ * Can be used for getting the y coordinates of floating rows, or x coordinates of floating columns, calculated using the `sizeMap` passed in.
+ * @param startCount The number of floating items at the start (ie. `floatingTopRowCount` for rows, `floatingLeftColumnCount` for columns)
+ * @param endCount The number of floating items at the end (ie. `floatingBottomRowCount` for rows, `floatingRightColumnCount` for columns)
+ * @param totalCount Total number of items in this dimension (ie. `rowCount` for rows, `columnCount` for columns)
+ * @param max The max coordinate value (ie. `maxY` for rows, `maxX` for columns)
+ * @param sizeMap Map from index to size of item (ie. `rowHeightMap` for rows, `columnWidthMap` for columns)
+ */
+export const getFloatingCoordinates = (
+  startCount: number,
+  endCount: number,
+  totalCount: number,
+  max: number,
+  sizeMap: SizeMap
+): CoordinateMap => {
+  const coordinates = new Map();
+  let x = 0;
+  for (let i = 0; i < startCount && i < totalCount; i += 1) {
+    coordinates.set(i, x);
+    x += sizeMap.get(i) ?? 0;
+  }
+
+  x = max;
+  for (let i = 0; i < endCount && totalCount - i - 1 >= 0; i += 1) {
+    x -= sizeMap.get(totalCount - i - 1) ?? 0;
+    coordinates.set(totalCount - i - 1, x);
+  }
+  return coordinates;
+};
+
+function mapGet<K, V>(map: Map<K, V>, key: K): V {
+  const value = map.get(key);
+  if (value !== undefined) {
+    return value;
+  }
+
+  throw new Error(`Missing value for key ${key}`);
+}
+
+/**
  * Class to calculate all the metrics for drawing a grid.
  * Call getMetrics() with the state to get the full metrics.
  * Override this class and override the individual methods to provide additional functionality.
@@ -58,57 +118,6 @@ class GridMetricCalculator {
 
   /** The maximum column width as a percentage of the full grid */
   static MAX_COLUMN_WIDTH = 0.8;
-
-  /**
-   * Trim the provided map in place. Trims oldest inserted items down to the target size if the cache size is exceeded.
-   * Instead of trimming one item on every tick, we trim half the items so there isn't a cache clear on every new item.
-   * @param map The map to trim
-   * @param cacheSize The maximum number of elements to cache
-   * @param targetSize The number of elements to reduce the cache down to if `cacheSize` is exceeded
-   */
-  static trimMap(
-    map: Map<unknown, unknown>,
-    cacheSize = GridMetricCalculator.CACHE_SIZE,
-    targetSize = Math.floor(cacheSize / 2)
-  ): void {
-    if (map.size > cacheSize) {
-      const iter = map.keys();
-      while (map.size > targetSize) {
-        map.delete(iter.next().value);
-      }
-    }
-  }
-
-  /**
-   * Get the coordinates of floating items in one dimension.
-   * Can be used for getting the y coordinates of floating rows, or x coordinates of floating columns, calculated using the `sizeMap` passed in.
-   * @param startCount The number of floating items at the start (ie. `floatingTopRowCount` for rows, `floatingLeftColumnCount` for columns)
-   * @param endCount The number of floating items at the end (ie. `floatingBottomRowCount` for rows, `floatingRightColumnCount` for columns)
-   * @param totalCount Total number of items in this dimension (ie. `rowCount` for rows, `columnCount` for columns)
-   * @param max The max coordinate value (ie. `maxY` for rows, `maxX` for columns)
-   * @param sizeMap Map from index to size of item (ie. `rowHeightMap` for rows, `columnWidthMap` for columns)
-   */
-  static getFloatingCoordinates(
-    startCount: number,
-    endCount: number,
-    totalCount: number,
-    max: number,
-    sizeMap: SizeMap
-  ): CoordinateMap {
-    const coordinates = new Map();
-    let x = 0;
-    for (let i = 0; i < startCount && i < totalCount; i += 1) {
-      coordinates.set(i, x);
-      x += sizeMap.get(i) ?? 0;
-    }
-
-    x = max;
-    for (let i = 0; i < endCount && totalCount - i - 1 >= 0; i += 1) {
-      x -= sizeMap.get(totalCount - i - 1) ?? 0;
-      coordinates.set(totalCount - i - 1, x);
-    }
-    return coordinates;
-  }
 
   /** User set column widths */
   private userColumnWidths: ModelSizeMap;
@@ -982,7 +991,7 @@ class GridMetricCalculator {
       floatingRightColumnCount,
     } = model;
 
-    return GridMetricCalculator.getFloatingCoordinates(
+    return getFloatingCoordinates(
       floatingLeftColumnCount,
       floatingRightColumnCount,
       columnCount,
@@ -1032,7 +1041,7 @@ class GridMetricCalculator {
     const { model } = state;
     const { floatingTopRowCount, floatingBottomRowCount, rowCount } = model;
 
-    return GridMetricCalculator.getFloatingCoordinates(
+    return getFloatingCoordinates(
       floatingTopRowCount,
       floatingBottomRowCount,
       rowCount,
@@ -1536,7 +1545,7 @@ class GridMetricCalculator {
 
     // Not sure how to accurately get the height of text. For now just return the theme height.
     this.calculatedRowHeights.set(modelRow, Math.ceil(rowHeight));
-    GridMetricCalculator.trimMap(this.calculatedRowHeights);
+    trimMap(this.calculatedRowHeights);
     return rowHeight;
   }
 
@@ -1572,7 +1581,7 @@ class GridMetricCalculator {
       columnWidth = cachedValue;
     } else {
       this.calculatedColumnWidths.set(modelColumn, columnWidth);
-      GridMetricCalculator.trimMap(this.calculatedColumnWidths);
+      trimMap(this.calculatedColumnWidths);
     }
 
     if (column === firstColumn) {
@@ -1718,7 +1727,7 @@ class GridMetricCalculator {
     const userColumnWidths = new Map(this.userColumnWidths);
     if (size !== undefined) {
       userColumnWidths.set(column, Math.ceil(size));
-      GridMetricCalculator.trimMap(userColumnWidths);
+      trimMap(userColumnWidths);
     } else {
       userColumnWidths.delete(column);
     }
@@ -1743,7 +1752,7 @@ class GridMetricCalculator {
     const userRowHeights = new Map(this.userRowHeights);
     if (size !== undefined) {
       userRowHeights.set(row, Math.ceil(size));
-      GridMetricCalculator.trimMap(userRowHeights);
+      trimMap(userRowHeights);
     } else {
       userRowHeights.delete(row);
     }

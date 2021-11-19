@@ -1,4 +1,4 @@
-import GridMetricCalculator from './GridMetricCalculator';
+import { trimMap } from './GridMetricCalculator';
 
 describe('trimMap', () => {
   function makeMap(low = 0, high = 10) {
@@ -10,7 +10,7 @@ describe('trimMap', () => {
   }
 
   function expectResult(map, expectedMap, cacheSize = 10, targetSize = 5) {
-    GridMetricCalculator.trimMap(map, cacheSize, targetSize);
+    trimMap(map, cacheSize, targetSize);
     expect(map.size).toEqual(expectedMap.size);
     const iter = map.entries();
     const expectedIter = expectedMap.entries();
