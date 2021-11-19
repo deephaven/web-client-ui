@@ -187,6 +187,13 @@ class IrisGridModel extends GridModel {
   }
 
   /**
+   * @param {String[]} columns The columns to treat as frozen
+   */
+  set uiFrozenColumns(columns) {
+    throw new Error('set uiFrozenColumns not implemented');
+  }
+
+  /**
    * @returns {dh.RollupTableConfig} The config to use for rolling up this table
    */
   get rollupConfig() {

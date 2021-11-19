@@ -388,6 +388,7 @@ export class IrisGrid extends Component {
       pendingSaveError: null,
 
       toastMessage: null,
+      contextFrozenColumns: [],
     };
   }
 
@@ -1388,6 +1389,15 @@ export class IrisGrid extends Component {
     this.grid.forceUpdate();
   }
 
+  freezeColumnByColumnName(columnName) {
+    const { contextFrozenColumns } = this.state;
+    log.debug2('freezing column', columnName);
+
+    this.setState({
+      contextFrozenColumns: [...contextFrozenColumns, columnName],
+    });
+  }
+
   handleColumnVisibilityChanged(modelIndexes, visibilityOption) {
     const { metricCalculator } = this.state;
     if (
@@ -2325,6 +2335,7 @@ export class IrisGrid extends Component {
       pendingDataErrors,
       pendingDataMap,
       toastMessage,
+      contextFrozenColumns,
     } = this.state;
     if (!isReady) {
       return null;
@@ -2941,6 +2952,7 @@ export class IrisGrid extends Component {
                 selectDistinctColumns={selectDistinctColumns}
                 pendingRowCount={pendingRowCount}
                 pendingDataMap={pendingDataMap}
+                contextFrozenColumns={contextFrozenColumns}
               />
             )}
             <div

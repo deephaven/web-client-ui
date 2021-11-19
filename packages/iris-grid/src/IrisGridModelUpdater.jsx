@@ -33,6 +33,7 @@ const IrisGridModelUpdater = React.memo(
     selectDistinctColumns,
     pendingRowCount,
     pendingDataMap,
+    contextFrozenColumns,
   }) => {
     const columns = useMemo(
       () =>
@@ -97,6 +98,9 @@ const IrisGridModelUpdater = React.memo(
     useEffect(() => {
       model.pendingDataMap = pendingDataMap;
     }, [model, pendingDataMap]);
+    useEffect(() => {
+      model.contextFrozenColumns = contextFrozenColumns;
+    }, [model, contextFrozenColumns]);
 
     return null;
   }
@@ -117,6 +121,7 @@ IrisGridModelUpdater.propTypes = {
   customColumns: PropTypes.arrayOf(PropTypes.string).isRequired,
   movedColumns: PropTypes.arrayOf(PropTypes.shape({})).isRequired,
   hiddenColumns: PropTypes.arrayOf(PropTypes.number).isRequired,
+  contextFrozenColumns: PropTypes.arrayOf(PropTypes.string),
   alwaysFetchColumns: PropTypes.arrayOf(PropTypes.string).isRequired,
   formatter: PropTypes.instanceOf(Formatter).isRequired,
   rollupConfig: APIPropTypes.RollupConfig,
@@ -135,6 +140,7 @@ IrisGridModelUpdater.defaultProps = {
   selectDistinctColumns: [],
   pendingRowCount: 0,
   pendingDataMap: new Map(),
+  contextFrozenColumns: [],
 };
 
 export default IrisGridModelUpdater;

@@ -221,6 +221,14 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
           },
         });
         actions.push({
+          title: 'Freeze Column',
+          group: IrisGridContextMenuHandler.GROUP_HIDE_COLUMNS,
+          action: () => {
+            this.irisGrid.freezeColumnByColumnName(column.name);
+          },
+          order: 10,
+        });
+        actions.push({
           title: 'Show All Columns',
           group: IrisGridContextMenuHandler.GROUP_HIDE_COLUMNS,
           action: () => {

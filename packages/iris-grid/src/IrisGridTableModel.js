@@ -74,6 +74,8 @@ class IrisGridTableModel extends IrisGridModel {
     // These rows can be sparse, so using a map instead of an array.
     this.pendingNewDataMap = new Map();
     this.pendingNewRowCount = 0;
+
+    this.contextFrozenColumns = [];
   }
 
   close() {
@@ -458,8 +460,8 @@ class IrisGridTableModel extends IrisGridModel {
     return '';
   }
 
-  getColumnsWithLayoutHints = memoize((columns, hints) => {
-    if (hints) {
+  getColumnsWithLayoutHints = memoize((columns, hints, uiFrozenColumns) => {
+    if (hints || uiFrozenColumns.length) {
       const columnMap = new Map();
       columns.forEach(col => columnMap.set(col.name, col));
 
@@ -467,30 +469,37 @@ class IrisGridTableModel extends IrisGridModel {
       let backColumns = [];
       let frozenColumns = [];
 
-      if (hints.frontColumns) {
+      if (hints?.frontColumns) {
         frontColumns = hints.frontColumns
           .map(name => columnMap.get(name))
           .filter(Boolean);
       }
-      if (hints.backColumns) {
+      if (hints?.backColumns) {
         backColumns = hints.backColumns
           .map(name => columnMap.get(name))
           .filter(Boolean);
       }
-      if (hints.frozenColumns) {
+      if (hints?.frozenColumns) {
         frozenColumns = hints.frozenColumns
           .map(name => columnMap.get(name))
           .filter(Boolean);
       }
 
       if (
-        frontColumns.length !== (hints.frontColumns?.length ?? 0) ||
-        backColumns.length !== (hints.backColumns?.length ?? 0) ||
-        frozenColumns.length !== (hints.frozenColumns?.length ?? 0)
+        frontColumns.length !== (hints?.frontColumns?.length ?? 0) ||
+        backColumns.length !== (hints?.backColumns?.length ?? 0) ||
+        frozenColumns.length !== (hints?.frozenColumns?.length ?? 0)
       ) {
         throw new Error(
           'Layout hints are invalid (contain invalid column names)'
         );
+      }
+
+      // Handle frozen columns by user UI action.
+      if (uiFrozenColumns.length) {
+        frozenColumns = uiFrozenColumns
+          .map(name => columnMap.get(name))
+          .filter(Boolean);
       }
 
       const frontColumnSet = new Set(frontColumns);
@@ -514,9 +523,13 @@ class IrisGridTableModel extends IrisGridModel {
   });
 
   get columns() {
+    // columns can be 'frozen' by freeze() in Layout Hints or
+    // a column header context action
+
     return this.getColumnsWithLayoutHints(
       this.table.columns,
-      this.table.layoutHints
+      this.table.layoutHints,
+      this.contextFrozenColumns
     );
   }
 
@@ -794,6 +807,10 @@ class IrisGridTableModel extends IrisGridModel {
     this.closeSubscription();
     this.table.applyCustomColumns(customColumns);
     this.applyViewport();
+  }
+
+  set uiFrozenColumns(columns) {
+    this.contextFrozenColumns = columns;
   }
 
   set totalsConfig(totalsConfig) {
