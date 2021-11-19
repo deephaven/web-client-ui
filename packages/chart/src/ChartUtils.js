@@ -1225,7 +1225,13 @@ class ChartUtils {
     return axis;
   }
 
-  static makeDefaultLayout(theme = {}) {
+  /**
+   * Parses the colorway property of a theme and returns an array of colors
+   * Theme could have a single string with space separated colors or an array of strings representing the colorway
+   * @param {ChartTheme} theme The theme to get colorway from
+   * @returns {string[]} Colorway array for the theme
+   */
+  static getColorwayFromTheme(theme) {
     let colorway = [];
     if (theme.colorway) {
       if (Array.isArray(theme.colorway)) {
@@ -1237,10 +1243,14 @@ class ChartUtils {
       }
     }
 
+    return colorway;
+  }
+
+  static makeDefaultLayout(theme = {}) {
     const layout = {
       ...theme,
       autosize: true,
-      colorway,
+      colorway: ChartUtils.getColorwayFromTheme(theme),
       font: {
         family: "'Fira Sans', sans-serif",
       },
