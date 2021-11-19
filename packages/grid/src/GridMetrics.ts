@@ -10,27 +10,27 @@ export type BoxCoordinates = {
 };
 
 /** The visible index of the item, eg. after moves are applied */
-export type Index = number;
+export type VisibleIndex = number;
 
 /** The model index of the item, eg. moves are not applied */
 export type ModelIndex = number;
 
 /** Map from an item index to it's coordinate */
-export type CoordinateMap = Map<Index, Coordinate>;
+export type CoordinateMap = Map<VisibleIndex, Coordinate>;
 
 /** Map from an item index to it's size */
-export type SizeMap = Map<Index, number>;
+export type SizeMap = Map<VisibleIndex, number>;
 
 /** Map from a ModelIndex to it's size */
 export type ModelSizeMap = Map<ModelIndex, number>;
 
 /** Map from visible Index to ModelIndex */
-export type IndexModelMap = Map<Index, ModelIndex>;
+export type IndexModelMap = Map<VisibleIndex, ModelIndex>;
 
 /** Represents a move operation from one index to another */
 export type MoveOperation = {
-  from: Index;
-  to: Index;
+  from: VisibleIndex;
+  to: VisibleIndex;
 };
 
 export type GridMetrics = {
@@ -54,30 +54,30 @@ export type GridMetrics = {
   gridY: Coordinate;
 
   // Index of non-hidden row/columns
-  firstRow: Index;
-  firstColumn: Index;
+  firstRow: VisibleIndex;
+  firstColumn: VisibleIndex;
 
   // The amount of padding for tree (if applicable)
   treePaddingX: number;
   treePaddingY: number;
 
   // What viewport is currently visible, limited by data size
-  left: Index;
-  top: Index;
-  bottom: Index;
-  right: Index;
+  left: VisibleIndex;
+  top: VisibleIndex;
+  bottom: VisibleIndex;
+  right: VisibleIndex;
   topOffset: Coordinate;
   leftOffset: Coordinate;
 
   // Bottom and right that are fully visible, not overlapped by scroll bars or anything
-  topVisible: Index;
-  leftVisible: Index;
-  bottomVisible: Index;
-  rightVisible: Index;
+  topVisible: VisibleIndex;
+  leftVisible: VisibleIndex;
+  bottomVisible: VisibleIndex;
+  rightVisible: VisibleIndex;
 
   // Bottom and right of the viewport, not limited by data size
-  bottomViewport: Index;
-  rightViewport: Index;
+  bottomViewport: VisibleIndex;
+  rightViewport: VisibleIndex;
 
   // Canvas width/height
   width: number;
@@ -88,8 +88,8 @@ export type GridMetrics = {
   maxY: Coordinate;
 
   // Last valid column/row that can be the left/top of the grid
-  lastLeft: Index;
-  lastTop: Index;
+  lastLeft: VisibleIndex;
+  lastTop: VisibleIndex;
 
   // Scroll bar metrics
   barHeight: number;
@@ -106,16 +106,16 @@ export type GridMetrics = {
   scrollY: number;
 
   // Array of visible rows/columns, by grid index
-  visibleRows: Index[];
-  visibleColumns: Index[];
+  visibleRows: VisibleIndex[];
+  visibleColumns: VisibleIndex[];
 
   // Array of floating rows/columns, by grid index
-  floatingRows: Index[];
-  floatingColumns: Index[];
+  floatingRows: VisibleIndex[];
+  floatingColumns: VisibleIndex[];
 
   // Array of all rows/columns, visible and floating, by grid index
-  allRows: Index[];
-  allColumns: Index[];
+  allRows: VisibleIndex[];
+  allColumns: VisibleIndex[];
 
   // Map of the height/width of visible rows/columns
   visibleRowHeights: SizeMap;
@@ -132,7 +132,7 @@ export type GridMetrics = {
   visibleColumnXs: CoordinateMap;
 
   // The boxes user can click on for expanding/collapsing tree rows
-  visibleRowTreeBoxes: Map<Index, BoxCoordinates>;
+  visibleRowTreeBoxes: Map<VisibleIndex, BoxCoordinates>;
 
   // Mapping from visible row indexes to the model row/columns they pull from
   modelRows: IndexModelMap;
