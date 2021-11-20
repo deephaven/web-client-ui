@@ -1,6 +1,7 @@
 import dh from '@deephaven/jsapi-shim';
 import ChartUtils from './ChartUtils';
 import FigureChartModel from './FigureChartModel';
+import ChartTheme from './ChartTheme';
 
 class ChartModelFactory {
   /**
@@ -14,9 +15,10 @@ class ChartModelFactory {
    * @param {string} settings.xAxis The column name to use for the x-axis
    * @param {string[]} settings.hiddenSeries Array of hidden series names
    * @param {dh.Table} table The table to build the model for
+   * @param {Object} theme The theme for the figure. Defaults to ChartTheme
    * @returns {Promise<FigureChartModel>} The FigureChartModel representing the figure
    */
-  static async makeModelFromSettings(settings, table) {
+  static async makeModelFromSettings(settings, table, theme = ChartTheme) {
     // Copy the table first and then re-apply the filters from the original table
     // When we add table linking we'll want to listen to the original table and update
     // the copied table with any changes that occur.
@@ -28,7 +30,7 @@ class ChartModelFactory {
 
       return dh.plot.Figure.create(
         ChartUtils.makeFigureSettings(settings, tableCopy)
-      ).then(figure => new FigureChartModel(figure, settings));
+      ).then(figure => new FigureChartModel(figure, settings, theme));
     });
   }
 
@@ -43,10 +45,11 @@ class ChartModelFactory {
    * @param {string} settings.xAxis The column name to use for the x-axis
    * @param {string[]} settings.hiddenSeries Array of hidden series names
    * @param {dh.Figure} figure The figure to build the model for
+   * @param {Object} theme The theme for the figure. Defaults to ChartTheme
    * @returns {Promise<FigureChartModel>} The FigureChartModel representing the figure
    */
-  static async makeModel(settings, figure) {
-    return new FigureChartModel(figure, settings);
+  static async makeModel(settings, figure, theme = ChartTheme) {
+    return new FigureChartModel(figure, settings, theme);
   }
 }
 

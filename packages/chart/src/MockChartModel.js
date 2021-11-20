@@ -152,7 +152,7 @@ class MockChartModel extends ChartModel {
   }
 
   static makeDefaultLayout() {
-    const layout = ChartUtils.makeDefaultLayout();
+    const layout = ChartUtils.makeDefaultLayout(ChartTheme);
     layout.title = 'Chart';
     layout.xaxis.title = 'Datestamp';
     layout.yaxis.title = 'Price';
