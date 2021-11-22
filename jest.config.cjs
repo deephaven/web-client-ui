@@ -22,7 +22,6 @@ module.exports = {
   ],
   collectCoverage: true,
   collectCoverageFrom: ['./src/**/*.{js,ts,jsx,tsx}'], // This is relative to individual project root due to how Jest handles it
-  coverageReporters: ['text'],
   coverageThreshold: {
     // These global thresholds were taken as the baseline of the overall project when code coverage initiative began.
     // In CI, these thresholds will be measures against only the files you have changed.
