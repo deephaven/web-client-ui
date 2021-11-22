@@ -229,12 +229,14 @@ class GridMetricCalculator {
       : 0;
     const treePaddingY = 0; // We don't support trees on columns (at least not yet)
 
-    let visibleRowHeights = this.getVisibleRowHeights(state);
-    let visibleColumnWidths = this.getVisibleColumnWidths(
-      state,
-      firstColumn,
-      treePaddingX
-    );
+    const visibleRowHeights = new Map([
+      ...this.getVisibleRowHeights(state),
+      ...this.getFloatingRowHeights(state),
+    ]);
+    const visibleColumnWidths = new Map([
+      ...this.getVisibleColumnWidths(state, firstColumn, treePaddingX),
+      ...this.getFloatingColumnWidths(state),
+    ]);
 
     // Calculate the metrics for the main grid
     const visibleRows = Array.from(visibleRowHeights.keys());
@@ -321,8 +323,9 @@ class GridMetricCalculator {
           )
         : 0;
 
-    const leftColumnWidth = mapGet(visibleColumnWidths, left);
-    const topRowHeight = mapGet(visibleRowHeights, top);
+    const leftColumnWidth =
+      columnCount > 0 ? mapGet(visibleColumnWidths, left) : 0;
+    const topRowHeight = rowCount > 0 ? mapGet(visibleRowHeights, top) : 0;
     const leftOffsetPercent =
       leftColumnWidth > 0 ? leftOffset / leftColumnWidth : 0;
     const topOffsetPercent = topRowHeight > 0 ? topOffset / topRowHeight : 0;
@@ -335,17 +338,13 @@ class GridMetricCalculator {
         ? ((top + topOffsetPercent) / lastTop) * (barHeight - handleHeight)
         : 0;
 
-    // Now add the floating sections
+    // Now add the floating sections positions
     let floatingRows: ModelIndex[] = [];
     if (floatingTopRowCount > 0 || floatingBottomRowCount > 0) {
       floatingRows = [
         ...Array(floatingTopRowCount).keys(),
         ...[...Array(floatingBottomRowCount).keys()].map(i => rowCount - i - 1),
       ];
-      visibleRowHeights = new Map([
-        ...visibleRowHeights,
-        ...this.getFloatingRowHeights(state),
-      ]);
       visibleRowYs = new Map([
         ...visibleRowYs,
         ...this.getFloatingRowYs(
@@ -364,10 +363,6 @@ class GridMetricCalculator {
           i => columnCount - i - 1
         ),
       ];
-      visibleColumnWidths = new Map([
-        ...visibleColumnWidths,
-        ...this.getFloatingColumnWidths(state),
-      ]);
       visibleColumnXs = new Map([
         ...visibleColumnXs,
         ...this.getFloatingColumnXs(
