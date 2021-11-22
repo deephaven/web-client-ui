@@ -2426,14 +2426,33 @@ export class IrisGrid extends Component {
         columnHeaderHeight,
         visibleColumnXs,
         visibleColumnWidths,
+        width,
       } = metrics;
       const columnX = visibleColumnXs.get(shownColumnTooltip);
       const columnWidth = visibleColumnWidths.get(shownColumnTooltip);
+
+      /**
+       * Create a wrapper dom element, the size of the column header.
+       * The wrapper acts as tooltip parent, for positioning, and the
+       * tooltip component will trigger hide on mouseleave of wrapper
+       * or tooltip. The wrapper should be bound to within the
+       * grid dimensions, so popper doesn't end up outside the panel.
+       */
+      const boundedLeft = Math.max(0, columnX);
+      let boundedWidth = columnWidth;
+      if (columnX + columnWidth > width) {
+        // column is extending past right edge
+        boundedWidth = width - columnX;
+      } else if (columnX < 0) {
+        // column is extending past left edge
+        boundedWidth = columnWidth - Math.abs(columnX);
+      }
+
       const wrapperStyle = {
         position: 'absolute',
         top: 0,
-        left: columnX,
-        width: columnWidth,
+        left: boundedLeft,
+        width: boundedWidth,
         height: columnHeaderHeight,
         pointerEvents: 'none',
       };
