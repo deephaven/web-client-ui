@@ -201,7 +201,8 @@ class GridMetricCalculator {
       null,
       width - gridX - scrollBarSize - rowFooterWidth
     );
-    const lastTop = this.getLastTop(
+
+    let lastTop = this.getLastTop(
       state,
       null,
       height - gridY - scrollBarSize - floatingBottomHeight
@@ -225,6 +226,8 @@ class GridMetricCalculator {
             barWidth - 1
           )
         : 0;
+
+    // Vertical scrollbar handle height.
     const handleHeight =
       lastTop > 0
         ? Math.min(
@@ -270,6 +273,12 @@ class GridMetricCalculator {
         ),
       ]);
     }
+
+    lastTop = this.getLastTop(
+      state,
+      null,
+      height - gridY - scrollBarSize - floatingBottomHeight
+    );
 
     let floatingColumns = [];
     if (floatingLeftColumnCount > 0 || floatingRightColumnCount > 0) {
