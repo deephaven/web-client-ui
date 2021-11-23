@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import classNames from 'classnames';
 import Log from '@deephaven/log';
-import Popper, { PopperOptions } from './Popper';
+import Popper, { PopperOptions, ReferenceObject } from './Popper';
 
 const log = Log.module('Tooltip');
 
@@ -12,6 +12,7 @@ interface TooltipProps {
   reshowTimeout: number;
   children: React.ReactNode;
   popperClassName: string;
+  referenceObject: ReferenceObject;
 }
 
 interface TooltipState {
@@ -47,6 +48,7 @@ class Tooltip extends Component<TooltipProps, TooltipState> {
     popperClassName: '',
     reshowTimeout: Tooltip.defaultReshowTimeout,
     timeout: Tooltip.defaultTimeout,
+    referenceObject: null,
   };
 
   static handleHidden(): void {
@@ -280,7 +282,13 @@ class Tooltip extends Component<TooltipProps, TooltipState> {
   }
 
   render(): JSX.Element {
-    const { interactive, children, options, popperClassName } = this.props;
+    const {
+      interactive,
+      children,
+      options,
+      referenceObject,
+      popperClassName,
+    } = this.props;
     const { isShown } = this.state;
     return (
       <div ref={this.container} style={{ display: 'none' }}>
@@ -290,6 +298,7 @@ class Tooltip extends Component<TooltipProps, TooltipState> {
           ref={this.popper}
           onExited={this.handleExited}
           interactive={interactive}
+          referenceObject={referenceObject}
         >
           <div className="tooltip-content"> {isShown && children}</div>
         </Popper>
