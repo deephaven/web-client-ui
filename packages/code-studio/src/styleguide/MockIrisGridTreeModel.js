@@ -54,7 +54,7 @@ class MockIrisGridTreeModel extends IrisGridModel {
   set pendingDataMap(value) {}
 
   getColumnIndexByName(name) {
-    return 3;
+    return Number(name);
   }
 
   textForCell(column, row) {
