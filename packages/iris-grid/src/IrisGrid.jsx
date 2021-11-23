@@ -2464,7 +2464,7 @@ export class IrisGrid extends Component {
        * positioning and keep the popper centered on the label. Creates a
        * 1px x headerHeight virtual object, placed centered on the column
        * label, clamped to 0 + margin to width - margin. We add a margin,
-       * otherwise the arrow wants to esacpe the boundry.
+       * otherwise the arrow wants to escape the boundary.
        */
       const gridRect = this.gridWrapper.getBoundingClientRect();
       const popperMargin = 20;
