@@ -48,14 +48,19 @@ export type GridMetricState = {
 };
 
 /**
- * Retrieve a value from a map. If the value is not found, throw.
+ * Retrieve a value from a map. If the value is not found and no default value is provided, throw.
  * Use when the value _must_ be present
  * @param map The map to get the value from
  * @param key The key to fetch the value for
+ * @param defaultValue A default value to set if the key is not present
  * @returns The value set for that key
  */
-export function mapGet<K, V>(map: Map<K, V>, key: K): V {
-  const value = map.get(key);
+export function mapGet<K, V>(
+  map: Map<K, V>,
+  key: K,
+  defaultValue: V | undefined = undefined
+): V {
+  const value = map.get(key) ?? defaultValue;
   if (value !== undefined) {
     return value;
   }
@@ -330,9 +335,8 @@ class GridMetricCalculator {
           )
         : 0;
 
-    const leftColumnWidth =
-      columnCount > 0 ? mapGet(visibleColumnWidths, left) : 0;
-    const topRowHeight = rowCount > 0 ? mapGet(visibleRowHeights, top) : 0;
+    const leftColumnWidth = mapGet(visibleColumnWidths, left, 0);
+    const topRowHeight = mapGet(visibleRowHeights, top, 0);
     const leftOffsetPercent =
       leftColumnWidth > 0 ? leftOffset / leftColumnWidth : 0;
     const topOffsetPercent = topRowHeight > 0 ? topOffset / topRowHeight : 0;
