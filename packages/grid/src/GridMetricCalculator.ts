@@ -48,24 +48,40 @@ export type GridMetricState = {
 };
 
 /**
+ * Retrieve a value from a map. If the value is not found, throw.
+ * Use when the value _must_ be present
+ * @param map The map to get the value from
+ * @param key The key to fetch the value for
+ * @returns The value set for that key
+ */
+export function mapGet<K, V>(map: Map<K, V>, key: K): V {
+  const value = map.get(key);
+  if (value !== undefined) {
+    return value;
+  }
+
+  throw new Error(`Missing value for key ${key}`);
+}
+
+/**
  * Trim the provided map in place. Trims oldest inserted items down to the target size if the cache size is exceeded.
  * Instead of trimming one item on every tick, we trim half the items so there isn't a cache clear on every new item.
  * @param map The map to trim
  * @param cacheSize The maximum number of elements to cache
  * @param targetSize The number of elements to reduce the cache down to if `cacheSize` is exceeded
  */
-export const trimMap = (
+export function trimMap(
   map: Map<unknown, unknown>,
   cacheSize = GridMetricCalculator.CACHE_SIZE,
   targetSize = Math.floor(cacheSize / 2)
-): void => {
+): void {
   if (map.size > cacheSize) {
     const iter = map.keys();
     while (map.size > targetSize) {
       map.delete(iter.next().value);
     }
   }
-};
+}
 
 /**
  * Get the coordinates of floating items in one dimension.
@@ -76,13 +92,13 @@ export const trimMap = (
  * @param max The max coordinate value (ie. `maxY` for rows, `maxX` for columns)
  * @param sizeMap Map from index to size of item (ie. `rowHeightMap` for rows, `columnWidthMap` for columns)
  */
-export const getFloatingCoordinates = (
+export function getFloatingCoordinates(
   startCount: number,
   endCount: number,
   totalCount: number,
   max: number,
   sizeMap: SizeMap
-): CoordinateMap => {
+): CoordinateMap {
   const coordinates = new Map();
   let x = 0;
   for (let i = 0; i < startCount && i < totalCount; i += 1) {
@@ -96,15 +112,6 @@ export const getFloatingCoordinates = (
     coordinates.set(totalCount - i - 1, x);
   }
   return coordinates;
-};
-
-function mapGet<K, V>(map: Map<K, V>, key: K): V {
-  const value = map.get(key);
-  if (value !== undefined) {
-    return value;
-  }
-
-  throw new Error(`Missing value for key ${key}`);
 }
 
 /**
@@ -1716,9 +1723,10 @@ class GridMetricCalculator {
   /**
    * Sets the width for the specified column
    * @param column The column model index to set
-   * @param size The size to set it to, or undefined to reset the column size
+   * @param size The size to set it to
    */
   setColumnWidth(column: ModelIndex, size: number): void {
+    // Always use a new instance of the map so any consumer of the metrics knows there has been a change
     const userColumnWidths = new Map(this.userColumnWidths);
     userColumnWidths.set(column, Math.ceil(size));
     trimMap(userColumnWidths);
@@ -1730,6 +1738,7 @@ class GridMetricCalculator {
    * @param column The column model index to reset
    */
   resetColumnWidth(column: ModelIndex): void {
+    // Always use a new instance of the map so any consumer of the metrics knows there has been a change
     const userColumnWidths = new Map(this.userColumnWidths);
     userColumnWidths.delete(column);
     this.userColumnWidths = userColumnWidths;
@@ -1739,9 +1748,10 @@ class GridMetricCalculator {
   /**
    * Sets the width for the specified row
    * @param row The row model index to set
-   * @param size The size to set it to, or undefined to reset the row size
+   * @param size The size to set it to
    */
   setRowHeight(row: ModelIndex, size: number): void {
+    // Always use a new instance of the map so any consumer of the metrics knows there has been a change
     const userRowHeights = new Map(this.userRowHeights);
     userRowHeights.set(row, Math.ceil(size));
     trimMap(userRowHeights);
@@ -1753,6 +1763,7 @@ class GridMetricCalculator {
    * @param row The row model index to reset
    */
   resetRowHeight(row: ModelIndex): void {
+    // Always use a new instance of the map so any consumer of the metrics knows there has been a change
     const userRowHeights = new Map(this.userRowHeights);
     userRowHeights.delete(row);
     this.userRowHeights = userRowHeights;
