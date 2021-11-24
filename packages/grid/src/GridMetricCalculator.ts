@@ -55,7 +55,7 @@ export type GridMetricState = {
  * @param defaultValue A default value to set if the key is not present
  * @returns The value set for that key
  */
-export function mapGet<K, V>(
+export function getOrThrow<K, V>(
   map: Map<K, V>,
   key: K,
   defaultValue: V | undefined = undefined
@@ -108,12 +108,12 @@ export function getFloatingCoordinates(
   let x = 0;
   for (let i = 0; i < startCount && i < totalCount; i += 1) {
     coordinates.set(i, x);
-    x += mapGet(sizeMap, i);
+    x += getOrThrow(sizeMap, i);
   }
 
   x = max;
   for (let i = 0; i < endCount && totalCount - i - 1 >= 0; i += 1) {
-    x -= mapGet(sizeMap, totalCount - i - 1);
+    x -= getOrThrow(sizeMap, totalCount - i - 1);
     coordinates.set(totalCount - i - 1, x);
   }
   return coordinates;
@@ -335,8 +335,8 @@ class GridMetricCalculator {
           )
         : 0;
 
-    const leftColumnWidth = mapGet(visibleColumnWidths, left, 0);
-    const topRowHeight = mapGet(visibleRowHeights, top, 0);
+    const leftColumnWidth = getOrThrow(visibleColumnWidths, left, 0);
+    const topRowHeight = getOrThrow(visibleRowHeights, top, 0);
     const leftOffsetPercent =
       leftColumnWidth > 0 ? leftOffset / leftColumnWidth : 0;
     const topOffsetPercent = topRowHeight > 0 ? topOffset / topRowHeight : 0;
@@ -1024,7 +1024,7 @@ class GridMetricCalculator {
     let x = -leftOffset;
     for (let i = 0; i < visibleColumns.length; i += 1) {
       const column = visibleColumns[i];
-      const columnWidth = mapGet(visibleColumnWidths, column);
+      const columnWidth = getOrThrow(visibleColumnWidths, column);
       visibleColumnXs.set(column, x);
       x += columnWidth;
     }
@@ -1074,7 +1074,7 @@ class GridMetricCalculator {
     let y = -topOffset;
     for (let i = 0; i < visibleRows.length; i += 1) {
       const row = visibleRows[i];
-      const rowHeight = mapGet(visibleRowHeights, row);
+      const rowHeight = getOrThrow(visibleRowHeights, row);
       visibleRowYs.set(row, y);
       y += rowHeight;
     }
@@ -1129,7 +1129,7 @@ class GridMetricCalculator {
     const { floatingLeftColumnCount } = model;
     let floatingWidth = 0;
     for (let i = 0; i < floatingLeftColumnCount; i += 1) {
-      floatingWidth += mapGet(columnWidths, i);
+      floatingWidth += getOrThrow(columnWidths, i);
     }
     return floatingWidth;
   }
@@ -1148,7 +1148,7 @@ class GridMetricCalculator {
     const { floatingRightColumnCount, columnCount } = model;
     let floatingWidth = 0;
     for (let i = 0; i < floatingRightColumnCount; i += 1) {
-      floatingWidth += mapGet(columnWidths, columnCount - i - 1);
+      floatingWidth += getOrThrow(columnWidths, columnCount - i - 1);
     }
 
     return floatingWidth;
@@ -1168,7 +1168,7 @@ class GridMetricCalculator {
     const { floatingTopRowCount } = model;
     let floatingHeight = 0;
     for (let i = 0; i < floatingTopRowCount; i += 1) {
-      floatingHeight += mapGet(rowHeights, i);
+      floatingHeight += getOrThrow(rowHeights, i);
     }
     return floatingHeight;
   }
@@ -1187,7 +1187,7 @@ class GridMetricCalculator {
     const { floatingBottomRowCount, rowCount } = model;
     let floatingHeight = 0;
     for (let i = 0; i < floatingBottomRowCount; i += 1) {
-      floatingHeight += mapGet(rowHeights, rowCount - i - 1);
+      floatingHeight += getOrThrow(rowHeights, rowCount - i - 1);
     }
     return floatingHeight;
   }
@@ -1210,7 +1210,7 @@ class GridMetricCalculator {
     const floatingHeight = this.getFloatingTopHeight(state, visibleRowHeights);
     for (let i = 0; i < visibleRows.length; i += 1) {
       const row = visibleRows[i];
-      const y = mapGet(visibleRowYs, row);
+      const y = getOrThrow(visibleRowYs, row);
       if (y >= floatingHeight) {
         return row;
       }
@@ -1236,7 +1236,7 @@ class GridMetricCalculator {
     const floatingWidth = this.getFloatingLeftWidth(state, visibleColumnWidths);
     for (let i = 0; i < visibleColumns.length; i += 1) {
       const column = visibleColumns[i];
-      const x = mapGet(visibleColumnXs, column);
+      const x = getOrThrow(visibleColumnXs, column);
       if (x >= floatingWidth) {
         return column;
       }
@@ -1270,8 +1270,8 @@ class GridMetricCalculator {
     const visibleHeight = height - gridY - scrollBarSize - floatingHeight;
     for (let i = visibleRows.length - 1; i >= 0; i -= 1) {
       const row = visibleRows[i];
-      const rowY = mapGet(visibleRowYs, row);
-      const rowHeight = mapGet(visibleRowHeights, row);
+      const rowY = getOrThrow(visibleRowYs, row);
+      const rowHeight = getOrThrow(visibleRowHeights, row);
       if (rowY + rowHeight <= visibleHeight) {
         return row;
       }
@@ -1305,8 +1305,8 @@ class GridMetricCalculator {
     const visibleWidth = width - gridX - scrollBarSize - floatingWidth;
     for (let i = visibleColumns.length - 1; i >= 0; i -= 1) {
       const column = visibleColumns[i];
-      const columnX = mapGet(visibleColumnXs, column);
-      const columnWidth = mapGet(visibleColumnWidths, column);
+      const columnX = getOrThrow(visibleColumnXs, column);
+      const columnWidth = getOrThrow(visibleColumnWidths, column);
       if (columnX + columnWidth <= visibleWidth) {
         return column;
       }
@@ -1387,7 +1387,8 @@ class GridMetricCalculator {
     let dataSize = 0;
     if (items.length > 0) {
       lastIndex = items[items.length - 1];
-      dataSize = mapGet(itemXs, lastIndex) + mapGet(itemSizes, lastIndex);
+      dataSize =
+        getOrThrow(itemXs, lastIndex) + getOrThrow(itemSizes, lastIndex);
     }
 
     if (dataSize < maxSize) {
@@ -1480,7 +1481,7 @@ class GridMetricCalculator {
    */
   getModelRow(visibleRow: VisibleIndex, state: GridMetricState): ModelIndex {
     if (this.modelRows.has(visibleRow)) {
-      return mapGet(this.modelRows, visibleRow);
+      return getOrThrow(this.modelRows, visibleRow);
     }
     const { movedRows } = state;
     const modelRow = GridUtils.getModelIndex(visibleRow, movedRows);
@@ -1518,7 +1519,7 @@ class GridMetricCalculator {
     state: GridMetricState
   ): ModelIndex {
     if (this.modelColumns.has(visibleColumn)) {
-      return mapGet(this.modelColumns, visibleColumn);
+      return getOrThrow(this.modelColumns, visibleColumn);
     }
     const { movedColumns } = state;
     const modelColumn = GridUtils.getModelIndex(visibleColumn, movedColumns);
@@ -1709,7 +1710,7 @@ class GridMetricCalculator {
    */
   getWidthForFont(font: GridFont, state: GridMetricState): number {
     if (this.fontWidths.has(font)) {
-      return mapGet(this.fontWidths, font);
+      return getOrThrow(this.fontWidths, font);
     }
     const { context } = state;
     context.font = font;
