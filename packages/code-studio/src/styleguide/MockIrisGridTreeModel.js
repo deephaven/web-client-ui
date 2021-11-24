@@ -53,6 +53,10 @@ class MockIrisGridTreeModel extends IrisGridModel {
 
   set pendingDataMap(value) {}
 
+  getColumnIndexByName(name) {
+    return Number(name);
+  }
+
   textForCell(column, row) {
     return (
       this.editedData[column]?.[row] ?? this.model.textForCell(column, row)

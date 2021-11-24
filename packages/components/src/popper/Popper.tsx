@@ -19,7 +19,7 @@ import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
 import classNames from 'classnames';
 import { CSSTransition } from 'react-transition-group';
-import PopperJs, { PopperOptions } from 'popper.js';
+import PopperJs, { PopperOptions, ReferenceObject } from 'popper.js';
 import PropTypes from 'prop-types';
 import ThemeExport from '../ThemeExport';
 import './Popper.scss';
@@ -33,6 +33,7 @@ interface PopperProps {
   isShown: boolean;
   closeOnBlur: boolean;
   interactive: boolean;
+  referenceObject: ReferenceObject;
 }
 
 interface PopperState {
@@ -51,6 +52,7 @@ class Popper extends Component<PopperProps, PopperState> {
     isShown: PropTypes.bool,
     closeOnBlur: PropTypes.bool,
     interactive: PropTypes.bool,
+    referenceObject: PropTypes.shape({}),
   };
 
   static defaultProps = {
@@ -66,6 +68,7 @@ class Popper extends Component<PopperProps, PopperState> {
     isShown: false,
     interactive: false,
     closeOnBlur: false,
+    referenceObject: null,
   };
 
   constructor(props: PopperProps) {
@@ -136,7 +139,7 @@ class Popper extends Component<PopperProps, PopperState> {
 
   initPopper(): void {
     let { popper } = this.state;
-    const { closeOnBlur } = this.props;
+    const { closeOnBlur, referenceObject } = this.props;
 
     if (popper) {
       return;
@@ -158,7 +161,7 @@ class Popper extends Component<PopperProps, PopperState> {
       parent = this.container.current;
     }
 
-    popper = new PopperJs(parent, this.element, options);
+    popper = new PopperJs(referenceObject || parent, this.element, options);
     popper.scheduleUpdate();
 
     // delayed due to scheduleUpdate
@@ -293,4 +296,4 @@ class Popper extends Component<PopperProps, PopperState> {
 }
 
 export default Popper;
-export type { PopperOptions };
+export type { PopperOptions, ReferenceObject };

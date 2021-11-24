@@ -36,6 +36,10 @@ class IrisGridColumnTooltipMouseHandler extends GridMouseHandler {
     return false;
   }
 
+  onWheel() {
+    this.destroyColumnTooltip();
+  }
+
   onMove(gridPoint) {
     const { y, column, row } = gridPoint;
     const { shownColumnTooltip } = this.irisGrid.state;
@@ -56,14 +60,6 @@ class IrisGridColumnTooltipMouseHandler extends GridMouseHandler {
       this.irisGrid.setState({ shownColumnTooltip: newTooltip });
     }
 
-    return false;
-  }
-
-  onLeave(gridPoint) {
-    const { y } = gridPoint;
-    if (y < 0) {
-      this.destroyColumnTooltip();
-    }
     return false;
   }
 }

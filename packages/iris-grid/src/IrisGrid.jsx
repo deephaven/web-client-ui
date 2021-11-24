@@ -36,6 +36,7 @@ import dh, { PropTypes as APIPropTypes } from '@deephaven/jsapi-shim';
 import { Pending, PromiseUtils, ValidationError } from '@deephaven/utils';
 import throttle from 'lodash.throttle';
 import debounce from 'lodash.debounce';
+import clamp from 'lodash.clamp';
 import PendingDataBottomBar from './PendingDataBottomBar';
 import IrisGridCopyHandler from './IrisGridCopyHandler';
 import FilterInputField from './FilterInputField';
@@ -2421,21 +2422,78 @@ export class IrisGrid extends Component {
     }
 
     let columnTooltip = null;
-    if (shownColumnTooltip != null && metrics) {
+    if (shownColumnTooltip != null && metrics && this.gridWrapper) {
       const {
         columnHeaderHeight,
         visibleColumnXs,
         visibleColumnWidths,
+        width,
       } = metrics;
       const columnX = visibleColumnXs.get(shownColumnTooltip);
       const columnWidth = visibleColumnWidths.get(shownColumnTooltip);
+
+      /**
+       * Create a wrapper dom element, the size of the column header.
+       * The wrapper acts as tooltip parent, the  tooltip component
+       * will trigger hide on mouseleave of wrapper or tooltip.
+       * The wrapper should be bound to within the grid dimensions,
+       * so popper only remains triggered while mouse is inside the panel.
+       */
+      const boundedLeft = Math.max(0, columnX);
+      let boundedWidth = columnWidth;
+      if (columnX + columnWidth > width) {
+        // column is extending past right edge
+        boundedWidth = width - columnX;
+      } else if (columnX < 0) {
+        // column is extending past left edge
+        boundedWidth = columnWidth - Math.abs(columnX);
+      }
+
       const wrapperStyle = {
         position: 'absolute',
         top: 0,
-        left: columnX,
-        width: columnWidth,
+        left: boundedLeft,
+        width: boundedWidth,
         height: columnHeaderHeight,
         pointerEvents: 'none',
+      };
+
+      /**
+       * Because the popper parent wrapper center is no longer the same as
+       * the column label center, we create a popper virtual ref, to handle
+       * positioning and keep the popper centered on the label. Creates a
+       * 1px x headerHeight virtual object, placed centered on the column
+       * label, clamped to 0 + margin to width - margin. We add a margin,
+       * otherwise the arrow wants to escape the boundary.
+       */
+      const gridRect = this.gridWrapper.getBoundingClientRect();
+      const popperMargin = 20;
+      const virtualReference = {
+        clientWidth: 1,
+        clientHeight: columnHeaderHeight,
+        getBoundingClientRect() {
+          return {
+            top: gridRect.top,
+            left:
+              gridRect.left +
+              clamp(
+                columnX + columnWidth / 2,
+                popperMargin,
+                width - popperMargin
+              ),
+            bottom: gridRect.top + columnHeaderHeight,
+            right:
+              gridRect.left +
+              clamp(
+                columnX + columnWidth / 2,
+                popperMargin,
+                width - popperMargin
+              ) +
+              1,
+            width: 1,
+            height: columnHeaderHeight,
+          };
+        },
       };
 
       const popperOptions = {
@@ -2459,6 +2517,7 @@ export class IrisGrid extends Component {
               interactive
               options={popperOptions}
               ref={this.handleTooltipRef}
+              referenceObject={virtualReference}
             >
               <ColumnStatistics
                 model={model}
