@@ -562,7 +562,7 @@ class IrisGridRenderer extends GridRenderer {
 
   drawTreeMarker(context, state, columnX, rowY, treeBox, color, isExpanded) {
     context.save();
-    const [x1, y1] = treeBox;
+    const { x1, y1 } = treeBox;
     const markerIcon = isExpanded
       ? this.getIcon(ICON_NAMES.CARET_DOWN)
       : this.getIcon(ICON_NAMES.CARET_RIGHT);
