@@ -1,0 +1,1282 @@
+import GridUtils from './GridUtils';
+
+/* eslint class-methods-use-this: "off" */
+/* eslint react/destructuring-assignment: "off" */
+/**
+ * Class to calculate all the metrics for drawing a grid.
+ * Call getMetrics() with the state to get the full metrics.
+ * Override this class and override the individual methods to provide additional functionality.
+ */
+class GridMetricCalculator {
+  /** The size of the caches this calculator stores */
+  static CACHE_SIZE = 10000;
+
+  /** The maximum column width as a percentage of the full grid */
+  static MAX_COLUMN_WIDTH = 0.8;
+
+  /**
+   * Trim the provided map in place. Trims oldest inserted items down to the target size if the cache size is exceeded.
+   * Instead of trimming one item on every tick, we trim half the items so there isn't a cache clear on every new item.
+   * @param {Map} map The map to trim
+   * @param {number} cacheSize The maximum number of elements to cache
+   * @param {number} targetSize The number of elements to reduce the cache down to if `cacheSize` is exceeded
+   */
+  static trimMap(
+    map,
+    cacheSize = GridMetricCalculator.CACHE_SIZE,
+    targetSize = Math.floor(cacheSize / 2)
+  ) {
+    if (map.size > cacheSize) {
+      const iter = map.keys();
+      while (map.size > targetSize) {
+        map.delete(iter.next().value);
+      }
+    }
+  }
+
+  /**
+   * Get the coordinates of floating items in one dimension.
+   * Can be used for getting the y coordinates of floating rows, or x coordinates of floating columns, calculated using the `sizeMap` passed in.
+   * @param {number} startCount The number of floating items at the start (ie. `floatingTopRowCount` for rows, `floatingLeftColumnCount` for columns)
+   * @param {number} endCount The number of floating items at the end (ie. `floatingBottomRowCount` for rows, `floatingRightColumnCount` for columns)
+   * @param {number} totalCount Total number of items in this dimension (ie. `rowCount` for rows, `columnCount` for columns)
+   * @param {number} max The max coordinate value (ie. `maxY` for rows, `maxX` for columns)
+   * @param {Map<number, number>} sizeMap Map from index to size of item (ie. `rowHeightMap` for rows, `columnWidthMap` for columns)
+   */
+  static getFloatingCoordinates(
+    startCount,
+    endCount,
+    totalCount,
+    max,
+    sizeMap
+  ) {
+    const coordinates = new Map();
+    let x = 0;
+    for (let i = 0; i < startCount && i < totalCount; i += 1) {
+      coordinates.set(i, x);
+      x += sizeMap.get(i);
+    }
+
+    x = max;
+    for (let i = 0; i < endCount && totalCount - i - 1 >= 0; i += 1) {
+      x -= sizeMap.get(totalCount - i - 1);
+      coordinates.set(totalCount - i - 1, x);
+    }
+    return coordinates;
+  }
+
+  constructor({
+    userColumnWidths = new Map(),
+    userRowHeights = new Map(),
+    calculatedRowHeights = new Map(),
+    calculatedColumnWidths = new Map(),
+    fontWidths = new Map(),
+    modelRows = new Map(),
+    modelColumns = new Map(),
+    movedRows = null,
+    movedColumns = null,
+  } = {}) {
+    this.userColumnWidths = userColumnWidths;
+    this.userRowHeights = userRowHeights;
+    this.calculatedRowHeights = calculatedRowHeights;
+    this.calculatedColumnWidths = calculatedColumnWidths;
+    this.fontWidths = fontWidths;
+
+    // Need to track the last moved rows/columns array so we know if we need to reset our models cache
+    this.modelRows = modelRows;
+    this.modelColumns = modelColumns;
+    this.movedRows = movedRows;
+    this.movedColumns = movedColumns;
+  }
+
+  /** update the calculated metrics from the model/canvas that are useful for many functions */
+  getMetrics(state) {
+    const {
+      left,
+      top,
+      leftOffset,
+      topOffset,
+      width,
+      height,
+      theme,
+      model,
+      movedRows,
+      movedColumns,
+    } = state;
+    const {
+      rowHeight,
+      rowHeaderWidth,
+      rowFooterWidth,
+      columnWidth,
+      columnHeaderHeight,
+      minScrollHandleSize,
+      scrollBarSize,
+    } = theme;
+
+    if (movedRows !== this.movedRows) {
+      this.movedRows = movedRows;
+      this.modelRows.clear();
+    }
+
+    if (movedColumns !== this.movedColumns) {
+      this.movedColumns = movedColumns;
+      this.modelColumns.clear();
+    }
+
+    const {
+      columnCount,
+      rowCount,
+      floatingTopRowCount,
+      floatingBottomRowCount,
+      floatingLeftColumnCount,
+      floatingRightColumnCount,
+    } = model;
+
+    // Get some basic metrics
+    const firstRow = this.getFirstRow(state);
+    const firstColumn = this.getFirstColumn(state);
+
+    const gridX = this.getGridX(state);
+    const gridY = this.getGridY(state);
+
+    const treePaddingX = model.hasExpandableRows
+      ? this.calculateTreePaddingX(state)
+      : 0;
+    const treePaddingY = 0; // We don't support trees on columns (at least not yet)
+
+    let visibleRowHeights = this.getVisibleRowHeights(state);
+    let visibleColumnWidths = this.getVisibleColumnWidths(
+      state,
+      firstColumn,
+      treePaddingX
+    );
+
+    // Calculate the metrics for the main grid
+    const visibleRows = Array.from(visibleRowHeights.keys());
+    const visibleColumns = Array.from(visibleColumnWidths.keys());
+
+    let visibleColumnXs = this.getVisibleColumnXs(
+      visibleColumnWidths,
+      visibleColumns,
+      leftOffset
+    );
+    let visibleRowYs = this.getVisibleRowYs(
+      visibleRowHeights,
+      visibleRows,
+      topOffset
+    );
+
+    const bottom =
+      visibleRows.length > 0 ? visibleRows[visibleRows.length - 1] : top;
+    const right =
+      visibleColumns.length > 0
+        ? visibleColumns[visibleColumns.length - 1]
+        : left;
+
+    const bottomViewport = this.getBottomViewport(
+      state,
+      visibleRows,
+      visibleRowYs,
+      visibleRowHeights
+    );
+    const rightViewport = this.getRightViewport(
+      state,
+      visibleColumns,
+      visibleColumnXs,
+      visibleColumnWidths
+    );
+
+    const columnWidthValues = Array.from(visibleColumnWidths.values());
+    const rowHeightValues = Array.from(visibleRowHeights.values());
+    const maxX = columnWidthValues.reduce((x, w) => x + w, 0) - leftOffset;
+    const maxY = rowHeightValues.reduce((y, h) => y + h, 0) - topOffset;
+
+    const floatingBottomHeight = this.getFloatingBottomHeight(
+      state,
+      visibleRowHeights
+    );
+
+    const lastLeft = this.getLastLeft(
+      state,
+      null,
+      width - gridX - scrollBarSize - rowFooterWidth
+    );
+    const lastTop = this.getLastTop(
+      state,
+      null,
+      height - gridY - scrollBarSize - floatingBottomHeight
+    );
+
+    // Calculate some metrics for the scroll bars
+    const hasHorizontalBar = lastLeft > 0;
+    const hasVerticalBar = lastTop > 0;
+    const horizontalBarHeight = hasHorizontalBar ? scrollBarSize : 0;
+    const verticalBarWidth = hasVerticalBar ? scrollBarSize : 0;
+    const barWidth = width - rowHeaderWidth - verticalBarWidth;
+    const barHeight = height - columnHeaderHeight - horizontalBarHeight;
+
+    const handleWidth =
+      lastLeft > 0
+        ? Math.min(
+            Math.max(
+              minScrollHandleSize,
+              barWidth * ((columnCount - lastLeft) / columnCount)
+            ),
+            barWidth - 1
+          )
+        : 0;
+    const handleHeight =
+      lastTop > 0
+        ? Math.min(
+            Math.max(
+              minScrollHandleSize,
+              barHeight * ((rowCount - lastTop) / rowCount)
+            ),
+            barHeight - 1
+          )
+        : 0;
+
+    const leftColumnWidth = visibleColumnWidths.get(left);
+    const topRowHeight = visibleRowHeights.get(top);
+    const leftOffsetPercent =
+      leftColumnWidth > 0 ? leftOffset / leftColumnWidth : 0;
+    const topOffsetPercent = topRowHeight > 0 ? topOffset / topRowHeight : 0;
+    const scrollX =
+      lastLeft > 0
+        ? ((left + leftOffsetPercent) / lastLeft) * (barWidth - handleWidth)
+        : 0;
+    const scrollY =
+      lastTop > 0
+        ? ((top + topOffsetPercent) / lastTop) * (barHeight - handleHeight)
+        : 0;
+
+    // Now add the floating sections
+    let floatingRows = [];
+    if (floatingTopRowCount > 0 || floatingBottomRowCount > 0) {
+      floatingRows = [
+        ...Array(floatingTopRowCount).keys(),
+        ...[...Array(floatingBottomRowCount).keys()].map(i => rowCount - i - 1),
+      ];
+      visibleRowHeights = new Map([
+        ...visibleRowHeights,
+        ...this.getFloatingRowHeights(state),
+      ]);
+      visibleRowYs = new Map([
+        ...visibleRowYs,
+        ...this.getFloatingRowYs(
+          state,
+          visibleRowHeights,
+          Math.floor(height - gridY - horizontalBarHeight)
+        ),
+      ]);
+    }
+
+    let floatingColumns = [];
+    if (floatingLeftColumnCount > 0 || floatingRightColumnCount > 0) {
+      floatingColumns = [
+        ...Array(floatingLeftColumnCount).keys(),
+        ...[...Array(floatingRightColumnCount).keys()].map(
+          i => columnCount - i - 1
+        ),
+      ];
+      visibleColumnWidths = new Map([
+        ...visibleColumnWidths,
+        ...this.getFloatingColumnWidths(state),
+      ]);
+      visibleColumnXs = new Map([
+        ...visibleColumnXs,
+        ...this.getFloatingColumnXs(
+          state,
+          visibleColumnWidths,
+          Math.floor(width - gridX - verticalBarWidth)
+        ),
+      ]);
+    }
+
+    const allRows = visibleRows.concat(floatingRows);
+    const allColumns = visibleColumns.concat(floatingColumns);
+    const modelRows = this.getModelRows(allRows, state);
+    const modelColumns = this.getModelColumns(allColumns, state);
+
+    const visibleRowTreeBoxes = this.getVisibleRowTreeBoxes(
+      visibleRowHeights,
+      modelRows,
+      state
+    );
+
+    // Calculate the visible viewport based on scroll position and floating sections
+    const topVisible = this.getTopVisible(
+      state,
+      visibleRowYs,
+      visibleRowHeights,
+      visibleRows,
+      gridY
+    );
+    const leftVisible = this.getLeftVisible(
+      state,
+      visibleColumnXs,
+      visibleColumnWidths,
+      visibleColumns,
+      gridX
+    );
+    const bottomVisible =
+      lastTop > 0
+        ? this.getBottomVisible(
+            state,
+            visibleRowYs,
+            visibleRowHeights,
+            visibleRows,
+            gridY
+          )
+        : bottom;
+    const rightVisible =
+      lastLeft > 0
+        ? this.getRightVisible(
+            state,
+            visibleColumnXs,
+            visibleColumnWidths,
+            visibleColumns,
+            gridX
+          )
+        : right;
+
+    const floatingTopHeight = this.getFloatingTopHeight(
+      state,
+      visibleRowHeights
+    );
+    const floatingLeftWidth = this.getFloatingLeftWidth(
+      state,
+      visibleColumnWidths
+    );
+    const floatingRightWidth = this.getFloatingRightWidth(
+      state,
+      visibleColumnWidths
+    );
+
+    const {
+      fontWidths,
+      userColumnWidths,
+      userRowHeights,
+      calculatedRowHeights,
+      calculatedColumnWidths,
+    } = this;
+
+    return {
+      // Row/Column metrics from model
+      rowHeight,
+      rowHeaderWidth,
+      rowFooterWidth,
+      rowCount,
+      columnWidth,
+      columnCount,
+      columnHeaderHeight,
+
+      // Floating row and column counts
+      floatingTopRowCount,
+      floatingBottomRowCount,
+      floatingLeftColumnCount,
+      floatingRightColumnCount,
+
+      // The grid offset from the top left
+      gridX,
+      gridY,
+
+      // Index of non-hidden row/columns
+      firstRow,
+      firstColumn,
+
+      // The amount of padding for tree (if applicable)
+      treePaddingX,
+      treePaddingY,
+
+      // What viewport is currently visible, limited by data size
+      left,
+      top,
+      bottom,
+      right,
+      topOffset,
+      leftOffset,
+
+      // Bottom and right that are fully visible, not overlapped by scroll bars or anything
+      topVisible,
+      leftVisible,
+      bottomVisible,
+      rightVisible,
+
+      // Bottom and right of the viewport, not limited by data size
+      bottomViewport,
+      rightViewport,
+
+      // Canvas width/height
+      width,
+      height,
+
+      // Max x/y coordinate of the grid (does not include headers)
+      maxX,
+      maxY,
+
+      // Last valid column/row that can be the left/top of the grid
+      lastLeft,
+      lastTop,
+
+      // Scroll bar metrics
+      barHeight,
+      barWidth,
+      handleHeight,
+      handleWidth,
+      hasHorizontalBar,
+      hasVerticalBar,
+      verticalBarWidth,
+      horizontalBarHeight,
+
+      // The vertical x/y scroll amount
+      scrollX,
+      scrollY,
+
+      // Array of visible rows/columns, by grid index
+      visibleRows,
+      visibleColumns,
+
+      // Array of floating rows/columns, by grid index
+      floatingRows,
+      floatingColumns,
+
+      // Array of all rows/columns, visible and floating, by grid index
+      allRows,
+      allColumns,
+
+      // Map of the height/width of visible rows/columns
+      visibleRowHeights,
+      visibleColumnWidths,
+
+      // Floating metrics
+      floatingTopHeight,
+      floatingBottomHeight,
+      floatingLeftWidth,
+      floatingRightWidth,
+
+      // Map of the X/Y coordinates of the rows/columns, from the top left of the grid
+      visibleRowYs,
+      visibleColumnXs,
+
+      // The boxes user can click on for expanding/collapsing tree rows
+      visibleRowTreeBoxes,
+
+      // Mapping from visible row indexes to the model row/columns they pull from
+      modelRows,
+      modelColumns,
+
+      // Map of the width of the fonts
+      fontWidths,
+
+      // Map of user set column/row width/height
+      userColumnWidths,
+      userRowHeights,
+
+      // Map of calculated row/column height/width
+      calculatedRowHeights,
+      calculatedColumnWidths,
+    };
+  }
+
+  getGridX(state) {
+    const { theme } = state;
+    const { rowHeaderWidth } = theme;
+
+    return rowHeaderWidth;
+  }
+
+  getGridY(state) {
+    const { theme } = state;
+    const { columnHeaderHeight } = theme;
+
+    return columnHeaderHeight;
+  }
+
+  getVisibleHeight(
+    state,
+    visibleRowHeights = this.getFloatingRowHeights(state)
+  ) {
+    const { height, theme } = state;
+    const { scrollBarSize } = theme;
+    const gridY = this.getGridY(state);
+    const floatingBottomHeight = this.getFloatingBottomHeight(
+      state,
+      visibleRowHeights
+    );
+    const floatingTopHeight = this.getFloatingTopHeight(
+      state,
+      visibleRowHeights
+    );
+
+    return (
+      height - floatingBottomHeight - floatingTopHeight - gridY - scrollBarSize
+    );
+  }
+
+  getVisibleWidth(
+    state,
+    visibleColumnWidths = this.getFloatingColumnWidths(state)
+  ) {
+    const { width, theme } = state;
+    const { scrollBarSize, rowFooterWidth } = theme;
+    const gridX = this.getGridX(state);
+    const floatingRightWidth = this.getFloatingRightWidth(
+      state,
+      visibleColumnWidths
+    );
+    const floatingLeftWidth = this.getFloatingLeftWidth(
+      state,
+      visibleColumnWidths
+    );
+
+    return (
+      width -
+      floatingLeftWidth -
+      floatingRightWidth -
+      gridX -
+      scrollBarSize -
+      rowFooterWidth
+    );
+  }
+
+  getFirstIndex(itemSizes, getModelIndex, state) {
+    // We only need to check at the very most the number of items the user has hidden + 1
+    const max = itemSizes.size + 1;
+    for (let i = 0; i < max; i += 1) {
+      const modelIndex = getModelIndex(i, state);
+      if (itemSizes.get(modelIndex) !== 0) {
+        return i;
+      }
+    }
+    return 0;
+  }
+
+  /** Get the first column index that isn't hidden */
+  getFirstColumn(state) {
+    return this.getFirstIndex(
+      this.userColumnWidths,
+      this.getModelColumn.bind(this),
+      state
+    );
+  }
+
+  /** Get the first row index that isn't hidden */
+  getFirstRow(state) {
+    return this.getFirstIndex(
+      this.userRowHeights,
+      this.getModelRow.bind(this),
+      state
+    );
+  }
+
+  /**
+   * Get the last column that can be the left most column (eg. scrolled to the right)
+   * If no right column is provided, then the last column is used.
+   */
+  getLastLeft(state, right = null, visibleWidth = this.getVisibleWidth(state)) {
+    const { model } = state;
+    const { columnCount } = model;
+
+    let lastLeft = columnCount - 1;
+    if (right != null) {
+      lastLeft = right;
+    }
+    let x = 0;
+    while (lastLeft >= 0) {
+      const columnWidth = this.getVisibleColumnWidth(lastLeft, state);
+      x += columnWidth;
+
+      if (x >= visibleWidth) {
+        return Math.min(lastLeft + 1, columnCount - 1);
+      }
+
+      lastLeft -= 1;
+    }
+
+    return 0;
+  }
+
+  /**
+   * The last row that can be the top row (eg. scrolled to the bottom)
+   * If no bottom row is provided, then the last row that is not floating is used
+   */
+  getLastTop(
+    state,
+    bottom = null,
+    visibleHeight = this.getVisibleHeight(state)
+  ) {
+    const { model } = state;
+    const { rowCount, floatingBottomRowCount } = model;
+
+    let lastTop = Math.max(0, rowCount - floatingBottomRowCount - 1);
+    if (bottom != null) {
+      lastTop = bottom;
+    }
+    let y = 0;
+    while (lastTop > 0) {
+      const rowHeight = this.getVisibleRowHeight(lastTop, state);
+      y += rowHeight;
+
+      if (y >= visibleHeight) {
+        return Math.min(lastTop + 1, rowCount - 1);
+      }
+
+      lastTop -= 1;
+    }
+
+    return 0;
+  }
+
+  getTopForTopVisible(state, topVisible) {
+    const floatingTopHeight = this.getFloatingTopHeight(state);
+    let top = topVisible;
+    let y = 0;
+    while (top > 0 && y < floatingTopHeight) {
+      top -= 1;
+      y += this.getVisibleRowHeight(top, state);
+    }
+    return top;
+  }
+
+  getTopForBottomVisible(state, bottomVisible) {
+    const { height } = state;
+    const gridY = this.getGridY(state);
+    const floatingBottomHeight = this.getFloatingBottomHeight(state);
+    const availableHeight = height - gridY - floatingBottomHeight;
+    return this.getLastTop(state, bottomVisible, availableHeight);
+  }
+
+  getLeftForLeftVisible(state, leftVisible) {
+    const floatingLeftWidth = this.getFloatingLeftWidth(state);
+    let left = leftVisible;
+    let x = 0;
+    while (left > 0 && x < floatingLeftWidth) {
+      left -= 1;
+      x += this.getVisibleColumnWidth(left, state);
+    }
+    return left;
+  }
+
+  getLeftForRightVisible(state, rightVisible) {
+    const { width } = state;
+    const gridX = this.getGridX(state);
+    const floatingRightWidth = this.getFloatingRightWidth(state);
+    const availableWidth = width - gridX - floatingRightWidth;
+    return this.getLastLeft(state, rightVisible, availableWidth);
+  }
+
+  getFloatingRowHeights(state) {
+    const { model } = state;
+    const { floatingTopRowCount, floatingBottomRowCount, rowCount } = model;
+
+    const rowHeights = new Map();
+    for (let i = 0; i < floatingTopRowCount && i < rowCount; i += 1) {
+      rowHeights.set(i, this.getVisibleRowHeight(i, state));
+    }
+
+    for (
+      let i = 0;
+      i < floatingBottomRowCount && rowCount - i - 1 >= 0;
+      i += 1
+    ) {
+      const row = rowCount - i - 1;
+      rowHeights.set(row, this.getVisibleRowHeight(row, state));
+    }
+
+    return rowHeights;
+  }
+
+  getVisibleRowHeights(state) {
+    const { top, topOffset, height, model } = state;
+
+    let y = 0;
+    let row = top;
+    const rowHeights = new Map();
+    const { rowCount } = model;
+    while (y < height + topOffset && row < rowCount) {
+      const rowHeight = this.getVisibleRowHeight(row, state);
+      rowHeights.set(row, rowHeight);
+      y += rowHeight;
+      row += 1;
+    }
+
+    return rowHeights;
+  }
+
+  getFloatingColumnWidths(
+    state,
+    firstColumn = this.getFirstColumn(state),
+    treePaddingX = this.calculateTreePaddingX(state)
+  ) {
+    const { model } = state;
+    const {
+      columnCount,
+      floatingLeftColumnCount,
+      floatingRightColumnCount,
+    } = model;
+
+    const columnWidths = new Map();
+    for (let i = 0; i < floatingLeftColumnCount && i < columnCount; i += 1) {
+      columnWidths.set(
+        i,
+        this.getVisibleColumnWidth(i, state, firstColumn, treePaddingX)
+      );
+    }
+
+    for (
+      let i = 0;
+      i < floatingRightColumnCount && columnCount - i - 1 >= 0;
+      i += 1
+    ) {
+      const column = columnCount - i - 1;
+      columnWidths.set(
+        column,
+        this.getVisibleColumnWidth(column, state, firstColumn, treePaddingX)
+      );
+    }
+
+    return columnWidths;
+  }
+
+  getVisibleColumnWidths(
+    state,
+    firstColumn = this.getFirstColumn(state),
+    treePaddingX = this.calculateTreePaddingX(state)
+  ) {
+    const { left, leftOffset, width, model } = state;
+
+    let x = 0;
+    let column = left;
+    const columnWidths = new Map();
+    const { columnCount } = model;
+    while (x < width + leftOffset && column < columnCount) {
+      const columnWidth = this.getVisibleColumnWidth(
+        column,
+        state,
+        firstColumn,
+        treePaddingX
+      );
+      columnWidths.set(column, columnWidth);
+      x += columnWidth;
+      column += 1;
+    }
+
+    return columnWidths;
+  }
+
+  getFloatingColumnXs(state, columnWidthMap, maxX) {
+    const { model } = state;
+    const {
+      columnCount,
+      floatingLeftColumnCount,
+      floatingRightColumnCount,
+    } = model;
+
+    return GridMetricCalculator.getFloatingCoordinates(
+      floatingLeftColumnCount,
+      floatingRightColumnCount,
+      columnCount,
+      maxX,
+      columnWidthMap
+    );
+  }
+
+  getVisibleColumnXs(visibleColumnWidths, visibleColumns, leftOffset) {
+    const visibleColumnXs = new Map();
+    let x = -leftOffset;
+    for (let i = 0; i < visibleColumns.length; i += 1) {
+      const column = visibleColumns[i];
+      const columnWidth = visibleColumnWidths.get(column);
+      visibleColumnXs.set(column, x);
+      x += columnWidth;
+    }
+
+    return visibleColumnXs;
+  }
+
+  getFloatingRowYs(state, rowHeightMap, maxY) {
+    const { model } = state;
+    const { floatingTopRowCount, floatingBottomRowCount, rowCount } = model;
+
+    return GridMetricCalculator.getFloatingCoordinates(
+      floatingTopRowCount,
+      floatingBottomRowCount,
+      rowCount,
+      maxY,
+      rowHeightMap
+    );
+  }
+
+  getVisibleRowYs(visibleRowHeights, visibleRows, topOffset) {
+    const visibleRowYs = new Map();
+    let y = -topOffset;
+    for (let i = 0; i < visibleRows.length; i += 1) {
+      const row = visibleRows[i];
+      const rowHeight = visibleRowHeights.get(row);
+      visibleRowYs.set(row, y);
+      y += rowHeight;
+    }
+
+    return visibleRowYs;
+  }
+
+  /** Calculates the tree box click areas that are visible. In relation to the columnX/rowY */
+  getVisibleRowTreeBoxes(visibleRowHeights, modelRows, state) {
+    const visibleRowTreeBoxes = new Map();
+    const { model, theme } = state;
+    const { treeDepthIndent, treeHorizontalPadding } = theme;
+
+    if (model.hasExpandableRows) {
+      visibleRowHeights.forEach((rowHeight, row) => {
+        const modelRow = modelRows.get(row);
+        if (model.isRowExpandable(modelRow)) {
+          const depth = model.depthForRow(modelRow);
+          const x1 = depth * treeDepthIndent + treeHorizontalPadding;
+          const x2 = (depth + 1) * treeDepthIndent + treeHorizontalPadding;
+          const y1 = 0;
+          const y2 = rowHeight;
+          visibleRowTreeBoxes.set(row, [x1, y1, x2, y2]);
+        }
+      });
+    }
+
+    return visibleRowTreeBoxes;
+  }
+
+  getFloatingLeftWidth(
+    state,
+    columnWidths = this.getFloatingColumnWidths(state)
+  ) {
+    const { model } = state;
+    const { floatingLeftColumnCount } = model;
+    let floatingWidth = 0;
+    for (let i = 0; i < floatingLeftColumnCount; i += 1) {
+      floatingWidth += columnWidths.get(i) ?? 0;
+    }
+    return floatingWidth;
+  }
+
+  getFloatingRightWidth(
+    state,
+    columnWidths = this.getFloatingColumnWidths(state)
+  ) {
+    const { model } = state;
+    const { floatingRightColumnCount, columnCount } = model;
+    let floatingWidth = 0;
+    for (let i = 0; i < floatingRightColumnCount; i += 1) {
+      floatingWidth += columnWidths.get(columnCount - i - 1) ?? 0;
+    }
+
+    return floatingWidth;
+  }
+
+  getFloatingTopHeight(state, rowHeights = this.getFloatingRowHeights(state)) {
+    const { model } = state;
+    const { floatingTopRowCount } = model;
+    let floatingHeight = 0;
+    for (let i = 0; i < floatingTopRowCount; i += 1) {
+      floatingHeight += rowHeights.get(i) ?? 0;
+    }
+    return floatingHeight;
+  }
+
+  getFloatingBottomHeight(
+    state,
+    rowHeights = this.getFloatingRowHeights(state)
+  ) {
+    const { model } = state;
+    const { floatingBottomRowCount, rowCount } = model;
+    let floatingHeight = 0;
+    for (let i = 0; i < floatingBottomRowCount; i += 1) {
+      floatingHeight += rowHeights.get(rowCount - i - 1) ?? 0;
+    }
+    return floatingHeight;
+  }
+
+  getTopVisible(state, visibleRowYs, visibleRowHeights, visibleRows) {
+    const floatingHeight = this.getFloatingTopHeight(state, visibleRowHeights);
+    for (let i = 0; i < visibleRows.length; i += 1) {
+      const row = visibleRows[i];
+      if (visibleRowYs.get(row) >= floatingHeight) {
+        return row;
+      }
+    }
+    return 0;
+  }
+
+  getLeftVisible(state, visibleColumnXs, visibleColumnWidths, visibleColumns) {
+    const floatingWidth = this.getFloatingLeftWidth(state, visibleColumnWidths);
+    for (let i = 0; i < visibleColumns.length; i += 1) {
+      const column = visibleColumns[i];
+      if (visibleColumnXs.get(column) >= floatingWidth) {
+        return column;
+      }
+    }
+    return 0;
+  }
+
+  getBottomVisible(state, visibleRowYs, visibleRowHeights, visibleRows, gridY) {
+    const { height, theme } = state;
+    const { scrollBarSize } = theme;
+    const floatingHeight = this.getFloatingBottomHeight(
+      state,
+      visibleRowHeights
+    );
+    const visibleHeight = height - gridY - scrollBarSize - floatingHeight;
+    for (let i = visibleRows.length - 1; i >= 0; i -= 1) {
+      const row = visibleRows[i];
+      const rowY = visibleRowYs.get(row);
+      const rowHeight = visibleRowHeights.get(row);
+      if (rowY + rowHeight <= visibleHeight) {
+        return row;
+      }
+    }
+
+    return 0;
+  }
+
+  getRightVisible(
+    state,
+    visibleColumnXs,
+    visibleColumnWidths,
+    visibleColumns,
+    gridX
+  ) {
+    const { width, theme } = state;
+    const { scrollBarSize } = theme;
+    const floatingWidth = this.getFloatingRightWidth(
+      state,
+      visibleColumnWidths
+    );
+    const visibleWidth = width - gridX - scrollBarSize - floatingWidth;
+    for (let i = visibleColumns.length - 1; i >= 0; i -= 1) {
+      const column = visibleColumns[i];
+      const columnX = visibleColumnXs.get(column);
+      const columnWidth = visibleColumnWidths.get(column);
+      if (columnX + columnWidth <= visibleWidth) {
+        return column;
+      }
+    }
+
+    return 0;
+  }
+
+  getBottomViewport(state, visibleRows, visibleRowYs, visibleRowHeights) {
+    const { height, theme } = state;
+    const { rowHeight } = theme;
+
+    return this.getLastIndexViewport(
+      visibleRows,
+      visibleRowYs,
+      visibleRowHeights,
+      height,
+      rowHeight
+    );
+  }
+
+  getRightViewport(
+    state,
+    visibleColumns,
+    visibleColumnXs,
+    visibleColumnWidths
+  ) {
+    const { width, theme } = state;
+    const { columnWidth } = theme;
+
+    return this.getLastIndexViewport(
+      visibleColumns,
+      visibleColumnXs,
+      visibleColumnWidths,
+      width,
+      columnWidth
+    );
+  }
+
+  getLastIndexViewport(items, itemXs, itemSizes, maxSize, defaultItemSize) {
+    let lastIndex = 0;
+    let dataSize = 0;
+    if (items.length > 0) {
+      lastIndex = items[items.length - 1];
+      dataSize = itemXs.get(lastIndex) + itemSizes.get(lastIndex);
+    }
+
+    if (dataSize < maxSize) {
+      lastIndex += Math.ceil((maxSize - dataSize) / defaultItemSize);
+    }
+
+    return lastIndex;
+  }
+
+  getVisibleItemSize(modelIndex, userSizes, calculateSize) {
+    if (userSizes.has(modelIndex)) {
+      return userSizes.get(modelIndex);
+    }
+    return calculateSize();
+  }
+
+  getVisibleRowHeight(row, state) {
+    const modelRow = this.getModelRow(row, state);
+
+    return this.getVisibleItemSize(modelRow, this.userRowHeights, () =>
+      this.calculateRowHeight(row, modelRow, state)
+    );
+  }
+
+  getVisibleColumnWidth(
+    column,
+    state,
+    firstColumn = this.getFirstColumn(state),
+    treePaddingX = this.calculateTreePaddingX(state)
+  ) {
+    const modelColumn = this.getModelColumn(column, state);
+
+    return this.getVisibleItemSize(modelColumn, this.userColumnWidths, () =>
+      this.calculateColumnWidth(
+        column,
+        modelColumn,
+        state,
+        firstColumn,
+        treePaddingX
+      )
+    );
+  }
+
+  getModelRows(visibleRows, state) {
+    const modelRows = new Map();
+    for (let i = 0; i < visibleRows.length; i += 1) {
+      const visibleRow = visibleRows[i];
+      const modelRow = this.getModelRow(visibleRow, state);
+      modelRows.set(visibleRow, modelRow);
+    }
+    return modelRows;
+  }
+
+  getModelRow(visibleRow, state) {
+    if (this.modelRows.has(visibleRow)) {
+      return this.modelRows.get(visibleRow);
+    }
+    const { movedRows } = state;
+    const modelRow = GridUtils.getModelIndex(visibleRow, movedRows);
+    this.modelRows.set(visibleRow, modelRow);
+    return modelRow;
+  }
+
+  getModelColumns(visibleColumns, state) {
+    const modelColumns = new Map();
+    for (let i = 0; i < visibleColumns.length; i += 1) {
+      const visibleColumn = visibleColumns[i];
+      const modelColumn = this.getModelColumn(visibleColumn, state);
+      modelColumns.set(visibleColumn, modelColumn);
+    }
+    return modelColumns;
+  }
+
+  getModelColumn(visibleColumn, state) {
+    if (this.modelColumns.has(visibleColumn)) {
+      return this.modelColumns.get(visibleColumn);
+    }
+    const { movedColumns } = state;
+    const modelColumn = GridUtils.getModelIndex(visibleColumn, movedColumns);
+    this.modelColumns.set(visibleColumn, modelColumn);
+    return modelColumn;
+  }
+
+  calculateRowHeight(row, modelRow, state) {
+    const { theme } = state;
+    const { autoSizeRows, rowHeight } = theme;
+    if (!autoSizeRows) {
+      return rowHeight;
+    }
+
+    const cachedValue = this.calculatedRowHeights.get(modelRow);
+    if (cachedValue != null) {
+      return cachedValue;
+    }
+
+    // Not sure how to accurately get the height of text. For now just return the theme height.
+    this.calculatedRowHeights.set(modelRow, Math.ceil(rowHeight));
+    GridMetricCalculator.trimMap(this.calculatedRowHeights);
+    return rowHeight;
+  }
+
+  /** Calculates the column width based on the provided column model index */
+  calculateColumnWidth(
+    column,
+    modelColumn,
+    state,
+    firstColumn = this.getFirstColumn(state),
+    treePaddingX = this.calculateTreePaddingX(state)
+  ) {
+    const { theme } = state;
+    const { autoSizeColumns, minColumnWidth } = theme;
+    if (!autoSizeColumns) {
+      const { columnWidth } = theme;
+      return columnWidth;
+    }
+
+    const headerWidth = this.calculateColumnHeaderWidth(modelColumn, state);
+    const dataWidth = this.calculateColumnDataWidth(modelColumn, state);
+    const cachedValue = this.calculatedColumnWidths.get(modelColumn);
+    let columnWidth = Math.ceil(Math.max(headerWidth, dataWidth));
+    columnWidth = Math.max(minColumnWidth, columnWidth);
+    if (cachedValue != null && cachedValue > columnWidth) {
+      columnWidth = cachedValue;
+    } else {
+      this.calculatedColumnWidths.set(modelColumn, columnWidth);
+      GridMetricCalculator.trimMap(this.calculatedColumnWidths);
+    }
+
+    if (column === firstColumn) {
+      columnWidth += treePaddingX;
+    }
+
+    return columnWidth;
+  }
+
+  calculateColumnHeaderWidth(modelColumn, state) {
+    const { model, theme } = state;
+    const { headerFont, headerHorizontalPadding } = theme;
+
+    const headerText = model.textForColumnHeader(modelColumn);
+    if (headerText) {
+      const headerFontWidth = this.getWidthForFont(headerFont, state);
+      return headerText.length * headerFontWidth + headerHorizontalPadding * 2;
+    }
+
+    return headerHorizontalPadding * 2;
+  }
+
+  calculateColumnDataWidth(modelColumn, state) {
+    const { top, height, width, model, theme } = state;
+    const { floatingTopRowCount, floatingBottomRowCount, rowCount } = model;
+    const {
+      font,
+      cellHorizontalPadding,
+      rowHeight,
+      rowHeaderWidth,
+      rowFooterWidth,
+      scrollBarSize,
+    } = theme;
+
+    let columnWidth = 0;
+
+    const fontWidth = this.getWidthForFont(font, state);
+    const rowsPerPage = height / rowHeight;
+    const bottom = Math.ceil(top + rowsPerPage);
+    GridUtils.iterateAllItems(
+      top,
+      bottom,
+      floatingTopRowCount,
+      floatingBottomRowCount,
+      rowCount,
+      row => {
+        const modelRow = this.getModelRow(row, state);
+        const text = model.textForCell(modelColumn, modelRow);
+        if (text) {
+          const cellPadding = cellHorizontalPadding * 2;
+          columnWidth = Math.max(
+            columnWidth,
+            text.length * fontWidth + cellPadding
+          );
+        }
+      }
+    );
+
+    columnWidth = Math.max(
+      Math.min(
+        columnWidth,
+        (width - rowHeaderWidth - scrollBarSize - rowFooterWidth) *
+          GridMetricCalculator.MAX_COLUMN_WIDTH
+      ),
+      cellHorizontalPadding * 2
+    );
+
+    return columnWidth;
+  }
+
+  calculateTreePaddingX(state) {
+    const { top, height, model, theme } = state;
+    const { rowHeight, treeDepthIndent } = theme;
+    if (!model.hasExpandableRows) {
+      return 0;
+    }
+    let treePadding = 0;
+
+    const rowsPerPage = height / rowHeight;
+    const bottom = Math.ceil(top + rowsPerPage);
+    for (let row = top; row <= bottom; row += 1) {
+      const modelRow = this.getModelRow(row, state);
+      const depth = model.depthForRow(modelRow);
+      treePadding = Math.max(treePadding, treeDepthIndent * (depth + 1));
+    }
+
+    return treePadding;
+  }
+
+  /** Get the width of the provided font. Exploits the fact that we're using tabular figures so every character is same width */
+  getWidthForFont(font, state) {
+    if (this.fontWidths.has(font)) {
+      return this.fontWidths.get(font);
+    }
+    const { context } = state;
+    context.font = font;
+    const textMetrics = context.measureText('8');
+    const { width } = textMetrics;
+
+    // context.font changes the string a little bit, eg. '10px Arial, sans serif' => '10px Arial, "sans serif"'
+    // Rather than require checking with the correct font def (theme, or context font), just key it to both
+    this.fontWidths.set(font, width);
+    this.fontWidths.set(context.font, width);
+
+    return width;
+  }
+
+  /**
+   * Sets the width for the specified column
+   * @param {Number} column The column model index to set
+   * @param {Number} size The size to set it to, or null to reset the column size
+   */
+  setColumnWidth(column, size) {
+    const userColumnWidths = new Map(this.userColumnWidths);
+    if (size != null) {
+      userColumnWidths.set(column, Math.ceil(size));
+      GridMetricCalculator.trimMap(userColumnWidths);
+    } else {
+      userColumnWidths.delete(column);
+    }
+    this.userColumnWidths = userColumnWidths;
+  }
+
+  /**
+   * Resets the column width for the specified column to the calculated width
+   * @param {Number} column The column model index to reset
+   */
+  resetColumnWidth(column) {
+    this.setColumnWidth(column, null);
+    this.calculatedColumnWidths.delete(column);
+  }
+
+  /**
+   * Sets the width for the specified row
+   * @param {Number} row The row model index to set
+   * @param {Number} size The size to set it to, or null to reset the row size
+   */
+  setRowHeight(row, size) {
+    const userRowHeights = new Map(this.userRowHeights);
+    if (size != null) {
+      userRowHeights.set(row, Math.ceil(size));
+      GridMetricCalculator.trimMap(userRowHeights);
+    } else {
+      userRowHeights.delete(row);
+    }
+    this.userRowHeights = userRowHeights;
+  }
+
+  resetRowHeight(row) {
+    this.setRowHeight(row, null);
+    this.calculatedRowHeights.delete(row);
+  }
+}
+
+export default GridMetricCalculator;

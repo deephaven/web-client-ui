@@ -1,28 +1,10 @@
 import GridRange from './GridRange';
-import type {
-  GridCell,
-  GridRangeIndex,
-  SELECTION_DIRECTION,
-} from './GridRange';
 import GridTestUtils from './GridTestUtils';
 
 const { LEFT, RIGHT, UP, DOWN } = GridRange.SELECTION_DIRECTION;
 
 describe('contains tests', () => {
-  function checkContainsRange(
-    range1Values: [
-      GridRangeIndex,
-      GridRangeIndex,
-      GridRangeIndex,
-      GridRangeIndex
-    ],
-    range2Values: [
-      GridRangeIndex,
-      GridRangeIndex,
-      GridRangeIndex,
-      GridRangeIndex
-    ]
-  ) {
+  function checkContainsRange(range1Values, range2Values) {
     const range1 = new GridRange(...range1Values);
     const range2 = new GridRange(...range2Values);
     return range1.contains(range2);
@@ -51,20 +33,7 @@ describe('contains tests', () => {
 });
 
 describe('touching tests', () => {
-  function checkTouchesRange(
-    range1Values: [
-      GridRangeIndex,
-      GridRangeIndex,
-      GridRangeIndex,
-      GridRangeIndex
-    ],
-    range2Values: [
-      GridRangeIndex,
-      GridRangeIndex,
-      GridRangeIndex,
-      GridRangeIndex
-    ]
-  ) {
+  function checkTouchesRange(range1Values, range2Values) {
     const range1 = new GridRange(...range1Values);
     const range2 = new GridRange(...range2Values);
     return range1.touches(range2);
@@ -111,11 +80,7 @@ describe('touching tests', () => {
 describe('intersection tests', () => {
   const maxRange = new GridRange(null, null, null, null);
 
-  function testIntersection(
-    range1: GridRange,
-    range2: GridRange,
-    expectedRange: GridRange | null = range1
-  ) {
+  function testIntersection(range1, range2, expectedRange = range1) {
     // Test with params flipped both ways as the result should be the same
     expect(GridRange.intersection(range1, range2)).toEqual(expectedRange);
     expect(GridRange.intersection(range2, range1)).toEqual(expectedRange);
@@ -258,11 +223,7 @@ describe('consolidation tests', () => {
 });
 
 describe('subtracting ranges tests', () => {
-  function testSubtract(
-    range: GridRange,
-    subtractRange: GridRange,
-    expectedResult: GridRange[]
-  ) {
+  function testSubtract(range, subtractRange, expectedResult) {
     expect(range.subtract(subtractRange)).toEqual(expectedResult);
   }
 
@@ -315,7 +276,7 @@ describe('subtracting ranges tests', () => {
   it('should handle subtracting the entire region', () => {
     const outerRange = new GridRange(5, 5, 15, 15);
     const innerRange = new GridRange(5, 5, 15, 15);
-    const expectedResult: [] = [];
+    const expectedResult = [];
 
     testSubtract(outerRange, innerRange, expectedResult);
   });
@@ -448,12 +409,7 @@ describe('subtracting ranges tests', () => {
 });
 
 describe('offset tests', () => {
-  function testOffset(
-    range: GridRange,
-    x: number,
-    y: number,
-    expectedRange: GridRange
-  ) {
+  function testOffset(range, x, y, expectedRange) {
     // Test both ways, since the opposite offset should hold true as well
     expect(GridRange.offset(range, x, y)).toEqual(expectedRange);
     expect(GridRange.offset(expectedRange, -x, -y)).toEqual(range);
@@ -475,7 +431,7 @@ describe('offset tests', () => {
 });
 
 describe('rowCount tests', () => {
-  function testRowCount(ranges: GridRange[], expectedCount: number) {
+  function testRowCount(ranges, expectedCount) {
     expect(GridRange.rowCount(ranges)).toBe(expectedCount);
   }
   it('returns 0 for empty set', () => {
@@ -484,7 +440,7 @@ describe('rowCount tests', () => {
   });
 
   it('sums bounded ranges properly', () => {
-    function testRangeSize(count: number, rangeSize: number) {
+    function testRangeSize(count, rangeSize) {
       const ranges = GridTestUtils.makeRanges(count, rangeSize);
       testRowCount(ranges, count * rangeSize);
     }
@@ -510,7 +466,7 @@ describe('rowCount tests', () => {
 });
 
 describe('cellCount tests', () => {
-  function testCellCount(ranges: GridRange[], expectedCount: number) {
+  function testCellCount(ranges, expectedCount) {
     expect(GridRange.cellCount(ranges)).toBe(expectedCount);
   }
 
@@ -548,16 +504,11 @@ describe('cellCount tests', () => {
 });
 
 describe('next cell', () => {
-  function cell(column: number, row: number) {
+  function cell(column, row) {
     return { column, row };
   }
 
-  function testRanges(
-    ranges: GridRange[],
-    currentFocus: GridCell | null,
-    direction: SELECTION_DIRECTION,
-    result: GridCell
-  ) {
+  function testRanges(ranges, currentFocus, direction, result) {
     const { column = null, row = null } = currentFocus ?? {};
     expect(GridRange.nextCell(ranges, column, row, direction)).toEqual(result);
   }
@@ -571,8 +522,7 @@ describe('next cell', () => {
   const CELL_OUTSIDE_RANGES = cell(1, 3);
 
   it('throws if no ranges passed', () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    expect(() => GridRange.nextCell(RANGES, 0, 0, 'INVALID' as any)).toThrow();
+    expect(() => GridRange.nextCell(null)).toThrow();
   });
 
   it('returns null for no ranges', () => {
