@@ -1011,7 +1011,7 @@ class GridRenderer {
   }
 
   drawTreeMarker(context, state, columnX, rowY, treeBox, color, isExpanded) {
-    const { x1, y1, x2, y2 } = treeBox;
+    const [x1, y1, x2, y2] = treeBox;
     const markerText = isExpanded ? '⊟' : '⊞';
     const textX = columnX + (x1 + x2) * 0.5 + 0.5;
     const textY = rowY + (y1 + y2) * 0.5 + 0.5;
