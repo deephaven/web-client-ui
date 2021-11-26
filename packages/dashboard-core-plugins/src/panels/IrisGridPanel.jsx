@@ -642,12 +642,18 @@ export class IrisGridPanel extends PureComponent {
     const irisGrid = this.irisGrid.current;
     const { model, isDisconnected } = this.state;
     if (irisGrid != null && !isDisconnected) {
+      const { columns, formatter } = model;
       irisGrid.clearAllFilters();
       irisGrid.setFilters({
-        quickFilters: IrisGridUtils.hydrateQuickFilters(model, quickFilters),
+        quickFilters: IrisGridUtils.hydrateQuickFilters(
+          columns,
+          quickFilters,
+          formatter.timeZone
+        ),
         advancedFilters: IrisGridUtils.hydrateAdvancedFilters(
-          model,
-          advancedFilters
+          columns,
+          advancedFilters,
+          formatter.timeZone
         ),
       });
     }

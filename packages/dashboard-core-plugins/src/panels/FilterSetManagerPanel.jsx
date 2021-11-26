@@ -138,7 +138,7 @@ class FilterSetManagerPanel extends Component {
       quickFilters: indexedQuickFilters = [],
     } = irisGridState ?? {};
     const dehydratedAdvancedFilters = IrisGridUtils.dehydrateAdvancedFilters(
-      table,
+      table.columns,
       indexedAdvancedFilters
     );
     const advancedFilters = FilterSetManagerPanel.changeFilterIndexesToColumnNames(
@@ -146,7 +146,6 @@ class FilterSetManagerPanel extends Component {
       dehydratedAdvancedFilters
     );
     const dehydratedQuickFilters = IrisGridUtils.dehydrateQuickFilters(
-      table,
       indexedQuickFilters
     );
     const quickFilters = FilterSetManagerPanel.changeFilterIndexesToColumnNames(
