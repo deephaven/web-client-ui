@@ -1,9 +1,16 @@
+import GridModel from './GridModel';
 import { ModelIndex } from './GridMetrics';
+
+export function isExpandableGridModel(
+  model: GridModel
+): model is ExpandableGridModel {
+  return (model as ExpandableGridModel)?.hasExpandableRows !== undefined;
+}
 
 /**
  * Expandable grid model. Allows for a grid with rows that can expand (e.g. A Tree Table)
  */
-interface ExpandableGridModel {
+export interface ExpandableGridModel extends GridModel {
   /** Whether the grid has rows that can be expanded */
   hasExpandableRows: boolean;
 

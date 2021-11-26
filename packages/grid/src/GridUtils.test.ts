@@ -1,6 +1,6 @@
 import GridMetrics, { ModelIndex, MoveOperation } from './GridMetrics';
-import GridRange from './GridRange';
-import GridUtils from './GridUtils';
+import GridRange, { GridRangeIndex } from './GridRange';
+import GridUtils, { AxisRange } from './GridUtils';
 
 function expectModelIndexes(
   movedItems: MoveOperation[],
@@ -64,7 +64,7 @@ describe('move items', () => {
 
 describe('iterate floating tests', () => {
   function testCallbackCalledWithRange(
-    callback: () => undefined,
+    callback: (a: unknown) => unknown,
     low: number,
     high: number,
     callIndex = 0
@@ -168,14 +168,14 @@ describe('floating item checks', () => {
 
 describe('start/end range adjustment in one dimension', () => {
   function testRange(
-    start,
-    end,
-    movedItems = [],
+    start: GridRangeIndex,
+    end: GridRangeIndex,
+    movedItems: MoveOperation[] = [],
     expectedResult = [[start, end]]
   ) {
     expect(
       GridUtils.getModelRangeIndexes(start, end, movedItems).sort(
-        (a, b) => a[0] - b[0]
+        (a, b) => (a as AxisRange)[0] - (b as AxisRange)[0]
       )
     ).toEqual(expectedResult);
   }
@@ -230,23 +230,23 @@ describe('start/end range adjustment in one dimension', () => {
 
 describe('grid range transforms with moved items in both dimensions', () => {
   function testRanges(
-    ranges,
-    movedColumns = [],
-    movedRows = [],
+    ranges: GridRange[],
+    movedColumns: MoveOperation[] = [],
+    movedRows: MoveOperation[] = [],
     expectedRanges = ranges
   ) {
     expect(
       GridUtils.getModelRanges(ranges, movedColumns, movedRows).sort((a, b) =>
         a.startColumn !== b.startColumn
-          ? a.startColumn - b.startColumn
-          : a.startRow - b.endRow
+          ? (a.startColumn as ModelIndex) - (b.startColumn as ModelIndex)
+          : (a.startRow as ModelIndex) - (b.endRow as ModelIndex)
       )
     ).toEqual(expectedRanges);
   }
   function testRange(
-    range,
-    movedColumns = [],
-    movedRows = [],
+    range: GridRange,
+    movedColumns: MoveOperation[] = [],
+    movedRows: MoveOperation[] = [],
     expectedRanges = [range]
   ) {
     testRanges([range], movedColumns, movedRows, expectedRanges);

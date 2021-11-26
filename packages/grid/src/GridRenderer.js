@@ -1,6 +1,7 @@
 import memoizeClear from './memoizeClear';
 import GridUtils from './GridUtils';
 import GridColorUtils from './GridColorUtils';
+import { isExpandableGridModel } from './ExpandableGridModel';
 
 /* eslint react/destructuring-assignment: "off" */
 /* eslint class-methods-use-this: "off" */
@@ -571,7 +572,7 @@ class GridRenderer {
     const topShadowRows = []; // Rows that are deeper than the row above them
     const bottomShadowRows = [];
     const addRowToColorMap = (row, rowAbove) => {
-      const depth = model.depthForRow(row);
+      const depth = isExpandableGridModel(model) ? model.depthForRow(row) : 0;
       const colorSet = colorSets[row % colorSets.length];
       const color = colorSet[Math.min(depth, colorSet.length - 1)];
       if (!colorRowMap.has(color)) {
@@ -579,7 +580,9 @@ class GridRenderer {
       }
       colorRowMap.get(color).push(row);
       if (rowAbove != null) {
-        const depthAbove = model.depthForRow(rowAbove);
+        const depthAbove = isExpandableGridModel(model)
+          ? model.depthForRow(rowAbove)
+          : 0;
         if (depthAbove < depth) {
           topShadowRows.push(row);
         } else if (depthAbove > depth) {
@@ -821,12 +824,7 @@ class GridRenderer {
   }
 
   drawCellBackground(context, state, column, row, rowAfter) {
-    const {
-      metrics,
-      model,
-      model: { hasExpandableRows },
-      theme,
-    } = state;
+    const { metrics, model, theme } = state;
     const {
       firstColumn,
       modelColumns,
@@ -844,6 +842,8 @@ class GridRenderer {
       theme
     );
     const isFirstColumn = column === firstColumn;
+    const hasExpandableRows =
+      isExpandableGridModel(model) && model.hasExpandableRows;
 
     if (backgroundColor) {
       const x = visibleColumnXs.get(column) + 1;
@@ -894,12 +894,7 @@ class GridRenderer {
   }
 
   drawCellContent(context, state, column, row) {
-    const {
-      metrics,
-      model,
-      model: { hasExpandableRows },
-      theme,
-    } = state;
+    const { metrics, model, theme } = state;
     const {
       firstColumn,
       fontWidths,
@@ -924,6 +919,8 @@ class GridRenderer {
     const modelColumn = modelColumns.get(column);
     const text = model.textForCell(modelColumn, modelRow);
     const isFirstColumn = column === firstColumn;
+    const hasExpandableRows =
+      isExpandableGridModel(model) && model.hasExpandableRows;
 
     if (text && rowHeight > 0) {
       const textAlign = model.textAlignForCell(modelColumn, modelRow) || 'left';
@@ -1023,7 +1020,7 @@ class GridRenderer {
   drawCellRowTreeDepthLines(context, state, row, rowAfter) {
     const { metrics, model, theme } = state;
 
-    const depth = model.depthForRow(row);
+    const depth = isExpandableGridModel(model) ? model.depthForRow(row) : 0;
     if (depth === 0) return;
 
     const {

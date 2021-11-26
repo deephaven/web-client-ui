@@ -1,5 +1,6 @@
 import GridRange from './GridRange';
 import { ModelIndex } from './GridMetrics';
+import GridModel from './GridModel';
 
 /**
  * Edit operation when applying multiple edits
@@ -18,7 +19,7 @@ export type EditOperation = {
 /**
  * Model for an editable grid
  */
-interface EditableGridModel {
+interface EditableGridModel extends GridModel {
   isEditable: boolean;
 
   /**

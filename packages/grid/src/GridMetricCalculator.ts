@@ -12,6 +12,7 @@ import GridMetrics, {
 } from './GridMetrics';
 import GridUtils from './GridUtils';
 import { GridFont, GridTheme } from './GridTheme';
+import { isExpandableGridModel } from './ExpandableGridModel';
 
 /* eslint class-methods-use-this: "off" */
 /* eslint react/destructuring-assignment: "off" */
@@ -236,9 +237,10 @@ class GridMetricCalculator {
     const gridX = this.getGridX(state);
     const gridY = this.getGridY(state);
 
-    const treePaddingX = model.hasExpandableRows
-      ? this.calculateTreePaddingX(state)
-      : 0;
+    const treePaddingX =
+      isExpandableGridModel(model) && model.hasExpandableRows
+        ? this.calculateTreePaddingX(state)
+        : 0;
     const treePaddingY = 0; // We don't support trees on columns (at least not yet)
 
     let visibleRowHeights = this.getVisibleRowHeights(state);
@@ -1108,9 +1110,9 @@ class GridMetricCalculator {
     const { model, theme } = state;
     const { treeDepthIndent, treeHorizontalPadding } = theme;
 
-    if (model.hasExpandableRows) {
+    if (isExpandableGridModel(model) && model.hasExpandableRows) {
       visibleRowHeights.forEach((rowHeight, row) => {
-        const modelRow = modelRows.get(row);
+        const modelRow = getOrThrow(modelRows, row);
         if (model.isRowExpandable(modelRow)) {
           const depth = model.depthForRow(modelRow);
           const x1 = depth * treeDepthIndent + treeHorizontalPadding;
@@ -1695,7 +1697,7 @@ class GridMetricCalculator {
   calculateTreePaddingX(state: GridMetricState): Coordinate {
     const { top, height, model, theme } = state;
     const { rowHeight, treeDepthIndent } = theme;
-    if (!model.hasExpandableRows) {
+    if (!isExpandableGridModel(model) || !model.hasExpandableRows) {
       return 0;
     }
     let treePadding = 0;

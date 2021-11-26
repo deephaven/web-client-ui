@@ -4,15 +4,19 @@
  * Could look at writing our own memoize with a smarter cache to avoid overhead of
  * LRU queue, but this should be sufficient for now.
  */
-import memoize from 'memoizee';
+import memoizee from 'memoizee';
 
 /**
  * @param {Function} fn The function to memoize
  * @param {Object} options The options to set for memoization
  */
-export default (fn, options = {}) => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function memoizeClear<F extends (...args: any[]) => any>(
+  fn: F,
+  options?: memoizee.Options<F>
+): F & memoizee.Memoized<F> {
   let isClearingCache = false;
-  const memoizedFn = memoize(fn, {
+  const memoizedFn = memoizee(fn, {
     ...options,
     dispose: () => {
       // Need to track when we're clearing because dispose gets called for all items removed
@@ -25,4 +29,6 @@ export default (fn, options = {}) => {
   });
 
   return memoizedFn;
-};
+}
+
+export default memoizeClear;
