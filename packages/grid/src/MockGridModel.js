@@ -89,7 +89,7 @@ class MockGridModel extends GridModel {
   async setValues(edits) {
     for (let i = 0; i < edits.length; i += 1) {
       const edit = edits[i];
-      this.setValueForCell(edit.x, edit.y, edit.text);
+      this.setValueForCell(edit.column, edit.row, edit.text);
     }
   }
 

@@ -1,13 +1,20 @@
+import GridMetrics, { ModelIndex, MoveOperation } from './GridMetrics';
 import GridRange from './GridRange';
 import GridUtils from './GridUtils';
 
-function expectModelIndexes(movedItems, indexes) {
+function expectModelIndexes(
+  movedItems: MoveOperation[],
+  indexes: ModelIndex[]
+) {
   for (let i = 0; i < indexes.length; i += 1) {
     expect(GridUtils.getModelIndex(i, movedItems)).toBe(indexes[i]);
   }
 }
 
-function expectVisibleIndexes(movedItems, indexes) {
+function expectVisibleIndexes(
+  movedItems: MoveOperation[],
+  indexes: ModelIndex[]
+) {
   for (let i = 0; i < indexes.length; i += 1) {
     expect(GridUtils.getVisibleIndex(i, movedItems)).toBe(indexes[i]);
   }
@@ -38,7 +45,7 @@ describe('move items', () => {
 
   it('handles moving the last column to the front repeatedly', () => {
     const itemCount = 3;
-    let movedItems = [];
+    let movedItems: MoveOperation[] = [];
 
     for (let i = 0; i < itemCount; i += 1) {
       movedItems = GridUtils.moveItem(itemCount - 1, 0, movedItems);
@@ -56,7 +63,12 @@ describe('move items', () => {
 });
 
 describe('iterate floating tests', () => {
-  function testCallbackCalledWithRange(callback, low, high, callIndex = 0) {
+  function testCallbackCalledWithRange(
+    callback: () => undefined,
+    low: number,
+    high: number,
+    callIndex = 0
+  ) {
     for (let i = low; i <= high; i += 1) {
       expect(callback).toHaveBeenNthCalledWith(callIndex + i - low + 1, i);
     }
@@ -116,7 +128,8 @@ describe('floating item checks', () => {
     floatingLeftColumnCount = 0,
     floatingRightColumnCount = 0,
     columnCount = 10
-  ) {
+  ): GridMetrics {
+    // We just return a partial metrics object but force it to GridMetrics for the tests
     return {
       floatingTopRowCount,
       floatingBottomRowCount,
@@ -124,7 +137,7 @@ describe('floating item checks', () => {
       floatingLeftColumnCount,
       floatingRightColumnCount,
       columnCount,
-    };
+    } as GridMetrics;
   }
 
   it('checks floating rows correctly', () => {
@@ -243,7 +256,7 @@ describe('grid range transforms with moved items in both dimensions', () => {
     testRange(new GridRange(1, 4, 2, 6));
   });
   it('handles transformations that do not affect the range', () => {
-    let movedItems = GridUtils.moveItem(2, 1);
+    let movedItems: MoveOperation[] = GridUtils.moveItem(2, 1);
     movedItems = GridUtils.moveItem(5, 0, movedItems);
     movedItems = GridUtils.moveItem(100, 110, movedItems);
     movedItems = GridUtils.moveItem(200, 220, movedItems);
@@ -251,8 +264,8 @@ describe('grid range transforms with moved items in both dimensions', () => {
     testRange(new GridRange(50, 55, 60, 65), movedItems, movedItems);
   });
   it('handles moving items into the range', () => {
-    const movedColumns = GridUtils.moveItem(25, 15);
-    const movedRows = GridUtils.moveItem(27, 17);
+    const movedColumns: MoveOperation[] = GridUtils.moveItem(25, 15);
+    const movedRows: MoveOperation[] = GridUtils.moveItem(27, 17);
     testRange(new GridRange(10, 15, 20, 25), movedColumns, movedRows, [
       new GridRange(10, 15, 19, 24),
       new GridRange(10, 27, 19, 27),

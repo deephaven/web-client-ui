@@ -968,8 +968,8 @@ class Grid extends PureComponent {
           movedColumns,
           movedRows
         );
-        GridRange.forEachCell(modelRanges, (x, y) => {
-          edits.push({ x, y, text: value });
+        GridRange.forEachCell(modelRanges, (column, row) => {
+          edits.push({ column, row, text: value });
         });
         await model.setValues(edits);
         return;
@@ -1017,8 +1017,8 @@ class Grid extends PureComponent {
         for (let x = 0; x < tableWidth; x += 1) {
           for (let y = 0; y < tableHeight; y += 1) {
             edits.push({
-              x: range.startColumn + x,
-              y: range.startRow + y,
+              column: range.startColumn + x,
+              row: range.startRow + y,
               text: value[y][x],
             });
           }
