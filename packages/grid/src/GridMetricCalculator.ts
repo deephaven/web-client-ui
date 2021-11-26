@@ -241,18 +241,27 @@ class GridMetricCalculator {
       : 0;
     const treePaddingY = 0; // We don't support trees on columns (at least not yet)
 
-    const visibleRowHeights = new Map([
-      ...this.getVisibleRowHeights(state),
-      ...this.getFloatingRowHeights(state),
-    ]);
-    const visibleColumnWidths = new Map([
-      ...this.getVisibleColumnWidths(state, firstColumn, treePaddingX),
-      ...this.getFloatingColumnWidths(state),
-    ]);
+    let visibleRowHeights = this.getVisibleRowHeights(state);
+    let visibleColumnWidths = this.getVisibleColumnWidths(
+      state,
+      firstColumn,
+      treePaddingX
+    );
 
     // Calculate the metrics for the main grid
     const visibleRows = Array.from(visibleRowHeights.keys());
     const visibleColumns = Array.from(visibleColumnWidths.keys());
+
+    // Add the floating row heights/column widths
+    // TODO #316: Create an allRowHeights/allColumnWidths maps
+    visibleRowHeights = new Map([
+      ...visibleRowHeights,
+      ...this.getFloatingRowHeights(state),
+    ]);
+    visibleColumnWidths = new Map([
+      ...visibleColumnWidths,
+      ...this.getFloatingColumnWidths(state),
+    ]);
 
     let visibleColumnXs = this.getVisibleColumnXs(
       visibleColumnWidths,
@@ -535,6 +544,7 @@ class GridMetricCalculator {
       allColumns,
 
       // Map of the height/width of visible rows/columns
+      // TODO #316: This should be split into allRowHeights/visibleRowHeights/floatingRowHeights ideally
       visibleRowHeights,
       visibleColumnWidths,
 
