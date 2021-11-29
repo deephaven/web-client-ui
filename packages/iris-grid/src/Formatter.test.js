@@ -13,7 +13,7 @@ function makeFormatter(...settings) {
   return new Formatter(...settings);
 }
 
-const TYPE_DATETIME = 'io.deephaven.db.tables.utils.DBDateTime';
+const TYPE_DATETIME = 'io.deephaven.engine.time.DateTime';
 
 describe('makeColumnFormatMap', () => {
   const conflictingColumnName = 'Conflicting name';
