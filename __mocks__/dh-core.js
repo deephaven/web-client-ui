@@ -157,7 +157,7 @@ const COLUMN_TYPE_CHAR = 'char';
 const COLUMN_TYPE_CHAR_OBJECT = 'java.lang.Character';
 const COLUMN_TYPE_STRING = 'java.lang.String';
 const COLUMN_TYPE_STRING_ARRAY = 'java.lang.String[]';
-const COLUMN_TYPE_DATE = 'io.deephaven.db.tables.utils.DBDateTime';
+const COLUMN_TYPE_DATE = 'io.deephaven.time.DateTime';
 
 // io.deephaven.web.client.api.input.ColumnValueDehydrater#serialize
 const COLUMN_TYPES = [

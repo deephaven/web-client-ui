@@ -7,7 +7,7 @@ const log = Log.module('ChartUtils');
 
 const DAYS = Object.freeze(dh.calendar.DayOfWeek.values());
 
-const BUSINESS_COLUMN_TYPE = 'io.deephaven.db.tables.utils.DBDateTime';
+const BUSINESS_COLUMN_TYPE = 'io.deephaven.time.DateTime';
 
 const MILLIS_PER_HOUR = 3600000;
 
