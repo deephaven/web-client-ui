@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/dashboard",
-  "version": "0.6.2",
+  "version": "0.7.0",
   "description": "Deephaven Dashboard",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
@@ -34,8 +34,8 @@
     "start": "cross-env NODE_ENV=development npm run watch"
   },
   "dependencies": {
-    "@deephaven/golden-layout": "^0.6.2",
-    "@deephaven/react-hooks": "^0.6.1",
+    "@deephaven/golden-layout": "^0.7.0",
+    "@deephaven/react-hooks": "^0.7.0",
     "deep-equal": "^2.0.4",
     "jquery": "^3.5.1",
     "lodash.throttle": "^4.1.1",
@@ -52,11 +52,11 @@
   },
   "devDependencies": {
     "@babel/cli": "^7.16.0",
-    "@deephaven/components": "^0.6.2",
-    "@deephaven/log": "^0.6.2",
-    "@deephaven/mocks": "^0.6.0",
-    "@deephaven/redux": "^0.6.2",
-    "@deephaven/tsconfig": "^0.6.0",
+    "@deephaven/components": "^0.7.0",
+    "@deephaven/log": "^0.7.0",
+    "@deephaven/mocks": "^0.7.0",
+    "@deephaven/redux": "^0.7.0",
+    "@deephaven/tsconfig": "^0.7.0",
     "@storybook/addon-actions": "^6.2.3",
     "@storybook/addon-essentials": "^6.2.3",
     "@storybook/addon-links": "^6.2.3",

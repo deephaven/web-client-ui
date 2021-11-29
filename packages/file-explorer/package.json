@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/file-explorer",
-  "version": "0.6.2",
+  "version": "0.7.0",
   "description": "Deephaven File Explorer React component",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
@@ -36,9 +36,9 @@
     "build-storybook": "build-storybook"
   },
   "dependencies": {
-    "@deephaven/icons": "^0.6.0",
-    "@deephaven/storage": "^0.6.2",
-    "@deephaven/utils": "^0.6.1",
+    "@deephaven/icons": "^0.7.0",
+    "@deephaven/storage": "^0.7.0",
+    "@deephaven/utils": "^0.7.0",
     "@fortawesome/fontawesome-svg-core": "^1.2.32",
     "@fortawesome/react-fontawesome": "^0.1.12",
     "classnames": "^2.3.1",
@@ -54,9 +54,9 @@
   },
   "devDependencies": {
     "@babel/cli": "^7.16.0",
-    "@deephaven/components": "^0.6.2",
-    "@deephaven/log": "^0.6.2",
-    "@deephaven/tsconfig": "^0.6.0",
+    "@deephaven/components": "^0.7.0",
+    "@deephaven/log": "^0.7.0",
+    "@deephaven/tsconfig": "^0.7.0",
     "@storybook/addon-actions": "^6.2.3",
     "@storybook/addon-essentials": "^6.2.3",
     "@storybook/addon-links": "^6.2.3",
