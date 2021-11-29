@@ -118,6 +118,15 @@ export class IrisGrid extends Component {
 
   static loadingSpinnerDelay = 800;
 
+  static makeQuickFilter(column, text, timeZone) {
+    try {
+      return TableUtils.makeQuickFilter(column, text, timeZone);
+    } catch (err) {
+      log.error('Error creating quick filter', err);
+    }
+    return null;
+  }
+
   constructor(props) {
     super(props);
 
@@ -796,13 +805,10 @@ export class IrisGrid extends Component {
           return false;
         }
       }
-      let filter = null;
-      try {
-        filter = TableUtils.makeQuickFilter(column, value, formatter.timeZone);
-      } catch (err) {
-        log.error('Error creating quick filter', err);
-      }
-      quickFilters.set(modelIndex, { filter, text: value });
+      quickFilters.set(modelIndex, {
+        text: value,
+        filter: IrisGrid.makeQuickFilter(column, value, formatter.timeZone),
+      });
       return true;
     }
     return quickFilters.delete(modelIndex);
@@ -975,14 +981,9 @@ export class IrisGrid extends Component {
     quickFilters.forEach((value, key) => {
       const { text } = value;
       const column = columns[key];
-      const filter = TableUtils.makeQuickFilter(
-        column,
-        text,
-        formatter.timeZone
-      );
       newQuickFilters.set(key, {
         text,
-        filter,
+        filter: IrisGrid.makeQuickFilter(column, text, formatter.timeZone),
       });
     });
 
