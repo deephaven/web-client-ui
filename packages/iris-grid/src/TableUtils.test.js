@@ -577,7 +577,7 @@ describe('quick filter tests', () => {
   describe('quick date filters', () => {
     function testDateFilter(text, expectedFilters) {
       testMultiFilter(
-        'io.deephaven.engine.time.DateTime',
+        'io.deephaven.time.DateTime',
         'makeQuickDateFilter',
         text,
         'America/New_York',

@@ -240,7 +240,7 @@ class TableUtils {
       case TableUtils.dataType.STRING:
         return TableUtils.dataType.STRING;
       case 'io.deephaven.db.tables.utils.DBDateTime':
-      case 'io.deephaven.engine.time.DateTime':
+      case 'io.deephaven.time.DateTime':
       case 'com.illumon.iris.db.tables.utils.DBDateTime':
       case TableUtils.dataType.DATETIME:
         return TableUtils.dataType.DATETIME;
@@ -278,7 +278,7 @@ class TableUtils {
   static isDateType(columnType) {
     switch (columnType) {
       case 'io.deephaven.db.tables.utils.DBDateTime':
-      case 'io.deephaven.engine.time.DateTime':
+      case 'io.deephaven.time.DateTime':
       case 'com.illumon.iris.db.tables.utils.DBDateTime':
         return true;
       default:
