@@ -31,6 +31,7 @@ export class SettingsMenu extends Component {
   static handleExportSupportLogs() {
     const metadata = {
       uiVersion: SettingsMenu.getVersion(),
+      userAgent: navigator.userAgent,
     };
     exportLogs(metadata);
   }
