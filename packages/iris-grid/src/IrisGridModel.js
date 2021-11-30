@@ -189,8 +189,8 @@ class IrisGridModel extends GridModel {
   /**
    * @param {String[]} columns The columns to treat as frozen
    */
-  set uiFrozenColumns(columns) {
-    throw new Error('set uiFrozenColumns not implemented');
+  updateFrozenColumns(columns) {
+    throw new Error('updateFrozenColumns not implemented');
   }
 
   /**

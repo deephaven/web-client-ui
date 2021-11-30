@@ -75,7 +75,7 @@ class IrisGridTableModel extends IrisGridModel {
     this.pendingNewDataMap = new Map();
     this.pendingNewRowCount = 0;
 
-    this.contextFrozenColumns = [];
+    this.frozenColumns = [];
   }
 
   close() {
@@ -529,7 +529,7 @@ class IrisGridTableModel extends IrisGridModel {
     return this.getColumnsWithLayoutHints(
       this.table.columns,
       this.table.layoutHints,
-      this.contextFrozenColumns
+      this.frozenColumns
     );
   }
 
@@ -538,7 +538,7 @@ class IrisGridTableModel extends IrisGridModel {
   }
 
   get floatingLeftColumnCount() {
-    return this.layoutHints?.frozenColumns?.length ?? 0;
+    return this.frozenColumns.length;
   }
 
   get groupedColumns() {
@@ -809,8 +809,9 @@ class IrisGridTableModel extends IrisGridModel {
     this.applyViewport();
   }
 
-  set uiFrozenColumns(columns) {
-    this.contextFrozenColumns = columns;
+  updateFrozenColumns(columns) {
+    this.frozenColumns = columns;
+    // emit event update?
   }
 
   set totalsConfig(totalsConfig) {
