@@ -86,7 +86,7 @@ export async function exportLogs(
   const folder = zip.folder(fileNamePrefix) as JSZip;
   folder.file('console.txt', logHistory.getFormattedHistory());
   folder.file('redux.json', getReduxDataString());
-  folder.file('metadata', JSON.stringify(metadata));
+  folder.file('metadata.json', JSON.stringify(metadata));
 
   const blob = await zip.generateAsync({ type: 'blob' });
   const link = document.createElement('a');
