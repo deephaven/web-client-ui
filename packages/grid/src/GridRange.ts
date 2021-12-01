@@ -1,12 +1,51 @@
-class GridRange {
-  static SELECTION_DIRECTION = Object.freeze({
-    DOWN: 'DOWN',
-    UP: 'UP',
-    LEFT: 'LEFT',
-    RIGHT: 'RIGHT',
-  });
+export type GridRangeIndex = number | null;
+type LeftIndex = GridRangeIndex;
+type RightIndex = GridRangeIndex;
+type TopIndex = GridRangeIndex;
+type BottomIndex = GridRangeIndex;
 
-  static normalize(startColumn, startRow, endColumn, endRow) {
+export type GridCell = { column: number; row: number };
+
+export interface BoundedGridRange extends GridRange {
+  startColumn: number;
+  startRow: number;
+  endColumn: number;
+  endRow: number;
+}
+
+// Also exported via GridRange.SELECTION_DIRECTION
+export enum SELECTION_DIRECTION {
+  DOWN = 'DOWN',
+  UP = 'UP',
+  LEFT = 'LEFT',
+  RIGHT = 'RIGHT',
+}
+
+class GridRange {
+  startColumn: GridRangeIndex;
+
+  startRow: GridRangeIndex;
+
+  endColumn: GridRangeIndex;
+
+  endRow: GridRangeIndex;
+
+  static SELECTION_DIRECTION = SELECTION_DIRECTION;
+
+  /**
+   * Returns a normalized array of indexes ensuring left <= right and top <= bottom
+   * @param startColumn Start column index
+   * @param startRow Start row index
+   * @param endColumn End column index
+   * @param endRow End row index
+   * @returns Array containing normalized indexes [left, top, right, bottom]
+   */
+  static normalize(
+    startColumn: GridRangeIndex,
+    startRow: GridRangeIndex,
+    endColumn: GridRangeIndex,
+    endRow: GridRangeIndex
+  ): [LeftIndex, TopIndex, RightIndex, BottomIndex] {
     let left = startColumn;
     let top = startRow;
     let right = endColumn;
@@ -25,44 +64,93 @@ class GridRange {
     return [left, top, right, bottom];
   }
 
-  /** Make a GridRange, but ensure startColumn <= endColumn, startRow <= endRow */
-  static makeNormalized(...coordinates) {
-    return new GridRange(...GridRange.normalize(...coordinates));
+  /**
+   * Makes a GridRange ensuring startColumn <= endColumn, startRow <= endRow
+   * @param startColumn Start column index
+   * @param startRow Start row index
+   * @param endColumn End column index
+   * @param endRow End row index
+   * @returns Normalized GridRange
+   */
+  static makeNormalized(
+    startColumn: GridRangeIndex,
+    startRow: GridRangeIndex,
+    endColumn: GridRangeIndex,
+    endRow: GridRangeIndex
+  ): GridRange {
+    return new GridRange(
+      ...GridRange.normalize(startColumn, startRow, endColumn, endRow)
+    );
   }
 
-  static makeCell(column, row) {
+  /**
+   * Creates a GridRange representing a single cell
+   * @param column Column index
+   * @param row Row index
+   * @returns GridRange representing the cell
+   */
+  static makeCell(column: GridRangeIndex, row: GridRangeIndex): GridRange {
     return new GridRange(column, row, column, row);
   }
 
-  static makeColumn(column) {
+  /**
+   * Creates a GridRange representing an infinite length column
+   * @param column Column index
+   * @returns GridRange representing the column
+   */
+  static makeColumn(column: GridRangeIndex): GridRange {
     return new GridRange(column, null, column, null);
   }
 
-  static makeRow(row) {
+  /**
+   * Creates a GridRange representing an infinite length row
+   * @param row Row index
+   * @returns GridRange representing the row
+   */
+  static makeRow(row: GridRangeIndex): GridRange {
     return new GridRange(null, row, null, row);
   }
 
-  static minOrNull(value1, value2) {
-    if (value1 == null || value2 == null) {
+  /**
+   * Returns the minimum value between 2 range indexes or null if at least 1 is null
+   * @param index1 First grid range index
+   * @param index2 Second grid range index
+   * @returns Minimum index or null if either index is null
+   */
+  static minOrNull(
+    index1: GridRangeIndex,
+    index2: GridRangeIndex
+  ): number | null {
+    if (index1 == null || index2 == null) {
       return null;
     }
 
-    return Math.min(value1, value2);
+    return Math.min(index1, index2);
   }
 
-  static maxOrNull(value1, value2) {
-    if (value1 == null || value2 == null) {
+  /**
+   * Returns the maximum value between 2 range indexes or null if at least 1 is null
+   * @param index1 First grid range index
+   * @param index2 Second grid range index
+   * @returns Maximum index or null if either index is null
+   */
+  static maxOrNull(
+    index1: GridRangeIndex,
+    index2: GridRangeIndex
+  ): number | null {
+    if (index1 == null || index2 == null) {
       return null;
     }
 
-    return Math.max(value1, value2);
+    return Math.max(index1, index2);
   }
 
   /**
    * Consolidate the passed in ranges to the minimum set, merging overlapping ranges.
-   * @param {[GridRange]} ranges The ranges to consolidate
+   * @param ranges The ranges to consolidate
+   * @returns Consolidated ranges
    */
-  static consolidate(ranges) {
+  static consolidate(ranges: GridRange[]): GridRange[] {
     const result = ranges.slice();
 
     let wasModified = true;
@@ -138,47 +226,69 @@ class GridRange {
     return result;
   }
 
-  static isAxisRangeTouching(start, end, otherStart, otherEnd) {
-    if (start == null) {
-      if (end == null) {
+  /**
+   * Checks if the 1-D ranges between 2 index pairs overlap or are continuous.
+   * For example ranges [0, 1] and [2, 3] are continuous and will return true.
+   * [0, 1] and [1, 3] overlap and return true.
+   * [0, 1] and [3, 4] do not overlap and have a gap so this will return false.
+   * @param start1 Start of 1st range
+   * @param end1 End of 1st range
+   * @param start2 Start of 2nd range
+   * @param end2 End of 2nd range
+   * @returns True if the ranges overlap or touch, else false
+   */
+  static isAxisRangeTouching(
+    start1: GridRangeIndex,
+    end1: GridRangeIndex,
+    start2: GridRangeIndex,
+    end2: GridRangeIndex
+  ): boolean {
+    if (start1 == null) {
+      if (end1 == null) {
         return true;
       }
 
-      if (otherStart == null) {
+      if (start2 == null) {
         return true;
       }
 
-      return otherStart <= end + 1;
+      return start2 <= end1 + 1;
     }
 
-    if (end == null) {
-      if (otherEnd == null) {
+    if (end1 == null) {
+      if (end2 == null) {
         return true;
       }
 
-      return otherEnd >= start - 1;
+      return end2 >= start1 - 1;
     }
 
-    if (otherStart == null) {
-      if (otherEnd == null) {
+    if (start2 == null) {
+      if (end2 == null) {
         return true;
       }
 
-      return start <= otherEnd + 1;
+      return start1 <= end2 + 1;
     }
 
-    if (otherEnd == null) {
-      return end >= otherStart - 1;
+    if (end2 == null) {
+      return end1 >= start2 - 1;
     }
 
-    if (otherStart >= start - 1) {
-      return otherStart <= end + 1;
+    if (start2 >= start1 - 1) {
+      return start2 <= end1 + 1;
     }
 
-    return otherEnd >= start - 1;
+    return end2 >= start1 - 1;
   }
 
-  static rangeArraysEqual(ranges1, ranges2) {
+  /**
+   * Checks if 2 arrays of ranges are the same ranges
+   * @param ranges1 First array of ranges
+   * @param ranges2 Second array of ranges
+   * @returns True if the arrays contain the same ranges in the same order
+   */
+  static rangeArraysEqual(ranges1: GridRange[], ranges2: GridRange[]): boolean {
     if (ranges1 === ranges2) {
       return true;
     }
@@ -202,11 +312,14 @@ class GridRange {
 
   /**
    * Get the intersection (overlapping area) of two ranges
-   * @param {GridRange} range One range to check for the intersection
-   * @param {GridRange} otherRange The other range to check for the intersection
-   * @returns {GridRange|null} Intersection of the two ranges. If they do not intersect, returns `null`.
+   * @param range One range to check for the intersection
+   * @param otherRange The other range to check for the intersection
+   * @returns Intersection of the two ranges. If they do not intersect, returns `null`.
    */
-  static intersection(range, otherRange) {
+  static intersection(
+    range: GridRange,
+    otherRange: GridRange
+  ): GridRange | null {
     if (range.equals(otherRange)) {
       return range;
     }
@@ -230,8 +343,8 @@ class GridRange {
         : endRow ?? otherRange.endRow;
 
     if (
-      (startColumn != null && startColumn > endColumn) ||
-      (startRow != null && startRow > endRow)
+      (startColumn != null && startColumn > (endColumn ?? -1)) ||
+      (startRow != null && startRow > (endRow ?? -1))
     ) {
       return null;
     }
@@ -240,11 +353,15 @@ class GridRange {
   }
 
   /**
-   * @param {GridRange} range The range to be subtracted from
-   * @param {GridRange} subtractRange The range to subtract from within this range
-   * @returns {GridRange[]} The ranges needed to represent the remaining
+   * Subtracts 1 range from another
+   * @param range The range to be subtracted from
+   * @param subtractRange The range to subtract from within this range
+   * @returns The ranges needed to represent the remaining
    */
-  static subtractFromRange(range, subtractRange) {
+  static subtractFromRange(
+    range: GridRange,
+    subtractRange: GridRange
+  ): GridRange[] {
     const result = [];
 
     // Make it a little easier by finding only the part the subtraction range intersects
@@ -319,12 +436,15 @@ class GridRange {
 
   /**
    * Subtract a range from multiple ranges
-   * @param {GridRange[]} ranges The ranges to be subtracted from
-   * @param {GridRange} subtractRange The range to subtract from within these ranges
-   * @returns {GridRange[]} The ranges needed to represent the remaining
+   * @param ranges The ranges to be subtracted from
+   * @param subtractRange The range to subtract from within these ranges
+   * @returns The ranges needed to represent the remaining
    */
-  static subtractFromRanges(ranges, subtractRange) {
-    const result = [];
+  static subtractFromRanges(
+    ranges: GridRange[],
+    subtractRange: GridRange
+  ): GridRange[] {
+    const result: GridRange[] = [];
     for (let i = 0; i < ranges.length; i += 1) {
       result.push(...GridRange.subtractFromRange(ranges[i], subtractRange));
     }
@@ -334,11 +454,14 @@ class GridRange {
 
   /**
    * Subtract multiple ranges from multiple ranges
-   * @param {GridRange[]} ranges The ranges to be subtracted from
-   * @param {GridRange[]} subtractRanges The ranges to subtract from within these ranges
-   * @returns {GridRange[]} The ranges needed to represent the remaining
+   * @param ranges The ranges to be subtracted from
+   * @param subtractRanges The ranges to subtract from within these ranges
+   * @returns The ranges needed to represent the remaining
    */
-  static subtractRangesFromRanges(ranges, subtractRanges) {
+  static subtractRangesFromRanges(
+    ranges: GridRange[],
+    subtractRanges: GridRange[]
+  ): GridRange[] {
     if (!subtractRanges || subtractRanges.length === 0) {
       return ranges;
     }
@@ -353,10 +476,10 @@ class GridRange {
 
   /**
    * Test if a given range is bounded (all values are non-null)
-   * @param {GridRange} range The range to test
-   * @returns {boolean} True if this range is bounded, false otherwise
+   * @param range The range to test
+   * @returns True if this range is bounded, false otherwise
    */
-  static isBounded(range) {
+  static isBounded(range: GridRange): range is BoundedGridRange {
     return (
       range.startRow != null &&
       range.startColumn != null &&
@@ -369,12 +492,16 @@ class GridRange {
    * Converts any GridRange passed in that is a full row or column selection to be bound
    * to the `columnCount` and `rowCount` passed in
    *
-   * @param {GridRange} range The range to get the bounded range of
-   * @param {number} columnCount The number of columns
-   * @param {number} rowCount The number of rows
-   * @returns {GridRange} The passed in GridRange with any null values filled in
+   * @param range The range to get the bounded range of
+   * @param columnCount The number of columns
+   * @param rowCount The number of rows
+   * @returns The passed in GridRange with any null values filled in
    */
-  static boundedRange(range, columnCount, rowCount) {
+  static boundedRange(
+    range: GridRange,
+    columnCount: number,
+    rowCount: number
+  ): GridRange {
     if (GridRange.isBounded(range)) {
       return range;
     }
@@ -390,24 +517,32 @@ class GridRange {
   /**
    * Converts the GridRanges passed in to be bound to the `columnCount` and `rowCount` passed in
    *
-   * @param {GridRange[]} ranges The ranges to get the bounded ranges of
-   * @param {number} columnCount The number of columns
-   * @param {number} rowCount The number of rows
-   * @returns {GridRange} The passed in GridRange with any null values filled in
+   * @param ranges The ranges to get the bounded ranges of
+   * @param columnCount The number of columns
+   * @param rowCount The number of rows
+   * @returns The passed in GridRange with any null values filled in
    */
-  static boundedRanges(ranges, columnCount, rowCount) {
+  static boundedRanges(
+    ranges: GridRange[],
+    columnCount: number,
+    rowCount: number
+  ): GridRange[] {
     return ranges.map(r => GridRange.boundedRange(r, columnCount, rowCount));
   }
 
   /**
    * Offsets a GridRange by the specified amount in the x and y directions
    *
-   * @param {GridRange} range The range to offset
-   * @param {number} columnOffset The number of columns to offset
-   * @param {number} rowOffset The number of rows to offset
-   * @returns {GridRange} The new grid range offset from the original
+   * @param range The range to offset
+   * @param columnOffset The number of columns to offset
+   * @param rowOffset The number of rows to offset
+   * @returns The new grid range offset from the original
    */
-  static offset(range, columnOffset, rowOffset) {
+  static offset(
+    range: GridRange,
+    columnOffset: number,
+    rowOffset: number
+  ): GridRange {
     return new GridRange(
       range.startColumn != null ? range.startColumn + columnOffset : null,
       range.startRow != null ? range.startRow + rowOffset : null,
@@ -418,18 +553,18 @@ class GridRange {
 
   /**
    * Get the next cell given the selected ranges and the current cell
-   * @param {GridRange[]} ranges The selected bounded ranges within the grid
-   * @param {number|null} column The cursor column, or null if none focused
-   * @param {number|null} row The cursor row, or null if none focused
-   * @param {SELECTION_DIRECTION} direction The direction in which to select next
-   * @returns {Cell} The next cell to focus, or null if there should be no more focus
+   * @param ranges The selected bounded ranges within the grid
+   * @param column The cursor column, or null if none focused
+   * @param row The cursor row, or null if none focused
+   * @param direction The direction in which to select next
+   * @returns The next cell to focus, or null if there should be no more focus
    */
   static nextCell(
-    ranges,
-    column = null,
-    row = null,
+    ranges: GridRange[],
+    column: GridRangeIndex = null,
+    row: GridRangeIndex = null,
     direction = GridRange.SELECTION_DIRECTION.DOWN
-  ) {
+  ): GridCell | null {
     if (ranges.length === 0) {
       return null;
     }
@@ -470,10 +605,10 @@ class GridRange {
 
   /**
    * Count the number of cells in the provided grid ranges
-   * @param {GridRange[]} ranges The ranges to count the rows of
-   * @returns {number|NaN} The number of cells in the ranges, or `NaN` if any of the ranges were unbounded
+   * @param ranges The ranges to count the rows of
+   * @returns The number of cells in the ranges, or `NaN` if any of the ranges were unbounded
    */
-  static cellCount(ranges) {
+  static cellCount(ranges: GridRange[]): number {
     return ranges.reduce(
       (cellCount, range) =>
         cellCount +
@@ -485,10 +620,10 @@ class GridRange {
 
   /**
    * Count the number of rows in the provided grid ranges
-   * @param {GridRange[]} ranges The ranges to count the rows of
-   * @returns {number|NaN} The number of rows in the ranges, or `NaN` if any of the ranges were unbounded
+   * @param ranges The ranges to count the rows of
+   * @returns The number of rows in the ranges, or `NaN` if any of the ranges were unbounded
    */
-  static rowCount(ranges) {
+  static rowCount(ranges: GridRange[]): number {
     return ranges.reduce(
       (rowCount, range) =>
         rowCount + (range.endRow ?? NaN) - (range.startRow ?? NaN) + 1,
@@ -498,10 +633,10 @@ class GridRange {
 
   /**
    * Count the number of columns in the provided grid ranges
-   * @param {GridRange[]} ranges The ranges to count the columns of
-   * @returns {number|NaN} The number of columns in the ranges, or `NaN` if any of the ranges were unbounded
+   * @param ranges The ranges to count the columns of
+   * @returns The number of columns in the ranges, or `NaN` if any of the ranges were unbounded
    */
-  static columnCount(ranges) {
+  static columnCount(ranges: GridRange[]): number {
     return ranges.reduce(
       (columnCount, range) =>
         columnCount + (range.endColumn ?? NaN) - (range.startColumn ?? NaN) + 1,
@@ -511,12 +646,16 @@ class GridRange {
 
   /**
    * Check if the provided ranges contain the provided cell
-   * @param {GridRange[]} ranges The ranges to check
-   * @param {number} column The column index
-   * @param {number} row The row index
-   * @returns {boolean} True if the cell is within the provided ranges, false otherwise.
+   * @param ranges The ranges to check
+   * @param column The column index
+   * @param row The row index
+   * @returns True if the cell is within the provided ranges, false otherwise.
    */
-  static containsCell(ranges, column, row) {
+  static containsCell(
+    ranges: GridRange[],
+    column: number,
+    row: number
+  ): boolean {
     for (let i = 0; i < ranges.length; i += 1) {
       const range = ranges[i];
       if (range.containsCell(column, row)) {
@@ -528,28 +667,38 @@ class GridRange {
 
   /**
    * Iterate through each cell in the provided ranges
-   * @param {GridRange[]} ranges The ranges to iterate through
+   * @param ranges The ranges to iterate through
    * @param {(column: number, row: number, index: number) => void} callback The callback to execute. `index` is the index within that range
    * @param {GridRange.SELECTION_DIRECTION} direction The direction to iterate in
    */
   static forEachCell(
-    ranges,
-    callback,
+    ranges: GridRange[],
+    callback: (column: number, row: number, index: number) => void,
     direction = GridRange.SELECTION_DIRECTION.RIGHT
-  ) {
+  ): void {
     for (let i = 0; i < ranges.length; i += 1) {
       ranges[i].forEach(callback, direction);
     }
   }
 
-  constructor(startColumn, startRow, endColumn, endRow) {
+  constructor(
+    startColumn: GridRangeIndex,
+    startRow: GridRangeIndex,
+    endColumn: GridRangeIndex,
+    endRow: GridRangeIndex
+  ) {
     this.startColumn = startColumn;
     this.startRow = startRow;
     this.endColumn = endColumn;
     this.endRow = endRow;
   }
 
-  equals(other) {
+  /**
+   * Checks if the provided range is equivalent to this range (same start and end column/row indexes)
+   * @param other Grid range to check against
+   * @returns True if the ranges cover the same area
+   */
+  equals(other: GridRange): boolean {
     return (
       this.startColumn === other.startColumn &&
       this.startRow === other.startRow &&
@@ -558,8 +707,12 @@ class GridRange {
     );
   }
 
-  /** @returns {boolean} true if this GridRange completely contains `other` */
-  contains(other) {
+  /**
+   * Checks if this GridRange contains another range
+   * @param other The range to check
+   * @returns True if this GridRange completely contains `other`
+   * */
+  contains(other: GridRange): boolean {
     return (
       (this.startColumn == null ||
         (other.startColumn != null && this.startColumn <= other.startColumn)) &&
@@ -574,11 +727,11 @@ class GridRange {
 
   /**
    * Check if the provided cell is in this range
-   * @param {number} column The column to check
-   * @param {number} row The row to check
-   * @returns {boolean} True if this cell is within this range
+   * @param column The column to check
+   * @param row The row to check
+   * @returns True if this cell is within this range
    */
-  containsCell(column, row) {
+  containsCell(column: GridRangeIndex, row: GridRangeIndex): boolean {
     if (column == null || row == null) {
       return false;
     }
@@ -591,8 +744,13 @@ class GridRange {
     );
   }
 
-  /** @returns {boolean} true if this GridRange touches `other` */
-  touches(other) {
+  /**
+   * Check if the provided range touches (or overlaps) this GridRange
+   * Effectively checks if the 2 ranges could be represented by 1 continuous range
+   * @param other The range to check
+   * @returns True if this GridRange touches `other`
+   * */
+  touches(other: GridRange): boolean {
     return (
       GridRange.isAxisRangeTouching(
         this.startRow,
@@ -610,20 +768,21 @@ class GridRange {
   }
 
   /**
-   * @param {GridRange} other The range to deselect from within this range
-   * @returns {[GridRange]} The ranges needed to represent the remaining
+   * Subtracts a range from this range
+   * @param other The range to deselect from within this range
+   * @returns The ranges needed to represent the remaining
    */
-  subtract(other) {
+  subtract(other: GridRange): GridRange[] {
     return GridRange.subtractFromRange(this, other);
   }
 
   /**
    * Get the first cell in this range. Throws if this range is unbounded.
    *
-   * @param {GridRange.SELECTION_DIRECTION?} direction The direction to get the starting cell in. Defaults to DOWN
-   * @returns {{column: number, row: number}} The first cell in this range in the direction specified
+   * @param direction The direction to get the starting cell in. Defaults to DOWN
+   * @returns The first cell in this range in the direction specified
    */
-  startCell(direction = GridRange.SELECTION_DIRECTION.DOWN) {
+  startCell(direction = GridRange.SELECTION_DIRECTION.DOWN): GridCell {
     if (!GridRange.isBounded(this)) {
       throw new Error('Cannot get the startCell of an unbounded range');
     }
@@ -652,7 +811,11 @@ class GridRange {
    * @param {SELECTION_DIRECTION} direction The direction to go in
    * @returns {GridCell|null} The next cell in the direction specified, or `null` if at the end of the range
    */
-  nextCell(column, row, direction) {
+  nextCell(
+    column: GridRangeIndex,
+    row: GridRangeIndex,
+    direction: SELECTION_DIRECTION
+  ): GridCell | null {
     if (!GridRange.isBounded(this)) {
       throw new Error('Bounded range required');
     }
@@ -708,12 +871,18 @@ class GridRange {
 
   /**
    * Iterate through each cell in the range
-   * @param {(column:number, row:number, index:number) => void} callback Callback to execute. `index` is the index within this range
-   * @param {GridRange.SELECTION_DIRECTION} direction The direction to iterate in
+   * @param callback Callback to execute. `index` is the index within this range
+   * @param direction The direction to iterate in
    */
-  forEach(callback, direction = GridRange.SELECTION_DIRECTION.RIGHT) {
+  forEach(
+    callback: (column: number, row: number, index: number) => void,
+    direction = GridRange.SELECTION_DIRECTION.RIGHT
+  ): void {
     let i = 0;
-    let { column: c, row: r } = this.startCell(direction);
+    let {
+      column: c,
+      row: r,
+    }: { column?: number; row?: number } = this.startCell(direction);
     while (c != null && r != null) {
       callback(c, r, i);
       i += 1;

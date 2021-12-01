@@ -86,15 +86,15 @@ class GridSelectionMouseHandler extends GridMouseHandler {
     let deltaX = 0;
     let deltaY = 0;
     if (left < lastLeft) {
-      if (x < dragBounds.x) {
-        deltaX = x - dragBounds.x;
+      if (x < dragBounds.x1) {
+        deltaX = x - dragBounds.x1;
       } else if (x > dragBounds.x2) {
         deltaX = x - dragBounds.x2;
       }
     }
     if (top < lastTop) {
-      if (y < dragBounds.y) {
-        deltaY = y - dragBounds.y;
+      if (y < dragBounds.y1) {
+        deltaY = y - dragBounds.y1;
       } else if (y > dragBounds.y2) {
         deltaY = y - dragBounds.y2;
       }
