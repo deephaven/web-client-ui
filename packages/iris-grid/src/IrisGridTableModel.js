@@ -811,7 +811,7 @@ class IrisGridTableModel extends IrisGridModel {
 
   updateFrozenColumns(columns) {
     this.frozenColumns = columns;
-    // emit event update?
+    this.dispatchEvent(new CustomEvent(IrisGridModel.EVENT.TABLE_CHANGED));
   }
 
   set totalsConfig(totalsConfig) {
@@ -1183,9 +1183,7 @@ class IrisGridTableModel extends IrisGridModel {
   }
 
   isColumnFrozen(x) {
-    return (
-      this.layoutHints?.frozenColumns?.includes(this.columns[x].name) ?? false
-    );
+    return this.frozenColumns.includes(this.columns[x].name);
   }
 
   isKeyColumn(x) {

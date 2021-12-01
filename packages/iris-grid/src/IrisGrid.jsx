@@ -1398,6 +1398,15 @@ export class IrisGrid extends Component {
     });
   }
 
+  unFreezeColumnByColumnName(columnName) {
+    const { frozenColumns } = this.state;
+    log.debug2('unfreezing column', columnName);
+
+    this.setState({
+      frozenColumns: frozenColumns.filter(col => col !== columnName),
+    });
+  }
+
   handleColumnVisibilityChanged(modelIndexes, visibilityOption) {
     const { metricCalculator } = this.state;
     if (
