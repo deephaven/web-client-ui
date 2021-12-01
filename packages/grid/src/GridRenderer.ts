@@ -2,6 +2,64 @@ import memoizeClear from './memoizeClear';
 import GridUtils from './GridUtils';
 import GridColorUtils from './GridColorUtils';
 import { isExpandableGridModel } from './ExpandableGridModel';
+import { GridTheme } from './GridTheme';
+import { GridModel, GridRange } from '.';
+import GridMetrics, { ModelIndex, VisibleIndex } from './GridMetrics';
+
+export type EditingCell = {
+  column: VisibleIndex;
+  row: VisibleIndex;
+  selectionRange: GridRange;
+  value: string | null;
+  isQuickEdit?: boolean;
+};
+
+export type GridRenderState = {
+  // The top/left cell of the scrolled viewport
+  left: VisibleIndex;
+  top: VisibleIndex;
+
+  // Width and height of the total canvas area
+  width: number;
+  height: number;
+
+  // The canvas context
+  context: CanvasRenderingContext2D;
+
+  // The grid theme
+  theme: GridTheme;
+
+  // The model used by the grid
+  model: GridModel;
+
+  // The grid metrics
+  metrics: GridMetrics;
+
+  // Location of the mouse on the grid
+  mouseX: number;
+  mouseY: number;
+
+  // Where the keyboard cursor is located
+  cursorColumn: VisibleIndex | null;
+  cursorRow: VisibleIndex | null;
+
+  // Currently selected ranges
+  selectedRanges: GridRange[];
+
+  // Currently dragged column/row information
+  draggingColumn: VisibleIndex | null;
+  draggingColumnOffset: number;
+  draggingColumnSeparator: VisibleIndex | null;
+  draggingRow: VisibleIndex | null;
+  draggingRowOffset: number;
+  draggingRowSeparator: VisibleIndex | null;
+
+  // The currently editing cell
+  editingCell?: EditingCell;
+  isDraggingHorizontalScrollBar: boolean;
+  isDraggingVerticalScrollBar: boolean;
+  isDragging: boolean;
+};
 
 /* eslint react/destructuring-assignment: "off" */
 /* eslint class-methods-use-this: "off" */
@@ -11,19 +69,23 @@ import { isExpandableGridModel } from './ExpandableGridModel';
  * This default rendering just renders a basic grid. Extend this class and implement
  * your own methods to customize drawing of the grid (eg. Draw icons or special features)
  */
-class GridRenderer {
+export class GridRenderer {
+  // Default font width if it cannot be retrieved from the context
   static DEFAULT_FONT_WIDTH = 10;
 
+  // Default radius for corners for some elements (like the active cell)
   static DEFAULT_EDGE_RADIUS = 2;
 
+  // Default width for the border of the active cell
   static ACTIVE_CELL_BORDER_WIDTH = 2;
 
   /**
-   * Truncate a string and add ellipses if necessary
-   * @param {string} str The string to truncate
-   * @param {number} len The length to truncate the string to. If longer than the actual string, just returns the string
+   * Truncate a string to the specified length and add ellipses if necessary
+   * @param str The string to truncate
+   * @param len The length to truncate the string to. If longer than the actual string, just returns the string
+   * @returns The truncated string
    */
-  static truncate(str, len) {
+  static truncate(str: string, len: number): string {
     if (len < str.length) {
       // eslint-disable-next-line prefer-template
       return str.substr(0, len) + '…';
@@ -33,19 +95,20 @@ class GridRenderer {
 
   /**
    * Uses binary search to truncate a string to fit in the provided width
-   * @param {Context} context The drawing context to measure the text in
-   * @param {string} str The string to get the maximum length it can draw
-   * @param {number} width The width to truncate it to
-   * @param {number} start The low boundary to start the search
-   * @param {number} end The high boundary to start the search
+   * @param context The drawing context to measure the text in
+   * @param str The string to get the maximum length it can draw
+   * @param width The width to truncate it to
+   * @param start The low boundary to start the search
+   * @param end The high boundary to start the search
+   * @returns The truncated string
    */
   static binaryTruncateToWidth(
-    context,
-    str,
-    width,
+    context: CanvasRenderingContext2D,
+    str: string,
+    width: number,
     start = 0,
     end = str.length
-  ) {
+  ): string {
     if (end >= str.length && context.measureText(str).width <= width) {
       // IDS-6069 If the whole string can fit, don't bother checking for truncation
       // The ellipses are actually slightly wider than other chars, and it's possible
@@ -82,18 +145,18 @@ class GridRenderer {
    * Truncate a string (if necessary) to fit in the specified width.
    * First uses the estimated font width to calculate a lower/upper bound
    * Then uses binary search within those bounds to find the exact max length
-   * @param {Context} context The drawing context
-   * @param {string} str The string to calculate max length for
-   * @param {number} width The width to truncate within
-   * @param {number} fontWidth The estimated width of each character
-   * @returns {string} The truncated string that fits within the width provided
+   * @param context The drawing context
+   * @param str The string to calculate max length for
+   * @param width The width to truncate within
+   * @param fontWidth The estimated width of each character
+   * @returns The truncated string that fits within the width provided
    */
   static truncateToWidth(
-    context,
-    str,
-    width,
+    context: CanvasRenderingContext2D,
+    str: string,
+    width: number,
     fontWidth = GridRenderer.DEFAULT_FONT_WIDTH
-  ) {
+  ): string {
     if (width <= 0 || str.length <= 0) {
       return '';
     }
@@ -111,11 +174,10 @@ class GridRenderer {
   }
 
   /**
-   *
-   * @param {CanvasRenderingContext2D} context The context to draw the grid in
-   * @param {GridState} state State of the grid, { left, top, mouseX, mouseY, selectedRanges, theme, model, metrics }
+   * Draw the grid canvas with the state provided
+   * @param state The state of the grid
    */
-  drawCanvas(state) {
+  drawCanvas(state: GridRenderState): void {
     const { context } = state;
 
     context.save();
@@ -139,21 +201,27 @@ class GridRenderer {
     context.restore();
   }
 
-  configureContext(context, state) {
+  configureContext(
+    context: CanvasRenderingContext2D,
+    state: GridRenderState
+  ): void {
     const { theme } = state;
     context.font = theme.font;
     context.textBaseline = 'middle';
     context.lineCap = 'butt';
   }
 
-  drawBackground(context, state) {
+  drawBackground(
+    context: CanvasRenderingContext2D,
+    state: GridRenderState
+  ): void {
     const { theme, metrics } = state;
     const { width, height } = metrics;
     context.fillStyle = theme.backgroundColor;
     context.fillRect(0, 0, width, height);
   }
 
-  drawGrid(context, state) {
+  drawGrid(context: CanvasRenderingContext2D, state: GridRenderState): void {
     const { metrics, draggingRow, draggingColumn } = state;
     const { gridX, gridY } = metrics;
 
@@ -174,7 +242,10 @@ class GridRenderer {
     context.translate(-gridX, -gridY);
   }
 
-  drawFloatingRows(context, state) {
+  drawFloatingRows(
+    context: CanvasRenderingContext2D,
+    state: GridRenderState
+  ): void {
     const { metrics, theme } = state;
     const {
       draggingRow,
@@ -266,7 +337,10 @@ class GridRenderer {
     }
   }
 
-  drawFloatingColumns(context, state) {
+  drawFloatingColumns(
+    context: CanvasRenderingContext2D,
+    state: GridRenderState
+  ): void {
     const { metrics, theme } = state;
     const {
       draggingRow,
@@ -380,7 +454,10 @@ class GridRenderer {
     }
   }
 
-  drawFloatingBorders(context, state) {
+  drawFloatingBorders(
+    context: CanvasRenderingContext2D,
+    state: GridRenderState
+  ): void {
     const { metrics, theme } = state;
     const {
       floatingTopRowCount,
@@ -473,7 +550,11 @@ class GridRenderer {
     context.stroke();
   }
 
-  drawGridBackground(context, state, drawHover = false) {
+  drawGridBackground(
+    context: CanvasRenderingContext2D,
+    state: GridRenderState,
+    drawHover = false
+  ): void {
     this.drawRowStripes(context, state);
 
     if (drawHover) {
