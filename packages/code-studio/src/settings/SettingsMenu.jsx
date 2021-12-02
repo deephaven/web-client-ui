@@ -24,16 +24,8 @@ export class SettingsMenu extends Component {
     }
   }
 
-  static getVersion() {
-    return process.env.REACT_APP_VERSION;
-  }
-
   static handleExportSupportLogs() {
-    const metadata = {
-      uiVersion: SettingsMenu.getVersion(),
-      userAgent: navigator.userAgent,
-    };
-    exportLogs(metadata);
+    exportLogs();
   }
 
   constructor(props) {
@@ -76,7 +68,7 @@ export class SettingsMenu extends Component {
   }
 
   render() {
-    const version = SettingsMenu.getVersion();
+    const version = process.env.REACT_APP_VERSION;
     const supportLink = process.env.REACT_APP_SUPPORT_LINK;
     const docsLink = process.env.REACT_APP_DOCS_LINK;
 

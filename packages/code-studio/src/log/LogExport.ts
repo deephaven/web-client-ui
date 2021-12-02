@@ -70,13 +70,21 @@ function getReduxDataString(): string {
   );
 }
 
+function getMetadata(): string {
+  const metadata = {
+    uiVersion: process.env.REACT_APP_VERSION,
+    userAgent: navigator.userAgent,
+  };
+
+  return JSON.stringify(metadata, null, 2);
+}
+
 /**
  * Export support logs with the given name.
  * @param metadata Any extra metadata to be written to a metadata file
  * @param fileNamePrefix The zip file name without the .zip extension. Ex: test will be saved as test.zip
  */
 export async function exportLogs(
-  metadata = {},
   fileNamePrefix = `${dh.i18n.DateTimeFormat.format(
     FILENAME_DATE_FORMAT,
     new Date()
@@ -86,7 +94,7 @@ export async function exportLogs(
   const folder = zip.folder(fileNamePrefix) as JSZip;
   folder.file('console.txt', logHistory.getFormattedHistory());
   folder.file('redux.json', getReduxDataString());
-  folder.file('metadata.json', JSON.stringify(metadata, null, 2));
+  folder.file('metadata.json', getMetadata());
 
   const blob = await zip.generateAsync({ type: 'blob' });
   const link = document.createElement('a');
