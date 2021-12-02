@@ -460,67 +460,72 @@ class IrisGridTableModel extends IrisGridModel {
     return '';
   }
 
-  getColumnsWithLayoutHints = memoize((columns, hints, uiFrozenColumns) => {
-    if (hints || uiFrozenColumns.length) {
-      const columnMap = new Map();
-      columns.forEach(col => columnMap.set(col.name, col));
+  getColumnsWithLayoutHints = memoize(
+    (columns, hints, currentFrozenColumns) => {
+      if (hints || currentFrozenColumns.length) {
+        const columnMap = new Map();
+        columns.forEach(col => columnMap.set(col.name, col));
 
-      let frontColumns = [];
-      let backColumns = [];
-      let frozenColumns = [];
+        let frontColumns = [];
+        let backColumns = [];
+        let frozenColumns = [];
 
-      if (hints?.frontColumns) {
-        frontColumns = hints.frontColumns
-          .map(name => columnMap.get(name))
-          .filter(Boolean);
-      }
-      if (hints?.backColumns) {
-        backColumns = hints.backColumns
-          .map(name => columnMap.get(name))
-          .filter(Boolean);
-      }
-      if (hints?.frozenColumns) {
-        frozenColumns = hints.frozenColumns
-          .map(name => columnMap.get(name))
-          .filter(Boolean);
-      }
+        if (hints?.frontColumns) {
+          frontColumns = hints.frontColumns
+            .map(name => columnMap.get(name))
+            .filter(Boolean);
+        }
+        if (hints?.backColumns) {
+          backColumns = hints.backColumns
+            .map(name => columnMap.get(name))
+            .filter(Boolean);
+        }
+        if (hints?.frozenColumns) {
+          frozenColumns = hints.frozenColumns
+            .map(name => columnMap.get(name))
+            .filter(Boolean);
+        }
 
-      if (
-        frontColumns.length !== (hints?.frontColumns?.length ?? 0) ||
-        backColumns.length !== (hints?.backColumns?.length ?? 0) ||
-        frozenColumns.length !== (hints?.frozenColumns?.length ?? 0)
-      ) {
-        throw new Error(
-          'Layout hints are invalid (contain invalid column names)'
+        if (
+          frontColumns.length !== (hints?.frontColumns?.length ?? 0) ||
+          backColumns.length !== (hints?.backColumns?.length ?? 0) ||
+          frozenColumns.length !== (hints?.frozenColumns?.length ?? 0)
+        ) {
+          throw new Error(
+            'Layout hints are invalid (contain invalid column names)'
+          );
+        }
+
+        // Handle frozen columns by user UI action.
+        if (currentFrozenColumns.length) {
+          frozenColumns = [
+            ...frozenColumns,
+            ...currentFrozenColumns
+              .map(name => columnMap.get(name))
+              .filter(Boolean),
+          ];
+        }
+
+        const frontColumnSet = new Set(frontColumns);
+        const backColumnSet = new Set(backColumns);
+        const frozenColumnSet = new Set(frozenColumns);
+        const middleColumns = columns.filter(
+          col =>
+            !frontColumnSet.has(col) &&
+            !backColumnSet.has(col) &&
+            !frozenColumnSet.has(col)
         );
+
+        return [
+          ...frozenColumns,
+          ...frontColumns,
+          ...middleColumns,
+          ...backColumns,
+        ];
       }
-
-      // Handle frozen columns by user UI action.
-      if (uiFrozenColumns.length) {
-        frozenColumns = uiFrozenColumns
-          .map(name => columnMap.get(name))
-          .filter(Boolean);
-      }
-
-      const frontColumnSet = new Set(frontColumns);
-      const backColumnSet = new Set(backColumns);
-      const frozenColumnSet = new Set(frozenColumns);
-      const middleColumns = columns.filter(
-        col =>
-          !frontColumnSet.has(col) &&
-          !backColumnSet.has(col) &&
-          !frozenColumnSet.has(col)
-      );
-
-      return [
-        ...frozenColumns,
-        ...frontColumns,
-        ...middleColumns,
-        ...backColumns,
-      ];
+      return columns;
     }
-    return columns;
-  });
+  );
 
   get columns() {
     // columns can be 'frozen' by freeze() in Layout Hints or
