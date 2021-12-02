@@ -368,7 +368,7 @@ export class ChartPanel extends Component {
       setActiveTool,
       setDashboardIsolatedLinkerPanelId,
     } = this.props;
-    setDashboardIsolatedLinkerPanelId(localDashboardId, null);
+    setDashboardIsolatedLinkerPanelId(localDashboardId, undefined);
     setActiveTool(ToolType.LINKER);
   }
 
@@ -1007,7 +1007,7 @@ const mapStateToProps = (state, ownProps) => {
     localDashboardId
   );
   const isLinkerActive =
-    activeTool === ToolType.LINKER && isolatedLinkerPanelId === null;
+    activeTool === ToolType.LINKER && isolatedLinkerPanelId === undefined;
   return {
     columnSelectionValidator: getColumnSelectionValidatorForDashboard(
       state,
