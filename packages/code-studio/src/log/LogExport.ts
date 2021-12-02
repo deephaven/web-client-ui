@@ -81,7 +81,6 @@ function getMetadata(): string {
 
 /**
  * Export support logs with the given name.
- * @param metadata Any extra metadata to be written to a metadata file
  * @param fileNamePrefix The zip file name without the .zip extension. Ex: test will be saved as test.zip
  */
 export async function exportLogs(
