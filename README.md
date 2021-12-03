@@ -2,6 +2,8 @@
 
 We're using a monorepo to manage our packages, as it becomes cumbersome to manage the overhead of multiple repos with how we wish to develop the Enterprise UI, while maintaining a separate OSS Code Studio solution. Using `lerna` to manage all of our packages in one repo simplifies the process.
 
+[![codecov](https://codecov.io/gh/deephaven/web-client-ui/branch/main/graph/badge.svg?token=RW29S9X72C)](https://codecov.io/gh/deephaven/web-client-ui)
+
 ## Getting Started
 
 We are still using node 14.x and npm 6.x. If you are [using nvm](https://github.com/nvm-sh/nvm#installing-and-updating), run `nvm install lts/fermium` to get the latest 14.x/6.x versions. Otherwise, download from the [node homepage](https://nodejs.org/en/download/).
