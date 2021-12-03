@@ -1,12 +1,14 @@
 /* eslint class-methods-use-this: "off" */
+import { KeyboardEvent } from 'react';
 import GridUtils from '../GridUtils';
 import Grid from '../Grid';
 import GridRange from '../GridRange';
-import KeyHandler from '../KeyHandler';
+import KeyHandler, { KeyHandlerResult } from '../KeyHandler';
+import { isEditableGridModel } from '../EditableGridModel';
 
 class EditKeyHandler extends KeyHandler {
-  onDown(e: KeyboardEvent, grid: Grid): boolean {
-    if (GridUtils.isModifierKeyDown(e)) {
+  onDown(event: KeyboardEvent, grid: Grid): KeyHandlerResult {
+    if (GridUtils.isModifierKeyDown(event)) {
       return false;
     }
 
@@ -15,6 +17,7 @@ class EditKeyHandler extends KeyHandler {
     if (
       cursorColumn == null ||
       cursorRow == null ||
+      !isEditableGridModel(model) ||
       !model.isEditableRange(GridRange.makeCell(cursorColumn, cursorRow))
     ) {
       return false;
@@ -25,22 +28,22 @@ class EditKeyHandler extends KeyHandler {
       return false;
     }
 
-    if (e.key.length === 1) {
-      grid.startEditing(column, row, true, [1, 1], e.key);
+    if (event.key.length === 1) {
+      grid.startEditing(column, row, true, [1, 1], event.key);
       return true;
     }
 
-    if (e.key === 'F2') {
+    if (event.key === 'F2') {
       grid.startEditing(column, row);
       return true;
     }
 
-    if (e.key === 'Backspace') {
-      grid.startEditing(column, row, true, null, '');
+    if (event.key === 'Backspace') {
+      grid.startEditing(column, row, true, undefined, '');
       return true;
     }
 
-    if (e.key === 'Delete') {
+    if (event.key === 'Delete') {
       grid.setValueForCell(column, row, '');
       return true;
     }

@@ -6,16 +6,19 @@
  */
 
 // eslint-disable-next-line import/no-cycle
+import { KeyboardEvent } from 'react';
 import Grid from './Grid';
 
 // True if consumed and to stop event propagation/prevent default, false if not consumed.
 // OR an object if consumed with boolean properties to control whether to stopPropagation/preventDefault
-export type KeyHandlerResponse =
-  | boolean
-  | { stopPropagation?: boolean; preventDefault?: boolean };
+export type KeyHandlerResponseOptions = {
+  stopPropagation?: boolean;
+  preventDefault?: boolean;
+};
+export type KeyHandlerResponse = boolean | KeyHandlerResponseOptions;
 
 class KeyHandler {
-  private order;
+  order: number;
 
   // What order this key handler should trigger in
   // Default to well below any of the GRID key handlers 100-1000+

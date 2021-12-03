@@ -4,13 +4,22 @@ import GridColorUtils from './GridColorUtils';
 import { isExpandableGridModel } from './ExpandableGridModel';
 import { GridTheme } from './GridTheme';
 import { GridModel, GridRange } from '.';
-import GridMetrics, { ModelIndex, VisibleIndex } from './GridMetrics';
+import GridMetrics, { VisibleIndex } from './GridMetrics';
+
+export type EditingCellTextSelectionRange = [start: number, end: number];
 
 export type EditingCell = {
+  // Index of the editing cell
   column: VisibleIndex;
   row: VisibleIndex;
-  selectionRange: GridRange;
-  value: string | null;
+
+  // Selection within the text
+  selectionRange?: EditingCellTextSelectionRange;
+
+  // The value to use for the edit
+  value: string;
+
+  // Whether the selection was triggered with a quick edit action (e.g. Start typing with the cell in focus)
   isQuickEdit?: boolean;
 };
 
@@ -36,8 +45,8 @@ export type GridRenderState = {
   metrics: GridMetrics;
 
   // Location of the mouse on the grid
-  mouseX: number;
-  mouseY: number;
+  mouseX: number | null;
+  mouseY: number | null;
 
   // Where the keyboard cursor is located
   cursorColumn: VisibleIndex | null;
@@ -48,14 +57,14 @@ export type GridRenderState = {
 
   // Currently dragged column/row information
   draggingColumn: VisibleIndex | null;
-  draggingColumnOffset: number;
+  draggingColumnOffset: number | null;
   draggingColumnSeparator: VisibleIndex | null;
   draggingRow: VisibleIndex | null;
-  draggingRowOffset: number;
+  draggingRowOffset: number | null;
   draggingRowSeparator: VisibleIndex | null;
 
   // The currently editing cell
-  editingCell?: EditingCell;
+  editingCell: EditingCell | null;
   isDraggingHorizontalScrollBar: boolean;
   isDraggingVerticalScrollBar: boolean;
   isDragging: boolean;

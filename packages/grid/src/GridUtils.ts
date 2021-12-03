@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { WheelEvent } from 'react';
 import GridRange, { GridRangeIndex } from './GridRange';
 import {
   BoxCoordinates,

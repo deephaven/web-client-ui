@@ -2,6 +2,12 @@ import GridRange from './GridRange';
 import { ModelIndex } from './GridMetrics';
 import GridModel from './GridModel';
 
+export function isEditableGridModel(
+  model: GridModel
+): model is EditableGridModel {
+  return (model as EditableGridModel)?.isEditable !== undefined;
+}
+
 /**
  * Edit operation when applying multiple edits
  */
@@ -19,7 +25,7 @@ export type EditOperation = {
 /**
  * Model for an editable grid
  */
-interface EditableGridModel extends GridModel {
+export interface EditableGridModel extends GridModel {
   isEditable: boolean;
 
   /**

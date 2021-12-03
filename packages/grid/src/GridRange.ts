@@ -21,7 +21,7 @@ export enum SELECTION_DIRECTION {
   RIGHT = 'RIGHT',
 }
 
-class GridRange {
+export class GridRange {
   startColumn: GridRangeIndex;
 
   startRow: GridRangeIndex;
@@ -653,8 +653,8 @@ class GridRange {
    */
   static containsCell(
     ranges: GridRange[],
-    column: number,
-    row: number
+    column: GridRangeIndex,
+    row: GridRangeIndex
   ): boolean {
     for (let i = 0; i < ranges.length; i += 1) {
       const range = ranges[i];

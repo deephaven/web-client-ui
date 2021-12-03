@@ -1,11 +1,9 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
-import GridRange from './GridRange';
+import GridRange, { SELECTION_DIRECTION } from './GridRange';
 import GridUtils from './GridUtils';
 import './CellInputField.scss';
-
-export type GridRangeSelectionDirection = string;
 
 export type CellInputFieldProps = {
   selectionRange?: number[];
@@ -18,26 +16,24 @@ export type CellInputFieldProps = {
   onDone?: (
     value: string,
     options: {
-      direction: GridRangeSelectionDirection | null;
-      fillRange: boolean;
+      direction?: SELECTION_DIRECTION;
+      fillRange?: boolean;
     }
   ) => void;
   onContextMenu?: React.MouseEventHandler<HTMLTextAreaElement>;
   style?: React.CSSProperties;
 };
 
-export const directionForKey = (
-  key: string
-): GridRangeSelectionDirection | null => {
+export const directionForKey = (key: string): SELECTION_DIRECTION | null => {
   switch (key) {
     case 'ArrowDown':
-      return GridRange.SELECTION_DIRECTION.DOWN;
+      return SELECTION_DIRECTION.DOWN;
     case 'ArrowUp':
-      return GridRange.SELECTION_DIRECTION.UP;
+      return SELECTION_DIRECTION.UP;
     case 'ArrowLeft':
-      return GridRange.SELECTION_DIRECTION.LEFT;
+      return SELECTION_DIRECTION.LEFT;
     case 'ArrowRight':
-      return GridRange.SELECTION_DIRECTION.RIGHT;
+      return SELECTION_DIRECTION.RIGHT;
     default:
       return null;
   }
@@ -110,11 +106,7 @@ export const CellInputField = ({
   }, [setIsQuickEdit]);
 
   const handleCommit = useCallback(
-    (
-      direction: GridRangeSelectionDirection | null = GridRange
-        .SELECTION_DIRECTION.DOWN,
-      fillRange = false
-    ) => {
+    (direction = GridRange.SELECTION_DIRECTION.DOWN, fillRange = false) => {
       onDone(value, { direction, fillRange });
     },
     [onDone, value]
@@ -148,9 +140,7 @@ export const CellInputField = ({
             sendUpdate(newValue);
           } else {
             handleCommit(
-              event.shiftKey
-                ? GridRange.SELECTION_DIRECTION.UP
-                : GridRange.SELECTION_DIRECTION.DOWN
+              event.shiftKey ? SELECTION_DIRECTION.UP : SELECTION_DIRECTION.DOWN
             );
           }
           break;
@@ -158,8 +148,8 @@ export const CellInputField = ({
           event.preventDefault();
           handleCommit(
             event.shiftKey
-              ? GridRange.SELECTION_DIRECTION.LEFT
-              : GridRange.SELECTION_DIRECTION.RIGHT
+              ? SELECTION_DIRECTION.LEFT
+              : SELECTION_DIRECTION.RIGHT
           );
           break;
         case 'ArrowDown':

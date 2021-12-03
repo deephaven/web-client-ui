@@ -1,7 +1,8 @@
 /* eslint class-methods-use-this: "off" */
+import { KeyboardEvent } from 'react';
 import Grid from '../Grid';
 import GridUtils from '../GridUtils';
-import KeyHandler from '../KeyHandler';
+import KeyHandler, { KeyHandlerResult } from '../KeyHandler';
 
 /**
  * Parse out data from an HTML table. Currently does not support colspan/rowspan
@@ -86,13 +87,10 @@ export function parseValueFromElement(
  * Handles the paste key combination
  */
 class PasteKeyHandler extends KeyHandler {
-  onDown(
-    e: KeyboardEvent,
-    grid: Grid
-  ): boolean | { stopPropagation?: boolean; preventDefault?: boolean } {
-    switch (e.key) {
+  onDown(event: KeyboardEvent, grid: Grid): KeyHandlerResult {
+    switch (event.key) {
       case 'v':
-        if (GridUtils.isModifierKeyDown(e)) {
+        if (GridUtils.isModifierKeyDown(event)) {
           // Chrome doesn't allow the paste event on canvas elements
           // Instead, we capture the ctrl+v keydown, then do this to capture the input
           const dummyInput = document.createElement('div');
