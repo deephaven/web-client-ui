@@ -2,9 +2,20 @@ import memoizeClear from './memoizeClear';
 import GridUtils from './GridUtils';
 import GridColorUtils from './GridColorUtils';
 import { isExpandableGridModel } from './ExpandableGridModel';
-import { GridTheme } from './GridTheme';
+import {
+  GridColor,
+  GridColorWay,
+  GridTheme,
+  NullableGridColor,
+} from './GridTheme';
 import { GridModel, GridRange } from '.';
-import GridMetrics, { VisibleIndex } from './GridMetrics';
+import GridMetrics, {
+  BoxCoordinates,
+  Coordinate,
+  VisibleIndex,
+} from './GridMetrics';
+import { getOrThrow } from './GridMetricCalculator';
+import { isEditableGridModel } from './EditableGridModel';
 
 export type EditingCellTextSelectionRange = [start: number, end: number];
 
@@ -255,10 +266,8 @@ export class GridRenderer {
     context: CanvasRenderingContext2D,
     state: GridRenderState
   ): void {
-    const { metrics, theme } = state;
+    const { draggingRow, draggingColumn, metrics, theme } = state;
     const {
-      draggingRow,
-      draggingColumn,
       floatingTopRowCount,
       floatingBottomRowCount,
       floatingRows,
@@ -305,35 +314,25 @@ export class GridRenderer {
 
     // Draw the floating row selection...
     if (floatingTopRowCount > 0) {
-      this.drawSelectedRanges(
-        context,
-        state,
-        {
-          top: 0,
-          bottom: floatingTopRowCount - 1,
-          maxY:
-            visibleRowYs.get(floatingTopRowCount - 1) +
-            visibleRowHeights.get(floatingTopRowCount - 1) -
-            0.5,
-        },
-        true
-      );
+      this.drawSelectedRanges(context, state, {
+        top: 0,
+        bottom: floatingTopRowCount - 1,
+        maxY:
+          getOrThrow(visibleRowYs, floatingTopRowCount - 1) +
+          getOrThrow(visibleRowHeights, floatingTopRowCount - 1) -
+          0.5,
+      });
     }
     if (floatingBottomRowCount > 0) {
-      this.drawSelectedRanges(
-        context,
-        state,
-        {
-          top: rowCount - floatingBottomRowCount - 1,
-          bottom: rowCount - 1,
-          minY: visibleRowYs.get(rowCount - floatingBottomRowCount) + 0.5,
-          maxY:
-            visibleRowYs.get(rowCount - 1) +
-            visibleRowHeights.get(rowCount - 1) -
-            0.5,
-        },
-        true
-      );
+      this.drawSelectedRanges(context, state, {
+        top: rowCount - floatingBottomRowCount - 1,
+        bottom: rowCount - 1,
+        minY: getOrThrow(visibleRowYs, rowCount - floatingBottomRowCount) + 0.5,
+        maxY:
+          getOrThrow(visibleRowYs, rowCount - 1) +
+          getOrThrow(visibleRowHeights, rowCount - 1) -
+          0.5,
+      });
     }
 
     // Draw the cell content...
@@ -350,10 +349,8 @@ export class GridRenderer {
     context: CanvasRenderingContext2D,
     state: GridRenderState
   ): void {
-    const { metrics, theme } = state;
+    const { draggingRow, draggingColumn, metrics, theme } = state;
     const {
-      draggingRow,
-      draggingColumn,
       floatingLeftColumnCount,
       floatingRightColumnCount,
       floatingLeftWidth,
@@ -424,33 +421,24 @@ export class GridRenderer {
 
     // Draw the floating column selection...
     if (floatingLeftColumnCount > 0) {
-      this.drawSelectedRanges(
-        context,
-        state,
-        {
-          left: 0,
-          maxX:
-            visibleColumnXs.get(floatingLeftColumnCount - 1) +
-            visibleColumnWidths.get(floatingLeftColumnCount - 1),
-        },
-        true
-      );
+      this.drawSelectedRanges(context, state, {
+        left: 0,
+        maxX:
+          getOrThrow(visibleColumnXs, floatingLeftColumnCount - 1) +
+          getOrThrow(visibleColumnWidths, floatingLeftColumnCount - 1),
+      });
     }
     if (floatingRightColumnCount > 0) {
-      this.drawSelectedRanges(
-        context,
-        state,
-        {
-          left: columnCount - floatingRightColumnCount,
-          right: columnCount - 1,
-          minX:
-            visibleColumnXs.get(columnCount - floatingRightColumnCount) + 0.5,
-          maxX:
-            visibleColumnXs.get(columnCount - 1) +
-            visibleColumnWidths.get(columnCount - 1),
-        },
-        true
-      );
+      this.drawSelectedRanges(context, state, {
+        left: columnCount - floatingRightColumnCount,
+        right: columnCount - 1,
+        minX:
+          getOrThrow(visibleColumnXs, columnCount - floatingRightColumnCount) +
+          0.5,
+        maxX:
+          getOrThrow(visibleColumnXs, columnCount - 1) +
+          getOrThrow(visibleColumnWidths, columnCount - 1),
+      });
     }
 
     // Draw the cell content...
@@ -490,23 +478,24 @@ export class GridRenderer {
 
     if (floatingTopRowCount > 0) {
       const y =
-        visibleRowYs.get(floatingTopRowCount - 1) +
-        visibleRowHeights.get(floatingTopRowCount - 1) +
+        getOrThrow(visibleRowYs, floatingTopRowCount - 1) +
+        getOrThrow(visibleRowHeights, floatingTopRowCount - 1) +
         0.5;
       context.moveTo(0.5, y);
       context.lineTo(maxX - 0.5, y);
     }
 
     if (floatingBottomRowCount > 0) {
-      const y = visibleRowYs.get(rowCount - floatingBottomRowCount) - 0.5;
+      const y =
+        getOrThrow(visibleRowYs, rowCount - floatingBottomRowCount) - 0.5;
       context.moveTo(0.5, y);
       context.lineTo(maxX - 0.5, y);
     }
 
     if (floatingLeftColumnCount > 0) {
       const x =
-        visibleColumnXs.get(floatingLeftColumnCount - 1) +
-        visibleColumnWidths.get(floatingLeftColumnCount - 1) +
+        getOrThrow(visibleColumnXs, floatingLeftColumnCount - 1) +
+        getOrThrow(visibleColumnWidths, floatingLeftColumnCount - 1) +
         0.5;
       context.moveTo(x, 0.5);
       context.lineTo(x, maxY - 0.5);
@@ -514,7 +503,8 @@ export class GridRenderer {
 
     if (floatingRightColumnCount > 0) {
       const x =
-        visibleColumnXs.get(columnCount - floatingRightColumnCount) - 0.5;
+        getOrThrow(visibleColumnXs, columnCount - floatingRightColumnCount) -
+        0.5;
       context.moveTo(x, 0.5);
       context.lineTo(x, maxY - 0.5);
     }
@@ -527,23 +517,24 @@ export class GridRenderer {
 
     if (floatingTopRowCount > 0) {
       const y =
-        visibleRowYs.get(floatingTopRowCount - 1) +
-        visibleRowHeights.get(floatingTopRowCount - 1) +
+        getOrThrow(visibleRowYs, floatingTopRowCount - 1) +
+        getOrThrow(visibleRowHeights, floatingTopRowCount - 1) +
         0.5;
       context.moveTo(0.5, y);
       context.lineTo(maxX - 0.5, y);
     }
 
     if (floatingBottomRowCount > 0) {
-      const y = visibleRowYs.get(rowCount - floatingBottomRowCount) - 0.5;
+      const y =
+        getOrThrow(visibleRowYs, rowCount - floatingBottomRowCount) - 0.5;
       context.moveTo(0.5, y);
       context.lineTo(maxX - 0.5, y);
     }
 
     if (floatingLeftColumnCount > 0) {
       const x =
-        visibleColumnXs.get(floatingLeftColumnCount - 1) +
-        visibleColumnWidths.get(floatingLeftColumnCount - 1) +
+        getOrThrow(visibleColumnXs, floatingLeftColumnCount - 1) +
+        getOrThrow(visibleColumnWidths, floatingLeftColumnCount - 1) +
         0.5;
       context.moveTo(x, 0.5);
       context.lineTo(x, maxY - 0.5);
@@ -551,7 +542,8 @@ export class GridRenderer {
 
     if (floatingRightColumnCount > 0) {
       const x =
-        visibleColumnXs.get(columnCount - floatingRightColumnCount) - 0.5;
+        getOrThrow(visibleColumnXs, columnCount - floatingRightColumnCount) -
+        0.5;
       context.moveTo(x, 0.5);
       context.lineTo(x, maxY - 0.5);
     }
@@ -583,7 +575,7 @@ export class GridRenderer {
       floatingBottomRowCount,
       floatingLeftColumnCount,
       floatingRightColumnCount,
-      floatingTopColumnCount,
+      floatingTopRowCount,
       columnCount,
       rowCount,
       visibleRowHeights,
@@ -602,15 +594,18 @@ export class GridRenderer {
           ? visibleColumnXs.get(floatingLeftColumnCount + 1)
           : -10,
       minY:
-        floatingTopColumnCount > 0 &&
-        visibleRowYs.has(floatingTopColumnCount + 1)
-          ? visibleRowYs.get(floatingTopColumnCount + 1)
+        floatingTopRowCount > 0 && visibleRowYs.has(floatingTopRowCount + 1)
+          ? visibleRowYs.get(floatingTopRowCount + 1)
           : -10,
       maxX:
         floatingRightColumnCount > 0 &&
         visibleColumnXs.has(columnCount - floatingRightColumnCount - 1)
-          ? visibleColumnXs.get(columnCount - floatingRightColumnCount - 1) +
-            visibleColumnWidths.get(
+          ? getOrThrow(
+              visibleColumnXs,
+              columnCount - floatingRightColumnCount - 1
+            ) +
+            getOrThrow(
+              visibleColumnWidths,
               columnCount - floatingRightColumnCount - 1
             ) -
             0.5
@@ -618,14 +613,20 @@ export class GridRenderer {
       maxY:
         floatingBottomRowCount > 0 &&
         visibleRowYs.has(rowCount - floatingBottomRowCount - 1)
-          ? visibleRowYs.get(rowCount - floatingBottomRowCount - 1) +
-            visibleRowHeights.get(rowCount - floatingBottomRowCount - 1) -
+          ? getOrThrow(visibleRowYs, rowCount - floatingBottomRowCount - 1) +
+            getOrThrow(
+              visibleRowHeights,
+              rowCount - floatingBottomRowCount - 1
+            ) -
             0.5
           : height + 10,
     });
   }
 
-  drawRowStripes(context, state) {
+  drawRowStripes(
+    context: CanvasRenderingContext2D,
+    state: GridRenderState
+  ): void {
     const { metrics, theme } = state;
     const { visibleRows } = metrics;
     const { rowBackgroundColors } = theme;
@@ -641,13 +642,13 @@ export class GridRenderer {
   }
 
   drawRowStripesForRows(
-    context,
-    state,
-    rows,
-    rowBackgroundColors,
+    context: CanvasRenderingContext2D,
+    state: GridRenderState,
+    rows: VisibleIndex[],
+    rowBackgroundColors: GridColorWay,
     minX = 0,
     maxX = state.metrics.maxX
-  ) {
+  ): void {
     const { theme, metrics, model } = state;
     const { maxDepth, shadowBlur, shadowColor } = theme;
 
@@ -659,9 +660,12 @@ export class GridRenderer {
 
     // Optimize by grouping together all rows that end up with the same color
     const colorRowMap = new Map();
-    const topShadowRows = []; // Rows that are deeper than the row above them
-    const bottomShadowRows = [];
-    const addRowToColorMap = (row, rowAbove) => {
+    const topShadowRows: VisibleIndex[] = []; // Rows that are deeper than the row above them
+    const bottomShadowRows: VisibleIndex[] = [];
+    const addRowToColorMap = (
+      row: VisibleIndex,
+      rowAbove?: VisibleIndex
+    ): void => {
       const depth = isExpandableGridModel(model) ? model.depthForRow(row) : 0;
       const colorSet = colorSets[row % colorSets.length];
       const color = colorSet[Math.min(depth, colorSet.length - 1)];
@@ -684,7 +688,7 @@ export class GridRenderer {
     // Add all the regular row stripes
     for (let i = 0; i < rows.length; i += 1) {
       const row = rows[i];
-      const rowAbove = i > 0 ? rows[i - 1] : null;
+      const rowAbove = i > 0 ? rows[i - 1] : undefined;
       addRowToColorMap(row, rowAbove);
     }
 
@@ -695,8 +699,8 @@ export class GridRenderer {
 
       for (let i = 0; i < colorRows.length; i += 1) {
         const row = colorRows[i];
-        const y = visibleRowYs.get(row);
-        const rowHeight = visibleRowHeights.get(row);
+        const y = getOrThrow(visibleRowYs, row);
+        const rowHeight = getOrThrow(visibleRowHeights, row);
         context.rect(minX, y, maxX, rowHeight);
       }
 
@@ -715,7 +719,7 @@ export class GridRenderer {
 
       for (let i = 0; i < topShadowRows.length; i += 1) {
         const row = topShadowRows[i];
-        const y = visibleRowYs.get(row);
+        const y = getOrThrow(visibleRowYs, row);
         // Use a translate so we can reuse the gradient
         context.translate(0, y);
         context.fillRect(minX, 0, maxX, shadowBlur);
@@ -737,8 +741,8 @@ export class GridRenderer {
 
       for (let i = 0; i < bottomShadowRows.length; i += 1) {
         const row = bottomShadowRows[i];
-        const y = visibleRowYs.get(row);
-        const rowHeight = visibleRowHeights.get(row);
+        const y = getOrThrow(visibleRowYs, row);
+        const rowHeight = getOrThrow(visibleRowHeights, row);
         const gradientY = y + rowHeight - shadowBlur;
         // Use a translate so we can reuse the gradient
         context.translate(0, gradientY);
@@ -750,8 +754,13 @@ export class GridRenderer {
     }
   }
 
-  drawMouseColumnHover(context, state) {
+  drawMouseColumnHover(
+    context: CanvasRenderingContext2D,
+    state: GridRenderState
+  ): void {
     const { mouseX, mouseY, theme, metrics } = state;
+    if (mouseX == null || mouseY == null) return;
+
     const mouseColumn = GridUtils.getColumnAtX(mouseX, metrics);
     if (mouseColumn == null || !theme.columnHoverBackgroundColor) {
       return;
@@ -762,15 +771,20 @@ export class GridRenderer {
       return;
     }
 
-    const x = visibleColumnXs.get(mouseColumn);
-    const columnWidth = visibleColumnWidths.get(mouseColumn);
+    const x = getOrThrow(visibleColumnXs, mouseColumn);
+    const columnWidth = getOrThrow(visibleColumnWidths, mouseColumn);
 
     context.fillStyle = theme.columnHoverBackgroundColor;
     context.fillRect(x, 0, columnWidth, maxY);
   }
 
-  drawMouseRowHover(context, state) {
+  drawMouseRowHover(
+    context: CanvasRenderingContext2D,
+    state: GridRenderState
+  ): void {
     const { mouseX, mouseY, theme, metrics } = state;
+    if (mouseX == null || mouseY == null) return;
+
     const { maxX } = metrics;
     if (mouseX > maxX || !theme.rowHoverBackgroundColor) {
       return;
@@ -784,7 +798,10 @@ export class GridRenderer {
     this.drawMouseRowHoverForRow(context, state, mouseRow);
   }
 
-  drawFloatingMouseRowHover(context, state) {
+  drawFloatingMouseRowHover(
+    context: CanvasRenderingContext2D,
+    state: GridRenderState
+  ): void {
     const { mouseX, mouseY, theme, metrics } = state;
     const {
       maxX,
@@ -793,7 +810,12 @@ export class GridRenderer {
       rowCount,
       rowFooterWidth,
     } = metrics;
-    if (mouseX > maxX + rowFooterWidth || !theme.rowHoverBackgroundColor) {
+    if (
+      mouseX == null ||
+      mouseY == null ||
+      mouseX > maxX + rowFooterWidth ||
+      !theme.rowHoverBackgroundColor
+    ) {
       return;
     }
 
@@ -807,27 +829,41 @@ export class GridRenderer {
     }
   }
 
-  drawMouseRowHoverForRow(context, state, row) {
+  drawMouseRowHoverForRow(
+    context: CanvasRenderingContext2D,
+    state: GridRenderState,
+    row: VisibleIndex
+  ): void {
     const { metrics, selectedRanges, theme } = state;
     const { visibleRowHeights, visibleRowYs, maxX } = metrics;
 
-    const y = visibleRowYs.get(row);
-    const rowHeight = visibleRowHeights.get(row);
+    const y = getOrThrow(visibleRowYs, row);
+    const rowHeight = getOrThrow(visibleRowHeights, row);
 
-    context.fillStyle = theme.rowHoverBackgroundColor;
+    if (theme.rowHoverBackgroundColor) {
+      context.fillStyle = theme.rowHoverBackgroundColor;
+    }
     for (let i = 0; i < selectedRanges.length; i += 1) {
+      const { startRow, endRow } = selectedRanges[i];
       if (
-        selectedRanges[i].startRow <= row &&
-        selectedRanges[i].endRow >= row
+        startRow != null &&
+        endRow != null &&
+        startRow <= row &&
+        endRow >= row
       ) {
-        context.fillStyle = theme.selectedRowHoverBackgroundColor;
+        if (theme.selectedRowHoverBackgroundColor) {
+          context.fillStyle = theme.selectedRowHoverBackgroundColor;
+        }
         break;
       }
     }
     context.fillRect(0, y, maxX, rowHeight);
   }
 
-  drawGridLines(context, state) {
+  drawGridLines(
+    context: CanvasRenderingContext2D,
+    state: GridRenderState
+  ): void {
     const { metrics, theme } = state;
     const { visibleColumns, visibleRows } = metrics;
 
@@ -841,7 +877,14 @@ export class GridRenderer {
     );
   }
 
-  drawGridLinesForItems(context, state, columns, rows, columnColor, rowColor) {
+  drawGridLinesForItems(
+    context: CanvasRenderingContext2D,
+    state: GridRenderState,
+    columns: VisibleIndex[],
+    rows: VisibleIndex[],
+    columnColor: NullableGridColor,
+    rowColor: NullableGridColor
+  ): void {
     if (!columnColor && !rowColor) {
       return;
     }
@@ -861,18 +904,26 @@ export class GridRenderer {
     context.stroke();
   }
 
-  drawGridLinesForColumns(context, state, columns) {
+  drawGridLinesForColumns(
+    context: CanvasRenderingContext2D,
+    state: GridRenderState,
+    columns: VisibleIndex[]
+  ): void {
     const { metrics } = state;
     const { visibleColumnXs, maxY } = metrics;
     for (let i = 0; i < columns.length; i += 1) {
       const column = columns[i];
-      const x = visibleColumnXs.get(column) + 0.5;
+      const x = getOrThrow(visibleColumnXs, column) + 0.5;
       context.moveTo(x, 0);
       context.lineTo(x, maxY);
     }
   }
 
-  drawGridLinesForRows(context, state, rows) {
+  drawGridLinesForRows(
+    context: CanvasRenderingContext2D,
+    state: GridRenderState,
+    rows: VisibleIndex[]
+  ): void {
     const { metrics } = state;
     const { visibleRowYs, maxX: metricsMaxX } = metrics;
     const maxX = metricsMaxX;
@@ -880,13 +931,16 @@ export class GridRenderer {
     // Draw row lines
     for (let i = 0; i < rows.length; i += 1) {
       const row = rows[i];
-      const y = visibleRowYs.get(row) + 0.5;
+      const y = getOrThrow(visibleRowYs, row) + 0.5;
       context.moveTo(0.5, y);
       context.lineTo(maxX - 0.5, y);
     }
   }
 
-  drawCellBackgrounds(context, state) {
+  drawCellBackgrounds(
+    context: CanvasRenderingContext2D,
+    state: GridRenderState
+  ): void {
     const { metrics } = state;
     const { visibleColumns, visibleRows } = metrics;
     this.drawCellBackgroundsForItems(
@@ -897,7 +951,12 @@ export class GridRenderer {
     );
   }
 
-  drawCellBackgroundsForItems(context, state, columns, rows) {
+  drawCellBackgroundsForItems(
+    context: CanvasRenderingContext2D,
+    state: GridRenderState,
+    columns: VisibleIndex[],
+    rows: VisibleIndex[]
+  ): void {
     context.save();
 
     for (let i = 0; i < columns.length; i += 1) {
@@ -905,7 +964,7 @@ export class GridRenderer {
 
       for (let j = 0; j < rows.length; j += 1) {
         const row = rows[j];
-        const rowAfter = j + 1 < rows.length ? rows[j + 1] : null;
+        const rowAfter = j + 1 < rows.length ? rows[j + 1] : undefined;
         this.drawCellBackground(context, state, column, row, rowAfter);
       }
     }
@@ -913,7 +972,13 @@ export class GridRenderer {
     context.restore();
   }
 
-  drawCellBackground(context, state, column, row, rowAfter) {
+  drawCellBackground(
+    context: CanvasRenderingContext2D,
+    state: GridRenderState,
+    column: VisibleIndex,
+    row: VisibleIndex,
+    rowAfter?: VisibleIndex
+  ): void {
     const { metrics, model, theme } = state;
     const {
       firstColumn,
@@ -924,8 +989,8 @@ export class GridRenderer {
       visibleRowYs,
       visibleRowHeights,
     } = metrics;
-    const modelRow = modelRows.get(row);
-    const modelColumn = modelColumns.get(column);
+    const modelRow = getOrThrow(modelRows, row);
+    const modelColumn = getOrThrow(modelColumns, column);
     const backgroundColor = model.backgroundColorForCell(
       modelColumn,
       modelRow,
@@ -936,10 +1001,10 @@ export class GridRenderer {
       isExpandableGridModel(model) && model.hasExpandableRows;
 
     if (backgroundColor) {
-      const x = visibleColumnXs.get(column) + 1;
-      const y = visibleRowYs.get(row) + 1;
-      const columnWidth = visibleColumnWidths.get(column) - 1;
-      const rowHeight = visibleRowHeights.get(row) - 1;
+      const x = getOrThrow(visibleColumnXs, column) + 1;
+      const y = getOrThrow(visibleRowYs, row) + 1;
+      const columnWidth = getOrThrow(visibleColumnWidths, column) - 1;
+      const rowHeight = getOrThrow(visibleRowHeights, row) - 1;
       context.fillStyle = backgroundColor;
       context.fillRect(x, y, columnWidth, rowHeight);
     }
@@ -949,7 +1014,10 @@ export class GridRenderer {
     }
   }
 
-  drawCellContents(context, state) {
+  drawCellContents(
+    context: CanvasRenderingContext2D,
+    state: GridRenderState
+  ): void {
     const { metrics } = state;
     const { visibleColumns } = metrics;
 
@@ -959,7 +1027,11 @@ export class GridRenderer {
     }
   }
 
-  drawColumnCellContents(context, state, column) {
+  drawColumnCellContents(
+    context: CanvasRenderingContext2D,
+    state: GridRenderState,
+    column: VisibleIndex
+  ): void {
     const { metrics } = state;
     const {
       visibleColumnXs,
@@ -967,8 +1039,8 @@ export class GridRenderer {
       visibleRows,
       height,
     } = metrics;
-    const x = visibleColumnXs.get(column);
-    const columnWidth = visibleColumnWidths.get(column);
+    const x = getOrThrow(visibleColumnXs, column);
+    const columnWidth = getOrThrow(visibleColumnWidths, column);
 
     context.save();
 
@@ -983,7 +1055,12 @@ export class GridRenderer {
     context.restore();
   }
 
-  drawCellContent(context, state, column, row) {
+  drawCellContent(
+    context: CanvasRenderingContext2D,
+    state: GridRenderState,
+    column: VisibleIndex,
+    row: VisibleIndex
+  ): void {
     const { metrics, model, theme } = state;
     const {
       firstColumn,
@@ -1001,12 +1078,12 @@ export class GridRenderer {
       treeHorizontalPadding,
       textColor,
     } = theme;
-    const x = visibleColumnXs.get(column);
-    const y = visibleRowYs.get(row);
-    const columnWidth = visibleColumnWidths.get(column);
-    const rowHeight = visibleRowHeights.get(row);
-    const modelRow = modelRows.get(row);
-    const modelColumn = modelColumns.get(column);
+    const x = getOrThrow(visibleColumnXs, column);
+    const y = getOrThrow(visibleRowYs, row);
+    const columnWidth = getOrThrow(visibleColumnWidths, column);
+    const rowHeight = getOrThrow(visibleRowHeights, row);
+    const modelRow = getOrThrow(modelRows, row);
+    const modelColumn = getOrThrow(modelColumns, column);
     const text = model.textForCell(modelColumn, modelRow);
     const isFirstColumn = column === firstColumn;
     const hasExpandableRows =
@@ -1038,7 +1115,8 @@ export class GridRenderer {
       }
       textX += treeIndent;
 
-      const fontWidth = fontWidths.get(context.font);
+      const fontWidth =
+        fontWidths.get(context.font) ?? GridRenderer.DEFAULT_FONT_WIDTH;
       const truncatedText = this.getCachedTruncatedString(
         context,
         text,
@@ -1055,7 +1133,11 @@ export class GridRenderer {
     }
   }
 
-  drawCellRowTreeMarker(context, state, row) {
+  drawCellRowTreeMarker(
+    context: CanvasRenderingContext2D,
+    state: GridRenderState,
+    row: VisibleIndex
+  ): void {
     const { metrics, model, mouseX, mouseY, theme } = state;
     const {
       firstColumn,
@@ -1068,16 +1150,19 @@ export class GridRenderer {
       visibleRowTreeBoxes,
     } = metrics;
     const { treeMarkerColor, treeMarkerHoverColor } = theme;
-    const columnX = visibleColumnXs.get(firstColumn);
-    const columnWidth = visibleColumnWidths.get(firstColumn);
-    const rowY = visibleRowYs.get(row);
-    const rowHeight = visibleRowHeights.get(row);
-    const isExpandable = model.isRowExpandable(row);
-    const isExpanded = model.isRowExpanded(row);
+    const columnX = getOrThrow(visibleColumnXs, firstColumn);
+    const columnWidth = getOrThrow(visibleColumnWidths, firstColumn);
+    const rowY = getOrThrow(visibleRowYs, row);
+    const rowHeight = getOrThrow(visibleRowHeights, row);
+    const isExpandable =
+      isExpandableGridModel(model) && model.isRowExpandable(row);
+    const isExpanded = isExpandable && model.isRowExpanded(row);
 
     if (isExpandable) {
-      const treeBox = visibleRowTreeBoxes.get(row);
+      const treeBox = getOrThrow(visibleRowTreeBoxes, row);
       const color =
+        mouseX != null &&
+        mouseY != null &&
         mouseX >= gridX + columnX &&
         mouseX <= gridX + columnX + columnWidth &&
         mouseY >= gridY + rowY &&
@@ -1097,7 +1182,15 @@ export class GridRenderer {
     }
   }
 
-  drawTreeMarker(context, state, columnX, rowY, treeBox, color, isExpanded) {
+  drawTreeMarker(
+    context: CanvasRenderingContext2D,
+    state: GridRenderState,
+    columnX: Coordinate,
+    rowY: Coordinate,
+    treeBox: BoxCoordinates,
+    color: GridColor,
+    isExpanded: boolean
+  ): void {
     const { x1, y1, x2, y2 } = treeBox;
     const markerText = isExpanded ? '⊟' : '⊞';
     const textX = columnX + (x1 + x2) * 0.5 + 0.5;
@@ -1107,10 +1200,17 @@ export class GridRenderer {
     context.fillText(markerText, textX, textY);
   }
 
-  drawCellRowTreeDepthLines(context, state, row, rowAfter) {
+  drawCellRowTreeDepthLines(
+    context: CanvasRenderingContext2D,
+    state: GridRenderState,
+    row: VisibleIndex,
+    rowAfter?: VisibleIndex
+  ): void {
     const { metrics, model, theme } = state;
 
-    const depth = isExpandableGridModel(model) ? model.depthForRow(row) : 0;
+    if (!isExpandableGridModel(model)) return;
+
+    const depth = model.depthForRow(row);
     if (depth === 0) return;
 
     const {
@@ -1120,10 +1220,11 @@ export class GridRenderer {
       visibleRowHeights,
     } = metrics;
     const { treeDepthIndent, treeHorizontalPadding, treeLineColor } = theme;
-    const columnX = visibleColumnXs.get(firstColumn);
-    const rowY = visibleRowYs.get(row);
-    const rowHeight = visibleRowHeights.get(row);
-    const depthRowAfter = model.depthForRow(rowAfter);
+    const columnX = getOrThrow(visibleColumnXs, firstColumn);
+    const rowY = getOrThrow(visibleRowYs, row);
+    const rowHeight = getOrThrow(visibleRowHeights, row);
+    const depthRowAfter =
+      rowAfter !== undefined ? model.depthForRow(rowAfter) : 0;
     const depthDiff = depth > depthRowAfter ? depth - depthRowAfter : 0;
 
     context.strokeStyle = treeLineColor;
@@ -1169,13 +1270,17 @@ export class GridRenderer {
   }
 
   getCachedTruncatedString = memoizeClear(
-    (context, text, width, fontWidth) =>
-      GridRenderer.truncateToWidth(context, text, width, fontWidth),
+    (
+      context: CanvasRenderingContext2D,
+      text: string,
+      width: number,
+      fontWidth: number
+    ): string => GridRenderer.truncateToWidth(context, text, width, fontWidth),
     { max: 10000 }
   );
 
   getCachedBackgroundColors = memoizeClear(
-    (backgroundColors, maxDepth) =>
+    (backgroundColors: GridColorWay, maxDepth: number): GridColor[][] =>
       backgroundColors.split(' ').map(color => {
         const colors = [];
         for (let i = 0; i < maxDepth; i += 1) {
@@ -1191,7 +1296,7 @@ export class GridRenderer {
     { max: 1000 }
   );
 
-  drawHeaders(context, state) {
+  drawHeaders(context: CanvasRenderingContext2D, state: GridRenderState): void {
     const { theme } = state;
 
     context.font = theme.headerFont;
@@ -1201,7 +1306,7 @@ export class GridRenderer {
     this.drawRowHeaders(context, state);
   }
 
-  drawFooters(context, state) {
+  drawFooters(context: CanvasRenderingContext2D, state: GridRenderState): void {
     const { theme } = state;
 
     context.font = theme.headerFont;
@@ -1209,7 +1314,10 @@ export class GridRenderer {
     this.drawRowFooters(context, state);
   }
 
-  drawColumnHeaders(context, state) {
+  drawColumnHeaders(
+    context: CanvasRenderingContext2D,
+    state: GridRenderState
+  ): void {
     const {
       mouseX,
       mouseY,
@@ -1258,15 +1366,15 @@ export class GridRenderer {
     // Visible columns.
     for (let i = 0; i < visibleColumns.length; i += 1) {
       const column = visibleColumns[i];
-      const columnWidth = visibleColumnWidths.get(column);
-      const x = visibleColumnXs.get(column) + gridX;
+      const columnWidth = getOrThrow(visibleColumnWidths, column);
+      const x = getOrThrow(visibleColumnXs, column) + gridX;
       this.drawColumnHeader(context, state, column, x, columnWidth);
     }
 
     if (containsFrozenColumns) {
       floatingLeftColumnsWidth =
-        visibleColumnXs.get(floatingLeftColumnCount - 1) +
-        visibleColumnWidths.get(floatingLeftColumnCount - 1);
+        getOrThrow(visibleColumnXs, floatingLeftColumnCount - 1) +
+        getOrThrow(visibleColumnWidths, floatingLeftColumnCount - 1);
 
       // Frozen columns' background
       context.fillStyle = headerBackgroundColor;
@@ -1276,8 +1384,8 @@ export class GridRenderer {
       context.fillStyle = headerColor;
       for (let i = 0; i < floatingColumns.length; i += 1) {
         const column = floatingColumns[i];
-        const columnWidth = visibleColumnWidths.get(column);
-        const x = visibleColumnXs.get(column) + gridX;
+        const columnWidth = getOrThrow(visibleColumnWidths, column);
+        const x = getOrThrow(visibleColumnXs, column) + gridX;
         this.drawColumnHeader(context, state, column, x, columnWidth);
       }
     }
@@ -1292,8 +1400,8 @@ export class GridRenderer {
       let isPreviousColumnHidden = false;
       for (let i = 0; i < visibleColumns.length; i += 1) {
         const column = visibleColumns[i];
-        const columnX = visibleColumnXs.get(column);
-        const columnWidth = visibleColumnWidths.get(column);
+        const columnX = getOrThrow(visibleColumnXs, column);
+        const columnWidth = getOrThrow(visibleColumnWidths, column);
 
         if (!(columnX < floatingLeftColumnsWidth - columnWidth)) {
           if (columnWidth > 0) {
@@ -1312,8 +1420,8 @@ export class GridRenderer {
       isPreviousColumnHidden = false;
       for (let i = 0; i < floatingColumns.length; i += 1) {
         const column = floatingColumns[i];
-        const columnX = visibleColumnXs.get(column);
-        const columnWidth = visibleColumnWidths.get(column);
+        const columnX = getOrThrow(visibleColumnXs, column);
+        const columnWidth = getOrThrow(visibleColumnWidths, column);
         if (columnWidth > 0) {
           const x = gridX + columnX + columnWidth + 0.5;
           context.moveTo(x, 0);
@@ -1335,8 +1443,8 @@ export class GridRenderer {
       context.fillStyle = headerSeparatorColor;
       for (let i = 0; i < hiddenColumns.length; i += 1) {
         const column = hiddenColumns[i];
-        const columnX = visibleColumnXs.get(column);
-        const columnWidth = visibleColumnWidths.get(column);
+        const columnX = getOrThrow(visibleColumnXs, column);
+        const columnWidth = getOrThrow(visibleColumnWidths, column);
         const minX =
           gridX + columnX + columnWidth + 0.5 - headerHiddenSeparatorSize * 0.5;
         context.rect(
@@ -1352,7 +1460,7 @@ export class GridRenderer {
     if (headerSeparatorHoverColor) {
       let highlightedSeparator = draggingColumnSeparator;
 
-      if (highlightedSeparator == null) {
+      if (highlightedSeparator == null && mouseX != null && mouseY != null) {
         highlightedSeparator = GridUtils.getColumnSeparatorIndex(
           mouseX,
           mouseY,
@@ -1367,8 +1475,11 @@ export class GridRenderer {
       ) {
         context.strokeStyle = headerSeparatorHoverColor;
 
-        const columnX = visibleColumnXs.get(highlightedSeparator);
-        const columnWidth = visibleColumnWidths.get(highlightedSeparator);
+        const columnX = getOrThrow(visibleColumnXs, highlightedSeparator);
+        const columnWidth = getOrThrow(
+          visibleColumnWidths,
+          highlightedSeparator
+        );
         const x = gridX + columnX + columnWidth + 0.5;
         const visibleColumnIndex = visibleColumns.indexOf(highlightedSeparator);
         const nextColumn =
@@ -1410,13 +1521,19 @@ export class GridRenderer {
     context.restore();
   }
 
-  drawColumnHeader(context, state, column, columnX, columnWidth) {
+  drawColumnHeader(
+    context: CanvasRenderingContext2D,
+    state: GridRenderState,
+    column: VisibleIndex,
+    columnX: Coordinate,
+    columnWidth: number
+  ): void {
     if (columnWidth <= 0) {
       return;
     }
     const { metrics, model, theme } = state;
     const { modelColumns } = metrics;
-    const modelColumn = modelColumns.get(column);
+    const modelColumn = getOrThrow(modelColumns, column);
     let text = model.textForColumnHeader(modelColumn);
 
     const { headerHorizontalPadding } = theme;
@@ -1454,7 +1571,10 @@ export class GridRenderer {
     context.restore();
   }
 
-  drawRowHeaders(context, state) {
+  drawRowHeaders(
+    context: CanvasRenderingContext2D,
+    state: GridRenderState
+  ): void {
     const { mouseX, mouseY, metrics, theme, draggingRowSeparator } = state;
     const {
       gridY,
@@ -1498,8 +1618,8 @@ export class GridRenderer {
       let isPreviousRowHidden = false;
       for (let i = 0; i < visibleRows.length; i += 1) {
         const row = visibleRows[i];
-        const rowY = visibleRowYs.get(row);
-        const rowHeight = visibleRowHeights.get(row);
+        const rowY = getOrThrow(visibleRowYs, row);
+        const rowHeight = getOrThrow(visibleRowHeights, row);
         if (rowHeight > 0) {
           const y = gridY + rowY + rowHeight + 0.5;
 
@@ -1524,8 +1644,8 @@ export class GridRenderer {
       context.fillStyle = headerSeparatorColor;
       for (let i = 0; i < hiddenRows.length; i += 1) {
         const row = hiddenRows[i];
-        const rowY = visibleRowYs.get(row);
-        const rowHeight = visibleRowHeights.get(row);
+        const rowY = getOrThrow(visibleRowYs, row);
+        const rowHeight = getOrThrow(visibleRowHeights, row);
         const minY =
           gridY + rowY + rowHeight + 0.5 - headerHiddenSeparatorSize * 0.5;
         context.rect(
@@ -1541,7 +1661,7 @@ export class GridRenderer {
 
     if (headerSeparatorHoverColor) {
       let highlightedSeparator = draggingRowSeparator;
-      if (highlightedSeparator == null) {
+      if (highlightedSeparator == null && mouseX != null && mouseY != null) {
         highlightedSeparator = GridUtils.getRowSeparatorIndex(
           mouseX,
           mouseY,
@@ -1553,8 +1673,8 @@ export class GridRenderer {
       if (highlightedSeparator != null) {
         context.strokeStyle = headerSeparatorHoverColor;
 
-        const rowY = visibleRowYs.get(highlightedSeparator);
-        const rowHeight = visibleRowHeights.get(highlightedSeparator);
+        const rowY = getOrThrow(visibleRowYs, highlightedSeparator);
+        const rowHeight = getOrThrow(visibleRowHeights, highlightedSeparator);
         const y = gridY + rowY + rowHeight + 0.5;
 
         const visibleRowIndex = visibleRows.indexOf(highlightedSeparator);
@@ -1602,27 +1722,36 @@ export class GridRenderer {
 
     for (let i = 0; i < visibleRows.length; i += 1) {
       const row = visibleRows[i];
-      const rowHeight = visibleRowHeights.get(row);
-      const y = visibleRowYs.get(row) + gridY;
+      const rowHeight = getOrThrow(visibleRowHeights, row);
+      const y = getOrThrow(visibleRowYs, row) + gridY;
       this.drawRowHeader(context, state, row, y, rowHeight);
     }
 
     context.restore();
   }
 
-  drawRowHeader(context, state, row, rowY, rowHeight) {
+  drawRowHeader(
+    context: CanvasRenderingContext2D,
+    state: GridRenderState,
+    row: VisibleIndex,
+    rowY: Coordinate,
+    rowHeight: number
+  ): void {
     if (rowHeight <= 0) {
       return;
     }
     const { metrics, model, theme } = state;
     const { modelRows, rowHeaderWidth } = metrics;
-    const modelRow = modelRows.get(row);
+    const modelRow = getOrThrow(modelRows, row);
     const x = rowHeaderWidth - theme.cellHorizontalPadding;
     const y = rowY + rowHeight * 0.5;
     context.fillText(model.textForRowHeader(modelRow), x, y);
   }
 
-  drawRowFooters(context, state) {
+  drawRowFooters(
+    context: CanvasRenderingContext2D,
+    state: GridRenderState
+  ): void {
     const {
       mouseX,
       mouseY,
@@ -1680,8 +1809,8 @@ export class GridRenderer {
       let isPreviousRowHidden = false;
       for (let i = 0; i < visibleRows.length; i += 1) {
         const row = visibleRows[i];
-        const rowY = visibleRowYs.get(row);
-        const rowHeight = visibleRowHeights.get(row);
+        const rowY = getOrThrow(visibleRowYs, row);
+        const rowHeight = getOrThrow(visibleRowHeights, row);
         if (rowHeight > 0) {
           const y = gridY + rowY + rowHeight + 0.5;
 
@@ -1706,8 +1835,8 @@ export class GridRenderer {
       context.fillStyle = headerSeparatorColor;
       for (let i = 0; i < hiddenRows.length; i += 1) {
         const row = hiddenRows[i];
-        const rowY = visibleRowYs.get(row);
-        const rowHeight = visibleRowHeights.get(row);
+        const rowY = getOrThrow(visibleRowYs, row);
+        const rowHeight = getOrThrow(visibleRowHeights, row);
         const minY =
           gridY + rowY + rowHeight + 0.5 - headerHiddenSeparatorSize * 0.5;
         context.rect(
@@ -1723,7 +1852,7 @@ export class GridRenderer {
 
     if (headerSeparatorHoverColor) {
       let highlightedSeparator = draggingRowSeparator;
-      if (highlightedSeparator == null) {
+      if (highlightedSeparator == null && mouseX != null && mouseY != null) {
         highlightedSeparator = GridUtils.getRowSeparatorIndex(
           mouseX,
           mouseY,
@@ -1735,8 +1864,8 @@ export class GridRenderer {
       if (highlightedSeparator != null) {
         context.strokeStyle = headerSeparatorHoverColor;
 
-        const rowY = visibleRowYs.get(highlightedSeparator);
-        const rowHeight = visibleRowHeights.get(highlightedSeparator);
+        const rowY = getOrThrow(visibleRowYs, highlightedSeparator);
+        const rowHeight = getOrThrow(visibleRowHeights, highlightedSeparator);
         const y = gridY + rowY + rowHeight + 0.5;
 
         const visibleRowIndex = visibleRows.indexOf(highlightedSeparator);
@@ -1785,10 +1914,10 @@ export class GridRenderer {
     const textX = x + cellHorizontalPadding;
     for (let i = 0; i < visibleRows.length; i += 1) {
       const row = visibleRows[i];
-      const rowHeight = visibleRowHeights.get(row);
+      const rowHeight = getOrThrow(visibleRowHeights, row);
       if (rowHeight > 0) {
-        const rowY = visibleRowYs.get(row) + gridY;
-        const modelRow = modelRows.get(row);
+        const rowY = getOrThrow(visibleRowYs, row) + gridY;
+        const modelRow = getOrThrow(modelRows, row);
         const textY = rowY + rowHeight * 0.5;
         context.fillText(model.textForRowFooter(modelRow), textX, textY);
       }
@@ -1797,7 +1926,20 @@ export class GridRenderer {
     context.restore();
   }
 
-  drawSelectedRanges(context, state, viewport = {}) {
+  drawSelectedRanges(
+    context: CanvasRenderingContext2D,
+    state: GridRenderState,
+    viewport: {
+      left?: VisibleIndex;
+      top?: VisibleIndex;
+      right?: VisibleIndex;
+      bottom?: VisibleIndex;
+      minX?: VisibleIndex;
+      minY?: VisibleIndex;
+      maxX?: VisibleIndex;
+      maxY?: VisibleIndex;
+    } = {}
+  ): void {
     const {
       cursorColumn: column,
       cursorRow: row,
@@ -1832,18 +1974,21 @@ export class GridRenderer {
     }
 
     const isCursorVisible =
+      isEditableGridModel(model) &&
       model.isEditable &&
       editingCell == null &&
       draggingRow == null &&
       draggingColumn == null &&
+      column != null &&
+      row != null &&
       visibleColumnXs.has(column) &&
       visibleRowYs.has(row);
     if (isCursorVisible) {
       // Punch a hole out where the active cell is, it gets styled differently.
-      const x = visibleColumnXs.get(column);
-      const y = visibleRowYs.get(row);
-      const w = visibleColumnWidths.get(column);
-      const h = visibleRowHeights.get(row);
+      const x = getOrThrow(visibleColumnXs, column);
+      const y = getOrThrow(visibleRowYs, row);
+      const w = getOrThrow(visibleColumnWidths, column);
+      const h = getOrThrow(visibleRowHeights, row);
 
       context.save();
 
@@ -1876,24 +2021,28 @@ export class GridRenderer {
         // Need to offset the x/y coordinates so that the line draws nice and crisp
         const x =
           startColumn >= left && visibleColumnXs.has(startColumn)
-            ? Math.round(visibleColumnXs.get(startColumn)) + 0.5
+            ? Math.round(getOrThrow(visibleColumnXs, startColumn)) + 0.5
             : minX;
         const y =
           startRow >= top && visibleRowYs.has(startRow)
-            ? Math.max(Math.round(visibleRowYs.get(startRow)) + 0.5, 0.5)
+            ? Math.max(
+                Math.round(getOrThrow(visibleRowYs, startRow)) + 0.5,
+                0.5
+              )
             : minY;
 
         const endX =
           endColumn <= right && visibleColumnXs.has(endColumn)
             ? Math.round(
-                visibleColumnXs.get(endColumn) +
-                  visibleColumnWidths.get(endColumn)
+                getOrThrow(visibleColumnXs, endColumn) +
+                  getOrThrow(visibleColumnWidths, endColumn)
               ) - 0.5
             : maxX;
         const endY =
           endRow <= bottom && visibleRowYs.has(endRow)
             ? Math.round(
-                visibleRowYs.get(endRow) + visibleRowHeights.get(endRow)
+                getOrThrow(visibleRowYs, endRow) +
+                  getOrThrow(visibleRowHeights, endRow)
               ) - 0.5
             : maxY;
 
@@ -1932,12 +2081,12 @@ export class GridRenderer {
   }
 
   drawActiveCell(
-    context,
-    state,
-    column,
-    row,
+    context: CanvasRenderingContext2D,
+    state: GridRenderState,
+    column: VisibleIndex,
+    row: VisibleIndex,
     borderWidth = GridRenderer.ACTIVE_CELL_BORDER_WIDTH
-  ) {
+  ): void {
     const { metrics, theme } = state;
     const {
       visibleColumnWidths,
@@ -1945,10 +2094,10 @@ export class GridRenderer {
       visibleRowHeights,
       visibleRowYs,
     } = metrics;
-    const cellX = visibleColumnXs.get(column);
-    const cellY = visibleRowYs.get(row);
-    const cellW = visibleColumnWidths.get(column);
-    const cellH = visibleRowHeights.get(row);
+    const cellX = getOrThrow(visibleColumnXs, column);
+    const cellY = getOrThrow(visibleRowYs, row);
+    const cellW = getOrThrow(visibleColumnWidths, column);
+    const cellH = getOrThrow(visibleRowHeights, row);
 
     // Now get the outline for the active cell
     let x = cellX - borderWidth * 0.5;
@@ -1978,14 +2127,21 @@ export class GridRenderer {
   /**
    * Draws a rounded rectangle using the current state of the canvas.
    *
-   * @param {CanvasRenderingContext2D} ctx
-   * @param {number} x coordinate of the left side
-   * @param {number} y coordinate of the top side
-   * @param {number} w width of the rectangle
-   * @param {number} h height of the rectangle
-   * @param {number} r corner radius of the rectangle
+   * @param context The canvas context
+   * @param x coordinate of the left side
+   * @param y coordinate of the top side
+   * @param w width of the rectangle
+   * @param h height of the rectangle
+   * @param r corner radius of the rectangle
    */
-  drawRoundedRect(context, x, y, w, h, r = GridRenderer.DEFAULT_EDGE_RADIUS) {
+  drawRoundedRect(
+    context: CanvasRenderingContext2D,
+    x: Coordinate,
+    y: Coordinate,
+    w: number,
+    h: number,
+    r = GridRenderer.DEFAULT_EDGE_RADIUS
+  ): void {
     context.beginPath();
     context.moveTo(x + r, y);
     context.lineTo(x + w - r, y);
@@ -1999,7 +2155,10 @@ export class GridRenderer {
     context.closePath();
   }
 
-  drawDraggingColumn(context, state) {
+  drawDraggingColumn(
+    context: CanvasRenderingContext2D,
+    state: GridRenderState
+  ): void {
     const {
       draggingColumn,
       draggingColumnOffset,
@@ -2007,7 +2166,7 @@ export class GridRenderer {
       mouseX,
       theme,
     } = state;
-    if (draggingColumn == null) {
+    if (draggingColumn == null || mouseX == null) {
       return;
     }
 
@@ -2018,8 +2177,8 @@ export class GridRenderer {
       visibleColumnWidths,
       height,
     } = metrics;
-    const x = visibleColumnXs.get(draggingColumn);
-    const columnWidth = visibleColumnWidths.get(draggingColumn) + 1;
+    const x = getOrThrow(visibleColumnXs, draggingColumn);
+    const columnWidth = getOrThrow(visibleColumnWidths, draggingColumn) + 1;
     const {
       backgroundColor,
       font,
@@ -2038,7 +2197,7 @@ export class GridRenderer {
     context.fillRect(x, 0, columnWidth, height);
 
     context.translate(
-      mouseX - x - gridX - draggingColumnOffset,
+      mouseX - x - gridX - (draggingColumnOffset ?? 0),
       gridY + reorderOffset
     );
 
@@ -2074,15 +2233,18 @@ export class GridRenderer {
     context.restore();
   }
 
-  drawDraggingRow(context, state) {
+  drawDraggingRow(
+    context: CanvasRenderingContext2D,
+    state: GridRenderState
+  ): void {
     const { draggingRow, draggingRowOffset, metrics, mouseY, theme } = state;
-    if (draggingRow == null) {
+    if (draggingRow == null || mouseY == null) {
       return;
     }
 
     const { gridX, gridY, visibleRowYs, visibleRowHeights, width } = metrics;
-    const y = visibleRowYs.get(draggingRow);
-    const rowHeight = visibleRowHeights.get(draggingRow) + 1;
+    const y = getOrThrow(visibleRowYs, draggingRow);
+    const rowHeight = getOrThrow(visibleRowHeights, draggingRow) + 1;
     const {
       backgroundColor,
       font,
@@ -2102,7 +2264,7 @@ export class GridRenderer {
 
     context.translate(
       gridX + reorderOffset,
-      mouseY - y - gridY - draggingRowOffset
+      mouseY - y - gridY - (draggingRowOffset ?? 0)
     );
 
     // Then draw the shadow of the moving row
@@ -2137,7 +2299,10 @@ export class GridRenderer {
     context.restore();
   }
 
-  drawScrollBars(context, state) {
+  drawScrollBars(
+    context: CanvasRenderingContext2D,
+    state: GridRenderState
+  ): void {
     const {
       isDraggingHorizontalScrollBar,
       isDraggingVerticalScrollBar,
@@ -2178,13 +2343,16 @@ export class GridRenderer {
       scrollBarCasingWidth,
     } = theme;
 
-    const isInbounds = mouseX <= width && mouseY <= height;
+    const isInbounds =
+      mouseX != null && mouseY != null && mouseX <= width && mouseY <= height;
 
     const isVerticalBarHover =
       isDraggingVerticalScrollBar ||
       (hasVerticalBar &&
         !isDraggingHorizontalScrollBar &&
         !isDragging &&
+        mouseX != null &&
+        mouseY != null &&
         mouseX >= width - scrollBarHoverSize &&
         mouseY <= barHeight + columnHeaderHeight &&
         isInbounds);
@@ -2195,6 +2363,8 @@ export class GridRenderer {
         !isDraggingVerticalScrollBar &&
         !isDragging &&
         !isVerticalBarHover && // vert bar gets priorty in overlapped corner hover area
+        mouseX != null &&
+        mouseY != null &&
         mouseY >= height - scrollBarHoverSize &&
         mouseX <= barWidth - rowHeaderWidth &&
         isInbounds);
