@@ -61,13 +61,22 @@ function makeSafeToStringify(
   return output;
 }
 
-function getReduxDataString() {
+function getReduxDataString(): string {
   const reduxData = store.getState();
   return JSON.stringify(
     makeSafeToStringify(reduxData),
     null,
     2 // Indent w/ 2 spaces
   );
+}
+
+function getMetadata(): string {
+  const metadata = {
+    uiVersion: process.env.REACT_APP_VERSION,
+    userAgent: navigator.userAgent,
+  };
+
+  return JSON.stringify(metadata, null, 2);
 }
 
 /**
@@ -84,6 +93,7 @@ export async function exportLogs(
   const folder = zip.folder(fileNamePrefix) as JSZip;
   folder.file('console.txt', logHistory.getFormattedHistory());
   folder.file('redux.json', getReduxDataString());
+  folder.file('metadata.json', getMetadata());
 
   const blob = await zip.generateAsync({ type: 'blob' });
   const link = document.createElement('a');
