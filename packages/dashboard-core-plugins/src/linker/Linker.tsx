@@ -255,7 +255,7 @@ export class Linker extends Component<LinkerProps, LinkerState> {
     isAlwaysEndPoint = false,
     overrideIsolatedLinkerPanelId?: string
   ): void {
-    if (overrideIsolatedLinkerPanelId == null && !this.isOverlayShown()) {
+    if (overrideIsolatedLinkerPanelId === undefined && !this.isOverlayShown()) {
       return;
     }
     const { isolatedLinkerPanelId } = this.props;
@@ -398,7 +398,7 @@ export class Linker extends Component<LinkerProps, LinkerState> {
 
   handleAllLinksDeleted(): void {
     const { links, isolatedLinkerPanelId } = this.props;
-    if (isolatedLinkerPanelId == null) {
+    if (isolatedLinkerPanelId === undefined) {
       this.deleteLinks(links, true);
     } else {
       const isolatedLinks = links.filter(
@@ -519,7 +519,7 @@ export class Linker extends Component<LinkerProps, LinkerState> {
       combinedLinks.push(linkInProgress);
     }
 
-    if (isolateForPanelId != null) {
+    if (isolateForPanelId !== undefined) {
       return combinedLinks.filter(
         link =>
           link?.start?.panelId === isolateForPanelId ||
@@ -614,7 +614,7 @@ export class Linker extends Component<LinkerProps, LinkerState> {
     const isLinkOverlayShown = this.isOverlayShown();
     const disabled = linkInProgress != null && linkInProgress.start != null;
     const linkerOverlayMessage =
-      isolatedLinkerPanelId === null
+      isolatedLinkerPanelId === undefined
         ? 'Click a column source, then click a column target to create a filter link. Remove a filter link by clicking again to erase. Click done when finished.'
         : 'Create a link between the source column button and a table column by clicking on one, then the other. Remove the link by clicking it directly. Click done when finished.';
     return (

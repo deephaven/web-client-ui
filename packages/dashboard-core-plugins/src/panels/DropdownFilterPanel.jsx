@@ -671,12 +671,13 @@ const mapStateToProps = (state, ownProps) => {
   );
   const isLinkerActive =
     activeTool === ToolType.LINKER &&
-    (isolatedLinkerPanelId === null || isolatedLinkerPanelId === panelId);
+    (isolatedLinkerPanelId === undefined || isolatedLinkerPanelId === panelId);
   // Disable linking if linker is in isolated mode for a different panel
   const disableLinking =
     activeTool === ToolType.LINKER &&
-    isolatedLinkerPanelId !== null &&
+    isolatedLinkerPanelId !== undefined &&
     isolatedLinkerPanelId !== panelId;
+
   return {
     columns: getColumnsForDashboard(state, localDashboardId),
     columnSelectionValidator: getColumnSelectionValidatorForDashboard(
