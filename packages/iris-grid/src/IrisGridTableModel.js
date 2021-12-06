@@ -75,7 +75,7 @@ class IrisGridTableModel extends IrisGridModel {
     this.pendingNewDataMap = new Map();
     this.pendingNewRowCount = 0;
 
-    this.frozenColumns = [];
+    this.userFrozenColumns = null;
   }
 
   close() {
@@ -460,82 +460,70 @@ class IrisGridTableModel extends IrisGridModel {
     return '';
   }
 
-  getColumnsWithLayoutHints = memoize(
-    (columns, hints, currentFrozenColumns) => {
-      if (hints || currentFrozenColumns.length) {
-        const columnMap = new Map();
-        columns.forEach(col => columnMap.set(col.name, col));
+  getColumnsWithLayoutHints = memoize((columns, hints, userFrozenColumns) => {
+    if (hints || userFrozenColumns.length) {
+      const columnMap = new Map();
+      columns.forEach(col => columnMap.set(col.name, col));
 
-        let frontColumns = [];
-        let backColumns = [];
-        let frozenColumns = [];
+      let frontColumns = [];
+      let backColumns = [];
+      let frozenColumns = [];
 
-        if (hints?.frontColumns) {
-          frontColumns = hints.frontColumns
-            .map(name => columnMap.get(name))
-            .filter(Boolean);
-        }
-        if (hints?.backColumns) {
-          backColumns = hints.backColumns
-            .map(name => columnMap.get(name))
-            .filter(Boolean);
-        }
-        if (hints?.frozenColumns) {
-          frozenColumns = hints.frozenColumns
-            .map(name => columnMap.get(name))
-            .filter(Boolean);
-        }
-
-        if (
-          frontColumns.length !== (hints?.frontColumns?.length ?? 0) ||
-          backColumns.length !== (hints?.backColumns?.length ?? 0) ||
-          frozenColumns.length !== (hints?.frozenColumns?.length ?? 0)
-        ) {
-          throw new Error(
-            'Layout hints are invalid (contain invalid column names)'
-          );
-        }
-
-        // Handle frozen columns by user UI action.
-        if (currentFrozenColumns.length) {
-          frozenColumns = [
-            ...frozenColumns,
-            ...currentFrozenColumns
-              .map(name => columnMap.get(name))
-              .filter(Boolean),
-          ];
-        }
-
-        const frontColumnSet = new Set(frontColumns);
-        const backColumnSet = new Set(backColumns);
-        const frozenColumnSet = new Set(frozenColumns);
-        const middleColumns = columns.filter(
-          col =>
-            !frontColumnSet.has(col) &&
-            !backColumnSet.has(col) &&
-            !frozenColumnSet.has(col)
-        );
-
-        return [
-          ...frozenColumns,
-          ...frontColumns,
-          ...middleColumns,
-          ...backColumns,
-        ];
+      if (hints?.frontColumns) {
+        frontColumns = hints.frontColumns
+          .map(name => columnMap.get(name))
+          .filter(Boolean);
       }
-      return columns;
+      if (hints?.backColumns) {
+        backColumns = hints.backColumns
+          .map(name => columnMap.get(name))
+          .filter(Boolean);
+      }
+      if (userFrozenColumns.length) {
+        frozenColumns = userFrozenColumns
+          .map(name => columnMap.get(name))
+          .filter(Boolean);
+      }
+
+      if (
+        frontColumns.length !== (hints?.frontColumns?.length ?? 0) ||
+        backColumns.length !== (hints?.backColumns?.length ?? 0)
+      ) {
+        throw new Error(
+          'Layout hints are invalid (contain invalid column names)'
+        );
+      }
+
+      const frontColumnSet = new Set(frontColumns);
+      const backColumnSet = new Set(backColumns);
+      const frozenColumnSet = new Set(frozenColumns);
+      const middleColumns = columns.filter(
+        col =>
+          !frontColumnSet.has(col) &&
+          !backColumnSet.has(col) &&
+          !frozenColumnSet.has(col)
+      );
+
+      return [
+        ...frozenColumns,
+        ...frontColumns,
+        ...middleColumns,
+        ...backColumns,
+      ];
     }
-  );
+    return columns;
+  });
 
   get columns() {
-    // columns can be 'frozen' by freeze() in Layout Hints or
-    // a column header context action
-
     return this.getColumnsWithLayoutHints(
       this.table.columns,
-      this.table.layoutHints,
+      this.layoutHints,
       this.frozenColumns
     );
+  }
+
+  get frozenColumns() {
+    return this.userFrozenColumns ?? this.layoutHints?.frozenColumns ?? [];
   }
 
   get layoutHints() {
@@ -815,7 +803,7 @@ class IrisGridTableModel extends IrisGridModel {
   }
 
   updateFrozenColumns(columns) {
-    this.frozenColumns = columns;
+    this.userFrozenColumns = columns;
     this.dispatchEvent(new CustomEvent(IrisGridModel.EVENT.TABLE_CHANGED));
   }
 
@@ -1180,7 +1168,7 @@ class IrisGridTableModel extends IrisGridModel {
     if (
       this.layoutHints?.frontColumns?.includes(columnName) ||
       this.layoutHints?.backColumns?.includes(columnName) ||
-      this.layoutHints?.frozenColumns?.includes(columnName)
+      this.frozenColumns.includes(columnName)
     ) {
       return false;
     }

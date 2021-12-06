@@ -282,6 +282,7 @@ export class IrisGrid extends Component {
       selectDistinctColumns,
       pendingDataMap,
       canCopy,
+      frozenColumns,
     } = props;
 
     const keyHandlers = [
@@ -388,7 +389,7 @@ export class IrisGrid extends Component {
       pendingSaveError: null,
 
       toastMessage: null,
-      frozenColumns: [],
+      frozenColumns,
     };
   }
 
@@ -3155,6 +3156,7 @@ IrisGrid.propTypes = {
 
   canCopy: PropTypes.bool,
   canDownloadCsv: PropTypes.bool,
+  frozenColumns: PropTypes.arrayOf(PropTypes.string).isRequired,
 };
 
 IrisGrid.defaultProps = {

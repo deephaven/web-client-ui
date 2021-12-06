@@ -761,7 +761,7 @@ export class IrisGridPanel extends PureComponent {
       pendingDataMap,
     } = irisGridState;
     const { userColumnWidths, userRowHeights } = metrics;
-    const { movedColumns, movedRows, frozenColumns } = gridState;
+    const { movedColumns, movedRows } = gridState;
 
     const panelState = this.getCachedPanelState(
       this.getDehydratedIrisGridPanelState(
