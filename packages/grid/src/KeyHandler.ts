@@ -9,13 +9,20 @@
 import { KeyboardEvent } from 'react';
 import Grid from './Grid';
 
-// True if consumed and to stop event propagation/prevent default, false if not consumed.
-// OR an object if consumed with boolean properties to control whether to stopPropagation/preventDefault
-export type KeyHandlerResponseOptions = {
+/**
+ * An options object can be returned as the result to control
+ * if event.stopPropagation() and event.preventDefault() should be called
+ */
+export type KeyHandlerResultOptions = {
   stopPropagation?: boolean;
   preventDefault?: boolean;
 };
-export type KeyHandlerResponse = boolean | KeyHandlerResponseOptions;
+
+/**
+ * Result from the key handler for an event.
+ * Return `false` to pass the event on, otherwise the event is consumed.
+ */
+export type KeyHandlerResult = boolean | KeyHandlerResultOptions;
 
 class KeyHandler {
   order: number;
@@ -32,7 +39,7 @@ class KeyHandler {
    * @param grid The grid component the key press is on
    * @returns Response indicating if the key was consumed
    */
-  onDown(event: KeyboardEvent, grid: Grid): KeyHandlerResponse {
+  onDown(event: KeyboardEvent, grid: Grid): KeyHandlerResult {
     return false;
   }
 }
