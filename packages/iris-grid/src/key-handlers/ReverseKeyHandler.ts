@@ -1,3 +1,4 @@
+import { KeyboardEvent } from 'react';
 import { KeyHandler } from '@deephaven/grid';
 import { IrisGrid } from '../IrisGrid';
 import TableUtils from '../TableUtils';
@@ -12,8 +13,8 @@ class ReverseKeyHandler extends KeyHandler {
     this.irisGrid = irisGrid;
   }
 
-  onDown(e: KeyboardEvent): boolean {
-    if (IrisGridShortcuts.TABLE.REVERSE.matchesEvent(e)) {
+  onDown(event: KeyboardEvent): boolean {
+    if (IrisGridShortcuts.TABLE.REVERSE.matchesEvent(event)) {
       if (!this.irisGrid.isReversible()) {
         return false;
       }
