@@ -1047,12 +1047,12 @@ class GridUtils {
 
     // Normalize other deltaMode values to pixel units
     // deltaMode 0, is already in pixel units
-    if (wheelEvent?.deltaMode === WheelEvent.DOM_DELTA_PAGE) {
+    if (wheelEvent?.deltaMode === window.WheelEvent.DOM_DELTA_PAGE) {
       // Users can set OS to be in deltaMode page
       // scrolly by page units as pixels
       deltaX *= pageWidth;
       deltaY *= pageHeight;
-    } else if (wheelEvent?.deltaMode === WheelEvent.DOM_DELTA_LINE) {
+    } else if (wheelEvent?.deltaMode === window.WheelEvent.DOM_DELTA_LINE) {
       // Firefox reports deltaMode line
       // Normalize distance travelled between browsers
       // but remain ~platform/browser combo consistent

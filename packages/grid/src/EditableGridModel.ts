@@ -20,6 +20,11 @@ export type EditOperation = {
 
   /** Text value to set */
   text: string;
+
+  /** @deprecated use `column` instead */
+  x?: ModelIndex;
+  /** @deprecated use `row` instead */
+  y?: ModelIndex;
 };
 
 /**
