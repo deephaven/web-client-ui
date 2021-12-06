@@ -1,14 +1,18 @@
 /* eslint class-methods-use-this: "off" */
-import GridMouseHandler from '../GridMouseHandler';
+import Grid from '../Grid';
+import GridMouseHandler, { GridMouseHandlerResult } from '../GridMouseHandler';
+import { GridPoint } from '../GridUtils';
 
 /**
  * Used to eat the mouse event in the bottom right corner of the scroll bar
  */
 class GridScrollBarCornerMouseHandler extends GridMouseHandler {
-  isInCorner(gridPoint, grid) {
+  isInCorner(gridPoint: GridPoint, grid: Grid): boolean {
     const theme = grid.getTheme();
     const { scrollBarSize } = theme;
     const { metrics } = grid;
+    if (!metrics) throw new Error('metrics not set');
+
     const { x, y } = gridPoint;
     const { lastLeft, lastTop, width, height } = metrics;
     return (
@@ -22,15 +26,15 @@ class GridScrollBarCornerMouseHandler extends GridMouseHandler {
     );
   }
 
-  onDown(gridPoint, grid) {
+  onDown(gridPoint: GridPoint, grid: Grid): GridMouseHandlerResult {
     return this.isInCorner(gridPoint, grid);
   }
 
-  onUp(gridPoint, grid) {
+  onUp(gridPoint: GridPoint, grid: Grid): GridMouseHandlerResult {
     return this.isInCorner(gridPoint, grid);
   }
 
-  onClick(gridPoint, grid) {
+  onClick(gridPoint: GridPoint, grid: Grid): GridMouseHandlerResult {
     return this.isInCorner(gridPoint, grid);
   }
 }

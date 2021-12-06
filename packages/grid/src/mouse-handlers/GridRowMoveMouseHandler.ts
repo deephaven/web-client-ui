@@ -1,26 +1,30 @@
-import GridUtils from '../GridUtils';
-import GridMouseHandler from '../GridMouseHandler';
+import Grid from '../Grid';
+import { getOrThrow } from '../GridMetricCalculator';
+import GridMouseHandler, { GridMouseHandlerResult } from '../GridMouseHandler';
+import GridUtils, { GridPoint } from '../GridUtils';
 
 class GridRowMoveMouseHandler extends GridMouseHandler {
   cursor = 'move';
 
-  draggingOffset = null;
+  private draggingOffset?: number;
 
-  onDown(gridPoint, grid) {
+  onDown(gridPoint: GridPoint, grid: Grid): GridMouseHandlerResult {
     const { model } = grid.props;
     const { x, y, row } = gridPoint;
     const { metrics } = grid;
+    if (!metrics) throw new Error('metrics not set');
+
     const { columnHeaderHeight, rowHeaderWidth, visibleRowYs } = metrics;
 
-    if (x <= rowHeaderWidth && model.isRowMovable(row)) {
-      const rowY = visibleRowYs.get(row);
+    if (x <= rowHeaderWidth && row !== null && model.isRowMovable(row)) {
+      const rowY = getOrThrow(visibleRowYs, row);
       this.draggingOffset = y - rowY - columnHeaderHeight;
       grid.setState({ draggingRowOffset: this.draggingOffset });
     }
     return false;
   }
 
-  onDrag(gridPoint, grid) {
+  onDrag(gridPoint: GridPoint, grid: Grid): GridMouseHandlerResult {
     if (this.draggingOffset == null) {
       return false;
     }
@@ -48,6 +52,8 @@ class GridRowMoveMouseHandler extends GridMouseHandler {
     }
 
     const { metrics } = grid;
+    if (!metrics) throw new Error('metrics not set');
+
     const {
       top,
       lastTop,
@@ -63,8 +69,8 @@ class GridRowMoveMouseHandler extends GridMouseHandler {
     if (top < draggingRow) {
       const topRow = draggingRow - 1;
       minY =
-        visibleRowYs.get(topRow) +
-        visibleRowHeights.get(topRow) * 0.5 +
+        getOrThrow(visibleRowYs, topRow) +
+        getOrThrow(visibleRowHeights, topRow) * 0.5 +
         columnHeaderHeight;
     }
 
@@ -72,8 +78,8 @@ class GridRowMoveMouseHandler extends GridMouseHandler {
     if (draggingRow < bottom) {
       const bottomRow = draggingRow + 1;
       maxY =
-        visibleRowYs.get(bottomRow) +
-        visibleRowHeights.get(bottomRow) * 0.5 +
+        getOrThrow(visibleRowYs, bottomRow) +
+        getOrThrow(visibleRowHeights, bottomRow) * 0.5 +
         columnHeaderHeight;
     }
 
@@ -95,11 +101,12 @@ class GridRowMoveMouseHandler extends GridMouseHandler {
     }
     grid.setState({ movedRows, draggingRow });
 
-    const minMoveY = columnHeaderHeight + visibleRowHeights.get(top) * 0.5;
+    const minMoveY =
+      columnHeaderHeight + getOrThrow(visibleRowHeights, top) * 0.5;
     const maxMoveY =
       columnHeaderHeight +
-      visibleRowYs.get(bottomVisible) +
-      visibleRowHeights.get(bottomVisible) * 0.5;
+      getOrThrow(visibleRowYs, bottomVisible) +
+      getOrThrow(visibleRowHeights, bottomVisible) * 0.5;
     if (mouseY < minMoveY && top > 0) {
       grid.setState({ top: top - 1 });
     } else if (mouseY > maxMoveY && top < lastTop) {
@@ -109,9 +116,9 @@ class GridRowMoveMouseHandler extends GridMouseHandler {
     return true;
   }
 
-  onUp(_, grid) {
-    if (this.draggingOffset != null) {
-      this.draggingOffset = null;
+  onUp(gridPoint: GridPoint, grid: Grid): GridMouseHandlerResult {
+    if (this.draggingOffset !== undefined) {
+      this.draggingOffset = undefined;
       grid.setState({
         draggingRowOffset: null,
         draggingRow: null,

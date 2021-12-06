@@ -1,17 +1,48 @@
-import GridMouseHandler from '../GridMouseHandler';
+import Grid from '../Grid';
+import { VisibleIndex } from '../GridMetrics';
+import GridMouseHandler, { GridMouseHandlerResult } from '../GridMouseHandler';
+import { GridPoint } from '../GridUtils';
 
 /* eslint class-methods-use-this: "off" */
 class GridVerticalScrollBarMouseHandler extends GridMouseHandler {
-  dragOffset = null;
+  static getTopWithOffsetFromRawTop(
+    grid: Grid,
+    rawTop: number
+  ): { top: VisibleIndex; topOffset: number } {
+    const theme = grid.getTheme();
+    const { metrics, metricCalculator } = grid;
+    if (!metrics) throw new Error('metrics not set');
+
+    if (theme.scrollSnapToRow) {
+      const top = Math.round(rawTop);
+      const topOffset = 0;
+
+      return { top, topOffset };
+    }
+    const top = Math.floor(rawTop);
+    const topOffsetPercent = rawTop - top;
+    let rowHeight = metrics.visibleRowHeights.get(top);
+    if (rowHeight == null) {
+      const metricState = grid.getMetricState();
+      rowHeight = metricCalculator.getVisibleRowHeight(top, metricState);
+    }
+    const topOffset = rowHeight * topOffsetPercent;
+
+    return { top, topOffset };
+  }
+
+  private dragOffset?: number;
 
   // to trigger pointer event blocking
   cursor = 'default';
 
-  isInScrollBar(gridPoint, grid) {
+  isInScrollBar(gridPoint: GridPoint, grid: Grid): boolean {
     const theme = grid.getTheme();
 
     const { scrollBarSize, scrollBarHoverSize } = theme;
     const { metrics } = grid;
+    if (!metrics) throw new Error('metrics not set');
+
     const { x, y } = gridPoint;
     const { lastLeft, lastTop, columnHeaderHeight, height, width } = metrics;
     const scrollBarHeight = lastLeft > 0 ? height - scrollBarSize : height;
@@ -25,8 +56,10 @@ class GridVerticalScrollBarMouseHandler extends GridMouseHandler {
     );
   }
 
-  onDown(gridPoint, grid) {
+  onDown(gridPoint: GridPoint, grid: Grid): GridMouseHandlerResult {
     const { metrics } = grid;
+    if (!metrics) throw new Error('metrics not set');
+
     const { y } = gridPoint;
     const {
       barHeight,
@@ -70,14 +103,16 @@ class GridVerticalScrollBarMouseHandler extends GridMouseHandler {
     return true;
   }
 
-  onMove(gridPoint, grid) {
+  onMove(gridPoint: GridPoint, grid: Grid): GridMouseHandlerResult {
     return this.isInScrollBar(gridPoint, grid);
   }
 
-  onDrag(gridPoint, grid) {
+  onDrag(gridPoint: GridPoint, grid: Grid): GridMouseHandlerResult {
     if (this.dragOffset != null) {
       const { y } = gridPoint;
       const { metrics } = grid;
+      if (!metrics) throw new Error('metrics not set');
+
       const { barHeight, handleHeight, lastTop, columnHeaderHeight } = metrics;
       const mouseBarY = y - columnHeaderHeight;
 
@@ -107,39 +142,17 @@ class GridVerticalScrollBarMouseHandler extends GridMouseHandler {
     return false;
   }
 
-  onUp(gridPoint, grid) {
-    if (this.dragOffset != null) {
-      this.dragOffset = null;
+  onUp(gridPoint: GridPoint, grid: Grid): GridMouseHandlerResult {
+    if (this.dragOffset !== undefined) {
+      this.dragOffset = undefined;
       grid.setState({ isDraggingVerticalScrollBar: false, isDragging: false });
     }
 
     return this.isInScrollBar(gridPoint, grid);
   }
 
-  onClick(gridPoint, grid) {
+  onClick(gridPoint: GridPoint, grid: Grid): GridMouseHandlerResult {
     return this.isInScrollBar(gridPoint, grid);
-  }
-
-  static getTopWithOffsetFromRawTop(grid, rawTop) {
-    const theme = grid.getTheme();
-    const { metrics, metricCalculator } = grid;
-
-    if (theme.scrollSnapToRow) {
-      const top = Math.round(rawTop);
-      const topOffset = 0;
-
-      return { top, topOffset };
-    }
-    const top = Math.floor(rawTop);
-    const topOffsetPercent = rawTop - top;
-    let rowHeight = metrics.visibleRowHeights.get(top);
-    if (rowHeight == null) {
-      const metricState = grid.getMetricState();
-      rowHeight = metricCalculator.getVisibleRowHeight(top, metricState);
-    }
-    const topOffset = rowHeight * topOffsetPercent;
-
-    return { top, topOffset };
   }
 }
 
