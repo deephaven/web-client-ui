@@ -59,11 +59,13 @@ class SelectionKeyHandler extends KeyHandler {
           grid.clearSelectedRanges();
         }
         grid.moveCursorToPosition(
-          GridUtils.isModifierKeyDown(e)
+          GridUtils.isModifierKeyDown(event)
             ? grid.state.cursorColumn
             : columnCount - 1,
-          GridUtils.isModifierKeyDown(e) ? rowCount - 1 : grid.state.cursorRow,
-          e.shiftKey,
+          GridUtils.isModifierKeyDown(event)
+            ? rowCount - 1
+            : grid.state.cursorRow,
+          event.shiftKey,
           true,
           true
         );

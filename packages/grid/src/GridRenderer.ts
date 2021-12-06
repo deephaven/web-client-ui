@@ -1086,8 +1086,6 @@ export class GridRenderer {
     const modelColumn = getOrThrow(modelColumns, column);
     const text = model.textForCell(modelColumn, modelRow);
     const isFirstColumn = column === firstColumn;
-    const hasExpandableRows =
-      isExpandableGridModel(model) && model.hasExpandableRows;
 
     if (text && rowHeight > 0) {
       const textAlign = model.textAlignForCell(modelColumn, modelRow) || 'left';
@@ -1098,7 +1096,11 @@ export class GridRenderer {
       context.fillStyle = color;
 
       let treeIndent = 0;
-      if (hasExpandableRows && isFirstColumn) {
+      if (
+        isExpandableGridModel(model) &&
+        model.hasExpandableRows &&
+        isFirstColumn
+      ) {
         treeIndent =
           treeDepthIndent * (model.depthForRow(row) + 1) +
           treeHorizontalPadding;
@@ -1128,7 +1130,11 @@ export class GridRenderer {
       }
     }
 
-    if (isFirstColumn && hasExpandableRows) {
+    if (
+      isFirstColumn &&
+      isExpandableGridModel(model) &&
+      model.hasExpandableRows
+    ) {
       this.drawCellRowTreeMarker(context, state, row);
     }
   }
@@ -1154,32 +1160,30 @@ export class GridRenderer {
     const columnWidth = getOrThrow(visibleColumnWidths, firstColumn);
     const rowY = getOrThrow(visibleRowYs, row);
     const rowHeight = getOrThrow(visibleRowHeights, row);
-    const isExpandable =
-      isExpandableGridModel(model) && model.isRowExpandable(row);
-    const isExpanded = isExpandable && model.isRowExpanded(row);
-
-    if (isExpandable) {
-      const treeBox = getOrThrow(visibleRowTreeBoxes, row);
-      const color =
-        mouseX != null &&
-        mouseY != null &&
-        mouseX >= gridX + columnX &&
-        mouseX <= gridX + columnX + columnWidth &&
-        mouseY >= gridY + rowY &&
-        mouseY <= gridY + rowY + rowHeight
-          ? treeMarkerHoverColor
-          : treeMarkerColor;
-
-      this.drawTreeMarker(
-        context,
-        state,
-        columnX,
-        rowY,
-        treeBox,
-        color,
-        isExpanded
-      );
+    if (!isExpandableGridModel(model) || !model.isRowExpandable(row)) {
+      return;
     }
+
+    const treeBox = getOrThrow(visibleRowTreeBoxes, row);
+    const color =
+      mouseX != null &&
+      mouseY != null &&
+      mouseX >= gridX + columnX &&
+      mouseX <= gridX + columnX + columnWidth &&
+      mouseY >= gridY + rowY &&
+      mouseY <= gridY + rowY + rowHeight
+        ? treeMarkerHoverColor
+        : treeMarkerColor;
+
+    this.drawTreeMarker(
+      context,
+      state,
+      columnX,
+      rowY,
+      treeBox,
+      color,
+      model.isRowExpanded(row)
+    );
   }
 
   drawTreeMarker(
@@ -2073,7 +2077,7 @@ export class GridRenderer {
       context.stroke();
     }
 
-    if (isCursorVisible) {
+    if (column != null && row != null) {
       context.restore();
 
       this.drawActiveCell(context, state, column, row);

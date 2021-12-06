@@ -1954,18 +1954,18 @@ class Grid extends PureComponent<GridProps, GridState> {
     const y = visibleRowYs.get(row);
     const w = visibleColumnWidths.get(column);
     const h = visibleRowHeights.get(row);
-    const isVisible = x != null && y != null && w != null && h != null;
 
     // If the cell isn't visible, we still need to display an invisible cell for focus purposes
-    const wrapperStyle: CSSProperties = isVisible
-      ? {
-          position: 'absolute',
-          left: gridX + x,
-          top: gridY + y,
-          width: w,
-          height: h,
-        }
-      : { opacity: 0 };
+    const wrapperStyle: CSSProperties =
+      x != null && y != null && w != null && h != null
+        ? {
+            position: 'absolute',
+            left: gridX + x,
+            top: gridY + y,
+            width: w,
+            height: h,
+          }
+        : { opacity: 0 };
 
     const modelColumn = this.getModelColumn(column);
     const modelRow = this.getModelRow(row);
