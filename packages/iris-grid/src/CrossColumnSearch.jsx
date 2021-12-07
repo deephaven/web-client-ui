@@ -22,7 +22,9 @@ class CrossColumnSearch extends PureComponent {
     invertSelection
   ) {
     const filterColumns = invertSelection
-      ? columns.filter(column => !selectedColumns.includes(column.name))
+      ? columns
+          .filter(column => !selectedColumns.includes(column.name))
+          .map(column => column.name)
       : selectedColumns;
     if (searchValue && filterColumns.length > 0) {
       const filterValue = dh.FilterValue.ofString(searchValue);
