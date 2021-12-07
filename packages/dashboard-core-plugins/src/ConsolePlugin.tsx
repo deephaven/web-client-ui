@@ -426,7 +426,9 @@ export const ConsolePlugin = ({
   /** Attempts to send the text to a notebook matching the passed in settings */
   const sendToNotebook = useCallback(
     (session, sessionLanguage, settings = {}, createIfNecessary = true) => {
-      const notebookPanel = panelManager.getLastUsedPanelOfType(NotebookPanel);
+      const notebookPanel = panelManager.getLastUsedPanelOfType(
+        NotebookPanel.WrappedComponent
+      );
       if (notebookPanel && isNotebookPanel(notebookPanel)) {
         if (settings && settings.value && notebookPanel.notebook) {
           notebookPanel.notebook.append(settings.value);
