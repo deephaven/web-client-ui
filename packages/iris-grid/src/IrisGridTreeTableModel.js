@@ -1,6 +1,11 @@
 /* eslint class-methods-use-this: "off" */
 import memoize from 'memoize-one';
+import Log from '@deephaven/log';
+import { GridRange } from '@deephaven/grid';
 import IrisGridTableModel from './IrisGridTableModel';
+import IrisGridUtils from './IrisGridUtils';
+
+const log = Log.module('IrisGridTreeTableModel');
 
 class IrisGridTreeTableModel extends IrisGridTableModel {
   applyBufferedViewport(viewportTop, viewportBottom, columns) {
@@ -30,6 +35,35 @@ class IrisGridTreeTableModel extends IrisGridTableModel {
       hasChildren,
       depth,
     };
+  }
+
+  snapshot(ranges) {
+    const { columns } = this.viewport;
+    const result = [];
+    const viewportRange = new GridRange(
+      0,
+      this.viewportData.offset,
+      columns.length,
+      this.viewportData.offset + this.viewportData.rows.length
+    );
+    const intersection = GridRange.intersection(viewportRange, ranges);
+
+    for (let i = intersection.startRow; i < intersection.endRow; i += 1) {
+      const row = this.viewportData.rows[i];
+      result.push([...row.data.values()].map(rowVal => rowVal.value));
+    }
+    return result;
+  }
+
+  textSnapshot(
+    ranges,
+    includeHeaders = false,
+    formatValue = value => `${value}`
+  ) {
+    log.debug2('textSnapshot', ranges, includeHeaders);
+
+    const data = this.snapshot(ranges, includeHeaders, formatValue);
+    return data.map(row => row.join('\t')).join('\n');
   }
 
   get groupedColumns() {
