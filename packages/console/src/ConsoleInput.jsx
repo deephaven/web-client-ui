@@ -367,11 +367,24 @@ export class ConsoleInput extends PureComponent {
       Math.min(contentHeight, maxHeight),
       MIN_INPUT_HEIGHT
     );
+
+    // Only show the cursor position in the ruler if the scrollbar will show
+    const shouldScroll = contentHeight > commandEditorHeight;
+    const options = this.commandEditor.getOptions();
+    if (shouldScroll) {
+      options.hideCursorInOverviewRuler = false;
+      options.overviewRulerBorder = true;
+    } else {
+      options.hideCursorInOverviewRuler = true;
+      options.overviewRulerBorder = false;
+    }
+
     this.setState(
       {
         commandEditorHeight,
       },
       () => {
+        this.commandEditor.updateOptions(options);
         this.commandEditor.layout();
       }
     );
