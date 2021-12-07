@@ -80,12 +80,12 @@ jobs:
       - name: Test (Push)
         if: ${{ github.event_name == 'push' }}
         run: |
-          npm run test:ci -- --lastCommit
+          npm run test:ci -- --lastCommit --collectCoverage=true
           npm run test:golden-layout
 
       - name: Codecov report
         uses: codecov/codecov-action@v2
-        if: ${{ github.event_name == 'pull_request' }}
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
+          directory: ./coverage
           flags: unit
