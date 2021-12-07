@@ -144,29 +144,33 @@ export class ConsoleInput extends PureComponent {
      * Can't do it in `onDidChangeModelContent` either, since we want to stop the Enter action from modifying the command.
      */
     this.commandEditor.onKeyDown(keyEvent => {
-      if (
-        !this.isCommandModified ||
-        this.commandEditor.getModel().getValueLength() === 0
-      ) {
-        if (keyEvent.keyCode === monaco.KeyCode.UpArrow) {
-          const { commandHistoryIndex } = this;
+      const { commandEditor, commandHistoryIndex } = this;
+      const { lineNumber } = commandEditor.getPosition();
+      const model = commandEditor.getModel();
+      if (!this.isCommandModified || model.getValueLength() === 0) {
+        if (keyEvent.keyCode === monaco.KeyCode.UpArrow && lineNumber === 1) {
           if (commandHistoryIndex != null) {
             this.loadCommand(commandHistoryIndex + 1);
           } else {
             this.loadCommand(0);
           }
+
+          this.focusStart();
           keyEvent.stopPropagation();
           keyEvent.preventDefault();
           return;
         }
-        if (keyEvent.keyCode === monaco.KeyCode.DownArrow) {
-          const { commandHistoryIndex } = this;
+        if (
+          keyEvent.keyCode === monaco.KeyCode.DownArrow &&
+          lineNumber === model.getLineCount()
+        ) {
           if (commandHistoryIndex != null && commandHistoryIndex >= 0) {
             this.loadCommand(commandHistoryIndex - 1);
           } else {
             this.commandHistoryIndex = null;
           }
 
+          this.focusEnd();
           keyEvent.stopPropagation();
           keyEvent.preventDefault();
           return;
@@ -254,6 +258,15 @@ export class ConsoleInput extends PureComponent {
     this.commandEditor.focus();
   }
 
+  focusStart() {
+    const model = this.commandEditor.getModel();
+    const column = model.getLineLength(1) + 1; // Length of 1st line
+    const firstCharTop = this.commandEditor.getTopForPosition(1, column);
+    this.commandEditor.setPosition({ lineNumber: 1, column });
+    this.commandEditor.setScrollTop(firstCharTop);
+    this.commandEditor.focus();
+  }
+
   focusEnd() {
     const model = this.commandEditor.getModel();
     const lastLine = model.getLineCount();
@@ -291,7 +304,6 @@ export class ConsoleInput extends PureComponent {
     }
 
     this.isCommandModified = false;
-    this.focusEnd();
   }
 
   async loadMoreHistory() {
