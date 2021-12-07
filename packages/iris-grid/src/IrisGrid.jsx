@@ -1922,7 +1922,10 @@ export class IrisGrid extends Component {
       selectDistinctColumns,
     } = this.state;
 
-    const { columns, customColumns: oldCustomColumns } = model;
+    const { columns } = model;
+    const oldCustomColumns = model.customColumns.map(
+      customColumn => `${customColumn}`
+    );
 
     const removedColumnNames = IrisGridUtils.getRemovedCustomColumnNames(
       oldCustomColumns,
