@@ -92,6 +92,15 @@ const AutoResizeTextarea = ({
     // scroll left as it can be disorienting if you click on a long line
   }
 
+  // make it explode when dragging the resize handle
+  // by making it trigger focus (which normally doesn't
+  // trigger when just resizing).
+  function handleMouseDown() {
+    if (!element.current) return;
+    if (document.activeElement === element.current) return;
+    element.current.focus();
+  }
+
   function handleBlur() {
     if (delimiter) {
       setValue(implode(value));
@@ -117,6 +126,7 @@ const AutoResizeTextarea = ({
       rows={1}
       onChange={handleChange}
       onFocus={handleFocus}
+      onMouseDown={handleMouseDown}
       onBlur={handleBlur}
       onPaste={handlePaste}
       spellCheck={spellCheck}
