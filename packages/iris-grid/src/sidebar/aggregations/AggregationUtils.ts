@@ -8,8 +8,7 @@ import AggregationOperation from './AggregationOperation';
  */
 export const isRollupOperation = (type: AggregationOperation): boolean => {
   switch (type) {
-    case AggregationOperation.COUNT:
-      return true;
+    // currently no rollup only operations, but there has been in the past
     default:
       return false;
   }
