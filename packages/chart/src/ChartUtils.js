@@ -148,8 +148,6 @@ class ChartUtils {
         return 'label';
       case dh.plot.SourceType.COLOR:
         return 'color';
-      case 'unknown':
-        return 'unknown';
       default:
         throw new Error('Unrecognized source type', sourceType);
     }
