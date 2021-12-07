@@ -12,7 +12,7 @@ import {
   Tooltip,
   GLOBAL_SHORTCUTS,
 } from '@deephaven/components';
-import { ScriptEditor, ScriptEditorUtils } from '@deephaven/console';
+import { ScriptEditor, ScriptEditorUtils, SHORTCUTS } from '@deephaven/console';
 import { GLPropTypes } from '@deephaven/dashboard';
 import { FileUtils, NewItemModal } from '@deephaven/file-explorer';
 import {
@@ -30,7 +30,7 @@ import { Pending, PromiseUtils } from '@deephaven/utils';
 import { ConsoleEvent, NotebookEvent } from '../events';
 import { getDashboardSessionWrapper } from '../redux';
 import Panel from './Panel';
-import SHORTCUTS from './Shortcuts';
+// import SHORTCUTS from './Shortcuts';
 import './NotebookPanel.scss';
 
 const log = Log.module('NotebookPanel');

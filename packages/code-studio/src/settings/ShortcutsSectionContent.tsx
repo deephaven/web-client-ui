@@ -7,6 +7,7 @@ import {
   RootState,
   saveSettings as saveSettingsAction,
 } from '@deephaven/redux';
+import { MonacoUtils } from '@deephaven/console';
 import ShortcutItem from './ShortcutItem';
 
 type ShortcutSectionContentProps = ReturnType<typeof mapStateToProps> &
@@ -100,6 +101,7 @@ function ShortcutCategory({
   const [shortcuts, setShortcuts] = useState(propsShortcuts);
 
   function handleShortcutChange(shortcut: Shortcut) {
+    console.log(MonacoUtils.getMonacoKeyCodeFromShortcut(shortcut));
     const conflictingShortcuts = shortcuts.filter(
       s =>
         s !== shortcut &&

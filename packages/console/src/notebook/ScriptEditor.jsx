@@ -9,6 +9,7 @@ import Log from '@deephaven/log';
 import Editor from './Editor';
 import { MonacoCompletionProvider, MonacoUtils } from '../monaco';
 import './ScriptEditor.scss';
+import SHORTCUTS from '../ConsoleShortcuts';
 
 const log = Log.module('ScriptEditor');
 
@@ -100,6 +101,7 @@ class ScriptEditor extends Component {
     log.debug('handleEditorInitialized', sessionLanguage, session, settings);
 
     this.editor = editor;
+    console.log(editor);
     this.setState({ model: this.editor.getModel() });
 
     MonacoUtils.setEOL(editor);
@@ -151,8 +153,9 @@ class ScriptEditor extends Component {
       this.editor.addAction({
         id: 'run-code',
         label: 'Run',
-        // eslint-disable-next-line no-bitwise
-        keybindings: [monaco.KeyMod.Alt | monaco.KeyCode.KEY_R],
+        keybindings: [
+          MonacoUtils.getMonacoKeyCodeFromShortcut(SHORTCUTS.NOTEBOOK.RUN),
+        ],
         precondition: null,
 
         keybindingContext: null,
@@ -171,8 +174,9 @@ class ScriptEditor extends Component {
         id: 'run-selected-code',
         label: 'Run Selected',
         keybindings: [
-          // eslint-disable-next-line no-bitwise
-          monaco.KeyMod.Alt | monaco.KeyMod.Shift | monaco.KeyCode.KEY_R,
+          MonacoUtils.getMonacoKeyCodeFromShortcut(
+            SHORTCUTS.NOTEBOOK.RUN_SELECTED
+          ),
         ],
         precondition: null,
         keybindingContext: null,
@@ -187,6 +191,8 @@ class ScriptEditor extends Component {
     );
 
     this.contextActionCleanups = cleanups;
+
+    console.log(this);
   }
 
   deInitContextActions() {
@@ -194,6 +200,11 @@ class ScriptEditor extends Component {
       this.contextActionCleanups.forEach(cleanup => cleanup.dispose());
       this.contextActionCleanups = [];
     }
+  }
+
+  refreshContextActions() {
+    this.deInitContextActions();
+    this.initContextActions();
   }
 
   initCodeCompletion() {
