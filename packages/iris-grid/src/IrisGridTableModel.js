@@ -354,7 +354,7 @@ class IrisGridTableModel extends IrisGridModel {
         return null;
       }
 
-      const column = this.columns[x];
+      const column = this.totalsColumn(x, y) ?? this.columns[x];
       const hasCustomColumnFormat = this.getCachedCustomColumnFormatFlag(
         this.formatter,
         column.type,
@@ -407,7 +407,7 @@ class IrisGridTableModel extends IrisGridModel {
       // Fallback to formatting based on the value/type of the cell
       const { value } = data;
       if (value != null) {
-        const column = this.columns[x];
+        const column = this.totalsColumn(x, y) ?? this.columns[x];
         if (TableUtils.isDateType(column.type) || column.name === 'Date') {
           return theme.dateColor;
         }
@@ -551,6 +551,27 @@ class IrisGridTableModel extends IrisGridModel {
     const offset = this.viewportData?.offset ?? 0;
     const viewportY = (showOnTop ? y - totalsRowCount : y) - offset;
     return this.viewportData?.rows?.[viewportY] ?? null;
+  }
+
+  /**
+   * Retrieve the totals column if this is a totals row, or null otherwise
+   * @param {ModelIndex} x Column index to get the totals column from
+   * @param {ModelIndex} y Row index to get the totals column from
+   * @returns {dh.Column | null}
+   */
+  totalsColumn(x, y) {
+    const totalsRow = this.totalsRow(y);
+    if (totalsRow == null) return null;
+
+    const operation = this.totals.operationOrder[totalsRow];
+    const defaultOperation =
+      this.totals?.defaultOperation ?? AggregationOperation.SUM;
+    const tableColumn = this.columns[x];
+    return this.totalsTable.columns.find(
+      column =>
+        column.name === `${tableColumn.name}__${operation}` ||
+        (operation === defaultOperation && column.name === tableColumn.name)
+    );
   }
 
   /**
@@ -832,6 +853,7 @@ class IrisGridTableModel extends IrisGridModel {
     }
 
     this.totalsTable = totalsTable;
+    this.totalsDataMap = null;
 
     if (this.listenerCount > 0 && this.totalsTable != null) {
       this.addTotalsListeners(totalsTable);
