@@ -1,11 +1,7 @@
 /* eslint class-methods-use-this: "off" */
 import memoize from 'memoize-one';
-import Log from '@deephaven/log';
 import { GridRange } from '@deephaven/grid';
 import IrisGridTableModel from './IrisGridTableModel';
-import IrisGridUtils from './IrisGridUtils';
-
-const log = Log.module('IrisGridTreeTableModel');
 
 class IrisGridTreeTableModel extends IrisGridTableModel {
   applyBufferedViewport(viewportTop, viewportBottom, columns) {
