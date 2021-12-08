@@ -37,7 +37,7 @@ class IrisGridTreeTableModel extends IrisGridTableModel {
     };
   }
 
-  snapshot(ranges) {
+  async snapshot(ranges, _, formatValue = value => value) {
     const { columns } = this.viewport;
     const result = [];
     const viewportRange = new GridRange(
@@ -46,24 +46,29 @@ class IrisGridTreeTableModel extends IrisGridTableModel {
       columns.length,
       this.viewportData.offset + this.viewportData.rows.length
     );
-    const intersection = GridRange.intersection(viewportRange, ranges);
 
-    for (let i = intersection.startRow; i < intersection.endRow; i += 1) {
-      const row = this.viewportData.rows[i];
-      result.push([...row.data.values()].map(rowVal => rowVal.value));
+    for (let i = 0; i < ranges.length; i += 1) {
+      const intersection = GridRange.intersection(viewportRange, ranges[i]);
+
+      for (let r = intersection.startRow; r <= intersection.endRow; r += 1) {
+        const resultRow = [];
+        const viewportRow = this.viewportData.rows[
+          r - this.viewportData.offset
+        ];
+        for (
+          let c = intersection.startColumn;
+          c <= intersection.endColumn;
+          c += 1
+        ) {
+          resultRow.push(
+            formatValue(viewportRow.data.get(c).value, this.columns[c])
+          );
+        }
+        result.push(resultRow);
+      }
     }
+
     return result;
-  }
-
-  textSnapshot(
-    ranges,
-    includeHeaders = false,
-    formatValue = value => `${value}`
-  ) {
-    log.debug2('textSnapshot', ranges, includeHeaders);
-
-    const data = this.snapshot(ranges, includeHeaders, formatValue);
-    return data.map(row => row.join('\t')).join('\n');
   }
 
   get groupedColumns() {
