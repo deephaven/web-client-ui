@@ -168,7 +168,7 @@ class IrisGridUtils {
       selectedSearchColumns,
       invertSearchColumns = true,
       pendingDataMap = [],
-      frozenColumns,
+      frozenColumns = [],
     } = irisGridState;
     const { columns, formatter } = model;
     return {

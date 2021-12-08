@@ -75,7 +75,8 @@ class IrisGridTableModel extends IrisGridModel {
     this.pendingNewDataMap = new Map();
     this.pendingNewRowCount = 0;
 
-    this.userFrozenColumns = null;
+    this.userFrozenColumns = table?.layoutHints?.frozenColumns ?? [];
+    console.log('...initial frozen columns:', this.userFrozenColumns);
   }
 
   close() {
@@ -484,6 +485,8 @@ class IrisGridTableModel extends IrisGridModel {
           .map(name => columnMap.get(name))
           .filter(Boolean);
       }
+
+      console.log('...memoized frozen columns:', userFrozenColumns);
 
       if (
         frontColumns.length !== (hints?.frontColumns?.length ?? 0) ||
