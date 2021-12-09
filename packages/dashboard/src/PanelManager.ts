@@ -1,3 +1,4 @@
+import { ComponentType } from 'react';
 import GoldenLayout, { ReactComponentConfig } from '@deephaven/golden-layout';
 import Log from '@deephaven/log';
 import PanelEvent from './PanelEvent';
@@ -162,13 +163,17 @@ class PanelManager {
     return undefined;
   }
 
-  getLastUsedPanelOfType(type: PanelComponentType): PanelComponent | undefined {
+  getLastUsedPanelOfType<
+    P extends PanelProps = PanelProps,
+    C extends ComponentType<P> = ComponentType<P>
+  >(type: PanelComponentType<P, C>): PanelComponent<P> | undefined {
     return this.getLastUsedPanelOfTypes([type]);
   }
 
-  getLastUsedPanelOfTypes(
-    types: PanelComponentType[]
-  ): PanelComponent | undefined {
+  getLastUsedPanelOfTypes<
+    P extends PanelProps = PanelProps,
+    C extends ComponentType<P> = ComponentType<P>
+  >(types: PanelComponentType<P, C>[]): PanelComponent<P> | undefined {
     return this.getLastUsedPanel(panel =>
       types.some(
         type =>

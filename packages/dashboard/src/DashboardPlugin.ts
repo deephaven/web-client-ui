@@ -1,23 +1,23 @@
-import { Component, ComponentClass, ComponentType } from 'react';
+import { Component, ComponentType } from 'react';
 import { ConnectedComponent } from 'react-redux';
 import GoldenLayout, { ReactComponentConfig } from '@deephaven/golden-layout';
 import PanelManager from './PanelManager';
 
 export type WrappedComponentType<
-  C extends ComponentClass,
-  P extends PanelProps
+  P extends PanelProps,
+  C extends ComponentType<P>
 > = ConnectedComponent<C, P>;
 
 export type PanelComponentType<
-  C extends ComponentClass = ComponentClass,
-  P extends PanelProps = PanelProps
-> = ComponentType | WrappedComponentType<C, P>;
+  P extends PanelProps = PanelProps,
+  C extends ComponentType<P> = ComponentType<P>
+> = ComponentType<P> | WrappedComponentType<P, C>;
 
 export function isWrappedComponent<
-  C extends ComponentClass,
-  P extends PanelProps
->(type: PanelComponentType<C, P>): type is WrappedComponentType<C, P> {
-  return (type as WrappedComponentType<C, P>)?.WrappedComponent !== undefined;
+  P extends PanelProps,
+  C extends ComponentType<P>
+>(type: PanelComponentType<P, C>): type is WrappedComponentType<P, C> {
+  return (type as WrappedComponentType<P, C>)?.WrappedComponent !== undefined;
 }
 
 export type PanelProps = {
@@ -58,9 +58,9 @@ export type DashboardPluginComponentProps = {
   id: string;
   layout: GoldenLayout;
   panelManager: PanelManager;
-  registerComponent: <C extends ComponentClass, P extends PanelProps>(
+  registerComponent: <P extends PanelProps, C extends ComponentType<P>>(
     name: string,
-    ComponentType: PanelComponentType<C, P>,
+    ComponentType: PanelComponentType<P, C>,
     hydrate?: PanelHydrateFunction,
     dehydrate?: PanelDehydrateFunction
   ) => DeregisterComponentFunction;

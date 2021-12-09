@@ -3,7 +3,6 @@ import {
   DashboardPluginComponentProps,
   LayoutUtils,
   PanelComponent,
-  PanelComponentType,
   useListener,
 } from '@deephaven/dashboard';
 import { FileUtils } from '@deephaven/file-explorer';
@@ -48,7 +47,7 @@ export const ConsolePlugin = ({
   const dispatch = useDispatch();
 
   const getConsolePanel = useCallback(
-    () => panelManager.getLastUsedPanelOfType(ConsolePanel.WrappedComponent),
+    () => panelManager.getLastUsedPanelOfType(ConsolePanel),
     [panelManager]
   );
 
@@ -421,9 +420,7 @@ export const ConsolePlugin = ({
   /** Attempts to send the text to a notebook matching the passed in settings */
   const sendToNotebook = useCallback(
     (session, sessionLanguage, settings = {}, createIfNecessary = true) => {
-      const notebookPanel = panelManager.getLastUsedPanelOfType(
-        NotebookPanel.WrappedComponent
-      );
+      const notebookPanel = panelManager.getLastUsedPanelOfType(NotebookPanel);
       if (notebookPanel && isNotebookPanel(notebookPanel)) {
         if (settings && settings.value && notebookPanel.notebook) {
           notebookPanel.notebook.append(settings.value);
@@ -439,10 +436,7 @@ export const ConsolePlugin = ({
     const cleanups = [
       registerComponent(ConsolePanel.COMPONENT, ConsolePanel),
       registerComponent(CommandHistoryPanel.COMPONENT, CommandHistoryPanel),
-      registerComponent(
-        FileExplorerPanel.COMPONENT,
-        (FileExplorerPanel as unknown) as PanelComponentType
-      ),
+      registerComponent(FileExplorerPanel.COMPONENT, FileExplorerPanel),
       registerComponent(LogPanel.COMPONENT, LogPanel),
       registerComponent(NotebookPanel.COMPONENT, NotebookPanel),
     ];
