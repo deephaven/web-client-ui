@@ -72,3 +72,24 @@ it('gets last used panel of type properly', () => {
   layout.eventHub.emit(PanelEvent.UNMOUNT, panelA);
   layout.eventHub.emit(PanelEvent.UNMOUNT, panelB);
 });
+
+it('get last used panel for multiple types', () => {
+  const layout = makeLayout();
+  const panelManager = new PanelManager(layout);
+
+  const panelA = new TestComponentA();
+  const panelB = new TestComponentB();
+  layout.eventHub.emit(PanelEvent.MOUNT, panelA);
+  layout.eventHub.emit(PanelEvent.MOUNT, panelB);
+
+  expect(panelManager.getLastUsedPanelOfTypes([TestComponentA])).toBe(panelA);
+  expect(
+    panelManager.getLastUsedPanelOfTypes([TestComponentA, TestComponentB])
+  ).toBe(panelB);
+  expect(
+    panelManager.getLastUsedPanelOfTypes([TestComponentB, TestComponentB])
+  ).toBe(panelB);
+
+  layout.eventHub.emit(PanelEvent.UNMOUNT, panelA);
+  layout.eventHub.emit(PanelEvent.UNMOUNT, panelB);
+});
