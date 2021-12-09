@@ -29,7 +29,7 @@ interface BaseButtonProps {
   icon?: IconDefinition | JSX.Element;
   disabled?: boolean;
   active?: boolean;
-  onClick: React.MouseEventHandler<HTMLButtonElement>;
+  onClick?: React.MouseEventHandler<HTMLButtonElement>;
   children?: React.ReactNode;
   className?: string;
   style?: React.CSSProperties;
@@ -180,7 +180,16 @@ Button.propTypes = {
   },
   disabled: PropTypes.bool,
   active: PropTypes.bool,
-  onClick: PropTypes.func.isRequired,
+  onClick(props) {
+    const { onClick, type } = props;
+    if (type === 'button' && typeof onClick !== 'function') {
+      return new Error('type button requires an onClick function');
+    }
+    if (onClick !== undefined && typeof onClick !== 'function') {
+      return new Error('onClick must be a function');
+    }
+    return null;
+  },
   children: PropTypes.node,
   className: PropTypes.string,
   style: PropTypes.object,
@@ -188,6 +197,7 @@ Button.propTypes = {
 
 Button.defaultProps = {
   type: 'button',
+  onClick: undefined,
   variant: undefined,
   tooltip: undefined,
   icon: undefined,

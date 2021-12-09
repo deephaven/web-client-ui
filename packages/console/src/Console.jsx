@@ -554,7 +554,8 @@ export class Console extends PureComponent {
     if (
       !e.dataTransfer ||
       !e.dataTransfer.items ||
-      e.dataTransfer.items.length === 0
+      e.dataTransfer.items.length === 0 ||
+      e.dataTransfer.items[0].kind === 'string'
     ) {
       return;
     }
@@ -565,6 +566,7 @@ export class Console extends PureComponent {
     const { items } = e.dataTransfer;
     if (items.length > 1) {
       this.setState({ dragError: CsvOverlay.MULTIPLE_FILE_ERROR });
+      return;
     }
 
     const item = items[0];

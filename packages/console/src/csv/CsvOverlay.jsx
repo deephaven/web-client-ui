@@ -21,7 +21,7 @@ const INVALID_MIME_TYPES = [/^audio.*/, /^font.*/, /^image.*/, /^video.*/];
  * Overlay that is displayed when uploading a CSV file.
  */
 class CsvOverlay extends Component {
-  static MULTIPLE_FILE_ERROR = 'Please select one file';
+  static MULTIPLE_FILE_ERROR = 'Please select only one file';
 
   static FILE_TYPE_ERROR = 'Filetype not supported.';
 
