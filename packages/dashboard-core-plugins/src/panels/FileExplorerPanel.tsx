@@ -1,4 +1,4 @@
-import { PanelProps } from '@deephaven/dashboard';
+import { DashboardPanelProps } from '@deephaven/dashboard';
 import Log from '@deephaven/log';
 import { getFileStorage, RootState } from '@deephaven/redux';
 import FileExplorer, {
@@ -8,7 +8,7 @@ import FileExplorer, {
   NewItemModal,
 } from '@deephaven/file-explorer';
 import React, { ReactNode } from 'react';
-import { connect } from 'react-redux';
+import { connect, ConnectedProps } from 'react-redux';
 import Panel from './Panel';
 import { NotebookEvent } from '../events';
 import './FileExplorerPanel.scss';
@@ -20,19 +20,42 @@ type DhSession = {
   close: () => void;
 };
 
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
-export type FileExplorerPanelProps = {
+type StateProps = {
   fileStorage: FileStorage;
   language: string;
   session?: DhSession;
-} & PanelProps;
+};
 
-export interface FileExplorerPanelState {
+type OwnProps = DashboardPanelProps;
+
+const mapStateToProps = (state: RootState, ownProps: OwnProps): StateProps => {
+  const fileStorage = getFileStorage(state);
+  const sessionWrapper = getDashboardSessionWrapper(
+    state,
+    ownProps.localDashboardId
+  );
+  const { session, config: sessionConfig } = sessionWrapper ?? {};
+  const language = sessionConfig?.type;
+
+  return {
+    fileStorage,
+    language,
+    session,
+  };
+};
+
+const connector = connect(mapStateToProps, null, null, { forwardRef: true });
+
+export type FileExplorerPanelProps = OwnProps &
+  StateProps &
+  ConnectedProps<typeof connector>;
+
+export type FileExplorerPanelState = {
   isShown: boolean;
   language?: string;
   session?: DhSession;
   showCreateFolder: boolean;
-}
+};
 
 function isMouseEvent<T>(e: React.SyntheticEvent<T>): e is React.MouseEvent<T> {
   const mouseEvent = e as React.MouseEvent<T>;
@@ -241,25 +264,4 @@ export class FileExplorerPanel extends React.Component<
   }
 }
 
-const mapStateToProps = (
-  state: RootState,
-  ownProps: { localDashboardId: string }
-) => {
-  const fileStorage = getFileStorage(state);
-  const sessionWrapper = getDashboardSessionWrapper(
-    state,
-    ownProps.localDashboardId
-  );
-  const { session, config: sessionConfig } = sessionWrapper ?? {};
-  const language = sessionConfig?.type;
-
-  return {
-    fileStorage,
-    language,
-    session,
-  };
-};
-
-export default connect(mapStateToProps, null, null, { forwardRef: true })(
-  FileExplorerPanel
-);
+export default connector(FileExplorerPanel);
