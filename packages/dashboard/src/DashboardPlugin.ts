@@ -1,6 +1,24 @@
 import { Component, ComponentType } from 'react';
+import { ConnectedComponent } from 'react-redux';
 import GoldenLayout, { ReactComponentConfig } from '@deephaven/golden-layout';
 import PanelManager from './PanelManager';
+
+export type WrappedComponentType<
+  P extends PanelProps,
+  C extends ComponentType<P>
+> = ConnectedComponent<C, P>;
+
+export type PanelComponentType<
+  P extends PanelProps = PanelProps,
+  C extends ComponentType<P> = ComponentType<P>
+> = ComponentType<P> | WrappedComponentType<P, C>;
+
+export function isWrappedComponent<
+  P extends PanelProps,
+  C extends ComponentType<P>
+>(type: PanelComponentType<P, C>): type is WrappedComponentType<P, C> {
+  return (type as WrappedComponentType<P, C>)?.WrappedComponent !== undefined;
+}
 
 export type PanelProps = {
   glContainer: GoldenLayout.Container;
@@ -40,9 +58,9 @@ export type DashboardPluginComponentProps = {
   id: string;
   layout: GoldenLayout;
   panelManager: PanelManager;
-  registerComponent: (
+  registerComponent: <P extends PanelProps, C extends ComponentType<P>>(
     name: string,
-    ComponentType: ComponentType,
+    ComponentType: PanelComponentType<P, C>,
     hydrate?: PanelHydrateFunction,
     dehydrate?: PanelDehydrateFunction
   ) => DeregisterComponentFunction;

@@ -7,13 +7,7 @@ import {
 } from '@deephaven/dashboard';
 import { FileUtils } from '@deephaven/file-explorer';
 import Log from '@deephaven/log';
-import React, {
-  ComponentType,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import shortid from 'shortid';
 import { ConsoleEvent, NotebookEvent } from './events';
@@ -53,7 +47,7 @@ export const ConsolePlugin = ({
   const dispatch = useDispatch();
 
   const getConsolePanel = useCallback(
-    () => panelManager.getLastUsedPanelOfType(ConsolePanel.WrappedComponent),
+    () => panelManager.getLastUsedPanelOfType(ConsolePanel),
     [panelManager]
   );
 
@@ -426,9 +420,7 @@ export const ConsolePlugin = ({
   /** Attempts to send the text to a notebook matching the passed in settings */
   const sendToNotebook = useCallback(
     (session, sessionLanguage, settings = {}, createIfNecessary = true) => {
-      const notebookPanel = panelManager.getLastUsedPanelOfType(
-        NotebookPanel.WrappedComponent
-      );
+      const notebookPanel = panelManager.getLastUsedPanelOfType(NotebookPanel);
       if (notebookPanel && isNotebookPanel(notebookPanel)) {
         if (settings && settings.value && notebookPanel.notebook) {
           notebookPanel.notebook.append(settings.value);
@@ -442,26 +434,11 @@ export const ConsolePlugin = ({
 
   useEffect(() => {
     const cleanups = [
-      registerComponent(
-        ConsolePanel.COMPONENT,
-        (ConsolePanel as unknown) as ComponentType
-      ),
-      registerComponent(
-        CommandHistoryPanel.COMPONENT,
-        (CommandHistoryPanel as unknown) as ComponentType
-      ),
-      registerComponent(
-        FileExplorerPanel.COMPONENT,
-        (FileExplorerPanel as unknown) as ComponentType
-      ),
-      registerComponent(
-        LogPanel.COMPONENT,
-        (LogPanel as unknown) as ComponentType
-      ),
-      registerComponent(
-        NotebookPanel.COMPONENT,
-        (NotebookPanel as unknown) as ComponentType
-      ),
+      registerComponent(ConsolePanel.COMPONENT, ConsolePanel),
+      registerComponent(CommandHistoryPanel.COMPONENT, CommandHistoryPanel),
+      registerComponent(FileExplorerPanel.COMPONENT, FileExplorerPanel),
+      registerComponent(LogPanel.COMPONENT, LogPanel),
+      registerComponent(NotebookPanel.COMPONENT, NotebookPanel),
     ];
 
     return () => {

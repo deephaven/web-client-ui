@@ -1,4 +1,4 @@
-import React, { ComponentType, useCallback, useEffect } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import shortid from 'shortid';
 import {
   DashboardPluginComponentProps,
@@ -88,7 +88,7 @@ export const MarkdownPlugin = ({
     const cleanups = [
       registerComponent(
         MarkdownPanel.COMPONENT,
-        (MarkdownPanel as unknown) as ComponentType,
+        MarkdownPanel,
         hydrate,
         dehydrateMarkdown
       ),
