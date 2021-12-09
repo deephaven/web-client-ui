@@ -1,4 +1,4 @@
-import React, { ComponentType, DragEvent, useCallback, useEffect } from 'react';
+import React, { DragEvent, useCallback, useEffect } from 'react';
 import { ChartModel } from '@deephaven/chart';
 import {
   DashboardPluginComponentProps,
@@ -59,11 +59,7 @@ export const ChartPlugin = ({
 
   useEffect(() => {
     const cleanups = [
-      registerComponent(
-        ChartPanel.COMPONENT,
-        (ChartPanel as unknown) as ComponentType,
-        hydrate
-      ),
+      registerComponent(ChartPanel.COMPONENT, ChartPanel, hydrate),
     ];
     return () => {
       cleanups.forEach(cleanup => cleanup());

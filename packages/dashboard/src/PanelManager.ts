@@ -1,9 +1,9 @@
-import { ComponentType } from 'react';
 import GoldenLayout, { ReactComponentConfig } from '@deephaven/golden-layout';
 import Log from '@deephaven/log';
 import PanelEvent from './PanelEvent';
 import LayoutUtils from './layout/LayoutUtils';
 import { PanelComponent, PanelProps } from './DashboardPlugin';
+import { isWrappedComponent, PanelComponentType } from '.';
 
 const log = Log.module('PanelManager');
 
@@ -162,8 +162,22 @@ class PanelManager {
     return undefined;
   }
 
-  getLastUsedPanelOfType(type: ComponentType): PanelComponent | undefined {
-    return this.getLastUsedPanel(panel => panel instanceof type);
+  getLastUsedPanelOfType(type: PanelComponentType): PanelComponent | undefined {
+    return this.getLastUsedPanelOfTypes([type]);
+  }
+
+  getLastUsedPanelOfTypes(
+    types: PanelComponentType[]
+  ): PanelComponent | undefined {
+    return this.getLastUsedPanel(panel =>
+      types.some(
+        type =>
+          panel instanceof type ||
+          (isWrappedComponent(type) &&
+            type.WrappedComponent &&
+            panel instanceof type.WrappedComponent)
+      )
+    );
   }
 
   updatePanel(panel: PanelComponent): void {

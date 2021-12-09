@@ -1,5 +1,4 @@
 import React, {
-  ComponentType,
   ReactElement,
   useCallback,
   useEffect,
@@ -21,6 +20,7 @@ import {
 import PanelEvent from './PanelEvent';
 import { GLPropTypes, useListener } from './layout';
 import { getDashboardData, updateDashboardData } from './redux';
+import { PanelComponentType } from './DashboardPlugin';
 
 export type DashboardLayoutConfig = ItemConfigType[];
 
@@ -75,7 +75,7 @@ export const DashboardLayout = ({
   const registerComponent = useCallback(
     (
       name: string,
-      componentType: ComponentType,
+      componentType: PanelComponentType,
       hydrate = hydrateDefault,
       dehydrate = dehydrateDefault
     ) => {

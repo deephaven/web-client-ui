@@ -1,4 +1,4 @@
-import React, { ComponentType, DragEvent, useCallback, useEffect } from 'react';
+import React, { DragEvent, useCallback, useEffect } from 'react';
 import {
   DashboardPluginComponentProps,
   DashboardUtils,
@@ -65,11 +65,7 @@ export const GridPlugin = ({
 
   useEffect(() => {
     const cleanups = [
-      registerComponent(
-        IrisGridPanel.COMPONENT,
-        (IrisGridPanel as unknown) as ComponentType,
-        hydrate
-      ),
+      registerComponent(IrisGridPanel.COMPONENT, IrisGridPanel, hydrate),
     ];
     return () => {
       cleanups.forEach(cleanup => cleanup());

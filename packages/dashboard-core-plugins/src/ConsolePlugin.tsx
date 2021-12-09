@@ -3,17 +3,12 @@ import {
   DashboardPluginComponentProps,
   LayoutUtils,
   PanelComponent,
+  PanelComponentType,
   useListener,
 } from '@deephaven/dashboard';
 import { FileUtils } from '@deephaven/file-explorer';
 import Log from '@deephaven/log';
-import React, {
-  ComponentType,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import shortid from 'shortid';
 import { ConsoleEvent, NotebookEvent } from './events';
@@ -442,26 +437,14 @@ export const ConsolePlugin = ({
 
   useEffect(() => {
     const cleanups = [
-      registerComponent(
-        ConsolePanel.COMPONENT,
-        (ConsolePanel as unknown) as ComponentType
-      ),
-      registerComponent(
-        CommandHistoryPanel.COMPONENT,
-        (CommandHistoryPanel as unknown) as ComponentType
-      ),
+      registerComponent(ConsolePanel.COMPONENT, ConsolePanel),
+      registerComponent(CommandHistoryPanel.COMPONENT, CommandHistoryPanel),
       registerComponent(
         FileExplorerPanel.COMPONENT,
-        (FileExplorerPanel as unknown) as ComponentType
+        (FileExplorerPanel as unknown) as PanelComponentType
       ),
-      registerComponent(
-        LogPanel.COMPONENT,
-        (LogPanel as unknown) as ComponentType
-      ),
-      registerComponent(
-        NotebookPanel.COMPONENT,
-        (NotebookPanel as unknown) as ComponentType
-      ),
+      registerComponent(LogPanel.COMPONENT, LogPanel),
+      registerComponent(NotebookPanel.COMPONENT, NotebookPanel),
     ];
 
     return () => {

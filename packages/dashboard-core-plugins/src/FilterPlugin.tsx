@@ -1,10 +1,4 @@
-import React, {
-  Component,
-  ComponentType,
-  useCallback,
-  useEffect,
-  useState,
-} from 'react';
+import React, { Component, useCallback, useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import shortid from 'shortid';
 import {
@@ -235,18 +229,9 @@ export const FilterPlugin = ({
 
   useEffect(() => {
     const cleanups = [
-      registerComponent(
-        DropdownFilterPanel.COMPONENT,
-        (DropdownFilterPanel as unknown) as ComponentType
-      ),
-      registerComponent(
-        InputFilterPanel.COMPONENT,
-        (InputFilterPanel as unknown) as ComponentType
-      ),
-      registerComponent(
-        FilterSetManagerPanel.COMPONENT,
-        (FilterSetManagerPanel as unknown) as ComponentType
-      ),
+      registerComponent(DropdownFilterPanel.COMPONENT, DropdownFilterPanel),
+      registerComponent(InputFilterPanel.COMPONENT, InputFilterPanel),
+      registerComponent(FilterSetManagerPanel.COMPONENT, FilterSetManagerPanel),
     ];
 
     return () => {

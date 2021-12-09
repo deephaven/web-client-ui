@@ -1,3 +1,4 @@
+import { PanelProps } from '@deephaven/dashboard';
 import Log from '@deephaven/log';
 import { getFileStorage, RootState } from '@deephaven/redux';
 import FileExplorer, {
@@ -6,7 +7,6 @@ import FileExplorer, {
   FileStorageItem,
   NewItemModal,
 } from '@deephaven/file-explorer';
-import GoldenLayout from '@deephaven/golden-layout';
 import React, { ReactNode } from 'react';
 import { connect } from 'react-redux';
 import Panel from './Panel';
@@ -21,13 +21,11 @@ type DhSession = {
 };
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
-export interface FileExplorerPanelProps {
+export type FileExplorerPanelProps = {
   fileStorage: FileStorage;
-  glContainer: GoldenLayout.Container;
-  glEventHub: GoldenLayout.EventEmitter;
   language: string;
   session?: DhSession;
-}
+} & PanelProps;
 
 export interface FileExplorerPanelState {
   isShown: boolean;
