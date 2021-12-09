@@ -483,13 +483,7 @@ class IrisGridTableModel extends IrisGridModel {
         frozenColumns = userFrozenColumns
           .map(name => columnMap.get(name))
           .filter(Boolean);
-      } else if (hints?.frozenColumns) {
-        frozenColumns = hints.frozenColumns
-          .map(name => columnMap.get(name))
-          .filter(Boolean);
       }
-
-      console.log('...memoized frozen columns:', frozenColumns);
 
       if (
         frontColumns.length !== (hints?.frontColumns?.length ?? 0) ||
@@ -529,7 +523,11 @@ class IrisGridTableModel extends IrisGridModel {
   }
 
   get frozenColumns() {
-    return this.userFrozenColumns ?? this.layoutHints?.frozenColumns ?? [];
+    if (this.userFrozenColumns && this.userFrozenColumns.length) {
+      return this.userFrozenColumns;
+    }
+
+    return this.layoutHints?.frozenColumns ?? [];
   }
 
   get layoutHints() {
