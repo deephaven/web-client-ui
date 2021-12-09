@@ -33,9 +33,14 @@ class IrisGridTreeTableModel extends IrisGridTableModel {
     };
   }
 
-  async snapshot(ranges, _, formatValue = value => value) {
+  async snapshot(ranges, includeHeaders = false, formatValue = value => value) {
     const { columns } = this.viewport;
     const result = [];
+
+    if (includeHeaders) {
+      result.push(columns.map(c => c.name));
+    }
+
     const viewportRange = new GridRange(
       0,
       this.viewportData.offset,
