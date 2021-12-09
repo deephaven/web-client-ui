@@ -28,7 +28,7 @@
     "test:ci": "jest --maxWorkers=2",
     "test:golden-layout": "lerna run test:ci --scope=@deephaven/golden-layout --stream",
     "version-bump": "lerna version --no-git-tag-version --no-push",
-    "publish-all": "lerna publish from-package"
+    "changelog": "lerna-changelog"
   },
   "repository": "https://github.com/deephaven/web-client-ui",
   "devDependencies": {
@@ -69,6 +69,7 @@
     "jest-watch-select-projects": "^2.0.0",
     "jest-watch-typeahead": "^0.6.4",
     "lerna": "^4.0.0",
+    "lerna-changelog": "^2.2.0",
     "npm-run-all": "^4.1.5",
     "prettier": "^2.2.1",
     "react-test-renderer": "^16.14.0",

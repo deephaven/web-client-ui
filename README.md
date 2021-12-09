@@ -13,7 +13,6 @@ We are still using node 14.x and npm 6.x. If you are [using nvm](https://github.
 - `npm test`: Start running tests in all packages and watching (when possible). Use when you're developing, and any breaking changes will be printed out automatically.
 - `npm run build`: Create a production build of all packages. Mainly used by CI when packaging up a production version of the app.
 - `npm run version-bump`: Update the version of all packages. Used when updating/tagging new versions. You'll need to select whether to do a [patch, minor, or major version](https://semver.org/). It does not commit the changes.
-- `npm run publish-all`: Publish the current versions of the packages that have not yet been published. If all packages with the current version have already been published, does nothing. Should be done after doing an `npm version-bump` and committing/tagging the release.
 
 ## Package Overview
 
@@ -35,6 +34,24 @@ A standalone application with it's own entry point. Recommend using the [create-
 ### Component/library package
 
 Component template is located in `examples/component-template`. Use that template when making new component packages/libraries.
+
+## Releasing a New Version
+
+When releasing a new version, you need to commit a version bump, then tag and create the release. By creating the release, the [publish-packages action](.github/workflows/publish-packages.yml) will be triggered, and will automatically publish the packages. Some of these steps below also make use of the [GitHub CLI](https://github.com/cli/cli)
+
+1. Bump the version:
+   - Run `npm run version-bump`. Select the type of version bump ([patch, minor, or major version](https://semver.org/)). Remember the version for the next steps, and fill it in instead of `<version>` (should be in semver format with `v` prefix, e.g. `v0.7.1`).
+   - Commit your changes. `git commit -a -m "Version Bump <version>"`
+   - Create a pull request. `gh pr create -f -w`
+   - Approve the pull request and merge to `main`.
+2. Generate the changelog:
+   - Generate a [GitHub Personal access token](https://github.com/settings/tokens) with the `public_repo` scope. Copy this token and replace `<token>` with it below.
+   - Generate the changelog: `GITHUB_AUTH=<token> npm run changelog -- --next-version=<version> > /tmp/changelog_<version>.md`
+3. Create the tag. Use the command line to create an annotated tag (lightweight tags will not work correctly with lerna-changelog): `git tag -a <version> -F /tmp/changelog_<version>.md`
+4. Push the tag: `git push origin <version>`
+5. Create the release: `gh release create <version> -F ~/tmp/changelog_<version>.md`
+
+After the release is created, you can go to the [actions page](https://github.com/deephaven/web-client-ui/actions) to see the publish action being kicked off.
 
 ## Browser Support
 
