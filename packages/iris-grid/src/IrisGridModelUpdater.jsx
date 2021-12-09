@@ -140,7 +140,7 @@ IrisGridModelUpdater.defaultProps = {
   selectDistinctColumns: [],
   pendingRowCount: 0,
   pendingDataMap: new Map(),
-  frozenColumns: [],
+  frozenColumns: null,
 };
 
 export default IrisGridModelUpdater;

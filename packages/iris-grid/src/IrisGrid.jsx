@@ -3156,7 +3156,7 @@ IrisGrid.propTypes = {
 
   canCopy: PropTypes.bool,
   canDownloadCsv: PropTypes.bool,
-  frozenColumns: PropTypes.arrayOf(PropTypes.string).isRequired,
+  frozenColumns: PropTypes.arrayOf(PropTypes.string),
 };
 
 IrisGrid.defaultProps = {
@@ -3213,6 +3213,7 @@ IrisGrid.defaultProps = {
   },
   canCopy: true,
   canDownloadCsv: true,
+  frozenColumns: null,
 };
 
 export default IrisGrid;
