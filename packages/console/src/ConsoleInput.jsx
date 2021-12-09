@@ -67,6 +67,14 @@ export class ConsoleInput extends PureComponent {
     this.destroyCommandEditor();
   }
 
+  /**
+   * Sets the console text from an external source.
+   * Sets commandHistoryIndex to null since the source is not part of the history
+   * @param {string} text The text to set in the input
+   * @param {boolean} focus If the input should be focused
+   * @param {boolean} execute If the input should be executed
+   * @returns void
+   */
   setConsoleText(text, focus = true, execute = false) {
     if (!text) {
       return;
@@ -75,6 +83,7 @@ export class ConsoleInput extends PureComponent {
     log.debug('Command received: ', text);
 
     this.commandEditor.setValue(text);
+    this.commandHistoryIndex = null;
 
     if (focus) {
       this.focusEnd();
@@ -147,34 +156,35 @@ export class ConsoleInput extends PureComponent {
       const { commandEditor, commandHistoryIndex } = this;
       const { lineNumber } = commandEditor.getPosition();
       const model = commandEditor.getModel();
-      if (!this.isCommandModified || model.getValueLength() === 0) {
-        if (keyEvent.keyCode === monaco.KeyCode.UpArrow && lineNumber === 1) {
-          if (commandHistoryIndex != null) {
-            this.loadCommand(commandHistoryIndex + 1);
-          } else {
-            this.loadCommand(0);
-          }
-
-          this.focusStart();
-          keyEvent.stopPropagation();
-          keyEvent.preventDefault();
-          return;
+      if (keyEvent.keyCode === monaco.KeyCode.UpArrow && lineNumber === 1) {
+        if (commandHistoryIndex != null) {
+          this.loadCommand(commandHistoryIndex + 1);
+        } else if (model.getValueLength() === 0) {
+          this.loadCommand(0);
         }
-        if (
-          keyEvent.keyCode === monaco.KeyCode.DownArrow &&
-          lineNumber === model.getLineCount()
-        ) {
-          if (commandHistoryIndex != null && commandHistoryIndex >= 0) {
-            this.loadCommand(commandHistoryIndex - 1);
-          } else {
-            this.commandHistoryIndex = null;
-          }
 
-          this.focusEnd();
-          keyEvent.stopPropagation();
-          keyEvent.preventDefault();
-          return;
+        this.focusStart();
+        keyEvent.stopPropagation();
+        keyEvent.preventDefault();
+
+        return;
+      }
+
+      if (
+        keyEvent.keyCode === monaco.KeyCode.DownArrow &&
+        lineNumber === model.getLineCount()
+      ) {
+        if (commandHistoryIndex != null && commandHistoryIndex >= 0) {
+          this.loadCommand(commandHistoryIndex - 1);
+        } else {
+          this.commandHistoryIndex = null;
         }
+
+        this.focusEnd();
+        keyEvent.stopPropagation();
+        keyEvent.preventDefault();
+
+        return;
       }
 
       if (!keyEvent.altKey && !keyEvent.shiftKey && !keyEvent.metaKey) {
