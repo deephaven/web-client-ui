@@ -21,7 +21,7 @@ const VARIANT_KINDS = ['group-end'] as const;
 type VariantTuple = typeof VARIANT_KINDS;
 type VariantKind = VariantTuple[number];
 
-interface BaseButtonProps {
+type BaseButtonProps = {
   kind: ButtonKind;
   variant?: VariantKind;
   type?: 'button' | 'reset' | 'submit';
@@ -33,17 +33,24 @@ interface BaseButtonProps {
   children?: React.ReactNode;
   className?: string;
   style?: React.CSSProperties;
-}
+};
 
-interface ButtonWithChildren extends BaseButtonProps {
+type ButtonButtonProps = BaseButtonProps & {
+  type?: 'button';
+  onClick: React.MouseEventHandler<HTMLButtonElement>;
+};
+
+type ButtonWithTypeProps = ButtonButtonProps | BaseButtonProps;
+
+type ButtonWithChildren = ButtonWithTypeProps & {
   children: React.ReactNode;
-}
+};
 
-interface IconOnlyButton extends BaseButtonProps {
+type IconOnlyButton = ButtonWithTypeProps & {
   tooltip: string | JSX.Element;
   icon: IconDefinition | JSX.Element;
   children?: undefined;
-}
+};
 
 type ButtonProps = IconOnlyButton | ButtonWithChildren;
 
