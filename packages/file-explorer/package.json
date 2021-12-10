@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/file-explorer",
-  "version": "0.7.1",
+  "version": "0.7.2",
   "description": "Deephaven File Explorer React component",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
@@ -37,7 +37,7 @@
   },
   "dependencies": {
     "@deephaven/icons": "^0.7.0",
-    "@deephaven/storage": "^0.7.1",
+    "@deephaven/storage": "^0.7.2",
     "@deephaven/utils": "^0.7.0",
     "@fortawesome/fontawesome-svg-core": "^1.2.32",
     "@fortawesome/react-fontawesome": "^0.1.12",
@@ -54,7 +54,7 @@
   },
   "devDependencies": {
     "@babel/cli": "^7.16.0",
-    "@deephaven/components": "^0.7.1",
+    "@deephaven/components": "^0.7.2",
     "@deephaven/log": "^0.7.0",
     "@deephaven/tsconfig": "^0.7.0",
     "@storybook/addon-actions": "^6.2.3",
