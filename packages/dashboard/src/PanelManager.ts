@@ -3,8 +3,12 @@ import GoldenLayout, { ReactComponentConfig } from '@deephaven/golden-layout';
 import Log from '@deephaven/log';
 import PanelEvent from './PanelEvent';
 import LayoutUtils from './layout/LayoutUtils';
-import { PanelComponent, PanelProps } from './DashboardPlugin';
-import { isWrappedComponent, PanelComponentType } from '.';
+import {
+  isWrappedComponent,
+  PanelComponent,
+  PanelComponentType,
+  PanelProps,
+} from './DashboardPlugin';
 
 const log = Log.module('PanelManager');
 

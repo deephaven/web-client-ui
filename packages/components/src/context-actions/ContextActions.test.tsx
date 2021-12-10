@@ -1,7 +1,8 @@
 import React from 'react';
 import TestRenderer from 'react-test-renderer';
 import { TestUtils } from '@deephaven/utils';
-import { ContextMenuRoot, ContextActionUtils } from '.';
+import ContextActionUtils from './ContextActionUtils';
+import ContextMenuRoot from './ContextMenuRoot';
 
 type ContextMenuMock = {
   addEventListener: jest.Mock<void>;
