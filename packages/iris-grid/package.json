@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/iris-grid",
-  "version": "0.7.1",
+  "version": "0.7.2",
   "description": "Deephaven Iris Grid",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
@@ -61,7 +61,7 @@
   },
   "devDependencies": {
     "@babel/cli": "^7.16.0",
-    "@deephaven/components": "^0.7.1",
+    "@deephaven/components": "^0.7.2",
     "@deephaven/log": "^0.7.0",
     "@deephaven/mocks": "^0.7.0",
     "@deephaven/tsconfig": "^0.7.0",
