@@ -21,32 +21,22 @@ const VARIANT_KINDS = ['group-end'] as const;
 type VariantTuple = typeof VARIANT_KINDS;
 type VariantKind = VariantTuple[number];
 
-type BaseButtonProps = {
+type ButtonTypes = 'submit' | 'reset' | 'button';
+
+interface BaseButtonProps extends React.ComponentPropsWithRef<'button'> {
   kind: ButtonKind;
+  type?: ButtonTypes;
   variant?: VariantKind;
-  type?: 'button' | 'reset' | 'submit';
   tooltip?: string | JSX.Element;
   icon?: IconDefinition | JSX.Element;
-  disabled?: boolean;
   active?: boolean;
-  onClick?: React.MouseEventHandler<HTMLButtonElement>;
-  children?: React.ReactNode;
-  className?: string;
-  style?: React.CSSProperties;
-};
+}
 
-type ButtonButtonProps = BaseButtonProps & {
-  type?: 'button';
-  onClick: React.MouseEventHandler<HTMLButtonElement>;
-};
-
-type ButtonWithTypeProps = ButtonButtonProps | BaseButtonProps;
-
-type ButtonWithChildren = ButtonWithTypeProps & {
+type ButtonWithChildren = BaseButtonProps & {
   children: React.ReactNode;
 };
 
-type IconOnlyButton = ButtonWithTypeProps & {
+type IconOnlyButton = BaseButtonProps & {
   tooltip: string | JSX.Element;
   icon: IconDefinition | JSX.Element;
   children?: undefined;
@@ -94,9 +84,9 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       disabled,
       active,
       onClick,
-      children,
       className,
       style,
+      children,
     } = props;
 
     const iconOnly = (icon && !children) as boolean;
@@ -163,7 +153,7 @@ Button.displayName = 'Button';
 Button.propTypes = {
   kind: PropTypes.oneOf(BUTTON_KINDS).isRequired,
   variant: PropTypes.oneOf(VARIANT_KINDS),
-  type: PropTypes.oneOf(['button', 'reset', 'submit']),
+  type: PropTypes.oneOf<ButtonTypes>(['submit', 'reset', 'button']),
   tooltip(props) {
     const { tooltip, icon, children } = props;
     if (!tooltip && icon && !children) {
