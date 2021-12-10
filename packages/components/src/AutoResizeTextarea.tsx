@@ -62,7 +62,7 @@ const AutoResizeTextarea = ({
     if (!element.current) {
       return;
     }
-    element.current.style.height = 'auto'; // needed to allow component to shrink
+    element.current.style.height = '0'; // shrink component to get scrollHeight
     const resizedHeight =
       element.current.scrollHeight +
       (element.current.offsetHeight - element.current.clientHeight);
