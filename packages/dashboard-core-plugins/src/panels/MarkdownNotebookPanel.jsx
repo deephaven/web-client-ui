@@ -98,8 +98,7 @@ export class MarkdownNotebookPanel extends Component {
             content,
             isLoading: false,
 
-            // eslint-disable-next-line react/no-unused-state
-            panelState: { content },
+            panelState,
           });
         })
         .catch(err => {
@@ -202,9 +201,6 @@ export class MarkdownNotebookPanel extends Component {
     this.setState({
       content,
       isEditing: false,
-
-      // eslint-disable-next-line react/no-unused-state
-      panelState: { content },
     });
   }
 
