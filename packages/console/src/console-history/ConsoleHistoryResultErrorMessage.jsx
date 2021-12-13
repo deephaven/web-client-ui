@@ -95,7 +95,10 @@ class ConsoleHistoryResultErrorMessage extends PureComponent {
     const { message: messageProp } = this.props;
     const lineBreakIndex = messageProp.indexOf('\n');
     const isMultiline = lineBreakIndex > -1;
-    const topLineOfMessage = messageProp.slice(0, lineBreakIndex);
+    let topLineOfMessage = messageProp;
+    if (isMultiline) {
+      topLineOfMessage = messageProp.slice(0, lineBreakIndex);
+    }
     const remainderOfMessage = messageProp.slice(lineBreakIndex);
     const arrowBtnClasses = isTriggerHovered
       ? 'error-btn-link error-btn-link--active'
@@ -109,36 +112,43 @@ class ConsoleHistoryResultErrorMessage extends PureComponent {
         })}
       >
         {isMultiline && (
-          <div className="error-gutter">
-            <button
-              type="button"
-              onClick={this.handleToggleError}
-              className={arrowBtnClasses}
-              tabIndex="-1"
-            >
-              <FontAwesomeIcon
-                icon={isExpanded ? vsTriangleDown : vsTriangleRight}
-                transform="left-3"
-              />
-            </button>
+          <>
+            <div className="error-gutter">
+              <button
+                type="button"
+                onClick={this.handleToggleError}
+                className={arrowBtnClasses}
+                tabIndex="-1"
+              >
+                <FontAwesomeIcon
+                  icon={isExpanded ? vsTriangleDown : vsTriangleRight}
+                  transform="left-3"
+                />
+              </button>
+            </div>
+            <div className="error-content">
+              <div
+                className="console-error-text-trigger"
+                role="button"
+                tabIndex="0"
+                onKeyPress={this.handleKeyPress}
+                onMouseDown={this.handleMouseDown}
+                onMouseMove={this.handleMouseMove}
+                onMouseEnter={this.handleMouseEnter}
+                onMouseLeave={this.handleMouseLeave}
+                onMouseUp={this.handleMouseUp}
+              >
+                {topLineOfMessage}
+              </div>
+              {isExpanded ? remainderOfMessage : ''}
+            </div>
+          </>
+        )}
+        {!isMultiline && (
+          <div className="error-content">
+            <div className="console-error-text">{topLineOfMessage}</div>
           </div>
         )}
-        <div className="error-content">
-          <div
-            className="console-error-text-trigger"
-            role="button"
-            tabIndex="0"
-            onKeyPress={this.handleKeyPress}
-            onMouseDown={this.handleMouseDown}
-            onMouseMove={this.handleMouseMove}
-            onMouseEnter={this.handleMouseEnter}
-            onMouseLeave={this.handleMouseLeave}
-            onMouseUp={this.handleMouseUp}
-          >
-            {topLineOfMessage}
-          </div>
-          {isExpanded ? remainderOfMessage : ''}
-        </div>
       </div>
     );
   }
