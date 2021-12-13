@@ -1,9 +1,10 @@
 /* eslint class-methods-use-this: "off" */
 /* eslint no-unused-vars: "off" */
 import { Grid, GridMetricCalculator } from '..';
+import { EventHandlerResult } from '../EventHandlerResult';
 import { getOrThrow } from '../GridMetricCalculator';
 import GridMetrics, { ModelIndex, VisibleIndex } from '../GridMetrics';
-import GridMouseHandler, { GridMouseHandlerResult } from '../GridMouseHandler';
+import GridMouseHandler from '../GridMouseHandler';
 import { GridPoint } from '../GridUtils';
 
 // The different properties that can be used by implementing classes, whether for rows or columns
@@ -94,7 +95,7 @@ abstract class GridSeparatorMouseHandler extends GridMouseHandler {
   ): VisibleIndex | null;
   // End of overrides
 
-  onDown(gridPoint: GridPoint, grid: Grid): GridMouseHandlerResult {
+  onDown(gridPoint: GridPoint, grid: Grid): EventHandlerResult {
     const separatorIndex = this.getSeparatorIndex(gridPoint, grid);
     if (separatorIndex != null) {
       const { metrics } = grid;
@@ -117,7 +118,7 @@ abstract class GridSeparatorMouseHandler extends GridMouseHandler {
     return false;
   }
 
-  onMove(gridPoint: GridPoint, grid: Grid): GridMouseHandlerResult {
+  onMove(gridPoint: GridPoint, grid: Grid): EventHandlerResult {
     const separatorIndex = this.getSeparatorIndex(gridPoint, grid);
     if (separatorIndex != null) {
       const { metrics } = grid;
@@ -129,7 +130,7 @@ abstract class GridSeparatorMouseHandler extends GridMouseHandler {
     return false;
   }
 
-  onDrag(gridPoint: GridPoint, grid: Grid): GridMouseHandlerResult {
+  onDrag(gridPoint: GridPoint, grid: Grid): EventHandlerResult {
     if (this.draggingIndex == null) {
       return false;
     }
@@ -237,7 +238,7 @@ abstract class GridSeparatorMouseHandler extends GridMouseHandler {
     return true;
   }
 
-  onUp(gridPoint: GridPoint, grid: Grid): GridMouseHandlerResult {
+  onUp(gridPoint: GridPoint, grid: Grid): EventHandlerResult {
     if (this.draggingIndex != null) {
       this.draggingIndex = undefined;
       this.resizingItems = [];
@@ -250,7 +251,7 @@ abstract class GridSeparatorMouseHandler extends GridMouseHandler {
     return false;
   }
 
-  onDoubleClick(gridPoint: GridPoint, grid: Grid): GridMouseHandlerResult {
+  onDoubleClick(gridPoint: GridPoint, grid: Grid): EventHandlerResult {
     const separatorIndex = this.getSeparatorIndex(gridPoint, grid);
 
     if (separatorIndex != null) {

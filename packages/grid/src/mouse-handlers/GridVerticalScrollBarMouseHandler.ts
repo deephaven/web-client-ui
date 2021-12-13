@@ -1,6 +1,7 @@
+import { EventHandlerResult } from '../EventHandlerResult';
 import Grid from '../Grid';
 import { VisibleIndex } from '../GridMetrics';
-import GridMouseHandler, { GridMouseHandlerResult } from '../GridMouseHandler';
+import GridMouseHandler from '../GridMouseHandler';
 import { GridPoint } from '../GridUtils';
 
 /* eslint class-methods-use-this: "off" */
@@ -56,7 +57,7 @@ class GridVerticalScrollBarMouseHandler extends GridMouseHandler {
     );
   }
 
-  onDown(gridPoint: GridPoint, grid: Grid): GridMouseHandlerResult {
+  onDown(gridPoint: GridPoint, grid: Grid): EventHandlerResult {
     const { metrics } = grid;
     if (!metrics) throw new Error('metrics not set');
 
@@ -103,11 +104,11 @@ class GridVerticalScrollBarMouseHandler extends GridMouseHandler {
     return true;
   }
 
-  onMove(gridPoint: GridPoint, grid: Grid): GridMouseHandlerResult {
+  onMove(gridPoint: GridPoint, grid: Grid): EventHandlerResult {
     return this.isInScrollBar(gridPoint, grid);
   }
 
-  onDrag(gridPoint: GridPoint, grid: Grid): GridMouseHandlerResult {
+  onDrag(gridPoint: GridPoint, grid: Grid): EventHandlerResult {
     if (this.dragOffset != null) {
       const { y } = gridPoint;
       const { metrics } = grid;
@@ -142,7 +143,7 @@ class GridVerticalScrollBarMouseHandler extends GridMouseHandler {
     return false;
   }
 
-  onUp(gridPoint: GridPoint, grid: Grid): GridMouseHandlerResult {
+  onUp(gridPoint: GridPoint, grid: Grid): EventHandlerResult {
     if (this.dragOffset !== undefined) {
       this.dragOffset = undefined;
       grid.setState({ isDraggingVerticalScrollBar: false, isDragging: false });
@@ -151,7 +152,7 @@ class GridVerticalScrollBarMouseHandler extends GridMouseHandler {
     return this.isInScrollBar(gridPoint, grid);
   }
 
-  onClick(gridPoint: GridPoint, grid: Grid): GridMouseHandlerResult {
+  onClick(gridPoint: GridPoint, grid: Grid): EventHandlerResult {
     return this.isInScrollBar(gridPoint, grid);
   }
 }

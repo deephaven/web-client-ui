@@ -7,22 +7,8 @@
 
 // eslint-disable-next-line import/no-cycle
 import { KeyboardEvent } from 'react';
+import { EventHandlerResult } from './EventHandlerResult';
 import Grid from './Grid';
-
-/**
- * An options object can be returned as the result to control
- * if event.stopPropagation() and event.preventDefault() should be called
- */
-export type KeyHandlerResultOptions = {
-  stopPropagation?: boolean;
-  preventDefault?: boolean;
-};
-
-/**
- * Result from the key handler for an event.
- * Return `false` to pass the event on, otherwise the event is consumed.
- */
-export type KeyHandlerResult = boolean | KeyHandlerResultOptions;
 
 class KeyHandler {
   order: number;
@@ -39,7 +25,7 @@ class KeyHandler {
    * @param grid The grid component the key press is on
    * @returns Response indicating if the key was consumed
    */
-  onDown(event: KeyboardEvent, grid: Grid): KeyHandlerResult {
+  onDown(event: KeyboardEvent, grid: Grid): EventHandlerResult {
     return false;
   }
 }

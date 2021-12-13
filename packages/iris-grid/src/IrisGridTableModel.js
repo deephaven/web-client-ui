@@ -1,11 +1,10 @@
 /* eslint class-methods-use-this: "off" */
 import memoize from 'memoize-one';
 import throttle from 'lodash.throttle';
-import { GridRange } from '@deephaven/grid';
+import { GridRange, memoizeClear } from '@deephaven/grid';
 import dh from '@deephaven/jsapi-shim';
 import Log from '@deephaven/log';
 import { PromiseUtils } from '@deephaven/utils';
-import memoizeClear from './memoizeClear';
 import TableUtils from './TableUtils';
 import Formatter from './Formatter';
 import { TableColumnFormatter } from './formatters';

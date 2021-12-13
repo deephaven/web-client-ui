@@ -1,11 +1,22 @@
 import GridRange from './GridRange';
 import { ModelIndex } from './GridMetrics';
 import GridModel from './GridModel';
+import { AssertionError } from './errors';
 
 export function isEditableGridModel(
   model: GridModel
 ): model is EditableGridModel {
   return (model as EditableGridModel)?.isEditable !== undefined;
+}
+
+export function assertIsEditableGridModel(
+  model: GridModel
+): asserts model is EditableGridModel {
+  if (!isEditableGridModel(model)) {
+    throw new AssertionError(
+      `Expected 'model' to be editable, but received ${model}`
+    );
+  }
 }
 
 /**

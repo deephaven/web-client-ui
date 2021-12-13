@@ -1,6 +1,7 @@
+import { EventHandlerResult } from '../EventHandlerResult';
 import Grid from '../Grid';
 import { VisibleIndex } from '../GridMetrics';
-import GridMouseHandler, { GridMouseHandlerResult } from '../GridMouseHandler';
+import GridMouseHandler from '../GridMouseHandler';
 import { GridPoint } from '../GridUtils';
 
 /* eslint class-methods-use-this: "off" */
@@ -56,7 +57,7 @@ class GridHorizontalScrollBarMouseHandler extends GridMouseHandler {
     );
   }
 
-  onDown(gridPoint: GridPoint, grid: Grid): GridMouseHandlerResult {
+  onDown(gridPoint: GridPoint, grid: Grid): EventHandlerResult {
     const { metrics } = grid;
     if (!metrics) throw new Error('metrics not set');
 
@@ -102,7 +103,7 @@ class GridHorizontalScrollBarMouseHandler extends GridMouseHandler {
     return true;
   }
 
-  onDrag(gridPoint: GridPoint, grid: Grid): GridMouseHandlerResult {
+  onDrag(gridPoint: GridPoint, grid: Grid): EventHandlerResult {
     if (this.dragOffset != null) {
       const { x } = gridPoint;
       const { metrics } = grid;
@@ -138,11 +139,11 @@ class GridHorizontalScrollBarMouseHandler extends GridMouseHandler {
     return false;
   }
 
-  onMove(gridPoint: GridPoint, grid: Grid): GridMouseHandlerResult {
+  onMove(gridPoint: GridPoint, grid: Grid): EventHandlerResult {
     return this.isInScrollBar(gridPoint, grid);
   }
 
-  onUp(gridPoint: GridPoint, grid: Grid): GridMouseHandlerResult {
+  onUp(gridPoint: GridPoint, grid: Grid): EventHandlerResult {
     if (this.dragOffset !== undefined) {
       this.dragOffset = undefined;
       grid.setState({
@@ -154,7 +155,7 @@ class GridHorizontalScrollBarMouseHandler extends GridMouseHandler {
     return this.isInScrollBar(gridPoint, grid);
   }
 
-  onClick(gridPoint: GridPoint, grid: Grid): GridMouseHandlerResult {
+  onClick(gridPoint: GridPoint, grid: Grid): EventHandlerResult {
     return this.isInScrollBar(gridPoint, grid);
   }
 }

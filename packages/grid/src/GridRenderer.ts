@@ -8,7 +8,8 @@ import {
   GridTheme,
   NullableGridColor,
 } from './GridTheme';
-import { GridModel, GridRange } from '.';
+import GridModel from './GridModel';
+import GridRange from './GridRange';
 import GridMetrics, {
   BoxCoordinates,
   Coordinate,
@@ -90,13 +91,13 @@ export type GridRenderState = {
  * your own methods to customize drawing of the grid (eg. Draw icons or special features)
  */
 export class GridRenderer {
-  // Default font width if it cannot be retrieved from the context
+  // Default font width in pixels if it cannot be retrieved from the context
   static DEFAULT_FONT_WIDTH = 10;
 
-  // Default radius for corners for some elements (like the active cell)
+  // Default radius in pixels for corners for some elements (like the active cell)
   static DEFAULT_EDGE_RADIUS = 2;
 
-  // Default width for the border of the active cell
+  // Default width in pixels for the border of the active cell
   static ACTIVE_CELL_BORDER_WIDTH = 2;
 
   /**
@@ -591,11 +592,11 @@ export class GridRenderer {
       minX:
         floatingLeftColumnCount > 0 &&
         visibleColumnXs.has(floatingLeftColumnCount + 1)
-          ? visibleColumnXs.get(floatingLeftColumnCount + 1)
+          ? getOrThrow(visibleColumnXs, floatingLeftColumnCount + 1)
           : -10,
       minY:
         floatingTopRowCount > 0 && visibleRowYs.has(floatingTopRowCount + 1)
-          ? visibleRowYs.get(floatingTopRowCount + 1)
+          ? getOrThrow(visibleRowYs, floatingTopRowCount + 1)
           : -10,
       maxX:
         floatingRightColumnCount > 0 &&
@@ -1938,10 +1939,10 @@ export class GridRenderer {
       top?: VisibleIndex;
       right?: VisibleIndex;
       bottom?: VisibleIndex;
-      minX?: VisibleIndex;
-      minY?: VisibleIndex;
-      maxX?: VisibleIndex;
-      maxY?: VisibleIndex;
+      minX?: Coordinate;
+      minY?: Coordinate;
+      maxX?: Coordinate;
+      maxY?: Coordinate;
     } = {}
   ): void {
     const {

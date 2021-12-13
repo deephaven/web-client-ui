@@ -1,12 +1,5 @@
 /* eslint react/no-did-update-set-state: "off" */
-import React, {
-  CSSProperties,
-  KeyboardEvent,
-  MouseEvent,
-  PureComponent,
-  ReactNode,
-  WheelEvent,
-} from 'react';
+import React, { CSSProperties, PureComponent, ReactNode } from 'react';
 import classNames from 'classnames';
 import memoize from 'memoize-one';
 import clamp from 'lodash.clamp';
@@ -14,7 +7,6 @@ import GridMetricCalculator, { GridMetricState } from './GridMetricCalculator';
 import GridModel from './GridModel';
 import GridMouseHandler, {
   GridMouseHandlerFunctionName,
-  GridMouseHandlerResultOptions,
 } from './GridMouseHandler';
 import GridTheme, { GridTheme as GridThemeType } from './GridTheme';
 import GridRange, { GridRangeIndex, SELECTION_DIRECTION } from './GridRange';
@@ -36,7 +28,7 @@ import {
   EditMouseHandler,
 } from './mouse-handlers';
 import './Grid.scss';
-import KeyHandler, { KeyHandlerResultOptions } from './KeyHandler';
+import KeyHandler from './KeyHandler';
 import {
   EditKeyHandler,
   PasteKeyHandler,
@@ -52,9 +44,15 @@ import GridMetrics, {
   VisibleIndex,
 } from './GridMetrics';
 import { isExpandableGridModel } from './ExpandableGridModel';
-import { EditOperation, isEditableGridModel } from './EditableGridModel';
+import {
+  assertIsEditableGridModel,
+  EditOperation,
+  isEditableGridModel,
+} from './EditableGridModel';
+import { EventHandlerResultOptions } from './EventHandlerResult';
+import { assertIsDefined } from './assertions';
 
-type OldCanvasRenderingContext2D = CanvasRenderingContext2D & {
+type LegacyCanvasRenderingContext2D = CanvasRenderingContext2D & {
   webkitBackingStorePixelRatio?: number;
   mozBackingStorePixelRatio?: number;
   msBackingStorePixelRatio?: number;
@@ -118,9 +116,8 @@ export type GridState = {
   left: VisibleIndex;
 
   // The scroll offset of the top/left cell. 0,0 means the cell is at the top left
-  // Should be less than the width of the column
-  topOffset: number;
-  leftOffset: number;
+  topOffset: number; // Should be less than the height of the row
+  leftOffset: number; // Should be less than the width of the column
 
   // current column/row that user is dragging
   draggingColumn: VisibleIndex | null;
@@ -225,13 +222,13 @@ class Grid extends PureComponent<GridProps, GridState> {
     const devicePixelRatio = window.devicePixelRatio || 1;
 
     // backingStorePixelRatio is deprecated, but check it just in case
-    const oldContext = context as OldCanvasRenderingContext2D;
+    const legacyContext = context as LegacyCanvasRenderingContext2D;
     const backingStorePixelRatio =
-      oldContext.webkitBackingStorePixelRatio ||
-      oldContext.mozBackingStorePixelRatio ||
-      oldContext.msBackingStorePixelRatio ||
-      oldContext.oBackingStorePixelRatio ||
-      oldContext.backingStorePixelRatio ||
+      legacyContext.webkitBackingStorePixelRatio ||
+      legacyContext.mozBackingStorePixelRatio ||
+      legacyContext.msBackingStorePixelRatio ||
+      legacyContext.oBackingStorePixelRatio ||
+      legacyContext.backingStorePixelRatio ||
       1;
     return devicePixelRatio / backingStorePixelRatio;
   }
@@ -408,13 +405,9 @@ class Grid extends PureComponent<GridProps, GridState> {
     // Need to explicitly add wheel event to canvas so we can preventDefault/avoid passive listener issue
     // Otherwise React attaches listener at doc level and you can't prevent default
     // https://github.com/facebook/react/issues/14856
-    this.canvas?.addEventListener(
-      'wheel',
-      (this.handleWheel as unknown) as EventListenerOrEventListenerObject,
-      {
-        passive: false,
-      }
-    );
+    this.canvas?.addEventListener('wheel', this.handleWheel, {
+      passive: false,
+    });
     window.addEventListener('resize', this.handleResize);
 
     this.updateCanvasScale();
@@ -543,14 +536,7 @@ class Grid extends PureComponent<GridProps, GridState> {
       cancelAnimationFrame(this.animationFrame);
     }
 
-    this.canvas?.removeEventListener(
-      'wheel',
-      (this.handleWheel as unknown) as EventListenerOrEventListenerObject,
-      // Need to cast this because passive is not in EventListenerOptions for some reason
-      ({
-        passive: false,
-      } as unknown) as EventListenerOptions
-    );
+    this.canvas?.removeEventListener('wheel', this.handleWheel);
 
     window.removeEventListener(
       'mousemove',
@@ -572,8 +558,8 @@ class Grid extends PureComponent<GridProps, GridState> {
     return Grid.getTheme(theme);
   }
 
-  getGridPointFromEvent(event: MouseEvent): GridPoint {
-    if (!this.canvas) throw new Error('Canvas must be set');
+  getGridPointFromEvent(event: React.MouseEvent): GridPoint {
+    assertIsDefined(this.canvas);
 
     const rect = this.canvas.getBoundingClientRect();
     const x = event.clientX - rect.left;
@@ -1192,8 +1178,8 @@ class Grid extends PureComponent<GridProps, GridState> {
   /**
    * Checks the `top` and `left` properties that are set and updates the isStuckToBottom/Right properties
    * Should be called when user interaction occurs
-   * @param {object} viewState New state properties to set.
-   * @param {boolean} forceUpdate Whether to force an update.
+   * @param viewState New state properties to set.
+   * @param forceUpdate Whether to force an update.
    */
   setViewState(viewState: Partial<GridState>, forceUpdate = false): void {
     if (!this.metrics) throw new Error('metrics not set');
@@ -1283,7 +1269,8 @@ class Grid extends PureComponent<GridProps, GridState> {
     const { movedColumns, movedRows, selectedRanges } = this.state;
 
     try {
-      if (!isEditableGridModel(model)) throw new Error('model is not editable');
+      assertIsEditableGridModel(model);
+
       if (
         !model.isEditable ||
         !selectedRanges.every(range => model.isEditableRange(range))
@@ -1372,22 +1359,23 @@ class Grid extends PureComponent<GridProps, GridState> {
    * @param column Column index to set the value for
    * @param row Row index to set the value for
    * @param value Value to set at that cell
+   * @returns true If the value was valid and attempted to be set, false is it was not valid
    */
   setValueForCell(
     column: VisibleIndex,
     row: VisibleIndex,
     value: string
-  ): void {
+  ): boolean {
     const { model } = this.props;
+    assertIsEditableGridModel(model);
 
     const modelColumn = this.getModelColumn(column);
     const modelRow = this.getModelRow(row);
-    if (
-      isEditableGridModel(model) &&
-      model.isValidForCell(modelColumn, modelRow, value)
-    ) {
+    if (model.isValidForCell(modelColumn, modelRow, value)) {
       model.setValueForCell(modelColumn, modelRow, value);
+      return true;
     }
+    return false;
   }
 
   /**
@@ -1455,7 +1443,7 @@ class Grid extends PureComponent<GridProps, GridState> {
     }
   }
 
-  startDragTimer(event: MouseEvent): void {
+  startDragTimer(event: React.MouseEvent): void {
     this.stopDragTimer();
 
     const mouseEvent = new MouseEvent(
@@ -1564,7 +1552,7 @@ class Grid extends PureComponent<GridProps, GridState> {
    * Focuses the grid after the click.
    * @param event The mouse event
    */
-  handleClick(event: MouseEvent): void {
+  handleClick(event: React.MouseEvent): void {
     const gridPoint = this.getGridPointFromEvent(event);
 
     const mouseHandlers = this.getMouseHandlers();
@@ -1584,7 +1572,7 @@ class Grid extends PureComponent<GridProps, GridState> {
    * Handle a mouse context menu event. Pass the event to the registered mouse handlers until one handles it.
    * @param event The mouse event triggering the context menu
    */
-  handleContextMenu(event: MouseEvent): void {
+  handleContextMenu(event: React.MouseEvent): void {
     const gridPoint = this.getGridPointFromEvent(event);
 
     const mouseHandlers = this.getMouseHandlers();
@@ -1599,16 +1587,16 @@ class Grid extends PureComponent<GridProps, GridState> {
   }
 
   /**
-   *
+   * Handle a key down event from the keyboard. Pass the event to the registered keyboard handlers until one handles it.
    * @param event Keyboard event
    */
-  handleKeyDown(event: KeyboardEvent): void {
+  handleKeyDown(event: React.KeyboardEvent): void {
     const keyHandlers = this.getKeyHandlers();
     for (let i = 0; i < keyHandlers.length; i += 1) {
       const keyHandler = keyHandlers[i];
       const result = keyHandler.onDown(event, this);
       if (result) {
-        const options = result as KeyHandlerResultOptions;
+        const options = result as EventHandlerResultOptions;
         if (options?.stopPropagation ?? true) event.stopPropagation();
         if (options?.preventDefault ?? true) event.preventDefault();
         break;
@@ -1625,7 +1613,7 @@ class Grid extends PureComponent<GridProps, GridState> {
    */
   notifyMouseHandlers(
     functionName: GridMouseHandlerFunctionName,
-    event: MouseEvent,
+    event: React.MouseEvent,
     updateCoordinates = true,
     addCursorToDocument = false
   ): void {
@@ -1646,7 +1634,7 @@ class Grid extends PureComponent<GridProps, GridState> {
         }
 
         // result is bool or object, events are stopped by default
-        const options = result as GridMouseHandlerResultOptions;
+        const options = result as EventHandlerResultOptions;
         if (options?.stopPropagation ?? true) event.stopPropagation();
         if (options?.preventDefault ?? true) event.preventDefault();
         break;
@@ -1661,17 +1649,9 @@ class Grid extends PureComponent<GridProps, GridState> {
     }
   }
 
-  handleMouseDown(event: MouseEvent): void {
-    window.addEventListener(
-      'mousemove',
-      (this.handleMouseDrag as unknown) as EventListenerOrEventListenerObject,
-      true
-    );
-    window.addEventListener(
-      'mouseup',
-      (this.handleMouseUp as unknown) as EventListenerOrEventListenerObject,
-      true
-    );
+  handleMouseDown(event: React.MouseEvent): void {
+    window.addEventListener('mousemove', this.handleMouseDrag, true);
+    window.addEventListener('mouseup', this.handleMouseUp, true);
 
     if (event.button != null && event.button !== 0) {
       return;
@@ -1682,43 +1662,44 @@ class Grid extends PureComponent<GridProps, GridState> {
     this.startDragTimer(event);
   }
 
-  handleDoubleClick(event: MouseEvent): void {
+  handleDoubleClick(event: React.MouseEvent): void {
     this.notifyMouseHandlers('onDoubleClick', event);
   }
 
-  handleMouseMove(event: MouseEvent): void {
+  handleMouseMove(event: React.MouseEvent): void {
     this.notifyMouseHandlers('onMove', event);
   }
 
-  handleMouseLeave(event: MouseEvent): void {
+  handleMouseLeave(event: React.MouseEvent): void {
     this.notifyMouseHandlers('onLeave', event, false);
     this.setState({ mouseX: null, mouseY: null });
   }
 
   handleMouseDrag(event: MouseEvent): void {
     this.setState({ isDragging: true });
-    this.notifyMouseHandlers('onDrag', event, true, true);
+    this.notifyMouseHandlers(
+      'onDrag',
+      (event as unknown) as React.MouseEvent,
+      true,
+      true
+    );
 
     this.stopDragTimer();
   }
 
   handleMouseUp(event: MouseEvent): void {
-    window.removeEventListener(
-      'mousemove',
-      (this.handleMouseDrag as unknown) as EventListenerOrEventListenerObject,
-      true
-    );
-    window.removeEventListener(
-      'mouseup',
-      (this.handleMouseUp as unknown) as EventListenerOrEventListenerObject,
-      true
-    );
+    window.removeEventListener('mousemove', this.handleMouseDrag, true);
+    window.removeEventListener('mouseup', this.handleMouseUp, true);
 
     if (event.button != null && event.button !== 0) {
       return;
     }
 
-    this.notifyMouseHandlers('onUp', event, false);
+    this.notifyMouseHandlers(
+      'onUp',
+      (event as unknown) as React.MouseEvent,
+      false
+    );
 
     this.stopDragTimer();
 
@@ -1739,7 +1720,7 @@ class Grid extends PureComponent<GridProps, GridState> {
   }
 
   handleWheel(event: WheelEvent): void {
-    this.notifyMouseHandlers('onWheel', event);
+    this.notifyMouseHandlers('onWheel', (event as unknown) as React.WheelEvent);
 
     if (event.defaultPrevented) {
       return;
@@ -1887,9 +1868,13 @@ class Grid extends PureComponent<GridProps, GridState> {
    * @param value New value set
    */
   handleEditCellChange(value: string): void {
-    this.setState(({ editingCell }) => ({
-      editingCell: { ...editingCell, value } as EditingCell,
-    }));
+    this.setState(({ editingCell }) => {
+      assertIsDefined(editingCell);
+
+      return {
+        editingCell: { ...editingCell, value } as EditingCell,
+      };
+    });
   }
 
   /**
@@ -1902,7 +1887,7 @@ class Grid extends PureComponent<GridProps, GridState> {
     {
       direction = SELECTION_DIRECTION.DOWN,
       fillRange = false,
-    }: { direction?: SELECTION_DIRECTION; fillRange?: boolean } = {}
+    }: { direction?: SELECTION_DIRECTION | null; fillRange?: boolean } = {}
   ): void {
     const { editingCell, selectedRanges } = this.state;
     if (!editingCell) throw new Error('editingCell not set');
@@ -1910,7 +1895,7 @@ class Grid extends PureComponent<GridProps, GridState> {
     const { column, row } = editingCell;
     if (!this.isValidForCell(column, row, value)) {
       // Don't allow an invalid value to be commited, the editing cell should show an error
-      if (direction == null) {
+      if (direction === null) {
         // If they clicked off of the editing cell, just remove focus
         this.setState({ editingCell: null });
       }
@@ -1923,7 +1908,7 @@ class Grid extends PureComponent<GridProps, GridState> {
       this.setValueForCell(column, row, value);
     }
 
-    if (direction != null) {
+    if (direction !== null) {
       this.moveCursorInDirection(direction);
     }
 

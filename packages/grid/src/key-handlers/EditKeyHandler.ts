@@ -3,11 +3,12 @@ import { KeyboardEvent } from 'react';
 import GridUtils from '../GridUtils';
 import Grid from '../Grid';
 import GridRange from '../GridRange';
-import KeyHandler, { KeyHandlerResult } from '../KeyHandler';
+import KeyHandler from '../KeyHandler';
 import { isEditableGridModel } from '../EditableGridModel';
+import { EventHandlerResult } from '../EventHandlerResult';
 
 class EditKeyHandler extends KeyHandler {
-  onDown(event: KeyboardEvent, grid: Grid): KeyHandlerResult {
+  onDown(event: KeyboardEvent, grid: Grid): EventHandlerResult {
     if (GridUtils.isModifierKeyDown(event)) {
       return false;
     }

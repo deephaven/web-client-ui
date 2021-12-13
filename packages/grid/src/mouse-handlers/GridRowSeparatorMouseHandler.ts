@@ -3,17 +3,7 @@ import Grid from '../Grid';
 import GridMetricCalculator from '../GridMetricCalculator';
 import { ModelIndex, VisibleIndex } from '../GridMetrics';
 import GridUtils, { GridPoint } from '../GridUtils';
-import GridSeparatorMouseHandler, {
-  CalculatedSizeProperty,
-  FirstIndexProperty,
-  MarginProperty,
-  ModelIndexesProperty,
-  PointProperty,
-  TreePaddingProperty,
-  UserSizeProperty,
-  VisibleOffsetProperty,
-  VisibleSizeProperty,
-} from './GridSeparatorMouseHandler';
+import GridSeparatorMouseHandler from './GridSeparatorMouseHandler';
 
 class GridRowSeparatorMouseHandler extends GridSeparatorMouseHandler {
   static getRowSeparatorIndex(
@@ -37,23 +27,23 @@ class GridRowSeparatorMouseHandler extends GridSeparatorMouseHandler {
 
   defaultCursor = 'row-resize';
 
-  pointProperty: PointProperty = 'y';
+  pointProperty = 'y' as const;
 
-  userSizesProperty: UserSizeProperty = 'userRowHeights';
+  userSizesProperty = 'userRowHeights' as const;
 
-  visibleOffsetProperty: VisibleOffsetProperty = 'visibleRowYs';
+  visibleOffsetProperty = 'visibleRowYs' as const;
 
-  visibleSizesProperty: VisibleSizeProperty = 'visibleRowHeights';
+  visibleSizesProperty = 'visibleRowHeights' as const;
 
-  marginProperty: MarginProperty = 'columnHeaderHeight';
+  marginProperty = 'columnHeaderHeight' as const;
 
-  calculatedSizesProperty: CalculatedSizeProperty = 'calculatedRowHeights';
+  calculatedSizesProperty = 'calculatedRowHeights' as const;
 
-  modelIndexesProperty: ModelIndexesProperty = 'modelRows';
+  modelIndexesProperty = 'modelRows' as const;
 
-  firstIndexProperty: FirstIndexProperty = 'firstRow';
+  firstIndexProperty = 'firstRow' as const;
 
-  treePaddingProperty: TreePaddingProperty = 'treePaddingY';
+  treePaddingProperty = 'treePaddingY' as const;
 
   getHiddenItems = GridUtils.getHiddenRows;
 
@@ -77,7 +67,7 @@ class GridRowSeparatorMouseHandler extends GridSeparatorMouseHandler {
   updateSeparator(grid: Grid, separatorIndex: VisibleIndex | null): void {
     grid.setState({
       draggingRowSeparator: separatorIndex,
-      isDragging: !!separatorIndex,
+      isDragging: separatorIndex !== null,
     });
   }
 

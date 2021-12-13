@@ -3,17 +3,7 @@ import Grid from '../Grid';
 import GridMetricCalculator from '../GridMetricCalculator';
 import { ModelIndex, VisibleIndex } from '../GridMetrics';
 import GridUtils, { GridPoint } from '../GridUtils';
-import GridSeparatorMouseHandler, {
-  CalculatedSizeProperty,
-  FirstIndexProperty,
-  MarginProperty,
-  ModelIndexesProperty,
-  PointProperty,
-  TreePaddingProperty,
-  UserSizeProperty,
-  VisibleOffsetProperty,
-  VisibleSizeProperty,
-} from './GridSeparatorMouseHandler';
+import GridSeparatorMouseHandler from './GridSeparatorMouseHandler';
 
 class GridColumnSeparatorMouseHandler extends GridSeparatorMouseHandler {
   static getColumnSeparatorIndex(
@@ -37,23 +27,23 @@ class GridColumnSeparatorMouseHandler extends GridSeparatorMouseHandler {
 
   defaultCursor = 'col-resize';
 
-  pointProperty: PointProperty = 'x';
+  pointProperty = 'x' as const;
 
-  userSizesProperty: UserSizeProperty = 'userColumnWidths';
+  userSizesProperty = 'userColumnWidths' as const;
 
-  visibleOffsetProperty: VisibleOffsetProperty = 'visibleColumnXs';
+  visibleOffsetProperty = 'visibleColumnXs' as const;
 
-  visibleSizesProperty: VisibleSizeProperty = 'visibleColumnWidths';
+  visibleSizesProperty = 'visibleColumnWidths' as const;
 
-  marginProperty: MarginProperty = 'rowHeaderWidth';
+  marginProperty = 'rowHeaderWidth' as const;
 
-  calculatedSizesProperty: CalculatedSizeProperty = 'calculatedColumnWidths';
+  calculatedSizesProperty = 'calculatedColumnWidths' as const;
 
-  modelIndexesProperty: ModelIndexesProperty = 'modelColumns';
+  modelIndexesProperty = 'modelColumns' as const;
 
-  firstIndexProperty: FirstIndexProperty = 'firstColumn';
+  firstIndexProperty = 'firstColumn' as const;
 
-  treePaddingProperty: TreePaddingProperty = 'treePaddingX';
+  treePaddingProperty = 'treePaddingX' as const;
 
   getHiddenItems = GridUtils.getHiddenColumns;
 
@@ -77,7 +67,7 @@ class GridColumnSeparatorMouseHandler extends GridSeparatorMouseHandler {
   updateSeparator(grid: Grid, separatorIndex: VisibleIndex | null): void {
     grid.setState({
       draggingColumnSeparator: separatorIndex,
-      isDragging: !!separatorIndex,
+      isDragging: separatorIndex !== null,
     });
   }
 

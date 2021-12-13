@@ -1,7 +1,8 @@
 import { MouseEvent } from 'react';
+import { EventHandlerResult } from '../EventHandlerResult';
 import Grid from '../Grid';
 import { BoxCoordinates } from '../GridMetrics';
-import GridMouseHandler, { GridMouseHandlerResult } from '../GridMouseHandler';
+import GridMouseHandler from '../GridMouseHandler';
 import GridUtils, { GridPoint } from '../GridUtils';
 
 const DEFAULT_INTERVAL_MS = 100;
@@ -22,7 +23,7 @@ class GridSelectionMouseHandler extends GridMouseHandler {
     gridPoint: GridPoint,
     grid: Grid,
     event: MouseEvent
-  ): GridMouseHandlerResult {
+  ): EventHandlerResult {
     const { x, y, column, row } = gridPoint;
     const { metrics } = grid;
     if (!metrics) throw new Error('metrics not set');
@@ -73,7 +74,7 @@ class GridSelectionMouseHandler extends GridMouseHandler {
     return true;
   }
 
-  onDrag(gridPoint: GridPoint, grid: Grid): GridMouseHandlerResult {
+  onDrag(gridPoint: GridPoint, grid: Grid): EventHandlerResult {
     if (this.startPoint === undefined) {
       return false;
     }
@@ -207,7 +208,7 @@ class GridSelectionMouseHandler extends GridMouseHandler {
     return true;
   }
 
-  onUp(gridPoint: GridPoint, grid: Grid): GridMouseHandlerResult {
+  onUp(gridPoint: GridPoint, grid: Grid): EventHandlerResult {
     if (this.startPoint !== undefined) {
       this.startPoint = undefined;
       this.dragBounds = undefined;
@@ -229,8 +230,9 @@ class GridSelectionMouseHandler extends GridMouseHandler {
     if (!metrics) throw new Error('metrics not set');
 
     const { selectionEndRow, selectionEndColumn } = grid.state;
-    if (selectionEndRow == null || selectionEndColumn == null)
+    if (selectionEndRow == null || selectionEndColumn == null) {
       throw new Error('selection not set');
+    }
 
     const { rowCount, columnCount } = metrics;
     const minX = deltaX < 0 && column != null ? column : 0;

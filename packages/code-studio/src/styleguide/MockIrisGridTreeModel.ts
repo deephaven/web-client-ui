@@ -20,7 +20,7 @@ type CustomEventType = EventTarget.EventData<
 
 type IrisGridColumn = { name: string; type: string };
 
-const EMPTY_ARRAY: IrisGridColumn[] = [];
+const EMPTY_ARRAY: never[] = [];
 
 /**
  * A mock class that takes a GridModel and adds mock functionality for use in IrisGrid.
@@ -65,11 +65,11 @@ class MockIrisGridTreeModel
     return this.isEditable;
   }
 
-  setValues(edits: EditOperation[]): Promise<void> {
+  setValues(edits: EditOperation[]): Promise<never> {
     throw new Error('Method not implemented.');
   }
 
-  delete(ranges: GridRange[]): Promise<void> {
+  delete(ranges: GridRange[]): Promise<never> {
     throw new Error('Method not implemented.');
   }
 

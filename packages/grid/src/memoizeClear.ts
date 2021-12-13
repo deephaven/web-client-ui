@@ -7,14 +7,10 @@
 import memoizee from 'memoizee';
 
 /**
- * @param {Function} fn The function to memoize
- * @param {Object} options The options to set for memoization
+ * @param fn The function to memoize
+ * @param options The options to set for memoization
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function memoizeClear<F extends (...args: any[]) => any>(
-  fn: F,
-  options?: memoizee.Options<F>
-): F & memoizee.Memoized<F> {
+export const memoizeClear: typeof memoizee = (fn, options) => {
   let isClearingCache = false;
   const memoizedFn = memoizee(fn, {
     ...options,
@@ -29,6 +25,6 @@ export function memoizeClear<F extends (...args: any[]) => any>(
   });
 
   return memoizedFn;
-}
+};
 
 export default memoizeClear;

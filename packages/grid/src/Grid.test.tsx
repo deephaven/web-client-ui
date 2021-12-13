@@ -1,4 +1,4 @@
-import React, { KeyboardEvent, MouseEvent, ReactElement } from 'react';
+import React, { ReactElement } from 'react';
 import TestRenderer from 'react-test-renderer';
 import Grid from './Grid';
 import GridRange from './GridRange';
@@ -8,7 +8,7 @@ import GridUtils from './GridUtils';
 import MockGridModel from './MockGridModel';
 import MockGridData from './MockGridData';
 import { VisibleIndex } from './GridMetrics';
-import { GridModel } from '.';
+import GridModel from './GridModel';
 
 function makeMockContext(): CanvasRenderingContext2D {
   // Just return a partial mock
@@ -109,14 +109,14 @@ function getClientY(
 function mouseEvent(
   column: VisibleIndex,
   row: VisibleIndex,
-  fn: (event: MouseEvent) => void,
+  fn: (event: React.MouseEvent) => void,
   type: string,
   extraArgs?: MouseEventInit,
   clientX = getClientX(column),
   clientY = getClientY(row)
 ) {
   const mouseArgs = { clientX, clientY, ...extraArgs };
-  fn((new MouseEvent(type, mouseArgs) as unknown) as MouseEvent);
+  fn((new MouseEvent(type, mouseArgs) as unknown) as React.MouseEvent);
 }
 
 function mouseDown(
@@ -149,7 +149,7 @@ function mouseMove(
   mouseEvent(
     column,
     row,
-    component.handleMouseDrag,
+    (component.handleMouseDrag as unknown) as (event: React.MouseEvent) => void,
     'mousemove',
     extraMouseArgs,
     clientX,
@@ -168,7 +168,7 @@ function mouseUp(
   mouseEvent(
     column,
     row,
-    component.handleMouseUp,
+    (component.handleMouseUp as unknown) as (event: React.MouseEvent) => void,
     'mouseup',
     extraMouseArgs,
     clientX,
@@ -210,7 +210,7 @@ function mouseDoubleClick(
 function keyDown(key: string, component: Grid, extraArgs?: KeyboardEventInit) {
   const args = { key, ...extraArgs };
   component.handleKeyDown(
-    (new KeyboardEvent('keydown', args) as unknown) as KeyboardEvent
+    (new KeyboardEvent('keydown', args) as unknown) as React.KeyboardEvent
   );
 }
 

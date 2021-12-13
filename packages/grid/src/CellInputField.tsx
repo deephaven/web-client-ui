@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
-import GridRange, { SELECTION_DIRECTION } from './GridRange';
+import { SELECTION_DIRECTION } from './GridRange';
 import GridUtils from './GridUtils';
 import './CellInputField.scss';
 
@@ -16,7 +16,7 @@ export type CellInputFieldProps = {
   onDone?: (
     value: string,
     options: {
-      direction?: SELECTION_DIRECTION;
+      direction?: SELECTION_DIRECTION | null;
       fillRange?: boolean;
     }
   ) => void;
@@ -24,7 +24,9 @@ export type CellInputFieldProps = {
   style?: React.CSSProperties;
 };
 
-export const directionForKey = (key: string): SELECTION_DIRECTION | null => {
+export const directionForKey = (
+  key: string
+): SELECTION_DIRECTION | undefined => {
   switch (key) {
     case 'ArrowDown':
       return SELECTION_DIRECTION.DOWN;
@@ -35,7 +37,7 @@ export const directionForKey = (key: string): SELECTION_DIRECTION | null => {
     case 'ArrowRight':
       return SELECTION_DIRECTION.RIGHT;
     default:
-      return null;
+      return undefined;
   }
 };
 
@@ -106,7 +108,7 @@ export const CellInputField = ({
   }, [setIsQuickEdit]);
 
   const handleCommit = useCallback(
-    (direction = GridRange.SELECTION_DIRECTION.DOWN, fillRange = false) => {
+    (direction?: SELECTION_DIRECTION | null, fillRange = false) => {
       onDone(value, { direction, fillRange });
     },
     [onDone, value]
@@ -132,7 +134,7 @@ export const CellInputField = ({
         case 'Enter':
           event.preventDefault();
           if (GridUtils.isModifierKeyDown(event)) {
-            handleCommit(null, true);
+            handleCommit(undefined, true);
           } else if (event.altKey) {
             const newValue = `${value}\n`;
             setValue(newValue);

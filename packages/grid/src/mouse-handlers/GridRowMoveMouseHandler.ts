@@ -1,6 +1,7 @@
+import { EventHandlerResult } from '../EventHandlerResult';
 import Grid from '../Grid';
 import { getOrThrow } from '../GridMetricCalculator';
-import GridMouseHandler, { GridMouseHandlerResult } from '../GridMouseHandler';
+import GridMouseHandler from '../GridMouseHandler';
 import GridUtils, { GridPoint } from '../GridUtils';
 
 class GridRowMoveMouseHandler extends GridMouseHandler {
@@ -8,7 +9,7 @@ class GridRowMoveMouseHandler extends GridMouseHandler {
 
   private draggingOffset?: number;
 
-  onDown(gridPoint: GridPoint, grid: Grid): GridMouseHandlerResult {
+  onDown(gridPoint: GridPoint, grid: Grid): EventHandlerResult {
     const { model } = grid.props;
     const { x, y, row } = gridPoint;
     const { metrics } = grid;
@@ -24,7 +25,7 @@ class GridRowMoveMouseHandler extends GridMouseHandler {
     return false;
   }
 
-  onDrag(gridPoint: GridPoint, grid: Grid): GridMouseHandlerResult {
+  onDrag(gridPoint: GridPoint, grid: Grid): EventHandlerResult {
     if (this.draggingOffset == null) {
       return false;
     }
@@ -116,7 +117,7 @@ class GridRowMoveMouseHandler extends GridMouseHandler {
     return true;
   }
 
-  onUp(gridPoint: GridPoint, grid: Grid): GridMouseHandlerResult {
+  onUp(gridPoint: GridPoint, grid: Grid): EventHandlerResult {
     if (this.draggingOffset !== undefined) {
       this.draggingOffset = undefined;
       grid.setState({

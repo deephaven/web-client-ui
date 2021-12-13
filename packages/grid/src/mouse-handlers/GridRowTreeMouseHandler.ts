@@ -1,7 +1,8 @@
 /* eslint class-methods-use-this: "off" */
+import { EventHandlerResult } from '../EventHandlerResult';
 import Grid from '../Grid';
 import { getOrThrow } from '../GridMetricCalculator';
-import GridMouseHandler, { GridMouseHandlerResult } from '../GridMouseHandler';
+import GridMouseHandler from '../GridMouseHandler';
 import { GridPoint } from '../GridUtils';
 
 /**
@@ -47,11 +48,11 @@ class GridRowTreeMouseHandler extends GridMouseHandler {
     return false;
   }
 
-  onDown(gridPoint: GridPoint, grid: Grid): GridMouseHandlerResult {
+  onDown(gridPoint: GridPoint, grid: Grid): EventHandlerResult {
     return GridRowTreeMouseHandler.isInTreeBox(gridPoint, grid);
   }
 
-  onClick(gridPoint: GridPoint, grid: Grid): GridMouseHandlerResult {
+  onClick(gridPoint: GridPoint, grid: Grid): EventHandlerResult {
     if (GridRowTreeMouseHandler.isInTreeBox(gridPoint, grid)) {
       const { row } = gridPoint;
       if (row !== null) {

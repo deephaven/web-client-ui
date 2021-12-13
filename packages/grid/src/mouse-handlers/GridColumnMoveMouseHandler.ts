@@ -1,7 +1,8 @@
 import Grid from '../Grid';
 import GridUtils, { GridPoint } from '../GridUtils';
-import GridMouseHandler, { GridMouseHandlerResult } from '../GridMouseHandler';
+import GridMouseHandler from '../GridMouseHandler';
 import { getOrThrow } from '../GridMetricCalculator';
+import { EventHandlerResult } from '../EventHandlerResult';
 
 const SLOPPY_CLICK_DISTANCE = 5;
 
@@ -14,7 +15,7 @@ class GridColumnMoveMouseHandler extends GridMouseHandler {
 
   private sloppyClickThreshold = false;
 
-  onDown(gridPoint: GridPoint, grid: Grid): GridMouseHandlerResult {
+  onDown(gridPoint: GridPoint, grid: Grid): EventHandlerResult {
     const { model } = grid.props;
     const { x, y, column } = gridPoint;
     const { metrics } = grid;
@@ -38,7 +39,7 @@ class GridColumnMoveMouseHandler extends GridMouseHandler {
     return false;
   }
 
-  onDrag(gridPoint: GridPoint, grid: Grid): GridMouseHandlerResult {
+  onDrag(gridPoint: GridPoint, grid: Grid): EventHandlerResult {
     if (
       this.draggingOffset === undefined ||
       this.startingGridPoint === undefined
@@ -157,7 +158,7 @@ class GridColumnMoveMouseHandler extends GridMouseHandler {
     return true;
   }
 
-  onUp(gridPoint: GridPoint, grid: Grid): GridMouseHandlerResult {
+  onUp(gridPoint: GridPoint, grid: Grid): EventHandlerResult {
     this.cursor = null;
 
     if (this.draggingOffset != null) {

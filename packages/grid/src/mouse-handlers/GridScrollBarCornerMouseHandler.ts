@@ -1,6 +1,7 @@
 /* eslint class-methods-use-this: "off" */
+import { EventHandlerResult } from '../EventHandlerResult';
 import Grid from '../Grid';
-import GridMouseHandler, { GridMouseHandlerResult } from '../GridMouseHandler';
+import GridMouseHandler from '../GridMouseHandler';
 import { GridPoint } from '../GridUtils';
 
 /**
@@ -26,15 +27,15 @@ class GridScrollBarCornerMouseHandler extends GridMouseHandler {
     );
   }
 
-  onDown(gridPoint: GridPoint, grid: Grid): GridMouseHandlerResult {
+  onDown(gridPoint: GridPoint, grid: Grid): EventHandlerResult {
     return this.isInCorner(gridPoint, grid);
   }
 
-  onUp(gridPoint: GridPoint, grid: Grid): GridMouseHandlerResult {
+  onUp(gridPoint: GridPoint, grid: Grid): EventHandlerResult {
     return this.isInCorner(gridPoint, grid);
   }
 
-  onClick(gridPoint: GridPoint, grid: Grid): GridMouseHandlerResult {
+  onClick(gridPoint: GridPoint, grid: Grid): EventHandlerResult {
     return this.isInCorner(gridPoint, grid);
   }
 }
