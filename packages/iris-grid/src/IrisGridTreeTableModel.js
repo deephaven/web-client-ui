@@ -1,5 +1,6 @@
 /* eslint class-methods-use-this: "off" */
 import memoize from 'memoize-one';
+import { GridRange } from '@deephaven/grid';
 import IrisGridTableModel from './IrisGridTableModel';
 
 class IrisGridTreeTableModel extends IrisGridTableModel {
@@ -30,6 +31,45 @@ class IrisGridTreeTableModel extends IrisGridTableModel {
       hasChildren,
       depth,
     };
+  }
+
+  async snapshot(ranges, includeHeaders = false, formatValue = value => value) {
+    const { columns } = this.viewport;
+    const result = [];
+
+    if (includeHeaders) {
+      result.push(columns.map(c => c.name));
+    }
+
+    const viewportRange = new GridRange(
+      0,
+      this.viewportData.offset,
+      columns.length,
+      this.viewportData.offset + this.viewportData.rows.length
+    );
+
+    for (let i = 0; i < ranges.length; i += 1) {
+      const intersection = GridRange.intersection(viewportRange, ranges[i]);
+
+      for (let r = intersection.startRow; r <= intersection.endRow; r += 1) {
+        const resultRow = [];
+        const viewportRow = this.viewportData.rows[
+          r - this.viewportData.offset
+        ];
+        for (
+          let c = intersection.startColumn;
+          c <= intersection.endColumn;
+          c += 1
+        ) {
+          resultRow.push(
+            formatValue(viewportRow.data.get(c).value, this.columns[c])
+          );
+        }
+        result.push(resultRow);
+      }
+    }
+
+    return result;
   }
 
   get groupedColumns() {
