@@ -461,7 +461,7 @@ class IrisGridTableModel extends IrisGridModel {
   }
 
   getColumnsWithLayoutHints = memoize((columns, hints, userFrozenColumns) => {
-    if (hints || userFrozenColumns.length) {
+    if (hints || userFrozenColumns?.length) {
       const columnMap = new Map();
       columns.forEach(col => columnMap.set(col.name, col));
 
@@ -523,7 +523,7 @@ class IrisGridTableModel extends IrisGridModel {
   }
 
   get frozenColumns() {
-    if (this.userFrozenColumns && this.userFrozenColumns.length) {
+    if (this.userFrozenColumns && this.userFrozenColumns != null) {
       return this.userFrozenColumns;
     }
 

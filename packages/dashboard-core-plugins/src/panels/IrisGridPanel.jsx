@@ -122,7 +122,7 @@ export class IrisGridPanel extends PureComponent {
       pluginFetchColumns: [],
       modelQueue: [],
       pendingDataMap: new Map(),
-      frozenColumns: [],
+      frozenColumns: null,
 
       // eslint-disable-next-line react/no-unused-state
       panelState, // Dehydrated panel state that can load this panel

@@ -1395,13 +1395,13 @@ export class IrisGrid extends Component {
     const { model } = this.props;
     log.debug2('freezing column', columnName);
 
-    let allFrozenColumns = new Set([...frozenColumns, columnName]);
+    let allFrozenColumns;
 
-    if (frozenColumns.length === 0) {
-      allFrozenColumns = new Set(
-        (model.layoutHints?.frozenColumns ?? []).concat(frozenColumns)
-      );
+    if (frozenColumns == null) {
+      allFrozenColumns = new Set(model.layoutHints?.frozenColumns ?? []);
       allFrozenColumns.add(columnName);
+    } else {
+      allFrozenColumns = new Set([...frozenColumns, columnName]);
     }
 
     this.setState({
