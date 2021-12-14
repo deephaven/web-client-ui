@@ -95,13 +95,6 @@ export interface EditableGridModel extends GridModel {
    * @returns True if it's a valid value, false otherwise
    */
   isValidForCell(column: ModelIndex, row: ModelIndex, value: string): boolean;
-
-  /**
-   * Delete ranges from an editable grid
-   * @param ranges The ranges to delete
-   * @returns A promise that resolves successfully when the operation is complete or rejects if there's an error
-   */
-  delete(ranges: GridRange[]): Promise<void>;
 }
 
 export default EditableGridModel;

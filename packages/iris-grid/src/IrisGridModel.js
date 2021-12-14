@@ -408,6 +408,15 @@ class IrisGridModel extends GridModel {
   isRowMovable() {
     return false;
   }
+
+  /**
+   * Delete ranges from an input grid. Will delete the entire row, causing data to shift up
+   * @param {GridRange[]} ranges The ranges to delete
+   * @returns {Promise<void>} A promise that resolves successfully when the operation is complete or rejects if there's an error
+   */
+  delete(ranges) {
+    throw new Error('delete not implemented');
+  }
 }
 
 export default IrisGridModel;

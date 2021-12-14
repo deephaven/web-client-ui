@@ -9,9 +9,9 @@ export type EventHandlerResultOptions = {
 
 /**
  * Result from the event handler for an event.
- * Return `false` if the event should not be consumed,
- * `true` to consume the event and stopPropagation/preventDefault,
- * or an options object to consume and decide whether to stopPropagation
- * or preventDefault
+ * Return one of the following:
+ * - `false` if the event was not consumed and should be passed to other registered grid event handlers
+ * - `true` to stop the event from being passed along to other registered grid event handlers, as well as call event.stopPropagation() and event.preventDefault()
+ * - An `EventHandlerResultOptions` object to stop the event from being passed along to other registered grid event handlers, and decide whether to call event.stopPropagation() and/or event.preventDefault()
  */
 export type EventHandlerResult = boolean | EventHandlerResultOptions;
