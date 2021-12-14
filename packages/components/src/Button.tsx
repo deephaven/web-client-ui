@@ -21,29 +21,26 @@ const VARIANT_KINDS = ['group-end'] as const;
 type VariantTuple = typeof VARIANT_KINDS;
 type VariantKind = VariantTuple[number];
 
-interface BaseButtonProps {
+type ButtonTypes = 'submit' | 'reset' | 'button';
+
+interface BaseButtonProps extends React.ComponentPropsWithRef<'button'> {
   kind: ButtonKind;
+  type?: ButtonTypes;
   variant?: VariantKind;
-  type?: 'button' | 'reset' | 'submit';
   tooltip?: string | JSX.Element;
   icon?: IconDefinition | JSX.Element;
-  disabled?: boolean;
   active?: boolean;
-  onClick: React.MouseEventHandler<HTMLButtonElement>;
-  children?: React.ReactNode;
-  className?: string;
-  style?: React.CSSProperties;
 }
 
-interface ButtonWithChildren extends BaseButtonProps {
+type ButtonWithChildren = BaseButtonProps & {
   children: React.ReactNode;
-}
+};
 
-interface IconOnlyButton extends BaseButtonProps {
+type IconOnlyButton = BaseButtonProps & {
   tooltip: string | JSX.Element;
   icon: IconDefinition | JSX.Element;
   children?: undefined;
-}
+};
 
 type ButtonProps = IconOnlyButton | ButtonWithChildren;
 
@@ -87,9 +84,9 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       disabled,
       active,
       onClick,
-      children,
       className,
       style,
+      children,
     } = props;
 
     const iconOnly = (icon && !children) as boolean;
@@ -156,7 +153,7 @@ Button.displayName = 'Button';
 Button.propTypes = {
   kind: PropTypes.oneOf(BUTTON_KINDS).isRequired,
   variant: PropTypes.oneOf(VARIANT_KINDS),
-  type: PropTypes.oneOf(['button', 'reset', 'submit']),
+  type: PropTypes.oneOf<ButtonTypes>(['submit', 'reset', 'button']),
   tooltip(props) {
     const { tooltip, icon, children } = props;
     if (!tooltip && icon && !children) {
@@ -180,7 +177,16 @@ Button.propTypes = {
   },
   disabled: PropTypes.bool,
   active: PropTypes.bool,
-  onClick: PropTypes.func.isRequired,
+  onClick(props) {
+    const { onClick, type } = props;
+    if (type === 'button' && typeof onClick !== 'function') {
+      return new Error('type button requires an onClick function');
+    }
+    if (onClick !== undefined && typeof onClick !== 'function') {
+      return new Error('onClick must be a function');
+    }
+    return null;
+  },
   children: PropTypes.node,
   className: PropTypes.string,
   style: PropTypes.object,
@@ -188,6 +194,7 @@ Button.propTypes = {
 
 Button.defaultProps = {
   type: 'button',
+  onClick: undefined,
   variant: undefined,
   tooltip: undefined,
   icon: undefined,
