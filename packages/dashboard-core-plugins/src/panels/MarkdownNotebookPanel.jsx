@@ -259,8 +259,11 @@ export class MarkdownNotebookPanel extends Component {
     this.setState(
       ({ isPreview, panelState = {} }) => {
         if (isPreview) {
-          const { metadata } = this.props;
-          this.registerFileMetadata(metadata, false);
+          const { metadata, panelState: propsPanelState } = this.props;
+          this.registerFileMetadata(
+            propsPanelState?.fileMetadata ?? metadata,
+            false
+          );
           return { isPreview: false, panelState: { ...panelState, isPreview } };
         }
         return null;
@@ -280,8 +283,8 @@ export class MarkdownNotebookPanel extends Component {
    * @returns String the transformed link
    */
   transformLinkUri(src) {
-    const { metadata, notebooksUrl } = this.props;
-    let itemName = metadata?.itemName;
+    const { notebooksUrl, panelState } = this.props;
+    let itemName = panelState?.fileMetadata?.itemName;
     if (!itemName) {
       return src;
     }
@@ -347,7 +350,7 @@ MarkdownNotebookPanel.propTypes = {
   glContainer: GLPropTypes.Container.isRequired,
   glEventHub: GLPropTypes.EventHub.isRequired,
   metadata: PropTypes.shape({
-    itemName: PropTypes.string,
+    id: PropTypes.string,
   }),
   panelState: PropTypes.shape({
     content: PropTypes.string,
