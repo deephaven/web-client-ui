@@ -2078,7 +2078,7 @@ export class GridRenderer {
       context.stroke();
     }
 
-    if (column != null && row != null) {
+    if (isCursorVisible && column != null && row != null) {
       context.restore();
 
       this.drawActiveCell(context, state, column, row);
