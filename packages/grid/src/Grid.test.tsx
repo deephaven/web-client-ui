@@ -109,7 +109,7 @@ function getClientY(
 function mouseEvent(
   column: VisibleIndex,
   row: VisibleIndex,
-  fn: (event: React.MouseEvent) => void,
+  fn: React.MouseEventHandler,
   type: string,
   extraArgs?: MouseEventInit,
   clientX = getClientX(column),
@@ -149,7 +149,7 @@ function mouseMove(
   mouseEvent(
     column,
     row,
-    (component.handleMouseDrag as unknown) as (event: React.MouseEvent) => void,
+    (component.handleMouseDrag as unknown) as React.MouseEventHandler,
     'mousemove',
     extraMouseArgs,
     clientX,
@@ -168,7 +168,7 @@ function mouseUp(
   mouseEvent(
     column,
     row,
-    (component.handleMouseUp as unknown) as (event: React.MouseEvent) => void,
+    (component.handleMouseUp as unknown) as React.MouseEventHandler,
     'mouseup',
     extraMouseArgs,
     clientX,

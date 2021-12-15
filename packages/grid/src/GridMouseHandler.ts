@@ -1,9 +1,14 @@
 /* eslint class-methods-use-this: "off" */
 /* eslint no-unused-vars: "off" */
-import { MouseEvent } from 'react';
 import { EventHandlerResult } from './EventHandlerResult';
 import Grid from './Grid';
 import { GridPoint } from './GridUtils';
+
+/**
+ * Some events we listen to are a native mouse event, and others are wrapped with React's SyntheticEvent.
+ * The GridMouseHandler shouldn't care though - the properties it accesses should be common on both types of events.
+ */
+export type GridMouseEvent = MouseEvent | React.MouseEvent;
 
 export type GridMouseHandlerFunctionName =
   | 'onDown'
@@ -35,7 +40,7 @@ export class GridMouseHandler {
   onDown(
     gridPoint: GridPoint,
     grid: Grid,
-    event: MouseEvent
+    event: GridMouseEvent
   ): EventHandlerResult {
     return false;
   }
@@ -43,7 +48,7 @@ export class GridMouseHandler {
   onMove(
     gridPoint: GridPoint,
     grid: Grid,
-    event: MouseEvent
+    event: GridMouseEvent
   ): EventHandlerResult {
     return false;
   }
@@ -51,7 +56,7 @@ export class GridMouseHandler {
   onDrag(
     gridPoint: GridPoint,
     grid: Grid,
-    event: MouseEvent
+    event: GridMouseEvent
   ): EventHandlerResult {
     return false;
   }
@@ -59,7 +64,7 @@ export class GridMouseHandler {
   onLeave(
     gridPoint: GridPoint,
     grid: Grid,
-    event: MouseEvent
+    event: GridMouseEvent
   ): EventHandlerResult {
     return false;
   }
@@ -67,7 +72,7 @@ export class GridMouseHandler {
   onClick(
     gridPoint: GridPoint,
     grid: Grid,
-    event: MouseEvent
+    event: GridMouseEvent
   ): EventHandlerResult {
     return false;
   }
@@ -75,7 +80,7 @@ export class GridMouseHandler {
   onContextMenu(
     gridPoint: GridPoint,
     grid: Grid,
-    event: MouseEvent
+    event: GridMouseEvent
   ): EventHandlerResult {
     return false;
   }
@@ -83,7 +88,7 @@ export class GridMouseHandler {
   onDoubleClick(
     gridPoint: GridPoint,
     grid: Grid,
-    event: MouseEvent
+    event: GridMouseEvent
   ): EventHandlerResult {
     return false;
   }
@@ -91,7 +96,7 @@ export class GridMouseHandler {
   onUp(
     gridPoint: GridPoint,
     grid: Grid,
-    event: MouseEvent
+    event: GridMouseEvent
   ): EventHandlerResult {
     return false;
   }
@@ -99,7 +104,7 @@ export class GridMouseHandler {
   onWheel(
     gridPoint: GridPoint,
     grid: Grid,
-    event: MouseEvent
+    event: GridMouseEvent
   ): EventHandlerResult {
     return false;
   }

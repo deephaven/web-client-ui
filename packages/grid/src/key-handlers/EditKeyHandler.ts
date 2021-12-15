@@ -1,14 +1,13 @@
 /* eslint class-methods-use-this: "off" */
-import { KeyboardEvent } from 'react';
 import GridUtils from '../GridUtils';
 import Grid from '../Grid';
 import GridRange from '../GridRange';
-import KeyHandler from '../KeyHandler';
+import KeyHandler, { GridKeyboardEvent } from '../KeyHandler';
 import { isEditableGridModel } from '../EditableGridModel';
 import { EventHandlerResult } from '../EventHandlerResult';
 
 class EditKeyHandler extends KeyHandler {
-  onDown(event: KeyboardEvent, grid: Grid): EventHandlerResult {
+  onDown(event: GridKeyboardEvent, grid: Grid): EventHandlerResult {
     if (GridUtils.isModifierKeyDown(event)) {
       return false;
     }

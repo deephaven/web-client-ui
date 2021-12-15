@@ -6,6 +6,7 @@ import clamp from 'lodash.clamp';
 import GridMetricCalculator, { GridMetricState } from './GridMetricCalculator';
 import GridModel from './GridModel';
 import GridMouseHandler, {
+  GridMouseEvent,
   GridMouseHandlerFunctionName,
 } from './GridMouseHandler';
 import GridTheme, { GridTheme as GridThemeType } from './GridTheme';
@@ -28,7 +29,7 @@ import {
   EditMouseHandler,
 } from './mouse-handlers';
 import './Grid.scss';
-import KeyHandler from './KeyHandler';
+import KeyHandler, { GridKeyboardEvent } from './KeyHandler';
 import {
   EditKeyHandler,
   PasteKeyHandler,
@@ -558,7 +559,7 @@ class Grid extends PureComponent<GridProps, GridState> {
     return Grid.getTheme(theme);
   }
 
-  getGridPointFromEvent(event: React.MouseEvent): GridPoint {
+  getGridPointFromEvent(event: GridMouseEvent): GridPoint {
     assertIsDefined(this.canvas);
 
     const rect = this.canvas.getBoundingClientRect();
@@ -1446,13 +1447,10 @@ class Grid extends PureComponent<GridProps, GridState> {
   startDragTimer(event: React.MouseEvent): void {
     this.stopDragTimer();
 
-    const mouseEvent = new MouseEvent(
-      'custom',
-      (event as unknown) as MouseEventInit
-    );
+    const mouseEvent = new MouseEvent('custom', event.nativeEvent);
 
     this.dragTimer = setTimeout(() => {
-      this.handleMouseDrag((mouseEvent as unknown) as MouseEvent);
+      this.handleMouseDrag(mouseEvent);
     }, Grid.dragTimeout);
   }
 
@@ -1590,7 +1588,7 @@ class Grid extends PureComponent<GridProps, GridState> {
    * Handle a key down event from the keyboard. Pass the event to the registered keyboard handlers until one handles it.
    * @param event Keyboard event
    */
-  handleKeyDown(event: React.KeyboardEvent): void {
+  handleKeyDown(event: GridKeyboardEvent): void {
     const keyHandlers = this.getKeyHandlers();
     for (let i = 0; i < keyHandlers.length; i += 1) {
       const keyHandler = keyHandlers[i];
@@ -1613,7 +1611,7 @@ class Grid extends PureComponent<GridProps, GridState> {
    */
   notifyMouseHandlers(
     functionName: GridMouseHandlerFunctionName,
-    event: React.MouseEvent,
+    event: GridMouseEvent,
     updateCoordinates = true,
     addCursorToDocument = false
   ): void {
@@ -1677,12 +1675,7 @@ class Grid extends PureComponent<GridProps, GridState> {
 
   handleMouseDrag(event: MouseEvent): void {
     this.setState({ isDragging: true });
-    this.notifyMouseHandlers(
-      'onDrag',
-      (event as unknown) as React.MouseEvent,
-      true,
-      true
-    );
+    this.notifyMouseHandlers('onDrag', event, true, true);
 
     this.stopDragTimer();
   }
@@ -1695,11 +1688,7 @@ class Grid extends PureComponent<GridProps, GridState> {
       return;
     }
 
-    this.notifyMouseHandlers(
-      'onUp',
-      (event as unknown) as React.MouseEvent,
-      false
-    );
+    this.notifyMouseHandlers('onUp', event, false);
 
     this.stopDragTimer();
 
@@ -1720,7 +1709,7 @@ class Grid extends PureComponent<GridProps, GridState> {
   }
 
   handleWheel(event: WheelEvent): void {
-    this.notifyMouseHandlers('onWheel', (event as unknown) as React.WheelEvent);
+    this.notifyMouseHandlers('onWheel', event);
 
     if (event.defaultPrevented) {
       return;

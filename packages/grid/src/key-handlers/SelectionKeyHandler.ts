@@ -1,13 +1,12 @@
 /* eslint class-methods-use-this: "off" */
 import clamp from 'lodash.clamp';
-import { KeyboardEvent } from 'react';
 import Grid from '../Grid';
 import GridRange from '../GridRange';
 import GridUtils from '../GridUtils';
-import KeyHandler from '../KeyHandler';
+import KeyHandler, { GridKeyboardEvent } from '../KeyHandler';
 
 class SelectionKeyHandler extends KeyHandler {
-  onDown(event: KeyboardEvent, grid: Grid): boolean {
+  onDown(event: GridKeyboardEvent, grid: Grid): boolean {
     switch (event.key) {
       case 'a':
         if (GridUtils.isModifierKeyDown(event)) {
@@ -103,7 +102,7 @@ class SelectionKeyHandler extends KeyHandler {
   handleArrowMove(
     deltaColumn: number,
     deltaRow: number,
-    event: KeyboardEvent,
+    event: GridKeyboardEvent,
     grid: Grid
   ): boolean {
     const isShiftKey = event.shiftKey;
@@ -180,7 +179,7 @@ class SelectionKeyHandler extends KeyHandler {
     return true;
   }
 
-  handlePageUp(e: KeyboardEvent, grid: Grid): boolean {
+  handlePageUp(e: GridKeyboardEvent, grid: Grid): boolean {
     const isShiftKey = e.shiftKey;
 
     if (isShiftKey) {
@@ -223,7 +222,7 @@ class SelectionKeyHandler extends KeyHandler {
     return true;
   }
 
-  handlePageDown(e: KeyboardEvent, grid: Grid): boolean {
+  handlePageDown(e: GridKeyboardEvent, grid: Grid): boolean {
     const isShiftKey = e.shiftKey;
 
     if (isShiftKey) {

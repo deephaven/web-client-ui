@@ -1,9 +1,8 @@
 /* eslint class-methods-use-this: "off" */
-import { KeyboardEvent } from 'react';
 import { EventHandlerResult } from '../EventHandlerResult';
 import Grid from '../Grid';
 import GridUtils from '../GridUtils';
-import KeyHandler from '../KeyHandler';
+import KeyHandler, { GridKeyboardEvent } from '../KeyHandler';
 
 /**
  * Parse out data from an HTML table. Currently does not support colspan/rowspan
@@ -88,7 +87,7 @@ export function parseValueFromElement(
  * Handles the paste key combination
  */
 class PasteKeyHandler extends KeyHandler {
-  onDown(event: KeyboardEvent, grid: Grid): EventHandlerResult {
+  onDown(event: GridKeyboardEvent, grid: Grid): EventHandlerResult {
     switch (event.key) {
       case 'v':
         if (GridUtils.isModifierKeyDown(event)) {

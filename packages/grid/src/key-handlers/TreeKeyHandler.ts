@@ -1,5 +1,4 @@
 /* eslint class-methods-use-this: "off" */
-import { KeyboardEvent } from 'react';
 import { isExpandableGridModel } from '../ExpandableGridModel';
 import Grid from '../Grid';
 import GridRange from '../GridRange';

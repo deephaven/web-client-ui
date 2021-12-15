@@ -1,8 +1,7 @@
-import { MouseEvent } from 'react';
 import { EventHandlerResult } from '../EventHandlerResult';
 import Grid from '../Grid';
 import { BoxCoordinates } from '../GridMetrics';
-import GridMouseHandler from '../GridMouseHandler';
+import GridMouseHandler, { GridMouseEvent } from '../GridMouseHandler';
 import GridUtils, { GridPoint } from '../GridUtils';
 
 const DEFAULT_INTERVAL_MS = 100;
@@ -22,7 +21,7 @@ class GridSelectionMouseHandler extends GridMouseHandler {
   onDown(
     gridPoint: GridPoint,
     grid: Grid,
-    event: MouseEvent
+    event: GridMouseEvent
   ): EventHandlerResult {
     const { x, y, column, row } = gridPoint;
     const { metrics } = grid;
