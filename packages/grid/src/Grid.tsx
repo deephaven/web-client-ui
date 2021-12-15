@@ -51,7 +51,7 @@ import {
   isEditableGridModel,
 } from './EditableGridModel';
 import { EventHandlerResultOptions } from './EventHandlerResult';
-import { assertIsDefined } from './assertions';
+import { assertIsDefined } from './errors';
 
 type LegacyCanvasRenderingContext2D = CanvasRenderingContext2D & {
   webkitBackingStorePixelRatio?: number;
@@ -1351,7 +1351,7 @@ class Grid extends PureComponent<GridProps, GridState> {
       await model.setValues(edits);
     } catch (e) {
       const { onError } = this.props;
-      onError(e as Error);
+      onError(e);
     }
   }
 
@@ -1858,11 +1858,18 @@ class Grid extends PureComponent<GridProps, GridState> {
    */
   handleEditCellChange(value: string): void {
     this.setState(({ editingCell }) => {
-      assertIsDefined(editingCell);
+      try {
+        assertIsDefined(editingCell);
 
-      return {
-        editingCell: { ...editingCell, value } as EditingCell,
-      };
+        return {
+          editingCell: { ...editingCell, value } as EditingCell,
+        };
+      } catch (e) {
+        // This case should _never_ happen, since the editingCell shouldn't be null if this method is called
+        const { onError } = this.props;
+        onError(e);
+        return null;
+      }
     });
   }
 
