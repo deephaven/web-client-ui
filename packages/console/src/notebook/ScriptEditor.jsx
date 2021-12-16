@@ -3,7 +3,6 @@
  */
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js';
 import { LoadingOverlay } from '@deephaven/components';
 import Log from '@deephaven/log';
 import Editor from './Editor';
@@ -101,7 +100,6 @@ class ScriptEditor extends Component {
     log.debug('handleEditorInitialized', sessionLanguage, session, settings);
 
     this.editor = editor;
-    console.log(editor);
     this.setState({ model: this.editor.getModel() });
 
     MonacoUtils.setEOL(editor);
@@ -191,8 +189,6 @@ class ScriptEditor extends Component {
     );
 
     this.contextActionCleanups = cleanups;
-
-    console.log(this);
   }
 
   deInitContextActions() {
@@ -202,7 +198,7 @@ class ScriptEditor extends Component {
     }
   }
 
-  refreshContextActions() {
+  updateShortcuts() {
     this.deInitContextActions();
     this.initContextActions();
   }

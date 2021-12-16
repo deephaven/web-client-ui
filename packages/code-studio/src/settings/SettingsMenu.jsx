@@ -71,6 +71,7 @@ export class SettingsMenu extends Component {
     const version = process.env.REACT_APP_VERSION;
     const supportLink = process.env.REACT_APP_SUPPORT_LINK;
     const docsLink = process.env.REACT_APP_DOCS_LINK;
+    const { onShortcutUpdate } = this.props;
 
     return (
       <div className="app-settings-menu">
@@ -122,7 +123,7 @@ export class SettingsMenu extends Component {
             }
             onToggle={this.handleSectionToggle}
           >
-            <ShortcutSectionContent />
+            <ShortcutSectionContent onUpdate={onShortcutUpdate} />
           </SettingsMenuSection>
 
           <div className="app-settings-footer">
@@ -187,6 +188,7 @@ export class SettingsMenu extends Component {
 
 SettingsMenu.propTypes = {
   onDone: PropTypes.func,
+  onShortcutUpdate: PropTypes.func.isRequired,
 };
 
 SettingsMenu.defaultProps = {

@@ -7,16 +7,18 @@ import {
   RootState,
   saveSettings as saveSettingsAction,
 } from '@deephaven/redux';
-import { MonacoUtils } from '@deephaven/console';
 import ShortcutItem from './ShortcutItem';
 
 type ShortcutSectionContentProps = ReturnType<typeof mapStateToProps> &
-  typeof mapDispatchToProps;
+  typeof mapDispatchToProps & {
+    onUpdate(): void;
+  };
 
 function ShortcutSectionContent({
   shortcutOverrides = {},
   settings,
   saveSettings,
+  onUpdate,
 }: ShortcutSectionContentProps): JSX.Element {
   const saveShortcutOverrides = useCallback(
     (modifiedShortcuts: Shortcut[]) => {
@@ -72,6 +74,7 @@ function ShortcutSectionContent({
           name={category.name}
           shortcuts={category.shortcuts}
           saveShortcutOverrides={saveShortcutOverrides}
+          onUpdate={onUpdate}
         />
       ))}
     </>
@@ -82,12 +85,14 @@ type ShortcutCategoryProps = {
   name: string;
   shortcuts: Shortcut[];
   saveShortcutOverrides(shortcuts: Shortcut[]): void;
+  onUpdate(): void;
 };
 
 function ShortcutCategory({
   name,
   shortcuts: propsShortcuts,
   saveShortcutOverrides,
+  onUpdate,
 }: ShortcutCategoryProps): JSX.Element {
   function formatCategoryName(categoryName: string): string {
     return categoryName
@@ -101,7 +106,6 @@ function ShortcutCategory({
   const [shortcuts, setShortcuts] = useState(propsShortcuts);
 
   function handleShortcutChange(shortcut: Shortcut) {
-    console.log(MonacoUtils.getMonacoKeyCodeFromShortcut(shortcut));
     const conflictingShortcuts = shortcuts.filter(
       s =>
         s !== shortcut &&
@@ -114,6 +118,7 @@ function ShortcutCategory({
 
     saveShortcutOverrides([shortcut, ...conflictingShortcuts]);
     setShortcuts(s => [...s]);
+    onUpdate();
   }
 
   const displayTexts = useMemo(() => shortcuts.map(s => s.getDisplayText()), [
