@@ -57,6 +57,7 @@ import 'monaco-editor/esm/vs/editor/contrib/wordHighlighter/wordHighlighter.js';
 import 'monaco-editor/esm/vs/editor/contrib/wordOperations/wordOperations.js';
 import 'monaco-editor/esm/vs/editor/contrib/wordPartOperations/wordPartOperations.js';
 import { KeyCodeUtils } from 'monaco-editor/esm/vs/base/common/keyCodes.js';
+import { KeyMod } from 'monaco-editor/esm/vs/editor/common/standalone/standaloneBase.js';
 import Log from '@deephaven/log';
 import MonacoTheme from './MonacoTheme.module.scss';
 import PyLang from './lang/python';
@@ -421,20 +422,20 @@ class MonacoUtils {
     if (isMac) {
       return (
         // eslint-disable-next-line no-bitwise
-        (keyState.metaKey && monaco.KeyMod.CtrlCmd) |
-        (keyState.shiftKey && monaco.KeyMod.Shift) |
-        (keyState.altKey && monaco.KeyMod.Alt) |
-        (keyState.ctrlKey && monaco.KeyMod.WinCtrl) |
+        (keyState.metaKey && KeyMod.CtrlCmd) |
+        (keyState.shiftKey && KeyMod.Shift) |
+        (keyState.altKey && KeyMod.Alt) |
+        (keyState.ctrlKey && KeyMod.WinCtrl) |
         KeyCodeUtils.fromString(keyValue)
       );
     }
 
     return (
       // eslint-disable-next-line no-bitwise
-      (keyState.ctrlKey && monaco.KeyMod.CtrlCmd) |
-      (keyState.shiftKey && monaco.KeyMod.Shift) |
-      (keyState.altKey && monaco.KeyMod.Alt) |
-      (keyState.metaKey && monaco.KeyMod.WinCtrl) |
+      (keyState.ctrlKey && KeyMod.CtrlCmd) |
+      (keyState.shiftKey && KeyMod.Shift) |
+      (keyState.altKey && KeyMod.Alt) |
+      (keyState.metaKey && KeyMod.WinCtrl) |
       KeyCodeUtils.fromString(keyValue)
     );
   }

@@ -51,14 +51,12 @@ const NOTEBOOK = {
     name: 'Run',
     shortcut: [MODIFIER.ALT, KEY.R],
     macShortcut: [MODIFIER.OPTION, KEY.R],
-    // isEditable: false,
   }),
   RUN_SELECTED: ShortcutRegistry.createAndAdd({
     id: 'NOTEBOOK.RUN_SELECTED',
     name: 'Run Selected',
     shortcut: [MODIFIER.ALT, MODIFIER.SHIFT, KEY.R],
     macShortcut: [MODIFIER.OPTION, MODIFIER.SHIFT, KEY.R],
-    // isEditable: false,
   }),
   FIND: ShortcutRegistry.createAndAdd({
     id: 'NOTEBOOK.FIND',
