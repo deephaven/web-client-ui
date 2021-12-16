@@ -30,7 +30,6 @@ import { Pending, PromiseUtils } from '@deephaven/utils';
 import { ConsoleEvent, NotebookEvent } from '../events';
 import { getDashboardSessionWrapper } from '../redux';
 import Panel from './Panel';
-// import SHORTCUTS from './Shortcuts';
 import './NotebookPanel.scss';
 
 const log = Log.module('NotebookPanel');
