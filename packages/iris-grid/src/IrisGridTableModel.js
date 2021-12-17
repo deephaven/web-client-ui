@@ -462,6 +462,7 @@ class IrisGridTableModel extends IrisGridModel {
 
   getColumnsWithLayoutHints = memoize(
     (columnMap, frontColumns, backColumns, frozenColumns) => {
+      const columns = [...columnMap.values()];
       if (frontColumns.length || backColumns.length || frozenColumns.length) {
         let finalFrontColumns = [];
         let finalBackColumns = [];
@@ -485,7 +486,8 @@ class IrisGridTableModel extends IrisGridModel {
 
         if (
           finalFrontColumns.length !== frontColumns.length ||
-          finalBackColumns.length !== backColumns.length
+          finalBackColumns.length !== backColumns.length ||
+          finalFrozenColumns.length !== frozenColumns.length
         ) {
           throw new Error(
             'Layout hints are invalid (contain invalid column names)'
@@ -495,7 +497,7 @@ class IrisGridTableModel extends IrisGridModel {
         const frontColumnSet = new Set(finalFrontColumns);
         const backColumnSet = new Set(finalBackColumns);
         const frozenColumnSet = new Set(finalFrozenColumns);
-        const middleColumns = [...columnMap.values()].filter(
+        const middleColumns = columns.filter(
           col =>
             !frontColumnSet.has(col) &&
             !backColumnSet.has(col) &&
@@ -509,7 +511,7 @@ class IrisGridTableModel extends IrisGridModel {
           ...finalBackColumns,
         ];
       }
-      return this.table.columns;
+      return columns;
     }
   );
 
@@ -559,14 +561,6 @@ class IrisGridTableModel extends IrisGridModel {
       this.userFrozenColumns
     );
   }
-
-  // get frozenColumns() {
-  //   if (this.userFrozenColumns && this.userFrozenColumns != null) {
-  //     return this.userFrozenColumns;
-  //   }
-
-  //   return this.layoutHints?.frozenColumns ?? [];
-  // }
 
   get layoutHints() {
     return this.table.layoutHints;

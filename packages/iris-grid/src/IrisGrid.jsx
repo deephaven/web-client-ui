@@ -1411,10 +1411,22 @@ export class IrisGrid extends Component {
 
   unFreezeColumnByColumnName(columnName) {
     const { frozenColumns } = this.state;
+    const { model } = this.props;
     log.debug2('unfreezing column', columnName);
 
+    let allFrozenColumns;
+
+    if (frozenColumns == null) {
+      allFrozenColumns = new Set(model.layoutHints?.frozenColumns ?? []);
+      allFrozenColumns.delete(columnName);
+    } else {
+      allFrozenColumns = new Set(
+        frozenColumns.filter(col => col !== columnName)
+      );
+    }
+
     this.setState({
-      frozenColumns: frozenColumns.filter(col => col !== columnName),
+      frozenColumns: [...allFrozenColumns],
     });
   }
 
