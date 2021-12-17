@@ -38,7 +38,22 @@ const log = Log.module('AppInit');
 
 // Default values used
 const NAME = 'user';
-const USER = { name: NAME, operateAs: NAME };
+const USER = {
+  name: NAME,
+  operateAs: NAME,
+  groups: [],
+  permissions: {
+    isSuperUser: false,
+    isQueryViewOnly: false,
+    isNonInteractive: false,
+    canUsePanels: true,
+    canCreateDashboard: true,
+    canCreateCodeStudio: true,
+    canCreateQueryMonitor: true,
+    canCopy: true,
+    canDownloadCsv: true,
+  },
+};
 const WORKSPACE_STORAGE = new LocalWorkspaceStorage();
 const COMMAND_HISTORY_STORAGE = new PouchCommandHistoryStorage();
 const FILE_STORAGE = new WebdavFileStorage(

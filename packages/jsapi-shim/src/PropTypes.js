@@ -69,11 +69,6 @@ const RollupConfig = PropTypes.shape({
   includeDescriptions: PropTypes.bool,
 });
 
-const User = PropTypes.shape({
-  name: PropTypes.string.isRequired,
-  operateAs: PropTypes.string.isRequired,
-});
-
 const IdeSession = PropTypes.shape({
   addEventListener: PropTypes.func.isRequired,
   removeEventListener: PropTypes.func.isRequired,
@@ -90,7 +85,6 @@ const DhPropTypes = Object.freeze({
   Sort,
   Table,
   TreeTable,
-  User,
   VariableChanges,
   VariableDefinition,
 });

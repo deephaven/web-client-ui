@@ -57,8 +57,17 @@ class TestUtils {
     name: 'test',
     operateAs: 'test',
     groups: ['allusers', 'test'],
-    isQueryViewOnly: false,
-    isSuperUser: false,
+    permissions: {
+      isSuperUser: false,
+      isQueryViewOnly: false,
+      isNonInteractive: false,
+      canUsePanels: true,
+      canCreateDashboard: true,
+      canCreateCodeStudio: true,
+      canCreateQueryMonitor: true,
+      canCopy: true,
+      canDownloadCsv: true,
+    },
   };
 }
 

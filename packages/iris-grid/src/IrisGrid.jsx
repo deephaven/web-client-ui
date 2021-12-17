@@ -260,20 +260,6 @@ export class IrisGrid extends Component {
       this.commitAction,
     ];
 
-    const keyHandlers = [
-      new CopyKeyHandler(this),
-      new ReverseKeyHandler(this),
-      new ClearFilterKeyHandler(this),
-    ];
-    const mouseHandlers = [
-      new IrisGridColumnSelectMouseHandler(this),
-      new IrisGridColumnTooltipMouseHandler(this),
-      new IrisGridSortMouseHandler(this),
-      new IrisGridFilterMouseHandler(this),
-      new IrisGridContextMenuHandler(this),
-      new IrisGridDataSelectMouseHandler(this),
-      new PendingMouseHandler(this),
-    ];
     const {
       aggregationSettings,
       customColumnFormatMap,
@@ -295,7 +281,26 @@ export class IrisGrid extends Component {
       quickFilters,
       selectDistinctColumns,
       pendingDataMap,
+      canCopy,
     } = props;
+
+    const keyHandlers = [
+      new ReverseKeyHandler(this),
+      new ClearFilterKeyHandler(this),
+    ];
+    if (canCopy) {
+      keyHandlers.push(new CopyKeyHandler(this));
+    }
+    const mouseHandlers = [
+      new IrisGridColumnSelectMouseHandler(this),
+      new IrisGridColumnTooltipMouseHandler(this),
+      new IrisGridSortMouseHandler(this),
+      new IrisGridFilterMouseHandler(this),
+      new IrisGridContextMenuHandler(this),
+      new IrisGridDataSelectMouseHandler(this),
+      new PendingMouseHandler(this),
+    ];
+
     const metricCalculator = new IrisGridMetricCalculator({
       userColumnWidths: new Map(userColumnWidths),
       userRowHeights: new Map(userRowHeights),
@@ -516,7 +521,8 @@ export class IrisGrid extends Component {
       toggleFilterBarAction,
       toggleSearchBarAction,
       isFilterBarShown,
-      showSearchBar
+      showSearchBar,
+      canDownloadCsv
     ) => {
       const optionItems = [];
       if (isChartBuilderAvailable) {
@@ -559,7 +565,7 @@ export class IrisGrid extends Component {
           icon: vsRuby,
         });
       }
-      if (isExportAvailable) {
+      if (isExportAvailable && canDownloadCsv) {
         optionItems.push({
           type: OptionType.TABLE_EXPORTER,
           title: 'Download CSV',
@@ -1175,10 +1181,15 @@ export class IrisGrid extends Component {
   }
 
   copyCell(columnIndex, rowIndex, rawValue = false) {
-    const value = this.getValueForCell(columnIndex, rowIndex, rawValue);
-    ContextActionUtils.copyToClipboard(value).catch(e =>
-      log.error('Unable to copy cell', e)
-    );
+    const { canCopy } = this.props;
+    if (canCopy) {
+      const value = this.getValueForCell(columnIndex, rowIndex, rawValue);
+      ContextActionUtils.copyToClipboard(value).catch(e =>
+        log.error('Unable to copy cell', e)
+      );
+    } else {
+      log.error('Attempted to copyCell for user without copy permission.');
+    }
   }
 
   /**
@@ -1194,24 +1205,28 @@ export class IrisGrid extends Component {
     formatValues = true,
     error = null
   ) {
-    const { model } = this.props;
+    const { model, canCopy } = this.props;
     const { metricCalculator, movedColumns } = this.state;
     const { userColumnWidths } = metricCalculator;
 
-    const copyOperation = {
-      ranges: GridRange.boundedRanges(
-        ranges,
-        model.columnCount,
-        model.rowCount
-      ),
-      includeHeaders,
-      formatValues,
-      movedColumns,
-      userColumnWidths,
-      error,
-    };
+    if (canCopy) {
+      const copyOperation = {
+        ranges: GridRange.boundedRanges(
+          ranges,
+          model.columnCount,
+          model.rowCount
+        ),
+        includeHeaders,
+        formatValues,
+        movedColumns,
+        userColumnWidths,
+        error,
+      };
 
-    this.setState({ copyOperation });
+      this.setState({ copyOperation });
+    } else {
+      log.error('Attempted copyRanges for user without copy permission.');
+    }
   }
 
   startLoading(loadingText, resetRanges = false) {
@@ -2121,24 +2136,38 @@ export class IrisGrid extends Component {
   }
 
   handleDownloadTableStart() {
-    this.setState({
-      isTableDownloading: true,
-      tableDownloadProgress: 0,
-      tableDownloadEstimatedTime: null,
-      tableDownloadStatus: TableCsvExporter.DOWNLOAD_STATUS.INITIATING,
-    });
+    const { canDownloadCsv } = this.props;
+    if (canDownloadCsv) {
+      this.setState({
+        isTableDownloading: true,
+        tableDownloadProgress: 0,
+        tableDownloadEstimatedTime: null,
+        tableDownloadStatus: TableCsvExporter.DOWNLOAD_STATUS.INITIATING,
+      });
+    } else {
+      log.error(
+        'Attempted to handleDownloadTableStart for user without download CSV permission.'
+      );
+    }
   }
 
   handleDownloadTable(...args) {
-    log.info('start table downloading', ...args);
-    this.setState(() => {
-      if (this.tableSaver) {
-        this.tableSaver.startDownload(...args);
-      }
-      return {
-        tableDownloadStatus: TableCsvExporter.DOWNLOAD_STATUS.DOWNLOADING,
-      };
-    });
+    const { canDownloadCsv } = this.props;
+    if (canDownloadCsv) {
+      log.info('start table downloading', ...args);
+      this.setState(() => {
+        if (this.tableSaver) {
+          this.tableSaver.startDownload(...args);
+        }
+        return {
+          tableDownloadStatus: TableCsvExporter.DOWNLOAD_STATUS.DOWNLOADING,
+        };
+      });
+    } else {
+      log.error(
+        'Attempted to handleDownloadTable for user without download CSV permission.'
+      );
+    }
   }
 
   handleCancelDownloadTable() {
@@ -2237,6 +2266,7 @@ export class IrisGrid extends Component {
       alwaysFetchColumns,
       advancedSettings,
       onAdvancedSettingsChange,
+      canDownloadCsv,
     } = this.props;
     const {
       metricCalculator,
@@ -2696,7 +2726,8 @@ export class IrisGrid extends Component {
       this.toggleFilterBarAction,
       this.toggleSearchBarAction,
       isFilterBarShown,
-      showSearchBar
+      showSearchBar,
+      canDownloadCsv
     );
 
     const openOptionsStack = openOptions.map(option => {
@@ -3100,6 +3131,9 @@ IrisGrid.propTypes = {
 
   pendingDataMap: PropTypes.instanceOf(Map),
   getDownloadWorker: PropTypes.func,
+
+  canCopy: PropTypes.bool,
+  canDownloadCsv: PropTypes.bool,
 };
 
 IrisGrid.defaultProps = {
@@ -3154,6 +3188,8 @@ IrisGrid.defaultProps = {
     showTSeparator: true,
     formatter: [],
   },
+  canCopy: true,
+  canDownloadCsv: true,
 };
 
 export default IrisGrid;
