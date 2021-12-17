@@ -65,11 +65,11 @@ class MockIrisGridTreeModel
     return this.isEditable;
   }
 
-  setValues(edits: EditOperation[]): Promise<never> {
+  setValues(edits: EditOperation[]): never {
     throw new Error('Method not implemented.');
   }
 
-  delete(ranges: GridRange[]): Promise<never> {
+  delete(ranges: GridRange[]): never {
     throw new Error('Method not implemented.');
   }
 
