@@ -133,7 +133,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
     const { y, column: columnIndex, row: rowIndex } = gridPoint;
     const modelColumn = irisGrid.getModelColumn(columnIndex);
     const modelRow = irisGrid.getModelRow(rowIndex);
-    const { model } = irisGrid.props;
+    const { model, canCopy } = irisGrid.props;
     const { columns } = model;
     const value = model.valueForCell(modelColumn, modelRow);
     const valueText = model.textForCell(modelColumn, modelRow);
@@ -455,46 +455,50 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
           }
         }
 
-        actions.push({
-          title: 'Copy Cell',
-          group: IrisGridContextMenuHandler.GROUP_COPY,
-          order: 10,
-          action: () => {
-            irisGrid.copyCell(columnIndex, rowIndex);
-          },
-        });
+        if (canCopy) {
+          actions.push({
+            title: 'Copy Cell',
+            group: IrisGridContextMenuHandler.GROUP_COPY,
+            order: 10,
+            action: () => {
+              irisGrid.copyCell(columnIndex, rowIndex);
+            },
+          });
 
-        actions.push({
-          title: 'Copy Cell Unformatted',
-          group: IrisGridContextMenuHandler.GROUP_COPY,
-          order: 20,
-          action: () => {
-            irisGrid.copyCell(columnIndex, rowIndex, true);
-          },
-        });
+          actions.push({
+            title: 'Copy Cell Unformatted',
+            group: IrisGridContextMenuHandler.GROUP_COPY,
+            order: 20,
+            action: () => {
+              irisGrid.copyCell(columnIndex, rowIndex, true);
+            },
+          });
+        }
       }
 
       // data area, including blank space context menu options
       const { selectedRanges } = grid.state;
       if (selectedRanges.length > 0) {
-        actions.push({
-          title: 'Copy Selection',
-          shortcut: GLOBAL_SHORTCUTS.COPY,
-          group: IrisGridContextMenuHandler.GROUP_COPY,
-          order: 30,
-          action: () => {
-            irisGrid.copyRanges(selectedRanges);
-          },
-        });
+        if (canCopy) {
+          actions.push({
+            title: 'Copy Selection',
+            shortcut: GLOBAL_SHORTCUTS.COPY,
+            group: IrisGridContextMenuHandler.GROUP_COPY,
+            order: 30,
+            action: () => {
+              irisGrid.copyRanges(selectedRanges);
+            },
+          });
 
-        actions.push({
-          title: 'Copy Selection w/ Headers',
-          group: IrisGridContextMenuHandler.GROUP_COPY,
-          order: 40,
-          action: () => {
-            irisGrid.copyRanges(selectedRanges, true);
-          },
-        });
+          actions.push({
+            title: 'Copy Selection w/ Headers',
+            group: IrisGridContextMenuHandler.GROUP_COPY,
+            order: 40,
+            action: () => {
+              irisGrid.copyRanges(selectedRanges, true);
+            },
+          });
+        }
 
         if (model.isEditable) {
           actions.push({

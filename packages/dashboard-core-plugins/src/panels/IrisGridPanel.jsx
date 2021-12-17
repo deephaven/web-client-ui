@@ -15,7 +15,6 @@ import {
   TableUtils,
 } from '@deephaven/iris-grid';
 import AdvancedSettings from '@deephaven/iris-grid/dist/sidebar/AdvancedSettings';
-import { PropTypes as APIPropTypes } from '@deephaven/jsapi-shim';
 import Log from '@deephaven/log';
 import { getSettings, getUser, getWorkspace } from '@deephaven/redux';
 import { PromiseUtils } from '@deephaven/utils';
@@ -869,6 +868,8 @@ export class IrisGridPanel extends PureComponent {
     const childrenContent =
       children ??
       this.getPluginContent(Plugin, model?.table, user, workspace, pluginState);
+    const { permissions } = user;
+    const { canCopy, canDownloadCsv } = permissions;
 
     return (
       <WidgetPanel
@@ -937,6 +938,8 @@ export class IrisGridPanel extends PureComponent {
             onAdvancedSettingsChange={this.handleAdvancedSettingsChange}
             customFilters={pluginFilters}
             pendingDataMap={pendingDataMap}
+            canCopy={canCopy}
+            canDownloadCsv={canDownloadCsv}
             ref={this.irisGrid}
             getDownloadWorker={getDownloadWorker}
           >
@@ -979,7 +982,7 @@ IrisGridPanel.propTypes = {
   columnSelectionValidator: PropTypes.func,
   onStateChange: PropTypes.func,
   onPanelStateUpdate: PropTypes.func,
-  user: APIPropTypes.User.isRequired,
+  user: UIPropTypes.User.isRequired,
   workspace: PropTypes.shape({}).isRequired,
   settings: PropTypes.shape({ timeZone: PropTypes.string.isRequired })
     .isRequired,

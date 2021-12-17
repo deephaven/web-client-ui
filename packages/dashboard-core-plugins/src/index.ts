@@ -9,3 +9,4 @@ export { default as PandasPlugin } from './PandasPlugin';
 export * from './events';
 export * from './panels';
 export * from './redux';
+export * from './prop-types';

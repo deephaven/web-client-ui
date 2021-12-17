@@ -29,6 +29,7 @@ import {
   MarkdownPlugin,
   PandasPlugin,
   getDashboardSessionWrapper,
+  UIPropTypes,
 } from '@deephaven/dashboard-core-plugins';
 import ControlType from '@deephaven/dashboard-core-plugins/dist/controls/ControlType';
 import ToolType from '@deephaven/dashboard-core-plugins/dist/linker/ToolType';
@@ -500,6 +501,8 @@ export class AppMainContainer extends Component {
     const { data: workspaceData = {} } = workspace;
     const { data = EMPTY_OBJECT, layoutConfig } = workspaceData;
     const { layoutSettings = EMPTY_OBJECT } = data;
+    const { permissions } = user;
+    const { canUsePanels } = permissions;
     const {
       contextActions,
       isPanelsMenuShown,
@@ -538,30 +541,32 @@ export class AppMainContainer extends Component {
                   onClearFilter={this.handleClearFilter}
                 />
               </button>
-              <button
-                type="button"
-                className="btn btn-link btn-panels-menu btn-show-panels"
-                data-testid="app-main-panels-button"
-                onClick={this.handleWidgetMenuClick}
-              >
-                <FontAwesomeIcon icon={dhPanels} />
-                Panels
-                <Popper
-                  isShown={isPanelsMenuShown}
-                  className="panels-menu-popper"
-                  onExited={this.handleWidgetsMenuClose}
-                  closeOnBlur
-                  interactive
+              {canUsePanels && (
+                <button
+                  type="button"
+                  className="btn btn-link btn-panels-menu btn-show-panels"
+                  data-testid="app-main-panels-button"
+                  onClick={this.handleWidgetMenuClick}
                 >
-                  <WidgetList
-                    widgets={widgets}
-                    onExportLayout={this.handleExportLayoutClick}
-                    onImportLayout={this.handleImportLayoutClick}
-                    onResetLayout={this.handleResetLayoutClick}
-                    onSelect={this.handleWidgetSelect}
-                  />
-                </Popper>
-              </button>
+                  <FontAwesomeIcon icon={dhPanels} />
+                  Panels
+                  <Popper
+                    isShown={isPanelsMenuShown}
+                    className="panels-menu-popper"
+                    onExited={this.handleWidgetsMenuClose}
+                    closeOnBlur
+                    interactive
+                  >
+                    <WidgetList
+                      widgets={widgets}
+                      onExportLayout={this.handleExportLayoutClick}
+                      onImportLayout={this.handleImportLayoutClick}
+                      onResetLayout={this.handleResetLayoutClick}
+                      onSelect={this.handleWidgetSelect}
+                    />
+                  </Popper>
+                </button>
+              )}
               <button
                 type="button"
                 className={classNames(
@@ -630,7 +635,7 @@ AppMainContainer.propTypes = {
   session: APIPropTypes.IdeSession.isRequired,
   setActiveTool: PropTypes.func.isRequired,
   updateWorkspaceData: PropTypes.func.isRequired,
-  user: APIPropTypes.User.isRequired,
+  user: UIPropTypes.User.isRequired,
   workspace: PropTypes.shape({
     data: PropTypes.shape({
       data: PropTypes.shape({}),

@@ -2,6 +2,7 @@ import React from 'react';
 import { shallow } from 'enzyme';
 import ToolType from '@deephaven/dashboard-core-plugins/dist/linker/ToolType';
 import dh from '@deephaven/jsapi-shim';
+import { TestUtils } from '@deephaven/utils';
 import { AppMainContainer } from './AppMainContainer';
 import LocalWorkspaceStorage from '../storage/LocalWorkspaceStorage';
 
@@ -19,13 +20,7 @@ function makeSession() {
 
 function makeAppMainContainer({
   layoutStorage = {},
-  user = {
-    name: 'name',
-    operateAs: 'operateAs',
-    groups: [],
-    isQueryViewOnly: false,
-    isSuperUser: false,
-  },
+  user = TestUtils.REGULAR_USER,
   dashboardData = {},
   saveWorkspace = jest.fn(() => Promise.resolve()),
   updateWorkspaceData = jest.fn(() => Promise.resolve()),
