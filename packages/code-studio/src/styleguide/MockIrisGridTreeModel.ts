@@ -1,7 +1,6 @@
 /* eslint class-methods-use-this: "off" */
 /* eslint no-unused-vars: "off" */
 /* eslint no-empty-function: "off" */
-// eslint-disable-next-line max-classes-per-file
 import { EventTarget, Event } from 'event-target-shim';
 import memoize from 'memoize-one';
 import { GridRange, MockTreeGridModel } from '@deephaven/grid';
