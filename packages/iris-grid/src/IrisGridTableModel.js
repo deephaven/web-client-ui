@@ -460,75 +460,113 @@ class IrisGridTableModel extends IrisGridModel {
     return '';
   }
 
-  getColumnsWithLayoutHints = memoize((columns, hints, userFrozenColumns) => {
-    if (hints || userFrozenColumns?.length) {
-      const columnMap = new Map();
-      columns.forEach(col => columnMap.set(col.name, col));
+  getColumnsWithLayoutHints = memoize(
+    (columnMap, frontColumns, backColumns, frozenColumns) => {
+      if (frontColumns.length || backColumns.length || frozenColumns.length) {
+        let finalFrontColumns = [];
+        let finalBackColumns = [];
+        let finalFrozenColumns = [];
 
-      let frontColumns = [];
-      let backColumns = [];
-      let frozenColumns = [];
+        if (frontColumns.length) {
+          finalFrontColumns = frontColumns
+            .map(name => columnMap.get(name))
+            .filter(Boolean);
+        }
+        if (backColumns.length) {
+          finalBackColumns = backColumns
+            .map(name => columnMap.get(name))
+            .filter(Boolean);
+        }
+        if (frozenColumns.length) {
+          finalFrozenColumns = frozenColumns
+            .map(name => columnMap.get(name))
+            .filter(Boolean);
+        }
 
-      if (hints?.frontColumns) {
-        frontColumns = hints.frontColumns
-          .map(name => columnMap.get(name))
-          .filter(Boolean);
-      }
-      if (hints?.backColumns) {
-        backColumns = hints.backColumns
-          .map(name => columnMap.get(name))
-          .filter(Boolean);
-      }
-      if (userFrozenColumns) {
-        frozenColumns = userFrozenColumns
-          .map(name => columnMap.get(name))
-          .filter(Boolean);
-      }
+        if (
+          finalFrontColumns.length !== frontColumns.length ||
+          finalBackColumns.length !== backColumns.length
+        ) {
+          throw new Error(
+            'Layout hints are invalid (contain invalid column names)'
+          );
+        }
 
-      if (
-        frontColumns.length !== (hints?.frontColumns?.length ?? 0) ||
-        backColumns.length !== (hints?.backColumns?.length ?? 0)
-      ) {
-        throw new Error(
-          'Layout hints are invalid (contain invalid column names)'
+        const frontColumnSet = new Set(finalFrontColumns);
+        const backColumnSet = new Set(finalBackColumns);
+        const frozenColumnSet = new Set(finalFrozenColumns);
+        const middleColumns = [...columnMap.values()].filter(
+          col =>
+            !frontColumnSet.has(col) &&
+            !backColumnSet.has(col) &&
+            !frozenColumnSet.has(col)
         );
+
+        return [
+          ...finalFrozenColumns,
+          ...finalFrontColumns,
+          ...middleColumns,
+          ...finalBackColumns,
+        ];
       }
-
-      const frontColumnSet = new Set(frontColumns);
-      const backColumnSet = new Set(backColumns);
-      const frozenColumnSet = new Set(frozenColumns);
-      const middleColumns = columns.filter(
-        col =>
-          !frontColumnSet.has(col) &&
-          !backColumnSet.has(col) &&
-          !frozenColumnSet.has(col)
-      );
-
-      return [
-        ...frozenColumns,
-        ...frontColumns,
-        ...middleColumns,
-        ...backColumns,
-      ];
+      return this.table.columns;
     }
-    return columns;
-  });
+  );
 
   get columns() {
     return this.getColumnsWithLayoutHints(
-      this.table.columns,
-      this.layoutHints,
+      this.columnMap,
+      this.frontColumns,
+      this.backColumns,
       this.frozenColumns
     );
   }
 
-  get frozenColumns() {
-    if (this.userFrozenColumns && this.userFrozenColumns != null) {
-      return this.userFrozenColumns;
-    }
+  getMemoizedColumnMap = memoize(tableColumns => {
+    const columnMap = new Map();
+    tableColumns.forEach(col => columnMap.set(col.name, col));
+    return columnMap;
+  });
 
-    return this.layoutHints?.frozenColumns ?? [];
+  get columnMap() {
+    return this.getMemoizedColumnMap(this.table.columns);
   }
+
+  getMemoizedFrontColumns = memoize(
+    layoutHintsFrontColumns => layoutHintsFrontColumns ?? []
+  );
+
+  get frontColumns() {
+    return this.getMemoizedFrontColumns(this.layoutHints?.frontColumns);
+  }
+
+  getMemoizedBackColumns = memoize(
+    layoutHintsBackColumns => layoutHintsBackColumns ?? []
+  );
+
+  get backColumns() {
+    return this.getMemoizedBackColumns(this.layoutHints?.backColumns);
+  }
+
+  getMemoizedFrozenColumns = memoize(
+    (layoutHintsFrozenColumns, userFrozenColumns) =>
+      userFrozenColumns ?? layoutHintsFrozenColumns ?? []
+  );
+
+  get frozenColumns() {
+    return this.getMemoizedFrozenColumns(
+      this.layoutHints?.frozenColumns,
+      this.userFrozenColumns
+    );
+  }
+
+  // get frozenColumns() {
+  //   if (this.userFrozenColumns && this.userFrozenColumns != null) {
+  //     return this.userFrozenColumns;
+  //   }
+
+  //   return this.layoutHints?.frozenColumns ?? [];
+  // }
 
   get layoutHints() {
     return this.table.layoutHints;
