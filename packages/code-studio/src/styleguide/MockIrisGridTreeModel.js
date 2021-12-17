@@ -47,6 +47,8 @@ class MockIrisGridTreeModel extends IrisGridModel {
 
   set pendingRowCount(count) {}
 
+  updateFrozenColumns(columns) {}
+
   get pendingDataMap() {
     return new Map();
   }
