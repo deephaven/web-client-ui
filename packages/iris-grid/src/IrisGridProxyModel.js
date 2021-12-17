@@ -286,6 +286,10 @@ class IrisGridProxyModel extends IrisGridModel {
     return this.model.layoutHints;
   }
 
+  updateFrozenColumns(...args) {
+    this.model.updateFrozenColumns(...args);
+  }
+
   get originalColumns() {
     return this.originalModel.columns;
   }

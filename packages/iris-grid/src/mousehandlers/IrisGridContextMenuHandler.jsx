@@ -174,6 +174,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
       showTSeparator: settings.showTSeparator,
       defaultDateTimeFormatString: CONTEXT_MENU_DATE_FORMAT,
     });
+    const isColumnFrozen = model.isColumnFrozen(columnIndex);
 
     if (column != null) {
       const { table } = model;
@@ -219,6 +220,18 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
           action: () => {
             this.irisGrid.hideColumnByVisibleIndex(columnIndex);
           },
+        });
+        actions.push({
+          title: isColumnFrozen ? 'Unfreeze Column' : 'Freeze Column',
+          group: IrisGridContextMenuHandler.GROUP_HIDE_COLUMNS,
+          action: () => {
+            if (isColumnFrozen) {
+              this.irisGrid.unFreezeColumnByColumnName(column.name);
+            } else {
+              this.irisGrid.freezeColumnByColumnName(column.name);
+            }
+          },
+          order: 10,
         });
         actions.push({
           title: 'Show All Columns',

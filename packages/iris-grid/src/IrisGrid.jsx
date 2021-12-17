@@ -282,6 +282,7 @@ export class IrisGrid extends Component {
       selectDistinctColumns,
       pendingDataMap,
       canCopy,
+      frozenColumns,
     } = props;
 
     const keyHandlers = [
@@ -388,6 +389,7 @@ export class IrisGrid extends Component {
       pendingSaveError: null,
 
       toastMessage: null,
+      frozenColumns,
     };
   }
 
@@ -1388,6 +1390,46 @@ export class IrisGrid extends Component {
     this.grid.forceUpdate();
   }
 
+  freezeColumnByColumnName(columnName) {
+    const { frozenColumns } = this.state;
+    const { model } = this.props;
+    log.debug2('freezing column', columnName);
+
+    let allFrozenColumns;
+
+    if (frozenColumns == null) {
+      allFrozenColumns = new Set(model.layoutHints?.frozenColumns ?? []);
+      allFrozenColumns.add(columnName);
+    } else {
+      allFrozenColumns = new Set([...frozenColumns, columnName]);
+    }
+
+    this.setState({
+      frozenColumns: [...allFrozenColumns],
+    });
+  }
+
+  unFreezeColumnByColumnName(columnName) {
+    const { frozenColumns } = this.state;
+    const { model } = this.props;
+    log.debug2('unfreezing column', columnName);
+
+    let allFrozenColumns;
+
+    if (frozenColumns == null) {
+      allFrozenColumns = new Set(model.layoutHints?.frozenColumns ?? []);
+      allFrozenColumns.delete(columnName);
+    } else {
+      allFrozenColumns = new Set(
+        frozenColumns.filter(col => col !== columnName)
+      );
+    }
+
+    this.setState({
+      frozenColumns: [...allFrozenColumns],
+    });
+  }
+
   handleColumnVisibilityChanged(modelIndexes, visibilityOption) {
     const { metricCalculator } = this.state;
     if (
@@ -2325,6 +2367,7 @@ export class IrisGrid extends Component {
       pendingDataErrors,
       pendingDataMap,
       toastMessage,
+      frozenColumns,
     } = this.state;
     if (!isReady) {
       return null;
@@ -2941,6 +2984,7 @@ export class IrisGrid extends Component {
                 selectDistinctColumns={selectDistinctColumns}
                 pendingRowCount={pendingRowCount}
                 pendingDataMap={pendingDataMap}
+                frozenColumns={frozenColumns}
               />
             )}
             <div
@@ -3134,6 +3178,7 @@ IrisGrid.propTypes = {
 
   canCopy: PropTypes.bool,
   canDownloadCsv: PropTypes.bool,
+  frozenColumns: PropTypes.arrayOf(PropTypes.string),
 };
 
 IrisGrid.defaultProps = {
@@ -3190,6 +3235,7 @@ IrisGrid.defaultProps = {
   },
   canCopy: true,
   canDownloadCsv: true,
+  frozenColumns: null,
 };
 
 export default IrisGrid;
