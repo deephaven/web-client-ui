@@ -392,6 +392,7 @@ export class Chart extends Component {
   }
 
   updateFormatter() {
+    // TODO: Update with decimal/integer formats
     const formatter = new Formatter(
       this.columnFormats,
       this.dateTimeFormatterOptions

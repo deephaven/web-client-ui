@@ -1080,6 +1080,7 @@ export class IrisGrid extends Component {
       ...this.globalColumnFormats,
       ...update.customColumnFormatMap.values(),
     ];
+    // TODO: Pass in decimal/integer format settings here...
     const formatter = new Formatter(
       mergedColumnFormats,
       this.dateTimeFormatterOptions

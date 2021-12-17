@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { dhNewCircleLargeFilled, vsTrash } from '@deephaven/icons';
-import memoize from 'memoize-one';
+import memoize from 'memoizee';
 import { CSSTransition, TransitionGroup } from 'react-transition-group';
 import debounce from 'lodash.debounce';
 import classNames from 'classnames';
@@ -118,6 +118,7 @@ export class FormattingSectionContent extends PureComponent {
     isGlobalOptions,
     legacyGlobalFormat
   ) {
+    // TODO: Do we need the decimal/integer formatting settings here? Or no because it's just date/time anyway?
     const formatter = new Formatter([], {
       timeZone,
       showTimeZone,
@@ -679,6 +680,7 @@ export class FormattingSectionContent extends PureComponent {
             </div>
           </div>
           <div className="form-row mb-2">
+            {/* TODO: Add Decimal and Integer formatting here */}
             <label className="col-form-label col-3">DateTime</label>
             <div className="col-9">
               <select
