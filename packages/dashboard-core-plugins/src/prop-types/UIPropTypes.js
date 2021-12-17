@@ -47,7 +47,7 @@ const User = PropTypes.shape({
     canCreateQueryMonitor: PropTypes.bool.isRequired,
     canCopy: PropTypes.bool.isRequired,
     canDownloadCsv: PropTypes.bool.isRequired,
-  }),
+  }).isRequired,
 });
 
 const UIPropTypes = Object.freeze({
