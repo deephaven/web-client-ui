@@ -711,7 +711,11 @@ export class IrisGrid extends Component {
   );
 
   getCachedTheme = memoize(
-    isEditable => ({ ...IrisGridTheme, autoSelectRow: !isEditable }),
+    (theme, isEditable) => ({
+      ...IrisGridTheme,
+      autoSelectRow: !isEditable,
+      ...theme,
+    }),
     { max: 1 }
   );
 
@@ -746,8 +750,8 @@ export class IrisGrid extends Component {
   }
 
   getTheme() {
-    const { model } = this.props;
-    return this.getCachedTheme(model.isEditable);
+    const { model, theme } = this.props;
+    return this.getCachedTheme(theme, model.isEditable);
   }
 
   getVisibleColumn(modelIndex) {
@@ -3179,6 +3183,9 @@ IrisGrid.propTypes = {
   canCopy: PropTypes.bool,
   canDownloadCsv: PropTypes.bool,
   frozenColumns: PropTypes.arrayOf(PropTypes.string),
+
+  // Theme override for IrisGridTheme
+  theme: PropTypes.shape({}),
 };
 
 IrisGrid.defaultProps = {
@@ -3236,6 +3243,7 @@ IrisGrid.defaultProps = {
   canCopy: true,
   canDownloadCsv: true,
   frozenColumns: null,
+  theme: {},
 };
 
 export default IrisGrid;
