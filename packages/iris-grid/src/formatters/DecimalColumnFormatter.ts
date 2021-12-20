@@ -1,11 +1,17 @@
 /* eslint class-methods-use-this: "off" */
 import dh from '@deephaven/jsapi-shim';
 import Log from '@deephaven/log';
-import TableColumnFormatter from './TableColumnFormatter';
+import TableColumnFormatter, {
+  TableColumnFormat,
+} from './TableColumnFormatter';
 
 const log = Log.module('DecimalTableColumnFormatter');
 
-class DecimalTableColumnFormatter extends TableColumnFormatter {
+export type DecimalColumnFormat = TableColumnFormat & {
+  multiplier?: number;
+};
+
+export class DecimalTableColumnFormatter extends TableColumnFormatter {
   /**
    * Validates format object
    * @param {Object} format Format object
@@ -21,11 +27,11 @@ class DecimalTableColumnFormatter extends TableColumnFormatter {
   }
 
   static makeFormat(
-    label,
-    formatString,
-    multiplier = null,
-    type = TableColumnFormatter.TYPE_CONTEXT_PRESET
-  ) {
+    label: string,
+    formatString: string,
+    type = TableColumnFormatter.TYPE_CONTEXT_PRESET,
+    multiplier = null
+  ): TableColumnFormat {
     return {
       label,
       type,

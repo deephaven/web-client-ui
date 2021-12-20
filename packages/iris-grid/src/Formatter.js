@@ -50,8 +50,17 @@ class Formatter {
    * @param {boolean} dateTimeOptions.showTimeZone Show time zone in DateTime values
    * @param {boolean} dateTimeOptions.showTSeparator Show 'T' separator in DateTime values
    * @param {string} dateTimeOptions.defaultDateTimeFormatString DateTime format to use if columnFormats for DateTime isn't set
+   * @param {Object} decimalFormatOptions Optional object with Decimal format configuration
+   * @param {string} decimalFormatOptions.formatString Default format string to use for decimals
+   * @param {Object} integerFormatOptions Optional object with Integer format configuration
+   * @param {string} integerFormatOptions.formatString Default format string to use for integers
    */
-  constructor(columnFormattingRules = [], dateTimeOptions = {}) {
+  constructor(
+    columnFormattingRules = [],
+    dateTimeOptions = {},
+    decimalFormatOptions = {},
+    integerFormatOptions = {}
+  ) {
     // Formatting order:
     // - columnFormatMap[type][name]
     // - typeFormatterMap[type]
@@ -67,8 +76,14 @@ class Formatter {
         TableUtils.dataType.DATETIME,
         new DateTimeColumnFormatter(dateTimeOptions),
       ],
-      [TableUtils.dataType.DECIMAL, new DecimalColumnFormatter()],
-      [TableUtils.dataType.INT, new IntegerColumnFormatter()],
+      [
+        TableUtils.dataType.DECIMAL,
+        new DecimalColumnFormatter(decimalFormatOptions),
+      ],
+      [
+        TableUtils.dataType.INT,
+        new IntegerColumnFormatter(integerFormatOptions),
+      ],
     ]);
 
     // Formats indexed by data type and column name
