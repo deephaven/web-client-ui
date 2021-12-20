@@ -3,13 +3,15 @@
 /* eslint no-empty-function: "off" */
 import { EventTarget, Event } from 'event-target-shim';
 import memoize from 'memoize-one';
-import { GridRange, MockTreeGridModel } from '@deephaven/grid';
-import { Formatter, IrisGridModel } from '@deephaven/iris-grid';
-import ExpandableGridModel from '@deephaven/grid/dist/ExpandableGridModel';
-import EditableGridModel, {
+import {
+  EditableGridModel,
   EditOperation,
-} from '@deephaven/grid/dist/EditableGridModel';
-import { ModelIndex } from '@deephaven/grid/dist/GridMetrics';
+  ExpandableGridModel,
+  GridRange,
+  MockTreeGridModel,
+  ModelIndex,
+} from '@deephaven/grid';
+import { Formatter, IrisGridModel } from '@deephaven/iris-grid';
 
 // We need to cast our CustomEvent so it's happy with event-target-shim
 type CustomEventType = EventTarget.EventData<
