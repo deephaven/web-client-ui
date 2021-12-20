@@ -5,19 +5,19 @@ import TableColumnFormatter, {
   TableColumnFormat,
 } from './TableColumnFormatter';
 
-const log = Log.module('DecimalTableColumnFormatter');
+const log = Log.module('DecimalColumnFormatter');
 
 export type DecimalColumnFormat = TableColumnFormat & {
   multiplier?: number;
 };
 
-export class DecimalTableColumnFormatter extends TableColumnFormatter {
+export class DecimalColumnFormatter extends TableColumnFormatter {
   /**
    * Validates format object
-   * @param {Object} format Format object
-   * @returns {boolean} true for valid object
+   * @param format Format object
+   * @returns true for valid object
    */
-  static isValid(format) {
+  static isValid(format: TableColumnFormat): boolean {
     try {
       dh.i18n.NumberFormat.format(format.formatString, 0);
       return true;
@@ -26,12 +26,20 @@ export class DecimalTableColumnFormatter extends TableColumnFormatter {
     }
   }
 
+  /**
+   * Create a DecimalColumnFormat object with the parameters specified
+   * @param label Label for the format
+   * @param formatString Format string for the format
+   * @param multiplier Optional multiplier for the formatter
+   * @param type Type of format created
+   * @returns DecimalColumnFormat object
+   */
   static makeFormat(
     label: string,
     formatString: string,
     type = TableColumnFormatter.TYPE_CONTEXT_PRESET,
-    multiplier = null
-  ): TableColumnFormat {
+    multiplier?: number
+  ): DecimalColumnFormat {
     return {
       label,
       type,
@@ -40,45 +48,51 @@ export class DecimalTableColumnFormatter extends TableColumnFormatter {
     };
   }
 
-  static makeCustomFormat(formatString = null, multiplier = null) {
-    return DecimalTableColumnFormatter.makeFormat(
+  /**
+   * Convenient function to create a DecimalFormatObject with a default 'Custom Format' label and Custom type
+   * @param formatString Format string to use
+   * @param multiplier Multiplier to use
+   * @returns DecimalColumnFormat object
+   */
+  static makeCustomFormat(
+    formatString = '',
+    multiplier?: number
+  ): DecimalColumnFormat {
+    return DecimalColumnFormatter.makeFormat(
       'Custom Format',
       formatString,
-      multiplier,
-      TableColumnFormatter.TYPE_CONTEXT_CUSTOM
+      TableColumnFormatter.TYPE_CONTEXT_CUSTOM,
+      multiplier
     );
   }
 
   static DEFAULT_FORMAT_STRING = '###,##0.0000';
 
-  static FORMAT_PERCENT = DecimalTableColumnFormatter.makeFormat(
+  static FORMAT_PERCENT = DecimalColumnFormatter.makeFormat(
     'Percent',
     '##0.00%'
   );
 
-  static FORMAT_BASIS_POINTS = DecimalTableColumnFormatter.makeFormat(
+  static FORMAT_BASIS_POINTS = DecimalColumnFormatter.makeFormat(
     'Basis Points',
     '###,##0 bp',
     10000
   );
 
-  static FORMAT_MILLIONS = DecimalTableColumnFormatter.makeFormat(
+  static FORMAT_MILLIONS = DecimalColumnFormatter.makeFormat(
     'Millions',
     '###,##0.000 mm',
     0.000001
   );
 
-  static FORMAT_ROUND = DecimalTableColumnFormatter.makeFormat(
-    'Round',
-    '###,##0'
-  );
+  static FORMAT_ROUND = DecimalColumnFormatter.makeFormat('Round', '###,##0');
 
-  static FORMAT_ROUND_TWO_DECIMALS = DecimalTableColumnFormatter.makeFormat(
+  static FORMAT_ROUND_TWO_DECIMALS = DecimalColumnFormatter.makeFormat(
     '0.00',
     '###,##0.00'
   );
 
-  static FORMAT_ROUND_FOUR_DECIMALS = DecimalTableColumnFormatter.makeFormat(
+  static FORMAT_ROUND_FOUR_DECIMALS = DecimalColumnFormatter.makeFormat(
     '0.0000',
     '###,##0.0000'
   );
@@ -110,7 +124,7 @@ export class DecimalTableColumnFormatter extends TableColumnFormatter {
   format(valueParam, format) {
     const formatString =
       (format && format.formatString) ||
-      DecimalTableColumnFormatter.DEFAULT_FORMAT_STRING;
+      DecimalColumnFormatter.DEFAULT_FORMAT_STRING;
     const value =
       format && format.multiplier ? valueParam * format.multiplier : valueParam;
     try {
@@ -122,4 +136,4 @@ export class DecimalTableColumnFormatter extends TableColumnFormatter {
   }
 }
 
-export default DecimalTableColumnFormatter;
+export default DecimalColumnFormatter;

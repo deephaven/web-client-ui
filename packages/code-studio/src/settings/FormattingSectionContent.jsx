@@ -622,8 +622,8 @@ export class FormattingSectionContent extends PureComponent {
           const selectedFormat = DecimalColumnFormatter.makeFormat(
             '',
             e.target.value,
-            null,
-            DecimalColumnFormatter.TYPE_GLOBAL
+            DecimalColumnFormatter.TYPE_GLOBAL,
+            null
           );
           this.handleFormatRuleChange(i, 'format', selectedFormat);
         }}
