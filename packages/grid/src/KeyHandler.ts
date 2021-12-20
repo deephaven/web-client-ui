@@ -5,17 +5,18 @@
  * Return true from any of the events to indicate they're consumed, and stopPropagation/preventDefault will be called.
  */
 
-// eslint-disable-next-line import/no-cycle
+import React from 'react';
+import { EventHandlerResult } from './EventHandlerResult';
 import Grid from './Grid';
 
-// True if consumed and to stop event propagation/prevent default, false if not consumed.
-// OR an object if consumed with boolean properties to control whether to stopPropagation/preventDefault
-export type KeyHandlerResponse =
-  | boolean
-  | { stopPropagation?: boolean; preventDefault?: boolean };
+/**
+ * Some events we listen to are a native keyboard event, and others are wrapped with React's SyntheticEvent.
+ * The KeyHandler shouldn't care though - the properties it accesses should be common on both types of events.
+ */
+export type GridKeyboardEvent = KeyboardEvent | React.KeyboardEvent;
 
-class KeyHandler {
-  private order;
+export class KeyHandler {
+  order: number;
 
   // What order this key handler should trigger in
   // Default to well below any of the GRID key handlers 100-1000+
@@ -29,7 +30,7 @@ class KeyHandler {
    * @param grid The grid component the key press is on
    * @returns Response indicating if the key was consumed
    */
-  onDown(event: KeyboardEvent, grid: Grid): KeyHandlerResponse {
+  onDown(event: GridKeyboardEvent, grid: Grid): EventHandlerResult {
     return false;
   }
 }

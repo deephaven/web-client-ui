@@ -291,10 +291,10 @@ class GridUtils {
 
   /**
    * Iterate backward through the visible items until a shown item is hit
-   * @param {Number} startIndex The index to start from
-   * @param {Map} modelIndexes The mapping of model indexes
-   * @param {Number[]} visibleItems The visible items
-   * @param {Map} userSizes The user set sizes
+   * @param startIndex The index to start from
+   * @param modelIndexes The mapping of model indexes
+   * @param visibleItems The visible items
+   * @param userSizes The user set sizes
    * @returns Index of the next visible item, or null if no more are visible
    */
   static getNextShownItem(

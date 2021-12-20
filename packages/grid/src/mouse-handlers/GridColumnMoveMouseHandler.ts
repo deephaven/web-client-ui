@@ -1,21 +1,26 @@
-import GridUtils from '../GridUtils';
+import Grid from '../Grid';
+import GridUtils, { GridPoint } from '../GridUtils';
 import GridMouseHandler from '../GridMouseHandler';
+import { getOrThrow } from '../GridMetricCalculator';
+import { EventHandlerResult } from '../EventHandlerResult';
 
 const SLOPPY_CLICK_DISTANCE = 5;
 
 class GridColumnMoveMouseHandler extends GridMouseHandler {
-  cursor = null;
+  cursor: string | null = null;
 
-  draggingOffset = null;
+  private draggingOffset?: number;
 
-  startingGridPoint = null;
+  private startingGridPoint?: GridPoint;
 
-  sloppyClickThreshold = false;
+  private sloppyClickThreshold = false;
 
-  onDown(gridPoint, grid) {
+  onDown(gridPoint: GridPoint, grid: Grid): EventHandlerResult {
     const { model } = grid.props;
     const { x, y, column } = gridPoint;
     const { metrics } = grid;
+    if (!metrics) throw new Error('Metrics not set');
+
     const { columnHeaderHeight, rowHeaderWidth, visibleColumnXs } = metrics;
 
     this.startingGridPoint = gridPoint;
@@ -27,15 +32,18 @@ class GridColumnMoveMouseHandler extends GridMouseHandler {
       y <= columnHeaderHeight &&
       model.isColumnMovable(column)
     ) {
-      const columnX = visibleColumnXs.get(column);
+      const columnX = getOrThrow(visibleColumnXs, column);
       this.draggingOffset = x - columnX - rowHeaderWidth;
       grid.setState({ draggingColumnOffset: this.draggingOffset });
     }
     return false;
   }
 
-  onDrag(gridPoint, grid) {
-    if (this.draggingOffset == null) {
+  onDrag(gridPoint: GridPoint, grid: Grid): EventHandlerResult {
+    if (
+      this.draggingOffset === undefined ||
+      this.startingGridPoint === undefined
+    ) {
       return false;
     }
 
@@ -75,6 +83,8 @@ class GridColumnMoveMouseHandler extends GridMouseHandler {
 
     this.cursor = 'move';
     const { metrics } = grid;
+    if (!metrics) throw new Error('Metrics not set');
+
     const {
       left,
       lastLeft,
@@ -90,8 +100,8 @@ class GridColumnMoveMouseHandler extends GridMouseHandler {
     if (left < draggingColumn) {
       const leftColumn = draggingColumn - 1;
       minX =
-        visibleColumnXs.get(leftColumn) +
-        visibleColumnWidths.get(leftColumn) * 0.5 +
+        getOrThrow(visibleColumnXs, leftColumn) +
+        getOrThrow(visibleColumnWidths, leftColumn) * 0.5 +
         this.draggingOffset +
         rowHeaderWidth;
     }
@@ -100,9 +110,9 @@ class GridColumnMoveMouseHandler extends GridMouseHandler {
     if (draggingColumn < right) {
       const rightColumn = draggingColumn + 1;
       maxX =
-        visibleColumnXs.get(rightColumn) +
-        visibleColumnWidths.get(rightColumn) * 0.5 -
-        visibleColumnWidths.get(draggingColumn) +
+        getOrThrow(visibleColumnXs, rightColumn) +
+        getOrThrow(visibleColumnWidths, rightColumn) * 0.5 -
+        getOrThrow(visibleColumnWidths, draggingColumn) +
         this.draggingOffset +
         rowHeaderWidth;
     }
@@ -133,11 +143,12 @@ class GridColumnMoveMouseHandler extends GridMouseHandler {
     }
     grid.setState({ movedColumns, draggingColumn });
 
-    const minMoveX = rowHeaderWidth + visibleColumnWidths.get(left) * 0.5;
+    const minMoveX =
+      rowHeaderWidth + getOrThrow(visibleColumnWidths, left) * 0.5;
     const maxMoveX =
       rowHeaderWidth +
-      visibleColumnXs.get(rightVisible) +
-      visibleColumnWidths.get(rightVisible) * 0.5;
+      getOrThrow(visibleColumnXs, rightVisible) +
+      getOrThrow(visibleColumnWidths, rightVisible) * 0.5;
     if (mouseX < minMoveX && left > 0) {
       grid.setState({ left: left - 1 });
     } else if (mouseX > maxMoveX && left < lastLeft) {
@@ -147,11 +158,11 @@ class GridColumnMoveMouseHandler extends GridMouseHandler {
     return true;
   }
 
-  onUp(_, grid) {
+  onUp(gridPoint: GridPoint, grid: Grid): EventHandlerResult {
     this.cursor = null;
 
     if (this.draggingOffset != null) {
-      this.draggingOffset = null;
+      this.draggingOffset = undefined;
       grid.setState({
         draggingColumnOffset: null,
         draggingColumn: null,

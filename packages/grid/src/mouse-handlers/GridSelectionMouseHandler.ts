@@ -1,23 +1,32 @@
-import GridMouseHandler from '../GridMouseHandler';
-import GridUtils from '../GridUtils';
+import { EventHandlerResult } from '../EventHandlerResult';
+import Grid from '../Grid';
+import { BoxCoordinates } from '../GridMetrics';
+import GridMouseHandler, { GridMouseEvent } from '../GridMouseHandler';
+import GridUtils, { GridPoint } from '../GridUtils';
 
 const DEFAULT_INTERVAL_MS = 100;
 
 class GridSelectionMouseHandler extends GridMouseHandler {
-  startPoint = null;
+  private startPoint?: GridPoint;
 
-  hasExtendedFloating = false;
+  private hasExtendedFloating = false;
 
   // Timer used when holding a drag past the end of the grid
-  timer = null;
+  private timer?: ReturnType<typeof setTimeout>;
 
-  lastTriggerTime = null;
+  private lastTriggerTime?: number;
 
-  dragBounds = null;
+  private dragBounds?: BoxCoordinates;
 
-  onDown(gridPoint, grid, event) {
+  onDown(
+    gridPoint: GridPoint,
+    grid: Grid,
+    event: GridMouseEvent
+  ): EventHandlerResult {
     const { x, y, column, row } = gridPoint;
     const { metrics } = grid;
+    if (!metrics) throw new Error('metrics not set');
+
     const { gridX, gridY, maxX, maxY } = metrics;
     const gridMouseX = x - gridX;
     const gridMouseY = y - gridY;
@@ -64,8 +73,8 @@ class GridSelectionMouseHandler extends GridMouseHandler {
     return true;
   }
 
-  onDrag(gridPoint, grid) {
-    if (this.startPoint === null) {
+  onDrag(gridPoint: GridPoint, grid: Grid): EventHandlerResult {
+    if (this.startPoint === undefined) {
       return false;
     }
 
@@ -75,6 +84,8 @@ class GridSelectionMouseHandler extends GridMouseHandler {
     const { x, y } = gridPoint;
     let { row, column } = gridPoint;
     const { metrics } = grid;
+    if (!metrics) throw new Error('metrics not set');
+
     const { left, lastLeft, top, lastTop, columnWidth, rowHeight } = metrics;
     const dragBounds = GridUtils.getScrollDragBounds(
       metrics,
@@ -130,11 +141,16 @@ class GridSelectionMouseHandler extends GridMouseHandler {
       // When selection crosses from a floating area to a non floating area, we need to scroll instead of jumping to the floating area
       // So when that happens, just adjust the point to be past the new boundary
       if (!this.hasExtendedFloating) {
-        if (startRow < floatingTopRowCount && row >= floatingTopRowCount) {
+        if (
+          startRow !== null &&
+          startRow < floatingTopRowCount &&
+          row >= floatingTopRowCount
+        ) {
           // Extending from floating top into the view
           row = floatingTopRowCount;
           this.hasExtendedFloating = true;
         } else if (
+          startRow !== null &&
           startRow >= rowCount - floatingBottomRowCount &&
           row < rowCount - floatingBottomRowCount
         ) {
@@ -144,6 +160,7 @@ class GridSelectionMouseHandler extends GridMouseHandler {
         }
 
         if (
+          startColumn !== null &&
           startColumn < floatingLeftColumnCount &&
           column >= floatingLeftColumnCount
         ) {
@@ -151,6 +168,7 @@ class GridSelectionMouseHandler extends GridMouseHandler {
           column = floatingLeftColumnCount;
           this.hasExtendedFloating = true;
         } else if (
+          startColumn !== null &&
           startColumn >= columnCount - floatingRightColumnCount &&
           column < columnCount - floatingRightColumnCount
         ) {
@@ -162,6 +180,7 @@ class GridSelectionMouseHandler extends GridMouseHandler {
 
       // When a selection is dragging from within the main area to over a floating area, scroll.
       if (
+        startRow !== null &&
         !GridUtils.isFloatingRow(startRow, metrics) &&
         GridUtils.isFloatingRow(row, metrics)
       ) {
@@ -173,6 +192,7 @@ class GridSelectionMouseHandler extends GridMouseHandler {
         }
       }
       if (
+        startColumn !== null &&
         !GridUtils.isFloatingColumn(startColumn, metrics) &&
         GridUtils.isFloatingColumn(column, metrics)
       ) {
@@ -187,10 +207,10 @@ class GridSelectionMouseHandler extends GridMouseHandler {
     return true;
   }
 
-  onUp(gridPoint, grid) {
-    if (this.startPoint !== null) {
-      this.startPoint = null;
-      this.dragBounds = null;
+  onUp(gridPoint: GridPoint, grid: Grid): EventHandlerResult {
+    if (this.startPoint !== undefined) {
+      this.startPoint = undefined;
+      this.dragBounds = undefined;
       this.stopTimer();
       grid.commitSelection();
     }
@@ -198,10 +218,21 @@ class GridSelectionMouseHandler extends GridMouseHandler {
     return false;
   }
 
-  moveSelection(grid, gridPoint, deltaX, deltaY) {
+  moveSelection(
+    grid: Grid,
+    gridPoint: GridPoint,
+    deltaX: number,
+    deltaY: number
+  ): void {
     const { row, column } = gridPoint;
     const { metrics } = grid;
+    if (!metrics) throw new Error('metrics not set');
+
     const { selectionEndRow, selectionEndColumn } = grid.state;
+    if (selectionEndRow == null || selectionEndColumn == null) {
+      throw new Error('selection not set');
+    }
+
     const { rowCount, columnCount } = metrics;
     const minX = deltaX < 0 && column != null ? column : 0;
     const maxX = deltaX > 0 && column != null ? column : columnCount - 1;
@@ -215,7 +246,12 @@ class GridSelectionMouseHandler extends GridMouseHandler {
     this.lastTriggerTime = Date.now();
   }
 
-  startTimer(grid, gridPoint, deltaX, deltaY) {
+  startTimer(
+    grid: Grid,
+    gridPoint: GridPoint,
+    deltaX: number,
+    deltaY: number
+  ): void {
     this.stopTimer();
 
     const timeout =
@@ -229,9 +265,11 @@ class GridSelectionMouseHandler extends GridMouseHandler {
     }, timeout);
   }
 
-  stopTimer() {
-    clearTimeout(this.timer);
-    this.timer = null;
+  stopTimer(): void {
+    if (this.timer !== undefined) {
+      clearTimeout(this.timer);
+      this.timer = undefined;
+    }
   }
 }
 

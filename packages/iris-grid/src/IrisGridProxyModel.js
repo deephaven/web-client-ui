@@ -458,10 +458,6 @@ class IrisGridProxyModel extends IrisGridModel {
     return this.model.columnStatistics(...args);
   }
 
-  async columnFormatMap() {
-    return this.model.columnFormatMap();
-  }
-
   editValueForCell(...args) {
     return this.model.editValueForCell(...args);
   }

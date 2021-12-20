@@ -3,31 +3,31 @@ import clamp from 'lodash.clamp';
 import Grid from '../Grid';
 import GridRange from '../GridRange';
 import GridUtils from '../GridUtils';
-import KeyHandler from '../KeyHandler';
+import KeyHandler, { GridKeyboardEvent } from '../KeyHandler';
 
 class SelectionKeyHandler extends KeyHandler {
-  onDown(e: KeyboardEvent, grid: Grid): boolean {
-    switch (e.key) {
+  onDown(event: GridKeyboardEvent, grid: Grid): boolean {
+    switch (event.key) {
       case 'a':
-        if (GridUtils.isModifierKeyDown(e)) {
+        if (GridUtils.isModifierKeyDown(event)) {
           grid.selectAll();
           return true;
         }
         break;
       case 'ArrowUp':
-        return this.handleArrowMove(0, -1, e, grid);
+        return this.handleArrowMove(0, -1, event, grid);
       case 'ArrowDown':
-        return this.handleArrowMove(0, 1, e, grid);
+        return this.handleArrowMove(0, 1, event, grid);
       case 'ArrowRight':
-        return this.handleArrowMove(1, 0, e, grid);
+        return this.handleArrowMove(1, 0, event, grid);
       case 'ArrowLeft':
-        return this.handleArrowMove(-1, 0, e, grid);
+        return this.handleArrowMove(-1, 0, event, grid);
       case 'k': // h/j/k/l keys are grouped together for quick navigation by power users
       case 'PageUp':
-        return this.handlePageUp(e, grid);
+        return this.handlePageUp(event, grid);
       case 'j':
       case 'PageDown':
-        return this.handlePageDown(e, grid);
+        return this.handlePageDown(event, grid);
       case 'h':
         grid.clearSelectedRanges();
         grid.moveCursorToPosition(0, grid.state.cursorRow);
@@ -40,13 +40,13 @@ class SelectionKeyHandler extends KeyHandler {
         return true;
       }
       case 'Home':
-        if (!e.shiftKey) {
+        if (!event.shiftKey) {
           grid.clearSelectedRanges();
         }
         grid.moveCursorToPosition(
-          GridUtils.isModifierKeyDown(e) ? grid.state.cursorColumn : 0,
-          GridUtils.isModifierKeyDown(e) ? 0 : grid.state.cursorRow,
-          e.shiftKey,
+          GridUtils.isModifierKeyDown(event) ? grid.state.cursorColumn : 0,
+          GridUtils.isModifierKeyDown(event) ? 0 : grid.state.cursorRow,
+          event.shiftKey,
           true,
           true
         );
@@ -54,15 +54,17 @@ class SelectionKeyHandler extends KeyHandler {
       case 'End': {
         const { model } = grid.props;
         const { columnCount, rowCount } = model;
-        if (!e.shiftKey) {
+        if (!event.shiftKey) {
           grid.clearSelectedRanges();
         }
         grid.moveCursorToPosition(
-          GridUtils.isModifierKeyDown(e)
+          GridUtils.isModifierKeyDown(event)
             ? grid.state.cursorColumn
             : columnCount - 1,
-          GridUtils.isModifierKeyDown(e) ? rowCount - 1 : grid.state.cursorRow,
-          e.shiftKey,
+          GridUtils.isModifierKeyDown(event)
+            ? rowCount - 1
+            : grid.state.cursorRow,
+          event.shiftKey,
           true,
           true
         );
@@ -74,7 +76,7 @@ class SelectionKeyHandler extends KeyHandler {
       case 'Enter':
         if (grid.state.selectedRanges.length > 0) {
           grid.moveCursorInDirection(
-            e.shiftKey
+            event.shiftKey
               ? GridRange.SELECTION_DIRECTION.UP
               : GridRange.SELECTION_DIRECTION.DOWN
           );
@@ -84,7 +86,7 @@ class SelectionKeyHandler extends KeyHandler {
       case 'Tab':
         if (grid.state.selectedRanges.length > 0) {
           grid.moveCursorInDirection(
-            e.shiftKey
+            event.shiftKey
               ? GridRange.SELECTION_DIRECTION.LEFT
               : GridRange.SELECTION_DIRECTION.RIGHT
           );
@@ -100,7 +102,7 @@ class SelectionKeyHandler extends KeyHandler {
   handleArrowMove(
     deltaColumn: number,
     deltaRow: number,
-    event: KeyboardEvent,
+    event: GridKeyboardEvent,
     grid: Grid
   ): boolean {
     const isShiftKey = event.shiftKey;
@@ -148,6 +150,8 @@ class SelectionKeyHandler extends KeyHandler {
         );
       }
     } else {
+      if (!grid.metrics) throw new Error('grid.metrics are not set');
+
       const { theme } = grid.props;
       const { autoSelectRow, autoSelectColumn } = theme;
       if (autoSelectRow && deltaColumn !== 0) {
@@ -175,7 +179,7 @@ class SelectionKeyHandler extends KeyHandler {
     return true;
   }
 
-  handlePageUp(e: KeyboardEvent, grid: Grid): boolean {
+  handlePageUp(e: GridKeyboardEvent, grid: Grid): boolean {
     const isShiftKey = e.shiftKey;
 
     if (isShiftKey) {
@@ -218,7 +222,7 @@ class SelectionKeyHandler extends KeyHandler {
     return true;
   }
 
-  handlePageDown(e: KeyboardEvent, grid: Grid): boolean {
+  handlePageDown(e: GridKeyboardEvent, grid: Grid): boolean {
     const isShiftKey = e.shiftKey;
 
     if (isShiftKey) {

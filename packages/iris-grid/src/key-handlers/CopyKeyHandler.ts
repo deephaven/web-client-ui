@@ -1,4 +1,5 @@
 /* eslint class-methods-use-this: "off" */
+import { KeyboardEvent } from 'react';
 import { ContextActionUtils } from '@deephaven/components';
 import { KeyHandler } from '@deephaven/grid';
 import { IrisGrid } from '../IrisGrid';
@@ -13,9 +14,9 @@ class CopyKeyHandler extends KeyHandler {
     this.irisGrid = irisGrid;
   }
 
-  onDown(e: KeyboardEvent): boolean {
+  onDown(event: KeyboardEvent): boolean {
     const { selectedRanges } = this.irisGrid.state;
-    if (e.key === 'c' && ContextActionUtils.isModifierKeyDown(e)) {
+    if (event.key === 'c' && ContextActionUtils.isModifierKeyDown(event)) {
       if (IrisGridUtils.isValidSnapshotRanges(selectedRanges)) {
         this.irisGrid.copyRanges(selectedRanges);
       } else {

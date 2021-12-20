@@ -1,16 +1,21 @@
 /* eslint react/no-did-update-set-state: "off" */
-import React, { PureComponent } from 'react';
+import React, { CSSProperties, PureComponent, ReactNode } from 'react';
 import classNames from 'classnames';
 import memoize from 'memoize-one';
-import PropTypes from 'prop-types';
 import clamp from 'lodash.clamp';
-import GridMetricCalculator from './GridMetricCalculator';
+import GridMetricCalculator, { GridMetricState } from './GridMetricCalculator';
 import GridModel from './GridModel';
-import GridMouseHandler from './GridMouseHandler';
-import GridTheme from './GridTheme';
-import GridRange from './GridRange';
-import GridRenderer from './GridRenderer';
-import GridUtils from './GridUtils';
+import GridMouseHandler, {
+  GridMouseEvent,
+  GridMouseHandlerFunctionName,
+} from './GridMouseHandler';
+import GridTheme, { GridTheme as GridThemeType } from './GridTheme';
+import GridRange, { GridRangeIndex, SELECTION_DIRECTION } from './GridRange';
+import GridRenderer, {
+  EditingCell,
+  EditingCellTextSelectionRange,
+} from './GridRenderer';
+import GridUtils, { GridPoint } from './GridUtils';
 import {
   GridSelectionMouseHandler,
   GridColumnMoveMouseHandler,
@@ -24,7 +29,7 @@ import {
   EditMouseHandler,
 } from './mouse-handlers';
 import './Grid.scss';
-import KeyHandler from './KeyHandler';
+import KeyHandler, { GridKeyboardEvent } from './KeyHandler';
 import {
   EditKeyHandler,
   PasteKeyHandler,
@@ -33,6 +38,136 @@ import {
 } from './key-handlers';
 import CellInputField from './CellInputField';
 import PasteError from './errors/PasteError';
+import GridMetrics, {
+  Coordinate,
+  ModelIndex,
+  MoveOperation,
+  VisibleIndex,
+} from './GridMetrics';
+import { isExpandableGridModel } from './ExpandableGridModel';
+import {
+  assertIsEditableGridModel,
+  EditOperation,
+  isEditableGridModel,
+} from './EditableGridModel';
+import { EventHandlerResultOptions } from './EventHandlerResult';
+import { assertIsDefined } from './errors';
+
+type LegacyCanvasRenderingContext2D = CanvasRenderingContext2D & {
+  webkitBackingStorePixelRatio?: number;
+  mozBackingStorePixelRatio?: number;
+  msBackingStorePixelRatio?: number;
+  oBackingStorePixelRatio?: number;
+  backingStorePixelRatio?: number;
+};
+
+export type GridProps = typeof Grid.defaultProps & {
+  // Options to set on the canvas
+  canvasOptions?: CanvasRenderingContext2DSettings;
+
+  // Whether the grid should stick to the bottom or the right once scrolled to the end
+  // Only matters with ticking grids
+  isStickyBottom?: boolean;
+  isStickyRight?: boolean;
+
+  // Calculate all the metrics required for drawing the grid
+  metricCalculator?: GridMetricCalculator;
+
+  // The model to pull data from
+  model: GridModel;
+
+  // Optional key and mouse handlers
+  keyHandlers?: KeyHandler[];
+  mouseHandlers?: GridMouseHandler[];
+
+  // Initial state of moved columns or rows
+  movedColumns?: MoveOperation[];
+  movedRows?: MoveOperation[];
+
+  // Callback for if an error occurs
+  onError?: (e: Error) => void;
+
+  // Callback when the selection within the grid changes
+  onSelectionChanged?: (ranges: GridRange[]) => void;
+
+  // Callback when the moved columns or rows have changed
+  onMovedColumnsChanged?: (movedColumns: MoveOperation[]) => void;
+  onMovedRowsChanged?: (movedRows: MoveOperation[]) => void;
+
+  // Callback when a move operation is completed
+  onMoveColumnComplete?: (movedColumns: MoveOperation[]) => void;
+  onMoveRowComplete?: (movedRows: MoveOperation[]) => void;
+
+  // Callback when the viewport has scrolled or changed
+  onViewChanged?: (metrics: GridMetrics) => void;
+
+  // Renderer for the grid canvas
+  renderer?: GridRenderer;
+
+  // Optional state override to pass in to the metric and render state
+  // Can be used to add custom properties as well
+  stateOverride?: Record<string, unknown>;
+
+  theme?: GridThemeType;
+};
+
+export type GridState = {
+  // Top/left visible cell in the grid. Note that it's visible row/column index, not the model index (ie. if columns are re-ordered)
+  top: VisibleIndex;
+  left: VisibleIndex;
+
+  // The scroll offset of the top/left cell. 0,0 means the cell is at the top left
+  topOffset: number; // Should be less than the height of the row
+  leftOffset: number; // Should be less than the width of the column
+
+  // current column/row that user is dragging
+  draggingColumn: VisibleIndex | null;
+  draggingRow: VisibleIndex | null;
+
+  // Offset when dragging a column/row
+  draggingColumnOffset: number | null;
+  draggingRowOffset: number | null;
+
+  // When drawing header separators for resizing
+  draggingColumnSeparator: VisibleIndex | null;
+  draggingRowSeparator: VisibleIndex | null;
+
+  // Dragging a scroll bar status
+  isDraggingHorizontalScrollBar: boolean;
+  isDraggingVerticalScrollBar: boolean;
+
+  // Anything is performing a drag, for blocking hover rendering
+  isDragging: boolean;
+
+  // The coordinates of the mouse. May be outside of the canvas
+  mouseX: number | null;
+  mouseY: number | null;
+
+  // Move operations the user has performed on this grids columns/rows
+  movedColumns: MoveOperation[];
+  movedRows: MoveOperation[];
+
+  // Cursor (highlighted cell) location and active selected range
+  cursorRow: VisibleIndex | null;
+  cursorColumn: VisibleIndex | null;
+  selectionStartRow: VisibleIndex | null;
+  selectionStartColumn: VisibleIndex | null;
+  selectionEndRow: VisibleIndex | null;
+  selectionEndColumn: VisibleIndex | null;
+
+  // Currently selected ranges and previously selected ranges
+  // Store the previously selected ranges to determine if the new selection should
+  // deselect again (if it's the same range)
+  selectedRanges: GridRange[];
+  lastSelectedRanges: GridRange[];
+
+  // The mouse cursor style to use when hovering over the grid element
+  cursor: string | null;
+
+  // { column: number, row: number, selectionRange: [number, number], value: string | null, isQuickEdit?: boolean }
+  // The cell that is currently being edited
+  editingCell: EditingCell | null;
+};
 
 /**
  * High performance, extendible, themeable grid component.
@@ -48,7 +183,29 @@ import PasteError from './errors/PasteError';
  * Add an onViewChanged callback to page in/out data as user moves around the grid
  * Can also add onClick and onContextMenu handlers to add custom functionality and menus.
  */
-class Grid extends PureComponent {
+class Grid extends PureComponent<GridProps, GridState> {
+  static defaultProps = {
+    canvasOptions: { alpha: false } as CanvasRenderingContext2DSettings,
+    isStickyBottom: false,
+    isStickyRight: false,
+    keyHandlers: [] as KeyHandler[],
+    mouseHandlers: [] as GridMouseHandler[],
+    movedColumns: [] as MoveOperation[],
+    movedRows: [] as MoveOperation[],
+    onError: (): void => undefined,
+    onSelectionChanged: (): void => undefined,
+    onMovedColumnsChanged: (): void => undefined,
+    onMoveColumnComplete: (): void => undefined,
+    onMovedRowsChanged: (): void => undefined,
+    onMoveRowComplete: (): void => undefined,
+    onViewChanged: (): void => undefined,
+    stateOverride: {} as Record<string, unknown>,
+    theme: {
+      autoSelectColumn: false,
+      autoSelectRow: false,
+    } as GridThemeType,
+  };
+
   // use same constant as chrome source for windows
   // https://github.com/chromium/chromium/blob/973af9d461b6b5dc60208c8d3d66adc27e53da78/ui/events/blink/web_input_event_builders_win.cc#L285
   static pixelsPerLine = 100 / 3;
@@ -57,23 +214,73 @@ class Grid extends PureComponent {
 
   static getTheme = memoize(userTheme => ({ ...GridTheme, ...userTheme }));
 
-  static getScale(context) {
+  /**
+   * On some devices there may be different scaling required for high DPI. Get the scale required for the canvas.
+   * @param context The canvas context
+   * @returns The scale to use
+   */
+  static getScale(context: CanvasRenderingContext2D): number {
     const devicePixelRatio = window.devicePixelRatio || 1;
+
+    // backingStorePixelRatio is deprecated, but check it just in case
+    const legacyContext = context as LegacyCanvasRenderingContext2D;
     const backingStorePixelRatio =
-      context.webkitBackingStorePixelRatio ||
-      context.mozBackingStorePixelRatio ||
-      context.msBackingStorePixelRatio ||
-      context.oBackingStorePixelRatio ||
-      context.backingStorePixelRatio ||
+      legacyContext.webkitBackingStorePixelRatio ||
+      legacyContext.mozBackingStorePixelRatio ||
+      legacyContext.msBackingStorePixelRatio ||
+      legacyContext.oBackingStorePixelRatio ||
+      legacyContext.backingStorePixelRatio ||
       1;
     return devicePixelRatio / backingStorePixelRatio;
   }
 
-  static getCursorClassName(cursor) {
+  /**
+   * Get the class name from the cursor provided
+   * @param cursor The grid cursor to use
+   * @returns Class name with the grid-cursor prefix or null if no cursor provided
+   */
+  static getCursorClassName(cursor: string | null): string | null {
     return cursor ? `grid-cursor-${cursor}` : null;
   }
 
-  constructor(props) {
+  // Need to disable react/sort-comp so I can put the fields here
+  /* eslint-disable react/sort-comp */
+  renderer: GridRenderer;
+
+  metricCalculator: GridMetricCalculator;
+
+  canvas: HTMLCanvasElement | null;
+
+  canvasContext: CanvasRenderingContext2D | null;
+
+  // We draw the canvas on the next animation frame, keep track of the next one
+  animationFrame: number | null;
+
+  // Keep track of previous metrics and new metrics for comparison
+  prevMetrics: GridMetrics | null;
+
+  metrics: GridMetrics | null;
+
+  // If the grid is stuck to the bottom or right
+  isStuckToBottom: boolean;
+
+  isStuckToRight: boolean;
+
+  // Track the cursor that is currently added to the document
+  // Add to document so that when dragging the cursor stays, even if mouse leaves the canvas
+  // Note: on document, not body so that cursor styling can be combined with
+  // blocked pointer events that would otherwise prevent cursor styling from showing
+  documentCursor: string | null;
+
+  dragTimer: ReturnType<typeof setTimeout> | null;
+
+  keyHandlers: KeyHandler[];
+
+  mouseHandlers: GridMouseHandler[];
+
+  /* eslint-enable react/sort-comp */
+
+  constructor(props: GridProps) {
     super(props);
 
     this.handleClick = this.handleClick.bind(this);
@@ -193,20 +400,22 @@ class Grid extends PureComponent {
     };
   }
 
-  componentDidMount() {
+  componentDidMount(): void {
     this.initContext();
 
     // Need to explicitly add wheel event to canvas so we can preventDefault/avoid passive listener issue
     // Otherwise React attaches listener at doc level and you can't prevent default
     // https://github.com/facebook/react/issues/14856
-    this.canvas.addEventListener('wheel', this.handleWheel, { passive: false });
+    this.canvas?.addEventListener('wheel', this.handleWheel, {
+      passive: false,
+    });
     window.addEventListener('resize', this.handleResize);
 
     this.updateCanvasScale();
     this.updateCanvas();
   }
 
-  componentDidUpdate(prevProps, prevState) {
+  componentDidUpdate(prevProps: GridProps, prevState: GridState): void {
     const {
       isStickyBottom,
       isStickyRight,
@@ -214,24 +423,31 @@ class Grid extends PureComponent {
       movedRows,
       onMovedColumnsChanged,
       onMoveColumnComplete,
+      onMovedRowsChanged,
+      onMoveRowComplete,
     } = this.props;
     const {
       isStickyBottom: prevIsStickyBottom,
       isStickyRight: prevIsStickyRight,
       movedColumns: prevPropMovedColumns,
-      movedRows: prevMovedRows,
+      movedRows: prevPropMovedRows,
     } = prevProps;
-    const { movedColumns: prevStateMovedColumns } = prevState;
+    const {
+      movedColumns: prevStateMovedColumns,
+      movedRows: prevStateMovedRows,
+    } = prevState;
     const {
       draggingColumn,
+      draggingRow,
       movedColumns: currentStateMovedColumns,
+      movedRows: currentStateMovedRows,
     } = this.state;
 
     if (prevPropMovedColumns !== movedColumns) {
       this.setState({ movedColumns });
     }
 
-    if (prevMovedRows !== movedRows) {
+    if (prevPropMovedRows !== movedRows) {
       this.setState({ movedRows });
     }
 
@@ -241,6 +457,14 @@ class Grid extends PureComponent {
 
     if (prevState.draggingColumn != null && draggingColumn == null) {
       onMoveColumnComplete(currentStateMovedColumns);
+    }
+
+    if (prevStateMovedRows !== currentStateMovedRows) {
+      onMovedRowsChanged(currentStateMovedRows);
+    }
+
+    if (prevState.draggingRow != null && draggingRow == null) {
+      onMoveRowComplete(currentStateMovedRows);
     }
 
     if (isStickyBottom !== prevIsStickyBottom) {
@@ -308,41 +532,54 @@ class Grid extends PureComponent {
     }
   }
 
-  componentWillUnmount() {
+  componentWillUnmount(): void {
     if (this.animationFrame != null) {
       cancelAnimationFrame(this.animationFrame);
     }
 
-    this.canvas.removeEventListener('wheel', this.handleWheel, {
-      passive: false,
-    });
+    this.canvas?.removeEventListener('wheel', this.handleWheel);
 
-    window.removeEventListener('mousemove', this.handleMouseDrag, true);
-    window.removeEventListener('mouseup', this.handleMouseUp, true);
+    window.removeEventListener(
+      'mousemove',
+      (this.handleMouseDrag as unknown) as EventListenerOrEventListenerObject,
+      true
+    );
+    window.removeEventListener(
+      'mouseup',
+      (this.handleMouseUp as unknown) as EventListenerOrEventListenerObject,
+      true
+    );
     window.removeEventListener('resize', this.handleResize);
 
     this.stopDragTimer();
   }
 
-  getTheme() {
+  getTheme(): GridThemeType {
     const { theme } = this.props;
     return Grid.getTheme(theme);
   }
 
-  getGridPointFromEvent(event) {
+  getGridPointFromEvent(event: GridMouseEvent): GridPoint {
+    assertIsDefined(this.canvas);
+
     const rect = this.canvas.getBoundingClientRect();
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
     return this.getGridPointFromXY(x, y);
   }
 
-  getGridPointFromXY(x, y) {
+  getGridPointFromXY(x: Coordinate, y: Coordinate): GridPoint {
+    if (!this.metrics) throw new Error('metrics must be set');
+
     return GridUtils.getGridPointFromXY(x, y, this.metrics);
   }
 
-  getMetricState(state = this.state) {
+  getMetricState(state = this.state): GridMetricState {
     const theme = this.getTheme();
     const { model, stateOverride } = this.props;
+    if (!this.canvasContext || !this.canvas) {
+      throw new Error('Canvas and context must be defined to get metrics');
+    }
     const context = this.canvasContext;
     const width = this.canvas.clientWidth;
     const height = this.canvas.clientHeight;
@@ -375,41 +612,60 @@ class Grid extends PureComponent {
     };
   }
 
-  getCachedKeyHandlers = memoize(keyHandlers =>
+  getCachedKeyHandlers = memoize((keyHandlers: KeyHandler[]) =>
     [...keyHandlers, ...this.keyHandlers].sort((a, b) => a.order - b.order)
   );
 
-  getKeyHandlers() {
+  getKeyHandlers(): KeyHandler[] {
     const { keyHandlers } = this.props;
     return this.getCachedKeyHandlers(keyHandlers);
   }
 
-  getCachedMouseHandlers = memoize(mouseHandlers =>
+  getCachedMouseHandlers = memoize((mouseHandlers: GridMouseHandler[]) =>
     [...mouseHandlers, ...this.mouseHandlers].sort((a, b) => a.order - b.order)
   );
 
-  getMouseHandlers() {
+  getMouseHandlers(): GridMouseHandler[] {
     const { mouseHandlers } = this.props;
     return this.getCachedMouseHandlers(mouseHandlers);
   }
 
-  getModelColumn(columnIndex) {
-    return this.metrics?.modelColumns?.get(columnIndex);
+  /**
+   * Translate from the provided visible index to the model index
+   * @param columnIndex The column index to get the model for
+   * @returns The model index
+   */
+  getModelColumn(columnIndex: VisibleIndex): ModelIndex {
+    const modelIndex = this.metrics?.modelColumns?.get(columnIndex);
+    if (modelIndex === undefined) {
+      throw new Error(`Unable to get ModelIndex for column ${columnIndex}`);
+    }
+    return modelIndex;
   }
 
-  getModelRow(rowIndex) {
-    return this.metrics?.modelRows?.get(rowIndex);
+  /**
+   * Translate from the provided visible index to the model index
+   * @param rowIndex The row index to get the model for
+   * @returns The model index
+   */
+  getModelRow(rowIndex: VisibleIndex): ModelIndex {
+    const modelIndex = this.metrics?.modelRows?.get(rowIndex);
+    if (modelIndex === undefined) {
+      throw new Error(`Unable to get ModelIndex for row ${rowIndex}`);
+    }
+    return modelIndex;
   }
 
-  toggleRowExpanded(row) {
-    const { metrics } = this;
-    const { modelRows } = metrics;
-
-    const modelRow = modelRows.get(row);
+  /**
+   * Toggle a row between expanded and collapsed states
+   * @param row The row to toggle expansion for
+   */
+  toggleRowExpanded(row: VisibleIndex): void {
+    const modelRow = this.getModelRow(row);
     const { model } = this.props;
     // We only want to set expansion if the row is expandable
     // If it's not, still move the cursor to that position, as it may be outside of the current viewport and we don't know if it's expandable yet
-    if (model.isRowExpandable(modelRow)) {
+    if (isExpandableGridModel(model) && model.isRowExpandable(modelRow)) {
       model.setRowExpanded(modelRow, !model.isRowExpanded(modelRow));
     }
     this.clearSelectedRanges();
@@ -420,8 +676,12 @@ class Grid extends PureComponent {
     this.isStuckToBottom = false;
   }
 
-  /** Allows the selected range to be set programatically */
-  setSelectedRanges(gridRanges) {
+  /**
+   * Allows the selected ranges to be set programatically
+   * Will update the cursor and selection start/end based on the new ranges
+   * @param gridRanges The new selected ranges to set
+   */
+  setSelectedRanges(gridRanges: GridRange[]): void {
     const { model } = this.props;
     const { columnCount, rowCount } = model;
     const { cursorRow, cursorColumn, selectedRanges } = this.state;
@@ -452,14 +712,16 @@ class Grid extends PureComponent {
     }
   }
 
-  initContext() {
+  initContext(): void {
     const { canvas } = this;
     const { canvasOptions } = this.props;
+
+    if (!canvas) throw new Error('Canvas not set');
 
     this.canvasContext = canvas.getContext('2d', canvasOptions);
   }
 
-  requestUpdateCanvas() {
+  requestUpdateCanvas(): void {
     if (this.animationFrame != null) {
       return;
     }
@@ -467,11 +729,13 @@ class Grid extends PureComponent {
     this.animationFrame = requestAnimationFrame(() => {
       this.animationFrame = null;
 
+      if (!this.metrics) throw new Error('Metrics not set');
+
       this.updateCanvas(this.metrics);
     });
   }
 
-  updateCanvas(metrics = this.updateMetrics()) {
+  updateCanvas(metrics = this.updateMetrics()): void {
     this.updateCanvasScale();
 
     const { onViewChanged } = this.props;
@@ -480,8 +744,12 @@ class Grid extends PureComponent {
     this.drawCanvas(metrics);
   }
 
-  updateCanvasScale() {
+  updateCanvasScale(): void {
     const { canvas, canvasContext } = this;
+    if (!canvas) throw new Error('canvas not set');
+    if (!canvasContext) throw new Error('canvasContext not set');
+    if (!canvas.parentElement) throw new Error('Canvas has no parent element');
+
     const scale = Grid.getScale(canvasContext);
     // the parent wrapper has 100% width/height, and is used for determining size
     // we don't want to stretch the canvas to 100%, to avoid fractional pixels.
@@ -495,7 +763,7 @@ class Grid extends PureComponent {
     canvasContext.scale(scale, scale);
   }
 
-  updateMetrics(state = this.state) {
+  updateMetrics(state = this.state): GridMetrics {
     this.prevMetrics = this.metrics;
 
     const { metricCalculator } = this;
@@ -505,7 +773,11 @@ class Grid extends PureComponent {
     return this.metrics;
   }
 
-  checkSelectionChange(prevState) {
+  /**
+   * Check if the selection state has changed, and call the onSelectionChanged callback if they have
+   * @param prevState The previous grid state
+   */
+  checkSelectionChange(prevState: GridState): void {
     const { selectedRanges: oldSelectedRanges } = prevState;
     const { selectedRanges } = this.state;
 
@@ -515,7 +787,11 @@ class Grid extends PureComponent {
     }
   }
 
-  validateSelection() {
+  /**
+   * Validate the current selection, and reset if it is invalid
+   * @returns True if the selection is valid, false if the selection was invalid and has been reset
+   */
+  validateSelection(): boolean {
     const { model } = this.props;
     const { selectedRanges } = this.state;
     const { columnCount, rowCount } = model;
@@ -534,13 +810,16 @@ class Grid extends PureComponent {
     return true;
   }
 
-  clearSelectedRanges() {
+  /**
+   * Clears all selected ranges
+   */
+  clearSelectedRanges(): void {
     const { selectedRanges } = this.state;
     this.setState({ selectedRanges: [], lastSelectedRanges: selectedRanges });
   }
 
   /** Clears all but the last selected range */
-  trimSelectedRanges() {
+  trimSelectedRanges(): void {
     const { selectedRanges } = this.state;
     if (selectedRanges.length > 0) {
       this.setState({
@@ -549,7 +828,12 @@ class Grid extends PureComponent {
     }
   }
 
-  beginSelection(column, row) {
+  /**
+   * Begin a selection operation at the provided location
+   * @param column Column where the selection is beginning
+   * @param row Row where the selection is beginning
+   */
+  beginSelection(column: GridRangeIndex, row: GridRangeIndex): void {
     this.setState({
       selectionStartColumn: column,
       selectionStartRow: row,
@@ -562,17 +846,17 @@ class Grid extends PureComponent {
 
   /**
    * Moves the selection to the cell specified
-   * @param {number} column The column index to move the cursor to
-   * @param {number} row The row index to move the cursor to
-   * @param {boolean} extendSelection Whether to extend the current selection (eg. holding Shift)
-   * @param {boolean} maximizePreviousRange When true, maximize/add to the previous range only, ignoring where the selection was started.
+   * @param column The column index to move the cursor to
+   * @param row The row index to move the cursor to
+   * @param extendSelection Whether to extend the current selection (eg. holding Shift)
+   * @param maximizePreviousRange When true, maximize/add to the previous range only, ignoring where the selection was started.
    */
   moveSelection(
-    column,
-    row,
+    column: GridRangeIndex,
+    row: GridRangeIndex,
     extendSelection = false,
     maximizePreviousRange = false
-  ) {
+  ): void {
     this.setState(state => {
       const { selectedRanges, selectionStartRow, selectionStartColumn } = state;
       const { theme } = this.props;
@@ -587,16 +871,16 @@ class Grid extends PureComponent {
         if (maximizePreviousRange) {
           left = autoSelectRow
             ? null
-            : Math.min(column, lastSelectedRange.startColumn);
+            : Math.min(column ?? 0, lastSelectedRange.startColumn ?? 0);
           top = autoSelectColumn
             ? null
-            : Math.min(row, lastSelectedRange.startRow);
+            : Math.min(row ?? 0, lastSelectedRange.startRow ?? 0);
           right = autoSelectRow
             ? null
-            : Math.max(column, lastSelectedRange.endColumn);
+            : Math.max(column ?? 0, lastSelectedRange.endColumn ?? 0);
           bottom = autoSelectColumn
             ? null
-            : Math.max(row, lastSelectedRange.endRow);
+            : Math.max(row ?? 0, lastSelectedRange.endRow ?? 0);
         } else {
           left = lastSelectedRange.startColumn;
           top = lastSelectedRange.startRow;
@@ -623,7 +907,7 @@ class Grid extends PureComponent {
           return null;
         }
 
-        const newRanges = [].concat(selectedRanges);
+        const newRanges = [...selectedRanges];
         newRanges[newRanges.length - 1] = selectedRange;
         return {
           selectedRanges: newRanges,
@@ -631,7 +915,7 @@ class Grid extends PureComponent {
           selectionEndRow: row,
         };
       }
-      const newRanges = [].concat(selectedRanges);
+      const newRanges = [...selectedRanges];
       const selectedColumn = autoSelectRow ? null : column;
       const selectedRow = autoSelectColumn ? null : row;
       newRanges.push(
@@ -656,8 +940,8 @@ class Grid extends PureComponent {
    * is then it blows those ranges apart.
    * Then it consolidates all the selected ranges, reducing them.
    */
-  commitSelection() {
-    this.setState(state => {
+  commitSelection(): void {
+    this.setState((state: GridState) => {
       const { theme } = this.props;
       const { autoSelectRow } = theme;
       const {
@@ -676,7 +960,12 @@ class Grid extends PureComponent {
       ) {
         // If it's the exact same single selection, then deselect.
         // For if we click on one cell multiple times.
-        return { selectedRanges: [], lastSelectedRanges: [] };
+        return {
+          selectedRanges: [],
+          lastSelectedRanges: [],
+          cursorColumn,
+          cursorRow,
+        };
       }
 
       let newSelectedRanges = selectedRanges.slice();
@@ -724,7 +1013,10 @@ class Grid extends PureComponent {
     });
   }
 
-  selectAll() {
+  /**
+   * Set the selection to the entire grid
+   */
+  selectAll(): void {
     const { model, theme } = this.props;
     const { autoSelectRow, autoSelectColumn } = theme;
 
@@ -735,7 +1027,17 @@ class Grid extends PureComponent {
     this.setSelectedRanges([new GridRange(left, top, right, bottom)]);
   }
 
-  moveCursor(deltaColumn, deltaRow, extendSelection) {
+  /**
+   * Move the cursor in relation to the current cursor position
+   * @param deltaColumn Number of columns to move the cursor
+   * @param deltaRow Number of rows to move the cursor
+   * @param extendSelection True if the current selection should be extended, false to start a new selection
+   */
+  moveCursor(
+    deltaColumn: number,
+    deltaRow: number,
+    extendSelection: boolean
+  ): void {
     const {
       cursorRow,
       cursorColumn,
@@ -759,9 +1061,9 @@ class Grid extends PureComponent {
 
   /**
    * Move the cursor in the provided selection direction
-   * @param {string} direction The direction to move the cursor in
+   * @param direction The direction to move the cursor in
    */
-  moveCursorInDirection(direction = GridRange.SELECTION_DIRECTION.DOWN) {
+  moveCursorInDirection(direction = GridRange.SELECTION_DIRECTION.DOWN): void {
     const { model } = this.props;
     const { columnCount, rowCount } = model;
     const { cursorRow, cursorColumn, selectedRanges } = this.state;
@@ -808,19 +1110,19 @@ class Grid extends PureComponent {
 
   /**
    * Move a cursor to the specified position in the grid.
-   * @param {number|null} column The column index to move the cursor to
-   * @param {number|null} row The row index to move the cursor to
-   * @param {boolean} extendSelection Whether to extend the current selection (eg. holding Shift)
-   * @param {boolean} keepCursorInView Whether to move the viewport so that the cursor is in view
-   * @param {boolean} maximizePreviousRange With this and `extendSelection` true, it will maximize/add to the previous range only, ignoring where the selection was started
+   * @param column The column index to move the cursor to
+   * @param row The row index to move the cursor to
+   * @param extendSelection Whether to extend the current selection (eg. holding Shift)
+   * @param keepCursorInView Whether to move the viewport so that the cursor is in view
+   * @param maximizePreviousRange With this and `extendSelection` true, it will maximize/add to the previous range only, ignoring where the selection was started
    */
   moveCursorToPosition(
-    column,
-    row,
+    column: GridRangeIndex,
+    row: GridRangeIndex,
     extendSelection = false,
     keepCursorInView = true,
     maximizePreviousRange = false
-  ) {
+  ): void {
     if (!extendSelection) {
       this.beginSelection(column, row);
     }
@@ -835,10 +1137,12 @@ class Grid extends PureComponent {
   /**
    * Moves the view to make the specified cell visible
    *
-   * @param {number|null} column The column index to bring into view
-   * @param {number|null} row The row index to bring into view
+   * @param column The column index to bring into view
+   * @param row The row index to bring into view
    */
-  moveViewToCell(column, row) {
+  moveViewToCell(column: GridRangeIndex, row: GridRangeIndex): void {
+    if (!this.metrics) throw new Error('metrics not set');
+
     const { metricCalculator } = this;
     const {
       bottomVisible,
@@ -875,10 +1179,12 @@ class Grid extends PureComponent {
   /**
    * Checks the `top` and `left` properties that are set and updates the isStuckToBottom/Right properties
    * Should be called when user interaction occurs
-   * @param {object} viewState New state properties to set.
-   * @param {boolean} forceUpdate Whether to force an update.
+   * @param viewState New state properties to set.
+   * @param forceUpdate Whether to force an update.
    */
-  setViewState(viewState, forceUpdate = false) {
+  setViewState(viewState: Partial<GridState>, forceUpdate = false): void {
+    if (!this.metrics) throw new Error('metrics not set');
+
     const { isStickyBottom, isStickyRight } = this.props;
     const { top, left } = viewState;
     const { lastTop, lastLeft } = this.metrics;
@@ -889,7 +1195,7 @@ class Grid extends PureComponent {
       this.isStuckToRight = isStickyRight && left >= lastLeft;
     }
 
-    this.setState(viewState);
+    this.setState(viewState as GridState);
     if (forceUpdate) {
       this.forceUpdate();
     }
@@ -898,20 +1204,22 @@ class Grid extends PureComponent {
   /**
    * Start editing the data at the given index
    *
-   * @param {number} column The visible column index to start editing
-   * @param {number} row The visible row index to start editing
-   * @param {boolean} isQuickEdit If this is a quick edit (the arrow keys can commit)
-   * @param {number[]|null} selectionRange The tuple [start,end] text selection range of the value to select when editing
-   * @param {string?} value The value to start with in the edit field. Leave undefined to use the current value.
+   * @param column The visible column index to start editing
+   * @param row The visible row index to start editing
+   * @param isQuickEdit If this is a quick edit (the arrow keys can commit)
+   * @param selectionRange The tuple [start,end] text selection range of the value to select when editing
+   * @param value The value to start with in the edit field. Leave undefined to use the current value.
    */
   startEditing(
-    column,
-    row,
+    column: VisibleIndex,
+    row: VisibleIndex,
     isQuickEdit = false,
-    selectionRange = null,
-    value = undefined
-  ) {
+    selectionRange?: EditingCellTextSelectionRange,
+    value?: string
+  ): void {
     const { model } = this.props;
+    if (!isEditableGridModel(model)) throw new Error('model is not editable');
+
     const modelColumn = this.getModelColumn(column);
     const modelRow = this.getModelRow(row);
     const cell = {
@@ -929,25 +1237,41 @@ class Grid extends PureComponent {
     this.moveViewToCell(column, row);
   }
 
-  isValidForCell(column, row, value) {
+  /**
+   * Check if a value is valid for a specific cell
+   * @param column Column index of the cell to check
+   * @param row Row index of the cell to check
+   * @param value Value to check
+   * @returns True if the value is valid for the provided cell, false otherwise
+   */
+  isValidForCell(
+    column: VisibleIndex,
+    row: VisibleIndex,
+    value: string
+  ): boolean {
     const { model } = this.props;
 
     const modelColumn = this.getModelColumn(column);
     const modelRow = this.getModelRow(row);
-    return model.isValidForCell(modelColumn, modelRow, value);
+    return (
+      isEditableGridModel(model) &&
+      model.isValidForCell(modelColumn, modelRow, value)
+    );
   }
 
   /**
    * Paste a value with the current selection
    * It first needs to validate that the pasted table is valid for the given selection.
    * Also may update selection if single cells are selected and a table is pasted.
-   * @param {string[][] | string} value Table or a string that is being pasted
+   * @param value Table or a string that is being pasted
    */
-  async pasteValue(value) {
+  async pasteValue(value: string[][] | string): Promise<void> {
     const { model } = this.props;
     const { movedColumns, movedRows, selectedRanges } = this.state;
 
     try {
+      assertIsEditableGridModel(model);
+
       if (
         !model.isEditable ||
         !selectedRanges.every(range => model.isEditableRange(range))
@@ -961,15 +1285,15 @@ class Grid extends PureComponent {
 
       if (typeof value === 'string') {
         // Just paste the value into all the selected cells
-        const edits = [];
+        const edits: EditOperation[] = [];
 
         const modelRanges = GridUtils.getModelRanges(
           selectedRanges,
           movedColumns,
           movedRows
         );
-        GridRange.forEachCell(modelRanges, (x, y) => {
-          edits.push({ x, y, text: value });
+        GridRange.forEachCell(modelRanges, (column, row) => {
+          edits.push({ column, row, text: value });
         });
         await model.setValues(edits);
         return;
@@ -985,8 +1309,8 @@ class Grid extends PureComponent {
         ranges.every(
           range =>
             GridRange.cellCount([range]) === 1 &&
-            range.startColumn + tableWidth <= columnCount &&
-            range.startRow + tableHeight <= rowCount
+            (range.startColumn ?? 0) + tableWidth <= columnCount &&
+            (range.startRow ?? 0) + tableHeight <= rowCount
         )
       ) {
         // Remap the selected ranges
@@ -995,8 +1319,8 @@ class Grid extends PureComponent {
             new GridRange(
               range.startColumn,
               range.startRow,
-              range.startColumn + tableWidth - 1,
-              range.startRow + tableHeight - 1
+              (range.startColumn ?? 0) + tableWidth - 1,
+              (range.startRow ?? 0) + tableHeight - 1
             )
         );
         this.setSelectedRanges(ranges);
@@ -1012,13 +1336,13 @@ class Grid extends PureComponent {
         throw new PasteError('Copy and paste area are not same size.');
       }
 
-      const edits = [];
+      const edits: EditOperation[] = [];
       ranges.forEach(range => {
         for (let x = 0; x < tableWidth; x += 1) {
           for (let y = 0; y < tableHeight; y += 1) {
             edits.push({
-              x: range.startColumn + x,
-              y: range.startRow + y,
+              column: (range.startColumn ?? 0) + x,
+              row: (range.startRow ?? 0) + y,
               text: value[y][x],
             });
           }
@@ -1031,17 +1355,36 @@ class Grid extends PureComponent {
     }
   }
 
-  setValueForCell(column, row, value) {
+  /**
+   * Set a value to a specific cell. If the value is not valid for that cell, do not set it
+   * @param column Column index to set the value for
+   * @param row Row index to set the value for
+   * @param value Value to set at that cell
+   * @returns true If the value was valid and attempted to be set, false is it was not valid
+   */
+  setValueForCell(
+    column: VisibleIndex,
+    row: VisibleIndex,
+    value: string
+  ): boolean {
     const { model } = this.props;
+    assertIsEditableGridModel(model);
 
     const modelColumn = this.getModelColumn(column);
     const modelRow = this.getModelRow(row);
     if (model.isValidForCell(modelColumn, modelRow, value)) {
       model.setValueForCell(modelColumn, modelRow, value);
+      return true;
     }
+    return false;
   }
 
-  setValueForRanges(ranges, value) {
+  /**
+   * Set a value on all the ranges provided
+   * @param ranges Ranges to set
+   * @param value The value to set on all the ranges
+   */
+  setValueForRanges(ranges: GridRange[], value: string): void {
     const { model } = this.props;
     const { movedColumns, movedRows } = this.state;
 
@@ -1050,21 +1393,29 @@ class Grid extends PureComponent {
       movedColumns,
       movedRows
     );
-    model.setValueForRanges(modelRanges, value);
+    if (isEditableGridModel(model)) {
+      model.setValueForRanges(modelRanges, value);
+    }
   }
 
-  isSelected(row, column) {
+  /**
+   * Check if a given cell is within the current selection
+   * @param row Row to check
+   * @param column Column to check
+   * @returns True if the cell is in the current selection, false otherwise
+   */
+  isSelected(row: VisibleIndex, column: VisibleIndex): boolean {
     const { selectedRanges } = this.state;
 
     for (let i = 0; i < selectedRanges.length; i += 1) {
       const selectedRange = selectedRanges[i];
       const rowSelected =
         selectedRange.startRow === null ||
-        (selectedRange.startRow <= row && row <= selectedRange.endRow);
+        (selectedRange.startRow <= row && row <= (selectedRange.endRow ?? 0));
       const columnSelected =
         selectedRange.startColumn === null ||
         (selectedRange.startColumn <= column &&
-          column <= selectedRange.endColumn);
+          column <= (selectedRange.endColumn ?? 0));
       if (rowSelected && columnSelected) {
         return true;
       }
@@ -1073,15 +1424,19 @@ class Grid extends PureComponent {
     return false;
   }
 
-  addDocumentCursor(cursor = null) {
+  addDocumentCursor(cursor: string | null = null): void {
     if (this.documentCursor === Grid.getCursorClassName(cursor)) return;
-    document.documentElement.classList.remove(this.documentCursor);
+    if (this.documentCursor) {
+      document.documentElement.classList.remove(this.documentCursor);
+    }
     this.documentCursor = Grid.getCursorClassName(cursor);
-    document.documentElement.classList.add(this.documentCursor);
+    if (this.documentCursor) {
+      document.documentElement.classList.add(this.documentCursor);
+    }
     document.documentElement.classList.add('grid-block-events');
   }
 
-  removeDocumentCursor() {
+  removeDocumentCursor(): void {
     if (this.documentCursor) {
       document.documentElement.classList.remove(this.documentCursor);
       document.documentElement.classList.remove('grid-block-events');
@@ -1089,17 +1444,17 @@ class Grid extends PureComponent {
     }
   }
 
-  startDragTimer(event) {
+  startDragTimer(event: React.MouseEvent): void {
     this.stopDragTimer();
 
-    const mouseEvent = new MouseEvent('custom', event);
+    const mouseEvent = new MouseEvent('custom', event.nativeEvent);
 
     this.dragTimer = setTimeout(() => {
       this.handleMouseDrag(mouseEvent);
     }, Grid.dragTimeout);
   }
 
-  stopDragTimer() {
+  stopDragTimer(): void {
     if (this.dragTimer) {
       clearTimeout(this.dragTimer);
       this.dragTimer = null;
@@ -1107,10 +1462,15 @@ class Grid extends PureComponent {
   }
 
   /**
+   * Draw the grid with the metrics provided
    * When scrolling you've have to re-draw the whole canvas. As a consequence, all these drawing methods
    * must be very quick.
+   * @param metrics Metrics to use for rendering the grid
    */
-  drawCanvas(metrics = this.updateMetrics()) {
+  drawCanvas(metrics = this.updateMetrics()): void {
+    if (!this.canvas) throw new Error('canvas is not set');
+    if (!this.canvasContext) throw new Error('context not set');
+
     const {
       left,
       top,
@@ -1170,15 +1530,27 @@ class Grid extends PureComponent {
     context.restore();
   }
 
-  focus() {
-    this.canvas.focus();
+  /**
+   * Set focus to this grid element
+   */
+  focus(): void {
+    this.canvas?.focus();
   }
 
-  isFocused() {
+  /**
+   * Check if this grid is currently focused
+   * @returns True if the active element is this grid
+   */
+  isFocused(): boolean {
     return document.activeElement === this.canvas;
   }
 
-  handleClick(event) {
+  /**
+   * Handle a mouse click event. Pass the event to the registered mouse handlers until one handles it.
+   * Focuses the grid after the click.
+   * @param event The mouse event
+   */
+  handleClick(event: React.MouseEvent): void {
     const gridPoint = this.getGridPointFromEvent(event);
 
     const mouseHandlers = this.getMouseHandlers();
@@ -1191,10 +1563,14 @@ class Grid extends PureComponent {
       }
     }
 
-    this.canvas.focus();
+    this.canvas?.focus();
   }
 
-  handleContextMenu(event) {
+  /**
+   * Handle a mouse context menu event. Pass the event to the registered mouse handlers until one handles it.
+   * @param event The mouse event triggering the context menu
+   */
+  handleContextMenu(event: React.MouseEvent): void {
     const gridPoint = this.getGridPointFromEvent(event);
 
     const mouseHandlers = this.getMouseHandlers();
@@ -1208,14 +1584,19 @@ class Grid extends PureComponent {
     }
   }
 
-  handleKeyDown(e) {
+  /**
+   * Handle a key down event from the keyboard. Pass the event to the registered keyboard handlers until one handles it.
+   * @param event Keyboard event
+   */
+  handleKeyDown(event: GridKeyboardEvent): void {
     const keyHandlers = this.getKeyHandlers();
     for (let i = 0; i < keyHandlers.length; i += 1) {
       const keyHandler = keyHandlers[i];
-      const result = keyHandler.onDown(e, this);
+      const result = keyHandler.onDown(event, this);
       if (result) {
-        if (result?.stopPropagation ?? true) e.stopPropagation();
-        if (result?.preventDefault ?? true) e.preventDefault();
+        const options = result as EventHandlerResultOptions;
+        if (options?.stopPropagation ?? true) event.stopPropagation();
+        if (options?.preventDefault ?? true) event.preventDefault();
         break;
       }
     }
@@ -1223,17 +1604,17 @@ class Grid extends PureComponent {
 
   /**
    * Notify all of the mouse handlers for this grid of a mouse event.
-   * @param {String} functionName The name of the function in the mouse handler to call
-   * @param {MouseEvent} event The mouse event to notify
-   * @param {Boolean} updateCoordinates Whether to update the mouse coordinates
-   * @param {Boolean} addCursorToDocument Whether to add a cursor overlay or not (for dragging)
+   * @param functionName The name of the function in the mouse handler to call
+   * @param event The mouse event to notify
+   * @param updateCoordinates Whether to update the mouse coordinates
+   * @param addCursorToDocument Whether to add a cursor overlay or not (for dragging)
    */
   notifyMouseHandlers(
-    functionName,
-    event,
+    functionName: GridMouseHandlerFunctionName,
+    event: GridMouseEvent,
     updateCoordinates = true,
     addCursorToDocument = false
-  ) {
+  ): void {
     const gridPoint = this.getGridPointFromEvent(event);
     const mouseHandlers = this.getMouseHandlers();
     let cursor = null;
@@ -1251,8 +1632,9 @@ class Grid extends PureComponent {
         }
 
         // result is bool or object, events are stopped by default
-        if (result?.stopPropagation ?? true) event.stopPropagation();
-        if (result?.preventDefault ?? true) event.preventDefault();
+        const options = result as EventHandlerResultOptions;
+        if (options?.stopPropagation ?? true) event.stopPropagation();
+        if (options?.preventDefault ?? true) event.preventDefault();
         break;
       }
     }
@@ -1265,7 +1647,7 @@ class Grid extends PureComponent {
     }
   }
 
-  handleMouseDown(event) {
+  handleMouseDown(event: React.MouseEvent): void {
     window.addEventListener('mousemove', this.handleMouseDrag, true);
     window.addEventListener('mouseup', this.handleMouseUp, true);
 
@@ -1273,44 +1655,32 @@ class Grid extends PureComponent {
       return;
     }
 
-    this.notifyMouseHandlers(GridMouseHandler.FUNCTION_NAMES.DOWN, event);
+    this.notifyMouseHandlers('onDown', event);
 
     this.startDragTimer(event);
   }
 
-  handleDoubleClick(event) {
-    this.notifyMouseHandlers(
-      GridMouseHandler.FUNCTION_NAMES.DOUBLE_CLICK,
-      event
-    );
+  handleDoubleClick(event: React.MouseEvent): void {
+    this.notifyMouseHandlers('onDoubleClick', event);
   }
 
-  handleMouseMove(event) {
-    this.notifyMouseHandlers(GridMouseHandler.FUNCTION_NAMES.MOVE, event);
+  handleMouseMove(event: React.MouseEvent): void {
+    this.notifyMouseHandlers('onMove', event);
   }
 
-  handleMouseLeave(event) {
-    this.notifyMouseHandlers(
-      GridMouseHandler.FUNCTION_NAMES.LEAVE,
-      event,
-      false
-    );
+  handleMouseLeave(event: React.MouseEvent): void {
+    this.notifyMouseHandlers('onLeave', event, false);
     this.setState({ mouseX: null, mouseY: null });
   }
 
-  handleMouseDrag(event) {
+  handleMouseDrag(event: MouseEvent): void {
     this.setState({ isDragging: true });
-    this.notifyMouseHandlers(
-      GridMouseHandler.FUNCTION_NAMES.DRAG,
-      event,
-      true,
-      true
-    );
+    this.notifyMouseHandlers('onDrag', event, true, true);
 
     this.stopDragTimer();
   }
 
-  handleMouseUp(event) {
+  handleMouseUp(event: MouseEvent): void {
     window.removeEventListener('mousemove', this.handleMouseDrag, true);
     window.removeEventListener('mouseup', this.handleMouseUp, true);
 
@@ -1318,14 +1688,14 @@ class Grid extends PureComponent {
       return;
     }
 
-    this.notifyMouseHandlers(GridMouseHandler.FUNCTION_NAMES.UP, event, false);
+    this.notifyMouseHandlers('onUp', event, false);
 
     this.stopDragTimer();
 
     this.removeDocumentCursor();
   }
 
-  handleResize() {
+  handleResize(): void {
     /**
      * We need to always redraw the canvas in the same frame as the updateCanvasScale
      * because it clears the canvas by nature of direct dom manipulation. However,
@@ -1338,15 +1708,17 @@ class Grid extends PureComponent {
     this.forceUpdate();
   }
 
-  handleWheel(e) {
-    this.notifyMouseHandlers(GridMouseHandler.FUNCTION_NAMES.WHEEL, e);
+  handleWheel(event: WheelEvent): void {
+    this.notifyMouseHandlers('onWheel', event);
 
-    if (e.defaultPrevented) {
+    if (event.defaultPrevented) {
       return;
     }
 
     const { metricCalculator, metrics } = this;
     const metricState = this.getMetricState();
+
+    if (!metrics) throw new Error('metrics not set');
 
     const { lastTop, lastLeft } = metrics;
     let { top, left, topOffset, leftOffset } = metrics;
@@ -1354,7 +1726,7 @@ class Grid extends PureComponent {
     const theme = this.getTheme();
 
     let { deltaX, deltaY } = GridUtils.getScrollDelta(
-      e,
+      event,
       metrics.barWidth,
       metrics.barHeight,
       metrics.rowHeight,
@@ -1468,29 +1840,58 @@ class Grid extends PureComponent {
 
     this.setViewState({ top, left, leftOffset, topOffset });
 
-    e.stopPropagation();
-    e.preventDefault();
+    event.stopPropagation();
+    event.preventDefault();
   }
 
-  handleEditCellCancel() {
+  /**
+   * Handle cancelling the cell edit action
+   */
+  handleEditCellCancel(): void {
     this.setState({ editingCell: null });
     this.focus();
   }
 
-  handleEditCellChange(value) {
-    this.setState(({ editingCell }) => ({
-      editingCell: { ...editingCell, value },
-    }));
+  /**
+   * Handle a change in the value in an editing cell
+   * @param value New value set
+   */
+  handleEditCellChange(value: string): void {
+    this.setState(({ editingCell }) => {
+      try {
+        assertIsDefined(editingCell);
+
+        return {
+          editingCell: { ...editingCell, value } as EditingCell,
+        };
+      } catch (e) {
+        // This case should _never_ happen, since the editingCell shouldn't be null if this method is called
+        const { onError } = this.props;
+        onError(e);
+        return null;
+      }
+    });
   }
 
+  /**
+   * Commit an edit for the currently editing cell
+   * @param value Value that was committed
+   * @param options Options for committing
+   */
   handleEditCellCommit(
-    value,
-    { direction = GridRange.SELECTION_DIRECTION.DOWN, fillRange = false } = {}
-  ) {
-    const { cursorColumn: column, cursorRow: row, selectedRanges } = this.state;
+    value: string,
+    {
+      direction = SELECTION_DIRECTION.DOWN,
+      fillRange = false,
+    }: { direction?: SELECTION_DIRECTION | null; fillRange?: boolean } = {}
+  ): void {
+    const { editingCell, selectedRanges } = this.state;
+    if (!editingCell) throw new Error('editingCell not set');
+
+    const { column, row } = editingCell;
     if (!this.isValidForCell(column, row, value)) {
       // Don't allow an invalid value to be commited, the editing cell should show an error
-      if (direction == null) {
+      if (direction === null) {
         // If they clicked off of the editing cell, just remove focus
         this.setState({ editingCell: null });
       }
@@ -1503,7 +1904,7 @@ class Grid extends PureComponent {
       this.setValueForCell(column, row, value);
     }
 
-    if (direction != null) {
+    if (direction !== null) {
       this.moveCursorInDirection(direction);
     }
 
@@ -1512,15 +1913,15 @@ class Grid extends PureComponent {
     this.focus();
   }
 
-  renderInputField() {
+  renderInputField(): ReactNode {
     const { model } = this.props;
     const { editingCell } = this.state;
     const { metrics } = this;
-    if (editingCell == null || metrics == null) {
+    if (editingCell == null || metrics == null || !isEditableGridModel(model)) {
       return null;
     }
-    const { selectionRange = null, value, isQuickEdit } = editingCell;
-    const { cursorRow: row, cursorColumn: column } = this.state;
+    const { selectionRange, value, isQuickEdit } = editingCell;
+    const { column, row } = editingCell;
     const {
       gridX,
       gridY,
@@ -1534,27 +1935,27 @@ class Grid extends PureComponent {
     const y = visibleRowYs.get(row);
     const w = visibleColumnWidths.get(column);
     const h = visibleRowHeights.get(row);
-    const isVisible = x != null && y != null && w != null && h != null;
 
     // If the cell isn't visible, we still need to display an invisible cell for focus purposes
-    const wrapperStyle = isVisible
-      ? {
-          position: 'absolute',
-          left: gridX + x,
-          top: gridY + y,
-          width: w,
-          height: h,
-        }
-      : { opacity: 0 };
+    const wrapperStyle: CSSProperties =
+      x != null && y != null && w != null && h != null
+        ? {
+            position: 'absolute',
+            left: gridX + x,
+            top: gridY + y,
+            width: w,
+            height: h,
+          }
+        : { opacity: 0 };
 
     const modelColumn = this.getModelColumn(column);
     const modelRow = this.getModelRow(row);
-    const inputStyle =
+    const inputStyle: CSSProperties | undefined =
       modelColumn != null && modelRow != null
         ? {
             textAlign: model.textAlignForCell(modelColumn, modelRow),
           }
-        : null;
+        : undefined;
     const isValid = model.isValidForCell(modelColumn, modelRow, value);
 
     return (
@@ -1574,7 +1975,7 @@ class Grid extends PureComponent {
     );
   }
 
-  render() {
+  render(): ReactNode {
     const { cursor } = this.state;
 
     return (
@@ -1600,60 +2001,5 @@ class Grid extends PureComponent {
     );
   }
 }
-
-Grid.propTypes = {
-  canvasOptions: PropTypes.shape({}),
-  isStickyBottom: PropTypes.bool,
-  isStickyRight: PropTypes.bool,
-  metricCalculator: PropTypes.instanceOf(GridMetricCalculator),
-  model: PropTypes.instanceOf(GridModel).isRequired,
-  keyHandlers: PropTypes.arrayOf(PropTypes.instanceOf(KeyHandler)),
-  mouseHandlers: PropTypes.arrayOf(PropTypes.instanceOf(GridMouseHandler)),
-  movedColumns: PropTypes.arrayOf(
-    PropTypes.shape({
-      from: PropTypes.number.isRequired,
-      to: PropTypes.number.isRequired,
-    })
-  ),
-  movedRows: PropTypes.arrayOf(
-    PropTypes.shape({
-      from: PropTypes.number.isRequired,
-      to: PropTypes.number.isRequired,
-    })
-  ),
-  onError: PropTypes.func,
-  onSelectionChanged: PropTypes.func,
-  onMovedColumnsChanged: PropTypes.func,
-  onMoveColumnComplete: PropTypes.func,
-  onViewChanged: PropTypes.func,
-  renderer: PropTypes.instanceOf(GridRenderer),
-  stateOverride: PropTypes.shape({}),
-  theme: PropTypes.shape({
-    autoSelectColumn: PropTypes.bool,
-    autoSelectRow: PropTypes.bool,
-  }),
-};
-
-Grid.defaultProps = {
-  canvasOptions: { alpha: false },
-  isStickyBottom: false,
-  isStickyRight: false,
-  metricCalculator: null,
-  keyHandlers: [],
-  mouseHandlers: [],
-  movedColumns: [],
-  movedRows: [],
-  onError: () => {},
-  onSelectionChanged: () => {},
-  onMovedColumnsChanged: () => {},
-  onMoveColumnComplete: () => {},
-  onViewChanged: () => {},
-  renderer: null,
-  stateOverride: {},
-  theme: {
-    autoSelectColumn: false,
-    autoSelectRow: false,
-  },
-};
 
 export default Grid;

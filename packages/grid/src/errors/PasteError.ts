@@ -1,4 +1,4 @@
-class PasteError extends Error {
+export class PasteError extends Error {
   isPasteError = true;
 }
 

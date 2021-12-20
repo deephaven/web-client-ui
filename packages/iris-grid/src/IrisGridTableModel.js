@@ -1,11 +1,10 @@
 /* eslint class-methods-use-this: "off" */
 import memoize from 'memoize-one';
 import throttle from 'lodash.throttle';
-import { GridRange } from '@deephaven/grid';
+import { GridRange, memoizeClear } from '@deephaven/grid';
 import dh from '@deephaven/jsapi-shim';
 import Log from '@deephaven/log';
 import { PromiseUtils } from '@deephaven/utils';
-import memoizeClear from './memoizeClear';
 import TableUtils from './TableUtils';
 import Formatter from './Formatter';
 import { TableColumnFormatter } from './formatters';
@@ -1434,7 +1433,9 @@ class IrisGridTableModel extends IrisGridModel {
     log.debug('setValues(', edits, ')');
     if (
       !edits.every(edit =>
-        this.isEditableRange(GridRange.makeCell(edit.x, edit.y))
+        this.isEditableRange(
+          GridRange.makeCell(edit.column ?? edit.x, edit.row ?? edit.y)
+        )
       )
     ) {
       throw new Error('Uneditable ranges', edits);
@@ -1445,7 +1446,9 @@ class IrisGridTableModel extends IrisGridModel {
 
       // Cache the display values
       edits.forEach(edit => {
-        const { x, y, text } = edit;
+        const { text } = edit;
+        const x = edit.column ?? edit.x;
+        const y = edit.row ?? edit.y;
         const column = this.columns[x];
         const value = TableUtils.makeValue(
           column.type,
@@ -1488,15 +1491,18 @@ class IrisGridTableModel extends IrisGridModel {
 
       // Need to group by row...
       const rowEditMap = edits.reduce((rowMap, edit) => {
-        if (!rowMap.has(edit.y)) {
-          rowMap.set(edit.y, []);
+        const y = edit.row ?? edit.y;
+        if (!rowMap.has(y)) {
+          rowMap.set(y, []);
         }
-        rowMap.get(edit.y).push(edit);
+        rowMap.get(y).push(edit);
         return rowMap;
       }, new Map());
 
       const ranges = GridRange.consolidate(
-        edits.map(edit => GridRange.makeCell(edit.x, edit.y))
+        edits.map(edit =>
+          GridRange.makeCell(edit.column ?? edit.x, edit.row ?? edit.y)
+        )
       );
       const tableAreaRange = this.getTableAreaRange();
       const tableRanges = ranges
@@ -1531,7 +1537,7 @@ class IrisGridTableModel extends IrisGridModel {
           const rowEdits = rowEditMap.get(rowIndex);
           if (rowEdits != null) {
             rowEdits.forEach(edit => {
-              const column = this.columns[edit.x];
+              const column = this.columns[edit.column ?? edit.x];
               newRow[column.name] = TableUtils.makeValue(
                 column.type,
                 edit.text,
@@ -1554,7 +1560,9 @@ class IrisGridTableModel extends IrisGridModel {
       // The update event could be received on the next tick, after the input rows have been committed,
       // so make sure we don't display stale data
       edits.forEach(edit => {
-        const { x, y, text } = edit;
+        const { text } = edit;
+        const x = edit.column ?? edit.x;
+        const y = edit.row ?? edit.y;
         const column = this.columns[x];
         const value = TableUtils.makeValue(
           column.type,
@@ -1569,7 +1577,7 @@ class IrisGridTableModel extends IrisGridModel {
       });
     } finally {
       edits.forEach(edit => {
-        this.clearPendingValue(edit.x, edit.y);
+        this.clearPendingValue(edit.column, edit.row);
       });
     }
   }

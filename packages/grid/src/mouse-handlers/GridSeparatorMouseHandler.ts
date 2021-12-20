@@ -1,86 +1,105 @@
 /* eslint class-methods-use-this: "off" */
 /* eslint no-unused-vars: "off" */
+import { Grid, GridMetricCalculator } from '..';
+import { EventHandlerResult } from '../EventHandlerResult';
+import { getOrThrow } from '../GridMetricCalculator';
+import GridMetrics, { ModelIndex, VisibleIndex } from '../GridMetrics';
 import GridMouseHandler from '../GridMouseHandler';
+import { GridPoint } from '../GridUtils';
 
-const OVERRIDE_STRING = 'NEED_TO_OVERRIDE_PROPERTY';
+// The different properties that can be used by implementing classes, whether for rows or columns
+export type PointProperty = 'x' | 'y';
+export type UserSizeProperty = 'userRowHeights' | 'userColumnWidths';
+export type VisibleOffsetProperty = 'visibleRowYs' | 'visibleColumnXs';
+export type VisibleSizeProperty = 'visibleRowHeights' | 'visibleColumnWidths';
+export type MarginProperty = 'columnHeaderHeight' | 'rowHeaderWidth';
+export type CalculatedSizeProperty =
+  | 'calculatedRowHeights'
+  | 'calculatedColumnWidths';
+export type ModelIndexesProperty = 'modelRows' | 'modelColumns';
+export type FirstIndexProperty = 'firstRow' | 'firstColumn';
+export type TreePaddingProperty = 'treePaddingX' | 'treePaddingY';
 
 /**
  * Abstract class that should be extended for column/row behaviour
  * Override the necessary functions/properties
  */
-class GridSeparatorMouseHandler extends GridMouseHandler {
+abstract class GridSeparatorMouseHandler extends GridMouseHandler {
   // The index where dragging the column separator started
-  draggingIndex = null;
+  protected draggingIndex?: VisibleIndex;
 
   // The columns in the order they're being resized
-  resizingItems = [];
+  protected resizingItems: VisibleIndex[] = [];
 
   // Columns that were hidden under the separator when starting a drag
-  hiddenItems = [];
+  protected hiddenItems: VisibleIndex[] = [];
 
   // The target width of the columns being resized
-  targetSizes = new Map();
+  protected targetSizes: Map<ModelIndex, number> = new Map();
 
-  dragOffset = 0;
+  protected dragOffset = 0;
 
   // Override/Implement these properties/functions
-  cursor = OVERRIDE_STRING;
+  abstract hiddenCursor: string;
 
-  hiddenCursor = OVERRIDE_STRING;
+  abstract defaultCursor: string;
 
-  defaultCursor = OVERRIDE_STRING;
+  abstract pointProperty: PointProperty;
 
-  pointProperty = OVERRIDE_STRING;
+  abstract userSizesProperty: UserSizeProperty;
 
-  userSizesProperty = OVERRIDE_STRING;
+  abstract visibleOffsetProperty: VisibleOffsetProperty;
 
-  visibleOffsetProperty = OVERRIDE_STRING;
+  abstract visibleSizesProperty: VisibleSizeProperty;
 
-  visibleSizesProperty = OVERRIDE_STRING;
+  abstract marginProperty: MarginProperty;
 
-  marginProperty = OVERRIDE_STRING;
+  abstract calculatedSizesProperty: CalculatedSizeProperty;
 
-  calculatedSizesProperty = OVERRIDE_STRING;
+  abstract modelIndexesProperty: ModelIndexesProperty;
 
-  modelIndexesProperty = OVERRIDE_STRING;
+  abstract firstIndexProperty: FirstIndexProperty;
 
-  firstIndexProperty = OVERRIDE_STRING;
+  abstract treePaddingProperty: TreePaddingProperty;
 
-  treePaddingProperty = OVERRIDE_STRING;
+  abstract getHiddenItems(
+    itemIndex: VisibleIndex,
+    metrics: GridMetrics
+  ): VisibleIndex[];
 
-  getHiddenItems(itemIndex, metrics) {
-    throw new Error('Need to override getHiddenItems');
-  }
+  abstract getNextShownItem(
+    itemIndex: VisibleIndex,
+    metrics: GridMetrics
+  ): VisibleIndex | null;
 
-  getNextShownItem(itemIndex, metrics) {
-    throw new Error('Need to override getNextShownItem');
-  }
+  abstract setSize(
+    metricCalculator: GridMetricCalculator,
+    modelIndex: ModelIndex,
+    size: number
+  ): void;
 
-  // eslint-disable-next-line no-unused-vars
-  setSize(metricCalculator, modelIndex, size) {
-    throw new Error('Need to override setSize');
-  }
+  abstract resetSize(
+    metricCalculator: GridMetricCalculator,
+    modelIndex: ModelIndex
+  ): void;
 
-  // eslint-disable-next-line no-unused-vars
-  resetSize(metricCalculator, modelIndex) {
-    throw new Error('Need to override resetSize');
-  }
+  abstract updateSeparator(
+    grid: Grid,
+    separatorIndex: VisibleIndex | null
+  ): void;
 
-  // eslint-disable-next-line no-unused-vars
-  updateSeparator(grid, separatorIndex) {
-    throw new Error('Need to override updateSeparator');
-  }
-
-  // eslint-disable-next-line no-unused-vars
-  getSeparatorIndex(gridPoint, grid, checkAllowResize = true) {
-    throw new Error('Need to override getSeparatorIndex');
-  }
+  abstract getSeparatorIndex(
+    gridPoint: GridPoint,
+    grid: Grid,
+    checkAllowResize?: boolean
+  ): VisibleIndex | null;
   // End of overrides
 
-  onDown(gridPoint, grid) {
+  onDown(gridPoint: GridPoint, grid: Grid): EventHandlerResult {
     const separatorIndex = this.getSeparatorIndex(gridPoint, grid);
     if (separatorIndex != null) {
       const { metrics } = grid;
+      if (!metrics) throw new Error('metrics not set');
 
       this.dragOffset = 0;
       this.draggingIndex = separatorIndex;
@@ -99,23 +118,27 @@ class GridSeparatorMouseHandler extends GridMouseHandler {
     return false;
   }
 
-  onMove(gridPoint, grid) {
+  onMove(gridPoint: GridPoint, grid: Grid): EventHandlerResult {
     const separatorIndex = this.getSeparatorIndex(gridPoint, grid);
     if (separatorIndex != null) {
       const { metrics } = grid;
+      if (!metrics) throw new Error('metrics not set');
+
       this.updateCursor(metrics, separatorIndex);
       return true;
     }
     return false;
   }
 
-  onDrag(gridPoint, grid) {
+  onDrag(gridPoint: GridPoint, grid: Grid): EventHandlerResult {
     if (this.draggingIndex == null) {
       return false;
     }
 
     const point = gridPoint[this.pointProperty];
     const { metricCalculator, metrics } = grid;
+    if (!metrics) throw new Error('metrics not set');
+
     const theme = grid.getTheme();
 
     const visibleOffsets = metrics[this.visibleOffsetProperty];
@@ -126,28 +149,31 @@ class GridSeparatorMouseHandler extends GridMouseHandler {
     const treePadding = metrics[this.treePaddingProperty];
 
     // New sizes are batched and applied after the loop to avoid updating state while calculating next step
-    const newSizes = new Map();
+    const newSizes: Map<ModelIndex, number | null> = new Map();
 
     // Use a loop as we may need to resize multiple items if they drag quickly
-    let resizeIndex = this.resizingItems[this.resizingItems.length - 1];
+    let resizeIndex: number | null = this.resizingItems[
+      this.resizingItems.length - 1
+    ];
     while (resizeIndex != null) {
-      const itemOffset = visibleOffsets.get(resizeIndex);
+      const itemOffset = getOrThrow(visibleOffsets, resizeIndex);
       const itemSize = point - margin - itemOffset - this.dragOffset;
-      const modelIndex = modelIndexes.get(resizeIndex);
+      const modelIndex = getOrThrow(modelIndexes, resizeIndex);
       const targetSize = this.targetSizes.get(modelIndex);
       const isResizingMultiple = this.resizingItems.length > 1;
       const hiddenIndex = this.hiddenItems.indexOf(resizeIndex);
-      let calculatedSize = calculatedSizes.get(modelIndex);
+      let calculatedSize = getOrThrow(calculatedSizes, modelIndex);
       if (resizeIndex === firstIndex) {
         calculatedSize += treePadding;
       }
-      let newSize = itemSize;
+      let newSize: number | null = itemSize;
       if (
         Math.abs(itemSize - calculatedSize) <= theme.headerResizeSnapThreshold
       ) {
         // Snapping behaviour to "natural" width
         newSize = null;
       } else if (
+        targetSize !== undefined &&
         itemSize > targetSize &&
         ((isResizingMultiple && hiddenIndex !== 0) || hiddenIndex > 0)
       ) {
@@ -168,17 +194,17 @@ class GridSeparatorMouseHandler extends GridMouseHandler {
           this.resizingItems.pop();
           this.removeTargetSize(metrics, resizeIndex);
           resizeIndex = this.resizingItems[this.resizingItems.length - 1];
-          this.dragOffset -= this.targetSizes.get(
-            modelIndexes.get(resizeIndex)
-          );
+          this.dragOffset -=
+            this.targetSizes.get(getOrThrow(modelIndexes, resizeIndex)) ?? 0;
         } else {
           resizeIndex = this.getNextShownItem(resizeIndex, metrics);
-          if (resizeIndex != null) {
+          if (resizeIndex !== null) {
             this.resizingItems.push(resizeIndex);
             this.addTargetSize(metrics, resizeIndex);
           }
         }
       } else if (
+        targetSize !== undefined &&
         itemSize > targetSize + theme.headerResizeSnapThreshold &&
         newSize === targetSize
       ) {
@@ -200,7 +226,11 @@ class GridSeparatorMouseHandler extends GridMouseHandler {
     }
 
     newSizes.forEach((newSize, modelIndex) => {
-      this.setSize(metricCalculator, modelIndex, newSize);
+      if (newSize !== null) {
+        this.setSize(metricCalculator, modelIndex, newSize);
+      } else {
+        this.resetSize(metricCalculator, modelIndex);
+      }
     });
 
     this.updateCursor(metrics, this.draggingIndex);
@@ -208,9 +238,9 @@ class GridSeparatorMouseHandler extends GridMouseHandler {
     return true;
   }
 
-  onUp(_, grid) {
+  onUp(gridPoint: GridPoint, grid: Grid): EventHandlerResult {
     if (this.draggingIndex != null) {
-      this.draggingIndex = null;
+      this.draggingIndex = undefined;
       this.resizingItems = [];
       this.hiddenItems = [];
       this.targetSizes.clear();
@@ -221,13 +251,15 @@ class GridSeparatorMouseHandler extends GridMouseHandler {
     return false;
   }
 
-  onDoubleClick(gridPoint, grid) {
+  onDoubleClick(gridPoint: GridPoint, grid: Grid): EventHandlerResult {
     const separatorIndex = this.getSeparatorIndex(gridPoint, grid);
 
     if (separatorIndex != null) {
       const { metricCalculator, metrics } = grid;
+      if (!metrics) throw new Error('metrics not set');
+
       const modelIndexes = metrics[this.modelIndexesProperty];
-      const modelIndex = modelIndexes.get(separatorIndex);
+      const modelIndex = getOrThrow(modelIndexes, separatorIndex);
 
       this.resetSize(metricCalculator, modelIndex);
 
@@ -238,9 +270,9 @@ class GridSeparatorMouseHandler extends GridMouseHandler {
     return false;
   }
 
-  updateCursor(metrics, itemIndex) {
+  updateCursor(metrics: GridMetrics, itemIndex: VisibleIndex): void {
     const visibleSizes = metrics[this.visibleSizesProperty];
-    const itemSize = visibleSizes.get(itemIndex);
+    const itemSize = getOrThrow(visibleSizes, itemIndex);
     if (itemSize === 0) {
       this.cursor = this.hiddenCursor;
     } else {
@@ -248,23 +280,23 @@ class GridSeparatorMouseHandler extends GridMouseHandler {
     }
   }
 
-  addTargetSize(metrics, itemIndex) {
+  addTargetSize(metrics: GridMetrics, itemIndex: VisibleIndex): void {
     const modelIndexes = metrics[this.modelIndexesProperty];
     const userSizes = metrics[this.userSizesProperty];
     const calculatedSizes = metrics[this.calculatedSizesProperty];
     const treePadding = itemIndex === 0 ? metrics[this.treePaddingProperty] : 0;
 
-    const modelIndex = modelIndexes.get(itemIndex);
+    const modelIndex = getOrThrow(modelIndexes, itemIndex);
     let targetSize = userSizes.get(modelIndex);
     if (targetSize == null || targetSize === 0) {
-      targetSize = calculatedSizes.get(modelIndex) + treePadding;
+      targetSize = getOrThrow(calculatedSizes, modelIndex) + treePadding;
     }
     this.targetSizes.set(modelIndex, targetSize);
   }
 
-  removeTargetSize(metrics, itemIndex) {
+  removeTargetSize(metrics: GridMetrics, itemIndex: VisibleIndex): void {
     const modelIndexes = metrics[this.modelIndexesProperty];
-    const modelIndex = modelIndexes.get(itemIndex);
+    const modelIndex = getOrThrow(modelIndexes, itemIndex);
     this.targetSizes.delete(modelIndex);
   }
 }

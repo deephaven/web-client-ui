@@ -4,15 +4,15 @@
  * Could look at writing our own memoize with a smarter cache to avoid overhead of
  * LRU queue, but this should be sufficient for now.
  */
-import memoize from 'memoizee';
+import memoizee from 'memoizee';
 
 /**
- * @param {Function} fn The function to memoize
- * @param {Object} options The options to set for memoization
+ * @param fn The function to memoize
+ * @param options The options to set for memoization
  */
-export default (fn, options = {}) => {
+export const memoizeClear: typeof memoizee = (fn, options) => {
   let isClearingCache = false;
-  const memoizedFn = memoize(fn, {
+  const memoizedFn = memoizee(fn, {
     ...options,
     dispose: () => {
       // Need to track when we're clearing because dispose gets called for all items removed
@@ -26,3 +26,5 @@ export default (fn, options = {}) => {
 
   return memoizedFn;
 };
+
+export default memoizeClear;

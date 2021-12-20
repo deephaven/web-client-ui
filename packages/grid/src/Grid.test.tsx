@@ -1,16 +1,18 @@
-import React from 'react';
+import React, { ReactElement } from 'react';
 import TestRenderer from 'react-test-renderer';
 import Grid from './Grid';
-import GridModel from './GridModel';
 import GridRange from './GridRange';
 import GridRenderer from './GridRenderer';
-import GridTheme from './GridTheme';
+import GridTheme, { GridTheme as GridThemeType } from './GridTheme';
 import GridUtils from './GridUtils';
 import MockGridModel from './MockGridModel';
 import MockGridData from './MockGridData';
+import { VisibleIndex } from './GridMetrics';
+import GridModel from './GridModel';
 
-function makeMockContext() {
-  return {
+function makeMockContext(): CanvasRenderingContext2D {
+  // Just return a partial mock
+  return ({
     arc: jest.fn(),
     beginPath: jest.fn(),
     clip: jest.fn(),
@@ -22,7 +24,7 @@ function makeMockContext() {
     fillRect: jest.fn(),
     fillText: jest.fn(),
     lineTo: jest.fn(),
-    measureText: jest.fn(str => ({ width: str.length * 10 })),
+    measureText: jest.fn(str => ({ width: str.length * 10 } as TextMetrics)),
     moveTo: jest.fn(),
     rect: jest.fn(),
     restore: jest.fn(),
@@ -33,12 +35,15 @@ function makeMockContext() {
     translate: jest.fn(),
     scale: jest.fn(),
     createPattern: jest.fn(),
-  };
+  } as unknown) as CanvasRenderingContext2D;
 }
 
-HTMLCanvasElement.prototype.getContext = jest.fn(makeMockContext);
+// We only use the '2d' mode of getContext. Defining the type in TS is tricky,
+// so just use any here and call it a day.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+HTMLCanvasElement.prototype.getContext = jest.fn(makeMockContext) as any;
 
-const defaultTheme = { ...GridTheme, autoSizeColumns: false };
+const defaultTheme = { ...GridTheme, autoSizeColumns: false } as GridThemeType;
 
 const VIEW_SIZE = 5000;
 
@@ -65,53 +70,62 @@ function makeMockCanvas() {
   };
 }
 
-function createNodeMock(element) {
+function createNodeMock(element: ReactElement) {
   if (element.type === 'canvas') {
     return makeMockCanvas();
   }
   return null;
 }
 
-function makeGridComponent(model = new MockGridModel(), theme = defaultTheme) {
+function makeGridComponent(
+  model: GridModel = new MockGridModel(),
+  theme: GridThemeType = defaultTheme
+): Grid {
   const testRenderer = TestRenderer.create(
     <Grid model={model} theme={theme} />,
     {
       createNodeMock,
     }
   );
-  return testRenderer.getInstance();
+  return (testRenderer.getInstance() as unknown) as Grid;
 }
 
-function getClientX(columnIndex, theme = defaultTheme) {
+function getClientX(
+  columnIndex: VisibleIndex,
+  theme: GridThemeType = defaultTheme
+) {
   const { rowHeaderWidth, columnWidth } = theme;
   return rowHeaderWidth + columnWidth * columnIndex + 1;
 }
 
-function getClientY(rowIndex, theme = defaultTheme) {
+function getClientY(
+  rowIndex: VisibleIndex,
+  theme: GridThemeType = defaultTheme
+) {
   const { columnHeaderHeight, rowHeight } = theme;
   return columnHeaderHeight + rowHeight * rowIndex + 1;
 }
 
 function mouseEvent(
-  column,
-  row,
-  fn,
-  type,
-  extraArgs,
+  column: VisibleIndex,
+  row: VisibleIndex,
+  fn: React.MouseEventHandler,
+  type: string,
+  extraArgs?: MouseEventInit,
   clientX = getClientX(column),
   clientY = getClientY(row)
 ) {
   const mouseArgs = { clientX, clientY, ...extraArgs };
-  fn(new MouseEvent(type, mouseArgs));
+  fn((new MouseEvent(type, mouseArgs) as unknown) as React.MouseEvent);
 }
 
 function mouseDown(
-  column,
-  row,
-  component,
-  extraMouseArgs = {},
-  clientX,
-  clientY
+  column: VisibleIndex,
+  row: VisibleIndex,
+  component: Grid,
+  extraMouseArgs?: MouseEventInit,
+  clientX?: number,
+  clientY?: number
 ) {
   mouseEvent(
     column,
@@ -125,17 +139,17 @@ function mouseDown(
 }
 
 function mouseMove(
-  column,
-  row,
-  component,
-  extraMouseArgs = {},
-  clientX,
-  clientY
+  column: VisibleIndex,
+  row: VisibleIndex,
+  component: Grid,
+  extraMouseArgs?: MouseEventInit,
+  clientX?: number,
+  clientY?: number
 ) {
   mouseEvent(
     column,
     row,
-    component.handleMouseDrag,
+    (component.handleMouseDrag as unknown) as React.MouseEventHandler,
     'mousemove',
     extraMouseArgs,
     clientX,
@@ -144,17 +158,17 @@ function mouseMove(
 }
 
 function mouseUp(
-  column,
-  row,
-  component,
-  extraMouseArgs = {},
-  clientX,
-  clientY
+  column: VisibleIndex,
+  row: VisibleIndex,
+  component: Grid,
+  extraMouseArgs?: MouseEventInit,
+  clientX?: number,
+  clientY?: number
 ) {
   mouseEvent(
     column,
     row,
-    component.handleMouseUp,
+    (component.handleMouseUp as unknown) as React.MouseEventHandler,
     'mouseup',
     extraMouseArgs,
     clientX,
@@ -163,24 +177,24 @@ function mouseUp(
 }
 
 function mouseClick(
-  column,
-  row,
-  component,
-  extraMouseArgs = {},
-  clientX,
-  clientY
+  column: VisibleIndex,
+  row: VisibleIndex,
+  component: Grid,
+  extraMouseArgs?: MouseEventInit,
+  clientX?: number,
+  clientY?: number
 ) {
   mouseDown(column, row, component, extraMouseArgs, clientX, clientY);
   mouseUp(column, row, component, extraMouseArgs, clientX, clientY);
 }
 
 function mouseDoubleClick(
-  column,
-  row,
-  component,
-  extraMouseArgs = {},
-  clientX,
-  clientY
+  column: VisibleIndex,
+  row: VisibleIndex,
+  component: Grid,
+  extraMouseArgs?: MouseEventInit,
+  clientX?: number,
+  clientY?: number
 ) {
   mouseEvent(
     column,
@@ -193,50 +207,48 @@ function mouseDoubleClick(
   );
 }
 
-function keyDown(key, component, extraArgs) {
+function keyDown(key: string, component: Grid, extraArgs?: KeyboardEventInit) {
   const args = { key, ...extraArgs };
-  component.handleKeyDown(new KeyboardEvent('keydown', args));
+  component.handleKeyDown(
+    (new KeyboardEvent('keydown', args) as unknown) as React.KeyboardEvent
+  );
 }
 
-function arrowDown(component, extraArgs) {
+function arrowDown(component: Grid, extraArgs?: KeyboardEventInit) {
   keyDown('ArrowDown', component, extraArgs);
 }
 
-function arrowUp(component, extraArgs) {
+function arrowUp(component: Grid, extraArgs?: KeyboardEventInit) {
   keyDown('ArrowUp', component, extraArgs);
 }
 
-function arrowLeft(component, extraArgs) {
+function arrowLeft(component: Grid, extraArgs?: KeyboardEventInit) {
   keyDown('ArrowLeft', component, extraArgs);
 }
 
-function arrowRight(component, extraArgs) {
+function arrowRight(component: Grid, extraArgs?: KeyboardEventInit) {
   keyDown('ArrowRight', component, extraArgs);
 }
 
-function pageUp(component, extraArgs) {
+function pageUp(component: Grid, extraArgs?: KeyboardEventInit) {
   keyDown('PageUp', component, extraArgs);
 }
 
-function pageDown(component, extraArgs) {
+function pageDown(component: Grid, extraArgs?: KeyboardEventInit) {
   keyDown('PageDown', component, extraArgs);
 }
 
-function home(component, extraArgs) {
+function home(component: Grid, extraArgs?: KeyboardEventInit) {
   keyDown('Home', component, extraArgs);
 }
 
-function end(component, extraArgs) {
+function end(component: Grid, extraArgs?: KeyboardEventInit) {
   keyDown('End', component, extraArgs);
 }
 
-function paste(component, data = DEFAULT_PASTE_DATA) {
+function paste(component: Grid, data = DEFAULT_PASTE_DATA) {
   component.pasteValue(data);
 }
-
-it('renders default model without crashing', () => {
-  makeGridComponent(new GridModel());
-});
 
 it('renders mock data model without crashing', () => {
   makeGridComponent(new MockGridModel());
@@ -847,7 +859,12 @@ describe('mac specific shortcut tests', () => {
 describe('truncate to width', () => {
   const context = makeMockContext();
 
-  function expectTruncate(str, expectedResult, width = 100, fontWidth = 10) {
+  function expectTruncate(
+    str: string,
+    expectedResult: string,
+    width = 100,
+    fontWidth = 10
+  ) {
     expect(GridRenderer.truncateToWidth(context, str, width, fontWidth)).toBe(
       expectedResult
     );
@@ -894,8 +911,8 @@ describe('paste tests', () => {
   });
 
   describe('editable', () => {
-    let model = null;
-    let component = null;
+    let model: MockGridModel;
+    let component: Grid;
 
     beforeEach(() => {
       model = new MockGridModel({ isEditable: true });
@@ -915,8 +932,8 @@ describe('paste tests', () => {
       expect(model.setValues).toHaveBeenCalledTimes(1);
       expect(model.setValues).toHaveBeenCalledWith([
         expect.objectContaining({
-          x: 5,
-          y: 7,
+          column: 5,
+          row: 7,
           text: DEFAULT_PASTE_DATA,
         }),
       ]);

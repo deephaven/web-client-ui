@@ -1,3 +1,4 @@
+import { KeyboardEvent } from 'react';
 import { KeyHandler } from '@deephaven/grid';
 import { IrisGrid } from '../IrisGrid';
 import IrisGridShortcuts from '../IrisGridShortcuts';
@@ -11,8 +12,8 @@ class ClearFilterKeyHandler extends KeyHandler {
     this.irisGrid = irisGrid;
   }
 
-  onDown(e: KeyboardEvent): boolean {
-    if (IrisGridShortcuts.TABLE.CLEAR_FILTERS.matchesEvent(e)) {
+  onDown(event: KeyboardEvent): boolean {
+    if (IrisGridShortcuts.TABLE.CLEAR_FILTERS.matchesEvent(event)) {
       this.irisGrid.clearAllFilters();
       return true;
     }

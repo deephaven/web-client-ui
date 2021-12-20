@@ -1,17 +1,49 @@
+import { EventHandlerResult } from '../EventHandlerResult';
+import Grid from '../Grid';
+import { VisibleIndex } from '../GridMetrics';
 import GridMouseHandler from '../GridMouseHandler';
+import { GridPoint } from '../GridUtils';
 
 /* eslint class-methods-use-this: "off" */
 class GridHorizontalScrollBarMouseHandler extends GridMouseHandler {
-  dragOffset = null;
+  static getLeftWithOffsetFromRawLeft(
+    grid: Grid,
+    rawLeft: number
+  ): { left: VisibleIndex; leftOffset: number } {
+    const theme = grid.getTheme();
+    const { metrics, metricCalculator } = grid;
+    if (!metrics) throw new Error('metrics not set');
+
+    if (theme.scrollSnapToColumn) {
+      const left = Math.round(rawLeft);
+      const leftOffset = 0;
+
+      return { left, leftOffset };
+    }
+    const left = Math.floor(rawLeft);
+    const leftOffsetPercent = rawLeft - left;
+    let columnWidth = metrics.visibleColumnWidths.get(left);
+    if (columnWidth == null) {
+      const metricState = grid.getMetricState();
+      columnWidth = metricCalculator.getVisibleColumnWidth(left, metricState);
+    }
+    const leftOffset = columnWidth * leftOffsetPercent;
+
+    return { left, leftOffset };
+  }
+
+  private dragOffset?: number;
 
   // to trigger pointer event blocking
   cursor = 'default';
 
-  isInScrollBar(gridPoint, grid) {
+  isInScrollBar(gridPoint: GridPoint, grid: Grid): boolean {
     const theme = grid.getTheme();
 
     const { scrollBarSize, scrollBarHoverSize } = theme;
     const { metrics } = grid;
+    if (!metrics) throw new Error('metrics not set');
+
     const { x, y } = gridPoint;
     const { lastLeft, lastTop, rowHeaderWidth, width, height } = metrics;
     const scrollBarWidth = lastTop > 0 ? width - scrollBarSize : width;
@@ -25,8 +57,10 @@ class GridHorizontalScrollBarMouseHandler extends GridMouseHandler {
     );
   }
 
-  onDown(gridPoint, grid) {
+  onDown(gridPoint: GridPoint, grid: Grid): EventHandlerResult {
     const { metrics } = grid;
+    if (!metrics) throw new Error('metrics not set');
+
     const { x } = gridPoint;
     const {
       barWidth,
@@ -69,10 +103,12 @@ class GridHorizontalScrollBarMouseHandler extends GridMouseHandler {
     return true;
   }
 
-  onDrag(gridPoint, grid) {
+  onDrag(gridPoint: GridPoint, grid: Grid): EventHandlerResult {
     if (this.dragOffset != null) {
       const { x } = gridPoint;
       const { metrics } = grid;
+      if (!metrics) throw new Error('metrics not set');
+
       const { barWidth, handleWidth, lastLeft, rowHeaderWidth } = metrics;
       const mouseBarX = x - rowHeaderWidth;
 
@@ -103,13 +139,13 @@ class GridHorizontalScrollBarMouseHandler extends GridMouseHandler {
     return false;
   }
 
-  onMove(gridPoint, grid) {
+  onMove(gridPoint: GridPoint, grid: Grid): EventHandlerResult {
     return this.isInScrollBar(gridPoint, grid);
   }
 
-  onUp(gridPoint, grid) {
-    if (this.dragOffset != null) {
-      this.dragOffset = null;
+  onUp(gridPoint: GridPoint, grid: Grid): EventHandlerResult {
+    if (this.dragOffset !== undefined) {
+      this.dragOffset = undefined;
       grid.setState({
         isDraggingHorizontalScrollBar: false,
         isDragging: false,
@@ -119,30 +155,8 @@ class GridHorizontalScrollBarMouseHandler extends GridMouseHandler {
     return this.isInScrollBar(gridPoint, grid);
   }
 
-  onClick(gridPoint, grid) {
+  onClick(gridPoint: GridPoint, grid: Grid): EventHandlerResult {
     return this.isInScrollBar(gridPoint, grid);
-  }
-
-  static getLeftWithOffsetFromRawLeft(grid, rawLeft) {
-    const theme = grid.getTheme();
-    const { metrics, metricCalculator } = grid;
-
-    if (theme.scrollSnapToColumn) {
-      const left = Math.round(rawLeft);
-      const leftOffset = 0;
-
-      return { left, leftOffset };
-    }
-    const left = Math.floor(rawLeft);
-    const leftOffsetPercent = rawLeft - left;
-    let columnWidth = metrics.visibleColumnWidths.get(left);
-    if (columnWidth == null) {
-      const metricState = grid.getMetricState();
-      columnWidth = metricCalculator.getVisibleColumnWidth(left, metricState);
-    }
-    const leftOffset = columnWidth * leftOffsetPercent;
-
-    return { left, leftOffset };
   }
 }
 
