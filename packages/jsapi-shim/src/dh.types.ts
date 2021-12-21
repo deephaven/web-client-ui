@@ -409,7 +409,6 @@ export interface FilterCondition {
   or(first: FilterCondition, ...rest: FilterCondition[]): FilterCondition;
 
   toString(): string;
-  // columns: Column[] //doesnt work
 }
 export interface Sort {
   reverse(): Sort;
@@ -438,7 +437,6 @@ export interface Table extends Evented {
 
   readonly SIZE_UNCOALESCED: number;
 
-  reverse(): Sort;
   readonly size: number;
 
   readonly columns: Column[];
@@ -459,6 +457,7 @@ export interface Table extends Evented {
   applySort(sorts: Sort[]): Sort[];
   applyFilter(filters: FilterCondition[]): FilterCondition[];
   applyCustomColumns(columns: string[]): string[];
+  reverse(): Sort;
 
   setViewport(
     firstRow: number,
@@ -469,7 +468,6 @@ export interface Table extends Evented {
   getViewportData(): Promise<TableData>;
 
   subscribe(columns: Column[]): TableSubscription;
-  // inputTable(): Promise<InputTable>
 
   selectDistinct(columns: Column[]): Promise<Table>;
   copy(): Promise<Table>;
