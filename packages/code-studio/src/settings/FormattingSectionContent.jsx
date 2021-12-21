@@ -290,7 +290,7 @@ export class FormattingSectionContent extends PureComponent {
     this.setState(
       {
         defaultDecimalFormatOptions: {
-          formatString: event.target.value,
+          defaultFormatString: event.target.value,
         },
       },
       () => {
@@ -304,7 +304,7 @@ export class FormattingSectionContent extends PureComponent {
     this.setState(
       {
         defaultIntegerFormatOptions: {
-          formatString: event.target.value,
+          defaultFormatString: event.target.value,
         },
       },
       () => {
@@ -431,16 +431,35 @@ export class FormattingSectionContent extends PureComponent {
       .map(FormattingSectionContent.removeFormatRuleExtraProps);
 
     const { settings, saveSettings } = this.props;
-    saveSettings({
+    const newSettings = {
       ...settings,
       formatter,
       defaultDateTimeFormat,
       showTimeZone,
       showTSeparator,
       timeZone,
-      defaultDecimalFormatOptions,
-      defaultIntegerFormatOptions,
-    });
+    };
+    if (
+      defaultDecimalFormatOptions?.defaultFormatString &&
+      DecimalColumnFormatter.isValid(
+        DecimalColumnFormatter.makeCustomFormat(
+          defaultDecimalFormatOptions?.defaultFormatString
+        )
+      )
+    ) {
+      newSettings.defaultDecimalFormatOptions = defaultDecimalFormatOptions;
+    }
+    if (
+      defaultIntegerFormatOptions?.defaultFormatString &&
+      IntegerColumnFormatter.isValid(
+        IntegerColumnFormatter.makeCustomFormat(
+          defaultIntegerFormatOptions.defaultFormatString
+        )
+      )
+    ) {
+      newSettings.defaultIntegerFormatOptions = defaultIntegerFormatOptions;
+    }
+    saveSettings(newSettings);
   }
 
   scrollToFormatBlockBottom() {
@@ -781,9 +800,11 @@ export class FormattingSectionContent extends PureComponent {
                   'flex-grow-1',
                   'default-decimal-format-input',
                   {
-                    'is-invalid': DecimalColumnFormatter.isValid({
-                      formatString: defaultDecimalFormatString,
-                    }),
+                    'is-invalid': !DecimalColumnFormatter.isValid(
+                      DecimalColumnFormatter.makeCustomFormat(
+                        defaultDecimalFormatString
+                      )
+                    ),
                   }
                 )}
                 data-lpignore
@@ -803,9 +824,11 @@ export class FormattingSectionContent extends PureComponent {
                   'flex-grow-1',
                   'default-integer-format-input',
                   {
-                    'is-invalid': IntegerColumnFormatter.isValid({
-                      formatString: defaultIntegerFormatString,
-                    }),
+                    'is-invalid': !IntegerColumnFormatter.isValid(
+                      IntegerColumnFormatter.makeCustomFormat(
+                        defaultIntegerFormatString
+                      )
+                    ),
                   }
                 )}
                 data-lpignore

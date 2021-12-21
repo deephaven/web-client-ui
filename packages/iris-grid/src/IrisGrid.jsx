@@ -1020,7 +1020,10 @@ export class IrisGrid extends Component {
     const dateTimeFormatterOptions = FormatterUtils.getDateTimeFormatterOptions(
       settings
     );
-    const { decimalFormatOptions = {}, integerFormatOptions = {} } = settings;
+    const {
+      defaultDecimalFormatOptions = {},
+      defaultIntegerFormatOptions = {},
+    } = settings;
 
     const isColumnFormatChanged = !deepEqual(
       this.globalColumnFormats,
@@ -1032,11 +1035,11 @@ export class IrisGrid extends Component {
     );
     const isDecimalFormattingChanged = !deepEqual(
       this.decimalFormatOptions,
-      decimalFormatOptions
+      defaultDecimalFormatOptions
     );
     const isIntegerFormattingChanged = !deepEqual(
       this.integerFormatOptions,
-      integerFormatOptions
+      defaultIntegerFormatOptions
     );
     if (
       isColumnFormatChanged ||
@@ -1046,8 +1049,8 @@ export class IrisGrid extends Component {
     ) {
       this.globalColumnFormats = globalColumnFormats;
       this.dateTimeFormatterOptions = dateTimeFormatterOptions;
-      this.decimalFormatOptions = decimalFormatOptions;
-      this.integerFormatOptions = integerFormatOptions;
+      this.decimalFormatOptions = defaultDecimalFormatOptions;
+      this.integerFormatOptions = defaultIntegerFormatOptions;
       this.updateFormatter({}, forceUpdate);
 
       if (isDateFormattingChanged && forceUpdate) {
