@@ -4,25 +4,9 @@ import shortid from 'shortid';
 
 const log = Log.module('SessionUtils');
 
-export type VariableDefinition = {
-  id: string;
-  type: string;
-  title?: string;
-  description?: string;
-};
-
-export type DhSession = {
-  getObject: (definition: VariableDefinition) => Promise<unknown>;
-};
+export type DhSession = typeof dh.Session;
 
 export type ListenerRemover = () => void;
-
-export type DhIdeConnection = {
-  addEventListener: (
-    name: string,
-    callback: (event: CustomEvent) => undefined
-  ) => ListenerRemover;
-};
 
 export type SessionConfig = {
   id: string;
@@ -32,7 +16,7 @@ export type SessionConfig = {
 export type SessionWrapper = {
   session: DhSession;
   config: SessionConfig;
-  connection: DhIdeConnection;
+  connection: InstanceType<typeof dh.IdeConnection>;
 };
 
 /**
