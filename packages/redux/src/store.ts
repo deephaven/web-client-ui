@@ -30,6 +30,12 @@ interface WorkspaceFormattingRule {
 
 export interface WorkspaceSettings {
   defaultDateTimeFormat: string;
+  decimalFormatOptions?: {
+    defaultFormatString?: string;
+  };
+  integerFormatOptions?: {
+    defaultFormatString?: string;
+  };
   formatter: WorkspaceFormattingRule[];
   timeZone: string;
   showTimeZone: boolean;

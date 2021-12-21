@@ -45,15 +45,9 @@ class Formatter {
 
   /**
    * @param {Array} columnFormattingRules Optional array of column formatting rules
-   * @param {Object} dateTimeOptions Optional object with DateTime configuration
-   * @param {string} dateTimeOptions.timeZone Time zone
-   * @param {boolean} dateTimeOptions.showTimeZone Show time zone in DateTime values
-   * @param {boolean} dateTimeOptions.showTSeparator Show 'T' separator in DateTime values
-   * @param {string} dateTimeOptions.defaultDateTimeFormatString DateTime format to use if columnFormats for DateTime isn't set
-   * @param {Object} decimalFormatOptions Optional object with Decimal format configuration
-   * @param {string} decimalFormatOptions.formatString Default format string to use for decimals
-   * @param {Object} integerFormatOptions Optional object with Integer format configuration
-   * @param {string} integerFormatOptions.formatString Default format string to use for integers
+   * @param {DateTimeColumnFormatterOptions} dateTimeOptions Optional object with DateTime configuration
+   * @param {DecimalColumnFormatterOptions} decimalFormatOptions Optional object with Decimal format configuration
+   * @param {IntegerColumnFormatterOptions} integerFormatOptions Optional object with Integer format configuration
    */
   constructor(
     columnFormattingRules = [],

@@ -5,24 +5,25 @@ import TableColumnFormatter, {
   TableColumnFormat,
 } from './TableColumnFormatter';
 
-const log = Log.module('DecimalColumnFormatter');
+const log = Log.module('IntegerColumnFormatter');
 
-export type DecimalColumnFormat = TableColumnFormat & {
+export type IntegerColumnFormat = TableColumnFormat & {
   multiplier?: number;
 };
 
-export type DecimalColumnFormatterOptions = {
-  // Default format string to use. Defaults to DecimalColumnFormatter.DEFAULT_FORMAT_STRING
+export type IntegerColumnFormatterOptions = {
+  // Default format string to use. Defaults to IntegerColumnFormatter.DEFAULT_FORMAT_STRING
   defaultFormatString?: string;
 };
 
-export class DecimalColumnFormatter extends TableColumnFormatter {
+/** Column formatter for integers/whole numbers */
+export class IntegerColumnFormatter extends TableColumnFormatter {
   /**
    * Validates format object
-   * @param format Format object
-   * @returns true for valid object
+   * @param {Object} format Format object
+   * @returns {boolean} true for valid object
    */
-  static isValid(format: TableColumnFormat): boolean {
+  static isValid(format: IntegerColumnFormat): boolean {
     try {
       dh.i18n.NumberFormat.format(format.formatString, 0);
       return true;
@@ -32,19 +33,19 @@ export class DecimalColumnFormatter extends TableColumnFormatter {
   }
 
   /**
-   * Create a DecimalColumnFormat object with the parameters specified
+   * Create an IntegerColumnFormat object with the parameters specified
    * @param label Label for the format
    * @param formatString Format string for the format
    * @param multiplier Optional multiplier for the formatter
    * @param type Type of format created
-   * @returns DecimalColumnFormat object
+   * @returns IntegerColumnFormat object
    */
   static makeFormat(
     label: string,
     formatString: string,
     type = TableColumnFormatter.TYPE_CONTEXT_PRESET,
     multiplier?: number
-  ): DecimalColumnFormat {
+  ): IntegerColumnFormat {
     return {
       label,
       type,
@@ -54,18 +55,18 @@ export class DecimalColumnFormatter extends TableColumnFormatter {
   }
 
   /**
-   * Convenient function to create a DecimalFormatObject with Preset type set
+   * Convenient function to create a IntegerFormatObject with Preset type set
    * @param label Label for this format object
    * @param formatString Format string to use
    * @param multiplier Multiplier to use
-   * @returns DecimalColumnFormat object
+   * @returns IntegerColumnFormat object
    */
   static makePresetFormat(
     label: string,
     formatString = '',
     multiplier?: number
-  ): DecimalColumnFormat {
-    return DecimalColumnFormatter.makeFormat(
+  ): IntegerColumnFormat {
+    return IntegerColumnFormatter.makeFormat(
       label,
       formatString,
       TableColumnFormatter.TYPE_CONTEXT_PRESET,
@@ -74,56 +75,22 @@ export class DecimalColumnFormatter extends TableColumnFormatter {
   }
 
   /**
-   * Convenient function to create a DecimalFormatObject with a default 'Custom Format' label and Custom type
+   * Convenient function to create a IntegerFormatObject with a default 'Custom Format' label and Custom type
    * @param formatString Format string to use
    * @param multiplier Multiplier to use
-   * @returns DecimalColumnFormat object
+   * @returns IntegerColumnFormat object
    */
   static makeCustomFormat(
     formatString = '',
     multiplier?: number
-  ): DecimalColumnFormat {
-    return DecimalColumnFormatter.makeFormat(
+  ): IntegerColumnFormat {
+    return IntegerColumnFormatter.makeFormat(
       'Custom Format',
       formatString,
       TableColumnFormatter.TYPE_CONTEXT_CUSTOM,
       multiplier
     );
   }
-
-  static DEFAULT_FORMAT_STRING = '###,##0.0000';
-
-  static FORMAT_PERCENT = DecimalColumnFormatter.makePresetFormat(
-    'Percent',
-    '##0.00%'
-  );
-
-  static FORMAT_BASIS_POINTS = DecimalColumnFormatter.makePresetFormat(
-    'Basis Points',
-    '###,##0 bp',
-    10000
-  );
-
-  static FORMAT_MILLIONS = DecimalColumnFormatter.makePresetFormat(
-    'Millions',
-    '###,##0.000 mm',
-    0.000001
-  );
-
-  static FORMAT_ROUND = DecimalColumnFormatter.makePresetFormat(
-    'Round',
-    '###,##0'
-  );
-
-  static FORMAT_ROUND_TWO_DECIMALS = DecimalColumnFormatter.makePresetFormat(
-    '0.00',
-    '###,##0.00'
-  );
-
-  static FORMAT_ROUND_FOUR_DECIMALS = DecimalColumnFormatter.makePresetFormat(
-    '0.0000',
-    '###,##0.0000'
-  );
 
   /**
    * Check if the given formats match
@@ -132,8 +99,8 @@ export class DecimalColumnFormatter extends TableColumnFormatter {
    * @returns True if the formats match
    */
   static isSameFormat(
-    formatA?: DecimalColumnFormat,
-    formatB?: DecimalColumnFormat
+    formatA?: IntegerColumnFormat,
+    formatB?: IntegerColumnFormat
   ): boolean {
     return (
       formatA === formatB ||
@@ -145,11 +112,19 @@ export class DecimalColumnFormatter extends TableColumnFormatter {
     );
   }
 
+  static DEFAULT_FORMAT_STRING = '###,##0';
+
+  static FORMAT_MILLIONS = IntegerColumnFormatter.makePresetFormat(
+    'Millions',
+    '###,##0.000 mm',
+    0.000001
+  );
+
   defaultFormatString: string;
 
   constructor({
-    defaultFormatString = DecimalColumnFormatter.DEFAULT_FORMAT_STRING,
-  }: DecimalColumnFormatterOptions = {}) {
+    defaultFormatString = IntegerColumnFormatter.DEFAULT_FORMAT_STRING,
+  }: IntegerColumnFormatterOptions = {}) {
     super();
 
     this.defaultFormatString = defaultFormatString;
@@ -161,7 +136,7 @@ export class DecimalColumnFormatter extends TableColumnFormatter {
    * @param format Format object
    * @returns Formatted string
    */
-  format(valueParam: number, format: DecimalColumnFormat): string {
+  format(valueParam: number, format: IntegerColumnFormat): string {
     const formatString =
       (format && format.formatString) || this.defaultFormatString;
     const value =
@@ -175,4 +150,4 @@ export class DecimalColumnFormatter extends TableColumnFormatter {
   }
 }
 
-export default DecimalColumnFormatter;
+export default IntegerColumnFormatter;

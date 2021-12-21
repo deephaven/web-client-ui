@@ -41,6 +41,14 @@ export const getDefaultDateTimeFormat: Selector<
   WorkspaceSettings['defaultDateTimeFormat']
 > = store => getSettings(store).defaultDateTimeFormat;
 
+export const getDefaultDecimalFormatOptions: Selector<
+  WorkspaceSettings['decimalFormatOptions']
+> = store => getSettings(store).decimalFormatOptions;
+
+export const getDefaultIntegerFormatOptions: Selector<
+  WorkspaceSettings['integerFormatOptions']
+> = store => getSettings(store).integerFormatOptions;
+
 export const getFormatter: Selector<WorkspaceSettings['formatter']> = store =>
   getSettings(store).formatter;
 

@@ -7,7 +7,21 @@ import TableColumnFormatter, {
 
 const log = Log.module('DateTimeColumnFormatter');
 
-class DateTimeColumnFormatter extends TableColumnFormatter {
+export type DateTimeColumnFormatterOptions = {
+  // Time zone
+  timeZone?: string;
+
+  // Show time zone in DateTime values
+  showTimeZone?: boolean;
+
+  // Show 'T' separator in DateTime values
+  showTSeparator?: boolean;
+
+  // DateTime format to use if columnFormats for DateTime isn't set
+  defaultDateTimeFormatString?: string;
+};
+
+export class DateTimeColumnFormatter extends TableColumnFormatter {
   /**
    * Validates format object
    * @param format Format object
@@ -128,12 +142,7 @@ class DateTimeColumnFormatter extends TableColumnFormatter {
     showTimeZone = true,
     showTSeparator = false,
     defaultDateTimeFormatString = DateTimeColumnFormatter.DEFAULT_DATETIME_FORMAT_STRING,
-  }: {
-    timeZone?: string;
-    showTimeZone?: boolean;
-    showTSeparator?: boolean;
-    defaultDateTimeFormatString?: string;
-  } = {}) {
+  }: DateTimeColumnFormatterOptions = {}) {
     super();
 
     const timeZone =
