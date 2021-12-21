@@ -179,25 +179,6 @@ export class FormattingSectionContent extends PureComponent {
     );
     this.handleTimeZoneChange = this.handleTimeZoneChange.bind(this);
 
-    this.containerRef = React.createRef();
-    this.addFormatRuleButtonRef = React.createRef();
-
-    this.lastFormatRuleIndex = 0;
-
-    this.state = {
-      formatSettings: [],
-      formatRulesChanged: false,
-      showTimeZone: true,
-      showTSeparator: false,
-      timeZone: '',
-      defaultDateTimeFormat: '',
-      defaultDecimalFormatOptions: {},
-      defaultIntegerFormatOptions: {},
-      timestampAtMenuOpen: new Date(),
-    };
-  }
-
-  componentDidMount() {
     const {
       formatter,
       defaultDateTimeFormat,
@@ -206,26 +187,34 @@ export class FormattingSectionContent extends PureComponent {
       showTimeZone,
       showTSeparator,
       timeZone,
-    } = this.props;
+    } = props;
 
-    this.setState(
-      {
-        formatSettings: formatter.map(item => ({
-          ...item,
-          id: this.getAutoIncrementFormatRuleIndex(),
-        })),
-        defaultDateTimeFormat,
-        defaultDecimalFormatOptions,
-        defaultIntegerFormatOptions,
-        showTimeZone,
-        showTSeparator,
-        timeZone,
-      },
-      () => {
-        FormattingSectionContent.focusFirstInputInContainer(
-          this.containerRef.current
-        );
-      }
+    const formatSettings = formatter.map((item, i) => ({
+      ...item,
+      id: i,
+    }));
+
+    this.containerRef = React.createRef();
+    this.addFormatRuleButtonRef = React.createRef();
+
+    this.lastFormatRuleIndex = formatSettings.length;
+
+    this.state = {
+      formatSettings,
+      formatRulesChanged: false,
+      showTimeZone,
+      showTSeparator,
+      timeZone,
+      defaultDateTimeFormat,
+      defaultDecimalFormatOptions,
+      defaultIntegerFormatOptions,
+      timestampAtMenuOpen: new Date(),
+    };
+  }
+
+  componentDidMount() {
+    FormattingSectionContent.focusFirstInputInContainer(
+      this.containerRef.current
     );
   }
 
@@ -872,16 +861,14 @@ FormattingSectionContent.propTypes = {
   scrollTo: PropTypes.func,
   defaultDecimalFormatOptions: PropTypes.shape({
     defaultFormatString: PropTypes.string,
-  }),
+  }).isRequired,
   defaultIntegerFormatOptions: PropTypes.shape({
     defaultFormatString: PropTypes.string,
-  }),
+  }).isRequired,
 };
 
 FormattingSectionContent.defaultProps = {
   scrollTo: () => {},
-  defaultDecimalFormatOptions: {},
-  defaultIntegerFormatOptions: {},
 };
 
 const mapStateToProps = state => ({
