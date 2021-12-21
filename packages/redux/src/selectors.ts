@@ -6,6 +6,8 @@ import type {
   WorkspaceSettings,
 } from './store';
 
+const EMPTY_OBJECT = Object.freeze({});
+
 type Selector<R> = (state: RootState) => R;
 
 // User
@@ -42,12 +44,12 @@ export const getDefaultDateTimeFormat: Selector<
 > = store => getSettings(store).defaultDateTimeFormat;
 
 export const getDefaultDecimalFormatOptions: Selector<
-  WorkspaceSettings['decimalFormatOptions']
-> = store => getSettings(store).decimalFormatOptions;
+  WorkspaceSettings['defaultDecimalFormatOptions']
+> = store => getSettings(store).defaultDecimalFormatOptions ?? EMPTY_OBJECT;
 
 export const getDefaultIntegerFormatOptions: Selector<
-  WorkspaceSettings['integerFormatOptions']
-> = store => getSettings(store).integerFormatOptions;
+  WorkspaceSettings['defaultIntegerFormatOptions']
+> = store => getSettings(store).defaultIntegerFormatOptions ?? EMPTY_OBJECT;
 
 export const getFormatter: Selector<WorkspaceSettings['formatter']> = store =>
   getSettings(store).formatter;

@@ -30,10 +30,10 @@ interface WorkspaceFormattingRule {
 
 export interface WorkspaceSettings {
   defaultDateTimeFormat: string;
-  decimalFormatOptions?: {
+  defaultDecimalFormatOptions?: {
     defaultFormatString?: string;
   };
-  integerFormatOptions?: {
+  defaultIntegerFormatOptions?: {
     defaultFormatString?: string;
   };
   formatter: WorkspaceFormattingRule[];
