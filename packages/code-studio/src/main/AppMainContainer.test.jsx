@@ -23,6 +23,7 @@ function makeAppMainContainer({
   user = TestUtils.REGULAR_USER,
   dashboardData = {},
   saveWorkspace = jest.fn(() => Promise.resolve()),
+  updateDashboardData = jest.fn(() => Promise.resolve()),
   updateWorkspaceData = jest.fn(() => Promise.resolve()),
   workspace = { data: {} },
   workspaceStorage = new LocalWorkspaceStorage(),
@@ -39,6 +40,7 @@ function makeAppMainContainer({
       dashboardData={dashboardData}
       layoutStorage={layoutStorage}
       saveWorkspace={saveWorkspace}
+      updateDashboardData={updateDashboardData}
       updateWorkspaceData={updateWorkspaceData}
       user={user}
       workspace={workspace}
