@@ -11,13 +11,13 @@ module.exports = api => ({
           : {
               esmodules: true,
             },
+        include: ['@babel/plugin-proposal-class-properties'],
       },
     ],
     '@babel/preset-react',
     '@babel/preset-typescript',
   ],
   plugins: [
-    '@babel/plugin-proposal-class-properties',
     api.env('test') ? false : ['babel-plugin-add-import-extension'],
     [
       'transform-rename-import',
