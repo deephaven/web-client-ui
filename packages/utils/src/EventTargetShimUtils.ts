@@ -1,9 +1,19 @@
+import type { Event } from 'event-target-shim';
+
 /**
  * A CustomEvent extension which combines the browser CustomEvent and event-target-shim's Event types for type safety
  * CustomEvent does not
  */
-export class EventShimCustomEvent<T extends string, D> extends CustomEvent<D> {
+export class EventShimCustomEvent<
+  T extends string,
+  D = unknown
+> extends CustomEvent<D> {
   type!: T;
+
+  // eslint-disable-next-line @typescript-eslint/no-useless-constructor
+  constructor(typeArg: T, eventInitDict?: CustomEventInit<D>) {
+    super(typeArg, eventInitDict);
+  }
 }
 
 /**
@@ -13,12 +23,10 @@ export class EventShimCustomEvent<T extends string, D> extends CustomEvent<D> {
  */
 export type CustomEventMap<M extends Record<string, Event>> = {
   [T in keyof M]: T extends string
-    ? M[T] extends EventShimCustomEvent<string, unknown>
-      ? M[T]
-      : M[T] extends CustomEvent<infer D>
+    ? M[T] extends CustomEvent<infer D>
       ? EventShimCustomEvent<T, D>
       : M[T] extends Event
-      ? EventShimCustomEvent<T, never>
+      ? Event<T>
       : never
     : never;
 };

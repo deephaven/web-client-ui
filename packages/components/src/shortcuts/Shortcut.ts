@@ -1,6 +1,11 @@
 /* eslint-disable no-underscore-dangle */
+import { EventTarget } from 'event-target-shim';
 import React from 'react';
+import { Log } from '@deephaven/log';
+import { CustomEventMap, EventShimCustomEvent } from '@deephaven/utils';
 import { ContextActionUtils } from '../context-actions';
+
+const log = Log.module('Shortcut');
 
 export enum MODIFIER {
   CTRL = 'MODIFIER_CTRL',
@@ -125,7 +130,11 @@ export interface ValidKeyState extends KeyState {
   keyValue: KEY | null;
 }
 
-export default class Shortcut {
+type EventMap = CustomEventMap<{
+  onUpdate: CustomEvent<Shortcut>;
+}>;
+
+export default class Shortcut extends EventTarget<EventMap, 'strict'> {
   readonly id: string; // Unique identifier for the shortcut
 
   readonly name: string; // e.g. Rename, Save, Run Selected
@@ -371,6 +380,7 @@ export default class Shortcut {
     name: string;
     tooltip?: string;
   }) {
+    super();
     this.id = id;
     this.name = name;
     this.tooltip = tooltip;
@@ -402,7 +412,17 @@ export default class Shortcut {
    */
   setKeyState(keyState: KeyState): void {
     if (Shortcut.isValidKeyState(keyState)) {
+      log.debug2(`Shortcut ${this.id} updated to ${JSON.stringify(keyState)}`);
       this.keyState = keyState;
+      this.dispatchEvent(
+        new EventShimCustomEvent('onUpdate', { detail: this })
+      );
+    } else {
+      log.debug2(
+        `Shortcut ${
+          this.id
+        } tried to update to invalid keyState ${JSON.stringify(keyState)}`
+      );
     }
   }
 

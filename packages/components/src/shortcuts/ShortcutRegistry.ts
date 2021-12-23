@@ -1,13 +1,13 @@
 /* eslint-disable max-classes-per-file */
 import { EventTarget } from 'event-target-shim';
 import { Log } from '@deephaven/log';
-import { CustomEventMap } from '@deephaven/utils';
+import { CustomEventMap, EventShimCustomEvent } from '@deephaven/utils';
 import Shortcut, { KeyState } from './Shortcut';
 
 const log = Log.module('ShortcutRegistry');
 
 type EventMap = CustomEventMap<{
-  onUpdate: CustomEvent<Shortcut[]>;
+  onUpdate: CustomEvent<Shortcut>;
 }>;
 
 class ShortcutRegistry extends EventTarget<EventMap, 'strict'> {
@@ -37,6 +37,12 @@ class ShortcutRegistry extends EventTarget<EventMap, 'strict'> {
       );
       return;
     }
+
+    log.debug2(`Adding shortcut to registry: ${shortcut.id}`);
+
+    shortcut.addEventListener('onUpdate', ({ detail }) =>
+      this.dispatchEvent(new EventShimCustomEvent('onUpdate', { detail }))
+    );
 
     const category = shortcut.id.split('.')[0];
 

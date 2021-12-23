@@ -7,7 +7,6 @@ import {
   RootState,
   saveSettings as saveSettingsAction,
 } from '@deephaven/redux';
-import { EventShimCustomEvent } from '@deephaven/utils';
 import ShortcutItem from './ShortcutItem';
 
 type ShortcutSectionContentProps = ReturnType<typeof mapStateToProps> &
@@ -115,9 +114,6 @@ function ShortcutCategory({
 
     saveShortcutOverrides(modifiedShoftcuts);
     setShortcuts(s => [...s]);
-    ShortcutRegistry.dispatchEvent(
-      new EventShimCustomEvent('onUpdate', { detail: modifiedShoftcuts })
-    );
   }
 
   const displayTexts = useMemo(() => shortcuts.map(s => s.getDisplayText()), [
