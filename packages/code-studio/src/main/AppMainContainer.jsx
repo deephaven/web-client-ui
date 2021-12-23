@@ -15,6 +15,7 @@ import {
 import Dashboard, {
   DEFAULT_DASHBOARD_ID,
   getDashboardData,
+  updateDashboardData as updateDashboardDataAction,
 } from '@deephaven/dashboard';
 import {
   ChartEvent,
@@ -334,11 +335,12 @@ export class AppMainContainer extends Component {
     try {
       const { workspace } = this.props;
       const { data } = workspace;
-      const { layoutConfig = [] } = data;
+      const { filterSets, layoutConfig, links } = data;
+      const exportedConfig = { filterSets, layoutConfig, links, version: 2 };
 
-      log.info('Exporting layoutConfig', layoutConfig);
+      log.info('handleExportLayoutClick exportedConfig', exportedConfig);
 
-      const blob = new Blob([JSON.stringify(layoutConfig)], {
+      const blob = new Blob([JSON.stringify(exportedConfig)], {
         mimeType: 'application/json',
       });
       const timestamp = dh.i18n.DateTimeFormat.format(
@@ -385,13 +387,30 @@ export class AppMainContainer extends Component {
    */
   async importLayoutFile(file) {
     try {
+      const { updateDashboardData, updateWorkspaceData } = this.props;
       const fileText = await file.text();
-      const layoutConfig = JSON.parse(fileText);
-
-      const { updateWorkspaceData } = this.props;
-      updateWorkspaceData({ layoutConfig });
+      const importedConfig = JSON.parse(fileText);
+      if (importedConfig.version !== undefined) {
+        const { version } = importedConfig;
+        if (version === 2) {
+          const { filterSets, layoutConfig, links } = importedConfig;
+          updateWorkspaceData({ layoutConfig });
+          updateDashboardData(DEFAULT_DASHBOARD_ID, {
+            filterSets,
+            layoutConfig,
+            links,
+          });
+        } else {
+          throw new Error(
+            `Unexpected import config version ${version}: ${importedConfig}`
+          );
+        }
+      } else {
+        // Legacy import - just a layout config being imported
+        updateWorkspaceData({ layoutConfig: importedConfig });
+      }
     } catch (e) {
-      log.error('Unable to export layout', e);
+      log.error('Unable to import layout', e);
     }
   }
 
@@ -634,12 +653,16 @@ AppMainContainer.propTypes = {
   layoutStorage: PropTypes.shape({}).isRequired,
   session: APIPropTypes.IdeSession.isRequired,
   setActiveTool: PropTypes.func.isRequired,
+  updateDashboardData: PropTypes.func.isRequired,
   updateWorkspaceData: PropTypes.func.isRequired,
   user: UIPropTypes.User.isRequired,
   workspace: PropTypes.shape({
     data: PropTypes.shape({
       data: PropTypes.shape({}),
+      filterSets: PropTypes.arrayOf(PropTypes.shape({})),
       layoutConfig: PropTypes.arrayOf(PropTypes.shape({})),
+      settings: PropTypes.shape({}),
+      links: PropTypes.arrayOf(PropTypes.shape({})),
     }),
   }).isRequired,
 };
@@ -655,5 +678,6 @@ const mapStateToProps = state => ({
 
 export default connect(mapStateToProps, {
   setActiveTool: setActiveToolAction,
+  updateDashboardData: updateDashboardDataAction,
   updateWorkspaceData: updateWorkspaceDataAction,
 })(AppMainContainer);
