@@ -31,6 +31,10 @@ class ScriptEditor extends Component {
     };
   }
 
+  componentDidMount() {
+    ShortcutRegistry.addEventListener('onUpdate', this.updateShortcuts);
+  }
+
   componentDidUpdate(prevProps) {
     const { sessionLanguage, settings } = this.props;
     const { language } = settings;
@@ -67,6 +71,10 @@ class ScriptEditor extends Component {
       this.initContextActions();
       this.initCodeCompletion();
     }
+  }
+
+  componentWillUnmount() {
+    ShortcutRegistry.removeEventListener('onUpdate', this.updateShortcuts);
   }
 
   getValue() {
@@ -190,7 +198,6 @@ class ScriptEditor extends Component {
     );
 
     this.contextActionCleanups = cleanups;
-    ShortcutRegistry.addEventListener('onUpdate', this.updateShortcuts);
   }
 
   deInitContextActions() {
@@ -198,7 +205,6 @@ class ScriptEditor extends Component {
       this.contextActionCleanups.forEach(cleanup => cleanup.dispose());
       this.contextActionCleanups = [];
     }
-    ShortcutRegistry.removeEventListener('onUpdate', this.updateShortcuts);
   }
 
   updateShortcuts() {
