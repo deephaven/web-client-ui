@@ -30,7 +30,6 @@ import {
   PandasPlugin,
   getDashboardSessionWrapper,
   UIPropTypes,
-  NotebookEvent,
 } from '@deephaven/dashboard-core-plugins';
 import ControlType from '@deephaven/dashboard-core-plugins/dist/controls/ControlType';
 import ToolType from '@deephaven/dashboard-core-plugins/dist/linker/ToolType';
@@ -74,7 +73,6 @@ export class AppMainContainer extends Component {
     super(props);
     this.handleSettingsMenuHide = this.handleSettingsMenuHide.bind(this);
     this.handleSettingsMenuShow = this.handleSettingsMenuShow.bind(this);
-    this.handleShortcutUpdate = this.handleShortcutUpdate.bind(this);
     this.handleError = this.handleError.bind(this);
     this.handleControlSelect = this.handleControlSelect.bind(this);
     this.handleToolSelect = this.handleToolSelect.bind(this);
@@ -226,10 +224,6 @@ export class AppMainContainer extends Component {
 
   handleSettingsMenuShow() {
     this.setState({ isSettingsMenuShown: true });
-  }
-
-  handleShortcutUpdate() {
-    this.emitLayoutEvent(NotebookEvent.UPDATE_SHORTCUTS);
   }
 
   handleControlSelect(type, dragEvent = null) {
@@ -619,10 +613,7 @@ export class AppMainContainer extends Component {
           mountOnEnter
           unmountOnExit
         >
-          <SettingsMenu
-            onDone={this.handleSettingsMenuHide}
-            onShortcutUpdate={this.handleShortcutUpdate}
-          />
+          <SettingsMenu onDone={this.handleSettingsMenuHide} />
         </CSSTransition>
         <ContextActions actions={contextActions} />
         <input

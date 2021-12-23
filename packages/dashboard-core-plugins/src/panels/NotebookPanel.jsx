@@ -96,7 +96,6 @@ class NotebookPanel extends Component {
     this.handleTab = this.handleTab.bind(this);
     this.handleTabFocus = this.handleTabFocus.bind(this);
     this.handleTabBlur = this.handleTabBlur.bind(this);
-    this.handleUpdateShortcuts = this.handleUpdateShortcuts.bind(this);
 
     this.pending = new Pending();
 
@@ -180,7 +179,6 @@ class NotebookPanel extends Component {
     if (tab) this.initTab(tab);
     this.initNotebookContent();
     glEventHub.on(NotebookEvent.RENAME_FILE, this.handleRenameFile);
-    glEventHub.on(NotebookEvent.UPDATE_SHORTCUTS, this.handleUpdateShortcuts);
     glContainer.on('tabClicked', this.handlePanelTabClick);
   }
 
@@ -199,7 +197,6 @@ class NotebookPanel extends Component {
 
     const { fileMetadata, isPreview } = this.state;
     glEventHub.off(NotebookEvent.RENAME_FILE, this.handleRenameFile);
-    glEventHub.off(NotebookEvent.UPDATE_SHORTCUTS, this.handleUpdateShortcuts);
     glContainer.off('tabClicked', this.handlePanelTabClick);
     glEventHub.emit(NotebookEvent.UNREGISTER_FILE, fileMetadata, isPreview);
   }
@@ -666,13 +663,6 @@ class NotebookPanel extends Component {
   handlePanelTabClick() {
     log.debug('handlePanelTabClick');
     this.focus();
-  }
-
-  handleUpdateShortcuts() {
-    log.debug('handleUpdateShortcuts');
-    if (this.notebook) {
-      this.notebook.updateShortcuts();
-    }
   }
 
   focus() {

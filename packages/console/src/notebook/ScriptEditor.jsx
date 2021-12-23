@@ -3,7 +3,7 @@
  */
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { LoadingOverlay } from '@deephaven/components';
+import { LoadingOverlay, ShortcutRegistry } from '@deephaven/components';
 import Log from '@deephaven/log';
 import Editor from './Editor';
 import { MonacoCompletionProvider, MonacoUtils } from '../monaco';
@@ -19,6 +19,7 @@ class ScriptEditor extends Component {
     this.handleEditorWillDestroy = this.handleEditorWillDestroy.bind(this);
     this.handleRun = this.handleRun.bind(this);
     this.handleRunSelected = this.handleRunSelected.bind(this);
+    this.updateShortcuts = this.updateShortcuts.bind(this);
 
     this.contextActionCleanups = [];
     this.completionCleanup = null;
@@ -189,6 +190,7 @@ class ScriptEditor extends Component {
     );
 
     this.contextActionCleanups = cleanups;
+    ShortcutRegistry.addEventListener('onUpdate', this.updateShortcuts);
   }
 
   deInitContextActions() {
@@ -196,6 +198,7 @@ class ScriptEditor extends Component {
       this.contextActionCleanups.forEach(cleanup => cleanup.dispose());
       this.contextActionCleanups = [];
     }
+    ShortcutRegistry.removeEventListener('onUpdate', this.updateShortcuts);
   }
 
   updateShortcuts() {

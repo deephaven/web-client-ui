@@ -1,20 +1,28 @@
+/* eslint-disable max-classes-per-file */
+import { EventTarget } from 'event-target-shim';
+import { Log } from '@deephaven/log';
+import { CustomEventMap } from '@deephaven/utils';
 import Shortcut, { KeyState } from './Shortcut';
 
-export default class ShortcutRegistry {
-  static readonly shortcutMap = new Map<string, Shortcut>();
+const log = Log.module('ShortcutRegistry');
 
-  static readonly shortcutsByCategory = new Map<string, Shortcut[]>();
+type EventMap = CustomEventMap<{
+  onUpdate: CustomEvent<Shortcut[]>;
+}>;
+
+class ShortcutRegistry extends EventTarget<EventMap, 'strict'> {
+  readonly shortcutMap = new Map<string, Shortcut>();
+
+  readonly shortcutsByCategory = new Map<string, Shortcut[]>();
 
   /**
    * Creates a Shortcut and adds it to the registry
    * @param params The constructor params for the {@link Shortcut}
    * @returns The created Shortcut
    */
-  static createAndAdd(
-    params: ConstructorParameters<typeof Shortcut>[0]
-  ): Shortcut {
+  createAndAdd(params: ConstructorParameters<typeof Shortcut>[0]): Shortcut {
     const shortcut = new Shortcut(params);
-    ShortcutRegistry.add(shortcut);
+    this.add(shortcut);
     return shortcut;
   }
 
@@ -22,20 +30,21 @@ export default class ShortcutRegistry {
    * Adds a shortcut to the registry. Throws if a shortcut with the same ID already exists
    * @param shortcut Shortcut to add to the registry
    */
-  static add(shortcut: Shortcut): void {
-    if (ShortcutRegistry.shortcutMap.has(shortcut.id)) {
-      throw new Error(
+  add(shortcut: Shortcut): void {
+    if (this.shortcutMap.has(shortcut.id)) {
+      log.warn(
         `Skipping attempt to add duplicate shortcut ID to registry: ${shortcut.id}`
       );
+      return;
     }
 
     const category = shortcut.id.split('.')[0];
 
-    ShortcutRegistry.shortcutMap.set(shortcut.id, shortcut);
-    if (ShortcutRegistry.shortcutsByCategory.has(category)) {
-      ShortcutRegistry.shortcutsByCategory.get(category)?.push(shortcut);
+    this.shortcutMap.set(shortcut.id, shortcut);
+    if (this.shortcutsByCategory.has(category)) {
+      this.shortcutsByCategory.get(category)?.push(shortcut);
     } else {
-      ShortcutRegistry.shortcutsByCategory.set(category, [shortcut]);
+      this.shortcutsByCategory.set(category, [shortcut]);
     }
   }
 
@@ -44,8 +53,8 @@ export default class ShortcutRegistry {
    * @param id ID of the shortcut
    * @returns The shortcut for that ID if it exists
    */
-  static get(id: string): Shortcut | undefined {
-    return ShortcutRegistry.shortcutMap.get(id);
+  get(id: string): Shortcut | undefined {
+    return this.shortcutMap.get(id);
   }
 
   /**
@@ -54,9 +63,13 @@ export default class ShortcutRegistry {
    * @param keyState
    * @returns Array of conflicting shortcuts. Empty array if none conflict
    */
-  static getConflictingShortcuts(keyState: KeyState): Shortcut[] {
-    return Array.from(ShortcutRegistry.shortcutMap.values()).filter(
+  getConflictingShortcuts(keyState: KeyState): Shortcut[] {
+    return Array.from(this.shortcutMap.values()).filter(
       shortcut => !shortcut.isNull() && shortcut.matchesKeyState(keyState)
     );
   }
 }
+
+const registry = Object.freeze(new ShortcutRegistry());
+
+export default registry;

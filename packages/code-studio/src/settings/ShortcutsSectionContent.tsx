@@ -7,18 +7,16 @@ import {
   RootState,
   saveSettings as saveSettingsAction,
 } from '@deephaven/redux';
+import { EventShimCustomEvent } from '@deephaven/utils';
 import ShortcutItem from './ShortcutItem';
 
 type ShortcutSectionContentProps = ReturnType<typeof mapStateToProps> &
-  typeof mapDispatchToProps & {
-    onUpdate(): void;
-  };
+  typeof mapDispatchToProps;
 
 function ShortcutSectionContent({
   shortcutOverrides = {},
   settings,
   saveSettings,
-  onUpdate,
 }: ShortcutSectionContentProps): JSX.Element {
   const saveShortcutOverrides = useCallback(
     (modifiedShortcuts: Shortcut[]) => {
@@ -74,7 +72,6 @@ function ShortcutSectionContent({
           name={category.name}
           shortcuts={category.shortcuts}
           saveShortcutOverrides={saveShortcutOverrides}
-          onUpdate={onUpdate}
         />
       ))}
     </>
@@ -85,14 +82,12 @@ type ShortcutCategoryProps = {
   name: string;
   shortcuts: Shortcut[];
   saveShortcutOverrides(shortcuts: Shortcut[]): void;
-  onUpdate(): void;
 };
 
 function ShortcutCategory({
   name,
   shortcuts: propsShortcuts,
   saveShortcutOverrides,
-  onUpdate,
 }: ShortcutCategoryProps): JSX.Element {
   function formatCategoryName(categoryName: string): string {
     return categoryName
@@ -116,9 +111,13 @@ function ShortcutCategory({
     // Set conflicting shortcuts to null
     conflictingShortcuts.forEach(conflict => conflict.setToNull());
 
-    saveShortcutOverrides([shortcut, ...conflictingShortcuts]);
+    const modifiedShoftcuts = [shortcut, ...conflictingShortcuts];
+
+    saveShortcutOverrides(modifiedShoftcuts);
     setShortcuts(s => [...s]);
-    onUpdate();
+    ShortcutRegistry.dispatchEvent(
+      new EventShimCustomEvent('onUpdate', { detail: modifiedShoftcuts })
+    );
   }
 
   const displayTexts = useMemo(() => shortcuts.map(s => s.getDisplayText()), [

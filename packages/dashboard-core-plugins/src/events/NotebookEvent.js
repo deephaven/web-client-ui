@@ -14,8 +14,6 @@ class NotebookEvent {
   static SEND_TO_NOTEBOOK = 'NotebookEvent.sendToNotebook';
 
   static UNREGISTER_FILE = 'NotebookEvent.unregisterFile';
-
-  static UPDATE_SHORTCUTS = 'NotebookEvent.updateShortcuts';
 }
 
 export default NotebookEvent;
