@@ -38,6 +38,7 @@
     "@deephaven/react-hooks": "^0.9.0",
     "deep-equal": "^2.0.4",
     "jquery": "^3.5.1",
+    "lodash.ismatch": "^4.1.1",
     "lodash.throttle": "^4.1.1",
     "prop-types": "^15.7.2",
     "shortid": "^2.2.15"

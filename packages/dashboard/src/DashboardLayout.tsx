@@ -44,6 +44,7 @@ interface DashboardLayoutProps {
   layout: GoldenLayout;
   layoutConfig?: DashboardLayoutConfig;
   onLayoutChange?: (dehydratedLayout: DashboardLayoutConfig) => void;
+  onLayoutInitialized?: () => void;
   data?: DashboardData;
   children?: React.ReactNode | React.ReactNode[];
   emptyDashboard?: React.ReactNode;
@@ -59,6 +60,7 @@ export const DashboardLayout = ({
   layout,
   layoutConfig = DEFAULT_LAYOUT_CONFIG,
   onLayoutChange = DEFAULT_CALLBACK,
+  onLayoutInitialized = DEFAULT_CALLBACK,
 }: DashboardLayoutProps): JSX.Element => {
   const dispatch = useDispatch();
   const data =
@@ -226,6 +228,7 @@ export const DashboardLayout = ({
       }
 
       setIsDashboardEmpty(layout.root.contentItems.length === 0);
+      onLayoutInitialized();
     }
   }, [
     hydrateComponent,
@@ -234,6 +237,7 @@ export const DashboardLayout = ({
     lastConfig,
     panelManager,
     previousLayoutConfig,
+    onLayoutInitialized,
   ]);
 
   return (
@@ -261,6 +265,7 @@ DashboardLayout.propTypes = {
   layout: GLPropTypes.Layout.isRequired,
   layoutConfig: PropTypes.arrayOf(PropTypes.shape({})),
   onLayoutChange: PropTypes.func,
+  onLayoutInitialized: PropTypes.func,
 };
 
 export default DashboardLayout;
