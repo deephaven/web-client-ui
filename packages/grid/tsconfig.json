@@ -1,5 +1,5 @@
-{ 
-  "extends": "@deephaven/tsconfig",
+{
+  "extends": "../../tsconfig.json",
   "compilerOptions": {
     "target": "es2017",
     "declarationDir": "dist/",

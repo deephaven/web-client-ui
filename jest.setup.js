@@ -1,7 +1,7 @@
 import 'regenerator-runtime/runtime';
 import { configure } from 'enzyme';
 import Adapter from 'enzyme-adapter-react-16';
-import { TestUtils } from '@deephaven/utils';
+import { TestUtils } from './packages/utils/src';
 import './__mocks__/dh-core';
 
 // disable annoying dnd-react warnings

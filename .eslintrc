@@ -4,6 +4,7 @@
     "@deephaven/eslint-config"
   ],
   "ignorePatterns": [
-    "packages/golden-layout/*"
-  ],
+    "packages/golden-layout/*",
+    "jest.config.*"
+  ]
 }

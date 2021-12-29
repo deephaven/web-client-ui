@@ -7,7 +7,7 @@
 
 import React from 'react';
 import { EventHandlerResult } from './EventHandlerResult';
-import Grid from './Grid';
+import type Grid from './Grid';
 
 /**
  * Some events we listen to are a native keyboard event, and others are wrapped with React's SyntheticEvent.

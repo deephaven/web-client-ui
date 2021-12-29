@@ -5,6 +5,8 @@ export { default as GridPlugin } from './GridPlugin';
 export { default as LinkerPlugin } from './LinkerPlugin';
 export { default as MarkdownPlugin } from './MarkdownPlugin';
 export { default as PandasPlugin } from './PandasPlugin';
+export { default as ControlType } from './controls/ControlType';
+export { default as ToolType } from './linker/ToolType';
 
 export * from './events';
 export * from './panels';

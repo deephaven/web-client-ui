@@ -1,3 +1,64 @@
 {
-  "extends": "@deephaven/tsconfig"
+  "extends": "@deephaven/tsconfig",
+  "compilerOptions": {
+    "esModuleInterop": true,
+    "baseUrl": ".",
+    "paths": {
+      "@deephaven/chart": [
+        "./packages/chart/src"
+      ],
+      "@deephaven/components": [
+        "./packages/components/src"
+      ],
+      "@deephaven/console": [
+        "./packages/console/src"
+      ],
+      "@deephaven/dashboard": [
+        "./packages/dashboard/src"
+      ],
+      "@deephaven/dashboard-core-plugins": [
+        "./packages/dashboard-core-plugins/src"
+      ],
+      "@deephaven/file-explorer": [
+        "./packages/file-explorer/src"
+      ],
+      "@deephaven/grid": [
+        "./packages/grid/src"
+      ],
+      "@deephaven/iris-grid": [
+        "./packages/iris-grid/src"
+      ],
+      "@deephaven/iris-grid/dist/*": [
+        "./packages/iris-grid/src/*"
+      ],
+      "@deephaven/jsapi-shim": [
+        "./packages/jsapi-shim/src"
+      ],
+      "@deephaven/log": [
+        "./packages/log/src"
+      ],
+      "@deephaven/mocks": [
+        "./packages/mocks/src"
+      ],
+      "@deephaven/react-hooks": [
+        "./packages/react-hooks/src"
+      ],
+      "@deephaven/redux": [
+        "./packages/redux/src"
+      ],
+      "@deephaven/storage": [
+        "./packages/storage/src"
+      ],
+      "@deephaven/utils": [
+        "./packages/utils/src"
+      ]
+    }
+  },
+  "include": [
+    "packages/*/src/*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "packages/*/dist"
+  ]
 }

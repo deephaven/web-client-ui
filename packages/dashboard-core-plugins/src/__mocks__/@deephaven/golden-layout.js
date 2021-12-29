@@ -1,1 +1,1 @@
-export { default } from '@deephaven/mocks/golden-layout';
+export { GoldenLayout as default } from '@deephaven/mocks';
