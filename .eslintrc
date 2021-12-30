@@ -3,6 +3,13 @@
   "extends": [
     "@deephaven/eslint-config"
   ],
+  "settings": {
+    "import/resolver": {
+      "typescript": {
+        "project": "tsconfig-base.json"
+      }
+    }
+  },
   "ignorePatterns": [
     "packages/golden-layout/*",
     "jest.config.*"

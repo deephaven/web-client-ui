@@ -29,7 +29,7 @@
     "start:packages": "lerna run watch --ignore=@deephaven/code-studio --stream --parallel",
     "prestart": "lerna run prestart --stream",
     "pretest": "npm run build:necessary",
-    "test": "jest",
+    "test": "jest --watch --changedSince origin/main",
     "pretest:ci": "npm run pretest",
     "test:ci": "jest --maxWorkers=2",
     "test:golden-layout": "lerna run test:ci --scope=@deephaven/golden-layout --stream",
