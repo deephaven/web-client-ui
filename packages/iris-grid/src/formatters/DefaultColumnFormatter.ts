@@ -3,7 +3,7 @@
 import TableColumnFormatter from './TableColumnFormatter';
 
 class DefaultColumnFormatter extends TableColumnFormatter {
-  format(value) {
+  format(value: unknown): string {
     return `${value}`;
   }
 }

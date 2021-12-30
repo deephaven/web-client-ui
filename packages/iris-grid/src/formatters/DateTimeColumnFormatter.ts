@@ -99,8 +99,8 @@ export class DateTimeColumnFormatter extends TableColumnFormatter {
   }
 
   static makeFormatStringMap(
-    showTimeZone: boolean,
-    showTSeparator: boolean
+    showTimeZone?: boolean,
+    showTSeparator?: boolean
   ): Map<string, string> {
     const separator = showTSeparator ? `'T'` : ' ';
     const tz = showTimeZone ? ' z' : '';
@@ -119,7 +119,10 @@ export class DateTimeColumnFormatter extends TableColumnFormatter {
     ]);
   }
 
-  static getFormats(showTimeZone: boolean, showTSeparator: boolean): string[] {
+  static getFormats(
+    showTimeZone?: boolean,
+    showTSeparator?: boolean
+  ): string[] {
     const formatStringMap = DateTimeColumnFormatter.makeFormatStringMap(
       showTimeZone,
       showTSeparator
