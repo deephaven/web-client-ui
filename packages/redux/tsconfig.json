@@ -1,7 +1,7 @@
 {
-  "extends": "../../tsconfig.json",
+  "extends": "../../tsconfig-base.json",
   "compilerOptions": {
-    "declarationDir": "dist/",
+    "rootDir": "src/",
     "outDir": "dist/",
   },
   "include": [
@@ -14,6 +14,20 @@
     "node_modules",
     "src/**/*.test.*",
     "src/**/*.stories.*",
-    "src/__mocks__/*"
+    "src/**/__mocks__/*"
+  ],
+  "references": [
+    {
+      "path": "../components"
+    },
+    {
+      "path": "../console"
+    },
+    {
+      "path": "../file-explorer"
+    },
+    {
+      "path": "../log"
+    },
   ]
 }

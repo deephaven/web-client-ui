@@ -1,0 +1,14 @@
+{
+  "extends": "./packages/tsconfig/tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@deephaven/iris-grid/dist/*": [
+        "./packages/iris-grid/src/*"
+      ],
+      "@deephaven/*": [
+        "./packages/*/src"
+      ]
+    }
+  }
+}
