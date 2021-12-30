@@ -30,6 +30,7 @@
     "prestart": "lerna run prestart --stream",
     "pretest": "npm run build:necessary",
     "test": "jest --watch --changedSince origin/main",
+    "pretest:ci": "npm run pretest",
     "test:ci": "jest --maxWorkers=2",
     "test:golden-layout": "lerna run test:ci --scope=@deephaven/golden-layout --stream",
     "version-bump": "lerna version --no-git-tag-version --no-push",
