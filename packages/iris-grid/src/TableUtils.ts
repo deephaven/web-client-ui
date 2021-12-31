@@ -1,10 +1,34 @@
 import Log from '@deephaven/log';
-import dh from '@deephaven/jsapi-shim';
-import { PromiseUtils, TextUtils, TimeoutError } from '@deephaven/utils';
+import dh, {
+  Column,
+  FilterCondition,
+  FilterValue,
+  LongWrapper,
+  RemoverFn,
+  Sort,
+  Table,
+  TreeTable,
+} from '@deephaven/jsapi-shim';
+import {
+  CancelablePromise,
+  PromiseUtils,
+  TextUtils,
+  TimeoutError,
+} from '@deephaven/utils';
 import DateUtils from './DateUtils';
-import { FilterType, FilterOperator } from './filters';
+import {
+  FilterType,
+  FilterOperator,
+  FilterTypeValue,
+  FilterOperatorValue,
+} from './filters';
+import type { AdvancedFilterCreatorFilterItemState } from './AdvancedFilterCreatorFilterItem';
 
 const log = Log.module('TableUtils');
+
+type Values<T> = T[keyof T];
+type DataType = Values<typeof TableUtils.dataType>;
+type SortDirection = Values<typeof TableUtils.sortDirection>;
 
 /** Utility class to provide some functions for working with tables */
 class TableUtils {
@@ -15,25 +39,25 @@ class TableUtils {
     DECIMAL: 'decimal',
     INT: 'int',
     STRING: 'string',
-  };
+  } as const;
 
   static sortDirection = {
     ascending: 'ASC',
     descending: 'DESC',
     reverse: 'REVERSE',
     none: null,
-  };
+  } as const;
 
   static REVERSE_TYPE = Object.freeze({
     NONE: 'none',
     PRE_SORT: 'pre-sort',
     POST_SORT: 'post-sort',
-  });
+  } as const);
 
   // Regex looking for a negative or positive integer or decimal number
   static NUMBER_REGEX = /^-?\d+(\.\d+)?$/;
 
-  static getSortIndex(sort, columnIndex) {
+  static getSortIndex(sort: Sort[], columnIndex: number): number | null {
     for (let i = 0; i < sort.length; i += 1) {
       const s = sort[i];
       if (s.column?.index === columnIndex) {
@@ -45,11 +69,11 @@ class TableUtils {
   }
 
   /**
-   * @param {dh.Sort[]} tableSort The sorts from the table to get the sort from
-   * @param {number} columnIndex The index of the column to get the sort for
-   * @return {dh.Sort} The sort for the column, or null if it's not sorted
+   * @param tableSort The sorts from the table to get the sort from
+   * @param columnIndex The index of the column to get the sort for
+   * @return The sort for the column, or null if it's not sorted
    */
-  static getSortForColumn(tableSort, columnIndex) {
+  static getSortForColumn(tableSort: Sort[], columnIndex: number): Sort | null {
     const sortIndex = TableUtils.getSortIndex(tableSort, columnIndex);
     if (sortIndex != null) {
       return tableSort[sortIndex];
@@ -57,7 +81,7 @@ class TableUtils {
     return null;
   }
 
-  static getFilterText(filter) {
+  static getFilterText(filter: FilterCondition): string | null {
     if (filter) {
       return filter.toString();
     }
@@ -65,7 +89,7 @@ class TableUtils {
   }
 
   /** Return the valid filter types for the column */
-  static getFilterTypes(columnType) {
+  static getFilterTypes(columnType: string): FilterType[] {
     if (TableUtils.isBooleanType(columnType)) {
       return [FilterType.isTrue, FilterType.isFalse, FilterType.isNull];
     }
@@ -103,7 +127,7 @@ class TableUtils {
     return [];
   }
 
-  static getNextSort(table, columnIndex) {
+  static getNextSort(table: Table, columnIndex: number): Sort | null {
     if (
       !table ||
       !table.columns ||
@@ -123,7 +147,12 @@ class TableUtils {
     return null;
   }
 
-  static makeColumnSort(table, columnIndex, direction, isAbs) {
+  static makeColumnSort(
+    table: Table,
+    columnIndex: number,
+    direction: SortDirection,
+    isAbs: boolean
+  ): Sort | null {
     if (
       !table ||
       !table.columns ||
@@ -157,12 +186,17 @@ class TableUtils {
 
   /**
    * Toggles the sort for the specified column
-   * @param {array} sorts The current sorts from IrisGrid.state
-   * @param {dh.Table} table The table to apply the sort to
-   * @param {number} columnIndex The column index to apply the sort to
-   * @param {boolean} addToExisting Add this sort to the existing sort
+   * @param sorts The current sorts from IrisGrid.state
+   * @param table The table to apply the sort to
+   * @param columnIndex The column index to apply the sort to
+   * @param addToExisting Add this sort to the existing sort
    */
-  static toggleSortForColumn(sorts, table, columnIndex, addToExisting = false) {
+  static toggleSortForColumn(
+    sorts: Sort[],
+    table: Table,
+    columnIndex: number,
+    addToExisting = false
+  ): Sort[] {
     if (!table || columnIndex < 0 || columnIndex >= table.columns.length) {
       return [];
     }
@@ -177,7 +211,13 @@ class TableUtils {
     );
   }
 
-  static sortColumn(table, modelColumn, direction, isAbs, addToExisting) {
+  static sortColumn(
+    table: Table,
+    modelColumn: number,
+    direction: SortDirection,
+    isAbs: boolean,
+    addToExisting: boolean
+  ): Sort[] {
     if (!table || modelColumn < 0 || modelColumn >= table.columns.length) {
       return [];
     }
@@ -199,15 +239,20 @@ class TableUtils {
 
   /**
    * Sets the sort for the given column *and* removes any reverses
-   * @param {dh.Sort[]} tableSort The current sorts from IrisGrid.state
-   * @param {number} columnIndex The column index to apply the sort to
-   * @param {dh.Sort} sort The sort object to add
-   * @param {boolean} addToExisting Add this sort to the existing sort
-   * @returns {array} Returns the modified array of sorts - removing reverses
+   * @param tableSort The current sorts from IrisGrid.state
+   * @param columnIndex The column index to apply the sort to
+   * @param sort The sort object to add
+   * @param addToExisting Add this sort to the existing sort
+   * @returns Returns the modified array of sorts - removing reverses
    */
-  static setSortForColumn(tableSort, columnIndex, sort, addToExisting = false) {
+  static setSortForColumn(
+    tableSort: Sort[],
+    columnIndex: number,
+    sort: Sort | null,
+    addToExisting = false
+  ): Sort[] {
     const sortIndex = TableUtils.getSortIndex(tableSort, columnIndex);
-    let sorts = [];
+    let sorts: Sort[] = [];
     if (addToExisting) {
       sorts = sorts.concat(
         tableSort.filter(
@@ -226,7 +271,7 @@ class TableUtils {
     return sorts;
   }
 
-  static getNormalizedType(columnType) {
+  static getNormalizedType(columnType: string): DataType | null {
     switch (columnType) {
       case 'boolean':
       case 'java.lang.Boolean':
@@ -265,7 +310,7 @@ class TableUtils {
     }
   }
 
-  static isLongType(columnType) {
+  static isLongType(columnType: string): boolean {
     switch (columnType) {
       case 'long':
       case 'java.lang.Long':
@@ -275,7 +320,7 @@ class TableUtils {
     }
   }
 
-  static isDateType(columnType) {
+  static isDateType(columnType: string): boolean {
     switch (columnType) {
       case 'io.deephaven.db.tables.utils.DBDateTime':
       case 'io.deephaven.time.DateTime':
@@ -286,14 +331,14 @@ class TableUtils {
     }
   }
 
-  static isNumberType(columnType) {
+  static isNumberType(columnType: string): boolean {
     return (
       TableUtils.isIntegerType(columnType) ||
       TableUtils.isDecimalType(columnType)
     );
   }
 
-  static isIntegerType(columnType) {
+  static isIntegerType(columnType: string): boolean {
     switch (columnType) {
       case 'int':
       case 'java.lang.Integer':
@@ -310,7 +355,7 @@ class TableUtils {
     }
   }
 
-  static isDecimalType(columnType) {
+  static isDecimalType(columnType: string): boolean {
     switch (columnType) {
       case 'double':
       case 'java.lang.Double':
@@ -323,7 +368,7 @@ class TableUtils {
     }
   }
 
-  static isBooleanType(columnType) {
+  static isBooleanType(columnType: string): boolean {
     switch (columnType) {
       case 'boolean':
       case 'java.lang.Boolean':
@@ -333,7 +378,7 @@ class TableUtils {
     }
   }
 
-  static isCharType(columnType) {
+  static isCharType(columnType: string): boolean {
     switch (columnType) {
       case 'char':
       case 'java.lang.Character':
@@ -343,7 +388,7 @@ class TableUtils {
     }
   }
 
-  static isTextType(columnType) {
+  static isTextType(columnType: string): boolean {
     switch (columnType) {
       case 'char':
       case 'java.lang.Character':
@@ -356,20 +401,20 @@ class TableUtils {
 
   /**
    * Get base column type
-   * @param {string} columnType Column type
-   * @returns {string} Element type for array columns, original type for non-array columns
+   * @param columnType Column type
+   * @returns Element type for array columns, original type for non-array columns
    */
-  static getBaseType(columnType) {
+  static getBaseType(columnType: string): string {
     return columnType.split('[]')[0];
   }
 
   /**
    * Check if the column types are compatible
-   * @param {string} type1 Column type to check
-   * @param {string} type2 Column type to check
-   * @returns {boolean} True, if types are compatible
+   * @param type1 Column type to check
+   * @param type2 Column type to check
+   * @returns True, if types are compatible
    */
-  static isCompatibleType(type1, type2) {
+  static isCompatibleType(type1: string, type2: string): boolean {
     return (
       TableUtils.getNormalizedType(type1) ===
       TableUtils.getNormalizedType(type2)
@@ -378,12 +423,16 @@ class TableUtils {
 
   /**
    * Create filter with the provided column and text. Handles multiple filters joined with && or ||
-   * @param {dh.Column} column The column to set the filter on
-   * @param {string} text The text string to create the filter from
-   * @param {string} timeZone The time zone to make this value in if it is a date type. E.g. America/New_York
-   * @returns {dh.FilterCondition} Returns the created filter, null if text could not be parsed
+   * @param column The column to set the filter on
+   * @param text The text string to create the filter from
+   * @param timeZone The time zone to make this value in if it is a date type. E.g. America/New_York
+   * @returns Returns the created filter, null if text could not be parsed
    */
-  static makeQuickFilter(column, text, timeZone) {
+  static makeQuickFilter(
+    column: Column,
+    text: string,
+    timeZone: string
+  ): FilterCondition | null {
     const orComponents = text.split('||');
     let orFilter = null;
     for (let i = 0; i < orComponents.length; i += 1) {
@@ -410,7 +459,7 @@ class TableUtils {
         }
       }
 
-      if (orFilter) {
+      if (orFilter && andFilter) {
         orFilter = orFilter.or(andFilter);
       } else {
         orFilter = andFilter;
@@ -422,12 +471,16 @@ class TableUtils {
 
   /**
    * Create filter with the provided column and text of one component (no multiple conditions)
-   * @param {dh.Column} column The column to set the filter on
-   * @param {string} text The text string to create the filter from
-   * @param {string} timeZone The time zone to make this filter in if it is a date type. E.g. America/New_York
-   * @returns {dh.FilterCondition} Returns the created filter, null if text could not be parsed
+   * @param column The column to set the filter on
+   * @param text The text string to create the filter from
+   * @param timeZone The time zone to make this filter in if it is a date type. E.g. America/New_York
+   * @returns Returns the created filter, null if text could not be parsed
    */
-  static makeQuickFilterFromComponent(column, text, timeZone) {
+  static makeQuickFilterFromComponent(
+    column: Column,
+    text: string,
+    timeZone: string
+  ): FilterCondition | null {
     const { type } = column;
     if (TableUtils.isNumberType(type)) {
       return this.makeQuickNumberFilter(column, text);
@@ -444,7 +497,10 @@ class TableUtils {
     return this.makeQuickTextFilter(column, text);
   }
 
-  static makeQuickNumberFilter(column, text) {
+  static makeQuickNumberFilter(
+    column: Column,
+    text: string
+  ): FilterCondition | null {
     if (text == null) {
       return null;
     }
@@ -461,7 +517,7 @@ class TableUtils {
     let abnormalValue = null; // includes nan, null and infinity(positive & negative)
     let overflow = null;
 
-    if (result.length > 3) {
+    if (result !== null && result.length > 3) {
       [, operation, negativeSign, value, abnormalValue, overflow] = result;
     }
 
@@ -472,10 +528,6 @@ class TableUtils {
 
     if (operation == null) {
       operation = '=';
-    }
-
-    if (value == null && abnormalValue == null) {
-      return null;
     }
 
     if (abnormalValue != null) {
@@ -507,10 +559,14 @@ class TableUtils {
         default:
           break;
       }
-      if (operation === '!' || operation === '!=') {
+      if (filter !== null && (operation === '!' || operation === '!=')) {
         filter = filter.not();
       }
       return filter;
+    }
+
+    if (value == null) {
+      return null;
     }
 
     value = TableUtils.removeCommas(value);
@@ -537,7 +593,10 @@ class TableUtils {
     return TableUtils.makeRangeFilterWithOperation(filter, operation, value);
   }
 
-  static makeQuickTextFilter(column, text) {
+  static makeQuickTextFilter(
+    column: Column,
+    text: string | null
+  ): FilterCondition | null {
     if (text == null) {
       return null;
     }
@@ -548,7 +607,7 @@ class TableUtils {
 
     let operation = null;
     let value = null;
-    if (result.length > 2) {
+    if (result !== null && result.length > 2) {
       [, operation, value] = result;
       if (value != null) {
         value = value.trim();
@@ -679,18 +738,24 @@ class TableUtils {
     return null;
   }
 
-  static makeQuickBooleanFilter(column, text) {
+  static makeQuickBooleanFilter(
+    column: Column,
+    text: string
+  ): FilterCondition | null {
     if (text == null) {
       return null;
     }
 
     const regex = /^(!=|=|!)?(.*)/;
     const result = regex.exec(`${text}`.trim());
+    if (result === null) {
+      return null;
+    }
     const [, operation, value] = result;
     const notEqual = operation === '!' || operation === '!=';
     const cleanValue = value.trim().toLowerCase();
 
-    let filter = column.filter();
+    let filter: FilterCondition | FilterValue = column.filter();
 
     try {
       const boolValue = TableUtils.makeBooleanValue(cleanValue);
@@ -710,10 +775,15 @@ class TableUtils {
 
   /**
    * Builds a date filter parsed from the text string which may or may not include an operator.
-   * @param {Column} column The column to build the filter from, with or without a leading operator.
-   * @param {string} text The date string text to parse.
+   * @param column The column to build the filter from, with or without a leading operator.
+   * @param text The date string text to parse.
+   * @param timeZone The time zone to make this filter in if it is a date type. E.g. America/New_York
    */
-  static makeQuickDateFilter(column, text, timeZone) {
+  static makeQuickDateFilter(
+    column: Column,
+    text: string,
+    timeZone: string
+  ): FilterCondition {
     const cleanText = text.trim();
     const regex = /\s*(>=|<=|=>|=<|>|<|!=|!|=)?(.*)/;
     const result = regex.exec(cleanText);
@@ -726,7 +796,7 @@ class TableUtils {
 
     [, operation, dateText] = result;
 
-    let filterOperation = FilterType.eq;
+    let filterOperation: FilterTypeValue = FilterType.eq;
     switch (operation) {
       case '<':
         filterOperation = FilterType.lessThan;
@@ -763,17 +833,17 @@ class TableUtils {
 
   /**
    * Builds a date filter parsed from the text string with the provided filter.
-   * @param {Column} column The column to build the filter from.
-   * @param {string} text The date string text to parse, without an operator.
-   * @param {FilterType} operation The filter operation to use.
-   * @param {string} timeZone The time zone to make this filter with. E.g. America/New_York
+   * @param column The column to build the filter from.
+   * @param text The date string text to parse, without an operator.
+   * @param operation The filter operation to use.
+   * @param timeZone The time zone to make this filter with. E.g. America/New_York
    */
   static makeQuickDateFilterWithOperation(
-    column,
-    text,
-    operation = FilterType.eq,
-    timeZone
-  ) {
+    column: Column,
+    text: string,
+    operation: FilterTypeValue = FilterType.eq,
+    timeZone: string
+  ): FilterCondition {
     if (column == null) {
       throw new Error('Column is null');
     }
@@ -785,7 +855,7 @@ class TableUtils {
     const endValue = endDate != null ? dh.FilterValue.ofNumber(endDate) : null;
 
     const filter = column.filter();
-    if (startValue == null && endValue == null) {
+    if (startValue == null) {
       return operation === FilterType.notEq
         ? filter.isNull().not()
         : filter.isNull();
@@ -831,7 +901,10 @@ class TableUtils {
     }
   }
 
-  static makeQuickCharFilter(column, text) {
+  static makeQuickCharFilter(
+    column: Column,
+    text: string
+  ): FilterCondition | null {
     if (text == null) {
       return null;
     }
@@ -843,7 +916,7 @@ class TableUtils {
     let operation = null;
     let value = null;
     let overflow = null;
-    if (result.length > 3) {
+    if (result !== null && result.length > 3) {
       [, operation, value, overflow] = result;
     }
     if (overflow != null && overflow.trim().length > 0) {
@@ -881,12 +954,16 @@ class TableUtils {
   }
 
   /**
-   * @param {dh.FilterValue} filter The column filter to apply the range operation to
-   * @param {string} operation The range operation to run
-   * @param {dh.FilterValue} value The value to use for the operation
-   * @returns {dh.FilterCondition} The condition with the specified operation
+   * @param filter The column filter to apply the range operation to
+   * @param operation The range operation to run
+   * @param value The value to use for the operation
+   * @returns The condition with the specified operation
    */
-  static makeRangeFilterWithOperation(filter, operation, value) {
+  static makeRangeFilterWithOperation(
+    filter: FilterValue,
+    operation: string,
+    value: FilterValue
+  ): FilterCondition | null {
     switch (operation) {
       case '=':
         return filter.eq(value);
@@ -911,9 +988,11 @@ class TableUtils {
   /**
    * Wraps a table promise in a cancelable promise that will close the table if the promise is cancelled.
    * Use in a component that loads a table, and call cancel when unmounting.
-   * @param {Promise<dh.Table> | dh.Table} table The table promise to wrap
+   * @param table The table promise to wrap
    */
-  static makeCancelableTablePromise(table) {
+  static makeCancelableTablePromise(
+    table: Promise<Table> | Table
+  ): CancelablePromise<Table> {
     return PromiseUtils.makeCancelable(table, resolved => {
       resolved.close();
     });
@@ -921,20 +1000,20 @@ class TableUtils {
 
   /**
    * Make a cancelable promise for a one-shot table event with a timeout.
-   * @param {dh.Table|dh.TreeTable} table Table to listen for events on
-   * @param {string} eventName Event to listen for
-   * @param {number} timeout Event timeout in milliseconds, defaults to 0
-   * @param {function} matcher Optional function to determine if the promise can be resolved or stays pending
-   * @returns {Promise} Resolves with the event data
+   * @param table Table to listen for events on
+   * @param eventName Event to listen for
+   * @param timeout Event timeout in milliseconds, defaults to 0
+   * @param matcher Optional function to determine if the promise can be resolved or stays pending
+   * @returns Resolves with the event data
    */
   static makeCancelableTableEventPromise(
-    table,
-    eventName,
+    table: Table | TreeTable,
+    eventName: string,
     timeout = 0,
-    matcher = null
-  ) {
-    let eventCleanup = null;
-    let timeoutId = null;
+    matcher: ((event: CustomEvent) => boolean) | null = null
+  ): CancelablePromise<CustomEvent> {
+    let eventCleanup: RemoverFn;
+    let timeoutId: ReturnType<typeof setTimeout>;
     let isPending = true;
     const wrappedPromise = new Promise((resolve, reject) => {
       timeoutId = setTimeout(() => {
@@ -953,7 +1032,7 @@ class TableUtils {
         isPending = false;
         resolve(event);
       });
-    });
+    }) as CancelablePromise<CustomEvent>;
     wrappedPromise.cancel = () => {
       if (isPending) {
         log.debug2('Pending promise cleanup.');
@@ -967,7 +1046,16 @@ class TableUtils {
     return wrappedPromise;
   }
 
-  static makeAdvancedFilter(column, options, timeZone) {
+  static makeAdvancedFilter(
+    column: Column,
+    options: {
+      filterItems: AdvancedFilterCreatorFilterItemState[];
+      filterOperators: FilterOperatorValue[];
+      invertSelection: boolean;
+      selectedValues: string[];
+    },
+    timeZone: string
+  ): FilterCondition | null {
     const {
       filterItems,
       filterOperators,
@@ -1036,16 +1124,16 @@ class TableUtils {
     return filter;
   }
 
-  static removeCommas(value) {
+  static removeCommas(value: string): string {
     return value.replace(/[\s|,]/g, '');
   }
 
   /**
-   * @param {String} columnType The column type to make the filter value from.
-   * @param {String} value The value to make the filter value from.
-   * @returns {dh.FilterValue} The FilterValue item for this column/value combination
+   * @param columnType The column type to make the filter value from.
+   * @param value The value to make the filter value from.
+   * @returns The FilterValue item for this column/value combination
    */
-  static makeFilterValue(columnType, value) {
+  static makeFilterValue(columnType: string, value: string): FilterValue {
     const type = TableUtils.getBaseType(columnType);
     if (TableUtils.isTextType(type)) {
       return dh.FilterValue.ofString(value);
@@ -1062,11 +1150,14 @@ class TableUtils {
   /**
    * Takes a value and converts it to an `dh.FilterValue`
    *
-   * @param {String} columnType The column type to make the filter value from.
-   * @param {unknown} value The value to actually set
-   * @returns {dh.FilterValue} The FilterValue item for this column/value combination
+   * @param columnType The column type to make the filter value from.
+   * @param value The value to actually set
+   * @returns The FilterValue item for this column/value combination
    */
-  static makeFilterRawValue(columnType, rawValue) {
+  static makeFilterRawValue(
+    columnType: string,
+    rawValue: unknown
+  ): FilterValue {
     if (TableUtils.isTextType(columnType)) {
       return dh.FilterValue.ofString(rawValue);
     }
@@ -1080,11 +1171,15 @@ class TableUtils {
 
   /**
    * Converts a string value to a value appropriate for the column
-   * @param {string} columnType The column type to make the value for
-   * @param {string} text The string value to make a type for
-   * @param {string} timeZone The time zone to make this value in if it is a date type. E.g. America/New_York
+   * @param columnType The column type to make the value for
+   * @param text The string value to make a type for
+   * @param timeZone The time zone to make this value in if it is a date type. E.g. America/New_York
    */
-  static makeValue(columnType, text, timeZone) {
+  static makeValue(
+    columnType: string,
+    text: string,
+    timeZone: string
+  ): string | number | boolean | LongWrapper | null {
     if (text == null || text === 'null') {
       return null;
     }
@@ -1110,7 +1205,7 @@ class TableUtils {
     return null;
   }
 
-  static makeBooleanValue(text, allowEmpty = false) {
+  static makeBooleanValue(text: string, allowEmpty = false): boolean | null {
     if (text === '' && allowEmpty) {
       return null;
     }
@@ -1141,7 +1236,7 @@ class TableUtils {
     }
   }
 
-  static makeNumberValue(text) {
+  static makeNumberValue(text: string): number | null {
     if (text == null || text === 'null' || text === '') {
       return null;
     }
@@ -1166,7 +1261,12 @@ class TableUtils {
     throw new Error(`Invalid number '${text}'`);
   }
 
-  static makeAdvancedValueFilter(column, operation, value, timeZone) {
+  static makeAdvancedValueFilter(
+    column: Column,
+    operation: FilterTypeValue,
+    value: string,
+    timeZone: string
+  ): FilterCondition {
     if (TableUtils.isDateType(column.type)) {
       return TableUtils.makeQuickDateFilterWithOperation(
         column,
@@ -1256,11 +1356,16 @@ class TableUtils {
    * Create a filter using the selected items
    * Has a flag for invertSelection as we start from a "Select All" state and a user just deselects items.
    * Since there may be millions of distinct items, it's easier to build an inverse filter.
-   * @param {String[]} selectedValues The values that are selected
-   * @param {boolean} invertSelection Invert the selection (eg. All items are selected, then you deselect items)
-   * @returns dh.FilterCondition Returns a `in` or `notIn` FilterCondition as necessary, or null if no filtering should be applied (everything selected)
+   * @param column The column to set the filter on
+   * @param selectedValues The values that are selected
+   * @param invertSelection Invert the selection (eg. All items are selected, then you deselect items)
+   * @returns Returns a `in` or `notIn` FilterCondition as necessary, or null if no filtering should be applied (everything selected)
    */
-  static makeSelectValueFilter(column, selectedValues, invertSelection) {
+  static makeSelectValueFilter(
+    column: Column,
+    selectedValues: string[],
+    invertSelection: boolean
+  ): FilterCondition | null {
     if (selectedValues.length === 0) {
       if (invertSelection) {
         // No filter means select everything
@@ -1332,16 +1437,20 @@ class TableUtils {
     return column.filter().in(values);
   }
 
-  static isTreeTable(table) {
-    return table && table.expand && table.collapse;
+  static isTreeTable(table: unknown): table is TreeTable {
+    return (
+      table != null &&
+      (table as TreeTable).expand !== undefined &&
+      (table as TreeTable).collapse !== undefined
+    );
   }
 
   /**
    * Copies the provided array, sorts by column name case insensitive, and returns the sorted array.
-   * @param {Array<dh.Column>}} columns The columns to sort
-   * @param {boolean} isAscending Whether to sort ascending
+   * @param columns The columns to sort
+   * @param isAscending Whether to sort ascending
    */
-  static sortColumns(columns, isAscending = true) {
+  static sortColumns(columns: Column[], isAscending = true): Column[] {
     return [...columns].sort((a, b) => {
       const aName = a.name.toUpperCase();
       const bName = b.name.toUpperCase();

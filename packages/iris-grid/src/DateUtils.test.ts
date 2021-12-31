@@ -33,8 +33,24 @@ describe('month parsing tests', () => {
 
 describe('dateTimeString parsing tests', () => {
   function testDateTimeString(
-    text,
-    { year, month, date, hours, minutes, seconds, nanos }
+    text: string,
+    {
+      year,
+      month,
+      date,
+      hours,
+      minutes,
+      seconds,
+      nanos,
+    }: {
+      year?: string;
+      month?: string;
+      date?: string;
+      hours?: string;
+      minutes?: string;
+      seconds?: string;
+      nanos?: string;
+    }
   ) {
     expect(DateUtils.parseDateTimeString(text)).toMatchObject({
       year,

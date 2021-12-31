@@ -1,17 +1,33 @@
 /* eslint react/no-did-update-set-state: "off" */
 import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Tooltip } from '@deephaven/components';
 import { vsTrash } from '@deephaven/icons';
 import Log from '@deephaven/log';
 import TableUtils from './TableUtils';
-import FilterType from './filters/FilterType';
+import { FilterType, FilterTypeValue } from './filters';
 
 const log = Log.module('AdvancedFilterCreatorFilterItem');
 
-class AdvancedFilterCreatorFilterItem extends PureComponent {
-  static getLabelForTextFilter(filterType) {
+interface AdvancedFilterCreatorFilterItemProps {
+  column: { type: string };
+  filterTypes: FilterTypeValue[];
+  onChange(type: FilterTypeValue, value: string): void;
+  onDelete(): void;
+  selectedType?: FilterTypeValue;
+  value?: string;
+}
+
+export interface AdvancedFilterCreatorFilterItemState {
+  selectedType: FilterTypeValue;
+  value: string;
+}
+
+class AdvancedFilterCreatorFilterItem extends PureComponent<
+  AdvancedFilterCreatorFilterItemProps,
+  AdvancedFilterCreatorFilterItemState
+> {
+  static getLabelForTextFilter(filterType: FilterTypeValue): string {
     switch (filterType) {
       case FilterType.eq:
         return 'is exactly';
@@ -35,7 +51,7 @@ class AdvancedFilterCreatorFilterItem extends PureComponent {
     }
   }
 
-  static getLabelForNumberFilter(filterType) {
+  static getLabelForNumberFilter(filterType: FilterTypeValue): string {
     switch (filterType) {
       case FilterType.eq:
         return 'is equal to';
@@ -55,7 +71,7 @@ class AdvancedFilterCreatorFilterItem extends PureComponent {
     }
   }
 
-  static getLabelForDateFilter(filterType) {
+  static getLabelForDateFilter(filterType: FilterTypeValue): string {
     switch (filterType) {
       case FilterType.eq:
         return 'date is';
@@ -76,7 +92,7 @@ class AdvancedFilterCreatorFilterItem extends PureComponent {
     }
   }
 
-  static getLabelForBooleanFilter(filterType) {
+  static getLabelForBooleanFilter(filterType: FilterTypeValue): string {
     switch (filterType) {
       case FilterType.isTrue:
         return 'Is True';
@@ -90,7 +106,10 @@ class AdvancedFilterCreatorFilterItem extends PureComponent {
     }
   }
 
-  static getLabelForFilter(columnType, filterType) {
+  static getLabelForFilter(
+    columnType: string,
+    filterType: FilterTypeValue
+  ): string {
     if (
       TableUtils.isNumberType(columnType) ||
       TableUtils.isCharType(columnType)
@@ -114,7 +133,7 @@ class AdvancedFilterCreatorFilterItem extends PureComponent {
     return '';
   }
 
-  constructor(props) {
+  constructor(props: AdvancedFilterCreatorFilterItemProps) {
     super(props);
 
     this.handleDelete = this.handleDelete.bind(this);
@@ -122,28 +141,34 @@ class AdvancedFilterCreatorFilterItem extends PureComponent {
     this.handleValueChange = this.handleValueChange.bind(this);
     this.typeDropdown = null;
 
-    const { selectedType, value, filterTypes } = props;
+    const { value = '', filterTypes, selectedType = filterTypes[0] } = props;
 
     this.state = {
-      selectedType: selectedType || filterTypes[0],
+      selectedType,
       value,
     };
   }
 
-  componentDidMount() {
-    this.typeDropdown.focus();
+  componentDidMount(): void {
+    this.typeDropdown?.focus();
   }
 
-  componentDidUpdate(prevProps) {
-    const { selectedType, value } = this.props;
+  componentDidUpdate(prevProps: AdvancedFilterCreatorFilterItemProps): void {
+    const {
+      value = '',
+      filterTypes,
+      selectedType = filterTypes[0],
+    } = this.props;
     if (prevProps.selectedType !== selectedType || prevProps.value !== value) {
       this.setState({ selectedType, value });
     }
   }
 
-  handleTypeChange(event) {
+  typeDropdown: HTMLSelectElement | null;
+
+  handleTypeChange(event: React.ChangeEvent<HTMLSelectElement>): void {
     log.debug2('typeChange');
-    const selectedType = event.target.value;
+    const selectedType = event.target.value as FilterTypeValue;
     this.setState({ selectedType });
 
     const { onChange } = this.props;
@@ -154,27 +179,27 @@ class AdvancedFilterCreatorFilterItem extends PureComponent {
     }
   }
 
-  handleValueChange(event) {
+  handleValueChange(event: React.ChangeEvent<HTMLInputElement>): void {
     log.debug2('valueChange');
     const { value } = event.target;
     this.setState({ value });
 
     const { onChange } = this.props;
     const { selectedType } = this.state;
-    if (selectedType != null && selectedType.length > 0) {
+    if (selectedType != null) {
       // Don't send an update unless they've already selected a type
       onChange(selectedType, value);
     }
   }
 
-  handleDelete() {
+  handleDelete(): void {
     log.debug('delete');
 
     const { onDelete } = this.props;
     onDelete();
   }
 
-  render() {
+  render(): JSX.Element {
     const { column, filterTypes } = this.props;
     const { selectedType, value } = this.state;
     const showValueInput = !TableUtils.isBooleanType(column.type);
@@ -236,19 +261,5 @@ class AdvancedFilterCreatorFilterItem extends PureComponent {
     );
   }
 }
-
-AdvancedFilterCreatorFilterItem.propTypes = {
-  column: PropTypes.shape({ type: PropTypes.string }).isRequired,
-  filterTypes: PropTypes.arrayOf(PropTypes.string).isRequired,
-  onChange: PropTypes.func.isRequired,
-  onDelete: PropTypes.func.isRequired,
-  selectedType: PropTypes.string,
-  value: PropTypes.string,
-};
-
-AdvancedFilterCreatorFilterItem.defaultProps = {
-  selectedType: '',
-  value: '',
-};
 
 export default AdvancedFilterCreatorFilterItem;
