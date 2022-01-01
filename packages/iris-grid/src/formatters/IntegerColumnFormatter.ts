@@ -136,7 +136,7 @@ export class IntegerColumnFormatter extends TableColumnFormatter {
    * @param format Format object
    * @returns Formatted string
    */
-  format(valueParam: number, format: IntegerColumnFormat): string {
+  format(valueParam: number, format?: IntegerColumnFormat): string {
     const formatString =
       (format && format.formatString) || this.defaultFormatString;
     const value =

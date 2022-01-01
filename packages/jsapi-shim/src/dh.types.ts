@@ -546,6 +546,7 @@ export interface TimeZone {
   adjustments: number[];
   standardOffset: number;
   timeZoneID: string;
+  id: string;
   transitionPoints: number[];
   tzNames: string[];
 }
@@ -555,7 +556,11 @@ export interface i18nTimeZone {
 }
 
 export interface DateTimeFormat {
-  format(pattern: string, date: Date, timeZone?: TimeZone): string;
+  format(
+    pattern: string,
+    date: DateWrapper | Date | number,
+    timeZone?: TimeZone
+  ): string;
   parse(pattern: string, text: string, timeZone?: TimeZone): DateWrapper;
   parseAsDate(pattern: string, text: string): Date;
 }

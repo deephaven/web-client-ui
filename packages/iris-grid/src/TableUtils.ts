@@ -27,8 +27,8 @@ import type { AdvancedFilterCreatorFilterItemState } from './AdvancedFilterCreat
 const log = Log.module('TableUtils');
 
 type Values<T> = T[keyof T];
-type DataType = Values<typeof TableUtils.dataType>;
-type SortDirection = Values<typeof TableUtils.sortDirection>;
+export type DataType = Values<typeof TableUtils.dataType>;
+export type SortDirection = Values<typeof TableUtils.sortDirection>;
 
 /** Utility class to provide some functions for working with tables */
 class TableUtils {

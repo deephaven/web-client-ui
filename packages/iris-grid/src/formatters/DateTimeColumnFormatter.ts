@@ -1,5 +1,5 @@
 /* eslint class-methods-use-this: "off" */
-import dh from '@deephaven/jsapi-shim';
+import dh, { DateWrapper, TimeZone } from '@deephaven/jsapi-shim';
 import Log from '@deephaven/log';
 import TableColumnFormatter, {
   TableColumnFormat,
@@ -130,7 +130,7 @@ export class DateTimeColumnFormatter extends TableColumnFormatter {
     return [...formatStringMap.keys()];
   }
 
-  dhTimeZone: unknown;
+  dhTimeZone: TimeZone;
 
   defaultDateTimeFormatString: string;
 
@@ -173,7 +173,7 @@ export class DateTimeColumnFormatter extends TableColumnFormatter {
     return this.formatStringMap.get(baseFormatString) || baseFormatString;
   }
 
-  format(value: unknown, format?: TableColumnFormat): string {
+  format(value: Date | DateWrapper, format?: TableColumnFormat): string {
     const baseFormatString =
       (format && format.formatString) || this.defaultDateTimeFormatString;
     const formatString = this.getEffectiveFormatString(baseFormatString);

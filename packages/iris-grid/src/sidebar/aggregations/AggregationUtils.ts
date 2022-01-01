@@ -1,3 +1,4 @@
+import type { Column } from '@deephaven/jsapi-shim';
 import TableUtils from '../../TableUtils';
 import AggregationOperation from './AggregationOperation';
 
@@ -50,7 +51,6 @@ export const isValidOperation = (
   }
 };
 
-type Column = { type: string; name: string };
 export const filterValidColumns = (
   columns: Column[],
   operationType: AggregationOperation
