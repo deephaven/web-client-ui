@@ -1,8 +1,7 @@
-{ 
-  "extends": "@deephaven/tsconfig",
+{
+  "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "target": "es2017",
-    "declarationDir": "dist/",
+    "rootDir": "src/",
     "outDir": "dist/",
   },
   "include": [
@@ -15,6 +14,26 @@
     "node_modules",
     "src/**/*.test.*",
     "src/**/*.stories.*",
-    "src/__mocks__/*"
+    "src/**/__mocks__/*"
+  ],
+  "references": [
+    {
+      "path": "../components"
+    },
+    {
+      "path": "../grid"
+    },
+    {
+      "path": "../jsapi-shim"
+    },
+    {
+      "path": "../log"
+    },
+    {
+      "path": "../react-hooks"
+    },
+    {
+      "path": "../utils"
+    }
   ]
 }

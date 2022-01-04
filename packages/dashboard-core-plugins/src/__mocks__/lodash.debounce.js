@@ -1,1 +1,1 @@
-export { default } from '@deephaven/mocks/lodash.debounce';
+export { LodashDebounce as default } from '@deephaven/mocks';

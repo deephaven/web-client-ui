@@ -10,8 +10,10 @@ import {
   DEFAULT_DASHBOARD_ID,
   setDashboardData as setDashboardDataAction,
 } from '@deephaven/dashboard';
-import { setDashboardSessionWrapper as setDashboardSessionWrapperAction } from '@deephaven/dashboard-core-plugins';
-import ToolType from '@deephaven/dashboard-core-plugins/dist/linker/ToolType';
+import {
+  setDashboardSessionWrapper as setDashboardSessionWrapperAction,
+  ToolType,
+} from '@deephaven/dashboard-core-plugins';
 import { WebdavFileStorage } from '@deephaven/file-explorer';
 import dh from '@deephaven/jsapi-shim';
 import Log from '@deephaven/log';

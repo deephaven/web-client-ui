@@ -59,7 +59,7 @@
   "peerDependencies": {
     "@deephaven/components": "^0.4.0",
     "@deephaven/log": "^0.4.0",
-    "@deephaven/redux": "^0.4.0",
+    "@deephaven/redux": "^0.8.1",
     "react": "^16.0.0",
     "react-dom": "^16.0.0",
     "react-redux": "^7.2.4"

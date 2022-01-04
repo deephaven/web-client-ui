@@ -1,0 +1,53 @@
+{
+  "files": [],
+  "watchOptions": {
+    "excludeDirectories": [
+      "**/node_modules",
+      "**/dist"
+    ]
+  },
+  "references": [
+    {
+      "path": "./packages/chart"
+    },
+    {
+      "path": "./packages/components"
+    },
+    {
+      "path": "./packages/console"
+    },
+    {
+      "path": "./packages/dashboard"
+    },
+    {
+      "path": "./packages/dashboard-core-plugins"
+    },
+    {
+      "path": "./packages/file-explorer"
+    },
+    {
+      "path": "./packages/grid"
+    },
+    {
+      "path": "./packages/iris-grid"
+    },
+    {
+      "path": "./packages/jsapi-shim"
+    },
+    {
+      "path": "./packages/log"
+    },
+    {
+      "path": "./packages/react-hooks"
+    },
+    {
+      "path": "./packages/redux"
+    },
+    {
+      "path": "./packages/storage"
+    },
+    {
+      "path": "./packages/utils"
+    }
+  ]
+}

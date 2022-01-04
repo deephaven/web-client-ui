@@ -7,8 +7,7 @@ import React, {
 } from 'react';
 import classNames from 'classnames';
 import { DropdownMenu, GLOBAL_SHORTCUTS } from '@deephaven/components';
-import ControlType from '@deephaven/dashboard-core-plugins/dist/controls/ControlType';
-import ToolType from '@deephaven/dashboard-core-plugins/dist/linker/ToolType';
+import { ControlType, ToolType } from '@deephaven/dashboard-core-plugins';
 import { SHORTCUTS as IRIS_GRID_SHORTCUTS } from '@deephaven/iris-grid';
 import {
   dhInput,

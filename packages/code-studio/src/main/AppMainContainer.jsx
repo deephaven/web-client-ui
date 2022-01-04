@@ -31,9 +31,9 @@ import {
   PandasPlugin,
   getDashboardSessionWrapper,
   UIPropTypes,
+  ControlType,
+  ToolType,
 } from '@deephaven/dashboard-core-plugins';
-import ControlType from '@deephaven/dashboard-core-plugins/dist/controls/ControlType';
-import ToolType from '@deephaven/dashboard-core-plugins/dist/linker/ToolType';
 import { vsGear, dhShapes, dhPanels } from '@deephaven/icons';
 import dh, { PropTypes as APIPropTypes } from '@deephaven/jsapi-shim';
 import Log from '@deephaven/log';

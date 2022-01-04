@@ -1,14 +1,19 @@
 {
-  "extends": "@deephaven/tsconfig",
+  "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "declarationDir": "dist/",
-    "outDir": "dist/"
+    "rootDir": "src/",
+    "outDir": "dist/",
   },
-  "include": ["src/**/*.ts", "src/**/*.tsx"],
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "src/**/*.js",
+    "src/**/*.jsx",
+  ],
   "exclude": [
     "node_modules",
     "src/**/*.test.*",
     "src/**/*.stories.*",
-    "src/stories/*"
+    "src/**/__mocks__/*"
   ]
 }

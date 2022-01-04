@@ -1,1 +1,1 @@
-export { default } from '@deephaven/mocks/pouchdb-browser';
+export { PouchDbBrowser as default } from '@deephaven/mocks';

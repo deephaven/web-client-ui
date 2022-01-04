@@ -1,10 +1,10 @@
 const path = require('path');
+const { pathsToModuleNameMapper } = require('ts-jest/utils');
+const { compilerOptions } = require('./tsconfig.json');
 
 module.exports = {
   transform: {
-    // In CI, we don't need the tests to type check, so use babel-jest
-    // In non-CI (locally), use ts-jest so tests fail on type errors
-    '.(ts|tsx|js|jsx)': process.env.CI ? 'babel-jest' : 'ts-jest',
+    '.(ts|tsx|js|jsx)': 'babel-jest',
   },
   // Makes jest transform monaco, but continue ignoring other node_modules. Used for MonacoUtils test
   transformIgnorePatterns: ['node_modules/(?!(monaco-editor)/)'],
@@ -28,6 +28,15 @@ module.exports = {
       __dirname,
       './__mocks__/monaco-editor-empty.js'
     ),
+    '^@deephaven/golden-layout$': path.join(
+      __dirname,
+      './packages/golden-layout/dist/goldenlayout.js'
+    ),
+    '^@deephaven/icons$': path.join(
+      __dirname,
+      './packages/icons/dist/index.js'
+    ),
+    ...pathsToModuleNameMapper(compilerOptions.paths, { prefix: __dirname }),
   },
   setupFilesAfterEnv: [path.join(__dirname, './jest.setup.js')],
 };
