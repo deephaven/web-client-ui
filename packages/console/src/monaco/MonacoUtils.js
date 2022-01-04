@@ -56,6 +56,8 @@ import 'monaco-editor/esm/vs/editor/contrib/viewportSemanticTokens/viewportSeman
 import 'monaco-editor/esm/vs/editor/contrib/wordHighlighter/wordHighlighter.js';
 import 'monaco-editor/esm/vs/editor/contrib/wordOperations/wordOperations.js';
 import 'monaco-editor/esm/vs/editor/contrib/wordPartOperations/wordPartOperations.js';
+import { KeyCodeUtils } from 'monaco-editor/esm/vs/base/common/keyCodes.js';
+import { KeyMod } from 'monaco-editor/esm/vs/editor/common/standalone/standaloneBase.js';
 import Log from '@deephaven/log';
 import MonacoTheme from './MonacoTheme.module.scss';
 import PyLang from './lang/python';
@@ -406,6 +408,36 @@ class MonacoUtils {
       log.warn(`Did not find any keybindings to remove for ${keybinding}`);
     }
     /* eslint-enable no-underscore-dangle */
+  }
+
+  static getMonacoKeyCodeFromShortcut(shortcut) {
+    const { keyState } = shortcut;
+    const { keyValue } = keyState;
+    if (keyValue === null) {
+      return 0;
+    }
+
+    const isMac = MonacoUtils.isMacPlatform();
+
+    if (isMac) {
+      return (
+        // eslint-disable-next-line no-bitwise
+        (keyState.metaKey && KeyMod.CtrlCmd) |
+        (keyState.shiftKey && KeyMod.Shift) |
+        (keyState.altKey && KeyMod.Alt) |
+        (keyState.ctrlKey && KeyMod.WinCtrl) |
+        KeyCodeUtils.fromString(keyValue)
+      );
+    }
+
+    return (
+      // eslint-disable-next-line no-bitwise
+      (keyState.ctrlKey && KeyMod.CtrlCmd) |
+      (keyState.shiftKey && KeyMod.Shift) |
+      (keyState.altKey && KeyMod.Alt) |
+      (keyState.metaKey && KeyMod.WinCtrl) |
+      KeyCodeUtils.fromString(keyValue)
+    );
   }
 }
 

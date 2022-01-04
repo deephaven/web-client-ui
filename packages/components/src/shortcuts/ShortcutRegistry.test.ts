@@ -33,11 +33,12 @@ it('Adds a shortcut', () => {
   ]);
 });
 
-it('Throws and does not register a shortcut with a duplicate id', () => {
-  ShortcutRegistry.createAndAdd(SINGLE_MOD_PARAMS);
+it('Does not register a shortcut with a duplicate id', () => {
+  const shortcutA = ShortcutRegistry.createAndAdd(SINGLE_MOD_PARAMS);
   expect(ShortcutRegistry.shortcutMap.size).toBe(1);
-  expect(() => ShortcutRegistry.createAndAdd(SINGLE_MOD_PARAMS)).toThrow();
+  const shortcutB = ShortcutRegistry.createAndAdd(SINGLE_MOD_PARAMS);
   expect(ShortcutRegistry.shortcutMap.size).toBe(1);
+  expect(shortcutA).toBe(shortcutB);
 });
 
 it('Gets a shortcut by ID', () => {

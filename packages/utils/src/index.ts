@@ -2,6 +2,7 @@ export { default as CanceledPromiseError } from './CanceledPromiseError';
 export { default as ColorUtils } from './ColorUtils';
 export { default as DbNameValidator } from './DbNameValidator';
 export { default as DOMUtils } from './DOMUtils';
+export * from './EventTargetShimUtils';
 export { default as Pending } from './Pending';
 export * from './PromiseUtils';
 export { default as RangeUtils } from './RangeUtils';

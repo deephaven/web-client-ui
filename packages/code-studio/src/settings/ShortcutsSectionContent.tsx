@@ -110,7 +110,9 @@ function ShortcutCategory({
     // Set conflicting shortcuts to null
     conflictingShortcuts.forEach(conflict => conflict.setToNull());
 
-    saveShortcutOverrides([shortcut, ...conflictingShortcuts]);
+    const modifiedShoftcuts = [shortcut, ...conflictingShortcuts];
+
+    saveShortcutOverrides(modifiedShoftcuts);
     setShortcuts(s => [...s]);
   }
 

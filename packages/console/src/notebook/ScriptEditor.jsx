@@ -3,12 +3,12 @@
  */
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js';
-import { LoadingOverlay } from '@deephaven/components';
+import { LoadingOverlay, ShortcutRegistry } from '@deephaven/components';
 import Log from '@deephaven/log';
 import Editor from './Editor';
 import { MonacoCompletionProvider, MonacoUtils } from '../monaco';
 import './ScriptEditor.scss';
+import SHORTCUTS from '../ConsoleShortcuts';
 
 const log = Log.module('ScriptEditor');
 
@@ -19,6 +19,7 @@ class ScriptEditor extends Component {
     this.handleEditorWillDestroy = this.handleEditorWillDestroy.bind(this);
     this.handleRun = this.handleRun.bind(this);
     this.handleRunSelected = this.handleRunSelected.bind(this);
+    this.updateShortcuts = this.updateShortcuts.bind(this);
 
     this.contextActionCleanups = [];
     this.completionCleanup = null;
@@ -28,6 +29,10 @@ class ScriptEditor extends Component {
     this.state = {
       model: null,
     };
+  }
+
+  componentDidMount() {
+    ShortcutRegistry.addEventListener('onUpdate', this.updateShortcuts);
   }
 
   componentDidUpdate(prevProps) {
@@ -66,6 +71,10 @@ class ScriptEditor extends Component {
       this.initContextActions();
       this.initCodeCompletion();
     }
+  }
+
+  componentWillUnmount() {
+    ShortcutRegistry.removeEventListener('onUpdate', this.updateShortcuts);
   }
 
   getValue() {
@@ -151,8 +160,9 @@ class ScriptEditor extends Component {
       this.editor.addAction({
         id: 'run-code',
         label: 'Run',
-        // eslint-disable-next-line no-bitwise
-        keybindings: [monaco.KeyMod.Alt | monaco.KeyCode.KEY_R],
+        keybindings: [
+          MonacoUtils.getMonacoKeyCodeFromShortcut(SHORTCUTS.NOTEBOOK.RUN),
+        ],
         precondition: null,
 
         keybindingContext: null,
@@ -171,8 +181,9 @@ class ScriptEditor extends Component {
         id: 'run-selected-code',
         label: 'Run Selected',
         keybindings: [
-          // eslint-disable-next-line no-bitwise
-          monaco.KeyMod.Alt | monaco.KeyMod.Shift | monaco.KeyCode.KEY_R,
+          MonacoUtils.getMonacoKeyCodeFromShortcut(
+            SHORTCUTS.NOTEBOOK.RUN_SELECTED
+          ),
         ],
         precondition: null,
         keybindingContext: null,
@@ -194,6 +205,11 @@ class ScriptEditor extends Component {
       this.contextActionCleanups.forEach(cleanup => cleanup.dispose());
       this.contextActionCleanups = [];
     }
+  }
+
+  updateShortcuts() {
+    this.deInitContextActions();
+    this.initContextActions();
   }
 
   initCodeCompletion() {

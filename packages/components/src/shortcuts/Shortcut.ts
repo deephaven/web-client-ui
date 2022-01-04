@@ -1,6 +1,11 @@
 /* eslint-disable no-underscore-dangle */
+import { EventTarget } from 'event-target-shim';
 import React from 'react';
+import { Log } from '@deephaven/log';
+import { CustomEventMap, EventShimCustomEvent } from '@deephaven/utils';
 import { ContextActionUtils } from '../context-actions';
+
+const log = Log.module('Shortcut');
 
 export enum MODIFIER {
   CTRL = 'MODIFIER_CTRL',
@@ -89,6 +94,23 @@ export enum KEY {
   F12 = 'F12',
 }
 
+const ALLOWED_SINGLE_KEY_SET: Set<KEY> = new Set([
+  KEY.ENTER,
+  KEY.DELETE,
+  KEY.F1,
+  KEY.F2,
+  KEY.F3,
+  KEY.F4,
+  KEY.F5,
+  KEY.F6,
+  KEY.F7,
+  KEY.F8,
+  KEY.F9,
+  KEY.F10,
+  KEY.F11,
+  KEY.F12,
+]);
+
 type ShortcutKeys = [...MODIFIER[], KEY];
 
 export interface KeyState {
@@ -108,7 +130,11 @@ export interface ValidKeyState extends KeyState {
   keyValue: KEY | null;
 }
 
-export default class Shortcut {
+type EventMap = CustomEventMap<{
+  onUpdate: CustomEvent<Shortcut>;
+}>;
+
+export default class Shortcut extends EventTarget<EventMap, 'strict'> {
   readonly id: string; // Unique identifier for the shortcut
 
   readonly name: string; // e.g. Rename, Save, Run Selected
@@ -144,17 +170,26 @@ export default class Shortcut {
    * @returns True if KeyState is is using an allowed keyCode
    */
   static isValidKeyState(state: KeyState): state is ValidKeyState {
-    return (
-      state.keyValue === null ||
-      (Shortcut.isAllowedKey(state.keyValue) &&
-        (Shortcut.isMacPlatform || !state.metaKey) && // MetaKey not allowed in windows
-        (state.altKey ||
-          state.ctrlKey ||
-          state.metaKey ||
-          state.shiftKey ||
-          state.keyValue === KEY.ENTER ||
-          state.keyValue === KEY.DELETE))
-    );
+    const { keyValue } = state;
+
+    if (keyValue === null) {
+      // Null state is valid
+      return true;
+    }
+
+    if (!Shortcut.isMacPlatform && state.metaKey) {
+      // MetaKey not allowed in windows
+      return false;
+    }
+
+    if (!Shortcut.isAllowedKey(keyValue)) {
+      return false;
+    }
+
+    const isSingleKey =
+      !state.altKey && !state.ctrlKey && !state.metaKey && !state.shiftKey;
+
+    return !isSingleKey || ALLOWED_SINGLE_KEY_SET.has(keyValue);
   }
 
   static isMacPlatform = ContextActionUtils.isMacPlatform();
@@ -209,6 +244,8 @@ export default class Shortcut {
     ) {
       key = '';
     } else if (
+      // This is primarily for Mac which has a symbol keyboard hidden behind the alt key
+      // The keyCode still corresponds to the letter keyCode, but the key value will be a symbol
       !Shortcut.isAllowedKey(eventKey) &&
       Shortcut.isAllowedKey(String.fromCharCode(keyCode))
     ) {
@@ -343,6 +380,7 @@ export default class Shortcut {
     name: string;
     tooltip?: string;
   }) {
+    super();
     this.id = id;
     this.name = name;
     this.tooltip = tooltip;
@@ -374,7 +412,17 @@ export default class Shortcut {
    */
   setKeyState(keyState: KeyState): void {
     if (Shortcut.isValidKeyState(keyState)) {
+      log.debug2(`Shortcut ${this.id} updated to ${JSON.stringify(keyState)}`);
       this.keyState = keyState;
+      this.dispatchEvent(
+        new EventShimCustomEvent('onUpdate', { detail: this })
+      );
+    } else {
+      log.debug2(
+        `Shortcut ${
+          this.id
+        } tried to update to invalid keyState ${JSON.stringify(keyState)}`
+      );
     }
   }
 
