@@ -76,16 +76,21 @@ export const DEFAULT_LAYOUT_CONFIG = [
 export const getDefaultLayout = async (
   layoutStorage: LayoutStorage
 ): Promise<ItemConfigType[]> => {
-  const layouts = await layoutStorage.getLayouts();
-  if (layouts.length > 0) {
-    try {
-      // We found a layout on the server, use it. It could be an empty layout if they want user to build their own
-      const layout = await layoutStorage.getLayout(layouts[0]);
-      return layout;
-    } catch (err) {
-      log.error('Unable to load layout', layouts[0], ':', err);
-      log.warn('No valid layouts found, falling back to default layout');
+  try {
+    const layouts = await layoutStorage.getLayouts();
+    if (layouts.length > 0) {
+      try {
+        // We found a layout on the server, use it. It could be an empty layout if they want user to build their own
+        const layout = await layoutStorage.getLayout(layouts[0]);
+        return layout;
+      } catch (err) {
+        log.error('Unable to load layout', layouts[0], ':', err);
+        log.warn('No valid layouts found, falling back to default layout');
+      }
     }
+  } catch (err) {
+    log.error('Unable to fetch layout list', err);
+    log.warn('Falling back to default layout');
   }
   // Otherwise, do the default layout
   return DEFAULT_LAYOUT_CONFIG;
