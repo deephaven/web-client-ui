@@ -804,7 +804,7 @@ export class FormattingSectionContent extends PureComponent {
               />
             </div>
           </div>
-          <div className="form-row mb-2">
+          <div className="form-row mb-3">
             <label className="col-form-label col-3">Integer</label>
             <div className="col-9">
               <input
