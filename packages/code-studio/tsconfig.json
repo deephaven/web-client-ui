@@ -1,9 +1,55 @@
 {
   "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "rootDir": "src/",
+    "outDir": "dist/",
+    "noEmit": true
+  },
   "include": [
     "src"
   ],
-  "compilerOptions": {
-    "noEmit": true
-  }
+  "references": [
+    {
+      "path": "../chart"
+    },
+    {
+      "path": "../components"
+    },
+    {
+      "path": "../console"
+    },
+    {
+      "path": "../dashboard"
+    },
+    {
+      "path": "../dashboard-core-plugins"
+    },
+    {
+      "path": "../file-explorer"
+    },
+    {
+      "path": "../grid"
+    },
+    {
+      "path": "../iris-grid"
+    },
+    {
+      "path": "../jsapi-shim"
+    },
+    {
+      "path": "../log"
+    },
+    {
+      "path": "../react-hooks"
+    },
+    {
+      "path": "../redux"
+    },
+    {
+      "path": "../storage"
+    },
+    {
+      "path": "../utils"
+    }
+  ]
 }
