@@ -20,8 +20,8 @@ export type IntegerColumnFormatterOptions = {
 export class IntegerColumnFormatter extends TableColumnFormatter {
   /**
    * Validates format object
-   * @param {Object} format Format object
-   * @returns {boolean} true for valid object
+   * @param format Format object
+   * @returns true for valid object
    */
   static isValid(format: IntegerColumnFormat): boolean {
     try {

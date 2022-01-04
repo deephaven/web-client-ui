@@ -429,8 +429,8 @@ export class FormattingSectionContent extends PureComponent {
       timeZone,
     };
     if (
-      defaultDecimalFormatOptions?.defaultFormatString &&
-      DecimalColumnFormatter.isValid(
+      FormattingSectionContent.isValidFormat(
+        TableUtils.dataType.DECIMAL,
         DecimalColumnFormatter.makeCustomFormat(
           defaultDecimalFormatOptions?.defaultFormatString
         )
@@ -439,8 +439,8 @@ export class FormattingSectionContent extends PureComponent {
       newSettings.defaultDecimalFormatOptions = defaultDecimalFormatOptions;
     }
     if (
-      defaultIntegerFormatOptions?.defaultFormatString &&
-      IntegerColumnFormatter.isValid(
+      FormattingSectionContent.isValidFormat(
+        TableUtils.dataType.INT,
         IntegerColumnFormatter.makeCustomFormat(
           defaultIntegerFormatOptions.defaultFormatString
         )
@@ -650,8 +650,8 @@ export class FormattingSectionContent extends PureComponent {
           const selectedFormat = IntegerColumnFormatter.makeFormat(
             '',
             e.target.value,
-            null,
-            IntegerColumnFormatter.TYPE_GLOBAL
+            IntegerColumnFormatter.TYPE_GLOBAL,
+            null
           );
           this.handleFormatRuleChange(i, 'format', selectedFormat);
         }}
@@ -789,7 +789,8 @@ export class FormattingSectionContent extends PureComponent {
                   'flex-grow-1',
                   'default-decimal-format-input',
                   {
-                    'is-invalid': !DecimalColumnFormatter.isValid(
+                    'is-invalid': !FormattingSectionContent.isValidFormat(
+                      TableUtils.dataType.DECIMAL,
                       DecimalColumnFormatter.makeCustomFormat(
                         defaultDecimalFormatString
                       )
@@ -813,7 +814,8 @@ export class FormattingSectionContent extends PureComponent {
                   'flex-grow-1',
                   'default-integer-format-input',
                   {
-                    'is-invalid': !IntegerColumnFormatter.isValid(
+                    'is-invalid': !FormattingSectionContent.isValidFormat(
+                      TableUtils.dataType.INT,
                       IntegerColumnFormatter.makeCustomFormat(
                         defaultIntegerFormatString
                       )
