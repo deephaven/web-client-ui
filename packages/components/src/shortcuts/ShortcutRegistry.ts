@@ -18,24 +18,25 @@ class ShortcutRegistry extends EventTarget<EventMap, 'strict'> {
   /**
    * Creates a Shortcut and adds it to the registry
    * @param params The constructor params for the {@link Shortcut}
-   * @returns The created Shortcut
+   * @returns The created shortcut or the shortcut in the registry if 1 already exists w/ the same ID
    */
   createAndAdd(params: ConstructorParameters<typeof Shortcut>[0]): Shortcut {
     const shortcut = new Shortcut(params);
-    this.add(shortcut);
-    return shortcut;
+    return this.add(shortcut);
   }
 
   /**
-   * Adds a shortcut to the registry. Throws if a shortcut with the same ID already exists
+   * Adds a shortcut to the registry. Warns and returns existing shortcut if a shortcut with the same ID already exists
    * @param shortcut Shortcut to add to the registry
+   * @returns Shortcut passed if it is not in the registry. Shortcut from the registry if one exists for the same ID
    */
-  add(shortcut: Shortcut): void {
-    if (this.shortcutMap.has(shortcut.id)) {
+  add(shortcut: Shortcut): Shortcut {
+    const existingShortcut = this.shortcutMap.get(shortcut.id);
+    if (existingShortcut) {
       log.warn(
         `Skipping attempt to add duplicate shortcut ID to registry: ${shortcut.id}`
       );
-      return;
+      return existingShortcut;
     }
 
     log.debug2(`Adding shortcut to registry: ${shortcut.id}`);
@@ -52,6 +53,8 @@ class ShortcutRegistry extends EventTarget<EventMap, 'strict'> {
     } else {
       this.shortcutsByCategory.set(category, [shortcut]);
     }
+
+    return shortcut;
   }
 
   /**

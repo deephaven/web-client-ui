@@ -38,8 +38,7 @@ it('Does not register a shortcut with a duplicate id', () => {
   expect(ShortcutRegistry.shortcutMap.size).toBe(1);
   const shortcutB = ShortcutRegistry.createAndAdd(SINGLE_MOD_PARAMS);
   expect(ShortcutRegistry.shortcutMap.size).toBe(1);
-  expect(shortcutA).not.toBe(shortcutB);
-  expect(ShortcutRegistry.shortcutMap.get(shortcutA.id)).toBe(shortcutA);
+  expect(shortcutA).toBe(shortcutB);
 });
 
 it('Gets a shortcut by ID', () => {
