@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { dhNewCircleLargeFilled, vsTrash } from '@deephaven/icons';
-import memoize from 'memoize-one';
+import memoize from 'memoizee';
 import { CSSTransition, TransitionGroup } from 'react-transition-group';
 import debounce from 'lodash.debounce';
 import classNames from 'classnames';
@@ -17,6 +17,8 @@ import {
 import Log from '@deephaven/log';
 import {
   getDefaultDateTimeFormat,
+  getDefaultDecimalFormatOptions,
+  getDefaultIntegerFormatOptions,
   getFormatter,
   getTimeZone,
   getShowTimeZone,
@@ -161,6 +163,12 @@ export class FormattingSectionContent extends PureComponent {
     this.handleDefaultDateTimeFormatChange = this.handleDefaultDateTimeFormatChange.bind(
       this
     );
+    this.handleDefaultDecimalFormatChange = this.handleDefaultDecimalFormatChange.bind(
+      this
+    );
+    this.handleDefaultIntegerFormatChange = this.handleDefaultIntegerFormatChange.bind(
+      this
+    );
     this.handleFormatRuleEntered = this.handleFormatRuleEntered.bind(this);
     this.handleFormatRuleChange = this.handleFormatRuleChange.bind(this);
     this.handleFormatRuleCreate = this.handleFormatRuleCreate.bind(this);
@@ -171,47 +179,42 @@ export class FormattingSectionContent extends PureComponent {
     );
     this.handleTimeZoneChange = this.handleTimeZoneChange.bind(this);
 
+    const {
+      formatter,
+      defaultDateTimeFormat,
+      defaultDecimalFormatOptions,
+      defaultIntegerFormatOptions,
+      showTimeZone,
+      showTSeparator,
+      timeZone,
+    } = props;
+
+    const formatSettings = formatter.map((item, i) => ({
+      ...item,
+      id: i,
+    }));
+
     this.containerRef = React.createRef();
     this.addFormatRuleButtonRef = React.createRef();
 
-    this.lastFormatRuleIndex = 0;
+    this.lastFormatRuleIndex = formatSettings.length;
 
     this.state = {
-      formatSettings: [],
+      formatSettings,
       formatRulesChanged: false,
-      showTimeZone: true,
-      showTSeparator: false,
-      timeZone: '',
-      defaultDateTimeFormat: '',
+      showTimeZone,
+      showTSeparator,
+      timeZone,
+      defaultDateTimeFormat,
+      defaultDecimalFormatOptions,
+      defaultIntegerFormatOptions,
       timestampAtMenuOpen: new Date(),
     };
   }
 
   componentDidMount() {
-    const {
-      formatter,
-      defaultDateTimeFormat,
-      showTimeZone,
-      showTSeparator,
-      timeZone,
-    } = this.props;
-
-    this.setState(
-      {
-        formatSettings: formatter.map(item => ({
-          ...item,
-          id: this.getAutoIncrementFormatRuleIndex(),
-        })),
-        defaultDateTimeFormat,
-        showTimeZone,
-        showTSeparator,
-        timeZone,
-      },
-      () => {
-        FormattingSectionContent.focusFirstInputInContainer(
-          this.containerRef.current
-        );
-      }
+    FormattingSectionContent.focusFirstInputInContainer(
+      this.containerRef.current
     );
   }
 
@@ -264,6 +267,34 @@ export class FormattingSectionContent extends PureComponent {
     this.setState(
       {
         defaultDateTimeFormat: event.target.value,
+      },
+      () => {
+        this.debouncedCommitChanges();
+      }
+    );
+  }
+
+  handleDefaultDecimalFormatChange(event) {
+    log.debug('handleDefaultDecimalFormatChange', event.target.value);
+    this.setState(
+      {
+        defaultDecimalFormatOptions: {
+          defaultFormatString: event.target.value,
+        },
+      },
+      () => {
+        this.debouncedCommitChanges();
+      }
+    );
+  }
+
+  handleDefaultIntegerFormatChange(event) {
+    log.debug('handleDefaultIntegerFormatChange', event.target.value);
+    this.setState(
+      {
+        defaultIntegerFormatOptions: {
+          defaultFormatString: event.target.value,
+        },
       },
       () => {
         this.debouncedCommitChanges();
@@ -380,6 +411,8 @@ export class FormattingSectionContent extends PureComponent {
       showTimeZone,
       showTSeparator,
       timeZone,
+      defaultDecimalFormatOptions,
+      defaultIntegerFormatOptions,
     } = this.state;
 
     const formatter = formatSettings
@@ -387,14 +420,35 @@ export class FormattingSectionContent extends PureComponent {
       .map(FormattingSectionContent.removeFormatRuleExtraProps);
 
     const { settings, saveSettings } = this.props;
-    saveSettings({
+    const newSettings = {
       ...settings,
       formatter,
       defaultDateTimeFormat,
       showTimeZone,
       showTSeparator,
       timeZone,
-    });
+    };
+    if (
+      FormattingSectionContent.isValidFormat(
+        TableUtils.dataType.DECIMAL,
+        DecimalColumnFormatter.makeCustomFormat(
+          defaultDecimalFormatOptions?.defaultFormatString
+        )
+      )
+    ) {
+      newSettings.defaultDecimalFormatOptions = defaultDecimalFormatOptions;
+    }
+    if (
+      FormattingSectionContent.isValidFormat(
+        TableUtils.dataType.INT,
+        IntegerColumnFormatter.makeCustomFormat(
+          defaultIntegerFormatOptions.defaultFormatString
+        )
+      )
+    ) {
+      newSettings.defaultIntegerFormatOptions = defaultIntegerFormatOptions;
+    }
+    saveSettings(newSettings);
   }
 
   scrollToFormatBlockBottom() {
@@ -596,8 +650,8 @@ export class FormattingSectionContent extends PureComponent {
           const selectedFormat = IntegerColumnFormatter.makeFormat(
             '',
             e.target.value,
-            null,
-            IntegerColumnFormatter.TYPE_GLOBAL
+            IntegerColumnFormatter.TYPE_GLOBAL,
+            null
           );
           this.handleFormatRuleChange(i, 'format', selectedFormat);
         }}
@@ -621,8 +675,8 @@ export class FormattingSectionContent extends PureComponent {
           const selectedFormat = DecimalColumnFormatter.makeFormat(
             '',
             e.target.value,
-            null,
-            DecimalColumnFormatter.TYPE_GLOBAL
+            DecimalColumnFormatter.TYPE_GLOBAL,
+            null
           );
           this.handleFormatRuleChange(i, 'format', selectedFormat);
         }}
@@ -635,10 +689,19 @@ export class FormattingSectionContent extends PureComponent {
       formatRulesChanged,
       formatSettings,
       defaultDateTimeFormat,
+      defaultDecimalFormatOptions,
+      defaultIntegerFormatOptions,
       timeZone,
       showTimeZone,
       showTSeparator,
     } = this.state;
+
+    const {
+      defaultFormatString: defaultDecimalFormatString = DecimalColumnFormatter.DEFAULT_FORMAT_STRING,
+    } = defaultDecimalFormatOptions ?? {};
+    const {
+      defaultFormatString: defaultIntegerFormatString = IntegerColumnFormatter.DEFAULT_FORMAT_STRING,
+    } = defaultIntegerFormatOptions ?? {};
 
     const formatRules = formatSettings.map((rule, index) => (
       <CSSTransition
@@ -696,7 +759,6 @@ export class FormattingSectionContent extends PureComponent {
               </select>
             </div>
           </div>
-
           <div className="form-row">
             <div className="offset-3 col-9">
               <Checkbox
@@ -716,6 +778,56 @@ export class FormattingSectionContent extends PureComponent {
               >
                 Show &#39;T&#39; separator
               </Checkbox>
+            </div>
+          </div>
+          <div className="form-row mb-2">
+            <label className="col-form-label col-3">Decimal</label>
+            <div className="col-9">
+              <input
+                className={classNames(
+                  'form-control',
+                  'flex-grow-1',
+                  'default-decimal-format-input',
+                  {
+                    'is-invalid': !FormattingSectionContent.isValidFormat(
+                      TableUtils.dataType.DECIMAL,
+                      DecimalColumnFormatter.makeCustomFormat(
+                        defaultDecimalFormatString
+                      )
+                    ),
+                  }
+                )}
+                data-lpignore
+                placeholder={DecimalColumnFormatter.DEFAULT_FORMAT_STRING}
+                type="text"
+                value={defaultDecimalFormatString}
+                onChange={this.handleDefaultDecimalFormatChange}
+              />
+            </div>
+          </div>
+          <div className="form-row mb-3">
+            <label className="col-form-label col-3">Integer</label>
+            <div className="col-9">
+              <input
+                className={classNames(
+                  'form-control',
+                  'flex-grow-1',
+                  'default-integer-format-input',
+                  {
+                    'is-invalid': !FormattingSectionContent.isValidFormat(
+                      TableUtils.dataType.INT,
+                      IntegerColumnFormatter.makeCustomFormat(
+                        defaultIntegerFormatString
+                      )
+                    ),
+                  }
+                )}
+                data-lpignore
+                placeholder={IntegerColumnFormatter.DEFAULT_FORMAT_STRING}
+                type="text"
+                value={defaultIntegerFormatString}
+                onChange={this.handleDefaultIntegerFormatChange}
+              />
             </div>
           </div>
         </div>
@@ -747,9 +859,14 @@ FormattingSectionContent.propTypes = {
   showTSeparator: PropTypes.bool.isRequired,
   timeZone: PropTypes.string.isRequired,
   settings: PropTypes.shape({}).isRequired,
-
   saveSettings: PropTypes.func.isRequired,
   scrollTo: PropTypes.func,
+  defaultDecimalFormatOptions: PropTypes.shape({
+    defaultFormatString: PropTypes.string,
+  }).isRequired,
+  defaultIntegerFormatOptions: PropTypes.shape({
+    defaultFormatString: PropTypes.string,
+  }).isRequired,
 };
 
 FormattingSectionContent.defaultProps = {
@@ -759,6 +876,8 @@ FormattingSectionContent.defaultProps = {
 const mapStateToProps = state => ({
   formatter: getFormatter(state),
   defaultDateTimeFormat: getDefaultDateTimeFormat(state),
+  defaultDecimalFormatOptions: getDefaultDecimalFormatOptions(state),
+  defaultIntegerFormatOptions: getDefaultIntegerFormatOptions(state),
   showTimeZone: getShowTimeZone(state),
   showTSeparator: getShowTSeparator(state),
   timeZone: getTimeZone(state),

@@ -57,6 +57,8 @@ export class Chart extends Component {
     this.plotWrapper = React.createRef();
     this.columnFormats = [];
     this.dateTimeFormatterOptions = {};
+    this.decimalFormatOptions = {};
+    this.integerFormatOptions = {};
     this.rect = null;
     this.ranges = null;
     this.isSubscribed = false;
@@ -378,15 +380,18 @@ export class Chart extends Component {
     const dateTimeFormatterOptions = FormatterUtils.getDateTimeFormatterOptions(
       settings
     );
+    const { decimalFormatOptions = {}, integerFormatOptions = {} } = settings;
 
     if (
       !deepEqual(this.columnFormats, columnFormats) ||
-      !deepEqual(this.dateTimeFormatterOptions, dateTimeFormatterOptions)
+      !deepEqual(this.dateTimeFormatterOptions, dateTimeFormatterOptions) ||
+      !deepEqual(this.decimalFormatOptions, decimalFormatOptions) ||
+      !deepEqual(this.integerFormatOptions, integerFormatOptions)
     ) {
       this.columnFormats = FormatterUtils.getColumnFormats(settings);
-      this.dateTimeFormatterOptions = FormatterUtils.getDateTimeFormatterOptions(
-        settings
-      );
+      this.dateTimeFormatterOptions = dateTimeFormatterOptions;
+      this.decimalFormatOptions = decimalFormatOptions;
+      this.integerFormatOptions = integerFormatOptions;
       this.updateFormatter();
     }
   }
@@ -394,7 +399,9 @@ export class Chart extends Component {
   updateFormatter() {
     const formatter = new Formatter(
       this.columnFormats,
-      this.dateTimeFormatterOptions
+      this.dateTimeFormatterOptions,
+      this.decimalFormatOptions,
+      this.integerFormatOptions
     );
 
     const { model } = this.props;
@@ -465,6 +472,12 @@ Chart.propTypes = {
     showTimeZone: PropTypes.bool.isRequired,
     showTSeparator: PropTypes.bool.isRequired,
     formatter: PropTypes.arrayOf(PropTypes.shape({})).isRequired,
+    decimalFormatOptions: PropTypes.shape({
+      defaultFormatString: PropTypes.string,
+    }),
+    integerFormatOptions: PropTypes.shape({
+      defaultFormatString: PropTypes.string,
+    }),
   }),
   isActive: PropTypes.bool,
   onDisconnect: PropTypes.func,

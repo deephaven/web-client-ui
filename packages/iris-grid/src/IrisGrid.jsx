@@ -201,6 +201,8 @@ export class IrisGrid extends Component {
     this.pending = new Pending();
     this.globalColumnFormats = [];
     this.dateTimeFormatterOptions = {};
+    this.decimalFormatOptions = {};
+    this.integerFormatOptions = {};
 
     // When the loading scrim started/when it should extend to the end of the screen.
     this.loadingScrimStartTime = null;
@@ -1004,6 +1006,10 @@ export class IrisGrid extends Component {
     const dateTimeFormatterOptions = FormatterUtils.getDateTimeFormatterOptions(
       settings
     );
+    const {
+      defaultDecimalFormatOptions = {},
+      defaultIntegerFormatOptions = {},
+    } = settings;
 
     const isColumnFormatChanged = !deepEqual(
       this.globalColumnFormats,
@@ -1013,9 +1019,24 @@ export class IrisGrid extends Component {
       this.dateTimeFormatterOptions,
       dateTimeFormatterOptions
     );
-    if (isColumnFormatChanged || isDateFormattingChanged) {
+    const isDecimalFormattingChanged = !deepEqual(
+      this.decimalFormatOptions,
+      defaultDecimalFormatOptions
+    );
+    const isIntegerFormattingChanged = !deepEqual(
+      this.integerFormatOptions,
+      defaultIntegerFormatOptions
+    );
+    if (
+      isColumnFormatChanged ||
+      isDateFormattingChanged ||
+      isDecimalFormattingChanged ||
+      isIntegerFormattingChanged
+    ) {
       this.globalColumnFormats = globalColumnFormats;
       this.dateTimeFormatterOptions = dateTimeFormatterOptions;
+      this.decimalFormatOptions = defaultDecimalFormatOptions;
+      this.integerFormatOptions = defaultIntegerFormatOptions;
       this.updateFormatter({}, forceUpdate);
 
       if (isDateFormattingChanged && forceUpdate) {
@@ -1068,7 +1089,9 @@ export class IrisGrid extends Component {
     ];
     const formatter = new Formatter(
       mergedColumnFormats,
-      this.dateTimeFormatterOptions
+      this.dateTimeFormatterOptions,
+      this.decimalFormatOptions,
+      this.integerFormatOptions
     );
 
     log.debug('updateFormatter', this.globalColumnFormats, mergedColumnFormats);
@@ -3090,6 +3113,12 @@ IrisGrid.defaultProps = {
     showTimeZone: false,
     showTSeparator: true,
     formatter: [],
+    decimalFormatOptions: PropTypes.shape({
+      defaultFormatString: PropTypes.string,
+    }),
+    integerFormatOptions: PropTypes.shape({
+      defaultFormatString: PropTypes.string,
+    }),
   },
 };
 
