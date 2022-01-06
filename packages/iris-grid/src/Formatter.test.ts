@@ -130,7 +130,7 @@ describe('getColumnFormat', () => {
 });
 
 describe('getFormattedString', () => {
-  it('passes null to formatter.format for column with no custom format', () => {
+  it('passes undefined to formatter.format for column with no custom format', () => {
     const value = 'randomValue';
     const columnType = TYPE_DATETIME;
     const columnName = 'randomColumnName';
@@ -139,7 +139,7 @@ describe('getFormattedString', () => {
     const originalFormatFn = columnTypeFormatter.format;
     columnTypeFormatter.format = jest.fn();
     formatter.getFormattedString(value, columnType, columnName);
-    expect(columnTypeFormatter.format).toHaveBeenCalledWith(value, null);
+    expect(columnTypeFormatter.format).toHaveBeenCalledWith(value, undefined);
     columnTypeFormatter.format = originalFormatFn;
   });
 

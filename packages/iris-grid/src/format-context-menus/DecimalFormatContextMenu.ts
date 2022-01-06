@@ -1,5 +1,7 @@
-import FormatContextMenuUtils from './FormatContextMenuUtils';
-import { DecimalColumnFormatter } from '../formatters';
+import FormatContextMenuUtils, {
+  FormatContextMenuOption,
+} from './FormatContextMenuUtils';
+import { DecimalColumnFormat, DecimalColumnFormatter } from '../formatters';
 
 class DecimalFormatContextMenu {
   static defaultGroup = 10;
@@ -12,11 +14,14 @@ class DecimalFormatContextMenu {
 
   /**
    * Creates list of formatting options for Decimal context menu
-   * @param {Object} selectedFormat Selected format object, null for no selected format
-   * @param {function} onCustomFormatChange Callback to call when the custom format is changed
-   * @returns {Array} Array of formatting options for the context menu
+   * @param selectedFormat Selected format object, null for no selected format
+   * @param onCustomFormatChange Callback to call when the custom format is changed
+   * @returns Array of formatting options for the context menu
    */
-  static getOptions(selectedFormat, onCustomFormatChange) {
+  static getOptions(
+    selectedFormat: DecimalColumnFormat,
+    onCustomFormatChange: (value: DecimalColumnFormat | null) => void
+  ): FormatContextMenuOption[] {
     const formatItems = [
       {
         format: DecimalColumnFormatter.FORMAT_PERCENT,

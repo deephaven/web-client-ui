@@ -1,5 +1,7 @@
-import FormatContextMenuUtils from './FormatContextMenuUtils';
-import { IntegerColumnFormatter } from '../formatters';
+import FormatContextMenuUtils, {
+  FormatContextMenuOption,
+} from './FormatContextMenuUtils';
+import { IntegerColumnFormat, IntegerColumnFormatter } from '../formatters';
 
 class IntegerFormatContextMenu {
   static defaultGroup = 10;
@@ -10,11 +12,14 @@ class IntegerFormatContextMenu {
 
   /**
    * Creates list of formatting options for Integer context menu
-   * @param {Object} selectedFormat Selected format object, null for no selected format
-   * @param {function} onCustomFormatChange Callback to call when the custom format is changed
-   * @returns {Array} Array of formatting options for the context menu
+   * @param selectedFormat Selected format object, null for no selected format
+   * @param onCustomFormatChange Callback to call when the custom format is changed
+   * @returns Array of formatting options for the context menu
    */
-  static getOptions(selectedFormat, onCustomFormatChange) {
+  static getOptions(
+    selectedFormat: IntegerColumnFormat,
+    onCustomFormatChange: (value: IntegerColumnFormat | null) => void
+  ): FormatContextMenuOption[] {
     const formatItems = [
       {
         format: IntegerColumnFormatter.FORMAT_MILLIONS,

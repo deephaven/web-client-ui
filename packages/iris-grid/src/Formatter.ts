@@ -74,7 +74,13 @@ class Formatter {
    */
   constructor(
     columnFormattingRules: FormattingRule[] = [],
-    dateTimeOptions?: ConstructorParameters<typeof DateTimeColumnFormatter>[0]
+    dateTimeOptions?: ConstructorParameters<typeof DateTimeColumnFormatter>[0],
+    decimalFormatOptions?: ConstructorParameters<
+      typeof DecimalColumnFormatter
+    >[0],
+    integerFormatOptions?: ConstructorParameters<
+      typeof IntegerColumnFormatter
+    >[0]
   ) {
     // Formatting order:
     // - columnFormatMap[type][name]
@@ -91,8 +97,14 @@ class Formatter {
         TableUtils.dataType.DATETIME,
         new DateTimeColumnFormatter(dateTimeOptions),
       ],
-      [TableUtils.dataType.DECIMAL, new DecimalColumnFormatter()],
-      [TableUtils.dataType.INT, new IntegerColumnFormatter()],
+      [
+        TableUtils.dataType.DECIMAL,
+        new DecimalColumnFormatter(decimalFormatOptions),
+      ],
+      [
+        TableUtils.dataType.INT,
+        new IntegerColumnFormatter(integerFormatOptions),
+      ],
     ]);
 
     // Formats indexed by data type and column name
