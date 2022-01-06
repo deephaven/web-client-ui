@@ -1,6 +1,13 @@
+import type { GridThemeType } from '@deephaven/grid';
 import IrisGridTheme from './IrisGridTheme.module.scss';
 
-export default Object.freeze({
+export type IrisGridThemeType = Partial<GridThemeType> & {
+  filterBarHeight: number;
+  filterBarCollapsedHeight: number;
+  reverseHeaderBarHeight: number;
+};
+
+const theme: IrisGridThemeType = Object.freeze({
   backgroundColor: IrisGridTheme['grid-bg'],
   font: IrisGridTheme.font,
   headerBackgroundColor: IrisGridTheme['header-bg'],
@@ -87,3 +94,5 @@ export default Object.freeze({
   floatingDividerInnerColor: IrisGridTheme['floating-divider-inner-color'],
   floatingDividerOuterColor: IrisGridTheme['floating-divider-outer-color'],
 });
+
+export default theme;

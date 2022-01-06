@@ -1,6 +1,7 @@
 import { applyMiddleware, createStore, compose, combineReducers } from 'redux';
 import type { FileStorage } from '@deephaven/file-explorer';
 import type { ValidKeyState } from '@deephaven/components';
+import type { FormattingRule } from '@deephaven/iris-grid';
 import type { PayloadAction } from './actions';
 import rootMiddleware from './middleware';
 import reducers from './reducers';
@@ -18,16 +19,6 @@ export interface Storage {
   workspaceStorage: WorkspaceStorage;
 }
 
-interface WorkspaceFormattingRule {
-  columnType: string;
-  columnName: string;
-  format: {
-    label: string;
-    formatString: string;
-    type: string;
-  };
-}
-
 export interface WorkspaceSettings {
   defaultDateTimeFormat: string;
   defaultDecimalFormatOptions?: {
@@ -36,7 +27,7 @@ export interface WorkspaceSettings {
   defaultIntegerFormatOptions?: {
     defaultFormatString?: string;
   };
-  formatter: WorkspaceFormattingRule[];
+  formatter: FormattingRule[];
   timeZone: string;
   showTimeZone: boolean;
   showTSeparator: boolean;

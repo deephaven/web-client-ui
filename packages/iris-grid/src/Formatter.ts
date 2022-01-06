@@ -13,8 +13,8 @@ import {
 
 const log = Log.module('Formatter');
 
-interface FormattingRule {
-  columnType: DataType;
+export interface FormattingRule {
+  columnType: string;
   columnName: string;
   format: TableColumnFormat;
 }
@@ -74,7 +74,7 @@ class Formatter {
    */
   constructor(
     columnFormattingRules: FormattingRule[] = [],
-    dateTimeOptions: ConstructorParameters<typeof DateTimeColumnFormatter>[0]
+    dateTimeOptions?: ConstructorParameters<typeof DateTimeColumnFormatter>[0]
   ) {
     // Formatting order:
     // - columnFormatMap[type][name]

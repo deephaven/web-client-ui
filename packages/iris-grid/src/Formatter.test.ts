@@ -9,30 +9,38 @@ import {
 } from './formatters';
 import TableUtils from './TableUtils';
 
-function makeFormatter(...settings) {
+function makeFormatter(...settings: ConstructorParameters<typeof Formatter>) {
   return new Formatter(...settings);
 }
 
-const TYPE_DATETIME = 'io.deephaven.time.DateTime';
+const TYPE_DATETIME = TableUtils.dataType.DATETIME;
 
 describe('makeColumnFormatMap', () => {
   const conflictingColumnName = 'Conflicting name';
-  const lastFormat = 'Last format';
+  const lastFormat = {
+    label: 'Last format',
+    formatString: 'yyyy',
+    type: 'type-context-custom' as const,
+  };
   const formatArray = [
-    Formatter.makeColumnFormattingRule(
-      TableUtils.dataType.DATETIME,
-      'Col 1',
-      'format 1'
-    ),
-    Formatter.makeColumnFormattingRule(
-      TableUtils.dataType.DATETIME,
-      'Col 2',
-      'format 2'
-    ),
+    Formatter.makeColumnFormattingRule(TableUtils.dataType.DATETIME, 'Col 1', {
+      label: 'format 1',
+      formatString: 'yyyy',
+      type: 'type-context-custom',
+    }),
+    Formatter.makeColumnFormattingRule(TableUtils.dataType.DATETIME, 'Col 2', {
+      label: 'format 2',
+      formatString: 'yyyy',
+      type: 'type-context-custom',
+    }),
     Formatter.makeColumnFormattingRule(
       TableUtils.dataType.DECIMAL,
       conflictingColumnName,
-      'format 3'
+      {
+        label: 'format 3',
+        formatString: 'yyyy',
+        type: 'type-context-custom',
+      }
     ),
     Formatter.makeColumnFormattingRule(
       TableUtils.dataType.DECIMAL,
@@ -49,14 +57,14 @@ describe('makeColumnFormatMap', () => {
   it('converts array of format definitions to map of name-to-format maps', () => {
     const formatMap = Formatter.makeColumnFormatMap(formatArray);
     expect(formatMap.size).toBe(2);
-    expect(formatMap.get(TableUtils.dataType.DATETIME).size).toBe(2);
+    expect(formatMap.get(TableUtils.dataType.DATETIME)?.size).toBe(2);
   });
 
   it('uses the last format definition in case of conflicting column names', () => {
     const formatMap = Formatter.makeColumnFormatMap(formatArray);
-    expect(formatMap.get(TableUtils.dataType.DECIMAL).size).toBe(1);
+    expect(formatMap.get(TableUtils.dataType.DECIMAL)?.size).toBe(1);
     expect(
-      formatMap.get(TableUtils.dataType.DECIMAL).get(conflictingColumnName)
+      formatMap.get(TableUtils.dataType.DECIMAL)?.get(conflictingColumnName)
     ).toBe(lastFormat);
   });
 });

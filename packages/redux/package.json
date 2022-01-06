@@ -39,6 +39,7 @@
     "@deephaven/components": "^0.8.0",
     "@deephaven/console": "^0.8.1",
     "@deephaven/file-explorer": "^0.8.1",
+    "@deephaven/iris-grid": "^0.8.1",
     "@deephaven/log": "^0.8.0",
     "@deephaven/tsconfig": "^0.8.0",
     "@types/deep-equal": "^1.0.1",

@@ -173,7 +173,10 @@ export class DateTimeColumnFormatter extends TableColumnFormatter {
     return this.formatStringMap.get(baseFormatString) || baseFormatString;
   }
 
-  format(value: Date | DateWrapper, format?: TableColumnFormat): string {
+  format(
+    value: Date | DateWrapper | number,
+    format?: TableColumnFormat
+  ): string {
     const baseFormatString =
       (format && format.formatString) || this.defaultDateTimeFormatString;
     const formatString = this.getEffectiveFormatString(baseFormatString);

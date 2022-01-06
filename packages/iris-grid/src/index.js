@@ -1,5 +1,6 @@
 export { default as DateUtils } from './DateUtils';
 export { default as Formatter } from './Formatter';
+export * from './Formatter';
 export { default as FormatterUtils } from './FormatterUtils';
 export { default as IrisGrid } from './IrisGrid';
 export { default as SHORTCUTS } from './IrisGridShortcuts';
