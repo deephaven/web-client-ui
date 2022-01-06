@@ -1,0 +1,10 @@
+@import '~@deephaven/components/scss/custom.scss';
+
+.btn-reset {
+  transition: opacity $transition ease-out;
+
+  &.hidden {
+    opacity: 0;
+    pointer-events: none;
+  }
+}

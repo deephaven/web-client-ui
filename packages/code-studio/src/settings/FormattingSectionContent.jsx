@@ -27,6 +27,7 @@ import {
   saveSettings as saveSettingsAction,
 } from '@deephaven/redux';
 import { DbNameValidator, TimeUtils } from '@deephaven/utils';
+import './FormattingSectionContent.scss';
 
 const log = Log.module('FormattingSectionContent');
 
@@ -38,6 +39,14 @@ export class FormattingSectionContent extends PureComponent {
     if (input) {
       input.focus();
     }
+  }
+
+  static isSameDecimalOptions(options1, options2) {
+    return options1?.defaultFormatString === options2?.defaultFormatString;
+  }
+
+  static isSameIntegerOptions(options1, options2) {
+    return options1?.defaultFormatString === options2?.defaultFormatString;
   }
 
   static isValidColumnName(name) {
@@ -178,6 +187,9 @@ export class FormattingSectionContent extends PureComponent {
       this
     );
     this.handleTimeZoneChange = this.handleTimeZoneChange.bind(this);
+    this.handleResetDateTimeFormat = this.handleResetDateTimeFormat.bind(this);
+    this.handleResetDecimalFormat = this.handleResetDecimalFormat.bind(this);
+    this.handleResetIntegerFormat = this.handleResetIntegerFormat.bind(this);
     this.handleResetTimeZone = this.handleResetTimeZone.bind(this);
 
     const {
@@ -401,13 +413,14 @@ export class FormattingSectionContent extends PureComponent {
   }
 
   handleResetDateTimeFormat() {
+    const { defaults } = this.props;
+    const { defaultDateTimeFormat, showTimeZone, showTSeparator } = defaults;
     log.debug('handleResetDateTimeFormat');
     this.setState(
       {
-        defaultDateTimeFormat:
-          DateTimeColumnFormatter.DEFAULT_DATETIME_FORMAT_STRING,
-        showTimeZone: false,
-        showTSeparator: true,
+        defaultDateTimeFormat,
+        showTimeZone,
+        showTSeparator,
       },
       () => {
         this.debouncedCommitChanges();
@@ -416,10 +429,40 @@ export class FormattingSectionContent extends PureComponent {
   }
 
   handleResetTimeZone() {
+    const { defaults } = this.props;
+    const { timeZone } = defaults;
     log.debug('handleResetTimeZone');
     this.setState(
       {
-        timeZone: DateTimeColumnFormatter.DEFAULT_TIME_ZONE_ID,
+        timeZone,
+      },
+      () => {
+        this.debouncedCommitChanges();
+      }
+    );
+  }
+
+  handleResetDecimalFormat() {
+    const { defaults } = this.props;
+    const { defaultDecimalFormatOptions } = defaults;
+    log.debug('handleResetDecimalFormat');
+    this.setState(
+      {
+        defaultDecimalFormatOptions,
+      },
+      () => {
+        this.debouncedCommitChanges();
+      }
+    );
+  }
+
+  handleResetIntegerFormat() {
+    const { defaults } = this.props;
+    const { defaultIntegerFormatOptions } = defaults;
+    log.debug('handleResetIntegerFormat');
+    this.setState(
+      {
+        defaultIntegerFormatOptions,
       },
       () => {
         this.debouncedCommitChanges();
@@ -713,6 +756,7 @@ export class FormattingSectionContent extends PureComponent {
   }
 
   render() {
+    const { defaults } = this.props;
     const {
       formatRulesChanged,
       formatSettings,
@@ -754,34 +798,53 @@ export class FormattingSectionContent extends PureComponent {
       </button>
     );
 
+    const isTimeZoneDefault = timeZone === defaults.timeZone;
+    const isDateTimeOptionsDefault =
+      showTSeparator === defaults.showTSeparator &&
+      showTimeZone === defaults.showTimeZone &&
+      defaultDateTimeFormat === defaults.defaultDateTimeFormat;
+    const isDecimalOptionsDefault = FormattingSectionContent.isSameDecimalOptions(
+      defaultDecimalFormatOptions,
+      defaults.defaultDecimalFormatOptions
+    );
+    const isIntegerOptionsDefault = FormattingSectionContent.isSameIntegerOptions(
+      defaultIntegerFormatOptions,
+      defaults.defaultIntegerFormatOptions
+    );
+
     return (
       <div ref={this.containerRef}>
         <div className="container-fluid p-0">
+          <div>Default formatting for column types</div>
+          <div className="app-settings-menu-description mb-3">
+            Applies a formatting rule to all columns of a set type.
+          </div>
           <div className="form-row mb-2">
             <label className="col-form-label col-3">Time zone</label>
-            <div className="col">
-              <div className="input-group">
-                <select
-                  className="custom-select"
-                  value={timeZone}
-                  onChange={this.handleTimeZoneChange}
-                >
-                  {FormattingSectionContent.renderTimeZoneOptions()}
-                </select>
-              </div>
+            <div className="col pr-0">
+              <select
+                className="custom-select"
+                value={timeZone}
+                onChange={this.handleTimeZoneChange}
+              >
+                {FormattingSectionContent.renderTimeZoneOptions()}
+              </select>
             </div>
-            <div className="col-1">
+            <div className="col-1 pl-0">
               <Button
                 kind="ghost"
                 icon={vsRefresh}
                 onClick={this.handleResetTimeZone}
-                tooltip="Reset Layout"
+                tooltip="Reset Time Zone"
+                className={classNames('btn-reset', 'btn-reset-time-zone', {
+                  hidden: isTimeZoneDefault,
+                })}
               />
             </div>
           </div>
           <div className="form-row mb-2">
             <label className="col-form-label col-3">DateTime</label>
-            <div className="col-9">
+            <div className="col pr-0">
               <select
                 className="custom-select"
                 value={defaultDateTimeFormat}
@@ -795,6 +858,17 @@ export class FormattingSectionContent extends PureComponent {
                   defaultDateTimeFormat
                 )}
               </select>
+            </div>
+            <div className="col-1 pl-0">
+              <Button
+                kind="ghost"
+                icon={vsRefresh}
+                onClick={this.handleResetDateTimeFormat}
+                tooltip="Reset DateTime Options"
+                className={classNames('btn-reset', 'btn-reset-date-time', {
+                  hidden: isDateTimeOptionsDefault,
+                })}
+              />
             </div>
           </div>
           <div className="form-row">
@@ -820,7 +894,7 @@ export class FormattingSectionContent extends PureComponent {
           </div>
           <div className="form-row mb-2">
             <label className="col-form-label col-3">Decimal</label>
-            <div className="col-9">
+            <div className="col pr-0">
               <input
                 className={classNames(
                   'form-control',
@@ -842,10 +916,21 @@ export class FormattingSectionContent extends PureComponent {
                 onChange={this.handleDefaultDecimalFormatChange}
               />
             </div>
+            <div className="col-1 pl-0">
+              <Button
+                kind="ghost"
+                icon={vsRefresh}
+                onClick={this.handleResetDecimalFormat}
+                tooltip="Reset Decimal Formatting"
+                className={classNames('btn-reset', 'btn-reset-decimal', {
+                  hidden: isDecimalOptionsDefault,
+                })}
+              />
+            </div>
           </div>
           <div className="form-row mb-3">
             <label className="col-form-label col-3">Integer</label>
-            <div className="col-9">
+            <div className="col pr-0">
               <input
                 className={classNames(
                   'form-control',
@@ -867,13 +952,24 @@ export class FormattingSectionContent extends PureComponent {
                 onChange={this.handleDefaultIntegerFormatChange}
               />
             </div>
+            <div className="col-1 pl-0">
+              <Button
+                kind="ghost"
+                icon={vsRefresh}
+                onClick={this.handleResetIntegerFormat}
+                tooltip="Reset Integer Formatting"
+                className={classNames('btn-reset', 'btn-reset-integer', {
+                  hidden: isIntegerOptionsDefault,
+                })}
+              />
+            </div>
           </div>
         </div>
 
-        <div>Default Formatting Rules</div>
+        <div>Default formatting for matched column names</div>
         <div className="app-settings-menu-description mb-3">
-          Applies a preset column formatting rule to all columns that match a
-          set name and type
+          Applies a formatting rule to all columns that match a specified name
+          and type.
         </div>
 
         <TransitionGroup
@@ -905,10 +1001,35 @@ FormattingSectionContent.propTypes = {
   defaultIntegerFormatOptions: PropTypes.shape({
     defaultFormatString: PropTypes.string,
   }).isRequired,
+  defaults: PropTypes.shape({
+    defaultDateTimeFormat: PropTypes.string.isRequired,
+    defaultDecimalFormatOptions: PropTypes.shape({
+      defaultFormatString: PropTypes.string,
+    }).isRequired,
+    defaultIntegerFormatOptions: PropTypes.shape({
+      defaultFormatString: PropTypes.string,
+    }).isRequired,
+    showTimeZone: PropTypes.bool.isRequired,
+    showTSeparator: PropTypes.bool.isRequired,
+    timeZone: PropTypes.string.isRequired,
+  }),
 };
 
 FormattingSectionContent.defaultProps = {
   scrollTo: () => {},
+  defaults: {
+    defaultDateTimeFormat:
+      DateTimeColumnFormatter.DEFAULT_DATETIME_FORMAT_STRING,
+    defaultDecimalFormatOptions: {
+      defaultFormatString: DecimalColumnFormatter.DEFAULT_FORMAT_STRING,
+    },
+    defaultIntegerFormatOptions: {
+      defaultFormatString: IntegerColumnFormatter.DEFAULT_FORMAT_STRING,
+    },
+    showTimeZone: false,
+    showTSeparator: true,
+    timeZone: DateTimeColumnFormatter.DEFAULT_TIME_ZONE_ID,
+  },
 };
 
 const mapStateToProps = state => ({
