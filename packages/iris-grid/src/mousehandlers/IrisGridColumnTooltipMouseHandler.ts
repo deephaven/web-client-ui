@@ -1,24 +1,31 @@
 /* eslint class-methods-use-this: "off" */
-import { GridMouseHandler } from '@deephaven/grid';
+import {
+  GridMouseHandler,
+  GridPoint,
+  EventHandlerResult,
+} from '@deephaven/grid';
+import type { IrisGrid } from '../IrisGrid';
 
 /**
  * Detects mouse hover over column headers and displays the appropriate tooltip
  */
 class IrisGridColumnTooltipMouseHandler extends GridMouseHandler {
-  constructor(irisGrid) {
+  constructor(irisGrid: IrisGrid) {
     super();
 
     this.irisGrid = irisGrid;
   }
 
-  destroyColumnTooltip() {
+  irisGrid: IrisGrid;
+
+  destroyColumnTooltip(): void {
     const { shownColumnTooltip } = this.irisGrid.state;
     if (shownColumnTooltip != null) {
       this.irisGrid.setState({ shownColumnTooltip: null });
     }
   }
 
-  hideColumnTooltip() {
+  hideColumnTooltip(): void {
     const { tooltip } = this.irisGrid;
     if (tooltip) {
       tooltip.stopTimer();
@@ -26,21 +33,22 @@ class IrisGridColumnTooltipMouseHandler extends GridMouseHandler {
     }
   }
 
-  onDown() {
+  onDown(): EventHandlerResult {
     this.hideColumnTooltip();
     return false;
   }
 
-  onContextMenu() {
+  onContextMenu(): EventHandlerResult {
     this.hideColumnTooltip();
     return false;
   }
 
-  onWheel() {
+  onWheel(): EventHandlerResult {
     this.destroyColumnTooltip();
+    return false;
   }
 
-  onMove(gridPoint) {
+  onMove(gridPoint: GridPoint): EventHandlerResult {
     const { y, column, row } = gridPoint;
     const { shownColumnTooltip } = this.irisGrid.state;
     const theme = this.irisGrid.getTheme();

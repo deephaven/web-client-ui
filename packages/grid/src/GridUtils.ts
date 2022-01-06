@@ -1022,7 +1022,7 @@ class GridUtils {
    * @returns The delta coordinates normalized to pixels
    */
   static getScrollDelta(
-    wheelEvent: WheelEvent,
+    wheelEvent: WheelEvent | React.WheelEvent,
     pageWidth = 1024,
     pageHeight = 768,
     lineWidth = 20,
