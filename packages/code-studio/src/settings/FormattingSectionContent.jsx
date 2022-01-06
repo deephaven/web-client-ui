@@ -2,12 +2,12 @@ import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { dhNewCircleLargeFilled, vsTrash } from '@deephaven/icons';
+import { dhNewCircleLargeFilled, vsRefresh, vsTrash } from '@deephaven/icons';
 import memoize from 'memoizee';
 import { CSSTransition, TransitionGroup } from 'react-transition-group';
 import debounce from 'lodash.debounce';
 import classNames from 'classnames';
-import { Checkbox, ThemeExport } from '@deephaven/components';
+import { Button, Checkbox, ThemeExport } from '@deephaven/components';
 import { Formatter, TableUtils } from '@deephaven/iris-grid';
 import {
   DateTimeColumnFormatter,
@@ -178,6 +178,7 @@ export class FormattingSectionContent extends PureComponent {
       this
     );
     this.handleTimeZoneChange = this.handleTimeZoneChange.bind(this);
+    this.handleResetTimeZone = this.handleResetTimeZone.bind(this);
 
     const {
       formatter,
@@ -392,6 +393,33 @@ export class FormattingSectionContent extends PureComponent {
     this.setState(
       {
         timeZone: event.target.value,
+      },
+      () => {
+        this.debouncedCommitChanges();
+      }
+    );
+  }
+
+  handleResetDateTimeFormat() {
+    log.debug('handleResetDateTimeFormat');
+    this.setState(
+      {
+        defaultDateTimeFormat:
+          DateTimeColumnFormatter.DEFAULT_DATETIME_FORMAT_STRING,
+        showTimeZone: false,
+        showTSeparator: true,
+      },
+      () => {
+        this.debouncedCommitChanges();
+      }
+    );
+  }
+
+  handleResetTimeZone() {
+    log.debug('handleResetTimeZone');
+    this.setState(
+      {
+        timeZone: DateTimeColumnFormatter.DEFAULT_TIME_ZONE_ID,
       },
       () => {
         this.debouncedCommitChanges();
@@ -731,14 +759,24 @@ export class FormattingSectionContent extends PureComponent {
         <div className="container-fluid p-0">
           <div className="form-row mb-2">
             <label className="col-form-label col-3">Time zone</label>
-            <div className="col-9">
-              <select
-                className="custom-select"
-                value={timeZone}
-                onChange={this.handleTimeZoneChange}
-              >
-                {FormattingSectionContent.renderTimeZoneOptions()}
-              </select>
+            <div className="col">
+              <div className="input-group">
+                <select
+                  className="custom-select"
+                  value={timeZone}
+                  onChange={this.handleTimeZoneChange}
+                >
+                  {FormattingSectionContent.renderTimeZoneOptions()}
+                </select>
+              </div>
+            </div>
+            <div className="col-1">
+              <Button
+                kind="ghost"
+                icon={vsRefresh}
+                onClick={this.handleResetTimeZone}
+                tooltip="Reset Layout"
+              />
             </div>
           </div>
           <div className="form-row mb-2">
