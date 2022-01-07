@@ -1,5 +1,9 @@
 import Log from '@deephaven/log';
-import { DateTimeColumnFormatter } from '@deephaven/iris-grid/dist/formatters';
+import {
+  DateTimeColumnFormatter,
+  DecimalColumnFormatter,
+  IntegerColumnFormatter,
+} from '@deephaven/iris-grid/dist/formatters';
 import WorkspaceStorage, { Workspace, WorkspaceData } from './WorkspaceStorage';
 
 const log = Log.module('LocalWorkspaceStorage');
@@ -20,6 +24,12 @@ export class LocalWorkspaceStorage implements WorkspaceStorage {
         showTimeZone: false,
         showTSeparator: true,
         disableMoveConfirmation: false,
+        defaultDecimalFormatOptions: {
+          defaultFormatString: DecimalColumnFormatter.DEFAULT_FORMAT_STRING,
+        },
+        defaultIntegerFormatOptions: {
+          defaultFormatString: IntegerColumnFormatter.DEFAULT_FORMAT_STRING,
+        },
       },
     };
   }

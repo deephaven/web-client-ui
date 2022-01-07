@@ -15,6 +15,10 @@ import {
   ToolType,
 } from '@deephaven/dashboard-core-plugins';
 import { WebdavFileStorage } from '@deephaven/file-explorer';
+import {
+  DecimalColumnFormatter,
+  IntegerColumnFormatter,
+} from '@deephaven/iris-grid/dist/formatters';
 import dh from '@deephaven/jsapi-shim';
 import Log from '@deephaven/log';
 import {
@@ -106,8 +110,21 @@ const AppInit = props => {
         data.layoutConfig = layoutConfig;
       }
 
-      // Set any shortcuts that user has overridden on this platform
+      // Fill in settings that have not yet been set
       const { settings } = data;
+      if (settings.defaultDecimalFormatOptions === undefined) {
+        settings.defaultDecimalFormatOptions = {
+          defaultFormatString: DecimalColumnFormatter.DEFAULT_FORMAT_STRING,
+        };
+      }
+
+      if (settings.defaultIntegerFormatOptions === undefined) {
+        settings.defaultIntegerFormatOptions = {
+          defaultFormatString: IntegerColumnFormatter.DEFAULT_FORMAT_STRING,
+        };
+      }
+
+      // Set any shortcuts that user has overridden on this platform
       const { shortcutOverrides = {} } = settings;
       const isMac = Shortcut.isMacPlatform;
       const platformOverrides = isMac
