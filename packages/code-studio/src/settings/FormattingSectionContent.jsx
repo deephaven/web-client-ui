@@ -813,7 +813,7 @@ export class FormattingSectionContent extends PureComponent {
     );
 
     return (
-      <div ref={this.containerRef}>
+      <div className="app-settings-formatting-section" ref={this.containerRef}>
         <div className="container-fluid p-0">
           <div>Default formatting for column types</div>
           <div className="app-settings-menu-description mb-3">
@@ -830,7 +830,7 @@ export class FormattingSectionContent extends PureComponent {
                 {FormattingSectionContent.renderTimeZoneOptions()}
               </select>
             </div>
-            <div className="col-1 pl-0">
+            <div className="col-1 btn-col">
               <Button
                 kind="ghost"
                 icon={vsRefresh}
@@ -859,7 +859,7 @@ export class FormattingSectionContent extends PureComponent {
                 )}
               </select>
             </div>
-            <div className="col-1 pl-0">
+            <div className="col-1 btn-col">
               <Button
                 kind="ghost"
                 icon={vsRefresh}
@@ -916,7 +916,7 @@ export class FormattingSectionContent extends PureComponent {
                 onChange={this.handleDefaultDecimalFormatChange}
               />
             </div>
-            <div className="col-1 pl-0">
+            <div className="col-1 btn-col">
               <Button
                 kind="ghost"
                 icon={vsRefresh}
@@ -952,7 +952,7 @@ export class FormattingSectionContent extends PureComponent {
                 onChange={this.handleDefaultIntegerFormatChange}
               />
             </div>
-            <div className="col-1 pl-0">
+            <div className="col-1 btn-col">
               <Button
                 kind="ghost"
                 icon={vsRefresh}

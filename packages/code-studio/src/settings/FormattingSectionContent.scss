@@ -1,5 +1,13 @@
 @import '~@deephaven/components/scss/custom.scss';
 
+.app-settings-formatting-section {
+  .btn-col {
+    padding-left: 0;
+    align-items: center;
+    display: flex;
+  }
+}
+
 .btn-reset {
   transition: opacity $transition ease-out;
 
