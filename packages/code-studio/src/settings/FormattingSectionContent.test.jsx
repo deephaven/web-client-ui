@@ -1,9 +1,27 @@
 import React from 'react';
 import { mount } from 'enzyme';
+import { DateTimeColumnFormatter } from '@deephaven/iris-grid/dist/formatters';
 import { FormattingSectionContent } from './FormattingSectionContent';
 
 const DEFAULT_DECIMAL_STRING = '###,#00.00';
 const DEFAULT_INTEGER_STRING = '###,000';
+
+function makeDefaults(overrides = {}) {
+  return {
+    defaultDateTimeFormat:
+      DateTimeColumnFormatter.DEFAULT_DATETIME_FORMAT_STRING,
+    defaultDecimalFormatOptions: {
+      defaultFormatString: DEFAULT_DECIMAL_STRING,
+    },
+    defaultIntegerFormatOptions: {
+      defaultFormatString: DEFAULT_INTEGER_STRING,
+    },
+    showTimeZone: false,
+    showTSeparator: true,
+    timeZone: DateTimeColumnFormatter.DEFAULT_TIME_ZONE_ID,
+    ...overrides,
+  };
+}
 
 function mountSectionContent({
   settings = {},
@@ -20,6 +38,7 @@ function mountSectionContent({
   defaultIntegerFormatOptions = {
     defaultFormatString: DEFAULT_INTEGER_STRING,
   },
+  defaults = makeDefaults(),
 } = {}) {
   // eslint-disable-next-line react/jsx-props-no-spreading
   return mount(
@@ -34,6 +53,7 @@ function mountSectionContent({
       scrollTo={scrollTo}
       defaultDecimalFormatOptions={defaultDecimalFormatOptions}
       defaultIntegerFormatOptions={defaultIntegerFormatOptions}
+      defaults={defaults}
     />
   );
 }
@@ -78,6 +98,32 @@ describe('default decimal formatting', () => {
 
     wrapper.unmount();
   });
+
+  it('resets to default', () => {
+    const saveSettings = jest.fn();
+    const defaultFormatOptions = {
+      defaultFormatString: DEFAULT_DECIMAL_STRING,
+    };
+    const wrapper = mountSectionContent({
+      saveSettings,
+      defaultDecimalFormatOptions: {
+        defaultFormatString: '000',
+      },
+      defaults: makeDefaults({
+        defaultDecimalFormatOptions: defaultFormatOptions,
+      }),
+    });
+
+    wrapper.find('.btn-reset-decimal').at(0).simulate('click');
+
+    jest.runOnlyPendingTimers();
+
+    expect(saveSettings).toHaveBeenCalledWith(
+      expect.objectContaining({
+        defaultDecimalFormatOptions: defaultFormatOptions,
+      })
+    );
+  });
 });
 
 describe('default integer formatting', () => {
@@ -106,5 +152,31 @@ describe('default integer formatting', () => {
     );
 
     wrapper.unmount();
+  });
+
+  it('resets to default', () => {
+    const saveSettings = jest.fn();
+    const defaultFormatOptions = {
+      defaultFormatString: DEFAULT_INTEGER_STRING,
+    };
+    const wrapper = mountSectionContent({
+      saveSettings,
+      defaultIntegerFormatOptions: {
+        defaultFormatString: '000',
+      },
+      defaults: makeDefaults({
+        defaultIntegerFormatOptions: defaultFormatOptions,
+      }),
+    });
+
+    wrapper.find('.btn-reset-integer').at(0).simulate('click');
+
+    jest.runOnlyPendingTimers();
+
+    expect(saveSettings).toHaveBeenCalledWith(
+      expect.objectContaining({
+        defaultIntegerFormatOptions: defaultFormatOptions,
+      })
+    );
   });
 });

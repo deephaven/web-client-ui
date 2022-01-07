@@ -11,6 +11,12 @@ export type WorkspaceSettings = {
   showTimeZone: boolean;
   showTSeparator: boolean;
   disableMoveConfirmation: boolean;
+  defaultDecimalFormatOptions: {
+    defaultFormatString: string;
+  };
+  defaultIntegerFormatOptions: {
+    defaultFormatString: string;
+  };
 };
 
 export type WorkspaceData = {
