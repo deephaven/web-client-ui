@@ -121,8 +121,11 @@ describe('calls to iris format and time zone functions', () => {
     });
     const timestamp = Date.now();
     formatter.format(timestamp);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    formatter.format(timestamp, '' as any);
+    formatter.format(timestamp, {
+      formatString: '',
+      label: '',
+      type: 'type-context-custom',
+    });
 
     expect(formatMock.mock.calls.length).toBe(2);
     expect(formatMock.mock.calls[0][0]).toBe(fallbackFormat);

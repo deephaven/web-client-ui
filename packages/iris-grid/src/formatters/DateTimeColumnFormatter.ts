@@ -21,7 +21,9 @@ export type DateTimeColumnFormatterOptions = {
   defaultDateTimeFormatString?: string;
 };
 
-export class DateTimeColumnFormatter extends TableColumnFormatter {
+export class DateTimeColumnFormatter extends TableColumnFormatter<
+  Date | DateWrapper | number
+> {
   /**
    * Validates format object
    * @param format Format object

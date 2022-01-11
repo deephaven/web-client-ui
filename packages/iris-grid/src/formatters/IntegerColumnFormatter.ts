@@ -17,7 +17,7 @@ export type IntegerColumnFormatterOptions = {
 };
 
 /** Column formatter for integers/whole numbers */
-export class IntegerColumnFormatter extends TableColumnFormatter {
+export class IntegerColumnFormatter extends TableColumnFormatter<number> {
   /**
    * Validates format object
    * @param format Format object

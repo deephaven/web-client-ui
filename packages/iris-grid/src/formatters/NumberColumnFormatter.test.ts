@@ -43,18 +43,6 @@ numberColumnFormatters.forEach(({ name, formatter: NumberColumnFormatter }) => {
 
   describe(`${name} instance format method`, () => {
     const formatter = new NumberColumnFormatter();
-    it('does not throw error for invalid formatString in format argument', () => {
-      expect(() => {
-        formatter.format(0, INVALID_FORMAT);
-      }).not.toThrow();
-    });
-
-    it('does not throw error for invalid value argument', () => {
-      expect(() => {
-        formatter.format(null);
-      }).not.toThrow();
-    });
-
     it('returns empty string for invalid formatString in format argument', () => {
       expect(formatter.format(0, INVALID_FORMAT)).toBe('');
     });

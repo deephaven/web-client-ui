@@ -13,6 +13,8 @@ import {
 
 const log = Log.module('Formatter');
 
+type ColumnName = string;
+
 export interface FormattingRule {
   columnType: string;
   columnName: string;
@@ -21,13 +23,13 @@ export interface FormattingRule {
 
 class Formatter {
   /**
-   * Converts [{columnType, columnName, format}] to Map { dataType, Map { columnName, format }}
+   * Converts FormattingRule[] to Map
    * @param columnFormattingRules Array or column formatting rules
    * @returns Map of columnName-to-format Maps indexed by normalized dataType
    */
   static makeColumnFormatMap(
     columnFormattingRules: FormattingRule[]
-  ): Map<DataType, Map<string, TableColumnFormat>> {
+  ): Map<DataType, Map<ColumnName, TableColumnFormat>> {
     if (columnFormattingRules == null) {
       return new Map();
     }
@@ -43,7 +45,7 @@ class Formatter {
       const formatMap = map.get(dataType);
       formatMap?.set(next.columnName, next.format);
       return map;
-    }, new Map<DataType, Map<string, TableColumnFormat>>());
+    }, new Map<DataType, Map<ColumnName, TableColumnFormat>>());
   }
 
   /**
@@ -67,10 +69,8 @@ class Formatter {
   /**
    * @param columnFormattingRules Optional array of column formatting rules
    * @param dateTimeOptions Optional object with DateTime configuration
-   * @param dateTimeOptions.timeZone Time zone
-   * @param dateTimeOptions.showTimeZone Show time zone in DateTime values
-   * @param dateTimeOptions.showTSeparator Show 'T' separator in DateTime values
-   * @param dateTimeOptions.defaultDateTimeFormatString DateTime format to use if columnFormats for DateTime isn't set
+   * @param decimalFormatOptions Optional object with Decimal configuration
+   * @param integerFormatOptions Optional object with Integer configuration
    */
   constructor(
     columnFormattingRules: FormattingRule[] = [],

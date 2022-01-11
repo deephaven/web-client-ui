@@ -1,4 +1,4 @@
-class FilterOperator {
+export class FilterOperator {
   static readonly not = 'not';
 
   static readonly and = 'and';
@@ -10,5 +10,3 @@ export type FilterOperatorValue = typeof FilterOperator[Exclude<
   keyof typeof FilterOperator,
   'prototype'
 >];
-
-export default FilterOperator;

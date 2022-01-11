@@ -80,8 +80,8 @@ class DateUtils {
   }
 
   /**
-   * @param {Object} components The string components that were parsed from the original string
-   * @param {Object} values The values that were parsed from the components
+   * @param components The string components that were parsed from the original string
+   * @param values The values that were parsed from the components
    * @param timeZone The time zone to parse the date in. E.g. America/New_York
    * @returns Returns the DateWrapper for the next date, or null if a full date was passed in
    */
@@ -246,9 +246,9 @@ class DateUtils {
 
   /**
    * Parses the date range provided from a string of text.
-   * @param {string} text The string to parse the date from. Can be a keyword like "today", or in the format "2018-08-04"
-   * @param {string} timeZone The time zone to parse this range in. E.g. America/New_York
-   * @returns {[DateWrapper, DateWrapper]} A tuple with the start/end values for that date range
+   * @param text The string to parse the date from. Can be a keyword like "today", or in the format "2018-08-04"
+   * @param timeZone The time zone to parse this range in. E.g. America/New_York
+   * @returns A tuple with the start and end value/null for that date range, or both null
    */
   static parseDateRange(
     text: string,
@@ -344,7 +344,7 @@ class DateUtils {
   /**
    * Gets the Js Date object from the provided DateWrapper.
    * In unit test, DateWrapper is just a number provided in millis, so handles that case.
-   * @param {DateWrapper|number} dateWrapper The DateWrapper object, or time in millis
+   * @param dateWrapper The DateWrapper object, or time in millis
    */
   static getJsDate(dateWrapper: DateWrapper | number): Date {
     if (typeof dateWrapper === 'number') {

@@ -6,6 +6,8 @@ import {
   DecimalColumnFormatter,
   DefaultColumnFormatter,
   IntegerColumnFormatter,
+  TableColumnFormat,
+  TableColumnFormatType,
 } from './formatters';
 import TableUtils from './TableUtils';
 
@@ -13,7 +15,15 @@ function makeFormatter(...settings: ConstructorParameters<typeof Formatter>) {
   return new Formatter(...settings);
 }
 
-const TYPE_DATETIME = TableUtils.dataType.DATETIME;
+function makeFormattingRule(
+  label: string,
+  formatString = '',
+  type: TableColumnFormatType = 'type-context-custom'
+): TableColumnFormat {
+  return { label, formatString, type };
+}
+
+const TYPE_DATETIME = 'io.deephaven.time.DateTime';
 
 describe('makeColumnFormatMap', () => {
   const conflictingColumnName = 'Conflicting name';
@@ -23,24 +33,20 @@ describe('makeColumnFormatMap', () => {
     type: 'type-context-custom' as const,
   };
   const formatArray = [
-    Formatter.makeColumnFormattingRule(TableUtils.dataType.DATETIME, 'Col 1', {
-      label: 'format 1',
-      formatString: 'yyyy',
-      type: 'type-context-custom',
-    }),
-    Formatter.makeColumnFormattingRule(TableUtils.dataType.DATETIME, 'Col 2', {
-      label: 'format 2',
-      formatString: 'yyyy',
-      type: 'type-context-custom',
-    }),
+    Formatter.makeColumnFormattingRule(
+      TableUtils.dataType.DATETIME,
+      'Col 1',
+      makeFormattingRule('format 1')
+    ),
+    Formatter.makeColumnFormattingRule(
+      TableUtils.dataType.DATETIME,
+      'Col 2',
+      makeFormattingRule('format 2')
+    ),
     Formatter.makeColumnFormattingRule(
       TableUtils.dataType.DECIMAL,
       conflictingColumnName,
-      {
-        label: 'format 3',
-        formatString: 'yyyy',
-        type: 'type-context-custom',
-      }
+      makeFormattingRule('format 3')
     ),
     Formatter.makeColumnFormattingRule(
       TableUtils.dataType.DECIMAL,
@@ -103,7 +109,7 @@ describe('getColumnFormat', () => {
   );
   const columnFormats = [
     Formatter.makeColumnFormattingRule(
-      TYPE_DATETIME,
+      TableUtils.dataType.DATETIME,
       columnNameWithCustomFormat,
       customFormat
     ),
@@ -154,7 +160,7 @@ describe('getFormattedString', () => {
     );
     const customColumnFormats = [
       Formatter.makeColumnFormattingRule(
-        columnType,
+        TableUtils.dataType.DATETIME,
         columnNameWithCustomFormat,
         customFormat
       ),

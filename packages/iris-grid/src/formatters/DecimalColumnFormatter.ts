@@ -16,7 +16,7 @@ export type DecimalColumnFormatterOptions = {
   defaultFormatString?: string;
 };
 
-export class DecimalColumnFormatter extends TableColumnFormatter {
+export class DecimalColumnFormatter extends TableColumnFormatter<number> {
   /**
    * Validates format object
    * @param format Format object

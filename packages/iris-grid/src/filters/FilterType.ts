@@ -1,5 +1,5 @@
 /** Different filter conditions user can select */
-class FilterType {
+export class FilterType {
   static readonly eq = 'eq';
 
   static readonly eqIgnoreCase = 'eqIgnoreCase';
@@ -47,5 +47,3 @@ export type FilterTypeValue = typeof FilterType[Exclude<
   keyof typeof FilterType,
   'prototype'
 >];
-
-export default FilterType;

@@ -17,8 +17,8 @@ export interface dh {
   };
   DateWrapper: DateWrapper;
   LongWrapper: LongWrapper;
-  FilterCondition: Pick<FilterCondition, 'invoke' | 'search'>;
-  FilterValue: Pick<FilterValue, 'ofString' | 'ofNumber' | 'ofBoolean'>;
+  FilterCondition: FilterConditionStatic;
+  FilterValue: FilterValueStatic;
   plot: Plot;
 }
 
@@ -385,11 +385,13 @@ export interface Column {
   filter(): FilterValue;
   sort(): Sort;
 }
-export interface FilterValue {
+
+export interface FilterValueStatic {
   ofString(input: unknown): FilterValue;
   ofNumber(input: unknown): FilterValue;
   ofBoolean(input: unknown): FilterValue;
-
+}
+export interface FilterValue {
   eq(value: FilterValue): FilterCondition;
   eqIgnoreCase(value: FilterValue): FilterCondition;
   notEq(value: FilterValue): FilterCondition;
@@ -408,10 +410,12 @@ export interface FilterValue {
   isNull(): FilterCondition;
   invoke(method: string, ...args: FilterValue[]): FilterCondition;
 }
-export interface FilterCondition {
+
+export interface FilterConditionStatic {
   invoke(method: string, ...args: FilterValue[]): FilterCondition;
   search(value: FilterValue, columns?: FilterValue[]): FilterCondition;
-
+}
+export interface FilterCondition {
   not(): FilterCondition;
   and(first: FilterCondition, ...rest: FilterCondition[]): FilterCondition;
   or(first: FilterCondition, ...rest: FilterCondition[]): FilterCondition;

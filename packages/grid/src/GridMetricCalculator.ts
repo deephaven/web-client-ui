@@ -137,28 +137,28 @@ class GridMetricCalculator {
   protected userColumnWidths: ModelSizeMap;
 
   /** User set row heights */
-  private userRowHeights: ModelSizeMap;
+  protected userRowHeights: ModelSizeMap;
 
   /** Calculated column widths based on cell contents */
-  private calculatedColumnWidths: ModelSizeMap;
+  protected calculatedColumnWidths: ModelSizeMap;
 
   /** Calculated row heights based on cell contents */
-  private calculatedRowHeights: ModelSizeMap;
+  protected calculatedRowHeights: ModelSizeMap;
 
   /** Cache of fonts to estimated width of one char */
-  private fontWidths: Map<string, number>;
+  protected fontWidths: Map<string, number>;
 
   /** Map from visible index to model index for rows (e.g. reversing movedRows operations) */
-  private modelRows: IndexModelMap;
+  protected modelRows: IndexModelMap;
 
   /** Map from visible index to model index for columns (e.g. reversing movedColumns operations) */
-  private modelColumns: IndexModelMap;
+  protected modelColumns: IndexModelMap;
 
   /** List of moved row operations. Need to track the previous value so we know if modelRows needs to be cleared. */
-  private movedRows: MoveOperation[];
+  protected movedRows: MoveOperation[];
 
   /** List of moved column operations. Need to track the previous value so we know if modelColumns needs to be cleared. */
-  private movedColumns: MoveOperation[];
+  protected movedColumns: MoveOperation[];
 
   constructor({
     userColumnWidths = new Map(),
