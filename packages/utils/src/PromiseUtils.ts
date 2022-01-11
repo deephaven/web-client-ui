@@ -49,11 +49,11 @@ export class PromiseUtils {
     return wrappedPromise as CancelablePromise<T>;
   }
 
-  static isCanceled(error: Error): boolean {
+  static isCanceled(error: unknown): boolean {
     return error instanceof CanceledPromiseError;
   }
 
-  static isTimedOut(error: Error): boolean {
+  static isTimedOut(error: unknown): boolean {
     return error instanceof TimeoutError;
   }
 }

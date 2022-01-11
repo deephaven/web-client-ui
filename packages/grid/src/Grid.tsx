@@ -85,7 +85,7 @@ export type GridProps = typeof Grid.defaultProps & {
   movedRows?: MoveOperation[];
 
   // Callback for if an error occurs
-  onError?: (e: Error) => void;
+  onError?: (e: unknown) => void;
 
   // Callback when the selection within the grid changes
   onSelectionChanged?: (ranges: GridRange[]) => void;

@@ -118,7 +118,7 @@ class ContextActionUtils {
   static async copyToClipboard(text: string): Promise<void> {
     try {
       const permissions = await navigator.permissions.query({
-        name: 'clipboard-write',
+        name: 'clipboard-write' as PermissionName,
       });
       if (permissions.state !== 'granted' && permissions.state !== 'prompt') {
         throw new Error('Invalid permissions for clipboard-write');
