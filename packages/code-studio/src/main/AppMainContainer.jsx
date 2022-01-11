@@ -245,11 +245,16 @@ export class AppMainContainer extends Component {
         );
       } else {
         // Focus the notebook within its stack if it is already open
+        // Can't use SELECT_NOTEBOOK event
+        // At this stage, the openFileMap in ConsolePlugin is not initialized yet
+        // This causes the file open check to fail since the notebooks haven't initialized
+        // Emitting SELECT_NOTEBOOK will open a 2nd copy of the notebook
         const notebookPanel = LayoutUtils.getContentItemInStack(
           notebookStack,
           panelConfig
         );
-        LayoutUtils.openComponentInStack(notebookStack, notebookPanel.config);
+        notebookPanel.config.props.panelState.isPreview = false;
+        LayoutUtils.activateTab(this.goldenLayout.root, notebookPanel.config);
       }
     }
   }
