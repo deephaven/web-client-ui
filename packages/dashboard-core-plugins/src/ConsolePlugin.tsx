@@ -295,6 +295,8 @@ export const ConsolePlugin = ({
         fileMetadata,
       };
       // KLUDGE: show a different component type for markdown notebooks
+      // Markdown notebooks are just used in the demo, and cannot be created/edited using the UI
+      // Keeping the panels separate helps ensure we don't pollute the NotebookPanel
       const component = fileMetadata?.itemName?.endsWith('.md')
         ? MarkdownNotebookPanel.COMPONENT
         : NotebookPanel.COMPONENT;
@@ -441,16 +443,12 @@ export const ConsolePlugin = ({
 
   useEffect(() => {
     const cleanups = [
-<<<<<<< HEAD
       registerComponent(ConsolePanel.COMPONENT, ConsolePanel),
       registerComponent(CommandHistoryPanel.COMPONENT, CommandHistoryPanel),
       registerComponent(FileExplorerPanel.COMPONENT, FileExplorerPanel),
       registerComponent(LogPanel.COMPONENT, LogPanel),
       registerComponent(NotebookPanel.COMPONENT, NotebookPanel),
-      registerComponent(
-        MarkdownNotebookPanel.COMPONENT,
-        MarkdownNotebookPanel
-      ),
+      registerComponent(MarkdownNotebookPanel.COMPONENT, MarkdownNotebookPanel),
     ];
 
     return () => {
