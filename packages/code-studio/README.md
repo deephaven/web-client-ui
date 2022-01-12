@@ -54,25 +54,6 @@ Turns on the logger proxy which captures log messages so users can easily export
 
 In development, `DHLogProxy` and `DHLogHistory` are added to the window so they can be manipulated directly from the console if needed. `DHLogProxy.enable()` will capture and emit events for all logging events. `DHLogHistory.enable()` will attach event listeners to the `DHLogProxy` events. Both also have a `disable` method.
 
-## Development Environment
-
-[Visual Studio Code](https://code.visualstudio.com/) is recommended for code editing. We use some extensions to help our development:
-
-- [Prettier](https://github.com/prettier/prettier-vscode): Automatically formats code to our style. Enable the `formatOnSave` option to auto format when saving. Also set the Editor:Default Formatter to `ebsenp.prettier-vscode`
-- [ESLint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint): Identifies linting errors, gives options to fix them automatically.
-- [stylelint](https://marketplace.visualstudio.com/items?itemName=shinnn.stylelint): Identifies scss lint errors.
-- [SCSS IntelliSense](https://marketplace.visualstudio.com/items?itemName=mrmlnc.vscode-scss): Autocomplete for SCSS files
-- [Debugger for Chrome](https://marketplace.visualstudio.com/items?itemName=msjsdiag.debugger-for-chrome): Set up debugging in Chrome.
-
-Use Chrome for debugging, install the React and Redux extensions.
-
-- [React Developer Tools](https://chrome.google.com/webstore/detail/react-developer-tools/fmkadmapgofadopljbjfkapdkoienihi): Allows inspection/changing the props/state of react components.
-- [Redux DevTools](https://chrome.google.com/webstore/detail/redux-devtools/lmhkpmbekcpmknklioeibfkpmmfibljd?hl=en): Inspect the redux store data.
-
-VSCode Typescript Version Settings
-
-- Open a TS file. In the bottom right of VSCode you will see "Typescript #.#.#". Click on the version number > Select Typescript Version > Use Workspace Version. This ensures Intellisense matches the TS version and features we compile against.
-
 ## Data Storage
 
 There is the data for the current session stored in the local redux state (Redux Data), and data persisted between sessions is stored in browser storage.
