@@ -1,5 +1,6 @@
 import DecimalColumnFormatter from './DecimalColumnFormatter';
 import IntegerColumnFormatter from './IntegerColumnFormatter';
+import { TableColumnFormat } from './TableColumnFormatter';
 
 const numberColumnFormatters = [
   {
@@ -12,9 +13,9 @@ const numberColumnFormatters = [
   },
 ];
 
-const INVALID_FORMAT = {
+const INVALID_FORMAT = ({
   formatString: {},
-};
+} as unknown) as TableColumnFormat;
 
 numberColumnFormatters.forEach(({ name, formatter: NumberColumnFormatter }) => {
   describe(`${name}.isValid`, () => {
@@ -42,24 +43,12 @@ numberColumnFormatters.forEach(({ name, formatter: NumberColumnFormatter }) => {
 
   describe(`${name} instance format method`, () => {
     const formatter = new NumberColumnFormatter();
-    it('does not throw error for invalid formatString in format argument', () => {
-      expect(() => {
-        formatter.format(INVALID_FORMAT, 0);
-      }).not.toThrow();
-    });
-
-    it('does not throw error for invalid value argument', () => {
-      expect(() => {
-        formatter.format(null, null);
-      }).not.toThrow();
-    });
-
     it('returns empty string for invalid formatString in format argument', () => {
-      expect(formatter.format(INVALID_FORMAT, 0)).toBe('');
+      expect(formatter.format(0, INVALID_FORMAT)).toBe('');
     });
 
     it('returns empty string for null value ', () => {
-      expect(formatter.format(null, null)).toBe('');
+      expect(formatter.format(null)).toBe('');
     });
   });
 });

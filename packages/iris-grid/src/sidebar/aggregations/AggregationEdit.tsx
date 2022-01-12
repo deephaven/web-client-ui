@@ -3,6 +3,7 @@ import classNames from 'classnames';
 import { CSSTransition } from 'react-transition-group';
 import { Button, Checkbox, ItemList, ThemeExport } from '@deephaven/components';
 import { dhSortAlphaDown, dhSortAlphaUp } from '@deephaven/icons';
+import type { Column } from '@deephaven/jsapi-shim';
 import { Aggregation } from './Aggregations';
 import { filterValidColumns } from './AggregationUtils';
 import './AggregationEdit.scss';
@@ -15,7 +16,7 @@ interface AggregationEditItem {
 
 export type AggregationEditProps = {
   aggregation: Aggregation;
-  columns: { name: string; type: string }[];
+  columns: Column[];
   onChange: (aggregation: Aggregation) => void;
 };
 

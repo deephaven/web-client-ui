@@ -1,5 +1,5 @@
 /* eslint class-methods-use-this: "off" */
-import dh from '@deephaven/jsapi-shim';
+import dh, { DateWrapper, TimeZone } from '@deephaven/jsapi-shim';
 import Log from '@deephaven/log';
 import TableColumnFormatter, {
   TableColumnFormat,
@@ -21,7 +21,9 @@ export type DateTimeColumnFormatterOptions = {
   defaultDateTimeFormatString?: string;
 };
 
-export class DateTimeColumnFormatter extends TableColumnFormatter {
+export class DateTimeColumnFormatter extends TableColumnFormatter<
+  Date | DateWrapper | number
+> {
   /**
    * Validates format object
    * @param format Format object
@@ -99,8 +101,8 @@ export class DateTimeColumnFormatter extends TableColumnFormatter {
   }
 
   static makeFormatStringMap(
-    showTimeZone: boolean,
-    showTSeparator: boolean
+    showTimeZone?: boolean,
+    showTSeparator?: boolean
   ): Map<string, string> {
     const separator = showTSeparator ? `'T'` : ' ';
     const tz = showTimeZone ? ' z' : '';
@@ -119,7 +121,10 @@ export class DateTimeColumnFormatter extends TableColumnFormatter {
     ]);
   }
 
-  static getFormats(showTimeZone: boolean, showTSeparator: boolean): string[] {
+  static getFormats(
+    showTimeZone?: boolean,
+    showTSeparator?: boolean
+  ): string[] {
     const formatStringMap = DateTimeColumnFormatter.makeFormatStringMap(
       showTimeZone,
       showTSeparator
@@ -127,7 +132,7 @@ export class DateTimeColumnFormatter extends TableColumnFormatter {
     return [...formatStringMap.keys()];
   }
 
-  dhTimeZone: unknown;
+  dhTimeZone: TimeZone;
 
   defaultDateTimeFormatString: string;
 
@@ -170,7 +175,10 @@ export class DateTimeColumnFormatter extends TableColumnFormatter {
     return this.formatStringMap.get(baseFormatString) || baseFormatString;
   }
 
-  format(value: unknown, format?: TableColumnFormat): string {
+  format(
+    value: Date | DateWrapper | number,
+    format?: TableColumnFormat
+  ): string {
     const baseFormatString =
       (format && format.formatString) || this.defaultDateTimeFormatString;
     const formatString = this.getEffectiveFormatString(baseFormatString);

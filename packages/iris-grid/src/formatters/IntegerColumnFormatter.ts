@@ -17,7 +17,7 @@ export type IntegerColumnFormatterOptions = {
 };
 
 /** Column formatter for integers/whole numbers */
-export class IntegerColumnFormatter extends TableColumnFormatter {
+export class IntegerColumnFormatter extends TableColumnFormatter<number> {
   /**
    * Validates format object
    * @param format Format object
@@ -136,7 +136,7 @@ export class IntegerColumnFormatter extends TableColumnFormatter {
    * @param format Format object
    * @returns Formatted string
    */
-  format(valueParam: number, format: IntegerColumnFormat): string {
+  format(valueParam: number, format?: IntegerColumnFormat): string {
     const formatString =
       (format && format.formatString) || this.defaultFormatString;
     const value =

@@ -1,9 +1,17 @@
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
 import { Tooltip } from '@deephaven/components';
 import { DOMUtils } from '@deephaven/utils';
 
 import './CustomFormatAction.scss';
+
+type CustomFormatActionProps = typeof CustomFormatAction.defaultProps & {
+  forwardedProps: {
+    menuItem: {
+      title?: string;
+      description?: string;
+    };
+  };
+};
 
 /**
  * Renders menuElement option with custom format input for use in formatting context menus
@@ -12,8 +20,26 @@ import './CustomFormatAction.scss';
  * - capture focus when this menu action is selected via ArrowUp/ArrowDown keys
  * - dynamically update selected menu item when clicking on the input box
  */
-class CustomFormatAction extends Component {
-  constructor(props) {
+class CustomFormatAction extends Component<CustomFormatActionProps> {
+  static defaultProps = {
+    formatString: '',
+    forwardedProps: {
+      menuItem: {},
+      closeMenu(focusInput: boolean): void {
+        // no-op
+      },
+      iconElement: null,
+    },
+    placeholder: '',
+    title: '',
+    onChange(value: string | null): void {
+      // no-op
+    },
+  };
+
+  constructor(
+    props: CustomFormatActionProps = CustomFormatAction.defaultProps
+  ) {
     super(props);
 
     this.handleInputChange = this.handleInputChange.bind(this);
@@ -22,33 +48,37 @@ class CustomFormatAction extends Component {
     this.inputRef = React.createRef();
   }
 
-  handleInputChange() {
+  inputRef: React.RefObject<HTMLInputElement>;
+
+  handleInputChange(): void {
     const { onChange } = this.props;
-    onChange(this.inputRef.current.value);
+    if (this.inputRef.current) {
+      onChange(this.inputRef.current.value);
+    }
   }
 
-  closeContextMenu() {
+  closeContextMenu(): void {
     const { forwardedProps } = this.props;
     const { closeMenu } = forwardedProps;
     closeMenu(true);
   }
 
-  revertToDefault() {
+  revertToDefault(): void {
     const { onChange } = this.props;
     onChange(null);
   }
 
-  returnFocusToContextMenu() {
+  returnFocusToContextMenu(): void {
     const parentContextMenu = DOMUtils.getClosestByClassName(
       this.inputRef.current,
       'context-menu-container'
     );
-    if (parentContextMenu) {
+    if (parentContextMenu instanceof HTMLElement) {
       parentContextMenu.focus();
     }
   }
 
-  handleKeyDown(event) {
+  handleKeyDown(event: React.KeyboardEvent<HTMLInputElement>): void {
     switch (event.key) {
       case 'Enter':
         event.stopPropagation();
@@ -72,7 +102,7 @@ class CustomFormatAction extends Component {
     }
   }
 
-  render() {
+  render(): JSX.Element {
     const { formatString, forwardedProps, placeholder, title } = this.props;
     const {
       menuItem: { description },
@@ -107,32 +137,5 @@ class CustomFormatAction extends Component {
     );
   }
 }
-
-CustomFormatAction.propTypes = {
-  formatString: PropTypes.string,
-  forwardedProps: PropTypes.shape({
-    menuItem: PropTypes.shape({
-      title: PropTypes.string,
-      description: PropTypes.string,
-    }),
-    closeMenu: PropTypes.func,
-    iconElement: PropTypes.node,
-  }),
-  placeholder: PropTypes.string,
-  title: PropTypes.string,
-  onChange: PropTypes.func,
-};
-
-CustomFormatAction.defaultProps = {
-  formatString: '',
-  forwardedProps: {
-    menuItem: {},
-    closeMenu: () => {},
-    iconElement: null,
-  },
-  placeholder: '',
-  title: '',
-  onChange: () => {},
-};
 
 export default CustomFormatAction;

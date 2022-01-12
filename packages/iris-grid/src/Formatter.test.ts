@@ -6,33 +6,47 @@ import {
   DecimalColumnFormatter,
   DefaultColumnFormatter,
   IntegerColumnFormatter,
+  TableColumnFormat,
+  TableColumnFormatType,
 } from './formatters';
 import TableUtils from './TableUtils';
 
-function makeFormatter(...settings) {
+function makeFormatter(...settings: ConstructorParameters<typeof Formatter>) {
   return new Formatter(...settings);
+}
+
+function makeFormattingRule(
+  label: string,
+  formatString = '',
+  type: TableColumnFormatType = 'type-context-custom'
+): TableColumnFormat {
+  return { label, formatString, type };
 }
 
 const TYPE_DATETIME = 'io.deephaven.time.DateTime';
 
 describe('makeColumnFormatMap', () => {
   const conflictingColumnName = 'Conflicting name';
-  const lastFormat = 'Last format';
+  const lastFormat = {
+    label: 'Last format',
+    formatString: 'yyyy',
+    type: 'type-context-custom' as const,
+  };
   const formatArray = [
     Formatter.makeColumnFormattingRule(
       TableUtils.dataType.DATETIME,
       'Col 1',
-      'format 1'
+      makeFormattingRule('format 1')
     ),
     Formatter.makeColumnFormattingRule(
       TableUtils.dataType.DATETIME,
       'Col 2',
-      'format 2'
+      makeFormattingRule('format 2')
     ),
     Formatter.makeColumnFormattingRule(
       TableUtils.dataType.DECIMAL,
       conflictingColumnName,
-      'format 3'
+      makeFormattingRule('format 3')
     ),
     Formatter.makeColumnFormattingRule(
       TableUtils.dataType.DECIMAL,
@@ -49,14 +63,14 @@ describe('makeColumnFormatMap', () => {
   it('converts array of format definitions to map of name-to-format maps', () => {
     const formatMap = Formatter.makeColumnFormatMap(formatArray);
     expect(formatMap.size).toBe(2);
-    expect(formatMap.get(TableUtils.dataType.DATETIME).size).toBe(2);
+    expect(formatMap.get(TableUtils.dataType.DATETIME)?.size).toBe(2);
   });
 
   it('uses the last format definition in case of conflicting column names', () => {
     const formatMap = Formatter.makeColumnFormatMap(formatArray);
-    expect(formatMap.get(TableUtils.dataType.DECIMAL).size).toBe(1);
+    expect(formatMap.get(TableUtils.dataType.DECIMAL)?.size).toBe(1);
     expect(
-      formatMap.get(TableUtils.dataType.DECIMAL).get(conflictingColumnName)
+      formatMap.get(TableUtils.dataType.DECIMAL)?.get(conflictingColumnName)
     ).toBe(lastFormat);
   });
 });
@@ -95,7 +109,7 @@ describe('getColumnFormat', () => {
   );
   const columnFormats = [
     Formatter.makeColumnFormattingRule(
-      TYPE_DATETIME,
+      TableUtils.dataType.DATETIME,
       columnNameWithCustomFormat,
       customFormat
     ),
@@ -122,7 +136,7 @@ describe('getColumnFormat', () => {
 });
 
 describe('getFormattedString', () => {
-  it('passes null to formatter.format for column with no custom format', () => {
+  it('passes undefined to formatter.format for column with no custom format', () => {
     const value = 'randomValue';
     const columnType = TYPE_DATETIME;
     const columnName = 'randomColumnName';
@@ -131,7 +145,7 @@ describe('getFormattedString', () => {
     const originalFormatFn = columnTypeFormatter.format;
     columnTypeFormatter.format = jest.fn();
     formatter.getFormattedString(value, columnType, columnName);
-    expect(columnTypeFormatter.format).toHaveBeenCalledWith(value, null);
+    expect(columnTypeFormatter.format).toHaveBeenCalledWith(value, undefined);
     columnTypeFormatter.format = originalFormatFn;
   });
 
@@ -146,7 +160,7 @@ describe('getFormattedString', () => {
     );
     const customColumnFormats = [
       Formatter.makeColumnFormattingRule(
-        columnType,
+        TableUtils.dataType.DATETIME,
         columnNameWithCustomFormat,
         customFormat
       ),

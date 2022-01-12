@@ -445,7 +445,8 @@ export class Linker extends Component<LinkerProps, LinkerState> {
             showTSeparator: true,
             defaultDateTimeFormatString: DateUtils.FULL_DATE_FORMAT,
           });
-          text = dateFilterFormatter.format(value);
+          // The values are Dates for dateType values, not string like everything else
+          text = dateFilterFormatter.format((value as unknown) as Date);
         }
         filterMap.set(columnName, {
           columnType,

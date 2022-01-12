@@ -3,8 +3,8 @@
 import TableColumnFormatter from './TableColumnFormatter';
 
 /** Column formatter for chars */
-class BooleanColumnFormatter extends TableColumnFormatter {
-  format(value) {
+class BooleanColumnFormatter extends TableColumnFormatter<boolean | number> {
+  format(value: boolean | number): string {
     switch (value) {
       case 1:
       case true:

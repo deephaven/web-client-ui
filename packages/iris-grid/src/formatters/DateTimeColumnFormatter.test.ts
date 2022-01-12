@@ -6,6 +6,11 @@ function makeFormatter({
   showTimeZone,
   showTSeparator,
   defaultDateTimeFormatString,
+}: {
+  timeZone?: string;
+  showTimeZone?: boolean;
+  showTSeparator?: boolean;
+  defaultDateTimeFormatString?: string;
 } = {}) {
   return new DateTimeColumnFormatter({
     timeZone,
@@ -73,7 +78,7 @@ it('should add T separator when showTSeparator is true', () => {
 });
 
 describe('calls to iris format and time zone functions', () => {
-  const formatMock = jest.fn();
+  const formatMock: jest.Mock<Record<string, unknown>> = jest.fn();
   const getTimeZoneMock = jest.fn(makeIrisTimeZone);
   const originalFormat = dh.i18n.DateTimeFormat.format;
   const originalGetTimeZone = dh.i18n.TimeZone.getTimeZone;
@@ -116,7 +121,11 @@ describe('calls to iris format and time zone functions', () => {
     });
     const timestamp = Date.now();
     formatter.format(timestamp);
-    formatter.format(timestamp, '');
+    formatter.format(timestamp, {
+      formatString: '',
+      label: '',
+      type: 'type-context-custom',
+    });
 
     expect(formatMock.mock.calls.length).toBe(2);
     expect(formatMock.mock.calls[0][0]).toBe(fallbackFormat);

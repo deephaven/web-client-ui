@@ -114,8 +114,8 @@ export type GridTheme = {
   reorderOffset: number;
 
   // Colors for the grid in floating sections
-  floatingGridColumnColor: GridColor;
-  floatingGridRowColor: GridColor;
+  floatingGridColumnColor: NullableGridColor;
+  floatingGridRowColor: NullableGridColor;
 
   // Background row colors for grid in the floating sections
   floatingRowBackgroundColors: GridColorWay;

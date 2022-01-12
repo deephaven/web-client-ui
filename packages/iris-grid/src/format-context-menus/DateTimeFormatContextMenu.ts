@@ -1,6 +1,9 @@
-import { DateTimeColumnFormatter } from '../formatters';
-import FormatContextMenuUtils from './FormatContextMenuUtils';
+import { DateTimeColumnFormatter, TableColumnFormat } from '../formatters';
+import FormatContextMenuUtils, {
+  FormatContextMenuOption,
+} from './FormatContextMenuUtils';
 import TableUtils from '../TableUtils';
+import type Formatter from '../Formatter';
 
 class DateTimeFormatContextMenu {
   static dateGroup = 10;
@@ -11,11 +14,14 @@ class DateTimeFormatContextMenu {
 
   /**
    * Creates list of formatting options for DateTime context menu
-   * @param {Formatter} formatter Formatter instance
-   * @param {Object} selectedFormat Selected format object, null for no selected format
-   * @returns {Array} Array of formatting options for the context menu
+   * @param formatter Formatter instance
+   * @param selectedFormat Selected format object, null for no selected format
+   * @returns Array of formatting options for the context menu
    */
-  static getOptions(formatter, selectedFormat) {
+  static getOptions(
+    formatter: Formatter,
+    selectedFormat: TableColumnFormat
+  ): FormatContextMenuOption[] {
     const currentTime = new Date();
     const formatItems = [
       {

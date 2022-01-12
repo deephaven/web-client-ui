@@ -10,7 +10,15 @@ export interface dh {
   IdeConnection: IdeConnectionConstructor;
   Session: IdeSession;
   VariableType: typeof VariableType;
-  i18n: any;
+  i18n: {
+    DateTimeFormat: DateTimeFormat;
+    NumberFormat: NumberFormat;
+    TimeZone: i18nTimeZone;
+  };
+  DateWrapper: DateWrapper;
+  LongWrapper: LongWrapper;
+  FilterCondition: FilterConditionStatic;
+  FilterValue: FilterValueStatic;
   plot: Plot;
 }
 
@@ -366,6 +374,7 @@ export interface OneClick {
 }
 
 export interface Column {
+  readonly index: number;
   readonly type: string;
   readonly name: string;
   readonly description: string;
@@ -376,13 +385,13 @@ export interface Column {
   filter(): FilterValue;
   sort(): Sort;
 }
-export interface FilterValue {
-  ofString(input: object): FilterValue;
-  ofNumber(input: number): FilterValue;
-  ofNumber(input: LongWrapper): FilterValue;
-  ofNumber(input: object): FilterValue;
-  ofBoolean(input: boolean): FilterValue;
 
+export interface FilterValueStatic {
+  ofString(input: unknown): FilterValue;
+  ofNumber(input: unknown): FilterValue;
+  ofBoolean(input: unknown): FilterValue;
+}
+export interface FilterValue {
   eq(value: FilterValue): FilterCondition;
   eqIgnoreCase(value: FilterValue): FilterCondition;
   notEq(value: FilterValue): FilterCondition;
@@ -391,19 +400,22 @@ export interface FilterValue {
   lessThan(value: FilterValue): FilterCondition;
   greaterThanOrEqualTo(value: FilterValue): FilterCondition;
   lessThanOrEqualTo(value: FilterValue): FilterCondition;
-  inIgnoreCase(value: FilterValue): FilterCondition;
-  notIn(value: FilterValue): FilterCondition;
-  notInIgnoreCase(value: FilterValue): FilterCondition;
+  in(values: FilterValue[]): FilterCondition;
+  inIgnoreCase(values: FilterValue[]): FilterCondition;
+  notIn(values: FilterValue[]): FilterCondition;
+  notInIgnoreCase(values: FilterValue[]): FilterCondition;
   contains(value: FilterValue): FilterCondition;
   isFalse(): FilterCondition;
   isTrue(): FilterCondition;
   isNull(): FilterCondition;
   invoke(method: string, ...args: FilterValue[]): FilterCondition;
 }
-export interface FilterCondition {
+
+export interface FilterConditionStatic {
   invoke(method: string, ...args: FilterValue[]): FilterCondition;
   search(value: FilterValue, columns?: FilterValue[]): FilterCondition;
-
+}
+export interface FilterCondition {
   not(): FilterCondition;
   and(first: FilterCondition, ...rest: FilterCondition[]): FilterCondition;
   or(first: FilterCondition, ...rest: FilterCondition[]): FilterCondition;
@@ -527,10 +539,39 @@ export interface LongWrapper {
   asNumber(): number;
   valueOf(): string;
   toString(): string;
+  ofString(str: string): LongWrapper;
 }
 export interface DateWrapper extends LongWrapper {
   ofJsDate(date: Date): DateWrapper;
   asDate(): Date;
+}
+
+export interface TimeZone {
+  adjustments: number[];
+  standardOffset: number;
+  timeZoneID: string;
+  id: string;
+  transitionPoints: number[];
+  tzNames: string[];
+}
+
+export interface i18nTimeZone {
+  getTimeZone(tzCode: string): TimeZone;
+}
+
+export interface DateTimeFormat {
+  format(
+    pattern: string,
+    date: DateWrapper | Date | number,
+    timeZone?: TimeZone
+  ): string;
+  parse(pattern: string, text: string, timeZone?: TimeZone): DateWrapper;
+  parseAsDate(pattern: string, text: string): Date;
+}
+
+export interface NumberFormat {
+  format(pattern: string, number: number): string;
+  parse(pattern: string, text: string): number;
 }
 
 export interface TableData {

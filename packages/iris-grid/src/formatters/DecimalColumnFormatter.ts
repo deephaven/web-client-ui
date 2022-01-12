@@ -16,7 +16,7 @@ export type DecimalColumnFormatterOptions = {
   defaultFormatString?: string;
 };
 
-export class DecimalColumnFormatter extends TableColumnFormatter {
+export class DecimalColumnFormatter extends TableColumnFormatter<number> {
   /**
    * Validates format object
    * @param format Format object
@@ -161,7 +161,7 @@ export class DecimalColumnFormatter extends TableColumnFormatter {
    * @param format Format object
    * @returns Formatted string
    */
-  format(valueParam: number, format: DecimalColumnFormat): string {
+  format(valueParam: number, format?: DecimalColumnFormat): string {
     const formatString =
       (format && format.formatString) || this.defaultFormatString;
     const value =
