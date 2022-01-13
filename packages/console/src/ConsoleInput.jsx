@@ -83,8 +83,10 @@ export class ConsoleInput extends PureComponent {
 
     log.debug('Command received: ', text);
 
-    this.commandEditor.setValue(text);
+    // Need to set commandHistoryIndex before value
+    // On value change, modified commands map updates
     this.commandHistoryIndex = null;
+    this.commandEditor.setValue(text);
 
     if (focus) {
       this.focusEnd();
