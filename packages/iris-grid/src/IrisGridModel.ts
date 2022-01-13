@@ -10,15 +10,23 @@ import type {
   ColumnStatistics,
   FilterCondition,
   Format,
+  LayoutHints,
   RollupConfig,
   Row,
   Sort,
   Table,
   TotalsTableConfig,
 } from '@deephaven/jsapi-shim';
+import type { Event, EventTarget } from 'event-target-shim';
 import type Formatter from './Formatter';
 
 type RowIndex = ModelIndex;
+
+type IrisGridModelEventNames = typeof IrisGridModel.EVENT[keyof typeof IrisGridModel.EVENT];
+
+type IrisGridModelEventMap = {
+  [E in IrisGridModelEventNames]: Event<E>;
+};
 
 /**
  * Abstract class that extends the GridModel to have more functionality, like filtering and sorting.
@@ -27,7 +35,13 @@ type RowIndex = ModelIndex;
  * Note that it still uses dh.Column, dh.FilterCondition, dh.Sort, etc., still. Theoretically should abstract
  * those out as well, so there's no dependency on IrisAPI at all, but it's a lot of work for no real gain at this time.
  */
-abstract class IrisGridModel extends GridModel {
+abstract class IrisGridModel<
+  TEventMap extends Record<string, Event<string>> = Record<
+    string,
+    Event<string>
+  >,
+  TMode extends 'standard' | 'strict' = 'standard'
+> extends GridModel<TEventMap & IrisGridModelEventMap, TMode> {
   static EVENT = Object.freeze({
     UPDATED: 'UPDATED',
     FORMATTER_UPDATED: 'FORMATTER_UPDATED',
@@ -40,7 +54,7 @@ abstract class IrisGridModel extends GridModel {
     RECONNECT: 'RECONNECT',
     TOTALS_UPDATED: 'TOTALS_UPDATED',
     PENDING_DATA_UPDATED: 'PENDING_DATA_UPDATED',
-  });
+  } as const);
 
   constructor() {
     super();
@@ -50,9 +64,15 @@ abstract class IrisGridModel extends GridModel {
 
   listenerCount: number;
 
-  addEventListener(...args: Parameters<EventTarget['addEventListener']>): void {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    super.addEventListener(...(args as [any, any, any]));
+  // Pulled directly from event-target-shim implementation signature
+  // https://github.com/mysticatea/event-target-shim/blob/master/src/lib/event-target.ts#L99
+  // Using Parameters<GridModel['addEventListener']> doesn't work
+  addEventListener<T extends string & keyof TEventMap>(
+    type0: T,
+    callback0?: EventTarget.EventListener<this, TEventMap[T]> | null,
+    options0?: boolean | EventTarget.AddOptions
+  ): void {
+    super.addEventListener(type0, callback0 as never, options0 as never);
 
     this.listenerCount += 1;
     if (this.listenerCount === 1) {
@@ -60,11 +80,12 @@ abstract class IrisGridModel extends GridModel {
     }
   }
 
-  removeEventListener(
-    ...args: Parameters<EventTarget['removeEventListener']>
+  removeEventListener<T extends string & keyof TEventMap>(
+    type0: T,
+    callback0?: EventTarget.EventListener<this, TEventMap[T]> | null,
+    options0?: boolean | EventTarget.Options
   ): void {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    super.removeEventListener(...(args as [any, any, any]));
+    super.removeEventListener(type0, callback0 as never, options0 as never);
 
     this.listenerCount -= 1;
     if (this.listenerCount === 0) {
@@ -244,7 +265,7 @@ abstract class IrisGridModel extends GridModel {
   /**
    * @returns The LayoutHints to use for the columns of this table model
    */
-  get layoutHints(): unknown | null {
+  get layoutHints(): LayoutHints | null {
     return null;
   }
 
@@ -310,10 +331,33 @@ abstract class IrisGridModel extends GridModel {
   }
 
   /**
+   * @return True if select distinct functionality is available
+   */
+  get isSelectDistinctAvailable(): boolean {
+    return false;
+  }
+
+  /**
    * @returns True if the totals functionality is available
    */
   get isTotalsAvailable(): boolean {
     return false;
+  }
+
+  /**
+   * The names of columns with select distinct enabled
+   * @returns An array of column names
+   */
+  get selectDistinctColumns(): string[] {
+    throw new Error('get selectDistinctColumns not implemented');
+  }
+
+  /**
+   * Set the columns with select distinct enabled
+   * @param names The array of column names to enable select distinct on
+   */
+  set selectDistinctColumns(names: string[]) {
+    throw new Error('set selectDistinctColumns not implemented');
   }
 
   /**
@@ -380,7 +424,7 @@ abstract class IrisGridModel extends GridModel {
   setViewport(
     top: VisibleIndex,
     bottom: VisibleIndex,
-    columns: Column[]
+    columns: Column[] | null
   ): void {
     throw new Error('setViewport not implemented');
   }
