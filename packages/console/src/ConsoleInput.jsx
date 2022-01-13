@@ -32,11 +32,12 @@ export class ConsoleInput extends PureComponent {
     this.commandEditor = null;
     this.commandHistoryIndex = null;
     this.commandSuggestionContainer = null;
-    this.isCommandModified = false;
     this.loadingPromise = null;
     this.timestamp = Date.now();
     this.bufferIndex = 0;
     this.history = [];
+    // Tracks every command that has been modified by its commandHistoryIndex. Cleared on any command being executed
+    this.modifiedCommands = new Map();
 
     this.state = {
       commandEditorHeight: LINE_HEIGHT,
@@ -135,7 +136,10 @@ export class ConsoleInput extends PureComponent {
     MonacoUtils.openDocument(this.commandEditor, session);
 
     this.commandEditor.onDidChangeModelContent(() => {
-      this.isCommandModified = true;
+      this.modifiedCommands.set(
+        this.commandHistoryIndex,
+        this.commandEditor.getValue()
+      );
       this.updateDimensions();
     });
 
@@ -159,7 +163,7 @@ export class ConsoleInput extends PureComponent {
       if (keyEvent.keyCode === monaco.KeyCode.UpArrow && lineNumber === 1) {
         if (commandHistoryIndex != null) {
           this.loadCommand(commandHistoryIndex + 1);
-        } else if (model.getValueLength() === 0) {
+        } else {
           this.loadCommand(0);
         }
 
@@ -174,10 +178,10 @@ export class ConsoleInput extends PureComponent {
         keyEvent.keyCode === monaco.KeyCode.DownArrow &&
         lineNumber === model.getLineCount()
       ) {
-        if (commandHistoryIndex != null && commandHistoryIndex >= 0) {
+        if (commandHistoryIndex != null && commandHistoryIndex > 0) {
           this.loadCommand(commandHistoryIndex - 1);
         } else {
-          this.commandHistoryIndex = null;
+          this.loadCommand(null);
         }
 
         this.focusEnd();
@@ -299,21 +303,24 @@ export class ConsoleInput extends PureComponent {
     }
   }
 
+  /**
+   * Loads the given command from history
+   * If edits have been made to the command since last run command, loads the modified version
+   * @param {number | null} index The index to load. Null to load command started in the editor and not in the history
+   */
   loadCommand(index) {
-    if (index < 0) {
-      this.commandHistoryIndex = null;
-      this.commandEditor.getModel().setValue('');
-    } else if (index < this.history.length) {
-      this.commandHistoryIndex = index;
-      this.commandEditor
-        .getModel()
-        .setValue(this.history[this.history.length - index - 1]);
+    let value = '';
+    if (index !== null && index < this.history.length) {
+      value = this.history[this.history.length - index - 1];
+
       if (index > this.history.length - BUFFER_SIZE) {
         this.loadMoreHistory();
       }
     }
 
-    this.isCommandModified = false;
+    this.commandHistoryIndex = index;
+    value = this.modifiedCommands.get(index) ?? value;
+    this.commandEditor.getModel().setValue(value);
   }
 
   async loadMoreHistory() {
@@ -366,8 +373,8 @@ export class ConsoleInput extends PureComponent {
   }
 
   processCommand() {
-    this.isCommandModified = false;
     this.commandHistoryIndex = null;
+    this.modifiedCommands.clear();
 
     const command = this.commandEditor.getValue().trim();
     this.history.push(command);
