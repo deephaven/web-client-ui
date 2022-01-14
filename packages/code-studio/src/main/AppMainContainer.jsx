@@ -3,6 +3,7 @@ import classNames from 'classnames';
 import PropTypes from 'prop-types';
 import { CSSTransition } from 'react-transition-group';
 import { connect } from 'react-redux';
+import { withRouter } from 'react-router-dom';
 import shortid from 'shortid';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -27,6 +28,7 @@ import {
   IrisGridEvent,
   LinkerPlugin,
   MarkdownEvent,
+  NotebookEvent,
   MarkdownPlugin,
   PandasPlugin,
   getDashboardSessionWrapper,
@@ -92,6 +94,7 @@ export class AppMainContainer extends Component {
     this.handlePaste = this.handlePaste.bind(this);
     this.hydrateChart = this.hydrateChart.bind(this);
     this.hydrateGrid = this.hydrateGrid.bind(this);
+    this.openNotebookFromURL = this.openNotebookFromURL.bind(this);
 
     this.goldenLayout = null;
     this.importElement = React.createRef();
@@ -201,6 +204,34 @@ export class AppMainContainer extends Component {
 
   deinitWidgets() {
     this.widgetListenerRemover?.();
+  }
+
+  openNotebookFromURL() {
+    const { match } = this.props;
+    const { notebookPath } = match.params;
+
+    if (notebookPath) {
+      const fileMetadata = {
+        id: `/${notebookPath}`,
+        itemName: `/${notebookPath}`,
+      };
+
+      const { session, sessionConfig } = this.props;
+      const language = sessionConfig.type;
+      const notebookSettings = {
+        value: null,
+        language,
+      };
+
+      this.emitLayoutEvent(
+        NotebookEvent.SELECT_NOTEBOOK,
+        session,
+        language,
+        notebookSettings,
+        fileMetadata,
+        true
+      );
+    }
   }
 
   sendClearFilter() {
@@ -612,6 +643,7 @@ export class AppMainContainer extends Component {
           layoutSettings={layoutSettings}
           onGoldenLayoutChange={this.handleGoldenLayoutChange}
           onLayoutConfigChange={this.handleLayoutConfigChange}
+          onLayoutInitialized={this.openNotebookFromURL}
         >
           <GridPlugin
             hydrate={this.hydrateGrid}
@@ -651,7 +683,14 @@ AppMainContainer.propTypes = {
   activeTool: PropTypes.string.isRequired,
   dashboardData: PropTypes.shape({}).isRequired,
   layoutStorage: PropTypes.shape({}).isRequired,
+  match: PropTypes.shape({
+    params: PropTypes.shape({ notebookPath: PropTypes.string }),
+  }).isRequired,
   session: APIPropTypes.IdeSession.isRequired,
+  sessionConfig: PropTypes.shape({
+    type: PropTypes.string,
+    id: PropTypes.string,
+  }).isRequired,
   setActiveTool: PropTypes.func.isRequired,
   updateDashboardData: PropTypes.func.isRequired,
   updateWorkspaceData: PropTypes.func.isRequired,
@@ -672,6 +711,7 @@ const mapStateToProps = state => ({
   dashboardData: getDashboardData(state, DEFAULT_DASHBOARD_ID),
   layoutStorage: getLayoutStorage(state),
   session: getDashboardSessionWrapper(state, DEFAULT_DASHBOARD_ID).session,
+  sessionConfig: getDashboardSessionWrapper(state, DEFAULT_DASHBOARD_ID).config,
   user: getUser(state),
   workspace: getWorkspace(state),
 });
@@ -680,4 +720,4 @@ export default connect(mapStateToProps, {
   setActiveTool: setActiveToolAction,
   updateDashboardData: updateDashboardDataAction,
   updateWorkspaceData: updateWorkspaceDataAction,
-})(AppMainContainer);
+})(withRouter(AppMainContainer));

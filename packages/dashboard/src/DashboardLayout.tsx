@@ -44,6 +44,7 @@ interface DashboardLayoutProps {
   layout: GoldenLayout;
   layoutConfig?: DashboardLayoutConfig;
   onLayoutChange?: (dehydratedLayout: DashboardLayoutConfig) => void;
+  onLayoutInitialized?: () => void;
   data?: DashboardData;
   children?: React.ReactNode | React.ReactNode[];
   emptyDashboard?: React.ReactNode;
@@ -59,6 +60,7 @@ export const DashboardLayout = ({
   layout,
   layoutConfig = DEFAULT_LAYOUT_CONFIG,
   onLayoutChange = DEFAULT_CALLBACK,
+  onLayoutInitialized = DEFAULT_CALLBACK,
 }: DashboardLayoutProps): JSX.Element => {
   const dispatch = useDispatch();
   const data =
@@ -68,6 +70,7 @@ export const DashboardLayout = ({
   const [isItemDragging, setIsItemDragging] = useState(false);
   const [lastConfig, setLastConfig] = useState<DashboardLayoutConfig>();
   const [initialClosedPanels] = useState(data?.closed ?? []);
+  const [isDashboardInitialized, setIsDashboardInitialized] = useState(false);
 
   const hydrateMap = useMemo(() => new Map(), []);
   const dehydrateMap = useMemo(() => new Map(), []);
@@ -149,6 +152,11 @@ export const DashboardLayout = ({
     // we risk the last saved state being one without that panel in the layout entirely
     if (isItemDragging) return;
 
+    if (!isDashboardInitialized) {
+      onLayoutInitialized();
+      setIsDashboardInitialized(true);
+    }
+
     const glConfig = layout.toConfig();
     const contentConfig = glConfig.content;
     const dehydratedLayoutConfig = LayoutUtils.dehydrateLayoutConfig(
@@ -173,7 +181,15 @@ export const DashboardLayout = ({
 
       onLayoutChange(dehydratedLayoutConfig);
     }
-  }, [dehydrateComponent, isItemDragging, lastConfig, layout, onLayoutChange]);
+  }, [
+    dehydrateComponent,
+    isDashboardInitialized,
+    isItemDragging,
+    lastConfig,
+    layout,
+    onLayoutChange,
+    onLayoutInitialized,
+  ]);
 
   const handleLayoutItemPickedUp = useCallback(() => {
     setIsItemDragging(true);
@@ -261,6 +277,7 @@ DashboardLayout.propTypes = {
   layout: GLPropTypes.Layout.isRequired,
   layoutConfig: PropTypes.arrayOf(PropTypes.shape({})),
   onLayoutChange: PropTypes.func,
+  onLayoutInitialized: PropTypes.func,
 };
 
 export default DashboardLayout;
