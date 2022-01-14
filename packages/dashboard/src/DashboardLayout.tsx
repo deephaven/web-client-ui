@@ -70,6 +70,7 @@ export const DashboardLayout = ({
   const [isItemDragging, setIsItemDragging] = useState(false);
   const [lastConfig, setLastConfig] = useState<DashboardLayoutConfig>();
   const [initialClosedPanels] = useState(data?.closed ?? []);
+  const [isDashboardInitialized, setIsDashboardInitialized] = useState(false);
 
   const hydrateMap = useMemo(() => new Map(), []);
   const dehydrateMap = useMemo(() => new Map(), []);
@@ -151,6 +152,11 @@ export const DashboardLayout = ({
     // we risk the last saved state being one without that panel in the layout entirely
     if (isItemDragging) return;
 
+    if (!isDashboardInitialized) {
+      onLayoutInitialized();
+      setIsDashboardInitialized(true);
+    }
+
     const glConfig = layout.toConfig();
     const contentConfig = glConfig.content;
     const dehydratedLayoutConfig = LayoutUtils.dehydrateLayoutConfig(
@@ -175,7 +181,15 @@ export const DashboardLayout = ({
 
       onLayoutChange(dehydratedLayoutConfig);
     }
-  }, [dehydrateComponent, isItemDragging, lastConfig, layout, onLayoutChange]);
+  }, [
+    dehydrateComponent,
+    isDashboardInitialized,
+    isItemDragging,
+    lastConfig,
+    layout,
+    onLayoutChange,
+    onLayoutInitialized,
+  ]);
 
   const handleLayoutItemPickedUp = useCallback(() => {
     setIsItemDragging(true);
@@ -228,7 +242,6 @@ export const DashboardLayout = ({
       }
 
       setIsDashboardEmpty(layout.root.contentItems.length === 0);
-      onLayoutInitialized();
     }
   }, [
     hydrateComponent,
@@ -237,7 +250,6 @@ export const DashboardLayout = ({
     lastConfig,
     panelManager,
     previousLayoutConfig,
-    onLayoutInitialized,
   ]);
 
   return (

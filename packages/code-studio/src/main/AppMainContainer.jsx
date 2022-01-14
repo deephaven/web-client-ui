@@ -17,7 +17,6 @@ import Dashboard, {
   DEFAULT_DASHBOARD_ID,
   getDashboardData,
   updateDashboardData as updateDashboardDataAction,
-  LayoutUtils,
 } from '@deephaven/dashboard';
 import {
   ChartEvent,
@@ -224,38 +223,14 @@ export class AppMainContainer extends Component {
         language,
       };
 
-      const panelConfig = {
-        props: { panelState: { fileMetadata } },
-      };
-
-      const notebookStack = LayoutUtils.getStackForConfig(
-        this.goldenLayout.root,
-        panelConfig
+      this.emitLayoutEvent(
+        NotebookEvent.SELECT_NOTEBOOK,
+        session,
+        language,
+        notebookSettings,
+        fileMetadata,
+        true
       );
-
-      if (!notebookStack) {
-        // Open the notebook if it isn't open anywhere
-        this.emitLayoutEvent(
-          NotebookEvent.SELECT_NOTEBOOK,
-          session,
-          language,
-          notebookSettings,
-          fileMetadata,
-          true
-        );
-      } else {
-        // Focus the notebook within its stack if it is already open
-        // Can't use SELECT_NOTEBOOK event
-        // At this stage, the openFileMap in ConsolePlugin is not initialized yet
-        // This causes the file open check to fail since the notebooks haven't initialized
-        // Emitting SELECT_NOTEBOOK will open a 2nd copy of the notebook
-        const notebookPanel = LayoutUtils.getContentItemInStack(
-          notebookStack,
-          panelConfig
-        );
-        notebookPanel.config.props.panelState.isPreview = false;
-        LayoutUtils.activateTab(this.goldenLayout.root, notebookPanel.config);
-      }
     }
   }
 
