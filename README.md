@@ -4,6 +4,15 @@ We're using a monorepo to manage our packages, as it becomes cumbersome to manag
 
 [![codecov](https://codecov.io/gh/deephaven/web-client-ui/branch/main/graph/badge.svg?token=RW29S9X72C)](https://codecov.io/gh/deephaven/web-client-ui)
 
+## Development Environment
+
+We recommend using [Visual Studio Code](https://code.visualstudio.com/) and installing the recommended workspace extensions. There are a few workspace settings configured with the repo.
+
+Use Chrome for debugging, install the React and Redux extensions.
+
+- [React Developer Tools](https://chrome.google.com/webstore/detail/react-developer-tools/fmkadmapgofadopljbjfkapdkoienihi): Allows inspection/changing the props/state of react components.
+- [Redux DevTools](https://chrome.google.com/webstore/detail/redux-devtools/lmhkpmbekcpmknklioeibfkpmmfibljd?hl=en): Inspect the redux store data.
+
 ## Getting Started
 
 We are still using node 14.x and npm 6.x. If you are [using nvm](https://github.com/nvm-sh/nvm#installing-and-updating), run `nvm install lts/fermium` to get the latest 14.x/6.x versions. Otherwise, download from the [node homepage](https://nodejs.org/en/download/).
