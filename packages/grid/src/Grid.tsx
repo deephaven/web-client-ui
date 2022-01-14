@@ -3,6 +3,7 @@ import React, { CSSProperties, PureComponent, ReactNode } from 'react';
 import classNames from 'classnames';
 import memoize from 'memoize-one';
 import clamp from 'lodash.clamp';
+import { asError } from '@deephaven/utils';
 import GridMetricCalculator, { GridMetricState } from './GridMetricCalculator';
 import GridModel from './GridModel';
 import GridMouseHandler, {
@@ -85,7 +86,7 @@ export type GridProps = typeof Grid.defaultProps & {
   movedRows?: MoveOperation[];
 
   // Callback for if an error occurs
-  onError?: (e: unknown) => void;
+  onError?: (e: Error) => void;
 
   // Callback when the selection within the grid changes
   onSelectionChanged?: (ranges: GridRange[]) => void;
@@ -1351,7 +1352,7 @@ class Grid extends PureComponent<GridProps, GridState> {
       await model.setValues(edits);
     } catch (e) {
       const { onError } = this.props;
-      onError(e);
+      onError(asError(e));
     }
   }
 
@@ -1867,7 +1868,7 @@ class Grid extends PureComponent<GridProps, GridState> {
       } catch (e) {
         // This case should _never_ happen, since the editingCell shouldn't be null if this method is called
         const { onError } = this.props;
-        onError(e);
+        onError(asError(e));
         return null;
       }
     });
