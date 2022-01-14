@@ -18,9 +18,7 @@ class DownloadServiceWorkerUtils {
       window.addEventListener('load', () => {
         const swUrl = new URL(
           `${
-            process.env.REACT_APP_ROUTER_BASE_NAME
-              ? `${process.env.REACT_APP_ROUTER_BASE_NAME}`
-              : ''
+            process.env.PUBLIC_URL ? `${process.env.PUBLIC_URL}` : ''
           }download/serviceWorker.js`,
           window.location.href
         );
