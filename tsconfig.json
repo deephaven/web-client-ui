@@ -3,6 +3,10 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
+      // Specifically try mapping to the TS file first in case the file is a TS src
+      "@deephaven/iris-grid/dist/*.js": [
+        "./packages/iris-grid/src/*.ts"
+      ],
       "@deephaven/iris-grid/dist/*": [
         "./packages/iris-grid/src/*"
       ],
