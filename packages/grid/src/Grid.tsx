@@ -1351,7 +1351,7 @@ class Grid extends PureComponent<GridProps, GridState> {
       await model.setValues(edits);
     } catch (e) {
       const { onError } = this.props;
-      onError(e);
+      onError(e instanceof Error ? e : new Error(`${e}`));
     }
   }
 
@@ -1867,7 +1867,7 @@ class Grid extends PureComponent<GridProps, GridState> {
       } catch (e) {
         // This case should _never_ happen, since the editingCell shouldn't be null if this method is called
         const { onError } = this.props;
-        onError(e);
+        onError(e instanceof Error ? e : new Error(`${e}`));
         return null;
       }
     });
