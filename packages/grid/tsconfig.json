@@ -15,10 +15,5 @@
     "src/**/*.test.*",
     "src/**/*.stories.*",
     "src/**/__mocks__/*"
-  ],
-  "references": [
-    {
-      "path": "../utils"
-    }
   ]
 }
