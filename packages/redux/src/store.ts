@@ -55,12 +55,12 @@ export interface WorkspaceStorage {
   save(workspace: Workspace): Promise<Workspace>;
 }
 
-export interface RootState {
+export type RootState = {
   user: User;
   storage: Storage;
   workspace: Workspace;
   activeTool: string;
-}
+};
 
 Object.entries(reducers).map(([name, reducer]) =>
   reducerRegistry.register(name, reducer)

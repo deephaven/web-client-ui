@@ -54,7 +54,8 @@ export const createChartModel = async (
     const definition = { name: figureName, type: dh.VariableType.FIGURE };
     const figure = await session.getObject(definition);
 
-    return ChartModelFactory.makeModel(settings, figure);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return ChartModelFactory.makeModel(settings as any, figure);
   }
 
   const definition = { name: tableName, type: dh.VariableType.TABLE };
@@ -66,7 +67,8 @@ export const createChartModel = async (
     getTimeZone(store.getState())
   );
 
-  return ChartModelFactory.makeModelFromSettings(settings, table);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return ChartModelFactory.makeModelFromSettings(settings as any, table);
 };
 
 export const createGridModel = async (
