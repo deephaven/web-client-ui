@@ -28,9 +28,8 @@
     "jquery": "^3.5.1"
   },
   "scripts": {
-    "build": "cross-env NODE_ENV=production run-s clean build-steps",
-    "build-dev": "cross-env NODE_ENV=development run-s clean build-steps",
-    "build-steps": "run-p build:*",
+    "build": "cross-env NODE_ENV=production run-p build:*",
+    "build-dev": "cross-env NODE_ENV=production run-p build:*",
     "sass": "sass ./src/scss:./dist/css -s compressed",
     "build:gulp": "gulp build",
     "build:sass": "npm run sass",

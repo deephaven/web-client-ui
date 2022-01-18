@@ -10,7 +10,9 @@
     "dist"
   ],
   "scripts": {
-    "clean": "rimraf ./dist",
+    "clean": "run-p clean:*",
+    "clean:types": "tsc -b --clean",
+    "clean:build": "rimraf ./dist",
     "prestart": "npm run build",
     "start": "npm run watch",
     "watch": "chokidar \"src/**/*\" -c \"npm run build\"",
