@@ -257,6 +257,7 @@ export class IrisGrid extends Component {
     };
     this.contextActions = [
       this.toggleFilterBarAction,
+      this.toggleSearchBarAction,
       this.discardAction,
       this.commitAction,
     ];
@@ -284,13 +285,7 @@ export class IrisGrid extends Component {
       pendingDataMap,
       canCopy,
       frozenColumns,
-      isSearchBarToggleVisible,
     } = props;
-
-    // Hide search bar is serverConfig.showSearch is false.
-    if (isSearchBarToggleVisible) {
-      this.contextActions.push(this.toggleSearchBarAction);
-    }
 
     const keyHandlers = [
       new ReverseKeyHandler(this),
@@ -532,7 +527,7 @@ export class IrisGrid extends Component {
       isFilterBarShown,
       showSearchBar,
       canDownloadCsv,
-      isSearchBarToggleVisible
+      canToggleSearch
     ) => {
       const optionItems = [];
       if (isChartBuilderAvailable) {
@@ -595,7 +590,7 @@ export class IrisGrid extends Component {
         isOn: isFilterBarShown,
         onChange: toggleFilterBarAction.action,
       });
-      if (isSearchBarToggleVisible) {
+      if (canToggleSearch) {
         optionItems.push({
           type: OptionType.SEARCH_BAR,
           title: 'Search Bar',
@@ -1659,6 +1654,9 @@ export class IrisGrid extends Component {
 
   toggleSearchBar() {
     const { showSearchBar } = this.state;
+    const { canToggleSearch } = this.props;
+    if (!canToggleSearch) return;
+
     const update = !showSearchBar;
     this.setState(
       {
@@ -2344,7 +2342,7 @@ export class IrisGrid extends Component {
       advancedSettings,
       onAdvancedSettingsChange,
       canDownloadCsv,
-      isSearchBarToggleVisible,
+      canToggleSearch,
     } = this.props;
     const {
       metricCalculator,
@@ -2807,7 +2805,7 @@ export class IrisGrid extends Component {
       isFilterBarShown,
       showSearchBar,
       canDownloadCsv,
-      isSearchBarToggleVisible
+      canToggleSearch
     );
 
     const openOptionsStack = openOptions.map(option => {
@@ -3220,7 +3218,7 @@ IrisGrid.propTypes = {
   // Theme override for IrisGridTheme
   theme: PropTypes.shape({}),
 
-  isSearchBarToggleVisible: PropTypes.bool.isRequired,
+  canToggleSearch: PropTypes.bool,
 };
 
 IrisGrid.defaultProps = {
@@ -3285,6 +3283,7 @@ IrisGrid.defaultProps = {
   canDownloadCsv: true,
   frozenColumns: null,
   theme: {},
+  canToggleSearch: true,
 };
 
 export default IrisGrid;
