@@ -511,6 +511,7 @@ export class AppMainContainer extends Component {
    * @param {DragEvent} dragEvent The mouse drag event that trigger it, undefined if it was not triggered by a drag
    */
   openWidget(widget, dragEvent) {
+    // TODO: This needs to check the list of plugins registered types and the types of panels that can show them
     switch (widget.type) {
       case dh.VariableType.TABLE: {
         const metadata = { table: widget.name };

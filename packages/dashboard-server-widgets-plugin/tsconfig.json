@@ -1,0 +1,51 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "rootDir": "src/",
+    "outDir": "dist/",
+  },
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "src/**/*.js",
+    "src/**/*.jsx",
+  ],
+  "exclude": [
+    "node_modules",
+    "src/**/*.test.*",
+    "src/**/*.stories.*",
+    "src/**/__mocks__/*"
+  ],
+  "references": [
+    {
+      "path": "../chart"
+    },
+    {
+      "path": "../components"
+    },
+    {
+      "path": "../console"
+    },
+    {
+      "path": "../dashboard"
+    },
+    {
+      "path": "../file-explorer"
+    },
+    {
+      "path": "../iris-grid"
+    },
+    {
+      "path": "../jsapi-shim"
+    },
+    {
+      "path": "../log"
+    },
+    {
+      "path": "../redux"
+    },
+    {
+      "path": "../utils"
+    }
+  ]
+}

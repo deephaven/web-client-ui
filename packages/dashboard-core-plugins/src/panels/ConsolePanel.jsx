@@ -160,6 +160,7 @@ class ConsolePanel extends PureComponent {
     const { sessionWrapper } = this.props;
     const { session } = sessionWrapper;
     const { type } = object;
+    // TODO: Make this generic, and just emit an Open event with the type?
     if (ConsoleUtils.isTableType(type)) {
       this.openTable(object, session);
     } else if (ConsoleUtils.isFigureType(type)) {
@@ -168,6 +169,8 @@ class ConsolePanel extends PureComponent {
       this.openPandas(object, session);
     } else if (ConsoleUtils.isMatPlotLib(type)) {
       this.openDataString(object, session);
+    } else if (ConsoleUtils.isDeephavenPluginType(type)) {
+      this.openJson(object, session);
     } else {
       log.error('Unknown object', object);
     }
@@ -242,6 +245,23 @@ class ConsolePanel extends PureComponent {
     log.debug('openDataString', id);
 
     glEventHub.emit(MatPlotLibEvent.OPEN, name, makeModel, metadata, id);
+  }
+
+  openPluginObject(object, session) {
+    const { name } = object;
+    const id = this.getItemId(name);
+    const metadata = { name };
+    const { glEventHub } = this.props;
+    const makeModel = () => session.getObject(object);
+
+    log.debug('openJsonViewer', id);
+
+    glEventHub.emit('ServerWidgetEvent.OPEN', {
+      name,
+      makeModel,
+      metadata,
+      id,
+    });
   }
 
   addCommand(command, focus = true, execute = false) {

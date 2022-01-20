@@ -15,6 +15,7 @@
     "@deephaven/console": "^0.9.0",
     "@deephaven/dashboard": "^0.9.0",
     "@deephaven/dashboard-core-plugins": "^0.9.0",
+    "@deephaven/dashboard-server-widgets-plugin": "^0.9.0",
     "@deephaven/file-explorer": "^0.9.0",
     "@deephaven/golden-layout": "^0.9.0",
     "@deephaven/grid": "^0.9.0",
