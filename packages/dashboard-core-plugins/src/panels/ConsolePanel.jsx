@@ -18,12 +18,12 @@ import {
   ChartEvent,
   ConsoleEvent,
   IrisGridEvent,
+  MatPlotLibEvent,
   PandasEvent,
 } from '../events';
 import './ConsolePanel.scss';
 import Panel from './Panel';
 import { getDashboardSessionWrapper } from '../redux';
-import { MatPlotLibEvent } from '../../dist/events';
 
 const log = Log.module('ConsolePanel');
 
