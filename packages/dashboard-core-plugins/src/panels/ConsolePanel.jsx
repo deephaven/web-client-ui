@@ -170,7 +170,7 @@ class ConsolePanel extends PureComponent {
     } else if (ConsoleUtils.isMatPlotLib(type)) {
       this.openDataString(object, session);
     } else if (ConsoleUtils.isDeephavenPluginType(type)) {
-      this.openJson(object, session);
+      this.openJsonViewer(object, session);
     } else {
       log.error('Unknown object', object);
     }
@@ -247,7 +247,7 @@ class ConsolePanel extends PureComponent {
     glEventHub.emit(MatPlotLibEvent.OPEN, name, makeModel, metadata, id);
   }
 
-  openPluginObject(object, session) {
+  openJsonViewer(object, session) {
     const { name } = object;
     const id = this.getItemId(name);
     const metadata = { name };

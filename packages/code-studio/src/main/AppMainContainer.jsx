@@ -37,6 +37,7 @@ import {
   ControlType,
   ToolType,
 } from '@deephaven/dashboard-core-plugins';
+import { ServerWidgetsPlugin } from '@deephaven/dashboard-server-widgets-plugin';
 import { vsGear, dhShapes, dhPanels } from '@deephaven/icons';
 import dh, { PropTypes as APIPropTypes } from '@deephaven/jsapi-shim';
 import Log from '@deephaven/log';
@@ -658,6 +659,7 @@ export class AppMainContainer extends Component {
           <PandasPlugin />
           <MarkdownPlugin />
           <MatPlotLibPlugin />
+          <ServerWidgetsPlugin />
           <LinkerPlugin />
         </Dashboard>
         <CSSTransition

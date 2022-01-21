@@ -2,14 +2,9 @@
   "extends": "../../tsconfig.json",
   "compilerOptions": {
     "rootDir": "src/",
-    "outDir": "dist/",
+    "outDir": "dist/"
   },
-  "include": [
-    "src/**/*.ts",
-    "src/**/*.tsx",
-    "src/**/*.js",
-    "src/**/*.jsx",
-  ],
+  "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.js", "src/**/*.jsx"],
   "exclude": [
     "node_modules",
     "src/**/*.test.*",
@@ -18,22 +13,13 @@
   ],
   "references": [
     {
-      "path": "../chart"
-    },
-    {
       "path": "../components"
-    },
-    {
-      "path": "../console"
     },
     {
       "path": "../dashboard"
     },
     {
-      "path": "../file-explorer"
-    },
-    {
-      "path": "../iris-grid"
+      "path": "../dashboard-core-plugins"
     },
     {
       "path": "../jsapi-shim"
