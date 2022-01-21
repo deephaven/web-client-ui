@@ -1,6 +1,9 @@
+import { Button } from '@deephaven/components';
 import { DashboardPanelProps } from '@deephaven/dashboard';
-import { WidgetPanel } from '@deephaven/dashboard-core-plugins';
+import { IrisGridEvent, WidgetPanel } from '@deephaven/dashboard-core-plugins';
+import { Table } from '@deephaven/jsapi-shim';
 import Log from '@deephaven/log';
+import { IrisGridModelFactory } from '@deephaven/redux/node_modules/@deephaven/iris-grid';
 import React, { ReactNode } from 'react';
 import ReactJson from 'react-json-view';
 import './ServerWidgetPanel.scss';
@@ -8,7 +11,7 @@ import './ServerWidgetPanel.scss';
 const log = Log.module('ServerWidgetPanel');
 
 type StateProps = {
-  makeModel: () => Promise<unknown>;
+  makeModel: () => Promise<JsWidget>;
   metadata: {
     name: string;
   };
@@ -16,19 +19,28 @@ type StateProps = {
 
 type OwnProps = DashboardPanelProps;
 
+export type JsExportedObjectType = 'Table' | 'TableMap';
+
+export type JsWidget = {
+  data: string;
+  type: string;
+  exportedObjectTypes: JsExportedObjectType[];
+  getTable: (index: number) => Promise<Table>;
+};
+
 export type ServerWidgetPanelProps = OwnProps & StateProps;
 
-export type ServerWidgetPanelState<T = unknown> = {
+export type ServerWidgetPanelState = {
   error?: Error;
-  model?: T;
+  model?: JsWidget;
 };
 
 /**
  * Panel for showing a widget from the server in a Dashboard.
  */
-export class ServerWidgetPanel<T = unknown> extends React.Component<
+export class ServerWidgetPanel extends React.Component<
   ServerWidgetPanelProps,
-  ServerWidgetPanelState<T>
+  ServerWidgetPanelState
 > {
   static COMPONENT = 'ServerWidgetPanel';
 
@@ -36,6 +48,7 @@ export class ServerWidgetPanel<T = unknown> extends React.Component<
     super(props);
 
     this.handleError = this.handleError.bind(this);
+    this.handleExportedTypeClick = this.handleExportedTypeClick.bind(this);
 
     this.state = {
       error: undefined,
@@ -50,10 +63,32 @@ export class ServerWidgetPanel<T = unknown> extends React.Component<
   async initModel(): Promise<void> {
     try {
       const { makeModel } = this.props;
-      const model = (await makeModel()) as T;
+      const model = await makeModel();
       this.setState({ model });
     } catch (e: unknown) {
       this.handleError(e as Error);
+    }
+  }
+
+  handleExportedTypeClick(type: JsExportedObjectType, index: number): void {
+    log.debug('handleExportedTypeClick', type, index);
+
+    if (type === 'Table') {
+      log.debug('Opening table', index);
+
+      const { glEventHub, metadata } = this.props;
+      const { name } = metadata;
+      const { model } = this.state;
+      glEventHub.emit(
+        IrisGridEvent.OPEN_GRID,
+        `${name} Table ${index}`,
+        async () => {
+          const table = await model?.getTable(index);
+          return IrisGridModelFactory.makeModel(table, true);
+        }
+      );
+    } else {
+      log.error('Unable to handle exported object type', type);
     }
   }
 
@@ -69,8 +104,7 @@ export class ServerWidgetPanel<T = unknown> extends React.Component<
     const isLoading = error === undefined && model === undefined;
     const isLoaded = model !== undefined;
     const errorMessage = error ? `${error}` : undefined;
-    const modelJson =
-      typeof model === 'string' ? JSON.parse(atob(model)) : undefined;
+    const modelJson = model ? JSON.parse(atob(model.data)) : undefined;
 
     return (
       <WidgetPanel
@@ -84,6 +118,21 @@ export class ServerWidgetPanel<T = unknown> extends React.Component<
         componentPanel={this}
       >
         <div className="server-widget-panel-content">
+          {model ? (
+            <div className="server-widget-exported-tables">
+              Exported Types:
+              {model.exportedObjectTypes.map((type, index) => (
+                <Button
+                  // eslint-disable-next-line react/no-array-index-key
+                  key={index}
+                  kind="ghost"
+                  onClick={() => this.handleExportedTypeClick(type, index)}
+                >
+                  {type} {index}
+                </Button>
+              ))}
+            </div>
+          ) : null}
           {modelJson && <ReactJson src={modelJson} theme="monokai" />}
         </div>
       </WidgetPanel>

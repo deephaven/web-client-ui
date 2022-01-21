@@ -168,7 +168,7 @@ class ConsolePanel extends PureComponent {
     } else if (ConsoleUtils.isPandas(type)) {
       this.openPandas(object, session);
     } else if (ConsoleUtils.isMatPlotLib(type)) {
-      this.openDataString(object, session);
+      this.openMatPlotLib(object, session);
     } else if (ConsoleUtils.isDeephavenPluginType(type)) {
       this.openJsonViewer(object, session);
     } else {
@@ -235,14 +235,15 @@ class ConsolePanel extends PureComponent {
     glEventHub.emit(PandasEvent.OPEN, name, makeModel, metadata, id);
   }
 
-  openDataString(object, session) {
+  openMatPlotLib(object, session) {
     const { name } = object;
     const id = this.getItemId(name);
     const metadata = { name };
     const { glEventHub } = this.props;
-    const makeModel = () => session.getObject(object);
+    const makeModel = () =>
+      session.getObject(object).then(response => response.data);
 
-    log.debug('openDataString', id);
+    log.debug('openMatPlotLib', id);
 
     glEventHub.emit(MatPlotLibEvent.OPEN, name, makeModel, metadata, id);
   }
