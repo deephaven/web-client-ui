@@ -2,6 +2,8 @@ import { DashboardPanelProps } from '@deephaven/dashboard';
 import { WidgetPanel } from '@deephaven/dashboard-core-plugins';
 import Log from '@deephaven/log';
 import React, { ReactNode } from 'react';
+import ReactJson from 'react-json-view';
+import './ServerWidgetPanel.scss';
 
 const log = Log.module('ServerWidgetPanel');
 
@@ -67,6 +69,8 @@ export class ServerWidgetPanel<T = unknown> extends React.Component<
     const isLoading = error === undefined && model === undefined;
     const isLoaded = model !== undefined;
     const errorMessage = error ? `${error}` : undefined;
+    const modelJson =
+      typeof model === 'string' ? JSON.parse(atob(model)) : undefined;
 
     return (
       <WidgetPanel
@@ -80,7 +84,7 @@ export class ServerWidgetPanel<T = unknown> extends React.Component<
         componentPanel={this}
       >
         <div className="server-widget-panel-content">
-          Model content: {model}
+          {modelJson && <ReactJson src={modelJson} theme="monokai" />}
         </div>
       </WidgetPanel>
     );
