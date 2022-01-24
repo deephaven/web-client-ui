@@ -37,6 +37,7 @@ export type ServerWidgetPanelProps = OwnProps & StateProps;
 export type ServerWidgetPanelState = {
   error?: Error;
   model?: JsWidget;
+  value?: string; // Big Display value
 };
 
 /**
@@ -68,6 +69,22 @@ export class ServerWidgetPanel extends React.Component<
     try {
       const { makeModel } = this.props;
       const model = await makeModel();
+      // KLUDGE: This is just hacking in a proof of concept
+      if (model.type === 'deephaven.plugin.big_display.BigDisplay') {
+        const table = (await model.exportedObjects[0].fetch()) as Table;
+        table.addEventListener('updated', event => {
+          const { detail: data } = event;
+          const row = data.rows[0];
+          const column = data.columns[0];
+          const rawValue = row.get(column);
+          const value = dh.i18n.DateTimeFormat.format(
+            'yyyy-MM-dd HH:mm:ss.SSSSSSSSS',
+            rawValue
+          );
+          this.setState({ value });
+        });
+        table.setViewport(0, 0);
+      }
       this.setState({ model });
     } catch (e: unknown) {
       this.handleError(e as Error);
@@ -108,13 +125,14 @@ export class ServerWidgetPanel extends React.Component<
   render(): ReactNode {
     const { glContainer, glEventHub, metadata } = this.props;
     const { name } = metadata;
-    const { error, model } = this.state;
+    const { error, model, value } = this.state;
     const isLoading = error === undefined && model === undefined;
     const isLoaded = model !== undefined;
     const errorMessage = error ? `${error}` : undefined;
-    const modelJson = model
-      ? JSON.parse(atob(model.getDataAsBase64()))
-      : undefined;
+    const modelJson =
+      model?.type === 'deephaven.plugin.json.Node'
+        ? JSON.parse(atob(model.getDataAsBase64()))
+        : undefined;
 
     return (
       <WidgetPanel
@@ -146,6 +164,7 @@ export class ServerWidgetPanel extends React.Component<
             </div>
           ) : null}
           {modelJson && <ReactJson src={modelJson} theme="monokai" />}
+          {value && <div className="big-display">{value}</div>}
         </div>
       </WidgetPanel>
     );
