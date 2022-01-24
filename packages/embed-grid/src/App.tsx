@@ -50,7 +50,8 @@ function App(): JSX.Element {
     try {
       // Connect to the Web API server
       const baseUrl = new URL(
-        process.env.REACT_APP_CORE_API_URL ?? `${window.location}`
+        process.env.REACT_APP_CORE_API_URL ?? '',
+        `${window.location}`
       );
 
       const websocketUrl = `${baseUrl.protocol}//${baseUrl.host}`;
