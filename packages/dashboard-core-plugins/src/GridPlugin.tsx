@@ -6,7 +6,7 @@ import {
   PanelHydrateFunction,
   useListener,
 } from '@deephaven/dashboard';
-import { IrisGridModel } from '@deephaven/iris-grid';
+import { IrisGridModel, IrisGridThemeType } from '@deephaven/iris-grid';
 import shortid from 'shortid';
 import { IrisGridPanel } from './panels';
 import { IrisGridEvent } from './events';
@@ -15,6 +15,7 @@ export type GridPluginComponentProps = DashboardPluginComponentProps & {
   getDownloadWorker?: () => Promise<ServiceWorker>;
   loadPlugin?: (name: string) => ReturnType<typeof React.forwardRef>;
   hydrate: PanelHydrateFunction;
+  theme?: Partial<IrisGridThemeType>;
 };
 
 export const GridPlugin = ({
@@ -24,6 +25,7 @@ export const GridPlugin = ({
   layout,
   registerComponent,
   hydrate = DashboardUtils.hydrate,
+  theme,
 }: GridPluginComponentProps): JSX.Element => {
   const handleOpen = useCallback(
     (
@@ -43,6 +45,7 @@ export const GridPlugin = ({
           id: panelId,
           metadata,
           makeModel,
+          theme,
         },
         title,
         id: panelId,
@@ -51,7 +54,7 @@ export const GridPlugin = ({
       const { root } = layout;
       LayoutUtils.openComponent({ root, config, dragEvent });
     },
-    [getDownloadWorker, id, layout, loadPlugin]
+    [getDownloadWorker, id, layout, loadPlugin, theme]
   );
 
   const handleClose = useCallback(
