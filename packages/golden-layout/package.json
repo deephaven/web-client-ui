@@ -29,7 +29,7 @@
   },
   "scripts": {
     "build": "cross-env NODE_ENV=production run-p build:*",
-    "build-dev": "cross-env NODE_ENV=production run-p build:*",
+    "build-dev": "cross-env NODE_ENV=development run-p build:*",
     "sass": "sass ./src/scss:./dist/css -s compressed",
     "build:gulp": "gulp build",
     "build:sass": "npm run sass",

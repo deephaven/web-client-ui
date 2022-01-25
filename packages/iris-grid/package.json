@@ -17,7 +17,7 @@
   },
   "scripts": {
     "build": "cross-env NODE_ENV=production run-p build:*",
-    "build-dev": "cross-env NODE_ENV=production run-p build:*",
+    "build-dev": "cross-env NODE_ENV=development run-p build:*",
     "babel": "babel ./src --out-dir ./dist --extensions \".ts,.tsx,.js,.jsx\" --source-maps --root-mode upward --verbose",
     "sass": "sass ./src:./dist",
     "types": "tsc -b",
