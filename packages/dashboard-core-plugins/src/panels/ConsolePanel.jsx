@@ -241,7 +241,7 @@ class ConsolePanel extends PureComponent {
     const metadata = { name };
     const { glEventHub } = this.props;
     const makeModel = () =>
-      session.getObject(object).then(response => response.data);
+      session.getObject(object).then(response => response.getDataAsBase64());
 
     log.debug('openMatPlotLib', id);
 

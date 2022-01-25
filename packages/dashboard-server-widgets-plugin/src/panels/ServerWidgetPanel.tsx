@@ -21,11 +21,15 @@ type OwnProps = DashboardPanelProps;
 
 export type JsExportedObjectType = 'Table' | 'TableMap';
 
+export type JsWidgetExportedObject = {
+  type: 'Table' | 'TableMap';
+  fetch: () => Promise<unknown>;
+};
+
 export type JsWidget = {
-  data: string;
   type: string;
-  exportedObjectTypes: JsExportedObjectType[];
-  getTable: (index: number) => Promise<Table>;
+  getDataAsBase64: () => string;
+  exportedObjects: JsWidgetExportedObject[];
 };
 
 export type ServerWidgetPanelProps = OwnProps & StateProps;
@@ -70,9 +74,13 @@ export class ServerWidgetPanel extends React.Component<
     }
   }
 
-  handleExportedTypeClick(type: JsExportedObjectType, index: number): void {
-    log.debug('handleExportedTypeClick', type, index);
+  handleExportedTypeClick(
+    exportedObject: JsWidgetExportedObject,
+    index: number
+  ): void {
+    log.debug('handleExportedTypeClick', exportedObject, index);
 
+    const { type } = exportedObject;
     if (type === 'Table') {
       log.debug('Opening table', index);
 
@@ -81,9 +89,9 @@ export class ServerWidgetPanel extends React.Component<
       const { model } = this.state;
       glEventHub.emit(
         IrisGridEvent.OPEN_GRID,
-        `${name} Table ${index}`,
+        `${name} ${type} ${index}`,
         async () => {
-          const table = await model?.getTable(index);
+          const table = await exportedObject.fetch();
           return IrisGridModelFactory.makeModel(table, true);
         }
       );
@@ -104,7 +112,9 @@ export class ServerWidgetPanel extends React.Component<
     const isLoading = error === undefined && model === undefined;
     const isLoaded = model !== undefined;
     const errorMessage = error ? `${error}` : undefined;
-    const modelJson = model ? JSON.parse(atob(model.data)) : undefined;
+    const modelJson = model
+      ? JSON.parse(atob(model.getDataAsBase64()))
+      : undefined;
 
     return (
       <WidgetPanel
@@ -121,14 +131,16 @@ export class ServerWidgetPanel extends React.Component<
           {model ? (
             <div className="server-widget-exported-tables">
               Exported Types:
-              {model.exportedObjectTypes.map((type, index) => (
+              {model.exportedObjects.map((exportedObject, index) => (
                 <Button
                   // eslint-disable-next-line react/no-array-index-key
                   key={index}
                   kind="ghost"
-                  onClick={() => this.handleExportedTypeClick(type, index)}
+                  onClick={() =>
+                    this.handleExportedTypeClick(exportedObject, index)
+                  }
                 >
-                  {type} {index}
+                  {exportedObject.type} {index}
                 </Button>
               ))}
             </div>
