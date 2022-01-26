@@ -1,23 +1,12 @@
 @import '../../../components/scss/custom.scss';
-$edit-hint-height: 30px;
-$panel-container-padding: 10px;
-$btn-play-color: $success;
 
-.markdown-notebook-title {
-  &.is-preview {
-    font-style: italic;
-  }
-}
+.markdown-notebook {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 
-.markdown-notebook-container {
-  .markdown-notebook-editor-container {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-  }
-
-  .markdown-notebook-editor-toolbar {
+  .markdown-notebook-toolbar {
     display: flex;
     align-items: center;
     padding: $spacer-1;
@@ -30,22 +19,7 @@ $btn-play-color: $success;
     }
   }
 
-  .edit-hint {
-    position: absolute;
-    top: 0;
-    right: 0;
-    padding: 5px 20px;
-    text-align: right;
-    width: 100%;
-    min-height: $edit-hint-height;
-    height: $edit-hint-height;
-    opacity: 0;
-    user-select: none;
-    transition: opacity $transition ease-out;
-    pointer-events: none;
-  }
-
-  .markdown-notebook-editor {
+  .markdown-notebook-content {
     flex-grow: 1;
     width: 100%;
     padding: 0 15px;
@@ -58,10 +32,6 @@ $btn-play-color: $success;
     h3 {
       margin-top: 3rem;
     }
-  }
-
-  &:hover .edit-hint.viewing {
-    opacity: 1;
   }
 
   blockquote {
@@ -87,7 +57,7 @@ $btn-play-color: $success;
     }
   }
 
-  .markdown-notebook-editor-code-block {
+  .markdown-notebook-code-block {
     position: relative;
     border-radius: 0 $border-radius $border-radius 0;
 

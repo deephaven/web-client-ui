@@ -2,20 +2,19 @@ import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import Markdown from 'react-markdown';
 import { Button } from '@deephaven/components';
-import { Code, Editor } from '@deephaven/console';
+import { Code } from '@deephaven/console';
 import classNames from 'classnames';
 import { vsPlay } from '@deephaven/icons';
 import remarkGfm from 'remark-gfm';
+import './MarkdownNotebook.scss';
 
-export default class MarkdownNotebookEditor extends PureComponent {
+export class MarkdownNotebook extends PureComponent {
   constructor(props) {
     super(props);
 
     this.handleRunSelected = this.handleRunSelected.bind(this);
     this.renderCodeBlock = this.renderCodeBlock.bind(this);
     this.renderLink = this.renderLink.bind(this);
-
-    this.container = null;
 
     // Map of each code block from it's starting line number to the code within that block
     this.commands = new Map();
@@ -121,7 +120,7 @@ export default class MarkdownNotebookEditor extends PureComponent {
 
     return (
       <div
-        className={classNames('markdown-notebook-editor-code-block', {
+        className={classNames('markdown-notebook-code-block', {
           'is-selected': isSelected,
         })}
         ref={ref}
@@ -162,22 +161,11 @@ export default class MarkdownNotebookEditor extends PureComponent {
   }
 
   render() {
-    const {
-      isEditing,
-      content,
-      onEditorInitialized,
-      transformImageUri,
-      transformLinkUri,
-    } = this.props;
+    const { content, transformImageUri, transformLinkUri } = this.props;
     const { hasRunCode, nextStartLine } = this.state;
     return (
-      <div
-        className="markdown-notebook-editor-container"
-        ref={container => {
-          this.container = container;
-        }}
-      >
-        <div className="markdown-notebook-editor-toolbar">
+      <div className="markdown-notebook">
+        <div className="markdown-notebook-toolbar">
           <Button
             className={classNames('btn-play-selected-cell', {
               flashing: !hasRunCode,
@@ -191,49 +179,37 @@ export default class MarkdownNotebookEditor extends PureComponent {
             Run Selected Code
           </Button>
         </div>
-        <div className="markdown-notebook-editor" ref={this.editorScrollView}>
-          {isEditing ? (
-            <Editor
-              settings={{
-                language: 'markdown',
-                value: content,
-                lineNumbers: 'off',
-              }}
-              onEditorInitialized={onEditorInitialized}
-            />
-          ) : (
-            <Markdown
-              components={{ code: this.renderCodeBlock, a: this.renderLink }}
-              linkTarget="_blank"
-              remarkPlugins={[remarkGfm]}
-              transformLinkUri={transformLinkUri}
-              transformImageUri={transformImageUri}
-              includeElementIndex
-            >
-              {content}
-            </Markdown>
-          )}
+        <div className="markdown-notebook-content" ref={this.editorScrollView}>
+          <Markdown
+            components={{ code: this.renderCodeBlock, a: this.renderLink }}
+            linkTarget="_blank"
+            remarkPlugins={[remarkGfm]}
+            transformLinkUri={transformLinkUri}
+            transformImageUri={transformImageUri}
+            includeElementIndex
+          >
+            {content}
+          </Markdown>
         </div>
       </div>
     );
   }
 }
 
-MarkdownNotebookEditor.propTypes = {
-  isEditing: PropTypes.bool,
+MarkdownNotebook.propTypes = {
   onRunCode: PropTypes.func,
   content: PropTypes.string,
-  onEditorInitialized: PropTypes.func.isRequired,
   onLinkClick: PropTypes.func,
   transformImageUri: PropTypes.func,
   transformLinkUri: PropTypes.func,
 };
 
-MarkdownNotebookEditor.defaultProps = {
-  isEditing: false,
+MarkdownNotebook.defaultProps = {
   content: '',
   onLinkClick: undefined,
   onRunCode: () => {},
   transformImageUri: undefined,
   transformLinkUri: undefined,
 };
+
+export default MarkdownNotebook;

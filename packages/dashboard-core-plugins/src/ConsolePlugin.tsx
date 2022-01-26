@@ -18,7 +18,6 @@ import {
   LogPanel,
   NotebookPanel,
 } from './panels';
-import MarkdownNotebookPanel from './panels/MarkdownNotebookPanel';
 import { setDashboardConsoleSettings } from './redux';
 
 const log = Log.module('ConsolePlugin');
@@ -294,16 +293,10 @@ export const ConsolePlugin = ({
         settings,
         fileMetadata,
       };
-      // KLUDGE: show a different component type for markdown notebooks
-      // Markdown notebooks are just used in the demo, and cannot be created/edited using the UI
-      // Keeping the panels separate helps ensure we don't pollute the NotebookPanel
-      const component = fileMetadata?.itemName?.endsWith('.md')
-        ? MarkdownNotebookPanel.COMPONENT
-        : NotebookPanel.COMPONENT;
       const title = getNotebookTitle(fileMetadata);
       return {
         type: 'react-component',
-        component,
+        component: NotebookPanel.COMPONENT,
         isFocusOnShow: false,
         props: {
           id: panelId,
@@ -397,7 +390,6 @@ export const ConsolePlugin = ({
         panelId = getPanelIdForFileMetadata(fileMetadata);
         stack = LayoutUtils.getStackForComponentTypes(layout.root, [
           NotebookPanel.COMPONENT,
-          MarkdownNotebookPanel.COMPONENT,
         ]);
       }
       const config = makeConfig({
@@ -448,7 +440,6 @@ export const ConsolePlugin = ({
       registerComponent(FileExplorerPanel.COMPONENT, FileExplorerPanel),
       registerComponent(LogPanel.COMPONENT, LogPanel),
       registerComponent(NotebookPanel.COMPONENT, NotebookPanel),
-      registerComponent(MarkdownNotebookPanel.COMPONENT, MarkdownNotebookPanel),
     ];
 
     return () => {

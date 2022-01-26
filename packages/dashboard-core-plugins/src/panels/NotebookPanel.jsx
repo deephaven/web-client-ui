@@ -30,6 +30,7 @@ import { Pending, PromiseUtils } from '@deephaven/utils';
 import { ConsoleEvent, NotebookEvent } from '../events';
 import { getDashboardSessionWrapper } from '../redux';
 import Panel from './Panel';
+import MarkdownNotebook from './MarkdownNotebook';
 import './NotebookPanel.scss';
 
 const log = Log.module('NotebookPanel');
@@ -445,14 +446,7 @@ class NotebookPanel extends Component {
   handleEditorChange(e) {
     log.debug2('handleEditorChanged', e);
 
-    this.setState(({ isPreview }) => {
-      if (isPreview) {
-        const { fileMetadata } = this.state;
-        this.registerFileMetadata(fileMetadata, false);
-        return { isPreview: false };
-      }
-      return null;
-    });
+    this.removePreviewStatus();
 
     this.setState(({ changeCount, savedChangeCount }) => {
       const { isUndoing, isRedoing } = e;
@@ -706,8 +700,28 @@ class NotebookPanel extends Component {
       log.debug('Ignoring empty command.');
       return;
     }
+
+    this.removePreviewStatus();
+
     const { glEventHub } = this.props;
     glEventHub.emit(ConsoleEvent.SEND_COMMAND, command, false, true);
+  }
+
+  removePreviewStatus() {
+    this.setState(({ isPreview }) => {
+      if (isPreview) {
+        const { fileMetadata } = this.state;
+        this.registerFileMetadata(fileMetadata, false);
+        return { isPreview: false };
+      }
+      return null;
+    });
+  }
+
+  layout() {
+    if (this.notebook) {
+      this.notebook.updateDimensions();
+    }
   }
 
   render() {
@@ -736,6 +750,7 @@ class NotebookPanel extends Component {
     const focusOnMount =
       isDashboardActive && !glContainer.isHidden && !isPreview;
     const itemName = fileMetadata?.itemName ?? NotebookPanel.DEFAULT_NAME;
+    const isMarkdown = itemName.endsWith('.mid');
     const isExistingItem = fileMetadata?.id != null;
     const overflowActions = this.getOverflowActions();
     const settings = {
@@ -809,74 +824,87 @@ class NotebookPanel extends Component {
           additionalActions={additionalActions}
           renderTabTooltip={() => itemName}
         >
-          <div className="notebook-toolbar">
-            <span>
-              <button
-                type="button"
-                className="btn btn-link btn-link-icon btn-play"
-                onClick={this.handleRunAll}
-                disabled={runButtonsDisabled}
-              >
-                <FontAwesomeIcon icon={vsRunAll} transform="grow-4" />
-                <Tooltip>Run {SHORTCUTS.NOTEBOOK.RUN.getDisplayText()}</Tooltip>
-              </button>
-              {disabledRunButtonTooltip && (
-                <Tooltip>{disabledRunButtonTooltip}</Tooltip>
-              )}
-            </span>
-            <span>
-              <button
-                type="button"
-                className="btn btn-link btn-link-icon btn-play"
-                onClick={this.handleRunSelected}
-                disabled={runButtonsDisabled}
-              >
-                <FontAwesomeIcon icon={vsPlay} transform="grow-4" />
-                <Tooltip>
-                  Run Selected{' '}
-                  {SHORTCUTS.NOTEBOOK.RUN_SELECTED.getDisplayText()}
-                </Tooltip>
-              </button>
-              {disabledRunSelectedButtonTooltip && (
-                <Tooltip>{disabledRunSelectedButtonTooltip}</Tooltip>
-              )}
-            </span>
-            <button
-              type="button"
-              className="btn btn-link btn-link-icon mr-auto"
-              disabled={toolbarDisabled}
-              onClick={this.handleSave}
-            >
-              <FontAwesomeIcon icon={vsSave} />
-              <Tooltip>Save</Tooltip>
-            </button>
-            <button
-              type="button"
-              className="btn btn-link btn-overflow btn-link-icon"
-              disabled={toolbarDisabled}
-            >
-              <FontAwesomeIcon icon={vsKebabVertical} />
-              <Tooltip>More Actions...</Tooltip>
-              <DropdownMenu
-                actions={overflowActions}
-                popperOptions={NotebookPanel.POPPER_OPTIONS}
+          {!isMarkdown && (
+            <>
+              <div className="notebook-toolbar">
+                <span>
+                  <button
+                    type="button"
+                    className="btn btn-link btn-link-icon btn-play"
+                    onClick={this.handleRunAll}
+                    disabled={runButtonsDisabled}
+                  >
+                    <FontAwesomeIcon icon={vsRunAll} transform="grow-4" />
+                    <Tooltip>
+                      Run {SHORTCUTS.NOTEBOOK.RUN.getDisplayText()}
+                    </Tooltip>
+                  </button>
+                  {disabledRunButtonTooltip && (
+                    <Tooltip>{disabledRunButtonTooltip}</Tooltip>
+                  )}
+                </span>
+                <span>
+                  <button
+                    type="button"
+                    className="btn btn-link btn-link-icon btn-play"
+                    onClick={this.handleRunSelected}
+                    disabled={runButtonsDisabled}
+                  >
+                    <FontAwesomeIcon icon={vsPlay} transform="grow-4" />
+                    <Tooltip>
+                      Run Selected{' '}
+                      {SHORTCUTS.NOTEBOOK.RUN_SELECTED.getDisplayText()}
+                    </Tooltip>
+                  </button>
+                  {disabledRunSelectedButtonTooltip && (
+                    <Tooltip>{disabledRunSelectedButtonTooltip}</Tooltip>
+                  )}
+                </span>
+                <button
+                  type="button"
+                  className="btn btn-link btn-link-icon mr-auto"
+                  disabled={toolbarDisabled}
+                  onClick={this.handleSave}
+                >
+                  <FontAwesomeIcon icon={vsSave} />
+                  <Tooltip>Save</Tooltip>
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-link btn-overflow btn-link-icon"
+                  disabled={toolbarDisabled}
+                >
+                  <FontAwesomeIcon icon={vsKebabVertical} />
+                  <Tooltip>More Actions...</Tooltip>
+                  <DropdownMenu
+                    actions={overflowActions}
+                    popperOptions={NotebookPanel.POPPER_OPTIONS}
+                  />
+                </button>
+              </div>
+              <ScriptEditor
+                isLoaded={isLoaded}
+                isLoading={isLoading}
+                error={error}
+                onChange={this.handleEditorChange}
+                onRunCommand={this.handleRunCommand}
+                session={session}
+                sessionLanguage={sessionLanguage}
+                settings={settings}
+                focusOnMount={focusOnMount}
+                ref={notebook => {
+                  this.notebook = notebook;
+                }}
               />
-            </button>
-          </div>
-          <ScriptEditor
-            isLoaded={isLoaded}
-            isLoading={isLoading}
-            error={error}
-            onChange={this.handleEditorChange}
-            onRunCommand={this.handleRunCommand}
-            session={session}
-            sessionLanguage={sessionLanguage}
-            settings={settings}
-            focusOnMount={focusOnMount}
-            ref={notebook => {
-              this.notebook = notebook;
-            }}
-          />
+            </>
+          )}
+          {isMarkdown && (
+            <MarkdownNotebook
+              content={settings.value}
+              onLinkClick={this.handleLinkClick}
+              onRunCode={this.handleRunCommand}
+            />
+          )}
           <NewItemModal
             isOpen={showSaveAsModal}
             type="file"
