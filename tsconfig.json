@@ -12,8 +12,7 @@
       "@deephaven/*": [
         "./packages/*/src"
       ]
-    },
-    "preserveWatchOutput": true
+    }
   },
   "files": [],
   "watchOptions": {

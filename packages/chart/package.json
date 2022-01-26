@@ -18,17 +18,13 @@
   "scripts": {
     "build": "cross-env NODE_ENV=production run-p build:*",
     "build-dev": "cross-env NODE_ENV=development run-p build:*",
-    "babel": "babel ./src --out-dir ./dist --extensions \".ts,.tsx,.js,.jsx\" --source-maps --root-mode upward --verbose",
+    "babel": "babel ./src --out-dir ./dist --extensions \".ts,.tsx,.js,.jsx\" --source-maps --root-mode upward",
     "sass": "sass ./src:./dist",
-    "types": "tsc -b",
     "build:babel": "npm run babel",
     "build:sass": "npm run sass",
     "watch": "run-p watch:*",
     "watch:babel": "npm run babel -- -w --skip-initial-build",
     "watch:sass": "npm run sass -- --watch --update",
-    "clean": "run-p clean:*",
-    "clean:types": "tsc -b --clean",
-    "clean:build": "rimraf ./dist",
     "prestart": "npm run build-dev",
     "start": "cross-env NODE_ENV=development npm run watch"
   },

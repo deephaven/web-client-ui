@@ -19,13 +19,9 @@
     "build": "cross-env NODE_ENV=production run-p build:*",
     "build-dev": "cross-env NODE_ENV=development run-p build:*",
     "babel": "babel ./src --out-dir ./dist --extensions \".ts,.tsx,.js,.jsx\" --source-maps --root-mode upward",
-    "types": "tsc -b",
     "build:babel": "npm run babel",
     "watch": "run-p watch:*",
     "watch:babel": "npm run babel -- -w --skip-initial-build",
-    "clean": "run-p clean:*",
-    "clean:types": "tsc -b --clean",
-    "clean:build": "rimraf ./dist",
     "prestart": "npm run build-dev",
     "start": "cross-env NODE_ENV=development npm run watch"
   },
