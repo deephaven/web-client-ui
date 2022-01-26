@@ -103,7 +103,6 @@ export class ServerWidgetPanel extends React.Component<
 
       const { glEventHub, metadata } = this.props;
       const { name } = metadata;
-      const { model } = this.state;
       glEventHub.emit(
         IrisGridEvent.OPEN_GRID,
         `${name} ${type} ${index}`,
