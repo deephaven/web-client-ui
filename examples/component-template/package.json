@@ -26,8 +26,6 @@
     "watch:sass": "npm run sass -- --watch --update",
     "prestart": "npm run build-dev",
     "start": "cross-env NODE_ENV=development npm run watch",
-    "test": "jest --watch",
-    "test:ci": "jest",
     "storybook": "start-storybook -p 6006",
     "build-storybook": "build-storybook"
   },

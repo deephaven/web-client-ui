@@ -16,4 +16,9 @@
     "src/**/*.stories.*",
     "src/**/__mocks__/*"
   ],
+  "references": [
+    {
+      "path": "../log"
+    },
+  ]
 }
