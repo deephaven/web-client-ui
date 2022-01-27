@@ -502,6 +502,11 @@ class NotebookPanel extends Component {
       /%20/g,
       ' '
     );
+    if (notebookPath === '/') {
+      log.debug('Ignoring invalid notebook link', notebookPath);
+      return;
+    }
+
     log.debug('Notebook link clicked, opening', notebookPath);
 
     const { glEventHub } = this.props;
@@ -702,6 +707,11 @@ class NotebookPanel extends Component {
   handleTransformLinkUri(src) {
     const { notebooksUrl } = this.props;
     const { fileMetadata } = this.state;
+
+    if (src.charAt(0) === '/') {
+      return `${notebooksUrl}${src}`;
+    }
+
     let itemName = fileMetadata?.itemName;
     if (!itemName) {
       return src;
@@ -711,9 +721,6 @@ class NotebookPanel extends Component {
     }
 
     const itemUri = new URL(itemName, notebooksUrl);
-    if (src.charAt(0) === '/') {
-      return `${notebooksUrl}${src}`;
-    }
     return new URL(src, itemUri).href;
   }
 

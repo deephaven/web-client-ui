@@ -22,12 +22,27 @@ export class MarkdownNotebook extends PureComponent {
     this.editorScrollView = React.createRef();
 
     this.state = {
+      hasCode: false,
+
       // Keep track if any code has been executed yet. If not, make the run button flash
       hasRunCode: false,
 
       // Line of the next block to execute. Null to start at the first block
       nextStartLine: null,
     };
+  }
+
+  componentDidUpdate() {
+    this.updateHasCode();
+  }
+
+  updateHasCode() {
+    const { hasCode } = this.state;
+    if (this.commands.size === 0 && hasCode) {
+      this.setState({ hasCode: false });
+    } else if (this.commands.size > 0 && !hasCode) {
+      this.setState({ hasCode: true });
+    }
   }
 
   /**
@@ -149,19 +164,19 @@ export class MarkdownNotebook extends PureComponent {
 
   render() {
     const { content, transformImageUri, transformLinkUri } = this.props;
-    const { hasRunCode, nextStartLine } = this.state;
+    const { hasCode, hasRunCode, nextStartLine } = this.state;
     return (
       <div className="markdown-notebook">
         <div className="markdown-notebook-toolbar">
           <Button
             className={classNames('btn-play-selected-cell', {
-              flashing: !hasRunCode,
+              flashing: hasCode && !hasRunCode,
             })}
             kind="ghost"
             icon={vsPlay}
             onClick={this.handleRunSelected}
             tooltip="Run code and select next"
-            disabled={hasRunCode && nextStartLine == null}
+            disabled={(hasRunCode && nextStartLine == null) || !hasCode}
           >
             Run Selected Code
           </Button>

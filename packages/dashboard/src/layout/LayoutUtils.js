@@ -441,9 +441,10 @@ class LayoutUtils {
 
     const searchConfig = { id: config.id };
 
-    const oldContentItem = searchConfig
-      ? LayoutUtils.getContentItemInStack(stack, searchConfig)
-      : null;
+    const oldContentItem = LayoutUtils.getContentItemInStack(
+      stack,
+      searchConfig
+    );
 
     if (replaceExisting && oldContentItem) {
       const index = stack.contentItems.indexOf(oldContentItem);
