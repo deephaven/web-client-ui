@@ -16,7 +16,9 @@ class ChartModelFactory {
    * @param {string[]} settings.hiddenSeries Array of hidden series names
    * @param {dh.Table} table The table to build the model for
    * @param {Object} theme The theme for the figure. Defaults to ChartTheme
-   * @returns {Promise<FigureChartModel>} The FigureChartModel representing the figure
+   * @returns {Promise<ChartModel | FigureChartModel>} The FigureChartModel representing the figure
+   * CRA sets tsconfig to type check JS based on jsdoc comments. It isn't able to figure out FigureChartModel extends ChartModel
+   * This causes TS issues in 1 or 2 spots. Once this is TS it can be returned to just FigureChartModel
    */
   static async makeModelFromSettings(settings, table, theme = ChartTheme) {
     // Copy the table first and then re-apply the filters from the original table
@@ -46,7 +48,9 @@ class ChartModelFactory {
    * @param {string[]} settings.hiddenSeries Array of hidden series names
    * @param {dh.Figure} figure The figure to build the model for
    * @param {Object} theme The theme for the figure. Defaults to ChartTheme
-   * @returns {Promise<FigureChartModel>} The FigureChartModel representing the figure
+   * @returns {Promise<ChartModel | FigureChartModel>} The FigureChartModel representing the figure
+   * CRA sets tsconfig to type check JS based on jsdoc comments. It isn't able to figure out FigureChartModel extends ChartModel
+   * This causes TS issues in 1 or 2 spots. Once this is TS it can be returned to just FigureChartModel
    */
   static async makeModel(settings, figure, theme = ChartTheme) {
     return new FigureChartModel(figure, settings, theme);

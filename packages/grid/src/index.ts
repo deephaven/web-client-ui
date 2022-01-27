@@ -1,3 +1,5 @@
+export * from './EditableGridModel';
+export * from './ExpandableGridModel';
 export { default as Grid } from './Grid';
 export { default as GridMetricCalculator } from './GridMetricCalculator';
 export * from './GridMetricCalculator';

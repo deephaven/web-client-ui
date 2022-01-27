@@ -5,9 +5,10 @@ This is an example which is setup to build components using Typescript, React, a
 ## Usage
 
 1. Copy this folder into a new folder within the `packages` directory.
-1. Open `package.json` in your new directory and give your package a new name. Lerna will ignore any packages with the name `@deephaven/component-template`
-1. In the root of all the packages, run `npm bootstrap`. This will use lerna to install dependencies and symlink our packages together.
-1. Add your package to the Dockerfile at the root of these packages. You will need to add lines to copy the appropriate files in all sections where there are several copy commands.
+1. Open `package.json` in your new directory and give your package a new name
+1. Add any packages this package depends on to dependencies and tsconfig references. If other packages depend on this update their package.json and tsconfig as needed.
+1. Add this package to the root tsconfig references. The root tsconfig is used to type check all packages efficiently.
+1. In the root of all the packages, run `npm install`. This will use lerna to install dependencies and symlink our packages together.
 
 ## Consuming the Component
 
@@ -24,7 +25,7 @@ The defualt entry point is `src/index.ts`. The entry point should serve as a col
 
 ## Build
 
-The build step will transpile TS to JS (using Babel), generate type declarations (using TSC), compile Sass to CSS (using dart-sass), and update .scss imports to import .css files (using Babel). Everything will be put in the `dist` folder. The babel config is located at the root of the web client-ui packages. You can extend/override parts of it by creating a `.babelrc`
+The build step will transpile TS to JS (using Babel), compile Sass to CSS (using dart-sass), and update .scss imports to import .css files (using Babel). Type checks will be done by the root tsconfig through project references. Everything will be put in the `dist` folder. The babel config is located at the root of the web client-ui packages. You can extend/override parts of it by creating a `.babelrc`
 
 All JS/TS/JSX/TSX files you want in the output MUST be in `./src` since it is set as the `rootDir` in `tsconfig.json`
 
@@ -40,7 +41,7 @@ The reason we use Babel and TSC is Babel doesn't actually type check TypeScript.
 
 ## Test
 
-`npm test` will run Jest tests in watch mode. There are tests which run ESLint and Stylelint on all applicable files already included in `src/test`. Remove the Stylelint test if there is no Sass usage in the package.
+Tests are run from the monorepo root. If any Jest configs need to be changed, modify `jest.config.cjs` in the specific package folder.
 
 ## Linting
 

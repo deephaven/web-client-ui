@@ -10,13 +10,11 @@
     "dist"
   ],
   "scripts": {
-    "clean": "rimraf ./dist",
     "prestart": "npm run build",
     "start": "npm run watch",
     "watch": "chokidar \"src/**/*\" -c \"npm run build\"",
     "svgo-dh": "svgo -q -f ./src/icons/ -o ./dist/svg/dh --config ./config.yml",
     "svgo-vs": "svgo -q -f '../../node_modules/@vscode/codicons/src/icons/' -o ./dist/svg/vs --config ./config.yml",
-    "prebuild": "npm run clean",
     "build": "run-s build:icons build:js",
     "build:icons": "run-p svgo-dh svgo-vs",
     "build:js": "node ./scripts/build.js"
