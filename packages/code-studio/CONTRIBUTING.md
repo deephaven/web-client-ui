@@ -1,78 +1,62 @@
 # Contributing
 
-When contributing to the Web UI source, please follow our internal code branching/review process: https://wiki-internal.illumon.com/Internal/Illumon_GitFlow_Code_Review_Process
+This guide will serve as a reference for contributing to the Deephaven.
 
-Note that some of these steps don't apply as much to web contributions. A step-by-step guide is provided below.
+## Getting the source
 
-In addition, the unit tests for web must all pass (run `npm test`).
+Deephaven uses the [Forking Workflow](https://www.atlassian.com/git/tutorials/comparing-workflows/forking-workflow).  In this workflow, the [deephaven/deephaven-core](https://github.com/deephaven/deephaven-core) repository contains a minimum number of branches, and development work happens in user-forked repositories.
 
-## Setting up for dev
+To learn more see:
+* [Forking Workflow](https://www.atlassian.com/git/tutorials/comparing-workflows/forking-workflow)
+* [Forking Projects](https://guides.github.com/activities/forking/)
+* [Fork A Repo](https://docs.github.com/en/github/getting-started-with-github/fork-a-repo)
+* [Working With Forks](https://docs.github.com/en/github/collaborating-with-issues-and-pull-requests/working-with-forks)
 
-1.  Checkout latest of the branch the ticket release targets (e.g. web/powell, rc/treasureplus)
-2.  Create new branch named yourname_IDS-#### based on the target branch
-    ```
-    git checkout web/powell
-    git pull
-    git checkout -b yourname_IDS-####
-    ```
-3.  Update ticket status in Aha! to “In Development”
-4.  Add branch name to the field in Aha!
+To get started quickly:
+1) Navigate to [https://github.com/deephaven/deephaven-core](https://github.com/deephaven/deephaven-core).
+2) Click `Fork` in the top right corner.
+3) `git clone git@github.com:<username>/deephaven-core.git`
+4) Commit changes to your own branches in your forked repository.
 
-## Development
+For details on working with git on GitHub, see:
+* [Cloning a repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository)
+* [Connecting to GitHub with SSH](https://docs.github.com/en/authentication/connecting-to-github-with-ssh) 
+* [Troubleshooting cloning errors](https://docs.github.com/en/repositories/creating-and-managing-repositories/troubleshooting-cloning-errors)
+* [Pushing commits to a remote repository](https://docs.github.com/en/get-started/using-git/pushing-commits-to-a-remote-repository)
 
-1.  Develop feature/fix and commit
-2.  Ensure unit tests pass with `npm test`
+Forked repositories do not have access to the same tokens/secrets as the [deephaven/deephaven-core](https://github.com/deephaven/deephaven-core) repository, so GitHub actions will fail. To disable GitHub actions in your forked repository, go to "Actions" -> "Disable Actions" in your forked repository settings (`https://github.com/<username>/deephaven-core/settings/actions`).
 
-## Rebasing before review
+Over time, forks will get out of sync with the upstream repository.  To stay up to date, either:
+* Navigate to `https://github.com/<username>/deephaven-core` and click on `Fetch upstream`, or
+* Follow these directions on [Syncing A Fork](https://docs.github.com/en/github/collaborating-with-issues-and-pull-requests/syncing-a-fork).
 
-1.  Before going to review (and before merge request), you should rebase your branch on top of the base. This applies all of your commits after the latest commit in the base branch.
-    ```
-    git fetch origin
-    git rebase origin/web/powell (or whatever the starting branch was)
-    ```
-2.  Fix any rebase issues git gives you (usually avoided by making sure you do not perform a merge at any point in development), then `git push -f`
+## Building and Running
+For instructions on building and running, see [Build and launch from source](https://deephaven.io/core/docs/how-to-guides/launch-build/).
 
-## Posting for review
+## Creating a Pull Request
+Pull requests can be created through the GitHub website or through the GitHub CLI.
 
-1.  Post to reviewboard. You can use the rb bash script given on the [internal wiki GitFlow page](https://wiki-internal.illumon.com/Internal/Illumon_GitFlow_Code_Review_Process). Usage is `rb baseBranch new IDS-####` for initial review
-2.  Go to the reviewboard link and assign a reviewer (like Bender)
-3.  Update the review name to match the Aha! ticket description (IDS-####: Description)
-4.  Put what testing you did or testing that needs to be done
-5.  Copy that same testing to the testing plan box on Aha! (unless final testing needs to be more thorough, different)
-6.  Publish reviewboard request. The request defaults to a draft state.
-7.  Copy reviewboard link to the space in Aha!
-8.  Move Aha! status to “Ready to review”
-9.  Add the reviewer you added on reviewboard to the Code Reviewer slot in Aha!
+### GitHub Web
 
-## Review comments
+Follow the directions in [Creating A Pull Request From A Fork](https://docs.github.com/en/github/collaborating-with-issues-and-pull-requests/creating-a-pull-request-from-a-fork).
 
-1.  Address any needed updates from review.
-2.  Rebase on top of the base branch again
-3.  Update reviewboard entry. Using the bash script from wiki, syntax is `rb baseBranch update updateMsg`
-4.  Go to reviewboard site and publish the update
+### GitHub CLI
 
-## Merge Request
+1) [Install GitHub command line tool](https://github.com/cli/cli).  
+2) On the command line, cd into your checked-out fork/branch.
+3) `gh pr create -f -w`
+    * Use `deephaven/deephaven-core` as the base repository.
+    * Use `<username>/deephaven-core` as the repository to push to.
+4) Your changes should automatically get pushed, and then a new pull request with your changes should open up in your browser. 
+5) Complete the information in the pull request and click `Create pull request`.
 
-1.  Once no more updates are needed, rebase one last time.
-    ```
-    git fetch origin
-    git rebase origin/web/powell (or whatever the starting branch was)
-    git push -f
-    ```
-2.  If committing to `web/branch`, skip this step. If committing to `rc/branch`, update the changelog for the release (e.g. powell) and bump the version number for the release in `gradle/` which is at the root of the entire repo
-3.  Submit a merge request on Gitlab. Source is your branch, target is the base (e.g. web/powell)
-4.  Title the merge request to match the Aha! name (IDS-####: Description)
-5.  Click the edit button on the right side of reviewers and add someone (e.g. Bender)
-6.  Check the 2 boxes to delete branch and squash commits on merge
-7.  Submit request
-8.  Copy gitlab link to the Merge Request field in Aha!
-9.  Close reviewboard item by marking as submitted
+For more information, see:
+* [gh pr create](https://cli.github.com/manual/gh_pr_create)
+* [CLI In Use](https://cli.github.com/manual/examples.html)
 
-## Finalizing
+## Styleguide
+The [styleguide](style/README.md) is applied globally to the entire project, except for generated code that gets checked in.
+To apply the styleguide, run `./gradlew spotlessApply`.
 
-1.  Once merge is complete, check that Aha! has a branch name, reviewboard link, reviewer, merge request link, test plan (if needed), and documentation required (if needed)
-2.  Update Aha! to “Ready to test” (or “Ready to ship” if it’s a dev only ticket that doesn’t impact prod systems at all)
-
-## Exceptions
-
-Very small/quick changes/fixes (like a typo in a config file) may skip reviewboard and go straight to a merge request. This is pretty rare, and you should verify w/ the team before skipping reviewboard.
+## Deephaven Contributor License Agreement (CLA)
+The [Deephaven Contributor License Agreement (CLA)](https://github.com/deephaven/cla/blob/main/CLA.md) must be accepted before a pull request can be merged.  A bot monitors all pull requests.  Follow the instructions from the bot in the pull request comments to accept the CLA.  The Deephaven CLA and associated signatures are maintained at [https://github.com/deephaven/cla](https://github.com/deephaven/cla).
