@@ -10,7 +10,6 @@ import Plot from './plotly/Plot';
 
 import ChartModel from './ChartModel';
 import ChartUtils from './ChartUtils';
-import ChartConstants from './Chart.module.scss';
 import './Chart.scss';
 
 const log = Log.module('Chart');
@@ -35,12 +34,20 @@ export class Chart extends Component {
 
   static downsampleButtonTitle(isDownsampleInProgress, isDownsamplingDisabled) {
     if (isDownsampleInProgress) {
-      return ChartConstants['title-downsampling-in-progress'];
+      return 'Downsampling in progress...';
     }
 
     return isDownsamplingDisabled
-      ? ChartConstants['title-downsampling-disabled']
-      : ChartConstants['title-downsampling-enabled'];
+      ? 'Downsampling disabled, click to enable'
+      : 'Downsampling enabled, click to disable';
+  }
+
+  static downsampleButtonAttr(isDownsampleInProgress, isDownsamplingDisabled) {
+    if (isDownsampleInProgress) {
+      return 'animation-spin';
+    }
+
+    return isDownsamplingDisabled ? undefined : 'fill-active';
   }
 
   constructor(props) {
@@ -118,9 +125,10 @@ export class Chart extends Component {
       const customButtons = [];
       if (downsamplingError) {
         customButtons.push({
-          name: `${ChartConstants['title-downsampling-failed']}: ${downsamplingError}`,
+          name: `Downsampling failed: ${downsamplingError}`,
           click: () => {},
           icon: Chart.convertIcon(dhWarningFilled),
+          attr: 'fill-warning',
         });
       }
 
@@ -134,11 +142,17 @@ export class Chart extends Component {
           isDownsampleInProgress,
           isDownsamplingDisabled
         );
+        const attr = Chart.downsampleButtonAttr(
+          isDownsampleInProgress,
+          isDownsamplingDisabled
+        );
+
         const icon = isDownsampleInProgress ? vsLoading : dhGraphLineDown;
         customButtons.push({
           name,
           icon: Chart.convertIcon(icon),
           click: this.handleDownsampleClick,
+          attr,
         });
       }
 

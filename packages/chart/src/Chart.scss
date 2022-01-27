@@ -5,10 +5,6 @@ $plotly-notifier-margin-right: 15px;
 $plotly-notifier-note-bg: $gray-600;
 $plotly-notifier-note-border-radius: 2px;
 $plotly-color-btn-active: rgba(255, 255, 255, 0.7);
-$title-downsampling-in-progress: 'Downsampling in progress...';
-$title-downsampling-failed: 'Downsampling failed';
-$title-downsampling-enabled: 'Downsampling enabled, click to disable';
-$title-downsampling-disabled: 'Downsampling disabled, click to enable';
 
 .plotly-notifier {
   margin-right: $plotly-notifier-margin-right;
@@ -74,15 +70,14 @@ $title-downsampling-disabled: 'Downsampling disabled, click to enable';
     //aggressive set as 1001 by plotly, no need for it to be explicitly above anything
     z-index: auto;
 
-    // Can't add a custom class to the button, so we need to match on the title
     .modebar-btn {
-      &[data-title='#{$title-downsampling-in-progress}'] {
+      &[data-attr='animation-spin'] {
         svg {
           animation: fa-spin 2s infinite linear;
         }
       }
 
-      &[data-title='#{$title-downsampling-enabled}'] {
+      &[data-attr='fill-active'] {
         svg {
           path {
             fill: $plotly-color-btn-active !important;
@@ -90,7 +85,7 @@ $title-downsampling-disabled: 'Downsampling disabled, click to enable';
         }
       }
 
-      &[data-title^='#{$title-downsampling-failed}'] {
+      &[data-attr='fill-warning'] {
         svg {
           path {
             fill: $warning !important;
