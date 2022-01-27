@@ -8,13 +8,35 @@ This project was bootstrapped with [Create React App](https://github.com/faceboo
 2. **Install dependencies**: Run `npm install` to install all dependencies required.
 3. **Start the UI**: Run `npm start` to start up the UI. It should automatically open up at http://localhost:4010.
 
+## Query Parameters
+
+- `name`: Required. The name of the table to load
+- `canCopy`: Optional. Add this query param to enable copy functionality (no value required)
+- `canDownloadCsv`: Optional. Add this query param to enable exporting to CSV functionality (no value required)
+
+## API
+
+The iframe provides an API to perform some basic actions with the table loaded. Use by posting the command/value as a [postMessage](https://developer.mozilla.org/en-US/docs/Web/API/Window/postMessage) to the `contentWindow` of the iframe element, e.g. `document.getElementById('my-iframe').contentWindow.postMessage({ command, value }, 'http://localhost:4010')`
+
+### Filtering
+
+Command: `filter`
+Value: `{ name: string; value: string }[]` - Provide an array of column name and quick filter values to set.
+Example: `document.getElementById('my-iframe').contentWindow.postMessage({ command: 'filter', value: [{ name: 'A', value: '>50' }, { name: 'B', value: '<4' } ] }, 'http://localhost:4010')`
+
+### Sorting
+
+Command: 'sort'
+Value: `{ name: string, direction?: 'ASC' | 'DESC' }[]` - Provide an array of column names to sort on, and optionally the sort direction (defaults to `'ASC'`);
+Example: `document.getElementById('my-iframe').contentWindow.postMessage({ command: 'sort', value: [{ name: 'A' }, { name: 'B', direction: 'DESC' } ] }, 'http://localhost:4010')`
+
 ## Advanced
 
 ### Application Mode
 
 See the guide for how to set up core in Application Mode: https://deephaven.io/core/docs/how-to-guides/app-mode/
 
-Once Deephaven is running, you can open a table with a specific name by adding the query param `tableName`, e.g. http://localhost:4010/?tableName=world
+Once Deephaven is running, you can open a table with a specific name by adding the query param `name`, e.g. http://localhost:4010/?name=world
 
 ### Configuring Server Address
 

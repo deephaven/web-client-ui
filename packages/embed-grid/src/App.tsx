@@ -4,6 +4,7 @@ import {
   IrisGrid,
   IrisGridModel,
   IrisGridModelFactory,
+  TableUtils,
 } from '@deephaven/iris-grid'; // iris-grid is used to display Deephaven tables
 import dh from '@deephaven/jsapi-shim'; // Import the shim to use the JS API
 import Log from '@deephaven/log';
@@ -11,7 +12,18 @@ import './App.scss'; // Styles for in this app
 
 const log = Log.module('EmbedGrid.App');
 
-const FILTER_COMMAND = 'filter';
+export type Command = 'filter' | 'sort';
+
+/** Input value for filter commands */
+export type FilterCommandType = {
+  name: string;
+  value: string;
+};
+
+export type SortCommandType = {
+  name: string;
+  direction?: 'ASC' | 'DESC';
+};
 
 /**
  * Load an existing Deephaven table with the session provided
@@ -28,8 +40,8 @@ async function loadTable(session: typeof dh.Session, name: string) {
 
 /**
  * A functional React component that displays a Deephaven table in an IrisGrid using the @deephaven/iris-grid package.
- * If the query param `tableName` is provided, it will attempt to open and display that table, expecting it to be present on the server.
- * E.g. http://localhost:3000/?tableName=myTable will attempt to open a table `myTable`
+ * It will attempt to open and display the table specified with the `name` parameter, expecting it to be present on the server.
+ * E.g. http://localhost:3000/?name=myTable will attempt to open a table `myTable`
  * If no query param is provided, it will attempt to open a new session and create a basic time table and display that.
  * By default, tries to connect to the server defined in the REACT_APP_CORE_API_URL variable, which is set to http://localhost:1000/jsapi
  * See create-react-app docs for how to update these env vars: https://create-react-app.dev/docs/adding-custom-environment-variables/
@@ -37,14 +49,15 @@ async function loadTable(session: typeof dh.Session, name: string) {
 function App(): JSX.Element {
   const [model, setModel] = useState<IrisGridModel>();
   const [error, setError] = useState<string>();
-  const [inputFilters, setInputFilters] = useState();
+  const [inputFilters, setInputFilters] = useState<unknown[]>();
+  const [sorts, setSorts] = useState<unknown[]>();
   const [isLoading, setIsLoading] = useState(true);
   const searchParams = useMemo(
     () => new URLSearchParams(window.location.search),
     []
   );
-  const canCopy = searchParams.get('canCopy') === '1';
-  const canDownloadCsv = searchParams.get('canDownloadCsv') === '1';
+  const canCopy = searchParams.get('canCopy') != null;
+  const canDownloadCsv = searchParams.get('canDownloadCsv') != null;
 
   const initApp = useCallback(async () => {
     try {
@@ -63,17 +76,17 @@ function App(): JSX.Element {
       log.debug(`Starting session...`);
       const session = await connection.startSession('python');
 
-      // Get the table name from the query param `tableName`.
-      const tableName = searchParams.get('tableName');
+      // Get the table name from the query param `name`.
+      const name = searchParams.get('name');
 
-      if (!tableName) {
-        throw new Error('No tableName param provided');
+      if (!name) {
+        throw new Error('No name param provided');
       }
 
-      log.debug('Loading table', tableName, '...');
+      log.debug('Loading table', name, '...');
 
       // Load the table up.
-      const table = await loadTable(session, tableName);
+      const table = await loadTable(session, name);
 
       // Create the `IrisGridModel` for use with the `IrisGrid` component
       log.debug(`Creating model...`);
@@ -96,14 +109,40 @@ function App(): JSX.Element {
 
   useEffect(() => {
     function receiveMessage(e: MessageEvent) {
-      const { command, value } = e.data;
+      const { command, value } = e.data as { command: Command; value: unknown };
       switch (command) {
-        case FILTER_COMMAND:
-          setInputFilters(value);
+        case 'filter': {
+          const filterCommandValues = value as FilterCommandType[];
+          const newInputFilters = filterCommandValues.map(
+            ({ name, value: filterValue }) => {
+              const column = model?.columns.find(c => c.name === name);
+              if (column == null) {
+                throw new Error(`Could not find column named ${name}`);
+              }
+              return {
+                name,
+                value: filterValue,
+                type: TableUtils.getNormalizedType(column.type),
+              };
+            }
+          );
+          setInputFilters(newInputFilters);
           break;
-        default:
-          log.warn('Unrecognized message', e.data);
+        }
+        case 'sort': {
+          const sortCommandValues = value as SortCommandType[];
+          const newSorts = sortCommandValues.map(({ name, direction }) => {
+            const column = model?.columns.find(c => c.name === name);
+            if (column == null) {
+              throw new Error(`Could not find column named ${name}`);
+            }
+            return direction === 'DESC'
+              ? column.sort().asc()
+              : column.sort().desc();
+          });
+          setSorts(newSorts);
           break;
+        }
       }
     }
     window.addEventListener('message', receiveMessage);
@@ -123,6 +162,7 @@ function App(): JSX.Element {
           canDownloadCsv={canDownloadCsv}
           model={model}
           inputFilters={inputFilters}
+          sorts={sorts}
         />
       )}
       {!isLoaded && (

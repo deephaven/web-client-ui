@@ -418,6 +418,7 @@ export class IrisGrid extends Component {
       settings,
       model,
       customFilters,
+      sorts,
     } = this.props;
 
     if (model !== prevProps.model) {
@@ -441,6 +442,7 @@ export class IrisGrid extends Component {
         this.clearGridInputField();
         this.clearCrossColumSearch();
       }
+      this.startLoading('Filtering...', true);
       this.applyInputFilters(changedInputFilters, replaceExistingFilters);
     }
 
@@ -452,6 +454,9 @@ export class IrisGrid extends Component {
     }
     if (customFilters !== prevProps.customFilters) {
       this.startLoading('Filtering...', true);
+    }
+    if (sorts !== prevProps.sorts) {
+      this.updateSorts(sorts);
     }
 
     const { loadingScrimStartTime, loadingScrimFinishTime } = this;
@@ -1593,6 +1598,10 @@ export class IrisGrid extends Component {
       modelColumn,
       addToExisting
     );
+    this.updateSorts(sorts);
+  }
+
+  updateSorts(sorts) {
     this.startLoading('Sorting...');
     this.setState({ sorts });
     this.grid.forceUpdate();
