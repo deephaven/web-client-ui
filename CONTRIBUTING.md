@@ -47,7 +47,7 @@ Follow the directions in [Creating A Pull Request From A Fork](https://docs.gith
 1. [Install GitHub command line tool](https://github.com/cli/cli).
 2. On the command line, cd into your checked-out fork/branch.
 3. `gh pr create -f -w`
-   - Use `deephaven/web-client` as the base repository.
+   - Use `deephaven/web-client-ui` as the base repository.
    - Use `<username>/web-client-ui` as the repository to push to.
 4. Your changes should automatically get pushed, and then a new pull request with your changes should open up in your browser.
 5. Complete the information in the pull request and click `Create pull request`.
