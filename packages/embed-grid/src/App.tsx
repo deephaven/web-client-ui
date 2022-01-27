@@ -137,8 +137,8 @@ function App(): JSX.Element {
               throw new Error(`Could not find column named ${name}`);
             }
             return direction === 'DESC'
-              ? column.sort().asc()
-              : column.sort().desc();
+              ? column.sort().desc()
+              : column.sort().asc();
           });
           setSorts(newSorts);
           break;
