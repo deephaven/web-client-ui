@@ -1,11 +1,11 @@
 import React, { PureComponent } from 'react';
+import classNames from 'classnames';
 import PropTypes from 'prop-types';
 import Markdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { Button } from '@deephaven/components';
 import { Code } from '@deephaven/console';
-import classNames from 'classnames';
 import { vsPlay } from '@deephaven/icons';
-import remarkGfm from 'remark-gfm';
 import './MarkdownNotebook.scss';
 
 export class MarkdownNotebook extends PureComponent {
@@ -28,19 +28,6 @@ export class MarkdownNotebook extends PureComponent {
       // Line of the next block to execute. Null to start at the first block
       nextStartLine: null,
     };
-  }
-
-  componentDidUpdate(prevProps) {
-    const { content } = this.props;
-    if (prevProps.content !== content) {
-      this.resetBlocks();
-    }
-  }
-
-  resetBlocks() {
-    this.codeElements.clear();
-    this.commands.clear();
-    this.setState({ nextStartLine: null });
   }
 
   /**

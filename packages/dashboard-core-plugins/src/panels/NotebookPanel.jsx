@@ -77,6 +77,7 @@ class NotebookPanel extends Component {
     this.handleEditorChange = this.handleEditorChange.bind(this);
     this.handleFind = this.handleFind.bind(this);
     this.handleFocus = this.handleFocus.bind(this);
+    this.handleLinkClick = this.handleLinkClick.bind(this);
     this.handleLoadSuccess = this.handleLoadSuccess.bind(this);
     this.handleLoadError = this.handleLoadError.bind(this);
     this.handlePanelTabClick = this.handlePanelTabClick.bind(this);
@@ -97,6 +98,7 @@ class NotebookPanel extends Component {
     this.handleTab = this.handleTab.bind(this);
     this.handleTabFocus = this.handleTabFocus.bind(this);
     this.handleTabBlur = this.handleTabBlur.bind(this);
+    this.handleTransformLinkUri = this.handleTransformLinkUri.bind(this);
 
     this.pending = new Pending();
 
@@ -483,6 +485,40 @@ class NotebookPanel extends Component {
     this.setState({ isFocused: true });
   }
 
+  /**
+   * @param {MouseEvent} event The click event from clicking on the link
+   */
+  handleLinkClick(event) {
+    const { notebooksUrl, session, sessionLanguage } = this.props;
+    const { href } = event.target;
+    if (!href || !href.startsWith(notebooksUrl)) {
+      return;
+    }
+
+    event.stopPropagation();
+    event.preventDefault();
+
+    const notebookPath = `/${href.substring(notebooksUrl.length)}`.replace(
+      /%20/g,
+      ' '
+    );
+    log.debug('Notebook link clicked, opening', notebookPath);
+
+    const { glEventHub } = this.props;
+    const notebookSettings = {
+      value: null,
+      language: sessionLanguage,
+    };
+    const fileMetadata = { id: notebookPath, itemName: notebookPath };
+    glEventHub.emit(
+      NotebookEvent.SELECT_NOTEBOOK,
+      session,
+      sessionLanguage,
+      notebookSettings,
+      fileMetadata
+    );
+  }
+
   handleLoadSuccess() {
     this.setState({
       error: null,
@@ -621,10 +657,9 @@ class NotebookPanel extends Component {
 
   handleShow() {
     log.debug('handleShow');
-    if (!this.notebook) {
-      return;
+    if (this.notebook) {
+      this.notebook.updateDimensions();
     }
-    this.notebook.updateDimensions();
   }
 
   handleShowRename() {
@@ -657,6 +692,29 @@ class NotebookPanel extends Component {
   handlePanelTabClick() {
     log.debug('handlePanelTabClick');
     this.focus();
+  }
+
+  /**
+   * Transform the link URI to load from where the notebook is if it's relative
+   * @param {String} src The link to transform
+   * @returns String the transformed link
+   */
+  handleTransformLinkUri(src) {
+    const { notebooksUrl } = this.props;
+    const { fileMetadata } = this.state;
+    let itemName = fileMetadata?.itemName;
+    if (!itemName) {
+      return src;
+    }
+    if (itemName.charAt(0) === '/') {
+      itemName = itemName.substring(1);
+    }
+
+    const itemUri = new URL(itemName, notebooksUrl);
+    if (src.charAt(0) === '/') {
+      return `${notebooksUrl}${src}`;
+    }
+    return new URL(src, itemUri).href;
   }
 
   focus() {
@@ -718,12 +776,6 @@ class NotebookPanel extends Component {
     });
   }
 
-  layout() {
-    if (this.notebook) {
-      this.notebook.updateDimensions();
-    }
-  }
-
   render() {
     const {
       fileStorage,
@@ -750,7 +802,7 @@ class NotebookPanel extends Component {
     const focusOnMount =
       isDashboardActive && !glContainer.isHidden && !isPreview;
     const itemName = fileMetadata?.itemName ?? NotebookPanel.DEFAULT_NAME;
-    const isMarkdown = itemName.endsWith('.mid');
+    const isMarkdown = itemName.endsWith('.md');
     const isExistingItem = fileMetadata?.id != null;
     const overflowActions = this.getOverflowActions();
     const settings = {
@@ -903,6 +955,8 @@ class NotebookPanel extends Component {
               content={settings.value}
               onLinkClick={this.handleLinkClick}
               onRunCode={this.handleRunCommand}
+              transformImageUri={this.handleTransformLinkUri}
+              transformLinkUri={this.handleTransformLinkUri}
             />
           )}
           <NewItemModal
@@ -951,6 +1005,7 @@ NotebookPanel.propTypes = {
     settings: PropTypes.shape({}),
     fileMetadata: PropTypes.shape({}),
   }).isRequired,
+  notebooksUrl: PropTypes.string,
 };
 
 NotebookPanel.defaultProps = {
@@ -958,6 +1013,10 @@ NotebookPanel.defaultProps = {
   isPreview: false,
   session: null,
   sessionLanguage: null,
+  notebooksUrl: new URL(
+    `${process.env.REACT_APP_NOTEBOOKS_URL}/`,
+    window.location
+  ).href,
 };
 
 const mapStateToProps = (state, ownProps) => {

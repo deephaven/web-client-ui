@@ -382,7 +382,7 @@ export const ConsolePlugin = ({
       if (previewTabId != null) {
         panelId = previewTabId;
         stack = LayoutUtils.getStackForConfig(layout.root, {
-          // component: NotebookPanel.COMPONENT,
+          component: NotebookPanel.COMPONENT,
           id: panelId,
         });
       }
