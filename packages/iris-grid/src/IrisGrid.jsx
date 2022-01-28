@@ -2830,7 +2830,7 @@ export class IrisGrid extends Component {
       isFilterBarShown,
       showSearchBar,
       canDownloadCsv,
-      this.isToggleSearchAvailable()
+      this.isTableSearchAvailable()
     );
 
     const openOptionsStack = openOptions.map(option => {
