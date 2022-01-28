@@ -5,6 +5,7 @@ import { GridRange, memoizeClear } from '@deephaven/grid';
 import dh from '@deephaven/jsapi-shim';
 import Log from '@deephaven/log';
 import { PromiseUtils } from '@deephaven/utils';
+import deepEqual from 'deep-equal';
 import TableUtils from './TableUtils';
 import Formatter from './Formatter';
 import { TableColumnFormatter } from './formatters';
@@ -67,6 +68,9 @@ class IrisGridTableModel extends IrisGridModel {
     this.totalsTablePromise = null;
     this.totals = null;
     this.totalsDataMap = null;
+
+    this.customColumnList = [];
+    this.formatColumnList = [];
 
     // Map from new row index to their values. Only for input tables that can have new rows added.
     // The index of these rows start at 0, and they are appended at the end of the regular table data.
@@ -306,6 +310,10 @@ class IrisGridTableModel extends IrisGridModel {
   }
 
   get isCustomColumnsAvailable() {
+    return this.table.applyCustomColumns != null;
+  }
+
+  get isConditionalFormatsAvailable() {
     return this.table.applyCustomColumns != null;
   }
 
@@ -834,12 +842,32 @@ class IrisGridTableModel extends IrisGridModel {
   }
 
   get customColumns() {
-    return this.table.customColumns ?? [];
+    return this.customColumnList ?? [];
   }
 
   set customColumns(customColumns) {
+    if (deepEqual(customColumns, this.customColumnList)) {
+      log.debug('Ignore same customColumns');
+      return;
+    }
     this.closeSubscription();
-    this.table.applyCustomColumns(customColumns);
+    this.customColumnList = customColumns;
+    this.table.applyCustomColumns([...customColumns, ...this.formatColumnList]);
+    this.applyViewport();
+  }
+
+  get formatColumns() {
+    return this.formatColumnList;
+  }
+
+  set formatColumns(formatColumns) {
+    if (deepEqual(formatColumns, this.formatColumnList)) {
+      log.debug('Ignore same formatColumns');
+      return;
+    }
+    this.closeSubscription();
+    this.formatColumnList = formatColumns;
+    this.table.applyCustomColumns([...this.customColumnList, ...formatColumns]);
     this.applyViewport();
   }
 

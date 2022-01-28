@@ -1,0 +1,161 @@
+import React, { useCallback, useState } from 'react';
+import classNames from 'classnames';
+import { Button } from '@deephaven/components';
+import Log from '@deephaven/log';
+import { FormatColumnWhereIcon, FormatRowWhereIcon } from '../icons';
+import ColumnFormatEditor, { ConditionConfig } from './ColumnFormatEditor';
+import RowFormatEditor, { RowFormatConfig } from './RowFormatEditor';
+import { ModelColumn } from './ConditionalFormattingUtils';
+import './ConditionalFormatEditor.scss';
+
+const log = Log.module('ConditionalFormatEditor');
+
+export type SaveCallback = (rule: FormattingRule) => void;
+
+export type CancelCallback = () => void;
+
+export type ChangeCallback = (ruleConfig: ConditionConfig) => void;
+
+export enum FormatterType {
+  CONDITIONAL = 'conditional',
+  ROWS = 'rows',
+}
+
+export interface FormattingRule {
+  type: FormatterType;
+  config: ConditionConfig | RowFormatConfig;
+}
+
+export interface ConditionalFormatEditorProps {
+  columns: ModelColumn[];
+  rule?: FormattingRule;
+  onCancel?: CancelCallback;
+  onSave?: SaveCallback;
+  onUpdate?: SaveCallback;
+}
+
+const DEFAULT_CALLBACK = () => undefined;
+
+function getFormatterTypeIcon(option: FormatterType): JSX.Element | undefined {
+  switch (option) {
+    case FormatterType.CONDITIONAL:
+      return <FormatColumnWhereIcon />;
+    case FormatterType.ROWS:
+      return <FormatRowWhereIcon />;
+  }
+}
+
+function getFormatterTypeLabel(option: FormatterType): string {
+  switch (option) {
+    case FormatterType.CONDITIONAL:
+      return 'Conditional';
+    case FormatterType.ROWS:
+      return 'Rows';
+  }
+}
+
+const formatterTypes = [FormatterType.CONDITIONAL, FormatterType.ROWS];
+
+const ConditionalFormatEditor = (
+  props: ConditionalFormatEditorProps
+): JSX.Element => {
+  const {
+    columns,
+    onSave = DEFAULT_CALLBACK,
+    onUpdate = DEFAULT_CALLBACK,
+    onCancel = DEFAULT_CALLBACK,
+    rule: defaultRule,
+  } = props;
+
+  const [selectedFormatter, setFormatter] = useState(
+    defaultRule?.type ?? formatterTypes[0]
+  );
+  const [rule, setRule] = useState(defaultRule);
+
+  const handleCancel = useCallback(() => {
+    onCancel();
+  }, [onCancel]);
+
+  const handleSave = useCallback(() => {
+    if (rule === undefined) {
+      log.error('Rule is not defined.');
+      return;
+    }
+    onSave(rule);
+  }, [onSave, rule]);
+
+  const handleFormatterChange = useCallback(value => {
+    log.debug('handleFormatterChange', value);
+    setFormatter(value);
+  }, []);
+
+  const handleRuleChange = useCallback(
+    ruleConfig => {
+      log.debug('handleRuleChange', ruleConfig, selectedFormatter);
+      const updatedRule = {
+        type: selectedFormatter,
+        config: ruleConfig as ConditionConfig,
+      };
+      setRule(updatedRule);
+      onUpdate(updatedRule);
+    },
+    [onUpdate, selectedFormatter]
+  );
+
+  return (
+    <div className="conditional-format-editor form">
+      <div className="mb-2">
+        <label className="mb-0" htmlFor="formatter-select">
+          Select Formatter
+        </label>
+
+        <div className="formatter-list">
+          {formatterTypes.map((type, index) => (
+            <div key={type} className="formatter-type">
+              <button
+                type="button"
+                className={classNames('btn', 'btn-icon', 'btn-formatter-type', {
+                  active: type === selectedFormatter,
+                })}
+                data-index={index}
+                onClick={() => handleFormatterChange(type)}
+              >
+                {getFormatterTypeIcon(type)}
+                {getFormatterTypeLabel(type)}
+              </button>
+            </div>
+          ))}
+        </div>
+      </div>
+      {selectedFormatter === FormatterType.CONDITIONAL && (
+        <ColumnFormatEditor
+          columns={columns}
+          config={rule?.config as ConditionConfig}
+          onChange={handleRuleChange}
+        />
+      )}
+      {selectedFormatter === FormatterType.ROWS && (
+        <RowFormatEditor
+          columns={columns}
+          config={rule?.config as RowFormatConfig}
+          onChange={handleRuleChange}
+        />
+      )}
+      <hr />
+      <div className="d-flex justify-content-end my-3">
+        <Button kind="secondary" onClick={handleCancel} className="mr-2">
+          Cancel
+        </Button>
+        <Button
+          kind="primary"
+          onClick={handleSave}
+          disabled={rule === undefined}
+        >
+          Save
+        </Button>
+      </div>
+    </div>
+  );
+};
+
+export default ConditionalFormatEditor;

@@ -251,6 +251,10 @@ class IrisGridProxyModel extends IrisGridModel {
     );
   }
 
+  get isConditionalFormatsAvailable() {
+    return this.model.isConditionalFormatsAvailable;
+  }
+
   get isChartBuilderAvailable() {
     return this.model.isChartBuilderAvailable;
   }
@@ -344,6 +348,14 @@ class IrisGridProxyModel extends IrisGridModel {
 
   set customColumns(customColumns) {
     this.model.customColumns = customColumns;
+  }
+
+  get formatColumns() {
+    return this.model.formatColumns;
+  }
+
+  set formatColumns(formatColumns) {
+    this.model.formatColumns = formatColumns;
   }
 
   get rollupConfig() {

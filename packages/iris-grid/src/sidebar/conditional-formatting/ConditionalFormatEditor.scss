@@ -1,0 +1,25 @@
+@import '../../../../components/scss/custom.scss';
+
+.conditional-format-editor {
+  padding: $spacer-3;
+
+  .formatter-list {
+    display: flex;
+    justify-content: flex-start;
+    padding-top: $spacer-2;
+  }
+
+  .formatter-type {
+    margin: 0 $spacer-3 0 0;
+    display: flex;
+  }
+
+  .btn-formatter-type {
+    font-size: smaller;
+    width: 100%;
+  }
+
+  .color-select {
+    padding: 0 2em 0 0.25em;
+  }
+}
