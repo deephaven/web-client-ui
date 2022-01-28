@@ -81,6 +81,25 @@ class IrisGridRenderer extends GridRenderer {
     this.drawPendingRowLine(context, state);
   }
 
+  drawCellContent(context, state, column, row) {
+    const { metrics, model } = state;
+    const { modelColumns, modelRows } = metrics;
+    const modelRow = modelRows.get(row);
+    const modelColumn = modelColumns.get(column);
+    const value = model.valueForCell(modelColumn, modelRow);
+    if (
+      value == null &&
+      TableUtils.isTextType(model.columns[modelColumn].type)
+    ) {
+      const originalFont = context.font;
+      context.font = `italic ${originalFont}`;
+      super.drawCellContent(context, state, column, row, 'null');
+      context.font = originalFont;
+    } else {
+      super.drawCellContent(context, state, column, row);
+    }
+  }
+
   drawGroupedColumnLine(context, state) {
     const { metrics, model, theme } = state;
     const { groupedColumns, columns } = model;

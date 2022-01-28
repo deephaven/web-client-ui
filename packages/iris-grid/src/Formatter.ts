@@ -10,6 +10,7 @@ import {
   TableColumnFormat,
   TableColumnFormatter,
 } from './formatters';
+import StringColumnFormatter from './formatters/StringColumnFormatter';
 
 const log = Log.module('Formatter');
 
@@ -105,6 +106,7 @@ class Formatter {
         TableUtils.dataType.INT,
         new IntegerColumnFormatter(integerFormatOptions),
       ],
+      [TableUtils.dataType.STRING, new StringColumnFormatter()],
     ]);
 
     // Formats indexed by data type and column name
@@ -176,9 +178,9 @@ class Formatter {
     columnName = '',
     formatOverride?: TableColumnFormat
   ): string {
-    if (value == null) {
-      return '';
-    }
+    // if (value == null) {
+    //   return '';
+    // }
 
     const formatter = this.getColumnTypeFormatter(columnType);
     const format =

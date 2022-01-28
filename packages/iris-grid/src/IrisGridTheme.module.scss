@@ -39,6 +39,7 @@ $selection-outline-casing-color: $gray-900;
   date-color: $yellow;
   pending-text-color: lighten($yellow, 10%);
   error-text-color: $danger;
+  null-string-color: $gray-400;
 
   $filter-color: $primary; // local to just the following
   filter-bar-active-bg: scale-color(
