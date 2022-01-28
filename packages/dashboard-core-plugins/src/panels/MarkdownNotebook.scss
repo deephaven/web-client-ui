@@ -1,0 +1,129 @@
+@import '../../../components/scss/custom.scss';
+
+$btn-play-color: $success;
+
+.markdown-notebook {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+
+  .markdown-notebook-toolbar {
+    display: flex;
+    align-items: center;
+    padding: $spacer-1;
+    width: 100%;
+    flex: 0 0 36px;
+    border-bottom: 2px solid $black;
+    .btn-play-selected-cell {
+      color: $btn-play-color;
+      min-height: 34px;
+    }
+  }
+
+  .markdown-notebook-content {
+    flex-grow: 1;
+    width: 100%;
+    padding: 0 15px;
+    overflow: auto;
+    position: relative;
+    scroll-behavior: smooth;
+
+    h1,
+    h2,
+    h3 {
+      margin-top: 3rem;
+    }
+  }
+
+  blockquote {
+    border-left: 0.25em solid $gray-400;
+    padding: 0 1em;
+    color: $foreground;
+  }
+
+  pre {
+    overflow: hidden;
+  }
+
+  pre > code {
+    display: block;
+    padding: $spacer-2;
+  }
+
+  a {
+    color: $primary;
+
+    &:visited {
+      color: $purple;
+    }
+  }
+
+  .markdown-notebook-code-block {
+    position: relative;
+    border-radius: 0 $border-radius $border-radius 0;
+
+    .btn-play-block {
+      color: $btn-play-color;
+      opacity: 0;
+      position: absolute;
+      top: 0;
+      right: 0;
+      margin: 3px; // 3px so the outline doesn't get cut off
+      transition: opacity $transition ease-out;
+    }
+
+    code {
+      color: $foreground;
+      background: $gray-700;
+      padding: $spacer-2;
+      border-radius: $border-radius;
+      border: 1px solid $black;
+      overflow: auto;
+      display: block;
+    }
+
+    &.is-selected {
+      &::after {
+        position: absolute;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        width: 5px;
+        margin: 1px 0 1px 0;
+        background: $primary;
+        content: '';
+        pointer-events: none;
+        border-radius: $border-radius 0 0 $border-radius;
+      }
+    }
+
+    &.is-selected,
+    &:hover {
+      .btn-play-block {
+        opacity: 1;
+      }
+    }
+  }
+
+  .flashing {
+    animation-duration: 1s;
+    animation-name: flash;
+    animation-timing-function: ease-in-out;
+    animation-iteration-count: infinite;
+  }
+}
+
+@keyframes flash {
+  0% {
+    text-shadow: 0 0 5px $interfacegray, 0 0 20px $interfacegray;
+  }
+
+  50% {
+    text-shadow: 0 0 2px rgba(255, 255, 255, 0.5), 0 0 10px $success;
+  }
+
+  100% {
+    text-shadow: 0 0 5px $interfacegray, 0 0 20px $interfacegray;
+  }
+}

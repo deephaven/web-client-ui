@@ -30,6 +30,7 @@ import { Pending, PromiseUtils } from '@deephaven/utils';
 import { ConsoleEvent, NotebookEvent } from '../events';
 import { getDashboardSessionWrapper } from '../redux';
 import Panel from './Panel';
+import MarkdownNotebook from './MarkdownNotebook';
 import './NotebookPanel.scss';
 
 const log = Log.module('NotebookPanel');
@@ -76,6 +77,7 @@ class NotebookPanel extends Component {
     this.handleEditorChange = this.handleEditorChange.bind(this);
     this.handleFind = this.handleFind.bind(this);
     this.handleFocus = this.handleFocus.bind(this);
+    this.handleLinkClick = this.handleLinkClick.bind(this);
     this.handleLoadSuccess = this.handleLoadSuccess.bind(this);
     this.handleLoadError = this.handleLoadError.bind(this);
     this.handlePanelTabClick = this.handlePanelTabClick.bind(this);
@@ -96,6 +98,7 @@ class NotebookPanel extends Component {
     this.handleTab = this.handleTab.bind(this);
     this.handleTabFocus = this.handleTabFocus.bind(this);
     this.handleTabBlur = this.handleTabBlur.bind(this);
+    this.handleTransformLinkUri = this.handleTransformLinkUri.bind(this);
 
     this.pending = new Pending();
 
@@ -445,14 +448,7 @@ class NotebookPanel extends Component {
   handleEditorChange(e) {
     log.debug2('handleEditorChanged', e);
 
-    this.setState(({ isPreview }) => {
-      if (isPreview) {
-        const { fileMetadata } = this.state;
-        this.registerFileMetadata(fileMetadata, false);
-        return { isPreview: false };
-      }
-      return null;
-    });
+    this.removePreviewStatus();
 
     this.setState(({ changeCount, savedChangeCount }) => {
       const { isUndoing, isRedoing } = e;
@@ -487,6 +483,45 @@ class NotebookPanel extends Component {
   handleFocus() {
     log.debug('handleFocus');
     this.setState({ isFocused: true });
+  }
+
+  /**
+   * @param {MouseEvent} event The click event from clicking on the link
+   */
+  handleLinkClick(event) {
+    const { notebooksUrl, session, sessionLanguage } = this.props;
+    const { href } = event.target;
+    if (!href || !href.startsWith(notebooksUrl)) {
+      return;
+    }
+
+    event.stopPropagation();
+    event.preventDefault();
+
+    const notebookPath = `/${href.substring(notebooksUrl.length)}`.replace(
+      /%20/g,
+      ' '
+    );
+    if (notebookPath === '/') {
+      log.debug('Ignoring invalid notebook link', notebookPath);
+      return;
+    }
+
+    log.debug('Notebook link clicked, opening', notebookPath);
+
+    const { glEventHub } = this.props;
+    const notebookSettings = {
+      value: null,
+      language: sessionLanguage,
+    };
+    const fileMetadata = { id: notebookPath, itemName: notebookPath };
+    glEventHub.emit(
+      NotebookEvent.SELECT_NOTEBOOK,
+      session,
+      sessionLanguage,
+      notebookSettings,
+      fileMetadata
+    );
   }
 
   handleLoadSuccess() {
@@ -586,9 +621,7 @@ class NotebookPanel extends Component {
   }
 
   handleResize() {
-    if (this.notebook) {
-      this.notebook.updateDimensions();
-    }
+    this.notebook?.updateDimensions();
   }
 
   handleRunCommand(command) {
@@ -627,10 +660,7 @@ class NotebookPanel extends Component {
 
   handleShow() {
     log.debug('handleShow');
-    if (!this.notebook) {
-      return;
-    }
-    this.notebook.updateDimensions();
+    this.notebook?.updateDimensions();
   }
 
   handleShowRename() {
@@ -663,6 +693,35 @@ class NotebookPanel extends Component {
   handlePanelTabClick() {
     log.debug('handlePanelTabClick');
     this.focus();
+  }
+
+  /**
+   * Transform the link URI to load from where the notebook is if it's relative
+   * @param {String} src The link to transform
+   * @returns String the transformed link
+   */
+  handleTransformLinkUri(src) {
+    const { notebooksUrl } = this.props;
+    const { fileMetadata } = this.state;
+
+    if (src.endsWith('/')) {
+      return src;
+    }
+
+    if (src.startsWith('/')) {
+      return `${notebooksUrl}${src.substring(1)}`;
+    }
+
+    let itemName = fileMetadata?.itemName;
+    if (!itemName) {
+      return src;
+    }
+    if (itemName.charAt(0) === '/') {
+      itemName = itemName.substring(1);
+    }
+
+    const itemUri = new URL(itemName, notebooksUrl);
+    return new URL(src, itemUri).href;
   }
 
   focus() {
@@ -706,8 +765,22 @@ class NotebookPanel extends Component {
       log.debug('Ignoring empty command.');
       return;
     }
+
+    this.removePreviewStatus();
+
     const { glEventHub } = this.props;
     glEventHub.emit(ConsoleEvent.SEND_COMMAND, command, false, true);
+  }
+
+  removePreviewStatus() {
+    this.setState(({ isPreview }) => {
+      if (isPreview) {
+        const { fileMetadata } = this.state;
+        this.registerFileMetadata(fileMetadata, false);
+        return { isPreview: false };
+      }
+      return null;
+    });
   }
 
   render() {
@@ -736,6 +809,7 @@ class NotebookPanel extends Component {
     const focusOnMount =
       isDashboardActive && !glContainer.isHidden && !isPreview;
     const itemName = fileMetadata?.itemName ?? NotebookPanel.DEFAULT_NAME;
+    const isMarkdown = itemName.endsWith('.md');
     const isExistingItem = fileMetadata?.id != null;
     const overflowActions = this.getOverflowActions();
     const settings = {
@@ -809,74 +883,89 @@ class NotebookPanel extends Component {
           additionalActions={additionalActions}
           renderTabTooltip={() => itemName}
         >
-          <div className="notebook-toolbar">
-            <span>
-              <button
-                type="button"
-                className="btn btn-link btn-link-icon btn-play"
-                onClick={this.handleRunAll}
-                disabled={runButtonsDisabled}
-              >
-                <FontAwesomeIcon icon={vsRunAll} transform="grow-4" />
-                <Tooltip>Run {SHORTCUTS.NOTEBOOK.RUN.getDisplayText()}</Tooltip>
-              </button>
-              {disabledRunButtonTooltip && (
-                <Tooltip>{disabledRunButtonTooltip}</Tooltip>
-              )}
-            </span>
-            <span>
-              <button
-                type="button"
-                className="btn btn-link btn-link-icon btn-play"
-                onClick={this.handleRunSelected}
-                disabled={runButtonsDisabled}
-              >
-                <FontAwesomeIcon icon={vsPlay} transform="grow-4" />
-                <Tooltip>
-                  Run Selected{' '}
-                  {SHORTCUTS.NOTEBOOK.RUN_SELECTED.getDisplayText()}
-                </Tooltip>
-              </button>
-              {disabledRunSelectedButtonTooltip && (
-                <Tooltip>{disabledRunSelectedButtonTooltip}</Tooltip>
-              )}
-            </span>
-            <button
-              type="button"
-              className="btn btn-link btn-link-icon mr-auto"
-              disabled={toolbarDisabled}
-              onClick={this.handleSave}
-            >
-              <FontAwesomeIcon icon={vsSave} />
-              <Tooltip>Save</Tooltip>
-            </button>
-            <button
-              type="button"
-              className="btn btn-link btn-overflow btn-link-icon"
-              disabled={toolbarDisabled}
-            >
-              <FontAwesomeIcon icon={vsKebabVertical} />
-              <Tooltip>More Actions...</Tooltip>
-              <DropdownMenu
-                actions={overflowActions}
-                popperOptions={NotebookPanel.POPPER_OPTIONS}
+          {!isMarkdown && (
+            <>
+              <div className="notebook-toolbar">
+                <span>
+                  <button
+                    type="button"
+                    className="btn btn-link btn-link-icon btn-play"
+                    onClick={this.handleRunAll}
+                    disabled={runButtonsDisabled}
+                  >
+                    <FontAwesomeIcon icon={vsRunAll} transform="grow-4" />
+                    <Tooltip>
+                      Run {SHORTCUTS.NOTEBOOK.RUN.getDisplayText()}
+                    </Tooltip>
+                  </button>
+                  {disabledRunButtonTooltip && (
+                    <Tooltip>{disabledRunButtonTooltip}</Tooltip>
+                  )}
+                </span>
+                <span>
+                  <button
+                    type="button"
+                    className="btn btn-link btn-link-icon btn-play"
+                    onClick={this.handleRunSelected}
+                    disabled={runButtonsDisabled}
+                  >
+                    <FontAwesomeIcon icon={vsPlay} transform="grow-4" />
+                    <Tooltip>
+                      Run Selected{' '}
+                      {SHORTCUTS.NOTEBOOK.RUN_SELECTED.getDisplayText()}
+                    </Tooltip>
+                  </button>
+                  {disabledRunSelectedButtonTooltip && (
+                    <Tooltip>{disabledRunSelectedButtonTooltip}</Tooltip>
+                  )}
+                </span>
+                <button
+                  type="button"
+                  className="btn btn-link btn-link-icon mr-auto"
+                  disabled={toolbarDisabled}
+                  onClick={this.handleSave}
+                >
+                  <FontAwesomeIcon icon={vsSave} />
+                  <Tooltip>Save</Tooltip>
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-link btn-overflow btn-link-icon"
+                  disabled={toolbarDisabled}
+                >
+                  <FontAwesomeIcon icon={vsKebabVertical} />
+                  <Tooltip>More Actions...</Tooltip>
+                  <DropdownMenu
+                    actions={overflowActions}
+                    popperOptions={NotebookPanel.POPPER_OPTIONS}
+                  />
+                </button>
+              </div>
+              <ScriptEditor
+                isLoaded={isLoaded}
+                isLoading={isLoading}
+                error={error}
+                onChange={this.handleEditorChange}
+                onRunCommand={this.handleRunCommand}
+                session={session}
+                sessionLanguage={sessionLanguage}
+                settings={settings}
+                focusOnMount={focusOnMount}
+                ref={notebook => {
+                  this.notebook = notebook;
+                }}
               />
-            </button>
-          </div>
-          <ScriptEditor
-            isLoaded={isLoaded}
-            isLoading={isLoading}
-            error={error}
-            onChange={this.handleEditorChange}
-            onRunCommand={this.handleRunCommand}
-            session={session}
-            sessionLanguage={sessionLanguage}
-            settings={settings}
-            focusOnMount={focusOnMount}
-            ref={notebook => {
-              this.notebook = notebook;
-            }}
-          />
+            </>
+          )}
+          {isMarkdown && (
+            <MarkdownNotebook
+              content={settings.value}
+              onLinkClick={this.handleLinkClick}
+              onRunCode={this.handleRunCommand}
+              transformImageUri={this.handleTransformLinkUri}
+              transformLinkUri={this.handleTransformLinkUri}
+            />
+          )}
           <NewItemModal
             isOpen={showSaveAsModal}
             type="file"
@@ -923,6 +1012,7 @@ NotebookPanel.propTypes = {
     settings: PropTypes.shape({}),
     fileMetadata: PropTypes.shape({}),
   }).isRequired,
+  notebooksUrl: PropTypes.string,
 };
 
 NotebookPanel.defaultProps = {
@@ -930,6 +1020,10 @@ NotebookPanel.defaultProps = {
   isPreview: false,
   session: null,
   sessionLanguage: null,
+  notebooksUrl: new URL(
+    `${process.env.REACT_APP_NOTEBOOKS_URL}/`,
+    window.location
+  ).href,
 };
 
 const mapStateToProps = (state, ownProps) => {
