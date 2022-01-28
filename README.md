@@ -50,15 +50,15 @@ When releasing a new version, you need to commit a version bump, then tag and cr
 
 1. Bump the version:
    - Run `npm run version-bump`. Select the type of version bump ([patch, minor, or major version](https://semver.org/)). Remember the version for the next steps, and fill it in instead of `<version>` (should be in semver format with `v` prefix, e.g. `v0.7.1`).
-   - Commit your changes. `git commit -a -m "Version Bump <version>"`
-   - Create a pull request. `gh pr create -f -w`
+   - Commit your changes. `git commit --all --message="Version Bump <version>"`
+   - Create a pull request. `gh pr create --fill --web`
    - Approve the pull request and merge to `main`.
 2. Generate the changelog:
    - Generate a [GitHub Personal access token](https://github.com/settings/tokens) with the `public_repo` scope. Copy this token and replace `<token>` with it below.
    - Generate the changelog: `GITHUB_AUTH=<token> npm run changelog -- --next-version=<version> > /tmp/changelog_<version>.md`
-3. Create the tag. Use the command line to create an annotated tag (lightweight tags will not work correctly with lerna-changelog): `git tag -a <version> -F /tmp/changelog_<version>.md`
+3. Create the tag. Use the command line to create an annotated tag (lightweight tags will not work correctly with lerna-changelog): `git tag --annotate <version> --file=/tmp/changelog_<version>.md`
 4. Push the tag: `git push origin <version>`
-5. Create the release: `gh release create <version> -F ~/tmp/changelog_<version>.md`
+5. Create the release: `gh release create <version> --notes-file ~/tmp/changelog_<version>.md --title <version>`
 
 After the release is created, you can go to the [actions page](https://github.com/deephaven/web-client-ui/actions) to see the publish action being kicked off.
 
