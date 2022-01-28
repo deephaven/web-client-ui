@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/iris-grid",
-  "version": "0.9.0",
+  "version": "0.9.1",
   "description": "Deephaven Iris Grid",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
@@ -29,11 +29,11 @@
     "start": "cross-env NODE_ENV=development npm run watch"
   },
   "dependencies": {
-    "@deephaven/grid": "^0.9.0",
-    "@deephaven/icons": "^0.9.0",
-    "@deephaven/jsapi-shim": "^0.9.0",
-    "@deephaven/react-hooks": "^0.9.0",
-    "@deephaven/utils": "^0.9.0",
+    "@deephaven/grid": "^0.9.1",
+    "@deephaven/icons": "^0.9.1",
+    "@deephaven/jsapi-shim": "^0.9.1",
+    "@deephaven/react-hooks": "^0.9.1",
+    "@deephaven/utils": "^0.9.1",
     "@fortawesome/react-fontawesome": "^0.1.12",
     "classnames": "^2.3.1",
     "deep-equal": "^2.0.4",
@@ -56,8 +56,8 @@
   },
   "devDependencies": {
     "@babel/cli": "^7.16.0",
-    "@deephaven/components": "^0.9.0",
-    "@deephaven/log": "^0.9.0",
+    "@deephaven/components": "^0.9.1",
+    "@deephaven/log": "^0.9.1",
     "@deephaven/mocks": "^0.9.0",
     "@deephaven/tsconfig": "^0.9.0",
     "@svgr/cli": "^5.5.0",
