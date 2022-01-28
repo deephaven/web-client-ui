@@ -1,0 +1,92 @@
+{
+  "name": "@deephaven/embed-grid",
+  "version": "0.9.0",
+  "description": "Deephaven Embedded Grid",
+  "author": "Deephaven Data Labs LLC",
+  "license": "Apache-2.0",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/deephaven/web-client-ui"
+  },
+  "homepage": ".",
+  "main": "public/index.js",
+  "files": [
+    "build"
+  ],
+  "dependencies": {
+    "@babel/core": "^7.15.5",
+    "@deephaven/components": "^0.9.0",
+    "@deephaven/grid": "^0.9.0",
+    "@deephaven/icons": "^0.9.0",
+    "@deephaven/iris-grid": "^0.9.0",
+    "@deephaven/jsapi-shim": "^0.9.0",
+    "@deephaven/log": "^0.9.0",
+    "@deephaven/react-hooks": "^0.9.0",
+    "@deephaven/utils": "^0.9.0",
+    "@fortawesome/fontawesome-svg-core": "^1.2.36",
+    "@fortawesome/react-fontawesome": "^0.1.15",
+    "@testing-library/jest-dom": "^5.14.1",
+    "@testing-library/react": "^11.2.7",
+    "@testing-library/user-event": "^12.8.3",
+    "@types/jest": "^26.0.24",
+    "@types/node": "^12.20.24",
+    "@types/react": "^16.14.15",
+    "@types/react-dom": "^17.0.9",
+    "bootstrap": "^4.6.0",
+    "classnames": "^2.3.1",
+    "deep-equal": "^2.0.5",
+    "fira": "mozilla/fira#4.202",
+    "jquery": "^3.6.0",
+    "lodash.flatten": "^4.4.0",
+    "lodash.throttle": "^4.1.1",
+    "monaco-editor": "^0.22.3",
+    "popper.js": "^1.16.1",
+    "react": "^16.14.0",
+    "react-beautiful-dnd": "^13.1.0",
+    "react-dom": "^16.14.0",
+    "react-scripts": "4.0.3",
+    "react-transition-group": "^2.9.0",
+    "react-virtualized-auto-sizer": "^1.0.6",
+    "react-window": "^1.8.6",
+    "reactstrap": "^8.10.0",
+    "sass": "^1.39.0",
+    "shortid": "^2.2.16",
+    "typescript": "^4.4.2"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "eject": "react-scripts eject"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.16.0",
+    "@deephaven/eslint-config": "^0.9.0",
+    "@deephaven/mocks": "^0.9.0",
+    "@deephaven/prettier-config": "^0.9.0",
+    "@deephaven/stylelint-config": "^0.9.0",
+    "@deephaven/tsconfig": "^0.9.0",
+    "@types/node": "^14.17.2",
+    "@types/react": "^16.14.8",
+    "@types/react-beautiful-dnd": "^13.0.0",
+    "@types/react-dom": "^16.9.13",
+    "@types/react-router-dom": "^5.1.2",
+    "@types/react-transition-group": "^4.4.0",
+    "cross-env": "^7.0.2",
+    "follow-redirects": ">=1.14.7",
+    "npm-run-all": "^4.1.5",
+    "react-is": "^16.13.1",
+    "sass": "1.32.13",
+    "webpack": "4.44.2"
+  },
+  "browserslist": [
+    ">0.2%",
+    "not dead",
+    "not ie >= 0",
+    "not op_mini all"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "proxy": "http://localhost:10000"
+}

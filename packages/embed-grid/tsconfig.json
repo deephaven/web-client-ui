@@ -1,0 +1,34 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "rootDir": "src/",
+    "outDir": "dist/",
+    "noEmit": true
+  },
+  "include": [
+    "src"
+  ],
+  "references": [
+    {
+      "path": "../components"
+    },
+    {
+      "path": "../grid"
+    },
+    {
+      "path": "../iris-grid"
+    },
+    {
+      "path": "../jsapi-shim"
+    },
+    {
+      "path": "../log"
+    },
+    {
+      "path": "../react-hooks"
+    },
+    {
+      "path": "../utils"
+    }
+  ]
+}
