@@ -3,9 +3,9 @@ import classNames from 'classnames';
 import { Button } from '@deephaven/components';
 import Log from '@deephaven/log';
 import { FormatColumnWhereIcon, FormatRowWhereIcon } from '../icons';
-import ColumnFormatEditor, { ConditionConfig } from './ColumnFormatEditor';
+import ColumnFormatEditor, { ColumnFormatConfig } from './ColumnFormatEditor';
 import RowFormatEditor, { RowFormatConfig } from './RowFormatEditor';
-import { ModelColumn } from './ConditionalFormattingUtils';
+import { BaseFormatConfig, ModelColumn } from './ConditionalFormattingUtils';
 import './ConditionalFormatEditor.scss';
 
 const log = Log.module('ConditionalFormatEditor');
@@ -14,7 +14,7 @@ export type SaveCallback = (rule: FormattingRule) => void;
 
 export type CancelCallback = () => void;
 
-export type ChangeCallback = (ruleConfig: ConditionConfig) => void;
+export type ChangeCallback = (ruleConfig: BaseFormatConfig) => void;
 
 export enum FormatterType {
   CONDITIONAL = 'conditional',
@@ -23,7 +23,7 @@ export enum FormatterType {
 
 export interface FormattingRule {
   type: FormatterType;
-  config: ConditionConfig | RowFormatConfig;
+  config: BaseFormatConfig;
 }
 
 export interface ConditionalFormatEditorProps {
@@ -94,7 +94,7 @@ const ConditionalFormatEditor = (
       log.debug('handleRuleChange', ruleConfig, selectedFormatter);
       const updatedRule = {
         type: selectedFormatter,
-        config: ruleConfig as ConditionConfig,
+        config: ruleConfig as BaseFormatConfig,
       };
       setRule(updatedRule);
       onUpdate(updatedRule);
@@ -130,7 +130,7 @@ const ConditionalFormatEditor = (
       {selectedFormatter === FormatterType.CONDITIONAL && (
         <ColumnFormatEditor
           columns={columns}
-          config={rule?.config as ConditionConfig}
+          config={rule?.config as ColumnFormatConfig}
           onChange={handleRuleChange}
         />
       )}
@@ -151,7 +151,7 @@ const ConditionalFormatEditor = (
           onClick={handleSave}
           disabled={rule === undefined}
         >
-          Save
+          Done
         </Button>
       </div>
     </div>

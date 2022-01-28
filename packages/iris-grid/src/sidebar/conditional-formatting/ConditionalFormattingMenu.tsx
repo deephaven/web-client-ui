@@ -8,8 +8,8 @@ import Log from '@deephaven/log';
 import { FormatterType, FormattingRule } from './ConditionalFormatEditor';
 
 import './ConditionalFormattingMenu.scss';
-import { ConditionConfig } from './ColumnFormatEditor';
 import {
+  BaseFormatConfig,
   getBackgroundForStyleConfig,
   getColorForStyleConfig,
   getShortLabelForConditionType,
@@ -35,7 +35,7 @@ export type ConditionalFormattingMenuProps = {
 
 const DEFAULT_CALLBACK = () => undefined;
 
-function getRuleValue(config: ConditionConfig): string {
+function getRuleValue(config: BaseFormatConfig): string {
   const {
     column: { type },
   } = config;
@@ -51,7 +51,7 @@ function getRuleValue(config: ConditionConfig): string {
   throw new Error(`Invalid column type ${type} in getRuleValue`);
 }
 
-function getRuleTitle(config: ConditionConfig): string {
+function getRuleTitle(config: BaseFormatConfig): string {
   if (
     TableUtils.isNumberType(config.column.type) &&
     config.condition === NumberCondition.IS_BETWEEN
@@ -59,10 +59,10 @@ function getRuleTitle(config: ConditionConfig): string {
     return `${config.start} < ${config.column.name} < ${config.end}`;
   }
   return `${config.column.name} ${getShortLabelForConditionType(
-    (config as ConditionConfig).column.type,
-    (config as ConditionConfig).condition
+    (config as BaseFormatConfig).column.type,
+    (config as BaseFormatConfig).condition
   )} 
-    ${getRuleValue(config as ConditionConfig)}`;
+    ${getRuleValue(config as BaseFormatConfig)}`;
 }
 
 const ConditionalFormattingMenu = (
@@ -137,6 +137,9 @@ const ConditionalFormattingMenu = (
                 dragging: snapshot.draggingFromThisWith,
               })}
             >
+              {rules.length === 0 && (
+                <div className="text-muted pl-2">No formats defined</div>
+              )}
               {rules.map((rule, index) => (
                 <Draggable
                   // eslint-disable-next-line react/no-array-index-key
@@ -166,10 +169,10 @@ const ConditionalFormattingMenu = (
                                 className="rule-icon-bg"
                                 style={{
                                   backgroundColor: getBackgroundForStyleConfig(
-                                    (rule.config as ConditionConfig).style
+                                    (rule.config as BaseFormatConfig).style
                                   ),
                                   color: getColorForStyleConfig(
-                                    (rule.config as ConditionConfig).style
+                                    (rule.config as BaseFormatConfig).style
                                   ),
                                 }}
                               >
@@ -179,7 +182,7 @@ const ConditionalFormattingMenu = (
                               </span>
                             </div>
                             <div className="rule-title">
-                              {getRuleTitle(rule.config as ConditionConfig)}
+                              {getRuleTitle(rule.config as BaseFormatConfig)}
                             </div>
                             <button
                               type="button"

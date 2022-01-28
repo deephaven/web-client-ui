@@ -129,7 +129,7 @@ IrisGridModelUpdater.propTypes = {
   hiddenColumns: PropTypes.arrayOf(PropTypes.number).isRequired,
   frozenColumns: PropTypes.arrayOf(PropTypes.string),
   alwaysFetchColumns: PropTypes.arrayOf(PropTypes.string).isRequired,
-  formatColumns: PropTypes.arrayOf(PropTypes.string).isRequired,
+  formatColumns: PropTypes.arrayOf(PropTypes.shape({})).isRequired,
   formatter: PropTypes.instanceOf(Formatter).isRequired,
   rollupConfig: APIPropTypes.RollupConfig,
   totalsConfig: PropTypes.shape({}),

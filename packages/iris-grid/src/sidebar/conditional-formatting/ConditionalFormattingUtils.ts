@@ -1,10 +1,19 @@
 import { TableUtils } from '../..';
-import { ConditionConfig } from './ColumnFormatEditor';
+import { ConditionConfig } from './ConditionEditor';
 
 export type ModelColumn = {
   name: string;
   type: string;
 };
+
+export interface BaseFormatConfig {
+  column: ModelColumn;
+  condition: NumberCondition | StringCondition | DateCondition;
+  value?: string | number;
+  start?: number;
+  end?: number;
+  style: FormatStyleConfig;
+}
 
 export enum NumberCondition {
   IS_EQUAL = 'is-equal',
@@ -126,15 +135,16 @@ export function getColorForStyleConfig(
   }
 }
 
-export function getDBStringForStyleConfig(
-  config: FormatStyleConfig
-): string | null {
-  return `bgfg(\`${getBackgroundForStyleConfig(config) ?? null}\`, \`${
-    getColorForStyleConfig(config) ?? null
-  }\`)`;
+export function getStyleDBString(config: BaseFormatConfig): string | undefined {
+  const color = getColorForStyleConfig(config.style);
+  const bg = getBackgroundForStyleConfig(config.style);
+  if (color === undefined || bg === undefined) {
+    return undefined;
+  }
+  return `bgfg(\`${bg}\`, \`${color}\`)`;
 }
 
-function getNumberConditionText(config: ConditionConfig): string {
+function getNumberConditionText(config: BaseFormatConfig): string {
   const { column, value, start, end } = config;
   return getTextForNumberCondition(
     column.name,
@@ -145,7 +155,7 @@ function getNumberConditionText(config: ConditionConfig): string {
   );
 }
 
-function getStringConditionText(config: ConditionConfig): string {
+function getStringConditionText(config: BaseFormatConfig): string {
   const { column, value } = config;
   return getTextForStringCondition(
     column.name,
@@ -154,7 +164,7 @@ function getStringConditionText(config: ConditionConfig): string {
   );
 }
 
-function getDateConditionText(config: ConditionConfig): string {
+function getDateConditionText(config: BaseFormatConfig): string {
   const { column, value } = config;
   return getTextForDateCondition(
     column.name,
@@ -163,7 +173,7 @@ function getDateConditionText(config: ConditionConfig): string {
   );
 }
 
-export function getConditionText(config: ConditionConfig): string {
+export function getConditionDBString(config: BaseFormatConfig): string {
   const { column } = config;
 
   if (TableUtils.isNumberType(column.type)) {
@@ -249,6 +259,28 @@ export function getDefaultConditionForType(
   }
 
   throw new Error('Invalid column type');
+}
+
+export function getConditionConfig(config: BaseFormatConfig): ConditionConfig {
+  const { condition, value, start, end } = config;
+  return { condition, value, start, end };
+}
+
+export function getDefaultConditionConfigForType(
+  type: string
+): ConditionConfig {
+  return {
+    condition: getDefaultConditionForType(type),
+    value: undefined,
+    start: undefined,
+    end: undefined,
+  };
+}
+
+export function getDefaultStyleConfig(): FormatStyleConfig {
+  return {
+    type: FormatStyleType.NO_FORMATTING,
+  };
 }
 
 function getShortLabelForStringCondition(condition: StringCondition): string {

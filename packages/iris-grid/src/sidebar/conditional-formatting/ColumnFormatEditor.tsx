@@ -1,120 +1,39 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import Log from '@deephaven/log';
-import { ColorUtils } from '@deephaven/utils';
 import { ComboBox } from '@deephaven/components';
-import { TableUtils } from '../..';
 import { ChangeCallback } from './ConditionalFormatEditor';
 import {
-  DateCondition,
-  FormatStyleConfig,
-  FormatStyleType,
-  getDefaultConditionForType,
-  getLabelForDateCondition,
-  getLabelForNumberCondition,
-  getLabelForStringCondition,
-  getLabelForStyleType,
   ModelColumn,
-  NumberCondition,
-  StringCondition,
+  BaseFormatConfig,
+  getDefaultConditionConfigForType,
+  getConditionConfig,
+  getDefaultStyleConfig,
 } from './ConditionalFormattingUtils';
+import ConditionEditor from './ConditionEditor';
+import StyleEditor from './StyleEditor';
 
 const log = Log.module('ColumnFormatEditor');
 
-// TODO: move to utils?
-const DEFAULT_BACKGROUND = '#fcfcfa';
-
-const DEFAULT_COLOR_LIGHT = '#f0f0ee';
-
-const DEFAULT_COLOR_DARK = '#1a171a';
-
-export interface ConditionConfig {
-  column: ModelColumn;
-  condition: NumberCondition | StringCondition | DateCondition;
-  value?: string | number;
-  start?: number;
-  end?: number;
-  style: FormatStyleConfig;
-}
+export type ColumnFormatConfig = BaseFormatConfig;
 
 export interface ColumnFormatEditorProps {
   columns: ModelColumn[];
-  config?: ConditionConfig;
+  config?: ColumnFormatConfig;
   onChange?: ChangeCallback;
 }
 
 const DEFAULT_CALLBACK = () => undefined;
 
-function makeDefaultConfig(columns: ModelColumn[]): ConditionConfig {
+function makeDefaultConfig(columns: ModelColumn[]): ColumnFormatConfig {
   const { type, name } = columns[0];
   const column = { type, name };
-  const condition = getDefaultConditionForType(type);
   const config = {
     column,
-    condition,
-    value: undefined,
-    start: undefined,
-    end: undefined,
-    style: {
-      type: FormatStyleType.NO_FORMATTING,
-    },
+    style: getDefaultStyleConfig(),
+    ...getDefaultConditionConfigForType(type),
   };
   return config;
 }
-
-const numberConditionOptions = [
-  NumberCondition.IS_EQUAL,
-  NumberCondition.IS_NOT_EQUAL,
-  NumberCondition.IS_BETWEEN,
-  NumberCondition.GREATER_THAN,
-  NumberCondition.GREATER_THAN_OR_EQUAL,
-  NumberCondition.LESS_THAN,
-  NumberCondition.LESS_THAN_OR_EQUAL,
-].map(option => (
-  <option key={option} value={option}>
-    {getLabelForNumberCondition(option)}
-  </option>
-));
-
-const stringConditions = [
-  StringCondition.IS_EXACTLY,
-  StringCondition.IS_NOT_EXACTLY,
-  StringCondition.CONTAINS,
-  StringCondition.DOES_NOT_CONTAIN,
-  StringCondition.STARTS_WITH,
-  StringCondition.ENDS_WITH,
-].map(option => (
-  <option key={option} value={option}>
-    {getLabelForStringCondition(option)}
-  </option>
-));
-
-const dateConditions = [
-  DateCondition.IS_EXACTLY,
-  DateCondition.IS_NOT_EXACTLY,
-  DateCondition.IS_BEFORE,
-  DateCondition.IS_BEFORE_OR_EQUAL,
-  DateCondition.IS_AFTER,
-  DateCondition.IS_AFTER_OR_EQUAL,
-].map(option => (
-  <option key={option} value={option}>
-    {getLabelForDateCondition(option)}
-  </option>
-));
-
-const styleOptions = [
-  FormatStyleType.NO_FORMATTING,
-  FormatStyleType.POSITIVE,
-  FormatStyleType.NEGATIVE,
-  FormatStyleType.WARN,
-  FormatStyleType.NEUTRAL,
-  FormatStyleType.ACCENT_1,
-  FormatStyleType.ACCENT_2,
-  FormatStyleType.CUSTOM,
-].map(option => (
-  <option key={option} value={option}>
-    {getLabelForStyleType(option)}
-  </option>
-));
 
 const ColumnFormatEditor = (props: ColumnFormatEditorProps): JSX.Element => {
   const {
@@ -131,39 +50,18 @@ const ColumnFormatEditor = (props: ColumnFormatEditorProps): JSX.Element => {
       : undefined
   );
   const selectedColumnType = selectedColumn?.type;
-  const [selectedCondition, setCondition] = useState(config.condition);
-  const [conditionValue, setConditionValue] = useState(config.value);
-  const [startValue, setStartValue] = useState(config.start);
-  const [endValue, setEndValue] = useState(config.end);
-  const [selectedStyle, setStyle] = useState(config.style.type);
-  const [selectedBackground, setBackground] = useState(
-    config.style.customConfig?.background ?? DEFAULT_BACKGROUND
+  const [conditionConfig, setConditionConfig] = useState(
+    getConditionConfig(config)
   );
-
-  const conditions = useMemo(() => {
-    if (selectedColumnType === undefined) {
-      return [];
-    }
-    if (TableUtils.isNumberType(selectedColumnType)) {
-      return numberConditionOptions;
-    }
-    if (TableUtils.isTextType(selectedColumnType)) {
-      return stringConditions;
-    }
-    if (TableUtils.isDateType(selectedColumnType)) {
-      return dateConditions;
-    }
-  }, [selectedColumnType]);
+  const [conditionValid, setConditionValid] = useState(false);
+  const [selectedStyle, setStyle] = useState(config.style);
 
   const handleColumnChange = useCallback(
-    (value: string) => {
+    value => {
       const newColumn = columns.find(({ name }) => name === value);
       if (newColumn && selectedColumnType !== newColumn.type) {
         log.debug('handleColumnChange', selectedColumnType, newColumn.type);
-        setCondition(getDefaultConditionForType(newColumn.type));
-        setConditionValue(undefined);
-        setStartValue(undefined);
-        setEndValue(undefined);
+        setConditionConfig(getDefaultConditionConfigForType(newColumn.type));
       }
       setColumn(newColumn);
     },
@@ -171,183 +69,45 @@ const ColumnFormatEditor = (props: ColumnFormatEditorProps): JSX.Element => {
   );
 
   const handleConditionChange = useCallback(
-    e => {
-      const { value } = e.target;
-      log.debug('handleConditionChange', value, selectedColumnType);
-      setCondition(value);
+    (updatedConditionConfig, isValid) => {
+      log.debug('handleConditionChange', updatedConditionConfig, isValid);
+      setConditionConfig(updatedConditionConfig);
+      setConditionValid(isValid);
     },
-    [selectedColumnType]
+    []
   );
 
-  const handleValueChange = useCallback(e => {
-    const { value } = e.target;
-    log.debug('handleValueChange', value);
-    setConditionValue(value);
-  }, []);
-
-  const handleStartValueChange = useCallback(e => {
-    const { value } = e.target;
-    log.debug('handleStartValueChange', value);
-    setStartValue(value);
-  }, []);
-
-  const handleEndValueChange = useCallback(e => {
-    const { value } = e.target;
-    log.debug('handleEndValueChange', value);
-    setEndValue(value);
-  }, []);
-
-  const handleStyleChange = useCallback(e => {
-    const { value } = e.target;
-    log.debug('handleStyleChange', value);
-    setStyle(value);
-  }, []);
-
-  const handleBackgroundChange = useCallback(e => {
-    const { value } = e.target;
-    log.debug('handleBackgroundChange', value);
-    setBackground(value);
+  const handleStyleChange = useCallback(updatedStyleConfig => {
+    log.debug('handleStyleChange', updatedStyleConfig);
+    setStyle(updatedStyleConfig);
   }, []);
 
   useEffect(() => {
-    // TODO: validation;
     if (selectedColumn === undefined) {
-      log.error('Unable to create formatting rule. Column is not selected.');
+      log.debug('Column is not selected, skip update.');
       return;
     }
-
     if (selectedStyle === undefined) {
-      log.error('Unable to create formatting rule. Style is not selected.');
+      log.debug('Style is not selected, skip update.');
       return;
     }
-
-    if (selectedCondition === undefined) {
-      log.error('Unable to create formatting rule. Condition is not selected.');
+    if (!conditionValid) {
+      log.debug('Condition not valid, skip update.');
       return;
     }
-
     const { type, name } = selectedColumn;
     const column = { type, name };
-
-    if (
-      TableUtils.isNumberType(selectedColumn.type) &&
-      ((Number.isNaN(Number(conditionValue)) &&
-        selectedCondition !== NumberCondition.IS_BETWEEN) ||
-        (selectedCondition === NumberCondition.IS_BETWEEN &&
-          (Number.isNaN(Number(startValue)) || Number.isNaN(Number(endValue)))))
-    ) {
-      log.error(
-        'Unable to create formatting rule. Invalid value',
-        conditionValue
-      );
-      return;
-    }
     onChange({
       column,
-      condition: selectedCondition,
-      style: {
-        type: selectedStyle,
-        customConfig: {
-          color: ColorUtils.isDark(selectedBackground)
-            ? DEFAULT_COLOR_LIGHT
-            : DEFAULT_COLOR_DARK,
-          background: selectedBackground,
-        },
-      },
-      value: conditionValue,
-      start: startValue,
-      end: endValue,
+      style: selectedStyle,
+      ...conditionConfig,
     });
   }, [
     onChange,
-    selectedBackground,
     selectedColumn,
     selectedStyle,
-    selectedCondition,
-    conditionValue,
-    startValue,
-    endValue,
-  ]);
-
-  const conditionInputs = useMemo(() => {
-    if (
-      selectedColumnType !== undefined &&
-      TableUtils.isNumberType(selectedColumnType)
-    ) {
-      switch (selectedCondition) {
-        case NumberCondition.IS_EQUAL:
-        case NumberCondition.IS_NOT_EQUAL:
-        case NumberCondition.GREATER_THAN:
-        case NumberCondition.GREATER_THAN_OR_EQUAL:
-        case NumberCondition.LESS_THAN:
-        case NumberCondition.LESS_THAN_OR_EQUAL:
-          return (
-            <input
-              type="text"
-              className="form-control"
-              placeholder="Enter value"
-              value={conditionValue ?? ''}
-              onChange={handleValueChange}
-            />
-          );
-        case NumberCondition.IS_BETWEEN:
-          return (
-            <div className="d-flex flex-row">
-              <input
-                type="text"
-                className="form-control d-flex mr-2"
-                placeholder="Start value"
-                value={startValue ?? ''}
-                onChange={handleStartValueChange}
-              />
-              <input
-                // TODO: fix this
-                // move into a separate component that calls onChange with the updated config
-                type="text"
-                className="form-control d-flex"
-                placeholder="End value"
-                value={endValue ?? ''}
-                onChange={handleEndValueChange}
-              />
-            </div>
-          );
-      }
-    } else if (
-      selectedColumnType !== undefined &&
-      TableUtils.isTextType(selectedColumnType)
-    ) {
-      return (
-        <input
-          type="text"
-          className="form-control"
-          placeholder="Enter value"
-          value={conditionValue ?? ''}
-          onChange={handleValueChange}
-        />
-      );
-    } else if (
-      selectedColumnType !== undefined &&
-      TableUtils.isDateType(selectedColumnType)
-    ) {
-      return (
-        <input
-          type="text"
-          className="form-control"
-          placeholder="Enter value"
-          value={conditionValue ?? ''}
-          onChange={handleValueChange}
-        />
-      );
-    }
-  }, [
-    selectedColumnType,
-    selectedCondition,
-    conditionValue,
-    startValue,
-    endValue,
-    handleValueChange,
-    handleStartValueChange,
-    handleEndValueChange,
+    conditionConfig,
+    conditionValid,
   ]);
 
   const columnInputOptions = columns.map(({ name }) => ({
@@ -358,7 +118,7 @@ const ColumnFormatEditor = (props: ColumnFormatEditorProps): JSX.Element => {
   return (
     <div className="conditional-rule-editor form">
       <div className="mb-2">
-        <label className="mb-0">Apply to Column</label>
+        <label className="mb-0">Format Cell If</label>
         <ComboBox
           defaultValue={selectedColumn?.name}
           options={columnInputOptions}
@@ -371,48 +131,12 @@ const ColumnFormatEditor = (props: ColumnFormatEditorProps): JSX.Element => {
 
       {selectedColumn !== undefined && (
         <>
-          <div className="mb-2">
-            <label className="mb-0" htmlFor="condition-select">
-              Format Cell If
-            </label>
-            <select
-              value={selectedCondition}
-              id="condition-select"
-              className="custom-select mb-2"
-              onChange={handleConditionChange}
-            >
-              {conditions}
-            </select>
-            {conditionInputs}
-          </div>
-          <div className="mb-2">
-            <label className="mb-0" htmlFor="style-select">
-              Style
-            </label>
-            <select
-              value={selectedStyle}
-              className="custom-select"
-              id="style-select"
-              onChange={handleStyleChange}
-            >
-              {styleOptions}
-            </select>
-          </div>
-
-          {selectedStyle === FormatStyleType.CUSTOM && (
-            <div className="mb-2">
-              <label className="mb-0" htmlFor="color-select">
-                Background
-              </label>
-              <input
-                type="color"
-                value={selectedBackground}
-                className="custom-select"
-                id="color-select"
-                onChange={handleBackgroundChange}
-              />
-            </div>
-          )}
+          <ConditionEditor
+            column={selectedColumn}
+            config={conditionConfig}
+            onChange={handleConditionChange}
+          />
+          <StyleEditor config={selectedStyle} onChange={handleStyleChange} />
         </>
       )}
     </div>

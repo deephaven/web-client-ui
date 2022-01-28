@@ -89,8 +89,8 @@ import SHORTCUTS from './IrisGridShortcuts';
 import DateUtils from './DateUtils';
 import ConditionalFormattingMenu from './sidebar/conditional-formatting/ConditionalFormattingMenu';
 import {
-  getConditionText,
-  getDBStringForStyleConfig,
+  getConditionDBString,
+  getStyleDBString,
 } from './sidebar/conditional-formatting/ConditionalFormattingUtils';
 import ConditionalFormatEditor, {
   FormatterType,
@@ -695,9 +695,8 @@ export class IrisGrid extends Component {
       .filter(o => !AggregationUtils.isRollupOperation(o))
   );
 
-  // TODO: cleanup
   getFormatColumns = memoize((columns, rulesParam, preview, editIndex) => {
-    log.debug('getFormatColumns', columns, rulesParam, preview, editIndex);
+    log.debug('getFormatColumns', rulesParam, preview, editIndex);
     const result = [];
     const formatColumnMap = new Map();
     const formatRowMap = new Map();
@@ -711,39 +710,44 @@ export class IrisGrid extends Component {
       const col = columns.find(
         ({ name, type }) => name === column.name && type === column.type
       );
+      if (col === undefined) {
+        log.debug(
+          `Column ${column.name}:${column.type} not found. Ignoring format rule.`,
+          config
+        );
+        return;
+      }
+      const styleDBString = getStyleDBString(config);
+      if (styleDBString === undefined) {
+        log.debug(`No formatting set. Ignoring format rule.`, config);
+        return;
+      }
+      const conditionDBString = getConditionDBString(config);
+
+      // Stack ternary format conditions by column
       if (formatterType === FormatterType.ROWS) {
         const { rule: prevRule = null, index = undefined } =
           formatRowMap.get(col.name) ?? {};
-        const rule = `${getConditionText(config)} ? ${getDBStringForStyleConfig(
-          config.style
-        )} : ${prevRule}`;
+        const rule = `${conditionDBString} ? ${styleDBString} : ${prevRule}`;
         const formatRow = dh.Column.formatRowColor(rule);
         if (index !== undefined) {
           result.splice(index, 1);
         }
         result.push(formatRow);
         formatRowMap.set(col.name, { rule, index: result.length - 1 });
-        return;
+      } else if (formatterType === FormatterType.CONDITIONAL) {
+        const { rule: prevRule = null, index = undefined } =
+          formatColumnMap.get(col.name) ?? {};
+        const rule = `${conditionDBString} ? ${styleDBString} : ${prevRule}`;
+        const formatColumn = col.formatColor(rule);
+        if (index !== undefined) {
+          result.splice(index, 1);
+        }
+        result.push(formatColumn);
+        formatColumnMap.set(col.name, { rule, index: result.length - 1 });
+      } else {
+        log.error('Unsupported formatter type', formatterType);
       }
-      // FormatterType.CONDITIONAL
-      if (!col) {
-        log.debug(
-          `Column ${column.name}:${column.type} not found. Ignoring format rule`,
-          config
-        );
-        return;
-      }
-      const { rule: prevRule = null, index = undefined } =
-        formatColumnMap.get(col.name) ?? {};
-      const rule = `${getConditionText(config)} ? ${getDBStringForStyleConfig(
-        config.style
-      )} : ${prevRule}`;
-      const formatColumn = col.formatColor(rule);
-      if (index !== undefined) {
-        result.splice(index, 1);
-      }
-      result.push(formatColumn);
-      formatColumnMap.set(col.name, { rule, index: result.length - 1 });
     });
 
     return result;
@@ -3229,7 +3233,11 @@ export class IrisGrid extends Component {
                   model.columns,
                   conditionalFormats,
                   conditionalFormatPreview,
-                  conditionalFormatEditIndex
+                  // Disable the preview format when we press Back on the format edit page
+                  openOptions[openOptions.length - 1]?.type ===
+                    OptionType.CONDITIONAL_FORMATTING_EDIT
+                    ? conditionalFormatEditIndex
+                    : undefined
                 )}
                 rollupConfig={this.getModelRollupConfig(
                   model.originalColumns,

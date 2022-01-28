@@ -1,0 +1,58 @@
+@import '../../../../components/scss/custom.scss';
+
+$cs-option-hover-opacity: 0.8;
+
+.style-editor {
+  .cs-dropdown {
+    display: flex;
+    text-align: left;
+    padding-left: $spacer-2;
+    width: 100%;
+    justify-content: space-between;
+    border-radius: $border-radius;
+    border: $input-border-width solid $input-border-color;
+    min-width: 14rem;
+    &:focus {
+      border-color: $input-focus-border-color;
+    }
+    .cs-caret {
+      color: $input-border-color;
+    }
+  }
+}
+
+.style-dropdown-menu {
+  border-radius: $border-radius;
+  .style-options {
+    max-height: 400px;
+    overflow: auto;
+  }
+  .style-option-btn {
+    border: none;
+    border-radius: 0;
+    width: 100%;
+    padding: $input-btn-padding-y $input-btn-padding-x;
+    white-space: nowrap;
+    text-decoration: none;
+    background-color: transparent;
+    text-align: left;
+    cursor: pointer;
+    user-select: none;
+    display: block;
+    &:hover {
+      opacity: $cs-option-hover-opacity;
+    }
+    &:focus {
+      outline: none;
+      box-shadow: none;
+    }
+    &:first-child {
+      border-top-left-radius: $border-radius;
+      border-top-right-radius: $border-radius;
+    }
+    &:last-child {
+      border-bottom-left-radius: $border-radius;
+      border-bottom-right-radius: $border-radius;
+    }
+  }
+}
