@@ -1661,10 +1661,27 @@ export class IrisGrid extends Component {
     }
   }
 
+  isTableSearchAvailable() {
+    const { model, canToggleSearch } = this.props;
+    const searchDisplayMode = model?.layoutHints?.searchDisplayMode;
+
+    if (searchDisplayMode) {
+      if (searchDisplayMode === dh.SearchDisplayMode.SEARCH_DISPLAY_HIDE) {
+        return false;
+      }
+      if (searchDisplayMode === dh.SearchDisplayMode.SEARCH_DISPLAY_SHOW) {
+        return true;
+      }
+    }
+
+    return canToggleSearch;
+  }
+
   toggleSearchBar() {
     const { showSearchBar } = this.state;
-    const { canToggleSearch } = this.props;
-    if (!canToggleSearch) return;
+    if (!this.isToggleSearchAvailable()) {
+      return;
+    }
 
     const update = !showSearchBar;
     this.setState(
@@ -2351,7 +2368,6 @@ export class IrisGrid extends Component {
       advancedSettings,
       onAdvancedSettingsChange,
       canDownloadCsv,
-      canToggleSearch,
     } = this.props;
     const {
       metricCalculator,
@@ -2814,7 +2830,7 @@ export class IrisGrid extends Component {
       isFilterBarShown,
       showSearchBar,
       canDownloadCsv,
-      canToggleSearch
+      this.isToggleSearchAvailable()
     );
 
     const openOptionsStack = openOptions.map(option => {
