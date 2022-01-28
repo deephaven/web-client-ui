@@ -1760,7 +1760,6 @@ class GridMetricCalculator {
     const userColumnWidths = new Map(this.userColumnWidths);
     userColumnWidths.delete(column);
     this.userColumnWidths = userColumnWidths;
-    this.calculatedColumnWidths.delete(column);
   }
 
   /**
