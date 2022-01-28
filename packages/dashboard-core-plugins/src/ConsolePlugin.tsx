@@ -299,7 +299,6 @@ export const ConsolePlugin = ({
         component: NotebookPanel.COMPONENT,
         isFocusOnShow: false,
         props: {
-          id: panelId,
           localDashboardId: id,
           metadata: { id: panelId },
           session,

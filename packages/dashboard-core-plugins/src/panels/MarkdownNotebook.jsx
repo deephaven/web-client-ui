@@ -32,6 +32,10 @@ export class MarkdownNotebook extends PureComponent {
     };
   }
 
+  componentDidMount() {
+    this.updateHasCode();
+  }
+
   componentDidUpdate() {
     this.updateHasCode();
   }
@@ -155,11 +159,14 @@ export class MarkdownNotebook extends PureComponent {
     );
   }
 
-  // eslint-disable-next-line class-methods-use-this
   renderLink(props) {
     const { onLinkClick } = this.props;
-    // eslint-disable-next-line react/jsx-props-no-spreading,jsx-a11y/anchor-has-content,jsx-a11y/no-static-element-interactions
-    return <a {...props} onClick={onLinkClick} />;
+    const { href, children, target } = props;
+    return (
+      <a href={href} onClick={onLinkClick} target={target}>
+        {children}
+      </a>
+    );
   }
 
   render() {

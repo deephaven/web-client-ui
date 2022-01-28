@@ -621,9 +621,7 @@ class NotebookPanel extends Component {
   }
 
   handleResize() {
-    if (this.notebook) {
-      this.notebook.updateDimensions();
-    }
+    this.notebook?.updateDimensions();
   }
 
   handleRunCommand(command) {
@@ -662,9 +660,7 @@ class NotebookPanel extends Component {
 
   handleShow() {
     log.debug('handleShow');
-    if (this.notebook) {
-      this.notebook.updateDimensions();
-    }
+    this.notebook?.updateDimensions();
   }
 
   handleShowRename() {
@@ -708,8 +704,12 @@ class NotebookPanel extends Component {
     const { notebooksUrl } = this.props;
     const { fileMetadata } = this.state;
 
-    if (src.charAt(0) === '/') {
-      return `${notebooksUrl}${src}`;
+    if (src.endsWith('/')) {
+      return src;
+    }
+
+    if (src.startsWith('/')) {
+      return `${notebooksUrl}${src.substring(1)}`;
     }
 
     let itemName = fileMetadata?.itemName;
