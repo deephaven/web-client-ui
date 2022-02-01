@@ -106,7 +106,7 @@ export class GridMouseHandler {
   onWheel(
     gridPoint: GridPoint,
     grid: Grid,
-    event: GridWheelEvent
+    event: GridMouseEvent
   ): EventHandlerResult {
     return false;
   }

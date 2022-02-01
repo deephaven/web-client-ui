@@ -12,6 +12,7 @@ import {
   ModelIndex,
 } from '@deephaven/grid';
 import { Formatter, IrisGridModel } from '@deephaven/iris-grid';
+import type { Column } from '@deephaven/jsapi-shim';
 
 // We need to cast our CustomEvent so it's happy with event-target-shim
 type CustomEventType = EventTarget.EventData<
@@ -19,8 +20,6 @@ type CustomEventType = EventTarget.EventData<
   'standard',
   'CustomEvent'
 >;
-
-type IrisGridColumn = { name: string; type: string };
 
 const EMPTY_ARRAY: never[] = [];
 
@@ -138,11 +137,11 @@ class MockIrisGridTreeModel
   }
 
   // Stub out functions for IrisGridModel functionality
-  get columns(): IrisGridColumn[] {
-    return this.getCachedColumns(this.columnCount);
+  get columns(): Column[] {
+    return this.getCachedColumns(this.columnCount) as Column[];
   }
 
-  get groupedColumns(): IrisGridColumn[] {
+  get groupedColumns(): Column[] {
     return EMPTY_ARRAY;
   }
 
@@ -170,19 +169,19 @@ class MockIrisGridTreeModel
     // Ignore for mock
   }
 
-  get sort(): unknown[] {
+  get sort(): never[] {
     return [];
   }
 
-  set sort(sort: unknown[]) {
+  set sort(sort: never[]) {
     // Ignore for mock
   }
 
-  get filter(): unknown[] {
+  get filter(): never[] {
     return [];
   }
 
-  set filter(filter: unknown[]) {
+  set filter(filter: never[]) {
     // Ignore for mock
   }
 
@@ -198,8 +197,8 @@ class MockIrisGridTreeModel
     return this.textForCell(column, row);
   }
 
-  formatForCell(column: ModelIndex, row: ModelIndex): string | null {
-    return null;
+  formatForCell(column: ModelIndex, row: ModelIndex): undefined {
+    return undefined;
   }
 
   setViewport(): void {

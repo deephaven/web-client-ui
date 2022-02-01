@@ -155,7 +155,7 @@ abstract class IrisGridModel<
    * @param row The model row index
    * @returns The format stored for that cell
    */
-  formatForCell(column: ModelIndex, row: ModelIndex): Format {
+  formatForCell(column: ModelIndex, row: ModelIndex): Format | undefined {
     throw new Error('formatForCell not implemented');
   }
 
