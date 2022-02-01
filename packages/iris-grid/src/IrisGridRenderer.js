@@ -88,7 +88,7 @@ class IrisGridRenderer extends GridRenderer {
     const modelColumn = modelColumns.get(column);
     const value = model.valueForCell(modelColumn, modelRow);
     if (
-      value == null &&
+      value === null &&
       TableUtils.isTextType(model.columns[modelColumn].type)
     ) {
       const originalFont = context.font;

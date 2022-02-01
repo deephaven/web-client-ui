@@ -675,7 +675,11 @@ class IrisGridTableModel extends IrisGridModel {
   }
 
   valueForCell(x, y) {
-    return this.dataForCell(x, y)?.value;
+    const data = this.dataForCell(x, y);
+    if (data) {
+      return data.value ?? null;
+    }
+    return undefined;
   }
 
   copyViewportData(data) {

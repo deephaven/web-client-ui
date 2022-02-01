@@ -178,9 +178,9 @@ class Formatter {
     columnName = '',
     formatOverride?: TableColumnFormat
   ): string {
-    // if (value == null) {
-    //   return '';
-    // }
+    if (value == null) {
+      return '';
+    }
 
     const formatter = this.getColumnTypeFormatter(columnType);
     const format =
