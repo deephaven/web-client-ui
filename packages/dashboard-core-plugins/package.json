@@ -56,8 +56,8 @@
     "@deephaven/components": "^0.4.0",
     "@deephaven/log": "^0.4.0",
     "@deephaven/redux": "^0.8.1",
-    "react": "^16.0.0",
-    "react-dom": "^16.0.0",
+    "react": "^17.0.0",
+    "react-dom": "^17.0.0",
     "react-redux": "^7.2.4"
   },
   "devDependencies": {
@@ -76,8 +76,8 @@
     "follow-redirects": ">=1.14.7",
     "identity-obj-proxy": "^3.0.0",
     "npm-run-all": "^4.1.5",
-    "react": "^16.14.0",
-    "react-dom": "^16.14.0",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
     "react-redux": "^7.2.4",
     "rimraf": "^3.0.2",
     "sass": "1.32.13"
