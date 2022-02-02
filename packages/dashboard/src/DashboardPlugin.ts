@@ -84,3 +84,29 @@ export interface DashboardPlugin {
   /** Called when the dashboard is unintialized and layout is about to be destroyed */
   deinitialize?: (config: DashboardConfig) => void;
 }
+
+/**
+ * Takes a partial DashboardPluginComponentProps and verifies all the dashboard component fields are filled in.
+ * @param props The props to check
+ * @returns True if the props are valid DashboardPluginComponentProps, false otherwise
+ */
+export function isDashboardPluginProps(
+  props: Partial<DashboardPluginComponentProps>
+): props is DashboardPluginComponentProps {
+  return (
+    typeof props.id === 'string' &&
+    props.layout instanceof GoldenLayout &&
+    props.panelManager instanceof PanelManager &&
+    typeof props.registerComponent === 'function'
+  );
+}
+
+export function assertIsDashboardPluginProps(
+  props: Partial<DashboardPluginComponentProps>
+): asserts props is DashboardPluginComponentProps {
+  if (!isDashboardPluginProps(props)) {
+    throw new Error(
+      `Expected dashboard plugin props, but instead received ${props}`
+    );
+  }
+}
