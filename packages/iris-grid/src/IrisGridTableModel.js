@@ -313,7 +313,7 @@ class IrisGridTableModel extends IrisGridModel {
     return this.table.applyCustomColumns != null;
   }
 
-  get isConditionalFormatsAvailable() {
+  get isFormatColumnsAvailable() {
     return this.table.applyCustomColumns != null;
   }
 

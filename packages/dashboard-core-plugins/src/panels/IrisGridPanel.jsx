@@ -1014,6 +1014,7 @@ IrisGridPanel.propTypes = {
     irisGridState: PropTypes.shape({
       aggregationSettings: PropTypes.shape({}),
       customColumns: PropTypes.arrayOf(PropTypes.string),
+      conditionalFormats: PropTypes.arrayOf(PropTypes.shape({})),
       selectDistinctColumns: PropTypes.arrayOf(PropTypes.string),
       rollupConfig: PropTypes.shape({
         columns: PropTypes.arrayOf(PropTypes.string).isRequired,

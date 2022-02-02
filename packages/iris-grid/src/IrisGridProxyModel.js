@@ -251,8 +251,8 @@ class IrisGridProxyModel extends IrisGridModel {
     );
   }
 
-  get isConditionalFormatsAvailable() {
-    return this.model.isConditionalFormatsAvailable;
+  get isFormatColumnsAvailable() {
+    return this.model.isFormatColumnsAvailable;
   }
 
   get isChartBuilderAvailable() {

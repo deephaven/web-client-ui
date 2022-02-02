@@ -107,7 +107,7 @@ class IrisGridUtils {
       metrics,
       quickFilters,
       customColumns,
-      conditionalFormats,
+      conditionalFormats = [],
       reverseType,
       rollupConfig = null,
       showSearchBar,

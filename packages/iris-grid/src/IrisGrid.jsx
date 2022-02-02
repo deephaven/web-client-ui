@@ -557,7 +557,7 @@ export class IrisGrid extends Component {
     (
       isChartBuilderAvailable,
       isCustomColumnsAvailable,
-      isConditionalFormatsAvailable,
+      isFormatColumnsAvailable,
       isRollupAvailable,
       isTotalsAvailable,
       isSelectDistinctAvailable,
@@ -582,7 +582,7 @@ export class IrisGrid extends Component {
         title: 'Column Visibility & Ordering',
         icon: dhEye,
       });
-      if (isConditionalFormatsAvailable) {
+      if (isFormatColumnsAvailable) {
         optionItems.push({
           type: OptionType.CONDITIONAL_FORMATTING,
           title: 'Conditional Formatting',
@@ -2996,7 +2996,7 @@ export class IrisGrid extends Component {
     const optionItems = this.getCachedOptionItems(
       model.isChartBuilderAvailable,
       model.isCustomColumnsAvailable,
-      model.isConditionalFormatsAvailable,
+      model.isFormatColumnsAvailable,
       model.isRollupAvailable,
       model.isTotalsAvailable,
       model.isSelectDistinctAvailable,
