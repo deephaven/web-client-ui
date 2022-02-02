@@ -138,6 +138,10 @@ export class PouchStorageTable<T extends StorageItem = StorageItem>
   constructor(databaseName: string) {
     this.db = new PouchDB<T & PouchStorageItem>(`${DB_PREFIX}${databaseName}`);
 
+    // Need to set `_remote` to false to remove deprecation warnings: https://github.com/pouchdb/pouchdb/issues/6106
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any, no-underscore-dangle
+    (this.db as any)._remote = false;
+
     this.db
       .changes({ live: true, since: 'now', include_docs: true })
       .on('change', this.dbUpdate.bind(this));
