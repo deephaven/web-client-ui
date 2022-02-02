@@ -936,7 +936,7 @@ Console.defaultProps = {
   actions: [],
   disconnectedChildren: null,
   timeZone: 'America/New_York',
-  objectMap: undefined,
+  objectMap: new Map(),
 };
 
 export default Console;
