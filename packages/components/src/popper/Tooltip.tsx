@@ -13,6 +13,7 @@ interface TooltipProps {
   children: React.ReactNode;
   popperClassName: string;
   referenceObject: ReferenceObject;
+  onExited: () => void;
 }
 
 interface TooltipState {
@@ -49,6 +50,9 @@ class Tooltip extends Component<TooltipProps, TooltipState> {
     reshowTimeout: Tooltip.defaultReshowTimeout,
     timeout: Tooltip.defaultTimeout,
     referenceObject: null,
+    onExited(): void {
+      // no-op
+    },
   };
 
   static handleHidden(): void {
@@ -271,6 +275,8 @@ class Tooltip extends Component<TooltipProps, TooltipState> {
 
   handleExited(): void {
     this.setState({ isShown: false });
+    const { onExited } = this.props;
+    onExited();
   }
 
   stopShowingTooltip(): void {

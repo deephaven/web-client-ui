@@ -81,8 +81,6 @@ class Popper extends Component<PopperProps, PopperState> {
     this.element.className = 'popper-container';
     this.container = React.createRef<HTMLDivElement>();
 
-    this.isExiting = false;
-
     // cancelAnimationFrame does nothing if the handle isn't recognized
     // requestAnimationFrame provides a non-zero number, so 0 as a default should be safe
     this.rAF = 0;
@@ -112,14 +110,11 @@ class Popper extends Component<PopperProps, PopperState> {
 
   componentWillUnmount(): void {
     this.destroyPopper(false);
-    this.isExiting = false;
   }
 
   element: HTMLDivElement;
 
   container: React.RefObject<HTMLDivElement>;
-
-  isExiting: boolean;
 
   // This is the request animation frame handle number
   rAF: number;
@@ -181,7 +176,6 @@ class Popper extends Component<PopperProps, PopperState> {
   }
 
   destroyPopper(updateState = true): void {
-    this.isExiting = false;
     cancelAnimationFrame(this.rAF);
 
     const { popper } = this.state;
@@ -191,7 +185,12 @@ class Popper extends Component<PopperProps, PopperState> {
 
     popper.destroy();
 
-    document.body.removeChild(this.element);
+    // If component is exiting and unmounted in
+    // the same frame, destroy can be called twice.
+    // Check to make sure removeChild isn't called twice.
+    if (document.body.contains(this.element)) {
+      document.body.removeChild(this.element);
+    }
 
     if (updateState) {
       this.setState({ popper: null });
@@ -228,14 +227,11 @@ class Popper extends Component<PopperProps, PopperState> {
 
   handleExit(): void {
     const { onExited } = this.props;
-    onExited(); // trigger any parent component waiting for exited handler
-
     const { show } = this.state;
     if (!show) {
       this.destroyPopper();
     }
-
-    this.isExiting = false;
+    onExited(); // trigger any parent component waiting for exited handler
   }
 
   renderContent(): JSX.Element {
@@ -254,9 +250,6 @@ class Popper extends Component<PopperProps, PopperState> {
         timeout={timeout}
         classNames="popper-transition"
         onEntered={this.handleEnter}
-        onExit={() => {
-          this.isExiting = true;
-        }}
         onExited={this.handleExit}
       >
         <div
