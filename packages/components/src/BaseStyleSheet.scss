@@ -215,6 +215,7 @@ span.btn-disabled-wrapper {
   &:focus {
     outline: none;
     text-decoration: none;
+    box-shadow: none;
     &::after {
       background: rgba($primary, $focus-bg-transparency);
       border: $input-border-width solid $primary;
