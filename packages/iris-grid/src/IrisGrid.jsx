@@ -2638,6 +2638,9 @@ export class IrisGrid extends Component {
               options={popperOptions}
               ref={this.handleTooltipRef}
               referenceObject={virtualReference}
+              onExited={() => {
+                this.setState({ shownColumnTooltip: null });
+              }}
             >
               <ColumnStatistics
                 model={model}
