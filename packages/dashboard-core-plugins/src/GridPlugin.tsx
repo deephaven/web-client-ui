@@ -2,7 +2,6 @@ import React, { DragEvent, useCallback, useEffect } from 'react';
 import {
   assertIsDashboardPluginProps,
   DashboardPluginComponentProps,
-  DashboardUtils,
   LayoutUtils,
   PanelHydrateFunction,
   useListener,
@@ -27,7 +26,7 @@ export const GridPlugin = (props: GridPluginProps): JSX.Element => {
     id,
     layout,
     registerComponent,
-    hydrate = DashboardUtils.hydrate,
+    hydrate,
     theme,
   } = props;
   const handleOpen = useCallback(

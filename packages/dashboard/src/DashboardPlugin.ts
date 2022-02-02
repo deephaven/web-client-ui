@@ -94,10 +94,10 @@ export function isDashboardPluginProps(
   props: Partial<DashboardPluginComponentProps>
 ): props is DashboardPluginComponentProps {
   return (
-    props.id !== undefined &&
-    props.layout !== undefined &&
-    props.panelManager !== undefined &&
-    props.registerComponent !== undefined
+    typeof props.id === 'string' &&
+    props.layout instanceof GoldenLayout &&
+    props.panelManager instanceof PanelManager &&
+    typeof props.registerComponent === 'function'
   );
 }
 

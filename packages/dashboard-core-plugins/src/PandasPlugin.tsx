@@ -2,7 +2,6 @@ import React, { DragEvent, useCallback, useEffect } from 'react';
 import {
   assertIsDashboardPluginProps,
   DashboardPluginComponentProps,
-  DashboardUtils,
   LayoutUtils,
   PanelHydrateFunction,
   useListener,
@@ -18,12 +17,7 @@ export type PandasPluginProps = Partial<DashboardPluginComponentProps> & {
 
 export const PandasPlugin = (props: PandasPluginProps): JSX.Element => {
   assertIsDashboardPluginProps(props);
-  const {
-    hydrate = DashboardUtils.hydrate,
-    id,
-    layout,
-    registerComponent,
-  } = props;
+  const { hydrate, id, layout, registerComponent } = props;
   const handleOpen = useCallback(
     (
       title: string,
