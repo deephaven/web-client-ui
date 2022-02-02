@@ -108,17 +108,26 @@ class ConsolePanel extends PureComponent {
     this.objectSubscriptionCleanup = session.connection.subscribeToFieldUpdates(
       updates => {
         log.debug('Got updates', updates);
+        this.setState(({ objectMap }) => {
+          const { updated, created, removed } = updates;
 
-        const { updated, created } = updates;
-        const objectMap = new Map();
-        const widgetsToAdd = [...updated, ...created];
-        widgetsToAdd.forEach(toAdd => {
-          if (toAdd.name) {
-            objectMap.set(toAdd.name, toAdd);
-          }
+          // Remove from the array if it's been removed OR modified. We'll add it back after if it was modified.
+          const objectsToRemove = [...updated, ...removed];
+          const newObjectMap = new Map(objectMap);
+          objectsToRemove.forEach(toRemove => {
+            newObjectMap.delete(toRemove.name);
+          });
+
+          // Now add all the modified and updated widgets back in
+          const objectsToAdd = [...updated, ...created];
+          objectsToAdd.forEach(toAdd => {
+            if (toAdd.name) {
+              newObjectMap.set(toAdd.name, toAdd);
+            }
+          });
+
+          return { objectMap: newObjectMap };
         });
-
-        this.setState({ objectMap });
       }
     );
   }
