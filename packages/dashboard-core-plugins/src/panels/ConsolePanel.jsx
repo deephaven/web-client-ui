@@ -1,13 +1,11 @@
 // Wrapper for the Console for use in a golden layout container
 // Will probably need to handle window popping out from golden layout here.
 import React, { PureComponent } from 'react';
-import { CSSTransition } from 'react-transition-group';
 import PropTypes from 'prop-types';
 import shortid from 'shortid';
 import debounce from 'lodash.debounce';
 import { connect } from 'react-redux';
 import { ChartModelFactory } from '@deephaven/chart';
-import { ThemeExport } from '@deephaven/components';
 import { Console, ConsoleConstants, ConsoleUtils } from '@deephaven/console';
 import { GLPropTypes, PanelEvent } from '@deephaven/dashboard';
 import { IrisGridModelFactory } from '@deephaven/iris-grid';
@@ -57,6 +55,7 @@ class ConsolePanel extends PureComponent {
     );
 
     this.consoleRef = React.createRef();
+    this.objectSubscriptionCleanup = null;
 
     const { panelState: initialPanelState } = props;
     const panelState = {
@@ -69,6 +68,8 @@ class ConsolePanel extends PureComponent {
       consoleSettings,
       itemIds: new Map(itemIds),
 
+      objectMap: new Map(),
+
       // eslint-disable-next-line react/no-unused-state
       panelState, // Dehydrated panel state that can load this panel
     };
@@ -80,6 +81,7 @@ class ConsolePanel extends PureComponent {
     // as they may have been saved with the dashboard
     this.closeDisconnectedPanels();
     glEventHub.on(PanelEvent.MOUNT, this.handlePanelMount);
+    this.subscribeToFieldUpdates();
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -96,6 +98,29 @@ class ConsolePanel extends PureComponent {
     const { glEventHub } = this.props;
     this.savePanelState.flush();
     glEventHub.off(PanelEvent.MOUNT, this.handlePanelMount);
+    this.objectSubscriptionCleanup();
+  }
+
+  subscribeToFieldUpdates() {
+    const { sessionWrapper } = this.props;
+    const { session } = sessionWrapper;
+
+    this.objectSubscriptionCleanup = session.connection.subscribeToFieldUpdates(
+      updates => {
+        log.debug('Got updates', updates);
+
+        const { updated, created } = updates;
+        const objectMap = new Map();
+        const widgetsToAdd = [...updated, ...created];
+        widgetsToAdd.forEach(toAdd => {
+          if (toAdd.name) {
+            objectMap.set(toAdd.name, toAdd);
+          }
+        });
+
+        this.setState({ objectMap });
+      }
+    );
   }
 
   setItemId(name, id) {
@@ -276,7 +301,7 @@ class ConsolePanel extends PureComponent {
       sessionWrapper,
       timeZone,
     } = this.props;
-    const { consoleSettings, error } = this.state;
+    const { consoleSettings, error, objectMap } = this.state;
     const { config, session } = sessionWrapper;
     const { id: sessionId, type: language } = config;
 
@@ -289,40 +314,32 @@ class ConsolePanel extends PureComponent {
         onShow={this.handleShow}
         onTabFocus={this.handleTabFocus}
         onTabBlur={this.handleTabBlur}
-        isLoaded={session != null}
         errorMessage={error != null ? `${error}` : null}
       >
-        <CSSTransition
-          in={session != null}
-          timeout={ThemeExport.transitionMidMs}
-          classNames="fade"
-          mountOnEnter
-          unmountOnExit
-        >
-          <>
-            {session && (
-              <Console
-                ref={this.consoleRef}
-                settings={consoleSettings}
-                session={session}
-                focusCommandHistory={this.handleFocusCommandHistory}
-                openObject={this.handleOpenObject}
-                closeObject={this.handleCloseObject}
-                commandHistoryStorage={commandHistoryStorage}
-                onSettingsChange={this.handleSettingsChange}
-                language={language}
-                statusBarChildren={
-                  <>
-                    <div>&nbsp;</div>
-                    <div>{ConsoleConstants.LANGUAGE_MAP.get(language)}</div>
-                  </>
-                }
-                scope={sessionId}
-                timeZone={timeZone}
-              />
-            )}
-          </>
-        </CSSTransition>
+        <>
+          {session && (
+            <Console
+              ref={this.consoleRef}
+              settings={consoleSettings}
+              session={session}
+              focusCommandHistory={this.handleFocusCommandHistory}
+              openObject={this.handleOpenObject}
+              closeObject={this.handleCloseObject}
+              commandHistoryStorage={commandHistoryStorage}
+              onSettingsChange={this.handleSettingsChange}
+              language={language}
+              statusBarChildren={
+                <>
+                  <div>&nbsp;</div>
+                  <div>{ConsoleConstants.LANGUAGE_MAP.get(language)}</div>
+                </>
+              }
+              scope={sessionId}
+              timeZone={timeZone}
+              objectMap={objectMap}
+            />
+          )}
+        </>
       </Panel>
     );
   }
@@ -340,8 +357,9 @@ ConsolePanel.propTypes = {
   }),
 
   sessionWrapper: PropTypes.shape({
-    session: APIPropTypes.IdeSession,
-    config: PropTypes.shape({ type: PropTypes.string, id: PropTypes.string }),
+    session: APIPropTypes.IdeSession.isRequired,
+    config: PropTypes.shape({ type: PropTypes.string, id: PropTypes.string })
+      .isRequired,
   }).isRequired,
 
   timeZone: PropTypes.string.isRequired,

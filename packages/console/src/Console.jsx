@@ -98,7 +98,7 @@ export class Console extends PureComponent {
     this.pending = new Pending();
     this.queuedLogMessages = [];
 
-    const { settings } = this.props;
+    const { objectMap, settings } = this.props;
 
     this.state = {
       // Need separate histories as console history has stdout/stderr output
@@ -113,7 +113,7 @@ export class Console extends PureComponent {
       objectHistoryMap: new Map(),
 
       // The object definitions, name/type
-      objectMap: new Map(),
+      objectMap: new Map(objectMap),
 
       showCsvOverlay: false,
       csvFile: null,
@@ -147,6 +147,10 @@ export class Console extends PureComponent {
       prevProps.disconnectedChildren == null
     ) {
       this.disconnect();
+    }
+
+    if (props.objectMap !== prevProps.objectMap) {
+      this.updateObjectMap();
     }
   }
 
@@ -451,6 +455,11 @@ export class Console extends PureComponent {
 
       return { objectHistoryMap, objectMap, consoleHistory: history };
     });
+  }
+
+  updateObjectMap() {
+    const { objectMap } = this.props;
+    this.setState({ objectMap });
   }
 
   /**
@@ -914,6 +923,9 @@ Console.propTypes = {
 
   // Message shown when the session has disconnected. Setting this value removes the input bar and disables old tables
   disconnectedChildren: PropTypes.node,
+
+  // Known object map
+  objectMap: PropTypes.instanceOf(Map),
 };
 
 Console.defaultProps = {
@@ -924,6 +936,7 @@ Console.defaultProps = {
   actions: [],
   disconnectedChildren: null,
   timeZone: 'America/New_York',
+  objectMap: undefined,
 };
 
 export default Console;
