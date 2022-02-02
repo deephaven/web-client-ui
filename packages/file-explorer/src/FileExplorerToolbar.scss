@@ -1,8 +1,9 @@
 @import '../../components/scss/custom.scss';
 
+$toolbar-padding: $spacer-1;
 $toolbar-font-size: 17px;
-$toolbar-width: 36px;
-$toolbar-height: 36px;
+$toolbar-btn-width: $input-height;
+$toolbar-height: calc(#{$input-height} + 2 * #{$toolbar-padding});
 $toolbar-bg: $content-bg;
 $file-list-search-bg: $gray-800;
 $item-list-color: $foreground;
@@ -18,10 +19,11 @@ $item-list-color: $foreground;
   width: 100%;
   position: relative;
   align-items: center;
-  padding: $spacer-1;
+  padding: $toolbar-padding;
+  min-height: 0;
   .file-explorer-toolbar-buttons {
     display: flex;
-    padding-right: $spacer-1;
+    padding-right: $toolbar-padding;
   }
   .file-explorer-toolbar-search {
     display: flex;
@@ -34,7 +36,7 @@ $item-list-color: $foreground;
     }
   }
   .btn {
-    min-width: $toolbar-width;
+    min-width: $toolbar-btn-width;
     padding-left: 0;
     padding-right: 0;
     font-size: $toolbar-font-size;
