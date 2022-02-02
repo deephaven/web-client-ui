@@ -46,6 +46,7 @@
     "react-redux": "^7.2.4",
     "react-router-dom": "^5.1.2",
     "react-scripts": "4.0.3",
+    "react-error-overlay": "6.0.9",
     "react-transition-group": "^2.3.1",
     "reactstrap": "^8.4.1",
     "redux": "^4.0.5",
