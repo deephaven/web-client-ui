@@ -214,14 +214,14 @@ class FilterSetManager extends Component<
   }
 
   handleSettingsSave(): void {
-    const { onChange, onUpdateSets, selectedId } = this.props;
+    const { onChange, onUpdateSets } = this.props;
     const { modifiedFilterSets, editId } = this.state;
     this.setState({ modifiedFilterSets: [] });
     log.debug('Update sets', modifiedFilterSets, editId);
-    onUpdateSets(modifiedFilterSets, editId);
+    onUpdateSets(modifiedFilterSets);
     // Don't flip the card to the filter set selection screen if the updated sets list is empty
     if (modifiedFilterSets.length > 0) {
-      onChange({ isValueShown: true, selectedId });
+      onChange({ isValueShown: true, selectedId: editId });
     }
   }
 

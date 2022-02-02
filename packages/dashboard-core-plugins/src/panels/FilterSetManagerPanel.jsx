@@ -189,17 +189,8 @@ class FilterSetManagerPanel extends Component {
     });
   }
 
-  handleSetsUpdate(modifiedFilterSets, selectedEditId) {
+  handleSetsUpdate(modifiedFilterSets) {
     const { setDashboardFilterSets, localDashboardId } = this.props;
-    const { selectedId } = this.state;
-    // Only change the selected filter if the previous selection was deleted
-    const prevSelection = modifiedFilterSets.find(
-      ({ id }) => id === selectedId
-    );
-    if (prevSelection !== undefined) {
-      this.setState({ selectedId: selectedEditId });
-    }
-
     log.debug('Saving updated sets', modifiedFilterSets);
     // Filter sets are stored in dashboard data instead of the panelState
     // because they need to be shared between the filter view manager panels
