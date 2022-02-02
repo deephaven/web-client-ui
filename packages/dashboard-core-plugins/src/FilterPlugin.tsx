@@ -2,6 +2,7 @@ import React, { Component, useCallback, useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import shortid from 'shortid';
 import {
+  assertIsDashboardPluginProps,
   DashboardPluginComponentProps,
   LayoutUtils,
   PanelEvent,
@@ -30,15 +31,15 @@ export type FilterChangeEvent = Column & {
   excludePanelIds?: string[];
 };
 
+export type FilterPluginProps = Partial<DashboardPluginComponentProps>;
+
 function flattenArray<T>(accumulator: T[], currentValue: T | T[]): T[] {
   return accumulator.concat(currentValue);
 }
 
-export const FilterPlugin = ({
-  id: localDashboardId,
-  layout,
-  registerComponent,
-}: DashboardPluginComponentProps): JSX.Element => {
+export const FilterPlugin = (props: FilterPluginProps): JSX.Element => {
+  assertIsDashboardPluginProps(props);
+  const { id: localDashboardId, layout, registerComponent } = props;
   const dispatch = useDispatch();
   const [panelColumns] = useState(() => new Map<Component, Column[]>());
   const [panelFilters] = useState(

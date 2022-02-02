@@ -9,6 +9,7 @@ export { default as IrisGridTableModel } from './IrisGridTableModel';
 export { default as IrisGridModelFactory } from './IrisGridModelFactory';
 export { default as IrisGridTheme } from './IrisGridTheme';
 export type { IrisGridThemeType } from './IrisGridTheme';
+export { default as IrisGridTestUtils } from './IrisGridTestUtils';
 export { default as IrisGridUtils } from './IrisGridUtils';
 export { default as TableUtils } from './TableUtils';
 

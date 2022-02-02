@@ -46,6 +46,8 @@ export class GoldenLayout extends EventHub {
 
   root = new LayoutRoot();
 
+  registerComponent = jest.fn(() => () => undefined);
+
   setFallbackComponent = jest.fn();
 }
 

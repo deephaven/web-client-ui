@@ -1,5 +1,6 @@
 import React, { DragEvent, useCallback, useEffect } from 'react';
 import {
+  assertIsDashboardPluginProps,
   DashboardPluginComponentProps,
   DashboardUtils,
   LayoutUtils,
@@ -11,16 +12,18 @@ import shortid from 'shortid';
 import { PandasPanel } from './panels';
 import { PandasEvent } from './events';
 
-export type PandasPluginComponentProps = DashboardPluginComponentProps & {
+export type PandasPluginProps = Partial<DashboardPluginComponentProps> & {
   hydrate: PanelHydrateFunction;
 };
 
-export const PandasPlugin = ({
-  hydrate = DashboardUtils.hydrate,
-  id,
-  layout,
-  registerComponent,
-}: PandasPluginComponentProps): JSX.Element => {
+export const PandasPlugin = (props: PandasPluginProps): JSX.Element => {
+  assertIsDashboardPluginProps(props);
+  const {
+    hydrate = DashboardUtils.hydrate,
+    id,
+    layout,
+    registerComponent,
+  } = props;
   const handleOpen = useCallback(
     (
       title: string,

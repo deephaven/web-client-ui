@@ -1,5 +1,6 @@
 import { ScriptEditor } from '@deephaven/console';
 import {
+  assertIsDashboardPluginProps,
   DashboardPluginComponentProps,
   LayoutUtils,
   PanelComponent,
@@ -33,12 +34,11 @@ function isNotebookPanel(
   return (panel as NotebookPanelComponent).notebook !== undefined;
 }
 
-export const ConsolePlugin = ({
-  id,
-  layout,
-  panelManager,
-  registerComponent,
-}: DashboardPluginComponentProps): JSX.Element => {
+export type ConsolePluginProps = Partial<DashboardPluginComponentProps>;
+
+export const ConsolePlugin = (props: ConsolePluginProps): JSX.Element => {
+  assertIsDashboardPluginProps(props);
+  const { id, layout, panelManager, registerComponent } = props;
   const notebookIndex = useRef(0);
   // Map from file ID to panel ID
   const [openFileMap] = useState(new Map<string, string>());

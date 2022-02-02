@@ -1,5 +1,6 @@
 import React, { DragEvent, useCallback, useEffect } from 'react';
 import {
+  assertIsDashboardPluginProps,
   DashboardPluginComponentProps,
   DashboardUtils,
   LayoutUtils,
@@ -11,22 +12,24 @@ import shortid from 'shortid';
 import { IrisGridPanel } from './panels';
 import { IrisGridEvent } from './events';
 
-export type GridPluginComponentProps = DashboardPluginComponentProps & {
+export type GridPluginProps = Partial<DashboardPluginComponentProps> & {
   getDownloadWorker?: () => Promise<ServiceWorker>;
   loadPlugin?: (name: string) => ReturnType<typeof React.forwardRef>;
   hydrate: PanelHydrateFunction;
   theme?: Partial<IrisGridThemeType>;
 };
 
-export const GridPlugin = ({
-  getDownloadWorker,
-  loadPlugin,
-  id,
-  layout,
-  registerComponent,
-  hydrate = DashboardUtils.hydrate,
-  theme,
-}: GridPluginComponentProps): JSX.Element => {
+export const GridPlugin = (props: GridPluginProps): JSX.Element => {
+  assertIsDashboardPluginProps(props);
+  const {
+    getDownloadWorker,
+    loadPlugin,
+    id,
+    layout,
+    registerComponent,
+    hydrate = DashboardUtils.hydrate,
+    theme,
+  } = props;
   const handleOpen = useCallback(
     (
       title: string,

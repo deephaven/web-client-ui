@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect } from 'react';
 import shortid from 'shortid';
 import {
+  assertIsDashboardPluginProps,
   DashboardPluginComponentProps,
   dehydrate,
   hydrate,
@@ -11,19 +12,18 @@ import { MarkdownPanel } from './panels';
 import MarkdownUtils from './controls/markdown/MarkdownUtils';
 import MarkdownEvent from './events/MarkdownEvent';
 
-type MarkdownComponentState = {
+export type MarkdownPluginProps = Partial<DashboardPluginComponentProps>;
+
+export type MarkdownComponentState = {
   panelState?: { content: string } | null;
 };
 
-export const MarkdownPlugin = ({
-  id,
-  layout,
-  panelManager,
-  registerComponent,
-}: DashboardPluginComponentProps): JSX.Element => {
+export const MarkdownPlugin = (props: MarkdownPluginProps): JSX.Element => {
+  assertIsDashboardPluginProps(props);
+  const { id, layout, panelManager, registerComponent } = props;
   const dehydrateMarkdown = useCallback(config => {
-    const { title, componentState, props } = config;
-    let { panelState = null }: MarkdownComponentState = props;
+    const { title, componentState, props: configProps } = config;
+    let { panelState = null }: MarkdownComponentState = configProps;
     if (componentState) {
       ({ panelState = null } = componentState as MarkdownComponentState);
     }

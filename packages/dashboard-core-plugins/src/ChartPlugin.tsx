@@ -1,8 +1,8 @@
 import React, { DragEvent, useCallback, useEffect } from 'react';
 import { ChartModel } from '@deephaven/chart';
 import {
+  assertIsDashboardPluginProps,
   DashboardPluginComponentProps,
-  DashboardUtils,
   LayoutUtils,
   PanelHydrateFunction,
   useListener,
@@ -11,16 +11,13 @@ import shortid from 'shortid';
 import { ChartPanel } from './panels';
 import { ChartEvent } from './events';
 
-export type ChartPluginComponentProps = DashboardPluginComponentProps & {
+export type ChartPluginProps = Partial<DashboardPluginComponentProps> & {
   hydrate: PanelHydrateFunction;
 };
 
-export const ChartPlugin = ({
-  id,
-  layout,
-  registerComponent,
-  hydrate = DashboardUtils.hydrate,
-}: ChartPluginComponentProps): JSX.Element => {
+export const ChartPlugin = (props: ChartPluginProps): JSX.Element => {
+  assertIsDashboardPluginProps(props);
+  const { id, layout, registerComponent, hydrate } = props;
   const handleOpen = useCallback(
     (
       title: string,
