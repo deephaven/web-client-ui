@@ -17,10 +17,17 @@ class IrisGridUtils {
    * @returns {Object} An object that can be stringified and imported with {{@link hydrateGridState}}
    */
   static dehydrateGridState(model, gridState) {
-    const { movedColumns, movedRows } = gridState;
+    const {
+      isStuckToBottom,
+      isStuckToRight,
+      movedColumns,
+      movedRows,
+    } = gridState;
 
     const { columns } = model;
     return {
+      isStuckToBottom,
+      isStuckToRight,
       movedColumns: [...movedColumns]
         .filter(
           ({ to, from }) =>
@@ -41,7 +48,12 @@ class IrisGridUtils {
    * @returns {Object} The gridState props to set on the Grid
    */
   static hydrateGridState(model, gridState, customColumns = []) {
-    const { movedColumns, movedRows } = gridState;
+    const {
+      isStuckToBottom,
+      isStuckToRight,
+      movedColumns,
+      movedRows,
+    } = gridState;
 
     const { columns } = model;
     const customColumnNames = IrisGridUtils.parseCustomColumnNames(
@@ -52,6 +64,8 @@ class IrisGridUtils {
       .concat(customColumnNames);
 
     return {
+      isStuckToBottom,
+      isStuckToRight,
       movedColumns: [...movedColumns]
         .map(({ to, from }) => {
           if (
