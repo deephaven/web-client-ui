@@ -2344,6 +2344,8 @@ export class IrisGrid extends Component {
       customFilters,
       getDownloadWorker,
       isSelectingColumn,
+      isStuckToBottom,
+      isStuckToRight,
       model,
       name,
       onlyFetchVisibleColumns,
@@ -2983,6 +2985,8 @@ export class IrisGrid extends Component {
                 this.grid = grid;
               }}
               isStickyBottom={!model.isEditable}
+              isStuckToBottom={isStuckToBottom}
+              isStuckToRight={isStuckToRight}
               metricCalculator={metricCalculator}
               model={model}
               keyHandlers={keyHandlers}
@@ -3202,6 +3206,8 @@ IrisGrid.propTypes = {
 
   isSelectingColumn: PropTypes.bool,
   isSelectingPartition: PropTypes.bool,
+  isStuckToBottom: PropTypes.bool,
+  isStuckToRight: PropTypes.bool,
 
   // eslint-disable-next-line react/no-unused-prop-types
   columnSelectionValidator: PropTypes.func,
@@ -3266,6 +3272,8 @@ IrisGrid.defaultProps = {
   onSelectionChanged: () => {},
   isSelectingColumn: false,
   isSelectingPartition: false,
+  isStuckToBottom: false,
+  isStuckToRight: false,
   columnSelectionValidator: null,
   columnAllowedCursor: null,
   columnNotAllowedCursor: null,

@@ -272,8 +272,14 @@ export class IrisGridPanel extends PureComponent {
       })
   );
 
-  getDehydratedGridState = memoize((model, movedColumns, movedRows) =>
-    IrisGridUtils.dehydrateGridState(model, { movedColumns, movedRows })
+  getDehydratedGridState = memoize(
+    (model, movedColumns, movedRows, isStuckToBottom, isStuckToRight) =>
+      IrisGridUtils.dehydrateGridState(model, {
+        isStuckToBottom,
+        isStuckToRight,
+        movedColumns,
+        movedRows,
+      })
   );
 
   getCachedPanelState = memoize(
@@ -700,7 +706,12 @@ export class IrisGridPanel extends PureComponent {
         pendingDataMap,
         frozenColumns,
       } = IrisGridUtils.hydrateIrisGridState(model, irisGridState);
-      const { movedColumns, movedRows } = IrisGridUtils.hydrateGridState(
+      const {
+        isStuckToBottom,
+        isStuckToRight,
+        movedColumns,
+        movedRows,
+      } = IrisGridUtils.hydrateGridState(
         model,
         gridState,
         irisGridState.customColumns
@@ -730,6 +741,8 @@ export class IrisGridPanel extends PureComponent {
         invertSearchColumns,
         pendingDataMap,
         frozenColumns,
+        isStuckToBottom,
+        isStuckToRight,
       });
     } catch (error) {
       log.error('loadPanelState failed to load panelState', panelState, error);
@@ -767,7 +780,12 @@ export class IrisGridPanel extends PureComponent {
       frozenColumns,
     } = irisGridState;
     const { userColumnWidths, userRowHeights } = metrics;
-    const { movedColumns, movedRows } = gridState;
+    const {
+      isStuckToBottom,
+      isStuckToRight,
+      movedColumns,
+      movedRows,
+    } = gridState;
 
     const panelState = this.getCachedPanelState(
       this.getDehydratedIrisGridPanelState(
@@ -798,7 +816,13 @@ export class IrisGridPanel extends PureComponent {
         pendingDataMap,
         frozenColumns
       ),
-      this.getDehydratedGridState(model, movedColumns, movedRows),
+      this.getDehydratedGridState(
+        model,
+        movedColumns,
+        movedRows,
+        isStuckToBottom,
+        isStuckToRight
+      ),
       pluginState
     );
 
@@ -844,6 +868,8 @@ export class IrisGridPanel extends PureComponent {
       isDisconnected,
       isFilterBarShown,
       isSelectingPartition,
+      isStuckToBottom,
+      isStuckToRight,
       isLoaded,
       isLoading,
       isModelReady,
@@ -919,6 +945,8 @@ export class IrisGridPanel extends PureComponent {
             isFilterBarShown={isFilterBarShown}
             isSelectingColumn={columnSelectionValidator != null}
             isSelectingPartition={isSelectingPartition}
+            isStuckToBottom={isStuckToBottom}
+            isStuckToRight={isStuckToRight}
             movedColumns={movedColumns}
             movedRows={movedRows}
             partition={partition}

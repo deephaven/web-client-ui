@@ -70,6 +70,10 @@ export type GridProps = typeof Grid.defaultProps & {
   isStickyBottom?: boolean;
   isStickyRight?: boolean;
 
+  // Whether the grid is currently stuck to the bottom or the right
+  isStuckToBottom?: boolean;
+  isStuckToRight?: boolean;
+
   // Calculate all the metrics required for drawing the grid
   metricCalculator?: GridMetricCalculator;
 
@@ -167,6 +171,10 @@ export type GridState = {
   // { column: number, row: number, selectionRange: [number, number], value: string | null, isQuickEdit?: boolean }
   // The cell that is currently being edited
   editingCell: EditingCell | null;
+
+  // Whether we're stuck to the bottom or the right
+  isStuckToBottom: boolean;
+  isStuckToRight: boolean;
 };
 
 /**
@@ -188,6 +196,8 @@ class Grid extends PureComponent<GridProps, GridState> {
     canvasOptions: { alpha: false } as CanvasRenderingContext2DSettings,
     isStickyBottom: false,
     isStickyRight: false,
+    isStuckToBottom: false,
+    isStuckToRight: false,
     keyHandlers: [] as KeyHandler[],
     mouseHandlers: [] as GridMouseHandler[],
     movedColumns: [] as MoveOperation[],
@@ -261,11 +271,6 @@ class Grid extends PureComponent<GridProps, GridState> {
 
   metrics: GridMetrics | null;
 
-  // If the grid is stuck to the bottom or right
-  isStuckToBottom: boolean;
-
-  isStuckToRight: boolean;
-
   // Track the cursor that is currently added to the document
   // Add to document so that when dragging the cursor stays, even if mouse leaves the canvas
   // Note: on document, not body so that cursor styling can be combined with
@@ -298,7 +303,14 @@ class Grid extends PureComponent<GridProps, GridState> {
     this.handleResize = this.handleResize.bind(this);
     this.handleWheel = this.handleWheel.bind(this);
 
-    const { metricCalculator, movedColumns, movedRows, renderer } = props;
+    const {
+      isStuckToBottom,
+      isStuckToRight,
+      metricCalculator,
+      movedColumns,
+      movedRows,
+      renderer,
+    } = props;
 
     this.renderer = renderer || new GridRenderer();
     this.metricCalculator = metricCalculator || new GridMetricCalculator();
@@ -309,9 +321,6 @@ class Grid extends PureComponent<GridProps, GridState> {
 
     this.prevMetrics = null;
     this.metrics = null;
-
-    this.isStuckToBottom = false;
-    this.isStuckToRight = false;
 
     // Track the cursor that is currently added to the document
     // Add to document so that when dragging the cursor stays, even if mouse leaves the canvas
@@ -397,6 +406,9 @@ class Grid extends PureComponent<GridProps, GridState> {
       // { column: number, row: number, selectionRange: [number, number], value: string | null, isQuickEdit?: boolean }
       // The cell that is currently being edited
       editingCell: null,
+
+      isStuckToBottom,
+      isStuckToRight,
     };
   }
 
@@ -468,11 +480,11 @@ class Grid extends PureComponent<GridProps, GridState> {
     }
 
     if (isStickyBottom !== prevIsStickyBottom) {
-      this.isStuckToBottom = false;
+      this.setState({ isStuckToBottom: false });
     }
 
     if (isStickyRight !== prevIsStickyRight) {
-      this.isStuckToRight = false;
+      this.setState({ isStuckToRight: false });
     }
 
     this.updateMetrics();
@@ -503,11 +515,11 @@ class Grid extends PureComponent<GridProps, GridState> {
 
     if (prevRowCount !== rowCount || height !== prevHeight) {
       const lastTop = this.metricCalculator.getLastTop(metricState);
+      const { isStuckToBottom } = this.state;
       if (
-        (this.isStuckToBottom &&
+        (isStuckToBottom &&
           bottomVisible < rowCount - 1 &&
-          bottomVisible > 0 &&
-          top > 0) ||
+          bottomVisible > 0) ||
         top > lastTop
       ) {
         this.setState({ top: lastTop });
@@ -516,11 +528,11 @@ class Grid extends PureComponent<GridProps, GridState> {
 
     if (prevColumnCount !== columnCount || width !== prevWidth) {
       const lastLeft = this.metricCalculator.getLastLeft(metricState);
+      const { isStuckToRight } = this.state;
       if (
-        (this.isStuckToRight &&
+        (isStuckToRight &&
           rightVisible < columnCount - 1 &&
-          rightVisible > 0 &&
-          left > 0) ||
+          rightVisible > 0) ||
         left > lastLeft
       ) {
         this.setState({ left: lastLeft });
@@ -673,7 +685,7 @@ class Grid extends PureComponent<GridProps, GridState> {
     this.moveCursorToPosition(0, row);
     this.commitSelection();
 
-    this.isStuckToBottom = false;
+    this.setState({ isStuckToBottom: false });
   }
 
   /**
@@ -1189,10 +1201,10 @@ class Grid extends PureComponent<GridProps, GridState> {
     const { top, left } = viewState;
     const { lastTop, lastLeft } = this.metrics;
     if (top != null) {
-      this.isStuckToBottom = isStickyBottom && top >= lastTop;
+      this.setState({ isStuckToBottom: isStickyBottom && top >= lastTop });
     }
     if (left != null) {
-      this.isStuckToRight = isStickyRight && left >= lastLeft;
+      this.setState({ isStuckToRight: isStickyRight && left >= lastLeft });
     }
 
     this.setState(viewState as GridState);
