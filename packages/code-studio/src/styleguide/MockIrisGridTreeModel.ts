@@ -12,7 +12,14 @@ import {
   ModelIndex,
 } from '@deephaven/grid';
 import { Formatter, IrisGridModel } from '@deephaven/iris-grid';
-import type { Column } from '@deephaven/jsapi-shim';
+import type {
+  Column,
+  ColumnStatistics,
+  RollupConfig,
+  Row,
+  Table,
+  TotalsTableConfig,
+} from '@deephaven/jsapi-shim';
 
 // We need to cast our CustomEvent so it's happy with event-target-shim
 type CustomEventType = EventTarget.EventData<
@@ -234,6 +241,62 @@ class MockIrisGridTreeModel
 
   isValidForCell(column: ModelIndex, row: ModelIndex, value: string): boolean {
     return true;
+  }
+
+  async columnStatistics(column: Column): Promise<ColumnStatistics> {
+    throw new Error('Not defined in mock');
+  }
+
+  async commitPending(): Promise<void> {
+    throw new Error('Not defined in mock');
+  }
+
+  async export(): Promise<Table> {
+    throw new Error('Not defined in mock');
+  }
+
+  get pendingDataErrors(): Map<number, Error> {
+    throw new Error('Not defined in mock');
+  }
+
+  get rollupConfig(): RollupConfig {
+    throw new Error('Not defined in mock');
+  }
+
+  set rollupConfig(rollupConfig: RollupConfig) {
+    throw new Error('Not defined in mock');
+  }
+
+  get selectDistinctColumns(): string[] {
+    throw new Error('Not defined in mock');
+  }
+
+  set selectDistinctColumns(names: string[]) {
+    throw new Error('Not defined in mock');
+  }
+
+  async snapshot(ranges: GridRange[]): Promise<unknown[][]> {
+    throw new Error('Not defined in mock');
+  }
+
+  async textSnapshot(
+    ranges: GridRange[],
+    includeHeaders?: boolean,
+    formatValue?: (value: unknown, column: Column, row: Row) => string
+  ): Promise<string> {
+    throw new Error('Not defined in mock');
+  }
+
+  get totalsConfig(): TotalsTableConfig {
+    throw new Error('Not defined in mock');
+  }
+
+  set totalsConfig(totalsConfig: TotalsTableConfig) {
+    throw new Error('Not defined in mock');
+  }
+
+  valuesTable(column: Column): Promise<Table> {
+    throw new Error('Not defined in mock');
   }
 }
 

@@ -16,16 +16,16 @@ class IrisGridColumnTooltipMouseHandler extends GridMouseHandler {
     this.irisGrid = irisGrid;
   }
 
-  irisGrid: IrisGrid;
+  private irisGrid: IrisGrid;
 
-  destroyColumnTooltip(): void {
+  private destroyColumnTooltip(): void {
     const { shownColumnTooltip } = this.irisGrid.state;
     if (shownColumnTooltip != null) {
       this.irisGrid.setState({ shownColumnTooltip: null });
     }
   }
 
-  hideColumnTooltip(): void {
+  private hideColumnTooltip(): void {
     const { tooltip } = this.irisGrid;
     if (tooltip) {
       tooltip.stopTimer();

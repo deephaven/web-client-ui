@@ -126,7 +126,7 @@ export function getFloatingCoordinates(
  * Call getMetrics() with the state to get the full metrics.
  * Override this class and override the individual methods to provide additional functionality.
  */
-class GridMetricCalculator {
+export class GridMetricCalculator {
   /** The size of the caches this calculator stores */
   static CACHE_SIZE = 10000;
 

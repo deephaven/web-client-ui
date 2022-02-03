@@ -113,18 +113,14 @@ abstract class IrisGridModel<
    * Gets the columns for this model
    * @returns All columns in the model
    */
-  get columns(): Column[] {
-    throw new Error('get columns not implemented');
-  }
+  abstract get columns(): Column[];
 
   /**
    * Gets the column index for this model
    * @param name The model column name.
    * @returns The numeric index of the requested column.
    */
-  getColumnIndexByName(name: string): ModelIndex {
-    throw new Error('getColumnIndexByName not implemented');
-  }
+  abstract getColumnIndexByName(name: string): ModelIndex;
 
   /**
    * Gets the columns for the model before any transformations (such as rollups) are applied.
@@ -138,129 +134,100 @@ abstract class IrisGridModel<
    * Retrieve the grouped columns for this model
    * @returns The columns that are grouped
    */
-  get groupedColumns(): Column[] {
-    throw new Error('get groupedColumns not implemented');
-  }
+  abstract get groupedColumns(): Column[];
 
   /**
    * The description for this model.
    * @returns The description of the model
    */
-  get description(): string {
-    throw new Error('get description not implemented');
-  }
+  abstract get description(): string;
 
   /**
    * @param column The model column index
    * @param row The model row index
    * @returns The format stored for that cell
    */
-  formatForCell(column: ModelIndex, row: ModelIndex): Format | undefined {
-    throw new Error('formatForCell not implemented');
-  }
+  abstract formatForCell(
+    column: ModelIndex,
+    row: ModelIndex
+  ): Format | undefined;
 
   /**
    * @param column The model column index
    * @param row The model row index
    * @returns The value stored for that cell
    */
-  valueForCell(column: ModelIndex, row: ModelIndex): unknown {
-    throw new Error('valueForCell not implemented');
-  }
+  abstract valueForCell(column: ModelIndex, row: ModelIndex): unknown;
 
   /**
    * @returns The filters set on this model
    */
-  get filter(): FilterCondition[] {
-    throw new Error('get filter not implemented');
-  }
+  abstract get filter(): FilterCondition[];
 
   /**
    * @param filter The filters to set
    */
-  set filter(filter: FilterCondition[]) {
-    throw new Error('set filter not implemented');
-  }
+  abstract set filter(filter: FilterCondition[]);
 
   /**
    * @returns {Formatter} The formatter used when formatting data
    */
-  get formatter(): Formatter {
-    throw new Error('get formatter not implemented');
-  }
+  abstract get formatter(): Formatter;
 
   /**
    * @param {Formatter} formatter The formatter to set
    */
-  set formatter(formatter: Formatter) {
-    throw new Error('set formatter not implemented');
-  }
+  abstract set formatter(formatter: Formatter);
 
   /**
    * @param value The value to format
    * @param columnType The column type to format
    * @param columnName The column name to format
    */
-  displayString(value: unknown, columnType: string, columnName = ''): string {
-    throw new Error('displayString not implemented');
-  }
+  abstract displayString(
+    value: unknown,
+    columnType: string,
+    columnName?: string
+  ): string;
 
   /**
    * @returns The sorts used on this model
    */
-  get sort(): Sort[] {
-    throw new Error('get sort not implemented');
-  }
+  abstract get sort(): Sort[];
 
   /**
    * @param sort The sorts to use on this model
    */
-  set sort(sort: Sort[]) {
-    throw new Error('set sort not implemented');
-  }
+  abstract set sort(sort: Sort[]);
 
   /**
    * @returns The custom columns on this model
    */
-  get customColumns(): string[] {
-    throw new Error('get customColumns not implemented');
-  }
+  abstract get customColumns(): string[];
 
   /**
    * @param customColumns The custom columns to use
    */
-  set customColumns(customColumns: string[]) {
-    throw new Error('set customColumns not implemented');
-  }
+  abstract set customColumns(customColumns: string[]);
 
   /**
    * @param columns The columns to treat as frozen
    */
-  updateFrozenColumns(columns: string[]): void {
-    throw new Error('updateFrozenColumns not implemented');
-  }
+  abstract updateFrozenColumns(columns: string[]): void;
 
   /**
    * @returns The config to use for rolling up this table
    */
-  get rollupConfig(): RollupConfig {
-    throw new Error('get rollupConfig not implemented');
-  }
+  abstract get rollupConfig(): RollupConfig;
 
-  set rollupConfig(rollupConfig: RollupConfig) {
-    throw new Error('set rollupConfig not implemented');
-  }
+  abstract set rollupConfig(rollupConfig: RollupConfig);
 
   /**
    * @returns The config to use for the totals table of this model
    */
-  get totalsConfig(): TotalsTableConfig {
-    throw new Error('get totalsConfig not implemented');
-  }
+  abstract get totalsConfig(): TotalsTableConfig;
 
-  set totalsConfig(totalsConfig: TotalsTableConfig) {
-    throw new Error('set totalsConfig not implemented');
-  }
+  abstract set totalsConfig(totalsConfig: TotalsTableConfig);
 
   /**
    * @returns The LayoutHints to use for the columns of this table model
@@ -348,63 +315,47 @@ abstract class IrisGridModel<
    * The names of columns with select distinct enabled
    * @returns An array of column names
    */
-  get selectDistinctColumns(): string[] {
-    throw new Error('get selectDistinctColumns not implemented');
-  }
+  abstract get selectDistinctColumns(): string[];
 
   /**
    * Set the columns with select distinct enabled
    * @param names The array of column names to enable select distinct on
    */
-  set selectDistinctColumns(names: string[]) {
-    throw new Error('set selectDistinctColumns not implemented');
-  }
+  abstract set selectDistinctColumns(names: string[]);
 
   /**
    * The pending data for this model
    * @returns A map of row index to a map of column name/value pairs
    */
-  get pendingDataMap(): Map<RowIndex, Map<string, unknown>> {
-    throw new Error('get pendingDataMap not implemented');
-  }
+  abstract get pendingDataMap(): Map<RowIndex, Map<string, unknown>>;
 
   /**
    * Set the pending data for this model
    * @param A map of row index to a map of column name/value pairs
    */
-  set pendingDataMap(map: Map<RowIndex, Map<string, unknown>>) {
-    throw new Error('set pendingDataMap not implemented');
-  }
+  abstract set pendingDataMap(map: Map<RowIndex, Map<string, unknown>>);
 
   /**
    * @returns The count of pending rows to show
    */
-  get pendingRowCount(): number {
-    throw new Error('get pendingRowCount not implemented');
-  }
+  abstract get pendingRowCount(): number;
 
   /**
    * Set the count of pending rows to show
    * @param count The count of pending rows to show
    */
-  set pendingRowCount(count: number) {
-    throw new Error('set pendingRowCount not implemented');
-  }
+  abstract set pendingRowCount(count: number);
 
   /**
    * Errors for the pending data
    * @returns Map from row number to the error
    */
-  get pendingDataErrors(): Map<RowIndex, Error> {
-    throw new Error('get pendingDataErrors not implemented');
-  }
+  abstract get pendingDataErrors(): Map<RowIndex, Error>;
 
   /**
    * Commit pending data and save all data to the table
    */
-  async commitPending(): Promise<void> {
-    throw new Error('commitPending not implemented');
-  }
+  abstract commitPending(): Promise<void>;
 
   /**
    * Check if a column is filterable
@@ -421,22 +372,18 @@ abstract class IrisGridModel<
    * @param bottom Bottom of viewport
    * @param columns The columns in the viewport. `null` for all columns
    */
-  setViewport(
+  abstract setViewport(
     top: VisibleIndex,
     bottom: VisibleIndex,
     columns: Column[] | null
-  ): void {
-    throw new Error('setViewport not implemented');
-  }
+  ): void;
 
   /**
    * Takes a snapshot of the provided ranges
    * @param ranges The model ranges to take the snapshot of
    * @returns Returns the data in a row/column matrix
    */
-  async snapshot(ranges: GridRange[]): Promise<unknown[][]> {
-    throw new Error('snapshot not implemented');
-  }
+  abstract snapshot(ranges: GridRange[]): Promise<unknown[][]>;
 
   /**
    * @param ranges The ranges to take a snapshot of
@@ -444,36 +391,28 @@ abstract class IrisGridModel<
    * @param {(unknown, dh.Column, dh.Row) => string} formatValue A function to format a value for a cell. Defaults to model format value.
    * @returns A text formatted snapshot of the data for the specified range set
    */
-  async textSnapshot(
+  abstract textSnapshot(
     ranges: GridRange[],
-    includeHeaders = false,
+    includeHeaders?: boolean,
     formatValue?: (value: unknown, column: Column, row: Row) => string
-  ): Promise<string> {
-    throw new Error('textSnapshot not implemented');
-  }
+  ): Promise<string>;
 
   /**
    * @returns Returns a raw table that is frozen and can be used for exporting data
    */
-  async export(): Promise<Table> {
-    throw new Error('export not implemented');
-  }
+  abstract export(): Promise<Table>;
 
   /**
    * @param column The column to get the distinct values for
    * @returns A table partitioned on the column specified
    */
-  async valuesTable(column: Column): Promise<Table> {
-    throw new Error('getValuesTable not implemented');
-  }
+  abstract valuesTable(column: Column): Promise<Table>;
 
   /**
    * @param column The column to get statistics for
    * @returns The column statistics
    */
-  async columnStatistics(column: Column): Promise<ColumnStatistics> {
-    throw new Error('columnStatistics not implemented');
-  }
+  abstract columnStatistics(column: Column): Promise<ColumnStatistics>;
 
   /**
    * Close this model. It can no longer be used after being closed
@@ -494,9 +433,7 @@ abstract class IrisGridModel<
    * @param ranges The ranges to delete
    * @returns A promise that resolves successfully when the operation is complete or rejects if there's an error
    */
-  delete(ranges: GridRange[]): Promise<void> {
-    throw new Error('delete not implemented');
-  }
+  abstract delete(ranges: GridRange[]): Promise<void>;
 }
 
 export default IrisGridModel;

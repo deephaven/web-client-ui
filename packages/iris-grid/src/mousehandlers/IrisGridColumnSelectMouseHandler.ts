@@ -18,14 +18,14 @@ class IrisGridColumnSelectMouseHandler extends GridMouseHandler {
     this.cursor = null;
   }
 
-  irisGrid: IrisGrid;
+  private irisGrid: IrisGrid;
 
-  isActive(): boolean {
+  private isActive(): boolean {
     const { isSelectingColumn } = this.irisGrid.props;
     return isSelectingColumn;
   }
 
-  isValidColumn(tableColumn: Column | null): boolean {
+  private isValidColumn(tableColumn: Column | null): boolean {
     if (tableColumn == null) {
       return false;
     }
@@ -37,14 +37,14 @@ class IrisGridColumnSelectMouseHandler extends GridMouseHandler {
     return true;
   }
 
-  updateColumnSelectionStatus(): void {
+  private updateColumnSelectionStatus(): void {
     const { columnSelectionValidator } = this.irisGrid.props;
     if (columnSelectionValidator) {
       columnSelectionValidator(null);
     }
   }
 
-  getTableColumn(columnIndex: number | null): Column | null {
+  private getTableColumn(columnIndex: number | null): Column | null {
     if (columnIndex == null) {
       return null;
     }

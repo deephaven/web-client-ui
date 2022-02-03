@@ -13,6 +13,7 @@ import {
 } from './GridMetrics';
 import type { GridMetrics } from './GridMetrics';
 import { GridTheme } from './GridTheme';
+import { GridWheelEvent } from './GridMouseHandler';
 
 export type AxisRange = [start: VisibleIndex, end: VisibleIndex];
 
@@ -27,7 +28,7 @@ export type GridPoint = {
 
 export type IndexCallback<T> = (itemIndex: VisibleIndex) => T | undefined;
 
-class GridUtils {
+export class GridUtils {
   // use same constant as chrome source for windows
   // https://github.com/chromium/chromium/blob/973af9d461b6b5dc60208c8d3d66adc27e53da78/ui/events/blink/web_input_event_builders_win.cc#L285
   static PIXELS_PER_LINE = 100 / 3;
@@ -1022,7 +1023,7 @@ class GridUtils {
    * @returns The delta coordinates normalized to pixels
    */
   static getScrollDelta(
-    wheelEvent: WheelEvent | React.WheelEvent,
+    wheelEvent: GridWheelEvent,
     pageWidth = 1024,
     pageHeight = 768,
     lineWidth = 20,
