@@ -396,7 +396,7 @@ class IrisGridTableModel extends IrisGridModel {
     const data = this.dataForCell(x, y);
     if (data) {
       const { format, value } = data;
-      if (value == null) {
+      if (value == null || value === '') {
         return theme.nullStringColor;
       }
       if (format && format.color) {

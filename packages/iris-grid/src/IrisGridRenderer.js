@@ -87,17 +87,17 @@ class IrisGridRenderer extends GridRenderer {
     const modelRow = modelRows.get(row);
     const modelColumn = modelColumns.get(column);
     const value = model.valueForCell(modelColumn, modelRow);
-    if (
-      value === null &&
-      TableUtils.isTextType(model.columns[modelColumn].type)
-    ) {
-      const originalFont = context.font;
-      context.font = `italic ${originalFont}`;
-      super.drawCellContent(context, state, column, row, 'null');
-      context.font = originalFont;
-    } else {
-      super.drawCellContent(context, state, column, row);
+    if (TableUtils.isTextType(model.columns[modelColumn].type)) {
+      if (value === null || value === '') {
+        const originalFont = context.font;
+        context.font = `italic ${originalFont}`;
+        const displayValue = value === null ? 'null' : 'empty';
+        super.drawCellContent(context, state, column, row, displayValue);
+        context.font = originalFont;
+        return;
+      }
     }
+    super.drawCellContent(context, state, column, row);
   }
 
   drawGroupedColumnLine(context, state) {
