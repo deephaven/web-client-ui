@@ -21,10 +21,10 @@
       padding: $spacer-1 $spacer-2;
       overflow: auto;
       max-height: 25vh;
-      .time-string {
+      .time-wrapper {
         text-align: right;
         color: $text-muted;
-        span {
+        .time-string {
           color: $foreground;
         }
       }

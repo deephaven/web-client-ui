@@ -152,8 +152,13 @@ export class CommandHistoryItemTooltip extends Component {
           {previewText.length < name.length && <p>Preview Truncated...</p>}
         </div>
         <div className="result-info">
-          <div className="time-string">
-            Elapsed time: <span>{timeString || <LoadingSpinner />}</span>
+          <div className="time-wrapper">
+            Elapsed time:{' '}
+            {timeString ? (
+              <span className="time-string">{timeString}</span>
+            ) : (
+              <LoadingSpinner />
+            )}
           </div>
           {errorMessage && <div className="error-message">{errorMessage}</div>}
         </div>
