@@ -1,23 +1,36 @@
 @import '../../../components/scss/custom.scss';
 .command-history-item-popper {
   padding: 0;
+  .popper-content .tooltip-content {
+    padding: 0;
+  }
   .command-history-item-tooltip {
+    display: flex;
+    flex-direction: column;
     max-height: 50vh;
     max-width: 50vw;
-    overflow: auto;
     text-align: left;
-    padding: $tooltip-padding-y $tooltip-padding-x;
+    .scroll-container {
+      padding: $spacer-2;
+      overflow: auto;
+      flex: 0 1 auto;
+    }
     .result-info {
-      text-align: right;
-    }
-    .time-string {
-      color: $text-muted;
-    }
-    hr {
-      background-color: $gray-400;
-    }
-    .error-message {
-      color: $danger;
+      flex: 1 0 auto;
+      border-top: 1px solid $gray-500;
+      padding: $spacer-1 $spacer-2;
+      overflow: auto;
+      max-height: 25vh;
+      .time-string {
+        text-align: right;
+        color: $text-muted;
+        span {
+          color: $foreground;
+        }
+      }
+      .error-message {
+        color: $danger;
+      }
     }
   }
 }

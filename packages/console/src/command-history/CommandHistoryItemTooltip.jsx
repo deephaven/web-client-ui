@@ -147,20 +147,16 @@ export class CommandHistoryItemTooltip extends Component {
 
     return (
       <div className="command-history-item-tooltip">
-        <Code language={language}>{previewText}</Code>
-        {previewText.length < name.length && <p>Preview Truncated...</p>}
-        <div className="result-info">
-          {!timeString && <LoadingSpinner />}
-          {timeString && <div className="time-string">{timeString}</div>}
+        <div className="scroll-container">
+          <Code language={language}>{previewText}</Code>
+          {previewText.length < name.length && <p>Preview Truncated...</p>}
         </div>
-        {errorMessage && (
-          <>
-            <hr />
-            <div key="error" className="error-message">
-              {errorMessage}
-            </div>
-          </>
-        )}
+        <div className="result-info">
+          <div className="time-string">
+            Elapsed time: <span>{timeString || <LoadingSpinner />}</span>
+          </div>
+          {errorMessage && <div className="error-message">{errorMessage}</div>}
+        </div>
       </div>
     );
   }

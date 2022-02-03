@@ -5,17 +5,16 @@ import Popper, { PopperOptions, ReferenceObject } from './Popper';
 
 const log = Log.module('Tooltip');
 
-interface TooltipProps {
-  interactive: boolean;
-  options: PopperOptions;
-  timeout: number;
-  reshowTimeout: number;
+type TooltipProps = typeof Tooltip.defaultProps & {
   children: React.ReactNode;
-  popperClassName: string;
-  referenceObject: ReferenceObject;
-  onExited: () => void;
-}
-
+  interactive?: boolean;
+  options?: PopperOptions;
+  popperClassName?: string;
+  reshowTimeout?: number;
+  timeout?: number;
+  referenceObject?: ReferenceObject | null;
+  onExited?: () => void;
+};
 interface TooltipState {
   isShown: boolean;
 }
@@ -50,9 +49,7 @@ class Tooltip extends Component<TooltipProps, TooltipState> {
     reshowTimeout: Tooltip.defaultReshowTimeout,
     timeout: Tooltip.defaultTimeout,
     referenceObject: null,
-    onExited(): void {
-      // no-op
-    },
+    onExited: (): void => undefined,
   };
 
   static handleHidden(): void {
