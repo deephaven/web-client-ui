@@ -1357,12 +1357,6 @@ const VariableType = Object.freeze({
   PANDAS: 'Pandas',
 });
 
-const SearchDisplayMode = Object.freeze({
-  SEARCH_DISPLAY_HIDE: 'Hide',
-  SEARCH_DISPLAY_SHOW: 'Show',
-  SEARCH_DISPLAY_DEFAULT: 'Default',
-});
-
 //
 // CONSOLE END
 //
@@ -1786,7 +1780,6 @@ const dh = {
   DateWrapper: DateWrapper,
   ViewportData,
   VariableType,
-  SearchDisplayMode,
 };
 
 // The actual library just sets a global window object, we do the same
