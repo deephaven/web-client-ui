@@ -48,6 +48,7 @@ class CustomColumnBuilder extends Component {
       isSuccessShowing: false,
     };
     this.container = null;
+    this.successButtonTimer = null;
   }
 
   componentDidMount() {
@@ -60,6 +61,9 @@ class CustomColumnBuilder extends Component {
     this.stopListening();
     if (this.messageTimer) {
       clearTimeout(this.messageTimer);
+    }
+    if (this.successButtonTimer) {
+      clearTimeout(this.successButtonTimer);
     }
   }
 
@@ -170,7 +174,7 @@ class CustomColumnBuilder extends Component {
     this.setState(
       { isCustomColumnApplying: false, isSuccessShowing: true },
       () => {
-        setTimeout(
+        this.successButtonTimer = setTimeout(
           () => this.setState({ isSuccessShowing: false }),
           CustomColumnBuilder.SUCCESS_SHOW_DURATION
         );
