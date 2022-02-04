@@ -6,12 +6,14 @@ import memoize from 'memoize-one';
 import { DragDropContext, Droppable } from 'react-beautiful-dnd';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { DragUtils, LoadingSpinner } from '@deephaven/components';
-import { dhNewCircleLargeFilled, vsIssues } from '@deephaven/icons';
+import { dhNewCircleLargeFilled, vsIssues, vsPass } from '@deephaven/icons';
 import CustomColumnInput from './CustomColumnInput';
 import './CustomColumnBuilder.scss';
 import IrisGridModel from '../IrisGridModel';
 
 class CustomColumnBuilder extends Component {
+  static SUCCESS_SHOW_DURATION = 750;
+
   static makeCustomColumnInputEventKey() {
     return shortid.generate();
   }
@@ -43,8 +45,10 @@ class CustomColumnBuilder extends Component {
       isCustomColumnApplying: false,
       errorMessage: null,
       hasRequestFailed: false,
+      isSuccessShowing: false,
     };
     this.container = null;
+    this.successButtonTimer = null;
   }
 
   componentDidMount() {
@@ -57,6 +61,9 @@ class CustomColumnBuilder extends Component {
     this.stopListening();
     if (this.messageTimer) {
       clearTimeout(this.messageTimer);
+    }
+    if (this.successButtonTimer) {
+      clearTimeout(this.successButtonTimer);
     }
   }
 
@@ -164,7 +171,15 @@ class CustomColumnBuilder extends Component {
     if (!isCustomColumnApplying) {
       return;
     }
-    this.setState({ isCustomColumnApplying: false });
+    this.setState(
+      { isCustomColumnApplying: false, isSuccessShowing: true },
+      () => {
+        this.successButtonTimer = setTimeout(
+          () => this.setState({ isSuccessShowing: false }),
+          CustomColumnBuilder.SUCCESS_SHOW_DURATION
+        );
+      }
+    );
   }
 
   handleRequestFailed(event) {
@@ -279,9 +294,43 @@ class CustomColumnBuilder extends Component {
     });
   }
 
+  renderSaveButton() {
+    const { inputs, isCustomColumnApplying, isSuccessShowing } = this.state;
+    const saveText = inputs.length > 1 ? 'Save Columns' : 'Save Column';
+
+    return (
+      <button
+        type="button"
+        className={classNames(
+          'btn btn-apply',
+          {
+            'btn-spinner': isCustomColumnApplying,
+          },
+          isSuccessShowing ? 'btn-success' : 'btn-primary'
+        )}
+        disabled={isSuccessShowing || isCustomColumnApplying}
+        onClick={this.handleSaveClick}
+      >
+        {isCustomColumnApplying && (
+          <span>
+            <LoadingSpinner />
+            <span className="btn-normal-content">Applying</span>
+            <span className="btn-hover-content">Applying</span>
+          </span>
+        )}
+        {!isSuccessShowing && !isCustomColumnApplying && saveText}
+        {isSuccessShowing && (
+          <>
+            <FontAwesomeIcon icon={vsPass} /> Success
+          </>
+        )}
+      </button>
+    );
+  }
+
   render() {
     const { onCancel } = this.props;
-    const { inputs, errorMessage, isCustomColumnApplying } = this.state;
+    const { errorMessage } = this.state;
     return (
       <div
         role="presentation"
@@ -337,23 +386,7 @@ class CustomColumnBuilder extends Component {
             >
               Cancel
             </button>
-            <button
-              type="button"
-              className={classNames('btn btn-primary btn-apply', {
-                'btn-spinner': isCustomColumnApplying,
-              })}
-              onClick={this.handleSaveClick}
-            >
-              {isCustomColumnApplying && (
-                <span>
-                  <LoadingSpinner />
-                  <span className="btn-normal-content">Applying</span>
-                  <span className="btn-hover-content">Applying</span>
-                </span>
-              )}
-              {!isCustomColumnApplying &&
-                (inputs.length > 1 ? 'Save Columns' : 'Save Column')}
-            </button>
+            {this.renderSaveButton()}
           </div>
         </div>
       </div>
