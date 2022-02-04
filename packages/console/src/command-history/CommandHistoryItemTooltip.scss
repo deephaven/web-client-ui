@@ -13,10 +13,9 @@
     .scroll-container {
       padding: $spacer-2;
       overflow: auto;
-      flex: 0 1 auto;
     }
     .result-info {
-      flex: 1 0 auto;
+      flex-shrink: 0;
       border-top: 1px solid $gray-500;
       padding: $spacer-1 $spacer-2;
       overflow: auto;
