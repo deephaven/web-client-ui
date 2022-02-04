@@ -1665,10 +1665,10 @@ export class IrisGrid extends Component {
     const { model, canToggleSearch } = this.props;
     const searchDisplayMode = model?.layoutHints?.searchDisplayMode;
 
-    if (searchDisplayMode === dh.SearchDisplayMode.SEARCH_DISPLAY_HIDE) {
+    if (searchDisplayMode === dh.SearchDisplayMode?.SEARCH_DISPLAY_HIDE) {
       return false;
     }
-    if (searchDisplayMode === dh.SearchDisplayMode.SEARCH_DISPLAY_SHOW) {
+    if (searchDisplayMode === dh.SearchDisplayMode?.SEARCH_DISPLAY_SHOW) {
       return true;
     }
 
