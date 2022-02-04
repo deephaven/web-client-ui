@@ -33,7 +33,7 @@ interface PopperProps {
   isShown: boolean;
   closeOnBlur: boolean;
   interactive: boolean;
-  referenceObject: ReferenceObject;
+  referenceObject: ReferenceObject | null;
 }
 
 interface PopperState {

@@ -4,6 +4,8 @@ import debounce from 'lodash.debounce';
 import memoize from 'memoizee';
 import { LoadingSpinner } from '@deephaven/components';
 import { TimeUtils } from '@deephaven/utils';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { vsWarning } from '@deephaven/icons';
 import Code from '../common/Code';
 import './CommandHistoryItemTooltip.scss';
 import ConsolePropTypes from '../ConsolePropTypes';
@@ -147,20 +149,28 @@ export class CommandHistoryItemTooltip extends Component {
 
     return (
       <div className="command-history-item-tooltip">
-        <Code language={language}>{previewText}</Code>
-        {previewText.length < name.length && <p>Preview Truncated...</p>}
-        <div className="result-info">
-          {!timeString && <LoadingSpinner />}
-          {timeString && <div className="time-string">{timeString}</div>}
+        <div className="scroll-container">
+          <Code language={language}>{previewText}</Code>
+          {previewText.length < name.length && <p>Preview Truncated...</p>}
         </div>
-        {errorMessage && (
-          <>
-            <hr />
-            <div key="error" className="error-message">
-              {errorMessage}
+        <div className="result-info">
+          <div className="d-flex justify-content-between">
+            {errorMessage && (
+              <div className="text-danger mr-1">
+                <FontAwesomeIcon icon={vsWarning} /> Executed with errors
+              </div>
+            )}
+            <div className="time-wrapper">
+              Elapsed time:{' '}
+              {timeString ? (
+                <span className="time-string">{timeString}</span>
+              ) : (
+                <LoadingSpinner />
+              )}
             </div>
-          </>
-        )}
+          </div>
+          {errorMessage && <div className="error-message">{errorMessage}</div>}
+        </div>
       </div>
     );
   }
