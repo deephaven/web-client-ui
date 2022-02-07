@@ -10,7 +10,6 @@ import { Code, ObjectIcon } from '../common';
 import ConsoleHistoryItemResult from './ConsoleHistoryItemResult';
 import ConsoleHistoryResultInProgress from './ConsoleHistoryResultInProgress';
 import ConsoleHistoryResultErrorMessage from './ConsoleHistoryResultErrorMessage';
-import ConsoleUtils from '../common/ConsoleUtils';
 import './ConsoleHistoryItem.scss';
 
 const log = Log.module('ConsoleHistoryItem');

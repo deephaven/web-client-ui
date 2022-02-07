@@ -3,6 +3,7 @@ import createLoadRemoteModule, {
 } from '@paciolan/remote-module-loader';
 
 const dependencies = {
+  // eslint-disable-next-line global-require
   react: require('react'),
 };
 

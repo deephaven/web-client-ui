@@ -18,6 +18,18 @@ function makeSession() {
   };
 }
 
+function makeSessionConfig() {
+  return { type: 'Test' };
+}
+
+function makeMatch() {
+  return {
+    params: {
+      notebookPath: '/test/',
+    },
+  };
+}
+
 function makeAppMainContainer({
   layoutStorage = {},
   user = TestUtils.REGULAR_USER,
@@ -34,8 +46,9 @@ function makeAppMainContainer({
   serverConfigValues = {},
   dashboardOpenedPanelMaps = {},
   session = makeSession(),
-  sessionConfig = {},
-  match = {},
+  sessionConfig = makeSessionConfig(),
+  match = makeMatch(),
+  plugins = new Map(),
 } = {}) {
   return shallow(
     <AppMainContainer
@@ -56,6 +69,7 @@ function makeAppMainContainer({
       session={session}
       sessionConfig={sessionConfig}
       match={match}
+      plugins={plugins}
     />
   );
 }

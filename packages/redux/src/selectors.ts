@@ -8,8 +8,6 @@ import type {
 
 const EMPTY_OBJECT = Object.freeze({});
 
-const EMPTY_ARRAY = Object.freeze([]);
-
 const EMPTY_MAP = new Map();
 
 type Selector<R> = (state: RootState) => R;

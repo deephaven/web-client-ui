@@ -11,7 +11,6 @@ import { IrisGridModelFactory, IrisGridThemeType } from '@deephaven/iris-grid';
 import { Table, VariableDefinition } from '@deephaven/jsapi-shim';
 import shortid from 'shortid';
 import { IrisGridPanel } from './panels';
-import { IrisGridEvent } from './events';
 
 export type GridPluginProps = Partial<DashboardPluginComponentProps> & {
   getDownloadWorker?: () => Promise<ServiceWorker>;

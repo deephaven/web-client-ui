@@ -5,7 +5,6 @@ import memoize from 'memoize-one';
 import { CSSTransition } from 'react-transition-group';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
-import shortid from 'shortid';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   ContextActions,
@@ -21,13 +20,11 @@ import Dashboard, {
   updateDashboardData as updateDashboardDataAction,
 } from '@deephaven/dashboard';
 import {
-  ChartEvent,
   ChartPlugin,
   ConsolePlugin,
   FilterPlugin,
   GridPlugin,
   InputFilterEvent,
-  IrisGridEvent,
   LinkerPlugin,
   MarkdownEvent,
   NotebookEvent,
