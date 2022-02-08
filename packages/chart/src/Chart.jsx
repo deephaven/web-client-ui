@@ -465,6 +465,7 @@ export class Chart extends Component {
             revision={revision}
             config={config}
             onAfterPlot={this.handleAfterPlot}
+            onError={log.error}
             onRelayout={this.handleRelayout}
             onUpdate={this.handlePlotUpdate}
             onRestyle={this.handleRestyle}
