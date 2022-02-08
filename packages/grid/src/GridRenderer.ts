@@ -1060,7 +1060,8 @@ export class GridRenderer {
     context: CanvasRenderingContext2D,
     state: GridRenderState,
     column: VisibleIndex,
-    row: VisibleIndex
+    row: VisibleIndex,
+    textOverride?: string
   ): void {
     const { metrics, model, theme } = state;
     const {
@@ -1085,7 +1086,7 @@ export class GridRenderer {
     const rowHeight = getOrThrow(visibleRowHeights, row);
     const modelRow = getOrThrow(modelRows, row);
     const modelColumn = getOrThrow(modelColumns, column);
-    const text = model.textForCell(modelColumn, modelRow);
+    const text = textOverride ?? model.textForCell(modelColumn, modelRow);
     const isFirstColumn = column === firstColumn;
 
     if (text && rowHeight > 0) {

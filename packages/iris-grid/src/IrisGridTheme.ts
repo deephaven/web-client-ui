@@ -40,6 +40,7 @@ const theme: IrisGridThemeType = Object.freeze({
   dateColor: IrisGridTheme['date-color'],
   pendingTextColor: IrisGridTheme['pending-text-color'],
   errorTextColor: IrisGridTheme['error-text-color'],
+  nullStringColor: IrisGridTheme['null-string-color'],
   filterBarActiveBackgroundColor: IrisGridTheme['filter-bar-active-bg'],
   filterBarExpandedBackgroundColor: IrisGridTheme['filter-bar-expanded-bg'],
   filterBarExpandedActiveBackgroundColor:

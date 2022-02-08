@@ -395,7 +395,10 @@ class IrisGridTableModel extends IrisGridModel {
   colorForCell(x, y, theme) {
     const data = this.dataForCell(x, y);
     if (data) {
-      const { format } = data;
+      const { format, value } = data;
+      if (value == null || value === '') {
+        return theme.nullStringColor;
+      }
       if (format && format.color) {
         return format.color;
       }
@@ -406,7 +409,6 @@ class IrisGridTableModel extends IrisGridModel {
       }
 
       // Fallback to formatting based on the value/type of the cell
-      const { value } = data;
       if (value != null) {
         const column = this.totalsColumn(x, y) ?? this.columns[x];
         if (TableUtils.isDateType(column.type) || column.name === 'Date') {
@@ -673,7 +675,11 @@ class IrisGridTableModel extends IrisGridModel {
   }
 
   valueForCell(x, y) {
-    return this.dataForCell(x, y)?.value;
+    const data = this.dataForCell(x, y);
+    if (data) {
+      return data.value ?? null;
+    }
+    return undefined;
   }
 
   copyViewportData(data) {
