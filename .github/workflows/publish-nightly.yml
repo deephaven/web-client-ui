@@ -36,7 +36,7 @@ jobs:
         with:
           node-version: '14.x'
           registry-url: 'https://registry.npmjs.org'
-      - run: npm install
+      - run: npm ci
       - run: npm run build
       # Need the --no-verify-access access flag since we use an automation token. Otherwise publish step fails
       # https://github.com/lerna/lerna/issues/2788
