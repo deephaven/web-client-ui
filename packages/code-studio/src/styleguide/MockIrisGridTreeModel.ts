@@ -12,14 +12,7 @@ import {
   ModelIndex,
 } from '@deephaven/grid';
 import { Formatter, IrisGridModel } from '@deephaven/iris-grid';
-import type {
-  Column,
-  ColumnStatistics,
-  RollupConfig,
-  Row,
-  Table,
-  TotalsTableConfig,
-} from '@deephaven/jsapi-shim';
+import type { Column } from '@deephaven/jsapi-shim';
 
 // We need to cast our CustomEvent so it's happy with event-target-shim
 type CustomEventType = EventTarget.EventData<
@@ -243,59 +236,55 @@ class MockIrisGridTreeModel
     return true;
   }
 
-  async columnStatistics(column: Column): Promise<ColumnStatistics> {
+  async columnStatistics(column: Column): Promise<never> {
     throw new Error('Not defined in mock');
   }
 
-  async commitPending(): Promise<void> {
+  async commitPending(): Promise<never> {
     throw new Error('Not defined in mock');
   }
 
-  async export(): Promise<Table> {
+  async export(): Promise<never> {
     throw new Error('Not defined in mock');
   }
 
-  get pendingDataErrors(): Map<number, Error> {
+  get pendingDataErrors(): never {
     throw new Error('Not defined in mock');
   }
 
-  get rollupConfig(): RollupConfig {
+  get rollupConfig(): never {
     throw new Error('Not defined in mock');
   }
 
-  set rollupConfig(rollupConfig: RollupConfig) {
+  set rollupConfig(rollupConfig: never) {
     throw new Error('Not defined in mock');
   }
 
-  get selectDistinctColumns(): string[] {
+  get selectDistinctColumns(): never {
     throw new Error('Not defined in mock');
   }
 
-  set selectDistinctColumns(names: string[]) {
+  set selectDistinctColumns(names: never) {
     throw new Error('Not defined in mock');
   }
 
-  async snapshot(ranges: GridRange[]): Promise<unknown[][]> {
+  async snapshot(ranges: GridRange[]): Promise<never> {
     throw new Error('Not defined in mock');
   }
 
-  async textSnapshot(
-    ranges: GridRange[],
-    includeHeaders?: boolean,
-    formatValue?: (value: unknown, column: Column, row: Row) => string
-  ): Promise<string> {
+  async textSnapshot(): Promise<never> {
     throw new Error('Not defined in mock');
   }
 
-  get totalsConfig(): TotalsTableConfig {
+  get totalsConfig(): never {
     throw new Error('Not defined in mock');
   }
 
-  set totalsConfig(totalsConfig: TotalsTableConfig) {
+  set totalsConfig(totalsConfig: never) {
     throw new Error('Not defined in mock');
   }
 
-  valuesTable(column: Column): Promise<Table> {
+  valuesTable(column: Column): Promise<never> {
     throw new Error('Not defined in mock');
   }
 }
