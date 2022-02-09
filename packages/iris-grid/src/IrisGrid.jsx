@@ -88,13 +88,8 @@ import AdvancedSettingsMenu from './sidebar/AdvancedSettingsMenu';
 import SHORTCUTS from './IrisGridShortcuts';
 import DateUtils from './DateUtils';
 import ConditionalFormattingMenu from './sidebar/conditional-formatting/ConditionalFormattingMenu';
-import {
-  getConditionDBString,
-  getStyleDBString,
-} from './sidebar/conditional-formatting/ConditionalFormattingUtils';
-import ConditionalFormatEditor, {
-  FormatterType,
-} from './sidebar/conditional-formatting/ConditionalFormatEditor';
+import { getFormatColumns } from './sidebar/conditional-formatting/ConditionalFormattingUtils';
+import ConditionalFormatEditor from './sidebar/conditional-formatting/ConditionalFormatEditor';
 
 const log = Log.module('IrisGrid');
 
@@ -393,7 +388,7 @@ export class IrisGrid extends Component {
       customColumnFormatMap: new Map(customColumnFormatMap),
 
       conditionalFormats,
-      conditionalFormatEditIndex: undefined,
+      conditionalFormatEditIndex: null,
       conditionalFormatPreview: undefined,
 
       // Column user is hovering over for selection
@@ -695,63 +690,24 @@ export class IrisGrid extends Component {
       .filter(o => !AggregationUtils.isRollupOperation(o))
   );
 
-  getFormatColumns = memoize((columns, rulesParam, preview, editIndex) => {
-    log.debug('getFormatColumns', rulesParam, preview, editIndex);
-    const result = [];
-    const formatColumnMap = new Map();
-    const formatRowMap = new Map();
-    const rules = [...rulesParam];
-    if (preview !== undefined && editIndex !== undefined) {
-      rules[editIndex] = preview;
+  /**
+   * Builds formatColumns array based on the provided formatting rules with optional preview
+   * @param {Column[]} columns Array of columns
+   * @param {FormattingRule[]} rulesParam Array of formatting rules
+   * @param {FormattingRule?} preview Optional temporary formatting rule for previewing live changes
+   * @param {Number|null} editIndex Index in the rulesParam array to replace with the preview, null if preview not applicable
+   * @returns {CustomColumn[]} Format columns array
+   */
+  getCachedFormatColumns = memoize(
+    (columns, rulesParam, preview, editIndex) => {
+      log.debug('getCachedFormatColumns', rulesParam, preview, editIndex);
+      const rules = [...rulesParam];
+      if (preview !== undefined && editIndex !== null) {
+        rules[editIndex] = preview;
+      }
+      return getFormatColumns(columns, rules);
     }
-    rules.forEach(({ config, type: formatterType }) => {
-      const { column } = config;
-      // Check both name and type because the type can change
-      const col = columns.find(
-        ({ name, type }) => name === column.name && type === column.type
-      );
-      if (col === undefined) {
-        log.debug(
-          `Column ${column.name}:${column.type} not found. Ignoring format rule.`,
-          config
-        );
-        return;
-      }
-      const styleDBString = getStyleDBString(config);
-      if (styleDBString === undefined) {
-        log.debug(`No formatting set. Ignoring format rule.`, config);
-        return;
-      }
-      const conditionDBString = getConditionDBString(config);
-
-      // Stack ternary format conditions by column
-      if (formatterType === FormatterType.ROWS) {
-        const { rule: prevRule = null, index = undefined } =
-          formatRowMap.get(col.name) ?? {};
-        const rule = `${conditionDBString} ? ${styleDBString} : ${prevRule}`;
-        const formatRow = dh.Column.formatRowColor(rule);
-        if (index !== undefined) {
-          result.splice(index, 1);
-        }
-        result.push(formatRow);
-        formatRowMap.set(col.name, { rule, index: result.length - 1 });
-      } else if (formatterType === FormatterType.CONDITIONAL) {
-        const { rule: prevRule = null, index = undefined } =
-          formatColumnMap.get(col.name) ?? {};
-        const rule = `${conditionDBString} ? ${styleDBString} : ${prevRule}`;
-        const formatColumn = col.formatColor(rule);
-        if (index !== undefined) {
-          result.splice(index, 1);
-        }
-        result.push(formatColumn);
-        formatColumnMap.set(col.name, { rule, index: result.length - 1 });
-      } else {
-        log.error('Unsupported formatter type', formatterType);
-      }
-    });
-
-    return result;
-  });
+  );
 
   getModelRollupConfig = memoize(
     (originalColumns, config, aggregationSettings) =>
@@ -2172,7 +2128,7 @@ export class IrisGrid extends Component {
     log.debug('Save conditional format changes', config);
     this.setState(
       state => {
-        if (state.conditionalFormatEditIndex === undefined) {
+        if (state.conditionalFormatEditIndex === null) {
           log.debug('Invalid format index');
           return null;
         }
@@ -2190,7 +2146,7 @@ export class IrisGrid extends Component {
     this.handleMenuBack();
     // Not resetting conditionalFormatPreview here
     // to prevent editor fields change during the menu transition
-    this.setState({ conditionalFormatEditIndex: undefined });
+    this.setState({ conditionalFormatEditIndex: null });
   }
 
   handleUpdateCustomColumns(customColumns) {
@@ -3229,7 +3185,7 @@ export class IrisGrid extends Component {
                   model.floatingLeftColumnCount,
                   model.floatingRightColumnCount
                 )}
-                formatColumns={this.getFormatColumns(
+                formatColumns={this.getCachedFormatColumns(
                   model.columns,
                   conditionalFormats,
                   conditionalFormatPreview,
@@ -3237,7 +3193,7 @@ export class IrisGrid extends Component {
                   openOptions[openOptions.length - 1]?.type ===
                     OptionType.CONDITIONAL_FORMATTING_EDIT
                     ? conditionalFormatEditIndex
-                    : undefined
+                    : null
                 )}
                 rollupConfig={this.getModelRollupConfig(
                   model.originalColumns,
