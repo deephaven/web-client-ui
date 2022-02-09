@@ -5,7 +5,12 @@ import Log from '@deephaven/log';
 import { FormatColumnWhereIcon, FormatRowWhereIcon } from '../icons';
 import ColumnFormatEditor, { ColumnFormatConfig } from './ColumnFormatEditor';
 import RowFormatEditor, { RowFormatConfig } from './RowFormatEditor';
-import { BaseFormatConfig, ModelColumn } from './ConditionalFormattingUtils';
+import {
+  BaseFormatConfig,
+  FormatterType,
+  FormattingRule,
+  ModelColumn,
+} from './ConditionalFormattingUtils';
 import './ConditionalFormatEditor.scss';
 
 const log = Log.module('ConditionalFormatEditor');
@@ -15,16 +20,6 @@ export type SaveCallback = (rule: FormattingRule) => void;
 export type CancelCallback = () => void;
 
 export type ChangeCallback = (ruleConfig: BaseFormatConfig) => void;
-
-export enum FormatterType {
-  CONDITIONAL = 'conditional',
-  ROWS = 'rows',
-}
-
-export interface FormattingRule {
-  type: FormatterType;
-  config: BaseFormatConfig;
-}
 
 export interface ConditionalFormatEditorProps {
   columns: ModelColumn[];

@@ -43,11 +43,9 @@ const ColumnFormatEditor = (props: ColumnFormatEditorProps): JSX.Element => {
   } = props;
 
   const [selectedColumn, setColumn] = useState(
-    columns.length > 0
-      ? columns.find(
-          c => c.name === config.column.name && c.type === config.column.type
-        )
-      : undefined
+    columns.find(
+      c => c.name === config.column.name && c.type === config.column.type
+    )
   );
   const selectedColumnType = selectedColumn?.type;
   const [conditionConfig, setConditionConfig] = useState(

@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-function SvgBarIcon(
+function FormatRowWhereIcon(
   props: JSX.IntrinsicAttributes & React.SVGProps<SVGSVGElement>
 ): JSX.Element {
   return (
@@ -21,4 +21,4 @@ function SvgBarIcon(
   );
 }
 
-export default SvgBarIcon;
+export default FormatRowWhereIcon;

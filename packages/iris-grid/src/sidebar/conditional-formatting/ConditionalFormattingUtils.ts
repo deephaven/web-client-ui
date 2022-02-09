@@ -1,5 +1,9 @@
+import Log from '@deephaven/log';
+import { Column, CustomColumn } from '@deephaven/jsapi-shim';
 import { TableUtils } from '../..';
 import { ConditionConfig } from './ConditionEditor';
+
+const log = Log.module('ConditionalFormattingUtils');
 
 export type ModelColumn = {
   name: string;
@@ -13,6 +17,16 @@ export interface BaseFormatConfig {
   start?: number;
   end?: number;
   style: FormatStyleConfig;
+}
+
+export enum FormatterType {
+  CONDITIONAL = 'conditional',
+  ROWS = 'rows',
+}
+
+export interface FormattingRule {
+  type: FormatterType;
+  config: BaseFormatConfig;
 }
 
 export enum NumberCondition {
@@ -193,53 +207,53 @@ export function getConditionDBString(config: BaseFormatConfig): string {
 export function getLabelForNumberCondition(condition: NumberCondition): string {
   switch (condition) {
     case NumberCondition.IS_EQUAL:
-      return 'Is equal to';
+      return 'is equal to';
     case NumberCondition.IS_NOT_EQUAL:
-      return 'Is not equal to';
+      return 'is not equal to';
     case NumberCondition.IS_BETWEEN:
-      return 'Is between';
+      return 'is between';
     case NumberCondition.GREATER_THAN:
-      return 'Greater than';
+      return 'greater than';
     case NumberCondition.GREATER_THAN_OR_EQUAL:
-      return 'Greater than or equal to';
+      return 'greater than or equal to';
     case NumberCondition.LESS_THAN:
-      return 'Less than';
+      return 'less than';
     case NumberCondition.LESS_THAN_OR_EQUAL:
-      return 'Less than or equal to';
+      return 'less than or equal to';
   }
 }
 
 export function getLabelForStringCondition(condition: StringCondition): string {
   switch (condition) {
     case StringCondition.IS_EXACTLY:
-      return 'Is exactly';
+      return 'is exactly';
     case StringCondition.IS_NOT_EXACTLY:
-      return 'Is not exactly';
+      return 'is not exactly';
     case StringCondition.CONTAINS:
-      return 'Contains';
+      return 'contains';
     case StringCondition.DOES_NOT_CONTAIN:
-      return 'Does not contain';
+      return 'does not contain';
     case StringCondition.STARTS_WITH:
-      return 'Starts with';
+      return 'starts with';
     case StringCondition.ENDS_WITH:
-      return 'Ends with';
+      return 'ends with';
   }
 }
 
 export function getLabelForDateCondition(condition: DateCondition): string {
   switch (condition) {
     case DateCondition.IS_EXACTLY:
-      return 'Is';
+      return 'is';
     case DateCondition.IS_NOT_EXACTLY:
-      return 'Is not';
+      return 'is not';
     case DateCondition.IS_BEFORE:
-      return 'Is before';
+      return 'is before';
     case DateCondition.IS_BEFORE_OR_EQUAL:
-      return 'Is before or equal';
+      return 'is before or equal';
     case DateCondition.IS_AFTER:
-      return 'Is after';
+      return 'is after';
     case DateCondition.IS_AFTER_OR_EQUAL:
-      return 'Is after or equal';
+      return 'is after or equal';
   }
 }
 
@@ -422,4 +436,60 @@ export function getShortLabelForConditionType(
   }
 
   throw new Error('Invalid column type');
+}
+
+export function getFormatColumns(
+  columns: Column[],
+  rules: FormattingRule[]
+): CustomColumn[] {
+  const result: CustomColumn[] = [];
+  const formatRowMap = new Map();
+  const formatColumnMap = new Map();
+  rules.forEach(({ config, type: formatterType }) => {
+    const { column } = config;
+    // Check both name and type because the type can change
+    const col = columns.find(
+      ({ name, type }) => name === column.name && type === column.type
+    );
+    if (col === undefined) {
+      log.debug(
+        `Column ${column.name}:${column.type} not found. Ignoring format rule.`,
+        config
+      );
+      return;
+    }
+    const styleDBString = getStyleDBString(config);
+    if (styleDBString === undefined) {
+      log.debug(`No formatting set. Ignoring format rule.`, config);
+      return;
+    }
+    const conditionDBString = getConditionDBString(config);
+
+    // Stack ternary format conditions by column
+    if (formatterType === FormatterType.ROWS) {
+      const { rule: prevRule = null, index = undefined } =
+        formatRowMap.get(col.name) ?? {};
+      const rule = `${conditionDBString} ? ${styleDBString} : ${prevRule}`;
+      const formatRow = dh.Column.formatRowColor(rule);
+      if (index !== undefined) {
+        result.splice(index, 1);
+      }
+      result.push(formatRow);
+      formatRowMap.set(col.name, { rule, index: result.length - 1 });
+    } else if (formatterType === FormatterType.CONDITIONAL) {
+      const { rule: prevRule = null, index = undefined } =
+        formatColumnMap.get(col.name) ?? {};
+      const rule = `${conditionDBString} ? ${styleDBString} : ${prevRule}`;
+      const formatColumn = col.formatColor(rule);
+      if (index !== undefined) {
+        result.splice(index, 1);
+      }
+      result.push(formatColumn);
+      formatColumnMap.set(col.name, { rule, index: result.length - 1 });
+    } else {
+      log.error('Unsupported formatter type', formatterType);
+    }
+  });
+
+  return result;
 }
