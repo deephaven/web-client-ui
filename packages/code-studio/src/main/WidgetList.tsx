@@ -60,8 +60,8 @@ export const WidgetList = (props: WidgetListProps): JSX.Element => {
    * Send object to be created, if an event is passed object
    * is treated as createDragSourceFromEvent in golden-layout
    * and uses the event as the starting location for the drag.
-   * @param {WidgetDefintion} widget
-   * @param {WindowMouseEvent?} event
+   * @param widget
+   * @param event
    */
   const sendSelect = useCallback(
     (widget: VariableDefinition, event?: WindowMouseEvent) => {

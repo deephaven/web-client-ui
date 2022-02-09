@@ -85,6 +85,7 @@ export class AppMainContainer extends Component {
     this.handleExportLayoutClick = this.handleExportLayoutClick.bind(this);
     this.handleImportLayoutClick = this.handleImportLayoutClick.bind(this);
     this.handleImportLayoutFiles = this.handleImportLayoutFiles.bind(this);
+    this.handleLoadTablePlugin = this.handleLoadTablePlugin.bind(this);
     this.handleResetLayoutClick = this.handleResetLayoutClick.bind(this);
     this.handleWidgetMenuClick = this.handleWidgetMenuClick.bind(this);
     this.handleWidgetsMenuClose = this.handleWidgetsMenuClose.bind(this);
@@ -479,12 +480,29 @@ export class AppMainContainer extends Component {
     }
   }
 
+  /**
+   * Load a Table plugin specified by a table
+   * @param {string} pluginName The name of the plugin to load
+   * @returns {JSX.Element} An element from the plugin
+   */
+  handleLoadTablePlugin(pluginName) {
+    const { plugins } = this.props;
+
+    // First check if we have any plugin modules loaded that match the TablePlugin.
+    const pluginModule = plugins.get(pluginName);
+    if (pluginModule.TablePlugin) {
+      return pluginModule.TablePlugin;
+    }
+
+    return PluginUtils.loadComponentPlugin(pluginName);
+  }
+
   hydrateGrid(props, id) {
     const { session } = this.props;
     return {
       ...props,
       getDownloadWorker: DownloadServiceWorkerUtils.getServiceWorker,
-      loadPlugin: PluginUtils.loadComponentPlugin,
+      loadPlugin: this.handleLoadTablePlugin,
       localDashboardId: id,
       makeModel: () => createGridModel(session, props.metadata),
     };
@@ -519,9 +537,7 @@ export class AppMainContainer extends Component {
   getDashboardPlugins = memoize(plugins =>
     [...plugins.entries()]
       .filter(([, { DashboardPlugin }]) => DashboardPlugin)
-      .map(([name, { DashboardPlugin }]) =>
-        DashboardPlugin ? <DashboardPlugin key={name} /> : null
-      )
+      .map(([name, { DashboardPlugin }]) => <DashboardPlugin key={name} />)
   );
 
   render() {
@@ -625,7 +641,7 @@ export class AppMainContainer extends Component {
           <GridPlugin
             hydrate={this.hydrateGrid}
             getDownloadWorker={DownloadServiceWorkerUtils.getServiceWorker}
-            loadPlugin={PluginUtils.loadComponentPlugin}
+            loadPlugin={this.handleLoadTablePlugin}
           />
           <ChartPlugin hydrate={this.hydrateChart} />
           <ConsolePlugin />

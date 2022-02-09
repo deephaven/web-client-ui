@@ -201,7 +201,11 @@ export class IrisGridPanel extends PureComponent {
       <div className="iris-grid-plugin">
         <Plugin
           ref={this.pluginRef}
+          filter={this.handlePluginFilter}
+          // onFilter is deprecated
           onFilter={this.handlePluginFilter}
+          fetchColumns={this.handlePluginFetchColumns}
+          // onFetchColumns is deprecated
           onFetchColumns={this.handlePluginFetchColumns}
           table={table}
           user={user}
