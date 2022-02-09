@@ -24,7 +24,7 @@
     "@deephaven/log": "^0.9.1",
     "@deephaven/react-hooks": "^0.9.1",
     "@deephaven/utils": "^0.9.1",
-    "@fortawesome/fontawesome-svg-core": "^1.2.36",
+    "@fortawesome/fontawesome-svg-core": "1.2.36",
     "@fortawesome/react-fontawesome": "^0.1.15",
     "@testing-library/jest-dom": "^5.14.1",
     "@testing-library/react": "^11.2.7",

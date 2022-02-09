@@ -32,7 +32,7 @@
     "@deephaven/icons": "^0.9.1",
     "@deephaven/react-hooks": "^0.9.1",
     "@deephaven/utils": "^0.9.1",
-    "@fortawesome/fontawesome-svg-core": "^1.2.32",
+    "@fortawesome/fontawesome-svg-core": "1.2.36",
     "@fortawesome/react-fontawesome": "^0.1.12",
     "bootstrap": "4.4.1",
     "classnames": "^2.3.1",
