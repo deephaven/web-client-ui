@@ -55,8 +55,8 @@ When releasing a new version, you need to commit a version bump, then tag and cr
    - Approve the pull request and merge to `main`.
 2. Generate the changelog:
    - Generate a [GitHub Personal access token](https://github.com/settings/tokens) with the `public_repo` scope. Copy this token and replace `<token>` with it below.
-   - Generate the changelog: `GITHUB_AUTH=<token> npm run changelog -- --next-version=<version> > /tmp/changelog_<version>.md`
-3. Create the tag. Use the command line to create an annotated tag (lightweight tags will not work correctly with lerna-changelog): `git tag --annotate <version> --file=/tmp/changelog_<version>.md`
+   - Generate the changelog: `GITHUB_AUTH=<token> npm run changelog --silent -- --next-version=<version> > /tmp/changelog_<version>.md`
+3. Create the tag. Use the command line to create an annotated tag (lightweight tags will not work correctly with lerna-changelog): `git tag --annotate <version> --file /tmp/changelog_<version>.md`
 4. Push the tag: `git push origin <version>`
 5. Create the release: `gh release create <version> --notes-file ~/tmp/changelog_<version>.md --title <version>`
 
