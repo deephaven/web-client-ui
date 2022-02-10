@@ -1,6 +1,7 @@
 import React from 'react';
 import { shallow } from 'enzyme';
 import { ToolType } from '@deephaven/dashboard-core-plugins';
+import { DEFAULT_DASHBOARD_ID } from '@deephaven/dashboard';
 import dh from '@deephaven/jsapi-shim';
 import { TestUtils } from '@deephaven/utils';
 import { AppMainContainer } from './AppMainContainer';
@@ -14,6 +15,7 @@ function makeSession() {
     },
     removeEventListener: jest.fn(),
     getTable: jest.fn(),
+    getObject: jest.fn(),
     runCode: jest.fn(),
   };
 }
@@ -129,4 +131,55 @@ it('listens for widgets properly', () => {
   expect(wrapper.state('widgets')).toEqual(expect.arrayContaining([TABLE_A]));
 
   wrapper.unmount();
+});
+
+describe('hydrates widgets correctly', () => {
+  const localDashboardId = DEFAULT_DASHBOARD_ID;
+  let session = null;
+  let wrapper = null;
+
+  beforeEach(() => {
+    session = makeSession();
+    wrapper = makeAppMainContainer({ session });
+  });
+
+  it('hydrates empty props with defaults', () => {
+    const result = wrapper.instance().hydrateDefault({}, localDashboardId);
+    expect(result).toEqual(
+      expect.objectContaining({
+        localDashboardId: DEFAULT_DASHBOARD_ID,
+      })
+    );
+    expect(result).not.toEqual(expect.objectContaining({ fetch: expect.any }));
+  });
+
+  it('does not try and add fetch when metadata does not have widget metadata', () => {
+    const result = wrapper
+      .instance()
+      .hydrateDefault({ metadata: {} }, localDashboardId);
+    expect(result).toEqual(
+      expect.objectContaining({
+        localDashboardId: DEFAULT_DASHBOARD_ID,
+      })
+    );
+    expect(result).not.toEqual(expect.objectContaining({ fetch: expect.any }));
+  });
+
+  it('hydrates a widget properly', () => {
+    const result = wrapper
+      .instance()
+      .hydrateDefault(
+        { metadata: { type: 'TestType', name: 'TestName' } },
+        localDashboardId
+      );
+    expect(result).toEqual(
+      expect.objectContaining({
+        localDashboardId: DEFAULT_DASHBOARD_ID,
+        fetch: expect.any(Function),
+      })
+    );
+    expect(session.getObject).not.toHaveBeenCalled();
+    result.fetch();
+    expect(session.getObject).toHaveBeenCalled();
+  });
 });

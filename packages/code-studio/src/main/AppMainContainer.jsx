@@ -14,6 +14,7 @@ import {
   Popper,
 } from '@deephaven/components';
 import Dashboard, {
+  DashboardUtils,
   DEFAULT_DASHBOARD_ID,
   getDashboardData,
   PanelEvent,
@@ -93,6 +94,7 @@ export class AppMainContainer extends Component {
     this.handlePaste = this.handlePaste.bind(this);
     this.hydrateChart = this.hydrateChart.bind(this);
     this.hydrateGrid = this.hydrateGrid.bind(this);
+    this.hydrateDefault = this.hydrateDefault.bind(this);
     this.openNotebookFromURL = this.openNotebookFromURL.bind(this);
 
     this.goldenLayout = null;
@@ -497,6 +499,26 @@ export class AppMainContainer extends Component {
     return PluginUtils.loadComponentPlugin(pluginName);
   }
 
+  hydrateDefault(props, id) {
+    const { session } = this.props;
+    const { metadata } = props;
+    if (metadata?.type && (metadata?.id || metadata?.name)) {
+      // Looks like a widget, hydrate it as such
+      const widget = metadata.id
+        ? {
+            type: metadata.type,
+            id: metadata.id,
+          }
+        : { type: metadata.type, name: metadata.name };
+      return {
+        fetch: () => session.getObject(widget),
+        localDashboardId: id,
+        ...props,
+      };
+    }
+    return DashboardUtils.hydrate(props, id);
+  }
+
   hydrateGrid(props, id) {
     const { session } = this.props;
     return {
@@ -637,6 +659,7 @@ export class AppMainContainer extends Component {
           onGoldenLayoutChange={this.handleGoldenLayoutChange}
           onLayoutConfigChange={this.handleLayoutConfigChange}
           onLayoutInitialized={this.openNotebookFromURL}
+          hydrate={this.hydrateDefault}
         >
           <GridPlugin
             hydrate={this.hydrateGrid}
