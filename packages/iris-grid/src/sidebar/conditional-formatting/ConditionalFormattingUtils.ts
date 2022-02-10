@@ -450,9 +450,9 @@ export function getShortLabelForConditionType(
 }
 
 /**
- * Get format columns array for the given columns and rules
- * @param columns Columns
- * @param rules Rules
+ * Get format columns array for the given columns and formatting rules
+ * @param columns Available columns
+ * @param rules Formatting rules to build the format columns from
  * @returns Array of format columns
  */
 export function getFormatColumns(

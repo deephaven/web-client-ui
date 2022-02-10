@@ -233,7 +233,6 @@ export class IrisGridPanel extends PureComponent {
       isFilterBarShown,
       quickFilters,
       customColumns,
-      conditionalFormats,
       reverseType,
       rollupConfig,
       showSearchBar,
@@ -246,7 +245,8 @@ export class IrisGridPanel extends PureComponent {
       aggregationSettings,
       advancedSettings,
       pendingDataMap,
-      frozenColumns
+      frozenColumns,
+      conditionalFormats
     ) =>
       IrisGridUtils.dehydrateIrisGridState(model, {
         advancedFilters,
@@ -260,7 +260,6 @@ export class IrisGridPanel extends PureComponent {
         },
         quickFilters,
         customColumns,
-        conditionalFormats,
         reverseType,
         rollupConfig,
         showSearchBar,
@@ -271,6 +270,7 @@ export class IrisGridPanel extends PureComponent {
         invertSearchColumns,
         pendingDataMap,
         frozenColumns,
+        conditionalFormats,
       })
   );
 
@@ -692,7 +692,6 @@ export class IrisGridPanel extends PureComponent {
         advancedSettings,
         customColumns,
         customColumnFormatMap,
-        conditionalFormats,
         isFilterBarShown,
         quickFilters,
         reverseType,
@@ -708,6 +707,7 @@ export class IrisGridPanel extends PureComponent {
         invertSearchColumns,
         pendingDataMap,
         frozenColumns,
+        conditionalFormats,
       } = IrisGridUtils.hydrateIrisGridState(model, irisGridState);
       const {
         isStuckToBottom,
@@ -771,7 +771,6 @@ export class IrisGridPanel extends PureComponent {
       isFilterBarShown,
       quickFilters,
       customColumns,
-      conditionalFormats,
       reverseType,
       rollupConfig,
       showSearchBar,
@@ -783,6 +782,7 @@ export class IrisGridPanel extends PureComponent {
       metrics,
       pendingDataMap,
       frozenColumns,
+      conditionalFormats,
     } = irisGridState;
     const { userColumnWidths, userRowHeights } = metrics;
     const {
@@ -807,7 +807,6 @@ export class IrisGridPanel extends PureComponent {
         isFilterBarShown,
         quickFilters,
         customColumns,
-        conditionalFormats,
         reverseType,
         rollupConfig,
         showSearchBar,
@@ -820,7 +819,8 @@ export class IrisGridPanel extends PureComponent {
         aggregationSettings,
         advancedSettings,
         pendingDataMap,
-        frozenColumns
+        frozenColumns,
+        conditionalFormats
       ),
       this.getDehydratedGridState(
         model,
