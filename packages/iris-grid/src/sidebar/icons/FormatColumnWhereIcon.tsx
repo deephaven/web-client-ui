@@ -22,4 +22,4 @@ function FormatColumnWhereIcon(
   );
 }
 
-export default SvgBarIcon;
+export default FormatColumnWhereIcon;
