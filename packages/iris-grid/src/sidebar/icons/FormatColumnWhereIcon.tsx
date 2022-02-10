@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-function SvgBarIcon(
+function FormatColumnWhereIcon(
   props: JSX.IntrinsicAttributes & React.SVGProps<SVGSVGElement>
 ): JSX.Element {
   return (
