@@ -1,7 +1,11 @@
 import Log from '@deephaven/log';
 import { Column, CustomColumn } from '@deephaven/jsapi-shim';
-import { TableUtils } from '../..';
-import { ConditionConfig } from './ConditionEditor';
+import TableUtils from '../../TableUtils';
+import {
+  makeColumnFormatColumn,
+  makeRowFormatColumn,
+  makeTernaryFormatRule,
+} from './ConditionalFormattingAPIUtils';
 
 const log = Log.module('ConditionalFormattingUtils');
 
@@ -17,6 +21,13 @@ export interface BaseFormatConfig {
   start?: number;
   end?: number;
   style: FormatStyleConfig;
+}
+
+export interface ConditionConfig {
+  condition: NumberCondition | StringCondition | DateCondition;
+  value?: string | number;
+  start?: number;
+  end?: number;
 }
 
 export enum FormatterType {
@@ -438,13 +449,21 @@ export function getShortLabelForConditionType(
   throw new Error('Invalid column type');
 }
 
+/**
+ * Get format columns array for the given columns and rules
+ * @param columns Columns
+ * @param rules Rules
+ * @returns Array of format columns
+ */
 export function getFormatColumns(
   columns: Column[],
   rules: FormattingRule[]
 ): CustomColumn[] {
   const result: CustomColumn[] = [];
-  const formatRowMap = new Map();
-  const formatColumnMap = new Map();
+  const ruleMap = {
+    [FormatterType.ROWS]: new Map(),
+    [FormatterType.CONDITIONAL]: new Map(),
+  };
   rules.forEach(({ config, type: formatterType }) => {
     const { column } = config;
     // Check both name and type because the type can change
@@ -458,37 +477,23 @@ export function getFormatColumns(
       );
       return;
     }
-    const styleDBString = getStyleDBString(config);
-    if (styleDBString === undefined) {
-      log.debug(`No formatting set. Ignoring format rule.`, config);
+    // Stack ternary format conditions by column
+    const prevRule = ruleMap[formatterType].get(col.name) ?? null;
+    const rule = makeTernaryFormatRule(config, prevRule);
+    if (rule === undefined) {
+      log.debug(`Ignoring format rule.`, config);
       return;
     }
-    const conditionDBString = getConditionDBString(config);
-
-    // Stack ternary format conditions by column
-    if (formatterType === FormatterType.ROWS) {
-      const { rule: prevRule = null, index = undefined } =
-        formatRowMap.get(col.name) ?? {};
-      const rule = `${conditionDBString} ? ${styleDBString} : ${prevRule}`;
-      const formatRow = dh.Column.formatRowColor(rule);
-      if (index !== undefined) {
-        result.splice(index, 1);
-      }
-      result.push(formatRow);
-      formatRowMap.set(col.name, { rule, index: result.length - 1 });
-    } else if (formatterType === FormatterType.CONDITIONAL) {
-      const { rule: prevRule = null, index = undefined } =
-        formatColumnMap.get(col.name) ?? {};
-      const rule = `${conditionDBString} ? ${styleDBString} : ${prevRule}`;
-      const formatColumn = col.formatColor(rule);
-      if (index !== undefined) {
-        result.splice(index, 1);
-      }
-      result.push(formatColumn);
-      formatColumnMap.set(col.name, { rule, index: result.length - 1 });
-    } else {
-      log.error('Unsupported formatter type', formatterType);
+    const index = result.indexOf(prevRule);
+    if (index > -1) {
+      result.splice(index, 1);
     }
+    const formatColumn =
+      formatterType === FormatterType.CONDITIONAL
+        ? makeColumnFormatColumn(col, rule)
+        : makeRowFormatColumn(rule);
+    result.push(formatColumn);
+    ruleMap[formatterType].set(col.name, rule);
   });
 
   return result;
