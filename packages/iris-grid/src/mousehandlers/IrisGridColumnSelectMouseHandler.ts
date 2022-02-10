@@ -1,23 +1,31 @@
 /* eslint class-methods-use-this: "off" */
-import { GridMouseHandler } from '@deephaven/grid';
+import {
+  GridMouseHandler,
+  GridPoint,
+  EventHandlerResult,
+} from '@deephaven/grid';
+import type { Column } from '@deephaven/jsapi-shim';
+import type { IrisGrid } from '../IrisGrid';
 
 /**
  * Handles interaction with tables when the Linker tool is active
  */
 class IrisGridColumnSelectMouseHandler extends GridMouseHandler {
-  constructor(irisGrid) {
+  constructor(irisGrid: IrisGrid) {
     super();
 
     this.irisGrid = irisGrid;
     this.cursor = null;
   }
 
-  isActive() {
+  private irisGrid: IrisGrid;
+
+  private isActive(): boolean {
     const { isSelectingColumn } = this.irisGrid.props;
     return isSelectingColumn;
   }
 
-  isValidColumn(tableColumn) {
+  private isValidColumn(tableColumn: Column | null): boolean {
     if (tableColumn == null) {
       return false;
     }
@@ -29,14 +37,14 @@ class IrisGridColumnSelectMouseHandler extends GridMouseHandler {
     return true;
   }
 
-  updateColumnSelectionStatus() {
+  private updateColumnSelectionStatus(): void {
     const { columnSelectionValidator } = this.irisGrid.props;
     if (columnSelectionValidator) {
       columnSelectionValidator(null);
     }
   }
 
-  getTableColumn(columnIndex) {
+  private getTableColumn(columnIndex: number | null): Column | null {
     if (columnIndex == null) {
       return null;
     }
@@ -50,7 +58,7 @@ class IrisGridColumnSelectMouseHandler extends GridMouseHandler {
     return model.columns[modelColumn];
   }
 
-  onMove(gridPoint) {
+  onMove(gridPoint: GridPoint): EventHandlerResult {
     if (!this.isActive()) {
       return false;
     }
@@ -71,7 +79,7 @@ class IrisGridColumnSelectMouseHandler extends GridMouseHandler {
   }
 
   // keeps linker cursor state during wheel event
-  onWheel(gridPoint) {
+  onWheel(gridPoint: GridPoint): EventHandlerResult {
     if (!this.isActive()) {
       return false;
     }
@@ -90,7 +98,7 @@ class IrisGridColumnSelectMouseHandler extends GridMouseHandler {
     return { preventDefault: false, stopPropagation: false };
   }
 
-  onLeave() {
+  onLeave(): EventHandlerResult {
     if (this.isActive()) {
       this.irisGrid.setState({ hoverSelectColumn: null });
     }
@@ -100,11 +108,11 @@ class IrisGridColumnSelectMouseHandler extends GridMouseHandler {
     return false;
   }
 
-  onDown() {
+  onDown(): EventHandlerResult {
     return this.isActive();
   }
 
-  onClick(gridPoint) {
+  onClick(gridPoint: GridPoint): EventHandlerResult {
     if (!this.isActive()) {
       return false;
     }

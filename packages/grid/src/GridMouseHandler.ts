@@ -10,6 +10,8 @@ import { GridPoint } from './GridUtils';
  */
 export type GridMouseEvent = MouseEvent | React.MouseEvent;
 
+export type GridWheelEvent = WheelEvent | React.WheelEvent;
+
 export type GridMouseHandlerFunctionName =
   | 'onDown'
   | 'onMove'

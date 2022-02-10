@@ -20,6 +20,7 @@ export interface dh {
   FilterCondition: FilterConditionStatic;
   FilterValue: FilterValueStatic;
   plot: Plot;
+  Table: TableStatic;
 }
 
 const VariableType = {
@@ -434,7 +435,16 @@ export interface Sort {
   desc(): Sort;
   abs(): Sort;
 }
-export interface Table extends Evented {
+
+export interface LayoutHints {
+  areSavedLayoutsAllowed: boolean;
+  frontColumns: string[];
+  backColumns: string[];
+  hiddenColumns: string[];
+  frozenColumns: string[];
+}
+
+export interface TableStatic {
   readonly EVENT_SIZECHANGED: string;
   readonly EVENT_UPDATED: string;
   readonly EVENT_ROWADDED: string;
@@ -446,9 +456,10 @@ export interface Table extends Evented {
   readonly EVENT_DISCONNECT: string;
   readonly EVENT_RECONNECT: string;
   readonly EVENT_RECONNECTFAILED: string;
-
   readonly SIZE_UNCOALESCED: number;
-
+  reverse(): Sort;
+}
+export interface Table extends Evented, TableStatic {
   readonly size: number;
 
   readonly columns: Column[];
@@ -457,6 +468,7 @@ export interface Table extends Evented {
   readonly sort: Sort[];
   readonly filter: FilterCondition[];
   readonly customColumns: string[];
+  readonly layoutHints: LayoutHints;
 
   readonly isUncoalesced: boolean;
   readonly hasInputTable: boolean;
@@ -469,7 +481,6 @@ export interface Table extends Evented {
   applySort(sorts: Sort[]): Sort[];
   applyFilter(filters: FilterCondition[]): FilterCondition[];
   applyCustomColumns(columns: string[]): string[];
-  reverse(): Sort;
 
   setViewport(
     firstRow: number,

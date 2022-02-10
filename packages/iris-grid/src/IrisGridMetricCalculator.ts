@@ -1,5 +1,6 @@
 import { GridMetricCalculator } from '@deephaven/grid';
 import type { VisibleIndex, GridMetricState, GridTheme } from '@deephaven/grid';
+import type { FilterCondition, Sort } from '@deephaven/jsapi-shim';
 import TableUtils from './TableUtils';
 import type IrisGridModel from './IrisGridModel';
 import type IrisGridTheme from './IrisGridTheme';
@@ -8,9 +9,12 @@ export interface IrisGridMetricState extends GridMetricState {
   model: IrisGridModel;
   theme: typeof IrisGridTheme & typeof GridTheme;
   isFilterBarShown: boolean;
-  advancedFilters: Map<string, unknown>;
-  quickFilters: Map<string, unknown>;
-  sorts: unknown[];
+  advancedFilters: Map<
+    string,
+    { options: unknown; filter: FilterCondition | null }
+  >;
+  quickFilters: Map<string, { text: string; filter: FilterCondition | null }>;
+  sorts: Sort[];
   reverseType: string;
 }
 

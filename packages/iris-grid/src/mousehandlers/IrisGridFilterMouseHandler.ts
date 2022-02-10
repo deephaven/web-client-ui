@@ -1,17 +1,24 @@
 /* eslint class-methods-use-this: "off" */
-import { GridMouseHandler } from '@deephaven/grid';
+import {
+  GridMouseHandler,
+  GridPoint,
+  EventHandlerResult,
+} from '@deephaven/grid';
+import type { IrisGrid } from '../IrisGrid';
 
 /**
  * Trigger quick filters and advanced filters
  */
 class IrisGridFilterMouseHandler extends GridMouseHandler {
-  constructor(irisGrid) {
+  constructor(irisGrid: IrisGrid) {
     super();
 
     this.irisGrid = irisGrid;
   }
 
-  onDown(gridPoint) {
+  irisGrid: IrisGrid;
+
+  onDown(gridPoint: GridPoint): EventHandlerResult {
     const { y, column, row } = gridPoint;
     if (column !== null && row === null) {
       const { isFilterBarShown } = this.irisGrid.state;
@@ -29,7 +36,7 @@ class IrisGridFilterMouseHandler extends GridMouseHandler {
     return false;
   }
 
-  onMove(gridPoint) {
+  onMove(gridPoint: GridPoint): EventHandlerResult {
     const { y, column } = gridPoint;
     const { isFilterBarShown, hoverAdvancedFilter } = this.irisGrid.state;
     const theme = this.irisGrid.getTheme();
@@ -50,12 +57,14 @@ class IrisGridFilterMouseHandler extends GridMouseHandler {
     return false;
   }
 
-  onLeave(gridPoint) {
+  onLeave(gridPoint: GridPoint): EventHandlerResult {
     const { column } = gridPoint;
     const { hoverAdvancedFilter } = this.irisGrid.state;
     if (hoverAdvancedFilter !== null && column !== hoverAdvancedFilter) {
       this.irisGrid.setState({ hoverAdvancedFilter: null });
     }
+
+    return false;
   }
 }
 

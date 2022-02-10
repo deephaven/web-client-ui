@@ -1,4 +1,4 @@
-import { EventTarget } from 'event-target-shim';
+import { EventTarget, Event } from 'event-target-shim';
 import { ModelIndex } from './GridMetrics';
 import { GridColor, GridTheme, NullableGridColor } from './GridTheme';
 
@@ -9,7 +9,13 @@ import { GridColor, GridTheme, NullableGridColor } from './GridTheme';
  * All of these methods should return very quickly, as they will be called many times in the render cycle.
  * If data needs to be loaded asynchronously, return something immediately, then trigger an event for the table to refresh (Not yet implemented).
  */
-abstract class GridModel extends EventTarget {
+abstract class GridModel<
+  TEventMap extends Record<string, Event<string>> = Record<
+    string,
+    Event<string>
+  >,
+  TMode extends 'standard' | 'strict' = 'standard'
+> extends EventTarget<TEventMap, TMode> {
   /** Count of rows in the grid */
   abstract get rowCount(): number;
 

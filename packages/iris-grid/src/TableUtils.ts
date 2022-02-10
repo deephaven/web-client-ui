@@ -29,6 +29,7 @@ const log = Log.module('TableUtils');
 type Values<T> = T[keyof T];
 export type DataType = Values<typeof TableUtils.dataType>;
 export type SortDirection = Values<typeof TableUtils.sortDirection>;
+export type ReverseType = Values<typeof TableUtils.REVERSE_TYPE>;
 
 /** Utility class to provide some functions for working with tables */
 class TableUtils {
