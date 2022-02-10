@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import Log from '@deephaven/log';
-import { TableUtils } from '../..';
+import TableUtils from '../../TableUtils';
 import {
   StringCondition,
   DateCondition,
@@ -9,16 +9,10 @@ import {
   getLabelForStringCondition,
   NumberCondition,
   ModelColumn,
+  ConditionConfig,
 } from './ConditionalFormattingUtils';
 
 const log = Log.module('ConditionEditor');
-
-export interface ConditionConfig {
-  condition: NumberCondition | StringCondition | DateCondition;
-  value?: string | number;
-  start?: number;
-  end?: number;
-}
 
 export interface ConditionEditorProps {
   column: ModelColumn;

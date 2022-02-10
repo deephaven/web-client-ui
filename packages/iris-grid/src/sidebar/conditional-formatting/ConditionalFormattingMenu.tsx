@@ -16,7 +16,7 @@ import {
   getShortLabelForConditionType,
   NumberCondition,
 } from './ConditionalFormattingUtils';
-import { TableUtils } from '../..';
+import TableUtils from '../../TableUtils';
 
 const log = Log.module('ConditionalFormattingMenu');
 
