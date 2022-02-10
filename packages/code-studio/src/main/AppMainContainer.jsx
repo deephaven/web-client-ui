@@ -490,7 +490,7 @@ export class AppMainContainer extends Component {
 
     // First check if we have any plugin modules loaded that match the TablePlugin.
     const pluginModule = plugins.get(pluginName);
-    if (pluginModule.TablePlugin) {
+    if (pluginModule?.TablePlugin) {
       return pluginModule.TablePlugin;
     }
 

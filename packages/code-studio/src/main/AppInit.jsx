@@ -121,7 +121,7 @@ const AppInit = props => {
       return pluginMap;
     } catch (e) {
       log.error('Unable to load plugins:', e);
-      return [];
+      return new Map();
     }
   }, []);
 

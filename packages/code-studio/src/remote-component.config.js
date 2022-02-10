@@ -1,4 +1,4 @@
-/* eslint-disable */
+/* eslint-disable global-require */
 /**
  * remote-component.config.js
  *

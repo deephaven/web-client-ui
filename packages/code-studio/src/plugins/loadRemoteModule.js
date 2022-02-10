@@ -1,10 +1,11 @@
+/* eslint-disable global-require */
 import createLoadRemoteModule, {
   createRequires,
 } from '@paciolan/remote-module-loader';
 
 const dependencies = {
-  // eslint-disable-next-line global-require
   react: require('react'),
+  reactstrap: require('reactstrap'),
 };
 
 const requires = createRequires(dependencies);
