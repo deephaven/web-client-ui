@@ -3,8 +3,8 @@ import classNames from 'classnames';
 import { Button } from '@deephaven/components';
 import Log from '@deephaven/log';
 import { FormatColumnWhereIcon, FormatRowWhereIcon } from '../icons';
-import ColumnFormatEditor, { ColumnFormatConfig } from './ColumnFormatEditor';
-import RowFormatEditor, { RowFormatConfig } from './RowFormatEditor';
+import ColumnFormatEditor from './ColumnFormatEditor';
+import RowFormatEditor from './RowFormatEditor';
 import {
   BaseFormatConfig,
   FormatterType,
@@ -125,14 +125,14 @@ const ConditionalFormatEditor = (
       {selectedFormatter === FormatterType.CONDITIONAL && (
         <ColumnFormatEditor
           columns={columns}
-          config={rule?.config as ColumnFormatConfig}
+          config={rule?.config}
           onChange={handleRuleChange}
         />
       )}
       {selectedFormatter === FormatterType.ROWS && (
         <RowFormatEditor
           columns={columns}
-          config={rule?.config as RowFormatConfig}
+          config={rule?.config}
           onChange={handleRuleChange}
         />
       )}

@@ -10,6 +10,7 @@ import {
   NumberCondition,
   ModelColumn,
   ConditionConfig,
+  getDefaultConditionForType,
 } from './ConditionalFormattingUtils';
 
 const log = Log.module('ConditionEditor');
@@ -65,10 +66,20 @@ const dateConditions = [
 const ConditionEditor = (props: ConditionEditorProps): JSX.Element => {
   const { column, config, onChange = DEFAULT_CALLBACK } = props;
   const selectedColumnType = column.type;
+  const [prevColumnType, setPrevColumnType] = useState(selectedColumnType);
   const [selectedCondition, setCondition] = useState(config.condition);
-  const [conditionValue, setConditionValue] = useState(config.value);
+  const [conditionValue, setValue] = useState(config.value);
   const [startValue, setStartValue] = useState(config.start);
   const [endValue, setEndValue] = useState(config.end);
+
+  if (selectedColumnType !== prevColumnType) {
+    // Column type changed, reset condition and value fields
+    setCondition(getDefaultConditionForType(selectedColumnType));
+    setValue(undefined);
+    setStartValue(undefined);
+    setEndValue(undefined);
+    setPrevColumnType(selectedColumnType);
+  }
 
   const conditions = useMemo(() => {
     if (selectedColumnType === undefined) {
@@ -85,19 +96,16 @@ const ConditionEditor = (props: ConditionEditorProps): JSX.Element => {
     }
   }, [selectedColumnType]);
 
-  const handleConditionChange = useCallback(
-    e => {
-      const { value } = e.target;
-      log.debug('handleConditionChange', value, selectedColumnType);
-      setCondition(value);
-    },
-    [selectedColumnType]
-  );
+  const handleConditionChange = useCallback(e => {
+    const { value } = e.target;
+    log.debug('handleConditionChange', value);
+    setCondition(value);
+  }, []);
 
   const handleValueChange = useCallback(e => {
     const { value } = e.target;
     log.debug('handleValueChange', value);
-    setConditionValue(value);
+    setValue(value);
   }, []);
 
   const handleStartValueChange = useCallback(e => {

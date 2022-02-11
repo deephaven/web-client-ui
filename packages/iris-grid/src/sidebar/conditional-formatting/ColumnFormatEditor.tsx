@@ -14,17 +14,15 @@ import StyleEditor from './StyleEditor';
 
 const log = Log.module('ColumnFormatEditor');
 
-export type ColumnFormatConfig = BaseFormatConfig;
-
 export interface ColumnFormatEditorProps {
   columns: ModelColumn[];
-  config?: ColumnFormatConfig;
+  config?: BaseFormatConfig;
   onChange?: ChangeCallback;
 }
 
 const DEFAULT_CALLBACK = () => undefined;
 
-function makeDefaultConfig(columns: ModelColumn[]): ColumnFormatConfig {
+function makeDefaultConfig(columns: ModelColumn[]): BaseFormatConfig {
   const { type, name } = columns[0];
   const column = { type, name };
   const config = {
@@ -45,9 +43,8 @@ const ColumnFormatEditor = (props: ColumnFormatEditorProps): JSX.Element => {
   const [selectedColumn, setColumn] = useState(
     columns.find(
       c => c.name === config.column.name && c.type === config.column.type
-    )
+    ) ?? columns[0]
   );
-  const selectedColumnType = selectedColumn?.type;
   const [conditionConfig, setConditionConfig] = useState(
     getConditionConfig(config)
   );
@@ -57,13 +54,16 @@ const ColumnFormatEditor = (props: ColumnFormatEditorProps): JSX.Element => {
   const handleColumnChange = useCallback(
     value => {
       const newColumn = columns.find(({ name }) => name === value);
-      if (newColumn && selectedColumnType !== newColumn.type) {
-        log.debug('handleColumnChange', selectedColumnType, newColumn.type);
-        setConditionConfig(getDefaultConditionConfigForType(newColumn.type));
+      if (newColumn !== undefined) {
+        setColumn(newColumn);
+        if (selectedColumn.type !== newColumn.type) {
+          setConditionConfig(getDefaultConditionConfigForType(newColumn.type));
+        }
+      } else {
+        log.error(`Column ${value} not found.`);
       }
-      setColumn(newColumn);
     },
-    [columns, selectedColumnType]
+    [columns, selectedColumn]
   );
 
   const handleConditionChange = useCallback(
