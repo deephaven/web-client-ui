@@ -61,8 +61,6 @@ import { PluginUtils } from '../plugins';
 
 const log = Log.module('AppMainContainer');
 
-const EMPTY_OBJECT = Object.freeze({});
-
 export class AppMainContainer extends Component {
   static handleWindowBeforeUnload(event) {
     event.preventDefault();
@@ -366,8 +364,7 @@ export class AppMainContainer extends Component {
     try {
       const { workspace } = this.props;
       const { data } = workspace;
-      const { filterSets, layoutConfig, links } = data;
-      const exportedConfig = { filterSets, layoutConfig, links, version: 2 };
+      const exportedConfig = UserLayoutUtils.exportLayout(data);
 
       log.info('handleExportLayoutClick exportedConfig', exportedConfig);
 
@@ -420,26 +417,18 @@ export class AppMainContainer extends Component {
     try {
       const { updateDashboardData, updateWorkspaceData } = this.props;
       const fileText = await file.text();
-      const importedConfig = JSON.parse(fileText);
-      if (importedConfig.version !== undefined) {
-        const { version } = importedConfig;
-        if (version === 2) {
-          const { filterSets, layoutConfig, links } = importedConfig;
-          updateWorkspaceData({ layoutConfig });
-          updateDashboardData(DEFAULT_DASHBOARD_ID, {
-            filterSets,
-            layoutConfig,
-            links,
-          });
-        } else {
-          throw new Error(
-            `Unexpected import config version ${version}: ${importedConfig}`
-          );
-        }
-      } else {
-        // Legacy import - just a layout config being imported
-        updateWorkspaceData({ layoutConfig: importedConfig });
-      }
+      const exportedLayout = JSON.parse(fileText);
+      const {
+        filterSets,
+        layoutConfig,
+        links,
+      } = UserLayoutUtils.normalizeLayout(exportedLayout);
+
+      updateWorkspaceData({ layoutConfig });
+      updateDashboardData(DEFAULT_DASHBOARD_ID, {
+        filterSets,
+        links,
+      });
     } catch (e) {
       log.error('Unable to import layout', e);
     }
@@ -450,10 +439,18 @@ export class AppMainContainer extends Component {
    */
   async resetLayout() {
     const { layoutStorage } = this.props;
-    const layoutConfig = await UserLayoutUtils.getDefaultLayout(layoutStorage);
+    const {
+      filterSets,
+      layoutConfig,
+      links,
+    } = await UserLayoutUtils.getDefaultLayout(layoutStorage);
 
-    const { updateWorkspaceData } = this.props;
+    const { updateDashboardData, updateWorkspaceData } = this.props;
     updateWorkspaceData({ layoutConfig });
+    updateDashboardData(DEFAULT_DASHBOARD_ID, {
+      filterSets,
+      links,
+    });
   }
 
   // eslint-disable-next-line class-methods-use-this
@@ -549,8 +546,7 @@ export class AppMainContainer extends Component {
   render() {
     const { activeTool, user, workspace } = this.props;
     const { data: workspaceData = {} } = workspace;
-    const { data = EMPTY_OBJECT, layoutConfig } = workspaceData;
-    const { layoutSettings = EMPTY_OBJECT } = data;
+    const { layoutConfig } = workspaceData;
     const { permissions } = user;
     const { canUsePanels } = permissions;
     const {
@@ -640,7 +636,6 @@ export class AppMainContainer extends Component {
           }
           id={DEFAULT_DASHBOARD_ID}
           layoutConfig={layoutConfig}
-          layoutSettings={layoutSettings}
           onGoldenLayoutChange={this.handleGoldenLayoutChange}
           onLayoutConfigChange={this.handleLayoutConfigChange}
           onLayoutInitialized={this.openNotebookFromURL}

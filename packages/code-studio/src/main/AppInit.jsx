@@ -104,10 +104,14 @@ const AppInit = props => {
       const { data } = loadedWorkspace;
       if (data.layoutConfig == null) {
         // User doesn't have a saved layout yet, load the default
-        const layoutConfig = await UserLayoutUtils.getDefaultLayout(
-          LAYOUT_STORAGE
-        );
+        const {
+          filterSets,
+          links,
+          layoutConfig,
+        } = await UserLayoutUtils.getDefaultLayout(LAYOUT_STORAGE);
         data.layoutConfig = layoutConfig;
+        data.filterSets = filterSets;
+        data.links = links;
       }
 
       // Fill in settings that have not yet been set
@@ -135,9 +139,11 @@ const AppInit = props => {
         ShortcutRegistry.get(id)?.setKeyState(keyState);
       });
 
+      const dashboardData = { filterSets: data.filterSets, links: data.links };
+
       setActiveTool(ToolType.DEFAULT);
       setCommandHistoryStorage(COMMAND_HISTORY_STORAGE);
-      setDashboardData(DEFAULT_DASHBOARD_ID, data);
+      setDashboardData(DEFAULT_DASHBOARD_ID, dashboardData);
       setFileStorage(FILE_STORAGE);
       setLayoutStorage(LAYOUT_STORAGE);
       setDashboardSessionWrapper(DEFAULT_DASHBOARD_ID, sessionWrapper);

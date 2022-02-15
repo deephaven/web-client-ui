@@ -1,6 +1,5 @@
-import { ItemConfigType } from '@deephaven/golden-layout';
 import { FileStat, WebDAVClient } from 'webdav/web';
-import LayoutStorage from './LayoutStorage';
+import LayoutStorage, { ExportedLayout } from './LayoutStorage';
 
 export class WebdavLayoutStorage implements LayoutStorage {
   readonly client: WebDAVClient;
@@ -25,7 +24,7 @@ export class WebdavLayoutStorage implements LayoutStorage {
     return files.map(file => file.basename);
   }
 
-  async getLayout(name: string): Promise<ItemConfigType[]> {
+  async getLayout(name: string): Promise<ExportedLayout> {
     const content = (await this.client.getFileContents(`${this.root}${name}`, {
       format: 'text',
     })) as string;
