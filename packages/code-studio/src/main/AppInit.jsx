@@ -105,8 +105,8 @@ const AppInit = props => {
       log.debug('Plugin manifest loaded:', manifest);
       const pluginPromises = [];
       for (let i = 0; i < manifest.plugins.length; i += 1) {
-        const { main } = manifest.plugins[i];
-        const pluginMainUrl = `${process.env.REACT_APP_MODULE_PLUGINS_URL}/${main}`;
+        const { name, main } = manifest.plugins[i];
+        const pluginMainUrl = `${process.env.REACT_APP_MODULE_PLUGINS_URL}/${name}/${main}`;
         pluginPromises.push(PluginUtils.loadModulePlugin(pluginMainUrl));
       }
       const pluginModules = await Promise.all(pluginPromises);
