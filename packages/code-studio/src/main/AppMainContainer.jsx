@@ -35,6 +35,7 @@ import {
   UIPropTypes,
   ControlType,
   ToolType,
+  ChartBuilderPlugin,
 } from '@deephaven/dashboard-core-plugins';
 import { vsGear, dhShapes, dhPanels } from '@deephaven/icons';
 import dh, { PropTypes as APIPropTypes } from '@deephaven/jsapi-shim';
@@ -544,7 +545,7 @@ export class AppMainContainer extends Component {
 
   /**
    * Open a widget up, using a drag event if specified.
-   * @param {VariableDefinition} widget The widget to
+   * @param {VariableDefinition} widget The widget to open
    * @param {DragEvent} dragEvent The mouse drag event that trigger it, undefined if it was not triggered by a drag
    */
   openWidget(widget, dragEvent) {
@@ -667,6 +668,7 @@ export class AppMainContainer extends Component {
             loadPlugin={this.handleLoadTablePlugin}
           />
           <ChartPlugin hydrate={this.hydrateChart} />
+          <ChartBuilderPlugin />
           <ConsolePlugin />
           <FilterPlugin />
           <PandasPlugin />

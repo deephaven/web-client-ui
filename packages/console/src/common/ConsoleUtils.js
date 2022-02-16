@@ -55,10 +55,6 @@ class ConsoleUtils {
     );
   }
 
-  static isDataStringType(type) {
-    return type === dh.VariableType.DATA_STRING;
-  }
-
   static isOpenableType(type) {
     return ConsoleUtils.isTableType(type) || ConsoleUtils.isWidgetType(type);
   }

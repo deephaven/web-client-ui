@@ -1276,17 +1276,6 @@ class ChartUtils {
   }
 
   /**
-   * Dehydrate settings so they can be JSONified
-   * @param {object} settings Chart builder settings
-   */
-  static dehydrateSettings(settings) {
-    return {
-      ...settings,
-      type: `${settings.type}`,
-    };
-  }
-
-  /**
    * Hydrate settings from a JSONable object
    * @param {object} settings Dehydrated settings
    */

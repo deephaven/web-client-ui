@@ -246,7 +246,7 @@ class ChartBuilder extends PureComponent {
     const { onSubmit } = this.props;
     const { type, seriesItems, xAxis, isLinked } = this.state;
     const series = seriesItems.map(item => item.value);
-    onSubmit({ type, series, xAxis, isLinked });
+    onSubmit({ type: `${type}`, series, xAxis, isLinked });
   }
 
   handleTypeClick(event) {

@@ -1,4 +1,5 @@
 export { default as ChartPlugin } from './ChartPlugin';
+export { default as ChartBuilderPlugin } from './ChartBuilderPlugin';
 export { default as ConsolePlugin } from './ConsolePlugin';
 export { default as FilterPlugin } from './FilterPlugin';
 export { default as GridPlugin } from './GridPlugin';

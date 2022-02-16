@@ -19,9 +19,9 @@ it('handles mounting and unmount core plugins properly', () => {
     <Provider store={store}>
       <Dashboard>
         <FilterPlugin />
+        <GridPlugin hydrate={() => undefined} />
         <ChartPlugin hydrate={() => undefined} />
         <ConsolePlugin />
-        <GridPlugin hydrate={() => undefined} />
         <LinkerPlugin />
         <MarkdownPlugin />
         <PandasPlugin hydrate={() => undefined} />

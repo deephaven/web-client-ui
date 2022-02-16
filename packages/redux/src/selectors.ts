@@ -8,7 +8,7 @@ import type {
 
 const EMPTY_OBJECT = Object.freeze({});
 
-const EMPTY_MAP = new Map();
+const EMPTY_MAP: ReadonlyMap<unknown, unknown> = new Map();
 
 type Selector<R> = (state: RootState) => R;
 

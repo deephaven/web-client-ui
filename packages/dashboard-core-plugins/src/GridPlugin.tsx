@@ -12,6 +12,11 @@ import { Table, VariableDefinition } from '@deephaven/jsapi-shim';
 import shortid from 'shortid';
 import { IrisGridPanel } from './panels';
 
+export const SUPPORTED_TYPES: string[] = [
+  dh.VariableType.TABLE,
+  dh.VariableType.TREETABLE,
+];
+
 export type GridPluginProps = Partial<DashboardPluginComponentProps> & {
   getDownloadWorker?: () => Promise<ServiceWorker>;
   loadPlugin?: (name: string) => ReturnType<typeof React.forwardRef>;
@@ -43,7 +48,7 @@ export const GridPlugin = (props: GridPluginProps): JSX.Element => {
       widget: VariableDefinition;
     }) => {
       const { name, type } = widget;
-      if (type !== dh.VariableType.TABLE) {
+      if (!SUPPORTED_TYPES.includes(type)) {
         return;
       }
 
