@@ -247,6 +247,7 @@ class TableUtils {
       case 'java.lang.Double':
       case 'float':
       case 'java.lang.Float':
+      case 'java.math.BigDecimal':
       case TableUtils.dataType.DECIMAL:
         return TableUtils.dataType.DECIMAL;
       case 'int':
@@ -257,6 +258,7 @@ class TableUtils {
       case 'java.lang.Short':
       case 'byte':
       case 'java.lang.Byte':
+      case 'java.math.BigInteger':
       case TableUtils.dataType.INT:
         return TableUtils.dataType.INT;
       default:
