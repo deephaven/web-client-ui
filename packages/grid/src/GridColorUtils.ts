@@ -14,7 +14,7 @@ export function darkenForDepth(
   depth: number,
   maxDepth = 6
 ): GridColor {
-  const lab = convert.hex.lab(color);
+  const lab = convert.hex.lab.raw(color);
   lab[0] = Math.max(lab[0] - (lab[0] / maxDepth) * depth, 0);
   return `#${convert.lab.hex(lab)}`;
 }
