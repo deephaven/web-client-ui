@@ -39,7 +39,7 @@
     "@deephaven/icons": "^0.6.0",
     "@deephaven/storage": "^0.6.2",
     "@deephaven/utils": "^0.6.1",
-    "@fortawesome/fontawesome-svg-core": "^1.2.32",
+    "@fortawesome/fontawesome-svg-core": "1.2.36",
     "@fortawesome/react-fontawesome": "^0.1.12",
     "classnames": "^2.3.1",
     "lodash.throttle": "^4.1.1",
