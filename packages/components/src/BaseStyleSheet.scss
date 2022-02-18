@@ -563,7 +563,7 @@ input[type='number']::-webkit-inner-spin-button {
     border-color: $gray-300;
     &:focus,
     &.focus {
-      box-shadow: 0 0 0 0.2rem rgba(91, 90, 92, 0.2);
+      box-shadow: 0 0 0 0.2rem rgba(91, 90, 92, 20%);
     }
   }
 }
@@ -628,7 +628,7 @@ input[type='number']::-webkit-inner-spin-button {
 }
 
 ::-webkit-scrollbar-corner {
-  background: rgba(0, 0, 0, 0.1);
+  background: rgba(0, 0, 0, 10%);
 }
 
 ::-webkit-scrollbar-track:horizontal {
@@ -719,6 +719,7 @@ input[type='number']::-webkit-inner-spin-button {
 /********** Browser Hacks *********/
 
 //Moz specific hacks
+/* stylelint-disable-next-line function-url-quotes */
 @-moz-document url-prefix() {
   //Selection box in mozilla loses default styling on options list if you apply a background color other then #FFF or inheirt...
   //Hack: turn the background to inheirt, then apply a background gradient that is inputbg color to inputbg color
@@ -733,7 +734,7 @@ input[type='number']::-webkit-inner-spin-button {
     background-position: bottom 50% right $custom-select-padding-x, center;
     //make the dotted duplicate focus line on firefox go away
     &:-moz-focusring {
-      color: rgba(0, 0, 0, 0);
+      color: rgba(0, 0, 0, 0%);
       text-shadow: 0 0 0 $white !important;
     }
   }
@@ -742,7 +743,7 @@ input[type='number']::-webkit-inner-spin-button {
     background-image: escape-svg($custom-select-indicator),
       linear-gradient(0deg, $gray-700, $gray-700);
     &:-moz-focusring {
-      color: rgba(0, 0, 0, 0);
+      color: rgba(0, 0, 0, 0%);
       text-shadow: 0 0 0 $white !important;
     }
   }
@@ -751,7 +752,7 @@ input[type='number']::-webkit-inner-spin-button {
     background-image: escape-svg($custom-select-indicator),
       linear-gradient(0deg, $gray-200, $gray-200);
     &:-moz-focusring {
-      color: rgba(0, 0, 0, 0);
+      color: rgba(0, 0, 0, 0%);
       text-shadow: 0 0 0 $black !important;
     }
   }
