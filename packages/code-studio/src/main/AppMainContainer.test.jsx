@@ -34,6 +34,8 @@ function makeAppMainContainer({
   serverConfigValues = {},
   dashboardOpenedPanelMaps = {},
   session = makeSession(),
+  sessionConfig = {},
+  match = {},
 } = {}) {
   return shallow(
     <AppMainContainer
@@ -52,6 +54,8 @@ function makeAppMainContainer({
       serverConfigValues={serverConfigValues}
       dashboardOpenedPanelMaps={dashboardOpenedPanelMaps}
       session={session}
+      sessionConfig={sessionConfig}
+      match={match}
     />
   );
 }
