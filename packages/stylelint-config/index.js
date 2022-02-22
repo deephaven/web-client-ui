@@ -13,7 +13,7 @@ module.exports = {
         ignorePseudoClasses: ['export'],
       },
     ],
-    // TODO: Re-enable these rules
+    // TODO #447: Re-enable these rules
     'color-function-notation': null,
     'declaration-block-no-redundant-longhand-properties': null,
     'keyframes-name-pattern': null,
