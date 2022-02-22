@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/eslint-config",
-  "version": "0.9.0",
+  "version": "0.10.0",
   "description": "Deephaven ESLint configuration",
   "repository": "https://github.com/deephaven/web-client-ui",
   "license": "Apache-2.0",
