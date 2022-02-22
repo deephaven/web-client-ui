@@ -4,7 +4,7 @@ $chart-bg: $interfacegray;
 $plotly-notifier-margin-right: 15px;
 $plotly-notifier-note-bg: $gray-600;
 $plotly-notifier-note-border-radius: 2px;
-$plotly-color-btn-active: rgba(255, 255, 255, 0.7);
+$plotly-color-btn-active: rgba(255, 255, 255, 70%);
 
 .plotly-notifier {
   margin-right: $plotly-notifier-margin-right;
@@ -38,7 +38,7 @@ $plotly-color-btn-active: rgba(255, 255, 255, 0.7);
     }
 
     .zoomlayer .zoombox {
-      fill: rgba(0, 0, 0, 0.5) !important;
+      fill: rgba(0, 0, 0, 50%) !important;
     }
 
     .zoomlayer .zoombox-corners {
