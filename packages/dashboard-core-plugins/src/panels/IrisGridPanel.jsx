@@ -245,7 +245,8 @@ export class IrisGridPanel extends PureComponent {
       aggregationSettings,
       advancedSettings,
       pendingDataMap,
-      frozenColumns
+      frozenColumns,
+      conditionalFormats
     ) =>
       IrisGridUtils.dehydrateIrisGridState(model, {
         advancedFilters,
@@ -269,6 +270,7 @@ export class IrisGridPanel extends PureComponent {
         invertSearchColumns,
         pendingDataMap,
         frozenColumns,
+        conditionalFormats,
       })
   );
 
@@ -705,6 +707,7 @@ export class IrisGridPanel extends PureComponent {
         invertSearchColumns,
         pendingDataMap,
         frozenColumns,
+        conditionalFormats,
       } = IrisGridUtils.hydrateIrisGridState(model, irisGridState);
       const {
         isStuckToBottom,
@@ -719,6 +722,7 @@ export class IrisGridPanel extends PureComponent {
       this.setState({
         advancedFilters,
         advancedSettings,
+        conditionalFormats,
         customColumns,
         customColumnFormatMap,
         isFilterBarShown,
@@ -778,6 +782,7 @@ export class IrisGridPanel extends PureComponent {
       metrics,
       pendingDataMap,
       frozenColumns,
+      conditionalFormats,
     } = irisGridState;
     const { userColumnWidths, userRowHeights } = metrics;
     const {
@@ -814,7 +819,8 @@ export class IrisGridPanel extends PureComponent {
         aggregationSettings,
         advancedSettings,
         pendingDataMap,
-        frozenColumns
+        frozenColumns,
+        conditionalFormats
       ),
       this.getDehydratedGridState(
         model,
@@ -862,6 +868,7 @@ export class IrisGridPanel extends PureComponent {
       advancedFilters,
       aggregationSettings,
       advancedSettings,
+      conditionalFormats,
       customColumns,
       customColumnFormatMap,
       error,
@@ -940,6 +947,7 @@ export class IrisGridPanel extends PureComponent {
             customColumns={customColumns}
             customColumnFormatMap={customColumnFormatMap}
             columnSelectionValidator={this.isColumnSelectionValid}
+            conditionalFormats={conditionalFormats}
             inputFilters={this.getGridInputFilters(model.columns, inputFilters)}
             applyInputFiltersOnInit={panelState == null}
             isFilterBarShown={isFilterBarShown}
@@ -1006,6 +1014,7 @@ IrisGridPanel.propTypes = {
     irisGridState: PropTypes.shape({
       aggregationSettings: PropTypes.shape({}),
       customColumns: PropTypes.arrayOf(PropTypes.string),
+      conditionalFormats: PropTypes.arrayOf(PropTypes.shape({})),
       selectDistinctColumns: PropTypes.arrayOf(PropTypes.string),
       rollupConfig: PropTypes.shape({
         columns: PropTypes.arrayOf(PropTypes.string).isRequired,

@@ -21,6 +21,7 @@ export interface dh {
   FilterValue: FilterValueStatic;
   plot: Plot;
   Table: TableStatic;
+  Column: Column;
 }
 
 const VariableType = {
@@ -385,6 +386,15 @@ export interface Column {
 
   filter(): FilterValue;
   sort(): Sort;
+
+  formatColor(expression: string): CustomColumn;
+  formatRowColor(expression: string): CustomColumn;
+}
+
+export interface CustomColumn {
+  readonly type: string;
+  readonly name: string;
+  readonly expression: string;
 }
 
 export interface FilterValueStatic {

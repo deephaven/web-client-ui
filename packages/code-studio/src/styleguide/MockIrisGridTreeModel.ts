@@ -12,7 +12,7 @@ import {
   ModelIndex,
 } from '@deephaven/grid';
 import { Formatter, IrisGridModel } from '@deephaven/iris-grid';
-import type { Column } from '@deephaven/jsapi-shim';
+import type { Column, CustomColumn } from '@deephaven/jsapi-shim';
 
 // We need to cast our CustomEvent so it's happy with event-target-shim
 type CustomEventType = EventTarget.EventData<
@@ -166,6 +166,14 @@ class MockIrisGridTreeModel
   }
 
   set customColumns(customColumns: string[]) {
+    // Ignore for mock
+  }
+
+  get formatColumns(): CustomColumn[] {
+    return [];
+  }
+
+  set formatColumns(formatColumns: CustomColumn[]) {
     // Ignore for mock
   }
 

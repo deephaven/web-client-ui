@@ -24,6 +24,7 @@ import {
   dhGraphLineUp,
   dhTriangleDownSquare,
   vsCloudDownload,
+  vsEdit,
   vsFilter,
   vsMenu,
   vsRuby,
@@ -86,12 +87,17 @@ import AdvancedSettingsType from './sidebar/AdvancedSettingsType';
 import AdvancedSettingsMenu from './sidebar/AdvancedSettingsMenu';
 import SHORTCUTS from './IrisGridShortcuts';
 import DateUtils from './DateUtils';
+import ConditionalFormattingMenu from './sidebar/conditional-formatting/ConditionalFormattingMenu';
+import { getFormatColumns } from './sidebar/conditional-formatting/ConditionalFormattingUtils';
+import ConditionalFormatEditor from './sidebar/conditional-formatting/ConditionalFormatEditor';
 
 const log = Log.module('IrisGrid');
 
 const UPDATE_DOWNLOAD_THROTTLE = 500;
 
 const SET_FILTER_DEBOUNCE = 250;
+
+const SET_CONDITIONAL_FORMAT_DEBOUNCE = 250;
 
 function isEmptyConfig({
   advancedFilters,
@@ -163,7 +169,25 @@ export class IrisGrid extends Component {
     this.handleTooltipRef = this.handleTooltipRef.bind(this);
     this.handleViewChanged = this.handleViewChanged.bind(this);
     this.handleFormatSelection = this.handleFormatSelection.bind(this);
-
+    this.handleConditionalFormatCreate = this.handleConditionalFormatCreate.bind(
+      this
+    );
+    this.handleConditionalFormatEdit = this.handleConditionalFormatEdit.bind(
+      this
+    );
+    this.handleConditionalFormatsChange = this.handleConditionalFormatsChange.bind(
+      this
+    );
+    this.handleConditionalFormatEditorSave = this.handleConditionalFormatEditorSave.bind(
+      this
+    );
+    this.handleConditionalFormatEditorUpdate = debounce(
+      this.handleConditionalFormatEditorUpdate.bind(this),
+      SET_CONDITIONAL_FORMAT_DEBOUNCE
+    );
+    this.handleConditionalFormatEditorCancel = this.handleConditionalFormatEditorCancel.bind(
+      this
+    );
     this.handleUpdateCustomColumns = this.handleUpdateCustomColumns.bind(this);
     this.handleCustomColumnsChanged = this.handleCustomColumnsChanged.bind(
       this
@@ -264,6 +288,7 @@ export class IrisGrid extends Component {
 
     const {
       aggregationSettings,
+      conditionalFormats,
       customColumnFormatMap,
       isFilterBarShown,
       isSelectingPartition,
@@ -361,6 +386,10 @@ export class IrisGrid extends Component {
       formatter: new Formatter(),
       isMenuShown: false,
       customColumnFormatMap: new Map(customColumnFormatMap),
+
+      conditionalFormats,
+      conditionalFormatEditIndex: null,
+      conditionalFormatPreview: undefined,
 
       // Column user is hovering over for selection
       hoverSelectColumn: null,
@@ -523,6 +552,7 @@ export class IrisGrid extends Component {
     (
       isChartBuilderAvailable,
       isCustomColumnsAvailable,
+      isFormatColumnsAvailable,
       isRollupAvailable,
       isTotalsAvailable,
       isSelectDistinctAvailable,
@@ -547,6 +577,13 @@ export class IrisGrid extends Component {
         title: 'Column Visibility & Ordering',
         icon: dhEye,
       });
+      if (isFormatColumnsAvailable) {
+        optionItems.push({
+          type: OptionType.CONDITIONAL_FORMATTING,
+          title: 'Conditional Formatting',
+          icon: vsEdit,
+        });
+      }
       if (isCustomColumnsAvailable) {
         optionItems.push({
           type: OptionType.CUSTOM_COLUMN_BUILDER,
@@ -651,6 +688,40 @@ export class IrisGrid extends Component {
     aggregations
       .map(a => a.operation)
       .filter(o => !AggregationUtils.isRollupOperation(o))
+  );
+
+  getCachedFormatColumns = memoize((columns, rules) =>
+    getFormatColumns(columns, rules)
+  );
+
+  // customColumns arg is needed to invalidate the cache
+  // eslint-disable-next-line no-unused-vars
+  getCachedModelColumns = memoize((model, customColumns) => model.columns);
+
+  /**
+   * Builds formatColumns array based on the provided formatting rules with optional preview
+   * @param {Column[]} columns Array of columns
+   * @param {FormattingRule[]} rulesParam Array of formatting rules
+   * @param {FormattingRule?} preview Optional temporary formatting rule for previewing live changes
+   * @param {Number|null} editIndex Index in the rulesParam array to replace with the preview, null if preview not applicable
+   * @returns {CustomColumn[]} Format columns array
+   */
+  getCachedPreviewFormatColumns = memoize(
+    (columns, rulesParam, preview, editIndex) => {
+      log.debug(
+        'getCachedPreviewFormatColumns',
+        rulesParam,
+        preview,
+        editIndex
+      );
+      if (preview !== undefined && editIndex !== null) {
+        const rules = [...rulesParam];
+        rules[editIndex] = preview;
+        return this.getCachedFormatColumns(columns, rules);
+      }
+
+      return this.getCachedFormatColumns(columns, rulesParam);
+    }
   );
 
   getModelRollupConfig = memoize(
@@ -2024,6 +2095,75 @@ export class IrisGrid extends Component {
     this.tooltip = tooltip;
   }
 
+  handleConditionalFormatsChange(conditionalFormats) {
+    log.debug('Updated conditional formats', conditionalFormats);
+    this.setState({ conditionalFormats });
+  }
+
+  handleConditionalFormatCreate() {
+    log.debug('Create new conditional format');
+    const { openOptions, conditionalFormats } = this.state;
+    this.setState({
+      openOptions: [
+        ...openOptions,
+        {
+          type: OptionType.CONDITIONAL_FORMATTING_EDIT,
+          title: `Create Formatting Rule`,
+        },
+      ],
+      conditionalFormatEditIndex: conditionalFormats.length,
+      // Start with a blank rule
+      conditionalFormatPreview: undefined,
+    });
+  }
+
+  handleConditionalFormatEdit(index) {
+    log.debug('Edit conditional format', index);
+    const { openOptions, conditionalFormats } = this.state;
+    this.setState({
+      openOptions: [
+        ...openOptions,
+        {
+          type: OptionType.CONDITIONAL_FORMATTING_EDIT,
+          title: `Edit Formatting Rule`,
+        },
+      ],
+      conditionalFormatEditIndex: index,
+      // Clone rule to preview temporary changes
+      conditionalFormatPreview: { ...conditionalFormats[index] },
+    });
+  }
+
+  // Apply live changes
+  handleConditionalFormatEditorUpdate(conditionalFormatPreview) {
+    this.setState({ conditionalFormatPreview });
+  }
+
+  handleConditionalFormatEditorSave(config) {
+    log.debug('Save conditional format changes', config);
+    this.setState(
+      state => {
+        if (state.conditionalFormatEditIndex === null) {
+          log.debug('Invalid format index');
+          return null;
+        }
+        const conditionalFormats = [...state.conditionalFormats];
+        conditionalFormats[state.conditionalFormatEditIndex] = config;
+        return { conditionalFormats };
+      },
+      () => {
+        this.handleMenuBack();
+      }
+    );
+  }
+
+  handleConditionalFormatEditorCancel() {
+    this.handleMenuBack();
+    // Not resetting conditionalFormatPreview here
+    // to prevent editor fields change during the menu transition
+    this.setState({ conditionalFormatEditIndex: null });
+  }
+
   handleUpdateCustomColumns(customColumns) {
     log.info(`handleUpdateCustomColumns:`, customColumns);
 
@@ -2400,6 +2540,9 @@ export class IrisGrid extends Component {
       movedRows,
 
       formatter,
+      conditionalFormats,
+      conditionalFormatPreview,
+      conditionalFormatEditIndex,
 
       sorts,
       reverseType,
@@ -2824,6 +2967,7 @@ export class IrisGrid extends Component {
     const optionItems = this.getCachedOptionItems(
       model.isChartBuilderAvailable,
       model.isCustomColumnsAvailable,
+      model.isFormatColumnsAvailable,
       model.isRollupAvailable,
       model.isTotalsAvailable,
       model.isSelectDistinctAvailable,
@@ -2856,6 +3000,26 @@ export class IrisGrid extends Component {
               onColumnVisibilityChanged={this.handleColumnVisibilityChanged}
               onMovedColumnsChanged={this.handleMovedColumnsChanged}
               key={OptionType.VISIBILITY_ORDERING_BUILDER}
+            />
+          );
+        case OptionType.CONDITIONAL_FORMATTING:
+          return (
+            <ConditionalFormattingMenu
+              columns={model.columns}
+              rules={conditionalFormats}
+              onChange={this.handleConditionalFormatsChange}
+              onCreate={this.handleConditionalFormatCreate}
+              onSelect={this.handleConditionalFormatEdit}
+            />
+          );
+        case OptionType.CONDITIONAL_FORMATTING_EDIT:
+          return (
+            <ConditionalFormatEditor
+              columns={model.columns}
+              rule={conditionalFormatPreview}
+              onUpdate={this.handleConditionalFormatEditorUpdate}
+              onSave={this.handleConditionalFormatEditorSave}
+              onCancel={this.handleConditionalFormatEditorCancel}
             />
           );
         case OptionType.CUSTOM_COLUMN_BUILDER:
@@ -3036,6 +3200,16 @@ export class IrisGrid extends Component {
                   model.floatingLeftColumnCount,
                   model.floatingRightColumnCount
                 )}
+                formatColumns={this.getCachedPreviewFormatColumns(
+                  this.getCachedModelColumns(model, customColumns),
+                  conditionalFormats,
+                  conditionalFormatPreview,
+                  // Disable the preview format when we press Back on the format edit page
+                  openOptions[openOptions.length - 1]?.type ===
+                    OptionType.CONDITIONAL_FORMATTING_EDIT
+                    ? conditionalFormatEditIndex
+                    : null
+                )}
                 rollupConfig={this.getModelRollupConfig(
                   model.originalColumns,
                   rollupConfig,
@@ -3154,6 +3328,7 @@ IrisGrid.propTypes = {
   alwaysFetchColumns: PropTypes.arrayOf(PropTypes.string),
   isFilterBarShown: PropTypes.bool,
   applyInputFiltersOnInit: PropTypes.bool,
+  conditionalFormats: PropTypes.arrayOf(PropTypes.shape({})),
   customColumnFormatMap: PropTypes.instanceOf(Map),
   movedColumns: PropTypes.arrayOf(
     PropTypes.shape({
@@ -3258,6 +3433,7 @@ IrisGrid.defaultProps = {
   advancedFilters: new Map(),
   advancedSettings: new Map(),
   alwaysFetchColumns: [],
+  conditionalFormats: [],
   customColumnFormatMap: new Map(),
   isFilterBarShown: false,
   applyInputFiltersOnInit: false,

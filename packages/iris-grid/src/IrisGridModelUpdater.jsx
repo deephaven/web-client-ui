@@ -28,6 +28,7 @@ const IrisGridModelUpdater = React.memo(
     movedColumns,
     hiddenColumns,
     alwaysFetchColumns,
+    formatColumns,
     rollupConfig,
     totalsConfig,
     selectDistinctColumns,
@@ -74,6 +75,11 @@ const IrisGridModelUpdater = React.memo(
         model.customColumns = customColumns;
       }
     }, [model, customColumns]);
+    useEffect(() => {
+      if (model.isFormatColumnsAvailable) {
+        model.formatColumns = formatColumns;
+      }
+    }, [model, formatColumns]);
     useEffect(() => {
       model.setViewport(top, bottom, columns);
     }, [model, top, bottom, columns]);
@@ -123,6 +129,7 @@ IrisGridModelUpdater.propTypes = {
   hiddenColumns: PropTypes.arrayOf(PropTypes.number).isRequired,
   frozenColumns: PropTypes.arrayOf(PropTypes.string),
   alwaysFetchColumns: PropTypes.arrayOf(PropTypes.string).isRequired,
+  formatColumns: PropTypes.arrayOf(PropTypes.shape({})).isRequired,
   formatter: PropTypes.instanceOf(Formatter).isRequired,
   rollupConfig: APIPropTypes.RollupConfig,
   totalsConfig: PropTypes.shape({}),
