@@ -1,4 +1,5 @@
 /* eslint-disable class-methods-use-this */
+import type { Event, EventTarget } from 'event-target-shim';
 import {
   GridModel,
   GridRange,
@@ -8,6 +9,7 @@ import {
 import type {
   Column,
   ColumnStatistics,
+  CustomColumn,
   FilterCondition,
   Format,
   LayoutHints,
@@ -17,7 +19,6 @@ import type {
   Table,
   TotalsTableConfig,
 } from '@deephaven/jsapi-shim';
-import type { Event, EventTarget } from 'event-target-shim';
 import type Formatter from './Formatter';
 
 type RowIndex = ModelIndex;
@@ -211,6 +212,16 @@ abstract class IrisGridModel<
   abstract set customColumns(customColumns: string[]);
 
   /**
+   * @returns The format columns on this model
+   */
+  abstract get formatColumns(): CustomColumn[];
+
+  /**
+   * @param formatColumns The format columns to use
+   */
+  abstract set formatColumns(formatColumns: CustomColumn[]);
+
+  /**
    * @param columns The columns to treat as frozen
    */
   abstract updateFrozenColumns(columns: string[]): void;
@@ -266,6 +277,13 @@ abstract class IrisGridModel<
    * @returns True if this model supports customColumns
    */
   get isCustomColumnsAvailable(): boolean {
+    return false;
+  }
+
+  /**
+   * @returns True if this model supports customColumns
+   */
+  get isFormatColumnsAvailable(): boolean {
     return false;
   }
 

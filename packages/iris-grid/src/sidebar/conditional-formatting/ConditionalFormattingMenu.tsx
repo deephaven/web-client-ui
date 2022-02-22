@@ -15,6 +15,8 @@ import {
   getColorForStyleConfig,
   getShortLabelForConditionType,
   NumberCondition,
+  StringCondition,
+  DateCondition,
 } from './ConditionalFormattingUtils';
 import TableUtils from '../../TableUtils';
 
@@ -41,13 +43,31 @@ function getRuleValue(config: BaseFormatConfig): string {
     column: { type },
   } = config;
   if (TableUtils.isNumberType(type)) {
-    return `${config.value}`;
+    return config.condition === NumberCondition.IS_NULL ||
+      config.condition === NumberCondition.IS_NOT_NULL
+      ? ''
+      : `${config.value}`;
+  }
+  if (TableUtils.isCharType(type)) {
+    return config.condition === DateCondition.IS_NULL ||
+      config.condition === DateCondition.IS_NOT_NULL
+      ? ''
+      : `${config.value}`;
   }
   if (TableUtils.isTextType(type)) {
-    return `"${config.value}"`;
+    return config.condition === StringCondition.IS_NULL ||
+      config.condition === StringCondition.IS_NOT_NULL
+      ? ''
+      : `"${config.value}"`;
   }
   if (TableUtils.isDateType(type)) {
-    return `${config.value}`;
+    return config.condition === DateCondition.IS_NULL ||
+      config.condition === DateCondition.IS_NOT_NULL
+      ? ''
+      : `${config.value}`;
+  }
+  if (TableUtils.isBooleanType(type)) {
+    return '';
   }
   throw new Error(`Invalid column type ${type} in getRuleValue`);
 }

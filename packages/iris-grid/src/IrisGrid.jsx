@@ -690,6 +690,10 @@ export class IrisGrid extends Component {
       .filter(o => !AggregationUtils.isRollupOperation(o))
   );
 
+  getCachedFormatColumns = memoize((columns, rules) =>
+    getFormatColumns(columns, rules)
+  );
+
   /**
    * Builds formatColumns array based on the provided formatting rules with optional preview
    * @param {Column[]} columns Array of columns
@@ -698,14 +702,21 @@ export class IrisGrid extends Component {
    * @param {Number|null} editIndex Index in the rulesParam array to replace with the preview, null if preview not applicable
    * @returns {CustomColumn[]} Format columns array
    */
-  getCachedFormatColumns = memoize(
+  getCachedPreviewFormatColumns = memoize(
     (columns, rulesParam, preview, editIndex) => {
-      log.debug('getCachedFormatColumns', rulesParam, preview, editIndex);
-      const rules = [...rulesParam];
+      log.debug(
+        'getCachedPreviewFormatColumns',
+        rulesParam,
+        preview,
+        editIndex
+      );
       if (preview !== undefined && editIndex !== null) {
+        const rules = [...rulesParam];
         rules[editIndex] = preview;
+        return this.getCachedFormatColumns(columns, rules);
       }
-      return getFormatColumns(columns, rules);
+
+      return this.getCachedFormatColumns(columns, rulesParam);
     }
   );
 
@@ -3185,7 +3196,7 @@ export class IrisGrid extends Component {
                   model.floatingLeftColumnCount,
                   model.floatingRightColumnCount
                 )}
-                formatColumns={this.getCachedFormatColumns(
+                formatColumns={this.getCachedPreviewFormatColumns(
                   model.columns,
                   conditionalFormats,
                   conditionalFormatPreview,

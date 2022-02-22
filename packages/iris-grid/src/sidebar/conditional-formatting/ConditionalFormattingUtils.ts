@@ -14,9 +14,16 @@ export type ModelColumn = {
   type: string;
 };
 
+export type Condition =
+  | NumberCondition
+  | StringCondition
+  | DateCondition
+  | BooleanCondition
+  | CharCondition;
+
 export interface BaseFormatConfig {
   column: ModelColumn;
-  condition: NumberCondition | StringCondition | DateCondition;
+  condition: Condition;
   value?: string | number;
   start?: number;
   end?: number;
@@ -24,7 +31,7 @@ export interface BaseFormatConfig {
 }
 
 export interface ConditionConfig {
-  condition: NumberCondition | StringCondition | DateCondition;
+  condition: Condition;
   value?: string | number;
   start?: number;
   end?: number;
@@ -48,6 +55,8 @@ export enum NumberCondition {
   GREATER_THAN_OR_EQUAL = 'greater-than-or-equal',
   LESS_THAN = 'less-than',
   LESS_THAN_OR_EQUAL = 'less-than-or-equal',
+  IS_NULL = 'is-null',
+  IS_NOT_NULL = 'is-not-null',
 }
 
 export enum StringCondition {
@@ -57,6 +66,8 @@ export enum StringCondition {
   DOES_NOT_CONTAIN = 'does-not-contain',
   STARTS_WITH = 'starts-with',
   ENDS_WITH = 'ends-with',
+  IS_NULL = 'is-null',
+  IS_NOT_NULL = 'is-not-null',
 }
 
 export enum DateCondition {
@@ -66,6 +77,22 @@ export enum DateCondition {
   IS_BEFORE_OR_EQUAL = 'is-before-or-equal',
   IS_AFTER = 'is-after',
   IS_AFTER_OR_EQUAL = 'is-after-or-equal',
+  IS_NULL = 'is-null',
+  IS_NOT_NULL = 'is-not-null',
+}
+
+export enum BooleanCondition {
+  IS_TRUE = 'is-true',
+  IS_FALSE = 'is-false',
+  IS_NULL = 'is-null',
+  IS_NOT_NULL = 'is-not-null',
+}
+
+export enum CharCondition {
+  IS_EQUAL = 'is-equal',
+  IS_NOT_EQUAL = 'is-not-equal',
+  IS_NULL = 'is-null',
+  IS_NOT_NULL = 'is-not-null',
 }
 
 export enum FormatStyleType {
@@ -198,18 +225,40 @@ function getDateConditionText(config: BaseFormatConfig): string {
   );
 }
 
+function getBooleanConditionText(config: BaseFormatConfig): string {
+  const { column } = config;
+  return getTextForBooleanCondition(
+    column.name,
+    config.condition as BooleanCondition
+  );
+}
+
+function getCharConditionText(config: BaseFormatConfig): string {
+  const { column, value } = config;
+  return getTextForCharCondition(
+    column.name,
+    config.condition as CharCondition,
+    value
+  );
+}
+
 export function getConditionDBString(config: BaseFormatConfig): string {
   const { column } = config;
 
   if (TableUtils.isNumberType(column.type)) {
     return getNumberConditionText(config);
   }
+  if (TableUtils.isCharType(column.type)) {
+    return getCharConditionText(config);
+  }
   if (TableUtils.isTextType(column.type)) {
     return getStringConditionText(config);
   }
-
   if (TableUtils.isDateType(column.type)) {
     return getDateConditionText(config);
+  }
+  if (TableUtils.isBooleanType(column.type)) {
+    return getBooleanConditionText(config);
   }
 
   throw new Error('Invalid column type');
@@ -231,6 +280,10 @@ export function getLabelForNumberCondition(condition: NumberCondition): string {
       return 'less than';
     case NumberCondition.LESS_THAN_OR_EQUAL:
       return 'less than or equal to';
+    case NumberCondition.IS_NULL:
+      return 'is null';
+    case NumberCondition.IS_NOT_NULL:
+      return 'is not null';
   }
 }
 
@@ -248,6 +301,10 @@ export function getLabelForStringCondition(condition: StringCondition): string {
       return 'starts with';
     case StringCondition.ENDS_WITH:
       return 'ends with';
+    case StringCondition.IS_NULL:
+      return 'is null';
+    case StringCondition.IS_NOT_NULL:
+      return 'is not null';
   }
 }
 
@@ -265,22 +322,56 @@ export function getLabelForDateCondition(condition: DateCondition): string {
       return 'is after';
     case DateCondition.IS_AFTER_OR_EQUAL:
       return 'is after or equal';
+    case DateCondition.IS_NULL:
+      return 'is null';
+    case DateCondition.IS_NOT_NULL:
+      return 'is not null';
   }
 }
 
-export function getDefaultConditionForType(
-  columnType: string
-): NumberCondition | StringCondition | DateCondition {
+export function getLabelForBooleanCondition(
+  condition: BooleanCondition
+): string {
+  switch (condition) {
+    case BooleanCondition.IS_TRUE:
+      return 'is true';
+    case BooleanCondition.IS_FALSE:
+      return 'is false';
+    case BooleanCondition.IS_NULL:
+      return 'is null';
+    case BooleanCondition.IS_NOT_NULL:
+      return 'is not null';
+  }
+}
+
+export function getLabelForCharCondition(condition: CharCondition): string {
+  switch (condition) {
+    case CharCondition.IS_EQUAL:
+      return 'is';
+    case CharCondition.IS_NOT_EQUAL:
+      return 'is not';
+    case CharCondition.IS_NULL:
+      return 'is null';
+    case CharCondition.IS_NOT_NULL:
+      return 'is not null';
+  }
+}
+
+export function getDefaultConditionForType(columnType: string): Condition {
   if (TableUtils.isNumberType(columnType)) {
     return NumberCondition.IS_EQUAL;
   }
-
+  if (TableUtils.isCharType(columnType)) {
+    return CharCondition.IS_EQUAL;
+  }
   if (TableUtils.isTextType(columnType)) {
     return StringCondition.IS_EXACTLY;
   }
-
   if (TableUtils.isDateType(columnType)) {
     return DateCondition.IS_EXACTLY;
+  }
+  if (TableUtils.isBooleanType(columnType)) {
+    return BooleanCondition.IS_TRUE;
   }
 
   throw new Error('Invalid column type');
@@ -322,6 +413,10 @@ function getShortLabelForStringCondition(condition: StringCondition): string {
       return 'starts with';
     case StringCondition.ENDS_WITH:
       return 'ends with';
+    case StringCondition.IS_NULL:
+      return 'is null';
+    case StringCondition.IS_NOT_NULL:
+      return 'is not null';
   }
 }
 
@@ -339,6 +434,36 @@ function getShortLabelForDateCondition(condition: DateCondition): string {
       return '>';
     case DateCondition.IS_AFTER_OR_EQUAL:
       return '>=';
+    case DateCondition.IS_NULL:
+      return 'is null';
+    case DateCondition.IS_NOT_NULL:
+      return 'is not null';
+  }
+}
+
+function getShortLabelForBooleanCondition(condition: BooleanCondition): string {
+  switch (condition) {
+    case BooleanCondition.IS_TRUE:
+      return 'is true';
+    case BooleanCondition.IS_FALSE:
+      return 'is false';
+    case BooleanCondition.IS_NULL:
+      return 'is null';
+    case BooleanCondition.IS_NOT_NULL:
+      return 'is not null';
+  }
+}
+
+function getShortLabelForCharCondition(condition: CharCondition): string {
+  switch (condition) {
+    case CharCondition.IS_EQUAL:
+      return '==';
+    case CharCondition.IS_NOT_EQUAL:
+      return '!=';
+    case CharCondition.IS_NULL:
+      return 'is null';
+    case CharCondition.IS_NOT_NULL:
+      return 'is not null';
   }
 }
 
@@ -360,6 +485,10 @@ export function getShortLabelForNumberCondition(
       return '<';
     case NumberCondition.LESS_THAN_OR_EQUAL:
       return '<=';
+    case NumberCondition.IS_NULL:
+      return 'is null';
+    case NumberCondition.IS_NOT_NULL:
+      return 'is not null';
   }
 }
 
@@ -385,6 +514,10 @@ export function getTextForNumberCondition(
       return `${columnName} < ${value}`;
     case NumberCondition.LESS_THAN_OR_EQUAL:
       return `${columnName} <= ${value}`;
+    case NumberCondition.IS_NULL:
+      return `${columnName} == null`;
+    case NumberCondition.IS_NOT_NULL:
+      return `${columnName} != null`;
   }
 }
 
@@ -399,13 +532,17 @@ export function getTextForStringCondition(
     case StringCondition.IS_NOT_EXACTLY:
       return `${columnName} != "${value}"`;
     case StringCondition.CONTAINS:
-      return `${columnName}.contains("${value}")`;
+      return `${columnName} != null && ${columnName}.contains("${value}")`;
     case StringCondition.DOES_NOT_CONTAIN:
-      return `!${columnName}.contains("${value}")`;
+      return `!${columnName} != null && !${columnName}.contains("${value}")`;
     case StringCondition.STARTS_WITH:
-      return `${columnName}.startsWith("${value}")`;
+      return `!${columnName} != null && ${columnName}.startsWith("${value}")`;
     case StringCondition.ENDS_WITH:
-      return `${columnName}.endsWith("${value}")`;
+      return `!${columnName} != null && ${columnName}.endsWith("${value}")`;
+    case StringCondition.IS_NULL:
+      return `${columnName} == null`;
+    case StringCondition.IS_NOT_NULL:
+      return `${columnName} != null`;
   }
 }
 
@@ -427,23 +564,64 @@ export function getTextForDateCondition(
       return `${columnName} > convertDateTime(\`${value}\`)`;
     case DateCondition.IS_AFTER_OR_EQUAL:
       return `${columnName} >=  convertDateTime(\`${value}\`)`;
+    case DateCondition.IS_NULL:
+      return `${columnName} == null`;
+    case DateCondition.IS_NOT_NULL:
+      return `${columnName} != null`;
+  }
+}
+
+export function getTextForBooleanCondition(
+  columnName: string,
+  condition: BooleanCondition
+): string {
+  switch (condition) {
+    case BooleanCondition.IS_TRUE:
+      return `${columnName} == true`;
+    case BooleanCondition.IS_FALSE:
+      return `${columnName} == false`;
+    case BooleanCondition.IS_NULL:
+      return `${columnName} == null`;
+    case BooleanCondition.IS_NOT_NULL:
+      return `${columnName} != null`;
+  }
+}
+
+export function getTextForCharCondition(
+  columnName: string,
+  condition: CharCondition,
+  value: unknown
+): string {
+  switch (condition) {
+    case CharCondition.IS_EQUAL:
+      return `${columnName} == '${value}'`;
+    case CharCondition.IS_NOT_EQUAL:
+      return `${columnName} != '${value}'`;
+    case CharCondition.IS_NULL:
+      return `isNull(${columnName})`;
+    case CharCondition.IS_NOT_NULL:
+      return `!isNull(${columnName})`;
   }
 }
 
 export function getShortLabelForConditionType(
   columnType: string,
-  condition: StringCondition | NumberCondition | DateCondition
+  condition: Condition
 ): string {
   if (TableUtils.isNumberType(columnType)) {
     return getShortLabelForNumberCondition(condition as NumberCondition);
   }
-
+  if (TableUtils.isCharType(columnType)) {
+    return getShortLabelForCharCondition(condition as CharCondition);
+  }
   if (TableUtils.isTextType(columnType)) {
     return getShortLabelForStringCondition(condition as StringCondition);
   }
-
   if (TableUtils.isDateType(columnType)) {
     return getShortLabelForDateCondition(condition as DateCondition);
+  }
+  if (TableUtils.isBooleanType(columnType)) {
+    return getShortLabelForBooleanCondition(condition as BooleanCondition);
   }
 
   throw new Error('Invalid column type');

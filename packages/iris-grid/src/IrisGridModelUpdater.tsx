@@ -3,6 +3,7 @@
 import React, { useEffect, useMemo } from 'react';
 import dh, {
   Column,
+  CustomColumn,
   FilterCondition,
   RollupConfig,
   Sort,
@@ -29,6 +30,7 @@ interface IrisGridModelUpdaterProps {
   movedColumns: unknown[];
   hiddenColumns: number[];
   frozenColumns?: string[];
+  formatColumns: CustomColumn[];
   alwaysFetchColumns: string[];
   formatter: Formatter;
   rollupConfig?: RollupConfig;
@@ -63,6 +65,7 @@ const IrisGridModelUpdater = React.memo(
     pendingRowCount = 0,
     pendingDataMap = new Map(),
     frozenColumns,
+    formatColumns,
   }: IrisGridModelUpdaterProps) => {
     const columns = useMemo(
       () =>
@@ -103,6 +106,11 @@ const IrisGridModelUpdater = React.memo(
         model.customColumns = customColumns;
       }
     }, [model, customColumns]);
+    useEffect(() => {
+      if (model.isFormatColumnsAvailable) {
+        model.formatColumns = formatColumns;
+      }
+    }, [model, formatColumns]);
     useEffect(() => {
       model.setViewport(top, bottom, columns);
     }, [model, top, bottom, columns]);
