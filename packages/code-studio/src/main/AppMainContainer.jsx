@@ -500,7 +500,7 @@ export class AppMainContainer extends Component {
     return PluginUtils.loadComponentPlugin(pluginName);
   }
 
-  hydrateDefault(props, id) {
+  hydrateDefault(props = {}, id = '') {
     const { session } = this.props;
     const { metadata } = props;
     if (metadata?.type && (metadata?.id || metadata?.name)) {

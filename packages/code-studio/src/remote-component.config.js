@@ -7,6 +7,7 @@
 module.exports = {
   resolve: {
     react: require('react'),
-    reactstrap: require(`reactstrap`),
+    reactstrap: require('reactstrap'),
+    regeneratorRuntime: require('regenerator-runtime/runtime'),
   },
 };

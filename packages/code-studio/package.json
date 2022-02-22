@@ -52,6 +52,7 @@
     "reactstrap": "^8.4.1",
     "redux": "^4.0.5",
     "redux-thunk": "^2.3.0",
+    "regenerator-runtime": "^0.13.9",
     "shortid": "^2.2.15",
     "webdav": "^4.6.1"
   },
