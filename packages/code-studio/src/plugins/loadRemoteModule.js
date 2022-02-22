@@ -1,12 +1,10 @@
-/* eslint-disable global-require */
 import createLoadRemoteModule, {
   createRequires,
 } from '@paciolan/remote-module-loader';
+import { resolve } from '../remote-component.config';
 
-const dependencies = {
-  react: require('react'),
-  reactstrap: require('reactstrap'),
-};
+const requires = createRequires(resolve);
 
-const requires = createRequires(dependencies);
-export default createLoadRemoteModule({ requires });
+export const loadRemoteModule = createLoadRemoteModule({ requires });
+
+export default loadRemoteModule;
