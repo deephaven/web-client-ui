@@ -24,18 +24,23 @@ export type Condition =
 export interface BaseFormatConfig {
   column: ModelColumn;
   condition: Condition;
-  value?: string | number;
-  start?: number;
-  end?: number;
+  value?: string;
+  start?: string;
+  end?: string;
   style: FormatStyleConfig;
 }
 
 export interface ConditionConfig {
   condition: Condition;
-  value?: string | number;
-  start?: number;
-  end?: number;
+  value?: string;
+  start?: string;
+  end?: string;
 }
+
+export type ChangeCallback = (
+  ruleConfig: BaseFormatConfig,
+  isValid: boolean
+) => void;
 
 export enum FormatterType {
   CONDITIONAL = 'conditional',
@@ -377,6 +382,16 @@ export function getDefaultConditionForType(columnType: string): Condition {
   throw new Error('Invalid column type');
 }
 
+export function getDefaultValueForType(columnType: string): string | undefined {
+  if (TableUtils.isCharType(columnType)) {
+    return '';
+  }
+  if (TableUtils.isTextType(columnType)) {
+    return '';
+  }
+  return undefined;
+}
+
 export function getConditionConfig(config: BaseFormatConfig): ConditionConfig {
   const { condition, value, start, end } = config;
   return { condition, value, start, end };
@@ -387,7 +402,7 @@ export function getDefaultConditionConfigForType(
 ): ConditionConfig {
   return {
     condition: getDefaultConditionForType(type),
-    value: undefined,
+    value: getDefaultValueForType(type),
     start: undefined,
     end: undefined,
   };

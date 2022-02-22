@@ -21,11 +21,6 @@ export type UpdateCallback = (rule?: FormattingRule) => void;
 
 export type CancelCallback = () => void;
 
-export type ChangeCallback = (
-  ruleConfig: BaseFormatConfig,
-  isValid: boolean
-) => void;
-
 export interface ConditionalFormatEditorProps {
   columns: ModelColumn[];
   rule?: FormattingRule;

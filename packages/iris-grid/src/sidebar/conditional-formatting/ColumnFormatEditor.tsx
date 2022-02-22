@@ -1,13 +1,13 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import Log from '@deephaven/log';
 import { ComboBox } from '@deephaven/components';
-import { ChangeCallback } from './ConditionalFormatEditor';
 import {
-  ModelColumn,
   BaseFormatConfig,
+  ChangeCallback,
   getDefaultConditionConfigForType,
   getConditionConfig,
   getDefaultStyleConfig,
+  ModelColumn,
 } from './ConditionalFormattingUtils';
 import ConditionEditor from './ConditionEditor';
 import StyleEditor from './StyleEditor';

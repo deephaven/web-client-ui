@@ -97,9 +97,9 @@ const charConditions = [
 
 function isNumberConditionValid(
   condition: NumberCondition,
-  value?: string | number,
-  startValue?: string | number,
-  endValue?: string | number
+  value?: string,
+  startValue?: string,
+  endValue?: string
 ) {
   if (
     condition === NumberCondition.IS_NULL ||
@@ -109,14 +109,17 @@ function isNumberConditionValid(
   }
   if (
     condition === NumberCondition.IS_BETWEEN &&
-    !Number.isNaN(Number(startValue)) &&
-    !Number.isNaN(Number(endValue))
+    startValue &&
+    !Number.isNaN(Number.parseFloat(startValue)) &&
+    endValue &&
+    !Number.isNaN(Number.parseFloat(endValue))
   ) {
     return true;
   }
   if (
     condition !== NumberCondition.IS_BETWEEN &&
-    !Number.isNaN(Number(value))
+    value &&
+    !Number.isNaN(Number.parseFloat(value))
   ) {
     return true;
   }
@@ -128,9 +131,9 @@ function getNumberInputs(
   handleValueChange: (e: unknown) => void,
   handleStartValueChange: (e: unknown) => void,
   handleEndValueChange: (e: unknown) => void,
-  conditionValue?: string | number,
-  startValue?: number,
-  endValue?: number
+  conditionValue?: string,
+  startValue?: string,
+  endValue?: string
 ) {
   switch (selectedCondition) {
     case NumberCondition.IS_EQUAL:
@@ -141,7 +144,7 @@ function getNumberInputs(
     case NumberCondition.LESS_THAN_OR_EQUAL:
       return (
         <input
-          type="text"
+          type="number"
           className="form-control"
           placeholder="Enter value"
           value={conditionValue ?? ''}
@@ -152,14 +155,14 @@ function getNumberInputs(
       return (
         <div className="d-flex flex-row">
           <input
-            type="text"
+            type="number"
             className="form-control d-flex mr-2"
             placeholder="Start value"
             value={startValue ?? ''}
             onChange={handleStartValueChange}
           />
           <input
-            type="text"
+            type="number"
             className="form-control d-flex"
             placeholder="End value"
             value={endValue ?? ''}
@@ -176,7 +179,7 @@ function getNumberInputs(
 function getStringInputs(
   selectedCondition: StringCondition,
   handleValueChange: (e: unknown) => void,
-  conditionValue?: string | number
+  conditionValue?: string
 ) {
   switch (selectedCondition) {
     case StringCondition.IS_NULL:
@@ -198,7 +201,7 @@ function getStringInputs(
 function getDateInputs(
   selectedCondition: DateCondition,
   handleValueChange: (e: unknown) => void,
-  conditionValue?: string | number
+  conditionValue?: string
 ) {
   switch (selectedCondition) {
     case DateCondition.IS_NULL:
@@ -224,7 +227,7 @@ function getBooleanInputs() {
 function getCharInputs(
   selectedCondition: CharCondition,
   handleValueChange: (e: unknown) => void,
-  conditionValue?: string | number
+  conditionValue?: string
 ) {
   switch (selectedCondition) {
     case CharCondition.IS_NULL:
