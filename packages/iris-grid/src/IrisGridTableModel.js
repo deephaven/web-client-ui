@@ -5,7 +5,6 @@ import { GridRange, memoizeClear } from '@deephaven/grid';
 import dh from '@deephaven/jsapi-shim';
 import Log from '@deephaven/log';
 import { PromiseUtils } from '@deephaven/utils';
-import deepEqual from 'deep-equal';
 import TableUtils from './TableUtils';
 import Formatter from './Formatter';
 import { TableColumnFormatter } from './formatters';
@@ -69,8 +68,8 @@ class IrisGridTableModel extends IrisGridModel {
     this.totals = null;
     this.totalsDataMap = null;
 
-    this.customColumnList = [];
-    this.formatColumnList = [];
+    this.customColumnList = null;
+    this.formatColumnList = null;
 
     // Map from new row index to their values. Only for input tables that can have new rows added.
     // The index of these rows start at 0, and they are appended at the end of the regular table data.
@@ -846,7 +845,12 @@ class IrisGridTableModel extends IrisGridModel {
   }
 
   set customColumns(customColumns) {
-    if (deepEqual(customColumns, this.customColumnList)) {
+    if (this.customColumnList === null && customColumns.length === 0) {
+      log.debug('Ignore empty initial customColumns');
+      this.customColumnList = customColumns;
+      return;
+    }
+    if (this.customColumnList === customColumns) {
       log.debug('Ignore same customColumns');
       return;
     }
@@ -857,13 +861,18 @@ class IrisGridTableModel extends IrisGridModel {
   }
 
   get formatColumns() {
-    return this.formatColumnList;
+    return this.formatColumnList ?? [];
   }
 
   set formatColumns(formatColumns) {
-    if (deepEqual(formatColumns, this.formatColumnList)) {
-      log.debug('Ignore same formatColumns');
+    if (this.formatColumnList === null && formatColumns.length === 0) {
+      log.debug('Ignore empty initial formatColumns');
+      this.formatColumnList = formatColumns;
       return;
+    }
+    if (this.formatColumnList === formatColumns) {
+      log.debug('Ignore initial empty formatColumns');
+      this.formatColumnList = formatColumns;
     }
     this.closeSubscription();
     this.formatColumnList = formatColumns;
