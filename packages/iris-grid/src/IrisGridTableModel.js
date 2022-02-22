@@ -68,8 +68,8 @@ class IrisGridTableModel extends IrisGridModel {
     this.totals = null;
     this.totalsDataMap = null;
 
-    this.customColumnList = null;
-    this.formatColumnList = null;
+    this.customColumnList = [];
+    this.formatColumnList = [];
 
     // Map from new row index to their values. Only for input tables that can have new rows added.
     // The index of these rows start at 0, and they are appended at the end of the regular table data.
@@ -841,11 +841,17 @@ class IrisGridTableModel extends IrisGridModel {
   }
 
   get customColumns() {
-    return this.customColumnList ?? [];
+    return this.customColumnList;
   }
 
   set customColumns(customColumns) {
-    if (this.customColumnList === null && customColumns.length === 0) {
+    log.debug2(
+      'set customColumns',
+      customColumns,
+      this.customColumnList,
+      customColumns === this.customColumnList
+    );
+    if (this.customColumnList.length === 0 && customColumns.length === 0) {
       log.debug('Ignore empty initial customColumns');
       this.customColumnList = customColumns;
       return;
@@ -856,27 +862,33 @@ class IrisGridTableModel extends IrisGridModel {
     }
     this.closeSubscription();
     this.customColumnList = customColumns;
-    this.table.applyCustomColumns([...customColumns, ...this.formatColumnList]);
+    this.table.applyCustomColumns([...customColumns, ...this.formatColumns]);
     this.applyViewport();
   }
 
   get formatColumns() {
-    return this.formatColumnList ?? [];
+    return this.formatColumnList;
   }
 
   set formatColumns(formatColumns) {
-    if (this.formatColumnList === null && formatColumns.length === 0) {
+    log.debug2(
+      'set formatColumns',
+      formatColumns,
+      this.formatColumnList,
+      formatColumns === this.formatColumnList
+    );
+    if (this.formatColumnList.length === 0 && formatColumns.length === 0) {
       log.debug('Ignore empty initial formatColumns');
       this.formatColumnList = formatColumns;
       return;
     }
     if (this.formatColumnList === formatColumns) {
-      log.debug('Ignore initial empty formatColumns');
-      this.formatColumnList = formatColumns;
+      log.debug('Ignore same formatColumns');
+      return;
     }
     this.closeSubscription();
     this.formatColumnList = formatColumns;
-    this.table.applyCustomColumns([...this.customColumnList, ...formatColumns]);
+    this.table.applyCustomColumns([...this.customColumns, ...formatColumns]);
     this.applyViewport();
   }
 

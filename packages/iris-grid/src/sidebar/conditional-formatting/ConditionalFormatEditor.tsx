@@ -17,16 +17,21 @@ const log = Log.module('ConditionalFormatEditor');
 
 export type SaveCallback = (rule: FormattingRule) => void;
 
+export type UpdateCallback = (rule?: FormattingRule) => void;
+
 export type CancelCallback = () => void;
 
-export type ChangeCallback = (ruleConfig: BaseFormatConfig) => void;
+export type ChangeCallback = (
+  ruleConfig: BaseFormatConfig,
+  isValid: boolean
+) => void;
 
 export interface ConditionalFormatEditorProps {
   columns: ModelColumn[];
   rule?: FormattingRule;
   onCancel?: CancelCallback;
   onSave?: SaveCallback;
-  onUpdate?: SaveCallback;
+  onUpdate?: UpdateCallback;
 }
 
 const DEFAULT_CALLBACK = () => undefined;
@@ -66,6 +71,7 @@ const ConditionalFormatEditor = (
     defaultRule?.type ?? formatterTypes[0]
   );
   const [rule, setRule] = useState(defaultRule);
+  const [isValid, setIsValid] = useState(false);
 
   const handleCancel = useCallback(() => {
     onCancel();
@@ -85,14 +91,15 @@ const ConditionalFormatEditor = (
   }, []);
 
   const handleRuleChange = useCallback(
-    ruleConfig => {
-      log.debug('handleRuleChange', ruleConfig, selectedFormatter);
+    (ruleConfig, isRuleValid) => {
+      log.debug('handleRuleChange', ruleConfig, isRuleValid, selectedFormatter);
       const updatedRule = {
         type: selectedFormatter,
         config: ruleConfig as BaseFormatConfig,
       };
       setRule(updatedRule);
-      onUpdate(updatedRule);
+      setIsValid(isRuleValid);
+      onUpdate(isRuleValid ? updatedRule : undefined);
     },
     [onUpdate, selectedFormatter]
   );
@@ -144,7 +151,7 @@ const ConditionalFormatEditor = (
         <Button
           kind="primary"
           onClick={handleSave}
-          disabled={rule === undefined}
+          disabled={rule === undefined || !isValid}
         >
           Done
         </Button>

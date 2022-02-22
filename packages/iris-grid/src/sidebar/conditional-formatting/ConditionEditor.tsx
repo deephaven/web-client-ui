@@ -311,11 +311,10 @@ const ConditionEditor = (props: ConditionEditorProps): JSX.Element => {
     let isValid = true;
 
     if (selectedCondition === undefined) {
-      log.error('Unable to create formatting rule. Condition is not selected.');
+      log.debug('Unable to create formatting rule. Condition is not selected.');
       isValid = false;
     }
 
-    // TODO: validate other types as well...?
     if (
       TableUtils.isNumberType(column.type) &&
       !isNumberConditionValid(
@@ -325,7 +324,7 @@ const ConditionEditor = (props: ConditionEditorProps): JSX.Element => {
         endValue
       )
     ) {
-      log.error(
+      log.debug(
         'Unable to create formatting rule. Invalid value',
         conditionValue
       );

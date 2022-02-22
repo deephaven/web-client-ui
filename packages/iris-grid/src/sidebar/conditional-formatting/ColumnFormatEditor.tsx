@@ -58,6 +58,7 @@ const ColumnFormatEditor = (props: ColumnFormatEditorProps): JSX.Element => {
         setColumn(newColumn);
         if (selectedColumn.type !== newColumn.type) {
           setConditionConfig(getDefaultConditionConfigForType(newColumn.type));
+          setConditionValid(false);
         }
       } else {
         log.error(`Column ${value} not found.`);
@@ -89,17 +90,16 @@ const ColumnFormatEditor = (props: ColumnFormatEditorProps): JSX.Element => {
       log.debug('Style is not selected, skip update.');
       return;
     }
-    if (!conditionValid) {
-      log.debug('Condition not valid, skip update.');
-      return;
-    }
     const { type, name } = selectedColumn;
     const column = { type, name };
-    onChange({
-      column,
-      style: selectedStyle,
-      ...conditionConfig,
-    });
+    onChange(
+      {
+        column,
+        style: selectedStyle,
+        ...conditionConfig,
+      },
+      conditionValid
+    );
   }, [
     onChange,
     selectedColumn,

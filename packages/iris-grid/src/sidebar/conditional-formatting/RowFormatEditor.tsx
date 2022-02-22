@@ -53,14 +53,18 @@ const RowFormatEditor = (props: RowFormatEditorProps): JSX.Element => {
 
   const handleColumnChange = useCallback(
     value => {
-      const column = columns.find(({ name }) => name === value);
-      if (column !== undefined) {
-        setColumn(column);
+      const newColumn = columns.find(({ name }) => name === value);
+      if (newColumn !== undefined) {
+        setColumn(newColumn);
+        if (selectedColumn.type !== newColumn.type) {
+          setConditionConfig(getDefaultConditionConfigForType(newColumn.type));
+          setConditionValid(false);
+        }
       } else {
         log.error(`Column ${value} not found.`);
       }
     },
-    [columns]
+    [columns, selectedColumn]
   );
 
   const handleConditionChange = useCallback(
@@ -86,17 +90,16 @@ const RowFormatEditor = (props: RowFormatEditorProps): JSX.Element => {
       log.debug('Style is not selected, skip update.');
       return;
     }
-    if (!conditionValid) {
-      log.debug('Condition not valid, skip update.');
-      return;
-    }
     const { type, name } = selectedColumn;
     const column = { type, name };
-    onChange({
-      column,
-      style: selectedStyle,
-      ...conditionConfig,
-    });
+    onChange(
+      {
+        column,
+        style: selectedStyle,
+        ...conditionConfig,
+      },
+      conditionValid
+    );
   }, [
     onChange,
     selectedColumn,
