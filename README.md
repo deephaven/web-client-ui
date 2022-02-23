@@ -67,3 +67,19 @@ After the release is created, you can go to the [actions page](https://github.co
 Support is best for [Google Chrome](https://www.google.com/intl/en_ca/chrome/) and Chromium based browsers (such as [Microsoft Edge based on Chromium](https://www.microsoft.com/en-us/edge)). We try and maintain compatibility with [Mozilla Firefox](https://www.mozilla.org/en-CA/firefox/new/) and [Apple Safari](https://www.apple.com/ca/safari/) as well.
 
 If you encounter an issue specific to a browser, check that your browser is up to date, then check issues labeled with [firefox](https://github.com/deephaven/web-client-ui/labels/firefox) or [safari](https://github.com/deephaven/web-client-ui/labels/safari) for a list of known browser compatibility issues before reporting the issue.
+
+## Release Strategy
+
+All new changes (bug fixes, feature requests) are merged to `main` so they are always included in the latest release.
+
+### Stable Releases
+
+Stable releases are created periodically off of the `main` with the dist-tag `latest`. These will include an appropriate version bump and [release notes](https://github.com/deephaven/web-client-ui/releases), detailing the changes that are in that version.
+
+### Nightly Releases
+
+Nightly releases are published every night with the dist-tag `nightly` to npm. You can reference the nightly release to always be on the latest by referencing `nightly` as the version, though stability is not guaranteed, e.g. `npm install --save @deephaven/grid@nightly`.
+
+### Hotfix Releases
+
+For Deephaven Enterprise, once a release has reached certification and will only receive hotfixes, we create a new branch in Community matching the Deephaven Enterprise release name (e.g. [bard](https://github.com/deephaven/web-client-ui/tree/bard)). Bug fixes/hotfixes are then either cherry-picked from `main` (if the fix has been merged to main), or directly merged into the hotfix branch (if code has changed in `main` and the fix only applies in the hotfix branch). Once the branch is pushed to origin, the publish step is kicked off manually using the Publish Alpha with the release name as the `preid` and the branches latest commit to deploy the latest from that branch.
