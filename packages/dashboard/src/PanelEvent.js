@@ -26,6 +26,11 @@ export default Object.freeze({
   // Panel was closed
   CLOSED: 'PanelEvent.CLOSED',
 
+  // Event to open a new panel
+  // Plugins will need to register to open based on this event.
+  // Multiple plugins could open panels for the same event if desired.
+  OPEN: 'PanelEvent.OPEN',
+
   // Event to close a panel that's currently open
   CLOSE: 'PanelEvent.CLOSE',
 });

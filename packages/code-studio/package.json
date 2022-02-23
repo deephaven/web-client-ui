@@ -29,6 +29,7 @@
     "@fortawesome/fontawesome-svg-core": "1.2.36",
     "@fortawesome/react-fontawesome": "^0.1.12",
     "@paciolan/remote-component": "2.7.2",
+    "@paciolan/remote-module-loader": "^3.0.2",
     "classnames": "^2.3.1",
     "event-target-shim": "^6.0.2",
     "fira": "github:mozilla/fira#4.202",
@@ -51,6 +52,7 @@
     "reactstrap": "^8.4.1",
     "redux": "^4.0.5",
     "redux-thunk": "^2.3.0",
+    "regenerator-runtime": "^0.13.9",
     "shortid": "^2.2.15",
     "webdav": "^4.6.1"
   },

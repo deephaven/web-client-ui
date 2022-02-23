@@ -20,7 +20,11 @@ import {
 import PanelEvent from './PanelEvent';
 import { GLPropTypes, useListener } from './layout';
 import { getDashboardData, updateDashboardData } from './redux';
-import { PanelComponentType } from './DashboardPlugin';
+import {
+  PanelComponentType,
+  PanelDehydrateFunction,
+  PanelHydrateFunction,
+} from './DashboardPlugin';
 
 export type DashboardLayoutConfig = ItemConfigType[];
 
@@ -41,6 +45,10 @@ type DashboardData = {
 
 interface DashboardLayoutProps {
   id: string;
+
+  // Default hydrate/dehydration functions
+  hydrate?: PanelHydrateFunction;
+  dehydrate?: PanelDehydrateFunction;
   layout: GoldenLayout;
   layoutConfig?: DashboardLayoutConfig;
   onLayoutChange?: (dehydratedLayout: DashboardLayoutConfig) => void;
@@ -61,6 +69,8 @@ export const DashboardLayout = ({
   layoutConfig = DEFAULT_LAYOUT_CONFIG,
   onLayoutChange = DEFAULT_CALLBACK,
   onLayoutInitialized = DEFAULT_CALLBACK,
+  hydrate = hydrateDefault,
+  dehydrate = dehydrateDefault,
 }: DashboardLayoutProps): JSX.Element => {
   const dispatch = useDispatch();
   const data =
@@ -79,10 +89,16 @@ export const DashboardLayout = ({
     (
       name: string,
       componentType: PanelComponentType,
-      hydrate = hydrateDefault,
-      dehydrate = dehydrateDefault
+      componentHydrate = hydrate,
+      componentDehydrate = dehydrate
     ) => {
-      log.debug2('registerComponent', name, componentType, hydrate, dehydrate);
+      log.debug2(
+        'registerComponent',
+        name,
+        componentType,
+        componentHydrate,
+        componentDehydrate
+      );
 
       function renderComponent(
         props: { glContainer: unknown; glEventHub: unknown },
@@ -111,11 +127,11 @@ export const DashboardLayout = ({
 
       const wrappedComponent = React.forwardRef(renderComponent);
       const cleanup = layout.registerComponent(name, wrappedComponent);
-      hydrateMap.set(name, hydrate);
-      dehydrateMap.set(name, dehydrate);
+      hydrateMap.set(name, componentHydrate);
+      dehydrateMap.set(name, componentDehydrate);
       return cleanup;
     },
-    [hydrateMap, dehydrateMap, layout, store]
+    [hydrate, dehydrate, hydrateMap, dehydrateMap, layout, store]
   );
   const hydrateComponent = useCallback(
     (name, props) => (hydrateMap.get(name) ?? FALLBACK_CALLBACK)(props, id),

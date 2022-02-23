@@ -39,6 +39,9 @@ export interface VariableDefinition<
   T extends VariableTypeUnion = VariableTypeUnion
 > {
   type: T;
+  name?: string;
+  title?: string;
+  id?: string;
 }
 
 export interface IdeSession {

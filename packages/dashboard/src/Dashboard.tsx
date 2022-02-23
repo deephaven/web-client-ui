@@ -12,6 +12,10 @@ import './layout/golden-layout';
 import LayoutUtils from './layout/LayoutUtils';
 import PanelPlaceholder from './PanelPlaceholder';
 import DashboardLayout from './DashboardLayout';
+import {
+  PanelDehydrateFunction,
+  PanelHydrateFunction,
+} from './DashboardPlugin';
 import './Dashboard.scss';
 
 const RESIZE_THROTTLE = 100;
@@ -30,6 +34,8 @@ export type DashboardProps = {
   onGoldenLayoutChange?: (goldenLayout: GoldenLayout) => void;
   onLayoutInitialized?: () => void;
   fallbackComponent?: ForwardRefExoticComponent<RefAttributes<unknown>>;
+  hydrate?: PanelHydrateFunction;
+  dehydrate?: PanelDehydrateFunction;
 };
 
 export const Dashboard = ({
@@ -42,6 +48,8 @@ export const Dashboard = ({
   onGoldenLayoutChange = DEFAULT_CALLBACK,
   onLayoutInitialized = DEFAULT_CALLBACK,
   fallbackComponent = PanelPlaceholder,
+  hydrate,
+  dehydrate,
 }: DashboardProps): JSX.Element => {
   const layoutElement = useRef<HTMLDivElement>(null);
   const [isInitialized, setIsInitialized] = useState(false);
@@ -114,6 +122,8 @@ export const Dashboard = ({
           layoutConfig={layoutConfig}
           onLayoutChange={onLayoutConfigChange}
           onLayoutInitialized={onLayoutInitialized}
+          hydrate={hydrate}
+          dehydrate={dehydrate}
         >
           {children}
         </DashboardLayout>

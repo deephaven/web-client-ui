@@ -1916,7 +1916,7 @@ export class IrisGrid extends Component {
 
   handleChartCreate(settings) {
     const { model, onCreateChart } = this.props;
-    onCreateChart(settings, model.table);
+    onCreateChart(settings, model);
   }
 
   handleGridError(error) {
@@ -2508,6 +2508,7 @@ export class IrisGrid extends Component {
       advancedSettings,
       onAdvancedSettingsChange,
       canDownloadCsv,
+      onCreateChart,
     } = this.props;
     const {
       metricCalculator,
@@ -2965,7 +2966,7 @@ export class IrisGrid extends Component {
     }
 
     const optionItems = this.getCachedOptionItems(
-      model.isChartBuilderAvailable,
+      onCreateChart !== undefined && model.isChartBuilderAvailable,
       model.isCustomColumnsAvailable,
       model.isFormatColumnsAvailable,
       model.isRollupAvailable,
@@ -3441,7 +3442,7 @@ IrisGrid.defaultProps = {
   movedRows: [],
   inputFilters: [],
   customFilters: [],
-  onCreateChart: () => {},
+  onCreateChart: undefined,
   onColumnSelected: () => {},
   onDataSelected: () => {},
   onError: () => {},

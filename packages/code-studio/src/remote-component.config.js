@@ -1,4 +1,4 @@
-/* eslint-disable */
+/* eslint-disable global-require */
 /**
  * remote-component.config.js
  *
@@ -7,6 +7,7 @@
 module.exports = {
   resolve: {
     react: require('react'),
-    reactstrap: require(`reactstrap`),
+    reactstrap: require('reactstrap'),
+    regeneratorRuntime: require('regenerator-runtime/runtime'),
   },
 };

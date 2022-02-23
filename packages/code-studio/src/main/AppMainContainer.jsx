@@ -1,10 +1,10 @@
 import React, { Component } from 'react';
 import classNames from 'classnames';
 import PropTypes from 'prop-types';
+import memoize from 'memoize-one';
 import { CSSTransition } from 'react-transition-group';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
-import shortid from 'shortid';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   ContextActions,
@@ -14,18 +14,18 @@ import {
   Popper,
 } from '@deephaven/components';
 import Dashboard, {
+  DashboardUtils,
   DEFAULT_DASHBOARD_ID,
   getDashboardData,
+  PanelEvent,
   updateDashboardData as updateDashboardDataAction,
 } from '@deephaven/dashboard';
 import {
-  ChartEvent,
   ChartPlugin,
   ConsolePlugin,
   FilterPlugin,
   GridPlugin,
   InputFilterEvent,
-  IrisGridEvent,
   LinkerPlugin,
   MarkdownEvent,
   NotebookEvent,
@@ -35,6 +35,7 @@ import {
   UIPropTypes,
   ControlType,
   ToolType,
+  ChartBuilderPlugin,
 } from '@deephaven/dashboard-core-plugins';
 import { vsGear, dhShapes, dhPanels } from '@deephaven/icons';
 import dh, { PropTypes as APIPropTypes } from '@deephaven/jsapi-shim';
@@ -45,6 +46,7 @@ import {
   getUser,
   setActiveTool as setActiveToolAction,
   updateWorkspaceData as updateWorkspaceDataAction,
+  getPlugins,
 } from '@deephaven/redux';
 import { PromiseUtils } from '@deephaven/utils';
 import SettingsMenu from '../settings/SettingsMenu';
@@ -85,6 +87,7 @@ export class AppMainContainer extends Component {
     this.handleExportLayoutClick = this.handleExportLayoutClick.bind(this);
     this.handleImportLayoutClick = this.handleImportLayoutClick.bind(this);
     this.handleImportLayoutFiles = this.handleImportLayoutFiles.bind(this);
+    this.handleLoadTablePlugin = this.handleLoadTablePlugin.bind(this);
     this.handleResetLayoutClick = this.handleResetLayoutClick.bind(this);
     this.handleWidgetMenuClick = this.handleWidgetMenuClick.bind(this);
     this.handleWidgetsMenuClose = this.handleWidgetsMenuClose.bind(this);
@@ -92,6 +95,7 @@ export class AppMainContainer extends Component {
     this.handlePaste = this.handlePaste.bind(this);
     this.hydrateChart = this.hydrateChart.bind(this);
     this.hydrateGrid = this.hydrateGrid.bind(this);
+    this.hydrateDefault = this.hydrateDefault.bind(this);
     this.openNotebookFromURL = this.openNotebookFromURL.bind(this);
 
     this.goldenLayout = null;
@@ -479,11 +483,49 @@ export class AppMainContainer extends Component {
     }
   }
 
+  /**
+   * Load a Table plugin specified by a table
+   * @param {string} pluginName The name of the plugin to load
+   * @returns {JSX.Element} An element from the plugin
+   */
+  handleLoadTablePlugin(pluginName) {
+    const { plugins } = this.props;
+
+    // First check if we have any plugin modules loaded that match the TablePlugin.
+    const pluginModule = plugins.get(pluginName);
+    if (pluginModule?.TablePlugin) {
+      return pluginModule.TablePlugin;
+    }
+
+    return PluginUtils.loadComponentPlugin(pluginName);
+  }
+
+  hydrateDefault(props, id) {
+    const { session } = this.props;
+    const { metadata } = props;
+    if (metadata?.type && (metadata?.id || metadata?.name)) {
+      // Looks like a widget, hydrate it as such
+      const widget = metadata.id
+        ? {
+            type: metadata.type,
+            id: metadata.id,
+          }
+        : { type: metadata.type, name: metadata.name };
+      return {
+        fetch: () => session.getObject(widget),
+        localDashboardId: id,
+        ...props,
+      };
+    }
+    return DashboardUtils.hydrate(props, id);
+  }
+
   hydrateGrid(props, id) {
     const { session } = this.props;
     return {
       ...props,
       getDownloadWorker: DownloadServiceWorkerUtils.getServiceWorker,
+      loadPlugin: this.handleLoadTablePlugin,
       localDashboardId: id,
       makeModel: () => createGridModel(session, props.metadata),
     };
@@ -503,48 +545,26 @@ export class AppMainContainer extends Component {
 
   /**
    * Open a widget up, using a drag event if specified.
-   * @param {WidgetDefinition} widget The widget to
+   * @param {VariableDefinition} widget The widget to open
    * @param {DragEvent} dragEvent The mouse drag event that trigger it, undefined if it was not triggered by a drag
    */
   openWidget(widget, dragEvent) {
-    switch (widget.type) {
-      case dh.VariableType.TABLE: {
-        const metadata = { table: widget.name };
-        this.emitLayoutEvent(
-          IrisGridEvent.OPEN_GRID,
-          widget.name,
-          () => {
-            const { session } = this.props;
-            return createGridModel(session, metadata);
-          },
-          metadata,
-          shortid.generate(),
-          dragEvent
-        );
-        break;
-      }
-      case dh.VariableType.FIGURE: {
-        const metadata = { figure: widget.name };
-        this.emitLayoutEvent(
-          ChartEvent.OPEN,
-          widget.name,
-          () => {
-            const { session } = this.props;
-            return createChartModel(session, metadata);
-          },
-          metadata,
-          shortid.generate(),
-          dragEvent
-        );
-        break;
-      }
-      default:
-        log.error('Unexpected widget type', widget);
-    }
+    const { session } = this.props;
+    this.emitLayoutEvent(PanelEvent.OPEN, {
+      dragEvent,
+      fetch: () => session.getObject(widget),
+      widget,
+    });
   }
 
+  getDashboardPlugins = memoize(plugins =>
+    [...plugins.entries()]
+      .filter(([, { DashboardPlugin }]) => DashboardPlugin)
+      .map(([name, { DashboardPlugin }]) => <DashboardPlugin key={name} />)
+  );
+
   render() {
-    const { activeTool, user, workspace } = this.props;
+    const { activeTool, plugins, user, workspace } = this.props;
     const { data: workspaceData = {} } = workspace;
     const { layoutConfig } = workspaceData;
     const { permissions } = user;
@@ -555,6 +575,7 @@ export class AppMainContainer extends Component {
       isSettingsMenuShown,
       widgets,
     } = this.state;
+    const dashboardPlugins = this.getDashboardPlugins(plugins);
 
     return (
       <div
@@ -639,18 +660,21 @@ export class AppMainContainer extends Component {
           onGoldenLayoutChange={this.handleGoldenLayoutChange}
           onLayoutConfigChange={this.handleLayoutConfigChange}
           onLayoutInitialized={this.openNotebookFromURL}
+          hydrate={this.hydrateDefault}
         >
           <GridPlugin
             hydrate={this.hydrateGrid}
             getDownloadWorker={DownloadServiceWorkerUtils.getServiceWorker}
-            loadPlugin={PluginUtils.loadPlugin}
+            loadPlugin={this.handleLoadTablePlugin}
           />
           <ChartPlugin hydrate={this.hydrateChart} />
+          <ChartBuilderPlugin />
           <ConsolePlugin />
           <FilterPlugin />
           <PandasPlugin />
           <MarkdownPlugin />
           <LinkerPlugin />
+          {dashboardPlugins}
         </Dashboard>
         <CSSTransition
           in={isSettingsMenuShown}
@@ -699,12 +723,14 @@ AppMainContainer.propTypes = {
       links: PropTypes.arrayOf(PropTypes.shape({})),
     }),
   }).isRequired,
+  plugins: PropTypes.instanceOf(Map).isRequired,
 };
 
 const mapStateToProps = state => ({
   activeTool: getActiveTool(state),
   dashboardData: getDashboardData(state, DEFAULT_DASHBOARD_ID),
   layoutStorage: getLayoutStorage(state),
+  plugins: getPlugins(state),
   session: getDashboardSessionWrapper(state, DEFAULT_DASHBOARD_ID).session,
   sessionConfig: getDashboardSessionWrapper(state, DEFAULT_DASHBOARD_ID).config,
   user: getUser(state),

@@ -1,15 +1,16 @@
-import React, { DragEvent, useCallback, useEffect } from 'react';
-import { ChartModel } from '@deephaven/chart';
+import React, { useCallback, useEffect } from 'react';
+import { ChartModelFactory } from '@deephaven/chart';
 import {
   assertIsDashboardPluginProps,
   DashboardPluginComponentProps,
   LayoutUtils,
+  PanelEvent,
   PanelHydrateFunction,
   useListener,
 } from '@deephaven/dashboard';
+import { Figure, VariableDefinition } from '@deephaven/jsapi-shim';
 import shortid from 'shortid';
 import { ChartPanel } from './panels';
-import { ChartEvent } from './events';
 
 export type ChartPluginProps = Partial<DashboardPluginComponentProps> & {
   hydrate: PanelHydrateFunction;
@@ -18,14 +19,28 @@ export type ChartPluginProps = Partial<DashboardPluginComponentProps> & {
 export const ChartPlugin = (props: ChartPluginProps): JSX.Element => {
   assertIsDashboardPluginProps(props);
   const { id, layout, registerComponent, hydrate } = props;
-  const handleOpen = useCallback(
-    (
-      title: string,
-      makeModel: () => ChartModel,
-      metadata: Record<string, unknown> = {},
+  const handlePanelOpen = useCallback(
+    ({
+      dragEvent,
+      fetch,
       panelId = shortid.generate(),
-      dragEvent?: DragEvent
-    ) => {
+      widget,
+    }: {
+      dragEvent?: DragEvent;
+      fetch: () => Promise<Figure>;
+      panelId?: string;
+      widget: VariableDefinition;
+    }) => {
+      const { name, type } = widget;
+      if (type !== dh.VariableType.FIGURE) {
+        return;
+      }
+
+      const metadata = { name, figure: name };
+      const makeModel = () =>
+        fetch().then((figure: Figure) =>
+          ChartModelFactory.makeModel(undefined, figure)
+        );
       const config = {
         type: 'react-component',
         component: ChartPanel.COMPONENT,
@@ -35,7 +50,7 @@ export const ChartPlugin = (props: ChartPluginProps): JSX.Element => {
           metadata,
           makeModel,
         },
-        title,
+        title: name,
         id: panelId,
       };
 
@@ -43,15 +58,6 @@ export const ChartPlugin = (props: ChartPluginProps): JSX.Element => {
       LayoutUtils.openComponent({ root, config, dragEvent });
     },
     [id, layout]
-  );
-
-  const handleClose = useCallback(
-    (panelId: string) => {
-      const config = { component: ChartPanel.COMPONENT, id: panelId };
-      const { root } = layout;
-      LayoutUtils.closeComponent(root, config);
-    },
-    [layout]
   );
 
   useEffect(() => {
@@ -63,8 +69,7 @@ export const ChartPlugin = (props: ChartPluginProps): JSX.Element => {
     };
   }, [hydrate, registerComponent]);
 
-  useListener(layout.eventHub, ChartEvent.OPEN, handleOpen);
-  useListener(layout.eventHub, ChartEvent.CLOSE, handleClose);
+  useListener(layout.eventHub, PanelEvent.OPEN, handlePanelOpen);
 
   return <></>;
 };

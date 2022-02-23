@@ -8,6 +8,8 @@ import type {
 
 const EMPTY_OBJECT = Object.freeze({});
 
+const EMPTY_MAP: ReadonlyMap<unknown, unknown> = new Map();
+
 type Selector<R> = (state: RootState) => R;
 
 // User
@@ -79,3 +81,6 @@ export const getShortcutOverrides: Selector<
 
 export const getActiveTool: Selector<RootState['activeTool']> = store =>
   store.activeTool;
+
+export const getPlugins: Selector<RootState['plugins']> = store =>
+  store.plugins ?? EMPTY_MAP;

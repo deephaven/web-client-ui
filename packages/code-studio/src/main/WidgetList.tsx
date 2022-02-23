@@ -14,6 +14,7 @@ import {
   vsPreview,
   vsRefresh,
 } from '@deephaven/icons';
+import { VariableDefinition } from '@deephaven/jsapi-shim';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import './WidgetList.scss';
 
@@ -23,23 +24,18 @@ const MINIMUM_DRAG_DISTANCE = 10;
 // `WindowMouseEvent` is just a convenience alias
 export type WindowMouseEvent = globalThis.MouseEvent;
 
-export type WidgetDefinition = {
-  name: string;
-  type: string;
-};
-
 export type SelectStartEvent = {
   x: number;
   y: number;
-  widget: WidgetDefinition;
+  widget: VariableDefinition;
 };
 
 export interface WidgetListProps {
-  onSelect: (widget: WidgetDefinition, e?: WindowMouseEvent) => undefined;
+  onSelect: (widget: VariableDefinition, e?: WindowMouseEvent) => undefined;
   onExportLayout: () => undefined;
   onImportLayout: () => undefined;
   onResetLayout: () => undefined;
-  widgets?: WidgetDefinition[];
+  widgets?: VariableDefinition[];
 }
 
 /**
@@ -64,11 +60,11 @@ export const WidgetList = (props: WidgetListProps): JSX.Element => {
    * Send object to be created, if an event is passed object
    * is treated as createDragSourceFromEvent in golden-layout
    * and uses the event as the starting location for the drag.
-   * @param {WidgetDefintion} widget
-   * @param {WindowMouseEvent?} event
+   * @param widget
+   * @param event
    */
   const sendSelect = useCallback(
-    (widget: WidgetDefinition, event?: WindowMouseEvent) => {
+    (widget: VariableDefinition, event?: WindowMouseEvent) => {
       if (widget) onSelect(widget, event);
     },
     [onSelect]
@@ -100,7 +96,7 @@ export const WidgetList = (props: WidgetListProps): JSX.Element => {
   );
 
   const handleMouseDown = useCallback(
-    (e: MouseEvent, widget: WidgetDefinition) => {
+    (e: MouseEvent, widget: VariableDefinition) => {
       selectStartEvent.current = {
         x: e.clientX,
         y: e.clientY,
@@ -112,7 +108,7 @@ export const WidgetList = (props: WidgetListProps): JSX.Element => {
   );
 
   const handleMouseUp = useCallback(
-    (e: MouseEvent, widget: WidgetDefinition) => {
+    (e: MouseEvent, widget: VariableDefinition) => {
       window.removeEventListener('mousemove', handleMouseMove);
 
       // down and up need to occur on same object to constitute a click event
@@ -129,11 +125,11 @@ export const WidgetList = (props: WidgetListProps): JSX.Element => {
     () =>
       widgets.filter(widget =>
         searchText
-          ? widget.name.toLowerCase().includes(searchText.toLowerCase())
+          ? widget.name?.toLowerCase().includes(searchText.toLowerCase())
           : true
       ),
     [searchText, widgets]
-  ).sort((a, b) => a.name.localeCompare(b.name));
+  ).sort((a, b) => a.name?.localeCompare(b.name ?? '') ?? 0);
 
   const widgetElements = useMemo(
     () =>
@@ -142,7 +138,7 @@ export const WidgetList = (props: WidgetListProps): JSX.Element => {
           <button
             type="button"
             className="btn btn-link"
-            data-testid={`panel-list-item-${widget.name}-button`}
+            data-testid={`panel-list-item-${widget.name ?? ''}-button`}
             onMouseDown={event => {
               handleMouseDown(event, widget);
             }}
@@ -156,7 +152,7 @@ export const WidgetList = (props: WidgetListProps): JSX.Element => {
             }}
             disabled={disableDoubleClick}
           >
-            <ObjectIcon type={widget.type} /> {widget.name}
+            <ObjectIcon type={widget.type} /> {widget.name ?? ''}
           </button>
         </li>
       )),

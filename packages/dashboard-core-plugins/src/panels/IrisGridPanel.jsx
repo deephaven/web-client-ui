@@ -5,7 +5,6 @@ import memoize from 'memoize-one';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import debounce from 'lodash.debounce';
-import { ChartModelFactory, ChartUtils } from '@deephaven/chart';
 import { GLPropTypes, LayoutUtils } from '@deephaven/dashboard';
 import {
   IrisGrid,
@@ -19,12 +18,7 @@ import Log from '@deephaven/log';
 import { getSettings, getUser, getWorkspace } from '@deephaven/redux';
 import { PromiseUtils } from '@deephaven/utils';
 import { ContextMenuRoot } from '@deephaven/components';
-import {
-  ChartEvent,
-  ConsoleEvent,
-  InputFilterEvent,
-  IrisGridEvent,
-} from '../events';
+import { ConsoleEvent, InputFilterEvent, IrisGridEvent } from '../events';
 import {
   getInputFiltersForDashboard,
   getLinksForDashboard,
@@ -201,7 +195,11 @@ export class IrisGridPanel extends PureComponent {
       <div className="iris-grid-plugin">
         <Plugin
           ref={this.pluginRef}
+          filter={this.handlePluginFilter}
+          // onFilter is deprecated
           onFilter={this.handlePluginFilter}
+          fetchColumns={this.handlePluginFetchColumns}
+          // onFetchColumns is deprecated
           onFetchColumns={this.handlePluginFetchColumns}
           table={table}
           user={user}
@@ -450,32 +448,38 @@ export class IrisGridPanel extends PureComponent {
     glEventHub.emit(ConsoleEvent.SEND_COMMAND, command, false, true);
   }
 
-  handleCreateChart(settings, table) {
+  /**
+   * Create a chart with the specified settings
+   * @param {ChartBuilderSettings} settings The settings from the chart builder
+   * @param {string} settings.type The settings from the chart builder
+   * @param {string[]} settings.series The names of the series
+   * @param {string} xAxis The xAxis for this chart
+   * @param {boolean} isLinked Whether this chart should be linked or not
+   * @param {IrisGridModel} model The IrisGridModel object
+   */
+  handleCreateChart(settings, model) {
     // Panel state is stored with the created chart, so flush it first
     this.savePanelState.flush();
 
     this.setState(
       () => null,
       () => {
-        const makeModel = () =>
-          ChartModelFactory.makeModelFromSettings(settings, table);
-
         const { glEventHub, inputFilters, metadata } = this.props;
-        const { querySerial, table: tableName } = metadata;
+        const { table } = metadata;
         const { panelState } = this.state;
-        const id = LayoutUtils.getIdFromPanel(this);
-
+        const sourcePanelId = LayoutUtils.getIdFromPanel(this);
         const tableSettings = IrisGridUtils.extractTableSettings(
           panelState,
           inputFilters
         );
-        const title = ChartUtils.titleFromSettings(settings);
-        glEventHub.emit(ChartEvent.OPEN, title, makeModel, {
-          querySerial,
-          settings: ChartUtils.dehydrateSettings(settings),
-          sourcePanelId: id,
-          table: tableName,
-          tableSettings,
+        glEventHub.emit(IrisGridEvent.CREATE_CHART, {
+          metadata: {
+            settings,
+            sourcePanelId,
+            table,
+            tableSettings,
+          },
+          table: model.table,
         });
       }
     );
