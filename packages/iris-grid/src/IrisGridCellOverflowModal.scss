@@ -1,0 +1,16 @@
+@import '../../components/scss/custom.scss';
+
+.cell-overflow-modal-header .modal-title {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  .overflow-modal-title {
+    flex-grow: 1;
+  }
+
+  .format-btn-error {
+    border-color: $danger;
+  }
+}

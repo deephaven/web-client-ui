@@ -1,3 +1,4 @@
+export { default as IrisGridCellOverflowMouseHandler } from './IrisGridCellOverflowMouseHandler';
 export { default as IrisGridColumnSelectMouseHandler } from './IrisGridColumnSelectMouseHandler';
 export { default as IrisGridColumnTooltipMouseHandler } from './IrisGridColumnTooltipMouseHandler';
 export { default as IrisGridContextMenuHandler } from './IrisGridContextMenuHandler';

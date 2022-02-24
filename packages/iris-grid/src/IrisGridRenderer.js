@@ -71,6 +71,7 @@ class IrisGridRenderer extends GridRenderer {
     super.drawCanvas(state);
 
     this.drawScrim(state);
+    // this.drawCellOverflowButton(state);
   }
 
   drawGridLines(context, state) {
@@ -683,6 +684,102 @@ class IrisGridRenderer extends GridRenderer {
     }
 
     context.translate(-gridX, -gridY);
+  }
+
+  drawCellOverflowButton(state) {
+    const { context, mouseX, mouseY, theme, metrics, model } = state;
+    if (mouseX == null || mouseY == null) return;
+
+    const { row, column } = GridUtils.getGridPointFromXY(
+      mouseX,
+      mouseY,
+      metrics
+    );
+    if (row == null || column == null) {
+      return;
+    }
+
+    const {
+      visibleColumnWidths,
+      visibleRowHeights,
+      visibleColumnXs,
+      visibleRowYs,
+      modelColumns,
+      modelRows,
+      width,
+    } = metrics;
+
+    const {
+      cellHorizontalPadding,
+      overflowButtonBackgroundColor,
+      overflowButtonHoverBackgroundColor,
+    } = theme;
+
+    const modelColumn = modelColumns.get(column);
+    const modelRow = modelRows.get(row);
+
+    const left = visibleColumnXs.get(column);
+    const top = visibleRowYs.get(row);
+    const columnWidth = visibleColumnWidths.get(column);
+    const rowHeight = visibleRowHeights.get(row);
+
+    const text = model.textForCell(modelColumn, modelRow) ?? '';
+    const textWidth = columnWidth - 2 * cellHorizontalPadding;
+    const fontWidth =
+      metrics.fontWidths.get(context.font) ??
+      IrisGridRenderer.DEFAULT_FONT_WIDTH;
+
+    const truncatedText = this.getCachedTruncatedString(
+      context,
+      text,
+      textWidth,
+      fontWidth
+    );
+
+    if (text === '' || truncatedText === text) {
+      return;
+    }
+
+    const buttonWidth = 30;
+    const buttonHeight = 12;
+    const buttonRight =
+      Math.min(
+        metrics.gridX + left + columnWidth,
+        width - 2 * cellHorizontalPadding
+      ) - cellHorizontalPadding;
+    const buttonLeft = buttonRight - buttonWidth;
+    const buttonTop =
+      metrics.gridY + top + rowHeight * 0.5 - buttonHeight * 0.5;
+
+    context.save();
+    context.clearRect(
+      buttonLeft - 2,
+      buttonTop - 2,
+      buttonWidth + 4,
+      buttonHeight + 4
+    );
+    const path = this.createRoundedRect(
+      buttonLeft,
+      buttonTop,
+      buttonWidth,
+      buttonHeight,
+      buttonHeight / 2
+    );
+
+    if (
+      mouseX >= buttonLeft &&
+      mouseX <= buttonRight &&
+      mouseY >= buttonTop &&
+      mouseY <= buttonTop + buttonHeight
+    ) {
+      context.fillStyle = overflowButtonHoverBackgroundColor;
+    } else {
+      context.fillStyle = overflowButtonBackgroundColor;
+    }
+    context.fill(path);
+
+    // context.fillArc
+    context.restore();
   }
 }
 
