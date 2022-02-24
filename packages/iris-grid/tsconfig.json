@@ -23,6 +23,9 @@
       "path": "../react-hooks"
     },
     {
+      "path": "../storage"
+    },
+    {
       "path": "../utils"
     }
   ]
