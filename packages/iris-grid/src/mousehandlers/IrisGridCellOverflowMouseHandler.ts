@@ -11,7 +11,7 @@ import type IrisGrid from '../IrisGrid';
 import IrisGridRenderer from '../IrisGridRenderer';
 
 /**
- * Detects mouse hover over column headers and displays the appropriate tooltip
+ * Detects if the hovered cell is truncated and sets state on IrisGrid to display a view overflow button
  */
 class IrisGridCellOverflowMouseHandler extends GridMouseHandler {
   private irisGrid: IrisGrid;

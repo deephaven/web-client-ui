@@ -20,7 +20,6 @@ export default function IrisGridCellOverflowModal({
 }: IrisGridCellOverflowModalProps): JSX.Element {
   const [height, setHeight] = useState(250);
   const [showLineNumbers, setShowLineNumbers] = useState(false);
-  const [closeOnEscape, setCloseOnEscape] = useState(true);
   const [isFormatted, setIsFormatted] = useState(false);
   const [isFormatError, setIsFormatError] = useState(false);
   const editorRef = useRef<monaco.editor.IStandaloneCodeEditor>();
@@ -78,10 +77,10 @@ export default function IrisGridCellOverflowModal({
     <Modal
       isOpen={isOpen}
       centered
-      keyboard={closeOnEscape}
+      keyboard
       toggle={onClose}
       size="xl"
-      className="theme-bg-dark"
+      className="theme-bg-dark cell-overflow-modal"
       modalTransition={{
         timeout: 150,
       }}
@@ -89,11 +88,7 @@ export default function IrisGridCellOverflowModal({
         timeout: 150,
       }}
     >
-      <ModalHeader
-        tag="div"
-        className="cell-overflow-modal-header"
-        toggle={onClose}
-      >
+      <ModalHeader tag="div" toggle={onClose}>
         <h5 className="overflow-modal-title">Cell Contents</h5>
         <Button
           kind="inline"
@@ -114,10 +109,7 @@ export default function IrisGridCellOverflowModal({
           onClick={formatAsJSON}
         />
       </ModalHeader>
-      <ModalBody
-        onBlur={() => setCloseOnEscape(true)}
-        style={{ height, maxHeight: '80vh', flexShrink: 1 }}
-      >
+      <ModalBody style={{ height }}>
         <Editor
           onEditorInitialized={(
             editor: monaco.editor.IStandaloneCodeEditor
