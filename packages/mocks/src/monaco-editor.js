@@ -5,6 +5,7 @@
  */
 const editor = {
   create: () => ({
+    addAction: () => {},
     addCommand: () => {},
     focus: () => {},
     layout: () => {},
