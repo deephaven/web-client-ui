@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/redux",
-  "version": "0.11.0",
+  "version": "0.11.1",
   "description": "Deephaven Redux",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
@@ -32,9 +32,9 @@
   "devDependencies": {
     "@babel/cli": "^7.16.0",
     "@deephaven/components": "^0.11.0",
-    "@deephaven/console": "^0.11.0",
-    "@deephaven/file-explorer": "^0.11.0",
-    "@deephaven/iris-grid": "^0.11.0",
+    "@deephaven/console": "^0.11.1",
+    "@deephaven/file-explorer": "^0.11.1",
+    "@deephaven/iris-grid": "^0.11.1",
     "@deephaven/log": "^0.11.0",
     "@deephaven/tsconfig": "^0.11.0",
     "@types/deep-equal": "^1.0.1",
