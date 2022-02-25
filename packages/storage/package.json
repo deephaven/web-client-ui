@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/storage",
-  "version": "0.11.0",
+  "version": "0.11.1",
   "description": "Deephaven Storage abstract classes for storing app data",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
@@ -26,7 +26,7 @@
     "start": "cross-env NODE_ENV=development npm run watch"
   },
   "dependencies": {
-    "@deephaven/iris-grid": "^0.11.0",
+    "@deephaven/iris-grid": "^0.11.1",
     "lodash.throttle": "^4.1.1"
   },
   "peerDependencies": {
