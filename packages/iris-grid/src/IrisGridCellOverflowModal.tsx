@@ -5,7 +5,6 @@ import * as monaco from 'monaco-editor';
 import { Button } from '@deephaven/components';
 import { vsJson, vsListOrdered } from '@deephaven/icons';
 import './IrisGridCellOverflowModal.scss';
-import classNames from 'classnames';
 
 interface IrisGridCellOverflowModalProps {
   text: string;
@@ -21,7 +20,14 @@ export default function IrisGridCellOverflowModal({
   const [height, setHeight] = useState(250);
   const [showLineNumbers, setShowLineNumbers] = useState(false);
   const [isFormatted, setIsFormatted] = useState(false);
-  const [isFormatError, setIsFormatError] = useState(false);
+  const [canFormat] = useState(() => {
+    try {
+      JSON.parse(text);
+      return true;
+    } catch {
+      return false;
+    }
+  });
   const editorRef = useRef<monaco.editor.IStandaloneCodeEditor>();
 
   useEffect(() => {
@@ -44,23 +50,18 @@ export default function IrisGridCellOverflowModal({
 
   function formatAsJSON() {
     const model = editorRef.current?.getModel();
-    if (!model) {
+    if (!canFormat || !model) {
       return;
     }
 
     if (!isFormatted) {
-      try {
-        model.setValue(JSON.stringify(JSON.parse(text), undefined, 2));
-        setIsFormatted(true);
-        updateLayout();
-      } catch {
-        setIsFormatError(true);
-      }
+      model.setValue(JSON.stringify(JSON.parse(text), undefined, 2));
+      setIsFormatted(true);
     } else {
       model.setValue(text);
       setIsFormatted(false);
-      updateLayout();
     }
+    updateLayout();
   }
 
   function updateLayout() {
@@ -97,17 +98,15 @@ export default function IrisGridCellOverflowModal({
           tooltip="Toggle line numbers"
           onClick={toggleLineNumbers}
         />
-        <Button
-          kind="inline"
-          icon={vsJson}
-          active={isFormatted}
-          disabled={isFormatError}
-          tooltip={
-            isFormatError ? 'Unable to format as JSON' : 'Format as JSON'
-          }
-          className={classNames({ 'format-btn-error': isFormatError })}
-          onClick={formatAsJSON}
-        />
+        {canFormat && (
+          <Button
+            kind="inline"
+            icon={vsJson}
+            active={isFormatted}
+            tooltip="Format as JSON"
+            onClick={formatAsJSON}
+          />
+        )}
       </ModalHeader>
       <ModalBody style={{ height }}>
         <Editor
@@ -122,7 +121,9 @@ export default function IrisGridCellOverflowModal({
             value: text,
             readOnly: true,
             wordWrap: 'on',
-            language: 'json',
+            language: canFormat ? 'typescript' : 'plaintext', // Loading json language w/o the monaco workers causes UI freezes and monaco errors. TS colorizes the same
+            folding: canFormat,
+            padding: { bottom: 16 },
             lineNumbers: showLineNumbers ? 'on' : 'off',
             overviewRulerLanes: 0,
             renderLineHighlight: 'none',

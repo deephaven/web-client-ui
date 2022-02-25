@@ -9,11 +9,8 @@
     gap: 0.5rem;
 
     .overflow-modal-title {
+      margin: 0;
       flex-grow: 1;
-    }
-
-    .format-btn-error {
-      border-color: $danger;
     }
   }
 
