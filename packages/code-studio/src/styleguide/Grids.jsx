@@ -2,6 +2,7 @@ import React, { PureComponent } from 'react';
 import { Grid, MockGridModel, MockTreeGridModel } from '@deephaven/grid';
 import IrisGrid from '@deephaven/iris-grid/dist/IrisGrid';
 import MockIrisGridTreeModel from './MockIrisGridTreeModel';
+import GridExample from './GridExample';
 
 class Grids extends PureComponent {
   constructor(props) {
@@ -24,6 +25,10 @@ class Grids extends PureComponent {
         <h2 className="ui-title">Grid</h2>
         <div style={{ height: 500 }}>
           <Grid model={model} theme={theme} />
+        </div>
+        <h2 className="ui-title">Static Data</h2>
+        <div style={{ height: 200 }}>
+          <GridExample />
         </div>
         <h2 className="ui-title">Tree Grid</h2>
         <div style={{ height: 500 }}>
