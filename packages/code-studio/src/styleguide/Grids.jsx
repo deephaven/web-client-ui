@@ -2,7 +2,10 @@ import React, { PureComponent } from 'react';
 import { Grid, MockGridModel, MockTreeGridModel } from '@deephaven/grid';
 import IrisGrid from '@deephaven/iris-grid/dist/IrisGrid';
 import MockIrisGridTreeModel from './MockIrisGridTreeModel';
-import GridExample from './GridExample';
+import StaticExample from './grid-examples/StaticExample';
+import QuadrillionExample from './grid-examples/QuadrillionExample';
+import TreeExample from './grid-examples/TreeExample';
+import AsyncExample from './grid-examples/AsyncExample';
 
 class Grids extends PureComponent {
   constructor(props) {
@@ -12,13 +15,11 @@ class Grids extends PureComponent {
       irisGridModel: new MockIrisGridTreeModel(new MockTreeGridModel()),
       model: new MockGridModel(),
       theme: { autoSelectRow: true },
-      treeModel: new MockTreeGridModel(),
-      treeTheme: { autoSelectRow: true },
     };
   }
 
   render() {
-    const { irisGridModel, model, theme, treeModel, treeTheme } = this.state;
+    const { irisGridModel, model, theme } = this.state;
 
     return (
       <div>
@@ -28,11 +29,19 @@ class Grids extends PureComponent {
         </div>
         <h2 className="ui-title">Static Data</h2>
         <div style={{ height: 200 }}>
-          <GridExample />
+          <StaticExample />
+        </div>
+        <h2 className="ui-title">Quadrillion rows and columns</h2>
+        <div style={{ height: 500, position: 'relative' }}>
+          <QuadrillionExample />
+        </div>
+        <h2 className="ui-title">Async example</h2>
+        <div style={{ height: 500, position: 'relative' }}>
+          <AsyncExample />
         </div>
         <h2 className="ui-title">Tree Grid</h2>
         <div style={{ height: 500 }}>
-          <Grid model={treeModel} theme={treeTheme} />
+          <TreeExample />
         </div>
         <h2 className="ui-title">Iris Grid</h2>
         <div style={{ height: 500 }}>
