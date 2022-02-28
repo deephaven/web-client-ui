@@ -31,3 +31,11 @@ $panel-message-overlay-top: 30px;
 .grid-cursor-linker {
   cursor: crosshair;
 }
+
+.tab-tooltip-container {
+  .column-statistics-grid {
+    border-top: 1px solid $gray-500;
+    margin: 5px -15px 0;
+    font-weight: 300;
+  }
+}

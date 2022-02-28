@@ -54,8 +54,18 @@ class WidgetPanel extends PureComponent {
     return null;
   }
 
-  getCachedRenderTabTooltip = memoize(showTabTooltip =>
-    showTabTooltip ? () => WidgetPanelTooltip(this.props) : null
+  getCachedRenderTabTooltip = memoize(
+    (showTabTooltip, glContainer, widgetType, widgetName, description) =>
+      showTabTooltip
+        ? () => (
+            <WidgetPanelTooltip
+              glContainer={glContainer}
+              widgetType={widgetType}
+              widgetName={widgetName}
+              description={description}
+            />
+          )
+        : null
   );
 
   handleSessionClosed(...args) {
@@ -86,6 +96,10 @@ class WidgetPanel extends PureComponent {
       isClonable,
       isRenamable,
       showTabTooltip,
+      renderTabTooltip,
+      widgetType,
+      widgetName,
+      description,
 
       onClearAllFilters,
       onHide,
@@ -103,7 +117,15 @@ class WidgetPanel extends PureComponent {
       isPanelInactive,
     } = this.state;
     const errorMessage = this.getErrorMessage();
-    const renderTabTooltip = this.getCachedRenderTabTooltip(showTabTooltip);
+    const doRenderTabTooltip =
+      renderTabTooltip ??
+      this.getCachedRenderTabTooltip(
+        showTabTooltip,
+        glContainer,
+        widgetType,
+        widgetName,
+        description
+      );
 
     return (
       <Panel
@@ -125,7 +147,7 @@ class WidgetPanel extends PureComponent {
         onSessionOpen={this.handleSessionOpened}
         onTabBlur={onTabBlur}
         onTabFocus={onTabFocus}
-        renderTabTooltip={renderTabTooltip}
+        renderTabTooltip={doRenderTabTooltip}
         errorMessage={errorMessage}
         isLoaded={isLoaded}
         isLoading={isLoading}
@@ -156,6 +178,8 @@ WidgetPanel.propTypes = {
   showTabTooltip: PropTypes.bool,
   widgetName: PropTypes.string,
   widgetType: PropTypes.string,
+  renderTabTooltip: PropTypes.func,
+  description: PropTypes.string,
 
   onFocus: PropTypes.func,
   onBlur: PropTypes.func,
@@ -180,6 +204,8 @@ WidgetPanel.defaultProps = {
   showTabTooltip: true,
   widgetName: 'Widget',
   widgetType: 'Widget',
+  renderTabTooltip: null,
+  description: '',
 
   onFocus: () => {},
   onBlur: () => {},
