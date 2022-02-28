@@ -1,0 +1,80 @@
+{
+  "name": "@deephaven/js-plugin-table-example",
+  "version": "0.1.4",
+  "description": "Deephaven JS Plugin Table Example",
+  "keywords": [
+    "Deephaven",
+    "plugin",
+    "deephaven-js-plugin"
+  ],
+  "author": "Deephaven Data Labs LLC",
+  "license": "Apache-2.0",
+  "main": "dist/index.js",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "npm run clean && webpack",
+    "clean": "rimraf dist/*",
+    "lint": "eslint './src/**/*.{js,jsx,ts,tsx}' --quiet",
+    "start": "webpack watch",
+    "test": "jest --coverage --watchAll --config=configs/jest.json"
+  },
+  "dependencies": {
+    "react-json-view": "^1.21.3"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.16.7",
+    "@babel/core": "^7.16.7",
+    "@babel/plugin-proposal-class-properties": "^7.16.7",
+    "@babel/preset-env": "^7.16.7",
+    "@babel/preset-react": "^7.16.7",
+    "@babel/preset-typescript": "^7.16.7",
+    "@deephaven/eslint-config": "^0.11.0",
+    "@deephaven/jsapi-shim": "^0.11.0",
+    "@deephaven/prettier-config": "^0.11.0",
+    "@deephaven/stylelint-config": "^0.11.0",
+    "@types/jest": "^27.4.0",
+    "@types/node": "^17.0.7",
+    "@types/react": "^16.14.8",
+    "@typescript-eslint/eslint-plugin": "^4.28.0",
+    "@typescript-eslint/parser": "^5.8.1",
+    "babel-loader": "^8.2.3",
+    "css-loader": "^6.5.1",
+    "eslint": "^7.22.0",
+    "eslint-plugin-es": "^4.1.0",
+    "eslint-plugin-prettier": "^3.3.1",
+    "file-loader": "^6.2.0",
+    "image-webpack-loader": "^8.0.1",
+    "jest": "^27.4.5",
+    "node-sass": "^7.0.1",
+    "postcss": "^8.4.6",
+    "prettier": "^2.2.1",
+    "react": "^17.0.2",
+    "rimraf": "^3.0.2",
+    "sass-loader": "^12.4.0",
+    "style-loader": "^3.3.1",
+    "stylelint": "^14.5.1",
+    "typescript": "^4.5.4",
+    "webpack": "^5.65.0",
+    "webpack-cli": "^4.9.1"
+  },
+  "peerDependencies": {
+    "@deephaven/jsapi-shim": "^0.11.0",
+    "react": "^17.0.2"
+  },
+  "prettier": "@deephaven/prettier-config",
+  "stylelint": {
+    "ignoreFiles": [
+      "node_modules",
+      "*.*",
+      "!*.scss"
+    ],
+    "extends": [
+      "@deephaven/stylelint-config"
+    ]
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

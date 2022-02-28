@@ -1,0 +1,20 @@
+@import '~@deephaven/components/scss/custom_webpack.scss';
+
+.object-panel-content {
+  height: 100%;
+  width: 100%;
+  overflow: auto;
+  padding: $spacer-2;
+
+  .react-json-view {
+    background-color: transparent !important;
+  }
+
+  .object-panel-data {
+    overflow-wrap: break-word;
+
+    .error-message {
+      color: $danger;
+    }
+  }
+}

@@ -1,0 +1,12 @@
+@import "~@deephaven/components/scss/custom_webpack.scss";
+
+.mat-plot-lib-panel {
+  height: 100%;
+  width: 100%;
+
+  img {
+    height: 100%;
+    width: 100%;
+    object-fit: contain;
+  }
+}
