@@ -4,7 +4,7 @@ import { GLPropTypes, LayoutUtils } from '@deephaven/dashboard';
 import './WidgetPanelTooltip.scss';
 
 const WidgetPanelTooltip = props => {
-  const { widgetType, widgetName, glContainer, description } = props;
+  const { widgetType, widgetName, glContainer, description, children } = props;
   const panelTitle = LayoutUtils.getTitleFromContainer(glContainer);
 
   return (
@@ -28,6 +28,7 @@ const WidgetPanelTooltip = props => {
           <span className="tab-tooltip-description">{description}</span>
         </div>
       )}
+      {children}
     </div>
   );
 };
@@ -37,12 +38,14 @@ WidgetPanelTooltip.propTypes = {
   widgetType: PropTypes.string,
   widgetName: PropTypes.string,
   description: PropTypes.string,
+  children: PropTypes.node,
 };
 
 WidgetPanelTooltip.defaultProps = {
   widgetType: '',
   widgetName: '',
   description: null,
+  children: null,
 };
 
 export default WidgetPanelTooltip;
