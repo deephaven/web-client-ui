@@ -7,7 +7,8 @@
   "type": "module",
   "repository": {
     "type": "git",
-    "url": "https://github.com/deephaven/web-client-ui"
+    "url": "https://github.com/deephaven/web-client-ui.git",
+    "directory": "packages/storage"
   },
   "source": "src/index.js",
   "main": "dist/index.js",

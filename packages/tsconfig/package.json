@@ -2,7 +2,11 @@
   "name": "@deephaven/tsconfig",
   "version": "0.11.0",
   "description": "Deephaven TypeScript configuration",
-  "repository": "https://github.com/deephaven/web-client-ui",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/deephaven/web-client-ui.git",
+    "directory": "packages/tsconfig"
+  },
   "license": "Apache-2.0",
   "main": "tsconfig.json",
   "publishConfig": {

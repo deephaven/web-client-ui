@@ -45,7 +45,8 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/deephaven/web-client-ui"
+    "url": "https://github.com/deephaven/web-client-ui.git",
+    "directory": "packages/golden-layout"
   },
   "keywords": [
     "layout manager",
