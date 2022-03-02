@@ -33,8 +33,8 @@ interface IrisGridModelUpdaterProps {
   formatColumns: CustomColumn[];
   alwaysFetchColumns: string[];
   formatter: Formatter;
-  rollupConfig?: RollupConfig;
-  totalsConfig?: TotalsTableConfig;
+  rollupConfig?: RollupConfig | null;
+  totalsConfig?: TotalsTableConfig | null;
   selectDistinctColumns?: string[];
   pendingRowCount?: number;
   pendingDataMap?: Map<number, Map<string, unknown>>;
@@ -59,8 +59,8 @@ const IrisGridModelUpdater = React.memo(
     movedColumns,
     hiddenColumns,
     alwaysFetchColumns,
-    rollupConfig,
-    totalsConfig,
+    rollupConfig = null,
+    totalsConfig = null,
     selectDistinctColumns = [],
     pendingRowCount = 0,
     pendingDataMap = new Map(),
@@ -115,7 +115,7 @@ const IrisGridModelUpdater = React.memo(
       model.setViewport(top, bottom, columns);
     }, [model, top, bottom, columns]);
     useEffect(() => {
-      if (model.isRollupAvailable && rollupConfig) {
+      if (model.isRollupAvailable) {
         model.rollupConfig = rollupConfig;
       }
     }, [model, model.isRollupAvailable, rollupConfig]);
@@ -125,7 +125,7 @@ const IrisGridModelUpdater = React.memo(
       }
     }, [model, selectDistinctColumns]);
     useEffect(() => {
-      if (model.isTotalsAvailable && totalsConfig) {
+      if (model.isTotalsAvailable) {
         model.totalsConfig = totalsConfig;
       }
     }, [model, model.isTotalsAvailable, totalsConfig]);
