@@ -229,16 +229,16 @@ abstract class IrisGridModel<
   /**
    * @returns The config to use for rolling up this table
    */
-  abstract get rollupConfig(): RollupConfig;
+  abstract get rollupConfig(): RollupConfig | null;
 
-  abstract set rollupConfig(rollupConfig: RollupConfig);
+  abstract set rollupConfig(rollupConfig: RollupConfig | null);
 
   /**
    * @returns The config to use for the totals table of this model
    */
-  abstract get totalsConfig(): TotalsTableConfig;
+  abstract get totalsConfig(): TotalsTableConfig | null;
 
-  abstract set totalsConfig(totalsConfig: TotalsTableConfig);
+  abstract set totalsConfig(totalsConfig: TotalsTableConfig | null);
 
   /**
    * @returns The LayoutHints to use for the columns of this table model
