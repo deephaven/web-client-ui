@@ -1,4 +1,9 @@
-import { ItemList, Range, RenderItemProps } from '@deephaven/components';
+import {
+  ItemList,
+  Range,
+  RenderItemProps,
+  Tooltip,
+} from '@deephaven/components';
 import { dhPython, vsCode, vsFolder, vsFolderOpened } from '@deephaven/icons';
 import Log from '@deephaven/log';
 import { RangeUtils } from '@deephaven/utils';
@@ -137,7 +142,17 @@ export const renderFileListItem = (
     >
       {depthLines}{' '}
       <FontAwesomeIcon icon={icon} className="item-icon" fixedWidth />{' '}
-      {children ?? item.basename}
+      <span className="truncation-wrapper">
+        {children ?? item.basename}
+        <Tooltip
+          options={{
+            modifiers: { preventOverflow: { boundariesElement: 'window' } },
+            placement: 'left',
+          }}
+        >
+          {children ?? item.basename}
+        </Tooltip>
+      </span>
     </div>
   );
 };

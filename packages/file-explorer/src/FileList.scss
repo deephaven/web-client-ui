@@ -55,6 +55,12 @@ $item-list-drop-target-color: $white;
     }
   }
 
+  .truncation-wrapper {
+    overflow-x: hidden;
+    text-overflow: ellipsis;
+    white-space: pre;
+  }
+
   .item-icon {
     margin-right: $spacer-1;
   }
