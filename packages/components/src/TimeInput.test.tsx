@@ -159,6 +159,9 @@ describe('select and type', () => {
     testSelectAndType(1, '0', '02:34:56');
     testSelectAndType(1, '00', '00:34:56');
 
+    testSelectAndType(0, '3', '03:34:56');
+    testSelectAndType(1, '3', '03:34:56');
+
     testSelectAndType(4, '5', '12:54:56');
     testSelectAndType(4, '55', '12:55:56');
 
