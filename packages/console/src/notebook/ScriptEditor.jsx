@@ -88,7 +88,11 @@ class ScriptEditor extends Component {
   getSelectedCommand() {
     const range = this.editor.getSelection();
     const model = this.editor.getModel();
-    const { startLineNumber, endLineNumber } = range;
+    const { startLineNumber, endColumn } = range;
+    let { endLineNumber } = range;
+    if (endColumn === 1 && endLineNumber > startLineNumber) {
+      endLineNumber -= 1;
+    }
     const startLineMinColumn = model.getLineMinColumn(startLineNumber);
     const endLineMaxColumn = model.getLineMaxColumn(endLineNumber);
     const wholeLineRange = range
