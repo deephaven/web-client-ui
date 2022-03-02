@@ -1151,26 +1151,8 @@ class IrisGridTableModel extends IrisGridModel {
     return this.table.isUncoalesced;
   }
 
-  get hasExpandableRows() {
-    return false;
-  }
-
   isFilterable(columnIndex) {
     return this.getCachedFilterableColumnSet(this.columns).has(columnIndex);
-  }
-
-  isRowExpanded(y) {
-    const row = this.row(y);
-    return row?.isExpanded ?? false;
-  }
-
-  setRowExpanded(y, isExpanded) {
-    this.table.setExpanded(y, isExpanded);
-  }
-
-  depthForRow(y) {
-    const row = this.row(y);
-    return (row?.depth ?? 1) - 1;
   }
 
   async valuesTable(column) {
