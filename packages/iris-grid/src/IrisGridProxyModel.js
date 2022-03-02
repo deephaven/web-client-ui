@@ -61,9 +61,6 @@ class IrisGridProxyModel extends IrisGridModel {
     log.debug('setModel', model);
 
     const oldModel = this.model;
-    if (this.listenerCount > 0) {
-      this.removeListeners(oldModel);
-    }
 
     if (oldModel !== this.originalModel) {
       oldModel.close();
@@ -95,6 +92,10 @@ class IrisGridProxyModel extends IrisGridModel {
       this.modelPromise.cancel();
     }
 
+    if (this.listenerCount > 0) {
+      this.removeListeners(this.model);
+    }
+
     this.modelPromise = PromiseUtils.makeCancelable(modelPromise, model =>
       model.close()
     );
@@ -105,6 +106,7 @@ class IrisGridProxyModel extends IrisGridModel {
       })
       .catch(err => {
         if (PromiseUtils.isCanceled(err)) {
+          log.debug2('setNextModel cancelled');
           return;
         }
 
