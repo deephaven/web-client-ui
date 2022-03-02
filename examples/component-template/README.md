@@ -1,6 +1,6 @@
 # @deephaven/component-template
 
-This is an example which is setup to build components using Typescript, React, and Sass with Jest for testing and Storybook for isolated component development. Plain Javascript is also allowed, but for new components Typescript is preferred.
+This is an example which is setup to build components using Typescript, React, and Sass with Jest for testing. Plain Javascript is also allowed, but for new components Typescript is preferred.
 
 ## Usage
 
@@ -29,7 +29,7 @@ The build step will transpile TS to JS (using Babel), compile Sass to CSS (using
 
 All JS/TS/JSX/TSX files you want in the output MUST be in `./src` since it is set as the `rootDir` in `tsconfig.json`
 
-If you need another type of file copied, you will need to add it to the build process (Babel can be used with `--copy-files --no-copy-ignored` which should work since it ignores all the test/sass/storybook files)
+If you need another type of file copied, you will need to add it to the build process (Babel can be used with `--copy-files --no-copy-ignored` which should work since it ignores all the test/sass files)
 
 If for some reason you need to build somewhere that isn't `dist`, you must update `tsconfig.json` and `package.json` to replace everywhere that `dist` is used with whatever you decide to build with.
 
@@ -48,12 +48,6 @@ Tests are run from the monorepo root. If any Jest configs need to be changed, mo
 ESLint, Prettier, and Stylelint configs are all set at the root level of the web folder in the monorepo. If you need to override some rules or add additional rules, add them to their proper config file or `package.json` to cascade with the existing rules. See more for [ESLint](https://eslint.org/docs/user-guide/configuring/configuration-files#cascading-and-hierarchy), [Prettier](https://prettier.io/docs/en/configuration.html), and [Stylelint](https://stylelint.io/user-guide/configure)
 
 You can add an `.eslintignore` file if needed.
-
-## Storybook
-
-You can use [Storybook](https://storybook.js.org/) to isolate your component for development. Just use `npm run storybook` to start a Storybook server for this component.
-
-Storybook is setup with a default config in this template. Any `.stories.(jsx?|tsx?|mdx)` file should be picked up by Storybook and ignored by the build process.
 
 ## Best Practices
 

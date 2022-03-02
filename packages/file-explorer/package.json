@@ -27,9 +27,7 @@
     "watch:babel": "npm run babel -- -w --skip-initial-build",
     "watch:sass": "npm run sass -- --watch --update",
     "prestart": "npm run build-dev",
-    "start": "cross-env NODE_ENV=development npm run watch",
-    "storybook": "start-storybook -p 6006",
-    "build-storybook": "build-storybook"
+    "start": "cross-env NODE_ENV=development npm run watch"
   },
   "dependencies": {
     "@deephaven/icons": "^0.11.0",
@@ -53,10 +51,6 @@
     "@deephaven/components": "^0.11.0",
     "@deephaven/log": "^0.11.0",
     "@deephaven/tsconfig": "^0.11.0",
-    "@storybook/addon-actions": "^6.2.3",
-    "@storybook/addon-essentials": "^6.2.3",
-    "@storybook/addon-links": "^6.2.3",
-    "@storybook/react": "^6.2.3",
     "@types/react": "^17.0.2",
     "cross-env": "^7.0.2",
     "follow-redirects": ">=1.14.7",
