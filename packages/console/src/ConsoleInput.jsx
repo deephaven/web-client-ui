@@ -420,10 +420,10 @@ export class ConsoleInput extends PureComponent {
   }
 
   render() {
-    const { language, session } = this.props;
+    const { disabled, language, session } = this.props;
     const { commandEditorHeight, isFocused, model } = this.state;
     return (
-      <div className="console-input-wrapper">
+      <div className={classNames('console-input-wrapper', { disabled })}>
         <div
           className={classNames('console-input-inner-wrapper', {
             focus: isFocused,
@@ -454,11 +454,13 @@ ConsoleInput.propTypes = {
   commandHistoryStorage: StoragePropTypes.CommandHistoryStorage.isRequired,
   onSubmit: PropTypes.func.isRequired,
   maxHeight: PropTypes.number,
+  disabled: PropTypes.bool,
 };
 
 ConsoleInput.defaultProps = {
   maxHeight: LINE_HEIGHT * 10,
   scope: null,
+  disabled: false,
 };
 
 export default ConsoleInput;

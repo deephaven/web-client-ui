@@ -141,13 +141,6 @@ export class Console extends PureComponent {
     const { props, state } = this;
     this.sendSettingsChange(prevState, state);
 
-    if (
-      props.disconnectedChildren != null &&
-      prevProps.disconnectedChildren == null
-    ) {
-      this.disconnect();
-    }
-
     if (props.objectMap !== prevProps.objectMap) {
       this.updateObjectMap();
     }
@@ -177,27 +170,6 @@ export class Console extends PureComponent {
       this.cancelListener();
       this.cancelListener = null;
     }
-  }
-
-  disconnect() {
-    this.setState(({ consoleHistory }) => ({
-      // Reset any pending commands with an empty result, disable all tables/widgets
-      consoleHistory: consoleHistory.map(item => {
-        if (item.result == null) {
-          return { ...item, endTime: Date.now(), result: {} };
-        }
-        const { result } = item;
-        if (result.changes) {
-          const disabledItems = []
-            .concat(result.changes.created)
-            .concat(result.changes.updated);
-          return { ...item, disabledItems };
-        }
-        return item;
-      }),
-      objectHistoryMap: new Map(),
-      objectMap: new Map(),
-    }));
   }
 
   handleClearShortcut(event) {
@@ -866,11 +838,12 @@ export class Console extends PureComponent {
                 items={consoleHistory}
                 openObject={openObject}
                 language={language}
+                disabled={isDisconnected}
               />
               {isDisconnected && disconnectedChildren}
             </div>
           </div>
-          {!isDisconnected && !showCsvOverlay && (
+          {!showCsvOverlay && (
             <ConsoleInput
               ref={this.consoleInput}
               session={session}
@@ -879,6 +852,7 @@ export class Console extends PureComponent {
               onSubmit={this.handleCommandSubmit}
               maxHeight={inputMaxHeight}
               commandHistoryStorage={commandHistoryStorage}
+              disabled={isDisconnected}
             />
           )}
           {!isDisconnected && showCsvOverlay && (

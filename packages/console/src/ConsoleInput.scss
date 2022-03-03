@@ -38,6 +38,10 @@ $console-input-margin-color: $foreground;
     color: $console-input-margin-color;
   }
 
+  &.disabled {
+    visibility: hidden;
+  }
+
   .console-input-inner-wrapper {
     min-width: 0;
     flex-grow: 1;

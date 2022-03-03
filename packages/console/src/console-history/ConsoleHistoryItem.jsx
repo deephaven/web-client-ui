@@ -38,7 +38,7 @@ class ConsoleHistoryItem extends PureComponent {
   }
 
   render() {
-    const { item, language } = this.props;
+    const { disabled, item, language } = this.props;
     const { disabledObjects, result } = item;
 
     let commandElement = null;
@@ -63,13 +63,14 @@ class ConsoleHistoryItem extends PureComponent {
         [...created, ...updated].forEach(object => {
           const { name } = object;
           const key = `${name}`;
-          const disabled = (disabledObjects ?? []).indexOf(name) >= 0;
+          const btnDisabled =
+            disabled || (disabledObjects ?? []).indexOf(name) >= 0;
           const element = (
             <ButtonOld
               key={key}
               onClick={() => this.handleObjectClick(object)}
-              className="btn-primary btn-console"
-              disabled={disabled}
+              className="btn-primary btn-console btn-console-object"
+              disabled={btnDisabled}
             >
               <ObjectIcon type={object.type} /> {name}
             </ButtonOld>
@@ -106,6 +107,7 @@ class ConsoleHistoryItem extends PureComponent {
         <ConsoleHistoryResultInProgress
           key="in_progress"
           onCancelClick={this.handleCancelClick}
+          disabled={disabled}
         />
       );
       resultElements.push(element);
@@ -145,6 +147,11 @@ ConsoleHistoryItem.propTypes = {
   }).isRequired,
   language: PropTypes.string.isRequired,
   openObject: PropTypes.func.isRequired,
+  disabled: PropTypes.bool,
+};
+
+ConsoleHistoryItem.defaultProps = {
+  disabled: false,
 };
 
 export default ConsoleHistoryItem;
