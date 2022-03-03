@@ -2,20 +2,10 @@
   "extends": "../../tsconfig.json",
   "compilerOptions": {
     "rootDir": "src/",
-    "outDir": "dist/",
+    "outDir": "dist/"
   },
-  "include": [
-    "src/**/*.ts",
-    "src/**/*.tsx",
-    "src/**/*.js",
-    "src/**/*.jsx",
-  ],
-  "exclude": [
-    "node_modules",
-    "src/**/*.test.*",
-    "src/**/*.stories.*",
-    "src/**/__mocks__/*"
-  ],
+  "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.js", "src/**/*.jsx"],
+  "exclude": ["node_modules", "src/**/*.test.*", "src/**/__mocks__/*"],
   "references": [
     {
       "path": "../iris-grid"
