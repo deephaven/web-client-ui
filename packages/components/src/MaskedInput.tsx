@@ -18,6 +18,18 @@ const SELECTION_DIRECTION = {
  */
 const FIXED_WIDTH_SPACE = '\u2007';
 
+export function DEFAULT_GET_PREFERRED_REPLACEMENT_STRING(
+  value: string,
+  replaceIndex: number,
+  newChar: string
+): string {
+  return (
+    value.substring(0, replaceIndex) +
+    newChar +
+    value.substring(replaceIndex + 1)
+  );
+}
+
 export type SelectionSegment = {
   selectionStart: number;
   selectionEnd: number;
@@ -46,6 +58,13 @@ type MaskedInputProps = {
     segmentValue: string,
     value: string
   ): string;
+  getPreferredReplacementString?(
+    value: string,
+    replaceIndex: number,
+    replaceChar: string,
+    selectionStart: number,
+    selectionEnd: number
+  ): string;
   onFocus?: React.FocusEventHandler;
   onBlur?: React.FocusEventHandler;
 };
@@ -63,6 +82,7 @@ const MaskedInput = React.forwardRef<HTMLInputElement, MaskedInputProps>(
       className,
       example,
       getNextSegmentValue = (range, delta, segmentValue) => segmentValue,
+      getPreferredReplacementString = DEFAULT_GET_PREFERRED_REPLACEMENT_STRING,
       onChange = () => false,
       onSelect = () => false,
       pattern,
@@ -414,10 +434,13 @@ const MaskedInput = React.forwardRef<HTMLInputElement, MaskedInputProps>(
           replaceIndex <= maxReplaceIndex;
           replaceIndex += 1
         ) {
-          const newValue =
-            value.substring(0, replaceIndex) +
-            newChar +
-            value.substring(replaceIndex + 1);
+          const newValue = getPreferredReplacementString(
+            value,
+            replaceIndex,
+            newChar,
+            selectionStart,
+            selectionEnd
+          );
           if (isValid(newValue, replaceIndex + 1)) {
             const currentSegment = getSegment(replaceIndex);
             const newSelectionStart = replaceIndex + 1;
@@ -472,6 +495,7 @@ MaskedInput.defaultProps = {
     // no-op
   },
   getNextSegmentValue: (range, delta, segmentValue) => segmentValue,
+  getPreferredReplacementString: DEFAULT_GET_PREFERRED_REPLACEMENT_STRING,
   selection: undefined,
   onFocus(): void {
     // no-op

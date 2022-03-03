@@ -1,7 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import Log from '@deephaven/log';
 import { TimeUtils } from '@deephaven/utils';
-import MaskedInput, { SelectionSegment } from './MaskedInput';
+import MaskedInput, {
+  DEFAULT_GET_PREFERRED_REPLACEMENT_STRING,
+  SelectionSegment,
+} from './MaskedInput';
 
 const log = Log.module('TimeInput');
 
@@ -55,6 +58,29 @@ const TimeInput = React.forwardRef<HTMLInputElement, TimeInputProps>(
       return `${newSegmentValue}`.padStart(2, '0');
     }
 
+    function getPreferredReplacementString(
+      replaceValue: string,
+      replaceIndex: number,
+      newChar: string,
+      selectionStart: number,
+      selectionEnd: number
+    ) {
+      if (
+        selectionStart === 0 &&
+        selectionEnd === 2 &&
+        replaceIndex === 1 &&
+        parseInt(newChar, 10) > 1
+      ) {
+        // DH-10082 Special case for when typing `3` when it's already 12
+        return `0${newChar}${replaceValue.substring(2)}`;
+      }
+      return DEFAULT_GET_PREFERRED_REPLACEMENT_STRING(
+        replaceValue,
+        replaceIndex,
+        newChar
+      );
+    }
+
     function handleChange(newValue: string): void {
       log.debug('handleChange', newValue);
       setValue(newValue);
@@ -75,6 +101,7 @@ const TimeInput = React.forwardRef<HTMLInputElement, TimeInputProps>(
         className={className}
         example={EXAMPLES}
         getNextSegmentValue={getNextSegmentValue}
+        getPreferredReplacementString={getPreferredReplacementString}
         onChange={handleChange}
         onSelect={handleSelect}
         pattern={TIME_PATTERN}
