@@ -141,13 +141,6 @@ export class Console extends PureComponent {
     const { props, state } = this;
     this.sendSettingsChange(prevState, state);
 
-    if (
-      props.disconnectedChildren != null &&
-      prevProps.disconnectedChildren == null
-    ) {
-      this.disconnect();
-    }
-
     if (props.objectMap !== prevProps.objectMap) {
       this.updateObjectMap();
     }
@@ -177,27 +170,6 @@ export class Console extends PureComponent {
       this.cancelListener();
       this.cancelListener = null;
     }
-  }
-
-  disconnect() {
-    this.setState(({ consoleHistory }) => ({
-      // Reset any pending commands with an empty result, disable all tables/widgets
-      consoleHistory: consoleHistory.map(item => {
-        if (item.result == null) {
-          return { ...item, endTime: Date.now(), result: {} };
-        }
-        const { result } = item;
-        if (result.changes) {
-          const disabledItems = []
-            .concat(result.changes.created)
-            .concat(result.changes.updated);
-          return { ...item, disabledItems };
-        }
-        return item;
-      }),
-      objectHistoryMap: new Map(),
-      objectMap: new Map(),
-    }));
   }
 
   handleClearShortcut(event) {
@@ -797,7 +769,7 @@ export class Console extends PureComponent {
   render() {
     const {
       actions,
-      disconnectedChildren,
+      historyChildren,
       language,
       statusBarChildren,
       openObject,
@@ -805,6 +777,7 @@ export class Console extends PureComponent {
       scope,
       commandHistoryStorage,
       timeZone,
+      disabled,
     } = this.props;
     const {
       consoleHeight,
@@ -819,15 +792,12 @@ export class Console extends PureComponent {
     } = this.state;
     const consoleMenuObjects = this.getObjects(objectMap);
     const inputMaxHeight = Math.round(consoleHeight * 0.7);
-    const isDisconnected = disconnectedChildren != null;
     const contextActions = this.getContextActions(actions);
 
     return (
       <div
         role="presentation"
-        className={classNames('iris-console h-100 w-100', {
-          disconnected: isDisconnected,
-        })}
+        className={classNames('iris-console', 'h-100', 'w-100', { disabled })}
       >
         <div className="console-pane" ref={this.consolePane}>
           <ConsoleStatusBar
@@ -844,7 +814,7 @@ export class Console extends PureComponent {
             onDragEnter={this.handleDragEnter}
             onDragLeave={this.handleDragLeave}
           >
-            {!isDisconnected && showCsvOverlay && (
+            {showCsvOverlay && (
               <CsvOverlay
                 onFileOpened={this.handleCsvFileOpened}
                 onPaste={this.handleCsvPaste}
@@ -867,10 +837,10 @@ export class Console extends PureComponent {
                 openObject={openObject}
                 language={language}
               />
-              {isDisconnected && disconnectedChildren}
+              {historyChildren}
             </div>
           </div>
-          {!isDisconnected && !showCsvOverlay && (
+          {!showCsvOverlay && (
             <ConsoleInput
               ref={this.consoleInput}
               session={session}
@@ -881,7 +851,7 @@ export class Console extends PureComponent {
               commandHistoryStorage={commandHistoryStorage}
             />
           )}
-          {!isDisconnected && showCsvOverlay && (
+          {showCsvOverlay && (
             <CsvInputBar
               session={session}
               onOpenTable={this.handleOpenCsvTable}
@@ -918,11 +888,13 @@ Console.propTypes = {
   actions: PropTypes.arrayOf(PropTypes.shape({})),
   timeZone: PropTypes.string,
 
-  // Message shown when the session has disconnected. Setting this value removes the input bar and disables old tables
-  disconnectedChildren: PropTypes.node,
+  // Children shown at the bottom of the console history
+  historyChildren: PropTypes.node,
 
   // Known object map
   objectMap: PropTypes.instanceOf(Map),
+
+  disabled: PropTypes.bool,
 };
 
 Console.defaultProps = {
@@ -931,9 +903,10 @@ Console.defaultProps = {
   onSettingsChange: () => {},
   scope: null,
   actions: [],
-  disconnectedChildren: null,
+  historyChildren: null,
   timeZone: 'America/New_York',
   objectMap: new Map(),
+  disabled: false,
 };
 
 export default Console;

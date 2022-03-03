@@ -252,7 +252,7 @@ class CsvInputBar extends Component {
     // A blank table name is invalid for pasted values
     const isNameInvalid = paste && !tableName;
     return (
-      <div>
+      <div className="csv-input-bar">
         {!showProgress && (
           <form
             onSubmit={this.handleUpload}

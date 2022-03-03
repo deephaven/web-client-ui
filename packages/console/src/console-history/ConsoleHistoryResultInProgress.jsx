@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import classNames from 'classnames';
 import PropTypes from 'prop-types';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { LoadingSpinner, Tooltip } from '@deephaven/components';
@@ -42,14 +43,18 @@ class ConsoleHistoryResultInProgress extends Component {
   }
 
   render() {
+    const { disabled, onCancelClick } = this.props;
     const { elapsed } = this.state;
-    const { onCancelClick } = this.props;
     return (
-      <div className="console-history-result-in-progress">
+      <div
+        className={classNames('console-history-result-in-progress', {
+          disabled,
+        })}
+      >
         <span className="badge">
           <LoadingSpinner />
           &nbsp;Running... {TimeUtils.formatElapsedTime(elapsed)}&nbsp;
-          <button type="button" onClick={onCancelClick}>
+          <button type="button" onClick={onCancelClick} disabled={disabled}>
             <FontAwesomeIcon icon={vsClose} />
             <Tooltip>Cancel</Tooltip>
           </button>
@@ -61,6 +66,11 @@ class ConsoleHistoryResultInProgress extends Component {
 
 ConsoleHistoryResultInProgress.propTypes = {
   onCancelClick: PropTypes.func.isRequired,
+  disabled: PropTypes.bool,
+};
+
+ConsoleHistoryResultInProgress.defaultProps = {
+  disabled: false,
 };
 
 export default ConsoleHistoryResultInProgress;
