@@ -2,10 +2,10 @@ import {
   CommandHistoryPanel,
   ConsolePanel,
   FileExplorerPanel,
+  FilterSet,
+  Link,
   LogPanel,
 } from '@deephaven/dashboard-core-plugins';
-import { Link } from '@deephaven/dashboard-core-plugins/dist/linker/LinkerUtils';
-import { FilterSet } from '@deephaven/dashboard-core-plugins/dist/panels/FilterSetManager';
 import { ItemConfigType } from '@deephaven/golden-layout';
 import Log from '@deephaven/log';
 import LayoutStorage, {

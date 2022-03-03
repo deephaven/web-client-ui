@@ -3,6 +3,7 @@ export { default as CommandHistoryPanel } from './CommandHistoryPanel';
 export { default as ConsolePanel } from './ConsolePanel';
 export { default as DropdownFilterPanel } from './DropdownFilterPanel';
 export { default as FileExplorerPanel } from './FileExplorerPanel';
+export { FilterSet, default as FilterSetManager } from './FilterSetManager';
 export { default as FilterSetManagerPanel } from './FilterSetManagerPanel';
 export { default as InputFilterPanel } from './InputFilterPanel';
 export { default as IrisGridPanel } from './IrisGridPanel';

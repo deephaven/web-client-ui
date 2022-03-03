@@ -1,6 +1,5 @@
 import { ItemConfigType } from '@deephaven/golden-layout';
-import { Link } from '@deephaven/dashboard-core-plugins/dist/linker/LinkerUtils';
-import { FilterSet } from '@deephaven/dashboard-core-plugins/dist/panels/FilterSetManager';
+import { FilterSet, Link } from '@deephaven/dashboard-core-plugins';
 
 /**
  * Have a different version to support legacy layout exports
