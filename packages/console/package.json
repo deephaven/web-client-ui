@@ -14,7 +14,7 @@
   "source": "src/index.js",
   "types": "dist/index.d.ts",
   "engines": {
-    "node": ">=10"
+    "node": ">=16"
   },
   "scripts": {
     "build": "cross-env NODE_ENV=production run-p build:*",
