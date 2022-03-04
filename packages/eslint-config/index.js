@@ -63,12 +63,6 @@ module.exports = {
       },
     },
     {
-      files: ['**/*.stories.@(js|jsx|ts|tsx)'],
-      rules: {
-        'react/jsx-props-no-spreading': 'off',
-      },
-    },
-    {
       files: ['**/*.@(ts|tsx)'],
       plugins: ['@typescript-eslint'],
       extends: ['plugin:@typescript-eslint/recommended'],

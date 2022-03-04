@@ -25,9 +25,7 @@
     "watch:babel": "npm run babel -- -w --skip-initial-build",
     "watch:sass": "npm run sass -- --watch --update",
     "prestart": "npm run build-dev",
-    "start": "cross-env NODE_ENV=development npm run watch",
-    "storybook": "start-storybook -p 6006",
-    "build-storybook": "build-storybook"
+    "start": "cross-env NODE_ENV=development npm run watch"
   },
   "dependencies": {
     "prop-types": "^15.7.2"
@@ -39,10 +37,6 @@
   "devDependencies": {
     "@babel/cli": "^7.16.0",
     "@deephaven/tsconfig": "^0.3.1",
-    "@storybook/addon-actions": "^6.2.3",
-    "@storybook/addon-essentials": "^6.2.3",
-    "@storybook/addon-links": "^6.2.3",
-    "@storybook/react": "^6.2.3",
     "@testing-library/react": "^11.2.7",
     "@types/jest": "^26.0.23",
     "@types/react": "^17.0.2",

@@ -77,11 +77,7 @@ When new functions are added to the API, ideally stubs returning a generic succe
 
 ## Styleguide/Component Development
 
-The styleguide uses [Storybook](https://storybook.js.org/) and can be accessed using `npm run storybook`. This runs independently of the dev server. Storybook can be used to develop components in isolation. The styleguide displays many common components and how to use them. When creating a new component, it should be added to the styleguide to show usage using a `component.stories.jsx` file.
-
-### Legacy Style Guide
-
-When running in development mode (`npm run start`), a style guide is served up at http://localhost:4000/styleguide. This is for legacy purposes now while everything is ported over to Storybook. Do NOT add new components to this styleguide, only use it for reference if things are missing in Storybook.
+When running in development mode (`npm run start`), a style guide is served up at http://localhost:4000/styleguide. Styleguide can be used to develop components. The styleguide displays many common components and how to use them. When creating a new component, it should be added to the [styleguide](./src/styleguide/).
 
 ## Architecture
 

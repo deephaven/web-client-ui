@@ -6,7 +6,6 @@ module.exports = api => {
     ignore: [
       !isTest ? /\.test.(tsx?|jsx?)$/ : false,
       !isTest ? '**/__mocks__/*' : false,
-      /\.stories.(tsx?|jsx?|mdx?)$/,
       '**/*.scss',
     ].filter(Boolean),
   };
