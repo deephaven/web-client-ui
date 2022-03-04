@@ -836,6 +836,7 @@ export class Console extends PureComponent {
                 items={consoleHistory}
                 openObject={openObject}
                 language={language}
+                disabled={disabled}
               />
               {historyChildren}
             </div>
