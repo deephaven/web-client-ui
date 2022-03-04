@@ -68,8 +68,8 @@
   ],
   "scripts": {
     "analyze": "source-map-explorer 'build/static/js/*.js'",
-    "start": "react-scripts start",
-    "build-js": "react-scripts build",
+    "start": "react-scripts --max-old-space-size=4096 start",
+    "build-js": "react-scripts --max-old-space-size=4096 build",
     "build": "npm-run-all build-js clean-mocks",
     "clean-mocks": "rm -rf build/__mocks__",
     "eject": "react-scripts eject",
