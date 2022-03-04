@@ -8,9 +8,9 @@ import {
 } from '@deephaven/iris-grid'; // iris-grid is used to display Deephaven tables
 import dh from '@deephaven/jsapi-shim'; // Import the shim to use the JS API
 import Log from '@deephaven/log';
-import './App.scss'; // Styles for in this app
+import './EmbedGridApp.scss'; // Styles for in this app
 
-const log = Log.module('EmbedGrid.App');
+const log = Log.module('EmbedGridApp');
 
 export type Command = 'filter' | 'sort';
 
@@ -46,7 +46,7 @@ async function loadTable(session: typeof dh.Session, name: string) {
  * By default, tries to connect to the server defined in the REACT_APP_CORE_API_URL variable, which is set to http://localhost:1000/jsapi
  * See create-react-app docs for how to update these env vars: https://create-react-app.dev/docs/adding-custom-environment-variables/
  */
-function App(): JSX.Element {
+function EmbedGridApp(): JSX.Element {
   const [model, setModel] = useState<IrisGridModel>();
   const [error, setError] = useState<string>();
   const [inputFilters, setInputFilters] = useState<unknown[]>();
@@ -155,7 +155,7 @@ function App(): JSX.Element {
   const isLoaded = model != null;
 
   return (
-    <div className="App">
+    <div className="EmbedGridApp">
       {isLoaded && (
         <IrisGrid
           canCopy={canCopy}
@@ -177,4 +177,4 @@ function App(): JSX.Element {
   );
 }
 
-export default App;
+export default EmbedGridApp;

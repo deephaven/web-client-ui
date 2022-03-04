@@ -1,7 +1,6 @@
-// Import Deephaven styling so we can use it's variables
-@import '~@deephaven/components/scss/custom_webpack.scss';
+@import '~@deephaven/components/scss/custom.scss';
 
-.App {
+.EmbedGridApp {
   position: absolute;
   top: 0;
   left: 0;
