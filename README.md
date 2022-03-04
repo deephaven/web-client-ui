@@ -15,7 +15,7 @@ Use Chrome for debugging, install the React and Redux extensions.
 
 ## Getting Started
 
-We are still using node 14.x and npm 6.x. If you are [using nvm](https://github.com/nvm-sh/nvm#installing-and-updating), run `nvm install lts/fermium` to get the latest 14.x/6.x versions. Otherwise, download from the [node homepage](https://nodejs.org/en/download/).
+We are still using node 16.x and npm 8.x. If you are [using nvm](https://github.com/nvm-sh/nvm#installing-and-updating), there is a [.nvmrc](.nvmrc) file, so just run `nvm install` to get the latest 16.x/8.x versions. Otherwise, download from the [node homepage](https://nodejs.org/en/download/).
 
 - `npm install` : Install all dependencies and automatically bootstrap packages
 - `npm start`: Start building all packages and watching them (when possible). Use when you're developing, and your changes will be picked up automatically.
