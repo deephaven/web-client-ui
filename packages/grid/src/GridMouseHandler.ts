@@ -36,7 +36,7 @@ export class GridMouseHandler {
     this.order = order;
   }
 
-  // Cursor to use if this returns true from any function
+  // Cursor to use if this returns any truthy value including { stopPropagation: false, preventDefault: false }
   cursor: string | null = null;
 
   onDown(

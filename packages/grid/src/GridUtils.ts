@@ -26,6 +26,17 @@ export type GridPoint = {
   row: GridRangeIndex;
 };
 
+export interface CellInfo {
+  row: VisibleIndex | null;
+  column: VisibleIndex | null;
+  modelRow: ModelIndex | null;
+  modelColumn: ModelIndex | null;
+  left: Coordinate | null;
+  top: Coordinate | null;
+  columnWidth: number | null;
+  rowHeight: number | null;
+}
+
 export type IndexCallback<T> = (itemIndex: VisibleIndex) => T | undefined;
 
 export class GridUtils {
@@ -49,6 +60,42 @@ export class GridUtils {
     const row = GridUtils.getRowAtY(y, metrics);
 
     return { x, y, row, column };
+  }
+
+  static getCellInfoFromXY(
+    x: Coordinate,
+    y: Coordinate,
+    metrics: GridMetrics
+  ): CellInfo {
+    const { row, column } = GridUtils.getGridPointFromXY(x, y, metrics);
+
+    const {
+      visibleColumnWidths,
+      visibleRowHeights,
+      visibleColumnXs,
+      visibleRowYs,
+      modelColumns,
+      modelRows,
+    } = metrics;
+
+    const modelRow = row !== null ? modelRows.get(row) : null;
+    const modelColumn = column !== null ? modelColumns.get(column) : null;
+    const left = column !== null ? visibleColumnXs.get(column) : null;
+    const top = row !== null ? visibleRowYs.get(row) : null;
+    const columnWidth =
+      column !== null ? visibleColumnWidths.get(column) : null;
+    const rowHeight = row !== null ? visibleRowHeights.get(row) : null;
+
+    return {
+      row,
+      column,
+      modelRow: modelRow ?? null,
+      modelColumn: modelColumn ?? null,
+      left: left ?? null,
+      top: top ?? null,
+      columnWidth: columnWidth ?? null,
+      rowHeight: rowHeight ?? null,
+    };
   }
 
   /**

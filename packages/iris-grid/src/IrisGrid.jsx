@@ -91,7 +91,6 @@ import DateUtils from './DateUtils';
 import ConditionalFormattingMenu from './sidebar/conditional-formatting/ConditionalFormattingMenu';
 import { getFormatColumns } from './sidebar/conditional-formatting/ConditionalFormattingUtils';
 import ConditionalFormatEditor from './sidebar/conditional-formatting/ConditionalFormatEditor';
-import IrisGridCellOverflowButton from './IrisGridCellOverflowButton';
 import IrisGridCellOverflowModal from './IrisGridCellOverflowModal';
 
 const log = Log.module('IrisGrid');
@@ -224,7 +223,6 @@ export class IrisGrid extends Component {
     );
     this.handleCrossColumnSearch = this.handleCrossColumnSearch.bind(this);
     this.handleRollupChange = this.handleRollupChange.bind(this);
-    this.handleOverflowClick = this.handleOverflowClick.bind(this);
     this.handleOverflowClose = this.handleOverflowClose.bind(this);
 
     this.updateSearchFilter = debounce(
@@ -427,7 +425,6 @@ export class IrisGrid extends Component {
 
       toastMessage: null,
       frozenColumns,
-      overflowProps: null,
       showOverflowModal: false,
       overflowText: '',
     };
@@ -2503,47 +2500,11 @@ export class IrisGrid extends Component {
     onStateChange(irisGridState, gridState);
   }
 
-  handleOverflowClick() {
-    const { overflowProps } = this.state;
-    if (overflowProps == null) {
-      return;
-    }
-    const { column, row } = overflowProps;
-    this.setState({
-      showOverflowModal: true,
-      overflowText: this.getValueForCell(column, row),
-      overflowProps: null,
-    });
-  }
-
   handleOverflowClose() {
     this.setState({
       showOverflowModal: false,
-      overflowText: '',
-      overflowProps: null,
     });
   }
-
-  renderOverflowButton = memoize(overflowProps => {
-    if (overflowProps == null) {
-      return null;
-    }
-    const { top, right } = overflowProps;
-
-    if (top == null || right == null) {
-      return null;
-    }
-
-    return (
-      <IrisGridCellOverflowButton
-        style={{
-          top,
-          right,
-        }}
-        onClick={this.handleOverflowClick}
-      />
-    );
-  });
 
   render() {
     const {
@@ -2623,7 +2584,6 @@ export class IrisGrid extends Component {
       pendingDataMap,
       toastMessage,
       frozenColumns,
-      overflowProps,
       showOverflowModal,
       overflowText,
     } = this.state;
@@ -3234,16 +3194,12 @@ export class IrisGrid extends Component {
               renderer={this.renderer}
               stateOverride={stateOverride}
               theme={theme}
-            >
-              {this.renderOverflowButton(overflowProps)}
-            </Grid>
-            {showOverflowModal && (
-              <IrisGridCellOverflowModal
-                isOpen={showOverflowModal}
-                text={overflowText}
-                onClose={this.handleOverflowClose}
-              />
-            )}
+            />
+            <IrisGridCellOverflowModal
+              isOpen={showOverflowModal}
+              text={overflowText}
+              onClose={this.handleOverflowClose}
+            />
             {isVisible && (
               <IrisGridModelUpdater
                 model={model}

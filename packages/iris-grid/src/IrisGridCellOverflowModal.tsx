@@ -17,6 +17,7 @@ export default function IrisGridCellOverflowModal({
   isOpen,
   onClose,
 }: IrisGridCellOverflowModalProps): JSX.Element {
+  const [isOpened, setIsOpened] = useState(false);
   const [height, setHeight] = useState(250);
   const [showLineNumbers, setShowLineNumbers] = useState(false);
   const [isFormatted, setIsFormatted] = useState(false);
@@ -70,8 +71,22 @@ export default function IrisGridCellOverflowModal({
       return;
     }
 
-    setHeight(editor.getContentHeight());
     setShowLineNumbers((editor.getModel()?.getLineCount() ?? 0) > 1);
+  }
+
+  function handleToggle() {
+    if (isOpened) {
+      setIsOpened(false);
+      onClose();
+    }
+  }
+
+  function onEditorInitialized(editor: monaco.editor.IStandaloneCodeEditor) {
+    editorRef.current = editor;
+    editor.onDidContentSizeChange(({ contentHeight }) =>
+      setHeight(contentHeight)
+    );
+    updateLayout();
   }
 
   return (
@@ -79,7 +94,8 @@ export default function IrisGridCellOverflowModal({
       isOpen={isOpen}
       centered
       keyboard
-      toggle={onClose}
+      toggle={handleToggle}
+      onOpened={() => setIsOpened(true)}
       size="xl"
       className="theme-bg-dark cell-overflow-modal"
       modalTransition={{
@@ -110,18 +126,13 @@ export default function IrisGridCellOverflowModal({
       </ModalHeader>
       <ModalBody style={{ height }}>
         <Editor
-          onEditorInitialized={(
-            editor: monaco.editor.IStandaloneCodeEditor
-          ) => {
-            editorRef.current = editor;
-            editor.focus();
-            updateLayout();
-          }}
+          onEditorInitialized={onEditorInitialized}
           settings={{
             value: text,
             readOnly: true,
             wordWrap: 'on',
-            language: canFormat ? 'typescript' : 'plaintext', // Loading json language w/o the monaco workers causes UI freezes and monaco errors. TS colorizes the same
+            // Loading json language w/o the monaco workers causes UI freezes and monaco errors. TS colorizes the same
+            language: canFormat ? 'typescript' : 'plaintext',
             folding: canFormat,
             padding: { bottom: 16 },
             lineNumbers: showLineNumbers ? 'on' : 'off',

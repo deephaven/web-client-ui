@@ -94,6 +94,9 @@ const theme: IrisGridThemeType = Object.freeze({
   floatingRowBackgroundColors: IrisGridTheme['floating-row-background-colors'],
   floatingDividerInnerColor: IrisGridTheme['floating-divider-inner-color'],
   floatingDividerOuterColor: IrisGridTheme['floating-divider-outer-color'],
+
+  overflowButtonColor: IrisGridTheme['overflow-button-color'],
+  overflowButtonHoverColor: IrisGridTheme['overflow-button-hover-color'],
 });
 
 export default theme;

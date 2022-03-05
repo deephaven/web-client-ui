@@ -1056,6 +1056,75 @@ export class GridRenderer {
     context.restore();
   }
 
+  /**
+   * Gets textWidth and X-Y position for a specific cell
+   * The textWidth returned is the width that the text can occupy accounting for any other cell markings
+   * The width accounts for tree table indents and cell padding, so it is the width the text may consume
+   *
+   * @param context Canvas context
+   * @param state GridRendererState to get the text metrics for
+   * @param column Column of cell to get text metrics for
+   * @param row Row of cell to get text metrics for
+   * @returns Object with textWidth, textX, and textY
+   */
+  getTextRenderMetrics(
+    context: CanvasRenderingContext2D,
+    state: GridRenderState,
+    column: VisibleIndex,
+    row: VisibleIndex
+  ): {
+    textWidth: number;
+    textX: number;
+    textY: number;
+  } {
+    const { textAlign } = context;
+    const { metrics, model, theme } = state;
+    const {
+      firstColumn,
+      visibleColumnXs,
+      visibleColumnWidths,
+      visibleRowYs,
+      visibleRowHeights,
+    } = metrics;
+    const {
+      cellHorizontalPadding,
+      treeDepthIndent,
+      treeHorizontalPadding,
+    } = theme;
+
+    const x = getOrThrow(visibleColumnXs, column);
+    const y = getOrThrow(visibleRowYs, row);
+    const columnWidth = getOrThrow(visibleColumnWidths, column);
+    const rowHeight = getOrThrow(visibleRowHeights, row);
+    const isFirstColumn = column === firstColumn;
+    let treeIndent = 0;
+    if (
+      isExpandableGridModel(model) &&
+      model.hasExpandableRows &&
+      isFirstColumn
+    ) {
+      treeIndent =
+        treeDepthIndent * (model.depthForRow(row) + 1) + treeHorizontalPadding;
+    }
+    const textWidth = columnWidth - treeIndent;
+    let textX = x + cellHorizontalPadding;
+    const textY = y + rowHeight * 0.5;
+    if (textAlign === 'right') {
+      textX = x + textWidth - cellHorizontalPadding;
+    } else if (textAlign === 'center') {
+      textX = x + textWidth * 0.5;
+    } else {
+      textX = x + cellHorizontalPadding;
+    }
+    textX += treeIndent;
+
+    return {
+      textWidth: textWidth - cellHorizontalPadding * 2,
+      textX,
+      textY,
+    };
+  }
+
   drawCellContent(
     context: CanvasRenderingContext2D,
     state: GridRenderState,
@@ -1069,20 +1138,9 @@ export class GridRenderer {
       fontWidths,
       modelColumns,
       modelRows,
-      visibleColumnXs,
-      visibleColumnWidths,
-      visibleRowYs,
       visibleRowHeights,
     } = metrics;
-    const {
-      cellHorizontalPadding,
-      treeDepthIndent,
-      treeHorizontalPadding,
-      textColor,
-    } = theme;
-    const x = getOrThrow(visibleColumnXs, column);
-    const y = getOrThrow(visibleRowYs, row);
-    const columnWidth = getOrThrow(visibleColumnWidths, column);
+    const { textColor } = theme;
     const rowHeight = getOrThrow(visibleRowHeights, row);
     const modelRow = getOrThrow(modelRows, row);
     const modelColumn = getOrThrow(modelColumns, column);
@@ -1097,34 +1155,19 @@ export class GridRenderer {
         model.colorForCell(modelColumn, modelRow, theme) || textColor;
       context.fillStyle = color;
 
-      let treeIndent = 0;
-      if (
-        isExpandableGridModel(model) &&
-        model.hasExpandableRows &&
-        isFirstColumn
-      ) {
-        treeIndent =
-          treeDepthIndent * (model.depthForRow(row) + 1) +
-          treeHorizontalPadding;
-      }
-      const textWidth = columnWidth - treeIndent;
-      let textX = x + cellHorizontalPadding;
-      const textY = y + rowHeight * 0.5;
-      if (textAlign === 'right') {
-        textX = x + textWidth - cellHorizontalPadding;
-      } else if (textAlign === 'center') {
-        textX = x + textWidth * 0.5;
-      } else {
-        textX = x + cellHorizontalPadding;
-      }
-      textX += treeIndent;
+      const { textWidth, textX, textY } = this.getTextRenderMetrics(
+        context,
+        state,
+        column,
+        row
+      );
 
       const fontWidth =
         fontWidths.get(context.font) ?? GridRenderer.DEFAULT_FONT_WIDTH;
       const truncatedText = this.getCachedTruncatedString(
         context,
         text,
-        textWidth - cellHorizontalPadding * 2,
+        textWidth,
         fontWidth
       );
       if (truncatedText) {
