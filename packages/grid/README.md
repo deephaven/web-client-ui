@@ -12,11 +12,11 @@ npm install --save @deephaven/grid
 
 ## Usage
 
-There are many ways to use the @deephaven/grid package. The minimum requirement for displaying a grid is to implement the [GridModel](./src/GridModel.ts) class and pass that in as a prop. Below are a few different examples of different ways to extend the `GridModel`.
+There are many ways to use the @deephaven/grid package. The minimum requirement for displaying a grid is to implement the [GridModel](https://github.com/deephaven/web-client-ui/blob/main/packages/grid/src/GridModel.ts) class and pass that in as a prop. Below are a few different examples of different ways to extend the `GridModel`.
 
 ### Displaying static data
 
-It's easy to display a static array of data using [StaticDataGridModel](./src/StaticDataGridModel.ts). All you need to do is pass in the data you would like to display, and it will display it.
+It's easy to display a static array of data using [StaticDataGridModel](https://github.com/deephaven/web-client-ui/blob/main/packages/grid/src/StaticDataGridModel.ts). All you need to do is pass in the data you would like to display, and it will display it.
 
 ```jsx
 import React, { useState } from 'react';
@@ -43,7 +43,7 @@ export default GridExample;
 
 ### Quadrillions of rows and columns
 
-Both rows and columns are virtualized in this grid solution, so you can theoretically have up to `Number.MAX_SAFE_INTEGER` (about 9 quadrillion) rows and columns. Not only are the row and columns virtualized, but you can drag columns/rows to reposition them without affecting the underlying model, effectiively allowing quadrillions of rows and columns that can be moved around. Here is an example using [MockGridModel](./src/MockGridModel.ts) that displays quadrillions of rows/columns, which you can scroll around using the mouse or keyboard, edit by double clicking on a value or by typing, or move columns or rows by dragging the headers:
+Both rows and columns are virtualized in this grid solution, so you can theoretically have up to `Number.MAX_SAFE_INTEGER` (about 9 quadrillion) rows and columns. Not only are the row and columns virtualized, but you can drag columns/rows to reposition them without affecting the underlying model, effectiively allowing quadrillions of rows and columns that can be moved around. Here is an example using [MockGridModel](https://github.com/deephaven/web-client-ui/blob/main/packages/grid/src/MockGridModel.ts) that displays quadrillions of rows/columns, which you can scroll around using the mouse or keyboard, edit by double clicking on a value or by typing, or move columns or rows by dragging the headers:
 
 ```jsx
 import React, { useState } from 'react';
@@ -67,7 +67,7 @@ export default GridQuadrillionExample;
 
 ### Expandable rows
 
-Some data can be displayed as a tree. This example uses [MockTreeGridModel](src/MockTreeGridModel.ts) to display exandable rows of data:
+Some data can be displayed as a tree. This example uses [MockTreeGridModel](https://github.com/deephaven/web-client-ui/blob/main/packages/grid/src/MockTreeGridModel.ts) to display exandable rows of data:
 
 ```jsx
 import React, { useState } from 'react';
@@ -153,7 +153,7 @@ export default AsyncExample;
 
 ## Code Examples
 
-There are [code examples](../code-studio/src/styleguide/grid-examples/) available in the [StyleGuide](../code-studio/src/styleguide/).
+There are [code examples](https://github.com/deephaven/web-client-ui/tree/main/packages/code-studio/src/styleguide/grid-examples) available in the [StyleGuide](https://github.com/deephaven/web-client-ui/tree/main/packages/code-studio/src/styleguide).
 
 # Legal Notices
 
