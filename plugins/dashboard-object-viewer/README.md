@@ -1,6 +1,6 @@
 # Deephaven Object Viewer JavaScript Plugin
 
-Use this plugin to view custom objects
+Use this plugin to view custom objects for debugging purposes.
 
 ## Development
 

@@ -30,10 +30,10 @@
     "@babel/preset-env": "^7.16.7",
     "@babel/preset-react": "^7.16.7",
     "@babel/preset-typescript": "^7.16.7",
-    "@deephaven/eslint-config": "^0.11.0",
-    "@deephaven/jsapi-shim": "^0.11.0",
-    "@deephaven/prettier-config": "^0.11.0",
-    "@deephaven/stylelint-config": "^0.11.0",
+    "@deephaven/eslint-config": "0.11.2-js-plugins.1",
+    "@deephaven/jsapi-shim": "0.11.2-js-plugins.1",
+    "@deephaven/prettier-config": "0.11.2-js-plugins.1",
+    "@deephaven/stylelint-config": "0.11.2-js-plugins.1",
     "@types/jest": "^27.4.0",
     "@types/node": "^17.0.7",
     "@types/react": "^16.14.8",
@@ -60,7 +60,7 @@
     "webpack-cli": "^4.9.1"
   },
   "peerDependencies": {
-    "@deephaven/jsapi-shim": "^0.11.0",
+    "@deephaven/jsapi-shim": "0.11.2-js-plugins.1",
     "react": "^17.0.2"
   },
   "prettier": "@deephaven/prettier-config",
