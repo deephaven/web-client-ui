@@ -1,7 +1,5 @@
-/* eslint-disable react/jsx-props-no-spreading */
-/* eslint-disable react/no-unused-state */
-import React from "react";
-import "./MatPlotLibPanel.scss";
+import React, { useEffect, useState } from 'react';
+import './MatPlotLibPanel.scss';
 
 export type MatPlotLibWidget = {
   type: string;
@@ -17,42 +15,28 @@ export type MatPlotLibPanelState = {
 };
 
 /**
- * Wraps and IrisGridPanel to add a refresh button for Pandas.
+ * Displays a rendered matplotlib from the server
  */
-export class MatPlotLibPanel extends React.Component<
-  MatPlotLibPanelProps,
-  MatPlotLibPanelState
-> {
-  static COMPONENT = "MatPlotLibPanel";
+export const MatPlotLibPanel = (props: MatPlotLibPanelProps): JSX.Element => {
+  const { fetch } = props;
+  const [imageSrc, setImageSrc] = useState<string>();
 
-  constructor(props) {
-    super(props);
+  useEffect(() => {
+    async function fetchData() {
+      const widget = await fetch();
+      const imageData = await widget.getDataAsBase64();
+      setImageSrc(`data:image/png;base64,${imageData}`);
+    }
+    fetchData();
+  }, [fetch]);
 
-    this.state = {
-      imageData: undefined,
-    };
-  }
+  return (
+    <div className="mat-plot-lib-panel">
+      {imageSrc && <img src={imageSrc} alt="MatPlotLib render" />}
+    </div>
+  );
+};
 
-  componentDidMount() {
-    this.initImage();
-  }
-
-  async initImage() {
-    const { fetch } = this.props;
-    const widget = await fetch();
-    const imageData = widget.getDataAsBase64();
-    this.setState({ imageData });
-  }
-
-  render() {
-    const { imageData } = this.state;
-
-    const src = `data:image/png;base64,${imageData}`;
-
-    return (
-      <div className="mat-plot-lib-panel">{imageData && <img src={src} />}</div>
-    );
-  }
-}
+MatPlotLibPanel.COMPONENT = 'MatPlotLibPanel';
 
 export default MatPlotLibPanel;

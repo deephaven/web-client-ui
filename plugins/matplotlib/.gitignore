@@ -1,6 +1,5 @@
-.idea/
-dist/
-node_modules/
-src/**/*.jsx
-tests/__coverage__/
-tests/**/*.jsx
+# Ignore npm dependencies
+/node_modules
+
+# Ignore webpack output directory
+/dist

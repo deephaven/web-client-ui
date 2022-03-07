@@ -1,5 +1,5 @@
 import { Button, LoadingOverlay } from '@deephaven/components';
-import { DashboardPanelProps } from '@deephaven/dashboard';
+import { DashboardPanelProps, PanelEvent } from '@deephaven/dashboard';
 import Log from '@deephaven/log';
 import React, { ReactNode } from 'react';
 import ReactJson from 'react-json-view';
@@ -14,8 +14,6 @@ type StateProps = {
   };
 };
 
-type OwnProps = DashboardPanelProps;
-
 export type JsExportedObjectType = 'Table' | 'TableMap';
 
 export type JsWidgetExportedObject = {
@@ -23,7 +21,7 @@ export type JsWidgetExportedObject = {
   fetch: () => Promise<unknown>;
 };
 
-export type ObjectPanelProps = OwnProps & StateProps;
+export type ObjectPanelProps = DashboardPanelProps & StateProps;
 
 export type JsWidget = {
   type: string;
@@ -32,11 +30,11 @@ export type JsWidget = {
 };
 
 export type ObjectPanelState = {
-  error?: Error;
+  error?: unknown;
   object?: unknown;
 };
 
-export function isJsWidget(object: JsWidget | unknown): object is JsWidget {
+export function isJsWidget(object: unknown): object is JsWidget {
   return typeof (object as JsWidget).getDataAsBase64 === 'function';
 }
 
@@ -66,14 +64,14 @@ export class ObjectPanel extends React.Component<
   }
 
   async fetchObject(): Promise<void> {
-    log.info('fetchObject...');
     try {
-      const { fetch } = this.props;
+      const { fetch, metadata } = this.props;
+      log.info('fetchObject...', metadata);
       const object = await fetch();
       log.info('Object fetched: ', object);
       this.setState({ object });
     } catch (e: unknown) {
-      this.handleError(e as Error);
+      this.handleError(e);
     }
   }
 
@@ -96,23 +94,23 @@ export class ObjectPanel extends React.Component<
 
       log.info('openWidget', openOptions);
 
-      glEventHub.emit('PanelEvent.OPEN', openOptions);
+      glEventHub.emit(PanelEvent.OPEN, openOptions);
     } else {
       log.error('Unable to handle exported object type', type);
     }
   }
 
-  handleError(error: Error): void {
+  handleError(error: unknown): void {
     log.error(error);
     this.setState({ error, object: undefined });
   }
 
   renderObjectData(): JSX.Element {
     const { object } = this.state;
-    log.info('Rendering object data');
     if (!object) {
       return null;
     }
+    log.info('Rendering object data');
     if (!isJsWidget(object)) {
       return <div className="error-message">Object is not a widget</div>;
     }

@@ -2,21 +2,10 @@
 
 Use this plugin to view custom objects
 
-## Initial Setup
-
-After checking out this template for the first time:
-
-1. Do an `npm install`
-
-## Source Files
-
-Your main source file is `src/index.ts`. It imports exports
-
-It imports the
-
-## Build the Plugin
+## Development
 
 ```
+npm install
 npm run build
 ```
 
