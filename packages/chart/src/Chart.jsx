@@ -10,6 +10,7 @@ import Plot from './plotly/Plot';
 
 import ChartModel from './ChartModel';
 import ChartUtils from './ChartUtils';
+import ChartTheme from './ChartTheme';
 import './Chart.scss';
 
 const log = Log.module('Chart');
@@ -182,11 +183,21 @@ export class Chart extends Component {
   initData() {
     const { model } = this.props;
     const { layout } = this.state;
+    const data = model.getData();
+    const title = data[0].name;
     this.setState({
-      data: model.getData(),
+      data,
       layout: {
         ...layout,
         ...model.getLayout(),
+        title: {
+          text: title,
+          font: {
+            color: ChartTheme.title_color,
+            size: 14,
+          },
+          y: 0.95, // relative to bottom of chart with range [0-1]
+        },
       },
     });
   }
