@@ -17,7 +17,7 @@ import {
   ThemeExport,
   Tooltip,
 } from '@deephaven/components';
-import { Grid, GridRange, GridTheme, GridUtils } from '@deephaven/grid';
+import { Grid, GridRange, GridUtils } from '@deephaven/grid';
 import {
   dhEye,
   dhFilterFilled,
@@ -799,7 +799,6 @@ export class IrisGrid extends Component {
 
   getCachedTheme = memoize(
     (theme, isEditable) => ({
-      ...GridTheme,
       ...IrisGridTheme,
       autoSelectRow: !isEditable,
       ...theme,

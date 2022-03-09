@@ -1989,32 +1989,27 @@ class Grid extends PureComponent<GridProps, GridState> {
 
   render(): ReactNode {
     const { cursor } = this.state;
-    const { children } = this.props;
 
     return (
-      // eslint-disable-next-line jsx-a11y/no-static-element-interactions
-      <div
-        style={{ height: '100%', width: '100%' }}
-        onClick={this.handleClick}
-        onContextMenu={this.handleContextMenu}
-        onDoubleClick={this.handleDoubleClick}
-        onKeyDown={this.handleKeyDown}
-        onMouseDown={this.handleMouseDown}
-        onMouseMove={this.handleMouseMove}
-        onMouseLeave={this.handleMouseLeave}
-      >
+      <>
         <canvas
           className={classNames('grid-canvas', Grid.getCursorClassName(cursor))}
           ref={canvas => {
             this.canvas = canvas;
           }}
+          onClick={this.handleClick}
+          onContextMenu={this.handleContextMenu}
+          onDoubleClick={this.handleDoubleClick}
+          onKeyDown={this.handleKeyDown}
+          onMouseDown={this.handleMouseDown}
+          onMouseMove={this.handleMouseMove}
+          onMouseLeave={this.handleMouseLeave}
           tabIndex={0}
         >
           Your browser does not support HTML canvas. Update your browser?
         </canvas>
-        {children}
         {this.renderInputField()}
-      </div>
+      </>
     );
   }
 }

@@ -31,7 +31,7 @@
     "build:profile": "lerna run build --stream --profile",
     "build:necessary": "lerna run build --scope=@deephaven/{icons,golden-layout}",
     "prestart": "lerna run prestart --stream",
-    "start": "run-p watch:types start:*",
+    "start": "npm-run-all types --parallel watch:types start:*",
     "start:app": "lerna run start --scope=@deephaven/code-studio --stream",
     "start:embed-grid": "lerna run start --scope=@deephaven/embed-grid --stream",
     "start:packages": "lerna run watch --ignore=@deephaven/{code-studio,embed-grid} --stream --parallel",

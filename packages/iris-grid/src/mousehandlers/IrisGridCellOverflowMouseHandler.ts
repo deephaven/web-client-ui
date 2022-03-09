@@ -13,7 +13,7 @@ class IrisGridCellOverflowMouseHandler extends GridMouseHandler {
   private irisGrid: IrisGrid;
 
   constructor(irisGrid: IrisGrid) {
-    super();
+    super(850); // Needs to be before GridSelectionMouseHandler
 
     this.irisGrid = irisGrid;
   }
@@ -41,10 +41,13 @@ class IrisGridCellOverflowMouseHandler extends GridMouseHandler {
       return false;
     }
     const { renderer, grid, state, props } = this.irisGrid;
+    if (!grid) {
+      return false;
+    }
     const { metrics } = state;
     const { model } = props;
     const { canvasContext: context } = grid || {};
-    const theme = this.irisGrid.getTheme();
+    const theme = grid.getTheme();
     const rendererState = {
       context,
       mouseX: x,
@@ -79,7 +82,8 @@ class IrisGridCellOverflowMouseHandler extends GridMouseHandler {
     );
   }
 
-  onClick(point: GridPoint): boolean {
+  // Needs to be onDown and not onClick b/c of GridSelectionMouseHandler shifting cell onDown
+  onDown(point: GridPoint): boolean {
     const { column, row } = point;
 
     if (this.isHoveringOverflowButton(point))

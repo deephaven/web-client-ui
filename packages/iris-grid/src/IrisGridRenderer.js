@@ -19,7 +19,7 @@ const ICON_NAMES = Object.freeze({
   CELL_OVERFLOW: 'cellOverflow',
 });
 
-const ICON_SCALE = 0.03;
+const ICON_SIZE = 16;
 
 /**
  * Handles rendering some of the Iris specific features, such as sorting icons, sort bar display
@@ -49,8 +49,16 @@ class IrisGridRenderer extends GridRenderer {
     this.setIcon(ICON_NAMES.CELL_OVERFLOW, vsLinkExternal);
   }
 
+  // Scales the icon to be square and match the global ICON_SIZE
   setIcon(name, faIcon) {
-    this.icons[name] = new Path2D(faIcon.icon[4]);
+    const icon = new Path2D(faIcon.icon[4]);
+    const scaledIcon = new Path2D();
+    const scaleMatrix = new DOMMatrix().scale(
+      ICON_SIZE / faIcon.icon[0],
+      ICON_SIZE / faIcon.icon[1]
+    );
+    scaledIcon.addPath(icon, scaleMatrix);
+    this.icons[name] = scaledIcon;
   }
 
   getIcon(name) {
@@ -62,10 +70,10 @@ class IrisGridRenderer extends GridRenderer {
       return null;
     }
     if (sort.direction === TableUtils.sortDirection.ascending) {
-      return new Path2D(this.getIcon(ICON_NAMES.SORT_UP));
+      return this.getIcon(ICON_NAMES.SORT_UP);
     }
     if (sort.direction === TableUtils.sortDirection.descending) {
-      return new Path2D(this.getIcon(ICON_NAMES.SORT_DOWN));
+      return this.getIcon(ICON_NAMES.SORT_DOWN);
     }
     return null;
   }
@@ -326,7 +334,6 @@ class IrisGridRenderer extends GridRenderer {
 
     context.fillStyle = theme.headerSortBarColor;
     context.translate(x, y);
-    context.scale(ICON_SCALE, ICON_SCALE);
     context.fill(icon);
 
     context.restore();
@@ -595,7 +602,6 @@ class IrisGridRenderer extends GridRenderer {
     context.fillStyle = color;
     context.textAlign = 'center';
     context.translate(iconX, iconY);
-    context.scale(ICON_SCALE, ICON_SCALE);
     context.fill(markerIcon);
     context.restore();
   }
@@ -772,15 +778,15 @@ class IrisGridRenderer extends GridRenderer {
       metrics
     );
 
-    const { width: gridWidth } = metrics;
+    const { width: gridWidth, verticalBarWidth } = metrics;
     const { cellHorizontalPadding } = theme;
 
-    const iconSize = 16;
-    const width = iconSize + 2 * cellHorizontalPadding;
+    const width = ICON_SIZE + 2 * cellHorizontalPadding;
     const height = rowHeight;
+    // Right edge of column or of visible grid, whichever is smaller
     const right = Math.min(
       metrics.gridX + left + columnWidth,
-      gridWidth - 2 * cellHorizontalPadding
+      gridWidth - verticalBarWidth
     );
     const buttonLeft = right - width;
     const buttonTop = metrics.gridY + top;
@@ -820,9 +826,8 @@ class IrisGridRenderer extends GridRenderer {
     } else {
       context.fillStyle = overflowButtonColor;
     }
-    const icon = new Path2D(this.getIcon(ICON_NAMES.CELL_OVERFLOW));
+    const icon = this.getIcon(ICON_NAMES.CELL_OVERFLOW);
     context.translate(buttonLeft + cellHorizontalPadding, buttonTop + 2);
-    context.scale(ICON_SCALE, ICON_SCALE);
     context.fill(icon);
 
     context.restore();

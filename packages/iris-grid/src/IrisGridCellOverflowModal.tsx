@@ -16,9 +16,9 @@ export default function IrisGridCellOverflowModal({
   text,
   isOpen,
   onClose,
-}: IrisGridCellOverflowModalProps): JSX.Element {
+}: IrisGridCellOverflowModalProps): React.ReactNode {
   const [isOpened, setIsOpened] = useState(false);
-  const [height, setHeight] = useState(250);
+  const [height, setHeight] = useState(0);
   const [showLineNumbers, setShowLineNumbers] = useState(false);
   const [isFormatted, setIsFormatted] = useState(false);
   const [canFormat] = useState(() => {
@@ -31,12 +31,14 @@ export default function IrisGridCellOverflowModal({
   });
   const editorRef = useRef<monaco.editor.IStandaloneCodeEditor>();
 
+  // Re-layout editor on height change
   useEffect(() => {
     if (editorRef.current) {
       editorRef.current.layout();
     }
   }, [height]);
 
+  // Update editor options on line number toggle
   useEffect(() => {
     if (editorRef.current) {
       editorRef.current.updateOptions({
@@ -62,10 +64,10 @@ export default function IrisGridCellOverflowModal({
       model.setValue(text);
       setIsFormatted(false);
     }
-    updateLayout();
+    autoSetLineNumbers();
   }
 
-  function updateLayout() {
+  function autoSetLineNumbers() {
     const editor = editorRef.current;
     if (!editor) {
       return;
@@ -76,7 +78,7 @@ export default function IrisGridCellOverflowModal({
 
   function handleToggle() {
     if (isOpened) {
-      setIsOpened(false);
+      editorRef.current = undefined;
       onClose();
     }
   }
@@ -86,7 +88,11 @@ export default function IrisGridCellOverflowModal({
     editor.onDidContentSizeChange(({ contentHeight }) =>
       setHeight(contentHeight)
     );
-    updateLayout();
+    autoSetLineNumbers();
+  }
+
+  if (!isOpen && !isOpened) {
+    return null;
   }
 
   return (
@@ -96,14 +102,12 @@ export default function IrisGridCellOverflowModal({
       keyboard
       toggle={handleToggle}
       onOpened={() => setIsOpened(true)}
+      onClosed={() => {
+        setIsOpened(false);
+        setHeight(0);
+      }}
       size="xl"
       className="theme-bg-dark cell-overflow-modal"
-      modalTransition={{
-        timeout: 150,
-      }}
-      backdropTransition={{
-        timeout: 150,
-      }}
     >
       <ModalHeader tag="div" toggle={onClose}>
         <h5 className="overflow-modal-title">Cell Contents</h5>
