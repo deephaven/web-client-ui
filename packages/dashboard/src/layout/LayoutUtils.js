@@ -314,7 +314,7 @@ class LayoutUtils {
 
     for (let i = 0; i < config.length; i += 1) {
       const itemConfig = config[i];
-      const { component, content, props, type } = itemConfig;
+      const { component, content, props = {}, type } = itemConfig;
       if (type === 'react-component') {
         hydratedConfig.push({
           ...itemConfig,
@@ -519,12 +519,13 @@ class LayoutUtils {
       log.error('Could not find stack for config', config);
       return null;
     }
+    const { props = {} } = config;
     const panelState = LayoutUtils.getPanelComponentState(config);
     const cloneConfig = {
       type: 'react-component',
       component: config.component,
       props: {
-        ...config.props,
+        ...props,
         panelState,
       },
       title: `${config.title} Copy`,
