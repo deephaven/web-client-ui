@@ -101,21 +101,29 @@ const SET_FILTER_DEBOUNCE = 250;
 
 const SET_CONDITIONAL_FORMAT_DEBOUNCE = 250;
 
+const DEFAULT_AGGREGATION_SETTINGS = { aggregations: [], showOnTop: false };
+
 function isEmptyConfig({
   advancedFilters,
-  quickFilters,
-  sorts,
+  aggregationSettings,
   customColumns,
+  quickFilters,
   reverseType,
+  rollupConfig,
   searchFilter,
+  selectDistinctColumns,
+  sorts,
 }) {
   return (
     advancedFilters.size === 0 &&
-    quickFilters.size === 0 &&
-    sorts.length === 0 &&
+    aggregationSettings.aggregations.length === 0 &&
     customColumns.length === 0 &&
+    quickFilters.size === 0 &&
     reverseType === TableUtils.REVERSE_TYPE.NONE &&
-    searchFilter == null
+    rollupConfig == null &&
+    searchFilter == null &&
+    selectDistinctColumns.length === 0 &&
+    sorts.length === 0
   );
 }
 
@@ -1405,29 +1413,38 @@ export class IrisGrid extends Component {
       log.debug('loading last loading config', this.lastLoadedConfig);
       const {
         advancedFilters,
+        aggregationSettings,
         customColumns,
         quickFilters,
         reverseType,
+        rollupConfig,
         searchFilter,
+        selectDistinctColumns,
         sorts,
       } = this.lastLoadedConfig;
       this.lastLoadedConfig = null;
       this.setState({
         advancedFilters,
+        aggregationSettings,
         customColumns,
         quickFilters,
         reverseType,
+        rollupConfig,
         searchFilter,
+        selectDistinctColumns,
         sorts,
       });
     } else {
       log.debug('remove all sorts, filters, and custom columns');
       this.setState({
         advancedFilters: new Map(),
-        quickFilters: new Map(),
-        sorts: [],
+        aggregationSettings: DEFAULT_AGGREGATION_SETTINGS,
         customColumns: [],
+        quickFilters: new Map(),
         reverseType: TableUtils.REVERSE_TYPE.NONE,
+        rollupConfig: null,
+        selectDistinctColumns: [],
+        sorts: [],
       });
     }
   }
@@ -2036,18 +2053,24 @@ export class IrisGrid extends Component {
 
     const {
       advancedFilters,
+      aggregationSettings,
       customColumns,
       quickFilters,
       reverseType,
+      rollupConfig,
       searchFilter,
+      selectDistinctColumns,
       sorts,
     } = this.state;
     const config = {
       advancedFilters,
+      aggregationSettings,
       customColumns,
-      reverseType,
       quickFilters,
+      reverseType,
+      rollupConfig,
       searchFilter,
+      selectDistinctColumns,
       sorts,
     };
     if (!isEmptyConfig(config)) {
@@ -3524,7 +3547,7 @@ IrisGrid.defaultProps = {
   sorts: [],
   reverseType: TableUtils.REVERSE_TYPE.NONE,
   customColumns: [],
-  aggregationSettings: { aggregations: [], showOnTop: false },
+  aggregationSettings: DEFAULT_AGGREGATION_SETTINGS,
   rollupConfig: null,
   userColumnWidths: new Map(),
   userRowHeights: new Map(),

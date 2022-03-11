@@ -28,6 +28,7 @@ import { UIPropTypes } from '../prop-types';
 import WidgetPanel from './WidgetPanel';
 import WidgetPanelTooltip from './WidgetPanelTooltip';
 import './IrisGridPanel.scss';
+import { FilterSetManagerPanel } from '.';
 
 const log = Log.module('IrisGridPanel');
 
@@ -122,6 +123,7 @@ export class IrisGridPanel extends PureComponent {
 
       // eslint-disable-next-line react/no-unused-state
       panelState, // Dehydrated panel state that can load this panel
+      irisGridStateOverrides: {},
     };
   }
 
@@ -309,6 +311,7 @@ export class IrisGridPanel extends PureComponent {
   handleLoadSuccess(modelParam) {
     const model = modelParam;
     const { panelState } = this.props;
+    const { irisGridStateOverrides } = this.state;
     const modelQueue = [];
 
     if (panelState != null) {
@@ -318,7 +321,7 @@ export class IrisGridPanel extends PureComponent {
         customColumns,
         selectDistinctColumns = [],
         rollupConfig,
-      } = irisGridState;
+      } = { ...irisGridState, ...irisGridStateOverrides };
 
       if (customColumns.length > 0) {
         modelQueue.push(m => {
@@ -660,25 +663,11 @@ export class IrisGridPanel extends PureComponent {
     }
   }
 
-  setFilters({ quickFilters, advancedFilters }) {
-    const irisGrid = this.irisGrid.current;
-    const { model, isDisconnected } = this.state;
-    if (irisGrid != null && !isDisconnected) {
-      const { columns, formatter } = model;
-      irisGrid.clearAllFilters();
-      irisGrid.setFilters({
-        quickFilters: IrisGridUtils.hydrateQuickFilters(
-          columns,
-          quickFilters,
-          formatter.timeZone
-        ),
-        advancedFilters: IrisGridUtils.hydrateAdvancedFilters(
-          columns,
-          advancedFilters,
-          formatter.timeZone
-        ),
-      });
-    }
+  setFilters(irisGridStateOverrides) {
+    log.debug('setFilters', irisGridStateOverrides);
+    this.setState({ irisGridStateOverrides }, () => {
+      this.initModel();
+    });
   }
 
   // eslint-disable-next-line class-methods-use-this
@@ -688,12 +677,29 @@ export class IrisGridPanel extends PureComponent {
 
   loadPanelState(model) {
     const { panelState } = this.props;
+    const { irisGridStateOverrides } = this.state;
     if (panelState == null) {
       return;
     }
 
     try {
       const { gridState, irisGridState, irisGridPanelState } = panelState;
+      const {
+        quickFilters: indexedQuickFilters,
+        advancedFilters: indexedAdvancedFilters,
+      } = irisGridStateOverrides;
+      if (indexedQuickFilters) {
+        irisGridStateOverrides.quickFilters = FilterSetManagerPanel.changeFilterColumnNamesToIndexes(
+          model,
+          indexedQuickFilters
+        );
+      }
+      if (indexedAdvancedFilters) {
+        irisGridStateOverrides.advancedFilters = FilterSetManagerPanel.changeFilterColumnNamesToIndexes(
+          model,
+          indexedAdvancedFilters
+        );
+      }
       const {
         isSelectingPartition,
         partition,
@@ -720,7 +726,10 @@ export class IrisGridPanel extends PureComponent {
         pendingDataMap,
         frozenColumns,
         conditionalFormats,
-      } = IrisGridUtils.hydrateIrisGridState(model, irisGridState);
+      } = IrisGridUtils.hydrateIrisGridState(model, {
+        ...irisGridState,
+        ...irisGridStateOverrides,
+      });
       const {
         isStuckToBottom,
         isStuckToRight,

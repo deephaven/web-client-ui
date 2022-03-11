@@ -134,8 +134,11 @@ class FilterSetManagerPanel extends Component {
     // Change indexes to column names to make it work for proxy models
     const { irisGridState = null } = panelState;
     const {
-      advancedFilters: indexedAdvancedFilters = [],
-      quickFilters: indexedQuickFilters = [],
+      advancedFilters: indexedAdvancedFilters,
+      aggregationSettings,
+      quickFilters: indexedQuickFilters,
+      rollupConfig,
+      selectDistinctColumns,
     } = irisGridState ?? {};
     const dehydratedAdvancedFilters = IrisGridUtils.dehydrateAdvancedFilters(
       table.columns,
@@ -152,7 +155,13 @@ class FilterSetManagerPanel extends Component {
       table,
       dehydratedQuickFilters
     );
-    return { advancedFilters, quickFilters };
+    return {
+      advancedFilters,
+      aggregationSettings,
+      quickFilters,
+      rollupConfig,
+      selectDistinctColumns,
+    };
   }
 
   handleGetFilterState() {
@@ -209,8 +218,11 @@ class FilterSetManagerPanel extends Component {
 
   restoreIrisGridFilters(panel, state) {
     const {
-      advancedFilters: savedAdvancedFilters,
-      quickFilters: savedQuickFilters,
+      advancedFilters,
+      aggregationSettings,
+      quickFilters,
+      rollupConfig,
+      selectDistinctColumns,
     } = state;
     const { panelTableMap } = this.props;
     const panelId = LayoutUtils.getIdFromPanel(panel);
@@ -220,15 +232,13 @@ class FilterSetManagerPanel extends Component {
       return;
     }
     log.debug('restoreIrisGridFilters', panelId, state);
-    const quickFilters = FilterSetManagerPanel.changeFilterColumnNamesToIndexes(
-      table,
-      savedQuickFilters
-    );
-    const advancedFilters = FilterSetManagerPanel.changeFilterColumnNamesToIndexes(
-      table,
-      savedAdvancedFilters
-    );
-    panel.setFilters({ quickFilters, advancedFilters });
+    panel.setFilters({
+      advancedFilters,
+      aggregationSettings,
+      quickFilters,
+      rollupConfig,
+      selectDistinctColumns,
+    });
   }
 
   // eslint-disable-next-line class-methods-use-this
