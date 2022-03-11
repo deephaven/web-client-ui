@@ -53,10 +53,10 @@ class IrisGridRenderer extends GridRenderer {
   setIcon(name, faIcon) {
     const icon = new Path2D(faIcon.icon[4]);
     const scaledIcon = new Path2D();
-    const scaleMatrix = new DOMMatrix().scale(
-      ICON_SIZE / faIcon.icon[0],
-      ICON_SIZE / faIcon.icon[1]
-    );
+    const scaleMatrix = {
+      a: ICON_SIZE / faIcon.icon[0],
+      d: ICON_SIZE / faIcon.icon[1],
+    };
     scaledIcon.addPath(icon, scaleMatrix);
     this.icons[name] = scaledIcon;
   }

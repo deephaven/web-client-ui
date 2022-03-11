@@ -5,7 +5,10 @@ import { IrisGrid } from './IrisGrid';
 import IrisGridTestUtils from './IrisGridTestUtils';
 import DateUtils from './DateUtils';
 
-class MockPath2D {}
+class MockPath2D {
+  // eslint-disable-next-line class-methods-use-this
+  addPath() {}
+}
 
 window.Path2D = MockPath2D;
 
