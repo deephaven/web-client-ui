@@ -27,15 +27,6 @@ const log = Log.module('FilterSetManagerPanel');
 class FilterSetManagerPanel extends Component {
   static COMPONENT = 'FilterSetManagerPanel';
 
-  static changeFilterColumnNamesToIndexes(table, configs) {
-    return configs
-      .map(({ name, filter }) => {
-        const index = table.columns.findIndex(column => column.name === name);
-        return index < 0 ? null : [index, filter];
-      })
-      .filter(config => config != null);
-  }
-
   static changeFilterIndexesToColumnNames(table, configs) {
     return configs
       .map(([index, filter]) => {

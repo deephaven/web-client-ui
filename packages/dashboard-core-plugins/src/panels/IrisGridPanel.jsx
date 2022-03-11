@@ -28,7 +28,6 @@ import { UIPropTypes } from '../prop-types';
 import WidgetPanel from './WidgetPanel';
 import WidgetPanelTooltip from './WidgetPanelTooltip';
 import './IrisGridPanel.scss';
-import { FilterSetManagerPanel } from '.';
 
 const log = Log.module('IrisGridPanel');
 
@@ -689,14 +688,14 @@ export class IrisGridPanel extends PureComponent {
         advancedFilters: indexedAdvancedFilters,
       } = irisGridStateOverrides;
       if (indexedQuickFilters) {
-        irisGridStateOverrides.quickFilters = FilterSetManagerPanel.changeFilterColumnNamesToIndexes(
-          model,
+        irisGridStateOverrides.quickFilters = IrisGridUtils.changeFilterColumnNamesToIndexes(
+          model.columns,
           indexedQuickFilters
         );
       }
       if (indexedAdvancedFilters) {
-        irisGridStateOverrides.advancedFilters = FilterSetManagerPanel.changeFilterColumnNamesToIndexes(
-          model,
+        irisGridStateOverrides.advancedFilters = IrisGridUtils.changeFilterColumnNamesToIndexes(
+          model.columns,
           indexedAdvancedFilters
         );
       }
