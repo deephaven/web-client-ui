@@ -3,6 +3,7 @@ import {
   GridMouseHandler,
   EventHandlerResult,
 } from '@deephaven/grid';
+import deepEqual from 'deep-equal';
 import type IrisGrid from '../IrisGrid';
 
 /**
@@ -18,7 +19,11 @@ class IrisGridCellOverflowMouseHandler extends GridMouseHandler {
     this.irisGrid = irisGrid;
   }
 
-  setCursor(point: GridPoint): EventHandlerResult {
+  private destroyColumnTooltip(): void {
+    this.irisGrid.setState({ overflowButtonTooltipProps: null });
+  }
+
+  private setCursor(point: GridPoint): EventHandlerResult {
     if (this.isHoveringOverflowButton(point)) {
       this.cursor = 'pointer';
       return { stopPropagation: false, preventDefault: false };
@@ -28,18 +33,54 @@ class IrisGridCellOverflowMouseHandler extends GridMouseHandler {
     return false;
   }
 
-  onMove(point: GridPoint): EventHandlerResult {
-    return this.setCursor(point);
-  }
-
-  onWheel(point: GridPoint): EventHandlerResult {
-    return this.setCursor(point);
-  }
-
-  isHoveringOverflowButton({ x, y, column, row }: GridPoint): boolean {
+  private getButtonPosition({
+    x,
+    y,
+    column,
+    row,
+  }: GridPoint): {
+    left: number;
+    top: number;
+    width: number;
+    height: number;
+  } | null {
     if (column == null || row == null) {
+      return null;
+    }
+    const { renderer, grid, state, props } = this.irisGrid;
+    if (!grid) {
+      return null;
+    }
+    const { metrics } = state;
+    const { model } = props;
+    const { canvasContext: context } = grid || {};
+    const theme = grid.getTheme();
+    const rendererState = {
+      context,
+      mouseX: x,
+      mouseY: y,
+      metrics,
+      model,
+      theme,
+    };
+
+    const { left, top, width, height } = renderer.getCellOverflowButtonPosition(
+      rendererState
+    );
+    if (left == null || width == null || top == null || height == null) {
+      return null;
+    }
+
+    return { left, top, width, height };
+  }
+
+  private isHoveringOverflowButton(point: GridPoint): boolean {
+    const { x, y } = point;
+    const { left, top, width, height } = this.getButtonPosition(point) ?? {};
+    if (left == null || width == null || top == null || height == null) {
       return false;
     }
+
     const { renderer, grid, state, props } = this.irisGrid;
     if (!grid) {
       return false;
@@ -57,33 +98,36 @@ class IrisGridCellOverflowMouseHandler extends GridMouseHandler {
       theme,
     };
 
-    const {
-      left: buttonLeft,
-      top: buttonTop,
-      width: buttonWidth,
-      height: buttonHeight,
-    } = renderer.getCellOverflowButtonPosition(rendererState);
-
-    if (
-      buttonLeft == null ||
-      buttonWidth == null ||
-      buttonTop == null ||
-      buttonHeight == null
-    ) {
-      return false;
-    }
-
     return (
       renderer.shouldRenderOverflowButton(rendererState) &&
-      x >= buttonLeft &&
-      x <= buttonLeft + buttonWidth &&
-      y >= buttonTop &&
-      y <= buttonTop + buttonHeight
+      x >= left &&
+      x <= left + width &&
+      y >= top &&
+      y <= top + height
     );
+  }
+
+  onMove(point: GridPoint): EventHandlerResult {
+    if (this.isHoveringOverflowButton(point)) {
+      const { overflowButtonTooltipProps } = this.irisGrid.state;
+      const newProps = this.getButtonPosition(point);
+      if (!deepEqual(overflowButtonTooltipProps, newProps)) {
+        this.irisGrid.setState({ overflowButtonTooltipProps: newProps });
+      }
+    } else {
+      this.destroyColumnTooltip();
+    }
+    return this.setCursor(point);
+  }
+
+  onWheel(point: GridPoint): EventHandlerResult {
+    this.destroyColumnTooltip();
+    return this.onMove(point);
   }
 
   // Needs to be onDown and not onClick b/c of GridSelectionMouseHandler shifting cell onDown
   onDown(point: GridPoint): boolean {
+    this.destroyColumnTooltip();
     const { column, row } = point;
 
     if (this.isHoveringOverflowButton(point))
@@ -92,6 +136,16 @@ class IrisGridCellOverflowMouseHandler extends GridMouseHandler {
         overflowText: this.irisGrid.getValueForCell(column, row),
       });
 
+    return false;
+  }
+
+  onContextMenu(): EventHandlerResult {
+    this.destroyColumnTooltip();
+    return false;
+  }
+
+  onLeave(): EventHandlerResult {
+    this.destroyColumnTooltip();
     return false;
   }
 }

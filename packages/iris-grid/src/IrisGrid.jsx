@@ -427,6 +427,7 @@ export class IrisGrid extends Component {
       frozenColumns,
       showOverflowModal: false,
       overflowText: '',
+      overflowButtonTooltipProps: null,
     };
   }
 
@@ -2505,6 +2506,39 @@ export class IrisGrid extends Component {
     });
   }
 
+  getOverflowButtonTooltip = memoize(overflowButtonTooltipProps => {
+    if (overflowButtonTooltipProps == null) {
+      return null;
+    }
+
+    const wrapperStyle = {
+      position: 'absolute',
+      ...overflowButtonTooltipProps,
+      pointerEvents: 'none',
+    };
+
+    const popperOptions = {
+      placement: 'left',
+      modifiers: {
+        flip: {
+          behavior: ['left', 'right'],
+        },
+      },
+    };
+
+    return (
+      <div style={wrapperStyle}>
+        <Tooltip
+          key={Date.now()}
+          options={popperOptions}
+          ref={this.handleTooltipRef}
+        >
+          View full contents
+        </Tooltip>
+      </div>
+    );
+  });
+
   render() {
     const {
       children,
@@ -2585,6 +2619,7 @@ export class IrisGrid extends Component {
       frozenColumns,
       showOverflowModal,
       overflowText,
+      overflowButtonTooltipProps,
     } = this.state;
     if (!isReady) {
       return null;
@@ -3264,6 +3299,7 @@ export class IrisGrid extends Component {
             {filterBar}
             {columnTooltip}
             {advancedFilterMenus}
+            {this.getOverflowButtonTooltip(overflowButtonTooltipProps)}
           </div>
           <PendingDataBottomBar
             error={pendingSaveError}
