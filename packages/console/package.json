@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/console",
-  "version": "0.11.1",
+  "version": "0.11.2",
   "description": "Deephaven Console",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
@@ -30,10 +30,10 @@
     "start": "cross-env NODE_ENV=development npm run watch"
   },
   "dependencies": {
-    "@deephaven/icons": "^0.11.0",
-    "@deephaven/jsapi-shim": "^0.11.0",
-    "@deephaven/storage": "^0.11.1",
-    "@deephaven/utils": "^0.11.0",
+    "@deephaven/icons": "^0.11.2",
+    "@deephaven/jsapi-shim": "^0.11.2",
+    "@deephaven/storage": "^0.11.2",
+    "@deephaven/utils": "^0.11.2",
     "@fortawesome/react-fontawesome": "^0.1.12",
     "classnames": "^2.3.1",
     "jszip": "3.2.2",
@@ -54,10 +54,10 @@
   },
   "devDependencies": {
     "@babel/cli": "^7.16.0",
-    "@deephaven/components": "^0.11.0",
-    "@deephaven/log": "^0.11.0",
-    "@deephaven/mocks": "^0.11.0",
-    "@deephaven/tsconfig": "^0.11.0",
+    "@deephaven/components": "^0.11.2",
+    "@deephaven/log": "^0.11.2",
+    "@deephaven/mocks": "^0.11.2",
+    "@deephaven/tsconfig": "^0.11.2",
     "@types/react": "^17.0.2",
     "@types/react-dom": "^17.0.2",
     "cross-env": "^7.0.2",
