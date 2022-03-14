@@ -233,8 +233,11 @@ class FilterSetManagerPanel extends Component {
 
   // eslint-disable-next-line class-methods-use-this
   restoreInputFilterState(panel, state) {
-    log.debug('restoreInputFilterState', panel, state);
-    panel.setPanelState(state);
+    const inputFilterState = { ...state };
+    // Restore state but don't flip the card
+    delete inputFilterState.isValueShown;
+    log.debug('restoreInputFilterState', panel, inputFilterState);
+    panel.setPanelState(inputFilterState);
   }
 
   render() {

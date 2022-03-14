@@ -150,7 +150,11 @@ class InputFilter extends Component {
 
   setFilterState({ name, type, value, isValueShown }) {
     const column = name != null && type != null ? { name, type } : null;
-    this.setState({ column, value, isValueShown });
+    const update =
+      isValueShown === undefined
+        ? { column, value }
+        : { column, value, isValueShown };
+    this.setState(update);
   }
 
   sendUpdate() {
