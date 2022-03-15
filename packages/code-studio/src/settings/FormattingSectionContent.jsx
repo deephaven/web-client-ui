@@ -191,6 +191,9 @@ export class FormattingSectionContent extends PureComponent {
     this.handleResetDecimalFormat = this.handleResetDecimalFormat.bind(this);
     this.handleResetIntegerFormat = this.handleResetIntegerFormat.bind(this);
     this.handleResetTimeZone = this.handleResetTimeZone.bind(this);
+    this.handletruncateNumbersWithPoundChange = this.handletruncateNumbersWithPoundChange.bind(
+      this
+    );
 
     const {
       formatter,
@@ -470,6 +473,17 @@ export class FormattingSectionContent extends PureComponent {
     );
   }
 
+  handletruncateNumbersWithPoundChange() {
+    this.setState(
+      state => ({
+        truncateNumbersWithPound: !state.truncateNumbersWithPound,
+      }),
+      () => {
+        this.debouncedCommitChanges();
+      }
+    );
+  }
+
   handleFormatRuleEntered(elem) {
     this.scrollToFormatBlockBottom();
     FormattingSectionContent.focusFirstInputInContainer(elem);
@@ -484,6 +498,7 @@ export class FormattingSectionContent extends PureComponent {
       timeZone,
       defaultDecimalFormatOptions,
       defaultIntegerFormatOptions,
+      truncateNumbersWithPound,
     } = this.state;
 
     const formatter = formatSettings
@@ -498,6 +513,7 @@ export class FormattingSectionContent extends PureComponent {
       showTimeZone,
       showTSeparator,
       timeZone,
+      truncateNumbersWithPound,
     };
     if (
       FormattingSectionContent.isValidFormat(
@@ -766,6 +782,7 @@ export class FormattingSectionContent extends PureComponent {
       timeZone,
       showTimeZone,
       showTSeparator,
+      truncateNumbersWithPound,
     } = this.state;
 
     const {
@@ -946,7 +963,7 @@ export class FormattingSectionContent extends PureComponent {
               />
             </div>
           </div>
-          <div className="form-row mb-3">
+          <div className="form-row mb-2">
             <label
               className="col-form-label col-3"
               htmlFor="default-integer-format-input"
@@ -986,6 +1003,16 @@ export class FormattingSectionContent extends PureComponent {
                   hidden: isIntegerOptionsDefault,
                 })}
               />
+            </div>
+          </div>
+          <div className="form-row mb-3">
+            <div className="offset-3 col-9">
+              <Checkbox
+                checked={truncateNumbersWithPound}
+                onChange={this.handletruncateNumbersWithPoundChange}
+              >
+                Truncate numbers with #
+              </Checkbox>
             </div>
           </div>
         </div>

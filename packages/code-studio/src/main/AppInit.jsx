@@ -166,6 +166,10 @@ const AppInit = props => {
         };
       }
 
+      if (settings.truncateNumbersWithPound === undefined) {
+        settings.truncateNumbersWithPound = false;
+      }
+
       // Set any shortcuts that user has overridden on this platform
       const { shortcutOverrides = {} } = settings;
       const isMac = Shortcut.isMacPlatform;
