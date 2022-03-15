@@ -391,15 +391,17 @@ class TableUtils {
     }
   }
 
-  static isTextType(columnType: string): boolean {
+  static isStringType(columnType: string): boolean {
     switch (columnType) {
-      case 'char':
-      case 'java.lang.Character':
       case 'java.lang.String':
         return true;
       default:
         return false;
     }
+  }
+
+  static isTextType(columnType: string): boolean {
+    return this.isStringType(columnType) || this.isCharType(columnType);
   }
 
   /**

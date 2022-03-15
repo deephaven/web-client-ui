@@ -47,6 +47,7 @@ import {
   ReverseKeyHandler,
 } from './key-handlers';
 import {
+  IrisGridCellOverflowMouseHandler,
   IrisGridColumnSelectMouseHandler,
   IrisGridColumnTooltipMouseHandler,
   IrisGridContextMenuHandler,
@@ -90,6 +91,7 @@ import DateUtils from './DateUtils';
 import ConditionalFormattingMenu from './sidebar/conditional-formatting/ConditionalFormattingMenu';
 import { getFormatColumns } from './sidebar/conditional-formatting/ConditionalFormattingUtils';
 import ConditionalFormatEditor from './sidebar/conditional-formatting/ConditionalFormatEditor';
+import IrisGridCellOverflowModal from './IrisGridCellOverflowModal';
 
 const log = Log.module('IrisGrid');
 
@@ -221,6 +223,7 @@ export class IrisGrid extends Component {
     );
     this.handleCrossColumnSearch = this.handleCrossColumnSearch.bind(this);
     this.handleRollupChange = this.handleRollupChange.bind(this);
+    this.handleOverflowClose = this.handleOverflowClose.bind(this);
 
     this.updateSearchFilter = debounce(
       this.updateSearchFilter.bind(this),
@@ -320,6 +323,7 @@ export class IrisGrid extends Component {
       keyHandlers.push(new CopyKeyHandler(this));
     }
     const mouseHandlers = [
+      new IrisGridCellOverflowMouseHandler(this),
       new IrisGridColumnSelectMouseHandler(this),
       new IrisGridColumnTooltipMouseHandler(this),
       new IrisGridSortMouseHandler(this),
@@ -421,6 +425,9 @@ export class IrisGrid extends Component {
 
       toastMessage: null,
       frozenColumns,
+      showOverflowModal: false,
+      overflowText: '',
+      overflowButtonTooltipProps: null,
     };
   }
 
@@ -2493,6 +2500,45 @@ export class IrisGrid extends Component {
     onStateChange(irisGridState, gridState);
   }
 
+  handleOverflowClose() {
+    this.setState({
+      showOverflowModal: false,
+    });
+  }
+
+  getOverflowButtonTooltip = memoize(overflowButtonTooltipProps => {
+    if (overflowButtonTooltipProps == null) {
+      return null;
+    }
+
+    const wrapperStyle = {
+      position: 'absolute',
+      ...overflowButtonTooltipProps,
+      pointerEvents: 'none',
+    };
+
+    const popperOptions = {
+      placement: 'left',
+      modifiers: {
+        flip: {
+          behavior: ['left', 'right'],
+        },
+      },
+    };
+
+    return (
+      <div style={wrapperStyle}>
+        <Tooltip
+          key={Date.now()}
+          options={popperOptions}
+          ref={this.handleTooltipRef}
+        >
+          View full contents
+        </Tooltip>
+      </div>
+    );
+  });
+
   render() {
     const {
       children,
@@ -2571,6 +2617,9 @@ export class IrisGrid extends Component {
       pendingDataMap,
       toastMessage,
       frozenColumns,
+      showOverflowModal,
+      overflowText,
+      overflowButtonTooltipProps,
     } = this.state;
     if (!isReady) {
       return null;
@@ -3180,6 +3229,11 @@ export class IrisGrid extends Component {
               stateOverride={stateOverride}
               theme={theme}
             />
+            <IrisGridCellOverflowModal
+              isOpen={showOverflowModal}
+              text={overflowText}
+              onClose={this.handleOverflowClose}
+            />
             {isVisible && (
               <IrisGridModelUpdater
                 model={model}
@@ -3245,6 +3299,7 @@ export class IrisGrid extends Component {
             {filterBar}
             {columnTooltip}
             {advancedFilterMenus}
+            {this.getOverflowButtonTooltip(overflowButtonTooltipProps)}
           </div>
           <PendingDataBottomBar
             error={pendingSaveError}

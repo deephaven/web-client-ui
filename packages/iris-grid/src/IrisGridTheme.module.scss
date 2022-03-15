@@ -4,10 +4,13 @@
 $selection-color: rgba($blue, 0.09);
 $selection-outline-color: $blue;
 $selection-outline-casing-color: $gray-900;
+$font-size: 12px;
+$row-height: 19px;
+$row-hover-bg: mix($gray-600, $gray-700, 50%);
 
 :export {
   grid-bg: $gray-900;
-  font: 12px Fira Sans, sans-serif; // must be preloaded
+  font: $font-size Fira Sans, sans-serif; // must be preloaded
   header-bg: $content-bg;
   header-color: $gray-200;
   header-separator-color: $gray-900;
@@ -16,12 +19,13 @@ $selection-outline-casing-color: $gray-900;
   header-sort-bar-color: $purple;
   header-reverse-bar-color: $green-dark;
   header-bar-casing-color: $gray-900;
-  header-font: 600 12px Fira Sans, sans-serif; // must be preloaded
+  header-font: 600 $font-size Fira Sans, sans-serif; // must be preloaded
+  row-height: $row-height;
   row-background-colors: $gray-800 $content-bg;
   selection-color: $selection-color;
   selection-outline-color: $selection-outline-color;
   selection-outline-casing-color: $selection-outline-casing-color;
-  row-hover-bg: mix($gray-600, $gray-700, 50%);
+  row-hover-bg: $row-hover-bg;
   selected-row-hover-bg: rgba($blue, 0.25);
 
   scroll-bar-bg: $gray-850;
@@ -76,4 +80,7 @@ $selection-outline-casing-color: $gray-900;
   floating-row-background-colors: $gray-700;
   floating-divider-inner-color: $gray-700;
   floating-divider-outer-color: $gray-900;
+
+  overflow-button-color: $gray-300;
+  overflow-button-hover-color: $gray-100;
 }

@@ -1,4 +1,4 @@
-import { FilterOperator } from '@deephaven/iris-grid/dist/filters';
+import { FilterOperator } from './filters';
 import {
   FilterConfig,
   FilterConfigItem,

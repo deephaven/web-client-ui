@@ -65,7 +65,7 @@ const theme: IrisGridThemeType = Object.freeze({
   scrollBarSize: 13,
   scrollBarHoverSize: 16, // system default scrollbar width is 17
   minScrollHandleSize: 24,
-  rowHeight: 19,
+  rowHeight: parseInt(IrisGridTheme['row-height'], 10) || 19, // IrisGrid test breaks without the fallback value
   columnWidth: 100,
   rowHeaderWidth: 0,
   rowFooterWidth: 60,
@@ -94,6 +94,9 @@ const theme: IrisGridThemeType = Object.freeze({
   floatingRowBackgroundColors: IrisGridTheme['floating-row-background-colors'],
   floatingDividerInnerColor: IrisGridTheme['floating-divider-inner-color'],
   floatingDividerOuterColor: IrisGridTheme['floating-divider-outer-color'],
+
+  overflowButtonColor: IrisGridTheme['overflow-button-color'],
+  overflowButtonHoverColor: IrisGridTheme['overflow-button-hover-color'],
 });
 
 export default theme;

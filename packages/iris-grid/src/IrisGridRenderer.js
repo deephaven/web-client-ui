@@ -6,6 +6,7 @@ import {
   dhSortUp,
   vsTriangleDown,
   vsTriangleRight,
+  vsLinkExternal,
 } from '@deephaven/icons';
 import { GridRenderer, GridUtils } from '@deephaven/grid';
 import TableUtils from './TableUtils';
@@ -15,9 +16,10 @@ const ICON_NAMES = Object.freeze({
   SORT_DOWN: 'sortDown',
   CARET_DOWN: 'caretDown',
   CARET_RIGHT: 'caretRight',
+  CELL_OVERFLOW: 'cellOverflow',
 });
 
-const ICON_SCALE = 0.03;
+const ICON_SIZE = 16;
 
 /**
  * Handles rendering some of the Iris specific features, such as sorting icons, sort bar display
@@ -44,10 +46,19 @@ class IrisGridRenderer extends GridRenderer {
     this.setIcon(ICON_NAMES.SORT_DOWN, dhSortDown);
     this.setIcon(ICON_NAMES.CARET_DOWN, vsTriangleDown);
     this.setIcon(ICON_NAMES.CARET_RIGHT, vsTriangleRight);
+    this.setIcon(ICON_NAMES.CELL_OVERFLOW, vsLinkExternal);
   }
 
+  // Scales the icon to be square and match the global ICON_SIZE
   setIcon(name, faIcon) {
-    this.icons[name] = new Path2D(faIcon.icon[4]);
+    const icon = new Path2D(faIcon.icon[4]);
+    const scaledIcon = new Path2D();
+    const scaleMatrix = {
+      a: ICON_SIZE / faIcon.icon[0],
+      d: ICON_SIZE / faIcon.icon[1],
+    };
+    scaledIcon.addPath(icon, scaleMatrix);
+    this.icons[name] = scaledIcon;
   }
 
   getIcon(name) {
@@ -59,10 +70,10 @@ class IrisGridRenderer extends GridRenderer {
       return null;
     }
     if (sort.direction === TableUtils.sortDirection.ascending) {
-      return new Path2D(this.getIcon(ICON_NAMES.SORT_UP));
+      return this.getIcon(ICON_NAMES.SORT_UP);
     }
     if (sort.direction === TableUtils.sortDirection.descending) {
-      return new Path2D(this.getIcon(ICON_NAMES.SORT_DOWN));
+      return this.getIcon(ICON_NAMES.SORT_DOWN);
     }
     return null;
   }
@@ -70,6 +81,7 @@ class IrisGridRenderer extends GridRenderer {
   drawCanvas(state) {
     super.drawCanvas(state);
 
+    this.drawCellOverflowButton(state);
     this.drawScrim(state);
   }
 
@@ -322,7 +334,6 @@ class IrisGridRenderer extends GridRenderer {
 
     context.fillStyle = theme.headerSortBarColor;
     context.translate(x, y);
-    context.scale(ICON_SCALE, ICON_SCALE);
     context.fill(icon);
 
     context.restore();
@@ -591,7 +602,6 @@ class IrisGridRenderer extends GridRenderer {
     context.fillStyle = color;
     context.textAlign = 'center';
     context.translate(iconX, iconY);
-    context.scale(ICON_SCALE, ICON_SCALE);
     context.fill(markerIcon);
     context.restore();
   }
@@ -683,6 +693,144 @@ class IrisGridRenderer extends GridRenderer {
     }
 
     context.translate(-gridX, -gridY);
+  }
+
+  // This will shrink the size the text may take when the overflow button is rendered
+  // The text will truncate to a smaller width and won't overlap the button
+  getTextRenderMetrics(context, state, column, row) {
+    const textMetrics = super.getTextRenderMetrics(context, state, column, row);
+
+    const { mouseX, mouseY, metrics } = state;
+
+    if (mouseX == null || mouseY == null) {
+      return textMetrics;
+    }
+
+    const { column: mouseColumn, row: mouseRow } = GridUtils.getGridPointFromXY(
+      mouseX,
+      mouseY,
+      metrics
+    );
+
+    if (column === mouseColumn && row === mouseRow) {
+      const { left } = this.getCellOverflowButtonPosition(state);
+      if (this.shouldRenderOverflowButton(state)) {
+        textMetrics.width = left - textMetrics.x;
+      }
+    }
+    return textMetrics;
+  }
+
+  shouldRenderOverflowButton(state) {
+    const { context, mouseX, mouseY, metrics, model, theme } = state;
+    if (mouseX == null || mouseY == null) {
+      return false;
+    }
+
+    const { row, column, modelRow, modelColumn } = GridUtils.getCellInfoFromXY(
+      mouseX,
+      mouseY,
+      metrics
+    );
+
+    if (
+      row == null ||
+      column == null ||
+      modelRow == null ||
+      modelColumn == null ||
+      !TableUtils.isStringType(model.columns[modelColumn].type)
+    ) {
+      return false;
+    }
+
+    const text = model.textForCell(modelColumn, modelRow) ?? '';
+    const { width: textWidth } = super.getTextRenderMetrics(
+      context,
+      state,
+      column,
+      row
+    );
+    const fontWidth =
+      metrics.fontWidths.get(theme.font) ?? IrisGridRenderer.DEFAULT_FONT_WIDTH;
+
+    context.save();
+    context.font = theme.font;
+
+    const truncatedText = this.getCachedTruncatedString(
+      context,
+      text,
+      textWidth,
+      fontWidth
+    );
+    context.restore();
+
+    return text !== '' && truncatedText !== text;
+  }
+
+  getCellOverflowButtonPosition({ mouseX, mouseY, metrics, theme }) {
+    const NULL_POSITION = { left: null, top: null, width: null, height: null };
+    if (mouseX == null || mouseY == null) {
+      return NULL_POSITION;
+    }
+    const { rowHeight, columnWidth, left, top } = GridUtils.getCellInfoFromXY(
+      mouseX,
+      mouseY,
+      metrics
+    );
+
+    const { width: gridWidth, verticalBarWidth } = metrics;
+    const { cellHorizontalPadding } = theme;
+
+    const width = ICON_SIZE + 2 * cellHorizontalPadding;
+    const height = rowHeight;
+    // Right edge of column or of visible grid, whichever is smaller
+    const right = Math.min(
+      metrics.gridX + left + columnWidth,
+      gridWidth - verticalBarWidth
+    );
+    const buttonLeft = right - width;
+    const buttonTop = metrics.gridY + top;
+
+    return { left: buttonLeft, top: buttonTop, width, height };
+  }
+
+  drawCellOverflowButton(state) {
+    const { context, mouseX, mouseY, theme } = state;
+    if (mouseX == null || mouseY == null) return;
+
+    if (!this.shouldRenderOverflowButton(state)) {
+      return;
+    }
+
+    const {
+      left: buttonLeft,
+      top: buttonTop,
+      width: buttonWidth,
+      height: buttonHeight,
+    } = this.getCellOverflowButtonPosition(state);
+
+    const {
+      cellHorizontalPadding,
+      overflowButtonColor,
+      overflowButtonHoverColor,
+    } = theme;
+
+    context.save();
+    if (
+      mouseX >= buttonLeft &&
+      mouseX <= buttonLeft + buttonWidth &&
+      mouseY >= buttonTop &&
+      mouseY <= buttonTop + buttonHeight
+    ) {
+      context.fillStyle = overflowButtonHoverColor;
+    } else {
+      context.fillStyle = overflowButtonColor;
+    }
+    const icon = this.getIcon(ICON_NAMES.CELL_OVERFLOW);
+    context.translate(buttonLeft + cellHorizontalPadding, buttonTop + 2);
+    context.fill(icon);
+
+    context.restore();
   }
 }
 

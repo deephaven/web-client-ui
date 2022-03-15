@@ -56,6 +56,7 @@ import 'monaco-editor/esm/vs/editor/contrib/viewportSemanticTokens/viewportSeman
 import 'monaco-editor/esm/vs/editor/contrib/wordHighlighter/wordHighlighter.js';
 import 'monaco-editor/esm/vs/editor/contrib/wordOperations/wordOperations.js';
 import 'monaco-editor/esm/vs/editor/contrib/wordPartOperations/wordPartOperations.js';
+import 'monaco-editor/esm/vs/basic-languages/typescript/typescript.contribution.js';
 import { KeyCodeUtils } from 'monaco-editor/esm/vs/base/common/keyCodes.js';
 import { KeyMod } from 'monaco-editor/esm/vs/editor/common/standalone/standaloneBase.js';
 import Log from '@deephaven/log';

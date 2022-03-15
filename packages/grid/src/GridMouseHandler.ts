@@ -30,13 +30,13 @@ export type GridMouseHandlerFunctionName =
 export class GridMouseHandler {
   order: number;
 
-  // What order this mouse handler should trigger in
+  // What order this mouse handler should trigger in. Smaller numbers trigger first
   // Default to well below any of the GRID mouse handlers 100-1000+
   constructor(order = 5000) {
     this.order = order;
   }
 
-  // Cursor to use if this returns true from any function
+  // Cursor to use if this returns any truthy value including { stopPropagation: false, preventDefault: false }
   cursor: string | null = null;
 
   onDown(

@@ -30,10 +30,12 @@
     "start": "cross-env NODE_ENV=development npm run watch"
   },
   "dependencies": {
+    "@deephaven/console": "^0.11.2",
     "@deephaven/grid": "^0.11.2",
     "@deephaven/icons": "^0.11.2",
     "@deephaven/jsapi-shim": "^0.11.2",
     "@deephaven/react-hooks": "^0.11.2",
+    "@deephaven/storage": "^0.11.2",
     "@deephaven/utils": "^0.11.2",
     "@fortawesome/react-fontawesome": "^0.1.15",
     "classnames": "^2.3.1",
@@ -47,6 +49,7 @@
     "prop-types": "^15.7.2",
     "react-beautiful-dnd": "^13.1.0",
     "react-transition-group": "^2.9.0",
+    "reactstrap": "^8.10.0",
     "shortid": "^2.2.16",
     "web-streams-polyfill": "^2.1.0"
   },

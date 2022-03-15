@@ -27,7 +27,6 @@
     "start": "cross-env NODE_ENV=development npm run watch"
   },
   "dependencies": {
-    "@deephaven/iris-grid": "^0.11.2",
     "lodash.throttle": "^4.1.1"
   },
   "peerDependencies": {
