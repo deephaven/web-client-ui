@@ -14,7 +14,7 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "engines": {
-    "node": ">=10"
+    "node": ">=16"
   },
   "scripts": {
     "build": "cross-env NODE_ENV=production run-p build:*",
@@ -27,7 +27,7 @@
     "start": "cross-env NODE_ENV=development npm run watch"
   },
   "dependencies": {
-    "deep-equal": "^2.0.4",
+    "deep-equal": "^2.0.5",
     "redux-thunk": "^2.3.0"
   },
   "devDependencies": {

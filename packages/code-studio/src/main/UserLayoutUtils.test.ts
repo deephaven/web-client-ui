@@ -1,5 +1,4 @@
-import { Link } from '@deephaven/dashboard-core-plugins/dist/linker/LinkerUtils';
-import { FilterSet } from '@deephaven/dashboard-core-plugins/dist/panels/FilterSetManager';
+import { FilterSet, Link } from '@deephaven/dashboard-core-plugins';
 import { ItemConfigType } from '@deephaven/golden-layout';
 import LayoutStorage, {
   ExportedLayout,

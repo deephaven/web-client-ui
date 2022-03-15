@@ -7,6 +7,8 @@ export { default as LinkerPlugin } from './LinkerPlugin';
 export { default as MarkdownPlugin } from './MarkdownPlugin';
 export { default as PandasPlugin } from './PandasPlugin';
 export { default as ControlType } from './controls/ControlType';
+export { default as LinkerUtils } from './linker/LinkerUtils';
+export type { Link } from './linker/LinkerUtils';
 export { default as ToolType } from './linker/ToolType';
 
 export * from './events';

@@ -14,7 +14,7 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "engines": {
-    "node": ">=10"
+    "node": ">=16"
   },
   "scripts": {
     "build": "cross-env NODE_ENV=production run-p build:*",
@@ -39,19 +39,19 @@
     "@deephaven/iris-grid": "^0.11.2",
     "@deephaven/jsapi-shim": "^0.11.2",
     "@deephaven/utils": "^0.11.2",
-    "@fortawesome/react-fontawesome": "^0.1.12",
+    "@fortawesome/react-fontawesome": "^0.1.15",
     "classnames": "^2.3.1",
-    "deep-equal": "^2.0.4",
+    "deep-equal": "^2.0.5",
     "lodash.debounce": "^4.0.8",
     "lodash.throttle": "^4.1.1",
     "memoize-one": "^5.1.1",
     "memoizee": "^0.4.15",
     "prop-types": "^15.7.2",
     "react-markdown": "^6.0.2",
-    "react-transition-group": "^2.3.1",
-    "reactstrap": "^8.4.1",
+    "react-transition-group": "^2.9.0",
+    "reactstrap": "^8.10.0",
     "remark-gfm": "1.0.0",
-    "shortid": "^2.2.15"
+    "shortid": "^2.2.16"
   },
   "peerDependencies": {
     "@deephaven/components": "^0.4.0",
@@ -77,7 +77,7 @@
     "react-dom": "^17.0.2",
     "react-redux": "^7.2.4",
     "rimraf": "^3.0.2",
-    "sass": "1.32.13"
+    "sass": "^1.39.0"
   },
   "files": [
     "dist"
