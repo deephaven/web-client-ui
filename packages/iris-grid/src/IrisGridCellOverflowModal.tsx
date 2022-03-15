@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Editor } from '@deephaven/console';
 import { Modal, ModalBody, ModalHeader } from 'reactstrap';
 import * as monaco from 'monaco-editor';
