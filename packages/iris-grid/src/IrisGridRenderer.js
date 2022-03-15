@@ -760,7 +760,8 @@ class IrisGridRenderer extends GridRenderer {
       context,
       text,
       textWidth,
-      fontWidth
+      fontWidth,
+      model.truncationCharForCell(modelColumn, modelRow)
     );
     context.restore();
 

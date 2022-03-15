@@ -399,6 +399,19 @@ class IrisGridTableModel extends IrisGridModel {
     return text;
   }
 
+  truncationCharForCell(x) {
+    const column = this.columns[x];
+    const { type } = column;
+    if (
+      TableUtils.isNumberType(type) &&
+      this.formatter.truncateNumbersWithPound
+    ) {
+      return '#';
+    }
+
+    return undefined;
+  }
+
   colorForCell(x, y, theme) {
     const data = this.dataForCell(x, y);
     if (data) {

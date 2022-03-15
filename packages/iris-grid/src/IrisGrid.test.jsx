@@ -20,6 +20,7 @@ const DEFAULT_SETTINGS = {
   showTimeZone: false,
   showTSeparator: true,
   formatter: [],
+  truncateNumbersWithPound: false,
 };
 
 function makeMockCanvas() {

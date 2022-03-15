@@ -51,6 +51,19 @@ abstract class GridModel<
   abstract textForCell(column: ModelIndex, row: ModelIndex): string;
 
   /**
+   * Get the truncation character for the specified cell. Can be undefined
+   * @param column Column to get the truncation character for
+   * @param row Row to get the truncation character for
+   * @returns Truncation character for the specified cell
+   */
+  truncationCharForCell(
+    column: ModelIndex,
+    row: ModelIndex
+  ): string | undefined {
+    return undefined;
+  }
+
+  /**
    * Get the text alignment for the specified cell
    * @param column Column to get the alignment for
    * @param row Row to get the alignment for
