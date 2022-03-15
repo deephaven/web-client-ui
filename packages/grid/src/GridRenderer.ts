@@ -1062,10 +1062,10 @@ export class GridRenderer {
    * The width accounts for tree table indents and cell padding, so it is the width the text may consume
    *
    * @param context Canvas context
-   * @param state GridRendererState to get the text metrics for
+   * @param state GridRenderState to get the text metrics for
    * @param column Column of cell to get text metrics for
    * @param row Row of cell to get text metrics for
-   * @returns Object with textWidth, textX, and textY
+   * @returns Object with width, x, and y of the text
    */
   getTextRenderMetrics(
     context: CanvasRenderingContext2D,
@@ -1073,9 +1073,9 @@ export class GridRenderer {
     column: VisibleIndex,
     row: VisibleIndex
   ): {
-    textWidth: number;
-    textX: number;
-    textY: number;
+    width: number;
+    x: number;
+    y: number;
   } {
     const { textAlign } = context;
     const { metrics, model, theme } = state;
@@ -1113,15 +1113,13 @@ export class GridRenderer {
       textX = x + textWidth - cellHorizontalPadding;
     } else if (textAlign === 'center') {
       textX = x + textWidth * 0.5;
-    } else {
-      textX = x + cellHorizontalPadding;
     }
     textX += treeIndent;
 
     return {
-      textWidth: textWidth - cellHorizontalPadding * 2,
-      textX,
-      textY,
+      width: textWidth - cellHorizontalPadding * 2,
+      x: textX,
+      y: textY,
     };
   }
 
@@ -1155,12 +1153,11 @@ export class GridRenderer {
         model.colorForCell(modelColumn, modelRow, theme) || textColor;
       context.fillStyle = color;
 
-      const { textWidth, textX, textY } = this.getTextRenderMetrics(
-        context,
-        state,
-        column,
-        row
-      );
+      const {
+        width: textWidth,
+        x: textX,
+        y: textY,
+      } = this.getTextRenderMetrics(context, state, column, row);
 
       const fontWidth =
         fontWidths.get(context.font) ?? GridRenderer.DEFAULT_FONT_WIDTH;

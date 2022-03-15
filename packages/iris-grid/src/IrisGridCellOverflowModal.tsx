@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Editor } from '@deephaven/console';
 import { Modal, ModalBody, ModalHeader } from 'reactstrap';
 import * as monaco from 'monaco-editor';
@@ -21,15 +21,23 @@ export default function IrisGridCellOverflowModal({
   const [height, setHeight] = useState(0);
   const [showLineNumbers, setShowLineNumbers] = useState(false);
   const [isFormatted, setIsFormatted] = useState(false);
-  const [canFormat] = useState(() => {
+  const [canFormat, setCanFormat] = useState(false);
+  const editorRef = useRef<monaco.editor.IStandaloneCodeEditor>();
+
+  // Update format button on open
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+
     try {
       JSON.parse(text);
-      return true;
+      setCanFormat(true);
     } catch {
-      return false;
+      setCanFormat(false);
     }
-  });
-  const editorRef = useRef<monaco.editor.IStandaloneCodeEditor>();
+    setIsFormatted(false);
+  }, [isOpen, text]);
 
   // Re-layout editor on height change
   useEffect(() => {
