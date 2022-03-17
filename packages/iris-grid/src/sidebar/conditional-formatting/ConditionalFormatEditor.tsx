@@ -9,6 +9,7 @@ import {
   BaseFormatConfig,
   FormatterType,
   FormattingRule,
+  isSupportedColumn,
   ModelColumn,
 } from './ConditionalFormattingUtils';
 import './ConditionalFormatEditor.scss';
@@ -55,12 +56,14 @@ const ConditionalFormatEditor = (
   props: ConditionalFormatEditorProps
 ): JSX.Element => {
   const {
-    columns,
+    columns: originalColumns,
     onSave = DEFAULT_CALLBACK,
     onUpdate = DEFAULT_CALLBACK,
     onCancel = DEFAULT_CALLBACK,
     rule: defaultRule,
   } = props;
+
+  const columns = originalColumns.filter(isSupportedColumn);
 
   const [selectedFormatter, setFormatter] = useState(
     defaultRule?.type ?? formatterTypes[0]

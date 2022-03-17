@@ -54,7 +54,7 @@ function getRuleValue(config: BaseFormatConfig): string {
       ? ''
       : `${config.value}`;
   }
-  if (TableUtils.isTextType(type)) {
+  if (TableUtils.isStringType(type)) {
     return config.condition === StringCondition.IS_NULL ||
       config.condition === StringCondition.IS_NOT_NULL
       ? ''

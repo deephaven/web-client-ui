@@ -256,7 +256,7 @@ export function getConditionDBString(config: BaseFormatConfig): string {
   if (TableUtils.isCharType(column.type)) {
     return getCharConditionText(config);
   }
-  if (TableUtils.isTextType(column.type)) {
+  if (TableUtils.isStringType(column.type)) {
     return getStringConditionText(config);
   }
   if (TableUtils.isDateType(column.type)) {
@@ -369,7 +369,7 @@ export function getDefaultConditionForType(columnType: string): Condition {
   if (TableUtils.isCharType(columnType)) {
     return CharCondition.IS_EQUAL;
   }
-  if (TableUtils.isTextType(columnType)) {
+  if (TableUtils.isStringType(columnType)) {
     return StringCondition.IS_EXACTLY;
   }
   if (TableUtils.isDateType(columnType)) {
@@ -386,7 +386,7 @@ export function getDefaultValueForType(columnType: string): string | undefined {
   if (TableUtils.isCharType(columnType)) {
     return '';
   }
-  if (TableUtils.isTextType(columnType)) {
+  if (TableUtils.isStringType(columnType)) {
     return '';
   }
   return undefined;
@@ -629,7 +629,7 @@ export function getShortLabelForConditionType(
   if (TableUtils.isCharType(columnType)) {
     return getShortLabelForCharCondition(condition as CharCondition);
   }
-  if (TableUtils.isTextType(columnType)) {
+  if (TableUtils.isStringType(columnType)) {
     return getShortLabelForStringCondition(condition as StringCondition);
   }
   if (TableUtils.isDateType(columnType)) {
@@ -690,4 +690,14 @@ export function getFormatColumns(
   });
 
   return result;
+}
+
+export function isSupportedColumn({ type }: ModelColumn): boolean {
+  return (
+    TableUtils.isNumberType(type) ||
+    TableUtils.isCharType(type) ||
+    TableUtils.isStringType(type) ||
+    TableUtils.isDateType(type) ||
+    TableUtils.isBooleanType(type)
+  );
 }
