@@ -2,7 +2,10 @@ import React from 'react';
 import { render } from '@testing-library/react';
 import StyleGuide from './StyleGuide';
 
-class MockPath2D {}
+class MockPath2D {
+  // eslint-disable-next-line class-methods-use-this
+  addPath() {}
+}
 
 window.Path2D = MockPath2D;
 
