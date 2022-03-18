@@ -70,7 +70,7 @@ jobs:
       # Do this before restoring build cache since npm ci cleans node_modules
       - name: Install dependencies
         if: steps.cache-node-modules.outputs.cache-hit != 'true'
-        run: npm ci
+        run: npm ci --no-audit
 
       # This is for webpack/terser cache mainly which helps build speed
       # Cache on pushes to main should end up using the cache from the previous commit to main
