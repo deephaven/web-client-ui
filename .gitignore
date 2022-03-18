@@ -38,4 +38,4 @@ yarn-error.log*
 src/**/*.css
 
 tsconfig.tsbuildinfo
-packages/*/.gitignore
+packages/*/package-lock.json
