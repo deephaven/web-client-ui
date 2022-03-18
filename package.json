@@ -80,7 +80,8 @@
     "ignoreFiles": [
       "node_modules",
       "*.*",
-      "!*.scss"
+      "!*.scss",
+      "packages/golden-layout/*"
     ],
     "extends": [
       "@deephaven/stylelint-config"
