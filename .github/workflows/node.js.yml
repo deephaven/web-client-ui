@@ -36,21 +36,6 @@ jobs:
             packages/*/node_modules
           key: ${{ runner.os }}-modules-${{ hashFiles('package-lock.json') }}
 
-      # This is for webpack/terser cache mainly which helps build speed
-      # Cache on pushes to main should end up using the cache from the previous commit to main
-      # PRs should hit the cache on the base branch first, then future commits hit the cache on the PR
-      # Don't skip this on node_modules hit b/c package-lock will change less often than this cache
-      # The result would be less recent build caches if it were skipped
-      - name: Cache node_mocules/.cache
-        uses: actions/cache@v2
-        with:
-          path: |
-            node_modules/.cache
-            packages/*/node_modules/.cache
-          key: ${{ runner.os }}-build-cache-${{ github.ref }}
-          restore-keys: |
-            ${{ runner.os }}-build-cache-
-
       - name: Cache npm
         uses: actions/cache@v2
         with:
@@ -81,6 +66,21 @@ jobs:
       - name: Install dependencies
         if: steps.cache-node-modules.outputs.cache-hit == 'false'
         run: npm ci
+
+      # This is for webpack/terser cache mainly which helps build speed
+      # Cache on pushes to main should end up using the cache from the previous commit to main
+      # PRs should hit the cache on the base branch first, then future commits hit the cache on the PR
+      # Don't skip this on node_modules hit b/c package-lock will change less often than this cache
+      # The result would be less recent build caches if it were skipped
+      - name: Cache node_mocules/.cache
+        uses: actions/cache@v2
+        with:
+          path: |
+            node_modules/.cache
+            packages/*/node_modules/.cache
+          key: ${{ runner.os }}-build-cache-${{ github.ref }}
+          restore-keys: |
+            ${{ runner.os }}-build-cache-
 
       - name: Build
         run: npm run build
