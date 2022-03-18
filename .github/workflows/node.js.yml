@@ -12,13 +12,17 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    concurrency:
+      group: ${{ github.ref }}
+      cancel-in-progress: true
 
     steps:
       - uses: actions/checkout@v2
         with:
           fetch-depth: '0' # This action defaults to only getting the latest commit. Setting to 0 makes it retrieve the full git commit history
 
-      - name: Fetch base branch
+      - name: Fetch base branch (PR)
+        if: ${{ github.event_name == 'pull_request' }}
         run: git fetch --no-tags origin ${{ github.event.pull_request.base.ref }}
 
       - name: Use Node.js
@@ -30,7 +34,7 @@ jobs:
         id: cache-node-modules
         uses: actions/cache@v2
         with:
-          # If no package-lock.json or package.json files have changed, it should be safe to restore all node_modules as they were
+          # If package-lock has not changed, it should be safe to restore all node_modules as they were
           path: |
             node_modules
             packages/*/node_modules
@@ -38,6 +42,7 @@ jobs:
 
       - name: Cache npm
         uses: actions/cache@v2
+        if: steps.cache-node-modules.outputs.cache-hit == 'false'
         with:
           # npm cache files are stored in `~/.npm` on Linux/macOS
           # Only needed if package-lock changed and we'll do npm ci
@@ -45,7 +50,6 @@ jobs:
           # If no new packages are installed for a while, the install could take longer
           # It might not be worth it though if the install only takes another minute vs 10-15s per action to cache this
           path: ~/.npm
-          if: steps.cache-node-modules.outputs.cache-hit == 'false'
           key: ${{ runner.os }}-npm-${{ hashFiles('package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-npm-
@@ -62,7 +66,8 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-lintcache-
 
-      # Only need to install and bootstrap deps if package-locks changed
+      # Only need to install deps if package-lock changed
+      # Do this before restoring build cache since npm ci cleans node_modules
       - name: Install dependencies
         if: steps.cache-node-modules.outputs.cache-hit == 'false'
         run: npm ci
