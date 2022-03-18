@@ -1,5 +1,6 @@
 import React from 'react';
-import { mount } from 'enzyme';
+import { render } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import ChartBuilder from './ChartBuilder';
 import IrisGridTestUtils from '../IrisGridTestUtils';
 
@@ -12,152 +13,114 @@ function makeChartBuilderWrapper({
     IrisGridTestUtils.makeTable(COLUMN_NAMES.map(IrisGridTestUtils.makeColumn))
   ),
 } = {}) {
-  return mount(
+  return render(
     <ChartBuilder onChange={onChange} onSubmit={onSubmit} model={model} />
   );
 }
 
 it('renders without crashing', () => {
-  const wrapper = makeChartBuilderWrapper();
-  wrapper.unmount();
+  const { unmount } = makeChartBuilderWrapper();
+  unmount();
 });
 
 it('updates the chart type', () => {
-  const wrapper = makeChartBuilderWrapper();
+  const { container, unmount } = makeChartBuilderWrapper();
 
-  let chartButtons = wrapper.find('.btn-chart-type');
-  expect(wrapper.state('type')).toBe(ChartBuilder.types[0]);
-  expect(chartButtons.at(0).hasClass('active')).toBe(true);
-  expect(chartButtons.at(1).hasClass('active')).toBe(false);
+  let chartButtons = container.querySelectorAll('.btn-chart-type');
 
-  chartButtons.at(1).simulate('click');
+  expect(chartButtons[0].classList.contains('active')).toBe(true);
+  expect(chartButtons[1].classList.contains('active')).toBe(false);
 
-  chartButtons = wrapper.find('.btn-chart-type');
+  userEvent.click(chartButtons[1]);
 
-  expect(wrapper.state('type')).toBe(ChartBuilder.types[1]);
-  expect(chartButtons.at(0).hasClass('active')).toBe(false);
-  expect(chartButtons.at(1).hasClass('active')).toBe(true);
+  chartButtons = container.querySelectorAll('.btn-chart-type');
 
-  wrapper.unmount();
+  expect(chartButtons[0].classList.contains('active')).toBe(false);
+  expect(chartButtons[1].classList.contains('active')).toBe(true);
+
+  unmount();
 });
 
 it('has x-axis selection with the proper columns', () => {
-  const wrapper = makeChartBuilderWrapper();
+  const { container, unmount } = makeChartBuilderWrapper();
+  const xAxisSelectElm = container.querySelector('.select-x-axis');
 
-  expect(wrapper.find('.select-x-axis').children().length).toBe(
+  expect(xAxisSelectElm.querySelectorAll('option').length).toBe(
     COLUMN_NAMES.length
   );
-  expect(wrapper.find('.select-x-axis').instance().value).toBe(COLUMN_NAMES[0]);
-  expect(wrapper.state('xAxis')).toBe(COLUMN_NAMES[0]);
-
-  wrapper.find('.select-x-axis').childAt(1).simulate('change');
-  expect(wrapper.state('xAxis')).toBe(COLUMN_NAMES[1]);
-
-  wrapper.unmount();
+  expect(xAxisSelectElm.value).toBe(COLUMN_NAMES[0]);
+  unmount();
 });
 
 it('updates series selection with the proper columns', () => {
-  const wrapper = makeChartBuilderWrapper();
+  const { container, unmount } = makeChartBuilderWrapper();
+  const seriesSelectElm = container.querySelector('.select-series');
 
-  expect(wrapper.find('.select-series').children().length).toBe(
+  expect(seriesSelectElm.querySelectorAll('option').length).toBe(
     COLUMN_NAMES.length
   );
-  expect(wrapper.find('.select-series').instance().value).toBe(COLUMN_NAMES[1]);
-  expect(wrapper.state('seriesItems').map(item => item.value)).toEqual([
-    COLUMN_NAMES[1],
-  ]);
+  expect(seriesSelectElm.value).toBe(COLUMN_NAMES[1]);
 
-  wrapper.find('.select-series').childAt(2).simulate('change');
-  expect(wrapper.state('seriesItems').map(item => item.value)).toEqual([
-    COLUMN_NAMES[2],
-  ]);
-
-  wrapper.unmount();
+  unmount();
 });
 
 it('add and deletes series items', () => {
-  const wrapper = makeChartBuilderWrapper();
+  const { container } = makeChartBuilderWrapper();
+  const addSeriesItemBtn = container.querySelector('.btn-add-series');
 
-  expect(wrapper.state('seriesItems').length).toBe(1);
+  expect(container.querySelectorAll('.form-series-item').length).toBe(1);
 
-  wrapper.find('.btn-add-series').simulate('click');
-  wrapper.find('.btn-add-series').simulate('click');
+  userEvent.click(addSeriesItemBtn);
+  userEvent.click(addSeriesItemBtn);
 
-  expect(wrapper.state('seriesItems').length).toBe(3);
-
-  wrapper.find('.select-series').at(1).childAt(3).simulate('change');
-  wrapper.find('.select-series').at(2).childAt(2).simulate('change');
-
-  expect(wrapper.state('seriesItems').map(item => item.value)).toEqual([
-    COLUMN_NAMES[1],
-    COLUMN_NAMES[3],
-    COLUMN_NAMES[2],
-  ]);
-
-  wrapper.find('.btn-delete-series').at(0).simulate('click');
-
-  expect(wrapper.state('seriesItems').map(item => item.value)).toEqual([
-    COLUMN_NAMES[3],
-    COLUMN_NAMES[2],
-  ]);
-});
-
-it('updates linked state', () => {
-  const wrapper = makeChartBuilderWrapper();
-
-  expect(wrapper.state('isLinked')).toBe(true);
-
-  wrapper
-    .find('.chart-builder-link input[type="radio"]')
-    .at(1)
-    .simulate('change', { target: { value: 'false' } });
-
-  expect(wrapper.state('isLinked')).toBe(false);
-
-  wrapper
-    .find('.chart-builder-link input[type="radio"]')
-    .at(0)
-    .simulate('change', { target: { value: 'true' } });
-
-  expect(wrapper.state('isLinked')).toBe(true);
+  expect(container.querySelectorAll('.form-series-item').length).toBe(3);
 });
 
 it('resets the form properly', () => {
-  const wrapper = makeChartBuilderWrapper();
+  const { container, unmount } = makeChartBuilderWrapper();
+  const addSeriesItemBtn = container.querySelector('.btn-add-series');
 
-  wrapper.find('.btn-add-series').simulate('click');
-  wrapper.find('.btn-add-series').simulate('click');
-  wrapper.find('.btn-add-series').simulate('click');
+  userEvent.click(addSeriesItemBtn);
+  userEvent.click(addSeriesItemBtn);
 
-  wrapper.find('.btn-reset').simulate('click');
+  userEvent.click(container.querySelector('.btn-reset'));
 
-  expect(wrapper.state('seriesItems').length).toBe(1);
+  expect(container.querySelectorAll('.form-series-item').length).toBe(1);
 
-  wrapper.unmount();
+  unmount();
 });
 
 it('handles form submission', () => {
   const onSubmit = jest.fn();
-  const wrapper = makeChartBuilderWrapper({ onSubmit });
+  const { container, unmount } = makeChartBuilderWrapper({ onSubmit });
 
-  wrapper.find('.btn-submit').simulate('submit');
+  userEvent.click(container.querySelector('.btn-submit'));
 
   expect(onSubmit).toHaveBeenCalled();
 
-  wrapper.unmount();
+  unmount();
 });
 
 it('calls onChange when fields are updated', () => {
   const onChange = jest.fn();
-  const wrapper = makeChartBuilderWrapper({ onChange });
+  const { container, unmount } = makeChartBuilderWrapper({ onChange });
+  const addSeriesItemBtn = container.querySelector('.btn-add-series');
 
-  wrapper.find('.select-series').childAt(1).simulate('change');
-  wrapper.find('.btn-add-series').simulate('click');
-  wrapper.find('.btn-add-series').simulate('click');
-  wrapper.find('.select-series').at(2).childAt(2).simulate('change');
-  wrapper.find('.btn-chart-type').at(1).simulate('click');
+  userEvent.selectOptions(
+    container.querySelector('.select-series'),
+    COLUMN_NAMES[1]
+  );
+
+  userEvent.click(addSeriesItemBtn);
+  userEvent.click(addSeriesItemBtn);
+  userEvent.selectOptions(
+    container.querySelectorAll('.select-series')[2],
+    COLUMN_NAMES[2]
+  );
+
+  userEvent.click(container.querySelectorAll('.btn-chart-type')[1]);
 
   expect(onChange).toHaveBeenCalledTimes(5);
 
-  wrapper.unmount();
+  unmount();
 });
