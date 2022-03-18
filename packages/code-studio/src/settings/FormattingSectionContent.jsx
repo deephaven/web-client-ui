@@ -820,12 +820,18 @@ export class FormattingSectionContent extends PureComponent {
             Applies a formatting rule to all columns of a set type.
           </div>
           <div className="form-row mb-2">
-            <label className="col-form-label col-3">Time zone</label>
+            <label
+              className="col-form-label col-3"
+              htmlFor="select-reset-timezone"
+            >
+              Time zone
+            </label>
             <div className="col pr-0">
               <select
                 className="custom-select"
                 value={timeZone}
                 onChange={this.handleTimeZoneChange}
+                id="select-reset-timezone"
               >
                 {FormattingSectionContent.renderTimeZoneOptions()}
               </select>
@@ -843,12 +849,18 @@ export class FormattingSectionContent extends PureComponent {
             </div>
           </div>
           <div className="form-row mb-2">
-            <label className="col-form-label col-3">DateTime</label>
+            <label
+              className="col-form-label col-3"
+              htmlFor="select-default-time-format"
+            >
+              DateTime
+            </label>
             <div className="col pr-0">
               <select
                 className="custom-select"
                 value={defaultDateTimeFormat}
                 onChange={this.handleDefaultDateTimeFormatChange}
+                id="select-default-time-format"
               >
                 {this.getCachedDateTimeFormatOptions(
                   timeZone,
@@ -893,7 +905,12 @@ export class FormattingSectionContent extends PureComponent {
             </div>
           </div>
           <div className="form-row mb-2">
-            <label className="col-form-label col-3">Decimal</label>
+            <label
+              className="col-form-label col-3"
+              htmlFor="default-decimal-format-input"
+            >
+              Decimal
+            </label>
             <div className="col pr-0">
               <input
                 className={classNames(
@@ -912,6 +929,7 @@ export class FormattingSectionContent extends PureComponent {
                 data-lpignore
                 placeholder={DecimalColumnFormatter.DEFAULT_FORMAT_STRING}
                 type="text"
+                id="default-decimal-format-input"
                 value={defaultDecimalFormatString}
                 onChange={this.handleDefaultDecimalFormatChange}
               />
@@ -929,7 +947,12 @@ export class FormattingSectionContent extends PureComponent {
             </div>
           </div>
           <div className="form-row mb-3">
-            <label className="col-form-label col-3">Integer</label>
+            <label
+              className="col-form-label col-3"
+              htmlFor="default-integer-format-input"
+            >
+              Integer
+            </label>
             <div className="col pr-0">
               <input
                 className={classNames(
@@ -948,6 +971,7 @@ export class FormattingSectionContent extends PureComponent {
                 data-lpignore
                 placeholder={IntegerColumnFormatter.DEFAULT_FORMAT_STRING}
                 type="text"
+                id="default-integer-format-input"
                 value={defaultIntegerFormatString}
                 onChange={this.handleDefaultIntegerFormatChange}
               />

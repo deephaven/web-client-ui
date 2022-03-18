@@ -1,5 +1,6 @@
 import React from 'react';
-import { mount } from 'enzyme';
+import { render } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { DateTimeColumnFormatter } from '@deephaven/iris-grid/dist/formatters';
 import { FormattingSectionContent } from './FormattingSectionContent';
 
@@ -23,7 +24,7 @@ function makeDefaults(overrides = {}) {
   };
 }
 
-function mountSectionContent({
+function renderSectionContent({
   settings = {},
   formatter = [],
   showTimeZone = true,
@@ -41,7 +42,7 @@ function mountSectionContent({
   defaults = makeDefaults(),
 } = {}) {
   // eslint-disable-next-line react/jsx-props-no-spreading
-  return mount(
+  return render(
     <FormattingSectionContent
       settings={settings}
       formatter={formatter}
@@ -67,26 +68,22 @@ afterEach(() => {
 });
 
 it('should mount and unmount without errors', () => {
-  const wrapper = mountSectionContent();
-  wrapper.unmount();
+  expect(() => renderSectionContent()).not.toThrow();
 });
 
 describe('default decimal formatting', () => {
   it('shows the currently set default', () => {
-    const wrapper = mountSectionContent();
-    expect(wrapper.find('.default-decimal-format-input').prop('value')).toEqual(
-      DEFAULT_DECIMAL_STRING
-    );
-    wrapper.unmount();
+    const { getByLabelText, unmount } = renderSectionContent();
+    expect(getByLabelText('Decimal').value).toEqual(DEFAULT_DECIMAL_STRING);
+    unmount();
   });
 
   it('updates settings when value is changed', () => {
     const saveSettings = jest.fn();
-    const wrapper = mountSectionContent({ saveSettings });
+    const { getByLabelText, unmount } = renderSectionContent({ saveSettings });
     const newFormat = '00.0';
-    wrapper
-      .find('.default-decimal-format-input')
-      .simulate('change', { target: { value: newFormat } });
+    // {selectall} to overwrite existing input value, otherwise appends
+    userEvent.type(getByLabelText('Decimal'), `{selectall}${newFormat}`);
 
     jest.runOnlyPendingTimers();
 
@@ -96,7 +93,7 @@ describe('default decimal formatting', () => {
       })
     );
 
-    wrapper.unmount();
+    unmount();
   });
 
   it('resets to default', () => {
@@ -104,7 +101,7 @@ describe('default decimal formatting', () => {
     const defaultFormatOptions = {
       defaultFormatString: DEFAULT_DECIMAL_STRING,
     };
-    const wrapper = mountSectionContent({
+    const { container } = renderSectionContent({
       saveSettings,
       defaultDecimalFormatOptions: {
         defaultFormatString: '000',
@@ -114,7 +111,7 @@ describe('default decimal formatting', () => {
       }),
     });
 
-    wrapper.find('.btn-reset-decimal').at(0).simulate('click');
+    userEvent.click(container.querySelector('.btn-reset-decimal'));
 
     jest.runOnlyPendingTimers();
 
@@ -128,20 +125,17 @@ describe('default decimal formatting', () => {
 
 describe('default integer formatting', () => {
   it('shows the currently set default', () => {
-    const wrapper = mountSectionContent();
-    expect(wrapper.find('.default-integer-format-input').prop('value')).toEqual(
-      DEFAULT_INTEGER_STRING
-    );
-    wrapper.unmount();
+    const { getByLabelText, unmount } = renderSectionContent();
+    expect(getByLabelText('Integer').value).toEqual(DEFAULT_INTEGER_STRING);
+    unmount();
   });
 
   it('updates settings when value is changed', () => {
     const saveSettings = jest.fn();
-    const wrapper = mountSectionContent({ saveSettings });
+    const { getByLabelText, unmount } = renderSectionContent({ saveSettings });
     const newFormat = '000,000';
-    wrapper
-      .find('.default-integer-format-input')
-      .simulate('change', { target: { value: newFormat } });
+
+    userEvent.type(getByLabelText('Integer'), `{selectall}${newFormat}`);
 
     jest.runOnlyPendingTimers();
 
@@ -151,7 +145,7 @@ describe('default integer formatting', () => {
       })
     );
 
-    wrapper.unmount();
+    unmount();
   });
 
   it('resets to default', () => {
@@ -159,7 +153,7 @@ describe('default integer formatting', () => {
     const defaultFormatOptions = {
       defaultFormatString: DEFAULT_INTEGER_STRING,
     };
-    const wrapper = mountSectionContent({
+    const { container } = renderSectionContent({
       saveSettings,
       defaultIntegerFormatOptions: {
         defaultFormatString: '000',
@@ -169,7 +163,7 @@ describe('default integer formatting', () => {
       }),
     });
 
-    wrapper.find('.btn-reset-integer').at(0).simulate('click');
+    userEvent.click(container.querySelector('.btn-reset-integer'));
 
     jest.runOnlyPendingTimers();
 
