@@ -34,23 +34,38 @@ jobs:
           path: |
             node_modules
             packages/*/node_modules
-          key: ${{ runner.os }}-modules-${{ hashFiles('package.json', 'packages/*/package.json', 'package-lock.json', 'packages/*/package-lock.json') }}
+          key: ${{ runner.os }}-modules-${{ hashFiles('package-lock.json') }}
 
-      - name: Cache npm cache
+      # This is for webpack/terser cache mainly which helps build speed
+      # Cache on pushes to main should end up using the cache from the previous commit to main
+      # PRs should hit the cache on the base branch first, then future commits hit the cache on the PR
+      # Don't skip this on node_modules hit b/c package-lock will change less often than this cache
+      # The result would be less recent build caches if it were skipped
+      - name: Cache node_mocules/.cache
         uses: actions/cache@v2
-        env:
-          cache-name: cache-npm-cache
+        with:
+          path: |
+            node_modules/.cache
+            packages/*/node_modules/.cache
+          key: ${{ runner.os }}-build-cache-${{ github.ref }}
+          restore-keys: |
+            ${{ runner.os }}-build-cache-
+
+      - name: Cache npm
+        uses: actions/cache@v2
         with:
           # npm cache files are stored in `~/.npm` on Linux/macOS
+          # Only needed if package-lock changed and we'll do npm ci
+          # It's possible we don't want to skip this since caches are evicted after 7 days of no access
+          # If no new packages are installed for a while, the install could take longer
+          # It might not be worth it though if the install only takes another minute vs 10-15s per action to cache this
           path: ~/.npm
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ matrix.node-version }}-${{ hashFiles('package-lock.json', 'packages/*/package-lock.json') }}
+          if: steps.cache-node-modules.outputs.cache-hit == 'false'
+          key: ${{ runner.os }}-npm-${{ hashFiles('package-lock.json') }}
           restore-keys: |
-            ${{ runner.os }}-build-${{ env.cache-name }}-${{ matrix.node-version }}
-            ${{ runner.os }}-build-${{ env.cache-name }}-
-            ${{ runner.os }}-build-
-            ${{ runner.os }}-
+            ${{ runner.os }}-npm-
 
-      - name: Cache linter caches
+      - name: Cache linters
         uses: actions/cache@v2
         with:
           path: |
@@ -58,14 +73,13 @@ jobs:
             packages/*/.eslintcache
             .stylelintcache
             packages/*/.stylelintcache
-          key: ${{ runner.os }}-lintcache-${{ github.head_ref }}
+          key: ${{ runner.os }}-lintcache-${{ github.ref }}
           restore-keys: |
             ${{ runner.os }}-lintcache-
-            ${{ runner.os }}-
 
       # Only need to install and bootstrap deps if package-locks changed
       - name: Install dependencies
-        if: steps.cache-node-modules.outputs.cache-hit != 'true'
+        if: steps.cache-node-modules.outputs.cache-hit == 'false'
         run: npm ci
 
       - name: Build
@@ -74,11 +88,20 @@ jobs:
       - name: Test (Pull Request)
         if: ${{ github.event_name == 'pull_request' }}
         run: |
-          npm run test:ci -- --changedSince origin/${{ github.event.pull_request.base.ref }}
+          npm run test:unit -- --maxWorkers=2 --cacheDirectory node_modules/.cache/jest
+          npm run test:lint -- --maxWorkers=2 --cacheDirectory node_modules/.cache/jest --changedSince origin/${{ github.event.pull_request.base.ref }}
           npm run test:golden-layout
 
       - name: Test (Push)
         if: ${{ github.event_name == 'push' }}
         run: |
-          npm run test:ci -- --lastCommit
+          npm run test:unit -- --maxWorkers=2 --cacheDirectory node_modules/.cache/jest
+          npm run test:lint -- --maxWorkers=2 --cacheDirectory node_modules/.cache/jest --lastCommit
           npm run test:golden-layout
+
+      - name: Codecov report
+        uses: codecov/codecov-action@v2
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          directory: ./coverage
+          flags: unit
