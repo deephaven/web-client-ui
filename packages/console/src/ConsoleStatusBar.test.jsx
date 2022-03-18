@@ -1,11 +1,11 @@
 import React from 'react';
-import { mount } from 'enzyme';
+import { render } from '@testing-library/react';
 import dh from '@deephaven/jsapi-shim';
 import ConsoleStatusBar from './ConsoleStatusBar';
 
 function makeConsoleStatusBarWrapper() {
   const session = new dh.IdeSession('test');
-  const wrapper = mount(
+  const wrapper = render(
     <ConsoleStatusBar
       session={session}
       language="test"
