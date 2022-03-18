@@ -23,6 +23,7 @@ import {
   getTimeZone,
   getShowTimeZone,
   getShowTSeparator,
+  getTruncateNumbersWithPound,
   getSettings,
   saveSettings as saveSettingsAction,
 } from '@deephaven/redux';
@@ -203,6 +204,7 @@ export class FormattingSectionContent extends PureComponent {
       showTimeZone,
       showTSeparator,
       timeZone,
+      truncateNumbersWithPound,
     } = props;
 
     const formatSettings = formatter.map((item, i) => ({
@@ -224,6 +226,7 @@ export class FormattingSectionContent extends PureComponent {
       defaultDateTimeFormat,
       defaultDecimalFormatOptions,
       defaultIntegerFormatOptions,
+      truncateNumbersWithPound,
       timestampAtMenuOpen: new Date(),
     };
   }
@@ -1043,6 +1046,7 @@ FormattingSectionContent.propTypes = {
   showTimeZone: PropTypes.bool.isRequired,
   showTSeparator: PropTypes.bool.isRequired,
   timeZone: PropTypes.string.isRequired,
+  truncateNumbersWithPound: PropTypes.bool.isRequired,
   settings: PropTypes.shape({}).isRequired,
   saveSettings: PropTypes.func.isRequired,
   scrollTo: PropTypes.func,
@@ -1090,6 +1094,7 @@ const mapStateToProps = state => ({
   defaultIntegerFormatOptions: getDefaultIntegerFormatOptions(state),
   showTimeZone: getShowTimeZone(state),
   showTSeparator: getShowTSeparator(state),
+  truncateNumbersWithPound: getTruncateNumbersWithPound(state),
   timeZone: getTimeZone(state),
   settings: getSettings(state),
 });

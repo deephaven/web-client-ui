@@ -67,6 +67,10 @@ export const getShowTSeparator: Selector<
   WorkspaceSettings['showTSeparator']
 > = store => getSettings(store).showTSeparator;
 
+export const getTruncateNumbersWithPound: Selector<
+  WorkspaceSettings['truncateNumbersWithPound']
+> = store => getSettings(store).truncateNumbersWithPound;
+
 export const getDisableMoveConfirmation: Selector<
   WorkspaceSettings['disableMoveConfirmation']
 > = store => getSettings(store).disableMoveConfirmation || false;
