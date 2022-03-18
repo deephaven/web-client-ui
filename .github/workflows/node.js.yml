@@ -42,7 +42,7 @@ jobs:
 
       - name: Cache npm
         uses: actions/cache@v2
-        if: steps.cache-node-modules.outputs.cache-hit == 'false'
+        if: steps.cache-node-modules.outputs.cache-hit != 'true'
         with:
           # npm cache files are stored in `~/.npm` on Linux/macOS
           # Only needed if package-lock changed and we'll do npm ci
@@ -69,7 +69,7 @@ jobs:
       # Only need to install deps if package-lock changed
       # Do this before restoring build cache since npm ci cleans node_modules
       - name: Install dependencies
-        if: steps.cache-node-modules.outputs.cache-hit == 'false'
+        if: steps.cache-node-modules.outputs.cache-hit != 'true'
         run: npm ci
 
       # This is for webpack/terser cache mainly which helps build speed
