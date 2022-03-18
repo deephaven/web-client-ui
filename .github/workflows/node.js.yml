@@ -93,15 +93,15 @@ jobs:
       - name: Test (Pull Request)
         if: ${{ github.event_name == 'pull_request' }}
         run: |
-          npm run test:unit -- --maxWorkers=2 --cacheDirectory node_modules/.cache/jest
-          npm run test:lint -- --maxWorkers=2 --cacheDirectory node_modules/.cache/jest --changedSince origin/${{ github.event.pull_request.base.ref }}
+          npm run test:unit -- --cacheDirectory node_modules/.cache/jest
+          npm run test:lint -- --cacheDirectory node_modules/.cache/jest --changedSince origin/${{ github.event.pull_request.base.ref }}
           npm run test:golden-layout
 
       - name: Test (Push)
         if: ${{ github.event_name == 'push' }}
         run: |
-          npm run test:unit -- --maxWorkers=2 --cacheDirectory node_modules/.cache/jest
-          npm run test:lint -- --maxWorkers=2 --cacheDirectory node_modules/.cache/jest --lastCommit
+          npm run test:unit -- --cacheDirectory node_modules/.cache/jest
+          npm run test:lint -- --cacheDirectory node_modules/.cache/jest --lastCommit
           npm run test:golden-layout
 
       - name: Codecov report
