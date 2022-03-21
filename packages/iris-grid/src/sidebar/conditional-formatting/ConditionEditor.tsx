@@ -275,7 +275,7 @@ const ConditionEditor = (props: ConditionEditorProps): JSX.Element => {
     if (TableUtils.isCharType(selectedColumnType)) {
       return charConditions;
     }
-    if (TableUtils.isTextType(selectedColumnType)) {
+    if (TableUtils.isStringType(selectedColumnType)) {
       return stringConditions;
     }
     if (TableUtils.isDateType(selectedColumnType)) {
@@ -374,7 +374,7 @@ const ConditionEditor = (props: ConditionEditorProps): JSX.Element => {
         conditionValue
       );
     }
-    if (TableUtils.isTextType(selectedColumnType)) {
+    if (TableUtils.isStringType(selectedColumnType)) {
       return getStringInputs(
         selectedCondition as StringCondition,
         handleValueChange,
