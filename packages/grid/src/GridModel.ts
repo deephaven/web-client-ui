@@ -51,7 +51,8 @@ abstract class GridModel<
   abstract textForCell(column: ModelIndex, row: ModelIndex): string;
 
   /**
-   * Get the truncation character for the specified cell. Can be undefined
+   * Get the character to replace text when truncated for a specific cell.
+   * Leave undefined to show text truncated with ellipsis
    * @param column Column to get the truncation character for
    * @param row Row to get the truncation character for
    * @returns Truncation character for the specified cell

@@ -192,7 +192,7 @@ export class FormattingSectionContent extends PureComponent {
     this.handleResetDecimalFormat = this.handleResetDecimalFormat.bind(this);
     this.handleResetIntegerFormat = this.handleResetIntegerFormat.bind(this);
     this.handleResetTimeZone = this.handleResetTimeZone.bind(this);
-    this.handletruncateNumbersWithPoundChange = this.handletruncateNumbersWithPoundChange.bind(
+    this.handleTruncateNumbersWithPoundChange = this.handleTruncateNumbersWithPoundChange.bind(
       this
     );
 
@@ -476,7 +476,7 @@ export class FormattingSectionContent extends PureComponent {
     );
   }
 
-  handletruncateNumbersWithPoundChange() {
+  handleTruncateNumbersWithPoundChange() {
     this.setState(
       state => ({
         truncateNumbersWithPound: !state.truncateNumbersWithPound,
@@ -1012,7 +1012,7 @@ export class FormattingSectionContent extends PureComponent {
             <div className="offset-3 col-9">
               <Checkbox
                 checked={truncateNumbersWithPound}
-                onChange={this.handletruncateNumbersWithPoundChange}
+                onChange={this.handleTruncateNumbersWithPoundChange}
               >
                 Truncate numbers with #
               </Checkbox>
