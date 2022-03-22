@@ -121,6 +121,7 @@ export class GridRenderer {
    * @param width The width to truncate it to
    * @param start The low boundary to start the search
    * @param end The high boundary to start the search
+   * @param truncationChar This char will be repeated as the display string if the string is truncated instead of just adding an ellipsis
    * @returns The truncated string
    */
   static binaryTruncateToWidth(
@@ -128,7 +129,8 @@ export class GridRenderer {
     str: string,
     width: number,
     start = 0,
-    end = str.length
+    end = str.length,
+    truncationChar?: string
   ): string {
     if (end >= str.length && context.measureText(str).width <= width) {
       // IDS-6069 If the whole string can fit, don't bother checking for truncation
@@ -138,6 +140,12 @@ export class GridRenderer {
       // Besides, if we already fit, it's just faster to not bother checking other truncations.
       return str;
     }
+
+    if (truncationChar) {
+      const charWidth = context.measureText(truncationChar).width;
+      return truncationChar.repeat(Math.max(1, Math.floor(width / charWidth)));
+    }
+
     let lo = start;
     let hi = Math.min(str.length - 1, end);
     let result = str;
@@ -170,13 +178,15 @@ export class GridRenderer {
    * @param str The string to calculate max length for
    * @param width The width to truncate within
    * @param fontWidth The estimated width of each character
+   * @param truncationChar This char will be repeated as the display string if the string is truncated instead of just adding an ellipsis
    * @returns The truncated string that fits within the width provided
    */
   static truncateToWidth(
     context: CanvasRenderingContext2D,
     str: string,
     width: number,
-    fontWidth = GridRenderer.DEFAULT_FONT_WIDTH
+    fontWidth = GridRenderer.DEFAULT_FONT_WIDTH,
+    truncationChar?: string
   ): string {
     if (width <= 0 || str.length <= 0) {
       return '';
@@ -191,7 +201,14 @@ export class GridRenderer {
     );
     const hi = Math.min(Math.ceil((width / fontWidth) * 2), str.length);
 
-    return GridRenderer.binaryTruncateToWidth(context, str, width, lo, hi);
+    return GridRenderer.binaryTruncateToWidth(
+      context,
+      str,
+      width,
+      lo,
+      hi,
+      truncationChar
+    );
   }
 
   /**
@@ -1143,6 +1160,7 @@ export class GridRenderer {
     const modelRow = getOrThrow(modelRows, row);
     const modelColumn = getOrThrow(modelColumns, column);
     const text = textOverride ?? model.textForCell(modelColumn, modelRow);
+    const truncationChar = model.truncationCharForCell(modelColumn, modelRow);
     const isFirstColumn = column === firstColumn;
 
     if (text && rowHeight > 0) {
@@ -1165,7 +1183,8 @@ export class GridRenderer {
         context,
         text,
         textWidth,
-        fontWidth
+        fontWidth,
+        truncationChar
       );
       if (truncatedText) {
         context.fillText(truncatedText, textX, textY);
@@ -1320,8 +1339,16 @@ export class GridRenderer {
       context: CanvasRenderingContext2D,
       text: string,
       width: number,
-      fontWidth: number
-    ): string => GridRenderer.truncateToWidth(context, text, width, fontWidth),
+      fontWidth: number,
+      truncationChar?: string
+    ): string =>
+      GridRenderer.truncateToWidth(
+        context,
+        text,
+        width,
+        fontWidth,
+        truncationChar
+      ),
     { max: 10000 }
   );
 

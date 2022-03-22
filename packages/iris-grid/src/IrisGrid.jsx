@@ -240,6 +240,7 @@ export class IrisGrid extends Component {
     this.dateTimeFormatterOptions = {};
     this.decimalFormatOptions = {};
     this.integerFormatOptions = {};
+    this.truncateNumbersWithPound = false;
 
     // When the loading scrim started/when it should extend to the end of the screen.
     this.loadingScrimStartTime = null;
@@ -1109,6 +1110,7 @@ export class IrisGrid extends Component {
     const {
       defaultDecimalFormatOptions = {},
       defaultIntegerFormatOptions = {},
+      truncateNumbersWithPound = false,
     } = settings;
 
     const isColumnFormatChanged = !deepEqual(
@@ -1127,16 +1129,20 @@ export class IrisGrid extends Component {
       this.integerFormatOptions,
       defaultIntegerFormatOptions
     );
+    const isTruncateNumbersChanged =
+      this.truncateNumbersWithPound !== truncateNumbersWithPound;
     if (
       isColumnFormatChanged ||
       isDateFormattingChanged ||
       isDecimalFormattingChanged ||
-      isIntegerFormattingChanged
+      isIntegerFormattingChanged ||
+      isTruncateNumbersChanged
     ) {
       this.globalColumnFormats = globalColumnFormats;
       this.dateTimeFormatterOptions = dateTimeFormatterOptions;
       this.decimalFormatOptions = defaultDecimalFormatOptions;
       this.integerFormatOptions = defaultIntegerFormatOptions;
+      this.truncateNumbersWithPound = truncateNumbersWithPound;
       this.updateFormatter({}, forceUpdate);
 
       if (isDateFormattingChanged && forceUpdate) {
@@ -1191,7 +1197,8 @@ export class IrisGrid extends Component {
       mergedColumnFormats,
       this.dateTimeFormatterOptions,
       this.decimalFormatOptions,
-      this.integerFormatOptions
+      this.integerFormatOptions,
+      this.truncateNumbersWithPound
     );
 
     log.debug('updateFormatter', this.globalColumnFormats, mergedColumnFormats);
@@ -3427,6 +3434,7 @@ IrisGrid.propTypes = {
     defaultDateTimeFormat: PropTypes.string.isRequired,
     showTimeZone: PropTypes.bool.isRequired,
     showTSeparator: PropTypes.bool.isRequired,
+    truncateNumbersWithPound: PropTypes.bool.isRequired,
     formatter: PropTypes.arrayOf(PropTypes.shape({})).isRequired,
   }),
   userColumnWidths: PropTypes.instanceOf(Map),
@@ -3537,6 +3545,7 @@ IrisGrid.defaultProps = {
     defaultDateTimeFormat: DateUtils.FULL_DATE_FORMAT,
     showTimeZone: false,
     showTSeparator: true,
+    truncateNumbersWithPound: false,
     formatter: [],
     decimalFormatOptions: PropTypes.shape({
       defaultFormatString: PropTypes.string,

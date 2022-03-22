@@ -23,6 +23,7 @@ import {
   getTimeZone,
   getShowTimeZone,
   getShowTSeparator,
+  getTruncateNumbersWithPound,
   getSettings,
   saveSettings as saveSettingsAction,
 } from '@deephaven/redux';
@@ -191,6 +192,9 @@ export class FormattingSectionContent extends PureComponent {
     this.handleResetDecimalFormat = this.handleResetDecimalFormat.bind(this);
     this.handleResetIntegerFormat = this.handleResetIntegerFormat.bind(this);
     this.handleResetTimeZone = this.handleResetTimeZone.bind(this);
+    this.handleTruncateNumbersWithPoundChange = this.handleTruncateNumbersWithPoundChange.bind(
+      this
+    );
 
     const {
       formatter,
@@ -200,6 +204,7 @@ export class FormattingSectionContent extends PureComponent {
       showTimeZone,
       showTSeparator,
       timeZone,
+      truncateNumbersWithPound,
     } = props;
 
     const formatSettings = formatter.map((item, i) => ({
@@ -221,6 +226,7 @@ export class FormattingSectionContent extends PureComponent {
       defaultDateTimeFormat,
       defaultDecimalFormatOptions,
       defaultIntegerFormatOptions,
+      truncateNumbersWithPound,
       timestampAtMenuOpen: new Date(),
     };
   }
@@ -470,6 +476,17 @@ export class FormattingSectionContent extends PureComponent {
     );
   }
 
+  handleTruncateNumbersWithPoundChange() {
+    this.setState(
+      state => ({
+        truncateNumbersWithPound: !state.truncateNumbersWithPound,
+      }),
+      () => {
+        this.debouncedCommitChanges();
+      }
+    );
+  }
+
   handleFormatRuleEntered(elem) {
     this.scrollToFormatBlockBottom();
     FormattingSectionContent.focusFirstInputInContainer(elem);
@@ -484,6 +501,7 @@ export class FormattingSectionContent extends PureComponent {
       timeZone,
       defaultDecimalFormatOptions,
       defaultIntegerFormatOptions,
+      truncateNumbersWithPound,
     } = this.state;
 
     const formatter = formatSettings
@@ -498,6 +516,7 @@ export class FormattingSectionContent extends PureComponent {
       showTimeZone,
       showTSeparator,
       timeZone,
+      truncateNumbersWithPound,
     };
     if (
       FormattingSectionContent.isValidFormat(
@@ -766,6 +785,7 @@ export class FormattingSectionContent extends PureComponent {
       timeZone,
       showTimeZone,
       showTSeparator,
+      truncateNumbersWithPound,
     } = this.state;
 
     const {
@@ -946,7 +966,7 @@ export class FormattingSectionContent extends PureComponent {
               />
             </div>
           </div>
-          <div className="form-row mb-3">
+          <div className="form-row mb-2">
             <label
               className="col-form-label col-3"
               htmlFor="default-integer-format-input"
@@ -988,6 +1008,16 @@ export class FormattingSectionContent extends PureComponent {
               />
             </div>
           </div>
+          <div className="form-row mb-3">
+            <div className="offset-3 col-9">
+              <Checkbox
+                checked={truncateNumbersWithPound}
+                onChange={this.handleTruncateNumbersWithPoundChange}
+              >
+                Truncate numbers with #
+              </Checkbox>
+            </div>
+          </div>
         </div>
 
         <div>Default formatting for matched column names</div>
@@ -1016,6 +1046,7 @@ FormattingSectionContent.propTypes = {
   showTimeZone: PropTypes.bool.isRequired,
   showTSeparator: PropTypes.bool.isRequired,
   timeZone: PropTypes.string.isRequired,
+  truncateNumbersWithPound: PropTypes.bool.isRequired,
   settings: PropTypes.shape({}).isRequired,
   saveSettings: PropTypes.func.isRequired,
   scrollTo: PropTypes.func,
@@ -1063,6 +1094,7 @@ const mapStateToProps = state => ({
   defaultIntegerFormatOptions: getDefaultIntegerFormatOptions(state),
   showTimeZone: getShowTimeZone(state),
   showTSeparator: getShowTSeparator(state),
+  truncateNumbersWithPound: getTruncateNumbersWithPound(state),
   timeZone: getTimeZone(state),
   settings: getSettings(state),
 });

@@ -173,6 +173,10 @@ class IrisGridProxyModel extends IrisGridModel {
     return this.model.textForCell(...args);
   }
 
+  truncationCharForCell(...args) {
+    return this.model.truncationCharForCell(...args);
+  }
+
   textAlignForCell(...args) {
     return this.model.textAlignForCell(...args);
   }

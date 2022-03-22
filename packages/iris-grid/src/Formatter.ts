@@ -72,6 +72,7 @@ class Formatter {
    * @param dateTimeOptions Optional object with DateTime configuration
    * @param decimalFormatOptions Optional object with Decimal configuration
    * @param integerFormatOptions Optional object with Integer configuration
+   * @param truncateNumbersWithPound Determine if numbers should be truncated w/ repeating # instead of ellipsis at the end
    */
   constructor(
     columnFormattingRules: FormattingRule[] = [],
@@ -81,7 +82,8 @@ class Formatter {
     >[0],
     integerFormatOptions?: ConstructorParameters<
       typeof IntegerColumnFormatter
-    >[0]
+    >[0],
+    truncateNumbersWithPound = false
   ) {
     // Formatting order:
     // - columnFormatMap[type][name]
@@ -111,6 +113,7 @@ class Formatter {
 
     // Formats indexed by data type and column name
     this.columnFormatMap = Formatter.makeColumnFormatMap(columnFormattingRules);
+    this.truncateNumbersWithPound = truncateNumbersWithPound;
   }
 
   defaultColumnFormatter: TableColumnFormatter;
@@ -118,6 +121,8 @@ class Formatter {
   typeFormatterMap: Map<DataType, TableColumnFormatter>;
 
   columnFormatMap: Map<DataType, Map<string, TableColumnFormat>>;
+
+  truncateNumbersWithPound: boolean;
 
   /**
    * Gets columnFormatMap indexed by name for a given column type, creates new Map entry if necessary
