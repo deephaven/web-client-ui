@@ -62,7 +62,7 @@ jobs:
             packages/*/.eslintcache
             .stylelintcache
             packages/*/.stylelintcache
-          key: ${{ runner.os }}-lintcache-${{ github.ref }}
+          key: ${{ runner.os }}-lintcache-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-lintcache-
 
@@ -77,13 +77,13 @@ jobs:
       # PRs should hit the cache on the base branch first, then future commits hit the cache on the PR
       # Don't skip this on node_modules hit b/c package-lock will change less often than this cache
       # The result would be less recent build caches if it were skipped
-      - name: Cache node_mocules/.cache
+      - name: Cache node_modules/.cache
         uses: actions/cache@v2
         with:
           path: |
             node_modules/.cache
             packages/*/node_modules/.cache
-          key: ${{ runner.os }}-build-cache-${{ github.ref }}
+          key: ${{ runner.os }}-build-cache-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-build-cache-
 
@@ -95,15 +95,15 @@ jobs:
       - name: Test (Pull Request)
         if: ${{ github.event_name == 'pull_request' }}
         run: |
-          npm run test:unit -- --maxWorkers=50% --cacheDirectory node_modules/.cache/jest
-          npm run test:lint -- --maxWorkers=50% --cacheDirectory node_modules/.cache/jest --changedSince origin/${{ github.event.pull_request.base.ref }}
+          npm run test:unit -- --cacheDirectory node_modules/.cache/jest
+          npm run test:lint -- --changedSince origin/${{ github.event.pull_request.base.ref }} --cacheDirectory node_modules/.cache/jest
           npm run test:golden-layout
 
       - name: Test (Push)
         if: ${{ github.event_name == 'push' }}
         run: |
-          npm run test:unit -- --maxWorkers=50% --cacheDirectory node_modules/.cache/jest
-          npm run test:lint -- --maxWorkers=50% --cacheDirectory node_modules/.cache/jest --lastCommit
+          npm run test:unit -- --cacheDirectory node_modules/.cache/jest
+          npm run test:lint -- --lastCommit --cacheDirectory node_modules/.cache/jest
           npm run test:golden-layout
 
       - name: Codecov report
