@@ -13,7 +13,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     concurrency:
-      group: ${{ github.ref }}
+      group: ${{ github.workflow }}-${{ github.ref }}
       cancel-in-progress: true
 
     steps:
@@ -90,6 +90,8 @@ jobs:
       - name: Build
         run: npm run build
 
+      # Run unit tests on all files for accurate code coverage
+      # Lint only changed files so linting is faster
       - name: Test (Pull Request)
         if: ${{ github.event_name == 'pull_request' }}
         run: |
