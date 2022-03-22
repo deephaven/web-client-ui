@@ -1,28 +1,15 @@
 const baseConfig = require('./jest.config.base.cjs');
+const unitConfig = require('./jest.config.unit.cjs');
+const lintConfig = require('./jest.config.lint.cjs');
 
 module.exports = {
   ...baseConfig,
-  projects: [
-    {
-      displayName: 'eslint',
-      runner: 'jest-runner-eslint',
-      testMatch: ['<rootDir>/packages/*/src/**/*.{js,jsx,ts,tsx}'],
-      testPathIgnorePatterns: ['<rootDir>/packages/golden-layout/*'],
-    },
-    {
-      displayName: 'stylelint',
-      runner: 'jest-runner-stylelint',
-      testMatch: ['<rootDir>/packages/*/src/**/*.scss'],
-      testPathIgnorePatterns: ['<rootDir>/packages/golden-layout/*'],
-      moduleFileExtensions: ['scss'],
-    },
-    '<rootDir>/packages/*/jest.config.cjs',
-  ],
+  projects: [...lintConfig.projects, ...unitConfig.projects],
   watchPlugins: [
     'jest-watch-typeahead/filename',
     'jest-watch-typeahead/testname',
     'jest-watch-select-projects',
   ],
-  collectCoverage: false,
+  collectCoverage: true,
   collectCoverageFrom: ['./src/**/*.{js,ts,jsx,tsx}'], // This is relative to individual project root due to how Jest handles it
 };

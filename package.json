@@ -36,8 +36,9 @@
     "start:packages": "lerna run watch --ignore=@deephaven/{code-studio,embed-grid} --stream --parallel",
     "pretest": "npm run build:necessary",
     "test": "jest --watch --changedSince origin/main",
-    "pretest:ci": "npm run pretest",
-    "test:ci": "jest --maxWorkers=2",
+    "pretest:unit": "npm run pretest",
+    "test:unit": "jest --config jest.config.unit.cjs",
+    "test:lint": "jest --config jest.config.lint.cjs",
     "test:golden-layout": "lerna run test:ci --scope=@deephaven/golden-layout --stream",
     "version-bump": "lerna version --no-git-tag-version --no-push",
     "changelog": "lerna-changelog"
@@ -79,7 +80,8 @@
     "ignoreFiles": [
       "node_modules",
       "*.*",
-      "!*.scss"
+      "!*.scss",
+      "packages/golden-layout/*"
     ],
     "extends": [
       "@deephaven/stylelint-config"
