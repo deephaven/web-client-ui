@@ -1423,7 +1423,9 @@ export class GridMetricCalculator {
     userSizes: ModelSizeMap,
     calculateSize: () => number
   ): number {
-    return userSizes.get(modelIndex) ?? calculateSize();
+    // Always re-calculate the size of the item so the calculated size maps are populated
+    const calculatedSize = calculateSize();
+    return userSizes.get(modelIndex) ?? calculatedSize;
   }
 
   /**

@@ -35,19 +35,21 @@ class IrisGridMetricCalculator extends GridMetricCalculator {
     const hiddenColumns = model.layoutHints?.hiddenColumns ?? [];
     const modelColumn = this.getModelColumn(column, state);
 
-    const existingWidth = this.userColumnWidths.get(modelColumn);
-    if (existingWidth !== undefined) {
-      return existingWidth;
-    }
-    if (hiddenColumns.includes(model.columns[modelColumn].name)) {
-      return 0;
-    }
-    return super.getVisibleColumnWidth(
+    // Need to make sure super is called so column width is always re-calculated correctly
+    const columnWidth = super.getVisibleColumnWidth(
       column,
       state,
       firstColumn,
       treePaddingX
     );
+    const hasUserSetWidth = this.userColumnWidths.has(modelColumn);
+    if (
+      !hasUserSetWidth &&
+      hiddenColumns.includes(model.columns[modelColumn].name)
+    ) {
+      return 0;
+    }
+    return columnWidth;
   }
 
   getGridY(state: IrisGridMetricState): number {
