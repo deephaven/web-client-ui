@@ -48,7 +48,9 @@ it('has x-axis selection with the proper columns', () => {
   expect(xAxisSelectElm.querySelectorAll('option').length).toBe(
     COLUMN_NAMES.length
   );
-  expect(xAxisSelectElm.value).toBe(COLUMN_NAMES[0]);
+  userEvent.selectOptions(xAxisSelectElm, COLUMN_NAMES[1]);
+
+  expect(xAxisSelectElm.value).toBe(COLUMN_NAMES[1]);
   unmount();
 });
 
@@ -60,6 +62,8 @@ it('updates series selection with the proper columns', () => {
     COLUMN_NAMES.length
   );
   expect(seriesSelectElm.value).toBe(COLUMN_NAMES[1]);
+  userEvent.selectOptions(seriesSelectElm, COLUMN_NAMES[2]);
+  expect(seriesSelectElm.value).toBe(COLUMN_NAMES[2]);
 
   unmount();
 });
@@ -73,7 +77,29 @@ it('add and deletes series items', () => {
   userEvent.click(addSeriesItemBtn);
   userEvent.click(addSeriesItemBtn);
 
-  expect(container.querySelectorAll('.form-series-item').length).toBe(3);
+  const seriesItems = container.querySelectorAll('.select-series');
+  userEvent.selectOptions(seriesItems[1], COLUMN_NAMES[3]);
+  userEvent.selectOptions(seriesItems[2], COLUMN_NAMES[2]);
+
+  expect(seriesItems[1].value).toBe(COLUMN_NAMES[3]);
+  expect(seriesItems[2].value).toBe(COLUMN_NAMES[2]);
+
+  userEvent.click(container.querySelector('.btn-delete-series'));
+
+  expect(container.querySelectorAll('.form-series-item').length).toBe(2);
+});
+
+it('updates linked state', () => {
+  const { container } = makeChartBuilderWrapper();
+  const chartBuilderLinks = container.querySelectorAll(
+    '.chart-builder-link input[type="radio"]'
+  );
+
+  userEvent.click(chartBuilderLinks[1]);
+  expect(chartBuilderLinks[1].value).toBe('false');
+
+  userEvent.click(chartBuilderLinks[0]);
+  expect(chartBuilderLinks[0].value).toBe('true');
 });
 
 it('resets the form properly', () => {
