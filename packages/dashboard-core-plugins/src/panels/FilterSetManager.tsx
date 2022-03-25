@@ -13,19 +13,19 @@ import memoizeOne from 'memoize-one';
 import shortid from 'shortid';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
+  vsEdit,
   vsGear,
   vsSave,
   vsCircleSlash,
   vsTrash,
   vsDeviceCamera,
-  dhICursor,
   dhRefresh,
   dhNewCircleLargeFilled,
   vsCircleLargeFilled,
   vsArrowSmallUp,
 } from '@deephaven/icons';
 import Log from '@deephaven/log';
-import { Button, CardFlip } from '@deephaven/components';
+import { Button, CardFlip, RadioGroup, RadioItem } from '@deephaven/components';
 
 import './FilterSetManager.scss';
 
@@ -40,6 +40,7 @@ export interface FilterSet {
   id: string;
   title: string;
   panels: FilterSetPanel[];
+  restoreFullState?: boolean;
 }
 
 export interface ChangeHandlerArgs {
@@ -64,6 +65,7 @@ interface FilterSetManagerState {
   renameSet?: FilterSet;
   // Unsaved set changes on the settings screen
   modifiedFilterSets: FilterSet[];
+  restoreFullState: boolean;
 }
 
 const NAME_INPUT_PLACEHOLDER = 'Enter name...';
@@ -99,9 +101,12 @@ class FilterSetManager extends Component<
     this.handleNameInputKeyPress = this.handleNameInputKeyPress.bind(this);
     this.handleRenameConfirm = this.handleRenameConfirm.bind(this);
     this.handleRenameCancel = this.handleRenameCancel.bind(this);
+    this.handleRestoreFullStateChange = this.handleRestoreFullStateChange.bind(
+      this
+    );
 
     this.handleSetDelete = this.handleSetDelete.bind(this);
-    this.handleSetRename = this.handleSetRename.bind(this);
+    this.handleSetEdit = this.handleSetEdit.bind(this);
     this.handleSetUpdate = this.handleSetUpdate.bind(this);
 
     this.state = {
@@ -110,6 +115,7 @@ class FilterSetManager extends Component<
       nameInputValue: '',
       nameInputError: undefined,
       modifiedFilterSets: [],
+      restoreFullState: false,
     };
   }
 
@@ -243,6 +249,12 @@ class FilterSetManager extends Component<
     this.setState({ renameSet: undefined });
   }
 
+  handleRestoreFullStateChange(event: ChangeEvent<HTMLInputElement>): void {
+    this.setState({
+      restoreFullState: event.target.value === 'true',
+    });
+  }
+
   getNameError(nameInputValue: string): string | undefined {
     const { renameSet, modifiedFilterSets } = this.state;
     const trimmedName = nameInputValue?.trim() ?? '';
@@ -265,7 +277,12 @@ class FilterSetManager extends Component<
   }
 
   handleRenameConfirm(): void {
-    const { nameInputValue, renameSet, modifiedFilterSets } = this.state;
+    const {
+      nameInputValue,
+      renameSet,
+      modifiedFilterSets,
+      restoreFullState,
+    } = this.state;
     if (renameSet === undefined) {
       log.error('Renamed set undefined.');
       return;
@@ -277,7 +294,11 @@ class FilterSetManager extends Component<
       return;
     }
     const trimmedName = nameInputValue?.trim() ?? '';
-    const namedFilterSet = { ...renameSet, title: trimmedName };
+    const namedFilterSet = {
+      ...renameSet,
+      title: trimmedName,
+      restoreFullState,
+    };
     const selectedIndex = modifiedFilterSets.findIndex(
       ({ id }) => id === renameSet.id
     );
@@ -365,18 +386,19 @@ class FilterSetManager extends Component<
     });
   }
 
-  handleSetRename(): void {
+  handleSetEdit(): void {
     this.setState(({ editId, modifiedFilterSets }) => {
       const selectedSet = modifiedFilterSets.find(({ id }) => id === editId);
       if (selectedSet === undefined) {
         log.error('Could not find selected set', editId, modifiedFilterSets);
         return null;
       }
-      const { title } = selectedSet;
+      const { title, restoreFullState = false } = selectedSet;
       return {
         nameInputValue: title,
         nameInputError: undefined,
         renameSet: selectedSet,
+        restoreFullState,
       };
     });
   }
@@ -450,6 +472,7 @@ class FilterSetManager extends Component<
       editId,
       renameSet,
       modifiedFilterSets,
+      restoreFullState,
     } = this.state;
     const { isValueShown, filterSets, selectedId } = this.props;
     const isNameInputScreen = this.isNameInputScreen();
@@ -517,9 +540,7 @@ class FilterSetManager extends Component<
                 <div className="d-flex flex-column justify-content-center">
                   <div className="form-group">
                     <label>
-                      {isRenamingExistingSet
-                        ? 'Rename set'
-                        : 'Name captured set'}
+                      {isRenamingExistingSet ? 'Edit set' : 'Name captured set'}
                     </label>
                     <div className="name-input-container">
                       <input
@@ -551,6 +572,17 @@ class FilterSetManager extends Component<
                     {nameInputError && (
                       <div className="error-message">{nameInputError}</div>
                     )}
+                  </div>
+                  <div className="form-group">
+                    <RadioGroup
+                      onChange={this.handleRestoreFullStateChange}
+                      value={`${restoreFullState}`}
+                    >
+                      <RadioItem value="false">Restore only filters</RadioItem>
+                      <RadioItem value="true">
+                        Restore full table state
+                      </RadioItem>
+                    </RadioGroup>
                   </div>
                 </div>
               )}
@@ -589,10 +621,10 @@ class FilterSetManager extends Component<
 
                       <Button
                         kind="ghost"
-                        onClick={this.handleSetRename}
+                        onClick={this.handleSetEdit}
                         disabled={isEmptyEditList}
-                        icon={dhICursor}
-                        tooltip="Rename"
+                        icon={vsEdit}
+                        tooltip="Edit"
                       />
 
                       <Button

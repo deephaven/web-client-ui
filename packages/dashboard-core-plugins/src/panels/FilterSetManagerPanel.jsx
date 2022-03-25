@@ -123,14 +123,11 @@ class FilterSetManagerPanel extends Component {
     }
     // IrisGridUtils.hydrate uses numeric indexes for columns
     // Change indexes to column names to make it work for proxy models
-    const { irisGridState = null } = panelState;
+    const { irisGridState = {}, gridState = {} } = panelState;
     const {
       advancedFilters: indexedAdvancedFilters,
-      aggregationSettings,
       quickFilters: indexedQuickFilters,
-      rollupConfig,
-      selectDistinctColumns,
-    } = irisGridState ?? {};
+    } = irisGridState;
     const dehydratedAdvancedFilters = IrisGridUtils.dehydrateAdvancedFilters(
       table.columns,
       indexedAdvancedFilters
@@ -147,11 +144,12 @@ class FilterSetManagerPanel extends Component {
       dehydratedQuickFilters
     );
     return {
-      advancedFilters,
-      aggregationSettings,
-      quickFilters,
-      rollupConfig,
-      selectDistinctColumns,
+      irisGridState: {
+        ...irisGridState,
+        advancedFilters,
+        quickFilters,
+      },
+      gridState: { ...gridState },
     };
   }
 
@@ -167,7 +165,7 @@ class FilterSetManagerPanel extends Component {
 
   handleFilterApply(filterSet) {
     const { dashboardOpenedPanelMap } = this.props;
-    const { panels } = filterSet;
+    const { panels, restoreFullState = false } = filterSet;
     log.debug(`Apply filters from filter set`, filterSet);
     panels.forEach(({ panelId, type, state }) => {
       if (!dashboardOpenedPanelMap.has(panelId)) {
@@ -178,7 +176,7 @@ class FilterSetManagerPanel extends Component {
       const panel = dashboardOpenedPanelMap.get(panelId);
       switch (type) {
         case LayoutUtils.getComponentName(IrisGridPanel):
-          this.restoreIrisGridFilters(panel, state);
+          this.restoreIrisGridFilters(panel, state, restoreFullState);
           break;
         case LayoutUtils.getComponentName(InputFilterPanel):
         case LayoutUtils.getComponentName(DropdownFilterPanel):
@@ -207,14 +205,18 @@ class FilterSetManagerPanel extends Component {
     }));
   }
 
-  restoreIrisGridFilters(panel, state) {
+  restoreIrisGridFilters(panel, state, restoreFullState) {
+    // Fall back to state.advancedFilters and state.quickFilters
+    // for backward compatibility with filter sets that only contain filters
     const {
-      advancedFilters,
-      aggregationSettings,
-      quickFilters,
-      rollupConfig,
-      selectDistinctColumns,
+      irisGridState = {},
+      advancedFilters: prevAdvancedFilters = [],
+      quickFilters: prevQuickFilters = [],
     } = state;
+    const {
+      advancedFilters = prevAdvancedFilters,
+      quickFilters = prevQuickFilters,
+    } = irisGridState;
     const { panelTableMap } = this.props;
     const panelId = LayoutUtils.getIdFromPanel(panel);
     const table = panelTableMap.get(panelId);
@@ -222,14 +224,12 @@ class FilterSetManagerPanel extends Component {
       log.error(`Unable to get table for panel ${panelId}.`);
       return;
     }
-    log.debug('restoreIrisGridFilters', panelId, state);
-    panel.setFilters({
-      advancedFilters,
-      aggregationSettings,
-      quickFilters,
-      rollupConfig,
-      selectDistinctColumns,
-    });
+    log.debug('restoreIrisGridFilters', panelId, state, restoreFullState);
+    panel.setFilters(
+      restoreFullState
+        ? state
+        : { irisGridState: { advancedFilters, quickFilters } }
+    );
   }
 
   // eslint-disable-next-line class-methods-use-this
