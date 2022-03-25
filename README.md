@@ -58,7 +58,7 @@ When releasing a new version, you need to commit a version bump, then tag and cr
    - Generate the changelog: `GITHUB_AUTH=<token> npm run changelog --silent -- --next-version=<version> > /tmp/changelog_<version>.md`
 3. Create the tag. Use the command line to create an annotated tag (lightweight tags will not work correctly with lerna-changelog): `git tag --annotate <version> --file /tmp/changelog_<version>.md`
 4. Push the tag: `git push origin <version>`
-5. Create the release: `gh release create <version> --notes-file ~/tmp/changelog_<version>.md --title <version>`
+5. Create the release: `gh release create <version> --notes-file /tmp/changelog_<version>.md --title <version>`
 
 After the release is created, you can go to the [actions page](https://github.com/deephaven/web-client-ui/actions) to see the publish action being kicked off.
 
