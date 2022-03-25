@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/chart",
-  "version": "0.11.2",
+  "version": "0.11.3",
   "description": "Deephaven Chart",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
@@ -30,9 +30,9 @@
     "start": "cross-env NODE_ENV=development npm run watch"
   },
   "dependencies": {
-    "@deephaven/icons": "^0.11.2",
-    "@deephaven/iris-grid": "^0.11.2",
-    "@deephaven/jsapi-shim": "^0.11.2",
+    "@deephaven/icons": "^0.11.3",
+    "@deephaven/iris-grid": "^0.11.3",
+    "@deephaven/jsapi-shim": "^0.11.3",
     "deep-equal": "^2.0.5",
     "lodash.debounce": "^4.0.8",
     "memoize-one": "^5.1.1",
@@ -47,9 +47,9 @@
   },
   "devDependencies": {
     "@babel/cli": "^7.16.0",
-    "@deephaven/log": "^0.11.2",
-    "@deephaven/mocks": "^0.11.2",
-    "@deephaven/tsconfig": "^0.11.2",
+    "@deephaven/log": "^0.11.3",
+    "@deephaven/mocks": "^0.11.3",
+    "@deephaven/tsconfig": "^0.11.3",
     "@types/react": "^17.0.2",
     "@types/react-dom": "^17.0.9",
     "cross-env": "^7.0.2",
