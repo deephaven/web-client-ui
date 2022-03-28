@@ -26,13 +26,6 @@
     "prestart": "npm run build-dev",
     "start": "cross-env NODE_ENV=development npm run watch"
   },
-  "devDependencies": {
-    "@babel/cli": "^7.16.0",
-    "@deephaven/tsconfig": "^0.11.3",
-    "cross-env": "^7.0.2",
-    "npm-run-all": "^4.1.5",
-    "rimraf": "^3.0.2"
-  },
   "files": [
     "dist"
   ],

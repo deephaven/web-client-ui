@@ -30,13 +30,13 @@
     "start": "cross-env NODE_ENV=development npm run watch"
   },
   "dependencies": {
-    "@deephaven/console": "^0.11.3",
-    "@deephaven/grid": "^0.11.3",
-    "@deephaven/icons": "^0.11.3",
-    "@deephaven/jsapi-shim": "^0.11.3",
-    "@deephaven/react-hooks": "^0.11.3",
-    "@deephaven/storage": "^0.11.3",
-    "@deephaven/utils": "^0.11.3",
+    "@deephaven/console": "file:../console",
+    "@deephaven/grid": "file:../grid",
+    "@deephaven/icons": "file:../icons",
+    "@deephaven/jsapi-shim": "file:../jsapi-shim",
+    "@deephaven/react-hooks": "file:../react-hooks",
+    "@deephaven/storage": "file:../storage",
+    "@deephaven/utils": "file:../utils",
     "@fortawesome/react-fontawesome": "^0.1.15",
     "classnames": "^2.3.1",
     "deep-equal": "^2.0.5",
@@ -54,26 +54,14 @@
     "web-streams-polyfill": "^2.1.0"
   },
   "peerDependencies": {
-    "@deephaven/components": "^0.3.1",
-    "@deephaven/log": "^0.3.1",
+    "@deephaven/components": "^0.11.2",
+    "@deephaven/log": "^0.11.2",
     "react": "^17.x"
   },
   "devDependencies": {
-    "@babel/cli": "^7.16.0",
-    "@deephaven/components": "^0.11.3",
-    "@deephaven/log": "^0.11.3",
-    "@deephaven/mocks": "^0.11.3",
-    "@deephaven/tsconfig": "^0.11.3",
-    "@svgr/cli": "^5.5.0",
-    "@types/react": "^17.0.2",
-    "@types/react-dom": "^17.0.9",
-    "@types/react-transition-group": "^4.4.0",
-    "cross-env": "^7.0.2",
-    "mini-css-extract-plugin": "^1.6.0",
-    "npm-run-all": "^4.1.5",
-    "react": "^17.0.2",
-    "rimraf": "^3.0.2",
-    "sass": "^1.39.0"
+    "@deephaven/log": "file:../log",
+    "@deephaven/mocks": "file:../mocks",
+    "@deephaven/tsconfig": "file:../tsconfig"
   },
   "files": [
     "dist"
