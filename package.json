@@ -40,7 +40,7 @@
     "test:unit": "jest --config jest.config.unit.cjs",
     "test:lint": "jest --config jest.config.lint.cjs",
     "test:golden-layout": "lerna run test:ci --scope=@deephaven/golden-layout --stream",
-    "version-bump": "lerna version --no-git-tag-version --no-push && npm install && npm install --package-lock-only",
+    "version-bump": "lerna version --no-git-tag-version --no-push && npm install --package-lock-only",
     "changelog": "lerna-changelog"
   },
   "repository": "https://github.com/deephaven/web-client-ui",
