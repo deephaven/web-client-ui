@@ -26,6 +26,7 @@ export const Page = ({
         {onBack !== undefined && (
           <button
             className="btn btn-link btn-back"
+            data-testid="page-back-button"
             type="button"
             onClick={onBack}
           >
@@ -39,6 +40,7 @@ export const Page = ({
         {onClose !== undefined && (
           <button
             className="btn btn-link btn-link-icon btn-close px-2 m-1"
+            data-testid="page-close-button"
             type="button"
             onClick={onClose}
           >
