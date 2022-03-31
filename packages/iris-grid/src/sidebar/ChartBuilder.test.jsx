@@ -90,16 +90,29 @@ it('add and deletes series items', () => {
 });
 
 it('updates linked state', () => {
-  const { container } = makeChartBuilderWrapper();
-  const chartBuilderLinks = container.querySelectorAll(
-    '.chart-builder-link input[type="radio"]'
+  const onChange = jest.fn();
+  const { container } = makeChartBuilderWrapper({ onChange });
+
+  const linkButton = container.querySelector(
+    '.chart-builder-link input[type="radio"][value="true"]'
+  );
+  const unlinkButton = container.querySelector(
+    '.chart-builder-link input[type="radio"][value="false"]'
   );
 
-  userEvent.click(chartBuilderLinks[1]);
-  expect(chartBuilderLinks[1].value).toBe('false');
+  expect(onChange).not.toHaveBeenCalled();
 
-  userEvent.click(chartBuilderLinks[0]);
-  expect(chartBuilderLinks[0].value).toBe('true');
+  userEvent.click(unlinkButton);
+
+  expect(onChange).toHaveBeenCalledWith(
+    expect.objectContaining({ isLinked: false })
+  );
+  onChange.mockClear();
+
+  userEvent.click(linkButton);
+  expect(onChange).toHaveBeenCalledWith(
+    expect.objectContaining({ isLinked: true })
+  );
 });
 
 it('resets the form properly', () => {

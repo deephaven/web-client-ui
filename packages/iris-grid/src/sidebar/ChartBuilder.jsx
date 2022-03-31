@@ -186,7 +186,9 @@ class ChartBuilder extends PureComponent {
   }
 
   handleLinkStateChange(event) {
-    this.setState({ isLinked: event.target.value === 'true' });
+    this.setState({ isLinked: event.target.value === 'true' }, () => {
+      this.sendChange();
+    });
   }
 
   handleReset() {
