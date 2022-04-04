@@ -1,5 +1,5 @@
 import React from 'react';
-import { render } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import ChartBuilder from './ChartBuilder';
 import IrisGridTestUtils from '../IrisGridTestUtils';
@@ -24,19 +24,18 @@ it('renders without crashing', () => {
 });
 
 it('updates the chart type', () => {
-  const { container, unmount } = makeChartBuilderWrapper();
+  const { unmount } = makeChartBuilderWrapper();
 
-  let chartButtons = container.querySelectorAll('.btn-chart-type');
+  const lineButton = screen.getByText('Line');
+  const barButton = screen.getByText('Bar');
 
-  expect(chartButtons[0].classList.contains('active')).toBe(true);
-  expect(chartButtons[1].classList.contains('active')).toBe(false);
+  expect(lineButton.classList.contains('active')).toBe(true);
+  expect(barButton.classList.contains('active')).toBe(false);
 
-  userEvent.click(chartButtons[1]);
+  userEvent.click(barButton);
 
-  chartButtons = container.querySelectorAll('.btn-chart-type');
-
-  expect(chartButtons[0].classList.contains('active')).toBe(false);
-  expect(chartButtons[1].classList.contains('active')).toBe(true);
+  expect(lineButton.classList.contains('active')).toBe(false);
+  expect(barButton.classList.contains('active')).toBe(true);
 
   unmount();
 });
@@ -69,24 +68,30 @@ it('updates series selection with the proper columns', () => {
 });
 
 it('add and deletes series items', () => {
-  const { container } = makeChartBuilderWrapper();
-  const addSeriesItemBtn = container.querySelector('.btn-add-series');
+  const { unmount } = makeChartBuilderWrapper();
+  const addSeriesItemBtn = screen.getByText('Add Series');
 
-  expect(container.querySelectorAll('.form-series-item').length).toBe(1);
+  expect(screen.getAllByTestId(/form-series-item-./).length).toBe(1);
 
   userEvent.click(addSeriesItemBtn);
   userEvent.click(addSeriesItemBtn);
 
-  const seriesItems = container.querySelectorAll('.select-series');
-  userEvent.selectOptions(seriesItems[1], COLUMN_NAMES[3]);
-  userEvent.selectOptions(seriesItems[2], COLUMN_NAMES[2]);
+  const seriesItem1 = screen.getByTestId('select-series-item-1');
+  const seriesItem2 = screen.getByTestId('select-series-item-2');
+  userEvent.selectOptions(seriesItem1, COLUMN_NAMES[3]);
+  userEvent.selectOptions(seriesItem2, COLUMN_NAMES[2]);
 
-  expect(seriesItems[1].value).toBe(COLUMN_NAMES[3]);
-  expect(seriesItems[2].value).toBe(COLUMN_NAMES[2]);
+  expect(seriesItem1.value).toBe(COLUMN_NAMES[3]);
+  expect(seriesItem2.value).toBe(COLUMN_NAMES[2]);
 
-  userEvent.click(container.querySelector('.btn-delete-series'));
+  userEvent.click(screen.getByTestId('delete-series-1'));
 
-  expect(container.querySelectorAll('.form-series-item').length).toBe(2);
+  expect(screen.getAllByTestId(/form-series-item-./).length).toBe(2);
+  expect(screen.getByTestId('select-series-item-1').value).toBe(
+    COLUMN_NAMES[2]
+  );
+
+  unmount();
 });
 
 it('updates linked state', () => {
@@ -135,7 +140,7 @@ it('handles form submission', () => {
 
   userEvent.click(container.querySelector('.btn-submit'));
 
-  expect(onSubmit).toHaveBeenCalled();
+  expect(onSubmit).toHaveBeenCalledTimes(1);
 
   unmount();
 });
