@@ -4,6 +4,21 @@ import { TestUtils } from '@deephaven/utils';
 import ContextActionUtils from './ContextActionUtils';
 import ContextMenuRoot from './ContextMenuRoot';
 
+let spy: jest.SpyInstance;
+beforeEach(() => {
+  spy = jest.spyOn(window, 'requestAnimationFrame').mockImplementation(cb => {
+    // mock request animation frame
+    // see https://github.com/deephaven/web-client-ui/issues/508
+    // only safe to mock like this if RAF is non-recursive
+    cb(0);
+    return 0;
+  });
+});
+
+afterEach(() => {
+  spy.mockRestore();
+});
+
 type ContextMenuMock = {
   addEventListener: jest.Mock<void>;
   removeEventListener: jest.Mock<void>;
