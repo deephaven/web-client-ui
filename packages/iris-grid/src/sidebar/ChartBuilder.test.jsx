@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import ChartBuilder from './ChartBuilder';
 import IrisGridTestUtils from '../IrisGridTestUtils';
@@ -19,15 +19,14 @@ function makeChartBuilderWrapper({
 }
 
 it('renders without crashing', () => {
-  const { unmount } = makeChartBuilderWrapper();
-  unmount();
+  makeChartBuilderWrapper();
 });
 
 it('updates the chart type', () => {
-  const { unmount } = makeChartBuilderWrapper();
+  const { getByText } = makeChartBuilderWrapper();
 
-  const lineButton = screen.getByText('Line');
-  const barButton = screen.getByText('Bar');
+  const lineButton = getByText('Line');
+  const barButton = getByText('Bar');
 
   expect(lineButton.classList.contains('active')).toBe(true);
   expect(barButton.classList.contains('active')).toBe(false);
@@ -36,12 +35,10 @@ it('updates the chart type', () => {
 
   expect(lineButton.classList.contains('active')).toBe(false);
   expect(barButton.classList.contains('active')).toBe(true);
-
-  unmount();
 });
 
 it('has x-axis selection with the proper columns', () => {
-  const { container, unmount } = makeChartBuilderWrapper();
+  const { container } = makeChartBuilderWrapper();
   const xAxisSelectElm = container.querySelector('.select-x-axis');
 
   expect(xAxisSelectElm.querySelectorAll('option').length).toBe(
@@ -50,11 +47,10 @@ it('has x-axis selection with the proper columns', () => {
   userEvent.selectOptions(xAxisSelectElm, COLUMN_NAMES[1]);
 
   expect(xAxisSelectElm.value).toBe(COLUMN_NAMES[1]);
-  unmount();
 });
 
 it('updates series selection with the proper columns', () => {
-  const { container, unmount } = makeChartBuilderWrapper();
+  const { container } = makeChartBuilderWrapper();
   const seriesSelectElm = container.querySelector('.select-series');
 
   expect(seriesSelectElm.querySelectorAll('option').length).toBe(
@@ -63,35 +59,29 @@ it('updates series selection with the proper columns', () => {
   expect(seriesSelectElm.value).toBe(COLUMN_NAMES[1]);
   userEvent.selectOptions(seriesSelectElm, COLUMN_NAMES[2]);
   expect(seriesSelectElm.value).toBe(COLUMN_NAMES[2]);
-
-  unmount();
 });
 
 it('add and deletes series items', () => {
-  const { unmount } = makeChartBuilderWrapper();
-  const addSeriesItemBtn = screen.getByText('Add Series');
+  const { getAllByTestId, getByTestId, getByText } = makeChartBuilderWrapper();
+  const addSeriesItemBtn = getByText('Add Series');
 
-  expect(screen.getAllByTestId(/form-series-item-./).length).toBe(1);
+  expect(getAllByTestId(/form-series-item-./).length).toBe(1);
 
   userEvent.click(addSeriesItemBtn);
   userEvent.click(addSeriesItemBtn);
 
-  const seriesItem1 = screen.getByTestId('select-series-item-1');
-  const seriesItem2 = screen.getByTestId('select-series-item-2');
+  const seriesItem1 = getByTestId('select-series-item-1');
+  const seriesItem2 = getByTestId('select-series-item-2');
   userEvent.selectOptions(seriesItem1, COLUMN_NAMES[3]);
   userEvent.selectOptions(seriesItem2, COLUMN_NAMES[2]);
 
   expect(seriesItem1.value).toBe(COLUMN_NAMES[3]);
   expect(seriesItem2.value).toBe(COLUMN_NAMES[2]);
 
-  userEvent.click(screen.getByTestId('delete-series-1'));
+  userEvent.click(getByTestId('delete-series-1'));
 
-  expect(screen.getAllByTestId(/form-series-item-./).length).toBe(2);
-  expect(screen.getByTestId('select-series-item-1').value).toBe(
-    COLUMN_NAMES[2]
-  );
-
-  unmount();
+  expect(getAllByTestId(/form-series-item-./).length).toBe(2);
+  expect(getByTestId('select-series-item-1').value).toBe(COLUMN_NAMES[2]);
 });
 
 it('updates linked state', () => {
@@ -121,7 +111,7 @@ it('updates linked state', () => {
 });
 
 it('resets the form properly', () => {
-  const { container, unmount } = makeChartBuilderWrapper();
+  const { container } = makeChartBuilderWrapper();
   const addSeriesItemBtn = container.querySelector('.btn-add-series');
 
   userEvent.click(addSeriesItemBtn);
@@ -130,24 +120,20 @@ it('resets the form properly', () => {
   userEvent.click(container.querySelector('.btn-reset'));
 
   expect(container.querySelectorAll('.form-series-item').length).toBe(1);
-
-  unmount();
 });
 
 it('handles form submission', () => {
   const onSubmit = jest.fn();
-  const { container, unmount } = makeChartBuilderWrapper({ onSubmit });
+  const { container } = makeChartBuilderWrapper({ onSubmit });
 
   userEvent.click(container.querySelector('.btn-submit'));
 
   expect(onSubmit).toHaveBeenCalledTimes(1);
-
-  unmount();
 });
 
 it('calls onChange when fields are updated', () => {
   const onChange = jest.fn();
-  const { container, unmount } = makeChartBuilderWrapper({ onChange });
+  const { container } = makeChartBuilderWrapper({ onChange });
   const addSeriesItemBtn = container.querySelector('.btn-add-series');
 
   userEvent.selectOptions(
@@ -165,6 +151,4 @@ it('calls onChange when fields are updated', () => {
   userEvent.click(container.querySelectorAll('.btn-chart-type')[1]);
 
   expect(onChange).toHaveBeenCalledTimes(5);
-
-  unmount();
 });
