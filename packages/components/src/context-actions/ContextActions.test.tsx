@@ -8,6 +8,7 @@ let spy: jest.SpyInstance;
 beforeEach(() => {
   spy = jest.spyOn(window, 'requestAnimationFrame').mockImplementation(cb => {
     // mock request animation frame
+    // see https://github.com/deephaven/web-client-ui/issues/508
     // only safe to mock like this if RAF is non-recursive
     cb(0);
     return 0;
