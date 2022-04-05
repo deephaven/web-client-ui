@@ -32,6 +32,9 @@ type RadioItemProps = {
 
   /** The value to associate with this radio item */
   value: string;
+
+  /** An id used for test */
+  'data-testid'?: string;
 };
 
 /**
@@ -50,6 +53,7 @@ const RadioItem = React.forwardRef<HTMLInputElement, RadioItemProps>(
       name,
       onChange,
       value,
+      'data-testid': dataTestId,
     } = props;
 
     const [id] = useState(shortid());
@@ -59,6 +63,7 @@ const RadioItem = React.forwardRef<HTMLInputElement, RadioItemProps>(
         <input
           type="radio"
           id={id}
+          data-testid={dataTestId}
           name={name}
           ref={ref}
           className={classNames('custom-control-input', inputClassName, {
@@ -91,6 +96,7 @@ RadioItem.defaultProps = {
   labelClassName: '',
   name: undefined,
   onChange: undefined,
+  'data-testid': undefined,
 };
 
 export default RadioItem;

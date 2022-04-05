@@ -46,6 +46,7 @@ export const MenuItem = ({
   return (
     <div
       className="btn btn-navigation-menu-item"
+      data-testid={`menu-item-${title}`}
       onClick={handleSelect}
       onKeyDown={event => {
         if (event.key === 'Enter' || event.key === ' ') {
