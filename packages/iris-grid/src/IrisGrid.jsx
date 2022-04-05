@@ -2879,6 +2879,7 @@ export class IrisGrid extends Component {
             >
               <button
                 type="button"
+                data-testid={`btn-iris-grid-settings-button-${name}`}
                 className="btn btn-link btn-link-icon"
                 onClick={this.handleMenu}
               >

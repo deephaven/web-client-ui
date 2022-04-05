@@ -226,7 +226,10 @@ class TableCsvExporter extends Component {
             value={downloadOption}
             disabled={isDownloading}
           >
-            <RadioItem value={TableCsvExporter.DOWNLOAD_OPTIONS.ALL_ROWS}>
+            <RadioItem
+              value={TableCsvExporter.DOWNLOAD_OPTIONS.ALL_ROWS}
+              data-testid="radio-csv-exporter-download-all"
+            >
               All Rows
               <span className="text-muted ml-2">
                 {`(${rowCount
@@ -234,7 +237,10 @@ class TableCsvExporter extends Component {
                   .replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,')} rows)`}
               </span>
             </RadioItem>
-            <RadioItem value={TableCsvExporter.DOWNLOAD_OPTIONS.SELECTED_ROWS}>
+            <RadioItem
+              value={TableCsvExporter.DOWNLOAD_OPTIONS.SELECTED_ROWS}
+              data-testid="radio-csv-exporter-only-selected"
+            >
               Only Selected Rows
               <span className="text-muted ml-2">
                 {selectedRanges.length > 0
@@ -246,6 +252,7 @@ class TableCsvExporter extends Component {
             </RadioItem>
             <RadioItem
               value={TableCsvExporter.DOWNLOAD_OPTIONS.CUSTOMIZED_ROWS}
+              data-testid="radio-csv-exporter-customized-rows"
             >
               <div
                 className="radio-input-row"
@@ -260,6 +267,7 @@ class TableCsvExporter extends Component {
                 <select
                   defaultValue={TableCsvExporter.DOWNLOAD_OPTIONS.FIRST}
                   value={customizedDownloadOption}
+                  data-testid="select-csv-exporter-customized-rows"
                   className="custom-select"
                   disabled={isDownloading}
                   onChange={this.handleCustomizedDownloadOptionChanged}
@@ -271,6 +279,7 @@ class TableCsvExporter extends Component {
                   type="number"
                   className="form-control"
                   id={`customizedRows-${id}`}
+                  data-testid="input-csv-exporter-customized-rows"
                   name={`customizedRows-${id}`}
                   placeholder="100"
                   value={customizedDownloadRows}
@@ -288,6 +297,7 @@ class TableCsvExporter extends Component {
             type="text"
             className="form-control"
             id={`filename-${id}`}
+            data-testid="input-csv-exporter-file-name"
             name={`filename-${id}`}
             value={fileName}
             onChange={event => {
@@ -358,6 +368,7 @@ class TableCsvExporter extends Component {
           )}
           <button
             type="button"
+            data-testid="btn-csv-exporter-download"
             className={ClassNames('btn btn-primary btn-downloading', {
               'btn-spinner btn-cancelable': isDownloading,
             })}
