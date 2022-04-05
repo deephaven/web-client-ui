@@ -1,3 +1,5 @@
+@use "sass:math";
+
 @import '../scss/custom.scss';
 
 $track-height: 15px;
@@ -41,7 +43,7 @@ $tick-label-color: $gray-300;
     margin: 4px;
     height: $track-height;
     background: $track-background;
-    border-radius: $track-height/2;
+    border-radius: $track-height * 0.5;
     position: relative;
 
     .track-fills {
@@ -50,11 +52,11 @@ $tick-label-color: $gray-300;
       left: 0;
       width: 100%;
       height: 100%;
-      border-radius: $track-height/2;
+      border-radius: $track-height * 0.5;
       overflow: hidden;
 
       .track-fill {
-        border-radius: $track-height/2;
+        border-radius: $track-height * 0.5;
         background: $primary-dark;
         height: 100%;
         width: 100%;
@@ -122,7 +124,7 @@ $tick-label-color: $gray-300;
       flex-direction: row;
       div {
         display: block;
-        width: percentage(1/24); //one box per hour in day
+        width: percentage(math.div(1, 24)); //one box per hour in day
         height: $track-height;
         border-right: 1px solid $tick-color;
       }
@@ -145,7 +147,7 @@ $tick-label-color: $gray-300;
 
     .tick-label {
       width: percentage(
-        1/24
+        math.div(1, 24)
       ); // the first label is outside of wrapper and always visible
 
       text-align: left;
@@ -155,15 +157,18 @@ $tick-label-color: $gray-300;
     //if less then min width, the visible tick labels wrap into overflow hidden zone,
     //while the absolutely positioned children stay in place
     .tick-label-wrapper {
-      width: 100% - percentage(1/24); // minus the first label
+      width: 100% - percentage(math.div(1, 24)); // minus the first label
       min-width: 300px; // point where extra labels wrap
-      margin-left: percentage(1/24) / 2 * -1; // offset by half so that labels fall on ticks, not between
+      margin-left: percentage(math.div(1, 24)) * 0.5 * -1; // offset by half so that labels fall on ticks, not between
       display: flex;
 
       .tick-label {
-        width: percentage(1/23); //remaining number of labels excluding first
         text-align: center;
         visibility: hidden;
+        width: percentage(
+          math.div(1, 23)
+        ); //remaining number of labels excluding first
+
         // used to center text in a box potentially smaller then the text it contains
         &::before {
           content: '';
@@ -189,11 +194,11 @@ $tick-label-color: $gray-300;
       div:nth-child(12) {
         position: absolute;
         top: 0;
-        left: percentage(1/23) * 11;
+        left: percentage(math.div(1, 23)) * 11;
       }
       div:nth-child(13) {
         margin-left: percentage(
-          1/24
+          math.div(1, 24)
         ); //compensate the labels to the right to account for removed 12th label
       }
       div:nth-child(24) {

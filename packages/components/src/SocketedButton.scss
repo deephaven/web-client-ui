@@ -87,7 +87,7 @@ $socket-bg: $content-bg;
     position: absolute;
     bottom: 1px; // looked slightly low
     left: 50%;
-    transform: translate(-50%, $socket-size/2);
+    transform: translate(-50%, $socket-size * 0.5);
     z-index: 1; // appear above the circle
   }
 
@@ -121,7 +121,7 @@ $socket-bg: $content-bg;
     position: absolute;
     bottom: 1px; // looked slightly low
     left: 50%;
-    transform: translate(-50%, $socket-size/2);
+    transform: translate(-50%, $socket-size * 0.5);
     z-index: 1; // appear above the circle
   }
 

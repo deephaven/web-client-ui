@@ -227,15 +227,15 @@ $nav-space: 4px; // give a gap around some buttons for focus area that are in na
       white-space: nowrap;
       height: $tab-height - $nav-space;
       line-height: $tab-height - $nav-space - $input-border-width * 2;
-      margin: $nav-space/2 0 $nav-space/2 $tab-button-side-padding;
+      margin: $nav-space * 0.5 0 $nav-space * 0.5 $tab-button-side-padding;
 
       &::before {
         content: '';
         position: absolute;
         left: -$tab-button-side-padding;
         width: 1px;
-        top: ($tab-height - $tab-button-separator-height)/2 - $nav-space/2 -
-          $input-border-width;
+        top: ($tab-height - $tab-button-separator-height) * 0.5 - $nav-space *
+          0.5 - $input-border-width;
         height: $tab-button-separator-height;
         background: $tab-button-separator-color;
       }
@@ -268,7 +268,7 @@ $nav-space: 4px; // give a gap around some buttons for focus area that are in na
     line-height: $tab-height - $nav-space;
     padding: 0 $tab-button-side-padding;
     cursor: pointer;
-    margin: $nav-space/2 0 $nav-space/2 0;
+    margin: $nav-space * 0.5 0 $nav-space * 0.5 0;
 
     &.btn-settings-menu {
       margin-right: $input-border-width;
