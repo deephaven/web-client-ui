@@ -109,6 +109,7 @@ class WidgetPanel extends PureComponent {
       onShow,
       onTabBlur,
       onTabFocus,
+      onTabClicked,
     } = this.props;
 
     const {
@@ -147,6 +148,7 @@ class WidgetPanel extends PureComponent {
         onSessionOpen={this.handleSessionOpened}
         onTabBlur={onTabBlur}
         onTabFocus={onTabFocus}
+        onTabClicked={onTabClicked}
         renderTabTooltip={doRenderTabTooltip}
         errorMessage={errorMessage}
         isLoaded={isLoaded}
@@ -191,6 +193,7 @@ WidgetPanel.propTypes = {
   onShow: PropTypes.func,
   onTabBlur: PropTypes.func,
   onTabFocus: PropTypes.func,
+  onTabClicked: PropTypes.func,
 };
 
 WidgetPanel.defaultProps = {
@@ -217,6 +220,7 @@ WidgetPanel.defaultProps = {
   onShow: () => {},
   onTabBlur: () => {},
   onTabFocus: () => {},
+  onTabClicked: () => {},
 };
 
 export default WidgetPanel;

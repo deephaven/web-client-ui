@@ -60,6 +60,7 @@ export class IrisGridPanel extends PureComponent {
     this.handleCreateChart = this.handleCreateChart.bind(this);
     this.handleResize = this.handleResize.bind(this);
     this.handleShow = this.handleShow.bind(this);
+    this.handleTabClicked = this.handleTabClicked.bind(this);
     this.handleDisconnect = this.handleDisconnect.bind(this);
     this.handleReconnect = this.handleReconnect.bind(this);
     this.handleLoadSuccess = this.handleLoadSuccess.bind(this);
@@ -504,6 +505,12 @@ export class IrisGridPanel extends PureComponent {
     this.updateGrid();
   }
 
+  handleTabClicked() {
+    if (this.irisGrid.current) {
+      this.irisGrid.current.focus();
+    }
+  }
+
   handleError(error) {
     log.error(error);
     this.setState({ error, isLoading: false });
@@ -935,6 +942,7 @@ export class IrisGridPanel extends PureComponent {
         onResize={this.handleResize}
         onShow={this.handleShow}
         onTabFocus={this.handleShow}
+        onTabClicked={this.handleTabClicked}
         queryName={queryName}
         querySerial={querySerial}
         widgetName={name}
