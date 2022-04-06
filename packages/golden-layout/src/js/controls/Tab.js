@@ -231,7 +231,13 @@ lm.utils.copy(lm.controls.Tab.prototype, {
           document.activeElement
         )
       ) {
+        // if no focus inside put focus onto the container
+        // so focusin always fires for tabclicks
         this.contentItem.container._contentElement.focus();
+
+        // still emit tab clicked event, so panels can also
+        // do it's own focus handling if desired
+        this.contentItem.container.emit('tabClicked');
       }
 
       // might have been called from the dropdown

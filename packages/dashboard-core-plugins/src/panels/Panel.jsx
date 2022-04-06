@@ -36,7 +36,7 @@ class Panel extends PureComponent {
     this.handleRenameCancel = this.handleRenameCancel.bind(this);
     this.handleRenameSubmit = this.handleRenameSubmit.bind(this);
     this.handleShowRenameDialog = this.handleShowRenameDialog.bind(this);
-
+    this.handleTabClicked = this.handleTabClicked.bind(this);
     this.handleTab = this.handleTab.bind(this);
 
     const { glContainer } = this.props;
@@ -54,6 +54,7 @@ class Panel extends PureComponent {
     glContainer.on('shown', this.handleShow);
     glContainer.on('hide', this.handleHide);
     glContainer.on('tab', this.handleTab);
+    glContainer.on('tabClicked', this.handleTabClicked);
     glEventHub.on(ConsoleEvent.SESSION_CLOSED, this.handleSessionClosed);
     glEventHub.on(ConsoleEvent.SESSION_OPENED, this.handleSessionOpened);
     glEventHub.on(TabEvent.focus, this.handleTabFocus);
@@ -74,6 +75,7 @@ class Panel extends PureComponent {
     glContainer.off('shown', this.handleShow);
     glContainer.off('hide', this.handleHide);
     glContainer.off('tab', this.handleTab);
+    glContainer.off('tabClicked', this.handleTabClicked);
     glEventHub.off(ConsoleEvent.SESSION_CLOSED, this.handleSessionClosed);
     glEventHub.off(ConsoleEvent.SESSION_OPENED, this.handleSessionOpened);
     glEventHub.off(TabEvent.focus, this.handleTabFocus);
@@ -98,6 +100,11 @@ class Panel extends PureComponent {
 
     const { onTab } = this.props;
     onTab(tab);
+  }
+
+  handleTabClicked(...args) {
+    const { onTabClicked } = this.props;
+    onTabClicked(...args);
   }
 
   handleClearAllFilters(...args) {
@@ -293,6 +300,7 @@ Panel.propTypes = {
   onFocus: PropTypes.func,
   onBlur: PropTypes.func,
   onTab: PropTypes.func,
+  onTabClicked: PropTypes.func,
   onClearAllFilters: PropTypes.func,
   onHide: PropTypes.func,
   onResize: PropTypes.func,
@@ -314,6 +322,7 @@ Panel.propTypes = {
 Panel.defaultProps = {
   className: '',
   onTab: () => {},
+  onTabClicked: () => {},
   onClearAllFilters: () => {},
   onFocus: () => {},
   onBlur: () => {},

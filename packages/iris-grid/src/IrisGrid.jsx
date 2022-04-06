@@ -1472,6 +1472,10 @@ export class IrisGrid extends Component {
     );
   }
 
+  focus() {
+    if (this.grid) this.grid.focus();
+  }
+
   focusFilterBar(column) {
     const { model } = this.props;
     const { columnCount } = model;
