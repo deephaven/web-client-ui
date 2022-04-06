@@ -79,6 +79,7 @@ module.exports = {
           'error',
           { ignoreFunctionalComponents: true },
         ],
+        'import/no-extraneous-dependencies': 'off',
       },
     },
   ],

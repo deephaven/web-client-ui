@@ -3,23 +3,14 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@deephaven/iris-grid/dist/*.js": [
-        "./packages/iris-grid/src/*.ts"
-      ],
-      "@deephaven/iris-grid/dist/*": [
-        "./packages/iris-grid/src/*"
-      ],
-      "@deephaven/*": [
-        "./packages/*/src"
-      ]
+      "@deephaven/iris-grid/dist/*.js": ["./packages/iris-grid/src/*.ts"],
+      "@deephaven/iris-grid/dist/*": ["./packages/iris-grid/src/*"],
+      "@deephaven/*": ["./packages/*/src"]
     }
   },
   "files": [],
   "watchOptions": {
-    "excludeDirectories": [
-      "**/node_modules",
-      "**/dist"
-    ]
+    "excludeDirectories": ["**/node_modules", "**/dist"]
   },
   "references": [
     {

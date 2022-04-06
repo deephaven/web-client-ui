@@ -38,5 +38,5 @@ module.exports = {
     ),
     ...pathsToModuleNameMapper(compilerOptions.paths, { prefix: __dirname }),
   },
-  setupFilesAfterEnv: [path.join(__dirname, './jest.setup.js')],
+  setupFilesAfterEnv: [path.join(__dirname, './jest.setup.ts')],
 };
