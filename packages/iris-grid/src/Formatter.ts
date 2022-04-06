@@ -1,4 +1,3 @@
-import { Log } from '@deephaven/log';
 import TableUtils, { DataType } from './TableUtils';
 import {
   BooleanColumnFormatter,
@@ -11,8 +10,6 @@ import {
   TableColumnFormatter,
 } from './formatters';
 import StringColumnFormatter from './formatters/StringColumnFormatter';
-
-const log = Log.module('Formatter');
 
 type ColumnName = string;
 
