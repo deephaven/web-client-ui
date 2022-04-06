@@ -141,6 +141,7 @@ class ChartBuilder extends PureComponent {
     this.handleSubmit = this.handleSubmit.bind(this);
     this.handleTypeClick = this.handleTypeClick.bind(this);
     this.handleXAxisChange = this.handleXAxisChange.bind(this);
+    this.sendChange = this.sendChange.bind(this);
 
     const { model } = props;
     const { columns } = model;
@@ -165,28 +166,23 @@ class ChartBuilder extends PureComponent {
   }
 
   handleAddSeries() {
-    this.setState(
-      state => {
-        let { seriesItems } = state;
-        seriesItems = [].concat(seriesItems);
+    this.setState(state => {
+      let { seriesItems } = state;
+      seriesItems = [].concat(seriesItems);
 
-        const { model } = this.props;
-        const { columns } = model;
-        seriesItems.push({
-          id: shortid.generate(),
-          value: columns[0].name,
-        });
+      const { model } = this.props;
+      const { columns } = model;
+      seriesItems.push({
+        id: shortid.generate(),
+        value: columns[0].name,
+      });
 
-        return { seriesItems };
-      },
-      () => {
-        this.sendChange();
-      }
-    );
+      return { seriesItems };
+    }, this.sendChange);
   }
 
   handleLinkStateChange(event) {
-    this.setState({ isLinked: event.target.value === 'true' });
+    this.setState({ isLinked: event.target.value === 'true' }, this.sendChange);
   }
 
   handleReset() {
@@ -198,46 +194,34 @@ class ChartBuilder extends PureComponent {
     const seriesItems = ChartBuilder.makeDefaultSeriesItems(type, columns);
     const isLinked = true;
 
-    this.setState({ type, seriesItems, xAxis, isLinked }, () => {
-      this.sendChange();
-    });
+    this.setState({ type, seriesItems, xAxis, isLinked }, this.sendChange);
   }
 
   handleSeriesChange(event) {
     const { value } = event.target;
     const index = event.target.getAttribute('data-index');
 
-    this.setState(
-      state => {
-        let { seriesItems } = state;
+    this.setState(state => {
+      let { seriesItems } = state;
 
-        seriesItems = [].concat(seriesItems);
-        seriesItems[index].value = value;
+      seriesItems = [].concat(seriesItems);
+      seriesItems[index].value = value;
 
-        return { seriesItems };
-      },
-      () => {
-        this.sendChange();
-      }
-    );
+      return { seriesItems };
+    }, this.sendChange);
   }
 
   handleSeriesDeleteClick(event) {
     const index = event.target.getAttribute('data-index');
 
-    this.setState(
-      state => {
-        let { seriesItems } = state;
+    this.setState(state => {
+      let { seriesItems } = state;
 
-        seriesItems = [].concat(seriesItems);
-        seriesItems.splice(index, 1);
+      seriesItems = [].concat(seriesItems);
+      seriesItems.splice(index, 1);
 
-        return { seriesItems };
-      },
-      () => {
-        this.sendChange();
-      }
-    );
+      return { seriesItems };
+    }, this.sendChange);
   }
 
   handleSubmit(event) {
@@ -255,32 +239,25 @@ class ChartBuilder extends PureComponent {
 
     log.debug2('handleTypeSelect', type);
 
-    this.setState(
-      state => {
-        const maxSeriesCount = ChartBuilder.getMaxSeriesCount(type);
-        let { seriesItems } = state;
-        seriesItems = seriesItems.slice(0, maxSeriesCount);
-        if (seriesItems.length === 0 && maxSeriesCount > 0) {
-          const { model } = this.props;
-          const { columns } = model;
-          seriesItems = ChartBuilder.makeDefaultSeriesItems(type, columns);
-        }
-
-        return { type, seriesItems };
-      },
-      () => {
-        this.sendChange();
+    this.setState(state => {
+      const maxSeriesCount = ChartBuilder.getMaxSeriesCount(type);
+      let { seriesItems } = state;
+      seriesItems = seriesItems.slice(0, maxSeriesCount);
+      if (seriesItems.length === 0 && maxSeriesCount > 0) {
+        const { model } = this.props;
+        const { columns } = model;
+        seriesItems = ChartBuilder.makeDefaultSeriesItems(type, columns);
       }
-    );
+
+      return { type, seriesItems };
+    }, this.sendChange);
   }
 
   handleXAxisChange(event) {
     const xAxis = event.target.value;
     log.debug2('x-axis change', xAxis);
 
-    this.setState({ xAxis }, () => {
-      this.sendChange();
-    });
+    this.setState({ xAxis }, this.sendChange);
   }
 
   sendChange() {
@@ -344,6 +321,7 @@ class ChartBuilder extends PureComponent {
             <div
               className="form-row form-inline form-series-item"
               key={seriesItem.id}
+              data-testid={`form-series-item-${i}`}
             >
               <label className="col-2 label-left">
                 {i === 0 ? seriesLabel : ''}
@@ -352,6 +330,7 @@ class ChartBuilder extends PureComponent {
                 className="form-control custom-select select-series col"
                 value={seriesItem.value}
                 onChange={this.handleSeriesChange}
+                data-testid={`select-series-item-${i}`}
                 data-index={i}
               >
                 {columns.map(column => (
@@ -365,6 +344,7 @@ class ChartBuilder extends PureComponent {
                   type="button"
                   className="btn btn-link btn-link-icon btn-delete-series ml-2 px-2"
                   data-index={i}
+                  data-testid={`delete-series-${i}`}
                   onClick={this.handleSeriesDeleteClick}
                 >
                   <FontAwesomeIcon icon={vsTrash} />

@@ -1,5 +1,6 @@
 import React from 'react';
-import { mount } from 'enzyme';
+import { render } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import ChartBuilder from './ChartBuilder';
 import IrisGridTestUtils from '../IrisGridTestUtils';
 
@@ -12,152 +13,142 @@ function makeChartBuilderWrapper({
     IrisGridTestUtils.makeTable(COLUMN_NAMES.map(IrisGridTestUtils.makeColumn))
   ),
 } = {}) {
-  return mount(
+  return render(
     <ChartBuilder onChange={onChange} onSubmit={onSubmit} model={model} />
   );
 }
 
 it('renders without crashing', () => {
-  const wrapper = makeChartBuilderWrapper();
-  wrapper.unmount();
+  makeChartBuilderWrapper();
 });
 
 it('updates the chart type', () => {
-  const wrapper = makeChartBuilderWrapper();
+  const { getByText } = makeChartBuilderWrapper();
 
-  let chartButtons = wrapper.find('.btn-chart-type');
-  expect(wrapper.state('type')).toBe(ChartBuilder.types[0]);
-  expect(chartButtons.at(0).hasClass('active')).toBe(true);
-  expect(chartButtons.at(1).hasClass('active')).toBe(false);
+  const lineButton = getByText('Line');
+  const barButton = getByText('Bar');
 
-  chartButtons.at(1).simulate('click');
+  expect(lineButton.classList.contains('active')).toBe(true);
+  expect(barButton.classList.contains('active')).toBe(false);
 
-  chartButtons = wrapper.find('.btn-chart-type');
+  userEvent.click(barButton);
 
-  expect(wrapper.state('type')).toBe(ChartBuilder.types[1]);
-  expect(chartButtons.at(0).hasClass('active')).toBe(false);
-  expect(chartButtons.at(1).hasClass('active')).toBe(true);
-
-  wrapper.unmount();
+  expect(lineButton.classList.contains('active')).toBe(false);
+  expect(barButton.classList.contains('active')).toBe(true);
 });
 
 it('has x-axis selection with the proper columns', () => {
-  const wrapper = makeChartBuilderWrapper();
+  const { container } = makeChartBuilderWrapper();
+  const xAxisSelectElm = container.querySelector('.select-x-axis');
 
-  expect(wrapper.find('.select-x-axis').children().length).toBe(
+  expect(xAxisSelectElm.querySelectorAll('option').length).toBe(
     COLUMN_NAMES.length
   );
-  expect(wrapper.find('.select-x-axis').instance().value).toBe(COLUMN_NAMES[0]);
-  expect(wrapper.state('xAxis')).toBe(COLUMN_NAMES[0]);
+  userEvent.selectOptions(xAxisSelectElm, COLUMN_NAMES[1]);
 
-  wrapper.find('.select-x-axis').childAt(1).simulate('change');
-  expect(wrapper.state('xAxis')).toBe(COLUMN_NAMES[1]);
-
-  wrapper.unmount();
+  expect(xAxisSelectElm.value).toBe(COLUMN_NAMES[1]);
 });
 
 it('updates series selection with the proper columns', () => {
-  const wrapper = makeChartBuilderWrapper();
+  const { container } = makeChartBuilderWrapper();
+  const seriesSelectElm = container.querySelector('.select-series');
 
-  expect(wrapper.find('.select-series').children().length).toBe(
+  expect(seriesSelectElm.querySelectorAll('option').length).toBe(
     COLUMN_NAMES.length
   );
-  expect(wrapper.find('.select-series').instance().value).toBe(COLUMN_NAMES[1]);
-  expect(wrapper.state('seriesItems').map(item => item.value)).toEqual([
-    COLUMN_NAMES[1],
-  ]);
-
-  wrapper.find('.select-series').childAt(2).simulate('change');
-  expect(wrapper.state('seriesItems').map(item => item.value)).toEqual([
-    COLUMN_NAMES[2],
-  ]);
-
-  wrapper.unmount();
+  expect(seriesSelectElm.value).toBe(COLUMN_NAMES[1]);
+  userEvent.selectOptions(seriesSelectElm, COLUMN_NAMES[2]);
+  expect(seriesSelectElm.value).toBe(COLUMN_NAMES[2]);
 });
 
 it('add and deletes series items', () => {
-  const wrapper = makeChartBuilderWrapper();
+  const { getAllByTestId, getByTestId, getByText } = makeChartBuilderWrapper();
+  const addSeriesItemBtn = getByText('Add Series');
 
-  expect(wrapper.state('seriesItems').length).toBe(1);
+  expect(getAllByTestId(/form-series-item-./).length).toBe(1);
 
-  wrapper.find('.btn-add-series').simulate('click');
-  wrapper.find('.btn-add-series').simulate('click');
+  userEvent.click(addSeriesItemBtn);
+  userEvent.click(addSeriesItemBtn);
 
-  expect(wrapper.state('seriesItems').length).toBe(3);
+  const seriesItem1 = getByTestId('select-series-item-1');
+  const seriesItem2 = getByTestId('select-series-item-2');
+  userEvent.selectOptions(seriesItem1, COLUMN_NAMES[3]);
+  userEvent.selectOptions(seriesItem2, COLUMN_NAMES[2]);
 
-  wrapper.find('.select-series').at(1).childAt(3).simulate('change');
-  wrapper.find('.select-series').at(2).childAt(2).simulate('change');
+  expect(seriesItem1.value).toBe(COLUMN_NAMES[3]);
+  expect(seriesItem2.value).toBe(COLUMN_NAMES[2]);
 
-  expect(wrapper.state('seriesItems').map(item => item.value)).toEqual([
-    COLUMN_NAMES[1],
-    COLUMN_NAMES[3],
-    COLUMN_NAMES[2],
-  ]);
+  userEvent.click(getByTestId('delete-series-1'));
 
-  wrapper.find('.btn-delete-series').at(0).simulate('click');
-
-  expect(wrapper.state('seriesItems').map(item => item.value)).toEqual([
-    COLUMN_NAMES[3],
-    COLUMN_NAMES[2],
-  ]);
+  expect(getAllByTestId(/form-series-item-./).length).toBe(2);
+  expect(getByTestId('select-series-item-1').value).toBe(COLUMN_NAMES[2]);
 });
 
 it('updates linked state', () => {
-  const wrapper = makeChartBuilderWrapper();
+  const onChange = jest.fn();
+  const { container } = makeChartBuilderWrapper({ onChange });
 
-  expect(wrapper.state('isLinked')).toBe(true);
+  const linkButton = container.querySelector(
+    '.chart-builder-link input[type="radio"][value="true"]'
+  );
+  const unlinkButton = container.querySelector(
+    '.chart-builder-link input[type="radio"][value="false"]'
+  );
 
-  wrapper
-    .find('.chart-builder-link input[type="radio"]')
-    .at(1)
-    .simulate('change', { target: { value: 'false' } });
+  expect(onChange).not.toHaveBeenCalled();
 
-  expect(wrapper.state('isLinked')).toBe(false);
+  userEvent.click(unlinkButton);
 
-  wrapper
-    .find('.chart-builder-link input[type="radio"]')
-    .at(0)
-    .simulate('change', { target: { value: 'true' } });
+  expect(onChange).toHaveBeenCalledWith(
+    expect.objectContaining({ isLinked: false })
+  );
+  onChange.mockClear();
 
-  expect(wrapper.state('isLinked')).toBe(true);
+  userEvent.click(linkButton);
+  expect(onChange).toHaveBeenCalledWith(
+    expect.objectContaining({ isLinked: true })
+  );
 });
 
 it('resets the form properly', () => {
-  const wrapper = makeChartBuilderWrapper();
+  const { container } = makeChartBuilderWrapper();
+  const addSeriesItemBtn = container.querySelector('.btn-add-series');
 
-  wrapper.find('.btn-add-series').simulate('click');
-  wrapper.find('.btn-add-series').simulate('click');
-  wrapper.find('.btn-add-series').simulate('click');
+  userEvent.click(addSeriesItemBtn);
+  userEvent.click(addSeriesItemBtn);
 
-  wrapper.find('.btn-reset').simulate('click');
+  userEvent.click(container.querySelector('.btn-reset'));
 
-  expect(wrapper.state('seriesItems').length).toBe(1);
-
-  wrapper.unmount();
+  expect(container.querySelectorAll('.form-series-item').length).toBe(1);
 });
 
 it('handles form submission', () => {
   const onSubmit = jest.fn();
-  const wrapper = makeChartBuilderWrapper({ onSubmit });
+  const { container } = makeChartBuilderWrapper({ onSubmit });
 
-  wrapper.find('.btn-submit').simulate('submit');
+  userEvent.click(container.querySelector('.btn-submit'));
 
-  expect(onSubmit).toHaveBeenCalled();
-
-  wrapper.unmount();
+  expect(onSubmit).toHaveBeenCalledTimes(1);
 });
 
 it('calls onChange when fields are updated', () => {
   const onChange = jest.fn();
-  const wrapper = makeChartBuilderWrapper({ onChange });
+  const { container } = makeChartBuilderWrapper({ onChange });
+  const addSeriesItemBtn = container.querySelector('.btn-add-series');
 
-  wrapper.find('.select-series').childAt(1).simulate('change');
-  wrapper.find('.btn-add-series').simulate('click');
-  wrapper.find('.btn-add-series').simulate('click');
-  wrapper.find('.select-series').at(2).childAt(2).simulate('change');
-  wrapper.find('.btn-chart-type').at(1).simulate('click');
+  userEvent.selectOptions(
+    container.querySelector('.select-series'),
+    COLUMN_NAMES[1]
+  );
+
+  userEvent.click(addSeriesItemBtn);
+  userEvent.click(addSeriesItemBtn);
+  userEvent.selectOptions(
+    container.querySelectorAll('.select-series')[2],
+    COLUMN_NAMES[2]
+  );
+
+  userEvent.click(container.querySelectorAll('.btn-chart-type')[1]);
 
   expect(onChange).toHaveBeenCalledTimes(5);
-
-  wrapper.unmount();
 });
