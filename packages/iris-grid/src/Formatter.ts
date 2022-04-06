@@ -136,7 +136,6 @@ class Formatter {
   ): Map<string, TableColumnFormat> | undefined {
     const dataType = TableUtils.getNormalizedType(columnType);
     if (dataType === null) {
-      log.warn(`Unknown columnType ${columnType}`);
       return undefined;
     }
 
