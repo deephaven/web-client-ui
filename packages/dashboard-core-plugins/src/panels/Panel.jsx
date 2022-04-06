@@ -75,6 +75,7 @@ class Panel extends PureComponent {
     glContainer.off('shown', this.handleShow);
     glContainer.off('hide', this.handleHide);
     glContainer.off('tab', this.handleTab);
+    glContainer.off('tabClicked', this.handleTabClicked);
     glEventHub.off(ConsoleEvent.SESSION_CLOSED, this.handleSessionClosed);
     glEventHub.off(ConsoleEvent.SESSION_OPENED, this.handleSessionOpened);
     glEventHub.off(TabEvent.focus, this.handleTabFocus);
