@@ -225,11 +225,11 @@ class FilterSetManagerPanel extends Component {
       return;
     }
     log.debug('restoreIrisGridFilters', panelId, state, restoreFullState);
-    panel.setFilters(
-      restoreFullState
-        ? state
-        : { irisGridState: { advancedFilters, quickFilters } }
-    );
+    if (restoreFullState) {
+      panel.setStateOverrides(state);
+    } else {
+      panel.setFilters({ quickFilters, advancedFilters });
+    }
   }
 
   // eslint-disable-next-line class-methods-use-this

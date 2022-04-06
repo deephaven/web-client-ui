@@ -123,6 +123,7 @@ export class IrisGridPanel extends PureComponent {
       // eslint-disable-next-line react/no-unused-state
       panelState, // Dehydrated panel state that can load this panel
       irisGridStateOverrides: {},
+      gridStateOverrides: {},
     };
   }
 
@@ -309,8 +310,7 @@ export class IrisGridPanel extends PureComponent {
 
   handleLoadSuccess(modelParam) {
     const model = modelParam;
-    const { panelState } = this.props;
-    const { irisGridStateOverrides } = this.state;
+    const { panelState, irisGridStateOverrides } = this.state;
     const modelQueue = [];
 
     if (panelState != null) {
@@ -662,9 +662,46 @@ export class IrisGridPanel extends PureComponent {
     }
   }
 
-  setFilters(irisGridStateOverrides) {
-    log.debug('setFilters', irisGridStateOverrides);
-    this.setState({ irisGridStateOverrides }, () => {
+  setFilters({ quickFilters, advancedFilters }) {
+    log.debug('setFilters', quickFilters, advancedFilters);
+    const { model, isDisconnected } = this.state;
+    const irisGrid = this.irisGrid.current;
+    if (irisGrid == null || isDisconnected) {
+      log.debug('Ignore setFilters, model disconnected');
+      return;
+    }
+    const { columns, formatter } = model;
+    const indexedQuickFilters = IrisGridUtils.changeFilterColumnNamesToIndexes(
+      model.columns,
+      quickFilters
+    ).filter(([columnIndex]) => model.isFilterable(columnIndex));
+    const indexedAdvancedFilters = IrisGridUtils.changeFilterColumnNamesToIndexes(
+      model.columns,
+      advancedFilters
+    ).filter(([columnIndex]) => model.isFilterable(columnIndex));
+
+    irisGrid.clearAllFilters();
+    irisGrid.setFilters({
+      quickFilters: IrisGridUtils.hydrateQuickFilters(
+        columns,
+        indexedQuickFilters,
+        formatter.timeZone
+      ),
+      advancedFilters: IrisGridUtils.hydrateAdvancedFilters(
+        columns,
+        indexedAdvancedFilters,
+        formatter.timeZone
+      ),
+    });
+  }
+
+  setStateOverrides(overrides) {
+    log.debug('setStateOverrides', overrides);
+    const {
+      irisGridState: irisGridStateOverrides,
+      gridState: gridStateOverrides,
+    } = overrides;
+    this.setState({ irisGridStateOverrides, gridStateOverrides }, () => {
       this.initModel();
     });
   }
@@ -675,28 +712,32 @@ export class IrisGridPanel extends PureComponent {
   }
 
   loadPanelState(model) {
-    const { panelState } = this.props;
-    const { irisGridStateOverrides } = this.state;
+    const {
+      panelState,
+      irisGridStateOverrides: originalIrisGridStateOverrides,
+      gridStateOverrides,
+    } = this.state;
     if (panelState == null) {
       return;
     }
 
     try {
       const { gridState, irisGridState, irisGridPanelState } = panelState;
+      const irisGridStateOverrides = { ...originalIrisGridStateOverrides };
       const {
-        quickFilters: indexedQuickFilters,
-        advancedFilters: indexedAdvancedFilters,
+        quickFilters: savedQuickFilters,
+        advancedFilters: savedAdvancedFilters,
       } = irisGridStateOverrides;
-      if (indexedQuickFilters) {
+      if (savedQuickFilters) {
         irisGridStateOverrides.quickFilters = IrisGridUtils.changeFilterColumnNamesToIndexes(
           model.columns,
-          indexedQuickFilters
+          savedQuickFilters
         );
       }
-      if (indexedAdvancedFilters) {
+      if (savedAdvancedFilters) {
         irisGridStateOverrides.advancedFilters = IrisGridUtils.changeFilterColumnNamesToIndexes(
           model.columns,
-          indexedAdvancedFilters
+          savedAdvancedFilters
         );
       }
       const {
@@ -736,7 +777,7 @@ export class IrisGridPanel extends PureComponent {
         movedRows,
       } = IrisGridUtils.hydrateGridState(
         model,
-        gridState,
+        { ...gridState, ...gridStateOverrides },
         irisGridState.customColumns
       );
       this.setState({

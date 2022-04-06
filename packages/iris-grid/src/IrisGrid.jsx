@@ -101,7 +101,10 @@ const SET_FILTER_DEBOUNCE = 250;
 
 const SET_CONDITIONAL_FORMAT_DEBOUNCE = 250;
 
-const DEFAULT_AGGREGATION_SETTINGS = { aggregations: [], showOnTop: false };
+const DEFAULT_AGGREGATION_SETTINGS = Object.freeze({
+  aggregations: [],
+  showOnTop: false,
+});
 
 function isEmptyConfig({
   advancedFilters,

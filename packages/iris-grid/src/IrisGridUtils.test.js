@@ -435,3 +435,33 @@ describe('validate copy ranges', () => {
     ]);
   });
 });
+
+describe('changeFilterColumnNamesToIndexes', () => {
+  const DEFAULT_FILTER = {};
+  const columns = makeColumns(10);
+  it('Replaces column names with indexes', () => {
+    const filters = [
+      { name: '1', filter: DEFAULT_FILTER },
+      { name: '3', filter: DEFAULT_FILTER },
+      { name: '5', filter: DEFAULT_FILTER },
+    ];
+    expect(
+      IrisGridUtils.changeFilterColumnNamesToIndexes(columns, filters)
+    ).toEqual([
+      [1, DEFAULT_FILTER],
+      [3, DEFAULT_FILTER],
+      [5, DEFAULT_FILTER],
+    ]);
+  });
+
+  it('Omits missing columns', () => {
+    const filters = [
+      { name: 'missing_1', filter: DEFAULT_FILTER },
+      { name: '3', filter: DEFAULT_FILTER },
+      { name: 'missing_2', filter: DEFAULT_FILTER },
+    ];
+    expect(
+      IrisGridUtils.changeFilterColumnNamesToIndexes(columns, filters)
+    ).toEqual([[3, DEFAULT_FILTER]]);
+  });
+});

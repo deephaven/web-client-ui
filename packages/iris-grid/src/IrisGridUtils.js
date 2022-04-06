@@ -1118,7 +1118,7 @@ class IrisGridUtils {
   }
 
   /**
-   * Get filter configs with column names changed to indexes
+   * Get filter configs with column names changed to indexes, exclude missing columns
    * @param {dh.Column[]} columns The columns to get column indexes from
    * @param {Object[]} filters Filter configs
    * @returns {Object[]} Updated filter configs with column names changed to indexes
