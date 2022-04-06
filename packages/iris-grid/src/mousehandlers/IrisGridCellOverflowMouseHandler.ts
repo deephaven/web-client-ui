@@ -130,11 +130,12 @@ class IrisGridCellOverflowMouseHandler extends GridMouseHandler {
     this.destroyColumnTooltip();
     const { column, row } = point;
 
-    if (this.isHoveringOverflowButton(point))
+    if (this.isHoveringOverflowButton(point)) {
       this.irisGrid.setState({
         showOverflowModal: true,
         overflowText: this.irisGrid.getValueForCell(column, row),
       });
+    }
 
     return false;
   }

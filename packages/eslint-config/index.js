@@ -39,6 +39,7 @@ module.exports = {
     'import/no-named-as-default': 'off',
     'import/extensions': 'off',
     'es/no-regexp-lookbehind-assertions': 'error',
+    curly: ['error'],
   },
   parserOptions: {
     ecmaFeatures: {
