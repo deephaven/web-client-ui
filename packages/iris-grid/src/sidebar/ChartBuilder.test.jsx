@@ -28,13 +28,13 @@ it('updates the chart type', () => {
   const lineButton = getByText('Line');
   const barButton = getByText('Bar');
 
-  expect(lineButton.classList.contains('active')).toBe(true);
-  expect(barButton.classList.contains('active')).toBe(false);
+  expect(lineButton).toHaveClass('active');
+  expect(barButton).not.toHaveClass('active');
 
   userEvent.click(barButton);
 
-  expect(lineButton.classList.contains('active')).toBe(false);
-  expect(barButton.classList.contains('active')).toBe(true);
+  expect(lineButton).not.toHaveClass('active');
+  expect(barButton).toHaveClass('active');
 });
 
 it('has x-axis selection with the proper columns', () => {
