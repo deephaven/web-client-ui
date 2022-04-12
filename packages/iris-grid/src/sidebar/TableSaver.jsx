@@ -370,7 +370,8 @@ export default class TableSaver extends PureComponent {
         const cellData = formatter.getFormattedString(
           snapshot.getData(rowIdx, this.columns[j]),
           this.columns[j].type,
-          this.columns[j].name
+          this.columns[j].name,
+          snapshot.getFormat(rowIdx, this.columns[j])?.formatString
         );
         csvString += TableSaver.csvEscapeString(cellData);
         csvString += j === this.columns.length - 1 ? '\n' : ',';

@@ -363,6 +363,7 @@ class IrisGridTableModel extends IrisGridModel {
       }
 
       const column = this.totalsColumn(x, y) ?? this.columns[x];
+      // TODO: formatting
       const hasCustomColumnFormat = this.getCachedCustomColumnFormatFlag(
         this.formatter,
         column.type,
@@ -691,6 +692,7 @@ class IrisGridTableModel extends IrisGridModel {
   }
 
   formatForCell(x, y) {
+    //
     return this.dataForCell(x, y)?.format;
   }
 
