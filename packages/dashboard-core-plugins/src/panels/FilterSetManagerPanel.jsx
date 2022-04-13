@@ -24,7 +24,7 @@ import './FilterSetManagerPanel.scss';
 
 const log = Log.module('FilterSetManagerPanel');
 
-class FilterSetManagerPanel extends Component {
+export class FilterSetManagerPanel extends Component {
   static COMPONENT = 'FilterSetManagerPanel';
 
   static changeFilterIndexesToColumnNames(table, configs) {

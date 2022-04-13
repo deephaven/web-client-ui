@@ -558,6 +558,7 @@ class FilterSetManager extends Component<
                         className="btn btn-link no-underline pt-2 pb-2"
                         onClick={this.handleRenameConfirm}
                         tooltip="Save"
+                        test-id="button-save"
                         icon={vsSave}
                       />
 
