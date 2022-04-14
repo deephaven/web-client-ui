@@ -1,12 +1,7 @@
 import React from 'react';
 import { render, cleanup } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-// import { LayoutUtils } from '@deephaven/dashboard';
 import { FilterSetManagerPanel } from './FilterSetManagerPanel';
-
-// jest.mock('LayoutUtils', () => ({
-//   getPanelId: () => 'Grid1',
-// }));
 
 function makeGlComponent() {
   return {
