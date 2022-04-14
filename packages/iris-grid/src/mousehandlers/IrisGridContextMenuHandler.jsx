@@ -174,7 +174,6 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
       showTSeparator: settings.showTSeparator,
       defaultDateTimeFormatString: CONTEXT_MENU_DATE_FORMAT,
     });
-    const isColumnFrozen = model.isColumnFrozen(columnIndex);
 
     if (column != null) {
       const { table } = model;
@@ -214,6 +213,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
         const isColumnHidden = [...userColumnWidths.values()].some(
           columnWidth => columnWidth === 0
         );
+        const isColumnFrozen = model.isColumnFrozen(columnIndex);
         actions.push({
           title: 'Hide Column',
           group: IrisGridContextMenuHandler.GROUP_HIDE_COLUMNS,
