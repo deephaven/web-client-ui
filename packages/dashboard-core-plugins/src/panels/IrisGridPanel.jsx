@@ -122,6 +122,8 @@ export class IrisGridPanel extends PureComponent {
 
       // eslint-disable-next-line react/no-unused-state
       panelState, // Dehydrated panel state that can load this panel
+      irisGridStateOverrides: {},
+      gridStateOverrides: {},
     };
   }
 
@@ -308,7 +310,7 @@ export class IrisGridPanel extends PureComponent {
 
   handleLoadSuccess(modelParam) {
     const model = modelParam;
-    const { panelState } = this.props;
+    const { panelState, irisGridStateOverrides } = this.state;
     const modelQueue = [];
 
     if (panelState != null) {
@@ -318,7 +320,7 @@ export class IrisGridPanel extends PureComponent {
         customColumns,
         selectDistinctColumns = [],
         rollupConfig,
-      } = irisGridState;
+      } = { ...irisGridState, ...irisGridStateOverrides };
 
       if (customColumns.length > 0) {
         modelQueue.push(m => {
@@ -661,24 +663,47 @@ export class IrisGridPanel extends PureComponent {
   }
 
   setFilters({ quickFilters, advancedFilters }) {
-    const irisGrid = this.irisGrid.current;
+    log.debug('setFilters', quickFilters, advancedFilters);
     const { model, isDisconnected } = this.state;
-    if (irisGrid != null && !isDisconnected) {
-      const { columns, formatter } = model;
-      irisGrid.clearAllFilters();
-      irisGrid.setFilters({
-        quickFilters: IrisGridUtils.hydrateQuickFilters(
-          columns,
-          quickFilters,
-          formatter.timeZone
-        ),
-        advancedFilters: IrisGridUtils.hydrateAdvancedFilters(
-          columns,
-          advancedFilters,
-          formatter.timeZone
-        ),
-      });
+    const irisGrid = this.irisGrid.current;
+    if (irisGrid == null || isDisconnected) {
+      log.debug('Ignore setFilters, model disconnected');
+      return;
     }
+    const { columns, formatter } = model;
+    const indexedQuickFilters = IrisGridUtils.changeFilterColumnNamesToIndexes(
+      model.columns,
+      quickFilters
+    ).filter(([columnIndex]) => model.isFilterable(columnIndex));
+    const indexedAdvancedFilters = IrisGridUtils.changeFilterColumnNamesToIndexes(
+      model.columns,
+      advancedFilters
+    ).filter(([columnIndex]) => model.isFilterable(columnIndex));
+
+    irisGrid.clearAllFilters();
+    irisGrid.setFilters({
+      quickFilters: IrisGridUtils.hydrateQuickFilters(
+        columns,
+        indexedQuickFilters,
+        formatter.timeZone
+      ),
+      advancedFilters: IrisGridUtils.hydrateAdvancedFilters(
+        columns,
+        indexedAdvancedFilters,
+        formatter.timeZone
+      ),
+    });
+  }
+
+  setStateOverrides(overrides) {
+    log.debug('setStateOverrides', overrides);
+    const {
+      irisGridState: irisGridStateOverrides,
+      gridState: gridStateOverrides,
+    } = overrides;
+    this.setState({ irisGridStateOverrides, gridStateOverrides }, () => {
+      this.initModel();
+    });
   }
 
   // eslint-disable-next-line class-methods-use-this
@@ -687,13 +712,34 @@ export class IrisGridPanel extends PureComponent {
   }
 
   loadPanelState(model) {
-    const { panelState } = this.props;
+    const {
+      panelState,
+      irisGridStateOverrides: originalIrisGridStateOverrides,
+      gridStateOverrides,
+    } = this.state;
     if (panelState == null) {
       return;
     }
 
     try {
       const { gridState, irisGridState, irisGridPanelState } = panelState;
+      const irisGridStateOverrides = { ...originalIrisGridStateOverrides };
+      const {
+        quickFilters: savedQuickFilters,
+        advancedFilters: savedAdvancedFilters,
+      } = irisGridStateOverrides;
+      if (savedQuickFilters) {
+        irisGridStateOverrides.quickFilters = IrisGridUtils.changeFilterColumnNamesToIndexes(
+          model.columns,
+          savedQuickFilters
+        );
+      }
+      if (savedAdvancedFilters) {
+        irisGridStateOverrides.advancedFilters = IrisGridUtils.changeFilterColumnNamesToIndexes(
+          model.columns,
+          savedAdvancedFilters
+        );
+      }
       const {
         isSelectingPartition,
         partition,
@@ -720,7 +766,10 @@ export class IrisGridPanel extends PureComponent {
         pendingDataMap,
         frozenColumns,
         conditionalFormats,
-      } = IrisGridUtils.hydrateIrisGridState(model, irisGridState);
+      } = IrisGridUtils.hydrateIrisGridState(model, {
+        ...irisGridState,
+        ...irisGridStateOverrides,
+      });
       const {
         isStuckToBottom,
         isStuckToRight,
@@ -728,7 +777,7 @@ export class IrisGridPanel extends PureComponent {
         movedRows,
       } = IrisGridUtils.hydrateGridState(
         model,
-        gridState,
+        { ...gridState, ...gridStateOverrides },
         irisGridState.customColumns
       );
       this.setState({

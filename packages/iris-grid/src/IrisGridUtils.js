@@ -1116,6 +1116,21 @@ class IrisGridUtils {
 
     return column;
   }
+
+  /**
+   * Get filter configs with column names changed to indexes, exclude missing columns
+   * @param {dh.Column[]} columns The columns to get column indexes from
+   * @param {Object[]} filters Filter configs
+   * @returns {Object[]} Updated filter configs with column names changed to indexes
+   */
+  static changeFilterColumnNamesToIndexes(columns, filters) {
+    return filters
+      .map(({ name, filter }) => {
+        const index = columns.findIndex(column => column.name === name);
+        return index < 0 ? null : [index, filter];
+      })
+      .filter(filterConfig => filterConfig != null);
+  }
 }
 
 export default IrisGridUtils;
