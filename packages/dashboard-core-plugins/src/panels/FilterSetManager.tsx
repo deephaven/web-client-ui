@@ -537,7 +537,10 @@ class FilterSetManager extends Component<
               )}
 
               {isNameInputScreen && (
-                <div className="d-flex flex-column justify-content-center">
+                <div
+                  className="d-flex flex-column justify-content-center"
+                  data-testid="edit-filter-set-container"
+                >
                   <div className="form-group">
                     <label>
                       {isRenamingExistingSet ? 'Edit set' : 'Name captured set'}
@@ -554,6 +557,7 @@ class FilterSetManager extends Component<
                         spellCheck="false"
                       />
                       <Button
+                        data-testid="rename-confirm-button"
                         kind="ghost"
                         className="btn btn-link no-underline pt-2 pb-2"
                         onClick={this.handleRenameConfirm}
@@ -563,6 +567,7 @@ class FilterSetManager extends Component<
                       />
 
                       <Button
+                        data-testid="rename-cancel-button"
                         kind="ghost"
                         className="btn btn-link no-underline pt-2 pb-2"
                         onClick={this.handleRenameCancel}
@@ -594,6 +599,7 @@ class FilterSetManager extends Component<
                     <label>Edit filter sets</label>
                     <div className="filter-select-container">
                       <select
+                        data-testid="settings-card-filter-select"
                         ref={this.editDropdownRef}
                         value={editId ?? '-1'}
                         className="custom-select filter-value-select"
@@ -680,6 +686,7 @@ class FilterSetManager extends Component<
                 <div className="filter-set-manager-value-input">
                   <div className="filter-select-container">
                     <select
+                      data-testid="value-card-filter-select"
                       ref={this.dropdownRef}
                       value={selectedId}
                       className="custom-select filter-value-select"
@@ -697,6 +704,7 @@ class FilterSetManager extends Component<
                       ))}
                     </select>
                     <Button
+                      data-testid="filter-apply-button"
                       kind="ghost"
                       onClick={this.handleFilterApply}
                       icon={dhRefresh}

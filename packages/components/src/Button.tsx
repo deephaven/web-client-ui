@@ -30,6 +30,7 @@ interface BaseButtonProps extends React.ComponentPropsWithRef<'button'> {
   tooltip?: string | JSX.Element;
   icon?: IconDefinition | JSX.Element;
   active?: boolean;
+  'data-testid'?: string;
 }
 
 type ButtonWithChildren = BaseButtonProps & {
@@ -87,6 +88,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       className,
       style,
       children,
+      'data-testid': dataTestId,
     } = props;
 
     const iconOnly = (icon && !children) as boolean;
@@ -114,6 +116,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 
     const button = (
       <button
+        data-testid={dataTestId}
         ref={ref}
         // eslint-disable-next-line react/button-has-type
         type={type}
@@ -190,6 +193,7 @@ Button.propTypes = {
   children: PropTypes.node,
   className: PropTypes.string,
   style: PropTypes.object,
+  'data-testid': PropTypes.string,
 };
 
 Button.defaultProps = {
@@ -203,6 +207,7 @@ Button.defaultProps = {
   children: undefined,
   className: undefined,
   style: {},
+  'data-testid': undefined,
 };
 
 export default Button;

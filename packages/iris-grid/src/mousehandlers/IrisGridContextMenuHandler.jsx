@@ -174,7 +174,8 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
       showTSeparator: settings.showTSeparator,
       defaultDateTimeFormatString: CONTEXT_MENU_DATE_FORMAT,
     });
-    const isColumnFrozen = model.isColumnFrozen(columnIndex);
+    const isColumnFrozen =
+      columnIndex !== null && model.isColumnFrozen(columnIndex);
 
     if (column != null) {
       const { table } = model;
