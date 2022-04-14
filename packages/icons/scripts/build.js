@@ -91,7 +91,7 @@ async function createDefinition(file) {
       ),
     ]);
   } catch (e) {
-    console.error(e);
+    console.error('Unable to create definition for', file, ':', e);
   }
 }
 
