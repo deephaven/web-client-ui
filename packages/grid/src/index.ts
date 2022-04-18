@@ -21,3 +21,4 @@ export * from './key-handlers';
 export * from './mouse-handlers';
 export * from './errors';
 export * from './EventHandlerResult';
+export { default as ThemeContext } from './ThemeContext';

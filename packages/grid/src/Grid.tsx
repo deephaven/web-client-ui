@@ -52,6 +52,7 @@ import {
 } from './EditableGridModel';
 import { EventHandlerResultOptions } from './EventHandlerResult';
 import { assertIsDefined } from './errors';
+import ThemeContext from './ThemeContext';
 
 type LegacyCanvasRenderingContext2D = CanvasRenderingContext2D & {
   webkitBackingStorePixelRatio?: number;
@@ -192,6 +193,8 @@ export type GridState = {
  * Can also add onClick and onContextMenu handlers to add custom functionality and menus.
  */
 class Grid extends PureComponent<GridProps, GridState> {
+  static contextType = ThemeContext;
+
   static defaultProps = {
     canvasOptions: { alpha: false } as CanvasRenderingContext2DSettings,
     isStickyBottom: false,
@@ -222,7 +225,11 @@ class Grid extends PureComponent<GridProps, GridState> {
 
   static dragTimeout = 1000;
 
-  static getTheme = memoize(userTheme => ({ ...GridTheme, ...userTheme }));
+  static getTheme = memoize((contextTheme, userTheme) => ({
+    ...GridTheme,
+    ...contextTheme,
+    ...userTheme,
+  }));
 
   /**
    * On some devices there may be different scaling required for high DPI. Get the scale required for the canvas.
@@ -568,7 +575,7 @@ class Grid extends PureComponent<GridProps, GridState> {
 
   getTheme(): GridThemeType {
     const { theme } = this.props;
-    return Grid.getTheme(theme);
+    return Grid.getTheme(this.context, theme);
   }
 
   getGridPointFromEvent(event: GridMouseEvent): GridPoint {
