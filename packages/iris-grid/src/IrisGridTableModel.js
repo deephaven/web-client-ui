@@ -7,7 +7,7 @@ import Log from '@deephaven/log';
 import { PromiseUtils } from '@deephaven/utils';
 import TableUtils from './TableUtils';
 import Formatter from './Formatter';
-import { TableColumnFormatter } from './formatters';
+import FormatterUtils from './FormatterUtils';
 import IrisGridModel from './IrisGridModel';
 import AggregationOperation from './sidebar/aggregations/AggregationOperation';
 import IrisGridUtils from './IrisGridUtils';
@@ -363,7 +363,6 @@ class IrisGridTableModel extends IrisGridModel {
       }
 
       const column = this.totalsColumn(x, y) ?? this.columns[x];
-      // TODO: formatting
       const hasCustomColumnFormat = this.getCachedCustomColumnFormatFlag(
         this.formatter,
         column.type,
@@ -692,7 +691,6 @@ class IrisGridTableModel extends IrisGridModel {
   }
 
   formatForCell(x, y) {
-    //
     return this.dataForCell(x, y)?.format;
   }
 
@@ -1208,14 +1206,7 @@ class IrisGridTableModel extends IrisGridModel {
   );
 
   getCachedCustomColumnFormatFlag = memoizeClear(
-    (formatter, columnType, columnName) => {
-      const columnFormat = formatter.getColumnFormat(columnType, columnName);
-      return (
-        columnFormat != null &&
-        (columnFormat.type === TableColumnFormatter.TYPE_CONTEXT_PRESET ||
-          columnFormat.type === TableColumnFormatter.TYPE_CONTEXT_CUSTOM)
-      );
-    },
+    FormatterUtils.isCustomColumnFormatDefined,
     { max: 10000 }
   );
 

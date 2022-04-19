@@ -3,8 +3,10 @@ import PropTypes from 'prop-types';
 import { WritableStream as ponyfillWritableStream } from 'web-streams-polyfill/dist/ponyfill.js';
 import dh from '@deephaven/jsapi-shim';
 import Log from '@deephaven/log';
+import { memoizeClear } from '@deephaven/grid';
 import { PromiseUtils } from '@deephaven/utils';
 import Formatter from '../Formatter';
+import FormatterUtils from '../FormatterUtils';
 
 const log = Log.module('TableSaver');
 
@@ -97,6 +99,11 @@ export default class TableSaver extends PureComponent {
     clearTimeout(this.streamTimeout);
     clearTimeout(this.snapshotHandlerTimeout);
   }
+
+  getCachedCustomColumnFormatFlag = memoizeClear(
+    FormatterUtils.isCustomColumnFormatDefined,
+    { max: 10000 }
+  );
 
   createWriterStream(port) {
     // use blob fall back if it's safari
@@ -367,11 +374,22 @@ export default class TableSaver extends PureComponent {
     for (let i = 0; i < rows.length; i += 1) {
       const rowIdx = rows[i];
       for (let j = 0; j < this.columns.length; j += 1) {
+        const { type, name } = this.columns[j];
+        const hasCustomColumnFormat = this.getCachedCustomColumnFormatFlag(
+          formatter,
+          type,
+          name
+        );
+        let formatOverride = null;
+        if (!hasCustomColumnFormat) {
+          const cellFormat = snapshot.getFormat(rowIdx, this.columns[j]);
+          formatOverride = cellFormat?.formatString != null ? cellFormat : null;
+        }
         const cellData = formatter.getFormattedString(
           snapshot.getData(rowIdx, this.columns[j]),
-          this.columns[j].type,
-          this.columns[j].name,
-          snapshot.getFormat(rowIdx, this.columns[j])?.formatString
+          type,
+          name,
+          formatOverride
         );
         csvString += TableSaver.csvEscapeString(cellData);
         csvString += j === this.columns.length - 1 ? '\n' : ',';
