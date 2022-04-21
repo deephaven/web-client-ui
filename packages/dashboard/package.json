@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/dashboard",
-  "version": "0.6.2",
+  "version": "0.6.3",
   "description": "Deephaven Dashboard",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
@@ -52,10 +52,10 @@
   },
   "devDependencies": {
     "@babel/cli": "^7.14.8",
-    "@deephaven/components": "^0.6.2",
+    "@deephaven/components": "^0.6.3",
     "@deephaven/log": "^0.6.2",
     "@deephaven/mocks": "^0.6.0",
-    "@deephaven/redux": "^0.6.2",
+    "@deephaven/redux": "^0.6.3",
     "@deephaven/tsconfig": "^0.6.0",
     "@storybook/addon-actions": "^6.2.3",
     "@storybook/addon-essentials": "^6.2.3",
