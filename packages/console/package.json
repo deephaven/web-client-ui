@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/console",
-  "version": "0.11.5",
+  "version": "0.11.6",
   "description": "Deephaven Console",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
