@@ -365,8 +365,8 @@ class IrisGridTableModel extends IrisGridModel {
       const column = this.totalsColumn(x, y) ?? this.columns[x];
       const hasCustomColumnFormat = this.getCachedCustomColumnFormatFlag(
         this.formatter,
-        column.type,
-        column.name
+        column.name,
+        column.type
       );
       let formatOverride = null;
       if (!hasCustomColumnFormat) {
