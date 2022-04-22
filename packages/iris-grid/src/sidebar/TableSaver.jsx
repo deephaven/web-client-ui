@@ -377,8 +377,8 @@ export default class TableSaver extends PureComponent {
         const { type, name } = this.columns[j];
         const hasCustomColumnFormat = this.getCachedCustomColumnFormatFlag(
           formatter,
-          type,
-          name
+          name,
+          type
         );
         let formatOverride = null;
         if (!hasCustomColumnFormat) {
