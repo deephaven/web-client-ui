@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/chart",
-  "version": "0.6.3",
+  "version": "0.6.4",
   "description": "Deephaven Chart",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
@@ -35,7 +35,7 @@
   },
   "dependencies": {
     "@deephaven/icons": "^0.6.3",
-    "@deephaven/iris-grid": "^0.6.3",
+    "@deephaven/iris-grid": "^0.6.4",
     "@deephaven/jsapi-shim": "^0.6.2",
     "deep-equal": "^2.0.4",
     "lodash.debounce": "^4.0.8",

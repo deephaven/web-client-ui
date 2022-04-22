@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/console",
-  "version": "0.6.3",
+  "version": "0.6.4",
   "description": "Deephaven Console",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
@@ -36,7 +36,7 @@
   "dependencies": {
     "@deephaven/icons": "^0.6.3",
     "@deephaven/jsapi-shim": "^0.6.2",
-    "@deephaven/storage": "^0.6.3",
+    "@deephaven/storage": "^0.6.4",
     "@deephaven/utils": "^0.6.1",
     "@fortawesome/react-fontawesome": "^0.1.12",
     "classnames": "^2.3.1",
