@@ -13,8 +13,8 @@ jest.mock('./ConditionalFormattingAPIUtils', () => ({
     (rule, prevRule = null) =>
       `${rule.column.name} - ${rule.style.type} : ${prevRule}`
   ),
-  makeColumnFormatColumn: jest.fn((col, rule) => rule),
-  makeRowFormatColumn: jest.fn(rule => rule),
+  makeColumnFormatColumn: jest.fn((col, rule) => `[col] ${rule}`),
+  makeRowFormatColumn: jest.fn(rule => `[row] ${rule}`),
 }));
 
 describe('getFormatColumns', () => {
@@ -56,7 +56,7 @@ describe('getFormatColumns', () => {
           styleType: FormatStyleType.POSITIVE,
         }),
       ])
-    ).toEqual([`0 - ${FormatStyleType.POSITIVE} : null`]);
+    ).toEqual([`[col] 0 - ${FormatStyleType.POSITIVE} : null`]);
   });
 
   it('ignores rules referring to missing columns', () => {
@@ -75,7 +75,7 @@ describe('getFormatColumns', () => {
           styleType: FormatStyleType.POSITIVE,
         }),
       ])
-    ).toEqual([`0 - ${FormatStyleType.POSITIVE} : null`]);
+    ).toEqual([`[col] 0 - ${FormatStyleType.POSITIVE} : null`]);
   });
 
   it('stacks multiple rules for the same column in the correct order', () => {
@@ -91,7 +91,7 @@ describe('getFormatColumns', () => {
         }),
       ])
     ).toEqual([
-      `0 - ${FormatStyleType.NEGATIVE} : 0 - ${FormatStyleType.POSITIVE} : null`,
+      `[col] 0 - ${FormatStyleType.NEGATIVE} : 0 - ${FormatStyleType.POSITIVE} : null`,
     ]);
   });
 
@@ -116,8 +116,8 @@ describe('getFormatColumns', () => {
         }),
       ])
     ).toEqual([
-      `0 - ${FormatStyleType.NEGATIVE} : 0 - ${FormatStyleType.POSITIVE} : null`,
-      `1 - ${FormatStyleType.NEGATIVE} : 1 - ${FormatStyleType.POSITIVE} : null`,
+      `[col] 0 - ${FormatStyleType.NEGATIVE} : 0 - ${FormatStyleType.POSITIVE} : null`,
+      `[col] 1 - ${FormatStyleType.NEGATIVE} : 1 - ${FormatStyleType.POSITIVE} : null`,
     ]);
   });
 
@@ -146,8 +146,8 @@ describe('getFormatColumns', () => {
         }),
       ])
     ).toEqual([
-      `0 - ${FormatStyleType.NEUTRAL} : 0 - ${FormatStyleType.POSITIVE} : null`,
-      `0 - ${FormatStyleType.WARN} : 0 - ${FormatStyleType.NEGATIVE} : null`,
+      `[col] 0 - ${FormatStyleType.NEUTRAL} : 0 - ${FormatStyleType.POSITIVE} : null`,
+      `[row] 0 - ${FormatStyleType.WARN} : 0 - ${FormatStyleType.NEGATIVE} : null`,
     ]);
   });
 
@@ -172,8 +172,27 @@ describe('getFormatColumns', () => {
         }),
       ])
     ).toEqual([
-      `0 - ${FormatStyleType.NEGATIVE} : 0 - ${FormatStyleType.POSITIVE} : null`,
-      `1 - ${FormatStyleType.NEGATIVE} : 1 - ${FormatStyleType.POSITIVE} : null`,
+      `[col] 0 - ${FormatStyleType.NEGATIVE} : 0 - ${FormatStyleType.POSITIVE} : null`,
+      `[col] 1 - ${FormatStyleType.NEGATIVE} : 1 - ${FormatStyleType.POSITIVE} : null`,
+    ]);
+  });
+
+  it('returns a single condition for multiple rules on the same column', () => {
+    expect(
+      getFormatColumns(makeColumns(), [
+        makeFormatRule({
+          columnName: '0',
+          formatterType: FormatterType.ROWS,
+          styleType: FormatStyleType.POSITIVE,
+        }),
+        makeFormatRule({
+          columnName: '0',
+          formatterType: FormatterType.ROWS,
+          styleType: FormatStyleType.WARN,
+        }),
+      ])
+    ).toEqual([
+      `[row] 0 - ${FormatStyleType.WARN} : 0 - ${FormatStyleType.POSITIVE} : null`,
     ]);
   });
 });

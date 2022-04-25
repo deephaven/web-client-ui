@@ -654,8 +654,8 @@ export function getFormatColumns(
 ): CustomColumn[] {
   const result: CustomColumn[] = [];
   const ruleMap = {
-    [FormatterType.ROWS]: new Map(),
-    [FormatterType.CONDITIONAL]: new Map(),
+    [FormatterType.ROWS]: new Map<string, [string, CustomColumn]>(),
+    [FormatterType.CONDITIONAL]: new Map<string, [string, CustomColumn]>(),
   };
   rules.forEach(({ config, type: formatterType }) => {
     const { column } = config;
@@ -671,13 +671,17 @@ export function getFormatColumns(
       return;
     }
     // Stack ternary format conditions by column
-    const prevRule = ruleMap[formatterType].get(col.name) ?? null;
+    const [prevRule, prevFormatColumn] = ruleMap[formatterType].get(
+      col.name
+    ) ?? ['null', undefined];
     const rule = makeTernaryFormatRule(config, prevRule);
     if (rule === undefined) {
       log.debug(`Ignoring format rule.`, config);
       return;
     }
-    const index = result.indexOf(prevRule);
+    // Replace existing formatColumn with the new stacked format
+    const index =
+      prevFormatColumn === undefined ? -1 : result.indexOf(prevFormatColumn);
     if (index > -1) {
       result.splice(index, 1);
     }
@@ -686,7 +690,7 @@ export function getFormatColumns(
         ? makeColumnFormatColumn(col, rule)
         : makeRowFormatColumn(rule);
     result.push(formatColumn);
-    ruleMap[formatterType].set(col.name, rule);
+    ruleMap[formatterType].set(col.name, [rule, formatColumn]);
   });
 
   return result;
