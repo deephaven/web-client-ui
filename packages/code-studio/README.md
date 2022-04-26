@@ -1,6 +1,6 @@
 # Introduction
 
-Code Studio is a web application that connects to a running [deephaven-core](https://github.com/deephaven/deephaven-core/) instance. A few notes to get developers quickly up and running.
+Code Studio is a web application that connects to a running [deephaven-core](https://github.com/deephaven/deephaven-core/) instance. You can quickly bring up a [Deephaven backend from pre-built images](https://deephaven.io/core/docs/tutorials/quickstart/#tldr). A few notes to get developers quickly up and running.
 
 ## Running
 

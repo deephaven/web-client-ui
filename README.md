@@ -28,10 +28,11 @@ We are still using node 16.x and npm 8.x. If you are [using nvm](https://github.
 
 There are many packages located in the [packages](./packages) directory. A few of the more important ones are:
 
-- [@deephaven/code-studio](./packages/code-studio): Main web UI used with the [deephaven-core](https://github.com/deephaven/deephaven-core/) backend.
+- [@deephaven/code-studio](./packages/code-studio): Main web UI used with the [deephaven-core](https://github.com/deephaven/deephaven-core/) backend. This package is the main front-end application, and depends on almost all other packages in the repository. It is often the easiest way to see the effect of your changes by opening this application. Follow the instructions in the [code-studio README.md](https://github.com/deephaven/web-client-ui/blob/main/packages/code-studio/README.md) to get it started.
 - [@deephaven/components](./packages/components): Component library used within the web UI.
 - [@deephaven/grid](./packages/grid): High-performance grid component used to display large tables of data.
-- [@deephaven/golden-layout](./packages/golden-layout): Layout framework used in [@deephaven/code-studio](./packages/code-studio).
+- [@deephaven/dashboard](./packages/dashboard/): Dashboards used in [@deephaven/code-studio](./packages/code-studio) for displaying and organizing panels.
+- [@deephaven/golden-layout](./packages/golden-layout): Layout framework used in [@deephaven/dashboard](./packages/dashboard/).
 
 ## Contributing
 
