@@ -36,7 +36,7 @@ There are many packages located in the [packages](./packages) directory. A few o
 
 ## Contributing
 
-For details on how to contribute to this repository, please see the [https://github.com/deephaven/web-client-ui/blob/main/CONTRIBUTING.md](contributing guidelines).
+For details on how to contribute to this repository, please see the [contributing guidelines](https://github.com/deephaven/web-client-ui/blob/main/CONTRIBUTING.md).
 
 ## Creating a New Package
 
