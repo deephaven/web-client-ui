@@ -235,6 +235,7 @@ export class IrisGrid extends Component {
     this.handleCrossColumnSearch = this.handleCrossColumnSearch.bind(this);
     this.handleRollupChange = this.handleRollupChange.bind(this);
     this.handleOverflowClose = this.handleOverflowClose.bind(this);
+    this.getColumnBoundingRect = this.getColumnBoundingRect.bind(this);
 
     this.updateSearchFilter = debounce(
       this.updateSearchFilter.bind(this),
@@ -2543,6 +2544,33 @@ export class IrisGrid extends Component {
     });
   }
 
+  getColumnBoundingRect() {
+    const { metrics, shownColumnTooltip } = this.state;
+    const gridRect = this.gridWrapper.getBoundingClientRect();
+    const popperMargin = 20;
+    const {
+      columnHeaderHeight,
+      visibleColumnXs,
+      visibleColumnWidths,
+      width,
+    } = metrics;
+    const columnX = visibleColumnXs.get(shownColumnTooltip);
+    const columnWidth = visibleColumnWidths.get(shownColumnTooltip);
+    return {
+      top: gridRect.top,
+      left:
+        gridRect.left +
+        clamp(columnX + columnWidth / 2, popperMargin, width - popperMargin),
+      bottom: gridRect.top + columnHeaderHeight,
+      right:
+        gridRect.left +
+        clamp(columnX + columnWidth / 2, popperMargin, width - popperMargin) +
+        1,
+      width: 1,
+      height: columnHeaderHeight,
+    };
+  }
+
   getOverflowButtonTooltip = memoize(overflowButtonTooltipProps => {
     if (overflowButtonTooltipProps == null) {
       return null;
@@ -2832,34 +2860,10 @@ export class IrisGrid extends Component {
        * label, clamped to 0 + margin to width - margin. We add a margin,
        * otherwise the arrow wants to escape the boundary.
        */
-      const gridRect = this.gridWrapper.getBoundingClientRect();
-      const popperMargin = 20;
       const virtualReference = {
         clientWidth: 1,
         clientHeight: columnHeaderHeight,
-        getBoundingClientRect() {
-          return {
-            top: gridRect.top,
-            left:
-              gridRect.left +
-              clamp(
-                columnX + columnWidth / 2,
-                popperMargin,
-                width - popperMargin
-              ),
-            bottom: gridRect.top + columnHeaderHeight,
-            right:
-              gridRect.left +
-              clamp(
-                columnX + columnWidth / 2,
-                popperMargin,
-                width - popperMargin
-              ) +
-              1,
-            width: 1,
-            height: columnHeaderHeight,
-          };
-        },
+        getBoundingClientRect: this.getColumnBoundingRect,
       };
 
       const popperOptions = {
@@ -2898,6 +2902,9 @@ export class IrisGrid extends Component {
             </Tooltip>
           </div>
         );
+
+        // #510 We may need to update the position of the tooltip if it's already opened and columns are resized
+        this.tooltip?.update();
       }
     }
 
