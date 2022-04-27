@@ -6,7 +6,7 @@ We're using a monorepo to manage our packages, as it becomes cumbersome to manag
 
 ## Development Environment
 
-We recommend using [Visual Studio Code](https://code.visualstudio.com/) and installing the [recommended workspace extensions](https://github.com/deephaven/web-client-ui/blob/main/.vscode/extensions.json). There are a few workspace [settings configured](https://github.com/deephaven/web-client-ui/tree/main/.vscode) with the repo.
+We recommend using [Visual Studio Code](https://code.visualstudio.com/) and installing the [recommended workspace extensions](https://github.com/deephaven/web-client-ui/blob/main/.vscode/extensions.json) which VS Code will suggest when you open the repo or when you browse the extensions panel. There are a few [workspace settings](https://github.com/deephaven/web-client-ui/tree/main/.vscode) configured with the repo.
 
 Use Chrome for debugging, install the React and Redux extensions.
 
