@@ -3,7 +3,7 @@
 $toolbar-padding: $spacer-1;
 $toolbar-font-size: 17px;
 $toolbar-btn-width: $input-height;
-$toolbar-height: calc(#{$input-height} + 2 * #{$toolbar-padding});
+$toolbar-height: 42px;
 $toolbar-bg: $content-bg;
 $file-list-search-bg: $gray-800;
 $item-list-color: $foreground;
@@ -20,7 +20,7 @@ $item-list-color: $foreground;
   position: relative;
   align-items: center;
   padding: $toolbar-padding;
-  min-height: 0;
+  min-height: $toolbar-height;
   .file-explorer-toolbar-buttons {
     display: flex;
     padding-right: $toolbar-padding;
