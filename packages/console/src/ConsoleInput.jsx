@@ -311,18 +311,20 @@ export class ConsoleInput extends PureComponent {
    * @param {number | null} index The index to load. Null to load command started in the editor and not in the history
    */
   loadCommand(index) {
-    let value = '';
-    if (index !== null && index < this.history.length) {
-      value = this.history[this.history.length - index - 1];
-
-      if (index > this.history.length - BUFFER_SIZE) {
-        this.loadMoreHistory();
-      }
+    if (index >= this.history.length) {
+      return;
     }
 
+    const modifiedValue = this.modifiedCommands.get(index);
+    const historyValue =
+      index === null ? '' : this.history[this.history.length - index - 1];
+
     this.commandHistoryIndex = index;
-    value = this.modifiedCommands.get(index) ?? value;
-    this.commandEditor.getModel().setValue(value);
+    this.commandEditor.getModel().setValue(modifiedValue ?? historyValue);
+
+    if (index > this.history.length - BUFFER_SIZE) {
+      this.loadMoreHistory();
+    }
   }
 
   async loadMoreHistory() {
