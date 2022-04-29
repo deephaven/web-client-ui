@@ -127,6 +127,7 @@ class GridHorizontalScrollBarMouseHandler extends GridMouseHandler {
         columnCount,
         maxX,
         width,
+        gridX,
         leftOffset,
       } = metrics;
 
@@ -140,7 +141,7 @@ class GridHorizontalScrollBarMouseHandler extends GridMouseHandler {
 
       if (columnCount === 1) {
         grid.setViewState({
-          leftOffset: scrollPercent * (maxWidth - width),
+          leftOffset: scrollPercent * (maxWidth - (width - gridX)),
           isDraggingHorizontalScrollBar: true,
           isDragging: true,
         });

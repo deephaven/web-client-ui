@@ -303,7 +303,7 @@ export class GridMetricCalculator {
     const maxY = rowHeightValues.reduce((y, h) => y + h, 0) - topOffset;
 
     // Visible space available in the canvas viewport
-    const viewportWidth = width - gridX - rowHeaderWidth;
+    const viewportWidth = width - gridX;
 
     // How much total space the content will take
     const contentWidth = leftOffset + maxX + rowFooterWidth;
