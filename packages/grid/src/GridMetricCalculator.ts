@@ -302,6 +302,12 @@ export class GridMetricCalculator {
     const maxX = columnWidthValues.reduce((x, w) => x + w, 0) - leftOffset;
     const maxY = rowHeightValues.reduce((y, h) => y + h, 0) - topOffset;
 
+    // Visible space available in the canvas viewport
+    const viewportWidth = width - gridX - rowHeaderWidth;
+
+    // How much total space the content will take
+    const contentWidth = leftOffset + maxX + rowFooterWidth;
+
     const floatingBottomHeight = this.getFloatingBottomHeight(
       state,
       visibleRowHeights
@@ -319,47 +325,54 @@ export class GridMetricCalculator {
     );
 
     // Calculate some metrics for the scroll bars
-    const hasHorizontalBar = lastLeft > 0;
+    const hasHorizontalBar = lastLeft > 0 || contentWidth > viewportWidth;
     const hasVerticalBar = lastTop > 0;
     const horizontalBarHeight = hasHorizontalBar ? scrollBarSize : 0;
     const verticalBarWidth = hasVerticalBar ? scrollBarSize : 0;
     const barWidth = width - rowHeaderWidth - verticalBarWidth;
     const barHeight = height - columnHeaderHeight - horizontalBarHeight;
 
-    const handleWidth =
-      lastLeft > 0
-        ? Math.min(
-            Math.max(
-              minScrollHandleSize,
-              barWidth * ((columnCount - lastLeft) / columnCount)
-            ),
-            barWidth - 1
-          )
-        : 0;
-    const handleHeight =
-      lastTop > 0
-        ? Math.min(
-            Math.max(
-              minScrollHandleSize,
-              barHeight * ((rowCount - lastTop) / rowCount)
-            ),
-            barHeight - 1
-          )
-        : 0;
+    // How big the horizontal is relative to the horizontal bar
+    const horizontalHandlePercent =
+      columnCount === 1
+        ? barWidth / contentWidth
+        : (columnCount - lastLeft) / columnCount;
+
+    const handleWidth = hasHorizontalBar
+      ? Math.min(
+          Math.max(minScrollHandleSize, barWidth * horizontalHandlePercent),
+          barWidth - 1
+        )
+      : 0;
+    const handleHeight = hasVerticalBar
+      ? Math.min(
+          Math.max(
+            minScrollHandleSize,
+            barHeight * ((rowCount - lastTop) / rowCount)
+          ),
+          barHeight - 1
+        )
+      : 0;
 
     const leftColumnWidth = getOrThrow(visibleColumnWidths, left, 0);
     const topRowHeight = getOrThrow(visibleRowHeights, top, 0);
     const leftOffsetPercent =
       leftColumnWidth > 0 ? leftOffset / leftColumnWidth : 0;
     const topOffsetPercent = topRowHeight > 0 ? topOffset / topRowHeight : 0;
-    const scrollX =
-      lastLeft > 0
-        ? ((left + leftOffsetPercent) / lastLeft) * (barWidth - handleWidth)
-        : 0;
-    const scrollY =
-      lastTop > 0
-        ? ((top + topOffsetPercent) / lastTop) * (barHeight - handleHeight)
-        : 0;
+
+    // How much of the available space has been scrolled
+    const horizontalScrollPercent =
+      columnCount === 1
+        ? leftOffset / (contentWidth - viewportWidth)
+        : (left + leftOffsetPercent) / lastLeft;
+    const verticalScrollPercent = (top + topOffsetPercent) / lastTop;
+
+    const scrollX = hasHorizontalBar
+      ? horizontalScrollPercent * (barWidth - handleWidth)
+      : 0;
+    const scrollY = hasVerticalBar
+      ? verticalScrollPercent * (barHeight - handleHeight)
+      : 0;
 
     // Now add the floating sections positions
     let floatingRows: ModelIndex[] = [];

@@ -1,3 +1,4 @@
+import clamp from 'lodash.clamp';
 import { EventHandlerResult } from '../EventHandlerResult';
 import Grid from '../Grid';
 import { VisibleIndex } from '../GridMetrics';
@@ -45,11 +46,19 @@ class GridHorizontalScrollBarMouseHandler extends GridMouseHandler {
     if (!metrics) throw new Error('metrics not set');
 
     const { x, y } = gridPoint;
-    const { lastLeft, lastTop, rowHeaderWidth, width, height } = metrics;
+    const {
+      lastTop,
+      rowHeaderWidth,
+      width,
+      height,
+      hasHorizontalBar,
+    } = metrics;
+
     const scrollBarWidth = lastTop > 0 ? width - scrollBarSize : width;
+
     return (
+      hasHorizontalBar &&
       scrollBarSize > 0 &&
-      lastLeft > 0 &&
       y >= height - scrollBarHoverSize &&
       y < height &&
       x > rowHeaderWidth &&
@@ -109,16 +118,37 @@ class GridHorizontalScrollBarMouseHandler extends GridMouseHandler {
       const { metrics } = grid;
       if (!metrics) throw new Error('metrics not set');
 
-      const { barWidth, handleWidth, lastLeft, rowHeaderWidth } = metrics;
-      const mouseBarX = x - rowHeaderWidth;
+      const {
+        barWidth,
+        handleWidth,
+        lastLeft,
+        rowHeaderWidth,
+        rowFooterWidth,
+        columnCount,
+        maxX,
+        width,
+        leftOffset,
+      } = metrics;
 
-      const rawLeft = Math.min(
-        Math.max(
-          0,
-          ((mouseBarX - this.dragOffset) / (barWidth - handleWidth)) * lastLeft
-        ),
-        lastLeft
+      const mouseBarX = x - rowHeaderWidth;
+      const maxWidth = leftOffset + maxX + rowFooterWidth;
+      const scrollPercent = clamp(
+        (mouseBarX - this.dragOffset) / (barWidth - handleWidth),
+        0,
+        1
       );
+
+      if (columnCount === 1) {
+        grid.setViewState({
+          leftOffset: scrollPercent * (maxWidth - width),
+          isDraggingHorizontalScrollBar: true,
+          isDragging: true,
+        });
+
+        return true;
+      }
+
+      const rawLeft = scrollPercent * lastLeft;
 
       const {
         left: newLeft,
