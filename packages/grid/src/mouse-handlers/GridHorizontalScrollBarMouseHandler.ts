@@ -66,7 +66,10 @@ class GridHorizontalScrollBarMouseHandler extends GridMouseHandler {
     );
   }
 
-  onDown(gridPoint: GridPoint, grid: Grid): EventHandlerResult {
+  getLeftWithOffset(
+    gridPoint: GridPoint,
+    grid: Grid
+  ): { left: number; leftOffset: number } {
     const { metrics } = grid;
     if (!metrics) throw new Error('metrics not set');
 
@@ -76,8 +79,42 @@ class GridHorizontalScrollBarMouseHandler extends GridMouseHandler {
       handleWidth,
       lastLeft,
       rowHeaderWidth,
-      scrollX,
+      leftOffset,
+      maxX,
+      rowFooterWidth,
+      width,
+      gridX,
+      columnCount,
     } = metrics;
+
+    const mouseBarX = x - rowHeaderWidth;
+    const maxWidth = leftOffset + maxX + rowFooterWidth;
+    const scrollPercent = clamp(
+      (mouseBarX - (this.dragOffset ?? 0)) / (barWidth - handleWidth),
+      0,
+      1
+    );
+
+    if (columnCount === 1) {
+      return {
+        left: 0,
+        leftOffset: scrollPercent * (maxWidth - (width - gridX)),
+      };
+    }
+
+    const rawLeft = scrollPercent * lastLeft;
+    return GridHorizontalScrollBarMouseHandler.getLeftWithOffsetFromRawLeft(
+      grid,
+      rawLeft
+    );
+  }
+
+  onDown(gridPoint: GridPoint, grid: Grid): EventHandlerResult {
+    const { metrics } = grid;
+    if (!metrics) throw new Error('metrics not set');
+
+    const { x } = gridPoint;
+    const { handleWidth, rowHeaderWidth, scrollX } = metrics;
     if (!this.isInScrollBar(gridPoint, grid)) {
       return false;
     }
@@ -89,18 +126,12 @@ class GridHorizontalScrollBarMouseHandler extends GridMouseHandler {
       grid.setState({ isDraggingHorizontalScrollBar: true });
     } else {
       this.dragOffset = 0;
-      const rawLeft = Math.min(
-        Math.max(0, (mouseBarX / (barWidth - handleWidth)) * lastLeft),
-        lastLeft
-      );
 
       const {
         left: newLeft,
         leftOffset: newLeftOffset,
-      } = GridHorizontalScrollBarMouseHandler.getLeftWithOffsetFromRawLeft(
-        grid,
-        rawLeft
-      );
+      } = this.getLeftWithOffset(gridPoint, grid);
+
       grid.setViewState({
         left: newLeft,
         leftOffset: newLeftOffset,
@@ -114,50 +145,11 @@ class GridHorizontalScrollBarMouseHandler extends GridMouseHandler {
 
   onDrag(gridPoint: GridPoint, grid: Grid): EventHandlerResult {
     if (this.dragOffset != null) {
-      const { x } = gridPoint;
-      const { metrics } = grid;
-      if (!metrics) throw new Error('metrics not set');
-
-      const {
-        barWidth,
-        handleWidth,
-        lastLeft,
-        rowHeaderWidth,
-        rowFooterWidth,
-        columnCount,
-        maxX,
-        width,
-        gridX,
-        leftOffset,
-      } = metrics;
-
-      const mouseBarX = x - rowHeaderWidth;
-      const maxWidth = leftOffset + maxX + rowFooterWidth;
-      const scrollPercent = clamp(
-        (mouseBarX - this.dragOffset) / (barWidth - handleWidth),
-        0,
-        1
-      );
-
-      if (columnCount === 1) {
-        grid.setViewState({
-          leftOffset: scrollPercent * (maxWidth - (width - gridX)),
-          isDraggingHorizontalScrollBar: true,
-          isDragging: true,
-        });
-
-        return true;
-      }
-
-      const rawLeft = scrollPercent * lastLeft;
-
       const {
         left: newLeft,
         leftOffset: newLeftOffset,
-      } = GridHorizontalScrollBarMouseHandler.getLeftWithOffsetFromRawLeft(
-        grid,
-        rawLeft
-      );
+      } = this.getLeftWithOffset(gridPoint, grid);
+
       grid.setViewState({
         left: newLeft,
         leftOffset: newLeftOffset,
