@@ -81,8 +81,12 @@ class IrisGridRenderer extends GridRenderer {
   drawCanvas(state) {
     super.drawCanvas(state);
 
-    this.drawCellOverflowButton(state);
     this.drawScrim(state);
+  }
+
+  drawGrid(context, state) {
+    super.drawGrid(context, state);
+    this.drawCellOverflowButton(state);
   }
 
   drawGridLines(context, state) {
@@ -715,7 +719,7 @@ class IrisGridRenderer extends GridRenderer {
     if (column === mouseColumn && row === mouseRow) {
       const { left } = this.getCellOverflowButtonPosition(state);
       if (this.shouldRenderOverflowButton(state)) {
-        textMetrics.width = left - textMetrics.x;
+        textMetrics.width = left - metrics.gridX - textMetrics.x;
       }
     }
     return textMetrics;
