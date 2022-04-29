@@ -6,7 +6,7 @@ import memoize from 'memoize-one';
 import { DragDropContext, Droppable } from 'react-beautiful-dnd';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { DragUtils, LoadingSpinner } from '@deephaven/components';
-import { dhNewCircleLargeFilled, vsIssues, vsPass } from '@deephaven/icons';
+import { dhNewCircleLargeFilled, vsWarning, vsPass } from '@deephaven/icons';
 import CustomColumnInput from './CustomColumnInput';
 import './CustomColumnBuilder.scss';
 import IrisGridModel from '../IrisGridModel';
@@ -193,7 +193,7 @@ class CustomColumnBuilder extends Component {
       errorMessage: (
         <>
           <p>
-            <FontAwesomeIcon icon={vsIssues} /> Failed to apply custom columns.
+            <FontAwesomeIcon icon={vsWarning} /> Failed to apply custom columns.
           </p>
           <div className="error-box">
             {event.detail.errorMessage}

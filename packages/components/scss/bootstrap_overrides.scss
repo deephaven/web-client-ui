@@ -212,10 +212,10 @@ $transition-mid: 0.2s;
 $transition-long: 0.3s;
 $transition-slow: 0.6s;
 
-//form-validation icon, uses vsIssues icon encoded here as svg
+//form-validation icon, uses vsWarning icon encoded here as svg
 $form-feedback-icon-invalid-color: theme-color('danger');
 $form-feedback-icon-invalid: str-replace(
-  url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Cg fill='none'%3E%3Cg fill='#{$form-feedback-icon-invalid-color}'%3E%3Cpath d='M3.889 3.095a6.5 6.5 0 117.222 10.81A6.5 6.5 0 013.89 3.095zm.555 9.978a5.5 5.5 0 106.111-9.145 5.5 5.5 0 00-6.11 9.145zM8 5H7v5h1V5zm0 6H7v1h1v-1z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E "),
+  url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Cg fill='none'%3E%3Cg fill='#{$form-feedback-icon-invalid-color}'%3E%3Cpath d='M7.56 1h.88l6.54 12.26-.44.74H1.44L1 13.26 7.56 1zM8 2.28 2.28 13H13.7L8 2.28zM8.625 12v-1h-1.25v1h1.25zm-1.25-2V6h1.25v4h-1.25z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E "),
   '#',
   '%23'
 );

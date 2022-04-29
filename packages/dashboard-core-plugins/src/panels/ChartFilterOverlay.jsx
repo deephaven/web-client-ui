@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { ButtonOld } from '@deephaven/components';
-import { vsPass, vsIssues } from '@deephaven/icons';
+import { vsPass, vsWarning } from '@deephaven/icons';
 import { TextUtils } from '@deephaven/utils';
 import './ChartFilterOverlay.scss';
 
@@ -77,7 +77,7 @@ const ChartFilterOverlay = ({
             <div className="waiting-filter-list">
               {columns.map(column => {
                 const isColumnWaiting = waitingFilterMap.has(column.name);
-                const icon = isColumnWaiting ? vsIssues : vsPass;
+                const icon = isColumnWaiting ? vsWarning : vsPass;
                 return (
                   <div
                     key={column.name}

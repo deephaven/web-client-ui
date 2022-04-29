@@ -4,7 +4,7 @@ import ClassNames from 'classnames';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { LoadingSpinner, RadioGroup, RadioItem } from '@deephaven/components';
 import { GridRange } from '@deephaven/grid';
-import { vsIssues } from '@deephaven/icons';
+import { vsWarning } from '@deephaven/icons';
 import dh from '@deephaven/jsapi-shim';
 import { TimeUtils } from '@deephaven/utils';
 import shortid from 'shortid';
@@ -174,7 +174,7 @@ class TableCsvExporter extends Component {
       this.setState({
         errorMessage: (
           <p>
-            <FontAwesomeIcon icon={vsIssues} /> No rows selected. Please select
+            <FontAwesomeIcon icon={vsWarning} /> No rows selected. Please select
             some rows in the table.
           </p>
         ),
@@ -189,8 +189,8 @@ class TableCsvExporter extends Component {
       this.setState({
         errorMessage: (
           <p>
-            <FontAwesomeIcon icon={vsIssues} /> Number of rows to output must be
-            greater than 0
+            <FontAwesomeIcon icon={vsWarning} /> Number of rows to output must
+            be greater than 0
           </p>
         ),
       });
