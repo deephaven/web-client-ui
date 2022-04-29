@@ -311,7 +311,7 @@ export class ConsoleInput extends PureComponent {
    * @param {number | null} index The index to load. Null to load command started in the editor and not in the history
    */
   loadCommand(index) {
-    if (index >= this.history.length) {
+    if (index !== null && index >= this.history.length) {
       return;
     }
 
@@ -322,7 +322,7 @@ export class ConsoleInput extends PureComponent {
     this.commandHistoryIndex = index;
     this.commandEditor.getModel().setValue(modifiedValue ?? historyValue);
 
-    if (index > this.history.length - BUFFER_SIZE) {
+    if (index !== null && index > this.history.length - BUFFER_SIZE) {
       this.loadMoreHistory();
     }
   }
