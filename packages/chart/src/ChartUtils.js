@@ -58,7 +58,8 @@ class ChartUtils {
         return 'bar';
 
       case dh.plot.SeriesPlotStyle.PIE:
-        return 'pie';
+        // TODO: High-jacking pie chart so I can test it out quickly
+        return 'treemap';
 
       case dh.plot.SeriesPlotStyle.HISTOGRAM:
         return 'histogram';
@@ -94,6 +95,7 @@ class ChartUtils {
   static getPlotlyProperty(plotStyle, sourceType) {
     switch (plotStyle) {
       case dh.plot.SeriesPlotStyle.PIE:
+      case dh.plot.SeriesPlotStyle.TREEMAP:
         switch (sourceType) {
           case dh.plot.SourceType.X:
             return 'labels';
@@ -458,6 +460,10 @@ class ChartUtils {
         sourceType
       );
       seriesData[dataAttributeName] = [];
+      // TODO:  Remove hack for testing
+      if (dataAttributeName === 'labels') {
+        seriesData.parents = [];
+      }
 
       const axisProperty = ChartUtils.getAxisPropertyName(axis.type);
       const axes = axisTypeMap.get(axis.type);

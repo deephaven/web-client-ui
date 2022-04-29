@@ -536,6 +536,11 @@ class FigureChartModel extends ChartModel {
 
     const property = ChartUtils.getPlotlyProperty(plotStyle, sourceType);
     const seriesData = this.seriesDataMap.get(name);
+    if (property === 'labels') {
+      // TODO: HACK for testing, just make everything parents of the first item for now
+      const parents = dataArray.map((value, i) => (i > 0 ? dataArray[0] : ''));
+      seriesData.parents = parents;
+    }
     seriesData[property] = dataArray;
   }
 

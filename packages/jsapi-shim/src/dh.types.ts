@@ -270,6 +270,7 @@ export interface SeriesPlotStyle {
   readonly SCATTER: SeriesPlotStyle;
   readonly STEP: SeriesPlotStyle;
   readonly ERROR_BAR: SeriesPlotStyle;
+  readonly TREEMAP: SeriesPlotStyle;
 }
 export interface AxisFormatType {
   readonly CATEGORY: AxisFormatType;
