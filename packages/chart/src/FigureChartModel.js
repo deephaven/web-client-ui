@@ -351,10 +351,20 @@ class FigureChartModel extends ChartModel {
       for (let j = 0; j < sources.length; j += 1) {
         const source = sources[j];
         const { columnType, type } = source;
-        const valueTranslator = this.getValueTranslator(
+        let valueTranslator = this.getValueTranslator(
           columnType,
           this.formatter
         );
+        // KLUDGE: Make this more elegant?
+        if (
+          series.plotStyle === dh.plot.SeriesPlotStyle.TREEMAP &&
+          type === dh.plot.SourceType.COLOR
+        ) {
+          valueTranslator = value => {
+            // Need to convert long to a hex color
+            return value;
+          };
+        }
         const dataArray = figureUpdateEvent.getArray(
           series,
           type,
@@ -534,14 +544,17 @@ class FigureChartModel extends ChartModel {
   setDataArrayForSeries(series, sourceType, dataArray) {
     const { name, plotStyle } = series;
 
-    const property = ChartUtils.getPlotlyProperty(plotStyle, sourceType);
     const seriesData = this.seriesDataMap.get(name);
-    if (property === 'labels') {
-      // TODO: HACK for testing, just make everything parents of the first item for now
-      const parents = dataArray.map((value, i) => (i > 0 ? dataArray[0] : ''));
-      seriesData.parents = parents;
+    // KLUDGE: Can we make this more elegant?
+    if (
+      plotStyle === dh.plot.SeriesPlotStyle.TREEMAP &&
+      sourceType === dh.plot.SourceType.COLOR
+    ) {
+      seriesData.marker.colors = dataArray;
+    } else {
+      const property = ChartUtils.getPlotlyProperty(plotStyle, sourceType);
+      seriesData[property] = dataArray;
     }
-    seriesData[property] = dataArray;
   }
 
   /**

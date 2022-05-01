@@ -58,7 +58,9 @@ class ChartUtils {
         return 'bar';
 
       case dh.plot.SeriesPlotStyle.PIE:
-        // TODO: High-jacking pie chart so I can test it out quickly
+        return 'pie';
+
+      case dh.plot.SeriesPlotStyle.TREEMAP:
         return 'treemap';
 
       case dh.plot.SeriesPlotStyle.HISTOGRAM:
@@ -95,7 +97,6 @@ class ChartUtils {
   static getPlotlyProperty(plotStyle, sourceType) {
     switch (plotStyle) {
       case dh.plot.SeriesPlotStyle.PIE:
-      case dh.plot.SeriesPlotStyle.TREEMAP:
         switch (sourceType) {
           case dh.plot.SourceType.X:
             return 'labels';
@@ -109,6 +110,20 @@ class ChartUtils {
         switch (sourceType) {
           case dh.plot.SourceType.TIME:
             return 'x';
+          default:
+            break;
+        }
+        break;
+      case dh.plot.SeriesPlotStyle.TREEMAP:
+        switch (sourceType) {
+          case dh.plot.SourceType.X:
+            return 'ids';
+          case dh.plot.SourceType.Y:
+            return 'values';
+          case dh.plot.SourceType.LABEL:
+            return 'labels';
+          case dh.plot.SourceType.PARENT:
+            return 'parents';
           default:
             break;
         }
@@ -150,8 +165,14 @@ class ChartUtils {
         return 'label';
       case dh.plot.SourceType.COLOR:
         return 'color';
+      case dh.plot.SourceType.PARENT:
+        return 'parent';
+      case dh.plot.SourceType.HOVER_TEXT:
+        return 'hovertext';
+      case dh.plot.SourceType.TEXT:
+        return 'text';
       default:
-        throw new Error('Unrecognized source type', sourceType);
+        throw new Error(`Unrecognized source type: ${sourceType}`);
     }
   }
 
@@ -418,7 +439,9 @@ class ChartUtils {
   ) {
     const { name, plotStyle, lineColor, shapeColor, sources } = series;
 
-    const isBusinessTime = sources.some(source => source.axis.businessCalendar);
+    const isBusinessTime = sources.some(
+      source => source.axis?.businessCalendar
+    );
     const type = ChartUtils.getChartType(plotStyle, isBusinessTime);
     const mode = ChartUtils.getPlotlyChartMode(plotStyle);
     const orientation = ChartUtils.getPlotlySeriesOrientation(series);
@@ -460,15 +483,13 @@ class ChartUtils {
         sourceType
       );
       seriesData[dataAttributeName] = [];
-      // TODO:  Remove hack for testing
-      if (dataAttributeName === 'labels') {
-        seriesData.parents = [];
-      }
 
-      const axisProperty = ChartUtils.getAxisPropertyName(axis.type);
-      const axes = axisTypeMap.get(axis.type);
-      const axisIndex = axes.indexOf(axis);
+      const axisProperty = axis
+        ? ChartUtils.getAxisPropertyName(axis.type)
+        : null;
       if (axisProperty != null) {
+        const axes = axisTypeMap.get(axis.type);
+        const axisIndex = axes.indexOf(axis);
         const axisIndexString = axisIndex > 0 ? `${axisIndex + 1}` : '';
         seriesData[`${axisProperty}axis`] = `${axisProperty}${axisIndexString}`;
       }
@@ -514,6 +535,14 @@ class ChartUtils {
     } else if (plotStyle === dh.plot.SeriesPlotStyle.PIE) {
       seriesData.textinfo = 'label+percent';
       seriesData.outsidetextfont = { color: theme.title_color };
+    } else if (plotStyle === dh.plot.SeriesPlotStyle.TREEMAP) {
+      seriesData.hoverinfo = 'text';
+      seriesData.textinfo = 'label+text';
+      seriesData.tiling = {
+        packing: 'squarify',
+        pad: 0,
+      };
+      seriesData.textposition = 'middle center';
     }
 
     if (lineColor != null) {
@@ -555,9 +584,9 @@ class ChartUtils {
       for (let j = 0; j < chart.series.length; j += 1) {
         const series = chart.series[j];
         const { sources } = series;
-
-        for (let k = 0; k < sources.length; k += 1) {
-          const source = sources[k];
+        const axisSources = sources.filter(source => source.axis);
+        for (let k = 0; k < axisSources.length; k += 1) {
+          const source = axisSources[k];
           const { axis } = source;
           const { type: axisType } = axis;
           const typeAxes = axisTypeMap.get(axisType);
