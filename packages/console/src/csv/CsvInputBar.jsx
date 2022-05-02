@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
-import JSZip from 'jszip';
 import { Button, Checkbox } from '@deephaven/components';
 import Log from '@deephaven/log';
 import { DbNameValidator } from '@deephaven/utils';
@@ -119,29 +118,10 @@ class CsvInputBar extends Component {
   handleUpload(event) {
     event.stopPropagation();
     event.preventDefault();
-    const { file, paste, onUpdate } = this.props;
+    const { file, paste } = this.props;
     if (file) {
       if (file.name.endsWith('.zip')) {
-        JSZip.loadAsync(file)
-          .then(zip => {
-            const { files } = zip;
-            let csvFound = false;
-            // Using a for loop instead of forEach in order to break
-            const values = Object.values(files);
-            for (let i = 0; i < values.length; i += 1) {
-              const f = values[i];
-              if (CsvOverlay.isValidExtension(f.name)) {
-                onUpdate(`Loading ${f.name} as csv from ${file.name}`);
-                csvFound = true;
-                this.handleFile(f, true);
-                break;
-              }
-            }
-            if (!csvFound) {
-              throw new Error(`No csv file found in ${file.name}`);
-            }
-          })
-          .catch(e => this.handleError(e));
+        this.handleZip(file);
       } else {
         this.handleFile(file);
       }
@@ -200,6 +180,33 @@ class CsvInputBar extends Component {
     });
     // Note that calling onClose will set in progress to false
     onInProgress(true);
+  }
+
+  handleZip(zipFile) {
+    const { onUpdate, unzip } = this.props;
+    if (unzip == null) {
+      this.handleError(new Error('No support for zip files available.'));
+      return;
+    }
+
+    unzip(zipFile)
+      .then(files => {
+        let csvFound = false;
+        // Find the first Csv file in the zip and use that
+        for (let i = 0; i < files.length; i += 1) {
+          const f = files[i];
+          if (CsvOverlay.isValidExtension(f.name)) {
+            onUpdate(`Loading ${f.name} as csv from ${zipFile.name}`);
+            csvFound = true;
+            this.handleFile(f, true);
+            break;
+          }
+        }
+        if (!csvFound) {
+          throw new Error(`No csv file found in ${zipFile.name}`);
+        }
+      })
+      .catch(e => this.handleError(e));
   }
 
   handleProgress(progressValue) {
@@ -343,11 +350,13 @@ CsvInputBar.propTypes = {
   paste: PropTypes.string,
   onInProgress: PropTypes.func.isRequired,
   timeZone: PropTypes.string.isRequired,
+  unzip: PropTypes.func,
 };
 
 CsvInputBar.defaultProps = {
   file: null,
   paste: null,
+  unzip: null,
 };
 
 export default CsvInputBar;

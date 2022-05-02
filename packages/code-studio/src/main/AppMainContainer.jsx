@@ -49,6 +49,7 @@ import {
   getPlugins,
 } from '@deephaven/redux';
 import { PromiseUtils } from '@deephaven/utils';
+import JSZip from 'jszip';
 import SettingsMenu from '../settings/SettingsMenu';
 import AppControlsMenu from './AppControlsMenu';
 import { getLayoutStorage } from '../redux';
@@ -70,6 +71,17 @@ export class AppMainContainer extends Component {
     // https://developer.mozilla.org/en-US/docs/Web/API/WindowEventHandlers/onbeforeunload#example
     // eslint-disable-next-line no-param-reassign
     event.returnValue = '';
+  }
+
+  static hydrateConsole(props, id) {
+    return DashboardUtils.hydrate(
+      {
+        ...props,
+        unzip: zipFile =>
+          JSZip.loadAsync(zipFile).then(zip => Object.values(zip.files)),
+      },
+      id
+    );
   }
 
   constructor(props) {
@@ -669,7 +681,7 @@ export class AppMainContainer extends Component {
           />
           <ChartPlugin hydrate={this.hydrateChart} />
           <ChartBuilderPlugin />
-          <ConsolePlugin />
+          <ConsolePlugin hydrateConsole={AppMainContainer.hydrateConsole} />
           <FilterPlugin />
           <PandasPlugin />
           <MarkdownPlugin />

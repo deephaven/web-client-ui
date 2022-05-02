@@ -269,6 +269,7 @@ class ConsolePanel extends PureComponent {
       glEventHub,
       sessionWrapper,
       timeZone,
+      unzip,
     } = this.props;
     const { consoleSettings, error, objectMap } = this.state;
     const { config, session } = sessionWrapper;
@@ -306,6 +307,7 @@ class ConsolePanel extends PureComponent {
               scope={sessionId}
               timeZone={timeZone}
               objectMap={objectMap}
+              unzip={unzip}
             />
           )}
         </>
@@ -332,10 +334,12 @@ ConsolePanel.propTypes = {
   }).isRequired,
 
   timeZone: PropTypes.string.isRequired,
+  unzip: PropTypes.func,
 };
 
 ConsolePanel.defaultProps = {
   panelState: null,
+  unzip: null,
 };
 
 const mapStateToProps = (state, ownProps) => ({

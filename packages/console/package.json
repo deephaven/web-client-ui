@@ -36,7 +36,6 @@
     "@deephaven/utils": "file:../utils",
     "@fortawesome/react-fontawesome": "^0.1.15",
     "classnames": "^2.3.1",
-    "jszip": "3.2.2",
     "lodash.debounce": "^4.0.8",
     "lodash.throttle": "^4.1.1",
     "memoize-one": "^5.1.1",
