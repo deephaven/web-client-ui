@@ -1,12 +1,12 @@
 # Web Javascript packages
 
-We're using a monorepo to manage our packages, as it becomes cumbersome to manage the overhead of multiple repos with how we wish to develop the Enterprise UI, while maintaining a separate OSS Code Studio solution. Using `lerna` to manage all of our packages in one repo simplifies the process.
+We're using a monorepo to manage our packages, as it becomes cumbersome to manage the overhead of multiple separate repos for each package. Using [lerna](https://github.com/lerna/lerna) to manage all of our packages in one repo simplifies the process.
 
 [![codecov](https://codecov.io/gh/deephaven/web-client-ui/branch/main/graph/badge.svg?token=RW29S9X72C)](https://codecov.io/gh/deephaven/web-client-ui)
 
 ## Development Environment
 
-We recommend using [Visual Studio Code](https://code.visualstudio.com/) and installing the recommended workspace extensions. There are a few workspace settings configured with the repo.
+We recommend using [Visual Studio Code](https://code.visualstudio.com/) and installing the [recommended workspace extensions](https://github.com/deephaven/web-client-ui/blob/main/.vscode/extensions.json) which VS Code will suggest when you open the repo or when you browse the extensions panel. There are a few [workspace settings](https://github.com/deephaven/web-client-ui/tree/main/.vscode) configured with the repo.
 
 Use Chrome for debugging, install the React and Redux extensions.
 
@@ -15,30 +15,36 @@ Use Chrome for debugging, install the React and Redux extensions.
 
 ## Getting Started
 
-We are still using node 16.x and npm 8.x. If you are [using nvm](https://github.com/nvm-sh/nvm#installing-and-updating), there is a [.nvmrc](.nvmrc) file, so just run `nvm install` to get the latest 16.x/8.x versions. Otherwise, download from the [node homepage](https://nodejs.org/en/download/).
+We are still using node 16.x and npm 8.x. If you are [using nvm](https://github.com/nvm-sh/nvm#installing-and-updating), there is an [.nvmrc](.nvmrc) file, so just run `nvm install` to get the latest 16.x/8.x versions (or set up your environment to [automatically switch](https://github.com/nvm-sh/nvm#deeper-shell-integration)). Otherwise, download from the [node homepage](https://nodejs.org/en/download/).
 
-- `npm install` : Install all dependencies and automatically bootstrap packages
+### Scripts
+
+- `npm install` : Install all dependencies and automatically bootstrap packages. Should be run before any of the other steps.
 - `npm start`: Start building all packages and watching them (when possible). Use when you're developing, and your changes will be picked up automatically.
 - `npm test`: Start running tests in all packages and watching (when possible). Use when you're developing, and any breaking changes will be printed out automatically.
 - `npm run build`: Create a production build of all packages. Mainly used by CI when packaging up a production version of the app.
-- `npm run version-bump`: Update the version of all packages. Used when updating/tagging new versions. You'll need to select whether to do a [patch, minor, or major version](https://semver.org/). It does not commit the changes.
 
 ## Package Overview
 
 There are many packages located in the [packages](./packages) directory. A few of the more important ones are:
 
-- [@deephaven/code-studio](./packages/code-studio): Main web UI used with the [deephaven-core](https://github.com/deephaven/deephaven-core/) backend.
+- [@deephaven/code-studio](./packages/code-studio): Main web UI used with the [deephaven-core](https://github.com/deephaven/deephaven-core/) backend. This package is the main front-end application, and depends on almost all other packages in the repository. It is often the easiest way to see the effect of your changes by opening this application. Follow the instructions in the [code-studio README.md](https://github.com/deephaven/web-client-ui/blob/main/packages/code-studio/README.md) to get it started.
 - [@deephaven/components](./packages/components): Component library used within the web UI.
 - [@deephaven/grid](./packages/grid): High-performance grid component used to display large tables of data.
-- [@deephaven/golden-layout](./packages/golden-layout): Layout framework used in [@deephaven/code-studio](./packages/code-studio).
+- [@deephaven/dashboard](./packages/dashboard/): Dashboards used in [@deephaven/code-studio](./packages/code-studio) for displaying and organizing panels.
+- [@deephaven/golden-layout](./packages/golden-layout): Layout framework used in [@deephaven/dashboard](./packages/dashboard/).
+
+## Contributing
+
+For details on how to contribute to this repository, please see the [contributing guidelines](https://github.com/deephaven/web-client-ui/blob/main/CONTRIBUTING.md).
 
 ## Creating a New Package
 
-Depending on what your package is, there are a couple of different templates that may be appropriate
+Depending on what your package is, there are a couple of different templates that may be appropriate.
 
 ### Application package
 
-A standalone application with it's own entry point. Recommend using the [create-react-app template](https://github.com/facebook/create-react-app).
+A standalone application with it's own entry point. Recommend using the [create-react-app template](https://github.com/facebook/create-react-app) with TypeScript enabled.
 
 ### Component/library package
 
@@ -82,4 +88,4 @@ Nightly releases are published every night with the dist-tag `nightly` to npm. Y
 
 ### Hotfix Releases
 
-For Deephaven Enterprise, once a release has reached certification and will only receive hotfixes, we create a new branch in Community matching the Deephaven Enterprise release name (e.g. [bard](https://github.com/deephaven/web-client-ui/tree/bard)). Bug fixes/hotfixes are then either cherry-picked from `main` (if the fix has been merged to main), or directly merged into the hotfix branch (if code has changed in `main` and the fix only applies in the hotfix branch). Once the branch is pushed to origin, the publish step is kicked off manually using the Publish Alpha with the release name as the `preid` and the branches latest commit to deploy the latest from that branch.
+For Long Term Support releases, we create a new branch in Community matching the LTS version number (e.g. [v0.6](https://github.com/deephaven/web-client-ui/tree/v0.6)), then adding a matching [dist-tag](https://github.com/lerna/lerna/blob/main/commands/publish/README.md#--dist-tag-tag) to the [publish-packages.yml](.github/workflows/publish-packages.yml#L24) for that branch. Bug fixes/hotfixes are then either cherry-picked from `main` (if the fix has been merged to main), or directly merged into the hotfix branch (if code has changed in `main` and the fix only applies in the hotfix branch). Once the branch is pushed to origin, the publish step is kicked off by creating a release as instructed in the [Releasing a New Version](#releasing-a-new-version) section.
