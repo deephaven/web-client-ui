@@ -9,10 +9,9 @@ import dh, {
   Sort,
   TotalsTableConfig,
 } from '@deephaven/jsapi-shim';
-import Formatter from './Formatter';
+import { Formatter, ReverseType, TableUtils } from '@deephaven/jsapi-utils';
 import IrisGridModel from './IrisGridModel';
 import IrisGridUtils from './IrisGridUtils';
-import TableUtils, { ReverseType } from './TableUtils';
 
 const COLUMN_BUFFER_PAGES = 1;
 

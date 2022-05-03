@@ -1,9 +1,12 @@
-import { DateTimeColumnFormatter, TableColumnFormat } from '../formatters';
+import {
+  DateTimeColumnFormatter,
+  Formatter,
+  TableColumnFormat,
+  TableUtils,
+} from '@deephaven/jsapi-utils';
 import FormatContextMenuUtils, {
   FormatContextMenuOption,
 } from './FormatContextMenuUtils';
-import TableUtils from '../TableUtils';
-import type Formatter from '../Formatter';
 
 class DateTimeFormatContextMenu {
   static dateGroup = 10;

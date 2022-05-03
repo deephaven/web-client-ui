@@ -8,6 +8,9 @@
   "exclude": ["node_modules", "src/**/*.test.*", "src/**/__mocks__/*"],
   "references": [
     {
+      "path": "../filters"
+    },
+    {
       "path": "../log"
     }
   ]

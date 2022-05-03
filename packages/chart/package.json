@@ -31,8 +31,8 @@
   },
   "dependencies": {
     "@deephaven/icons": "file:../icons",
-    "@deephaven/iris-grid": "file:../iris-grid",
     "@deephaven/jsapi-shim": "file:../jsapi-shim",
+    "@deephaven/jsapi-utils": "file:../jsapi-utils",
     "deep-equal": "^2.0.5",
     "lodash.debounce": "^4.0.8",
     "memoize-one": "^5.1.1",

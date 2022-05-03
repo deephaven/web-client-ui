@@ -1,12 +1,11 @@
 /* eslint class-methods-use-this: "off" */
 import deepEqual from 'deep-equal';
+import { Formatter, TableUtils } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
 import { PromiseUtils } from '@deephaven/utils';
-import Formatter from './Formatter';
 import IrisGridTableModel from './IrisGridTableModel';
 import IrisGridTreeTableModel from './IrisGridTreeTableModel';
 import IrisGridModel from './IrisGridModel';
-import TableUtils from './TableUtils';
 
 const log = Log.module('IrisGridProxyModel');
 

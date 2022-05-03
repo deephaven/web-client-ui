@@ -1,6 +1,6 @@
 import shortid from 'shortid';
 import { LayoutUtils, PanelComponent } from '@deephaven/dashboard';
-import { TableUtils } from '@deephaven/iris-grid';
+import { TableUtils } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
 import { ChartPanel, IrisGridPanel, DropdownFilterPanel } from '../panels';
 

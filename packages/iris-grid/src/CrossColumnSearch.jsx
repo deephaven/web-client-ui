@@ -11,7 +11,7 @@ import {
   vsCircleLargeFilled,
 } from '@deephaven/icons';
 import dh from '@deephaven/jsapi-shim';
-import TableUtils from './TableUtils';
+import { TableUtils } from '@deephaven/jsapi-utils';
 import './CrossColumnSearch.scss';
 
 class CrossColumnSearch extends PureComponent {

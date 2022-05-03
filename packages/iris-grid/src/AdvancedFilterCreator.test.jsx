@@ -1,10 +1,13 @@
 import React from 'react';
 import { mount } from 'enzyme';
+import {
+  Type as FilterType,
+  Operator as FilterOperator,
+} from '@deephaven/filters';
 import dh from '@deephaven/jsapi-shim';
+import { Formatter } from '@deephaven/jsapi-utils';
 import AdvancedFilterCreator from './AdvancedFilterCreator';
 import IrisGridTestUtils from './IrisGridTestUtils';
-import { FilterType, FilterOperator } from './filters';
-import Formatter from './Formatter';
 
 function makeAdvancedFilterCreatorWrapper({
   options = {},

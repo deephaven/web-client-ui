@@ -4,8 +4,8 @@ import classNames from 'classnames';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { dhNewCircleLargeFilled, vsGripper, vsTrash } from '@deephaven/icons';
 import { Button, DragUtils, Tooltip } from '@deephaven/components';
+import { TableUtils } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
-
 import './ConditionalFormattingMenu.scss';
 import {
   BaseFormatConfig,
@@ -18,7 +18,6 @@ import {
   StringCondition,
   DateCondition,
 } from './ConditionalFormattingUtils';
-import TableUtils from '../../TableUtils';
 
 const log = Log.module('ConditionalFormattingMenu');
 

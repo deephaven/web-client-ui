@@ -1,6 +1,9 @@
 import React from 'react';
+import {
+  TableColumnFormat,
+  TableColumnFormatter,
+} from '@deephaven/jsapi-utils';
 import CustomFormatAction from './CustomFormatAction';
-import { TableColumnFormatter, TableColumnFormat } from '../formatters';
 
 export interface FormatContextMenuOption {
   title: string;

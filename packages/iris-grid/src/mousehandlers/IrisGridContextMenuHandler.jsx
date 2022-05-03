@@ -10,6 +10,11 @@ import {
 } from '@deephaven/components';
 import { GridMouseHandler } from '@deephaven/grid';
 import dh from '@deephaven/jsapi-shim';
+import {
+  TableColumnFormatter,
+  DateTimeColumnFormatter,
+  TableUtils,
+} from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
 import {
   DateTimeFormatContextMenu,
@@ -17,8 +22,6 @@ import {
   IntegerFormatContextMenu,
 } from '../format-context-menus';
 import './IrisGridContextMenuHandler.scss';
-import TableUtils from '../TableUtils';
-import { TableColumnFormatter, DateTimeColumnFormatter } from '../formatters';
 import SHORTCUTS from '../IrisGridShortcuts';
 
 const log = Log.module('IrisGridContextMenuHandler');

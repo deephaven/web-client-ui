@@ -1,6 +1,6 @@
 import Log from '@deephaven/log';
 import { Column, CustomColumn } from '@deephaven/jsapi-shim';
-import TableUtils from '../../TableUtils';
+import { TableUtils } from '@deephaven/jsapi-utils';
 import {
   makeColumnFormatColumn,
   makeRowFormatColumn,

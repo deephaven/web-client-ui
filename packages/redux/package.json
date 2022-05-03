@@ -27,6 +27,7 @@
     "start": "cross-env NODE_ENV=development npm run watch"
   },
   "dependencies": {
+    "@deephaven/jsapi-utils": "file:../jsapi-utils",
     "deep-equal": "^2.0.5",
     "redux-thunk": "^2.3.0"
   },

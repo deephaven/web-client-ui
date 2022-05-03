@@ -1,0 +1,23 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "rootDir": "src/",
+    "outDir": "dist/"
+  },
+  "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.js", "src/**/*.jsx"],
+  "exclude": ["node_modules", "src/**/*.test.*", "src/**/__mocks__/*"],
+  "references": [
+    {
+      "path": "../filters"
+    },
+    {
+      "path": "../jsapi-shim"
+    },
+    {
+      "path": "../log"
+    },
+    {
+      "path": "../utils"
+    }
+  ]
+}

@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { TableUtils } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
-import TableUtils from '../../TableUtils';
 import {
   StringCondition,
   DateCondition,
