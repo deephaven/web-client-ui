@@ -110,8 +110,6 @@ class GridVerticalScrollBarMouseHandler extends GridMouseHandler {
       return false;
     }
 
-    console.log(gridY);
-
     const mouseBarY = y - gridY;
     if (mouseBarY >= scrollY && mouseBarY <= scrollY + handleHeight) {
       // Grabbed the vertical handle
