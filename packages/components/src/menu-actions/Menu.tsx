@@ -17,6 +17,7 @@ type MenuProps = {
   onMenuOpened(menu: Menu): void;
   options: MenuOptions;
   menuStyle: React.CSSProperties;
+  'data-testid'?: string;
 };
 
 type MenuState = {
@@ -47,6 +48,7 @@ class Menu extends PureComponent<MenuProps, MenuState> {
     },
     options: {},
     menuStyle: {},
+    'data-testid': undefined,
   };
 
   constructor(props: MenuProps) {
@@ -233,6 +235,7 @@ class Menu extends PureComponent<MenuProps, MenuState> {
 
   render(): JSX.Element {
     const menuItemElements = [];
+    const { 'data-testid': dataTestId } = this.props;
     const { keyboardIndex, menuItems, mouseIndex } = this.state;
     for (let i = 0; i < menuItems.length; i += 1) {
       const menuItem = menuItems[i];
@@ -268,6 +271,7 @@ class Menu extends PureComponent<MenuProps, MenuState> {
         onMouseLeave={this.handleMouseLeave}
         role="menuitem"
         tabIndex={0}
+        data-testid={dataTestId}
       >
         {menuItemElements}
       </div>

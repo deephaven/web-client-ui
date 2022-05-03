@@ -15,6 +15,7 @@ type HierarchicalCheckboxMenuProps = {
   onUpdateValueMap(map: HierarchicalCheckboxValueMap): void;
   icon: IconDefinition | null;
   id: string;
+  'data-testid'?: string;
 };
 
 type HierarchicalCheckboxMenuState = {
@@ -55,6 +56,7 @@ class HierarchicalCheckboxMenu extends Component<
     className: '',
     icon: null,
     id: '',
+    'data-testid': undefined,
   };
 
   static isParentSelected(
@@ -167,7 +169,7 @@ class HierarchicalCheckboxMenu extends Component<
   }
 
   renderMenuElement(): React.ReactNode {
-    const { valueMap } = this.props;
+    const { valueMap, 'data-testid': dataTestId } = this.props;
     return (
       <div className="hcm-menu-container">
         {Array.from(valueMap.entries()).map(([parent, children]) => (
@@ -196,10 +198,20 @@ class HierarchicalCheckboxMenu extends Component<
               ))}
           </div>
         ))}
-        <button type="button" className="btn btn-link" onClick={this.selectAll}>
+        <button
+          type="button"
+          className="btn btn-link"
+          onClick={this.selectAll}
+          data-testid={dataTestId}
+        >
           Select All
         </button>
-        <button type="button" className="btn btn-link" onClick={this.clear}>
+        <button
+          type="button"
+          className="btn btn-link"
+          onClick={this.clear}
+          data-testid={dataTestId}
+        >
           Clear
         </button>
       </div>
@@ -207,7 +219,13 @@ class HierarchicalCheckboxMenu extends Component<
   }
 
   render(): JSX.Element {
-    const { menuText, className, icon, id } = this.props;
+    const {
+      menuText,
+      className,
+      icon,
+      id,
+      'data-testid': dataTestId,
+    } = this.props;
     const { menuIsOpen } = this.state;
 
     return (
@@ -216,6 +234,7 @@ class HierarchicalCheckboxMenu extends Component<
         className={classNames('btn hcm-btn', className)}
         onClick={this.toggleMenu}
         id={id}
+        data-testid={dataTestId}
       >
         <span>
           {icon && <FontAwesomeIcon icon={icon} className="hcm-icon mr-1" />}

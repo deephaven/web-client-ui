@@ -24,6 +24,7 @@ function isSwitchMenuItemType(item: MenuItemDef): item is SwitchMenuItemDef {
 export type MenuItemProps = {
   item: MenuItemDef;
   onSelect?: () => void;
+  'data-testid'?: string;
 };
 
 /**
@@ -33,6 +34,7 @@ export type MenuItemProps = {
 export const MenuItem = ({
   item,
   onSelect = () => undefined,
+  'data-testid': dataTestId,
 }: MenuItemProps): JSX.Element => {
   const { icon, subtitle, title } = item;
   const handleSelect = useMemo(() => {
@@ -63,7 +65,7 @@ export const MenuItem = ({
       )}
       <div className="title">{title}</div>
       {subtitle && <div className="shortcut">{subtitle}</div>}
-      <div className="accessory">
+      <div className="accessory" data-testid={dataTestId}>
         {(isSwitchMenuItemType(item) && (
           <UISwitch
             on={item.isOn}

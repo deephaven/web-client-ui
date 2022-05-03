@@ -9,6 +9,7 @@ type UISwitchProps = {
   className?: string;
   isInvalid?: boolean;
   disabled?: boolean;
+  'data-testid'?: string;
 };
 
 const UISwitch = ({
@@ -18,6 +19,7 @@ const UISwitch = ({
   isInvalid,
   disabled = false,
   onClick,
+  'data-testid': dataTestId,
 }: UISwitchProps): JSX.Element => (
   <button
     type="button"
@@ -31,6 +33,7 @@ const UISwitch = ({
     id={id}
     onClick={onClick}
     disabled={disabled}
+    data-testid={dataTestId}
   >
     <div className="handle" />
   </button>

@@ -18,6 +18,7 @@ type TimeInputProps = {
   value?: number;
   onFocus?(): void;
   onBlur?(): void;
+  'data-testid'?: string;
 };
 
 // Forward ref causes a false positive for display-name in eslint:
@@ -32,6 +33,7 @@ const TimeInput = React.forwardRef<HTMLInputElement, TimeInputProps>(
       value: propsValue = 0,
       onFocus = () => false,
       onBlur = () => false,
+      'data-testid': dataTestId,
     } = props;
     const [value, setValue] = useState(TimeUtils.formatTime(propsValue));
     const [selection, setSelection] = useState<SelectionSegment>();
@@ -109,6 +111,7 @@ const TimeInput = React.forwardRef<HTMLInputElement, TimeInputProps>(
         value={value}
         onFocus={onFocus}
         onBlur={onBlur}
+        data-testid={dataTestId}
       />
     );
   }
@@ -121,6 +124,7 @@ TimeInput.defaultProps = {
   value: 0,
   onFocus: () => false,
   onBlur: () => false,
+  'data-testid': undefined,
 };
 
 export default TimeInput;

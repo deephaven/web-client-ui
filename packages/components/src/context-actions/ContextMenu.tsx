@@ -29,6 +29,7 @@ interface ContextMenuProps {
     initialKeyboardIndex?: number;
   };
   menuStyle: React.CSSProperties;
+  'data-testid'?: string;
 }
 
 interface ContextMenuState {
@@ -60,6 +61,7 @@ class ContextMenu extends PureComponent<ContextMenuProps, ContextMenuState> {
     },
     options: {},
     menuStyle: {},
+    'data-testid': undefined,
   };
 
   static handleContextMenu(e: React.MouseEvent): void {
@@ -584,7 +586,7 @@ class ContextMenu extends PureComponent<ContextMenuProps, ContextMenuState> {
       );
     }
 
-    const { menuStyle } = this.props;
+    const { menuStyle, 'data-testid': dataTestId } = this.props;
 
     // don't show submenu until it has an position initialized
     const showSubmenu =
@@ -606,6 +608,7 @@ class ContextMenu extends PureComponent<ContextMenuProps, ContextMenuState> {
           onContextMenu={ContextMenu.handleContextMenu}
           role="menuitem"
           tabIndex={0}
+          data-testid={dataTestId}
         >
           {menuItemElements}
           {pendingElement}

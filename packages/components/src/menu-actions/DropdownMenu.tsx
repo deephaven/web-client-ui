@@ -48,6 +48,7 @@ type DropdownMenuProps = {
   popperOptions: PopperOptions;
   popperClassName: string;
   menuStyle: React.CSSProperties;
+  'data-testid'?: string;
 };
 
 class DropdownMenu extends PureComponent<DropdownMenuProps> {
@@ -63,6 +64,7 @@ class DropdownMenu extends PureComponent<DropdownMenuProps> {
     popperOptions: {},
     popperClassName: '',
     menuStyle: {},
+    'data-testid': undefined,
   };
 
   constructor(props: DropdownMenuProps) {
@@ -155,7 +157,12 @@ class DropdownMenu extends PureComponent<DropdownMenuProps> {
   }
 
   render(): JSX.Element {
-    const { actions, onMenuOpened, popperClassName } = this.props;
+    const {
+      actions,
+      onMenuOpened,
+      popperClassName,
+      'data-testid': dataTestId,
+    } = this.props;
     const { menuStyle } = this.props;
     let { options, popperOptions } = this.props;
     popperOptions = { placement: 'bottom', ...popperOptions };
@@ -164,7 +171,11 @@ class DropdownMenu extends PureComponent<DropdownMenuProps> {
       ...options,
     };
     return (
-      <div className="menu-actions-listener" ref={this.container}>
+      <div
+        className="menu-actions-listener"
+        ref={this.container}
+        data-testid={dataTestId}
+      >
         <Popper
           ref={this.popper}
           options={popperOptions}

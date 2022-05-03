@@ -1,17 +1,14 @@
 {
+  "editor.guides.bracketPairs": "active",
   "typescript.tsdk": "node_modules/typescript/lib",
   "editor.formatOnSave": true,
   "editor.tabSize": 2,
+  "editor.bracketPairColorization.enabled": true,
   "eslint.workingDirectories": [
     {
       "mode": "auto"
     }
   ],
   "editor.defaultFormatter": "esbenp.prettier-vscode",
-  "stylelint.validate": [
-    "css",
-    "html",
-    "sass",
-    "scss"
-  ]
+  "stylelint.validate": ["css", "html", "sass", "scss"]
 }

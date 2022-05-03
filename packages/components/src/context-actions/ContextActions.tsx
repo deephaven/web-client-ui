@@ -13,6 +13,7 @@ const log = Log.module('ContextActions');
 interface ContextActionsProps {
   actions: ContextAction[] | (() => ContextAction[]);
   ignoreClassNames?: string[];
+  'data-testid'?: string;
 }
 
 interface ContextActionsState {
@@ -209,9 +210,14 @@ class ContextActions extends Component<
   }
 
   render(): JSX.Element {
+    const { 'data-testid': dataTestId } = this.props;
     const { globalActions } = this.state;
     return (
-      <div className="context-actions-listener" ref={this.container}>
+      <div
+        className="context-actions-listener"
+        ref={this.container}
+        data-testid={dataTestId}
+      >
         <GlobalContextActions actions={globalActions} />
       </div>
     );

@@ -3,7 +3,9 @@ import classNames from 'classnames';
 import ContextMenu from './ContextMenu';
 import ContextActionUtils, { MenuItem } from './ContextActionUtils';
 
-type ContextMenuRootProps = Record<string, never>;
+type ContextMenuRootProps = Record<string, never> & {
+  'data-testid'?: string;
+};
 
 interface ContextMenuRootState {
   actions: MenuItem[] | null;
@@ -123,6 +125,7 @@ class ContextMenuRoot extends Component<
 
   render(): JSX.Element {
     let menu = null;
+    const { 'data-testid': dataTestId } = this.props;
     const { actions, top, left } = this.state;
     if (actions) {
       menu = (
@@ -135,6 +138,7 @@ class ContextMenuRoot extends Component<
           updatePosition={(verifiedTop, verifiedLeft) => {
             this.setState({ top: verifiedTop, left: verifiedLeft });
           }}
+          data-testid={dataTestId}
         />
       );
     }

@@ -67,6 +67,7 @@ export type ItemListProps<T> = {
   disableSelect: boolean;
   renderItem: RenderItemFn<T>;
   focusSelector: string;
+  'data-testid'?: string;
 };
 
 type ItemListState = {
@@ -131,6 +132,8 @@ export class ItemList<T> extends PureComponent<
     selectedRanges: [],
 
     focusSelector: '.item-list-item',
+
+    'data-testid': undefined,
   };
 
   static renderItem<P extends DefaultListItem>({
@@ -750,6 +753,7 @@ export class ItemList<T> extends PureComponent<
       overscanCount,
       renderItem,
       rowHeight,
+      'data-testid': dataTestId,
     } = this.props;
     const { selectedRanges } = this.state;
     return (
@@ -772,6 +776,7 @@ export class ItemList<T> extends PureComponent<
             outerRef={this.listContainer}
             innerElementType={this.getInnerElement()}
             overscanCount={overscanCount}
+            data-testid={dataTestId}
           >
             {this.renderInnerElement}
           </List>

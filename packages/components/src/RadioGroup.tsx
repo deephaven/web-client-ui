@@ -15,6 +15,7 @@ type RadioGroupProps = {
   value?: string;
 
   disabled?: boolean;
+  'data-testid'?: string;
 };
 
 /**
@@ -31,6 +32,7 @@ const RadioGroup = (props: RadioGroupProps): JSX.Element => {
     name: propsName,
     onChange,
     value = '',
+    'data-testid': dataTestId,
   } = props;
   const [name] = useState(propsName || shortid());
 
@@ -44,6 +46,7 @@ const RadioGroup = (props: RadioGroupProps): JSX.Element => {
               onChange: child.props.onChange || onChange,
               checked: value === child.props.value,
               disabled: child.props.disabled || disabled,
+              'data-testid': dataTestId,
             })
           : null
       )}

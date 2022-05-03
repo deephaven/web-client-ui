@@ -7,13 +7,15 @@ export type MenuSelectCallback = (itemIndex: number) => void;
 export type MenuProps = {
   items: MenuItemDef[];
   onSelect?: MenuSelectCallback;
+  'data-testid'?: string;
 };
 
 export const Menu = ({
   items,
   onSelect = () => undefined,
+  'data-testid': dataTestId,
 }: MenuProps): JSX.Element => (
-  <div className="navigation-menu-view">
+  <div className="navigation-menu-view" data-testid={dataTestId}>
     <ul className="navigation-menu-list">
       {items.map((item, itemIndex) => (
         <li key={item.title}>

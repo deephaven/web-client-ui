@@ -13,6 +13,7 @@ interface AutoResizeTextareaProps {
   disabled?: boolean;
   delimiter?: string;
   id?: string;
+  'data-testid'?: string;
 }
 
 /**
@@ -30,6 +31,7 @@ const AutoResizeTextarea = ({
   disabled = false,
   delimiter = '',
   id = '',
+  'data-testid': dataTestId,
 }: AutoResizeTextareaProps): JSX.Element => {
   const [value, setValue] = useState(propsValue);
   const [isPastedChange, setIsPastedChange] = useState(false);
@@ -131,6 +133,7 @@ const AutoResizeTextarea = ({
       onPaste={handlePaste}
       spellCheck={spellCheck}
       disabled={disabled}
+      data-testid={dataTestId}
     />
   );
 };
@@ -144,6 +147,7 @@ AutoResizeTextarea.propTypes = {
   disabled: PropTypes.bool,
   delimiter: PropTypes.string,
   id: PropTypes.string,
+  'data-testid': PropTypes.string,
 };
 
 AutoResizeTextarea.defaultProps = {
@@ -153,6 +157,7 @@ AutoResizeTextarea.defaultProps = {
   disabled: false,
   spellCheck: false,
   delimiter: '',
+  'data-testid': undefined,
 };
 
 export default AutoResizeTextarea;

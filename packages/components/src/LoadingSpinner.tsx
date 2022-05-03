@@ -6,12 +6,17 @@ import './LoadingSpinner.scss';
 
 type LoadingSpinnerProps = {
   className?: string;
+  'data-testid'?: string;
 };
 
 const LoadingSpinner = ({
   className = '',
+  'data-testid': dataTestId,
 }: LoadingSpinnerProps): JSX.Element => (
-  <div className={classNames('loading-spinner fa-layers', className)}>
+  <div
+    className={classNames('loading-spinner fa-layers', className)}
+    data-testid={dataTestId}
+  >
     <FontAwesomeIcon icon={vsCircleLargeOutline} className="text-white-50" />
     <FontAwesomeIcon icon={vsLoading} className="text-primary" spin />
   </div>

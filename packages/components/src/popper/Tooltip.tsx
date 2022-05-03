@@ -14,6 +14,7 @@ type TooltipProps = typeof Tooltip.defaultProps & {
   timeout?: number;
   referenceObject?: ReferenceObject | null;
   onExited?: () => void;
+  'data-testid'?: string;
 };
 interface TooltipState {
   isShown: boolean;
@@ -50,6 +51,7 @@ class Tooltip extends Component<TooltipProps, TooltipState> {
     timeout: Tooltip.defaultTimeout,
     referenceObject: null,
     onExited: (): void => undefined,
+    'data-testid': undefined,
   };
 
   static handleHidden(): void {
@@ -291,10 +293,15 @@ class Tooltip extends Component<TooltipProps, TooltipState> {
       options,
       referenceObject,
       popperClassName,
+      'data-testid': dataTestId,
     } = this.props;
     const { isShown } = this.state;
     return (
-      <div ref={this.container} style={{ display: 'none' }}>
+      <div
+        ref={this.container}
+        style={{ display: 'none' }}
+        data-testid={dataTestId}
+      >
         <Popper
           className={classNames(popperClassName)}
           options={options}

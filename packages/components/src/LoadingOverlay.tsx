@@ -11,6 +11,7 @@ type LoadingOverlayProps = {
   isLoaded: boolean;
   isLoading: boolean;
   errorMessage: string | null;
+  'data-testid'?: string;
 };
 
 /**
@@ -20,6 +21,7 @@ const LoadingOverlay = ({
   isLoaded = false,
   isLoading = true,
   errorMessage = null,
+  'data-testid': dataTestId,
 }: LoadingOverlayProps): JSX.Element => (
   <CSSTransition
     in={!!errorMessage || !isLoaded || isLoading}
@@ -28,7 +30,7 @@ const LoadingOverlay = ({
     mountOnEnter
     unmountOnExit
   >
-    <div className="fill-parent-absolute">
+    <div className="fill-parent-absolute" data-testid={dataTestId}>
       <div
         className={classNames(
           'iris-panel-message-overlay',

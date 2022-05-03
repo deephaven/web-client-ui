@@ -9,6 +9,7 @@ interface CollapseProps {
   in: boolean;
   children: React.ReactNode;
   autoFocusOnShow?: boolean;
+  'data-testid'?: string;
 }
 
 class Collapse extends Component<CollapseProps> {
@@ -17,11 +18,13 @@ class Collapse extends Component<CollapseProps> {
     in: PropTypes.bool.isRequired,
     children: PropTypes.node.isRequired,
     autoFocusOnShow: PropTypes.bool,
+    'data-testid': PropTypes.string,
   };
 
   static defaultProps = {
     className: '',
     autoFocusOnShow: false,
+    'data-testid': undefined,
   };
 
   static handleEnter(elemParam: HTMLElement): void {
@@ -72,7 +75,12 @@ class Collapse extends Component<CollapseProps> {
   }
 
   render(): JSX.Element {
-    const { children, className, in: inTransition } = this.props;
+    const {
+      children,
+      className,
+      in: inTransition,
+      'data-testid': dataTestId,
+    } = this.props;
     return (
       <CSSTransition
         in={inTransition}
@@ -92,6 +100,7 @@ class Collapse extends Component<CollapseProps> {
         {state => (
           <div
             className={classNames({ collapse: state === 'exited' }, className)}
+            data-testid={dataTestId}
           >
             {children}
           </div>

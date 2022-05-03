@@ -34,6 +34,7 @@ interface PopperProps {
   closeOnBlur: boolean;
   interactive: boolean;
   referenceObject: ReferenceObject | null;
+  'data-testid'?: string;
 }
 
 interface PopperState {
@@ -53,6 +54,7 @@ class Popper extends Component<PopperProps, PopperState> {
     closeOnBlur: PropTypes.bool,
     interactive: PropTypes.bool,
     referenceObject: PropTypes.shape({}),
+    'data-testid': PropTypes.string,
   };
 
   static defaultProps = {
@@ -69,6 +71,7 @@ class Popper extends Component<PopperProps, PopperState> {
     interactive: false,
     closeOnBlur: false,
     referenceObject: null,
+    'data-testid': undefined,
   };
 
   constructor(props: PopperProps) {
@@ -276,11 +279,13 @@ class Popper extends Component<PopperProps, PopperState> {
 
   render(): JSX.Element {
     const { popper } = this.state;
+    const { 'data-testid': dataTestId } = this.props;
     return (
       <div
         className="popper-parent-container"
         ref={this.container}
         style={{ display: 'none' }}
+        data-testid={dataTestId}
       >
         {popper && ReactDOM.createPortal(this.renderContent(), this.element)}
       </div>
