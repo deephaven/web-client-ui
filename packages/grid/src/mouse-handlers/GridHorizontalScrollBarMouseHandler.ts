@@ -79,16 +79,12 @@ class GridHorizontalScrollBarMouseHandler extends GridMouseHandler {
       handleWidth,
       lastLeft,
       rowHeaderWidth,
-      leftOffset,
-      maxX,
-      rowFooterWidth,
-      width,
-      gridX,
       columnCount,
+      scrollableContentWidth,
+      scrollableViewportWidth,
     } = metrics;
 
     const mouseBarX = x - rowHeaderWidth;
-    const maxWidth = leftOffset + maxX + rowFooterWidth;
     const scrollPercent = clamp(
       (mouseBarX - (this.dragOffset ?? 0)) / (barWidth - handleWidth),
       0,
@@ -98,7 +94,8 @@ class GridHorizontalScrollBarMouseHandler extends GridMouseHandler {
     if (columnCount === 1) {
       return {
         left: 0,
-        leftOffset: scrollPercent * (maxWidth - (width - gridX)),
+        leftOffset:
+          scrollPercent * (scrollableContentWidth - scrollableViewportWidth),
       };
     }
 

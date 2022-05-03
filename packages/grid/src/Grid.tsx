@@ -1739,7 +1739,13 @@ class Grid extends PureComponent<GridProps, GridState> {
 
     if (!metrics) throw new Error('metrics not set');
 
-    const { lastTop, lastLeft } = metrics;
+    const {
+      lastTop,
+      lastLeft,
+      columnCount,
+      scrollableContentWidth,
+      scrollableViewportWidth,
+    } = metrics;
     let { top, left, topOffset, leftOffset } = metrics;
 
     const theme = this.getTheme();
@@ -1758,13 +1764,27 @@ class Grid extends PureComponent<GridProps, GridState> {
       leftOffset += deltaX;
       deltaX = 0;
 
-      // no scrolling needed, at directional edge
-      if (
-        (leftOffset > 0 && left >= lastLeft) ||
-        (leftOffset < 0 && left <= 0)
-      ) {
-        leftOffset = 0;
-        break;
+      if (columnCount > 1) {
+        // no scrolling needed, at directional edge
+        if (
+          (leftOffset > 0 && left >= lastLeft) ||
+          (leftOffset < 0 && left <= 0)
+        ) {
+          leftOffset = 0;
+          break;
+        }
+      } else {
+        // single column at edge
+        if (leftOffset <= 0) {
+          leftOffset = 0;
+          break;
+        }
+
+        const maxLeftOffset = scrollableContentWidth - scrollableViewportWidth;
+        if (leftOffset >= maxLeftOffset) {
+          leftOffset = maxLeftOffset;
+          break;
+        }
       }
 
       if (leftOffset > 0) {

@@ -303,10 +303,10 @@ export class GridMetricCalculator {
     const maxY = rowHeightValues.reduce((y, h) => y + h, 0) - topOffset;
 
     // Visible space available in the canvas viewport
-    const viewportWidth = width - gridX;
+    const scrollableViewportWidth = width - gridX;
 
     // How much total space the content will take
-    const contentWidth = leftOffset + maxX + rowFooterWidth;
+    const scrollableContentWidth = leftOffset + maxX + rowFooterWidth;
 
     const floatingBottomHeight = this.getFloatingBottomHeight(
       state,
@@ -325,7 +325,8 @@ export class GridMetricCalculator {
     );
 
     // Calculate some metrics for the scroll bars
-    const hasHorizontalBar = lastLeft > 0 || contentWidth > viewportWidth;
+    const hasHorizontalBar =
+      lastLeft > 0 || scrollableContentWidth > scrollableViewportWidth;
     const hasVerticalBar = lastTop > 0;
     const horizontalBarHeight = hasHorizontalBar ? scrollBarSize : 0;
     const verticalBarWidth = hasVerticalBar ? scrollBarSize : 0;
@@ -335,7 +336,7 @@ export class GridMetricCalculator {
     // How big the horizontal is relative to the horizontal bar
     const horizontalHandlePercent =
       columnCount === 1
-        ? barWidth / contentWidth
+        ? barWidth / scrollableContentWidth
         : (columnCount - lastLeft) / columnCount;
 
     const handleWidth = hasHorizontalBar
@@ -363,7 +364,7 @@ export class GridMetricCalculator {
     // How much of the available space has been scrolled
     const horizontalScrollPercent =
       columnCount === 1
-        ? leftOffset / (contentWidth - viewportWidth)
+        ? leftOffset / (scrollableContentWidth - scrollableViewportWidth)
         : (left + leftOffsetPercent) / lastLeft;
     const verticalScrollPercent = (top + topOffsetPercent) / lastTop;
 
@@ -546,6 +547,9 @@ export class GridMetricCalculator {
       // The vertical x/y scroll amount
       scrollX,
       scrollY,
+
+      scrollableContentWidth,
+      scrollableViewportWidth,
 
       // Array of visible rows/columns, by grid index
       visibleRows,
