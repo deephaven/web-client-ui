@@ -46,22 +46,16 @@ class GridHorizontalScrollBarMouseHandler extends GridMouseHandler {
     if (!metrics) throw new Error('metrics not set');
 
     const { x, y } = gridPoint;
-    const {
-      lastTop,
-      rowHeaderWidth,
-      width,
-      height,
-      hasHorizontalBar,
-    } = metrics;
+    const { gridX, width, height, hasHorizontalBar, hasVerticalBar } = metrics;
 
-    const scrollBarWidth = lastTop > 0 ? width - scrollBarSize : width;
+    const scrollBarWidth = hasVerticalBar ? width - scrollBarSize : width;
 
     return (
       hasHorizontalBar &&
       scrollBarSize > 0 &&
       y >= height - scrollBarHoverSize &&
       y < height &&
-      x > rowHeaderWidth &&
+      x > gridX &&
       x < scrollBarWidth
     );
   }
@@ -78,13 +72,13 @@ class GridHorizontalScrollBarMouseHandler extends GridMouseHandler {
       barWidth,
       handleWidth,
       lastLeft,
-      rowHeaderWidth,
+      gridX,
       columnCount,
       scrollableContentWidth,
       scrollableViewportWidth,
     } = metrics;
 
-    const mouseBarX = x - rowHeaderWidth;
+    const mouseBarX = x - gridX;
     const scrollPercent = clamp(
       (mouseBarX - (this.dragOffset ?? 0)) / (barWidth - handleWidth),
       0,
@@ -111,12 +105,12 @@ class GridHorizontalScrollBarMouseHandler extends GridMouseHandler {
     if (!metrics) throw new Error('metrics not set');
 
     const { x } = gridPoint;
-    const { handleWidth, rowHeaderWidth, scrollX } = metrics;
+    const { handleWidth, gridX, scrollX } = metrics;
     if (!this.isInScrollBar(gridPoint, grid)) {
       return false;
     }
 
-    const mouseBarX = x - rowHeaderWidth;
+    const mouseBarX = x - gridX;
     if (mouseBarX >= scrollX && mouseBarX <= scrollX + handleWidth) {
       // Grabbed the horizontal handle
       this.dragOffset = mouseBarX - scrollX;

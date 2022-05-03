@@ -105,11 +105,13 @@ export type GridMetrics = {
   scrollX: number;
   scrollY: number;
 
-  // The width of all known content in the scrollable area (includes footer, not header which is 'frozen')
+  // The size of all known content in the scrollable area
   scrollableContentWidth: number;
+  scrollableContentHeight: number;
 
   // The visible space for scrollable content to display
   scrollableViewportWidth: number;
+  scrollableViewportHeight: number;
 
   // Array of visible rows/columns, by grid index
   visibleRows: VisibleIndex[];

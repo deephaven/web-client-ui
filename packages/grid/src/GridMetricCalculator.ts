@@ -1,3 +1,4 @@
+import clamp from 'lodash.clamp';
 import GridModel from './GridModel';
 import type {
   GridMetrics,
@@ -302,12 +303,6 @@ export class GridMetricCalculator {
     const maxX = columnWidthValues.reduce((x, w) => x + w, 0) - leftOffset;
     const maxY = rowHeightValues.reduce((y, h) => y + h, 0) - topOffset;
 
-    // Visible space available in the canvas viewport
-    const scrollableViewportWidth = width - gridX;
-
-    // How much total space the content will take
-    const scrollableContentWidth = leftOffset + maxX + rowFooterWidth;
-
     const floatingBottomHeight = this.getFloatingBottomHeight(
       state,
       visibleRowHeights
@@ -324,33 +319,47 @@ export class GridMetricCalculator {
       height - gridY - scrollBarSize - floatingBottomHeight
     );
 
+    // How much total space the content will take
+    const scrollableContentWidth = leftOffset + maxX + rowFooterWidth;
+    const scrollableContentHeight = topOffset + maxY;
+
+    // Visible space available in the canvas viewport
+    const scrollableViewportWidth = width - gridX;
+    const scrollableViewportHeight = height - gridY;
+
     // Calculate some metrics for the scroll bars
     const hasHorizontalBar =
       lastLeft > 0 || scrollableContentWidth > scrollableViewportWidth;
-    const hasVerticalBar = lastTop > 0;
     const horizontalBarHeight = hasHorizontalBar ? scrollBarSize : 0;
+    const hasVerticalBar =
+      lastTop > 0 ||
+      scrollableContentHeight > scrollableViewportHeight - horizontalBarHeight;
     const verticalBarWidth = hasVerticalBar ? scrollBarSize : 0;
     const barWidth = width - rowHeaderWidth - verticalBarWidth;
     const barHeight = height - columnHeaderHeight - horizontalBarHeight;
 
-    // How big the horizontal is relative to the horizontal bar
+    // How big the scroll handle is relative to the bar
     const horizontalHandlePercent =
       columnCount === 1
         ? barWidth / scrollableContentWidth
         : (columnCount - lastLeft) / columnCount;
 
+    const verticalHandlePercent =
+      rowCount === 1
+        ? barHeight / scrollableContentHeight
+        : (rowCount - lastTop) / rowCount;
+
     const handleWidth = hasHorizontalBar
-      ? Math.min(
-          Math.max(minScrollHandleSize, barWidth * horizontalHandlePercent),
+      ? clamp(
+          barWidth * horizontalHandlePercent,
+          minScrollHandleSize,
           barWidth - 1
         )
       : 0;
     const handleHeight = hasVerticalBar
-      ? Math.min(
-          Math.max(
-            minScrollHandleSize,
-            barHeight * ((rowCount - lastTop) / rowCount)
-          ),
+      ? clamp(
+          barHeight * verticalHandlePercent,
+          minScrollHandleSize,
           barHeight - 1
         )
       : 0;
@@ -366,7 +375,10 @@ export class GridMetricCalculator {
       columnCount === 1
         ? leftOffset / (scrollableContentWidth - scrollableViewportWidth)
         : (left + leftOffsetPercent) / lastLeft;
-    const verticalScrollPercent = (top + topOffsetPercent) / lastTop;
+    const verticalScrollPercent =
+      rowCount === 1
+        ? topOffset / (scrollableContentHeight - scrollableViewportHeight)
+        : (top + topOffsetPercent) / lastTop;
 
     const scrollX = hasHorizontalBar
       ? horizontalScrollPercent * (barWidth - handleWidth)
@@ -549,7 +561,10 @@ export class GridMetricCalculator {
       scrollY,
 
       scrollableContentWidth,
+      scrollableContentHeight,
+
       scrollableViewportWidth,
+      scrollableViewportHeight,
 
       // Array of visible rows/columns, by grid index
       visibleRows,

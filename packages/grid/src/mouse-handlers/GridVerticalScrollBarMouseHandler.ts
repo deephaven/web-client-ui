@@ -1,3 +1,4 @@
+import clamp from 'lodash.clamp';
 import { EventHandlerResult } from '../EventHandlerResult';
 import Grid from '../Grid';
 import { VisibleIndex } from '../GridMetrics';
@@ -45,19 +46,24 @@ class GridVerticalScrollBarMouseHandler extends GridMouseHandler {
     if (!metrics) throw new Error('metrics not set');
 
     const { x, y } = gridPoint;
-    const { lastLeft, lastTop, columnHeaderHeight, height, width } = metrics;
-    const scrollBarHeight = lastLeft > 0 ? height - scrollBarSize : height;
+    const { gridY, height, width, hasHorizontalBar, hasVerticalBar } = metrics;
+
+    const scrollBarHeight = hasHorizontalBar ? height - scrollBarSize : height;
+
     return (
+      hasVerticalBar &&
       scrollBarSize > 0 &&
-      lastTop > 0 &&
       x >= width - scrollBarHoverSize &&
       x < width &&
-      y > columnHeaderHeight &&
+      y > gridY &&
       y < scrollBarHeight
     );
   }
 
-  onDown(gridPoint: GridPoint, grid: Grid): EventHandlerResult {
+  getTopWithOffset(
+    gridPoint: GridPoint,
+    grid: Grid
+  ): { top: number; topOffset: number } {
     const { metrics } = grid;
     if (!metrics) throw new Error('metrics not set');
 
@@ -66,14 +72,47 @@ class GridVerticalScrollBarMouseHandler extends GridMouseHandler {
       barHeight,
       handleHeight,
       lastTop,
-      columnHeaderHeight,
-      scrollY,
+      gridY,
+      rowCount,
+      scrollableContentHeight,
+      scrollableViewportHeight,
     } = metrics;
+
+    const mouseBarY = y - gridY;
+    const scrollPercent = clamp(
+      (mouseBarY - (this.dragOffset ?? 0)) / (barHeight - handleHeight),
+      0,
+      1
+    );
+
+    if (rowCount === 1) {
+      return {
+        top: 0,
+        topOffset:
+          scrollPercent * (scrollableContentHeight - scrollableViewportHeight),
+      };
+    }
+
+    const rawTop = scrollPercent * lastTop;
+    return GridVerticalScrollBarMouseHandler.getTopWithOffsetFromRawTop(
+      grid,
+      rawTop
+    );
+  }
+
+  onDown(gridPoint: GridPoint, grid: Grid): EventHandlerResult {
+    const { metrics } = grid;
+    if (!metrics) throw new Error('metrics not set');
+
+    const { y } = gridPoint;
+    const { handleHeight, gridY, scrollY } = metrics;
     if (!this.isInScrollBar(gridPoint, grid)) {
       return false;
     }
 
-    const mouseBarY = y - columnHeaderHeight;
+    console.log(gridY);
+
+    const mouseBarY = y - gridY;
     if (mouseBarY >= scrollY && mouseBarY <= scrollY + handleHeight) {
       // Grabbed the vertical handle
       this.dragOffset = mouseBarY - scrollY;
@@ -81,18 +120,12 @@ class GridVerticalScrollBarMouseHandler extends GridMouseHandler {
     } else {
       // clicked elsewhere in bar
       this.dragOffset = 0;
-      const rawTop = Math.min(
-        Math.max(0, (mouseBarY / (barHeight - handleHeight)) * lastTop),
-        lastTop
+
+      const { top: newTop, topOffset: newTopOffset } = this.getTopWithOffset(
+        gridPoint,
+        grid
       );
 
-      const {
-        top: newTop,
-        topOffset: newTopOffset,
-      } = GridVerticalScrollBarMouseHandler.getTopWithOffsetFromRawTop(
-        grid,
-        rawTop
-      );
       grid.setViewState({
         top: newTop,
         topOffset: newTopOffset,
@@ -110,28 +143,11 @@ class GridVerticalScrollBarMouseHandler extends GridMouseHandler {
 
   onDrag(gridPoint: GridPoint, grid: Grid): EventHandlerResult {
     if (this.dragOffset != null) {
-      const { y } = gridPoint;
-      const { metrics } = grid;
-      if (!metrics) throw new Error('metrics not set');
-
-      const { barHeight, handleHeight, lastTop, columnHeaderHeight } = metrics;
-      const mouseBarY = y - columnHeaderHeight;
-
-      const rawTop = Math.min(
-        Math.max(
-          0,
-          ((mouseBarY - this.dragOffset) / (barHeight - handleHeight)) * lastTop
-        ),
-        lastTop
+      const { top: newTop, topOffset: newTopOffset } = this.getTopWithOffset(
+        gridPoint,
+        grid
       );
 
-      const {
-        top: newTop,
-        topOffset: newTopOffset,
-      } = GridVerticalScrollBarMouseHandler.getTopWithOffsetFromRawTop(
-        grid,
-        rawTop
-      );
       grid.setViewState({
         top: newTop,
         topOffset: newTopOffset,
