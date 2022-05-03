@@ -474,7 +474,7 @@ class ComboBox extends Component<ComboBoxProps, ComboBoxState> {
           onBlur={this.handleInputBlur}
           onKeyDown={this.handleInputKeyDown}
           spellCheck={spellCheck}
-          data-testid={dataTestId}
+          data-testid={dataTestId ? `${dataTestId}-input` : undefined}
         />
         <div className="input-group-append cb-dropdown">
           <button
@@ -484,7 +484,7 @@ class ComboBox extends Component<ComboBoxProps, ComboBoxState> {
             onClick={this.toggleMenu}
             onKeyDown={this.handleInputKeyDown}
             disabled={disabled}
-            data-testid={dataTestId}
+            data-testid={dataTestId ? `${dataTestId}-btn` : undefined}
           >
             <FontAwesomeIcon icon={vsTriangleDown} />
             <Popper

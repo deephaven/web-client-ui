@@ -493,6 +493,7 @@ class CustomTimeSelect extends Component<
       <div
         className="input-group cs-container context-menu"
         ref={this.csContainer}
+        data-testid={dataTestId}
       >
         <div
           className={classNames('input-group-append cs-dropdown', {
@@ -507,7 +508,6 @@ class CustomTimeSelect extends Component<
             ref={this.button}
             onClick={this.toggleMenu}
             disabled={disabled}
-            data-testid={dataTestId}
           >
             <span
               className={classNames({

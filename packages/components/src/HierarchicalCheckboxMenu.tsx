@@ -202,7 +202,7 @@ class HierarchicalCheckboxMenu extends Component<
           type="button"
           className="btn btn-link"
           onClick={this.selectAll}
-          data-testid={dataTestId}
+          data-testid={dataTestId ? `${dataTestId}-btn-select-all` : undefined}
         >
           Select All
         </button>
@@ -210,7 +210,7 @@ class HierarchicalCheckboxMenu extends Component<
           type="button"
           className="btn btn-link"
           onClick={this.clear}
-          data-testid={dataTestId}
+          data-testid={dataTestId ? `${dataTestId}-btn-clear` : undefined}
         >
           Clear
         </button>

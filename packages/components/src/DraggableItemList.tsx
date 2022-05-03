@@ -332,6 +332,7 @@ class DraggableItemList<T> extends PureComponent<
           offset,
           renderItem
         )}
+        data-testid={dataTestId}
       >
         {(provided, snapshot) => (
           <div
@@ -345,7 +346,6 @@ class DraggableItemList<T> extends PureComponent<
             })}
             style={style}
             ref={provided.innerRef}
-            data-testid={dataTestId}
             // eslint-disable-next-line react/jsx-props-no-spreading
             {...provided.droppableProps}
           >

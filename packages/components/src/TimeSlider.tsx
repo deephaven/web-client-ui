@@ -195,7 +195,7 @@ const PopOvers = (props: PopOversProps): JSX.Element => {
           allowValueWrapping={false}
           value={firstTime}
           onChange={onFirstTimeChange}
-          data-testid={dataTestId}
+          data-testid={dataTestId ? `${dataTestId}-input-1` : undefined}
         />
       </div>
       <div className="flex-spacer" />
@@ -211,7 +211,7 @@ const PopOvers = (props: PopOversProps): JSX.Element => {
           allowValueWrapping={false}
           value={secondTime}
           onChange={onSecondTimeChange}
-          data-testid={dataTestId}
+          data-testid={dataTestId ? `${dataTestId}-input-2` : undefined}
         />
       </div>
       <div
@@ -238,7 +238,7 @@ type TrackFillsProps = {
 const TrackFills = (props: TrackFillsProps): JSX.Element => {
   const { startTime, endTime, 'data-testid': dataTestId } = props;
   return (
-    <div className="track-fills">
+    <div className="track-fills" data-testid={dataTestId}>
       {startTime > endTime && (
         <>
           <div
@@ -252,7 +252,6 @@ const TrackFills = (props: TrackFillsProps): JSX.Element => {
                 (SECONDS_IN_DAY - startTime) / SECONDS_IN_DAY
               })`,
             }}
-            data-testid={dataTestId}
           />
         </>
       )}
@@ -264,7 +263,6 @@ const TrackFills = (props: TrackFillsProps): JSX.Element => {
               (startTime / SECONDS_IN_DAY) * 100
             }%) scaleX(${(endTime - startTime) / SECONDS_IN_DAY})`,
           }}
-          data-testid={dataTestId}
         />
       )}
     </div>

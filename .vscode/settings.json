@@ -1,9 +1,7 @@
 {
-  "editor.guides.bracketPairs": "active",
   "typescript.tsdk": "node_modules/typescript/lib",
   "editor.formatOnSave": true,
   "editor.tabSize": 2,
-  "editor.bracketPairColorization.enabled": true,
   "eslint.workingDirectories": [
     {
       "mode": "auto"

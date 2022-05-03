@@ -83,7 +83,9 @@ const BasicModal: React.FC<BasicModalProps> = props => {
               id="move-confirmation-checkbox"
               defaultChecked={false}
               ref={disableModalCheckbox}
-              data-testid={dataTestId}
+              data-testid={
+                dataTestId ? `${dataTestId}-checkbox-confirm` : undefined
+              }
             />
             <label
               className="custom-control-label"
@@ -99,7 +101,7 @@ const BasicModal: React.FC<BasicModalProps> = props => {
             className="btn btn-outline-primary mr-auto"
             data-dismiss="modal"
             onClick={onDiscard}
-            data-testid={dataTestId}
+            data-testid={dataTestId ? `${dataTestId}-btn-discard` : undefined}
           >
             {discardButtonText}
           </button>
@@ -110,7 +112,7 @@ const BasicModal: React.FC<BasicModalProps> = props => {
             className="btn btn-outline-primary"
             data-dismiss="modal"
             onClick={onCancel}
-            data-testid={dataTestId}
+            data-testid={dataTestId ? `${dataTestId}-btn-cancel` : undefined}
           >
             {cancelButtonText}
           </button>
@@ -120,7 +122,7 @@ const BasicModal: React.FC<BasicModalProps> = props => {
             kind="primary"
             onClick={onConfirmClicked}
             ref={confirmButton}
-            data-testid={dataTestId}
+            data-testid={dataTestId ? `${dataTestId}-btn-confirm` : undefined}
           >
             {confirmButtonText}
           </Button>
