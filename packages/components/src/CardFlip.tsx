@@ -6,6 +6,7 @@ type CardFlipProps = {
   isFlipped: boolean;
   children: [React.ReactNode, React.ReactNode];
   className?: string;
+  'data-testid'?: string;
 };
 
 /**
@@ -20,6 +21,7 @@ const CardFlip = ({
   className,
   isFlipped,
   children,
+  'data-testid': dataTestId,
 }: CardFlipProps): JSX.Element => {
   const getComponent = (key: 0 | 1) => {
     if (children.length !== 2) {
@@ -53,6 +55,7 @@ const CardFlip = ({
         'card-flip--show-front': isFlipped,
         'card-flip--show-back': !isFlipped,
       })}
+      data-testid={dataTestId}
     >
       <div className="card-flip--back">{getComponent(0)}</div>
       <div

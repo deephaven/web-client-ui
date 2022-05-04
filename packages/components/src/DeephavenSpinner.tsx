@@ -5,6 +5,7 @@ import classNames from 'classnames';
 interface DeephavenSpinnerProps {
   className?: string;
   show?: boolean;
+  'data-testid'?: string;
 }
 
 /**
@@ -15,8 +16,12 @@ interface DeephavenSpinnerProps {
 const DeephavenSpinner = ({
   className = '',
   show = true,
+  'data-testid': dataTestId,
 }: DeephavenSpinnerProps): JSX.Element => (
-  <div className={classNames('dh-loader', className, { show })}>
+  <div
+    className={classNames('dh-loader', className, { show })}
+    data-testid={dataTestId}
+  >
     <svg className="dh-outer-shape" viewBox="0 0 182 182">
       <g transform="translate(91,91.0033) translate(-64,-64.0033)">
         <path

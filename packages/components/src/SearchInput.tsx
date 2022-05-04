@@ -12,6 +12,7 @@ interface SearchInputProps {
   className: string;
   matchCount: number;
   id: string;
+  'data-testid'?: string;
 }
 
 class SearchInput extends PureComponent<SearchInputProps> {
@@ -23,6 +24,7 @@ class SearchInput extends PureComponent<SearchInputProps> {
       // no-op
     },
     id: '',
+    'data-testid': undefined,
   };
 
   constructor(props: SearchInputProps) {
@@ -45,6 +47,7 @@ class SearchInput extends PureComponent<SearchInputProps> {
       matchCount,
       id,
       onKeyDown,
+      'data-testid': dataTestId,
     } = this.props;
     return (
       <div className={classNames('search-group', className)}>
@@ -57,6 +60,7 @@ class SearchInput extends PureComponent<SearchInputProps> {
           placeholder={placeholder}
           ref={this.inputField}
           id={id}
+          data-testid={dataTestId}
         />
         {matchCount != null && (
           <span className="search-match">{matchCount}</span>

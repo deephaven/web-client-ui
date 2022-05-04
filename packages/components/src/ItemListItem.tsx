@@ -26,6 +26,7 @@ interface ItemListItemProps {
   onMouseUp(index: number, e: React.MouseEvent<HTMLDivElement>): void;
   style: React.CSSProperties;
   children: React.ReactNode;
+  'data-testid'?: string;
 }
 
 class ItemListItem extends Component<ItemListItemProps, Record<string, never>> {
@@ -36,6 +37,7 @@ class ItemListItem extends Component<ItemListItemProps, Record<string, never>> {
     isSelected: false,
     itemIndex: 0,
     disableSelect: false,
+    'data-testid': undefined,
 
     onBlur(): void {
       // no-op
@@ -174,7 +176,14 @@ class ItemListItem extends Component<ItemListItemProps, Record<string, never>> {
   }
 
   render(): JSX.Element {
-    const { isDraggable, isFocused, isSelected, style, children } = this.props;
+    const {
+      isDraggable,
+      isFocused,
+      isSelected,
+      style,
+      children,
+      'data-testid': dataTestId,
+    } = this.props;
     return (
       <div
         className={classNames(
@@ -202,6 +211,7 @@ class ItemListItem extends Component<ItemListItemProps, Record<string, never>> {
         onFocus={this.handleFocus}
         onBlur={this.handleBlur}
         draggable={isDraggable}
+        data-testid={dataTestId}
       >
         {children}
       </div>

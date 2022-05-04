@@ -67,6 +67,8 @@ type MaskedInputProps = {
   ): string;
   onFocus?: React.FocusEventHandler;
   onBlur?: React.FocusEventHandler;
+
+  'data-testid'?: string;
 };
 
 /**
@@ -90,6 +92,7 @@ const MaskedInput = React.forwardRef<HTMLInputElement, MaskedInputProps>(
       value,
       onFocus = () => false,
       onBlur = () => false,
+      'data-testid': dataTestId,
     } = props;
     const input = useForwardedRef(ref);
     const examples = useMemo(
@@ -481,6 +484,7 @@ const MaskedInput = React.forwardRef<HTMLInputElement, MaskedInputProps>(
         onSelectCapture={handleSelectCapture}
         onFocus={onFocus}
         onBlur={onBlur}
+        data-testid={dataTestId}
       />
     );
   }
@@ -503,6 +507,7 @@ MaskedInput.defaultProps = {
   onBlur(): void {
     // no-op
   },
+  'data-testid': undefined,
 };
 
 export default MaskedInput;

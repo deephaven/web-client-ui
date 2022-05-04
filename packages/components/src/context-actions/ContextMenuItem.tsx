@@ -13,6 +13,7 @@ interface ContextMenuItemProps {
   onMenuItemClick(item: ContextAction, e: React.MouseEvent): void;
   onMenuItemMouseMove(item: ContextAction, e: React.MouseEvent): void;
   onMenuItemContextMenu(item: ContextAction, e: React.MouseEvent): void;
+  'data-testid'?: string;
 }
 
 const ContextMenuItem = React.forwardRef<HTMLDivElement, ContextMenuItemProps>(
@@ -46,6 +47,7 @@ const ContextMenuItem = React.forwardRef<HTMLDivElement, ContextMenuItemProps>(
         menuItem,
         isKeyboardSelected,
         isMouseSelected,
+        'data-testid': dataTestId,
       } = props;
       const forwardedProps = {
         menuItem,
@@ -54,13 +56,20 @@ const ContextMenuItem = React.forwardRef<HTMLDivElement, ContextMenuItemProps>(
         isMouseSelected,
         iconElement,
         displayShortcut,
+        'data-testid': dataTestId,
       };
       return React.cloneElement(element, {
         forwardedProps,
       });
     }
 
-    const { children, menuItem, isKeyboardSelected, isMouseSelected } = props;
+    const {
+      children,
+      menuItem,
+      isKeyboardSelected,
+      isMouseSelected,
+      'data-testid': dataTestId,
+    } = props;
 
     const displayShortcut = menuItem.shortcut?.getDisplayText();
     let icon: IconDefinition | React.ReactElement | null = null;
@@ -131,7 +140,7 @@ const ContextMenuItem = React.forwardRef<HTMLDivElement, ContextMenuItemProps>(
     }
 
     return (
-      <div className="context-menu-item" ref={ref}>
+      <div className="context-menu-item" ref={ref} data-testid={dataTestId}>
         {children}
         {content}
       </div>
@@ -145,6 +154,7 @@ ContextMenuItem.defaultProps = {
   children: null,
   isKeyboardSelected: false,
   isMouseSelected: false,
+  'data-testid': undefined,
 };
 
 export default ContextMenuItem;

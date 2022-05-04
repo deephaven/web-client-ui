@@ -40,6 +40,7 @@ interface ComboBoxProps {
   defaultValue: string;
   spellCheck: boolean;
   onEnter(): void;
+  'data-testid'?: string;
 }
 
 interface ComboBoxState {
@@ -80,6 +81,7 @@ class ComboBox extends Component<ComboBoxProps, ComboBoxState> {
     defaultValue: PropTypes.string,
     spellCheck: PropTypes.bool,
     onEnter: PropTypes.func,
+    'data-testid': PropTypes.string,
   };
 
   static defaultProps = {
@@ -96,6 +98,7 @@ class ComboBox extends Component<ComboBoxProps, ComboBoxState> {
     onEnter(): void {
       // no-op
     },
+    'data-testid': undefined,
   };
 
   constructor(props: ComboBoxProps) {
@@ -447,6 +450,7 @@ class ComboBox extends Component<ComboBoxProps, ComboBoxState> {
       className,
       defaultValue,
       spellCheck,
+      'data-testid': dataTestId,
     } = this.props;
     const { value } = this.state;
     let { popperOptions } = this.props;
@@ -470,6 +474,7 @@ class ComboBox extends Component<ComboBoxProps, ComboBoxState> {
           onBlur={this.handleInputBlur}
           onKeyDown={this.handleInputKeyDown}
           spellCheck={spellCheck}
+          data-testid={dataTestId ? `${dataTestId}-input` : undefined}
         />
         <div className="input-group-append cb-dropdown">
           <button
@@ -479,6 +484,7 @@ class ComboBox extends Component<ComboBoxProps, ComboBoxState> {
             onClick={this.toggleMenu}
             onKeyDown={this.handleInputKeyDown}
             disabled={disabled}
+            data-testid={dataTestId ? `${dataTestId}-btn` : undefined}
           >
             <FontAwesomeIcon icon={vsTriangleDown} />
             <Popper

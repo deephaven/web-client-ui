@@ -39,6 +39,8 @@ type DraggableItemListProps<T> = Omit<
   draggablePrefix: string;
   // The ID to give the droppable list
   droppableId: string;
+
+  'data-testid'?: string;
 };
 
 type DraggableItemListState = {
@@ -88,6 +90,7 @@ class DraggableItemList<T> extends PureComponent<
     selectedRanges: [],
     draggablePrefix: 'draggable-item',
     droppableId: 'droppable-item-list',
+    'data-testid': undefined,
   };
 
   static renderHandle(): JSX.Element {
@@ -316,6 +319,7 @@ class DraggableItemList<T> extends PureComponent<
       rowHeight,
       selectedRanges,
       style,
+      'data-testid': dataTestId,
     } = this.props;
     return (
       <Droppable
@@ -328,6 +332,7 @@ class DraggableItemList<T> extends PureComponent<
           offset,
           renderItem
         )}
+        data-testid={dataTestId}
       >
         {(provided, snapshot) => (
           <div

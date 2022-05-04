@@ -8,10 +8,5 @@
     }
   ],
   "editor.defaultFormatter": "esbenp.prettier-vscode",
-  "stylelint.validate": [
-    "css",
-    "html",
-    "sass",
-    "scss"
-  ]
+  "stylelint.validate": ["css", "html", "sass", "scss"]
 }

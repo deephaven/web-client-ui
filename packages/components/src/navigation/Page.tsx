@@ -8,6 +8,7 @@ export type PageProps = {
   onBack?: () => void;
   onClose?: () => void;
   title: string;
+  'data-testid'?: string;
 };
 
 /**
@@ -19,8 +20,9 @@ export const Page = ({
   onBack,
   onClose,
   title,
+  'data-testid': dataTestId,
 }: PageProps): JSX.Element => (
-  <div className="navigation-page">
+  <div className="navigation-page" data-testid={dataTestId}>
     <div className="navigation-title-bar">
       <div className="navigation-left-buttons">
         {onBack !== undefined && (

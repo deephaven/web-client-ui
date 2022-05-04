@@ -16,6 +16,7 @@ type SocketedButtonProps = {
   onMouseEnter?: React.MouseEventHandler<HTMLButtonElement>;
   onMouseLeave?: React.MouseEventHandler<HTMLButtonElement>;
   style?: React.CSSProperties;
+  'data-testid'?: string;
 };
 
 const SocketedButton = React.forwardRef<HTMLButtonElement, SocketedButtonProps>(
@@ -31,6 +32,7 @@ const SocketedButton = React.forwardRef<HTMLButtonElement, SocketedButtonProps>(
       onMouseEnter,
       onMouseLeave,
       style,
+      'data-testid': dataTestId,
     } = props;
     return (
       <button
@@ -48,6 +50,7 @@ const SocketedButton = React.forwardRef<HTMLButtonElement, SocketedButtonProps>(
         onMouseLeave={onMouseLeave}
         style={style}
         disabled={disabled}
+        data-testid={dataTestId}
       >
         {children}
         <FontAwesomeIcon
@@ -77,6 +80,7 @@ SocketedButton.defaultProps = {
   onMouseEnter: undefined,
   onMouseLeave: undefined,
   style: undefined,
+  'data-testid': undefined,
 };
 
 export default SocketedButton;

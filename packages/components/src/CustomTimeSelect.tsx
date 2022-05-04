@@ -30,6 +30,7 @@ type CustomTimeSelectProps = {
   // Defaults to converting the time in seconds to value in milliseconds
   timeToValue(time: number): number;
   invalid: boolean;
+  'data-testid'?: string;
 };
 
 type TimeInSeconds = number;
@@ -63,6 +64,7 @@ class CustomTimeSelect extends Component<
     valueToTime: value => (value === null ? 0 : Math.round(value / 1000)),
     timeToValue: time => time * 1000,
     invalid: false,
+    'data-testid': undefined,
   };
 
   constructor(props: CustomTimeSelectProps) {
@@ -476,7 +478,7 @@ class CustomTimeSelect extends Component<
   }
 
   render(): JSX.Element {
-    const { disabled, invalid, value } = this.props;
+    const { disabled, invalid, value, 'data-testid': dataTestId } = this.props;
     const { menuIsOpen } = this.state;
     let { popperOptions } = this.props;
     popperOptions = {
@@ -491,6 +493,7 @@ class CustomTimeSelect extends Component<
       <div
         className="input-group cs-container context-menu"
         ref={this.csContainer}
+        data-testid={dataTestId}
       >
         <div
           className={classNames('input-group-append cs-dropdown', {

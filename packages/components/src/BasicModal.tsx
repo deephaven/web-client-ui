@@ -16,6 +16,7 @@ interface BasicModalProps {
   confirmButtonText?: string;
   discardButtonText?: string;
   children?: React.ReactNode;
+  'data-testid'?: string;
 }
 
 /**
@@ -44,6 +45,7 @@ const BasicModal: React.FC<BasicModalProps> = props => {
     confirmButtonText = 'Okay',
     discardButtonText = 'Discard',
     children,
+    'data-testid': dataTestId,
   } = props;
 
   const confirmButton = useRef<HTMLButtonElement>(null);
@@ -81,6 +83,9 @@ const BasicModal: React.FC<BasicModalProps> = props => {
               id="move-confirmation-checkbox"
               defaultChecked={false}
               ref={disableModalCheckbox}
+              data-testid={
+                dataTestId ? `${dataTestId}-checkbox-confirm` : undefined
+              }
             />
             <label
               className="custom-control-label"
@@ -96,6 +101,7 @@ const BasicModal: React.FC<BasicModalProps> = props => {
             className="btn btn-outline-primary mr-auto"
             data-dismiss="modal"
             onClick={onDiscard}
+            data-testid={dataTestId ? `${dataTestId}-btn-discard` : undefined}
           >
             {discardButtonText}
           </button>
@@ -106,12 +112,18 @@ const BasicModal: React.FC<BasicModalProps> = props => {
             className="btn btn-outline-primary"
             data-dismiss="modal"
             onClick={onCancel}
+            data-testid={dataTestId ? `${dataTestId}-btn-cancel` : undefined}
           >
             {cancelButtonText}
           </button>
         )}
         <ButtonGroup>
-          <Button kind="primary" onClick={onConfirmClicked} ref={confirmButton}>
+          <Button
+            kind="primary"
+            onClick={onConfirmClicked}
+            ref={confirmButton}
+            data-testid={dataTestId ? `${dataTestId}-btn-confirm` : undefined}
+          >
             {confirmButtonText}
           </Button>
           {children}
@@ -133,6 +145,7 @@ BasicModal.propTypes = {
   confirmButtonText: PropTypes.string,
   discardButtonText: PropTypes.string,
   children: PropTypes.node,
+  'data-testid': PropTypes.string,
 };
 
 BasicModal.defaultProps = {
@@ -143,6 +156,7 @@ BasicModal.defaultProps = {
   onCancel: undefined,
   onDiscard: undefined,
   onModalDisable: undefined,
+  'data-testid': undefined,
 };
 
 export default BasicModal;

@@ -8,6 +8,7 @@ export type SelectProps = {
   defaultValue?: string;
   value?: string;
   disabled?: boolean;
+  'data-testid'?: string;
 };
 
 const Select = ({
@@ -17,6 +18,7 @@ const Select = ({
   defaultValue,
   value,
   disabled,
+  'data-testid': dataTestId,
 }: SelectProps): JSX.Element => {
   const handleChange = useCallback(
     event => {
@@ -32,6 +34,7 @@ const Select = ({
       defaultValue={defaultValue}
       value={value}
       disabled={disabled}
+      data-testid={dataTestId}
     >
       {children}
     </select>

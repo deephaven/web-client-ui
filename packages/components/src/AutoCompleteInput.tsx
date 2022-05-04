@@ -49,6 +49,7 @@ interface AutoCompleteInputProps {
   spellCheck: boolean;
   onEnter(): void;
   noMatchText: string;
+  'data-testid'?: string;
 }
 
 interface AutoCompleteInputState {
@@ -81,6 +82,7 @@ class AutoCompleteInput extends Component<
     spellCheck: PropTypes.bool,
     onEnter: PropTypes.func,
     noMatchText: PropTypes.string,
+    'data-testid': PropTypes.string,
   };
 
   static defaultProps = {
@@ -97,6 +99,7 @@ class AutoCompleteInput extends Component<
       // no-op
     },
     noMatchText: 'No matching items found',
+    'data-testid': undefined,
   };
 
   static MENU_NAVIGATION_DIRECTION = MENU_NAVIGATION_DIRECTION;
@@ -473,6 +476,7 @@ class AutoCompleteInput extends Component<
       className,
       defaultTitle,
       spellCheck,
+      'data-testid': dataTestId,
     } = this.props;
     const { title, menuIsOpen, popperOptions, invalid } = this.state;
 
@@ -492,6 +496,7 @@ class AutoCompleteInput extends Component<
           onBlur={this.handleInputBlur}
           onKeyDown={this.handleInputKeyDown}
           spellCheck={spellCheck}
+          data-testid={dataTestId}
         />
         <Popper
           ref={this.popper}

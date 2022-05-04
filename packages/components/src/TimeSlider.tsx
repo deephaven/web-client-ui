@@ -24,6 +24,7 @@ type TimeSliderProps = {
   onChange(value: { startTime: number; endTime: number }): void;
   isStartModified?: boolean;
   isEndModified?: boolean;
+  'data-testid'?: string;
 };
 
 /**
@@ -36,6 +37,7 @@ const TimeSlider = ({
   onChange,
   isStartModified = false,
   isEndModified = false,
+  'data-testid': dataTestId,
 }: TimeSliderProps): JSX.Element => {
   const [startTime, setStartTime] = useState(propStartTime);
   const [endTime, setEndTime] = useState(propEndTime);
@@ -82,7 +84,7 @@ const TimeSlider = ({
   );
 
   return (
-    <div className="time-slider">
+    <div className="time-slider" data-testid={dataTestId}>
       <PopOvers
         startTime={startTime}
         endTime={endTime}
@@ -129,6 +131,7 @@ type PopOversProps = {
   onEndTimeChange(time: number): void;
   isStartModified: boolean;
   isEndModified: boolean;
+  'data-testid'?: string;
 };
 
 const PopOvers = (props: PopOversProps): JSX.Element => {
@@ -139,6 +142,7 @@ const PopOvers = (props: PopOversProps): JSX.Element => {
     onEndTimeChange,
     isStartModified,
     isEndModified,
+    'data-testid': dataTestId,
   } = props;
 
   const [firstTime, setFirstTime] = useState(
@@ -191,6 +195,7 @@ const PopOvers = (props: PopOversProps): JSX.Element => {
           allowValueWrapping={false}
           value={firstTime}
           onChange={onFirstTimeChange}
+          data-testid={dataTestId ? `${dataTestId}-input-1` : undefined}
         />
       </div>
       <div className="flex-spacer" />
@@ -206,6 +211,7 @@ const PopOvers = (props: PopOversProps): JSX.Element => {
           allowValueWrapping={false}
           value={secondTime}
           onChange={onSecondTimeChange}
+          data-testid={dataTestId ? `${dataTestId}-input-2` : undefined}
         />
       </div>
       <div
@@ -223,15 +229,16 @@ const PopOvers = (props: PopOversProps): JSX.Element => {
 type TrackFillsProps = {
   startTime: number;
   endTime: number;
+  'data-testid'?: string;
 };
 
 /**
  * Shades the area between or outside of handles according to if start or endtime is greater.
  */
 const TrackFills = (props: TrackFillsProps): JSX.Element => {
-  const { startTime, endTime } = props;
+  const { startTime, endTime, 'data-testid': dataTestId } = props;
   return (
-    <div className="track-fills">
+    <div className="track-fills" data-testid={dataTestId}>
       {startTime > endTime && (
         <>
           <div
@@ -266,13 +273,14 @@ type HandleProps = {
   track: React.RefObject<HTMLDivElement>;
   time: number;
   setTime(time: number): void;
+  'data-testid'?: string;
 };
 
 /**
  * Creates a draggable handle the sets the time
  */
 const Handle = (props: HandleProps): JSX.Element => {
-  const { track, time, setTime } = props;
+  const { track, time, setTime, 'data-testid': dataTestId } = props;
 
   /**
    * Takes the time and generate our translation string taking into account handle offset.
@@ -366,6 +374,7 @@ const Handle = (props: HandleProps): JSX.Element => {
         type="button"
         aria-label="Change time"
         onMouseDown={handleMouseDown}
+        data-testid={dataTestId}
       />
     </div>
   );

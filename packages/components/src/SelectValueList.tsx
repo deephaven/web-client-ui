@@ -21,6 +21,8 @@ type SelectValueListProps<T> = {
 
   onSelect(itemIndex: number, value: T | null): void;
   onViewportChange(topRow: number, bottomRow: number): void;
+
+  'data-testid'?: string;
 };
 
 /**
@@ -31,6 +33,7 @@ class SelectValueList<T> extends PureComponent<SelectValueListProps<T>> {
   static defaultProps = {
     disabled: false,
     rowHeight: 21,
+    'data-testid': undefined,
   };
 
   constructor(props: SelectValueListProps<T>) {
@@ -153,7 +156,14 @@ class SelectValueList<T> extends PureComponent<SelectValueListProps<T>> {
   }
 
   render(): JSX.Element {
-    const { disabled, items, itemCount, offset, rowHeight } = this.props;
+    const {
+      disabled,
+      items,
+      itemCount,
+      offset,
+      rowHeight,
+      'data-testid': dataTestId,
+    } = this.props;
     const itemElements = this.getCachedItems(
       items,
       rowHeight,
@@ -166,6 +176,7 @@ class SelectValueList<T> extends PureComponent<SelectValueListProps<T>> {
         className="select-value-list-scroll-pane h-100 w-100"
         onScroll={this.handleScroll}
         ref={this.list}
+        data-testid={dataTestId}
       >
         <div
           className="select-value-list"

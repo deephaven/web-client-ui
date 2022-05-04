@@ -12,6 +12,7 @@ type ToastNotificationProps = {
   isShown?: boolean;
   message?: string;
   type?: string;
+  'data-testid'?: string;
 
   onClick?: React.EventHandler<
     React.MouseEvent<HTMLDivElement> | React.KeyboardEvent<HTMLDivElement>
@@ -27,6 +28,7 @@ const ToastNotification = ({
   type,
   onClick,
   onDismiss,
+  'data-testid': dataTestId,
 }: ToastNotificationProps): JSX.Element => {
   const hasButtons = buttons && buttons.length !== 0;
 
@@ -43,6 +45,7 @@ const ToastNotification = ({
         role="presentation"
         onClick={onClick}
         onKeyPress={onClick}
+        data-testid={dataTestId}
       >
         <div className="message-container">
           <span className="message">{message}</span>

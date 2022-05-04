@@ -10,6 +10,7 @@ interface DebouncedSearchInputProps {
   matchCount: number;
   debounceMs: number;
   id: string;
+  'data-testid'?: string;
 }
 
 interface DebouncedSearchInputState {
@@ -26,6 +27,7 @@ class DebouncedSearchInput extends PureComponent<
     matchCount: null,
     debounceMs: 250,
     id: '',
+    'data-testid': undefined,
   };
 
   constructor(props: DebouncedSearchInputProps) {
@@ -64,7 +66,13 @@ class DebouncedSearchInput extends PureComponent<
   }
 
   render(): JSX.Element {
-    const { placeholder, className, matchCount, id } = this.props;
+    const {
+      placeholder,
+      className,
+      matchCount,
+      id,
+      'data-testid': dataTestId,
+    } = this.props;
     const { value } = this.state;
     return (
       <SearchInput
@@ -75,6 +83,7 @@ class DebouncedSearchInput extends PureComponent<
         matchCount={matchCount}
         ref={this.searchInput}
         id={id}
+        data-testid={dataTestId}
       />
     );
   }
