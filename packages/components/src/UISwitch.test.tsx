@@ -18,17 +18,14 @@ it('mounts and unmounts properly', () => {
 });
 
 it('get element by data-testid works', () => {
-  let clicked = false;
-  const onClick = () => {
-    clicked = true;
-  };
+  const onClick = jest.fn();
   const testId = 'test id for UISwitch';
   const testSwitch = makeUISwitch({ 'data-testid': testId, onClick });
   const elements = testSwitch.getAllByTestId(testId);
   expect(elements.length).toBe(1);
   const button = elements[0];
   expect(button instanceof HTMLButtonElement).toBe(true);
-  expect(clicked).toBe(false);
+  expect(onClick).not.toHaveBeenCalled();
   userEvent.click(button);
-  expect(clicked).toBe(true);
+  expect(onClick).toHaveBeenCalledTimes(1);
 });
