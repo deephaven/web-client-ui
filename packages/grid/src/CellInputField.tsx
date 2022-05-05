@@ -62,19 +62,22 @@ export const CellInputField = ({
   const [value, setValue] = useState(propsValue);
 
   // Init field selection
-  useEffect(() => {
-    const { current: field } = inputField;
-    if (field == null) {
-      return;
-    }
+  useEffect(
+    function selectInputField() {
+      const { current: field } = inputField;
+      if (field == null) {
+        return;
+      }
 
-    field.focus();
-    if (selectionRange) {
-      field.setSelectionRange(selectionRange[0], selectionRange[1]);
-    } else {
-      field.setSelectionRange(field.value.length, field.value.length);
-    }
-  }, [selectionRange]);
+      field.focus();
+      if (selectionRange) {
+        field.setSelectionRange(selectionRange[0], selectionRange[1]);
+      } else {
+        field.setSelectionRange(field.value.length, field.value.length);
+      }
+    },
+    [selectionRange]
+  );
 
   const sendUpdate = useCallback(
     (newValue: string) => {

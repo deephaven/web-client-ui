@@ -228,17 +228,23 @@ export const FilterPlugin = (props: FilterPluginProps): JSX.Element => {
     [layout, localDashboardId]
   );
 
-  useEffect(() => {
-    const cleanups = [
-      registerComponent(DropdownFilterPanel.COMPONENT, DropdownFilterPanel),
-      registerComponent(InputFilterPanel.COMPONENT, InputFilterPanel),
-      registerComponent(FilterSetManagerPanel.COMPONENT, FilterSetManagerPanel),
-    ];
+  useEffect(
+    function registerComponentsAndReturnCleanup() {
+      const cleanups = [
+        registerComponent(DropdownFilterPanel.COMPONENT, DropdownFilterPanel),
+        registerComponent(InputFilterPanel.COMPONENT, InputFilterPanel),
+        registerComponent(
+          FilterSetManagerPanel.COMPONENT,
+          FilterSetManagerPanel
+        ),
+      ];
 
-    return () => {
-      cleanups.forEach(cleanup => cleanup());
-    };
-  }, [registerComponent]);
+      return () => {
+        cleanups.forEach(cleanup => cleanup());
+      };
+    },
+    [registerComponent]
+  );
 
   useListener(
     layout.eventHub,

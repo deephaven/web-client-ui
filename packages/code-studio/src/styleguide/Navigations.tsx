@@ -139,7 +139,7 @@ const Navigations = (): JSX.Element => {
     [stackItems, toggleValue, push]
   );
 
-  useEffect(() => {
+  useEffect(function setMenu() {
     setStackItems([
       {
         title: 'Navigation Menu',

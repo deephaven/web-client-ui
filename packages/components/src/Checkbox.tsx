@@ -37,12 +37,15 @@ const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
 
     const ref = useForwardedRef<HTMLInputElement>(forwardedRef);
 
-    useEffect(() => {
-      if (ref.current) {
-        // indeterminate is not actually an html attr, can only be set via JS
-        ref.current.indeterminate = checked === null;
-      }
-    }, [ref, checked]);
+    useEffect(
+      function setIndeterminateProperty() {
+        if (ref.current) {
+          // indeterminate is not actually an html attr, can only be set via JS
+          ref.current.indeterminate = checked === null;
+        }
+      },
+      [ref, checked]
+    );
 
     const handleOnChange: React.ChangeEventHandler<HTMLInputElement> = useCallback(
       event => {

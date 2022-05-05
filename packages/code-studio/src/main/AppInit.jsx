@@ -181,7 +181,10 @@ const AppInit = props => {
         ShortcutRegistry.get(id)?.setKeyState(keyState);
       });
 
-      const dashboardData = { filterSets: data.filterSets, links: data.links };
+      const dashboardData = {
+        filterSets: data.filterSets,
+        links: data.links,
+      };
 
       setActiveTool(ToolType.DEFAULT);
       setCommandHistoryStorage(COMMAND_HISTORY_STORAGE);
@@ -222,10 +225,13 @@ const AppInit = props => {
     }
   }, []);
 
-  useEffect(() => {
-    initClient();
-    initFonts();
-  }, [initClient, initFonts]);
+  useEffect(
+    function initClientAndFonts() {
+      initClient();
+      initFonts();
+    },
+    [initClient, initFonts]
+  );
 
   const isLoading = (!workspace && !error) || isFontLoading;
   const isLoaded = !isLoading && !error;

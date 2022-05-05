@@ -37,37 +37,40 @@ export const Stack = ({
    * When the `pushingView` or `poppingView` is set, that will kick off their animation.
    * Completion of the animation is handled in `pushComplete` or `popComplete`, and then the stack is in an idle state again.
    */
-  useEffect(() => {
-    if (
-      prevChildrenArray === undefined ||
-      childrenArray === prevChildrenArray
-    ) {
-      return;
-    }
-    const topChild = childrenArray[childrenArray.length - 1];
-    if (
-      childrenArray.length === prevChildrenArray.length ||
-      prevChildrenArray.length === 0 ||
-      pushingView !== null ||
-      poppingView !== null
-    ) {
-      // 1) Stack is the same size, we've just mounted, or we're already in an animation - just update the view
-      if (pushingView !== null && topChild !== pushingView) {
-        // Stack was updated mid animation
-        setPushingView(topChild);
-      } else if (topChild !== poppingView && topChild !== mainView) {
-        // Replace the current view
-        setMainView(topChild);
+  useEffect(
+    function initAnimation() {
+      if (
+        prevChildrenArray === undefined ||
+        childrenArray === prevChildrenArray
+      ) {
+        return;
       }
-    } else if (childrenArray.length > prevChildrenArray.length) {
-      // 2) Stack has grown - start the push animation
-      setPushingView(topChild);
-    } else if (childrenArray.length < prevChildrenArray.length) {
-      // 3) Stack has shrunk - start the pop animation
-      setMainView(topChild);
-      setPoppingView(prevChildrenArray[prevChildrenArray.length - 1]);
-    }
-  }, [childrenArray, prevChildrenArray, pushingView, poppingView, mainView]);
+      const topChild = childrenArray[childrenArray.length - 1];
+      if (
+        childrenArray.length === prevChildrenArray.length ||
+        prevChildrenArray.length === 0 ||
+        pushingView !== null ||
+        poppingView !== null
+      ) {
+        // 1) Stack is the same size, we've just mounted, or we're already in an animation - just update the view
+        if (pushingView !== null && topChild !== pushingView) {
+          // Stack was updated mid animation
+          setPushingView(topChild);
+        } else if (topChild !== poppingView && topChild !== mainView) {
+          // Replace the current view
+          setMainView(topChild);
+        }
+      } else if (childrenArray.length > prevChildrenArray.length) {
+        // 2) Stack has grown - start the push animation
+        setPushingView(topChild);
+      } else if (childrenArray.length < prevChildrenArray.length) {
+        // 3) Stack has shrunk - start the pop animation
+        setMainView(topChild);
+        setPoppingView(prevChildrenArray[prevChildrenArray.length - 1]);
+      }
+    },
+    [childrenArray, prevChildrenArray, pushingView, poppingView, mainView]
+  );
 
   const pushComplete = useCallback(() => {
     setMainView(pushingView);

@@ -37,10 +37,13 @@ const AutoResizeTextarea = ({
   const [isPastedChange, setIsPastedChange] = useState(false);
   const element = useRef<HTMLTextAreaElement>(null);
 
-  useEffect(() => {
-    // keep state value in sync with prop changes
-    setValue(propsValue);
-  }, [propsValue]);
+  useEffect(
+    function syncStateWithProp() {
+      // keep state value in sync with prop changes
+      setValue(propsValue);
+    },
+    [propsValue]
+  );
 
   function explode(input: string) {
     // split by delimiter, commonly " " or " -"
@@ -114,9 +117,12 @@ const AutoResizeTextarea = ({
     setIsPastedChange(true);
   }
 
-  useEffect(() => {
-    reCalculateLayout();
-  }, [value]);
+  useEffect(
+    function reCalculate() {
+      reCalculateLayout();
+    },
+    [value]
+  );
 
   return (
     <textarea

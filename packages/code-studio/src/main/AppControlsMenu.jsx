@@ -84,8 +84,10 @@ const DragSourceMenuItem = props => {
 
   useEffect(
     // funny syntax after prettier, return function for the cleanup function
-    () => () => {
-      window.removeEventListener('mousemove', handleMouseMove);
+    function cleanUpMouseEventListener() {
+      return function removeOldMouseMoveEventListener() {
+        return window.removeEventListener('mousemove', handleMouseMove);
+      };
     },
     [handleMouseMove]
   );
@@ -181,7 +183,7 @@ const AppControlsMenu = props => {
         shortcut: IRIS_GRID_SHORTCUTS.TABLE.CLEAR_ALL_FILTERS,
       },
     ],
-    [handleControlSelect, handleToolSelect, onClearFilter]
+    [(handleControlSelect, handleToolSelect, onClearFilter)]
   );
 
   return (

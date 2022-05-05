@@ -240,33 +240,39 @@ export const DashboardLayout = ({
   );
 
   const previousLayoutConfig = usePrevious(layoutConfig);
-  useEffect(() => {
-    if (previousLayoutConfig !== layoutConfig && layoutConfig !== lastConfig) {
-      log.debug('Setting new layout content...');
-      const content = LayoutUtils.hydrateLayoutConfig(
-        layoutConfig,
-        hydrateComponent
-      );
-      // Remove the old layout before add the new one
-      while (layout.root.contentItems.length > 0) {
-        layout.root.contentItems[0].remove();
-      }
+  useEffect(
+    function loadNewConfig() {
+      if (
+        previousLayoutConfig !== layoutConfig &&
+        layoutConfig !== lastConfig
+      ) {
+        log.debug('Setting new layout content...');
+        const content = LayoutUtils.hydrateLayoutConfig(
+          layoutConfig,
+          hydrateComponent
+        );
+        // Remove the old layout before add the new one
+        while (layout.root.contentItems.length > 0) {
+          layout.root.contentItems[0].remove();
+        }
 
-      // Add the new content. It is usally just one item from the root
-      for (let i = 0; i < content.length; i += 1) {
-        layout.root.addChild(content[i]);
-      }
+        // Add the new content. It is usally just one item from the root
+        for (let i = 0; i < content.length; i += 1) {
+          layout.root.addChild(content[i]);
+        }
 
-      setIsDashboardEmpty(layout.root.contentItems.length === 0);
-    }
-  }, [
-    hydrateComponent,
-    layout,
-    layoutConfig,
-    lastConfig,
-    panelManager,
-    previousLayoutConfig,
-  ]);
+        setIsDashboardEmpty(layout.root.contentItems.length === 0);
+      }
+    },
+    [
+      hydrateComponent,
+      layout,
+      layoutConfig,
+      lastConfig,
+      panelManager,
+      previousLayoutConfig,
+    ]
+  );
 
   return (
     <>

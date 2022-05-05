@@ -55,34 +55,41 @@ function CommandHistoryViewportUpdater({
     [table]
   );
 
-  useEffect(() => {
-    const cleanup = table.onUpdate(
-      (viewportData: ViewportData<CommandHistoryStorageItem>) => {
-        onUpdate({
-          items: viewportData.items ?? [],
-          offset: viewportData.offset ?? 0,
-        });
-      }
-    );
+  useEffect(
+    function cleanup() {
+      const cleanup = table.onUpdate(
+        (viewportData: ViewportData<CommandHistoryStorageItem>) => {
+          onUpdate({
+            items: viewportData.items ?? [],
+            offset: viewportData.offset ?? 0,
+          });
+        }
+      );
 
-    return () => {
-      log.debug('onUpdate cleanup');
-      cleanup();
-    };
-  }, [table, onUpdate]);
+      return () => {
+        log.debug('onUpdate cleanup');
+        cleanup();
+      };
+    },
+    [table, onUpdate]
+  );
 
-  useEffect(() => {
-    table.setSearch(search ?? '');
-  }, [table, search]);
-
-  useEffect(() => {
-    throttledUpdateViewport({
-      top,
-      bottom,
-      columns,
-    });
-  }, [throttledUpdateViewport, top, bottom, columns, search, isReversed]);
-
+  useEffect(
+    function setSearchbar() {
+      table.setSearch(search ?? '');
+    },
+    [table, search]
+  );
+  useEffect(
+    function updateViewport() {
+      throttledUpdateViewport({
+        top,
+        bottom,
+        columns,
+      });
+    },
+    [throttledUpdateViewport, top, bottom, columns, search, isReversed]
+  );
   useEffect(
     () => () => {
       log.debug2('Cancel throttledUpdateViewport');

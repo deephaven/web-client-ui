@@ -44,28 +44,31 @@ export const FileExplorer = (props: FileExplorerProps): JSX.Element => {
   const [itemsToDelete, setItemsToDelete] = useState<FileStorageItem[]>([]);
   const [table, setTable] = useState<FileStorageTable>();
 
-  useEffect(() => {
-    let tablePromise: CancelablePromise<FileStorageTable>;
-    async function initTable() {
-      log.debug('initTable');
+  useEffect(
+    function initializeTable() {
+      let tablePromise: CancelablePromise<FileStorageTable>;
+      async function initTable() {
+        log.debug('initTable');
 
-      tablePromise = PromiseUtils.makeCancelable(storage.getTable(), t =>
-        t.close()
-      );
+        tablePromise = PromiseUtils.makeCancelable(storage.getTable(), t =>
+          t.close()
+        );
 
-      try {
-        setTable(await tablePromise);
-      } catch (e) {
-        if (!PromiseUtils.isCanceled(e)) {
-          log.error('Unable to initialize table', e);
+        try {
+          setTable(await tablePromise);
+        } catch (e) {
+          if (!PromiseUtils.isCanceled(e)) {
+            log.error('Unable to initialize table', e);
+          }
         }
       }
-    }
-    initTable();
-    return () => {
-      tablePromise.cancel();
-    };
-  }, [storage]);
+      initTable();
+      return () => {
+        tablePromise.cancel();
+      };
+    },
+    [storage]
+  );
 
   const handleError = useCallback((e: Error) => {
     if (!PromiseUtils.isCanceled(e)) {

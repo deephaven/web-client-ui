@@ -16,7 +16,7 @@ export const useDarkMode = () => {
     }
   };
 
-  React.useEffect(() => {
+  React.useEffect(function setTheme() {
     const localTheme = window.localStorage.getItem('theme');
 
     if (localTheme) {

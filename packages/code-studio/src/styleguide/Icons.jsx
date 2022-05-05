@@ -25,17 +25,20 @@ const getPrefixedName = (name, prefix) =>
 const Flash = ({ message, message: { text } }) => {
   const [show, setShow] = useState(false);
 
-  useEffect(() => {
-    if (!text) return;
-    setShow(true);
-    const timeout = setTimeout(() => {
-      setShow(false);
-    }, 2000);
-    // eslint-disable-next-line consistent-return
-    return () => {
-      clearTimeout(timeout);
-    };
-  }, [message, text]);
+  useEffect(
+    function setFlashMessage() {
+      if (!text) return;
+      setShow(true);
+      const timeout = setTimeout(() => {
+        setShow(false);
+      }, 2000);
+      // eslint-disable-next-line consistent-return
+      return () => {
+        clearTimeout(timeout);
+      };
+    },
+    [message, text]
+  );
 
   return <p className={show ? 'flash in' : 'flash out'}>{text}</p>;
 };

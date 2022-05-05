@@ -84,20 +84,23 @@ export const MarkdownPlugin = (props: MarkdownPluginProps): JSX.Element => {
     [id, layout, panelManager]
   );
 
-  useEffect(() => {
-    const cleanups = [
-      registerComponent(
-        MarkdownPanel.COMPONENT,
-        MarkdownPanel,
-        hydrate,
-        dehydrateMarkdown
-      ),
-    ];
+  useEffect(
+    function registerComponentsAndReturnCleanup() {
+      const cleanups = [
+        registerComponent(
+          MarkdownPanel.COMPONENT,
+          MarkdownPanel,
+          hydrate,
+          dehydrateMarkdown
+        ),
+      ];
 
-    return () => {
-      cleanups.forEach(cleanup => cleanup());
-    };
-  }, [dehydrateMarkdown, registerComponent]);
+      return () => {
+        cleanups.forEach(cleanup => cleanup());
+      };
+    },
+    [dehydrateMarkdown, registerComponent]
+  );
 
   useListener(layout.eventHub, MarkdownEvent.OPEN, handleOpen);
 
