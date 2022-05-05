@@ -56,7 +56,7 @@ function CommandHistoryViewportUpdater({
   );
 
   useEffect(
-    function cleanup() {
+    function updateTableAndReturnCleanup() {
       const cleanup = table.onUpdate(
         (viewportData: ViewportData<CommandHistoryStorageItem>) => {
           onUpdate({

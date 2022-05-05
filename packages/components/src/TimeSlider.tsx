@@ -368,7 +368,7 @@ const Handle = (props: HandleProps): JSX.Element => {
 
   useEffect(
     function removeListenersOnUnmount() {
-      () => {
+      return () => {
         stopDragListening();
       };
     },

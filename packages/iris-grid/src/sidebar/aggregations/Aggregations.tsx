@@ -190,11 +190,14 @@ const Aggregations = ({
     [changeShowOnTop]
   );
 
-  useEffect(() => {
-    if (options.length > 0 && !options.includes(selectedOperation)) {
-      setSelectedOperation(options[0]);
-    }
-  }, [options, selectedOperation]);
+  useEffect(
+    function setDefaultOperation() {
+      if (options.length > 0 && !options.includes(selectedOperation)) {
+        setSelectedOperation(options[0]);
+      }
+    },
+    [options, selectedOperation]
+  );
 
   const renderAggregation = useCallback(
     ({

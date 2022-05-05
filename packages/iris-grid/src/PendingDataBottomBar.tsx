@@ -55,30 +55,35 @@ export const PendingDataBottomBar = ({
     return `Key can't be empty (on ${pendingDataErrors.size} rows)`;
   }, [error, pendingDataErrors]);
 
-  useEffect(() => {
-    if (prevIsSaving && !isSaving && errorMessage == null) {
-      setIsSuccessShown(true);
-      setWasSuccessShown(true);
-      successTimeout.current = setTimeout(() => {
-        setIsSuccessShown(false);
-      }, HIDE_TIMEOUT);
-    }
-  }, [errorMessage, isSaving, prevIsSaving]);
-
-  useEffect(() => {
-    if (successTimeout.current && pendingDataMap.size > 0) {
-      // A change just occurred while the success message was still being shown, just hide the success message
-      clearTimeout(successTimeout.current);
-      setIsSuccessShown(false);
-      setWasSuccessShown(false);
-    }
-  }, [pendingDataMap]);
+  useEffect(
+    function showSuccessMessage() {
+      if (prevIsSaving && !isSaving && errorMessage == null) {
+        setIsSuccessShown(true);
+        setWasSuccessShown(true);
+        successTimeout.current = setTimeout(() => {
+          setIsSuccessShown(false);
+        }, HIDE_TIMEOUT);
+      }
+    },
+    [errorMessage, isSaving, prevIsSaving]
+  );
 
   useEffect(
-    () => () =>
-      successTimeout.current ? clearTimeout(successTimeout.current) : undefined,
-    []
+    function hideSuccessMessage() {
+      if (successTimeout.current && pendingDataMap.size > 0) {
+        // A change just occurred while the success message was still being shown, just hide the success message
+        clearTimeout(successTimeout.current);
+        setIsSuccessShown(false);
+        setWasSuccessShown(false);
+      }
+    },
+    [pendingDataMap]
   );
+
+  useEffect(function cleanupTimeout() {
+    return () =>
+      successTimeout.current ? clearTimeout(successTimeout.current) : undefined;
+  }, []);
 
   const pendingRowCount = pendingDataMap.size;
   let commitIcon;

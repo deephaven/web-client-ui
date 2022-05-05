@@ -25,35 +25,44 @@ export default function IrisGridCellOverflowModal({
   const editorRef = useRef<monaco.editor.IStandaloneCodeEditor>();
 
   // Update format button on open
-  useEffect(() => {
-    if (!isOpen) {
-      return;
-    }
+  useEffect(
+    function enableFormatButtonWhenOpen() {
+      if (!isOpen) {
+        return;
+      }
 
-    try {
-      JSON.parse(text);
-      setCanFormat(true);
-    } catch {
-      setCanFormat(false);
-    }
-    setIsFormatted(false);
-  }, [isOpen, text]);
+      try {
+        JSON.parse(text);
+        setCanFormat(true);
+      } catch {
+        setCanFormat(false);
+      }
+      setIsFormatted(false);
+    },
+    [isOpen, text]
+  );
 
   // Re-layout editor on height change
-  useEffect(() => {
-    if (editorRef.current) {
-      editorRef.current.layout();
-    }
-  }, [height]);
+  useEffect(
+    function updateLayoutOnHeightChange() {
+      if (editorRef.current) {
+        editorRef.current.layout();
+      }
+    },
+    [height]
+  );
 
   // Update editor options on line number toggle
-  useEffect(() => {
-    if (editorRef.current) {
-      editorRef.current.updateOptions({
-        lineNumbers: showLineNumbers ? 'on' : 'off',
-      });
-    }
-  }, [showLineNumbers]);
+  useEffect(
+    function toggleShowLineNumber() {
+      if (editorRef.current) {
+        editorRef.current.updateOptions({
+          lineNumbers: showLineNumbers ? 'on' : 'off',
+        });
+      }
+    },
+    [showLineNumbers]
+  );
 
   function toggleLineNumbers() {
     setShowLineNumbers(!showLineNumbers);

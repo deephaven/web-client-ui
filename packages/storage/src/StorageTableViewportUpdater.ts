@@ -57,50 +57,56 @@ export function StorageTableViewportUpdater({
     [table]
   );
 
-  useEffect(() => {
-    const cleanup = table.onUpdate(
-      (viewportData: ViewportData<StorageItem>) => {
-        onUpdate({
-          items: viewportData.items ?? [],
-          offset: viewportData.offset ?? 0,
-        });
-      }
-    );
+  useEffect(
+    function updateViewportAndReturnClaenup() {
+      const cleanup = table.onUpdate(
+        (viewportData: ViewportData<StorageItem>) => {
+          onUpdate({
+            items: viewportData.items ?? [],
+            offset: viewportData.offset ?? 0,
+          });
+        }
+      );
 
-    return () => {
-      log.debug('onUpdate cleanup');
-      cleanup();
-    };
-  }, [table, onUpdate]);
-
-  useEffect(() => {
-    table.setFilters(filters ?? null);
-  }, [table, filters]);
-
-  useEffect(() => {
-    table.setSorts(sorts ?? null);
-  }, [table, sorts]);
-
-  useEffect(() => {
-    throttledUpdateViewport({
-      top,
-      bottom,
-      columns,
-    });
-  }, [
-    throttledUpdateViewport,
-    top,
-    bottom,
-    columns,
-    filters,
-    sorts,
-    isReversed,
-  ]);
+      return () => {
+        log.debug('onUpdate cleanup');
+        cleanup();
+      };
+    },
+    [table, onUpdate]
+  );
 
   useEffect(
-    () => () => {
-      log.debug2('Cancel throttledUpdateViewport');
-      throttledUpdateViewport.cancel();
+    function updateFilters() {
+      table.setFilters(filters ?? null);
+    },
+    [table, filters]
+  );
+
+  useEffect(
+    function updateSorts() {
+      table.setSorts(sorts ?? null);
+    },
+    [table, sorts]
+  );
+
+  useEffect(
+    function updateViewport() {
+      throttledUpdateViewport({
+        top,
+        bottom,
+        columns,
+      });
+    },
+    [throttledUpdateViewport, top, bottom, columns, filters, sorts, isReversed]
+  );
+
+  useEffect(
+    function cleanupUpdateViewport() {
+      return () => {
+        log.debug2('Cancel throttledUpdateViewport');
+        throttledUpdateViewport.cancel();
+      };
     },
     [throttledUpdateViewport]
   );

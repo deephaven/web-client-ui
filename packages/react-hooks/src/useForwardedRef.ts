@@ -11,7 +11,7 @@ export default function useForwardedRef<T>(
   ref: ((instance: T | null) => void) | React.MutableRefObject<T | null> | null
 ): React.MutableRefObject<T | null> {
   const innerRef = useRef<T | null>(null);
-  useEffect(() => {
+  useEffect(function getSafeRef() {
     if (!ref) return;
     if (typeof ref === 'function') {
       ref(innerRef.current);

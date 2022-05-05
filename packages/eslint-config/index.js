@@ -73,6 +73,7 @@ module.exports = {
         'no-shadow': 'off',
         '@typescript-eslint/no-shadow': ['error'],
         'no-use-before-define': 'off',
+        'prefer-arrow-callback': 'off',
         '@typescript-eslint/no-use-before-define': 'error',
         'no-useless-constructor': 'off',
         'react/static-property-placement': ['error', 'static public field'],

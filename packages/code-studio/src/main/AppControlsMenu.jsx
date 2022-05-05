@@ -183,7 +183,7 @@ const AppControlsMenu = props => {
         shortcut: IRIS_GRID_SHORTCUTS.TABLE.CLEAR_ALL_FILTERS,
       },
     ],
-    [(handleControlSelect, handleToolSelect, onClearFilter)]
+    [handleControlSelect, handleToolSelect, onClearFilter]
   );
 
   return (
