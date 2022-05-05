@@ -104,7 +104,7 @@ const theme: Partial<IrisGridThemeType> = Object.freeze({
   columnWidth: 100,
   rowHeaderWidth: 0,
   rowFooterWidth: 60,
-  columnHeaderHeight: 30,
+  columnHeaderHeight: parseInt(IrisGridTheme['header-height'], 10) || 30,
   filterBarHeight: 30, // includes 1px casing at bottom
   filterBarCollapsedHeight: 5, // includes 1px casing at bottom
   sortHeaderBarHeight: 2,

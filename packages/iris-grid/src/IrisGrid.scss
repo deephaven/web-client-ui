@@ -88,20 +88,23 @@ $cell-invalid-box-shadow: 0 0 0 2px $danger, 0 0 0 5px rgba($danger, 0.25);
       position: absolute;
       top: 0;
       right: 0;
-      background-image: linear-gradient(
-        to left,
-        $iris-grid-bg 19px,
-        transparent
-      );
-      background-size: 100% 23px; // header height - reversebar height
-      background-repeat: no-repeat;
-      margin: 1px 0;
+      height: $header-height;
+      width: $header-height;
+      background-color: $header-bg;
+      border-bottom: 1px solid $header-separator-color;
       transition: transform $transition-mid ease-out,
         opacity $transition-mid ease-out;
 
       .btn {
-        padding: 4px 8px 1px 8px;
-        // remove extra bottom padding that was covering up table indicator bars
+        height: 100%;
+        width: 100%;
+        &::after {
+          border-radius: 0;
+        }
+
+        &:focus::after {
+          box-shadow: none;
+        }
       }
 
       &.is-menu-shown {
