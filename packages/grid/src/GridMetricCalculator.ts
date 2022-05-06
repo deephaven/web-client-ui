@@ -1,3 +1,4 @@
+import clamp from 'lodash.clamp';
 import GridModel from './GridModel';
 import type {
   GridMetrics,
@@ -318,48 +319,73 @@ export class GridMetricCalculator {
       height - gridY - scrollBarSize - floatingBottomHeight
     );
 
+    // How much total space the content will take
+    const scrollableContentWidth = leftOffset + maxX + rowFooterWidth;
+    const scrollableContentHeight = topOffset + maxY;
+
+    // Visible space available in the canvas viewport
+    const scrollableViewportWidth = width - gridX;
+    const scrollableViewportHeight = height - gridY;
+
     // Calculate some metrics for the scroll bars
-    const hasHorizontalBar = lastLeft > 0;
-    const hasVerticalBar = lastTop > 0;
+    const hasHorizontalBar =
+      lastLeft > 0 || scrollableContentWidth > scrollableViewportWidth;
     const horizontalBarHeight = hasHorizontalBar ? scrollBarSize : 0;
+    const hasVerticalBar =
+      lastTop > 0 ||
+      scrollableContentHeight > scrollableViewportHeight - horizontalBarHeight;
     const verticalBarWidth = hasVerticalBar ? scrollBarSize : 0;
     const barWidth = width - rowHeaderWidth - verticalBarWidth;
     const barHeight = height - columnHeaderHeight - horizontalBarHeight;
 
-    const handleWidth =
-      lastLeft > 0
-        ? Math.min(
-            Math.max(
-              minScrollHandleSize,
-              barWidth * ((columnCount - lastLeft) / columnCount)
-            ),
-            barWidth - 1
-          )
-        : 0;
-    const handleHeight =
-      lastTop > 0
-        ? Math.min(
-            Math.max(
-              minScrollHandleSize,
-              barHeight * ((rowCount - lastTop) / rowCount)
-            ),
-            barHeight - 1
-          )
-        : 0;
+    // How big the scroll handle is relative to the bar
+    const horizontalHandlePercent =
+      columnCount === 1
+        ? barWidth / scrollableContentWidth
+        : (columnCount - lastLeft) / columnCount;
+
+    const verticalHandlePercent =
+      rowCount === 1
+        ? barHeight / scrollableContentHeight
+        : (rowCount - lastTop) / rowCount;
+
+    const handleWidth = hasHorizontalBar
+      ? clamp(
+          barWidth * horizontalHandlePercent,
+          minScrollHandleSize,
+          barWidth - 1
+        )
+      : 0;
+    const handleHeight = hasVerticalBar
+      ? clamp(
+          barHeight * verticalHandlePercent,
+          minScrollHandleSize,
+          barHeight - 1
+        )
+      : 0;
 
     const leftColumnWidth = getOrThrow(visibleColumnWidths, left, 0);
     const topRowHeight = getOrThrow(visibleRowHeights, top, 0);
     const leftOffsetPercent =
       leftColumnWidth > 0 ? leftOffset / leftColumnWidth : 0;
     const topOffsetPercent = topRowHeight > 0 ? topOffset / topRowHeight : 0;
-    const scrollX =
-      lastLeft > 0
-        ? ((left + leftOffsetPercent) / lastLeft) * (barWidth - handleWidth)
-        : 0;
-    const scrollY =
-      lastTop > 0
-        ? ((top + topOffsetPercent) / lastTop) * (barHeight - handleHeight)
-        : 0;
+
+    // How much of the available space has been scrolled
+    const horizontalScrollPercent =
+      columnCount === 1
+        ? leftOffset / (scrollableContentWidth - scrollableViewportWidth)
+        : (left + leftOffsetPercent) / lastLeft;
+    const verticalScrollPercent =
+      rowCount === 1
+        ? topOffset / (scrollableContentHeight - scrollableViewportHeight)
+        : (top + topOffsetPercent) / lastTop;
+
+    const scrollX = hasHorizontalBar
+      ? horizontalScrollPercent * (barWidth - handleWidth)
+      : 0;
+    const scrollY = hasVerticalBar
+      ? verticalScrollPercent * (barHeight - handleHeight)
+      : 0;
 
     // Now add the floating sections positions
     let floatingRows: ModelIndex[] = [];
@@ -533,6 +559,12 @@ export class GridMetricCalculator {
       // The vertical x/y scroll amount
       scrollX,
       scrollY,
+
+      scrollableContentWidth,
+      scrollableContentHeight,
+
+      scrollableViewportWidth,
+      scrollableViewportHeight,
 
       // Array of visible rows/columns, by grid index
       visibleRows,

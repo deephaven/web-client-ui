@@ -1,3 +1,4 @@
+import clamp from 'lodash.clamp';
 import { EventHandlerResult } from '../EventHandlerResult';
 import Grid from '../Grid';
 import { VisibleIndex } from '../GridMetrics';
@@ -45,19 +46,24 @@ class GridHorizontalScrollBarMouseHandler extends GridMouseHandler {
     if (!metrics) throw new Error('metrics not set');
 
     const { x, y } = gridPoint;
-    const { lastLeft, lastTop, rowHeaderWidth, width, height } = metrics;
-    const scrollBarWidth = lastTop > 0 ? width - scrollBarSize : width;
+    const { gridX, width, height, hasHorizontalBar, hasVerticalBar } = metrics;
+
+    const scrollBarWidth = hasVerticalBar ? width - scrollBarSize : width;
+
     return (
+      hasHorizontalBar &&
       scrollBarSize > 0 &&
-      lastLeft > 0 &&
       y >= height - scrollBarHoverSize &&
       y < height &&
-      x > rowHeaderWidth &&
+      x > gridX &&
       x < scrollBarWidth
     );
   }
 
-  onDown(gridPoint: GridPoint, grid: Grid): EventHandlerResult {
+  getLeftWithOffset(
+    gridPoint: GridPoint,
+    grid: Grid
+  ): { left: number; leftOffset: number } {
     const { metrics } = grid;
     if (!metrics) throw new Error('metrics not set');
 
@@ -66,32 +72,57 @@ class GridHorizontalScrollBarMouseHandler extends GridMouseHandler {
       barWidth,
       handleWidth,
       lastLeft,
-      rowHeaderWidth,
-      scrollX,
+      gridX,
+      columnCount,
+      scrollableContentWidth,
+      scrollableViewportWidth,
     } = metrics;
+
+    const mouseBarX = x - gridX;
+    const scrollPercent = clamp(
+      (mouseBarX - (this.dragOffset ?? 0)) / (barWidth - handleWidth),
+      0,
+      1
+    );
+
+    if (columnCount === 1) {
+      return {
+        left: 0,
+        leftOffset:
+          scrollPercent * (scrollableContentWidth - scrollableViewportWidth),
+      };
+    }
+
+    const rawLeft = scrollPercent * lastLeft;
+    return GridHorizontalScrollBarMouseHandler.getLeftWithOffsetFromRawLeft(
+      grid,
+      rawLeft
+    );
+  }
+
+  onDown(gridPoint: GridPoint, grid: Grid): EventHandlerResult {
+    const { metrics } = grid;
+    if (!metrics) throw new Error('metrics not set');
+
+    const { x } = gridPoint;
+    const { handleWidth, gridX, scrollX } = metrics;
     if (!this.isInScrollBar(gridPoint, grid)) {
       return false;
     }
 
-    const mouseBarX = x - rowHeaderWidth;
+    const mouseBarX = x - gridX;
     if (mouseBarX >= scrollX && mouseBarX <= scrollX + handleWidth) {
       // Grabbed the horizontal handle
       this.dragOffset = mouseBarX - scrollX;
       grid.setState({ isDraggingHorizontalScrollBar: true });
     } else {
       this.dragOffset = 0;
-      const rawLeft = Math.min(
-        Math.max(0, (mouseBarX / (barWidth - handleWidth)) * lastLeft),
-        lastLeft
-      );
 
       const {
         left: newLeft,
         leftOffset: newLeftOffset,
-      } = GridHorizontalScrollBarMouseHandler.getLeftWithOffsetFromRawLeft(
-        grid,
-        rawLeft
-      );
+      } = this.getLeftWithOffset(gridPoint, grid);
+
       grid.setViewState({
         left: newLeft,
         leftOffset: newLeftOffset,
@@ -105,28 +136,11 @@ class GridHorizontalScrollBarMouseHandler extends GridMouseHandler {
 
   onDrag(gridPoint: GridPoint, grid: Grid): EventHandlerResult {
     if (this.dragOffset != null) {
-      const { x } = gridPoint;
-      const { metrics } = grid;
-      if (!metrics) throw new Error('metrics not set');
-
-      const { barWidth, handleWidth, lastLeft, rowHeaderWidth } = metrics;
-      const mouseBarX = x - rowHeaderWidth;
-
-      const rawLeft = Math.min(
-        Math.max(
-          0,
-          ((mouseBarX - this.dragOffset) / (barWidth - handleWidth)) * lastLeft
-        ),
-        lastLeft
-      );
-
       const {
         left: newLeft,
         leftOffset: newLeftOffset,
-      } = GridHorizontalScrollBarMouseHandler.getLeftWithOffsetFromRawLeft(
-        grid,
-        rawLeft
-      );
+      } = this.getLeftWithOffset(gridPoint, grid);
+
       grid.setViewState({
         left: newLeft,
         leftOffset: newLeftOffset,

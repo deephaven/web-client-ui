@@ -1739,7 +1739,16 @@ class Grid extends PureComponent<GridProps, GridState> {
 
     if (!metrics) throw new Error('metrics not set');
 
-    const { lastTop, lastLeft } = metrics;
+    const {
+      lastTop,
+      lastLeft,
+      columnCount,
+      rowCount,
+      scrollableContentWidth,
+      scrollableViewportWidth,
+      scrollableContentHeight,
+      scrollableViewportHeight,
+    } = metrics;
     let { top, left, topOffset, leftOffset } = metrics;
 
     const theme = this.getTheme();
@@ -1758,13 +1767,27 @@ class Grid extends PureComponent<GridProps, GridState> {
       leftOffset += deltaX;
       deltaX = 0;
 
-      // no scrolling needed, at directional edge
-      if (
-        (leftOffset > 0 && left >= lastLeft) ||
-        (leftOffset < 0 && left <= 0)
-      ) {
-        leftOffset = 0;
-        break;
+      if (columnCount > 1) {
+        // no scrolling needed, at directional edge
+        if (
+          (leftOffset > 0 && left >= lastLeft) ||
+          (leftOffset < 0 && left <= 0)
+        ) {
+          leftOffset = 0;
+          break;
+        }
+      } else {
+        // single column at edge
+        if (leftOffset <= 0) {
+          leftOffset = 0;
+          break;
+        }
+
+        const maxLeftOffset = scrollableContentWidth - scrollableViewportWidth;
+        if (leftOffset >= maxLeftOffset) {
+          leftOffset = maxLeftOffset;
+          break;
+        }
       }
 
       if (leftOffset > 0) {
@@ -1780,7 +1803,7 @@ class Grid extends PureComponent<GridProps, GridState> {
           deltaX = leftOffset - columnWidth;
           leftOffset = 0;
           left += 1;
-        } else if (theme.scrollSnapToColumn) {
+        } else if (theme.scrollSnapToColumn && columnCount > 1) {
           // if there's still a balance to travel but its less then a column and snapping is on
           leftOffset = 0;
           left += 1;
@@ -1793,7 +1816,11 @@ class Grid extends PureComponent<GridProps, GridState> {
           metrics.visibleColumnWidths.get(left - 1) ??
           metricCalculator.getVisibleColumnWidth(left - 1, metricState);
 
-        if (Math.abs(leftOffset) <= columnWidth && theme.scrollSnapToColumn) {
+        if (
+          Math.abs(leftOffset) <= columnWidth &&
+          theme.scrollSnapToColumn &&
+          columnCount > 1
+        ) {
           // if there's still a balance to travel but its less then a column and snapping is on
           leftOffset = 0;
           left -= 1;
@@ -1812,10 +1839,24 @@ class Grid extends PureComponent<GridProps, GridState> {
       topOffset += deltaY;
       deltaY = 0;
 
-      // no scrolling needed, at directional edge
-      if ((topOffset > 0 && top >= lastTop) || (topOffset < 0 && top <= 0)) {
-        topOffset = 0;
-        break;
+      if (rowCount > 1) {
+        // no scrolling needed, at directional edge
+        if ((topOffset > 0 && top >= lastTop) || (topOffset < 0 && top <= 0)) {
+          topOffset = 0;
+          break;
+        }
+      } else {
+        // single row at edge
+        if (topOffset <= 0) {
+          topOffset = 0;
+          break;
+        }
+
+        const maxTopOffset = scrollableContentHeight - scrollableViewportHeight;
+        if (topOffset >= maxTopOffset) {
+          topOffset = maxTopOffset;
+          break;
+        }
       }
 
       if (topOffset > 0) {
@@ -1831,7 +1872,7 @@ class Grid extends PureComponent<GridProps, GridState> {
           deltaY = topOffset - rowHeight;
           topOffset = 0;
           top += 1;
-        } else if (theme.scrollSnapToRow) {
+        } else if (theme.scrollSnapToRow && rowCount > 1) {
           // if there's still a balance to travel but its less then a row and snapping is on
           topOffset = 0;
           top += 1;
@@ -1844,7 +1885,11 @@ class Grid extends PureComponent<GridProps, GridState> {
           metrics.visibleRowHeights.get(top - 1) ??
           metricCalculator.getVisibleRowHeight(top - 1, metricState);
 
-        if (Math.abs(topOffset) <= rowHeight && theme.scrollSnapToRow) {
+        if (
+          Math.abs(topOffset) <= rowHeight &&
+          theme.scrollSnapToRow &&
+          rowCount > 1
+        ) {
           // if there's still a balance to travel but its less then a row and snapping is on
           topOffset = 0;
           top -= 1;
