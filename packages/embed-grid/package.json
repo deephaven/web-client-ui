@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/embed-grid",
-  "version": "0.11.8",
+  "version": "0.11.9",
   "description": "Deephaven Embedded Grid",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
