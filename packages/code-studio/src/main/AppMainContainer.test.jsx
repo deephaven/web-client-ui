@@ -1,5 +1,6 @@
 import React from 'react';
-import { shallow } from 'enzyme';
+import { render, window } from '@testing-library/react';
+import ShallowRenderer from 'react-test-renderer/shallow';
 import { ToolType } from '@deephaven/dashboard-core-plugins';
 import { DEFAULT_DASHBOARD_ID } from '@deephaven/dashboard';
 import dh from '@deephaven/jsapi-shim';
@@ -52,7 +53,8 @@ function makeAppMainContainer({
   match = makeMatch(),
   plugins = new Map(),
 } = {}) {
-  return shallow(
+  const renderer = new ShallowRenderer();
+  return renderer.render(
     <AppMainContainer
       dashboardData={dashboardData}
       layoutStorage={layoutStorage}
@@ -77,8 +79,7 @@ function makeAppMainContainer({
 }
 
 it('mounts and unmounts AppMainContainer without crashing', () => {
-  const wrapper = makeAppMainContainer();
-  wrapper.unmount();
+  makeAppMainContainer();
 });
 
 it('listens for widgets properly', () => {
