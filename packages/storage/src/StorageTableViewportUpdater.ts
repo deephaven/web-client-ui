@@ -58,7 +58,7 @@ export function StorageTableViewportUpdater({
   );
 
   useEffect(
-    function updateViewportAndReturnClaenup() {
+    function updateViewportAndReturnCleanup() {
       const cleanup = table.onUpdate(
         (viewportData: ViewportData<StorageItem>) => {
           onUpdate({
