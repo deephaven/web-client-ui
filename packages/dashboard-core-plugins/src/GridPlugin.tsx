@@ -77,14 +77,17 @@ export const GridPlugin = (props: GridPluginProps): JSX.Element => {
     [getDownloadWorker, id, layout, loadPlugin, theme]
   );
 
-  useEffect(() => {
-    const cleanups = [
-      registerComponent(IrisGridPanel.COMPONENT, IrisGridPanel, hydrate),
-    ];
-    return () => {
-      cleanups.forEach(cleanup => cleanup());
-    };
-  }, [hydrate, registerComponent]);
+  useEffect(
+    function registerComponentsAndReturnCleanup() {
+      const cleanups = [
+        registerComponent(IrisGridPanel.COMPONENT, IrisGridPanel, hydrate),
+      ];
+      return () => {
+        cleanups.forEach(cleanup => cleanup());
+      };
+    },
+    [hydrate, registerComponent]
+  );
 
   useListener(layout.eventHub, PanelEvent.OPEN, handlePanelOpen);
 

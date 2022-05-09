@@ -44,10 +44,20 @@ const CardFlip = ({
     }
   }, []);
 
-  useEffect(() => {
-    if (!front.current) throw Error('ref undefined');
-    front.current.addEventListener('transitionstart', transitionStart);
-  }, [transitionStart]);
+  useEffect(
+    function setIsFlippingClassOnTransitionStart() {
+      if (!front.current) throw Error('ref undefined');
+      front.current.addEventListener('transitionstart', transitionStart);
+
+      const refObj = front.current;
+      return function cleanupListener() {
+        if (refObj) {
+          return refObj.removeEventListener('transitionstart', transitionStart);
+        }
+      };
+    },
+    [transitionStart]
+  );
 
   return (
     <div

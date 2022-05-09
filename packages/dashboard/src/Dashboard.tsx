@@ -55,44 +55,49 @@ export const Dashboard = ({
   const [isInitialized, setIsInitialized] = useState(false);
   const [layout, setLayout] = useState<GoldenLayout>();
 
-  useEffect(() => {
-    if (!layoutElement.current) {
-      setLayout(undefined);
-      return;
-    }
-    const config: GoldenLayout.Config = { ...LayoutUtils.makeDefaultLayout() };
-    Object.assign(config.settings, layoutSettings);
-    // Load our content later after plugins have registered
-    config.content = [];
+  useEffect(
+    function initDashboard() {
+      if (!layoutElement.current) {
+        setLayout(undefined);
+        return;
+      }
+      const config: GoldenLayout.Config = {
+        ...LayoutUtils.makeDefaultLayout(),
+      };
+      Object.assign(config.settings, layoutSettings);
+      // Load our content later after plugins have registered
+      config.content = [];
 
-    const newLayout = new GoldenLayout(config, layoutElement.current);
+      const newLayout = new GoldenLayout(config, layoutElement.current);
 
-    const onInit = () => {
-      newLayout.off('initialised', onInit);
-      setIsInitialized(true);
-    };
-    newLayout.on('initialised', onInit);
+      const onInit = () => {
+        newLayout.off('initialised', onInit);
+        setIsInitialized(true);
+      };
+      newLayout.on('initialised', onInit);
 
-    if (fallbackComponent) {
-      newLayout.setFallbackComponent(fallbackComponent);
-    }
+      if (fallbackComponent) {
+        newLayout.setFallbackComponent(fallbackComponent);
+      }
 
-    newLayout.init();
+      newLayout.init();
 
-    setLayout(newLayout);
+      setLayout(newLayout);
 
-    onGoldenLayoutChange(newLayout);
+      onGoldenLayoutChange(newLayout);
 
-    return () => {
-      newLayout.destroy();
-    };
-  }, [
-    layoutSettings,
-    fallbackComponent,
-    onGoldenLayoutChange,
-    setIsInitialized,
-    setLayout,
-  ]);
+      return () => {
+        newLayout.destroy();
+      };
+    },
+    [
+      layoutSettings,
+      fallbackComponent,
+      onGoldenLayoutChange,
+      setIsInitialized,
+      setLayout,
+    ]
+  );
 
   const handleResize = useMemo(
     () =>
@@ -104,12 +109,15 @@ export const Dashboard = ({
     [layout]
   );
 
-  useEffect(() => {
-    window.addEventListener('resize', handleResize);
-    return () => {
-      window.removeEventListener('resize', handleResize);
-    };
-  }, [handleResize]);
+  useEffect(
+    function initResizeEventListner() {
+      window.addEventListener('resize', handleResize);
+      return () => {
+        window.removeEventListener('resize', handleResize);
+      };
+    },
+    [handleResize]
+  );
 
   return (
     <div className="dashboard-container w-100 h-100">

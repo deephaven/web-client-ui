@@ -88,58 +88,94 @@ const IrisGridModelUpdater = React.memo(
       ]
     );
 
-    useEffect(() => {
-      model.filter = filter;
-    }, [model, filter]);
-    useEffect(() => {
-      const sortsForModel = [...sorts];
-      if (reverseType !== TableUtils.REVERSE_TYPE.NONE) {
-        sortsForModel.push(dh.Table.reverse());
-      }
-      model.sort = sortsForModel;
-    }, [model, sorts, reverseType]);
-    useEffect(() => {
-      model.formatter = formatter;
-    }, [model, formatter]);
-    useEffect(() => {
-      if (model.isCustomColumnsAvailable) {
-        model.customColumns = customColumns;
-      }
-    }, [model, customColumns]);
-    useEffect(() => {
-      if (model.isFormatColumnsAvailable) {
-        model.formatColumns = formatColumns;
-      }
-    }, [model, formatColumns]);
-    useEffect(() => {
-      model.setViewport(top, bottom, columns);
-    }, [model, top, bottom, columns]);
-    useEffect(() => {
-      if (model.isRollupAvailable) {
-        model.rollupConfig = rollupConfig;
-      }
-    }, [model, model.isRollupAvailable, rollupConfig]);
-    useEffect(() => {
-      if (model.isSelectDistinctAvailable) {
-        model.selectDistinctColumns = selectDistinctColumns;
-      }
-    }, [model, selectDistinctColumns]);
-    useEffect(() => {
-      if (model.isTotalsAvailable) {
-        model.totalsConfig = totalsConfig;
-      }
-    }, [model, model.isTotalsAvailable, totalsConfig]);
-    useEffect(() => {
-      model.pendingRowCount = pendingRowCount;
-    }, [model, pendingRowCount]);
-    useEffect(() => {
-      model.pendingDataMap = pendingDataMap;
-    }, [model, pendingDataMap]);
-    useEffect(() => {
-      if (frozenColumns) {
-        model.updateFrozenColumns(frozenColumns);
-      }
-    }, [model, frozenColumns]);
+    useEffect(
+      function updateFilter() {
+        model.filter = filter;
+      },
+      [model, filter]
+    );
+    useEffect(
+      function updateSorts() {
+        const sortsForModel = [...sorts];
+        if (reverseType !== TableUtils.REVERSE_TYPE.NONE) {
+          sortsForModel.push(dh.Table.reverse());
+        }
+        model.sort = sortsForModel;
+      },
+      [model, sorts, reverseType]
+    );
+    useEffect(
+      function updateFormatter() {
+        model.formatter = formatter;
+      },
+      [model, formatter]
+    );
+    useEffect(
+      function updateCustomColumns() {
+        if (model.isCustomColumnsAvailable) {
+          model.customColumns = customColumns;
+        }
+      },
+      [model, customColumns]
+    );
+    useEffect(
+      function updateFormatColumns() {
+        if (model.isFormatColumnsAvailable) {
+          model.formatColumns = formatColumns;
+        }
+      },
+      [model, formatColumns]
+    );
+    useEffect(
+      function updateViewport() {
+        model.setViewport(top, bottom, columns);
+      },
+      [model, top, bottom, columns]
+    );
+    useEffect(
+      function updateRollupCOnfig() {
+        if (model.isRollupAvailable) {
+          model.rollupConfig = rollupConfig;
+        }
+      },
+      [model, model.isRollupAvailable, rollupConfig]
+    );
+    useEffect(
+      function updateSelectDistinctColumns() {
+        if (model.isSelectDistinctAvailable) {
+          model.selectDistinctColumns = selectDistinctColumns;
+        }
+      },
+      [model, selectDistinctColumns]
+    );
+    useEffect(
+      function updateTotalsConfig() {
+        if (model.isTotalsAvailable) {
+          model.totalsConfig = totalsConfig;
+        }
+      },
+      [model, model.isTotalsAvailable, totalsConfig]
+    );
+    useEffect(
+      function updatePendingRowCount() {
+        model.pendingRowCount = pendingRowCount;
+      },
+      [model, pendingRowCount]
+    );
+    useEffect(
+      function updatePendingDataMap() {
+        model.pendingDataMap = pendingDataMap;
+      },
+      [model, pendingDataMap]
+    );
+    useEffect(
+      function updateFrozenColumns() {
+        if (frozenColumns) {
+          model.updateFrozenColumns(frozenColumns);
+        }
+      },
+      [model, frozenColumns]
+    );
 
     return null;
   }

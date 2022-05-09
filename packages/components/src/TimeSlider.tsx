@@ -45,10 +45,13 @@ const TimeSlider = ({
   const track = useRef<HTMLDivElement>(null); // we need the track width while calulculating time from handle drag
 
   // updates state if props change
-  useEffect(() => {
-    setStartTime(propStartTime);
-    setEndTime(propEndTime);
-  }, [propStartTime, propEndTime]);
+  useEffect(
+    function setTimeOnPropTimeChange() {
+      setStartTime(propStartTime);
+      setEndTime(propEndTime);
+    },
+    [propStartTime, propEndTime]
+  );
 
   const updateTime = useCallback(
     (newStartTime: number, newEndTime: number) => {
@@ -152,10 +155,13 @@ const PopOvers = (props: PopOversProps): JSX.Element => {
     startTime > endTime ? startTime : endTime
   );
 
-  useEffect(() => {
-    setFirstTime(startTime > endTime ? endTime : startTime);
-    setSecondTime(startTime > endTime ? startTime : endTime);
-  }, [startTime, endTime]);
+  useEffect(
+    function setTimeOnPropTimeChange() {
+      setFirstTime(startTime > endTime ? endTime : startTime);
+      setSecondTime(startTime > endTime ? startTime : endTime);
+    },
+    [startTime, endTime]
+  );
 
   function onFirstTimeChange(value: number) {
     if (startTime <= endTime) {
@@ -361,8 +367,10 @@ const Handle = (props: HandleProps): JSX.Element => {
   }, [startDragListening]);
 
   useEffect(
-    () => () => {
-      stopDragListening();
+    function removeListenersOnUnmount() {
+      return () => {
+        stopDragListening();
+      };
     },
     [stopDragListening]
   );

@@ -53,22 +53,28 @@ export const FileListItemEditor = ({
       .catch(e => log.info('Unable to validate name', e));
   }, [onSubmit, value, validationPromise]);
 
-  useEffect(() => {
-    const validatePromise = PromiseUtils.makeCancelable(validate(value));
-    validatePromise
-      .then(() => setValidationError(undefined))
-      .catch(e => {
-        if (!PromiseUtils.isCanceled(e)) {
-          setValidationError(e);
-        }
-      });
-    setValidationPromise(validatePromise);
-    return () => validatePromise.cancel();
-  }, [validate, value]);
+  useEffect(
+    function validateValueAndSetPromise() {
+      const validatePromise = PromiseUtils.makeCancelable(validate(value));
+      validatePromise
+        .then(() => setValidationError(undefined))
+        .catch(e => {
+          if (!PromiseUtils.isCanceled(e)) {
+            setValidationError(e);
+          }
+        });
+      setValidationPromise(validatePromise);
+      return () => validatePromise.cancel();
+    },
+    [validate, value]
+  );
 
-  useEffect(() => {
-    focus();
-  }, [focus]);
+  useEffect(
+    function selectRange() {
+      focus();
+    },
+    [focus]
+  );
 
   const handleBlur = useCallback(() => {
     log.debug2('handleBlur');

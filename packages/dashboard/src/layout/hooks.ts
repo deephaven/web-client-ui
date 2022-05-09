@@ -7,12 +7,15 @@ export const useListener = (
   // eslint-disable-next-line @typescript-eslint/ban-types
   callback: Function
 ): void =>
-  useEffect(() => {
-    eventEmitter.on(eventName, callback);
+  useEffect(
+    function initEventEmitter() {
+      eventEmitter.on(eventName, callback);
 
-    return () => {
-      eventEmitter.off(eventName, callback);
-    };
-  }, [eventEmitter, eventName, callback]);
+      return () => {
+        eventEmitter.off(eventName, callback);
+      };
+    },
+    [eventEmitter, eventName, callback]
+  );
 
 export default { useListener };

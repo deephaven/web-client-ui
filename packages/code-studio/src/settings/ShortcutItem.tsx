@@ -32,48 +32,57 @@ export default function ShortcutItem({
   const [error, setError] = useState('');
 
   // If propsDisplayText changes, the shortcut was altered from a conflict state by the parent component
-  useEffect(() => {
-    setDisplayText(propsDisplayText);
-    setKeyState(shortcut.getKeyState());
-  }, [propsDisplayText, shortcut]);
+  useEffect(
+    function resolveConflictOnPropChange() {
+      setDisplayText(propsDisplayText);
+      setKeyState(shortcut.getKeyState());
+    },
+    [propsDisplayText, shortcut]
+  );
 
   // Updates displayText when keyState is changed
-  useEffect(() => {
-    setDisplayText(Shortcut.getDisplayText(keyState));
-    if (shortcut.matchesKeyState(keyState)) {
-      setIsPending(false);
-    }
-  }, [keyState, shortcut]);
+  useEffect(
+    function onNewKeybind() {
+      setDisplayText(Shortcut.getDisplayText(keyState));
+      if (shortcut.matchesKeyState(keyState)) {
+        setIsPending(false);
+      }
+    },
+    [keyState, shortcut]
+  );
 
   // Sets error state based on isPending
-  useEffect(() => {
-    if (isPending) {
-      if (!Shortcut.isValidKeyState(keyState)) {
-        if (Shortcut.isAllowedKey(keyState.keyValue)) {
-          setError('Must contain a modifier key');
-        } else {
-          setError('Must contain an allowed action key');
+  useEffect(
+    function setErrors() {
+      if (isPending) {
+        if (!Shortcut.isValidKeyState(keyState)) {
+          if (Shortcut.isAllowedKey(keyState.keyValue)) {
+            setError('Must contain a modifier key');
+          } else {
+            setError('Must contain an allowed action key');
+          }
+          return;
         }
-        return;
+
+        const conflictNames = ShortcutRegistry.getConflictingShortcuts(keyState)
+          .filter(
+            conflict =>
+              conflict.id.startsWith(categoryName) && conflict !== shortcut
+          )
+          .map(conflict => conflict.name);
+
+        if (conflictNames.length) {
+          setError(`Conflicts with ${conflictNames.join(', ')}`);
+          return;
+        }
+
+        setError('');
+      } else {
+        setError('');
       }
-
-      const conflictNames = ShortcutRegistry.getConflictingShortcuts(keyState)
-        .filter(
-          conflict =>
-            conflict.id.startsWith(categoryName) && conflict !== shortcut
-        )
-        .map(conflict => conflict.name);
-
-      if (conflictNames.length) {
-        setError(`Conflicts with ${conflictNames.join(', ')}`);
-        return;
-      }
-
-      setError('');
-    } else {
-      setError('');
-    }
-  }, [isPending, keyState, categoryName, shortcut]);
+    },
+    [isPending, keyState, categoryName, shortcut]
+  );
 
   // Updates pending key state and sets input display text
   function handleInputKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {

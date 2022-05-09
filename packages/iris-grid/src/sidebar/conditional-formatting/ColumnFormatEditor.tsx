@@ -81,32 +81,29 @@ const ColumnFormatEditor = (props: ColumnFormatEditorProps): JSX.Element => {
     setStyle(updatedStyleConfig);
   }, []);
 
-  useEffect(() => {
-    if (selectedColumn === undefined) {
-      log.debug('Column is not selected, skip update.');
-      return;
-    }
-    if (selectedStyle === undefined) {
-      log.debug('Style is not selected, skip update.');
-      return;
-    }
-    const { type, name } = selectedColumn;
-    const column = { type, name };
-    onChange(
-      {
-        column,
-        style: selectedStyle,
-        ...conditionConfig,
-      },
-      conditionValid
-    );
-  }, [
-    onChange,
-    selectedColumn,
-    selectedStyle,
-    conditionConfig,
-    conditionValid,
-  ]);
+  useEffect(
+    function updateColumnFormat() {
+      if (selectedColumn === undefined) {
+        log.debug('Column is not selected, skip update.');
+        return;
+      }
+      if (selectedStyle === undefined) {
+        log.debug('Style is not selected, skip update.');
+        return;
+      }
+      const { type, name } = selectedColumn;
+      const column = { type, name };
+      onChange(
+        {
+          column,
+          style: selectedStyle,
+          ...conditionConfig,
+        },
+        conditionValid
+      );
+    },
+    [onChange, selectedColumn, selectedStyle, conditionConfig, conditionValid]
+  );
 
   const columnInputOptions = columns.map(({ name }) => ({
     title: name,

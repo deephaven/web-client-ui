@@ -60,14 +60,17 @@ export const ChartPlugin = (props: ChartPluginProps): JSX.Element => {
     [id, layout]
   );
 
-  useEffect(() => {
-    const cleanups = [
-      registerComponent(ChartPanel.COMPONENT, ChartPanel, hydrate),
-    ];
-    return () => {
-      cleanups.forEach(cleanup => cleanup());
-    };
-  }, [hydrate, registerComponent]);
+  useEffect(
+    function registerComponentsAndReturnCleanup() {
+      const cleanups = [
+        registerComponent(ChartPanel.COMPONENT, ChartPanel, hydrate),
+      ];
+      return () => {
+        cleanups.forEach(cleanup => cleanup());
+      };
+    },
+    [hydrate, registerComponent]
+  );
 
   useListener(layout.eventHub, PanelEvent.OPEN, handlePanelOpen);
 

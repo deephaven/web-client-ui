@@ -432,19 +432,22 @@ export const ConsolePlugin = (props: ConsolePluginProps): JSX.Element => {
     [createNotebook, panelManager]
   );
 
-  useEffect(() => {
-    const cleanups = [
-      registerComponent(ConsolePanel.COMPONENT, ConsolePanel),
-      registerComponent(CommandHistoryPanel.COMPONENT, CommandHistoryPanel),
-      registerComponent(FileExplorerPanel.COMPONENT, FileExplorerPanel),
-      registerComponent(LogPanel.COMPONENT, LogPanel),
-      registerComponent(NotebookPanel.COMPONENT, NotebookPanel),
-    ];
+  useEffect(
+    function registerComponentsAndReturnCleanup() {
+      const cleanups = [
+        registerComponent(ConsolePanel.COMPONENT, ConsolePanel),
+        registerComponent(CommandHistoryPanel.COMPONENT, CommandHistoryPanel),
+        registerComponent(FileExplorerPanel.COMPONENT, FileExplorerPanel),
+        registerComponent(LogPanel.COMPONENT, LogPanel),
+        registerComponent(NotebookPanel.COMPONENT, NotebookPanel),
+      ];
 
-    return () => {
-      cleanups.forEach(cleanup => cleanup());
-    };
-  }, [registerComponent]);
+      return () => {
+        cleanups.forEach(cleanup => cleanup());
+      };
+    },
+    [registerComponent]
+  );
 
   useListener(layout.eventHub, ConsoleEvent.SEND_COMMAND, handleSendCommand);
   useListener(

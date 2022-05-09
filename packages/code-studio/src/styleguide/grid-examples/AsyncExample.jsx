@@ -26,35 +26,38 @@ const AsyncExample = () => {
   }, []);
 
   const { top, bottom, left, right } = viewport;
-  useEffect(() => {
-    let isCancelled = false;
+  useEffect(
+    function mockLoadViewportAndData() {
+      let isCancelled = false;
 
-    // Simulate fetching data asynchronously by using at timeout
-    setTimeout(() => {
-      if (isCancelled) return;
+      // Simulate fetching data asynchronously by using at timeout
+      setTimeout(() => {
+        if (isCancelled) return;
 
-      // Generate the data for the viewport
-      const data = [];
-      for (let i = top; i <= bottom; i += 1) {
-        const rowData = [];
-        for (let j = left; j <= right; j += 1) {
-          rowData.push(`${i},${j}`);
+        // Generate the data for the viewport
+        const data = [];
+        for (let i = top; i <= bottom; i += 1) {
+          const rowData = [];
+          for (let j = left; j <= right; j += 1) {
+            rowData.push(`${i},${j}`);
+          }
+          data.push(rowData);
         }
-        data.push(rowData);
-      }
-      model.viewportData = {
-        rowOffset: top,
-        columnOffset: left,
-        data,
-      };
+        model.viewportData = {
+          rowOffset: top,
+          columnOffset: left,
+          data,
+        };
 
-      // Refresh the grid
-      grid.current.forceUpdate();
-    }, 250);
-    return () => {
-      isCancelled = true;
-    };
-  }, [top, bottom, left, right, model]);
+        // Refresh the grid
+        grid.current.forceUpdate();
+      }, 250);
+      return () => {
+        isCancelled = true;
+      };
+    },
+    [top, bottom, left, right, model]
+  );
 
   return <Grid model={model} onViewChanged={handleViewChanged} ref={grid} />;
 };

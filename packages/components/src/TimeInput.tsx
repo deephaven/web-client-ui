@@ -37,9 +37,12 @@ const TimeInput = React.forwardRef<HTMLInputElement, TimeInputProps>(
     } = props;
     const [value, setValue] = useState(TimeUtils.formatTime(propsValue));
     const [selection, setSelection] = useState<SelectionSegment>();
-    useEffect(() => {
-      setValue(TimeUtils.formatTime(propsValue));
-    }, [propsValue]);
+    useEffect(
+      function setFormattedTime() {
+        setValue(TimeUtils.formatTime(propsValue));
+      },
+      [propsValue]
+    );
 
     function getNextSegmentValue(
       range: SelectionSegment,

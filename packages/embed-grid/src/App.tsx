@@ -103,54 +103,63 @@ function App(): JSX.Element {
     setIsLoading(false);
   }, [searchParams]);
 
-  useEffect(() => {
-    initApp();
-  }, [initApp]);
+  useEffect(
+    function initializeApp() {
+      initApp();
+    },
+    [initApp]
+  );
 
-  useEffect(() => {
-    function receiveMessage(e: MessageEvent) {
-      const { command, value } = e.data as { command: Command; value: unknown };
-      switch (command) {
-        case 'filter': {
-          const filterCommandValues = value as FilterCommandType[];
-          const newInputFilters = filterCommandValues.map(
-            ({ name, value: filterValue }) => {
+  useEffect(
+    function initCommandListener() {
+      function receiveMessage(e: MessageEvent) {
+        const { command, value } = e.data as {
+          command: Command;
+          value: unknown;
+        };
+        switch (command) {
+          case 'filter': {
+            const filterCommandValues = value as FilterCommandType[];
+            const newInputFilters = filterCommandValues.map(
+              ({ name, value: filterValue }) => {
+                const column = model?.columns.find(c => c.name === name);
+                if (column == null) {
+                  throw new Error(`Could not find column named ${name}`);
+                }
+                return {
+                  name,
+                  value: filterValue,
+                  type: TableUtils.getNormalizedType(column.type),
+                };
+              }
+            );
+            setInputFilters(newInputFilters);
+            break;
+          }
+          case 'sort': {
+            const sortCommandValues = value as SortCommandType[];
+            const newSorts = sortCommandValues.map(({ name, direction }) => {
               const column = model?.columns.find(c => c.name === name);
               if (column == null) {
                 throw new Error(`Could not find column named ${name}`);
               }
-              return {
-                name,
-                value: filterValue,
-                type: TableUtils.getNormalizedType(column.type),
-              };
-            }
-          );
-          setInputFilters(newInputFilters);
-          break;
-        }
-        case 'sort': {
-          const sortCommandValues = value as SortCommandType[];
-          const newSorts = sortCommandValues.map(({ name, direction }) => {
-            const column = model?.columns.find(c => c.name === name);
-            if (column == null) {
-              throw new Error(`Could not find column named ${name}`);
-            }
-            return direction === 'DESC'
-              ? column.sort().desc()
-              : column.sort().asc();
-          });
-          setSorts(newSorts);
-          break;
+              return direction === 'DESC'
+                ? column.sort().desc()
+                : column.sort().asc();
+            });
+            setSorts(newSorts);
+            break;
+          }
         }
       }
-    }
-    window.addEventListener('message', receiveMessage);
+      window.addEventListener('message', receiveMessage);
 
-    return () => {
-      window.removeEventListener('message', receiveMessage);
-    };
-  }, [model]);
+      return () => {
+        window.removeEventListener('message', receiveMessage);
+      };
+    },
+    [model]
+  );
 
   const isLoaded = model != null;
 

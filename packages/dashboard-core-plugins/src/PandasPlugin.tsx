@@ -49,15 +49,18 @@ export const PandasPlugin = (props: PandasPluginProps): JSX.Element => {
     [id, layout]
   );
 
-  useEffect(() => {
-    const cleanups = [
-      registerComponent(PandasPanel.COMPONENT, PandasPanel, hydrate),
-    ];
+  useEffect(
+    function registerComponentsAndReturnCleanup() {
+      const cleanups = [
+        registerComponent(PandasPanel.COMPONENT, PandasPanel, hydrate),
+      ];
 
-    return () => {
-      cleanups.forEach(cleanup => cleanup());
-    };
-  }, [hydrate, registerComponent]);
+      return () => {
+        cleanups.forEach(cleanup => cleanup());
+      };
+    },
+    [hydrate, registerComponent]
+  );
 
   useListener(layout.eventHub, PanelEvent.OPEN, handlePanelOpen);
 

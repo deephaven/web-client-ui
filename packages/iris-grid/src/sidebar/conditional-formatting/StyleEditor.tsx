@@ -86,17 +86,20 @@ const StyleEditor = (props: ConditionEditorProps): JSX.Element => {
     }
   }
 
-  useEffect(() => {
-    onChange({
-      type: styleType,
-      customConfig: {
-        color: ColorUtils.isDark(background)
-          ? DEFAULT_COLOR_LIGHT
-          : DEFAULT_COLOR_DARK,
-        background,
-      },
-    });
-  }, [onChange, styleType, background]);
+  useEffect(
+    function updateTheme() {
+      onChange({
+        type: styleType,
+        customConfig: {
+          color: ColorUtils.isDark(background)
+            ? DEFAULT_COLOR_LIGHT
+            : DEFAULT_COLOR_DARK,
+          background,
+        },
+      });
+    },
+    [onChange, styleType, background]
+  );
 
   const renderOptions = useCallback(() => {
     let matchFound = false;

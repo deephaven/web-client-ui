@@ -100,18 +100,25 @@ const MaskedInput = React.forwardRef<HTMLInputElement, MaskedInputProps>(
       [example]
     );
 
-    useEffect(() => {
-      if (selection != null) {
-        log.debug('setting selection...', selection);
-        const { selectionStart, selectionEnd, selectionDirection } = selection;
-        input.current?.setSelectionRange(
-          selectionStart,
-          selectionEnd,
-          selectionDirection
-        );
-        log.debug('selection set!');
-      }
-    }, [selection, input]);
+    useEffect(
+      function setSelectedSegment() {
+        if (selection != null) {
+          log.debug('setting selection...', selection);
+          const {
+            selectionStart,
+            selectionEnd,
+            selectionDirection,
+          } = selection;
+          input.current?.setSelectionRange(
+            selectionStart,
+            selectionEnd,
+            selectionDirection
+          );
+          log.debug('selection set!');
+        }
+      },
+      [selection, input]
+    );
 
     /**
      * Returns the selection range for the segment at the given cursor position

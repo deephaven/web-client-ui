@@ -310,46 +310,51 @@ const ConditionEditor = (props: ConditionEditorProps): JSX.Element => {
     setEndValue(value);
   }, []);
 
-  useEffect(() => {
-    let isValid = true;
+  useEffect(
+    function changeCondition() {
+      let isValid = true;
 
-    if (selectedCondition === undefined) {
-      log.debug('Unable to create formatting rule. Condition is not selected.');
-      isValid = false;
-    }
+      if (selectedCondition === undefined) {
+        log.debug(
+          'Unable to create formatting rule. Condition is not selected.'
+        );
+        isValid = false;
+      }
 
-    if (
-      TableUtils.isNumberType(column.type) &&
-      !isNumberConditionValid(
-        selectedCondition as NumberCondition,
-        conditionValue,
-        startValue,
-        endValue
-      )
-    ) {
-      log.debug(
-        'Unable to create formatting rule. Invalid value',
-        conditionValue
+      if (
+        TableUtils.isNumberType(column.type) &&
+        !isNumberConditionValid(
+          selectedCondition as NumberCondition,
+          conditionValue,
+          startValue,
+          endValue
+        )
+      ) {
+        log.debug(
+          'Unable to create formatting rule. Invalid value',
+          conditionValue
+        );
+        isValid = false;
+      }
+      onChange(
+        {
+          condition: selectedCondition,
+          value: conditionValue,
+          start: startValue,
+          end: endValue,
+        },
+        isValid
       );
-      isValid = false;
-    }
-    onChange(
-      {
-        condition: selectedCondition,
-        value: conditionValue,
-        start: startValue,
-        end: endValue,
-      },
-      isValid
-    );
-  }, [
-    onChange,
-    column.type,
-    selectedCondition,
-    conditionValue,
-    startValue,
-    endValue,
-  ]);
+    },
+    [
+      onChange,
+      column.type,
+      selectedCondition,
+      conditionValue,
+      startValue,
+      endValue,
+    ]
+  );
 
   const conditionInputs = useMemo(() => {
     if (selectedColumnType === undefined) {

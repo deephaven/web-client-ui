@@ -484,46 +484,55 @@ export const FileList = (props: FileListProps): JSX.Element => {
     }
   }, [draggedItems, dropTargetItem]);
 
-  useEffect(() => {
-    log.debug('updating table viewport', viewport);
-    table?.setViewport({
-      top: Math.max(0, viewport.top - overscanCount),
-      bottom: viewport.bottom + overscanCount,
-    });
-  }, [overscanCount, table, viewport]);
+  useEffect(
+    function updateTableViewport() {
+      log.debug('updating table viewport', viewport);
+      table?.setViewport({
+        top: Math.max(0, viewport.top - overscanCount),
+        bottom: viewport.bottom + overscanCount,
+      });
+    },
+    [overscanCount, table, viewport]
+  );
 
   // Listen for table updates
-  useEffect(() => {
-    const listenerRemover = table.onUpdate(newViewport => {
-      setLoadedViewport({
-        items: newViewport.items.map(item => ({
-          ...item,
-          itemName: item.basename,
-        })),
-        offset: newViewport.offset,
-        itemCount: table.size,
+  useEffect(
+    function setLoadedViewportAndReturnCleanup() {
+      const listenerRemover = table.onUpdate(newViewport => {
+        setLoadedViewport({
+          items: newViewport.items.map(item => ({
+            ...item,
+            itemName: item.basename,
+          })),
+          offset: newViewport.offset,
+          itemCount: table.size,
+        });
       });
-    });
-    return () => {
-      listenerRemover();
-    };
-  }, [table]);
+      return () => {
+        listenerRemover();
+      };
+    },
+    [table]
+  );
 
   // Expand a folder if hovering over it
-  useEffect(() => {
-    if (
-      dropTargetItem != null &&
-      isDirectory(dropTargetItem) &&
-      dropTargetItem.filename !== '/'
-    ) {
-      const timeout = setTimeout(() => {
-        if (!dropTargetItem.isExpanded) {
-          table?.setExpanded(dropTargetItem.filename, true);
-        }
-      }, DRAG_HOVER_TIMEOUT);
-      return () => clearTimeout(timeout);
-    }
-  }, [dropTargetItem, table]);
+  useEffect(
+    function expandFolderOnHover() {
+      if (
+        dropTargetItem != null &&
+        isDirectory(dropTargetItem) &&
+        dropTargetItem.filename !== '/'
+      ) {
+        const timeout = setTimeout(() => {
+          if (!dropTargetItem.isExpanded) {
+            table?.setExpanded(dropTargetItem.filename, true);
+          }
+        }, DRAG_HOVER_TIMEOUT);
+        return () => clearTimeout(timeout);
+      }
+    },
+    [dropTargetItem, table]
+  );
 
   const renderWrapper = useCallback(
     itemProps =>
