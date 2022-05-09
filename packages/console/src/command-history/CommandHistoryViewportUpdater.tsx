@@ -75,7 +75,7 @@ function CommandHistoryViewportUpdater({
   );
 
   useEffect(
-    function setSearchbar() {
+    function setSearchText() {
       table.setSearch(search ?? '');
     },
     [table, search]

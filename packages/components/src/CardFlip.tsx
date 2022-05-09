@@ -48,6 +48,13 @@ const CardFlip = ({
     function setIsFlippingClassOnTransitionStart() {
       if (!front.current) throw Error('ref undefined');
       front.current.addEventListener('transitionstart', transitionStart);
+
+      const refObj = front.current;
+      return function cleanupListener() {
+        if (refObj) {
+          return refObj.removeEventListener('transitionstart', transitionStart);
+        }
+      };
     },
     [transitionStart]
   );

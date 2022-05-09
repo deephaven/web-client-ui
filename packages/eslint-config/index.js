@@ -40,7 +40,7 @@ module.exports = {
     'import/extensions': 'off',
     'es/no-regexp-lookbehind-assertions': 'error',
     curly: ['error'],
-    'prefer-arrow-callback': 'off',
+    'prefer-arrow-callback': ['error', { allowNamedFunctions: true }],
   },
   parserOptions: {
     ecmaFeatures: {

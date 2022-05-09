@@ -111,7 +111,7 @@ function App(): JSX.Element {
   );
 
   useEffect(
-    function handleTableCommand() {
+    function initCommandListener() {
       function receiveMessage(e: MessageEvent) {
         const { command, value } = e.data as {
           command: Command;

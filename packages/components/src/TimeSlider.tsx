@@ -156,7 +156,7 @@ const PopOvers = (props: PopOversProps): JSX.Element => {
   );
 
   useEffect(
-    function setTimeOnPropTimeChangee() {
+    function setTimeOnPropTimeChange() {
       setFirstTime(startTime > endTime ? endTime : startTime);
       setSecondTime(startTime > endTime ? startTime : endTime);
     },
