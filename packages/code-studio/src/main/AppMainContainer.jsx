@@ -13,7 +13,8 @@ import {
   GLOBAL_SHORTCUTS,
   Popper,
 } from '@deephaven/components';
-import Dashboard, {
+import {
+  Dashboard,
   DashboardUtils,
   DEFAULT_DASHBOARD_ID,
   getDashboardData,
