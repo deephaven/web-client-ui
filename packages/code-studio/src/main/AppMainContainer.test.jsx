@@ -33,7 +33,7 @@ function makeMatch() {
   };
 }
 
-function getAppMainContainer({
+function renderAppMainContainer({
   layoutStorage = {},
   user = TestUtils.REGULAR_USER,
   dashboardData = {},
@@ -53,7 +53,7 @@ function getAppMainContainer({
   match = makeMatch(),
   plugins = new Map(),
 } = {}) {
-  return (
+  return render(
     <AppMainContainer
       dashboardData={dashboardData}
       layoutStorage={layoutStorage}
@@ -91,15 +91,6 @@ jest.mock('@deephaven/dashboard', () => ({
   default: jest.fn(),
 }));
 
-// jest.mock('@deephaven/components', () => ({
-//   ...jest.requireActual('@deephaven/components'),
-//   __esModule: true,
-//   Popper: jest.fn(({ children }) => {
-//     return children;
-//   }),
-//   default: jest.fn(),
-// }));
-
 let spy;
 beforeEach(() => {
   spy = jest.spyOn(window, 'requestAnimationFrame').mockImplementation(cb => {
@@ -116,7 +107,7 @@ afterEach(() => {
 });
 
 it('mounts and unmounts AppMainContainer without crashing', () => {
-  render(getAppMainContainer());
+  renderAppMainContainer();
 });
 
 it('listens for widgets properly', () => {
@@ -129,7 +120,7 @@ it('listens for widgets properly', () => {
     callback = cb;
   });
 
-  render(getAppMainContainer({ session }));
+  renderAppMainContainer({ session });
 
   expect(session.connection.subscribeToFieldUpdates).toHaveBeenCalled();
 
@@ -177,30 +168,31 @@ it('listens for widgets properly', () => {
 describe('hydrates widgets correctly', () => {
   const localDashboardId = DEFAULT_DASHBOARD_ID;
   let session = null;
-  it('hydrates empty props with defaults', () => {
+  beforeEach(() => {
     session = makeSession();
+  });
+
+  it('hydrates empty props with defaults', () => {
     mockProp = {};
     mockId = localDashboardId;
-    render(getAppMainContainer({ session }));
+    renderAppMainContainer({ session });
     expect(
       screen.getByText('{"metadata":{},"localDashboardId":"default"}')
     ).toBeTruthy();
   });
   it('does not try and add fetch when metadata does not have widget metadata', () => {
-    session = makeSession();
     mockProp = { metadata: {} };
     mockId = localDashboardId;
-    render(getAppMainContainer({ session }));
+    renderAppMainContainer({ session });
     expect(
       screen.getByText('{"metadata":{},"localDashboardId":"default"}')
     ).toBeTruthy();
   });
   it('hydrates a widget properly', () => {
-    session = makeSession();
     mockProp = { metadata: { type: 'TestType', name: 'TestName' } };
     mockId = localDashboardId;
     expect(session.getObject).not.toHaveBeenCalled();
-    render(getAppMainContainer({ session }));
+    renderAppMainContainer({ session });
 
     expect(
       screen.getByText(
