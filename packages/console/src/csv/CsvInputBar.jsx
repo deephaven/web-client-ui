@@ -121,7 +121,7 @@ class CsvInputBar extends Component {
     const { file, paste } = this.props;
     if (file) {
       if (file.name.endsWith('.zip')) {
-        this.handleZip(file);
+        this.handleZipFile(file);
       } else {
         this.handleFile(file);
       }
@@ -182,7 +182,7 @@ class CsvInputBar extends Component {
     onInProgress(true);
   }
 
-  handleZip(zipFile) {
+  handleZipFile(zipFile) {
     const { onUpdate, unzip } = this.props;
     if (unzip == null) {
       this.handleError(new Error('No support for zip files available.'));

@@ -1,5 +1,5 @@
 import React from 'react';
-import { render } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import CsvOverlay from './CsvOverlay';
 
 function makeOverlayWrapper({
@@ -11,7 +11,7 @@ function makeOverlayWrapper({
   onError = jest.fn(),
   uploadInProgress = false,
 } = {}) {
-  const wrapper = render(
+  return render(
     <CsvOverlay
       allowZip={allowZip}
       onFileOpened={onFileOpened}
@@ -22,8 +22,6 @@ function makeOverlayWrapper({
       uploadInProgress={uploadInProgress}
     />
   );
-
-  return wrapper;
 }
 
 it('renders without crashing', () => {
@@ -31,17 +29,23 @@ it('renders without crashing', () => {
 });
 
 describe('allowZip tests', () => {
+  function checkExtensionAccepted(extension, isAccepted = true) {
+    expect(screen.getByTestId('fileElem')).toHaveAttribute(
+      'accept',
+      isAccepted
+        ? expect.stringContaining(extension)
+        : expect.not.stringContaining(extension)
+    );
+  }
   it('does not accept zip in input if allowZip not true', () => {
-    const wrapper = makeOverlayWrapper({ allowZip: false });
-    const acceptString = wrapper.getByTestId('fileElem').getAttribute('accept');
-    expect(acceptString.includes('zip')).toBe(false);
-    expect(acceptString.includes('.csv')).toBe(true);
+    makeOverlayWrapper({ allowZip: false });
+    checkExtensionAccepted('.zip', false);
+    checkExtensionAccepted('.csv');
   });
   it('accepts zip from input if allowZip is true', () => {
-    const wrapper = makeOverlayWrapper({ allowZip: true });
-    const acceptString = wrapper.getByTestId('fileElem').getAttribute('accept');
-    expect(acceptString.includes('zip')).toBe(true);
-    expect(acceptString.includes('.csv')).toBe(true);
+    makeOverlayWrapper({ allowZip: true });
+    checkExtensionAccepted('.zip');
+    checkExtensionAccepted('.csv');
   });
 });
 
