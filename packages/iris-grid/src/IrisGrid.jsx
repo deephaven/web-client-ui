@@ -309,8 +309,8 @@ export class IrisGrid extends Component {
       isFilterBarShown,
       isSelectingPartition,
       model,
-      movedColumns,
-      movedRows,
+      movedColumns: movedColumnsProp,
+      movedRows: movedRowsProp,
       partition,
       partitionColumn,
       rollupConfig,
@@ -346,9 +346,15 @@ export class IrisGrid extends Component {
       new PendingMouseHandler(this),
     ];
 
+    const movedColumns =
+      movedColumnsProp.length > 0 ? movedColumnsProp : model.movedColumns;
+    const movedRows =
+      movedRowsProp.length > 0 ? movedRowsProp : model.movedRows;
+
     const metricCalculator = new IrisGridMetricCalculator({
       userColumnWidths: new Map(userColumnWidths),
       userRowHeights: new Map(userRowHeights),
+      movedColumns,
     });
     const searchColumns = selectedSearchColumns ?? [];
     const searchFilter = CrossColumnSearch.createSearchFilter(
@@ -1536,42 +1542,56 @@ export class IrisGrid extends Component {
   }
 
   freezeColumnByColumnName(columnName) {
-    const { frozenColumns } = this.state;
+    const { frozenColumns, movedColumns } = this.state;
     const { model } = this.props;
     log.debug2('freezing column', columnName);
 
-    let allFrozenColumns;
+    const allFrozenColumns =
+      frozenColumns == null
+        ? new Set(model.layoutHints?.frozenColumns)
+        : new Set(frozenColumns);
 
-    if (frozenColumns == null) {
-      allFrozenColumns = new Set(model.layoutHints?.frozenColumns ?? []);
-      allFrozenColumns.add(columnName);
-    } else {
-      allFrozenColumns = new Set([...frozenColumns, columnName]);
-    }
+    allFrozenColumns.add(columnName);
+
+    const modelIndex = model.getColumnIndexByName(columnName);
+    const visibleIndex = GridUtils.getVisibleIndex(modelIndex, movedColumns);
+    const newMovedColumns = GridUtils.moveItem(
+      visibleIndex,
+      allFrozenColumns.size - 1,
+      movedColumns
+    );
 
     this.setState({
       frozenColumns: [...allFrozenColumns],
+      movedColumns: newMovedColumns,
     });
   }
 
   unFreezeColumnByColumnName(columnName) {
-    const { frozenColumns } = this.state;
+    const { frozenColumns, movedColumns } = this.state;
     const { model } = this.props;
     log.debug2('unfreezing column', columnName);
 
-    let allFrozenColumns;
+    const allFrozenColumns =
+      frozenColumns == null
+        ? new Set(model.layoutHints?.frozenColumns)
+        : new Set(frozenColumns);
 
-    if (frozenColumns == null) {
-      allFrozenColumns = new Set(model.layoutHints?.frozenColumns ?? []);
-      allFrozenColumns.delete(columnName);
-    } else {
-      allFrozenColumns = new Set(
-        frozenColumns.filter(col => col !== columnName)
-      );
-    }
+    allFrozenColumns.delete(columnName);
+
+    const modelIndex = model.getColumnIndexByName(columnName);
+    const visibleIndex = GridUtils.getVisibleIndex(modelIndex, movedColumns);
+
+    // Move to after remaining frozen columns and front columns
+    const newMovedColumns = GridUtils.moveItem(
+      visibleIndex,
+      allFrozenColumns.size + model.frontColumns.length,
+      movedColumns
+    );
 
     this.setState({
       frozenColumns: [...allFrozenColumns],
+      movedColumns: newMovedColumns,
     });
   }
 
