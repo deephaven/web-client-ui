@@ -56,11 +56,13 @@ const ContextMenuItem = React.forwardRef<HTMLDivElement, ContextMenuItemProps>(
         isMouseSelected,
         iconElement,
         displayShortcut,
-        'data-testid': dataTestId,
       };
-      return React.cloneElement(element, {
-        forwardedProps,
-      });
+      return React.cloneElement(
+        React.cloneElement(element, {
+          forwardedProps,
+        }),
+        { 'data-testid': dataTestId }
+      );
     }
 
     const {
