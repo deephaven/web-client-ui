@@ -1,11 +1,12 @@
 import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { ToolType } from '@deephaven/dashboard-core-plugins';
 import dh from '@deephaven/jsapi-shim';
 import { TestUtils } from '@deephaven/utils';
+import userEvent from '@testing-library/user-event';
+import { DEFAULT_DASHBOARD_ID } from '@deephaven/dashboard';
 import { AppMainContainer } from './AppMainContainer';
 import LocalWorkspaceStorage from '../storage/LocalWorkspaceStorage';
-import userEvent from '@testing-library/user-event';
 
 function makeSession() {
   return {
@@ -75,13 +76,44 @@ function getAppMainContainer({
     />
   );
 }
-
+let mockProp = {};
+let mockId = DEFAULT_DASHBOARD_ID;
 jest.mock('@deephaven/dashboard', () => ({
   ...jest.requireActual('@deephaven/dashboard'),
   __esModule: true,
-  Dashboard: jest.fn(() => null),
+  Dashboard: jest.fn(({ hydrate }) => {
+    const result = hydrate(mockProp, mockId);
+    if (result.fetch) {
+      result.fetch();
+    }
+    return <p>{JSON.stringify(result)}</p>;
+  }),
   default: jest.fn(),
 }));
+
+// jest.mock('@deephaven/components', () => ({
+//   ...jest.requireActual('@deephaven/components'),
+//   __esModule: true,
+//   Popper: jest.fn(({ children }) => {
+//     return children;
+//   }),
+//   default: jest.fn(),
+// }));
+
+let spy;
+beforeEach(() => {
+  spy = jest.spyOn(window, 'requestAnimationFrame').mockImplementation(cb => {
+    // mock request animation frame
+    // see https://github.com/deephaven/web-client-ui/issues/508
+    // only safe to mock like this if RAF is non-recursive
+    cb(0);
+    return 0;
+  });
+});
+
+afterEach(() => {
+  spy.mockRestore();
+});
 
 it('mounts and unmounts AppMainContainer without crashing', () => {
   render(getAppMainContainer());
@@ -97,10 +129,14 @@ it('listens for widgets properly', () => {
     callback = cb;
   });
 
-  const { rerender } = render(getAppMainContainer({ session }));
-  //expect(wrapper.state('widgets')).toEqual(expect.arrayContaining([]));panel-list-item-${widget.name ?? ''}-button
-  //expect(screen.getAllByTestId("panel-list-item-button"))
+  render(getAppMainContainer({ session }));
+
   expect(session.connection.subscribeToFieldUpdates).toHaveBeenCalled();
+
+  const panelsButton = screen.getByRole('button', { name: 'Panels' });
+  userEvent.click(panelsButton);
+
+  expect(screen.getByText('No bound variables found.')).toBeTruthy();
 
   callback({
     created: [TABLE_A],
@@ -108,92 +144,69 @@ it('listens for widgets properly', () => {
     updated: [],
   });
 
-  const panelsButton = screen.getByRole('button', { name: 'Panels' });
-  userEvent.click(panelsButton);
-  console.log(panelsButton);
-  //wrapper.getAllByRole('button', { name: 'a' });
-  //rerender(getAppMainContainer({ session }));
+  expect(screen.getByRole('button', { name: 'a' })).toBeTruthy();
 
-  waitFor(
-    expect(screen.getAllByRole('button', { name: 'a' }).length).toEqual(1)
-  );
+  callback({
+    created: [TABLE_B],
+    removed: [],
+    updated: [TABLE_A],
+  });
 
-  // expect(wrapper.state('widgets')).toEqual(expect.arrayContaining([TABLE_A]));
+  expect(screen.getByRole('button', { name: 'a' })).toBeTruthy();
+  expect(screen.getByRole('button', { name: 'b' })).toBeTruthy();
 
-  // callback({
-  //   created: [TABLE_B],
-  //   removed: [],
-  //   updated: [TABLE_A],
-  // });
+  callback({
+    created: [],
+    removed: [TABLE_A],
+    updated: [],
+  });
 
-  // expect(wrapper.state('widgets')).toEqual(
-  //   expect.arrayContaining([TABLE_A, TABLE_B])
-  // );
+  expect(screen.queryByRole('button', { name: 'a' })).toBeNull();
+  expect(screen.getByRole('button', { name: 'b' })).toBeTruthy();
 
-  // callback({
-  //   created: [],
-  //   removed: [TABLE_A],
-  //   updated: [],
-  // });
+  callback({
+    created: [TABLE_A],
+    removed: [TABLE_B],
+    updated: [],
+  });
 
-  // expect(wrapper.state('widgets')).toEqual(expect.arrayContaining([TABLE_B]));
-
-  // callback({
-  //   created: [TABLE_A],
-  //   removed: [TABLE_B],
-  //   updated: [],
-  // });
-
-  // expect(wrapper.state('widgets')).toEqual(expect.arrayContaining([TABLE_A]));
+  expect(screen.queryByRole('button', { name: 'b' })).toBeNull();
+  expect(screen.getByRole('button', { name: 'a' })).toBeTruthy();
 });
 
-// describe('hydrates widgets correctly', () => {
-//   const localDashboardId = DEFAULT_DASHBOARD_ID;
-//   let session = null;
-//   let wrapper = null;
+describe('hydrates widgets correctly', () => {
+  const localDashboardId = DEFAULT_DASHBOARD_ID;
+  let session = null;
+  it('hydrates empty props with defaults', () => {
+    session = makeSession();
+    mockProp = {};
+    mockId = localDashboardId;
+    render(getAppMainContainer({ session }));
+    expect(
+      screen.getByText('{"metadata":{},"localDashboardId":"default"}')
+    ).toBeTruthy();
+  });
+  it('does not try and add fetch when metadata does not have widget metadata', () => {
+    session = makeSession();
+    mockProp = { metadata: {} };
+    mockId = localDashboardId;
+    render(getAppMainContainer({ session }));
+    expect(
+      screen.getByText('{"metadata":{},"localDashboardId":"default"}')
+    ).toBeTruthy();
+  });
+  it('hydrates a widget properly', () => {
+    session = makeSession();
+    mockProp = { metadata: { type: 'TestType', name: 'TestName' } };
+    mockId = localDashboardId;
+    expect(session.getObject).not.toHaveBeenCalled();
+    render(getAppMainContainer({ session }));
 
-//   beforeEach(() => {
-//     session = makeSession();
-//     wrapper = makeAppMainContainer({ session });
-//   });
-
-//   it('hydrates empty props with defaults', () => {
-//     const result = wrapper.instance().hydrateDefault({}, localDashboardId);
-//     expect(result).toEqual(
-//       expect.objectContaining({
-//         localDashboardId: DEFAULT_DASHBOARD_ID,
-//       })
-//     );
-//     expect(result).not.toEqual(expect.objectContaining({ fetch: expect.any }));
-//   });
-
-//   it('does not try and add fetch when metadata does not have widget metadata', () => {
-//     const result = wrapper
-//       .instance()
-//       .hydrateDefault({ metadata: {} }, localDashboardId);
-//     expect(result).toEqual(
-//       expect.objectContaining({
-//         localDashboardId: DEFAULT_DASHBOARD_ID,
-//       })
-//     );
-//     expect(result).not.toEqual(expect.objectContaining({ fetch: expect.any }));
-//   });
-
-//   it('hydrates a widget properly', () => {
-//     const result = wrapper
-//       .instance()
-//       .hydrateDefault(
-//         { metadata: { type: 'TestType', name: 'TestName' } },
-//         localDashboardId
-//       );
-//     expect(result).toEqual(
-//       expect.objectContaining({
-//         localDashboardId: DEFAULT_DASHBOARD_ID,
-//         fetch: expect.any(Function),
-//       })
-//     );
-//     expect(session.getObject).not.toHaveBeenCalled();
-//     result.fetch();
-//     expect(session.getObject).toHaveBeenCalled();
-//   });
-// });
+    expect(
+      screen.getByText(
+        '{"localDashboardId":"default","metadata":{"type":"TestType","name":"TestName"}}'
+      )
+    ).toBeTruthy();
+    expect(session.getObject).toHaveBeenCalled();
+  });
+});
