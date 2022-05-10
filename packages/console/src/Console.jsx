@@ -778,6 +778,7 @@ export class Console extends PureComponent {
       commandHistoryStorage,
       timeZone,
       disabled,
+      unzip,
     } = this.props;
     const {
       consoleHeight,
@@ -822,6 +823,7 @@ export class Console extends PureComponent {
                 dragError={dragError}
                 onError={this.handleCsvError}
                 uploadInProgress={csvUploadInProgress}
+                allowZip={unzip != null}
               />
             )}
             <div
@@ -863,6 +865,7 @@ export class Console extends PureComponent {
               paste={csvPaste}
               onInProgress={this.handleCsvInProgress}
               timeZone={timeZone}
+              unzip={unzip}
             />
           )}
         </div>
@@ -896,6 +899,12 @@ Console.propTypes = {
   objectMap: PropTypes.instanceOf(Map),
 
   disabled: PropTypes.bool,
+
+  /**
+   * Function to unzip a zip file. If not provided, zip files will not be accepted
+   * (file:File) => Promise<File[]>
+   */
+  unzip: PropTypes.func,
 };
 
 Console.defaultProps = {
@@ -908,6 +917,7 @@ Console.defaultProps = {
   timeZone: 'America/New_York',
   objectMap: new Map(),
   disabled: false,
+  unzip: null,
 };
 
 export default Console;

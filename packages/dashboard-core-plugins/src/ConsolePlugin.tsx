@@ -4,6 +4,7 @@ import {
   DashboardPluginComponentProps,
   LayoutUtils,
   PanelComponent,
+  PanelHydrateFunction,
   useListener,
 } from '@deephaven/dashboard';
 import { FileUtils } from '@deephaven/file-explorer';
@@ -34,11 +35,21 @@ function isNotebookPanel(
   return (panel as NotebookPanelComponent).notebook !== undefined;
 }
 
-export type ConsolePluginProps = Partial<DashboardPluginComponentProps>;
+export type ConsolePluginProps = DashboardPluginComponentProps & {
+  hydrateConsole?: PanelHydrateFunction;
+};
 
-export const ConsolePlugin = (props: ConsolePluginProps): JSX.Element => {
+export function assertIsConsolePluginProps(
+  props: Partial<ConsolePluginProps>
+): asserts props is ConsolePluginProps {
   assertIsDashboardPluginProps(props);
-  const { id, layout, panelManager, registerComponent } = props;
+}
+
+export const ConsolePlugin = (
+  props: Partial<ConsolePluginProps>
+): JSX.Element => {
+  assertIsConsolePluginProps(props);
+  const { id, hydrateConsole, layout, panelManager, registerComponent } = props;
   const notebookIndex = useRef(0);
   // Map from file ID to panel ID
   const [openFileMap] = useState(new Map<string, string>());
@@ -435,7 +446,7 @@ export const ConsolePlugin = (props: ConsolePluginProps): JSX.Element => {
   useEffect(
     function registerComponentsAndReturnCleanup() {
       const cleanups = [
-        registerComponent(ConsolePanel.COMPONENT, ConsolePanel),
+        registerComponent(ConsolePanel.COMPONENT, ConsolePanel, hydrateConsole),
         registerComponent(CommandHistoryPanel.COMPONENT, CommandHistoryPanel),
         registerComponent(FileExplorerPanel.COMPONENT, FileExplorerPanel),
         registerComponent(LogPanel.COMPONENT, LogPanel),
@@ -446,7 +457,7 @@ export const ConsolePlugin = (props: ConsolePluginProps): JSX.Element => {
         cleanups.forEach(cleanup => cleanup());
       };
     },
-    [registerComponent]
+    [registerComponent, hydrateConsole]
   );
 
   useListener(layout.eventHub, ConsoleEvent.SEND_COMMAND, handleSendCommand);

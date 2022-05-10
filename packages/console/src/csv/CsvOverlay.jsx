@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import memoize from 'memoize-one';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { ContextActions, GLOBAL_SHORTCUTS } from '@deephaven/components';
 import {
@@ -12,10 +13,15 @@ import {
   vsWarning,
 } from '@deephaven/icons';
 import './CsvOverlay.scss';
+import { TextUtils } from '@deephaven/utils';
 
 const PASTED_VALUES = 'pasted values';
 
 const INVALID_MIME_TYPES = [/^audio.*/, /^font.*/, /^image.*/, /^video.*/];
+
+const VALID_EXTENSIONS = ['.csv', '.tsv', '.tab', '.psv', '.dsv', '.txt'];
+
+const ZIP_EXTENSIONS = ['.zip'];
 
 /**
  * Overlay that is displayed when uploading a CSV file.
@@ -33,15 +39,10 @@ class CsvOverlay extends Component {
     );
   }
 
-  static isValidExtension(name) {
+  static isValidExtension(name, allowZip = false) {
     return (
-      name.endsWith('.csv') ||
-      name.endsWith('.zip') ||
-      name.endsWith('.tsv') ||
-      name.endsWith('.tab') ||
-      name.endsWith('.psv') ||
-      name.endsWith('.dsv') ||
-      name.endsWith('.txt')
+      VALID_EXTENSIONS.some(ext => name.endsWith(ext)) ||
+      (allowZip && ZIP_EXTENSIONS.some(ext => name.endsWith(ext)))
     );
   }
 
@@ -103,7 +104,7 @@ class CsvOverlay extends Component {
   }
 
   handleDrop(e) {
-    const { clearDragError, dragError } = this.props;
+    const { allowZip, clearDragError, dragError } = this.props;
     e.preventDefault();
     e.stopPropagation();
 
@@ -117,7 +118,7 @@ class CsvOverlay extends Component {
     }
 
     const file = e.dataTransfer.items[0].getAsFile();
-    if (CsvOverlay.isValidExtension(file.name)) {
+    if (CsvOverlay.isValidExtension(file.name, allowZip)) {
       this.handleFile(file);
     } else {
       this.setState({
@@ -182,8 +183,20 @@ class CsvOverlay extends Component {
     ];
   }
 
+  getValidExtensions = memoize(allowZip =>
+    allowZip ? [...VALID_EXTENSIONS, ...ZIP_EXTENSIONS] : [...VALID_EXTENSIONS]
+  );
+
+  getAcceptString = memoize(allowZip =>
+    this.getValidExtensions(allowZip).join(', ')
+  );
+
+  getFileTypeErrorString = memoize(allowZip =>
+    TextUtils.join(this.getValidExtensions(allowZip), 'or')
+  );
+
   render() {
-    const { dragError, uploadInProgress } = this.props;
+    const { allowZip, dragError, uploadInProgress } = this.props;
     const { selectedFileName, dropError } = this.state;
     const error = dragError || dropError;
     const contextActions = this.makeContextMenuItems();
@@ -200,9 +213,10 @@ class CsvOverlay extends Component {
           ref={this.fileElem}
           type="file"
           id="fileElem"
-          accept=".csv, .tsv, .tab, .zip, .psv, .dsv, .txt"
+          accept={this.getAcceptString(allowZip)}
           style={{ display: 'none' }}
           onChange={this.handleFiles}
+          data-testid="fileElem"
         />
         {!selectedFileName && !error && (
           <div className="message-content">
@@ -252,9 +266,7 @@ class CsvOverlay extends Component {
             <label>{error}</label>
             {error === CsvOverlay.FILE_TYPE_ERROR && (
               <div className="message-small">
-                <label>
-                  Please select a .csv, .tsv, .tab, .psv, .dsv, .txt or .zip
-                </label>
+                <label>{this.getFileTypeErrorString(allowZip)}</label>
               </div>
             )}
           </div>
@@ -265,6 +277,7 @@ class CsvOverlay extends Component {
 }
 
 CsvOverlay.propTypes = {
+  allowZip: PropTypes.bool,
   onFileOpened: PropTypes.func.isRequired,
   onPaste: PropTypes.func.isRequired,
   clearDragError: PropTypes.func.isRequired,
@@ -274,6 +287,7 @@ CsvOverlay.propTypes = {
 };
 
 CsvOverlay.defaultProps = {
+  allowZip: false,
   dragError: null,
 };
 
