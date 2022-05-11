@@ -549,11 +549,11 @@ export function getTextForStringCondition(
     case StringCondition.CONTAINS:
       return `${columnName} != null && ${columnName}.contains("${value}")`;
     case StringCondition.DOES_NOT_CONTAIN:
-      return `!${columnName} != null && !${columnName}.contains("${value}")`;
+      return `${columnName} != null && !${columnName}.contains("${value}")`;
     case StringCondition.STARTS_WITH:
-      return `!${columnName} != null && ${columnName}.startsWith("${value}")`;
+      return `${columnName} != null && ${columnName}.startsWith("${value}")`;
     case StringCondition.ENDS_WITH:
-      return `!${columnName} != null && ${columnName}.endsWith("${value}")`;
+      return `${columnName} != null && ${columnName}.endsWith("${value}")`;
     case StringCondition.IS_NULL:
       return `${columnName} == null`;
     case StringCondition.IS_NOT_NULL:
@@ -653,10 +653,10 @@ export function getFormatColumns(
   rules: FormattingRule[]
 ): CustomColumn[] {
   const result: CustomColumn[] = [];
-  const ruleMap = {
-    [FormatterType.ROWS]: new Map<string, [string, CustomColumn]>(),
-    [FormatterType.CONDITIONAL]: new Map<string, [string, CustomColumn]>(),
-  };
+  // There can be only one row format custom column
+  // and multiple column format custom columns (one per column)
+  let rowFormatConfig = undefined as [string, CustomColumn] | undefined;
+  const columnFormatConfigMap = new Map<string, [string, CustomColumn]>();
   rules.forEach(({ config, type: formatterType }) => {
     const { column } = config;
     // Check both name and type because the type can change
@@ -671,9 +671,10 @@ export function getFormatColumns(
       return;
     }
     // Stack ternary format conditions by column
-    const [prevRule, prevFormatColumn] = ruleMap[formatterType].get(
-      col.name
-    ) ?? ['null', undefined];
+    const [prevRule, prevFormatColumn] = (formatterType ===
+    FormatterType.CONDITIONAL
+      ? columnFormatConfigMap.get(col.name)
+      : rowFormatConfig) ?? ['null', undefined];
     const rule = makeTernaryFormatRule(config, prevRule);
     if (rule === undefined) {
       log.debug(`Ignoring format rule.`, config);
@@ -690,7 +691,11 @@ export function getFormatColumns(
         ? makeColumnFormatColumn(col, rule)
         : makeRowFormatColumn(rule);
     result.push(formatColumn);
-    ruleMap[formatterType].set(col.name, [rule, formatColumn]);
+    if (formatterType === FormatterType.CONDITIONAL) {
+      columnFormatConfigMap.set(col.name, [rule, formatColumn]);
+    } else {
+      rowFormatConfig = [rule, formatColumn];
+    }
   });
 
   return result;
