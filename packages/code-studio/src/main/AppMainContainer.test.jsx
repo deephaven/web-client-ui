@@ -1,9 +1,10 @@
 import React from 'react';
-import { shallow } from 'enzyme';
+import { render, screen } from '@testing-library/react';
 import { ToolType } from '@deephaven/dashboard-core-plugins';
-import { DEFAULT_DASHBOARD_ID } from '@deephaven/dashboard';
 import dh from '@deephaven/jsapi-shim';
 import { TestUtils } from '@deephaven/utils';
+import userEvent from '@testing-library/user-event';
+import { DEFAULT_DASHBOARD_ID } from '@deephaven/dashboard';
 import { AppMainContainer } from './AppMainContainer';
 import LocalWorkspaceStorage from '../storage/LocalWorkspaceStorage';
 
@@ -32,7 +33,7 @@ function makeMatch() {
   };
 }
 
-function makeAppMainContainer({
+function renderAppMainContainer({
   layoutStorage = {},
   user = TestUtils.REGULAR_USER,
   dashboardData = {},
@@ -52,7 +53,7 @@ function makeAppMainContainer({
   match = makeMatch(),
   plugins = new Map(),
 } = {}) {
-  return shallow(
+  return render(
     <AppMainContainer
       dashboardData={dashboardData}
       layoutStorage={layoutStorage}
@@ -75,10 +76,38 @@ function makeAppMainContainer({
     />
   );
 }
+let mockProp = {};
+let mockId = DEFAULT_DASHBOARD_ID;
+jest.mock('@deephaven/dashboard', () => ({
+  ...jest.requireActual('@deephaven/dashboard'),
+  __esModule: true,
+  Dashboard: jest.fn(({ hydrate }) => {
+    const result = hydrate(mockProp, mockId);
+    if (result.fetch) {
+      result.fetch();
+    }
+    return <p>{JSON.stringify(result)}</p>;
+  }),
+  default: jest.fn(),
+}));
+
+let spy;
+beforeEach(() => {
+  spy = jest.spyOn(window, 'requestAnimationFrame').mockImplementation(cb => {
+    // mock request animation frame
+    // see https://github.com/deephaven/web-client-ui/issues/508
+    // only safe to mock like this if RAF is non-recursive
+    cb(0);
+    return 0;
+  });
+});
+
+afterEach(() => {
+  spy.mockRestore();
+});
 
 it('mounts and unmounts AppMainContainer without crashing', () => {
-  const wrapper = makeAppMainContainer();
-  wrapper.unmount();
+  renderAppMainContainer();
 });
 
 it('listens for widgets properly', () => {
@@ -91,10 +120,14 @@ it('listens for widgets properly', () => {
     callback = cb;
   });
 
-  const wrapper = makeAppMainContainer({ session });
+  renderAppMainContainer({ session });
 
-  expect(wrapper.state('widgets')).toEqual(expect.arrayContaining([]));
   expect(session.connection.subscribeToFieldUpdates).toHaveBeenCalled();
+
+  const panelsButton = screen.getByRole('button', { name: 'Panels' });
+  userEvent.click(panelsButton);
+
+  expect(screen.getByText('No bound variables found.')).toBeTruthy();
 
   callback({
     created: [TABLE_A],
@@ -102,7 +135,7 @@ it('listens for widgets properly', () => {
     updated: [],
   });
 
-  expect(wrapper.state('widgets')).toEqual(expect.arrayContaining([TABLE_A]));
+  expect(screen.getByRole('button', { name: 'a' })).toBeTruthy();
 
   callback({
     created: [TABLE_B],
@@ -110,9 +143,8 @@ it('listens for widgets properly', () => {
     updated: [TABLE_A],
   });
 
-  expect(wrapper.state('widgets')).toEqual(
-    expect.arrayContaining([TABLE_A, TABLE_B])
-  );
+  expect(screen.getByRole('button', { name: 'a' })).toBeTruthy();
+  expect(screen.getByRole('button', { name: 'b' })).toBeTruthy();
 
   callback({
     created: [],
@@ -120,7 +152,8 @@ it('listens for widgets properly', () => {
     updated: [],
   });
 
-  expect(wrapper.state('widgets')).toEqual(expect.arrayContaining([TABLE_B]));
+  expect(screen.queryByRole('button', { name: 'a' })).toBeNull();
+  expect(screen.getByRole('button', { name: 'b' })).toBeTruthy();
 
   callback({
     created: [TABLE_A],
@@ -128,58 +161,44 @@ it('listens for widgets properly', () => {
     updated: [],
   });
 
-  expect(wrapper.state('widgets')).toEqual(expect.arrayContaining([TABLE_A]));
-
-  wrapper.unmount();
+  expect(screen.queryByRole('button', { name: 'b' })).toBeNull();
+  expect(screen.getByRole('button', { name: 'a' })).toBeTruthy();
 });
 
 describe('hydrates widgets correctly', () => {
   const localDashboardId = DEFAULT_DASHBOARD_ID;
   let session = null;
-  let wrapper = null;
-
   beforeEach(() => {
     session = makeSession();
-    wrapper = makeAppMainContainer({ session });
   });
 
   it('hydrates empty props with defaults', () => {
-    const result = wrapper.instance().hydrateDefault({}, localDashboardId);
-    expect(result).toEqual(
-      expect.objectContaining({
-        localDashboardId: DEFAULT_DASHBOARD_ID,
-      })
-    );
-    expect(result).not.toEqual(expect.objectContaining({ fetch: expect.any }));
+    mockProp = {};
+    mockId = localDashboardId;
+    renderAppMainContainer({ session });
+    expect(
+      screen.getByText('{"metadata":{},"localDashboardId":"default"}')
+    ).toBeTruthy();
   });
-
   it('does not try and add fetch when metadata does not have widget metadata', () => {
-    const result = wrapper
-      .instance()
-      .hydrateDefault({ metadata: {} }, localDashboardId);
-    expect(result).toEqual(
-      expect.objectContaining({
-        localDashboardId: DEFAULT_DASHBOARD_ID,
-      })
-    );
-    expect(result).not.toEqual(expect.objectContaining({ fetch: expect.any }));
+    mockProp = { metadata: {} };
+    mockId = localDashboardId;
+    renderAppMainContainer({ session });
+    expect(
+      screen.getByText('{"metadata":{},"localDashboardId":"default"}')
+    ).toBeTruthy();
   });
-
   it('hydrates a widget properly', () => {
-    const result = wrapper
-      .instance()
-      .hydrateDefault(
-        { metadata: { type: 'TestType', name: 'TestName' } },
-        localDashboardId
-      );
-    expect(result).toEqual(
-      expect.objectContaining({
-        localDashboardId: DEFAULT_DASHBOARD_ID,
-        fetch: expect.any(Function),
-      })
-    );
+    mockProp = { metadata: { type: 'TestType', name: 'TestName' } };
+    mockId = localDashboardId;
     expect(session.getObject).not.toHaveBeenCalled();
-    result.fetch();
+    renderAppMainContainer({ session });
+
+    expect(
+      screen.getByText(
+        '{"localDashboardId":"default","metadata":{"type":"TestType","name":"TestName"}}'
+      )
+    ).toBeTruthy();
     expect(session.getObject).toHaveBeenCalled();
   });
 });
