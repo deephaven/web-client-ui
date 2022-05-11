@@ -1,6 +1,7 @@
 import React from 'react';
-import { mount, ReactWrapper } from 'enzyme';
 import { Range } from '@deephaven/utils';
+import { fireEvent, render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import ItemList from './ItemList';
 
 function makeItems(count = 20) {
@@ -24,7 +25,7 @@ function makeItemList({
   onSelectionChange = jest.fn(),
   onViewportChange = jest.fn(),
 } = {}) {
-  return mount(
+  return render(
     <ItemList
       isDoubleClickSelect={isDoubleClickSelect}
       isMultiSelect={isMultiSelect}
@@ -40,82 +41,57 @@ function makeItemList({
 }
 
 it('mounts and unmounts properly', () => {
-  const itemList = makeItemList();
-  itemList.unmount();
+  makeItemList();
 });
 
 describe('mouse', () => {
-  function clickItem(
-    itemList: ReactWrapper,
-    itemIndex: number,
-    options = {}
-  ): void {
-    itemList
-      .find('.item-list-item')
-      .at(itemIndex)
-      .simulate('mousedown', options);
-
-    itemList.find('.item-list-item').at(itemIndex).simulate('mouseup', options);
+  function clickItem(itemIndex: number, options = {}): void {
+    const item = screen.getByText(`${itemIndex}`);
+    userEvent.click(item, options);
   }
 
-  function doubleClickItem(
-    itemList: ReactWrapper,
-    itemIndex: number,
-    options = {}
-  ): void {
-    itemList
-      .find('.item-list-item')
-      .at(itemIndex)
-      .simulate('dblclick', options);
+  function doubleClickItem(itemIndex: number, options = {}): void {
+    const item = screen.getByText(`${itemIndex}`);
+    userEvent.dblClick(item, options);
   }
 
-  function rightClickItem(
-    itemList: ReactWrapper,
-    itemIndex: number,
-    options = {}
-  ): void {
-    itemList
-      .find('.item-list-item')
-      .at(itemIndex)
-      .simulate('contextmenu', options);
+  function rightClickItem(itemIndex: number, options = {}): void {
+    const item = screen.getByText(`${itemIndex}`);
+    fireEvent.contextMenu(item, options);
   }
 
   it('sends onSelect when an item is clicked', () => {
     const onSelect = jest.fn();
-    const itemList = makeItemList({ onSelect });
+    makeItemList({ onSelect });
 
-    clickItem(itemList, 3);
+    clickItem(3);
 
     expect(onSelect).toHaveBeenCalledWith(3, expect.anything());
-
-    itemList.unmount();
   });
 
   it('sends onSelect only when double clicked if isDoubleClickSelect is true', () => {
     const onSelect = jest.fn();
-    const itemList = makeItemList({ onSelect, isDoubleClickSelect: true });
+    makeItemList({ onSelect, isDoubleClickSelect: true });
 
-    clickItem(itemList, 3);
+    clickItem(3);
 
     expect(onSelect).not.toHaveBeenCalled();
 
-    doubleClickItem(itemList, 3);
+    doubleClickItem(3);
 
     expect(onSelect).toHaveBeenCalledWith(3, expect.anything());
-
-    itemList.unmount();
   });
 
   it('extends the selection when shift clicked', () => {
     const onSelect = jest.fn();
     const onSelectionChange = jest.fn();
-    const itemList = makeItemList({
+    makeItemList({
       isMultiSelect: true,
       onSelect,
       onSelectionChange,
     });
 
-    clickItem(itemList, 3);
+    clickItem(3);
 
     expect(onSelect).toHaveBeenCalledWith(3, expect.anything());
     expect(onSelectionChange).toHaveBeenCalledWith([[3, 3]]);
@@ -123,24 +99,22 @@ describe('mouse', () => {
     onSelectionChange.mockClear();
     onSelect.mockClear();
 
-    clickItem(itemList, 6, { shiftKey: true });
+    clickItem(6, { shiftKey: true });
 
     expect(onSelect).not.toHaveBeenCalled();
     expect(onSelectionChange).toHaveBeenCalledWith([[3, 6]]);
-
-    itemList.unmount();
   });
 
   it('selects multiple items with Ctrl+Click', () => {
     const onSelect = jest.fn();
     const onSelectionChange = jest.fn();
-    const itemList = makeItemList({
+    makeItemList({
       isMultiSelect: true,
       onSelect,
       onSelectionChange,
     });
 
-    clickItem(itemList, 3);
+    clickItem(3);
 
     expect(onSelect).toHaveBeenCalledWith(3, expect.anything());
     expect(onSelectionChange).toHaveBeenCalledWith([[3, 3]]);
@@ -148,15 +122,13 @@ describe('mouse', () => {
     onSelectionChange.mockClear();
     onSelect.mockClear();
 
-    clickItem(itemList, 6, { ctrlKey: true });
+    clickItem(6, { ctrlKey: true });
 
     expect(onSelect).not.toHaveBeenCalled();
     expect(onSelectionChange).toHaveBeenCalledWith([
       [3, 3],
       [6, 6],
     ]);
-
-    itemList.unmount();
   });
 
   describe('context menu', () => {
@@ -174,7 +146,7 @@ describe('mouse', () => {
         onSelectionChange,
       });
 
-      clickItem(itemList, firstIndex);
+      clickItem(firstIndex);
 
       expect(onSelect).toHaveBeenCalledWith(firstIndex, expect.anything());
       expect(onSelectionChange).toHaveBeenCalledWith([
@@ -184,7 +156,7 @@ describe('mouse', () => {
       onSelectionChange.mockClear();
       onSelect.mockClear();
 
-      rightClickItem(itemList, secondIndex, mouseOptions);
+      rightClickItem(secondIndex, mouseOptions);
 
       expect(onSelect).not.toHaveBeenCalled();
       if (expectedSelectionChange != null) {
@@ -223,13 +195,13 @@ describe('mouse', () => {
     it('maintains selection if right-clicked item is selected', () => {
       const onSelect = jest.fn();
       const onSelectionChange = jest.fn();
-      const itemList = makeItemList({
+      makeItemList({
         isMultiSelect: true,
         onSelect,
         onSelectionChange,
       });
 
-      clickItem(itemList, 3);
+      clickItem(3);
 
       expect(onSelect).toHaveBeenCalledWith(3, expect.anything());
       expect(onSelectionChange).toHaveBeenCalledWith([[3, 3]]);
@@ -237,7 +209,7 @@ describe('mouse', () => {
       onSelectionChange.mockClear();
       onSelect.mockClear();
 
-      clickItem(itemList, 5, { ctrlKey: true });
+      clickItem(5, { ctrlKey: true });
 
       expect(onSelect).not.toHaveBeenCalled();
       expect(onSelectionChange).toHaveBeenCalledWith([
@@ -248,35 +220,56 @@ describe('mouse', () => {
       onSelectionChange.mockClear();
       onSelect.mockClear();
 
-      rightClickItem(itemList, 5);
+      rightClickItem(5);
 
       expect(onSelect).not.toHaveBeenCalled();
       expect(onSelectionChange).not.toHaveBeenCalled();
-
-      itemList.unmount();
     });
   });
 });
 
+function checkFocus(elementList, index) {
+  for (let i = 0; i < 20; i += 1) {
+    if (i === index) {
+      expect(elementList[i]).toHaveFocus();
+    } else {
+      expect(elementList[i]).not.toHaveFocus();
+    }
+  }
+}
 it('handles keyboard up and down properly', () => {
   const itemList = makeItemList();
 
-  expect(itemList.state('focusIndex')).toBe(null);
+  const correctList = itemList.baseElement.firstChild.firstChild;
 
-  itemList.simulate('keydown', { key: 'ArrowDown' });
+  const items = screen.getAllByRole('presentation').splice(1);
 
-  expect(itemList.state('focusIndex')).toBe(0);
+  checkFocus(items, -1);
 
-  itemList.simulate('keydown', { key: 'ArrowDown' });
-  itemList.simulate('keydown', { key: 'ArrowDown' });
-  itemList.simulate('keydown', { key: 'ArrowDown' });
+  fireEvent.keyDown(correctList, {
+    key: 'ArrowDown',
+  });
 
-  expect(itemList.state('focusIndex')).toBe(3);
+  checkFocus(items, 0);
 
-  itemList.simulate('keydown', { key: 'ArrowUp' });
-  itemList.simulate('keydown', { key: 'ArrowUp' });
+  fireEvent.keyDown(correctList, {
+    key: 'ArrowDown',
+  });
+  fireEvent.keyDown(correctList, {
+    key: 'ArrowDown',
+  });
+  fireEvent.keyDown(correctList, {
+    key: 'ArrowDown',
+  });
 
-  expect(itemList.state('focusIndex')).toBe(1);
+  checkFocus(items, 3);
 
-  itemList.unmount();
+  fireEvent.keyDown(correctList, {
+    key: 'ArrowUp',
+  });
+  fireEvent.keyDown(correctList, {
+    key: 'ArrowUp',
+  });
+
+  checkFocus(items, 1);
 });

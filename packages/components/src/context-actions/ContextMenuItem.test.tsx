@@ -2,18 +2,16 @@ import React, { Component } from 'react';
 import { render, screen } from '@testing-library/react';
 import ContextMenuItem from './ContextMenuItem';
 
-type JSONValue =
-  | string
-  | number
-  | boolean
-  | { [x: string]: JSONValue }
-  | Array<JSONValue>;
-
 type ClassComponentProps = {
   closeMenu?(): void;
-  forwardedProps?: JSONValue;
+  forwardedProps?: ForwardedProps;
   'data-testid'?: string;
 };
+
+type ForwardedProps = {
+  closeMenu?;
+};
+
 class ClassComponent extends Component<ClassComponentProps> {
   constructor(props) {
     super(props);
@@ -48,7 +46,7 @@ function mountContextMenuItem(propsParam = {}) {
   };
   const props = { ...defaultProps, ...propsParam };
 
-  // eslint-disable-n ext-line react/jsx-props-no-spreading
+  // eslint-disable-next-line react/jsx-props-no-spreading
   return render(<ContextMenuItem {...props} />);
 }
 
@@ -65,23 +63,19 @@ describe('menuElement', () => {
   });
 
   it('passes forwardedProps prop to a functional component', () => {
-    const TestComponent = props => {
-      const { forwardedProps } = props;
-      if (forwardedProps) {
-        return <p>{JSON.stringify(forwardedProps)}</p>;
-      }
-      return <p>no forwarded props</p>;
-    };
+    const MenuElement = jest.fn(() => null);
     mountContextMenuItem({
-      menuItem: {
-        menuElement: <TestComponent />,
-      },
+      menuItem: { menuElement: <MenuElement /> },
     });
-    expect(
-      screen.getByText(
-        '{"menuItem":{"menuElement":{"key":null,"ref":null,"props":{},"_owner":null,"_store":{}}},"isKeyboardSelected":false,"isMouseSelected":false,"iconElement":null}'
-      )
-    ).toBeTruthy();
+    expect(MenuElement).toHaveBeenCalledWith(
+      expect.objectContaining({
+        forwardedProps: expect.objectContaining({
+          isKeyboardSelected: false,
+          isMouseSelected: false,
+        }),
+      }),
+      expect.objectContaining({})
+    );
   });
 
   it('passes forwardedProps prop to a class component', () => {
@@ -96,24 +90,41 @@ describe('menuElement', () => {
       )
     ).toBeTruthy();
   });
+
   it('does not override props with conflicting names', () => {
     const menuElementCloseMenuProp = jest.fn(() => false);
     const contextMenuItemCloseMenuProp = jest.fn(() => false);
+
+    const PropComponent = ({ closeMenu }) => {
+      closeMenu();
+      return null;
+    };
     mountContextMenuItem({
       menuItem: {
-        menuElement: <ClassComponent closeMenu={menuElementCloseMenuProp} />,
+        menuElement: <PropComponent closeMenu={menuElementCloseMenuProp} />,
       },
       closeMenu: contextMenuItemCloseMenuProp,
     });
 
     expect(menuElementCloseMenuProp).toHaveBeenCalledTimes(1);
+    expect(contextMenuItemCloseMenuProp).toHaveBeenCalledTimes(0);
   });
 
   it('passes contextMenuItem props in forwardedProps', () => {
+    const PropComponent = ({
+      forwardedProps,
+    }: {
+      forwardedProps?: ForwardedProps;
+    }) => {
+      const { closeMenu } = forwardedProps;
+      closeMenu();
+      return null;
+    };
     const contextMenuItemCloseMenuProp = jest.fn(() => false);
+
     mountContextMenuItem({
       menuItem: {
-        menuElement: <ClassComponent />,
+        menuElement: <PropComponent />,
       },
       closeMenu: contextMenuItemCloseMenuProp,
     });
