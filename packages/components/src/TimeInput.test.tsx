@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { TimeUtils } from '@deephaven/utils';
 import type { SelectionSegment } from './MaskedInput';
@@ -166,7 +166,7 @@ describe('arrow left and right jumps segments', () => {
   ) {
     const { unmount } = makeTimeInput();
     const input: HTMLInputElement = screen.getByRole('textbox');
-
+    input.focus();
     input.setSelectionRange(cursorPosition, cursorPosition);
     userEvent.type(input, '', {
       initialSelectionStart: cursorPosition,
@@ -175,20 +175,33 @@ describe('arrow left and right jumps segments', () => {
 
     const movements: number[] = ([] as number[]).concat(movement);
 
-    console.log(`start ${input.selectionStart} end ${input.selectionEnd}`);
     for (let i = 0; i < movements.length; i += 1) {
       const arrowMovement = movements[i];
 
       for (let j = 0; j < arrowMovement; j += 1) {
-        userEvent.type(input, '{ArrowRight}');
+        fireEvent.keyDown(input, {
+          key: 'ArrowRight',
+        });
+        fireEvent.keyPress(input, {
+          key: 'ArrowRight',
+        });
+        fireEvent.keyUp(input, {
+          key: 'ArrowRight',
+        });
       }
 
       for (let j = 0; j > arrowMovement; j -= 1) {
-        userEvent.type(input, '{arrowleft}');
+        fireEvent.keyDown(input, {
+          key: 'ArrowLeft',
+        });
+        fireEvent.keyPress(input, {
+          key: 'ArrowLeft',
+        });
+        fireEvent.keyUp(input, {
+          key: 'ArrowLeft',
+        });
       }
     }
-
-    console.log(`start ${input.selectionStart} end ${input.selectionEnd}`);
 
     const {
       selectionStart,
@@ -206,85 +219,79 @@ describe('arrow left and right jumps segments', () => {
   it('handles going left', () => {
     testArrowNavigation(0, -1, makeSelection(0, 2, 'backward'));
     testArrowNavigation(0, -10, makeSelection(0, 2, 'backward'));
+    testArrowNavigation(8, -2, makeSelection(0, 2, 'backward'));
     testArrowNavigation(8, -1, makeSelection(3, 5, 'backward'));
-    // testArrowNavigation(8, -2, makeSelection(0, 2, 'backward'));
-    // testArrowNavigation(8, -10, makeSelection(0, 2, 'backward'));
-    // testArrowNavigation(5, -1, makeSelection(0, 2, 'backward'));
+    testArrowNavigation(8, -10, makeSelection(0, 2, 'backward'));
+    testArrowNavigation(5, -1, makeSelection(0, 2, 'backward'));
   });
 
-  // it('handles going right', () => {
-  //   testArrowNavigation(0, 1, makeSelection(3, 5, 'backward'));
-  //   testArrowNavigation(0, 2, makeSelection(6, 8, 'backward'));
-  //   testArrowNavigation(0, 10, makeSelection(6, 8, 'backward'));
-  //   testArrowNavigation(8, 1, makeSelection(6, 8, 'backward'));
-  //   testArrowNavigation(8, 10, makeSelection(6, 8, 'backward'));
-  //   testArrowNavigation(5, 1, makeSelection(6, 8, 'backward'));
-  // });
+  it('handles going right', () => {
+    testArrowNavigation(0, 1, makeSelection(3, 5, 'backward'));
+    testArrowNavigation(0, 2, makeSelection(6, 8, 'backward'));
+    testArrowNavigation(0, 10, makeSelection(6, 8, 'backward'));
+    testArrowNavigation(8, 1, makeSelection(6, 8, 'backward'));
+    testArrowNavigation(8, 10, makeSelection(6, 8, 'backward'));
+    testArrowNavigation(5, 1, makeSelection(6, 8, 'backward'));
+  });
 
-  // it('handles a mix of left/right', () => {
-  //   testArrowNavigation(0, [2, -1], makeSelection(3, 5, 'backward'));
-  //   testArrowNavigation(0, [3, -3], makeSelection(0, 2, 'backward'));
-  //   testArrowNavigation(8, [3, -1], makeSelection(3, 5, 'backward'));
-  // });
+  it('handles a mix of left/right', () => {
+    testArrowNavigation(0, [2, -1], makeSelection(3, 5, 'backward'));
+    testArrowNavigation(0, [3, -3], makeSelection(0, 2, 'backward'));
+    testArrowNavigation(8, [3, -1], makeSelection(3, 5, 'backward'));
+  });
 });
 
-// describe('arrow up and down updates values in segments', () => {
-//   function testArrowValue(
-//     cursorPosition: number,
-//     movement: number | number[],
-//     expectedValue: string,
-//     value = DEFAULT_VALUE
-//   ) {
-//     const timeInput = makeTimeInput({ value });
+describe('arrow up and down updates values in segments', () => {
+  function testArrowValue(
+    cursorPosition: number,
+    movement: number | number[],
+    expectedValue: string,
+    value = DEFAULT_VALUE
+  ) {
+    const { unmount } = makeTimeInput({ value });
 
-//     selectRange(timeInput, makeSelection(cursorPosition, cursorPosition));
+    const input: HTMLInputElement = screen.getByRole('textbox');
 
-//     const movements: number[] = ([] as number[]).concat(movement);
-//     const inputField = timeInput.find('input');
-//     for (let i = 0; i < movements.length; i += 1) {
-//       const arrowMovement = movements[i];
-//       for (let j = 0; j < arrowMovement; j += 1) {
-//         inputField.simulate('keydown', { key: 'ArrowDown' });
-//       }
+    input.setSelectionRange(cursorPosition, cursorPosition);
 
-//       for (let j = 0; j > arrowMovement; j -= 1) {
-//         inputField.simulate('keydown', { key: 'ArrowUp' });
-//       }
-//     }
+    userEvent.type(input, '', {
+      initialSelectionStart: cursorPosition,
+      initialSelectionEnd: cursorPosition,
+    });
 
-//     expect(timeInput.find('input').prop('value')).toEqual(expectedValue);
+    const movements: number[] = ([] as number[]).concat(movement);
 
-//     timeInput.unmount();
-//   }
+    for (let i = 0; i < movements.length; i += 1) {
+      const arrowMovement = movements[i];
+      for (let j = 0; j < arrowMovement; j += 1) {
+        userEvent.type(input, '{arrowdown}');
+      }
 
-//   it('handles down arrow', () => {
-//     testArrowValue(0, 1, '11:34:56');
-//     testArrowValue(0, 3, '09:34:56');
-//     testArrowValue(0, 1, '23:00:00', 0);
-//     testArrowValue(3, 1, '00:59:00', 0);
-//     testArrowValue(6, 1, '00:00:59', 0);
-//     testArrowValue(6, 3, '12:34:53');
-//   });
+      for (let j = 0; j > arrowMovement; j -= 1) {
+        userEvent.type(input, '{arrowup}');
+      }
+    }
 
-//   it('handles up arrow', () => {
-//     testArrowValue(0, -1, '13:34:56');
-//     testArrowValue(0, -3, '15:34:56');
-//     testArrowValue(0, -1, '00:00:00', TimeUtils.parseTime('23:00:00'));
-//     testArrowValue(3, -1, '00:00:00', TimeUtils.parseTime('00:59:00'));
-//     testArrowValue(6, -1, '00:00:00', TimeUtils.parseTime('00:00:59'));
-//     testArrowValue(6, -3, '12:34:59');
-//   });
-// });
+    expect(input.value).toEqual(expectedValue);
 
-// it('updates properly when the value prop is updated', () => {
-//   const timeInput = makeTimeInput();
+    unmount();
+  }
 
-//   expect(timeInput.find('input').prop('value')).toEqual('12:34:56');
+  it('handles down arrow', () => {
+    testArrowValue(0, 1, '11:34:56');
+    testArrowValue(0, 3, '09:34:56');
+    testArrowValue(0, 1, '23:00:00', 0);
+    testArrowValue(3, 1, '00:59:00', 0);
+    testArrowValue(6, 1, '00:00:59', 0);
+    testArrowValue(6, 3, '12:34:53');
+  });
 
-//   timeInput.setProps({ value: 0 });
-//   timeInput.update();
-
-//   expect(timeInput.find('input').prop('value')).toEqual('00:00:00');
-
-//   timeInput.unmount();
-// });
+  it('handles up arrow', () => {
+    testArrowValue(0, -1, '13:34:56');
+    testArrowValue(0, -3, '15:34:56');
+    testArrowValue(0, -1, '00:00:00', TimeUtils.parseTime('23:00:00'));
+    testArrowValue(3, -1, '00:00:00', TimeUtils.parseTime('00:59:00'));
+    testArrowValue(6, -1, '00:00:00', TimeUtils.parseTime('00:00:59'));
+    testArrowValue(6, -3, '12:34:59');
+  });
+});
