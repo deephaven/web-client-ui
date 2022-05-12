@@ -1,5 +1,5 @@
 import React from 'react';
-import { mount } from 'enzyme';
+import { render } from '@testing-library/react';
 import { MarkdownPanel } from './MarkdownPanel';
 
 jest.mock('@deephaven/dashboard', () => ({
@@ -32,7 +32,7 @@ function mountMarkdownPanel(
   openedMarkdowns = [],
   closedPanels = []
 ) {
-  return mount(
+  return render(
     <MarkdownPanel
       glContainer={glContainer}
       glEventHub={glEventHub}
@@ -46,6 +46,5 @@ function mountMarkdownPanel(
 }
 
 it('mount/unmount MarkdownPanel without crashing', () => {
-  const wrapper = mountMarkdownPanel();
-  wrapper.unmount();
+  mountMarkdownPanel();
 });

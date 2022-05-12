@@ -1,5 +1,5 @@
 import React from 'react';
-import { mount } from 'enzyme';
+import { render } from '@testing-library/react';
 import PanelContextMenu from './PanelContextMenu';
 
 function makeGlComponent() {
@@ -7,7 +7,7 @@ function makeGlComponent() {
 }
 
 function mountPanelContextMenu() {
-  return mount(
+  return render(
     <PanelContextMenu
       title="test"
       onRename={() => {}}
@@ -17,6 +17,5 @@ function mountPanelContextMenu() {
 }
 
 it('mounts and unmounts without crashing', () => {
-  const wrapper = mountPanelContextMenu();
-  wrapper.unmount();
+  mountPanelContextMenu();
 });
