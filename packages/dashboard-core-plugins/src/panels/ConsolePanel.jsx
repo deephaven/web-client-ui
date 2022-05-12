@@ -24,7 +24,7 @@ const DEFAULT_PANEL_STATE = Object.freeze({
   itemIds: [],
 });
 
-class ConsolePanel extends PureComponent {
+export class ConsolePanel extends PureComponent {
   static COMPONENT = 'ConsolePanel';
 
   static TITLE = 'Console';
