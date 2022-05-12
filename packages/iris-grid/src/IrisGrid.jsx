@@ -1179,13 +1179,13 @@ export class IrisGrid extends Component {
     ) => {
       const floatingColumns = [];
 
-      for (let i = 0; i < floatingLeftColumnCount; i++) {
+      for (let i = 0; i < floatingLeftColumnCount; i += 1) {
         floatingColumns.push(
           columns[GridUtils.getModelIndex(i, movedColumns)].name
         );
       }
 
-      for (let i = 0; i < floatingRightColumnCount; i++) {
+      for (let i = 0; i < floatingRightColumnCount; i += 1) {
         floatingColumns.push(
           columns[GridUtils.getModelIndex(columns.length - 1 - i, movedColumns)]
             .name
