@@ -111,10 +111,8 @@ it('shows the loading spinner until grid is ready', async () => {
   await TestUtils.flushPromises();
 
   expectLoading();
-  MockIrisGrid.mock.calls[MockIrisGrid.mock.calls.length - 1][0].onStateChange(
-    {},
-    {}
-  );
+  const params = MockIrisGrid.mock.calls[MockIrisGrid.mock.calls.length - 1][0];
+  params.onStateChange({}, {});
 
   expectNotLoading();
 });
@@ -126,7 +124,8 @@ it('shows an error properly if table loading fails', async () => {
   makeIrisGridPanelWrapper(makeModel);
   await TestUtils.flushPromises();
   expect(screen.getAllByRole('img', { hidden: true }).length).not.toBe(2);
-  expect(
-    screen.getByText('Unable to open table. Error: TEST ERROR MESSAGE')
-  ).toBeTruthy();
+  const msg = screen.getByText(
+    'Unable to open table. Error: TEST ERROR MESSAGE'
+  );
+  expect(msg).toBeTruthy();
 });

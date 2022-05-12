@@ -409,7 +409,6 @@ describe('linker column selection', () => {
     });
     const modelPromise = Promise.resolve(model);
     const makeModel = () => modelPromise;
-
     const { rerender, container } = render(
       makeChartPanelWrapper({
         makeModel,
@@ -417,23 +416,15 @@ describe('linker column selection', () => {
         isLinkerActive: true,
       })
     );
-
     await expect(modelPromise).resolves.toBe(model);
-
     callUpdateFunction();
-
     checkPanelOverlays({ container, isSelectingColumn: true });
-
     expect(container.querySelectorAll('.btn-socketed').length).toBe(
       columnNames.length
     );
-
     expect(screen.getByText('Field_C').closest('button')).not.toBeDisabled();
-
     expect(container.querySelectorAll('.btn-socketed-linked').length).toBe(0);
-
     disabledColumnNames.push(columnNames[2]);
-
     rerender(
       makeChartPanelWrapper({
         makeModel,
@@ -488,7 +479,6 @@ it('adds listeners to the source table when passed in and linked', async () => {
   const model = new MockChartModel();
   const modelPromise = Promise.resolve(model);
   const makeModel = () => modelPromise;
-
   const { rerender } = render(
     makeChartPanelWrapper({
       makeModel,
@@ -497,11 +487,8 @@ it('adds listeners to the source table when passed in and linked', async () => {
       sourcePanel: null,
     })
   );
-
   await expect(modelPromise).resolves.toBe(model);
-
   const source = makeTable();
-
   rerender(
     makeChartPanelWrapper({
       makeModel,
@@ -510,7 +497,6 @@ it('adds listeners to the source table when passed in and linked', async () => {
       sourcePanel: null,
     })
   );
-
   expect(source.addEventListener.mock.calls.length).toBe(3);
   expect([
     source.addEventListener.mock.calls[0][0],
