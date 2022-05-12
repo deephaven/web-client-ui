@@ -30,12 +30,11 @@ describe('typing in matches mask', () => {
     const { unmount } = makeTimeInput();
     const input: HTMLInputElement = screen.getByRole('textbox');
     input.setSelectionRange(0, 0);
-    const cursorPosition = 0;
 
     input.focus();
     userEvent.type(input, text, {
-      initialSelectionStart: cursorPosition,
-      initialSelectionEnd: cursorPosition,
+      initialSelectionStart: 0,
+      initialSelectionEnd: 0,
     });
 
     expect(input.value).toEqual(expectedResult);
@@ -137,8 +136,8 @@ describe('select and type', () => {
     unmount();
   }
   it('handles typing after autoselecting a segment', () => {
-    testSelectAndType(1, '0', '02:34:56');
     testSelectAndType(0, '0', '02:34:56');
+    testSelectAndType(1, '0', '02:34:56');
     testSelectAndType(0, '00', '00:34:56');
     testSelectAndType(1, '00', '00:34:56');
 
@@ -179,27 +178,15 @@ describe('arrow left and right jumps segments', () => {
       const arrowMovement = movements[i];
 
       for (let j = 0; j < arrowMovement; j += 1) {
-        fireEvent.keyDown(input, {
-          key: 'ArrowRight',
-        });
-        fireEvent.keyPress(input, {
-          key: 'ArrowRight',
-        });
-        fireEvent.keyUp(input, {
-          key: 'ArrowRight',
-        });
+        fireEvent.keyDown(input, { key: 'ArrowRight' });
+        fireEvent.keyPress(input, { key: 'ArrowRight' });
+        fireEvent.keyUp(input, { key: 'ArrowRight' });
       }
 
       for (let j = 0; j > arrowMovement; j -= 1) {
-        fireEvent.keyDown(input, {
-          key: 'ArrowLeft',
-        });
-        fireEvent.keyPress(input, {
-          key: 'ArrowLeft',
-        });
-        fireEvent.keyUp(input, {
-          key: 'ArrowLeft',
-        });
+        fireEvent.keyDown(input, { key: 'ArrowLeft' });
+        fireEvent.keyPress(input, { key: 'ArrowLeft' });
+        fireEvent.keyUp(input, { key: 'ArrowLeft' });
       }
     }
 
@@ -294,4 +281,14 @@ describe('arrow up and down updates values in segments', () => {
     testArrowValue(6, -1, '00:00:00', TimeUtils.parseTime('00:00:59'));
     testArrowValue(6, -3, '12:34:59');
   });
+});
+it('updates properly when the value prop is updated', () => {
+  const { rerender } = makeTimeInput();
+
+  const textbox: HTMLInputElement = screen.getByRole('textbox');
+  expect(textbox.value).toEqual('12:34:56');
+
+  rerender(<TimeInput value={0} onChange={jest.fn()} />);
+
+  expect(textbox.value).toEqual('00:00:00');
 });

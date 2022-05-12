@@ -44,19 +44,16 @@ beforeAll(() => {
 describe('stack push and pop tests', () => {
   let texts: string[];
   let stackItems: React.ReactNode[];
-  let rerenderFxn;
+  let rerender: (ui: React.ReactElement) => void;
 
   function renderStack(stackCount: number, itemCount = 5) {
     texts = makeStackItemTexts(itemCount);
     stackItems = texts.map(makeStackItem);
-    const { rerender } = render(
-      <Stack>{stackItems.slice(0, stackCount)}</Stack>
-    );
-    rerenderFxn = rerender;
+    ({ rerender } = render(<Stack>{stackItems.slice(0, stackCount)}</Stack>));
   }
 
   function updateStack(stackCount: number) {
-    rerenderFxn(<Stack>{stackItems.slice(0, stackCount)}</Stack>);
+    rerender(<Stack>{stackItems.slice(0, stackCount)}</Stack>);
   }
 
   function runTimers() {

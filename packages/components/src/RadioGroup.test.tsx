@@ -9,7 +9,7 @@ it('shows no markup with no children', () => {
 });
 
 it('shows the appropriate children', () => {
-  const radio = render(
+  render(
     <RadioGroup onChange={jest.fn()}>
       <RadioItem value="1">1</RadioItem>
       <RadioItem value="2">2</RadioItem>
@@ -18,5 +18,5 @@ it('shows the appropriate children', () => {
   );
 
   expect(screen.getAllByRole('radio').length).toEqual(3);
-  expect(radio.baseElement.firstChild.childNodes.length).toEqual(3);
+  expect(screen.getAllByLabelText(/[1,2,3]/).length).toBe(3);
 });

@@ -229,7 +229,7 @@ describe('mouse', () => {
 });
 
 function checkFocus(elementList, index) {
-  for (let i = 0; i < 20; i += 1) {
+  for (let i = 0; i < elementList.length; i += 1) {
     if (i === index) {
       expect(elementList[i]).toHaveFocus();
     } else {
@@ -238,10 +238,11 @@ function checkFocus(elementList, index) {
   }
 }
 it('handles keyboard up and down properly', () => {
-  const itemList = makeItemList();
+  const { container } = makeItemList();
 
-  const correctList = itemList.baseElement.firstChild.firstChild;
-
+  const correctList = container.querySelector(
+    '.item-list-inner-element'
+  ) as HTMLElement;
   const items = screen.getAllByRole('presentation').splice(1);
 
   checkFocus(items, -1);
@@ -252,24 +253,14 @@ it('handles keyboard up and down properly', () => {
 
   checkFocus(items, 0);
 
-  fireEvent.keyDown(correctList, {
-    key: 'ArrowDown',
-  });
-  fireEvent.keyDown(correctList, {
-    key: 'ArrowDown',
-  });
-  fireEvent.keyDown(correctList, {
-    key: 'ArrowDown',
-  });
+  fireEvent.keyDown(correctList, { key: 'ArrowDown' });
+  fireEvent.keyDown(correctList, { key: 'ArrowDown' });
+  fireEvent.keyDown(correctList, { key: 'ArrowDown' });
 
   checkFocus(items, 3);
 
-  fireEvent.keyDown(correctList, {
-    key: 'ArrowUp',
-  });
-  fireEvent.keyDown(correctList, {
-    key: 'ArrowUp',
-  });
+  fireEvent.keyDown(correctList, { key: 'ArrowUp' });
+  fireEvent.keyDown(correctList, { key: 'ArrowUp' });
 
   checkFocus(items, 1);
 });
