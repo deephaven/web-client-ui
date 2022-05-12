@@ -655,7 +655,7 @@ export function getFormatColumns(
   const result: CustomColumn[] = [];
   // There can be only one row format custom column
   // and multiple column format custom columns (one per column)
-  let rowFormatConfig = undefined as [string, CustomColumn] | undefined;
+  let rowFormatConfig: [string, CustomColumn];
   const columnFormatConfigMap = new Map<string, [string, CustomColumn]>();
   rules.forEach(({ config, type: formatterType }) => {
     const { column } = config;
