@@ -1173,29 +1173,26 @@ export class IrisGrid extends Component {
     (
       alwaysFetchColumns,
       columns,
+      movedColumns,
       floatingLeftColumnCount,
       floatingRightColumnCount
     ) => {
-      let floatingLeftColumns = [];
-      let floatingRightColumns = [];
+      const floatingColumns = [];
 
-      if (floatingLeftColumnCount) {
-        floatingLeftColumns = columns
-          .slice(0, floatingLeftColumnCount)
-          .map(col => col.name);
+      for (let i = 0; i < floatingLeftColumnCount; i++) {
+        floatingColumns.push(
+          columns[GridUtils.getModelIndex(i, movedColumns)].name
+        );
       }
 
-      if (floatingRightColumnCount) {
-        floatingRightColumns = columns
-          .slice(-floatingRightColumnCount)
-          .map(col => col.name);
+      for (let i = 0; i < floatingRightColumnCount; i++) {
+        floatingColumns.push(
+          columns[GridUtils.getModelIndex(columns.length - 1 - i, movedColumns)]
+            .name
+        );
       }
 
-      const columnSet = new Set([
-        ...alwaysFetchColumns,
-        ...floatingLeftColumns,
-        ...floatingRightColumns,
-      ]);
+      const columnSet = new Set([...alwaysFetchColumns, ...floatingColumns]);
 
       return [...columnSet];
     }
@@ -3316,6 +3313,7 @@ export class IrisGrid extends Component {
                 alwaysFetchColumns={this.getAlwaysFetchColumns(
                   alwaysFetchColumns,
                   model.columns,
+                  movedColumns,
                   model.floatingLeftColumnCount,
                   model.floatingRightColumnCount
                 )}
