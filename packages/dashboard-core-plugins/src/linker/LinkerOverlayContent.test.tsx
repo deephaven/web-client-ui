@@ -1,5 +1,5 @@
 import React from 'react';
-import { mount } from 'enzyme';
+import { render } from '@testing-library/react';
 import { PanelManager } from '@deephaven/dashboard';
 import GoldenLayout from '@deephaven/golden-layout';
 import LinkerOverlayContent from './LinkerOverlayContent';
@@ -23,7 +23,7 @@ function mountOverlay({
   onDone = jest.fn(),
   panelManager = makePanelManager(),
 } = {}) {
-  return mount(
+  return render(
     <LinkerOverlayContent
       links={links}
       messageText={messageText}
@@ -37,6 +37,5 @@ function mountOverlay({
 }
 
 it('mounts and unmounts LinkerOverlay without crashing', () => {
-  const wrapper = mountOverlay();
-  wrapper.unmount();
+  mountOverlay();
 });
