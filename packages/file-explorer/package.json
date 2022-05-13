@@ -42,8 +42,8 @@
     "webdav": "^4.6.1"
   },
   "peerDependencies": {
-    "@deephaven/components": "file:../components",
-    "@deephaven/log": "file:../log",
+    "@deephaven/components": "^0.12",
+    "@deephaven/log": "^0.12",
     "react": "^17.0.0"
   },
   "devDependencies": {

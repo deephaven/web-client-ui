@@ -54,8 +54,8 @@
     "web-streams-polyfill": "^2.1.0"
   },
   "peerDependencies": {
-    "@deephaven/components": "file:../components",
-    "@deephaven/log": "file:../log",
+    "@deephaven/components": "^0.12",
+    "@deephaven/log": "^0.12",
     "react": "^17.x"
   },
   "devDependencies": {

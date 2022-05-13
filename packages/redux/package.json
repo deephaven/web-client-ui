@@ -34,7 +34,7 @@
     "@deephaven/tsconfig": "file:../tsconfig"
   },
   "peerDependencies": {
-    "@deephaven/log": "file:../log",
+    "@deephaven/log": "^0.12",
     "redux": "^4.0.5"
   },
   "files": [

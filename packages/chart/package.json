@@ -42,7 +42,7 @@
     "react-plotly.js": "^2.4.0"
   },
   "peerDependencies": {
-    "@deephaven/log": "file:../log",
+    "@deephaven/log": "^0.12",
     "react": "^17.x"
   },
   "devDependencies": {
