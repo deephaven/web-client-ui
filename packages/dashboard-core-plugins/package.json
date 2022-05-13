@@ -54,9 +54,9 @@
     "shortid": "^2.2.16"
   },
   "peerDependencies": {
-    "@deephaven/components": "^0.11.2",
-    "@deephaven/log": "^0.11.2",
-    "@deephaven/redux": "^0.11.2",
+    "@deephaven/components": "file:../components",
+    "@deephaven/log": "file:../log",
+    "@deephaven/redux": "file:../redux",
     "react": "^17.0.0",
     "react-dom": "^17.0.0",
     "react-redux": "^7.2.4"
