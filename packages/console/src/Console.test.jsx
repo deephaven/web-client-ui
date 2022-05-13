@@ -1,6 +1,6 @@
 import React from 'react';
 import dh from '@deephaven/jsapi-shim';
-import { shallow } from 'enzyme';
+import { render } from '@testing-library/react';
 import { Console } from './Console';
 
 function makeMockCommandHistoryStorage() {
@@ -11,10 +11,16 @@ function makeMockCommandHistoryStorage() {
   };
 }
 
+jest.mock('./ConsoleInput', () => () => null);
+jest.mock('./Console.jsx', () => ({
+  ...jest.requireActual('./Console.jsx'),
+  commandHistory: jest.fn(),
+}));
+
 function makeConsoleWrapper() {
   const session = new dh.IdeSession('test');
   const commandHistoryStorage = makeMockCommandHistoryStorage();
-  const wrapper = shallow(
+  return render(
     <Console
       commandHistoryStorage={commandHistoryStorage}
       focusCommandHistory={() => {}}
@@ -24,12 +30,6 @@ function makeConsoleWrapper() {
       language="test"
     />
   );
-
-  wrapper.instance().commandHistory = {
-    scrollToBottom: jest.fn(),
-  };
-
-  return wrapper;
 }
 
 it('renders without crashing', () => {

@@ -1,11 +1,18 @@
 import React from 'react';
-import { mount } from 'enzyme';
+import { render, screen } from '@testing-library/react';
 import dh from '@deephaven/jsapi-shim';
 import AdvancedFilterCreator from './AdvancedFilterCreator';
 import IrisGridTestUtils from './IrisGridTestUtils';
 import { FilterType, FilterOperator } from './filters';
 import Formatter from './Formatter';
 
+let mockFilterHandlers = [];
+jest.mock('./AdvancedFilterCreatorFilterItem', () =>
+  jest.fn(({ onChange }) => {
+    mockFilterHandlers.push(onChange);
+    return null;
+  })
+);
 function makeAdvancedFilterCreatorWrapper({
   options = {},
   model = IrisGridTestUtils.makeModel(),
@@ -13,7 +20,7 @@ function makeAdvancedFilterCreatorWrapper({
   formatter = new Formatter(),
   timeZone = 'America/New_York',
 } = {}) {
-  const wrapper = mount(
+  const wrapper = render(
     <AdvancedFilterCreator
       model={model}
       column={column}
@@ -47,22 +54,26 @@ it('renders without crashing', () => {
 it('handles assigning a unknown filter type properly', () => {
   const type = 'garbage';
   const value = 'test';
-  const wrapper = makeAdvancedFilterCreatorWrapper({
+  const { container } = makeAdvancedFilterCreatorWrapper({
     column: new dh.Column({ type: 'garbage' }),
   });
-  wrapper.instance().handleFilterChange(0, type, value);
-  expect(wrapper.find('.advanced-filter-creator-filter-item').length).toBe(0);
-  wrapper.unmount();
+  const handleFilterChange = mockFilterHandlers[0];
+  handleFilterChange(0, type, value);
+  expect(
+    container.querySelectorAll('advanced-filter-creator-filter-item').length
+  ).toBe(0);
 });
 
 it('handles editing a filters value properly', () => {
+  mockFilterHandlers = [];
   const type = FilterType.eqIgnoreCase;
   const value = 'test';
-  const wrapper = makeAdvancedFilterCreatorWrapper();
-  wrapper.instance().handleFilterChange(0, type, value);
+  const { container } = makeAdvancedFilterCreatorWrapper();
+  console.log(mockFilterHandlers);
+  const handleFilterChange = mockFilterHandlers[0];
+  handleFilterChange(0, type, value);
 
-  const filterItems = wrapper.state('filterItems');
-  expect(filterItems.length).toEqual(1);
+  expect(screen.getByRole('textbodrtgxs')).toEqual(1);
   expect(filterItems[0].selectedType).toEqual(type);
   expect(filterItems[0].value).toEqual(value);
 });
