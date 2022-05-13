@@ -1,5 +1,5 @@
 import React from 'react';
-import { mount } from 'enzyme';
+import { render } from '@testing-library/react';
 import dh from '@deephaven/jsapi-shim';
 import TableViewportUpdater from './TableViewportUpdater';
 
@@ -10,21 +10,19 @@ function makeTable() {
   return new dh.Table({ columns });
 }
 
-function mountUpdater(table = makeTable(), bottom = 50, top = 0) {
-  return mount(
-    <TableViewportUpdater table={table} top={top} bottom={bottom} />
-  );
+function makeUpdater(table = makeTable(), bottom = 50, top = 0) {
+  return <TableViewportUpdater table={table} top={top} bottom={bottom} />;
 }
 
 it('renders without crashing', () => {
-  mountUpdater();
+  render(makeUpdater());
 });
 
 it('updates viewport on mount', () => {
   const table = makeTable();
   table.setViewport = jest.fn();
 
-  mountUpdater(table);
+  render(makeUpdater(table));
   jest.runAllTimers();
   expect(table.setViewport).toHaveBeenCalled();
 });
@@ -40,7 +38,7 @@ describe('verify updates', () => {
     table.setViewport = jest.fn(() => ({
       setViewport: subscriptionSetViewport,
     }));
-    wrapper = mountUpdater(table);
+    wrapper = render(makeUpdater(table));
     jest.advanceTimersByTime(500);
     expect(table.setViewport).toHaveBeenCalledTimes(1);
     expect(subscriptionSetViewport).not.toHaveBeenCalled();
@@ -50,7 +48,7 @@ describe('verify updates', () => {
   });
 
   it('updates when props are updated', () => {
-    wrapper.setProps({ top: 100, bottom: 150 });
+    wrapper.rerender(makeUpdater(100, 150));
 
     jest.advanceTimersByTime(500);
     expect(table.setViewport).not.toHaveBeenCalled();

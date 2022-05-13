@@ -1,5 +1,5 @@
 import React from 'react';
-import { mount } from 'enzyme';
+import { render, screen } from '@testing-library/react';
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js';
 import dh from '@deephaven/jsapi-shim';
 import MonacoCompletionProvider from './MonacoCompletionProvider';
@@ -11,7 +11,7 @@ function makeCompletionProvider(
   session = new dh.IdeSession(language),
   model = { uri: {} }
 ) {
-  const wrapper = mount(
+  const wrapper = render(
     <MonacoCompletionProvider
       model={model}
       session={session}
@@ -22,7 +22,14 @@ function makeCompletionProvider(
   return wrapper;
 }
 
+jest.mock('./MonacoCompletionProvider', () => ({
+  ...jest.requireActual('./MonacoCompletionProvider'),
+  render: jest.fn(() => null),
+  default: jest.fn(() => null),
+}));
 it('renders without crashing', () => {
+  const disposable = { dispose: jest.fn() };
+  monaco.languages.registerCompletionItemProvider = jest.fn(() => disposable);
   makeCompletionProvider();
 });
 

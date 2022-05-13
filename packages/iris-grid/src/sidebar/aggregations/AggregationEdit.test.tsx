@@ -1,5 +1,6 @@
 import React from 'react';
-import { mount, ReactWrapper } from 'enzyme';
+import { render, RenderResult, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { Aggregation } from './Aggregations';
 import AggregationEdit from './AggregationEdit';
 import AggregationOperation from './AggregationOperation';
@@ -32,8 +33,8 @@ function mountAggregationEdit({
   aggregation = makeAggregation(),
   columns = makeColumns(),
   onChange = jest.fn(),
-} = {}): ReactWrapper {
-  return mount(
+} = {}): RenderResult {
+  return render(
     <AggregationEdit
       aggregation={aggregation}
       columns={columns}
@@ -49,7 +50,8 @@ it('resets select when reset button is pressed', () => {
     onChange,
   });
 
-  wrapper.find('button.btn-reset').simulate('click');
+  const btn = screen.getByText('Reset');
+  userEvent.click(btn);
 
   expect(onChange).toHaveBeenCalledWith(
     expect.objectContaining(makeAggregation())
