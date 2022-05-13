@@ -499,15 +499,15 @@ export class GridRenderer {
         getOrThrow(visibleRowYs, floatingTopRowCount - 1) +
         getOrThrow(visibleRowHeights, floatingTopRowCount - 1) +
         0.5;
-      context.moveTo(0.5, y);
-      context.lineTo(maxX - 0.5, y);
+      context.moveTo(0, y);
+      context.lineTo(maxX, y);
     }
 
     if (floatingBottomRowCount > 0) {
       const y =
         getOrThrow(visibleRowYs, rowCount - floatingBottomRowCount) - 0.5;
-      context.moveTo(0.5, y);
-      context.lineTo(maxX - 0.5, y);
+      context.moveTo(0, y);
+      context.lineTo(maxX, y);
     }
 
     if (floatingLeftColumnCount > 0) {
@@ -538,15 +538,15 @@ export class GridRenderer {
         getOrThrow(visibleRowYs, floatingTopRowCount - 1) +
         getOrThrow(visibleRowHeights, floatingTopRowCount - 1) +
         0.5;
-      context.moveTo(0.5, y);
-      context.lineTo(maxX - 0.5, y);
+      context.moveTo(0, y);
+      context.lineTo(maxX, y);
     }
 
     if (floatingBottomRowCount > 0) {
       const y =
         getOrThrow(visibleRowYs, rowCount - floatingBottomRowCount) - 0.5;
-      context.moveTo(0.5, y);
-      context.lineTo(maxX - 0.5, y);
+      context.moveTo(0, y);
+      context.lineTo(maxX, y);
     }
 
     if (floatingLeftColumnCount > 0) {
