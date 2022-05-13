@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/mocks",
-  "version": "0.11.3",
+  "version": "0.12.0",
   "description": "Deephaven Mocks for common libraries",
   "repository": {
     "type": "git",

@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/redux",
-  "version": "0.11.4",
+  "version": "0.12.0",
   "description": "Deephaven Redux",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
@@ -34,7 +34,7 @@
     "@deephaven/tsconfig": "file:../tsconfig"
   },
   "peerDependencies": {
-    "@deephaven/log": "^0.11.2",
+    "@deephaven/log": "^0.12",
     "redux": "^4.0.5"
   },
   "files": [

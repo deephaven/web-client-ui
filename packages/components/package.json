@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/components",
-  "version": "0.11.9",
+  "version": "0.12.0",
   "description": "Deephaven React component library",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
@@ -52,7 +52,7 @@
     "shortid": "^2.2.16"
   },
   "peerDependencies": {
-    "@deephaven/log": "^0.11.2",
+    "@deephaven/log": "^0.12",
     "react": "^17.x",
     "react-dom": "^17.x"
   },
