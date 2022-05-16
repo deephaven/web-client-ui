@@ -15,10 +15,14 @@ function makeUpdater(table = makeTable(), bottom = 50, top = 0) {
 }
 
 it('renders without crashing', () => {
+  const mockCloseSub = jest.fn();
+  TableViewportUpdater.prototype.closeSubscription = mockCloseSub;
   render(makeUpdater());
 });
 
 it('updates viewport on mount', () => {
+  const mockCloseSub = jest.fn();
+  TableViewportUpdater.prototype.closeSubscription = mockCloseSub;
   const table = makeTable();
   table.setViewport = jest.fn();
 
@@ -37,18 +41,19 @@ describe('verify updates', () => {
     subscriptionSetViewport = jest.fn();
     table.setViewport = jest.fn(() => ({
       setViewport: subscriptionSetViewport,
+      close: jest.fn(),
     }));
+
     wrapper = render(makeUpdater(table));
     jest.advanceTimersByTime(500);
     expect(table.setViewport).toHaveBeenCalledTimes(1);
     expect(subscriptionSetViewport).not.toHaveBeenCalled();
     table.setViewport.mockClear();
-
     setTimeout.mockClear();
   });
 
   it('updates when props are updated', () => {
-    wrapper.rerender(makeUpdater(100, 150));
+    wrapper.rerender(makeUpdater(table, 150, 100));
 
     jest.advanceTimersByTime(500);
     expect(table.setViewport).not.toHaveBeenCalled();
@@ -56,16 +61,15 @@ describe('verify updates', () => {
   });
 
   it('queues multiple updates made rapidly', () => {
-    wrapper.setProps({ top: 100, bottom: 150 });
-    wrapper.setProps({ top: 125, bottom: 175 });
+    wrapper.rerender(makeUpdater(table, 150, 100));
+    wrapper.rerender(makeUpdater(table, 175, 125));
 
     jest.advanceTimersByTime(500);
 
     expect(table.setViewport).not.toHaveBeenCalled();
     expect(subscriptionSetViewport).toHaveBeenCalledTimes(2);
-
-    wrapper.setProps({ top: 150, bottom: 200 });
-    wrapper.setProps({ top: 175, bottom: 225 });
+    wrapper.rerender(makeUpdater(table, 200, 150));
+    wrapper.rerender(makeUpdater(table, 225, 175));
 
     jest.advanceTimersByTime(500);
 
@@ -78,19 +82,19 @@ describe('verify updates', () => {
   });
 
   it('runs updates immediately if spaced apart', () => {
-    wrapper.setProps({ top: 100, bottom: 150 });
+    wrapper.rerender(makeUpdater(table, 150, 100));
     jest.advanceTimersByTime(500);
 
     expect(table.setViewport).not.toHaveBeenCalled();
     expect(subscriptionSetViewport).toHaveBeenCalledTimes(1);
 
-    wrapper.setProps({ top: 125, bottom: 175 });
+    wrapper.rerender(makeUpdater(table, 175, 125));
     jest.advanceTimersByTime(500);
 
     expect(table.setViewport).not.toHaveBeenCalled();
     expect(subscriptionSetViewport).toHaveBeenCalledTimes(2);
 
-    wrapper.setProps({ top: 150, bottom: 200 });
+    wrapper.rerender(makeUpdater(table, 200, 150));
     jest.advanceTimersByTime(500);
 
     expect(table.setViewport).not.toHaveBeenCalled();
