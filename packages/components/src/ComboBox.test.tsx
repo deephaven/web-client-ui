@@ -1,12 +1,11 @@
 import React from 'react';
-import { mount } from 'enzyme';
+import { render } from '@testing-library/react';
 import ComboBox from './ComboBox';
 
 function makeWrapper(options = []) {
-  return mount(<ComboBox options={options} />);
+  return render(<ComboBox options={options} />);
 }
 
 it('mounts and unmounts without failing', () => {
-  const wrapper = makeWrapper();
-  wrapper.unmount();
+  makeWrapper();
 });

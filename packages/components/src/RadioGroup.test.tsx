@@ -1,16 +1,15 @@
 import React from 'react';
-import { mount } from 'enzyme';
+import { render, screen } from '@testing-library/react';
 import RadioGroup from './RadioGroup';
 import RadioItem from './RadioItem';
 
 it('shows no markup with no children', () => {
-  const radio = mount(<RadioGroup onChange={jest.fn()} />);
-  expect(radio.html()).toBe(null);
-  radio.unmount();
+  const radio = render(<RadioGroup onChange={jest.fn()} />);
+  expect(radio.baseElement.firstChild.firstChild).toBe(null);
 });
 
 it('shows the appropriate children', () => {
-  const radio = mount(
+  render(
     <RadioGroup onChange={jest.fn()}>
       <RadioItem value="1">1</RadioItem>
       <RadioItem value="2">2</RadioItem>
@@ -18,9 +17,6 @@ it('shows the appropriate children', () => {
     </RadioGroup>
   );
 
-  expect(radio.find('.custom-radio').length).toEqual(3);
-  expect(radio.find('.custom-radio .custom-control-input').length).toEqual(3);
-  expect(radio.find('.custom-radio .custom-control-label').length).toEqual(3);
-
-  radio.unmount();
+  expect(screen.getAllByRole('radio').length).toEqual(3);
+  expect(screen.getAllByLabelText(/[1,2,3]/).length).toBe(3);
 });

@@ -1,5 +1,5 @@
 import React from 'react';
-import { mount } from 'enzyme';
+import { render } from '@testing-library/react';
 import TimeSlider from './TimeSlider';
 
 function makeTimeSlider({
@@ -7,12 +7,11 @@ function makeTimeSlider({
   endTime = 24 * 60 * 60 - 1,
   onChange = jest.fn(),
 } = {}) {
-  return mount(
+  return render(
     <TimeSlider startTime={startTime} endTime={endTime} onChange={onChange} />
   );
 }
 
 it('mounts and unmounts properly', () => {
-  const timeSlider = makeTimeSlider();
-  timeSlider.unmount();
+  makeTimeSlider();
 });

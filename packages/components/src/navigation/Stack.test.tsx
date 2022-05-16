@@ -1,6 +1,6 @@
 import React from 'react';
 import { act } from 'react-dom/test-utils';
-import { mount, ReactWrapper } from 'enzyme';
+import { render, screen } from '@testing-library/react';
 import Stack from './Stack';
 
 // Mock the CSS transitions to appear right away, and call the entered animation after a timeout
@@ -44,21 +44,16 @@ beforeAll(() => {
 describe('stack push and pop tests', () => {
   let texts: string[];
   let stackItems: React.ReactNode[];
-  let stack: ReactWrapper;
+  let rerender: (ui: React.ReactElement) => void;
 
-  function mountStack(stackCount: number, itemCount = 5) {
+  function renderStack(stackCount: number, itemCount = 5) {
     texts = makeStackItemTexts(itemCount);
     stackItems = texts.map(makeStackItem);
-    stack = mount(<Stack>{stackItems.slice(0, stackCount)}</Stack>);
-  }
-
-  function updateProps(props: Record<string, unknown>) {
-    stack.setProps(props);
-    stack.update();
+    ({ rerender } = render(<Stack>{stackItems.slice(0, stackCount)}</Stack>));
   }
 
   function updateStack(stackCount: number) {
-    updateProps({ children: stackItems.slice(0, stackCount) });
+    rerender(<Stack>{stackItems.slice(0, stackCount)}</Stack>);
   }
 
   function runTimers() {
@@ -66,7 +61,6 @@ describe('stack push and pop tests', () => {
     act(() => {
       jest.runOnlyPendingTimers();
     });
-    stack.update();
   }
 
   /**
@@ -74,7 +68,9 @@ describe('stack push and pop tests', () => {
    * @param i The index of the item to expect
    */
   function expectItem(i: number, isVisible: boolean) {
-    expect(stack?.find(`.${texts[i]}`).length).toBe(isVisible ? 1 : 0);
+    expect(screen.queryAllByText(`stack-text-${i}`).length).toBe(
+      isVisible ? 1 : 0
+    );
   }
 
   /**
@@ -86,9 +82,12 @@ describe('stack push and pop tests', () => {
       expectItem(i, visibleItems.indexOf(i) >= 0);
     }
   }
+  it('mounts and unmounts', async () => {
+    renderStack(1, 3);
+  });
 
   it('pushes items when stack grows', async () => {
-    mountStack(1, 3);
+    renderStack(1, 3);
     expectStack([0]);
 
     updateStack(2);
@@ -105,7 +104,7 @@ describe('stack push and pop tests', () => {
   });
 
   it('pops items when stack shrinks', async () => {
-    mountStack(3, 3);
+    renderStack(3, 3);
     expectStack([2]);
 
     updateStack(2);
@@ -122,7 +121,7 @@ describe('stack push and pop tests', () => {
   });
 
   it('pops multiple items', async () => {
-    mountStack(5, 5);
+    renderStack(5, 5);
     expectStack([4]);
 
     updateStack(1);
