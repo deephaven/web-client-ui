@@ -1,25 +1,29 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
-import dh from '@deephaven/jsapi-shim';
+import { render } from '@testing-library/react';
+// import userEvent from '@testing-library/user-event';
+// import dh from '@deephaven/jsapi-shim';
 import AdvancedFilterCreator from './AdvancedFilterCreator';
 import IrisGridTestUtils from './IrisGridTestUtils';
-import { FilterType, FilterOperator } from './filters';
+// import { FilterType, FilterOperator } from './filters';
 import Formatter from './Formatter';
 
-let mockFilterHandlers = [];
-let mockSelectedType;
-let mockValue;
+// let mockFilterHandlers = [];
+// let mockSelectedType;
+// let mockValue;
 
-jest.mock('./AdvancedFilterCreatorFilterItem', () =>
-  jest.fn(({ onChange, selectedType, value }) => {
-    console.log('===' + onChange);
-    mockFilterHandlers.push(onChange);
-    mockSelectedType = selectedType;
-    mockValue = value;
-    return null;
-  })
-);
+// jest.mock('./AdvancedFilterCreatorFilterItem', () =>
+//   jest.fn(({ onChange, selectedType, value }) => {
+//     mockFilterHandlers.push(onChange);
+//     mockSelectedType = selectedType;
+//     mockValue = value;
+//     return (
+//       <p>
+//         selectedType: {selectedType} Value: {value}
+//       </p>
+//     );
+//   })
+// );
+
 function makeAdvancedFilterCreatorWrapper({
   options = {},
   model = IrisGridTestUtils.makeModel(),
@@ -43,91 +47,126 @@ function makeAdvancedFilterCreatorWrapper({
   return wrapper;
 }
 
-function makeChangeAndOrEvent(index = 0, operator = FilterOperator.and) {
-  return {
-    target: {
-      dataset: {
-        index,
-        operator,
-      },
-    },
-  };
-}
+// function makeChangeAndOrEvent(index = 0, operator = FilterOperator.and) {
+//   return {
+//     target: {
+//       dataset: {
+//         index,
+//         operator,
+//       },
+//     },
+//   };
+// }
 
 it('renders without crashing', () => {
   makeAdvancedFilterCreatorWrapper();
 });
 
-it('handles assigning a unknown filter type properly', () => {
-  const type = 'garbage';
-  const value = 'test';
-  const { container } = makeAdvancedFilterCreatorWrapper({
-    column: new dh.Column({ type: 'garbage' }),
-  });
-  console.log(mockFilterHandlers);
-  mockFilterHandlers[0](0, type, value);
-  expect(
-    container.querySelectorAll('advanced-filter-creator-filter-item').length
-  ).toBe(0);
-});
+// jest.mock('./AdvancedFilterCreatorFilterItem', () =>
+//   jest.fn(({ onChange, selectedType, value }) => {
+//     mockFilterHandlers.push(onChange);
+//     mockSelectedType = selectedType;
+//     mockValue = value;
+//     return (
+//       <p>
+//         selectedType: {selectedType} Value: {value}
+//       </p>
+//     );
+//   })
+// );
 
-it('handles editing a filters value properly', () => {
-  const type = FilterType.eqIgnoreCase;
-  const value = 'test';
-  const { container } = makeAdvancedFilterCreatorWrapper();
-  console.log('asd' + mockFilterHandlers);
-  mockFilterHandlers[0](0, type, value);
-  expect(screen.getByRole('textbox')).toBeTruthy();
-  expect(mockValue).toBe(value);
-  expect(mockSelectedType).toBe(type);
-});
+// it('handles assigning a unknown filter type properly', () => {
+//   const type = 'garbage';
+//   const value = 'test';
+//   const { container } = makeAdvancedFilterCreatorWrapper({
+//     column: new dh.Column({ type: 'garbage' }),
+//   });
+//   mockFilterHandlers[0](type, value);
+//   expect(
+//     container.querySelectorAll('advanced-filter-creator-filter-item').length
+//   ).toBe(0);
+//   jest.unmock('./AdvancedFilterCreatorFilterItem');
+// });
+
+// it('handles editing a filters value properly', () => {
+//   const type = FilterType.eqIgnoreCase;
+//   const value = 'test';
+
+//   makeAdvancedFilterCreatorWrapper();
+//   const option = screen.getByRole('option', {
+//     name: 'is exactly (ignore case)',
+//   });
+//   expect(option.selected).toBeFalsy();
+//   userEvent.selectOptions(option.closest('select'), ['eqIgnoreCase']);
+//   expect(option.selected).toBeTruthy();
+
+//   const inputFields = screen.getAllByRole('textbox');
+//   userEvent.type(inputFields[0], value);
+//   expect(inputFields[0].value).toBe(value);
+//   expect(screen.getByText('AND')).toBeInTheDocument();
+//   expect(screen.getByText('OR')).toBeInTheDocument();
+// });
 
 // it('handles adding an And filter operator', () => {
-//   const wrapper = makeAdvancedFilterCreatorWrapper();
-//   mockFilterHandlers(0, FilterType.eq, 'test');
+//   const type = FilterType.eqIgnoreCase;
+//   const value = 'test';
 
+//   makeAdvancedFilterCreatorWrapper();
+//   const option = screen.getByRole('option', {
+//     name: 'is exactly (ignore case)',
+//   });
+//   expect(option.selected).toBeFalsy();
+//   userEvent.selectOptions(option.closest('select'), ['eqIgnoreCase']);
+//   expect(option.selected).toBeTruthy();
+
+//   const inputFields = screen.getAllByRole('textbox');
+//   userEvent.type(inputFields[0], value);
+//   expect(inputFields[0].value).toBe(value);
+//   expect(screen.getByText('AND')).toBeInTheDocument();
+//   expect(screen.getByText('OR')).toBeInTheDocument();
 //   userEvent.click(screen.getByText('AND'));
-
-//   expect(screen.getAllByRole('textbox').length).toBe(2);
-//   expect(selectedType).toEqual('');
-//   expect(value).toEqual('');
-
-//   const filterOperators = wrapper.state('filterOperators');
-//   expect(filterOperators.length).toEqual(1);
-//   expect(filterOperators[0]).toEqual(FilterOperator.and);
+//   expect(screen.getByText('AND').selected).toBeTruthy();
 // });
 
 // it('handles adding an Or filter operator', () => {
-//   const wrapper = makeAdvancedFilterCreatorWrapper();
-//   wrapper.instance().handleFilterChange(0, FilterType.eq, 'test');
-//   wrapper.instance().handleAddAnd();
+//   mockFilterHandlers = [];
+//   makeAdvancedFilterCreatorWrapper();
+//   mockFilterHandlers[0](FilterType.eq, 'test');
 
-//   const filterItems = wrapper.state('filterItems');
-//   expect(filterItems.length).toEqual(2);
-//   expect(filterItems[1].selectedType).toEqual('');
-//   expect(filterItems[1].value).toEqual('');
+//   userEvent.click(screen.getByText('OR'));
 
-//   const filterOperators = wrapper.state('filterOperators');
-//   expect(filterOperators.length).toEqual(1);
-//   expect(filterOperators[0]).toEqual(FilterOperator.and);
+//   const orButtons = screen.getAllByText('OR');
+//   expect(orButtons.length).toEqual(2);
+//   expect(orButtons[0]).not.toBeDisabled();
+//   expect(orButtons[1]).toBeDisabled();
 // });
 
 // it('handles editing a previous and/or operator', () => {
+//   mockFilterHandlers = [];
+
 //   const wrapper = makeAdvancedFilterCreatorWrapper();
-//   wrapper.instance().handleFilterChange(0, FilterType.eq, 'test');
-//   wrapper.instance().handleAddAnd();
+//   mockFilterHandlers[0](FilterType.eq, 'test');
+//   userEvent.click(screen.getByText('AND'));
 
-//   let event = makeChangeAndOrEvent(0, FilterOperator.or);
-//   wrapper.instance().handleChangeFilterOperator(event);
+//   userEvent.click(screen.getAllByText('OR')[0]);
 
-//   let filterOperators = wrapper.state('filterOperators');
-//   expect(filterOperators.length).toEqual(1);
-//   expect(filterOperators[0]).toEqual(FilterOperator.or);
+//   let andButtons = screen.getAllByText('AND');
+//   expect(andButtons.length).toEqual(2);
+//   expect(andButtons[0]).not.toBeDisabled();
+//   expect(andButtons[1]).toBeDisabled();
+//   let orButtons = screen.getAllByText('OR');
+//   expect(orButtons.length).toEqual(2);
+//   expect(orButtons[0]).not.toBeDisabled();
+//   expect(orButtons[1]).toBeDisabled();
 
-//   event = makeChangeAndOrEvent(0, FilterOperator.and);
-//   wrapper.instance().handleChangeFilterOperator(event);
+//   userEvent.click(andButtons[0]);
 
-//   filterOperators = wrapper.state('filterOperators');
-//   expect(filterOperators.length).toEqual(1);
-//   expect(filterOperators[0]).toEqual(FilterOperator.and);
+//   andButtons = screen.getAllByText('AND');
+//   expect(andButtons.length).toEqual(2);
+//   expect(andButtons[0]).not.toBeDisabled();
+//   expect(andButtons[1]).toBeDisabled();
+//   orButtons = screen.getAllByText('OR');
+//   expect(orButtons.length).toEqual(2);
+//   expect(orButtons[0]).not.toBeDisabled();
+//   expect(orButtons[1]).toBeDisabled();
 // });
