@@ -12,8 +12,8 @@ function makeMockCommandHistoryStorage() {
 }
 
 jest.mock('./ConsoleInput', () => () => null);
-jest.mock('./Console.jsx', () => ({
-  ...jest.requireActual('./Console.jsx'),
+jest.mock('./Console', () => ({
+  ...jest.requireActual('./Console'),
   commandHistory: jest.fn(),
 }));
 

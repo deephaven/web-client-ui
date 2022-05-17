@@ -106,12 +106,20 @@ function callErrorFunction() {
   MockChart.mock.calls[MockChart.mock.calls.length - 1][0].onError();
 }
 
-function expectLoading() {
-  expect(screen.getAllByRole('img', { hidden: true }).length).toBe(2);
+function expectLoading(container) {
+  expect(
+    container.querySelector("[data-icon='circle-large-outline']")
+  ).toBeInTheDocument();
+  expect(container.querySelector("[data-icon='loading']")).toBeInTheDocument();
 }
 
-function expectNotLoading() {
-  expect(screen.queryByRole('img', { hidden: true })).toBeNull();
+function expectNotLoading(container) {
+  expect(
+    container.querySelector("[data-icon='outline']")
+  ).not.toBeInTheDocument();
+  expect(
+    container.querySelector("[data-icon='loading']")
+  ).not.toBeInTheDocument();
 }
 
 function checkPanelOverlays({
@@ -124,7 +132,7 @@ function checkPanelOverlays({
 } = {}) {
   const isPromptShown = isWaitingForInput || waitingFilters > 0;
   if (isLoading) {
-    expectLoading();
+    expectLoading(container);
   }
   expect(
     container.querySelectorAll('.chart-column-selector-overlay').length
@@ -170,8 +178,8 @@ it('handles a model passed in as a promise, and shows the loading spinner until 
   const modelPromise = Promise.resolve(model);
   const makeModel = () => modelPromise;
 
-  render(makeChartPanelWrapper({ makeModel }));
-  expectLoading();
+  const { container } = render(makeChartPanelWrapper({ makeModel }));
+  expectLoading(container);
 
   await expect(modelPromise).resolves.toBe(model);
 
@@ -180,10 +188,10 @@ it('handles a model passed in as a promise, and shows the loading spinner until 
     expect.objectContaining({})
   );
 
-  expectLoading();
+  expectLoading(container);
   callUpdateFunction();
 
-  expectNotLoading();
+  expectNotLoading(container);
 });
 
 it('shows an error properly if model loading fails', async () => {
@@ -208,7 +216,7 @@ it('shows a prompt if input filters are required, and removes when they are set'
   const modelPromise = Promise.resolve(model);
   const makeModel = () => modelPromise;
 
-  const { rerender } = render(makeChartPanelWrapper({ makeModel }));
+  const { rerender, container } = render(makeChartPanelWrapper({ makeModel }));
 
   await expect(modelPromise).resolves.toBe(model);
 
@@ -216,7 +224,7 @@ it('shows a prompt if input filters are required, and removes when they are set'
   const prompt =
     'This plot requires a filter control to be added to the layout or a table link to be created on the following columns:';
   expect(screen.getByText(prompt)).toBeTruthy();
-  expectLoading();
+  expect(container.querySelectorAll("[data-icon='warning']").length).toEqual(2);
 
   rerender(
     makeChartPanelWrapper({
@@ -242,11 +250,11 @@ it('shows a prompt if input filters are required, and removes when they are set'
     })
   );
 
-  expectLoading();
+  expectLoading(container);
 
   // Loading spinner should be shown until the update event is received
   callUpdateFunction();
-  expectNotLoading();
+  expectNotLoading(container);
 });
 
 it('shows loading spinner until an error is received', async () => {
@@ -255,7 +263,7 @@ it('shows loading spinner until an error is received', async () => {
   const modelPromise = Promise.resolve(model);
   const makeModel = () => modelPromise;
 
-  render(
+  const { container } = render(
     makeChartPanelWrapper({
       makeModel,
       inputFilters: filterFields.map(name => ({
@@ -269,12 +277,12 @@ it('shows loading spinner until an error is received', async () => {
   await expect(modelPromise).resolves.toBe(model);
 
   // Overlays shouldn't appear yet because we haven't received an update or error event, should just see loading
-  expectLoading();
+  expectLoading(container);
 
   // Loading spinner should be shown until the error event is received
   callErrorFunction();
 
-  expect(screen.queryByRole('img')).toBeNull();
+  expectNotLoading(container);
 });
 
 it('shows prompt if input filters are removed', async () => {
@@ -294,12 +302,12 @@ it('shows prompt if input filters are removed', async () => {
 
   await expect(modelPromise).resolves.toBe(model);
 
-  expectLoading();
+  expectLoading(container);
 
   // Loading spinner should be shown until the update event is received
   callUpdateFunction();
 
-  expectNotLoading();
+  expectNotLoading(container);
 
   // Delete an input filter
   rerender(

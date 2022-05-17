@@ -52,20 +52,23 @@ function mountItems(itemLength = 10) {
   return wrapper;
 }
 
+function getCommandItem(index) {
+  return `Command ${index}`;
+}
 function clickItem(itemIndex, mouseEventInit = {}) {
-  const item = screen.getByText(`Command ${itemIndex}`);
+  const item = screen.getByText(getCommandItem(itemIndex));
   fireEvent.mouseDown(item, mouseEventInit);
   fireEvent.mouseUp(item, mouseEventInit);
 }
 
 function dragRange(start, end) {
-  const startItem = screen.getByText(`Command ${start}`);
+  const startItem = screen.getByText(getCommandItem(start));
   fireEvent.mouseDown(startItem);
   for (let i = start; i <= end; i += 1) {
-    const item = screen.getByText(`Command ${i}`);
+    const item = screen.getByText(getCommandItem(i));
     fireEvent.mouseMove(item);
   }
-  const endItem = screen.getByText(`Command ${start}`);
+  const endItem = screen.getByText(getCommandItem(end));
   fireEvent.mouseUp(endItem);
 }
 
@@ -78,14 +81,14 @@ it('renders a list with items without crashing', () => {
 });
 
 function expectSelected(index) {
-  expect(screen.getByText(`Command ${index}`).parentNode.className).toContain(
+  expect(screen.getByText(getCommandItem(index)).parentNode).toHaveClass(
     'active'
   );
 }
 function expectNotSelected(index) {
-  expect(
-    screen.getByText(`Command ${index}`).parentNode.className
-  ).not.toContain('active');
+  expect(screen.getByText(getCommandItem(index)).parentNode).not.toHaveClass(
+    'active'
+  );
 }
 
 it('handles selecting an item on click', () => {
@@ -98,12 +101,12 @@ it('handles selecting an item on click', () => {
 it('handles selecting and deselecting an item on click', () => {
   mountItems(10);
 
-  userEvent.click(screen.getByText('Command 0'));
+  userEvent.click(screen.getByText(getCommandItem(0)));
 
   expectSelected(0);
   expectNotSelected(1);
 
-  userEvent.click(screen.getByText('Command 0'));
+  userEvent.click(screen.getByText(getCommandItem(0)));
 
   expectNotSelected(0);
   expectNotSelected(1);
@@ -126,7 +129,7 @@ it('handles changing selection on click', () => {
 it('handles selecting a range on shift click', () => {
   mountItems();
 
-  clickItem(3, { shiftKey: true });
+  clickItem(3);
   expectNotSelected(2);
   expectSelected(3);
   expectNotSelected(4);
@@ -197,16 +200,16 @@ it('handles click and drag', () => {
 it('handles click and drag with multiples moves on same item', () => {
   mountItems();
 
-  fireEvent.mouseDown(screen.getByText('Command 3'));
-  fireEvent.mouseMove(screen.getByText('Command 3'));
-  fireEvent.mouseMove(screen.getByText('Command 4'));
-  fireEvent.mouseMove(screen.getByText('Command 4'));
-  fireEvent.mouseMove(screen.getByText('Command 4'));
-  fireEvent.mouseMove(screen.getByText('Command 5'));
-  fireEvent.mouseMove(screen.getByText('Command 6'));
-  fireEvent.mouseMove(screen.getByText('Command 7'));
-  fireEvent.mouseMove(screen.getByText('Command 6'));
-  fireEvent.mouseUp(screen.getByText('Command 6'));
+  fireEvent.mouseDown(screen.getByText(getCommandItem(3)));
+  fireEvent.mouseMove(screen.getByText(getCommandItem(3)));
+  fireEvent.mouseMove(screen.getByText(getCommandItem(4)));
+  fireEvent.mouseMove(screen.getByText(getCommandItem(4)));
+  fireEvent.mouseMove(screen.getByText(getCommandItem(4)));
+  fireEvent.mouseMove(screen.getByText(getCommandItem(5)));
+  fireEvent.mouseMove(screen.getByText(getCommandItem(6)));
+  fireEvent.mouseMove(screen.getByText(getCommandItem(7)));
+  fireEvent.mouseMove(screen.getByText(getCommandItem(6)));
+  fireEvent.mouseUp(screen.getByText(getCommandItem(6)));
 
   for (let i = 0; i < 10; i += 1) {
     const isSelected = i >= 3 && i <= 7;

@@ -63,12 +63,20 @@ function makeIrisGridPanelWrapper(
   );
 }
 
-function expectLoading() {
-  expect(screen.getAllByRole('img', { hidden: true }).length).toBe(2);
+function expectLoading(container) {
+  expect(
+    container.querySelector("[data-icon='circle-large-outline']")
+  ).toBeInTheDocument();
+  expect(container.querySelector("[data-icon='loading']")).toBeInTheDocument();
 }
 
-function expectNotLoading() {
-  expect(screen.queryByRole('img', { hidden: true })).toBeNull();
+function expectNotLoading(container) {
+  expect(
+    container.querySelector("[data-icon='outline']")
+  ).not.toBeInTheDocument();
+  expect(
+    container.querySelector("[data-icon='loading']")
+  ).not.toBeInTheDocument();
 }
 
 it('renders without crashing', () => {
@@ -103,27 +111,27 @@ it('shows the loading spinner until grid is ready', async () => {
   const tablePromise = Promise.resolve(table);
   const makeModel = makeMakeModel(tablePromise);
 
-  expect.assertions(3);
-  makeIrisGridPanelWrapper(makeModel);
+  expect.assertions(6);
+  const { container } = makeIrisGridPanelWrapper(makeModel);
 
-  expectLoading();
+  expectLoading(container);
 
   await TestUtils.flushPromises();
 
-  expectLoading();
+  expectLoading(container);
   const params = MockIrisGrid.mock.calls[MockIrisGrid.mock.calls.length - 1][0];
   params.onStateChange({}, {});
 
-  expectNotLoading();
+  expectNotLoading(container);
 });
 
 it('shows an error properly if table loading fails', async () => {
   const error = new Error('TEST ERROR MESSAGE');
   const tablePromise = Promise.reject(error);
   const makeModel = makeMakeModel(tablePromise);
-  makeIrisGridPanelWrapper(makeModel);
+  const { container } = makeIrisGridPanelWrapper(makeModel);
   await TestUtils.flushPromises();
-  expect(screen.getAllByRole('img', { hidden: true }).length).not.toBe(2);
+  expectNotLoading(container);
   const msg = screen.getByText(
     'Unable to open table. Error: TEST ERROR MESSAGE'
   );
