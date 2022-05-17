@@ -630,10 +630,16 @@ class IrisGridTableModel extends IrisGridModel {
     const defaultOperation =
       this.totals?.defaultOperation ?? AggregationOperation.SUM;
     const tableColumn = this.columns[x];
+
+    // Find the matching totals table column for the operation
+    // When there are multiple aggregations, the column name will be the original name of the column with the operation appended afterward
+    // When the the operation is the default operation OR there is only one operation, then the totals column name is just the original column name
     return this.totalsTable.columns.find(
       column =>
         column.name === `${tableColumn.name}__${operation}` ||
-        (operation === defaultOperation && column.name === tableColumn.name)
+        ((operation === defaultOperation ||
+          this.totals.operationOrder.length === 1) &&
+          column.name === tableColumn.name)
     );
   }
 
