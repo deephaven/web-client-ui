@@ -115,8 +115,8 @@ class ContextActionUtils {
    * @param text The text to copy
    * @returns Promise Resolved on success, rejected on failure
    */
-  static async copyToClipboard(text: string): Promise<void> {
-    await navigator.clipboard.writeText(text).catch(err => {
+  static copyToClipboard(text: string): Promise<void> {
+    return navigator.clipboard.writeText(text).catch(() => {
       ContextActionUtils.copyToClipboardExecCommand(text);
     });
   }
