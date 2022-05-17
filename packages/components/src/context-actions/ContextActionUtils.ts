@@ -115,21 +115,10 @@ class ContextActionUtils {
    * @param text The text to copy
    * @returns Promise Resolved on success, rejected on failure
    */
-  static async copyToClipboard(text: string): Promise<void> {
-    try {
-      const permissions = await navigator.permissions.query({
-        name: 'clipboard-write' as PermissionName,
-      });
-      if (permissions.state !== 'granted' && permissions.state !== 'prompt') {
-        throw new Error('Invalid permissions for clipboard-write');
-      }
-    } catch (e) {
-      // Fallback if we can't get permissions for some reason
+  static copyToClipboard(text: string): Promise<void> {
+    return navigator.clipboard.writeText(text).catch(() => {
       ContextActionUtils.copyToClipboardExecCommand(text);
-      return;
-    }
-
-    await navigator.clipboard.writeText(text);
+    });
   }
 
   /**
