@@ -1,8 +1,8 @@
-import React, { Component } from 'react';
+import React, { Component, ReactElement } from 'react';
 import classNames from 'classnames';
 
 class Alerts extends Component {
-  static renderAlert(brand) {
+  static renderAlert(brand: string): ReactElement {
     return (
       <div key={brand} className={classNames('alert', `alert-${brand}`)}>
         <strong>Well done!</strong>
@@ -11,7 +11,7 @@ class Alerts extends Component {
     );
   }
 
-  render() {
+  render(): ReactElement {
     const alerts = ['success', 'info', 'warning', 'danger'].map(brand =>
       Alerts.renderAlert(brand)
     );
