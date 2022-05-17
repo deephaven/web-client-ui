@@ -1545,7 +1545,7 @@ export class IrisGrid extends Component {
 
     const allFrozenColumns =
       frozenColumns == null
-        ? new Set(model.layoutHints?.frozenColumns)
+        ? new Set(model.frozenColumns)
         : new Set(frozenColumns);
 
     allFrozenColumns.add(columnName);
@@ -1571,7 +1571,7 @@ export class IrisGrid extends Component {
 
     const allFrozenColumns =
       frozenColumns == null
-        ? new Set(model.layoutHints?.frozenColumns)
+        ? new Set(model.frozenColumns)
         : new Set(frozenColumns);
 
     allFrozenColumns.delete(columnName);
