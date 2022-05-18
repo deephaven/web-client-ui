@@ -26,9 +26,6 @@
     "prestart": "npm run build-dev",
     "start": "cross-env NODE_ENV=development npm run watch"
   },
-  "dependencies": {
-    "prop-types": "^15.7.2"
-  },
   "devDependencies": {
     "@deephaven/tsconfig": "file:../tsconfig"
   },
