@@ -195,4 +195,23 @@ describe('getFormatColumns', () => {
       `[row] 0 - ${FormatStyleType.WARN} : 0 - ${FormatStyleType.POSITIVE} : null`,
     ]);
   });
+
+  it('returns a single condition for row rules on different columns', () => {
+    expect(
+      getFormatColumns(makeColumns(), [
+        makeFormatRule({
+          columnName: '0',
+          formatterType: FormatterType.ROWS,
+          styleType: FormatStyleType.POSITIVE,
+        }),
+        makeFormatRule({
+          columnName: '1',
+          formatterType: FormatterType.ROWS,
+          styleType: FormatStyleType.WARN,
+        }),
+      ])
+    ).toEqual([
+      `[row] 1 - ${FormatStyleType.WARN} : 0 - ${FormatStyleType.POSITIVE} : null`,
+    ]);
+  });
 });

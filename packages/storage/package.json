@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/storage",
-  "version": "0.11.4",
+  "version": "0.12.0",
   "description": "Deephaven Storage abstract classes for storing app data",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
@@ -30,8 +30,8 @@
     "lodash.throttle": "^4.1.1"
   },
   "peerDependencies": {
-    "@deephaven/filters": "^0.11.7",
-    "@deephaven/log": "^0.11.2",
+    "@deephaven/filters": "^0.12",
+    "@deephaven/log": "^0.12",
     "react": "^17.0.0"
   },
   "devDependencies": {

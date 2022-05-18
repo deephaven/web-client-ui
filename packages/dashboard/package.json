@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/dashboard",
-  "version": "0.11.6",
+  "version": "0.12.0",
   "description": "Deephaven Dashboard",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
@@ -40,9 +40,9 @@
     "shortid": "^2.2.16"
   },
   "peerDependencies": {
-    "@deephaven/components": "^0.11.2",
-    "@deephaven/log": "^0.11.2",
-    "@deephaven/redux": "^0.11.2",
+    "@deephaven/components": "^0.12",
+    "@deephaven/log": "^0.12",
+    "@deephaven/redux": "^0.12",
     "react": "^17.0.0",
     "react-dom": "^17.0.0",
     "react-redux": "^7.2.4"
