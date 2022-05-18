@@ -2,8 +2,16 @@ import React, { PureComponent } from 'react';
 import { TimeUtils } from '@deephaven/utils';
 import { TimeSlider } from '@deephaven/components';
 
-class TimeSliderInputs extends PureComponent {
-  constructor(props) {
+interface TimeSliderInputsState {
+  startTime: number;
+  endTime: number;
+}
+
+class TimeSliderInputs extends PureComponent<
+  Record<string, never>,
+  TimeSliderInputsState
+> {
+  constructor(props: Record<string, never>) {
     super(props);
 
     this.handleSliderChange = this.handleSliderChange.bind(this);
@@ -13,13 +21,13 @@ class TimeSliderInputs extends PureComponent {
     };
   }
 
-  handleSliderChange(values) {
+  handleSliderChange(values: { startTime: number; endTime: number }): void {
     const { startTime, endTime } = values;
     this.setState({ startTime });
     this.setState({ endTime });
   }
 
-  render() {
+  render(): React.ReactElement {
     const { startTime, endTime } = this.state;
     return (
       <div className="style-guide-inputs">

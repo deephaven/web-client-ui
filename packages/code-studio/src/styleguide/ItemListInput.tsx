@@ -3,8 +3,29 @@ import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import { ItemList } from '@deephaven/components';
 
-class ItemListInput extends PureComponent {
-  constructor(props) {
+interface ItemListInput {
+  selectedItems: number[];
+}
+
+interface ItemListInputProps {
+  isMultiSelect: boolean;
+}
+
+interface ItemListInputState {
+  itemCount: number;
+  items: { value: string; isSelected: boolean }[];
+  offset: number;
+}
+
+class ItemListInput extends PureComponent<
+  ItemListInputProps,
+  ItemListInputState
+> {
+  static defaultProps: { isMultiSelect: boolean };
+
+  static propTypes: { isMultiSelect: PropTypes.Requireable<boolean> };
+
+  constructor(props: ItemListInputProps) {
     super(props);
 
     this.handleSelect = this.handleSelect.bind(this);
@@ -19,12 +40,12 @@ class ItemListInput extends PureComponent {
     };
   }
 
-  handleSelect(itemIndex) {
+  handleSelect(itemIndex: number): void {
     const { itemCount } = this.state;
     console.log('Item selected at index', itemIndex, '/', itemCount);
   }
 
-  handleViewportChange(top, bottom) {
+  handleViewportChange(top: number, bottom: number): void {
     const { itemCount } = this.state;
 
     const viewportSize = bottom - top + 1;
@@ -32,7 +53,7 @@ class ItemListInput extends PureComponent {
     const bottomRow = Math.min(bottom + viewportSize, itemCount);
 
     const items = [];
-    for (let i = topRow; i <= bottomRow; i += 1) {
+    for (let i: number = topRow; i <= bottomRow; i += 1) {
       const value = `Item ${i}`;
       const isSelected = this.selectedItems.indexOf(i) >= 0;
       items.push({ value, isSelected });
@@ -42,7 +63,7 @@ class ItemListInput extends PureComponent {
     this.setState({ offset, items });
   }
 
-  render() {
+  render(): React.ReactElement {
     const { isMultiSelect } = this.props;
     const { offset, items, itemCount } = this.state;
     return (
@@ -57,13 +78,5 @@ class ItemListInput extends PureComponent {
     );
   }
 }
-
-ItemListInput.propTypes = {
-  isMultiSelect: PropTypes.bool,
-};
-
-ItemListInput.defaultProps = {
-  isMultiSelect: false,
-};
 
 export default ItemListInput;

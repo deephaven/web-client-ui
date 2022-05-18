@@ -1,6 +1,6 @@
 import React from 'react';
 
-const Typography = () => (
+const Typography = (): React.ReactElement => (
   <div>
     <h2 className="ui-title">Typograpy</h2>
     <div className="row">

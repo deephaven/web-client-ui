@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
 import { BasicModal, Checkbox } from '@deephaven/components';
 
-const Modals = () => {
-  const [openModal, setOpenModal] = useState(0);
-  const [check1, setCheck1] = useState(true);
+const Modals = (): React.ReactElement => {
+  const [openModal, setOpenModal] = useState<number>(0);
+  const [check1, setCheck1] = useState<boolean>(true);
   const closeModals = () => {
     setOpenModal(0);
   };
 
-  function renderBasicModal(buttonCount) {
+  function renderBasicModal(buttonCount: number) {
     return (
       <React.Fragment key={buttonCount}>
         <button
@@ -26,8 +26,8 @@ const Modals = () => {
           headerText="Header Text"
           bodyText="This is where the body text goes"
           onConfirm={closeModals}
-          onCancel={buttonCount >= 2 ? closeModals : null}
-          onDiscard={buttonCount >= 3 ? closeModals : null}
+          onCancel={buttonCount >= 2 ? closeModals : undefined}
+          onDiscard={buttonCount >= 3 ? closeModals : undefined}
         />
       </React.Fragment>
     );

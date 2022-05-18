@@ -4,11 +4,10 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { ButtonOld, SocketedButton } from '@deephaven/components';
 import { dhTruck } from '@deephaven/icons';
 
-interface ButtonsProps {}
 interface ButtonsState {
   toggle: boolean;
 }
-class Buttons extends Component {
+class Buttons extends Component<Record<string, never>, ButtonsState> {
   static renderButtonBrand(type: string, brand: string): ReactElement {
     const className = type.length ? `btn-${type}-${brand}` : `btn-${brand}`;
     return (
@@ -39,7 +38,7 @@ class Buttons extends Component {
     );
   }
 
-  static renderSocketedButtons(): ReactElement {
+  static renderSocketedButtons(): React.ReactElement {
     return (
       <div>
         <h5>Socketed Buttons (for linker)</h5>
@@ -75,7 +74,7 @@ class Buttons extends Component {
     );
   }
 
-  constructor(props: ButtonsProps) {
+  constructor(props: Record<string, never>) {
     super(props);
 
     this.state = {
@@ -83,7 +82,7 @@ class Buttons extends Component {
     };
   }
 
-  renderInlineButtons() {
+  renderInlineButtons(): React.ReactElement {
     const { toggle } = this.state;
 
     return (
@@ -125,7 +124,7 @@ class Buttons extends Component {
     );
   }
 
-  render() {
+  render(): React.ReactElement {
     const buttons = ['', 'outline'].map(type => Buttons.renderButtons(type));
     const inlineButtons = this.renderInlineButtons();
     const socketedButtons = Buttons.renderSocketedButtons();

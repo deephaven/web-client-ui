@@ -1,28 +1,32 @@
 import React, { useState, useEffect } from 'react';
-import { dh } from '@deephaven/icons';
+import { dh, IconDefinition } from '@deephaven/icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Button } from '@deephaven/components';
 import PropTypes from 'prop-types';
 
-async function copyText(text) {
+async function copyText(text: string): Promise<void | ErrorConstructor> {
   try {
     return await navigator.clipboard.writeText(text);
   } catch (error) {
-    throw new Error(`Unable to copy: ${error.message}`);
+    throw new Error(`Unable to copy: ${error}`);
   }
 }
 
 const DH_PREFIX = 'dh';
 const VS_PREFIX = 'vs';
 // prefix, icon-name to prefixIconName
-const getPrefixedName = (name, prefix) =>
+const getPrefixedName = (name: string, prefix: string) =>
   prefix.toLowerCase() +
   name
     .split('-')
     .map(str => str.charAt(0).toUpperCase() + str.slice(1))
     .join('');
 
-const Flash = ({ message, message: { text } }) => {
+interface FlashProps {
+  message: { text: React.ReactNode };
+}
+
+const Flash = ({ message, message: { text } }: FlashProps) => {
   const [show, setShow] = useState(false);
 
   useEffect(
@@ -49,20 +53,22 @@ Flash.propTypes = {
   }).isRequired,
 };
 
-const Icons = () => {
-  const [dhFilter, setDhFilter] = useState(true);
-  const [vsFilter, setVsFilter] = useState(true);
-  const [search, setSearch] = useState('');
-  const [flashText, setFlashText] = useState({ text: '' });
+const Icons = (): React.ReactElement => {
+  const [dhFilter, setDhFilter] = useState<boolean>(true);
+  const [vsFilter, setVsFilter] = useState<boolean>(true);
+  const [search, setSearch] = useState<string>('');
+  const [flashText, setFlashText] = useState<{ text: React.ReactNode }>({
+    text: '',
+  });
 
   const renderIcons = Object.values(dh)
-    .filter(icon => {
+    .filter((icon: IconDefinition): boolean => {
       const matchesFilter =
         (icon.prefix.toLowerCase() + icon.iconName.toLowerCase()).indexOf(
           search.toLowerCase()
         ) !== -1;
-      const isDH = dhFilter && icon.prefix === DH_PREFIX;
-      const isVS = vsFilter && icon.prefix === VS_PREFIX;
+      const isDH = dhFilter && (icon.prefix as string) === DH_PREFIX;
+      const isVS = vsFilter && (icon.prefix as string) === VS_PREFIX;
       return matchesFilter && (isDH || isVS);
     })
     .map(icon => {

@@ -1,8 +1,11 @@
 import React, { PureComponent } from 'react';
 import { Chart, MockChartModel } from '@deephaven/chart';
 
-class Charts extends PureComponent {
-  constructor(props) {
+interface ChartsState {
+  model: MockChartModel;
+}
+class Charts extends PureComponent<Record<string, never>, ChartsState> {
+  constructor(props: Record<string, never>) {
     super(props);
 
     this.state = {
@@ -10,7 +13,7 @@ class Charts extends PureComponent {
     };
   }
 
-  render() {
+  render(): React.ReactElement {
     const { model } = this.state;
 
     return (
