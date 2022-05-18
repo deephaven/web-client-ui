@@ -60,19 +60,19 @@ function getCommandItem(index) {
   return screen.getByText(getCommandText(index));
 }
 function clickItem(itemIndex, mouseEventInit = {}) {
-  const item = screen.getByText(getCommandItem(itemIndex));
+  const item = getCommandItem(itemIndex);
   fireEvent.mouseDown(item, mouseEventInit);
   fireEvent.mouseUp(item, mouseEventInit);
 }
 
 function dragRange(start, end) {
-  const startItem = screen.getByText(getCommandItem(start));
+  const startItem = getCommandItem(start);
   fireEvent.mouseDown(startItem);
   for (let i = start; i <= end; i += 1) {
-    const item = screen.getByText(getCommandItem(i));
+    const item = getCommandItem(i);
     fireEvent.mouseMove(item);
   }
-  const endItem = screen.getByText(getCommandItem(end));
+  const endItem = getCommandItem(end);
   fireEvent.mouseUp(endItem);
 }
 
@@ -85,14 +85,10 @@ it('renders a list with items without crashing', () => {
 });
 
 function expectSelected(index) {
-  expect(screen.getByText(getCommandItem(index)).parentNode).toHaveClass(
-    'active'
-  );
+  expect(getCommandItem(index).parentNode).toHaveClass('active');
 }
 function expectNotSelected(index) {
-  expect(screen.getByText(getCommandItem(index)).parentNode).not.toHaveClass(
-    'active'
-  );
+  expect(getCommandItem(index).parentNode).not.toHaveClass('active');
 }
 
 it('handles selecting an item on click', () => {
@@ -105,12 +101,12 @@ it('handles selecting an item on click', () => {
 it('handles selecting and deselecting an item on click', () => {
   mountItems(10);
 
-  userEvent.click(screen.getByText(getCommandItem(0)));
+  userEvent.click(getCommandItem(0));
 
   expectSelected(0);
   expectNotSelected(1);
 
-  userEvent.click(screen.getByText(getCommandItem(0)));
+  userEvent.click(getCommandItem(0));
 
   expectNotSelected(0);
   expectNotSelected(1);
@@ -204,16 +200,16 @@ it('handles click and drag', () => {
 it('handles click and drag with multiples moves on same item', () => {
   mountItems();
 
-  fireEvent.mouseDown(screen.getByText(getCommandItem(3)));
-  fireEvent.mouseMove(screen.getByText(getCommandItem(3)));
-  fireEvent.mouseMove(screen.getByText(getCommandItem(4)));
-  fireEvent.mouseMove(screen.getByText(getCommandItem(4)));
-  fireEvent.mouseMove(screen.getByText(getCommandItem(4)));
-  fireEvent.mouseMove(screen.getByText(getCommandItem(5)));
-  fireEvent.mouseMove(screen.getByText(getCommandItem(6)));
-  fireEvent.mouseMove(screen.getByText(getCommandItem(7)));
-  fireEvent.mouseMove(screen.getByText(getCommandItem(6)));
-  fireEvent.mouseUp(screen.getByText(getCommandItem(6)));
+  fireEvent.mouseDown(getCommandItem(3));
+  fireEvent.mouseMove(getCommandItem(3));
+  fireEvent.mouseMove(getCommandItem(4));
+  fireEvent.mouseMove(getCommandItem(4));
+  fireEvent.mouseMove(getCommandItem(4));
+  fireEvent.mouseMove(getCommandItem(5));
+  fireEvent.mouseMove(getCommandItem(6));
+  fireEvent.mouseMove(getCommandItem(7));
+  fireEvent.mouseMove(getCommandItem(6));
+  fireEvent.mouseUp(getCommandItem(6));
 
   for (let i = 0; i < 10; i += 1) {
     const isSelected = i >= 3 && i <= 7;
