@@ -52,7 +52,7 @@ function mountItems(itemLength = 10) {
   return wrapper;
 }
 
-function getCommandTextindex) {
+function getCommandText(index) {
   return `Command ${index}`;
 }
 
