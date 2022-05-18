@@ -52,8 +52,12 @@ function mountItems(itemLength = 10) {
   return wrapper;
 }
 
-function getCommandItem(index) {
+function getCommandTextindex) {
   return `Command ${index}`;
+}
+
+function getCommandItem(index) {
+  return screen.getByText(getCommandText(index));
 }
 function clickItem(itemIndex, mouseEventInit = {}) {
   const item = screen.getByText(getCommandItem(itemIndex));
