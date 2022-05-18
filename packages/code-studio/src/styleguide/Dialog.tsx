@@ -9,7 +9,7 @@ import {
 
 interface DialogState {
   isShown: boolean;
-  checkBoxMap: HierarchicalCheckboxValueMap;
+  checkBoxMap: Map<string, Map<string, boolean>>;
 }
 
 interface DialogProps {
