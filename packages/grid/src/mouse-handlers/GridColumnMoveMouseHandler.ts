@@ -30,7 +30,7 @@ class GridColumnMoveMouseHandler extends GridMouseHandler {
     if (
       column != null &&
       y <= columnHeaderHeight &&
-      model.isColumnMovable(column)
+      model.isColumnMovable(grid.getModelColumn(column))
     ) {
       const columnX = getOrThrow(visibleColumnXs, column);
       this.draggingOffset = x - columnX - rowHeaderWidth;
@@ -68,7 +68,10 @@ class GridColumnMoveMouseHandler extends GridMouseHandler {
 
     if (draggingColumn == null) {
       const { column } = grid.getGridPointFromXY(mouseX, mouseY);
-      if (column != null && !model.isColumnMovable(column)) {
+      if (
+        column != null &&
+        !model.isColumnMovable(grid.getModelColumn(column))
+      ) {
         return false;
       }
 
@@ -121,7 +124,7 @@ class GridColumnMoveMouseHandler extends GridMouseHandler {
     if (
       mouseX < minX &&
       draggingColumn > 0 &&
-      model.isColumnMovable(draggingColumn - 1)
+      model.isColumnMovable(grid.getModelColumn(draggingColumn - 1))
     ) {
       movedColumns = GridUtils.moveItem(
         draggingColumn,
@@ -132,7 +135,7 @@ class GridColumnMoveMouseHandler extends GridMouseHandler {
     } else if (
       maxX < mouseX &&
       draggingColumn < columnCount - 1 &&
-      model.isColumnMovable(draggingColumn + 1)
+      model.isColumnMovable(grid.getModelColumn(draggingColumn + 1))
     ) {
       movedColumns = GridUtils.moveItem(
         draggingColumn,
