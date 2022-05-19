@@ -1,5 +1,5 @@
 import React from 'react';
-import { mount } from 'enzyme';
+import { render } from '@testing-library/react';
 import dh from '@deephaven/jsapi-shim';
 import IrisGridPartitionSelector from './IrisGridPartitionSelector';
 
@@ -14,7 +14,7 @@ function makeIrisGridPartitionSelector(
   onDone = jest.fn(),
   getFormattedString = jest.fn(value => `${value}`)
 ) {
-  return mount(
+  return render(
     <IrisGridPartitionSelector
       table={table}
       columnName="0"
@@ -26,6 +26,5 @@ function makeIrisGridPartitionSelector(
 }
 
 it('unmounts successfully without crashing', () => {
-  const wrapper = makeIrisGridPartitionSelector();
-  wrapper.unmount();
+  makeIrisGridPartitionSelector();
 });

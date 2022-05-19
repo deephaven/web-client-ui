@@ -1,5 +1,5 @@
 import React from 'react';
-import { mount } from 'enzyme';
+import { render } from '@testing-library/react';
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js';
 import dh from '@deephaven/jsapi-shim';
 import MonacoCompletionProvider from './MonacoCompletionProvider';
@@ -11,7 +11,7 @@ function makeCompletionProvider(
   session = new dh.IdeSession(language),
   model = { uri: {} }
 ) {
-  const wrapper = mount(
+  const wrapper = render(
     <MonacoCompletionProvider
       model={model}
       session={session}
@@ -23,6 +23,8 @@ function makeCompletionProvider(
 }
 
 it('renders without crashing', () => {
+  const disposable = { dispose: jest.fn() };
+  monaco.languages.registerCompletionItemProvider = jest.fn(() => disposable);
   makeCompletionProvider();
 });
 
@@ -45,7 +47,10 @@ it('registers/deregisters completion provider properly', () => {
 });
 
 it('provides completion items properly', () => {
+  const disposable = { dispose: jest.fn() };
   const newText = 'test';
+  const myRegister = jest.fn(() => disposable);
+  monaco.languages.registerCompletionItemProvider = myRegister;
   const items = [
     {
       label: newText,
@@ -65,13 +70,12 @@ it('provides completion items properly', () => {
   session.getCompletionItems = jest.fn(() => promiseItems);
 
   const model = { uri: { path: 'test' } };
-  const wrapper = makeCompletionProvider(language, session, model);
+  makeCompletionProvider(language, session, model);
   const position = { lineNumber: 1, column: 1 };
-
-  expect.assertions(3);
-  return wrapper
-    .instance()
-    .handleCompletionRequest(model, position)
+  expect(myRegister).toHaveBeenCalledTimes(1);
+  expect.assertions(4);
+  return myRegister.mock.calls[0][1]
+    .provideCompletionItems(model, position)
     .then(resultItems => {
       expect(session.getCompletionItems).toHaveBeenCalled();
 

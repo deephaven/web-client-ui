@@ -1,27 +1,39 @@
 import React from 'react';
-import { shallow } from 'enzyme';
-import ConsolePanel from './ConsolePanel';
+import { render } from '@testing-library/react';
+import { ConsolePanel } from './ConsolePanel';
 
-function makeStorageMock() {
-  const storage = {};
+jest.mock('@deephaven/console', () => ({
+  ...jest.requireActual('@deephaven/console'),
+  Console: jest.fn(() => null),
+  default: jest.fn(() => null),
+}));
 
+jest.mock('./Panel', () => jest.fn(() => null));
+
+function makeSession() {
   return {
-    setItem: jest.fn((key, value) => {
-      storage[key] = value || '';
-    }),
-    getItem: jest.fn(key => (key in storage ? storage[key] : null)),
+    addEventListener: jest.fn(),
+    connection: {
+      subscribeToFieldUpdates: jest.fn(() => () => null),
+    },
+    removeEventListener: jest.fn(),
+    getTable: jest.fn(),
+    getObject: jest.fn(),
+    runCode: jest.fn(),
   };
 }
-
-// mock the require that monaco should add
-window.require = jest.fn();
-window.localStorage = makeStorageMock();
 
 it('renders without crashing', () => {
   const eventHub = { emit: () => {}, on: () => {}, off: () => {} };
   const container = { emit: () => {}, on: () => {}, off: () => {} };
-  const wrapper = shallow(
-    <ConsolePanel glEventHub={eventHub} glContainer={container} />
+  const session = makeSession();
+  render(
+    <ConsolePanel
+      glEventHub={eventHub}
+      glContainer={container}
+      commandHistoryStorage={{}}
+      timeZone="MockTimeZone"
+      sessionWrapper={{ session, config: {} }}
+    />
   );
-  wrapper.unmount();
 });

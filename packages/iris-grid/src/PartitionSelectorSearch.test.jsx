@@ -1,5 +1,6 @@
 import React from 'react';
-import { mount } from 'enzyme';
+import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import dh from '@deephaven/jsapi-shim';
 import PartitionSelectorSearch from './PartitionSelectorSearch';
 
@@ -13,7 +14,7 @@ function makePartitionSelectorSearch({
   onSelect = jest.fn(),
   getFormattedString = jest.fn(value => `${value}`),
 } = {}) {
-  return mount(
+  return render(
     <PartitionSelectorSearch
       table={table}
       onSelect={onSelect}
@@ -31,8 +32,7 @@ afterEach(() => {
 });
 
 it('mounts and unmounts properly', () => {
-  const component = makePartitionSelectorSearch();
-  component.unmount();
+  makePartitionSelectorSearch();
 });
 
 it('updates filters when input is changed', () => {
@@ -41,7 +41,8 @@ it('updates filters when input is changed', () => {
 
   const component = makePartitionSelectorSearch({ table });
 
-  component.find('input').simulate('change', { target: { value: 'abc' } });
+  const input = screen.getByRole('textbox');
+  userEvent.type(input, 'abc');
 
   jest.runAllTimers();
 
@@ -49,7 +50,7 @@ it('updates filters when input is changed', () => {
     expect.any(dh.FilterCondition),
   ]);
 
-  component.find('input').simulate('change', { target: { value: '' } });
+  userEvent.type(input, '{backspace}{backspace}{backspace}');
 
   jest.runAllTimers();
 
@@ -65,7 +66,8 @@ it('selects the first item when enter is pressed', () => {
 
   table.fireViewportUpdate();
 
-  component.find('input').simulate('keydown', { key: 'Enter' });
+  const input = screen.getByRole('textbox');
+  userEvent.type(input, '{enter}');
 
   expect(onSelect).toHaveBeenCalledWith('AAPL');
 
