@@ -1,3 +1,4 @@
+import AdvancedSettings from './AdvancedSettings';
 import Aggregations from './aggregations/Aggregations';
 import AggregationEdit from './aggregations/AggregationEdit';
 import AggregationUtils from './aggregations/AggregationUtils';
@@ -10,6 +11,7 @@ import TableSaver from './TableSaver';
 import VisibilityOrderingBuilder from './VisibilityOrderingBuilder';
 
 export {
+  AdvancedSettings,
   Aggregations,
   AggregationEdit,
   AggregationUtils,

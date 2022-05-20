@@ -1,7 +1,7 @@
 import { GridMetricCalculator } from '@deephaven/grid';
 import type { VisibleIndex, GridMetricState, GridTheme } from '@deephaven/grid';
 import type { FilterCondition, Sort } from '@deephaven/jsapi-shim';
-import TableUtils from './TableUtils';
+import { TableUtils } from '@deephaven/jsapi-utils';
 import type IrisGridModel from './IrisGridModel';
 import type IrisGridTheme from './IrisGridTheme';
 

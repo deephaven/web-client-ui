@@ -11,8 +11,11 @@ import {
   PanelManager,
 } from '@deephaven/dashboard';
 import type GoldenLayout from '@deephaven/golden-layout';
-import { DateUtils, TableUtils } from '@deephaven/iris-grid';
-import { DateTimeColumnFormatter } from '@deephaven/iris-grid/dist/formatters';
+import {
+  DateTimeColumnFormatter,
+  DateUtils,
+  TableUtils,
+} from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
 import {
   getActiveTool,

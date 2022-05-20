@@ -1,5 +1,8 @@
 import dh from '@deephaven/jsapi-shim';
-import { FilterOperator, FilterType } from './filters';
+import {
+  Operator as FilterOperator,
+  Type as FilterType,
+} from '@deephaven/filters';
 import TableUtils from './TableUtils';
 import DateUtils from './DateUtils';
 

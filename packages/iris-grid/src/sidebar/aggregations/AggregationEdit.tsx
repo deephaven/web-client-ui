@@ -4,10 +4,10 @@ import { CSSTransition } from 'react-transition-group';
 import { Button, Checkbox, ItemList, ThemeExport } from '@deephaven/components';
 import { dhSortAlphaDown, dhSortAlphaUp } from '@deephaven/icons';
 import type { Column } from '@deephaven/jsapi-shim';
+import { TableUtils } from '@deephaven/jsapi-utils';
 import { Aggregation } from './Aggregations';
 import { filterValidColumns } from './AggregationUtils';
 import './AggregationEdit.scss';
-import TableUtils from '../../TableUtils';
 
 interface AggregationEditItem {
   value: string;

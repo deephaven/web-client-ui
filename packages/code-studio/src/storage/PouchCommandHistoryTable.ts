@@ -2,7 +2,7 @@ import {
   CommandHistoryStorageItem,
   CommandHistoryTable,
 } from '@deephaven/console';
-import { FilterType } from '@deephaven/iris-grid/dist/filters';
+import { Type as FilterType } from '@deephaven/filters';
 import { StorageUtils } from '@deephaven/storage';
 import PouchStorageTable from './PouchStorageTable';
 

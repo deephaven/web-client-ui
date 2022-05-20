@@ -1,0 +1,44 @@
+{
+  "name": "@deephaven/jsapi-utils",
+  "version": "0.11.4",
+  "description": "Deephaven JSAPI Utils",
+  "author": "Deephaven Data Labs LLC",
+  "license": "Apache-2.0",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/deephaven/web-client-ui.git",
+    "directory": "packages/jsapi-utils"
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "source": "src/index.ts",
+  "engines": {
+    "node": ">=16"
+  },
+  "scripts": {
+    "build": "cross-env NODE_ENV=production run-p build:*",
+    "build-dev": "cross-env NODE_ENV=development run-p build:*",
+    "babel": "babel ./src --out-dir ./dist --extensions \".ts,.tsx,.js,.jsx\" --source-maps --root-mode upward",
+    "build:babel": "npm run babel",
+    "watch": "run-p watch:*",
+    "watch:babel": "npm run babel -- -w --skip-initial-build",
+    "prestart": "npm run build-dev",
+    "start": "cross-env NODE_ENV=development npm run watch"
+  },
+  "dependencies": {
+    "@deephaven/filters": "file:../filters",
+    "@deephaven/jsapi-shim": "file:../jsapi-shim",
+    "@deephaven/log": "file:../log",
+    "@deephaven/utils": "file:../utils"
+  },
+  "devDependencies": {
+    "@deephaven/tsconfig": "file:../tsconfig"
+  },
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
+}

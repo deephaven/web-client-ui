@@ -7,13 +7,13 @@ import { connect } from 'react-redux';
 import debounce from 'lodash.debounce';
 import { GLPropTypes, LayoutUtils } from '@deephaven/dashboard';
 import {
+  AdvancedSettings,
   IrisGrid,
   IrisGridModel,
   IrisGridUtils,
   IrisGridTableModel,
-  TableUtils,
 } from '@deephaven/iris-grid';
-import AdvancedSettings from '@deephaven/iris-grid/dist/sidebar/AdvancedSettings';
+import { TableUtils } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
 import { getSettings, getUser, getWorkspace } from '@deephaven/redux';
 import { PromiseUtils } from '@deephaven/utils';

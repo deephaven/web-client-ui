@@ -1,7 +1,7 @@
 import React from 'react';
 import { render } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { DateTimeColumnFormatter } from '@deephaven/iris-grid/dist/formatters';
+import { DateTimeColumnFormatter } from '@deephaven/jsapi-utils';
 import { FormattingSectionContent } from './FormattingSectionContent';
 
 const DEFAULT_DECIMAL_STRING = '###,#00.00';

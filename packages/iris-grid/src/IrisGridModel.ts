@@ -20,7 +20,7 @@ import type {
   Table,
   TotalsTableConfig,
 } from '@deephaven/jsapi-shim';
-import type Formatter from './Formatter';
+import { Formatter } from '@deephaven/jsapi-utils';
 
 type RowIndex = ModelIndex;
 

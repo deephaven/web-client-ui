@@ -34,6 +34,12 @@ import {
   vsTools,
 } from '@deephaven/icons';
 import dh, { PropTypes as APIPropTypes } from '@deephaven/jsapi-shim';
+import {
+  DateUtils,
+  Formatter,
+  FormatterUtils,
+  TableUtils,
+} from '@deephaven/jsapi-utils';
 import { Pending, PromiseUtils, ValidationError } from '@deephaven/utils';
 import throttle from 'lodash.throttle';
 import debounce from 'lodash.debounce';
@@ -63,9 +69,6 @@ import IrisGridRenderer from './IrisGridRenderer';
 import IrisGridTheme from './IrisGridTheme';
 import ColumnStatistics from './ColumnStatistics';
 import './IrisGrid.scss';
-import Formatter from './Formatter';
-import FormatterUtils from './FormatterUtils';
-import TableUtils from './TableUtils';
 import AdvancedFilterCreator from './AdvancedFilterCreator';
 import {
   Aggregations,
@@ -87,7 +90,6 @@ import SelectDistinctBuilder from './sidebar/SelectDistinctBuilder';
 import AdvancedSettingsType from './sidebar/AdvancedSettingsType';
 import AdvancedSettingsMenu from './sidebar/AdvancedSettingsMenu';
 import SHORTCUTS from './IrisGridShortcuts';
-import DateUtils from './DateUtils';
 import ConditionalFormattingMenu from './sidebar/conditional-formatting/ConditionalFormattingMenu';
 import { getFormatColumns } from './sidebar/conditional-formatting/ConditionalFormattingUtils';
 import ConditionalFormatEditor from './sidebar/conditional-formatting/ConditionalFormatEditor';

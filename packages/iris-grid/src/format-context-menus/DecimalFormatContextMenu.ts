@@ -1,7 +1,10 @@
+import {
+  DecimalColumnFormat,
+  DecimalColumnFormatter,
+} from '@deephaven/jsapi-utils';
 import FormatContextMenuUtils, {
   FormatContextMenuOption,
 } from './FormatContextMenuUtils';
-import { DecimalColumnFormat, DecimalColumnFormatter } from '../formatters';
 
 class DecimalFormatContextMenu {
   static defaultGroup = 10;

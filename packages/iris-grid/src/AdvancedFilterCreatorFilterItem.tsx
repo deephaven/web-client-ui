@@ -2,14 +2,20 @@
 import React, { PureComponent } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Tooltip } from '@deephaven/components';
+import {
+  getLabelForBooleanFilter,
+  getLabelForDateFilter,
+  getLabelForNumberFilter,
+  getLabelForTextFilter,
+  TypeValue as FilterTypeValue,
+} from '@deephaven/filters';
 import { vsTrash } from '@deephaven/icons';
+import { AdvancedFilterItemType, TableUtils } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
-import TableUtils from './TableUtils';
-import { FilterType, FilterTypeValue } from './filters';
 
 const log = Log.module('AdvancedFilterCreatorFilterItem');
 
-interface AdvancedFilterCreatorFilterItemProps {
+export interface AdvancedFilterCreatorFilterItemProps {
   column: { type: string };
   filterTypes: FilterTypeValue[];
   onChange(type: FilterTypeValue, value: string): void;
@@ -18,119 +24,37 @@ interface AdvancedFilterCreatorFilterItemProps {
   value?: string;
 }
 
-export interface AdvancedFilterCreatorFilterItemState {
-  selectedType: FilterTypeValue;
-  value: string;
-}
+export type AdvancedFilterCreatorFilterItemState = AdvancedFilterItemType;
 
-class AdvancedFilterCreatorFilterItem extends PureComponent<
+export class AdvancedFilterCreatorFilterItem extends PureComponent<
   AdvancedFilterCreatorFilterItemProps,
   AdvancedFilterCreatorFilterItemState
 > {
-  static getLabelForTextFilter(filterType: FilterTypeValue): string {
-    switch (filterType) {
-      case FilterType.eq:
-        return 'is exactly';
-      case FilterType.eqIgnoreCase:
-        return 'is exactly (ignore case)';
-      case FilterType.notEq:
-        return 'is not exactly';
-      case FilterType.notEqIgnoreCase:
-        return 'is not exactly (ignore case)';
-      case FilterType.contains:
-        return 'contains';
-      case FilterType.notContains:
-        return 'does not contain';
-      case FilterType.startsWith:
-        return 'starts with';
-      case FilterType.endsWith:
-        return 'ends with';
-      default:
-        log.warn('Unrecognized text filter type', filterType);
-        return '';
-    }
-  }
-
-  static getLabelForNumberFilter(filterType: FilterTypeValue): string {
-    switch (filterType) {
-      case FilterType.eq:
-        return 'is equal to';
-      case FilterType.notEq:
-        return 'is not equal to';
-      case FilterType.greaterThan:
-        return 'greater than';
-      case FilterType.greaterThanOrEqualTo:
-        return 'greater than or equal to';
-      case FilterType.lessThan:
-        return 'less than';
-      case FilterType.lessThanOrEqualTo:
-        return 'less than or equal to';
-      default:
-        log.warn('Unrecognized number filter type', filterType);
-        return '';
-    }
-  }
-
-  static getLabelForDateFilter(filterType: FilterTypeValue): string {
-    switch (filterType) {
-      case FilterType.eq:
-        return 'date is';
-      case FilterType.notEq:
-        return 'date is not';
-      case FilterType.notEqIgnoreCase:
-      case FilterType.greaterThan:
-        return 'date is after';
-      case FilterType.greaterThanOrEqualTo:
-        return 'date is after or equal';
-      case FilterType.lessThan:
-        return 'date is before';
-      case FilterType.lessThanOrEqualTo:
-        return 'date is before or equal';
-      default:
-        log.warn('Unrecognized date filter type', filterType);
-        return '';
-    }
-  }
-
-  static getLabelForBooleanFilter(filterType: FilterTypeValue): string {
-    switch (filterType) {
-      case FilterType.isTrue:
-        return 'Is True';
-      case FilterType.isFalse:
-        return 'Is False';
-      case FilterType.isNull:
-        return 'Is Null';
-      default:
-        log.warn('Unrecognized boolean filter type', filterType);
-        return '';
-    }
-  }
-
   static getLabelForFilter(
     columnType: string,
     filterType: FilterTypeValue
   ): string {
-    if (
-      TableUtils.isNumberType(columnType) ||
-      TableUtils.isCharType(columnType)
-    ) {
-      return AdvancedFilterCreatorFilterItem.getLabelForNumberFilter(
-        filterType
-      );
+    try {
+      if (
+        TableUtils.isNumberType(columnType) ||
+        TableUtils.isCharType(columnType)
+      ) {
+        return getLabelForNumberFilter(filterType);
+      }
+      if (TableUtils.isTextType(columnType)) {
+        return getLabelForTextFilter(filterType);
+      }
+      if (TableUtils.isDateType(columnType)) {
+        return getLabelForDateFilter(filterType);
+      }
+      if (TableUtils.isBooleanType(columnType)) {
+        return getLabelForBooleanFilter(filterType);
+      }
+      throw new Error(`Unrecognized column type: ${columnType}`);
+    } catch (e) {
+      log.warn(e);
+      return '';
     }
-    if (TableUtils.isTextType(columnType)) {
-      return AdvancedFilterCreatorFilterItem.getLabelForTextFilter(filterType);
-    }
-    if (TableUtils.isDateType(columnType)) {
-      return AdvancedFilterCreatorFilterItem.getLabelForDateFilter(filterType);
-    }
-    if (TableUtils.isBooleanType(columnType)) {
-      return AdvancedFilterCreatorFilterItem.getLabelForBooleanFilter(
-        filterType
-      );
-    }
-    log.warn('Unrecognized column type: ', columnType);
-    return '';
   }
 
   constructor(props: AdvancedFilterCreatorFilterItemProps) {

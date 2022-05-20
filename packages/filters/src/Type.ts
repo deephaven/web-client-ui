@@ -1,5 +1,5 @@
 /** Different filter conditions user can select */
-export class FilterType {
+export class Type {
   static readonly eq = 'eq';
 
   static readonly eqIgnoreCase = 'eqIgnoreCase';
@@ -43,7 +43,4 @@ export class FilterType {
   static readonly containsAny = 'containsAny';
 }
 
-export type FilterTypeValue = typeof FilterType[Exclude<
-  keyof typeof FilterType,
-  'prototype'
->];
+export type TypeValue = typeof Type[Exclude<keyof typeof Type, 'prototype'>];

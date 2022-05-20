@@ -1,5 +1,5 @@
 import Log from '@deephaven/log';
-import TableUtils from '@deephaven/iris-grid/dist/TableUtils.js';
+import { TableUtils } from '@deephaven/jsapi-utils';
 import dh from '@deephaven/jsapi-shim';
 
 const log = Log.module('ChartUtils');

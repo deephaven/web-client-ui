@@ -2,7 +2,7 @@ import type { FormattingRule } from './Formatter';
 import Formatter from './Formatter';
 import { DateTimeColumnFormatter, TableColumnFormatter } from './formatters';
 
-class FormatterUtils {
+export class FormatterUtils {
   static getColumnFormats(settings: {
     formatter: FormattingRule[];
   }): FormattingRule[] {

@@ -6,15 +6,14 @@ import classNames from 'classnames';
 import PropTypes from 'prop-types';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import memoize from 'memoize-one';
+import { Operator as FilterOperator } from '@deephaven/filters';
 import { dhSortAmountDown, dhNewCircleLargeFilled } from '@deephaven/icons';
+import { Formatter, TableUtils } from '@deephaven/jsapi-utils';
 import { ContextActionUtils, Tooltip } from '@deephaven/components';
 import Log from '@deephaven/log';
 import { PromiseUtils } from '@deephaven/utils';
-import TableUtils from './TableUtils';
-import { FilterOperator } from './filters';
 import AdvancedFilterCreatorFilterItem from './AdvancedFilterCreatorFilterItem';
 import AdvancedFilterCreatorSelectValue from './AdvancedFilterCreatorSelectValue';
-import Formatter from './Formatter';
 import IrisGridModel from './IrisGridModel';
 import './AdvancedFilterCreator.scss';
 

@@ -1,4 +1,4 @@
-import { FilterOperator } from './filters';
+import { Operator as FilterOperator } from '@deephaven/filters';
 import {
   FilterConfig,
   FilterConfigItem,

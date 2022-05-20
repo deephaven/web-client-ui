@@ -6,10 +6,10 @@ import {
   DecimalColumnFormatter,
   DefaultColumnFormatter,
   IntegerColumnFormatter,
+  StringColumnFormatter,
   TableColumnFormat,
   TableColumnFormatter,
 } from './formatters';
-import StringColumnFormatter from './formatters/StringColumnFormatter';
 
 type ColumnName = string;
 
@@ -19,7 +19,7 @@ export interface FormattingRule {
   format: TableColumnFormat;
 }
 
-class Formatter {
+export class Formatter {
   /**
    * Converts FormattingRule[] to Map
    * @param columnFormattingRules Array or column formatting rules

@@ -1,9 +1,9 @@
 import React from 'react';
 import TestRenderer from 'react-test-renderer';
+import { DateUtils } from '@deephaven/jsapi-utils';
 import { TestUtils } from '@deephaven/utils';
 import { IrisGrid } from './IrisGrid';
 import IrisGridTestUtils from './IrisGridTestUtils';
-import DateUtils from './DateUtils';
 
 class MockPath2D {
   // eslint-disable-next-line class-methods-use-this

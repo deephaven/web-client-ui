@@ -14,10 +14,16 @@
       "path": "../components"
     },
     {
+      "path": "../filters"
+    },
+    {
       "path": "../grid"
     },
     {
       "path": "../jsapi-shim"
+    },
+    {
+      "path": "../jsapi-utils"
     },
     {
       "path": "../log"

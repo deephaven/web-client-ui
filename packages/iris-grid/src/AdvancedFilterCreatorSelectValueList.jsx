@@ -3,9 +3,9 @@ import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import { CSSTransition } from 'react-transition-group';
 import dh, { PropTypes as APIPropTypes } from '@deephaven/jsapi-shim';
+import { Formatter } from '@deephaven/jsapi-utils';
 import { LoadingSpinner, SelectValueList } from '@deephaven/components';
 import Log from '@deephaven/log';
-import Formatter from './Formatter';
 
 const log = Log.module('AdvancedFilterCreatorSelectValueList');
 

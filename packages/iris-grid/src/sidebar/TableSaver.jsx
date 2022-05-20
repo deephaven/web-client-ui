@@ -2,11 +2,10 @@ import { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import { WritableStream as ponyfillWritableStream } from 'web-streams-polyfill/dist/ponyfill.js';
 import dh from '@deephaven/jsapi-shim';
+import { Formatter, FormatterUtils } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
 import { memoizeClear } from '@deephaven/grid';
 import { PromiseUtils } from '@deephaven/utils';
-import Formatter from '../Formatter';
-import FormatterUtils from '../FormatterUtils';
 
 const log = Log.module('TableSaver');
 

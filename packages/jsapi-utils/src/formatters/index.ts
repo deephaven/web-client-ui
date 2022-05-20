@@ -6,3 +6,4 @@ export { default as DefaultColumnFormatter } from './DefaultColumnFormatter';
 export * from './IntegerColumnFormatter';
 export { default as TableColumnFormatter } from './TableColumnFormatter';
 export * from './TableColumnFormatter';
+export * from './StringColumnFormatter';

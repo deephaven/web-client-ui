@@ -1,6 +1,6 @@
 import { TestUtils } from '@deephaven/utils';
 import dh from '@deephaven/jsapi-shim';
-import Formatter from './Formatter';
+import { Formatter } from '@deephaven/jsapi-utils';
 import IrisGridModel from './IrisGridModel';
 import IrisGridTestUtils from './IrisGridTestUtils';
 

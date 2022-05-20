@@ -13,12 +13,12 @@ import {
   Tooltip,
 } from '@deephaven/components';
 import { vsTrash, dhSortAlphaDown, dhSortAlphaUp } from '@deephaven/icons';
+import { TableUtils } from '@deephaven/jsapi-utils';
 import memoize from 'memoizee';
 import debounce from 'lodash.debounce';
 import Log from '@deephaven/log';
 import './RollupRows.scss';
 import IrisGridModel from '../IrisGridModel';
-import TableUtils from '../TableUtils';
 
 const log = Log.module('RollupRows');
 const DEBOUNCE_SEARCH = 150;

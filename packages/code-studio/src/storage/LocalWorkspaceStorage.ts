@@ -3,7 +3,7 @@ import {
   DateTimeColumnFormatter,
   DecimalColumnFormatter,
   IntegerColumnFormatter,
-} from '@deephaven/iris-grid/dist/formatters';
+} from '@deephaven/jsapi-utils';
 import WorkspaceStorage, { Workspace, WorkspaceData } from './WorkspaceStorage';
 
 const log = Log.module('LocalWorkspaceStorage');
