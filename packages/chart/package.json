@@ -33,6 +33,7 @@
     "@deephaven/icons": "file:../icons",
     "@deephaven/jsapi-shim": "file:../jsapi-shim",
     "@deephaven/jsapi-utils": "file:../jsapi-utils",
+    "@deephaven/log": "file:../log",
     "deep-equal": "^2.0.5",
     "lodash.debounce": "^4.0.8",
     "memoize-one": "^5.1.1",
@@ -42,11 +43,9 @@
     "react-plotly.js": "^2.4.0"
   },
   "peerDependencies": {
-    "@deephaven/log": "^0.12",
     "react": "^17.x"
   },
   "devDependencies": {
-    "@deephaven/log": "file:../log",
     "@deephaven/mocks": "file:../mocks",
     "@deephaven/tsconfig": "file:../tsconfig"
   },

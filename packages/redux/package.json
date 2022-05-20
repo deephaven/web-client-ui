@@ -28,6 +28,7 @@
   },
   "dependencies": {
     "@deephaven/jsapi-utils": "file:../jsapi-utils",
+    "@deephaven/log": "file:../log",
     "deep-equal": "^2.0.5",
     "redux-thunk": "^2.3.0"
   },
@@ -35,7 +36,6 @@
     "@deephaven/tsconfig": "file:../tsconfig"
   },
   "peerDependencies": {
-    "@deephaven/log": "^0.12",
     "redux": "^4.0.5"
   },
   "files": [
