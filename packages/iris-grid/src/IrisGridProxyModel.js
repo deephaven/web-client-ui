@@ -291,8 +291,28 @@ class IrisGridProxyModel extends IrisGridModel {
     return this.model.columns;
   }
 
+  get movedColumns() {
+    return this.model.movedColumns;
+  }
+
+  get movedRows() {
+    return this.model.movedRows;
+  }
+
   get layoutHints() {
     return this.model.layoutHints;
+  }
+
+  get frontColumns() {
+    return this.model.frontColumns;
+  }
+
+  get backColumns() {
+    return this.model.backColumns;
+  }
+
+  get frozenColumns() {
+    return this.model.frozenColumns;
   }
 
   updateFrozenColumns(...args) {

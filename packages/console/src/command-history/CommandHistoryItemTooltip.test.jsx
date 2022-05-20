@@ -1,5 +1,5 @@
 import React from 'react';
-import { mount } from 'enzyme';
+import { render, screen } from '@testing-library/react';
 import { CommandHistoryItemTooltip } from './CommandHistoryItemTooltip';
 
 jest.mock('../common/Code', () => () => 'Code');
@@ -52,7 +52,7 @@ function shallowTooltip(
   item = makeItem(),
   commandHistoryStorage = makeCommandHistoryStorage()
 ) {
-  return mount(
+  return render(
     <CommandHistoryItemTooltip
       language="test"
       item={item}
@@ -62,15 +62,14 @@ function shallowTooltip(
 }
 
 it('mounts and unmounts without crashing', () => {
-  const wrapper = shallowTooltip();
-  wrapper.unmount();
+  shallowTooltip();
 });
 
 describe('different command results', () => {
   let callback = null;
   let cleanup = null;
   let commandHistoryStorage = null;
-  let wrapper = null;
+  let unmount = null;
 
   beforeEach(() => {
     jest.useFakeTimers();
@@ -80,7 +79,7 @@ describe('different command results', () => {
       callback = data => cb({ data });
       return cleanup;
     });
-    wrapper = shallowTooltip(makeItem(), commandHistoryStorage);
+    ({ unmount } = shallowTooltip(makeItem(), commandHistoryStorage));
 
     // Run the pending timers so that it tries to load the data
     jest.runOnlyPendingTimers();
@@ -88,32 +87,27 @@ describe('different command results', () => {
 
   it('shows loading spinner while waiting for updates', () => {
     expect(commandHistoryStorage.listenItem).toHaveBeenCalled();
-    expect(wrapper.find('.loading-spinner').length).toBe(1);
+    expect(screen.getAllByRole('img', { hidden: true }).length).toBe(2);
 
-    wrapper.unmount();
+    unmount();
 
     expect(cleanup).toHaveBeenCalled();
   });
 
   it('renders <1s elapsed time for a command that was just started', () => {
     callback(makeCommandStarted());
-    wrapper.update();
-    expect(wrapper.find('.time-string').text()).toBe('<1s');
+    expect(screen.getByText('<1s')).toBeTruthy();
   });
 
   it('renders correct time for completed command', () => {
     callback(makeCommandCompletedSuccess());
-    wrapper.update();
-    expect(wrapper.find('.time-string').text()).toBe('5s');
+    expect(screen.getByText('5s')).toBeTruthy();
   });
 
   it('shows error message', () => {
     const commandCompletedError = makeCommandCompletedError();
     callback(commandCompletedError);
-    wrapper.update();
-    expect(wrapper.find('.error-message').length).toBe(1);
-    expect(wrapper.find('.error-message').text()).toBe(
-      commandCompletedError.result.error
-    );
+
+    expect(screen.getByText(commandCompletedError.result.error)).toBeTruthy();
   });
 });

@@ -4,8 +4,9 @@ import RadioGroup from './RadioGroup';
 import RadioItem from './RadioItem';
 
 it('shows no markup with no children', () => {
-  const radio = render(<RadioGroup onChange={jest.fn()} />);
-  expect(radio.baseElement.firstChild.firstChild).toBe(null);
+  const { container } = render(<RadioGroup onChange={jest.fn()} />);
+  expect(container.childElementCount).toBe(0);
+  expect(container.innerHTML).toBe('');
 });
 
 it('shows the appropriate children', () => {

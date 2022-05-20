@@ -216,7 +216,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
         const isColumnHidden = [...userColumnWidths.values()].some(
           columnWidth => columnWidth === 0
         );
-        const isColumnFrozen = model.isColumnFrozen(columnIndex);
+        const isColumnFrozen = model.isColumnFrozen(modelColumn);
         actions.push({
           title: 'Hide Column',
           group: IrisGridContextMenuHandler.GROUP_HIDE_COLUMNS,
@@ -235,6 +235,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
             }
           },
           order: 10,
+          disabled: !model.isColumnMovable(modelColumn) && !isColumnFrozen,
         });
         actions.push({
           title: 'Show All Columns',

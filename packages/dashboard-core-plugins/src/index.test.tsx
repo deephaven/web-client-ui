@@ -1,5 +1,5 @@
 import React from 'react';
-import { mount } from 'enzyme';
+import { render } from '@testing-library/react';
 import { Provider } from 'react-redux';
 import Dashboard from '@deephaven/dashboard';
 import { createMockStore } from '@deephaven/redux';
@@ -15,7 +15,7 @@ import {
 
 it('handles mounting and unmount core plugins properly', () => {
   const store = createMockStore();
-  const dashboard = mount(
+  render(
     <Provider store={store}>
       <Dashboard>
         <FilterPlugin />
@@ -28,5 +28,4 @@ it('handles mounting and unmount core plugins properly', () => {
       </Dashboard>
     </Provider>
   );
-  dashboard.unmount();
 });

@@ -1,18 +1,18 @@
 /* eslint func-names: "off" */
 import React from 'react';
-import { mount } from 'enzyme';
+import { render, screen } from '@testing-library/react';
 import { IrisGridModelFactory } from '@deephaven/iris-grid';
 import dh from '@deephaven/jsapi-shim';
 import { TestUtils } from '@deephaven/utils';
 import { IrisGridPanel } from './IrisGridPanel';
 
-jest.mock('@deephaven/iris-grid', () => {
-  const MockReact = jest.requireActual('react');
-  return {
-    ...jest.requireActual('@deephaven/iris-grid'),
-    IrisGrid: MockReact.forwardRef(() => null),
-  };
-});
+const MockIrisGrid = jest.fn(() => null);
+
+jest.mock('@deephaven/iris-grid', () => ({
+  ...jest.requireActual('@deephaven/iris-grid'),
+  // eslint-disable-next-line react/jsx-props-no-spreading
+  IrisGrid: jest.fn(props => <MockIrisGrid {...props} />),
+}));
 
 jest.mock('@deephaven/dashboard', () => ({
   ...jest.requireActual('@deephaven/dashboard'),
@@ -47,7 +47,7 @@ function makeIrisGridPanelWrapper(
   workspace = {},
   settings = { timeZone: 'America/New_York' }
 ) {
-  return mount(
+  return render(
     <IrisGridPanel
       makeModel={makeModel}
       metadata={metadata}
@@ -63,13 +63,28 @@ function makeIrisGridPanelWrapper(
   );
 }
 
+function expectLoading(container) {
+  expect(
+    container.querySelector("[data-icon='circle-large-outline']")
+  ).toBeInTheDocument();
+  expect(container.querySelector("[data-icon='loading']")).toBeInTheDocument();
+}
+
+function expectNotLoading(container) {
+  expect(
+    container.querySelector("[data-icon='outline']")
+  ).not.toBeInTheDocument();
+  expect(
+    container.querySelector("[data-icon='loading']")
+  ).not.toBeInTheDocument();
+}
+
 it('renders without crashing', () => {
   makeIrisGridPanelWrapper();
 });
 
 it('unmounts successfully without crashing', () => {
-  const wrapper = makeIrisGridPanelWrapper();
-  wrapper.unmount();
+  makeIrisGridPanelWrapper();
 });
 
 it('unmounts while still resolving a table successfully', async () => {
@@ -80,17 +95,15 @@ it('unmounts while still resolving a table successfully', async () => {
   });
   const makeModel = makeMakeModel(tablePromise);
 
-  const wrapper = makeIrisGridPanelWrapper(makeModel);
-  const setState = jest.fn();
-  wrapper.instance().setState = setState;
-  wrapper.unmount();
+  const { unmount } = makeIrisGridPanelWrapper(makeModel);
+  const spy = jest.spyOn(IrisGridPanel.prototype, 'setState');
+  unmount();
 
   tableResolve(table);
-
+  expect(spy).toHaveBeenCalledTimes(0);
   expect.assertions(1);
 
   await TestUtils.flushPromises();
-  expect(setState).not.toHaveBeenCalled();
 });
 
 it('shows the loading spinner until grid is ready', async () => {
@@ -98,31 +111,29 @@ it('shows the loading spinner until grid is ready', async () => {
   const tablePromise = Promise.resolve(table);
   const makeModel = makeMakeModel(tablePromise);
 
-  expect.assertions(4);
-  const wrapper = makeIrisGridPanelWrapper(makeModel);
+  expect.assertions(6);
+  const { container } = makeIrisGridPanelWrapper(makeModel);
 
-  expect(wrapper.find('LoadingOverlay').prop('isLoading')).toBe(true);
+  expectLoading(container);
 
   await TestUtils.flushPromises();
-  wrapper.update();
 
-  expect(wrapper.find('LoadingOverlay').prop('isLoading')).toBe(true);
+  expectLoading(container);
+  const params = MockIrisGrid.mock.calls[MockIrisGrid.mock.calls.length - 1][0];
+  params.onStateChange({}, {});
 
-  wrapper.instance().handleGridStateChange({}, {});
-  wrapper.update();
-
-  expect(wrapper.state('isLoaded')).toBe(true);
-  expect(wrapper.find('LoadingOverlay').prop('isLoading')).toBe(false);
+  expectNotLoading(container);
 });
 
 it('shows an error properly if table loading fails', async () => {
   const error = new Error('TEST ERROR MESSAGE');
   const tablePromise = Promise.reject(error);
   const makeModel = makeMakeModel(tablePromise);
-  const wrapper = makeIrisGridPanelWrapper(makeModel);
+  const { container } = makeIrisGridPanelWrapper(makeModel);
   await TestUtils.flushPromises();
-  wrapper.update();
-  expect(wrapper.state('error')).toBe(error);
-  expect(wrapper.find('LoadingOverlay').prop('isLoading')).toBe(false);
-  expect(wrapper.find('LoadingOverlay').prop('errorMessage')).not.toBe(null);
+  expectNotLoading(container);
+  const msg = screen.getByText(
+    'Unable to open table. Error: TEST ERROR MESSAGE'
+  );
+  expect(msg).toBeTruthy();
 });
