@@ -2176,7 +2176,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     });
   }
 
-  handleFilterBarChange(value) {
+  handleFilterBarChange(value: string): void {
     this.startLoading('Filtering...', true);
 
     this.setState(({ focusedFilterBarColumn, quickFilters }) => {
@@ -2187,7 +2187,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     });
   }
 
-  handleFilterBarDone(setGridFocus = true, defocusInput = true) {
+  handleFilterBarDone(setGridFocus: boolean = true, defocusInput: boolean = true): void {
     if (setGridFocus) {
       this.grid.focus();
     }
