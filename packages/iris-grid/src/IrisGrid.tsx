@@ -17,7 +17,7 @@ import {
   ThemeExport,
   Tooltip,
 } from '@deephaven/components';
-import { Grid, GridRange, GridUtils } from '@deephaven/grid';
+import { Grid, GridMetrics, GridRange, GridUtils, MoveOperation } from '@deephaven/grid';
 import {
   dhEye,
   dhFilterFilled,
@@ -33,7 +33,7 @@ import {
   vsSymbolOperator,
   vsTools,
 } from '@deephaven/icons';
-import dh, { PropTypes as APIPropTypes } from '@deephaven/jsapi-shim';
+import dh, { Column, PropTypes as APIPropTypes } from '@deephaven/jsapi-shim';
 import {
   DateUtils,
   Formatter,
@@ -90,10 +90,11 @@ import SelectDistinctBuilder from './sidebar/SelectDistinctBuilder';
 import AdvancedSettingsType from './sidebar/AdvancedSettingsType';
 import AdvancedSettingsMenu from './sidebar/AdvancedSettingsMenu';
 import SHORTCUTS from './IrisGridShortcuts';
-import ConditionalFormattingMenu from './sidebar/conditional-formatting/ConditionalFormattingMenu';
-import { getFormatColumns } from './sidebar/conditional-formatting/ConditionalFormattingUtils';
-import ConditionalFormatEditor from './sidebar/conditional-formatting/ConditionalFormatEditor';
+import ConditionalFormattingMenu, { ChangeCallback } from './sidebar/conditional-formatting/ConditionalFormattingMenu';
+import { FormattingRule, getFormatColumns } from './sidebar/conditional-formatting/ConditionalFormattingUtils';
+import ConditionalFormatEditor, { SaveCallback, UpdateCallback } from './sidebar/conditional-formatting/ConditionalFormatEditor';
 import IrisGridCellOverflowModal from './IrisGridCellOverflowModal';
+import { Aggregation, AggregationSettings } from './sidebar/aggregations/Aggregations';
 
 const log = Log.module('IrisGrid');
 
@@ -132,14 +133,173 @@ function isEmptyConfig({
   );
 }
 
-export class IrisGrid extends Component {
+interface IrisGridProps {
+    children: React.ReactNode,
+    advancedFilters: Map,
+    advancedSettings: Map,
+    alwaysFetchColumns: string[],
+    isFilterBarShown: boolean,
+    applyInputFiltersOnInit: boolean,
+    conditionalFormats: ,
+    customColumnFormatMap: Map,
+    movedColumns: {from: number, to: number}[]
+    movedRows: {from: number, to: number}[]
+    inputFilters: {name: string, type: string, value: string}[]
+    customFilters: unknown[],
+    model: IrisGridModel,
+    onCreateChart: ,
+    onColumnSelected: ,
+    onError: ,
+    onDataSelected: ,
+    onStateChange: ,
+    onPartitionAppend: ,
+    onAdvancedSettingsChange:,
+    partition: string,
+    partitionColumn: Column,
+    sorts: ,
+    reverseType: string,
+    quickFilters: Map,
+    customColumns: string[],
+    selectDistinctColumns: string[],
+    // These settings come from the redux store
+    settings: {
+      formatter: FormattingRule[];
+  },
+    userColumnWidths: Map,
+    userRowHeights: Map,
+    onSelectionChanged: ,
+    rollupConfig: ,
+    aggregationSettings: ,
+  
+    isSelectingColumn: boolean,
+    isSelectingPartition: boolean,
+    isStuckToBottom: boolean,
+    isStuckToRight: boolean,
+  
+    // eslint-disable-next-line react/no-unused-prop-types
+    columnSelectionValidator:,
+    columnAllowedCursor: string,
+  
+    // eslint-disable-next-line react/no-unused-prop-types
+    columnNotAllowedCursor: sting,
+    name: string,
+    onlyFetchVisibleColumns: boolean,
+  
+    showSearchBar: boolean,
+    searchValue: string,
+    selectedSearchColumns: string[],
+    invertSearchColumns: boolean,
+  
+    // eslint-disable-next-line react/no-unused-prop-types
+    onContextMenu: ,
+  
+    pendingDataMap: Map,
+    getDownloadWorker: ,
+  
+    canCopy: boolean,
+    canDownloadCsv: boolean,
+    frozenColumns: string[],
+  
+    // Theme override for IrisGridTheme
+    theme: GridThemeType,
+  
+    canToggleSearch: boolean,
+
+}
+
+interface IrisGridState{
+  isFilterBarShown,
+  isSelectingPartition,
+  focusedFilterBarColumn: null,
+  metricCalculator: GridMetricCalculator,
+  metrics: GridMetrics,
+  keyHandlers,
+  mouseHandlers,
+
+  partition,
+  partitionColumn,
+  partitionTable: null,
+  partitionFilters: [],
+  // setAdvancedFilter and setQuickFilter mutate the arguments
+  // so we want to always use map copies from the state instead of props
+  quickFilters: new Map(quickFilters),
+  advancedFilters: new Map(advancedFilters),
+  shownAdvancedFilter: null,
+  hoverAdvancedFilter: null,
+
+  filter: [],
+  sorts: [],
+  reverseType: TableUtils.REVERSE_TYPE.NONE,
+  customColumns: [],
+  selectDistinctColumns,
+
+  // selected range in table
+  selectedRanges: [],
+
+  // Current ongoing copy operation
+  copyOperation: null,
+
+  // The filter that is currently being applied. Reset after update is received
+  loadingText: null,
+  loadingScrimProgress: null,
+  loadingSpinnerShown: false,
+
+  movedColumns,
+  movedRows,
+
+  shownColumnTooltip: null,
+
+  formatter: new Formatter(),
+  isMenuShown: false,
+  customColumnFormatMap: new Map(customColumnFormatMap),
+
+  conditionalFormats,
+  conditionalFormatEditIndex: null,
+  conditionalFormatPreview: FormattingRule,
+
+  // Column user is hovering over for selection
+  hoverSelectColumn: null,
+
+  isTableDownloading: false,
+  isReady: false,
+  tableDownloadStatus: '',
+  tableDownloadProgress: 0,
+  tableDownloadEstimatedTime: 0,
+
+  showSearchBar,
+  searchFilter,
+  searchValue,
+  selectedSearchColumns: searchColumns,
+  invertSearchColumns,
+
+  rollupConfig,
+  rollupSelectedColumns: [],
+  aggregationSettings,
+  selectedAggregation: Aggregation,
+
+  openOptions: [],
+
+  pendingRowCount: 0,
+  pendingDataMap,
+  pendingDataErrors: new Map(),
+  pendingSavePromise: null,
+  pendingSaveError: null,
+
+  toastMessage: JSX.Element,
+  frozenColumns,
+  showOverflowModal: boolean,
+  overflowText: string,
+  overflowButtonTooltipProps: null,
+};
+
+export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   static minDebounce = 150;
 
   static maxDebounce = 500;
 
   static loadingSpinnerDelay = 800;
 
-  static makeQuickFilter(column, text, timeZone) {
+  static makeQuickFilter(column: Column, text: string, timeZone: string) {
     try {
       return TableUtils.makeQuickFilter(column, text, timeZone);
     } catch (err) {
@@ -148,7 +308,7 @@ export class IrisGrid extends Component {
     return null;
   }
 
-  constructor(props) {
+  constructor(props: IrisGridProps) {
     super(props);
 
     this.handleAdvancedFilterChange = this.handleAdvancedFilterChange.bind(
@@ -197,7 +357,7 @@ export class IrisGrid extends Component {
       this
     );
     this.handleConditionalFormatEditorUpdate = debounce(
-      this.handleConditionalFormatEditorUpdate.bind(this),
+      this._handleConditionalFormatEditorUpdate.bind(this),
       SET_CONDITIONAL_FORMAT_DEBOUNCE
     );
     this.handleConditionalFormatEditorCancel = this.handleConditionalFormatEditorCancel.bind(
@@ -304,6 +464,35 @@ export class IrisGrid extends Component {
       this.commitAction,
     ];
 
+    grid
+    gridWrapper
+    lastFocusedFilterBarColumn 
+    lastLoadedConfig 
+    tooltip
+    pending 
+    globalColumnFormat
+    dateTimeFormatterOptions
+    decimalFormatOptions
+    integerFormatOptions 
+    truncateNumbersWithPound 
+
+    // When the loading scrim started/when it should extend to the end of the screen.
+    loadingScrimStartTime
+    loadingScrimFinishTime 
+    loadingTime
+    rendere
+    tableSave
+    crossColumnRef
+    isAnimatin
+    animationFrame 
+    filterInputRef 
+
+    toggleFilterBarAction
+    toggleSearchBarAction 
+    discardAction
+    commitAction;
+
+
     const {
       aggregationSettings,
       conditionalFormats,
@@ -408,7 +597,7 @@ export class IrisGrid extends Component {
 
       shownColumnTooltip: null,
 
-      formatter: new Formatter(),
+      formatter: Formatter,
       isMenuShown: false,
       customColumnFormatMap: new Map(customColumnFormatMap),
 
@@ -452,7 +641,10 @@ export class IrisGrid extends Component {
     };
   }
 
-  componentDidMount() {
+  loadingScrimStartTime: number | null
+  loadingScrimFinishTime: number | null
+
+  componentDidMount(): void {
     const { partitionColumn, model } = this.props;
     const column =
       partitionColumn || model.columns.find(c => c.isPartitionColumn);
@@ -468,7 +660,7 @@ export class IrisGrid extends Component {
     this.startListening(model);
   }
 
-  componentDidUpdate(prevProps) {
+  componentDidUpdate(prevProps: IrisGridProps): void {
     const {
       inputFilters,
       isSelectingColumn,
@@ -515,8 +707,7 @@ export class IrisGrid extends Component {
     if (sorts !== prevProps.sorts) {
       this.updateSorts(sorts);
     }
-
-    const { loadingScrimStartTime, loadingScrimFinishTime } = this;
+    const { loadingScrimStartTime, loadingScrimFinishTime} = this;
     if (loadingScrimStartTime != null && loadingScrimFinishTime != null) {
       window.requestAnimationFrame(() => {
         const now = Date.now();
@@ -528,7 +719,7 @@ export class IrisGrid extends Component {
           this.loadingScrimFinishTime = null;
         }
 
-        this.setState(state => {
+        this.setState((state) => {
           if (state.loadingScrimProgress == null) {
             log.debug2('Ignoring scrim update because loading cancelled.');
             return null;
@@ -541,8 +732,9 @@ export class IrisGrid extends Component {
 
     this.sendStateChange();
   }
-
-  componentWillUnmount() {
+  animationFrame: number
+  loadingTimer: NodeJS.Timeout
+  componentWillUnmount(): void {
     const { model } = this.props;
     this.stopListening(model);
     this.pending.cancel();
@@ -828,7 +1020,7 @@ export class IrisGrid extends Component {
     { max: 1 }
   );
 
-  getValueForCell(columnIndex, rowIndex, rawValue = false) {
+  getValueForCell(columnIndex: number, rowIndex: number, rawValue = false) {
     const { model } = this.props;
     const modelColumn = this.getModelColumn(columnIndex);
     const modelRow = this.getModelRow(rowIndex);
@@ -838,7 +1030,7 @@ export class IrisGrid extends Component {
     return model.textForCell(modelColumn, modelRow);
   }
 
-  getModelColumn(columnIndex) {
+  getModelColumn(columnIndex: number) {
     const { metrics } = this.state;
     const { modelColumns } = metrics;
     if (!modelColumns) {
@@ -1368,7 +1560,7 @@ export class IrisGrid extends Component {
     }
   }
 
-  startLoading(loadingText, resetRanges = false) {
+  startLoading(loadingText: string, resetRanges = false) {
     this.setState({ loadingText });
 
     const theme = this.getTheme();
@@ -1646,7 +1838,7 @@ export class IrisGrid extends Component {
     this.setState({ searchFilter });
   }
 
-  handleAnimationLoop() {
+  handleAnimationLoop(): void {
     this.grid.updateCanvasScale();
     this.grid.updateCanvas();
 
@@ -1655,7 +1847,7 @@ export class IrisGrid extends Component {
     }
   }
 
-  handleAnimationStart() {
+  handleAnimationStart(): void {
     log.debug2('handleAnimationStart');
 
     this.isAnimating = true;
@@ -1663,13 +1855,13 @@ export class IrisGrid extends Component {
     this.animationFrame = requestAnimationFrame(this.handleAnimationLoop);
   }
 
-  handleAnimationEnd() {
+  handleAnimationEnd(): void {
     log.debug2('handleAnimationEnd');
 
     this.isAnimating = false;
   }
 
-  handlePartitionAppend(value) {
+  handlePartitionAppend(value: string) {
     const { onPartitionAppend } = this.props;
     const { partitionColumn } = this.state;
     onPartitionAppend(partitionColumn, value);
@@ -1977,7 +2169,7 @@ export class IrisGrid extends Component {
     onCreateChart(settings, model);
   }
 
-  handleGridError(error) {
+  handleGridError(error: Error) {
     log.warn('Grid Error', error);
     this.setState({
       toastMessage: <div className="error-message">{`${error}`}</div>,
@@ -2105,7 +2297,7 @@ export class IrisGrid extends Component {
     this.grid.forceUpdate();
   }
 
-  handleViewChanged(metrics) {
+  handleViewChanged(metrics: GridMetrics) {
     const { model } = this.props;
     const { bottomViewport } = metrics;
     const { selectionEndRow = 0 } = this.grid?.state ?? {};
@@ -2146,7 +2338,7 @@ export class IrisGrid extends Component {
     onSelectionChanged(selectedRanges);
   }
 
-  handleMovedColumnsChanged(movedColumns, onChangeApplied = () => {}) {
+  handleMovedColumnsChanged(movedColumns: MoveOperation[], onChangeApplied = () => {}) {
     this.setState({ movedColumns }, onChangeApplied);
   }
 
@@ -2159,12 +2351,12 @@ export class IrisGrid extends Component {
     this.tooltip = tooltip;
   }
 
-  handleConditionalFormatsChange(conditionalFormats) {
+  handleConditionalFormatsChange(conditionalFormats: FormattingRule[]) {
     log.debug('Updated conditional formats', conditionalFormats);
     this.setState({ conditionalFormats });
   }
 
-  handleConditionalFormatCreate() {
+  handleConditionalFormatCreate(): void {
     log.debug('Create new conditional format');
     const { openOptions, conditionalFormats } = this.state;
     this.setState({
@@ -2181,7 +2373,7 @@ export class IrisGrid extends Component {
     });
   }
 
-  handleConditionalFormatEdit(index) {
+  handleConditionalFormatEdit(index: number) {
     log.debug('Edit conditional format', index);
     const { openOptions, conditionalFormats } = this.state;
     this.setState({
@@ -2199,11 +2391,11 @@ export class IrisGrid extends Component {
   }
 
   // Apply live changes
-  handleConditionalFormatEditorUpdate(conditionalFormatPreview) {
+  _handleConditionalFormatEditorUpdate(conditionalFormatPreview: FormattingRule): void {
     this.setState({ conditionalFormatPreview });
   }
 
-  handleConditionalFormatEditorSave(config) {
+  handleConditionalFormatEditorSave(config: FormattingRule): void {
     log.debug('Save conditional format changes', config);
     this.setState(
       state => {
@@ -2342,7 +2534,7 @@ export class IrisGrid extends Component {
    * User added, removed, or changed the order of aggregations, or position
    * @param {AggregationSettings} aggregationSettings The new aggregation settings
    */
-  handleAggregationsChange(aggregationSettings) {
+  handleAggregationsChange(aggregationSettings: AggregationSettings) {
     log.debug('handleAggregationsChange', aggregationSettings);
 
     this.startLoading(
@@ -2357,7 +2549,7 @@ export class IrisGrid extends Component {
    * A specific aggregation has been modified
    * @param {Aggregation} aggregation The new aggregation
    */
-  handleAggregationChange(aggregation) {
+  handleAggregationChange(aggregation: Aggregation): void {
     log.debug('handleAggregationChange', aggregation);
 
     this.startLoading(`Aggregating ${aggregation.operation}...`);
@@ -2376,7 +2568,7 @@ export class IrisGrid extends Component {
    * An aggregations has been selected for editing
    * @param {Aggregation} aggregation The aggregation to edit
    */
-  handleAggregationEdit(aggregation) {
+  handleAggregationEdit(aggregation: Aggregation): void {
     log.debug('handleAggregationEdit', aggregation);
 
     const { openOptions } = this.state;
@@ -2393,7 +2585,7 @@ export class IrisGrid extends Component {
     });
   }
 
-  handleRollupChange(rollupConfig) {
+  handleRollupChange(rollupConfig): void{
     log.info('Rollup change', rollupConfig);
 
     this.resetGridViewState();
@@ -2557,7 +2749,7 @@ export class IrisGrid extends Component {
     onStateChange(irisGridState, gridState);
   }
 
-  handleOverflowClose() {
+  handleOverflowClose(): void {
     this.setState({
       showOverflowModal: false,
     });

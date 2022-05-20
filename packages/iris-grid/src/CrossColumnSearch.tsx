@@ -10,16 +10,50 @@ import {
   dhWarningCircleFilled,
   vsCircleLargeFilled,
 } from '@deephaven/icons';
-import dh from '@deephaven/jsapi-shim';
+import dh, { Column } from '@deephaven/jsapi-shim';
 import { TableUtils } from '@deephaven/jsapi-utils';
 import './CrossColumnSearch.scss';
 
-class CrossColumnSearch extends PureComponent {
+interface CrossColumnSearchProps {
+  value: string;
+  selectedColumns: string[];
+  invertSelection: boolean;
+  onChange: (
+    value: string,
+    selectedColumns: string[],
+    invertSelection: boolean
+  ) => void;
+  columns: Column[];
+}
+
+interface CrossColumnSearchState {
+  isConfigureColumnsShown: boolean;
+}
+class CrossColumnSearch extends PureComponent<
+  CrossColumnSearchProps,
+  CrossColumnSearchState
+> {
+  static propTypes: {
+    value: PropTypes.Validator<string>;
+    selectedColumns: PropTypes.Validator<(string | null | undefined)[]>;
+    invertSelection: PropTypes.Validator<boolean>;
+    onChange: PropTypes.Validator<(...args: any[]) => any>;
+    columns: PropTypes.Validator<
+      (
+        | PropTypes.InferProps<{
+            name: PropTypes.Validator<string>;
+            type: PropTypes.Validator<string>;
+          }>
+        | null
+        | undefined
+      )[]
+    >;
+  };
   static createSearchFilter(
-    searchValue,
-    selectedColumns,
-    columns,
-    invertSelection
+    searchValue: string,
+    selectedColumns: string[],
+    columns: Column[],
+    invertSelection: boolean
   ) {
     const filterColumns = invertSelection
       ? columns
@@ -42,7 +76,7 @@ class CrossColumnSearch extends PureComponent {
     return null;
   }
 
-  constructor(props) {
+  constructor(props: CrossColumnSearchProps) {
     super(props);
     this.handleSearchValueChange = this.handleSearchValueChange.bind(this);
     this.toggleColumn = this.toggleColumn.bind(this);
@@ -57,26 +91,28 @@ class CrossColumnSearch extends PureComponent {
     };
   }
 
-  focus() {
-    this.searchField.current.focus();
+  searchField: React.RefObject<SearchInput>;
+
+  focus(): void {
+    this.searchField.current?.focus();
   }
 
-  handleSearchValueChange(event) {
+  handleSearchValueChange(event: React.ChangeEvent<HTMLInputElement>): void {
     const { onChange, selectedColumns, invertSelection } = this.props;
     onChange(event.target.value, selectedColumns, invertSelection);
   }
 
-  sendColumnChange(selectedColumns, invertSelection) {
+  sendColumnChange(selectedColumns: string[], invertSelection: boolean): void {
     const { onChange, value } = this.props;
     onChange(value, selectedColumns, invertSelection);
   }
 
-  setInvertSelection(invertSelection) {
+  setInvertSelection(invertSelection: boolean): void {
     const { onChange, value } = this.props;
     onChange(value, [], invertSelection);
   }
 
-  toggleColumn(name) {
+  toggleColumn(name: string): void {
     const { selectedColumns, invertSelection } = this.props;
     if (selectedColumns.includes(name)) {
       this.sendColumnChange(
@@ -90,15 +126,15 @@ class CrossColumnSearch extends PureComponent {
     }
   }
 
-  selectAll() {
+  selectAll(): void {
     this.setInvertSelection(true);
   }
 
-  clear() {
+  clear(): void {
     this.setInvertSelection(false);
   }
 
-  selectNumbers() {
+  selectNumbers(): void {
     const { columns } = this.props;
     this.sendColumnChange(
       columns
@@ -108,7 +144,7 @@ class CrossColumnSearch extends PureComponent {
     );
   }
 
-  render() {
+  render(): React.ReactElement {
     const { value, selectedColumns, invertSelection, columns } = this.props;
     const { isConfigureColumnsShown } = this.state;
     const hasAllColumnsSelected =
@@ -258,18 +294,5 @@ class CrossColumnSearch extends PureComponent {
     );
   }
 }
-
-CrossColumnSearch.propTypes = {
-  value: PropTypes.string.isRequired,
-  selectedColumns: PropTypes.arrayOf(PropTypes.string).isRequired,
-  invertSelection: PropTypes.bool.isRequired,
-  onChange: PropTypes.func.isRequired,
-  columns: PropTypes.arrayOf(
-    PropTypes.shape({
-      name: PropTypes.string.isRequired,
-      type: PropTypes.string.isRequired,
-    })
-  ).isRequired,
-};
 
 export default CrossColumnSearch;

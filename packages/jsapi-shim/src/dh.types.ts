@@ -474,6 +474,7 @@ export interface TableStatic {
 }
 export interface Table extends Evented, TableStatic {
   readonly size: number;
+  readonly totalSize: number;
 
   readonly columns: Column[];
   readonly description: string;

@@ -1,29 +1,83 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import debounce from 'lodash.debounce';
-import dh from '@deephaven/jsapi-shim';
+import dh, { Table } from '@deephaven/jsapi-shim';
 import { ItemList, LoadingSpinner } from '@deephaven/components';
 import Log from '@deephaven/log';
 import { CanceledPromiseError } from '@deephaven/utils';
 import './PartitionSelectorSearch.scss';
+import { SelectItem } from 'packages/components/src/SelectValueList';
+import { UrlWithStringQuery } from 'url';
 
 const log = Log.module('PartitionSelectorSearch');
 const DEBOUNCE_UPDATE_FILTER = 150;
 
-class PartitionSelectorSearch extends Component {
-  static MAX_VISIBLE_ITEMS = 12;
+interface Item {
+  value: string;
+  displayValue: string;
+}
 
-  static handleError(error) {
+interface PartitionSelectorSearchProps {
+  getFormattedString: (value: unknown, type: unknown, name: string) => string;
+  table: Table;
+  initialPageSize: number;
+  onSelect: (value: string) => void;
+  onListResized: () => void;
+}
+interface PartitionSelectorSearchState {
+  offset: number;
+  itemCount: number;
+  items: Item[];
+  text: string;
+  isLoading: boolean;
+}
+class PartitionSelectorSearch extends Component<
+  PartitionSelectorSearchProps,
+  PartitionSelectorSearchState
+> {
+  static MAX_VISIBLE_ITEMS = 12;
+  static defaultProps: {
+    initialPageSize: number;
+    onSelect: () => void;
+    onListResized: () => void;
+  };
+  static propTypes = {
+    getFormattedString: PropTypes.func.isRequired,
+    table: PropTypes.shape({
+      addEventListener: PropTypes.func.isRequired,
+      removeEventListener: PropTypes.func.isRequired,
+      columns: PropTypes.arrayOf(
+        PropTypes.shape({
+          name: PropTypes.string.isRequired,
+          type: PropTypes.string.isRequired,
+          filter: PropTypes.func.isRequired,
+        })
+      ),
+      size: PropTypes.number.isRequired,
+      applyFilter: PropTypes.func.isRequired,
+      setViewport: PropTypes.func.isRequired,
+    }).isRequired,
+    initialPageSize: PropTypes.number,
+    onSelect: PropTypes.func,
+    onListResized: PropTypes.func,
+  };
+
+  static handleError(error: unknown): void {
     if (!(error instanceof CanceledPromiseError)) {
       log.error(error);
     }
   }
 
-  constructor(props) {
+  itemList: ItemList<Item> | null;
+  searchInput: HTMLInputElement | null;
+  timer: null;
+
+  debounceUpdateFilter;
+  constructor(props: PartitionSelectorSearchProps) {
     super(props);
 
     this.debounceUpdateFilter = debounce(
-      this.debounceUpdateFilter.bind(this),
+      this._debounceUpdateFilter.bind(this),
       DEBOUNCE_UPDATE_FILTER
     );
     this.handleFilterChange = this.handleFilterChange.bind(this);
@@ -48,11 +102,14 @@ class PartitionSelectorSearch extends Component {
     };
   }
 
-  componentDidMount() {
+  componentDidMount(): void {
     this.startListening();
   }
 
-  componentDidUpdate(prevProps, prevState) {
+  componentDidUpdate(
+    prevProps: PartitionSelectorSearchProps,
+    prevState: PartitionSelectorSearchState
+  ): void {
     const { isLoading, itemCount } = this.state;
     const { onListResized } = this.props;
     if (
@@ -63,13 +120,13 @@ class PartitionSelectorSearch extends Component {
     }
   }
 
-  componentWillUnmount() {
+  componentWillUnmount(): void {
     this.debounceUpdateFilter.cancel();
 
     this.stopListening();
   }
 
-  handleKeyDown(event) {
+  handleKeyDown(event: React.KeyboardEvent<HTMLInputElement>): boolean {
     if (this.itemList == null) {
       return false;
     }
@@ -106,7 +163,7 @@ class PartitionSelectorSearch extends Component {
     }
   }
 
-  handleListKeydown(event) {
+  handleListKeydown(event: React.KeyboardEvent<HTMLDivElement>): void {
     switch (event.key) {
       case 'Escape':
         // Do nothing
@@ -117,7 +174,7 @@ class PartitionSelectorSearch extends Component {
     }
   }
 
-  handleFilterChange() {
+  handleFilterChange(): void {
     log.debug2('handleFilterChange');
 
     const { table } = this.props;
@@ -125,13 +182,13 @@ class PartitionSelectorSearch extends Component {
     this.setState({ itemCount, isLoading: true });
   }
 
-  handleInputFocus() {
+  handleInputFocus(): void {
     if (this.itemList) {
       this.itemList.focusItem(0);
     }
   }
 
-  handleSelect(itemIndex) {
+  handleSelect(itemIndex: number): void {
     log.debug2('handleSelect', itemIndex);
 
     const { onSelect } = this.props;
@@ -146,11 +203,11 @@ class PartitionSelectorSearch extends Component {
     onSelect(value);
   }
 
-  handleTableUpdate(event) {
+  handleTableUpdate(event: CustomEvent): void {
     const data = event.detail;
     const { offset } = data;
 
-    const items = [];
+    const items = [] as Item[];
     const { getFormattedString, table } = this.props;
     const column = table.columns[0];
     for (let r = 0; r < data.rows.length; r += 1) {
@@ -168,7 +225,7 @@ class PartitionSelectorSearch extends Component {
     this.setState({ itemCount, items, offset, isLoading: false });
   }
 
-  handleTextChange(event) {
+  handleTextChange(event: React.ChangeEvent<HTMLInputElement>): void {
     log.debug2('handleTextChange');
 
     const { value: text } = event.target;
@@ -178,7 +235,7 @@ class PartitionSelectorSearch extends Component {
     this.debounceUpdateFilter();
   }
 
-  handleViewportChange(topRow, bottomRow) {
+  handleViewportChange(topRow: number, bottomRow: number): void {
     log.debug2('handleViewportChange', topRow, bottomRow);
 
     const delta = Math.max(1, bottomRow - topRow);
@@ -189,17 +246,17 @@ class PartitionSelectorSearch extends Component {
     table.setViewport(top, bottom);
   }
 
-  debounceUpdateFilter() {
+  _debounceUpdateFilter(): void {
     this.updateFilter();
   }
 
-  focus() {
+  focus(): void {
     if (this.searchInput) {
       this.searchInput.focus();
     }
   }
 
-  startListening() {
+  startListening(): void {
     const { initialPageSize, table } = this.props;
     table.addEventListener(dh.Table.EVENT_UPDATED, this.handleTableUpdate);
     table.addEventListener(
@@ -209,7 +266,7 @@ class PartitionSelectorSearch extends Component {
     table.setViewport(0, initialPageSize);
   }
 
-  stopListening() {
+  stopListening(): void {
     const { table } = this.props;
     table.removeEventListener(dh.Table.EVENT_UPDATED, this.handleTableUpdate);
     table.removeEventListener(
@@ -218,7 +275,7 @@ class PartitionSelectorSearch extends Component {
     );
   }
 
-  updateFilter() {
+  updateFilter(): void {
     const { initialPageSize, table } = this.props;
     const { text } = this.state;
     const filterText = text.trim();
@@ -240,7 +297,7 @@ class PartitionSelectorSearch extends Component {
     table.setViewport(0, initialPageSize);
   }
 
-  render() {
+  render(): React.ReactElement {
     const { isLoading, itemCount, items, offset, text } = this.state;
     const listHeight =
       Math.min(itemCount, PartitionSelectorSearch.MAX_VISIBLE_ITEMS) *
@@ -297,32 +354,5 @@ class PartitionSelectorSearch extends Component {
     );
   }
 }
-
-PartitionSelectorSearch.propTypes = {
-  getFormattedString: PropTypes.func.isRequired,
-  table: PropTypes.shape({
-    addEventListener: PropTypes.func.isRequired,
-    removeEventListener: PropTypes.func.isRequired,
-    columns: PropTypes.arrayOf(
-      PropTypes.shape({
-        name: PropTypes.string.isRequired,
-        type: PropTypes.string.isRequired,
-        filter: PropTypes.func.isRequired,
-      })
-    ),
-    size: PropTypes.number.isRequired,
-    applyFilter: PropTypes.func.isRequired,
-    setViewport: PropTypes.func.isRequired,
-  }).isRequired,
-  initialPageSize: PropTypes.number,
-  onSelect: PropTypes.func,
-  onListResized: PropTypes.func,
-};
-
-PartitionSelectorSearch.defaultProps = {
-  initialPageSize: 100,
-  onSelect: () => {},
-  onListResized: () => {},
-};
 
 export default PartitionSelectorSearch;

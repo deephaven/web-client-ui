@@ -3,7 +3,7 @@ import './SelectValueList.scss';
 import memoize from 'memoizee';
 import Checkbox from './Checkbox';
 
-interface SelectItem<T> {
+export interface SelectItem<T> {
   value: T;
   displayValue?: string;
   isSelected: boolean;

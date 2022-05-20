@@ -1,17 +1,29 @@
 /* eslint class-methods-use-this: "off" */
-import { GridMouseHandler, GridUtils } from '@deephaven/grid';
+import {
+  Grid,
+  GridMouseEvent,
+  GridMouseHandler,
+  GridPoint,
+  GridUtils,
+  GridWheelEvent,
+} from '@deephaven/grid';
+import IrisGrid from '../IrisGrid';
 
 /**
  * Handles sending data selected via double click
  */
+
+interface PendingMouseHandler {
+  irisGrid: IrisGrid;
+}
 class PendingMouseHandler extends GridMouseHandler {
-  constructor(irisGrid) {
+  constructor(irisGrid: IrisGrid) {
     super();
 
     this.irisGrid = irisGrid;
   }
 
-  onWheel(gridPoint, grid, wheelEvent) {
+  onWheel(gridPoint: GridPoint, grid: Grid, wheelEvent: GridWheelEvent): false {
     const { irisGrid } = this;
     const { model } = irisGrid.props;
     const { metrics, pendingRowCount } = irisGrid.state;

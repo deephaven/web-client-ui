@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, Key } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -14,32 +14,77 @@ import {
   vsLock,
   vsPassFilled,
 } from '@deephaven/icons';
-import { PropTypes as APIPropTypes } from '@deephaven/jsapi-shim';
+import {
+  Column,
+  PropTypes as APIPropTypes,
+  ColumnStatistics as APIColumnStatistics,
+} from '@deephaven/jsapi-shim';
 import Log from '@deephaven/log';
-import { PromiseUtils } from '@deephaven/utils';
-import IrisGridModel from './IrisGridModel';
+import {
+  CancelablePromise,
+  CanceledPromiseError,
+  PromiseUtils,
+} from '@deephaven/utils';
 import './ColumnStatistics.scss';
+import { ExpandableGridModel } from '@deephaven/grid';
+import IrisGridModel from './IrisGridModel';
 
 const log = Log.module('ColumnStatistics');
 const STATS_LABEL_OVERRIDES = {
   SIZE: 'Number of Rows',
 };
 
-class ColumnStatistics extends Component {
+interface Statistic {
+  operation: Key;
+  className?: string;
+  value: unknown;
+  type: string;
+}
+
+interface ColumnStatisticsProps {
+  column: Column;
+  model: IrisGridModel & ExpandableGridModel;
+  onStatistics: () => void;
+}
+interface ColumnStatisticsState {
+  error: unknown;
+  loading: boolean;
+  statistics: Statistic[] | null;
+  numRows: number;
+  copied: boolean;
+}
+
+class ColumnStatistics extends Component<
+  ColumnStatisticsProps,
+  ColumnStatisticsState
+> {
   /** Automatically generate the statistics when the row count is below this threshold */
   static AUTO_GENERATE_LIMIT = 100000;
+  static propTypes: {
+    model: PropTypes.Validator<unknown>;
+    column: PropTypes.Validator<
+      PropTypes.InferProps<{
+        name: PropTypes.Validator<string>;
+        type: PropTypes.Validator<string>;
+        description: PropTypes.Requireable<string>;
+        constituentType: PropTypes.Requireable<string>;
+      }>
+    >;
+    onStatistics: PropTypes.Validator<(...args: any[]) => any>;
+  };
 
-  static getStatsLabel(operation) {
+  static getStatsLabel(operation: string): string {
     return (
+      //eslint-ignore-next-line
+      // @ts-ignore
       STATS_LABEL_OVERRIDES[operation] ??
       operation
         .split(' ')
-        .map(w => w[0].toUpperCase() + w.substr(1).toLowerCase())
+        .map((w: string) => w[0].toUpperCase() + w.substr(1).toLowerCase())
         .join(' ')
     );
   }
-
-  constructor(props) {
+  constructor(props: ColumnStatisticsProps) {
     super(props);
 
     this.handleError = this.handleError.bind(this);
@@ -58,21 +103,23 @@ class ColumnStatistics extends Component {
     };
   }
 
-  componentDidMount() {
+  cancelablePromise: CancelablePromise<APIColumnStatistics> | null;
+
+  componentDidMount(): void {
     this.maybeGenerateStatistics();
   }
 
-  componentWillUnmount() {
+  componentWillUnmount(): void {
     if (this.cancelablePromise) {
       this.cancelablePromise.cancel();
     }
   }
 
-  handleCopyHeader() {
+  handleCopyHeader(): void {
     this.setState({ copied: true });
   }
 
-  maybeGenerateStatistics() {
+  maybeGenerateStatistics(): void {
     const { model } = this.props;
 
     const numRows = model.rowCount;
@@ -84,7 +131,7 @@ class ColumnStatistics extends Component {
     }
   }
 
-  handleGenerateStatistics() {
+  handleGenerateStatistics(): void {
     this.setState({ loading: true });
 
     const { column, model } = this.props;
@@ -96,11 +143,11 @@ class ColumnStatistics extends Component {
     this.cancelablePromise.then(this.handleStatistics).catch(this.handleError);
   }
 
-  handleStatistics(stats) {
+  handleStatistics(stats: APIColumnStatistics): void {
     log.debug('Received statistics', stats);
 
     const { model, onStatistics } = this.props;
-    const statistics = [];
+    const statistics = [] as Statistic[];
 
     stats.statisticsMap.forEach((value, operation) => {
       statistics.push({
@@ -128,7 +175,7 @@ class ColumnStatistics extends Component {
     onStatistics();
   }
 
-  handleError(error) {
+  handleError(error: CanceledPromiseError): void {
     if (error && error.isCanceled) {
       log.debug('Called handleError on a cancelled promise result');
       return;
@@ -142,7 +189,7 @@ class ColumnStatistics extends Component {
     });
   }
 
-  render() {
+  render(): React.ReactElement {
     const { column, model } = this.props;
     const { error, loading, statistics, numRows, copied } = this.state;
     const showGenerateStatistics =
@@ -246,11 +293,5 @@ class ColumnStatistics extends Component {
     );
   }
 }
-
-ColumnStatistics.propTypes = {
-  model: PropTypes.instanceOf(IrisGridModel).isRequired,
-  column: APIPropTypes.Column.isRequired,
-  onStatistics: PropTypes.func.isRequired,
-};
 
 export default ColumnStatistics;

@@ -2,24 +2,79 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import { CSSTransition } from 'react-transition-group';
-import dh, { PropTypes as APIPropTypes } from '@deephaven/jsapi-shim';
+import dh, {
+  FilterCondition,
+  PropTypes as APIPropTypes,
+  Table,
+} from '@deephaven/jsapi-shim';
 import { Formatter } from '@deephaven/jsapi-utils';
-import { LoadingSpinner, SelectValueList } from '@deephaven/components';
+import {
+  ItemListItem,
+  LoadingSpinner,
+  SelectValueList,
+} from '@deephaven/components';
 import Log from '@deephaven/log';
+import { SelectItem } from 'packages/components/src/SelectValueList';
 
 const log = Log.module('AdvancedFilterCreatorSelectValueList');
 
+interface AdvancedFilterCreatorSelectValueListProps<T> {
+  selectedValues: T[];
+  table: Table;
+  filters: FilterCondition[];
+  invertSelection: boolean;
+  onChange: (selectedValues: T[], invertSelection: boolean) => void;
+  formatter: Formatter;
+}
+
+interface AdvancedFilterCreatorSelectValueListState<T> {
+  itemCount: number;
+  items: SelectItem<T>[];
+  offset: number;
+  selectedValues: T[];
+  isLoading: boolean;
+}
 /**
  * Select values from a long scrollable list.
  * Swaps items in and out for infinite scrolling
  */
-class AdvancedFilterCreatorSelectValueList extends PureComponent {
+class AdvancedFilterCreatorSelectValueList<T> extends PureComponent<
+  AdvancedFilterCreatorSelectValueListProps<T>,
+  AdvancedFilterCreatorSelectValueListState<T>
+> {
+  static propTypes = {
+    table: PropTypes.shape({
+      addEventListener: PropTypes.func,
+      removeEventListener: PropTypes.func,
+
+      applyFilter: PropTypes.func,
+      columns: PropTypes.arrayOf(
+        PropTypes.shape({
+          name: PropTypes.string,
+          type: PropTypes.string,
+        })
+      ),
+      setViewport: PropTypes.func,
+      size: PropTypes.number,
+    }),
+    invertSelection: PropTypes.bool,
+    selectedValues: PropTypes.arrayOf(PropTypes.any),
+    onChange: PropTypes.func,
+    filters: PropTypes.arrayOf(APIPropTypes.FilterCondition).isRequired,
+    formatter: PropTypes.instanceOf(Formatter).isRequired,
+  };
+  static defaultProps: {
+    table: null;
+    invertSelection: boolean;
+    selectedValues: never[];
+    onChange: () => void;
+  };
   /**
    * Get the index of a value in an array. Has some special handling for some types, like DateTimes and Longs.
    * @param {Any} value The value to search for
    * @param {Array} values The array of values to search within
    */
-  static indexOf(value, values) {
+  static indexOf(value: any, values: any) {
     for (let i = 0; i < values.length; i += 1) {
       const v = values[i];
       if (
@@ -37,7 +92,7 @@ class AdvancedFilterCreatorSelectValueList extends PureComponent {
     return -1;
   }
 
-  constructor(props) {
+  constructor(props: AdvancedFilterCreatorSelectValueListProps<T>) {
     super(props);
 
     this.handleSelect = this.handleSelect.bind(this);
@@ -58,12 +113,14 @@ class AdvancedFilterCreatorSelectValueList extends PureComponent {
     };
   }
 
-  componentDidMount() {
+  componentDidMount(): void {
     const { table } = this.props;
     this.startListening(table);
   }
 
-  componentDidUpdate(prevProps) {
+  componentDidUpdate(
+    prevProps: AdvancedFilterCreatorSelectValueListProps<T>
+  ): void {
     const { filters, invertSelection, selectedValues, table } = this.props;
     if (prevProps.table !== table) {
       this.stopListening(prevProps.table);
@@ -85,14 +142,16 @@ class AdvancedFilterCreatorSelectValueList extends PureComponent {
     }
   }
 
-  componentWillUnmount() {
+  componentWillUnmount(): void {
     this.stopListening();
   }
 
-  handleSelect(itemIndex, value) {
+  list: SelectValueList<T> | null;
+
+  handleSelect(itemIndex: number, value: T): void {
     const { invertSelection } = this.props;
     let { selectedValues } = this.state;
-    selectedValues = [].concat(selectedValues);
+    selectedValues = ([] as T[]).concat(selectedValues);
     const selectedIndex = AdvancedFilterCreatorSelectValueList.indexOf(
       value,
       selectedValues
@@ -110,7 +169,7 @@ class AdvancedFilterCreatorSelectValueList extends PureComponent {
 
     const { offset } = this.state;
     let { items } = this.state;
-    items = [].concat(items);
+    items = ([] as SelectItem<T>[]).concat(items);
     const visibleItemIndex = itemIndex - offset;
     if (visibleItemIndex >= 0 && visibleItemIndex < items.length) {
       items[visibleItemIndex].isSelected = isSelected;
@@ -122,15 +181,15 @@ class AdvancedFilterCreatorSelectValueList extends PureComponent {
     onChange(selectedValues, invertSelection);
   }
 
-  handleViewportChange(top, bottom) {
+  handleViewportChange(top: number, bottom: number): void {
     this.updateViewport(top, bottom);
   }
 
-  handleSelectionUpdate() {
+  handleSelectionUpdate(): void {
     this.updateItemSelection();
   }
 
-  handleTableUpdate(event) {
+  handleTableUpdate(event: CustomEvent): void {
     const data = event.detail;
     const { offset } = data;
 
@@ -159,7 +218,7 @@ class AdvancedFilterCreatorSelectValueList extends PureComponent {
     this.setState({ itemCount, items, offset, isLoading: false });
   }
 
-  isValueSelected(value) {
+  isValueSelected(value: T): boolean {
     const { invertSelection } = this.props;
     const { selectedValues } = this.state;
 
@@ -172,28 +231,28 @@ class AdvancedFilterCreatorSelectValueList extends PureComponent {
     return invertSelection ? selectedIndex < 0 : selectedIndex >= 0;
   }
 
-  startListening(table) {
+  startListening(table?: Table): void {
     if (table != null) {
       table.addEventListener(dh.Table.EVENT_UPDATED, this.handleTableUpdate);
     }
   }
 
-  stopListening(table) {
+  stopListening(table?: Table): void {
     if (table != null) {
       table.removeEventListener(dh.Table.EVENT_UPDATED, this.handleTableUpdate);
     }
   }
 
-  resetViewport() {
-    if (this.list) {
+  resetViewport(): void {
+    if (this.list && this.list.topRow && this.list.bottomRow) {
       this.updateViewport(this.list.topRow, this.list.bottomRow, true);
     }
   }
 
-  updateItemSelection() {
+  updateItemSelection(): void {
     let { items } = this.state;
 
-    items = [].concat(items);
+    items = ([] as SelectItem<T>[]).concat(items);
 
     for (let i = 0; i < items.length; i += 1) {
       const item = items[i];
@@ -204,7 +263,7 @@ class AdvancedFilterCreatorSelectValueList extends PureComponent {
     this.setState({ items });
   }
 
-  updateViewport(top, bottom, isLoading = false) {
+  updateViewport(top: number, bottom: number, isLoading = false): void {
     const { table } = this.props;
     if (table == null) {
       return;
@@ -219,10 +278,10 @@ class AdvancedFilterCreatorSelectValueList extends PureComponent {
     const bottomRow = Math.max(topRow, bottom + viewportSize * 3);
 
     log.debug2('Setting viewport', topRow, ',', bottomRow);
-    table.setViewport(topRow, bottomRow, null);
+    table.setViewport(topRow, bottomRow);
   }
 
-  render() {
+  render(): React.ReactElement {
     const { offset, isLoading, items, itemCount } = this.state;
 
     return (
@@ -234,7 +293,9 @@ class AdvancedFilterCreatorSelectValueList extends PureComponent {
           onSelect={this.handleSelect}
           onViewportChange={this.handleViewportChange}
           ref={list => {
-            this.list = list;
+            if (list) {
+              this.list = list;
+            }
           }}
         />
         <CSSTransition
@@ -252,34 +313,5 @@ class AdvancedFilterCreatorSelectValueList extends PureComponent {
     );
   }
 }
-
-AdvancedFilterCreatorSelectValueList.propTypes = {
-  table: PropTypes.shape({
-    addEventListener: PropTypes.func,
-    removeEventListener: PropTypes.func,
-
-    applyFilter: PropTypes.func,
-    columns: PropTypes.arrayOf(
-      PropTypes.shape({
-        name: PropTypes.string,
-        type: PropTypes.string,
-      })
-    ),
-    setViewport: PropTypes.func,
-    size: PropTypes.number,
-  }),
-  invertSelection: PropTypes.bool,
-  selectedValues: PropTypes.arrayOf(PropTypes.any),
-  onChange: PropTypes.func,
-  filters: PropTypes.arrayOf(APIPropTypes.FilterCondition).isRequired,
-  formatter: PropTypes.instanceOf(Formatter).isRequired,
-};
-
-AdvancedFilterCreatorSelectValueList.defaultProps = {
-  table: null,
-  invertSelection: true,
-  selectedValues: [],
-  onChange: () => {},
-};
 
 export default AdvancedFilterCreatorSelectValueList;

@@ -1,17 +1,65 @@
-import React, { PureComponent } from 'react';
+import React, { ChangeEvent, PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import debounce from 'lodash.debounce';
 import { vsFilter, dhFilterFilled } from '@deephaven/icons';
 import './FilterInputField.scss';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { DebouncedFunc } from 'lodash';
+import { ReactElementType } from 'react-window';
 
+interface FilterInputFieldProps {
+  className: string;
+  style: React.CSSProperties;
+  value: string;
+  isAdvancedFilterSet: boolean;
+  onAdvancedFiltersTriggered: React.MouseEventHandler<HTMLButtonElement>;
+  onChange: (value: string) => void;
+  onDone: (setGridFocus?: boolean, defocusInput?: boolean) => void;
+  onTab: (backward: boolean) => void;
+  onContextMenu: React.MouseEventHandler<HTMLInputElement | HTMLButtonElement>;
+  debounceMs: number;
+}
+interface FilterInputFieldState {
+  isChanged: boolean;
+  value: string;
+}
 /**
  * An input field showing a input field and button.
  * Debounces changes.
  */
-class FilterInputField extends PureComponent {
-  constructor(props) {
+class FilterInputField extends PureComponent<
+  FilterInputFieldProps,
+  FilterInputFieldState
+> {
+  propTypes = {
+    className: PropTypes.string,
+    style: PropTypes.object,
+    value: PropTypes.string,
+    isAdvancedFilterSet: PropTypes.bool,
+    onAdvancedFiltersTriggered: PropTypes.func,
+    onChange: PropTypes.func,
+    onDone: PropTypes.func,
+    onTab: PropTypes.func,
+    onContextMenu: PropTypes.func,
+    debounceMs: PropTypes.number,
+  };
+  static defaultProps: {
+    style: {};
+    className: string;
+    value: string;
+    isAdvancedFilterSet: boolean;
+    onAdvancedFiltersTriggered: () => void;
+    onChange: () => void;
+    onDone: () => void;
+    onTab: () => void;
+    onContextMenu: () => void;
+    debounceMs: number;
+  };
+  inputField: HTMLInputElement | null;
+  initialValue: string;
+  debouncedSendUpdate: DebouncedFunc<(value: any) => void>;
+  constructor(props: FilterInputFieldProps) {
     super(props);
 
     const { debounceMs } = props;
@@ -35,11 +83,11 @@ class FilterInputField extends PureComponent {
     };
   }
 
-  componentDidMount() {
-    this.inputField.focus();
+  componentDidMount(): void {
+    this.inputField?.focus();
   }
 
-  componentDidUpdate(prevProps) {
+  componentDidUpdate(prevProps: FilterInputFieldProps): void {
     const { debounceMs } = this.props;
     if (prevProps.debounceMs !== debounceMs) {
       this.debouncedSendUpdate.flush();
@@ -50,30 +98,30 @@ class FilterInputField extends PureComponent {
     }
   }
 
-  componentWillUnmount() {
+  componentWillUnmount(): void {
     this.debouncedSendUpdate.cancel();
   }
 
   // clear filters needs to be able to reset the value externally
   // and due to the way this component handles its own debouncing
   // this was easier than moving state up.
-  setValue(value) {
+  setValue(value: string): void {
     this.initialValue = value;
     this.setState({ value });
   }
 
   focus() {
-    this.inputField.focus();
+    this.inputField?.focus();
   }
 
-  handleChange(event) {
+  handleChange(event: ChangeEvent<HTMLInputElement>): void {
     const { value } = event.target;
     this.setState({ value, isChanged: true });
 
     this.debouncedSendUpdate(value);
   }
 
-  handleCancel() {
+  handleCancel(): void {
     this.debouncedSendUpdate.cancel();
     const { initialValue } = this;
     const { isChanged } = this.state;
@@ -85,18 +133,21 @@ class FilterInputField extends PureComponent {
     onDone();
   }
 
-  handleCommit(setGridFocus = true, defocusInput = true) {
+  handleCommit(
+    setGridFocus: boolean = true,
+    defocusInput: boolean = true
+  ): void {
     this.debouncedSendUpdate.flush();
 
     const { onDone } = this.props;
     onDone(setGridFocus, defocusInput);
   }
 
-  handleFocus() {
-    this.inputField.select();
+  handleFocus(): void {
+    this.inputField?.select();
   }
 
-  handleBlur(event) {
+  handleBlur(event: React.FocusEvent<HTMLInputElement>): void {
     const { relatedTarget } = event;
     // handleCommit results in a call that steals focus
     if (relatedTarget?.classList.contains('context-menu-container')) {
@@ -120,7 +171,7 @@ class FilterInputField extends PureComponent {
     onTab(backward);
   }
 
-  handleKeyDown(event) {
+  handleKeyDown(event: React.KeyboardEvent<HTMLInputElement>) {
     switch (event.key) {
       case 'Escape':
         event.stopPropagation();
@@ -142,12 +193,14 @@ class FilterInputField extends PureComponent {
     }
   }
 
-  handleContextMenu(event) {
+  handleContextMenu(
+    event: React.MouseEvent<HTMLInputElement | HTMLButtonElement>
+  ) {
     const { onContextMenu } = this.props;
     onContextMenu(event);
   }
 
-  sendUpdate(value) {
+  sendUpdate(value: string) {
     const { onChange } = this.props;
     onChange(value);
   }
@@ -205,31 +258,5 @@ class FilterInputField extends PureComponent {
     );
   }
 }
-
-FilterInputField.propTypes = {
-  className: PropTypes.string,
-  style: PropTypes.object,
-  value: PropTypes.string,
-  isAdvancedFilterSet: PropTypes.bool,
-  onAdvancedFiltersTriggered: PropTypes.func,
-  onChange: PropTypes.func,
-  onDone: PropTypes.func,
-  onTab: PropTypes.func,
-  onContextMenu: PropTypes.func,
-  debounceMs: PropTypes.number,
-};
-
-FilterInputField.defaultProps = {
-  style: {},
-  className: '',
-  value: '',
-  isAdvancedFilterSet: false,
-  onAdvancedFiltersTriggered: () => {},
-  onChange: () => {},
-  onDone: () => {},
-  onTab: () => {},
-  onContextMenu: () => {},
-  debounceMs: 150,
-};
 
 export default FilterInputField;

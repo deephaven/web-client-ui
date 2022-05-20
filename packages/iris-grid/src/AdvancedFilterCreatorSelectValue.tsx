@@ -6,11 +6,58 @@ import classNames from 'classnames';
 import { Formatter, TableUtils } from '@deephaven/jsapi-utils';
 import AdvancedFilterCreatorSelectValueList from './AdvancedFilterCreatorSelectValueList';
 import './AdvancedFilterCreatorSelectValue.scss';
+import { FilterCondition, Table } from '@deephaven/jsapi-shim';
 
-class AdvancedFilterCreatorSelectValue extends PureComponent {
+interface AdvancedFilterCreatorSelectValueProps<T> {
+  invertSelection: boolean;
+  selectedValues: T[];
+  table: Table;
+  formatter: Formatter;
+  onChange: (selectedValues: T[], invertSelection: boolean) => void;
+  showSearch: boolean;
+  timeZone: string;
+}
+
+interface AdvancedFilterCreatorSelectValueState<T> {
+  error: unknown;
+  filters: FilterCondition[];
+  invertSelection: boolean;
+  selectedValues: T[];
+  searchText: string;
+  table: Table | null;
+}
+
+class AdvancedFilterCreatorSelectValue<T> extends PureComponent<
+  AdvancedFilterCreatorSelectValueProps<T>,
+  AdvancedFilterCreatorSelectValueState<T>
+> {
+  propTypes = {
+    table: PropTypes.shape({
+      close: PropTypes.func,
+      columns: PropTypes.arrayOf(PropTypes.shape({ name: PropTypes.string })),
+      copy: PropTypes.func,
+      totalSize: PropTypes.number,
+    }),
+    invertSelection: PropTypes.bool,
+    selectedValues: PropTypes.arrayOf(PropTypes.any),
+    formatter: PropTypes.instanceOf(Formatter).isRequired,
+    onChange: PropTypes.func,
+    showSearch: PropTypes.bool,
+    timeZone: PropTypes.string.isRequired,
+  };
+
+  searchTablePromise: Promise<Table> | null;
+  updateFilterTimer: NodeJS.Timeout | null;
   static searchDebounceTime = 250;
+  static defaultProps: {
+    table: null;
+    invertSelection: boolean;
+    selectedValues: never[];
+    onChange: () => void;
+    showSearch: boolean;
+  };
 
-  constructor(props) {
+  constructor(props: AdvancedFilterCreatorSelectValueProps<T>) {
     super(props);
 
     this.handleSelectAllClick = this.handleSelectAllClick.bind(this);
@@ -34,11 +81,14 @@ class AdvancedFilterCreatorSelectValue extends PureComponent {
     };
   }
 
-  componentDidMount() {
+  componentDidMount(): void {
     this.initSearchTable();
   }
 
-  componentDidUpdate(prevProps, prevState) {
+  componentDidUpdate(
+    prevProps: AdvancedFilterCreatorSelectValueProps<T>,
+    prevState: AdvancedFilterCreatorSelectValueState<T>
+  ): void {
     const { invertSelection, selectedValues, table } = this.props;
     if (prevProps.table !== table) {
       this.initSearchTable();
@@ -62,7 +112,7 @@ class AdvancedFilterCreatorSelectValue extends PureComponent {
     }
   }
 
-  componentWillUnmount() {
+  componentWillUnmount(): void {
     const { table } = this.state;
     if (table != null) {
       table.close();
@@ -72,7 +122,7 @@ class AdvancedFilterCreatorSelectValue extends PureComponent {
     this.stopUpdateFilterTimer();
   }
 
-  getColumnName() {
+  getColumnName(): string {
     const { table } = this.props;
     if (table != null) {
       return table.columns[0].name;
@@ -80,7 +130,7 @@ class AdvancedFilterCreatorSelectValue extends PureComponent {
     return '';
   }
 
-  getDisplayedValuesCount() {
+  getDisplayedValuesCount(): number | null {
     const { invertSelection, selectedValues, table } = this.state;
     if (table == null) {
       return null;
@@ -92,9 +142,10 @@ class AdvancedFilterCreatorSelectValue extends PureComponent {
     return selectedValues.length;
   }
 
-  getDisplayedValueText() {
+  getDisplayedValueText(): string | null {
     const count = this.getDisplayedValuesCount();
     const { table } = this.state;
+
     const { formatter } = this.props;
 
     if (count != null && table != null) {
@@ -112,7 +163,7 @@ class AdvancedFilterCreatorSelectValue extends PureComponent {
     return null;
   }
 
-  initSearchTable() {
+  initSearchTable(): void {
     const { table } = this.props;
     if (table == null) {
       return;
@@ -130,33 +181,33 @@ class AdvancedFilterCreatorSelectValue extends PureComponent {
     });
   }
 
-  handleListChange(selectedValues, invertSelection) {
+  handleListChange(selectedValues: T[], invertSelection: boolean): void {
     this.setState({ selectedValues, invertSelection });
 
     const { onChange } = this.props;
     onChange(selectedValues, invertSelection);
   }
 
-  handleSearchChange(event) {
+  handleSearchChange(event: React.ChangeEvent<HTMLInputElement>): void {
     const searchText = event.target.value;
     this.setState({ searchText });
   }
 
-  handleSelectAllClick() {
+  handleSelectAllClick(): void {
     this.resetSelection(true);
   }
 
-  handleClearAllClick() {
+  handleClearAllClick(): void {
     this.resetSelection(false);
   }
 
-  handleUpdateFilterTimeout() {
+  handleUpdateFilterTimeout(): void {
     this.updateFilterTimer = null;
     this.updateTableFilter();
   }
 
-  resetSelection(invertSelection) {
-    const selectedValues = [];
+  resetSelection(invertSelection: boolean): void {
+    const selectedValues: T[] = [];
 
     this.setState({ invertSelection, selectedValues });
 
@@ -164,7 +215,7 @@ class AdvancedFilterCreatorSelectValue extends PureComponent {
     onChange(selectedValues, invertSelection);
   }
 
-  startUpdateFilterTimer() {
+  startUpdateFilterTimer(): void {
     this.stopUpdateFilterTimer();
 
     this.updateFilterTimer = setTimeout(
@@ -173,28 +224,28 @@ class AdvancedFilterCreatorSelectValue extends PureComponent {
     );
   }
 
-  stopUpdateFilterTimer() {
+  stopUpdateFilterTimer(): void {
     if (this.updateFilterTimer) {
       clearTimeout(this.updateFilterTimer);
       this.updateFilterTimer = null;
     }
   }
 
-  updateTableFilter() {
+  updateTableFilter(): void {
     const { table, searchText } = this.state;
     const { timeZone } = this.props;
-    const column = table.columns[0];
+    const column = table?.columns[0];
     const filters = [];
     let error = null;
     if (searchText.length > 0) {
       let filter = null;
-      if (TableUtils.isCharType(column.type)) {
+      if (column && TableUtils.isCharType(column.type)) {
         // Just exact match for char
         filter = TableUtils.makeQuickFilter(column, searchText);
-      } else if (TableUtils.isTextType(column.type)) {
+      } else if (column && TableUtils.isTextType(column.type)) {
         // case insensitive & contains search text
         filter = TableUtils.makeQuickFilter(column, `~${searchText}`, timeZone);
-      } else {
+      } else if (column) {
         // greater than or equal search for everything else
         // we may want to be smarter with some other types (like dates)
         filter = TableUtils.makeQuickFilter(
@@ -214,7 +265,7 @@ class AdvancedFilterCreatorSelectValue extends PureComponent {
     this.setState({ filters, error });
   }
 
-  render() {
+  render(): React.ReactElement {
     const {
       error,
       filters,
@@ -247,14 +298,16 @@ class AdvancedFilterCreatorSelectValue extends PureComponent {
             />
           )}
         </div>
-        <AdvancedFilterCreatorSelectValueList
-          table={table}
-          filters={filters}
-          invertSelection={invertSelection}
-          selectedValues={selectedValues}
-          formatter={formatter}
-          onChange={this.handleListChange}
-        />
+        {table && (
+          <AdvancedFilterCreatorSelectValueList
+            table={table}
+            filters={filters}
+            invertSelection={invertSelection}
+            selectedValues={selectedValues}
+            formatter={formatter}
+            onChange={this.handleListChange}
+          />
+        )}
         <div className="advanced-filter-creator-select-meta-row">
           <div>
             <button
@@ -286,28 +339,5 @@ class AdvancedFilterCreatorSelectValue extends PureComponent {
     );
   }
 }
-
-AdvancedFilterCreatorSelectValue.propTypes = {
-  table: PropTypes.shape({
-    close: PropTypes.func,
-    columns: PropTypes.arrayOf(PropTypes.shape({ name: PropTypes.string })),
-    copy: PropTypes.func,
-    totalSize: PropTypes.number,
-  }),
-  invertSelection: PropTypes.bool,
-  selectedValues: PropTypes.arrayOf(PropTypes.any),
-  formatter: PropTypes.instanceOf(Formatter).isRequired,
-  onChange: PropTypes.func,
-  showSearch: PropTypes.bool,
-  timeZone: PropTypes.string.isRequired,
-};
-
-AdvancedFilterCreatorSelectValue.defaultProps = {
-  table: null,
-  invertSelection: true,
-  selectedValues: [],
-  onChange: () => {},
-  showSearch: true,
-};
 
 export default AdvancedFilterCreatorSelectValue;

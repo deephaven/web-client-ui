@@ -5,19 +5,58 @@ import { DropdownMenu, Tooltip } from '@deephaven/components';
 import { vsTriangleDown, vsClose } from '@deephaven/icons';
 import Log from '@deephaven/log';
 import debounce from 'lodash.debounce';
+import { DebouncedFunc } from 'lodash';
 import PartitionSelectorSearch from './PartitionSelectorSearch';
 import './IrisGridPartitionSelector.scss';
+import { Table } from '@deephaven/jsapi-shim';
 
 const log = Log.module('IrisGridPartitionSelector');
 
 const PARTITION_CHANGE_DEBOUNCE_MS = 250;
+interface IrisGridPartitionSelectorProps {
+  getFormattedString: (...args: unknown[]) => string;
+  table: Table;
+  columnName: string;
+  partition: string;
+  onAppend: (partition: string) => void;
+  onFetchAll: () => void;
+  onDone: (event?: React.MouseEvent<HTMLButtonElement>) => void;
+  onChange: (partition: string) => void;
+}
+interface IrisGridPartitionSelectorState {
+  partition: string;
+}
+class IrisGridPartitionSelector extends Component<
+  IrisGridPartitionSelectorProps,
+  IrisGridPartitionSelectorState
+> {
+  static propTypes = {
+    getFormattedString: PropTypes.func.isRequired,
+    table: PropTypes.shape({ applyFilter: PropTypes.func }).isRequired,
+    columnName: PropTypes.string.isRequired,
+    partition: PropTypes.string,
+    onAppend: PropTypes.func,
+    onChange: PropTypes.func,
+    onFetchAll: PropTypes.func,
+    onDone: PropTypes.func,
+  };
+  static defaultProps: {
+    onAppend: () => void;
+    onChange: () => void;
+    onFetchAll: () => void;
+    onDone: () => void;
+    partition: string;
+  };
 
-class IrisGridPartitionSelector extends Component {
-  constructor(props) {
+  searchMenu: DropdownMenu | null;
+  selectorSearch: PartitionSelectorSearch | null;
+  debounceUpdate: DebouncedFunc<() => void>;
+
+  constructor(props: IrisGridPartitionSelectorProps) {
     super(props);
 
     this.debounceUpdate = debounce(
-      this.debounceUpdate.bind(this),
+      this._debounceUpdate.bind(this),
       PARTITION_CHANGE_DEBOUNCE_MS
     );
     this.handleAppendClick = this.handleAppendClick.bind(this);
@@ -40,11 +79,11 @@ class IrisGridPartitionSelector extends Component {
     };
   }
 
-  componentWillUnmount() {
+  componentWillUnmount(): void {
     this.debounceUpdate.cancel();
   }
 
-  handleAppendClick() {
+  handleAppendClick(): void {
     log.debug2('handleAppendClick');
 
     const { onAppend } = this.props;
@@ -52,19 +91,19 @@ class IrisGridPartitionSelector extends Component {
     onAppend(partition);
   }
 
-  handleCloseClick() {
+  handleCloseClick(): void {
     log.debug2('handleCloseClick');
 
     this.sendDone();
   }
 
-  handleIgnoreClick() {
+  handleIgnoreClick(): void {
     log.debug2('handleIgnoreClick');
 
     this.sendFetchAll();
   }
 
-  handlePartitionChange(event) {
+  handlePartitionChange(event: React.ChangeEvent<HTMLInputElement>): void {
     log.debug2('handlePartitionChange');
 
     const { value: partition } = event.target;
@@ -74,7 +113,7 @@ class IrisGridPartitionSelector extends Component {
     this.debounceUpdate();
   }
 
-  handlePartitionSelect(partition) {
+  handlePartitionSelect(partition: string): void {
     if (this.searchMenu) {
       this.searchMenu.closeMenu();
     }
@@ -84,36 +123,36 @@ class IrisGridPartitionSelector extends Component {
     });
   }
 
-  handlePartitionListResized() {
+  handlePartitionListResized(): void {
     if (this.searchMenu) {
       this.searchMenu.scheduleUpdate();
     }
   }
 
-  handleSearchClosed() {
+  handleSearchClosed(): void {
     // Reset the table filter so it's ready next time user opens search
     const { table } = this.props;
     table.applyFilter([]);
   }
 
-  handleSearchOpened() {
+  handleSearchOpened(): void {
     if (this.selectorSearch) {
       this.selectorSearch.focus();
     }
   }
 
-  debounceUpdate() {
+  _debounceUpdate(): void {
     this.sendUpdate();
   }
 
-  sendDone() {
+  sendDone(): void {
     this.debounceUpdate.flush();
 
     const { onDone } = this.props;
     onDone();
   }
 
-  sendUpdate() {
+  sendUpdate(): void {
     log.debug2('sendUpdate');
 
     const { onChange } = this.props;
@@ -121,7 +160,7 @@ class IrisGridPartitionSelector extends Component {
     onChange(partition);
   }
 
-  sendFetchAll() {
+  sendFetchAll(): void {
     log.debug2('sendFetchAll');
 
     this.debounceUpdate.cancel();
@@ -130,7 +169,7 @@ class IrisGridPartitionSelector extends Component {
     onFetchAll();
   }
 
-  render() {
+  render(): React.ReactElement {
     const { columnName, getFormattedString, onDone, table } = this.props;
     const { partition } = this.state;
     const partitionSelectorSearch = (
@@ -198,24 +237,5 @@ class IrisGridPartitionSelector extends Component {
     );
   }
 }
-
-IrisGridPartitionSelector.propTypes = {
-  getFormattedString: PropTypes.func.isRequired,
-  table: PropTypes.shape({ applyFilter: PropTypes.func }).isRequired,
-  columnName: PropTypes.string.isRequired,
-  partition: PropTypes.string,
-  onAppend: PropTypes.func,
-  onChange: PropTypes.func,
-  onFetchAll: PropTypes.func,
-  onDone: PropTypes.func,
-};
-
-IrisGridPartitionSelector.defaultProps = {
-  onAppend: () => {},
-  onChange: () => {},
-  onFetchAll: () => {},
-  onDone: () => {},
-  partition: '',
-};
 
 export default IrisGridPartitionSelector;
