@@ -5,7 +5,7 @@ import {
   Coordinate,
   CoordinateMap,
   VisibleIndex,
-  IndexModelMap,
+  VisibleToModelMap,
   ModelIndex,
   ModelSizeMap,
   MoveOperation,
@@ -375,7 +375,7 @@ export class GridUtils {
    */
   static getNextShownItem(
     startIndex: VisibleIndex,
-    modelIndexes: IndexModelMap,
+    modelIndexes: VisibleToModelMap,
     visibleItems: VisibleIndex[],
     userSizes: ModelSizeMap
   ): VisibleIndex | null {
@@ -733,7 +733,7 @@ export class GridUtils {
   /**
    * Set a new order for items in the grid
    * @param from The visible index to move from
-   * @param to The visible index to move the itme to
+   * @param to The visible index to move the item to
    * @param oldMovedItems The old reordered items
    * @returns The new reordered items
    */
