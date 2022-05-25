@@ -30,8 +30,11 @@
     "start": "cross-env NODE_ENV=development npm run watch"
   },
   "dependencies": {
+    "@deephaven/components": "file:../components",
     "@deephaven/golden-layout": "file:../golden-layout",
+    "@deephaven/log": "file:../log",
     "@deephaven/react-hooks": "file:../react-hooks",
+    "@deephaven/redux": "file:../redux",
     "deep-equal": "^2.0.5",
     "jquery": "^3.6.0",
     "lodash.ismatch": "^4.1.1",
@@ -40,17 +43,12 @@
     "shortid": "^2.2.16"
   },
   "peerDependencies": {
-    "@deephaven/components": "^0.12",
-    "@deephaven/log": "^0.12",
-    "@deephaven/redux": "^0.12",
     "react": "^17.0.0",
     "react-dom": "^17.0.0",
     "react-redux": "^7.2.4"
   },
   "devDependencies": {
-    "@deephaven/log": "file:../log",
     "@deephaven/mocks": "file:../mocks",
-    "@deephaven/redux": "file:../redux",
     "@deephaven/tsconfig": "file:../tsconfig"
   },
   "files": [

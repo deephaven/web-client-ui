@@ -31,6 +31,7 @@
   },
   "dependencies": {
     "@deephaven/icons": "file:../icons",
+    "@deephaven/log": "file:../log",
     "@deephaven/react-hooks": "file:../react-hooks",
     "@deephaven/utils": "file:../utils",
     "@fortawesome/fontawesome-svg-core": "1.2.36",
@@ -52,12 +53,10 @@
     "shortid": "^2.2.16"
   },
   "peerDependencies": {
-    "@deephaven/log": "^0.12",
     "react": "^17.x",
     "react-dom": "^17.x"
   },
   "devDependencies": {
-    "@deephaven/log": "file:../log",
     "@deephaven/mocks": "file:../mocks",
     "@deephaven/tsconfig": "file:../tsconfig"
   },

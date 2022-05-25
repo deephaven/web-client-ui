@@ -27,15 +27,14 @@
     "start": "cross-env NODE_ENV=development npm run watch"
   },
   "dependencies": {
+    "@deephaven/filters": "file:../filters",
+    "@deephaven/log": "file:../log",
     "lodash.throttle": "^4.1.1"
   },
   "peerDependencies": {
-    "@deephaven/filters": "^0.12",
-    "@deephaven/log": "^0.12",
     "react": "^17.0.0"
   },
   "devDependencies": {
-    "@deephaven/filters": "file:../filters",
     "@deephaven/tsconfig": "file:../tsconfig"
   },
   "files": [
