@@ -6,27 +6,58 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Tooltip } from '@deephaven/components';
 import { vsTrash, vsGripper } from '@deephaven/icons';
 import InputEditor from './InputEditor';
+import { CustomColumnKey } from './CustomColumnBuilder';
 
-class CustomColumnInput extends PureComponent {
+interface CustomColumnInputProps {
+  eventKey: string;
+  inputIndex: number;
+  name: string;
+  formula: string;
+  onChange: (
+    eventKey: string,
+    inputType: CustomColumnKey,
+    value: string
+  ) => void;
+  onDeleteColumn: (eventKey: string) => void;
+  onTabInEditor: (editorIndex: number, shiftKey: boolean) => void;
+  invalid: boolean;
+}
+class CustomColumnInput extends PureComponent<
+  CustomColumnInputProps,
+  Record<string, never>
+> {
   static INPUT_TYPE = {
     NAME: 'name',
     FORMULA: 'formula',
   };
 
-  constructor(props) {
+  static defaultProps: {
+    name: string;
+    inputIndex: number;
+    formula: string;
+    onChange: () => void;
+    onDeleteColumn: () => void;
+    onTabInEditor: () => void;
+    invalid: boolean;
+  };
+
+  constructor(props: CustomColumnInputProps) {
     super(props);
     this.handleFormulaEditorContentChanged = this.handleFormulaEditorContentChanged.bind(
       this
     );
-
-    this.editorContainer = null;
-    this.formulaEditor = null;
   }
 
-  handleFormulaEditorContentChanged(formulaValue) {
+  handleFormulaEditorContentChanged(formulaValue?: string) {
     const { onChange, eventKey } = this.props;
-    formulaValue.replace(/(\r\n|\n|\r)/gm, ''); // remove line break
-    onChange(eventKey, CustomColumnInput.INPUT_TYPE.FORMULA, formulaValue);
+    if (formulaValue) {
+      formulaValue.replace(/(\r\n|\n|\r)/gm, ''); // remove line break
+      onChange(
+        eventKey,
+        CustomColumnInput.INPUT_TYPE.FORMULA as CustomColumnKey,
+        formulaValue
+      );
+    }
   }
 
   render() {
@@ -66,7 +97,7 @@ class CustomColumnInput extends PureComponent {
                   onChange={event => {
                     onChange(
                       eventKey,
-                      CustomColumnInput.INPUT_TYPE.NAME,
+                      CustomColumnInput.INPUT_TYPE.NAME as CustomColumnKey,
                       event.target.value
                     );
                   }}
@@ -108,26 +139,5 @@ class CustomColumnInput extends PureComponent {
     );
   }
 }
-
-CustomColumnInput.propTypes = {
-  eventKey: PropTypes.string.isRequired,
-  inputIndex: PropTypes.number,
-  name: PropTypes.string,
-  formula: PropTypes.string,
-  onChange: PropTypes.func,
-  onDeleteColumn: PropTypes.func,
-  onTabInEditor: PropTypes.func,
-  invalid: PropTypes.bool,
-};
-
-CustomColumnInput.defaultProps = {
-  name: '',
-  inputIndex: 0,
-  formula: '',
-  onChange: () => {},
-  onDeleteColumn: () => {},
-  onTabInEditor: () => {},
-  invalid: false,
-};
 
 export default CustomColumnInput;

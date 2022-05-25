@@ -7,22 +7,60 @@ import {
   LoadingSpinner,
   ThemeExport,
 } from '@deephaven/components';
-import { GridRange, GridUtils } from '@deephaven/grid';
-import { CanceledPromiseError, PromiseUtils } from '@deephaven/utils';
+import {
+  GridRange,
+  GridUtils,
+  ModelSizeMap,
+  MoveOperation,
+} from '@deephaven/grid';
+import {
+  CancelablePromise,
+  CanceledPromiseError,
+  PromiseUtils,
+} from '@deephaven/utils';
 import Log from '@deephaven/log';
 import IrisGridModel from './IrisGridModel';
 import IrisGridUtils from './IrisGridUtils';
 import IrisGridBottomBar from './IrisGridBottomBar';
 import './IrisGridCopyHandler.scss';
+import { Column } from '@deephaven/jsapi-shim';
 
 const log = Log.module('IrisGridCopyHandler');
 
+export type CopyOperation = {
+  ranges: GridRange[];
+  includeHeaders: boolean;
+  formatValues: boolean;
+  movedColumns: MoveOperation[];
+  userColumnWidths: ModelSizeMap;
+  error: null;
+};
+
+interface IrisGridCopyHandlerProps {
+  model: IrisGridModel;
+  copyOperation: CopyOperation;
+  onEntering: () => void;
+  onEntered: () => void;
+  onExiting: () => void;
+  onExited: () => void;
+}
+
+interface IrisGridCopyHandlerState {
+  error: Error | null;
+  copyState: string;
+  buttonState: string;
+  isShown: boolean;
+  rowCount: number;
+}
 /**
  * Component for handling copying of data from the Iris Grid.
  * - Prompts if necessary (large amount of rows copied)
  * - Tries to async copy, falls back to showing a "Click to Copy" button if that fails
  */
-class IrisGridCopyHandler extends Component {
+class IrisGridCopyHandler extends Component<
+  IrisGridCopyHandlerProps,
+  IrisGridCopyHandlerState
+> {
   static NO_PROMPT_THRESHOLD = 10000;
 
   static HIDE_TIMEOUT = 3000;
@@ -56,8 +94,15 @@ class IrisGridCopyHandler extends Component {
     CLICK_TO_COPY: 'CLICK_TO_COPY',
     RETRY: 'RETRY',
   };
+  static defaultProps: {
+    copyOperation: null;
+    onEntering: () => void;
+    onEntered: () => void;
+    onExiting: () => void;
+    onExited: () => void;
+  };
 
-  static getStatusMessageText(copyState, rowCount) {
+  static getStatusMessageText(copyState: string, rowCount: number): string {
     switch (copyState) {
       case IrisGridCopyHandler.COPY_STATES.CONFIRMATION_REQUIRED:
         return `Are you sure you want to copy ${rowCount.toLocaleString()} rows to your clipboard?`;
@@ -74,7 +119,7 @@ class IrisGridCopyHandler extends Component {
     }
   }
 
-  static getCopyButtonText(buttonState) {
+  static getCopyButtonText(buttonState: string): string {
     switch (buttonState) {
       case IrisGridCopyHandler.BUTTON_STATES.FETCH_IN_PROGRESS:
         return 'Fetching';
@@ -87,7 +132,11 @@ class IrisGridCopyHandler extends Component {
     }
   }
 
-  constructor(props) {
+  textData: string | null;
+  hideTimer: NodeJS.Timeout | null;
+  fetchPromise: CancelablePromise<string> | null;
+
+  constructor(props: IrisGridCopyHandlerProps) {
     super(props);
 
     this.handleBackgroundClick = this.handleBackgroundClick.bind(this);
@@ -108,25 +157,25 @@ class IrisGridCopyHandler extends Component {
     };
   }
 
-  componentDidMount() {
+  componentDidMount(): void {
     const { copyOperation } = this.props;
     if (copyOperation != null) {
       this.startCopy();
     }
   }
 
-  componentDidUpdate(prevProps) {
+  componentDidUpdate(prevProps: IrisGridCopyHandlerProps): void {
     const { copyOperation } = this.props;
     if (prevProps.copyOperation !== copyOperation) {
       this.startCopy();
     }
   }
 
-  componentWillUnmount() {
+  componentWillUnmount(): void {
     this.stopCopy();
   }
 
-  startCopy() {
+  startCopy(): void {
     log.debug2('startCopy');
 
     this.stopCopy();
@@ -164,13 +213,13 @@ class IrisGridCopyHandler extends Component {
     }
   }
 
-  stopCopy() {
+  stopCopy(): void {
     this.textData = null;
     this.stopFetch();
     this.stopHideTimer();
   }
 
-  handleBackgroundClick() {
+  handleBackgroundClick(): void {
     log.debug2('handleBackgroundClick');
 
     const { copyState } = this.state;
@@ -179,14 +228,14 @@ class IrisGridCopyHandler extends Component {
     }
   }
 
-  handleCancelClick() {
+  handleCancelClick(): void {
     log.debug2('handleCancelClick');
 
     this.stopFetch();
     this.setState({ isShown: false });
   }
 
-  handleCopyClick() {
+  handleCopyClick(): void {
     log.debug2('handleCopyClick');
 
     if (this.textData != null) {
@@ -196,7 +245,7 @@ class IrisGridCopyHandler extends Component {
     }
   }
 
-  handleHideTimeout() {
+  handleHideTimeout(): void {
     log.debug2('handleHideTimeout');
 
     this.stopHideTimer();
@@ -204,7 +253,7 @@ class IrisGridCopyHandler extends Component {
     this.setState({ isShown: false });
   }
 
-  copyText(text) {
+  copyText(text: string) {
     log.debug2('copyText', text);
 
     this.textData = text;
@@ -254,18 +303,19 @@ class IrisGridCopyHandler extends Component {
 
     // Remove the hidden columns from the snapshot
     const formatValue = formatValues
-      ? (value, column) => model.displayString(value, column.type, column.name)
-      : value => `${value}`;
+      ? (value: unknown, column: Column) =>
+          model.displayString(value, column.type, column.name)
+      : (value: unknown) => `${value}`;
 
     this.fetchPromise = PromiseUtils.makeCancelable(
       model.textSnapshot(modelRanges, includeHeaders, formatValue)
     );
     this.fetchPromise
-      .then(text => {
+      .then((text: string) => {
         this.fetchPromise = null;
         this.copyText(text);
       })
-      .catch(error => {
+      .catch((error: unknown) => {
         if (error instanceof CanceledPromiseError) {
           log.debug('User cancelled copy.');
         } else {
@@ -296,7 +346,7 @@ class IrisGridCopyHandler extends Component {
     );
   }
 
-  stopHideTimer() {
+  stopHideTimer(): void {
     if (this.hideTimer != null) {
       clearTimeout(this.hideTimer);
       this.hideTimer = null;
@@ -370,32 +420,5 @@ class IrisGridCopyHandler extends Component {
     );
   }
 }
-
-IrisGridCopyHandler.propTypes = {
-  model: PropTypes.instanceOf(IrisGridModel).isRequired,
-  copyOperation: PropTypes.shape({
-    // ranges are expected to be bounded ranges
-    ranges: PropTypes.arrayOf(PropTypes.instanceOf(GridRange)).isRequired,
-    movedColumns: PropTypes.arrayOf(
-      PropTypes.shape({ to: PropTypes.number, from: PropTypes.number })
-    ).isRequired,
-    userColumnWidths: PropTypes.instanceOf(Map).isRequired,
-    formatValues: PropTypes.bool,
-    includeHeaders: PropTypes.bool,
-    error: PropTypes.string,
-  }),
-  onEntering: PropTypes.func,
-  onEntered: PropTypes.func,
-  onExiting: PropTypes.func,
-  onExited: PropTypes.func,
-};
-
-IrisGridCopyHandler.defaultProps = {
-  copyOperation: null,
-  onEntering: () => {},
-  onEntered: () => {},
-  onExiting: () => {},
-  onExited: () => {},
-};
 
 export default IrisGridCopyHandler;

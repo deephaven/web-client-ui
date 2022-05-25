@@ -5,6 +5,9 @@ import Log from '@deephaven/log';
 import AdvancedSettings from './sidebar/AdvancedSettings';
 import AggregationUtils from './sidebar/aggregations/AggregationUtils';
 import AggregationOperation from './sidebar/aggregations/AggregationOperation';
+import IrisGridModel from './IrisGridModel';
+import IrisGrid from './IrisGrid';
+import { GridState } from 'packages/grid/src/Grid';
 
 const log = Log.module('IrisGridUtils');
 
@@ -15,7 +18,7 @@ class IrisGridUtils {
    * @param {Object} gridState The state of the Grid to export
    * @returns {Object} An object that can be stringified and imported with {{@link hydrateGridState}}
    */
-  static dehydrateGridState(model, gridState) {
+  static dehydrateGridState(model: IrisGridModel, gridState) {
     const {
       isStuckToBottom,
       isStuckToRight,
@@ -46,7 +49,7 @@ class IrisGridUtils {
    * @param {Object} gridState The state of the panel that was saved
    * @returns {Object} The gridState props to set on the Grid
    */
-  static hydrateGridState(model, gridState, customColumns = []) {
+  static hydrateGridState(model: IrisGridModel, gridState, customColumns = []) {
     const {
       isStuckToBottom,
       isStuckToRight,
@@ -96,7 +99,7 @@ class IrisGridUtils {
    * @param {IrisGridModel} model The table model to export the state for
    * @param {Object} irisGridState The current state of the IrisGrid
    */
-  static dehydrateIrisGridState(model, irisGridState) {
+  static dehydrateIrisGridState(model: IrisGridModel, irisGridState) {
     const {
       aggregationSettings = { aggregations: [], showOnTop: false },
       advancedSettings = [],
@@ -163,7 +166,7 @@ class IrisGridUtils {
    * @param {IrisGridModel} model The table model to import the state with
    * @param {Object} irisGridState The saved IrisGrid state
    */
-  static hydrateIrisGridState(model, irisGridState) {
+  static hydrateIrisGridState(model: IrisGridModel, irisGridState) {
     const {
       advancedFilters,
       advancedSettings = [],
@@ -243,7 +246,7 @@ class IrisGridUtils {
    * @param {Object} irisGridPanelState The current IrisGridPanel state
    * @returns {Object} The dehydrated IrisGridPanel state
    */
-  static dehydrateIrisGridPanelState(model, irisGridPanelState) {
+  static dehydrateIrisGridPanelState(model: IrisGridModel, irisGridPanelState) {
     const {
       isSelectingPartition,
       partition,
@@ -263,7 +266,7 @@ class IrisGridUtils {
    * @param {Object} irisGridPanelState Exported IrisGridPanel state
    * @returns {Object} The state to apply to the IrisGridPanel
    */
-  static hydrateIrisGridPanelState(model, irisGridPanelState) {
+  static hydrateIrisGridPanelState(model: IrisGridModel, irisGridPanelState) {
     const {
       isSelectingPartition,
       partition,
@@ -1004,7 +1007,11 @@ class IrisGridUtils {
    * @param {Object} aggregationSettings Aggregation settings
    * @returns {Object} Rollup config for the model
    */
-  static getModelRollupConfig(originalColumns, config, aggregationSettings) {
+  static getModelRollupConfig(
+    originalColumns,
+    config,
+    aggregationSettings
+  ): RollupConfig {
     if ((config?.columns?.length ?? 0) === 0) {
       return null;
     }

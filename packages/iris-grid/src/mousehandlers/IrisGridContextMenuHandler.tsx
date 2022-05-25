@@ -23,12 +23,17 @@ import {
 } from '../format-context-menus';
 import './IrisGridContextMenuHandler.scss';
 import SHORTCUTS from '../IrisGridShortcuts';
+import IrisGrid from '../IrisGrid';
+import { DebouncedFunc } from 'lodash';
 
 const log = Log.module('IrisGridContextMenuHandler');
 
 const DEBOUNCE_UPDATE_FORMAT = 150;
 const CONTEXT_MENU_DATE_FORMAT = 'yyyy-MM-dd HH:mm:ss.SSSSSSSSS';
 
+interface IrisGridContextMenuHandlerState {}
+
+interface IrisGridContextMenuHandlerProps {}
 /**
  * Used to eat the mouse event in the bottom right corner of the scroll bar
  */
@@ -110,13 +115,18 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
     return columnFilter.eq(filterValue);
   }
 
-  static getFilterValueForNumberOrChar(columnType, value) {
+  static getFilterValueForNumberOrChar(columnType: string, value: number[]) {
     return TableUtils.isCharType(columnType)
       ? dh.FilterValue.ofString(String.fromCharCode(value))
       : dh.FilterValue.ofNumber(value);
   }
 
-  constructor(irisGrid) {
+  irisGrid: IrisGrid;
+  debouncedUpdateCustomFormat: DebouncedFunc<
+    (modelIndex: any, selectedFormat: any) => void
+  >;
+
+  constructor(irisGrid: IrisGrid) {
     super();
 
     this.debouncedUpdateCustomFormat = debounce(

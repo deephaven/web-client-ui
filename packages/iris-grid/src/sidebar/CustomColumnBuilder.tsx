@@ -1,9 +1,9 @@
-import React, { Component } from 'react';
+import React, { Component, ReactElement } from 'react';
 import classNames from 'classnames';
 import PropTypes from 'prop-types';
 import shortid from 'shortid';
 import memoize from 'memoize-one';
-import { DragDropContext, Droppable } from 'react-beautiful-dnd';
+import { DragDropContext, Droppable, DropResult } from 'react-beautiful-dnd';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { DragUtils, LoadingSpinner } from '@deephaven/components';
 import { dhNewCircleLargeFilled, vsWarning, vsPass } from '@deephaven/icons';
@@ -11,10 +11,39 @@ import CustomColumnInput from './CustomColumnInput';
 import './CustomColumnBuilder.scss';
 import IrisGridModel from '../IrisGridModel';
 
-class CustomColumnBuilder extends Component {
-  static SUCCESS_SHOW_DURATION = 750;
+export type CustomColumnKey = 'eventKey' | 'name' | 'formula';
 
-  static makeCustomColumnInputEventKey() {
+type Input = {
+  eventKey: string;
+  name: string;
+  formula: string;
+};
+interface CustomColumnBuilderProps {
+  model: IrisGridModel;
+  customColumns: string[];
+  onSave: (columns: string[]) => void;
+  onCancel: () => void;
+}
+
+interface CustomColumnBuilderState {
+  inputs: Input[];
+  isCustomColumnApplying: boolean;
+  errorMessage: ReactElement | null;
+  hasRequestFailed: boolean;
+  isSuccessShowing: boolean;
+}
+class CustomColumnBuilder extends Component<
+  CustomColumnBuilderProps,
+  CustomColumnBuilderState
+> {
+  static SUCCESS_SHOW_DURATION = 750;
+  static defaultProps: {
+    customColumns: never[];
+    onSave: () => void;
+    onCancel: () => void;
+  };
+
+  static makeCustomColumnInputEventKey(): string {
     return shortid.generate();
   }
 
@@ -26,7 +55,11 @@ class CustomColumnBuilder extends Component {
     };
   }
 
-  constructor(props) {
+  container: HTMLDivElement | null;
+  successButtonTimer: NodeJS.Timeout | null;
+  messageTimer: undefined;
+
+  constructor(props: CustomColumnBuilderProps) {
     super(props);
 
     this.handleAddColumnClick = this.handleAddColumnClick.bind(this);
@@ -51,13 +84,13 @@ class CustomColumnBuilder extends Component {
     this.successButtonTimer = null;
   }
 
-  componentDidMount() {
+  componentDidMount(): void {
     const { customColumns } = this.props;
     this.parseCustomColumns(customColumns);
     this.startListening();
   }
 
-  componentWillUnmount() {
+  componentWillUnmount(): void {
     this.stopListening();
     if (this.messageTimer) {
       clearTimeout(this.messageTimer);
@@ -67,11 +100,11 @@ class CustomColumnBuilder extends Component {
     }
   }
 
-  getInput = memoize((inputs, key) =>
+  getInput = memoize((inputs: Input[], key: string) =>
     inputs.find(input => input.eventKey === key)
   );
 
-  getInputIndex = memoize((inputs, key) =>
+  getInputIndex = memoize((inputs: Input[], key: string) =>
     inputs.findIndex(input => input.eventKey === key)
   );
 
@@ -111,7 +144,7 @@ class CustomColumnBuilder extends Component {
     );
   }
 
-  parseCustomColumns(customColumns) {
+  parseCustomColumns(customColumns: string[]) {
     if (customColumns.length > 0) {
       const customColumnInputs = customColumns.map(customColumn => {
         const input = customColumn.split(/=(.+)/, 2);
@@ -129,7 +162,7 @@ class CustomColumnBuilder extends Component {
     }
   }
 
-  handleAddColumnClick() {
+  handleAddColumnClick(): void {
     const { inputs } = this.state;
     const newInputs = [...inputs];
     newInputs.push(CustomColumnBuilder.createCustomColumnInput());
@@ -138,7 +171,7 @@ class CustomColumnBuilder extends Component {
     });
   }
 
-  handleDeleteColumn(eventKey) {
+  handleDeleteColumn(eventKey: string): void {
     const { inputs } = this.state;
     const customColumnIndex = this.getInputIndex(inputs, eventKey);
     const newInputs = [...inputs];
@@ -151,12 +184,16 @@ class CustomColumnBuilder extends Component {
     });
   }
 
-  handleInputChange(eventKey, type, value) {
+  handleInputChange(
+    eventKey: string,
+    type: CustomColumnKey,
+    value: string
+  ): void {
     const { inputs } = this.state;
     const customColumnIndex = this.getInputIndex(inputs, eventKey);
     const customColumnInput = this.getInput(inputs, eventKey);
 
-    const newCustomInput = { ...customColumnInput };
+    const newCustomInput = { ...customColumnInput } as Input;
     newCustomInput[type] = value;
 
     const newInputs = [...inputs];
@@ -182,7 +219,8 @@ class CustomColumnBuilder extends Component {
     );
   }
 
-  handleRequestFailed(event) {
+  handleRequestFailed(event: Event) {
+    const customEvent = event as CustomEvent;
     const { isCustomColumnApplying } = this.state;
     if (!isCustomColumnApplying) {
       return;
@@ -196,9 +234,10 @@ class CustomColumnBuilder extends Component {
             <FontAwesomeIcon icon={vsWarning} /> Failed to apply custom columns.
           </p>
           <div className="error-box">
-            {event.detail.errorMessage}
+            {customEvent.detail.errorMessage}
             <br />
-            Table configuration: {JSON.stringify(event.detail.configuration)}
+            Table configuration:{' '}
+            {JSON.stringify(customEvent.detail.configuration)}
           </div>
         </>
       ),
@@ -206,7 +245,7 @@ class CustomColumnBuilder extends Component {
     });
   }
 
-  handleDragEnd(result) {
+  handleDragEnd(result: DropResult) {
     DragUtils.stopDragging();
 
     // if dropped outside the list
@@ -225,34 +264,35 @@ class CustomColumnBuilder extends Component {
     this.setState({ inputs: newInputs });
   }
 
-  handleEditorTabNavigation(focusEditorIndex, shiftKey) {
+  handleEditorTabNavigation(focusEditorIndex: number, shiftKey: boolean): void {
     const { inputs } = this.state;
     // focus on drag handle
     if (shiftKey) {
-      this.container
-        .querySelectorAll(`.btn-drag-handle`) // eslint-disable-next-line no-unexpected-multiline
-        [focusEditorIndex].focus();
+      (this.container?.querySelectorAll(`.btn-drag-handle`)[
+        focusEditorIndex
+      ] as HTMLButtonElement).focus();
       return;
     }
     if (focusEditorIndex === inputs.length - 1) {
-      // focus on add another column button
-      this.container.querySelector('.btn-add-column').focus();
+      (this.container?.querySelectorAll(`.btn-add-column`)[
+        focusEditorIndex
+      ] as HTMLButtonElement).focus();
     } else {
       // focus on next column name input
       const nextFocusIndex = focusEditorIndex + 1;
-      this.container
-        .querySelectorAll('.custom-column-input') // eslint-disable-next-line no-unexpected-multiline
-        [nextFocusIndex].focus();
+      (this.container?.querySelectorAll(`.custom-column-input`)[
+        nextFocusIndex
+      ] as HTMLInputElement).focus();
     }
   }
 
-  handleSaveClick() {
+  handleSaveClick(): void {
     const { onSave } = this.props;
     const { inputs, isCustomColumnApplying } = this.state;
     if (isCustomColumnApplying) {
       return;
     }
-    const customColumns = [];
+    const customColumns = [] as string[];
     inputs.forEach(input => {
       const { name, formula } = input;
       if (name && formula) {
@@ -264,7 +304,7 @@ class CustomColumnBuilder extends Component {
     onSave(customColumns);
   }
 
-  resetRequestFailed() {
+  resetRequestFailed(): void {
     this.setState(({ hasRequestFailed }) => {
       if (hasRequestFailed) {
         return { hasRequestFailed: false };
@@ -273,7 +313,7 @@ class CustomColumnBuilder extends Component {
     });
   }
 
-  renderInputs() {
+  renderInputs(): ReactElement[] {
     const { inputs, hasRequestFailed } = this.state;
 
     return inputs.map((input, index) => {
@@ -294,7 +334,7 @@ class CustomColumnBuilder extends Component {
     });
   }
 
-  renderSaveButton() {
+  renderSaveButton(): ReactElement {
     const { inputs, isCustomColumnApplying, isSuccessShowing } = this.state;
     const saveText = inputs.length > 1 ? 'Save Columns' : 'Save Column';
 
@@ -328,7 +368,7 @@ class CustomColumnBuilder extends Component {
     );
   }
 
-  render() {
+  render(): ReactElement {
     const { onCancel } = this.props;
     const { errorMessage } = this.state;
     return (
@@ -393,18 +433,5 @@ class CustomColumnBuilder extends Component {
     );
   }
 }
-
-CustomColumnBuilder.propTypes = {
-  model: PropTypes.instanceOf(IrisGridModel).isRequired,
-  customColumns: PropTypes.arrayOf(PropTypes.string),
-  onSave: PropTypes.func,
-  onCancel: PropTypes.func,
-};
-
-CustomColumnBuilder.defaultProps = {
-  customColumns: [],
-  onSave: () => {},
-  onCancel: () => {},
-};
 
 export default CustomColumnBuilder;

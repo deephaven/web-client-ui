@@ -1,17 +1,53 @@
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
+import PropTypes, { resetWarningCache } from 'prop-types';
 import ClassNames from 'classnames';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { LoadingSpinner, RadioGroup, RadioItem } from '@deephaven/components';
 import { GridRange } from '@deephaven/grid';
 import { vsWarning } from '@deephaven/icons';
-import dh from '@deephaven/jsapi-shim';
+import dh, {
+  FilterCondition,
+  Table,
+  TableViewportSubscription,
+} from '@deephaven/jsapi-shim';
 import { TimeUtils } from '@deephaven/utils';
 import shortid from 'shortid';
 import IrisGridModel from '../IrisGridModel';
 import './TableCsvExporter.scss';
+import { Options } from '../AdvancedFilterCreator';
 
-class TableCsvExporter extends Component {
+interface TableCsvExporterProps {
+  model: IrisGridModel;
+  name: string;
+  isDownloading: boolean;
+  tableDownloadStatus: string;
+  tableDownloadProgress: number;
+  tableDownloadEstimatedTime: number;
+  onDownloadStart: () => void;
+  onDownload: (
+    fileName: string,
+    frozenTable: Table,
+    tableSubscription: TableViewportSubscription,
+    snapshotRanges: GridRange[]
+  ) => void;
+  onCancel: () => void;
+  selectedRanges: GridRange[];
+}
+
+interface TableCsvExporterState {
+  fileName: string;
+
+  downloadOption: string;
+  customizedDownloadOption: string;
+  customizedDownloadRows: number;
+
+  errorMessage: React.ReactNode;
+  id: string;
+}
+class TableCsvExporter extends Component<
+  TableCsvExporterProps,
+  TableCsvExporterState
+> {
   static FILENAME_DATE_FORMAT = 'yyyy-MM-dd-HHmmss';
 
   static DOWNLOAD_STATUS = {
@@ -34,14 +70,23 @@ class TableCsvExporter extends Component {
 
   static DEFAULT_DOWNLOAD_ROWS = 100;
 
-  static getDateString() {
+  static defaultProps: {
+    onDownloadStart: () => void;
+    isDownloading: boolean;
+    tableDownloadStatus: string;
+    tableDownloadProgress: number;
+    tableDownloadEstimatedTime: null;
+    selectedRanges: never[];
+  };
+
+  static getDateString(): string {
     return dh.i18n.DateTimeFormat.format(
       TableCsvExporter.FILENAME_DATE_FORMAT,
       new Date()
     );
   }
 
-  constructor(props) {
+  constructor(props: TableCsvExporterProps) {
     super(props);
 
     this.handleDownloadClick = this.handleDownloadClick.bind(this);
@@ -68,7 +113,7 @@ class TableCsvExporter extends Component {
     };
   }
 
-  getSnapshotRanges() {
+  getSnapshotRanges(): GridRange[] {
     const { model, selectedRanges } = this.props;
     const {
       downloadOption,
@@ -76,15 +121,18 @@ class TableCsvExporter extends Component {
       customizedDownloadRows,
     } = this.state;
     const { rowCount } = model;
-    let snapshotRanges = [];
+    let snapshotRanges = [] as GridRange[];
     switch (downloadOption) {
       case TableCsvExporter.DOWNLOAD_OPTIONS.ALL_ROWS:
         snapshotRanges.push(new GridRange(null, 0, null, rowCount - 1));
         break;
       case TableCsvExporter.DOWNLOAD_OPTIONS.SELECTED_ROWS:
-        snapshotRanges = [...selectedRanges].sort(
-          (rangeA, rangeB) => rangeA.startRow - rangeB.startRow
-        );
+        snapshotRanges = [...selectedRanges].sort((rangeA, rangeB) => {
+          if (rangeA.startRow && rangeB.startRow) {
+            return rangeA.startRow - rangeB.startRow;
+          }
+          return 0;
+        });
         break;
       case TableCsvExporter.DOWNLOAD_OPTIONS.CUSTOMIZED_ROWS:
         switch (customizedDownloadOption) {
@@ -118,11 +166,11 @@ class TableCsvExporter extends Component {
     return snapshotRanges;
   }
 
-  resetDownloadState() {
+  resetDownloadState(): void {
     this.setState({ errorMessage: null });
   }
 
-  handleDownloadClick() {
+  handleDownloadClick(): void {
     const {
       model,
       isDownloading,
@@ -151,16 +199,22 @@ class TableCsvExporter extends Component {
     }
   }
 
-  handleDownloadOptionChanged(event) {
+  handleDownloadOptionChanged(
+    event: React.ChangeEvent<HTMLInputElement>
+  ): void {
     this.setState({ downloadOption: event.target.value });
   }
 
-  handleCustomizedDownloadOptionChanged(event) {
+  handleCustomizedDownloadOptionChanged(
+    event: React.ChangeEvent<HTMLSelectElement>
+  ): void {
     this.setState({ customizedDownloadOption: event.target.value });
   }
 
-  handleCustomizedDownloadRowsChanged(event) {
-    this.setState({ customizedDownloadRows: event.target.value });
+  handleCustomizedDownloadRowsChanged(
+    event: React.ChangeEvent<HTMLInputElement>
+  ): void {
+    this.setState({ customizedDownloadRows: parseInt(event.target.value) });
   }
 
   validateOptionInput() {
@@ -389,25 +443,4 @@ class TableCsvExporter extends Component {
   }
 }
 
-TableCsvExporter.propTypes = {
-  model: PropTypes.instanceOf(IrisGridModel).isRequired,
-  name: PropTypes.string.isRequired,
-  isDownloading: PropTypes.bool,
-  tableDownloadStatus: PropTypes.string,
-  tableDownloadProgress: PropTypes.number,
-  tableDownloadEstimatedTime: PropTypes.number,
-  onDownloadStart: PropTypes.func,
-  onDownload: PropTypes.func.isRequired,
-  onCancel: PropTypes.func.isRequired,
-  selectedRanges: PropTypes.arrayOf(PropTypes.instanceOf(GridRange)),
-};
-
-TableCsvExporter.defaultProps = {
-  onDownloadStart: () => {},
-  isDownloading: false,
-  tableDownloadStatus: '',
-  tableDownloadProgress: 0,
-  tableDownloadEstimatedTime: null,
-  selectedRanges: [],
-};
 export default TableCsvExporter;

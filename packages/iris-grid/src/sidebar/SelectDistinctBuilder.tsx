@@ -8,11 +8,30 @@ import Log from '@deephaven/log';
 import IrisGridModel from '../IrisGridModel';
 
 import './SelectDistinctBuilder.scss';
+import { Column } from '@deephaven/jsapi-shim';
 
 const log = Log.module('SelectDistinctBuilder');
 
-class SelectDistinctBuilder extends Component {
-  constructor(props) {
+interface SelectDistinctBuilderProps {
+  model: IrisGridModel;
+  selectDistinctColumns: string[];
+  onChange: (newStr: string[]) => void;
+}
+interface SelectDistinctBuilderState {
+  inputs: string[];
+  columns: Column[];
+}
+class SelectDistinctBuilder extends Component<
+  SelectDistinctBuilderProps,
+  SelectDistinctBuilderState
+> {
+  static defaultProps: { selectDistinctColumns: never[]; onChange: () => void };
+  static propTypes: {
+    model: PropTypes.Validator<unknown>;
+    selectDistinctColumns: PropTypes.Requireable<(string | null | undefined)[]>;
+    onChange: PropTypes.Requireable<(...args: any[]) => any>;
+  };
+  constructor(props: SelectDistinctBuilderProps) {
     super(props);
 
     this.handleAddColumnClick = this.handleAddColumnClick.bind(this);
@@ -28,7 +47,10 @@ class SelectDistinctBuilder extends Component {
     };
   }
 
-  componentDidUpdate(prevProps, prevState) {
+  componentDidUpdate(
+    prevProps: SelectDistinctBuilderProps,
+    prevState: SelectDistinctBuilderState
+  ): void {
     const { inputs } = this.state;
     const { onChange } = this.props;
     if (prevState.inputs !== inputs) {
@@ -44,13 +66,13 @@ class SelectDistinctBuilder extends Component {
     }
   }
 
-  handleAddColumnClick() {
+  handleAddColumnClick(): void {
     this.setState(({ inputs: prevInputs }) => ({
       inputs: [...prevInputs, ''],
     }));
   }
 
-  handleDeleteColumn(index) {
+  handleDeleteColumn(index: number): void {
     this.setState(({ inputs }) => ({
       inputs:
         inputs.length === 1 && index === 0
@@ -59,7 +81,10 @@ class SelectDistinctBuilder extends Component {
     }));
   }
 
-  handleDropdownChanged(index, event) {
+  handleDropdownChanged(
+    index: number,
+    event: React.ChangeEvent<HTMLSelectElement>
+  ): void {
     log.debug('handleDropdownChanged', index, event);
     const { value } = event.target;
     this.setState(({ inputs: prevInputs }) => {
@@ -109,7 +134,7 @@ class SelectDistinctBuilder extends Component {
     });
   }
 
-  render() {
+  render(): React.ReactElement {
     const { columns, inputs } = this.state;
     const disableAddButton = inputs.length >= columns.length;
     return (
@@ -149,16 +174,5 @@ class SelectDistinctBuilder extends Component {
     );
   }
 }
-
-SelectDistinctBuilder.propTypes = {
-  model: PropTypes.instanceOf(IrisGridModel).isRequired,
-  selectDistinctColumns: PropTypes.arrayOf(PropTypes.string),
-  onChange: PropTypes.func,
-};
-
-SelectDistinctBuilder.defaultProps = {
-  selectDistinctColumns: [],
-  onChange: () => {},
-};
 
 export default SelectDistinctBuilder;

@@ -1,5 +1,5 @@
 import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
+import PropTypes, { string } from 'prop-types';
 import classNames from 'classnames';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { RadioGroup, RadioItem } from '@deephaven/components';
@@ -11,7 +11,7 @@ import {
   vsCircleLargeFilled,
   vsTrash,
 } from '@deephaven/icons';
-import dh from '@deephaven/jsapi-shim';
+import dh, { Column, SeriesPlotStyle } from '@deephaven/jsapi-shim';
 import Log from '@deephaven/log';
 import shortid from 'shortid';
 import {
@@ -26,10 +26,39 @@ import IrisGridModel from '../IrisGridModel';
 
 const log = Log.module('ChartBuilder');
 
+export type ChartBuilderSettings = {
+  type: SeriesPlotStyle;
+  series: unknown;
+  xAxis: string;
+  isLinked: boolean;
+};
+export type SeriesItem = {
+  id: string;
+  value: string;
+};
+
+interface ChartBuilderProps {
+  model: IrisGridModel;
+  onSubmit: (obj: ChartBuilderSettings) => void;
+  onChange: (obj: ChartBuilderSettings) => void;
+}
+interface ChartBuilderState {
+  /** The selected chart type */
+  type: SeriesPlotStyle;
+
+  /** Array of column names of the series to display */
+  seriesItems: SeriesItem[];
+
+  /** The column name to use as the x-axis */
+  xAxis: string;
+
+  /** Whether the newly created chart should be linked with the table (update when filters update) */
+  isLinked: boolean;
+}
 /**
  * Form for configuring all the settings when creating a console.
  */
-class ChartBuilder extends PureComponent {
+class ChartBuilder extends PureComponent<ChartBuilderProps, ChartBuilderState> {
   static types = [
     dh.plot.SeriesPlotStyle.LINE,
     dh.plot.SeriesPlotStyle.BAR,
@@ -43,7 +72,7 @@ class ChartBuilder extends PureComponent {
    * Converts the provided chart type into a readable type.
    * Just replaces underscores with spaces and capitals the first letter of each word.
    */
-  static getTypeName(type) {
+  static getTypeName(type: SeriesPlotStyle): string | SeriesPlotStyle {
     switch (type) {
       case dh.plot.SeriesPlotStyle.LINE:
         return 'Line';
@@ -60,7 +89,7 @@ class ChartBuilder extends PureComponent {
     }
   }
 
-  static getTypeIcon(type) {
+  static getTypeIcon(type: SeriesPlotStyle): React.ReactElement | null {
     switch (type) {
       case dh.plot.SeriesPlotStyle.LINE:
         return <LineIcon />;
@@ -77,7 +106,7 @@ class ChartBuilder extends PureComponent {
     }
   }
 
-  static getMaxSeriesCount(type) {
+  static getMaxSeriesCount(type: SeriesPlotStyle): number {
     switch (type) {
       case dh.plot.SeriesPlotStyle.PIE:
         return 1;
@@ -88,7 +117,7 @@ class ChartBuilder extends PureComponent {
     }
   }
 
-  static getXAxisLabel(type) {
+  static getXAxisLabel(type: SeriesPlotStyle): string {
     switch (type) {
       case dh.plot.SeriesPlotStyle.PIE:
         return 'Labels';
@@ -99,7 +128,7 @@ class ChartBuilder extends PureComponent {
     }
   }
 
-  static getSeriesLabel(type) {
+  static getSeriesLabel(type: SeriesPlotStyle): string {
     switch (type) {
       case dh.plot.SeriesPlotStyle.PIE:
         return 'Values';
@@ -108,11 +137,14 @@ class ChartBuilder extends PureComponent {
     }
   }
 
-  static makeSeriesItem(value) {
+  static makeSeriesItem(value: string): SeriesItem {
     return { id: shortid.generate(), value };
   }
 
-  static makeDefaultSeriesItems(type, columns) {
+  static makeDefaultSeriesItems(
+    type: SeriesPlotStyle,
+    columns: Column[]
+  ): SeriesItem[] {
     const maxSeriesCount = ChartBuilder.getMaxSeriesCount(type);
     if (maxSeriesCount === 0 || columns == null || columns.length === 0) {
       return [];
@@ -122,7 +154,7 @@ class ChartBuilder extends PureComponent {
     return [ChartBuilder.makeSeriesItem(value)];
   }
 
-  static getDefaultXAxis(type, columns) {
+  static getDefaultXAxis(type: SeriesPlotStyle, columns: Column[]) {
     if (columns != null && columns.length > 0) {
       return columns[0].name;
     }
@@ -130,7 +162,7 @@ class ChartBuilder extends PureComponent {
     return null;
   }
 
-  constructor(props) {
+  constructor(props: ChartBuilderProps) {
     super(props);
 
     this.handleAddSeries = this.handleAddSeries.bind(this);
@@ -147,7 +179,7 @@ class ChartBuilder extends PureComponent {
     const { columns } = model;
 
     const type = ChartBuilder.types[0];
-    const xAxis = ChartBuilder.getDefaultXAxis(type, columns);
+    const xAxis = ChartBuilder.getDefaultXAxis(type, columns) as string;
     const seriesItems = ChartBuilder.makeDefaultSeriesItems(type, columns);
 
     this.state = {
@@ -165,10 +197,10 @@ class ChartBuilder extends PureComponent {
     };
   }
 
-  handleAddSeries() {
+  handleAddSeries(): void {
     this.setState(state => {
       let { seriesItems } = state;
-      seriesItems = [].concat(seriesItems);
+      seriesItems = ([] as SeriesItem[]).concat(seriesItems);
 
       const { model } = this.props;
       const { columns } = model;
@@ -181,61 +213,72 @@ class ChartBuilder extends PureComponent {
     }, this.sendChange);
   }
 
-  handleLinkStateChange(event) {
+  handleLinkStateChange(event: React.ChangeEvent<HTMLInputElement>) {
     this.setState({ isLinked: event.target.value === 'true' }, this.sendChange);
   }
 
-  handleReset() {
+  handleReset(): void {
     const { model } = this.props;
     const { columns } = model;
 
     const type = ChartBuilder.types[0];
-    const xAxis = ChartBuilder.getDefaultXAxis(type, columns);
+    const xAxis = ChartBuilder.getDefaultXAxis(type, columns) as string;
     const seriesItems = ChartBuilder.makeDefaultSeriesItems(type, columns);
     const isLinked = true;
 
     this.setState({ type, seriesItems, xAxis, isLinked }, this.sendChange);
   }
 
-  handleSeriesChange(event) {
+  handleSeriesChange(event: React.ChangeEvent<HTMLSelectElement>) {
     const { value } = event.target;
-    const index = event.target.getAttribute('data-index');
+    const index = event.target.getAttribute('data-index') as string;
+    const intIndex = parseInt(index);
 
     this.setState(state => {
       let { seriesItems } = state;
 
-      seriesItems = [].concat(seriesItems);
-      seriesItems[index].value = value;
+      seriesItems = ([] as SeriesItem[]).concat(seriesItems);
+      seriesItems[intIndex].value = value;
 
       return { seriesItems };
     }, this.sendChange);
   }
 
-  handleSeriesDeleteClick(event) {
-    const index = event.target.getAttribute('data-index');
+  handleSeriesDeleteClick(event: React.MouseEvent<HTMLButtonElement>): void {
+    const changeEvent = (event as unknown) as React.ChangeEvent<HTMLButtonElement>;
+    const index = changeEvent.target.getAttribute('data-index') as string;
+    const intIndex = parseInt(index);
 
     this.setState(state => {
       let { seriesItems } = state;
 
-      seriesItems = [].concat(seriesItems);
-      seriesItems.splice(index, 1);
+      seriesItems = ([] as SeriesItem[]).concat(seriesItems);
+      seriesItems.splice(intIndex, 1);
 
       return { seriesItems };
     }, this.sendChange);
   }
 
-  handleSubmit(event) {
+  handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     const { onSubmit } = this.props;
     const { type, seriesItems, xAxis, isLinked } = this.state;
     const series = seriesItems.map(item => item.value);
-    onSubmit({ type: `${type}`, series, xAxis, isLinked });
+    onSubmit({
+      type: (`${type}` as unknown) as SeriesPlotStyle,
+      series,
+      xAxis,
+      isLinked,
+    });
   }
 
-  handleTypeClick(event) {
-    const index = event.target.getAttribute('data-index');
-    const type = ChartBuilder.types[index];
+  handleTypeClick(event: React.MouseEvent<HTMLButtonElement>) {
+    const changeEvent = (event as unknown) as React.ChangeEvent<HTMLButtonElement>;
+    const index = changeEvent.target.getAttribute('data-index') as string;
+    const intIndex = parseInt(index);
+
+    const type = ChartBuilder.types[intIndex];
 
     log.debug2('handleTypeSelect', type);
 
@@ -253,7 +296,7 @@ class ChartBuilder extends PureComponent {
     }, this.sendChange);
   }
 
-  handleXAxisChange(event) {
+  handleXAxisChange(event: React.ChangeEvent<HTMLSelectElement>): void {
     const xAxis = event.target.value;
     log.debug2('x-axis change', xAxis);
 
@@ -268,7 +311,7 @@ class ChartBuilder extends PureComponent {
     onChange({ type, series, xAxis, isLinked });
   }
 
-  render() {
+  render(): React.ReactElement {
     const { model } = this.props;
     const { columns } = model;
     const { seriesItems, type, xAxis, isLinked } = this.state;
@@ -284,21 +327,29 @@ class ChartBuilder extends PureComponent {
           <div className="form-row">
             <label>Select Chart Type</label>
             <div className="form-row">
-              {ChartBuilder.types.map((chartType, index) => (
-                <div key={chartType} className="col col-chart-type">
-                  <button
-                    type="button"
-                    className={classNames('btn', 'btn-icon', 'btn-chart-type', {
-                      active: chartType === type,
-                    })}
-                    data-index={index}
-                    onClick={this.handleTypeClick}
-                  >
-                    {ChartBuilder.getTypeIcon(chartType)}
-                    {ChartBuilder.getTypeName(chartType)}
-                  </button>
-                </div>
-              ))}
+              {ChartBuilder.types.map((chartType, index) => {
+                const key = (chartType as unknown) as React.Key;
+                return (
+                  <div key={key} className="col col-chart-type">
+                    <button
+                      type="button"
+                      className={classNames(
+                        'btn',
+                        'btn-icon',
+                        'btn-chart-type',
+                        {
+                          active: chartType === type,
+                        }
+                      )}
+                      data-index={index}
+                      onClick={this.handleTypeClick}
+                    >
+                      {ChartBuilder.getTypeIcon(chartType)}
+                      {ChartBuilder.getTypeName(chartType)}
+                    </button>
+                  </div>
+                );
+              })}
             </div>
           </div>
           <hr />
@@ -414,11 +465,5 @@ class ChartBuilder extends PureComponent {
     );
   }
 }
-
-ChartBuilder.propTypes = {
-  model: PropTypes.instanceOf(IrisGridModel).isRequired,
-  onSubmit: PropTypes.func.isRequired,
-  onChange: PropTypes.func.isRequired,
-};
 
 export default ChartBuilder;

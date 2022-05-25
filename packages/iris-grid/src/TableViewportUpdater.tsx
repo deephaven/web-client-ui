@@ -2,8 +2,16 @@ import { PureComponent } from 'react';
 import memoize from 'memoize-one';
 import PropTypes from 'prop-types';
 import throttle from 'lodash.throttle';
-import { GridUtils } from '@deephaven/grid';
-import { PropTypes as APIPropTypes } from '@deephaven/jsapi-shim';
+import { DebouncedFunc } from 'lodash';
+import { GridUtils, MoveOperation } from '@deephaven/grid';
+import {
+  Column,
+  FilterCondition,
+  PropTypes as APIPropTypes,
+  Sort,
+  Table,
+  TableViewportSubscription,
+} from '@deephaven/jsapi-shim';
 import Log from '@deephaven/log';
 
 const log = Log.module('TableViewportUpdater');
@@ -14,17 +22,78 @@ const UPDATE_THROTTLE = 150;
  * Updates the viewport for an Iris table, for use in a scroll pane.
  * Automatically throttles the viewport requests and buffers above and below.
  */
-class TableViewportUpdater extends PureComponent {
+
+interface TableViewportUpdaterProps {
+  table: Table;
+  top: number;
+  bottom: number;
+  left: number;
+  right: number;
+  columns: Column[];
+  filters: FilterCondition[];
+  sorts: Sort[];
+  customColumns: string[];
+  movedColumns: MoveOperation[];
+  onSubscription: (subscription?: TableViewportSubscription) => void;
+}
+
+class TableViewportUpdater extends PureComponent<
+  TableViewportUpdaterProps,
+  Record<string, never>
+> {
+  static propTypes = {
+    table: PropTypes.shape({
+      applyFilter: PropTypes.func.isRequired,
+      applySort: PropTypes.func.isRequired,
+      applyCustomColumns: PropTypes.func.isRequired,
+      setViewport: PropTypes.func.isRequired,
+    }).isRequired,
+    top: PropTypes.number,
+    bottom: PropTypes.number,
+    left: PropTypes.number,
+    right: PropTypes.number,
+    columns: PropTypes.arrayOf(APIPropTypes.Column),
+    filters: PropTypes.arrayOf(PropTypes.shape({})),
+    sorts: PropTypes.arrayOf(PropTypes.shape({})),
+    customColumns: PropTypes.arrayOf(PropTypes.string),
+    movedColumns: PropTypes.arrayOf(PropTypes.shape({})),
+    onSubscription: PropTypes.func,
+  };
+
   // Number of pages to buffer for rows/columns
   static ROW_BUFFER_PAGES = 3;
 
   static COLUMN_BUFFER_PAGES = 1;
 
-  constructor(props) {
+  updateViewport: DebouncedFunc<
+    (
+      top: number,
+      bottom: number,
+      left: number,
+      right: number,
+      viewColumns: Column[]
+    ) => void
+  >;
+  subscription: TableViewportSubscription | null;
+
+  static defaultProps: {
+    top: number;
+    bottom: number;
+    left: null;
+    right: null;
+    columns: null;
+    onSubscription: () => void;
+    filters: never[];
+    sorts: never[];
+    customColumns: never[];
+    movedColumns: never[];
+  };
+
+  constructor(props: TableViewportUpdaterProps) {
     super(props);
 
     this.updateViewport = throttle(
-      this.updateViewport.bind(this),
+      this._updateViewport.bind(this),
       UPDATE_THROTTLE
     );
 
@@ -49,7 +118,7 @@ class TableViewportUpdater extends PureComponent {
     this.updateViewport(top, bottom, left, right, columns);
   }
 
-  componentDidUpdate(prevProps) {
+  componentDidUpdate(prevProps: TableViewportUpdaterProps) {
     const {
       top,
       bottom,
@@ -109,30 +178,32 @@ class TableViewportUpdater extends PureComponent {
   });
 
   // eslint-disable-next-line class-methods-use-this
-  getViewportColumns = memoize((table, left, right, movedColumns) => {
-    if (left == null || right == null) {
-      return null;
+  getViewportColumns = memoize(
+    (table, left, right, movedColumns: MoveOperation[]) => {
+      if (left == null || right == null) {
+        return null;
+      }
+
+      const viewWidth = right - left;
+      const viewportLeft = Math.max(
+        0,
+        left - viewWidth * TableViewportUpdater.COLUMN_BUFFER_PAGES
+      );
+      const viewportRight = Math.min(
+        right + viewWidth * TableViewportUpdater.COLUMN_BUFFER_PAGES,
+        table.columns.length - 1
+      );
+
+      // Need to get all the columns from the table model now
+      const columns = [];
+      for (let i = viewportLeft; i <= viewportRight; i += 1) {
+        const modelIndex = GridUtils.getModelIndex(i, movedColumns);
+        columns.push(table.columns[modelIndex]);
+      }
+
+      return columns;
     }
-
-    const viewWidth = right - left;
-    const viewportLeft = Math.max(
-      0,
-      left - viewWidth * TableViewportUpdater.COLUMN_BUFFER_PAGES
-    );
-    const viewportRight = Math.min(
-      right + viewWidth * TableViewportUpdater.COLUMN_BUFFER_PAGES,
-      table.columns.length - 1
-    );
-
-    // Need to get all the columns from the table model now
-    const columns = [];
-    for (let i = viewportLeft; i <= viewportRight; i += 1) {
-      const modelIndex = GridUtils.getModelIndex(i, movedColumns);
-      columns.push(table.columns[modelIndex]);
-    }
-
-    return columns;
-  });
+  );
 
   closeSubscription() {
     log.debug2('closeSubscription', this.subscription);
@@ -141,13 +212,19 @@ class TableViewportUpdater extends PureComponent {
       this.subscription = null;
 
       const { onSubscription } = this.props;
-      onSubscription(null);
+      onSubscription();
     }
 
     this.updateViewport.cancel();
   }
 
-  updateViewport(top, bottom, left, right, viewColumns) {
+  _updateViewport(
+    top: number,
+    bottom: number,
+    left: number,
+    right: number,
+    viewColumns: Column[]
+  ) {
     if (bottom < top) {
       log.error('Invalid viewport', top, bottom);
       return;
@@ -194,37 +271,5 @@ class TableViewportUpdater extends PureComponent {
     return null;
   }
 }
-
-TableViewportUpdater.propTypes = {
-  table: PropTypes.shape({
-    applyFilter: PropTypes.func.isRequired,
-    applySort: PropTypes.func.isRequired,
-    applyCustomColumns: PropTypes.func.isRequired,
-    setViewport: PropTypes.func.isRequired,
-  }).isRequired,
-  top: PropTypes.number,
-  bottom: PropTypes.number,
-  left: PropTypes.number,
-  right: PropTypes.number,
-  columns: PropTypes.arrayOf(APIPropTypes.Column),
-  filters: PropTypes.arrayOf(PropTypes.shape({})),
-  sorts: PropTypes.arrayOf(PropTypes.shape({})),
-  customColumns: PropTypes.arrayOf(PropTypes.string),
-  movedColumns: PropTypes.arrayOf(PropTypes.shape({})),
-  onSubscription: PropTypes.func,
-};
-
-TableViewportUpdater.defaultProps = {
-  top: 0,
-  bottom: 0,
-  left: null,
-  right: null,
-  columns: null,
-  onSubscription: () => {},
-  filters: [],
-  sorts: [],
-  customColumns: [],
-  movedColumns: [],
-};
 
 export default TableViewportUpdater;

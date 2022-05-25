@@ -21,6 +21,7 @@ export interface dh {
   FilterValue: FilterValueStatic;
   plot: Plot;
   Table: TableStatic;
+  TreeTable: TreeTableStatic;
   Column: Column;
 }
 
@@ -634,12 +635,14 @@ export interface ColumnStatistics {
   getType(name: string): string;
 }
 
-export interface TreeTable extends Evented {
+export interface TreeTableStatic {
   readonly EVENT_UPDATED: string;
   readonly EVENT_DISCONNECT: string;
   readonly EVENT_RECONNECT: string;
   readonly EVENT_RECONNECTFAILED: string;
+}
 
+export interface TreeTable extends Evented, TreeTableStatic {
   readonly size: number;
 
   readonly columns: Column[];

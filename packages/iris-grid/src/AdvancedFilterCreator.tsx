@@ -6,23 +6,113 @@ import classNames from 'classnames';
 import PropTypes from 'prop-types';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import memoize from 'memoize-one';
-import { Operator as FilterOperator } from '@deephaven/filters';
+import {
+  Operator as FilterOperator,
+  OperatorValue as FilterOperatorValue,
+  TypeValue as FilterTypeValue,
+} from '@deephaven/filters';
 import { dhSortAmountDown, dhNewCircleLargeFilled } from '@deephaven/icons';
-import { Formatter, TableUtils } from '@deephaven/jsapi-utils';
+import { Formatter, TableUtils, SortDirection } from '@deephaven/jsapi-utils';
 import { ContextActionUtils, Tooltip } from '@deephaven/components';
 import Log from '@deephaven/log';
-import { PromiseUtils } from '@deephaven/utils';
-import AdvancedFilterCreatorFilterItem from './AdvancedFilterCreatorFilterItem';
+import { CancelablePromise, PromiseUtils } from '@deephaven/utils';
+import AdvancedFilterCreatorFilterItem, {
+  AdvancedFilterCreatorFilterItemState,
+} from './AdvancedFilterCreatorFilterItem';
 import AdvancedFilterCreatorSelectValue from './AdvancedFilterCreatorSelectValue';
 import IrisGridModel from './IrisGridModel';
 import './AdvancedFilterCreator.scss';
+import { Column, FilterCondition, Table } from '@deephaven/jsapi-shim';
+import IrisGridTableModel from './IrisGridTableModel';
 
 const log = Log.module('AdvancedFilterCreator');
 
-class AdvancedFilterCreator extends PureComponent {
-  static debounceFilterUpdate = 250;
+export type Options = {
+  filterItems: FilterItem[];
+  filterOperators: FilterOperatorValue[];
+  invertSelection: boolean;
+  selectedValues: string[];
+};
 
-  constructor(props) {
+interface AdvancedFilterCreatorProps {
+  model: IrisGridModel;
+  column: Column;
+  onFilterChange: (
+    column: Column,
+    filter: FilterCondition,
+    options: Options
+  ) => void;
+  onSortChange: (
+    column: Column,
+    direction: SortDirection,
+    addToExisting?: boolean
+  ) => void;
+  onDone: () => void;
+  options: Options;
+  sortDirection: SortDirection;
+  formatter: Formatter;
+}
+
+interface FilterItem {
+  selectedType: FilterTypeValue;
+  value: string;
+  key: number;
+}
+
+interface AdvancedFilterCreatorState {
+  // Filter items
+  filterItems: FilterItem[];
+
+  // And/Or between the filter items
+  filterOperators: FilterOperatorValue[];
+
+  invertSelection: boolean;
+
+  selectedValues: string[];
+
+  valuesTableError: null;
+  valuesTable: Table | null;
+}
+class AdvancedFilterCreator extends PureComponent<
+  AdvancedFilterCreatorProps,
+  AdvancedFilterCreatorState
+> {
+  static debounceFilterUpdate = 250;
+  static defaultProps: {
+    options: {
+      filterItems: null;
+      filterOperators: null;
+      invertSelection: boolean;
+      selectedValues: never[];
+    };
+    sortDirection: null;
+  };
+  static propTypes = {
+    model: PropTypes.oneOf([IrisGridModel]).isRequired,
+    column: PropTypes.shape({ name: PropTypes.string, type: PropTypes.string })
+      .isRequired,
+    onFilterChange: PropTypes.func.isRequired,
+    onSortChange: PropTypes.func.isRequired,
+    onDone: PropTypes.func.isRequired,
+    options: PropTypes.shape({
+      filterItems: PropTypes.arrayOf(PropTypes.shape({})),
+      filterOperators: PropTypes.arrayOf(PropTypes.shape({})),
+      invertSelection: PropTypes.bool,
+      selectedValues: PropTypes.arrayOf(PropTypes.any),
+    }),
+    sortDirection: PropTypes.string,
+    formatter: PropTypes.instanceOf(Formatter).isRequired,
+  };
+
+  focusTrapContainer: React.RefObject<HTMLFormElement>;
+
+  debounceTimeout: NodeJS.Timeout | null;
+
+  filterKey: number;
+
+  valuesTablePromise: CancelablePromise<Table> | null;
+
+  constructor(props: AdvancedFilterCreatorProps) {
     super(props);
 
     this.handleAddAnd = this.handleAddAnd.bind(this);
@@ -97,15 +187,17 @@ class AdvancedFilterCreator extends PureComponent {
     }
   }
 
-  getFilterChangeHandler(index) {
+  getFilterChangeHandler(index: number) {
     return this.handleFilterChange.bind(this, index);
   }
 
-  getFilterDeleteHandler(index) {
+  getFilterDeleteHandler(index: number) {
     return this.handleFilterDelete.bind(this, index);
   }
 
-  getFilterTypes = memoize(columnType => TableUtils.getFilterTypes(columnType));
+  getFilterTypes = memoize((columnType: string) =>
+    TableUtils.getFilterTypes(columnType)
+  );
 
   initValuesTable() {
     const { model, column } = this.props;
@@ -135,49 +227,60 @@ class AdvancedFilterCreator extends PureComponent {
   }
 
   handleFocusTrapEnd() {
-    const inputs = this.focusTrapContainer.current.querySelectorAll(
+    const inputs = this.focusTrapContainer?.current?.querySelectorAll(
       'button,select,input,textarea'
     );
-    inputs[0].focus();
+    if (inputs) {
+      (inputs[0] as HTMLDivElement).focus();
+    }
   }
 
   handleFocusTrapStart() {
-    const inputs = this.focusTrapContainer.current.querySelectorAll(
+    const inputs = this.focusTrapContainer?.current?.querySelectorAll(
       'button,select,input,textarea'
     );
-    inputs[inputs.length - 1].focus();
+    if (inputs) {
+      const element = inputs[inputs.length - 1] as HTMLDivElement;
+      element.focus();
+    }
   }
 
-  handleAddAnd() {
+  handleAddAnd(): void {
     let { filterItems, filterOperators } = this.state;
     filterItems = filterItems.concat(this.makeFilterItem());
     filterOperators = filterOperators.concat(FilterOperator.and);
     this.setState({ filterItems, filterOperators });
   }
 
-  handleAddOr() {
+  handleAddOr(): void {
     let { filterItems, filterOperators } = this.state;
     filterItems = filterItems.concat(this.makeFilterItem());
     filterOperators = filterOperators.concat(FilterOperator.or);
     this.setState({ filterItems, filterOperators });
   }
 
-  handleChangeFilterOperator(event) {
-    const index = parseInt(event.target.dataset.index, 10);
-    const { operator } = event.target.dataset;
+  handleChangeFilterOperator(event: React.MouseEvent<HTMLButtonElement>): void {
+    const target = event.target as HTMLButtonElement;
+    const strIndex = target.dataset.index as string;
+    const index = parseInt(strIndex, 10);
+    const { operator } = target.dataset;
 
     let { filterOperators } = this.state;
-    filterOperators = [].concat(filterOperators);
-    filterOperators[index] = operator;
+    filterOperators = ([] as FilterOperatorValue[]).concat(filterOperators);
+    filterOperators[index] = operator as FilterOperatorValue;
 
     this.setState({ filterOperators });
 
     this.startUpdateTimer();
   }
 
-  handleFilterChange(filterIndex, selectedType, value) {
+  handleFilterChange(
+    filterIndex: number,
+    selectedType: FilterTypeValue,
+    value: string
+  ) {
     let { filterItems } = this.state;
-    filterItems = [].concat(filterItems);
+    filterItems = ([] as FilterItem[]).concat(filterItems);
     const { key } = filterItems[filterIndex];
     filterItems[filterIndex] = { key, selectedType, value };
 
@@ -186,10 +289,10 @@ class AdvancedFilterCreator extends PureComponent {
     this.startUpdateTimer();
   }
 
-  handleFilterDelete(filterIndex) {
+  handleFilterDelete(filterIndex: number): void {
     let { filterItems, filterOperators } = this.state;
-    filterItems = [].concat(filterItems);
-    filterOperators = [].concat(filterOperators);
+    filterItems = ([] as FilterItem[]).concat(filterItems);
+    filterOperators = ([] as FilterOperatorValue[]).concat(filterOperators);
     if (filterIndex < filterItems.length) {
       filterItems.splice(filterIndex, 1);
     }
@@ -210,13 +313,13 @@ class AdvancedFilterCreator extends PureComponent {
     this.startUpdateTimer();
   }
 
-  handleSelectValueChange(selectedValues, invertSelection) {
+  handleSelectValueChange(selectedValues: string[], invertSelection: boolean) {
     this.setState({ selectedValues, invertSelection });
 
     this.startUpdateTimer();
   }
 
-  handleReset() {
+  handleReset(): void {
     log.debug('Resetting Advanced Filter');
 
     this.setState({
@@ -229,17 +332,17 @@ class AdvancedFilterCreator extends PureComponent {
     this.startUpdateTimer();
   }
 
-  handleSortDown(event) {
+  handleSortDown(event: React.MouseEvent<HTMLButtonElement>): void {
     const addToExisting = ContextActionUtils.isModifierKeyDown(event);
     this.sortTable(TableUtils.sortDirection.descending, addToExisting);
   }
 
-  handleSortUp(event) {
+  handleSortUp(event: React.MouseEvent<HTMLButtonElement>): void {
     const addToExisting = ContextActionUtils.isModifierKeyDown(event);
     this.sortTable(TableUtils.sortDirection.ascending, addToExisting);
   }
 
-  handleSubmit(event) {
+  handleSubmit(event: React.FormEvent<HTMLFormElement>): void {
     log.debug('Submitting Advanced Filter');
     this.stopUpdateTimer();
     this.sendUpdate();
@@ -247,7 +350,7 @@ class AdvancedFilterCreator extends PureComponent {
     event.preventDefault();
   }
 
-  handleDone(event) {
+  handleDone(event: React.MouseEvent<HTMLButtonElement>): void {
     log.debug('Submitting and Closing Advanced Filter');
     this.stopUpdateTimer();
     this.sendUpdate();
@@ -258,17 +361,17 @@ class AdvancedFilterCreator extends PureComponent {
     event.preventDefault();
   }
 
-  handleUpdateTimeout() {
+  handleUpdateTimeout(): void {
     this.debounceTimeout = null;
     this.sendUpdate();
   }
 
-  makeFilterItem(updateKey = true) {
+  makeFilterItem(updateKey = true): FilterItem {
     const key = this.filterKey;
     if (updateKey) {
       this.filterKey += 1;
     }
-    return { selectedType: '', value: '', key };
+    return { selectedType: '' as FilterTypeValue, value: '', key };
   }
 
   /**
@@ -276,7 +379,7 @@ class AdvancedFilterCreator extends PureComponent {
    * we should show the add filter buttons (+ AND OR)
    * @returns true If the add filter buttons should be shown, false otherwise
    */
-  shouldShowAddFilter() {
+  shouldShowAddFilter(): boolean {
     const { filterItems } = this.state;
     if (filterItems.length === 0) {
       return false;
@@ -298,12 +401,12 @@ class AdvancedFilterCreator extends PureComponent {
    * @param {String} direction The sort direction, ASC or DESC
    * @param {boolean} addToExisting Add to the existing sort, or replace the existing table sort
    */
-  sortTable(direction, addToExisting = false) {
+  sortTable(direction: SortDirection, addToExisting = false): void {
     const { column, onSortChange } = this.props;
     onSortChange(column, direction, addToExisting);
   }
 
-  startUpdateTimer() {
+  startUpdateTimer(): void {
     this.stopUpdateTimer();
 
     this.debounceTimeout = setTimeout(
@@ -312,7 +415,7 @@ class AdvancedFilterCreator extends PureComponent {
     );
   }
 
-  stopUpdateTimer() {
+  stopUpdateTimer(): void {
     if (this.debounceTimeout) {
       clearTimeout(this.debounceTimeout);
       this.debounceTimeout = null;
@@ -340,7 +443,7 @@ class AdvancedFilterCreator extends PureComponent {
       column,
       options,
       formatter.timeZone
-    );
+    ) as FilterCondition;
 
     onFilterChange(column, filter, options);
   }
@@ -370,7 +473,7 @@ class AdvancedFilterCreator extends PureComponent {
           <AdvancedFilterCreatorFilterItem
             key={key}
             column={column}
-            filterTypes={filterTypes}
+            filterTypes={filterTypes as FilterTypeValue[]}
             onChange={this.getFilterChangeHandler(i)}
             onDelete={this.getFilterDeleteHandler(i)}
             selectedType={selectedType}
@@ -450,7 +553,7 @@ class AdvancedFilterCreator extends PureComponent {
 
     return (
       <div className="advanced-filter-creator" role="presentation">
-        <div tabIndex="0" onFocus={this.handleFocusTrapStart} />
+        <div tabIndex={0} onFocus={this.handleFocusTrapStart} />
         <form onSubmit={this.handleSubmit} ref={this.focusTrapContainer}>
           <div className="title-bar">
             <h6 className="advanced-filter-title">Advanced Filters</h6>
@@ -494,17 +597,19 @@ class AdvancedFilterCreator extends PureComponent {
           {isValuesTableAvailable && !valuesTableError && (
             <>
               {!isBoolean && <hr />}
-              <div className="form-group">
-                <AdvancedFilterCreatorSelectValue
-                  table={valuesTable}
-                  onChange={this.handleSelectValueChange}
-                  invertSelection={invertSelection}
-                  selectedValues={selectedValues}
-                  formatter={formatter}
-                  showSearch={!isDateType}
-                  timeZone={formatter.timeZone}
-                />
-              </div>
+              {valuesTable && (
+                <div className="form-group">
+                  <AdvancedFilterCreatorSelectValue
+                    table={valuesTable}
+                    onChange={this.handleSelectValueChange}
+                    invertSelection={invertSelection}
+                    selectedValues={selectedValues}
+                    formatter={formatter}
+                    showSearch={!isDateType}
+                    timeZone={formatter.timeZone}
+                  />
+                </div>
+              )}
             </>
           )}
           <div className="form-row justify-content-end">
@@ -524,37 +629,10 @@ class AdvancedFilterCreator extends PureComponent {
             </button>
           </div>
         </form>
-        <div tabIndex="0" onFocus={this.handleFocusTrapEnd} />
+        <div tabIndex={0} onFocus={this.handleFocusTrapEnd} />
       </div>
     );
   }
 }
-
-AdvancedFilterCreator.propTypes = {
-  model: PropTypes.instanceOf(IrisGridModel).isRequired,
-  column: PropTypes.shape({ name: PropTypes.string, type: PropTypes.string })
-    .isRequired,
-  onFilterChange: PropTypes.func.isRequired,
-  onSortChange: PropTypes.func.isRequired,
-  onDone: PropTypes.func.isRequired,
-  options: PropTypes.shape({
-    filterItems: PropTypes.arrayOf(PropTypes.shape({})),
-    filterOperators: PropTypes.arrayOf(PropTypes.shape({})),
-    invertSelection: PropTypes.bool,
-    selectedValues: PropTypes.arrayOf(PropTypes.any),
-  }),
-  sortDirection: PropTypes.string,
-  formatter: PropTypes.instanceOf(Formatter).isRequired,
-};
-
-AdvancedFilterCreator.defaultProps = {
-  options: {
-    filterItems: null,
-    filterOperators: null,
-    invertSelection: true,
-    selectedValues: [],
-  },
-  sortDirection: null,
-};
 
 export default AdvancedFilterCreator;

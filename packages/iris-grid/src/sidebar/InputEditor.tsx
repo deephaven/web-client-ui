@@ -1,15 +1,43 @@
-import React, { Component } from 'react';
+import React, { Component, ReactElement } from 'react';
 import PropTypes from 'prop-types';
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js';
 import classNames from 'classnames';
 import './InputEditor.scss';
 
+interface InputEditorProps {
+  value: string;
+  onContentChanged: (value?: string) => void;
+  editorSettings: Partial<monaco.editor.IStandaloneEditorConstructionOptions>;
+  editorIndex: number;
+  onTab: (editorIndex: number, shiftKey: boolean) => void;
+  invalid: boolean;
+}
+
+interface InputEditorState {
+  isEditorFocused: boolean;
+  isEditorEmpty: boolean;
+}
 /**
  * A monaco editor that looks like an general input
  */
 
-export default class InputEditor extends Component {
-  constructor(props) {
+export default class InputEditor extends Component<
+  InputEditorProps,
+  InputEditorState
+> {
+  editorContainer: HTMLDivElement | null;
+
+  editor: monaco.editor.IStandaloneCodeEditor | null;
+
+  static defaultProps: {
+    value: string;
+    onContentChanged: () => void;
+    editorSettings: {};
+    editorIndex: number;
+    onTab: () => void;
+    invalid: boolean;
+  };
+  constructor(props: InputEditorProps) {
     super(props);
 
     this.handleContentChanged = this.handleContentChanged.bind(this);
@@ -26,15 +54,15 @@ export default class InputEditor extends Component {
     this.editor = null;
   }
 
-  componentDidMount() {
+  componentDidMount(): void {
     this.initEditor();
   }
 
-  componentWillUnmount() {
+  componentWillUnmount(): void {
     this.destroyEditor();
   }
 
-  initEditor() {
+  initEditor(): void {
     const { value, editorSettings } = this.props;
     const inputEditorSettings = {
       copyWithSyntaxHighlighting: 'false',
@@ -63,7 +91,10 @@ export default class InputEditor extends Component {
       wordWrap: 'on',
       automaticLayout: true,
       ...editorSettings,
-    };
+    } as monaco.editor.IStandaloneEditorConstructionOptions;
+    if (!this.editorContainer) {
+      throw new Error('editorContainer is null');
+    }
     this.editor = monaco.editor.create(
       this.editorContainer,
       inputEditorSettings
@@ -71,32 +102,36 @@ export default class InputEditor extends Component {
     this.editor.layout();
 
     // disable tab to spaces in this editor to improve tab navigation
-    this.editor.getModel().updateOptions({ tabSize: 0 });
+    this.editor.getModel()?.updateOptions({ tabSize: 0 });
 
     this.editor.onDidChangeModelContent(this.handleContentChanged);
     this.editor.onDidFocusEditorText(this.handleEditorFocus);
     this.editor.onDidBlurEditorText(this.handleEditorBlur);
   }
 
-  destroyEditor() {
-    this.editor.dispose();
+  destroyEditor(): void {
+    this.editor?.dispose();
     this.editor = null;
   }
 
-  handleContentChanged() {
+  handleContentChanged(): void {
     const { onContentChanged } = this.props;
-    const value = this.editor.getModel().getValue();
-    this.setState({ isEditorEmpty: value.length === 0 });
-
+    const value = this.editor?.getModel()?.getValue();
+    if (value) {
+      this.setState({ isEditorEmpty: value.length === 0 });
+    }
     onContentChanged(value);
   }
 
-  handleEditorFocus() {
+  handleEditorFocus(): void {
     this.setState({ isEditorFocused: true });
   }
 
-  handleEditorBlur() {
-    const value = this.editor.getModel().getValue();
+  handleEditorBlur(): void {
+    const value = this.editor?.getModel()?.getValue();
+    if (!value) {
+      throw new Error('value is undefined');
+    }
     this.setState({
       isEditorEmpty: value.length === 0,
       isEditorFocused: false,
@@ -104,22 +139,22 @@ export default class InputEditor extends Component {
   }
 
   // force editor to focus if clicked
-  handleContainerClick() {
+  handleContainerClick(): void {
     const { isEditorFocused } = this.state;
     if (isEditorFocused) {
       return;
     }
-    this.editor.focus();
+    this.editor?.focus();
   }
 
-  handleKeyDown(event) {
+  handleKeyDown(event: React.KeyboardEvent<HTMLDivElement>): void {
     const { onTab, editorIndex } = this.props;
     if (event.key === 'Tab') {
       onTab(editorIndex, event.shiftKey);
     }
   }
 
-  render() {
+  render(): ReactElement {
     const { value, invalid } = this.props;
     const { isEditorFocused, isEditorEmpty } = this.state;
     return (
@@ -145,21 +180,3 @@ export default class InputEditor extends Component {
     );
   }
 }
-
-InputEditor.propTypes = {
-  value: PropTypes.string,
-  onContentChanged: PropTypes.func,
-  editorSettings: PropTypes.shape({}),
-  editorIndex: PropTypes.number,
-  onTab: PropTypes.func,
-  invalid: PropTypes.bool,
-};
-
-InputEditor.defaultProps = {
-  value: '',
-  onContentChanged: () => {},
-  editorSettings: {},
-  editorIndex: 0,
-  onTab: () => {},
-  invalid: false,
-};
