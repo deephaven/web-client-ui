@@ -1419,7 +1419,6 @@ export class GridRenderer {
 
     const {
       headerBackgroundColor,
-      headerColor,
       headerHiddenSeparatorSize,
       headerHiddenSeparatorHoverColor,
       headerSeparatorColor,
@@ -1428,92 +1427,34 @@ export class GridRenderer {
     const hiddenSeparatorHeight = columnHeaderHeight * 0.5;
     const hiddenY = columnHeaderHeight * 0.5 - hiddenSeparatorHeight * 0.5;
     const containsFrozenColumns = floatingLeftColumnCount > 0;
-    let floatingLeftColumnsWidth = 0;
 
     context.save();
 
-    context.beginPath();
-
-    // Fill in the background
-    context.fillStyle = headerBackgroundColor;
-    context.fillRect(0, 0, width, columnHeaderHeight);
-
-    context.fillStyle = headerColor;
+    // Make sure header bar always goes to the right edge
+    this.drawColumnHeader(context, state, '', 0, width, {
+      backgroundColor: headerBackgroundColor,
+      separatorColor: headerSeparatorColor,
+    });
 
     // Visible columns.
     for (let i = 0; i < visibleColumns.length; i += 1) {
       const column = visibleColumns[i];
-      const columnWidth = getOrThrow(visibleColumnWidths, column);
-      const x = getOrThrow(visibleColumnXs, column) + gridX;
-      this.drawColumnHeader(context, state, column, x, columnWidth);
+      this.drawColumnHeaderAtIndex(context, state, column);
     }
 
     if (containsFrozenColumns) {
-      floatingLeftColumnsWidth =
-        getOrThrow(visibleColumnXs, floatingLeftColumnCount - 1) +
-        getOrThrow(visibleColumnWidths, floatingLeftColumnCount - 1);
-
-      // Frozen columns' background
-      context.fillStyle = headerBackgroundColor;
-      context.fillRect(gridX, 0, floatingLeftColumnsWidth, columnHeaderHeight);
-
-      // Frozen columns.
-      context.fillStyle = headerColor;
       for (let i = 0; i < floatingColumns.length; i += 1) {
         const column = floatingColumns[i];
-        const columnWidth = getOrThrow(visibleColumnWidths, column);
-        const x = getOrThrow(visibleColumnXs, column) + gridX;
-        this.drawColumnHeader(context, state, column, x, columnWidth);
+        this.drawColumnHeaderAtIndex(context, state, column);
       }
     }
 
-    // Draw the separators, visible columns then floating columns.
     if (headerSeparatorColor) {
       context.strokeStyle = headerSeparatorColor;
-      context.beginPath();
-      const hiddenColumns = [];
 
-      // Draw visible column separators.
-      let isPreviousColumnHidden = false;
-      for (let i = 0; i < visibleColumns.length; i += 1) {
-        const column = visibleColumns[i];
-        const columnX = getOrThrow(visibleColumnXs, column);
-        const columnWidth = getOrThrow(visibleColumnWidths, column);
-
-        if (!(columnX < floatingLeftColumnsWidth - columnWidth)) {
-          if (columnWidth > 0) {
-            const x = gridX + columnX + columnWidth + 0.5;
-            context.moveTo(x, 0);
-            context.lineTo(x, columnHeaderHeight - 0.5);
-            isPreviousColumnHidden = false;
-          } else if (!isPreviousColumnHidden) {
-            isPreviousColumnHidden = true;
-            hiddenColumns.push(column);
-          }
-        }
-      }
-
-      // Draw floating column separators.
-      isPreviousColumnHidden = false;
-      for (let i = 0; i < floatingColumns.length; i += 1) {
-        const column = floatingColumns[i];
-        const columnX = getOrThrow(visibleColumnXs, column);
-        const columnWidth = getOrThrow(visibleColumnWidths, column);
-        if (columnWidth > 0) {
-          const x = gridX + columnX + columnWidth + 0.5;
-          context.moveTo(x, 0);
-          context.lineTo(x, columnHeaderHeight - 0.5);
-          isPreviousColumnHidden = false;
-        } else if (!isPreviousColumnHidden) {
-          isPreviousColumnHidden = true;
-          hiddenColumns.push(column);
-        }
-      }
-
-      // Bottom Border, should be interior to the header height
-      context.moveTo(0, columnHeaderHeight - 0.5);
-      context.lineTo(width, columnHeaderHeight - 0.5);
-      context.stroke();
+      const hiddenColumns = [...visibleColumnWidths.entries()]
+        .filter(([_, w]) => w === 0)
+        .map(([index]) => index);
 
       // Now draw the hidden column separator boxes
       context.beginPath();
@@ -1598,23 +1539,56 @@ export class GridRenderer {
     context.restore();
   }
 
+  /**
+   * Draws the column header for the given visible index
+   * @param context Canvas context
+   * @param state Grid render state
+   * @param index Visible index of the column header to draw
+   */
+  drawColumnHeaderAtIndex(
+    context: CanvasRenderingContext2D,
+    state: GridRenderState,
+    index: VisibleIndex
+  ): void {
+    const { metrics, model, theme } = state;
+    const {
+      modelColumns,
+      visibleColumnWidths,
+      visibleColumnXs,
+      gridX,
+    } = metrics;
+    const width = getOrThrow(visibleColumnWidths, index);
+    const x = getOrThrow(visibleColumnXs, index) + gridX;
+    const modelColumn = getOrThrow(modelColumns, index);
+    const text = model.textForColumnHeader(modelColumn);
+    const { headerBackgroundColor, headerColor, headerSeparatorColor } = theme;
+
+    this.drawColumnHeader(context, state, text, x, width, {
+      backgroundColor: headerBackgroundColor,
+      textColor: headerColor,
+      separatorColor: headerSeparatorColor,
+    });
+  }
+
   drawColumnHeader(
     context: CanvasRenderingContext2D,
     state: GridRenderState,
-    column: VisibleIndex,
+    columnText: string,
     columnX: Coordinate,
-    columnWidth: number
+    columnWidth: number,
+    style?: {
+      backgroundColor?: string;
+      textColor?: string;
+      separatorColor?: string;
+    }
   ): void {
     if (columnWidth <= 0) {
       return;
     }
-    const { metrics, model, theme } = state;
-    const { modelColumns } = metrics;
-    const modelColumn = getOrThrow(modelColumns, column);
-    let text = model.textForColumnHeader(modelColumn);
+    const { metrics, theme } = state;
 
-    const { headerHorizontalPadding } = theme;
-    const { columnHeaderHeight, fontWidths } = metrics;
+    const { headerHorizontalPadding, columnHeaderHeight } = theme;
+    const { fontWidths } = metrics;
     const fontWidth =
       fontWidths.get(context.font) || GridRenderer.DEFAULT_FONT_WIDTH;
 
@@ -1623,26 +1597,56 @@ export class GridRenderer {
       return;
     }
 
+    const { backgroundColor, textColor = '#ffffff', separatorColor } =
+      style ?? {};
+
     context.save();
+
+    // Fill background color if specified
+    if (backgroundColor) {
+      context.fillStyle = backgroundColor;
+      context.fillRect(columnX, 0, columnWidth, columnHeaderHeight);
+    }
+
+    if (separatorColor) {
+      context.strokeStyle = separatorColor;
+      context.beginPath();
+
+      // Don't draw left separator if column touches the left edge
+      if (columnX > 0) {
+        context.moveTo(columnX + 0.5, 0);
+        context.lineTo(columnX + 0.5, columnHeaderHeight);
+      }
+      context.moveTo(columnX + columnWidth + 0.5, 0);
+      context.lineTo(columnX + columnWidth + 0.5, columnHeaderHeight);
+
+      // Bottom Border, should be interior to the header height
+      context.moveTo(columnX, columnHeaderHeight - 0.5);
+      context.lineTo(columnX + columnWidth, columnHeaderHeight - 0.5);
+      context.stroke();
+    }
 
     context.beginPath();
     context.rect(columnX, 0, columnWidth, columnHeaderHeight);
     context.clip();
+    context.fillStyle = textColor;
 
-    if (text.length > maxLength) {
-      text = `${text.substring(0, maxLength - 1)}…`;
+    let renderText = columnText;
+
+    if (renderText.length > maxLength) {
+      renderText = `${renderText.substring(0, maxLength - 1)}…`;
 
       const x = columnX + headerHorizontalPadding;
       const y = columnHeaderHeight * 0.5;
 
       context.textAlign = 'left';
-      context.fillText(text, x, y);
+      context.fillText(renderText, x, y);
     } else {
       const x = columnX + columnWidth * 0.5;
       const y = columnHeaderHeight * 0.5;
 
       context.textAlign = 'center';
-      context.fillText(text, x, y);
+      context.fillText(renderText, x, y);
     }
 
     context.restore();
