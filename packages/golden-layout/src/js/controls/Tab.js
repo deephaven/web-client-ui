@@ -44,7 +44,8 @@ lm.controls.Tab = function (header, contentItem) {
     this
   );
 
-  this.element.on('mousedown', this._onTabClickFn);
+  this.element.on('click', this._onTabClickFn);
+  this.element.on('auxclick', this._onTabClickFn);
 
   if (this.contentItem.config.isClosable) {
     this.closeElement.on('click', this._onCloseClickFn);
@@ -123,7 +124,8 @@ lm.utils.copy(lm.controls.Tab.prototype, {
    * @returns {void}
    */
   _$destroy: function () {
-    this.element.off('mousedown', this._onTabClickFn);
+    this.element.off('click', this._onTabClickFn);
+    this.element.off('auxclick', this._onTabClickFn);
     this.closeElement.off('click', this._onCloseClickFn);
     if (this.contentItem.isComponent) {
       this.contentItem.container._contentElement.off();
