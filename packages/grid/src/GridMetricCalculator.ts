@@ -6,7 +6,7 @@ import type {
   Coordinate,
   CoordinateMap,
   VisibleIndex,
-  IndexModelMap,
+  VisibleToModelMap,
   ModelIndex,
   ModelSizeMap,
   MoveOperation,
@@ -150,10 +150,10 @@ export class GridMetricCalculator {
   protected fontWidths: Map<string, number>;
 
   /** Map from visible index to model index for rows (e.g. reversing movedRows operations) */
-  protected modelRows: IndexModelMap;
+  protected modelRows: VisibleToModelMap;
 
   /** Map from visible index to model index for columns (e.g. reversing movedColumns operations) */
-  protected modelColumns: IndexModelMap;
+  protected modelColumns: VisibleToModelMap;
 
   /** List of moved row operations. Need to track the previous value so we know if modelRows needs to be cleared. */
   protected movedRows: MoveOperation[];
@@ -603,6 +603,9 @@ export class GridMetricCalculator {
       // Mapping from visible row indexes to the model row/columns they pull from
       modelRows,
       modelColumns,
+
+      movedRows,
+      movedColumns,
 
       // Map of the width of the fonts
       fontWidths,
@@ -1140,7 +1143,7 @@ export class GridMetricCalculator {
    */
   getVisibleRowTreeBoxes(
     visibleRowHeights: SizeMap,
-    modelRows: IndexModelMap,
+    modelRows: VisibleToModelMap,
     state: GridMetricState
   ): Map<VisibleIndex, BoxCoordinates> {
     const visibleRowTreeBoxes = new Map();
@@ -1506,15 +1509,15 @@ export class GridMetricCalculator {
   }
 
   /**
-   * Get a map of ModelIndex to Index
+   * Get a map of VisibleIndex to ModelIndex
    * @param visibleRows Array of visible row indexes
    * @param state The grid metric state
-   * @returns Map of Index to ModelIndex
+   * @returns Map of VisibleIndex to ModelIndex
    */
   getModelRows(
     visibleRows: VisibleIndex[],
     state: GridMetricState
-  ): IndexModelMap {
+  ): VisibleToModelMap {
     const modelRows = new Map();
     for (let i = 0; i < visibleRows.length; i += 1) {
       const visibleRow = visibleRows[i];
@@ -1549,7 +1552,7 @@ export class GridMetricCalculator {
   getModelColumns(
     visibleColumns: VisibleIndex[],
     state: GridMetricState
-  ): IndexModelMap {
+  ): VisibleToModelMap {
     const modelColumns = new Map();
     for (let i = 0; i < visibleColumns.length; i += 1) {
       const visibleColumn = visibleColumns[i];
