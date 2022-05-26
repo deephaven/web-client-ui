@@ -2,10 +2,11 @@
 /* eslint no-console: "off" */
 import React, { Component } from 'react';
 import { HierarchicalCheckboxMenu, Popper } from '@deephaven/components';
+import { HierarchicalCheckboxValueMap } from '@deephaven/components/src/HierarchicalCheckboxMenu';
 
 interface DialogState {
   isShown: boolean;
-  checkBoxMap: Map<string, Map<string, boolean>>;
+  checkBoxMap: HierarchicalCheckboxValueMap;
 }
 
 interface DialogProps {

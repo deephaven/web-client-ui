@@ -6,7 +6,10 @@ import Checkbox from './Checkbox';
 import Popper from './popper/Popper';
 import './HierarchicalCheckboxMenu.scss';
 
-type HierarchicalCheckboxValueMap = Map<string, boolean | Map<string, boolean>>;
+export type HierarchicalCheckboxValueMap = Map<
+  string,
+  boolean | Map<string, boolean>
+>;
 
 type HierarchicalCheckboxMenuProps = {
   className: string;
