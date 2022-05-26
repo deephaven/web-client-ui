@@ -38,7 +38,7 @@ class Buttons extends Component<Record<string, never>, ButtonsState> {
     );
   }
 
-  static renderSocketedButtons(): React.ReactElement {
+  static renderSocketedButtons(): ReactElement {
     return (
       <div>
         <h5>Socketed Buttons (for linker)</h5>
@@ -82,7 +82,7 @@ class Buttons extends Component<Record<string, never>, ButtonsState> {
     };
   }
 
-  renderInlineButtons(): React.ReactElement {
+  renderInlineButtons(): ReactElement {
     const { toggle } = this.state;
 
     return (
