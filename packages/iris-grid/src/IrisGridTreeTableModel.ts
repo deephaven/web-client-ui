@@ -2,6 +2,7 @@
 import memoize from 'memoize-one';
 import { GridRange } from '@deephaven/grid';
 import IrisGridTableModel from './IrisGridTableModel';
+import { Table } from '@deephaven/jsapi-shim';
 
 class IrisGridTreeTableModel extends IrisGridTableModel {
   applyBufferedViewport(viewportTop, viewportBottom, columns) {

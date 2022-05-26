@@ -13,8 +13,8 @@ import { Table } from '@deephaven/jsapi-shim';
 const log = Log.module('IrisGridPartitionSelector');
 
 const PARTITION_CHANGE_DEBOUNCE_MS = 250;
-interface IrisGridPartitionSelectorProps {
-  getFormattedString: (...args: unknown[]) => string;
+interface IrisGridPartitionSelectorProps<T> {
+  getFormattedString: (value: T, type: string, name: string) => string;
   table: Table;
   columnName: string;
   partition: string;
@@ -26,8 +26,8 @@ interface IrisGridPartitionSelectorProps {
 interface IrisGridPartitionSelectorState {
   partition: string;
 }
-class IrisGridPartitionSelector extends Component<
-  IrisGridPartitionSelectorProps,
+class IrisGridPartitionSelector<T> extends Component<
+  IrisGridPartitionSelectorProps<T>,
   IrisGridPartitionSelectorState
 > {
   static propTypes = {
@@ -49,10 +49,10 @@ class IrisGridPartitionSelector extends Component<
   };
 
   searchMenu: DropdownMenu | null;
-  selectorSearch: PartitionSelectorSearch | null;
+  selectorSearch: PartitionSelectorSearch<T> | null;
   debounceUpdate: DebouncedFunc<() => void>;
 
-  constructor(props: IrisGridPartitionSelectorProps) {
+  constructor(props: IrisGridPartitionSelectorProps<T>) {
     super(props);
 
     this.debounceUpdate = debounce(

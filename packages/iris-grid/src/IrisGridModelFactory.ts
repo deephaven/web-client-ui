@@ -1,3 +1,4 @@
+import { Table, TreeTable } from '@deephaven/jsapi-shim';
 import { Formatter } from '@deephaven/jsapi-utils';
 import IrisGridProxyModel from './IrisGridProxyModel';
 
@@ -10,7 +11,10 @@ class IrisGridModelFactory {
    * @param {Formatter} formatter The formatter to use
    * @returns {Promise<IrisGridModel>} An IrisGridModel that uses the table provided
    */
-  static async makeModel(table, formatter = new Formatter()) {
+  static async makeModel(
+    table: Table | TreeTable,
+    formatter = new Formatter()
+  ) {
     let inputTable = null;
     if (table.hasInputTable) {
       inputTable = await table.inputTable();

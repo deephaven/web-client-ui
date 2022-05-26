@@ -2,7 +2,7 @@
 import memoize from 'memoize-one';
 import throttle from 'lodash.throttle';
 import { GridRange, GridUtils, memoizeClear } from '@deephaven/grid';
-import dh from '@deephaven/jsapi-shim';
+import dh, { Table, TableViewportSubscription } from '@deephaven/jsapi-shim';
 import { Formatter, FormatterUtils, TableUtils } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
 import { PromiseUtils } from '@deephaven/utils';
@@ -24,12 +24,39 @@ class IrisGridTableModel extends IrisGridModel {
 
   static COLUMN_BUFFER_PAGES = 0;
 
+  irisFormatter: Formatter;
+  inputTable;
+  listenerCount: number;
+  subscription: TableViewportSubscription;
+  table: Table;
+  viewport = null;
+  viewportData = null;
+  formattedStringData = [];
+  pendingStringData = [];
+  isSaveInProgress = false;
+
+  totalsTable = null;
+  totalsTablePromise = null;
+  totals = null;
+  totalsDataMap = null;
+
+  customColumnList = [];
+  formatColumnList = [];
+
+  // Map from new row index to their values. Only for input tables that can have new rows added.
+  // The index of these rows start at 0, and they are appended at the end of the regular table data.
+  // These rows can be sparse, so using a map instead of an array.
+  pendingNewDataMap = new Map();
+  pendingNewRowCount = 0;
+
+  userFrozenColumns = null;
+
   /**
    * @param {dh.Table} table Iris data table to be used in the model
    * @param {Formatter} formatter The formatter to use when getting formats
    * @param {dh.InputTable} inputTable Iris input table associated with this table
    */
-  constructor(table, formatter = new Formatter(), inputTable = null) {
+  constructor(table: Table, formatter = new Formatter(), inputTable = null) {
     super();
 
     this.handleTableDisconnect = this.handleTableDisconnect.bind(this);

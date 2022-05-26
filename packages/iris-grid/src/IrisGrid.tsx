@@ -1,4 +1,11 @@
-import React, { Component } from 'react';
+import React, {
+  Component,
+  CSSProperties,
+  LegacyRef,
+  ReactElement,
+  ReactNode,
+  RefObject,
+} from 'react';
 import memoize from 'memoizee';
 import classNames from 'classnames';
 import { CSSTransition } from 'react-transition-group';
@@ -6,6 +13,7 @@ import PropTypes from 'prop-types';
 import deepEqual from 'deep-equal';
 import Log from '@deephaven/log';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { FormattingRule as SidebarFormattingRule } from './sidebar/conditional-formatting/ConditionalFormattingUtils';
 import {
   ContextActionUtils,
   ContextActions,
@@ -59,6 +67,8 @@ import dh, {
   RollupConfig,
   Sort,
   Table,
+  TableSubscription,
+  TableViewportSubscription,
 } from '@deephaven/jsapi-shim';
 import {
   DateUtils,
@@ -207,6 +217,15 @@ export type Action = {
   shortcut: Shortcut;
 };
 
+export type OptionItem = {
+  type: OptionType;
+  title: string;
+  subtitle?: string;
+  icon?: IconDefinition;
+  isOn?: boolean;
+  onChange?: () => void;
+};
+
 export type InputFilter = { name: string; type: string; value: string };
 interface IrisGridProps {
   children: React.ReactNode;
@@ -215,7 +234,7 @@ interface IrisGridProps {
   alwaysFetchColumns: string[];
   isFilterBarShown: boolean;
   applyInputFiltersOnInit: boolean;
-  conditionalFormats: FormattingRule[];
+  conditionalFormats: SidebarFormattingRule[];
   customColumnFormatMap: Map<string, FormattingRule>;
   movedColumns: { from: number; to: number }[];
   movedRows: { from: number; to: number }[];
@@ -267,7 +286,7 @@ interface IrisGridProps {
   onContextMenu: never;
 
   pendingDataMap: Map<number, Map<string, unknown>>;
-  getDownloadWorker: undefined;
+  getDownloadWorker: () => Promise<ServiceWorker>;
 
   canCopy: boolean;
   canDownloadCsv: boolean;
@@ -283,7 +302,7 @@ interface IrisGridState {
   isFilterBarShown: boolean;
   isSelectingPartition: boolean;
   focusedFilterBarColumn: number | null;
-  metricCalculator: GridMetricCalculator;
+  metricCalculator: IrisGridMetricCalculator;
   metrics: GridMetrics | null;
   keyHandlers: KeyHandler[];
   mouseHandlers: GridMouseHandler[];
@@ -299,7 +318,6 @@ interface IrisGridState {
   shownAdvancedFilter: number | null;
   hoverAdvancedFilter: number | null;
 
-  filter;
   sorts: Sort[];
   reverseType: ReverseType;
   customColumns: string[];
@@ -325,9 +343,9 @@ interface IrisGridState {
   isMenuShown: boolean;
   customColumnFormatMap: Map<string, FormattingRule>;
 
-  conditionalFormats: FormattingRule[];
-  conditionalFormatEditIndex: null;
-  conditionalFormatPreview: FormattingRule | null;
+  conditionalFormats: SidebarFormattingRule[];
+  conditionalFormatEditIndex: number | null;
+  conditionalFormatPreview?: SidebarFormattingRule | null;
 
   // Column user is hovering over for selection
   hoverSelectColumn: null;
@@ -335,8 +353,8 @@ interface IrisGridState {
   isTableDownloading: boolean;
   isReady: boolean;
   tableDownloadStatus: string;
-  tableDownloadProgress: 0;
-  tableDownloadEstimatedTime: 0;
+  tableDownloadProgress: number;
+  tableDownloadEstimatedTime: number | null;
 
   showSearchBar: boolean;
   searchFilter: FilterCondition | null;
@@ -349,7 +367,7 @@ interface IrisGridState {
   aggregationSettings: AggregationSettings;
   selectedAggregation: Aggregation | null;
 
-  openOptions: MenuItemDef[];
+  openOptions: OptionItem[];
 
   pendingRowCount: number;
   pendingDataMap: Map<number, Map<string, unknown>>;
@@ -361,7 +379,7 @@ interface IrisGridState {
   frozenColumns: string[];
   showOverflowModal: boolean;
   overflowText: string;
-  overflowButtonTooltipProps: null;
+  overflowButtonTooltipProps: CSSProperties | null;
 }
 
 export function assertNotNull<T>(value: T | null): asserts value is T {
@@ -474,13 +492,22 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   grid: Grid | null;
   gridWrapper: HTMLDivElement | null;
   lastFocusedFilterBarColumn: number | null;
-  lastLoadedConfig;
-  tooltip: React.RefObject<Tooltip> | null;
+  lastLoadedConfig: Pick<
+    IrisGridState,
+    | 'advancedFilters'
+    | 'aggregationSettings'
+    | 'customColumns'
+    | 'quickFilters'
+    | 'reverseType'
+    | 'rollupConfig'
+    | 'searchFilter'
+    | 'selectDistinctColumns'
+    | 'sorts'
+  > | null;
+  tooltip: Tooltip | null;
   pending: Pending;
   globalColumnFormats: FormattingRule[];
-  dateTimeFormatterOptions: Required<
-    DateTimeColumnFormatterOptions | undefined
-  >;
+  dateTimeFormatterOptions?: DateTimeColumnFormatterOptions;
   decimalFormatOptions;
   integerFormatOptions: { defaultFormatString?: string };
   truncateNumbersWithPound: boolean;
@@ -504,7 +531,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
   contextActions: ContextAction[];
   handleConditionalFormatEditorUpdate: DebouncedFunc<
-    (conditionalFormatPreview: FormattingRule) => void
+    (conditionalFormatPreview?: SidebarFormattingRule) => void
   >;
   handleDownloadProgressUpdate: DebouncedFunc<
     (tableDownloadProgress: any, tableDownloadEstimatedTime: any) => void
@@ -754,8 +781,6 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       advancedFilters: new Map(advancedFilters),
       shownAdvancedFilter: null,
       hoverAdvancedFilter: null,
-
-      filter: [],
       sorts: [],
       reverseType: TableUtils.REVERSE_TYPE.NONE,
       customColumns: [],
@@ -934,7 +959,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       model,
       column,
       advancedFilterOptions,
-      sortDirection: SortDirection,
+      sortDirection: SortDirection | string,
       formatter
     ) => (
       <AdvancedFilterCreator
@@ -944,7 +969,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
         onSortChange={this.handleAdvancedFilterSortChange}
         onDone={this.handleAdvancedFilterDone}
         options={advancedFilterOptions}
-        sortDirection={sortDirection}
+        sortDirection={sortDirection as SortDirection}
         formatter={formatter}
       />
     ),
@@ -967,7 +992,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       canDownloadCsv,
       canToggleSearch
     ) => {
-      const optionItems = [];
+      const optionItems = [] as OptionItem[];
       if (isChartBuilderAvailable) {
         optionItems.push({
           type: OptionType.CHART_BUILDER,
@@ -1057,7 +1082,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   });
 
   getAggregationMap = memoize((columns, aggregations: Aggregation[]) => {
-    const aggregationMap = {};
+    const aggregationMap = {} as Record<AggregationOperation, string[]>;
     aggregations.forEach(({ operation, selected, invert }) => {
       aggregationMap[operation] = AggregationUtils.getOperationColumnNames(
         columns,
@@ -1070,7 +1095,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   });
 
   getOperationMap = memoize((columns, aggregations: Aggregation[]) => {
-    const operationMap = {};
+    const operationMap = {} as Record<string, AggregationOperation[]>;
     aggregations
       .filter(
         (a: Aggregation) => !AggregationUtils.isRollupOperation(a.operation)
@@ -1117,9 +1142,9 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   getCachedPreviewFormatColumns = memoize(
     (
       columns: Column[],
-      rulesParam: FormattingRule[],
-      preview?: FormattingRule,
-      editIndex: number | null
+      rulesParam: SidebarFormattingRule[],
+      preview?: SidebarFormattingRule,
+      editIndex?: number | null
     ): CustomColumn[] => {
       log.debug(
         'getCachedPreviewFormatColumns',
@@ -1128,6 +1153,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
         editIndex
       );
       if (preview !== undefined && editIndex !== null) {
+        assertNotUndefined(editIndex);
         const rules = [...rulesParam];
         rules[editIndex] = preview;
         return this.getCachedFormatColumns(columns, rules);
@@ -1599,7 +1625,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
   getAlwaysFetchColumns = memoize(
     (
-      alwaysFetchColumns: string,
+      alwaysFetchColumns: string[],
       columns: Column[],
       movedColumns: MoveOperation[],
       floatingLeftColumnCount: number,
@@ -1777,7 +1803,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   ): void {
     const { model, canCopy } = this.props;
     const { metricCalculator, movedColumns } = this.state;
-    const { userColumnWidths } = metricCalculator;
+    const userColumnWidths = metricCalculator.getUserColumnWidths();
 
     if (canCopy) {
       const copyOperation = {
@@ -1862,6 +1888,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
         selectDistinctColumns,
         sorts,
       } = this.lastLoadedConfig;
+
       this.lastLoadedConfig = null;
       this.setState({
         advancedFilters,
@@ -2141,7 +2168,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
   showAllColumns(): void {
     const { metricCalculator } = this.state;
-    const { userColumnWidths } = metricCalculator;
+    const userColumnWidths = metricCalculator.getUserColumnWidths();
     const entries = [...userColumnWidths.entries()];
     for (let i = 0; i < entries.length; i += 1) {
       const [modelIndex, columnWidth] = entries[i];
@@ -2161,7 +2188,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     assertNotNullNorUndefined(modelColumn);
     const sorts = TableUtils.toggleSortForColumn(
       currentSorts,
-      model.table,
+      model.columns,
       modelColumn,
       addToExisting
     );
@@ -2175,16 +2202,18 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   }
 
   sortColumn(
-    modelColumn: number,
-    direction: SortDirection,
+    modelColumn: GridRangeIndex,
+    direction: string,
     isAbs = false,
     addToExisting = false
   ): void {
     const { model } = this.props;
+    assertNotNull(modelColumn);
     const sorts = TableUtils.sortColumn(
-      model.table,
+      model.sort,
+      model.columns,
       modelColumn,
-      direction,
+      direction as SortDirection,
       isAbs,
       addToExisting
     );
@@ -2268,7 +2297,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     );
   }
 
-  async commitPending(): void {
+  async commitPending(): Promise<void> {
     const { model } = this.props;
     if (!model.isEditable) {
       throw new Error('Cannot save, table is not editable');
@@ -2331,7 +2360,10 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   selectData(columnIndex: number, rowIndex: number): void {
     const { model } = this.props;
     const { columns } = model;
-    const dataMap = {};
+    const dataMap = {} as Record<
+      string,
+      { value: unknown; text: string; type: string }
+    >;
     for (let i = 0; i < columns.length; i += 1) {
       const column = columns[i];
       const { name, type } = column;
@@ -2508,7 +2540,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     });
   }
 
-  handleMenuSelect(option: MenuItemDef): void {
+  handleMenuSelect(option: OptionItem): void {
     this.setState(({ openOptions }) => ({
       openOptions: [...openOptions, option],
     }));
@@ -2543,6 +2575,9 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       selectDistinctColumns,
       sorts,
     } = this.state;
+
+    assertNotNull(rollupConfig);
+
     const config = {
       advancedFilters,
       aggregationSettings,
@@ -2554,6 +2589,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       selectDistinctColumns,
       sorts,
     };
+
     if (!isEmptyConfig(config)) {
       this.lastLoadedConfig = config;
     } else {
@@ -2595,7 +2631,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     this.setState({ metrics, pendingRowCount });
   }
 
-  handleSelectionChanged(selectedRanges?: GridRange[]) {
+  handleSelectionChanged(selectedRanges?: GridRange[]): void {
     const { onSelectionChanged } = this.props;
     const { copyOperation } = this.state;
     assertNotUndefined(selectedRanges);
@@ -2609,12 +2645,12 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   handleMovedColumnsChanged(
     movedColumns?: MoveOperation[],
     onChangeApplied = () => {}
-  ) {
+  ): void {
     assertNotUndefined(movedColumns);
     this.setState({ movedColumns }, onChangeApplied);
   }
 
-  handleTooltipRef(tooltip) {
+  handleTooltipRef(tooltip: Tooltip) {
     // Need to start the timer right away, since we're creating the tooltip when we want the timer to start
     if (tooltip) {
       tooltip.startTimer();
@@ -2623,7 +2659,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     this.tooltip = tooltip;
   }
 
-  handleConditionalFormatsChange(conditionalFormats: FormattingRule[]) {
+  handleConditionalFormatsChange(conditionalFormats: SidebarFormattingRule[]) {
     log.debug('Updated conditional formats', conditionalFormats);
     this.setState({ conditionalFormats });
   }
@@ -2664,12 +2700,12 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
   // Apply live changes
   _handleConditionalFormatEditorUpdate(
-    conditionalFormatPreview: FormattingRule
+    conditionalFormatPreview?: SidebarFormattingRule
   ): void {
     this.setState({ conditionalFormatPreview });
   }
 
-  handleConditionalFormatEditorSave(config: FormattingRule): void {
+  handleConditionalFormatEditorSave(config: SidebarFormattingRule): void {
     log.debug('Save conditional format changes', config);
     this.setState(
       state => {
@@ -2694,7 +2730,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     this.setState({ conditionalFormatEditIndex: null });
   }
 
-  handleUpdateCustomColumns(customColumns) {
+  handleUpdateCustomColumns(customColumns: string[]): void {
     log.info(`handleUpdateCustomColumns:`, customColumns);
 
     const { model } = this.props;
@@ -2751,7 +2787,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
         this.setState({
           quickFilters: newQuickFilters,
           advancedFilters: newAdvancedFilters,
-        });
+        } as {});
       }
       if (!deepEqual(movedColumns, newMovedColumns)) {
         log.debug(
@@ -2801,7 +2837,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       pendingDataErrors,
       pendingSaveError: null,
     });
-    this.grid.forceUpdate();
+    this.grid?.forceUpdate();
   }
 
   /**
@@ -2859,7 +2895,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     });
   }
 
-  handleRollupChange(rollupConfig): void {
+  handleRollupChange(rollupConfig: RollupConfig): void {
     log.info('Rollup change', rollupConfig);
 
     this.resetGridViewState();
@@ -2882,7 +2918,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     });
   }
 
-  handleSelectDistinctChanged(columnNames: string[]) {
+  handleSelectDistinctChanged(columnNames: string[]): void {
     log.debug('SelectDistinct change', columnNames);
 
     this.resetGridViewState();
@@ -2904,7 +2940,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     });
   }
 
-  handleDownloadTableStart() {
+  handleDownloadTableStart(): void {
     const { canDownloadCsv } = this.props;
     if (canDownloadCsv) {
       this.setState({
@@ -2920,13 +2956,29 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     }
   }
 
-  handleDownloadTable(...args) {
+  handleDownloadTable(
+    fileName: string,
+    frozenTable: Table,
+    tableSubscription: TableViewportSubscription,
+    gridRanges: GridRange[]
+  ) {
     const { canDownloadCsv } = this.props;
     if (canDownloadCsv) {
-      log.info('start table downloading', ...args);
+      log.info(
+        'start table downloading',
+        fileName,
+        frozenTable,
+        tableSubscription,
+        gridRanges
+      );
       this.setState(() => {
         if (this.tableSaver) {
-          this.tableSaver.startDownload(...args);
+          this.tableSaver.startDownload(
+            fileName,
+            frozenTable,
+            tableSubscription,
+            gridRanges
+          );
         }
         return {
           tableDownloadStatus: TableCsvExporter.DOWNLOAD_STATUS.DOWNLOADING,
@@ -2939,15 +2991,15 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     }
   }
 
-  handleCancelDownloadTable() {
-    this.tableSaver.cancelDownload();
+  handleCancelDownloadTable(): void {
+    this.tableSaver?.cancelDownload();
     this.setState({ isTableDownloading: false });
   }
 
   _handleDownloadProgressUpdate(
-    tableDownloadProgress,
-    tableDownloadEstimatedTime
-  ) {
+    tableDownloadProgress: number,
+    tableDownloadEstimatedTime: number
+  ): void {
     const { tableDownloadStatus } = this.state;
     if (tableDownloadStatus === TableCsvExporter.DOWNLOAD_STATUS.DOWNLOADING) {
       this.setState({
@@ -2957,7 +3009,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     }
   }
 
-  handleDownloadCompleted() {
+  handleDownloadCompleted(): void {
     this.setState({
       isTableDownloading: false,
       tableDownloadProgress: 100,
@@ -2965,7 +3017,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     });
   }
 
-  handleDownloadCanceled() {
+  handleDownloadCanceled(): void {
     this.setState({
       isTableDownloading: false,
       tableDownloadProgress: 0,
@@ -2977,7 +3029,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
    * Delete the specified ranges from the table.
    * @param {GridRange[]} ranges The ranges to delete
    */
-  deleteRanges(ranges) {
+  deleteRanges(ranges: GridRange[]): void {
     const { model } = this.props;
     this.pending.add(model.delete(ranges)).catch(e => {
       if (!PromiseUtils.isCanceled(e)) {
@@ -2986,7 +3038,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     });
   }
 
-  resetColumnSelection() {
+  resetColumnSelection(): void {
     if (this.grid == null) {
       return;
     }
@@ -3000,7 +3052,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     }
   }
 
-  resetGridViewState(forceUpdate = true) {
+  resetGridViewState(forceUpdate = true): void {
     if (!this.grid) {
       return;
     }
@@ -3012,7 +3064,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     );
   }
 
-  sendStateChange() {
+  sendStateChange(): void {
     if (!this.grid) {
       return;
     }
@@ -3029,10 +3081,13 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     });
   }
 
-  getColumnBoundingRect() {
+  getColumnBoundingRect(): Partial<DOMRect> {
     const { metrics, shownColumnTooltip } = this.state;
-    const gridRect = this.gridWrapper.getBoundingClientRect();
+    const gridRect = this.gridWrapper?.getBoundingClientRect();
     const popperMargin = 20;
+    assertNotNull(metrics);
+    assertNotNull(shownColumnTooltip);
+    assertNotUndefined(gridRect);
     const {
       columnHeaderHeight,
       visibleColumnXs,
@@ -3041,6 +3096,10 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     } = metrics;
     const columnX = visibleColumnXs.get(shownColumnTooltip);
     const columnWidth = visibleColumnWidths.get(shownColumnTooltip);
+
+    assertNotUndefined(columnX);
+    assertNotUndefined(columnWidth);
+
     return {
       top: gridRect.top,
       left:
@@ -3056,40 +3115,42 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     };
   }
 
-  getOverflowButtonTooltip = memoize(overflowButtonTooltipProps => {
-    if (overflowButtonTooltipProps == null) {
-      return null;
-    }
+  getOverflowButtonTooltip = memoize(
+    (overflowButtonTooltipProps: CSSProperties): ReactNode => {
+      if (overflowButtonTooltipProps == null) {
+        return null;
+      }
 
-    const wrapperStyle = {
-      position: 'absolute',
-      ...overflowButtonTooltipProps,
-      pointerEvents: 'none',
-    };
+      const wrapperStyle = {
+        position: 'absolute',
+        ...overflowButtonTooltipProps,
+        pointerEvents: 'none',
+      } as CSSProperties;
 
-    const popperOptions: PopperOptions = {
-      placement: 'left',
-      modifiers: {
-        flip: {
-          behavior: ['left', 'right'],
+      const popperOptions: PopperOptions = {
+        placement: 'left',
+        modifiers: {
+          flip: {
+            behavior: ['left', 'right'],
+          },
         },
-      },
-    };
+      };
 
-    return (
-      <div style={wrapperStyle}>
-        <Tooltip
-          key={Date.now()}
-          options={popperOptions}
-          ref={this.handleTooltipRef}
-        >
-          View full contents
-        </Tooltip>
-      </div>
-    );
-  });
+      return (
+        <div style={wrapperStyle}>
+          <Tooltip
+            key={Date.now()}
+            options={popperOptions}
+            ref={this.handleTooltipRef}
+          >
+            View full contents
+          </Tooltip>
+        </div>
+      );
+    }
+  );
 
-  render() {
+  render(): ReactElement | null {
     const {
       children,
       customFilters,
@@ -3236,6 +3297,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
         let value = '';
         let isValid = true;
         const modelColumn = this.getModelColumn(focusedFilterBarColumn);
+        assertNotNullNorUndefined(modelColumn);
         const quickFilter = quickFilters.get(modelColumn);
         const advancedFilter = advancedFilters.get(modelColumn);
         if (quickFilter != null) {
@@ -3362,9 +3424,10 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
             behavior: ['bottom', 'top'],
           },
         },
-      } as Popper.PopperOptions;
+      } as PopperOptions;
 
       const modelColumn = this.getModelColumn(shownColumnTooltip);
+      assertNotNullNorUndefined(modelColumn);
       const column = model.columns[modelColumn];
 
       if (column != null) {
@@ -3414,6 +3477,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
         const columnX = visibleColumnXs.get(columnIndex);
         const columnWidth = visibleColumnWidths.get(columnIndex);
         const modelColumn = this.getModelColumn(columnIndex);
+        assertNotNullNorUndefined(modelColumn);
         const isFilterable = model.isFilterable(modelColumn);
         if (
           isFilterable &&
@@ -3427,7 +3491,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
             position: 'absolute',
             top: y,
             left: x,
-          };
+          } as CSSProperties;
           const advancedFilter = advancedFilters.get(modelColumn);
           const isFilterSet = advancedFilter != null;
           const isFilterVisible =
@@ -3455,7 +3519,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
                     this.setState({ shownAdvancedFilter: columnIndex });
                   }}
                   onContextMenu={event => {
-                    this.grid.handleContextMenu(event);
+                    this.grid?.handleContextMenu(event);
                   }}
                   onMouseEnter={() => {
                     this.setState({ hoverAdvancedFilter: columnIndex });
@@ -3511,6 +3575,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
                 height: columnHeaderHeight,
               } as React.CSSProperties);
           const modelColumn = this.getModelColumn(columnIndex);
+          assertNotNullNorUndefined(modelColumn);
           const column = model.columns[modelColumn];
           const advancedFilter = advancedFilters.get(modelColumn);
           const { options: advancedFilterOptions } = advancedFilter || {};
@@ -3561,7 +3626,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       showSearchBar,
       canDownloadCsv,
       this.isTableSearchAvailable()
-    ) as MenuItemDef[];
+    ) as OptionItem[];
 
     const openOptionsStack = openOptions.map(option => {
       switch (option.type) {
@@ -3588,7 +3653,6 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
         case OptionType.CONDITIONAL_FORMATTING:
           return (
             <ConditionalFormattingMenu
-              // columns={model.columns}
               rules={conditionalFormats}
               onChange={this.handleConditionalFormatsChange}
               onCreate={this.handleConditionalFormatCreate}
@@ -3596,6 +3660,9 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
             />
           );
         case OptionType.CONDITIONAL_FORMATTING_EDIT:
+          assertNotNull(model.columns);
+          assertNotNull(conditionalFormatPreview);
+          assertNotNull(this.handleConditionalFormatEditorUpdate);
           return (
             <ConditionalFormatEditor
               columns={model.columns}
@@ -3635,6 +3702,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
             />
           );
         case OptionType.AGGREGATION_EDIT:
+          assertNotNull(selectedAggregation);
           return (
             <AggregationEdit
               aggregation={selectedAggregation}
@@ -3650,7 +3718,9 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
               isDownloading={isTableDownloading}
               tableDownloadStatus={tableDownloadStatus}
               tableDownloadProgress={tableDownloadProgress}
-              tableDownloadEstimatedTime={tableDownloadEstimatedTime}
+              tableDownloadEstimatedTime={
+                tableDownloadEstimatedTime ?? undefined
+              }
               onDownload={this.handleDownloadTable}
               onDownloadStart={this.handleDownloadTableStart}
               onCancel={this.handleCancelDownloadTable}
@@ -3675,7 +3745,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
           );
 
         default:
-          throw Error('Unexpected option type', option.type);
+          throw Error('Unexpected option type' + `${option.type}`);
       }
     });
 
@@ -3702,7 +3772,11 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
               {partitionTable && partitionColumn && (
                 <IrisGridPartitionSelector
                   table={partitionTable}
-                  getFormattedString={(...args) => model.displayString(...args)}
+                  getFormattedString={(
+                    value: unknown,
+                    type: string,
+                    name: string
+                  ) => model.displayString(value, type, name)}
                   columnName={partitionColumn.name}
                   partition={partition}
                   onChange={this.handlePartitionChange}
@@ -3792,7 +3866,9 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
                 formatColumns={this.getCachedPreviewFormatColumns(
                   this.getCachedModelColumns(model, customColumns),
                   conditionalFormats,
-                  conditionalFormatPreview,
+                  conditionalFormatPreview === null
+                    ? undefined
+                    : conditionalFormatPreview,
                   // Disable the preview format when we press Back on the format edit page
                   openOptions[openOptions.length - 1]?.type ===
                     OptionType.CONDITIONAL_FORMATTING_EDIT
@@ -3834,7 +3910,8 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
             {filterBar}
             {columnTooltip}
             {advancedFilterMenus}
-            {this.getOverflowButtonTooltip(overflowButtonTooltipProps)}
+            {overflowButtonTooltipProps &&
+              this.getOverflowButtonTooltip(overflowButtonTooltipProps)}
           </div>
           <PendingDataBottomBar
             error={pendingSaveError}
@@ -3911,182 +3988,5 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     );
   }
 }
-
-IrisGrid.propTypes = {
-  children: PropTypes.node,
-  advancedFilters: PropTypes.instanceOf(Map),
-  advancedSettings: PropTypes.instanceOf(Map),
-  alwaysFetchColumns: PropTypes.arrayOf(PropTypes.string),
-  isFilterBarShown: PropTypes.bool,
-  applyInputFiltersOnInit: PropTypes.bool,
-  conditionalFormats: PropTypes.arrayOf(PropTypes.shape({})),
-  customColumnFormatMap: PropTypes.instanceOf(Map),
-  movedColumns: PropTypes.arrayOf(
-    PropTypes.shape({
-      from: PropTypes.number.isRequired,
-      to: PropTypes.number.isRequired,
-    })
-  ),
-  movedRows: PropTypes.arrayOf(
-    PropTypes.shape({
-      from: PropTypes.number.isRequired,
-      to: PropTypes.number.isRequired,
-    })
-  ),
-  inputFilters: PropTypes.arrayOf(
-    PropTypes.shape({
-      name: PropTypes.string.isRequired,
-      type: PropTypes.string.isRequired,
-      value: PropTypes.string.isRequired,
-    })
-  ),
-  customFilters: PropTypes.arrayOf(PropTypes.shape({})),
-  model: PropTypes.instanceOf(IrisGridModel).isRequired,
-  onCreateChart: PropTypes.func,
-  onColumnSelected: PropTypes.func,
-  onError: PropTypes.func,
-  onDataSelected: PropTypes.func,
-  onStateChange: PropTypes.func,
-  onPartitionAppend: PropTypes.func,
-  onAdvancedSettingsChange: PropTypes.func,
-  partition: PropTypes.string,
-  partitionColumn: APIPropTypes.Column,
-  sorts: PropTypes.arrayOf(PropTypes.shape({})),
-  reverseType: PropTypes.string,
-  quickFilters: PropTypes.instanceOf(Map),
-  customColumns: PropTypes.arrayOf(PropTypes.string),
-  selectDistinctColumns: PropTypes.arrayOf(PropTypes.string),
-  // These settings come from the redux store
-  settings: PropTypes.shape({
-    timeZone: PropTypes.string.isRequired,
-    defaultDateTimeFormat: PropTypes.string.isRequired,
-    showTimeZone: PropTypes.bool.isRequired,
-    showTSeparator: PropTypes.bool.isRequired,
-    truncateNumbersWithPound: PropTypes.bool.isRequired,
-    formatter: PropTypes.arrayOf(PropTypes.shape({})).isRequired,
-  }),
-  userColumnWidths: PropTypes.instanceOf(Map),
-  userRowHeights: PropTypes.instanceOf(Map),
-  onSelectionChanged: PropTypes.func,
-  rollupConfig: PropTypes.shape({
-    columns: PropTypes.arrayOf(PropTypes.string),
-    showConstituents: PropTypes.bool,
-    showNonAggregatedColumns: PropTypes.bool,
-    includeDescriptions: PropTypes.bool,
-  }),
-  aggregationSettings: PropTypes.shape({
-    aggregations: PropTypes.arrayOf(
-      PropTypes.shape({
-        operation: PropTypes.string.isRequired,
-        selected: PropTypes.arrayOf(PropTypes.string).isRequired,
-        invert: PropTypes.bool.isRequired,
-      })
-    ),
-    showOnTop: PropTypes.bool,
-  }),
-
-  isSelectingColumn: PropTypes.bool,
-  isSelectingPartition: PropTypes.bool,
-  isStuckToBottom: PropTypes.bool,
-  isStuckToRight: PropTypes.bool,
-
-  // eslint-disable-next-line react/no-unused-prop-types
-  columnSelectionValidator: PropTypes.func,
-  columnAllowedCursor: PropTypes.string,
-
-  // eslint-disable-next-line react/no-unused-prop-types
-  columnNotAllowedCursor: PropTypes.string,
-  name: PropTypes.string,
-  onlyFetchVisibleColumns: PropTypes.bool,
-
-  showSearchBar: PropTypes.bool,
-  searchValue: PropTypes.string,
-  selectedSearchColumns: PropTypes.arrayOf(PropTypes.string),
-  invertSearchColumns: PropTypes.bool,
-
-  // eslint-disable-next-line react/no-unused-prop-types
-  onContextMenu: PropTypes.func,
-
-  pendingDataMap: PropTypes.instanceOf(Map),
-  getDownloadWorker: PropTypes.func,
-
-  canCopy: PropTypes.bool,
-  canDownloadCsv: PropTypes.bool,
-  frozenColumns: PropTypes.arrayOf(PropTypes.string),
-
-  // Theme override for IrisGridTheme
-  theme: PropTypes.shape({}),
-
-  canToggleSearch: PropTypes.bool,
-};
-
-IrisGrid.defaultProps = {
-  children: null,
-  advancedFilters: new Map(),
-  advancedSettings: new Map(),
-  alwaysFetchColumns: [],
-  conditionalFormats: [],
-  customColumnFormatMap: new Map(),
-  isFilterBarShown: false,
-  applyInputFiltersOnInit: false,
-  movedColumns: [],
-  movedRows: [],
-  inputFilters: [],
-  customFilters: [],
-  onCreateChart: undefined,
-  onColumnSelected: () => {},
-  onDataSelected: () => {},
-  onError: () => {},
-  onStateChange: () => {},
-  onPartitionAppend: () => {},
-  onAdvancedSettingsChange: () => {},
-  partition: null,
-  partitionColumn: null,
-  quickFilters: new Map(),
-  selectDistinctColumns: [],
-  sorts: [],
-  reverseType: TableUtils.REVERSE_TYPE.NONE,
-  customColumns: [],
-  aggregationSettings: DEFAULT_AGGREGATION_SETTINGS,
-  rollupConfig: null,
-  userColumnWidths: new Map(),
-  userRowHeights: new Map(),
-  onSelectionChanged: () => {},
-  isSelectingColumn: false,
-  isSelectingPartition: false,
-  isStuckToBottom: false,
-  isStuckToRight: false,
-  columnSelectionValidator: null,
-  columnAllowedCursor: null,
-  columnNotAllowedCursor: null,
-  name: 'table',
-  onlyFetchVisibleColumns: true,
-  showSearchBar: false,
-  searchValue: '',
-  selectedSearchColumns: null,
-  invertSearchColumns: true,
-  onContextMenu: () => [],
-  pendingDataMap: new Map(),
-  getDownloadWorker: undefined,
-  settings: {
-    timeZone: 'America/New_York',
-    defaultDateTimeFormat: DateUtils.FULL_DATE_FORMAT,
-    showTimeZone: false,
-    showTSeparator: true,
-    truncateNumbersWithPound: false,
-    formatter: [],
-    decimalFormatOptions: PropTypes.shape({
-      defaultFormatString: PropTypes.string,
-    }),
-    integerFormatOptions: PropTypes.shape({
-      defaultFormatString: PropTypes.string,
-    }),
-  },
-  canCopy: true,
-  canDownloadCsv: true,
-  frozenColumns: null,
-  theme: {},
-  canToggleSearch: true,
-};
 
 export default IrisGrid;

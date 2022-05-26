@@ -131,19 +131,18 @@ export class TableUtils {
     return [];
   }
 
-  static getNextSort(table: Table, columnIndex: number): Sort | null {
-    if (
-      !table ||
-      !table.columns ||
-      columnIndex < 0 ||
-      columnIndex >= table.columns.length
-    ) {
+  static getNextSort(
+    columns: Column[],
+    sorts: Sort[],
+    columnIndex: number
+  ): Sort | null {
+    if (!columns || columnIndex < 0 || columnIndex >= columns.length) {
       return null;
     }
 
-    const sort = TableUtils.getSortForColumn(table.sort, columnIndex);
+    const sort = TableUtils.getSortForColumn(sorts, columnIndex);
     if (sort === null) {
-      return table.columns[columnIndex].sort().asc();
+      return columns[columnIndex].sort().asc();
     }
     if (sort.direction === TableUtils.sortDirection.ascending) {
       return sort.desc();
@@ -152,17 +151,12 @@ export class TableUtils {
   }
 
   static makeColumnSort(
-    table: Table,
+    columns: Column[],
     columnIndex: number,
     direction: SortDirection,
     isAbs: boolean
   ): Sort | null {
-    if (
-      !table ||
-      !table.columns ||
-      columnIndex < 0 ||
-      columnIndex >= table.columns.length
-    ) {
+    if (!columns || columnIndex < 0 || columnIndex >= columns.length) {
       return null;
     }
 
@@ -170,7 +164,7 @@ export class TableUtils {
       return null;
     }
 
-    let sort = table.columns[columnIndex].sort();
+    let sort = columns[columnIndex].sort();
 
     switch (direction) {
       case TableUtils.sortDirection.ascending:
@@ -197,15 +191,15 @@ export class TableUtils {
    */
   static toggleSortForColumn(
     sorts: Sort[],
-    table: Table,
+    columns: Column[],
     columnIndex: number,
     addToExisting = false
   ): Sort[] {
-    if (!table || columnIndex < 0 || columnIndex >= table.columns.length) {
+    if (columnIndex < 0 || columnIndex >= columns.length) {
       return [];
     }
 
-    const newSort = TableUtils.getNextSort(table, columnIndex);
+    const newSort = TableUtils.getNextSort(columns, sorts, columnIndex);
 
     return TableUtils.setSortForColumn(
       sorts,
@@ -216,25 +210,26 @@ export class TableUtils {
   }
 
   static sortColumn(
-    table: Table,
+    sorts: Sort[],
+    columns: Column[],
     modelColumn: number,
     direction: SortDirection,
     isAbs: boolean,
     addToExisting: boolean
   ): Sort[] {
-    if (!table || modelColumn < 0 || modelColumn >= table.columns.length) {
+    if (!sorts || modelColumn < 0 || modelColumn >= columns.length) {
       return [];
     }
 
     const newSort = TableUtils.makeColumnSort(
-      table,
+      columns,
       modelColumn,
       direction,
       isAbs
     );
 
     return TableUtils.setSortForColumn(
-      table.sort,
+      sorts,
       modelColumn,
       newSort,
       addToExisting

@@ -66,6 +66,7 @@ abstract class IrisGridModel<
 
   listenerCount: number;
   isEditable: boolean | null | undefined;
+  hasExpandableRows: boolean | null | undefined;
 
   // Pulled directly from event-target-shim implementation signature
   // https://github.com/mysticatea/event-target-shim/blob/master/src/lib/event-target.ts#L99

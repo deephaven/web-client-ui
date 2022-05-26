@@ -17,8 +17,8 @@ interface Item {
   displayValue: string;
 }
 
-interface PartitionSelectorSearchProps {
-  getFormattedString: (value: unknown, type: unknown, name: string) => string;
+interface PartitionSelectorSearchProps<T> {
+  getFormattedString: (value: T, type: string, name: string) => string;
   table: Table;
   initialPageSize: number;
   onSelect: (value: string) => void;
@@ -31,8 +31,8 @@ interface PartitionSelectorSearchState {
   text: string;
   isLoading: boolean;
 }
-class PartitionSelectorSearch extends Component<
-  PartitionSelectorSearchProps,
+class PartitionSelectorSearch<T> extends Component<
+  PartitionSelectorSearchProps<T>,
   PartitionSelectorSearchState
 > {
   static MAX_VISIBLE_ITEMS = 12;
@@ -73,7 +73,7 @@ class PartitionSelectorSearch extends Component<
   timer: null;
 
   debounceUpdateFilter;
-  constructor(props: PartitionSelectorSearchProps) {
+  constructor(props: PartitionSelectorSearchProps<T>) {
     super(props);
 
     this.debounceUpdateFilter = debounce(
@@ -107,7 +107,7 @@ class PartitionSelectorSearch extends Component<
   }
 
   componentDidUpdate(
-    prevProps: PartitionSelectorSearchProps,
+    prevProps: PartitionSelectorSearchProps<T>,
     prevState: PartitionSelectorSearchState
   ): void {
     const { isLoading, itemCount } = this.state;

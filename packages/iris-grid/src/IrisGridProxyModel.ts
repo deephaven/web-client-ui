@@ -2,14 +2,15 @@
 import deepEqual from 'deep-equal';
 import { Formatter, TableUtils } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
-import { PromiseUtils } from '@deephaven/utils';
+import { CancelablePromise, PromiseUtils } from '@deephaven/utils';
 import IrisGridTableModel from './IrisGridTableModel';
 import IrisGridTreeTableModel from './IrisGridTreeTableModel';
 import IrisGridModel from './IrisGridModel';
+import { Table } from '@deephaven/jsapi-shim';
 
 const log = Log.module('IrisGridProxyModel');
 
-function makeModel(table, formatter, inputTable) {
+function makeModel(table: Table, formatter?: Formatter, inputTable?: null) {
   if (TableUtils.isTreeTable(table)) {
     return new IrisGridTreeTableModel(table, formatter);
   }
@@ -26,7 +27,15 @@ class IrisGridProxyModel extends IrisGridModel {
    * @param {Formatter} formatter The formatter to use when getting formats
    * @param {dh.InputTable} inputTable Iris input table associated with this table
    */
-  constructor(table, formatter = new Formatter(), inputTable = null) {
+
+  originalModel: IrisGridTreeTableModel | IrisGridTableModel;
+  model: IrisGridTreeTableModel | IrisGridTableModel;
+  modelPromise: CancelablePromise<
+    IrisGridTreeTableModel | IrisGridTableModel
+  > | null;
+  rollup: null;
+  selectDistinct: [];
+  constructor(table: Table, formatter = new Formatter(), inputTable = null) {
     super();
 
     this.handleModelEvent = this.handleModelEvent.bind(this);
@@ -56,7 +65,7 @@ class IrisGridProxyModel extends IrisGridModel {
     this.dispatchEvent(new CustomEvent(type, { detail }));
   }
 
-  setModel(model) {
+  setModel(model: IrisGridTreeTableModel | IrisGridTableModel): void {
     log.debug('setModel', model);
 
     const oldModel = this.model;
@@ -84,7 +93,12 @@ class IrisGridProxyModel extends IrisGridModel {
     );
   }
 
-  setNextModel(modelPromise) {
+  setNextModel(
+    modelPromise:
+      | IrisGridTreeTableModel
+      | IrisGridTableModel
+      | Promise<IrisGridTreeTableModel | IrisGridTableModel>
+  ) {
     log.debug2('setNextModel');
 
     if (this.modelPromise) {
@@ -95,15 +109,16 @@ class IrisGridProxyModel extends IrisGridModel {
       this.removeListeners(this.model);
     }
 
-    this.modelPromise = PromiseUtils.makeCancelable(modelPromise, model =>
-      model.close()
+    this.modelPromise = PromiseUtils.makeCancelable(
+      modelPromise,
+      (model: IrisGridTreeTableModel | IrisGridTableModel) => model.close()
     );
     this.modelPromise
       .then(model => {
         this.modelPromise = null;
         this.setModel(model);
       })
-      .catch(err => {
+      .catch((err: unknown) => {
         if (PromiseUtils.isCanceled(err)) {
           log.debug2('setNextModel cancelled');
           return;
@@ -118,26 +133,26 @@ class IrisGridProxyModel extends IrisGridModel {
       });
   }
 
-  startListening() {
+  startListening(): void {
     super.startListening();
 
     this.addListeners(this.model);
   }
 
-  stopListening() {
+  stopListening(): void {
     super.stopListening();
 
     this.removeListeners(this.model);
   }
 
-  addListeners(model) {
+  addListeners(model: IrisGridTreeTableModel | IrisGridTableModel) {
     const events = Object.keys(IrisGridModel.EVENT);
     for (let i = 0; i < events.length; i += 1) {
       model.addEventListener(events[i], this.handleModelEvent);
     }
   }
 
-  removeListeners(model) {
+  removeListeners(model: IrisGridTreeTableModel | IrisGridTableModel) {
     const events = Object.keys(IrisGridModel.EVENT);
     for (let i = 0; i < events.length; i += 1) {
       model.removeEventListener(events[i], this.handleModelEvent);

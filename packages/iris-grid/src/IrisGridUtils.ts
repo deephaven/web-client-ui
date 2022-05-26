@@ -1,12 +1,17 @@
 import { GridUtils } from '@deephaven/grid';
-import dh from '@deephaven/jsapi-shim';
+import dh, {
+  Column,
+  DateWrapper,
+  LongWrapper,
+  RollupConfig,
+} from '@deephaven/jsapi-shim';
 import { DateUtils, TableUtils } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
 import AdvancedSettings from './sidebar/AdvancedSettings';
 import AggregationUtils from './sidebar/aggregations/AggregationUtils';
 import AggregationOperation from './sidebar/aggregations/AggregationOperation';
 import IrisGridModel from './IrisGridModel';
-import IrisGrid from './IrisGrid';
+import IrisGrid, { AdvancedFilter, QuickFilter } from './IrisGrid';
 import { GridState } from 'packages/grid/src/Grid';
 
 const log = Log.module('IrisGridUtils');
@@ -246,7 +251,15 @@ class IrisGridUtils {
    * @param {Object} irisGridPanelState The current IrisGridPanel state
    * @returns {Object} The dehydrated IrisGridPanel state
    */
-  static dehydrateIrisGridPanelState(model: IrisGridModel, irisGridPanelState) {
+  static dehydrateIrisGridPanelState(
+    model: IrisGridModel,
+    irisGridPanelState: {
+      // This needs to be changed after IrisGridPanel is done
+      isSelectingPartition: unknown;
+      partition: unknown;
+      partitionColumn: Column;
+    }
+  ) {
     const {
       isSelectingPartition,
       partition,
@@ -266,7 +279,15 @@ class IrisGridUtils {
    * @param {Object} irisGridPanelState Exported IrisGridPanel state
    * @returns {Object} The state to apply to the IrisGridPanel
    */
-  static hydrateIrisGridPanelState(model: IrisGridModel, irisGridPanelState) {
+  static hydrateIrisGridPanelState(
+    model: IrisGridModel,
+    irisGridPanelState: {
+      // This needs to be changed after IrisGridPanel is done
+      isSelectingPartition: unknown;
+      partition: unknown;
+      partitionColumn: Column;
+    }
+  ) {
     const {
       isSelectingPartition,
       partition,
@@ -289,7 +310,7 @@ class IrisGridUtils {
    * @param {AdvancedFilter[]} quickFilters The quick filters to dehydrate
    * @returns {Object} The dehydrated quick filters
    */
-  static dehydrateQuickFilters(quickFilters) {
+  static dehydrateQuickFilters(quickFilters: AdvancedFilter[]) {
     return [...quickFilters].map(([columnIndex, quickFilter]) => {
       const { text } = quickFilter;
       return [columnIndex, { text }];
@@ -303,7 +324,11 @@ class IrisGridUtils {
    * @param {string} timeZone The time zone to make this value in if it is a date type. E.g. America/New_York
    * @returns {QuickFilter[]} The quick filters to apply to the columns
    */
-  static hydrateQuickFilters(columns, savedQuickFilters, timeZone) {
+  static hydrateQuickFilters(
+    columns: Column[],
+    savedQuickFilters: unknown[],
+    timeZone: string
+  ): QuickFilter[] {
     const importedFilters = savedQuickFilters.map(
       ([columnIndex, quickFilter]) => {
         const { text } = quickFilter;
@@ -331,7 +356,10 @@ class IrisGridUtils {
    * @param {AdvancedFilter[]} advancedFilters The advanced filters to dehydrate
    * @returns {Object} The dehydrated advanced filters
    */
-  static dehydrateAdvancedFilters(columns, advancedFilters) {
+  static dehydrateAdvancedFilters(
+    columns: Column[],
+    advancedFilters: AdvancedFilter[]
+  ) {
     return [...advancedFilters].map(([columnIndex, advancedFilter]) => {
       const options = IrisGridUtils.dehydrateAdvancedFilterOptions(
         IrisGridUtils.getColumn(columns, columnIndex),
@@ -348,7 +376,11 @@ class IrisGridUtils {
    * @param {string} timeZone The time zone to make this filter in if it is a date type. E.g. America/New_York
    * @returns {AdvancedFilter[]} The advanced filters to apply to the columns
    */
-  static hydrateAdvancedFilters(columns, savedAdvancedFilters, timeZone) {
+  static hydrateAdvancedFilters(
+    columns: Column[],
+    savedAdvancedFilters: unknown[],
+    timeZone: string
+  ): AdvancedFilter[] {
     const importedFilters = savedAdvancedFilters.map(
       ([columnIndex, advancedFilter]) => {
         const options = IrisGridUtils.hydrateAdvancedFilterOptions(
@@ -373,7 +405,7 @@ class IrisGridUtils {
     return new Map(importedFilters);
   }
 
-  static dehydrateAdvancedFilterOptions(column, options) {
+  static dehydrateAdvancedFilterOptions(column: Column, options) {
     const { selectedValues, ...otherOptions } = options;
     return {
       selectedValues: selectedValues.map(value =>
@@ -383,7 +415,7 @@ class IrisGridUtils {
     };
   }
 
-  static hydrateAdvancedFilterOptions(column, options) {
+  static hydrateAdvancedFilterOptions(column: Column, options) {
     const { selectedValues, ...otherOptions } = options;
     return {
       selectedValues: selectedValues.map(value =>
@@ -393,7 +425,7 @@ class IrisGridUtils {
     };
   }
 
-  static dehydratePendingDataMap(columns, pendingDataMap) {
+  static dehydratePendingDataMap(columns: Column[], pendingDataMap) {
     return [...pendingDataMap].map(([rowIndex, { data }]) => [
       rowIndex,
       {
@@ -457,7 +489,10 @@ class IrisGridUtils {
    * @param {Any} value The dehydrated value that needs to be hydrated
    * @param {String} columnType The type of column
    */
-  static hydrateValue(value, columnType) {
+  static hydrateValue(
+    value: string,
+    columnType: string
+  ): DateWrapper | LongWrapper | string | null {
     if (TableUtils.isDateType(columnType)) {
       return IrisGridUtils.hydrateDateTime(value);
     }
@@ -469,19 +504,19 @@ class IrisGridUtils {
     return value;
   }
 
-  static dehydrateDateTime(value) {
+  static dehydrateDateTime(value: number | DateWrapper | Date): string | null {
     return value != null
       ? dh.i18n.DateTimeFormat.format(DateUtils.FULL_DATE_FORMAT, value)
       : null;
   }
 
-  static hydrateDateTime(value) {
+  static hydrateDateTime(value: string): DateWrapper | null {
     return value != null
       ? dh.i18n.DateTimeFormat.parse(DateUtils.FULL_DATE_FORMAT, value)
       : null;
   }
 
-  static dehydrateLong(value) {
+  static dehydrateLong<T>(value: T): string | null {
     return value != null ? `${value}` : null;
   }
 

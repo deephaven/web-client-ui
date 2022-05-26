@@ -1,4 +1,4 @@
-import { GridMetricCalculator } from '@deephaven/grid';
+import { GridMetricCalculator, ModelSizeMap } from '@deephaven/grid';
 import type { VisibleIndex, GridMetricState, GridTheme } from '@deephaven/grid';
 import type { FilterCondition, Sort } from '@deephaven/jsapi-shim';
 import { TableUtils } from '@deephaven/jsapi-utils';
@@ -75,6 +75,10 @@ class IrisGridMetricCalculator extends GridMetricCalculator {
     }
 
     return gridY;
+  }
+
+  getUserColumnWidths(): ModelSizeMap {
+    return this.userColumnWidths;
   }
 }
 

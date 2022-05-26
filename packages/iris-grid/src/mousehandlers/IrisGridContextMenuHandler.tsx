@@ -4,16 +4,27 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { dhFilterFilled, vsRemove, vsCheck, vsFilter } from '@deephaven/icons';
 import debounce from 'lodash.debounce';
 import {
+  ContextAction,
   ContextActions,
   ContextActionUtils,
   GLOBAL_SHORTCUTS,
 } from '@deephaven/components';
-import { GridMouseHandler } from '@deephaven/grid';
-import dh from '@deephaven/jsapi-shim';
+import {
+  EventHandlerResult,
+  Grid,
+  GridMouseHandler,
+  GridPoint,
+} from '@deephaven/grid';
+import dh, {
+  Column,
+  FilterCondition,
+  FilterValue,
+} from '@deephaven/jsapi-shim';
 import {
   TableColumnFormatter,
   DateTimeColumnFormatter,
   TableUtils,
+  SortDirection,
 } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
 import {
@@ -23,7 +34,10 @@ import {
 } from '../format-context-menus';
 import './IrisGridContextMenuHandler.scss';
 import SHORTCUTS from '../IrisGridShortcuts';
-import IrisGrid from '../IrisGrid';
+import IrisGrid, {
+  assertNotNull,
+  assertNotNullNorUndefined,
+} from '../IrisGrid';
 import { DebouncedFunc } from 'lodash';
 
 const log = Log.module('IrisGridContextMenuHandler');
@@ -31,9 +45,6 @@ const log = Log.module('IrisGridContextMenuHandler');
 const DEBOUNCE_UPDATE_FORMAT = 150;
 const CONTEXT_MENU_DATE_FORMAT = 'yyyy-MM-dd HH:mm:ss.SSSSSSSSS';
 
-interface IrisGridContextMenuHandlerState {}
-
-interface IrisGridContextMenuHandlerProps {}
 /**
  * Used to eat the mouse event in the bottom right corner of the scroll bar
  */
@@ -65,10 +76,10 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
    * @param {boolean} additive
    */
   static getQuickFilterCondition(
-    columnFilter,
-    newColumnFilter,
+    columnFilter: FilterCondition,
+    newColumnFilter: FilterCondition,
     additive = false
-  ) {
+  ): FilterCondition {
     if (!additive || !columnFilter) {
       return newColumnFilter;
     }
@@ -81,7 +92,11 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
    * @param {String} newFilterText
    * @param {boolean} additive
    */
-  static getQuickFilterText(filterText, newFilterText, additive = false) {
+  static getQuickFilterText(
+    filterText: string,
+    newFilterText: string,
+    additive = false
+  ): string {
     return additive && filterText
       ? `${filterText} && ${newFilterText}`
       : newFilterText;
@@ -92,7 +107,10 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
    * @param {dh.Column} column The column to make the filter for
    * @param {Number} value The value to get the equality filter for
    */
-  static getNumberValueEqualsFilter(column, value) {
+  static getNumberValueEqualsFilter(
+    column: Column,
+    value: number
+  ): FilterCondition {
     const columnFilter = column.filter();
     if (value === Number.POSITIVE_INFINITY) {
       return dh.FilterCondition.invoke('isInf', columnFilter).and(
@@ -115,7 +133,10 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
     return columnFilter.eq(filterValue);
   }
 
-  static getFilterValueForNumberOrChar(columnType: string, value: number[]) {
+  static getFilterValueForNumberOrChar(
+    columnType: string,
+    value: number
+  ): FilterValue {
     return TableUtils.isCharType(columnType)
       ? dh.FilterValue.ofString(String.fromCharCode(value))
       : dh.FilterValue.ofNumber(value);
@@ -137,22 +158,28 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
     this.irisGrid = irisGrid;
   }
 
-  componentWillUnmount() {
+  componentWillUnmount(): void {
     this.debouncedUpdateCustomFormat.flush();
   }
 
-  onContextMenu(gridPoint, grid, event) {
+  onContextMenu(
+    gridPoint: GridPoint,
+    grid: Grid,
+    event: React.MouseEvent<Element, MouseEvent>
+  ): EventHandlerResult {
     const { irisGrid } = this;
     const { y, column: columnIndex, row: rowIndex } = gridPoint;
     const modelColumn = irisGrid.getModelColumn(columnIndex);
     const modelRow = irisGrid.getModelRow(rowIndex);
     const { model, canCopy } = irisGrid.props;
     const { columns } = model;
+    assertNotNullNorUndefined(modelColumn);
+    assertNotNullNorUndefined(modelRow);
     const value = model.valueForCell(modelColumn, modelRow);
     const valueText = model.textForCell(modelColumn, modelRow);
     const column = columns[modelColumn];
 
-    const actions = [];
+    const actions = [] as ContextAction[];
 
     const {
       metrics,
@@ -163,6 +190,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
       searchFilter,
     } = irisGrid.state;
     const theme = irisGrid.getTheme();
+    assertNotNull(metrics);
     const { columnHeaderHeight, gridY } = metrics;
     const {
       filterIconColor,
@@ -543,6 +571,8 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
     if (actions.length === 0) {
       return false;
     }
+
+    assertNotNull(irisGrid.gridWrapper);
 
     ContextActions.triggerMenu(
       irisGrid.gridWrapper,
@@ -1396,7 +1426,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
     return additionalSortActions;
   }
 
-  checkColumnSort(columnSort, direction = null, isAbs = false) {
+  checkColumnSort(columnSort, direction: string | null = null, isAbs = false) {
     if (!columnSort) {
       return false;
     }

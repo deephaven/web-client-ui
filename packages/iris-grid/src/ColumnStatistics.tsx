@@ -43,7 +43,7 @@ interface Statistic {
 
 interface ColumnStatisticsProps {
   column: Column;
-  model: IrisGridModel & ExpandableGridModel;
+  model: IrisGridModel;
   onStatistics: () => void;
 }
 interface ColumnStatisticsState {

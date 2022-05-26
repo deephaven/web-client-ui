@@ -1,9 +1,15 @@
 /* eslint-disable jsx-a11y/click-events-have-key-events */
-import React, { Component } from 'react';
+import React, { ChangeEvent, Component, RefObject } from 'react';
 import classNames from 'classnames';
 import PropTypes from 'prop-types';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { DragDropContext, Droppable } from 'react-beautiful-dnd';
+import {
+  DragDropContext,
+  DraggableLocation,
+  DragStart,
+  Droppable,
+  DropResult,
+} from 'react-beautiful-dnd';
 import {
   ButtonOld,
   Checkbox,
@@ -19,17 +25,36 @@ import debounce from 'lodash.debounce';
 import Log from '@deephaven/log';
 import './RollupRows.scss';
 import IrisGridModel from '../IrisGridModel';
+import { RollupConfig } from '@deephaven/jsapi-shim';
 
 const log = Log.module('RollupRows');
 const DEBOUNCE_SEARCH = 150;
 const GROUPED_LIST_ID = 'grouped-rollup-rows';
 const UNGROUPED_LIST_ID = 'ungrouped-rollup-rows';
 
-class RollupRows extends Component {
+interface RollupRowsProps {
+  model: IrisGridModel;
+  onChange;
+  config: RollupConfig;
+}
+
+interface RollupRowsState {
+  ungroupedSelectedRanges: Range[];
+  columns: [];
+  groupedSelectedRanges: Range[];
+  searchFilter: string;
+  showConstituents: boolean;
+  showNonAggregatedColumns: boolean;
+  dragSource: DraggableLocation | null;
+  sort: null;
+}
+
+class RollupRows extends Component<RollupRowsProps, RollupRowsState> {
   static SORT = Object.freeze({
     ASCENDING: 'ASCENDING',
     DESCENDING: 'DESCENDING',
   });
+  static defaultProps: { config: null; onChange: () => void };
 
   static renderColumn({ item, isClone, selectedCount }) {
     const text = item && item.name;
@@ -65,7 +90,10 @@ class RollupRows extends Component {
     return !TableUtils.isDecimalType(column.type);
   }
 
-  constructor(props) {
+  ungroupedList: RefObject<DraggableItemList>;
+  groupedList: RefObject<DraggableItemList>;
+
+  constructor(props: RollupRowsProps) {
     super(props);
 
     this.search = debounce(this.search.bind(this), DEBOUNCE_SEARCH);
@@ -113,7 +141,7 @@ class RollupRows extends Component {
     };
   }
 
-  componentDidUpdate(prevProps, prevState) {
+  componentDidUpdate(prevProps: RollupRowsProps, prevState: RollupRowsState) {
     const { config } = this.props;
     const { columns, showConstituents, showNonAggregatedColumns } = this.state;
     if (config !== prevProps.config) {
@@ -138,7 +166,7 @@ class RollupRows extends Component {
     this.search.cancel();
   }
 
-  handleSearchChange(event) {
+  handleSearchChange(event: ChangeEvent<HTMLInputElement>): void {
     const searchFilter = event.target.value;
     this.setState({ searchFilter });
     if (!searchFilter) {
@@ -167,7 +195,7 @@ class RollupRows extends Component {
     this.setState({ ungroupedSelectedRanges: [], groupedSelectedRanges: [] });
   }
 
-  search(searchFilter) {
+  _search(searchFilter: string) {
     const columns = this.getSortedUngroupedColumns();
     const selectedRanges = [];
     let focusIndex = null;
@@ -187,7 +215,7 @@ class RollupRows extends Component {
     }
   }
 
-  handleDragStart(e) {
+  handleDragStart(e: DragStart): void {
     log.debug('handleDragStart', e);
 
     document.documentElement.classList.add('drag-pointer-events-none');
@@ -195,7 +223,7 @@ class RollupRows extends Component {
     this.setState({ dragSource: e.source });
   }
 
-  handleDragEnd(e) {
+  handleDragEnd(e: DropResult): void {
     log.debug('handleDragEnd', e);
 
     document.documentElement.classList.remove('drag-pointer-events-none');
@@ -343,7 +371,7 @@ class RollupRows extends Component {
     });
   }
 
-  getCachedUngroupedColumns = memoize((columns, groupedColumns) =>
+  getCachedUngroupedColumns = memoize((columns: string[], groupedColumns) =>
     columns.filter(
       column =>
         RollupRows.isGroupable(column) &&
@@ -540,20 +568,5 @@ class RollupRows extends Component {
     );
   }
 }
-
-RollupRows.propTypes = {
-  model: PropTypes.instanceOf(IrisGridModel).isRequired,
-  onChange: PropTypes.func,
-  config: PropTypes.shape({
-    columns: PropTypes.arrayOf(PropTypes.string),
-    showConstituents: PropTypes.bool,
-    showNonAggregatedColumns: PropTypes.bool,
-  }),
-};
-
-RollupRows.defaultProps = {
-  config: null,
-  onChange: () => {},
-};
 
 export default RollupRows;

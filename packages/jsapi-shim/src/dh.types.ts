@@ -23,6 +23,7 @@ export interface dh {
   Table: TableStatic;
   TreeTable: TreeTableStatic;
   Column: Column;
+  SearchDisplayMode?: SearchDisplayModeStatic;
 }
 
 const VariableType = {
@@ -456,6 +457,13 @@ export interface LayoutHints {
   backColumns: string[];
   hiddenColumns: string[];
   frozenColumns: string[];
+  searchDisplayMode?: keyof SearchDisplayModeStatic;
+}
+
+export interface SearchDisplayModeStatic {
+  SEARCH_DISPLAY_DEFAULT: 'Default';
+  SEARCH_DISPLAY_HIDE: 'Hide';
+  SEARCH_DISPLAY_SHOW: 'Show';
 }
 
 export interface TableStatic {
@@ -515,6 +523,8 @@ export interface Table extends Evented, TableStatic {
 
   rollup(config: RollupConfig): Promise<TreeTable>;
   treeTable(config: TreeTableConfig): Promise<TreeTable>;
+
+  inputTable(): Promise<InputTable>;
 
   close(): void;
   readonly isClosed: boolean;
@@ -651,6 +661,7 @@ export interface TreeTable extends Evented, TreeTableStatic {
   readonly filter: FilterCondition[];
 
   readonly totalsTableConfig: TotalsTableConfig;
+  readonly hasInputTable: boolean;
 
   findColumn(name: string): Column;
   findColumns(names: string[]): Column[];
@@ -663,6 +674,8 @@ export interface TreeTable extends Evented, TreeTableStatic {
   setExpanded(row: TreeRow, isExpanded: boolean): void;
   isExpanded(row: number): boolean;
   isExpanded(row: TreeRow): boolean;
+
+  inputTable(): void;
 
   applySort(sorts: Sort[]): Sort[];
   applyFilter(filters: FilterCondition[]): FilterCondition[];
@@ -690,6 +703,7 @@ export interface TreeRow extends Row {
 }
 
 export interface RollupConfig {}
+
 export interface TreeTableConfig {}
 
 export interface TotalsTableConfig {}
