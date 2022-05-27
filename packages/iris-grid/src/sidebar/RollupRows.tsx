@@ -1,7 +1,6 @@
 /* eslint-disable jsx-a11y/click-events-have-key-events */
-import React, { ChangeEvent, Component, RefObject } from 'react';
+import React, { ChangeEvent, Component, ReactElement, RefObject } from 'react';
 import classNames from 'classnames';
-import PropTypes from 'prop-types';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   DragDropContext,
@@ -17,6 +16,8 @@ import {
   DragUtils,
   SearchInput,
   Tooltip,
+  Range,
+  RenderItemProps,
 } from '@deephaven/components';
 import { vsTrash, dhSortAlphaDown, dhSortAlphaUp } from '@deephaven/icons';
 import { TableUtils } from '@deephaven/jsapi-utils';
@@ -24,29 +25,37 @@ import memoize from 'memoizee';
 import debounce from 'lodash.debounce';
 import Log from '@deephaven/log';
 import './RollupRows.scss';
+import { Column, RollupConfig } from '@deephaven/jsapi-shim';
 import IrisGridModel from '../IrisGridModel';
-import { RollupConfig } from '@deephaven/jsapi-shim';
+import { assertNotNull } from '../IrisGrid';
 
 const log = Log.module('RollupRows');
 const DEBOUNCE_SEARCH = 150;
 const GROUPED_LIST_ID = 'grouped-rollup-rows';
 const UNGROUPED_LIST_ID = 'ungrouped-rollup-rows';
 
+export interface UIRollupConfig {
+  columns: string[];
+  showConstituents: boolean;
+  showNonAggregatedColumns: boolean;
+  includeDescriptions: true;
+}
+
 interface RollupRowsProps {
   model: IrisGridModel;
-  onChange;
-  config: RollupConfig;
+  onChange: (rollupConfig: UIRollupConfig) => void;
+  config: UIRollupConfig | null;
 }
 
 interface RollupRowsState {
   ungroupedSelectedRanges: Range[];
-  columns: [];
+  columns: string[];
   groupedSelectedRanges: Range[];
   searchFilter: string;
   showConstituents: boolean;
   showNonAggregatedColumns: boolean;
   dragSource: DraggableLocation | null;
-  sort: null;
+  sort: string | null;
 }
 
 class RollupRows extends Component<RollupRowsProps, RollupRowsState> {
@@ -54,9 +63,17 @@ class RollupRows extends Component<RollupRowsProps, RollupRowsState> {
     ASCENDING: 'ASCENDING',
     DESCENDING: 'DESCENDING',
   });
+
   static defaultProps: { config: null; onChange: () => void };
 
-  static renderColumn({ item, isClone, selectedCount }) {
+  static renderColumn({
+    item,
+    isClone,
+    selectedCount,
+  }: RenderItemProps<Column> & {
+    isClone?: boolean;
+    selectedCount?: number;
+  }): ReactElement {
     const text = item && item.name;
     const badgeText = isClone ? `${selectedCount}` : null;
     const className = isClone ? 'item-list-item-clone' : '';
@@ -64,10 +81,10 @@ class RollupRows extends Component<RollupRowsProps, RollupRowsState> {
   }
 
   static addGroupings(
-    currentGroupings,
-    newGroupings,
-    index = currentGroupings.length
-  ) {
+    currentGroupings: string[],
+    newGroupings: string[],
+    index: number = currentGroupings.length
+  ): string[] {
     if (newGroupings == null || newGroupings.length === 0) {
       return currentGroupings;
     }
@@ -86,17 +103,14 @@ class RollupRows extends Component<RollupRowsProps, RollupRowsState> {
     return groupings;
   }
 
-  static isGroupable(column) {
+  static isGroupable(column: Column): boolean {
     return !TableUtils.isDecimalType(column.type);
   }
-
-  ungroupedList: RefObject<DraggableItemList>;
-  groupedList: RefObject<DraggableItemList>;
 
   constructor(props: RollupRowsProps) {
     super(props);
 
-    this.search = debounce(this.search.bind(this), DEBOUNCE_SEARCH);
+    this.search = this.search.bind(this);
 
     this.handleDeleteClicked = this.handleDeleteClicked.bind(this);
     this.handleSearchChange = this.handleSearchChange.bind(this);
@@ -141,7 +155,10 @@ class RollupRows extends Component<RollupRowsProps, RollupRowsState> {
     };
   }
 
-  componentDidUpdate(prevProps: RollupRowsProps, prevState: RollupRowsState) {
+  componentDidUpdate(
+    prevProps: RollupRowsProps,
+    prevState: RollupRowsState
+  ): void {
     const { config } = this.props;
     const { columns, showConstituents, showNonAggregatedColumns } = this.state;
     if (config !== prevProps.config) {
@@ -162,9 +179,13 @@ class RollupRows extends Component<RollupRowsProps, RollupRowsState> {
     }
   }
 
-  componentWillUnmount() {
+  componentWillUnmount(): void {
     this.search.cancel();
   }
+
+  ungroupedList: RefObject<DraggableItemList<Column>>;
+
+  groupedList: RefObject<DraggableItemList<string>>;
 
   handleSearchChange(event: ChangeEvent<HTMLInputElement>): void {
     const searchFilter = event.target.value;
@@ -177,27 +198,27 @@ class RollupRows extends Component<RollupRowsProps, RollupRowsState> {
     this.search(searchFilter);
   }
 
-  handleSortAscending() {
+  handleSortAscending(): void {
     this.setState(({ sort }) => ({
       sort:
         sort === RollupRows.SORT.ASCENDING ? null : RollupRows.SORT.ASCENDING,
     }));
   }
 
-  handleSortDescending() {
+  handleSortDescending(): void {
     this.setState(({ sort }) => ({
       sort:
         sort === RollupRows.SORT.DESCENDING ? null : RollupRows.SORT.DESCENDING,
     }));
   }
 
-  resetSelection() {
+  resetSelection(): void {
     this.setState({ ungroupedSelectedRanges: [], groupedSelectedRanges: [] });
   }
 
-  _search(searchFilter: string) {
+  search = debounce((searchFilter: string) => {
     const columns = this.getSortedUngroupedColumns();
-    const selectedRanges = [];
+    const selectedRanges = [] as Range[];
     let focusIndex = null;
     for (let i = 0; i < columns.length; i += 1) {
       const column = columns[i];
@@ -211,9 +232,10 @@ class RollupRows extends Component<RollupRowsProps, RollupRowsState> {
     this.setState({ ungroupedSelectedRanges: selectedRanges });
 
     if (selectedRanges.length > 0 && this.ungroupedList.current) {
+      assertNotNull(focusIndex);
       this.ungroupedList.current.scrollToItem(focusIndex);
     }
-  }
+  }, DEBOUNCE_SEARCH);
 
   handleDragStart(e: DragStart): void {
     log.debug('handleDragStart', e);
@@ -261,7 +283,7 @@ class RollupRows extends Component<RollupRowsProps, RollupRowsState> {
     }
     this.setState(
       ({ columns, ungroupedSelectedRanges, groupedSelectedRanges }) => {
-        const newColumns = [...columns];
+        const newColumns = [...columns] as string[];
         const sourceItems = isSameList
           ? newColumns
           : this.getSortedUngroupedColumns().map(c => c.name);
@@ -283,11 +305,11 @@ class RollupRows extends Component<RollupRowsProps, RollupRowsState> {
             )
           : destinationIndex;
         const newSelectedRanges = [
-          [insertIndex, insertIndex + draggedItems.length - 1],
+          [insertIndex, insertIndex + draggedItems.length - 1] as Range,
         ];
         return {
           columns: newColumns,
-          ungroupedSelectedRanges: [],
+          ungroupedSelectedRanges: [] as Range[],
           groupedSelectedRanges: newSelectedRanges,
         };
       }
@@ -295,7 +317,7 @@ class RollupRows extends Component<RollupRowsProps, RollupRowsState> {
     this.resetSelection();
   }
 
-  handleUngroupedSelect(itemIndex) {
+  handleUngroupedSelect(itemIndex: number): void {
     log.debug('handleUngroupedSelect');
 
     this.setState(({ columns }) => ({
@@ -307,7 +329,7 @@ class RollupRows extends Component<RollupRowsProps, RollupRowsState> {
     }));
   }
 
-  handleUngroupedSelectionChange(ungroupedSelectedRanges) {
+  handleUngroupedSelectionChange(ungroupedSelectedRanges: Range[]): void {
     log.debug2('handleUngroupedSelectionChange', ungroupedSelectedRanges);
     this.setState(
       ({ ungroupedSelectedRanges: stateUngroupedSelectedRanges }) => {
@@ -320,7 +342,7 @@ class RollupRows extends Component<RollupRowsProps, RollupRowsState> {
     );
   }
 
-  handleGroupedSelectionChange(groupedSelectedRanges) {
+  handleGroupedSelectionChange(groupedSelectedRanges: Range[]): void {
     log.debug2('handleGroupedSelectedRanges', groupedSelectedRanges);
     this.setState(({ groupedSelectedRanges: stateGroupedSelectedRanges }) => {
       if (groupedSelectedRanges === stateGroupedSelectedRanges) {
@@ -331,7 +353,7 @@ class RollupRows extends Component<RollupRowsProps, RollupRowsState> {
     });
   }
 
-  handleDeleteClicked(index) {
+  handleDeleteClicked(index: number): void {
     this.setState(({ columns }) => {
       const newColumns = columns.slice();
       newColumns.splice(index, 1);
@@ -339,19 +361,19 @@ class RollupRows extends Component<RollupRowsProps, RollupRowsState> {
     });
   }
 
-  handleShowConstituentsChange() {
+  handleShowConstituentsChange(): void {
     this.setState(({ showConstituents }) => ({
       showConstituents: !showConstituents,
     }));
   }
 
-  handleShowNonAggregatedColumnsChange() {
+  handleShowNonAggregatedColumnsChange(): void {
     this.setState(({ showNonAggregatedColumns }) => ({
       showNonAggregatedColumns: !showNonAggregatedColumns,
     }));
   }
 
-  updateFromConfig() {
+  updateFromConfig(): void {
     const { config } = this.props;
     const {
       columns = [],
@@ -361,49 +383,55 @@ class RollupRows extends Component<RollupRowsProps, RollupRowsState> {
     this.setState({ columns, showConstituents, showNonAggregatedColumns });
   }
 
-  sendChange() {
+  sendChange(): void {
     const { onChange } = this.props;
     const { columns, showConstituents, showNonAggregatedColumns } = this.state;
     onChange({
       columns,
       showConstituents,
       showNonAggregatedColumns,
-    });
+    } as UIRollupConfig);
   }
 
-  getCachedUngroupedColumns = memoize((columns: string[], groupedColumns) =>
-    columns.filter(
-      column =>
-        RollupRows.isGroupable(column) &&
-        !groupedColumns.find(name => name === column.name)
-    )
+  getCachedUngroupedColumns = memoize(
+    (columns: Column[], groupedColumns: string[]): Column[] =>
+      columns.filter(
+        column =>
+          RollupRows.isGroupable(column) &&
+          !groupedColumns.find(name => name === column.name)
+      )
   );
 
-  getCachedSortedColumns = memoize((columns, sort) =>
-    sort == null
-      ? [...columns]
-      : TableUtils.sortColumns(columns, sort === RollupRows.SORT.ASCENDING)
+  getCachedSortedColumns = memoize(
+    (columns: Column[], sort?: string | null): Column[] =>
+      sort == null
+        ? [...columns]
+        : TableUtils.sortColumns(columns, sort === RollupRows.SORT.ASCENDING)
   );
 
-  getUngroupedColumns() {
+  getUngroupedColumns(): Column[] {
     const { model } = this.props;
-    const { columns, searchFilter } = this.state;
+    const { columns } = this.state;
     const { originalColumns } = model;
 
-    return this.getCachedUngroupedColumns(
-      originalColumns,
-      columns,
-      searchFilter
-    );
+    return this.getCachedUngroupedColumns(originalColumns, columns);
   }
 
-  getSortedUngroupedColumns() {
+  getSortedUngroupedColumns(): Column[] {
     const { sort } = this.state;
     const columns = this.getUngroupedColumns();
     return this.getCachedSortedColumns(columns, sort);
   }
 
-  renderGroupedItem({ item, itemIndex, isClone, selectedCount }) {
+  renderGroupedItem({
+    item,
+    itemIndex,
+    isClone,
+    selectedCount,
+  }: RenderItemProps<string> & {
+    isClone?: boolean;
+    selectedCount?: number;
+  }): ReactElement {
     const indent = isClone ? '' : '\u00A0\u00A0'.repeat(itemIndex);
     const text = `${indent}${item}`;
     const badgeText = isClone ? `${selectedCount}` : null;
@@ -423,7 +451,7 @@ class RollupRows extends Component<RollupRowsProps, RollupRowsState> {
     );
   }
 
-  render() {
+  render(): ReactElement {
     const {
       columns,
       dragSource,
@@ -453,7 +481,7 @@ class RollupRows extends Component<RollupRowsProps, RollupRowsState> {
         className={classNames('rollup-rows', {
           'is-dragging': dragSource != null,
         })}
-        tabIndex="0"
+        tabIndex={0}
       >
         <DragDropContext
           onDragEnd={this.handleDragEnd}
@@ -462,7 +490,7 @@ class RollupRows extends Component<RollupRowsProps, RollupRowsState> {
           <div className="rollup-rows-group-by">
             <div className="section-title">Group By</div>
             {columns.length === 0 && (
-              <Droppable isDragDisabled droppableId="placeholder">
+              <Droppable isDropDisabled droppableId="placeholder">
                 {(provided, snapshot) => (
                   <div
                     className={classNames('placeholder', 'text-muted', {
@@ -504,7 +532,7 @@ class RollupRows extends Component<RollupRowsProps, RollupRowsState> {
                 className="w-100"
                 value={searchFilter}
                 matchCount={
-                  searchFilter ? ungroupedSelectedRanges.length : null
+                  searchFilter ? ungroupedSelectedRanges.length : undefined
                 }
                 placeholder="Find column..."
                 onChange={this.handleSearchChange}

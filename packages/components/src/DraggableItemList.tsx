@@ -112,9 +112,10 @@ class DraggableItemList<T> extends PureComponent<
     className = '',
   }: {
     text: string;
-    badgeText: string;
+    badgeText: string | null;
     className: string;
   }): JSX.Element {
+    const stringBadgeText = badgeText ?? '';
     return (
       <div
         className={classNames(
@@ -124,7 +125,7 @@ class DraggableItemList<T> extends PureComponent<
         )}
       >
         <span className="title">{text}</span>
-        {DraggableItemList.renderBadge({ text: badgeText })}
+        {DraggableItemList.renderBadge({ text: stringBadgeText })}
         {DraggableItemList.renderHandle()}
       </div>
     );

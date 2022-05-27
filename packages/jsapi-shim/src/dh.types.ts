@@ -451,6 +451,20 @@ export interface Sort {
   abs(): Sort;
 }
 
+export interface InputTable {
+  keys: string[];
+  keyColumns: Column[];
+  values: string[];
+  valueColumns: Column[];
+  addRow(row: Row, userTimeZone?: string): Promise<InputTable>;
+  addRows(rows: Row[], userTimeZone?: string): Promise<InputTable>;
+  addTable(table: Table): Promise<InputTable>;
+  addTables(tables: Table[]): Promise<InputTable>;
+  deleteTable(table: Table): Promise<InputTable>;
+  deleteTables(tables: Table[]): Promise<InputTable>;
+  table: Table;
+}
+
 export interface LayoutHints {
   areSavedLayoutsAllowed: boolean;
   frontColumns: string[];
@@ -702,7 +716,13 @@ export interface TreeRow extends Row {
   readonly depth: number;
 }
 
-export interface RollupConfig {}
+export interface RollupConfig {
+  groupingColumns: string[] | null;
+  aggregations: Record<string, string[]> | null;
+  includeConstituents: boolean;
+  includeOriginalColumns: boolean;
+  includeDescriptions: boolean;
+}
 
 export interface TreeTableConfig {}
 

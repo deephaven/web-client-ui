@@ -1,29 +1,26 @@
 /* eslint-disable jsx-a11y/no-noninteractive-tabindex */
 // disabled for tab-index on focus traps, which are intentionally non-interactive
 
-import React, { PureComponent } from 'react';
+import React, { PureComponent, ReactElement } from 'react';
 import classNames from 'classnames';
-import PropTypes from 'prop-types';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import memoize from 'memoize-one';
 import {
   Operator as FilterOperator,
   OperatorValue as FilterOperatorValue,
   TypeValue as FilterTypeValue,
+  Type as FilterType,
 } from '@deephaven/filters';
 import { dhSortAmountDown, dhNewCircleLargeFilled } from '@deephaven/icons';
 import { Formatter, TableUtils, SortDirection } from '@deephaven/jsapi-utils';
 import { ContextActionUtils, Tooltip } from '@deephaven/components';
 import Log from '@deephaven/log';
 import { CancelablePromise, PromiseUtils } from '@deephaven/utils';
-import AdvancedFilterCreatorFilterItem, {
-  AdvancedFilterCreatorFilterItemState,
-} from './AdvancedFilterCreatorFilterItem';
+import { Column, FilterCondition, Table } from '@deephaven/jsapi-shim';
+import AdvancedFilterCreatorFilterItem from './AdvancedFilterCreatorFilterItem';
 import AdvancedFilterCreatorSelectValue from './AdvancedFilterCreatorSelectValue';
 import IrisGridModel from './IrisGridModel';
 import './AdvancedFilterCreator.scss';
-import { Column, FilterCondition, Table } from '@deephaven/jsapi-shim';
-import IrisGridTableModel from './IrisGridTableModel';
 
 const log = Log.module('AdvancedFilterCreator');
 
@@ -78,6 +75,7 @@ class AdvancedFilterCreator extends PureComponent<
   AdvancedFilterCreatorState
 > {
   static debounceFilterUpdate = 250;
+
   static defaultProps: {
     options: {
       filterItems: null;
@@ -87,30 +85,6 @@ class AdvancedFilterCreator extends PureComponent<
     };
     sortDirection: null;
   };
-  static propTypes = {
-    model: PropTypes.oneOf([IrisGridModel]).isRequired,
-    column: PropTypes.shape({ name: PropTypes.string, type: PropTypes.string })
-      .isRequired,
-    onFilterChange: PropTypes.func.isRequired,
-    onSortChange: PropTypes.func.isRequired,
-    onDone: PropTypes.func.isRequired,
-    options: PropTypes.shape({
-      filterItems: PropTypes.arrayOf(PropTypes.shape({})),
-      filterOperators: PropTypes.arrayOf(PropTypes.shape({})),
-      invertSelection: PropTypes.bool,
-      selectedValues: PropTypes.arrayOf(PropTypes.any),
-    }),
-    sortDirection: PropTypes.string,
-    formatter: PropTypes.instanceOf(Formatter).isRequired,
-  };
-
-  focusTrapContainer: React.RefObject<HTMLFormElement>;
-
-  debounceTimeout: NodeJS.Timeout | null;
-
-  filterKey: number;
-
-  valuesTablePromise: CancelablePromise<Table> | null;
 
   constructor(props: AdvancedFilterCreatorProps) {
     super(props);
@@ -173,11 +147,11 @@ class AdvancedFilterCreator extends PureComponent<
     };
   }
 
-  componentDidMount() {
+  componentDidMount(): void {
     this.initValuesTable();
   }
 
-  componentWillUnmount() {
+  componentWillUnmount(): void {
     if (this.debounceTimeout != null) {
       clearTimeout(this.debounceTimeout);
       this.sendUpdate();
@@ -187,19 +161,29 @@ class AdvancedFilterCreator extends PureComponent<
     }
   }
 
-  getFilterChangeHandler(index: number) {
+  focusTrapContainer: React.RefObject<HTMLFormElement>;
+
+  debounceTimeout: NodeJS.Timeout | null;
+
+  filterKey: number;
+
+  valuesTablePromise: CancelablePromise<Table> | null;
+
+  getFilterChangeHandler(
+    index: number
+  ): (selectedType: FilterTypeValue, value: string) => void {
     return this.handleFilterChange.bind(this, index);
   }
 
-  getFilterDeleteHandler(index: number) {
+  getFilterDeleteHandler(index: number): () => void {
     return this.handleFilterDelete.bind(this, index);
   }
 
-  getFilterTypes = memoize((columnType: string) =>
+  getFilterTypes = memoize((columnType: string): FilterType[] =>
     TableUtils.getFilterTypes(columnType)
   );
 
-  initValuesTable() {
+  initValuesTable(): void {
     const { model, column } = this.props;
     if (!model.isValuesTableAvailable) {
       log.debug('No values table for this model, just ignore');
@@ -226,7 +210,7 @@ class AdvancedFilterCreator extends PureComponent<
       });
   }
 
-  handleFocusTrapEnd() {
+  handleFocusTrapEnd(): void {
     const inputs = this.focusTrapContainer?.current?.querySelectorAll(
       'button,select,input,textarea'
     );
@@ -235,7 +219,7 @@ class AdvancedFilterCreator extends PureComponent<
     }
   }
 
-  handleFocusTrapStart() {
+  handleFocusTrapStart(): void {
     const inputs = this.focusTrapContainer?.current?.querySelectorAll(
       'button,select,input,textarea'
     );
@@ -278,7 +262,7 @@ class AdvancedFilterCreator extends PureComponent<
     filterIndex: number,
     selectedType: FilterTypeValue,
     value: string
-  ) {
+  ): void {
     let { filterItems } = this.state;
     filterItems = ([] as FilterItem[]).concat(filterItems);
     const { key } = filterItems[filterIndex];
@@ -313,7 +297,10 @@ class AdvancedFilterCreator extends PureComponent<
     this.startUpdateTimer();
   }
 
-  handleSelectValueChange(selectedValues: string[], invertSelection: boolean) {
+  handleSelectValueChange(
+    selectedValues: string[],
+    invertSelection: boolean
+  ): void {
     this.setState({ selectedValues, invertSelection });
 
     this.startUpdateTimer();
@@ -422,7 +409,7 @@ class AdvancedFilterCreator extends PureComponent<
     }
   }
 
-  sendUpdate() {
+  sendUpdate(): void {
     const {
       filterItems,
       filterOperators,
@@ -448,7 +435,7 @@ class AdvancedFilterCreator extends PureComponent<
     onFilterChange(column, filter, options);
   }
 
-  render() {
+  render(): ReactElement {
     const { column, model, sortDirection, formatter } = this.props;
     const {
       filterItems,

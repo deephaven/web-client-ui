@@ -1,5 +1,4 @@
 import React, { PureComponent } from 'react';
-import PropTypes, { string } from 'prop-types';
 import classNames from 'classnames';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { RadioGroup, RadioItem } from '@deephaven/components';
@@ -154,7 +153,10 @@ class ChartBuilder extends PureComponent<ChartBuilderProps, ChartBuilderState> {
     return [ChartBuilder.makeSeriesItem(value)];
   }
 
-  static getDefaultXAxis(type: SeriesPlotStyle, columns: Column[]) {
+  static getDefaultXAxis(
+    type: SeriesPlotStyle,
+    columns: Column[]
+  ): string | null {
     if (columns != null && columns.length > 0) {
       return columns[0].name;
     }
@@ -213,7 +215,7 @@ class ChartBuilder extends PureComponent<ChartBuilderProps, ChartBuilderState> {
     }, this.sendChange);
   }
 
-  handleLinkStateChange(event: React.ChangeEvent<HTMLInputElement>) {
+  handleLinkStateChange(event: React.ChangeEvent<HTMLInputElement>): void {
     this.setState({ isLinked: event.target.value === 'true' }, this.sendChange);
   }
 
@@ -229,10 +231,10 @@ class ChartBuilder extends PureComponent<ChartBuilderProps, ChartBuilderState> {
     this.setState({ type, seriesItems, xAxis, isLinked }, this.sendChange);
   }
 
-  handleSeriesChange(event: React.ChangeEvent<HTMLSelectElement>) {
+  handleSeriesChange(event: React.ChangeEvent<HTMLSelectElement>): void {
     const { value } = event.target;
     const index = event.target.getAttribute('data-index') as string;
-    const intIndex = parseInt(index);
+    const intIndex = parseInt(index, 10);
 
     this.setState(state => {
       let { seriesItems } = state;
@@ -247,7 +249,7 @@ class ChartBuilder extends PureComponent<ChartBuilderProps, ChartBuilderState> {
   handleSeriesDeleteClick(event: React.MouseEvent<HTMLButtonElement>): void {
     const changeEvent = (event as unknown) as React.ChangeEvent<HTMLButtonElement>;
     const index = changeEvent.target.getAttribute('data-index') as string;
-    const intIndex = parseInt(index);
+    const intIndex = parseInt(index, 10);
 
     this.setState(state => {
       let { seriesItems } = state;
@@ -259,7 +261,7 @@ class ChartBuilder extends PureComponent<ChartBuilderProps, ChartBuilderState> {
     }, this.sendChange);
   }
 
-  handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+  handleSubmit(event: React.FormEvent<HTMLFormElement>): void {
     event.preventDefault();
 
     const { onSubmit } = this.props;
@@ -273,10 +275,10 @@ class ChartBuilder extends PureComponent<ChartBuilderProps, ChartBuilderState> {
     });
   }
 
-  handleTypeClick(event: React.MouseEvent<HTMLButtonElement>) {
+  handleTypeClick(event: React.MouseEvent<HTMLButtonElement>): void {
     const changeEvent = (event as unknown) as React.ChangeEvent<HTMLButtonElement>;
     const index = changeEvent.target.getAttribute('data-index') as string;
-    const intIndex = parseInt(index);
+    const intIndex = parseInt(index, 10);
 
     const type = ChartBuilder.types[intIndex];
 
@@ -303,7 +305,7 @@ class ChartBuilder extends PureComponent<ChartBuilderProps, ChartBuilderState> {
     this.setState({ xAxis }, this.sendChange);
   }
 
-  sendChange() {
+  sendChange(): void {
     const { onChange } = this.props;
     const { isLinked, type, seriesItems, xAxis } = this.state;
     const series = seriesItems.map(item => item.value);

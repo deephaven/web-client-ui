@@ -27,6 +27,7 @@ import {
   SortDirection,
 } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
+import { DebouncedFunc } from 'lodash';
 import {
   DateTimeFormatContextMenu,
   DecimalFormatContextMenu,
@@ -38,7 +39,6 @@ import IrisGrid, {
   assertNotNull,
   assertNotNullNorUndefined,
 } from '../IrisGrid';
-import { DebouncedFunc } from 'lodash';
 
 const log = Log.module('IrisGridContextMenuHandler');
 
@@ -143,6 +143,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
   }
 
   irisGrid: IrisGrid;
+
   debouncedUpdateCustomFormat: DebouncedFunc<
     (modelIndex: any, selectedFormat: any) => void
   >;

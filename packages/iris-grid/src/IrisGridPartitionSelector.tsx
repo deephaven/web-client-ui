@@ -1,14 +1,12 @@
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { DropdownMenu, Tooltip } from '@deephaven/components';
 import { vsTriangleDown, vsClose } from '@deephaven/icons';
 import Log from '@deephaven/log';
-import debounce from 'lodash.debounce';
-import { DebouncedFunc } from 'lodash';
+import { throttle } from 'lodash';
+import { Table } from '@deephaven/jsapi-shim';
 import PartitionSelectorSearch from './PartitionSelectorSearch';
 import './IrisGridPartitionSelector.scss';
-import { Table } from '@deephaven/jsapi-shim';
 
 const log = Log.module('IrisGridPartitionSelector');
 
@@ -30,16 +28,6 @@ class IrisGridPartitionSelector<T> extends Component<
   IrisGridPartitionSelectorProps<T>,
   IrisGridPartitionSelectorState
 > {
-  static propTypes = {
-    getFormattedString: PropTypes.func.isRequired,
-    table: PropTypes.shape({ applyFilter: PropTypes.func }).isRequired,
-    columnName: PropTypes.string.isRequired,
-    partition: PropTypes.string,
-    onAppend: PropTypes.func,
-    onChange: PropTypes.func,
-    onFetchAll: PropTypes.func,
-    onDone: PropTypes.func,
-  };
   static defaultProps: {
     onAppend: () => void;
     onChange: () => void;
@@ -48,17 +36,10 @@ class IrisGridPartitionSelector<T> extends Component<
     partition: string;
   };
 
-  searchMenu: DropdownMenu | null;
-  selectorSearch: PartitionSelectorSearch<T> | null;
-  debounceUpdate: DebouncedFunc<() => void>;
-
   constructor(props: IrisGridPartitionSelectorProps<T>) {
     super(props);
 
-    this.debounceUpdate = debounce(
-      this._debounceUpdate.bind(this),
-      PARTITION_CHANGE_DEBOUNCE_MS
-    );
+    this.debounceUpdate = this.debounceUpdate.bind(this);
     this.handleAppendClick = this.handleAppendClick.bind(this);
     this.handleCloseClick = this.handleCloseClick.bind(this);
     this.handleIgnoreClick = this.handleIgnoreClick.bind(this);
@@ -82,6 +63,10 @@ class IrisGridPartitionSelector<T> extends Component<
   componentWillUnmount(): void {
     this.debounceUpdate.cancel();
   }
+
+  searchMenu: DropdownMenu | null;
+
+  selectorSearch: PartitionSelectorSearch<T> | null;
 
   handleAppendClick(): void {
     log.debug2('handleAppendClick');
@@ -141,9 +126,9 @@ class IrisGridPartitionSelector<T> extends Component<
     }
   }
 
-  _debounceUpdate(): void {
+  debounceUpdate = throttle((): void => {
     this.sendUpdate();
-  }
+  }, PARTITION_CHANGE_DEBOUNCE_MS);
 
   sendDone(): void {
     this.debounceUpdate.flush();

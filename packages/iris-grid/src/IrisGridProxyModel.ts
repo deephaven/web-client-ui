@@ -33,9 +33,9 @@ class IrisGridProxyModel extends IrisGridModel {
   modelPromise: CancelablePromise<
     IrisGridTreeTableModel | IrisGridTableModel
   > | null;
-  rollup: null;
+  rollup: null;: void
   selectDistinct: [];
-  constructor(table: Table, formatter = new Formatter(), inputTable = null) {
+  constructor(table: Table | TreeTable, formatter = new Formatter(), inputTable = null) {
     super();
 
     this.handleModelEvent = this.handleModelEvent.bind(this);

@@ -1,4 +1,4 @@
-import { GridUtils } from '@deephaven/grid';
+import { GridRange, GridUtils } from '@deephaven/grid';
 import dh, {
   Column,
   DateWrapper,
@@ -13,6 +13,8 @@ import AggregationOperation from './sidebar/aggregations/AggregationOperation';
 import IrisGridModel from './IrisGridModel';
 import IrisGrid, { AdvancedFilter, QuickFilter } from './IrisGrid';
 import { GridState } from 'packages/grid/src/Grid';
+import { UIRollupConfig } from './sidebar/RollupRows';
+import { AggregationSettings } from './sidebar/aggregations/Aggregations';
 
 const log = Log.module('IrisGridUtils');
 
@@ -307,10 +309,10 @@ class IrisGridUtils {
 
   /**
    * Export the quick filters to JSON striginfiable object
-   * @param {AdvancedFilter[]} quickFilters The quick filters to dehydrate
-   * @returns {Object} The dehydrated quick filters
+   * @param quickFilters The quick filters to dehydrate
+   * @returns The dehydrated quick filters
    */
-  static dehydrateQuickFilters(quickFilters: AdvancedFilter[]) {
+  static dehydrateQuickFilters(quickFilters: Map<number, QuickFilter>) {
     return [...quickFilters].map(([columnIndex, quickFilter]) => {
       const { text } = quickFilter;
       return [columnIndex, { text }];
@@ -945,10 +947,10 @@ class IrisGridUtils {
    * Validate whether the ranges passed in are valid to take a snapshot from.
    * Multiple selections are valid if all of the selected rows have the same columns selected.
    *
-   * @param {GridRange[]} ranges The ranges to validate
-   * @returns {boolean} True if the ranges are valid, false otherwise
+   * @param ranges The ranges to validate
+   * @returns True if the ranges are valid, false otherwise
    */
-  static isValidSnapshotRanges(ranges) {
+  static isValidSnapshotRanges(ranges: GridRange[]): boolean {
     if (!ranges || ranges.length === 0) {
       return false;
     }
@@ -981,8 +983,11 @@ class IrisGridUtils {
    * Check if the provided value is a valid table index
    * @param {any} value A value to check if it's a valid table index
    */
-  static isValidIndex(value) {
-    return Number.isInteger(value) && value >= 0;
+  static isValidIndex(value: unknown): boolean {
+    if (!Number.isInteger(value)) {
+      return false;
+    }
+    return value >= 0;
   }
 
   /**
@@ -1043,10 +1048,10 @@ class IrisGridUtils {
    * @returns {Object} Rollup config for the model
    */
   static getModelRollupConfig(
-    originalColumns,
-    config,
-    aggregationSettings
-  ): RollupConfig {
+    originalColumns: Column[],
+    config: UIRollupConfig,
+    aggregationSettings: AggregationSettings
+  ): RollupConfig | null {
     if ((config?.columns?.length ?? 0) === 0) {
       return null;
     }

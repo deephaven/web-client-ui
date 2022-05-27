@@ -6,8 +6,6 @@ import { ItemList, LoadingSpinner } from '@deephaven/components';
 import Log from '@deephaven/log';
 import { CanceledPromiseError } from '@deephaven/utils';
 import './PartitionSelectorSearch.scss';
-import { SelectItem } from 'packages/components/src/SelectValueList';
-import { UrlWithStringQuery } from 'url';
 
 const log = Log.module('PartitionSelectorSearch');
 const DEBOUNCE_UPDATE_FILTER = 150;
@@ -36,11 +34,13 @@ class PartitionSelectorSearch<T> extends Component<
   PartitionSelectorSearchState
 > {
   static MAX_VISIBLE_ITEMS = 12;
+
   static defaultProps: {
     initialPageSize: number;
     onSelect: () => void;
     onListResized: () => void;
   };
+
   static propTypes = {
     getFormattedString: PropTypes.func.isRequired,
     table: PropTypes.shape({
@@ -57,9 +57,9 @@ class PartitionSelectorSearch<T> extends Component<
       applyFilter: PropTypes.func.isRequired,
       setViewport: PropTypes.func.isRequired,
     }).isRequired,
-    initialPageSize: PropTypes.number,
-    onSelect: PropTypes.func,
-    onListResized: PropTypes.func,
+    initialPageSize: PropTypes.number.isRequired,
+    onSelect: PropTypes.func.isRequired,
+    onListResized: PropTypes.func.isRequired,
   };
 
   static handleError(error: unknown): void {
@@ -68,18 +68,10 @@ class PartitionSelectorSearch<T> extends Component<
     }
   }
 
-  itemList: ItemList<Item> | null;
-  searchInput: HTMLInputElement | null;
-  timer: null;
-
-  debounceUpdateFilter;
   constructor(props: PartitionSelectorSearchProps<T>) {
     super(props);
 
-    this.debounceUpdateFilter = debounce(
-      this._debounceUpdateFilter.bind(this),
-      DEBOUNCE_UPDATE_FILTER
-    );
+    this.debounceUpdateFilter = this.debounceUpdateFilter.bind(this);
     this.handleFilterChange = this.handleFilterChange.bind(this);
     this.handleInputFocus = this.handleInputFocus.bind(this);
     this.handleKeyDown = this.handleKeyDown.bind(this);
@@ -125,6 +117,12 @@ class PartitionSelectorSearch<T> extends Component<
 
     this.stopListening();
   }
+
+  itemList: ItemList<Item> | null;
+
+  searchInput: HTMLInputElement | null;
+
+  timer: null;
 
   handleKeyDown(event: React.KeyboardEvent<HTMLInputElement>): boolean {
     if (this.itemList == null) {
@@ -246,9 +244,9 @@ class PartitionSelectorSearch<T> extends Component<
     table.setViewport(top, bottom);
   }
 
-  _debounceUpdateFilter(): void {
+  debounceUpdateFilter = debounce((): void => {
     this.updateFilter();
-  }
+  }, DEBOUNCE_UPDATE_FILTER);
 
   focus(): void {
     if (this.searchInput) {

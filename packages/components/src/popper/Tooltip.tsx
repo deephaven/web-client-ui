@@ -5,7 +5,7 @@ import Popper, { PopperOptions, ReferenceObject } from './Popper';
 
 const log = Log.module('Tooltip');
 
-type TooltipProps = typeof Tooltip.defaultProps & {
+type TooltipProps = Omit<typeof Tooltip.defaultProps, 'referenceObject'> & {
   children: React.ReactNode;
   interactive?: boolean;
   options?: PopperOptions;
