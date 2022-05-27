@@ -17,7 +17,6 @@ import {
   vsKebabVertical,
   vsQuestion,
 } from '@deephaven/icons';
-import { IconDefinition } from '@fortawesome/fontawesome-svg-core';
 
 interface DropdownMenus {
   button: React.RefObject<HTMLDivElement>;
@@ -27,13 +26,13 @@ interface DropdownMenusState {
   isShown: boolean;
 }
 
-interface Actions {
-  title: string;
-  icon: IconDefinition;
-  action: () => void;
-  shortcut: Shortcut;
-  group?: number;
-}
+// interface Actions {
+//   title: string;
+//   icon: IconDefinition;
+//   action: () => void;
+//   shortcut: Shortcut;
+//   group?: number;
+// }
 
 class DropdownMenus extends Component<
   Record<string, never>,
@@ -75,7 +74,7 @@ class DropdownMenus extends Component<
           macShortcut: [MODIFIER.CMD, KEY.L],
         }),
       },
-    ] as Actions[];
+    ] as DropdownAction[];
 
     const globalActions = [
       {
@@ -92,7 +91,7 @@ class DropdownMenus extends Component<
         }),
         group: ContextActions.groups.global,
       },
-    ] as Actions[];
+    ] as DropdownAction[];
 
     const actions = globalActions.concat(contextActions);
 
