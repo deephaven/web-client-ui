@@ -1,17 +1,38 @@
 /* eslint no-alert: "off" */
 /* eslint no-console: "off" */
 import React, { Component } from 'react';
-import { ContextActions, KEY, MODIFIER, Shortcut } from '@deephaven/components';
-import { vsBell, dhFilePrint, vsQuestion } from '@deephaven/icons';
+import {
+  ContextAction,
+  ContextActions,
+  KEY,
+  MODIFIER,
+  Shortcut,
+} from '@deephaven/components';
+import {
+  vsBell,
+  dhFilePrint,
+  vsQuestion,
+  IconDefinition,
+} from '@deephaven/icons';
+
+interface ContextMenuItem {
+  title: string;
+  icon?: IconDefinition;
+  action?: () => void;
+  shortcut?: Shortcut;
+  group?: number;
+  order?: number;
+  disabled?: boolean;
+}
 
 class ContextMenus extends Component {
-  constructor(props) {
+  constructor(props: Record<string, never>) {
     super(props);
 
     this.makeContextMenuItems = this.makeContextMenuItems.bind(this);
   }
 
-  makeContextMenuItems(iteration) {
+  makeContextMenuItems(iteration?: number): Array<ContextMenuItem> {
     const suffix = iteration ? ` ${iteration}` : '';
     return [
       {
@@ -54,10 +75,10 @@ class ContextMenus extends Component {
     );
   }
 
-  render() {
+  render(): React.ReactElement {
     const contextActions = this.makeContextMenuItems();
 
-    const globalActions = [
+    const globalActions: Array<ContextMenuItem> = [
       {
         title: 'Show Shortcuts',
         icon: vsQuestion,
@@ -81,7 +102,7 @@ class ContextMenus extends Component {
         setTimeout(() => {
           resolve(contextActions);
         }, 3000);
-      });
+      }) as Promise<ContextAction[]>;
 
     return (
       <div>

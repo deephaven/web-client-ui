@@ -1,8 +1,13 @@
 /* eslint no-console: "off" */
 import React, { Component } from 'react';
-import { DragDropContext } from 'react-beautiful-dnd';
+import {
+  DragDropContext,
+  DragStart,
+  DragUpdate,
+  DropResult,
+} from 'react-beautiful-dnd';
 import memoize from 'memoizee';
-import { DragUtils, DraggableItemList } from '@deephaven/components';
+import { DragUtils, DraggableItemList, Range } from '@deephaven/components';
 import DraggableListInput from './DraggableListInput';
 
 const DRAG_LIST_TITLES = ['Draggable Only', 'Drag and Drop', 'Droppable Only'];
@@ -20,16 +25,29 @@ const makeItems = (prefix = 'Item', count = 1000) => {
   return items;
 };
 
-class DraggableLists extends Component {
-  static handleDragStart(e) {
+interface DraggableLists {
+  animationFrame: number | null;
+}
+
+interface DraggableListsState {
+  items: Array<unknown[]>;
+  lists: Array<React.RefObject<DraggableListInput>>;
+  selectedRanges: Array<Range[]>;
+}
+
+class DraggableLists extends Component<
+  Record<string, never>,
+  DraggableListsState
+> {
+  static handleDragStart(e: DragStart): void {
     console.log('handleDragStart', e);
   }
 
-  static handleDragUpdate(e) {
+  static handleDragUpdate(e: DragUpdate): void {
     console.log('handleDragUpdate', e);
   }
 
-  constructor(props) {
+  constructor(props: Record<string, never>) {
     super(props);
 
     this.handleDragEnd = this.handleDragEnd.bind(this);
@@ -42,7 +60,7 @@ class DraggableLists extends Component {
     for (let i = 0; i < DRAG_LIST_TITLES.length; i += 1) {
       items[i] = makeItems(DRAG_LIST_TITLES[i]);
       selectedRanges[i] = [];
-      lists[i] = React.createRef();
+      lists[i] = React.createRef() as React.RefObject<DraggableListInput>;
     }
 
     this.state = {
@@ -52,11 +70,15 @@ class DraggableLists extends Component {
     };
   }
 
-  componentWillUnmount() {
-    cancelAnimationFrame(this.animationFrame);
+  componentWillUnmount(): void {
+    if (this.animationFrame) {
+      cancelAnimationFrame(this.animationFrame);
+    }
   }
 
-  handleDragEnd(e) {
+  handleDragEnd(
+    e: DropResult
+  ): { items: unknown[][]; selectedRanges: Range[][] } | undefined {
     console.log('handleDragEnd', e);
 
     const { source, destination } = e;
@@ -111,18 +133,20 @@ class DraggableLists extends Component {
         return { items: newItems, selectedRanges: newSelectedRanges };
       },
       () => {
-        cancelAnimationFrame(this.animationFrame);
+        if (this.animationFrame) {
+          cancelAnimationFrame(this.animationFrame);
+        }
         this.animationFrame = requestAnimationFrame(() => {
           this.animationFrame = null;
 
           const { lists } = this.state;
-          lists[destinationListIndex].current.focusItem(insertIndex);
+          lists[destinationListIndex]?.current?.focusItem(insertIndex);
         });
       }
     );
   }
 
-  handleSelectionChange(listIndex, listSelectedRanges) {
+  handleSelectionChange(listIndex: number, listSelectedRanges: Range[]): void {
     this.setState(({ selectedRanges }) => {
       const newSelectedRanges = [...selectedRanges];
       newSelectedRanges[listIndex] = listSelectedRanges;
@@ -134,24 +158,31 @@ class DraggableLists extends Component {
     this.handleSelectionChange.bind(this, listIndex)
   );
 
-  getDraggableList = memoize((items, selectedRanges, ref, listIndex) => (
-    <DraggableListInput
-      items={items}
-      droppableId={DraggableItemList.getDraggableId('drop-list', listIndex)}
-      draggablePrefix={DraggableItemList.getDraggableId(
-        'draggable-item',
-        listIndex
-      )}
-      onSelectionChange={this.getSelectionChangeHandler(listIndex)}
-      isMultiSelect
-      ref={ref}
-      selectedRanges={selectedRanges}
-      // eslint-disable-next-line react/jsx-props-no-spreading
-      {...DRAG_LIST_PROPS[listIndex]}
-    />
-  ));
+  getDraggableList = memoize(
+    (
+      items: unknown[],
+      selectedRanges: Range[],
+      ref: React.RefObject<DraggableListInput>,
+      listIndex: number
+    ) => (
+      <DraggableListInput
+        items={items}
+        droppableId={DraggableItemList.getDraggableId('drop-list', listIndex)}
+        draggablePrefix={DraggableItemList.getDraggableId(
+          'draggable-item',
+          listIndex
+        )}
+        onSelectionChange={this.getSelectionChangeHandler(listIndex)}
+        isMultiSelect
+        ref={ref}
+        selectedRanges={selectedRanges}
+        // eslint-disable-next-line react/jsx-props-no-spreading
+        {...DRAG_LIST_PROPS[listIndex]}
+      />
+    )
+  );
 
-  render() {
+  render(): React.ReactElement {
     const { items, lists, selectedRanges } = this.state;
     return (
       <div className="style-guide-inputs">

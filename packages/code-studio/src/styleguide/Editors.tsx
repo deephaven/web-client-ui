@@ -2,7 +2,7 @@ import React from 'react';
 import { Editor } from '@deephaven/console';
 import Constants from './StyleConstants';
 
-const Editors = () => (
+const Editors = (): React.ReactElement => (
   <div>
     <h2 className="ui-title">Editor</h2>
     <h5 className="sub-title">Python</h5>

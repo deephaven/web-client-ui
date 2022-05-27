@@ -1,7 +1,7 @@
 import React from 'react';
 import classNames from 'classnames';
 
-const Colors = () => {
+const Colors = (): React.ReactElement => {
   const graySwatches = [
     '100',
     '200',

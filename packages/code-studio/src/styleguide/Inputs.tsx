@@ -13,8 +13,26 @@ import {
 } from '@deephaven/components';
 import DateInput from '../components/DateInput';
 
-class Inputs extends Component {
-  constructor(props) {
+interface InputsState {
+  on: boolean;
+  searchValue: string;
+  check1: boolean;
+  check2: boolean;
+  check3: boolean;
+  check4: boolean;
+  check5: boolean | null;
+  radioValue: string;
+  customTimeValue: number | null;
+  autoResizeTextareaValue: string;
+}
+
+interface Inputs {
+  example: Array<{ title: string; value: string }>;
+  timeouts: Array<{ title: string; value: number }>;
+}
+
+class Inputs extends Component<Record<string, never>, InputsState> {
+  constructor(props: Record<string, never>) {
     super(props);
 
     this.handleRadioChange = this.handleRadioChange.bind(this);
@@ -61,20 +79,20 @@ class Inputs extends Component {
     };
   }
 
-  handleRadioChange(e) {
+  handleRadioChange(e: React.ChangeEvent<HTMLInputElement>): void {
     this.setState({ radioValue: e.target.value });
   }
 
-  handleToggleClick() {
+  handleToggleClick(): void {
     const { on } = this.state;
     this.setState({ on: !on });
   }
 
-  handleSearchInputChange(e) {
+  handleSearchInputChange(e: React.ChangeEvent<HTMLInputElement>): void {
     this.setState({ searchValue: e.target.value });
   }
 
-  render() {
+  render(): React.ReactElement {
     const {
       on,
       radioValue,
@@ -161,7 +179,7 @@ class Inputs extends Component {
               >
                 Unchecked checkbox
               </Checkbox>
-              <Checkbox className="form-group" disabled>
+              <Checkbox className="form-group" disabled checked={null}>
                 Disabled checkbox
               </Checkbox>
               <Checkbox
@@ -211,7 +229,9 @@ class Inputs extends Component {
                 <RadioItem value="4" isInvalid>
                   Invalid radio
                 </RadioItem>
-                {check4 && <RadioItem value="5">Extra radio item</RadioItem>}
+                <>
+                  {check4 && <RadioItem value="5">Extra radio item</RadioItem>}
+                </>
               </RadioGroup>
             </form>
           </div>
@@ -250,7 +270,7 @@ class Inputs extends Component {
                 />
               </div>
               <br />
-              <div className="input-group" disabled>
+              <div className="input-group">
                 <ComboBox
                   options={this.example}
                   inputPlaceholder="10.128.0.8"
@@ -309,7 +329,7 @@ class Inputs extends Component {
                 }}
                 customText="Custom Timeout"
                 placeholder="Select a timeout"
-                valueToTime={value => Math.round(value / 1000)}
+                valueToTime={(value: number) => Math.round(value / 1000)}
                 timeToValue={time => time * 1000}
               />
             </div>

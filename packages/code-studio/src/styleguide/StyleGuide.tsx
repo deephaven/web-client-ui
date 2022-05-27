@@ -20,9 +20,9 @@ import Tooltips from './Tooltips';
 import Typograpy from './Typography';
 import './StyleGuide.scss';
 import DraggableLists from './DraggableLists';
-import Navigations from './Navigations.tsx';
+import Navigations from './Navigations';
 
-const StyleGuide = () => (
+const StyleGuide = (): React.ReactElement => (
   <div className="container style-guide-container">
     <div style={{ marginTop: '2rem', paddingBottom: '1rem' }}>
       <h1 style={{ paddingTop: '2rem' }}>Deephaven UI Components</h1>

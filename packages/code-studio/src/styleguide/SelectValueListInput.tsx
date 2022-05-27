@@ -1,8 +1,29 @@
 import React, { PureComponent } from 'react';
 import { SelectValueList } from '@deephaven/components';
 
-class SelectValueListInput extends PureComponent {
-  constructor(props) {
+interface SelectValueListInput {
+  selectedItems: number[];
+}
+
+interface SelectValueListInputProps {
+  isMultiSelect?: boolean;
+}
+
+interface Item {
+  value: string;
+  isSelected: boolean;
+}
+interface SelectValueListInputState {
+  itemCount: number;
+  items: Item[];
+  offset: number;
+}
+
+class SelectValueListInput extends PureComponent<
+  SelectValueListInputProps,
+  SelectValueListInputState
+> {
+  constructor(props: SelectValueListInputProps) {
     super(props);
 
     this.handleSelect = this.handleSelect.bind(this);
@@ -17,7 +38,7 @@ class SelectValueListInput extends PureComponent {
     };
   }
 
-  handleSelect(itemIndex) {
+  handleSelect(itemIndex: number): void {
     const selectedIndex = this.selectedItems.indexOf(itemIndex);
     if (selectedIndex >= 0) {
       this.selectedItems.splice(selectedIndex, 1);
@@ -28,7 +49,7 @@ class SelectValueListInput extends PureComponent {
     const isSelected = selectedIndex < 0;
     const { offset } = this.state;
     let { items } = this.state;
-    items = [].concat(items);
+    items = ([] as Item[]).concat(items);
     const visibleItemIndex = itemIndex - offset;
     if (visibleItemIndex >= 0 && visibleItemIndex < items.length) {
       items[visibleItemIndex].isSelected = isSelected;
@@ -37,7 +58,7 @@ class SelectValueListInput extends PureComponent {
     this.setState({ items });
   }
 
-  handleViewportChange(top, bottom) {
+  handleViewportChange(top: number, bottom: number): void {
     const { itemCount } = this.state;
 
     const viewportSize = bottom - top + 1;
@@ -55,7 +76,7 @@ class SelectValueListInput extends PureComponent {
     this.setState({ offset, items });
   }
 
-  render() {
+  render(): React.ReactElement {
     const { offset, items, itemCount } = this.state;
     return (
       <SelectValueList
