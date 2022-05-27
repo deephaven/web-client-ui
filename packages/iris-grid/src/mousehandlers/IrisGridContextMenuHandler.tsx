@@ -1053,10 +1053,10 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
   }
 
   dateFilterActions(
-    column,
-    valueText,
-    previewValue,
-    value,
+    column: Column,
+    valueText: string,
+    previewValue: unknown,
+    value: unknown,
     quickFilter = {},
     additive = false
   ) {

@@ -720,7 +720,7 @@ export interface RollupConfig {
   groupingColumns: string[] | null;
   aggregations: Record<string, string[]> | null;
   includeConstituents: boolean;
-  includeOriginalColumns: boolean;
+  includeOriginalColumns?: boolean;
   includeDescriptions: boolean;
 }
 

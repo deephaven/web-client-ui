@@ -7,14 +7,21 @@ import dh, {
 } from '@deephaven/jsapi-shim';
 import { DateUtils, TableUtils } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
+import { GridState } from 'packages/grid/src/Grid';
+import { assert } from 'console';
 import AdvancedSettings from './sidebar/AdvancedSettings';
 import AggregationUtils from './sidebar/aggregations/AggregationUtils';
 import AggregationOperation from './sidebar/aggregations/AggregationOperation';
 import IrisGridModel from './IrisGridModel';
-import IrisGrid, { AdvancedFilter, QuickFilter } from './IrisGrid';
-import { GridState } from 'packages/grid/src/Grid';
+import IrisGrid, {
+  AdvancedFilter,
+  IrisGridProps,
+  IrisGridState,
+  QuickFilter,
+} from './IrisGrid';
 import { UIRollupConfig } from './sidebar/RollupRows';
 import { AggregationSettings } from './sidebar/aggregations/Aggregations';
+import { Options } from './AdvancedFilterCreator';
 
 const log = Log.module('IrisGridUtils');
 
@@ -25,7 +32,18 @@ class IrisGridUtils {
    * @param {Object} gridState The state of the Grid to export
    * @returns {Object} An object that can be stringified and imported with {{@link hydrateGridState}}
    */
-  static dehydrateGridState(model: IrisGridModel, gridState) {
+  static dehydrateGridState(
+    model: IrisGridModel,
+    gridState: Pick<
+      IrisGridProps,
+      'isStuckToBottom' | 'isStuckToRight' | 'movedColumns' | 'movedRows'
+    >
+  ): {
+    isStuckToBottom: boolean;
+    isStuckToRight: boolean;
+    movedColumns: { from: string; to: string }[];
+    movedRows: { from: number; to: number }[];
+  } {
     const {
       isStuckToBottom,
       isStuckToRight,
@@ -56,7 +74,19 @@ class IrisGridUtils {
    * @param {Object} gridState The state of the panel that was saved
    * @returns {Object} The gridState props to set on the Grid
    */
-  static hydrateGridState(model: IrisGridModel, gridState, customColumns = []) {
+  static hydrateGridState(
+    model: IrisGridModel,
+    gridState: {
+      isStuckToBottom: boolean;
+      isStuckToRight: boolean;
+      movedColumns: { from: string | number; to: string | number }[];
+      movedRows: { from: number; to: number }[];
+    },
+    customColumns = []
+  ): Pick<
+    IrisGridProps,
+    'isStuckToBottom' | 'isStuckToRight' | 'movedColumns' | 'movedRows'
+  > {
     const {
       isStuckToBottom,
       isStuckToRight,
@@ -78,14 +108,16 @@ class IrisGridUtils {
       movedColumns: [...movedColumns]
         .map(({ to, from }) => {
           if (
-            (typeof to === 'string' || to instanceof String) &&
-            (typeof from === 'string' || from instanceof String)
+            (typeof to === 'string' || (to as unknown) instanceof String) &&
+            (typeof from === 'string' || (from as unknown) instanceof String)
           ) {
             return {
               to: columnNames.findIndex(name => name === to),
               from: columnNames.findIndex(name => name === from),
             };
           }
+          if (typeof to === 'string') throw Error('string');
+          if (typeof from === 'string') throw Error('string');
           return { to, from };
         })
         .filter(
@@ -106,7 +138,10 @@ class IrisGridUtils {
    * @param {IrisGridModel} model The table model to export the state for
    * @param {Object} irisGridState The current state of the IrisGrid
    */
-  static dehydrateIrisGridState(model: IrisGridModel, irisGridState) {
+  static dehydrateIrisGridState(
+    model: IrisGridModel,
+    irisGridState: IrisGridState
+  ): IrisGridState {
     const {
       aggregationSettings = { aggregations: [], showOnTop: false },
       advancedSettings = [],
@@ -354,14 +389,14 @@ class IrisGridUtils {
 
   /**
    * Export the advanced filters from the provided columns to JSON striginfiable object
-   * @param {dh.Column[]} columns The columns for the filters
-   * @param {AdvancedFilter[]} advancedFilters The advanced filters to dehydrate
+   * @param columns The columns for the filters
+   * @param advancedFilters The advanced filters to dehydrate
    * @returns {Object} The dehydrated advanced filters
    */
   static dehydrateAdvancedFilters(
     columns: Column[],
-    advancedFilters: AdvancedFilter[]
-  ) {
+    advancedFilters: Map<number, AdvancedFilter>
+  ): [columnIndex: number, {options}] {
     return [...advancedFilters].map(([columnIndex, advancedFilter]) => {
       const options = IrisGridUtils.dehydrateAdvancedFilterOptions(
         IrisGridUtils.getColumn(columns, columnIndex),
@@ -407,10 +442,10 @@ class IrisGridUtils {
     return new Map(importedFilters);
   }
 
-  static dehydrateAdvancedFilterOptions(column: Column, options) {
+  static dehydrateAdvancedFilterOptions(column: Column, options: Options): Options {
     const { selectedValues, ...otherOptions } = options;
     return {
-      selectedValues: selectedValues.map(value =>
+      selectedValues: selectedValues.map((value: string) =>
         IrisGridUtils.dehydrateValue(value, column?.type)
       ),
       ...otherOptions,
@@ -474,7 +509,7 @@ class IrisGridUtils {
    * @param {Any} value The value to dehydrate
    * @param {String} columnType The column type
    */
-  static dehydrateValue(value, columnType) {
+  static dehydrateValue(value: string, columnType:) {
     if (TableUtils.isDateType(columnType)) {
       return IrisGridUtils.dehydrateDateTime(value);
     }
