@@ -36,11 +36,13 @@ import Menu, { MenuOptions } from './Menu';
 import { ContextAction } from '../context-actions/ContextActionUtils';
 import './DropdownMenu.scss';
 
+export type DropdownAction = ContextAction & { actions?: never };
+
+export type DropdownActions = DropdownAction | DropdownAction[];
+
 type DropdownMenuProps = {
   // Override to prevent nested lists
-  actions:
-    | (ContextAction & { actions?: never })
-    | (ContextAction & { actions?: never })[];
+  actions: DropdownActions;
   isShown: boolean | null;
   onMenuClosed(): void;
   onMenuOpened(): void;
