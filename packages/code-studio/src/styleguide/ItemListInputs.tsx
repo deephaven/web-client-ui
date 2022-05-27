@@ -3,7 +3,7 @@ import React from 'react';
 import SelectValueListInput from './SelectValueListInput';
 import ItemListInput from './ItemListInput';
 
-const ItemListInputs = () => (
+const ItemListInputs = (): React.ReactElement => (
   <div className="style-guide-inputs">
     <h2 className="ui-title">Item Lists</h2>
 

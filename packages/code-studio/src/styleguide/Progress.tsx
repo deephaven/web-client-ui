@@ -1,7 +1,7 @@
 import React from 'react';
 import { DeephavenSpinner, LoadingSpinner } from '@deephaven/components';
 
-const Progress = () => (
+const Progress = (): React.ReactElement => (
   <div>
     <h2 className="ui-title">Progress</h2>
     <div className="row">
@@ -12,9 +12,9 @@ const Progress = () => (
           <div
             className="progress-bar bg-primary"
             style={{ width: '25%' }}
-            aria-valuenow="25"
-            aria-valuemin="0"
-            aria-valuemax="100"
+            aria-valuenow={25}
+            aria-valuemin={0}
+            aria-valuemax={100}
           />
         </div>
       </div>

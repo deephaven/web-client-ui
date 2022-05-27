@@ -1,11 +1,14 @@
-import React, { Component } from 'react';
+import React, { Component, ReactElement } from 'react';
 import classNames from 'classnames';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { ButtonOld, SocketedButton } from '@deephaven/components';
 import { dhTruck } from '@deephaven/icons';
 
-class Buttons extends Component {
-  static renderButtonBrand(type, brand) {
+interface ButtonsState {
+  toggle: boolean;
+}
+class Buttons extends Component<Record<string, never>, ButtonsState> {
+  static renderButtonBrand(type: string, brand: string): ReactElement {
     const className = type.length ? `btn-${type}-${brand}` : `btn-${brand}`;
     return (
       <ButtonOld
@@ -18,14 +21,14 @@ class Buttons extends Component {
     );
   }
 
-  static renderButtons(type) {
+  static renderButtons(type: string): ReactElement {
     const brands = [
       'primary',
       'secondary',
       'success',
       'info',
       'danger',
-    ].map(brand => Buttons.renderButtonBrand(type, brand));
+    ].map((brand: string) => Buttons.renderButtonBrand(type, brand));
 
     return (
       <div key={type}>
@@ -35,7 +38,7 @@ class Buttons extends Component {
     );
   }
 
-  static renderSocketedButtons() {
+  static renderSocketedButtons(): ReactElement {
     return (
       <div>
         <h5>Socketed Buttons (for linker)</h5>
@@ -71,7 +74,7 @@ class Buttons extends Component {
     );
   }
 
-  constructor(props) {
+  constructor(props: Record<string, never>) {
     super(props);
 
     this.state = {
@@ -79,7 +82,7 @@ class Buttons extends Component {
     };
   }
 
-  renderInlineButtons() {
+  renderInlineButtons(): ReactElement {
     const { toggle } = this.state;
 
     return (
@@ -121,7 +124,7 @@ class Buttons extends Component {
     );
   }
 
-  render() {
+  render(): React.ReactElement {
     const buttons = ['', 'outline'].map(type => Buttons.renderButtons(type));
     const inlineButtons = this.renderInlineButtons();
     const socketedButtons = Buttons.renderSocketedButtons();
