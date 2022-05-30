@@ -25,6 +25,9 @@ import { Options } from './AdvancedFilterCreator';
 
 const log = Log.module('IrisGridUtils');
 
+export type SavedFilters = {
+  number
+}
 class IrisGridUtils {
   /**
    * Exports the state from Grid component to a JSON stringifiable object
@@ -363,9 +366,9 @@ class IrisGridUtils {
    */
   static hydrateQuickFilters(
     columns: Column[],
-    savedQuickFilters: unknown[],
+    savedQuickFilters: (number, { text: string})[] [],
     timeZone: string
-  ): QuickFilter[] {
+  ):  Map<number, QuickFilter> {
     const importedFilters = savedQuickFilters.map(
       ([columnIndex, quickFilter]) => {
         const { text } = quickFilter;
@@ -396,7 +399,7 @@ class IrisGridUtils {
   static dehydrateAdvancedFilters(
     columns: Column[],
     advancedFilters: Map<number, AdvancedFilter>
-  ): [columnIndex: number, {options}] {
+  ): (number | { options: Options; })[][] {
     return [...advancedFilters].map(([columnIndex, advancedFilter]) => {
       const options = IrisGridUtils.dehydrateAdvancedFilterOptions(
         IrisGridUtils.getColumn(columns, columnIndex),
@@ -1185,7 +1188,7 @@ class IrisGridUtils {
    * @param {dh.Column[]} columns The columns to get the column from
    * @param {String} columnName The column name to retrieve
    */
-  static getColumnByName(columns, columnName) {
+  static getColumnByName(columns: Column[], columnName: string): Column | undefined {
     const column = columns.find(({ name }) => name === columnName);
     if (column == null) {
       log.error(
@@ -1204,7 +1207,7 @@ class IrisGridUtils {
    * @param {Object[]} filters Filter configs
    * @returns {Object[]} Updated filter configs with column names changed to indexes
    */
-  static changeFilterColumnNamesToIndexes(columns, filters) {
+  static changeFilterColumnNamesToIndexes(columns: Column[], filters: {name: string, filter: FilterCondition}[]) {
     return filters
       .map(({ name, filter }) => {
         const index = columns.findIndex(column => column.name === name);

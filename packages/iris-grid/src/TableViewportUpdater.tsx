@@ -1,13 +1,10 @@
 import { PureComponent } from 'react';
 import memoize from 'memoize-one';
-import PropTypes from 'prop-types';
 import throttle from 'lodash.throttle';
-import { DebouncedFunc } from 'lodash';
 import { GridUtils, MoveOperation } from '@deephaven/grid';
 import {
   Column,
   FilterCondition,
-  PropTypes as APIPropTypes,
   Sort,
   Table,
   TableViewportSubscription,
@@ -41,40 +38,10 @@ class TableViewportUpdater extends PureComponent<
   TableViewportUpdaterProps,
   Record<string, never>
 > {
-  static propTypes = {
-    table: PropTypes.shape({
-      applyFilter: PropTypes.func.isRequired,
-      applySort: PropTypes.func.isRequired,
-      applyCustomColumns: PropTypes.func.isRequired,
-      setViewport: PropTypes.func.isRequired,
-    }).isRequired,
-    top: PropTypes.number,
-    bottom: PropTypes.number,
-    left: PropTypes.number,
-    right: PropTypes.number,
-    columns: PropTypes.arrayOf(APIPropTypes.Column),
-    filters: PropTypes.arrayOf(PropTypes.shape({})),
-    sorts: PropTypes.arrayOf(PropTypes.shape({})),
-    customColumns: PropTypes.arrayOf(PropTypes.string),
-    movedColumns: PropTypes.arrayOf(PropTypes.shape({})),
-    onSubscription: PropTypes.func,
-  };
-
   // Number of pages to buffer for rows/columns
   static ROW_BUFFER_PAGES = 3;
 
   static COLUMN_BUFFER_PAGES = 1;
-
-  updateViewport: DebouncedFunc<
-    (
-      top: number,
-      bottom: number,
-      left: number,
-      right: number,
-      viewColumns: Column[]
-    ) => void
-  >;
-  subscription: TableViewportSubscription | null;
 
   static defaultProps: {
     top: number;
@@ -92,15 +59,12 @@ class TableViewportUpdater extends PureComponent<
   constructor(props: TableViewportUpdaterProps) {
     super(props);
 
-    this.updateViewport = throttle(
-      this._updateViewport.bind(this),
-      UPDATE_THROTTLE
-    );
+    this.updateViewport = this.updateViewport.bind(this);
 
     this.subscription = null;
   }
 
-  componentDidMount() {
+  componentDidMount(): void {
     const {
       top,
       bottom,
@@ -118,7 +82,7 @@ class TableViewportUpdater extends PureComponent<
     this.updateViewport(top, bottom, left, right, columns);
   }
 
-  componentDidUpdate(prevProps: TableViewportUpdaterProps) {
+  componentDidUpdate(prevProps: TableViewportUpdaterProps): void {
     const {
       top,
       bottom,
@@ -161,9 +125,11 @@ class TableViewportUpdater extends PureComponent<
     this.updateViewport(top, bottom, left, right, columns);
   }
 
-  componentWillUnmount() {
+  componentWillUnmount(): void {
     this.closeSubscription();
   }
+
+  subscription: TableViewportSubscription | null;
 
   // eslint-disable-next-line class-methods-use-this
   getViewportRowRange = memoize((table, top, bottom) => {
@@ -205,7 +171,7 @@ class TableViewportUpdater extends PureComponent<
     }
   );
 
-  closeSubscription() {
+  closeSubscription(): void {
     log.debug2('closeSubscription', this.subscription);
     if (this.subscription) {
       this.subscription.close();
@@ -218,56 +184,60 @@ class TableViewportUpdater extends PureComponent<
     this.updateViewport.cancel();
   }
 
-  _updateViewport(
-    top: number,
-    bottom: number,
-    left: number,
-    right: number,
-    viewColumns: Column[]
-  ) {
-    if (bottom < top) {
-      log.error('Invalid viewport', top, bottom);
-      return;
-    }
+  updateViewport = throttle(
+    (
+      top: number,
+      bottom: number,
+      left: number,
+      right: number,
+      viewColumns: Column[]
+    ): void => {
+      if (bottom < top) {
+        log.error('Invalid viewport', top, bottom);
+        return;
+      }
 
-    if (top === 0 && bottom === 0) {
-      log.debug2('Ignoring 0-0 viewport');
-      return;
-    }
+      if (top === 0 && bottom === 0) {
+        log.debug2('Ignoring 0-0 viewport');
+        return;
+      }
 
-    const { movedColumns, table } = this.props;
-    const [viewportTop, viewportBottom] = this.getViewportRowRange(
-      table,
-      top,
-      bottom
-    );
-    const columns =
-      viewColumns ?? this.getViewportColumns(table, left, right, movedColumns);
-    log.debug2(
-      'Setting Viewport Top:',
-      viewportTop,
-      'Bottom:',
-      viewportBottom,
-      'Columns:',
-      columns
-    );
-    if (this.subscription == null) {
-      log.debug2('updateViewport creating new subscription');
-      this.subscription = table.setViewport(
+      const { movedColumns, table } = this.props;
+      const [viewportTop, viewportBottom] = this.getViewportRowRange(
+        table,
+        top,
+        bottom
+      );
+      const columns =
+        viewColumns ??
+        this.getViewportColumns(table, left, right, movedColumns);
+      log.debug2(
+        'Setting Viewport Top:',
         viewportTop,
+        'Bottom:',
         viewportBottom,
+        'Columns:',
         columns
       );
+      if (this.subscription == null) {
+        log.debug2('updateViewport creating new subscription');
+        this.subscription = table.setViewport(
+          viewportTop,
+          viewportBottom,
+          columns
+        );
 
-      const { onSubscription } = this.props;
-      onSubscription(this.subscription);
-    } else {
-      log.debug2('updateViewport using existing subscription');
-      this.subscription.setViewport(viewportTop, viewportBottom, columns);
-    }
-  }
+        const { onSubscription } = this.props;
+        onSubscription(this.subscription);
+      } else {
+        log.debug2('updateViewport using existing subscription');
+        this.subscription.setViewport(viewportTop, viewportBottom, columns);
+      }
+    },
+    UPDATE_THROTTLE
+  );
 
-  render() {
+  render(): null {
     return null;
   }
 }

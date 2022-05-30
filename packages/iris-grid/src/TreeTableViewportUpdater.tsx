@@ -1,14 +1,11 @@
 import { PureComponent } from 'react';
-import PropTypes from 'prop-types';
 import throttle from 'lodash.throttle';
-import { DebouncedFunc } from 'lodash';
 import dh, {
   EventListener,
   FilterCondition,
   RemoverFn,
   Sort,
   Table,
-  TableViewportSubscription,
 } from '@deephaven/jsapi-shim';
 import Log from '@deephaven/log';
 
@@ -25,34 +22,15 @@ interface TreeTableViewportUpdaterProps {
   updateInterval: number;
   onViewportUpdate: EventListener;
 }
-interface TreeTableViewportUpdaterState {}
+
 /**
  * Updates the viewport of a TreeTable for use in a scroll pane.
  * Automatically throttles the viewport requests and buffers above and below.
  */
 class TreeTableViewportUpdater extends PureComponent<
   TreeTableViewportUpdaterProps,
-  TreeTableViewportUpdaterState
+  Record<string, never>
 > {
-  propTypes = {
-    table: PropTypes.shape({
-      addEventListener: PropTypes.func.isRequired,
-      applyFilter: PropTypes.func.isRequired,
-      applySort: PropTypes.func.isRequired,
-      setViewport: PropTypes.func.isRequired,
-    }).isRequired,
-    top: PropTypes.number,
-    bottom: PropTypes.number,
-    filters: PropTypes.arrayOf(PropTypes.shape({})),
-    sorts: PropTypes.arrayOf(PropTypes.shape({})),
-    updateInterval: PropTypes.number,
-    onViewportUpdate: PropTypes.func,
-  };
-
-  static UPDATE_INTERVAL = 1000;
-
-  listenerCleanup: RemoverFn | null;
-
   static defaultProps: {
     top: number;
     bottom: number;
@@ -62,14 +40,11 @@ class TreeTableViewportUpdater extends PureComponent<
     updateInterval: number;
   };
 
-  updateViewport: DebouncedFunc<(top: number, bottom: number) => void>;
+  static UPDATE_INTERVAL = 1000;
 
   constructor(props: TreeTableViewportUpdaterProps) {
     super(props);
-    this.updateViewport = throttle(
-      this._updateViewport.bind(this),
-      UPDATE_THROTTLE
-    );
+    this.updateViewport = this.updateViewport.bind(this);
 
     this.listenerCleanup = null;
   }
@@ -104,7 +79,9 @@ class TreeTableViewportUpdater extends PureComponent<
     }
   }
 
-  _updateViewport(top: number, bottom: number): void {
+  listenerCleanup: RemoverFn | null;
+
+  updateViewport = throttle((top: number, bottom: number): void => {
     if (bottom < top) {
       log.error('Invalid viewport', top, bottom);
       return;
@@ -136,9 +113,9 @@ class TreeTableViewportUpdater extends PureComponent<
     }
 
     table.setViewport(viewportTop, viewportBottom, undefined, updateInterval);
-  }
+  }, UPDATE_THROTTLE);
 
-  render() {
+  render(): null {
     return null;
   }
 }
