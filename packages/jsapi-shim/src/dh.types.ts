@@ -675,7 +675,7 @@ export interface TreeTable extends Evented, TreeTableStatic {
   readonly filter: FilterCondition[];
 
   readonly totalsTableConfig: TotalsTableConfig;
-  readonly hasInputTable: boolean;
+  readonly hasInputTable: undefined;
 
   findColumn(name: string): Column;
   findColumns(names: string[]): Column[];
@@ -688,8 +688,6 @@ export interface TreeTable extends Evented, TreeTableStatic {
   setExpanded(row: TreeRow, isExpanded: boolean): void;
   isExpanded(row: number): boolean;
   isExpanded(row: TreeRow): boolean;
-
-  inputTable(): void;
 
   applySort(sorts: Sort[]): Sort[];
   applyFilter(filters: FilterCondition[]): FilterCondition[];
@@ -726,7 +724,13 @@ export interface RollupConfig {
 
 export interface TreeTableConfig {}
 
-export interface TotalsTableConfig {}
+export interface TotalsTableConfig {
+  showTotalsByDefault: boolean;
+  showGrandTotalsByDefault: boolean;
+  defaultOperation: string;
+  groupBy: string[];
+}
+
 export interface TotalsTable extends Evented {
   readonly size: number;
   readonly column: Column[];

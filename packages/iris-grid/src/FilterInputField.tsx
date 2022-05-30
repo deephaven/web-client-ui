@@ -1,12 +1,10 @@
-import React, { ChangeEvent, PureComponent } from 'react';
-import PropTypes from 'prop-types';
+import React, { ChangeEvent, PureComponent, ReactElement } from 'react';
 import classNames from 'classnames';
 import debounce from 'lodash.debounce';
 import { vsFilter, dhFilterFilled } from '@deephaven/icons';
 import './FilterInputField.scss';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { DebouncedFunc } from 'lodash';
-import { ReactElementType } from 'react-window';
 
 interface FilterInputFieldProps {
   className: string;
@@ -32,20 +30,8 @@ class FilterInputField extends PureComponent<
   FilterInputFieldProps,
   FilterInputFieldState
 > {
-  propTypes = {
-    className: PropTypes.string,
-    style: PropTypes.object,
-    value: PropTypes.string,
-    isAdvancedFilterSet: PropTypes.bool,
-    onAdvancedFiltersTriggered: PropTypes.func,
-    onChange: PropTypes.func,
-    onDone: PropTypes.func,
-    onTab: PropTypes.func,
-    onContextMenu: PropTypes.func,
-    debounceMs: PropTypes.number,
-  };
   static defaultProps: {
-    style: {};
+    style: Record<string, never>;
     className: string;
     value: string;
     isAdvancedFilterSet: boolean;
@@ -56,9 +42,7 @@ class FilterInputField extends PureComponent<
     onContextMenu: () => void;
     debounceMs: number;
   };
-  inputField: HTMLInputElement | null;
-  initialValue: string;
-  debouncedSendUpdate: DebouncedFunc<(value: any) => void>;
+
   constructor(props: FilterInputFieldProps) {
     super(props);
 
@@ -102,6 +86,12 @@ class FilterInputField extends PureComponent<
     this.debouncedSendUpdate.cancel();
   }
 
+  inputField: HTMLInputElement | null;
+
+  initialValue: string;
+
+  debouncedSendUpdate: DebouncedFunc<(value: string) => void>;
+
   // clear filters needs to be able to reset the value externally
   // and due to the way this component handles its own debouncing
   // this was easier than moving state up.
@@ -110,7 +100,7 @@ class FilterInputField extends PureComponent<
     this.setState({ value });
   }
 
-  focus() {
+  focus(): void {
     this.inputField?.focus();
   }
 
@@ -133,10 +123,7 @@ class FilterInputField extends PureComponent<
     onDone();
   }
 
-  handleCommit(
-    setGridFocus: boolean = true,
-    defocusInput: boolean = true
-  ): void {
+  handleCommit(setGridFocus = true, defocusInput = true): void {
     this.debouncedSendUpdate.flush();
 
     const { onDone } = this.props;
@@ -164,14 +151,14 @@ class FilterInputField extends PureComponent<
     }
   }
 
-  handleTab(backward = false) {
+  handleTab(backward = false): void {
     this.debouncedSendUpdate.flush();
 
     const { onTab } = this.props;
     onTab(backward);
   }
 
-  handleKeyDown(event: React.KeyboardEvent<HTMLInputElement>) {
+  handleKeyDown(event: React.KeyboardEvent<HTMLInputElement>): void {
     switch (event.key) {
       case 'Escape':
         event.stopPropagation();
@@ -195,17 +182,17 @@ class FilterInputField extends PureComponent<
 
   handleContextMenu(
     event: React.MouseEvent<HTMLInputElement | HTMLButtonElement>
-  ) {
+  ): void {
     const { onContextMenu } = this.props;
     onContextMenu(event);
   }
 
-  sendUpdate(value: string) {
+  sendUpdate(value: string): void {
     const { onChange } = this.props;
     onChange(value);
   }
 
-  render() {
+  render(): ReactElement {
     const {
       className,
       style,

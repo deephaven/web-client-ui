@@ -12,9 +12,9 @@ export type MenuItem = ContextAction | Promise<ContextAction[]>;
 export interface ContextAction {
   title?: string;
   description?: string;
-  action?(event?: KeyboardEvent): void;
-  actions?: ResolvableContextAction[];
-  icon?: IconDefinition | React.ReactElement;
+  action?(event?: KeyboardEvent): void | null;
+  actions?: ResolvableContextAction[] | null;
+  icon?: IconDefinition | React.ReactElement | null;
   iconColor?: string;
   shortcut?: Shortcut;
   isGlobal?: boolean;

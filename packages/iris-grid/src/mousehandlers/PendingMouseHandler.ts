@@ -1,13 +1,12 @@
 /* eslint class-methods-use-this: "off" */
 import {
   Grid,
-  GridMouseEvent,
   GridMouseHandler,
   GridPoint,
   GridUtils,
   GridWheelEvent,
 } from '@deephaven/grid';
-import IrisGrid from '../IrisGrid';
+import IrisGrid, { assertNotNull } from '../IrisGrid';
 
 /**
  * Handles sending data selected via double click
@@ -27,6 +26,7 @@ class PendingMouseHandler extends GridMouseHandler {
     const { irisGrid } = this;
     const { model } = irisGrid.props;
     const { metrics, pendingRowCount } = irisGrid.state;
+    assertNotNull(metrics);
     const { bottom, rowCount, rowHeight } = metrics;
     const { deltaY } = GridUtils.getScrollDelta(wheelEvent);
     if (model.isEditable && bottom >= rowCount - 1 && deltaY > 0) {

@@ -1,13 +1,26 @@
 import type { GridThemeType } from '@deephaven/grid';
 import IrisGridTheme from './IrisGridTheme.module.scss';
 
-export type IrisGridThemeType = Partial<GridThemeType> & {
+export type IrisGridThemeType = GridThemeType & {
   filterBarHeight: number;
   filterBarCollapsedHeight: number;
   reverseHeaderBarHeight: number;
+  filterIconColor: string;
+  filterBarActiveColor: string;
+  contextMenuSortIconColor: string;
+  contextMenuReverseIconColor: string;
+  minScrimTransitionTime: number;
+  maxScrimTransitionTime: number;
+  nullStringColor: string;
+  pendingTextColor: string;
+  dateColor: string;
+  positiveNumberColor: string;
+  negativeNumberColor: string;
+  zeroNumberColor: string;
+  errorTextColor: string;
 };
 
-const theme: IrisGridThemeType = Object.freeze({
+const theme: Partial<IrisGridThemeType> = Object.freeze({
   backgroundColor: IrisGridTheme['grid-bg'],
   font: IrisGridTheme.font,
   headerBackgroundColor: IrisGridTheme['header-bg'],

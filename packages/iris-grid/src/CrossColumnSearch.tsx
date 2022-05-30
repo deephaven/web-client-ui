@@ -1,5 +1,4 @@
 import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Checkbox, Popper, SearchInput, Tooltip } from '@deephaven/components';
 import {
@@ -10,7 +9,7 @@ import {
   dhWarningCircleFilled,
   vsCircleLargeFilled,
 } from '@deephaven/icons';
-import dh, { Column } from '@deephaven/jsapi-shim';
+import dh, { Column, FilterCondition } from '@deephaven/jsapi-shim';
 import { TableUtils } from '@deephaven/jsapi-utils';
 import './CrossColumnSearch.scss';
 
@@ -33,28 +32,12 @@ class CrossColumnSearch extends PureComponent<
   CrossColumnSearchProps,
   CrossColumnSearchState
 > {
-  static propTypes: {
-    value: PropTypes.Validator<string>;
-    selectedColumns: PropTypes.Validator<(string | null | undefined)[]>;
-    invertSelection: PropTypes.Validator<boolean>;
-    onChange: PropTypes.Validator<(...args: any[]) => any>;
-    columns: PropTypes.Validator<
-      (
-        | PropTypes.InferProps<{
-            name: PropTypes.Validator<string>;
-            type: PropTypes.Validator<string>;
-          }>
-        | null
-        | undefined
-      )[]
-    >;
-  };
   static createSearchFilter(
     searchValue: string,
     selectedColumns: string[],
     columns: Column[],
     invertSelection: boolean
-  ) {
+  ): FilterCondition | null {
     const filterColumns = invertSelection
       ? columns
           .filter(column => !selectedColumns.includes(column.name))

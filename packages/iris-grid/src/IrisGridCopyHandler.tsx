@@ -1,6 +1,5 @@
-import React, { Component } from 'react';
+import React, { Component, ReactElement } from 'react';
 import classNames from 'classnames';
-import PropTypes from 'prop-types';
 import { CSSTransition } from 'react-transition-group';
 import {
   ContextActionUtils,
@@ -19,11 +18,11 @@ import {
   PromiseUtils,
 } from '@deephaven/utils';
 import Log from '@deephaven/log';
+import { Column } from '@deephaven/jsapi-shim';
 import IrisGridModel from './IrisGridModel';
 import IrisGridUtils from './IrisGridUtils';
 import IrisGridBottomBar from './IrisGridBottomBar';
 import './IrisGridCopyHandler.scss';
-import { Column } from '@deephaven/jsapi-shim';
 
 const log = Log.module('IrisGridCopyHandler');
 
@@ -33,7 +32,7 @@ export type CopyOperation = {
   formatValues: boolean;
   movedColumns: MoveOperation[];
   userColumnWidths: ModelSizeMap;
-  error: null;
+  error: string | null;
 };
 
 interface IrisGridCopyHandlerProps {
@@ -46,7 +45,7 @@ interface IrisGridCopyHandlerProps {
 }
 
 interface IrisGridCopyHandlerState {
-  error: Error | null;
+  error: string | null;
   copyState: string;
   buttonState: string;
   isShown: boolean;
@@ -94,6 +93,7 @@ class IrisGridCopyHandler extends Component<
     CLICK_TO_COPY: 'CLICK_TO_COPY',
     RETRY: 'RETRY',
   };
+
   static defaultProps: {
     copyOperation: null;
     onEntering: () => void;
@@ -131,10 +131,6 @@ class IrisGridCopyHandler extends Component<
         return 'Copy';
     }
   }
-
-  textData: string | null;
-  hideTimer: NodeJS.Timeout | null;
-  fetchPromise: CancelablePromise<string> | null;
 
   constructor(props: IrisGridCopyHandlerProps) {
     super(props);
@@ -174,6 +170,12 @@ class IrisGridCopyHandler extends Component<
   componentWillUnmount(): void {
     this.stopCopy();
   }
+
+  textData: string | null;
+
+  hideTimer: NodeJS.Timeout | null;
+
+  fetchPromise: CancelablePromise<string> | null;
 
   startCopy(): void {
     log.debug2('startCopy');
@@ -253,7 +255,7 @@ class IrisGridCopyHandler extends Component<
     this.setState({ isShown: false });
   }
 
-  copyText(text: string) {
+  copyText(text: string): void {
     log.debug2('copyText', text);
 
     this.textData = text;
@@ -273,7 +275,7 @@ class IrisGridCopyHandler extends Component<
     );
   }
 
-  startFetch() {
+  startFetch(): void {
     this.stopFetch();
 
     this.setState({
@@ -329,7 +331,7 @@ class IrisGridCopyHandler extends Component<
       });
   }
 
-  stopFetch() {
+  stopFetch(): void {
     if (this.fetchPromise) {
       log.debug2('stopFetch');
       this.fetchPromise.cancel();
@@ -337,7 +339,7 @@ class IrisGridCopyHandler extends Component<
     }
   }
 
-  startHideTimer() {
+  startHideTimer(): void {
     this.stopHideTimer();
 
     this.hideTimer = setTimeout(
@@ -353,7 +355,7 @@ class IrisGridCopyHandler extends Component<
     }
   }
 
-  render() {
+  render(): ReactElement {
     const { onEntering, onEntered, onExiting, onExited } = this.props;
     const { buttonState, copyState, isShown, rowCount, error } = this.state;
 

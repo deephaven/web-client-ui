@@ -14,7 +14,7 @@ class IrisGridModelFactory {
   static async makeModel(
     table: Table | TreeTable,
     formatter = new Formatter()
-  ) {
+  ): Promise<IrisGridProxyModel> {
     let inputTable = null;
     if (table.hasInputTable) {
       inputTable = await table.inputTable();

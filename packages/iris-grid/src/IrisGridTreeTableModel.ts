@@ -9,7 +9,7 @@ class IrisGridTreeTableModel extends IrisGridTableModel {
     this.table.setViewport(viewportTop, viewportBottom, columns);
   }
 
-  textForCell(x, y) {
+  textForCell(x: number, y: number) {
     const column = this.columns[x];
     const row = this.row(y);
     if (row != null && column != null) {
@@ -77,48 +77,48 @@ class IrisGridTreeTableModel extends IrisGridTableModel {
     return this.table.groupedColumns ?? [];
   }
 
-  get hasExpandableRows() {
+  get hasExpandableRows(): boolean {
     return true;
   }
 
-  get isChartBuilderAvailable() {
+  get isChartBuilderAvailable(): boolean {
     return false;
   }
 
-  get isSelectDistinctAvailable() {
+  get isSelectDistinctAvailable(): boolean {
     return false;
   }
 
-  get isReversible() {
+  get isReversible(): boolean {
     return false;
   }
 
-  isFilterable(columnIndex) {
+  isFilterable(columnIndex): boolean {
     return this.getCachedFilterableColumnSet(
       this.columns,
       this.groupedColumns
     ).has(columnIndex);
   }
 
-  isColumnMovable(column) {
+  isColumnMovable(column): boolean {
     return column >= this.groupedColumns.length;
   }
 
-  isRowExpandable(y) {
+  isRowExpandable(y): boolean {
     const row = this.row(y);
     return row?.hasChildren ?? false;
   }
 
-  isRowExpanded(y) {
+  isRowExpanded(y): boolean {
     const row = this.row(y);
     return row?.isExpanded ?? false;
   }
 
-  setRowExpanded(y, isExpanded) {
+  setRowExpanded(y: number, isExpanded: boolean): void {
     this.table.setExpanded(y, isExpanded);
   }
 
-  depthForRow(y) {
+  depthForRow(y: number): number {
     const row = this.row(y);
     return (row?.depth ?? 1) - 1;
   }

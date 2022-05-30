@@ -5,7 +5,7 @@ import {
   EventHandlerResult,
 } from '@deephaven/grid';
 import type { Column } from '@deephaven/jsapi-shim';
-import type { IrisGrid } from '../IrisGrid';
+import { assertNotNull, IrisGrid } from '../IrisGrid';
 
 /**
  * Handles interaction with tables when the Linker tool is active
@@ -119,6 +119,7 @@ class IrisGridColumnSelectMouseHandler extends GridMouseHandler {
 
     const { column } = gridPoint;
     const tableColumn = this.getTableColumn(column);
+    assertNotNull(tableColumn);
     if (this.isValidColumn(tableColumn)) {
       this.irisGrid.selectColumn(tableColumn);
     }

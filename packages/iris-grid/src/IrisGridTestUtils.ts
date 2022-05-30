@@ -1,11 +1,16 @@
-import dh from '@deephaven/jsapi-shim';
+import { GridRangeIndex } from '@deephaven/grid';
+import dh, { Column } from '@deephaven/jsapi-shim';
 import { Formatter } from '@deephaven/jsapi-utils';
 import IrisGridProxyModel from './IrisGridProxyModel';
 
 class IrisGridTestUtils {
   static DEFAULT_TYPE = 'java.lang.String';
 
-  static valueForCell(rowIndex, columnIndex, formatValue) {
+  static valueForCell(
+    rowIndex: GridRangeIndex,
+    columnIndex: GridRangeIndex,
+    formatValue: boolean
+  ): string {
     let value = `${rowIndex},${columnIndex}`;
     if (formatValue) {
       value = `(${value})`;
@@ -13,11 +18,15 @@ class IrisGridTestUtils {
     return value;
   }
 
-  static makeColumn(name, type = IrisGridTestUtils.DEFAULT_TYPE, index = 0) {
+  static makeColumn(
+    name: string,
+    type = IrisGridTestUtils.DEFAULT_TYPE,
+    index = 0
+  ): Column {
     return new dh.Column({ index, name, type });
   }
 
-  static makeColumns(count = 5) {
+  static makeColumns(count = 5): Column[] {
     const columns = [];
     for (let i = 0; i < count; i += 1) {
       columns.push(this.makeColumn(`${i}`, IrisGridTestUtils.DEFAULT_TYPE, i));
@@ -25,7 +34,7 @@ class IrisGridTestUtils {
     return columns;
   }
 
-  static makeUserColumnWidths(count = 5) {
+  static makeUserColumnWidths(count = 5): ModelSizeMap {
     const userColumnWidths = new Map();
     for (let i = 0; i < count; i += 1) {
       userColumnWidths.set(i.toString(), 100);
@@ -33,7 +42,7 @@ class IrisGridTestUtils {
     return userColumnWidths;
   }
 
-  static makeRow(i) {
+  static makeRow(i: number) {
     const row = new dh.Row({ index: i, name: `${i}` });
 
     row.get = jest.fn(column =>
@@ -72,7 +81,7 @@ class IrisGridTestUtils {
     table = IrisGridTestUtils.makeTable(),
     formatter = new Formatter(),
     inputTable = null
-  ) {
+  ): IrisGridProxyModel {
     return new IrisGridProxyModel(table, formatter, inputTable);
   }
 }

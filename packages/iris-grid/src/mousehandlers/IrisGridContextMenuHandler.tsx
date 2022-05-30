@@ -1,7 +1,13 @@
 /* eslint class-methods-use-this: "off" */
 import React from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { dhFilterFilled, vsRemove, vsCheck, vsFilter } from '@deephaven/icons';
+import {
+  dhFilterFilled,
+  vsRemove,
+  vsCheck,
+  vsFilter,
+  IconDefinition,
+} from '@deephaven/icons';
 import debounce from 'lodash.debounce';
 import {
   ContextAction,
@@ -14,17 +20,21 @@ import {
   Grid,
   GridMouseHandler,
   GridPoint,
+  GridRangeIndex,
+  VisibleIndex,
 } from '@deephaven/grid';
 import dh, {
   Column,
   FilterCondition,
   FilterValue,
+  Sort,
 } from '@deephaven/jsapi-shim';
 import {
   TableColumnFormatter,
   DateTimeColumnFormatter,
   TableUtils,
-  SortDirection,
+  TableColumnFormat,
+  IntegerColumnFormat,
 } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
 import { DebouncedFunc } from 'lodash';
@@ -38,6 +48,7 @@ import SHORTCUTS from '../IrisGridShortcuts';
 import IrisGrid, {
   assertNotNull,
   assertNotNullNorUndefined,
+  QuickFilter,
 } from '../IrisGrid';
 
 const log = Log.module('IrisGridContextMenuHandler');
@@ -135,17 +146,17 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
 
   static getFilterValueForNumberOrChar(
     columnType: string,
-    value: number
+    value: unknown
   ): FilterValue {
     return TableUtils.isCharType(columnType)
-      ? dh.FilterValue.ofString(String.fromCharCode(value))
+      ? dh.FilterValue.ofString(String.fromCharCode(value as number))
       : dh.FilterValue.ofNumber(value);
   }
 
   irisGrid: IrisGrid;
 
   debouncedUpdateCustomFormat: DebouncedFunc<
-    (modelIndex: any, selectedFormat: any) => void
+    (modelIndex: number, selectedFormat: TableColumnFormat | null) => void
   >;
 
   constructor(irisGrid: IrisGrid) {
@@ -255,12 +266,14 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
         const isColumnHidden = [...userColumnWidths.values()].some(
           columnWidth => columnWidth === 0
         );
-        const isColumnFrozen = model.isColumnFrozen(modelColumn);
+        const isColumnFrozen = model.isColumnFrozen(
+          columnIndex as VisibleIndex
+        );
         actions.push({
           title: 'Hide Column',
           group: IrisGridContextMenuHandler.GROUP_HIDE_COLUMNS,
           action: () => {
-            this.irisGrid.hideColumnByVisibleIndex(columnIndex);
+            this.irisGrid.hideColumnByVisibleIndex(columnIndex as VisibleIndex);
           },
         });
         actions.push({
@@ -401,7 +414,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
           actions.push({
             title: 'Number Format',
             group: IrisGridContextMenuHandler.GROUP_FORMAT,
-            actions: this.numberFormatActions(column),
+            actions: this.numberFormatActions(column) ?? undefined,
           });
         }
       }
@@ -417,6 +430,13 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
             group: IrisGridContextMenuHandler.GROUP_FILTER,
             order: 10,
             actions: null,
+          } as {
+            title: string;
+            icon: IconDefinition;
+            iconColor: string;
+            group: number;
+            order: number;
+            actions: ContextAction[] | null;
           };
 
           const andFilterMenu = {
@@ -427,6 +447,14 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
             order: 20,
             actions: null,
             disabled: !quickFilters.get(modelColumn),
+          } as {
+            title: string;
+            icon: IconDefinition;
+            iconColor: string;
+            group: number;
+            order: number;
+            actions: ContextAction[] | null;
+            disabled: boolean;
           };
 
           if (value != null) {
@@ -438,12 +466,14 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
               // We want to show the full unformatted value if it's a number, so user knows which value they are matching
               // If it's a Char we just show the char
               const numberValueText = TableUtils.isCharType(column.type)
-                ? String.fromCharCode(value)
+                ? String.fromCharCode(value as value)
                 : `${value}`;
               filterMenu.actions = this.numberFilterActions(
                 column,
                 numberValueText,
-                value
+                value,
+                quickFilters.get(modelColumn),
+                true
               );
               andFilterMenu.actions = this.numberFilterActions(
                 column,
@@ -495,7 +525,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
             filterMenu.actions = this.nullFilterActions(column);
             andFilterMenu.actions = this.nullFilterActions(
               column,
-              quickFilters.get(modelColumn),
+              quickFilters.get(modelColumn) as QuickF,
               true
             );
           }
@@ -584,10 +614,11 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
     return true;
   }
 
-  dateFormatActions(column) {
+  dateFormatActions(column: Column): ContextAction[] {
     const { model } = this.irisGrid.props;
     const { formatter } = model;
     const selectedFormat = formatter.getColumnFormat(column.type, column.name);
+    assertNotNull(selectedFormat);
     const formatOptions = DateTimeFormatContextMenu.getOptions(
       formatter,
       selectedFormat
@@ -602,7 +633,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
       actions.push({
         title,
         description,
-        icon: isSelected ? vsCheck : null,
+        icon: isSelected ? vsCheck : undefined,
         group,
         order: i,
         action: () => {
@@ -616,10 +647,13 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
     return actions;
   }
 
-  numberFormatActions(column) {
+  numberFormatActions(column: Column): ContextAction[] | null {
     const { model } = this.irisGrid.props;
     const { formatter } = model;
-    const selectedFormat = formatter.getColumnFormat(column.type, column.name);
+    const selectedFormat = formatter.getColumnFormat(
+      column.type,
+      column.name
+    ) as IntegerColumnFormat;
     let formatOptions;
 
     const columnIndex = model.getColumnIndexByName(column.name);
@@ -648,7 +682,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
       const { format, isSelected } = formatOptions[i];
       actions.push({
         ...formatOptions[i],
-        icon: isSelected ? vsCheck : null,
+        icon: isSelected ? vsCheck : undefined,
         order: i,
         action: () => {
           if (
@@ -665,12 +699,12 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
   }
 
   stringFilterActions(
-    column,
-    valueText,
-    value,
-    quickFilter = {},
+    column: Column,
+    valueText: string,
+    value: number,
+    quickFilter: QuickFilter,
     additive = false
-  ) {
+  ): ContextAction[] {
     const filterValue = dh.FilterValue.ofString(value);
     const { filter, text: filterText } = quickFilter;
     const actions = [];
@@ -793,7 +827,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
         this.irisGrid.setQuickFilter(
           columnIndex,
           IrisGridContextMenuHandler.getQuickFilterCondition(
-            quickFilter,
+            filter,
             column.filter().invoke('endsWith', filterValue),
             additive
           ),
@@ -810,12 +844,12 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
   }
 
   numberFilterActions(
-    column,
-    valueText,
-    value,
-    quickFilter = {},
+    column: Column,
+    valueText: string,
+    value: unknown,
+    quickFilter: QuickFilter,
     additive = false
-  ) {
+  ): ContextAction[] {
     const filterValue = IrisGridContextMenuHandler.getFilterValueForNumberOrChar(
       column.type,
       value
@@ -843,7 +877,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
       action: () => {
         const valueFilter = IrisGridContextMenuHandler.getNumberValueEqualsFilter(
           column,
-          value
+          value as number
         );
         this.irisGrid.setQuickFilter(
           columnIndex,
@@ -867,7 +901,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
       action: () => {
         const valueFilter = IrisGridContextMenuHandler.getNumberValueEqualsFilter(
           column,
-          value
+          value as number
         ).not();
         this.irisGrid.setQuickFilter(
           columnIndex,
@@ -974,7 +1008,12 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
     return actions;
   }
 
-  booleanFilterActions(column, valueText, quickFilter = {}, additive = false) {
+  booleanFilterActions(
+    column: Column,
+    valueText: string,
+    quickFilter: QuickFilter,
+    additive = false
+  ): ContextAction[] {
     const actions = [];
     const { filter, text: filterText } = quickFilter;
     const { model } = this.irisGrid.props;
@@ -1035,7 +1074,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
         this.irisGrid.setQuickFilter(
           columnIndex,
           IrisGridContextMenuHandler.getQuickFilterCondition(
-            quickFilter,
+            filter,
             column.filter().isNull(),
             additive
           ),
@@ -1057,9 +1096,9 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
     valueText: string,
     previewValue: unknown,
     value: unknown,
-    quickFilter = {},
+    quickFilter: QuickFilter,
     additive = false
-  ) {
+  ): ContextAction[] {
     const filterValue = dh.FilterValue.ofNumber(value);
     const { filter, text: filterText } = quickFilter;
     const { model } = this.irisGrid.props;
@@ -1198,7 +1237,11 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
     return actions;
   }
 
-  nullFilterActions(column, quickFilter = {}, additive = false) {
+  nullFilterActions(
+    column: Column,
+    quickFilter?: QuickFilter,
+    additive = false
+  ): ContextAction[] {
     const { filter, text: filterText } = quickFilter;
     const actions = [];
     const { model } = this.irisGrid.props;
@@ -1256,9 +1299,14 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
     return actions;
   }
 
-  sortByActions(column, modelColumn, columnSort) {
+  sortByActions(
+    column: Column,
+    modelColumn: GridRangeIndex,
+    columnSort: Sort | null
+  ): ContextAction[] {
     const theme = this.irisGrid.getTheme();
     const { contextMenuSortIconColor } = theme;
+    assertNotNull(columnSort);
     const sortActions = [
       {
         title: `${column.name} Ascending`,
@@ -1351,7 +1399,10 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
     return sortActions;
   }
 
-  additionalSortActions(column, columnIndex) {
+  additionalSortActions(
+    column: Column,
+    columnIndex: GridRangeIndex
+  ): ContextAction[] {
     const theme = this.irisGrid.getTheme();
     const { contextMenuSortIconColor } = theme;
     const additionalSortActions = [
@@ -1427,7 +1478,11 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
     return additionalSortActions;
   }
 
-  checkColumnSort(columnSort, direction: string | null = null, isAbs = false) {
+  checkColumnSort(
+    columnSort: Sort,
+    direction: string | null = null,
+    isAbs = false
+  ): boolean {
     if (!columnSort) {
       return false;
     }

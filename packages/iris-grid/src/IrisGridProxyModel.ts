@@ -3,14 +3,18 @@ import deepEqual from 'deep-equal';
 import { Formatter, TableUtils } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
 import { CancelablePromise, PromiseUtils } from '@deephaven/utils';
+import { InputTable, Table, TreeTable } from '@deephaven/jsapi-shim';
 import IrisGridTableModel from './IrisGridTableModel';
 import IrisGridTreeTableModel from './IrisGridTreeTableModel';
 import IrisGridModel from './IrisGridModel';
-import { Table } from '@deephaven/jsapi-shim';
 
 const log = Log.module('IrisGridProxyModel');
 
-function makeModel(table: Table, formatter?: Formatter, inputTable?: null) {
+function makeModel(
+  table: Table | TreeTable,
+  formatter?: Formatter,
+  inputTable?: InputTable | null
+) {
   if (TableUtils.isTreeTable(table)) {
     return new IrisGridTreeTableModel(table, formatter);
   }
@@ -29,13 +33,22 @@ class IrisGridProxyModel extends IrisGridModel {
    */
 
   originalModel: IrisGridTreeTableModel | IrisGridTableModel;
+
   model: IrisGridTreeTableModel | IrisGridTableModel;
+
   modelPromise: CancelablePromise<
     IrisGridTreeTableModel | IrisGridTableModel
   > | null;
-  rollup: null;: void
+
+  rollup: void;
+
   selectDistinct: [];
-  constructor(table: Table | TreeTable, formatter = new Formatter(), inputTable = null) {
+
+  constructor(
+    table: Table | TreeTable,
+    formatter = new Formatter(),
+    inputTable: InputTable | null = null
+  ) {
     super();
 
     this.handleModelEvent = this.handleModelEvent.bind(this);

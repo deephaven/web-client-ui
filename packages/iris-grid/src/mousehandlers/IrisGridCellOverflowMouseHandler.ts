@@ -133,7 +133,7 @@ class IrisGridCellOverflowMouseHandler extends GridMouseHandler {
     if (this.isHoveringOverflowButton(point)) {
       this.irisGrid.setState({
         showOverflowModal: true,
-        overflowText: this.irisGrid.getValueForCell(column, row),
+        overflowText: this.irisGrid.getValueForCell(column, row) as string,
       });
     }
 

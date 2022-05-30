@@ -1,6 +1,5 @@
 import React, { Component, ReactElement } from 'react';
 import classNames from 'classnames';
-import PropTypes from 'prop-types';
 import shortid from 'shortid';
 import memoize from 'memoize-one';
 import { DragDropContext, Droppable, DropResult } from 'react-beautiful-dnd';
@@ -37,6 +36,7 @@ class CustomColumnBuilder extends Component<
   CustomColumnBuilderState
 > {
   static SUCCESS_SHOW_DURATION = 750;
+
   static defaultProps: {
     customColumns: never[];
     onSave: () => void;
@@ -47,17 +47,13 @@ class CustomColumnBuilder extends Component<
     return shortid.generate();
   }
 
-  static createCustomColumnInput() {
+  static createCustomColumnInput(): Input {
     return {
       eventKey: shortid.generate(),
       name: '',
       formula: '',
     };
   }
-
-  container: HTMLDivElement | null;
-  successButtonTimer: NodeJS.Timeout | null;
-  messageTimer: undefined;
 
   constructor(props: CustomColumnBuilderProps) {
     super(props);
@@ -100,6 +96,12 @@ class CustomColumnBuilder extends Component<
     }
   }
 
+  container: HTMLDivElement | null;
+
+  successButtonTimer: NodeJS.Timeout | null;
+
+  messageTimer: undefined;
+
   getInput = memoize((inputs: Input[], key: string) =>
     inputs.find(input => input.eventKey === key)
   );
@@ -108,11 +110,11 @@ class CustomColumnBuilder extends Component<
     inputs.findIndex(input => input.eventKey === key)
   );
 
-  resetErrorMessage() {
+  resetErrorMessage(): void {
     this.setState({ errorMessage: null });
   }
 
-  startListening() {
+  startListening(): void {
     const { model } = this.props;
     model.addEventListener(
       IrisGridModel.EVENT.COLUMNS_CHANGED,
@@ -128,7 +130,7 @@ class CustomColumnBuilder extends Component<
     );
   }
 
-  stopListening() {
+  stopListening(): void {
     const { model } = this.props;
     model.removeEventListener(
       IrisGridModel.EVENT.COLUMNS_CHANGED,
@@ -144,7 +146,7 @@ class CustomColumnBuilder extends Component<
     );
   }
 
-  parseCustomColumns(customColumns: string[]) {
+  parseCustomColumns(customColumns: string[]): void {
     if (customColumns.length > 0) {
       const customColumnInputs = customColumns.map(customColumn => {
         const input = customColumn.split(/=(.+)/, 2);
@@ -203,7 +205,7 @@ class CustomColumnBuilder extends Component<
     });
   }
 
-  handleCustomColumnUpdated() {
+  handleCustomColumnUpdated(): void {
     const { isCustomColumnApplying } = this.state;
     if (!isCustomColumnApplying) {
       return;
@@ -219,7 +221,7 @@ class CustomColumnBuilder extends Component<
     );
   }
 
-  handleRequestFailed(event: Event) {
+  handleRequestFailed(event: Event): void {
     const customEvent = event as CustomEvent;
     const { isCustomColumnApplying } = this.state;
     if (!isCustomColumnApplying) {
@@ -245,7 +247,7 @@ class CustomColumnBuilder extends Component<
     });
   }
 
-  handleDragEnd(result: DropResult) {
+  handleDragEnd(result: DropResult): void {
     DragUtils.stopDragging();
 
     // if dropped outside the list

@@ -1,4 +1,4 @@
-import { GridRange, GridUtils } from '@deephaven/grid';
+import { GridRange, GridRangeIndex, GridUtils, MoveOperation } from '@deephaven/grid';
 import dh, {
   Column,
   DateWrapper,
@@ -837,13 +837,13 @@ class IrisGridUtils {
   }
 
   static getVisibleColumnsInRange(
-    tableColumns,
-    left,
-    right,
-    movedColumns,
-    hiddenColumns
-  ) {
-    const columns = [];
+    tableColumns: Column[],
+    left: number,
+    right: number,
+    movedColumns: MoveOperation[],
+    hiddenColumns: number[]
+  ): Column[] {
+    const columns = []as Column[];
     for (let i = left; i <= right; i += 1) {
       const modelIndex = GridUtils.getModelIndex(i, movedColumns);
       if (
@@ -858,12 +858,12 @@ class IrisGridUtils {
   }
 
   static getPrevVisibleColumns(
-    tableColumns,
-    startIndex,
-    count,
-    movedColumns,
-    hiddenColumns
-  ) {
+    tableColumns: Column[],
+    startIndex: number,
+    count: number,
+    movedColumns: MoveOperation[],
+    hiddenColumns: number[]
+  ): Column[] {
     const columns = [];
     let i = startIndex;
     while (i >= 0 && columns.length < count) {
@@ -919,13 +919,13 @@ class IrisGridUtils {
   }
 
   static getModelViewportColumns(
-    columns,
-    left,
-    right,
-    movedColumns = [],
-    hiddenColumns = [],
-    alwaysFetchColumnNames = [],
-    bufferPages = 0
+    columns: Column[],
+    left: number,
+    right: number,
+    movedColumns: MoveOperation[],
+    hiddenColumns: number[] = [],
+    alwaysFetchColumnNames: string[] = [],
+    bufferPages: number = 0
   ) {
     if (left == null || right == null) {
       return null;
@@ -1034,7 +1034,7 @@ class IrisGridUtils {
    * @param {dh.Column[]} allColumns All the columns to pull from
    * @returns {dh.Column[]} The columns selected in the range
    */
-  static columnsFromRanges(ranges, allColumns) {
+  static columnsFromRanges(ranges: GridRange[], allColumns: Column[]): Column[] {
     if (!ranges || ranges.length === 0) {
       return [];
     }
@@ -1043,11 +1043,11 @@ class IrisGridUtils {
       return allColumns;
     }
 
-    const columnSet = new Set();
+    const columnSet = new Set() as Set<number>;
     for (let i = 0; i < ranges.length; i += 1) {
       const range = ranges[i];
       for (
-        let c = range.startColumn ?? 0;
+        let c = range.startColumn ?? 0 as number;
         c <= (range.endColumn ?? allColumns.length - 1);
         c += 1
       ) {
@@ -1152,10 +1152,10 @@ class IrisGridUtils {
    * @param {Map} pendingDataMap Map of pending data
    * @returns {Map} A map with the errors in the pending data
    */
-  static getPendingErrors(pendingDataMap) {
+  static getPendingErrors(pendingDataMap: Map<number, Map<string, unknown>>): void {
     pendingDataMap.forEach((row, rowIndex) => {
       if (!IrisGridUtils.isValidIndex(rowIndex)) {
-        throw new Error('Invalid rowIndex', rowIndex);
+        throw new Error(`Invalid rowIndex ${rowIndex}`);
       }
 
       const { data } = row;
@@ -1173,7 +1173,7 @@ class IrisGridUtils {
    * @param {dh.Columns[]} columns The columns to get the column from
    * @param {Number} columnIndex The column index to get
    */
-  static getColumn(columns, columnIndex) {
+  static getColumn(columns: Column[], columnIndex: number): Column | null{
     if (columnIndex < columns.length) {
       return columns[columnIndex];
     }
@@ -1207,7 +1207,7 @@ class IrisGridUtils {
    * @param {Object[]} filters Filter configs
    * @returns {Object[]} Updated filter configs with column names changed to indexes
    */
-  static changeFilterColumnNamesToIndexes(columns: Column[], filters: {name: string, filter: FilterCondition}[]) {
+  static changeFilterColumnNamesToIndexes(columns: Column[], filters: {name: string, filter: unknown}[]) {
     return filters
       .map(({ name, filter }) => {
         const index = columns.findIndex(column => column.name === name);

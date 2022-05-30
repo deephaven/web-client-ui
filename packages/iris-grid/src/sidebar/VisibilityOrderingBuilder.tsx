@@ -1,8 +1,12 @@
 /* eslint-disable jsx-a11y/click-events-have-key-events */
-import React, { Component } from 'react';
+import React, { ChangeEvent, Component, ReactElement } from 'react';
 import classNames from 'classnames';
-import PropTypes from 'prop-types';
-import { GridUtils } from '@deephaven/grid';
+import {
+  GridUtils,
+  ModelSizeMap,
+  MoveOperation,
+  VisibleIndex,
+} from '@deephaven/grid';
 import { TextUtils } from '@deephaven/utils';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -16,18 +20,51 @@ import {
   vsChevronDown,
   vsGripper,
 } from '@deephaven/icons';
-import { DragDropContext, Draggable, Droppable } from 'react-beautiful-dnd';
+import {
+  DragDropContext,
+  Draggable,
+  DragStart,
+  Droppable,
+  DropResult,
+} from 'react-beautiful-dnd';
 import memoize from 'memoizee';
 import debounce from 'lodash.debounce';
 import { SearchInput, Tooltip } from '@deephaven/components';
 import Log from '@deephaven/log';
 import './VisibilityOrderingBuilder.scss';
+import { DebouncedFunc } from 'lodash';
 import IrisGridModel from '../IrisGridModel';
+import { assertNotNull } from '../IrisGrid';
 
 const log = Log.module('VisibilityOrderingBuilder');
 const DEBOUNCE_SEARCH_COLUMN = 150;
 
-class VisibilityOrderingBuilder extends Component {
+interface VisibilityOrderingBuilderProps {
+  model: IrisGridModel;
+  movedColumns: MoveOperation[];
+  userColumnWidths: ModelSizeMap;
+  onColumnVisibilityChanged: (
+    columns: number[],
+    options: string | null
+  ) => void;
+  onMovedColumnsChanged: (operations: MoveOperation[], cb?: () => void) => void;
+}
+
+interface VisibilityOrderingBuilderState {
+  selectedColumns: number[]; // model index of selected column(s)
+  lastSelectedColumns: number[];
+  isDraggingVisibility: boolean;
+  visibilityDraggingOption: string | null;
+  visibilityDraggingStartColumn: number | null;
+  isDraggingOrder: boolean;
+  orderDraggingColumn: number | null;
+  searchFilter: string;
+}
+
+class VisibilityOrderingBuilder extends Component<
+  VisibilityOrderingBuilderProps,
+  VisibilityOrderingBuilderState
+> {
   static VISIBILITY_OPTIONS = { SHOW: 'SHOW', HIDE: 'HIDE' };
 
   static SORTING_OPTIONS = { DSC: 'DSC', ASC: 'ASC' };
@@ -41,7 +78,13 @@ class VisibilityOrderingBuilder extends Component {
 
   static COLUMN_CHANGE_OPTIONS = { ALL: 'ALL', SELECTION: 'SELECTION' };
 
-  constructor(props) {
+  static defaultProps: {
+    movedColumns: never[];
+    onColumnVisibilityChanged: () => void;
+    onMovedColumnsChanged: () => void;
+  };
+
+  constructor(props: VisibilityOrderingBuilderProps) {
     super(props);
 
     this.handleSearchInputChange = this.handleSearchInputChange.bind(this);
@@ -66,11 +109,15 @@ class VisibilityOrderingBuilder extends Component {
     this.list = null;
   }
 
-  componentWillUnmount() {
+  componentWillUnmount(): void {
     this.debouncedSearchColumns.cancel();
   }
 
-  resetVisibilityOrdering() {
+  debouncedSearchColumns: DebouncedFunc<(searchFilter: string) => void>;
+
+  list: HTMLDivElement | null;
+
+  resetVisibilityOrdering(): void {
     const {
       model,
       onColumnVisibilityChanged,
@@ -90,7 +137,7 @@ class VisibilityOrderingBuilder extends Component {
     onMovedColumnsChanged([]);
   }
 
-  resetSelection() {
+  resetSelection(): void {
     const { isDraggingOrder } = this.state;
     // don't reset selection if user is dragging column(s)
     if (isDraggingOrder) {
@@ -99,7 +146,7 @@ class VisibilityOrderingBuilder extends Component {
     this.setState({ selectedColumns: [], lastSelectedColumns: [] });
   }
 
-  handleSearchInputChange(event) {
+  handleSearchInputChange(event: ChangeEvent<HTMLInputElement>): void {
     const searchFilter = event.target.value;
     this.setState({ searchFilter });
     if (!searchFilter) {
@@ -110,11 +157,11 @@ class VisibilityOrderingBuilder extends Component {
     this.debouncedSearchColumns(searchFilter);
   }
 
-  searchColumns(searchFilter) {
+  searchColumns(searchFilter: string): void {
     const { model, movedColumns } = this.props;
     const { columns } = model;
 
-    const columnsMatch = [];
+    const columnsMatch = [] as number[];
     let visibleIndexToFocus = columns.length;
     columns.forEach((column, index) => {
       const columnName = column.name.toLowerCase();
@@ -131,19 +178,23 @@ class VisibilityOrderingBuilder extends Component {
     });
     this.addColumnToSelected(columnsMatch, false);
     if (columnsMatch.length > 0) {
-      const columnItemToFocus = this.list.querySelectorAll('.column-item')[
+      const columnItemToFocus = this.list?.querySelectorAll('.column-item')[
         visibleIndexToFocus
       ];
-      columnItemToFocus.scrollIntoView({ block: 'center' });
+      columnItemToFocus?.scrollIntoView({ block: 'center' });
     }
   }
 
-  handleVisibilityKeyDown(modelIndex, visibilityOption) {
+  handleVisibilityKeyDown(modelIndex: number, visibilityOption: string): void {
     const { onColumnVisibilityChanged } = this.props;
     onColumnVisibilityChanged([modelIndex], visibilityOption);
   }
 
-  handleVisibilityDraggingStart(modelIndex, visibilityOption, event) {
+  handleVisibilityDraggingStart(
+    modelIndex: number,
+    visibilityOption: string,
+    event: React.MouseEvent<HTMLButtonElement, MouseEvent>
+  ): void {
     const { onColumnVisibilityChanged, movedColumns } = this.props;
 
     const isModifierKeyDown = GridUtils.isModifierKeyDown(event);
@@ -164,8 +215,10 @@ class VisibilityOrderingBuilder extends Component {
     this.addColumnToSelected([modelIndex]);
   }
 
-  handleVisibilityDraggingEnd(event = null) {
-    if (event) event.target.focus();
+  handleVisibilityDraggingEnd(
+    event: React.MouseEvent<HTMLButtonElement, MouseEvent> | null = null
+  ): void {
+    if (event) (event.target as HTMLButtonElement).focus();
 
     const { isDraggingVisibility } = this.state;
     if (isDraggingVisibility) {
@@ -177,7 +230,7 @@ class VisibilityOrderingBuilder extends Component {
     }
   }
 
-  handleOrderDraggingStart(start) {
+  handleOrderDraggingStart(start: DragStart): void {
     document.documentElement.classList.add('drag-pointer-events-none');
 
     const { selectedColumns } = this.state;
@@ -190,7 +243,9 @@ class VisibilityOrderingBuilder extends Component {
     // we want to clear focus from any eye toggles
     // however to maintain react-beautiful-dnd keyboard functionality the only valid
     // focus target is the drag target itself, so we set it there instead of blurring
-    this.list.querySelectorAll('.column-item')[startIndex].focus();
+    (this.list?.querySelectorAll('.column-item')[
+      startIndex
+    ] as HTMLDivElement).focus();
 
     if (!selectedColumns.includes(orderDraggingColumn)) {
       this.setState({
@@ -203,7 +258,7 @@ class VisibilityOrderingBuilder extends Component {
     this.setState({ isDraggingOrder: true, orderDraggingColumn });
   }
 
-  handleOrderDraggingEnd(result) {
+  handleOrderDraggingEnd(result: DropResult): void {
     document.documentElement.classList.remove('drag-pointer-events-none');
 
     const { movedColumns, onMovedColumnsChanged } = this.props;
@@ -225,13 +280,14 @@ class VisibilityOrderingBuilder extends Component {
         GridUtils.getVisibleIndex(columnB, movedColumns)
     );
 
-    let newMoves = [].concat(movedColumns);
+    let newMoves = ([] as MoveOperation[]).concat(movedColumns);
+    assertNotNull(orderDraggingColumn);
     const draggingVisibleIndex = GridUtils.getVisibleIndex(
       orderDraggingColumn,
       newMoves
     );
-    const upper = [];
-    const lower = [];
+    const upper = [] as number[];
+    const lower = [] as number[];
 
     // move the dragged column to destination first,
     newMoves = GridUtils.moveItem(
@@ -279,7 +335,10 @@ class VisibilityOrderingBuilder extends Component {
     log.debug('move column order by drag & drop', newMoves);
   }
 
-  handleMouseEnter(targetModelIndex, event) {
+  handleMouseEnter(
+    targetModelIndex: number,
+    event: React.MouseEvent<HTMLButtonElement, MouseEvent>
+  ): void {
     const {
       onColumnVisibilityChanged,
       movedColumns,
@@ -301,11 +360,12 @@ class VisibilityOrderingBuilder extends Component {
       return;
     }
 
-    event.target.focus();
+    (event.target as HTMLButtonElement).focus();
 
     // browser can skip mouseEnter / mouseMove event if user moves the mouse too fast
     // try to check columns between dragging start index to current index to compensate missing event,
     const columnsToChangeVisibility = [targetModelIndex];
+    assertNotNull(draggingStartVisibleIndex);
     const checkDownward = targetVisibleIndex > draggingStartVisibleIndex;
 
     for (
@@ -346,7 +406,7 @@ class VisibilityOrderingBuilder extends Component {
     );
   }
 
-  handleMoveColumns(option) {
+  handleMoveColumns(option: string): void {
     const { movedColumns, onMovedColumnsChanged, model } = this.props;
     const { columns } = model;
     const { selectedColumns } = this.state;
@@ -373,7 +433,7 @@ class VisibilityOrderingBuilder extends Component {
           GridUtils.getVisibleIndex(columnA, movedColumns)
     );
 
-    let newMoves = [];
+    let newMoves = [] as MoveOperation[];
     let scrollListAfterMove = () => {};
 
     switch (option) {
@@ -390,6 +450,7 @@ class VisibilityOrderingBuilder extends Component {
           );
         });
         scrollListAfterMove = () => {
+          assertNotNull(this.list);
           this.list.scrollTop = 0;
         };
         break;
@@ -406,6 +467,7 @@ class VisibilityOrderingBuilder extends Component {
           );
         });
         scrollListAfterMove = () => {
+          assertNotNull(this.list);
           this.list.scrollTop = this.list.scrollHeight;
         };
 
@@ -454,7 +516,7 @@ class VisibilityOrderingBuilder extends Component {
     }
   }
 
-  handleSortColumns(option) {
+  handleSortColumns(option: string): void {
     const { model, onMovedColumnsChanged } = this.props;
     const { columns } = model;
 
@@ -495,7 +557,7 @@ class VisibilityOrderingBuilder extends Component {
       modelIndexAlphaSorted[insertIndex] = movableColumnsSorted[i];
     }
 
-    let newMoves = [];
+    let newMoves = [] as MoveOperation[];
     modelIndexAlphaSorted.forEach((modelIndex, index) => {
       const visibleIndex = GridUtils.getVisibleIndex(modelIndex, newMoves);
       newMoves = GridUtils.moveItem(visibleIndex, index, newMoves);
@@ -503,7 +565,11 @@ class VisibilityOrderingBuilder extends Component {
     onMovedColumnsChanged(newMoves);
   }
 
-  handleItemClick(modelIndexClicked, event, removeSelectionOnClick = true) {
+  handleItemClick(
+    modelIndexClicked: number,
+    event: React.MouseEvent<HTMLDivElement | HTMLButtonElement, MouseEvent>,
+    removeSelectionOnClick = true
+  ): void {
     event.stopPropagation();
     event.currentTarget.focus();
 
@@ -560,7 +626,7 @@ class VisibilityOrderingBuilder extends Component {
     );
   }
 
-  addColumnToSelected(columnsToBeAdded, addToExisting = false) {
+  addColumnToSelected(columnsToBeAdded: number[], addToExisting = false): void {
     const { selectedColumns, lastSelectedColumns } = this.state;
     const newSelectedColumns = addToExisting
       ? selectedColumns.concat(columnsToBeAdded)
@@ -575,7 +641,7 @@ class VisibilityOrderingBuilder extends Component {
     });
   }
 
-  removeColumnFromSelected(modelIndex) {
+  removeColumnFromSelected(modelIndex: number): void {
     const { selectedColumns, lastSelectedColumns } = this.state;
     const newSelectedColumns = [...selectedColumns];
 
@@ -595,7 +661,7 @@ class VisibilityOrderingBuilder extends Component {
     });
   }
 
-  makeVisibilityOrderingList() {
+  makeVisibilityOrderingList(): ReactElement[] {
     const { model, userColumnWidths, movedColumns } = this.props;
     const { columns } = model;
     const {
@@ -667,23 +733,25 @@ class VisibilityOrderingBuilder extends Component {
     return null;
   });
 
-  renderImmovableItem = memoize(columnName => (
-    <div className="visibility-ordering-list-item immovable" key={columnName}>
-      <div className="column-item">
-        <span className="column-name">{columnName}</span>
+  renderImmovableItem = memoize(
+    (columnName: string): ReactElement => (
+      <div className="visibility-ordering-list-item immovable" key={columnName}>
+        <div className="column-item">
+          <span className="column-name">{columnName}</span>
+        </div>
       </div>
-    </div>
-  ));
+    )
+  );
 
   renderVisibilityOrderingItem = memoize(
     (
-      columnName,
-      modelIndex,
-      visibleIndex,
-      isHidden,
-      isSelected,
-      isDragging,
-      isDragged,
+      columnName: string,
+      modelIndex: number,
+      visibleIndex: VisibleIndex,
+      isHidden: boolean,
+      isSelected: boolean,
+      isDragging: boolean,
+      isDragged: boolean,
       columnsDragged
     ) => (
       <Draggable
@@ -738,7 +806,7 @@ class VisibilityOrderingBuilder extends Component {
             </button>
             <div
               role="menuitem"
-              tabIndex="0"
+              tabIndex={0}
               className={classNames(
                 'ordering column-item',
                 {
@@ -770,7 +838,7 @@ class VisibilityOrderingBuilder extends Component {
     )
   );
 
-  render() {
+  render(): ReactElement {
     const { model, userColumnWidths, onColumnVisibilityChanged } = this.props;
     const { selectedColumns, searchFilter } = this.state;
     const { columns } = model;
@@ -790,7 +858,7 @@ class VisibilityOrderingBuilder extends Component {
       <div
         role="menu"
         className="visibility-ordering-builder"
-        tabIndex="0"
+        tabIndex={0}
         onMouseUp={() => {
           this.handleVisibilityDraggingEnd();
         }}
@@ -910,7 +978,7 @@ class VisibilityOrderingBuilder extends Component {
           <SearchInput
             className="w-100"
             value={searchFilter}
-            matchCount={searchFilter ? selectedColumns.length : null}
+            matchCount={searchFilter ? selectedColumns.length : undefined}
             onChange={this.handleSearchInputChange}
           />
         </div>
@@ -947,24 +1015,5 @@ class VisibilityOrderingBuilder extends Component {
     );
   }
 }
-
-VisibilityOrderingBuilder.propTypes = {
-  model: PropTypes.instanceOf(IrisGridModel).isRequired,
-  movedColumns: PropTypes.arrayOf(
-    PropTypes.shape({
-      from: PropTypes.number,
-      to: PropTypes.number,
-    })
-  ),
-  userColumnWidths: PropTypes.instanceOf(Map).isRequired,
-  onColumnVisibilityChanged: PropTypes.func,
-  onMovedColumnsChanged: PropTypes.func,
-};
-
-VisibilityOrderingBuilder.defaultProps = {
-  movedColumns: [],
-  onColumnVisibilityChanged: () => {},
-  onMovedColumnsChanged: () => {},
-};
 
 export default VisibilityOrderingBuilder;

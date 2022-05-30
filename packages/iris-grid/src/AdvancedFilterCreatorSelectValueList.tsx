@@ -1,6 +1,5 @@
 /* eslint react/no-did-update-set-state: "off" */
 import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
 import { CSSTransition } from 'react-transition-group';
 import dh, {
   FilterCondition,
@@ -9,12 +8,11 @@ import dh, {
 } from '@deephaven/jsapi-shim';
 import { Formatter } from '@deephaven/jsapi-utils';
 import {
-  ItemListItem,
   LoadingSpinner,
   SelectValueList,
+  SelectItem,
 } from '@deephaven/components';
 import Log from '@deephaven/log';
-import { SelectItem } from 'packages/components/src/SelectValueList';
 
 const log = Log.module('AdvancedFilterCreatorSelectValueList');
 
@@ -42,45 +40,28 @@ class AdvancedFilterCreatorSelectValueList<T> extends PureComponent<
   AdvancedFilterCreatorSelectValueListProps<T>,
   AdvancedFilterCreatorSelectValueListState<T>
 > {
-  static propTypes = {
-    table: PropTypes.shape({
-      addEventListener: PropTypes.func,
-      removeEventListener: PropTypes.func,
-
-      applyFilter: PropTypes.func,
-      columns: PropTypes.arrayOf(
-        PropTypes.shape({
-          name: PropTypes.string,
-          type: PropTypes.string,
-        })
-      ),
-      setViewport: PropTypes.func,
-      size: PropTypes.number,
-    }),
-    invertSelection: PropTypes.bool,
-    selectedValues: PropTypes.arrayOf(PropTypes.any),
-    onChange: PropTypes.func,
-    filters: PropTypes.arrayOf(APIPropTypes.FilterCondition).isRequired,
-    formatter: PropTypes.instanceOf(Formatter).isRequired,
-  };
   static defaultProps: {
     table: null;
     invertSelection: boolean;
     selectedValues: never[];
     onChange: () => void;
   };
+
   /**
    * Get the index of a value in an array. Has some special handling for some types, like DateTimes and Longs.
    * @param {Any} value The value to search for
    * @param {Array} values The array of values to search within
    */
-  static indexOf(value: any, values: any) {
+  static indexOf(
+    value: { valueof?: unknown },
+    values: { valueof?: unknown }[]
+  ): number {
     for (let i = 0; i < values.length; i += 1) {
       const v = values[i];
       if (
         v === value ||
         (v != null &&
-          v.valueOf &&
+          v.valueof &&
           value != null &&
           value.valueOf &&
           v.valueOf() === value.valueOf())
