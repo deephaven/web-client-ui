@@ -6,7 +6,7 @@ import {
   ThemeContext,
   GridThemeType,
 } from '@deephaven/grid';
-import IrisGrid from '@deephaven/iris-grid/dist/IrisGrid';
+import { IrisGrid } from '@deephaven/iris-grid';
 import MockIrisGridTreeModel from './MockIrisGridTreeModel';
 import StaticExample from './grid-examples/StaticExample';
 import QuadrillionExample from './grid-examples/QuadrillionExample';

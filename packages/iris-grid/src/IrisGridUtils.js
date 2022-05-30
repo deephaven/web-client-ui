@@ -1,8 +1,7 @@
 import { GridUtils } from '@deephaven/grid';
 import dh from '@deephaven/jsapi-shim';
+import { DateUtils, TableUtils } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
-import TableUtils from './TableUtils';
-import DateUtils from './DateUtils';
 import AdvancedSettings from './sidebar/AdvancedSettings';
 import AggregationUtils from './sidebar/aggregations/AggregationUtils';
 import AggregationOperation from './sidebar/aggregations/AggregationOperation';

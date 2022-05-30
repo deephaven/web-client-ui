@@ -1,6 +1,6 @@
 import React from 'react';
-import { mount } from 'enzyme';
-import type { ReactWrapper } from 'enzyme';
+import { fireEvent, render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { TimeUtils } from '@deephaven/utils';
 import type { SelectionSegment } from './MaskedInput';
 import TimeInput from './TimeInput';
@@ -10,7 +10,7 @@ type SelectionDirection = SelectionSegment['selectionDirection'];
 const DEFAULT_VALUE = TimeUtils.parseTime('12:34:56');
 
 function makeTimeInput({ value = DEFAULT_VALUE, onChange = jest.fn() } = {}) {
-  return mount(<TimeInput value={value} onChange={onChange} />);
+  return render(<TimeInput value={value} onChange={onChange} />);
 }
 
 function makeSelection(
@@ -21,41 +21,25 @@ function makeSelection(
   return { selectionStart, selectionEnd, selectionDirection };
 }
 
-function typeString(timeInput: ReactWrapper, str: string) {
-  const inputField = timeInput.find('input');
-  for (let i = 0; i < str.length; i += 1) {
-    inputField.simulate('keydown', { key: str.charAt(i) });
-  }
-}
-
-function selectRange(
-  timeInput: ReactWrapper,
-  selectionRange: SelectionSegment
-) {
-  timeInput.find('input').simulate('select', { target: selectionRange });
-}
-
-function selectCursorPosition(timeInput: ReactWrapper, cursorPosition: number) {
-  selectRange(timeInput, makeSelection(cursorPosition, cursorPosition));
-}
-
 it('mounts and unmounts properly', () => {
-  const maskedInput = makeTimeInput();
-  maskedInput.unmount();
+  makeTimeInput();
 });
 
 describe('typing in matches mask', () => {
   function testInput(text: string, expectedResult = text) {
-    const timeInput = makeTimeInput({ value: 0 });
-    selectCursorPosition(timeInput, 0);
-    typeString(timeInput, text);
+    const { unmount } = makeTimeInput();
+    const input: HTMLInputElement = screen.getByRole('textbox');
+    input.setSelectionRange(0, 0);
 
-    const inputField = timeInput.find('input');
-    expect(inputField.prop('value')).toEqual(expectedResult);
+    input.focus();
+    userEvent.type(input, text, {
+      initialSelectionStart: 0,
+      initialSelectionEnd: 0,
+    });
 
-    timeInput.unmount();
+    expect(input.value).toEqual(expectedResult);
+    unmount();
   }
-
   it('handles typing in exactly the right characters', () => {
     testInput('12:34:56');
     testInput('09:11:00');
@@ -81,17 +65,19 @@ describe('selection', () => {
     expectedEnd: number,
     expectedDirection: SelectionDirection = 'backward'
   ) {
-    const timeInput = makeTimeInput();
+    const { unmount } = makeTimeInput();
 
-    selectCursorPosition(timeInput, cursorPosition);
+    const input: HTMLInputElement = screen.getByRole('textbox');
 
-    const domInput = timeInput.find('input').getDOMNode() as HTMLInputElement;
-    expect(domInput).toBeInstanceOf(HTMLInputElement);
-    expect(domInput.selectionStart).toEqual(expectedStart);
-    expect(domInput.selectionEnd).toEqual(expectedEnd);
-    expect(domInput.selectionDirection).toEqual(expectedDirection);
+    input.focus();
+    input.setSelectionRange(cursorPosition, cursorPosition);
+    userEvent.type(input, '');
 
-    timeInput.unmount();
+    expect(input).toBeInstanceOf(HTMLInputElement);
+    expect(input.selectionStart).toEqual(expectedStart);
+    expect(input.selectionEnd).toEqual(expectedEnd);
+    expect(input.selectionDirection).toEqual(expectedDirection);
+    unmount();
   }
 
   function testSelectRange(
@@ -99,22 +85,18 @@ describe('selection', () => {
     selectionEnd: number,
     selectionDirection: SelectionDirection = 'forward'
   ) {
-    const timeInput = makeTimeInput();
+    const { unmount } = makeTimeInput();
+    const input: HTMLInputElement = screen.getByRole('textbox');
 
-    const selection = makeSelection(
-      selectionStart,
-      selectionEnd,
-      selectionDirection
-    );
-    timeInput.find('input').simulate('select', { target: selection });
+    input.focus();
+    input.setSelectionRange(selectionStart, selectionEnd, selectionDirection);
+    userEvent.type(input, '');
 
-    const domInput = timeInput.find('input').getDOMNode() as HTMLInputElement;
-    expect(domInput).toBeInstanceOf(HTMLInputElement);
-    expect(domInput.selectionStart).toEqual(selectionStart);
-    expect(domInput.selectionEnd).toEqual(selectionEnd);
-    expect(domInput.selectionDirection).toEqual(selectionDirection);
-
-    timeInput.unmount();
+    expect(input).toBeInstanceOf(HTMLInputElement);
+    expect(input.selectionStart).toEqual(selectionStart);
+    expect(input.selectionEnd).toEqual(selectionEnd);
+    expect(input.selectionDirection).toEqual(selectionDirection);
+    unmount();
   }
 
   it('automatically selects the correct segment when no range selected', () => {
@@ -143,20 +125,20 @@ describe('select and type', () => {
     str: string,
     expectedResult: string
   ) {
-    const timeInput = makeTimeInput();
-    selectCursorPosition(timeInput, cursorPosition);
+    const { unmount } = makeTimeInput();
+    const input: HTMLInputElement = screen.getByRole('textbox');
 
-    typeString(timeInput, str);
+    input.setSelectionRange(cursorPosition, cursorPosition);
 
-    expect(timeInput.find('input').prop('value')).toEqual(expectedResult);
+    userEvent.type(input, str);
 
-    timeInput.unmount();
+    expect(input.value).toEqual(expectedResult);
+    unmount();
   }
-
   it('handles typing after autoselecting a segment', () => {
     testSelectAndType(0, '0', '02:34:56');
-    testSelectAndType(0, '00', '00:34:56');
     testSelectAndType(1, '0', '02:34:56');
+    testSelectAndType(0, '00', '00:34:56');
     testSelectAndType(1, '00', '00:34:56');
 
     testSelectAndType(0, '3', '03:34:56');
@@ -181,20 +163,30 @@ describe('arrow left and right jumps segments', () => {
     movement: number | number[],
     expectedSelection: SelectionSegment
   ) {
-    const timeInput = makeTimeInput();
-
-    selectRange(timeInput, makeSelection(cursorPosition, cursorPosition));
+    const { unmount } = makeTimeInput();
+    const input: HTMLInputElement = screen.getByRole('textbox');
+    input.focus();
+    input.setSelectionRange(cursorPosition, cursorPosition);
+    userEvent.type(input, '', {
+      initialSelectionStart: cursorPosition,
+      initialSelectionEnd: cursorPosition,
+    });
 
     const movements: number[] = ([] as number[]).concat(movement);
-    const inputField = timeInput.find('input');
+
     for (let i = 0; i < movements.length; i += 1) {
       const arrowMovement = movements[i];
+
       for (let j = 0; j < arrowMovement; j += 1) {
-        inputField.simulate('keydown', { key: 'ArrowRight' });
+        fireEvent.keyDown(input, { key: 'ArrowRight' });
+        fireEvent.keyPress(input, { key: 'ArrowRight' });
+        fireEvent.keyUp(input, { key: 'ArrowRight' });
       }
 
       for (let j = 0; j > arrowMovement; j -= 1) {
-        inputField.simulate('keydown', { key: 'ArrowLeft' });
+        fireEvent.keyDown(input, { key: 'ArrowLeft' });
+        fireEvent.keyPress(input, { key: 'ArrowLeft' });
+        fireEvent.keyUp(input, { key: 'ArrowLeft' });
       }
     }
 
@@ -203,19 +195,19 @@ describe('arrow left and right jumps segments', () => {
       selectionEnd,
       selectionDirection,
     } = expectedSelection;
-    const domInput = timeInput.find('input').getDOMNode() as HTMLInputElement;
-    expect(domInput).toBeInstanceOf(HTMLInputElement);
-    expect(domInput.selectionStart).toEqual(selectionStart);
-    expect(domInput.selectionEnd).toEqual(selectionEnd);
-    expect(domInput.selectionDirection).toEqual(selectionDirection);
 
-    timeInput.unmount();
+    expect(input).toBeInstanceOf(HTMLInputElement);
+    expect(input.selectionStart).toEqual(selectionStart);
+    expect(input.selectionEnd).toEqual(selectionEnd);
+    expect(input.selectionDirection).toEqual(selectionDirection);
+
+    unmount();
   }
   it('handles going left', () => {
     testArrowNavigation(0, -1, makeSelection(0, 2, 'backward'));
     testArrowNavigation(0, -10, makeSelection(0, 2, 'backward'));
-    testArrowNavigation(8, -1, makeSelection(3, 5, 'backward'));
     testArrowNavigation(8, -2, makeSelection(0, 2, 'backward'));
+    testArrowNavigation(8, -1, makeSelection(3, 5, 'backward'));
     testArrowNavigation(8, -10, makeSelection(0, 2, 'backward'));
     testArrowNavigation(5, -1, makeSelection(0, 2, 'backward'));
   });
@@ -243,26 +235,33 @@ describe('arrow up and down updates values in segments', () => {
     expectedValue: string,
     value = DEFAULT_VALUE
   ) {
-    const timeInput = makeTimeInput({ value });
+    const { unmount } = makeTimeInput({ value });
 
-    selectRange(timeInput, makeSelection(cursorPosition, cursorPosition));
+    const input: HTMLInputElement = screen.getByRole('textbox');
+
+    input.setSelectionRange(cursorPosition, cursorPosition);
+
+    userEvent.type(input, '', {
+      initialSelectionStart: cursorPosition,
+      initialSelectionEnd: cursorPosition,
+    });
 
     const movements: number[] = ([] as number[]).concat(movement);
-    const inputField = timeInput.find('input');
+
     for (let i = 0; i < movements.length; i += 1) {
       const arrowMovement = movements[i];
       for (let j = 0; j < arrowMovement; j += 1) {
-        inputField.simulate('keydown', { key: 'ArrowDown' });
+        userEvent.type(input, '{arrowdown}');
       }
 
       for (let j = 0; j > arrowMovement; j -= 1) {
-        inputField.simulate('keydown', { key: 'ArrowUp' });
+        userEvent.type(input, '{arrowup}');
       }
     }
 
-    expect(timeInput.find('input').prop('value')).toEqual(expectedValue);
+    expect(input.value).toEqual(expectedValue);
 
-    timeInput.unmount();
+    unmount();
   }
 
   it('handles down arrow', () => {
@@ -283,16 +282,13 @@ describe('arrow up and down updates values in segments', () => {
     testArrowValue(6, -3, '12:34:59');
   });
 });
-
 it('updates properly when the value prop is updated', () => {
-  const timeInput = makeTimeInput();
+  const { rerender } = makeTimeInput();
 
-  expect(timeInput.find('input').prop('value')).toEqual('12:34:56');
+  const textbox: HTMLInputElement = screen.getByRole('textbox');
+  expect(textbox.value).toEqual('12:34:56');
 
-  timeInput.setProps({ value: 0 });
-  timeInput.update();
+  rerender(<TimeInput value={0} onChange={jest.fn()} />);
 
-  expect(timeInput.find('input').prop('value')).toEqual('00:00:00');
-
-  timeInput.unmount();
+  expect(textbox.value).toEqual('00:00:00');
 });

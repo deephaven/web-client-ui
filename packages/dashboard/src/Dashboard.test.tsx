@@ -1,5 +1,5 @@
 import React from 'react';
-import { mount, ReactWrapper } from 'enzyme';
+import { render, RenderResult } from '@testing-library/react';
 import Dashboard, { DashboardProps } from './Dashboard';
 
 const mockDispatch = jest.fn();
@@ -18,8 +18,8 @@ function makeDashboard({
   layoutSettings,
   onGoldenLayoutChange,
   onLayoutConfigChange,
-}: DashboardProps = {}): ReactWrapper {
-  return mount(
+}: DashboardProps = {}): RenderResult {
+  return render(
     <Dashboard
       id={id}
       fallbackComponent={fallbackComponent}
@@ -34,6 +34,5 @@ function makeDashboard({
 }
 
 it('mounts and unmounts properly', () => {
-  const dashboard = makeDashboard();
-  dashboard.unmount();
+  makeDashboard();
 });

@@ -10,6 +10,11 @@ import {
 } from '@deephaven/components';
 import { GridMouseHandler } from '@deephaven/grid';
 import dh from '@deephaven/jsapi-shim';
+import {
+  TableColumnFormatter,
+  DateTimeColumnFormatter,
+  TableUtils,
+} from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
 import {
   DateTimeFormatContextMenu,
@@ -17,8 +22,6 @@ import {
   IntegerFormatContextMenu,
 } from '../format-context-menus';
 import './IrisGridContextMenuHandler.scss';
-import TableUtils from '../TableUtils';
-import { TableColumnFormatter, DateTimeColumnFormatter } from '../formatters';
 import SHORTCUTS from '../IrisGridShortcuts';
 
 const log = Log.module('IrisGridContextMenuHandler');
@@ -213,7 +216,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
         const isColumnHidden = [...userColumnWidths.values()].some(
           columnWidth => columnWidth === 0
         );
-        const isColumnFrozen = model.isColumnFrozen(columnIndex);
+        const isColumnFrozen = model.isColumnFrozen(modelColumn);
         actions.push({
           title: 'Hide Column',
           group: IrisGridContextMenuHandler.GROUP_HIDE_COLUMNS,
@@ -232,6 +235,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
             }
           },
           order: 10,
+          disabled: !model.isColumnMovable(modelColumn) && !isColumnFrozen,
         });
         actions.push({
           title: 'Show All Columns',

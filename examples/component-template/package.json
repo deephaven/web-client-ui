@@ -36,7 +36,7 @@
   },
   "devDependencies": {
     "@babel/cli": "^7.16.0",
-    "@deephaven/tsconfig": "^0.11.2",
+    "@deephaven/tsconfig": "file:../tsconfig",
     "@testing-library/react": "^12.1.3",
     "@types/jest": "^26.0.24",
     "@types/react": "^17.0.2",

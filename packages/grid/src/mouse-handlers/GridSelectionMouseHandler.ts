@@ -61,7 +61,7 @@ class GridSelectionMouseHandler extends GridMouseHandler {
         column,
         row,
         isShiftKey,
-        true,
+        false,
         isShiftKey && isModifierKey
       );
     }

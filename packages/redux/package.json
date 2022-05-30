@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/redux",
-  "version": "0.11.4",
+  "version": "0.13.0",
   "description": "Deephaven Redux",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
@@ -27,6 +27,8 @@
     "start": "cross-env NODE_ENV=development npm run watch"
   },
   "dependencies": {
+    "@deephaven/jsapi-utils": "file:../jsapi-utils",
+    "@deephaven/log": "file:../log",
     "deep-equal": "^2.0.5",
     "redux-thunk": "^2.3.0"
   },
@@ -34,7 +36,6 @@
     "@deephaven/tsconfig": "file:../tsconfig"
   },
   "peerDependencies": {
-    "@deephaven/log": "^0.11.2",
     "redux": "^4.0.5"
   },
   "files": [

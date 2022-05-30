@@ -34,6 +34,12 @@ import {
   vsTools,
 } from '@deephaven/icons';
 import dh, { PropTypes as APIPropTypes } from '@deephaven/jsapi-shim';
+import {
+  DateUtils,
+  Formatter,
+  FormatterUtils,
+  TableUtils,
+} from '@deephaven/jsapi-utils';
 import { Pending, PromiseUtils, ValidationError } from '@deephaven/utils';
 import throttle from 'lodash.throttle';
 import debounce from 'lodash.debounce';
@@ -63,9 +69,6 @@ import IrisGridRenderer from './IrisGridRenderer';
 import IrisGridTheme from './IrisGridTheme';
 import ColumnStatistics from './ColumnStatistics';
 import './IrisGrid.scss';
-import Formatter from './Formatter';
-import FormatterUtils from './FormatterUtils';
-import TableUtils from './TableUtils';
 import AdvancedFilterCreator from './AdvancedFilterCreator';
 import {
   Aggregations,
@@ -87,7 +90,6 @@ import SelectDistinctBuilder from './sidebar/SelectDistinctBuilder';
 import AdvancedSettingsType from './sidebar/AdvancedSettingsType';
 import AdvancedSettingsMenu from './sidebar/AdvancedSettingsMenu';
 import SHORTCUTS from './IrisGridShortcuts';
-import DateUtils from './DateUtils';
 import ConditionalFormattingMenu from './sidebar/conditional-formatting/ConditionalFormattingMenu';
 import { getFormatColumns } from './sidebar/conditional-formatting/ConditionalFormattingUtils';
 import ConditionalFormatEditor from './sidebar/conditional-formatting/ConditionalFormatEditor';
@@ -309,8 +311,8 @@ export class IrisGrid extends Component {
       isFilterBarShown,
       isSelectingPartition,
       model,
-      movedColumns,
-      movedRows,
+      movedColumns: movedColumnsProp,
+      movedRows: movedRowsProp,
       partition,
       partitionColumn,
       rollupConfig,
@@ -346,9 +348,15 @@ export class IrisGrid extends Component {
       new PendingMouseHandler(this),
     ];
 
+    const movedColumns =
+      movedColumnsProp.length > 0 ? movedColumnsProp : model.movedColumns;
+    const movedRows =
+      movedRowsProp.length > 0 ? movedRowsProp : model.movedRows;
+
     const metricCalculator = new IrisGridMetricCalculator({
       userColumnWidths: new Map(userColumnWidths),
       userRowHeights: new Map(userRowHeights),
+      movedColumns,
     });
     const searchColumns = selectedSearchColumns ?? [];
     const searchFilter = CrossColumnSearch.createSearchFilter(
@@ -1167,29 +1175,26 @@ export class IrisGrid extends Component {
     (
       alwaysFetchColumns,
       columns,
+      movedColumns,
       floatingLeftColumnCount,
       floatingRightColumnCount
     ) => {
-      let floatingLeftColumns = [];
-      let floatingRightColumns = [];
+      const floatingColumns = [];
 
-      if (floatingLeftColumnCount) {
-        floatingLeftColumns = columns
-          .slice(0, floatingLeftColumnCount)
-          .map(col => col.name);
+      for (let i = 0; i < floatingLeftColumnCount; i += 1) {
+        floatingColumns.push(
+          columns[GridUtils.getModelIndex(i, movedColumns)].name
+        );
       }
 
-      if (floatingRightColumnCount) {
-        floatingRightColumns = columns
-          .slice(-floatingRightColumnCount)
-          .map(col => col.name);
+      for (let i = 0; i < floatingRightColumnCount; i += 1) {
+        floatingColumns.push(
+          columns[GridUtils.getModelIndex(columns.length - 1 - i, movedColumns)]
+            .name
+        );
       }
 
-      const columnSet = new Set([
-        ...alwaysFetchColumns,
-        ...floatingLeftColumns,
-        ...floatingRightColumns,
-      ]);
+      const columnSet = new Set([...alwaysFetchColumns, ...floatingColumns]);
 
       return [...columnSet];
     }
@@ -1536,42 +1541,56 @@ export class IrisGrid extends Component {
   }
 
   freezeColumnByColumnName(columnName) {
-    const { frozenColumns } = this.state;
+    const { frozenColumns, movedColumns } = this.state;
     const { model } = this.props;
     log.debug2('freezing column', columnName);
 
-    let allFrozenColumns;
+    const allFrozenColumns =
+      frozenColumns == null
+        ? new Set(model.frozenColumns)
+        : new Set(frozenColumns);
 
-    if (frozenColumns == null) {
-      allFrozenColumns = new Set(model.layoutHints?.frozenColumns ?? []);
-      allFrozenColumns.add(columnName);
-    } else {
-      allFrozenColumns = new Set([...frozenColumns, columnName]);
-    }
+    allFrozenColumns.add(columnName);
+
+    const modelIndex = model.getColumnIndexByName(columnName);
+    const visibleIndex = GridUtils.getVisibleIndex(modelIndex, movedColumns);
+    const newMovedColumns = GridUtils.moveItem(
+      visibleIndex,
+      allFrozenColumns.size - 1,
+      movedColumns
+    );
 
     this.setState({
       frozenColumns: [...allFrozenColumns],
+      movedColumns: newMovedColumns,
     });
   }
 
   unFreezeColumnByColumnName(columnName) {
-    const { frozenColumns } = this.state;
+    const { frozenColumns, movedColumns } = this.state;
     const { model } = this.props;
     log.debug2('unfreezing column', columnName);
 
-    let allFrozenColumns;
+    const allFrozenColumns =
+      frozenColumns == null
+        ? new Set(model.frozenColumns)
+        : new Set(frozenColumns);
 
-    if (frozenColumns == null) {
-      allFrozenColumns = new Set(model.layoutHints?.frozenColumns ?? []);
-      allFrozenColumns.delete(columnName);
-    } else {
-      allFrozenColumns = new Set(
-        frozenColumns.filter(col => col !== columnName)
-      );
-    }
+    allFrozenColumns.delete(columnName);
+
+    const modelIndex = model.getColumnIndexByName(columnName);
+    const visibleIndex = GridUtils.getVisibleIndex(modelIndex, movedColumns);
+
+    // Move to after remaining frozen columns and front columns
+    const newMovedColumns = GridUtils.moveItem(
+      visibleIndex,
+      allFrozenColumns.size + model.frontColumns.length,
+      movedColumns
+    );
 
     this.setState({
       frozenColumns: [...allFrozenColumns],
+      movedColumns: newMovedColumns,
     });
   }
 
@@ -3296,6 +3315,7 @@ export class IrisGrid extends Component {
                 alwaysFetchColumns={this.getAlwaysFetchColumns(
                   alwaysFetchColumns,
                   model.columns,
+                  movedColumns,
                   model.floatingLeftColumnCount,
                   model.floatingRightColumnCount
                 )}

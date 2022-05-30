@@ -1,5 +1,5 @@
 import type { Column } from '@deephaven/jsapi-shim';
-import TableUtils from '../../TableUtils';
+import { TableUtils } from '@deephaven/jsapi-utils';
 import AggregationOperation from './AggregationOperation';
 
 /**

@@ -4,9 +4,9 @@ import {
   IrisGrid,
   IrisGridModel,
   IrisGridModelFactory,
-  TableUtils,
 } from '@deephaven/iris-grid'; // iris-grid is used to display Deephaven tables
 import dh from '@deephaven/jsapi-shim'; // Import the shim to use the JS API
+import { TableUtils } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
 import './App.scss'; // Styles for in this app
 
@@ -72,9 +72,21 @@ function App(): JSX.Element {
       log.debug(`Starting connection...`);
       const connection = new dh.IdeConnection(websocketUrl);
 
-      // Start a code session. For this example, we use python.
-      log.debug(`Starting session...`);
-      const session = await connection.startSession('python');
+      log.debug('Getting console types...');
+
+      const types = await connection.getConsoleTypes();
+
+      log.debug('Available types:', types);
+
+      if (types.length === 0) {
+        throw new Error('No console types available');
+      }
+
+      const type = types[0];
+
+      log.debug('Starting session with type', type);
+
+      const session = await connection.startSession(type);
 
       // Get the table name from the query param `name`.
       const name = searchParams.get('name');

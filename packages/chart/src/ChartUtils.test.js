@@ -1,5 +1,5 @@
 import dh from '@deephaven/jsapi-shim';
-import { Formatter } from '@deephaven/iris-grid';
+import { Formatter } from '@deephaven/jsapi-utils';
 import ChartUtils from './ChartUtils';
 import ChartTestUtils from './ChartTestUtils';
 import ChartTheme from './ChartTheme';

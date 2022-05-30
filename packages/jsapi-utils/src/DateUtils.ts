@@ -11,7 +11,7 @@ interface DateParts<T> {
   nanos: T;
 }
 
-class DateUtils {
+export class DateUtils {
   static FULL_DATE_FORMAT = 'yyyy-MM-dd HH:mm:ss.SSSSSSSSS';
 
   static months = [

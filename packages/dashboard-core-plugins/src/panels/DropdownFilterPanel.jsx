@@ -5,9 +5,13 @@ import debounce from 'lodash.debounce';
 import deepEqual from 'deep-equal';
 import memoize from 'memoize-one';
 import { GLPropTypes, LayoutUtils } from '@deephaven/dashboard';
-import { Formatter, FormatterUtils, TableUtils } from '@deephaven/iris-grid';
-import { DateTimeColumnFormatter } from '@deephaven/iris-grid/dist/formatters';
 import dh from '@deephaven/jsapi-shim';
+import {
+  DateTimeColumnFormatter,
+  Formatter,
+  FormatterUtils,
+  TableUtils,
+} from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
 import { getActiveTool, getSettings } from '@deephaven/redux';
 import { Pending, PromiseUtils } from '@deephaven/utils';

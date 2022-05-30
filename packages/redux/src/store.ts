@@ -1,7 +1,7 @@
 import { applyMiddleware, createStore, compose, combineReducers } from 'redux';
 import type { FileStorage } from '@deephaven/file-explorer';
 import type { ValidKeyState } from '@deephaven/components';
-import type { FormattingRule } from '@deephaven/iris-grid';
+import type { FormattingRule } from '@deephaven/jsapi-utils';
 import type { PayloadAction } from './actions';
 import rootMiddleware from './middleware';
 import reducers from './reducers';

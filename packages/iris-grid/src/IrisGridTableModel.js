@@ -1,13 +1,11 @@
 /* eslint class-methods-use-this: "off" */
 import memoize from 'memoize-one';
 import throttle from 'lodash.throttle';
-import { GridRange, memoizeClear } from '@deephaven/grid';
+import { GridRange, GridUtils, memoizeClear } from '@deephaven/grid';
 import dh from '@deephaven/jsapi-shim';
+import { Formatter, FormatterUtils, TableUtils } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
 import { PromiseUtils } from '@deephaven/utils';
-import TableUtils from './TableUtils';
-import Formatter from './Formatter';
-import FormatterUtils from './FormatterUtils';
 import IrisGridModel from './IrisGridModel';
 import AggregationOperation from './sidebar/aggregations/AggregationOperation';
 import IrisGridUtils from './IrisGridUtils';
@@ -481,68 +479,59 @@ class IrisGridTableModel extends IrisGridModel {
     return '';
   }
 
-  getColumnsWithLayoutHints = memoize(
-    (columnMap, frontColumns, backColumns, frozenColumns) => {
-      const columns = [...columnMap.values()];
-      if (frontColumns.length || backColumns.length || frozenColumns.length) {
-        let finalFrontColumns = [];
-        let finalBackColumns = [];
-        let finalFrozenColumns = [];
-
-        if (frontColumns.length) {
-          finalFrontColumns = frontColumns
-            .map(name => columnMap.get(name))
-            .filter(Boolean);
-        }
-        if (backColumns.length) {
-          finalBackColumns = backColumns
-            .map(name => columnMap.get(name))
-            .filter(Boolean);
-        }
-        if (frozenColumns.length) {
-          finalFrozenColumns = frozenColumns
-            .map(name => columnMap.get(name))
-            .filter(Boolean);
-        }
-
-        if (
-          finalFrontColumns.length !== frontColumns.length ||
-          finalBackColumns.length !== backColumns.length ||
-          finalFrozenColumns.length !== frozenColumns.length
-        ) {
-          throw new Error(
-            'Layout hints are invalid (contain invalid column names)'
-          );
-        }
-
-        const frontColumnSet = new Set(finalFrontColumns);
-        const backColumnSet = new Set(finalBackColumns);
-        const frozenColumnSet = new Set(finalFrozenColumns);
-        const middleColumns = columns.filter(
-          col =>
-            !frontColumnSet.has(col) &&
-            !backColumnSet.has(col) &&
-            !frozenColumnSet.has(col)
-        );
-
-        return [
-          ...finalFrozenColumns,
-          ...finalFrontColumns,
-          ...middleColumns,
-          ...finalBackColumns,
-        ];
-      }
-      return columns;
-    }
-  );
-
+  /**
+   * Returns an array of the columns in the model
+   * The order of model columns should never change once established
+   */
   get columns() {
-    return this.getColumnsWithLayoutHints(
-      this.columnMap,
-      this.frontColumns,
-      this.backColumns,
-      this.frozenColumns
-    );
+    return this.table.columns;
+  }
+
+  /**
+   * Used to get the initial moved columns based on layout hints
+   */
+  get movedColumns() {
+    let movedColumns = [];
+
+    if (
+      this.frontColumns.length ||
+      this.backColumns.length ||
+      this.frozenColumns.length
+    ) {
+      const usedColumns = new Set();
+
+      const moveColumn = (name, index) => {
+        if (usedColumns.has(name)) {
+          throw new Error(`Column specified in multiple layout hints: ${name}`);
+        }
+        const modelIndex = this.getColumnIndexByName(name);
+        if (!modelIndex) {
+          throw new Error(`Unknown layout hint column: ${name}`);
+        }
+        const visibleIndex = GridUtils.getVisibleIndex(
+          modelIndex,
+          movedColumns
+        );
+        movedColumns = GridUtils.moveItem(visibleIndex, index, movedColumns);
+      };
+
+      let frontIndex = 0;
+      this.frozenColumns.forEach(name => {
+        moveColumn(name, frontIndex);
+        frontIndex += 1;
+      });
+      this.frontColumns.forEach(name => {
+        moveColumn(name, frontIndex);
+        frontIndex += 1;
+      });
+
+      let backIndex = this.columnMap.size - 1;
+      this.backColumns.forEach(name => {
+        moveColumn(name, backIndex);
+        backIndex -= 1;
+      });
+    }
+    return movedColumns;
   }
 
   getMemoizedColumnMap = memoize(tableColumns => {
@@ -630,10 +619,16 @@ class IrisGridTableModel extends IrisGridModel {
     const defaultOperation =
       this.totals?.defaultOperation ?? AggregationOperation.SUM;
     const tableColumn = this.columns[x];
+
+    // Find the matching totals table column for the operation
+    // When there are multiple aggregations, the column name will be the original name of the column with the operation appended afterward
+    // When the the operation is the default operation OR there is only one operation, then the totals column name is just the original column name
     return this.totalsTable.columns.find(
       column =>
         column.name === `${tableColumn.name}__${operation}` ||
-        (operation === defaultOperation && column.name === tableColumn.name)
+        ((operation === defaultOperation ||
+          this.totals.operationOrder.length === 1) &&
+          column.name === tableColumn.name)
     );
   }
 
@@ -755,8 +750,9 @@ class IrisGridTableModel extends IrisGridModel {
   }
 
   /**
-   * Use this as the canonical column index since things like layoutHints could have
-   * changed the column order.
+   * Gets the model index for a column from its name
+   * @param {string} name The column name
+   * @returns {number | undefined} The ModelIndex if it exists
    */
   getColumnIndexByName(name) {
     return this.getColumnIndicesByNameMap(this.columns).get(name);
@@ -1241,20 +1237,20 @@ class IrisGridTableModel extends IrisGridModel {
     }
   );
 
-  isColumnMovable(x) {
-    const columnName = this.columns[x].name;
+  isColumnMovable(modelIndex) {
+    const columnName = this.columns[modelIndex].name;
     if (
-      this.layoutHints?.frontColumns?.includes(columnName) ||
-      this.layoutHints?.backColumns?.includes(columnName) ||
+      this.frontColumns.includes(columnName) ||
+      this.backColumns.includes(columnName) ||
       this.frozenColumns.includes(columnName)
     ) {
       return false;
     }
-    return !this.isKeyColumn(x);
+    return !this.isKeyColumn(modelIndex);
   }
 
-  isColumnFrozen(x) {
-    return this.frozenColumns.includes(this.columns[x].name);
+  isColumnFrozen(modelIndex) {
+    return this.frozenColumns.includes(this.columns[modelIndex].name);
   }
 
   isKeyColumn(x) {
