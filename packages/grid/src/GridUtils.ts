@@ -745,20 +745,162 @@ export class GridUtils {
     visibleIndex: VisibleIndex,
     movedItems: MoveOperation[] = []
   ): ModelIndex {
-    let modelIndex = visibleIndex;
-
-    for (let i = movedItems.length - 1; i >= 0; i -= 1) {
-      const movedItem = movedItems[i];
-      if (modelIndex === movedItem.to) {
-        ({ from: modelIndex } = movedItem);
-      } else if (movedItem.from <= modelIndex && modelIndex < movedItem.to) {
-        modelIndex += 1;
-      } else if (movedItem.to < modelIndex && modelIndex <= movedItem.from) {
-        modelIndex -= 1;
-      }
-    }
+    const modelIndex = GridUtils.applyItemMoves(
+      visibleIndex,
+      visibleIndex,
+      movedItems,
+      true
+    )[0][0];
 
     return modelIndex;
+  }
+
+  /**
+   * Translate the provided UI start/end indexes to the model start/end indexes by applying the `movedItems` transformations.
+   * Since moved items can split apart a range, multiple pairs of indexes are returned
+   *
+   * @param start Start item in one dimension
+   * @param end End item in one dimension
+   * @param movedItems Moved item pairs in this dimension
+   * @returns Array of start/end pairs of the indexes after transformations applied.
+   */
+  private static applyItemMoves(
+    start: number,
+    end: number,
+    movedItems: MoveOperation[],
+    reverse?: boolean
+  ): [number, number][];
+
+  // Without this duplicate signature, TS will complain
+  private static applyItemMoves(
+    start: GridRangeIndex,
+    end: GridRangeIndex,
+    movedItems: MoveOperation[],
+    reverse?: boolean
+  ): GridAxisRange[];
+
+  private static applyItemMoves(
+    start: GridRangeIndex,
+    end: GridRangeIndex,
+    movedItems: MoveOperation[],
+    reverse = false
+  ): GridAxisRange[] {
+    if (typeof start === 'string') {
+      return [];
+    }
+    if (start == null || end == null) {
+      return [[start, end]];
+    }
+
+    let result: [VisibleIndex, VisibleIndex][] = [[start, end]];
+
+    // movedItems is built by adding a new item whenever an item in the UI is dragged/moved, transforming a model
+    // index to the new UI index. We want to find the model index from the UI index here, so we unwind the
+    // transformations applied - the start/end axis range passed in is the current UI range, so we need to apply
+    // the transformations starting at the end of the chain backward to find the appropriate model indexes
+    for (
+      let i = reverse ? movedItems.length - 1 : 0;
+      reverse ? i >= 0 : i < movedItems.length;
+      reverse ? (i -= 1) : (i += 1)
+    ) {
+      const { from: fromItem, to: toItem } = movedItems[i];
+      const from = reverse ? toItem : fromItem;
+      const to = reverse ? fromItem : toItem;
+      const nextResult: [VisibleIndex, VisibleIndex][] = [];
+      for (let j = 0; j < result.length; j += 1) {
+        const [currentStart, currentEnd] = result[j];
+        const startLength = nextResult.length;
+        if (from < currentStart) {
+          // From before
+          if (to >= currentEnd) {
+            // To after
+            nextResult.push([currentStart - 1, currentEnd - 1]);
+          } else if (to >= currentStart) {
+            // To within
+            nextResult.push([currentStart - 1, to - 1]);
+            nextResult.push([to + 1, currentEnd]);
+          }
+        } else if (from > currentEnd) {
+          // From after
+          if (to <= currentStart) {
+            // To before
+            nextResult.push([currentStart + 1, currentEnd + 1]);
+          } else if (to <= currentEnd) {
+            // To within
+            nextResult.push([currentStart, to - 1]);
+            nextResult.push([to + 1, currentEnd + 1]);
+          }
+        } else if (to < currentStart) {
+          // From within to before
+          if (currentStart < currentEnd) {
+            // Don't create a 2nd range if the current range includes only 1 item
+            nextResult.push([currentStart + 1, currentEnd]);
+          }
+          nextResult.push([to, to]);
+        } else if (to > currentEnd) {
+          // From within to after
+          if (currentStart < currentEnd) {
+            // Don't create a 2nd range if the current range includes only 1 item
+            nextResult.push([currentStart, currentEnd - 1]);
+          }
+          nextResult.push([to, to]);
+        } else if (from > to) {
+          // From within after to within before
+          if (to > currentStart) {
+            nextResult.push([currentStart, to - 1]);
+          }
+          nextResult.push([to + 1, from]);
+          nextResult.push([to, to]);
+          if (from < currentEnd) {
+            nextResult.push([from + 1, currentEnd]);
+          }
+        } else if (from < to) {
+          // From within before to within after
+          if (from > currentStart) {
+            nextResult.push([currentStart, from - 1]);
+          }
+          nextResult.push([to, to]);
+          nextResult.push([from, to - 1]);
+          if (to < currentEnd) {
+            nextResult.push([to + 1, currentEnd]);
+          }
+        }
+
+        if (startLength === nextResult.length) {
+          // No modifications were made, add the original range indexes
+          nextResult.push([currentStart, currentEnd]);
+        }
+      }
+      result = nextResult;
+    }
+    return result;
+  }
+
+  static translateRange(
+    range: GridRange,
+    movedColumns: MoveOperation[],
+    movedRows: MoveOperation[],
+    translator: (
+      start: GridRangeIndex,
+      end: GridRangeIndex,
+      movedItems: MoveOperation[]
+    ) => GridAxisRange[]
+  ): GridRange[] {
+    const columnRanges = translator(
+      range.startColumn,
+      range.endColumn,
+      movedColumns
+    );
+    const rowRanges = translator(range.startRow, range.endRow, movedRows);
+    const ranges: GridRange[] = [];
+    for (let i = 0; i < columnRanges.length; i += 1) {
+      const c = columnRanges[i];
+      for (let j = 0; j < rowRanges.length; j += 1) {
+        const r = rowRanges[j];
+        ranges.push(new GridRange(c[0], r[0], c[1], r[1]));
+      }
+    }
+    return ranges;
   }
 
   /**
@@ -775,83 +917,11 @@ export class GridUtils {
     end: GridRangeIndex,
     movedItems: MoveOperation[]
   ): GridAxisRange[] {
-    if (start == null || end == null) {
-      return [[start, end]];
-    }
-
-    let result: [VisibleIndex, VisibleIndex][] = [[start, end]];
-    if (start == null) {
-      return result;
-    }
-
     // movedItems is built by adding a new item whenever an item in the UI is dragged/moved, transforming a model
     // index to the new UI index. We want to find the model index from the UI index here, so we unwind the
     // transformations applied - the start/end axis range passed in is the current UI range, so we need to apply
     // the transformations starting at the end of the chain backward to find the appropriate model indexes
-    for (let i = movedItems.length - 1; i >= 0; i -= 1) {
-      const { from, to } = movedItems[i];
-      const nextResult: [VisibleIndex, VisibleIndex][] = [];
-      for (let j = 0; j < result.length; j += 1) {
-        const [currentStart, currentEnd] = result[j];
-        const startLength = nextResult.length;
-        if (from <= currentStart) {
-          // From before
-          if (to > currentEnd) {
-            // To after
-            nextResult.push([currentStart + 1, currentEnd + 1]);
-          } else if (to >= currentStart) {
-            // To within
-            nextResult.push([from, from]);
-            nextResult.push([currentStart + 1, currentEnd]);
-          }
-        } else if (from > currentEnd) {
-          // From after
-          if (to < currentStart) {
-            // To before
-            nextResult.push([currentStart - 1, currentEnd - 1]);
-          } else if (to <= currentEnd) {
-            // To within
-            nextResult.push([from, from]);
-            nextResult.push([currentStart, currentEnd - 1]);
-          }
-        } else if (to < currentStart) {
-          // From within to before
-          nextResult.push([currentStart - 1, from - 1]);
-          nextResult.push([from + 1, currentEnd]);
-        } else if (to > currentEnd) {
-          // From within to after
-          nextResult.push([currentStart, from - 1]);
-          nextResult.push([from + 1, currentEnd + 1]);
-        } else if (from > to) {
-          // From within after to within before
-          if (to > currentStart) {
-            nextResult.push([currentStart, to - 1]);
-          }
-          nextResult.push([from, from]);
-          nextResult.push([to, from - 1]);
-          if (from < currentEnd) {
-            nextResult.push([from + 1, currentEnd]);
-          }
-        } else if (from < to) {
-          // From within before to within after
-          if (from > currentStart) {
-            nextResult.push([currentStart, from - 1]);
-          }
-          nextResult.push([from + 1, to]);
-          nextResult.push([from, from]);
-          if (from < currentEnd) {
-            nextResult.push([to + 1, currentEnd]);
-          }
-        }
-
-        if (startLength === nextResult.length) {
-          // No modifications were made, add the original range indexes
-          nextResult.push([currentStart, currentEnd]);
-        }
-      }
-      result = nextResult;
-    }
-    return result;
+    return GridUtils.applyItemMoves(start, end, movedItems, true);
   }
 
   /**
@@ -868,25 +938,12 @@ export class GridUtils {
     movedColumns: MoveOperation[] = [],
     movedRows: MoveOperation[] = []
   ): GridRange[] {
-    const columnRanges = GridUtils.getModelRangeIndexes(
-      uiRange.startColumn,
-      uiRange.endColumn,
-      movedColumns
+    return GridUtils.translateRange(
+      uiRange,
+      movedColumns,
+      movedRows,
+      GridUtils.getModelRangeIndexes
     );
-    const rowRanges = GridUtils.getModelRangeIndexes(
-      uiRange.startRow,
-      uiRange.endRow,
-      movedRows
-    );
-    const ranges: GridRange[] = [];
-    for (let i = 0; i < columnRanges.length; i += 1) {
-      const c = columnRanges[i];
-      for (let j = 0; j < rowRanges.length; j += 1) {
-        const r = rowRanges[j];
-        ranges.push(new GridRange(c[0], r[0], c[1], r[1]));
-      }
-    }
-    return ranges;
   }
 
   /**
@@ -913,6 +970,68 @@ export class GridUtils {
   }
 
   /**
+   * Translate the provided UI start/end indexes to the model start/end indexes by applying the `movedItems` transformations.
+   * Since moved items can split apart a range, multiple pairs of indexes are returned
+   *
+   * @param start Start item in one dimension
+   * @param end End item in one dimension
+   * @param movedItems Moved item pairs in this dimension
+   * @returns Array of start/end pairs of the indexes after transformations applied.
+   */
+  static getVisibleRangeIndexes(
+    start: GridRangeIndex,
+    end: GridRangeIndex,
+    movedItems: MoveOperation[]
+  ): GridAxisRange[] {
+    return GridUtils.applyItemMoves(start, end, movedItems, false);
+  }
+
+  /**
+   * Translate the provided UI range into model range, using the `movedColumns` and `movedRows` to apply the necessary transforms.
+   * `movedColumns` and `movedRows` are array of operations done to the UI indexes to re-order items
+   *
+   * @param uiRange The currently selected UI ranges
+   * @param movedColumns The moved column pairs
+   * @param movedRows The moved row pairs
+   * @returns The model ranges after translation.
+   */
+  static getVisibleRange(
+    modelRange: GridRange,
+    movedColumns: MoveOperation[] = [],
+    movedRows: MoveOperation[] = []
+  ): GridRange[] {
+    return this.translateRange(
+      modelRange,
+      movedColumns,
+      movedRows,
+      GridUtils.getVisibleRangeIndexes
+    );
+  }
+
+  /**
+   * Translate the provided model ranges into visible ranges, using the `movedColumns` and `movedRows` to apply the necessary transforms.
+   * `movedColumns` and `movedRows` are array of operations done to the UI indexes to re-order items
+   *
+   * @param modelRanges The model ranges
+   * @param movedColumns The moved column pairs
+   * @param movedRows The moved row pairs
+   * @returns The model ranges after translation.
+   */
+  static getVisibleRanges(
+    modelRanges: GridRange[],
+    movedColumns: MoveOperation[] = [],
+    movedRows: MoveOperation[] = []
+  ): GridRange[] {
+    const visibleRanges = [];
+    for (let i = 0; i < modelRanges.length; i += 1) {
+      visibleRanges.push(
+        ...GridUtils.getVisibleRange(modelRanges[i], movedColumns, movedRows)
+      );
+    }
+    return visibleRanges;
+  }
+
+  /**
    * Retrieve the visible index given the currently moved items
    * @param modelIndex The model index to get the visible index for
    * @param movedItems Moved items
@@ -922,24 +1041,11 @@ export class GridUtils {
     modelIndex: ModelIndex,
     movedItems: MoveOperation[] = []
   ): VisibleIndex {
-    let visibleIndex = modelIndex;
-
-    for (let i = 0; i < movedItems.length; i += 1) {
-      const movedItem = movedItems[i];
-      if (visibleIndex === movedItem.from) {
-        ({ to: visibleIndex } = movedItem);
-      } else if (
-        movedItem.from < visibleIndex &&
-        visibleIndex <= movedItem.to
-      ) {
-        visibleIndex -= 1;
-      } else if (
-        movedItem.to <= visibleIndex &&
-        visibleIndex < movedItem.from
-      ) {
-        visibleIndex += 1;
-      }
-    }
+    const visibleIndex = GridUtils.applyItemMoves(
+      modelIndex,
+      modelIndex,
+      movedItems
+    )[0][0];
 
     return visibleIndex;
   }
