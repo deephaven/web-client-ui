@@ -756,13 +756,12 @@ export class GridUtils {
   }
 
   /**
-   * Translate the provided UI start/end indexes to the model start/end indexes by applying the `movedItems` transformations.
-   * Since moved items can split apart a range, multiple pairs of indexes are returned
-   *
-   * @param start Start item in one dimension
-   * @param end End item in one dimension
-   * @param movedItems Moved item pairs in this dimension
-   * @returns Array of start/end pairs of the indexes after transformations applied.
+   * Applies the items moves to the 1D range
+   * @param start The start index of the range
+   * @param end The end index of the range
+   * @param movedItems The move operations to apply
+   * @param reverse If the moved items should be applied in reverse (this reverses the effects of the moves)
+   * @returns A list of 1D ranges in the translated space. Possibly multiple non-continuous ranges
    */
   private static applyItemMoves(
     start: number,
@@ -794,10 +793,6 @@ export class GridUtils {
 
     let result: [VisibleIndex, VisibleIndex][] = [[start, end]];
 
-    // movedItems is built by adding a new item whenever an item in the UI is dragged/moved, transforming a model
-    // index to the new UI index. We want to find the model index from the UI index here, so we unwind the
-    // transformations applied - the start/end axis range passed in is the current UI range, so we need to apply
-    // the transformations starting at the end of the chain backward to find the appropriate model indexes
     for (
       let i = reverse ? movedItems.length - 1 : 0;
       reverse ? i >= 0 : i < movedItems.length;
@@ -876,22 +871,32 @@ export class GridUtils {
     return result;
   }
 
+  /**
+   * Applies the items moves to the given 2D range
+   * @param range The 2D range to translate
+   * @param movedColumns The moved columns
+   * @param movedRows The moved rows
+   * @param reverse If the moved items should be reversed (i.e. visible to model range)
+   * @returns A list of 2D ranges in the translated space. Possibly multiple non-continuous ranges
+   */
   static translateRange(
     range: GridRange,
     movedColumns: MoveOperation[],
     movedRows: MoveOperation[],
-    translator: (
-      start: GridRangeIndex,
-      end: GridRangeIndex,
-      movedItems: MoveOperation[]
-    ) => GridAxisRange[]
+    reverse: boolean
   ): GridRange[] {
-    const columnRanges = translator(
+    const columnRanges = GridUtils.applyItemMoves(
       range.startColumn,
       range.endColumn,
-      movedColumns
+      movedColumns,
+      reverse
     );
-    const rowRanges = translator(range.startRow, range.endRow, movedRows);
+    const rowRanges = GridUtils.applyItemMoves(
+      range.startRow,
+      range.endRow,
+      movedRows,
+      reverse
+    );
     const ranges: GridRange[] = [];
     for (let i = 0; i < columnRanges.length; i += 1) {
       const c = columnRanges[i];
@@ -917,10 +922,6 @@ export class GridUtils {
     end: GridRangeIndex,
     movedItems: MoveOperation[]
   ): GridAxisRange[] {
-    // movedItems is built by adding a new item whenever an item in the UI is dragged/moved, transforming a model
-    // index to the new UI index. We want to find the model index from the UI index here, so we unwind the
-    // transformations applied - the start/end axis range passed in is the current UI range, so we need to apply
-    // the transformations starting at the end of the chain backward to find the appropriate model indexes
     return GridUtils.applyItemMoves(start, end, movedItems, true);
   }
 
@@ -938,12 +939,7 @@ export class GridUtils {
     movedColumns: MoveOperation[] = [],
     movedRows: MoveOperation[] = []
   ): GridRange[] {
-    return GridUtils.translateRange(
-      uiRange,
-      movedColumns,
-      movedRows,
-      GridUtils.getModelRangeIndexes
-    );
+    return GridUtils.translateRange(uiRange, movedColumns, movedRows, true);
   }
 
   /**
@@ -1000,12 +996,7 @@ export class GridUtils {
     movedColumns: MoveOperation[] = [],
     movedRows: MoveOperation[] = []
   ): GridRange[] {
-    return this.translateRange(
-      modelRange,
-      movedColumns,
-      movedRows,
-      GridUtils.getVisibleRangeIndexes
-    );
+    return this.translateRange(modelRange, movedColumns, movedRows, false);
   }
 
   /**
