@@ -5,6 +5,7 @@ import { Button, LoadingSpinner } from '@deephaven/components';
 import { usePrevious } from '@deephaven/react-hooks';
 import IrisGridBottomBar from './IrisGridBottomBar';
 import './PendingDataBottomBar.scss';
+import { PendingDataMap } from './IrisGridTableModel';
 
 const HIDE_TIMEOUT = 3000;
 
@@ -18,7 +19,7 @@ export type PendingDataBottomBarProps = {
   isSaving?: boolean;
   error?: string | null;
   pendingDataErrors: Map<number, Error>;
-  pendingDataMap: Map<number, Map<string, unknown>>;
+  pendingDataMap: PendingDataMap;
   onEntering?: () => void;
   onEntered?: () => void;
   onExiting?: () => void;

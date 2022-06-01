@@ -1,5 +1,4 @@
 import React, { Component, ReactElement } from 'react';
-import PropTypes from 'prop-types';
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js';
 import classNames from 'classnames';
 import './InputEditor.scss';
@@ -25,18 +24,15 @@ export default class InputEditor extends Component<
   InputEditorProps,
   InputEditorState
 > {
-  editorContainer: HTMLDivElement | null;
-
-  editor: monaco.editor.IStandaloneCodeEditor | null;
-
   static defaultProps: {
     value: string;
     onContentChanged: () => void;
-    editorSettings: {};
+    editorSettings: Record<string, unknown>;
     editorIndex: number;
     onTab: () => void;
     invalid: boolean;
   };
+
   constructor(props: InputEditorProps) {
     super(props);
 
@@ -61,6 +57,10 @@ export default class InputEditor extends Component<
   componentWillUnmount(): void {
     this.destroyEditor();
   }
+
+  editorContainer: HTMLDivElement | null;
+
+  editor: monaco.editor.IStandaloneCodeEditor | null;
 
   initEditor(): void {
     const { value, editorSettings } = this.props;

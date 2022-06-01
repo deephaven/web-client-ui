@@ -1,14 +1,13 @@
-import React, { Component } from 'react';
-import PropTypes from 'prop-types';
+import React, { Component, ReactElement } from 'react';
 import deepEqual from 'deep-equal';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { dhNewCircleLargeFilled, vsTrash } from '@deephaven/icons';
 import { Tooltip } from '@deephaven/components';
 import Log from '@deephaven/log';
+import { Column } from '@deephaven/jsapi-shim';
 import IrisGridModel from '../IrisGridModel';
 
 import './SelectDistinctBuilder.scss';
-import { Column } from '@deephaven/jsapi-shim';
 
 const log = Log.module('SelectDistinctBuilder');
 
@@ -26,11 +25,7 @@ class SelectDistinctBuilder extends Component<
   SelectDistinctBuilderState
 > {
   static defaultProps: { selectDistinctColumns: never[]; onChange: () => void };
-  static propTypes: {
-    model: PropTypes.Validator<unknown>;
-    selectDistinctColumns: PropTypes.Requireable<(string | null | undefined)[]>;
-    onChange: PropTypes.Requireable<(...args: any[]) => any>;
-  };
+
   constructor(props: SelectDistinctBuilderProps) {
     super(props);
 
@@ -94,7 +89,7 @@ class SelectDistinctBuilder extends Component<
     });
   }
 
-  renderInputs() {
+  renderInputs(): ReactElement[] {
     const { columns, inputs } = this.state;
 
     return inputs.map((value, index) => {

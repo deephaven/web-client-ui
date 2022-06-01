@@ -28,7 +28,7 @@ export type Options = {
   filterItems: FilterItem[];
   filterOperators: FilterOperatorValue[];
   invertSelection: boolean;
-  selectedValues: string[];
+  selectedValues: unknown[];
 };
 
 interface AdvancedFilterCreatorProps {
@@ -65,7 +65,7 @@ interface AdvancedFilterCreatorState {
 
   invertSelection: boolean;
 
-  selectedValues: string[];
+  selectedValues: unknown[];
 
   valuesTableError: null;
   valuesTable: Table | null;
@@ -298,7 +298,7 @@ class AdvancedFilterCreator extends PureComponent<
   }
 
   handleSelectValueChange(
-    selectedValues: string[],
+    selectedValues: unknown[],
     invertSelection: boolean
   ): void {
     this.setState({ selectedValues, invertSelection });
@@ -586,7 +586,7 @@ class AdvancedFilterCreator extends PureComponent<
               {!isBoolean && <hr />}
               {valuesTable && (
                 <div className="form-group">
-                  <AdvancedFilterCreatorSelectValue
+                  <AdvancedFilterCreatorSelectValue<unknown>
                     table={valuesTable}
                     onChange={this.handleSelectValueChange}
                     invertSelection={invertSelection}

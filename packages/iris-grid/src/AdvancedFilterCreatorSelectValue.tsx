@@ -1,12 +1,11 @@
 /* eslint react/no-did-update-set-state: "off" */
 import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
 import { CSSTransition } from 'react-transition-group';
 import classNames from 'classnames';
 import { Formatter, TableUtils } from '@deephaven/jsapi-utils';
+import { FilterCondition, Table } from '@deephaven/jsapi-shim';
 import AdvancedFilterCreatorSelectValueList from './AdvancedFilterCreatorSelectValueList';
 import './AdvancedFilterCreatorSelectValue.scss';
-import { FilterCondition, Table } from '@deephaven/jsapi-shim';
 
 interface AdvancedFilterCreatorSelectValueProps<T> {
   invertSelection: boolean;
@@ -31,24 +30,8 @@ class AdvancedFilterCreatorSelectValue<T> extends PureComponent<
   AdvancedFilterCreatorSelectValueProps<T>,
   AdvancedFilterCreatorSelectValueState<T>
 > {
-  propTypes = {
-    table: PropTypes.shape({
-      close: PropTypes.func,
-      columns: PropTypes.arrayOf(PropTypes.shape({ name: PropTypes.string })),
-      copy: PropTypes.func,
-      totalSize: PropTypes.number,
-    }),
-    invertSelection: PropTypes.bool,
-    selectedValues: PropTypes.arrayOf(PropTypes.any),
-    formatter: PropTypes.instanceOf(Formatter).isRequired,
-    onChange: PropTypes.func,
-    showSearch: PropTypes.bool,
-    timeZone: PropTypes.string.isRequired,
-  };
-
-  searchTablePromise: Promise<Table> | null;
-  updateFilterTimer: NodeJS.Timeout | null;
   static searchDebounceTime = 250;
+
   static defaultProps: {
     table: null;
     invertSelection: boolean;
@@ -121,6 +104,10 @@ class AdvancedFilterCreatorSelectValue<T> extends PureComponent<
 
     this.stopUpdateFilterTimer();
   }
+
+  searchTablePromise: Promise<Table> | null;
+
+  updateFilterTimer: NodeJS.Timeout | null;
 
   getColumnName(): string {
     const { table } = this.props;

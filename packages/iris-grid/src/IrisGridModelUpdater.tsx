@@ -12,6 +12,7 @@ import dh, {
 import { Formatter, ReverseType, TableUtils } from '@deephaven/jsapi-utils';
 import IrisGridModel from './IrisGridModel';
 import IrisGridUtils from './IrisGridUtils';
+import { UIRow } from './IrisGridTableModel';
 
 const COLUMN_BUFFER_PAGES = 1;
 
@@ -20,13 +21,13 @@ interface IrisGridModelUpdaterProps {
   modelColumns: Column[];
   top: number;
   bottom: number;
-  left?: number;
-  right?: number;
+  left: number | null;
+  right: number | null;
   filter: FilterCondition[];
   sorts: Sort[];
   reverseType?: ReverseType;
   customColumns: string[];
-  movedColumns: unknown[];
+  movedColumns: MoveOperation[];
   hiddenColumns: number[];
   frozenColumns?: string[];
   formatColumns: CustomColumn[];
@@ -36,7 +37,7 @@ interface IrisGridModelUpdaterProps {
   totalsConfig?: TotalsTableConfig | null;
   selectDistinctColumns?: string[];
   pendingRowCount?: number;
-  pendingDataMap?: Map<number, Map<string, unknown>>;
+  pendingDataMap?: Map<number, UIRow>;
 }
 
 /**

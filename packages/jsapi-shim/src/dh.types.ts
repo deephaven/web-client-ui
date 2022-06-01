@@ -21,6 +21,7 @@ export interface dh {
   FilterValue: FilterValueStatic;
   plot: Plot;
   Table: TableStatic;
+  Client: ClientStatic;
   TreeTable: TreeTableStatic;
   Column: Column;
   SearchDisplayMode?: SearchDisplayModeStatic;
@@ -456,8 +457,14 @@ export interface InputTable {
   keyColumns: Column[];
   values: string[];
   valueColumns: Column[];
-  addRow(row: Row, userTimeZone?: string): Promise<InputTable>;
-  addRows(rows: Row[], userTimeZone?: string): Promise<InputTable>;
+  addRow(
+    row: Record<string, unknown>,
+    userTimeZone?: string
+  ): Promise<InputTable>;
+  addRows(
+    rows: Record<string, unknown>[],
+    userTimeZone?: string
+  ): Promise<InputTable>;
   addTable(table: Table): Promise<InputTable>;
   addTables(tables: Table[]): Promise<InputTable>;
   deleteTable(table: Table): Promise<InputTable>;
@@ -494,6 +501,12 @@ export interface TableStatic {
   readonly EVENT_RECONNECTFAILED: string;
   readonly SIZE_UNCOALESCED: number;
   reverse(): Sort;
+}
+
+export interface ClientStatic {
+  readonly EVENT_REQUEST_FAILED: 'requestfailed';
+  readonly EVENT_REQUEST_STARTED: 'requeststarted';
+  readonly EVENT_REQUEST_SUCCEEDED: 'requestsucceeded';
 }
 export interface Table extends Evented, TableStatic {
   readonly size: number;
@@ -551,7 +564,7 @@ export interface Table extends Evented, TableStatic {
     stampColumns?: string[]
   ): Promise<Table>;
 
-  getColumnStatistics(column: Column): ColumnStatistics;
+  getColumnStatistics(column: Column): Promise<ColumnStatistics>;
 
   join(
     joinType: string,
@@ -567,6 +580,12 @@ export interface TableViewportSubscription extends Evented {
   getViewportData(): Promise<TableData>;
   snapshot(rows: RangeSet, columns: Column[]): Promise<TableData>;
   close(): void;
+}
+
+export interface ViewportData {
+  offset: number;
+  rows: Row[];
+  columns: Column[];
 }
 
 export interface TableSubscription extends Evented {
@@ -643,7 +662,7 @@ export interface Row {
 
   get(column: Column): any;
 
-  getFormat(column: Column): any;
+  getFormat(column: Column): Format;
 }
 
 export interface Format {
@@ -675,7 +694,8 @@ export interface TreeTable extends Evented, TreeTableStatic {
   readonly filter: FilterCondition[];
 
   readonly totalsTableConfig: TotalsTableConfig;
-  readonly hasInputTable: undefined;
+
+  isIncludeConstituents: boolean;
 
   findColumn(name: string): Column;
   findColumns(names: string[]): Column[];
@@ -704,6 +724,8 @@ export interface TreeTable extends Evented, TreeTableStatic {
   restoreExpandedState(nodesToRestore: string): void;
 
   close(): void;
+
+  copy(): Promise<TreeTable>;
 }
 export interface TreeTableData extends TableData {
   readonly rows: TreeRow[];
@@ -725,15 +747,16 @@ export interface RollupConfig {
 export interface TreeTableConfig {}
 
 export interface TotalsTableConfig {
-  showTotalsByDefault: boolean;
-  showGrandTotalsByDefault: boolean;
-  defaultOperation: string;
-  groupBy: string[];
+  showTotalsByDefault?: boolean;
+  showGrandTotalsByDefault?: boolean;
+  defaultOperation?: string;
+  groupBy?: string[];
+  operationMap: Record<string, string[]>;
 }
 
 export interface TotalsTable extends Evented {
   readonly size: number;
-  readonly column: Column[];
+  readonly columns: Column[];
 
   readonly sort: Sort[];
   readonly filter: FilterCondition[];

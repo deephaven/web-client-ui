@@ -1,5 +1,4 @@
-import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
+import React, { PureComponent, ReactElement } from 'react';
 import classNames from 'classnames';
 import { Draggable } from 'react-beautiful-dnd';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -48,7 +47,7 @@ class CustomColumnInput extends PureComponent<
     );
   }
 
-  handleFormulaEditorContentChanged(formulaValue?: string) {
+  handleFormulaEditorContentChanged(formulaValue?: string): void {
     const { onChange, eventKey } = this.props;
     if (formulaValue) {
       formulaValue.replace(/(\r\n|\n|\r)/gm, ''); // remove line break
@@ -60,7 +59,7 @@ class CustomColumnInput extends PureComponent<
     }
   }
 
-  render() {
+  render(): ReactElement {
     const {
       eventKey,
       name,

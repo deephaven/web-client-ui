@@ -147,6 +147,7 @@ import {
 } from './formatters';
 import AggregationOperation from './sidebar/aggregations/AggregationOperation';
 import { UIRollupConfig } from './sidebar/RollupRows';
+import { PendingDataMap } from './IrisGridTableModel';
 
 const log = Log.module('IrisGrid');
 
@@ -197,11 +198,11 @@ function isEmptyConfig({
 
 export type QuickFilter = {
   text: string;
-  filter: FilterCondition;
+  filter: FilterCondition | null;
 };
 
 export type AdvancedFilter = {
-  filter: FilterCondition;
+  filter: FilterCondition | null;
   options: Options;
 };
 
@@ -219,10 +220,10 @@ export type OptionItem = {
   onChange?: () => void;
 };
 
-export type UITotalsTableConfig = TotalsTableConfig & {
+export interface UITotalsTableConfig extends TotalsTableConfig {
   operationOrder: AggregationOperation[];
   showOnTop: boolean;
-};
+}
 
 export type InputFilter = { name: string; type: string; value: string };
 export interface IrisGridProps {
@@ -283,7 +284,7 @@ export interface IrisGridProps {
   // eslint-disable-next-line react/no-unused-prop-types
   onContextMenu: never;
 
-  pendingDataMap: Map<number, Map<string, unknown>>;
+  pendingDataMap: PendingDataMap;
   getDownloadWorker: () => Promise<ServiceWorker>;
 
   canCopy: boolean;
@@ -370,7 +371,7 @@ export interface IrisGridState {
   openOptions: OptionItem[];
 
   pendingRowCount: number;
-  pendingDataMap: Map<number, Map<string, unknown>>;
+  pendingDataMap: PendingDataMap;
   pendingDataErrors: Map<number, Error>;
   pendingSavePromise: Promise<void> | null;
   pendingSaveError: string | null;
@@ -454,7 +455,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     selectedSearchColumns: null;
     invertSearchColumns: boolean;
     onContextMenu: () => never[];
-    pendingDataMap: Map<number, Map<string, unknown>>;
+    pendingDataMap: PendingDataMap;
     getDownloadWorker: undefined;
     settings: {
       timeZone: string;
@@ -1181,7 +1182,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   );
 
   getModelTotalsConfig = memoize(
-    (columns, config, aggregationSettings): UITotalsTableConfig => {
+    (columns, config, aggregationSettings): UITotalsTableConfig | null => {
       const { aggregations, showOnTop } = aggregationSettings;
       // If we've got rollups, then aggregations are applied as part of that...
       if (
@@ -1241,7 +1242,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   );
 
   getCachedTheme = memoize(
-    (theme: GridThemeType, isEditable: boolean) => ({
+    (theme: GridThemeType, isEditable: boolean): IrisGridThemeType => ({
       ...IrisGridTheme,
       ...theme,
       autoSelectRow: !isEditable,
@@ -1290,7 +1291,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     return modelRows.get(numRowIndex);
   }
 
-  getTheme(): IrisGridThemeType & GridThemeType {
+  getTheme(): IrisGridThemeType {
     const { model, theme } = this.props;
     return this.getCachedTheme(theme, model.isEditable ?? false);
   }
@@ -1382,7 +1383,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   }
 
   setAdvancedFilter(
-    modelIndex: number,
+    modelIndex: number | null | undefined,
     filter: FilterCondition,
     options: Options
   ): void {
@@ -1416,10 +1417,15 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
    * @param {String} text The original text the filter was created with
    */
   setQuickFilter(
-    modelIndex: number,
+    modelIndex: number | null | undefined,
     filter: FilterCondition,
     text: string
   ): void {
+    if (modelIndex == null) {
+      log.error('Invalid model index to filter on');
+      return;
+    }
+
     log.debug('Setting quick filter', modelIndex, filter, text);
 
     this.startLoading('Filtering...', true);
@@ -2074,7 +2080,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
   handleColumnVisibilityChanged(
     modelIndexes: number[],
-    visibilityOption: string
+    visibilityOption: string | null
   ): void {
     const { metricCalculator } = this.state;
     if (
@@ -2416,6 +2422,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   ): void {
     const { model } = this.props;
     const columnIndex = model.getColumnIndexByName(column.name);
+    assertNotUndefined(columnIndex);
     const oldSort = TableUtils.getSortForColumn(model.sort, columnIndex);
     let newSort = null;
 
@@ -2664,7 +2671,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
   handleMovedColumnsChanged(
     movedColumns?: MoveOperation[],
-    onChangeApplied = () => null
+    onChangeApplied: (() => void) | undefined = () => null
   ): void {
     assertNotUndefined(movedColumns);
     this.setState({ movedColumns }, onChangeApplied);
@@ -2798,7 +2805,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
         selectDistinctColumns,
         removedColumnNames
       );
-      if (newSorts.length !== sorts) {
+      if (newSorts.length !== sorts.length) {
         log.debug('removing sorts from removed custom columns...');
         this.setState({ sorts: newSorts });
       }
@@ -3874,8 +3881,8 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
                 modelColumns={model.columns}
                 top={top}
                 bottom={bottom}
-                left={left ?? undefined}
-                right={right ?? undefined}
+                left={left}
+                right={right}
                 filter={filter}
                 formatter={formatter}
                 sorts={sorts}

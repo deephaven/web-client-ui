@@ -1055,7 +1055,7 @@ export class TableUtils {
       filterItems: AdvancedFilterItemType[];
       filterOperators: FilterOperatorValue[];
       invertSelection: boolean;
-      selectedValues: string[];
+      selectedValues: unknown[];
     },
     timeZone: string
   ): FilterCondition | null {
@@ -1366,7 +1366,7 @@ export class TableUtils {
    */
   static makeSelectValueFilter(
     column: Column,
-    selectedValues: string[],
+    selectedValues: unknown[],
     invertSelection: boolean
   ): FilterCondition | null {
     if (selectedValues.length === 0) {

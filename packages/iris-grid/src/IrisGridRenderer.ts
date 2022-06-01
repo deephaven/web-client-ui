@@ -9,7 +9,7 @@ import {
   vsLinkExternal,
 } from '@deephaven/icons';
 import { TableUtils } from '@deephaven/jsapi-utils';
-import { GridRenderer, GridUtils } from '@deephaven/grid';
+import { GridRenderer, GridRenderState, GridUtils } from '@deephaven/grid';
 
 const ICON_NAMES = Object.freeze({
   SORT_UP: 'sortUp',
@@ -225,7 +225,10 @@ class IrisGridRenderer extends GridRenderer {
     context.restore();
   }
 
-  drawColumnHeaders(context, state) {
+  drawColumnHeaders(
+    context: CanvasRenderingContext2D,
+    state: IrisGridRenderState
+  ) {
     super.drawColumnHeaders(context, state);
 
     const { theme, metrics, model, reverseType } = state;

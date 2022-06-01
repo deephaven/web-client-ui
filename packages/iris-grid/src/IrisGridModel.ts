@@ -21,6 +21,7 @@ import type {
   TotalsTableConfig,
 } from '@deephaven/jsapi-shim';
 import { Formatter } from '@deephaven/jsapi-utils';
+import { PendingDataMap } from './IrisGridTableModel';
 
 type RowIndex = ModelIndex;
 
@@ -65,10 +66,6 @@ abstract class IrisGridModel<
   }
 
   listenerCount: number;
-
-  isEditable: boolean | null | undefined;
-
-  hasExpandableRows: boolean | null | undefined;
 
   // Pulled directly from event-target-shim implementation signature
   // https://github.com/mysticatea/event-target-shim/blob/master/src/lib/event-target.ts#L99
@@ -126,7 +123,7 @@ abstract class IrisGridModel<
    * @param name The model column name.
    * @returns The numeric index of the requested column.
    */
-  abstract getColumnIndexByName(name: string): ModelIndex;
+  abstract getColumnIndexByName(name: string): ModelIndex | undefined;
 
   /**
    * Gets the columns for the model before any transformations (such as rollups) are applied.
@@ -381,13 +378,13 @@ abstract class IrisGridModel<
    * The pending data for this model
    * @returns A map of row index to a map of column name/value pairs
    */
-  abstract get pendingDataMap(): Map<RowIndex, Map<string, unknown>>;
+  abstract get pendingDataMap(): PendingDataMap;
 
   /**
    * Set the pending data for this model
    * @param A map of row index to a map of column name/value pairs
    */
-  abstract set pendingDataMap(map: Map<RowIndex, Map<string, unknown>>);
+  abstract set pendingDataMap(map: PendingDataMap);
 
   /**
    * @returns The count of pending rows to show
@@ -448,7 +445,7 @@ abstract class IrisGridModel<
   abstract textSnapshot(
     ranges: GridRange[],
     includeHeaders?: boolean,
-    formatValue?: (value: unknown, column: Column, row: Row) => string
+    formatValue?: (value: unknown, column?: Column, row?: Row) => string
   ): Promise<string>;
 
   /**

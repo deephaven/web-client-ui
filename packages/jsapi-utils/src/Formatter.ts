@@ -177,7 +177,7 @@ export class Formatter {
     value: unknown,
     columnType: string,
     columnName = '',
-    formatOverride?: TableColumnFormat
+    formatOverride?: Partial<TableColumnFormat>
   ): string {
     if (value == null) {
       return '';

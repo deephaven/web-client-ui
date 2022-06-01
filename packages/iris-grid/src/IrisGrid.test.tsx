@@ -2,25 +2,28 @@ import React from 'react';
 import TestRenderer from 'react-test-renderer';
 import { DateUtils } from '@deephaven/jsapi-utils';
 import { TestUtils } from '@deephaven/utils';
+import { WorkspaceSettings } from '@deephaven/redux';
 import { IrisGrid } from './IrisGrid';
 import IrisGridTestUtils from './IrisGridTestUtils';
 
 class MockPath2D {
   // eslint-disable-next-line class-methods-use-this
-  addPath() {}
+  addPath = jest.fn();
 }
 
 window.Path2D = MockPath2D;
 
 const VIEW_SIZE = 5000;
 
-const DEFAULT_SETTINGS = {
+const DEFAULT_SETTINGS: WorkspaceSettings = {
   timeZone: 'America/New_York',
   defaultDateTimeFormat: DateUtils.FULL_DATE_FORMAT,
   showTimeZone: false,
   showTSeparator: true,
   formatter: [],
   truncateNumbersWithPound: false,
+  disableMoveConfirmation: false,
+  showSystemBadge: false,
 };
 
 function makeMockCanvas() {
@@ -64,7 +67,7 @@ function makeComponent(
   return testRenderer.getInstance();
 }
 
-function keyDown(key, component, extraArgs) {
+function keyDown(key, component, extraArgs?) {
   const args = { key, ...extraArgs };
   component.grid.handleKeyDown(new KeyboardEvent('keydown', args));
 }

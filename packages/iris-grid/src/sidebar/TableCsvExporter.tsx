@@ -1,20 +1,14 @@
-import React, { Component } from 'react';
-import PropTypes, { resetWarningCache } from 'prop-types';
+import React, { Component, ReactElement } from 'react';
 import ClassNames from 'classnames';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { LoadingSpinner, RadioGroup, RadioItem } from '@deephaven/components';
 import { GridRange } from '@deephaven/grid';
 import { vsWarning } from '@deephaven/icons';
-import dh, {
-  FilterCondition,
-  Table,
-  TableViewportSubscription,
-} from '@deephaven/jsapi-shim';
+import dh, { Table, TableViewportSubscription } from '@deephaven/jsapi-shim';
 import { TimeUtils } from '@deephaven/utils';
 import shortid from 'shortid';
 import IrisGridModel from '../IrisGridModel';
 import './TableCsvExporter.scss';
-import { Options } from '../AdvancedFilterCreator';
 
 interface TableCsvExporterProps {
   model: IrisGridModel;
@@ -214,10 +208,10 @@ class TableCsvExporter extends Component<
   handleCustomizedDownloadRowsChanged(
     event: React.ChangeEvent<HTMLInputElement>
   ): void {
-    this.setState({ customizedDownloadRows: parseInt(event.target.value) });
+    this.setState({ customizedDownloadRows: parseInt(event.target.value, 10) });
   }
 
-  validateOptionInput() {
+  validateOptionInput(): boolean {
     const { selectedRanges } = this.props;
     const { downloadOption, customizedDownloadRows } = this.state;
 
@@ -253,7 +247,7 @@ class TableCsvExporter extends Component<
     return true;
   }
 
-  render() {
+  render(): ReactElement {
     const {
       model,
       isDownloading,
@@ -319,7 +313,6 @@ class TableCsvExporter extends Component<
                 }}
               >
                 <select
-                  defaultValue={TableCsvExporter.DOWNLOAD_OPTIONS.FIRST}
                   value={customizedDownloadOption}
                   data-testid="select-csv-exporter-customized-rows"
                   className="custom-select"

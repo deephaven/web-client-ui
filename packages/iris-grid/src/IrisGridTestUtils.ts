@@ -1,5 +1,5 @@
-import { GridRangeIndex } from '@deephaven/grid';
-import dh, { Column } from '@deephaven/jsapi-shim';
+import { GridRangeIndex, ModelSizeMap } from '@deephaven/grid';
+import dh, { Column, FilterCondition, Row } from '@deephaven/jsapi-shim';
 import { Formatter } from '@deephaven/jsapi-utils';
 import IrisGridProxyModel from './IrisGridProxyModel';
 
@@ -20,7 +20,7 @@ class IrisGridTestUtils {
 
   static makeColumn(
     name: string,
-    type = IrisGridTestUtils.DEFAULT_TYPE,
+    type: string = IrisGridTestUtils.DEFAULT_TYPE,
     index = 0
   ): Column {
     return new dh.Column({ index, name, type });
@@ -42,7 +42,7 @@ class IrisGridTestUtils {
     return userColumnWidths;
   }
 
-  static makeRow(i: number) {
+  static makeRow(i: number): Row {
     const row = new dh.Row({ index: i, name: `${i}` });
 
     row.get = jest.fn(column =>
@@ -52,11 +52,11 @@ class IrisGridTestUtils {
     return row;
   }
 
-  static makeFilter() {
+  static makeFilter(): FilterCondition {
     return new dh.FilterCondition();
   }
 
-  static makeSort() {
+  static makeSort(): Sort {
     return new dh.Sort();
   }
 

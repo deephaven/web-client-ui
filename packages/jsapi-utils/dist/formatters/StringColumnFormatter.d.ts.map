@@ -1,0 +1,1 @@
+{"version":3,"file":"StringColumnFormatter.d.ts","sourceRoot":"","sources":["../../src/formatters/StringColumnFormatter.ts"],"names":[],"mappings":"AACA,OAAO,oBAAoB,MAAM,wBAAwB,CAAC;AAE1D,mCAAmC;AACnC,qBAAa,qBAAsB,SAAQ,oBAAoB,CAAC,MAAM,CAAC;IACrE,MAAM,CAAC,KAAK,EAAE,MAAM,GAAG,MAAM;CAG9B;AAED,eAAe,qBAAqB,CAAC"}

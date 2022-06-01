@@ -32,9 +32,8 @@ import debounce from 'lodash.debounce';
 import { SearchInput, Tooltip } from '@deephaven/components';
 import Log from '@deephaven/log';
 import './VisibilityOrderingBuilder.scss';
-import { DebouncedFunc } from 'lodash';
 import IrisGridModel from '../IrisGridModel';
-import { assertNotNull } from '../IrisGrid';
+import { assertNotNull, assertNotUndefined } from '../IrisGrid';
 
 const log = Log.module('VisibilityOrderingBuilder');
 const DEBOUNCE_SEARCH_COLUMN = 150;
@@ -88,10 +87,7 @@ class VisibilityOrderingBuilder extends Component<
     super(props);
 
     this.handleSearchInputChange = this.handleSearchInputChange.bind(this);
-    this.debouncedSearchColumns = debounce(
-      this.searchColumns.bind(this),
-      DEBOUNCE_SEARCH_COLUMN
-    );
+    this.searchColumns = this.searchColumns.bind(this);
     this.handleOrderDraggingStart = this.handleOrderDraggingStart.bind(this);
     this.handleOrderDraggingEnd = this.handleOrderDraggingEnd.bind(this);
 
@@ -113,9 +109,9 @@ class VisibilityOrderingBuilder extends Component<
     this.debouncedSearchColumns.cancel();
   }
 
-  debouncedSearchColumns: DebouncedFunc<(searchFilter: string) => void>;
-
   list: HTMLDivElement | null;
+
+  debouncedSearchColumns = debounce(this.searchColumns, DEBOUNCE_SEARCH_COLUMN);
 
   resetVisibilityOrdering(): void {
     const {
@@ -126,7 +122,11 @@ class VisibilityOrderingBuilder extends Component<
     const { columns } = model;
 
     onColumnVisibilityChanged(
-      columns.map(column => model.getColumnIndexByName(column.name)),
+      columns.map(column => {
+        const index = model.getColumnIndexByName(column.name);
+        assertNotUndefined(index);
+        return index;
+      }),
       VisibilityOrderingBuilder.VISIBILITY_OPTIONS.SHOW
     );
     this.setState({
@@ -434,7 +434,7 @@ class VisibilityOrderingBuilder extends Component<
     );
 
     let newMoves = [] as MoveOperation[];
-    let scrollListAfterMove = () => {};
+    let scrollListAfterMove: () => void = () => undefined;
 
     switch (option) {
       case VisibilityOrderingBuilder.MOVE_OPTIONS.TOP:

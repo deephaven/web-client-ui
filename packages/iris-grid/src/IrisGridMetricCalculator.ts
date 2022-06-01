@@ -1,13 +1,13 @@
 import { GridMetricCalculator, ModelSizeMap } from '@deephaven/grid';
-import type { VisibleIndex, GridMetricState, GridTheme } from '@deephaven/grid';
+import type { VisibleIndex, GridMetricState } from '@deephaven/grid';
 import type { FilterCondition, Sort } from '@deephaven/jsapi-shim';
 import { TableUtils } from '@deephaven/jsapi-utils';
 import type IrisGridModel from './IrisGridModel';
-import type IrisGridTheme from './IrisGridTheme';
+import { IrisGridThemeType } from './IrisGridTheme';
 
 export interface IrisGridMetricState extends GridMetricState {
   model: IrisGridModel;
-  theme: typeof IrisGridTheme & typeof GridTheme;
+  theme: IrisGridThemeType;
   isFilterBarShown: boolean;
   advancedFilters: Map<
     string,

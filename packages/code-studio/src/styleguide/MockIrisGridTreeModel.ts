@@ -12,8 +12,12 @@ import {
   ModelIndex,
 } from '@deephaven/grid';
 import { IrisGridModel } from '@deephaven/iris-grid';
-import type { Column, CustomColumn } from '@deephaven/jsapi-shim';
+import type { Column } from '@deephaven/jsapi-shim';
 import { Formatter } from '@deephaven/jsapi-utils';
+import {
+  PendingDataMap,
+  UIRow,
+} from '@deephaven/iris-grid/dist/IrisGridTableModel.js';
 
 // We need to cast our CustomEvent so it's happy with event-target-shim
 type CustomEventType = EventTarget.EventData<
@@ -83,11 +87,11 @@ class MockIrisGridTreeModel
     // Ignore for mock
   }
 
-  get pendingDataMap(): Map<ModelIndex, Map<string, unknown>> {
+  get pendingDataMap(): PendingDataMap<UIRow> {
     return new Map();
   }
 
-  set pendingDataMap(value: Map<ModelIndex, Map<string, unknown>>) {
+  set pendingDataMap(value: PendingDataMap<UIRow>) {
     // Ignore for mock
   }
 
@@ -170,11 +174,11 @@ class MockIrisGridTreeModel
     // Ignore for mock
   }
 
-  get formatColumns(): CustomColumn[] {
+  get formatColumns(): string[] {
     return [];
   }
 
-  set formatColumns(formatColumns: CustomColumn[]) {
+  set formatColumns(formatColumns: string[]) {
     // Ignore for mock
   }
 
