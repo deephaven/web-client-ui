@@ -1748,6 +1748,8 @@ class Grid extends PureComponent<GridProps, GridState> {
       scrollableViewportWidth,
       scrollableContentHeight,
       scrollableViewportHeight,
+      hasHorizontalBar,
+      hasVerticalBar,
     } = metrics;
     let { top, left, topOffset, leftOffset } = metrics;
 
@@ -1763,7 +1765,7 @@ class Grid extends PureComponent<GridProps, GridState> {
 
     // iterate through each column to determine column width and figure out how far to scroll
     // get column width of next column to scroll to, and subract it from the remaining distance to travel
-    while (deltaX !== 0) {
+    while (hasHorizontalBar && deltaX !== 0) {
       leftOffset += deltaX;
       deltaX = 0;
 
@@ -1835,7 +1837,7 @@ class Grid extends PureComponent<GridProps, GridState> {
 
     // iterate through each row to determine row height and figure out how far to scroll
     // get row height of next row to scroll to, and subract it from the remaining distance to travel
-    while (deltaY !== 0) {
+    while (hasVerticalBar && deltaY !== 0) {
       topOffset += deltaY;
       deltaY = 0;
 
@@ -1853,6 +1855,7 @@ class Grid extends PureComponent<GridProps, GridState> {
         }
 
         const maxTopOffset = scrollableContentHeight - scrollableViewportHeight;
+        console.log(scrollableContentHeight, scrollableViewportHeight);
         if (topOffset >= maxTopOffset) {
           topOffset = maxTopOffset;
           break;
