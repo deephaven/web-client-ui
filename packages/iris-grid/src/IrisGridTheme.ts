@@ -2,8 +2,8 @@ import type { GridThemeType } from '@deephaven/grid';
 import IrisGridTheme from './IrisGridTheme.module.scss';
 
 export type IrisGridThemeType = GridThemeType & {
-  filterBarHeight: number;
   filterBarCollapsedHeight: number;
+  filterBarHeight: number;
   reverseHeaderBarHeight: number;
   filterIconColor: string;
   filterBarActiveColor: string;
@@ -18,6 +18,25 @@ export type IrisGridThemeType = GridThemeType & {
   negativeNumberColor: string;
   zeroNumberColor: string;
   errorTextColor: string;
+  groupedColumnDividerColor: string;
+  linkerColumnHoverBackgroundColor: string;
+  scrimBlurSize: number;
+  scrimColor: string;
+  headerReverseBarColor: string;
+  sortHeaderBarHeight: number;
+  headerSortBarColor: string;
+  headerBarCasingColor: string;
+  filterBarExpandedActiveBackgroundColor: string;
+  filterBarExpandedBackgroundColor: string;
+  filterBarSeparatorColor: string;
+  filterBarExpandedActiveCellBackgroundColor: string;
+  filterBarErrorColor: string;
+  filterBarHorizontalPadding: number;
+  filterBarActiveBackgroundColor: string;
+  overflowButtonColor: string;
+  overflowButtonHoverColor: string;
+  rowHoverBackgroundColor: string;
+  floatingGridRowColor: string;
 };
 
 const theme: Partial<IrisGridThemeType> = Object.freeze({

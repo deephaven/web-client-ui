@@ -1,7 +1,11 @@
 import { PureComponent } from 'react';
-import PropTypes from 'prop-types';
 import { WritableStream as ponyfillWritableStream } from 'web-streams-polyfill/dist/ponyfill.js';
-import dh, { Column, Table, TableData, TableSubscription, TableViewportSubscription } from '@deephaven/jsapi-shim';
+import dh, {
+  Column,
+  Table,
+  TableData,
+  TableViewportSubscription,
+} from '@deephaven/jsapi-shim';
 import Log from '@deephaven/log';
 import { GridRange, GridRangeIndex, memoizeClear } from '@deephaven/grid';
 import { CancelablePromise, PromiseUtils } from '@deephaven/utils';
@@ -34,59 +38,6 @@ export default class TableSaver extends PureComponent<TableSaverProps,Record<str
   static csvEscapeString(str: string) {
     return `"${str.replace(/"/g, '""')}"`;
   }
-
-  static propTypes = {
-    getDownloadWorker: PropTypes.func,
-    isDownloading: PropTypes.bool,
-    onDownloadCompleted: PropTypes.func,
-    onDownloadCanceled: PropTypes.func,
-    onDownloadProgressUpdate: PropTypes.func,
-    formatter: PropTypes.instanceOf(Formatter).isRequired,
-  };
-
-  
-  sw: ServiceWorker | null;
-  port: MessagePort | null;
-  fileWriter: WritableStreamDefaultWriter<any> | null;
-
-  table: Table | null;
-  tableSubscription: TableViewportSubscription | null;
-  columns: Column[] | null;
-
-  fileName: string | null;
-
-  chunkRows: number | null;
-
-  gridRanges: GridRange[];
-  gridRangeCounter: number | null;
-  rangedSnapshotsTotal: number[];
-  rangedSnapshotCounter: number | null;
-
-  snapshotsTotal: number;
-  snapshotCounter: number;
-  snapshotsBuffer: Map<number, TableData>;
-
-  currentSnapshotIndex: number;
-  snapshotPending: number;
-  cancelableSnapshots: (CancelablePromise<unknown> | null )[];
-
-  // WritableStream is not supported in Firefox (also IE) yet. use ponyfillWritableStream instead
-  WritableStream = window.WritableStream || ponyfillWritableStream;
-
-  // Due to an open issue in Chromium, readableStream.cancel() is never called when a user cancel the stream from Chromium's UI and the stream goes on even it's canceled.
-  // Instead, we  monitor the pull() behavior from the readableStream called when the stream wants more data to write.
-  // If the stream doesn't pull for long enough time, chances are the stream is already canceled, so we stop the stream.
-  // Issue ticket on Chromium: https://bugs.chromium.org/p/chromium/issues/detail?id=638494
-  streamTimeout: NodeJS.Timeout | null;
-
-  snapshotHandlerTimeout: NodeJS.Timeout | null;
-
-  downloadStartTime: number | null;
-
-  iframes: HTMLIFrameElement[];
-
-  useBlobFallback;
-
 
   constructor(props: TableSaverProps) {
 
@@ -169,12 +120,65 @@ export default class TableSaver extends PureComponent<TableSaverProps,Record<str
     clearTimeout(this.snapshotHandlerTimeout);
   }
 
+  sw: ServiceWorker | null;
+
+  port: MessagePort | null;
+
+  fileWriter: WritableStreamDefaultWriter<unknown> | null;
+
+  table: Table | null;
+
+  tableSubscription: TableViewportSubscription | null;
+
+  columns: Column[] | null;
+
+  fileName: string | null;
+
+  chunkRows: number | null;
+
+  gridRanges: GridRange[];
+
+  gridRangeCounter: number | null;
+
+  rangedSnapshotsTotal: number[];
+
+  rangedSnapshotCounter: number | null;
+
+  snapshotsTotal: number;
+
+  snapshotCounter: number;
+
+  snapshotsBuffer: Map<number, TableData>;
+
+  currentSnapshotIndex: number;
+
+  snapshotPending: number;
+
+  cancelableSnapshots: (CancelablePromise<unknown> | null)[];
+
+  // WritableStream is not supported in Firefox (also IE) yet. use ponyfillWritableStream instead
+  WritableStream = window.WritableStream || ponyfillWritableStream;
+
+  // Due to an open issue in Chromium, readableStream.cancel() is never called when a user cancel the stream from Chromium's UI and the stream goes on even it's canceled.
+  // Instead, we  monitor the pull() behavior from the readableStream called when the stream wants more data to write.
+  // If the stream doesn't pull for long enough time, chances are the stream is already canceled, so we stop the stream.
+  // Issue ticket on Chromium: https://bugs.chromium.org/p/chromium/issues/detail?id=638494
+  streamTimeout: NodeJS.Timeout | null;
+
+  snapshotHandlerTimeout: NodeJS.Timeout | null;
+
+  downloadStartTime: number | null;
+
+  iframes: HTMLIFrameElement[];
+
+  useBlobFallback;
+
   getCachedCustomColumnFormatFlag = memoizeClear(
     FormatterUtils.isCustomColumnFormatDefined,
     { max: 10000 }
   );
 
-  createWriterStream(port: MessagePort): WritableStream<any> {
+  createWriterStream(port: MessagePort): WritableStream<ServiceWorker> {
     // use blob fall back if it's safari
     const useBlob = this.useBlobFallback;
     const chunks = ([] as BlobPart[]);
@@ -186,7 +190,7 @@ export default class TableSaver extends PureComponent<TableSaverProps,Record<str
 
     const streamConfig = {} as UnderlyingSink;
     if (useBlob) {
-      streamConfig.write = (chunk: any) => {
+      streamConfig.write = (chunk: { rows?: string, header?: string }) => {
         assertNotNull(encode)
         if (chunk.header !== undefined) {
           chunks.push(encode(chunk.header));
@@ -210,7 +214,7 @@ export default class TableSaver extends PureComponent<TableSaverProps,Record<str
         port.close();
       };
     } else {
-      streamConfig.write = (chunk: BlobPart) => {
+      streamConfig.write = (chunk: unknown) => {
         port.postMessage(chunk);
       };
       streamConfig.close = () => {
@@ -264,7 +268,7 @@ export default class TableSaver extends PureComponent<TableSaverProps,Record<str
     this.port.onmessage = this.handlePortMessage;
   }
 
-  finishDownload() {
+  finishDownload(): void {
     if (this.table) {
       this.table.close();
     }
@@ -287,7 +291,7 @@ export default class TableSaver extends PureComponent<TableSaverProps,Record<str
     );}
   }
 
-  cancelDownload() {
+  cancelDownload(): void {
     if (this.table) {
       this.table.close();
     }
@@ -300,7 +304,7 @@ export default class TableSaver extends PureComponent<TableSaverProps,Record<str
 
     this.cancelableSnapshots.forEach(cancelable => {
       if (cancelable) {
-        cancelable.catch(() => {});
+        cancelable.catch(() => null);
         cancelable.cancel();
       }
     });
@@ -309,7 +313,7 @@ export default class TableSaver extends PureComponent<TableSaverProps,Record<str
     this.resetTableSaver();
   }
 
-  resetTableSaver() {
+  resetTableSaver(): void {
     this.table = null;
     this.tableSubscription = null;
     this.columns = null;
@@ -337,26 +341,27 @@ export default class TableSaver extends PureComponent<TableSaverProps,Record<str
     this.snapshotHandlerTimeout = null;
   }
 
-  handleDownloadTimeout() {
+  handleDownloadTimeout(): void {
     log.info('download canceled');
     this.cancelDownload();
   }
 
-  writeTableHeader() {
+  writeTableHeader(): void {
     let headerString = '';
-    if (this.columns){
-    for (let i = 0; i < this.columns.length; i += 1) {
-      headerString += this.columns[i].name;
-      headerString += i === this.columns.length - 1 ? '\n' : ',';
-    }}
-    this.fileWriter?.write({ header: headerString }).then(() => {});
+    if (this.columns) {
+      for (let i = 0; i < this.columns.length; i += 1) {
+        headerString += this.columns[i].name;
+        headerString += i === this.columns.length - 1 ? '\n' : ',';
+      }
+    }
+    this.fileWriter?.write({ header: headerString }).then(() => null);
   }
 
-  startWriteTableBody() {
-    if (this.columns && this.gridRanges){
-    this.chunkRows = Math.floor(
-      TableSaver.DOWNLOAD_CELL_CHUNK / this.columns.length
-    );
+  startWriteTableBody(): void {
+    if (this.columns && this.gridRanges) {
+      this.chunkRows = Math.floor(
+        TableSaver.DOWNLOAD_CELL_CHUNK / this.columns.length
+      );
 
     this.rangedSnapshotsTotal = this.gridRanges.map((range: GridRange) =>
       {assertNotNull(range.endRow)
@@ -377,12 +382,16 @@ export default class TableSaver extends PureComponent<TableSaverProps,Record<str
     }
   }
 
-  writeCsvTable() {
+  writeCsvTable(): void {
     this.writeTableHeader();
     this.startWriteTableBody();
   }
 
-  writeSnapshot(snapshotIndex: number, snapshotStartRow: GridRangeIndex, snapshotEndRow:GridRangeIndex) {
+  writeSnapshot(
+    snapshotIndex: number,
+    snapshotStartRow: GridRangeIndex,
+    snapshotEndRow: GridRangeIndex
+  ): void {
     if (this.currentSnapshotIndex === snapshotIndex && this.fileWriter) {
       while (this.snapshotsBuffer.has(this.currentSnapshotIndex)) {
         const n = this.snapshotsBuffer.get(this.currentSnapshotIndex)
@@ -429,7 +438,7 @@ export default class TableSaver extends PureComponent<TableSaverProps,Record<str
     }
   }
 
-  updateDownloadProgress(snapshotIndex: GridRangeIndex) {
+  updateDownloadProgress(snapshotIndex: GridRangeIndex): void {
     if (snapshotIndex && this.snapshotsTotal && this.downloadStartTime) {
     const { onDownloadProgressUpdate } = this.props;
     const downloadProgress = Math.floor(
@@ -449,7 +458,7 @@ export default class TableSaver extends PureComponent<TableSaverProps,Record<str
         }
   }
 
-  convertSnapshotIntoCsv(snapshot: TableData) {
+  convertSnapshotIntoCsv(snapshot: TableData): string {
     let csvString = '';
     const snapshotIterator = snapshot.added.iterator();
     const { formatter } = this.props;

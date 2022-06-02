@@ -401,7 +401,7 @@ abstract class IrisGridModel<
    * Errors for the pending data
    * @returns Map from row number to the error
    */
-  abstract get pendingDataErrors(): Map<RowIndex, Error>;
+  abstract get pendingDataErrors(): Map<RowIndex, Error[]>;
 
   /**
    * Commit pending data and save all data to the table

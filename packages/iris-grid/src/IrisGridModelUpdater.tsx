@@ -7,17 +7,18 @@ import dh, {
   FilterCondition,
   RollupConfig,
   Sort,
-  TotalsTableConfig,
 } from '@deephaven/jsapi-shim';
+import { MoveOperation } from '@deephaven/grid';
 import { Formatter, ReverseType, TableUtils } from '@deephaven/jsapi-utils';
-import IrisGridModel from './IrisGridModel';
 import IrisGridUtils from './IrisGridUtils';
 import { UIRow } from './IrisGridTableModel';
+import IrisGridProxyModel from './IrisGridProxyModel';
+import { UITotalsTableConfig } from './IrisGrid';
 
 const COLUMN_BUFFER_PAGES = 1;
 
 interface IrisGridModelUpdaterProps {
-  model: IrisGridModel;
+  model: IrisGridProxyModel;
   modelColumns: Column[];
   top: number;
   bottom: number;
@@ -34,7 +35,7 @@ interface IrisGridModelUpdaterProps {
   alwaysFetchColumns: string[];
   formatter: Formatter;
   rollupConfig?: RollupConfig | null;
-  totalsConfig?: TotalsTableConfig | null;
+  totalsConfig?: UITotalsTableConfig | null;
   selectDistinctColumns?: string[];
   pendingRowCount?: number;
   pendingDataMap?: Map<number, UIRow>;
@@ -128,7 +129,9 @@ const IrisGridModelUpdater = React.memo(
     );
     useEffect(
       function updateViewport() {
-        model.setViewport(top, bottom, columns);
+        if (columns) {
+          model.setViewport(top, bottom, columns);
+        }
       },
       [model, top, bottom, columns]
     );

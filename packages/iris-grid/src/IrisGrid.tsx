@@ -148,6 +148,7 @@ import {
 import AggregationOperation from './sidebar/aggregations/AggregationOperation';
 import { UIRollupConfig } from './sidebar/RollupRows';
 import { PendingDataMap } from './IrisGridTableModel';
+import IrisGridProxyModel from './IrisGridProxyModel';
 
 const log = Log.module('IrisGrid');
 
@@ -239,8 +240,11 @@ export interface IrisGridProps {
   movedRows: { from: number; to: number }[];
   inputFilters: InputFilter[];
   customFilters: unknown[];
-  model: IrisGridModel;
-  onCreateChart: (settings: ChartBuilderSettings, model: IrisGridModel) => void;
+  model: IrisGridProxyModel;
+  onCreateChart: (
+    settings: ChartBuilderSettings,
+    model: IrisGridProxyModel
+  ) => void;
   onColumnSelected: (column: Column) => void;
   onError: (error: unknown) => void;
   onDataSelected: (index: number, map: unknown) => void;
@@ -1242,7 +1246,10 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   );
 
   getCachedTheme = memoize(
-    (theme: GridThemeType, isEditable: boolean): IrisGridThemeType => ({
+    (
+      theme: GridThemeType,
+      isEditable: boolean
+    ): Partial<IrisGridThemeType> => ({
       ...IrisGridTheme,
       ...theme,
       autoSelectRow: !isEditable,
@@ -1291,7 +1298,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     return modelRows.get(numRowIndex);
   }
 
-  getTheme(): IrisGridThemeType {
+  getTheme(): Partial<IrisGridThemeType> {
     const { model, theme } = this.props;
     return this.getCachedTheme(theme, model.isEditable ?? false);
   }
@@ -1861,6 +1868,8 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     if (this.loadingScrimStartTime == null) {
       const { minScrimTransitionTime, maxScrimTransitionTime } = theme;
       const height = this.gridWrapper?.getBoundingClientRect().height ?? 0;
+      assertNotNullNorUndefined(minScrimTransitionTime);
+      assertNotNullNorUndefined(maxScrimTransitionTime);
       const scrimTransitionTime = Math.max(
         minScrimTransitionTime,
         Math.min(height / 2, maxScrimTransitionTime)
@@ -1947,7 +1956,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     return this.lastLoadedConfig != null || !isEmptyConfig(this.state);
   }
 
-  startListening(model: IrisGridModel): void {
+  startListening(model: IrisGridProxyModel): void {
     model.addEventListener(IrisGridModel.EVENT.UPDATED, this.handleUpdate);
     model.addEventListener(
       IrisGridModel.EVENT.REQUEST_FAILED,
@@ -1963,7 +1972,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     );
   }
 
-  stopListening(model: IrisGridModel): void {
+  stopListening(model: IrisGridProxyModel): void {
     model.removeEventListener(IrisGridModel.EVENT.UPDATED, this.handleUpdate);
     model.removeEventListener(
       IrisGridModel.EVENT.REQUEST_FAILED,
@@ -3320,9 +3329,9 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       const columnWidth = visibleColumnWidths.get(focusedFilterBarColumn);
       if (columnX != null && columnWidth != null) {
         const x = gridX + columnX;
-        const y = gridY - theme.filterBarHeight;
+        const y = gridY - (theme.filterBarHeight ?? 0);
         const fieldWidth = columnWidth + 1; // cover right border
-        const fieldHeight = theme.filterBarHeight - 1; // remove bottom border
+        const fieldHeight = (theme.filterBarHeight ?? 0) - 1; // remove bottom border
         const style = {
           top: y,
           left: x,
@@ -3521,7 +3530,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
           columnWidth > 0
         ) {
           const x = gridX + columnX + columnWidth - 24;
-          const y = gridY - filterBarHeight + 2; // 2 acts as top margin for the button
+          const y = gridY - (filterBarHeight ?? 0) + 2; // 2 acts as top margin for the button
           const style = {
             position: 'absolute',
             top: y,
@@ -3868,7 +3877,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
               onMovedColumnsChanged={this.handleMovedColumnsChanged}
               renderer={this.renderer}
               stateOverride={stateOverride}
-              theme={theme}
+              theme={theme as GridThemeType}
             />
             <IrisGridCellOverflowModal
               isOpen={showOverflowModal}

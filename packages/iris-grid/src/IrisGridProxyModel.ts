@@ -178,14 +178,14 @@ class IrisGridProxyModel extends IrisGridModel {
     this.removeListeners(this.model);
   }
 
-  addListeners(model: IrisGridTreeTableModel | IrisGridTableModel) {
+  addListeners(model: IrisGridTreeTableModel | IrisGridTableModel): void {
     const events = Object.keys(IrisGridModel.EVENT);
     for (let i = 0; i < events.length; i += 1) {
       model.addEventListener(events[i], this.handleModelEvent);
     }
   }
 
-  removeListeners(model: IrisGridTreeTableModel | IrisGridTableModel) {
+  removeListeners(model: IrisGridTreeTableModel | IrisGridTableModel): void {
     const events = Object.keys(IrisGridModel.EVENT);
     for (let i = 0; i < events.length; i += 1) {
       model.removeEventListener(events[i], this.handleModelEvent);
@@ -437,7 +437,7 @@ class IrisGridProxyModel extends IrisGridModel {
     return this.rollup;
   }
 
-  set rollupConfig(rollupConfig: RollupConfig) {
+  set rollupConfig(rollupConfig: RollupConfig | null) {
     log.debug('set rollupConfig', rollupConfig);
 
     if (!this.isRollupAvailable) {
@@ -497,11 +497,11 @@ class IrisGridProxyModel extends IrisGridModel {
     this.setNextModel(modelPromise);
   }
 
-  get totalsConfig(): UITotalsTableConfig {
+  get totalsConfig(): UITotalsTableConfig | null {
     return this.model.totalsConfig;
   }
 
-  set totalsConfig(totalsConfig: UITotalsTableConfig) {
+  set totalsConfig(totalsConfig: UITotalsTableConfig | null) {
     this.model.totalsConfig = totalsConfig;
   }
 
@@ -571,7 +571,7 @@ class IrisGridProxyModel extends IrisGridModel {
     this.model.pendingRowCount = count;
   }
 
-  get pendingDataErrors(): Map<number, Error> {
+  get pendingDataErrors(): Map<number, Error[]> {
     return this.model.pendingDataErrors;
   }
 

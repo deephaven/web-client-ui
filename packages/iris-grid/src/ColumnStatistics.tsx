@@ -1,5 +1,4 @@
 import React, { Component, Key } from 'react';
-import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -16,7 +15,6 @@ import {
 } from '@deephaven/icons';
 import {
   Column,
-  PropTypes as APIPropTypes,
   ColumnStatistics as APIColumnStatistics,
 } from '@deephaven/jsapi-shim';
 import Log from '@deephaven/log';
@@ -26,8 +24,7 @@ import {
   PromiseUtils,
 } from '@deephaven/utils';
 import './ColumnStatistics.scss';
-import { ExpandableGridModel } from '@deephaven/grid';
-import IrisGridModel from './IrisGridModel';
+import IrisGridProxyModel from './IrisGridProxyModel';
 
 const log = Log.module('ColumnStatistics');
 const STATS_LABEL_OVERRIDES = {
@@ -43,7 +40,7 @@ interface Statistic {
 
 interface ColumnStatisticsProps {
   column: Column;
-  model: IrisGridModel;
+  model: IrisGridProxyModel;
   onStatistics: () => void;
 }
 interface ColumnStatisticsState {
@@ -60,22 +57,10 @@ class ColumnStatistics extends Component<
 > {
   /** Automatically generate the statistics when the row count is below this threshold */
   static AUTO_GENERATE_LIMIT = 100000;
-  static propTypes: {
-    model: PropTypes.Validator<unknown>;
-    column: PropTypes.Validator<
-      PropTypes.InferProps<{
-        name: PropTypes.Validator<string>;
-        type: PropTypes.Validator<string>;
-        description: PropTypes.Requireable<string>;
-        constituentType: PropTypes.Requireable<string>;
-      }>
-    >;
-    onStatistics: PropTypes.Validator<(...args: any[]) => any>;
-  };
 
   static getStatsLabel(operation: string): string {
     return (
-      //eslint-ignore-next-line
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       STATS_LABEL_OVERRIDES[operation] ??
       operation
@@ -84,6 +69,7 @@ class ColumnStatistics extends Component<
         .join(' ')
     );
   }
+
   constructor(props: ColumnStatisticsProps) {
     super(props);
 
@@ -103,8 +89,6 @@ class ColumnStatistics extends Component<
     };
   }
 
-  cancelablePromise: CancelablePromise<APIColumnStatistics> | null;
-
   componentDidMount(): void {
     this.maybeGenerateStatistics();
   }
@@ -114,6 +98,8 @@ class ColumnStatistics extends Component<
       this.cancelablePromise.cancel();
     }
   }
+
+  cancelablePromise: CancelablePromise<APIColumnStatistics> | null;
 
   handleCopyHeader(): void {
     this.setState({ copied: true });
@@ -244,7 +230,7 @@ class ColumnStatistics extends Component<
         {description && (
           <div className="column-statistics-description">{description}</div>
         )}
-        {!model.isColumnMovable(columnIndex) && (
+        {columnIndex && !model.isColumnMovable(columnIndex) && (
           <div className="column-statistics-status">
             <FontAwesomeIcon
               icon={model.isColumnFrozen(columnIndex) ? dhFreeze : vsLock}

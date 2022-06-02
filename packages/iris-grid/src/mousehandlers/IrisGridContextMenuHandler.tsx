@@ -48,6 +48,7 @@ import SHORTCUTS from '../IrisGridShortcuts';
 import IrisGrid, {
   assertNotNull,
   assertNotNullNorUndefined,
+  assertNotUndefined,
   QuickFilter,
 } from '../IrisGrid';
 
@@ -87,7 +88,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
    * @param {boolean} additive
    */
   static getQuickFilterCondition(
-    columnFilter: FilterCondition,
+    columnFilter: FilterCondition | null | undefined,
     newColumnFilter: FilterCondition,
     additive = false
   ): FilterCondition {
@@ -463,10 +464,11 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
               TableUtils.isNumberType(column.type) ||
               TableUtils.isCharType(column.type)
             ) {
+              assertNotUndefined(modelColumn);
               // We want to show the full unformatted value if it's a number, so user knows which value they are matching
               // If it's a Char we just show the char
               const numberValueText = TableUtils.isCharType(column.type)
-                ? String.fromCharCode(value as value)
+                ? String.fromCharCode(value as number)
                 : `${value}`;
               filterMenu.actions = this.numberFilterActions(
                 column,
@@ -1011,10 +1013,13 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
   booleanFilterActions(
     column: Column,
     valueText: string,
-    quickFilter: QuickFilter,
+    quickFilter: QuickFilter | null | undefined,
     additive = false
-  ): ContextAction[] {
+  ): ContextAction[] | null {
     const actions = [];
+    if (quickFilter == null) {
+      return null;
+    }
     const { filter, text: filterText } = quickFilter;
     const { model } = this.irisGrid.props;
     const columnIndex = model.getColumnIndexByName(column.name);
@@ -1239,7 +1244,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
 
   nullFilterActions(
     column: Column,
-    quickFilter?: QuickFilter,
+    quickFilter: QuickFilter,
     additive = false
   ): ContextAction[] {
     const { filter, text: filterText } = quickFilter;

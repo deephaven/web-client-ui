@@ -1,5 +1,10 @@
 import { GridRangeIndex, ModelSizeMap } from '@deephaven/grid';
-import dh, { Column, FilterCondition, Row } from '@deephaven/jsapi-shim';
+import dh, {
+  Column,
+  FilterCondition,
+  Row,
+  TableViewportSubscription,
+} from '@deephaven/jsapi-shim';
 import { Formatter } from '@deephaven/jsapi-utils';
 import IrisGridProxyModel from './IrisGridProxyModel';
 
@@ -23,7 +28,7 @@ class IrisGridTestUtils {
     type: string = IrisGridTestUtils.DEFAULT_TYPE,
     index = 0
   ): Column {
-    return new dh.Column({ index, name, type });
+    return new Column({ index, name, type });
   }
 
   static makeColumns(count = 5): Column[] {
@@ -74,7 +79,7 @@ class IrisGridTestUtils {
   }
 
   static makeSubscription(table = IrisGridTestUtils.makeTable()) {
-    return new dh.TableViewportSubscription({ table });
+    return new TableViewportSubscription({ table });
   }
 
   static makeModel(

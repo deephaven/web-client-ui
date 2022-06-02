@@ -8,7 +8,6 @@ import {
   memoizeClear,
   ModelIndex,
   VisibleIndex,
-  NullableGridColor,
 } from '@deephaven/grid';
 import dh, {
   Column,
@@ -20,6 +19,7 @@ import dh, {
   LayoutHints,
   RollupConfig,
   Row,
+  Sort,
   Table,
   TableViewportSubscription,
   TotalsTable,
@@ -315,7 +315,7 @@ class IrisGridTableModel<R extends UIRow = UIRow> extends IrisGridModel {
     return this.table.size + this.pendingNewRowCount;
   }
 
-  get pendingDataErrors() {
+  get pendingDataErrors(): Map<number, Error[]> {
     return this.getCachedPendingErrors(
       this.pendingNewDataMap,
       this.columns,
@@ -560,7 +560,7 @@ class IrisGridTableModel<R extends UIRow = UIRow> extends IrisGridModel {
     return theme.textColor;
   }
 
-  backgroundColorForCell(x: ModelIndex, y: ModelIndex): NullableGridColor {
+  backgroundColorForCell(x: ModelIndex, y: ModelIndex): string | null {
     return this.formatForCell(x, y)?.backgroundColor ?? null;
   }
 
@@ -795,18 +795,22 @@ class IrisGridTableModel<R extends UIRow = UIRow> extends IrisGridModel {
     return this.pendingRow(y) != null;
   }
 
-  dataForCell(x: ModelIndex | null | undefined, y: ModelIndex) {
+  dataForCell(
+    x: ModelIndex | null | undefined,
+    y: ModelIndex | null | undefined
+  ): CellData | undefined {
     assertNotNullNorUndefined(x);
+    assertNotNullNorUndefined(y);
     return this.row(y)?.data.get(x);
   }
 
-  formatForCell(x: ModelIndex, y: ModelIndex) {
+  formatForCell(x: ModelIndex, y: ModelIndex): Format | undefined {
     return this.dataForCell(x, y)?.format;
   }
 
   valueForCell(
     x: ModelIndex | null | undefined,
-    y: ModelIndex
+    y: ModelIndex | null | undefined
   ): unknown | null {
     const data = this.dataForCell(x, y);
     if (data) {
@@ -946,7 +950,7 @@ class IrisGridTableModel<R extends UIRow = UIRow> extends IrisGridModel {
     return this.irisFormatter;
   }
 
-  set formatter(formatter) {
+  set formatter(formatter: Formatter) {
     this.irisFormatter = formatter;
     this.formattedStringData = [];
     this.dispatchEvent(
@@ -969,11 +973,11 @@ class IrisGridTableModel<R extends UIRow = UIRow> extends IrisGridModel {
     );
   }
 
-  get sort() {
+  get sort(): Sort[] {
     return this.table.sort;
   }
 
-  set sort(sort) {
+  set sort(sort: Sort[]) {
     this.closeSubscription();
     this.table.applySort(sort);
     this.applyViewport();
@@ -1038,7 +1042,7 @@ class IrisGridTableModel<R extends UIRow = UIRow> extends IrisGridModel {
     );
   }
 
-  set totalsConfig(totalsConfig: UITotalsTableConfig) {
+  set totalsConfig(totalsConfig: UITotalsTableConfig | null) {
     log.debug('set totalsConfig', totalsConfig);
 
     if (totalsConfig === this.totals) {
@@ -1310,11 +1314,11 @@ class IrisGridTableModel<R extends UIRow = UIRow> extends IrisGridModel {
     return data.map(row => row.join('\t')).join('\n');
   }
 
-  get isFilterRequired() {
+  get isFilterRequired(): boolean {
     return this.table.isUncoalesced;
   }
 
-  isFilterable(columnIndex: number) {
+  isFilterable(columnIndex: number): boolean {
     return this.getCachedFilterableColumnSet(this.columns).has(columnIndex);
   }
 
@@ -1387,7 +1391,7 @@ class IrisGridTableModel<R extends UIRow = UIRow> extends IrisGridModel {
       columns: Column[],
       keyColumnCount: number
     ) => {
-      const map = new Map();
+      const map = new Map<number, MissingKeyError[]>();
       pendingDataMap.forEach((row, rowIndex) => {
         const { data: rowData } = row;
         for (let i = 0; i < keyColumnCount; i += 1) {
@@ -1397,7 +1401,7 @@ class IrisGridTableModel<R extends UIRow = UIRow> extends IrisGridModel {
             }
             map
               .get(rowIndex)
-              .push(new MissingKeyError(rowIndex, columns[i].name));
+              ?.push(new MissingKeyError(rowIndex, columns[i].name));
           }
         }
       });
@@ -1645,7 +1649,7 @@ class IrisGridTableModel<R extends UIRow = UIRow> extends IrisGridModel {
     }
   }
 
-  async setValues(edits: EditOperation[] = []) {
+  async setValues(edits: EditOperation[] = []): Promise<void> {
     log.debug('setValues(', edits, ')');
     if (
       !edits.every(edit =>

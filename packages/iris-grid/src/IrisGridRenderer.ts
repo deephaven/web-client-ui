@@ -7,9 +7,20 @@ import {
   vsTriangleDown,
   vsTriangleRight,
   vsLinkExternal,
+  IconDefinition,
 } from '@deephaven/icons';
-import { TableUtils } from '@deephaven/jsapi-utils';
-import { GridRenderer, GridRenderState, GridUtils } from '@deephaven/grid';
+import {
+  BoxCoordinates,
+  GridRangeIndex,
+  GridRenderer,
+  GridRenderState,
+  GridUtils,
+} from '@deephaven/grid';
+import { Sort } from '@deephaven/jsapi-shim';
+import { TableUtils, ReverseType } from '@deephaven/jsapi-utils';
+import { AdvancedFilter, assertNotNull, QuickFilter } from './IrisGrid';
+import IrisGridProxyModel from './IrisGridProxyModel';
+import { IrisGridThemeType } from './IrisGridTheme';
 
 const ICON_NAMES = Object.freeze({
   SORT_UP: 'sortUp',
@@ -21,11 +32,25 @@ const ICON_NAMES = Object.freeze({
 
 const ICON_SIZE = 16;
 
+export type IrisGridRenderState = GridRenderState & {
+  model: IrisGridProxyModel;
+  theme: IrisGridThemeType;
+  hoverSelectColumn: GridRangeIndex;
+  isSelectingColumn: boolean;
+  loadingScrimProgress: number;
+  reverseType: ReverseType;
+  isFilterBarShown: boolean;
+  advancedFilters: Map<number, AdvancedFilter>;
+  quickFilters: Map<number, QuickFilter>;
+};
 /**
  * Handles rendering some of the Iris specific features, such as sorting icons, sort bar display
  * */
 class IrisGridRenderer extends GridRenderer {
-  static isFilterValid(advancedFilter, quickFilter) {
+  static isFilterValid(
+    advancedFilter: AdvancedFilter | undefined | null,
+    quickFilter: QuickFilter | undefined | null
+  ): boolean {
     const isAdvancedFilterValid =
       advancedFilter == null || advancedFilter.filter != null;
     const isQuickFilterValid =
@@ -39,7 +64,11 @@ class IrisGridRenderer extends GridRenderer {
     this.initIcons();
   }
 
-  initIcons() {
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
+  icons: Record<string, Path2D>;
+
+  initIcons(): void {
     this.icons = {};
 
     this.setIcon(ICON_NAMES.SORT_UP, dhSortUp);
@@ -50,8 +79,11 @@ class IrisGridRenderer extends GridRenderer {
   }
 
   // Scales the icon to be square and match the global ICON_SIZE
-  setIcon(name, faIcon) {
-    const icon = new Path2D(faIcon.icon[4]);
+  setIcon(name: string, faIcon: IconDefinition): void {
+    const path = Array.isArray(faIcon.icon[4])
+      ? faIcon.icon[4][0]
+      : faIcon.icon[4];
+    const icon = new Path2D(path);
     const scaledIcon = new Path2D();
     const scaleMatrix = {
       a: ICON_SIZE / faIcon.icon[0],
@@ -61,11 +93,11 @@ class IrisGridRenderer extends GridRenderer {
     this.icons[name] = scaledIcon;
   }
 
-  getIcon(name) {
+  getIcon(name: string): Path2D {
     return this.icons[name];
   }
 
-  getSortIcon(sort) {
+  getSortIcon(sort: Sort | null): Path2D | null {
     if (!sort) {
       return null;
     }
@@ -78,18 +110,24 @@ class IrisGridRenderer extends GridRenderer {
     return null;
   }
 
-  drawCanvas(state) {
+  drawCanvas(state: IrisGridRenderState): void {
     super.drawCanvas(state);
 
     this.drawScrim(state);
   }
 
-  drawGrid(context, state) {
+  drawGrid(
+    context: CanvasRenderingContext2D,
+    state: IrisGridRenderState
+  ): void {
     super.drawGrid(context, state);
     this.drawCellOverflowButton(state);
   }
 
-  drawGridLines(context, state) {
+  drawGridLines(
+    context: CanvasRenderingContext2D,
+    state: IrisGridRenderState
+  ): void {
     super.drawGridLines(context, state);
 
     this.drawGroupedColumnLine(context, state);
@@ -97,13 +135,18 @@ class IrisGridRenderer extends GridRenderer {
     this.drawPendingRowLine(context, state);
   }
 
-  drawCellContent(context, state, column, row) {
+  drawCellContent(
+    context: CanvasRenderingContext2D,
+    state: IrisGridRenderState,
+    column: number,
+    row: number
+  ): void {
     const { metrics, model } = state;
     const { modelColumns, modelRows } = metrics;
     const modelRow = modelRows.get(row);
     const modelColumn = modelColumns.get(column);
     const value = model.valueForCell(modelColumn, modelRow);
-    if (TableUtils.isTextType(model.columns[modelColumn].type)) {
+    if (modelColumn && TableUtils.isTextType(model.columns[modelColumn].type)) {
       if (value === null || value === '') {
         const originalFont = context.font;
         context.font = `italic ${originalFont}`;
@@ -116,7 +159,10 @@ class IrisGridRenderer extends GridRenderer {
     super.drawCellContent(context, state, column, row);
   }
 
-  drawGroupedColumnLine(context, state) {
+  drawGroupedColumnLine(
+    context: CanvasRenderingContext2D,
+    state: IrisGridRenderState
+  ): void {
     const { metrics, model, theme } = state;
     const { groupedColumns, columns } = model;
     const { maxY, visibleColumnWidths, visibleColumnXs } = metrics;
@@ -144,7 +190,10 @@ class IrisGridRenderer extends GridRenderer {
     context.stroke();
   }
 
-  drawPendingRowLine(context, state) {
+  drawPendingRowLine(
+    context: CanvasRenderingContext2D,
+    state: IrisGridRenderState
+  ): void {
     const { metrics, model, theme } = state;
     const { visibleRowYs, maxX } = metrics;
     const { pendingRowCount } = model;
@@ -171,7 +220,10 @@ class IrisGridRenderer extends GridRenderer {
     context.restore();
   }
 
-  drawMouseColumnHover(context, state) {
+  drawMouseColumnHover(
+    context: CanvasRenderingContext2D,
+    state: IrisGridRenderState
+  ): void {
     const { theme, metrics, hoverSelectColumn } = state;
     if (hoverSelectColumn == null || !theme.linkerColumnHoverBackgroundColor) {
       return;
@@ -183,17 +235,22 @@ class IrisGridRenderer extends GridRenderer {
     const columnWidth = visibleColumnWidths.get(hoverSelectColumn);
 
     context.fillStyle = theme.linkerColumnHoverBackgroundColor;
-    context.fillRect(x, 0, columnWidth, maxY);
+    if (x && columnWidth) {
+      context.fillRect(x, 0, columnWidth, maxY);
+    }
   }
 
-  drawMouseRowHover(context, state) {
+  drawMouseRowHover(
+    context: CanvasRenderingContext2D,
+    state: IrisGridRenderState
+  ): void {
     const { isSelectingColumn } = state;
     if (!isSelectingColumn) {
       super.drawMouseRowHover(context, state);
     }
   }
 
-  drawScrim(state) {
+  drawScrim(state: IrisGridRenderState): void {
     const { context, loadingScrimProgress, metrics, theme } = state;
     if (loadingScrimProgress == null) {
       return;
@@ -228,7 +285,7 @@ class IrisGridRenderer extends GridRenderer {
   drawColumnHeaders(
     context: CanvasRenderingContext2D,
     state: IrisGridRenderState
-  ) {
+  ): void {
     super.drawColumnHeaders(context, state);
 
     const { theme, metrics, model, reverseType } = state;
@@ -274,7 +331,13 @@ class IrisGridRenderer extends GridRenderer {
     }
   }
 
-  drawHeaderBar(context, state, color, barHeight, interior = true) {
+  drawHeaderBar(
+    context: CanvasRenderingContext2D,
+    state: IrisGridRenderState,
+    color: string | CanvasGradient | CanvasPattern,
+    barHeight: number,
+    interior = true
+  ): void {
     const { theme, metrics } = state;
     const { columnHeaderHeight, width } = metrics;
     // Draw casing with 1 pixel above and below the bar,
@@ -300,13 +363,29 @@ class IrisGridRenderer extends GridRenderer {
     );
   }
 
-  drawColumnHeader(context, state, column, columnX, columnWidth) {
+  drawColumnHeader(
+    context: CanvasRenderingContext2D,
+    state: IrisGridRenderState,
+    column: number,
+    columnX: number,
+    columnWidth: number
+  ): void {
     super.drawColumnHeader(context, state, column, columnX, columnWidth);
 
     const { metrics, model, theme } = state;
     const { modelColumns } = metrics;
     const modelColumn = modelColumns.get(column);
+
+    if (!modelColumn) {
+      return;
+    }
+
     const sort = TableUtils.getSortForColumn(model.sort, modelColumn);
+
+    if (!sort) {
+      return;
+    }
+
     const icon = this.getSortIcon(sort);
     if (!icon) {
       return;
@@ -346,7 +425,10 @@ class IrisGridRenderer extends GridRenderer {
     context.restore();
   }
 
-  drawFilterHeaders(context, state) {
+  drawFilterHeaders(
+    context: CanvasRenderingContext2D,
+    state: IrisGridRenderState
+  ): void {
     const { isFilterBarShown, quickFilters, advancedFilters } = state;
 
     if (isFilterBarShown) {
@@ -359,7 +441,10 @@ class IrisGridRenderer extends GridRenderer {
     }
   }
 
-  drawExpandedFilterHeaders(context, state) {
+  drawExpandedFilterHeaders(
+    context: CanvasRenderingContext2D,
+    state: IrisGridRenderState
+  ): void {
     const { metrics, model, theme, quickFilters, advancedFilters } = state;
     const { filterBarHeight } = theme;
 
@@ -413,8 +498,13 @@ class IrisGridRenderer extends GridRenderer {
         const modelColumn = modelColumns.get(column);
         const columnX = visibleColumnXs.get(column);
         const columnWidth = visibleColumnWidths.get(column);
-        if (model.isFilterable(modelColumn) && columnWidth > 0) {
-          const x1 = gridX + columnX;
+        if (
+          modelColumn &&
+          columnWidth &&
+          model.isFilterable(modelColumn) &&
+          columnWidth > 0
+        ) {
+          const x1 = gridX + (columnX ?? 0);
           context.rect(x1 + 0.5, y1 + 0.5, columnWidth, filterBarHeight - 2); // 1 for the border, 1 for the casing
         }
       }
@@ -423,15 +513,34 @@ class IrisGridRenderer extends GridRenderer {
 
     for (let i = 0; i < visibleColumns.length; i += 1) {
       const column = visibleColumns[i];
-      const columnWidth = visibleColumnWidths.get(column);
-      const x = visibleColumnXs.get(column) + gridX;
-      this.drawExpandedFilterHeader(context, state, column, x, columnWidth);
+      if (column) {
+        const columnWidth = visibleColumnWidths.get(column);
+        if (columnWidth) {
+          const columnX = visibleColumnXs.get(column);
+          if (columnX) {
+            const x = columnX + gridX;
+            this.drawExpandedFilterHeader(
+              context,
+              state,
+              column,
+              x,
+              columnWidth
+            );
+          }
+        }
+      }
     }
 
     context.restore();
   }
 
-  drawExpandedFilterHeader(context, state, column, columnX, columnWidth) {
+  drawExpandedFilterHeader(
+    context: CanvasRenderingContext2D,
+    state: IrisGridRenderState,
+    column: number,
+    columnX: number,
+    columnWidth: number
+  ): void {
     if (columnWidth <= 0) {
       return;
     }
@@ -447,6 +556,7 @@ class IrisGridRenderer extends GridRenderer {
     } = theme;
     const columnHeaderHeight = gridY - filterBarHeight;
     const modelColumn = modelColumns.get(column);
+    if (!modelColumn) return;
     const quickFilter = quickFilters.get(modelColumn);
     const advancedFilter = advancedFilters.get(modelColumn);
     if (quickFilter == null && advancedFilter == null) {
@@ -465,7 +575,7 @@ class IrisGridRenderer extends GridRenderer {
         const { fontWidths } = metrics;
         let fontWidth = fontWidths.get(context.font);
         if (!fontWidth) {
-          fontWidth = context.measureText('8');
+          fontWidth = context.measureText('8').width;
           if (!fontWidth) {
             fontWidth = 10;
           }
@@ -520,7 +630,10 @@ class IrisGridRenderer extends GridRenderer {
     context.restore();
   }
 
-  drawCollapsedFilterHeaders(context, state) {
+  drawCollapsedFilterHeaders(
+    context: CanvasRenderingContext2D,
+    state: IrisGridRenderState
+  ): void {
     const { metrics, theme } = state;
     const { headerSeparatorColor, filterBarCollapsedHeight } = theme;
 
@@ -547,15 +660,24 @@ class IrisGridRenderer extends GridRenderer {
     for (let i = 0; i < visibleColumns.length; i += 1) {
       const column = visibleColumns[i];
       const columnWidth = visibleColumnWidths.get(column);
-      const x = visibleColumnXs.get(column) + gridX;
-      // draw the collapsed cells
-      this.drawCollapsedFilterHeader(context, state, column, x, columnWidth);
+      const columnX = visibleColumnXs.get(column);
+      if (columnX && columnWidth) {
+        const x = columnX + gridX;
+        // draw the collapsed cells
+        this.drawCollapsedFilterHeader(context, state, column, x, columnWidth);
+      }
     }
 
     context.restore();
   }
 
-  drawCollapsedFilterHeader(context, state, column, columnX, columnWidth) {
+  drawCollapsedFilterHeader(
+    context: CanvasRenderingContext2D,
+    state: IrisGridRenderState,
+    column: number,
+    columnX: number,
+    columnWidth: number
+  ): void {
     if (columnWidth <= 0) {
       return;
     }
@@ -564,8 +686,10 @@ class IrisGridRenderer extends GridRenderer {
     const { modelColumns, gridY } = metrics;
     const modelColumn = modelColumns.get(column);
 
-    const quickFilter = quickFilters.get(modelColumn);
-    const advancedFilter = advancedFilters.get(modelColumn);
+    const quickFilter = modelColumn ? quickFilters.get(modelColumn) : null;
+    const advancedFilter = modelColumn
+      ? advancedFilters.get(modelColumn)
+      : null;
 
     const {
       filterBarCollapsedHeight,
@@ -597,7 +721,15 @@ class IrisGridRenderer extends GridRenderer {
     context.restore();
   }
 
-  drawTreeMarker(context, state, columnX, rowY, treeBox, color, isExpanded) {
+  drawTreeMarker(
+    context: CanvasRenderingContext2D,
+    state: IrisGridRenderState,
+    columnX: number,
+    rowY: number,
+    treeBox: BoxCoordinates,
+    color: string,
+    isExpanded: boolean
+  ): void {
     context.save();
     const { x1, y1 } = treeBox;
     const markerIcon = isExpanded
@@ -613,7 +745,10 @@ class IrisGridRenderer extends GridRenderer {
     context.restore();
   }
 
-  drawRowFooters(context, state) {
+  drawRowFooters(
+    context: CanvasRenderingContext2D,
+    state: IrisGridRenderState
+  ): void {
     const { metrics, model, mouseX, mouseY, theme } = state;
     const {
       gridY,
@@ -663,14 +798,16 @@ class IrisGridRenderer extends GridRenderer {
     context.fill();
 
     const mouseRow =
-      mouseX >= gridX && mouseX <= maxX + rowFooterWidth
+      mouseX && mouseY && mouseX >= gridX && mouseX <= maxX + rowFooterWidth
         ? GridUtils.getRowAtY(mouseY, metrics)
         : null;
     if (mouseRow !== null && floatingRows.includes(mouseRow)) {
       context.fillStyle = rowHoverBackgroundColor;
       const y = visibleRowYs.get(mouseRow);
       const rowHeight = visibleRowHeights.get(mouseRow);
-      context.fillRect(x, y, rowFooterWidth, rowHeight);
+      if (y && rowHeight) {
+        context.fillRect(x, y, rowFooterWidth, rowHeight);
+      }
     }
 
     context.beginPath();
@@ -695,8 +832,10 @@ class IrisGridRenderer extends GridRenderer {
       const rowHeight = visibleRowHeights.get(row);
       const rowY = visibleRowYs.get(row);
       const modelRow = modelRows.get(row);
-      const textY = rowY + rowHeight * 0.5;
-      context.fillText(model.textForRowFooter(modelRow), textX, textY);
+      if (rowY && rowHeight && modelRow) {
+        const textY = rowY + rowHeight * 0.5;
+        context.fillText(model.textForRowFooter(modelRow), textX, textY);
+      }
     }
 
     context.translate(-gridX, -gridY);
@@ -704,7 +843,16 @@ class IrisGridRenderer extends GridRenderer {
 
   // This will shrink the size the text may take when the overflow button is rendered
   // The text will truncate to a smaller width and won't overlap the button
-  getTextRenderMetrics(context, state, column, row) {
+  getTextRenderMetrics(
+    context: CanvasRenderingContext2D,
+    state: IrisGridRenderState,
+    column: number,
+    row: number
+  ): {
+    width: number;
+    x: number;
+    y: number;
+  } {
     const textMetrics = super.getTextRenderMetrics(context, state, column, row);
 
     const { mouseX, mouseY, metrics } = state;
@@ -721,14 +869,14 @@ class IrisGridRenderer extends GridRenderer {
 
     if (column === mouseColumn && row === mouseRow) {
       const { left } = this.getCellOverflowButtonPosition(state);
-      if (this.shouldRenderOverflowButton(state)) {
+      if (this.shouldRenderOverflowButton(state) && left) {
         textMetrics.width = left - metrics.gridX - textMetrics.x;
       }
     }
     return textMetrics;
   }
 
-  shouldRenderOverflowButton(state) {
+  shouldRenderOverflowButton(state: IrisGridRenderState): boolean {
     const { context, mouseX, mouseY, metrics, model, theme } = state;
     if (mouseX == null || mouseY == null) {
       return false;
@@ -775,7 +923,17 @@ class IrisGridRenderer extends GridRenderer {
     return text !== '' && truncatedText !== text;
   }
 
-  getCellOverflowButtonPosition({ mouseX, mouseY, metrics, theme }) {
+  getCellOverflowButtonPosition({
+    mouseX,
+    mouseY,
+    metrics,
+    theme,
+  }: IrisGridRenderState): {
+    left: number | null;
+    top: number | null;
+    width: number | null;
+    height: number | null;
+  } {
     const NULL_POSITION = { left: null, top: null, width: null, height: null };
     if (mouseX == null || mouseY == null) {
       return NULL_POSITION;
@@ -792,6 +950,9 @@ class IrisGridRenderer extends GridRenderer {
     const width = ICON_SIZE + 2 * cellHorizontalPadding;
     const height = rowHeight;
     // Right edge of column or of visible grid, whichever is smaller
+    assertNotNull(left);
+    assertNotNull(columnWidth);
+    assertNotNull(top);
     const right = Math.min(
       metrics.gridX + left + columnWidth,
       gridWidth - verticalBarWidth
@@ -802,7 +963,7 @@ class IrisGridRenderer extends GridRenderer {
     return { left: buttonLeft, top: buttonTop, width, height };
   }
 
-  drawCellOverflowButton(state) {
+  drawCellOverflowButton(state: IrisGridRenderState): void {
     const { context, mouseX, mouseY, theme } = state;
     if (mouseX == null || mouseY == null) return;
 
@@ -825,6 +986,10 @@ class IrisGridRenderer extends GridRenderer {
 
     context.save();
     if (
+      buttonLeft &&
+      buttonWidth &&
+      buttonTop &&
+      buttonHeight &&
       mouseX >= buttonLeft &&
       mouseX <= buttonLeft + buttonWidth &&
       mouseY >= buttonTop &&
@@ -835,7 +1000,9 @@ class IrisGridRenderer extends GridRenderer {
       context.fillStyle = overflowButtonColor;
     }
     const icon = this.getIcon(ICON_NAMES.CELL_OVERFLOW);
-    context.translate(buttonLeft + cellHorizontalPadding, buttonTop + 2);
+    if (buttonLeft && buttonTop) {
+      context.translate(buttonLeft + cellHorizontalPadding, buttonTop + 2);
+    }
     context.fill(icon);
 
     context.restore();

@@ -85,7 +85,9 @@ export class TableUtils {
     return null;
   }
 
-  static getFilterText(filter: FilterCondition): string | null {
+  static getFilterText(
+    filter: FilterCondition | undefined | null
+  ): string | null {
     if (filter) {
       return filter.toString();
     }
