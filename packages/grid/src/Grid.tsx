@@ -1855,7 +1855,6 @@ class Grid extends PureComponent<GridProps, GridState> {
         }
 
         const maxTopOffset = scrollableContentHeight - scrollableViewportHeight;
-        console.log(scrollableContentHeight, scrollableViewportHeight);
         if (topOffset >= maxTopOffset) {
           topOffset = maxTopOffset;
           break;
