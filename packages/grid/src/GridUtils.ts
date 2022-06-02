@@ -15,9 +15,13 @@ import type { GridMetrics } from './GridMetrics';
 import { GridTheme } from './GridTheme';
 import { GridWheelEvent } from './GridMouseHandler';
 
-export type AxisRange = [start: VisibleIndex, end: VisibleIndex];
+type Range<T> = [start: T, end: T];
 
-export type GridAxisRange = [start: GridRangeIndex, end: GridRangeIndex];
+export type AxisRange = Range<VisibleIndex>;
+
+export type BoundedAxisRange = Range<number>;
+
+export type GridAxisRange = Range<GridRangeIndex>;
 
 export type GridPoint = {
   x: Coordinate;
@@ -756,42 +760,20 @@ export class GridUtils {
   }
 
   /**
-   * Applies the items moves to the 1D range
+   * Applies the items moves to the AxisRange
    * @param start The start index of the range
    * @param end The end index of the range
    * @param movedItems The move operations to apply
    * @param reverse If the moved items should be applied in reverse (this reverses the effects of the moves)
-   * @returns A list of 1D ranges in the translated space. Possibly multiple non-continuous ranges
+   * @returns A list of AxisRanges in the translated space. Possibly multiple non-continuous ranges
    */
-  private static applyItemMoves(
-    start: number,
-    end: number,
-    movedItems: MoveOperation[],
-    reverse?: boolean
-  ): [number, number][];
-
-  // Without this duplicate signature, TS will complain
-  private static applyItemMoves(
-    start: GridRangeIndex,
-    end: GridRangeIndex,
-    movedItems: MoveOperation[],
-    reverse?: boolean
-  ): GridAxisRange[];
-
-  private static applyItemMoves(
-    start: GridRangeIndex,
-    end: GridRangeIndex,
+  private static applyItemMoves<T extends number | GridRangeIndex>(
+    start: T,
+    end: T,
     movedItems: MoveOperation[],
     reverse = false
-  ): GridAxisRange[] {
-    if (typeof start === 'string') {
-      return [];
-    }
-    if (start == null || end == null) {
-      return [[start, end]];
-    }
-
-    let result: [VisibleIndex, VisibleIndex][] = [[start, end]];
+  ): Range<T>[] {
+    let result: Range<T>[] = [[start, end]];
 
     for (
       let i = reverse ? movedItems.length - 1 : 0;
@@ -801,9 +783,10 @@ export class GridUtils {
       const { from: fromItem, to: toItem } = movedItems[i];
       const from = reverse ? toItem : fromItem;
       const to = reverse ? fromItem : toItem;
-      const nextResult: [VisibleIndex, VisibleIndex][] = [];
+      const nextResult: Range<number>[] = [];
       for (let j = 0; j < result.length; j += 1) {
-        const [currentStart, currentEnd] = result[j];
+        const currentStart = result[j][0] ?? Number.NEGATIVE_INFINITY;
+        const currentEnd = result[j][1] ?? Number.POSITIVE_INFINITY;
         const startLength = nextResult.length;
         if (from < currentStart) {
           // From before
@@ -827,18 +810,22 @@ export class GridUtils {
           }
         } else if (to < currentStart) {
           // From within to before
-          if (currentStart < currentEnd) {
-            // Don't create a 2nd range if the current range includes only 1 item
-            nextResult.push([currentStart + 1, currentEnd]);
+          if (from > currentStart) {
+            nextResult.push([currentStart + 1, from]);
           }
           nextResult.push([to, to]);
+          if (from < currentEnd) {
+            nextResult.push([from + 1, currentEnd]);
+          }
         } else if (to > currentEnd) {
           // From within to after
-          if (currentStart < currentEnd) {
-            // Don't create a 2nd range if the current range includes only 1 item
-            nextResult.push([currentStart, currentEnd - 1]);
+          if (from > currentStart) {
+            nextResult.push([currentStart, from - 1]);
           }
           nextResult.push([to, to]);
+          if (from < currentEnd) {
+            nextResult.push([from, currentEnd - 1]);
+          }
         } else if (from > to) {
           // From within after to within before
           if (to > currentStart) {
@@ -866,18 +853,23 @@ export class GridUtils {
           nextResult.push([currentStart, currentEnd]);
         }
       }
-      result = nextResult;
+
+      // Return infinity values back to null
+      result = nextResult.map(([s, e]) => [
+        Number.isFinite(s) ? s : null,
+        Number.isFinite(e) ? e : null,
+      ]) as Range<T>[];
     }
     return result;
   }
 
   /**
-   * Applies the items moves to the given 2D range
-   * @param range The 2D range to translate
+   * Applies the items moves to the givengrid range
+   * @param range The grid range to translate
    * @param movedColumns The moved columns
    * @param movedRows The moved rows
    * @param reverse If the moved items should be reversed (i.e. visible to model range)
-   * @returns A list of 2D ranges in the translated space. Possibly multiple non-continuous ranges
+   * @returns A list of grid ranges in the translated space. Possibly multiple non-continuous ranges
    */
   static translateRange(
     range: GridRange,

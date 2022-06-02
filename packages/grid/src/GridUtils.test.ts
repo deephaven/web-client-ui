@@ -189,18 +189,20 @@ describe('start/end range adjustment in one dimension visible to model', () => {
   });
   it('handles items moved into the range', () => {
     testRange(5, 10, GridUtils.moveItem(1, 7), [
-      [6, 10],
+      [6, 7],
       [1, 1],
+      [8, 10],
     ]);
 
     testRange(5, 10, GridUtils.moveItem(100, 7), [
-      [5, 9],
+      [5, 6],
       [100, 100],
+      [7, 9],
     ]);
 
     testRange(5, 10, GridUtils.moveItem(1, 5), [
-      [6, 10],
       [1, 1],
+      [6, 10],
     ]);
 
     testRange(5, 10, GridUtils.moveItem(1, 10), [
@@ -209,8 +211,8 @@ describe('start/end range adjustment in one dimension visible to model', () => {
     ]);
 
     testRange(5, 10, GridUtils.moveItem(100, 5), [
-      [5, 9],
       [100, 100],
+      [5, 9],
     ]);
 
     testRange(5, 10, GridUtils.moveItem(100, 10), [
@@ -242,8 +244,9 @@ describe('start/end range adjustment in one dimension visible to model', () => {
     movedItems = GridUtils.moveItem(50, 9, movedItems);
     testRange(5, 10, movedItems, [
       [6, 7],
-      [9, 11],
+      [9, 10],
       [52, 52],
+      [11, 11],
     ]);
   });
   it('handles moves within the range', () => {
@@ -281,6 +284,44 @@ describe('start/end range adjustment in one dimension visible to model', () => {
     testRange(5, 10, GridUtils.moveItem(10, 5), [
       [10, 10],
       [5, 9],
+    ]);
+  });
+
+  it('handles transforms with infinite ranges', () => {
+    testRange(null, null, GridUtils.moveItem(1, 10), [
+      [null, 0],
+      [2, 10],
+      [1, 1],
+      [11, null],
+    ]);
+
+    testRange(null, null, GridUtils.moveItem(0, 10), [
+      [null, -1],
+      [1, 10],
+      [0, 0],
+      [11, null],
+    ]);
+
+    testRange(5, null, GridUtils.moveItem(1, 10), [
+      [6, 10],
+      [1, 1],
+      [11, null],
+    ]);
+
+    testRange(5, null, GridUtils.moveItem(10, 1), [
+      [4, 9],
+      [11, null],
+    ]);
+
+    testRange(null, 10, GridUtils.moveItem(1, 15), [
+      [null, 0],
+      [2, 11],
+    ]);
+
+    testRange(null, 10, GridUtils.moveItem(15, 1), [
+      [null, 0],
+      [15, 15],
+      [1, 9],
     ]);
   });
 });
@@ -333,8 +374,15 @@ describe('start/end range adjustment in one dimension model to visible', () => {
   });
   it('handles items moved outside the range', () => {
     testRange(5, 10, GridUtils.moveItem(7, 100), [
-      [5, 9],
+      [5, 6],
       [100, 100],
+      [7, 9],
+    ]);
+
+    testRange(5, 10, GridUtils.moveItem(7, 1), [
+      [6, 7],
+      [1, 1],
+      [8, 10],
     ]);
   });
   it('handles items moved from before to after range', () => {
@@ -348,14 +396,16 @@ describe('start/end range adjustment in one dimension model to visible', () => {
     testRange(5, 10, movedItems, [[4, 9]]);
     movedItems = GridUtils.moveItem(7, 100, movedItems);
     testRange(5, 10, movedItems, [
-      [4, 8],
+      [4, 6],
       [100, 100],
+      [7, 8],
     ]);
     movedItems = GridUtils.moveItem(50, 8, movedItems);
     testRange(5, 10, movedItems, [
-      [4, 7],
-      [9, 9],
+      [4, 6],
       [100, 100],
+      [7, 7],
+      [9, 9],
     ]);
   });
 
@@ -396,6 +446,44 @@ describe('start/end range adjustment in one dimension model to visible', () => {
       [5, 5],
     ]);
   });
+
+  it('handles transforms with infinite ranges', () => {
+    testRange(null, null, GridUtils.moveItem(1, 10), [
+      [null, 0],
+      [10, 10],
+      [1, 9],
+      [11, null],
+    ]);
+
+    testRange(null, null, GridUtils.moveItem(0, 10), [
+      [null, -1],
+      [10, 10],
+      [0, 9],
+      [11, null],
+    ]);
+
+    testRange(5, null, GridUtils.moveItem(1, 10), [
+      [4, 9],
+      [11, null],
+    ]);
+
+    testRange(5, null, GridUtils.moveItem(10, 1), [
+      [6, 10],
+      [1, 1],
+      [11, null],
+    ]);
+
+    testRange(null, 10, GridUtils.moveItem(1, 15), [
+      [null, 0],
+      [15, 15],
+      [1, 9],
+    ]);
+
+    testRange(null, 10, GridUtils.moveItem(15, 1), [
+      [null, 0],
+      [2, 11],
+    ]);
+  });
 });
 
 describe('grid range transforms with moved items in both dimensions visible to model', () => {
@@ -405,13 +493,9 @@ describe('grid range transforms with moved items in both dimensions visible to m
     movedRows: MoveOperation[] = [],
     expectedRanges = ranges
   ) {
-    expect(
-      GridUtils.getModelRanges(ranges, movedColumns, movedRows).sort((a, b) =>
-        a.startColumn !== b.startColumn
-          ? (a.startColumn as ModelIndex) - (b.startColumn as ModelIndex)
-          : (a.startRow as ModelIndex) - (b.endRow as ModelIndex)
-      )
-    ).toEqual(expectedRanges);
+    expect(GridUtils.getModelRanges(ranges, movedColumns, movedRows)).toEqual(
+      expectedRanges
+    );
   }
   function testRange(
     range: GridRange,
@@ -437,10 +521,15 @@ describe('grid range transforms with moved items in both dimensions visible to m
     const movedColumns: MoveOperation[] = GridUtils.moveItem(25, 15);
     const movedRows: MoveOperation[] = GridUtils.moveItem(27, 17);
     testRange(new GridRange(10, 15, 20, 25), movedColumns, movedRows, [
-      new GridRange(10, 15, 19, 24),
-      new GridRange(10, 27, 19, 27),
-      new GridRange(25, 15, 25, 24),
+      new GridRange(10, 15, 14, 16),
+      new GridRange(10, 27, 14, 27),
+      new GridRange(10, 17, 14, 24),
+      new GridRange(25, 15, 25, 16),
       new GridRange(25, 27, 25, 27),
+      new GridRange(25, 17, 25, 24),
+      new GridRange(15, 15, 19, 16),
+      new GridRange(15, 27, 19, 27),
+      new GridRange(15, 17, 19, 24),
     ]);
   });
   it('handles multiple ranges', () => {
@@ -451,10 +540,15 @@ describe('grid range transforms with moved items in both dimensions visible to m
       movedColumns,
       movedRows,
       [
-        new GridRange(10, 15, 19, 24),
-        new GridRange(10, 27, 19, 27),
-        new GridRange(25, 15, 25, 24),
+        new GridRange(10, 15, 14, 16),
+        new GridRange(10, 27, 14, 27),
+        new GridRange(10, 17, 14, 24),
+        new GridRange(25, 15, 25, 16),
         new GridRange(25, 27, 25, 27),
+        new GridRange(25, 17, 25, 24),
+        new GridRange(15, 15, 19, 16),
+        new GridRange(15, 27, 19, 27),
+        new GridRange(15, 17, 19, 24),
         new GridRange(30, 35, 40, 45),
       ]
     );
@@ -468,13 +562,9 @@ describe('grid range transforms with moved items in both dimensions model to vis
     movedRows: MoveOperation[] = [],
     expectedRanges = ranges
   ) {
-    expect(
-      GridUtils.getVisibleRanges(ranges, movedColumns, movedRows).sort((a, b) =>
-        a.startColumn !== b.startColumn
-          ? (a.startColumn as ModelIndex) - (b.startColumn as ModelIndex)
-          : (a.startRow as ModelIndex) - (b.endRow as ModelIndex)
-      )
-    ).toEqual(expectedRanges);
+    expect(GridUtils.getVisibleRanges(ranges, movedColumns, movedRows)).toEqual(
+      expectedRanges
+    );
   }
   function testRange(
     range: GridRange,
