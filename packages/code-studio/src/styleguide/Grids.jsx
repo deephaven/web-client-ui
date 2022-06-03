@@ -31,7 +31,7 @@ class Grids extends PureComponent {
       <div>
         <ThemeContext.Provider value={contextTheme}>
           <h2 className="ui-title">Grid</h2>
-          <div style={{ height: 500 }}>
+          <div>
             <Grid model={model} theme={theme} />
           </div>
           <h2 className="ui-title">Static Data</h2>

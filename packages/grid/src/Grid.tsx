@@ -774,11 +774,13 @@ class Grid extends PureComponent<GridProps, GridState> {
     // we don't want to stretch the canvas to 100%, to avoid fractional pixels.
     // A wrapper element must be used for sizing, and canvas size must be
     // set manually to a floored value in css and a scaled value in width/height
-    const { width, height } = canvas.parentElement.getBoundingClientRect();
-    canvas.style.width = `${Math.floor(width)}px`;
-    canvas.style.height = `${Math.floor(height)}px`;
-    canvas.width = Math.floor(width) * scale;
-    canvas.height = Math.floor(height) * scale;
+    const rect = canvas.parentElement.getBoundingClientRect();
+    const width = Math.floor(rect.width);
+    const height = Math.floor(rect.height);
+    canvas.style.width = `${width}px`;
+    canvas.style.height = `${height}px`;
+    canvas.width = width * scale;
+    canvas.height = height * scale;
     canvasContext.scale(scale, scale);
   }
 
