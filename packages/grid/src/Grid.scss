@@ -1,3 +1,6 @@
+.grid-canvas {
+  display: block;
+}
 .grid-canvas:focus {
   outline: none;
 }
@@ -25,7 +28,6 @@
 .grid-cursor-pointer {
   cursor: pointer;
 }
-
 .grid-block-events {
   pointer-events: none;
 }
