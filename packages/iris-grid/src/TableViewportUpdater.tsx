@@ -43,23 +43,23 @@ class TableViewportUpdater extends PureComponent<
 
   static COLUMN_BUFFER_PAGES = 1;
 
-  static defaultProps: {
-    top: number;
-    bottom: number;
-    left: null;
-    right: null;
-    columns: null;
-    onSubscription: () => void;
-    filters: never[];
-    sorts: never[];
-    customColumns: never[];
-    movedColumns: never[];
+  static defaultProps = {
+    top: 0,
+    bottom: 0,
+    left: null,
+    right: null,
+    columns: null,
+    onSubscription: (): null => null,
+    filters: [],
+    sorts: [],
+    customColumns: [],
+    movedColumns: [],
   };
 
   constructor(props: TableViewportUpdaterProps) {
     super(props);
 
-    this.updateViewport = this.updateViewport.bind(this);
+    // this.updateViewport = this.updateViewport.bind(this);
 
     this.subscription = null;
   }

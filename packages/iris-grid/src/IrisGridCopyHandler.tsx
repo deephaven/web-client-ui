@@ -19,10 +19,10 @@ import {
 } from '@deephaven/utils';
 import Log from '@deephaven/log';
 import { Column } from '@deephaven/jsapi-shim';
-import IrisGridModel from './IrisGridModel';
 import IrisGridUtils from './IrisGridUtils';
 import IrisGridBottomBar from './IrisGridBottomBar';
 import './IrisGridCopyHandler.scss';
+import IrisGridProxyModel from './IrisGridProxyModel';
 
 const log = Log.module('IrisGridCopyHandler');
 
@@ -36,7 +36,7 @@ export type CopyOperation = {
 };
 
 interface IrisGridCopyHandlerProps {
-  model: IrisGridModel;
+  model: IrisGridProxyModel;
   copyOperation: CopyOperation;
   onEntering: () => void;
   onEntered: () => void;
@@ -94,12 +94,12 @@ class IrisGridCopyHandler extends Component<
     RETRY: 'RETRY',
   };
 
-  static defaultProps: {
-    copyOperation: null;
-    onEntering: () => void;
-    onEntered: () => void;
-    onExiting: () => void;
-    onExited: () => void;
+  static defaultProps = {
+    copyOperation: null,
+    onEntering: (): null => null,
+    onEntered: (): null => null,
+    onExiting: (): null => null,
+    onExited: (): null => null,
   };
 
   static getStatusMessageText(copyState: string, rowCount: number): string {

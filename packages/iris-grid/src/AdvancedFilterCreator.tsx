@@ -19,8 +19,8 @@ import { CancelablePromise, PromiseUtils } from '@deephaven/utils';
 import { Column, FilterCondition, Table } from '@deephaven/jsapi-shim';
 import AdvancedFilterCreatorFilterItem from './AdvancedFilterCreatorFilterItem';
 import AdvancedFilterCreatorSelectValue from './AdvancedFilterCreatorSelectValue';
-import IrisGridModel from './IrisGridModel';
 import './AdvancedFilterCreator.scss';
+import IrisGridProxyModel from './IrisGridProxyModel';
 
 const log = Log.module('AdvancedFilterCreator');
 
@@ -32,7 +32,7 @@ export type Options = {
 };
 
 interface AdvancedFilterCreatorProps {
-  model: IrisGridModel;
+  model: IrisGridProxyModel;
   column: Column;
   onFilterChange: (
     column: Column,
@@ -76,14 +76,14 @@ class AdvancedFilterCreator extends PureComponent<
 > {
   static debounceFilterUpdate = 250;
 
-  static defaultProps: {
+  static defaultProps = {
     options: {
-      filterItems: null;
-      filterOperators: null;
-      invertSelection: boolean;
-      selectedValues: never[];
-    };
-    sortDirection: null;
+      filterItems: null,
+      filterOperators: null,
+      invertSelection: true,
+      selectedValues: [],
+    },
+    sortDirection: null,
   };
 
   constructor(props: AdvancedFilterCreatorProps) {

@@ -32,12 +32,12 @@ class AdvancedFilterCreatorSelectValue<T> extends PureComponent<
 > {
   static searchDebounceTime = 250;
 
-  static defaultProps: {
-    table: null;
-    invertSelection: boolean;
-    selectedValues: never[];
-    onChange: () => void;
-    showSearch: boolean;
+  static defaultProps = {
+    table: null,
+    invertSelection: true,
+    selectedValues: [],
+    onChange: (): null => null,
+    showSearch: true,
   };
 
   constructor(props: AdvancedFilterCreatorSelectValueProps<T>) {

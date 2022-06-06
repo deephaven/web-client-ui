@@ -77,10 +77,10 @@ class VisibilityOrderingBuilder extends Component<
 
   static COLUMN_CHANGE_OPTIONS = { ALL: 'ALL', SELECTION: 'SELECTION' };
 
-  static defaultProps: {
-    movedColumns: never[];
-    onColumnVisibilityChanged: () => void;
-    onMovedColumnsChanged: () => void;
+  static defaultProps = {
+    movedColumns: [],
+    onColumnVisibilityChanged: (): null => null,
+    onMovedColumnsChanged: (): null => null,
   };
 
   constructor(props: VisibilityOrderingBuilderProps) {

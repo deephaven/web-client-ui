@@ -1,4 +1,5 @@
 import type { GridThemeType } from '@deephaven/grid';
+import { NullableGridColor } from '@deephaven/grid/src/GridTheme';
 import IrisGridTheme from './IrisGridTheme.module.scss';
 
 export type IrisGridThemeType = GridThemeType & {
@@ -6,37 +7,36 @@ export type IrisGridThemeType = GridThemeType & {
   filterBarHeight: number;
   reverseHeaderBarHeight: number;
   filterIconColor: string;
-  filterBarActiveColor: string;
-  contextMenuSortIconColor: string;
-  contextMenuReverseIconColor: string;
+  filterBarActiveColor: NullableGridColor;
+  contextMenuSortIconColor: NullableGridColor;
+  contextMenuReverseIconColor: NullableGridColor;
   minScrimTransitionTime: number;
   maxScrimTransitionTime: number;
-  nullStringColor: string;
-  pendingTextColor: string;
-  dateColor: string;
-  positiveNumberColor: string;
-  negativeNumberColor: string;
-  zeroNumberColor: string;
-  errorTextColor: string;
-  groupedColumnDividerColor: string;
-  linkerColumnHoverBackgroundColor: string;
+  nullStringColor: NullableGridColor;
+  pendingTextColor: NullableGridColor;
+  dateColor: NullableGridColor;
+  positiveNumberColor: NullableGridColor;
+  negativeNumberColor: NullableGridColor;
+  zeroNumberColor: NullableGridColor;
+  errorTextColor: NullableGridColor;
+  groupedColumnDividerColor: NullableGridColor;
+  linkerColumnHoverBackgroundColor: NullableGridColor;
   scrimBlurSize: number;
-  scrimColor: string;
-  headerReverseBarColor: string;
+  scrimColor: NullableGridColor;
+  headerReverseBarColor: NullableGridColor;
   sortHeaderBarHeight: number;
-  headerSortBarColor: string;
-  headerBarCasingColor: string;
-  filterBarExpandedActiveBackgroundColor: string;
-  filterBarExpandedBackgroundColor: string;
-  filterBarSeparatorColor: string;
-  filterBarExpandedActiveCellBackgroundColor: string;
-  filterBarErrorColor: string;
+  headerSortBarColor: NullableGridColor;
+  headerBarCasingColor: NullableGridColor;
+  filterBarExpandedActiveBackgroundColor: NullableGridColor;
+  filterBarExpandedBackgroundColor: NullableGridColor;
+  filterBarSeparatorColor: NullableGridColor;
+  filterBarExpandedActiveCellBackgroundColor: NullableGridColor;
+  filterBarErrorColor: NullableGridColor;
   filterBarHorizontalPadding: number;
-  filterBarActiveBackgroundColor: string;
-  overflowButtonColor: string;
-  overflowButtonHoverColor: string;
-  rowHoverBackgroundColor: string;
-  floatingGridRowColor: string;
+  filterBarActiveBackgroundColor: NullableGridColor;
+  overflowButtonColor: NullableGridColor;
+  overflowButtonHoverColor: NullableGridColor;
+  floatingGridRowColor: NullableGridColor;
 };
 
 const theme: Partial<IrisGridThemeType> = Object.freeze({

@@ -11,9 +11,11 @@ import {
 } from '@deephaven/icons';
 import {
   BoxCoordinates,
+  GridMetrics,
   GridRangeIndex,
   GridRenderer,
   GridRenderState,
+  GridThemeType,
   GridUtils,
 } from '@deephaven/grid';
 import { Sort } from '@deephaven/jsapi-shim';
@@ -211,7 +213,9 @@ class IrisGridRenderer extends GridRenderer {
     y -= 0.5;
     context.save();
     context.setLineDash([4, 2]);
-    context.strokeStyle = theme.pendingTextColor;
+    if (theme.pendingTextColor) {
+      context.strokeStyle = theme.pendingTextColor;
+    }
     context.lineWidth = 1;
     context.beginPath();
     context.moveTo(0, y);
@@ -264,7 +268,9 @@ class IrisGridRenderer extends GridRenderer {
     // Use global composite so we can just change the underlying layer to grayscale
     context.globalCompositeOperation = 'color';
     context.filter = `blur(${scrimBlurSize}px)`;
-    context.fillStyle = scrimColor;
+    if (scrimColor) {
+      context.fillStyle = scrimColor;
+    }
 
     // Clip the path so the top edge is hard edge, bottom edge is soft/blurry
     context.beginPath();
@@ -334,7 +340,7 @@ class IrisGridRenderer extends GridRenderer {
   drawHeaderBar(
     context: CanvasRenderingContext2D,
     state: IrisGridRenderState,
-    color: string | CanvasGradient | CanvasPattern,
+    color: string | CanvasGradient | CanvasPattern | undefined | null,
     barHeight: number,
     interior = true
   ): void {
@@ -347,14 +353,18 @@ class IrisGridRenderer extends GridRenderer {
     if (!interior) {
       offset = barHeight;
     }
-    context.fillStyle = theme.headerBarCasingColor;
+    if (theme.headerBarCasingColor) {
+      context.fillStyle = theme.headerBarCasingColor;
+    }
     context.fillRect(
       0,
       columnHeaderHeight - barHeight - 2 + offset,
       width,
       barHeight + 2
     );
-    context.fillStyle = color;
+    if (color) {
+      context.fillStyle = color;
+    }
     context.fillRect(
       0,
       columnHeaderHeight - barHeight - 1 + offset,
@@ -418,7 +428,9 @@ class IrisGridRenderer extends GridRenderer {
     context.fillStyle = gradient;
     context.fillRect(gradientX, 0, gradientWidth, columnHeaderHeight);
 
-    context.fillStyle = theme.headerSortBarColor;
+    if (theme.headerSortBarColor) {
+      context.fillStyle = theme.headerSortBarColor;
+    }
     context.translate(x, y);
     context.fill(icon);
 
@@ -470,12 +482,13 @@ class IrisGridRenderer extends GridRenderer {
     context.textAlign = 'left';
 
     if (
-      (quickFilters && quickFilters.size > 0) ||
-      (advancedFilters && advancedFilters.size > 0)
+      theme.filterBarExpandedActiveBackgroundColor &&
+      ((quickFilters && quickFilters.size > 0) ||
+        (advancedFilters && advancedFilters.size > 0))
     ) {
       // fill style if a fiter is set on any column
       context.fillStyle = theme.filterBarExpandedActiveBackgroundColor;
-    } else {
+    } else if (theme.filterBarExpandedBackgroundColor) {
       // fill style with no filters set
       context.fillStyle = theme.filterBarExpandedBackgroundColor;
     }
@@ -484,7 +497,9 @@ class IrisGridRenderer extends GridRenderer {
     context.fillRect(gridX, columnHeaderHeight, maxX, filterBarHeight - 1);
 
     // Draw the bottom border
-    context.fillStyle = theme.headerBarCasingColor;
+    if (theme.headerBarCasingColor) {
+      context.fillStyle = theme.headerBarCasingColor;
+    }
     context.fillRect(gridX, columnHeaderHeight + filterBarHeight - 1, maxX, 1);
 
     // Draw the filter input boxes
@@ -597,7 +612,7 @@ class IrisGridRenderer extends GridRenderer {
       advancedFilter,
       quickFilter
     );
-    if (isFilterValid) {
+    if (isFilterValid && filterBarExpandedActiveCellBackgroundColor) {
       // draw active filter background inside cell
       context.fillStyle = filterBarExpandedActiveCellBackgroundColor;
       context.fillRect(
@@ -606,7 +621,7 @@ class IrisGridRenderer extends GridRenderer {
         columnWidth - 1, // -1 right border
         filterBarHeight - 3 // -3 top, bottom border and bottom casing
       );
-    } else {
+    } else if (filterBarErrorColor) {
       // draw error box inside cell
       context.fillStyle = filterBarErrorColor;
       context.lineWidth = 2;
@@ -704,11 +719,15 @@ class IrisGridRenderer extends GridRenderer {
       advancedFilter,
       quickFilter
     );
-    if (quickFilter == null && advancedFilter == null) {
+    if (
+      filterBarActiveBackgroundColor &&
+      quickFilter == null &&
+      advancedFilter == null
+    ) {
       context.fillStyle = filterBarActiveBackgroundColor;
-    } else if (isFilterValid) {
+    } else if (filterBarActiveColor && isFilterValid) {
       context.fillStyle = filterBarActiveColor;
-    } else {
+    } else if (filterBarErrorColor) {
       context.fillStyle = filterBarErrorColor;
     }
 
@@ -801,7 +820,11 @@ class IrisGridRenderer extends GridRenderer {
       mouseX && mouseY && mouseX >= gridX && mouseX <= maxX + rowFooterWidth
         ? GridUtils.getRowAtY(mouseY, metrics)
         : null;
-    if (mouseRow !== null && floatingRows.includes(mouseRow)) {
+    if (
+      rowHoverBackgroundColor &&
+      mouseRow !== null &&
+      floatingRows.includes(mouseRow)
+    ) {
       context.fillStyle = rowHoverBackgroundColor;
       const y = visibleRowYs.get(mouseRow);
       const rowHeight = visibleRowHeights.get(mouseRow);
@@ -811,7 +834,9 @@ class IrisGridRenderer extends GridRenderer {
     }
 
     context.beginPath();
-    context.strokeStyle = floatingGridRowColor;
+    if (floatingGridRowColor) {
+      context.strokeStyle = floatingGridRowColor;
+    }
     if (floatingTopHeight > 0) {
       context.moveTo(x + 0.5, 0.5);
       context.lineTo(x + 0.5, floatingTopHeight - 0.5);
@@ -928,14 +953,19 @@ class IrisGridRenderer extends GridRenderer {
     mouseY,
     metrics,
     theme,
-  }: IrisGridRenderState): {
+  }: {
+    mouseX: number | null;
+    mouseY: number | null;
+    metrics: GridMetrics | null;
+    theme: GridThemeType;
+  }): {
     left: number | null;
     top: number | null;
     width: number | null;
     height: number | null;
   } {
     const NULL_POSITION = { left: null, top: null, width: null, height: null };
-    if (mouseX == null || mouseY == null) {
+    if (mouseX == null || mouseY == null || !metrics) {
       return NULL_POSITION;
     }
     const { rowHeight, columnWidth, left, top } = GridUtils.getCellInfoFromXY(
@@ -986,6 +1016,7 @@ class IrisGridRenderer extends GridRenderer {
 
     context.save();
     if (
+      overflowButtonHoverColor &&
       buttonLeft &&
       buttonWidth &&
       buttonTop &&
@@ -996,7 +1027,7 @@ class IrisGridRenderer extends GridRenderer {
       mouseY <= buttonTop + buttonHeight
     ) {
       context.fillStyle = overflowButtonHoverColor;
-    } else {
+    } else if (overflowButtonColor) {
       context.fillStyle = overflowButtonColor;
     }
     const icon = this.getIcon(ICON_NAMES.CELL_OVERFLOW);

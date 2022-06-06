@@ -1,4 +1,5 @@
 export * from './sidebar';
+export * from './AdvancedFilterCreator';
 export { default as IrisGrid } from './IrisGrid';
 export { default as SHORTCUTS } from './IrisGridShortcuts';
 export { default as IrisGridModel } from './IrisGridModel';
@@ -10,3 +11,4 @@ export { default as IrisGridTestUtils } from './IrisGridTestUtils';
 export { default as IrisGridUtils } from './IrisGridUtils';
 
 export { default } from './IrisGrid';
+export * from './IrisGrid';

@@ -7,11 +7,11 @@ import { vsWarning } from '@deephaven/icons';
 import dh, { Table, TableViewportSubscription } from '@deephaven/jsapi-shim';
 import { TimeUtils } from '@deephaven/utils';
 import shortid from 'shortid';
-import IrisGridModel from '../IrisGridModel';
 import './TableCsvExporter.scss';
+import IrisGridProxyModel from '../IrisGridProxyModel';
 
 interface TableCsvExporterProps {
-  model: IrisGridModel;
+  model: IrisGridProxyModel;
   name: string;
   isDownloading: boolean;
   tableDownloadStatus: string;
@@ -64,13 +64,13 @@ class TableCsvExporter extends Component<
 
   static DEFAULT_DOWNLOAD_ROWS = 100;
 
-  static defaultProps: {
-    onDownloadStart: () => void;
-    isDownloading: boolean;
-    tableDownloadStatus: string;
-    tableDownloadProgress: number;
-    tableDownloadEstimatedTime: null;
-    selectedRanges: never[];
+  static defaultProps = {
+    onDownloadStart: (): null => null,
+    isDownloading: false,
+    tableDownloadStatus: '',
+    tableDownloadProgress: 0,
+    tableDownloadEstimatedTime: null,
+    selectedRanges: [],
   };
 
   static getDateString(): string {

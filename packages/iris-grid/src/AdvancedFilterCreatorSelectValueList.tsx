@@ -40,11 +40,11 @@ class AdvancedFilterCreatorSelectValueList<T> extends PureComponent<
   AdvancedFilterCreatorSelectValueListProps<T>,
   AdvancedFilterCreatorSelectValueListState<T>
 > {
-  static defaultProps: {
-    table: null;
-    invertSelection: boolean;
-    selectedValues: never[];
-    onChange: () => void;
+  static defaultProps = {
+    table: null,
+    invertSelection: true,
+    selectedValues: [],
+    onChange: (): null => null,
   };
 
   /**

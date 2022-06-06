@@ -24,7 +24,10 @@ class SelectDistinctBuilder extends Component<
   SelectDistinctBuilderProps,
   SelectDistinctBuilderState
 > {
-  static defaultProps: { selectDistinctColumns: never[]; onChange: () => void };
+  static defaultProps = {
+    selectDistinctColumns: [],
+    onChange: (): null => null,
+  };
 
   constructor(props: SelectDistinctBuilderProps) {
     super(props);

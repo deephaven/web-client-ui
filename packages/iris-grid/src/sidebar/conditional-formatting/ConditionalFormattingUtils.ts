@@ -652,6 +652,10 @@ export function getFormatColumns(
   columns: Column[],
   rules: FormattingRule[]
 ): CustomColumn[] {
+  if (rules === undefined) {
+    log.debug(`no rules passed.`);
+    return [];
+  }
   const result: CustomColumn[] = [];
   // There can be only one row format custom column
   // and multiple column format custom columns (one per column)

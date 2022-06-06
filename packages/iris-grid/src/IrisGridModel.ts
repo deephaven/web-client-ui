@@ -9,7 +9,6 @@ import {
 } from '@deephaven/grid';
 import type {
   Column,
-  ColumnStatistics,
   CustomColumn,
   FilterCondition,
   Format,
@@ -150,12 +149,6 @@ abstract class IrisGridModel<
   abstract get groupedColumns(): Column[];
 
   /**
-   * The description for this model.
-   * @returns The description of the model
-   */
-  abstract get description(): string;
-
-  /**
    * @param column The model column index
    * @param row The model row index
    * @returns The format stored for that cell
@@ -232,11 +225,6 @@ abstract class IrisGridModel<
    * @param formatColumns The format columns to use
    */
   abstract set formatColumns(formatColumns: CustomColumn[]);
-
-  /**
-   * @param columns The columns to treat as frozen
-   */
-  abstract updateFrozenColumns(columns: string[]): void;
 
   /**
    * @returns The config to use for rolling up this table
@@ -449,21 +437,10 @@ abstract class IrisGridModel<
   ): Promise<string>;
 
   /**
-   * @returns Returns a raw table that is frozen and can be used for exporting data
-   */
-  abstract export(): Promise<Table>;
-
-  /**
    * @param column The column to get the distinct values for
    * @returns A table partitioned on the column specified
    */
   abstract valuesTable(column: Column): Promise<Table>;
-
-  /**
-   * @param column The column to get statistics for
-   * @returns The column statistics
-   */
-  abstract columnStatistics(column: Column): Promise<ColumnStatistics>;
 
   /**
    * Close this model. It can no longer be used after being closed

@@ -15,7 +15,7 @@ export interface ContextAction {
   action?(event?: KeyboardEvent): void | null;
   actions?: ResolvableContextAction[] | null;
   icon?: IconDefinition | React.ReactElement | null;
-  iconColor?: string;
+  iconColor?: string | null;
   shortcut?: Shortcut;
   isGlobal?: boolean;
   group?: number;

@@ -1,10 +1,11 @@
 import { PureComponent } from 'react';
-import { WritableStream as ponyfillWritableStream } from 'web-streams-polyfill/dist/ponyfill.js';
+import { WritableStream as ponyfillWritableStream } from 'web-streams-polyfill/ponyfill';
 import dh, {
   Column,
   Table,
   TableData,
   TableViewportSubscription,
+  UpdateEventData,
 } from '@deephaven/jsapi-shim';
 import Log from '@deephaven/log';
 import { GridRange, GridRangeIndex, memoizeClear } from '@deephaven/grid';
@@ -14,18 +15,34 @@ import { assertNotNull, assertNotUndefined } from '../IrisGrid';
 
 const log = Log.module('TableSaver');
 
-interface TableSaverProps{
-  getDownloadWorker: () => Promise<ServiceWorker>,
-  isDownloading: boolean,
-  onDownloadCompleted: () => void,
-  onDownloadCanceled: () => void,
-  onDownloadProgressUpdate: (progress: number,estimatedTime: number | null)=> void,
-  formatter: Formatter,
-
+interface TableSaverProps {
+  getDownloadWorker: () => Promise<ServiceWorker>;
+  isDownloading: boolean;
+  onDownloadCompleted: () => void;
+  onDownloadCanceled: () => void;
+  onDownloadProgressUpdate: (
+    progress: number,
+    estimatedTime: number | null
+  ) => void;
+  formatter: Formatter;
 }
 
+function isUpdateEventData(data: TableData): data is UpdateEventData {
+  return (data as UpdateEventData).added !== undefined;
+}
 
-export default class TableSaver extends PureComponent<TableSaverProps,Record<string, never> {
+function assertIsUpdateEventData(
+  data: TableData
+): asserts data is UpdateEventData {
+  if (!isUpdateEventData(data)) {
+    throw new Error('event is not UpdateEventData');
+  }
+}
+
+export default class TableSaver extends PureComponent<
+  TableSaverProps,
+  Record<string, never>
+> {
   static DOWNLOAD_CELL_CHUNK = 6000;
 
   static SNAPSHOT_BUFFER_SIZE = 5;
@@ -33,15 +50,21 @@ export default class TableSaver extends PureComponent<TableSaverProps,Record<str
   static STREAM_TIMEOUT = 8000;
 
   static SNAPSHOT_HANDLER_TIMEOUT = 5;
-  static defaultProps: { getDownloadWorker: () => Promise<never>; isDownloading: boolean; onDownloadCompleted: () => void; onDownloadCanceled: () => void; onDownloadProgressUpdate: () => void; };
 
-  static csvEscapeString(str: string) {
+  static defaultProps = {
+    getDownloadWorker: (): Promise<never> =>
+      Promise.reject(new Error('Download worker not provided')),
+    isDownloading: false,
+    onDownloadCompleted: (): null => null,
+    onDownloadCanceled: (): null => null,
+    onDownloadProgressUpdate: (): null => null,
+  };
+
+  static csvEscapeString(str: string): string {
     return `"${str.replace(/"/g, '""')}"`;
   }
 
   constructor(props: TableSaverProps) {
-
-
     super(props);
 
     this.handlePortMessage = this.handlePortMessage.bind(this);
@@ -90,7 +113,7 @@ export default class TableSaver extends PureComponent<TableSaverProps,Record<str
 
     this.iframes = [];
 
-    this.useBlobFallback = !!window.safari;
+    this.useBlobFallback = false;
   }
 
   componentDidMount(): void {
@@ -114,10 +137,8 @@ export default class TableSaver extends PureComponent<TableSaverProps,Record<str
         iframe.remove();
       });
     }
-    if (this.streamTimeout)
-    clearTimeout(this.streamTimeout);
-    if (this.snapshotHandlerTimeout)
-    clearTimeout(this.snapshotHandlerTimeout);
+    if (this.streamTimeout) clearTimeout(this.streamTimeout);
+    if (this.snapshotHandlerTimeout) clearTimeout(this.snapshotHandlerTimeout);
   }
 
   sw: ServiceWorker | null;
@@ -148,7 +169,7 @@ export default class TableSaver extends PureComponent<TableSaverProps,Record<str
 
   snapshotCounter: number;
 
-  snapshotsBuffer: Map<number, TableData>;
+  snapshotsBuffer: Map<number, UpdateEventData>;
 
   currentSnapshotIndex: number;
 
@@ -171,7 +192,7 @@ export default class TableSaver extends PureComponent<TableSaverProps,Record<str
 
   iframes: HTMLIFrameElement[];
 
-  useBlobFallback;
+  useBlobFallback: boolean;
 
   getCachedCustomColumnFormatFlag = memoizeClear(
     FormatterUtils.isCustomColumnFormatDefined,
@@ -181,7 +202,7 @@ export default class TableSaver extends PureComponent<TableSaverProps,Record<str
   createWriterStream(port: MessagePort): WritableStream<ServiceWorker> {
     // use blob fall back if it's safari
     const useBlob = this.useBlobFallback;
-    const chunks = ([] as BlobPart[]);
+    const chunks = [] as BlobPart[];
     let encode: ((input?: string | undefined) => Uint8Array) | null = null;
     if (useBlob) {
       encode = TextEncoder.prototype.encode.bind(new TextEncoder());
@@ -190,8 +211,8 @@ export default class TableSaver extends PureComponent<TableSaverProps,Record<str
 
     const streamConfig = {} as UnderlyingSink;
     if (useBlob) {
-      streamConfig.write = (chunk: { rows?: string, header?: string }) => {
-        assertNotNull(encode)
+      streamConfig.write = (chunk: { rows?: string; header?: string }) => {
+        assertNotNull(encode);
         if (chunk.header !== undefined) {
           chunks.push(encode(chunk.header));
         }
@@ -200,7 +221,7 @@ export default class TableSaver extends PureComponent<TableSaverProps,Record<str
         }
       };
       streamConfig.close = () => {
-        assertNotNull(fileName)
+        assertNotNull(fileName);
         const blob = new Blob(chunks, {
           type: 'application/octet-stream; charset=utf-8',
         });
@@ -230,7 +251,12 @@ export default class TableSaver extends PureComponent<TableSaverProps,Record<str
     return new this.WritableStream(streamConfig);
   }
 
-  startDownload(fileName: string, frozenTable: Table, tableSubscription: TableViewportSubscription, gridRanges: GridRange[]):void {
+  startDownload(
+    fileName: string,
+    frozenTable: Table,
+    tableSubscription: TableViewportSubscription,
+    gridRanges: GridRange[]
+  ): void {
     // don't trigger another download when a download is ongoing
     const { isDownloading } = this.props;
     if (isDownloading) {
@@ -284,11 +310,12 @@ export default class TableSaver extends PureComponent<TableSaverProps,Record<str
     this.resetTableSaver();
 
     if (this.downloadStartTime) {
-    log.info(
-      `download finished, total elapsed time ${
-        (Date.now() - this.downloadStartTime) / 1000
-      } seconds`
-    );}
+      log.info(
+        `download finished, total elapsed time ${
+          (Date.now() - this.downloadStartTime) / 1000
+        } seconds`
+      );
+    }
   }
 
   cancelDownload(): void {
@@ -332,11 +359,13 @@ export default class TableSaver extends PureComponent<TableSaverProps,Record<str
     this.snapshotPending = 0;
     this.cancelableSnapshots = [];
 
-    if (this.streamTimeout){
-    clearTimeout(this.streamTimeout);}
+    if (this.streamTimeout) {
+      clearTimeout(this.streamTimeout);
+    }
 
-    if (this.snapshotHandlerTimeout){
-    clearTimeout(this.snapshotHandlerTimeout);}
+    if (this.snapshotHandlerTimeout) {
+      clearTimeout(this.snapshotHandlerTimeout);
+    }
     this.streamTimeout = null;
     this.snapshotHandlerTimeout = null;
   }
@@ -363,22 +392,22 @@ export default class TableSaver extends PureComponent<TableSaverProps,Record<str
         TableSaver.DOWNLOAD_CELL_CHUNK / this.columns.length
       );
 
-    this.rangedSnapshotsTotal = this.gridRanges.map((range: GridRange) =>
-      {assertNotNull(range.endRow)
-        assertNotNull(range.startRow)
-        assertNotNull(this.chunkRows)
+      this.rangedSnapshotsTotal = this.gridRanges.map((range: GridRange) => {
+        assertNotNull(range.endRow);
+        assertNotNull(range.startRow);
+        assertNotNull(this.chunkRows);
 
-      return Math.ceil((range.endRow - range.startRow + 1) / this.chunkRows)}
-    );
-    this.snapshotsTotal = this.rangedSnapshotsTotal.reduce(
-      (total: number, snapshotCount: number) => total + snapshotCount
-    );
+        return Math.ceil((range.endRow - range.startRow + 1) / this.chunkRows);
+      });
+      this.snapshotsTotal = this.rangedSnapshotsTotal.reduce(
+        (total: number, snapshotCount: number) => total + snapshotCount
+      );
 
-    log.info(`start writing table, total snapshots: `, this.snapshotsTotal);
+      log.info(`start writing table, total snapshots: `, this.snapshotsTotal);
 
-    this.makeSnapshot(
-      Math.min(TableSaver.SNAPSHOT_BUFFER_SIZE, this.snapshotsTotal)
-    );
+      this.makeSnapshot(
+        Math.min(TableSaver.SNAPSHOT_BUFFER_SIZE, this.snapshotsTotal)
+      );
     }
   }
 
@@ -394,24 +423,30 @@ export default class TableSaver extends PureComponent<TableSaverProps,Record<str
   ): void {
     if (this.currentSnapshotIndex === snapshotIndex && this.fileWriter) {
       while (this.snapshotsBuffer.has(this.currentSnapshotIndex)) {
-        const n = this.snapshotsBuffer.get(this.currentSnapshotIndex)
-        assertNotUndefined(n)
+        const n = this.snapshotsBuffer.get(this.currentSnapshotIndex);
+        assertNotUndefined(n);
         this.fileWriter.write({
-          rows: this.convertSnapshotIntoCsv( n
-          ),
+          rows: this.convertSnapshotIntoCsv(n),
         });
         this.snapshotsBuffer.delete(this.currentSnapshotIndex);
         this.currentSnapshotIndex += 1;
 
         this.updateDownloadProgress(snapshotIndex);
       }
-      if (this.snapshotsTotal && this.currentSnapshotIndex >= this.snapshotsTotal) {
+      if (
+        this.snapshotsTotal &&
+        this.currentSnapshotIndex >= this.snapshotsTotal
+      ) {
         this.finishDownload();
         return;
       }
     }
 
-    if (this.snapshotCounter && this.snapshotsTotal && this.snapshotCounter < this.snapshotsTotal) {
+    if (
+      this.snapshotCounter &&
+      this.snapshotsTotal &&
+      this.snapshotCounter < this.snapshotsTotal
+    ) {
       log.debug2(
         `
         current range index: ${this.gridRangeCounter}, 
@@ -440,25 +475,25 @@ export default class TableSaver extends PureComponent<TableSaverProps,Record<str
 
   updateDownloadProgress(snapshotIndex: GridRangeIndex): void {
     if (snapshotIndex && this.snapshotsTotal && this.downloadStartTime) {
-    const { onDownloadProgressUpdate } = this.props;
-    const downloadProgress = Math.floor(
-      (snapshotIndex * 100) / this.snapshotsTotal
-    );
-    const estimateTime =
-      snapshotIndex > 1
-        ? Math.floor(
-            ((Date.now() - this.downloadStartTime) *
-              (this.snapshotsTotal - snapshotIndex)) /
-              snapshotIndex /
-              1000
-          )
-        : null;
-    
-    onDownloadProgressUpdate(downloadProgress, estimateTime);
-        }
+      const { onDownloadProgressUpdate } = this.props;
+      const downloadProgress = Math.floor(
+        (snapshotIndex * 100) / this.snapshotsTotal
+      );
+      const estimateTime =
+        snapshotIndex > 1
+          ? Math.floor(
+              ((Date.now() - this.downloadStartTime) *
+                (this.snapshotsTotal - snapshotIndex)) /
+                snapshotIndex /
+                1000
+            )
+          : null;
+
+      onDownloadProgressUpdate(downloadProgress, estimateTime);
+    }
   }
 
-  convertSnapshotIntoCsv(snapshot: TableData): string {
+  convertSnapshotIntoCsv(snapshot: UpdateEventData): string {
     let csvString = '';
     const snapshotIterator = snapshot.added.iterator();
     const { formatter } = this.props;
@@ -468,7 +503,7 @@ export default class TableSaver extends PureComponent<TableSaverProps,Record<str
       rows.push(snapshotIterator.next().value);
     }
 
-    assertNotNull(this.columns)
+    assertNotNull(this.columns);
 
     for (let i = 0; i < rows.length; i += 1) {
       const rowIdx = rows[i];
@@ -484,7 +519,7 @@ export default class TableSaver extends PureComponent<TableSaverProps,Record<str
           const cellFormat = snapshot.getFormat(rowIdx, this.columns[j]);
           formatOverride = cellFormat?.formatString != null ? cellFormat : null;
         }
-        let cellData = null
+        let cellData = null;
         if (formatOverride) {
           cellData = formatter.getFormattedString(
             snapshot.getData(rowIdx, this.columns[j]),
@@ -496,7 +531,7 @@ export default class TableSaver extends PureComponent<TableSaverProps,Record<str
           cellData = formatter.getFormattedString(
             snapshot.getData(rowIdx, this.columns[j]),
             type,
-            name,
+            name
           );
         }
         csvString += TableSaver.csvEscapeString(cellData);
@@ -530,6 +565,7 @@ export default class TableSaver extends PureComponent<TableSaverProps,Record<str
               this.columns
             )
             .then(snapshot => {
+              assertIsUpdateEventData(snapshot);
               this.handleSnapshotResolved(
                 snapshot,
                 snapshotIndex,
@@ -575,8 +611,8 @@ export default class TableSaver extends PureComponent<TableSaverProps,Record<str
     }
     if (readableStreamPulling) {
       if (!this.useBlobFallback) {
-        if (this.streamTimeout){
-        clearTimeout(this.streamTimeout);
+        if (this.streamTimeout) {
+          clearTimeout(this.streamTimeout);
         }
         this.streamTimeout = setTimeout(
           this.handleDownloadTimeout,
@@ -587,7 +623,7 @@ export default class TableSaver extends PureComponent<TableSaverProps,Record<str
   }
 
   handleSnapshotResolved(
-    snapshot: TableData,
+    snapshot: UpdateEventData,
     snapshotIndex: number,
     snapshotStartRow: GridRangeIndex,
     snapshotEndRow: GridRangeIndex
@@ -606,16 +642,7 @@ export default class TableSaver extends PureComponent<TableSaverProps,Record<str
     const iframe = document.createElement('iframe');
     iframe.hidden = true;
     iframe.src = `download/${src}`;
-    iframe.loaded = false;
     iframe.name = 'iframe';
-    iframe.isIframe = true;
-    iframe.addEventListener(
-      'load',
-      () => {
-        iframe.loaded = true;
-      },
-      false
-    );
     document.body.appendChild(iframe);
     this.iframes.push(iframe);
   }

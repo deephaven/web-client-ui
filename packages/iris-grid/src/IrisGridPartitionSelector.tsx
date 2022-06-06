@@ -3,7 +3,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { DropdownMenu, Tooltip } from '@deephaven/components';
 import { vsTriangleDown, vsClose } from '@deephaven/icons';
 import Log from '@deephaven/log';
-import { throttle } from 'lodash';
+import throttle from 'lodash.throttle';
 import { Table } from '@deephaven/jsapi-shim';
 import PartitionSelectorSearch from './PartitionSelectorSearch';
 import './IrisGridPartitionSelector.scss';
@@ -28,18 +28,18 @@ class IrisGridPartitionSelector<T> extends Component<
   IrisGridPartitionSelectorProps<T>,
   IrisGridPartitionSelectorState
 > {
-  static defaultProps: {
-    onAppend: () => void;
-    onChange: () => void;
-    onFetchAll: () => void;
-    onDone: () => void;
-    partition: string;
+  static defaultProps = {
+    onAppend: (): null => null,
+    onChange: (): null => null,
+    onFetchAll: (): null => null,
+    onDone: (): null => null,
+    partition: '',
   };
 
   constructor(props: IrisGridPartitionSelectorProps<T>) {
     super(props);
 
-    this.debounceUpdate = this.debounceUpdate.bind(this);
+    // this.debounceUpdate = this.debounceUpdate.bind(this);
     this.handleAppendClick = this.handleAppendClick.bind(this);
     this.handleCloseClick = this.handleCloseClick.bind(this);
     this.handleIgnoreClick = this.handleIgnoreClick.bind(this);

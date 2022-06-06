@@ -7,8 +7,8 @@ import IrisGridTestUtils from '../IrisGridTestUtils';
 const COLUMN_NAMES = ['A', 'B', 'C', 'D'];
 
 function makeChartBuilderWrapper({
-  onChange = () => {},
-  onSubmit = () => {},
+  onChange = () => null,
+  onSubmit = () => null,
   model = IrisGridTestUtils.makeModel(
     IrisGridTestUtils.makeTable(COLUMN_NAMES.map(IrisGridTestUtils.makeColumn))
   ),

@@ -37,10 +37,10 @@ class CustomColumnBuilder extends Component<
 > {
   static SUCCESS_SHOW_DURATION = 750;
 
-  static defaultProps: {
-    customColumns: never[];
-    onSave: () => void;
-    onCancel: () => void;
+  static defaultProps = {
+    customColumns: [],
+    onSave: (): null => null,
+    onCancel: (): null => null,
   };
 
   static makeCustomColumnInputEventKey(): string {

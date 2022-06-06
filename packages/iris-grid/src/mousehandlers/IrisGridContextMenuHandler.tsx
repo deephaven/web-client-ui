@@ -37,7 +37,7 @@ import {
   IntegerColumnFormat,
 } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
-import { DebouncedFunc } from 'lodash';
+import type { DebouncedFunc } from 'lodash';
 import {
   DateTimeFormatContextMenu,
   DecimalFormatContextMenu,
@@ -105,7 +105,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
    * @param {boolean} additive
    */
   static getQuickFilterText(
-    filterText: string,
+    filterText: string | null | undefined,
     newFilterText: string,
     additive = false
   ): string {
@@ -175,6 +175,196 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
     this.debouncedUpdateCustomFormat.flush();
   }
 
+  getHeaderActions() {
+    const { irisGrid } = this;
+    const { y, column: columnIndex, row: rowIndex } = gridPoint;
+    const modelColumn = irisGrid.getModelColumn(columnIndex);
+    const modelRow = irisGrid.getModelRow(rowIndex);
+    // assertNotNullNorUndefined(modelColumn);
+    // assertNotNullNorUndefined(modelRow);
+    const { model, canCopy } = irisGrid.props;
+    const { columns } = model;
+    const value = model.valueForCell(modelColumn, modelRow);
+
+    const valueText = model.textForCell(modelColumn, modelRow);
+    const column = columns[modelColumn];
+
+    const actions = [] as ContextAction[];
+
+    const {
+      metrics,
+      reverseType,
+      quickFilters,
+      advancedFilters,
+      searchFilter,
+    } = irisGrid.state;
+    const theme = irisGrid.getTheme();
+    assertNotNull(metrics);
+    const {
+      filterIconColor,
+      filterBarActiveColor,
+      contextMenuSortIconColor,
+      contextMenuReverseIconColor,
+    } = theme;
+
+    const modelSort = model.sort;
+    const columnSort = TableUtils.getSortForColumn(modelSort, modelColumn);
+    const hasReverse = reverseType !== TableUtils.REVERSE_TYPE.NO;
+
+    const { userColumnWidths } = metrics;
+    const isColumnHidden = [...userColumnWidths.values()].some(
+      columnWidth => columnWidth === 0
+    );
+    const isColumnFrozen = model.isColumnFrozen(columnIndex as VisibleIndex);
+    actions.push({
+      title: 'Hide Column',
+      group: IrisGridContextMenuHandler.GROUP_HIDE_COLUMNS,
+      action: () => {
+        this.irisGrid.hideColumnByVisibleIndex(columnIndex as VisibleIndex);
+      },
+    });
+    actions.push({
+      title: isColumnFrozen ? 'Unfreeze Column' : 'Freeze Column',
+      group: IrisGridContextMenuHandler.GROUP_HIDE_COLUMNS,
+      action: () => {
+        if (isColumnFrozen) {
+          this.irisGrid.unFreezeColumnByColumnName(column.name);
+        } else {
+          this.irisGrid.freezeColumnByColumnName(column.name);
+        }
+      },
+      order: 10,
+    });
+    actions.push({
+      title: 'Show All Columns',
+      group: IrisGridContextMenuHandler.GROUP_HIDE_COLUMNS,
+      action: () => {
+        this.irisGrid.showAllColumns();
+      },
+      disabled: !isColumnHidden,
+    });
+    actions.push({
+      title: 'Quick Filters',
+      icon: vsRemove,
+      iconColor: filterBarActiveColor,
+      shortcut: SHORTCUTS.TABLE.TOGGLE_QUICK_FILTER,
+      group: IrisGridContextMenuHandler.GROUP_FILTER,
+      order: 10,
+      action: () => {
+        this.irisGrid.toggleFilterBar(columnIndex);
+      },
+    });
+    actions.push({
+      title: 'Advanced Filters',
+      icon: advancedFilters.get(modelColumn) ? dhFilterFilled : vsFilter,
+      iconColor: filterIconColor,
+      group: IrisGridContextMenuHandler.GROUP_FILTER,
+      order: 20,
+      action: () => {
+        this.irisGrid.handleAdvancedMenuOpened(columnIndex);
+      },
+    });
+    actions.push({
+      title: 'Clear Table Filters',
+      group: IrisGridContextMenuHandler.GROUP_FILTER,
+      order: 40,
+      // this just displays the shortcut, the actual listener is in irisgrid handleKeyDown
+      shortcut: SHORTCUTS.TABLE.CLEAR_FILTERS,
+      action: () => {
+        this.irisGrid.clearAllFilters();
+      },
+      disabled: !(
+        quickFilters.size > 0 ||
+        advancedFilters.size > 0 ||
+        searchFilter !== null
+      ),
+    });
+    actions.push({
+      title: 'Sort by',
+      icon: vsRemove,
+      iconColor: contextMenuSortIconColor,
+      group: IrisGridContextMenuHandler.GROUP_SORT,
+      order: 10,
+      actions: this.sortByActions(column, modelColumn, columnSort),
+    });
+    actions.push({
+      title: 'Add Additional Sort',
+      /**
+       * disable conditions:
+       * 1. table is sorted only by this column
+       * 2. table is only reversed
+       * 3. 1 & 2 combined
+       * 4. table has no sort
+       * reverse is a type of sort, so needs to be accounted for in exclusions
+       * */
+      disabled:
+        (columnSort && modelSort.length === 1) ||
+        (hasReverse && modelSort.length === 1) ||
+        (columnSort && hasReverse && modelSort.length === 2) ||
+        modelSort.length === 0,
+      group: IrisGridContextMenuHandler.GROUP_SORT,
+      order: 20,
+      actions: this.additionalSortActions(column, modelColumn),
+    });
+    actions.push({
+      title: 'Clear Table Sorting',
+      disabled:
+        // reverse is a type of sort, but special and needs to be exluded despite being part of model.sort
+        modelSort.length === 0 || (hasReverse && modelSort.length === 1),
+      group: IrisGridContextMenuHandler.GROUP_SORT,
+      action: () => {
+        this.irisGrid.sortColumn(
+          columnIndex,
+          IrisGridContextMenuHandler.COLUMN_SORT_DIRECTION.none
+        );
+      },
+      order: 30,
+    });
+    actions.push({
+      title:
+        reverseType === TableUtils.REVERSE_TYPE.NONE
+          ? 'Reverse Table'
+          : 'Clear Reverse Table',
+      icon: vsRemove,
+      iconColor: contextMenuReverseIconColor,
+      group: IrisGridContextMenuHandler.GROUP_SORT,
+      order: 40,
+      disabled: !model.isReversible,
+      // this just displays the shortcut, the actual listener is in irisgrid handleKeyDown
+      shortcut: SHORTCUTS.TABLE.REVERSE,
+      action: () => {
+        if (reverseType === TableUtils.REVERSE_TYPE.NONE) {
+          this.irisGrid.reverse(TableUtils.REVERSE_TYPE.POST_SORT);
+        } else {
+          this.irisGrid.reverse(TableUtils.REVERSE_TYPE.NONE);
+        }
+      },
+    });
+    actions.push({
+      title: 'Copy Column Name',
+      group: IrisGridContextMenuHandler.GROUP_COPY,
+      action: () => {
+        ContextActionUtils.copyToClipboard(
+          model.textForColumnHeader(modelColumn)
+        ).catch(e => log.error('Unable to copy header', e));
+      },
+    });
+
+    if (TableUtils.isDateType(column.type)) {
+      actions.push({
+        title: 'Date/Time Format',
+        group: IrisGridContextMenuHandler.GROUP_FORMAT,
+        actions: this.dateFormatActions(column),
+      });
+    } else if (TableUtils.isNumberType(column.type)) {
+      actions.push({
+        title: 'Number Format',
+        group: IrisGridContextMenuHandler.GROUP_FORMAT,
+        actions: this.numberFormatActions(column) ?? undefined,
+      });
+    }
+  }
+
   onContextMenu(
     gridPoint: GridPoint,
     grid: Grid,
@@ -184,11 +374,12 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
     const { y, column: columnIndex, row: rowIndex } = gridPoint;
     const modelColumn = irisGrid.getModelColumn(columnIndex);
     const modelRow = irisGrid.getModelRow(rowIndex);
+    // assertNotNullNorUndefined(modelColumn);
+    // assertNotNullNorUndefined(modelRow);
     const { model, canCopy } = irisGrid.props;
     const { columns } = model;
-    assertNotNullNorUndefined(modelColumn);
-    assertNotNullNorUndefined(modelRow);
     const value = model.valueForCell(modelColumn, modelRow);
+
     const valueText = model.textForCell(modelColumn, modelRow);
     const column = columns[modelColumn];
 
@@ -217,15 +408,15 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
     const columnSort = TableUtils.getSortForColumn(modelSort, modelColumn);
     const hasReverse = reverseType !== TableUtils.REVERSE_TYPE.NONE;
     const dateFilterFormatter = new DateTimeColumnFormatter({
-      timeZone: settings.timeZone,
+      timeZone: settings?.timeZone,
       showTimeZone: false,
       showTSeparator: true,
       defaultDateTimeFormatString: CONTEXT_MENU_DATE_FORMAT,
     });
     const previewFilterFormatter = new DateTimeColumnFormatter({
-      timeZone: settings.timeZone,
-      showTimeZone: settings.showTimeZone,
-      showTSeparator: settings.showTSeparator,
+      timeZone: settings?.timeZone,
+      showTimeZone: settings?.showTimeZone,
+      showTSeparator: settings?.showTSeparator,
       defaultDateTimeFormatString: CONTEXT_MENU_DATE_FORMAT,
     });
 
@@ -263,161 +454,6 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
     if (isFilterBarShown ? y <= gridY : y <= columnHeaderHeight) {
       // grid header context menu options
       if (column != null) {
-        const { userColumnWidths } = metrics;
-        const isColumnHidden = [...userColumnWidths.values()].some(
-          columnWidth => columnWidth === 0
-        );
-        const isColumnFrozen = model.isColumnFrozen(
-          columnIndex as VisibleIndex
-        );
-        actions.push({
-          title: 'Hide Column',
-          group: IrisGridContextMenuHandler.GROUP_HIDE_COLUMNS,
-          action: () => {
-            this.irisGrid.hideColumnByVisibleIndex(columnIndex as VisibleIndex);
-          },
-        });
-        actions.push({
-          title: isColumnFrozen ? 'Unfreeze Column' : 'Freeze Column',
-          group: IrisGridContextMenuHandler.GROUP_HIDE_COLUMNS,
-          action: () => {
-            if (isColumnFrozen) {
-              this.irisGrid.unFreezeColumnByColumnName(column.name);
-            } else {
-              this.irisGrid.freezeColumnByColumnName(column.name);
-            }
-          },
-          order: 10,
-          disabled: !model.isColumnMovable(modelColumn) && !isColumnFrozen,
-        });
-        actions.push({
-          title: 'Show All Columns',
-          group: IrisGridContextMenuHandler.GROUP_HIDE_COLUMNS,
-          action: () => {
-            this.irisGrid.showAllColumns();
-          },
-          disabled: !isColumnHidden,
-        });
-        actions.push({
-          title: 'Quick Filters',
-          icon: vsRemove,
-          iconColor: filterBarActiveColor,
-          shortcut: SHORTCUTS.TABLE.TOGGLE_QUICK_FILTER,
-          group: IrisGridContextMenuHandler.GROUP_FILTER,
-          order: 10,
-          action: () => {
-            this.irisGrid.toggleFilterBar(columnIndex);
-          },
-        });
-        actions.push({
-          title: 'Advanced Filters',
-          icon: advancedFilters.get(modelColumn) ? dhFilterFilled : vsFilter,
-          iconColor: filterIconColor,
-          group: IrisGridContextMenuHandler.GROUP_FILTER,
-          order: 20,
-          action: () => {
-            this.irisGrid.handleAdvancedMenuOpened(columnIndex);
-          },
-        });
-        actions.push({
-          title: 'Clear Table Filters',
-          group: IrisGridContextMenuHandler.GROUP_FILTER,
-          order: 40,
-          // this just displays the shortcut, the actual listener is in irisgrid handleKeyDown
-          shortcut: SHORTCUTS.TABLE.CLEAR_FILTERS,
-          action: () => {
-            this.irisGrid.clearAllFilters();
-          },
-          disabled: !(
-            quickFilters.size > 0 ||
-            advancedFilters.size > 0 ||
-            searchFilter !== null
-          ),
-        });
-        actions.push({
-          title: 'Sort by',
-          icon: vsRemove,
-          iconColor: contextMenuSortIconColor,
-          group: IrisGridContextMenuHandler.GROUP_SORT,
-          order: 10,
-          actions: this.sortByActions(column, modelColumn, columnSort),
-        });
-        actions.push({
-          title: 'Add Additional Sort',
-          /**
-           * disable conditions:
-           * 1. table is sorted only by this column
-           * 2. table is only reversed
-           * 3. 1 & 2 combined
-           * 4. table has no sort
-           * reverse is a type of sort, so needs to be accounted for in exclusions
-           * */
-          disabled:
-            (columnSort && modelSort.length === 1) ||
-            (hasReverse && modelSort.length === 1) ||
-            (columnSort && hasReverse && modelSort.length === 2) ||
-            modelSort.length === 0,
-          group: IrisGridContextMenuHandler.GROUP_SORT,
-          order: 20,
-          actions: this.additionalSortActions(column, modelColumn),
-        });
-        actions.push({
-          title: 'Clear Table Sorting',
-          disabled:
-            // reverse is a type of sort, but special and needs to be exluded despite being part of model.sort
-            modelSort.length === 0 || (hasReverse && modelSort.length === 1),
-          group: IrisGridContextMenuHandler.GROUP_SORT,
-          action: () => {
-            this.irisGrid.sortColumn(
-              columnIndex,
-              IrisGridContextMenuHandler.COLUMN_SORT_DIRECTION.none
-            );
-          },
-          order: 30,
-        });
-        actions.push({
-          title:
-            reverseType === TableUtils.REVERSE_TYPE.NONE
-              ? 'Reverse Table'
-              : 'Clear Reverse Table',
-          icon: vsRemove,
-          iconColor: contextMenuReverseIconColor,
-          group: IrisGridContextMenuHandler.GROUP_SORT,
-          order: 40,
-          disabled: !model.isReversible,
-          // this just displays the shortcut, the actual listener is in irisgrid handleKeyDown
-          shortcut: SHORTCUTS.TABLE.REVERSE,
-          action: () => {
-            if (reverseType === TableUtils.REVERSE_TYPE.NONE) {
-              this.irisGrid.reverse(TableUtils.REVERSE_TYPE.POST_SORT);
-            } else {
-              this.irisGrid.reverse(TableUtils.REVERSE_TYPE.NONE);
-            }
-          },
-        });
-        actions.push({
-          title: 'Copy Column Name',
-          group: IrisGridContextMenuHandler.GROUP_COPY,
-          action: () => {
-            ContextActionUtils.copyToClipboard(
-              model.textForColumnHeader(modelColumn)
-            ).catch(e => log.error('Unable to copy header', e));
-          },
-        });
-
-        if (TableUtils.isDateType(column.type)) {
-          actions.push({
-            title: 'Date/Time Format',
-            group: IrisGridContextMenuHandler.GROUP_FORMAT,
-            actions: this.dateFormatActions(column),
-          });
-        } else if (TableUtils.isNumberType(column.type)) {
-          actions.push({
-            title: 'Number Format',
-            group: IrisGridContextMenuHandler.GROUP_FORMAT,
-            actions: this.numberFormatActions(column) ?? undefined,
-          });
-        }
       }
     } else {
       // grid data area context menu options
@@ -493,8 +529,8 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
                 true
               );
             } else if (TableUtils.isDateType(column.type)) {
-              const dateValueText = dateFilterFormatter.format(value);
-              const previewValue = previewFilterFormatter.format(value);
+              const dateValueText = dateFilterFormatter.format(value as Date);
+              const previewValue = previewFilterFormatter.format(value as Date);
               filterMenu.actions = this.dateFilterActions(
                 column,
                 dateValueText,
@@ -527,7 +563,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
             filterMenu.actions = this.nullFilterActions(column);
             andFilterMenu.actions = this.nullFilterActions(
               column,
-              quickFilters.get(modelColumn) as QuickF,
+              quickFilters.get(modelColumn),
               true
             );
           }
@@ -640,7 +676,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
         order: i,
         action: () => {
           this.irisGrid.handleFormatSelection(
-            model.getColumnIndexByName(column.name),
+            model.getColumnIndexByName(column.name) ?? null,
             format
           );
         },
@@ -663,6 +699,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
       formatOptions = DecimalFormatContextMenu.getOptions(
         selectedFormat,
         format => {
+          assertNotUndefined(columnIndex);
           this.debouncedUpdateCustomFormat(columnIndex, format);
         }
       );
@@ -670,6 +707,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
       formatOptions = IntegerFormatContextMenu.getOptions(
         selectedFormat,
         format => {
+          assertNotUndefined(columnIndex);
           this.debouncedUpdateCustomFormat(columnIndex, format);
         }
       );
@@ -688,11 +726,13 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
         order: i,
         action: () => {
           if (
+            !columnIndex &&
             format &&
             format.type === TableColumnFormatter.TYPE_CONTEXT_CUSTOM
           ) {
             return;
           }
+          assertNotUndefined(columnIndex);
           this.irisGrid.handleFormatSelection(columnIndex, format);
         },
       });
@@ -702,13 +742,23 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
 
   stringFilterActions(
     column: Column,
-    valueText: string,
-    value: number,
-    quickFilter: QuickFilter,
+    valueText: string | null,
+    value?: unknown,
+    quickFilter?: QuickFilter,
     additive = false
   ): ContextAction[] {
     const filterValue = dh.FilterValue.ofString(value);
-    const { filter, text: filterText } = quickFilter;
+    let newQuickFilter:
+      | {
+          filter: null | FilterCondition | undefined;
+          text: string | null;
+        }
+      | undefined
+      | null = quickFilter;
+    if (!newQuickFilter) {
+      newQuickFilter = { filter: null, text: null };
+    }
+    const { filter, text: filterText } = newQuickFilter;
     const actions = [];
     const { model } = this.irisGrid.props;
     const columnIndex = model.getColumnIndexByName(column.name);
@@ -849,14 +899,19 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
     column: Column,
     valueText: string,
     value: unknown,
-    quickFilter: QuickFilter,
+    quickFilter: QuickFilter | null | undefined,
     additive = false
   ): ContextAction[] {
     const filterValue = IrisGridContextMenuHandler.getFilterValueForNumberOrChar(
       column.type,
       value
     );
-    const { filter, text: filterText } = quickFilter;
+    let filter: FilterCondition | null = null;
+    let filterText: string | null = null;
+    if (quickFilter) {
+      filter = quickFilter.filter;
+      filterText = quickFilter.text;
+    }
     const actions = [];
     const isFinite =
       value !== Number.POSITIVE_INFINITY &&
@@ -1012,8 +1067,8 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
 
   booleanFilterActions(
     column: Column,
-    valueText: string,
-    quickFilter: QuickFilter | null | undefined,
+    valueText: string | null,
+    quickFilter?: QuickFilter | null | undefined,
     additive = false
   ): ContextAction[] | null {
     const actions = [];
@@ -1101,11 +1156,17 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
     valueText: string,
     previewValue: unknown,
     value: unknown,
-    quickFilter: QuickFilter,
+    quickFilter?: QuickFilter | undefined | null,
     additive = false
   ): ContextAction[] {
     const filterValue = dh.FilterValue.ofNumber(value);
-    const { filter, text: filterText } = quickFilter;
+
+    let filter: FilterCondition | null = null;
+    let filterText: string | null = null;
+    if (quickFilter) {
+      filter = quickFilter.filter;
+      filterText = quickFilter.text;
+    }
     const { model } = this.irisGrid.props;
     const columnIndex = model.getColumnIndexByName(column.name);
 
@@ -1244,10 +1305,15 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
 
   nullFilterActions(
     column: Column,
-    quickFilter: QuickFilter,
+    quickFilter?: QuickFilter,
     additive = false
   ): ContextAction[] {
-    const { filter, text: filterText } = quickFilter;
+    let filter: FilterCondition | null = null;
+    let filterText: string | null = null;
+    if (quickFilter) {
+      filter = quickFilter.filter;
+      filterText = quickFilter.text;
+    }
     const actions = [];
     const { model } = this.irisGrid.props;
     const columnIndex = model.getColumnIndexByName(column.name);
@@ -1418,7 +1484,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
             <span className="icon">
               <FontAwesomeIcon
                 icon={vsRemove}
-                style={{ color: contextMenuSortIconColor }}
+                style={{ color: contextMenuSortIconColor ?? undefined }}
               />
             </span>
             <span className="title">Add Additional Sort</span>

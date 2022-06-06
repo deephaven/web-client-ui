@@ -48,7 +48,7 @@ abstract class GridModel<
    * @param row Row to get the text for
    * @returns Text for the specified cell
    */
-  abstract textForCell(column: ModelIndex, row: ModelIndex): string;
+  abstract textForCell(column: ModelIndex, row: ModelIndex): string | null;
 
   /**
    * Get the character to replace text when truncated for a specific cell.

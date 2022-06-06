@@ -35,10 +35,10 @@ class PartitionSelectorSearch<T> extends Component<
 > {
   static MAX_VISIBLE_ITEMS = 12;
 
-  static defaultProps: {
-    initialPageSize: number;
-    onSelect: () => void;
-    onListResized: () => void;
+  static defaultProps = {
+    initialPageSize: 100,
+    onSelect: (): null => null,
+    onListResized: (): null => null,
   };
 
   static propTypes = {
@@ -57,9 +57,9 @@ class PartitionSelectorSearch<T> extends Component<
       applyFilter: PropTypes.func.isRequired,
       setViewport: PropTypes.func.isRequired,
     }).isRequired,
-    initialPageSize: PropTypes.number.isRequired,
-    onSelect: PropTypes.func.isRequired,
-    onListResized: PropTypes.func.isRequired,
+    initialPageSize: PropTypes.number,
+    onSelect: PropTypes.func,
+    onListResized: PropTypes.func,
   };
 
   static handleError(error: unknown): void {
@@ -71,7 +71,7 @@ class PartitionSelectorSearch<T> extends Component<
   constructor(props: PartitionSelectorSearchProps<T>) {
     super(props);
 
-    this.debounceUpdateFilter = this.debounceUpdateFilter.bind(this);
+    // this.debounceUpdateFilter = this.debounceUpdateFilter.bind(this);
     this.handleFilterChange = this.handleFilterChange.bind(this);
     this.handleInputFocus = this.handleInputFocus.bind(this);
     this.handleKeyDown = this.handleKeyDown.bind(this);

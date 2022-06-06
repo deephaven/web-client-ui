@@ -31,16 +31,16 @@ class TreeTableViewportUpdater extends PureComponent<
   TreeTableViewportUpdaterProps,
   Record<string, never>
 > {
-  static defaultProps: {
-    top: number;
-    bottom: number;
-    onViewportUpdate: () => void;
-    filters: never[];
-    sorts: never[];
-    updateInterval: number;
-  };
-
   static UPDATE_INTERVAL = 1000;
+
+  static defaultProps = {
+    top: 0,
+    bottom: 0,
+    onViewportUpdate: (): null => null,
+    filters: [],
+    sorts: [],
+    updateInterval: TreeTableViewportUpdater.UPDATE_INTERVAL,
+  };
 
   constructor(props: TreeTableViewportUpdaterProps) {
     super(props);

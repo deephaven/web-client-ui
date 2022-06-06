@@ -10,7 +10,6 @@ import {
   DropResult,
 } from 'react-beautiful-dnd';
 import {
-  ButtonOld,
   Checkbox,
   DraggableItemList,
   DragUtils,
@@ -18,6 +17,7 @@ import {
   Tooltip,
   Range,
   RenderItemProps,
+  Button,
 } from '@deephaven/components';
 import { vsTrash, dhSortAlphaDown, dhSortAlphaUp } from '@deephaven/icons';
 import { TableUtils } from '@deephaven/jsapi-utils';
@@ -64,7 +64,10 @@ class RollupRows extends Component<RollupRowsProps, RollupRowsState> {
     DESCENDING: 'DESCENDING',
   });
 
-  static defaultProps: { config: null; onChange: () => void };
+  static defaultProps = {
+    config: null,
+    onChange: (): null => null,
+  };
 
   static renderColumn({
     item,
@@ -440,12 +443,13 @@ class RollupRows extends Component<RollupRowsProps, RollupRowsState> {
       <>
         {DraggableItemList.renderTextItem({ text, badgeText, className })}
         {!isClone && (
-          <ButtonOld
+          <Button
+            kind="ghost"
             className="btn btn-link btn-link-icon btn-delete-grouping float-right"
             onClick={() => this.handleDeleteClicked(itemIndex)}
           >
             <FontAwesomeIcon icon={vsTrash} />
-          </ButtonOld>
+          </Button>
         )}
       </>
     );
@@ -537,7 +541,8 @@ class RollupRows extends Component<RollupRowsProps, RollupRowsState> {
                 placeholder="Find column..."
                 onChange={this.handleSearchChange}
               />
-              <ButtonOld
+              <Button
+                kind="ghost"
                 className={classNames('btn-link btn-link-icon', {
                   active: sort === RollupRows.SORT.ASCENDING,
                 })}
@@ -545,8 +550,9 @@ class RollupRows extends Component<RollupRowsProps, RollupRowsState> {
               >
                 <FontAwesomeIcon icon={dhSortAlphaDown} />
                 <Tooltip>Sort ascending</Tooltip>
-              </ButtonOld>
-              <ButtonOld
+              </Button>
+              <Button
+                kind="ghost"
                 className={classNames('btn-link btn-link-icon', {
                   active: sort === RollupRows.SORT.DESCENDING,
                 })}
@@ -554,7 +560,7 @@ class RollupRows extends Component<RollupRowsProps, RollupRowsState> {
               >
                 <FontAwesomeIcon icon={dhSortAlphaUp} />
                 <Tooltip>Sort descending</Tooltip>
-              </ButtonOld>
+              </Button>
             </div>
             <DraggableItemList
               className="rollup-available-grouping-columns"

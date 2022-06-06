@@ -1,10 +1,11 @@
-import dh, { TableViewportSubscription } from '@deephaven/jsapi-shim';
+import dh from '@deephaven/jsapi-shim';
 import {
   Operator as FilterOperator,
   Type as FilterType,
 } from '@deephaven/filters';
 import TableUtils from './TableUtils';
 import DateUtils from './DateUtils';
+
 const DEFAULT_TIME_ZONE_ID = 'America/New_York';
 const EXPECT_TIME_ZONE_PARAM = expect.objectContaining({
   id: DEFAULT_TIME_ZONE_ID,
@@ -14,7 +15,7 @@ function makeColumns(count = 5) {
   const columns = [];
 
   for (let i = 0; i < count; i += 1) {
-    const column = new Column({ index: i, name: `${i}` });
+    const column = new dh.Column({ index: i, name: `${i}` });
     columns.push(column);
   }
 
@@ -1318,7 +1319,7 @@ describe('makeCancelableTableEventPromise', () => {
       timeout,
       matcher
     );
-    promise.catch(() => {});
+    promise.catch(() => null);
     return promise;
   }
   beforeAll(() => {

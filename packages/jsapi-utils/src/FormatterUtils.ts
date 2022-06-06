@@ -2,31 +2,38 @@ import type { FormattingRule } from './Formatter';
 import Formatter from './Formatter';
 import { DateTimeColumnFormatter, TableColumnFormatter } from './formatters';
 
-export class FormatterUtils {
-  static getColumnFormats(settings: {
-    formatter: FormattingRule[];
-  }): FormattingRule[] {
-    const { formatter } = settings;
-    return formatter;
+class FormatterUtils {
+  static getColumnFormats(
+    settings?:
+      | {
+          formatter?: FormattingRule[];
+        }
+      | null
+      | undefined
+  ): FormattingRule[] | undefined {
+    if (settings && settings.formatter) {
+      const { formatter } = settings;
+      return formatter;
+    }
+    return undefined;
   }
 
-  static getDateTimeFormatterOptions(settings: {
-    timeZone: string;
-    defaultDateTimeFormat: string;
-    showTimeZone: boolean;
-    showTSeparator: boolean;
-  }): Required<ConstructorParameters<typeof DateTimeColumnFormatter>[0]> {
-    const {
-      timeZone,
-      defaultDateTimeFormat,
-      showTimeZone,
-      showTSeparator,
-    } = settings;
+  static getDateTimeFormatterOptions(
+    settings?:
+      | {
+          timeZone?: string;
+          defaultDateTimeFormat?: string;
+          showTimeZone?: boolean;
+          showTSeparator?: boolean;
+        }
+      | null
+      | undefined
+  ): ConstructorParameters<typeof DateTimeColumnFormatter>[0] {
     return {
-      timeZone,
-      defaultDateTimeFormatString: defaultDateTimeFormat,
-      showTimeZone,
-      showTSeparator,
+      timeZone: settings?.timeZone,
+      defaultDateTimeFormatString: settings?.defaultDateTimeFormat,
+      showTimeZone: settings?.showTimeZone,
+      showTSeparator: settings?.showTSeparator,
     };
   }
 

@@ -4,7 +4,7 @@ import debounce from 'lodash.debounce';
 import { vsFilter, dhFilterFilled } from '@deephaven/icons';
 import './FilterInputField.scss';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { DebouncedFunc } from 'lodash';
+import type { DebouncedFunc } from 'lodash';
 
 interface FilterInputFieldProps {
   className: string;
@@ -30,17 +30,17 @@ class FilterInputField extends PureComponent<
   FilterInputFieldProps,
   FilterInputFieldState
 > {
-  static defaultProps: {
-    style: Record<string, never>;
-    className: string;
-    value: string;
-    isAdvancedFilterSet: boolean;
-    onAdvancedFiltersTriggered: () => void;
-    onChange: () => void;
-    onDone: () => void;
-    onTab: () => void;
-    onContextMenu: () => void;
-    debounceMs: number;
+  static defaultProps = {
+    style: {},
+    className: '',
+    value: '',
+    isAdvancedFilterSet: false,
+    onAdvancedFiltersTriggered: (): null => null,
+    onChange: (): null => null,
+    onDone: (): null => null,
+    onTab: (): null => null,
+    onContextMenu: (): null => null,
+    debounceMs: 150,
   };
 
   constructor(props: FilterInputFieldProps) {

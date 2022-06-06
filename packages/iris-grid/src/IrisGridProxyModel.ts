@@ -9,6 +9,7 @@ import {
 } from '@deephaven/utils';
 import {
   Column,
+  ColumnStatistics,
   CustomColumn,
   FilterCondition,
   InputTable,
@@ -181,6 +182,8 @@ class IrisGridProxyModel extends IrisGridModel {
   addListeners(model: IrisGridTreeTableModel | IrisGridTableModel): void {
     const events = Object.keys(IrisGridModel.EVENT);
     for (let i = 0; i < events.length; i += 1) {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
       model.addEventListener(events[i], this.handleModelEvent);
     }
   }
@@ -188,6 +191,8 @@ class IrisGridProxyModel extends IrisGridModel {
   removeListeners(model: IrisGridTreeTableModel | IrisGridTableModel): void {
     const events = Object.keys(IrisGridModel.EVENT);
     for (let i = 0; i < events.length; i += 1) {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
       model.removeEventListener(events[i], this.handleModelEvent);
     }
   }
@@ -248,45 +253,52 @@ class IrisGridProxyModel extends IrisGridModel {
   isColumnMovable: IrisGridTableModel['isColumnMovable'] = (...args) =>
     this.model.isColumnMovable(...args);
 
-  isColumnFrozen: IrisGridTableModel['isColumnFrozen'] = (...args) =>
-    this.model.isColumnFrozen(...args);
+  isColumnFrozen(x: number): boolean {
+    if (TableUtils.isTreeTable(this.table)) {
+      throw new Error('TreeTable cannot be frozen');
+    }
+    return (this.model as IrisGridTableModel).isColumnFrozen(x);
+  }
 
   get hasExpandableRows(): boolean {
-    if (this.model instanceof IrisGridTreeTableModel) {
-      return this.model.hasExpandableRows;
+    if (TableUtils.isTreeTable(this.model.table)) {
+      return (this.model as IrisGridTreeTableModel).hasExpandableRows;
     }
     return false;
   }
 
   isRowExpandable: IrisGridTreeTableModel['isRowExpandable'] = (...args) => {
-    if (this.model instanceof IrisGridTreeTableModel) {
-      return this.model.isRowExpandable(...args);
+    if (TableUtils.isTreeTable(this.model.table)) {
+      return (this.model as IrisGridTreeTableModel).isRowExpandable(...args);
     }
-    return false;
+    throw Error(
+      'Function isRowExpandable does not exist on IrisGridTableModel'
+    );
   };
 
   isRowExpanded: IrisGridTreeTableModel['isRowExpanded'] = (...args) => {
-    if (this.model instanceof IrisGridTreeTableModel) {
-      return this.model.isRowExpanded(...args);
+    if (TableUtils.isTreeTable(this.model.table)) {
+      return (this.model as IrisGridTreeTableModel).isRowExpanded(...args);
     }
-    return false;
+    throw Error('Function isRowExpanded does not exist on IrisGridTableModel');
   };
 
   setRowExpanded: IrisGridTreeTableModel['setRowExpanded'] = (...args) => {
-    if (this.model instanceof IrisGridTreeTableModel) {
-      return this.model.setRowExpanded(...args);
+    if (TableUtils.isTreeTable(this.model.table)) {
+      return (this.model as IrisGridTreeTableModel).setRowExpanded(...args);
     }
-    return false;
+    throw Error('Function setRowExpanded does not exist on IrisGridTableModel');
   };
 
   depthForRow: IrisGridTreeTableModel['depthForRow'] = (...args) => {
-    if (this.model instanceof IrisGridTreeTableModel) {
-      return this.model.depthForRow(...args);
+    if (TableUtils.isTreeTable(this.model.table)) {
+      return (this.model as IrisGridTreeTableModel).depthForRow(...args);
     }
-    throw Error('Function depthForRow does not exist on IrisGridTableModel');
+    return 0;
+    // throw Error('Function depthForRow does not exist on IrisGridTableModel');
   };
 
-  get table(): Table {
+  get table(): Table | TreeTable {
     return this.model.table;
   }
 
@@ -353,7 +365,7 @@ class IrisGridProxyModel extends IrisGridModel {
     return this.model.movedRows;
   }
 
-  get layoutHints(): LayoutHints {
+  get layoutHints(): LayoutHints | null {
     return this.model.layoutHints;
   }
 
@@ -369,8 +381,12 @@ class IrisGridProxyModel extends IrisGridModel {
     return this.model.frozenColumns;
   }
 
-  updateFrozenColumns(...args) {
-    this.model.updateFrozenColumns(...args);
+  updateFrozenColumns(columns: string[]): void {
+    if (TableUtils.isTreeTable(this.table)) {
+      throw new Error('TreeTable cannot be frozen');
+    }
+    return (this.model as IrisGridTableModel).updateFrozenColumns(columns);
+  }
 
   get originalColumns(): Column[] {
     return this.originalModel.columns;
@@ -381,7 +397,10 @@ class IrisGridProxyModel extends IrisGridModel {
   }
 
   get description(): string {
-    return this.model.description;
+    if (TableUtils.isTreeTable(this.table)) {
+      throw new Error("TreeTable does not have property 'description'");
+    }
+    return (this.model as IrisGridTableModel).description;
   }
 
   formatForCell: IrisGridTableModel['formatForCell'] = (...args) =>
@@ -417,10 +436,6 @@ class IrisGridProxyModel extends IrisGridModel {
     this.model.sort = sort;
   }
 
-  get customColumns(): string[] {
-    return this.model.customColumns;
-  }
-
   set customColumns(customColumns: string[]) {
     this.model.customColumns = customColumns;
   }
@@ -438,6 +453,10 @@ class IrisGridProxyModel extends IrisGridModel {
   }
 
   set rollupConfig(rollupConfig: RollupConfig | null) {
+    if (TableUtils.isTreeTable(this.table)) {
+      throw new Error("TreeTable does not have property 'rollupConfig'");
+    }
+
     log.debug('set rollupConfig', rollupConfig);
 
     if (!this.isRollupAvailable) {
@@ -455,7 +474,7 @@ class IrisGridProxyModel extends IrisGridModel {
     let modelPromise = Promise.resolve(this.originalModel);
 
     if (rollupConfig != null) {
-      modelPromise = this.originalModel.table
+      modelPromise = (this.originalModel.table as Table)
         .rollup(rollupConfig)
         .then(table => makeModel(table, this.formatter));
     }
@@ -528,14 +547,22 @@ class IrisGridProxyModel extends IrisGridModel {
   textSnapshot: IrisGridTableModel['textSnapshot'] = (...args) =>
     this.model.textSnapshot(...args);
 
-  export: IrisGridTableModel['export'] = (...args) =>
-    this.model.export(...args);
+  export(): Promise<Table> {
+    if (TableUtils.isTreeTable(this.model)) {
+      throw new Error("TreeTable has no 'export' property");
+    }
+    return (this.model as IrisGridTableModel).export();
+  }
 
   valuesTable: IrisGridTableModel['valuesTable'] = (...args) =>
     this.model.valuesTable(...args);
 
-  columnStatistics: IrisGridTableModel['columnStatistics'] = (...args) =>
-    this.model.columnStatistics(...args);
+  columnStatistics(column: Column): Promise<ColumnStatistics> {
+    if (TableUtils.isTreeTable(this.model)) {
+      throw new Error("TreeTable has no 'columnStatistics' function");
+    }
+    return (this.model as IrisGridTableModel).columnStatistics(column);
+  }
 
   editValueForCell: IrisGridTableModel['editValueForCell'] = (...args) =>
     this.model.editValueForCell(...args);

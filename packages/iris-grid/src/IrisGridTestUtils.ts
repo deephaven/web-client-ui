@@ -2,7 +2,10 @@ import { GridRangeIndex, ModelSizeMap } from '@deephaven/grid';
 import dh, {
   Column,
   FilterCondition,
+  InputTable,
   Row,
+  Sort,
+  Table,
   TableViewportSubscription,
 } from '@deephaven/jsapi-shim';
 import { Formatter } from '@deephaven/jsapi-utils';
@@ -14,7 +17,7 @@ class IrisGridTestUtils {
   static valueForCell(
     rowIndex: GridRangeIndex,
     columnIndex: GridRangeIndex,
-    formatValue: boolean
+    formatValue?: boolean
   ): string {
     let value = `${rowIndex},${columnIndex}`;
     if (formatValue) {
@@ -28,7 +31,8 @@ class IrisGridTestUtils {
     type: string = IrisGridTestUtils.DEFAULT_TYPE,
     index = 0
   ): Column {
-    return new Column({ index, name, type });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return new (dh as any).Column({ index, name, type });
   }
 
   static makeColumns(count = 5): Column[] {
@@ -48,7 +52,8 @@ class IrisGridTestUtils {
   }
 
   static makeRow(i: number): Row {
-    const row = new dh.Row({ index: i, name: `${i}` });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const row = new (dh as any).Row({ index: i, name: `${i}` });
 
     row.get = jest.fn(column =>
       IrisGridTestUtils.valueForCell(i, column.index)
@@ -58,28 +63,35 @@ class IrisGridTestUtils {
   }
 
   static makeFilter(): FilterCondition {
-    return new dh.FilterCondition();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return new (dh as any).FilterCondition();
   }
 
   static makeSort(): Sort {
-    return new dh.Sort();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return new (dh as any).Sort();
   }
 
   static makeTable(
     columns = IrisGridTestUtils.makeColumns(),
     size = 1000000000
-  ) {
-    const table = new dh.Table({ columns, size });
+  ): Table {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const table = new (dh as any).Table({ columns, size });
     table.copy = jest.fn(() => Promise.resolve(table));
     return table;
   }
 
-  static makeInputTable(keyColumns = []) {
-    return new dh.InputTable(keyColumns);
+  static makeInputTable(keyColumns = []): InputTable {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return new (dh as any).InputTable(keyColumns);
   }
 
-  static makeSubscription(table = IrisGridTestUtils.makeTable()) {
-    return new TableViewportSubscription({ table });
+  static makeSubscription(
+    table = IrisGridTestUtils.makeTable()
+  ): TableViewportSubscription {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return new (dh as any).TableViewportSubscription({ table });
   }
 
   static makeModel(

@@ -18,7 +18,7 @@ export type PendingDataBottomBarProps = {
   saveTooltip?: string;
   isSaving?: boolean;
   error?: string | null;
-  pendingDataErrors: Map<number, Error>;
+  pendingDataErrors: Map<number, Error[]>;
   pendingDataMap: PendingDataMap;
   onEntering?: () => void;
   onEntered?: () => void;

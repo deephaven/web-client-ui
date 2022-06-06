@@ -25,6 +25,7 @@ export interface dh {
   TreeTable: TreeTableStatic;
   Column: Column;
   SearchDisplayMode?: SearchDisplayModeStatic;
+  RangeSet: RangeSet;
 }
 
 const VariableType = {
@@ -508,36 +509,22 @@ export interface ClientStatic {
   readonly EVENT_REQUEST_STARTED: 'requeststarted';
   readonly EVENT_REQUEST_SUCCEEDED: 'requestsucceeded';
 }
-export interface Table extends Evented, TableStatic {
-  readonly size: number;
+export interface Table extends TableTemplate<Table>, TableStatic {
   readonly totalSize: number;
 
-  readonly columns: Column[];
   readonly description: string;
 
-  readonly sort: Sort[];
-  readonly filter: FilterCondition[];
-  readonly customColumns: string[];
+  customColumns: string[];
+
   readonly layoutHints: LayoutHints;
 
   readonly isUncoalesced: boolean;
   readonly hasInputTable: boolean;
 
-  readonly totalsTableConfig: TotalsTableConfig;
+  readonly isClosed: boolean;
 
-  findColumn(name: string): Column;
-  findColumns(names: string[]): Column[];
+  applyCustomColumns(columns: (CustomColumn | string)[]): string[];
 
-  applySort(sorts: Sort[]): Sort[];
-  applyFilter(filters: FilterCondition[]): FilterCondition[];
-  applyCustomColumns(columns: string[]): string[];
-
-  setViewport(
-    firstRow: number,
-    lastRow: number,
-    columns?: Column[],
-    updateIntervalMs?: number
-  ): TableViewportSubscription;
   getViewportData(): Promise<TableData>;
 
   subscribe(columns: Column[]): TableSubscription;
@@ -545,16 +532,10 @@ export interface Table extends Evented, TableStatic {
   selectDistinct(columns: Column[]): Promise<Table>;
   copy(): Promise<Table>;
 
-  getTotalsTable(config?: TotalsTableConfig): Promise<TotalsTable>;
-  getGrandTotalsTable(config?: TotalsTableConfig): Promise<TotalsTable>;
-
   rollup(config: RollupConfig): Promise<TreeTable>;
   treeTable(config: TreeTableConfig): Promise<TreeTable>;
 
   inputTable(): Promise<InputTable>;
-
-  close(): void;
-  readonly isClosed: boolean;
 
   freeze(): Promise<Table>;
 
@@ -601,7 +582,12 @@ export interface RangeSet {
   ofRanges(ranges: RangeSet[]): RangeSet;
 
   readonly size: number;
-  iterator(): Iterator<LongWrapper>;
+  iterator(): JsIterator<LongWrapper>;
+}
+
+export interface JsIterator<T> {
+  hasNext(): boolean;
+  next(): IteratorResult<T>;
 }
 
 export interface LongWrapper {
@@ -657,6 +643,13 @@ export interface TableData {
   getFormat(index: LongWrapper, column: Column): Format;
 }
 
+export interface UpdateEventData extends TableData {
+  readonly added: RangeSet;
+  readonly removed: RangeSet;
+  readonly modified: RangeSet;
+  readonly fullIndex: RangeSet;
+}
+
 export interface Row {
   readonly index: LongWrapper;
 
@@ -685,20 +678,36 @@ export interface TreeTableStatic {
   readonly EVENT_RECONNECTFAILED: string;
 }
 
-export interface TreeTable extends Evented, TreeTableStatic {
+export interface TableTemplate<T> extends Evented {
   readonly size: number;
-
   readonly columns: Column[];
-
   readonly sort: Sort[];
   readonly filter: FilterCondition[];
-
   readonly totalsTableConfig: TotalsTableConfig;
-
-  isIncludeConstituents: boolean;
 
   findColumn(name: string): Column;
   findColumns(names: string[]): Column[];
+
+  applySort(sorts: Sort[]): Sort[];
+  applyFilter(filters: FilterCondition[]): FilterCondition[];
+  selectDistinct(columns: Column[]): Promise<Table>;
+
+  getTotalsTable(config?: TotalsTableConfig): Promise<TotalsTable>;
+  getGrandTotalsTable(config?: TotalsTableConfig): Promise<TotalsTable>;
+
+  setViewport(
+    firstRow: number,
+    lastRow: number,
+    columns?: Column[],
+    updateIntervalMs?: number
+  ): TableViewportSubscription;
+
+  copy(): Promise<T>;
+  close(): void;
+}
+
+export interface TreeTable extends TableTemplate<TreeTable>, TreeTableStatic {
+  readonly isIncludeConstituents: boolean;
 
   expand(row: number): void;
   expand(row: TreeRow): void;
@@ -709,23 +718,10 @@ export interface TreeTable extends Evented, TreeTableStatic {
   isExpanded(row: number): boolean;
   isExpanded(row: TreeRow): boolean;
 
-  applySort(sorts: Sort[]): Sort[];
-  applyFilter(filters: FilterCondition[]): FilterCondition[];
-
-  selectDistict(columns: Column[]): Promise<Table>;
-
-  getTotalsTable(config?: TotalsTableConfig): Promise<TotalsTable>;
-  getGrandTotalsTable(config?: TotalsTableConfig): Promise<TotalsTable>;
-
-  setViewport(): void;
   getViewportData(): Promise<TreeTableData>;
 
   saveExpandedState(): string;
   restoreExpandedState(nodesToRestore: string): void;
-
-  close(): void;
-
-  copy(): Promise<TreeTable>;
 }
 export interface TreeTableData extends TableData {
   readonly rows: TreeRow[];
@@ -760,7 +756,7 @@ export interface TotalsTable extends Evented {
 
   readonly sort: Sort[];
   readonly filter: FilterCondition[];
-  readonly customColumns: string[];
+  customColumns: string[];
 
   readonly totalsTableConfig: TotalsTableConfig;
 

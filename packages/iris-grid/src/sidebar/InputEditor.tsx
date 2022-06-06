@@ -24,13 +24,13 @@ export default class InputEditor extends Component<
   InputEditorProps,
   InputEditorState
 > {
-  static defaultProps: {
-    value: string;
-    onContentChanged: () => void;
-    editorSettings: Record<string, unknown>;
-    editorIndex: number;
-    onTab: () => void;
-    invalid: boolean;
+  static defaultProps = {
+    value: '',
+    onContentChanged: (): null => null,
+    editorSettings: {},
+    editorIndex: 0,
+    onTab: (): null => null,
+    invalid: false,
   };
 
   constructor(props: InputEditorProps) {

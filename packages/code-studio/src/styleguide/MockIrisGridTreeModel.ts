@@ -12,7 +12,7 @@ import {
   ModelIndex,
 } from '@deephaven/grid';
 import { IrisGridModel } from '@deephaven/iris-grid';
-import type { Column } from '@deephaven/jsapi-shim';
+import type { Column, CustomColumn } from '@deephaven/jsapi-shim';
 import { Formatter } from '@deephaven/jsapi-utils';
 import {
   PendingDataMap,
@@ -174,11 +174,11 @@ class MockIrisGridTreeModel
     // Ignore for mock
   }
 
-  get formatColumns(): string[] {
+  get formatColumns(): CustomColumn[] {
     return [];
   }
 
-  set formatColumns(formatColumns: string[]) {
+  set formatColumns(formatColumns: CustomColumn[]) {
     // Ignore for mock
   }
 

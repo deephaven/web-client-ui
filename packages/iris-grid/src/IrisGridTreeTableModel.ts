@@ -1,16 +1,21 @@
 /* eslint class-methods-use-this: "off" */
 import memoize from 'memoize-one';
 import { GridRange, ModelIndex } from '@deephaven/grid';
-import { Column, Row, Table, TreeRow, TreeTable } from '@deephaven/jsapi-shim';
-import IrisGridTableModel, { UIRow } from './IrisGridTableModel';
+import { Column, TreeRow, TreeTable } from '@deephaven/jsapi-shim';
+import { UIRow } from './IrisGridTableModel';
 import { assertNotNull, assertNotUndefined } from './IrisGrid';
+import IrisGridTableModelTemplate from './IrisGridTableModelTemplate';
+import { assertNotNullNorUndefined } from '.';
 
 export interface UITreeRow extends UIRow {
   isExpanded: boolean;
   hasChildren: boolean;
   depth: number;
 }
-class IrisGridTreeTableModel extends IrisGridTableModel<UITreeRow> {
+class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
+  TreeTable,
+  UITreeRow
+> {
   // table: TreeTable
 
   applyBufferedViewport(
@@ -21,16 +26,23 @@ class IrisGridTreeTableModel extends IrisGridTableModel<UITreeRow> {
     this.table.setViewport(viewportTop, viewportBottom, columns);
   }
 
-  textForCell(x: number, y: number): string {
-    const column = this.columns[x];
-    const row = this.row(y);
-    if (row != null && column != null) {
-      if (!row.hasChildren && column.constituentType != null) {
-        const value = this.valueForCell(x, y);
-        return this.displayString(value, column.constituentType, column.name);
+  textForCell(
+    x: number | null | undefined,
+    y: number | null | undefined
+  ): string | null {
+    if (x && y) {
+      const column = this.columns[x];
+      const row = this.row(y);
+      if (row != null && column != null) {
+        if (!row.hasChildren && column.constituentType != null) {
+          const value = this.valueForCell(x, y);
+          return this.displayString(value, column.constituentType, column.name);
+        }
       }
     }
 
+    assertNotNullNorUndefined(x);
+    assertNotNullNorUndefined(y);
     return super.textForCell(x, y);
   }
 
