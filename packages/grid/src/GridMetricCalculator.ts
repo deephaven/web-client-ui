@@ -638,10 +638,11 @@ export class GridMetricCalculator {
    * @returns y value of the top side of the first cell
    */
   getGridY(state: GridMetricState): Coordinate {
-    const { theme } = state;
+    const { theme, model } = state;
     const { columnHeaderHeight } = theme;
+    const { columnHeaderDepth } = model;
 
-    return columnHeaderHeight;
+    return columnHeaderDepth * columnHeaderHeight;
   }
 
   /**
@@ -1665,7 +1666,7 @@ export class GridMetricCalculator {
     const { model, theme } = state;
     const { headerFont, headerHorizontalPadding } = theme;
 
-    const headerText = model.textForColumnHeader(modelColumn);
+    const headerText = model.textForColumnHeader(modelColumn, 0);
     if (headerText) {
       const headerFontWidth = this.getWidthForFont(headerFont, state);
       return headerText.length * headerFontWidth + headerHorizontalPadding * 2;

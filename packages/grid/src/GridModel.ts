@@ -43,6 +43,17 @@ abstract class GridModel<
   }
 
   /**
+   * How many columns header levels are in the grid
+   * Used for column grouping where columns at depth 0 are the base columns
+   *
+   * A grid with 1-level grouping would have a columnHeaderDepth of 2
+   * and columns at depths 0 and 1
+   */
+  get columnHeaderDepth(): number {
+    return 1;
+  }
+
+  /**
    * Get the text for the specified cell
    * @param column Column to get the text for
    * @param row Row to get the text for
@@ -107,10 +118,20 @@ abstract class GridModel<
   /**
    * Text for the column header
    * @param column Column to get the header for
+   * @param depth Depth to get the header text for. 0 is base columns
    * @returns Text to put in the column header
    */
-  textForColumnHeader(column: ModelIndex): string {
+  textForColumnHeader(column: ModelIndex, depth = 0): string {
     return '';
+  }
+
+  /** Color for column header
+   * @param column Column to get the color for
+   * @param depth Header depth to get the color for
+   * @returns Color for the header at the depth or null
+   */
+  colorForColumnHeader(column: ModelIndex, depth = 0): string | null {
+    return null;
   }
 
   /**
