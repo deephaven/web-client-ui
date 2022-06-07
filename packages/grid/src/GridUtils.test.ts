@@ -296,6 +296,8 @@ describe('start/end range adjustment in one dimension visible to model', () => {
     ]);
 
     testRange(null, null, GridUtils.moveItem(0, 10), [
+      // We don't normally think of using negative indexes, but this is valid
+      // We go from the start (null) to the element before index 0 since 0 is moved
       [null, -1],
       [1, 10],
       [0, 0],
@@ -456,6 +458,8 @@ describe('start/end range adjustment in one dimension model to visible', () => {
     ]);
 
     testRange(null, null, GridUtils.moveItem(0, 10), [
+      // We don't normally think of using negative indexes, but this is valid
+      // We go from the start (null) to the element before index 0 since 0 is moved
       [null, -1],
       [10, 10],
       [0, 9],
