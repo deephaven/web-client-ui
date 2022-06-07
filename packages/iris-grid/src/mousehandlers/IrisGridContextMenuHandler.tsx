@@ -175,18 +175,11 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
     this.debouncedUpdateCustomFormat.flush();
   }
 
-  getHeaderActions() {
+  getHeaderActions(modelColumn: number, gridPoint: GridPoint): ContextAction[] {
     const { irisGrid } = this;
-    const { y, column: columnIndex, row: rowIndex } = gridPoint;
-    const modelColumn = irisGrid.getModelColumn(columnIndex);
-    const modelRow = irisGrid.getModelRow(rowIndex);
-    // assertNotNullNorUndefined(modelColumn);
-    // assertNotNullNorUndefined(modelRow);
-    const { model, canCopy } = irisGrid.props;
+    const { column: columnIndex } = gridPoint;
+    const { model } = irisGrid.props;
     const { columns } = model;
-    const value = model.valueForCell(modelColumn, modelRow);
-
-    const valueText = model.textForCell(modelColumn, modelRow);
     const column = columns[modelColumn];
 
     const actions = [] as ContextAction[];
@@ -209,7 +202,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
 
     const modelSort = model.sort;
     const columnSort = TableUtils.getSortForColumn(modelSort, modelColumn);
-    const hasReverse = reverseType !== TableUtils.REVERSE_TYPE.NO;
+    const hasReverse = reverseType !== TableUtils.REVERSE_TYPE.NONE;
 
     const { userColumnWidths } = metrics;
     const isColumnHidden = [...userColumnWidths.values()].some(
@@ -363,21 +356,21 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
         actions: this.numberFormatActions(column) ?? undefined,
       });
     }
+    return actions;
   }
 
-  onContextMenu(
-    gridPoint: GridPoint,
+  getCellActions(
+    modelColumn: number | undefined | null,
     grid: Grid,
-    event: React.MouseEvent<Element, MouseEvent>
-  ): EventHandlerResult {
+    gridPoint: GridPoint
+  ): ContextAction[] {
     const { irisGrid } = this;
-    const { y, column: columnIndex, row: rowIndex } = gridPoint;
-    const modelColumn = irisGrid.getModelColumn(columnIndex);
-    const modelRow = irisGrid.getModelRow(rowIndex);
-    // assertNotNullNorUndefined(modelColumn);
-    // assertNotNullNorUndefined(modelRow);
+    const { column: columnIndex, row: rowIndex } = gridPoint;
     const { model, canCopy } = irisGrid.props;
     const { columns } = model;
+    const modelRow = irisGrid.getModelRow(rowIndex);
+    assertNotNullNorUndefined(modelColumn);
+    assertNotNullNorUndefined(modelRow);
     const value = model.valueForCell(modelColumn, modelRow);
 
     const valueText = model.textForCell(modelColumn, modelRow);
@@ -385,28 +378,12 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
 
     const actions = [] as ContextAction[];
 
-    const {
-      metrics,
-      isFilterBarShown,
-      reverseType,
-      quickFilters,
-      advancedFilters,
-      searchFilter,
-    } = irisGrid.state;
+    const { metrics, quickFilters } = irisGrid.state;
     const theme = irisGrid.getTheme();
     assertNotNull(metrics);
-    const { columnHeaderHeight, gridY } = metrics;
-    const {
-      filterIconColor,
-      filterBarActiveColor,
-      contextMenuSortIconColor,
-      contextMenuReverseIconColor,
-    } = theme;
-    const { onContextMenu, settings } = irisGrid.props;
+    const { filterIconColor } = theme;
+    const { settings } = irisGrid.props;
 
-    const modelSort = model.sort;
-    const columnSort = TableUtils.getSortForColumn(modelSort, modelColumn);
-    const hasReverse = reverseType !== TableUtils.REVERSE_TYPE.NONE;
     const dateFilterFormatter = new DateTimeColumnFormatter({
       timeZone: settings?.timeZone,
       showTimeZone: false,
@@ -420,220 +397,265 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
       defaultDateTimeFormatString: CONTEXT_MENU_DATE_FORMAT,
     });
 
-    if (column != null) {
-      const { table } = model;
-      actions.push(
-        onContextMenu({
-          table,
-          model,
-          value,
-          valueText,
-          column,
-          rowIndex,
-          columnIndex,
-          modelRow,
-          modelColumn,
-        })
-      );
-    }
+    // grid data area context menu options
+    if (column != null && rowIndex != null) {
+      if (model.isFilterable(modelColumn)) {
+        // cell data area contextmenu options
+        const filterMenu = {
+          title: 'Filter By Value',
+          icon: vsRemove,
+          iconColor: filterIconColor,
+          group: IrisGridContextMenuHandler.GROUP_FILTER,
+          order: 10,
+          actions: null,
+        } as {
+          title: string;
+          icon: IconDefinition;
+          iconColor: string;
+          group: number;
+          order: number;
+          actions: ContextAction[] | null;
+        };
 
-    if (column != null && model.isFilterable(modelColumn)) {
-      actions.push({
-        title: 'Clear Column Filter',
-        group: IrisGridContextMenuHandler.GROUP_FILTER,
-        order: 30,
-        action: () => {
-          this.irisGrid.removeColumnFilter(modelColumn);
-        },
-        disabled: !(
-          quickFilters.has(modelColumn) || advancedFilters.has(modelColumn)
-        ),
-      });
-    }
+        const andFilterMenu = {
+          title: 'Add Filter By Value',
+          icon: vsRemove,
+          iconColor: filterIconColor,
+          group: IrisGridContextMenuHandler.GROUP_FILTER,
+          order: 20,
+          actions: null,
+          disabled: !quickFilters.get(modelColumn),
+        } as {
+          title: string;
+          icon: IconDefinition;
+          iconColor: string;
+          group: number;
+          order: number;
+          actions: ContextAction[] | null;
+          disabled: boolean;
+        };
 
-    if (isFilterBarShown ? y <= gridY : y <= columnHeaderHeight) {
-      // grid header context menu options
-      if (column != null) {
-      }
-    } else {
-      // grid data area context menu options
-      if (column != null && rowIndex != null) {
-        if (model.isFilterable(modelColumn)) {
-          // cell data area contextmenu options
-          const filterMenu = {
-            title: 'Filter By Value',
-            icon: vsRemove,
-            iconColor: filterIconColor,
-            group: IrisGridContextMenuHandler.GROUP_FILTER,
-            order: 10,
-            actions: null,
-          } as {
-            title: string;
-            icon: IconDefinition;
-            iconColor: string;
-            group: number;
-            order: number;
-            actions: ContextAction[] | null;
-          };
-
-          const andFilterMenu = {
-            title: 'Add Filter By Value',
-            icon: vsRemove,
-            iconColor: filterIconColor,
-            group: IrisGridContextMenuHandler.GROUP_FILTER,
-            order: 20,
-            actions: null,
-            disabled: !quickFilters.get(modelColumn),
-          } as {
-            title: string;
-            icon: IconDefinition;
-            iconColor: string;
-            group: number;
-            order: number;
-            actions: ContextAction[] | null;
-            disabled: boolean;
-          };
-
-          if (value != null) {
-            // Chars get treated like numbers in terms of which filters are available
-            if (
-              TableUtils.isNumberType(column.type) ||
-              TableUtils.isCharType(column.type)
-            ) {
-              assertNotUndefined(modelColumn);
-              // We want to show the full unformatted value if it's a number, so user knows which value they are matching
-              // If it's a Char we just show the char
-              const numberValueText = TableUtils.isCharType(column.type)
-                ? String.fromCharCode(value as number)
-                : `${value}`;
-              filterMenu.actions = this.numberFilterActions(
-                column,
-                numberValueText,
-                value,
-                quickFilters.get(modelColumn),
-                true
-              );
-              andFilterMenu.actions = this.numberFilterActions(
-                column,
-                numberValueText,
-                value,
-                quickFilters.get(modelColumn),
-                true
-              );
-            } else if (TableUtils.isBooleanType(column.type)) {
-              filterMenu.actions = this.booleanFilterActions(column, valueText);
-              andFilterMenu.actions = this.booleanFilterActions(
-                column,
-                valueText,
-                quickFilters.get(modelColumn),
-                true
-              );
-            } else if (TableUtils.isDateType(column.type)) {
-              const dateValueText = dateFilterFormatter.format(value as Date);
-              const previewValue = previewFilterFormatter.format(value as Date);
-              filterMenu.actions = this.dateFilterActions(
-                column,
-                dateValueText,
-                previewValue,
-                value
-              );
-              andFilterMenu.actions = this.dateFilterActions(
-                column,
-                dateValueText,
-                previewValue,
-                value,
-                quickFilters.get(modelColumn),
-                true
-              );
-            } else {
-              filterMenu.actions = this.stringFilterActions(
-                column,
-                valueText,
-                value
-              );
-              andFilterMenu.actions = this.stringFilterActions(
-                column,
-                valueText,
-                value,
-                quickFilters.get(modelColumn),
-                true
-              );
-            }
-          } else {
-            filterMenu.actions = this.nullFilterActions(column);
-            andFilterMenu.actions = this.nullFilterActions(
+        if (value != null) {
+          // Chars get treated like numbers in terms of which filters are available
+          if (
+            TableUtils.isNumberType(column.type) ||
+            TableUtils.isCharType(column.type)
+          ) {
+            assertNotUndefined(modelColumn);
+            // We want to show the full unformatted value if it's a number, so user knows which value they are matching
+            // If it's a Char we just show the char
+            const numberValueText = TableUtils.isCharType(column.type)
+              ? String.fromCharCode(value as number)
+              : `${value}`;
+            filterMenu.actions = this.numberFilterActions(
               column,
+              numberValueText,
+              value,
+              quickFilters.get(modelColumn)
+            );
+            andFilterMenu.actions = this.numberFilterActions(
+              column,
+              numberValueText,
+              value,
+              quickFilters.get(modelColumn),
+              true
+            );
+          } else if (TableUtils.isBooleanType(column.type)) {
+            filterMenu.actions = this.booleanFilterActions(column, valueText);
+            andFilterMenu.actions = this.booleanFilterActions(
+              column,
+              valueText,
+              quickFilters.get(modelColumn),
+              true
+            );
+          } else if (TableUtils.isDateType(column.type)) {
+            const dateValueText = dateFilterFormatter.format(value as Date);
+            const previewValue = previewFilterFormatter.format(value as Date);
+            filterMenu.actions = this.dateFilterActions(
+              column,
+              dateValueText,
+              previewValue,
+              value
+            );
+            andFilterMenu.actions = this.dateFilterActions(
+              column,
+              dateValueText,
+              previewValue,
+              value,
+              quickFilters.get(modelColumn),
+              true
+            );
+          } else {
+            filterMenu.actions = this.stringFilterActions(
+              column,
+              valueText,
+              value
+            );
+            andFilterMenu.actions = this.stringFilterActions(
+              column,
+              valueText,
+              value,
               quickFilters.get(modelColumn),
               true
             );
           }
-
-          if (filterMenu.actions != null && filterMenu.actions.length > 0) {
-            actions.push(filterMenu);
-          }
-          if (
-            andFilterMenu.actions != null &&
-            andFilterMenu.actions.length > 0
-          ) {
-            actions.push(andFilterMenu);
-          }
+        } else {
+          filterMenu.actions = this.nullFilterActions(column);
+          andFilterMenu.actions = this.nullFilterActions(
+            column,
+            quickFilters.get(modelColumn),
+            true
+          );
         }
 
-        if (canCopy) {
-          actions.push({
-            title: 'Copy Cell',
-            group: IrisGridContextMenuHandler.GROUP_COPY,
-            order: 10,
-            action: () => {
-              irisGrid.copyCell(columnIndex, rowIndex);
-            },
-          });
-
-          actions.push({
-            title: 'Copy Cell Unformatted',
-            group: IrisGridContextMenuHandler.GROUP_COPY,
-            order: 20,
-            action: () => {
-              irisGrid.copyCell(columnIndex, rowIndex, true);
-            },
-          });
+        if (filterMenu.actions != null && filterMenu.actions.length > 0) {
+          actions.push(filterMenu);
+        }
+        if (andFilterMenu.actions != null && andFilterMenu.actions.length > 0) {
+          actions.push(andFilterMenu);
         }
       }
 
-      // data area, including blank space context menu options
-      const { selectedRanges } = grid.state;
-      if (selectedRanges.length > 0) {
-        if (canCopy) {
-          actions.push({
-            title: 'Copy Selection',
-            shortcut: GLOBAL_SHORTCUTS.COPY,
-            group: IrisGridContextMenuHandler.GROUP_COPY,
-            order: 30,
-            action: () => {
-              irisGrid.copyRanges(selectedRanges);
-            },
-          });
+      if (canCopy) {
+        actions.push({
+          title: 'Copy Cell',
+          group: IrisGridContextMenuHandler.GROUP_COPY,
+          order: 10,
+          action: () => {
+            irisGrid.copyCell(columnIndex, rowIndex);
+          },
+        });
 
-          actions.push({
-            title: 'Copy Selection w/ Headers',
-            group: IrisGridContextMenuHandler.GROUP_COPY,
-            order: 40,
-            action: () => {
-              irisGrid.copyRanges(selectedRanges, true);
-            },
-          });
-        }
+        actions.push({
+          title: 'Copy Cell Unformatted',
+          group: IrisGridContextMenuHandler.GROUP_COPY,
+          order: 20,
+          action: () => {
+            irisGrid.copyCell(columnIndex, rowIndex, true);
+          },
+        });
+      }
+    }
 
-        if (model.isEditable) {
-          actions.push({
-            title: 'Delete Selected Rows',
-            group: IrisGridContextMenuHandler.GROUP_EDIT,
-            order: 50,
-            action: () => {
-              this.irisGrid.deleteRanges(selectedRanges);
-            },
-          });
+    // data area, including blank space context menu options
+    const { selectedRanges } = grid.state;
+    if (selectedRanges.length > 0) {
+      if (canCopy) {
+        actions.push({
+          title: 'Copy Selection',
+          shortcut: GLOBAL_SHORTCUTS.COPY,
+          group: IrisGridContextMenuHandler.GROUP_COPY,
+          order: 30,
+          action: () => {
+            irisGrid.copyRanges(selectedRanges);
+          },
+        });
+
+        actions.push({
+          title: 'Copy Selection w/ Headers',
+          group: IrisGridContextMenuHandler.GROUP_COPY,
+          order: 40,
+          action: () => {
+            irisGrid.copyRanges(selectedRanges, true);
+          },
+        });
+      }
+
+      if (model.isEditable) {
+        actions.push({
+          title: 'Delete Selected Rows',
+          group: IrisGridContextMenuHandler.GROUP_EDIT,
+          order: 50,
+          action: () => {
+            this.irisGrid.deleteRanges(selectedRanges);
+          },
+        });
+      }
+    }
+    return actions;
+  }
+
+  onContextMenu(
+    gridPoint: GridPoint,
+    grid: Grid,
+    event: React.MouseEvent<Element, MouseEvent>
+  ): EventHandlerResult {
+    const { irisGrid } = this;
+    const { y, column: columnIndex, row: rowIndex } = gridPoint;
+    const modelColumn = irisGrid.getModelColumn(columnIndex);
+    const modelRow = irisGrid.getModelRow(rowIndex);
+
+    const { model } = irisGrid.props;
+    const { columns } = model;
+
+    const {
+      metrics,
+      isFilterBarShown,
+      quickFilters,
+      advancedFilters,
+    } = irisGrid.state;
+
+    assertNotNull(metrics);
+
+    const { columnHeaderHeight, gridY } = metrics;
+
+    const actions = [] as ContextAction[];
+
+    if (modelColumn != null && modelRow != null) {
+      const value = model.valueForCell(modelColumn, modelRow);
+
+      const valueText = model.textForCell(modelColumn, modelRow);
+      const column = columns[modelColumn];
+
+      const { onContextMenu } = irisGrid.props;
+
+      if (column != null) {
+        const { table } = model;
+        actions.push(
+          onContextMenu({
+            table,
+            model,
+            value,
+            valueText,
+            column,
+            rowIndex,
+            columnIndex,
+            modelRow,
+            modelColumn,
+          })
+        );
+      }
+
+      if (
+        modelColumn != null &&
+        column != null &&
+        model.isFilterable(modelColumn)
+      ) {
+        actions.push({
+          title: 'Clear Column Filter',
+          group: IrisGridContextMenuHandler.GROUP_FILTER,
+          order: 30,
+          action: () => {
+            this.irisGrid.removeColumnFilter(modelColumn);
+          },
+          disabled: !(
+            quickFilters.has(modelColumn) || advancedFilters.has(modelColumn)
+          ),
+        });
+      }
+    }
+
+    if (modelColumn != null) {
+      const column = columns[modelColumn];
+
+      if (isFilterBarShown ? y <= gridY : y <= columnHeaderHeight) {
+        // grid header context menu options
+        if (column != null) {
+          assertNotNullNorUndefined(modelColumn);
+          actions.push(...this.getHeaderActions(modelColumn, gridPoint));
         }
+      } else {
+        actions.push(...this.getCellActions(modelColumn, grid, gridPoint));
       }
     }
 
@@ -1377,7 +1399,6 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
   ): ContextAction[] {
     const theme = this.irisGrid.getTheme();
     const { contextMenuSortIconColor } = theme;
-    assertNotNull(columnSort);
     const sortActions = [
       {
         title: `${column.name} Ascending`,
@@ -1550,7 +1571,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
   }
 
   checkColumnSort(
-    columnSort: Sort,
+    columnSort?: Sort | null,
     direction: string | null = null,
     isAbs = false
   ): boolean {

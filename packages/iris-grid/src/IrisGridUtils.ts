@@ -75,7 +75,7 @@ export interface DehydratedIrisGridState {
   selectDistinctColumns: string[];
   selectedSearchColumns: string[];
   invertSearchColumns: boolean;
-  pendingDataMap: DehydratedPendingDataMap<CellData>;
+  pendingDataMap: DehydratedPendingDataMap<string | CellData | null>;
   frozenColumns: string[];
 }
 
@@ -432,7 +432,7 @@ class IrisGridUtils {
   static hydrateQuickFilters(
     columns: Column[],
     savedQuickFilters: [number, { text: string }][],
-    timeZone: string
+    timeZone?: string
   ): Map<number, QuickFilter> {
     const importedFilters = savedQuickFilters.map(
       ([columnIndex, quickFilter]: [number, { text: string }]): [
@@ -526,7 +526,7 @@ class IrisGridUtils {
   ): Options {
     const { selectedValues, ...otherOptions } = options;
     return {
-      selectedValues: selectedValues.map((value: unknown) =>
+      selectedValues: selectedValues?.map((value: unknown) =>
         IrisGridUtils.dehydrateValue(value, column?.type)
       ),
       ...otherOptions,
@@ -539,7 +539,7 @@ class IrisGridUtils {
   ): Options {
     const { selectedValues, ...otherOptions } = options;
     return {
-      selectedValues: selectedValues.map(value =>
+      selectedValues: selectedValues?.map(value =>
         IrisGridUtils.hydrateValue(value, column?.type)
       ),
       ...otherOptions,
@@ -548,15 +548,24 @@ class IrisGridUtils {
 
   static dehydratePendingDataMap(
     columns: Column[],
-    pendingDataMap: Map<number, UIRow>
-  ): DehydratedPendingDataMap<CellData> {
+    pendingDataMap: Map<
+      number,
+      | UIRow
+      | {
+          data: Map<ModelIndex, string>;
+        }
+    >
+  ): DehydratedPendingDataMap<CellData | string | null> {
     return [...pendingDataMap].map(
-      ([rowIndex, { data }]: [number, { data: Map<ModelIndex, CellData> }]) => [
+      ([rowIndex, { data }]: [
+        number,
+        { data: Map<ModelIndex, CellData | string> }
+      ]) => [
         rowIndex,
         {
           data: [...data].map(([c, value]) => [
             columns[c].name,
-            IrisGridUtils.dehydrateValue(value, columns[c].type) as CellData,
+            IrisGridUtils.dehydrateValue(value, columns[c].type),
           ]),
         },
       ]
@@ -565,10 +574,10 @@ class IrisGridUtils {
 
   static hydratePendingDataMap(
     columns: Column[],
-    pendingDataMap: DehydratedPendingDataMap<CellData>
+    pendingDataMap: DehydratedPendingDataMap<CellData | string | null>
   ): Map<
     number,
-    { data: Map<ModelIndex | null, CellData | LongWrapper | null> }
+    { data: Map<ModelIndex | null, string | CellData | LongWrapper | null> }
   > {
     const columnMap = new Map<string, number>();
     const getColumnIndex = (columnName: string) => {
@@ -583,7 +592,10 @@ class IrisGridUtils {
 
     return new Map(
       pendingDataMap.map(
-        ([rowIndex, { data }]: [number, { data: [string, CellData][] }]) => [
+        ([rowIndex, { data }]: [
+          number,
+          { data: [string, CellData | string | null][] }
+        ]) => [
           rowIndex,
           {
             data: new Map(

@@ -22,6 +22,7 @@ import {
   TimeoutError,
 } from '@deephaven/utils';
 import DateUtils from './DateUtils';
+import { Options } from './AdvancedFilterCreator';
 
 const log = Log.module('TableUtils');
 
@@ -745,7 +746,7 @@ export class TableUtils {
 
   static makeQuickBooleanFilter(
     column: Column,
-    text: string
+    text: string | number
   ): FilterCondition | null {
     if (text == null) {
       return null;
@@ -1053,12 +1054,7 @@ export class TableUtils {
 
   static makeAdvancedFilter(
     column: Column,
-    options: {
-      filterItems: AdvancedFilterItemType[];
-      filterOperators: FilterOperatorValue[];
-      invertSelection: boolean;
-      selectedValues: unknown[];
-    },
+    options: Options,
     timeZone: string
   ): FilterCondition | null {
     const {

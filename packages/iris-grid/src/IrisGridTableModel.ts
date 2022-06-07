@@ -61,6 +61,10 @@ class IrisGridTableModel extends IrisGridTableModelTemplate<Table, UIRow> {
 
   userFrozenColumns: string[] | null;
 
+  customColumnList: string[];
+
+  formatColumnList: CustomColumn[];
+
   /**
    * @param {dh.Table} table Iris data table to be used in the model
    * @param {Formatter} formatter The formatter to use when getting formats
@@ -74,6 +78,8 @@ class IrisGridTableModel extends IrisGridTableModelTemplate<Table, UIRow> {
     super(table, formatter, inputTable);
 
     this.userFrozenColumns = null;
+    this.customColumnList = [];
+    this.formatColumnList = [];
   }
 
   get isExportAvailable(): boolean {
@@ -225,6 +231,10 @@ class IrisGridTableModel extends IrisGridTableModelTemplate<Table, UIRow> {
     this.customColumnList = customColumns;
     this.table.applyCustomColumns([...customColumns, ...this.formatColumns]);
     this.applyViewport();
+  }
+
+  get formatColumns(): CustomColumn[] {
+    return this.formatColumnList;
   }
 
   set formatColumns(formatColumns: CustomColumn[]) {
@@ -426,7 +436,7 @@ class IrisGridTableModel extends IrisGridTableModelTemplate<Table, UIRow> {
       });
 
     if (pendingRanges.length > 0) {
-      const newDataMap = new Map(this.pendingNewDataMap);
+      const newDataMap = new Map(super.pendingDataMap);
       for (let i = 0; i < pendingRanges.length; i += 1) {
         const pendingRange = pendingRanges[i];
         for (
@@ -437,7 +447,7 @@ class IrisGridTableModel extends IrisGridTableModelTemplate<Table, UIRow> {
           newDataMap.delete(r);
         }
       }
-      this.pendingNewDataMap = newDataMap;
+      super.pendingDataMap = newDataMap;
 
       this.formattedStringData = [];
 

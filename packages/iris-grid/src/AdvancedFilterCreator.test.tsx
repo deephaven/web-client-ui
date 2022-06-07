@@ -7,7 +7,7 @@ import { render } from '@testing-library/react';
 //   Type as FilterType,
 //   Operator as FilterOperator,
 // } from '@deephaven/filters';
-import AdvancedFilterCreator from './AdvancedFilterCreator';
+import AdvancedFilterCreator, { Options } from './AdvancedFilterCreator';
 import IrisGridTestUtils from './IrisGridTestUtils';
 
 // let mockFilterHandlers = [];
@@ -32,18 +32,16 @@ function makeAdvancedFilterCreatorWrapper({
   model = IrisGridTestUtils.makeModel(),
   column = IrisGridTestUtils.makeColumn(),
   formatter = new Formatter(),
-  timeZone = 'America/New_York',
 } = {}) {
   const wrapper = render(
     <AdvancedFilterCreator
       model={model}
       column={column}
       formatter={formatter}
-      onFilterChange={() => {}}
-      onSortChange={() => {}}
-      onDone={() => {}}
-      options={options}
-      timeZone={timeZone}
+      onFilterChange={() => null}
+      onSortChange={() => null}
+      onDone={() => null}
+      options={options as Options}
     />
   );
 

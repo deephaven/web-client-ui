@@ -436,16 +436,32 @@ class IrisGridProxyModel extends IrisGridModel {
     this.model.sort = sort;
   }
 
+  get customColumns(): string[] {
+    if (TableUtils.isTreeTable(this.table)) {
+      throw new Error("TreeTable does not have property 'customColumns'");
+    }
+    return (this.model as IrisGridTableModel).customColumns;
+  }
+
   set customColumns(customColumns: string[]) {
-    this.model.customColumns = customColumns;
+    if (TableUtils.isTreeTable(this.table)) {
+      throw new Error("TreeTable does not have property 'customColumns'");
+    }
+    (this.model as IrisGridTableModel).customColumns = customColumns;
   }
 
   get formatColumns(): CustomColumn[] {
-    return this.model.formatColumns;
+    if (TableUtils.isTreeTable(this.table)) {
+      throw new Error("TreeTable does not have property 'formatColumns'");
+    }
+    return (this.model as IrisGridTableModel).formatColumns;
   }
 
   set formatColumns(formatColumns: CustomColumn[]) {
-    this.model.formatColumns = formatColumns;
+    if (TableUtils.isTreeTable(this.table)) {
+      throw new Error("TreeTable does not have property 'formatColumns'");
+    }
+    (this.model as IrisGridTableModel).formatColumns = formatColumns;
   }
 
   get rollupConfig(): RollupConfig | null {

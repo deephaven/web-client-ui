@@ -71,7 +71,6 @@ class PartitionSelectorSearch<T> extends Component<
   constructor(props: PartitionSelectorSearchProps<T>) {
     super(props);
 
-    // this.debounceUpdateFilter = this.debounceUpdateFilter.bind(this);
     this.handleFilterChange = this.handleFilterChange.bind(this);
     this.handleInputFocus = this.handleInputFocus.bind(this);
     this.handleKeyDown = this.handleKeyDown.bind(this);
@@ -295,7 +294,7 @@ class PartitionSelectorSearch<T> extends Component<
     table.setViewport(0, initialPageSize);
   }
 
-  render(): React.ReactElement {
+  render(): JSX.Element {
     const { isLoading, itemCount, items, offset, text } = this.state;
     const listHeight =
       Math.min(itemCount, PartitionSelectorSearch.MAX_VISIBLE_ITEMS) *

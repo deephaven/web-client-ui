@@ -1,14 +1,15 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { ContextMenuRoot, LoadingOverlay } from '@deephaven/components'; // Use the loading spinner from the Deephaven components package
 import {
+  InputFilter,
   IrisGrid,
-  IrisGridModel,
   IrisGridModelFactory,
 } from '@deephaven/iris-grid'; // iris-grid is used to display Deephaven tables
-import dh from '@deephaven/jsapi-shim'; // Import the shim to use the JS API
+import dh, { Sort } from '@deephaven/jsapi-shim'; // Import the shim to use the JS API
 import { TableUtils } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
 import './App.scss'; // Styles for in this app
+import IrisGridProxyModel from '@deephaven/iris-grid/dist/IrisGridProxyModel.js';
 
 const log = Log.module('EmbedGrid.App');
 
@@ -47,10 +48,10 @@ async function loadTable(session: typeof dh.Session, name: string) {
  * See create-react-app docs for how to update these env vars: https://create-react-app.dev/docs/adding-custom-environment-variables/
  */
 function App(): JSX.Element {
-  const [model, setModel] = useState<IrisGridModel>();
+  const [model, setModel] = useState<IrisGridProxyModel>();
   const [error, setError] = useState<string>();
-  const [inputFilters, setInputFilters] = useState<unknown[]>();
-  const [sorts, setSorts] = useState<unknown[]>();
+  const [inputFilters, setInputFilters] = useState<InputFilter[]>();
+  const [sorts, setSorts] = useState<Sort[]>();
   const [isLoading, setIsLoading] = useState(true);
   const searchParams = useMemo(
     () => new URLSearchParams(window.location.search),
@@ -145,7 +146,7 @@ function App(): JSX.Element {
                 };
               }
             );
-            setInputFilters(newInputFilters);
+            setInputFilters(newInputFilters as InputFilter[]);
             break;
           }
           case 'sort': {

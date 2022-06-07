@@ -1,16 +1,12 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import dh from '@deephaven/jsapi-shim';
+import dh, { Table } from '@deephaven/jsapi-shim';
 import PartitionSelectorSearch from './PartitionSelectorSearch';
-
-function makeTable() {
-  const columns = [new dh.Column({ index: 0, name: '0' })];
-  return new dh.Table({ columns });
-}
+import IrisGridTestUtils from './IrisGridTestUtils';
 
 function makePartitionSelectorSearch({
-  table = makeTable(),
+  table = IrisGridTestUtils.makeTable(),
   onSelect = jest.fn(),
   getFormattedString = jest.fn(value => `${value}`),
 } = {}) {
@@ -36,7 +32,7 @@ it('mounts and unmounts properly', () => {
 });
 
 it('updates filters when input is changed', () => {
-  const table = makeTable();
+  const table = IrisGridTestUtils.makeTable();
   table.applyFilter = jest.fn();
 
   const component = makePartitionSelectorSearch({ table });
@@ -61,10 +57,10 @@ it('updates filters when input is changed', () => {
 
 it('selects the first item when enter is pressed', () => {
   const onSelect = jest.fn();
-  const table = makeTable();
+  const table = IrisGridTestUtils.makeTable();
   const component = makePartitionSelectorSearch({ onSelect, table });
 
-  table.fireViewportUpdate();
+  (table as Table).fireViewportUpdate();
 
   const input = screen.getByRole('textbox');
   userEvent.type(input, '{enter}');

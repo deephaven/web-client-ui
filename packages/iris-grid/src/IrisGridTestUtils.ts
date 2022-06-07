@@ -3,6 +3,7 @@ import dh, {
   Column,
   FilterCondition,
   InputTable,
+  RollupConfig,
   Row,
   Sort,
   Table,
@@ -27,12 +28,17 @@ class IrisGridTestUtils {
   }
 
   static makeColumn(
-    name: string,
+    name?: string,
     type: string = IrisGridTestUtils.DEFAULT_TYPE,
     index = 0
   ): Column {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return new (dh as any).Column({ index, name, type });
+  }
+
+  static makeRollupTableConfig(): RollupConfig {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return new (dh as any).RollupTableConfig();
   }
 
   static makeColumns(count = 5): Column[] {
@@ -74,10 +80,11 @@ class IrisGridTestUtils {
 
   static makeTable(
     columns = IrisGridTestUtils.makeColumns(),
-    size = 1000000000
+    size = 1000000000,
+    sort = []
   ): Table {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const table = new (dh as any).Table({ columns, size });
+    const table = new (dh as any).Table({ columns, size, sort });
     table.copy = jest.fn(() => Promise.resolve(table));
     return table;
   }

@@ -10,7 +10,9 @@ function makeChartBuilderWrapper({
   onChange = () => null,
   onSubmit = () => null,
   model = IrisGridTestUtils.makeModel(
-    IrisGridTestUtils.makeTable(COLUMN_NAMES.map(IrisGridTestUtils.makeColumn))
+    IrisGridTestUtils.makeTable(
+      COLUMN_NAMES.map(name => IrisGridTestUtils.makeColumn(name))
+    )
   ),
 } = {}) {
   return render(
@@ -39,7 +41,9 @@ it('updates the chart type', () => {
 
 it('has x-axis selection with the proper columns', () => {
   const { container } = makeChartBuilderWrapper();
-  const xAxisSelectElm = container.querySelector('.select-x-axis');
+  const xAxisSelectElm = container.querySelector(
+    '.select-x-axis'
+  ) as HTMLSelectElement;
 
   expect(xAxisSelectElm.querySelectorAll('option').length).toBe(
     COLUMN_NAMES.length
@@ -51,7 +55,9 @@ it('has x-axis selection with the proper columns', () => {
 
 it('updates series selection with the proper columns', () => {
   const { container } = makeChartBuilderWrapper();
-  const seriesSelectElm = container.querySelector('.select-series');
+  const seriesSelectElm = container.querySelector(
+    '.select-series'
+  ) as HTMLSelectElement;
 
   expect(seriesSelectElm.querySelectorAll('option').length).toBe(
     COLUMN_NAMES.length
@@ -70,8 +76,8 @@ it('add and deletes series items', () => {
   userEvent.click(addSeriesItemBtn);
   userEvent.click(addSeriesItemBtn);
 
-  const seriesItem1 = getByTestId('select-series-item-1');
-  const seriesItem2 = getByTestId('select-series-item-2');
+  const seriesItem1 = getByTestId('select-series-item-1') as HTMLSelectElement;
+  const seriesItem2 = getByTestId('select-series-item-2') as HTMLSelectElement;
   userEvent.selectOptions(seriesItem1, COLUMN_NAMES[3]);
   userEvent.selectOptions(seriesItem2, COLUMN_NAMES[2]);
 
@@ -81,7 +87,9 @@ it('add and deletes series items', () => {
   userEvent.click(getByTestId('delete-series-1'));
 
   expect(getAllByTestId(/form-series-item-./).length).toBe(2);
-  expect(getByTestId('select-series-item-1').value).toBe(COLUMN_NAMES[2]);
+  expect((getByTestId('select-series-item-1') as HTMLSelectElement).value).toBe(
+    COLUMN_NAMES[2]
+  );
 });
 
 it('updates linked state', () => {

@@ -5,7 +5,7 @@ import { GridTestUtils } from '@deephaven/grid';
 import { TestUtils } from '@deephaven/utils';
 import { ContextActionUtils } from '@deephaven/components';
 import IrisGridTestUtils from './IrisGridTestUtils';
-import IrisGridCopyHandler from './IrisGridCopyHandler';
+import IrisGridCopyHandler, { CopyOperation } from './IrisGridCopyHandler';
 
 jest.useFakeTimers();
 
@@ -24,7 +24,7 @@ function makeCopyOperation(
   includeHeaders = false,
   movedColumns = [],
   userColumnWidths = IrisGridTestUtils.makeUserColumnWidths()
-) {
+): CopyOperation {
   return {
     ranges,
     includeHeaders,

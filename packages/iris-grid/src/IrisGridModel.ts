@@ -9,7 +9,6 @@ import {
 } from '@deephaven/grid';
 import type {
   Column,
-  CustomColumn,
   FilterCondition,
   Format,
   LayoutHints,
@@ -205,26 +204,6 @@ abstract class IrisGridModel<
    * @param sort The sorts to use on this model
    */
   abstract set sort(sort: Sort[]);
-
-  /**
-   * @returns The custom columns on this model
-   */
-  abstract get customColumns(): string[];
-
-  /**
-   * @param customColumns The custom columns to use
-   */
-  abstract set customColumns(customColumns: string[]);
-
-  /**
-   * @returns The format columns on this model
-   */
-  abstract get formatColumns(): CustomColumn[];
-
-  /**
-   * @param formatColumns The format columns to use
-   */
-  abstract set formatColumns(formatColumns: CustomColumn[]);
 
   /**
    * @returns The config to use for rolling up this table

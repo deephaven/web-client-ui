@@ -1,4 +1,4 @@
-import React, { Component, ReactElement } from 'react';
+import React, { Component } from 'react';
 import classNames from 'classnames';
 import { CSSTransition } from 'react-transition-group';
 import {
@@ -29,10 +29,10 @@ const log = Log.module('IrisGridCopyHandler');
 export type CopyOperation = {
   ranges: GridRange[];
   includeHeaders: boolean;
-  formatValues: boolean;
+  formatValues?: boolean;
   movedColumns: MoveOperation[];
   userColumnWidths: ModelSizeMap;
-  error: string | null;
+  error?: string | null;
 };
 
 interface IrisGridCopyHandlerProps {
@@ -355,7 +355,7 @@ class IrisGridCopyHandler extends Component<
     }
   }
 
-  render(): ReactElement {
+  render(): JSX.Element {
     const { onEntering, onEntered, onExiting, onExited } = this.props;
     const { buttonState, copyState, isShown, rowCount, error } = this.state;
 

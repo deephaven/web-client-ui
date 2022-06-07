@@ -565,12 +565,6 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     this.handleConditionalFormatEditorSave = this.handleConditionalFormatEditorSave.bind(
       this
     );
-    // this.handleConditionalFormatEditorUpdate = this.handleConditionalFormatEditorUpdate.bind(
-    //   this
-    // );
-    this.handleConditionalFormatEditorCancel = this.handleConditionalFormatEditorCancel.bind(
-      this
-    );
     this.handleUpdateCustomColumns = this.handleUpdateCustomColumns.bind(this);
     this.handleCustomColumnsChanged = this.handleCustomColumnsChanged.bind(
       this
@@ -590,9 +584,6 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     this.handleDownloadTableStart = this.handleDownloadTableStart.bind(this);
     this.handleCancelDownloadTable = this.handleCancelDownloadTable.bind(this);
     this.handleDownloadCanceled = this.handleDownloadCanceled.bind(this);
-    // this.handleDownloadProgressUpdate = this.handleDownloadProgressUpdate.bind(
-    //   this
-    // );
     this.handleDownloadCompleted = this.handleDownloadCompleted.bind(this);
     this.handlePartitionAppend = this.handlePartitionAppend.bind(this);
     this.handlePartitionChange = this.handlePartitionChange.bind(this);
@@ -605,8 +596,6 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     this.handleRollupChange = this.handleRollupChange.bind(this);
     this.handleOverflowClose = this.handleOverflowClose.bind(this);
     this.getColumnBoundingRect = this.getColumnBoundingRect.bind(this);
-
-    // this.updateSearchFilter = this.updateSearchFilter.bind(this);
 
     this.grid = null;
     this.gridWrapper = null;
@@ -1378,7 +1367,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
    */
   applyQuickFilter(
     modelIndex: number,
-    value: string,
+    value: string | null,
     quickFilters: Map<number, QuickFilter>
   ): boolean {
     const { model } = this.props;

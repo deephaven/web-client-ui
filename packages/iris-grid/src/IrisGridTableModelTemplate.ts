@@ -4,14 +4,12 @@ import throttle from 'lodash.throttle';
 import {
   EditOperation,
   GridRange,
-  GridRangeIndex,
   memoizeClear,
   ModelIndex,
   VisibleIndex,
 } from '@deephaven/grid';
 import dh, {
   Column,
-  CustomColumn,
   FilterCondition,
   Format,
   InputTable,
@@ -90,13 +88,11 @@ class IrisGridTableModelTemplate<
 
   static COLUMN_BUFFER_PAGES = 0;
 
-  irisFormatter: Formatter;
+  private irisFormatter: Formatter;
 
   inputTable: InputTable | null;
 
-  listenerCount: number;
-
-  subscription: TableViewportSubscription | null;
+  private subscription: TableViewportSubscription | null;
 
   table: T;
 
@@ -110,30 +106,26 @@ class IrisGridTableModelTemplate<
 
   formattedStringData: (string | null)[][];
 
-  pendingStringData: (string | null)[][];
+  private pendingStringData: (string | null)[][];
 
-  isSaveInProgress: boolean;
+  private isSaveInProgress: boolean;
 
-  totalsTable: TotalsTable | null;
+  private totalsTable: TotalsTable | null;
 
   totalsTablePromise: CancelablePromise<TotalsTable> | null;
 
   totals: UITotalsTableConfig | null;
 
-  totalsDataMap: Map<string, R> | null;
-
-  customColumnList: string[];
-
-  formatColumnList: CustomColumn[];
+  private totalsDataMap: Map<string, R> | null;
 
   // Map from new row index to their values. Only for input tables that can have new rows added.
   // The index of these rows start at 0, and they are appended at the end of the regular table data.
   // These rows can be sparse, so using a map instead of an array.
-  pendingNewDataMap: PendingDataMap<R>;
+  private pendingNewDataMap: PendingDataMap<R>;
 
-  pendingNewRowCount = 0;
+  private pendingNewRowCount = 0;
 
-  pendingNewDataErrors: Map<unknown, unknown> | null;
+  private pendingNewDataErrors: Map<unknown, unknown> | null;
 
   /**
    * @param {dh.Table} table Iris data table to be used in the model
@@ -155,12 +147,9 @@ class IrisGridTableModelTemplate<
     this.handleCustomColumnsChanged = this.handleCustomColumnsChanged.bind(
       this
     );
-    // this.setViewport = this.setViewport.bind(this);
-    // this.applyViewport = this.applyViewport.bind(this);
 
     this.irisFormatter = formatter;
     this.inputTable = inputTable;
-    this.listenerCount = 0;
     this.subscription = null;
     this.table = table;
     this.viewport = null;
@@ -173,9 +162,6 @@ class IrisGridTableModelTemplate<
     this.totalsTablePromise = null;
     this.totals = null;
     this.totalsDataMap = null;
-
-    this.customColumnList = [];
-    this.formatColumnList = [];
 
     // Map from new row index to their values. Only for input tables that can have new rows added.
     // The index of these rows start at 0, and they are appended at the end of the regular table data.
@@ -673,24 +659,15 @@ class IrisGridTableModelTemplate<
     return this.pendingRow(y) != null;
   }
 
-  dataForCell(
-    x: ModelIndex | null | undefined,
-    y: ModelIndex | null | undefined
-  ): CellData | undefined {
-    if (x && y) {
-      return this.row(y)?.data.get(x);
-    }
-    return undefined;
+  dataForCell(x: ModelIndex, y: ModelIndex): CellData | undefined {
+    return this.row(y)?.data.get(x);
   }
 
   formatForCell(x: ModelIndex, y: ModelIndex): Format | undefined {
     return this.dataForCell(x, y)?.format;
   }
 
-  valueForCell(
-    x: GridRangeIndex | undefined,
-    y: GridRangeIndex | undefined
-  ): unknown | null {
+  valueForCell(x: ModelIndex, y: ModelIndex): unknown | null {
     const data = this.dataForCell(x, y);
     if (data) {
       return data.value ?? null;
@@ -859,22 +836,6 @@ class IrisGridTableModelTemplate<
     this.closeSubscription();
     this.table.applySort(sort);
     this.applyViewport();
-  }
-
-  get customColumns(): string[] {
-    return this.customColumnList;
-  }
-
-  set customColumns(columns: string[]) {
-    this.customColumnList = columns;
-  }
-
-  set formatColumns(columns: CustomColumn[]) {
-    this.formatColumns = columns;
-  }
-
-  get formatColumns(): CustomColumn[] {
-    return this.formatColumnList;
   }
 
   set totalsConfig(totalsConfig: UITotalsTableConfig | null) {
@@ -1087,12 +1048,11 @@ class IrisGridTableModelTemplate<
     const topFloatingRows = [...topFloatingRowsSet].sort();
     for (let i = 0; i < topFloatingRows.length; i += 1) {
       const row = topFloatingRows[i];
-      const rowData = columns.map(column =>
-        formatValue(
-          this.valueForCell(this.getColumnIndexByName(column.name), row),
-          column
-        )
-      );
+      const rowData = columns.map(column => {
+        const index = this.getColumnIndexByName(column.name);
+        assertNotUndefined(index);
+        return formatValue(this.valueForCell(index, row), column);
+      });
       if (includeHeaders) {
         rowData.push(this.textForRowFooter(row));
       }
@@ -1112,12 +1072,11 @@ class IrisGridTableModelTemplate<
     const bottomFloatingRows = [...bottomFloatingRowsSet].sort();
     for (let i = 0; i < bottomFloatingRows.length; i += 1) {
       const row = bottomFloatingRows[i];
-      const rowData = columns.map(column =>
-        formatValue(
-          this.valueForCell(this.getColumnIndexByName(column.name), row),
-          column
-        )
-      );
+      const rowData = columns.map(column => {
+        const index = this.getColumnIndexByName(column.name);
+        assertNotUndefined(index);
+        return formatValue(this.valueForCell(index, row), column);
+      });
       if (includeHeaders) {
         rowData.push(this.textForRowFooter(row));
       }

@@ -39,7 +39,6 @@ class IrisGridPartitionSelector<T> extends Component<
   constructor(props: IrisGridPartitionSelectorProps<T>) {
     super(props);
 
-    // this.debounceUpdate = this.debounceUpdate.bind(this);
     this.handleAppendClick = this.handleAppendClick.bind(this);
     this.handleCloseClick = this.handleCloseClick.bind(this);
     this.handleIgnoreClick = this.handleIgnoreClick.bind(this);
@@ -154,7 +153,7 @@ class IrisGridPartitionSelector<T> extends Component<
     onFetchAll();
   }
 
-  render(): React.ReactElement {
+  render(): JSX.Element {
     const { columnName, getFormattedString, onDone, table } = this.props;
     const { partition } = this.state;
     const partitionSelectorSearch = (

@@ -30,14 +30,14 @@ class CustomColumnInput extends PureComponent<
     FORMULA: 'formula',
   };
 
-  static defaultProps: {
-    name: string;
-    inputIndex: number;
-    formula: string;
-    onChange: () => void;
-    onDeleteColumn: () => void;
-    onTabInEditor: () => void;
-    invalid: boolean;
+  static defaultProps = {
+    name: '',
+    inputIndex: 0,
+    formula: '',
+    onChange: (): null => null,
+    onDeleteColumn: (): null => null,
+    onTabInEditor: (): null => null,
+    invalid: false,
   };
 
   constructor(props: CustomColumnInputProps) {

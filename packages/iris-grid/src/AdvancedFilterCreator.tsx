@@ -1,7 +1,7 @@
 /* eslint-disable jsx-a11y/no-noninteractive-tabindex */
 // disabled for tab-index on focus traps, which are intentionally non-interactive
 
-import React, { PureComponent, ReactElement } from 'react';
+import React, { PureComponent } from 'react';
 import classNames from 'classnames';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import memoize from 'memoize-one';
@@ -435,7 +435,7 @@ class AdvancedFilterCreator extends PureComponent<
     onFilterChange(column, filter, options);
   }
 
-  render(): ReactElement {
+  render(): JSX.Element {
     const { column, model, sortDirection, formatter } = this.props;
     const {
       filterItems,

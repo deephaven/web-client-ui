@@ -554,6 +554,8 @@ export interface Table extends TableTemplate<Table>, TableStatic {
     columnsToAdd?: string[]
   ): Promise<Table>;
   byExternal(keys: string[], dropKeys?: boolean): Promise<TableMap>;
+
+  fireViewportUpdate(): void;
 }
 
 export interface TableViewportSubscription extends Evented {

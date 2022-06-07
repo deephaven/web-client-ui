@@ -23,6 +23,7 @@ import { TableUtils, ReverseType } from '@deephaven/jsapi-utils';
 import { AdvancedFilter, assertNotNull, QuickFilter } from './IrisGrid';
 import IrisGridProxyModel from './IrisGridProxyModel';
 import { IrisGridThemeType } from './IrisGridTheme';
+import { assertNotUndefined } from '.';
 
 const ICON_NAMES = Object.freeze({
   SORT_UP: 'sortUp',
@@ -147,6 +148,8 @@ class IrisGridRenderer extends GridRenderer {
     const { modelColumns, modelRows } = metrics;
     const modelRow = modelRows.get(row);
     const modelColumn = modelColumns.get(column);
+    assertNotUndefined(modelColumn);
+    assertNotUndefined(modelRow);
     const value = model.valueForCell(modelColumn, modelRow);
     if (modelColumn && TableUtils.isTextType(model.columns[modelColumn].type)) {
       if (value === null || value === '') {
@@ -239,9 +242,9 @@ class IrisGridRenderer extends GridRenderer {
     const columnWidth = visibleColumnWidths.get(hoverSelectColumn);
 
     context.fillStyle = theme.linkerColumnHoverBackgroundColor;
-    if (x && columnWidth) {
-      context.fillRect(x, 0, columnWidth, maxY);
-    }
+    assertNotUndefined(x);
+    assertNotUndefined(columnWidth);
+    context.fillRect(x, 0, columnWidth, maxY);
   }
 
   drawMouseRowHover(
@@ -828,9 +831,9 @@ class IrisGridRenderer extends GridRenderer {
       context.fillStyle = rowHoverBackgroundColor;
       const y = visibleRowYs.get(mouseRow);
       const rowHeight = visibleRowHeights.get(mouseRow);
-      if (y && rowHeight) {
-        context.fillRect(x, y, rowFooterWidth, rowHeight);
-      }
+      assertNotUndefined(y);
+      assertNotUndefined(rowHeight);
+      context.fillRect(x, y, rowFooterWidth, rowHeight);
     }
 
     context.beginPath();

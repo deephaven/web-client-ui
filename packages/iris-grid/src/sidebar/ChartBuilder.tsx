@@ -313,7 +313,7 @@ class ChartBuilder extends PureComponent<ChartBuilderProps, ChartBuilderState> {
     onChange({ type, series, xAxis, isLinked });
   }
 
-  render(): React.ReactElement {
+  render(): JSX.Element {
     const { model } = this.props;
     const { columns } = model;
     const { seriesItems, type, xAxis, isLinked } = this.state;

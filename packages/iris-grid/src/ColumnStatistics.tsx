@@ -29,7 +29,7 @@ import IrisGridProxyModel from './IrisGridProxyModel';
 const log = Log.module('ColumnStatistics');
 const STATS_LABEL_OVERRIDES = {
   SIZE: 'Number of Rows',
-};
+} as Record<string, string>;
 
 interface Statistic {
   operation: Key;
@@ -60,8 +60,6 @@ class ColumnStatistics extends Component<
 
   static getStatsLabel(operation: string): string {
     return (
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
       STATS_LABEL_OVERRIDES[operation] ??
       operation
         .split(' ')

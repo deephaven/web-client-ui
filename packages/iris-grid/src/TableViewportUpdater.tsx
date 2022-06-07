@@ -59,8 +59,6 @@ class TableViewportUpdater extends PureComponent<
   constructor(props: TableViewportUpdaterProps) {
     super(props);
 
-    // this.updateViewport = this.updateViewport.bind(this);
-
     this.subscription = null;
   }
 

@@ -1,21 +1,23 @@
-import dh from '@deephaven/jsapi-shim';
+import dh, { Column, Table } from '@deephaven/jsapi-shim';
 import {
   Operator as FilterOperator,
   Type as FilterType,
 } from '@deephaven/filters';
 import TableUtils from './TableUtils';
 import DateUtils from './DateUtils';
+import IrisGridTestUtils from './IrisGridTestUtils';
 
 const DEFAULT_TIME_ZONE_ID = 'America/New_York';
 const EXPECT_TIME_ZONE_PARAM = expect.objectContaining({
   id: DEFAULT_TIME_ZONE_ID,
 });
 
-function makeColumns(count = 5) {
+function makeColumns(count = 5): Column[] {
   const columns = [];
 
   for (let i = 0; i < count; i += 1) {
-    const column = new dh.Column({ index: i, name: `${i}` });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const column = new (dh as any).Column({ index: i, name: `${i}` });
     columns.push(column);
   }
 
@@ -24,19 +26,20 @@ function makeColumns(count = 5) {
 
 it('toggles sort properly', () => {
   const columns = makeColumns();
-  const table = new dh.Table({ columns });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const table: Table = new (dh as any).Table({ columns });
   let tableSorts = [];
 
   expect(table).not.toBe(null);
   expect(table.sort.length).toBe(0);
 
-  tableSorts = TableUtils.toggleSortForColumn(tableSorts, table, 0, true);
+  tableSorts = TableUtils.toggleSortForColumn(tableSorts, columns, 0, true);
   table.applySort(tableSorts);
   expect(table.sort.length).toBe(1);
   expect(table.sort[0].column).toBe(columns[0]);
   expect(table.sort[0].direction).toBe(TableUtils.sortDirection.ascending);
 
-  tableSorts = TableUtils.toggleSortForColumn(tableSorts, table, 3, true);
+  tableSorts = TableUtils.toggleSortForColumn(tableSorts, columns, 3, true);
   table.applySort(tableSorts);
   expect(table.sort.length).toBe(2);
   expect(table.sort[0].column).toBe(columns[0]);
@@ -44,7 +47,7 @@ it('toggles sort properly', () => {
   expect(table.sort[1].column).toBe(columns[3]);
   expect(table.sort[1].direction).toBe(TableUtils.sortDirection.ascending);
 
-  tableSorts = TableUtils.toggleSortForColumn(tableSorts, table, 0, true);
+  tableSorts = TableUtils.toggleSortForColumn(tableSorts, columns, 0, true);
   table.applySort(tableSorts);
   expect(table.sort.length).toBe(2);
   expect(table.sort[0].column).toBe(columns[3]);
@@ -52,19 +55,19 @@ it('toggles sort properly', () => {
   expect(table.sort[1].column).toBe(columns[0]);
   expect(table.sort[1].direction).toBe(TableUtils.sortDirection.descending);
 
-  tableSorts = TableUtils.toggleSortForColumn(tableSorts, table, 0, true);
+  tableSorts = TableUtils.toggleSortForColumn(tableSorts, columns, 0, true);
   table.applySort(tableSorts);
   expect(table.sort.length).toBe(1);
   expect(table.sort[0].column).toBe(columns[3]);
   expect(table.sort[0].direction).toBe(TableUtils.sortDirection.ascending);
 
-  tableSorts = TableUtils.toggleSortForColumn(tableSorts, table, 3, true);
+  tableSorts = TableUtils.toggleSortForColumn(tableSorts, columns, 3, true);
   table.applySort(tableSorts);
   expect(table.sort.length).toBe(1);
   expect(table.sort[0].column).toBe(columns[3]);
   expect(table.sort[0].direction).toBe(TableUtils.sortDirection.descending);
 
-  tableSorts = TableUtils.toggleSortForColumn(tableSorts, table, 3, true);
+  tableSorts = TableUtils.toggleSortForColumn(tableSorts, columns, 3, true);
   table.applySort(tableSorts);
 
   expect(table.sort.length).toBe(0);
@@ -120,16 +123,19 @@ describe('quick filter tests', () => {
       invoke: jest.fn(() =>
         makeFilterCondition(`${type}.${FilterType.invoke}`)
       ),
+      notIn: jest.fn(() => makeFilterCondition(`${type}.${FilterType.notIn}`)),
+      notInIgnoreCase: jest.fn(() =>
+        makeFilterCondition(`${type}.${FilterType.notInIgnoreCase}`)
+      ),
       type,
     };
   }
 
   function makeFilterColumn(type = 'string') {
     const filter = makeFilter();
-    return {
-      type,
-      filter: () => filter,
-    };
+    const column = IrisGridTestUtils.makeColumn('test placeholder', type, 13);
+    column.filter = () => filter;
+    return column;
   }
 
   function mockFilterConditionReturnValue(filterToMock) {

@@ -1,29 +1,41 @@
 import { GridUtils, GridRange } from '@deephaven/grid';
-import dh from '@deephaven/jsapi-shim';
+import dh, { Column, Table } from '@deephaven/jsapi-shim';
+import { AdvancedFilter } from '.';
+import IrisGridTestUtils from './IrisGridTestUtils';
 import IrisGridUtils from './IrisGridUtils';
 
 function makeFilter() {
-  return new dh.FilterCondition();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return new (dh as any).FilterCondition();
 }
 
 function makeColumns(count = 30) {
   const columns = [];
 
   for (let i = 0; i < count; i += 1) {
-    const column = new dh.Column({ index: i, name: `${i}` });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const column = new (dh as any).Column({ index: i, name: `${i}` });
     columns.push(column);
   }
 
   return columns;
 }
 
-function makeTable({ columns = makeColumns(), sort = [] } = {}) {
-  return new dh.Table({ columns, sort });
+function makeTable({ columns = makeColumns(), sort = [] } = {}): Table {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return new (dh as any).Table({ columns, sort });
+}
+function makeColumn(index: number): Column {
+  return IrisGridTestUtils.makeColumn(
+    `${index}`,
+    IrisGridTestUtils.DEFAULT_TYPE,
+    index
+  );
 }
 
 describe('quickfilters tests', () => {
   it('exports/imports empty list', () => {
-    const table = makeTable();
+    const table = IrisGridTestUtils.makeTable();
     const filters = new Map();
     const exportedFilters = IrisGridUtils.dehydrateQuickFilters(filters);
     expect(exportedFilters).toEqual([]);
@@ -77,7 +89,8 @@ describe('advanced filter tests', () => {
 
     const importedFilters = IrisGridUtils.hydrateAdvancedFilters(
       table.columns,
-      exportedFilters
+      exportedFilters,
+      'America/New_York'
     );
     expect(importedFilters).toEqual(filters);
   });
@@ -96,7 +109,7 @@ describe('advanced filter tests', () => {
 
     const exportedFilters = IrisGridUtils.dehydrateAdvancedFilters(
       table.columns,
-      filters
+      filters as Map<number, AdvancedFilter>
     );
     expect(exportedFilters).toEqual([
       [column, expect.objectContaining({ options })],
@@ -104,7 +117,8 @@ describe('advanced filter tests', () => {
 
     const importedFilters = IrisGridUtils.hydrateAdvancedFilters(
       table.columns,
-      exportedFilters
+      exportedFilters,
+      'America/New_York'
     );
     expect(importedFilters).toEqual(
       new Map([
@@ -135,7 +149,7 @@ describe('sort exporting/importing', () => {
     const columns = makeColumns();
     const sort = [columns[3].sort(), columns[7].sort().abs().desc()];
     const table = makeTable({ columns, sort });
-    const exportedSort = IrisGridUtils.dehydrateSort(sort, table);
+    const exportedSort = IrisGridUtils.dehydrateSort(sort);
     expect(exportedSort).toEqual([
       { column: 3, isAbs: false, direction: 'ASC' },
       { column: 7, isAbs: true, direction: 'DESC' },
@@ -334,7 +348,7 @@ describe('remove columns in moved columns', () => {
 });
 
 describe('getPrevVisibleColumns', () => {
-  const columns = [0, 1, 2, 3, 4];
+  const columns = IrisGridTestUtils.makeColumns(5);
   it('returns [] for startIndex < 0', () => {
     expect(IrisGridUtils.getPrevVisibleColumns(columns, -1, 1, [], [])).toEqual(
       []
@@ -350,16 +364,16 @@ describe('getPrevVisibleColumns', () => {
   it('skips hidden columns', () => {
     expect(
       IrisGridUtils.getPrevVisibleColumns(columns, 2, 2, [], [1])
-    ).toEqual([0, 2]);
+    ).toEqual([makeColumn(0), makeColumn(2)]);
 
     expect(
       IrisGridUtils.getPrevVisibleColumns(columns, 3, 5, [], [1])
-    ).toEqual([0, 2, 3]);
+    ).toEqual([makeColumn(0), makeColumn(2), makeColumn(3)]);
   });
 });
 
 describe('getNextVisibleColumns', () => {
-  const columns = [0, 1, 2, 3, 4];
+  const columns = IrisGridTestUtils.makeColumns(5);
   it('returns [] for startIndex >= columns.length', () => {
     expect(
       IrisGridUtils.getNextVisibleColumns(columns, columns.length, 1, [], [])
@@ -372,14 +386,14 @@ describe('getNextVisibleColumns', () => {
     );
   });
 
-  it('skips hidden columns', () => {
+  it('skips hidden columns 2', () => {
     expect(
       IrisGridUtils.getNextVisibleColumns(columns, 1, 2, [], [2])
-    ).toEqual([1, 3]);
+    ).toEqual([makeColumn(1), makeColumn(3)]);
 
     expect(
       IrisGridUtils.getNextVisibleColumns(columns, 1, 5, [], [2])
-    ).toEqual([1, 3, 4]);
+    ).toEqual([makeColumn(1), makeColumn(3), makeColumn(4)]);
   });
 });
 
