@@ -1,1 +1,0 @@
-{"version":3,"file":"CharColumnFormatter.d.ts","sourceRoot":"","sources":["../../src/formatters/CharColumnFormatter.ts"],"names":[],"mappings":"AAEA,OAAO,oBAAoB,MAAM,wBAAwB,CAAC;AAE1D,iCAAiC;AACjC,cAAM,mBAAoB,SAAQ,oBAAoB,CAAC,MAAM,CAAC;IAC5D,MAAM,CAAC,KAAK,EAAE,MAAM,GAAG,MAAM;CAG9B;AAED,eAAe,mBAAmB,CAAC"}
