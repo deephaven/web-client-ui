@@ -1,3 +1,4 @@
+/* eslint-disable no-underscore-dangle */
 /* eslint class-methods-use-this: "off" */
 import memoize from 'memoize-one';
 import throttle from 'lodash.throttle';
@@ -196,6 +197,12 @@ class IrisGridTableModelTemplate<
     this.pendingNewDataMap = new Map();
     this.pendingNewDataErrors = null;
     this.pendingNewRowCount = 0;
+
+    this.userFrozenColumns = null;
+
+    this.columnHeaderGroupMap = new Map();
+    this.columnHeaderParentMap = new Map();
+    this._columnHeaderDepth = null;
   }
 
   close(): void {
@@ -567,9 +574,40 @@ class IrisGridTableModelTemplate<
     return 'left';
   }
 
-  textForColumnHeader(x: ModelIndex): string {
-    const column = this.columns[x];
-    return `${column.name}`;
+  textForColumnHeader(x, depth = 0) {
+    if (depth === 0) {
+      const column = this.columns[x];
+      return `${column.name}`;
+    }
+    return this.groupForColumnAtDepth(x, depth)?.name ?? null;
+  }
+
+  colorForColumnHeader(x, depth = 0) {
+    return this.groupForColumnAtDepth(x, depth)?.color ?? null;
+  }
+
+  groupForColumnAtDepth(x, depth = 0) {
+    const columnName = this.columns[x].name;
+    let group = this.columnHeaderParentMap.get(columnName);
+
+    if (!group) {
+      return undefined;
+    }
+
+    let currentDepth = group.depth;
+    while (currentDepth < depth) {
+      group = this.columnHeaderParentMap.get(group.name);
+      if (!group) {
+        return undefined;
+      }
+      currentDepth = group.depth;
+    }
+
+    if (group.depth === depth) {
+      return group;
+    }
+
+    return undefined;
   }
 
   textForRowFooter(y: ModelIndex): string {
@@ -592,7 +630,83 @@ class IrisGridTableModelTemplate<
     return this.getMemoizedColumnMap(this.table.columns);
   }
 
-  get groupedColumns(): [] {
+  get columnHeaderDepth(): number {
+    if (this._columnHeaderDepth == null) {
+      this.columnHeaderGroups = this.layoutHints?.columnGroups;
+    }
+    return this._columnHeaderDepth ?? 1;
+  }
+
+  set columnHeaderGroups(groups) {
+    this._columnHeaderDepth = 1;
+    this.columnHeaderParentMap = new Map();
+    this.columnHeaderGroupMap = new Map();
+
+    if (!groups) {
+      return;
+    }
+
+    const originalGroupMap = new Map(groups.map(group => [group.name, group]));
+
+    const addGroup = group => {
+      const { name } = group;
+
+      if (this.getColumnIndexByName(name) != null) {
+        throw new Error(`Column header group has same name as column: ${name}`);
+      }
+
+      if (this.columnHeaderGroupMap.has(name)) {
+        return this.columnHeaderGroupMap.get(name);
+      }
+
+      const groupWithDepth = { ...group, depth: 1, childIndexes: [] };
+
+      this.columnHeaderGroupMap.set(name, groupWithDepth);
+
+      group.children.forEach(childName => {
+        if (this.columnHeaderParentMap.has(childName)) {
+          throw new Error(
+            `Column group child ${childName} specified in multiple groups`
+          );
+        }
+        this.columnHeaderParentMap.set(childName, groupWithDepth);
+
+        const childGroup = originalGroupMap.get(childName);
+        if (childGroup) {
+          const addedGroup = addGroup(childGroup);
+          groupWithDepth.childIndexes.push(addedGroup.childIndexes.flat());
+          groupWithDepth.depth = Math.max(
+            groupWithDepth.depth,
+            addedGroup.depth + 1
+          );
+        } else {
+          groupWithDepth.childIndexes.push(
+            this.getColumnIndexByName(childName)
+          );
+          groupWithDepth.depth = Math.max(groupWithDepth.depth, 1);
+        }
+      });
+
+      this._columnHeaderDepth = Math.max(
+        this._columnHeaderDepth,
+        groupWithDepth.depth + 1
+      );
+      return groupWithDepth;
+    };
+
+    const groupNames = new Set();
+
+    groups.forEach(group => {
+      const { name } = group;
+      if (groupNames.has(name)) {
+        throw new Error(`Duplicate column group name: ${name}`);
+      }
+      groupNames.add(name);
+      addGroup(group);
+    });
+  }
+
+  get groupedColumns() {
     return [];
   }
 

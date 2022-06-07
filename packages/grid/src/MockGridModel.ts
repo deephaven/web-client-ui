@@ -88,7 +88,7 @@ class MockGridModel extends GridModel implements EditableGridModel {
     return theme.textColor;
   }
 
-  textForColumnHeader(column: ModelIndex): string {
+  textForColumnHeader(column: ModelIndex, depth = 0): string {
     return `${column}`;
   }
 
