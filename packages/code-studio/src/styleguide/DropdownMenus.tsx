@@ -26,14 +26,6 @@ interface DropdownMenusState {
   isShown: boolean;
 }
 
-// interface Actions {
-//   title: string;
-//   icon: IconDefinition;
-//   action: () => void;
-//   shortcut: Shortcut;
-//   group?: number;
-// }
-
 class DropdownMenus extends Component<
   Record<string, never>,
   DropdownMenusState
