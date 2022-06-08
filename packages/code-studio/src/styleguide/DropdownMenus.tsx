@@ -26,6 +26,7 @@ interface DropdownMenusState {
   isShown: boolean;
 }
 
+<<<<<<< HEAD
 // interface Actions {
 //   title: string;
 //   icon: IconDefinition;
@@ -34,6 +35,8 @@ interface DropdownMenusState {
 //   group?: number;
 // }
 
+=======
+>>>>>>> 797bd35 (fixed merge conflicts)
 class DropdownMenus extends Component<
   Record<string, never>,
   DropdownMenusState
