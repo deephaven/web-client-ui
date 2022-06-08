@@ -11,7 +11,10 @@ import './ContextActions.scss';
 const log = Log.module('ContextActions');
 
 interface ContextActionsProps {
-  actions: ContextAction[] | (() => ContextAction[]);
+  actions:
+    | ContextAction[]
+    | (() => ContextAction[])
+    | (() => Promise<ContextAction[]>);
   ignoreClassNames?: string[];
   'data-testid'?: string;
 }

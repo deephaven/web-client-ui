@@ -9,6 +9,7 @@ import {
   KEY,
   MODIFIER,
   Shortcut,
+  DropdownAction,
 } from '@deephaven/components';
 import {
   vsBell,
@@ -17,8 +18,19 @@ import {
   vsQuestion,
 } from '@deephaven/icons';
 
-class DropdownMenus extends Component {
-  constructor(props) {
+interface DropdownMenus {
+  button: React.RefObject<HTMLDivElement>;
+}
+
+interface DropdownMenusState {
+  isShown: boolean;
+}
+
+class DropdownMenus extends Component<
+  Record<string, never>,
+  DropdownMenusState
+> {
+  constructor(props: Record<string, never>) {
     super(props);
 
     this.state = {
@@ -26,7 +38,7 @@ class DropdownMenus extends Component {
     };
   }
 
-  render() {
+  render(): React.ReactElement {
     const contextActions = [
       {
         title: `Show Alert`,
@@ -54,7 +66,7 @@ class DropdownMenus extends Component {
           macShortcut: [MODIFIER.CMD, KEY.L],
         }),
       },
-    ];
+    ] as DropdownAction[];
 
     const globalActions = [
       {
@@ -71,7 +83,7 @@ class DropdownMenus extends Component {
         }),
         group: ContextActions.groups.global,
       },
-    ];
+    ] as DropdownAction[];
 
     const actions = globalActions.concat(contextActions);
 

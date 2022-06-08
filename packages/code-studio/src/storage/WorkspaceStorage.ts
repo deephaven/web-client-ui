@@ -1,12 +1,8 @@
-export type WorkspaceFormattingRule = {
-  columnType: string;
-  columnName: string;
-  format: string;
-};
+import { FormattingRule } from '@deephaven/jsapi-utils';
 
 export type WorkspaceSettings = {
   defaultDateTimeFormat: string;
-  formatter: WorkspaceFormattingRule[];
+  formatter: FormattingRule[];
   timeZone: string;
   showTimeZone: boolean;
   showTSeparator: boolean;

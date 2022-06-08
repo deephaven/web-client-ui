@@ -113,7 +113,7 @@ export type GridProps = typeof Grid.defaultProps & {
   // Can be used to add custom properties as well
   stateOverride?: Record<string, unknown>;
 
-  theme?: GridThemeType;
+  theme?: Partial<GridThemeType>;
 };
 
 export type GridState = {
@@ -216,7 +216,7 @@ class Grid extends PureComponent<GridProps, GridState> {
     theme: {
       autoSelectColumn: false,
       autoSelectRow: false,
-    } as GridThemeType,
+    } as Partial<GridThemeType>,
   };
 
   // use same constant as chrome source for windows

@@ -5,7 +5,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { LoadingSpinner, Tooltip } from '@deephaven/components';
 import { vsBell, dhFilePrint } from '@deephaven/icons';
 
-const Tooltips = () => {
+const Tooltips = (): React.ReactElement => {
   const icons = [dhFilePrint, vsBell];
   const iconElements = icons.map(icon => (
     <FontAwesomeIcon key={`${icon.prefix}-${icon.iconName}`} icon={icon} />

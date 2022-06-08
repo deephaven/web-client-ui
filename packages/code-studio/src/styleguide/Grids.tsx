@@ -4,6 +4,7 @@ import {
   MockGridModel,
   MockTreeGridModel,
   ThemeContext,
+  GridThemeType,
 } from '@deephaven/grid';
 import { IrisGrid } from '@deephaven/iris-grid';
 import MockIrisGridTreeModel from './MockIrisGridTreeModel';
@@ -12,8 +13,15 @@ import QuadrillionExample from './grid-examples/QuadrillionExample';
 import TreeExample from './grid-examples/TreeExample';
 import AsyncExample from './grid-examples/AsyncExample';
 
-class Grids extends PureComponent {
-  constructor(props) {
+type GridsState = {
+  irisGridModel: MockIrisGridTreeModel;
+  model: MockGridModel;
+  theme: Partial<GridThemeType>;
+  contextTheme: Partial<GridThemeType>;
+};
+
+class Grids extends PureComponent<Record<string, never>, GridsState> {
+  constructor(props: Record<string, never>) {
     super(props);
 
     this.state = {
@@ -24,7 +32,7 @@ class Grids extends PureComponent {
     };
   }
 
-  render() {
+  render(): React.ReactElement {
     const { contextTheme, irisGridModel, model, theme } = this.state;
 
     return (
