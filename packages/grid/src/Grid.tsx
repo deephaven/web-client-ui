@@ -774,11 +774,13 @@ class Grid extends PureComponent<GridProps, GridState> {
     // we don't want to stretch the canvas to 100%, to avoid fractional pixels.
     // A wrapper element must be used for sizing, and canvas size must be
     // set manually to a floored value in css and a scaled value in width/height
-    const { width, height } = canvas.parentElement.getBoundingClientRect();
-    canvas.style.width = `${Math.floor(width)}px`;
-    canvas.style.height = `${Math.floor(height)}px`;
-    canvas.width = Math.floor(width) * scale;
-    canvas.height = Math.floor(height) * scale;
+    const rect = canvas.parentElement.getBoundingClientRect();
+    const width = Math.floor(rect.width);
+    const height = Math.floor(rect.height);
+    canvas.style.width = `${width}px`;
+    canvas.style.height = `${height}px`;
+    canvas.width = width * scale;
+    canvas.height = height * scale;
     canvasContext.scale(scale, scale);
   }
 
@@ -1748,6 +1750,8 @@ class Grid extends PureComponent<GridProps, GridState> {
       scrollableViewportWidth,
       scrollableContentHeight,
       scrollableViewportHeight,
+      hasHorizontalBar,
+      hasVerticalBar,
     } = metrics;
     let { top, left, topOffset, leftOffset } = metrics;
 
@@ -1763,7 +1767,7 @@ class Grid extends PureComponent<GridProps, GridState> {
 
     // iterate through each column to determine column width and figure out how far to scroll
     // get column width of next column to scroll to, and subract it from the remaining distance to travel
-    while (deltaX !== 0) {
+    while (hasHorizontalBar && deltaX !== 0) {
       leftOffset += deltaX;
       deltaX = 0;
 
@@ -1835,7 +1839,7 @@ class Grid extends PureComponent<GridProps, GridState> {
 
     // iterate through each row to determine row height and figure out how far to scroll
     // get row height of next row to scroll to, and subract it from the remaining distance to travel
-    while (deltaY !== 0) {
+    while (hasVerticalBar && deltaY !== 0) {
       topOffset += deltaY;
       deltaY = 0;
 

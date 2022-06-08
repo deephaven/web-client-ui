@@ -1,4 +1,4 @@
-import { FormattingRule } from '@deephaven/iris-grid';
+import { FormattingRule } from '@deephaven/jsapi-utils';
 
 export type WorkspaceSettings = {
   defaultDateTimeFormat: string;

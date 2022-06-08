@@ -15,11 +15,11 @@ import {
   ToolType,
 } from '@deephaven/dashboard-core-plugins';
 import { WebdavFileStorage } from '@deephaven/file-explorer';
+import dh from '@deephaven/jsapi-shim';
 import {
   DecimalColumnFormatter,
   IntegerColumnFormatter,
-} from '@deephaven/iris-grid/dist/formatters';
-import dh from '@deephaven/jsapi-shim';
+} from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
 import {
   getWorkspace,

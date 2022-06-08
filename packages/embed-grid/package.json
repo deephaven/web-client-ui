@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/embed-grid",
-  "version": "0.12.0",
+  "version": "0.13.1",
   "description": "Deephaven Embedded Grid",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
@@ -22,6 +22,7 @@
     "@deephaven/icons": "file:../icons",
     "@deephaven/iris-grid": "file:../iris-grid",
     "@deephaven/jsapi-shim": "file:../jsapi-shim",
+    "@deephaven/jsapi-utils": "file:../jsapi-utils",
     "@deephaven/log": "file:../log",
     "@deephaven/react-hooks": "file:../react-hooks",
     "@deephaven/utils": "file:../utils",

@@ -8,10 +8,10 @@
   "exclude": ["node_modules", "src/**/*.test.*", "src/**/__mocks__/*"],
   "references": [
     {
-      "path": "../iris-grid"
+      "path": "../jsapi-shim"
     },
     {
-      "path": "../jsapi-shim"
+      "path": "../jsapi-utils"
     },
     {
       "path": "../log"

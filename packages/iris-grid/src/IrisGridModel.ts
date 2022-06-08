@@ -4,6 +4,7 @@ import {
   GridModel,
   GridRange,
   ModelIndex,
+  MoveOperation,
   VisibleIndex,
 } from '@deephaven/grid';
 import type {
@@ -19,7 +20,7 @@ import type {
   Table,
   TotalsTableConfig,
 } from '@deephaven/jsapi-shim';
-import type Formatter from './Formatter';
+import { Formatter } from '@deephaven/jsapi-utils';
 
 type RowIndex = ModelIndex;
 
@@ -129,6 +130,16 @@ abstract class IrisGridModel<
    */
   get originalColumns(): Column[] {
     return this.columns;
+  }
+
+  /** List of column movements defined by the model. Used as initial movements for IrisGrid */
+  get movedColumns(): MoveOperation[] {
+    return [];
+  }
+
+  /** List of row movements defined by the model. Used as initial movements for IrisGrid */
+  get movedRows(): MoveOperation[] {
+    return [];
   }
 
   /**
@@ -245,6 +256,27 @@ abstract class IrisGridModel<
    */
   get layoutHints(): LayoutHints | null {
     return null;
+  }
+
+  /**
+   * @returns Names of columns which should be locked to the front, but not floating
+   */
+  get frontColumns(): string[] {
+    return [];
+  }
+
+  /**
+   * @returns Names of columns which should be locked to the back, but not floating
+   */
+  get backColumns(): string[] {
+    return [];
+  }
+
+  /**
+   * @returns Names of columns which should be frozen to the front and floating
+   */
+  get frozenColumns(): string[] {
+    return [];
   }
 
   /**

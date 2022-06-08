@@ -2,7 +2,7 @@
 import TableColumnFormatter from './TableColumnFormatter';
 
 /** Column formatter for strings */
-class StringColumnFormatter extends TableColumnFormatter<string> {
+export class StringColumnFormatter extends TableColumnFormatter<string> {
   format(value: string): string {
     return value;
   }

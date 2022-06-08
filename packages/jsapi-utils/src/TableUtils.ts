@@ -1,3 +1,9 @@
+import {
+  Type as FilterType,
+  Operator as FilterOperator,
+  TypeValue as FilterTypeValue,
+  OperatorValue as FilterOperatorValue,
+} from '@deephaven/filters';
 import Log from '@deephaven/log';
 import dh, {
   Column,
@@ -16,13 +22,6 @@ import {
   TimeoutError,
 } from '@deephaven/utils';
 import DateUtils from './DateUtils';
-import {
-  FilterType,
-  FilterOperator,
-  FilterTypeValue,
-  FilterOperatorValue,
-} from './filters';
-import type { AdvancedFilterCreatorFilterItemState } from './AdvancedFilterCreatorFilterItem';
 
 const log = Log.module('TableUtils');
 
@@ -30,9 +29,13 @@ type Values<T> = T[keyof T];
 export type DataType = Values<typeof TableUtils.dataType>;
 export type SortDirection = Values<typeof TableUtils.sortDirection>;
 export type ReverseType = Values<typeof TableUtils.REVERSE_TYPE>;
+export type AdvancedFilterItemType = {
+  selectedType: FilterTypeValue;
+  value: string;
+};
 
 /** Utility class to provide some functions for working with tables */
-class TableUtils {
+export class TableUtils {
   static dataType = {
     BOOLEAN: 'boolean',
     CHAR: 'char',
@@ -1054,7 +1057,7 @@ class TableUtils {
   static makeAdvancedFilter(
     column: Column,
     options: {
-      filterItems: AdvancedFilterCreatorFilterItemState[];
+      filterItems: AdvancedFilterItemType[];
       filterOperators: FilterOperatorValue[];
       invertSelection: boolean;
       selectedValues: string[];

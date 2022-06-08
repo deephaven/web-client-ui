@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/dashboard-core-plugins",
-  "version": "0.12.0",
+  "version": "0.13.1",
   "description": "Deephaven Dashboard Core Plugins",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
@@ -31,6 +31,7 @@
   },
   "dependencies": {
     "@deephaven/chart": "file:../chart",
+    "@deephaven/components": "file:../components",
     "@deephaven/console": "file:../console",
     "@deephaven/dashboard": "file:../dashboard",
     "@deephaven/file-explorer": "file:../file-explorer",
@@ -38,6 +39,9 @@
     "@deephaven/icons": "file:../icons",
     "@deephaven/iris-grid": "file:../iris-grid",
     "@deephaven/jsapi-shim": "file:../jsapi-shim",
+    "@deephaven/jsapi-utils": "file:../jsapi-utils",
+    "@deephaven/log": "file:../log",
+    "@deephaven/redux": "file:../redux",
     "@deephaven/utils": "file:../utils",
     "@fortawesome/react-fontawesome": "^0.1.15",
     "classnames": "^2.3.1",
@@ -54,17 +58,12 @@
     "shortid": "^2.2.16"
   },
   "peerDependencies": {
-    "@deephaven/components": "^0.12",
-    "@deephaven/log": "^0.12",
-    "@deephaven/redux": "^0.12",
     "react": "^17.0.0",
     "react-dom": "^17.0.0",
     "react-redux": "^7.2.4"
   },
   "devDependencies": {
-    "@deephaven/log": "file:../log",
     "@deephaven/mocks": "file:../mocks",
-    "@deephaven/redux": "file:../redux",
     "@deephaven/tsconfig": "file:../tsconfig"
   },
   "files": [

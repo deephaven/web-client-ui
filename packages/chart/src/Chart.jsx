@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import deepEqual from 'deep-equal';
 import memoize from 'memoize-one';
 import { vsLoading, dhGraphLineDown, dhWarningFilled } from '@deephaven/icons';
-import { Formatter, FormatterUtils, DateUtils } from '@deephaven/iris-grid';
+import { Formatter, FormatterUtils, DateUtils } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
 import Plotly from './plotly/Plotly';
 import Plot from './plotly/Plot';

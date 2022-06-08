@@ -1,6 +1,9 @@
 import PouchDB from 'pouchdb-browser';
 import PouchDBFind from 'pouchdb-find';
-import { FilterOperator, FilterType } from '@deephaven/iris-grid/dist/filters';
+import {
+  Operator as FilterOperator,
+  Type as FilterType,
+} from '@deephaven/filters';
 import Log from '@deephaven/log';
 import {
   FilterConfig,

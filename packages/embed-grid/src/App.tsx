@@ -4,9 +4,9 @@ import {
   IrisGrid,
   IrisGridModel,
   IrisGridModelFactory,
-  TableUtils,
 } from '@deephaven/iris-grid'; // iris-grid is used to display Deephaven tables
 import dh from '@deephaven/jsapi-shim'; // Import the shim to use the JS API
+import { TableUtils } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
 import './App.scss'; // Styles for in this app
 

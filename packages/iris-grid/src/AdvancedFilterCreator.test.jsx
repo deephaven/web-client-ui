@@ -1,11 +1,14 @@
 import React from 'react';
+import { Formatter } from '@deephaven/jsapi-utils';
 import { render } from '@testing-library/react';
 // import userEvent from '@testing-library/user-event';
 // import dh from '@deephaven/jsapi-shim';
+// import {
+//   Type as FilterType,
+//   Operator as FilterOperator,
+// } from '@deephaven/filters';
 import AdvancedFilterCreator from './AdvancedFilterCreator';
 import IrisGridTestUtils from './IrisGridTestUtils';
-// import { FilterType, FilterOperator } from './filters';
-import Formatter from './Formatter';
 
 // let mockFilterHandlers = [];
 // let mockSelectedType;

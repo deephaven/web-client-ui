@@ -1,7 +1,10 @@
+import {
+  IntegerColumnFormat,
+  IntegerColumnFormatter,
+} from '@deephaven/jsapi-utils';
 import FormatContextMenuUtils, {
   FormatContextMenuOption,
 } from './FormatContextMenuUtils';
-import { IntegerColumnFormat, IntegerColumnFormatter } from '../formatters';
 
 class IntegerFormatContextMenu {
   static defaultGroup = 10;

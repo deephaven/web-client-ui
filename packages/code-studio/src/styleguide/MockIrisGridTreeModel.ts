@@ -11,8 +11,9 @@ import {
   MockTreeGridModel,
   ModelIndex,
 } from '@deephaven/grid';
-import { Formatter, IrisGridModel } from '@deephaven/iris-grid';
+import { IrisGridModel } from '@deephaven/iris-grid';
 import type { Column, CustomColumn } from '@deephaven/jsapi-shim';
+import { Formatter } from '@deephaven/jsapi-utils';
 
 // We need to cast our CustomEvent so it's happy with event-target-shim
 type CustomEventType = EventTarget.EventData<

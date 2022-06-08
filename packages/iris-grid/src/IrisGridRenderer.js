@@ -8,8 +8,8 @@ import {
   vsTriangleRight,
   vsLinkExternal,
 } from '@deephaven/icons';
+import { TableUtils } from '@deephaven/jsapi-utils';
 import { GridRenderer, GridUtils } from '@deephaven/grid';
-import TableUtils from './TableUtils';
 
 const ICON_NAMES = Object.freeze({
   SORT_UP: 'sortUp',

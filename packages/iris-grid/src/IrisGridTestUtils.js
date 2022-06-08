@@ -1,5 +1,5 @@
 import dh from '@deephaven/jsapi-shim';
-import Formatter from './Formatter';
+import { Formatter } from '@deephaven/jsapi-utils';
 import IrisGridProxyModel from './IrisGridProxyModel';
 
 class IrisGridTestUtils {

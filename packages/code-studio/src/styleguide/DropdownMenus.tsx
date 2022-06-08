@@ -26,6 +26,7 @@ interface DropdownMenusState {
   isShown: boolean;
 }
 
+<<<<<<< HEAD:packages/code-studio/src/styleguide/DropdownMenus.tsx
 // interface Actions {
 //   title: string;
 //   icon: IconDefinition;
@@ -34,6 +35,8 @@ interface DropdownMenusState {
 //   group?: number;
 // }
 
+=======
+>>>>>>> origin/main:packages/code-studio/src/styleguide/DropdownMenus.jsx
 class DropdownMenus extends Component<
   Record<string, never>,
   DropdownMenusState

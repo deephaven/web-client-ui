@@ -6,7 +6,7 @@ import {
   ThemeContext,
   GridThemeType,
 } from '@deephaven/grid';
-import IrisGrid from '@deephaven/iris-grid/dist/IrisGrid';
+import { IrisGrid } from '@deephaven/iris-grid';
 import MockIrisGridTreeModel from './MockIrisGridTreeModel';
 import StaticExample from './grid-examples/StaticExample';
 import QuadrillionExample from './grid-examples/QuadrillionExample';
@@ -39,7 +39,7 @@ class Grids extends PureComponent<Record<string, never>, GridsState> {
       <div>
         <ThemeContext.Provider value={contextTheme}>
           <h2 className="ui-title">Grid</h2>
-          <div style={{ height: 500 }}>
+          <div>
             <Grid model={model} theme={theme} />
           </div>
           <h2 className="ui-title">Static Data</h2>

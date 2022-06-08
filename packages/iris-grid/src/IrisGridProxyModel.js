@@ -1,12 +1,11 @@
 /* eslint class-methods-use-this: "off" */
 import deepEqual from 'deep-equal';
+import { Formatter, TableUtils } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
 import { PromiseUtils } from '@deephaven/utils';
-import Formatter from './Formatter';
 import IrisGridTableModel from './IrisGridTableModel';
 import IrisGridTreeTableModel from './IrisGridTreeTableModel';
 import IrisGridModel from './IrisGridModel';
-import TableUtils from './TableUtils';
 
 const log = Log.module('IrisGridProxyModel');
 
@@ -292,8 +291,28 @@ class IrisGridProxyModel extends IrisGridModel {
     return this.model.columns;
   }
 
+  get movedColumns() {
+    return this.model.movedColumns;
+  }
+
+  get movedRows() {
+    return this.model.movedRows;
+  }
+
   get layoutHints() {
     return this.model.layoutHints;
+  }
+
+  get frontColumns() {
+    return this.model.frontColumns;
+  }
+
+  get backColumns() {
+    return this.model.backColumns;
+  }
+
+  get frozenColumns() {
+    return this.model.frozenColumns;
   }
 
   updateFrozenColumns(...args) {

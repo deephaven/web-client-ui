@@ -8,12 +8,13 @@ import { CSSTransition, TransitionGroup } from 'react-transition-group';
 import debounce from 'lodash.debounce';
 import classNames from 'classnames';
 import { Button, Checkbox, ThemeExport } from '@deephaven/components';
-import { Formatter, TableUtils } from '@deephaven/iris-grid';
 import {
   DateTimeColumnFormatter,
   IntegerColumnFormatter,
   DecimalColumnFormatter,
-} from '@deephaven/iris-grid/dist/formatters';
+  Formatter,
+  TableUtils,
+} from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
 import {
   getDefaultDateTimeFormat,
