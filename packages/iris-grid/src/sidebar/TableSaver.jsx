@@ -117,7 +117,12 @@ export default class TableSaver extends PureComponent {
     const streamConfig = {};
     if (useBlob) {
       streamConfig.write = chunk => {
-        chunks.push(encode(chunk.rows));
+        if (chunk.header) {
+          chunks.push(encode(chunk.header));
+        }
+        if (chunk.rows) {
+          chunks.push(encode(chunk.rows));
+        }
       };
       streamConfig.close = () => {
         const blob = new Blob(chunks, {
