@@ -2414,8 +2414,10 @@ export class GridRenderer {
       scrollBarSize,
       scrollBarHoverSize,
       scrollBarCasingWidth,
+      selectedRowHoverBackgroundColor,
     } = theme;
 
+    //
     const isInbounds =
       mouseX != null && mouseY != null && mouseX <= width && mouseY <= height;
 
@@ -2539,6 +2541,51 @@ export class GridRenderer {
         vScrollBarSize - scrollBarCasingWidth,
         handleHeight
       );
+
+      // Scrollbar Selection Tick
+      const { selectedRanges, model } = state;
+      const { rowCount } = model;
+
+      for (let i = 0; i < selectedRanges.length; i += 1) {
+        const range = selectedRanges[i];
+        if (selectedRowHoverBackgroundColor != null) {
+          context.fillStyle = selectedRowHoverBackgroundColor;
+        }
+        if (range.startRow != null && range.endRow != null) {
+          const tickY = Math.round((range.startRow / rowCount) * barHeight);
+          const tickHeight = Math.max(
+            1,
+            Math.round(((range.endRow - range.startRow) / rowCount) * barHeight)
+          );
+          context.fillRect(
+            x + scrollBarCasingWidth,
+            tickY,
+            vScrollBarSize - scrollBarCasingWidth,
+            tickHeight
+          );
+        }
+      }
+
+      // Current Editing Tick
+      const { editingCell } = state;
+      if (editingCell != null) {
+        const { row } = editingCell;
+        if (row != null) {
+          const tickY = Math.round((row / rowCount) * barHeight);
+
+          const tickHeight = Math.max(
+            2,
+            Math.round((1 / rowCount) * barHeight)
+          );
+
+          context.fillRect(
+            x + scrollBarCasingWidth,
+            tickY,
+            vScrollBarSize - scrollBarCasingWidth,
+            tickHeight
+          );
+        }
+      }
     }
 
     context.translate(-rowHeaderWidth, -columnHeaderHeight);
