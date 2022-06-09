@@ -1,8 +1,8 @@
 import React, { useRef, useCallback } from 'react';
-import { Modal, ModalBody, ModalFooter, ModalHeader } from 'reactstrap';
 import PropTypes from 'prop-types';
 import ButtonGroup from './ButtonGroup';
 import Button from './Button';
+import { Modal, ModalBody, ModalFooter, ModalHeader } from './modal';
 
 interface BasicModalProps {
   isOpen: boolean;

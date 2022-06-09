@@ -1,0 +1,120 @@
+@import '../../scss/custom.scss';
+
+@keyframes slideInFromTop {
+  0% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInFromTop {
+  0% {
+    background-color: rgba(0, 0, 0, 0);
+  }
+  100% {
+    background-color: rgba(0, 0, 0, 25%);
+  }
+}
+
+.modal {
+  position: fixed;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, 25%);
+  z-index: 100000;
+}
+
+.modal-dialog.theme-bg-light {
+  width: auto;
+  position: relative;
+  animation: 0.5s ease-out 0s 1 slideInFromTop;
+
+  .modal-content {
+    //This isn't a variable wtf bootstrap
+    color: $black;
+    background: $gray-100;
+  }
+
+  .modal-title {
+    width: 100%;
+    display: flex;
+  }
+
+  .modal-header {
+    .close {
+      float: right;
+      font-size: 1.5rem;
+      font-weight: 700;
+      line-height: 1;
+      background-color: transparent;
+      border: 0;
+      opacity: 0.5;
+      outline: 0;
+    }
+  }
+  .modal-body {
+    position: relative;
+    flex: auto;
+    padding: 1rem;
+  }
+  .modal-footer {
+    border-top-color: transparent;
+  }
+
+  .close:hover {
+    opacity: 0.75;
+  }
+}
+
+.modal-dialog.theme-bg-dark {
+  width: auto;
+  position: relative;
+  animation: 0.5s ease-out 0s 1 slideInFromTop;
+
+  .modal-content {
+    //This isn't a variable wtf bootstrap
+    color: $black;
+    background: $interfacegray;
+  }
+
+  .modal-title {
+    width: 100%;
+    display: flex;
+    color: $interfacewhite;
+  }
+
+  .modal-header {
+    .close {
+      float: right;
+      font-size: 1.5rem;
+      font-weight: 700;
+      line-height: 1;
+      background-color: transparent;
+      border: 0;
+      opacity: 0.5;
+      outline: 0;
+      color: #f0f0ee;
+      padding-left: 1rem;
+    }
+    .close:hover {
+      opacity: 0.75;
+    }
+  }
+
+  .modal-body {
+    position: relative;
+    flex: auto;
+    padding: 1rem;
+  }
+
+  .modal-footer {
+    border-top-color: transparent;
+  }
+}
