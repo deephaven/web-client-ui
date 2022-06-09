@@ -2,11 +2,18 @@
   "extends": "./packages/tsconfig/tsconfig.json",
   "compilerOptions": {
     "baseUrl": ".",
-    "paths": { "@deephaven/*": ["./packages/*/src"] }
+    "paths": {
+      "@deephaven/*": [
+        "./packages/*/src"
+      ]
+    }
   },
   "files": [],
   "watchOptions": {
-    "excludeDirectories": ["**/node_modules", "**/dist"]
+    "excludeDirectories": [
+      "**/node_modules",
+      "**/dist"
+    ]
   },
   "references": [
     {
