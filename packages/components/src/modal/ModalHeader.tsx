@@ -1,6 +1,15 @@
 import React, { CSSProperties, ReactElement, ReactNode } from 'react';
 import './Modal.scss';
 
+interface ModalHeaderProps {
+  className?: string;
+  children?: ReactNode;
+  closeButton?: boolean;
+  style?: CSSProperties;
+  toggle?: () => void;
+  'data-testid'?: string;
+}
+
 const ModalHeader = ({
   className = 'modal-header',
   children,
@@ -8,14 +17,7 @@ const ModalHeader = ({
   style,
   toggle,
   'data-testid': dataTestId,
-}: {
-  className?: string;
-  children?: ReactNode;
-  closeButton?: boolean;
-  style?: CSSProperties;
-  toggle?: () => void;
-  'data-testid'?: string;
-}): ReactElement => (
+}: ModalHeaderProps): ReactElement => (
   <div className="modal-header" style={style}>
     <h5 className="modal-title">{children}</h5>
     {closeButton && (

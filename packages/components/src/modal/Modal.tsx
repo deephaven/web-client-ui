@@ -8,19 +8,7 @@ import React, {
 import ReactDOM from 'react-dom';
 import './Modal.scss';
 
-const Modal = ({
-  className = 'theme-bg-light',
-  children,
-  role = 'role',
-  keyboard = true,
-  isOpen = false,
-  autoFocus = true,
-  centered = true,
-  onOpened,
-  onClosed,
-  toggle,
-  'data-testid': dataTestId,
-}: {
+interface ModalProps {
   className?: string;
   children?: ReactNode;
   role?: string;
@@ -32,9 +20,22 @@ const Modal = ({
   onClosed?: () => void;
   toggle?: () => void;
   'data-testid'?: string;
-}): ReactElement => {
-  const outerDivRef = useRef<HTMLDivElement>(null);
+}
 
+const Modal = ({
+  className = 'theme-bg-light',
+  children,
+  role = 'role',
+  keyboard = true,
+  isOpen = false,
+  autoFocus = true,
+  centered = false,
+  onOpened,
+  onClosed,
+  toggle,
+  'data-testid': dataTestId,
+}: ModalProps): ReactElement => {
+  const outerDivRef = useRef<HTMLDivElement>(null);
   const handleKeyDown = useCallback(
     (event: KeyboardEvent): void => {
       switch (event.key) {
@@ -52,12 +53,12 @@ const Modal = ({
     [toggle, keyboard]
   );
 
-  useEffect(
-    function addKeydownEventListener() {
+  useEffect(function addKeydownEventListener() {
+    if (isOpen) {
       window.addEventListener('keydown', handleKeyDown);
-    },
-    [handleKeyDown]
-  );
+      return () => window.removeEventListener('keydown', handleKeyDown);
+    }
+  });
 
   useEffect(
     function open() {
@@ -68,14 +69,14 @@ const Modal = ({
     [onOpened]
   );
 
-  useEffect(
-    function autoFocusOnRender() {
-      if (autoFocus && isOpen) {
-        (outerDivRef?.current as HTMLDivElement).focus();
-      }
-    },
-    [autoFocus, isOpen]
-  );
+  // useEffect(
+  //   function autoFocusOnRender() {
+  //     if (autoFocus && isOpen) {
+  //       (outerDivRef?.current as HTMLDivElement).focus();
+  //     }
+  //   },
+  //   [autoFocus, isOpen]
+  // );
 
   const getCentered = (): string => {
     if (centered) {
@@ -86,13 +87,8 @@ const Modal = ({
 
   return isOpen ? (
     ReactDOM.createPortal(
-      <div className="modal">
-        <div
-          className={`modal-dialog ${className} ${getCentered()}`}
-          ref={outerDivRef}
-          onClick={toggle}
-          role="dialog"
-        >
+      <div className={`modal  ${getCentered()}`} onClick={toggle} role="dialog">
+        <div className={`modal-dialog ${className}`} ref={outerDivRef}>
           <div
             className="modal-content"
             onClick={e => e.stopPropagation()}

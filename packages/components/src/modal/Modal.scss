@@ -2,19 +2,19 @@
 
 @keyframes slideInFromTop {
   0% {
-    transform: translateY(-100%);
+    transform: translateY(-50px);
   }
   100% {
     transform: translateY(0);
   }
 }
 
-@keyframes slideInFromTop {
+@keyframes backdropFadeIn {
   0% {
-    background-color: rgba(0, 0, 0, 0);
+    opacity: 0;
   }
   100% {
-    background-color: rgba(0, 0, 0, 25%);
+    opacity: 1;
   }
 }
 
@@ -25,21 +25,21 @@
   right: 0;
   bottom: 0;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
   background-color: rgba(0, 0, 0, 25%);
   z-index: 100000;
+  animation: $transition ease-out 0s 1 backdropFadeIn;
 }
 
-.modal-dialog.theme-bg-light {
+.modal-dialog {
   width: auto;
+  min-width: 300px;
   position: relative;
-  animation: 0.5s ease-out 0s 1 slideInFromTop;
-
+  animation: $transition ease-out 0s 1 slideInFromTop;
   .modal-content {
     //This isn't a variable wtf bootstrap
     color: $black;
-    background: $gray-100;
   }
 
   .modal-title {
@@ -73,48 +73,30 @@
   }
 }
 
-.modal-dialog.theme-bg-dark {
-  width: auto;
-  position: relative;
-  animation: 0.5s ease-out 0s 1 slideInFromTop;
+.modal-dialog-centered {
+  align-items: center;
+}
 
+.modal-dialog.theme-bg-light {
   .modal-content {
     //This isn't a variable wtf bootstrap
-    color: $black;
+    background: $gray-100;
+  }
+}
+
+.modal-dialog.theme-bg-dark {
+  .modal-content {
+    //This isn't a variable wtf bootstrap
     background: $interfacegray;
   }
 
   .modal-title {
-    width: 100%;
-    display: flex;
     color: $interfacewhite;
   }
 
   .modal-header {
     .close {
-      float: right;
-      font-size: 1.5rem;
-      font-weight: 700;
-      line-height: 1;
-      background-color: transparent;
-      border: 0;
-      opacity: 0.5;
-      outline: 0;
       color: #f0f0ee;
-      padding-left: 1rem;
     }
-    .close:hover {
-      opacity: 0.75;
-    }
-  }
-
-  .modal-body {
-    position: relative;
-    flex: auto;
-    padding: 1rem;
-  }
-
-  .modal-footer {
-    border-top-color: transparent;
   }
 }

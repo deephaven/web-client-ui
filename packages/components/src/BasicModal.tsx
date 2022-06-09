@@ -72,7 +72,7 @@ const BasicModal: React.FC<BasicModalProps> = props => {
         confirmButton.current?.focus();
       }}
     >
-      <ModalHeader>{headerText}</ModalHeader>
+      <ModalHeader closeButton={false}>{headerText}</ModalHeader>
       <ModalBody>{modalBody}</ModalBody>
       <ModalFooter>
         {onModalDisable && (

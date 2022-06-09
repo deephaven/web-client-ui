@@ -446,7 +446,7 @@ export class IrisGrid extends Component {
 
       toastMessage: null,
       frozenColumns,
-      showOverflowModal: true,
+      showOverflowModal: false,
       overflowText: '',
       overflowButtonTooltipProps: null,
     };
