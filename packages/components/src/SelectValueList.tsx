@@ -13,6 +13,7 @@ interface SelectItem<T> {
 type SelectValueListProps<T> = {
   className?: string;
   disabled: boolean;
+  isInvalid?: boolean;
   // Total item count
   itemCount: number;
   rowHeight: number;
@@ -161,6 +162,7 @@ class SelectValueList<T> extends PureComponent<SelectValueListProps<T>> {
     const {
       className,
       disabled,
+      isInvalid,
       items,
       itemCount,
       offset,
@@ -178,6 +180,7 @@ class SelectValueList<T> extends PureComponent<SelectValueListProps<T>> {
       <div
         className={classNames(
           'select-value-list-scroll-pane h-100 w-100',
+          { 'is-invalid': isInvalid },
           className
         )}
         onScroll={this.handleScroll}
