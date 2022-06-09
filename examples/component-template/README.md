@@ -57,8 +57,6 @@ React and react-dom are listed as peer dependencies. If your component doesn't n
 
 If not using sass, you can remove the dev dependency for sass and also remove the sass targeted scripts such as `build:sass` and `watch:sass`
 
-`@testing-library/react` is a react component testing library. We currently use `enzyme` in several packages. Or you may not need this at all.
-
 ### PropTypes
 
 While prop-types is only truly needed for JS components, you should still keep and use the package for TS components.
