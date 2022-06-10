@@ -2414,7 +2414,8 @@ export class GridRenderer {
       scrollBarSize,
       scrollBarHoverSize,
       scrollBarCasingWidth,
-      selectedRowHoverBackgroundColor,
+      scrollBarSelectionTickColor,
+      scrollBarActiveSelectionTickColor,
     } = theme;
 
     //
@@ -2548,15 +2549,17 @@ export class GridRenderer {
 
       for (let i = 0; i < selectedRanges.length; i += 1) {
         const range = selectedRanges[i];
-        if (selectedRowHoverBackgroundColor != null) {
-          context.fillStyle = selectedRowHoverBackgroundColor;
+        if (scrollBarSelectionTickColor != null) {
+          context.fillStyle = scrollBarSelectionTickColor;
         }
         if (range.startRow != null && range.endRow != null) {
           const tickY = Math.round((range.startRow / rowCount) * barHeight);
           const trackWidth = vScrollBarSize - scrollBarCasingWidth;
           const tickHeight = Math.max(
             1,
-            Math.round(((range.endRow - range.startRow) / rowCount) * barHeight)
+            Math.round(
+              ((range.endRow - range.startRow + 1) / rowCount) * barHeight
+            )
           );
           context.fillRect(
             x + scrollBarCasingWidth + Math.round(trackWidth / 3),
@@ -2567,7 +2570,7 @@ export class GridRenderer {
         }
       }
 
-      // Current Editing Tick
+      // Current Active Tick
       const { cursorRow } = state;
       if (cursorRow != null) {
         const tickY = Math.round((cursorRow / rowCount) * barHeight);
@@ -2575,10 +2578,11 @@ export class GridRenderer {
         const trackWidth = vScrollBarSize - scrollBarCasingWidth;
         const tickHeight = Math.max(2, Math.round((1 / rowCount) * barHeight));
 
+        context.fillStyle = scrollBarActiveSelectionTickColor;
         context.fillRect(
-          x + scrollBarCasingWidth + Math.round(trackWidth / 3),
+          x + scrollBarCasingWidth,
           tickY,
-          Math.round(trackWidth / 3),
+          trackWidth,
           tickHeight
         );
       }
