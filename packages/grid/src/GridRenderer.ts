@@ -2553,38 +2553,34 @@ export class GridRenderer {
         }
         if (range.startRow != null && range.endRow != null) {
           const tickY = Math.round((range.startRow / rowCount) * barHeight);
+          const trackWidth = vScrollBarSize - scrollBarCasingWidth;
           const tickHeight = Math.max(
             1,
             Math.round(((range.endRow - range.startRow) / rowCount) * barHeight)
           );
           context.fillRect(
-            x + scrollBarCasingWidth,
+            x + scrollBarCasingWidth + Math.round(trackWidth / 3),
             tickY,
-            vScrollBarSize - scrollBarCasingWidth,
+            Math.round(trackWidth / 3),
             tickHeight
           );
         }
       }
 
       // Current Editing Tick
-      const { editingCell } = state;
-      if (editingCell != null) {
-        const { row } = editingCell;
-        if (row != null) {
-          const tickY = Math.round((row / rowCount) * barHeight);
+      const { cursorRow } = state;
+      if (cursorRow != null) {
+        const tickY = Math.round((cursorRow / rowCount) * barHeight);
 
-          const tickHeight = Math.max(
-            2,
-            Math.round((1 / rowCount) * barHeight)
-          );
+        const trackWidth = vScrollBarSize - scrollBarCasingWidth;
+        const tickHeight = Math.max(2, Math.round((1 / rowCount) * barHeight));
 
-          context.fillRect(
-            x + scrollBarCasingWidth,
-            tickY,
-            vScrollBarSize - scrollBarCasingWidth,
-            tickHeight
-          );
-        }
+        context.fillRect(
+          x + scrollBarCasingWidth + Math.round(trackWidth / 3),
+          tickY,
+          Math.round(trackWidth / 3),
+          tickHeight
+        );
       }
     }
 
