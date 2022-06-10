@@ -3172,6 +3172,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       visibleColumnXs,
       visibleColumnWidths,
       width,
+      columnHeaderMaxDepth,
     } = metrics;
     const columnX = visibleColumnXs.get(shownColumnTooltip);
     const columnWidth = visibleColumnWidths.get(shownColumnTooltip);
@@ -3184,9 +3185,11 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       clamp(columnX + columnWidth / 2, popperMargin, width - popperMargin);
 
     return {
-      top: gridRect.top,
-      left,
-      bottom: gridRect.top + columnHeaderHeight,
+      top: gridRect.top + (columnHeaderMaxDepth - 1) * columnHeaderHeight,
+      left:
+        gridRect.left +
+        clamp(columnX + columnWidth / 2, popperMargin, width - popperMargin),
+      bottom: gridRect.top + columnHeaderMaxDepth * columnHeaderHeight,
       right:
         gridRect.left +
         clamp(columnX + columnWidth / 2, popperMargin, width - popperMargin) +
@@ -3278,6 +3281,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   ): ReactNode {
     const {
       columnHeaderHeight,
+      columnHeaderMaxDepth,
       visibleColumnXs,
       visibleColumnWidths,
       width,
@@ -3308,7 +3312,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
     const wrapperStyle: CSSProperties = {
       position: 'absolute',
-      top: 0,
+      top: (columnHeaderMaxDepth - 1) * columnHeaderHeight,
       left: boundedLeft,
       width: boundedWidth,
       height: columnHeaderHeight,

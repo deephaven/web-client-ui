@@ -202,7 +202,8 @@ class IrisGridTableModelTemplate<
 
     this.columnHeaderGroupMap = new Map();
     this.columnHeaderParentMap = new Map();
-    this._columnHeaderDepth = null;
+    this._columnHeaderMaxDepth = null;
+    this._columnHeaderGroups = [];
   }
 
   close(): void {
@@ -618,11 +619,91 @@ class IrisGridTableModelTemplate<
     return '';
   }
 
-  getMemoizedColumnMap = memoize(
-    (tableColumns: Column[]): Map<string, Column> => {
-      const columnMap = new Map();
-      tableColumns.forEach(col => columnMap.set(col.name, col));
-      return columnMap;
+  /**
+   * Returns an array of the columns in the model
+   * The order of model columns should never change once established
+   */
+  get columns() {
+    return this.table.columns;
+  }
+
+  /**
+   * Used to get the initial moved columns based on layout hints
+   */
+  get movedColumns() {
+    let movedColumns = [];
+
+    if (
+      this.frontColumns.length ||
+      this.backColumns.length ||
+      this.frozenColumns.length
+    ) {
+      const usedColumns = new Set();
+
+      const moveColumn = (name, index) => {
+        if (usedColumns.has(name)) {
+          throw new Error(`Column specified in multiple layout hints: ${name}`);
+        }
+        const modelIndex = this.getColumnIndexByName(name);
+        if (!modelIndex) {
+          throw new Error(`Unknown layout hint column: ${name}`);
+        }
+        const visibleIndex = GridUtils.getVisibleIndex(
+          modelIndex,
+          movedColumns
+        );
+        movedColumns = GridUtils.moveItem(visibleIndex, index, movedColumns);
+      };
+
+      let frontIndex = 0;
+      this.frozenColumns.forEach(name => {
+        moveColumn(name, frontIndex);
+        frontIndex += 1;
+      });
+      this.frontColumns.forEach(name => {
+        moveColumn(name, frontIndex);
+        frontIndex += 1;
+      });
+
+      let backIndex = this.columnMap.size - 1;
+      this.backColumns.forEach(name => {
+        moveColumn(name, backIndex);
+        backIndex -= 1;
+      });
+    }
+
+    const columnGroups = this.layoutHints?.columnGroups;
+    if (columnGroups) {
+      this.columnHeaderGroups = columnGroups;
+      columnGroups.forEach(group => {
+        const firstChildModelIndex = this.columnHeaderGroups(group.children[0]);
+
+        for (let i = 1; i < group.children.length; i += 1) {
+          const modelIndex = this.getColumnIndexByName(group.children[i]);
+
+          if (modelIndex == null) {
+            // throw new Error(
+            //   `Unknown column ${group.children[i]} in group ${group.name}`
+            // );
+            return;
+          }
+          const firstChildVisibleIndex = GridUtils.getVisibleIndex(
+            firstChildModelIndex,
+            movedColumns
+          );
+          const visibleIndex = GridUtils.getVisibleIndex(
+            modelIndex,
+            movedColumns
+          );
+          movedColumns = GridUtils.moveItem(
+            visibleIndex,
+            visibleIndex < firstChildVisibleIndex
+              ? firstChildVisibleIndex + i - 1
+              : firstChildVisibleIndex + i,
+            movedColumns
+          );
+        }
+      });
     }
   );
 
@@ -630,15 +711,28 @@ class IrisGridTableModelTemplate<
     return this.getMemoizedColumnMap(this.table.columns);
   }
 
-  get columnHeaderDepth(): number {
-    if (this._columnHeaderDepth == null) {
+  get columnHeaderMaxDepth() {
+    if (this._columnHeaderMaxDepth == null) {
       this.columnHeaderGroups = this.layoutHints?.columnGroups;
     }
-    return this._columnHeaderDepth ?? 1;
+    return this._columnHeaderMaxDepth ?? 1;
+  }
+
+  set columnHeaderMaxDepth(depth) {
+    this._columnHeaderMaxDepth = depth;
+  }
+
+  get columnHeaderGroups() {
+    return this._columnHeaderGroups;
   }
 
   set columnHeaderGroups(groups) {
-    this._columnHeaderDepth = 1;
+    if (groups === this._columnHeaderGroups) {
+      return;
+    }
+
+    this._columnHeaderGroups = groups;
+    this.columnHeaderMaxDepth = 1;
     this.columnHeaderParentMap = new Map();
     this.columnHeaderGroupMap = new Map();
 
@@ -687,8 +781,8 @@ class IrisGridTableModelTemplate<
         }
       });
 
-      this._columnHeaderDepth = Math.max(
-        this._columnHeaderDepth,
+      this.columnHeaderMaxDepth = Math.max(
+        this.columnHeaderMaxDepth,
         groupWithDepth.depth + 1
       );
       return groupWithDepth;

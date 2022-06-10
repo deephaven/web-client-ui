@@ -369,7 +369,7 @@ class IrisGridRenderer extends GridRenderer {
     context.fillStyle = theme.headerBarCasingColor;
     context.fillRect(
       0,
-      model.columnHeaderDepth * columnHeaderHeight - barHeight - 2 + offset,
+      model.columnHeaderMaxDepth * columnHeaderHeight - barHeight - 2 + offset,
       width,
       barHeight + 2
     );
@@ -377,7 +377,7 @@ class IrisGridRenderer extends GridRenderer {
     context.fillStyle = color;
     context.fillRect(
       0,
-      model.columnHeaderDepth * columnHeaderHeight - barHeight - 1 + offset,
+      model.columnHeaderMaxDepth * columnHeaderHeight - barHeight - 1 + offset,
       width,
       barHeight
     );
@@ -391,13 +391,13 @@ class IrisGridRenderer extends GridRenderer {
     depth: number
   ): void {
     const { metrics, model } = state;
-    const { columnHeaderDepth } = model;
+    const { columnHeaderMaxDepth } = model;
     const { width } = metrics;
     const bounds = {
       ...boundsProp,
       // Account for the menu button
       maxX:
-        depth === columnHeaderDepth - 1 && boundsProp.maxX === width
+        depth === columnHeaderMaxDepth - 1 && boundsProp.maxX === width
           ? width - 30
           : boundsProp.maxX,
     };

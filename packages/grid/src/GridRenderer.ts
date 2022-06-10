@@ -1435,14 +1435,14 @@ export class GridRenderer {
     context.save();
 
     // Make sure base column header background always goes to the right edge
-    context.translate(0, (model.columnHeaderDepth - 1) * columnHeaderHeight);
+    context.translate(0, (model.columnHeaderMaxDepth - 1) * columnHeaderHeight);
     this.drawColumnHeader(context, state, '', 0, width, {
       backgroundColor: headerBackgroundColor,
       separatorColor: headerSeparatorColor,
     });
     context.translate(
       0,
-      -1 * (model.columnHeaderDepth - 1) * columnHeaderHeight
+      -1 * (model.columnHeaderMaxDepth - 1) * columnHeaderHeight
     );
 
     this.drawColumnHeadersForRange(context, state, visibleColumns, {
@@ -1554,13 +1554,13 @@ export class GridRenderer {
     bounds: { minX: number; maxX: number }
   ): void {
     const { model } = state;
-    const { columnHeaderDepth } = model;
+    const { columnHeaderMaxDepth } = model;
 
-    if (columnHeaderDepth === 0) {
+    if (columnHeaderMaxDepth === 0) {
       return;
     }
 
-    for (let d = 0; d <= columnHeaderDepth; d += 1) {
+    for (let d = 0; d <= columnHeaderMaxDepth; d += 1) {
       this.drawColumnHeadersAtDepth(context, state, range, bounds, d);
     }
   }
@@ -1589,16 +1589,19 @@ export class GridRenderer {
       columnHeaderHeight,
       columnWidth,
     } = theme;
-    const { columnHeaderDepth } = model;
+    const { columnHeaderMaxDepth } = model;
     const { minX, maxX } = bounds;
     const visibleWidth = maxX - minX;
 
-    if (columnHeaderDepth === 0) {
+    if (columnHeaderMaxDepth === 0) {
       return;
     }
 
     context.save();
-    context.translate(0, (columnHeaderDepth - depth - 1) * columnHeaderHeight);
+    context.translate(
+      0,
+      (columnHeaderMaxDepth - depth - 1) * columnHeaderHeight
+    );
 
     if (depth === 0) {
       // Draw base column headers
