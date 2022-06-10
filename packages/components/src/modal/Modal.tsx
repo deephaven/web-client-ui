@@ -15,10 +15,8 @@ interface ModalProps {
   role?: string;
   keyboard?: boolean;
   isOpen?: boolean;
-  autoFocus?: boolean;
   centered?: boolean;
   onOpened?: () => void;
-  onClosed?: () => void;
   toggle?: () => void;
   'data-testid'?: string;
 }
@@ -29,10 +27,8 @@ const Modal = ({
   role = 'role',
   keyboard = true,
   isOpen = false,
-  autoFocus = true,
   centered = false,
   onOpened,
-  onClosed,
   toggle,
   'data-testid': dataTestId,
 }: ModalProps): ReactElement => {
@@ -66,20 +62,11 @@ const Modal = ({
 
   useEffect(
     function open() {
-      if (onOpened) {
+      if (isOpen && onOpened) {
         onOpened();
       }
     },
-    [onOpened]
-  );
-
-  useEffect(
-    function autoFocusOnRender() {
-      if (autoFocus && isOpen) {
-        (outerDivRef?.current as HTMLDivElement)?.focus();
-      }
-    },
-    [autoFocus, isOpen]
+    [onOpened, isOpen]
   );
 
   return isOpen ? (
