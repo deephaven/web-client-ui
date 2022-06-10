@@ -11,14 +11,14 @@ interface ModalHeaderProps {
 }
 
 const ModalHeader = ({
-  className = 'modal-header',
+  className,
   children,
   closeButton = true,
   style,
   toggle,
   'data-testid': dataTestId,
 }: ModalHeaderProps): ReactElement => (
-  <div className="modal-header" style={style}>
+  <div className={`modal-header ${className}`} style={style}>
     <h5 className="modal-title">{children}</h5>
     {closeButton && (
       <button

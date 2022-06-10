@@ -1,3 +1,4 @@
+import classNames from 'classnames';
 import React, {
   ReactElement,
   ReactNode,
@@ -53,12 +54,15 @@ const Modal = ({
     [toggle, keyboard]
   );
 
-  useEffect(function addKeydownEventListener() {
-    if (isOpen) {
-      window.addEventListener('keydown', handleKeyDown);
-      return () => window.removeEventListener('keydown', handleKeyDown);
-    }
-  });
+  useEffect(
+    function addKeydownEventListener() {
+      if (isOpen) {
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+      }
+    },
+    [handleKeyDown, isOpen]
+  );
 
   useEffect(
     function open() {
@@ -69,25 +73,22 @@ const Modal = ({
     [onOpened]
   );
 
-  // useEffect(
-  //   function autoFocusOnRender() {
-  //     if (autoFocus && isOpen) {
-  //       (outerDivRef?.current as HTMLDivElement).focus();
-  //     }
-  //   },
-  //   [autoFocus, isOpen]
-  // );
-
-  const getCentered = (): string => {
-    if (centered) {
-      return 'modal-dialog-centered';
-    }
-    return '';
-  };
+  useEffect(
+    function autoFocusOnRender() {
+      if (autoFocus && isOpen) {
+        (outerDivRef?.current as HTMLDivElement)?.focus();
+      }
+    },
+    [autoFocus, isOpen]
+  );
 
   return isOpen ? (
     ReactDOM.createPortal(
-      <div className={`modal  ${getCentered()}`} onClick={toggle} role="dialog">
+      <div
+        className={classNames('modal', { 'modal-dialog-centered': centered })}
+        onClick={toggle}
+        role="dialog"
+      >
         <div className={`modal-dialog ${className}`} ref={outerDivRef}>
           <div
             className="modal-content"
