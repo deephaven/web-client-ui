@@ -162,6 +162,8 @@ export type GridMetrics = {
   // Map of calculated row/column height/width
   calculatedRowHeights: ModelSizeMap;
   calculatedColumnWidths: ModelSizeMap;
+
+  columnHeaderMaxDepth: number;
 };
 
 export default GridMetrics;

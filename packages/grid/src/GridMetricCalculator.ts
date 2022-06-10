@@ -230,6 +230,7 @@ export class GridMetricCalculator {
       floatingBottomRowCount,
       floatingLeftColumnCount,
       floatingRightColumnCount,
+      columnHeaderMaxDepth,
     } = model;
 
     // Get some basic metrics
@@ -617,6 +618,8 @@ export class GridMetricCalculator {
       // Map of calculated row/column height/width
       calculatedRowHeights,
       calculatedColumnWidths,
+
+      columnHeaderMaxDepth,
     };
   }
 
@@ -640,9 +643,9 @@ export class GridMetricCalculator {
   getGridY(state: GridMetricState): Coordinate {
     const { theme, model } = state;
     const { columnHeaderHeight } = theme;
-    const { columnHeaderDepth } = model;
+    const { columnHeaderMaxDepth } = model;
 
-    return columnHeaderDepth * columnHeaderHeight;
+    return columnHeaderMaxDepth * columnHeaderHeight;
   }
 
   /**

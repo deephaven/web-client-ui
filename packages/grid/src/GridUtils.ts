@@ -52,6 +52,7 @@ export type GridPoint = {
   y: Coordinate;
   column: GridRangeIndex;
   row: GridRangeIndex;
+  columnHeaderDepth?: number;
 };
 
 export interface CellInfo {
@@ -86,8 +87,15 @@ export class GridUtils {
   ): GridPoint {
     const column = GridUtils.getColumnAtX(x, metrics);
     const row = GridUtils.getRowAtY(y, metrics);
+    const { columnHeaderHeight, columnHeaderMaxDepth } = metrics;
 
-    return { x, y, row, column };
+    let columnHeaderDepth: number | undefined;
+    if (row === null) {
+      columnHeaderDepth =
+        columnHeaderMaxDepth - Math.ceil(y / columnHeaderHeight);
+    }
+
+    return { x, y, row, column, columnHeaderDepth };
   }
 
   static getCellInfoFromXY(

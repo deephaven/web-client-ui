@@ -49,7 +49,7 @@ abstract class GridModel<
    * A grid with 1-level grouping would have a columnHeaderDepth of 2
    * and columns at depths 0 and 1
    */
-  get columnHeaderDepth(): number {
+  get columnHeaderMaxDepth(): number {
     return 1;
   }
 
