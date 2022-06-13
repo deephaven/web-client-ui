@@ -740,6 +740,41 @@ export class GridUtils {
   }
 
   /**
+   * Move a visible range in the grid
+   * @param from The visible axis range to move
+   * @param to The visible index to move the start of the range to
+   * @param oldMovedItems The old reordered items
+   * @returns The new reordered items
+   */
+  static moveRange(
+    from: AxisRange,
+    to: VisibleIndex,
+    oldMovedItems: MoveOperation[] = []
+  ): MoveOperation[] {
+    if (from[0] === to) {
+      return oldMovedItems;
+    }
+
+    const movedItems: MoveOperation[] = [...oldMovedItems];
+    const lastMovedItem = movedItems[movedItems.length - 1];
+    if (
+      lastMovedItem &&
+      Array.isArray(lastMovedItem.from) &&
+      lastMovedItem.from[1] - lastMovedItem.from[0] === from[1] - from[0] &&
+      lastMovedItem.to === from[0]
+    ) {
+      movedItems[movedItems.length - 1] = {
+        ...movedItems[movedItems.length - 1],
+        to,
+      };
+    } else {
+      movedItems.push({ from, to });
+    }
+
+    return movedItems;
+  }
+
+  /**
    * Retrieve the model index given the currently moved items
    * @param visibleIndex The visible index of the item to get the model index for
    * @param movedItems The moved items
@@ -780,78 +815,80 @@ export class GridUtils {
       reverse ? i >= 0 : i < movedItems.length;
       reverse ? (i -= 1) : (i += 1)
     ) {
-      const { from: fromItem, to: toItem } = movedItems[i];
-      const from = reverse ? toItem : fromItem;
-      const to = reverse ? fromItem : toItem;
+      const { from: fromItemOrRange, to: toItem } = movedItems[i];
+      let length = 1;
+      let fromItem: number;
+      if (Array.isArray(fromItemOrRange)) {
+        length = fromItemOrRange[1] - fromItemOrRange[0] + 1; // Ranges are inclusive
+        [fromItem] = fromItemOrRange;
+      } else {
+        fromItem = fromItemOrRange;
+      }
+
+      const fromStart = reverse ? toItem : fromItem;
+      const fromEnd = fromStart + length - 1;
+      const toStart = reverse ? fromItem : toItem;
+      const moveDistance = toStart - fromStart;
+
       const nextResult: Range<number>[] = [];
       for (let j = 0; j < result.length; j += 1) {
         const currentStart = result[j][0] ?? Number.NEGATIVE_INFINITY;
         const currentEnd = result[j][1] ?? Number.POSITIVE_INFINITY;
-        const startLength = nextResult.length;
-        if (from < currentStart) {
-          // From before
-          if (to >= currentEnd) {
-            // To after
-            nextResult.push([currentStart - 1, currentEnd - 1]);
-          } else if (to >= currentStart) {
-            // To within
-            nextResult.push([currentStart - 1, to - 1]);
-            nextResult.push([to + 1, currentEnd]);
+
+        let movedRange: Range<number> | undefined;
+        const currentResult: Range<number>[] = [
+          [currentStart, fromStart - 1],
+          [fromStart, fromEnd],
+          [fromEnd + 1, currentEnd],
+        ]
+          .map(
+            ([s, e]): Range<number> => [
+              // Cap the ranges to within the current range bounds
+              Math.max(s, currentStart),
+              Math.min(e, currentEnd),
+            ]
+          )
+          .filter(([s, e]) => s <= e) // Remove invalid ranges
+          .map(
+            (range): Range<number> => {
+              const [s, e] = range;
+              if (fromStart <= s && fromEnd >= e) {
+                // Current range in moved range
+                movedRange = [s + moveDistance, e + moveDistance];
+                return movedRange;
           }
-        } else if (from > currentEnd) {
-          // From after
-          if (to <= currentStart) {
-            // To before
-            nextResult.push([currentStart + 1, currentEnd + 1]);
-          } else if (to <= currentEnd) {
-            // To within
-            nextResult.push([currentStart, to - 1]);
-            nextResult.push([to + 1, currentEnd + 1]);
+
+              if (fromEnd < s) {
+                // Current range is after moved range
+                return [s - length, e - length];
           }
-        } else if (to < currentStart) {
-          // From within to before
-          if (from > currentStart) {
-            nextResult.push([currentStart + 1, from]);
+              return range;
           }
-          nextResult.push([to, to]);
-          if (from < currentEnd) {
-            nextResult.push([from + 1, currentEnd]);
+          )
+          .map((range): Range<number>[] => {
+            const [s, e] = range;
+            if (toStart > s && toStart <= e) {
+              // Moved range splits this range
+              return [
+                [s, toStart - 1],
+                [toStart + length, e + length],
+              ];
           }
-        } else if (to > currentEnd) {
-          // From within to after
-          if (from > currentStart) {
-            nextResult.push([currentStart, from - 1]);
-          }
-          nextResult.push([to, to]);
-          if (from < currentEnd) {
-            nextResult.push([from, currentEnd - 1]);
-          }
-        } else if (from > to) {
-          // From within after to within before
-          if (to > currentStart) {
-            nextResult.push([currentStart, to - 1]);
-          }
-          nextResult.push([to + 1, from]);
-          nextResult.push([to, to]);
-          if (from < currentEnd) {
-            nextResult.push([from + 1, currentEnd]);
-          }
-        } else if (from < to) {
-          // From within before to within after
-          if (from > currentStart) {
-            nextResult.push([currentStart, from - 1]);
-          }
-          nextResult.push([to, to]);
-          nextResult.push([from, to - 1]);
-          if (to < currentEnd) {
-            nextResult.push([to + 1, currentEnd]);
-          }
+
+            if (range === movedRange) {
+              // Moved range has already been shifted
+              return [range];
         }
 
-        if (startLength === nextResult.length) {
-          // No modifications were made, add the original range indexes
-          nextResult.push([currentStart, currentEnd]);
+            if (toStart <= s) {
+              // Moved range shifts this range right
+              return [[s + length, e + length]];
         }
+            return [range];
+          })
+          .flat();
+
+        nextResult.push(...currentResult);
       }
 
       // Return infinity values back to null

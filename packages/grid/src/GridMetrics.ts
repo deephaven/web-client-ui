@@ -1,3 +1,5 @@
+import type { AxisRange } from './GridUtils';
+
 /** A grid coordinate value */
 export type Coordinate = number;
 
@@ -29,7 +31,7 @@ export type IndexModelMap = Map<VisibleIndex, ModelIndex>;
 
 /** Represents a move operation from one index to another */
 export type MoveOperation = {
-  from: VisibleIndex;
+  from: VisibleIndex | AxisRange;
   to: VisibleIndex;
 };
 
