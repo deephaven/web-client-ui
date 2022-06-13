@@ -741,6 +741,11 @@ export class GridUtils {
 
   /**
    * Move a visible range in the grid
+   *
+   * This will effectively slice the range out of the grid,
+   * re-index the remaining columns,
+   * then insert the range with the first element at the provided index
+   *
    * @param from The visible axis range to move
    * @param to The visible index to move the start of the range to
    * @param oldMovedItems The old reordered items
@@ -856,14 +861,14 @@ export class GridUtils {
                 // Current range in moved range
                 movedRange = [s + moveDistance, e + moveDistance];
                 return movedRange;
-          }
+              }
 
               if (fromEnd < s) {
                 // Current range is after moved range
                 return [s - length, e - length];
-          }
+              }
               return range;
-          }
+            }
           )
           .map((range): Range<number>[] => {
             const [s, e] = range;
@@ -873,17 +878,17 @@ export class GridUtils {
                 [s, toStart - 1],
                 [toStart + length, e + length],
               ];
-          }
+            }
 
             if (range === movedRange) {
               // Moved range has already been shifted
               return [range];
-        }
+            }
 
             if (toStart <= s) {
               // Moved range shifts this range right
               return [[s + length, e + length]];
-        }
+            }
             return [range];
           })
           .flat();
