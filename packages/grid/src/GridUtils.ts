@@ -17,11 +17,35 @@ import { GridWheelEvent } from './GridMouseHandler';
 
 type Range<T> = [start: T, end: T];
 
-export type AxisRange = Range<VisibleIndex>;
+export type AxisRange = Range<GridRangeIndex>;
+export type BoundedAxisRange = Range<VisibleIndex>;
 
-export type BoundedAxisRange = Range<number>;
+export function isAxisRange(range: unknown): range is AxisRange {
+  return (
+    Array.isArray(range) &&
+    range.length === 2 &&
+    (range[0] === null || typeof range[0] === 'number') &&
+    (range[1] === null || typeof range[1] === 'number')
+  );
+}
 
-export type GridAxisRange = Range<GridRangeIndex>;
+export function assertAxisRange(range: unknown): asserts range is AxisRange {
+  if (!isAxisRange(range)) {
+    throw new Error(`Expected axis range. Received: ${range}`);
+  }
+}
+
+export function isBoundedAxisRange(range: unknown): range is BoundedAxisRange {
+  return isAxisRange(range) && range[0] != null && range[1] != null;
+}
+
+export function assertBoundedAxisRange(
+  range: unknown
+): asserts range is BoundedAxisRange {
+  if (!isBoundedAxisRange(range)) {
+    throw new Error(`Expected bounded axis range. Received: ${range}`);
+  }
+}
 
 export type GridPoint = {
   x: Coordinate;
@@ -752,7 +776,7 @@ export class GridUtils {
    * @returns The new reordered items
    */
   static moveRange(
-    from: AxisRange,
+    from: BoundedAxisRange,
     to: VisibleIndex,
     oldMovedItems: MoveOperation[] = []
   ): MoveOperation[] {
@@ -763,8 +787,7 @@ export class GridUtils {
     const movedItems: MoveOperation[] = [...oldMovedItems];
     const lastMovedItem = movedItems[movedItems.length - 1];
     if (
-      lastMovedItem &&
-      Array.isArray(lastMovedItem.from) &&
+      isBoundedAxisRange(lastMovedItem.from) &&
       lastMovedItem.from[1] - lastMovedItem.from[0] === from[1] - from[0] &&
       lastMovedItem.to === from[0]
     ) {
@@ -823,7 +846,7 @@ export class GridUtils {
       const { from: fromItemOrRange, to: toItem } = movedItems[i];
       let length = 1;
       let fromItem: number;
-      if (Array.isArray(fromItemOrRange)) {
+      if (isBoundedAxisRange(fromItemOrRange)) {
         length = fromItemOrRange[1] - fromItemOrRange[0] + 1; // Ranges are inclusive
         [fromItem] = fromItemOrRange;
       } else {
@@ -955,7 +978,7 @@ export class GridUtils {
     start: GridRangeIndex,
     end: GridRangeIndex,
     movedItems: MoveOperation[]
-  ): GridAxisRange[] {
+  ): AxisRange[] {
     return GridUtils.applyItemMoves(start, end, movedItems, true);
   }
 
@@ -1012,7 +1035,7 @@ export class GridUtils {
     start: GridRangeIndex,
     end: GridRangeIndex,
     movedItems: MoveOperation[]
-  ): GridAxisRange[] {
+  ): AxisRange[] {
     return GridUtils.applyItemMoves(start, end, movedItems, false);
   }
 

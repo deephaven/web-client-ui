@@ -1,4 +1,4 @@
-import type { AxisRange } from './GridUtils';
+import type { BoundedAxisRange } from './GridUtils';
 
 /** A grid coordinate value */
 export type Coordinate = number;
@@ -31,7 +31,7 @@ export type IndexModelMap = Map<VisibleIndex, ModelIndex>;
 
 /** Represents a move operation from one index to another */
 export type MoveOperation = {
-  from: VisibleIndex | AxisRange;
+  from: VisibleIndex | BoundedAxisRange;
   to: VisibleIndex;
 };
 
