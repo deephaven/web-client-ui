@@ -787,6 +787,7 @@ export class GridUtils {
     const movedItems: MoveOperation[] = [...oldMovedItems];
     const lastMovedItem = movedItems[movedItems.length - 1];
     if (
+      lastMovedItem &&
       isBoundedAxisRange(lastMovedItem.from) &&
       lastMovedItem.from[1] - lastMovedItem.from[0] === from[1] - from[0] &&
       lastMovedItem.to === from[0]
