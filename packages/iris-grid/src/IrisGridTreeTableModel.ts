@@ -25,7 +25,7 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
     this.table.setViewport(viewportTop, viewportBottom, columns);
   }
 
-  textForCell(x: number, y: number): string | null {
+  textForCell(x: ModelIndex, y: ModelIndex): string {
     const column = this.columns[x];
     const row = this.row(y);
     if (row != null && column != null) {
@@ -54,6 +54,7 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
     formatValue?: (value: unknown, column: Column) => unknown
   ): Promise<unknown[][]> {
     assertNotNull(this.viewport);
+    assertNotNull(this.viewportData);
     const { columns } = this.viewport;
     const result = [];
 
@@ -61,7 +62,6 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
       result.push(columns.map(c => c.name));
     }
 
-    assertNotNull(this.viewportData);
     const viewportRange = new GridRange(
       0,
       this.viewportData?.offset,
@@ -141,11 +141,11 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
     return row?.isExpanded ?? false;
   }
 
-  setRowExpanded(y: number, isExpanded: boolean): void {
+  setRowExpanded(y: ModelIndex, isExpanded: boolean): void {
     this.table.setExpanded(y, isExpanded);
   }
 
-  depthForRow(y: number): number {
+  depthForRow(y: ModelIndex): ModelIndex {
     const row = this.row(y);
     return (row?.depth ?? 1) - 1;
   }

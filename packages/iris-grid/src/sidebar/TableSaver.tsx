@@ -55,9 +55,9 @@ export default class TableSaver extends PureComponent<
     getDownloadWorker: (): Promise<never> =>
       Promise.reject(new Error('Download worker not provided')),
     isDownloading: false,
-    onDownloadCompleted: (): null => null,
-    onDownloadCanceled: (): null => null,
-    onDownloadProgressUpdate: (): null => null,
+    onDownloadCompleted: (): void => undefined,
+    onDownloadCanceled: (): void => undefined,
+    onDownloadProgressUpdate: (): void => undefined,
   };
 
   static csvEscapeString(str: string): string {
@@ -73,17 +73,17 @@ export default class TableSaver extends PureComponent<
 
     this.state = {};
 
-    this.sw = null;
-    this.port = null;
-    this.fileWriter = null;
+    this.sw = undefined;
+    this.port = undefined;
+    this.fileWriter = undefined;
 
-    this.table = null;
-    this.tableSubscription = null;
-    this.columns = null;
+    this.table = undefined;
+    this.tableSubscription = undefined;
+    this.columns = undefined;
 
-    this.fileName = null;
+    this.fileName = undefined;
 
-    this.chunkRows = null;
+    this.chunkRows = undefined;
 
     this.gridRanges = [];
     this.gridRangeCounter = 0;
@@ -105,11 +105,11 @@ export default class TableSaver extends PureComponent<
     // Instead, we  monitor the pull() behavior from the readableStream called when the stream wants more data to write.
     // If the stream doesn't pull for long enough time, chances are the stream is already canceled, so we stop the stream.
     // Issue ticket on Chromium: https://bugs.chromium.org/p/chromium/issues/detail?id=638494
-    this.streamTimeout = null;
+    this.streamTimeout = undefined;
 
-    this.snapshotHandlerTimeout = null;
+    this.snapshotHandlerTimeout = undefined;
 
-    this.downloadStartTime = null;
+    this.downloadStartTime = undefined;
 
     this.iframes = [];
 
@@ -141,29 +141,29 @@ export default class TableSaver extends PureComponent<
     if (this.snapshotHandlerTimeout) clearTimeout(this.snapshotHandlerTimeout);
   }
 
-  sw: ServiceWorker | null;
+  sw: ServiceWorker | undefined;
 
-  port: MessagePort | null;
+  port: MessagePort | undefined;
 
-  fileWriter: WritableStreamDefaultWriter<unknown> | null;
+  fileWriter: WritableStreamDefaultWriter<unknown> | undefined;
 
-  table: Table | null;
+  table: Table | undefined;
 
-  tableSubscription: TableViewportSubscription | null;
+  tableSubscription: TableViewportSubscription | undefined;
 
-  columns: Column[] | null;
+  columns: Column[] | undefined;
 
-  fileName: string | null;
+  fileName: string | undefined;
 
-  chunkRows: number | null;
+  chunkRows: number | undefined;
 
   gridRanges: GridRange[];
 
-  gridRangeCounter: number | null;
+  gridRangeCounter: number | undefined;
 
   rangedSnapshotsTotal: number[];
 
-  rangedSnapshotCounter: number | null;
+  rangedSnapshotCounter: number | undefined;
 
   snapshotsTotal: number;
 
@@ -184,11 +184,11 @@ export default class TableSaver extends PureComponent<
   // Instead, we  monitor the pull() behavior from the readableStream called when the stream wants more data to write.
   // If the stream doesn't pull for long enough time, chances are the stream is already canceled, so we stop the stream.
   // Issue ticket on Chromium: https://bugs.chromium.org/p/chromium/issues/detail?id=638494
-  streamTimeout: NodeJS.Timeout | null;
+  streamTimeout: ReturnType<typeof setTimeout> | undefined;
 
-  snapshotHandlerTimeout: NodeJS.Timeout | null;
+  snapshotHandlerTimeout: ReturnType<typeof setTimeout> | undefined;
 
-  downloadStartTime: number | null;
+  downloadStartTime: number | undefined;
 
   iframes: HTMLIFrameElement[];
 
@@ -221,7 +221,7 @@ export default class TableSaver extends PureComponent<
         }
       };
       streamConfig.close = () => {
-        assertNotNull(fileName);
+        assertNotUndefined(fileName);
         const blob = new Blob(chunks, {
           type: 'application/octet-stream; charset=utf-8',
         });
@@ -341,10 +341,10 @@ export default class TableSaver extends PureComponent<
   }
 
   resetTableSaver(): void {
-    this.table = null;
-    this.tableSubscription = null;
-    this.columns = null;
-    this.chunkRows = null;
+    this.table = undefined;
+    this.tableSubscription = undefined;
+    this.columns = undefined;
+    this.chunkRows = undefined;
 
     this.gridRanges = [];
     this.gridRangeCounter = 0;
@@ -359,15 +359,15 @@ export default class TableSaver extends PureComponent<
     this.snapshotPending = 0;
     this.cancelableSnapshots = [];
 
-    if (this.streamTimeout) {
+    if (this.streamTimeout != null) {
       clearTimeout(this.streamTimeout);
     }
 
-    if (this.snapshotHandlerTimeout) {
+    if (this.snapshotHandlerTimeout != null) {
       clearTimeout(this.snapshotHandlerTimeout);
     }
-    this.streamTimeout = null;
-    this.snapshotHandlerTimeout = null;
+    this.streamTimeout = undefined;
+    this.snapshotHandlerTimeout = undefined;
   }
 
   handleDownloadTimeout(): void {
@@ -395,7 +395,7 @@ export default class TableSaver extends PureComponent<
       this.rangedSnapshotsTotal = this.gridRanges.map((range: GridRange) => {
         assertNotNull(range.endRow);
         assertNotNull(range.startRow);
-        assertNotNull(this.chunkRows);
+        assertNotUndefined(this.chunkRows);
 
         return Math.ceil((range.endRow - range.startRow + 1) / this.chunkRows);
       });
@@ -474,7 +474,11 @@ export default class TableSaver extends PureComponent<
   }
 
   updateDownloadProgress(snapshotIndex: GridRangeIndex): void {
-    if (snapshotIndex && this.snapshotsTotal && this.downloadStartTime) {
+    if (
+      snapshotIndex != null &&
+      this.snapshotsTotal != null &&
+      this.downloadStartTime != null
+    ) {
       const { onDownloadProgressUpdate } = this.props;
       const downloadProgress = Math.floor(
         (snapshotIndex * 100) / this.snapshotsTotal
@@ -503,7 +507,7 @@ export default class TableSaver extends PureComponent<
       rows.push(snapshotIterator.next().value);
     }
 
-    assertNotNull(this.columns);
+    assertNotUndefined(this.columns);
 
     for (let i = 0; i < rows.length; i += 1) {
       const rowIdx = rows[i];
@@ -546,9 +550,18 @@ export default class TableSaver extends PureComponent<
     if (n <= 0) {
       return;
     }
+    assertNotUndefined(this.gridRangeCounter);
     let i = 0;
     let currentGridRange = this.gridRanges[this.gridRangeCounter];
+
+    assertNotUndefined(this.tableSubscription);
+    assertNotUndefined(this.columns);
     while (i < n) {
+      assertNotNull(currentGridRange);
+      assertNotNull(currentGridRange.startRow);
+      assertNotNull(currentGridRange.endRow);
+      assertNotUndefined(this.rangedSnapshotCounter);
+      assertNotUndefined(this.chunkRows);
       const snapshotStartRow =
         currentGridRange.startRow + this.rangedSnapshotCounter * this.chunkRows;
       const snapshotEndRow = Math.min(
@@ -611,7 +624,7 @@ export default class TableSaver extends PureComponent<
     }
     if (readableStreamPulling) {
       if (!this.useBlobFallback) {
-        if (this.streamTimeout) {
+        if (this.streamTimeout != null) {
           clearTimeout(this.streamTimeout);
         }
         this.streamTimeout = setTimeout(

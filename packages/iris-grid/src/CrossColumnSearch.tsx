@@ -12,14 +12,15 @@ import {
 import dh, { Column, FilterCondition } from '@deephaven/jsapi-shim';
 import { TableUtils } from '@deephaven/jsapi-utils';
 import './CrossColumnSearch.scss';
+import { ColumnName } from './IrisGrid';
 
 interface CrossColumnSearchProps {
   value: string;
-  selectedColumns: string[];
+  selectedColumns: ColumnName[];
   invertSelection: boolean;
   onChange: (
     value: string,
-    selectedColumns: string[],
+    selectedColumns: ColumnName[],
     invertSelection: boolean
   ) => void;
   columns: Column[];
@@ -34,10 +35,10 @@ class CrossColumnSearch extends PureComponent<
 > {
   static createSearchFilter(
     searchValue: string,
-    selectedColumns: string[],
+    selectedColumns: ColumnName[],
     columns: Column[],
     invertSelection: boolean
-  ): FilterCondition | null {
+  ): FilterCondition | undefined {
     const filterColumns = invertSelection
       ? columns
           .filter(column => !selectedColumns.includes(column.name))
@@ -56,7 +57,7 @@ class CrossColumnSearch extends PureComponent<
             );
       return searchFilter;
     }
-    return null;
+    return undefined;
   }
 
   constructor(props: CrossColumnSearchProps) {
@@ -85,7 +86,10 @@ class CrossColumnSearch extends PureComponent<
     onChange(event.target.value, selectedColumns, invertSelection);
   }
 
-  sendColumnChange(selectedColumns: string[], invertSelection: boolean): void {
+  sendColumnChange(
+    selectedColumns: ColumnName[],
+    invertSelection: boolean
+  ): void {
     const { onChange, value } = this.props;
     onChange(value, selectedColumns, invertSelection);
   }

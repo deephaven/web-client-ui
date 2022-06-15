@@ -4,6 +4,7 @@ import {
   ModelIndex,
   ModelSizeMap,
   MoveOperation,
+  VisibleIndex,
 } from '@deephaven/grid';
 import dh, {
   Column,
@@ -16,7 +17,12 @@ import dh, {
   Table,
   TableData,
 } from '@deephaven/jsapi-shim';
-import { DateUtils, TableUtils, ReverseType } from '@deephaven/jsapi-utils';
+import {
+  DateUtils,
+  TableUtils,
+  ReverseType,
+  SortDirection,
+} from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
 import AggregationUtils from './sidebar/aggregations/AggregationUtils';
 import AggregationOperation from './sidebar/aggregations/AggregationOperation';
@@ -24,18 +30,21 @@ import {
   AdvancedFilter,
   assertNotNull,
   assertNotUndefined,
+  ColumnName,
   InputFilter,
   IrisGridProps,
   IrisGridState,
   QuickFilter,
+  AdvancedFilterMap,
+  QuickFilterMap,
 } from './IrisGrid';
 import { UIRollupConfig } from './sidebar/RollupRows';
 import { AggregationSettings } from './sidebar/aggregations/Aggregations';
-import { Options } from './AdvancedFilterCreator';
+import { AdvancedFilterOptions } from './AdvancedFilterCreator';
 import { CellData, PendingDataMap, UIRow } from './IrisGridTableModel';
-import IrisGridProxyModel from './IrisGridProxyModel';
 import { FormattingRule } from './Formatter';
 import { FormattingRule as SidebarFormattingRule } from './sidebar/conditional-formatting/ConditionalFormattingUtils';
+import IrisGridModel from './IrisGridModel';
 
 const log = Log.module('IrisGridUtils');
 
@@ -47,7 +56,7 @@ export interface DehydratedIrisGridState {
   advancedFilters: [
     number,
     {
-      options: Options;
+      options: AdvancedFilterOptions;
     }
   ][];
   aggregationSettings: AggregationSettings;
@@ -60,23 +69,23 @@ export interface DehydratedIrisGridState {
     }
   ][];
   sorts: {
-    column: number;
+    column: ModelIndex;
     isAbs: boolean;
-    direction: string;
+    direction: SortDirection;
   }[];
-  userColumnWidths: [string, number][];
+  userColumnWidths: [ColumnName, number][];
   userRowHeights: [number, number][];
-  customColumns: string[];
+  customColumns: ColumnName[];
   conditionalFormats: SidebarFormattingRule[];
   reverseType: ReverseType;
-  rollupConfig: UIRollupConfig | null;
+  rollupConfig: UIRollupConfig | undefined;
   showSearchBar: boolean;
   searchValue: string;
-  selectDistinctColumns: string[];
-  selectedSearchColumns: string[];
+  selectDistinctColumns: ColumnName[];
+  selectedSearchColumns: ColumnName[];
   invertSearchColumns: boolean;
   pendingDataMap: DehydratedPendingDataMap<string | CellData | null>;
-  frozenColumns: string[];
+  frozenColumns: ColumnName[];
 }
 
 type DehydratedPendingDataMap<T> = [number, { data: [string, T][] }][];
@@ -88,7 +97,7 @@ class IrisGridUtils {
    * @returns An object that can be stringified and imported with {{@link hydrateGridState}}
    */
   static dehydrateGridState(
-    model: IrisGridProxyModel,
+    model: IrisGridModel,
     gridState: Pick<
       IrisGridProps,
       'isStuckToBottom' | 'isStuckToRight' | 'movedColumns' | 'movedRows'
@@ -97,7 +106,7 @@ class IrisGridUtils {
     isStuckToBottom: boolean;
     isStuckToRight: boolean;
     movedColumns: { from: string; to: string }[];
-    movedRows: { from: number; to: number }[];
+    movedRows: MoveOperation[];
   } {
     const {
       isStuckToBottom,
@@ -130,12 +139,12 @@ class IrisGridUtils {
    * @returns The gridState props to set on the Grid
    */
   static hydrateGridState(
-    model: IrisGridProxyModel,
+    model: IrisGridModel,
     gridState: {
       isStuckToBottom: boolean;
       isStuckToRight: boolean;
-      movedColumns: { from: string | number; to: string | number }[];
-      movedRows: { from: number; to: number }[];
+      movedColumns: { from: string | ModelIndex; to: string | ModelIndex }[];
+      movedRows: MoveOperation[];
     },
     customColumns = []
   ): Pick<
@@ -194,7 +203,7 @@ class IrisGridUtils {
    * @param irisGridState The current state of the IrisGrid
    */
   static dehydrateIrisGridState(
-    model: IrisGridProxyModel,
+    model: IrisGridModel,
     irisGridState: IrisGridState
   ): DehydratedIrisGridState {
     const {
@@ -207,7 +216,7 @@ class IrisGridUtils {
       customColumns,
       conditionalFormats = [],
       reverseType,
-      rollupConfig = null,
+      rollupConfig = undefined,
       showSearchBar,
       searchValue,
       selectDistinctColumns = [],
@@ -217,7 +226,7 @@ class IrisGridUtils {
       pendingDataMap = new Map(),
       frozenColumns,
     } = irisGridState;
-    assertNotNull(metrics);
+    assertNotUndefined(metrics);
     const { userColumnWidths, userRowHeights } = metrics;
     const { columns } = model;
     return {
@@ -262,7 +271,7 @@ class IrisGridUtils {
    * @param irisGridState The saved IrisGrid state
    */
   static hydrateIrisGridState(
-    model: IrisGridProxyModel,
+    model: IrisGridModel,
     irisGridState: DehydratedIrisGridState
   ): Partial<IrisGridProps> {
     const {
@@ -277,7 +286,7 @@ class IrisGridUtils {
       userColumnWidths,
       userRowHeights,
       reverseType,
-      rollupConfig = null,
+      rollupConfig = undefined,
       showSearchBar,
       searchValue,
       selectDistinctColumns,
@@ -346,7 +355,7 @@ class IrisGridUtils {
    * @returns The dehydrated IrisGridPanel state
    */
   static dehydrateIrisGridPanelState(
-    model: IrisGridProxyModel,
+    model: IrisGridModel,
     irisGridPanelState: {
       // This needs to be changed after IrisGridPanel is done
       isSelectingPartition: boolean;
@@ -357,7 +366,7 @@ class IrisGridUtils {
   ): {
     isSelectingPartition: boolean;
     partition: string;
-    partitionColumn: string | null;
+    partitionColumn: ColumnName | null;
   } {
     const {
       isSelectingPartition,
@@ -379,12 +388,12 @@ class IrisGridUtils {
    * @returns The state to apply to the IrisGridPanel
    */
   static hydrateIrisGridPanelState(
-    model: IrisGridProxyModel,
+    model: IrisGridModel,
     irisGridPanelState: {
       // This needs to be changed after IrisGridPanel is done
       isSelectingPartition: boolean;
       partition: string;
-      partitionColumn: string;
+      partitionColumn: ColumnName;
     }
   ): {
     isSelectingPartition: boolean;
@@ -414,7 +423,7 @@ class IrisGridUtils {
    * @returns The dehydrated quick filters
    */
   static dehydrateQuickFilters(
-    quickFilters: Map<number, QuickFilter>
+    quickFilters: QuickFilterMap
   ): [number, { text: string }][] {
     return [...quickFilters].map(([columnIndex, quickFilter]) => {
       const { text } = quickFilter;
@@ -424,16 +433,16 @@ class IrisGridUtils {
 
   /**
    * Import the saved quick filters to apply to the columns. Does not actually apply the filters.
-   * @param {dh.Column[]} columns The columns the filters will be applied to
-   * @param {Object[]} savedQuickFilters Exported quick filters definitions
-   * @param {string} timeZone The time zone to make this value in if it is a date type. E.g. America/New_York
-   * @returns {QuickFilter[]} The quick filters to apply to the columns
+   * @param  columns The columns the filters will be applied to
+   * @param  savedQuickFilters Exported quick filters definitions
+   * @param  timeZone The time zone to make this value in if it is a date type. E.g. America/New_York
+   * @returns The quick filters to apply to the columns
    */
   static hydrateQuickFilters(
     columns: Column[],
     savedQuickFilters: [number, { text: string }][],
     timeZone?: string
-  ): Map<number, QuickFilter> {
+  ): QuickFilterMap {
     const importedFilters = savedQuickFilters.map(
       ([columnIndex, quickFilter]: [number, { text: string }]): [
         number,
@@ -462,12 +471,12 @@ class IrisGridUtils {
    * Export the advanced filters from the provided columns to JSON striginfiable object
    * @param columns The columns for the filters
    * @param advancedFilters The advanced filters to dehydrate
-   * @returns {Object} The dehydrated advanced filters
+   * @returns The dehydrated advanced filters
    */
   static dehydrateAdvancedFilters(
     columns: Column[],
-    advancedFilters: Map<number, AdvancedFilter>
-  ): [number, { options: Options }][] {
+    advancedFilters: AdvancedFilterMap
+  ): [number, { options: AdvancedFilterOptions }][] {
     return [...advancedFilters].map(([columnIndex, advancedFilter]) => {
       const column = IrisGridUtils.getColumn(columns, columnIndex);
       assertNotNull(column);
@@ -481,20 +490,23 @@ class IrisGridUtils {
 
   /**
    * Import the saved advanced filters to apply to the columns. Does not actually apply the filters.
-   * @param {dh.Columns[]} columns The columns the filters will be applied to
-   * @param {Object[]} savedAdvancedFilters Exported advanced filters definitions
-   * @param {string} timeZone The time zone to make this filter in if it is a date type. E.g. America/New_York
-   * @returns {AdvancedFilter[]} The advanced filters to apply to the columns
+   * @param  columns The columns the filters will be applied to
+   * @param  savedAdvancedFilters Exported advanced filters definitions
+   * @param  timeZone The time zone to make this filter in if it is a date type. E.g. America/New_York
+   * @returns The advanced filters to apply to the columns
    */
   static hydrateAdvancedFilters(
     columns: Column[],
-    savedAdvancedFilters: [number, { options: Options }][],
+    savedAdvancedFilters: [number, { options: AdvancedFilterOptions }][],
     timeZone: string
-  ): Map<number, AdvancedFilter> {
+  ): AdvancedFilterMap {
     const importedFilters = savedAdvancedFilters.map(
-      ([columnIndex, advancedFilter]: [number, { options: Options }]): [
+      ([columnIndex, advancedFilter]: [
         number,
-        { options: Options; filter: FilterCondition | null }
+        { options: AdvancedFilterOptions }
+      ]): [
+        number,
+        { options: AdvancedFilterOptions; filter: FilterCondition | null }
       ] => {
         const column = IrisGridUtils.getColumn(columns, columnIndex);
         assertNotNull(column);
@@ -522,8 +534,8 @@ class IrisGridUtils {
 
   static dehydrateAdvancedFilterOptions(
     column: Column,
-    options: Options
-  ): Options {
+    options: AdvancedFilterOptions
+  ): AdvancedFilterOptions {
     const { selectedValues, ...otherOptions } = options;
     return {
       selectedValues: selectedValues?.map((value: unknown) =>
@@ -535,8 +547,8 @@ class IrisGridUtils {
 
   static hydrateAdvancedFilterOptions(
     column: Column,
-    options: Options
-  ): Options {
+    options: AdvancedFilterOptions
+  ): AdvancedFilterOptions {
     const { selectedValues, ...otherOptions } = options;
     return {
       selectedValues: selectedValues?.map(value =>
@@ -579,8 +591,8 @@ class IrisGridUtils {
     number,
     { data: Map<ModelIndex | null, string | CellData | LongWrapper | null> }
   > {
-    const columnMap = new Map<string, number>();
-    const getColumnIndex = (columnName: string) => {
+    const columnMap = new Map<ColumnName, number>();
+    const getColumnIndex = (columnName: ColumnName) => {
       if (!columnMap.has(columnName)) {
         columnMap.set(
           columnName,
@@ -616,8 +628,8 @@ class IrisGridUtils {
 
   /**
    * Dehydrates/serializes a value for storage.
-   * @param {Any} value The value to dehydrate
-   * @param {String} columnType The column type
+   * @param  value The value to dehydrate
+   * @param  columnType The column type
    */
   static dehydrateValue<T>(value: T, columnType: string): string | T | null {
     if (TableUtils.isDateType(columnType)) {
@@ -635,8 +647,8 @@ class IrisGridUtils {
 
   /**
    * Hydrate a value from it's serialized state
-   * @param {Any} value The dehydrated value that needs to be hydrated
-   * @param {String} columnType The type of column
+   * @param  value The dehydrated value that needs to be hydrated
+   * @param  columnType The type of column
    */
   static hydrateValue<T>(
     value: T,
@@ -675,15 +687,15 @@ class IrisGridUtils {
 
   /**
    * Export the sorts from the provided table sorts to JSON stringifiable object
-   * @param {dh.Sort[]} sorts The table sorts
-   * @returns {Object} The dehydrated sorts
+   * @param  sorts The table sorts
+   * @returns The dehydrated sorts
    */
   static dehydrateSort(
     sorts: Sort[]
   ): {
-    column: number;
+    column: ModelIndex;
     isAbs: boolean;
-    direction: string;
+    direction: SortDirection;
   }[] {
     return sorts.map(sort => {
       const { column, isAbs, direction } = sort;
@@ -697,13 +709,13 @@ class IrisGridUtils {
 
   /**
    * Import the saved sorts to apply to the table. Does not actually apply the sort.
-   * @param {dh.Column[]} columns The columns the sorts will be applied to
-   * @param {Object[]} sorts Exported sort definitions
-   * @returns {dh.Sort[]} The sorts to apply to the table
+   * @param  columns The columns the sorts will be applied to
+   * @param  sorts Exported sort definitions
+   * @returns The sorts to apply to the table
    */
   static hydrateSort(
     columns: Column[],
-    sorts: { column: number; isAbs: boolean; direction: string }[]
+    sorts: { column: number; isAbs: boolean; direction: SortDirection }[]
   ): Sort[] {
     return (
       sorts
@@ -740,24 +752,24 @@ class IrisGridUtils {
 
   /**
    * Pulls just the table settings from the panel state, eg. filters/sorts
-   * @param {Object} panelState The dehydrated panel state
-   * @returns {Object} A dehydrated table settings object, { partition, partitionColumn, advancedFilters, quickFilters, sorts }
+   * @param  panelState The dehydrated panel state
+   * @returns A dehydrated table settings object, { partition, partitionColumn, advancedFilters, quickFilters, sorts }
    */
   static extractTableSettings(
     panelState: {
       irisGridState: IrisGridState;
       irisGridPanelState: {
-        partitionColumn: string;
+        partitionColumn: ColumnName;
         partition: unknown;
       };
     },
     inputFilters: InputFilter[] = []
   ): {
-    partitionColumn: string;
+    partitionColumn: ColumnName;
     partition: unknown;
-    advancedFilters: Map<number, AdvancedFilter>;
+    advancedFilters: AdvancedFilterMap;
     inputFilters: InputFilter[];
-    quickFilters: Map<number, QuickFilter>;
+    quickFilters: QuickFilterMap;
     sorts: Sort[];
   } {
     const { irisGridPanelState, irisGridState } = panelState;
@@ -776,9 +788,9 @@ class IrisGridUtils {
 
   /**
    * Applies the passed in table settings directly to the provided table
-   * @param {dh.Table} table The table to apply the settings to
-   * @param {Object} tableSettings Dehydrated table settings extracted with `extractTableSettings`
-   * @param {string} timeZone The time zone to make this value in if it is a date type. E.g. America/New_York
+   * @param  table The table to apply the settings to
+   * @param  tableSettings Dehydrated table settings extracted with `extractTableSettings`
+   * @param  timeZone The time zone to make this value in if it is a date type. E.g. America/New_York
    */
   static applyTableSettings(
     table: Table,
@@ -792,17 +804,17 @@ class IrisGridUtils {
       advancedFilters?: [
         number,
         {
-          options: Options;
+          options: AdvancedFilterOptions;
         }
       ][];
       inputFilters?: InputFilter[];
       sorts?: {
-        column: number;
+        column: ModelIndex;
         isAbs: boolean;
-        direction: string;
+        direction: SortDirection;
       }[];
       partition?: unknown;
-      partitionColumn?: string;
+      partitionColumn?: ColumnName;
     },
     timeZone: string
   ): void {
@@ -898,7 +910,7 @@ class IrisGridUtils {
   }
 
   static getFiltersFromFilterMap(
-    filterMap: Map<number, QuickFilter | AdvancedFilter | null>
+    filterMap: Map<ModelIndex, QuickFilter | AdvancedFilter | null>
   ): FilterCondition[] {
     const filters = [];
 
@@ -916,8 +928,8 @@ class IrisGridUtils {
 
   /**
    * Get array of hidden column indexes
-   * @param {Map} userColumnWidths Map of user column widths
-   * @returns {number[]} Array of hidden column indexes
+   * @param  userColumnWidths Map of user column widths
+   * @returns Array of hidden column indexes
    */
   static getHiddenColumns(userColumnWidths: ModelSizeMap): number[] {
     return [...userColumnWidths.entries()]
@@ -925,14 +937,14 @@ class IrisGridUtils {
       .map(([key]) => key);
   }
 
-  static parseCustomColumnNames(customColumns: string[]): string[] {
+  static parseCustomColumnNames(customColumns: ColumnName[]): ColumnName[] {
     return customColumns.map(customColumn => customColumn.split('=')[0]);
   }
 
   static getRemovedCustomColumnNames(
-    oldCustomColumns: string[],
-    customColumns: string[]
-  ): string[] {
+    oldCustomColumns: ColumnName[],
+    customColumns: ColumnName[]
+  ): ColumnName[] {
     const oldCustomColumnsNames = IrisGridUtils.parseCustomColumnNames(
       oldCustomColumns
     );
@@ -951,7 +963,7 @@ class IrisGridUtils {
   static removeFiltersInColumns<T>(
     columns: Column[],
     filters: Map<number, T>,
-    removedColumnNames: string[]
+    removedColumnNames: ColumnName[]
   ): Map<number, T> {
     const columnNames = columns.map(({ name }) => name);
     const newFilter = new Map(filters);
@@ -964,7 +976,7 @@ class IrisGridUtils {
   static removeColumnFromMovedColumns(
     columns: Column[],
     movedColumns: MoveOperation[],
-    removedColumnNames: string[]
+    removedColumnNames: ColumnName[]
   ): MoveOperation[] {
     const columnNames = columns.map(({ name }) => name);
     let newMoves = [...movedColumns];
@@ -1015,9 +1027,9 @@ class IrisGridUtils {
   }
 
   static removeColumnsFromSelectDistinctColumns(
-    selectDistinctColumns: string[],
-    removedColumnNames: string[]
-  ): string[] {
+    selectDistinctColumns: ColumnName[],
+    removedColumnNames: ColumnName[]
+  ): ColumnName[] {
     return selectDistinctColumns.filter(
       columnName => !removedColumnNames.includes(columnName)
     );
@@ -1030,7 +1042,7 @@ class IrisGridUtils {
     movedColumns: MoveOperation[],
     hiddenColumns: number[]
   ): Column[] {
-    const columns = [] as Column[];
+    const columns: Column[] = [];
     for (let i = left; i <= right; i += 1) {
       const modelIndex = GridUtils.getModelIndex(i, movedColumns);
       if (
@@ -1046,10 +1058,10 @@ class IrisGridUtils {
 
   static getPrevVisibleColumns(
     tableColumns: Column[],
-    startIndex: number,
+    startIndex: VisibleIndex,
     count: number,
     movedColumns: MoveOperation[],
-    hiddenColumns: number[]
+    hiddenColumns: VisibleIndex[]
   ): Column[] {
     const columns = [];
     let i = startIndex;
@@ -1069,10 +1081,10 @@ class IrisGridUtils {
 
   static getNextVisibleColumns(
     tableColumns: Column[],
-    startIndex: ModelIndex,
+    startIndex: VisibleIndex,
     count: number,
     movedColumns: MoveOperation[],
-    hiddenColumns: number[]
+    hiddenColumns: VisibleIndex[]
   ): Column[] {
     const columns = [];
     let i = startIndex;
@@ -1093,7 +1105,7 @@ class IrisGridUtils {
   static getColumnsToFetch(
     tableColumns: Column[],
     viewportColumns: Column[],
-    alwaysFetchColumnNames: string[]
+    alwaysFetchColumnNames: ColumnName[]
   ): Column[] {
     const columnsToFetch = [...viewportColumns];
     alwaysFetchColumnNames.forEach(columnName => {
@@ -1110,8 +1122,8 @@ class IrisGridUtils {
     left: number | null,
     right: number | null,
     movedColumns: MoveOperation[],
-    hiddenColumns: number[] = [],
-    alwaysFetchColumnNames: string[] = [],
+    hiddenColumns: VisibleIndex[] = [],
+    alwaysFetchColumnNames: ColumnName[] = [],
     bufferPages = 0
   ): Column[] | null {
     if (left == null || right == null) {
@@ -1154,8 +1166,8 @@ class IrisGridUtils {
    * Get the dh.RangeSet representation of the provided ranges.
    * Ranges are sorted prior to creating the RangeSet. Only the rows are taken into account,
    * RangeSet does not have an option for columns.
-   * @param {GridRange[]} ranges The ranges to get the range set for
-   * @returns {dh.RangeSet} The rangeset for the provided ranges
+   * @param  ranges The ranges to get the range set for
+   * @returns The rangeset for the provided ranges
    */
   static rangeSetFromRanges(ranges: GridRange[]): RangeSet {
     const rangeSets = ranges
@@ -1212,7 +1224,7 @@ class IrisGridUtils {
 
   /**
    * Check if the provided value is a valid table index
-   * @param {any} value A value to check if it's a valid table index
+   * @param  value A value to check if it's a valid table index
    */
   static isValidIndex(value: unknown): boolean {
     if (!Number.isInteger(value)) {
@@ -1226,9 +1238,9 @@ class IrisGridUtils {
 
   /**
    * Returns all columns used in any of the ranges provided
-   * @param {GridRange[]} ranges The model ranges to get columns for
-   * @param {dh.Column[]} allColumns All the columns to pull from
-   * @returns {dh.Column[]} The columns selected in the range
+   * @param  ranges The model ranges to get columns for
+   * @param  allColumns All the columns to pull from
+   * @returns The columns selected in the range
    */
   static columnsFromRanges(
     ranges: GridRange[],
@@ -1242,11 +1254,13 @@ class IrisGridUtils {
       return allColumns;
     }
 
-    const columnSet = new Set() as Set<number>;
+    const columnSet = new Set<ModelIndex>();
     for (let i = 0; i < ranges.length; i += 1) {
       const range = ranges[i];
+      assertNotNull(range.startColumn);
+      assertNotNull(range.endColumn);
       for (
-        let c = range.startColumn ?? (0 as number);
+        let c = range.startColumn ?? 0;
         c <= (range.endColumn ?? allColumns.length - 1);
         c += 1
       ) {
@@ -1258,8 +1272,8 @@ class IrisGridUtils {
 
   /**
    * Transforms an iris data snapshot into a simple data matrix
-   * @param {dh.TableData} data The Iris formatted table data
-   * @returns {unknown[][]} A matrix of the values of the data
+   * @param  data The Iris formatted table data
+   * @returns A matrix of the values of the data
    */
   static snapshotDataToMatrix(data: TableData): unknown[][] {
     const { columns, rows } = data;
@@ -1279,10 +1293,10 @@ class IrisGridUtils {
 
   /**
    * Hydrate model rollup config
-   * @param {Array} originalColumns Original model columns
-   * @param {Object} config Dehydrated rollup config
-   * @param {Object} aggregationSettings Aggregation settings
-   * @returns {Object} Rollup config for the model
+   * @param  originalColumns Original model columns
+   * @param  config Dehydrated rollup config
+   * @param  aggregationSettings Aggregation settings
+   * @returns Rollup config for the model
    */
   static getModelRollupConfig(
     originalColumns: Column[],
@@ -1348,8 +1362,8 @@ class IrisGridUtils {
   }
 
   /**
-   * @param {Map} pendingDataMap Map of pending data
-   * @returns {Map} A map with the errors in the pending data
+   * @param  pendingDataMap Map of pending data
+   * @returns A map with the errors in the pending data
    */
   static getPendingErrors(pendingDataMap: Map<number, UIRow>): void {
     pendingDataMap.forEach((row, rowIndex) => {
@@ -1369,10 +1383,10 @@ class IrisGridUtils {
   /**
    * Retrieves a column from the provided array at the index, or `null` and logs an error if it's invalid
    *
-   * @param {dh.Columns[]} columns The columns to get the column from
-   * @param {Number} columnIndex The column index to get
+   * @param  columns The columns to get the column from
+   * @param  columnIndex The column index to get
    */
-  static getColumn(columns: Column[], columnIndex: number): Column | null {
+  static getColumn(columns: Column[], columnIndex: ModelIndex): Column | null {
     if (columnIndex < columns.length) {
       return columns[columnIndex];
     }
@@ -1384,12 +1398,12 @@ class IrisGridUtils {
 
   /**
    * Retrieves a column from the provided array matching the name, or `null` and logs an error if not found
-   * @param {dh.Column[]} columns The columns to get the column from
-   * @param {String} columnName The column name to retrieve
+   * @param  columns The columns to get the column from
+   * @param  columnName The column name to retrieve
    */
   static getColumnByName(
     columns: Column[],
-    columnName: string
+    columnName: ColumnName
   ): Column | undefined {
     const column = columns.find(({ name }) => name === columnName);
     if (column == null) {
@@ -1405,13 +1419,13 @@ class IrisGridUtils {
 
   /**
    * Get filter configs with column names changed to indexes, exclude missing columns
-   * @param {dh.Column[]} columns The columns to get column indexes from
-   * @param {Object[]} filters Filter configs
-   * @returns {Object[]} Updated filter configs with column names changed to indexes
+   * @param  columns The columns to get column indexes from
+   * @param  filters Filter configs
+   * @returns Updated filter configs with column names changed to indexes
    */
   static changeFilterColumnNamesToIndexes<T>(
     columns: Column[],
-    filters: { name: string; filter: T }[]
+    filters: { name: ColumnName; filter: T }[]
   ): ([number, unknown] | null)[] {
     return filters
       .map(({ name, filter }): null | [number, T] => {

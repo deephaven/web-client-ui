@@ -444,7 +444,7 @@ export interface Sort {
   reverse(): Sort;
 
   readonly column: Column;
-  readonly direction: string;
+  readonly direction: 'ASC' | 'DESC' | 'REVERSE' | null;
 
   readonly isAbs: boolean;
 

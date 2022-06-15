@@ -8,10 +8,10 @@ import dh, { Table, TableViewportSubscription } from '@deephaven/jsapi-shim';
 import { TimeUtils } from '@deephaven/utils';
 import shortid from 'shortid';
 import './TableCsvExporter.scss';
-import IrisGridProxyModel from '../IrisGridProxyModel';
+import IrisGridModel from '../IrisGridModel';
 
 interface TableCsvExporterProps {
-  model: IrisGridProxyModel;
+  model: IrisGridModel;
   name: string;
   isDownloading: boolean;
   tableDownloadStatus: string;
@@ -65,7 +65,7 @@ class TableCsvExporter extends Component<
   static DEFAULT_DOWNLOAD_ROWS = 100;
 
   static defaultProps = {
-    onDownloadStart: (): null => null,
+    onDownloadStart: (): void => undefined,
     isDownloading: false,
     tableDownloadStatus: '',
     tableDownloadProgress: 0,

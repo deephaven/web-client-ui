@@ -18,18 +18,15 @@ import {
   ColumnStatistics as APIColumnStatistics,
 } from '@deephaven/jsapi-shim';
 import Log from '@deephaven/log';
-import {
-  CancelablePromise,
-  CanceledPromiseError,
-  PromiseUtils,
-} from '@deephaven/utils';
+import { CancelablePromise, PromiseUtils } from '@deephaven/utils';
+import { isExpandableGridModel } from '@deephaven/grid';
 import './ColumnStatistics.scss';
-import IrisGridProxyModel from './IrisGridProxyModel';
+import IrisGridModel from './IrisGridModel';
 
 const log = Log.module('ColumnStatistics');
-const STATS_LABEL_OVERRIDES = {
+const STATS_LABEL_OVERRIDES: Record<string, string> = {
   SIZE: 'Number of Rows',
-} as Record<string, string>;
+};
 
 interface Statistic {
   operation: Key;
@@ -40,7 +37,7 @@ interface Statistic {
 
 interface ColumnStatisticsProps {
   column: Column;
-  model: IrisGridProxyModel;
+  model: IrisGridModel;
   onStatistics: () => void;
 }
 interface ColumnStatisticsState {
@@ -63,7 +60,7 @@ class ColumnStatistics extends Component<
       STATS_LABEL_OVERRIDES[operation] ??
       operation
         .split(' ')
-        .map((w: string) => w[0].toUpperCase() + w.substr(1).toLowerCase())
+        .map(w => w[0].toUpperCase() + w.substr(1).toLowerCase())
         .join(' ')
     );
   }
@@ -131,7 +128,7 @@ class ColumnStatistics extends Component<
     log.debug('Received statistics', stats);
 
     const { model, onStatistics } = this.props;
-    const statistics = [] as Statistic[];
+    const statistics: Statistic[] = [];
 
     stats.statisticsMap.forEach((value, operation) => {
       statistics.push({
@@ -159,8 +156,8 @@ class ColumnStatistics extends Component<
     onStatistics();
   }
 
-  handleError(error: CanceledPromiseError): void {
-    if (error && error.isCanceled) {
+  handleError(error: Error): void {
+    if (error && PromiseUtils.isCanceled(error)) {
       log.debug('Called handleError on a cancelled promise result');
       return;
     }
@@ -203,9 +200,10 @@ class ColumnStatistics extends Component<
         statisticElements.push(statisticElement);
       }
     }
-    const rowCountLabel = model.hasExpandableRows
-      ? 'Expanded Rows'
-      : 'Number of Rows';
+    const rowCountLabel =
+      isExpandableGridModel(model) && model.hasExpandableRows
+        ? 'Expanded Rows'
+        : 'Number of Rows';
     const formattedRowCount = model.displayString(numRows, 'long');
     const columnIndex = model.getColumnIndexByName(column.name);
     return (
@@ -225,10 +223,10 @@ class ColumnStatistics extends Component<
             tooltip={copied ? 'Copied text' : 'Copy column name'}
           />
         </div>
-        {description && (
+        {description != null && (
           <div className="column-statistics-description">{description}</div>
         )}
-        {columnIndex && !model.isColumnMovable(columnIndex) && (
+        {columnIndex != null && !model.isColumnMovable(columnIndex) && (
           <div className="column-statistics-status">
             <FontAwesomeIcon
               icon={model.isColumnFrozen(columnIndex) ? dhFreeze : vsLock}

@@ -34,9 +34,9 @@ class CustomColumnInput extends PureComponent<
     name: '',
     inputIndex: 0,
     formula: '',
-    onChange: (): null => null,
-    onDeleteColumn: (): null => null,
-    onTabInEditor: (): null => null,
+    onChange: (): void => undefined,
+    onDeleteColumn: (): void => undefined,
+    onTabInEditor: (): void => undefined,
     invalid: false,
   };
 

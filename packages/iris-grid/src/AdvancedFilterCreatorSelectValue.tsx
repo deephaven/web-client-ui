@@ -6,6 +6,7 @@ import { Formatter, TableUtils } from '@deephaven/jsapi-utils';
 import { FilterCondition, Table } from '@deephaven/jsapi-shim';
 import AdvancedFilterCreatorSelectValueList from './AdvancedFilterCreatorSelectValueList';
 import './AdvancedFilterCreatorSelectValue.scss';
+import { ColumnName } from './IrisGrid';
 
 interface AdvancedFilterCreatorSelectValueProps<T> {
   invertSelection: boolean;
@@ -18,15 +19,15 @@ interface AdvancedFilterCreatorSelectValueProps<T> {
 }
 
 interface AdvancedFilterCreatorSelectValueState<T> {
-  error: unknown;
+  error?: string;
   filters: FilterCondition[];
   invertSelection: boolean;
   selectedValues: T[];
   searchText: string;
-  table: Table | null;
+  table: Table | undefined;
 }
 
-class AdvancedFilterCreatorSelectValue<T> extends PureComponent<
+class AdvancedFilterCreatorSelectValue<T = unknown> extends PureComponent<
   AdvancedFilterCreatorSelectValueProps<T>,
   AdvancedFilterCreatorSelectValueState<T>
 > {
@@ -36,7 +37,7 @@ class AdvancedFilterCreatorSelectValue<T> extends PureComponent<
     table: null,
     invertSelection: true,
     selectedValues: [],
-    onChange: (): null => null,
+    onChange: (): void => undefined,
     showSearch: true,
   };
 
@@ -49,18 +50,18 @@ class AdvancedFilterCreatorSelectValue<T> extends PureComponent<
     this.handleSearchChange = this.handleSearchChange.bind(this);
     this.handleUpdateFilterTimeout = this.handleUpdateFilterTimeout.bind(this);
 
-    this.searchTablePromise = null;
-    this.updateFilterTimer = null;
+    this.searchTablePromise = undefined;
+    this.updateFilterTimer = undefined;
 
     const { invertSelection, selectedValues } = props;
 
     this.state = {
-      error: null,
+      error: undefined,
       filters: [],
       invertSelection,
       selectedValues,
       searchText: '',
-      table: null,
+      table: undefined,
     };
   }
 
@@ -86,8 +87,14 @@ class AdvancedFilterCreatorSelectValue<T> extends PureComponent<
     }
 
     const { table: searchTable, searchText } = this.state;
-    if (searchTable !== prevState.table && prevState.table != null) {
-      prevState.table.close();
+
+    if (searchTable !== prevState.table) {
+      if (prevState.table != null) {
+        prevState.table.close();
+      }
+      if (searchTable != null) {
+        this.startUpdateFilterTimer();
+      }
     }
 
     if (searchText !== prevState.searchText) {
@@ -100,16 +107,16 @@ class AdvancedFilterCreatorSelectValue<T> extends PureComponent<
     if (table != null) {
       table.close();
     }
-    this.searchTablePromise = null;
+    this.searchTablePromise = undefined;
 
     this.stopUpdateFilterTimer();
   }
 
-  searchTablePromise: Promise<Table> | null;
+  searchTablePromise?: Promise<Table>;
 
-  updateFilterTimer: NodeJS.Timeout | null;
+  updateFilterTimer?: ReturnType<typeof setTimeout>;
 
-  getColumnName(): string {
+  getColumnName(): ColumnName {
     const { table } = this.props;
     if (table != null) {
       return table.columns[0].name;
@@ -161,7 +168,7 @@ class AdvancedFilterCreatorSelectValue<T> extends PureComponent<
     this.searchTablePromise.then(searchTable => {
       if (this.searchTablePromise === searchTablePromise) {
         this.setState({ table: searchTable });
-        this.searchTablePromise = null;
+        this.searchTablePromise = undefined;
       } else {
         searchTable.close();
       }
@@ -189,7 +196,7 @@ class AdvancedFilterCreatorSelectValue<T> extends PureComponent<
   }
 
   handleUpdateFilterTimeout(): void {
-    this.updateFilterTimer = null;
+    this.updateFilterTimer = undefined;
     this.updateTableFilter();
   }
 
@@ -212,9 +219,9 @@ class AdvancedFilterCreatorSelectValue<T> extends PureComponent<
   }
 
   stopUpdateFilterTimer(): void {
-    if (this.updateFilterTimer) {
+    if (this.updateFilterTimer != null) {
       clearTimeout(this.updateFilterTimer);
-      this.updateFilterTimer = null;
+      this.updateFilterTimer = undefined;
     }
   }
 
@@ -223,16 +230,19 @@ class AdvancedFilterCreatorSelectValue<T> extends PureComponent<
     const { timeZone } = this.props;
     const column = table?.columns[0];
     const filters = [];
-    let error = null;
+    if (column == null) {
+      return;
+    }
+    let error;
     if (searchText.length > 0) {
       let filter = null;
-      if (column && TableUtils.isCharType(column.type)) {
+      if (TableUtils.isCharType(column.type)) {
         // Just exact match for char
         filter = TableUtils.makeQuickFilter(column, searchText);
-      } else if (column && TableUtils.isTextType(column.type)) {
+      } else if (TableUtils.isTextType(column.type)) {
         // case insensitive & contains search text
         filter = TableUtils.makeQuickFilter(column, `~${searchText}`, timeZone);
-      } else if (column) {
+      } else {
         // greater than or equal search for everything else
         // we may want to be smarter with some other types (like dates)
         filter = TableUtils.makeQuickFilter(

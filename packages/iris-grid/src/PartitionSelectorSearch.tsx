@@ -6,6 +6,7 @@ import { ItemList, LoadingSpinner } from '@deephaven/components';
 import Log from '@deephaven/log';
 import { CanceledPromiseError } from '@deephaven/utils';
 import './PartitionSelectorSearch.scss';
+import { ModelIndex } from '@deephaven/grid';
 
 const log = Log.module('PartitionSelectorSearch');
 const DEBOUNCE_UPDATE_FILTER = 150;
@@ -37,8 +38,8 @@ class PartitionSelectorSearch<T> extends Component<
 
   static defaultProps = {
     initialPageSize: 100,
-    onSelect: (): null => null,
-    onListResized: (): null => null,
+    onSelect: (): void => undefined,
+    onListResized: (): void => undefined,
   };
 
   static propTypes = {
@@ -185,7 +186,7 @@ class PartitionSelectorSearch<T> extends Component<
     }
   }
 
-  handleSelect(itemIndex: number): void {
+  handleSelect(itemIndex: ModelIndex): void {
     log.debug2('handleSelect', itemIndex);
 
     const { onSelect } = this.props;

@@ -11,19 +11,28 @@ import {
 } from '@deephaven/icons';
 import {
   BoxCoordinates,
+  Coordinate,
+  getOrThrow,
   GridMetrics,
   GridRangeIndex,
   GridRenderer,
   GridRenderState,
   GridThemeType,
   GridUtils,
+  VisibleIndex,
 } from '@deephaven/grid';
 import { Sort } from '@deephaven/jsapi-shim';
 import { TableUtils, ReverseType } from '@deephaven/jsapi-utils';
-import { AdvancedFilter, assertNotNull, QuickFilter } from './IrisGrid';
-import IrisGridProxyModel from './IrisGridProxyModel';
+import {
+  AdvancedFilter,
+  assertNotNull,
+  QuickFilter,
+  AdvancedFilterMap,
+  assertNotUndefined,
+  QuickFilterMap,
+} from './IrisGrid';
 import { IrisGridThemeType } from './IrisGridTheme';
-import { assertNotUndefined } from '.';
+import IrisGridModel from './IrisGridModel';
 
 const ICON_NAMES = Object.freeze({
   SORT_UP: 'sortUp',
@@ -36,15 +45,15 @@ const ICON_NAMES = Object.freeze({
 const ICON_SIZE = 16;
 
 export type IrisGridRenderState = GridRenderState & {
-  model: IrisGridProxyModel;
+  model: IrisGridModel;
   theme: IrisGridThemeType;
   hoverSelectColumn: GridRangeIndex;
   isSelectingColumn: boolean;
   loadingScrimProgress: number;
   reverseType: ReverseType;
   isFilterBarShown: boolean;
-  advancedFilters: Map<number, AdvancedFilter>;
-  quickFilters: Map<number, QuickFilter>;
+  advancedFilters: AdvancedFilterMap;
+  quickFilters: QuickFilterMap;
 };
 /**
  * Handles rendering some of the Iris specific features, such as sorting icons, sort bar display
@@ -63,17 +72,14 @@ class IrisGridRenderer extends GridRenderer {
 
   constructor() {
     super();
+    this.icons = {};
 
     this.initIcons();
   }
 
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
   icons: Record<string, Path2D>;
 
   initIcons(): void {
-    this.icons = {};
-
     this.setIcon(ICON_NAMES.SORT_UP, dhSortUp);
     this.setIcon(ICON_NAMES.SORT_DOWN, dhSortDown);
     this.setIcon(ICON_NAMES.CARET_DOWN, vsTriangleDown);
@@ -141,17 +147,15 @@ class IrisGridRenderer extends GridRenderer {
   drawCellContent(
     context: CanvasRenderingContext2D,
     state: IrisGridRenderState,
-    column: number,
-    row: number
+    column: VisibleIndex,
+    row: VisibleIndex
   ): void {
     const { metrics, model } = state;
     const { modelColumns, modelRows } = metrics;
-    const modelRow = modelRows.get(row);
-    const modelColumn = modelColumns.get(column);
-    assertNotUndefined(modelColumn);
-    assertNotUndefined(modelRow);
+    const modelRow = getOrThrow(modelRows, row);
+    const modelColumn = getOrThrow(modelColumns, column);
     const value = model.valueForCell(modelColumn, modelRow);
-    if (modelColumn && TableUtils.isTextType(model.columns[modelColumn].type)) {
+    if (TableUtils.isTextType(model.columns[modelColumn].type)) {
       if (value === null || value === '') {
         const originalFont = context.font;
         context.font = `italic ${originalFont}`;
@@ -216,9 +220,8 @@ class IrisGridRenderer extends GridRenderer {
     y -= 0.5;
     context.save();
     context.setLineDash([4, 2]);
-    if (theme.pendingTextColor) {
-      context.strokeStyle = theme.pendingTextColor;
-    }
+    context.strokeStyle = theme.pendingTextColor;
+
     context.lineWidth = 1;
     context.beginPath();
     context.moveTo(0, y);
@@ -240,10 +243,10 @@ class IrisGridRenderer extends GridRenderer {
 
     const x = visibleColumnXs.get(hoverSelectColumn);
     const columnWidth = visibleColumnWidths.get(hoverSelectColumn);
-
-    context.fillStyle = theme.linkerColumnHoverBackgroundColor;
     assertNotUndefined(x);
     assertNotUndefined(columnWidth);
+
+    context.fillStyle = theme.linkerColumnHoverBackgroundColor;
     context.fillRect(x, 0, columnWidth, maxY);
   }
 
@@ -310,10 +313,17 @@ class IrisGridRenderer extends GridRenderer {
     // if there is only one sort bar, it is interior to the header to save space
     if (sort.length === 1) {
       const hasReverse = reverseType !== TableUtils.REVERSE_TYPE.NONE;
+
+      let color;
+      if (hasReverse) {
+        color = theme.headerReverseBarColor;
+      } else {
+        color = theme.headerSortBarColor;
+      }
       this.drawHeaderBar(
         context,
         state,
-        hasReverse ? theme.headerReverseBarColor : theme.headerSortBarColor,
+        color,
         hasReverse ? theme.reverseHeaderBarHeight : theme.sortHeaderBarHeight
       );
     } else if (sort.length > 1) {
@@ -343,7 +353,7 @@ class IrisGridRenderer extends GridRenderer {
   drawHeaderBar(
     context: CanvasRenderingContext2D,
     state: IrisGridRenderState,
-    color: string | CanvasGradient | CanvasPattern | undefined | null,
+    color: string | CanvasGradient | CanvasPattern,
     barHeight: number,
     interior = true
   ): void {
@@ -356,18 +366,15 @@ class IrisGridRenderer extends GridRenderer {
     if (!interior) {
       offset = barHeight;
     }
-    if (theme.headerBarCasingColor) {
-      context.fillStyle = theme.headerBarCasingColor;
-    }
+    context.fillStyle = theme.headerBarCasingColor;
     context.fillRect(
       0,
       columnHeaderHeight - barHeight - 2 + offset,
       width,
       barHeight + 2
     );
-    if (color) {
-      context.fillStyle = color;
-    }
+
+    context.fillStyle = color;
     context.fillRect(
       0,
       columnHeaderHeight - barHeight - 1 + offset,
@@ -379,19 +386,15 @@ class IrisGridRenderer extends GridRenderer {
   drawColumnHeader(
     context: CanvasRenderingContext2D,
     state: IrisGridRenderState,
-    column: number,
-    columnX: number,
+    column: VisibleIndex,
+    columnX: Coordinate,
     columnWidth: number
   ): void {
     super.drawColumnHeader(context, state, column, columnX, columnWidth);
 
     const { metrics, model, theme } = state;
     const { modelColumns } = metrics;
-    const modelColumn = modelColumns.get(column);
-
-    if (!modelColumn) {
-      return;
-    }
+    const modelColumn = getOrThrow(modelColumns, column);
 
     const sort = TableUtils.getSortForColumn(model.sort, modelColumn);
 
@@ -431,9 +434,7 @@ class IrisGridRenderer extends GridRenderer {
     context.fillStyle = gradient;
     context.fillRect(gradientX, 0, gradientWidth, columnHeaderHeight);
 
-    if (theme.headerSortBarColor) {
-      context.fillStyle = theme.headerSortBarColor;
-    }
+    context.fillStyle = theme.headerSortBarColor;
     context.translate(x, y);
     context.fill(icon);
 
@@ -485,13 +486,12 @@ class IrisGridRenderer extends GridRenderer {
     context.textAlign = 'left';
 
     if (
-      theme.filterBarExpandedActiveBackgroundColor &&
-      ((quickFilters && quickFilters.size > 0) ||
-        (advancedFilters && advancedFilters.size > 0))
+      (quickFilters && quickFilters.size > 0) ||
+      (advancedFilters && advancedFilters.size > 0)
     ) {
       // fill style if a fiter is set on any column
       context.fillStyle = theme.filterBarExpandedActiveBackgroundColor;
-    } else if (theme.filterBarExpandedBackgroundColor) {
+    } else {
       // fill style with no filters set
       context.fillStyle = theme.filterBarExpandedBackgroundColor;
     }
@@ -500,53 +500,33 @@ class IrisGridRenderer extends GridRenderer {
     context.fillRect(gridX, columnHeaderHeight, maxX, filterBarHeight - 1);
 
     // Draw the bottom border
-    if (theme.headerBarCasingColor) {
-      context.fillStyle = theme.headerBarCasingColor;
-    }
+    context.fillStyle = theme.headerBarCasingColor;
+
     context.fillRect(gridX, columnHeaderHeight + filterBarHeight - 1, maxX, 1);
 
     // Draw the filter input boxes
-    if (theme.filterBarSeparatorColor) {
-      const y1 = columnHeaderHeight;
-      context.strokeStyle = theme.filterBarSeparatorColor;
-      context.beginPath();
-
-      for (let i = 0; i < visibleColumns.length; i += 1) {
-        const column = visibleColumns[i];
-        const modelColumn = modelColumns.get(column);
-        const columnX = visibleColumnXs.get(column);
-        const columnWidth = visibleColumnWidths.get(column);
-        if (
-          modelColumn &&
-          columnWidth &&
-          model.isFilterable(modelColumn) &&
-          columnWidth > 0
-        ) {
-          const x1 = gridX + (columnX ?? 0);
-          context.rect(x1 + 0.5, y1 + 0.5, columnWidth, filterBarHeight - 2); // 1 for the border, 1 for the casing
-        }
-      }
-      context.stroke();
-    }
+    const y1 = columnHeaderHeight;
+    context.strokeStyle = theme.filterBarSeparatorColor;
+    context.beginPath();
 
     for (let i = 0; i < visibleColumns.length; i += 1) {
       const column = visibleColumns[i];
-      if (column) {
-        const columnWidth = visibleColumnWidths.get(column);
-        if (columnWidth) {
-          const columnX = visibleColumnXs.get(column);
-          if (columnX) {
-            const x = columnX + gridX;
-            this.drawExpandedFilterHeader(
-              context,
-              state,
-              column,
-              x,
-              columnWidth
-            );
-          }
-        }
+      const modelColumn = getOrThrow(modelColumns, column);
+      const columnX = getOrThrow(visibleColumnXs, column);
+      const columnWidth = getOrThrow(visibleColumnWidths, column);
+      if (model.isFilterable(modelColumn) && columnWidth > 0) {
+        const x1 = gridX + (columnX ?? 0);
+        context.rect(x1 + 0.5, y1 + 0.5, columnWidth, filterBarHeight - 2); // 1 for the border, 1 for the casing
       }
+    }
+    context.stroke();
+
+    for (let i = 0; i < visibleColumns.length; i += 1) {
+      const column = visibleColumns[i];
+      const columnWidth = getOrThrow(visibleColumnWidths, column);
+      const columnX = getOrThrow(visibleColumnXs, column);
+      const x = columnX + gridX;
+      this.drawExpandedFilterHeader(context, state, column, x, columnWidth);
     }
 
     context.restore();
@@ -555,8 +535,8 @@ class IrisGridRenderer extends GridRenderer {
   drawExpandedFilterHeader(
     context: CanvasRenderingContext2D,
     state: IrisGridRenderState,
-    column: number,
-    columnX: number,
+    column: VisibleIndex,
+    columnX: Coordinate,
     columnWidth: number
   ): void {
     if (columnWidth <= 0) {
@@ -679,7 +659,7 @@ class IrisGridRenderer extends GridRenderer {
       const column = visibleColumns[i];
       const columnWidth = visibleColumnWidths.get(column);
       const columnX = visibleColumnXs.get(column);
-      if (columnX && columnWidth) {
+      if (columnX != null && columnWidth != null) {
         const x = columnX + gridX;
         // draw the collapsed cells
         this.drawCollapsedFilterHeader(context, state, column, x, columnWidth);
@@ -692,8 +672,8 @@ class IrisGridRenderer extends GridRenderer {
   drawCollapsedFilterHeader(
     context: CanvasRenderingContext2D,
     state: IrisGridRenderState,
-    column: number,
-    columnX: number,
+    column: VisibleIndex,
+    columnX: Coordinate,
     columnWidth: number
   ): void {
     if (columnWidth <= 0) {
@@ -746,8 +726,8 @@ class IrisGridRenderer extends GridRenderer {
   drawTreeMarker(
     context: CanvasRenderingContext2D,
     state: IrisGridRenderState,
-    columnX: number,
-    rowY: number,
+    columnX: Coordinate,
+    rowY: Coordinate,
     treeBox: BoxCoordinates,
     color: string,
     isExpanded: boolean
@@ -860,7 +840,7 @@ class IrisGridRenderer extends GridRenderer {
       const rowHeight = visibleRowHeights.get(row);
       const rowY = visibleRowYs.get(row);
       const modelRow = modelRows.get(row);
-      if (rowY && rowHeight && modelRow) {
+      if (rowY != null && rowHeight != null && modelRow != null) {
         const textY = rowY + rowHeight * 0.5;
         context.fillText(model.textForRowFooter(modelRow), textX, textY);
       }
@@ -874,12 +854,12 @@ class IrisGridRenderer extends GridRenderer {
   getTextRenderMetrics(
     context: CanvasRenderingContext2D,
     state: IrisGridRenderState,
-    column: number,
-    row: number
+    column: VisibleIndex,
+    row: VisibleIndex
   ): {
     width: number;
-    x: number;
-    y: number;
+    x: Coordinate;
+    y: Coordinate;
   } {
     const textMetrics = super.getTextRenderMetrics(context, state, column, row);
 
@@ -957,13 +937,13 @@ class IrisGridRenderer extends GridRenderer {
     metrics,
     theme,
   }: {
-    mouseX: number | null;
-    mouseY: number | null;
-    metrics: GridMetrics | null;
+    mouseX: Coordinate | null;
+    mouseY: Coordinate | null;
+    metrics: GridMetrics | undefined;
     theme: GridThemeType;
   }): {
-    left: number | null;
-    top: number | null;
+    left: Coordinate | null;
+    top: Coordinate | null;
     width: number | null;
     height: number | null;
   } {
@@ -977,15 +957,15 @@ class IrisGridRenderer extends GridRenderer {
       metrics
     );
 
+    assertNotNull(left);
+    assertNotNull(columnWidth);
+    assertNotNull(top);
     const { width: gridWidth, verticalBarWidth } = metrics;
     const { cellHorizontalPadding } = theme;
 
     const width = ICON_SIZE + 2 * cellHorizontalPadding;
     const height = rowHeight;
     // Right edge of column or of visible grid, whichever is smaller
-    assertNotNull(left);
-    assertNotNull(columnWidth);
-    assertNotNull(top);
     const right = Math.min(
       metrics.gridX + left + columnWidth,
       gridWidth - verticalBarWidth
@@ -1020,10 +1000,10 @@ class IrisGridRenderer extends GridRenderer {
     context.save();
     if (
       overflowButtonHoverColor &&
-      buttonLeft &&
-      buttonWidth &&
-      buttonTop &&
-      buttonHeight &&
+      buttonLeft != null &&
+      buttonWidth != null &&
+      buttonTop != null &&
+      buttonHeight != null &&
       mouseX >= buttonLeft &&
       mouseX <= buttonLeft + buttonWidth &&
       mouseY >= buttonTop &&
@@ -1034,7 +1014,7 @@ class IrisGridRenderer extends GridRenderer {
       context.fillStyle = overflowButtonColor;
     }
     const icon = this.getIcon(ICON_NAMES.CELL_OVERFLOW);
-    if (buttonLeft && buttonTop) {
+    if (buttonLeft != null && buttonTop != null) {
       context.translate(buttonLeft + cellHorizontalPadding, buttonTop + 2);
     }
     context.fill(icon);

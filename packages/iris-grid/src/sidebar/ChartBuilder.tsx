@@ -202,7 +202,7 @@ class ChartBuilder extends PureComponent<ChartBuilderProps, ChartBuilderState> {
   handleAddSeries(): void {
     this.setState(state => {
       let { seriesItems } = state;
-      seriesItems = ([] as SeriesItem[]).concat(seriesItems);
+      seriesItems = [...seriesItems];
 
       const { model } = this.props;
       const { columns } = model;
@@ -239,7 +239,7 @@ class ChartBuilder extends PureComponent<ChartBuilderProps, ChartBuilderState> {
     this.setState(state => {
       let { seriesItems } = state;
 
-      seriesItems = ([] as SeriesItem[]).concat(seriesItems);
+      seriesItems = [...seriesItems];
       seriesItems[intIndex].value = value;
 
       return { seriesItems };
@@ -254,7 +254,7 @@ class ChartBuilder extends PureComponent<ChartBuilderProps, ChartBuilderState> {
     this.setState(state => {
       let { seriesItems } = state;
 
-      seriesItems = ([] as SeriesItem[]).concat(seriesItems);
+      seriesItems = [...seriesItems];
       seriesItems.splice(intIndex, 1);
 
       return { seriesItems };

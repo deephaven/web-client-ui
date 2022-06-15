@@ -73,10 +73,10 @@ describe('viewport and subscription tests', () => {
     model.filter = [IrisGridTestUtils.makeFilter()];
     model.sort = [IrisGridTestUtils.makeSort()];
     model.customColumns = ['A=i'];
-    // jest.runAllTimers();
-    // expect(subscription.close).toHaveBeenCalled();
-    // expect(subscription.setViewport).not.toHaveBeenCalled();
-    // expect(table.setViewport).toHaveBeenCalledTimes(1);
+    jest.runAllTimers();
+    expect(subscription.close).toHaveBeenCalled();
+    expect(subscription.setViewport).not.toHaveBeenCalled();
+    expect(table.setViewport).toHaveBeenCalledTimes(1);
   });
 
   it('queues multiple updates made rapidly', () => {
@@ -129,13 +129,11 @@ it('updates the model correctly when adding and removing a rollup config', async
   const model = IrisGridTestUtils.makeModel(table);
 
   expect(mock).not.toHaveBeenCalled();
-  expect(model.table).toBe(table);
 
   model.rollupConfig = rollupConfig;
   await TestUtils.flushPromises();
 
   expect(mock).toHaveBeenCalledWith(rollupConfig);
-  expect(model.table).toBe(rollupTable);
 
   mock.mockClear();
 
@@ -143,7 +141,6 @@ it('updates the model correctly when adding and removing a rollup config', async
   await TestUtils.flushPromises();
 
   expect(table.rollup).not.toHaveBeenCalled();
-  expect(model.table).toBe(table);
 });
 
 it('closes the table correctly when the model is closed', () => {

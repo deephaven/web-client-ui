@@ -19,13 +19,21 @@ import {
   Table,
   TreeTable,
 } from '@deephaven/jsapi-shim';
+import {
+  EditableGridModel,
+  isEditableGridModel,
+  isExpandableGridModel,
+  ModelIndex,
+  MoveOperation,
+} from '@deephaven/grid';
 import IrisGridTableModel, {
   PendingDataMap,
   UIRow,
 } from './IrisGridTableModel';
-import IrisGridTreeTableModel, { UITreeRow } from './IrisGridTreeTableModel';
+import IrisGridTreeTableModel from './IrisGridTreeTableModel';
 import IrisGridModel from './IrisGridModel';
-import { UITotalsTableConfig } from './IrisGrid';
+import { UITotalsTableConfig, ColumnName } from './IrisGrid';
+import IrisGridTableModelTemplate from './IrisGridTableModelTemplate';
 
 const log = Log.module('IrisGridProxyModel');
 
@@ -33,11 +41,17 @@ function makeModel(
   table: Table | TreeTable,
   formatter?: Formatter,
   inputTable?: InputTable | null
-) {
+): IrisGridModel {
   if (TableUtils.isTreeTable(table)) {
     return new IrisGridTreeTableModel(table, formatter);
   }
   return new IrisGridTableModel(table, formatter, inputTable);
+}
+
+function isIrisGridTableModelTemplate(
+  model: IrisGridModel
+): model is IrisGridTableModelTemplate {
+  return (model as IrisGridTableModelTemplate).table !== undefined;
 }
 
 /**
@@ -46,22 +60,20 @@ function makeModel(
  */
 class IrisGridProxyModel extends IrisGridModel {
   /**
-   * @param {dh.Table} table Iris data table to be used in the model
-   * @param {Formatter} formatter The formatter to use when getting formats
-   * @param {dh.InputTable} inputTable Iris input table associated with this table
+   * @param table Iris data table to be used in the model
+   * @param formatter The formatter to use when getting formats
+   * @param inputTable Iris input table associated with this table
    */
 
-  originalModel: IrisGridTreeTableModel | IrisGridTableModel;
+  originalModel: IrisGridModel;
 
-  model: IrisGridTreeTableModel | IrisGridTableModel;
+  model: IrisGridModel;
 
-  modelPromise: CancelablePromise<
-    IrisGridTreeTableModel | IrisGridTableModel
-  > | null;
+  modelPromise: CancelablePromise<IrisGridModel> | null;
 
   rollup: RollupConfig | null;
 
-  selectDistinct: string[];
+  selectDistinct: ColumnName[];
 
   constructor(
     table: Table | TreeTable,
@@ -97,7 +109,7 @@ class IrisGridProxyModel extends IrisGridModel {
     this.dispatchEvent(new EventShimCustomEvent(type, { detail }));
   }
 
-  setModel(model: IrisGridTreeTableModel | IrisGridTableModel): void {
+  setModel(model: IrisGridModel): void {
     log.debug('setModel', model);
 
     const oldModel = this.model;
@@ -118,19 +130,16 @@ class IrisGridProxyModel extends IrisGridModel {
       })
     );
 
-    this.dispatchEvent(
-      new EventShimCustomEvent(IrisGridModel.EVENT.TABLE_CHANGED, {
-        detail: model.table,
-      })
-    );
+    if (isIrisGridTableModelTemplate(model)) {
+      this.dispatchEvent(
+        new EventShimCustomEvent(IrisGridModel.EVENT.TABLE_CHANGED, {
+          detail: model.table,
+        })
+      );
+    }
   }
 
-  setNextModel(
-    modelPromise:
-      | IrisGridTreeTableModel
-      | IrisGridTableModel
-      | Promise<IrisGridTreeTableModel | IrisGridTableModel>
-  ): void {
+  setNextModel(modelPromise: Promise<IrisGridModel>): void {
     log.debug2('setNextModel');
 
     if (this.modelPromise) {
@@ -143,7 +152,7 @@ class IrisGridProxyModel extends IrisGridModel {
 
     this.modelPromise = PromiseUtils.makeCancelable(
       modelPromise,
-      (model: IrisGridTreeTableModel | IrisGridTableModel) => model.close()
+      (model: IrisGridModel) => model.close()
     );
     this.modelPromise
       .then(model => {
@@ -179,7 +188,7 @@ class IrisGridProxyModel extends IrisGridModel {
     this.removeListeners(this.model);
   }
 
-  addListeners(model: IrisGridTreeTableModel | IrisGridTableModel): void {
+  addListeners(model: IrisGridModel): void {
     const events = Object.keys(IrisGridModel.EVENT);
     for (let i = 0; i < events.length; i += 1) {
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -188,7 +197,7 @@ class IrisGridProxyModel extends IrisGridModel {
     }
   }
 
-  removeListeners(model: IrisGridTreeTableModel | IrisGridTableModel): void {
+  removeListeners(model: IrisGridModel): void {
     const events = Object.keys(IrisGridModel.EVENT);
     for (let i = 0; i < events.length; i += 1) {
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -221,86 +230,75 @@ class IrisGridProxyModel extends IrisGridModel {
     return this.model.floatingRightColumnCount;
   }
 
-  textForCell: IrisGridTableModel['textForCell'] = (...args) =>
+  textForCell: IrisGridModel['textForCell'] = (...args) =>
     this.model.textForCell(...args);
 
-  truncationCharForCell: IrisGridTableModel['truncationCharForCell'] = (
-    ...args
-  ) => this.model.truncationCharForCell(...args);
+  truncationCharForCell: IrisGridModel['truncationCharForCell'] = (...args) =>
+    this.model.truncationCharForCell(...args);
 
-  textAlignForCell: IrisGridTableModel['textAlignForCell'] = (...args) =>
+  textAlignForCell: IrisGridModel['textAlignForCell'] = (...args) =>
     this.model.textAlignForCell(...args);
 
-  colorForCell: IrisGridTableModel['colorForCell'] = (...args) =>
+  colorForCell: IrisGridModel['colorForCell'] = (...args) =>
     this.model.colorForCell(...args);
 
-  backgroundColorForCell: IrisGridTableModel['backgroundColorForCell'] = (
-    ...args
-  ) => this.model.backgroundColorForCell(...args);
+  backgroundColorForCell: IrisGridModel['backgroundColorForCell'] = (...args) =>
+    this.model.backgroundColorForCell(...args);
 
-  textForColumnHeader: IrisGridTableModel['textForColumnHeader'] = (...args) =>
+  textForColumnHeader: IrisGridModel['textForColumnHeader'] = (...args) =>
     this.model.textForColumnHeader(...args);
 
-  textForRowHeader: IrisGridTableModel['textForRowHeader'] = (...args) =>
+  textForRowHeader: IrisGridModel['textForRowHeader'] = (...args) =>
     this.model.textForRowHeader(...args);
 
-  textForRowFooter: IrisGridTableModel['textForRowFooter'] = (...args) =>
+  textForRowFooter: IrisGridModel['textForRowFooter'] = (...args) =>
     this.model.textForRowFooter(...args);
 
-  isRowMovable: IrisGridTableModel['isRowMovable'] = (...args) =>
+  isRowMovable: IrisGridModel['isRowMovable'] = (...args) =>
     this.model.isRowMovable(...args);
 
-  isColumnMovable: IrisGridTableModel['isColumnMovable'] = (...args) =>
+  isColumnMovable: IrisGridModel['isColumnMovable'] = (...args) =>
     this.model.isColumnMovable(...args);
 
-  isColumnFrozen(x: number): boolean {
-    if (TableUtils.isTreeTable(this.table)) {
-      throw new Error('TreeTable cannot be frozen');
-    }
-    return (this.model as IrisGridTableModel).isColumnFrozen(x);
+  isColumnFrozen(x: ModelIndex): boolean {
+    return this.model.isColumnFrozen(x);
   }
 
   get hasExpandableRows(): boolean {
-    if (TableUtils.isTreeTable(this.model.table)) {
-      return (this.model as IrisGridTreeTableModel).hasExpandableRows;
+    if (isExpandableGridModel(this.model)) {
+      return this.model.hasExpandableRows;
     }
     return false;
   }
 
   isRowExpandable: IrisGridTreeTableModel['isRowExpandable'] = (...args) => {
-    if (TableUtils.isTreeTable(this.model.table)) {
-      return (this.model as IrisGridTreeTableModel).isRowExpandable(...args);
+    if (isExpandableGridModel(this.model)) {
+      return this.model.isRowExpandable(...args);
     }
-    throw Error(
-      'Function isRowExpandable does not exist on IrisGridTableModel'
-    );
+    return false;
   };
 
   isRowExpanded: IrisGridTreeTableModel['isRowExpanded'] = (...args) => {
-    if (TableUtils.isTreeTable(this.model.table)) {
-      return (this.model as IrisGridTreeTableModel).isRowExpanded(...args);
+    if (isExpandableGridModel(this.model)) {
+      return this.model.isRowExpanded(...args);
     }
-    throw Error('Function isRowExpanded does not exist on IrisGridTableModel');
+    return false;
   };
 
   setRowExpanded: IrisGridTreeTableModel['setRowExpanded'] = (...args) => {
-    if (TableUtils.isTreeTable(this.model.table)) {
-      return (this.model as IrisGridTreeTableModel).setRowExpanded(...args);
+    if (isExpandableGridModel(this.model)) {
+      return this.model.setRowExpanded(...args);
     }
     throw Error('Function setRowExpanded does not exist on IrisGridTableModel');
   };
 
   depthForRow: IrisGridTreeTableModel['depthForRow'] = (...args) => {
-    if (TableUtils.isTreeTable(this.model.table)) {
-      return (this.model as IrisGridTreeTableModel).depthForRow(...args);
+    if (isExpandableGridModel(this.model)) {
+      return this.model.depthForRow(...args);
     }
     return 0;
     // throw Error('Function depthForRow does not exist on IrisGridTableModel');
   };
-
-  get table(): Table | TreeTable {
-    return this.model.table;
-  }
 
   get isExportAvailable(): boolean {
     return this.model.isExportAvailable;
@@ -357,11 +355,11 @@ class IrisGridProxyModel extends IrisGridModel {
     return this.model.columns;
   }
 
-  get movedColumns() {
+  get movedColumns(): MoveOperation[] {
     return this.model.movedColumns;
   }
 
-  get movedRows() {
+  get movedRows(): MoveOperation[] {
     return this.model.movedRows;
   }
 
@@ -369,23 +367,20 @@ class IrisGridProxyModel extends IrisGridModel {
     return this.model.layoutHints;
   }
 
-  get frontColumns() {
+  get frontColumns(): ColumnName[] {
     return this.model.frontColumns;
   }
 
-  get backColumns() {
+  get backColumns(): ColumnName[] {
     return this.model.backColumns;
   }
 
-  get frozenColumns() {
+  get frozenColumns(): ColumnName[] {
     return this.model.frozenColumns;
   }
 
-  updateFrozenColumns(columns: string[]): void {
-    if (TableUtils.isTreeTable(this.table)) {
-      throw new Error('TreeTable cannot be frozen');
-    }
-    return (this.model as IrisGridTableModel).updateFrozenColumns(columns);
+  updateFrozenColumns(columns: ColumnName[]): void {
+    return this.model.updateFrozenColumns(columns);
   }
 
   get originalColumns(): Column[] {
@@ -397,16 +392,13 @@ class IrisGridProxyModel extends IrisGridModel {
   }
 
   get description(): string {
-    if (TableUtils.isTreeTable(this.table)) {
-      throw new Error("TreeTable does not have property 'description'");
-    }
-    return (this.model as IrisGridTableModel).description;
+    return this.model.description;
   }
 
-  formatForCell: IrisGridTableModel['formatForCell'] = (...args) =>
+  formatForCell: IrisGridModel['formatForCell'] = (...args) =>
     this.model.formatForCell(...args);
 
-  valueForCell: IrisGridTableModel['valueForCell'] = (...args) =>
+  valueForCell: IrisGridModel['valueForCell'] = (...args) =>
     this.model.valueForCell(...args);
 
   get filter(): FilterCondition[] {
@@ -425,7 +417,7 @@ class IrisGridProxyModel extends IrisGridModel {
     this.model.formatter = formatter;
   }
 
-  displayString: IrisGridTableModel['displayString'] = (...args) =>
+  displayString: IrisGridModel['displayString'] = (...args) =>
     this.model.displayString(...args);
 
   get sort(): Sort[] {
@@ -436,32 +428,20 @@ class IrisGridProxyModel extends IrisGridModel {
     this.model.sort = sort;
   }
 
-  get customColumns(): string[] {
-    if (TableUtils.isTreeTable(this.table)) {
-      throw new Error("TreeTable does not have property 'customColumns'");
-    }
-    return (this.model as IrisGridTableModel).customColumns;
+  get customColumns(): ColumnName[] {
+    return this.model.customColumns;
   }
 
-  set customColumns(customColumns: string[]) {
-    if (TableUtils.isTreeTable(this.table)) {
-      throw new Error("TreeTable does not have property 'customColumns'");
-    }
-    (this.model as IrisGridTableModel).customColumns = customColumns;
+  set customColumns(customColumns: ColumnName[]) {
+    this.model.customColumns = customColumns;
   }
 
   get formatColumns(): CustomColumn[] {
-    if (TableUtils.isTreeTable(this.table)) {
-      throw new Error("TreeTable does not have property 'formatColumns'");
-    }
-    return (this.model as IrisGridTableModel).formatColumns;
+    return this.model.formatColumns;
   }
 
   set formatColumns(formatColumns: CustomColumn[]) {
-    if (TableUtils.isTreeTable(this.table)) {
-      throw new Error("TreeTable does not have property 'formatColumns'");
-    }
-    (this.model as IrisGridTableModel).formatColumns = formatColumns;
+    this.model.formatColumns = formatColumns;
   }
 
   get rollupConfig(): RollupConfig | null {
@@ -469,10 +449,6 @@ class IrisGridProxyModel extends IrisGridModel {
   }
 
   set rollupConfig(rollupConfig: RollupConfig | null) {
-    if (TableUtils.isTreeTable(this.table)) {
-      throw new Error("TreeTable does not have property 'rollupConfig'");
-    }
-
     log.debug('set rollupConfig', rollupConfig);
 
     if (!this.isRollupAvailable) {
@@ -489,15 +465,18 @@ class IrisGridProxyModel extends IrisGridModel {
 
     let modelPromise = Promise.resolve(this.originalModel);
 
-    if (rollupConfig != null) {
-      modelPromise = (this.originalModel.table as Table)
+    if (
+      isIrisGridTableModelTemplate(this.originalModel) &&
+      rollupConfig != null
+    ) {
+      modelPromise = this.originalModel.table
         .rollup(rollupConfig)
         .then(table => makeModel(table, this.formatter));
     }
     this.setNextModel(modelPromise);
   }
 
-  get selectDistinctColumns(): string[] {
+  get selectDistinctColumns(): ColumnName[] {
     return this.selectDistinct;
   }
 
@@ -524,7 +503,10 @@ class IrisGridProxyModel extends IrisGridModel {
 
     let modelPromise = Promise.resolve(this.originalModel);
 
-    if (columnNames.length > 0) {
+    if (
+      isIrisGridTableModelTemplate(this.originalModel) &&
+      selectDistinctColumns.length > 0
+    ) {
       modelPromise = this.originalModel.table
         .selectDistinct(selectDistinctColumns)
         .then(table => makeModel(table, this.formatter));
@@ -545,11 +527,15 @@ class IrisGridProxyModel extends IrisGridModel {
   }
 
   get isEditable(): boolean {
-    return this.model.isEditable;
+    return isEditableGridModel(this.model) && this.model.isEditable;
   }
 
-  isEditableRange: IrisGridTableModel['isEditableRange'] = (...args) =>
-    this.model.isEditableRange(...args);
+  isEditableRange: IrisGridTableModel['isEditableRange'] = (...args) => {
+    if (isEditableGridModel(this.model)) {
+      this.model.isEditableRange(...args);
+    }
+    return false;
+  };
 
   isFilterable: IrisGridTableModel['isFilterable'] = (...args) =>
     this.model.isFilterable(...args);
@@ -557,7 +543,7 @@ class IrisGridProxyModel extends IrisGridModel {
   setViewport = (top: number, bottom: number, columns: Column[]): void =>
     this.model.setViewport(top, bottom, columns);
 
-  snapshot: IrisGridTableModel['snapshot'] = (...args) =>
+  snapshot: IrisGridModel['snapshot'] = (...args) =>
     this.model.snapshot(...args);
 
   textSnapshot: IrisGridTableModel['textSnapshot'] = (...args) =>
@@ -580,29 +566,49 @@ class IrisGridProxyModel extends IrisGridModel {
     return (this.model as IrisGridTableModel).columnStatistics(column);
   }
 
-  editValueForCell: IrisGridTableModel['editValueForCell'] = (...args) =>
-    this.model.editValueForCell(...args);
+  editValueForCell: IrisGridTableModel['editValueForCell'] = (...args) => {
+    if (isEditableGridModel(this.model)) {
+      this.model.editValueForCell(...args);
+    }
+    return '';
+  };
 
-  setValueForCell: IrisGridTableModel['setValueForCell'] = (...args) =>
-    this.model.setValueForCell(...args);
+  setValueForCell: IrisGridTableModel['setValueForCell'] = (...args) => {
+    if (isEditableGridModel(this.model)) {
+      this.model.setValueForCell(...args);
+    }
+    return Promise.resolve();
+  };
 
-  setValueForRanges: IrisGridTableModel['setValueForRanges'] = (...args) =>
-    this.model.setValueForRanges(...args);
+  setValueForRanges: IrisGridTableModel['setValueForRanges'] = (...args) => {
+    if (isEditableGridModel(this.model)) {
+      this.model.setValueForRanges(...args);
+    }
+    return Promise.resolve();
+  };
 
-  setValues: IrisGridTableModel['setValues'] = (...args) =>
-    this.model.setValues(...args);
+  setValues: EditableGridModel['setValues'] = (...args) => {
+    if (isEditableGridModel(this.model)) {
+      return this.model.setValues(...args);
+    }
+    return Promise.resolve();
+  };
 
-  isValidForCell: IrisGridTableModel['isValidForCell'] = (...args) =>
-    this.model.isValidForCell(...args);
+  isValidForCell: IrisGridTableModel['isValidForCell'] = (...args) => {
+    if (isEditableGridModel(this.model)) {
+      return this.model.isValidForCell(...args);
+    }
+    return false;
+  };
 
   delete: IrisGridTableModel['delete'] = (...args) =>
     this.model.delete(...args);
 
-  get pendingDataMap(): PendingDataMap<UIRow | UITreeRow> {
+  get pendingDataMap(): PendingDataMap<UIRow> {
     return this.model.pendingDataMap;
   }
 
-  set pendingDataMap(map: PendingDataMap<UIRow | UITreeRow>) {
+  set pendingDataMap(map: PendingDataMap<UIRow>) {
     this.model.pendingDataMap = map;
   }
 
@@ -621,7 +627,7 @@ class IrisGridProxyModel extends IrisGridModel {
   commitPending: IrisGridTableModel['commitPending'] = (...args) =>
     this.model.commitPending(...args);
 
-  getColumnIndexByName(name: string): number | undefined {
+  getColumnIndexByName(name: ColumnName): number | undefined {
     return this.model.getColumnIndexByName(name);
   }
 }

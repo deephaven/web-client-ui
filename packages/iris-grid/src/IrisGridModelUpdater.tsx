@@ -8,17 +8,17 @@ import dh, {
   RollupConfig,
   Sort,
 } from '@deephaven/jsapi-shim';
-import { MoveOperation } from '@deephaven/grid';
+import { ModelIndex, MoveOperation } from '@deephaven/grid';
 import { Formatter, ReverseType, TableUtils } from '@deephaven/jsapi-utils';
 import IrisGridUtils from './IrisGridUtils';
 import { UIRow } from './IrisGridTableModel';
-import IrisGridProxyModel from './IrisGridProxyModel';
-import { UITotalsTableConfig } from './IrisGrid';
+import { ColumnName, UITotalsTableConfig } from './IrisGrid';
+import IrisGridModel from './IrisGridModel';
 
 const COLUMN_BUFFER_PAGES = 1;
 
 interface IrisGridModelUpdaterProps {
-  model: IrisGridProxyModel;
+  model: IrisGridModel;
   modelColumns: Column[];
   top: number;
   bottom: number;
@@ -27,18 +27,18 @@ interface IrisGridModelUpdaterProps {
   filter: FilterCondition[];
   sorts: Sort[];
   reverseType?: ReverseType;
-  customColumns: string[];
+  customColumns: ColumnName[];
   movedColumns: MoveOperation[];
-  hiddenColumns: number[];
-  frozenColumns?: string[];
+  hiddenColumns: ModelIndex[];
+  frozenColumns?: ColumnName[];
   formatColumns: CustomColumn[];
-  alwaysFetchColumns: string[];
+  alwaysFetchColumns: ColumnName[];
   formatter: Formatter;
   rollupConfig?: RollupConfig | null;
   totalsConfig?: UITotalsTableConfig | null;
-  selectDistinctColumns?: string[];
+  selectDistinctColumns?: ColumnName[];
   pendingRowCount?: number;
-  pendingDataMap?: Map<number, UIRow>;
+  pendingDataMap?: Map<ModelIndex, UIRow>;
 }
 
 /**
@@ -129,9 +129,7 @@ const IrisGridModelUpdater = React.memo(
     );
     useEffect(
       function updateViewport() {
-        if (columns) {
-          model.setViewport(top, bottom, columns);
-        }
+        model.setViewport(top, bottom, columns);
       },
       [model, top, bottom, columns]
     );

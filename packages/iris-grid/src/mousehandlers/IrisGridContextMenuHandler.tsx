@@ -20,7 +20,8 @@ import {
   Grid,
   GridMouseHandler,
   GridPoint,
-  GridRangeIndex,
+  isEditableGridModel,
+  ModelIndex,
   VisibleIndex,
 } from '@deephaven/grid';
 import dh, {
@@ -35,6 +36,7 @@ import {
   TableUtils,
   TableColumnFormat,
   IntegerColumnFormat,
+  SortDirection,
 } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
 import type { DebouncedFunc } from 'lodash';
@@ -77,15 +79,15 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
     ascending: 'ASC',
     descending: 'DESC',
     none: null,
-  };
+  } as const;
 
   /**
    * Get filter condition for quick filter with existed column filter and the new filter to be applied,
    * returns new filter if filters are not additive.
    * if filters are additive, returns filter conditions combined with 'and'.
-   * @param {FilterCondition} columnFilter
-   * @param {FilterCondition} newColumnFilter
-   * @param {boolean} additive
+   * @param columnFilter
+   * @param newColumnFilter
+   * @param additive
    */
   static getQuickFilterCondition(
     columnFilter: FilterCondition | null | undefined,
@@ -100,9 +102,9 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
 
   /**
    * combines filter text with '&&' if filters are additive
-   * @param {String} filterText
-   * @param {String} newFilterText
-   * @param {boolean} additive
+   * @param filterText
+   * @param newFilterText
+   * @param additive
    */
   static getQuickFilterText(
     filterText: string | null | undefined,
@@ -116,8 +118,8 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
 
   /**
    * Gets an equality filter for the provided numeric value
-   * @param {dh.Column} column The column to make the filter for
-   * @param {Number} value The value to get the equality filter for
+   * @param column The column to make the filter for
+   * @param value The value to get the equality filter for
    */
   static getNumberValueEqualsFilter(
     column: Column,
@@ -178,6 +180,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
   getHeaderActions(modelColumn: number, gridPoint: GridPoint): ContextAction[] {
     const { irisGrid } = this;
     const { column: columnIndex } = gridPoint;
+    assertNotNull(columnIndex);
     const { model } = irisGrid.props;
     const { columns } = model;
     const column = columns[modelColumn];
@@ -192,7 +195,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
       searchFilter,
     } = irisGrid.state;
     const theme = irisGrid.getTheme();
-    assertNotNull(metrics);
+    assertNotUndefined(metrics);
     const {
       filterIconColor,
       filterBarActiveColor,
@@ -203,7 +206,6 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
     const modelSort = model.sort;
     const columnSort = TableUtils.getSortForColumn(modelSort, modelColumn);
     const hasReverse = reverseType !== TableUtils.REVERSE_TYPE.NONE;
-
     const { userColumnWidths } = metrics;
     const isColumnHidden = [...userColumnWidths.values()].some(
       columnWidth => columnWidth === 0
@@ -364,12 +366,12 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
     grid: Grid,
     gridPoint: GridPoint
   ): ContextAction[] {
+    assertNotNullNorUndefined(modelColumn);
     const { irisGrid } = this;
     const { column: columnIndex, row: rowIndex } = gridPoint;
     const { model, canCopy } = irisGrid.props;
     const { columns } = model;
     const modelRow = irisGrid.getModelRow(rowIndex);
-    assertNotNullNorUndefined(modelColumn);
     assertNotNullNorUndefined(modelRow);
     const value = model.valueForCell(modelColumn, modelRow);
 
@@ -378,9 +380,8 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
 
     const actions = [] as ContextAction[];
 
-    const { metrics, quickFilters } = irisGrid.state;
+    const { quickFilters } = irisGrid.state;
     const theme = irisGrid.getTheme();
-    assertNotNull(metrics);
     const { filterIconColor } = theme;
     const { settings } = irisGrid.props;
 
@@ -407,14 +408,14 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
           iconColor: filterIconColor,
           group: IrisGridContextMenuHandler.GROUP_FILTER,
           order: 10,
-          actions: null,
+          actions: [],
         } as {
           title: string;
           icon: IconDefinition;
           iconColor: string;
           group: number;
           order: number;
-          actions: ContextAction[] | null;
+          actions: ContextAction[];
         };
 
         const andFilterMenu = {
@@ -423,7 +424,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
           iconColor: filterIconColor,
           group: IrisGridContextMenuHandler.GROUP_FILTER,
           order: 20,
-          actions: null,
+          actions: [],
           disabled: !quickFilters.get(modelColumn),
         } as {
           title: string;
@@ -431,7 +432,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
           iconColor: string;
           group: number;
           order: number;
-          actions: ContextAction[] | null;
+          actions: ContextAction[];
           disabled: boolean;
         };
 
@@ -561,7 +562,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
         });
       }
 
-      if (model.isEditable) {
+      if (isEditableGridModel(model) && model.isEditable) {
         actions.push({
           title: 'Delete Selected Rows',
           group: IrisGridContextMenuHandler.GROUP_EDIT,
@@ -595,7 +596,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
       advancedFilters,
     } = irisGrid.state;
 
-    assertNotNull(metrics);
+    assertNotUndefined(metrics);
 
     const { columnHeaderHeight, gridY } = metrics;
 
@@ -610,10 +611,8 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
       const { onContextMenu } = irisGrid.props;
 
       if (column != null) {
-        const { table } = model;
         actions.push(
           onContextMenu({
-            table,
             model,
             value,
             valueText,
@@ -651,7 +650,6 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
       if (isFilterBarShown ? y <= gridY : y <= columnHeaderHeight) {
         // grid header context menu options
         if (column != null) {
-          assertNotNullNorUndefined(modelColumn);
           actions.push(...this.getHeaderActions(modelColumn, gridPoint));
         }
       } else {
@@ -697,10 +695,9 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
         group,
         order: i,
         action: () => {
-          this.irisGrid.handleFormatSelection(
-            model.getColumnIndexByName(column.name) ?? null,
-            format
-          );
+          const modelIndex = model.getColumnIndexByName(column.name);
+          assertNotUndefined(modelIndex);
+          this.irisGrid.handleFormatSelection(modelIndex, format);
         },
       });
     }
@@ -784,6 +781,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
     const actions = [];
     const { model } = this.irisGrid.props;
     const columnIndex = model.getColumnIndexByName(column.name);
+    assertNotUndefined(columnIndex);
 
     actions.push({
       menuElement: (
@@ -941,7 +939,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
       !Number.isNaN(value);
     const { model } = this.irisGrid.props;
     const columnIndex = model.getColumnIndexByName(column.name);
-
+    assertNotUndefined(columnIndex);
     actions.push({
       menuElement: (
         <div className="iris-grid-filter-menu-item-value">
@@ -1092,14 +1090,15 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
     valueText: string | null,
     quickFilter?: QuickFilter | null | undefined,
     additive = false
-  ): ContextAction[] | null {
-    const actions = [];
+  ): ContextAction[] {
+    const actions: ContextAction[] = [];
     if (quickFilter == null) {
-      return null;
+      return actions;
     }
     const { filter, text: filterText } = quickFilter;
     const { model } = this.irisGrid.props;
     const columnIndex = model.getColumnIndexByName(column.name);
+    assertNotUndefined(columnIndex);
 
     actions.push({
       menuElement: (
@@ -1191,6 +1190,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
     }
     const { model } = this.irisGrid.props;
     const columnIndex = model.getColumnIndexByName(column.name);
+    assertNotUndefined(columnIndex);
 
     const actions = [];
 
@@ -1339,6 +1339,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
     const actions = [];
     const { model } = this.irisGrid.props;
     const columnIndex = model.getColumnIndexByName(column.name);
+    assertNotUndefined(columnIndex);
 
     actions.push({
       menuElement: (
@@ -1394,7 +1395,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
 
   sortByActions(
     column: Column,
-    modelColumn: GridRangeIndex,
+    modelColumn: ModelIndex,
     columnSort: Sort | null
   ): ContextAction[] {
     const theme = this.irisGrid.getTheme();
@@ -1414,7 +1415,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
           IrisGridContextMenuHandler.COLUMN_SORT_DIRECTION.ascending
         )
           ? vsRemove
-          : null,
+          : undefined,
         iconColor: contextMenuSortIconColor,
       },
       {
@@ -1431,7 +1432,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
           IrisGridContextMenuHandler.COLUMN_SORT_DIRECTION.descending
         )
           ? vsRemove
-          : null,
+          : undefined,
         iconColor: contextMenuSortIconColor,
       },
       {
@@ -1465,7 +1466,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
           true
         )
           ? vsRemove
-          : null,
+          : undefined,
         iconColor: contextMenuSortIconColor,
       });
       sortActions.push({
@@ -1484,7 +1485,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
           true
         )
           ? vsRemove
-          : null,
+          : undefined,
         iconColor: contextMenuSortIconColor,
       });
     }
@@ -1493,7 +1494,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
 
   additionalSortActions(
     column: Column,
-    columnIndex: GridRangeIndex
+    columnIndex: ModelIndex
   ): ContextAction[] {
     const theme = this.irisGrid.getTheme();
     const { contextMenuSortIconColor } = theme;
@@ -1572,7 +1573,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
 
   checkColumnSort(
     columnSort?: Sort | null,
-    direction: string | null = null,
+    direction: SortDirection = null,
     isAbs = false
   ): boolean {
     if (!columnSort) {

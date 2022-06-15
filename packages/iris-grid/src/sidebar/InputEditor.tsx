@@ -26,10 +26,10 @@ export default class InputEditor extends Component<
 > {
   static defaultProps = {
     value: '',
-    onContentChanged: (): null => null,
+    onContentChanged: (): void => undefined,
     editorSettings: {},
     editorIndex: 0,
-    onTab: (): null => null,
+    onTab: (): void => undefined,
     invalid: false,
   };
 
@@ -47,7 +47,7 @@ export default class InputEditor extends Component<
       isEditorEmpty: true,
     };
     this.editorContainer = null;
-    this.editor = null;
+    this.editor = undefined;
   }
 
   componentDidMount(): void {
@@ -60,7 +60,7 @@ export default class InputEditor extends Component<
 
   editorContainer: HTMLDivElement | null;
 
-  editor: monaco.editor.IStandaloneCodeEditor | null;
+  editor: monaco.editor.IStandaloneCodeEditor | undefined;
 
   initEditor(): void {
     const { value, editorSettings } = this.props;
@@ -111,7 +111,7 @@ export default class InputEditor extends Component<
 
   destroyEditor(): void {
     this.editor?.dispose();
-    this.editor = null;
+    this.editor = undefined;
   }
 
   handleContentChanged(): void {

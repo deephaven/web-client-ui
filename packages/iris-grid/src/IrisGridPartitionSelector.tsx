@@ -3,10 +3,11 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { DropdownMenu, Tooltip } from '@deephaven/components';
 import { vsTriangleDown, vsClose } from '@deephaven/icons';
 import Log from '@deephaven/log';
-import throttle from 'lodash.throttle';
+import debounce from 'lodash.debounce';
 import { Table } from '@deephaven/jsapi-shim';
 import PartitionSelectorSearch from './PartitionSelectorSearch';
 import './IrisGridPartitionSelector.scss';
+import { ColumnName } from './IrisGrid';
 
 const log = Log.module('IrisGridPartitionSelector');
 
@@ -14,7 +15,7 @@ const PARTITION_CHANGE_DEBOUNCE_MS = 250;
 interface IrisGridPartitionSelectorProps<T> {
   getFormattedString: (value: T, type: string, name: string) => string;
   table: Table;
-  columnName: string;
+  columnName: ColumnName;
   partition: string;
   onAppend: (partition: string) => void;
   onFetchAll: () => void;
@@ -29,10 +30,10 @@ class IrisGridPartitionSelector<T> extends Component<
   IrisGridPartitionSelectorState
 > {
   static defaultProps = {
-    onAppend: (): null => null,
-    onChange: (): null => null,
-    onFetchAll: (): null => null,
-    onDone: (): null => null,
+    onAppend: (): void => undefined,
+    onChange: (): void => undefined,
+    onFetchAll: (): void => undefined,
+    onDone: (): void => undefined,
     partition: '',
   };
 
@@ -125,7 +126,7 @@ class IrisGridPartitionSelector<T> extends Component<
     }
   }
 
-  debounceUpdate = throttle((): void => {
+  debounceUpdate = debounce((): void => {
     this.sendUpdate();
   }, PARTITION_CHANGE_DEBOUNCE_MS);
 

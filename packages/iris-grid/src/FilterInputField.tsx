@@ -35,11 +35,11 @@ class FilterInputField extends PureComponent<
     className: '',
     value: '',
     isAdvancedFilterSet: false,
-    onAdvancedFiltersTriggered: (): null => null,
-    onChange: (): null => null,
-    onDone: (): null => null,
-    onTab: (): null => null,
-    onContextMenu: (): null => null,
+    onAdvancedFiltersTriggered: (): void => undefined,
+    onChange: (): void => undefined,
+    onDone: (): void => undefined,
+    onTab: (): void => undefined,
+    onContextMenu: (): void => undefined,
     debounceMs: 150,
   };
 

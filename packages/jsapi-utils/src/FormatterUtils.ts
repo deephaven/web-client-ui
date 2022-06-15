@@ -1,16 +1,12 @@
 import type { FormattingRule } from './Formatter';
 import Formatter from './Formatter';
 import { DateTimeColumnFormatter, TableColumnFormatter } from './formatters';
+import { ColumnName } from './IrisGrid';
 
 class FormatterUtils {
-  static getColumnFormats(
-    settings?:
-      | {
-          formatter?: FormattingRule[];
-        }
-      | null
-      | undefined
-  ): FormattingRule[] | undefined {
+  static getColumnFormats(settings?: {
+    formatter?: FormattingRule[];
+  }): FormattingRule[] | undefined {
     if (settings && settings.formatter) {
       const { formatter } = settings;
       return formatter;
@@ -46,7 +42,7 @@ class FormatterUtils {
    */
   static isCustomColumnFormatDefined(
     formatter: Formatter,
-    columnName: string,
+    columnName: ColumnName,
     columnType: string
   ): boolean {
     const columnFormat = formatter.getColumnFormat(columnType, columnName);

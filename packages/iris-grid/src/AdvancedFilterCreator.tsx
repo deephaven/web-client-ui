@@ -17,14 +17,21 @@ import { ContextActionUtils, Tooltip } from '@deephaven/components';
 import Log from '@deephaven/log';
 import { CancelablePromise, PromiseUtils } from '@deephaven/utils';
 import { Column, FilterCondition, Table } from '@deephaven/jsapi-shim';
+import shortid from 'shortid';
 import AdvancedFilterCreatorFilterItem from './AdvancedFilterCreatorFilterItem';
 import AdvancedFilterCreatorSelectValue from './AdvancedFilterCreatorSelectValue';
 import './AdvancedFilterCreator.scss';
-import IrisGridProxyModel from './IrisGridProxyModel';
+import { assertNotUndefined } from './IrisGrid';
+import IrisGridModel from './IrisGridModel';
 
 const log = Log.module('AdvancedFilterCreator');
 
-export type Options = {
+type FilterChangeHandler = (
+  selectedType: FilterTypeValue,
+  value: string
+) => void;
+
+export type AdvancedFilterOptions = {
   filterItems: FilterItem[];
   filterOperators: FilterOperatorValue[];
   invertSelection: boolean;
@@ -32,12 +39,12 @@ export type Options = {
 };
 
 interface AdvancedFilterCreatorProps {
-  model: IrisGridProxyModel;
+  model: IrisGridModel;
   column: Column;
   onFilterChange: (
     column: Column,
     filter: FilterCondition,
-    options: Options
+    options: AdvancedFilterOptions
   ) => void;
   onSortChange: (
     column: Column,
@@ -45,20 +52,25 @@ interface AdvancedFilterCreatorProps {
     addToExisting?: boolean
   ) => void;
   onDone: () => void;
-  options: Options;
+  options: AdvancedFilterOptions;
   sortDirection: SortDirection;
   formatter: Formatter;
+}
+
+interface AdvancedFilterItem {
+  selectedType?: FilterTypeValue;
+  value?: string;
+  key: string;
 }
 
 interface FilterItem {
   selectedType: FilterTypeValue;
   value: string;
-  key: number;
 }
 
 interface AdvancedFilterCreatorState {
   // Filter items
-  filterItems: FilterItem[];
+  filterItems: AdvancedFilterItem[];
 
   // And/Or between the filter items
   filterOperators: FilterOperatorValue[];
@@ -68,7 +80,7 @@ interface AdvancedFilterCreatorState {
   selectedValues: unknown[];
 
   valuesTableError: null;
-  valuesTable: Table | null;
+  valuesTable?: Table;
 }
 class AdvancedFilterCreator extends PureComponent<
   AdvancedFilterCreatorProps,
@@ -85,6 +97,10 @@ class AdvancedFilterCreator extends PureComponent<
     },
     sortDirection: null,
   };
+
+  static makeFilterItem(): AdvancedFilterItem {
+    return { key: shortid() };
+  }
 
   constructor(props: AdvancedFilterCreatorProps) {
     super(props);
@@ -107,19 +123,22 @@ class AdvancedFilterCreator extends PureComponent<
     this.handleUpdateTimeout = this.handleUpdateTimeout.bind(this);
 
     this.focusTrapContainer = React.createRef();
-    this.debounceTimeout = null;
+    this.debounceTimeout = undefined;
     this.filterKey = 0;
-    this.valuesTablePromise = null;
+    this.valuesTablePromise = undefined;
 
     const { options } = props;
-    let {
-      filterItems,
-      filterOperators,
-      invertSelection,
-      selectedValues,
-    } = options;
+    let { filterOperators, invertSelection, selectedValues } = options;
+
+    let filterItems: AdvancedFilterItem[] = options.filterItems.map(
+      ({ selectedType, value }) => ({
+        selectedType,
+        value,
+        key: shortid(),
+      })
+    );
     if (filterItems == null) {
-      filterItems = [this.makeFilterItem()];
+      filterItems = [AdvancedFilterCreator.makeFilterItem()];
     }
     if (filterOperators == null) {
       filterOperators = [];
@@ -143,7 +162,7 @@ class AdvancedFilterCreator extends PureComponent<
       selectedValues,
 
       valuesTableError: null,
-      valuesTable: null,
+      valuesTable: undefined,
     };
   }
 
@@ -163,15 +182,13 @@ class AdvancedFilterCreator extends PureComponent<
 
   focusTrapContainer: React.RefObject<HTMLFormElement>;
 
-  debounceTimeout: NodeJS.Timeout | null;
+  debounceTimeout?: ReturnType<typeof setTimeout>;
 
   filterKey: number;
 
-  valuesTablePromise: CancelablePromise<Table> | null;
+  valuesTablePromise?: CancelablePromise<Table>;
 
-  getFilterChangeHandler(
-    index: number
-  ): (selectedType: FilterTypeValue, value: string) => void {
+  getFilterChangeHandler(index: number): FilterChangeHandler {
     return this.handleFilterChange.bind(this, index);
   }
 
@@ -179,7 +196,7 @@ class AdvancedFilterCreator extends PureComponent<
     return this.handleFilterDelete.bind(this, index);
   }
 
-  getFilterTypes = memoize((columnType: string): FilterType[] =>
+  getFilterTypes = memoize((columnType: string): FilterTypeValue[] =>
     TableUtils.getFilterTypes(columnType)
   );
 
@@ -211,47 +228,49 @@ class AdvancedFilterCreator extends PureComponent<
   }
 
   handleFocusTrapEnd(): void {
-    const inputs = this.focusTrapContainer?.current?.querySelectorAll(
+    (this.focusTrapContainer?.current?.querySelector(
       'button,select,input,textarea'
-    );
-    if (inputs) {
-      (inputs[0] as HTMLDivElement).focus();
-    }
+    ) as HTMLElement).focus();
   }
 
   handleFocusTrapStart(): void {
     const inputs = this.focusTrapContainer?.current?.querySelectorAll(
       'button,select,input,textarea'
     );
-    if (inputs) {
-      const element = inputs[inputs.length - 1] as HTMLDivElement;
+    if (inputs && inputs.length > 0) {
+      const element = inputs[inputs.length - 1] as HTMLElement;
       element.focus();
     }
   }
 
   handleAddAnd(): void {
     let { filterItems, filterOperators } = this.state;
-    filterItems = filterItems.concat(this.makeFilterItem());
+    filterItems = filterItems.concat(AdvancedFilterCreator.makeFilterItem());
     filterOperators = filterOperators.concat(FilterOperator.and);
     this.setState({ filterItems, filterOperators });
   }
 
   handleAddOr(): void {
     let { filterItems, filterOperators } = this.state;
-    filterItems = filterItems.concat(this.makeFilterItem());
+    filterItems = filterItems.concat(AdvancedFilterCreator.makeFilterItem());
     filterOperators = filterOperators.concat(FilterOperator.or);
     this.setState({ filterItems, filterOperators });
   }
 
   handleChangeFilterOperator(event: React.MouseEvent<HTMLButtonElement>): void {
-    const target = event.target as HTMLButtonElement;
-    const strIndex = target.dataset.index as string;
+    const target = event.currentTarget;
+
+    const { operator, index: strIndex } = target.dataset;
+    assertNotUndefined(strIndex);
     const index = parseInt(strIndex, 10);
-    const { operator } = target.dataset;
 
     let { filterOperators } = this.state;
-    filterOperators = ([] as FilterOperatorValue[]).concat(filterOperators);
-    filterOperators[index] = operator as FilterOperatorValue;
+    filterOperators = [...filterOperators];
+
+    if (!(operator === 'not' || operator === 'and' || operator === 'or')) {
+      throw new Error('operator is not a valid FilterOperatorValue');
+    }
+    filterOperators[index] = operator;
 
     this.setState({ filterOperators });
 
@@ -264,7 +283,7 @@ class AdvancedFilterCreator extends PureComponent<
     value: string
   ): void {
     let { filterItems } = this.state;
-    filterItems = ([] as FilterItem[]).concat(filterItems);
+    filterItems = [...filterItems];
     const { key } = filterItems[filterIndex];
     filterItems[filterIndex] = { key, selectedType, value };
 
@@ -275,8 +294,8 @@ class AdvancedFilterCreator extends PureComponent<
 
   handleFilterDelete(filterIndex: number): void {
     let { filterItems, filterOperators } = this.state;
-    filterItems = ([] as FilterItem[]).concat(filterItems);
-    filterOperators = ([] as FilterOperatorValue[]).concat(filterOperators);
+    filterItems = [...filterItems];
+    filterOperators = [...filterOperators];
     if (filterIndex < filterItems.length) {
       filterItems.splice(filterIndex, 1);
     }
@@ -289,7 +308,7 @@ class AdvancedFilterCreator extends PureComponent<
     }
 
     if (filterItems.length === 0) {
-      filterItems.push(this.makeFilterItem());
+      filterItems.push(AdvancedFilterCreator.makeFilterItem());
     }
 
     this.setState({ filterItems, filterOperators });
@@ -310,7 +329,7 @@ class AdvancedFilterCreator extends PureComponent<
     log.debug('Resetting Advanced Filter');
 
     this.setState({
-      filterItems: [this.makeFilterItem()],
+      filterItems: [AdvancedFilterCreator.makeFilterItem()],
       filterOperators: [],
       selectedValues: [],
       invertSelection: true,
@@ -349,16 +368,8 @@ class AdvancedFilterCreator extends PureComponent<
   }
 
   handleUpdateTimeout(): void {
-    this.debounceTimeout = null;
+    this.debounceTimeout = undefined;
     this.sendUpdate();
-  }
-
-  makeFilterItem(updateKey = true): FilterItem {
-    const key = this.filterKey;
-    if (updateKey) {
-      this.filterKey += 1;
-    }
-    return { selectedType: '' as FilterTypeValue, value: '', key };
   }
 
   /**
@@ -385,8 +396,8 @@ class AdvancedFilterCreator extends PureComponent<
 
   /**
    * Sorts the table in the specified direction. If already sorted in that direction, remove it.
-   * @param {String} direction The sort direction, ASC or DESC
-   * @param {boolean} addToExisting Add to the existing sort, or replace the existing table sort
+   * @param direction The sort direction, ASC or DESC
+   * @param addToExisting Add to the existing sort, or replace the existing table sort
    */
   sortTable(direction: SortDirection, addToExisting = false): void {
     const { column, onSortChange } = this.props;
@@ -403,9 +414,9 @@ class AdvancedFilterCreator extends PureComponent<
   }
 
   stopUpdateTimer(): void {
-    if (this.debounceTimeout) {
+    if (this.debounceTimeout !== undefined) {
       clearTimeout(this.debounceTimeout);
-      this.debounceTimeout = null;
+      this.debounceTimeout = undefined;
     }
   }
 
@@ -420,7 +431,9 @@ class AdvancedFilterCreator extends PureComponent<
     const { formatter } = model;
 
     const options = {
-      filterItems,
+      filterItems: filterItems.filter(
+        ({ selectedType, value }) => selectedType != null && value != null
+      ) as FilterItem[],
       filterOperators,
       invertSelection,
       selectedValues,
@@ -460,7 +473,7 @@ class AdvancedFilterCreator extends PureComponent<
           <AdvancedFilterCreatorFilterItem
             key={key}
             column={column}
-            filterTypes={filterTypes as FilterTypeValue[]}
+            filterTypes={filterTypes}
             onChange={this.getFilterChangeHandler(i)}
             onDelete={this.getFilterDeleteHandler(i)}
             selectedType={selectedType}

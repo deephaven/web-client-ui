@@ -10,6 +10,7 @@ import {
   TableViewportSubscription,
 } from '@deephaven/jsapi-shim';
 import Log from '@deephaven/log';
+import { ColumnName } from './IrisGrid';
 
 const log = Log.module('TableViewportUpdater');
 
@@ -29,7 +30,7 @@ interface TableViewportUpdaterProps {
   columns: Column[];
   filters: FilterCondition[];
   sorts: Sort[];
-  customColumns: string[];
+  customColumns: ColumnName[];
   movedColumns: MoveOperation[];
   onSubscription: (subscription?: TableViewportSubscription) => void;
 }
@@ -49,7 +50,7 @@ class TableViewportUpdater extends PureComponent<
     left: null,
     right: null,
     columns: null,
-    onSubscription: (): null => null,
+    onSubscription: (): void => undefined,
     filters: [],
     sorts: [],
     customColumns: [],
@@ -59,7 +60,7 @@ class TableViewportUpdater extends PureComponent<
   constructor(props: TableViewportUpdaterProps) {
     super(props);
 
-    this.subscription = null;
+    this.subscription = undefined;
   }
 
   componentDidMount(): void {
@@ -127,7 +128,7 @@ class TableViewportUpdater extends PureComponent<
     this.closeSubscription();
   }
 
-  subscription: TableViewportSubscription | null;
+  subscription: TableViewportSubscription | undefined;
 
   // eslint-disable-next-line class-methods-use-this
   getViewportRowRange = memoize((table, top, bottom) => {
@@ -173,7 +174,7 @@ class TableViewportUpdater extends PureComponent<
     log.debug2('closeSubscription', this.subscription);
     if (this.subscription) {
       this.subscription.close();
-      this.subscription = null;
+      this.subscription = undefined;
 
       const { onSubscription } = this.props;
       onSubscription();

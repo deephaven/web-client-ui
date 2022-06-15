@@ -22,9 +22,13 @@ import { Column } from '@deephaven/jsapi-shim';
 import IrisGridUtils from './IrisGridUtils';
 import IrisGridBottomBar from './IrisGridBottomBar';
 import './IrisGridCopyHandler.scss';
-import IrisGridProxyModel from './IrisGridProxyModel';
+import IrisGridModel from './IrisGridModel';
 
 const log = Log.module('IrisGridCopyHandler');
+
+type Values<T> = T[keyof T];
+
+type ButtonStateType = Values<typeof IrisGridCopyHandler.BUTTON_STATES>;
 
 export type CopyOperation = {
   ranges: GridRange[];
@@ -32,11 +36,11 @@ export type CopyOperation = {
   formatValues?: boolean;
   movedColumns: MoveOperation[];
   userColumnWidths: ModelSizeMap;
-  error?: string | null;
+  error?: string;
 };
 
 interface IrisGridCopyHandlerProps {
-  model: IrisGridProxyModel;
+  model: IrisGridModel;
   copyOperation: CopyOperation;
   onEntering: () => void;
   onEntered: () => void;
@@ -45,7 +49,7 @@ interface IrisGridCopyHandlerProps {
 }
 
 interface IrisGridCopyHandlerState {
-  error: string | null;
+  error?: string;
   copyState: string;
   buttonState: string;
   isShown: boolean;
@@ -96,10 +100,10 @@ class IrisGridCopyHandler extends Component<
 
   static defaultProps = {
     copyOperation: null,
-    onEntering: (): null => null,
-    onEntered: (): null => null,
-    onExiting: (): null => null,
-    onExited: (): null => null,
+    onEntering: (): void => undefined,
+    onEntered: (): void => undefined,
+    onExiting: (): void => undefined,
+    onExited: (): void => undefined,
   };
 
   static getStatusMessageText(copyState: string, rowCount: number): string {
@@ -119,7 +123,7 @@ class IrisGridCopyHandler extends Component<
     }
   }
 
-  static getCopyButtonText(buttonState: string): string {
+  static getCopyButtonText(buttonState: ButtonStateType): string {
     switch (buttonState) {
       case IrisGridCopyHandler.BUTTON_STATES.FETCH_IN_PROGRESS:
         return 'Fetching';
@@ -140,12 +144,12 @@ class IrisGridCopyHandler extends Component<
     this.handleCopyClick = this.handleCopyClick.bind(this);
     this.handleHideTimeout = this.handleHideTimeout.bind(this);
 
-    this.textData = null;
-    this.hideTimer = null;
-    this.fetchPromise = null;
+    this.textData = undefined;
+    this.hideTimer = undefined;
+    this.fetchPromise = undefined;
 
     this.state = {
-      error: null,
+      error: undefined,
       copyState: IrisGridCopyHandler.COPY_STATES.IDLE,
       buttonState: IrisGridCopyHandler.BUTTON_STATES.COPY,
       isShown: false,
@@ -171,11 +175,11 @@ class IrisGridCopyHandler extends Component<
     this.stopCopy();
   }
 
-  textData: string | null;
+  textData: string | undefined;
 
-  hideTimer: NodeJS.Timeout | null;
+  hideTimer: ReturnType<typeof setTimeout> | undefined;
 
-  fetchPromise: CancelablePromise<string> | null;
+  fetchPromise: CancelablePromise<string> | undefined;
 
   startCopy(): void {
     log.debug2('startCopy');
@@ -203,7 +207,7 @@ class IrisGridCopyHandler extends Component<
 
     const rowCount = GridRange.rowCount(ranges);
 
-    this.setState({ rowCount, isShown: true, error: null });
+    this.setState({ rowCount, isShown: true, error: undefined });
 
     if (rowCount > IrisGridCopyHandler.NO_PROMPT_THRESHOLD) {
       this.setState({
@@ -216,7 +220,7 @@ class IrisGridCopyHandler extends Component<
   }
 
   stopCopy(): void {
-    this.textData = null;
+    this.textData = undefined;
     this.stopFetch();
     this.stopHideTimer();
   }
@@ -314,7 +318,7 @@ class IrisGridCopyHandler extends Component<
     );
     this.fetchPromise
       .then((text: string) => {
-        this.fetchPromise = null;
+        this.fetchPromise = undefined;
         this.copyText(text);
       })
       .catch((error: unknown) => {
@@ -322,7 +326,7 @@ class IrisGridCopyHandler extends Component<
           log.debug('User cancelled copy.');
         } else {
           log.error('Error fetching contents', error);
-          this.fetchPromise = null;
+          this.fetchPromise = undefined;
           this.setState({
             buttonState: IrisGridCopyHandler.BUTTON_STATES.RETRY,
             copyState: IrisGridCopyHandler.COPY_STATES.FETCH_ERROR,
@@ -335,7 +339,7 @@ class IrisGridCopyHandler extends Component<
     if (this.fetchPromise) {
       log.debug2('stopFetch');
       this.fetchPromise.cancel();
-      this.fetchPromise = null;
+      this.fetchPromise = undefined;
     }
   }
 
@@ -351,7 +355,7 @@ class IrisGridCopyHandler extends Component<
   stopHideTimer(): void {
     if (this.hideTimer != null) {
       clearTimeout(this.hideTimer);
-      this.hideTimer = null;
+      this.hideTimer = undefined;
     }
   }
 

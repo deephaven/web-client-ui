@@ -548,12 +548,14 @@ export class IrisGridPanel extends PureComponent {
 
     this.setState({ isModelReady: true });
 
-    const { table } = model;
-    const { pluginName } = table;
-    if (loadPlugin && pluginName) {
-      const Plugin = loadPlugin(pluginName);
-      this.setState({ Plugin });
+    const { pluginName } = model;
+    if (pluginName) {
+      if (loadPlugin && pluginName) {
+        const Plugin = loadPlugin(pluginName);
+        this.setState({ Plugin });
+      }
     }
+    const table = null;
     glEventHub.emit(InputFilterEvent.TABLE_CHANGED, this, table);
 
     this.sendColumnsChange(model.columns);

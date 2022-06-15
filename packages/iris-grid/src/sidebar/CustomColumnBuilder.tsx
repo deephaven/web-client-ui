@@ -39,8 +39,8 @@ class CustomColumnBuilder extends Component<
 
   static defaultProps = {
     customColumns: [],
-    onSave: (): null => null,
-    onCancel: (): null => null,
+    onSave: (): void => undefined,
+    onCancel: (): void => undefined,
   };
 
   static makeCustomColumnInputEventKey(): string {
@@ -98,7 +98,7 @@ class CustomColumnBuilder extends Component<
 
   container: HTMLDivElement | null;
 
-  successButtonTimer: NodeJS.Timeout | null;
+  successButtonTimer: ReturnType<typeof setTimeout> | null;
 
   messageTimer: undefined;
 

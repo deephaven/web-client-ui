@@ -1,14 +1,18 @@
 import React from 'react';
 import { Formatter } from '@deephaven/jsapi-utils';
 import { render } from '@testing-library/react';
+import { Column } from '@deephaven/jsapi-shim';
 // import userEvent from '@testing-library/user-event';
 // import dh from '@deephaven/jsapi-shim';
 // import {
 //   Type as FilterType,
 //   Operator as FilterOperator,
 // } from '@deephaven/filters';
-import AdvancedFilterCreator, { Options } from './AdvancedFilterCreator';
+import AdvancedFilterCreator, {
+  AdvancedFilterOptions,
+} from './AdvancedFilterCreator';
 import IrisGridTestUtils from './IrisGridTestUtils';
+import IrisGridModel from './IrisGridModel';
 
 // let mockFilterHandlers = [];
 // let mockSelectedType;
@@ -27,12 +31,29 @@ import IrisGridTestUtils from './IrisGridTestUtils';
 //   })
 // );
 
-function makeAdvancedFilterCreatorWrapper({
-  options = {},
-  model = IrisGridTestUtils.makeModel(),
-  column = IrisGridTestUtils.makeColumn(),
-  formatter = new Formatter(),
-} = {}) {
+function makeAdvancedFilterCreatorWrapper(
+  {
+    options,
+    model,
+    column,
+    formatter,
+  }: {
+    options: AdvancedFilterOptions;
+    model: IrisGridModel;
+    column: Column;
+    formatter: Formatter;
+  } = {
+    options: {
+      filterItems: [],
+      filterOperators: [],
+      invertSelection: false,
+      selectedValues: [],
+    },
+    model: IrisGridTestUtils.makeModel(),
+    column: IrisGridTestUtils.makeColumn(),
+    formatter: new Formatter(),
+  }
+) {
   const wrapper = render(
     <AdvancedFilterCreator
       model={model}
@@ -41,7 +62,7 @@ function makeAdvancedFilterCreatorWrapper({
       onFilterChange={() => null}
       onSortChange={() => null}
       onDone={() => null}
-      options={options as Options}
+      options={options}
     />
   );
 

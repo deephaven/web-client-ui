@@ -1,14 +1,17 @@
 export * from './sidebar';
 export * from './AdvancedFilterCreator';
 export { default as IrisGrid } from './IrisGrid';
+export * from './IrisGrid';
 export { default as SHORTCUTS } from './IrisGridShortcuts';
 export { default as IrisGridModel } from './IrisGridModel';
 export { default as IrisGridTableModel } from './IrisGridTableModel';
+export * from './IrisGridTableModel';
+export { default as IrisGridTreeTableModel } from './IrisGridTreeTableModel';
+export * from './IrisGridTreeTableModel';
 export { default as IrisGridModelFactory } from './IrisGridModelFactory';
 export { default as IrisGridTheme } from './IrisGridTheme';
 export type { IrisGridThemeType } from './IrisGridTheme';
 export { default as IrisGridTestUtils } from './IrisGridTestUtils';
 export { default as IrisGridUtils } from './IrisGridUtils';
-
 export { default } from './IrisGrid';
 export * from './IrisGrid';

@@ -20,14 +20,14 @@ import {
   Button,
 } from '@deephaven/components';
 import { vsTrash, dhSortAlphaDown, dhSortAlphaUp } from '@deephaven/icons';
-import { TableUtils } from '@deephaven/jsapi-utils';
+import { TableUtils, SortDirection } from '@deephaven/jsapi-utils';
 import memoize from 'memoizee';
 import debounce from 'lodash.debounce';
 import Log from '@deephaven/log';
 import './RollupRows.scss';
 import { Column, RollupConfig } from '@deephaven/jsapi-shim';
 import IrisGridModel from '../IrisGridModel';
-import { assertNotNull } from '../IrisGrid';
+import { assertNotNull, ColumnName } from '../IrisGrid';
 
 const log = Log.module('RollupRows');
 const DEBOUNCE_SEARCH = 150;
@@ -35,7 +35,7 @@ const GROUPED_LIST_ID = 'grouped-rollup-rows';
 const UNGROUPED_LIST_ID = 'ungrouped-rollup-rows';
 
 export interface UIRollupConfig {
-  columns: string[];
+  columns: ColumnName[];
   showConstituents: boolean;
   showNonAggregatedColumns: boolean;
   includeDescriptions: true;
@@ -49,13 +49,13 @@ interface RollupRowsProps {
 
 interface RollupRowsState {
   ungroupedSelectedRanges: Range[];
-  columns: string[];
+  columns: ColumnName[];
   groupedSelectedRanges: Range[];
   searchFilter: string;
   showConstituents: boolean;
   showNonAggregatedColumns: boolean;
   dragSource: DraggableLocation | null;
-  sort: string | null;
+  sort: SortDirection;
 }
 
 class RollupRows extends Component<RollupRowsProps, RollupRowsState> {
@@ -66,7 +66,7 @@ class RollupRows extends Component<RollupRowsProps, RollupRowsState> {
 
   static defaultProps = {
     config: null,
-    onChange: (): null => null,
+    onChange: (): void => undefined,
   };
 
   static renderColumn({
@@ -78,7 +78,7 @@ class RollupRows extends Component<RollupRowsProps, RollupRowsState> {
     selectedCount?: number;
   }): ReactElement {
     const text = item && item.name;
-    const badgeText = isClone ? `${selectedCount}` : null;
+    const badgeText = isClone ? `${selectedCount}` : undefined;
     const className = isClone ? 'item-list-item-clone' : '';
     return DraggableItemList.renderTextItem({ text, badgeText, className });
   }
@@ -204,14 +204,18 @@ class RollupRows extends Component<RollupRowsProps, RollupRowsState> {
   handleSortAscending(): void {
     this.setState(({ sort }) => ({
       sort:
-        sort === RollupRows.SORT.ASCENDING ? null : RollupRows.SORT.ASCENDING,
+        sort === RollupRows.SORT.ASCENDING
+          ? null
+          : (RollupRows.SORT.ASCENDING as SortDirection),
     }));
   }
 
   handleSortDescending(): void {
     this.setState(({ sort }) => ({
       sort:
-        sort === RollupRows.SORT.DESCENDING ? null : RollupRows.SORT.DESCENDING,
+        sort === RollupRows.SORT.DESCENDING
+          ? null
+          : (RollupRows.SORT.DESCENDING as SortDirection),
     }));
   }
 
@@ -232,10 +236,10 @@ class RollupRows extends Component<RollupRowsProps, RollupRowsState> {
         selectedRanges.push([i, i]);
       }
     }
+    assertNotNull(focusIndex);
     this.setState({ ungroupedSelectedRanges: selectedRanges });
 
     if (selectedRanges.length > 0 && this.ungroupedList.current) {
-      assertNotNull(focusIndex);
       this.ungroupedList.current.scrollToItem(focusIndex);
     }
   }, DEBOUNCE_SEARCH);
@@ -286,7 +290,7 @@ class RollupRows extends Component<RollupRowsProps, RollupRowsState> {
     }
     this.setState(
       ({ columns, ungroupedSelectedRanges, groupedSelectedRanges }) => {
-        const newColumns = [...columns] as string[];
+        const newColumns = [...columns];
         const sourceItems = isSameList
           ? newColumns
           : this.getSortedUngroupedColumns().map(c => c.name);
@@ -397,7 +401,7 @@ class RollupRows extends Component<RollupRowsProps, RollupRowsState> {
   }
 
   getCachedUngroupedColumns = memoize(
-    (columns: Column[], groupedColumns: string[]): Column[] =>
+    (columns: Column[], groupedColumns: ColumnName[]): Column[] =>
       columns.filter(
         column =>
           RollupRows.isGroupable(column) &&
@@ -406,7 +410,7 @@ class RollupRows extends Component<RollupRowsProps, RollupRowsState> {
   );
 
   getCachedSortedColumns = memoize(
-    (columns: Column[], sort?: string | null): Column[] =>
+    (columns: Column[], sort?: SortDirection): Column[] =>
       sort == null
         ? [...columns]
         : TableUtils.sortColumns(columns, sort === RollupRows.SORT.ASCENDING)
@@ -437,7 +441,7 @@ class RollupRows extends Component<RollupRowsProps, RollupRowsState> {
   }): ReactElement {
     const indent = isClone ? '' : '\u00A0\u00A0'.repeat(itemIndex);
     const text = `${indent}${item}`;
-    const badgeText = isClone ? `${selectedCount}` : null;
+    const badgeText = isClone ? `${selectedCount}` : undefined;
     const className = isClone ? 'item-list-item-clone' : '';
     return (
       <>

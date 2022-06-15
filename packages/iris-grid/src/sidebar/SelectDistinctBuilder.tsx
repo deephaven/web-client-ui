@@ -5,15 +5,17 @@ import { dhNewCircleLargeFilled, vsTrash } from '@deephaven/icons';
 import { Tooltip } from '@deephaven/components';
 import Log from '@deephaven/log';
 import { Column } from '@deephaven/jsapi-shim';
+import { ModelIndex } from '@deephaven/grid';
 import IrisGridModel from '../IrisGridModel';
 
 import './SelectDistinctBuilder.scss';
+import { ColumnName } from '../IrisGrid';
 
 const log = Log.module('SelectDistinctBuilder');
 
 interface SelectDistinctBuilderProps {
   model: IrisGridModel;
-  selectDistinctColumns: string[];
+  selectDistinctColumns: ColumnName[];
   onChange: (newStr: string[]) => void;
 }
 interface SelectDistinctBuilderState {
@@ -26,7 +28,7 @@ class SelectDistinctBuilder extends Component<
 > {
   static defaultProps = {
     selectDistinctColumns: [],
-    onChange: (): null => null,
+    onChange: (): void => undefined,
   };
 
   constructor(props: SelectDistinctBuilderProps) {
@@ -70,7 +72,7 @@ class SelectDistinctBuilder extends Component<
     }));
   }
 
-  handleDeleteColumn(index: number): void {
+  handleDeleteColumn(index: ModelIndex): void {
     this.setState(({ inputs }) => ({
       inputs:
         inputs.length === 1 && index === 0

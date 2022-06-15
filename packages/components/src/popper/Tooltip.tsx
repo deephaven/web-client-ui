@@ -5,7 +5,7 @@ import Popper, { PopperOptions, ReferenceObject } from './Popper';
 
 const log = Log.module('Tooltip');
 
-type TooltipProps = Omit<typeof Tooltip.defaultProps, 'referenceObject'> & {
+type TooltipProps = typeof Tooltip.defaultProps & {
   children: React.ReactNode;
   interactive?: boolean;
   options?: PopperOptions;
@@ -49,7 +49,6 @@ class Tooltip extends Component<TooltipProps, TooltipState> {
     popperClassName: '',
     reshowTimeout: Tooltip.defaultReshowTimeout,
     timeout: Tooltip.defaultTimeout,
-    referenceObject: null,
     onExited: (): void => undefined,
     'data-testid': undefined,
   };

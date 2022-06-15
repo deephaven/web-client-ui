@@ -36,7 +36,7 @@ interface AdvancedFilterCreatorSelectValueListState<T> {
  * Select values from a long scrollable list.
  * Swaps items in and out for infinite scrolling
  */
-class AdvancedFilterCreatorSelectValueList<T> extends PureComponent<
+class AdvancedFilterCreatorSelectValueList<T = unknown> extends PureComponent<
   AdvancedFilterCreatorSelectValueListProps<T>,
   AdvancedFilterCreatorSelectValueListState<T>
 > {
@@ -44,13 +44,13 @@ class AdvancedFilterCreatorSelectValueList<T> extends PureComponent<
     table: null,
     invertSelection: true,
     selectedValues: [],
-    onChange: (): null => null,
+    onChange: (): void => undefined,
   };
 
   /**
    * Get the index of a value in an array. Has some special handling for some types, like DateTimes and Longs.
-   * @param {Any} value The value to search for
-   * @param {Array} values The array of values to search within
+   * @param value The value to search for
+   * @param values The array of values to search within
    */
   static indexOf(
     value: { valueof?: unknown },
@@ -61,7 +61,7 @@ class AdvancedFilterCreatorSelectValueList<T> extends PureComponent<
       if (
         v === value ||
         (v != null &&
-          v.valueof &&
+          v.valueOf &&
           value != null &&
           value.valueOf &&
           v.valueOf() === value.valueOf())
@@ -124,7 +124,8 @@ class AdvancedFilterCreatorSelectValueList<T> extends PureComponent<
   }
 
   componentWillUnmount(): void {
-    this.stopListening();
+    const { table } = this.props;
+    this.stopListening(table);
   }
 
   list: SelectValueList<T> | null;
@@ -132,7 +133,7 @@ class AdvancedFilterCreatorSelectValueList<T> extends PureComponent<
   handleSelect(itemIndex: number, value: T): void {
     const { invertSelection } = this.props;
     let { selectedValues } = this.state;
-    selectedValues = ([] as T[]).concat(selectedValues);
+    selectedValues = [...selectedValues];
     const selectedIndex = AdvancedFilterCreatorSelectValueList.indexOf(
       value,
       selectedValues
@@ -150,7 +151,7 @@ class AdvancedFilterCreatorSelectValueList<T> extends PureComponent<
 
     const { offset } = this.state;
     let { items } = this.state;
-    items = ([] as SelectItem<T>[]).concat(items);
+    items = [...items];
     const visibleItemIndex = itemIndex - offset;
     if (visibleItemIndex >= 0 && visibleItemIndex < items.length) {
       items[visibleItemIndex].isSelected = isSelected;
@@ -212,20 +213,16 @@ class AdvancedFilterCreatorSelectValueList<T> extends PureComponent<
     return invertSelection ? selectedIndex < 0 : selectedIndex >= 0;
   }
 
-  startListening(table?: Table): void {
-    if (table != null) {
-      table.addEventListener(dh.Table.EVENT_UPDATED, this.handleTableUpdate);
-    }
+  startListening(table: Table): void {
+    table.addEventListener(dh.Table.EVENT_UPDATED, this.handleTableUpdate);
   }
 
-  stopListening(table?: Table): void {
-    if (table != null) {
-      table.removeEventListener(dh.Table.EVENT_UPDATED, this.handleTableUpdate);
-    }
+  stopListening(table: Table): void {
+    table.removeEventListener(dh.Table.EVENT_UPDATED, this.handleTableUpdate);
   }
 
   resetViewport(): void {
-    if (this.list && this.list.topRow && this.list.bottomRow) {
+    if (this.list && this.list.topRow != null && this.list.bottomRow != null) {
       this.updateViewport(this.list.topRow, this.list.bottomRow, true);
     }
   }
@@ -233,7 +230,7 @@ class AdvancedFilterCreatorSelectValueList<T> extends PureComponent<
   updateItemSelection(): void {
     let { items } = this.state;
 
-    items = ([] as SelectItem<T>[]).concat(items);
+    items = [...items];
 
     for (let i = 0; i < items.length; i += 1) {
       const item = items[i];
@@ -274,9 +271,7 @@ class AdvancedFilterCreatorSelectValueList<T> extends PureComponent<
           onSelect={this.handleSelect}
           onViewportChange={this.handleViewportChange}
           ref={list => {
-            if (list) {
-              this.list = list;
-            }
+            this.list = list;
           }}
         />
         <CSSTransition

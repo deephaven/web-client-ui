@@ -6,6 +6,7 @@ import {
   GridUtils,
   memoizeClear,
   ModelIndex,
+  MoveOperation,
   VisibleIndex,
 } from '@deephaven/grid';
 import dh, {
@@ -29,6 +30,7 @@ import IrisGridModel from './IrisGridModel';
 import {
   assertNotNull,
   assertNotUndefined,
+  ColumnName,
   UITotalsTableConfig,
 } from './IrisGrid';
 import IrisGridTableModelTemplate from './IrisGridTableModelTemplate';
@@ -51,24 +53,27 @@ export type CellData = {
 };
 export type PendingDataMap<R extends UIRow = UIRow> = Map<ModelIndex, R>;
 
+const EMPTY_ARRAY = Object.freeze([]);
+
 /**
  * Model for a grid showing an iris data table
  */
+
 class IrisGridTableModel extends IrisGridTableModelTemplate<Table, UIRow> {
   static ROW_BUFFER_PAGES = 1;
 
   static COLUMN_BUFFER_PAGES = 0;
 
-  userFrozenColumns: string[] | null;
+  userFrozenColumns: ColumnName[] | undefined;
 
   customColumnList: string[];
 
   formatColumnList: CustomColumn[];
 
   /**
-   * @param {dh.Table} table Iris data table to be used in the model
-   * @param {Formatter} formatter The formatter to use when getting formats
-   * @param {dh.InputTable} inputTable Iris input table associated with this table
+   * @param table Iris data table to be used in the model
+   * @param formatter The formatter to use when getting formats
+   * @param inputTable Iris input table associated with this table
    */
   constructor(
     table: Table,
@@ -77,7 +82,7 @@ class IrisGridTableModel extends IrisGridTableModelTemplate<Table, UIRow> {
   ) {
     super(table, formatter, inputTable);
 
-    this.userFrozenColumns = null;
+    this.userFrozenColumns = undefined;
     this.customColumnList = [];
     this.formatColumnList = [];
   }
@@ -111,18 +116,10 @@ class IrisGridTableModel extends IrisGridTableModelTemplate<Table, UIRow> {
   }
 
   /**
-   * Returns an array of the columns in the model
-   * The order of model columns should never change once established
-   */
-  get columns() {
-    return this.table.columns;
-  }
-
-  /**
    * Used to get the initial moved columns based on layout hints
    */
-  get movedColumns() {
-    let movedColumns = [];
+  get movedColumns(): MoveOperation[] {
+    let movedColumns: MoveOperation[] = [];
 
     if (
       this.frontColumns.length ||
@@ -131,7 +128,7 @@ class IrisGridTableModel extends IrisGridTableModelTemplate<Table, UIRow> {
     ) {
       const usedColumns = new Set();
 
-      const moveColumn = (name, index) => {
+      const moveColumn = (name: string, toIndex: VisibleIndex) => {
         if (usedColumns.has(name)) {
           throw new Error(`Column specified in multiple layout hints: ${name}`);
         }
@@ -143,7 +140,7 @@ class IrisGridTableModel extends IrisGridTableModelTemplate<Table, UIRow> {
           modelIndex,
           movedColumns
         );
-        movedColumns = GridUtils.moveItem(visibleIndex, index, movedColumns);
+        movedColumns = GridUtils.moveItem(visibleIndex, toIndex, movedColumns);
       };
 
       let frontIndex = 0;
@@ -166,29 +163,30 @@ class IrisGridTableModel extends IrisGridTableModelTemplate<Table, UIRow> {
   }
 
   getMemoizedFrontColumns = memoize(
-    layoutHintsFrontColumns => layoutHintsFrontColumns ?? []
+    layoutHintsFrontColumns => layoutHintsFrontColumns ?? EMPTY_ARRAY
   );
 
-  get frontColumns(): string[] {
+  get frontColumns(): ColumnName[] {
     return this.getMemoizedFrontColumns(this.layoutHints?.frontColumns);
   }
 
   getMemoizedBackColumns = memoize(
-    layoutHintsBackColumns => layoutHintsBackColumns ?? []
+    layoutHintsBackColumns => layoutHintsBackColumns ?? EMPTY_ARRAY
   );
 
-  get backColumns(): string[] {
+  get backColumns(): ColumnName[] {
     return this.getMemoizedBackColumns(this.layoutHints?.backColumns);
   }
 
   getMemoizedFrozenColumns = memoize(
     (
-      layoutHintsFrozenColumns: string[],
-      userFrozenColumns: string[] | null
-    ): string[] => userFrozenColumns ?? layoutHintsFrozenColumns ?? []
+      layoutHintsFrozenColumns: ColumnName[],
+      userFrozenColumns: ColumnName[] | undefined
+    ): ColumnName[] =>
+      userFrozenColumns ?? layoutHintsFrozenColumns ?? EMPTY_ARRAY
   );
 
-  get frozenColumns(): string[] {
+  get frozenColumns(): ColumnName[] {
     return this.getMemoizedFrozenColumns(
       this.layoutHints?.frozenColumns,
       this.userFrozenColumns
@@ -207,11 +205,11 @@ class IrisGridTableModel extends IrisGridTableModelTemplate<Table, UIRow> {
     return this.table.description;
   }
 
-  get customColumns(): string[] {
+  get customColumns(): ColumnName[] {
     return this.customColumnList;
   }
 
-  set customColumns(customColumns: string[]) {
+  set customColumns(customColumns: ColumnName[]) {
     log.debug2(
       'set customColumns',
       customColumns,
@@ -259,10 +257,12 @@ class IrisGridTableModel extends IrisGridTableModelTemplate<Table, UIRow> {
     this.applyViewport();
   }
 
-  updateFrozenColumns(columns: string[]): void {
+  updateFrozenColumns(columns: ColumnName[]): void {
     this.userFrozenColumns = columns;
     this.dispatchEvent(
-      new EventShimCustomEvent(IrisGridModel.EVENT.TABLE_CHANGED)
+      new EventShimCustomEvent(IrisGridModel.EVENT.TABLE_CHANGED, {
+        detail: this.table,
+      })
     );
   }
 
@@ -317,7 +317,7 @@ class IrisGridTableModel extends IrisGridTableModelTemplate<Table, UIRow> {
     return this.table.isUncoalesced;
   }
 
-  isFilterable(columnIndex: number): boolean {
+  isFilterable(columnIndex: ModelIndex): boolean {
     return this.getCachedFilterableColumnSet(this.columns).has(columnIndex);
   }
 
@@ -331,70 +331,10 @@ class IrisGridTableModel extends IrisGridTableModelTemplate<Table, UIRow> {
 
   getCachedFilterableColumnSet = memoize(
     (columns: Column[]) =>
-      new Set(columns.map((_: Column, index: number) => index))
+      new Set(columns.map((_: Column, index: ModelIndex) => index))
   );
 
-  getCachedFormattedString = memoizeClear(
-    (
-      formatter: Formatter,
-      value: unknown,
-      columnType: string,
-      columnName: string,
-      formatOverride?: { formatString: string }
-    ): string =>
-      formatter.getFormattedString(
-        value,
-        columnType,
-        columnName,
-        formatOverride
-      ),
-    { max: 10000 }
-  );
-
-  getCachedCustomColumnFormatFlag = memoizeClear(
-    FormatterUtils.isCustomColumnFormatDefined,
-    { max: 10000 }
-  );
-
-  getCachedViewportRowRange = memoize((top: number, bottom: number): [
-    number,
-    number
-  ] => {
-    const viewHeight = bottom - top;
-    const viewportTop = Math.max(
-      0,
-      top - viewHeight * IrisGridTableModel.ROW_BUFFER_PAGES
-    );
-    const viewportBottom =
-      bottom + viewHeight * IrisGridTableModel.ROW_BUFFER_PAGES;
-    return [viewportTop, viewportBottom];
-  });
-
-  getCachedPendingErrors = memoize(
-    (
-      pendingDataMap: PendingDataMap,
-      columns: Column[],
-      keyColumnCount: number
-    ) => {
-      const map = new Map<number, MissingKeyError[]>();
-      pendingDataMap.forEach((row, rowIndex) => {
-        const { data: rowData } = row;
-        for (let i = 0; i < keyColumnCount; i += 1) {
-          if (!rowData.has(i)) {
-            if (!map.has(rowIndex)) {
-              map.set(rowIndex, []);
-            }
-            map
-              .get(rowIndex)
-              ?.push(new MissingKeyError(rowIndex, columns[i].name));
-          }
-        }
-      });
-      return map;
-    }
-  );
-
-  isColumnMovable(modelIndex: number): boolean {
+  isColumnMovable(modelIndex: ModelIndex): boolean {
     const columnName = this.columns[modelIndex].name;
     if (
       this.frontColumns.includes(columnName) ||
@@ -406,7 +346,7 @@ class IrisGridTableModel extends IrisGridTableModelTemplate<Table, UIRow> {
     return !this.isKeyColumn(modelIndex);
   }
 
-  isColumnFrozen(modelIndex: number): boolean {
+  isColumnFrozen(modelIndex: ModelIndex): boolean {
     return this.frozenColumns.includes(this.columns[modelIndex].name);
   }
 
@@ -439,11 +379,9 @@ class IrisGridTableModel extends IrisGridTableModelTemplate<Table, UIRow> {
       const newDataMap = new Map(super.pendingDataMap);
       for (let i = 0; i < pendingRanges.length; i += 1) {
         const pendingRange = pendingRanges[i];
-        for (
-          let r = pendingRange.startRow as number;
-          r <= (pendingRange.endRow as number);
-          r += 1
-        ) {
+        assertNotNull(pendingRange.startRow);
+        assertNotNull(pendingRange.endRow);
+        for (let r = pendingRange.startRow; r <= pendingRange.endRow; r += 1) {
           newDataMap.delete(r);
         }
       }

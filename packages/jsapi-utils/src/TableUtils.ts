@@ -22,7 +22,7 @@ import {
   TimeoutError,
 } from '@deephaven/utils';
 import DateUtils from './DateUtils';
-import { Options } from './AdvancedFilterCreator';
+import { AdvancedFilterOptions } from './AdvancedFilterCreator';
 
 const log = Log.module('TableUtils');
 
@@ -44,6 +44,7 @@ export class TableUtils {
     DECIMAL: 'decimal',
     INT: 'int',
     STRING: 'string',
+    UNKNOWN: 'unknown',
   } as const;
 
   static sortDirection = {
@@ -96,7 +97,7 @@ export class TableUtils {
   }
 
   /** Return the valid filter types for the column */
-  static getFilterTypes(columnType: string): FilterType[] {
+  static getFilterTypes(columnType: string): FilterTypeValue[] {
     if (TableUtils.isBooleanType(columnType)) {
       return [FilterType.isTrue, FilterType.isFalse, FilterType.isNull];
     }
@@ -273,7 +274,7 @@ export class TableUtils {
     return sorts;
   }
 
-  static getNormalizedType(columnType: string): DataType | null {
+  static getNormalizedType(columnType: string): DataType {
     switch (columnType) {
       case 'boolean':
       case 'java.lang.Boolean':
@@ -310,7 +311,7 @@ export class TableUtils {
       case TableUtils.dataType.INT:
         return TableUtils.dataType.INT;
       default:
-        return null;
+        return TableUtils.dataType.UNKNOWN;
     }
   }
 
@@ -1054,9 +1055,9 @@ export class TableUtils {
 
   static makeAdvancedFilter(
     column: Column,
-    options: Options,
+    options: AdvancedFilterOptions,
     timeZone: string
-  ): FilterCondition | null {
+  ): FilterCondition {
     const {
       filterItems,
       filterOperators,
@@ -1121,6 +1122,10 @@ export class TableUtils {
       } else {
         filter = selectValueFilter;
       }
+    }
+
+    if (filter === null) {
+      throw new Error('filter is null');
     }
     return filter;
   }

@@ -1,11 +1,14 @@
+import { ModelIndex } from '@deephaven/grid';
+import { ColumnName } from './IrisGrid';
+
 class MissingKeyError extends Error {
   isMissingKey = true;
 
-  rowIndex: number;
+  rowIndex: ModelIndex;
 
-  columnName: string;
+  columnName: ColumnName;
 
-  constructor(rowIndex: number, columnName: string) {
+  constructor(rowIndex: ModelIndex, columnName: ColumnName) {
     super(`${columnName} can't be empty (on pending row ${rowIndex + 1})`);
     this.rowIndex = rowIndex;
     this.columnName = columnName;

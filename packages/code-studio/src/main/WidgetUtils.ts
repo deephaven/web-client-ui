@@ -5,31 +5,33 @@ import {
   IrisGridModel,
   IrisGridModelFactory,
   IrisGridUtils,
-  Options,
+  AdvancedFilterOptions,
+  SortDirection,
 } from '@deephaven/iris-grid';
 import { getTimeZone, store } from '@deephaven/redux';
+import { ModelIndex } from '@deephaven/grid';
 import { DhSession } from './SessionUtils';
 
 export type ChartPanelMetadata = {
   settings: Record<string, unknown>;
   tableSettings: {
     quickFilters?: [
-      number,
+      ModelIndex,
       {
         text: string;
       }
     ][];
     advancedFilters?: [
-      number,
+      ModelIndex,
       {
-        options: Options;
+        options: AdvancedFilterOptions;
       }
     ][];
     inputFilters?: InputFilter[];
     sorts?: {
-      column: number;
+      column: ModelIndex;
       isAbs: boolean;
-      direction: string;
+      direction: SortDirection;
     }[];
     partition?: unknown;
     partitionColumn?: string;

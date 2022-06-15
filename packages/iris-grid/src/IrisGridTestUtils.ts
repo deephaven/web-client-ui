@@ -8,6 +8,7 @@ import dh, {
   Sort,
   Table,
   TableViewportSubscription,
+  TreeTable,
 } from '@deephaven/jsapi-shim';
 import { Formatter } from '@deephaven/jsapi-utils';
 import IrisGridProxyModel from './IrisGridProxyModel';
@@ -85,6 +86,17 @@ class IrisGridTestUtils {
   ): Table {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const table = new (dh as any).Table({ columns, size, sort });
+    table.copy = jest.fn(() => Promise.resolve(table));
+    return table;
+  }
+
+  static makeTreeTable(
+    columns = IrisGridTestUtils.makeColumns(),
+    size = 1000000000,
+    sort = []
+  ): TreeTable {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const table = new (dh as any).TreeTable({ columns, size, sort });
     table.copy = jest.fn(() => Promise.resolve(table));
     return table;
   }
