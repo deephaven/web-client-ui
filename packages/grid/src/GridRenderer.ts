@@ -2416,6 +2416,8 @@ export class GridRenderer {
       scrollBarCasingWidth,
       scrollBarSelectionTickColor,
       scrollBarActiveSelectionTickColor,
+      autoSelectRow,
+      autoSelectColumn,
     } = theme;
 
     //
@@ -2506,6 +2508,56 @@ export class GridRenderer {
         handleWidth,
         hScrollBarSize - scrollBarCasingWidth
       );
+
+      if (!autoSelectRow) {
+        // Scrollbar Selection Tick
+        const { selectedRanges, model } = state;
+        const { columnCount } = model;
+
+        for (let i = 0; i < selectedRanges.length; i += 1) {
+          const range = selectedRanges[i];
+          if (scrollBarSelectionTickColor != null) {
+            context.fillStyle = scrollBarSelectionTickColor;
+          }
+          if (range.startColumn != null && range.endColumn != null) {
+            const tickX = Math.round(
+              (range.startColumn / columnCount) * barWidth
+            );
+            const tickWidth = Math.max(
+              1,
+              Math.round(
+                ((range.endColumn - range.startColumn + 1) / columnCount) *
+                  barWidth
+              )
+            );
+            const trackHeight = hScrollBarSize - scrollBarCasingWidth;
+            context.fillRect(
+              tickX,
+              y + scrollBarCasingWidth + Math.round(trackHeight / 3),
+              tickWidth,
+              Math.round(trackHeight / 3)
+            );
+          }
+        }
+
+        // Current Active Tick
+        const { cursorColumn } = state;
+        if (cursorColumn != null) {
+          const tickX = Math.round((cursorColumn / columnCount) * barWidth);
+          const tickWidth = Math.max(
+            2,
+            Math.round((1 / columnCount) * barWidth)
+          );
+          const trackHeight = hScrollBarSize - scrollBarCasingWidth;
+          context.fillStyle = scrollBarActiveSelectionTickColor;
+          context.fillRect(
+            tickX,
+            y + scrollBarCasingWidth + Math.round(trackHeight / 3),
+            tickWidth,
+            Math.round(trackHeight / 3)
+          );
+        }
+      }
     }
 
     if (hasVerticalBar) {
@@ -2543,48 +2595,53 @@ export class GridRenderer {
         handleHeight
       );
 
-      // Scrollbar Selection Tick
-      const { selectedRanges, model } = state;
-      const { rowCount } = model;
+      if (!autoSelectColumn) {
+        // Scrollbar Selection Tick
+        const { selectedRanges, model } = state;
+        const { rowCount } = model;
 
-      for (let i = 0; i < selectedRanges.length; i += 1) {
-        const range = selectedRanges[i];
-        if (scrollBarSelectionTickColor != null) {
-          context.fillStyle = scrollBarSelectionTickColor;
+        for (let i = 0; i < selectedRanges.length; i += 1) {
+          const range = selectedRanges[i];
+          if (scrollBarSelectionTickColor != null) {
+            context.fillStyle = scrollBarSelectionTickColor;
+          }
+          if (range.startRow != null && range.endRow != null) {
+            const tickY = Math.round((range.startRow / rowCount) * barHeight);
+            const trackWidth = vScrollBarSize - scrollBarCasingWidth;
+            const tickHeight = Math.max(
+              1,
+              Math.round(
+                ((range.endRow - range.startRow + 1) / rowCount) * barHeight
+              )
+            );
+            context.fillRect(
+              x + scrollBarCasingWidth + Math.round(trackWidth / 3),
+              tickY,
+              Math.round(trackWidth / 3),
+              tickHeight
+            );
+          }
         }
-        if (range.startRow != null && range.endRow != null) {
-          const tickY = Math.round((range.startRow / rowCount) * barHeight);
+
+        // Current Active Tick
+        const { cursorRow } = state;
+        if (cursorRow != null) {
+          const tickY = Math.round((cursorRow / rowCount) * barHeight);
+
           const trackWidth = vScrollBarSize - scrollBarCasingWidth;
           const tickHeight = Math.max(
-            1,
-            Math.round(
-              ((range.endRow - range.startRow + 1) / rowCount) * barHeight
-            )
+            2,
+            Math.round((1 / rowCount) * barHeight)
           );
+
+          context.fillStyle = scrollBarActiveSelectionTickColor;
           context.fillRect(
-            x + scrollBarCasingWidth + Math.round(trackWidth / 3),
+            x + scrollBarCasingWidth,
             tickY,
-            Math.round(trackWidth / 3),
+            trackWidth,
             tickHeight
           );
         }
-      }
-
-      // Current Active Tick
-      const { cursorRow } = state;
-      if (cursorRow != null) {
-        const tickY = Math.round((cursorRow / rowCount) * barHeight);
-
-        const trackWidth = vScrollBarSize - scrollBarCasingWidth;
-        const tickHeight = Math.max(2, Math.round((1 / rowCount) * barHeight));
-
-        context.fillStyle = scrollBarActiveSelectionTickColor;
-        context.fillRect(
-          x + scrollBarCasingWidth,
-          tickY,
-          trackWidth,
-          tickHeight
-        );
       }
     }
 
