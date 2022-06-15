@@ -17,6 +17,7 @@ interface ModalProps {
   isOpen?: boolean;
   centered?: boolean;
   onOpened?: () => void;
+  onClosed?: () => void;
   toggle?: () => void;
   'data-testid'?: string;
 }
@@ -29,6 +30,7 @@ const Modal = ({
   isOpen = false,
   centered = false,
   onOpened,
+  onClosed,
   toggle,
   'data-testid': dataTestId,
 }: ModalProps): ReactElement => {
@@ -67,6 +69,15 @@ const Modal = ({
       }
     },
     [onOpened, isOpen]
+  );
+
+  useEffect(
+    function open() {
+      if (!isOpen && onClosed) {
+        onClosed();
+      }
+    },
+    [onClosed, isOpen]
   );
 
   return isOpen ? (
