@@ -390,6 +390,19 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
             disabled: !quickFilters.get(modelColumn),
           };
 
+          const gotoRow = {
+            title: 'Goto Row',
+            icon: vsRemove,
+            iconColor: filterIconColor,
+            group: IrisGridContextMenuHandler.GROUP_FILTER,
+            order: 50,
+            action: () =>
+              this.irisGrid.handleGotoRowOpened({
+                row: rowIndex,
+                column: columnIndex,
+              }),
+          };
+
           if (value != null) {
             // Chars get treated like numbers in terms of which filters are available
             if (
@@ -470,6 +483,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
           ) {
             actions.push(andFilterMenu);
           }
+          actions.push(gotoRow);
         }
 
         if (canCopy) {

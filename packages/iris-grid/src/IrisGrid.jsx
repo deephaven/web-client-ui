@@ -94,6 +94,7 @@ import ConditionalFormattingMenu from './sidebar/conditional-formatting/Conditio
 import { getFormatColumns } from './sidebar/conditional-formatting/ConditionalFormattingUtils';
 import ConditionalFormatEditor from './sidebar/conditional-formatting/ConditionalFormatEditor';
 import IrisGridCellOverflowModal from './IrisGridCellOverflowModal';
+import GotoRow from './GotoRow';
 
 const log = Log.module('IrisGrid');
 
@@ -159,6 +160,7 @@ export class IrisGrid extends Component {
     );
     this.handleAdvancedFilterDone = this.handleAdvancedFilterDone.bind(this);
     this.handleAdvancedMenuOpened = this.handleAdvancedMenuOpened.bind(this);
+    this.handleGotoRowOpened = this.handleGotoRowOpened.bind(this);
     this.handleAdvancedMenuClosed = this.handleAdvancedMenuClosed.bind(this);
     this.handleAggregationChange = this.handleAggregationChange.bind(this);
     this.handleAggregationsChange = this.handleAggregationsChange.bind(this);
@@ -238,7 +240,9 @@ export class IrisGrid extends Component {
     this.handleRollupChange = this.handleRollupChange.bind(this);
     this.handleOverflowClose = this.handleOverflowClose.bind(this);
     this.getColumnBoundingRect = this.getColumnBoundingRect.bind(this);
-
+    this.onGotoRowSelectdeRowNumberChanged = this.onGotoRowSelectdeRowNumberChanged.bind(
+      this
+    );
     this.updateSearchFilter = debounce(
       this.updateSearchFilter.bind(this),
       SET_FILTER_DEBOUNCE
@@ -449,6 +453,9 @@ export class IrisGrid extends Component {
       showOverflowModal: false,
       overflowText: '',
       overflowButtonTooltipProps: null,
+      isGotoRowShown: false,
+      showGotoRow: { row: null, column: null },
+      gotoRowSelectedRowNumber: '123',
     };
   }
 
@@ -557,6 +564,11 @@ export class IrisGrid extends Component {
 
   getAdvancedMenuOpenedHandler = memoize(
     column => this.handleAdvancedMenuOpened.bind(this, column),
+    { max: 100 }
+  );
+
+  getGotoRowOpenedHandler = memoize(
+    cellInfo => this.handleGotoRowOpened.bind(this, cellInfo),
     { max: 100 }
   );
 
@@ -1946,6 +1958,10 @@ export class IrisGrid extends Component {
     this.setState({ shownAdvancedFilter: column });
   }
 
+  handleGotoRowOpened(cellInfo) {
+    this.setState({ isGotoRowShown: true, showGotoRow: cellInfo });
+  }
+
   handleAdvancedMenuClosed(columnIndex) {
     const { focusedFilterBarColumn, isFilterBarShown } = this.state;
     if (
@@ -2623,6 +2639,10 @@ export class IrisGrid extends Component {
     );
   });
 
+  onGotoRowSelectdeRowNumberChanged(event) {
+    this.setState({ gotoRowNumber: parseInt(event.target.value, 10) });
+  }
+
   render() {
     const {
       children,
@@ -2704,6 +2724,9 @@ export class IrisGrid extends Component {
       showOverflowModal,
       overflowText,
       overflowButtonTooltipProps,
+      isGotoRowShown,
+      showGotoRow,
+      gotoRowSelectedRowNumber,
     } = this.state;
     if (!isReady) {
       return null;
@@ -3364,6 +3387,18 @@ export class IrisGrid extends Component {
             {filterBar}
             {columnTooltip}
             {advancedFilterMenus}
+            {
+              <Popper isShown={isGotoRowShown}>
+                <GotoRow
+                  cellInfo={showGotoRow}
+                  model={model}
+                  selectedRowNumber={gotoRowSelectedRowNumber}
+                  onGotoRowNumberChanged={
+                    this.onGotoRowSelectdeRowNumberChanged
+                  }
+                />
+              </Popper>
+            }
             {this.getOverflowButtonTooltip(overflowButtonTooltipProps)}
           </div>
           <PendingDataBottomBar
