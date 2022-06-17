@@ -20,6 +20,10 @@ import { isEditableGridModel } from './EditableGridModel';
 
 export type EditingCellTextSelectionRange = [start: number, end: number];
 
+type NoneNullColumnRange = { startColumn: number; endColumn: number };
+
+type NoneNullRowRange = { startRow: number; endRow: number };
+
 export type EditingCell = {
   // Index of the editing cell
   column: VisibleIndex;
@@ -99,6 +103,50 @@ export class GridRenderer {
 
   // Default width in pixels for the border of the active cell
   static ACTIVE_CELL_BORDER_WIDTH = 2;
+
+  static compareColumns(
+    range1: NoneNullColumnRange,
+    range2: NoneNullColumnRange
+  ): number {
+    if (
+      range1.startColumn == null ||
+      range1.endColumn == null ||
+      range2.startColumn == null ||
+      range2.endColumn == null
+    ) {
+      return 0;
+    }
+
+    if (range1.startColumn < range2.startColumn) {
+      return -1;
+    }
+    if (range1.startColumn > range2.startColumn) {
+      return 1;
+    }
+    return range1.endColumn - range2.endColumn;
+  }
+
+  static compareRows(
+    range1: NoneNullRowRange,
+    range2: NoneNullRowRange
+  ): number {
+    if (
+      range1.startRow == null ||
+      range1.endRow == null ||
+      range2.startRow == null ||
+      range2.endRow == null
+    ) {
+      return 0;
+    }
+
+    if (range1.startRow < range2.startRow) {
+      return -1;
+    }
+    if (range1.startRow > range2.startRow) {
+      return 1;
+    }
+    return range1.endRow - range2.endRow;
+  }
 
   /**
    * Truncate a string to the specified length and add ellipses if necessary
@@ -2511,24 +2559,51 @@ export class GridRenderer {
 
       if (!autoSelectRow) {
         // Scrollbar Selection Tick
-        const { selectedRanges, model } = state;
+        const { selectedRanges, model, cursorColumn } = state;
+        const { lastLeft } = metrics;
         const { columnCount } = model;
 
-        for (let i = 0; i < selectedRanges.length; i += 1) {
-          const range = selectedRanges[i];
+        const filteredRanges = [...selectedRanges].filter(
+          value => value.startColumn != null && value.endColumn != null
+        ) as NoneNullColumnRange[];
+
+        filteredRanges.sort(GridRenderer.compareColumns);
+
+        const mergedRanges: NoneNullColumnRange[] = [];
+
+        for (let i = 0; i < filteredRanges.length; i += 1) {
+          const range = filteredRanges[i];
+          const { startColumn, endColumn } = range;
+          if (i === 0) {
+            mergedRanges.push({ startColumn, endColumn });
+          } else if (
+            startColumn - 1 <=
+            mergedRanges[mergedRanges.length - 1].endColumn
+          ) {
+            mergedRanges[mergedRanges.length - 1].endColumn = Math.max(
+              mergedRanges[mergedRanges.length - 1].endColumn,
+              endColumn
+            );
+          } else {
+            mergedRanges.push({ startColumn, endColumn });
+          }
+        }
+
+        for (let i = 0; i < mergedRanges.length; i += 1) {
+          const range = mergedRanges[i];
           if (scrollBarSelectionTickColor != null) {
             context.fillStyle = scrollBarSelectionTickColor;
           }
-          if (range.startColumn != null && range.endColumn != null) {
-            const tickX = Math.round(
-              (range.startColumn / columnCount) * barWidth
-            );
+          if (
+            range.startColumn != null &&
+            range.endColumn != null &&
+            (range.startColumn !== cursorColumn ||
+              range.endColumn !== cursorColumn)
+          ) {
+            const tickX = Math.round((range.startColumn / lastLeft) * barWidth);
             const tickWidth = Math.max(
               1,
-              Math.round(
-                ((range.endColumn - range.startColumn + 1) / columnCount) *
-                  barWidth
-              )
+              Math.round(((range.endColumn + 1) / lastLeft) * barWidth - tickX)
             );
             const trackHeight = hScrollBarSize - scrollBarCasingWidth;
             context.fillRect(
@@ -2541,20 +2616,16 @@ export class GridRenderer {
         }
 
         // Current Active Tick
-        const { cursorColumn } = state;
         if (cursorColumn != null) {
-          const tickX = Math.round((cursorColumn / columnCount) * barWidth);
-          const tickWidth = Math.max(
-            2,
-            Math.round((1 / columnCount) * barWidth)
-          );
+          const tickX = Math.round((cursorColumn / lastLeft) * barWidth);
+          const tickWidth = 2;
           const trackHeight = hScrollBarSize - scrollBarCasingWidth;
           context.fillStyle = scrollBarActiveSelectionTickColor;
           context.fillRect(
             tickX,
-            y + scrollBarCasingWidth + Math.round(trackHeight / 3),
+            y + scrollBarCasingWidth,
             tickWidth,
-            Math.round(trackHeight / 3)
+            trackHeight
           );
         }
       }
@@ -2597,15 +2668,46 @@ export class GridRenderer {
 
       if (!autoSelectColumn) {
         // Scrollbar Selection Tick
-        const { selectedRanges, model } = state;
+        const { selectedRanges, model, cursorRow } = state;
         const { rowCount } = model;
 
-        for (let i = 0; i < selectedRanges.length; i += 1) {
-          const range = selectedRanges[i];
-          if (scrollBarSelectionTickColor != null) {
-            context.fillStyle = scrollBarSelectionTickColor;
+        if (scrollBarSelectionTickColor != null) {
+          context.fillStyle = scrollBarSelectionTickColor;
+        }
+
+        const filteredRanges = [...selectedRanges].filter(
+          value => value.startRow != null && value.endRow != null
+        ) as NoneNullRowRange[];
+
+        filteredRanges.sort(GridRenderer.compareRows);
+
+        const mergedRanges: NoneNullRowRange[] = [];
+
+        for (let i = 0; i < filteredRanges.length; i += 1) {
+          const range = filteredRanges[i];
+          const { startRow, endRow } = range;
+          if (i === 0) {
+            mergedRanges.push({ startRow, endRow });
+          } else if (
+            startRow - 1 <=
+            mergedRanges[mergedRanges.length - 1].endRow
+          ) {
+            mergedRanges[mergedRanges.length - 1].endRow = Math.max(
+              mergedRanges[mergedRanges.length - 1].endRow,
+              endRow
+            );
+          } else {
+            mergedRanges.push({ startRow, endRow });
           }
-          if (range.startRow != null && range.endRow != null) {
+        }
+
+        for (let i = 0; i < mergedRanges.length; i += 1) {
+          const range = mergedRanges[i];
+          if (
+            range.startRow != null &&
+            range.endRow != null &&
+            (range.startRow !== cursorRow || range.endRow !== cursorRow)
+          ) {
             const tickY = Math.round((range.startRow / rowCount) * barHeight);
             const trackWidth = vScrollBarSize - scrollBarCasingWidth;
             const tickHeight = Math.max(
@@ -2624,15 +2726,11 @@ export class GridRenderer {
         }
 
         // Current Active Tick
-        const { cursorRow } = state;
         if (cursorRow != null) {
           const tickY = Math.round((cursorRow / rowCount) * barHeight);
 
           const trackWidth = vScrollBarSize - scrollBarCasingWidth;
-          const tickHeight = Math.max(
-            2,
-            Math.round((1 / rowCount) * barHeight)
-          );
+          const tickHeight = 2;
 
           context.fillStyle = scrollBarActiveSelectionTickColor;
           context.fillRect(
