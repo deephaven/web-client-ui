@@ -18,6 +18,7 @@ interface ModalProps {
   keyboard?: boolean;
   isOpen?: boolean;
   centered?: boolean;
+  size?: 'sm' | 'lg' | 'xl' | undefined;
   onOpened?: () => void;
   onClosed?: () => void;
   toggle?: () => void;
@@ -31,6 +32,7 @@ const Modal = ({
   keyboard = true,
   isOpen = false,
   centered = false,
+  size,
   onOpened,
   onClosed,
   toggle,
@@ -43,27 +45,25 @@ const Modal = ({
     (event: KeyboardEvent): void => {
       switch (event.key) {
         case 'Escape':
-          if (keyboard === true) {
-            if (toggle) {
-              toggle();
-            }
+          if (toggle) {
+            toggle();
           }
           break;
         default:
           break;
       }
     },
-    [toggle, keyboard]
+    [toggle]
   );
 
   useEffect(
     function addKeydownEventListener() {
-      if (isOpen) {
+      if (isOpen && keyboard) {
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
       }
     },
-    [handleKeyDown, isOpen]
+    [handleKeyDown, isOpen, keyboard]
   );
 
   useEffect(
@@ -116,6 +116,9 @@ const Modal = ({
           >
             <div
               className={classNames('modal fade', {
+                'modal-lg': size === 'lg',
+                'modal-sm': size === 'sm',
+                'modal-xl': size === 'xl',
                 'modal-dialog-centered': centered,
                 show: isOpen,
               })}
