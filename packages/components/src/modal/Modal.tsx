@@ -5,9 +5,11 @@ import React, {
   useCallback,
   useEffect,
   useRef,
+  useState,
 } from 'react';
 import ReactDOM from 'react-dom';
 import './Modal.scss';
+import { CSSTransition } from 'react-transition-group';
 
 interface ModalProps {
   className?: string;
@@ -34,6 +36,8 @@ const Modal = ({
   toggle,
   'data-testid': dataTestId,
 }: ModalProps): ReactElement => {
+  const [show, setShow] = useState(false);
+
   const outerDivRef = useRef<HTMLDivElement>(null);
   const handleKeyDown = useCallback(
     (event: KeyboardEvent): void => {
@@ -80,24 +84,59 @@ const Modal = ({
     [onClosed, isOpen]
   );
 
-  return isOpen ? (
+  useEffect(
+    function syncState() {
+      if (isOpen) {
+        setShow(true);
+      } else {
+        setTimeout(() => setShow(false), 150);
+      }
+    },
+    [isOpen]
+  );
+
+  return show || isOpen ? (
     ReactDOM.createPortal(
-      <div
-        className={classNames('modal', { 'modal-dialog-centered': centered })}
-        onClick={toggle}
-        role="dialog"
+      <CSSTransition
+        appear
+        in={show}
+        classNames="modal-transition"
+        timeout={150}
       >
-        <div className={`modal-dialog ${className}`} ref={outerDivRef}>
+        <div style={{ zIndex: 1050, position: 'relative' }}>
           <div
-            className="modal-content"
-            onClick={e => e.stopPropagation()}
-            data-testid={dataTestId}
-            role="dialog"
+            className={classNames('modal-backdrop fade', { show: isOpen })}
+          />
+
+          <CSSTransition
+            appear
+            in={show}
+            classNames="modal-slide-in"
+            timeout={150}
           >
-            {children}
-          </div>
+            <div
+              className={classNames('modal fade', {
+                'modal-dialog-centered': centered,
+                show: isOpen,
+              })}
+              onClick={toggle}
+              role="dialog"
+              style={{ display: 'block' }}
+            >
+              <div className={`modal-dialog ${className}`} ref={outerDivRef}>
+                <div
+                  className="modal-content"
+                  onClick={e => e.stopPropagation()}
+                  data-testid={dataTestId}
+                  role="dialog"
+                >
+                  {children}
+                </div>
+              </div>
+            </div>
+          </CSSTransition>
         </div>
-      </div>,
+      </CSSTransition>,
       document.getElementsByTagName('BODY')[0]
     )
   ) : (

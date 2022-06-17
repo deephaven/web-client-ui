@@ -1,100 +1,36 @@
 @import '../../scss/custom.scss';
 
-@keyframes slideInFromTop {
-  0% {
-    transform: translateY(-50px);
-  }
-  100% {
-    transform: translateY(0);
-  }
+.modal-transition-enter {
+  opacity: 0;
+}
+.modal-transition-enter-done {
+  opacity: 1;
+  transition: opacity $transition ease-out;
 }
 
-@keyframes backdropFadeIn {
-  0% {
-    opacity: 0;
-  }
-  100% {
-    opacity: 1;
-  }
+.modal-transition-exit {
+  opacity: 1;
+}
+.modal-transition-exit-active {
+  opacity: 0;
+  transition: opacity $transition;
 }
 
-.modal {
-  position: fixed;
-  left: 0;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  background-color: rgba(0, 0, 0, 25%);
-  z-index: 100000;
-  animation: $transition ease-out 0s 1 backdropFadeIn;
+.modal-slide-in-enter {
+  opacity: 0;
+  transform: translateY(-50px);
+}
+.modal-slide-in-enter-done {
+  transform: translateY(0);
+  opacity: 1;
+  transition: transform $transition ease-in, opacity $transition ease-in;
+  transition-delay: $transition;
 }
 
-.modal-dialog {
-  width: auto;
-  min-width: 300px;
-  position: relative;
-  animation: $transition ease-out 0s 1 slideInFromTop;
-
-  .modal-content {
-    color: $black;
-  }
-
-  .modal-title {
-    width: 100%;
-    display: flex;
-  }
-
-  .modal-header {
-    .close {
-      float: right;
-      font-size: 1.5rem;
-      font-weight: 700;
-      line-height: 1;
-      background-color: transparent;
-      border: 0;
-      opacity: 0.5;
-      outline: 0;
-    }
-  }
-  .modal-body {
-    position: relative;
-    flex: auto;
-    padding: 1rem;
-  }
-  .modal-footer {
-    border-top-color: transparent;
-  }
-
-  .close:hover {
-    opacity: 0.75;
-  }
+.modal-slide-in-exit {
+  transform: translateY(0);
 }
-
-.modal-dialog-centered {
-  align-items: center;
-}
-
-.modal-dialog.theme-bg-light {
-  .modal-content {
-    background: $gray-100;
-  }
-}
-
-.modal-dialog.theme-bg-dark {
-  .modal-content {
-    background: $interfacegray;
-  }
-
-  .modal-title {
-    color: $interfacewhite;
-  }
-
-  .modal-header {
-    .close {
-      color: #f0f0ee;
-    }
-  }
+.modal-slide-in-active {
+  transform: translateY(-50px);
+  transition: transform $transition;
 }
