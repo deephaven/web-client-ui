@@ -5,7 +5,7 @@
 }
 .modal-transition-enter-done {
   opacity: 1;
-  transition: opacity $transition ease-out;
+  transition: opacity $transition-mid ease-out;
 }
 
 .modal-transition-exit {
@@ -24,7 +24,7 @@
   transform: translateY(0);
   opacity: 1;
   transition: transform $transition ease-in, opacity $transition ease-in;
-  transition-delay: $transition;
+  transition-delay: 0.05s;
 }
 
 .modal-slide-in-exit {

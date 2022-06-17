@@ -112,7 +112,7 @@ const Modal = ({
             appear
             in={show}
             classNames="modal-slide-in"
-            timeout={150}
+            timeout={200}
           >
             <div
               className={classNames('modal fade', {
