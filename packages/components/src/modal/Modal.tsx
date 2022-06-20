@@ -10,6 +10,7 @@ import React, {
 import ReactDOM from 'react-dom';
 import './Modal.scss';
 import { CSSTransition } from 'react-transition-group';
+import ThemeExport from '../ThemeExport';
 
 interface ModalProps {
   className?: string;
@@ -38,7 +39,7 @@ const Modal = ({
   toggle,
   'data-testid': dataTestId,
 }: ModalProps): ReactElement => {
-  const [show, setShow] = useState(false);
+  // const [show, setShow] = useState(false);
 
   const outerDivRef = useRef<HTMLDivElement>(null);
   const handleKeyDown = useCallback(
@@ -84,66 +85,60 @@ const Modal = ({
     [onClosed, isOpen]
   );
 
-  useEffect(
-    function syncState() {
-      if (isOpen) {
-        setShow(true);
-      } else {
-        setTimeout(() => setShow(false), 150);
-      }
-    },
-    [isOpen]
-  );
+  // useEffect(
+  //   function syncState() {
+  //     if (isOpen) {
+  //       setShow(true);
+  //     }
+  //   },
+  //   [isOpen]
+  // );
 
-  return show || isOpen ? (
-    ReactDOM.createPortal(
-      <CSSTransition
-        appear
-        in={show}
-        classNames="modal-transition"
-        timeout={150}
+  // const onEnterOrExit = () => {
+  //   setShow(isOpen);
+  // };
+
+  return ReactDOM.createPortal(
+    <CSSTransition
+      appear
+      mountOnEnter
+      unmountOnExit
+      in={isOpen}
+      classNames={{
+        enterActive: 'show',
+        enterDone: 'show',
+      }}
+      timeout={ThemeExport.transitionMs}
+    >
+      <div
+        className="modal fade"
+        onClick={toggle}
+        role="dialog"
+        style={{ zIndex: 1050, display: 'block', paddingRight: '15px' }}
       >
-        <div style={{ zIndex: 1050, position: 'relative' }}>
+        <div className={classNames('modal-backdrop fade show')} />
+        <div
+          className={classNames(`modal-dialog ${className}`, {
+            'modal-lg': size === 'lg',
+            'modal-sm': size === 'sm',
+            'modal-xl': size === 'xl',
+            'modal-dialog-centered': centered,
+          })}
+          ref={outerDivRef}
+          style={{ zIndex: 1040 }}
+        >
           <div
-            className={classNames('modal-backdrop fade', { show: isOpen })}
-          />
-
-          <CSSTransition
-            appear
-            in={show}
-            classNames="modal-slide-in"
-            timeout={200}
+            className="modal-content"
+            onClick={e => e.stopPropagation()}
+            data-testid={dataTestId}
+            role="dialog"
           >
-            <div
-              className={classNames('modal fade', {
-                'modal-lg': size === 'lg',
-                'modal-sm': size === 'sm',
-                'modal-xl': size === 'xl',
-                'modal-dialog-centered': centered,
-                show: isOpen,
-              })}
-              onClick={toggle}
-              role="dialog"
-              style={{ display: 'block' }}
-            >
-              <div className={`modal-dialog ${className}`} ref={outerDivRef}>
-                <div
-                  className="modal-content"
-                  onClick={e => e.stopPropagation()}
-                  data-testid={dataTestId}
-                  role="dialog"
-                >
-                  {children}
-                </div>
-              </div>
-            </div>
-          </CSSTransition>
+            {children}
+          </div>
         </div>
-      </CSSTransition>,
-      document.getElementsByTagName('BODY')[0]
-    )
-  ) : (
-    <></>
+      </div>
+    </CSSTransition>,
+    document.getElementsByTagName('BODY')[0]
   );
 };
 
