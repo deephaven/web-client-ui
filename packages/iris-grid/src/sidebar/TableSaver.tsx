@@ -11,7 +11,7 @@ import Log from '@deephaven/log';
 import { GridRange, GridRangeIndex, memoizeClear } from '@deephaven/grid';
 import { CancelablePromise, PromiseUtils } from '@deephaven/utils';
 import { Formatter, FormatterUtils } from '@deephaven/jsapi-utils';
-import { assertNotNull, assertNotUndefined } from '../IrisGrid';
+import { assertNotNull, assertNotUndefined } from '../asserts';
 
 const log = Log.module('TableSaver');
 
@@ -73,18 +73,6 @@ export default class TableSaver extends PureComponent<
 
     this.state = {};
 
-    this.sw = undefined;
-    this.port = undefined;
-    this.fileWriter = undefined;
-
-    this.table = undefined;
-    this.tableSubscription = undefined;
-    this.columns = undefined;
-
-    this.fileName = undefined;
-
-    this.chunkRows = undefined;
-
     this.gridRanges = [];
     this.gridRangeCounter = 0;
     this.rangedSnapshotsTotal = [];
@@ -105,11 +93,6 @@ export default class TableSaver extends PureComponent<
     // Instead, we  monitor the pull() behavior from the readableStream called when the stream wants more data to write.
     // If the stream doesn't pull for long enough time, chances are the stream is already canceled, so we stop the stream.
     // Issue ticket on Chromium: https://bugs.chromium.org/p/chromium/issues/detail?id=638494
-    this.streamTimeout = undefined;
-
-    this.snapshotHandlerTimeout = undefined;
-
-    this.downloadStartTime = undefined;
 
     this.iframes = [];
 
@@ -141,29 +124,29 @@ export default class TableSaver extends PureComponent<
     if (this.snapshotHandlerTimeout) clearTimeout(this.snapshotHandlerTimeout);
   }
 
-  sw: ServiceWorker | undefined;
+  sw?: ServiceWorker;
 
-  port: MessagePort | undefined;
+  port?: MessagePort;
 
-  fileWriter: WritableStreamDefaultWriter<unknown> | undefined;
+  fileWriter?: WritableStreamDefaultWriter<unknown>;
 
-  table: Table | undefined;
+  table?: Table;
 
-  tableSubscription: TableViewportSubscription | undefined;
+  tableSubscription?: TableViewportSubscription;
 
-  columns: Column[] | undefined;
+  columns?: Column[];
 
-  fileName: string | undefined;
+  fileName?: string;
 
-  chunkRows: number | undefined;
+  chunkRows?: number;
 
   gridRanges: GridRange[];
 
-  gridRangeCounter: number | undefined;
+  gridRangeCounter?: number;
 
   rangedSnapshotsTotal: number[];
 
-  rangedSnapshotCounter: number | undefined;
+  rangedSnapshotCounter?: number;
 
   snapshotsTotal: number;
 
@@ -184,11 +167,11 @@ export default class TableSaver extends PureComponent<
   // Instead, we  monitor the pull() behavior from the readableStream called when the stream wants more data to write.
   // If the stream doesn't pull for long enough time, chances are the stream is already canceled, so we stop the stream.
   // Issue ticket on Chromium: https://bugs.chromium.org/p/chromium/issues/detail?id=638494
-  streamTimeout: ReturnType<typeof setTimeout> | undefined;
+  streamTimeout?: ReturnType<typeof setTimeout>;
 
-  snapshotHandlerTimeout: ReturnType<typeof setTimeout> | undefined;
+  snapshotHandlerTimeout?: ReturnType<typeof setTimeout>;
 
-  downloadStartTime: number | undefined;
+  downloadStartTime?: number;
 
   iframes: HTMLIFrameElement[];
 
@@ -203,7 +186,7 @@ export default class TableSaver extends PureComponent<
     // use blob fall back if it's safari
     const useBlob = this.useBlobFallback;
     const chunks = [] as BlobPart[];
-    let encode: ((input?: string | undefined) => Uint8Array) | null = null;
+    let encode: ((input?: string) => Uint8Array) | null = null;
     if (useBlob) {
       encode = TextEncoder.prototype.encode.bind(new TextEncoder());
     }

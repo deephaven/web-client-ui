@@ -10,7 +10,7 @@ import {
   TableViewportSubscription,
 } from '@deephaven/jsapi-shim';
 import Log from '@deephaven/log';
-import { ColumnName } from './IrisGrid';
+import { ColumnName } from './CommonTypes';
 
 const log = Log.module('TableViewportUpdater');
 
@@ -56,12 +56,6 @@ class TableViewportUpdater extends PureComponent<
     customColumns: [],
     movedColumns: [],
   };
-
-  constructor(props: TableViewportUpdaterProps) {
-    super(props);
-
-    this.subscription = undefined;
-  }
 
   componentDidMount(): void {
     const {
@@ -128,7 +122,7 @@ class TableViewportUpdater extends PureComponent<
     this.closeSubscription();
   }
 
-  subscription: TableViewportSubscription | undefined;
+  subscription?: TableViewportSubscription;
 
   // eslint-disable-next-line class-methods-use-this
   getViewportRowRange = memoize((table, top, bottom) => {

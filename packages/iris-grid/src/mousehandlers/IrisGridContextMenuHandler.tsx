@@ -47,12 +47,12 @@ import {
 } from '../format-context-menus';
 import './IrisGridContextMenuHandler.scss';
 import SHORTCUTS from '../IrisGridShortcuts';
-import IrisGrid, {
+import IrisGrid, { QuickFilter } from '../IrisGrid';
+import {
   assertNotNull,
   assertNotNullNorUndefined,
   assertNotUndefined,
-  QuickFilter,
-} from '../IrisGrid';
+} from '../asserts';
 
 const log = Log.module('IrisGridContextMenuHandler');
 
@@ -919,7 +919,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
     column: Column,
     valueText: string,
     value: unknown,
-    quickFilter: QuickFilter | null | undefined,
+    quickFilter?: QuickFilter | null,
     additive = false
   ): ContextAction[] {
     const filterValue = IrisGridContextMenuHandler.getFilterValueForNumberOrChar(
@@ -1088,7 +1088,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
   booleanFilterActions(
     column: Column,
     valueText: string | null,
-    quickFilter?: QuickFilter | null | undefined,
+    quickFilter?: QuickFilter | null,
     additive = false
   ): ContextAction[] {
     const actions: ContextAction[] = [];
@@ -1177,7 +1177,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
     valueText: string,
     previewValue: unknown,
     value: unknown,
-    quickFilter?: QuickFilter | undefined | null,
+    quickFilter?: QuickFilter | null,
     additive = false
   ): ContextAction[] {
     const filterValue = dh.FilterValue.ofNumber(value);

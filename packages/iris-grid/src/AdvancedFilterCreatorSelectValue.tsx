@@ -6,7 +6,7 @@ import { Formatter, TableUtils } from '@deephaven/jsapi-utils';
 import { FilterCondition, Table } from '@deephaven/jsapi-shim';
 import AdvancedFilterCreatorSelectValueList from './AdvancedFilterCreatorSelectValueList';
 import './AdvancedFilterCreatorSelectValue.scss';
-import { ColumnName } from './IrisGrid';
+import { ColumnName } from './CommonTypes';
 
 interface AdvancedFilterCreatorSelectValueProps<T> {
   invertSelection: boolean;
@@ -24,7 +24,7 @@ interface AdvancedFilterCreatorSelectValueState<T> {
   invertSelection: boolean;
   selectedValues: T[];
   searchText: string;
-  table: Table | undefined;
+  table?: Table;
 }
 
 class AdvancedFilterCreatorSelectValue<T = unknown> extends PureComponent<
@@ -50,18 +50,13 @@ class AdvancedFilterCreatorSelectValue<T = unknown> extends PureComponent<
     this.handleSearchChange = this.handleSearchChange.bind(this);
     this.handleUpdateFilterTimeout = this.handleUpdateFilterTimeout.bind(this);
 
-    this.searchTablePromise = undefined;
-    this.updateFilterTimer = undefined;
-
     const { invertSelection, selectedValues } = props;
 
     this.state = {
-      error: undefined,
       filters: [],
       invertSelection,
       selectedValues,
       searchText: '',
-      table: undefined,
     };
   }
 

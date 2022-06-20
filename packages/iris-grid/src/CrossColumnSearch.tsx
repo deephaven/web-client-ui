@@ -12,7 +12,7 @@ import {
 import dh, { Column, FilterCondition } from '@deephaven/jsapi-shim';
 import { TableUtils } from '@deephaven/jsapi-utils';
 import './CrossColumnSearch.scss';
-import { ColumnName } from './IrisGrid';
+import { ColumnName } from './CommonTypes';
 
 interface CrossColumnSearchProps {
   value: string;

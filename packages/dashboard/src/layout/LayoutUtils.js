@@ -22,7 +22,7 @@ class LayoutUtils {
 
   /**
    * Is the tab with the given config active
-   * ContentItem} root A GoldenLayout content item with the tab
+   * @param {ContentItem} root A GoldenLayout content item with the tab
    * @param {Object} config Tab config to match
    * @returns {boolean} True if the tab is active
    */

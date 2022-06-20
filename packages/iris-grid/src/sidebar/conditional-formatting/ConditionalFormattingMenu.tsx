@@ -18,7 +18,7 @@ import {
   StringCondition,
   DateCondition,
 } from './ConditionalFormattingUtils';
-import { ColumnName } from '../../IrisGrid';
+import { ColumnName } from '../../CommonTypes';
 
 const log = Log.module('ConditionalFormattingMenu');
 

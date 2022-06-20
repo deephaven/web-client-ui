@@ -1,7 +1,7 @@
 import type { FormattingRule } from './Formatter';
 import Formatter from './Formatter';
 import { DateTimeColumnFormatter, TableColumnFormatter } from './formatters';
-import { ColumnName } from './IrisGrid';
+import { ColumnName } from './CommonTypes';
 
 class FormatterUtils {
   static getColumnFormats(settings?: {
@@ -15,15 +15,12 @@ class FormatterUtils {
   }
 
   static getDateTimeFormatterOptions(
-    settings?:
-      | {
-          timeZone?: string;
-          defaultDateTimeFormat?: string;
-          showTimeZone?: boolean;
-          showTSeparator?: boolean;
-        }
-      | null
-      | undefined
+    settings?: {
+      timeZone?: string;
+      defaultDateTimeFormat?: string;
+      showTimeZone?: boolean;
+      showTSeparator?: boolean;
+    } | null
   ): ConstructorParameters<typeof DateTimeColumnFormatter>[0] {
     return {
       timeZone: settings?.timeZone,

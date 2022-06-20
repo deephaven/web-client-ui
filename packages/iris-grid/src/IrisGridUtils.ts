@@ -28,16 +28,13 @@ import AggregationUtils from './sidebar/aggregations/AggregationUtils';
 import AggregationOperation from './sidebar/aggregations/AggregationOperation';
 import {
   AdvancedFilter,
-  assertNotNull,
-  assertNotUndefined,
-  ColumnName,
   InputFilter,
   IrisGridProps,
   IrisGridState,
   QuickFilter,
-  AdvancedFilterMap,
-  QuickFilterMap,
 } from './IrisGrid';
+import { assertNotNull, assertNotUndefined } from './asserts';
+import { ColumnName, AdvancedFilterMap, QuickFilterMap } from './CommonTypes';
 import { UIRollupConfig } from './sidebar/RollupRows';
 import { AggregationSettings } from './sidebar/aggregations/Aggregations';
 import { AdvancedFilterOptions } from './AdvancedFilterCreator';
@@ -78,7 +75,7 @@ export interface DehydratedIrisGridState {
   customColumns: ColumnName[];
   conditionalFormats: SidebarFormattingRule[];
   reverseType: ReverseType;
-  rollupConfig: UIRollupConfig | undefined;
+  rollupConfig?: UIRollupConfig;
   showSearchBar: boolean;
   searchValue: string;
   selectDistinctColumns: ColumnName[];
@@ -398,7 +395,7 @@ class IrisGridUtils {
   ): {
     isSelectingPartition: boolean;
     partition: string;
-    partitionColumn: Column | null | undefined;
+    partitionColumn?: Column | null;
   } {
     const {
       isSelectingPartition,

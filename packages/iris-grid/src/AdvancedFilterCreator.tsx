@@ -21,7 +21,7 @@ import shortid from 'shortid';
 import AdvancedFilterCreatorFilterItem from './AdvancedFilterCreatorFilterItem';
 import AdvancedFilterCreatorSelectValue from './AdvancedFilterCreatorSelectValue';
 import './AdvancedFilterCreator.scss';
-import { assertNotUndefined } from './IrisGrid';
+import { assertNotUndefined } from './asserts';
 import IrisGridModel from './IrisGridModel';
 
 const log = Log.module('AdvancedFilterCreator');
@@ -82,6 +82,7 @@ interface AdvancedFilterCreatorState {
   valuesTableError: null;
   valuesTable?: Table;
 }
+
 class AdvancedFilterCreator extends PureComponent<
   AdvancedFilterCreatorProps,
   AdvancedFilterCreatorState
@@ -100,6 +101,14 @@ class AdvancedFilterCreator extends PureComponent<
 
   static makeFilterItem(): AdvancedFilterItem {
     return { key: shortid() };
+  }
+
+  static assertFilterOperatorValue(
+    operator?: string
+  ): asserts operator is FilterOperatorValue {
+    if (!(operator === 'not' || operator === 'and' || operator === 'or')) {
+      throw new Error('operator is not a valid FilterOperatorValue');
+    }
   }
 
   constructor(props: AdvancedFilterCreatorProps) {
@@ -123,9 +132,7 @@ class AdvancedFilterCreator extends PureComponent<
     this.handleUpdateTimeout = this.handleUpdateTimeout.bind(this);
 
     this.focusTrapContainer = React.createRef();
-    this.debounceTimeout = undefined;
     this.filterKey = 0;
-    this.valuesTablePromise = undefined;
 
     const { options } = props;
     let { filterOperators, invertSelection, selectedValues } = options;
@@ -267,9 +274,8 @@ class AdvancedFilterCreator extends PureComponent<
     let { filterOperators } = this.state;
     filterOperators = [...filterOperators];
 
-    if (!(operator === 'not' || operator === 'and' || operator === 'or')) {
-      throw new Error('operator is not a valid FilterOperatorValue');
-    }
+    AdvancedFilterCreator.assertFilterOperatorValue(operator);
+
     filterOperators[index] = operator;
 
     this.setState({ filterOperators });
@@ -443,7 +449,7 @@ class AdvancedFilterCreator extends PureComponent<
       column,
       options,
       formatter.timeZone
-    ) as FilterCondition;
+    );
 
     onFilterChange(column, filter, options);
   }

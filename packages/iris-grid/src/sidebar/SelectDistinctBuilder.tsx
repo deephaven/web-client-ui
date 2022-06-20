@@ -9,7 +9,7 @@ import { ModelIndex } from '@deephaven/grid';
 import IrisGridModel from '../IrisGridModel';
 
 import './SelectDistinctBuilder.scss';
-import { ColumnName } from '../IrisGrid';
+import { ColumnName } from '../CommonTypes';
 
 const log = Log.module('SelectDistinctBuilder');
 

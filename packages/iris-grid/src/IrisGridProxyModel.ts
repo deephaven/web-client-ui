@@ -32,7 +32,8 @@ import IrisGridTableModel, {
 } from './IrisGridTableModel';
 import IrisGridTreeTableModel from './IrisGridTreeTableModel';
 import IrisGridModel from './IrisGridModel';
-import { UITotalsTableConfig, ColumnName } from './IrisGrid';
+import { UITotalsTableConfig } from './IrisGrid';
+import { ColumnName } from './CommonTypes';
 import IrisGridTableModelTemplate from './IrisGridTableModelTemplate';
 
 const log = Log.module('IrisGridProxyModel');
@@ -46,12 +47,6 @@ function makeModel(
     return new IrisGridTreeTableModel(table, formatter);
   }
   return new IrisGridTableModel(table, formatter, inputTable);
-}
-
-function isIrisGridTableModelTemplate(
-  model: IrisGridModel
-): model is IrisGridTableModelTemplate {
-  return (model as IrisGridTableModelTemplate).table !== undefined;
 }
 
 /**
@@ -130,7 +125,7 @@ class IrisGridProxyModel extends IrisGridModel {
       })
     );
 
-    if (isIrisGridTableModelTemplate(model)) {
+    if (IrisGridTableModelTemplate.isIrisGridTableModelTemplate(model)) {
       this.dispatchEvent(
         new EventShimCustomEvent(IrisGridModel.EVENT.TABLE_CHANGED, {
           detail: model.table,
@@ -466,7 +461,9 @@ class IrisGridProxyModel extends IrisGridModel {
     let modelPromise = Promise.resolve(this.originalModel);
 
     if (
-      isIrisGridTableModelTemplate(this.originalModel) &&
+      IrisGridTableModelTemplate.isIrisGridTableModelTemplate(
+        this.originalModel
+      ) &&
       rollupConfig != null
     ) {
       modelPromise = this.originalModel.table
@@ -504,7 +501,9 @@ class IrisGridProxyModel extends IrisGridModel {
     let modelPromise = Promise.resolve(this.originalModel);
 
     if (
-      isIrisGridTableModelTemplate(this.originalModel) &&
+      IrisGridTableModelTemplate.isIrisGridTableModelTemplate(
+        this.originalModel
+      ) &&
       selectDistinctColumns.length > 0
     ) {
       modelPromise = this.originalModel.table

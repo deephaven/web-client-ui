@@ -21,7 +21,8 @@ import type {
 } from '@deephaven/jsapi-shim';
 import { Formatter } from '@deephaven/jsapi-utils';
 import { PendingDataMap } from './IrisGridTableModel';
-import { ColumnName, UITotalsTableConfig } from './IrisGrid';
+import { UITotalsTableConfig } from './IrisGrid';
+import { ColumnName } from './CommonTypes';
 
 type RowIndex = ModelIndex;
 
@@ -453,7 +454,7 @@ abstract class IrisGridModel<
   /**
    * @param ranges The ranges to take a snapshot of
    * @param includeHeaders Whether to include the headers in the snapshot or not
-   * @para formatValue A function to format a value for a cell. Defaults to model format value.
+   * @param formatValue A function to format a value for a cell. Defaults to model format value.
    * @returns A text formatted snapshot of the data for the specified range set
    */
   abstract textSnapshot(
@@ -473,10 +474,6 @@ abstract class IrisGridModel<
    */
   close(): void {
     // no-op
-  }
-
-  get plugin(): string | null {
-    return null;
   }
 
   /**

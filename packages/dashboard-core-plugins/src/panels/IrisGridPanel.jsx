@@ -12,6 +12,7 @@ import {
   IrisGridModel,
   IrisGridUtils,
   IrisGridTableModel,
+  IrisGridTableModelTemplate,
 } from '@deephaven/iris-grid';
 import { TableUtils } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
@@ -548,15 +549,18 @@ export class IrisGridPanel extends PureComponent {
 
     this.setState({ isModelReady: true });
 
-    const { pluginName } = model;
-    if (pluginName) {
-      if (loadPlugin && pluginName) {
-        const Plugin = loadPlugin(pluginName);
-        this.setState({ Plugin });
+    if (IrisGridTableModelTemplate.isIrisGridTableModelTemplate(model)) {
+      const { table } = model;
+      const { pluginName } = table;
+
+      if (pluginName) {
+        if (loadPlugin && pluginName) {
+          const Plugin = loadPlugin(pluginName);
+          this.setState({ Plugin });
+        }
       }
+      glEventHub.emit(InputFilterEvent.TABLE_CHANGED, this, table);
     }
-    const table = null;
-    glEventHub.emit(InputFilterEvent.TABLE_CHANGED, this, table);
 
     this.sendColumnsChange(model.columns);
   }

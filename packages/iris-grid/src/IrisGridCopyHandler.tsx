@@ -144,10 +144,6 @@ class IrisGridCopyHandler extends Component<
     this.handleCopyClick = this.handleCopyClick.bind(this);
     this.handleHideTimeout = this.handleHideTimeout.bind(this);
 
-    this.textData = undefined;
-    this.hideTimer = undefined;
-    this.fetchPromise = undefined;
-
     this.state = {
       error: undefined,
       copyState: IrisGridCopyHandler.COPY_STATES.IDLE,
@@ -175,11 +171,11 @@ class IrisGridCopyHandler extends Component<
     this.stopCopy();
   }
 
-  textData: string | undefined;
+  textData?: string;
 
-  hideTimer: ReturnType<typeof setTimeout> | undefined;
+  hideTimer?: ReturnType<typeof setTimeout>;
 
-  fetchPromise: CancelablePromise<string> | undefined;
+  fetchPromise?: CancelablePromise<string>;
 
   startCopy(): void {
     log.debug2('startCopy');

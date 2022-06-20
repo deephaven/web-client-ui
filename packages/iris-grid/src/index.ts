@@ -7,6 +7,7 @@ export { default as IrisGridModel } from './IrisGridModel';
 export { default as IrisGridTableModel } from './IrisGridTableModel';
 export * from './IrisGridTableModel';
 export { default as IrisGridTreeTableModel } from './IrisGridTreeTableModel';
+export { default as IrisGridTableModelTemplate } from './IrisGridTableModelTemplate';
 export * from './IrisGridTreeTableModel';
 export { default as IrisGridModelFactory } from './IrisGridModelFactory';
 export { default as IrisGridTheme } from './IrisGridTheme';

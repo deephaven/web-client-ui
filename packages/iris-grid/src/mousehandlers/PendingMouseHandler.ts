@@ -7,7 +7,8 @@ import {
   GridWheelEvent,
   isEditableGridModel,
 } from '@deephaven/grid';
-import IrisGrid, { assertNotUndefined } from '../IrisGrid';
+import IrisGrid from '../IrisGrid';
+import { assertNotUndefined } from '../asserts';
 
 /**
  * Handles sending data selected via double click

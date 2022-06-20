@@ -1,5 +1,5 @@
 import { ModelIndex } from '@deephaven/grid';
-import { ColumnName } from './IrisGrid';
+import { ColumnName } from './CommonTypes';
 
 class MissingKeyError extends Error {
   isMissingKey = true;

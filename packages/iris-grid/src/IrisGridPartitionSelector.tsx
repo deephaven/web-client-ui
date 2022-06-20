@@ -7,7 +7,7 @@ import debounce from 'lodash.debounce';
 import { Table } from '@deephaven/jsapi-shim';
 import PartitionSelectorSearch from './PartitionSelectorSearch';
 import './IrisGridPartitionSelector.scss';
-import { ColumnName } from './IrisGrid';
+import { ColumnName } from './CommonTypes';
 
 const log = Log.module('IrisGridPartitionSelector');
 

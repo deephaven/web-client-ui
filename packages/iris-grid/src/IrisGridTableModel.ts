@@ -27,12 +27,9 @@ import {
 import { ViewportData } from '@deephaven/storage';
 import { Formatter, FormatterUtils, TableUtils } from '@deephaven/jsapi-utils';
 import IrisGridModel from './IrisGridModel';
-import {
-  assertNotNull,
-  assertNotUndefined,
-  ColumnName,
-  UITotalsTableConfig,
-} from './IrisGrid';
+import { UITotalsTableConfig } from './IrisGrid';
+import { assertNotNull, assertNotUndefined } from './asserts';
+import { ColumnName } from './CommonTypes';
 import IrisGridTableModelTemplate from './IrisGridTableModelTemplate';
 
 const log = Log.module('IrisGridTableModel');
@@ -64,7 +61,7 @@ class IrisGridTableModel extends IrisGridTableModelTemplate<Table, UIRow> {
 
   static COLUMN_BUFFER_PAGES = 0;
 
-  userFrozenColumns: ColumnName[] | undefined;
+  userFrozenColumns?: ColumnName[];
 
   customColumnList: string[];
 
@@ -82,7 +79,6 @@ class IrisGridTableModel extends IrisGridTableModelTemplate<Table, UIRow> {
   ) {
     super(table, formatter, inputTable);
 
-    this.userFrozenColumns = undefined;
     this.customColumnList = [];
     this.formatColumnList = [];
   }
@@ -181,7 +177,7 @@ class IrisGridTableModel extends IrisGridTableModelTemplate<Table, UIRow> {
   getMemoizedFrozenColumns = memoize(
     (
       layoutHintsFrozenColumns: ColumnName[],
-      userFrozenColumns: ColumnName[] | undefined
+      userFrozenColumns?: ColumnName[]
     ): ColumnName[] =>
       userFrozenColumns ?? layoutHintsFrozenColumns ?? EMPTY_ARRAY
   );

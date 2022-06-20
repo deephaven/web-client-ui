@@ -47,7 +47,6 @@ export default class InputEditor extends Component<
       isEditorEmpty: true,
     };
     this.editorContainer = null;
-    this.editor = undefined;
   }
 
   componentDidMount(): void {
@@ -60,7 +59,7 @@ export default class InputEditor extends Component<
 
   editorContainer: HTMLDivElement | null;
 
-  editor: monaco.editor.IStandaloneCodeEditor | undefined;
+  editor?: monaco.editor.IStandaloneCodeEditor;
 
   initEditor(): void {
     const { value, editorSettings } = this.props;

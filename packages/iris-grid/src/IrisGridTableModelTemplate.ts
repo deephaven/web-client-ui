@@ -38,12 +38,9 @@ import IrisGridModel from './IrisGridModel';
 import AggregationOperation from './sidebar/aggregations/AggregationOperation';
 import IrisGridUtils from './IrisGridUtils';
 import MissingKeyError from './MissingKeyError';
-import {
-  assertNotNull,
-  assertNotUndefined,
-  UITotalsTableConfig,
-  ColumnName,
-} from './IrisGrid';
+import { UITotalsTableConfig } from './IrisGrid';
+import { assertNotNull, assertNotUndefined } from './asserts';
+import { ColumnName } from './CommonTypes';
 import { IrisGridThemeType } from './IrisGridTheme';
 import IrisGridTableModel, {
   UIRow,
@@ -116,6 +113,12 @@ class IrisGridTableModelTemplate<
   static ROW_BUFFER_PAGES = 1;
 
   static COLUMN_BUFFER_PAGES = 0;
+
+  static isIrisGridTableModelTemplate(
+    model: IrisGridModel
+  ): model is IrisGridTableModelTemplate {
+    return (model as IrisGridTableModelTemplate).table !== undefined;
+  }
 
   private irisFormatter: Formatter;
 

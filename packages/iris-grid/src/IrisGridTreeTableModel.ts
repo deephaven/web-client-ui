@@ -3,7 +3,7 @@ import memoize from 'memoize-one';
 import { GridRange, ModelIndex } from '@deephaven/grid';
 import { Column, TreeRow, TreeTable } from '@deephaven/jsapi-shim';
 import { UIRow } from './IrisGridTableModel';
-import { assertNotNull, assertNotUndefined } from './IrisGrid';
+import { assertNotNull, assertNotUndefined } from './asserts';
 import IrisGridTableModelTemplate from './IrisGridTableModelTemplate';
 
 export interface UITreeRow extends UIRow {

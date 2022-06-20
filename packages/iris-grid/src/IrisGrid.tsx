@@ -152,6 +152,18 @@ import AggregationOperation from './sidebar/aggregations/AggregationOperation';
 import { UIRollupConfig } from './sidebar/RollupRows';
 import { PendingDataMap } from './IrisGridTableModel';
 import { VisibilityOptionType } from './sidebar/VisibilityOrderingBuilder';
+import {
+  AdvancedFilterMap,
+  ColumnName,
+  QuickFilterMap,
+  AggregationMap,
+  OperationMap,
+} from './CommonTypes';
+import {
+  assertNotUndefined,
+  assertNotNullNorUndefined,
+  assertNotNull,
+} from './asserts';
 
 const log = Log.module('IrisGrid');
 
@@ -199,16 +211,6 @@ function isEmptyConfig({
     sorts.length === 0
   );
 }
-
-export type ColumnName = string;
-
-export type AdvancedFilterMap = Map<ModelIndex, AdvancedFilter>;
-
-export type QuickFilterMap = Map<ModelIndex, QuickFilter>;
-
-type AggregationMap = Record<AggregationOperation, ColumnName[]>;
-
-type OperationMap = Record<ColumnName, AggregationOperation[]>;
 
 type Settings = {
   defaultDateTimeFormat?: string;
@@ -339,7 +341,7 @@ export interface IrisGridState {
   isSelectingPartition: boolean;
   focusedFilterBarColumn: number | null;
   metricCalculator: IrisGridMetricCalculator;
-  metrics: GridMetrics | undefined;
+  metrics?: GridMetrics;
   keyHandlers: KeyHandler[];
   mouseHandlers: GridMouseHandler[];
 
@@ -416,22 +418,6 @@ export interface IrisGridState {
   showOverflowModal: boolean;
   overflowText: string;
   overflowButtonTooltipProps: CSSProperties | null;
-}
-
-export function assertNotNull<T>(value: T | null): asserts value is T {
-  if (value == null) throw new Error('Value is null');
-}
-
-export function assertNotUndefined<T>(
-  value: T | undefined
-): asserts value is T {
-  if (value === undefined) throw new Error('Value is undefined');
-}
-export function assertNotNullNorUndefined<T>(
-  value: T | null | undefined
-): asserts value is T {
-  assertNotNull(value);
-  assertNotUndefined(value);
 }
 
 export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
@@ -605,9 +591,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
     this.grid = null;
     this.gridWrapper = null;
-    this.lastFocusedFilterBarColumn = undefined;
     this.lastLoadedConfig = null;
-    this.tooltip = undefined;
     this.pending = new Pending();
     this.globalColumnFormats = [];
     this.dateTimeFormatterOptions = {};
@@ -616,14 +600,10 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     this.truncateNumbersWithPound = false;
 
     // When the loading scrim started/when it should extend to the end of the screen.
-    this.loadingScrimStartTime = undefined;
-    this.loadingScrimFinishTime = undefined;
-    this.loadingTimer = undefined;
     this.renderer = new IrisGridRenderer();
     this.tableSaver = null;
     this.crossColumnRef = React.createRef();
     this.isAnimating = false;
-    this.animationFrame = undefined;
     this.filterInputRef = React.createRef();
 
     this.toggleFilterBarAction = {

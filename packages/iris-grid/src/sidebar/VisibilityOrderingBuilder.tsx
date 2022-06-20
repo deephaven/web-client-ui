@@ -34,7 +34,8 @@ import { SearchInput, Tooltip } from '@deephaven/components';
 import Log from '@deephaven/log';
 import './VisibilityOrderingBuilder.scss';
 import IrisGridModel from '../IrisGridModel';
-import { assertNotNull, assertNotUndefined, ColumnName } from '../IrisGrid';
+import { assertNotNull, assertNotUndefined } from '../asserts';
+import { ColumnName } from '../CommonTypes';
 
 const log = Log.module('VisibilityOrderingBuilder');
 const DEBOUNCE_SEARCH_COLUMN = 150;
