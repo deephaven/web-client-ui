@@ -2557,11 +2557,35 @@ export class GridRenderer {
         hScrollBarSize - scrollBarCasingWidth
       );
 
-      if (!autoSelectRow) {
+      if (!autoSelectRow && scrollBarSelectionTickColor != null) {
+        context.fillStyle = scrollBarSelectionTickColor;
         // Scrollbar Selection Tick
         const { selectedRanges, model, cursorColumn } = state;
-        const { lastLeft } = metrics;
+        const { visibleColumns, visibleColumnWidths } = metrics;
         const { columnCount } = model;
+
+        const leftVisibleIndex = Math.min(...visibleColumns.values());
+        const rightVisibleIndex = Math.max(...visibleColumns.values());
+
+        const getTickX = (index: number) => {
+          if (index < leftVisibleIndex) {
+            return Math.round((index / leftVisibleIndex) * x);
+          }
+          if (index > rightVisibleIndex) {
+            return Math.round(
+              ((index - rightVisibleIndex) /
+                (columnCount - rightVisibleIndex)) *
+                (barWidth - x - handleWidth) +
+                x +
+                handleWidth
+            );
+          }
+          let leftWidth = 0;
+          for (let i = leftVisibleIndex; i < index; i += 1) {
+            leftWidth += visibleColumnWidths.get(i) ?? 0;
+          }
+          return Math.round((leftWidth / width) * handleWidth + x);
+        };
 
         const filteredRanges = [...selectedRanges].filter(
           value => value.startColumn != null && value.endColumn != null
@@ -2591,19 +2615,20 @@ export class GridRenderer {
 
         for (let i = 0; i < mergedRanges.length; i += 1) {
           const range = mergedRanges[i];
-          if (scrollBarSelectionTickColor != null) {
-            context.fillStyle = scrollBarSelectionTickColor;
-          }
           if (
             range.startColumn != null &&
             range.endColumn != null &&
             (range.startColumn !== cursorColumn ||
               range.endColumn !== cursorColumn)
           ) {
-            const tickX = Math.round((range.startColumn / lastLeft) * barWidth);
+            const tickX = Math.round(
+              (range.startColumn / columnCount) * barWidth
+            );
             const tickWidth = Math.max(
               1,
-              Math.round(((range.endColumn + 1) / lastLeft) * barWidth - tickX)
+              Math.round(
+                ((range.endColumn + 1) / columnCount) * barWidth - tickX
+              )
             );
             const trackHeight = hScrollBarSize - scrollBarCasingWidth;
             context.fillRect(
@@ -2617,7 +2642,8 @@ export class GridRenderer {
 
         // Current Active Tick
         if (cursorColumn != null) {
-          const tickX = Math.round((cursorColumn / lastLeft) * barWidth);
+          // const tickX = Math.round((cursorColumn / columnCount) * barWidth);
+          const tickX = getTickX(cursorColumn);
           const tickWidth = 2;
           const trackHeight = hScrollBarSize - scrollBarCasingWidth;
           context.fillStyle = scrollBarActiveSelectionTickColor;
@@ -2666,14 +2692,12 @@ export class GridRenderer {
         handleHeight
       );
 
-      if (!autoSelectColumn) {
+      if (!autoSelectColumn && scrollBarSelectionTickColor != null) {
         // Scrollbar Selection Tick
         const { selectedRanges, model, cursorRow } = state;
         const { rowCount } = model;
 
-        if (scrollBarSelectionTickColor != null) {
-          context.fillStyle = scrollBarSelectionTickColor;
-        }
+        context.fillStyle = scrollBarSelectionTickColor;
 
         const filteredRanges = [...selectedRanges].filter(
           value => value.startRow != null && value.endRow != null
