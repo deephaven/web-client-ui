@@ -1,5 +1,4 @@
 import React, { CSSProperties, ReactElement, ReactNode } from 'react';
-import './Modal.scss';
 
 interface ModalBodyProps {
   className?: string;

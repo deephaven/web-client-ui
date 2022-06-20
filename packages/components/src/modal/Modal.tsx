@@ -1,14 +1,6 @@
 import classNames from 'classnames';
-import React, {
-  ReactElement,
-  ReactNode,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from 'react';
+import React, { ReactElement, ReactNode, useCallback, useEffect } from 'react';
 import ReactDOM from 'react-dom';
-import './Modal.scss';
 import { CSSTransition } from 'react-transition-group';
 import ThemeExport from '../ThemeExport';
 
@@ -39,9 +31,6 @@ const Modal = ({
   toggle,
   'data-testid': dataTestId,
 }: ModalProps): ReactElement => {
-  // const [show, setShow] = useState(false);
-
-  const outerDivRef = useRef<HTMLDivElement>(null);
   const handleKeyDown = useCallback(
     (event: KeyboardEvent): void => {
       switch (event.key) {
@@ -85,19 +74,6 @@ const Modal = ({
     [onClosed, isOpen]
   );
 
-  // useEffect(
-  //   function syncState() {
-  //     if (isOpen) {
-  //       setShow(true);
-  //     }
-  //   },
-  //   [isOpen]
-  // );
-
-  // const onEnterOrExit = () => {
-  //   setShow(isOpen);
-  // };
-
   return ReactDOM.createPortal(
     <CSSTransition
       appear
@@ -124,7 +100,6 @@ const Modal = ({
             'modal-xl': size === 'xl',
             'modal-dialog-centered': centered,
           })}
-          ref={outerDivRef}
           style={{ zIndex: 1040 }}
         >
           <div
