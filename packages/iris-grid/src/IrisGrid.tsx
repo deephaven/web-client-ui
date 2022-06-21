@@ -2189,7 +2189,6 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     const { sorts: currentSorts } = this.state;
     const modelColumn = this.getModelColumn(columnIndex);
     assertNotNull(modelColumn);
-    assertNotNull(modelColumn);
     const sorts = TableUtils.toggleSortForColumn(
       currentSorts,
       model.columns,
@@ -3391,8 +3390,6 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       const columnX = visibleColumnXs.get(shownColumnTooltip);
       const columnWidth = visibleColumnWidths.get(shownColumnTooltip);
 
-      assertNotNull(columnX);
-      assertNotNull(columnWidth);
       assertNotNull(columnX);
       assertNotNull(columnWidth);
       /**
