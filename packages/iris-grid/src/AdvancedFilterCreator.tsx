@@ -10,6 +10,7 @@ import {
   OperatorValue as FilterOperatorValue,
   TypeValue as FilterTypeValue,
   Type as FilterType,
+  assertFilterOperatorValue,
 } from '@deephaven/filters';
 import { dhSortAmountDown, dhNewCircleLargeFilled } from '@deephaven/icons';
 import { Formatter, TableUtils, SortDirection } from '@deephaven/jsapi-utils';
@@ -101,14 +102,6 @@ class AdvancedFilterCreator extends PureComponent<
 
   static makeFilterItem(): AdvancedFilterItem {
     return { key: shortid() };
-  }
-
-  static assertFilterOperatorValue(
-    operator?: string
-  ): asserts operator is FilterOperatorValue {
-    if (!(operator === 'not' || operator === 'and' || operator === 'or')) {
-      throw new Error('operator is not a valid FilterOperatorValue');
-    }
   }
 
   constructor(props: AdvancedFilterCreatorProps) {
@@ -274,7 +267,7 @@ class AdvancedFilterCreator extends PureComponent<
     let { filterOperators } = this.state;
     filterOperators = [...filterOperators];
 
-    AdvancedFilterCreator.assertFilterOperatorValue(operator);
+    assertFilterOperatorValue(operator);
 
     filterOperators[index] = operator;
 

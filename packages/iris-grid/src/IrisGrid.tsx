@@ -22,7 +22,6 @@ import {
   ThemeExport,
   Tooltip,
   ContextAction,
-  Shortcut,
   PopperOptions,
   ReferenceObject,
 } from '@deephaven/components';
@@ -47,7 +46,6 @@ import {
   dhFilterFilled,
   dhGraphLineUp,
   dhTriangleDownSquare,
-  IconDefinition,
   vsCloudDownload,
   vsEdit,
   vsFilter,
@@ -65,7 +63,6 @@ import dh, {
   Sort,
   Table,
   TableViewportSubscription,
-  TotalsTableConfig,
 } from '@deephaven/jsapi-shim';
 import {
   DateUtils,
@@ -150,7 +147,6 @@ import {
 } from './formatters';
 import AggregationOperation from './sidebar/aggregations/AggregationOperation';
 import { UIRollupConfig } from './sidebar/RollupRows';
-import { PendingDataMap } from './IrisGridTableModel';
 import { VisibilityOptionType } from './sidebar/VisibilityOrderingBuilder';
 import {
   AdvancedFilterMap,
@@ -158,6 +154,11 @@ import {
   QuickFilterMap,
   AggregationMap,
   OperationMap,
+  Action,
+  OptionItem,
+  UITotalsTableConfig,
+  InputFilter,
+  PendingDataMap,
 } from './CommonTypes';
 import {
   assertNotUndefined,
@@ -227,36 +228,6 @@ type Settings = {
   truncateNumbersWithPound?: boolean;
 };
 
-export type QuickFilter = {
-  text: string;
-  filter: FilterCondition | null;
-};
-
-export type AdvancedFilter = {
-  filter: FilterCondition | null;
-  options: AdvancedFilterOptions;
-};
-
-export type Action = {
-  action: () => void;
-  shortcut: Shortcut;
-};
-
-export type OptionItem = {
-  type: OptionType;
-  title: string;
-  subtitle?: string;
-  icon?: IconDefinition;
-  isOn?: boolean;
-  onChange?: () => void;
-};
-
-export interface UITotalsTableConfig extends TotalsTableConfig {
-  operationOrder: AggregationOperation[];
-  showOnTop: boolean;
-}
-
-export type InputFilter = { name: string; type: string; value: string };
 export interface IrisGridProps {
   children: React.ReactNode;
   advancedFilters: AdvancedFilterMap;
@@ -1363,7 +1334,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   applyQuickFilter(
     modelIndex: ModelIndex,
     value: string | null,
-    quickFilters: Map<ModelIndex, QuickFilter>
+    quickFilters: QuickFilterMap
   ): boolean {
     const { model } = this.props;
     const { formatter } = model;

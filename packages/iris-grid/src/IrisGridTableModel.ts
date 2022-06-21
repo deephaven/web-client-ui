@@ -13,7 +13,6 @@ import dh, {
   Column,
   ColumnStatistics,
   CustomColumn,
-  Format,
   InputTable,
   LayoutHints,
   Table,
@@ -27,28 +26,11 @@ import {
 import { ViewportData } from '@deephaven/storage';
 import { Formatter, FormatterUtils, TableUtils } from '@deephaven/jsapi-utils';
 import IrisGridModel from './IrisGridModel';
-import { UITotalsTableConfig } from './IrisGrid';
 import { assertNotNull, assertNotUndefined } from './asserts';
-import { ColumnName } from './CommonTypes';
+import { ColumnName, UITotalsTableConfig, UIRow } from './CommonTypes';
 import IrisGridTableModelTemplate from './IrisGridTableModelTemplate';
 
 const log = Log.module('IrisGridTableModel');
-
-export interface UIRow {
-  data: Map<ModelIndex, CellData>;
-}
-
-export type UIViewportData<R extends UIRow = UIRow> = {
-  offset: number;
-  rows: R[];
-};
-export type RowData<T = unknown> = Map<number, { value: T }>;
-
-export type CellData = {
-  value: unknown;
-  format?: Format;
-};
-export type PendingDataMap<R extends UIRow = UIRow> = Map<ModelIndex, R>;
 
 const EMPTY_ARRAY = Object.freeze([]);
 

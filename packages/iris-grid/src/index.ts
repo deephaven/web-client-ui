@@ -1,5 +1,6 @@
 export * from './sidebar';
 export * from './AdvancedFilterCreator';
+export * from './CommonTypes';
 export { default as IrisGrid } from './IrisGrid';
 export * from './IrisGrid';
 export { default as SHORTCUTS } from './IrisGridShortcuts';
@@ -8,6 +9,7 @@ export { default as IrisGridTableModel } from './IrisGridTableModel';
 export * from './IrisGridTableModel';
 export { default as IrisGridTreeTableModel } from './IrisGridTreeTableModel';
 export { default as IrisGridTableModelTemplate } from './IrisGridTableModelTemplate';
+export * from './IrisGridTableModelTemplate';
 export * from './IrisGridTreeTableModel';
 export { default as IrisGridModelFactory } from './IrisGridModelFactory';
 export { default as IrisGridTheme } from './IrisGridTheme';

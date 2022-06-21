@@ -23,9 +23,13 @@ import {
 } from '@deephaven/grid';
 import { Sort } from '@deephaven/jsapi-shim';
 import { TableUtils, ReverseType } from '@deephaven/jsapi-utils';
-import { AdvancedFilter, QuickFilter } from './IrisGrid';
 import { assertNotNull, assertNotUndefined } from './asserts';
-import { AdvancedFilterMap, QuickFilterMap } from './CommonTypes';
+import {
+  AdvancedFilterMap,
+  QuickFilterMap,
+  AdvancedFilter,
+  QuickFilter,
+} from './CommonTypes';
 import { IrisGridThemeType } from './IrisGridTheme';
 import IrisGridModel from './IrisGridModel';
 

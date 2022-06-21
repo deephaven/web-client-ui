@@ -2,7 +2,7 @@
 import memoize from 'memoize-one';
 import { GridRange, ModelIndex } from '@deephaven/grid';
 import { Column, TreeRow, TreeTable } from '@deephaven/jsapi-shim';
-import { UIRow } from './IrisGridTableModel';
+import { UIRow } from './CommonTypes';
 import { assertNotNull, assertNotUndefined } from './asserts';
 import IrisGridTableModelTemplate from './IrisGridTableModelTemplate';
 

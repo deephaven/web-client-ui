@@ -38,21 +38,28 @@ import IrisGridModel from './IrisGridModel';
 import AggregationOperation from './sidebar/aggregations/AggregationOperation';
 import IrisGridUtils from './IrisGridUtils';
 import MissingKeyError from './MissingKeyError';
-import { UITotalsTableConfig } from './IrisGrid';
 import { assertNotNull, assertNotUndefined } from './asserts';
-import { ColumnName } from './CommonTypes';
-import { IrisGridThemeType } from './IrisGridTheme';
-import IrisGridTableModel, {
+import {
+  ColumnName,
+  UITotalsTableConfig,
   UIRow,
   PendingDataMap,
   CellData,
   UIViewportData,
-} from './IrisGridTableModel';
+} from './CommonTypes';
+import { IrisGridThemeType } from './IrisGridTheme';
+import IrisGridTableModel from './IrisGridTableModel';
 
 const log = Log.module('IrisGridTableModel');
 
 const SET_VIEWPORT_THROTTLE = 150;
 const APPLY_VIEWPORT_THROTTLE = 0;
+
+export function isIrisGridTableModelTemplate(
+  model: IrisGridModel
+): model is IrisGridTableModelTemplate {
+  return (model as IrisGridTableModelTemplate).table !== undefined;
+}
 
 /**
  * Template model for a grid
@@ -113,12 +120,6 @@ class IrisGridTableModelTemplate<
   static ROW_BUFFER_PAGES = 1;
 
   static COLUMN_BUFFER_PAGES = 0;
-
-  static isIrisGridTableModelTemplate(
-    model: IrisGridModel
-  ): model is IrisGridTableModelTemplate {
-    return (model as IrisGridTableModelTemplate).table !== undefined;
-  }
 
   private irisFormatter: Formatter;
 

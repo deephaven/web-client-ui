@@ -5,7 +5,7 @@ import { Button, LoadingSpinner } from '@deephaven/components';
 import { usePrevious } from '@deephaven/react-hooks';
 import IrisGridBottomBar from './IrisGridBottomBar';
 import './PendingDataBottomBar.scss';
-import { PendingDataMap } from './IrisGridTableModel';
+import { PendingDataMap } from './CommonTypes';
 
 const HIDE_TIMEOUT = 3000;
 

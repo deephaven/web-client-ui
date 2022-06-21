@@ -26,15 +26,16 @@ import {
   ModelIndex,
   MoveOperation,
 } from '@deephaven/grid';
-import IrisGridTableModel, {
-  PendingDataMap,
-  UIRow,
-} from './IrisGridTableModel';
+import IrisGridTableModel from './IrisGridTableModel';
 import IrisGridTreeTableModel from './IrisGridTreeTableModel';
 import IrisGridModel from './IrisGridModel';
-import { UITotalsTableConfig } from './IrisGrid';
-import { ColumnName } from './CommonTypes';
-import IrisGridTableModelTemplate from './IrisGridTableModelTemplate';
+import {
+  ColumnName,
+  UITotalsTableConfig,
+  PendingDataMap,
+  UIRow,
+} from './CommonTypes';
+import { isIrisGridTableModelTemplate } from './IrisGridTableModelTemplate';
 
 const log = Log.module('IrisGridProxyModel');
 
@@ -125,7 +126,7 @@ class IrisGridProxyModel extends IrisGridModel {
       })
     );
 
-    if (IrisGridTableModelTemplate.isIrisGridTableModelTemplate(model)) {
+    if (isIrisGridTableModelTemplate(model)) {
       this.dispatchEvent(
         new EventShimCustomEvent(IrisGridModel.EVENT.TABLE_CHANGED, {
           detail: model.table,
@@ -461,9 +462,7 @@ class IrisGridProxyModel extends IrisGridModel {
     let modelPromise = Promise.resolve(this.originalModel);
 
     if (
-      IrisGridTableModelTemplate.isIrisGridTableModelTemplate(
-        this.originalModel
-      ) &&
+      isIrisGridTableModelTemplate(this.originalModel) &&
       rollupConfig != null
     ) {
       modelPromise = this.originalModel.table
@@ -501,9 +500,7 @@ class IrisGridProxyModel extends IrisGridModel {
     let modelPromise = Promise.resolve(this.originalModel);
 
     if (
-      IrisGridTableModelTemplate.isIrisGridTableModelTemplate(
-        this.originalModel
-      ) &&
+      isIrisGridTableModelTemplate(this.originalModel) &&
       selectDistinctColumns.length > 0
     ) {
       modelPromise = this.originalModel.table

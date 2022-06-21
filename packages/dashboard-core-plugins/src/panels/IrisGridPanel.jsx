@@ -12,7 +12,7 @@ import {
   IrisGridModel,
   IrisGridUtils,
   IrisGridTableModel,
-  IrisGridTableModelTemplate,
+  isIrisGridTableModelTemplate,
 } from '@deephaven/iris-grid';
 import { TableUtils } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
@@ -549,7 +549,7 @@ export class IrisGridPanel extends PureComponent {
 
     this.setState({ isModelReady: true });
 
-    if (IrisGridTableModelTemplate.isIrisGridTableModelTemplate(model)) {
+    if (isIrisGridTableModelTemplate(model)) {
       const { table } = model;
       const { pluginName } = table;
 

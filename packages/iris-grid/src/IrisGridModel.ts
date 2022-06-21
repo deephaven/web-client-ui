@@ -20,9 +20,7 @@ import type {
   Table,
 } from '@deephaven/jsapi-shim';
 import { Formatter } from '@deephaven/jsapi-utils';
-import { PendingDataMap } from './IrisGridTableModel';
-import { UITotalsTableConfig } from './IrisGrid';
-import { ColumnName } from './CommonTypes';
+import { ColumnName, UITotalsTableConfig, PendingDataMap } from './CommonTypes';
 
 type RowIndex = ModelIndex;
 

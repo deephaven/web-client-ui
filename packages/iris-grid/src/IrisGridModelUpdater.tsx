@@ -11,9 +11,7 @@ import dh, {
 import { ModelIndex, MoveOperation } from '@deephaven/grid';
 import { Formatter, ReverseType, TableUtils } from '@deephaven/jsapi-utils';
 import IrisGridUtils from './IrisGridUtils';
-import { UIRow } from './IrisGridTableModel';
-import { UITotalsTableConfig } from './IrisGrid';
-import { ColumnName } from './CommonTypes';
+import { ColumnName, UITotalsTableConfig, UIRow } from './CommonTypes';
 import IrisGridModel from './IrisGridModel';
 
 const COLUMN_BUFFER_PAGES = 1;

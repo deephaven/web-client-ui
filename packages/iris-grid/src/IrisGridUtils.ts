@@ -26,28 +26,27 @@ import {
 import Log from '@deephaven/log';
 import AggregationUtils from './sidebar/aggregations/AggregationUtils';
 import AggregationOperation from './sidebar/aggregations/AggregationOperation';
+import { IrisGridProps, IrisGridState } from './IrisGrid';
+import { assertNotNull, assertNotUndefined } from './asserts';
 import {
+  ColumnName,
+  AdvancedFilterMap,
+  QuickFilterMap,
   AdvancedFilter,
   InputFilter,
-  IrisGridProps,
-  IrisGridState,
   QuickFilter,
-} from './IrisGrid';
-import { assertNotNull, assertNotUndefined } from './asserts';
-import { ColumnName, AdvancedFilterMap, QuickFilterMap } from './CommonTypes';
+  CellData,
+  PendingDataMap,
+  UIRow,
+} from './CommonTypes';
 import { UIRollupConfig } from './sidebar/RollupRows';
 import { AggregationSettings } from './sidebar/aggregations/Aggregations';
 import { AdvancedFilterOptions } from './AdvancedFilterCreator';
-import { CellData, PendingDataMap, UIRow } from './IrisGridTableModel';
 import { FormattingRule } from './Formatter';
 import { FormattingRule as SidebarFormattingRule } from './sidebar/conditional-formatting/ConditionalFormattingUtils';
 import IrisGridModel from './IrisGridModel';
 
 const log = Log.module('IrisGridUtils');
-
-// export type SavedFilters = {
-//   number
-// }
 
 export interface DehydratedIrisGridState {
   advancedFilters: [

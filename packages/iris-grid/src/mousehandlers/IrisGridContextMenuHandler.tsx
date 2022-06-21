@@ -47,12 +47,13 @@ import {
 } from '../format-context-menus';
 import './IrisGridContextMenuHandler.scss';
 import SHORTCUTS from '../IrisGridShortcuts';
-import IrisGrid, { QuickFilter } from '../IrisGrid';
+import IrisGrid from '../IrisGrid';
 import {
   assertNotNull,
   assertNotNullNorUndefined,
   assertNotUndefined,
 } from '../asserts';
+import { QuickFilter } from '../CommonTypes';
 
 const log = Log.module('IrisGridContextMenuHandler');
 
