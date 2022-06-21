@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 import Modal from './Modal';
@@ -23,7 +23,7 @@ function makeModal({
   toggle?: () => void;
   'data-testid'?: string;
 }) {
-  return render(
+  return (
     <Modal
       className={className}
       keyboard={keyboard}
@@ -37,32 +37,55 @@ function makeModal({
   );
 }
 
-it('renders', () => {
-  makeModal({});
+it('mounts', () => {
+  render(makeModal({}));
 });
 
 it('does not render when isOpen is false', () => {
-  makeModal({ isOpen: false });
+  render(makeModal({ isOpen: false }));
   expect(screen.queryByRole('dialog')).toBeNull();
+});
+
+it('renders when isOpen is true', async () => {
+  render(makeModal({ isOpen: true }));
+  const dialogs = screen.getAllByRole('dialog');
+  expect(dialogs.length).not.toBe(0);
+});
+
+it('renders when isOpen changes', async () => {
+  const { rerender } = render(makeModal({ isOpen: false }));
+
+  expect(screen.queryByRole('dialog')).toBeNull();
+  rerender(makeModal({ isOpen: true }));
+
+  expect(screen.getAllByRole('dialog').length).not.toBe(0);
+  rerender(makeModal({ isOpen: false }));
+
+  await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
 });
 
 it('calls toggle when esc key is pressed', () => {
   const toggle = jest.fn();
-  const { container } = makeModal({ isOpen: true, keyboard: true, toggle });
+  const { container } = render(
+    makeModal({ isOpen: true, keyboard: true, toggle })
+  );
   fireEvent.keyDown(container, { key: 'Escape' });
   expect(toggle).toBeCalledTimes(1);
 });
 
 it('does not calls toggle when esc key is pressed when keyboard is false', () => {
   const toggle = jest.fn();
-  const { container } = makeModal({ isOpen: true, keyboard: false, toggle });
+
+  const { container } = render(
+    makeModal({ isOpen: true, keyboard: false, toggle })
+  );
   fireEvent.keyDown(container, { key: 'Escape' });
   expect(toggle).toBeCalledTimes(0);
 });
 
 it('closes only when clicking outside the modal', () => {
   const toggle = jest.fn();
-  makeModal({ isOpen: true, toggle });
+  render(makeModal({ isOpen: true, toggle }));
 
   // note that outer div covers the entire screen
   const outerDiv = screen.getAllByRole('dialog')[0];
@@ -77,7 +100,7 @@ it('closes only when clicking outside the modal', () => {
 it('calls onOpen when opens', () => {
   const onOpened = jest.fn();
   const toggle = jest.fn();
-  const { rerender } = makeModal({ isOpen: false, toggle, onOpened });
+  const { rerender } = render(makeModal({ isOpen: false, toggle, onOpened }));
   expect(onOpened).not.toBeCalled();
   rerender(<Modal isOpen onOpened={onOpened} />);
   expect(onOpened).toBeCalledTimes(1);

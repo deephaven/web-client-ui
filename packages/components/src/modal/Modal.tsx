@@ -1,5 +1,12 @@
 import classNames from 'classnames';
-import React, { ReactElement, ReactNode, useCallback, useEffect } from 'react';
+import React, {
+  ReactElement,
+  ReactNode,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
 import ReactDOM from 'react-dom';
 import { CSSTransition } from 'react-transition-group';
 import ThemeExport from '../ThemeExport';
@@ -31,6 +38,10 @@ const Modal = ({
   toggle,
   'data-testid': dataTestId,
 }: ModalProps): ReactElement => {
+  const [isPortalOpen, setIsPortalOpen] = useState(false);
+
+  const element = useRef<HTMLElement>();
+
   const handleKeyDown = useCallback(
     (event: KeyboardEvent): void => {
       switch (event.key) {
@@ -66,7 +77,7 @@ const Modal = ({
   );
 
   useEffect(
-    function open() {
+    function closed() {
       if (!isOpen && onClosed) {
         onClosed();
       }
@@ -74,46 +85,98 @@ const Modal = ({
     [onClosed, isOpen]
   );
 
-  return ReactDOM.createPortal(
-    <CSSTransition
-      appear
-      mountOnEnter
-      unmountOnExit
-      in={isOpen}
-      classNames={{
-        enterActive: 'show',
-        enterDone: 'show',
-      }}
-      timeout={ThemeExport.transitionMs}
-    >
-      <div
-        className="modal fade"
-        onClick={toggle}
-        role="dialog"
-        style={{ zIndex: 1050, display: 'block', paddingRight: '15px' }}
-      >
-        <div className={classNames('modal-backdrop fade show')} />
-        <div
-          className={classNames(`modal-dialog ${className}`, {
-            'modal-lg': size === 'lg',
-            'modal-sm': size === 'sm',
-            'modal-xl': size === 'xl',
-            'modal-dialog-centered': centered,
-          })}
-          style={{ zIndex: 1040 }}
+  useEffect(
+    function close() {
+      if (!isPortalOpen) {
+        if (element.current) {
+          document.body.removeChild(element.current);
+          element.current = undefined;
+        }
+      }
+    },
+    [isPortalOpen]
+  );
+
+  useEffect(
+    function open() {
+      if (isOpen && !element.current) {
+        element.current = document.createElement('div');
+        element.current.setAttribute(
+          'style',
+          'z-index: 1050; padding-right: 15px; display: block'
+        );
+        element.current.setAttribute('role', 'modal-container');
+        document.body.appendChild(element.current);
+        setIsPortalOpen(true);
+      }
+    },
+    [isOpen]
+  );
+
+  const onExited = () => {
+    setIsPortalOpen(false);
+  };
+
+  return element.current ? (
+    ReactDOM.createPortal(
+      <>
+        <CSSTransition
+          appear
+          mountOnEnter
+          unmountOnExit
+          in={isOpen}
+          classNames={{
+            enterActive: 'show',
+            enterDone: 'show',
+          }}
+          timeout={ThemeExport.transitionMs}
+          onExited={onExited}
+        >
+          <div className={classNames('modal-backdrop fade')} />
+        </CSSTransition>
+        <CSSTransition
+          appear
+          mountOnEnter
+          unmountOnExit
+          in={isOpen}
+          classNames={{
+            enterActive: 'show',
+            enterDone: 'show',
+          }}
+          timeout={ThemeExport.transitionMs}
+          onExited={onExited}
         >
           <div
-            className="modal-content"
-            onClick={e => e.stopPropagation()}
-            data-testid={dataTestId}
+            className="modal fade"
+            onClick={toggle}
             role="dialog"
+            style={{ display: 'block' }}
           >
-            {children}
+            <div
+              className={classNames(`modal-dialog ${className}`, {
+                'modal-lg': size === 'lg',
+                'modal-sm': size === 'sm',
+                'modal-xl': size === 'xl',
+                'modal-dialog-centered': centered,
+              })}
+              style={{ zIndex: 1040 }}
+            >
+              <div
+                className="modal-content"
+                onClick={e => e.stopPropagation()}
+                data-testid={dataTestId}
+                role="dialog"
+              >
+                {children}
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
-    </CSSTransition>,
-    document.getElementsByTagName('BODY')[0]
+        </CSSTransition>
+      </>,
+      element.current
+    )
+  ) : (
+    <></>
   );
 };
 
