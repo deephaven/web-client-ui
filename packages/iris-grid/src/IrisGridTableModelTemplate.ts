@@ -38,7 +38,7 @@ import IrisGridModel from './IrisGridModel';
 import AggregationOperation from './sidebar/aggregations/AggregationOperation';
 import IrisGridUtils from './IrisGridUtils';
 import MissingKeyError from './MissingKeyError';
-import { assertNotNull, assertNotUndefined } from './asserts';
+import assertNotNull from './asserts';
 import {
   ColumnName,
   UITotalsTableConfig,
@@ -608,7 +608,7 @@ class IrisGridTableModelTemplate<
     const totalsRow = this.totalsRow(y);
     if (totalsRow != null) {
       const operation = this.totals?.operationOrder[totalsRow];
-      assertNotUndefined(operation);
+      assertNotNull(operation);
       return this.totalsDataMap?.get(operation) ?? null;
     }
     const pendingRow = this.pendingRow(y);
@@ -805,7 +805,7 @@ class IrisGridTableModelTemplate<
       const column = columns[c];
 
       const index = this.getColumnIndexByName(column.name);
-      assertNotUndefined(index);
+      assertNotNull(index);
       data.set(index, {
         value: row.get(column),
         format: row.getFormat(column),
@@ -1084,7 +1084,7 @@ class IrisGridTableModelTemplate<
       const row = topFloatingRows[i];
       const rowData = columns.map(column => {
         const index = this.getColumnIndexByName(column.name);
-        assertNotUndefined(index);
+        assertNotNull(index);
         return formatValue(this.valueForCell(index, row), column);
       });
       if (includeHeaders) {
@@ -1108,7 +1108,7 @@ class IrisGridTableModelTemplate<
       const row = bottomFloatingRows[i];
       const rowData = columns.map(column => {
         const index = this.getColumnIndexByName(column.name);
-        assertNotUndefined(index);
+        assertNotNull(index);
         return formatValue(this.valueForCell(index, row), column);
       });
       if (includeHeaders) {
@@ -1356,7 +1356,7 @@ class IrisGridTableModelTemplate<
           }
           const column = this.columns[columnIndex];
           const row = newDataMap.get(rowIndex);
-          assertNotUndefined(row);
+          assertNotNull(row);
           const { data: rowData } = row;
           const newRowData = new Map(rowData);
           const value = TableUtils.makeValue(
@@ -1484,7 +1484,7 @@ class IrisGridTableModelTemplate<
           }
 
           const row = newDataMap.get(pendingRow);
-          assertNotUndefined(row);
+          assertNotNull(row);
           const { data: rowData } = row;
           const newRowData = new Map(rowData);
           if (value != null) {

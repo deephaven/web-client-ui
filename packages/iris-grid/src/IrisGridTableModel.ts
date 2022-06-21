@@ -26,7 +26,7 @@ import {
 import { ViewportData } from '@deephaven/storage';
 import { Formatter, FormatterUtils, TableUtils } from '@deephaven/jsapi-utils';
 import IrisGridModel from './IrisGridModel';
-import { assertNotNull, assertNotUndefined } from './asserts';
+import assertNotNull from './asserts';
 import { ColumnName, UITotalsTableConfig, UIRow } from './CommonTypes';
 import IrisGridTableModelTemplate from './IrisGridTableModelTemplate';
 

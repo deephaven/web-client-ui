@@ -23,7 +23,7 @@ import {
 } from '@deephaven/grid';
 import { Sort } from '@deephaven/jsapi-shim';
 import { TableUtils, ReverseType } from '@deephaven/jsapi-utils';
-import { assertNotNull, assertNotUndefined } from './asserts';
+import assertNotNull from './asserts';
 import {
   AdvancedFilterMap,
   QuickFilterMap,
@@ -242,8 +242,8 @@ class IrisGridRenderer extends GridRenderer {
 
     const x = visibleColumnXs.get(hoverSelectColumn);
     const columnWidth = visibleColumnWidths.get(hoverSelectColumn);
-    assertNotUndefined(x);
-    assertNotUndefined(columnWidth);
+    assertNotNull(x);
+    assertNotNull(columnWidth);
 
     context.fillStyle = theme.linkerColumnHoverBackgroundColor;
     context.fillRect(x, 0, columnWidth, maxY);
@@ -810,8 +810,8 @@ class IrisGridRenderer extends GridRenderer {
       context.fillStyle = rowHoverBackgroundColor;
       const y = visibleRowYs.get(mouseRow);
       const rowHeight = visibleRowHeights.get(mouseRow);
-      assertNotUndefined(y);
-      assertNotUndefined(rowHeight);
+      assertNotNull(y);
+      assertNotNull(rowHeight);
       context.fillRect(x, y, rowFooterWidth, rowHeight);
     }
 

@@ -11,7 +11,7 @@ import Log from '@deephaven/log';
 import { GridRange, GridRangeIndex, memoizeClear } from '@deephaven/grid';
 import { CancelablePromise, PromiseUtils } from '@deephaven/utils';
 import { Formatter, FormatterUtils } from '@deephaven/jsapi-utils';
-import { assertNotNull, assertNotUndefined } from '../asserts';
+import assertNotNull from '../asserts';
 
 const log = Log.module('TableSaver');
 
@@ -204,7 +204,7 @@ export default class TableSaver extends PureComponent<
         }
       };
       streamConfig.close = () => {
-        assertNotUndefined(fileName);
+        assertNotNull(fileName);
         const blob = new Blob(chunks, {
           type: 'application/octet-stream; charset=utf-8',
         });
@@ -378,7 +378,7 @@ export default class TableSaver extends PureComponent<
       this.rangedSnapshotsTotal = this.gridRanges.map((range: GridRange) => {
         assertNotNull(range.endRow);
         assertNotNull(range.startRow);
-        assertNotUndefined(this.chunkRows);
+        assertNotNull(this.chunkRows);
 
         return Math.ceil((range.endRow - range.startRow + 1) / this.chunkRows);
       });
@@ -407,7 +407,7 @@ export default class TableSaver extends PureComponent<
     if (this.currentSnapshotIndex === snapshotIndex && this.fileWriter) {
       while (this.snapshotsBuffer.has(this.currentSnapshotIndex)) {
         const n = this.snapshotsBuffer.get(this.currentSnapshotIndex);
-        assertNotUndefined(n);
+        assertNotNull(n);
         this.fileWriter.write({
           rows: this.convertSnapshotIntoCsv(n),
         });
@@ -490,7 +490,7 @@ export default class TableSaver extends PureComponent<
       rows.push(snapshotIterator.next().value);
     }
 
-    assertNotUndefined(this.columns);
+    assertNotNull(this.columns);
 
     for (let i = 0; i < rows.length; i += 1) {
       const rowIdx = rows[i];
@@ -533,18 +533,18 @@ export default class TableSaver extends PureComponent<
     if (n <= 0) {
       return;
     }
-    assertNotUndefined(this.gridRangeCounter);
+    assertNotNull(this.gridRangeCounter);
     let i = 0;
     let currentGridRange = this.gridRanges[this.gridRangeCounter];
 
-    assertNotUndefined(this.tableSubscription);
-    assertNotUndefined(this.columns);
+    assertNotNull(this.tableSubscription);
+    assertNotNull(this.columns);
     while (i < n) {
       assertNotNull(currentGridRange);
       assertNotNull(currentGridRange.startRow);
       assertNotNull(currentGridRange.endRow);
-      assertNotUndefined(this.rangedSnapshotCounter);
-      assertNotUndefined(this.chunkRows);
+      assertNotNull(this.rangedSnapshotCounter);
+      assertNotNull(this.chunkRows);
       const snapshotStartRow =
         currentGridRange.startRow + this.rangedSnapshotCounter * this.chunkRows;
       const snapshotEndRow = Math.min(

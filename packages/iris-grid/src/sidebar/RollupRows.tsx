@@ -27,7 +27,7 @@ import Log from '@deephaven/log';
 import './RollupRows.scss';
 import { Column, RollupConfig } from '@deephaven/jsapi-shim';
 import IrisGridModel from '../IrisGridModel';
-import { assertNotNull } from '../asserts';
+import assertNotNull from '../asserts';
 import { ColumnName } from '../CommonTypes';
 
 const log = Log.module('RollupRows');

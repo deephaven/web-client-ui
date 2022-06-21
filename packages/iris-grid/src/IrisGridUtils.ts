@@ -27,7 +27,7 @@ import Log from '@deephaven/log';
 import AggregationUtils from './sidebar/aggregations/AggregationUtils';
 import AggregationOperation from './sidebar/aggregations/AggregationOperation';
 import { IrisGridProps, IrisGridState } from './IrisGrid';
-import { assertNotNull, assertNotUndefined } from './asserts';
+import assertNotNull from './asserts';
 import {
   ColumnName,
   AdvancedFilterMap,
@@ -222,7 +222,7 @@ class IrisGridUtils {
       pendingDataMap = new Map(),
       frozenColumns,
     } = irisGridState;
-    assertNotUndefined(metrics);
+    assertNotNull(metrics);
     const { userColumnWidths, userRowHeights } = metrics;
     const { columns } = model;
     return {
@@ -609,7 +609,7 @@ class IrisGridUtils {
             data: new Map(
               data.map(([columnName, value]) => {
                 const index = getColumnIndex(columnName);
-                assertNotUndefined(index);
+                assertNotNull(index);
                 return [
                   getColumnIndex(columnName) ?? null,
                   IrisGridUtils.hydrateValue(value, columns[index].type),

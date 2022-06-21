@@ -160,11 +160,7 @@ import {
   InputFilter,
   PendingDataMap,
 } from './CommonTypes';
-import {
-  assertNotUndefined,
-  assertNotNullNorUndefined,
-  assertNotNull,
-} from './asserts';
+import assertNotNull from './asserts';
 
 const log = Log.module('IrisGrid');
 
@@ -1251,7 +1247,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
   getModelColumn(columnIndex: GridRangeIndex): ModelIndex | null | undefined {
     const { metrics } = this.state;
-    assertNotUndefined(metrics);
+    assertNotNull(metrics);
     const { modelColumns } = metrics;
     if (modelColumns == null) {
       return null;
@@ -1262,7 +1258,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
   getModelRow(rowIndex: GridRangeIndex): ModelIndex | null | undefined {
     const { metrics } = this.state;
-    assertNotUndefined(metrics);
+    assertNotNull(metrics);
     const { modelRows } = metrics;
     if (modelRows == null) {
       return null;
@@ -1440,7 +1436,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
         return;
       }
       const columnIndex = model.getColumnIndexByName(column.name);
-      assertNotNullNorUndefined(columnIndex);
+      assertNotNull(columnIndex);
       if (value === null) {
         this.setQuickFilter(columnIndex, column.filter().isNull(), '=null');
       } else {
@@ -1839,8 +1835,8 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
     if (this.loadingScrimStartTime == null) {
       const { minScrimTransitionTime, maxScrimTransitionTime } = theme;
-      assertNotNullNorUndefined(minScrimTransitionTime);
-      assertNotNullNorUndefined(maxScrimTransitionTime);
+      assertNotNull(minScrimTransitionTime);
+      assertNotNull(maxScrimTransitionTime);
       const height = this.gridWrapper?.getBoundingClientRect().height ?? 0;
       const scrimTransitionTime = Math.max(
         minScrimTransitionTime,
@@ -1981,13 +1977,13 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     }
 
     const { metricCalculator, metrics } = this.state;
-    assertNotNullNorUndefined(metrics);
+    assertNotNull(metrics);
     const { gridX, left, rightVisible, lastLeft } = metrics;
     if (column < left) {
       this.grid?.setViewState({ left: column }, true);
     } else if (rightVisible < column) {
       const metricState = this.grid?.getMetricState();
-      assertNotUndefined(metricState);
+      assertNotNull(metricState);
       const newLeft = metricCalculator.getLastLeft(metricState, column, gridX);
       this.grid?.setViewState({ left: Math.min(newLeft, lastLeft) }, true);
     }
@@ -2192,7 +2188,8 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     const { model } = this.props;
     const { sorts: currentSorts } = this.state;
     const modelColumn = this.getModelColumn(columnIndex);
-    assertNotNullNorUndefined(modelColumn);
+    assertNotNull(modelColumn);
+    assertNotNull(modelColumn);
     const sorts = TableUtils.toggleSortForColumn(
       currentSorts,
       model.columns,
@@ -2390,7 +2387,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   ): void {
     const { model } = this.props;
     const index = model.getColumnIndexByName(column.name);
-    assertNotUndefined(index);
+    assertNotNull(index);
     this.setAdvancedFilter(index, filter, options);
   }
 
@@ -2401,7 +2398,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   ): void {
     const { model } = this.props;
     const columnIndex = model.getColumnIndexByName(column.name);
-    assertNotUndefined(columnIndex);
+    assertNotNull(columnIndex);
     const oldSort = TableUtils.getSortForColumn(model.sort, columnIndex);
     let newSort = null;
 
@@ -2480,7 +2477,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       const newQuickFilters = new Map(quickFilters);
       if (focusedFilterBarColumn != null) {
         const modelIndex = this.getModelColumn(focusedFilterBarColumn);
-        assertNotNullNorUndefined(modelIndex);
+        assertNotNull(modelIndex);
         this.applyQuickFilter(modelIndex, value, newQuickFilters);
       }
       return { quickFilters: newQuickFilters };
@@ -2498,7 +2495,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
   handleFilterBarTab(backward: boolean): void {
     const { focusedFilterBarColumn } = this.state;
-    assertNotNullNorUndefined(focusedFilterBarColumn);
+    assertNotNull(focusedFilterBarColumn);
     if (backward) {
       this.focusFilterBar(focusedFilterBarColumn - 1);
     } else {
@@ -2610,7 +2607,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     const { selectionEndRow = 0 } = this.grid?.state ?? {};
     let pendingRowCount = 0;
     if (isEditableGridModel(model) && model.isEditable) {
-      assertNotUndefined(metrics);
+      assertNotNull(metrics);
       const { bottomViewport } = metrics;
 
       // We have an editable table that we can add new rows to
@@ -2639,7 +2636,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   }
 
   handleSelectionChanged(selectedRanges?: GridRange[]): void {
-    assertNotUndefined(selectedRanges);
+    assertNotNull(selectedRanges);
     const { onSelectionChanged } = this.props;
     const { copyOperation } = this.state;
     this.setState({ selectedRanges });
@@ -3097,11 +3094,11 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
   getColumnBoundingRect(): DOMRect {
     const { metrics, shownColumnTooltip } = this.state;
-    assertNotUndefined(metrics);
+    assertNotNull(metrics);
     assertNotNull(shownColumnTooltip);
     const gridRect = this.gridWrapper?.getBoundingClientRect();
     const popperMargin = 20;
-    assertNotUndefined(gridRect);
+    assertNotNull(gridRect);
     const {
       columnHeaderHeight,
       visibleColumnXs,
@@ -3111,8 +3108,8 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     const columnX = visibleColumnXs.get(shownColumnTooltip);
     const columnWidth = visibleColumnWidths.get(shownColumnTooltip);
 
-    assertNotUndefined(columnX);
-    assertNotUndefined(columnWidth);
+    assertNotNull(columnX);
+    assertNotNull(columnWidth);
 
     const left =
       gridRect.left +
@@ -3318,7 +3315,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
         let value = '';
         let isValid = true;
         const modelColumn = this.getModelColumn(focusedFilterBarColumn);
-        assertNotNullNorUndefined(modelColumn);
+        assertNotNull(modelColumn);
         const quickFilter = quickFilters.get(modelColumn);
         const advancedFilter = advancedFilters.get(modelColumn);
         if (quickFilter != null) {
@@ -3396,8 +3393,8 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
       assertNotNull(columnX);
       assertNotNull(columnWidth);
-      assertNotUndefined(columnX);
-      assertNotUndefined(columnWidth);
+      assertNotNull(columnX);
+      assertNotNull(columnWidth);
       /**
        * Create a wrapper dom element, the size of the column header.
        * The wrapper acts as tooltip parent, the  tooltip component

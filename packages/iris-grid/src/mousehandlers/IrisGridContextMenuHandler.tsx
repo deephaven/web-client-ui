@@ -48,11 +48,7 @@ import {
 import './IrisGridContextMenuHandler.scss';
 import SHORTCUTS from '../IrisGridShortcuts';
 import IrisGrid from '../IrisGrid';
-import {
-  assertNotNull,
-  assertNotNullNorUndefined,
-  assertNotUndefined,
-} from '../asserts';
+import assertNotNull from '../asserts';
 import { QuickFilter } from '../CommonTypes';
 
 const log = Log.module('IrisGridContextMenuHandler');
@@ -196,7 +192,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
       searchFilter,
     } = irisGrid.state;
     const theme = irisGrid.getTheme();
-    assertNotUndefined(metrics);
+    assertNotNull(metrics);
     const {
       filterIconColor,
       filterBarActiveColor,
@@ -367,13 +363,13 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
     grid: Grid,
     gridPoint: GridPoint
   ): ContextAction[] {
-    assertNotNullNorUndefined(modelColumn);
+    assertNotNull(modelColumn);
     const { irisGrid } = this;
     const { column: columnIndex, row: rowIndex } = gridPoint;
     const { model, canCopy } = irisGrid.props;
     const { columns } = model;
     const modelRow = irisGrid.getModelRow(rowIndex);
-    assertNotNullNorUndefined(modelRow);
+    assertNotNull(modelRow);
     const value = model.valueForCell(modelColumn, modelRow);
 
     const valueText = model.textForCell(modelColumn, modelRow);
@@ -443,7 +439,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
             TableUtils.isNumberType(column.type) ||
             TableUtils.isCharType(column.type)
           ) {
-            assertNotUndefined(modelColumn);
+            assertNotNull(modelColumn);
             // We want to show the full unformatted value if it's a number, so user knows which value they are matching
             // If it's a Char we just show the char
             const numberValueText = TableUtils.isCharType(column.type)
@@ -597,7 +593,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
       advancedFilters,
     } = irisGrid.state;
 
-    assertNotUndefined(metrics);
+    assertNotNull(metrics);
 
     const { columnHeaderHeight, gridY } = metrics;
 
@@ -697,7 +693,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
         order: i,
         action: () => {
           const modelIndex = model.getColumnIndexByName(column.name);
-          assertNotUndefined(modelIndex);
+          assertNotNull(modelIndex);
           this.irisGrid.handleFormatSelection(modelIndex, format);
         },
       });
@@ -719,7 +715,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
       formatOptions = DecimalFormatContextMenu.getOptions(
         selectedFormat,
         format => {
-          assertNotUndefined(columnIndex);
+          assertNotNull(columnIndex);
           this.debouncedUpdateCustomFormat(columnIndex, format);
         }
       );
@@ -727,7 +723,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
       formatOptions = IntegerFormatContextMenu.getOptions(
         selectedFormat,
         format => {
-          assertNotUndefined(columnIndex);
+          assertNotNull(columnIndex);
           this.debouncedUpdateCustomFormat(columnIndex, format);
         }
       );
@@ -752,7 +748,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
           ) {
             return;
           }
-          assertNotUndefined(columnIndex);
+          assertNotNull(columnIndex);
           this.irisGrid.handleFormatSelection(columnIndex, format);
         },
       });
@@ -782,7 +778,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
     const actions = [];
     const { model } = this.irisGrid.props;
     const columnIndex = model.getColumnIndexByName(column.name);
-    assertNotUndefined(columnIndex);
+    assertNotNull(columnIndex);
 
     actions.push({
       menuElement: (
@@ -940,7 +936,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
       !Number.isNaN(value);
     const { model } = this.irisGrid.props;
     const columnIndex = model.getColumnIndexByName(column.name);
-    assertNotUndefined(columnIndex);
+    assertNotNull(columnIndex);
     actions.push({
       menuElement: (
         <div className="iris-grid-filter-menu-item-value">
@@ -1099,7 +1095,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
     const { filter, text: filterText } = quickFilter;
     const { model } = this.irisGrid.props;
     const columnIndex = model.getColumnIndexByName(column.name);
-    assertNotUndefined(columnIndex);
+    assertNotNull(columnIndex);
 
     actions.push({
       menuElement: (
@@ -1191,7 +1187,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
     }
     const { model } = this.irisGrid.props;
     const columnIndex = model.getColumnIndexByName(column.name);
-    assertNotUndefined(columnIndex);
+    assertNotNull(columnIndex);
 
     const actions = [];
 
@@ -1340,7 +1336,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
     const actions = [];
     const { model } = this.irisGrid.props;
     const columnIndex = model.getColumnIndexByName(column.name);
-    assertNotUndefined(columnIndex);
+    assertNotNull(columnIndex);
 
     actions.push({
       menuElement: (

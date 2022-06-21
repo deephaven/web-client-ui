@@ -22,7 +22,7 @@ import shortid from 'shortid';
 import AdvancedFilterCreatorFilterItem from './AdvancedFilterCreatorFilterItem';
 import AdvancedFilterCreatorSelectValue from './AdvancedFilterCreatorSelectValue';
 import './AdvancedFilterCreator.scss';
-import { assertNotUndefined } from './asserts';
+import assertNotNull from './asserts';
 import IrisGridModel from './IrisGridModel';
 
 const log = Log.module('AdvancedFilterCreator');
@@ -261,7 +261,7 @@ class AdvancedFilterCreator extends PureComponent<
     const target = event.currentTarget;
 
     const { operator, index: strIndex } = target.dataset;
-    assertNotUndefined(strIndex);
+    assertNotNull(strIndex);
     const index = parseInt(strIndex, 10);
 
     let { filterOperators } = this.state;

@@ -34,7 +34,7 @@ import { SearchInput, Tooltip } from '@deephaven/components';
 import Log from '@deephaven/log';
 import './VisibilityOrderingBuilder.scss';
 import IrisGridModel from '../IrisGridModel';
-import { assertNotNull, assertNotUndefined } from '../asserts';
+import assertNotNull from '../asserts';
 import { ColumnName } from '../CommonTypes';
 
 const log = Log.module('VisibilityOrderingBuilder');
@@ -132,7 +132,7 @@ class VisibilityOrderingBuilder extends Component<
     onColumnVisibilityChanged(
       columns.map(column => {
         const index = model.getColumnIndexByName(column.name);
-        assertNotUndefined(index);
+        assertNotNull(index);
         return index;
       }),
       VisibilityOrderingBuilder.VISIBILITY_OPTIONS.SHOW
