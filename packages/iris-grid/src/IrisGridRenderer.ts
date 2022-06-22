@@ -23,7 +23,7 @@ import {
 } from '@deephaven/grid';
 import { Sort } from '@deephaven/jsapi-shim';
 import { TableUtils, ReverseType } from '@deephaven/jsapi-utils';
-import assertNotNull from './asserts';
+import { assertNotNull } from '@deephaven/utils';
 import {
   AdvancedFilterMap,
   QuickFilterMap,

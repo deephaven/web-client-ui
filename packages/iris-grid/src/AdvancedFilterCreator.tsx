@@ -16,14 +16,18 @@ import { dhSortAmountDown, dhNewCircleLargeFilled } from '@deephaven/icons';
 import { Formatter, TableUtils, SortDirection } from '@deephaven/jsapi-utils';
 import { ContextActionUtils, Tooltip } from '@deephaven/components';
 import Log from '@deephaven/log';
-import { CancelablePromise, PromiseUtils } from '@deephaven/utils';
+import {
+  CancelablePromise,
+  PromiseUtils,
+  assertNotNull,
+} from '@deephaven/utils';
 import { Column, FilterCondition, Table } from '@deephaven/jsapi-shim';
 import shortid from 'shortid';
 import AdvancedFilterCreatorFilterItem from './AdvancedFilterCreatorFilterItem';
 import AdvancedFilterCreatorSelectValue from './AdvancedFilterCreatorSelectValue';
 import './AdvancedFilterCreator.scss';
-import assertNotNull from './asserts';
 import IrisGridModel from './IrisGridModel';
+import { AdvancedFilterOptions } from './CommonTypes';
 
 const log = Log.module('AdvancedFilterCreator');
 
@@ -31,13 +35,6 @@ type FilterChangeHandler = (
   selectedType: FilterTypeValue,
   value: string
 ) => void;
-
-export type AdvancedFilterOptions = {
-  filterItems: FilterItem[];
-  filterOperators: FilterOperatorValue[];
-  invertSelection: boolean;
-  selectedValues: unknown[];
-};
 
 interface AdvancedFilterCreatorProps {
   model: IrisGridModel;
@@ -64,7 +61,7 @@ interface AdvancedFilterItem {
   key: string;
 }
 
-interface FilterItem {
+export interface FilterItem {
   selectedType: FilterTypeValue;
   value: string;
 }

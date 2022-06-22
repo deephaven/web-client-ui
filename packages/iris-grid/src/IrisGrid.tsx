@@ -73,7 +73,12 @@ import {
   ReverseType,
   SortDirection,
 } from '@deephaven/jsapi-utils';
-import { Pending, PromiseUtils, ValidationError } from '@deephaven/utils';
+import {
+  assertNotNull,
+  Pending,
+  PromiseUtils,
+  ValidationError,
+} from '@deephaven/utils';
 import throttle from 'lodash.throttle';
 import debounce from 'lodash.debounce';
 import clamp from 'lodash.clamp';
@@ -159,8 +164,8 @@ import {
   UITotalsTableConfig,
   InputFilter,
   PendingDataMap,
+  AdvancedFilterOptions,
 } from './CommonTypes';
-import assertNotNull from './asserts';
 
 const log = Log.module('IrisGrid');
 

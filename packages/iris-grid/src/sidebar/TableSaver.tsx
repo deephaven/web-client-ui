@@ -9,9 +9,13 @@ import dh, {
 } from '@deephaven/jsapi-shim';
 import Log from '@deephaven/log';
 import { GridRange, GridRangeIndex, memoizeClear } from '@deephaven/grid';
-import { CancelablePromise, PromiseUtils } from '@deephaven/utils';
+
 import { Formatter, FormatterUtils } from '@deephaven/jsapi-utils';
-import assertNotNull from '../asserts';
+import {
+  CancelablePromise,
+  PromiseUtils,
+  assertNotNull,
+} from '@deephaven/utils';
 
 const log = Log.module('TableSaver');
 

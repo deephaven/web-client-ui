@@ -5,8 +5,8 @@ import {
   EventHandlerResult,
 } from '@deephaven/grid';
 import type { Column } from '@deephaven/jsapi-shim';
+import { assertNotNull } from '@deephaven/utils';
 import { IrisGrid } from '../IrisGrid';
-import assertNotNull from '../asserts';
 
 /**
  * Handles interaction with tables when the Linker tool is active

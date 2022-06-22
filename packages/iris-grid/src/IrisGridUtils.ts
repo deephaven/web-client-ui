@@ -24,10 +24,10 @@ import {
   SortDirection,
 } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
+import { assertNotNull } from '@deephaven/utils';
 import AggregationUtils from './sidebar/aggregations/AggregationUtils';
 import AggregationOperation from './sidebar/aggregations/AggregationOperation';
 import { IrisGridProps, IrisGridState } from './IrisGrid';
-import assertNotNull from './asserts';
 import {
   ColumnName,
   AdvancedFilterMap,
@@ -38,10 +38,10 @@ import {
   CellData,
   PendingDataMap,
   UIRow,
+  AdvancedFilterOptions,
 } from './CommonTypes';
 import { UIRollupConfig } from './sidebar/RollupRows';
 import { AggregationSettings } from './sidebar/aggregations/Aggregations';
-import { AdvancedFilterOptions } from './AdvancedFilterCreator';
 import { FormattingRule } from './Formatter';
 import { FormattingRule as SidebarFormattingRule } from './sidebar/conditional-formatting/ConditionalFormattingUtils';
 import IrisGridModel from './IrisGridModel';

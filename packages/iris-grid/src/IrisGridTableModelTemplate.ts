@@ -29,6 +29,7 @@ import {
   CancelablePromise,
   EventShimCustomEvent,
   PromiseUtils,
+  assertNotNull,
 } from '@deephaven/utils';
 
 import TableUtils from './TableUtils';
@@ -38,7 +39,6 @@ import IrisGridModel from './IrisGridModel';
 import AggregationOperation from './sidebar/aggregations/AggregationOperation';
 import IrisGridUtils from './IrisGridUtils';
 import MissingKeyError from './MissingKeyError';
-import assertNotNull from './asserts';
 import {
   ColumnName,
   UITotalsTableConfig,

@@ -8,7 +8,7 @@ import {
   MoveOperation,
   VisibleIndex,
 } from '@deephaven/grid';
-import { TextUtils } from '@deephaven/utils';
+import { TextUtils, assertNotNull } from '@deephaven/utils';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   dhEye,
@@ -34,7 +34,6 @@ import { SearchInput, Tooltip } from '@deephaven/components';
 import Log from '@deephaven/log';
 import './VisibilityOrderingBuilder.scss';
 import IrisGridModel from '../IrisGridModel';
-import assertNotNull from '../asserts';
 import { ColumnName } from '../CommonTypes';
 
 const log = Log.module('VisibilityOrderingBuilder');

@@ -24,10 +24,10 @@ import { TableUtils, SortDirection } from '@deephaven/jsapi-utils';
 import memoize from 'memoizee';
 import debounce from 'lodash.debounce';
 import Log from '@deephaven/log';
+import { assertNotNull } from '@deephaven/utils';
 import './RollupRows.scss';
-import { Column, RollupConfig } from '@deephaven/jsapi-shim';
+import { Column } from '@deephaven/jsapi-shim';
 import IrisGridModel from '../IrisGridModel';
-import assertNotNull from '../asserts';
 import { ColumnName } from '../CommonTypes';
 
 const log = Log.module('RollupRows');

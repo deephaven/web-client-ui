@@ -22,7 +22,7 @@ import {
   TimeoutError,
 } from '@deephaven/utils';
 import DateUtils from './DateUtils';
-import { AdvancedFilterOptions } from './AdvancedFilterCreator';
+import { AdvancedFilterOptions } from './CommonTypes';
 
 const log = Log.module('TableUtils');
 

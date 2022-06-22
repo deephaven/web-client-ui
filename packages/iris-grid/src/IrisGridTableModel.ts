@@ -1,15 +1,13 @@
 /* eslint class-methods-use-this: "off" */
 import memoize from 'memoize-one';
 import {
-  EditOperation,
   GridRange,
   GridUtils,
-  memoizeClear,
   ModelIndex,
   MoveOperation,
   VisibleIndex,
 } from '@deephaven/grid';
-import dh, {
+import {
   Column,
   ColumnStatistics,
   CustomColumn,
@@ -18,15 +16,13 @@ import dh, {
   Table,
 } from '@deephaven/jsapi-shim';
 import Log from '@deephaven/log';
+import { Formatter, TableUtils } from '@deephaven/jsapi-utils';
 import {
-  CancelablePromise,
   EventShimCustomEvent,
   PromiseUtils,
+  assertNotNull,
 } from '@deephaven/utils';
-import { ViewportData } from '@deephaven/storage';
-import { Formatter, FormatterUtils, TableUtils } from '@deephaven/jsapi-utils';
 import IrisGridModel from './IrisGridModel';
-import assertNotNull from './asserts';
 import { ColumnName, UITotalsTableConfig, UIRow } from './CommonTypes';
 import IrisGridTableModelTemplate from './IrisGridTableModelTemplate';
 

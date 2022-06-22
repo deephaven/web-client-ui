@@ -40,6 +40,7 @@ import {
 } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
 import type { DebouncedFunc } from 'lodash';
+import { assertNotNull } from '@deephaven/utils';
 import {
   DateTimeFormatContextMenu,
   DecimalFormatContextMenu,
@@ -48,7 +49,6 @@ import {
 import './IrisGridContextMenuHandler.scss';
 import SHORTCUTS from '../IrisGridShortcuts';
 import IrisGrid from '../IrisGrid';
-import assertNotNull from '../asserts';
 import { QuickFilter } from '../CommonTypes';
 
 const log = Log.module('IrisGridContextMenuHandler');
