@@ -1,11 +1,7 @@
 /* eslint react/no-did-update-set-state: "off" */
 import React, { PureComponent } from 'react';
 import { CSSTransition } from 'react-transition-group';
-import dh, {
-  FilterCondition,
-  PropTypes as APIPropTypes,
-  Table,
-} from '@deephaven/jsapi-shim';
+import dh, { FilterCondition, Table } from '@deephaven/jsapi-shim';
 import { Formatter } from '@deephaven/jsapi-utils';
 import {
   LoadingSpinner,

@@ -1,11 +1,16 @@
-import dh, { Column, Table } from '@deephaven/jsapi-shim';
+import dh, {
+  Column,
+  DateWrapper,
+  FilterValue,
+  Table,
+} from '@deephaven/jsapi-shim';
 import {
   Operator as FilterOperator,
   Type as FilterType,
 } from '@deephaven/filters';
 import TableUtils from './TableUtils';
 import DateUtils from './DateUtils';
-import IrisGridTestUtils from './IrisGridTestUtils';
+import IrisGridTestUtils from '../../iris-grid/src/IrisGridTestUtils';
 
 const DEFAULT_TIME_ZONE_ID = 'America/New_York';
 const EXPECT_TIME_ZONE_PARAM = expect.objectContaining({
@@ -82,6 +87,8 @@ describe('quick filter tests', () => {
     };
   }
 
+  type MockFilter = ReturnType<typeof makeFilter>;
+
   function makeFilter(type = '') {
     return {
       contains: jest.fn(() =>
@@ -134,7 +141,7 @@ describe('quick filter tests', () => {
   function makeFilterColumn(type = 'string') {
     const filter = makeFilter();
     const column = IrisGridTestUtils.makeColumn('test placeholder', type, 13);
-    column.filter = () => filter;
+    column.filter = jest.fn(() => filter);
     return column;
   }
 
@@ -224,14 +231,14 @@ describe('quick filter tests', () => {
   beforeEach(() => {
     // Just return the value for all these functions for now...
     dh.FilterValue = {
-      ofString: value => value,
-      ofNumber: value => value,
-      ofDateTime: value => value,
-      ofBoolean: value => value,
+      ofString: value => value as FilterValue,
+      ofNumber: value => value as FilterValue,
+      ofBoolean: value => value as FilterValue,
     };
 
     dh.FilterCondition = {
       invoke: jest.fn(type => makeFilterCondition(type)),
+      search: jest.fn(),
     };
 
     dh.i18n.DateTimeFormat.parse = (pattern, text) => {
@@ -240,13 +247,18 @@ describe('quick filter tests', () => {
       const [year, month, day] = text
         .split('-')
         .map(value => parseInt(value, 10));
-      return new Date(year, month - 1, day).getTime();
+      return (new Date(
+        year,
+        month - 1,
+        day
+      ).getTime() as unknown) as DateWrapper;
     };
 
     // Just return the millis value as the date wrapper for unit tests
-    dh.DateWrapper.ofJsDate = date => date.getTime();
+    dh.DateWrapper.ofJsDate = date =>
+      (date.getTime() as unknown) as DateWrapper;
     dh.i18n.DateTimeFormat.parse = (_format, dateString) =>
-      Date.parse(dateString);
+      (Date.parse(dateString) as unknown) as DateWrapper;
   });
 
   describe('quick number filters', () => {
@@ -597,28 +609,36 @@ describe('quick filter tests', () => {
     it('handles invalid cases', () => {
       const column = makeFilterColumn();
 
-      expect(() => TableUtils.makeQuickDateFilter(column, null)).toThrow();
-      expect(() => TableUtils.makeQuickDateFilter(column, undefined)).toThrow();
-      expect(() => TableUtils.makeQuickDateFilter(column, '')).toThrow();
+      expect(() => TableUtils.makeQuickDateFilter(column, null, '')).toThrow();
+      expect(() =>
+        TableUtils.makeQuickDateFilter(column, undefined, '')
+      ).toThrow();
+      expect(() => TableUtils.makeQuickDateFilter(column, '', '')).toThrow();
 
-      expect(() => TableUtils.makeQuickDateFilter(column, '>')).toThrow();
-      expect(() => TableUtils.makeQuickDateFilter(column, 'U()$#@')).toThrow();
+      expect(() => TableUtils.makeQuickDateFilter(column, '>', '')).toThrow();
       expect(() =>
-        TableUtils.makeQuickDateFilter(column, 'invalid str')
-      ).toThrow();
-      expect(() => TableUtils.makeQuickDateFilter(column, 'nu ll')).toThrow();
-      expect(() =>
-        TableUtils.makeQuickDateFilter(column, '20193-02-02')
+        TableUtils.makeQuickDateFilter(column, 'U()$#@', '')
       ).toThrow();
       expect(() =>
-        TableUtils.makeQuickDateFilter(column, '302-111-303')
+        TableUtils.makeQuickDateFilter(column, 'invalid str', '')
       ).toThrow();
-      expect(() => TableUtils.makeQuickDateFilter(column, 4)).toThrow();
+      expect(() =>
+        TableUtils.makeQuickDateFilter(column, 'nu ll', '')
+      ).toThrow();
+      expect(() =>
+        TableUtils.makeQuickDateFilter(column, '20193-02-02', '')
+      ).toThrow();
+      expect(() =>
+        TableUtils.makeQuickDateFilter(column, '302-111-303', '')
+      ).toThrow();
+      expect(() =>
+        TableUtils.makeQuickDateFilter(column, (4 as unknown) as string, '')
+      ).toThrow();
 
       // Missing time zone
       expect(() =>
-        TableUtils.makeQuickDateFilter(column, '2021-10-19').toThrow()
-      );
+        TableUtils.makeQuickDateFilter(column, '2021-10-19', '')
+      ).toThrow();
     });
 
     it('handles year', () => {
@@ -829,9 +849,12 @@ describe('quick filter tests', () => {
 
     it('handles micros year-month-day hh:mm:ss.SSSSSS', () => {
       // Since our mock can only handle to millis, check that the parse function is called with the right values
-      dh.i18n.DateTimeFormat.parse = jest.fn((_format, dateString) =>
-        Date.parse(dateString)
+      const mock = jest.fn(
+        (_format, dateString) =>
+          (Date.parse(dateString) as unknown) as DateWrapper
       );
+
+      dh.i18n.DateTimeFormat.parse = mock;
       testDateFilter('2018-09-27 04:20:35.123456', [
         [
           FilterType.greaterThanOrEqualTo,
@@ -856,7 +879,7 @@ describe('quick filter tests', () => {
         '2018-09-27 04:20:35.123457000',
         EXPECT_TIME_ZONE_PARAM
       );
-      dh.i18n.DateTimeFormat.parse.mockClear();
+      mock.mockClear();
 
       testDateFilter('>=2018-09-27 04:20:35.123456', [
         [
@@ -877,7 +900,7 @@ describe('quick filter tests', () => {
         '2018-09-27 04:20:35.123457000',
         EXPECT_TIME_ZONE_PARAM
       );
-      dh.i18n.DateTimeFormat.parse.mockClear();
+      mock.mockClear();
 
       testDateFilter('>2018-09-27 04:20:35.123456', [
         [
@@ -898,7 +921,7 @@ describe('quick filter tests', () => {
         '2018-09-27 04:20:35.123457000',
         EXPECT_TIME_ZONE_PARAM
       );
-      dh.i18n.DateTimeFormat.parse.mockClear();
+      mock.mockClear();
 
       testDateFilter('<=2018-09-27 04:20:35.123456', [
         [
@@ -919,7 +942,7 @@ describe('quick filter tests', () => {
         '2018-09-27 04:20:35.123457000',
         EXPECT_TIME_ZONE_PARAM
       );
-      dh.i18n.DateTimeFormat.parse.mockClear();
+      mock.mockClear();
 
       testDateFilter('<2018-09-27 04:20:35.123456', [
         [
@@ -940,14 +963,16 @@ describe('quick filter tests', () => {
         '2018-09-27 04:20:35.123457000',
         EXPECT_TIME_ZONE_PARAM
       );
-      dh.i18n.DateTimeFormat.parse.mockClear();
+      mock.mockClear();
     });
 
     it('handles nanos year-month-day hh:mm:ss.SSSSSSSSS', () => {
-      // Since our mock can only handle to millis, check that the parse function is called with the right values
-      dh.i18n.DateTimeFormat.parse = jest.fn((_format, dateString) =>
-        Date.parse(dateString)
+      const mock = jest.fn(
+        (_format, dateString) =>
+          (Date.parse(dateString) as unknown) as DateWrapper
       );
+      // Since our mock can only handle to millis, check that the parse function is called with the right values
+      dh.i18n.DateTimeFormat.parse = mock;
       testDateFilter('2018-09-27 04:20:35.123456789', [
         [FilterType.eq, null, new Date(2018, 8, 27, 4, 20, 35, 123).getTime()],
       ]);
@@ -956,7 +981,7 @@ describe('quick filter tests', () => {
         '2018-09-27 04:20:35.123456789',
         EXPECT_TIME_ZONE_PARAM
       );
-      dh.i18n.DateTimeFormat.parse.mockClear();
+      mock.mockClear();
 
       testDateFilter('>=2018-09-27 04:20:35.123456789', [
         [
@@ -970,7 +995,7 @@ describe('quick filter tests', () => {
         '2018-09-27 04:20:35.123456789',
         EXPECT_TIME_ZONE_PARAM
       );
-      dh.i18n.DateTimeFormat.parse.mockClear();
+      mock.mockClear();
 
       testDateFilter('>2018-09-27 04:20:35.123456789', [
         [
@@ -984,7 +1009,7 @@ describe('quick filter tests', () => {
         '2018-09-27 04:20:35.123456789',
         EXPECT_TIME_ZONE_PARAM
       );
-      dh.i18n.DateTimeFormat.parse.mockClear();
+      mock.mockClear();
 
       testDateFilter('<=2018-09-27 04:20:35.123456789', [
         [
@@ -998,7 +1023,7 @@ describe('quick filter tests', () => {
         '2018-09-27 04:20:35.123456789',
         EXPECT_TIME_ZONE_PARAM
       );
-      dh.i18n.DateTimeFormat.parse.mockClear();
+      mock.mockClear();
 
       testDateFilter('<2018-09-27 04:20:35.123456789', [
         [
@@ -1012,7 +1037,7 @@ describe('quick filter tests', () => {
         '2018-09-27 04:20:35.123456789',
         EXPECT_TIME_ZONE_PARAM
       );
-      dh.i18n.DateTimeFormat.parse.mockClear();
+      mock.mockClear();
     });
 
     it('handles different delimiters', () => {
@@ -1025,10 +1050,12 @@ describe('quick filter tests', () => {
     });
 
     it('handles overflows', () => {
-      // Since our mock can only handle to millis, check that the parse function is called with the right values
-      dh.i18n.DateTimeFormat.parse = jest.fn((_format, dateString) =>
-        Date.parse(dateString)
+      const mock = jest.fn(
+        (_format, dateString) =>
+          (Date.parse(dateString) as unknown) as DateWrapper
       );
+      // Since our mock can only handle to millis, check that the parse function is called with the right values
+      dh.i18n.DateTimeFormat.parse = mock;
       testDateFilter('2018-09-27 04:20:35.99999999', [
         [
           FilterType.greaterThanOrEqualTo,
@@ -1049,7 +1076,7 @@ describe('quick filter tests', () => {
         '2018-09-27 04:20:36.000000000',
         EXPECT_TIME_ZONE_PARAM
       );
-      dh.i18n.DateTimeFormat.parse.mockClear();
+      mock.mockClear();
 
       testDateFilter('2018-12-31 23:59:59.99999999', [
         [
@@ -1071,7 +1098,7 @@ describe('quick filter tests', () => {
         '2019-01-01 00:00:00.000000000',
         EXPECT_TIME_ZONE_PARAM
       );
-      dh.i18n.DateTimeFormat.parse.mockClear();
+      mock.mockClear();
     });
 
     it('handles different delimiters', () => {
@@ -1126,7 +1153,7 @@ describe('quick filter tests', () => {
 
     function testInvokeFilter(text, ...args) {
       const column = makeFilterColumn();
-      const filter = column.filter();
+      const filter = column.filter() as MockFilter;
 
       const nullResult = makeFilterCondition();
       const notResult = makeFilterCondition();
@@ -1172,7 +1199,7 @@ describe('quick filter tests', () => {
 
     it('handles not null cases', () => {
       const column = makeFilterColumn();
-      const filter = column.filter();
+      const filter = column.filter() as MockFilter;
 
       const expectedNullFilter = makeFilterCondition();
       filter.isNull.mockReturnValueOnce(expectedNullFilter);

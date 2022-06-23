@@ -72,6 +72,8 @@ import {
   FormattingRule,
   ReverseType,
   SortDirection,
+  DateTimeColumnFormatterOptions,
+  TableColumnFormat,
 } from '@deephaven/jsapi-utils';
 import {
   assertNotNull,
@@ -111,9 +113,7 @@ import IrisGridRenderer from './IrisGridRenderer';
 import IrisGridTheme, { IrisGridThemeType } from './IrisGridTheme';
 import ColumnStatistics from './ColumnStatistics';
 import './IrisGrid.scss';
-import AdvancedFilterCreator, {
-  AdvancedFilterOptions,
-} from './AdvancedFilterCreator';
+import AdvancedFilterCreator from './AdvancedFilterCreator';
 import {
   Aggregations,
   AggregationEdit,
@@ -146,10 +146,6 @@ import {
 } from './sidebar/aggregations/Aggregations';
 
 import { ChartBuilderSettings } from './sidebar/ChartBuilder';
-import {
-  DateTimeColumnFormatterOptions,
-  TableColumnFormat,
-} from './formatters';
 import AggregationOperation from './sidebar/aggregations/AggregationOperation';
 import { UIRollupConfig } from './sidebar/RollupRows';
 import { VisibilityOptionType } from './sidebar/VisibilityOrderingBuilder';
@@ -2019,6 +2015,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     allFrozenColumns.add(columnName);
 
     const modelIndex = model.getColumnIndexByName(columnName);
+    assertNotNull(modelIndex);
     const visibleIndex = GridUtils.getVisibleIndex(modelIndex, movedColumns);
     const newMovedColumns = GridUtils.moveItem(
       visibleIndex,
@@ -2045,6 +2042,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     allFrozenColumns.delete(columnName);
 
     const modelIndex = model.getColumnIndexByName(columnName);
+    assertNotNull(modelIndex);
     const visibleIndex = GridUtils.getVisibleIndex(modelIndex, movedColumns);
 
     // Move to after remaining frozen columns and front columns

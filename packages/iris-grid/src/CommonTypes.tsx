@@ -1,3 +1,4 @@
+import { AdvancedFilterOptions } from '@deephaven/jsapi-utils';
 import { ModelIndex } from '@deephaven/grid';
 import {
   TotalsTableConfig,
@@ -8,15 +9,8 @@ import { Shortcut } from '@deephaven/components';
 import { IconDefinition } from '@deephaven/icons';
 import AggregationOperation from './sidebar/aggregations/AggregationOperation';
 import { OptionType } from './sidebar';
-import { FilterOperatorValue } from './filters';
-import { FilterItem } from './AdvancedFilterCreator';
 
-export type AdvancedFilterOptions = {
-  filterItems: FilterItem[];
-  filterOperators: FilterOperatorValue[];
-  invertSelection: boolean;
-  selectedValues: unknown[];
-};
+export type { AdvancedFilterOptions };
 export type ColumnName = string;
 export type AdvancedFilterMap = Map<ModelIndex, AdvancedFilter>;
 export type QuickFilterMap = Map<ModelIndex, QuickFilter>;

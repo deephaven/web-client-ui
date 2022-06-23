@@ -9,11 +9,15 @@ import {
   Operator as FilterOperator,
   OperatorValue as FilterOperatorValue,
   TypeValue as FilterTypeValue,
-  Type as FilterType,
-  assertFilterOperatorValue,
+  assertOperatorValue as assertFilterOperatorValue,
 } from '@deephaven/filters';
 import { dhSortAmountDown, dhNewCircleLargeFilled } from '@deephaven/icons';
-import { Formatter, TableUtils, SortDirection } from '@deephaven/jsapi-utils';
+import {
+  Formatter,
+  TableUtils,
+  SortDirection,
+  FilterItem,
+} from '@deephaven/jsapi-utils';
 import { ContextActionUtils, Tooltip } from '@deephaven/components';
 import Log from '@deephaven/log';
 import {
@@ -59,11 +63,6 @@ interface AdvancedFilterItem {
   selectedType?: FilterTypeValue;
   value?: string;
   key: string;
-}
-
-export interface FilterItem {
-  selectedType: FilterTypeValue;
-  value: string;
 }
 
 interface AdvancedFilterCreatorState {

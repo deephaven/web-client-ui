@@ -8,9 +8,8 @@ import { Column } from '@deephaven/jsapi-shim';
 //   Type as FilterType,
 //   Operator as FilterOperator,
 // } from '@deephaven/filters';
-import AdvancedFilterCreator, {
-  AdvancedFilterOptions,
-} from './AdvancedFilterCreator';
+import AdvancedFilterCreator from './AdvancedFilterCreator';
+import { AdvancedFilterOptions } from './CommonTypes';
 import IrisGridTestUtils from './IrisGridTestUtils';
 import IrisGridModel from './IrisGridModel';
 

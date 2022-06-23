@@ -22,7 +22,6 @@ import {
   TimeoutError,
 } from '@deephaven/utils';
 import DateUtils from './DateUtils';
-import { AdvancedFilterOptions } from './CommonTypes';
 
 const log = Log.module('TableUtils');
 
@@ -33,6 +32,18 @@ export type ReverseType = Values<typeof TableUtils.REVERSE_TYPE>;
 export type AdvancedFilterItemType = {
   selectedType: FilterTypeValue;
   value: string;
+};
+
+export interface FilterItem {
+  selectedType: FilterTypeValue;
+  value: string;
+}
+
+export type AdvancedFilterOptions = {
+  filterItems: FilterItem[];
+  filterOperators: FilterOperatorValue[];
+  invertSelection: boolean;
+  selectedValues: unknown[];
 };
 
 /** Utility class to provide some functions for working with tables */
@@ -187,7 +198,7 @@ export class TableUtils {
   /**
    * Toggles the sort for the specified column
    * @param sorts The current sorts from IrisGrid.state
-   * @param table The table to apply the sort to
+   * @param columns The columns to apply the sort to
    * @param columnIndex The column index to apply the sort to
    * @param addToExisting Add this sort to the existing sort
    */

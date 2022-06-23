@@ -1,7 +1,6 @@
 import type { FormattingRule } from './Formatter';
 import Formatter from './Formatter';
 import { DateTimeColumnFormatter, TableColumnFormatter } from './formatters';
-import { ColumnName } from './CommonTypes';
 
 class FormatterUtils {
   static getColumnFormats(settings?: {
@@ -39,7 +38,7 @@ class FormatterUtils {
    */
   static isCustomColumnFormatDefined(
     formatter: Formatter,
-    columnName: ColumnName,
+    columnName: string,
     columnType: string
   ): boolean {
     const columnFormat = formatter.getColumnFormat(columnType, columnName);

@@ -1,12 +1,12 @@
 import { ChartModel, ChartModelFactory } from '@deephaven/chart';
 import dh from '@deephaven/jsapi-shim';
+import { SortDirection } from '@deephaven/jsapi-utils';
 import {
   InputFilter,
   IrisGridModel,
   IrisGridModelFactory,
   IrisGridUtils,
   AdvancedFilterOptions,
-  SortDirection,
 } from '@deephaven/iris-grid';
 import { getTimeZone, store } from '@deephaven/redux';
 import { ModelIndex } from '@deephaven/grid';

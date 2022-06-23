@@ -31,10 +31,7 @@ import {
   PromiseUtils,
   assertNotNull,
 } from '@deephaven/utils';
-
-import TableUtils from './TableUtils';
-import Formatter from './Formatter';
-import FormatterUtils from './FormatterUtils';
+import { TableUtils, Formatter, FormatterUtils } from '@deephaven/jsapi-utils';
 import IrisGridModel from './IrisGridModel';
 import AggregationOperation from './sidebar/aggregations/AggregationOperation';
 import IrisGridUtils from './IrisGridUtils';

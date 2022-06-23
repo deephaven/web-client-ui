@@ -533,7 +533,7 @@ export default class TableSaver extends PureComponent<
     return csvString;
   }
 
-  makeSnapshot(n: number) {
+  makeSnapshot(n: number): void {
     if (n <= 0) {
       return;
     }
@@ -600,7 +600,12 @@ export default class TableSaver extends PureComponent<
     }
   }
 
-  handlePortMessage({ data }) {
+  handlePortMessage({
+    data,
+  }: MessageEvent<{
+    download: unknown;
+    readableStreamPulling: unknown;
+  }>): void {
     const { download, readableStreamPulling } = data;
     if (this.useBlobFallback) {
       return;
@@ -627,7 +632,7 @@ export default class TableSaver extends PureComponent<
     snapshotIndex: number,
     snapshotStartRow: GridRangeIndex,
     snapshotEndRow: GridRangeIndex
-  ) {
+  ): void {
     // use time out to break writeSnapshot into an individual task in browser with timeout, so there's window for the browser to update table in needed.
     this.snapshotHandlerTimeout = setTimeout(() => {
       this.snapshotsBuffer.set(snapshotIndex, snapshot);
@@ -637,7 +642,7 @@ export default class TableSaver extends PureComponent<
     }, TableSaver.SNAPSHOT_HANDLER_TIMEOUT);
   }
 
-  makeIframe(src: string) {
+  makeIframe(src: string): void {
     // make a return value and make it static method
     const iframe = document.createElement('iframe');
     iframe.hidden = true;
@@ -647,7 +652,7 @@ export default class TableSaver extends PureComponent<
     this.iframes.push(iframe);
   }
 
-  render() {
+  render(): null {
     return null;
   }
 }

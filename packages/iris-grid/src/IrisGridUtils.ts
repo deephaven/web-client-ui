@@ -22,6 +22,7 @@ import {
   TableUtils,
   ReverseType,
   SortDirection,
+  FormattingRule,
 } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
 import { assertNotNull } from '@deephaven/utils';
@@ -42,7 +43,6 @@ import {
 } from './CommonTypes';
 import { UIRollupConfig } from './sidebar/RollupRows';
 import { AggregationSettings } from './sidebar/aggregations/Aggregations';
-import { FormattingRule } from './Formatter';
 import { FormattingRule as SidebarFormattingRule } from './sidebar/conditional-formatting/ConditionalFormattingUtils';
 import IrisGridModel from './IrisGridModel';
 
