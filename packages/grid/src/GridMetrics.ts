@@ -27,6 +27,7 @@ export type ModelSizeMap = Map<ModelIndex, number>;
 /** Map from visible Index to ModelIndex */
 export type IndexModelMap = Map<VisibleIndex, ModelIndex>;
 
+// TODO #620
 /** Represents a move operation from one index to another */
 export type MoveOperation = {
   from: VisibleIndex;
