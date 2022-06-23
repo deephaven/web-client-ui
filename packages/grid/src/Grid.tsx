@@ -114,6 +114,8 @@ export type GridProps = typeof Grid.defaultProps & {
   stateOverride?: Record<string, unknown>;
 
   theme?: Partial<GridThemeType>;
+
+  focusedRow?: ModelIndex;
 };
 
 export type GridState = {
@@ -444,12 +446,14 @@ class Grid extends PureComponent<GridProps, GridState> {
       onMoveColumnComplete,
       onMovedRowsChanged,
       onMoveRowComplete,
+      focusedRow,
     } = this.props;
     const {
       isStickyBottom: prevIsStickyBottom,
       isStickyRight: prevIsStickyRight,
       movedColumns: prevPropMovedColumns,
       movedRows: prevPropMovedRows,
+      focusedRow: prevFocusedRow,
     } = prevProps;
     const {
       movedColumns: prevStateMovedColumns,
@@ -492,6 +496,15 @@ class Grid extends PureComponent<GridProps, GridState> {
 
     if (isStickyRight !== prevIsStickyRight) {
       this.setState({ isStuckToRight: false });
+    }
+
+    if (focusedRow !== prevFocusedRow && focusedRow != null) {
+      this.setState({ top: focusedRow - 1 });
+      this.setState({
+        selectedRanges: [
+          new GridRange(null, focusedRow - 1, null, focusedRow - 1),
+        ],
+      });
     }
 
     this.updateMetrics();

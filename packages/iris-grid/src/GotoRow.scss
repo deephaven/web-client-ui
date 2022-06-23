@@ -1,5 +1,22 @@
 @import '../../components/scss/custom.scss';
 
-.goto-row-top-row {
-  display: flex;
+.goto-row {
+  display: inline-block;
+  padding: 3px;
+  vertical-align: middle;
+
+  .goto-row-text {
+    padding: 5px;
+    display: inline-block;
+  }
+
+  .goto-row-input {
+    padding: 5px;
+    display: inline-block;
+    max-width: 200px;
+  }
+  .goto-row-close {
+    padding: 5px;
+    float: right;
+  }
 }

@@ -1,34 +1,57 @@
-import { ModelIndex } from '@deephaven/grid';
-import React, { ChangeEvent, ReactElement, useState } from 'react';
-import IrisGridModel from './IrisGridModel';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { vsClose } from '@deephaven/icons';
+import React, { ChangeEvent, ReactElement } from 'react';
+import { Button } from '@deephaven/components';
 import './GotoRow.scss';
+import IrisGridTableModel from './IrisGridTableModel';
 
 interface GotoRowProps {
-  cellInfo: { row: ModelIndex | null; column: ModelIndex | null };
-  model: IrisGridModel;
+  model: IrisGridTableModel;
   selectedRowNumber: string | undefined;
   onGotoRowNumberChanged: (event: ChangeEvent<HTMLInputElement>) => void;
+  onClose: () => void;
 }
 
 const GotoRow = ({
-  cellInfo: { row, column },
   model,
   selectedRowNumber,
   onGotoRowNumberChanged,
+  onClose,
 }: GotoRowProps): ReactElement => {
-  const res = 'Row Number';
+  const res = 'Row number';
+
+  const { table } = model;
+  const { size } = table;
 
   return (
-    <div>
-      <div className="goto-row-top-row">
-        <h6>Go To Row</h6>
+    <div className="goto-row">
+      <div className="goto-row-text">
+        <h6>Go to row</h6>
+      </div>
+      <div className="goto-row-input">
         <input
-          type="text"
+          type="number"
           className="form-control"
           placeholder={res}
-          onChange={onGotoRowNumberChanged}
+          onChange={event => {
+            const row = event.target.value;
+            if (
+              row === '' ||
+              (parseInt(row, 10) > 0 && parseInt(row, 10) <= size)
+            ) {
+              onGotoRowNumberChanged(event);
+            }
+          }}
           value={selectedRowNumber}
         />
+      </div>
+      <div className="goto-row-text">
+        <h6>of {size}</h6>
+      </div>
+      <div className="goto-row-close">
+        <Button kind="ghost" onClick={onClose}>
+          <FontAwesomeIcon icon={vsClose} style={{ marginRight: '0' }} />
+        </Button>
       </div>
     </div>
   );

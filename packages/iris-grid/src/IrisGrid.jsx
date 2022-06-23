@@ -27,6 +27,7 @@ import {
   vsEdit,
   vsFilter,
   vsMenu,
+  vsReply,
   vsRuby,
   vsSearch,
   vsSplitHorizontal,
@@ -161,6 +162,7 @@ export class IrisGrid extends Component {
     this.handleAdvancedFilterDone = this.handleAdvancedFilterDone.bind(this);
     this.handleAdvancedMenuOpened = this.handleAdvancedMenuOpened.bind(this);
     this.handleGotoRowOpened = this.handleGotoRowOpened.bind(this);
+    this.handleGotoRowClosed = this.handleGotoRowClosed.bind(this);
     this.handleAdvancedMenuClosed = this.handleAdvancedMenuClosed.bind(this);
     this.handleAggregationChange = this.handleAggregationChange.bind(this);
     this.handleAggregationsChange = this.handleAggregationsChange.bind(this);
@@ -240,7 +242,7 @@ export class IrisGrid extends Component {
     this.handleRollupChange = this.handleRollupChange.bind(this);
     this.handleOverflowClose = this.handleOverflowClose.bind(this);
     this.getColumnBoundingRect = this.getColumnBoundingRect.bind(this);
-    this.onGotoRowSelectdeRowNumberChanged = this.onGotoRowSelectdeRowNumberChanged.bind(
+    this.onGotoRowSelectedRowNumberChanged = this.onGotoRowSelectedRowNumberChanged.bind(
       this
     );
     this.updateSearchFilter = debounce(
@@ -275,9 +277,15 @@ export class IrisGrid extends Component {
       action: () => this.toggleFilterBar(),
       shortcut: SHORTCUTS.TABLE.TOGGLE_QUICK_FILTER,
     };
+
     this.toggleSearchBarAction = {
       action: () => this.toggleSearchBar(),
       shortcut: SHORTCUTS.TABLE.TOGGLE_SEARCH,
+    };
+
+    this.toggleGotoRowAction = {
+      action: () => this.toggleGotoRow(),
+      shortcut: SHORTCUTS.TABLE.GOTO_ROW,
     };
     this.discardAction = {
       action: () => {
@@ -454,8 +462,7 @@ export class IrisGrid extends Component {
       overflowText: '',
       overflowButtonTooltipProps: null,
       isGotoRowShown: false,
-      showGotoRow: { row: null, column: null },
-      gotoRowSelectedRowNumber: '123',
+      gotoRowSelectedRowNumber: '',
     };
   }
 
@@ -599,10 +606,12 @@ export class IrisGrid extends Component {
       isExportAvailable,
       toggleFilterBarAction,
       toggleSearchBarAction,
+      toggleGotoRowAction,
       isFilterBarShown,
       showSearchBar,
       canDownloadCsv,
-      canToggleSearch
+      canToggleSearch,
+      showGotoRow
     ) => {
       const optionItems = [];
       if (isChartBuilderAvailable) {
@@ -682,6 +691,14 @@ export class IrisGrid extends Component {
           onChange: toggleSearchBarAction.action,
         });
       }
+      optionItems.push({
+        type: OptionType.GOTO,
+        title: 'Go to',
+        subtitle: toggleGotoRowAction.shortcut.getDisplayText(),
+        icon: vsReply,
+        isOn: showGotoRow,
+        onChange: toggleGotoRowAction.action,
+      });
 
       return optionItems;
     },
@@ -1837,6 +1854,11 @@ export class IrisGrid extends Component {
     );
   }
 
+  toggleGotoRow() {
+    const { isGotoRowShown } = this.state;
+    this.setState({ isGotoRowShown: !isGotoRowShown });
+  }
+
   async commitPending() {
     const { model } = this.props;
     if (!model.isEditable) {
@@ -1958,8 +1980,12 @@ export class IrisGrid extends Component {
     this.setState({ shownAdvancedFilter: column });
   }
 
-  handleGotoRowOpened(cellInfo) {
-    this.setState({ isGotoRowShown: true, showGotoRow: cellInfo });
+  handleGotoRowOpened() {
+    this.setState({ isGotoRowShown: true });
+  }
+
+  handleGotoRowClosed() {
+    this.setState({ isGotoRowShown: false });
   }
 
   handleAdvancedMenuClosed(columnIndex) {
@@ -2639,8 +2665,10 @@ export class IrisGrid extends Component {
     );
   });
 
-  onGotoRowSelectdeRowNumberChanged(event) {
-    this.setState({ gotoRowNumber: parseInt(event.target.value, 10) });
+  onGotoRowSelectedRowNumberChanged(event) {
+    this.setState({
+      gotoRowSelectedRowNumber: event.target.value,
+    });
   }
 
   render() {
@@ -2725,7 +2753,6 @@ export class IrisGrid extends Component {
       overflowText,
       overflowButtonTooltipProps,
       isGotoRowShown,
-      showGotoRow,
       gotoRowSelectedRowNumber,
     } = this.state;
     if (!isReady) {
@@ -3110,10 +3137,12 @@ export class IrisGrid extends Component {
       model.isExportAvailable,
       this.toggleFilterBarAction,
       this.toggleSearchBarAction,
+      this.toggleGotoRowAction,
       isFilterBarShown,
       showSearchBar,
       canDownloadCsv,
-      this.isTableSearchAvailable()
+      this.isTableSearchAvailable(),
+      isGotoRowShown
     );
 
     const openOptionsStack = openOptions.map(option => {
@@ -3314,6 +3343,11 @@ export class IrisGrid extends Component {
               renderer={this.renderer}
               stateOverride={stateOverride}
               theme={theme}
+              focusedRow={
+                gotoRowSelectedRowNumber !== ''
+                  ? parseInt(gotoRowSelectedRowNumber, 10)
+                  : undefined
+              }
             />
             <IrisGridCellOverflowModal
               isOpen={showOverflowModal}
@@ -3387,20 +3421,16 @@ export class IrisGrid extends Component {
             {filterBar}
             {columnTooltip}
             {advancedFilterMenus}
-            {
-              <Popper isShown={isGotoRowShown}>
-                <GotoRow
-                  cellInfo={showGotoRow}
-                  model={model}
-                  selectedRowNumber={gotoRowSelectedRowNumber}
-                  onGotoRowNumberChanged={
-                    this.onGotoRowSelectdeRowNumberChanged
-                  }
-                />
-              </Popper>
-            }
             {this.getOverflowButtonTooltip(overflowButtonTooltipProps)}
           </div>
+          {isGotoRowShown && (
+            <GotoRow
+              model={model}
+              selectedRowNumber={gotoRowSelectedRowNumber}
+              onGotoRowNumberChanged={this.onGotoRowSelectedRowNumberChanged}
+              onClose={this.handleGotoRowClosed}
+            />
+          )}
           <PendingDataBottomBar
             error={pendingSaveError}
             isSaving={pendingSavePromise != null}

@@ -1,7 +1,13 @@
 /* eslint class-methods-use-this: "off" */
 import React from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { dhFilterFilled, vsRemove, vsCheck, vsFilter } from '@deephaven/icons';
+import {
+  dhFilterFilled,
+  vsRemove,
+  vsCheck,
+  vsFilter,
+  vsReply,
+} from '@deephaven/icons';
 import debounce from 'lodash.debounce';
 import {
   ContextActions,
@@ -38,6 +44,8 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
   static GROUP_HIDE_COLUMNS = ContextActions.groups.high + 25;
 
   static GROUP_FILTER = ContextActions.groups.high + 50;
+
+  static GROUP_GOTO = ContextActions.groups.high + 51;
 
   static GROUP_SORT = ContextActions.groups.high + 75;
 
@@ -391,11 +399,12 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
           };
 
           const gotoRow = {
-            title: 'Goto Row',
-            icon: vsRemove,
+            title: 'Go to',
+            icon: vsReply,
             iconColor: filterIconColor,
-            group: IrisGridContextMenuHandler.GROUP_FILTER,
-            order: 50,
+            shortcut: SHORTCUTS.TABLE.GOTO_ROW,
+            group: IrisGridContextMenuHandler.GROUP_GOTO,
+            order: 10,
             action: () =>
               this.irisGrid.handleGotoRowOpened({
                 row: rowIndex,

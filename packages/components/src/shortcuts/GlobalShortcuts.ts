@@ -43,6 +43,13 @@ const GLOBAL_SHORTCUTS = {
     macShortcut: [KEY.ESCAPE],
     isEditable: false,
   }),
+  GOTO: ShortcutRegistry.createAndAdd({
+    id: 'GLOBAL.GOTO',
+    name: 'GOTO',
+    shortcut: [MODIFIER.CTRL, KEY.G],
+    macShortcut: [MODIFIER.CMD, KEY.G],
+    isEditable: false,
+  }),
 };
 
 export default GLOBAL_SHORTCUTS;
