@@ -18,6 +18,8 @@ import GridMetrics, {
 } from './GridMetrics';
 import { getOrThrow } from './GridMetricCalculator';
 import { isEditableGridModel } from './EditableGridModel';
+import type { GridSeparator } from './mouse-handlers/GridSeparatorMouseHandler';
+import { DraggingColumn } from './mouse-handlers/GridColumnMoveMouseHandler';
 
 export type EditingCellTextSelectionRange = [start: number, end: number];
 
@@ -69,12 +71,12 @@ export type GridRenderState = {
   selectedRanges: GridRange[];
 
   // Currently dragged column/row information
-  draggingColumn: VisibleIndex | null;
+  draggingColumn: DraggingColumn | null;
   draggingColumnOffset: number | null;
-  draggingColumnSeparator: VisibleIndex | null;
+  draggingColumnSeparator: GridSeparator | null;
   draggingRow: VisibleIndex | null;
   draggingRowOffset: number | null;
-  draggingRowSeparator: VisibleIndex | null;
+  draggingRowSeparator: GridSeparator | null;
 
   // The currently editing cell
   editingCell: EditingCell | null;
@@ -1412,13 +1414,14 @@ export class GridRenderer {
       floatingLeftColumnCount,
       floatingLeftWidth,
       floatingRightWidth,
+      modelColumns,
+      columnHeaderMaxDepth,
     } = metrics;
     if (columnHeaderHeight <= 0) {
       return;
     }
 
     const {
-      headerBackgroundColor,
       headerHiddenSeparatorSize,
       headerHiddenSeparatorHoverColor,
       headerSeparatorColor,
@@ -1429,17 +1432,6 @@ export class GridRenderer {
     const containsFrozenColumns = floatingLeftColumnCount > 0;
 
     context.save();
-
-    // Make sure base column header background always goes to the right edge
-    context.translate(0, (model.columnHeaderMaxDepth - 1) * columnHeaderHeight);
-    this.drawColumnHeader(context, state, '', 0, width, {
-      backgroundColor: headerBackgroundColor,
-      separatorColor: headerSeparatorColor,
-    });
-    context.translate(
-      0,
-      -1 * (model.columnHeaderMaxDepth - 1) * columnHeaderHeight
-    );
 
     this.drawColumnHeadersForRange(context, state, visibleColumns, {
       minX: gridX + floatingLeftWidth,
@@ -1480,21 +1472,47 @@ export class GridRenderer {
     }
 
     if (headerSeparatorHoverColor) {
-      let highlightedSeparator = draggingColumnSeparator;
+      let { index: highlightedSeparator, depth } =
+        draggingColumnSeparator ?? {};
 
       if (highlightedSeparator == null && mouseX != null && mouseY != null) {
-        highlightedSeparator = GridUtils.getColumnSeparatorIndex(
+        highlightedSeparator =
+          GridUtils.getColumnSeparatorIndex(mouseX, mouseY, metrics, theme) ??
+          undefined;
+
+        ({ columnHeaderDepth: depth } = GridUtils.getGridPointFromXY(
           mouseX,
           mouseY,
-          metrics,
-          theme
-        );
+          metrics
+        ));
+      }
+
+      let shouldDrawSeparator: boolean;
+
+      if (highlightedSeparator == null) {
+        shouldDrawSeparator = false;
+      } else {
+        const columnIndex = modelColumns.get(highlightedSeparator);
+        const nextColumnIndex = modelColumns.get(highlightedSeparator + 1);
+        if (columnIndex == null || nextColumnIndex == null) {
+          shouldDrawSeparator = false;
+        } else {
+          shouldDrawSeparator =
+            model.textForColumnHeader(columnIndex, depth) !==
+            model.textForColumnHeader(nextColumnIndex, depth);
+        }
       }
 
       if (
+        shouldDrawSeparator &&
         highlightedSeparator != null &&
+        depth != null &&
         (!isDragging || draggingColumnSeparator != null)
       ) {
+        context.translate(
+          0,
+          (columnHeaderMaxDepth - depth - 1) * columnHeaderHeight
+        );
         context.strokeStyle = headerSeparatorHoverColor;
 
         const columnX = getOrThrow(visibleColumnXs, highlightedSeparator);
@@ -1537,6 +1555,10 @@ export class GridRenderer {
         context.moveTo(x, 0);
         context.lineTo(x, columnHeaderHeight - 1);
         context.stroke();
+        context.translate(
+          0,
+          -1 * (columnHeaderMaxDepth - depth - 1) * columnHeaderHeight
+        );
       }
     }
 
@@ -1600,6 +1622,12 @@ export class GridRenderer {
     );
 
     if (depth === 0) {
+      // Make sure base column header background always goes to the right edge
+      this.drawColumnHeader(context, state, '', minX, maxX, {
+        backgroundColor: headerBackgroundColor,
+        separatorColor: headerSeparatorColor,
+      });
+
       // Draw base column headers
       range.forEach(column =>
         this.drawColumnHeaderAtIndex(context, state, column, bounds)
@@ -1951,7 +1979,7 @@ export class GridRenderer {
     }
 
     if (headerSeparatorHoverColor) {
-      let highlightedSeparator = draggingRowSeparator;
+      let { index: highlightedSeparator = null } = draggingRowSeparator ?? {};
       if (highlightedSeparator == null && mouseX != null && mouseY != null) {
         highlightedSeparator = GridUtils.getRowSeparatorIndex(
           mouseX,
@@ -2142,7 +2170,7 @@ export class GridRenderer {
     }
 
     if (headerSeparatorHoverColor) {
-      let highlightedSeparator = draggingRowSeparator;
+      let { index: highlightedSeparator = null } = draggingRowSeparator ?? {};
       if (highlightedSeparator == null && mouseX != null && mouseY != null) {
         highlightedSeparator = GridUtils.getRowSeparatorIndex(
           mouseX,
@@ -2251,7 +2279,7 @@ export class GridRenderer {
       height,
     } = metrics;
     const {
-      left = metrics.left,
+      left = metrics.leftVisible,
       top = metrics.top,
       right = metrics.right,
       bottom = metrics.bottom,
@@ -2462,14 +2490,23 @@ export class GridRenderer {
     }
 
     const {
+      index: draggingColumnIndex,
+      depth: draggingColumnDepth,
+    } = draggingColumn;
+
+    const {
       gridX,
       gridY,
       visibleColumnXs,
       visibleColumnWidths,
       height,
+      width,
+      columnHeaderMaxDepth,
+      columnHeaderHeight,
     } = metrics;
-    const x = getOrThrow(visibleColumnXs, draggingColumn);
-    const columnWidth = getOrThrow(visibleColumnWidths, draggingColumn) + 1;
+    const x = getOrThrow(visibleColumnXs, draggingColumnIndex);
+    const columnWidth =
+      getOrThrow(visibleColumnWidths, draggingColumnIndex) + 1;
     const {
       backgroundColor,
       font,
@@ -2479,13 +2516,16 @@ export class GridRenderer {
       shadowColor,
     } = theme;
 
+    const columnHeaderOffset =
+      (columnHeaderMaxDepth - draggingColumnDepth - 1) * columnHeaderHeight;
+
     context.save();
 
     context.translate(gridX, 0);
 
     // First, we need to draw over the row stripes where the column is coming from
     context.fillStyle = backgroundColor;
-    context.fillRect(x, 0, columnWidth, height);
+    context.fillRect(x, columnHeaderOffset, columnWidth, height);
 
     context.translate(
       mouseX - x - gridX - (draggingColumnOffset ?? 0),
@@ -2499,27 +2539,30 @@ export class GridRenderer {
     context.shadowBlur = shadowBlur;
 
     context.fillStyle = backgroundColor;
-    context.fillRect(x, -gridY, columnWidth, height);
+    context.fillRect(x, -gridY + columnHeaderOffset, columnWidth, height);
 
     context.restore();
 
     // Now set the clipping region and pretty much just redraw this column and all it's contents
     context.beginPath();
-    context.rect(x, -gridY, columnWidth, height);
+    context.rect(x, -gridY + columnHeaderOffset, columnWidth, height);
     context.clip();
 
     context.font = font;
 
     this.drawGridBackground(context, state);
 
-    this.drawColumnCellContents(context, state, draggingColumn);
+    this.drawColumnCellContents(context, state, draggingColumnIndex);
 
     // Now translate it back up and draw the header
     context.translate(-gridX, -gridY);
 
     context.font = headerFont;
 
-    this.drawColumnHeaders(context, state);
+    this.drawColumnHeadersForRange(context, state, [draggingColumnIndex], {
+      minX: 0,
+      maxX: width,
+    });
 
     context.restore();
   }

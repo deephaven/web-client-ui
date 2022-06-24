@@ -892,11 +892,10 @@ class IrisGridRenderer extends GridRenderer {
       return textMetrics;
     }
 
-    const { column: mouseColumn, row: mouseRow } = GridUtils.getGridPointFromXY(
-      mouseX,
-      mouseY,
-      metrics
-    );
+    const {
+      visibleIndex: mouseColumn,
+      row: mouseRow,
+    } = GridUtils.getGridPointFromXY(mouseX, mouseY, metrics);
 
     if (column === mouseColumn && row === mouseRow) {
       const { left } = this.getCellOverflowButtonPosition(state);
