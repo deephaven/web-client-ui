@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 import Modal from './Modal';
@@ -48,20 +48,24 @@ it('does not render when isOpen is false', () => {
 
 it('renders when isOpen is true', async () => {
   render(makeModal({ isOpen: true }));
-  const dialogs = screen.getAllByRole('dialog');
-  expect(dialogs.length).not.toBe(0);
+  expect(screen.getByRole('dialog')).toBeInTheDocument();
 });
 
 it('renders when isOpen changes', async () => {
+  jest.useFakeTimers();
+
   const { rerender } = render(makeModal({ isOpen: false }));
 
   expect(screen.queryByRole('dialog')).toBeNull();
   rerender(makeModal({ isOpen: true }));
 
-  expect(screen.getAllByRole('dialog').length).not.toBe(0);
+  expect(screen.getByRole('dialog')).toBeInTheDocument();
   rerender(makeModal({ isOpen: false }));
 
-  await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+  // It will fade out, so it will still be visible until the animation is complete
+  expect(screen.queryByRole('dialog')).toBeInTheDocument();
+  jest.runAllTimers();
+  expect(screen.queryByRole('dialog')).toBeNull();
 });
 
 it('calls toggle when esc key is pressed', () => {
@@ -88,12 +92,12 @@ it('closes only when clicking outside the modal', () => {
   render(makeModal({ isOpen: true, toggle }));
 
   // note that outer div covers the entire screen
-  const outerDiv = screen.getAllByRole('dialog')[0];
-  userEvent.click(outerDiv);
+  userEvent.click(screen.getByRole('dialog'));
   expect(toggle).toBeCalledTimes(1);
 
   jest.clearAllMocks();
-  userEvent.click(screen.getAllByRole('dialog')[1]);
+  const modalContent = document.querySelector('.modal-content');
+  userEvent.click(modalContent);
   expect(toggle).toBeCalledTimes(0);
 });
 
@@ -102,6 +106,6 @@ it('calls onOpen when opens', () => {
   const toggle = jest.fn();
   const { rerender } = render(makeModal({ isOpen: false, toggle, onOpened }));
   expect(onOpened).not.toBeCalled();
-  rerender(<Modal isOpen onOpened={onOpened} />);
+  rerender(makeModal({ isOpen: true, onOpened }));
   expect(onOpened).toBeCalledTimes(1);
 });

@@ -4,7 +4,7 @@ import { vsLaw } from '@deephaven/icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 const LegalNotice = () => {
-  const [modal, setModal] = useState(true);
+  const [modal, setModal] = useState(false);
   const toggle = () => {
     setModal(!modal);
   };

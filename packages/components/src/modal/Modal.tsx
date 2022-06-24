@@ -5,7 +5,6 @@ import React, {
   useCallback,
   useEffect,
   useRef,
-  useState,
 } from 'react';
 import ReactDOM from 'react-dom';
 import { CSSTransition } from 'react-transition-group';
@@ -38,17 +37,13 @@ const Modal = ({
   toggle,
   'data-testid': dataTestId,
 }: ModalProps): ReactElement => {
-  const [isPortalOpen, setIsPortalOpen] = useState(false);
-
   const element = useRef<HTMLElement>();
 
   const handleKeyDown = useCallback(
     (event: KeyboardEvent): void => {
       switch (event.key) {
         case 'Escape':
-          if (toggle) {
-            toggle();
-          }
+          toggle?.();
           break;
         default:
           break;
@@ -85,36 +80,21 @@ const Modal = ({
     [onClosed, isOpen]
   );
 
-  useEffect(
-    function close() {
-      if (!isPortalOpen) {
-        if (element.current) {
-          document.body.removeChild(element.current);
-          element.current = undefined;
-        }
-      }
-    },
-    [isPortalOpen]
-  );
-
-  useEffect(
-    function open() {
-      if (isOpen && !element.current) {
-        element.current = document.createElement('div');
-        element.current.setAttribute(
-          'style',
-          'z-index: 1050; padding-right: 15px; display: block'
-        );
-        element.current.setAttribute('role', 'modal-container');
-        document.body.appendChild(element.current);
-        setIsPortalOpen(true);
-      }
-    },
-    [isOpen]
-  );
+  if (isOpen && !element.current) {
+    element.current = document.createElement('div');
+    element.current.setAttribute(
+      'style',
+      'padding-right: 15px; display: block'
+    );
+    element.current.setAttribute('role', 'presentation');
+    document.body.appendChild(element.current);
+  }
 
   const onExited = () => {
-    setIsPortalOpen(false);
+    if (element.current) {
+      document.body.removeChild(element.current);
+      element.current = undefined;
+    }
   };
 
   return element.current ? (
@@ -132,7 +112,10 @@ const Modal = ({
           timeout={ThemeExport.transitionMs}
           onExited={onExited}
         >
-          <div className={classNames('modal-backdrop fade')} />
+          <div
+            className={classNames('modal-backdrop fade')}
+            style={{ zIndex: 1050 }}
+          />
         </CSSTransition>
         <CSSTransition
           appear
@@ -143,7 +126,7 @@ const Modal = ({
             enterActive: 'show',
             enterDone: 'show',
           }}
-          timeout={ThemeExport.transitionMs}
+          timeout={ThemeExport.transitionLongMs}
           onExited={onExited}
         >
           <div
@@ -165,7 +148,6 @@ const Modal = ({
                 className="modal-content"
                 onClick={e => e.stopPropagation()}
                 data-testid={dataTestId}
-                role="dialog"
               >
                 {children}
               </div>
