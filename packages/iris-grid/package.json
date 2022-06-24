@@ -39,6 +39,7 @@
     "@deephaven/jsapi-utils": "file:../jsapi-utils",
     "@deephaven/log": "file:../log",
     "@deephaven/react-hooks": "file:../react-hooks",
+    "@deephaven/redux": "file:../redux",
     "@deephaven/storage": "file:../storage",
     "@deephaven/utils": "file:../utils",
     "@fortawesome/react-fontawesome": "^0.1.18",

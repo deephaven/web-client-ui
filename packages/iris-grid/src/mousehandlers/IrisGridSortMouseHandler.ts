@@ -29,7 +29,7 @@ class IrisGridSortMouseHandler extends GridMouseHandler {
     const { y, column, row } = gridPoint;
     if (column !== null && row === null) {
       const theme = this.irisGrid.getTheme();
-      if (y <= theme.columnHeaderHeight) {
+      if (theme.columnHeaderHeight && y <= theme.columnHeaderHeight) {
         return column;
       }
     }

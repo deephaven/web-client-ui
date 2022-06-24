@@ -5,6 +5,7 @@ import {
 } from '@deephaven/grid';
 import deepEqual from 'deep-equal';
 import type IrisGrid from '../IrisGrid';
+import { IrisGridRenderState } from '../IrisGridRenderer';
 
 /**
  * Handles cursor and click action for cell overflow button
@@ -96,7 +97,7 @@ class IrisGridCellOverflowMouseHandler extends GridMouseHandler {
       metrics,
       model,
       theme,
-    };
+    } as IrisGridRenderState;
 
     return (
       renderer.shouldRenderOverflowButton(rendererState) &&
@@ -133,7 +134,7 @@ class IrisGridCellOverflowMouseHandler extends GridMouseHandler {
     if (this.isHoveringOverflowButton(point)) {
       this.irisGrid.setState({
         showOverflowModal: true,
-        overflowText: this.irisGrid.getValueForCell(column, row),
+        overflowText: this.irisGrid.getValueForCell(column, row) as string,
       });
     }
 
