@@ -37,7 +37,7 @@ exports[`renders a menu from a promise returned from a function 1`] = `
         >
           <svg
             aria-hidden="true"
-            className="svg-inline--fa fa-circle-large-outline fa-w-16 text-white-50"
+            className="svg-inline--fa fa-circle-large-outline text-white-50"
             data-icon="circle-large-outline"
             data-prefix="vs"
             focusable="false"
@@ -54,7 +54,7 @@ exports[`renders a menu from a promise returned from a function 1`] = `
           </svg>
           <svg
             aria-hidden="true"
-            className="svg-inline--fa fa-loading fa-w-16 fa-spin text-primary"
+            className="svg-inline--fa fa-loading fa-spin text-primary"
             data-icon="loading"
             data-prefix="vs"
             focusable="false"
@@ -206,7 +206,7 @@ exports[`renders an empty menu for a rejected promise 1`] = `
         >
           <svg
             aria-hidden="true"
-            className="svg-inline--fa fa-circle-large-outline fa-w-16 text-white-50"
+            className="svg-inline--fa fa-circle-large-outline text-white-50"
             data-icon="circle-large-outline"
             data-prefix="vs"
             focusable="false"
@@ -223,7 +223,7 @@ exports[`renders an empty menu for a rejected promise 1`] = `
           </svg>
           <svg
             aria-hidden="true"
-            className="svg-inline--fa fa-loading fa-w-16 fa-spin text-primary"
+            className="svg-inline--fa fa-loading fa-spin text-primary"
             data-icon="loading"
             data-prefix="vs"
             focusable="false"
