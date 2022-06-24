@@ -14,38 +14,12 @@ import {
 import type { GridMetrics } from './GridMetrics';
 import { GridTheme } from './GridTheme';
 import { GridWheelEvent } from './GridMouseHandler';
-
-type Range<T> = [start: T, end: T];
-
-export type AxisRange = Range<GridRangeIndex>;
-export type BoundedAxisRange = Range<VisibleIndex>;
-
-export function isAxisRange(range: unknown): range is AxisRange {
-  return (
-    Array.isArray(range) &&
-    range.length === 2 &&
-    (range[0] === null || typeof range[0] === 'number') &&
-    (range[1] === null || typeof range[1] === 'number')
-  );
-}
-
-export function assertAxisRange(range: unknown): asserts range is AxisRange {
-  if (!isAxisRange(range)) {
-    throw new Error(`Expected axis range. Received: ${range}`);
-  }
-}
-
-export function isBoundedAxisRange(range: unknown): range is BoundedAxisRange {
-  return isAxisRange(range) && range[0] != null && range[1] != null;
-}
-
-export function assertBoundedAxisRange(
-  range: unknown
-): asserts range is BoundedAxisRange {
-  if (!isBoundedAxisRange(range)) {
-    throw new Error(`Expected bounded axis range. Received: ${range}`);
-  }
-}
+import {
+  AxisRange,
+  BoundedAxisRange,
+  isBoundedAxisRange,
+  Range,
+} from './GridAxisRange';
 
 export type GridPoint = {
   x: Coordinate;
@@ -90,7 +64,7 @@ export class GridUtils {
     const { columnHeaderHeight, columnHeaderMaxDepth } = metrics;
 
     let columnHeaderDepth: number | undefined;
-    if (row === null) {
+    if (row === null && y <= columnHeaderHeight * columnHeaderMaxDepth) {
       columnHeaderDepth =
         columnHeaderMaxDepth - Math.ceil(y / columnHeaderHeight);
     }
@@ -463,11 +437,12 @@ export class GridUtils {
       visibleColumns,
       visibleColumnXs,
       visibleColumnWidths,
+      columnHeaderMaxDepth,
     } = metrics;
     const { allowColumnResize, headerSeparatorHandleSize } = theme;
 
     if (
-      columnHeaderHeight < y ||
+      columnHeaderMaxDepth * columnHeaderHeight < y ||
       !allowColumnResize ||
       headerSeparatorHandleSize <= 0
     ) {
@@ -813,26 +788,6 @@ export class GridUtils {
   }
 
   /**
-   * Retrieve the model index given the currently moved items
-   * @param visibleIndex The visible index of the item to get the model index for
-   * @param movedItems The moved items
-   * @returns The model index of the item
-   */
-  static getModelIndex(
-    visibleIndex: VisibleIndex,
-    movedItems: MoveOperation[] = []
-  ): ModelIndex {
-    const modelIndex = GridUtils.applyItemMoves(
-      visibleIndex,
-      visibleIndex,
-      movedItems,
-      true
-    )[0][0];
-
-    return modelIndex;
-  }
-
-  /**
    * Applies the items moves to the AxisRange
    * @param start The start index of the range
    * @param end The end index of the range
@@ -976,6 +931,39 @@ export class GridUtils {
   }
 
   /**
+   * Retrieve the model index given the currently moved items
+   * @param visibleIndex The visible index of the item to get the model index for
+   * @param movedItems The moved items
+   * @returns The model index of the item
+   */
+  static getModelIndex(
+    visibleIndex: VisibleIndex,
+    movedItems: MoveOperation[]
+  ): ModelIndex {
+    const modelIndex = GridUtils.applyItemMoves(
+      visibleIndex,
+      visibleIndex,
+      movedItems,
+      true
+    )[0][0];
+
+    return modelIndex;
+  }
+
+  /**
+   * Retrieve the model indexes given the currently moved items
+   * @param visibleIndexes The visible indexes of the item to get the model indexes for
+   * @param movedItems The moved items
+   * @returns The model indexes of the item
+   */
+  static getModelIndexes(
+    visibleIndexes: ModelIndex[],
+    movedItems: MoveOperation[]
+  ): VisibleIndex[] {
+    return visibleIndexes.map(i => GridUtils.getModelIndex(i, movedItems));
+  }
+
+  /**
    * Translate the provided UI start/end indexes to the model start/end indexes by applying the `movedItems` transformations.
    * Since moved items can split apart a range, multiple pairs of indexes are returned
    *
@@ -1097,7 +1085,7 @@ export class GridUtils {
    */
   static getVisibleIndex(
     modelIndex: ModelIndex,
-    movedItems: MoveOperation[] = []
+    movedItems: MoveOperation[]
   ): VisibleIndex {
     const visibleIndex = GridUtils.applyItemMoves(
       modelIndex,
@@ -1106,6 +1094,19 @@ export class GridUtils {
     )[0][0];
 
     return visibleIndex;
+  }
+
+  /**
+   * Retrieve the visible indexes given the currently moved items
+   * @param modelIndexes The model indexes to get the visible indexes for
+   * @param movedItems Moved items
+   * @returns The visible indexes of the item
+   */
+  static getVisibleIndexes(
+    modelIndexes: ModelIndex[],
+    movedItems: MoveOperation[]
+  ): VisibleIndex[] {
+    return modelIndexes.map(i => GridUtils.getVisibleIndex(i, movedItems));
   }
 
   /**

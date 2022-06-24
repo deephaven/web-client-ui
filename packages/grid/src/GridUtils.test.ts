@@ -225,7 +225,7 @@ describe('start/end range adjustment in one dimension visible to model', () => {
     start: GridRangeIndex,
     end: GridRangeIndex,
     movedItems: MoveOperation[] = [],
-    expectedResult = [[start, end]]
+    expectedResult: AxisRange[] = [[start, end]]
   ) {
     expect(GridUtils.getModelRangeIndexes(start, end, movedItems)).toEqual(
       expectedResult
@@ -387,7 +387,7 @@ describe('start/end range adjustment in one dimension model to visible', () => {
     start: GridRangeIndex,
     end: GridRangeIndex,
     movedItems: MoveOperation[] = [],
-    expectedResult = [[start, end]]
+    expectedResult: AxisRange[] = [[start, end]]
   ) {
     expect(GridUtils.getVisibleRangeIndexes(start, end, movedItems)).toEqual(
       expectedResult
@@ -549,7 +549,7 @@ describe('Move ranges of items', () => {
     start: GridRangeIndex,
     end: GridRangeIndex,
     movedItems: MoveOperation[] = [],
-    expectedResult = [[start, end]]
+    expectedResult: AxisRange[] = [[start, end]]
   ) {
     expect(GridUtils.getVisibleRangeIndexes(start, end, movedItems)).toEqual(
       expectedResult
@@ -560,7 +560,7 @@ describe('Move ranges of items', () => {
     start: GridRangeIndex,
     end: GridRangeIndex,
     movedItems: MoveOperation[] = [],
-    expectedResult = [[start, end]]
+    expectedResult: AxisRange[] = [[start, end]]
   ) {
     expect(GridUtils.getModelRangeIndexes(start, end, movedItems)).toEqual(
       expectedResult

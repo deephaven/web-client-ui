@@ -10,6 +10,6 @@ module.exports = {
     'jest-watch-typeahead/testname',
     'jest-watch-select-projects',
   ],
-  collectCoverage: true,
+  collectCoverage: false,
   collectCoverageFrom: ['./src/**/*.{js,ts,jsx,tsx}'], // This is relative to individual project root due to how Jest handles it
 };
