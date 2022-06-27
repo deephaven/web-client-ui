@@ -169,8 +169,8 @@ export class GridMetricCalculator {
     fontWidths = new Map(),
     modelRows = new Map(),
     modelColumns = new Map(),
-    movedRows = [],
-    movedColumns = [],
+    movedRows = [] as MoveOperation[],
+    movedColumns = [] as MoveOperation[],
   } = {}) {
     this.userColumnWidths = userColumnWidths;
     this.userRowHeights = userRowHeights;

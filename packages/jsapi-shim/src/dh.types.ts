@@ -21,7 +21,11 @@ export interface dh {
   FilterValue: FilterValueStatic;
   plot: Plot;
   Table: TableStatic;
+  Client: ClientStatic;
+  TreeTable: TreeTableStatic;
   Column: Column;
+  SearchDisplayMode?: SearchDisplayModeStatic;
+  RangeSet: RangeSet;
 }
 
 const VariableType = {
@@ -440,7 +444,7 @@ export interface Sort {
   reverse(): Sort;
 
   readonly column: Column;
-  readonly direction: string;
+  readonly direction: 'ASC' | 'DESC' | 'REVERSE' | null;
 
   readonly isAbs: boolean;
 
@@ -449,12 +453,39 @@ export interface Sort {
   abs(): Sort;
 }
 
+export interface InputTable {
+  keys: string[];
+  keyColumns: Column[];
+  values: string[];
+  valueColumns: Column[];
+  addRow(
+    row: Record<string, unknown>,
+    userTimeZone?: string
+  ): Promise<InputTable>;
+  addRows(
+    rows: Record<string, unknown>[],
+    userTimeZone?: string
+  ): Promise<InputTable>;
+  addTable(table: Table): Promise<InputTable>;
+  addTables(tables: Table[]): Promise<InputTable>;
+  deleteTable(table: Table): Promise<InputTable>;
+  deleteTables(tables: Table[]): Promise<InputTable>;
+  table: Table;
+}
+
 export interface LayoutHints {
   areSavedLayoutsAllowed: boolean;
   frontColumns: string[];
   backColumns: string[];
   hiddenColumns: string[];
   frozenColumns: string[];
+  searchDisplayMode?: keyof SearchDisplayModeStatic;
+}
+
+export interface SearchDisplayModeStatic {
+  SEARCH_DISPLAY_DEFAULT: 'Default';
+  SEARCH_DISPLAY_HIDE: 'Hide';
+  SEARCH_DISPLAY_SHOW: 'Show';
 }
 
 export interface TableStatic {
@@ -472,35 +503,28 @@ export interface TableStatic {
   readonly SIZE_UNCOALESCED: number;
   reverse(): Sort;
 }
-export interface Table extends Evented, TableStatic {
-  readonly size: number;
 
-  readonly columns: Column[];
+export interface ClientStatic {
+  readonly EVENT_REQUEST_FAILED: 'requestfailed';
+  readonly EVENT_REQUEST_STARTED: 'requeststarted';
+  readonly EVENT_REQUEST_SUCCEEDED: 'requestsucceeded';
+}
+export interface Table extends TableTemplate<Table>, TableStatic {
+  readonly totalSize: number;
+
   readonly description: string;
 
-  readonly sort: Sort[];
-  readonly filter: FilterCondition[];
-  readonly customColumns: string[];
+  customColumns: string[];
+
   readonly layoutHints: LayoutHints;
 
   readonly isUncoalesced: boolean;
   readonly hasInputTable: boolean;
 
-  readonly totalsTableConfig: TotalsTableConfig;
+  readonly isClosed: boolean;
 
-  findColumn(name: string): Column;
-  findColumns(names: string[]): Column[];
+  applyCustomColumns(columns: (CustomColumn | string)[]): string[];
 
-  applySort(sorts: Sort[]): Sort[];
-  applyFilter(filters: FilterCondition[]): FilterCondition[];
-  applyCustomColumns(columns: string[]): string[];
-
-  setViewport(
-    firstRow: number,
-    lastRow: number,
-    columns?: Column[],
-    updateIntervalMs?: number
-  ): TableViewportSubscription;
   getViewportData(): Promise<TableData>;
 
   subscribe(columns: Column[]): TableSubscription;
@@ -508,14 +532,10 @@ export interface Table extends Evented, TableStatic {
   selectDistinct(columns: Column[]): Promise<Table>;
   copy(): Promise<Table>;
 
-  getTotalsTable(config?: TotalsTableConfig): Promise<TotalsTable>;
-  getGrandTotalsTable(config?: TotalsTableConfig): Promise<TotalsTable>;
-
   rollup(config: RollupConfig): Promise<TreeTable>;
   treeTable(config: TreeTableConfig): Promise<TreeTable>;
 
-  close(): void;
-  readonly isClosed: boolean;
+  inputTable(): Promise<InputTable>;
 
   freeze(): Promise<Table>;
 
@@ -525,7 +545,7 @@ export interface Table extends Evented, TableStatic {
     stampColumns?: string[]
   ): Promise<Table>;
 
-  getColumnStatistics(column: Column): ColumnStatistics;
+  getColumnStatistics(column: Column): Promise<ColumnStatistics>;
 
   join(
     joinType: string,
@@ -534,6 +554,8 @@ export interface Table extends Evented, TableStatic {
     columnsToAdd?: string[]
   ): Promise<Table>;
   byExternal(keys: string[], dropKeys?: boolean): Promise<TableMap>;
+
+  fireViewportUpdate(): void;
 }
 
 export interface TableViewportSubscription extends Evented {
@@ -541,6 +563,12 @@ export interface TableViewportSubscription extends Evented {
   getViewportData(): Promise<TableData>;
   snapshot(rows: RangeSet, columns: Column[]): Promise<TableData>;
   close(): void;
+}
+
+export interface ViewportData {
+  offset: number;
+  rows: Row[];
+  columns: Column[];
 }
 
 export interface TableSubscription extends Evented {
@@ -556,7 +584,12 @@ export interface RangeSet {
   ofRanges(ranges: RangeSet[]): RangeSet;
 
   readonly size: number;
-  iterator(): Iterator<LongWrapper>;
+  iterator(): JsIterator<LongWrapper>;
+}
+
+export interface JsIterator<T> {
+  hasNext(): boolean;
+  next(): IteratorResult<T>;
 }
 
 export interface LongWrapper {
@@ -612,12 +645,19 @@ export interface TableData {
   getFormat(index: LongWrapper, column: Column): Format;
 }
 
+export interface UpdateEventData extends TableData {
+  readonly added: RangeSet;
+  readonly removed: RangeSet;
+  readonly modified: RangeSet;
+  readonly fullIndex: RangeSet;
+}
+
 export interface Row {
   readonly index: LongWrapper;
 
   get(column: Column): any;
 
-  getFormat(column: Column): any;
+  getFormat(column: Column): Format;
 }
 
 export interface Format {
@@ -633,23 +673,43 @@ export interface ColumnStatistics {
   getType(name: string): string;
 }
 
-export interface TreeTable extends Evented {
+export interface TreeTableStatic {
   readonly EVENT_UPDATED: string;
   readonly EVENT_DISCONNECT: string;
   readonly EVENT_RECONNECT: string;
   readonly EVENT_RECONNECTFAILED: string;
+}
 
+export interface TableTemplate<T> extends Evented {
   readonly size: number;
-
   readonly columns: Column[];
-
   readonly sort: Sort[];
   readonly filter: FilterCondition[];
-
   readonly totalsTableConfig: TotalsTableConfig;
 
   findColumn(name: string): Column;
   findColumns(names: string[]): Column[];
+
+  applySort(sorts: Sort[]): Sort[];
+  applyFilter(filters: FilterCondition[]): FilterCondition[];
+  selectDistinct(columns: Column[]): Promise<Table>;
+
+  getTotalsTable(config?: TotalsTableConfig): Promise<TotalsTable>;
+  getGrandTotalsTable(config?: TotalsTableConfig): Promise<TotalsTable>;
+
+  setViewport(
+    firstRow: number,
+    lastRow: number,
+    columns?: Column[],
+    updateIntervalMs?: number
+  ): TableViewportSubscription;
+
+  copy(): Promise<T>;
+  close(): void;
+}
+
+export interface TreeTable extends TableTemplate<TreeTable>, TreeTableStatic {
+  readonly isIncludeConstituents: boolean;
 
   expand(row: number): void;
   expand(row: TreeRow): void;
@@ -660,21 +720,10 @@ export interface TreeTable extends Evented {
   isExpanded(row: number): boolean;
   isExpanded(row: TreeRow): boolean;
 
-  applySort(sorts: Sort[]): Sort[];
-  applyFilter(filters: FilterCondition[]): FilterCondition[];
-
-  selectDistict(columns: Column[]): Promise<Table>;
-
-  getTotalsTable(config?: TotalsTableConfig): Promise<TotalsTable>;
-  getGrandTotalsTable(config?: TotalsTableConfig): Promise<TotalsTable>;
-
-  setViewport(): void;
   getViewportData(): Promise<TreeTableData>;
 
   saveExpandedState(): string;
   restoreExpandedState(nodesToRestore: string): void;
-
-  close(): void;
 }
 export interface TreeTableData extends TableData {
   readonly rows: TreeRow[];
@@ -685,17 +734,31 @@ export interface TreeRow extends Row {
   readonly depth: number;
 }
 
-export interface RollupConfig {}
+export interface RollupConfig {
+  groupingColumns: string[] | null;
+  aggregations: Record<string, string[]> | null;
+  includeConstituents: boolean;
+  includeOriginalColumns?: boolean;
+  includeDescriptions: boolean;
+}
+
 export interface TreeTableConfig {}
 
-export interface TotalsTableConfig {}
+export interface TotalsTableConfig {
+  showTotalsByDefault?: boolean;
+  showGrandTotalsByDefault?: boolean;
+  defaultOperation?: string;
+  groupBy?: string[];
+  operationMap: Record<string, string[]>;
+}
+
 export interface TotalsTable extends Evented {
   readonly size: number;
-  readonly column: Column[];
+  readonly columns: Column[];
 
   readonly sort: Sort[];
   readonly filter: FilterCondition[];
-  readonly customColumns: string[];
+  customColumns: string[];
 
   readonly totalsTableConfig: TotalsTableConfig;
 

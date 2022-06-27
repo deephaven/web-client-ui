@@ -49,7 +49,6 @@ class Tooltip extends Component<TooltipProps, TooltipState> {
     popperClassName: '',
     reshowTimeout: Tooltip.defaultReshowTimeout,
     timeout: Tooltip.defaultTimeout,
-    referenceObject: null,
     onExited: (): void => undefined,
     'data-testid': undefined,
   };

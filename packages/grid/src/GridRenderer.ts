@@ -57,8 +57,8 @@ export type GridRenderState = {
   metrics: GridMetrics;
 
   // Location of the mouse on the grid
-  mouseX: number | null;
-  mouseY: number | null;
+  mouseX: Coordinate | null;
+  mouseY: Coordinate | null;
 
   // Where the keyboard cursor is located
   cursorColumn: VisibleIndex | null;

@@ -34,6 +34,18 @@ export type AdvancedFilterItemType = {
   value: string;
 };
 
+export interface FilterItem {
+  selectedType: FilterTypeValue;
+  value: string;
+}
+
+export type AdvancedFilterOptions = {
+  filterItems: FilterItem[];
+  filterOperators: FilterOperatorValue[];
+  invertSelection: boolean;
+  selectedValues: unknown[];
+};
+
 /** Utility class to provide some functions for working with tables */
 export class TableUtils {
   static dataType = {
@@ -43,6 +55,7 @@ export class TableUtils {
     DECIMAL: 'decimal',
     INT: 'int',
     STRING: 'string',
+    UNKNOWN: 'unknown',
   } as const;
 
   static sortDirection = {
@@ -85,7 +98,7 @@ export class TableUtils {
     return null;
   }
 
-  static getFilterText(filter: FilterCondition): string | null {
+  static getFilterText(filter?: FilterCondition | null): string | null {
     if (filter) {
       return filter.toString();
     }
@@ -93,7 +106,7 @@ export class TableUtils {
   }
 
   /** Return the valid filter types for the column */
-  static getFilterTypes(columnType: string): FilterType[] {
+  static getFilterTypes(columnType: string): FilterTypeValue[] {
     if (TableUtils.isBooleanType(columnType)) {
       return [FilterType.isTrue, FilterType.isFalse, FilterType.isNull];
     }
@@ -131,19 +144,18 @@ export class TableUtils {
     return [];
   }
 
-  static getNextSort(table: Table, columnIndex: number): Sort | null {
-    if (
-      !table ||
-      !table.columns ||
-      columnIndex < 0 ||
-      columnIndex >= table.columns.length
-    ) {
+  static getNextSort(
+    columns: Column[],
+    sorts: Sort[],
+    columnIndex: number
+  ): Sort | null {
+    if (!columns || columnIndex < 0 || columnIndex >= columns.length) {
       return null;
     }
 
-    const sort = TableUtils.getSortForColumn(table.sort, columnIndex);
+    const sort = TableUtils.getSortForColumn(sorts, columnIndex);
     if (sort === null) {
-      return table.columns[columnIndex].sort().asc();
+      return columns[columnIndex].sort().asc();
     }
     if (sort.direction === TableUtils.sortDirection.ascending) {
       return sort.desc();
@@ -152,17 +164,12 @@ export class TableUtils {
   }
 
   static makeColumnSort(
-    table: Table,
+    columns: Column[],
     columnIndex: number,
     direction: SortDirection,
     isAbs: boolean
   ): Sort | null {
-    if (
-      !table ||
-      !table.columns ||
-      columnIndex < 0 ||
-      columnIndex >= table.columns.length
-    ) {
+    if (!columns || columnIndex < 0 || columnIndex >= columns.length) {
       return null;
     }
 
@@ -170,7 +177,7 @@ export class TableUtils {
       return null;
     }
 
-    let sort = table.columns[columnIndex].sort();
+    let sort = columns[columnIndex].sort();
 
     switch (direction) {
       case TableUtils.sortDirection.ascending:
@@ -191,21 +198,21 @@ export class TableUtils {
   /**
    * Toggles the sort for the specified column
    * @param sorts The current sorts from IrisGrid.state
-   * @param table The table to apply the sort to
+   * @param columns The columns to apply the sort to
    * @param columnIndex The column index to apply the sort to
    * @param addToExisting Add this sort to the existing sort
    */
   static toggleSortForColumn(
     sorts: Sort[],
-    table: Table,
+    columns: Column[],
     columnIndex: number,
     addToExisting = false
   ): Sort[] {
-    if (!table || columnIndex < 0 || columnIndex >= table.columns.length) {
+    if (columnIndex < 0 || columnIndex >= columns.length) {
       return [];
     }
 
-    const newSort = TableUtils.getNextSort(table, columnIndex);
+    const newSort = TableUtils.getNextSort(columns, sorts, columnIndex);
 
     return TableUtils.setSortForColumn(
       sorts,
@@ -216,25 +223,26 @@ export class TableUtils {
   }
 
   static sortColumn(
-    table: Table,
+    sorts: Sort[],
+    columns: Column[],
     modelColumn: number,
     direction: SortDirection,
     isAbs: boolean,
     addToExisting: boolean
   ): Sort[] {
-    if (!table || modelColumn < 0 || modelColumn >= table.columns.length) {
+    if (!sorts || modelColumn < 0 || modelColumn >= columns.length) {
       return [];
     }
 
     const newSort = TableUtils.makeColumnSort(
-      table,
+      columns,
       modelColumn,
       direction,
       isAbs
     );
 
     return TableUtils.setSortForColumn(
-      table.sort,
+      sorts,
       modelColumn,
       newSort,
       addToExisting
@@ -275,7 +283,7 @@ export class TableUtils {
     return sorts;
   }
 
-  static getNormalizedType(columnType: string): DataType | null {
+  static getNormalizedType(columnType: string): DataType {
     switch (columnType) {
       case 'boolean':
       case 'java.lang.Boolean':
@@ -312,7 +320,7 @@ export class TableUtils {
       case TableUtils.dataType.INT:
         return TableUtils.dataType.INT;
       default:
-        return null;
+        return TableUtils.dataType.UNKNOWN;
     }
   }
 
@@ -439,7 +447,7 @@ export class TableUtils {
   static makeQuickFilter(
     column: Column,
     text: string,
-    timeZone: string
+    timeZone?: string
   ): FilterCondition | null {
     const orComponents = text.split('||');
     let orFilter = null;
@@ -487,7 +495,7 @@ export class TableUtils {
   static makeQuickFilterFromComponent(
     column: Column,
     text: string,
-    timeZone: string
+    timeZone?: string
   ): FilterCondition | null {
     const { type } = column;
     if (TableUtils.isNumberType(type)) {
@@ -496,7 +504,7 @@ export class TableUtils {
     if (TableUtils.isBooleanType(type)) {
       return this.makeQuickBooleanFilter(column, text);
     }
-    if (TableUtils.isDateType(type)) {
+    if (timeZone && TableUtils.isDateType(type)) {
       return this.makeQuickDateFilter(column, text, timeZone);
     }
     if (TableUtils.isCharType(type)) {
@@ -748,7 +756,7 @@ export class TableUtils {
 
   static makeQuickBooleanFilter(
     column: Column,
-    text: string
+    text: string | number
   ): FilterCondition | null {
     if (text == null) {
       return null;
@@ -1056,14 +1064,9 @@ export class TableUtils {
 
   static makeAdvancedFilter(
     column: Column,
-    options: {
-      filterItems: AdvancedFilterItemType[];
-      filterOperators: FilterOperatorValue[];
-      invertSelection: boolean;
-      selectedValues: string[];
-    },
+    options: AdvancedFilterOptions,
     timeZone: string
-  ): FilterCondition | null {
+  ): FilterCondition {
     const {
       filterItems,
       filterOperators,
@@ -1128,6 +1131,10 @@ export class TableUtils {
       } else {
         filter = selectValueFilter;
       }
+    }
+
+    if (filter === null) {
+      throw new Error('filter is null');
     }
     return filter;
   }
@@ -1371,7 +1378,7 @@ export class TableUtils {
    */
   static makeSelectValueFilter(
     column: Column,
-    selectedValues: string[],
+    selectedValues: unknown[],
     invertSelection: boolean
   ): FilterCondition | null {
     if (selectedValues.length === 0) {

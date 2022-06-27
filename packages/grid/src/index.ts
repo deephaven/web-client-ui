@@ -1,6 +1,7 @@
 export * from './EditableGridModel';
 export * from './ExpandableGridModel';
 export { default as Grid } from './Grid';
+export * from './Grid';
 export * from './GridMetricCalculator';
 export * from './GridMetrics';
 export { default as GridModel } from './GridModel';

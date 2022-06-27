@@ -11,7 +11,7 @@ import {
   MockTreeGridModel,
   ModelIndex,
 } from '@deephaven/grid';
-import { IrisGridModel } from '@deephaven/iris-grid';
+import { IrisGridModel, PendingDataMap, UITreeRow } from '@deephaven/iris-grid';
 import type { Column, CustomColumn } from '@deephaven/jsapi-shim';
 import { Formatter } from '@deephaven/jsapi-utils';
 
@@ -83,11 +83,11 @@ class MockIrisGridTreeModel
     // Ignore for mock
   }
 
-  get pendingDataMap(): Map<ModelIndex, Map<string, unknown>> {
+  get pendingDataMap(): PendingDataMap<UITreeRow> {
     return new Map();
   }
 
-  set pendingDataMap(value: Map<ModelIndex, Map<string, unknown>>) {
+  set pendingDataMap(value: PendingDataMap<UITreeRow>) {
     // Ignore for mock
   }
 

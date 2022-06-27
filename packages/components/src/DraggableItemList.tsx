@@ -112,7 +112,7 @@ class DraggableItemList<T> extends PureComponent<
     className = '',
   }: {
     text: string;
-    badgeText: string;
+    badgeText?: string;
     className: string;
   }): JSX.Element {
     return (

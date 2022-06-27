@@ -18,9 +18,9 @@ import type {
   Row,
   Sort,
   Table,
-  TotalsTableConfig,
 } from '@deephaven/jsapi-shim';
 import { Formatter } from '@deephaven/jsapi-utils';
+import { ColumnName, UITotalsTableConfig, PendingDataMap } from './CommonTypes';
 
 type RowIndex = ModelIndex;
 
@@ -122,7 +122,7 @@ abstract class IrisGridModel<
    * @param name The model column name.
    * @returns The numeric index of the requested column.
    */
-  abstract getColumnIndexByName(name: string): ModelIndex;
+  abstract getColumnIndexByName(name: string): ModelIndex | undefined;
 
   /**
    * Gets the columns for the model before any transformations (such as rollups) are applied.
@@ -144,15 +144,9 @@ abstract class IrisGridModel<
 
   /**
    * Retrieve the grouped columns for this model
-   * @returns The columns that are grouped
+   * @returns The columns that are groupe
    */
   abstract get groupedColumns(): Column[];
-
-  /**
-   * The description for this model.
-   * @returns The description of the model
-   */
-  abstract get description(): string;
 
   /**
    * @param column The model column index
@@ -182,12 +176,12 @@ abstract class IrisGridModel<
   abstract set filter(filter: FilterCondition[]);
 
   /**
-   * @returns {Formatter} The formatter used when formatting data
+   * @returns The formatter used when formatting data
    */
   abstract get formatter(): Formatter;
 
   /**
-   * @param {Formatter} formatter The formatter to set
+   * @param formatter The formatter to set
    */
   abstract set formatter(formatter: Formatter);
 
@@ -199,7 +193,7 @@ abstract class IrisGridModel<
   abstract displayString(
     value: unknown,
     columnType: string,
-    columnName?: string
+    columnName?: ColumnName
   ): string;
 
   /**
@@ -213,14 +207,15 @@ abstract class IrisGridModel<
   abstract set sort(sort: Sort[]);
 
   /**
+  /**
    * @returns The custom columns on this model
    */
-  abstract get customColumns(): string[];
+  abstract get customColumns(): ColumnName[];
 
   /**
    * @param customColumns The custom columns to use
    */
-  abstract set customColumns(customColumns: string[]);
+  abstract set customColumns(customColumns: ColumnName[]);
 
   /**
    * @returns The format columns on this model
@@ -235,7 +230,7 @@ abstract class IrisGridModel<
   /**
    * @param columns The columns to treat as frozen
    */
-  abstract updateFrozenColumns(columns: string[]): void;
+  abstract updateFrozenColumns(columns: ColumnName[]): void;
 
   /**
    * @returns The config to use for rolling up this table
@@ -247,9 +242,9 @@ abstract class IrisGridModel<
   /**
    * @returns The config to use for the totals table of this model
    */
-  abstract get totalsConfig(): TotalsTableConfig | null;
+  abstract get totalsConfig(): UITotalsTableConfig | null;
 
-  abstract set totalsConfig(totalsConfig: TotalsTableConfig | null);
+  abstract set totalsConfig(totalsConfig: UITotalsTableConfig | null);
 
   /**
    * @returns The LayoutHints to use for the columns of this table model
@@ -261,21 +256,21 @@ abstract class IrisGridModel<
   /**
    * @returns Names of columns which should be locked to the front, but not floating
    */
-  get frontColumns(): string[] {
+  get frontColumns(): ColumnName[] {
     return [];
   }
 
   /**
    * @returns Names of columns which should be locked to the back, but not floating
    */
-  get backColumns(): string[] {
+  get backColumns(): ColumnName[] {
     return [];
   }
 
   /**
    * @returns Names of columns which should be frozen to the front and floating
    */
-  get frozenColumns(): string[] {
+  get frozenColumns(): ColumnName[] {
     return [];
   }
 
@@ -299,11 +294,30 @@ abstract class IrisGridModel<
   }
 
   /**
+   * @returns Returns a raw table that is frozen and can be used for exporting data
+   */
+  abstract export(): Promise<Table>;
+
+  /**
    * @returns True if this model supports the columnStatistics(column) function
    */
   get isColumnStatisticsAvailable(): boolean {
     return false;
   }
+
+  /**
+   * The description for this model.
+   * @returns The description of the model
+   */
+  get description(): string {
+    return '';
+  }
+
+  /**
+   * @param column The column to get statistics for
+   * @returns The column statistics
+   */
+  abstract columnStatistics(column: Column): Promise<ColumnStatistics>;
 
   /**
    * @returns True if this model supports customColumns
@@ -365,25 +379,25 @@ abstract class IrisGridModel<
    * The names of columns with select distinct enabled
    * @returns An array of column names
    */
-  abstract get selectDistinctColumns(): string[];
+  abstract get selectDistinctColumns(): ColumnName[];
 
   /**
    * Set the columns with select distinct enabled
    * @param names The array of column names to enable select distinct on
    */
-  abstract set selectDistinctColumns(names: string[]);
+  abstract set selectDistinctColumns(names: ColumnName[]);
 
   /**
    * The pending data for this model
    * @returns A map of row index to a map of column name/value pairs
    */
-  abstract get pendingDataMap(): Map<RowIndex, Map<string, unknown>>;
+  abstract get pendingDataMap(): PendingDataMap;
 
   /**
    * Set the pending data for this model
    * @param A map of row index to a map of column name/value pairs
    */
-  abstract set pendingDataMap(map: Map<RowIndex, Map<string, unknown>>);
+  abstract set pendingDataMap(map: PendingDataMap);
 
   /**
    * @returns The count of pending rows to show
@@ -400,7 +414,7 @@ abstract class IrisGridModel<
    * Errors for the pending data
    * @returns Map from row number to the error
    */
-  abstract get pendingDataErrors(): Map<RowIndex, Error>;
+  abstract get pendingDataErrors(): Map<RowIndex, Error[]>;
 
   /**
    * Commit pending data and save all data to the table
@@ -438,31 +452,20 @@ abstract class IrisGridModel<
   /**
    * @param ranges The ranges to take a snapshot of
    * @param includeHeaders Whether to include the headers in the snapshot or not
-   * @param {(unknown, dh.Column, dh.Row) => string} formatValue A function to format a value for a cell. Defaults to model format value.
+   * @param formatValue A function to format a value for a cell. Defaults to model format value.
    * @returns A text formatted snapshot of the data for the specified range set
    */
   abstract textSnapshot(
     ranges: GridRange[],
     includeHeaders?: boolean,
-    formatValue?: (value: unknown, column: Column, row: Row) => string
+    formatValue?: (value: unknown, column: Column, row?: Row) => string
   ): Promise<string>;
-
-  /**
-   * @returns Returns a raw table that is frozen and can be used for exporting data
-   */
-  abstract export(): Promise<Table>;
 
   /**
    * @param column The column to get the distinct values for
    * @returns A table partitioned on the column specified
    */
   abstract valuesTable(column: Column): Promise<Table>;
-
-  /**
-   * @param column The column to get statistics for
-   * @returns The column statistics
-   */
-  abstract columnStatistics(column: Column): Promise<ColumnStatistics>;
 
   /**
    * Close this model. It can no longer be used after being closed

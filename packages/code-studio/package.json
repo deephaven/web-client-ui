@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/code-studio",
-  "version": "0.13.2",
+  "version": "0.14.0",
   "description": "Deephaven Code Studio",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
@@ -29,8 +29,8 @@
     "@deephaven/redux": "file:../redux",
     "@deephaven/storage": "file:../storage",
     "@deephaven/utils": "file:../utils",
-    "@fortawesome/fontawesome-svg-core": "1.2.36",
-    "@fortawesome/react-fontawesome": "^0.1.15",
+    "@fortawesome/fontawesome-svg-core": "^6.1.1",
+    "@fortawesome/react-fontawesome": "^0.1.18",
     "@paciolan/remote-component": "2.7.2",
     "@paciolan/remote-module-loader": "^3.0.2",
     "classnames": "^2.3.1",

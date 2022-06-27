@@ -16,7 +16,7 @@ export default function IrisGridCellOverflowModal({
   text,
   isOpen,
   onClose,
-}: IrisGridCellOverflowModalProps): React.ReactNode {
+}: IrisGridCellOverflowModalProps): React.ReactElement | null {
   const [isOpened, setIsOpened] = useState(false);
   const [height, setHeight] = useState(0);
   const [showLineNumbers, setShowLineNumbers] = useState(false);
