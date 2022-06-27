@@ -5,6 +5,7 @@ export { default as DOMUtils } from './DOMUtils';
 export * from './EventTargetShimUtils';
 export { default as Pending } from './Pending';
 export * from './PromiseUtils';
+export * from './Asserts';
 export { default as RangeUtils } from './RangeUtils';
 export type { Range } from './RangeUtils';
 export { default as TextUtils } from './TextUtils';

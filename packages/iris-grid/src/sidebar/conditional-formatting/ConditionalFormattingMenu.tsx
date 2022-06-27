@@ -18,6 +18,7 @@ import {
   StringCondition,
   DateCondition,
 } from './ConditionalFormattingUtils';
+import { ColumnName } from '../../CommonTypes';
 
 const log = Log.module('ConditionalFormattingMenu');
 
@@ -29,7 +30,7 @@ export type CreateCallback = () => void;
 
 export type ConditionalFormattingMenuProps = {
   rules: FormattingRule[];
-  selectedColumn?: string;
+  selectedColumn?: ColumnName;
   onChange?: ChangeCallback;
   onCreate?: CreateCallback;
   onSelect?: SelectCallback;

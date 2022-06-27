@@ -1,16 +1,41 @@
 import { ChartModel, ChartModelFactory } from '@deephaven/chart';
 import dh from '@deephaven/jsapi-shim';
+import { SortDirection } from '@deephaven/jsapi-utils';
 import {
+  InputFilter,
   IrisGridModel,
   IrisGridModelFactory,
   IrisGridUtils,
+  AdvancedFilterOptions,
 } from '@deephaven/iris-grid';
 import { getTimeZone, store } from '@deephaven/redux';
+import { ModelIndex } from '@deephaven/grid';
 import { DhSession } from './SessionUtils';
 
 export type ChartPanelMetadata = {
   settings: Record<string, unknown>;
-  tableSettings: Record<string, unknown>;
+  tableSettings: {
+    quickFilters?: [
+      ModelIndex,
+      {
+        text: string;
+      }
+    ][];
+    advancedFilters?: [
+      ModelIndex,
+      {
+        options: AdvancedFilterOptions;
+      }
+    ][];
+    inputFilters?: InputFilter[];
+    sorts?: {
+      column: ModelIndex;
+      isAbs: boolean;
+      direction: SortDirection;
+    }[];
+    partition?: unknown;
+    partitionColumn?: string;
+  };
   table?: string;
   figure?: string;
 };

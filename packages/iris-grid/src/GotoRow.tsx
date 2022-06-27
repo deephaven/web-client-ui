@@ -1,13 +1,13 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { vsClose } from '@deephaven/icons';
-import React, { ChangeEvent, ReactElement } from 'react';
+import React, { ChangeEvent, ReactElement, useEffect, useState } from 'react';
 import { Button } from '@deephaven/components';
 import './GotoRow.scss';
-import IrisGridTableModel from './IrisGridTableModel';
+import IrisGridModel from './IrisGridModel';
 
 interface GotoRowProps {
-  model: IrisGridTableModel;
-  selectedRowNumber: string | undefined;
+  model: IrisGridModel;
+  selectedRowNumber: string;
   onGotoRowNumberChanged: (event: ChangeEvent<HTMLInputElement>) => void;
   onClose: () => void;
 }
@@ -18,6 +18,11 @@ const GotoRow = ({
   onGotoRowNumberChanged,
   onClose,
 }: GotoRowProps): ReactElement => {
+  const [row, setRow] = useState<>('');
+
+  useEffect(() => {
+    setRow(selectedRowNumber);
+  }, [selectedRowNumber]);
   const res = 'Row number';
 
   const { table } = model;

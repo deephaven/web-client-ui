@@ -1,13 +1,13 @@
-import { GridMetricCalculator } from '@deephaven/grid';
-import type { VisibleIndex, GridMetricState, GridTheme } from '@deephaven/grid';
+import { GridMetricCalculator, ModelSizeMap } from '@deephaven/grid';
+import type { VisibleIndex, GridMetricState } from '@deephaven/grid';
 import type { FilterCondition, Sort } from '@deephaven/jsapi-shim';
 import { TableUtils } from '@deephaven/jsapi-utils';
 import type IrisGridModel from './IrisGridModel';
-import type IrisGridTheme from './IrisGridTheme';
+import { IrisGridThemeType } from './IrisGridTheme';
 
 export interface IrisGridMetricState extends GridMetricState {
   model: IrisGridModel;
-  theme: typeof IrisGridTheme & typeof GridTheme;
+  theme: IrisGridThemeType;
   isFilterBarShown: boolean;
   advancedFilters: Map<
     string,
@@ -70,11 +70,19 @@ class IrisGridMetricCalculator extends GridMetricCalculator {
     ) {
       gridY += theme.filterBarCollapsedHeight;
     }
-    if (reverseType !== TableUtils.REVERSE_TYPE.NONE && sorts.length > 0) {
+    if (
+      reverseType !== TableUtils.REVERSE_TYPE.NONE &&
+      sorts &&
+      sorts.length > 0
+    ) {
       gridY += theme.reverseHeaderBarHeight;
     }
 
     return gridY;
+  }
+
+  getUserColumnWidths(): ModelSizeMap {
+    return this.userColumnWidths;
   }
 }
 

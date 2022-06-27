@@ -25,6 +25,7 @@ import {
   Button,
 } from '@deephaven/components';
 import type { DraggableRenderItemProps, Range } from '@deephaven/components';
+import { ModelIndex } from '@deephaven/grid';
 import AggregationOperation from './AggregationOperation';
 import AggregationUtils from './AggregationUtils';
 import './Aggregations.scss';
@@ -158,7 +159,7 @@ const Aggregations = ({
   }, [aggregations, selectedOperation, changeAggregations]);
 
   const handleDeleteClicked = useCallback(
-    (itemIndex: number) => {
+    (itemIndex: ModelIndex) => {
       changeAggregations(
         aggregations.filter((aggregation, index) => index !== itemIndex)
       );

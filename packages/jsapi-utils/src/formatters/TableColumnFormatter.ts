@@ -64,7 +64,7 @@ export class TableColumnFormatter<T = unknown> {
    * @param format Optional format object with value transformation options
    * @returns String the formatted text string of the value passed in.
    */
-  format(value: T, format?: TableColumnFormat): string {
+  format(value: T, format?: Partial<TableColumnFormat>): string {
     return '';
   }
 }

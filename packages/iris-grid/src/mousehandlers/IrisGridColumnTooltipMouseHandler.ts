@@ -59,7 +59,7 @@ class IrisGridColumnTooltipMouseHandler extends GridMouseHandler {
        * however, gridY also == theme.columnHeaderHeight, so row still has a value
        * so this tooltip won't actually show until row is null at columnHeaderHeight - 1
        */
-      if (y >= 0 && y <= theme.columnHeaderHeight) {
+      if (theme.columnHeaderHeight && y >= 0 && y <= theme.columnHeaderHeight) {
         newTooltip = column;
       }
     }

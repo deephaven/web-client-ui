@@ -209,7 +209,7 @@ class Grid extends PureComponent<GridProps, GridState> {
     movedRows: [] as MoveOperation[],
     onError: (): void => undefined,
     onSelectionChanged: (): void => undefined,
-    onMovedColumnsChanged: (): void => undefined,
+    onMovedColumnsChanged: (moveOperations: MoveOperation[]): void => undefined,
     onMoveColumnComplete: (): void => undefined,
     onMovedRowsChanged: (): void => undefined,
     onMoveRowComplete: (): void => undefined,
