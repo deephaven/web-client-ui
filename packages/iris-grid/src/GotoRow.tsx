@@ -4,6 +4,7 @@ import React, { ChangeEvent, ReactElement, useEffect, useState } from 'react';
 import { Button } from '@deephaven/components';
 import './GotoRow.scss';
 import IrisGridModel from './IrisGridModel';
+import { isIrisGridTableModelTemplate } from './IrisGridTableModelTemplate';
 
 interface GotoRowProps {
   model: IrisGridModel;
@@ -18,15 +19,22 @@ const GotoRow = ({
   onGotoRowNumberChanged,
   onClose,
 }: GotoRowProps): ReactElement => {
-  const [row, setRow] = useState<>('');
+  const [row, setRow] = useState('');
+  const [rowCount, setRowCount] = useState(0);
 
   useEffect(() => {
     setRow(selectedRowNumber);
   }, [selectedRowNumber]);
+
   const res = 'Row number';
 
-  const { table } = model;
-  const { size } = table;
+  // useEffect(() => {
+  //   console.log('asdfas');
+  //   if (isIrisGridTableModelTemplate(model)) {
+  //     const { table } = model;
+  //     setRowCount(table.size);
+  //   }
+  // }, [model]);
 
   return (
     <div className="goto-row">
@@ -39,19 +47,21 @@ const GotoRow = ({
           className="form-control"
           placeholder={res}
           onChange={event => {
-            const row = event.target.value;
+            const rowNumber = event.target.value;
             if (
               row === '' ||
-              (parseInt(row, 10) > 0 && parseInt(row, 10) <= size)
+              (parseInt(rowNumber, 10) > 0 &&
+                parseInt(rowNumber, 10) <= rowCount)
             ) {
               onGotoRowNumberChanged(event);
             }
+            setRow(rowNumber);
           }}
-          value={selectedRowNumber}
+          value={row}
         />
       </div>
       <div className="goto-row-text">
-        <h6>of {size}</h6>
+        <h6>of {rowCount}</h6>
       </div>
       <div className="goto-row-close">
         <Button kind="ghost" onClick={onClose}>

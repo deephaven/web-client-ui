@@ -164,6 +164,7 @@ import {
   PendingDataMap,
   AdvancedFilterOptions,
 } from './CommonTypes';
+import { isIrisGridTableModelTemplate } from './IrisGridTableModelTemplate';
 
 const log = Log.module('IrisGrid');
 
@@ -804,6 +805,8 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       customFilters,
       sorts,
     } = this.props;
+
+    console.log(isIrisGridTableModelTemplate);
 
     if (model !== prevProps.model) {
       this.stopListening(prevProps.model);
