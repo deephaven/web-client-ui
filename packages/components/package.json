@@ -46,7 +46,7 @@
     "popper.js": "^1.16.1",
     "prop-types": "^15.7.2",
     "react-beautiful-dnd": "^13.1.0",
-    "react-transition-group": "^2.9.0",
+    "react-transition-group": "^4.4.2",
     "react-virtualized-auto-sizer": "^1.0.6",
     "react-window": "^1.8.6",
     "reactstrap": "^8.10.0",

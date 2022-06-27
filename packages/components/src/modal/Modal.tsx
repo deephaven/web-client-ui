@@ -106,8 +106,8 @@ const Modal = ({
           unmountOnExit
           in={isOpen}
           classNames={{
-            enterActive: 'show',
-            enterDone: 'show',
+            appearActive: 'show',
+            appearDone: 'show',
           }}
           timeout={ThemeExport.transitionMs}
           onExited={onExited}
@@ -123,10 +123,9 @@ const Modal = ({
           unmountOnExit
           in={isOpen}
           classNames={{
-            enterActive: 'show',
-            enterDone: 'show',
+            appearDone: 'show',
           }}
-          timeout={ThemeExport.transitionLongMs}
+          timeout={ThemeExport.transitionMs}
           onExited={onExited}
         >
           <div
