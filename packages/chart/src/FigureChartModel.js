@@ -351,20 +351,21 @@ class FigureChartModel extends ChartModel {
       for (let j = 0; j < sources.length; j += 1) {
         const source = sources[j];
         const { columnType, type } = source;
-        let valueTranslator = this.getValueTranslator(
+        const valueTranslator = this.getValueTranslator(
           columnType,
           this.formatter
         );
-        // KLUDGE: Make this more elegant?
-        if (
-          series.plotStyle === dh.plot.SeriesPlotStyle.TREEMAP &&
-          type === dh.plot.SourceType.COLOR
-        ) {
-          valueTranslator = value => {
-            // Need to convert long to a hex color
-            return value;
-          };
-        }
+        // // KLUDGE: Make this more elegant?
+        // if (
+        //   series.plotStyle === dh.plot.SeriesPlotStyle.TREEMAP &&
+        //   type === dh.plot.SourceType.COLOR
+        // ) {
+        //   valueTranslator = value => {
+        //     return value ?? '';
+        //     // Need to convert long to a hex color
+        //     // return value;
+        //   };
+        // }
         const dataArray = figureUpdateEvent.getArray(
           series,
           type,

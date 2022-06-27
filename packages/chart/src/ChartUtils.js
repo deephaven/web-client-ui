@@ -1168,6 +1168,9 @@ class ChartUtils {
    * Eg. Unwraps DateWrapper, LongWrapper objects.
    */
   static unwrapValue(value, timeZone = null) {
+    if (value == null) {
+      return 0;
+    }
     if (value != null) {
       if (value.asDate) {
         return dh.i18n.DateTimeFormat.format(
