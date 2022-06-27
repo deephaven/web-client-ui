@@ -1,8 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Editor } from '@deephaven/console';
-import { Modal, ModalBody, ModalHeader } from 'reactstrap';
 import * as monaco from 'monaco-editor';
-import { Button } from '@deephaven/components';
+import { Button, Modal, ModalBody, ModalHeader } from '@deephaven/components';
 import { vsJson, vsListOrdered } from '@deephaven/icons';
 import './IrisGridCellOverflowModal.scss';
 
@@ -123,10 +122,9 @@ export default function IrisGridCellOverflowModal({
         setIsOpened(false);
         setHeight(0);
       }}
-      size="xl"
       className="theme-bg-dark cell-overflow-modal"
     >
-      <ModalHeader tag="div" toggle={onClose}>
+      <ModalHeader toggle={onClose}>
         <h5 className="overflow-modal-title">Cell Contents</h5>
         <Button
           kind="inline"

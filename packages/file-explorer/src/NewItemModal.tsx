@@ -1,8 +1,13 @@
 import React, { ChangeEvent, KeyboardEvent, PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
-import { Modal, ModalBody, ModalFooter, ModalHeader } from 'reactstrap';
-import { BasicModal } from '@deephaven/components';
+import {
+  Modal,
+  ModalBody,
+  ModalFooter,
+  ModalHeader,
+  BasicModal,
+} from '@deephaven/components';
 import {
   CancelablePromise,
   Pending,

@@ -35,10 +35,6 @@ const EMPTY_ARRAY = Object.freeze([]);
  */
 
 class IrisGridTableModel extends IrisGridTableModelTemplate<Table, UIRow> {
-  static ROW_BUFFER_PAGES = 1;
-
-  static COLUMN_BUFFER_PAGES = 0;
-
   userFrozenColumns?: ColumnName[];
 
   customColumnList: string[];

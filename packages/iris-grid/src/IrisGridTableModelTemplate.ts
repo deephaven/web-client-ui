@@ -45,7 +45,6 @@ import {
   UIViewportData,
 } from './CommonTypes';
 import { IrisGridThemeType } from './IrisGridTheme';
-import IrisGridTableModel from './IrisGridTableModel';
 
 const log = Log.module('IrisGridTableModel');
 
@@ -66,6 +65,8 @@ class IrisGridTableModelTemplate<
   T extends TableTemplate<T> = Table,
   R extends UIRow = UIRow
 > extends IrisGridModel {
+  static ROW_BUFFER_PAGES = 1;
+
   export(): Promise<Table> {
     throw new Error('Method not implemented.');
   }
@@ -113,10 +114,6 @@ class IrisGridTableModelTemplate<
   get columns(): Column[] {
     return this.table.columns;
   }
-
-  static ROW_BUFFER_PAGES = 1;
-
-  static COLUMN_BUFFER_PAGES = 0;
 
   private irisFormatter: Formatter;
 
@@ -1182,10 +1179,10 @@ class IrisGridTableModelTemplate<
     const viewHeight = bottom - top;
     const viewportTop = Math.max(
       0,
-      top - viewHeight * IrisGridTableModel.ROW_BUFFER_PAGES
+      top - viewHeight * IrisGridTableModelTemplate.ROW_BUFFER_PAGES
     );
     const viewportBottom =
-      bottom + viewHeight * IrisGridTableModel.ROW_BUFFER_PAGES;
+      bottom + viewHeight * IrisGridTableModelTemplate.ROW_BUFFER_PAGES;
     return [viewportTop, viewportBottom];
   });
 
