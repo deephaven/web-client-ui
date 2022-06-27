@@ -177,7 +177,7 @@ export class DateTimeColumnFormatter extends TableColumnFormatter<
 
   format(
     value: Date | DateWrapper | number,
-    format?: TableColumnFormat
+    format?: Partial<TableColumnFormat>
   ): string {
     const baseFormatString =
       (format && format.formatString) || this.defaultDateTimeFormatString;

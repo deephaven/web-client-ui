@@ -1,13 +1,45 @@
 import type { GridThemeType } from '@deephaven/grid';
+import { GridColor, NullableGridColor } from '@deephaven/grid/src/GridTheme';
 import IrisGridTheme from './IrisGridTheme.module.scss';
 
-export type IrisGridThemeType = Partial<GridThemeType> & {
-  filterBarHeight: number;
+export type IrisGridThemeType = GridThemeType & {
   filterBarCollapsedHeight: number;
+  filterBarHeight: number;
   reverseHeaderBarHeight: number;
+  filterIconColor: string;
+  filterBarActiveColor: GridColor;
+  contextMenuSortIconColor: GridColor;
+  contextMenuReverseIconColor: GridColor;
+  minScrimTransitionTime: number;
+  maxScrimTransitionTime: number;
+  nullStringColor: GridColor;
+  pendingTextColor: GridColor;
+  dateColor: GridColor;
+  positiveNumberColor: GridColor;
+  negativeNumberColor: GridColor;
+  zeroNumberColor: GridColor;
+  errorTextColor: GridColor;
+  groupedColumnDividerColor: GridColor;
+  linkerColumnHoverBackgroundColor: GridColor;
+  scrimBlurSize: number;
+  scrimColor: GridColor;
+  headerReverseBarColor: GridColor;
+  sortHeaderBarHeight: number;
+  headerSortBarColor: GridColor;
+  headerBarCasingColor: GridColor;
+  filterBarExpandedActiveBackgroundColor: GridColor;
+  filterBarExpandedBackgroundColor: GridColor;
+  filterBarSeparatorColor: GridColor;
+  filterBarExpandedActiveCellBackgroundColor: GridColor;
+  filterBarErrorColor: GridColor;
+  filterBarHorizontalPadding: number;
+  filterBarActiveBackgroundColor: GridColor;
+  overflowButtonColor: GridColor;
+  overflowButtonHoverColor: GridColor;
+  floatingGridRowColor: NullableGridColor;
 };
 
-const theme: IrisGridThemeType = Object.freeze({
+const theme: Partial<IrisGridThemeType> = Object.freeze({
   backgroundColor: IrisGridTheme['grid-bg'],
   font: IrisGridTheme.font,
   headerBackgroundColor: IrisGridTheme['header-bg'],

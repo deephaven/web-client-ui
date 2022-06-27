@@ -1,4 +1,4 @@
-import dh from '@deephaven/jsapi-shim';
+import dh, { TimeZone } from '@deephaven/jsapi-shim';
 import DateTimeColumnFormatter from './DateTimeColumnFormatter';
 
 function makeFormatter({
@@ -20,9 +20,14 @@ function makeFormatter({
   });
 }
 
-function makeIrisTimeZone(id = 'default') {
+function makeIrisTimeZone(id = 'default'): TimeZone {
   return {
     id,
+    adjustments: [],
+    standardOffset: 0,
+    timeZoneID: '',
+    transitionPoints: [],
+    tzNames: [],
   };
 }
 
@@ -78,7 +83,10 @@ it('should add T separator when showTSeparator is true', () => {
 });
 
 describe('calls to iris format and time zone functions', () => {
-  const formatMock: jest.Mock<Record<string, unknown>> = jest.fn();
+  const formatMock = jest.fn(
+    (pattern: string, date: unknown, timeZone?: unknown) => ''
+  );
+
   const getTimeZoneMock = jest.fn(makeIrisTimeZone);
   const originalFormat = dh.i18n.DateTimeFormat.format;
   const originalGetTimeZone = dh.i18n.TimeZone.getTimeZone;

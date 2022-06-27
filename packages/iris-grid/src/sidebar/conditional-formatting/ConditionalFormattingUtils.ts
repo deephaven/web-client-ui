@@ -6,6 +6,7 @@ import {
   makeRowFormatColumn,
   makeTernaryFormatRule,
 } from './ConditionalFormattingAPIUtils';
+import { ColumnName } from '../../CommonTypes';
 
 const log = Log.module('ConditionalFormattingUtils');
 
@@ -508,7 +509,7 @@ export function getShortLabelForNumberCondition(
 }
 
 export function getTextForNumberCondition(
-  columnName: string,
+  columnName: ColumnName,
   condition: NumberCondition,
   value: unknown,
   start: unknown,
@@ -537,7 +538,7 @@ export function getTextForNumberCondition(
 }
 
 export function getTextForStringCondition(
-  columnName: string,
+  columnName: ColumnName,
   condition: StringCondition,
   value: unknown
 ): string {
@@ -562,7 +563,7 @@ export function getTextForStringCondition(
 }
 
 export function getTextForDateCondition(
-  columnName: string,
+  columnName: ColumnName,
   condition: DateCondition,
   value: unknown
 ): string {
@@ -587,7 +588,7 @@ export function getTextForDateCondition(
 }
 
 export function getTextForBooleanCondition(
-  columnName: string,
+  columnName: ColumnName,
   condition: BooleanCondition
 ): string {
   switch (condition) {
@@ -603,7 +604,7 @@ export function getTextForBooleanCondition(
 }
 
 export function getTextForCharCondition(
-  columnName: string,
+  columnName: ColumnName,
   condition: CharCondition,
   value: unknown
 ): string {
@@ -652,6 +653,10 @@ export function getFormatColumns(
   columns: Column[],
   rules: FormattingRule[]
 ): CustomColumn[] {
+  if (rules === undefined) {
+    log.debug(`no rules passed.`);
+    return [];
+  }
   const result: CustomColumn[] = [];
   // There can be only one row format custom column
   // and multiple column format custom columns (one per column)

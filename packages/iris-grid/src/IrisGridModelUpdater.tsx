@@ -7,11 +7,12 @@ import dh, {
   FilterCondition,
   RollupConfig,
   Sort,
-  TotalsTableConfig,
 } from '@deephaven/jsapi-shim';
+import { ModelIndex, MoveOperation } from '@deephaven/grid';
 import { Formatter, ReverseType, TableUtils } from '@deephaven/jsapi-utils';
-import IrisGridModel from './IrisGridModel';
 import IrisGridUtils from './IrisGridUtils';
+import { ColumnName, UITotalsTableConfig, UIRow } from './CommonTypes';
+import IrisGridModel from './IrisGridModel';
 
 const COLUMN_BUFFER_PAGES = 1;
 
@@ -20,23 +21,23 @@ interface IrisGridModelUpdaterProps {
   modelColumns: Column[];
   top: number;
   bottom: number;
-  left?: number;
-  right?: number;
+  left: number | null;
+  right: number | null;
   filter: FilterCondition[];
   sorts: Sort[];
   reverseType?: ReverseType;
-  customColumns: string[];
-  movedColumns: unknown[];
-  hiddenColumns: number[];
-  frozenColumns?: string[];
+  customColumns: ColumnName[];
+  movedColumns: MoveOperation[];
+  hiddenColumns: ModelIndex[];
+  frozenColumns?: ColumnName[];
   formatColumns: CustomColumn[];
-  alwaysFetchColumns: string[];
+  alwaysFetchColumns: ColumnName[];
   formatter: Formatter;
   rollupConfig?: RollupConfig | null;
-  totalsConfig?: TotalsTableConfig | null;
-  selectDistinctColumns?: string[];
+  totalsConfig?: UITotalsTableConfig | null;
+  selectDistinctColumns?: ColumnName[];
   pendingRowCount?: number;
-  pendingDataMap?: Map<number, Map<string, unknown>>;
+  pendingDataMap?: Map<ModelIndex, UIRow>;
 }
 
 /**

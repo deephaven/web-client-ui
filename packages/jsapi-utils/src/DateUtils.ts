@@ -50,6 +50,9 @@ export class DateUtils {
     second = 0,
     ns = 0
   ): DateWrapper {
+    if (!timeZone) {
+      throw new Error('No timezone provided');
+    }
     const yearString = `${year}`.padStart(4, '0');
     const monthString = `${month + 1}`.padStart(2, '0');
     const dayString = `${day}`.padStart(2, '0');

@@ -15,7 +15,7 @@ type ColumnName = string;
 
 export interface FormattingRule {
   columnType: string;
-  columnName: string;
+  columnName: ColumnName;
   format: TableColumnFormat;
 }
 
@@ -54,7 +54,7 @@ export class Formatter {
    */
   static makeColumnFormattingRule(
     columnType: DataType,
-    columnName: string,
+    columnName: ColumnName,
     format: TableColumnFormat
   ): FormattingRule {
     return {
@@ -150,7 +150,7 @@ export class Formatter {
    */
   getColumnFormat(
     columnType: string,
-    columnName: string
+    columnName: ColumnName
   ): TableColumnFormat | null {
     const columnFormatMap = this.getColumnFormatMapForType(columnType);
     return columnFormatMap?.get(columnName) ?? null;
@@ -177,7 +177,7 @@ export class Formatter {
     value: unknown,
     columnType: string,
     columnName = '',
-    formatOverride?: TableColumnFormat
+    formatOverride?: Partial<TableColumnFormat>
   ): string {
     if (value == null) {
       return '';
