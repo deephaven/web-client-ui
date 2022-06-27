@@ -147,6 +147,7 @@ const Modal = ({
               <div
                 className="modal-content"
                 onClick={e => e.stopPropagation()}
+                role="presentation"
                 data-testid={dataTestId}
               >
                 {children}
