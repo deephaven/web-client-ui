@@ -1,7 +1,12 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 
-import { Modal, ModalBody, ModalFooter, ModalHeader } from 'reactstrap';
+import {
+  Modal,
+  ModalBody,
+  ModalFooter,
+  ModalHeader,
+} from '@deephaven/components';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { vsTrash } from '@deephaven/icons';

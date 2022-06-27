@@ -1,8 +1,8 @@
 import React, { useRef, useCallback } from 'react';
-import { Modal, ModalBody, ModalFooter, ModalHeader } from 'reactstrap';
 import PropTypes from 'prop-types';
 import ButtonGroup from './ButtonGroup';
 import Button from './Button';
+import { Modal, ModalBody, ModalFooter, ModalHeader } from './modal';
 
 interface BasicModalProps {
   isOpen: boolean;
@@ -72,7 +72,7 @@ const BasicModal: React.FC<BasicModalProps> = props => {
         confirmButton.current?.focus();
       }}
     >
-      <ModalHeader>{headerText}</ModalHeader>
+      <ModalHeader closeButton={false}>{headerText}</ModalHeader>
       <ModalBody>{modalBody}</ModalBody>
       <ModalFooter>
         {onModalDisable && (
