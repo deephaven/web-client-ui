@@ -2450,6 +2450,7 @@ export class GridRenderer {
       hasVerticalBar,
       barWidth,
       barHeight,
+      visibleColumnXs,
     } = metrics;
     const {
       scrollBarBackgroundColor,
@@ -2569,22 +2570,26 @@ export class GridRenderer {
 
         const getTickX = (index: number) => {
           if (index < leftVisibleIndex) {
-            return Math.round((index / leftVisibleIndex) * x);
+            return Math.round((index / columnCount) * barWidth);
           }
           if (index > rightVisibleIndex) {
+            const remainderRight =
+              (getOrThrow(visibleColumnXs, rightVisibleIndex) +
+                getOrThrow(visibleColumnWidths, rightVisibleIndex) -
+                barWidth) /
+              getOrThrow(visibleColumnWidths, rightVisibleIndex);
+
+            const rightTickSize =
+              (barWidth - (x + handleWidth)) /
+              (columnCount - rightVisibleIndex + remainderRight);
+
             return Math.round(
-              ((index - rightVisibleIndex) /
-                (columnCount - rightVisibleIndex)) *
-                (barWidth - x - handleWidth) +
-                x +
-                handleWidth
+              barWidth - (columnCount - index + 1) * rightTickSize
             );
           }
-          let leftWidth = 0;
-          for (let i = leftVisibleIndex; i < index; i += 1) {
-            leftWidth += visibleColumnWidths.get(i) ?? 0;
-          }
-          return Math.round((leftWidth / width) * handleWidth + x);
+          return Math.round(
+            (getOrThrow(visibleColumnXs, index) / width) * handleWidth + x
+          );
         };
 
         const filteredRanges = [...selectedRanges].filter(
