@@ -115,6 +115,7 @@ export type GridProps = typeof Grid.defaultProps & {
 
   theme?: Partial<GridThemeType>;
 
+  isGotoRowShown: boolean;
   focusedRow?: ModelIndex;
 };
 
@@ -447,6 +448,7 @@ class Grid extends PureComponent<GridProps, GridState> {
       onMovedRowsChanged,
       onMoveRowComplete,
       focusedRow,
+      isGotoRowShown,
     } = this.props;
     const {
       isStickyBottom: prevIsStickyBottom,
@@ -454,6 +456,7 @@ class Grid extends PureComponent<GridProps, GridState> {
       movedColumns: prevPropMovedColumns,
       movedRows: prevPropMovedRows,
       focusedRow: prevFocusedRow,
+      isGotoRowShown: prevIsGotoRowShown,
     } = prevProps;
     const {
       movedColumns: prevStateMovedColumns,
@@ -506,6 +509,10 @@ class Grid extends PureComponent<GridProps, GridState> {
         ],
       });
     }
+
+    // if (!isGotoRowShown && isGotoRowShown !== prevIsGotoRowShown) {
+    //   this.updateCanvas();
+    // }
 
     this.updateMetrics();
 

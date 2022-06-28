@@ -4,6 +4,9 @@
   display: inline-block;
   padding: 3px;
   vertical-align: middle;
+  border-style: solid;
+  border-width: $border-width;
+  border-color: $black;
 
   .goto-row-text {
     padding: 5px;
@@ -15,6 +18,14 @@
     display: inline-block;
     max-width: 200px;
   }
+
+  .goto-row-error {
+    padding: 5px;
+    display: inline-block;
+    max-width: 200px;
+    color: $red;
+  }
+
   .goto-row-close {
     padding: 5px;
     float: right;

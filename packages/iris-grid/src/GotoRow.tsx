@@ -1,15 +1,22 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { vsClose } from '@deephaven/icons';
-import React, { ChangeEvent, ReactElement, useEffect, useState } from 'react';
+import React, { ReactElement, useEffect, useState } from 'react';
 import { Button } from '@deephaven/components';
 import './GotoRow.scss';
 import IrisGridModel from './IrisGridModel';
+import IrisGridProxyModel from './IrisGridProxyModel';
 import { isIrisGridTableModelTemplate } from './IrisGridTableModelTemplate';
+
+export function isIrisGridProxyModel(
+  model: IrisGridModel
+): model is IrisGridProxyModel {
+  return (model as IrisGridProxyModel).model !== undefined;
+}
 
 interface GotoRowProps {
   model: IrisGridModel;
   selectedRowNumber: string;
-  onGotoRowNumberChanged: (event: ChangeEvent<HTMLInputElement>) => void;
+  onGotoRowNumberChanged: (rowValue: string) => void;
   onClose: () => void;
 }
 
@@ -20,7 +27,7 @@ const GotoRow = ({
   onClose,
 }: GotoRowProps): ReactElement => {
   const [row, setRow] = useState('');
-  const [rowCount, setRowCount] = useState(0);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     setRow(selectedRowNumber);
@@ -28,13 +35,7 @@ const GotoRow = ({
 
   const res = 'Row number';
 
-  // useEffect(() => {
-  //   console.log('asdfas');
-  //   if (isIrisGridTableModelTemplate(model)) {
-  //     const { table } = model;
-  //     setRowCount(table.size);
-  //   }
-  // }, [model]);
+  const { rowCount } = model;
 
   return (
     <div className="goto-row">
@@ -48,14 +49,20 @@ const GotoRow = ({
           placeholder={res}
           onChange={event => {
             const rowNumber = event.target.value;
-            if (
-              row === '' ||
-              (parseInt(rowNumber, 10) > 0 &&
-                parseInt(rowNumber, 10) <= rowCount)
-            ) {
-              onGotoRowNumberChanged(event);
-            }
             setRow(rowNumber);
+            if (
+              rowNumber !== '' &&
+              (parseInt(rowNumber, 10) < 0 ||
+                parseInt(rowNumber, 10) > rowCount)
+            ) {
+              setError('Invalid row index');
+            } else if (rowNumber !== '' && parseInt(rowNumber, 10) === 0) {
+              onGotoRowNumberChanged('');
+              setError('');
+            } else {
+              onGotoRowNumberChanged(event.target.value);
+              setError('');
+            }
           }}
           value={row}
         />
@@ -63,6 +70,11 @@ const GotoRow = ({
       <div className="goto-row-text">
         <h6>of {rowCount}</h6>
       </div>
+      {error && (
+        <div className="goto-row-error">
+          <h6>{error}</h6>
+        </div>
+      )}
       <div className="goto-row-close">
         <Button kind="ghost" onClick={onClose}>
           <FontAwesomeIcon icon={vsClose} style={{ marginRight: '0' }} />

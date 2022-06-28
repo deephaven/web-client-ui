@@ -1,5 +1,4 @@
 import React, {
-  ChangeEvent,
   Component,
   CSSProperties,
   ReactElement,
@@ -164,7 +163,6 @@ import {
   PendingDataMap,
   AdvancedFilterOptions,
 } from './CommonTypes';
-import { isIrisGridTableModelTemplate } from './IrisGridTableModelTemplate';
 
 const log = Log.module('IrisGrid');
 
@@ -805,8 +803,6 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       customFilters,
       sorts,
     } = this.props;
-
-    console.log(isIrisGridTableModelTemplate);
 
     if (model !== prevProps.model) {
       this.stopListening(prevProps.model);
@@ -3220,11 +3216,9 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     }
   );
 
-  onGotoRowSelectedRowNumberChanged(
-    event: ChangeEvent<HTMLInputElement>
-  ): void {
+  onGotoRowSelectedRowNumberChanged(rowValue: string): void {
     this.setState({
-      gotoRowSelectedRowNumber: event.target.value,
+      gotoRowSelectedRowNumber: rowValue,
     });
   }
 
@@ -3921,6 +3915,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
               renderer={this.renderer}
               stateOverride={stateOverride}
               theme={theme}
+              isGotoRowShown={isGotoRowShown}
               focusedRow={
                 gotoRowSelectedRowNumber !== ''
                   ? parseInt(gotoRowSelectedRowNumber, 10)
