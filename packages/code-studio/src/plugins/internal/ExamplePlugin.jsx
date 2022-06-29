@@ -1,6 +1,11 @@
 /* eslint-disable */
 import React, { Component } from 'react';
-import { Modal, ModalBody, ModalFooter, ModalHeader } from 'reactstrap';
+import {
+  Modal,
+  ModalBody,
+  ModalFooter,
+  ModalHeader,
+} from '@deephaven/components';
 
 class ExamplePlugin extends Component {
   constructor(props) {
