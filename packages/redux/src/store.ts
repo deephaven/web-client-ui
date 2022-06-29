@@ -37,9 +37,9 @@ export interface WorkspaceSettings {
   timeZone: string;
   showTimeZone: boolean;
   showTSeparator: boolean;
-  truncateNumbersWithPound: boolean;
+  truncateNumbersWithPound?: boolean;
   disableMoveConfirmation: boolean;
-  showSystemBadge: boolean;
+  showSystemBadge?: boolean;
   shortcutOverrides?: {
     windows?: { [id: string]: ValidKeyState };
     mac?: { [id: string]: ValidKeyState };

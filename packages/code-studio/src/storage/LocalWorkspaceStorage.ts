@@ -4,7 +4,7 @@ import {
   DecimalColumnFormatter,
   IntegerColumnFormatter,
 } from '@deephaven/jsapi-utils';
-import WorkspaceStorage, { Workspace, WorkspaceData } from './WorkspaceStorage';
+import { WorkspaceStorage, Workspace, WorkspaceData } from '@deephaven/redux';
 
 const log = Log.module('LocalWorkspaceStorage');
 
@@ -31,6 +31,9 @@ export class LocalWorkspaceStorage implements WorkspaceStorage {
           defaultFormatString: IntegerColumnFormatter.DEFAULT_FORMAT_STRING,
         },
       },
+      data: {},
+      layoutConfig: [{}],
+      closed: [{}],
     };
   }
 
