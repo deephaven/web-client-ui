@@ -697,12 +697,12 @@ class IrisGridTableModelTemplate<
     return this.dataForCell(x, y)?.format;
   }
 
-  valueForCell(x: ModelIndex, y: ModelIndex): unknown | null {
+  valueForCell(x: ModelIndex, y: ModelIndex): unknown | null | undefined {
     const data = this.dataForCell(x, y);
     if (data) {
       return data.value ?? null;
     }
-    return null;
+    return undefined;
   }
 
   copyViewportData(data: ViewportData): void {
