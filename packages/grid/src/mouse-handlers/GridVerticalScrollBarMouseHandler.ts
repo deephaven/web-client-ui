@@ -46,17 +46,15 @@ class GridVerticalScrollBarMouseHandler extends GridMouseHandler {
     if (!metrics) throw new Error('metrics not set');
 
     const { x, y } = gridPoint;
-    const { gridY, height, width, hasHorizontalBar, hasVerticalBar } = metrics;
-
-    const scrollBarHeight = hasHorizontalBar ? height - scrollBarSize : height;
+    const { barTop, barHeight, width, hasVerticalBar } = metrics;
 
     return (
       hasVerticalBar &&
       scrollBarSize > 0 &&
       x >= width - scrollBarHoverSize &&
       x < width &&
-      y > gridY &&
-      y < scrollBarHeight
+      y > barTop &&
+      y < barTop + barHeight
     );
   }
 
@@ -72,13 +70,13 @@ class GridVerticalScrollBarMouseHandler extends GridMouseHandler {
       barHeight,
       handleHeight,
       lastTop,
-      gridY,
+      barTop,
       rowCount,
       scrollableContentHeight,
       scrollableViewportHeight,
     } = metrics;
 
-    const mouseBarY = y - gridY;
+    const mouseBarY = y - barTop;
     const scrollPercent = clamp(
       (mouseBarY - (this.dragOffset ?? 0)) / (barHeight - handleHeight),
       0,
@@ -105,12 +103,12 @@ class GridVerticalScrollBarMouseHandler extends GridMouseHandler {
     if (!metrics) throw new Error('metrics not set');
 
     const { y } = gridPoint;
-    const { handleHeight, gridY, scrollY } = metrics;
+    const { handleHeight, barTop, scrollY } = metrics;
     if (!this.isInScrollBar(gridPoint, grid)) {
       return false;
     }
 
-    const mouseBarY = y - gridY;
+    const mouseBarY = y - barTop;
     if (mouseBarY >= scrollY && mouseBarY <= scrollY + handleHeight) {
       // Grabbed the vertical handle
       this.dragOffset = mouseBarY - scrollY;

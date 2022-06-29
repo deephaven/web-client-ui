@@ -94,7 +94,9 @@ export type GridMetrics = {
 
   // Scroll bar metrics
   barHeight: number;
+  barTop: number; // Relative to canvas dimensions
   barWidth: number;
+  barLeft: number; // Relative to canvas dimensions
   handleHeight: number;
   handleWidth: number;
   hasHorizontalBar: boolean;
