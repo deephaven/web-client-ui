@@ -2531,7 +2531,8 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     this.updateFormatter({ customColumnFormatMap });
   }
 
-  handleMenu(): void {
+  handleMenu(e: React.MouseEvent<HTMLButtonElement>): void {
+    e.stopPropagation();
     this.setState({ isMenuShown: true });
   }
 
@@ -3170,6 +3171,104 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     }
   );
 
+  getColumnTooltip(
+    visibleIndex: VisibleIndex,
+    metrics: GridMetrics,
+    model: IrisGridModel
+  ): ReactNode {
+    const {
+      columnHeaderHeight,
+      visibleColumnXs,
+      visibleColumnWidths,
+      width,
+    } = metrics;
+    const columnX = visibleColumnXs.get(visibleIndex);
+    const columnWidth = visibleColumnWidths.get(visibleIndex);
+
+    if (columnX == null || columnWidth == null) {
+      return null;
+    }
+
+    /**
+     * Create a wrapper dom element, the size of the column header.
+     * The wrapper acts as tooltip parent, the  tooltip component
+     * will trigger hide on mouseleave of wrapper or tooltip.
+     * The wrapper should be bound to within the grid dimensions,
+     * so popper only remains triggered while mouse is inside the panel.
+     */
+    const boundedLeft = Math.max(0, columnX);
+    let boundedWidth = columnWidth;
+    if (columnX + columnWidth > width) {
+      // column is extending past right edge
+      boundedWidth = width - columnX;
+    } else if (columnX < 0) {
+      // column is extending past left edge
+      boundedWidth = columnWidth - Math.abs(columnX);
+    }
+
+    const wrapperStyle: CSSProperties = {
+      position: 'absolute',
+      top: 0,
+      left: boundedLeft,
+      width: boundedWidth,
+      height: columnHeaderHeight,
+      pointerEvents: 'none',
+    };
+
+    /**
+     * Because the popper parent wrapper center is no longer the same as
+     * the column label center, we create a popper virtual ref, to handle
+     * positioning and keep the popper centered on the label. Creates a
+     * 1px x headerHeight virtual object, placed centered on the column
+     * label, clamped to 0 + margin to width - margin. We add a margin,
+     * otherwise the arrow wants to escape the boundary.
+     */
+    const virtualReference: ReferenceObject = {
+      clientWidth: 1,
+      clientHeight: columnHeaderHeight,
+      getBoundingClientRect: this.getColumnBoundingRect,
+    };
+
+    const popperOptions: PopperOptions = {
+      placement: 'bottom',
+      modifiers: {
+        flip: {
+          behavior: ['bottom', 'top'],
+        },
+      },
+    };
+
+    const modelColumn = this.getModelColumn(visibleIndex);
+    if (modelColumn == null) return null;
+
+    const column = model.columns[modelColumn];
+    if (column == null) return null;
+
+    return (
+      <div style={wrapperStyle}>
+        <Tooltip
+          key={column.name}
+          timeout={400}
+          interactive
+          options={popperOptions}
+          ref={this.handleTooltipRef}
+          referenceObject={virtualReference}
+          onExited={() => {
+            this.setState({ shownColumnTooltip: null });
+          }}
+        >
+          <ColumnStatistics
+            model={model}
+            column={column}
+            onStatistics={() => {
+              this.tooltip?.update();
+            }}
+          />
+        </Tooltip>
+      </div>
+    );
+  }
+
   render(): ReactElement | null {
     const {
       children,
@@ -3382,101 +3481,11 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       );
     }
 
-    let columnTooltip = null;
-    if (shownColumnTooltip != null && metrics && this.gridWrapper) {
-      const {
-        columnHeaderHeight,
-        visibleColumnXs,
-        visibleColumnWidths,
-        width,
-      } = metrics;
-      const columnX = visibleColumnXs.get(shownColumnTooltip);
-      const columnWidth = visibleColumnWidths.get(shownColumnTooltip);
-
-      assertNotNull(columnX);
-      assertNotNull(columnWidth);
-      /**
-       * Create a wrapper dom element, the size of the column header.
-       * The wrapper acts as tooltip parent, the  tooltip component
-       * will trigger hide on mouseleave of wrapper or tooltip.
-       * The wrapper should be bound to within the grid dimensions,
-       * so popper only remains triggered while mouse is inside the panel.
-       */
-      const boundedLeft = Math.max(0, columnX);
-      let boundedWidth = columnWidth;
-      if (columnX + columnWidth > width) {
-        // column is extending past right edge
-        boundedWidth = width - columnX;
-      } else if (columnX < 0) {
-        // column is extending past left edge
-        boundedWidth = columnWidth - Math.abs(columnX);
-      }
-
-      const wrapperStyle: CSSProperties = {
-        position: 'absolute',
-        top: 0,
-        left: boundedLeft,
-        width: boundedWidth,
-        height: columnHeaderHeight,
-        pointerEvents: 'none',
-      };
-
-      /**
-       * Because the popper parent wrapper center is no longer the same as
-       * the column label center, we create a popper virtual ref, to handle
-       * positioning and keep the popper centered on the label. Creates a
-       * 1px x headerHeight virtual object, placed centered on the column
-       * label, clamped to 0 + margin to width - margin. We add a margin,
-       * otherwise the arrow wants to escape the boundary.
-       */
-      const virtualReference: ReferenceObject = {
-        clientWidth: 1,
-        clientHeight: columnHeaderHeight,
-        getBoundingClientRect: this.getColumnBoundingRect,
-      };
-
-      const popperOptions: PopperOptions = {
-        placement: 'bottom',
-        modifiers: {
-          flip: {
-            behavior: ['bottom', 'top'],
-          },
-        },
-      };
-
-      const modelColumn = this.getModelColumn(shownColumnTooltip);
-      if (modelColumn != null) {
-        const column = model.columns[modelColumn];
-
-        if (column != null) {
-          columnTooltip = (
-            <div style={wrapperStyle}>
-              <Tooltip
-                key={column.name}
-                timeout={400}
-                interactive
-                options={popperOptions}
-                ref={this.handleTooltipRef}
-                referenceObject={virtualReference}
-                onExited={() => {
-                  this.setState({ shownColumnTooltip: null });
-                }}
-              >
-                <ColumnStatistics
-                  model={model}
-                  column={column}
-                  onStatistics={() => {
-                    this.tooltip?.update();
-                  }}
-                />
-              </Tooltip>
-            </div>
-          );
-        }
-
-        // #510 We may need to update the position of the tooltip if it's already opened and columns are resized
-        this.tooltip?.update();
-      }
+    let columnTooltip: React.ReactNode = null;
+    if (shownColumnTooltip != null && metrics) {
+      columnTooltip = this.getColumnTooltip(shownColumnTooltip, metrics, model);
+      // #510 We may need to update the position of the tooltip if it's already opened and columns are resized
+      this.tooltip?.update();
     }
 
     const filterBar = [];
