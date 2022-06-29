@@ -1,6 +1,6 @@
 import React from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { dhTable, vsGraph, vsPreview } from '@deephaven/icons';
+import { dhPandas, dhTable, vsGraph, vsPreview } from '@deephaven/icons';
 import dh from '@deephaven/jsapi-shim';
 
 export type ObjectIconProps = {
@@ -15,6 +15,8 @@ const ObjectIcon = ({ type }: ObjectIconProps): JSX.Element => {
       return <FontAwesomeIcon icon={dhTable} />;
     case dh.VariableType.FIGURE:
       return <FontAwesomeIcon icon={vsGraph} />;
+    case dh.VariableType.PANDAS:
+      return <FontAwesomeIcon icon={dhPandas} />;
     default:
       return <FontAwesomeIcon icon={vsPreview} />;
   }
