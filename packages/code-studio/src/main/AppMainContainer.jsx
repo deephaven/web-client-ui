@@ -108,6 +108,7 @@ export class AppMainContainer extends Component {
     this.handlePaste = this.handlePaste.bind(this);
     this.hydrateChart = this.hydrateChart.bind(this);
     this.hydrateGrid = this.hydrateGrid.bind(this);
+    this.hydratePandas = this.hydratePandas.bind(this);
     this.hydrateDefault = this.hydrateDefault.bind(this);
     this.openNotebookFromURL = this.openNotebookFromURL.bind(this);
 
@@ -534,13 +535,21 @@ export class AppMainContainer extends Component {
   }
 
   hydrateGrid(props, id) {
+    return this.hydrateTable(props, id, dh.VariableType.TABLE);
+  }
+
+  hydratePandas(props, id) {
+    return this.hydrateTable(props, id, dh.VariableType.PANDAS);
+  }
+
+  hydrateTable(props, id, type = dh.VariableType.TABLE) {
     const { session } = this.props;
     return {
       ...props,
       getDownloadWorker: DownloadServiceWorkerUtils.getServiceWorker,
       loadPlugin: this.handleLoadTablePlugin,
       localDashboardId: id,
-      makeModel: () => createGridModel(session, props.metadata),
+      makeModel: () => createGridModel(session, props.metadata, type),
     };
   }
 
@@ -684,7 +693,7 @@ export class AppMainContainer extends Component {
           <ChartBuilderPlugin />
           <ConsolePlugin hydrateConsole={AppMainContainer.hydrateConsole} />
           <FilterPlugin />
-          <PandasPlugin />
+          <PandasPlugin hydrate={this.hydratePandas} />
           <MarkdownPlugin />
           <LinkerPlugin />
           {dashboardPlugins}
