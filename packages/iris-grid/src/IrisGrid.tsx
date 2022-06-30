@@ -626,6 +626,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     this.contextActions = [
       this.toggleFilterBarAction,
       this.toggleSearchBarAction,
+      this.toggleGotoRowAction,
       this.discardAction,
       this.commitAction,
     ];
@@ -3915,7 +3916,6 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
               renderer={this.renderer}
               stateOverride={stateOverride}
               theme={theme}
-              isGotoRowShown={isGotoRowShown}
               focusedRow={
                 gotoRowSelectedRowNumber !== ''
                   ? parseInt(gotoRowSelectedRowNumber, 10)
@@ -3999,14 +3999,19 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
             {overflowButtonTooltipProps &&
               this.getOverflowButtonTooltip(overflowButtonTooltipProps)}
           </div>
-          {isGotoRowShown && (
-            <GotoRow
-              model={model}
-              selectedRowNumber={gotoRowSelectedRowNumber}
-              onGotoRowNumberChanged={this.onGotoRowSelectedRowNumberChanged}
-              onClose={this.handleGotoRowClosed}
-            />
-          )}
+          <GotoRow
+            className=""
+            model={model}
+            isShown={isGotoRowShown}
+            selectedRowNumber={gotoRowSelectedRowNumber}
+            onGotoRowNumberChanged={this.onGotoRowSelectedRowNumberChanged}
+            onClose={this.handleGotoRowClosed}
+            onEntering={this.handleAnimationStart}
+            onEntered={this.handleAnimationEnd}
+            onExiting={this.handleAnimationStart}
+            onExited={this.handleAnimationEnd}
+          />
+
           <PendingDataBottomBar
             error={pendingSaveError}
             isSaving={pendingSavePromise != null}
