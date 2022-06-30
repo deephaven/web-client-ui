@@ -1205,11 +1205,11 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       partitionFilters,
       searchFilter
     ) => [
-      ...(customFilters ? [customFilters] : []), // null check
-      ...(partitionFilters ? [partitionFilters] : []), // null check
+      ...(customFilters ?? []),
+      ...(partitionFilters ?? []),
       ...IrisGridUtils.getFiltersFromFilterMap(quickFilters),
       ...IrisGridUtils.getFiltersFromFilterMap(advancedFilters),
-      ...(searchFilter ? [searchFilter] : []), // null check
+      ...(searchFilter ?? []),
     ],
     { max: 1 }
   );
