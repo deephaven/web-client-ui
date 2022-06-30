@@ -3,6 +3,8 @@ import {
   GridMouseHandler,
   GridPoint,
   EventHandlerResult,
+  Grid,
+  GridMouseEvent,
 } from '@deephaven/grid';
 import type { IrisGrid } from '../IrisGrid';
 
@@ -17,13 +19,6 @@ class IrisGridColumnTooltipMouseHandler extends GridMouseHandler {
   }
 
   private irisGrid: IrisGrid;
-
-  private destroyColumnTooltip(): void {
-    const { shownColumnTooltip } = this.irisGrid.state;
-    if (shownColumnTooltip != null) {
-      this.irisGrid.setState({ shownColumnTooltip: null });
-    }
-  }
 
   private hideColumnTooltip(): void {
     const { tooltip } = this.irisGrid;
@@ -44,7 +39,41 @@ class IrisGridColumnTooltipMouseHandler extends GridMouseHandler {
   }
 
   onWheel(): EventHandlerResult {
-    this.destroyColumnTooltip();
+    this.hideColumnTooltip();
+    return false;
+  }
+
+  onLeave(
+    gridPoint: GridPoint,
+    grid: Grid,
+    event: GridMouseEvent
+  ): EventHandlerResult {
+    /**
+     * This should always be a react event
+     * React seems to be handling onMouseLeave incorrectly at times
+     * When moving to the padding between the column and popper, React sets
+     * event.relatedTarget to window, but event.nativeEvent.relatedTarget is the popper.
+     * It's possibly related to popper being rendered in a portal
+     */
+    const { relatedTarget } =
+      event instanceof MouseEvent ? event : event.nativeEvent;
+
+    const { tooltip } = this.irisGrid;
+    if (!tooltip) {
+      return false;
+    }
+
+    const popper = tooltip.popper.current;
+
+    if (
+      popper &&
+      relatedTarget instanceof Element &&
+      popper.element.contains(relatedTarget)
+    ) {
+      // Do not hide the popper if we moved the cursor from canvas to popper
+      return false;
+    }
+    this.hideColumnTooltip();
     return false;
   }
 

@@ -697,12 +697,17 @@ class IrisGridTableModelTemplate<
     return this.dataForCell(x, y)?.format;
   }
 
-  valueForCell(x: ModelIndex, y: ModelIndex): unknown | null {
+  valueForCell(x: ModelIndex, y: ModelIndex): unknown {
     const data = this.dataForCell(x, y);
+
+    /* JS API current sets null values as undefined in some instances. This means 
+    we need to nullish coaelesce so all undefined values from the API return null 
+    since the data has been fetched. undefined is used to indicate the API has not 
+    fetched data yet */
     if (data) {
       return data.value ?? null;
     }
-    return null;
+    return undefined;
   }
 
   copyViewportData(data: ViewportData): void {

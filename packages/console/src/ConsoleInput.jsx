@@ -162,7 +162,11 @@ export class ConsoleInput extends PureComponent {
       const { commandEditor, commandHistoryIndex } = this;
       const { lineNumber } = commandEditor.getPosition();
       const model = commandEditor.getModel();
-      if (keyEvent.keyCode === monaco.KeyCode.UpArrow && lineNumber === 1) {
+      if (
+        keyEvent.keyCode === monaco.KeyCode.UpArrow &&
+        !this.isSuggestionMenuPopulated() &&
+        lineNumber === 1
+      ) {
         if (commandHistoryIndex != null) {
           this.loadCommand(commandHistoryIndex + 1);
         } else {
@@ -178,6 +182,7 @@ export class ConsoleInput extends PureComponent {
 
       if (
         keyEvent.keyCode === monaco.KeyCode.DownArrow &&
+        !this.isSuggestionMenuPopulated() &&
         lineNumber === model.getLineCount()
       ) {
         if (commandHistoryIndex != null && commandHistoryIndex > 0) {

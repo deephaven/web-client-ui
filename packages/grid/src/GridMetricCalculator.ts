@@ -337,6 +337,8 @@ export class GridMetricCalculator {
     const verticalBarWidth = hasVerticalBar ? scrollBarSize : 0;
     const barWidth = width - rowHeaderWidth - verticalBarWidth;
     const barHeight = height - columnHeaderHeight - horizontalBarHeight;
+    const barLeft = rowHeaderWidth;
+    const barTop = columnHeaderHeight;
 
     // How big the scroll handle is relative to the bar
     const horizontalHandlePercent =
@@ -548,7 +550,9 @@ export class GridMetricCalculator {
 
       // Scroll bar metrics
       barHeight,
+      barTop,
       barWidth,
+      barLeft,
       handleHeight,
       handleWidth,
       hasHorizontalBar,

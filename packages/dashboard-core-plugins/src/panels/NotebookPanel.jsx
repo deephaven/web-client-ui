@@ -20,7 +20,7 @@ import {
   vsKebabVertical,
   dhFileSearch,
   vsPlay,
-  vsRunAll,
+  dhRunSelection,
 } from '@deephaven/icons';
 import { getFileStorage } from '@deephaven/redux';
 import classNames from 'classnames';
@@ -893,7 +893,7 @@ class NotebookPanel extends Component {
                     onClick={this.handleRunAll}
                     disabled={runButtonsDisabled}
                   >
-                    <FontAwesomeIcon icon={vsRunAll} transform="grow-4" />
+                    <FontAwesomeIcon icon={vsPlay} transform="grow-4" />
                     <Tooltip>
                       Run {SHORTCUTS.NOTEBOOK.RUN.getDisplayText()}
                     </Tooltip>
@@ -909,7 +909,7 @@ class NotebookPanel extends Component {
                     onClick={this.handleRunSelected}
                     disabled={runButtonsDisabled}
                   >
-                    <FontAwesomeIcon icon={vsPlay} transform="grow-4" />
+                    <FontAwesomeIcon icon={dhRunSelection} transform="grow-4" />
                     <Tooltip>
                       Run Selected{' '}
                       {SHORTCUTS.NOTEBOOK.RUN_SELECTED.getDisplayText()}
