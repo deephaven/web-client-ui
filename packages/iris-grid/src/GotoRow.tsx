@@ -1,6 +1,6 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { vsClose } from '@deephaven/icons';
-import React, { ReactElement, useEffect, useState } from 'react';
+import React, { ReactElement, useState } from 'react';
 import { Button } from '@deephaven/components';
 import classNames from 'classnames';
 import './GotoRow.scss';
@@ -13,6 +13,8 @@ export function isIrisGridProxyModel(
 ): model is IrisGridProxyModel {
   return (model as IrisGridProxyModel).model !== undefined;
 }
+
+const DEFAULT_FORMAT_STRING = '###,##0';
 
 interface GotoRowProps {
   model: IrisGridModel;
@@ -83,7 +85,9 @@ const GotoRow = ({
           />
         </div>
         <div className="goto-row-text">
-          <h6>of {rowCount}</h6>
+          <h6>
+            of {dh.i18n.NumberFormat.format(DEFAULT_FORMAT_STRING, rowCount)}
+          </h6>
         </div>
         {error && (
           <div className="goto-row-error">
