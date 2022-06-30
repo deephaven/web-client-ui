@@ -19,9 +19,7 @@ interface GotoRowProps {
   selectedRowNumber: string;
   onGotoRowNumberChanged: (rowValue: string) => void;
   onClose: () => void;
-  animation?: string;
   isShown: boolean;
-  className?: string;
   onEntering: () => void;
   onEntered: () => void;
   onExiting: () => void;
@@ -29,9 +27,7 @@ interface GotoRowProps {
 }
 
 const GotoRow = ({
-  animation,
   isShown,
-  className,
   onEntering,
   onEntered,
   onExiting,
@@ -44,21 +40,14 @@ const GotoRow = ({
   const [row, setRow] = useState('');
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    setRow(selectedRowNumber);
-  }, [selectedRowNumber]);
-
   const res = 'Row number';
 
   const { rowCount } = model;
 
   return (
     <IrisGridBottomBar
-      animation={animation}
       isShown={isShown}
-      className={classNames('goto-row', {
-        'copy-done': true,
-      })}
+      className={classNames('goto-row')}
       onEntering={onEntering}
       onEntered={onEntered}
       onExiting={onExiting}

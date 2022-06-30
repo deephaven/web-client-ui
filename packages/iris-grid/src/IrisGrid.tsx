@@ -4009,7 +4009,6 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
               this.getOverflowButtonTooltip(overflowButtonTooltipProps)}
           </div>
           <GotoRow
-            className=""
             model={model}
             isShown={isGotoRowShown}
             selectedRowNumber={gotoRowSelectedRowNumber}
