@@ -553,7 +553,7 @@ class IrisGridRenderer extends GridRenderer {
     } = theme;
     const columnHeaderHeight = gridY - filterBarHeight;
     const modelColumn = modelColumns.get(column);
-    if (!modelColumn) return;
+    if (modelColumn === undefined) return;
     const quickFilter = quickFilters.get(modelColumn);
     const advancedFilter = advancedFilters.get(modelColumn);
     if (quickFilter == null && advancedFilter == null) {
