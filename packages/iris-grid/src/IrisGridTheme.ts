@@ -35,7 +35,7 @@ const theme: IrisGridThemeType = Object.freeze({
   scrollBarActiveColor: IrisGridTheme['scroll-bar-active-color'],
   scrollBarSelectionTickColor: IrisGridTheme['selected-row-hover-bg'],
   scrollBarActiveSelectionTickColor:
-    IrisGridTheme['selected-row-hover-bg-alpha'],
+    IrisGridTheme['scroll-bar-active-selection-tick-color'],
   textColor: IrisGridTheme['text-color'],
   positiveNumberColor: IrisGridTheme['positive-number-color'],
   negativeNumberColor: IrisGridTheme['negative-number-color'],

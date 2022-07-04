@@ -1275,6 +1275,20 @@ export class GridUtils {
 
     return { deltaX, deltaY };
   }
+
+  static compareRanges(range1: AxisRange, range2: AxisRange): number {
+    if (
+      range1[0] == null ||
+      range1[1] == null ||
+      range2[0] == null ||
+      range2[1] == null
+    ) {
+      return 0;
+    }
+    return range1[0] !== range2[0]
+      ? range1[0] - range2[0]
+      : range1[1] - range2[1];
+  }
 }
 
 export default GridUtils;

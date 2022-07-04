@@ -1,5 +1,5 @@
 import memoizeClear from './memoizeClear';
-import GridUtils from './GridUtils';
+import GridUtils, { AxisRange } from './GridUtils';
 import GridColorUtils from './GridColorUtils';
 import { isExpandableGridModel } from './ExpandableGridModel';
 import {
@@ -103,50 +103,6 @@ export class GridRenderer {
 
   // Default width in pixels for the border of the active cell
   static ACTIVE_CELL_BORDER_WIDTH = 2;
-
-  static compareColumns(
-    range1: NoneNullColumnRange,
-    range2: NoneNullColumnRange
-  ): number {
-    if (
-      range1.startColumn == null ||
-      range1.endColumn == null ||
-      range2.startColumn == null ||
-      range2.endColumn == null
-    ) {
-      return 0;
-    }
-
-    if (range1.startColumn < range2.startColumn) {
-      return -1;
-    }
-    if (range1.startColumn > range2.startColumn) {
-      return 1;
-    }
-    return range1.endColumn - range2.endColumn;
-  }
-
-  static compareRows(
-    range1: NoneNullRowRange,
-    range2: NoneNullRowRange
-  ): number {
-    if (
-      range1.startRow == null ||
-      range1.endRow == null ||
-      range2.startRow == null ||
-      range2.endRow == null
-    ) {
-      return 0;
-    }
-
-    if (range1.startRow < range2.startRow) {
-      return -1;
-    }
-    if (range1.startRow > range2.startRow) {
-      return 1;
-    }
-    return range1.endRow - range2.endRow;
-  }
 
   /**
    * Truncate a string to the specified length and add ellipses if necessary
@@ -2469,7 +2425,6 @@ export class GridRenderer {
       autoSelectColumn,
     } = theme;
 
-    //
     const isInbounds =
       mouseX != null && mouseY != null && mouseX <= width && mouseY <= height;
 
@@ -2558,50 +2513,66 @@ export class GridRenderer {
         hScrollBarSize - scrollBarCasingWidth
       );
 
-      if (!autoSelectRow && scrollBarSelectionTickColor != null) {
+      if (
+        !autoSelectRow &&
+        scrollBarSelectionTickColor != null &&
+        scrollBarActiveSelectionTickColor != null
+      ) {
         context.fillStyle = scrollBarSelectionTickColor;
         // Scrollbar Selection Tick
         const { selectedRanges, model, cursorColumn } = state;
-        const { visibleColumns, visibleColumnWidths } = metrics;
+        const {
+          visibleColumns,
+          visibleColumnWidths,
+          scrollableContentWidth,
+        } = metrics;
         const { columnCount } = model;
 
         const leftVisibleIndex = Math.min(...visibleColumns.values());
         const rightVisibleIndex = Math.max(...visibleColumns.values());
 
+        const remainderRight =
+          (getOrThrow(visibleColumnXs, rightVisibleIndex) +
+            getOrThrow(visibleColumnWidths, rightVisibleIndex) -
+            barWidth) /
+          getOrThrow(visibleColumnWidths, rightVisibleIndex);
+
+        const rightTickSize =
+          (barWidth - (x + handleWidth)) /
+          (columnCount + 1 - rightVisibleIndex + remainderRight);
+
         const getTickX = (index: number) => {
-          if (index < leftVisibleIndex) {
-            return Math.round((index / columnCount) * barWidth);
+          if (index <= leftVisibleIndex) {
+            return Math.round((index / (columnCount + 1)) * barWidth);
           }
-          if (index > rightVisibleIndex) {
-            const remainderRight =
-              (getOrThrow(visibleColumnXs, rightVisibleIndex) +
-                getOrThrow(visibleColumnWidths, rightVisibleIndex) -
-                barWidth) /
-              getOrThrow(visibleColumnWidths, rightVisibleIndex);
-
-            const rightTickSize =
-              (barWidth - (x + handleWidth)) /
-              (columnCount - rightVisibleIndex + remainderRight);
-
+          if (index >= rightVisibleIndex) {
             return Math.round(
-              barWidth - (columnCount - index + 1) * rightTickSize
+              barWidth - (columnCount + 1 - index + 1) * rightTickSize
             );
           }
           return Math.round(
-            (getOrThrow(visibleColumnXs, index) / width) * handleWidth + x
+            (getOrThrow(visibleColumnXs, index) / scrollableContentWidth) *
+              handleWidth +
+              x
           );
         };
 
         const filteredRanges = [...selectedRanges].filter(
           value => value.startColumn != null && value.endColumn != null
-        ) as NoneNullColumnRange[];
+        );
 
-        filteredRanges.sort(GridRenderer.compareColumns);
+        const sortedRanges = filteredRanges
+          .map((value): AxisRange => [value.startColumn, value.endColumn])
+          .sort(GridUtils.compareRanges)
+          .map(value => ({
+            startColumn: value[0],
+            endColumn: value[1],
+          })) as NoneNullColumnRange[];
 
         const mergedRanges: NoneNullColumnRange[] = [];
 
-        for (let i = 0; i < filteredRanges.length; i += 1) {
-          const range = filteredRanges[i];
+        for (let i = 0; i < sortedRanges.length; i += 1) {
+          const range = sortedRanges[i];
           const { startColumn, endColumn } = range;
           if (i === 0) {
             mergedRanges.push({ startColumn, endColumn });
@@ -2626,14 +2597,10 @@ export class GridRenderer {
             (range.startColumn !== cursorColumn ||
               range.endColumn !== cursorColumn)
           ) {
-            const tickX = Math.round(
-              (range.startColumn / columnCount) * barWidth
-            );
+            const tickX = getTickX(range.startColumn);
             const tickWidth = Math.max(
               1,
-              Math.round(
-                ((range.endColumn + 1) / columnCount) * barWidth - tickX
-              )
+              Math.round(getTickX(range.endColumn + 1) - tickX)
             );
             const trackHeight = hScrollBarSize - scrollBarCasingWidth;
             context.fillRect(
@@ -2647,7 +2614,6 @@ export class GridRenderer {
 
         // Current Active Tick
         if (cursorColumn != null) {
-          // const tickX = Math.round((cursorColumn / columnCount) * barWidth);
           const tickX = getTickX(cursorColumn);
           const tickWidth = 2;
           const trackHeight = hScrollBarSize - scrollBarCasingWidth;
@@ -2697,7 +2663,11 @@ export class GridRenderer {
         handleHeight
       );
 
-      if (!autoSelectColumn && scrollBarSelectionTickColor != null) {
+      if (
+        !autoSelectColumn &&
+        scrollBarSelectionTickColor != null &&
+        scrollBarActiveSelectionTickColor != null
+      ) {
         // Scrollbar Selection Tick
         const { selectedRanges, model, cursorRow } = state;
         const { rowCount } = model;
@@ -2706,14 +2676,20 @@ export class GridRenderer {
 
         const filteredRanges = [...selectedRanges].filter(
           value => value.startRow != null && value.endRow != null
-        ) as NoneNullRowRange[];
+        );
 
-        filteredRanges.sort(GridRenderer.compareRows);
+        const sortedRanges = filteredRanges
+          .map((value): AxisRange => [value.startRow, value.endRow])
+          .sort(GridUtils.compareRanges)
+          .map(value => ({
+            startRow: value[0],
+            endRow: value[1],
+          })) as NoneNullRowRange[];
 
         const mergedRanges: NoneNullRowRange[] = [];
 
-        for (let i = 0; i < filteredRanges.length; i += 1) {
-          const range = filteredRanges[i];
+        for (let i = 0; i < sortedRanges.length; i += 1) {
+          const range = sortedRanges[i];
           const { startRow, endRow } = range;
           if (i === 0) {
             mergedRanges.push({ startRow, endRow });

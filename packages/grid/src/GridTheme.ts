@@ -74,8 +74,8 @@ export type GridTheme = {
   scrollSnapToColumn: boolean;
   scrollSnapToRow: boolean;
 
-  scrollBarSelectionTickColor: GridColor;
-  scrollBarActiveSelectionTickColor: GridColor;
+  scrollBarSelectionTickColor: NullableGridColor;
+  scrollBarActiveSelectionTickColor: NullableGridColor;
 
   // Look of the current selection
   selectionColor: GridColor;

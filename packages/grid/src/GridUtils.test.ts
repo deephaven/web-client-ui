@@ -1,3 +1,4 @@
+import { AxisRange } from '.';
 import GridMetrics, { ModelIndex, MoveOperation } from './GridMetrics';
 import GridRange, { GridRangeIndex } from './GridRange';
 import GridUtils from './GridUtils';
@@ -916,5 +917,31 @@ describe('grid range transforms with moved items in both dimensions model to vis
         new GridRange(30, 35, 40, 45),
       ]
     );
+  });
+});
+
+describe('compareRange function works', () => {
+  it("returns negative when first range's start is before the second", () => {
+    const range1: AxisRange = [0, 5];
+    const range2: AxisRange = [1, 3];
+    expect(GridUtils.compareRanges(range1, range2) < 0).toBeTruthy();
+    expect(GridUtils.compareRanges(range1, range2) > 0).toBeFalsy();
+  });
+  it("returns negative when first range's end is before the second", () => {
+    const range1: AxisRange = [1, 2];
+    const range2: AxisRange = [1, 3];
+    expect(GridUtils.compareRanges(range1, range2) < 0).toBeTruthy();
+    expect(GridUtils.compareRanges(range1, range2) > 0).toBeFalsy();
+  });
+  it('returns positive when first range is after the second', () => {
+    const range1: AxisRange = [1, 5];
+    const range2: AxisRange = [1, 3];
+    expect(GridUtils.compareRanges(range1, range2) > 0).toBeTruthy();
+    expect(GridUtils.compareRanges(range1, range2) < 0).toBeFalsy();
+  });
+  it('returns 0 when the ranges are the same', () => {
+    const range1: AxisRange = [1, 3];
+    const range2: AxisRange = [1, 3];
+    expect(GridUtils.compareRanges(range1, range2) === 0).toBeTruthy();
   });
 });
