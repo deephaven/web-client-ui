@@ -490,7 +490,6 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     );
     this.handleAdvancedFilterDone = this.handleAdvancedFilterDone.bind(this);
     this.handleAdvancedMenuOpened = this.handleAdvancedMenuOpened.bind(this);
-    this.handleGotoRowOpened = this.handleGotoRowOpened.bind(this);
     this.handleGotoRowClosed = this.handleGotoRowClosed.bind(this);
     this.handleAdvancedMenuClosed = this.handleAdvancedMenuClosed.bind(this);
     this.handleAggregationChange = this.handleAggregationChange.bind(this);
@@ -2464,10 +2463,6 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
   handleAdvancedMenuOpened(column: GridRangeIndex): void {
     this.setState({ shownAdvancedFilter: column });
-  }
-
-  handleGotoRowOpened(): void {
-    this.setState({ isGotoRowShown: true });
   }
 
   handleGotoRowClosed(): void {
