@@ -18,7 +18,7 @@ const DEFAULT_FORMAT_STRING = '###,##0';
 
 interface GotoRowProps {
   model: IrisGridModel;
-  onGotoRowNumberChanged: (rowValue: string) => void;
+  onGotoRowNumberChanged: (rowValue: number) => void;
   onClose: () => void;
   isShown: boolean;
   onEntering: () => void;
@@ -75,13 +75,13 @@ const GotoRow = ({
               if (rowInt > rowCount || rowInt < -rowCount) {
                 setError('Invalid row index');
               } else if (rowInt === 0) {
-                onGotoRowNumberChanged('1');
+                onGotoRowNumberChanged(1);
                 setError('');
               } else if (rowInt < 0) {
-                onGotoRowNumberChanged(`${rowInt + rowCount + 1}`);
+                onGotoRowNumberChanged(rowInt + rowCount + 1);
                 setError('');
               } else {
-                onGotoRowNumberChanged(event.target.value);
+                onGotoRowNumberChanged(parseInt(event.target.value, 10));
                 setError('');
               }
             }}

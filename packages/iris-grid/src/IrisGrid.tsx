@@ -3211,7 +3211,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     }
   );
 
-  handleGotoRowSelectedRowNumberChanged(rowValue: string): void {
+  handleGotoRowSelectedRowNumberChanged(rowValue: number): void {
     this.grid?.setFocusRow(rowValue);
   }
 

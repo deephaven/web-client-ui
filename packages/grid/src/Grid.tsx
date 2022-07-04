@@ -552,8 +552,7 @@ class Grid extends PureComponent<GridProps, GridState> {
     }
   }
 
-  setFocusRow(row: string): void {
-    const focusedRow = parseInt(row, 10);
+  setFocusRow(focusedRow: number): void {
     this.setState({ top: focusedRow - 1 }, () => this.moveFocusRow());
     this.setState({
       selectedRanges: [
