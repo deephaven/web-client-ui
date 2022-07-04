@@ -18,7 +18,6 @@ const DEFAULT_FORMAT_STRING = '###,##0';
 
 interface GotoRowProps {
   model: IrisGridModel;
-  selectedRowNumber: string;
   onGotoRowNumberChanged: (rowValue: string) => void;
   onClose: () => void;
   isShown: boolean;
@@ -35,7 +34,6 @@ const GotoRow = ({
   onExiting,
   onExited,
   model,
-  selectedRowNumber,
   onGotoRowNumberChanged,
   onClose,
 }: GotoRowProps): ReactElement => {
@@ -62,19 +60,25 @@ const GotoRow = ({
         <div className="goto-row-input">
           <input
             type="number"
-            className="form-control"
+            className={classNames('form-control', {
+              'is-invalid': error !== '',
+            })}
             placeholder={res}
             onChange={event => {
               const rowNumber = event.target.value;
               setRow(rowNumber);
-              if (
-                rowNumber !== '' &&
-                (parseInt(rowNumber, 10) < 0 ||
-                  parseInt(rowNumber, 10) > rowCount)
-              ) {
+              if (rowNumber === '') {
+                setError('');
+                return;
+              }
+              const rowInt = parseInt(event.target.value, 10);
+              if (rowInt > rowCount || rowInt < -rowCount) {
                 setError('Invalid row index');
-              } else if (rowNumber !== '' && parseInt(rowNumber, 10) === 0) {
+              } else if (rowInt === 0) {
                 onGotoRowNumberChanged('1');
+                setError('');
+              } else if (rowInt < 0) {
+                onGotoRowNumberChanged(`${rowInt + rowCount + 1}`);
                 setError('');
               } else {
                 onGotoRowNumberChanged(event.target.value);

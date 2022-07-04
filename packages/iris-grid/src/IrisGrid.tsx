@@ -388,7 +388,6 @@ export interface IrisGridState {
   overflowText: string;
   overflowButtonTooltipProps: CSSProperties | null;
   isGotoRowShown: boolean;
-  gotoRowSelectedRowNumber: string;
 }
 
 export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
@@ -561,7 +560,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     this.handleRollupChange = this.handleRollupChange.bind(this);
     this.handleOverflowClose = this.handleOverflowClose.bind(this);
     this.getColumnBoundingRect = this.getColumnBoundingRect.bind(this);
-    this.onGotoRowSelectedRowNumberChanged = this.onGotoRowSelectedRowNumberChanged.bind(
+    this.handleGotoRowSelectedRowNumberChanged = this.handleGotoRowSelectedRowNumberChanged.bind(
       this
     );
 
@@ -775,7 +774,6 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       overflowText: '',
       overflowButtonTooltipProps: null,
       isGotoRowShown: false,
-      gotoRowSelectedRowNumber: '',
     };
   }
 
@@ -949,11 +947,6 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
   getAdvancedMenuOpenedHandler = memoize(
     column => this.handleAdvancedMenuOpened.bind(this, column),
-    { max: 100 }
-  );
-
-  getGotoRowOpenedHandler = memoize(
-    cellInfo => this.handleGotoRowOpened.bind(this, cellInfo),
     { max: 100 }
   );
 
@@ -3218,10 +3211,8 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     }
   );
 
-  onGotoRowSelectedRowNumberChanged(rowValue: string): void {
-    this.setState({
-      gotoRowSelectedRowNumber: rowValue,
-    });
+  handleGotoRowSelectedRowNumberChanged(rowValue: string): void {
+    this.grid?.setFocusRow(rowValue);
   }
 
   getColumnTooltip(
@@ -3404,7 +3395,6 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       overflowText,
       overflowButtonTooltipProps,
       isGotoRowShown,
-      gotoRowSelectedRowNumber,
     } = this.state;
     if (!isReady) {
       return null;
@@ -3925,11 +3915,6 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
               renderer={this.renderer}
               stateOverride={stateOverride}
               theme={theme}
-              focusedRow={
-                gotoRowSelectedRowNumber !== ''
-                  ? parseInt(gotoRowSelectedRowNumber, 10)
-                  : undefined
-              }
             />
             <IrisGridCellOverflowModal
               isOpen={showOverflowModal}
@@ -4011,8 +3996,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
           <GotoRow
             model={model}
             isShown={isGotoRowShown}
-            selectedRowNumber={gotoRowSelectedRowNumber}
-            onGotoRowNumberChanged={this.onGotoRowSelectedRowNumberChanged}
+            onGotoRowNumberChanged={this.handleGotoRowSelectedRowNumberChanged}
             onClose={this.handleGotoRowClosed}
             onEntering={this.handleAnimationStart}
             onEntered={this.handleAnimationEnd}

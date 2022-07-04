@@ -115,8 +115,6 @@ export type GridProps = typeof Grid.defaultProps & {
   stateOverride?: Record<string, unknown>;
 
   theme?: Partial<GridThemeType>;
-
-  focusedRow?: ModelIndex;
 };
 
 export type GridState = {
@@ -179,8 +177,6 @@ export type GridState = {
   // Whether we're stuck to the bottom or the right
   isStuckToBottom: boolean;
   isStuckToRight: boolean;
-
-  updateTop: boolean;
 };
 
 /**
@@ -421,8 +417,6 @@ class Grid extends PureComponent<GridProps, GridState> {
 
       isStuckToBottom,
       isStuckToRight,
-
-      updateTop: false,
     };
   }
 
@@ -451,14 +445,12 @@ class Grid extends PureComponent<GridProps, GridState> {
       onMoveColumnComplete,
       onMovedRowsChanged,
       onMoveRowComplete,
-      focusedRow,
     } = this.props;
     const {
       isStickyBottom: prevIsStickyBottom,
       isStickyRight: prevIsStickyRight,
       movedColumns: prevPropMovedColumns,
       movedRows: prevPropMovedRows,
-      focusedRow: prevFocusedRow,
     } = prevProps;
     const {
       movedColumns: prevStateMovedColumns,
@@ -469,7 +461,6 @@ class Grid extends PureComponent<GridProps, GridState> {
       draggingRow,
       movedColumns: currentStateMovedColumns,
       movedRows: currentStateMovedRows,
-      updateTop,
     } = this.state;
 
     if (prevPropMovedColumns !== movedColumns) {
@@ -521,7 +512,6 @@ class Grid extends PureComponent<GridProps, GridState> {
       left,
       height,
       width,
-      userRowHeights,
     } = this.metrics;
     const {
       rowCount: prevRowCount,
@@ -560,6 +550,24 @@ class Grid extends PureComponent<GridProps, GridState> {
     if (this.validateSelection()) {
       this.checkSelectionChange(prevState);
     }
+  }
+
+  setFocusRow(row: string): void {
+    const focusedRow = parseInt(row, 10);
+    this.setState({ top: focusedRow - 1 }, () => this.moveFocusRow());
+    this.setState({
+      selectedRanges: [
+        new GridRange(null, focusedRow - 1, null, focusedRow - 1),
+      ],
+    });
+  }
+
+  moveFocusRow(): void {
+    if (!this.metrics || !this.prevMetrics) {
+      return;
+    }
+
+    const { top } = this.state;
 
     const {
       rowHeight,
@@ -567,42 +575,34 @@ class Grid extends PureComponent<GridProps, GridState> {
       visibleRowYs,
       visibleRowHeights,
       columnHeaderHeight,
+      userRowHeights,
     } = this.metrics;
+
     const arr: [number, number][] = [];
     userRowHeights.forEach((x, number) => arr.push([x, number]));
-    if (updateTop) {
-      let currentTop = top;
-      const tableHeight =
-        (this.canvas?.clientHeight ?? columnHeaderHeight) - columnHeaderHeight;
+    let currentTop = top;
+    const tableHeight =
+      (this.canvas?.clientHeight ?? columnHeaderHeight) - columnHeaderHeight;
 
-      const halfViewportHeight =
-        Math.round(tableHeight / 2) - getOrThrow(visibleRowHeights, top);
-      const bottomToFill = Math.max(
-        0,
-        tableHeight -
-          rowHeight * 2 -
-          getOrThrow(visibleRowYs, bottom) -
-          getOrThrow(visibleRowHeights, bottom) -
-          halfViewportHeight
-      );
+    const halfViewportHeight =
+      Math.round(tableHeight / 2) - getOrThrow(visibleRowHeights, top);
+    const bottomToFill = Math.max(
+      0,
+      tableHeight -
+        rowHeight * 2 -
+        getOrThrow(visibleRowYs, bottom) -
+        getOrThrow(visibleRowHeights, bottom) -
+        halfViewportHeight
+    );
 
-      let heightToFill = halfViewportHeight + bottomToFill;
+    let heightToFill = halfViewportHeight + bottomToFill;
 
-      while (heightToFill >= 0 && currentTop > 0) {
-        currentTop -= 1;
-        heightToFill -= userRowHeights.get(currentTop) ?? rowHeight;
-      }
-
-      this.setState({ updateTop: false, top: currentTop });
+    while (heightToFill >= 0 && currentTop > 0) {
+      currentTop -= 1;
+      heightToFill -= userRowHeights.get(currentTop) ?? rowHeight;
     }
-    if (focusedRow !== prevFocusedRow && focusedRow != null) {
-      this.setState({ top: focusedRow - 1, updateTop: true });
-      this.setState({
-        selectedRanges: [
-          new GridRange(null, focusedRow - 1, null, focusedRow - 1),
-        ],
-      });
-    }
+
+    this.setState({ top: currentTop });
   }
 
   componentWillUnmount(): void {
