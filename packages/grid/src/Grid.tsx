@@ -53,7 +53,6 @@ import {
 import { EventHandlerResultOptions } from './EventHandlerResult';
 import { assertIsDefined } from './errors';
 import ThemeContext from './ThemeContext';
-import { getOrThrow } from '.';
 
 type LegacyCanvasRenderingContext2D = CanvasRenderingContext2D & {
   webkitBackingStorePixelRatio?: number;
@@ -552,58 +551,6 @@ class Grid extends PureComponent<GridProps, GridState> {
     }
   }
 
-  setFocusRow(focusedRow: number): void {
-    this.setState({ top: focusedRow - 1 }, () => this.moveFocusRow());
-    this.setState({
-      selectedRanges: [
-        new GridRange(null, focusedRow - 1, null, focusedRow - 1),
-      ],
-    });
-  }
-
-  moveFocusRow(): void {
-    if (!this.metrics || !this.prevMetrics) {
-      return;
-    }
-
-    const { top } = this.state;
-
-    const {
-      rowHeight,
-      bottom,
-      visibleRowYs,
-      visibleRowHeights,
-      columnHeaderHeight,
-      userRowHeights,
-    } = this.metrics;
-
-    const arr: [number, number][] = [];
-    userRowHeights.forEach((x, number) => arr.push([x, number]));
-    let currentTop = top;
-    const tableHeight =
-      (this.canvas?.clientHeight ?? columnHeaderHeight) - columnHeaderHeight;
-
-    const halfViewportHeight =
-      Math.round(tableHeight / 2) - getOrThrow(visibleRowHeights, top);
-    const bottomToFill = Math.max(
-      0,
-      tableHeight -
-        rowHeight * 2 -
-        getOrThrow(visibleRowYs, bottom) -
-        getOrThrow(visibleRowHeights, bottom) -
-        halfViewportHeight
-    );
-
-    let heightToFill = halfViewportHeight + bottomToFill;
-
-    while (heightToFill >= 0 && currentTop > 0) {
-      currentTop -= 1;
-      heightToFill -= userRowHeights.get(currentTop) ?? rowHeight;
-    }
-
-    this.setState({ top: currentTop });
-  }
-
   componentWillUnmount(): void {
     if (this.animationFrame != null) {
       cancelAnimationFrame(this.animationFrame);
@@ -1084,6 +1031,34 @@ class Grid extends PureComponent<GridProps, GridState> {
         selectedRanges: newSelectedRanges,
         lastSelectedRanges: selectedRanges,
       };
+    });
+  }
+
+  setFocusRow(focusedRow: number): void {
+    if (!this.metrics || !this.prevMetrics) {
+      return;
+    }
+
+    const { gridY, height, lastTop, userRowHeights, rowHeight } = this.metrics;
+
+    const tableHeight = height - gridY;
+
+    const halfViewportHeight =
+      Math.round(tableHeight / 2) +
+      (userRowHeights.get(focusedRow) ?? rowHeight);
+
+    const metricState = this.getMetricState();
+    const newTop = this.metricCalculator.getLastTop(
+      metricState,
+      focusedRow,
+      halfViewportHeight
+    );
+
+    this.setState({ top: newTop > lastTop ? lastTop : newTop });
+    this.setState({
+      selectedRanges: [
+        new GridRange(null, focusedRow - 1, null, focusedRow - 1),
+      ],
     });
   }
 
