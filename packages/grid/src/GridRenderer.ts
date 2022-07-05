@@ -2406,7 +2406,6 @@ export class GridRenderer {
       hasVerticalBar,
       barWidth,
       barHeight,
-      visibleColumnXs,
     } = metrics;
     const {
       scrollBarBackgroundColor,
@@ -2520,42 +2519,8 @@ export class GridRenderer {
       ) {
         context.fillStyle = scrollBarSelectionTickColor;
         // Scrollbar Selection Tick
-        const { selectedRanges, model, cursorColumn } = state;
-        const {
-          visibleColumns,
-          visibleColumnWidths,
-          scrollableContentWidth,
-        } = metrics;
-        const { columnCount } = model;
-
-        const leftVisibleIndex = Math.min(...visibleColumns.values());
-        const rightVisibleIndex = Math.max(...visibleColumns.values());
-
-        const remainderRight =
-          (getOrThrow(visibleColumnXs, rightVisibleIndex) +
-            getOrThrow(visibleColumnWidths, rightVisibleIndex) -
-            barWidth) /
-          getOrThrow(visibleColumnWidths, rightVisibleIndex);
-
-        const rightTickSize =
-          (barWidth - (x + handleWidth)) /
-          (columnCount + 1 - rightVisibleIndex + remainderRight);
-
-        const getTickX = (index: number) => {
-          if (index <= leftVisibleIndex) {
-            return Math.round((index / (columnCount + 1)) * barWidth);
-          }
-          if (index >= rightVisibleIndex) {
-            return Math.round(
-              barWidth - (columnCount + 1 - index + 1) * rightTickSize
-            );
-          }
-          return Math.round(
-            (getOrThrow(visibleColumnXs, index) / scrollableContentWidth) *
-              handleWidth +
-              x
-          );
-        };
+        const { selectedRanges, cursorColumn } = state;
+        const { lastLeft } = metrics;
 
         const filteredRanges = [...selectedRanges].filter(
           value => value.startColumn != null && value.endColumn != null
@@ -2597,10 +2562,14 @@ export class GridRenderer {
             (range.startColumn !== cursorColumn ||
               range.endColumn !== cursorColumn)
           ) {
-            const tickX = getTickX(range.startColumn);
+            const tickX =
+              (range.startColumn / lastLeft) * (barWidth - handleWidth);
             const tickWidth = Math.max(
               1,
-              Math.round(getTickX(range.endColumn + 1) - tickX)
+              Math.round(
+                ((range.endColumn + 1) / lastLeft) * (barWidth - handleWidth) -
+                  tickX
+              )
             );
             const trackHeight = hScrollBarSize - scrollBarCasingWidth;
             context.fillRect(
@@ -2614,7 +2583,7 @@ export class GridRenderer {
 
         // Current Active Tick
         if (cursorColumn != null) {
-          const tickX = getTickX(cursorColumn);
+          const tickX = (cursorColumn / lastLeft) * (barWidth - handleWidth);
           const tickWidth = 2;
           const trackHeight = hScrollBarSize - scrollBarCasingWidth;
           context.fillStyle = scrollBarActiveSelectionTickColor;
@@ -2669,8 +2638,8 @@ export class GridRenderer {
         scrollBarActiveSelectionTickColor != null
       ) {
         // Scrollbar Selection Tick
-        const { selectedRanges, model, cursorRow } = state;
-        const { rowCount } = model;
+        const { selectedRanges, cursorRow } = state;
+        const { lastTop } = metrics;
 
         context.fillStyle = scrollBarSelectionTickColor;
 
@@ -2713,12 +2682,15 @@ export class GridRenderer {
             range.endRow != null &&
             (range.startRow !== cursorRow || range.endRow !== cursorRow)
           ) {
-            const tickY = Math.round((range.startRow / rowCount) * barHeight);
+            const tickY = Math.round(
+              (range.startRow / lastTop) * (barHeight - handleHeight)
+            );
             const trackWidth = vScrollBarSize - scrollBarCasingWidth;
             const tickHeight = Math.max(
               1,
               Math.round(
-                ((range.endRow - range.startRow + 1) / rowCount) * barHeight
+                ((range.endRow + 1) / lastTop) * (barHeight - handleHeight) -
+                  tickY
               )
             );
             context.fillRect(
@@ -2732,7 +2704,9 @@ export class GridRenderer {
 
         // Current Active Tick
         if (cursorRow != null) {
-          const tickY = Math.round((cursorRow / rowCount) * barHeight);
+          const tickY = Math.round(
+            (cursorRow / lastTop) * (barHeight - handleHeight)
+          );
 
           const trackWidth = vScrollBarSize - scrollBarCasingWidth;
           const tickHeight = 2;
