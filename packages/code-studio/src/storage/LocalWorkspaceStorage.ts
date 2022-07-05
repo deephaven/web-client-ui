@@ -30,6 +30,7 @@ export class LocalWorkspaceStorage implements WorkspaceStorage {
         defaultIntegerFormatOptions: {
           defaultFormatString: IntegerColumnFormatter.DEFAULT_FORMAT_STRING,
         },
+        truncateNumbersWithPound: false,
       },
       data: {},
       layoutConfig: [{}],

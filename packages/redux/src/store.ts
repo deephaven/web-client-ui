@@ -37,7 +37,7 @@ export interface WorkspaceSettings {
   timeZone: string;
   showTimeZone: boolean;
   showTSeparator: boolean;
-  truncateNumbersWithPound?: boolean;
+  truncateNumbersWithPound: boolean;
   disableMoveConfirmation: boolean;
   showSystemBadge?: boolean;
   shortcutOverrides?: {
