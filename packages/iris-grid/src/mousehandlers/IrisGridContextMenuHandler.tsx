@@ -663,7 +663,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
         if (column != null) {
           actions.push(...this.getHeaderActions(modelColumn, gridPoint));
         }
-      } else {
+      } else if (column != null && rowIndex != null) {
         actions.push(...this.getCellActions(modelColumn, grid, gridPoint));
       }
     }
