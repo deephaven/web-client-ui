@@ -1,6 +1,7 @@
 /* eslint class-methods-use-this: "off" */
 import memoize from 'memoizee';
 import debounce from 'lodash.debounce';
+import set from 'lodash.set';
 import dh from '@deephaven/jsapi-shim';
 import Log from '@deephaven/log';
 import ChartModel from './ChartModel';
@@ -355,17 +356,6 @@ class FigureChartModel extends ChartModel {
           columnType,
           this.formatter
         );
-        // // KLUDGE: Make this more elegant?
-        // if (
-        //   series.plotStyle === dh.plot.SeriesPlotStyle.TREEMAP &&
-        //   type === dh.plot.SourceType.COLOR
-        // ) {
-        //   valueTranslator = value => {
-        //     return value ?? '';
-        //     // Need to convert long to a hex color
-        //     // return value;
-        //   };
-        // }
         const dataArray = figureUpdateEvent.getArray(
           series,
           type,
@@ -546,16 +536,8 @@ class FigureChartModel extends ChartModel {
     const { name, plotStyle } = series;
 
     const seriesData = this.seriesDataMap.get(name);
-    // KLUDGE: Can we make this more elegant?
-    if (
-      plotStyle === dh.plot.SeriesPlotStyle.TREEMAP &&
-      sourceType === dh.plot.SourceType.COLOR
-    ) {
-      seriesData.marker.colors = dataArray;
-    } else {
-      const property = ChartUtils.getPlotlyProperty(plotStyle, sourceType);
-      seriesData[property] = dataArray;
-    }
+    const property = ChartUtils.getPlotlyProperty(plotStyle, sourceType);
+    set(seriesData, property, dataArray);
   }
 
   /**

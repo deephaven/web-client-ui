@@ -1,6 +1,7 @@
 import Log from '@deephaven/log';
 import { TableUtils } from '@deephaven/jsapi-utils';
 import dh from '@deephaven/jsapi-shim';
+import set from 'lodash.set';
 
 const log = Log.module('ChartUtils');
 
@@ -124,6 +125,8 @@ class ChartUtils {
             return 'labels';
           case dh.plot.SourceType.PARENT:
             return 'parents';
+          case dh.plot.SourceType.COLOR:
+            return 'marker.colors';
           default:
             break;
         }
@@ -482,7 +485,7 @@ class ChartUtils {
         plotStyle,
         sourceType
       );
-      seriesData[dataAttributeName] = [];
+      set(seriesData, dataAttributeName, []);
 
       const axisProperty = axis
         ? ChartUtils.getAxisPropertyName(axis.type)
@@ -1168,9 +1171,6 @@ class ChartUtils {
    * Eg. Unwraps DateWrapper, LongWrapper objects.
    */
   static unwrapValue(value, timeZone = null) {
-    if (value == null) {
-      return 0;
-    }
     if (value != null) {
       if (value.asDate) {
         return dh.i18n.DateTimeFormat.format(

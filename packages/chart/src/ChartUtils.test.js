@@ -431,3 +431,18 @@ it('creates range breaks from holidays correctly', () => {
     ]
   );
 });
+
+describe('axis property name', () => {
+  it('gets x/y axis property names correctly', () => {
+    expect(ChartUtils.getAxisPropertyName(dh.plot.AxisType.X)).toBe('x');
+    expect(ChartUtils.getAxisPropertyName(dh.plot.AxisType.Y)).toBe('y');
+  });
+
+  it('returns null for all other properties', () => {
+    expect(ChartUtils.getAxisPropertyName(dh.plot.AxisType.COLOR)).toBe(null);
+    expect(ChartUtils.getAxisPropertyName(dh.plot.AxisType.LABEL)).toBe(null);
+    expect(ChartUtils.getAxisPropertyName(dh.plot.AxisType.SHAPE)).toBe(null);
+    expect(ChartUtils.getAxisPropertyName(dh.plot.AxisType.SIZE)).toBe(null);
+    expect(ChartUtils.getAxisPropertyName(dh.plot.AxisType.Z)).toBe(null);
+  });
+});

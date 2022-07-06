@@ -36,6 +36,7 @@
     "@deephaven/log": "file:../log",
     "deep-equal": "^2.0.5",
     "lodash.debounce": "^4.0.8",
+    "lodash.set": "^4.3.2",
     "memoize-one": "^5.1.1",
     "memoizee": "^0.4.15",
     "plotly.js": "^2.2.1",
