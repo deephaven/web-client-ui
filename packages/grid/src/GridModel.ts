@@ -1,4 +1,5 @@
 import { EventTarget, Event } from 'event-target-shim';
+import { IColumnHeaderGroup } from '.';
 import { ModelIndex } from './GridMetrics';
 import { GridColor, GridTheme, NullableGridColor } from './GridTheme';
 
@@ -121,9 +122,10 @@ abstract class GridModel<
    * @param depth Depth to get the header text for. 0 is base columns
    * @returns Text to put in the column header
    */
-  textForColumnHeader(column: ModelIndex, depth = 0): string {
-    return '';
-  }
+  abstract textForColumnHeader(
+    column: ModelIndex,
+    depth?: number
+  ): string | undefined;
 
   /** Color for column header
    * @param column Column to get the color for
@@ -195,6 +197,13 @@ abstract class GridModel<
    */
   isRowMovable(row: ModelIndex): boolean {
     return true;
+  }
+
+  getColumnHeaderGroup(
+    modelIndex: ModelIndex,
+    depth: number
+  ): IColumnHeaderGroup | null {
+    return null;
   }
 }
 

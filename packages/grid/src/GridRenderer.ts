@@ -20,6 +20,7 @@ import { getOrThrow } from './GridMetricCalculator';
 import { isEditableGridModel } from './EditableGridModel';
 import type { GridSeparator } from './mouse-handlers/GridSeparatorMouseHandler';
 import { DraggingColumn } from './mouse-handlers/GridColumnMoveMouseHandler';
+import { BoundedAxisRange } from '.';
 
 export type EditingCellTextSelectionRange = [start: number, end: number];
 
@@ -1433,16 +1434,26 @@ export class GridRenderer {
 
     context.save();
 
-    this.drawColumnHeadersForRange(context, state, visibleColumns, {
-      minX: gridX + floatingLeftWidth,
-      maxX: width - floatingRightWidth,
-    });
+    this.drawColumnHeadersForRange(
+      context,
+      state,
+      [visibleColumns[0], visibleColumns[visibleColumns.length - 1]],
+      {
+        minX: gridX + floatingLeftWidth,
+        maxX: width - floatingRightWidth,
+      }
+    );
 
     if (containsFrozenColumns) {
-      this.drawColumnHeadersForRange(context, state, floatingColumns, {
-        minX: gridX,
-        maxX: gridX + floatingLeftWidth,
-      });
+      this.drawColumnHeadersForRange(
+        context,
+        state,
+        [floatingColumns[0], floatingColumns[floatingColumns.length - 1]],
+        {
+          minX: gridX,
+          maxX: gridX + floatingLeftWidth,
+        }
+      );
     }
 
     if (headerSeparatorColor) {
@@ -1568,7 +1579,7 @@ export class GridRenderer {
   drawColumnHeadersForRange(
     context: CanvasRenderingContext2D,
     state: GridRenderState,
-    range: VisibleIndex[],
+    range: BoundedAxisRange,
     bounds: { minX: number; maxX: number }
   ): void {
     const { model } = state;
@@ -1586,7 +1597,7 @@ export class GridRenderer {
   drawColumnHeadersAtDepth(
     context: CanvasRenderingContext2D,
     state: GridRenderState,
-    range: VisibleIndex[],
+    range: BoundedAxisRange,
     bounds: { minX: number; maxX: number },
     depth: number
   ): void {
@@ -1615,6 +1626,9 @@ export class GridRenderer {
       return;
     }
 
+    const startIndex = range[0];
+    const endIndex = range[1];
+
     context.save();
     context.translate(
       0,
@@ -1629,15 +1643,13 @@ export class GridRenderer {
       });
 
       // Draw base column headers
-      range.forEach(column =>
-        this.drawColumnHeaderAtIndex(context, state, column, bounds)
-      );
+      for (let i = startIndex; i <= endIndex; i += 1) {
+        this.drawColumnHeaderAtIndex(context, state, i, bounds);
+      }
     }
 
     // Draw column header group
     if (depth > 0) {
-      const startIndex = range[0];
-      const endIndex = range[range.length - 1];
       let columnIndex = startIndex;
 
       while (columnIndex <= endIndex) {
@@ -1764,6 +1776,10 @@ export class GridRenderer {
     const modelColumn = getOrThrow(modelColumns, index);
     const text = model.textForColumnHeader(modelColumn);
     const { headerBackgroundColor, headerColor, headerSeparatorColor } = theme;
+
+    if (text == null) {
+      return;
+    }
 
     this.drawColumnHeader(
       context,
@@ -2484,6 +2500,7 @@ export class GridRenderer {
       metrics,
       mouseX,
       theme,
+      model,
     } = state;
     if (draggingColumn == null || mouseX == null) {
       return;
@@ -2503,10 +2520,37 @@ export class GridRenderer {
       width,
       columnHeaderMaxDepth,
       columnHeaderHeight,
+      movedColumns,
+      left,
+      right,
+      modelColumns,
     } = metrics;
-    const x = getOrThrow(visibleColumnXs, draggingColumnIndex);
-    const columnWidth =
-      getOrThrow(visibleColumnWidths, draggingColumnIndex) + 1;
+
+    const draggingModelIndex = getOrThrow(modelColumns, draggingColumnIndex);
+
+    const draggingGroup = model.getColumnHeaderGroup(
+      draggingModelIndex,
+      draggingColumnDepth
+    );
+
+    if (draggingColumnDepth > 0 && !draggingGroup) {
+      return;
+    }
+
+    const [startIndex, endIndex] = draggingGroup?.getVisibleRange(
+      movedColumns
+    ) ?? [draggingColumnIndex, draggingColumnIndex];
+
+    const xLeft =
+      startIndex >= left ? getOrThrow(visibleColumnXs, startIndex) : 0;
+    const xRight =
+      endIndex <= right
+        ? getOrThrow(visibleColumnXs, endIndex) +
+          getOrThrow(visibleColumnWidths, endIndex)
+        : width;
+    // const columnWidth =
+    //   getOrThrow(visibleColumnWidths, draggingColumnIndex) + 1;
+    const columnWidth = xRight - xLeft;
     const {
       backgroundColor,
       font,
@@ -2525,10 +2569,10 @@ export class GridRenderer {
 
     // First, we need to draw over the row stripes where the column is coming from
     context.fillStyle = backgroundColor;
-    context.fillRect(x, columnHeaderOffset, columnWidth, height);
+    context.fillRect(xLeft, columnHeaderOffset, columnWidth, height);
 
     context.translate(
-      mouseX - x - gridX - (draggingColumnOffset ?? 0),
+      mouseX - xLeft - gridX - (draggingColumnOffset ?? 0),
       gridY + reorderOffset
     );
 
@@ -2539,27 +2583,29 @@ export class GridRenderer {
     context.shadowBlur = shadowBlur;
 
     context.fillStyle = backgroundColor;
-    context.fillRect(x, -gridY + columnHeaderOffset, columnWidth, height);
+    context.fillRect(xLeft, -gridY + columnHeaderOffset, columnWidth, height);
 
     context.restore();
 
     // Now set the clipping region and pretty much just redraw this column and all it's contents
     context.beginPath();
-    context.rect(x, -gridY + columnHeaderOffset, columnWidth, height);
+    context.rect(xLeft, -gridY + columnHeaderOffset, columnWidth, height);
     context.clip();
 
     context.font = font;
 
     this.drawGridBackground(context, state);
 
-    this.drawColumnCellContents(context, state, draggingColumnIndex);
+    for (let i = startIndex; i <= endIndex; i += 1) {
+      this.drawColumnCellContents(context, state, i);
+    }
 
     // Now translate it back up and draw the header
     context.translate(-gridX, -gridY);
 
     context.font = headerFont;
 
-    this.drawColumnHeadersForRange(context, state, [draggingColumnIndex], {
+    this.drawColumnHeadersForRange(context, state, [startIndex, endIndex], {
       minX: 0,
       maxX: width,
     });

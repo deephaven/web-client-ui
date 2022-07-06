@@ -425,6 +425,11 @@ class IrisGridRenderer extends GridRenderer {
     const columnWidth = getOrThrow(visibleColumnWidths, index);
     const columnX = getOrThrow(visibleColumnXs, index) + gridX;
     const modelColumn = modelColumns.get(index);
+
+    if (modelColumn == null) {
+      return;
+    }
+
     const sort = TableUtils.getSortForColumn(model.sort, modelColumn);
 
     if (!sort) {
@@ -437,6 +442,10 @@ class IrisGridRenderer extends GridRenderer {
     }
 
     const text = model.textForColumnHeader(modelColumn);
+    if (!text) {
+      return;
+    }
+
     const fontWidth =
       fontWidths.get(context.font) || GridRenderer.DEFAULT_FONT_WIDTH;
     const textWidth = text.length * fontWidth;
@@ -892,10 +901,11 @@ class IrisGridRenderer extends GridRenderer {
       return textMetrics;
     }
 
-    const {
-      visibleIndex: mouseColumn,
-      row: mouseRow,
-    } = GridUtils.getGridPointFromXY(mouseX, mouseY, metrics);
+    const { column: mouseColumn, row: mouseRow } = GridUtils.getGridPointFromXY(
+      mouseX,
+      mouseY,
+      metrics
+    );
 
     if (column === mouseColumn && row === mouseRow) {
       const { left } = this.getCellOverflowButtonPosition(state);

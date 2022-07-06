@@ -5,12 +5,16 @@ import throttle from 'lodash.throttle';
 import {
   EditOperation,
   GridRange,
+  GridUtils,
+  IColumnHeaderGroup,
   memoizeClear,
   ModelIndex,
+  MoveOperation,
   VisibleIndex,
 } from '@deephaven/grid';
 import dh, {
   Column,
+  ColumnGroup,
   ColumnStatistics,
   CustomColumn,
   FilterCondition,
@@ -46,6 +50,7 @@ import {
   UIViewportData,
 } from './CommonTypes';
 import { IrisGridThemeType } from './IrisGridTheme';
+import ColumnHeaderGroup, { isColumnHeaderGroup } from './ColumnHeaderGroup';
 
 const log = Log.module('IrisGridTableModel');
 
@@ -112,6 +117,10 @@ class IrisGridTableModelTemplate<
     throw new Error('Method not implemented.');
   }
 
+  /**
+   * Returns an array of the columns in the model
+   * The order of model columns should never change once established
+   */
   get columns(): Column[] {
     return this.table.columns;
   }
@@ -155,6 +164,14 @@ class IrisGridTableModelTemplate<
 
   private pendingNewDataErrors: Map<unknown, unknown> | null;
 
+  private columnHeaderGroupMap: Map<string, ColumnHeaderGroup> = new Map();
+
+  private columnHeaderParentMap: Map<string, ColumnHeaderGroup> = new Map();
+
+  private _columnHeaderMaxDepth: number | null = null;
+
+  private _columnHeaderGroups: ColumnGroup[] = [];
+
   /**
    * @param table Iris data table to be used in the model
    * @param formatter The formatter to use when getting formats
@@ -197,13 +214,6 @@ class IrisGridTableModelTemplate<
     this.pendingNewDataMap = new Map();
     this.pendingNewDataErrors = null;
     this.pendingNewRowCount = 0;
-
-    this.userFrozenColumns = null;
-
-    this.columnHeaderGroupMap = new Map();
-    this.columnHeaderParentMap = new Map();
-    this._columnHeaderMaxDepth = null;
-    this._columnHeaderGroups = [];
   }
 
   close(): void {
@@ -575,20 +585,38 @@ class IrisGridTableModelTemplate<
     return 'left';
   }
 
-  textForColumnHeader(x, depth = 0) {
-    return this.columnAtDepth(x, depth)?.name ?? null;
+  textForColumnHeader(x: ModelIndex, depth = 0): string | undefined {
+    return this.columnAtDepth(x, depth)?.name ?? undefined;
   }
 
-  colorForColumnHeader(x, depth = 0) {
-    return this.columnAtDepth(x, depth)?.color ?? null;
+  colorForColumnHeader(x: ModelIndex, depth = 0): string | null {
+    const column = this.columnAtDepth(x, depth);
+    if (isColumnHeaderGroup(column)) {
+      return column.color ?? null;
+    }
+    return null;
   }
 
-  columnAtDepth(x, depth = 0) {
+  getColumnHeaderGroup(
+    modelIndex: ModelIndex,
+    depth: number
+  ): IColumnHeaderGroup | null {
+    const group = this.columnAtDepth(modelIndex, depth);
+    if (isColumnHeaderGroup(group)) {
+      return group;
+    }
+    return null;
+  }
+
+  columnAtDepth(
+    x: ModelIndex,
+    depth = 0
+  ): ColumnHeaderGroup | Column | undefined {
     if (depth === 0) {
       return this.columns[x];
     }
 
-    const columnName = this.columns[x].name;
+    const columnName = this.columns[x]?.name;
     let group = this.columnHeaderParentMap.get(columnName);
 
     if (!group) {
@@ -620,42 +648,27 @@ class IrisGridTableModelTemplate<
   }
 
   /**
-   * Returns an array of the columns in the model
-   * The order of model columns should never change once established
-   */
-  get columns() {
-    return this.table.columns;
-  }
-
-  /**
    * Used to get the initial moved columns based on layout hints
    */
-  get movedColumns() {
-    let movedColumns = [];
+  get movedColumns(): MoveOperation[] {
+    let movedColumns: MoveOperation[] = [];
 
-    const moveColumn = (name, index) => {
+    const moveColumn = (name: string, toIndex: VisibleIndex) => {
       const modelIndex = this.getColumnIndexByName(name);
       if (!modelIndex) {
         throw new Error(`Unknown layout hint column: ${name}`);
       }
       const visibleIndex = GridUtils.getVisibleIndex(modelIndex, movedColumns);
-      movedColumns = GridUtils.moveItem(visibleIndex, index, movedColumns);
+      movedColumns = GridUtils.moveItem(visibleIndex, toIndex, movedColumns);
     };
 
-    const moveGroup = (name, index) => {
+    const moveGroup = (name: string, toIndex: VisibleIndex) => {
       const group = this.columnHeaderGroupMap.get(name);
       if (!group) {
         throw new Error(`Unknown layout hint group: ${name}`);
       }
-      const visibleIndexes = GridUtils.getVisibleIndexes(
-        group.childIndexes.flat(),
-        movedColumns
-      );
-      movedColumns = GridUtils.moveRange(
-        [Math.min(...visibleIndexes), Math.max(...visibleIndexes)],
-        index,
-        movedColumns
-      );
+      const visibleRange = group.getVisibleRange(movedColumns);
+      movedColumns = GridUtils.moveRange(visibleRange, toIndex, movedColumns);
     };
 
     if (
@@ -691,63 +704,78 @@ class IrisGridTableModelTemplate<
       });
     }
 
-    const columnGroups = this.layoutHints?.columnGroups;
-    if (columnGroups) {
-      this.setColumnHeaderGroups(columnGroups);
+    const layoutHintColumnGroups = this.layoutHints?.columnGroups;
+    if (layoutHintColumnGroups) {
+      this.setColumnHeaderGroups(layoutHintColumnGroups);
 
-      const groupsWithDepth = [...this.columnHeaderGroupMap.values()];
-      groupsWithDepth.sort((a, b) => a.depth - b.depth);
+      const columnGroups = [...this.columnHeaderGroupMap.values()];
+      columnGroups.sort((a, b) => a.depth - b.depth);
 
-      groupsWithDepth.forEach(group => {
+      columnGroups.forEach(group => {
         const firstChildName = group.children[0];
-        let rightIndex = GridUtils.getVisibleIndex(
-          this.getColumnIndexByName(firstChildName),
-          movedColumns
-        );
+        const rightModelIndex = this.getColumnIndexByName(firstChildName);
 
-        if (rightIndex == null) {
-          const firstChildGroup = this.columnHeaderGroupMap.get(firstChildName);
-          const visibleIndexes = GridUtils.getVisibleIndexes(
-            firstChildGroup.childIndexes.flat(),
+        let rightVisibleIndex: number;
+
+        if (rightModelIndex != null) {
+          rightVisibleIndex = GridUtils.getVisibleIndex(
+            rightModelIndex,
             movedColumns
           );
+        } else {
+          const firstChildGroup = this.columnHeaderGroupMap.get(firstChildName);
+          if (!firstChildGroup) {
+            throw new Error(
+              `Unknown column ${firstChildName} in group ${group.name}`
+            );
+          }
 
+          const visibleRange = firstChildGroup.getVisibleRange(movedColumns);
           // Columns will be moved to start at the end of the first child group
-          rightIndex = Math.max(...visibleIndexes);
+          [, rightVisibleIndex] = visibleRange;
         }
 
         for (let i = 1; i < group.children.length; i += 1) {
           const childName = group.children[i];
           const childGroup = this.columnHeaderGroupMap.get(childName);
+          const childColumn = this.getColumnIndexByName(childName);
 
           if (childGroup) {
             // All columns in the group will be before or after the start index
             // Lower level groups are re-arranged first, so they will be contiguous
             const isBeforeGroup =
-              GridUtils.getVisibleIndex(
-                childGroup.childIndexes[0],
-                movedColumns
-              ) < rightIndex;
+              childGroup.getVisibleRange(movedColumns)[0] < rightVisibleIndex;
 
             const moveToIndex = isBeforeGroup
-              ? rightIndex - childGroup.childIndexes.length + 1
-              : rightIndex + 1;
+              ? rightVisibleIndex - childGroup.childIndexes.length + 1
+              : rightVisibleIndex + 1;
 
             moveGroup(childName, moveToIndex);
-            rightIndex = moveToIndex + childGroup.childIndexes.length - 1;
-          } else {
+            rightVisibleIndex =
+              moveToIndex + childGroup.childIndexes.length - 1;
+          } else if (childColumn) {
             const isBeforeGroup =
-              GridUtils.getVisibleIndex(
-                this.getColumnIndexByName(childName),
-                movedColumns
-              ) < rightIndex;
+              GridUtils.getVisibleIndex(childColumn, movedColumns) <
+              rightVisibleIndex;
 
-            const moveToIndex = isBeforeGroup ? rightIndex : rightIndex + 1;
+            const moveToIndex = isBeforeGroup
+              ? rightVisibleIndex
+              : rightVisibleIndex + 1;
             moveColumn(childName, moveToIndex);
-            rightIndex = moveToIndex;
+            rightVisibleIndex = moveToIndex;
           }
         }
       });
+    }
+
+    return movedColumns;
+  }
+
+  getMemoizedColumnMap = memoize(
+    (tableColumns: Column[]): Map<string, Column> => {
+      const columnMap = new Map();
+      tableColumns.forEach(col => columnMap.set(col.name, col));
+      return columnMap;
     }
   );
 
@@ -755,23 +783,23 @@ class IrisGridTableModelTemplate<
     return this.getMemoizedColumnMap(this.table.columns);
   }
 
-  get columnHeaderMaxDepth() {
+  get columnHeaderMaxDepth(): number {
     if (this._columnHeaderMaxDepth == null) {
       this.setColumnHeaderGroups(this.layoutHints?.columnGroups);
     }
     return this._columnHeaderMaxDepth ?? 1;
   }
 
-  set columnHeaderMaxDepth(depth) {
+  set columnHeaderMaxDepth(depth: number) {
     this._columnHeaderMaxDepth = depth;
   }
 
-  setColumnHeaderGroups(groups) {
+  setColumnHeaderGroups(groups: ColumnGroup[] | undefined): void {
     if (groups === this._columnHeaderGroups) {
       return;
     }
 
-    this._columnHeaderGroups = groups;
+    this._columnHeaderGroups = groups ?? [];
     this.columnHeaderMaxDepth = 1;
     this.columnHeaderParentMap = new Map();
     this.columnHeaderGroupMap = new Map();
@@ -782,18 +810,20 @@ class IrisGridTableModelTemplate<
 
     const originalGroupMap = new Map(groups.map(group => [group.name, group]));
 
-    const addGroup = group => {
+    const addGroup = (group: ColumnGroup): ColumnHeaderGroup => {
       const { name } = group;
 
       if (this.getColumnIndexByName(name) != null) {
         throw new Error(`Column header group has same name as column: ${name}`);
       }
 
-      if (this.columnHeaderGroupMap.has(name)) {
-        return this.columnHeaderGroupMap.get(name);
+      const existingGroup = this.columnHeaderGroupMap.get(name);
+
+      if (existingGroup) {
+        return existingGroup;
       }
 
-      const groupWithDepth = { ...group, depth: 1, childIndexes: [] };
+      const groupWithDepth = new ColumnHeaderGroup({ ...group, depth: 1 });
 
       group.children.forEach(childName => {
         if (this.columnHeaderParentMap.has(childName)) {
@@ -841,7 +871,7 @@ class IrisGridTableModelTemplate<
     });
   }
 
-  get groupedColumns() {
+  get groupedColumns(): Column[] {
     return [];
   }
 
@@ -1464,7 +1494,7 @@ class IrisGridTableModelTemplate<
     }
   );
 
-  isColumnMovable(modelIndex, depth) {
+  isColumnMovable(modelIndex: ModelIndex, depth: number): boolean {
     if (modelIndex < 0 || modelIndex >= this.columnCount) {
       return false;
     }
@@ -1489,12 +1519,16 @@ class IrisGridTableModelTemplate<
   /**
    * Checks if a column can be moved to a specific index
    * Columns being dragged outside of their group cannot be moved
-   * @param {ModelIndex} fromIndex The index to move from
-   * @param {ModelIndex} toIndex The index to move to
-   * @param {number} depth The depth the movement is occurring at
+   * @param fromIndex The index to move from
+   * @param toIndex The index to move to
+   * @param depth The depth the movement is occurring at
    * @returns If the column can be moved to the given index at the given depth
    */
-  isColumnMovableTo(fromIndex, toIndex, depth) {
+  isColumnMovableTo(
+    fromIndex: ModelIndex,
+    toIndex: ModelIndex,
+    depth: number
+  ): boolean {
     if (
       !this.isColumnMovable(fromIndex, depth) ||
       !this.isColumnMovable(toIndex, depth)
@@ -1503,7 +1537,7 @@ class IrisGridTableModelTemplate<
     }
 
     const fromParentGroup = this.columnHeaderParentMap.get(
-      this.columnAtDepth(fromIndex, depth).name
+      this.columnAtDepth(fromIndex, depth)?.name ?? ''
     );
 
     if (!fromParentGroup) {
@@ -1519,13 +1553,18 @@ class IrisGridTableModelTemplate<
    * Checks if a column can be dropped between 2 columns
    * Assumes the left and right indexes are adjacent to each other
    * Used to prevent dropping columns into groups they are not part of
-   * @param {ModelIndex} fromIndex The index to move from
-   * @param {ModelIndex} leftIndex The index on the left of the drop spot
-   * @param {ModelIndex} rightIndex The index on the right of the drop spot
-   * @param {number} depth The depth the movement is occurring at
+   * @param fromIndex The index to move from
+   * @param leftIndex The index on the left of the drop spot
+   * @param rightIndex The index on the right of the drop spot
+   * @param depth The depth the movement is occurring at
    * @returns If the column can be dropped between the given indexes at the given depth
    */
-  isColumnDroppableBetween(fromIndex, leftIndex, rightIndex, depth) {
+  isColumnDroppableBetween(
+    fromIndex: ModelIndex,
+    leftIndex: ModelIndex,
+    rightIndex: ModelIndex,
+    depth: number
+  ): boolean {
     if (
       !this.isColumnMovable(fromIndex, depth) ||
       (leftIndex != null &&
@@ -1537,13 +1576,13 @@ class IrisGridTableModelTemplate<
     }
 
     const fromParent = this.columnHeaderParentMap.get(
-      this.columnAtDepth(fromIndex, depth)?.name
+      this.columnAtDepth(fromIndex, depth)?.name ?? ''
     );
     const leftParent = this.columnHeaderParentMap.get(
-      this.columnAtDepth(leftIndex, depth)?.name
+      this.columnAtDepth(leftIndex, depth)?.name ?? ''
     );
     const rightParent = this.columnHeaderParentMap.get(
-      this.columnAtDepth(rightIndex, depth)?.name
+      this.columnAtDepth(rightIndex, depth)?.name ?? ''
     );
 
     // Dropping a column not in a group between columns not in groups
@@ -1552,7 +1591,7 @@ class IrisGridTableModelTemplate<
     }
 
     // Dropping between 2 columns in the same group
-    if (leftParent === rightParent) {
+    if (leftParent != null && leftParent === rightParent) {
       return fromParent === leftParent;
     }
 
@@ -1577,23 +1616,21 @@ class IrisGridTableModelTemplate<
     // Only valid if the other columns are not in the same max group
 
     let leftMaxParent = leftParent;
-    while (this.columnHeaderParentMap.has(leftMaxParent?.name)) {
-      leftMaxParent = this.columnHeaderParentMap.get(leftMaxParent?.name);
+    while (this.columnHeaderParentMap.has(leftMaxParent?.name ?? '')) {
+      leftMaxParent = this.columnHeaderParentMap.get(leftMaxParent?.name ?? '');
     }
 
     let rightMaxParent = rightParent;
-    while (this.columnHeaderParentMap.has(rightMaxParent?.name)) {
-      rightMaxParent = this.columnHeaderParentMap.get(rightMaxParent?.name);
+    while (this.columnHeaderParentMap.has(rightMaxParent?.name ?? '')) {
+      rightMaxParent = this.columnHeaderParentMap.get(
+        rightMaxParent?.name ?? ''
+      );
     }
 
     return leftMaxParent !== rightMaxParent;
   }
 
-  isColumnFrozen(modelIndex) {
-    return this.frozenColumns.includes(this.columns[modelIndex].name);
-  }
-
-  isKeyColumn(x) {
+  isKeyColumn(x: ModelIndex): boolean {
     return x < (this.inputTable?.keyColumns.length ?? 0);
   }
 

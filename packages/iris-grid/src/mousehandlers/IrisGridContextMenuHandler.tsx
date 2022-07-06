@@ -336,9 +336,13 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
       title: 'Copy Column Name',
       group: IrisGridContextMenuHandler.GROUP_COPY,
       action: () => {
-        ContextActionUtils.copyToClipboard(
-          model.textForColumnHeader(modelColumn)
-        ).catch(e => log.error('Unable to copy header', e));
+        const text = model.textForColumnHeader(modelColumn);
+        if (text == null) {
+          return;
+        }
+        ContextActionUtils.copyToClipboard(text).catch(e =>
+          log.error('Unable to copy header', e)
+        );
       },
     });
 
