@@ -21,7 +21,6 @@ import {
 } from '@deephaven/jsapi-shim';
 import {
   EditableGridModel,
-  IColumnHeaderGroup,
   isEditableGridModel,
   isExpandableGridModel,
   ModelIndex,

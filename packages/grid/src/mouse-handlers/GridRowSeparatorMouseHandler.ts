@@ -1,7 +1,9 @@
 /* eslint class-methods-use-this: "off" */
 import Grid from '../Grid';
 import GridMetricCalculator from '../GridMetricCalculator';
-import { ModelIndex, VisibleIndex } from '../GridMetrics';
+import type { ModelIndex, GridMetrics } from '../GridMetrics';
+import type GridModel from '../GridModel';
+import { GridTheme } from '../GridTheme';
 import GridUtils, { GridPoint } from '../GridUtils';
 import GridSeparatorMouseHandler, {
   GridSeparator,
@@ -10,17 +12,15 @@ import GridSeparatorMouseHandler, {
 class GridRowSeparatorMouseHandler extends GridSeparatorMouseHandler {
   static getRowSeparator(
     gridPoint: GridPoint,
-    grid: Grid,
-    checkAllowResize = true
+    metrics: GridMetrics,
+    model: GridModel,
+    theme: GridTheme
   ): GridSeparator | null {
-    const theme = grid.getTheme();
-    if (checkAllowResize && !theme.allowRowResize) {
+    if (!theme.allowRowResize) {
       return null;
     }
 
     const { x, y } = gridPoint;
-    const { metrics } = grid;
-    if (!metrics) throw new Error('metrics not set');
 
     const index = GridUtils.getRowSeparatorIndex(x, y, metrics, theme);
 

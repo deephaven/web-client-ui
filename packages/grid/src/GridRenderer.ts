@@ -20,7 +20,7 @@ import { getOrThrow } from './GridMetricCalculator';
 import { isEditableGridModel } from './EditableGridModel';
 import type { GridSeparator } from './mouse-handlers/GridSeparatorMouseHandler';
 import { DraggingColumn } from './mouse-handlers/GridColumnMoveMouseHandler';
-import { BoundedAxisRange } from '.';
+import { BoundedAxisRange, GridColumnSeparatorMouseHandler } from '.';
 
 export type EditingCellTextSelectionRange = [start: number, end: number];
 
@@ -1491,15 +1491,14 @@ export class GridRenderer {
         draggingColumnSeparator ?? {};
 
       if (highlightedSeparator == null && mouseX != null && mouseY != null) {
-        highlightedSeparator =
-          GridUtils.getColumnSeparatorIndex(mouseX, mouseY, metrics, theme) ??
-          undefined;
-
-        ({ columnHeaderDepth: depth } = GridUtils.getGridPointFromXY(
-          mouseX,
-          mouseY,
-          metrics
-        ));
+        const separator = GridColumnSeparatorMouseHandler.getColumnSeparator(
+          GridUtils.getGridPointFromXY(mouseX, mouseY, metrics),
+          metrics,
+          model,
+          theme
+        );
+        highlightedSeparator = separator?.index;
+        depth = separator?.depth;
       }
 
       let shouldDrawSeparator: boolean;
