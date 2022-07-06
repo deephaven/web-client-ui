@@ -1726,6 +1726,17 @@ class Grid extends PureComponent<GridProps, GridState> {
      */
     this.updateCanvasScale();
     this.updateCanvas();
+
+    if (!this.metrics) throw new Error('metrics not set');
+
+    const { left, top } = this.state;
+    const { lastLeft, lastTop } = this.metrics;
+    if (left > lastLeft) {
+      this.setState({ left: lastLeft, leftOffset: 0 });
+    }
+    if (top > lastTop) {
+      this.setState({ top: lastTop, topOffset: 0 });
+    }
     this.forceUpdate();
   }
 
