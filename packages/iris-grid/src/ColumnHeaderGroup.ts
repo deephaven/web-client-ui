@@ -1,29 +1,60 @@
-import { MoveOperation, AxisRange } from '@deephaven/grid';
+import {
+  MoveOperation,
+  GridUtils,
+  ModelIndex,
+  BoundedAxisRange,
+  IColumnHeaderGroup,
+} from '@deephaven/grid';
+import memoizeOne from 'memoize-one';
 
-export default class ColumnHeaderGroup {
+export function isColumnHeaderGroup(x: unknown): x is ColumnHeaderGroup {
+  return x instanceof ColumnHeaderGroup;
+}
+
+export default class ColumnHeaderGroup implements IColumnHeaderGroup {
   name: string;
 
   children: string[];
 
+  depth: number;
+
   color?: string;
 
-  private movedItems: MoveOperation[] = [];
+  childIndexes: (ModelIndex | ModelIndex[])[] = [];
 
   constructor({
     name,
     children,
     color,
+    depth,
   }: {
     name: string;
     children: string[];
     color?: string;
+    depth: number;
   }) {
     this.name = name;
     this.children = children;
     this.color = color;
+    this.depth = depth;
   }
 
-  // getVisibleRange(movedItems: MoveOperation[]): AxisRange {
+  getVisibleRange = memoizeOne(
+    (movedItems: MoveOperation[]): BoundedAxisRange => {
+      const flattenedIndexes = this.childIndexes.flat();
+      const visibleIndexes = GridUtils.getVisibleIndexes(
+        flattenedIndexes,
+        movedItems
+      );
 
-  // }
+      const start = Math.min(...visibleIndexes);
+      const end = Math.max(...visibleIndexes);
+
+      if (end - start !== flattenedIndexes.length - 1) {
+        throw new Error(`Column header group ${this.name} is not contiguous`);
+      }
+
+      return [start, end];
+    }
+  );
 }

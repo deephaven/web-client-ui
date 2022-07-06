@@ -21,6 +21,7 @@ import {
 } from '@deephaven/jsapi-shim';
 import {
   EditableGridModel,
+  IColumnHeaderGroup,
   isEditableGridModel,
   isExpandableGridModel,
   ModelIndex,
@@ -244,6 +245,9 @@ class IrisGridProxyModel extends IrisGridModel {
   textForColumnHeader: IrisGridModel['textForColumnHeader'] = (...args) =>
     this.model.textForColumnHeader(...args);
 
+  colorForColumnHeader: IrisGridModel['colorForColumnHeader'] = (...args) =>
+    this.model.colorForColumnHeader(...args);
+
   textForRowHeader: IrisGridModel['textForRowHeader'] = (...args) =>
     this.model.textForRowHeader(...args);
 
@@ -255,6 +259,13 @@ class IrisGridProxyModel extends IrisGridModel {
 
   isColumnMovable: IrisGridModel['isColumnMovable'] = (...args) =>
     this.model.isColumnMovable(...args);
+
+  isColumnMovableTo: IrisGridModel['isColumnMovableTo'] = (...args) =>
+    this.model.isColumnMovableTo(...args);
+
+  isColumnDroppableBetween: IrisGridModel['isColumnDroppableBetween'] = (
+    ...args
+  ) => this.model.isColumnDroppableBetween(...args);
 
   isColumnFrozen(x: ModelIndex): boolean {
     return this.model.isColumnFrozen(x);
@@ -373,6 +384,13 @@ class IrisGridProxyModel extends IrisGridModel {
 
   get frozenColumns(): ColumnName[] {
     return this.model.frozenColumns;
+  }
+
+  getColumnHeaderGroup: IrisGridModel['getColumnHeaderGroup'] = (...args) =>
+    this.model.getColumnHeaderGroup(...args);
+
+  get columnHeaderMaxDepth(): number {
+    return this.model.columnHeaderMaxDepth;
   }
 
   updateFrozenColumns(columns: ColumnName[]): void {

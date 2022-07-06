@@ -1,3 +1,4 @@
+export * from './ColumnHeaderGroup';
 export * from './EditableGridModel';
 export * from './ExpandableGridModel';
 export { default as Grid } from './Grid';

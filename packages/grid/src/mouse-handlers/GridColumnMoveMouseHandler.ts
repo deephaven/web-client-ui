@@ -1,10 +1,9 @@
 import Grid from '../Grid';
 import GridUtils, { GridPoint } from '../GridUtils';
 import GridMouseHandler, { GridMouseEvent } from '../GridMouseHandler';
-import { getOrThrow } from '../GridMetricCalculator';
 import { EventHandlerResult } from '../EventHandlerResult';
 import type { VisibleIndex, ModelIndex, GridMetrics } from '../GridMetrics';
-import type GridModel from '../GridModel';
+import { BoundedAxisRange, GridModel } from '..';
 
 const SLOPPY_CLICK_DISTANCE = 5;
 const SCROLL_INTERVAL = 250;
@@ -19,11 +18,25 @@ interface ColumnInfo {
   modelIndex: ModelIndex;
   left: number;
   right: number;
+  isColumnGroup: boolean;
+  range: BoundedAxisRange;
 }
 
+/**
+ * Gets info about a visible column
+ * @param visibleIndex The visible index to get info for
+ * @param depth The header depth to get info for
+ * @param metrics Grid metrics
+ * @param model Grid model
+ * @returns The column info at the depth.
+ * If the column is not in a group at that depth, returns the info for the base column.
+ * Returns null if the column is not visible.
+ */
 function getColumnInfo(
   visibleIndex: VisibleIndex | null,
-  metrics: GridMetrics
+  depth: number | undefined,
+  metrics: GridMetrics,
+  model: GridModel
 ): ColumnInfo | null {
   const {
     modelColumns,
@@ -33,9 +46,16 @@ function getColumnInfo(
     visibleColumnWidths,
     userColumnWidths,
     calculatedColumnWidths,
+    floatingLeftWidth,
+    maxX,
   } = metrics;
 
-  if (visibleIndex == null || visibleIndex > columnCount || visibleIndex < 0) {
+  if (
+    depth == null ||
+    visibleIndex == null ||
+    visibleIndex > columnCount ||
+    visibleIndex < 0
+  ) {
     return null;
   }
 
@@ -43,24 +63,46 @@ function getColumnInfo(
     modelColumns.get(visibleIndex) ??
     GridUtils.getModelIndex(visibleIndex, movedColumns);
 
-  const left = visibleColumnXs.get(visibleIndex);
+  const group = model.getColumnHeaderGroup(modelIndex, depth);
+  const isColumnGroup = group != null;
 
-  if (left == null) {
-    return null;
+  let left: number;
+  let right: number;
+  let range: BoundedAxisRange;
+
+  if (group != null) {
+    const [startVisibleIndex, endVisibleIndex] = group.getVisibleRange(
+      movedColumns
+    );
+
+    left = visibleColumnXs.get(startVisibleIndex) ?? floatingLeftWidth;
+    right =
+      (visibleColumnXs.get(endVisibleIndex) ?? maxX) +
+      (visibleColumnWidths.get(endVisibleIndex) ?? 0);
+    range = [startVisibleIndex, endVisibleIndex];
+  } else {
+    const possibleLeft = visibleColumnXs.get(visibleIndex);
+    if (possibleLeft == null) {
+      return null;
+    }
+
+    left = possibleLeft;
+    right =
+      left +
+      (visibleColumnWidths.get(visibleIndex) ??
+        userColumnWidths.get(modelIndex) ??
+        calculatedColumnWidths.get(modelIndex) ??
+        0);
+    range = [visibleIndex, visibleIndex];
   }
-
-  const right =
-    left +
-    (visibleColumnWidths.get(visibleIndex) ??
-      userColumnWidths.get(modelIndex) ??
-      calculatedColumnWidths.get(modelIndex) ??
-      0);
 
   return {
     visibleIndex,
     modelIndex,
     left,
     right,
+    isColumnGroup,
+    range,
   };
 }
 
@@ -69,9 +111,11 @@ class GridColumnMoveMouseHandler extends GridMouseHandler {
 
   private draggingOffset?: number;
 
-  private startingGridPoint?: GridPoint;
+  private initialOffset?: number;
 
-  private sloppyClickThreshold = false;
+  private initialGridPoint?: GridPoint;
+
+  private isDragging = false;
 
   private scrollingInterval?: number;
 
@@ -126,24 +170,30 @@ class GridColumnMoveMouseHandler extends GridMouseHandler {
     const { metrics } = grid;
     if (!metrics) throw new Error('Metrics not set');
 
-    const { rowHeaderWidth, visibleColumnXs, modelColumns } = metrics;
+    const columnInfo = getColumnInfo(column, columnHeaderDepth, metrics, model);
 
-    if (column == null || columnHeaderDepth !== 0) {
+    if (column == null || columnInfo == null || columnHeaderDepth == null) {
       return false;
     }
 
-    this.startingGridPoint = gridPoint;
-    this.sloppyClickThreshold = false;
+    // Can't drag a base column from the empty group area
+    if (columnHeaderDepth > 0 && !columnInfo.isColumnGroup) {
+      return false;
+    }
+
+    const { rowHeaderWidth } = metrics;
+
+    this.initialGridPoint = gridPoint;
+    this.isDragging = false;
     this.cursor = null;
-    const modelColumn = modelColumns.get(column);
 
     if (
-      modelColumn != null &&
+      columnInfo.modelIndex != null &&
       columnHeaderDepth != null &&
-      model.isColumnMovable(modelColumn, columnHeaderDepth)
+      model.isColumnMovable(columnInfo.modelIndex, columnHeaderDepth)
     ) {
-      const columnX = getOrThrow(visibleColumnXs, column);
-      this.draggingOffset = x - columnX - rowHeaderWidth;
+      this.draggingOffset = x - columnInfo.left - rowHeaderWidth;
+      this.initialOffset = this.draggingOffset;
       grid.setState({ draggingColumnOffset: this.draggingOffset });
     }
     return false;
@@ -156,83 +206,61 @@ class GridColumnMoveMouseHandler extends GridMouseHandler {
   ): EventHandlerResult {
     if (
       this.draggingOffset === undefined ||
-      this.startingGridPoint === undefined
+      this.initialGridPoint === undefined ||
+      this.initialOffset === undefined
     ) {
       return false;
     }
 
-    const {
-      x: mouseX,
-      y: mouseY,
-      column: visibleIndex,
-      columnHeaderDepth,
-    } = gridPoint;
+    const { x: mouseX, y: mouseY } = gridPoint;
+    const { columnHeaderDepth } = this.initialGridPoint;
 
     const { model } = grid.props;
     let { draggingColumn, movedColumns } = grid.state;
-    const { isDragging } = grid.state;
     const { metrics } = grid;
 
     if (!metrics) throw new Error('Metrics not set');
 
-    const {
-      leftVisible,
-      width,
-      rightVisible,
-      columnCount,
-      rowHeaderWidth,
-      visibleColumnWidths,
-      userColumnWidths,
-      calculatedColumnWidths,
-      visibleColumnXs,
-      modelColumns,
-      floatingLeftWidth,
-    } = metrics;
-
-    const modelIndex =
-      visibleIndex != null ? modelColumns.get(visibleIndex) : null;
-
-    if (
-      mouseX == null ||
-      mouseY == null ||
-      visibleIndex == null ||
-      modelIndex == null
-    ) {
-      return false;
-    }
+    const { leftVisible, rightVisible, rowHeaderWidth, modelColumns } = metrics;
 
     // before considering it a drag, the mouse must have moved a minimum distance
     // this prevents click actions from triggering a drag state
-    if (
-      (!this.sloppyClickThreshold &&
-        Math.abs(this.startingGridPoint.x - mouseX) >= SLOPPY_CLICK_DISTANCE) ||
-      Math.abs(this.startingGridPoint.y - mouseY) >= SLOPPY_CLICK_DISTANCE
-    ) {
-      this.sloppyClickThreshold = true;
-    } else if (!this.sloppyClickThreshold && !isDragging) {
-      return false;
+    if (!this.isDragging) {
+      if (
+        Math.abs(this.initialGridPoint.x - mouseX) >= SLOPPY_CLICK_DISTANCE ||
+        Math.abs(this.initialGridPoint.y - mouseY) >= SLOPPY_CLICK_DISTANCE
+      ) {
+        this.isDragging = true;
+      } else {
+        return false;
+      }
     }
 
+    // Get the initial dragging column info
     if (draggingColumn == null) {
-      const startColumnInfo = getColumnInfo(
-        this.startingGridPoint.column,
-        metrics
+      const initialColumnInfo = getColumnInfo(
+        this.initialGridPoint.column,
+        columnHeaderDepth,
+        metrics,
+        model
       );
-      if (!startColumnInfo) {
+
+      if (!initialColumnInfo || columnHeaderDepth == null) {
         return false;
       }
 
-      if (
-        startColumnInfo.visibleIndex != null &&
-        !model.isColumnMovable(startColumnInfo.modelIndex)
-      ) {
+      if (!model.isColumnMovable(initialColumnInfo.modelIndex)) {
+        return false;
+      }
+
+      if (columnHeaderDepth > 0 && !initialColumnInfo.isColumnGroup) {
         return false;
       }
 
       draggingColumn = null;
-      if (startColumnInfo.visibleIndex != null && columnHeaderDepth != null) {
+      if (initialColumnInfo.range[0] != null) {
         draggingColumn = {
-          index: startColumnInfo.visibleIndex,
+          index: initialColumnInfo.range[0],
           depth: columnHeaderDepth,
         };
       }
@@ -244,67 +272,119 @@ class GridColumnMoveMouseHandler extends GridMouseHandler {
       }
     }
 
+    /**
+     * At this point, we have determined we are actually dragging a column
+     */
     this.cursor = 'move';
 
-    const draggingColumnInfo = getColumnInfo(draggingColumn.index, metrics);
+    const draggingColumnInfo = getColumnInfo(
+      draggingColumn.index,
+      columnHeaderDepth,
+      metrics,
+      model
+    );
     if (!draggingColumnInfo) {
       return false;
     }
+
     const { depth: draggingColumnDepth } = draggingColumn;
     let draggingVisibleIndex = draggingColumnInfo.visibleIndex;
     const draggingModelIndex = draggingColumnInfo.modelIndex;
 
+    const startColumn = getColumnInfo(
+      draggingColumnInfo.range[0],
+      0,
+      metrics,
+      model
+    );
+    const endColumn = getColumnInfo(
+      draggingColumnInfo.range[1],
+      0,
+      metrics,
+      model
+    );
+
+    // Group spans the entire table. Drag and drop would be wonky
+    if (!startColumn && !endColumn) {
+      return false;
+    }
+
     const draggingColumnLeft = mouseX - this.draggingOffset;
     const draggingColumnRight =
-      draggingColumnLeft +
-      (visibleColumnWidths.get(draggingVisibleIndex) ??
-        userColumnWidths.get(draggingModelIndex) ??
-        calculatedColumnWidths.get(draggingModelIndex) ??
-        0);
+      draggingColumnLeft + (draggingColumnInfo.right - draggingColumnInfo.left);
 
-    const isDraggingLeft = draggingColumnLeft < draggingColumnInfo.left;
-    const isDraggingRight = draggingColumnRight > draggingColumnInfo.right;
+    const { movementX } = event;
+
+    const isDraggingLeft = movementX < 0;
+    const isDraggingRight = movementX > 0;
     if (!isDraggingLeft && !isDraggingRight) {
       return true;
     }
-    const swapColumnInfo = getColumnInfo(
-      isDraggingLeft ? draggingVisibleIndex - 1 : draggingVisibleIndex + 1,
-      metrics
+
+    const swapGroupInfo = getColumnInfo(
+      GridUtils.getColumnAtX(
+        isDraggingLeft ? draggingColumnLeft : draggingColumnRight,
+        metrics
+      ),
+      columnHeaderDepth,
+      metrics,
+      model
     );
 
-    if (!swapColumnInfo) {
+    if (!swapGroupInfo) {
       return true;
     }
+
+    const swapVisibleIndex = isDraggingLeft
+      ? swapGroupInfo.range[0]
+      : swapGroupInfo.range[1];
+
+    const swapModelIndex = GridUtils.getModelIndex(
+      swapVisibleIndex,
+      movedColumns
+    );
 
     const switchPoint =
-      getOrThrow(visibleColumnXs, swapColumnInfo.visibleIndex) +
-      getOrThrow(visibleColumnWidths, swapColumnInfo.visibleIndex) * 0.5 +
+      swapGroupInfo.left +
+      (swapGroupInfo.right - swapGroupInfo.left) * 0.5 +
       rowHeaderWidth;
 
-    if (visibleIndex === draggingVisibleIndex) {
-      return true;
+    // Cursor has moved past the column drag bounds, don't move the column until we hit the initial offset point again
+    if (this.initialOffset !== this.draggingOffset) {
+      // Pre move < Initial < Post move or vice-versa
+      // User crossed back past the iniital offset point, so we can start moving again
+      if (
+        (this.draggingOffset < this.initialOffset &&
+          this.initialOffset < this.draggingOffset + movementX) ||
+        (this.draggingOffset > this.initialOffset &&
+          this.initialOffset > this.draggingOffset + movementX)
+      ) {
+        this.draggingOffset = this.initialOffset;
+        grid.setState({ draggingColumnOffset: this.draggingOffset });
+      } else {
+        // Column can't move since we aren't back at the initial offset yet
+        this.draggingOffset += movementX;
+        grid.setState({ draggingColumnOffset: this.draggingOffset });
+        return true;
+      }
     }
 
+    // Column can't continue moving in this direction. Pin the left/right side and adjust offset
     if (
-      !model.isColumnMovableTo(draggingModelIndex, modelIndex)
-      // !model.isColumnMovableTo(draggingModelIndex, swapColumnInfo.modelIndex)
+      !model.isColumnMovableTo(
+        draggingModelIndex,
+        swapGroupInfo.modelIndex,
+        draggingColumnDepth
+      )
     ) {
-      this.clearScrollInterval();
-
-      this.draggingOffset +=
-        draggingColumnLeft - (visibleColumnXs.get(draggingVisibleIndex) ?? 0);
-
+      this.draggingOffset =
+        mouseX -
+        (isDraggingLeft ? swapGroupInfo.right : draggingColumnInfo.left);
       grid.setState({ draggingColumnOffset: this.draggingOffset });
       return true;
     }
 
-    if (draggingColumnLeft < floatingLeftWidth) {
-      this.setScrollInterval(grid, 'left');
-    } else if (draggingColumnRight > width) {
-      this.setScrollInterval(grid, 'right');
-    } else {
-      this.clearScrollInterval();
-    }
+    console.log(draggingColumnRight, switchPoint);
 
     if (
       isDraggingLeft &&
@@ -312,40 +392,53 @@ class GridColumnMoveMouseHandler extends GridMouseHandler {
       draggingColumnLeft < switchPoint &&
       model.isColumnDroppableBetween(
         draggingModelIndex,
-        visibleIndex > 0
-          ? modelColumns.get(visibleIndex - 1) ??
-              GridUtils.getModelIndex(visibleIndex - 1, movedColumns)
-          : null,
-        modelIndex,
+        swapModelIndex,
+        modelColumns.get(swapVisibleIndex - 1) ??
+          GridUtils.getModelIndex(swapVisibleIndex - 1, movedColumns),
         draggingColumnDepth
       )
     ) {
-      movedColumns = GridUtils.moveItem(
-        draggingVisibleIndex,
-        visibleIndex,
-        movedColumns
-      );
-      draggingVisibleIndex = visibleIndex;
+      if (draggingColumnInfo.isColumnGroup) {
+        movedColumns = GridUtils.moveRange(
+          draggingColumnInfo.range,
+          swapVisibleIndex,
+          movedColumns
+        );
+      } else {
+        movedColumns = GridUtils.moveItem(
+          draggingVisibleIndex,
+          swapVisibleIndex,
+          movedColumns
+        );
+      }
+      draggingVisibleIndex = swapVisibleIndex;
     } else if (
-      !isDraggingLeft &&
+      isDraggingRight &&
       draggingVisibleIndex < rightVisible &&
       draggingColumnRight > switchPoint &&
       model.isColumnDroppableBetween(
         draggingModelIndex,
-        modelIndex,
-        visibleIndex < columnCount + 1
-          ? modelColumns.get(visibleIndex + 1) ??
-              GridUtils.getModelIndex(visibleIndex + 1, movedColumns)
-          : null,
+        swapModelIndex,
+        modelColumns.get(swapVisibleIndex + 1) ??
+          GridUtils.getModelIndex(swapVisibleIndex + 1, movedColumns),
         draggingColumnDepth
       )
     ) {
-      movedColumns = GridUtils.moveItem(
-        draggingVisibleIndex,
-        visibleIndex,
-        movedColumns
-      );
-      draggingVisibleIndex = visibleIndex;
+      if (draggingColumnInfo.isColumnGroup) {
+        movedColumns = GridUtils.moveRange(
+          draggingColumnInfo.range,
+          swapVisibleIndex -
+            (draggingColumnInfo.range[1] - draggingColumnInfo.range[0]),
+          movedColumns
+        );
+      } else {
+        movedColumns = GridUtils.moveItem(
+          draggingVisibleIndex,
+          swapVisibleIndex,
+          movedColumns
+        );
+      }
+      draggingVisibleIndex = swapVisibleIndex;
     }
     grid.setState({
       movedColumns,
