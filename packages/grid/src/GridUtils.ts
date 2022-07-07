@@ -782,8 +782,7 @@ export class GridUtils {
         to,
       };
     } else {
-      // TODO #620
-      movedItems.push({ from: (from as unknown) as number, to });
+      movedItems.push({ from, to });
     }
 
     return movedItems;
