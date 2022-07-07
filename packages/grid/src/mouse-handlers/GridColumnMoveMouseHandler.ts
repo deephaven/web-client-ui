@@ -131,7 +131,7 @@ class GridColumnMoveMouseHandler extends GridMouseHandler {
 
     this.scrollingDirection = direction;
     this.scrollingInterval = window.setInterval(() => {
-      const { metrics } = grid;
+      let { metrics } = grid;
       if (!metrics) {
         return;
       }
@@ -150,6 +150,19 @@ class GridColumnMoveMouseHandler extends GridMouseHandler {
       }
 
       grid.setState({ left: direction === 'left' ? left - 1 : left + 1 });
+
+      grid.updateMetrics(grid.state);
+      metrics = grid.metrics;
+      const { mouseX, mouseY } = grid.state;
+
+      if (!metrics || mouseX == null || mouseY == null) {
+        return;
+      }
+
+      this.moveDraggingSection(
+        GridUtils.getGridPointFromXY(mouseX, mouseY, metrics),
+        grid
+      );
     }, SCROLL_INTERVAL);
   }
 
@@ -216,12 +229,10 @@ class GridColumnMoveMouseHandler extends GridMouseHandler {
     const { columnHeaderDepth } = this.initialGridPoint;
 
     const { model } = grid.props;
-    let { draggingColumn, movedColumns } = grid.state;
+    let { draggingColumn } = grid.state;
     const { metrics } = grid;
 
     if (!metrics) throw new Error('Metrics not set');
-
-    const { leftVisible, rightVisible, rowHeaderWidth, modelColumns } = metrics;
 
     // before considering it a drag, the mouse must have moved a minimum distance
     // this prevents click actions from triggering a drag state
@@ -277,6 +288,44 @@ class GridColumnMoveMouseHandler extends GridMouseHandler {
      */
     this.cursor = 'move';
 
+    this.moveDraggingSection(gridPoint, grid, event);
+
+    return true;
+  }
+
+  moveDraggingSection(
+    gridPoint: GridPoint,
+    grid: Grid,
+    event?: GridMouseEvent
+  ): void {
+    if (
+      this.draggingOffset === undefined ||
+      this.initialGridPoint === undefined ||
+      this.initialOffset === undefined
+    ) {
+      return;
+    }
+
+    const { x: mouseX } = gridPoint;
+    const { columnHeaderDepth } = this.initialGridPoint;
+
+    const { model } = grid.props;
+    const { draggingColumn } = grid.state;
+    let { movedColumns } = grid.state;
+    const { metrics } = grid;
+
+    if (!metrics) throw new Error('Metrics not set');
+    if (!draggingColumn) return;
+
+    const {
+      leftVisible,
+      rightVisible,
+      rowHeaderWidth,
+      modelColumns,
+      floatingLeftWidth,
+      width,
+    } = metrics;
+
     const draggingColumnInfo = getColumnInfo(
       draggingColumn.index,
       columnHeaderDepth,
@@ -284,7 +333,7 @@ class GridColumnMoveMouseHandler extends GridMouseHandler {
       model
     );
     if (!draggingColumnInfo) {
-      return false;
+      return;
     }
 
     const { depth: draggingColumnDepth } = draggingColumn;
@@ -306,19 +355,20 @@ class GridColumnMoveMouseHandler extends GridMouseHandler {
 
     // Group spans the entire table. Drag and drop would be wonky
     if (!startColumn && !endColumn) {
-      return false;
+      return;
     }
 
     const draggingColumnLeft = mouseX - this.draggingOffset;
     const draggingColumnRight =
       draggingColumnLeft + (draggingColumnInfo.right - draggingColumnInfo.left);
 
-    const { movementX } = event;
+    const { movementX = 0 } = event || {};
 
-    const isDraggingLeft = movementX < 0;
-    const isDraggingRight = movementX > 0;
+    const isDraggingLeft = movementX < 0 || this.scrollingDirection === 'left';
+    const isDraggingRight =
+      movementX > 0 || this.scrollingDirection === 'right';
     if (!isDraggingLeft && !isDraggingRight) {
-      return true;
+      return;
     }
 
     const swapGroupInfo = getColumnInfo(
@@ -332,7 +382,7 @@ class GridColumnMoveMouseHandler extends GridMouseHandler {
     );
 
     if (!swapGroupInfo) {
-      return true;
+      return;
     }
 
     const swapVisibleIndex = isDraggingLeft
@@ -365,7 +415,7 @@ class GridColumnMoveMouseHandler extends GridMouseHandler {
         // Column can't move since we aren't back at the initial offset yet
         this.draggingOffset += movementX;
         grid.setState({ draggingColumnOffset: this.draggingOffset });
-        return true;
+        return;
       }
     }
 
@@ -380,11 +430,18 @@ class GridColumnMoveMouseHandler extends GridMouseHandler {
       this.draggingOffset =
         mouseX -
         (isDraggingLeft ? swapGroupInfo.right : draggingColumnInfo.left);
+      this.clearScrollInterval();
       grid.setState({ draggingColumnOffset: this.draggingOffset });
-      return true;
+      return;
     }
 
-    console.log(draggingColumnRight, switchPoint);
+    if (draggingColumnLeft <= floatingLeftWidth) {
+      this.setScrollInterval(grid, 'left');
+    } else if (draggingColumnRight > width) {
+      this.setScrollInterval(grid, 'right');
+    } else {
+      this.clearScrollInterval();
+    }
 
     if (
       isDraggingLeft &&
@@ -447,8 +504,6 @@ class GridColumnMoveMouseHandler extends GridMouseHandler {
         depth: draggingColumnDepth,
       },
     });
-
-    return true;
   }
 
   onUp(gridPoint: GridPoint, grid: Grid): EventHandlerResult {

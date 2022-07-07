@@ -1,3 +1,5 @@
+import type { BoundedAxisRange } from './GridAxisRange';
+
 /** A grid coordinate value */
 export type Coordinate = number;
 
@@ -30,7 +32,7 @@ export type VisibleToModelMap = Map<VisibleIndex, ModelIndex>;
 // TODO #620
 /** Represents a move operation from one index to another */
 export type MoveOperation = {
-  from: VisibleIndex;
+  from: VisibleIndex | BoundedAxisRange;
   to: VisibleIndex;
 };
 
