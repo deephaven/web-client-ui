@@ -123,6 +123,7 @@ class IrisGridUtils {
     } = gridState;
 
     const { columns } = model;
+
     return {
       isStuckToBottom,
       isStuckToRight,
@@ -130,7 +131,7 @@ class IrisGridUtils {
         .filter(
           ({ to, from }) =>
             isValidIndex(to, columns) &&
-            ((typeof from === 'string' && isValidIndex(from, columns)) ||
+            ((typeof from === 'number' && isValidIndex(from, columns)) ||
               (Array.isArray(from) &&
                 isValidIndex(from[0], columns) &&
                 isValidIndex(from[1], columns)))
@@ -202,7 +203,7 @@ class IrisGridUtils {
         .filter(
           ({ to, from }) =>
             isValidIndex(to, columnNames) &&
-            ((typeof from === 'string' && isValidIndex(from, columnNames)) ||
+            ((typeof from === 'number' && isValidIndex(from, columnNames)) ||
               (Array.isArray(from) &&
                 isValidIndex(from[0], columnNames) &&
                 isValidIndex(from[1], columnNames)))
