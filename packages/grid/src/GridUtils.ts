@@ -730,13 +730,15 @@ export class GridUtils {
     }
 
     const movedItems: MoveOperation[] = [...oldMovedItems];
+    const lastMovedItem = movedItems[movedItems.length - 1];
 
     if (
-      movedItems.length > 0 &&
-      movedItems[movedItems.length - 1].to === from
+      lastMovedItem &&
+      !isBoundedAxisRange(lastMovedItem.from) &&
+      lastMovedItem.to === from
     ) {
       movedItems[movedItems.length - 1] = {
-        ...movedItems[movedItems.length - 1],
+        ...lastMovedItem,
         to,
       };
     } else {
@@ -776,7 +778,7 @@ export class GridUtils {
       lastMovedItem.to === from[0]
     ) {
       movedItems[movedItems.length - 1] = {
-        ...movedItems[movedItems.length - 1],
+        ...lastMovedItem,
         to,
       };
     } else {
@@ -795,7 +797,7 @@ export class GridUtils {
    * @param reverse If the moved items should be applied in reverse (this reverses the effects of the moves)
    * @returns A list of AxisRanges in the translated space. Possibly multiple non-continuous ranges
    */
-  private static applyItemMoves<T extends number | GridRangeIndex>(
+  static applyItemMoves<T extends number | GridRangeIndex>(
     start: T,
     end: T,
     movedItems: MoveOperation[],

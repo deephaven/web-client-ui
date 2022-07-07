@@ -85,6 +85,17 @@ export interface DehydratedIrisGridState {
 }
 
 type DehydratedPendingDataMap<T> = [number, { data: [string, T][] }][];
+
+/**
+ * Checks if an index is valid for the given array
+ * @param x The index to check
+ * @param array The array
+ * @returns True if the index if valid within the array
+ */
+function isValidIndex(x: number, array: unknown[]): boolean {
+  return x >= 0 && x < array.length;
+}
+
 class IrisGridUtils {
   /**
    * Exports the state from Grid component to a JSON stringifiable object
@@ -101,7 +112,7 @@ class IrisGridUtils {
   ): {
     isStuckToBottom: boolean;
     isStuckToRight: boolean;
-    movedColumns: { from: string; to: string }[];
+    movedColumns: { from: string | [string, string]; to: string }[];
     movedRows: MoveOperation[];
   } {
     const {
@@ -118,11 +129,17 @@ class IrisGridUtils {
       movedColumns: [...movedColumns]
         .filter(
           ({ to, from }) =>
-            to >= 0 && to < columns.length && from >= 0 && from < columns.length
+            isValidIndex(to, columns) &&
+            ((typeof from === 'string' && isValidIndex(from, columns)) ||
+              (Array.isArray(from) &&
+                isValidIndex(from[0], columns) &&
+                isValidIndex(from[1], columns)))
         )
         .map(({ to, from }) => ({
           to: columns[to].name,
-          from: columns[from].name,
+          from: Array.isArray(from)
+            ? [columns[from[0]].name, columns[from[1]].name]
+            : columns[from].name,
         })),
       movedRows: [...movedRows],
     };
@@ -139,7 +156,10 @@ class IrisGridUtils {
     gridState: {
       isStuckToBottom: boolean;
       isStuckToRight: boolean;
-      movedColumns: { from: string | ModelIndex; to: string | ModelIndex }[];
+      movedColumns: {
+        from: string | [string, string] | ModelIndex | [ModelIndex, ModelIndex];
+        to: string | ModelIndex;
+      }[];
       movedRows: MoveOperation[];
     },
     customColumns = []
@@ -167,27 +187,25 @@ class IrisGridUtils {
       isStuckToRight,
       movedColumns: [...movedColumns]
         .map(({ to, from }) => {
-          if (
-            (typeof to === 'string' || (to as unknown) instanceof String) &&
-            (typeof from === 'string' || (from as unknown) instanceof String)
-          ) {
-            return {
-              to: columnNames.findIndex(name => name === to),
-              from: columnNames.findIndex(name => name === from),
-            };
-          }
-          if (typeof to === 'string') throw Error('string');
-          if (typeof from === 'string') throw Error('string');
-          return { to, from };
+          const getIndex = (x: string | number) =>
+            typeof x === 'string'
+              ? columnNames.findIndex(name => name === x)
+              : x;
+
+          return {
+            to: getIndex(to),
+            from: Array.isArray(from)
+              ? ([getIndex(from[0]), getIndex(from[1])] as [number, number])
+              : getIndex(from),
+          };
         })
         .filter(
           ({ to, from }) =>
-            to != null &&
-            to >= 0 &&
-            to < columnNames.length &&
-            from != null &&
-            from >= 0 &&
-            from < columnNames.length
+            isValidIndex(to, columnNames) &&
+            ((typeof from === 'string' && isValidIndex(from, columnNames)) ||
+              (Array.isArray(from) &&
+                isValidIndex(from[0], columnNames) &&
+                isValidIndex(from[1], columnNames)))
         ),
       movedRows: [...movedRows],
     };
@@ -981,38 +999,45 @@ class IrisGridUtils {
       let removedColumnIndex = columnNames.findIndex(
         name => name === removedColumnName
       );
-      const moves = [];
+      const moves: MoveOperation[] = [];
       for (let j = 0; j < newMoves.length; j += 1) {
         const move = newMoves[j];
         const newMove = { ...move };
-        // remove the move if it's a removed column move
-        // from-=1 & to-=! if the from/to column is placed after the removed column
-        if (removedColumnIndex !== move.from) {
-          if (move.from > removedColumnIndex) {
-            newMove.from -= 1;
-          }
-          if (move.to >= removedColumnIndex) {
-            newMove.to -= 1;
-          }
-          if (newMove.from !== newMove.to) {
-            moves.push(newMove);
+        let [fromStart, fromEnd] = Array.isArray(move.from)
+          ? move.from
+          : [move.from, move.from];
+
+        if (removedColumnIndex <= move.to) {
+          newMove.to -= 1;
+        }
+
+        // If equal to fromStart, the new fromStart would stay the same
+        // It's just the next element in the range which will have the same index after deletion
+        if (removedColumnIndex < fromStart) {
+          fromStart -= 1;
+        }
+
+        if (removedColumnIndex <= fromEnd) {
+          fromEnd -= 1;
+        }
+
+        if (fromStart <= fromEnd && fromStart !== newMove.to) {
+          if (fromStart === fromEnd) {
+            moves.push({ ...newMove, from: fromStart });
+          } else {
+            moves.push({ ...newMove, from: [fromStart, fromEnd] });
           }
         }
-        // get the next index of the removed column after the move
-        if (move.from === removedColumnIndex) {
-          removedColumnIndex = move.to;
-        } else if (
-          move.from < removedColumnIndex &&
-          removedColumnIndex < move.to
-        ) {
-          removedColumnIndex -= 1;
-        } else if (
-          move.to <= removedColumnIndex &&
-          removedColumnIndex < move.from
-        ) {
-          removedColumnIndex += 1;
-        }
+
+        // get the next index of the removed column after the move is applied
+        // eslint-disable-next-line prefer-destructuring
+        removedColumnIndex = GridUtils.applyItemMoves(
+          removedColumnIndex,
+          removedColumnIndex,
+          [move]
+        )[0][0];
       }
+
       newMoves = moves;
       columnNames.splice(
         columnNames.findIndex(name => name === removedColumnName),
