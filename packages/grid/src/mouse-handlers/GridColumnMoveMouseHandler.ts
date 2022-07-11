@@ -186,19 +186,16 @@ class GridColumnMoveMouseHandler extends GridMouseHandler {
         nextOffset += SCROLL_DELTA;
         let leftColumnWidth = visibleColumnWidths.get(left);
         while (leftColumnWidth !== undefined && nextOffset > leftColumnWidth) {
-          if (nextLeft === lastLeft) {
+          nextLeft += 1;
+          nextOffset -= leftColumnWidth;
+          const modelIndex = GridUtils.getModelIndex(left + 1, movedColumns);
+          leftColumnWidth =
+            userColumnWidths.get(modelIndex) ??
+            calculatedColumnWidths.get(modelIndex);
+
+          if (nextLeft > lastLeft) {
             nextOffset = 0;
-          } else {
-            if (nextLeft === lastLeft) {
-              nextOffset = 0;
-            } else {
-              nextLeft += 1;
-              nextOffset -= leftColumnWidth;
-            }
-            const modelIndex = GridUtils.getModelIndex(left + 1, movedColumns);
-            leftColumnWidth =
-              userColumnWidths.get(modelIndex) ??
-              calculatedColumnWidths.get(modelIndex);
+            nextLeft = lastLeft;
           }
         }
       }
