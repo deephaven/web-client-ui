@@ -237,9 +237,9 @@ class MonacoUtils {
         log.debug2('Overriding default language loader:', language.id);
 
         // @ts-ignore
-        language.loader = () => ({
-          then: () => undefined,
-        });
+        // language.loader = () => ({
+        //   then: () => undefined,
+        // });
       });
 
     // Then register our language definitions
