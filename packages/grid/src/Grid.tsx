@@ -1054,8 +1054,8 @@ class Grid extends PureComponent<GridProps, GridState> {
       halfViewportHeight
     );
 
-    this.setState({ top: newTop > lastTop ? lastTop : newTop });
     this.setState({
+      top: Math.min(lastTop, newTop),
       selectedRanges: [
         new GridRange(null, focusedRow - 1, null, focusedRow - 1),
       ],
