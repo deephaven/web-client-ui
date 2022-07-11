@@ -253,20 +253,23 @@ export class GridUtils {
     floatingEnd: number,
     items: VisibleIndex[],
     itemCoordinates: CoordinateMap,
-    itemSizes: SizeMap
+    itemSizes: SizeMap,
+    ignoreFloating = false
   ): VisibleIndex | null {
-    const floatingItem = GridUtils.iterateFloating(
-      floatingStart,
-      floatingEnd,
-      itemCount,
-      item => {
-        if (GridUtils.isInItem(item, itemCoordinates, itemSizes, offset)) {
-          return item;
-        }
-        return undefined;
-      }
-    );
-    if (floatingItem !== undefined) {
+    const floatingItem = ignoreFloating
+      ? undefined
+      : GridUtils.iterateFloating(
+          floatingStart,
+          floatingEnd,
+          itemCount,
+          item => {
+            if (GridUtils.isInItem(item, itemCoordinates, itemSizes, offset)) {
+              return item;
+            }
+            return undefined;
+          }
+        );
+    if (!ignoreFloating && floatingItem !== undefined) {
       return floatingItem;
     }
 
@@ -288,7 +291,8 @@ export class GridUtils {
    */
   static getColumnAtX(
     x: Coordinate,
-    metrics: GridMetrics
+    metrics: GridMetrics,
+    ignoreFloating = false
   ): VisibleIndex | null {
     const {
       columnCount,
@@ -311,7 +315,8 @@ export class GridUtils {
       floatingRightColumnCount,
       visibleColumns,
       visibleColumnXs,
-      visibleColumnWidths
+      visibleColumnWidths,
+      ignoreFloating
     );
   }
 
@@ -1039,7 +1044,7 @@ export class GridUtils {
   }
 
   /**
-   * Translate the provided UI range into model range, using the `movedColumns` and `movedRows` to apply the necessary transforms.
+   * Translate the provided UI range into visible range, using the `movedColumns` and `movedRows` to apply the necessary transforms.
    * `movedColumns` and `movedRows` are array of operations done to the UI indexes to re-order items
    *
    * @param uiRange The currently selected UI ranges

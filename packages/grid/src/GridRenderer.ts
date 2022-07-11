@@ -2510,7 +2510,7 @@ export class GridRenderer {
     }
 
     const {
-      index: draggingColumnIndex,
+      range: draggingColumnVisibleRange,
       depth: draggingColumnDepth,
     } = draggingColumn;
 
@@ -2520,16 +2520,16 @@ export class GridRenderer {
       visibleColumnXs,
       visibleColumnWidths,
       height,
-      width,
       columnHeaderMaxDepth,
       columnHeaderHeight,
       movedColumns,
       left,
-      right,
       modelColumns,
     } = metrics;
 
-    const draggingModelIndex = getOrThrow(modelColumns, draggingColumnIndex);
+    const draggingModelIndex =
+      modelColumns.get(draggingColumnVisibleRange[0]) ??
+      GridUtils.getModelIndex(draggingColumnVisibleRange[0], movedColumns);
 
     const draggingGroup = model.getColumnHeaderGroup(
       draggingModelIndex,
@@ -2540,19 +2540,14 @@ export class GridRenderer {
       return;
     }
 
-    const [startIndex, endIndex] = draggingGroup?.getVisibleRange(
-      movedColumns
-    ) ?? [draggingColumnIndex, draggingColumnIndex];
+    const [startIndex, endIndex] = draggingColumnVisibleRange;
 
     const xLeft =
       startIndex >= left ? getOrThrow(visibleColumnXs, startIndex) : 0;
     const xRight =
-      endIndex <= right
-        ? getOrThrow(visibleColumnXs, endIndex) +
-          getOrThrow(visibleColumnWidths, endIndex)
-        : width;
-    // const columnWidth =
-    //   getOrThrow(visibleColumnWidths, draggingColumnIndex) + 1;
+      getOrThrow(visibleColumnXs, endIndex, xLeft) +
+      getOrThrow(visibleColumnWidths, endIndex, 0);
+
     const columnWidth = xRight - xLeft;
     const {
       backgroundColor,
@@ -2609,8 +2604,8 @@ export class GridRenderer {
     context.font = headerFont;
 
     this.drawColumnHeadersForRange(context, state, [startIndex, endIndex], {
-      minX: 0,
-      maxX: width,
+      minX: xLeft,
+      maxX: xRight,
     });
 
     context.restore();
