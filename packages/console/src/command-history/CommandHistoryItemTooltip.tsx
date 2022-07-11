@@ -166,13 +166,7 @@ export class CommandHistoryItemTooltip extends Component<
     const { result, startTime, endTime } = data ?? {};
 
     const errorMessage = result?.error ?? error;
-    // let errorMessage = error;
-    // const tempError = result?.error;
-    // if (typeof tempError === 'string') {
-    //   errorMessage = tempError;
-    // } else if ((tempError as { message: string }).message != null) {
-    //   errorMessage = (tempError as { message: string }).message;
-    // }
+
     const timeString = CommandHistoryItemTooltip.getTimeString(
       startTime,
       endTime || currentTime
