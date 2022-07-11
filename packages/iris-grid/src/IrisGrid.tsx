@@ -1182,7 +1182,8 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       advancedFilters,
       sorts,
       reverseType,
-      rollupConfig
+      rollupConfig,
+      isMenuShown
     ) => ({
       hoverSelectColumn,
       isFilterBarShown,
@@ -1193,6 +1194,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       sorts,
       reverseType,
       rollupConfig,
+      isMenuShown,
     }),
     { max: 1 }
   );
@@ -3379,7 +3381,8 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       advancedFilters,
       sorts,
       reverseType,
-      rollupConfig
+      rollupConfig,
+      isMenuShown
     );
     const top = metrics ? metrics.top : 0;
     const bottom = metrics ? metrics.bottomViewport : 0;
@@ -3928,20 +3931,18 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
                 frozenColumns={frozenColumns}
               />
             )}
-            <div
-              className={classNames('grid-settings-button', {
-                'is-menu-shown': isMenuShown,
-              })}
-            >
-              <button
-                type="button"
-                data-testid={`btn-iris-grid-settings-button-${name}`}
-                className="btn btn-link btn-link-icon"
-                onClick={this.handleMenu}
-              >
-                <FontAwesomeIcon icon={vsMenu} transform="up-1" />
-              </button>
-            </div>
+            {!isMenuShown && (
+              <div className="grid-settings-button">
+                <button
+                  type="button"
+                  data-testid={`btn-iris-grid-settings-button-${name}`}
+                  className="btn btn-link btn-link-icon"
+                  onClick={this.handleMenu}
+                >
+                  <FontAwesomeIcon icon={vsMenu} transform="up-1" />
+                </button>
+              </div>
+            )}
             {focusField}
             {loadingElement}
             {filterBar}

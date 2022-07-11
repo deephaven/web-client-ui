@@ -54,6 +54,7 @@ export type IrisGridRenderState = GridRenderState & {
   isFilterBarShown: boolean;
   advancedFilters: AdvancedFilterMap;
   quickFilters: QuickFilterMap;
+  isMenuShown: boolean;
 };
 /**
  * Handles rendering some of the Iris specific features, such as sorting icons, sort bar display
@@ -390,15 +391,14 @@ class IrisGridRenderer extends GridRenderer {
     boundsProp: { minX: number; maxX: number },
     depth: number
   ): void {
-    const { metrics, model } = state;
+    const { metrics, model, isMenuShown } = state;
     const { columnHeaderMaxDepth } = model;
     const { width } = metrics;
     const bounds = {
       ...boundsProp,
-      // Account for the menu button
       maxX:
         depth === columnHeaderMaxDepth - 1 && boundsProp.maxX === width
-          ? width - 30
+          ? width - (isMenuShown ? 0 : 30) // Account for the menu button
           : boundsProp.maxX,
     };
     super.drawColumnHeadersAtDepth(context, state, range, bounds, depth);
