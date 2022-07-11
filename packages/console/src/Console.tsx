@@ -22,9 +22,8 @@ import dh, {
 } from '@deephaven/jsapi-shim';
 import Log from '@deephaven/log';
 import { assertNotNull, Pending } from '@deephaven/utils';
-import ConsoleHistory, {
-  ConsoleHistoryActionItem,
-} from './console-history/ConsoleHistory';
+import ConsoleHistory from './console-history/ConsoleHistory';
+import { ConsoleHistoryActionItem } from './console-history/ConsoleHistoryTypes';
 import SHORTCUTS from './ConsoleShortcuts';
 import LogLevel from './log/LogLevel';
 import ConsoleInput from './ConsoleInput';

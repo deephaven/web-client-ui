@@ -5,12 +5,10 @@ import {
   ItemList,
   SearchInput,
   GLOBAL_SHORTCUTS,
-  Shortcut,
   RenderItemProps,
 } from '@deephaven/components';
 import { ViewportData } from '@deephaven/storage';
 import {
-  IconDefinition,
   vsFileCode,
   vsFiles,
   vsNewFile,
@@ -30,36 +28,18 @@ import CommandHistoryStorage, {
   CommandHistoryStorageItem,
   CommandHistoryTable,
 } from './CommandHistoryStorage';
+import { ItemAction, HistoryAction } from './CommandHistoryTypes';
 
 const log = Log.module('CommandHistory');
 
-type TODOEVENTHUB = {
+type Settings = {
   value: string;
   language: string;
 };
-export type ItemAction = {
-  title: string;
-  description: string;
-  icon: IconDefinition;
-  shortcut?: Shortcut;
-  action: () => void;
-  group: number;
-  order?: number;
-};
-
-export type HistoryAction = {
-  action: () => void;
-  title: string;
-  description: string;
-  icon: IconDefinition;
-  selectionRequired?: boolean;
-  className?: string;
-};
-
 interface CommandHistoryProps {
   language: string;
   sendToConsole: (command: string, focus?: boolean, execute?: boolean) => void;
-  sendToNotebook: (settings: TODOEVENTHUB, forceNewNotebook?: boolean) => void;
+  sendToNotebook: (settings: Settings, forceNewNotebook?: boolean) => void;
   table: CommandHistoryTable;
   commandHistoryStorage: CommandHistoryStorage;
 }
@@ -248,7 +228,7 @@ class CommandHistory extends Component<
 
   /**
    * Retrieves the text of all the currently selected commands, joined by a new line char
-   * @returns {Promise<string>} The commands joined by \n char
+   * @returns The commands joined by \n char
    */
   getSelectedCommandText(): Promise<string> {
     return this.getSelectedCommands().then(commands => commands.join('\n'));

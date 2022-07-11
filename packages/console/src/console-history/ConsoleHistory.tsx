@@ -2,32 +2,11 @@
  * Console display for use in the Iris environment.
  */
 import React, { Component, ReactElement } from 'react';
-import { CancelablePromise } from '@deephaven/utils';
-import { VariableChanges, VariableDefinition } from '@deephaven/jsapi-shim';
+import { VariableDefinition } from '@deephaven/jsapi-shim';
 import ConsoleHistoryItem from './ConsoleHistoryItem';
 
 import './ConsoleHistory.scss';
-
-export type ConsoleHistoryError =
-  | string
-  | {
-      message: string;
-    }
-  | undefined;
-
-export interface ConsoleHistoryActionItem {
-  command?: string;
-  result?: {
-    message?: string;
-    error?: unknown;
-    changes?: VariableChanges;
-  };
-  disabledObjects?: string[];
-  startTime?: number;
-  endTime?: number;
-  cancelResult?: () => void;
-  wrappedResult?: CancelablePromise<unknown>;
-}
+import { ConsoleHistoryActionItem } from './ConsoleHistoryTypes';
 
 interface ConsoleHistoryProps {
   items: ConsoleHistoryActionItem[];

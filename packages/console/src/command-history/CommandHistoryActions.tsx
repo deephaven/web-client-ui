@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Button } from '@deephaven/components';
 import { vsArrowLeft, vsCircleLargeFilled } from '@deephaven/icons';
 import './CommandHistoryActions.scss';
-import { HistoryAction } from './CommandHistory';
+import { HistoryAction } from './CommandHistoryTypes';
 
 interface CommandHistoryActionsProps {
   actions: HistoryAction[];

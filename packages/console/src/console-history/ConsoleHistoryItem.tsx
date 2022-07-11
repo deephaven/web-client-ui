@@ -10,7 +10,7 @@ import ConsoleHistoryItemResult from './ConsoleHistoryItemResult';
 import ConsoleHistoryResultInProgress from './ConsoleHistoryResultInProgress';
 import ConsoleHistoryResultErrorMessage from './ConsoleHistoryResultErrorMessage';
 import './ConsoleHistoryItem.scss';
-import { ConsoleHistoryActionItem } from './ConsoleHistory';
+import { ConsoleHistoryActionItem } from './ConsoleHistoryTypes';
 
 const log = Log.module('ConsoleHistoryItem');
 
