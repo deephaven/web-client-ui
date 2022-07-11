@@ -76,6 +76,13 @@ import LogLang from './lang/log';
 
 const log = Log.module('MonacoUtils');
 
+type Language = {
+  id: string;
+  conf: monaco.languages.LanguageConfiguration;
+  language:
+    | monaco.languages.IMonarchLanguage
+    | monaco.Thenable<monaco.languages.IMonarchLanguage>;
+};
 class MonacoUtils {
   static init(): void {
     log.debug('Initializing Monaco...');
@@ -190,7 +197,13 @@ class MonacoUtils {
     log.debug2('monaco theme: ', MonacoTheme);
     monaco.editor.setTheme('dh-dark');
 
-    registerLanguages([DbLang, PyLang, GroovyLang, LogLang, ScalaLang]);
+    registerLanguages(([
+      DbLang,
+      PyLang,
+      GroovyLang,
+      LogLang,
+      ScalaLang,
+    ] as unknown[]) as Language[]);
 
     log.debug('Monaco initialized.');
   }
@@ -198,13 +211,21 @@ class MonacoUtils {
   /**
    * Remove the hashtag prefix from a CSS color string.
    * Monaco expects colors to be the value only, no hashtag.
-   * @param {String} color The hex color string to remove the hashtag from, eg. '#ffffff'
+   * @param color The hex color string to remove the hashtag from, eg. '#ffffff'
    */
   static removeHashtag(color: string): string {
     return color.substring(1);
   }
 
-  static registerLanguages(languages): void {
+  static registerLanguages(
+    languages: {
+      id: string;
+      conf: monaco.languages.LanguageConfiguration;
+      language:
+        | monaco.languages.IMonarchLanguage
+        | monaco.Thenable<monaco.languages.IMonarchLanguage>;
+    }[]
+  ): void {
     // First override the default loader for any language we have a custom definition for
     // https://github.com/Microsoft/monaco-editor/issues/252#issuecomment-482786867
     const languageIds = languages.map(({ id }) => id);
@@ -214,6 +235,8 @@ class MonacoUtils {
       .forEach(languageParam => {
         const language = languageParam;
         log.debug2('Overriding default language loader:', language.id);
+
+        // @ts-ignore
         language.loader = () => ({
           then: () => undefined,
         });
@@ -225,7 +248,13 @@ class MonacoUtils {
     });
   }
 
-  static registerLanguage(language): void {
+  static registerLanguage(language: {
+    id: string;
+    conf: monaco.languages.LanguageConfiguration;
+    language:
+      | monaco.languages.IMonarchLanguage
+      | monaco.Thenable<monaco.languages.IMonarchLanguage>;
+  }): void {
     log.debug2('Registering language: ', language.id);
     monaco.languages.register(language);
 
@@ -418,7 +447,6 @@ class MonacoUtils {
     }
     /* eslint-disable no-underscore-dangle */
     // It's possible a single keybinding has multiple commands depending on context
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     const keybindings = editor._standaloneKeybindingService
       ._getResolver()
@@ -429,7 +457,6 @@ class MonacoUtils {
         log.debug2(
           `Removing Monaco keybinding ${keybinding} for ${elem.command}`
         );
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         editor._standaloneKeybindingService.addDynamicKeybinding(
           `-${elem.command}`,

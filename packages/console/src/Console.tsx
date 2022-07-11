@@ -326,7 +326,7 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
     result:
       | {
           message: string;
-          error: unknown;
+          error?: string;
           changes: VariableChanges;
         }
       | undefined,
@@ -553,11 +553,11 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
 
   /**
    * Updates an existing workspace CommandHistoryItem
-   * @param {object} result The result to store with the history item. Could be empty object for success
-   * @param {Promise<object>} workspaceItemPromise The workspace data row promise for the workspace item to be updated
+   * @param result The result to store with the history item. Could be empty object for success
+   * @param workspaceItemPromise The workspace data row promise for the workspace item to be updated
    */
   updateWorkspaceHistoryItem(
-    result: { error: unknown },
+    result: { error?: string },
     workspaceItemPromise: Promise<CommandHistoryStorageItem>
   ): void {
     const promise = this.pending.add(workspaceItemPromise);
@@ -731,7 +731,7 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
     });
   }
 
-  addConsoleHistoryMessage(message: string | null, error?: unknown): void {
+  addConsoleHistoryMessage(message: string | null, error?: string): void {
     const { consoleHistory } = this.state;
     const historyItem = {
       command: '',
@@ -750,7 +750,7 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
   }
 
   handleCsvError(error: unknown): void {
-    this.addConsoleHistoryMessage(null, error);
+    this.addConsoleHistoryMessage(null, error ? `${error}` : undefined);
   }
 
   handleCsvInProgress(csvUploadInProgress: boolean): void {
