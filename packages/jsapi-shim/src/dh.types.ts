@@ -137,7 +137,7 @@ export interface SeriesDescriptor {
   shape: string;
 }
 export interface SourceDescriptor {
-  axis: AxisDescriptor;
+  axis?: AxisDescriptor;
   table: Table;
   columnName: string;
   columnType: string;
@@ -249,6 +249,9 @@ export interface SourceType {
   readonly SIZE: SourceType;
   readonly LABEL: SourceType;
   readonly COLOR: SourceType;
+  readonly PARENT: SourceType;
+  readonly HOVER_TEXT: SourceType;
+  readonly TEXT: SourceType;
 }
 export interface ChartType {
   readonly XY: ChartType;
@@ -270,6 +273,7 @@ export interface SeriesPlotStyle {
   readonly SCATTER: SeriesPlotStyle;
   readonly STEP: SeriesPlotStyle;
   readonly ERROR_BAR: SeriesPlotStyle;
+  readonly TREEMAP: SeriesPlotStyle;
 }
 export interface AxisFormatType {
   readonly CATEGORY: AxisFormatType;

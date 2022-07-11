@@ -98,10 +98,11 @@ export const createChartModel = async (
 
 export const createGridModel = async (
   session: DhSession,
-  metadata: GridPanelMetadata
+  metadata: GridPanelMetadata,
+  type = dh.VariableType.TABLE
 ): Promise<IrisGridModel> => {
   const { table: tableName } = metadata;
-  const definition = { name: tableName, type: dh.VariableType.TABLE };
+  const definition = { name: tableName, type };
   const table = await session.getObject(definition);
   return IrisGridModelFactory.makeModel(table);
 };

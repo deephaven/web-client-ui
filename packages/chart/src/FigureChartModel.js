@@ -1,6 +1,7 @@
 /* eslint class-methods-use-this: "off" */
 import memoize from 'memoizee';
 import debounce from 'lodash.debounce';
+import set from 'lodash.set';
 import dh from '@deephaven/jsapi-shim';
 import Log from '@deephaven/log';
 import ChartModel from './ChartModel';
@@ -534,9 +535,9 @@ class FigureChartModel extends ChartModel {
   setDataArrayForSeries(series, sourceType, dataArray) {
     const { name, plotStyle } = series;
 
-    const property = ChartUtils.getPlotlyProperty(plotStyle, sourceType);
     const seriesData = this.seriesDataMap.get(name);
-    seriesData[property] = dataArray;
+    const property = ChartUtils.getPlotlyProperty(plotStyle, sourceType);
+    set(seriesData, property, dataArray);
   }
 
   /**

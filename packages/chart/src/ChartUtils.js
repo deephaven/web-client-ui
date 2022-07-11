@@ -1,6 +1,7 @@
 import Log from '@deephaven/log';
 import { TableUtils } from '@deephaven/jsapi-utils';
 import dh from '@deephaven/jsapi-shim';
+import set from 'lodash.set';
 
 const log = Log.module('ChartUtils');
 
@@ -60,6 +61,9 @@ class ChartUtils {
       case dh.plot.SeriesPlotStyle.PIE:
         return 'pie';
 
+      case dh.plot.SeriesPlotStyle.TREEMAP:
+        return 'treemap';
+
       case dh.plot.SeriesPlotStyle.HISTOGRAM:
         return 'histogram';
 
@@ -111,6 +115,22 @@ class ChartUtils {
             break;
         }
         break;
+      case dh.plot.SeriesPlotStyle.TREEMAP:
+        switch (sourceType) {
+          case dh.plot.SourceType.X:
+            return 'ids';
+          case dh.plot.SourceType.Y:
+            return 'values';
+          case dh.plot.SourceType.LABEL:
+            return 'labels';
+          case dh.plot.SourceType.PARENT:
+            return 'parents';
+          case dh.plot.SourceType.COLOR:
+            return 'marker.colors';
+          default:
+            break;
+        }
+        break;
       default:
         break;
     }
@@ -148,8 +168,14 @@ class ChartUtils {
         return 'label';
       case dh.plot.SourceType.COLOR:
         return 'color';
+      case dh.plot.SourceType.PARENT:
+        return 'parent';
+      case dh.plot.SourceType.HOVER_TEXT:
+        return 'hovertext';
+      case dh.plot.SourceType.TEXT:
+        return 'text';
       default:
-        throw new Error('Unrecognized source type', sourceType);
+        throw new Error(`Unrecognized source type: ${sourceType}`);
     }
   }
 
@@ -416,7 +442,9 @@ class ChartUtils {
   ) {
     const { name, plotStyle, lineColor, shapeColor, sources } = series;
 
-    const isBusinessTime = sources.some(source => source.axis.businessCalendar);
+    const isBusinessTime = sources.some(
+      source => source.axis?.businessCalendar
+    );
     const type = ChartUtils.getChartType(plotStyle, isBusinessTime);
     const mode = ChartUtils.getPlotlyChartMode(plotStyle);
     const orientation = ChartUtils.getPlotlySeriesOrientation(series);
@@ -457,12 +485,14 @@ class ChartUtils {
         plotStyle,
         sourceType
       );
-      seriesData[dataAttributeName] = [];
+      set(seriesData, dataAttributeName, []);
 
-      const axisProperty = ChartUtils.getAxisPropertyName(axis.type);
-      const axes = axisTypeMap.get(axis.type);
-      const axisIndex = axes.indexOf(axis);
+      const axisProperty = axis
+        ? ChartUtils.getAxisPropertyName(axis.type)
+        : null;
       if (axisProperty != null) {
+        const axes = axisTypeMap.get(axis.type);
+        const axisIndex = axes.indexOf(axis);
         const axisIndexString = axisIndex > 0 ? `${axisIndex + 1}` : '';
         seriesData[`${axisProperty}axis`] = `${axisProperty}${axisIndexString}`;
       }
@@ -508,6 +538,14 @@ class ChartUtils {
     } else if (plotStyle === dh.plot.SeriesPlotStyle.PIE) {
       seriesData.textinfo = 'label+percent';
       seriesData.outsidetextfont = { color: theme.title_color };
+    } else if (plotStyle === dh.plot.SeriesPlotStyle.TREEMAP) {
+      seriesData.hoverinfo = 'text';
+      seriesData.textinfo = 'label+text';
+      seriesData.tiling = {
+        packing: 'squarify',
+        pad: 0,
+      };
+      seriesData.textposition = 'middle center';
     }
 
     if (lineColor != null) {
@@ -549,9 +587,9 @@ class ChartUtils {
       for (let j = 0; j < chart.series.length; j += 1) {
         const series = chart.series[j];
         const { sources } = series;
-
-        for (let k = 0; k < sources.length; k += 1) {
-          const source = sources[k];
+        const axisSources = sources.filter(source => source.axis);
+        for (let k = 0; k < axisSources.length; k += 1) {
+          const source = axisSources[k];
           const { axis } = source;
           const { type: axisType } = axis;
           const typeAxes = axisTypeMap.get(axisType);

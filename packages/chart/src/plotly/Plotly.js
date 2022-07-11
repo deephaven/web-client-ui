@@ -8,8 +8,9 @@ import histogram from 'plotly.js/lib/histogram.js';
 import pie from 'plotly.js/lib/pie.js';
 import ohlc from 'plotly.js/lib/ohlc.js';
 import scattergl from 'plotly.js/lib/scattergl.js';
+import treemap from 'plotly.js/lib/treemap.js';
 
 // Load in the trace types we need/support
-Plotly.register([bar, histogram, pie, ohlc, scattergl]);
+Plotly.register([bar, histogram, pie, ohlc, scattergl, treemap]);
 
 export default Plotly;
