@@ -2,25 +2,32 @@
  * Completion provider for a code session
  */
 import { PureComponent } from 'react';
-import PropTypes from 'prop-types';
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js';
 import Log from '@deephaven/log';
+import { IdeSession } from '@deephaven/jsapi-shim';
 
 const log = Log.module('MonacoCompletionProvider');
+
+interface MonacoCompletionProviderProps {
+  model: monaco.editor.ITextModel;
+  session: IdeSession;
+  language: string;
+}
 
 /**
  * Registers a completion provider with monaco for the language and session provided.
  */
-class MonacoCompletionProvider extends PureComponent {
-  constructor(props) {
+class MonacoCompletionProvider extends PureComponent<
+  MonacoCompletionProviderProps,
+  Record<string, never>
+> {
+  constructor(props: MonacoCompletionProviderProps) {
     super(props);
 
     this.handleCompletionRequest = this.handleCompletionRequest.bind(this);
-
-    this.registeredCompletionProvider = null;
   }
 
-  componentDidMount() {
+  componentDidMount(): void {
     const { language } = this.props;
     this.registeredCompletionProvider = monaco.languages.registerCompletionItemProvider(
       language,
@@ -31,11 +38,17 @@ class MonacoCompletionProvider extends PureComponent {
     );
   }
 
-  componentWillUnmount() {
-    this.registeredCompletionProvider.dispose();
+  componentWillUnmount(): void {
+    this.registeredCompletionProvider?.dispose();
   }
 
-  handleCompletionRequest(model, position, context) {
+  registeredCompletionProvider?: monaco.IDisposable;
+
+  handleCompletionRequest(
+    model: monaco.editor.ITextModel,
+    position: monaco.Position,
+    context: monaco.languages.CompletionContext
+  ): monaco.languages.ProviderResult<monaco.languages.CompletionList> {
     const { model: propModel, session } = this.props;
     if (model !== propModel) {
       return null;
@@ -54,11 +67,11 @@ class MonacoCompletionProvider extends PureComponent {
       context,
     };
 
-    let completionItems = session.getCompletionItems(params);
+    const completionItems = session.getCompletionItems(params);
 
     log.debug('Completion items received: ', params, completionItems);
 
-    completionItems = completionItems
+    const monacoCompletionItems = completionItems
       .then(items => {
         // Annoying that the LSP protocol returns completion items with a range that's slightly different than what Monaco expects
         // Need to remap the items here
@@ -104,23 +117,17 @@ class MonacoCompletionProvider extends PureComponent {
           suggestions,
         };
       })
-      .catch(error => {
+      .catch((error: unknown) => {
         log.error('There was an error retrieving completion items', error);
         return { suggestions: [] };
       });
 
-    return completionItems;
+    return monacoCompletionItems;
   }
 
-  render() {
+  render(): null {
     return null;
   }
 }
-
-MonacoCompletionProvider.propTypes = {
-  model: PropTypes.shape({ uri: PropTypes.shape({}) }).isRequired,
-  session: PropTypes.shape({ getCompletionItems: PropTypes.func }).isRequired,
-  language: PropTypes.string.isRequired,
-};
 
 export default MonacoCompletionProvider;

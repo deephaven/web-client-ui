@@ -1,14 +1,33 @@
-import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
+import React, { PureComponent, ReactElement, ReactNode } from 'react';
 import classNames from 'classnames';
-import dh, { PropTypes as APIPropTypes } from '@deephaven/jsapi-shim';
-import { Tooltip } from '@deephaven/components';
+import dh, { IdeSession, VariableDefinition } from '@deephaven/jsapi-shim';
+import { DropdownAction, Tooltip } from '@deephaven/components';
 import { CanceledPromiseError, Pending } from '@deephaven/utils';
 import ConsoleMenu from './ConsoleMenu';
 import './ConsoleStatusBar.scss';
 
-export class ConsoleStatusBar extends PureComponent {
-  constructor(props) {
+interface ConsoleStatusBarProps {
+  children: ReactNode;
+  session: IdeSession;
+  openObject: (object: VariableDefinition) => void;
+  objects: VariableDefinition[];
+  overflowActions: DropdownAction[];
+}
+
+interface ConsoleStatusBarState {
+  isDisconnected: boolean;
+  isCommandRunning: boolean;
+}
+
+export class ConsoleStatusBar extends PureComponent<
+  ConsoleStatusBarProps,
+  ConsoleStatusBarState
+> {
+  static defaultProps = {
+    children: null,
+  };
+
+  constructor(props: ConsoleStatusBarProps) {
     super(props);
 
     this.handleCommandStarted = this.handleCommandStarted.bind(this);
@@ -22,16 +41,18 @@ export class ConsoleStatusBar extends PureComponent {
     };
   }
 
-  componentDidMount() {
+  componentDidMount(): void {
     this.startListening();
   }
 
-  componentWillUnmount() {
+  componentWillUnmount(): void {
     this.stopListening();
     this.cancelPendingPromises();
   }
 
-  startListening() {
+  pending: Pending;
+
+  startListening(): void {
     const { session } = this.props;
     session.addEventListener(
       dh.IdeSession.EVENT_COMMANDSTARTED,
@@ -39,7 +60,7 @@ export class ConsoleStatusBar extends PureComponent {
     );
   }
 
-  stopListening() {
+  stopListening(): void {
     const { session } = this.props;
     session.removeEventListener(
       dh.IdeSession.EVENT_COMMANDSTARTED,
@@ -47,24 +68,24 @@ export class ConsoleStatusBar extends PureComponent {
     );
   }
 
-  cancelPendingPromises() {
+  cancelPendingPromises(): void {
     this.pending.cancel();
   }
 
-  handleCommandStarted(event) {
+  handleCommandStarted(event: CustomEvent): void {
     const { result } = event.detail;
 
     this.pending
       .add(result)
-      .then(() => this.handleCommandCompleted(null, result))
-      .catch(error => this.handleCommandCompleted(error, result));
+      .then(() => this.handleCommandCompleted(null))
+      .catch(error => this.handleCommandCompleted(error));
 
     this.setState({
       isCommandRunning: true,
     });
   }
 
-  handleCommandCompleted(error) {
+  handleCommandCompleted(error: unknown): void {
     // Don't update state if the promise was canceled
     if (!(error instanceof CanceledPromiseError)) {
       this.setState({
@@ -73,7 +94,7 @@ export class ConsoleStatusBar extends PureComponent {
     }
   }
 
-  render() {
+  render(): ReactElement {
     const { children, openObject, overflowActions, objects } = this.props;
     const { isDisconnected, isCommandRunning } = this.state;
 
@@ -109,20 +130,5 @@ export class ConsoleStatusBar extends PureComponent {
     );
   }
 }
-
-ConsoleStatusBar.propTypes = {
-  children: PropTypes.node,
-  session: APIPropTypes.IdeSession.isRequired,
-  openObject: PropTypes.func.isRequired,
-  objects: PropTypes.arrayOf(APIPropTypes.VariableDefinition).isRequired,
-  overflowActions: PropTypes.oneOfType([
-    PropTypes.func,
-    PropTypes.arrayOf(PropTypes.shape({})),
-  ]).isRequired,
-};
-
-ConsoleStatusBar.defaultProps = {
-  children: null,
-};
 
 export default ConsoleStatusBar;

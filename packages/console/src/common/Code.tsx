@@ -1,19 +1,25 @@
-import React, { Component } from 'react';
-import PropTypes from 'prop-types';
+import React, { Component, ReactElement, ReactNode } from 'react';
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js';
 
-class Code extends Component {
-  constructor(props) {
+interface CodeProps {
+  children: ReactNode;
+  language: string;
+}
+
+class Code extends Component<CodeProps, Record<string, never>> {
+  constructor(props: CodeProps) {
     super(props);
 
     this.container = null;
   }
 
-  componentDidMount() {
+  componentDidMount(): void {
     this.colorize();
   }
 
-  colorize() {
+  container: HTMLDivElement | null;
+
+  colorize(): void {
     const { children } = this.props;
     if (this.container && children) {
       monaco.editor.colorizeElement(this.container, {
@@ -22,7 +28,7 @@ class Code extends Component {
     }
   }
 
-  render() {
+  render(): ReactElement {
     const { children, language } = this.props;
     return (
       <div>
@@ -41,10 +47,5 @@ class Code extends Component {
     );
   }
 }
-
-Code.propTypes = {
-  children: PropTypes.node.isRequired,
-  language: PropTypes.string.isRequired,
-};
 
 export default Code;

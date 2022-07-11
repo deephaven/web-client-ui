@@ -1,18 +1,27 @@
-import React, { PureComponent } from 'react';
+import React, { PureComponent, ReactElement } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { DropdownMenu, Tooltip } from '@deephaven/components';
+import { DropdownActions, DropdownMenu, Tooltip } from '@deephaven/components';
 import { vsGear, dhTrashUndo } from '@deephaven/icons';
-import { PropTypes as APIPropTypes } from '@deephaven/jsapi-shim';
+import { assertNotNull } from '@deephaven/utils';
+import { IdeSession, LogItem } from '@deephaven/jsapi-shim';
+import { Placement } from 'popper.js';
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js';
 import ConsoleUtils from '../common/ConsoleUtils';
 import LogLevel from './LogLevel';
 import './LogView.scss';
 import LogLevelMenuItem from './LogLevelMenuItem';
 
+interface LogViewProps {
+  session: IdeSession;
+}
+
+interface LogViewState {
+  shownLogLevels: Record<string, boolean>;
+}
 /**
  * Log view contents. Uses a monaco editor to display/search the contents of the log.
  */
-class LogView extends PureComponent {
+class LogView extends PureComponent<LogViewProps, LogViewState> {
   static DefaultLogLevels = [
     LogLevel.STDOUT,
     LogLevel.ERROR,
@@ -40,13 +49,13 @@ class LogView extends PureComponent {
 
   static truncateSize = 65536;
 
-  static getLogText(logItem) {
+  static getLogText(logItem: LogItem): string {
     const date = new Date(logItem.micros / 1000);
     const timestamp = ConsoleUtils.formatTimestamp(date);
     return `${timestamp} ${logItem.logLevel} ${logItem.message}`;
   }
 
-  constructor(props) {
+  constructor(props: LogViewProps) {
     super(props);
 
     this.handleClearClick = this.handleClearClick.bind(this);
@@ -57,11 +66,9 @@ class LogView extends PureComponent {
     this.handleResize = this.handleResize.bind(this);
     this.handleToggleAllClick = this.handleToggleAllClick.bind(this);
 
-    this.cancelListener = null;
-    this.editor = null;
-    this.editorContainer = null;
     this.logLevelMenuItems = {};
-    this.flushTimer = null;
+
+    this.editorContainer = null;
 
     this.bufferedMessages = [];
     this.messages = [];
@@ -71,7 +78,7 @@ class LogView extends PureComponent {
     };
   }
 
-  componentDidMount() {
+  componentDidMount(): void {
     this.resetLogLevels();
     this.initMonaco();
     this.startListening();
@@ -79,7 +86,7 @@ class LogView extends PureComponent {
     window.addEventListener('resize', this.handleResize);
   }
 
-  componentDidUpdate(prevProps, prevState) {
+  componentDidUpdate(prevProps: LogViewProps, prevState: LogViewState): void {
     this.updateDimensions();
 
     const { shownLogLevels } = this.state;
@@ -96,7 +103,7 @@ class LogView extends PureComponent {
     }
   }
 
-  componentWillUnmount() {
+  componentWillUnmount(): void {
     this.stopFlushTimer();
     this.stopListening();
     this.destroyMonaco();
@@ -104,7 +111,21 @@ class LogView extends PureComponent {
     window.removeEventListener('resize', this.handleResize);
   }
 
-  getMenuActions(shownLogLevels) {
+  cancelListener?: () => void | null;
+
+  editor?: monaco.editor.IStandaloneCodeEditor;
+
+  editorContainer: HTMLDivElement | null;
+
+  logLevelMenuItems: Record<string, LogLevelMenuItem | null>;
+
+  flushTimer?: ReturnType<typeof setTimeout>;
+
+  bufferedMessages: LogItem[];
+
+  messages: LogItem[];
+
+  getMenuActions(shownLogLevels: Record<string, boolean>): DropdownActions {
     const actions = [];
 
     actions.push({
@@ -163,8 +184,8 @@ class LogView extends PureComponent {
     return actions;
   }
 
-  resetLogLevels() {
-    const shownLogLevels = {};
+  resetLogLevels(): void {
+    const shownLogLevels: Record<string, boolean> = {};
     for (let i = 0; i < LogView.AllLogLevels.length; i += 1) {
       const logLevel = LogView.AllLogLevels[i];
       const isEnabled = LogView.DefaultLogLevels.indexOf(logLevel) >= 0;
@@ -174,28 +195,30 @@ class LogView extends PureComponent {
     this.setState({ shownLogLevels });
   }
 
-  startListening() {
+  startListening(): void {
     const { session } = this.props;
     this.cancelListener = session.onLogMessage(this.handleLogMessage);
   }
 
-  stopListening() {
+  stopListening(): void {
     if (this.cancelListener != null) {
       this.cancelListener();
-      this.cancelListener = null;
+      this.cancelListener = undefined;
     }
   }
 
-  initMonaco() {
+  initMonaco(): void {
+    assertNotNull(this.editorContainer);
     this.editor = monaco.editor.create(this.editorContainer, {
-      copyWithSyntaxHighlighting: 'false',
+      copyWithSyntaxHighlighting: false,
       fixedOverflowWidgets: true,
       folding: false,
       fontFamily: 'Fira Mono',
       glyphMargin: false,
       language: 'log',
       lineDecorationsWidth: 0,
-      lineNumbers: '',
+      // I commented this out since '' is not a valid parameter for line Numbers
+      // lineNumbers: '',
       lineNumbersMinChars: 0,
       minimap: { enabled: false },
       readOnly: true,
@@ -207,18 +230,20 @@ class LogView extends PureComponent {
 
     // When find widget is open, escape key closes it.
     // Instead, capture it and do nothing. Same for shift-escape.
-    this.editor.addCommand(monaco.KeyCode.Escape, () => {});
+    this.editor.addCommand(monaco.KeyCode.Escape, () => undefined);
     this.editor.addCommand(
       // eslint-disable-next-line no-bitwise
       monaco.KeyMod.Shift | monaco.KeyCode.Escape,
-      () => {}
+      () => undefined
     );
 
     // Restore regular escape to clear selection, when editorText has focus.
     this.editor.addCommand(
       monaco.KeyCode.Escape,
       () => {
-        this.editor.setPosition(this.editor.getPosition());
+        const position = this.editor?.getPosition();
+        assertNotNull(position);
+        this.editor?.setPosition(position);
       },
       'findWidgetVisible && editorTextFocus'
     );
@@ -227,28 +252,30 @@ class LogView extends PureComponent {
       // eslint-disable-next-line no-bitwise
       monaco.KeyMod.Shift | monaco.KeyCode.Escape,
       () => {
-        this.editor.setPosition(this.editor.getPosition());
+        const position = this.editor?.getPosition();
+        assertNotNull(position);
+        this.editor?.setPosition(position);
       },
       'findWidgetVisible && editorTextFocus'
     );
   }
 
-  destroyMonaco() {
+  destroyMonaco(): void {
     if (this.editor) {
       this.editor.dispose();
-      this.editor = null;
+      this.editor = undefined;
     }
   }
 
-  triggerFindWidget() {
+  triggerFindWidget(): void {
     // The actions.find action can no longer be triggered when the editor is not in focus, with monaco 0.22.x.
     // As a workaround, just focus the editor before triggering the action
     // https://github.com/microsoft/monaco-editor/issues/2355
-    this.editor.focus();
-    this.editor.trigger('keyboard', 'actions.find');
+    this.editor?.focus();
+    this.editor?.trigger('keyboard', 'actions.find', undefined);
   }
 
-  toggleAll() {
+  toggleAll(): void {
     const { shownLogLevels } = this.state;
     let isAllEnabled = true;
     for (let i = 0; i < LogView.AllLogLevels.length; i += 1) {
@@ -262,7 +289,7 @@ class LogView extends PureComponent {
     if (isAllEnabled) {
       this.setState({ shownLogLevels: {} });
     } else {
-      const updatedLogLevels = {};
+      const updatedLogLevels: Record<string, boolean> = {};
       for (let i = 0; i < LogView.AllLogLevels.length; i += 1) {
         const logLevel = LogView.AllLogLevels[i];
         updatedLogLevels[logLevel] = true;
@@ -271,28 +298,30 @@ class LogView extends PureComponent {
     }
   }
 
-  toggleLogLevel(logLevel) {
+  toggleLogLevel(logLevel: string): void {
     const { shownLogLevels } = this.state;
     const isEnabled = shownLogLevels[logLevel];
-    const updatedLogLevels = {};
+    const updatedLogLevels: Record<string, boolean> = {};
     updatedLogLevels[logLevel] = !isEnabled;
     this.updateLogLevels(updatedLogLevels);
   }
 
-  updateLogLevels(updatedLogLevels) {
+  updateLogLevels(updatedLogLevels: Record<string, boolean>): void {
     let { shownLogLevels } = this.state;
     shownLogLevels = { ...shownLogLevels, ...updatedLogLevels };
     this.setState({ shownLogLevels });
   }
 
-  appendLogText(text) {
+  appendLogText(text: string): void {
     if (!this.editor) {
       return;
     }
 
     const model = this.editor.getModel();
-    let line = model.getLineCount();
-    let column = model.getLineLength(line);
+    let line = model?.getLineCount();
+    assertNotNull(line);
+    let column = model?.getLineLength(line);
+    assertNotNull(column);
     const isBottomVisible = this.isBottomVisible();
 
     const edits = [];
@@ -322,17 +351,19 @@ class LogView extends PureComponent {
       forceMoveMarkers: true,
     });
 
-    model.applyEdits(edits);
+    model?.applyEdits(edits);
 
     if (isBottomVisible) {
-      this.editor.revealLine(model.getLineCount(), 1);
+      const lineCount = model?.getLineCount();
+      assertNotNull(lineCount);
+      this.editor.revealLine(lineCount, 1);
     }
   }
 
   /**
    * Refresh the contents of the log component with the updated filter text
    */
-  refreshLogText() {
+  refreshLogText(): void {
     if (!this.editor) {
       return;
     }
@@ -360,7 +391,8 @@ class LogView extends PureComponent {
     this.editor.setValue(text);
 
     if (isBottomVisible) {
-      const line = this.editor.getModel().getLineCount();
+      const line = this.editor.getModel()?.getLineCount();
+      assertNotNull(line);
       this.editor.revealLine(line, 1);
     }
 
@@ -368,7 +400,7 @@ class LogView extends PureComponent {
     this.bufferedMessages = [];
   }
 
-  truncateLogIfNecessary() {
+  truncateLogIfNecessary(): void {
     if (this.messages.length > LogView.maxLogSize) {
       this.messages = this.messages.splice(
         this.messages.length - LogView.truncateSize
@@ -376,28 +408,30 @@ class LogView extends PureComponent {
     }
   }
 
-  scrollToBottom() {
+  scrollToBottom(): void {
     if (!this.editor) {
       return;
     }
 
-    const line = this.editor.getModel().getLineCount();
+    const line = this.editor?.getModel?.()?.getLineCount();
+    assertNotNull(line);
     this.editor.revealLine(line, 1);
   }
 
-  isBottomVisible() {
+  isBottomVisible(): boolean {
     if (!this.editor) {
       return true;
     }
 
     const model = this.editor.getModel();
-    const line = model.getLineCount();
+    const line = model?.getLineCount();
 
+    assertNotNull(line);
     return this.isLineVisible(line);
   }
 
-  isLineVisible(line) {
-    const visibleRanges = this.editor.getVisibleRanges();
+  isLineVisible(line: number): boolean {
+    const visibleRanges = this.editor?.getVisibleRanges();
     if (visibleRanges == null || visibleRanges.length === 0) {
       return false;
     }
@@ -413,12 +447,12 @@ class LogView extends PureComponent {
   }
 
   /** Checks if the given log message is visible with the current filters */
-  isLogItemVisible(message) {
+  isLogItemVisible(message: LogItem): boolean {
     const { shownLogLevels } = this.state;
     return shownLogLevels[message.logLevel];
   }
 
-  flush() {
+  flush(): void {
     let text = '';
     for (let i = 0; i < this.bufferedMessages.length; i += 1) {
       const message = this.bufferedMessages[i];
@@ -434,7 +468,7 @@ class LogView extends PureComponent {
     this.appendLogText(text);
   }
 
-  queue(message) {
+  queue(message: LogItem): void {
     this.bufferedMessages.push(message);
     if (this.bufferedMessages.length === 1) {
       this.flushTimer = setTimeout(
@@ -444,34 +478,34 @@ class LogView extends PureComponent {
     }
   }
 
-  stopFlushTimer() {
+  stopFlushTimer(): void {
     if (this.flushTimer) {
       clearTimeout(this.flushTimer);
-      this.flushTimer = null;
+      this.flushTimer = undefined;
     }
   }
 
-  updateDimensions() {
+  updateDimensions(): void {
     if (this.editor) {
       this.editor.layout();
     }
   }
 
-  handleClearClick() {
+  handleClearClick(): void {
     this.clearLogs();
   }
 
-  clearLogs() {
+  clearLogs(): void {
     this.messages = [];
     this.refreshLogText();
   }
 
-  handleFlushTimeout() {
+  handleFlushTimeout(): void {
     this.stopFlushTimer();
     this.flush();
   }
 
-  handleLogMessage(message) {
+  handleLogMessage(message: LogItem): void {
     this.messages.push(message);
 
     if (this.editor && this.isLogItemVisible(message)) {
@@ -479,24 +513,24 @@ class LogView extends PureComponent {
     }
   }
 
-  handleMenuItemClick(logLevel) {
+  handleMenuItemClick(logLevel: string): void {
     this.toggleLogLevel(logLevel);
   }
 
-  handleResetClick() {
+  handleResetClick(): void {
     this.resetLogLevels();
   }
 
-  handleResize() {
+  handleResize(): void {
     this.updateDimensions();
   }
 
-  handleToggleAllClick() {
+  handleToggleAllClick(): void {
     this.toggleAll();
   }
 
-  render() {
-    const popperOptions = { placement: 'bottom-end' };
+  render(): ReactElement {
+    const popperOptions = { placement: 'bottom-end' as Placement };
     const { shownLogLevels } = this.state;
     const actions = this.getMenuActions(shownLogLevels);
     return (
@@ -533,9 +567,5 @@ class LogView extends PureComponent {
     );
   }
 }
-
-LogView.propTypes = {
-  session: APIPropTypes.IdeSession.isRequired,
-};
 
 export default LogView;

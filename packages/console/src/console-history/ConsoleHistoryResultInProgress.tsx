@@ -1,17 +1,31 @@
-import React, { Component } from 'react';
+import React, { Component, ReactElement } from 'react';
 import classNames from 'classnames';
-import PropTypes from 'prop-types';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { LoadingSpinner, Tooltip } from '@deephaven/components';
 import { vsClose } from '@deephaven/icons';
 import { TimeUtils } from '@deephaven/utils';
 import './ConsoleHistoryResultInProgress.scss';
 
+interface ConsoleHistoryResultInProgressProps {
+  onCancelClick: () => void;
+  disabled: boolean;
+}
+
+interface ConsoleHistoryResultInProgressState {
+  elapsed: number;
+}
 /**
  * A spinner shown when a command is taking a while.
  */
-class ConsoleHistoryResultInProgress extends Component {
-  constructor(props) {
+class ConsoleHistoryResultInProgress extends Component<
+  ConsoleHistoryResultInProgressProps,
+  ConsoleHistoryResultInProgressState
+> {
+  static defaultProps = {
+    disabled: false,
+  };
+
+  constructor(props: ConsoleHistoryResultInProgressProps) {
     super(props);
 
     this.updateElapsed = this.updateElapsed.bind(this);
@@ -24,11 +38,11 @@ class ConsoleHistoryResultInProgress extends Component {
     };
   }
 
-  componentDidMount() {
+  componentDidMount(): void {
     this.timer = setInterval(this.updateElapsed, 1000);
   }
 
-  componentWillUnmount() {
+  componentWillUnmount(): void {
     if (this.timer) {
       clearInterval(this.timer);
     }
@@ -36,13 +50,17 @@ class ConsoleHistoryResultInProgress extends Component {
     this.timer = null;
   }
 
-  updateElapsed() {
+  timer: NodeJS.Timer | null;
+
+  startTime: number;
+
+  updateElapsed(): void {
     this.setState({
       elapsed: Math.round((Date.now() - this.startTime) / 1000),
     });
   }
 
-  render() {
+  render(): ReactElement {
     const { disabled, onCancelClick } = this.props;
     const { elapsed } = this.state;
     return (
@@ -63,14 +81,5 @@ class ConsoleHistoryResultInProgress extends Component {
     );
   }
 }
-
-ConsoleHistoryResultInProgress.propTypes = {
-  onCancelClick: PropTypes.func.isRequired,
-  disabled: PropTypes.bool,
-};
-
-ConsoleHistoryResultInProgress.defaultProps = {
-  disabled: false,
-};
 
 export default ConsoleHistoryResultInProgress;

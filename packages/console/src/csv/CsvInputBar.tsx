@@ -1,7 +1,14 @@
-import React, { Component } from 'react';
-import PropTypes from 'prop-types';
+import React, {
+  ChangeEvent,
+  Component,
+  FormEvent,
+  ReactElement,
+  RefObject,
+} from 'react';
 import classNames from 'classnames';
+import type { JSZipObject } from 'jszip';
 import { Button, Checkbox } from '@deephaven/components';
+import { IdeSession, Table } from '@deephaven/jsapi-shim';
 import Log from '@deephaven/log';
 import { DbNameValidator } from '@deephaven/utils';
 import CsvOverlay from './CsvOverlay';
@@ -17,11 +24,39 @@ const TYPE_OPTIONS = Object.entries(CsvFormats.TYPES).map(([key, value]) => (
   </option>
 ));
 
+interface CsvInputBarProps {
+  session: IdeSession;
+  onOpenTable: (name: string) => void;
+  onClose: () => void;
+  onUpdate: (update: string) => void;
+  onError: (e: unknown) => void;
+  file: File;
+  paste?: string;
+  onInProgress: (boolean: boolean) => void;
+  timeZone: string;
+  unzip?: (zipFile: File) => Promise<JSZipObject[]>;
+}
+
+interface CsvInputBarState {
+  tableName: string;
+  tableNameSet: boolean;
+  isFirstRowHeaders: boolean;
+  showProgress: boolean;
+  progressValue: number;
+  type: keyof typeof CsvFormats.TYPES;
+  parser: CsvParser | null;
+}
 /**
  * Input controls for CSV upload.
  */
-class CsvInputBar extends Component {
-  constructor(props) {
+class CsvInputBar extends Component<CsvInputBarProps, CsvInputBarState> {
+  static defaultProps = {
+    file: null,
+    paste: null,
+    unzip: null,
+  };
+
+  constructor(props: CsvInputBarProps) {
     super(props);
 
     this.handleUpload = this.handleUpload.bind(this);
@@ -48,7 +83,7 @@ class CsvInputBar extends Component {
 
   // React documentation says it is fine to update state inside an if statment
   /* eslint-disable react/no-did-update-set-state */
-  componentDidUpdate(prevProps) {
+  componentDidUpdate(prevProps: CsvInputBarProps): void {
     const { file, paste } = this.props;
     const { tableName, tableNameSet } = this.state;
     // Set the table name from a file
@@ -61,7 +96,7 @@ class CsvInputBar extends Component {
         tableName: fileTableName,
         tableNameSet: true,
       });
-      this.inputRef.current.focus();
+      this.inputRef.current?.focus();
     } else if ((!file && prevProps.file) || (!paste && prevProps.paste)) {
       // The file or paste was unstaged
       this.setState({
@@ -87,35 +122,37 @@ class CsvInputBar extends Component {
     }
   }
 
-  componentWillUnmount() {
+  componentWillUnmount(): void {
     const { parser } = this.state;
     if (parser) {
       parser.cancel();
     }
   }
 
-  handleCancel() {
+  inputRef: RefObject<HTMLInputElement>;
+
+  handleCancel(): void {
     const { onClose } = this.props;
     onClose();
   }
 
-  handleError(e) {
+  handleError(e: unknown): void {
     const { onClose, onError } = this.props;
     log.error(e);
     onError(e);
     onClose();
   }
 
-  handleTableName(event) {
+  handleTableName(event: ChangeEvent<HTMLInputElement>): void {
     this.setState({ tableName: event.target.value, tableNameSet: true });
   }
 
-  toggleFirstRowHeaders() {
+  toggleFirstRowHeaders(): void {
     const { isFirstRowHeaders } = this.state;
     this.setState({ isFirstRowHeaders: !isFirstRowHeaders });
   }
 
-  handleUpload(event) {
+  handleUpload(event: FormEvent<HTMLFormElement>): void {
     event.stopPropagation();
     event.preventDefault();
     const { file, paste } = this.props;
@@ -134,15 +171,15 @@ class CsvInputBar extends Component {
     }
   }
 
-  handleFile(file, isZip = false) {
+  handleFile(file: Blob | JSZipObject, isZip = false): void {
     log.info(
-      `Starting CSV parser for ${file.name} ${
-        isZip ? '' : `${file.size} bytes`
-      }`
+      `Starting CSV parser for ${
+        file instanceof File ? file.name : 'pasted values'
+      } ${isZip ? '' : (file as Blob).size} bytes`
     );
     const { session, timeZone, onInProgress } = this.props;
     const { tableName, isFirstRowHeaders, type } = this.state;
-    const handleParseDone = tables => {
+    const handleParseDone = (tables: Table[]) => {
       // Do not bother merging just one table
       if (tables.length === 1) {
         session
@@ -182,7 +219,7 @@ class CsvInputBar extends Component {
     onInProgress(true);
   }
 
-  handleZipFile(zipFile) {
+  handleZipFile(zipFile: File): void {
     const { onUpdate, unzip } = this.props;
     if (unzip == null) {
       this.handleError(new Error('No support for zip files available.'));
@@ -209,7 +246,7 @@ class CsvInputBar extends Component {
       .catch(e => this.handleError(e));
   }
 
-  handleProgress(progressValue) {
+  handleProgress(progressValue: number): boolean {
     const { showProgress } = this.state;
     if (showProgress) {
       this.setState({
@@ -221,7 +258,7 @@ class CsvInputBar extends Component {
   }
 
   // Cancels an in progress upload
-  handleCancelInProgress() {
+  handleCancelInProgress(): void {
     const { onInProgress } = this.props;
     const { parser } = this.state;
     if (parser) {
@@ -234,20 +271,20 @@ class CsvInputBar extends Component {
     onInProgress(false);
   }
 
-  openTable() {
+  openTable(): void {
     const { onOpenTable, onClose } = this.props;
     const { tableName } = this.state;
     onOpenTable(tableName);
     onClose();
   }
 
-  handleQueryTypeChange(event) {
+  handleQueryTypeChange(event: ChangeEvent<HTMLSelectElement>): void {
     this.setState({
-      type: event.target.value,
+      type: event.target.value as keyof typeof CsvFormats.TYPES,
     });
   }
 
-  render() {
+  render(): ReactElement {
     const { file, paste } = this.props;
     const {
       tableName,
@@ -318,8 +355,8 @@ class CsvInputBar extends Component {
                 className="progress-bar bg-primary"
                 style={{ width: `${progressValue}%` }}
                 aria-valuenow={progressValue}
-                aria-valuemin="0"
-                aria-valuemax="100"
+                aria-valuemin={0}
+                aria-valuemax={100}
               />
             </div>
             <label>{progressValue}%</label>
@@ -336,27 +373,5 @@ class CsvInputBar extends Component {
     );
   }
 }
-
-CsvInputBar.propTypes = {
-  session: PropTypes.shape({
-    bindTableToVariable: PropTypes.func.isRequired,
-    mergeTables: PropTypes.func.isRequired,
-  }).isRequired,
-  onOpenTable: PropTypes.func.isRequired,
-  onClose: PropTypes.func.isRequired,
-  onUpdate: PropTypes.func.isRequired,
-  onError: PropTypes.func.isRequired,
-  file: PropTypes.instanceOf(File),
-  paste: PropTypes.string,
-  onInProgress: PropTypes.func.isRequired,
-  timeZone: PropTypes.string.isRequired,
-  unzip: PropTypes.func,
-};
-
-CsvInputBar.defaultProps = {
-  file: null,
-  paste: null,
-  unzip: null,
-};
 
 export default CsvInputBar;

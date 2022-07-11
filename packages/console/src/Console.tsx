@@ -1,17 +1,30 @@
 /**
  * Console display for use in the Iris environment.
  */
-import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
-import { ContextActions } from '@deephaven/components';
+import React, {
+  DragEvent,
+  PureComponent,
+  ReactElement,
+  ReactNode,
+  RefObject,
+} from 'react';
+import { ContextActions, DropdownAction } from '@deephaven/components';
 import { vsCheck } from '@deephaven/icons';
 import classNames from 'classnames';
 import memoize from 'memoize-one';
 import throttle from 'lodash.throttle';
-import dh, { PropTypes as APIPropTypes } from '@deephaven/jsapi-shim';
+import type { JSZipObject } from 'jszip';
+import dh, {
+  IdeSession,
+  LogItem,
+  VariableChanges,
+  VariableDefinition,
+} from '@deephaven/jsapi-shim';
 import Log from '@deephaven/log';
-import { Pending } from '@deephaven/utils';
-import ConsoleHistory from './console-history/ConsoleHistory';
+import { assertNotNull, Pending } from '@deephaven/utils';
+import ConsoleHistory, {
+  ConsoleHistoryActionItem,
+} from './console-history/ConsoleHistory';
 import SHORTCUTS from './ConsoleShortcuts';
 import LogLevel from './log/LogLevel';
 import ConsoleInput from './ConsoleInput';
@@ -19,25 +32,102 @@ import CsvOverlay from './csv/CsvOverlay';
 import CsvInputBar from './csv/CsvInputBar';
 import './Console.scss';
 import ConsoleStatusBar from './ConsoleStatusBar';
-import StoragePropTypes from './StoragePropTypes';
+import {
+  CommandHistoryStorage,
+  CommandHistoryStorageItem,
+} from './command-history';
 
 const log = Log.module('Console');
 
-const DEFAULT_SETTINGS = {
+interface Settings {
+  isAutoLaunchPanelsEnabled: boolean;
+  isPrintStdOutEnabled: boolean;
+  isClosePanelsOnDisconnectEnabled: boolean;
+}
+
+const DEFAULT_SETTINGS: Settings = {
   isAutoLaunchPanelsEnabled: true,
   isPrintStdOutEnabled: true,
   isClosePanelsOnDisconnectEnabled: true,
-};
+} as const;
 
-export class Console extends PureComponent {
+interface ConsoleProps {
+  statusBarChildren: ReactNode;
+  settings: Partial<Settings>;
+  focusCommandHistory: () => void;
+  openObject: (object: VariableDefinition) => void;
+  closeObject: (object: VariableDefinition) => void;
+  session: IdeSession;
+  language: string;
+  commandHistoryStorage: CommandHistoryStorage;
+  onSettingsChange: (settings: Record<string, unknown>) => void;
+  scope: string;
+  actions: DropdownAction[];
+  timeZone: string;
+
+  // Children shown at the bottom of the console history
+  historyChildren: ReactNode;
+
+  // Known object map
+  objectMap: Map<string, VariableDefinition>;
+
+  disabled: boolean;
+
+  /**
+   * Function to unzip a zip file. If not provided, zip files will not be accepted
+   * (file:File) => Promise<File[]>
+   */
+  unzip: (file: File) => Promise<JSZipObject[]>;
+}
+
+interface ConsoleState {
+  // Need separate histories as console history has stdout/stderr output
+  consoleHistory: ConsoleHistoryActionItem[];
+
+  // Height of the viewport of the console input and history
+  consoleHeight: number;
+
+  isScrollDecorationShown: boolean;
+
+  // Location of objects in the console history
+  objectHistoryMap: Map<string, number>;
+
+  // The object definitions, name/type
+  objectMap: Map<string, VariableDefinition>;
+
+  showCsvOverlay: boolean;
+  csvFile: File | null;
+  csvPaste: string | null;
+  dragError: string | null;
+  csvUploadInProgress: boolean;
+  isAutoLaunchPanelsEnabled: boolean;
+  isPrintStdOutEnabled: boolean;
+  isClosePanelsOnDisconnectEnabled: boolean;
+}
+export class Console extends PureComponent<ConsoleProps, ConsoleState> {
+  static defaultProps = {
+    statusBarChildren: null,
+    settings: {},
+    onSettingsChange: (): void => undefined,
+    scope: null,
+    actions: [],
+    historyChildren: null,
+    timeZone: 'America/New_York',
+    objectMap: new Map(),
+    disabled: false,
+    unzip: null,
+  };
+
   static LOG_THROTTLE = 500;
 
   /**
    * Check if the provided log level is an error type
-   * @param {LogLevel} logLevel The LogLevel being checked
-   * @returns {boolean} true if the log level is an error level log
+   * @param logLevel The LogLevel being checked
+   * @returns= true if the log level is an error level log
    */
-  static isErrorLevel(logLevel) {
+  static isErrorLevel(
+    logLevel: typeof LogLevel[keyof typeof LogLevel]
+  ): boolean {
     return (
       logLevel === LogLevel.STDERR ||
       logLevel === LogLevel.ERROR ||
@@ -47,16 +137,16 @@ export class Console extends PureComponent {
 
   /**
    * Check if the provided log level is output level
-   * @param {LogLevel} logLevel The LogLevel being checked
-   * @returns {boolean} true if the log level should be output to the console
+   * @para logLevel The LogLevel being checked
+   * @return true if the log level should be output to the console
    */
-  static isOutputLevel(logLevel) {
+  static isOutputLevel(logLevel: string): boolean {
     // We want all errors to be output, in addition to STDOUT.
     // That way the user is more likely to see them.
     return logLevel === LogLevel.STDOUT || Console.isErrorLevel(logLevel);
   }
 
-  constructor(props) {
+  constructor(props: ConsoleProps) {
     super(props);
 
     this.handleCommandResult = this.handleCommandResult.bind(this);
@@ -74,10 +164,6 @@ export class Console extends PureComponent {
       this
     );
     this.handleTogglePrintStdout = this.handleTogglePrintStdout.bind(this);
-    this.processLogMessageQueue = throttle(
-      this.processLogMessageQueue.bind(this),
-      Console.LOG_THROTTLE
-    );
     this.handleUploadCsv = this.handleUploadCsv.bind(this);
     this.handleHideCsv = this.handleHideCsv.bind(this);
     this.handleCsvFileOpened = this.handleCsvFileOpened.bind(this);
@@ -90,7 +176,7 @@ export class Console extends PureComponent {
     this.handleCsvError = this.handleCsvError.bind(this);
     this.handleCsvInProgress = this.handleCsvInProgress.bind(this);
 
-    this.cancelListener = null;
+    this.cancelListener = undefined;
     this.consolePane = React.createRef();
     this.consoleInput = React.createRef();
     this.consoleHistoryScrollPane = React.createRef();
@@ -125,7 +211,7 @@ export class Console extends PureComponent {
     };
   }
 
-  componentDidMount() {
+  componentDidMount(): void {
     this.initConsoleLogging();
 
     const { session } = this.props;
@@ -137,7 +223,7 @@ export class Console extends PureComponent {
     this.updateDimensions();
   }
 
-  componentDidUpdate(prevProps, prevState) {
+  componentDidUpdate(prevProps: ConsoleProps, prevState: ConsoleState): void {
     const { props, state } = this;
     this.sendSettingsChange(prevState, state);
 
@@ -146,7 +232,7 @@ export class Console extends PureComponent {
     }
   }
 
-  componentWillUnmount() {
+  componentWillUnmount(): void {
     const { session } = this.props;
 
     session.removeEventListener(
@@ -160,34 +246,44 @@ export class Console extends PureComponent {
     this.deinitConsoleLogging();
   }
 
-  initConsoleLogging() {
+  cancelListener?: () => void;
+
+  consolePane: RefObject<HTMLDivElement>;
+
+  consoleInput: RefObject<ConsoleInput>;
+
+  consoleHistoryScrollPane: RefObject<HTMLDivElement>;
+
+  pending: Pending;
+
+  queuedLogMessages: ConsoleHistoryActionItem[];
+
+  initConsoleLogging(): void {
     const { session } = this.props;
     this.cancelListener = session.onLogMessage(this.handleLogMessage);
   }
 
-  deinitConsoleLogging() {
+  deinitConsoleLogging(): void {
     if (this.cancelListener != null) {
       this.cancelListener();
-      this.cancelListener = null;
+      this.cancelListener = undefined;
     }
   }
 
-  handleClearShortcut(event) {
+  handleClearShortcut(event: CustomEvent): void {
     event.preventDefault();
     event.stopPropagation();
 
-    this.consoleInput.current.clear();
+    this.consoleInput.current?.clear();
   }
 
-  handleCommandStarted(event) {
+  handleCommandStarted(event: CustomEvent): void {
     const { code, result } = event.detail;
     const wrappedResult = this.pending.add(result);
     const historyItem = {
       command: code,
-      result: null,
       disabledObjects: [],
       startTime: Date.now(),
-      endTime: null,
       cancelResult: () => {
         result.cancel();
       },
@@ -202,8 +298,6 @@ export class Console extends PureComponent {
       {
         command: code,
         startTime: new Date().toJSON(),
-        endTime: null,
-        result: null,
       }
     );
     workspaceItemPromise.catch(err => {
@@ -228,10 +322,20 @@ export class Console extends PureComponent {
       });
   }
 
-  handleCommandResult(result, historyItemParam, workspaceItemPromise) {
+  handleCommandResult(
+    result:
+      | {
+          message: string;
+          error: unknown;
+          changes: VariableChanges;
+        }
+      | undefined,
+    historyItemParam: ConsoleHistoryActionItem,
+    workspaceItemPromise: Promise<CommandHistoryStorageItem>
+  ): void {
     const historyItem = historyItemParam;
-    historyItem.wrappedResult = null;
-    historyItem.cancelResult = null;
+    historyItem.wrappedResult = undefined;
+    historyItem.cancelResult = undefined;
 
     if (!result) {
       return;
@@ -250,12 +354,16 @@ export class Console extends PureComponent {
     this.openUpdatedItems(result.changes);
   }
 
-  handleCommandError(error, historyItemParam, workspaceItemPromise) {
+  handleCommandError(
+    error: unknown,
+    historyItemParam: ConsoleHistoryActionItem,
+    workspaceItemPromise: Promise<CommandHistoryStorageItem>
+  ): void {
     const historyItem = historyItemParam;
-    historyItem.wrappedResult = null;
-    historyItem.cancelResult = null;
+    historyItem.wrappedResult = undefined;
+    historyItem.cancelResult = undefined;
 
-    if (error && error.isCanceled) {
+    if (error && ((error as unknown) as { isCanceled: boolean }).isCanceled) {
       log.debug('Called handleCommandError on a cancelled promise result');
       return;
     }
@@ -277,7 +385,7 @@ export class Console extends PureComponent {
     });
   }
 
-  handleFocusHistory(event) {
+  handleFocusHistory(event: CustomEvent): void {
     event.preventDefault();
     event.stopPropagation();
 
@@ -285,7 +393,7 @@ export class Console extends PureComponent {
     focusCommandHistory();
   }
 
-  handleLogMessage(message) {
+  handleLogMessage(message: LogItem): void {
     const { isPrintStdOutEnabled } = this.state;
     if (!isPrintStdOutEnabled) {
       return;
@@ -296,22 +404,22 @@ export class Console extends PureComponent {
     }
   }
 
-  queueLogMessage(message, logLevel) {
-    const result = {};
+  queueLogMessage(message: string, logLevel: string): void {
+    const result: Record<string, string> = {};
     if (Console.isErrorLevel(logLevel)) {
       result.error = message;
     } else {
       result.message = message;
     }
 
-    const historyItem = { command: null, result };
+    const historyItem = { command: undefined, result };
 
     this.queuedLogMessages.push(historyItem);
 
     this.processLogMessageQueue();
   }
 
-  processLogMessageQueue() {
+  processLogMessageQueue = throttle(() => {
     this.scrollConsoleHistoryToBottom();
 
     this.setState(state => {
@@ -327,9 +435,9 @@ export class Console extends PureComponent {
 
       return { consoleHistory };
     });
-  }
+  }, Console.LOG_THROTTLE);
 
-  openUpdatedItems(changes) {
+  openUpdatedItems(changes: VariableChanges): void {
     const { isAutoLaunchPanelsEnabled } = this.state;
     if (!changes || !isAutoLaunchPanelsEnabled) {
       return;
@@ -341,7 +449,7 @@ export class Console extends PureComponent {
     );
   }
 
-  closeRemovedItems(changes) {
+  closeRemovedItems(changes: VariableChanges): void {
     if (!changes || !changes.removed || changes.removed.length === 0) {
       return;
     }
@@ -351,7 +459,10 @@ export class Console extends PureComponent {
     removed.forEach(object => closeObject(object));
   }
 
-  updateHistory(result, historyItemParam) {
+  updateHistory(
+    result: { changes: unknown },
+    historyItemParam: ConsoleHistoryActionItem
+  ): void {
     const historyItem = historyItemParam;
     if (!result || !result.changes || !historyItem) {
       return;
@@ -368,8 +479,11 @@ export class Console extends PureComponent {
     });
   }
 
-  updateKnownObjects(historyItem) {
-    const { changes } = historyItem.result;
+  updateKnownObjects(historyItem: ConsoleHistoryActionItem): void {
+    let changes: undefined | VariableChanges;
+    if (historyItem.result) {
+      changes = historyItem.result.changes;
+    }
     if (
       !changes ||
       ((!changes.created || changes.created.length === 0) &&
@@ -391,42 +505,48 @@ export class Console extends PureComponent {
       const objectHistoryMap = new Map(state.objectHistoryMap);
       const objectMap = new Map(state.objectMap);
 
-      const disableOldObject = (object, isRemoved = false) => {
-        const { name } = object;
-        const oldIndex = objectHistoryMap.get(name);
+      const disableOldObject = (
+        object: VariableDefinition,
+        isRemoved = false
+      ) => {
+        const { title } = object;
+        assertNotNull(title);
+        const oldIndex = objectHistoryMap.get(title);
         // oldIndex can be -1 if a object is active but doesn't have a command in consoleHistory
         // this can happen after clearing the console using 'clear' or 'cls' command
+        assertNotNull(oldIndex);
         if (oldIndex >= 0) {
           // disable outdated object variable in the old consoleHistory item
           history[oldIndex].disabledObjects = history[
             oldIndex
-          ].disabledObjects.concat(name);
+          ].disabledObjects?.concat(title);
           history[oldIndex] = { ...history[oldIndex] };
         }
-        objectHistoryMap.set(name, itemIndex);
+        objectHistoryMap.set(title, itemIndex);
         if (isRemoved) {
-          objectMap.delete(name);
+          objectMap.delete(title);
         } else {
-          objectMap.set(name, object);
+          objectMap.set(title, object);
         }
       };
 
-      changes.updated.forEach(object => disableOldObject(object));
-      changes.removed.forEach(object => disableOldObject(object, true));
+      changes?.updated.forEach(object => disableOldObject(object));
+      changes?.removed.forEach(object => disableOldObject(object, true));
 
       // Created objects have to be processed after removed
       // in case the same object name is present in both removed and created
-      changes.created.forEach(object => {
-        const { name } = object;
-        objectHistoryMap.set(name, itemIndex);
-        objectMap.set(name, object);
+      changes?.created.forEach(object => {
+        const { title } = object;
+        assertNotNull(title);
+        objectHistoryMap.set(title, itemIndex);
+        objectMap.set(title, object);
       });
 
       return { objectHistoryMap, objectMap, consoleHistory: history };
     });
   }
 
-  updateObjectMap() {
+  updateObjectMap(): void {
     const { objectMap } = this.props;
     this.setState({ objectMap });
   }
@@ -436,7 +556,10 @@ export class Console extends PureComponent {
    * @param {object} result The result to store with the history item. Could be empty object for success
    * @param {Promise<object>} workspaceItemPromise The workspace data row promise for the workspace item to be updated
    */
-  updateWorkspaceHistoryItem(result, workspaceItemPromise) {
+  updateWorkspaceHistoryItem(
+    result: { error: unknown },
+    workspaceItemPromise: Promise<CommandHistoryStorageItem>
+  ): void {
     const promise = this.pending.add(workspaceItemPromise);
 
     const endTime = new Date().toJSON();
@@ -461,8 +584,9 @@ export class Console extends PureComponent {
       });
   }
 
-  scrollConsoleHistoryToBottom(force = false) {
+  scrollConsoleHistoryToBottom(force = false): void {
     const pane = this.consoleHistoryScrollPane.current;
+    assertNotNull(pane);
     if (!force && pane.scrollTop < pane.scrollHeight - pane.offsetHeight) {
       return;
     }
@@ -472,8 +596,9 @@ export class Console extends PureComponent {
     });
   }
 
-  handleScrollPaneScroll() {
+  handleScrollPaneScroll(): void {
     const scrollPane = this.consoleHistoryScrollPane.current;
+    assertNotNull(scrollPane);
     if (
       scrollPane.scrollTop > 0 &&
       scrollPane.scrollHeight > scrollPane.clientHeight
@@ -484,25 +609,25 @@ export class Console extends PureComponent {
     }
   }
 
-  handleToggleAutoLaunchPanels() {
+  handleToggleAutoLaunchPanels(): void {
     this.setState(state => ({
       isAutoLaunchPanelsEnabled: !state.isAutoLaunchPanelsEnabled,
     }));
   }
 
-  handleToggleClosePanelsOnDisconnect() {
+  handleToggleClosePanelsOnDisconnect(): void {
     this.setState(state => ({
       isClosePanelsOnDisconnectEnabled: !state.isClosePanelsOnDisconnectEnabled,
     }));
   }
 
-  handleTogglePrintStdout() {
+  handleTogglePrintStdout(): void {
     this.setState(state => ({
       isPrintStdOutEnabled: !state.isPrintStdOutEnabled,
     }));
   }
 
-  handleUploadCsv() {
+  handleUploadCsv(): void {
     this.setState({
       showCsvOverlay: true,
       dragError: null,
@@ -510,7 +635,7 @@ export class Console extends PureComponent {
     });
   }
 
-  handleHideCsv() {
+  handleHideCsv(): void {
     this.setState({
       showCsvOverlay: false,
       csvFile: null,
@@ -520,15 +645,15 @@ export class Console extends PureComponent {
     });
   }
 
-  handleCsvFileOpened(file) {
+  handleCsvFileOpened(file: File | null): void {
     this.setState({ csvFile: file, csvPaste: null });
   }
 
-  handleCsvPaste(value) {
+  handleCsvPaste(value: string): void {
     this.setState({ csvFile: null, csvPaste: value });
   }
 
-  handleDragEnter(e) {
+  handleDragEnter(e: DragEvent<HTMLDivElement>): void {
     if (
       !e.dataTransfer ||
       !e.dataTransfer.items ||
@@ -555,9 +680,14 @@ export class Console extends PureComponent {
     }
   }
 
-  handleDragLeave(e) {
+  handleDragLeave(e: DragEvent<HTMLDivElement>): void {
     // DragLeave gets fired for every child element, so make sure we're actually leaving the drop zone
-    if (!e.currentTarget || e.currentTarget.contains(e.relatedTarget)) {
+    if (
+      !e.currentTarget ||
+      (e.currentTarget instanceof Element &&
+        e.relatedTarget instanceof Element &&
+        e.currentTarget.contains(e.relatedTarget))
+    ) {
       return;
     }
     e.preventDefault();
@@ -565,11 +695,11 @@ export class Console extends PureComponent {
     this.setState({ showCsvOverlay: false, dragError: null });
   }
 
-  handleClearDragError() {
+  handleClearDragError(): void {
     this.setState({ dragError: null });
   }
 
-  handleOpenCsvTable(name) {
+  handleOpenCsvTable(name: string): void {
     const { openObject, commandHistoryStorage, language, scope } = this.props;
     const { consoleHistory, objectMap } = this.state;
     const object = { name, type: dh.VariableType.TABLE };
@@ -598,17 +728,16 @@ export class Console extends PureComponent {
       command: name,
       startTime: new Date().toJSON(),
       endTime: new Date().toJSON(),
-      result: null,
     });
   }
 
-  addConsoleHistoryMessage(message, error) {
+  addConsoleHistoryMessage(message: string | null, error?: unknown): void {
     const { consoleHistory } = this.state;
     const historyItem = {
       command: '',
       startTime: Date.now(),
       endTime: Date.now(),
-      result: { message, error },
+      result: { message: message ?? undefined, error },
     };
     const history = consoleHistory.concat(historyItem);
     this.setState({
@@ -616,19 +745,19 @@ export class Console extends PureComponent {
     });
   }
 
-  handleCsvUpdate(message) {
+  handleCsvUpdate(message: string): void {
     this.addConsoleHistoryMessage(message);
   }
 
-  handleCsvError(error) {
+  handleCsvError(error: unknown): void {
     this.addConsoleHistoryMessage(null, error);
   }
 
-  handleCsvInProgress(csvUploadInProgress) {
+  handleCsvInProgress(csvUploadInProgress: boolean): void {
     this.setState({ csvUploadInProgress });
   }
 
-  handleOverflowActions() {
+  handleOverflowActions(): DropdownAction[] {
     const {
       isAutoLaunchPanelsEnabled,
       isClosePanelsOnDisconnectEnabled,
@@ -641,21 +770,21 @@ export class Console extends PureComponent {
         title: 'Print Stdout',
         action: this.handleTogglePrintStdout,
         group: ContextActions.groups.high,
-        icon: isPrintStdOutEnabled ? vsCheck : null,
+        icon: isPrintStdOutEnabled ? vsCheck : undefined,
         order: 10,
       },
       {
         title: 'Auto Launch Panels',
         action: this.handleToggleAutoLaunchPanels,
         group: ContextActions.groups.high,
-        icon: isAutoLaunchPanelsEnabled ? vsCheck : null,
+        icon: isAutoLaunchPanelsEnabled ? vsCheck : undefined,
         order: 20,
       },
       {
         title: 'Close Panels on Disconnect',
         action: this.handleToggleClosePanelsOnDisconnect,
         group: ContextActions.groups.high,
-        icon: isClosePanelsOnDisconnectEnabled ? vsCheck : null,
+        icon: isClosePanelsOnDisconnectEnabled ? vsCheck : undefined,
         order: 30,
       },
       {
@@ -667,7 +796,7 @@ export class Console extends PureComponent {
     ];
   }
 
-  handleCommandSubmit(command) {
+  handleCommandSubmit(command: string): void {
     if (command === 'clear' || command === 'cls') {
       this.clearConsoleHistory();
     } else if (command.length > 0) {
@@ -693,7 +822,7 @@ export class Console extends PureComponent {
     }
   }
 
-  clearConsoleHistory() {
+  clearConsoleHistory(): void {
     this.pending.cancel();
 
     this.setState(state => {
@@ -720,7 +849,7 @@ export class Console extends PureComponent {
     },
   ]);
 
-  addCommand(command, focus = true, execute = false) {
+  addCommand(command: string, focus = true, execute = false): void {
     if (!this.consoleInput.current) {
       return;
     }
@@ -731,13 +860,17 @@ export class Console extends PureComponent {
     }
   }
 
-  focus() {
+  focus(): void {
     this.consoleInput.current?.focus();
   }
 
-  sendSettingsChange(prevState, state, checkIfChanged = true) {
-    const keys = Object.keys(DEFAULT_SETTINGS);
-    const settings = {};
+  sendSettingsChange(
+    prevState: ConsoleState,
+    state: ConsoleState,
+    checkIfChanged = true
+  ): void {
+    const keys = Object.keys(DEFAULT_SETTINGS) as Array<keyof Settings>;
+    const settings: Record<string, unknown> = {};
     let hasChanges = false;
     for (let i = 0; i < keys.length; i += 1) {
       const key = keys[i];
@@ -755,7 +888,7 @@ export class Console extends PureComponent {
     onSettingsChange(settings);
   }
 
-  updateDimensions() {
+  updateDimensions(): void {
     if (this.consolePane.current) {
       this.setState({
         consoleHeight: this.consolePane.current.clientHeight,
@@ -766,7 +899,7 @@ export class Console extends PureComponent {
     }
   }
 
-  render() {
+  render(): ReactElement {
     const {
       actions,
       historyChildren,
@@ -803,7 +936,7 @@ export class Console extends PureComponent {
         <div className="console-pane" ref={this.consolePane}>
           <ConsoleStatusBar
             session={session}
-            overflowActions={this.handleOverflowActions}
+            overflowActions={this.handleOverflowActions()}
             openObject={openObject}
             objects={consoleMenuObjects}
           >
@@ -861,8 +994,8 @@ export class Console extends PureComponent {
               onClose={this.handleHideCsv}
               onUpdate={this.handleCsvUpdate}
               onError={this.handleCsvError}
-              file={csvFile}
-              paste={csvPaste}
+              file={csvFile ?? undefined}
+              paste={csvPaste ?? undefined}
               onInProgress={this.handleCsvInProgress}
               timeZone={timeZone}
               unzip={unzip}
@@ -877,47 +1010,5 @@ export class Console extends PureComponent {
     );
   }
 }
-
-Console.propTypes = {
-  statusBarChildren: PropTypes.node,
-  settings: PropTypes.shape({}),
-  focusCommandHistory: PropTypes.func.isRequired,
-  openObject: PropTypes.func.isRequired,
-  closeObject: PropTypes.func.isRequired,
-  session: APIPropTypes.IdeSession.isRequired,
-  language: PropTypes.string.isRequired,
-  commandHistoryStorage: StoragePropTypes.CommandHistoryStorage.isRequired,
-  onSettingsChange: PropTypes.func,
-  scope: PropTypes.string,
-  actions: PropTypes.arrayOf(PropTypes.shape({})),
-  timeZone: PropTypes.string,
-
-  // Children shown at the bottom of the console history
-  historyChildren: PropTypes.node,
-
-  // Known object map
-  objectMap: PropTypes.instanceOf(Map),
-
-  disabled: PropTypes.bool,
-
-  /**
-   * Function to unzip a zip file. If not provided, zip files will not be accepted
-   * (file:File) => Promise<File[]>
-   */
-  unzip: PropTypes.func,
-};
-
-Console.defaultProps = {
-  statusBarChildren: null,
-  settings: {},
-  onSettingsChange: () => {},
-  scope: null,
-  actions: [],
-  historyChildren: null,
-  timeZone: 'America/New_York',
-  objectMap: new Map(),
-  disabled: false,
-  unzip: null,
-};
 
 export default Console;

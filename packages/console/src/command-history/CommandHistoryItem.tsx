@@ -1,19 +1,26 @@
-import React, { useRef, useCallback } from 'react';
+import React, { useRef, useCallback, ReactElement } from 'react';
 import classNames from 'classnames';
-import PropTypes from 'prop-types';
 import { Tooltip } from '@deephaven/components';
 
 import './CommandHistoryItem.scss';
 import CommandHistoryItemTooltip from './CommandHistoryItemTooltip';
-import ConsolePropTypes from '../ConsolePropTypes';
-import StoragePropTypes from '../StoragePropTypes';
+import CommandHistoryStorage, {
+  CommandHistoryStorageItem,
+} from './CommandHistoryStorage';
+
+interface CommandHistoryItemProps {
+  item: CommandHistoryStorageItem;
+  language: string;
+  isSelected?: boolean;
+  commandHistoryStorage: CommandHistoryStorage;
+}
 
 const MAX_TRUNCATE_LENGTH = 512;
 
-const CommandHistoryItem = props => {
+const CommandHistoryItem = (props: CommandHistoryItemProps): ReactElement => {
   const { item, language, isSelected, commandHistoryStorage } = props;
   const previewText = item.name.substring(0, MAX_TRUNCATE_LENGTH);
-  const tooltip = useRef();
+  const tooltip = useRef<Tooltip>(null);
   const handleUpdate = useCallback(() => {
     tooltip.current?.update();
   }, [tooltip]);
@@ -49,13 +56,6 @@ const CommandHistoryItem = props => {
       </Tooltip>
     </div>
   );
-};
-
-CommandHistoryItem.propTypes = {
-  item: ConsolePropTypes.CommandHistoryItem.isRequired,
-  language: PropTypes.string.isRequired,
-  isSelected: PropTypes.bool,
-  commandHistoryStorage: StoragePropTypes.CommandHistoryStorage.isRequired,
 };
 
 CommandHistoryItem.defaultProps = {

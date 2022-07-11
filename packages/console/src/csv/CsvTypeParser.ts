@@ -1,6 +1,8 @@
+import type { JSZipObject } from 'jszip';
+import { assertNotNull } from '@deephaven/utils';
+import Papa, { Parser, ParseResult, ParseLocalConfig } from 'papaparse';
 // Intentionally using isNaN rather than Number.isNaN
 /* eslint-disable no-restricted-globals */
-import Papa from 'papaparse';
 import NewTableColumnTypes from './NewTableColumnTypes';
 
 // Initially column types start al unknown
@@ -16,7 +18,11 @@ const LOCAL_TIME_REGEX = /^([0-9]+T)?([0-9]+):([0-9]+)(:[0-9]+)?(?:\.[0-9]{1,9})
  * Determines the type of each column in a CSV file by parsing it and looking at every value.
  */
 class CsvTypeParser {
-  static determineType(value, type, nullString) {
+  static determineType(
+    value: string,
+    type: string,
+    nullString: string | null
+  ): string {
     if (!value || value === nullString) {
       // A null tells us nothing about the type
       return type;
@@ -44,11 +50,13 @@ class CsvTypeParser {
   }
 
   // Allows for cusomt rules in addition to isNaN
-  static isNotParsableNumber(s) {
-    return isNaN(s) || s === 'Infinity' || s === '-Infinity';
+  static isNotParsableNumber(s: string): boolean {
+    return (
+      isNaN((s as unknown) as number) || s === 'Infinity' || s === '-Infinity'
+    );
   }
 
-  static checkInteger(value) {
+  static checkInteger(value: string): string {
     const noCommas = value.replace(/,/g, '');
     if (CsvTypeParser.isNotParsableNumber(noCommas)) {
       return NewTableColumnTypes.STRING;
@@ -57,7 +65,7 @@ class CsvTypeParser {
     return CsvTypeParser.getNumberType(noCommas);
   }
 
-  static checkLong(value) {
+  static checkLong(value: string): string {
     const noCommas = value.replace(/,/g, '');
     if (CsvTypeParser.isNotParsableNumber(noCommas)) {
       return NewTableColumnTypes.STRING;
@@ -70,7 +78,7 @@ class CsvTypeParser {
     return NewTableColumnTypes.LONG;
   }
 
-  static checkDouble(value) {
+  static checkDouble(value: string): string {
     const noCommas = value.replace(/,/g, '');
     if (CsvTypeParser.isNotParsableNumber(noCommas)) {
       return NewTableColumnTypes.STRING;
@@ -79,7 +87,7 @@ class CsvTypeParser {
     return NewTableColumnTypes.DOUBLE;
   }
 
-  static checkBoolean(value) {
+  static checkBoolean(value: string): string {
     const lower = value.toLowerCase();
     if (lower === 'true' || lower === 'false') {
       return NewTableColumnTypes.BOOLEAN;
@@ -87,7 +95,7 @@ class CsvTypeParser {
     return NewTableColumnTypes.STRING;
   }
 
-  static checkDateTime(value) {
+  static checkDateTime(value: string): string {
     if (DATE_TIME_REGEX.test(value)) {
       return NewTableColumnTypes.DATE_TIME;
     }
@@ -95,7 +103,7 @@ class CsvTypeParser {
     return NewTableColumnTypes.STRING;
   }
 
-  static checkLocalTime(value) {
+  static checkLocalTime(value: string): string {
     if (LOCAL_TIME_REGEX.test(value)) {
       return NewTableColumnTypes.LOCAL_TIME;
     }
@@ -103,7 +111,7 @@ class CsvTypeParser {
     return NewTableColumnTypes.STRING;
   }
 
-  static getTypeFromUnknown(value) {
+  static getTypeFromUnknown(value: string): string {
     const noCommas = value.replace(/,/g, '');
     if (CsvTypeParser.isNotParsableNumber(noCommas)) {
       const lower = value.toLowerCase();
@@ -125,7 +133,7 @@ class CsvTypeParser {
     return CsvTypeParser.getNumberType(noCommas);
   }
 
-  static getNumberType(value) {
+  static getNumberType(value: string): string {
     if (value.includes('.')) {
       return NewTableColumnTypes.DOUBLE;
     }
@@ -146,16 +154,16 @@ class CsvTypeParser {
   }
 
   constructor(
-    onFileCompleted,
-    file,
-    readHeaders,
-    parentConfig,
-    nullString,
-    onProgress,
-    onError,
-    totalChunks,
-    isZip,
-    shouldTrim
+    onFileCompleted: (types: string[]) => void,
+    file: Blob | JSZipObject,
+    readHeaders: boolean,
+    parentConfig: ParseLocalConfig<unknown, Blob | NodeJS.ReadableStream>,
+    nullString: string | null,
+    onProgress: (progressValue: number) => boolean,
+    onError: (e: unknown) => void,
+    totalChunks: number,
+    isZip: boolean,
+    shouldTrim: boolean
   ) {
     this.onFileCompleted = onFileCompleted;
     this.file = file;
@@ -163,7 +171,6 @@ class CsvTypeParser {
     this.nullString = nullString;
     this.onProgress = onProgress;
     this.onError = onError;
-    this.types = null;
     this.chunks = 0;
     this.totalChunks = totalChunks;
     this.isZip = isZip;
@@ -183,14 +190,45 @@ class CsvTypeParser {
     };
   }
 
-  parse() {
+  onFileCompleted: (types: string[]) => void;
+
+  file: Blob | JSZipObject;
+
+  readHeaders: boolean;
+
+  nullString: string | null;
+
+  onProgress: (progressValue: number) => boolean;
+
+  onError: (e: unknown) => void;
+
+  types?: string[];
+
+  chunks: number;
+
+  totalChunks: number;
+
+  isZip: boolean;
+
+  shouldTrim: boolean;
+
+  zipProgress: number;
+
+  config: ParseLocalConfig<unknown, Blob | NodeJS.ReadableStream>;
+
+  parse(): void {
     const toParse = this.isZip
-      ? this.file.nodeStream('nodebuffer', this.handleNodeUpdate)
-      : this.file;
+      ? (this.file as JSZipObject).nodeStream(
+          // JsZip types are incorrect, thus the funny casting
+          // Actual parameter is 'nodebuffer'
+          'nodebuffer' as 'nodestream',
+          this.handleNodeUpdate
+        )
+      : (this.file as Blob);
     Papa.parse(toParse, this.config);
   }
 
-  handleChunk(result, parser) {
+  handleChunk(result: ParseResult<string[]>, parser: Parser): void {
     let { data } = result;
     if (!this.types) {
       if (!data || data.length === 0) {
@@ -205,19 +243,24 @@ class CsvTypeParser {
       }
     }
 
+    assertNotNull(this.types);
+
+    const cloneTypes = [...this.types];
+
     data.forEach(row => {
-      if (row.length >= this.types.length) {
-        for (let i = 0; i < this.types.length; i += 1) {
-          this.types[i] = CsvTypeParser.determineType(
+      if (row.length >= cloneTypes.length) {
+        for (let i = 0; i < cloneTypes.length; i += 1) {
+          cloneTypes[i] = CsvTypeParser.determineType(
             this.shouldTrim ? row[i].trim() : row[i],
-            this.types[i],
+            cloneTypes[i],
             this.nullString
           );
         }
+        this.types = cloneTypes;
       } else {
         parser.abort();
         this.onError(
-          `Error parsing CSV: Insufficient data in row.\nExpected length ${this.types.length} but found ${row.length}.\nRow = ${row}`
+          `Error parsing CSV: Insufficient data in row.\nExpected length ${cloneTypes.length} but found ${row.length}.\nRow = ${row}`
         );
       }
     });
@@ -236,9 +279,10 @@ class CsvTypeParser {
     }
   }
 
-  handleComplete(results) {
+  handleComplete(results: ParseResult<unknown>): void {
     const { types, onFileCompleted } = this;
     // results is undefined for a succesful parse, but has meta data for an abort
+    assertNotNull(types);
     if (!results || !results.meta.aborted) {
       onFileCompleted(
         types.map(type =>
@@ -248,12 +292,12 @@ class CsvTypeParser {
     }
   }
 
-  handleError(error) {
+  handleError(error: unknown): void {
     const { onError } = this;
     onError(error);
   }
 
-  handleNodeUpdate(metadata) {
+  handleNodeUpdate(metadata: { percent: number }): void {
     this.zipProgress = metadata.percent;
   }
 }

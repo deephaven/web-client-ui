@@ -1,61 +1,79 @@
 /**
  * Editor editor for large blocks of code
  */
-import React, { Component } from 'react';
-import PropTypes from 'prop-types';
+import React, { Component, ReactElement } from 'react';
 import classNames from 'classnames';
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js';
+import { assertNotNull } from '@deephaven/utils';
 import MonacoUtils from '../monaco/MonacoUtils';
 
-class Editor extends Component {
-  constructor(props) {
+interface EditorProps {
+  className: string;
+  onEditorInitialized: (editor: monaco.editor.IStandaloneCodeEditor) => void;
+  onEditorWillDestroy: (editor: monaco.editor.IStandaloneCodeEditor) => void;
+  settings: Record<string, unknown>;
+}
+
+class Editor extends Component<EditorProps, Record<string, never>> {
+  static defaultProps = {
+    className: 'fill-parent-absolute',
+    onEditorInitialized: (): void => undefined,
+    onEditorWillDestroy: (): void => undefined,
+    settings: {},
+  };
+
+  constructor(props: EditorProps) {
     super(props);
 
     this.handleResize = this.handleResize.bind(this);
 
     this.container = null;
-    this.editor = null;
-
     this.state = {};
   }
 
-  componentDidMount() {
+  componentDidMount(): void {
     this.initEditor();
 
     window.addEventListener('resize', this.handleResize);
   }
 
-  componentWillUnmount() {
+  componentWillUnmount(): void {
     window.removeEventListener('resize', this.handleResize);
 
     this.destroyEditor();
   }
 
-  setLanguage(language) {
+  container: HTMLDivElement | null;
+
+  editor?: monaco.editor.IStandaloneCodeEditor;
+
+  setLanguage(language: string): void {
     if (this.editor) {
-      monaco.editor.setModelLanguage(this.editor.getModel(), language);
+      const model = this.editor.getModel();
+      assertNotNull(model);
+      monaco.editor.setModelLanguage(model, language);
     }
   }
 
-  handleResize() {
+  handleResize(): void {
     this.updateDimensions();
   }
 
-  toggleFind() {
+  toggleFind(): void {
     if (this.editor) {
       // The actions.find action can no longer be triggered when the editor is not in focus, with monaco 0.22.x.
       // As a workaround, just focus the editor before triggering the action
       // https://github.com/microsoft/monaco-editor/issues/2355
       this.editor.focus();
-      this.editor.trigger('toggleFind', 'actions.find');
+      this.editor.trigger('toggleFind', 'actions.find', undefined);
     }
   }
 
-  updateDimensions() {
-    this.editor.layout();
+  updateDimensions(): void {
+    this.editor?.layout();
   }
 
-  initEditor() {
+  initEditor(): void {
     const { onEditorInitialized } = this.props;
     let { settings } = this.props;
     settings = {
@@ -73,6 +91,7 @@ class Editor extends Component {
       wordWrap: 'off',
       ...settings,
     };
+    assertNotNull(this.container);
     this.editor = monaco.editor.create(this.container, settings);
     this.editor.addAction({
       id: 'find',
@@ -81,14 +100,13 @@ class Editor extends Component {
         // eslint-disable-next-line no-bitwise
         monaco.KeyMod.CtrlCmd | monaco.KeyCode.KEY_F,
       ],
-      precondition: null,
-      keybindingContext: null,
+      precondition: undefined,
+      keybindingContext: undefined,
       contextMenuGroupId: 'navigation',
       contextMenuOrder: 1.0,
 
       run: () => {
         this.toggleFind();
-        return null;
       },
     });
     this.editor.layout();
@@ -97,14 +115,15 @@ class Editor extends Component {
     onEditorInitialized(this.editor);
   }
 
-  destroyEditor() {
+  destroyEditor(): void {
     const { onEditorWillDestroy } = this.props;
+    assertNotNull(this.editor);
     onEditorWillDestroy(this.editor);
     this.editor.dispose();
-    this.editor = null;
+    this.editor = undefined;
   }
 
-  render() {
+  render(): ReactElement {
     const { className } = this.props;
     return (
       <div
@@ -116,19 +135,5 @@ class Editor extends Component {
     );
   }
 }
-
-Editor.propTypes = {
-  className: PropTypes.string,
-  onEditorInitialized: PropTypes.func,
-  onEditorWillDestroy: PropTypes.func,
-  settings: PropTypes.shape({}),
-};
-
-Editor.defaultProps = {
-  className: 'fill-parent-absolute',
-  onEditorInitialized: () => {},
-  onEditorWillDestroy: () => {},
-  settings: {},
-};
 
 export default Editor;

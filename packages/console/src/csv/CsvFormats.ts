@@ -1,9 +1,11 @@
+export type CsvTypes = typeof CsvFormats.TYPES[keyof typeof CsvFormats.TYPES];
+
 class CsvFormats {
-  static DEFAULT_TYPE = 'DEFAULT_CSV';
+  static DEFAULT_TYPE = 'DEFAULT_CSV' as const;
 
-  static AUTO = 'AUTODETECT';
+  static AUTO = 'AUTODETECT' as const;
 
-  static fromExtension(fileName) {
+  static fromExtension(fileName: string): keyof typeof CsvFormats.TYPES {
     if (fileName.endsWith('.csv')) {
       return 'DEFAULT_CSV';
     }
@@ -20,7 +22,7 @@ class CsvFormats {
     DEFAULT_CSV: {
       name: 'Default csv (trimmed)',
       delimiter: ',',
-      newline: '', // autodetect
+      newline: undefined, // autodetect
       escapeChar: '"',
       shouldTrim: true,
       skipEmptyLines: true,
@@ -30,7 +32,7 @@ class CsvFormats {
     TSV: {
       name: 'Tab seperated (tsv)',
       delimiter: '\t',
-      newline: '', // autodetect
+      newline: undefined, // autodetect
       escapeChar: '"',
       shouldTrim: true,
       skipEmptyLines: true,
@@ -84,7 +86,7 @@ class CsvFormats {
     COLON_SV: {
       name: ': colon sv',
       delimiter: ':',
-      newline: '', // autodetect
+      newline: undefined, // autodetect
       escapeChar: '"',
       shouldTrim: true,
       skipEmptyLines: true,
@@ -94,7 +96,7 @@ class CsvFormats {
     SEMI_COLON_SV: {
       name: '; semi-colon sv',
       delimiter: ';',
-      newline: '', // autodetect
+      newline: undefined, // autodetect
       escapeChar: '"',
       shouldTrim: true,
       skipEmptyLines: true,
@@ -104,7 +106,7 @@ class CsvFormats {
     PIPE_SV: {
       name: '| pipe separated (psv)',
       delimiter: '|',
-      newline: '', // autodetect
+      newline: undefined, // autodetect
       escapeChar: '"',
       shouldTrim: true,
       skipEmptyLines: true,
@@ -114,7 +116,7 @@ class CsvFormats {
     SPACE_SV: {
       name: '" " space sv',
       delimiter: ' ',
-      newline: '', // autodetect
+      newline: undefined, // autodetect
       escapeChar: '"',
       shouldTrim: true,
       skipEmptyLines: true,
@@ -124,7 +126,7 @@ class CsvFormats {
     AUTODETECT: {
       name: 'autodetect',
       delimiter: '', // autodetect
-      newline: '', // autodetect
+      newline: undefined, // autodetect
       escapeChar: '"',
       shouldTrim: true,
       skipEmptyLines: true,

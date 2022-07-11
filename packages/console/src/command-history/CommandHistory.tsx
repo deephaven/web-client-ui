@@ -1,33 +1,84 @@
-import React, { Component } from 'react';
-import PropTypes from 'prop-types';
+import React, { ChangeEvent, Component, ReactElement, RefObject } from 'react';
 import {
   ContextActions,
   ContextActionUtils,
   ItemList,
   SearchInput,
   GLOBAL_SHORTCUTS,
+  Shortcut,
+  RenderItemProps,
 } from '@deephaven/components';
+import { ViewportData } from '@deephaven/storage';
 import {
+  IconDefinition,
   vsFileCode,
   vsFiles,
   vsNewFile,
   vsPlay,
   vsTerminal,
 } from '@deephaven/icons';
-import { Pending } from '@deephaven/utils';
+import { Pending, Range } from '@deephaven/utils';
 import Log from '@deephaven/log';
 import CommandHistoryItem from './CommandHistoryItem';
 import CommandHistoryActions from './CommandHistoryActions';
 import ConsoleConstants from '../common/ConsoleConstants';
 
 import './CommandHistory.scss';
-import StoragePropTypes from '../StoragePropTypes';
 import CommandHistoryViewportUpdater from './CommandHistoryViewportUpdater';
 import SHORTCUTS from '../ConsoleShortcuts';
+import CommandHistoryStorage, {
+  CommandHistoryStorageItem,
+  CommandHistoryTable,
+} from './CommandHistoryStorage';
 
 const log = Log.module('CommandHistory');
 
-class CommandHistory extends Component {
+type TODOEVENTHUB = {
+  value: string;
+  language: string;
+};
+export type ItemAction = {
+  title: string;
+  description: string;
+  icon: IconDefinition;
+  shortcut?: Shortcut;
+  action: () => void;
+  group: number;
+  order?: number;
+};
+
+export type HistoryAction = {
+  action: () => void;
+  title: string;
+  description: string;
+  icon: IconDefinition;
+  selectionRequired?: boolean;
+  className?: string;
+};
+
+interface CommandHistoryProps {
+  language: string;
+  sendToConsole: (command: string, focus?: boolean, execute?: boolean) => void;
+  sendToNotebook: (settings: TODOEVENTHUB, forceNewNotebook?: boolean) => void;
+  table: CommandHistoryTable;
+  commandHistoryStorage: CommandHistoryStorage;
+}
+interface CommandHistoryState {
+  actions: ItemAction[];
+  historyActions: HistoryAction[];
+  top: number;
+  bottom: number;
+  itemCount: number;
+  items: CommandHistoryStorageItem[];
+  offset: number;
+  selectedRanges: Range[];
+  searchText: string;
+}
+
+class CommandHistory extends Component<
+  CommandHistoryProps,
+  CommandHistoryState
+> {
   static ITEM_HEIGHT = 29;
 
   static MAX_SELECTION_COUNT = 10000;
@@ -36,7 +87,11 @@ class CommandHistory extends Component {
     send: ContextActions.groups.medium + 100,
   };
 
-  static getCommandsFromViewport(items, offset, sortedRanges) {
+  static getCommandsFromViewport(
+    items: CommandHistoryStorageItem[],
+    offset: number,
+    sortedRanges: Range[]
+  ): string[] {
     const commands = [];
     for (let i = 0; i < sortedRanges.length; i += 1) {
       const range = sortedRanges[i];
@@ -50,12 +105,15 @@ class CommandHistory extends Component {
     return commands;
   }
 
-  static async getCommandsFromSnapshot(table, sortedRanges) {
+  static async getCommandsFromSnapshot(
+    table: CommandHistoryTable,
+    sortedRanges: Range[]
+  ): Promise<string[]> {
     const items = await table.getSnapshot(sortedRanges);
     return [...items.values()].map(item => item.name);
   }
 
-  constructor(props) {
+  constructor(props: CommandHistoryProps) {
     super(props);
 
     this.copySelectedCommands = this.copySelectedCommands.bind(this);
@@ -151,16 +209,24 @@ class CommandHistory extends Component {
     };
   }
 
-  componentWillUnmount() {
+  componentWillUnmount(): void {
     this.pending.cancel();
   }
+
+  itemActions: ItemAction[];
+
+  historyActions: HistoryAction[];
+
+  pending: Pending;
+
+  searchInputRef: RefObject<SearchInput>;
 
   /**
    * Retrieves the selected commands as an array.
    * If they're not within the current viewport, will fetch them from the table
-   * @returns {Promise<string[]>} Array of selected commands
+   * @returns Array of selected commands
    */
-  async getSelectedCommands() {
+  async getSelectedCommands(): Promise<string[]> {
     const { items, offset, selectedRanges } = this.state;
     const ranges = selectedRanges.slice().sort((a, b) => a[0] - b[0]);
 
@@ -184,11 +250,11 @@ class CommandHistory extends Component {
    * Retrieves the text of all the currently selected commands, joined by a new line char
    * @returns {Promise<string>} The commands joined by \n char
    */
-  getSelectedCommandText() {
+  getSelectedCommandText(): Promise<string> {
     return this.getSelectedCommands().then(commands => commands.join('\n'));
   }
 
-  updateActions() {
+  updateActions(): void {
     this.setState(state => {
       const { selectedRanges } = state;
       const selectedRowCount = selectedRanges.reduce(
@@ -207,13 +273,13 @@ class CommandHistory extends Component {
     });
   }
 
-  copySelectedCommands() {
+  copySelectedCommands(): void {
     this.getSelectedCommandText()
       .then(ContextActionUtils.copyToClipboard)
       .catch(log.error);
   }
 
-  createNotebook() {
+  createNotebook(): void {
     this.getSelectedCommandText()
       .then(commandText => {
         const { language, sendToNotebook } = this.props;
@@ -222,7 +288,7 @@ class CommandHistory extends Component {
       .catch(log.error);
   }
 
-  sendToNotebook() {
+  sendToNotebook(): void {
     this.getSelectedCommandText()
       .then(commandText => {
         const { language, sendToNotebook } = this.props;
@@ -231,12 +297,12 @@ class CommandHistory extends Component {
       .catch(log.error);
   }
 
-  sendToConsole() {
+  sendToConsole(): void {
     const { sendToConsole } = this.props;
     this.getSelectedCommandText().then(sendToConsole).catch(log.error);
   }
 
-  runInConsole() {
+  runInConsole(): void {
     this.getSelectedCommandText()
       .then(commandText => {
         const { sendToConsole } = this.props;
@@ -245,7 +311,7 @@ class CommandHistory extends Component {
       .catch(log.error);
   }
 
-  handleSelect(index) {
+  handleSelect(index: number): void {
     const { sendToConsole } = this.props;
     const { items, offset } = this.state;
     if (index < offset || index >= offset + items.length) {
@@ -257,31 +323,37 @@ class CommandHistory extends Component {
     sendToConsole(name);
   }
 
-  handleSelectionChange(selectedRanges) {
+  handleSelectionChange(selectedRanges: Range[]): void {
     this.setState({ selectedRanges });
     this.updateActions();
   }
 
-  handleViewportChange(top, bottom) {
+  handleViewportChange(top: number, bottom: number): void {
     this.setState({ top, bottom });
   }
 
-  handleSearchChange(e) {
+  handleSearchChange(e: ChangeEvent<HTMLInputElement>): void {
     // clear selected range, as old selection could be filtered from list
     this.setState({ searchText: e.target.value, selectedRanges: [] });
   }
 
-  handleViewportUpdate({ items, offset }) {
+  handleViewportUpdate({
+    items,
+    offset,
+  }: ViewportData<CommandHistoryStorageItem>): void {
     const { table } = this.props;
     const itemCount = table.size;
     this.setState({ items, itemCount, offset });
   }
 
-  renderItem({ item, itemIndex, isSelected }) {
+  renderItem({
+    item,
+    itemIndex,
+    isSelected,
+  }: RenderItemProps<CommandHistoryStorageItem>): ReactElement {
     const { language, commandHistoryStorage } = this.props;
     return (
       <CommandHistoryItem
-        itemIndex={itemIndex}
         isSelected={isSelected}
         item={item}
         language={language}
@@ -290,13 +362,13 @@ class CommandHistory extends Component {
     );
   }
 
-  focus() {
+  focus(): void {
     if (this.searchInputRef.current) {
       this.searchInputRef.current.focus();
     }
   }
 
-  render() {
+  render(): ReactElement {
     const { language, table } = this.props;
     const {
       actions,
@@ -352,13 +424,5 @@ class CommandHistory extends Component {
     );
   }
 }
-
-CommandHistory.propTypes = {
-  language: PropTypes.string.isRequired,
-  sendToConsole: PropTypes.func.isRequired,
-  sendToNotebook: PropTypes.func.isRequired,
-  table: StoragePropTypes.CommandHistoryTable.isRequired,
-  commandHistoryStorage: StoragePropTypes.CommandHistoryStorage.isRequired,
-};
 
 export default CommandHistory;

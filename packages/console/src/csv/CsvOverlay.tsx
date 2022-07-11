@@ -1,19 +1,45 @@
-import React, { Component } from 'react';
-import PropTypes from 'prop-types';
+import React, {
+  ChangeEvent,
+  Component,
+  DragEvent,
+  MouseEvent,
+  ReactElement,
+  RefObject,
+} from 'react';
 import memoize from 'memoize-one';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { ContextActions, GLOBAL_SHORTCUTS } from '@deephaven/components';
+import {
+  ContextAction,
+  ContextActions,
+  GLOBAL_SHORTCUTS,
+} from '@deephaven/components';
 import {
   dhFileCsv,
   dhFileDownload,
   dhFileSpreadsheet,
+  IconDefinition,
   vsClippy,
   vsFileZip,
   vsTrash,
   vsWarning,
 } from '@deephaven/icons';
 import './CsvOverlay.scss';
-import { TextUtils } from '@deephaven/utils';
+import { assertNotNull, TextUtils } from '@deephaven/utils';
+
+interface CsvOverlayProps {
+  allowZip: boolean;
+  onFileOpened: (file: File | null) => void;
+  onPaste: (clipText: string) => void;
+  clearDragError: () => void;
+  dragError: string | null;
+  onError: (e: unknown) => void;
+  uploadInProgress: boolean;
+}
+
+interface CsvOverlayState {
+  selectedFileName: string;
+  dropError: string | null;
+}
 
 const PASTED_VALUES = 'pasted values';
 
@@ -26,12 +52,17 @@ const ZIP_EXTENSIONS = ['.zip'];
 /**
  * Overlay that is displayed when uploading a CSV file.
  */
-class CsvOverlay extends Component {
+class CsvOverlay extends Component<CsvOverlayProps, CsvOverlayState> {
+  static defaultProps = {
+    allowZip: false,
+    dragError: null,
+  };
+
   static MULTIPLE_FILE_ERROR = 'Please select only one file';
 
   static FILE_TYPE_ERROR = 'Filetype not supported.';
 
-  static isValidDropItem(item) {
+  static isValidDropItem(item: DataTransferItem): boolean {
     return (
       item &&
       item.kind === 'file' &&
@@ -39,19 +70,19 @@ class CsvOverlay extends Component {
     );
   }
 
-  static isValidExtension(name, allowZip = false) {
+  static isValidExtension(name: string, allowZip = false): boolean {
     return (
       VALID_EXTENSIONS.some(ext => name.endsWith(ext)) ||
       (allowZip && ZIP_EXTENSIONS.some(ext => name.endsWith(ext)))
     );
   }
 
-  static handleDragOver(e) {
+  static handleDragOver(e: DragEvent): void {
     e.preventDefault();
     e.stopPropagation();
   }
 
-  static getIcon(fileName) {
+  static getIcon(fileName: string): IconDefinition {
     if (fileName === PASTED_VALUES) {
       return vsClippy;
     }
@@ -64,7 +95,7 @@ class CsvOverlay extends Component {
     return dhFileSpreadsheet;
   }
 
-  constructor(props) {
+  constructor(props: CsvOverlayProps) {
     super(props);
 
     this.handleSelectFile = this.handleSelectFile.bind(this);
@@ -83,27 +114,36 @@ class CsvOverlay extends Component {
     };
   }
 
-  componentDidMount() {
-    this.divElem.current.addEventListener('paste', this.handlePasteEvent);
-    this.divElem.current.focus();
+  componentDidMount(): void {
+    this.divElem.current?.addEventListener('paste', this.handlePasteEvent);
+    this.divElem.current?.focus();
   }
 
-  componentWillUnmount() {
-    this.divElem.current.removeEventListener('paste', this.handlePasteEvent);
+  componentWillUnmount(): void {
+    this.divElem.current?.removeEventListener('paste', this.handlePasteEvent);
   }
 
-  handleSelectFile() {
-    this.fileElem.current.value = null;
-    this.fileElem.current.click();
+  fileElem: RefObject<HTMLInputElement>;
+
+  divElem: RefObject<HTMLDivElement>;
+
+  handleSelectFile(): void {
+    if (this.fileElem.current) {
+      this.fileElem.current.value = '';
+      this.fileElem.current?.click();
+    }
   }
 
-  handleFiles(event) {
+  handleFiles(event: ChangeEvent<HTMLInputElement>): void {
     event.stopPropagation();
     event.preventDefault();
-    this.handleFile(event.target.files[0]);
+    const { files } = event.target;
+    if (files != null) {
+      this.handleFile(files[0]);
+    }
   }
 
-  handleDrop(e) {
+  handleDrop(e: DragEvent<HTMLDivElement>): void {
     const { allowZip, clearDragError, dragError } = this.props;
     e.preventDefault();
     e.stopPropagation();
@@ -118,6 +158,7 @@ class CsvOverlay extends Component {
     }
 
     const file = e.dataTransfer.items[0].getAsFile();
+    assertNotNull(file);
     if (CsvOverlay.isValidExtension(file.name, allowZip)) {
       this.handleFile(file);
     } else {
@@ -127,7 +168,7 @@ class CsvOverlay extends Component {
     }
   }
 
-  unstageFile(event) {
+  unstageFile(event: MouseEvent<HTMLButtonElement>): void {
     const { onFileOpened } = this.props;
     event.stopPropagation();
     event.preventDefault();
@@ -138,7 +179,7 @@ class CsvOverlay extends Component {
     });
   }
 
-  handleFile(file) {
+  handleFile(file: File): void {
     const { onFileOpened } = this.props;
     onFileOpened(file);
     this.setState({
@@ -147,7 +188,7 @@ class CsvOverlay extends Component {
     });
   }
 
-  handleMenuPaste() {
+  handleMenuPaste(): void {
     const { onPaste, onError, uploadInProgress } = this.props;
     if (uploadInProgress) {
       return;
@@ -161,16 +202,16 @@ class CsvOverlay extends Component {
           dropError: null,
         });
       })
-      .catch(e => onError(e));
+      .catch((e: unknown) => onError(e));
   }
 
-  handlePasteEvent(event) {
+  handlePasteEvent(event: ClipboardEvent): void {
     event.stopPropagation();
     event.preventDefault();
     this.handleMenuPaste();
   }
 
-  makeContextMenuItems() {
+  makeContextMenuItems(): ContextAction[] {
     const { uploadInProgress } = this.props;
     return [
       {
@@ -195,7 +236,7 @@ class CsvOverlay extends Component {
     TextUtils.join(this.getValidExtensions(allowZip), 'or')
   );
 
-  render() {
+  render(): ReactElement {
     const { allowZip, dragError, uploadInProgress } = this.props;
     const { selectedFileName, dropError } = this.state;
     const error = dragError || dropError;
@@ -206,7 +247,7 @@ class CsvOverlay extends Component {
         className="csv-overlay fill-parent-absolute"
         onDragOver={CsvOverlay.handleDragOver}
         onDrop={this.handleDrop}
-        tabIndex="-1"
+        tabIndex={-1}
       >
         <ContextActions actions={contextActions} />
         <input
@@ -275,20 +316,5 @@ class CsvOverlay extends Component {
     );
   }
 }
-
-CsvOverlay.propTypes = {
-  allowZip: PropTypes.bool,
-  onFileOpened: PropTypes.func.isRequired,
-  onPaste: PropTypes.func.isRequired,
-  clearDragError: PropTypes.func.isRequired,
-  dragError: PropTypes.string,
-  onError: PropTypes.func.isRequired,
-  uploadInProgress: PropTypes.bool.isRequired,
-};
-
-CsvOverlay.defaultProps = {
-  allowZip: false,
-  dragError: null,
-};
 
 export default CsvOverlay;

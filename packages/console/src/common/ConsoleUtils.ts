@@ -1,25 +1,45 @@
-import ShellQuote from 'shell-quote';
+import ShellQuote, { ParseEntry, ControlOperator } from 'shell-quote';
 import dh from '@deephaven/jsapi-shim';
 
 class ConsoleUtils {
+  static hasComment(arg: ParseEntry): arg is { comment: string } {
+    return (arg as { comment: string }).comment !== undefined;
+  }
+
+  static hasPattern(arg: ParseEntry): arg is { op: 'glob'; pattern: string } {
+    return (arg as { pattern: string }).pattern !== undefined;
+  }
+
+  static hasOp(arg: ParseEntry): arg is { op: ControlOperator } {
+    return (arg as { op: ControlOperator }).op !== undefined;
+  }
+
   /**
    * Given the provided text, parse out arguments using shell quoting rules.
    * @param str The text to parse.
    * @return string[] of the arguments. Empty if no arguments found.
    */
-  static parseArguments(str) {
+  static parseArguments(str: unknown): string[] {
     if (!str || !(typeof str === 'string' || str instanceof String)) {
       return [];
     }
 
     // Parse can return an object, not just a string. See the `ParseEntry` type def for all types
     // We must map them all to strings. Filter out comments that will not be needed as well.
-    return ShellQuote.parse(str)
-      .filter(arg => !arg.comment)
-      .map(arg => arg.pattern ?? arg.op ?? `${arg}`);
+    return ShellQuote.parse(str as string)
+      .filter(arg => !this.hasComment(arg))
+      .map(arg => {
+        let ret = `${arg}`;
+        if (this.hasPattern(arg)) {
+          ret = arg.pattern;
+        } else if (this.hasOp(arg)) {
+          ret = arg.op;
+        }
+        return ret;
+      });
   }
 
-  static formatTimestamp(date) {
+  static formatTimestamp(date: Date): string | null {
     if (!date || !(date instanceof Date)) {
       return null;
     }
@@ -32,22 +52,23 @@ class ConsoleUtils {
     return `${hours}:${minutes}:${seconds}.${milliseconds}`;
   }
 
-  static defaultHost() {
+  static defaultHost(): string {
     let defaultHost = null;
-    try {
-      const url = new URL(process.env.REACT_APP_CORE_API_URL);
+    const apiUrl = process.env.REACT_APP_CORE_API_URL;
+    if (apiUrl != null) {
+      const url = new URL(apiUrl);
       defaultHost = url.hostname;
-    } catch (error) {
+    } else {
       defaultHost = window.location.hostname;
     }
     return defaultHost;
   }
 
-  static isTableType(type) {
+  static isTableType(type: unknown): boolean {
     return type === dh.VariableType.TABLE || type === dh.VariableType.TREETABLE;
   }
 
-  static isWidgetType(type) {
+  static isWidgetType(type: unknown): boolean {
     return (
       type === dh.VariableType.FIGURE ||
       type === dh.VariableType.OTHERWIDGET ||
@@ -55,15 +76,15 @@ class ConsoleUtils {
     );
   }
 
-  static isOpenableType(type) {
+  static isOpenableType(type: unknown): boolean {
     return ConsoleUtils.isTableType(type) || ConsoleUtils.isWidgetType(type);
   }
 
-  static isFigureType(type) {
+  static isFigureType(type: unknown): boolean {
     return type === dh.VariableType.FIGURE;
   }
 
-  static isPandas(type) {
+  static isPandas(type: unknown): boolean {
     return type === dh.VariableType.PANDAS;
   }
 }

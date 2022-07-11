@@ -40,3 +40,8 @@ describe('parsing shell arguments from text', () => {
     testStr('foo # bar', ['foo']);
   });
 });
+
+describe('predicates', () => {
+  expect(ConsoleUtils.hasComment('asdf')).toBeFalsy();
+  expect(ConsoleUtils.hasComment({ comment: 123 })).toBeTruthy();
+});

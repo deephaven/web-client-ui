@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 /**
  * Exports a function for initializing monaco with the deephaven theme/config
  */
@@ -5,6 +6,10 @@
 // Default list of features here: https://github.com/microsoft/monaco-editor-webpack-plugin
 // Mapping to paths here: https://github.com/microsoft/monaco-editor-webpack-plugin/blob/main/src/features.ts
 // Importing this way rather than using the plugin because I don't want to hook up react-app-rewired for the build
+
+import { Shortcut } from '@deephaven/components';
+import { IdeSession } from '@deephaven/jsapi-shim';
+import { assertNotNull } from '@deephaven/utils';
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js';
 import 'monaco-editor/esm/vs/editor/standalone/browser/accessibilityHelp/accessibilityHelp.js';
 import 'monaco-editor/esm/vs/editor/contrib/anchorSelect/anchorSelect.js';
@@ -57,7 +62,9 @@ import 'monaco-editor/esm/vs/editor/contrib/wordHighlighter/wordHighlighter.js';
 import 'monaco-editor/esm/vs/editor/contrib/wordOperations/wordOperations.js';
 import 'monaco-editor/esm/vs/editor/contrib/wordPartOperations/wordPartOperations.js';
 import 'monaco-editor/esm/vs/basic-languages/typescript/typescript.contribution.js';
+// @ts-ignore
 import { KeyCodeUtils } from 'monaco-editor/esm/vs/base/common/keyCodes.js';
+// @ts-ignore
 import { KeyMod } from 'monaco-editor/esm/vs/editor/common/standalone/standaloneBase.js';
 import Log from '@deephaven/log';
 import MonacoTheme from './MonacoTheme.module.scss';
@@ -70,7 +77,7 @@ import LogLang from './lang/log';
 const log = Log.module('MonacoUtils');
 
 class MonacoUtils {
-  static init() {
+  static init(): void {
     log.debug('Initializing Monaco...');
 
     const { registerLanguages, removeHashtag } = MonacoUtils;
@@ -193,11 +200,11 @@ class MonacoUtils {
    * Monaco expects colors to be the value only, no hashtag.
    * @param {String} color The hex color string to remove the hashtag from, eg. '#ffffff'
    */
-  static removeHashtag(color) {
+  static removeHashtag(color: string): string {
     return color.substring(1);
   }
 
-  static registerLanguages(languages) {
+  static registerLanguages(languages): void {
     // First override the default loader for any language we have a custom definition for
     // https://github.com/Microsoft/monaco-editor/issues/252#issuecomment-482786867
     const languageIds = languages.map(({ id }) => id);
@@ -208,7 +215,7 @@ class MonacoUtils {
         const language = languageParam;
         log.debug2('Overriding default language loader:', language.id);
         language.loader = () => ({
-          then: () => {},
+          then: () => undefined,
         });
       });
 
@@ -218,7 +225,7 @@ class MonacoUtils {
     });
   }
 
-  static registerLanguage(language) {
+  static registerLanguage(language): void {
     log.debug2('Registering language: ', language.id);
     monaco.languages.register(language);
 
@@ -230,21 +237,28 @@ class MonacoUtils {
 
   /**
    * Set EOL preference for the editor
-   * @param {monaco.editor.IEditor} editor The editor to set the EOL for
-   * @param {monaco.editor.EndOfLineSequence} eolSequence EOL sequence
+   * @param editor The editor to set the EOL for
+   * @param eolSequence EOL sequence
    */
-  static setEOL(editor, eolSequence = monaco.editor.EndOfLineSequence.LF) {
-    editor.getModel().setEOL(eolSequence);
+  static setEOL(
+    editor: monaco.editor.IStandaloneCodeEditor,
+    eolSequence = monaco.editor.EndOfLineSequence.LF
+  ): void {
+    editor.getModel()?.setEOL(eolSequence);
   }
 
   /**
    * Links an editor with a provided session to provide completion items.
-   * @param {dh.IdeSession} session The IdeSession to link
-   * @param {monaco.editor.IEditor} editor The editor to link the session to
+   * @param session The IdeSession to link
+   * @param editor The editor to link the session to
    * @return A cleanup function for disposing of the created listeners
    */
-  static openDocument(editor, session) {
+  static openDocument(
+    editor: monaco.editor.IStandaloneCodeEditor,
+    session: IdeSession
+  ): monaco.IDisposable {
     const model = editor.getModel();
+    assertNotNull(model);
     const didOpenDocumentParams = {
       textDocument: {
         uri: `${model.uri}`,
@@ -298,8 +312,12 @@ class MonacoUtils {
     return dispose;
   }
 
-  static closeDocument(editor, session) {
+  static closeDocument(
+    editor: monaco.editor.IStandaloneCodeEditor,
+    session: IdeSession
+  ): void {
     const model = editor.getModel();
+    assertNotNull(model);
     const didCloseDocumentParams = {
       textDocument: {
         uri: `${model.uri}`,
@@ -312,13 +330,16 @@ class MonacoUtils {
    * Register a paste handle to clean up any garbage code pasted.
    * Most of this comes from copying from Slack, which has a bad habit of injecting their own characters in your code snippets.
    * I've emailed Slack about the issue and they're working on it. I can't reference a ticket number because their ticket system is entirely internally facing.
-   * @param {Monaco.editor} editor The editor the register the paste handler for
+   * @param editor The editor the register the paste handler for
    */
-  static registerPasteHandler(editor) {
+  static registerPasteHandler(
+    editor: monaco.editor.IStandaloneCodeEditor
+  ): void {
     editor.onDidPaste(pasteEvent => {
       const smartQuotes = /“|”/g;
       const invalidChars = /\u200b/g;
       const editorModel = editor.getModel();
+      assertNotNull(editorModel);
       const pastedText = editorModel.getValueInRange(pasteEvent.range);
       if (smartQuotes.test(pastedText) || invalidChars.test(pastedText)) {
         editorModel.applyEdits([
@@ -333,7 +354,7 @@ class MonacoUtils {
     });
   }
 
-  static isMacPlatform() {
+  static isMacPlatform(): boolean {
     const { platform } = window.navigator;
     return platform.startsWith('Mac');
   }
@@ -341,9 +362,11 @@ class MonacoUtils {
   /**
    * Remove any keybindings which are used for our own shortcuts.
    * This allows the key events to bubble up so a component higher up can capture them
-   * @param {Monaco.editor} editor The editor to remove the keybindings from
+   * @param editor The editor to remove the keybindings from
    */
-  static removeConflictingKeybindings(editor) {
+  static removeConflictingKeybindings(
+    editor: monaco.editor.IStandaloneCodeEditor
+  ): void {
     // Multi-mod key events have a specific order
     // E.g. ctrl+alt+UpArrow is not found, but alt+ctrl+UpArrow is found
     // meta is WindowsKey on Windows and cmd on Mac
@@ -363,7 +386,9 @@ class MonacoUtils {
       keybindings.forEach(keybinding =>
         MonacoUtils.removeKeybinding(
           editor,
-          MonacoUtils.isMacPlatform() ? keybinding.mac : keybinding.windows
+          (MonacoUtils.isMacPlatform()
+            ? keybinding.mac
+            : keybinding.windows) as string
         )
       );
     } catch (err) {
@@ -381,28 +406,35 @@ class MonacoUtils {
    * https://github.com/microsoft/monaco-editor/issues/287#issuecomment-331447475
    * The issue for an API for this has apparently been open since 2016. Link below
    * https://github.com/microsoft/monaco-editor/issues/102
-   * @param {Monaco.editor} editor The editor to remove the keybinding from
-   * @param {string} keybinding The key string to remove. E.g. 'ctrl+C' for copy on Windows
+   * @param editor The editor to remove the keybinding from
+   * @param keybinding The key string to remove. E.g. 'ctrl+C' for copy on Windows
    */
-  static removeKeybinding(editor, keybinding) {
+  static removeKeybinding(
+    editor: monaco.editor.IStandaloneCodeEditor,
+    keybinding: string
+  ): void {
     if (!keybinding) {
       return;
     }
     /* eslint-disable no-underscore-dangle */
     // It's possible a single keybinding has multiple commands depending on context
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
     const keybindings = editor._standaloneKeybindingService
       ._getResolver()
       ._map.get(keybinding);
 
     if (keybindings) {
-      keybindings.forEach(elem => {
+      keybindings.forEach((elem: { command: unknown }) => {
         log.debug2(
           `Removing Monaco keybinding ${keybinding} for ${elem.command}`
         );
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
         editor._standaloneKeybindingService.addDynamicKeybinding(
           `-${elem.command}`,
           null,
-          () => {}
+          () => undefined
         );
       });
     } else {
@@ -411,7 +443,7 @@ class MonacoUtils {
     /* eslint-enable no-underscore-dangle */
   }
 
-  static getMonacoKeyCodeFromShortcut(shortcut) {
+  static getMonacoKeyCodeFromShortcut(shortcut: Shortcut): number {
     const { keyState } = shortcut;
     const { keyValue } = keyState;
     if (keyValue === null) {

@@ -1,12 +1,21 @@
-import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
+import React, { PureComponent, ReactElement, RefObject } from 'react';
 import classNames from 'classnames';
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js';
 import Log from '@deephaven/log';
-import { PromiseUtils } from '@deephaven/utils';
+import {
+  assertNotNull,
+  CancelablePromise,
+  PromiseUtils,
+} from '@deephaven/utils';
+import { ViewportData } from '@deephaven/storage';
+import { IdeSession } from '@deephaven/jsapi-shim';
+import {
+  CommandHistoryStorage,
+  CommandHistoryStorageItem,
+  CommandHistoryTable,
+} from './command-history';
 import { MonacoCompletionProvider, MonacoTheme, MonacoUtils } from './monaco';
 import './ConsoleInput.scss';
-import StoragePropTypes from './StoragePropTypes';
 
 const log = Log.module('ConsoleInput');
 
@@ -16,23 +25,43 @@ const BOTTOM_PADDING = 6;
 const MIN_INPUT_HEIGHT = LINE_HEIGHT + TOP_PADDING + BOTTOM_PADDING;
 const BUFFER_SIZE = 100;
 
+interface ConsoleInputProps {
+  session: IdeSession;
+  language: string;
+  scope?: string;
+  commandHistoryStorage: CommandHistoryStorage;
+  onSubmit: (command: string) => void;
+  maxHeight?: number;
+  disabled?: boolean;
+}
+
+interface ConsoleInputState {
+  commandEditorHeight: number;
+  isFocused: boolean;
+  model: monaco.editor.ITextModel | null;
+}
 /**
  * Component for input in a console session. Handles loading the recent command history
  */
-export class ConsoleInput extends PureComponent {
+export class ConsoleInput extends PureComponent<
+  ConsoleInputProps,
+  ConsoleInputState
+> {
+  static defaultProps = {
+    maxHeight: LINE_HEIGHT * 10,
+    scope: null,
+    disabled: false,
+  };
+
   static INPUT_CLASS_NAME = 'console-input';
 
-  constructor(props) {
+  constructor(props: ConsoleInputProps) {
     super(props);
 
     this.handleWindowResize = this.handleWindowResize.bind(this);
 
-    this.cancelListener = null;
     this.commandContainer = React.createRef();
-    this.commandEditor = null;
     this.commandHistoryIndex = null;
-    this.commandSuggestionContainer = null;
-    this.loadingPromise = null;
     this.timestamp = Date.now();
     this.bufferIndex = 0;
     this.history = [];
@@ -46,7 +75,7 @@ export class ConsoleInput extends PureComponent {
     };
   }
 
-  componentDidMount() {
+  componentDidMount(): void {
     this.initCommandEditor();
 
     window.addEventListener('resize', this.handleWindowResize);
@@ -54,11 +83,11 @@ export class ConsoleInput extends PureComponent {
     this.loadMoreHistory();
   }
 
-  componentDidUpdate() {
+  componentDidUpdate(): void {
     this.layoutEditor();
   }
 
-  componentWillUnmount() {
+  componentWillUnmount(): void {
     window.removeEventListener('resize', this.handleWindowResize);
 
     if (this.loadingPromise != null) {
@@ -68,15 +97,38 @@ export class ConsoleInput extends PureComponent {
     this.destroyCommandEditor();
   }
 
+  cancelListener?: () => void;
+
+  commandContainer: RefObject<HTMLDivElement>;
+
+  commandEditor?: monaco.editor.IStandaloneCodeEditor;
+
+  commandHistoryIndex: number | null;
+
+  commandSuggestionContainer?: Element | null;
+
+  loadingPromise?:
+    | CancelablePromise<ViewportData<CommandHistoryStorageItem>>
+    | CancelablePromise<CommandHistoryTable>;
+
+  timestamp: number;
+
+  bufferIndex: number | null;
+
+  history: string[];
+
+  // Tracks every command that has been modified by its commandHistoryIndex. Cleared on any command being executed
+  modifiedCommands: Map<number | null, string | null>;
+
   /**
    * Sets the console text from an external source.
    * Sets commandHistoryIndex to null since the source is not part of the history
-   * @param {string} text The text to set in the input
-   * @param {boolean} focus If the input should be focused
-   * @param {boolean} execute If the input should be executed
+   * @param text The text to set in the input
+   * @param focus If the input should be focused
+   * @param execute If the input should be executed
    * @returns void
    */
-  setConsoleText(text, focus = true, execute = false) {
+  setConsoleText(text: string, focus = true, execute = false): void {
     if (!text) {
       return;
     }
@@ -86,7 +138,7 @@ export class ConsoleInput extends PureComponent {
     // Need to set commandHistoryIndex before value
     // On value change, modified commands map updates
     this.commandHistoryIndex = null;
-    this.commandEditor.setValue(text);
+    this.commandEditor?.setValue(text);
 
     if (focus) {
       this.focusEnd();
@@ -99,10 +151,10 @@ export class ConsoleInput extends PureComponent {
     }
   }
 
-  initCommandEditor() {
+  initCommandEditor(): void {
     const { language, session } = this.props;
     const commandSettings = {
-      copyWithSyntaxHighlighting: 'false',
+      copyWithSyntaxHighlighting: false,
       cursorStyle: 'block',
       fixedOverflowWidgets: true,
       folding: false,
@@ -127,21 +179,18 @@ export class ConsoleInput extends PureComponent {
       tabCompletion: 'on',
       value: '',
       wordWrap: 'on',
-    };
+    } as const;
 
-    this.commandEditor = monaco.editor.create(
-      this.commandContainer.current,
-      commandSettings
-    );
+    const element = this.commandContainer.current;
+    assertNotNull(element);
+    this.commandEditor = monaco.editor.create(element, commandSettings);
 
     MonacoUtils.setEOL(this.commandEditor);
     MonacoUtils.openDocument(this.commandEditor, session);
 
     this.commandEditor.onDidChangeModelContent(() => {
-      this.modifiedCommands.set(
-        this.commandHistoryIndex,
-        this.commandEditor.getValue()
-      );
+      const value = this.commandEditor?.getValue();
+      this.modifiedCommands.set(this.commandHistoryIndex, value ?? null);
       this.updateDimensions();
     });
 
@@ -160,8 +209,10 @@ export class ConsoleInput extends PureComponent {
      */
     this.commandEditor.onKeyDown(keyEvent => {
       const { commandEditor, commandHistoryIndex } = this;
-      const { lineNumber } = commandEditor.getPosition();
-      const model = commandEditor.getModel();
+      const position = commandEditor?.getPosition();
+      assertNotNull(position);
+      const { lineNumber } = position;
+      const model = commandEditor?.getModel();
       if (
         keyEvent.keyCode === monaco.KeyCode.UpArrow &&
         !this.isSuggestionMenuPopulated() &&
@@ -183,7 +234,7 @@ export class ConsoleInput extends PureComponent {
       if (
         keyEvent.keyCode === monaco.KeyCode.DownArrow &&
         !this.isSuggestionMenuPopulated() &&
-        lineNumber === model.getLineCount()
+        lineNumber === model?.getLineCount()
       ) {
         if (commandHistoryIndex != null && commandHistoryIndex > 0) {
           this.loadCommand(commandHistoryIndex - 1);
@@ -211,7 +262,7 @@ export class ConsoleInput extends PureComponent {
             keyEvent.stopPropagation();
             keyEvent.preventDefault();
 
-            this.commandEditor.trigger(
+            this.commandEditor?.trigger(
               'Tab key trigger suggestions',
               'editor.action.triggerSuggest',
               {}
@@ -227,7 +278,7 @@ export class ConsoleInput extends PureComponent {
     // Override the Ctrl+F functionality so that the find window doesn't appear
     this.commandEditor.addCommand(
       monaco.KeyMod.CtrlCmd | monaco.KeyCode.KEY_F, // eslint-disable-line no-bitwise
-      () => {}
+      () => undefined
     );
 
     MonacoUtils.removeConflictingKeybindings(this.commandEditor);
@@ -241,70 +292,75 @@ export class ConsoleInput extends PureComponent {
     this.setState({ model: this.commandEditor.getModel() });
   }
 
-  destroyCommandEditor() {
+  destroyCommandEditor(): void {
     const { session } = this.props;
     if (this.commandEditor) {
       MonacoUtils.closeDocument(this.commandEditor, session);
       this.commandEditor.dispose();
-      this.commandEditor = null;
+      this.commandEditor = undefined;
     }
   }
 
-  handleWindowResize() {
+  handleWindowResize(): void {
     this.updateDimensions();
   }
 
-  isSuggestionMenuActive() {
+  isSuggestionMenuActive(): boolean {
     if (!this.commandSuggestionContainer) {
       this.commandSuggestionContainer = this.commandEditor
-        .getDomNode()
-        .querySelector('.suggest-widget');
+        ?.getDomNode()
+        ?.querySelector('.suggest-widget');
     }
 
     return (
-      this.commandSuggestionContainer &&
-      this.commandSuggestionContainer.classList.contains('visible')
+      (this.commandSuggestionContainer &&
+        this.commandSuggestionContainer.classList.contains('visible')) ??
+      false
     );
   }
 
-  isSuggestionMenuPopulated() {
+  isSuggestionMenuPopulated(): boolean {
     return (
       this.isSuggestionMenuActive() &&
-      this.commandSuggestionContainer.querySelector('.monaco-list-rows')
-        .childElementCount > 0
+      (this.commandSuggestionContainer?.querySelector('.monaco-list-rows')
+        ?.childElementCount ?? 0) > 0
     );
   }
 
-  focus() {
-    this.commandEditor.focus();
+  focus(): void {
+    this.commandEditor?.focus();
   }
 
-  focusStart() {
-    const model = this.commandEditor.getModel();
+  focusStart(): void {
+    const model = this.commandEditor?.getModel();
+    assertNotNull(model);
     const column = model.getLineLength(1) + 1; // Length of 1st line
-    const firstCharTop = this.commandEditor.getTopForPosition(1, column);
-    this.commandEditor.setPosition({ lineNumber: 1, column });
-    this.commandEditor.setScrollTop(firstCharTop);
-    this.commandEditor.focus();
+    const firstCharTop = this.commandEditor?.getTopForPosition(1, column);
+    assertNotNull(firstCharTop);
+    this.commandEditor?.setPosition({ lineNumber: 1, column });
+    this.commandEditor?.setScrollTop(firstCharTop);
+    this.commandEditor?.focus();
   }
 
-  focusEnd() {
-    const model = this.commandEditor.getModel();
+  focusEnd(): void {
+    const model = this.commandEditor?.getModel();
+    assertNotNull(model);
     const lastLine = model.getLineCount();
     const column = model.getLineLength(lastLine) + 1;
-    const lastCharTop = this.commandEditor.getTopForPosition(lastLine, column);
-    this.commandEditor.setPosition({ lineNumber: lastLine, column });
-    this.commandEditor.setScrollTop(lastCharTop);
-    this.commandEditor.focus();
+    const lastCharTop = this.commandEditor?.getTopForPosition(lastLine, column);
+    assertNotNull(lastCharTop);
+    this.commandEditor?.setPosition({ lineNumber: lastLine, column });
+    this.commandEditor?.setScrollTop(lastCharTop);
+    this.commandEditor?.focus();
   }
 
-  clear() {
-    this.commandEditor.focus();
-    this.commandEditor.getModel().setValue('');
+  clear(): void {
+    this.commandEditor?.focus();
+    this.commandEditor?.getModel()?.setValue('');
     this.commandHistoryIndex = null;
   }
 
-  layoutEditor() {
+  layoutEditor(): void {
     if (this.commandEditor) {
       this.commandEditor.layout();
     }
@@ -313,10 +369,10 @@ export class ConsoleInput extends PureComponent {
   /**
    * Loads the given command from history
    * If edits have been made to the command since last run command, loads the modified version
-   * @param {number | null} index The index to load. Null to load command started in the editor and not in the history
+   * @param index The index to load. Null to load command started in the editor and not in the history
    */
-  loadCommand(index) {
-    if (index !== null && index >= this.history.length) {
+  loadCommand(index: number | null): void {
+    if (index === null || index >= this.history.length) {
       return;
     }
 
@@ -325,14 +381,14 @@ export class ConsoleInput extends PureComponent {
       index === null ? '' : this.history[this.history.length - index - 1];
 
     this.commandHistoryIndex = index;
-    this.commandEditor.getModel().setValue(modifiedValue ?? historyValue);
+    this.commandEditor?.getModel()?.setValue(modifiedValue ?? historyValue);
 
     if (index !== null && index > this.history.length - BUFFER_SIZE) {
       this.loadMoreHistory();
     }
   }
 
-  async loadMoreHistory() {
+  async loadMoreHistory(): Promise<void> {
     try {
       if (this.loadingPromise != null || this.bufferIndex == null) {
         return;
@@ -341,7 +397,7 @@ export class ConsoleInput extends PureComponent {
       const { commandHistoryStorage, language, scope } = this.props;
 
       this.loadingPromise = PromiseUtils.makeCancelable(
-        commandHistoryStorage.getTable(language, scope, this.timestamp),
+        commandHistoryStorage.getTable(language, scope ?? '', this.timestamp),
         resolved => resolved.close()
       );
 
@@ -363,15 +419,15 @@ export class ConsoleInput extends PureComponent {
         this.bufferIndex = null;
       }
       this.history = [
-        ...viewportData.items.map(({ name }) => name).reverse(),
+        ...viewportData?.items.map(({ name }) => name).reverse(),
         ...this.history,
       ];
 
-      this.loadingPromise = null;
+      this.loadingPromise = undefined;
 
       table.close();
     } catch (err) {
-      this.loadingPromise = null;
+      this.loadingPromise = undefined;
       if (PromiseUtils.isCanceled(err)) {
         log.debug2('Promise canceled, not loading history');
         return;
@@ -381,25 +437,27 @@ export class ConsoleInput extends PureComponent {
     }
   }
 
-  processCommand() {
+  processCommand(): void {
     this.commandHistoryIndex = null;
     this.modifiedCommands.clear();
 
-    const command = this.commandEditor.getValue().trim();
+    const command = this.commandEditor?.getValue().trim();
+    assertNotNull(command);
     this.history.push(command);
-    this.commandEditor.setValue('');
+    this.commandEditor?.setValue('');
     this.updateDimensions();
 
     const { onSubmit } = this.props;
     onSubmit(command);
   }
 
-  updateDimensions() {
+  updateDimensions(): void {
     if (!this.commandEditor) {
       return;
     }
 
     const { maxHeight } = this.props;
+    assertNotNull(maxHeight);
     const contentHeight = this.commandEditor.getContentHeight();
     const commandEditorHeight = Math.max(
       Math.min(contentHeight, maxHeight),
@@ -408,25 +466,21 @@ export class ConsoleInput extends PureComponent {
 
     // Only show the overview ruler (markings overlapping sroll bar area) if the scrollbar will show
     const shouldScroll = contentHeight > commandEditorHeight;
-    const options = this.commandEditor.getOptions();
-    if (shouldScroll) {
-      options.overviewRulerLanes = undefined; // Resets to default
-    } else {
-      options.overviewRulerLanes = 0;
-    }
+
+    const options = { overviewRulerLanes: shouldScroll ? undefined : 0 };
 
     this.setState(
       {
         commandEditorHeight,
       },
       () => {
-        this.commandEditor.updateOptions(options);
-        this.commandEditor.layout();
+        this.commandEditor?.updateOptions(options);
+        this.commandEditor?.layout();
       }
     );
   }
 
-  render() {
+  render(): ReactElement {
     const { disabled, language, session } = this.props;
     const { commandEditorHeight, isFocused, model } = this.state;
     return (
@@ -453,21 +507,5 @@ export class ConsoleInput extends PureComponent {
     );
   }
 }
-
-ConsoleInput.propTypes = {
-  session: PropTypes.shape({}).isRequired,
-  language: PropTypes.string.isRequired,
-  scope: PropTypes.string,
-  commandHistoryStorage: StoragePropTypes.CommandHistoryStorage.isRequired,
-  onSubmit: PropTypes.func.isRequired,
-  maxHeight: PropTypes.number,
-  disabled: PropTypes.bool,
-};
-
-ConsoleInput.defaultProps = {
-  maxHeight: LINE_HEIGHT * 10,
-  scope: null,
-  disabled: false,
-};
 
 export default ConsoleInput;

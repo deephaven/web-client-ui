@@ -1,27 +1,52 @@
-import React, { Component } from 'react';
-import PropTypes from 'prop-types';
+import React, { Component, ReactElement } from 'react';
 import debounce from 'lodash.debounce';
 import memoize from 'memoizee';
 import { LoadingSpinner } from '@deephaven/components';
 import { TimeUtils } from '@deephaven/utils';
+import { StorageListenerRemover } from '@deephaven/storage';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { vsWarning } from '@deephaven/icons';
 import Code from '../common/Code';
 import './CommandHistoryItemTooltip.scss';
-import ConsolePropTypes from '../ConsolePropTypes';
-import StoragePropTypes from '../StoragePropTypes';
+import CommandHistoryStorage, {
+  CommandHistoryStorageData,
+  CommandHistoryStorageItem,
+} from './CommandHistoryStorage';
+
+interface CommandHistoryItemTooltipProps {
+  item: CommandHistoryStorageItem;
+  language: string;
+  onUpdate?: (data: CommandHistoryStorageData | null) => void;
+  commandHistoryStorage: CommandHistoryStorage;
+}
+
+interface CommandHistoryItemTooltipState {
+  currentTime: number;
+  data: CommandHistoryStorageData | null;
+  error: string | null;
+}
 
 const LOAD_DATA_DEBOUNCE = 250;
 const MAX_NUMBER_OF_LINES = 2500;
 
-export class CommandHistoryItemTooltip extends Component {
-  static getTimeString(startTime, endTime) {
+export class CommandHistoryItemTooltip extends Component<
+  CommandHistoryItemTooltipProps,
+  CommandHistoryItemTooltipState
+> {
+  static defaultProps = {
+    onUpdate: (): void => undefined,
+  };
+
+  static getTimeString(
+    startTime: string | undefined,
+    endTime: string | number
+  ): string | null {
     if (!startTime || !endTime) {
       return null;
     }
 
     const deltaTime = Math.round(
-      (new Date(endTime) - new Date(startTime)) / 1000
+      (new Date(endTime).valueOf() - new Date(startTime).valueOf()) / 1000
     );
 
     if (deltaTime < 1) return '<1s';
@@ -29,16 +54,12 @@ export class CommandHistoryItemTooltip extends Component {
     return TimeUtils.formatElapsedTime(deltaTime);
   }
 
-  constructor(props) {
+  constructor(props: CommandHistoryItemTooltipProps) {
     super(props);
 
-    this.loadData = debounce(this.loadData.bind(this), LOAD_DATA_DEBOUNCE);
     this.handleUpdate = this.handleUpdate.bind(this);
     this.handleError = this.handleError.bind(this);
     this.handleTimeout = this.handleTimeout.bind(this);
-
-    this.timer = null;
-    this.cleanup = null;
 
     this.state = {
       currentTime: Date.now(),
@@ -47,11 +68,14 @@ export class CommandHistoryItemTooltip extends Component {
     };
   }
 
-  componentDidMount() {
+  componentDidMount(): void {
     this.loadData();
   }
 
-  componentDidUpdate(prevProps, prevState) {
+  componentDidUpdate(
+    prevProps: CommandHistoryItemTooltipProps,
+    prevState: CommandHistoryItemTooltipState
+  ): void {
     const { data } = this.state;
 
     if (
@@ -70,7 +94,7 @@ export class CommandHistoryItemTooltip extends Component {
     }
   }
 
-  componentWillUnmount() {
+  componentWillUnmount(): void {
     this.loadData.cancel();
     if (this.cleanup != null) {
       this.cleanup();
@@ -78,7 +102,11 @@ export class CommandHistoryItemTooltip extends Component {
     this.stopTimer();
   }
 
-  loadData() {
+  timer?: NodeJS.Timer;
+
+  cleanup?: StorageListenerRemover;
+
+  loadData = debounce((): void => {
     const { commandHistoryStorage, item, language } = this.props;
     const { id } = item;
     this.cleanup = commandHistoryStorage.listenItem(
@@ -87,40 +115,40 @@ export class CommandHistoryItemTooltip extends Component {
       this.handleUpdate,
       this.handleError
     );
-  }
+  }, LOAD_DATA_DEBOUNCE);
 
-  startTimer() {
+  startTimer(): void {
     this.stopTimer();
 
     this.timer = setInterval(this.handleTimeout, 1000);
   }
 
-  stopTimer() {
+  stopTimer(): void {
     if (this.timer) {
       clearInterval(this.timer);
-      this.timer = null;
+      this.timer = undefined;
     }
   }
 
-  updateTime() {
+  updateTime(): void {
     this.setState({
       currentTime: Date.now(),
     });
   }
 
-  handleError(error) {
+  handleError(error: string): void {
     this.setState({ error: `${error}` });
   }
 
-  handleUpdate(item) {
+  handleUpdate(item: CommandHistoryStorageItem): void {
     const { data = null } = item ?? {};
     this.setState({ data });
 
     const { onUpdate } = this.props;
-    onUpdate(data);
+    onUpdate?.(data);
   }
 
-  handleTimeout() {
+  handleTimeout(): void {
     this.updateTime();
   }
 
@@ -129,14 +157,22 @@ export class CommandHistoryItemTooltip extends Component {
     { max: 1 }
   );
 
-  render() {
+  render(): ReactElement {
     const {
       item: { name },
       language,
     } = this.props;
     const { currentTime, data, error } = this.state;
     const { result, startTime, endTime } = data ?? {};
-    const errorMessage = result?.error?.message ?? result?.error ?? error;
+
+    const errorMessage = result?.error ?? error;
+    // let errorMessage = error;
+    // const tempError = result?.error;
+    // if (typeof tempError === 'string') {
+    //   errorMessage = tempError;
+    // } else if ((tempError as { message: string }).message != null) {
+    //   errorMessage = (tempError as { message: string }).message;
+    // }
     const timeString = CommandHistoryItemTooltip.getTimeString(
       startTime,
       endTime || currentTime
@@ -175,16 +211,5 @@ export class CommandHistoryItemTooltip extends Component {
     );
   }
 }
-
-CommandHistoryItemTooltip.propTypes = {
-  item: ConsolePropTypes.CommandHistoryItem.isRequired,
-  language: PropTypes.string.isRequired,
-  onUpdate: PropTypes.func,
-  commandHistoryStorage: StoragePropTypes.CommandHistoryStorage.isRequired,
-};
-
-CommandHistoryItemTooltip.defaultProps = {
-  onUpdate: () => {},
-};
 
 export default CommandHistoryItemTooltip;

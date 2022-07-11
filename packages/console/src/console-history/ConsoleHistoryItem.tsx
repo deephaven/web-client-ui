@@ -1,35 +1,49 @@
 /**
  * Console display for use in the Iris environment.
  */
-import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
+import React, { PureComponent, ReactElement } from 'react';
 import { ButtonOld } from '@deephaven/components';
-import { PropTypes as APIPropTypes } from '@deephaven/jsapi-shim';
 import Log from '@deephaven/log';
+import { VariableDefinition } from '@deephaven/jsapi-shim';
 import { Code, ObjectIcon } from '../common';
 import ConsoleHistoryItemResult from './ConsoleHistoryItemResult';
 import ConsoleHistoryResultInProgress from './ConsoleHistoryResultInProgress';
 import ConsoleHistoryResultErrorMessage from './ConsoleHistoryResultErrorMessage';
 import './ConsoleHistoryItem.scss';
+import { ConsoleHistoryActionItem } from './ConsoleHistory';
 
 const log = Log.module('ConsoleHistoryItem');
 
-class ConsoleHistoryItem extends PureComponent {
-  constructor(props) {
+interface ConsoleHistoryItemProps {
+  item: ConsoleHistoryActionItem;
+  language: string;
+  openObject: (object: VariableDefinition) => void;
+  disabled?: boolean;
+}
+
+class ConsoleHistoryItem extends PureComponent<
+  ConsoleHistoryItemProps,
+  Record<string, never>
+> {
+  static defaultProps = {
+    disabled: false,
+  };
+
+  constructor(props: ConsoleHistoryItemProps) {
     super(props);
 
     this.handleCancelClick = this.handleCancelClick.bind(this);
     this.handleObjectClick = this.handleObjectClick.bind(this);
   }
 
-  handleObjectClick(object) {
+  handleObjectClick(object: VariableDefinition): void {
     log.debug('handleObjectClick', object);
 
     const { openObject } = this.props;
     openObject(object);
   }
 
-  handleCancelClick() {
+  handleCancelClick(): void {
     const { item } = this.props;
     if (item && item.cancelResult) {
       log.debug(`Cancelling command: ${item.command}`);
@@ -37,7 +51,7 @@ class ConsoleHistoryItem extends PureComponent {
     }
   }
 
-  render() {
+  render(): ReactElement {
     const { disabled, item, language } = this.props;
     const { disabledObjects, result } = item;
 
@@ -61,10 +75,10 @@ class ConsoleHistoryItem extends PureComponent {
       if (changes) {
         const { created, updated } = changes;
         [...created, ...updated].forEach(object => {
-          const { name } = object;
-          const key = `${name}`;
+          const { title } = object;
+          const key = `${title}`;
           const btnDisabled =
-            disabled || (disabledObjects ?? []).indexOf(name) >= 0;
+            disabled || (disabledObjects ?? []).indexOf(key) >= 0;
           const element = (
             <ButtonOld
               key={key}
@@ -72,7 +86,7 @@ class ConsoleHistoryItem extends PureComponent {
               className="btn-primary btn-console btn-console-object"
               disabled={btnDisabled}
             >
-              <ObjectIcon type={object.type} /> {name}
+              <ObjectIcon type={object.type} /> {title}
             </ButtonOld>
           );
           resultElements.push(element);
@@ -80,15 +94,16 @@ class ConsoleHistoryItem extends PureComponent {
       }
 
       // If the error has an associated command, we'll actually get a separate ERROR item printed out, so only print an error if there isn't an associated command
-      if (error && !item.command) {
-        let errorMessage = error.message;
+      let errorMessage = error;
+      if (typeof error !== 'string' && error && !item.command) {
+        errorMessage = (error as { message: string }).message;
         if (!errorMessage) {
           errorMessage = error;
         }
         const element = (
           <ConsoleHistoryResultErrorMessage
             key="result-error"
-            message={errorMessage}
+            message={errorMessage as string}
           />
         );
         resultElements.push(element);
@@ -128,30 +143,5 @@ class ConsoleHistoryItem extends PureComponent {
     );
   }
 }
-
-ConsoleHistoryItem.propTypes = {
-  item: PropTypes.shape({
-    cancelResult: PropTypes.func,
-    command: PropTypes.string,
-    disabledObjects: PropTypes.arrayOf(PropTypes.string),
-    result: PropTypes.shape({
-      error: PropTypes.oneOfType([
-        PropTypes.string,
-        PropTypes.shape({ message: PropTypes.string }),
-      ]),
-      message: PropTypes.string,
-      changes: APIPropTypes.VariableChanges,
-    }),
-    startTime: PropTypes.number,
-    endTime: PropTypes.number,
-  }).isRequired,
-  language: PropTypes.string.isRequired,
-  openObject: PropTypes.func.isRequired,
-  disabled: PropTypes.bool,
-};
-
-ConsoleHistoryItem.defaultProps = {
-  disabled: false,
-};
 
 export default ConsoleHistoryItem;

@@ -1,7 +1,10 @@
-import Papa from 'papaparse';
+import Papa, { ParseLocalConfig, Parser, ParseResult } from 'papaparse';
 import Log from '@deephaven/log';
-import { DbNameValidator } from '@deephaven/utils';
+import { assertNotNull, DbNameValidator } from '@deephaven/utils';
+import { IdeSession, Table } from '@deephaven/jsapi-shim';
+import type { JSZipObject } from 'jszip';
 import CsvTypeParser from './CsvTypeParser';
+import { CsvTypes } from './CsvFormats';
 
 const log = Log.module('CsvParser');
 
@@ -9,12 +12,24 @@ const log = Log.module('CsvParser');
 // Want to consolidate to ~10 MB chunks
 const ZIP_CONSOLIDATE_CHUNKS = 650;
 
+interface CsvParserConstructor {
+  onFileCompleted: (tables: Table[]) => void;
+  session: IdeSession;
+  file: Blob | JSZipObject;
+  type: CsvTypes;
+  readHeaders: boolean;
+  onProgress: (progressValue: number) => boolean;
+  onError: (e: unknown) => void;
+  timeZone: string;
+  isZip: boolean;
+}
+
 /**
  * Parser a CSV file in chunks and returns a table handle for each chunk.
  */
 class CsvParser {
   // Generates column names A-Z, AA-AZ, BA-BZ, etc...
-  static generateHeaders = numColumns => {
+  static generateHeaders = (numColumns: number): string[] => {
     const headers = [];
     for (let i = 0; i < numColumns; i += 1) {
       headers.push(CsvParser.generateHeaderRecursive(i));
@@ -22,7 +37,7 @@ class CsvParser {
     return headers;
   };
 
-  static generateHeaderRecursive(n) {
+  static generateHeaderRecursive(n: number): string {
     let header = '';
     let char = n;
     if (n >= 26) {
@@ -44,7 +59,7 @@ class CsvParser {
     onError,
     timeZone,
     isZip,
-  }) {
+  }: CsvParserConstructor) {
     this.onFileCompleted = onFileCompleted;
     this.session = session;
     this.file = file;
@@ -55,13 +70,12 @@ class CsvParser {
     this.onProgress = onProgress;
     this.onError = onError;
     this.tables = [];
-    this.headers = null;
-    this.types = null;
     this.chunks = 0;
-    this.totalChunks = isZip ? 0 : Math.ceil(file.size / Papa.LocalChunkSize);
+    this.totalChunks = isZip
+      ? 0
+      : Math.ceil((file as Blob).size / Papa.LocalChunkSize);
     this.isComplete = false;
     this.zipProgress = 0;
-    this.consolidatedChunks = null;
     this.numConsolidated = 0;
     this.isCancelled = false;
 
@@ -73,7 +87,7 @@ class CsvParser {
 
     this.config = {
       delimiter: type.delimiter,
-      newline: type.newline,
+      newline: type.newline as '\r\n' | '\n' | '\r' | undefined,
       escapeChar: type.escapeChar,
       dynamicTyping: false,
       error: this.handleError,
@@ -84,11 +98,51 @@ class CsvParser {
     };
   }
 
-  cancel() {
+  onFileCompleted: (tables: Table[]) => void;
+
+  session: IdeSession;
+
+  file: Blob | JSZipObject;
+
+  isZip: boolean;
+
+  type: CsvTypes;
+
+  readHeaders: boolean;
+
+  timeZone: string;
+
+  onProgress: (progressValue: number) => boolean;
+
+  onError: (e: unknown) => void;
+
+  tables: Table[];
+
+  headers?: string[];
+
+  types?: string[];
+
+  chunks: number;
+
+  totalChunks: number;
+
+  isComplete: boolean;
+
+  zipProgress: number;
+
+  consolidatedChunks?: string[][];
+
+  numConsolidated: number;
+
+  isCancelled: boolean;
+
+  config: ParseLocalConfig<unknown, Blob | NodeJS.ReadableStream>;
+
+  cancel(): void {
     this.isCancelled = true;
   }
 
-  transpose(numColumns, array) {
+  transpose(numColumns: number, array: string[][]): string[][] {
     const numRows = array.length;
     const columns = new Array(numColumns)
       .fill(null)
@@ -105,18 +159,23 @@ class CsvParser {
         columns[c][r] = this.nullCheck(value);
       }
     }
-    return columns;
+    return columns as string[][];
   }
 
-  nullCheck(value) {
+  nullCheck(value: string): string {
     return value === this.type.nullString ? '' : value;
   }
 
-  parse() {
-    const handleParseDone = types => {
+  parse(): void {
+    const handleParseDone = (types: string[]) => {
       const toParse = this.isZip
-        ? this.file.nodeStream('nodebuffer', this.handleNodeUpdate)
-        : this.file;
+        ? (this.file as JSZipObject).nodeStream(
+            // JsZip types are incorrect, thus the funny casting
+            // Actual parameter is 'nodebuffer'
+            'nodebuffer' as 'nodestream',
+            this.handleNodeUpdate
+          )
+        : (this.file as Blob);
       this.types = types;
       Papa.parse(toParse, this.config);
     };
@@ -135,7 +194,7 @@ class CsvParser {
     typeParser.parse();
   }
 
-  handleChunk(result, parser) {
+  handleChunk(result: ParseResult<string[]>, parser: Parser): void {
     const { readHeaders, onError, handleCreateTable, isZip, tables } = this;
     if (this.isCancelled) {
       log.debug2('CSV parser cancelled.');
@@ -153,7 +212,7 @@ class CsvParser {
       }
     }
 
-    let columns = [];
+    let columns: string[][] = [];
     try {
       columns = this.transpose(this.headers.length, data);
       if (isZip) {
@@ -164,12 +223,12 @@ class CsvParser {
         this.chunks += 1;
         handleCreateTable(index, columns, parser);
       }
-    } catch (e) {
+    } catch (e: unknown) {
       onError(e);
     }
   }
 
-  consolidateChunks(columns, parser) {
+  consolidateChunks(columns: string[][], parser: Parser): void {
     if (!this.consolidatedChunks) {
       this.consolidatedChunks = columns.slice();
     } else {
@@ -185,17 +244,22 @@ class CsvParser {
     }
   }
 
-  uploadConsolidatedChunks(parser) {
+  uploadConsolidatedChunks(parser: Parser | null): void {
     const { handleCreateTable } = this;
     const index = this.chunks;
     this.chunks += 1;
-    const toUpload = this.consolidatedChunks.slice();
-    this.consolidatedChunks = null;
+    const toUpload = this.consolidatedChunks?.slice();
+    this.consolidatedChunks = undefined;
     this.numConsolidated = 0;
+    assertNotNull(toUpload);
     handleCreateTable(index, toUpload, parser);
   }
 
-  handleCreateTable(index, columns, parser) {
+  handleCreateTable(
+    index: number,
+    columns: string[][],
+    parser: Parser | null
+  ): void {
     const {
       session,
       tables,
@@ -208,6 +272,8 @@ class CsvParser {
     if (parser) {
       parser.pause();
     }
+    assertNotNull(this.headers);
+    assertNotNull(types);
     session
       .newTable(this.headers, types, columns, this.timeZone)
       .then(table => {
@@ -245,7 +311,7 @@ class CsvParser {
       });
   }
 
-  handleComplete(results) {
+  handleComplete(results: ParseResult<unknown>): void {
     // results is undefined for a succesful parse, but has meta data for an abort
     if (!results || !results.meta.aborted) {
       this.isComplete = true;
@@ -256,12 +322,12 @@ class CsvParser {
     }
   }
 
-  handleError(error) {
+  handleError(error: unknown): void {
     const { onError } = this;
     onError(error);
   }
 
-  handleNodeUpdate(metadata) {
+  handleNodeUpdate(metadata: { percent: number }): void {
     this.zipProgress = metadata.percent;
   }
 }

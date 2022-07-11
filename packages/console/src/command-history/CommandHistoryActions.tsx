@@ -1,18 +1,26 @@
-import React, { Component } from 'react';
-import PropTypes from 'prop-types';
+import React, { Component, ReactElement } from 'react';
 import classNames from 'classnames';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Button } from '@deephaven/components';
 import { vsArrowLeft, vsCircleLargeFilled } from '@deephaven/icons';
 import './CommandHistoryActions.scss';
+import { HistoryAction } from './CommandHistory';
 
-class CommandHistoryActions extends Component {
-  static itemKey(i, item) {
+interface CommandHistoryActionsProps {
+  actions: HistoryAction[];
+  hasSelection: boolean;
+}
+
+class CommandHistoryActions extends Component<
+  CommandHistoryActionsProps,
+  Record<string, never>
+> {
+  static itemKey(i: unknown, item: HistoryAction): string {
     return `${item.title}`;
   }
 
-  static renderContent(item) {
-    if (item.selectionRequired && item.icon) {
+  static renderContent(item: HistoryAction): JSX.Element {
+    if (item.selectionRequired) {
       return (
         <div className="fa-md fa-layers">
           <FontAwesomeIcon
@@ -27,15 +35,10 @@ class CommandHistoryActions extends Component {
         </div>
       );
     }
-
-    if (!item.selectionRequired && item.icon) {
-      return <FontAwesomeIcon icon={item.icon} />;
-    }
-
-    return item.title;
+    return <FontAwesomeIcon icon={item.icon} />;
   }
 
-  render() {
+  render(): ReactElement {
     const { actions, hasSelection } = this.props;
 
     return (
@@ -55,18 +58,5 @@ class CommandHistoryActions extends Component {
     );
   }
 }
-
-CommandHistoryActions.propTypes = {
-  actions: PropTypes.arrayOf(
-    PropTypes.shape({
-      action: PropTypes.func.isRequired,
-      title: PropTypes.string.isRequired,
-      description: PropTypes.string,
-      icon: PropTypes.FontAwesomeIcon,
-      selectionRequired: PropTypes.bool,
-    })
-  ).isRequired,
-  hasSelection: PropTypes.bool.isRequired,
-};
 
 export default CommandHistoryActions;

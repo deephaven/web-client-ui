@@ -1,7 +1,17 @@
-import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
+import React, {
+  ChangeEvent,
+  ChangeEventHandler,
+  PureComponent,
+  ReactElement,
+} from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { DropdownMenu, SearchInput, Tooltip } from '@deephaven/components';
+import {
+  DropdownAction,
+  DropdownMenu,
+  PopperOptions,
+  SearchInput,
+  Tooltip,
+} from '@deephaven/components';
 import {
   dhTable,
   vsGraph,
@@ -9,21 +19,32 @@ import {
   vsTriangleDown,
 } from '@deephaven/icons';
 import Log from '@deephaven/log';
-import { PropTypes as APIPropTypes } from '@deephaven/jsapi-shim';
+import { VariableDefinition } from '@deephaven/jsapi-shim';
 import memoize from 'memoize-one';
 import './ConsoleMenu.scss';
 import ConsoleUtils from './common/ConsoleUtils';
 
 const log = Log.module('ConsoleMenu');
 
-class ConsoleMenu extends PureComponent {
+interface ConsoleMenuProps {
+  openObject: (object: VariableDefinition) => void;
+  objects: VariableDefinition[];
+  overflowActions: DropdownAction[];
+}
+
+interface ConsoleMenuState {
+  tableFilterText: string;
+  widgetFilterText: string;
+}
+
+class ConsoleMenu extends PureComponent<ConsoleMenuProps, ConsoleMenuState> {
   static makeItemActions(
-    objects,
-    filterText,
-    refCallback,
-    changeCallback,
-    openCallback
-  ) {
+    objects: VariableDefinition[],
+    filterText: string,
+    refCallback: (ref: SearchInput) => void,
+    changeCallback: ChangeEventHandler<HTMLInputElement>,
+    openCallback: (object: VariableDefinition) => void
+  ): DropdownAction[] {
     if (objects.length === 0) {
       return [];
     }
@@ -41,11 +62,13 @@ class ConsoleMenu extends PureComponent {
     let filteredItems = objects;
     if (filterText) {
       filteredItems = filteredItems.filter(
-        ({ name }) => name.toLowerCase().indexOf(filterText.toLowerCase()) >= 0
+        ({ title }: { title?: string }) =>
+          title != null &&
+          title.toLowerCase().indexOf(filterText.toLowerCase()) >= 0
       );
     }
     const openActions = filteredItems.map(object => ({
-      title: object.name,
+      title: object.title,
       action: () => {
         openCallback(object);
       },
@@ -54,7 +77,7 @@ class ConsoleMenu extends PureComponent {
     return [searchAction, ...openActions];
   }
 
-  constructor(props) {
+  constructor(props: ConsoleMenuProps) {
     super(props);
 
     this.handleTableFilterChange = this.handleTableFilterChange.bind(this);
@@ -64,76 +87,89 @@ class ConsoleMenu extends PureComponent {
     this.handleWidgetMenuClosed = this.handleWidgetMenuClosed.bind(this);
     this.handleWidgetMenuOpened = this.handleWidgetMenuOpened.bind(this);
 
-    this.tableSearchField = null;
-    this.widgetSearchField = null;
-
     this.state = {
       tableFilterText: '',
       widgetFilterText: '',
     };
   }
 
-  makeTableActions = memoize((objects, filterText, openObject) => {
-    const tables = objects.filter(object =>
-      ConsoleUtils.isTableType(object.type)
-    );
-    return ConsoleMenu.makeItemActions(
-      tables,
-      filterText,
-      searchField => {
-        this.tableSearchField = searchField;
-      },
-      this.handleTableFilterChange,
-      openObject
-    );
-  });
+  tableSearchField?: SearchInput;
 
-  makeWidgetActions = memoize((objects, filterText, openObject) => {
-    const widgets = objects.filter(object =>
-      ConsoleUtils.isWidgetType(object.type)
-    );
-    return ConsoleMenu.makeItemActions(
-      widgets,
-      filterText,
-      searchField => {
-        this.widgetSearchField = searchField;
-      },
-      this.handleWidgetFilterChange,
-      openObject
-    );
-  });
+  widgetSearchField?: SearchInput;
 
-  handleTableFilterChange(e) {
+  makeTableActions = memoize(
+    (
+      objects: VariableDefinition[],
+      filterText: string,
+      openObject: (object: VariableDefinition) => void
+    ): DropdownAction[] => {
+      const tables = objects.filter(object =>
+        ConsoleUtils.isTableType(object.type)
+      );
+      return ConsoleMenu.makeItemActions(
+        tables,
+        filterText,
+        searchField => {
+          this.tableSearchField = searchField;
+        },
+        this.handleTableFilterChange,
+        openObject
+      );
+    }
+  );
+
+  makeWidgetActions = memoize(
+    (
+      objects: VariableDefinition[],
+      filterText: string,
+      openObject: (object: VariableDefinition) => void
+    ): DropdownAction[] => {
+      const widgets = objects.filter(object =>
+        ConsoleUtils.isWidgetType(object.type)
+      );
+      return ConsoleMenu.makeItemActions(
+        widgets,
+        filterText,
+        searchField => {
+          this.widgetSearchField = searchField;
+        },
+        this.handleWidgetFilterChange,
+        openObject
+      );
+    }
+  );
+
+  handleTableFilterChange(e: ChangeEvent<HTMLInputElement>): void {
     log.debug('filtering tables...');
     this.setState({ tableFilterText: e.target.value });
   }
 
-  handleTableMenuClosed() {
+  handleTableMenuClosed(): void {
     this.setState({ tableFilterText: '' });
   }
 
-  handleTableMenuOpened() {
+  handleTableMenuOpened(): void {
     if (this.tableSearchField && this.tableSearchField.focus) {
       this.tableSearchField.focus();
     }
   }
 
-  handleWidgetFilterChange(e) {
+  handleWidgetFilterChange(e: ChangeEvent<HTMLInputElement>): void {
     log.debug('filtering widgets...');
     this.setState({ widgetFilterText: e.target.value });
   }
 
-  handleWidgetMenuClosed() {
+  handleWidgetMenuClosed(): void {
     this.setState({ widgetFilterText: '' });
   }
 
-  handleWidgetMenuOpened() {
+  handleWidgetMenuOpened(): void {
     if (this.widgetSearchField && this.widgetSearchField.focus) {
       this.widgetSearchField.focus();
     }
   }
 
-  render() {
+  render(): ReactElement {
     const { overflowActions, objects, openObject } = this.props;
     const { tableFilterText, widgetFilterText } = this.state;
     const tableActions = this.makeTableActions(
@@ -146,7 +182,7 @@ class ConsoleMenu extends PureComponent {
       widgetFilterText,
       openObject
     );
-    const popperOptions = { placement: 'bottom-end' };
+    const popperOptions: PopperOptions = { placement: 'bottom-end' };
 
     return (
       <div className="console-pane-menu">
@@ -211,14 +247,5 @@ class ConsoleMenu extends PureComponent {
     );
   }
 }
-
-ConsoleMenu.propTypes = {
-  openObject: PropTypes.func.isRequired,
-  objects: PropTypes.arrayOf(APIPropTypes.VariableDefinition).isRequired,
-  overflowActions: PropTypes.oneOfType([
-    PropTypes.func,
-    PropTypes.arrayOf(PropTypes.shape({})),
-  ]).isRequired,
-};
 
 export default ConsoleMenu;

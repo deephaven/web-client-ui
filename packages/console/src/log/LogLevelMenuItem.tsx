@@ -1,23 +1,31 @@
 // Port of https://github.com/react-bootstrap/react-bootstrap/blob/master/src/Collapse.js
-import React, { PureComponent } from 'react';
+import React, { PureComponent, ReactElement } from 'react';
 import classNames from 'classnames';
-import PropTypes from 'prop-types';
 import { UISwitch } from '@deephaven/components';
 import './LogLevelMenuItem.scss';
 
-class LogLevelMenuItem extends PureComponent {
-  constructor(props) {
+interface LogLevelMenuItemProps {
+  logLevel: string;
+  on: boolean;
+  onClick: (logLevel: string) => void;
+}
+
+class LogLevelMenuItem extends PureComponent<
+  LogLevelMenuItemProps,
+  Record<string, never>
+> {
+  constructor(props: LogLevelMenuItemProps) {
     super(props);
 
     this.handleSwitchClick = this.handleSwitchClick.bind(this);
   }
 
-  handleSwitchClick() {
+  handleSwitchClick(): void {
     const { logLevel, onClick } = this.props;
     onClick(logLevel);
   }
 
-  render() {
+  render(): ReactElement {
     const { logLevel, on } = this.props;
     return (
       <div className={classNames('log-level-menu-item', logLevel)}>
@@ -27,11 +35,5 @@ class LogLevelMenuItem extends PureComponent {
     );
   }
 }
-
-LogLevelMenuItem.propTypes = {
-  logLevel: PropTypes.string.isRequired,
-  on: PropTypes.bool.isRequired,
-  onClick: PropTypes.func.isRequired,
-};
 
 export default LogLevelMenuItem;

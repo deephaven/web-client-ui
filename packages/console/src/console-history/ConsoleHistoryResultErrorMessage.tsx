@@ -1,16 +1,37 @@
 /**
  * Error message that can be expanded
  */
-import React, { PureComponent } from 'react';
+import React, {
+  KeyboardEvent,
+  MouseEvent,
+  PureComponent,
+  ReactElement,
+} from 'react';
 import classNames from 'classnames';
-import PropTypes from 'prop-types';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { vsTriangleRight, vsTriangleDown } from '@deephaven/icons';
+import { assertNotNull } from '@deephaven/utils';
 
-class ConsoleHistoryResultErrorMessage extends PureComponent {
+interface ConsoleHistoryResultErrorMessageProps {
+  message?: string;
+}
+
+interface ConsoleHistoryResultErrorMessageState {
+  isExpanded: boolean;
+  isTriggerHovered: boolean;
+}
+
+class ConsoleHistoryResultErrorMessage extends PureComponent<
+  ConsoleHistoryResultErrorMessageProps,
+  ConsoleHistoryResultErrorMessageState
+> {
+  static defaultProps = {
+    message: '',
+  };
+
   static mouseDragThreshold = 5;
 
-  constructor(props) {
+  constructor(props: ConsoleHistoryResultErrorMessageProps) {
     super(props);
 
     this.handleKeyPress = this.handleKeyPress.bind(this);
@@ -31,7 +52,13 @@ class ConsoleHistoryResultErrorMessage extends PureComponent {
     };
   }
 
-  handleKeyPress(event) {
+  mouseX: number | null;
+
+  mouseY: number | null;
+
+  isClicking: boolean;
+
+  handleKeyPress(event: KeyboardEvent<HTMLDivElement>): void {
     switch (event.key) {
       case 'Enter':
       case ' ':
@@ -45,13 +72,13 @@ class ConsoleHistoryResultErrorMessage extends PureComponent {
     }
   }
 
-  handleMouseDown(event) {
+  handleMouseDown(event: MouseEvent<HTMLDivElement>): void {
     this.mouseX = event.clientX;
     this.mouseY = event.clientY;
     this.isClicking = true;
   }
 
-  handleMouseMove(event) {
+  handleMouseMove(event: MouseEvent<HTMLDivElement>): void {
     if (this.mouseX != null && this.mouseY != null) {
       if (
         Math.abs(event.clientX - this.mouseX) >=
@@ -67,7 +94,7 @@ class ConsoleHistoryResultErrorMessage extends PureComponent {
     }
   }
 
-  handleMouseUp(event) {
+  handleMouseUp(event: MouseEvent<HTMLDivElement>): void {
     // We don't want to expand/collapse the error if user is holding shift or an alt key
     // They may be trying to adjust their selection
     if (this.isClicking && !event.shiftKey && !event.metaKey && !event.altKey) {
@@ -78,21 +105,22 @@ class ConsoleHistoryResultErrorMessage extends PureComponent {
     this.isClicking = false;
   }
 
-  handleToggleError() {
+  handleToggleError(): void {
     this.setState(state => ({ isExpanded: !state.isExpanded }));
   }
 
-  handleMouseEnter() {
+  handleMouseEnter(): void {
     this.setState({ isTriggerHovered: true });
   }
 
-  handleMouseLeave() {
+  handleMouseLeave(): void {
     this.setState({ isTriggerHovered: false });
   }
 
-  render() {
+  render(): ReactElement {
     const { isExpanded, isTriggerHovered } = this.state;
     const { message: messageProp } = this.props;
+    assertNotNull(messageProp);
     const lineBreakIndex = messageProp.indexOf('\n');
     const isMultiline = lineBreakIndex > -1;
     let topLineOfMessage = messageProp;
@@ -118,7 +146,7 @@ class ConsoleHistoryResultErrorMessage extends PureComponent {
                 type="button"
                 onClick={this.handleToggleError}
                 className={arrowBtnClasses}
-                tabIndex="-1"
+                tabIndex={-1}
               >
                 <FontAwesomeIcon
                   icon={isExpanded ? vsTriangleDown : vsTriangleRight}
@@ -130,7 +158,7 @@ class ConsoleHistoryResultErrorMessage extends PureComponent {
               <div
                 className="console-error-text-trigger"
                 role="button"
-                tabIndex="0"
+                tabIndex={0}
                 onKeyPress={this.handleKeyPress}
                 onMouseDown={this.handleMouseDown}
                 onMouseMove={this.handleMouseMove}
@@ -153,13 +181,5 @@ class ConsoleHistoryResultErrorMessage extends PureComponent {
     );
   }
 }
-
-ConsoleHistoryResultErrorMessage.propTypes = {
-  message: PropTypes.string,
-};
-
-ConsoleHistoryResultErrorMessage.defaultProps = {
-  message: '',
-};
 
 export default ConsoleHistoryResultErrorMessage;
