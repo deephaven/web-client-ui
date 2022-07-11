@@ -1,5 +1,5 @@
 import memoizeClear from './memoizeClear';
-import GridUtils, { AxisRange } from './GridUtils';
+import GridUtils, { NoneNullAxisRange } from './GridUtils';
 import GridColorUtils from './GridColorUtils';
 import { isExpandableGridModel } from './ExpandableGridModel';
 import {
@@ -2524,51 +2524,31 @@ export class GridRenderer {
 
         const filteredRanges = [...selectedRanges].filter(
           value => value.startColumn != null && value.endColumn != null
-        );
+        ) as NoneNullColumnRange[];
 
         const sortedRanges = filteredRanges
-          .map((value): AxisRange => [value.startColumn, value.endColumn])
-          .sort(GridUtils.compareRanges)
-          .map(value => ({
-            startColumn: value[0],
-            endColumn: value[1],
-          })) as NoneNullColumnRange[];
+          .map(
+            (value): NoneNullAxisRange => [value.startColumn, value.endColumn]
+          )
+          .sort(GridUtils.compareRanges);
 
-        const mergedRanges: NoneNullColumnRange[] = [];
-
-        for (let i = 0; i < sortedRanges.length; i += 1) {
-          const range = sortedRanges[i];
-          const { startColumn, endColumn } = range;
-          if (i === 0) {
-            mergedRanges.push({ startColumn, endColumn });
-          } else if (
-            startColumn - 1 <=
-            mergedRanges[mergedRanges.length - 1].endColumn
-          ) {
-            mergedRanges[mergedRanges.length - 1].endColumn = Math.max(
-              mergedRanges[mergedRanges.length - 1].endColumn,
-              endColumn
-            );
-          } else {
-            mergedRanges.push({ startColumn, endColumn });
-          }
-        }
+        const mergedRanges = GridUtils.mergeSortedRanges(sortedRanges);
 
         for (let i = 0; i < mergedRanges.length; i += 1) {
           const range = mergedRanges[i];
+          const startColumn = range[0];
+          const endColumn = range[1];
+
           if (
-            range.startColumn != null &&
-            range.endColumn != null &&
-            (range.startColumn !== cursorColumn ||
-              range.endColumn !== cursorColumn)
+            startColumn != null &&
+            endColumn != null &&
+            (startColumn !== cursorColumn || endColumn !== cursorColumn)
           ) {
-            const tickX =
-              (range.startColumn / lastLeft) * (barWidth - handleWidth);
+            const tickX = (startColumn / lastLeft) * (barWidth - handleWidth);
             const tickWidth = Math.max(
               1,
               Math.round(
-                ((range.endColumn + 1) / lastLeft) * (barWidth - handleWidth) -
-                  tickX
+                ((endColumn + 1) / lastLeft) * (barWidth - handleWidth) - tickX
               )
             );
             const trackHeight = hScrollBarSize - scrollBarCasingWidth;
@@ -2645,52 +2625,31 @@ export class GridRenderer {
 
         const filteredRanges = [...selectedRanges].filter(
           value => value.startRow != null && value.endRow != null
-        );
+        ) as NoneNullRowRange[];
 
         const sortedRanges = filteredRanges
-          .map((value): AxisRange => [value.startRow, value.endRow])
-          .sort(GridUtils.compareRanges)
-          .map(value => ({
-            startRow: value[0],
-            endRow: value[1],
-          })) as NoneNullRowRange[];
+          .map((value): NoneNullAxisRange => [value.startRow, value.endRow])
+          .sort(GridUtils.compareRanges);
 
-        const mergedRanges: NoneNullRowRange[] = [];
-
-        for (let i = 0; i < sortedRanges.length; i += 1) {
-          const range = sortedRanges[i];
-          const { startRow, endRow } = range;
-          if (i === 0) {
-            mergedRanges.push({ startRow, endRow });
-          } else if (
-            startRow - 1 <=
-            mergedRanges[mergedRanges.length - 1].endRow
-          ) {
-            mergedRanges[mergedRanges.length - 1].endRow = Math.max(
-              mergedRanges[mergedRanges.length - 1].endRow,
-              endRow
-            );
-          } else {
-            mergedRanges.push({ startRow, endRow });
-          }
-        }
+        const mergedRanges = GridUtils.mergeSortedRanges(sortedRanges);
 
         for (let i = 0; i < mergedRanges.length; i += 1) {
           const range = mergedRanges[i];
+          const startRow = range[0];
+          const endRow = range[1];
           if (
-            range.startRow != null &&
-            range.endRow != null &&
-            (range.startRow !== cursorRow || range.endRow !== cursorRow)
+            startRow != null &&
+            endRow != null &&
+            (startRow !== cursorRow || endRow !== cursorRow)
           ) {
             const tickY = Math.round(
-              (range.startRow / lastTop) * (barHeight - handleHeight)
+              (startRow / lastTop) * (barHeight - handleHeight)
             );
             const trackWidth = vScrollBarSize - scrollBarCasingWidth;
             const tickHeight = Math.max(
               1,
               Math.round(
-                ((range.endRow + 1) / lastTop) * (barHeight - handleHeight) -
-                  tickY
+                ((endRow + 1) / lastTop) * (barHeight - handleHeight) - tickY
               )
             );
             context.fillRect(

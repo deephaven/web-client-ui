@@ -1,7 +1,7 @@
 import { AxisRange } from '.';
 import GridMetrics, { ModelIndex, MoveOperation } from './GridMetrics';
 import GridRange, { GridRangeIndex } from './GridRange';
-import GridUtils from './GridUtils';
+import GridUtils, { NoneNullAxisRange } from './GridUtils';
 
 function expectModelIndexes(
   movedItems: MoveOperation[],
@@ -943,5 +943,42 @@ describe('compareRange function works', () => {
     const range1: AxisRange = [1, 3];
     const range2: AxisRange = [1, 3];
     expect(GridUtils.compareRanges(range1, range2) === 0).toBeTruthy();
+  });
+});
+
+describe('for each', () => {
+  it('works on a single array', () => {
+    const ranges: NoneNullAxisRange[] = [[1, 2]];
+    expect(GridUtils.mergeSortedRanges(ranges)).toEqual(ranges);
+  });
+
+  it('works on a non-overlapping array', () => {
+    const ranges: NoneNullAxisRange[] = [
+      [1, 2],
+      [4, 5],
+      [7, 8],
+    ];
+    expect(GridUtils.mergeSortedRanges(ranges)).toEqual(ranges);
+  });
+
+  it('works on a all overlapping array', () => {
+    const ranges: NoneNullAxisRange[] = [
+      [1, 2],
+      [3, 4],
+      [5, 6],
+    ];
+    expect(GridUtils.mergeSortedRanges(ranges)).toEqual([[1, 6]]);
+  });
+
+  it('works on a partially overlapping array', () => {
+    const ranges: NoneNullAxisRange[] = [
+      [1, 2],
+      [3, 4],
+      [7, 11],
+    ];
+    expect(GridUtils.mergeSortedRanges(ranges)).toEqual([
+      [1, 4],
+      [7, 11],
+    ]);
   });
 });
