@@ -8,6 +8,13 @@ class Logger {
     this.name = name;
     this.prefix = name ? `[${name}]` : ``;
 
+    this.error = silent;
+    this.warn = silent;
+    this.log = silent;
+    this.info = silent;
+    this.debug = silent;
+    this.debug2 = silent;
+
     this.setLogLevel(level);
   }
 
@@ -17,17 +24,17 @@ class Logger {
 
   level?: number;
 
-  error?: () => void;
+  error: (...data: unknown[]) => void;
 
-  warn?: () => void;
+  warn: (...data: unknown[]) => void;
 
-  log?: () => void;
+  log: (...data: unknown[]) => void;
 
-  info?: () => void;
+  info: (...data: unknown[]) => void;
 
-  debug?: () => void;
+  debug: (...data: unknown[]) => void;
 
-  debug2?: () => void;
+  debug2: (...data: unknown[]) => void;
 
   setLogLevel(level?: number): void {
     this.level = level;
