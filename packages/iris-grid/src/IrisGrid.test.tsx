@@ -23,7 +23,6 @@ const DEFAULT_SETTINGS: WorkspaceSettings = {
   formatter: [],
   truncateNumbersWithPound: false,
   disableMoveConfirmation: false,
-  showSystemBadge: false,
 };
 
 function makeMockCanvas() {

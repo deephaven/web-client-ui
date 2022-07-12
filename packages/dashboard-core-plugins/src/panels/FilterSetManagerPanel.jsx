@@ -6,7 +6,6 @@ import {
   GLPropTypes,
   LayoutUtils,
 } from '@deephaven/dashboard';
-import { IrisGridUtils } from '@deephaven/iris-grid';
 import Log from '@deephaven/log';
 import {
   getFilterSetsForDashboard,
@@ -128,20 +127,13 @@ export class FilterSetManagerPanel extends Component {
       advancedFilters: indexedAdvancedFilters,
       quickFilters: indexedQuickFilters,
     } = irisGridState;
-    const dehydratedAdvancedFilters = IrisGridUtils.dehydrateAdvancedFilters(
-      table.columns,
-      indexedAdvancedFilters
-    );
     const advancedFilters = FilterSetManagerPanel.changeFilterIndexesToColumnNames(
       table,
-      dehydratedAdvancedFilters
-    );
-    const dehydratedQuickFilters = IrisGridUtils.dehydrateQuickFilters(
-      indexedQuickFilters
+      indexedAdvancedFilters
     );
     const quickFilters = FilterSetManagerPanel.changeFilterIndexesToColumnNames(
       table,
-      dehydratedQuickFilters
+      indexedQuickFilters
     );
     return {
       irisGridState: {
