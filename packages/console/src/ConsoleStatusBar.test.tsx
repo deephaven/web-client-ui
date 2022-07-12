@@ -4,13 +4,12 @@ import dh from '@deephaven/jsapi-shim';
 import ConsoleStatusBar from './ConsoleStatusBar';
 
 function makeConsoleStatusBarWrapper() {
-  const session = new dh.IdeSession('test');
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const session = new (dh as any).IdeSession('test');
   const wrapper = render(
     <ConsoleStatusBar
       session={session}
-      language="test"
-      createNotebook={() => {}}
-      openObject={() => {}}
+      openObject={() => undefined}
       objects={[]}
       overflowActions={[]}
     />

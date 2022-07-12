@@ -5,7 +5,7 @@ import ConsoleHistory from './ConsoleHistory';
 function makeHistoryItem(
   message,
   result,
-  cancelResult = () => {},
+  cancelResult = () => undefined,
   disabledObjects = []
 ) {
   return {

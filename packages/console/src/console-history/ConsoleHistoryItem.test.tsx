@@ -4,12 +4,7 @@ import ConsoleHistoryItem from './ConsoleHistoryItem';
 
 const DEFAULT_ITEM = {
   message: 'Test item',
-  result: {
-    then: callback => {
-      callback('Command result!');
-    },
-  },
-  cancelResult: () => {},
+  cancelResult: () => undefined,
   disabledObjects: [],
 };
 

@@ -1,10 +1,12 @@
 /**
  * Script editor for large blocks of code
  */
-import React, { Component } from 'react';
-import PropTypes from 'prop-types';
+import React, { Component, ReactElement, RefObject } from 'react';
 import { LoadingOverlay, ShortcutRegistry } from '@deephaven/components';
 import Log from '@deephaven/log';
+import { IdeSession } from '@deephaven/jsapi-shim';
+import { assertNotNull } from '@deephaven/utils';
+import { editor, IDisposable } from 'monaco-editor';
 import Editor from './Editor';
 import { MonacoCompletionProvider, MonacoUtils } from '../monaco';
 import './ScriptEditor.scss';
@@ -12,8 +14,38 @@ import SHORTCUTS from '../ConsoleShortcuts';
 
 const log = Log.module('ScriptEditor');
 
-class ScriptEditor extends Component {
-  constructor(props) {
+interface ScriptEditorProps {
+  error?: { message?: string };
+  isLoading: boolean;
+  isLoaded: boolean;
+  focusOnMount?: boolean;
+  onChange: (e: editor.IModelContentChangedEvent) => void;
+  onRunCommand: (command: string | null) => void;
+  session: IdeSession;
+  sessionLanguage?: string;
+  settings?: {
+    language: string;
+    value?: string;
+  };
+}
+
+interface ScriptEditorState {
+  model: editor.ITextModel | null;
+}
+
+class ScriptEditor extends Component<ScriptEditorProps, ScriptEditorState> {
+  static defaultProps = {
+    error: null,
+    isLoading: false,
+    isLoaded: false,
+    focusOnMount: true,
+    onChange: (): void => undefined,
+    session: null,
+    sessionLanguage: null,
+    settings: null,
+  };
+
+  constructor(props: ScriptEditorProps) {
     super(props);
     this.handleEditorInitialized = this.handleEditorInitialized.bind(this);
     this.handleEditorWillDestroy = this.handleEditorWillDestroy.bind(this);
@@ -22,8 +54,6 @@ class ScriptEditor extends Component {
     this.updateShortcuts = this.updateShortcuts.bind(this);
 
     this.contextActionCleanups = [];
-    this.completionCleanup = null;
-    this.editor = null;
     this.editorComponent = React.createRef();
 
     this.state = {
@@ -31,15 +61,17 @@ class ScriptEditor extends Component {
     };
   }
 
-  componentDidMount() {
+  componentDidMount(): void {
     ShortcutRegistry.addEventListener('onUpdate', this.updateShortcuts);
   }
 
-  componentDidUpdate(prevProps) {
+  componentDidUpdate(prevProps: ScriptEditorProps): void {
     const { sessionLanguage, settings } = this.props;
-    const { language } = settings;
-
-    const languageChanged = language !== prevProps.settings.language;
+    let language = '';
+    if (settings) {
+      language = settings.language;
+    }
+    const languageChanged = language !== prevProps.settings?.language;
     if (languageChanged) {
       log.debug('Set language', language);
       this.setLanguage(language);
@@ -49,7 +81,7 @@ class ScriptEditor extends Component {
       sessionLanguage == null && prevProps.sessionLanguage != null;
     const languageMatch = language === sessionLanguage;
     const prevLanguageMatch =
-      prevProps.settings.language === prevProps.sessionLanguage;
+      prevProps.settings?.language === prevProps.sessionLanguage;
     if (
       sessionDisconnected ||
       (sessionLanguage && prevLanguageMatch && !languageMatch)
@@ -73,11 +105,19 @@ class ScriptEditor extends Component {
     }
   }
 
-  componentWillUnmount() {
+  componentWillUnmount(): void {
     ShortcutRegistry.removeEventListener('onUpdate', this.updateShortcuts);
   }
 
-  getValue() {
+  contextActionCleanups: IDisposable[];
+
+  completionCleanup?: IDisposable;
+
+  editor?: editor.IStandaloneCodeEditor;
+
+  editorComponent: RefObject<Editor>;
+
+  getValue(): string | null {
     if (this.editor) {
       return this.editor.getValue();
     }
@@ -85,23 +125,25 @@ class ScriptEditor extends Component {
     return null;
   }
 
-  getSelectedCommand() {
-    const range = this.editor.getSelection();
-    const model = this.editor.getModel();
+  getSelectedCommand(): string {
+    const range = this.editor?.getSelection();
+    assertNotNull(range);
+    const model = this.editor?.getModel();
+    assertNotNull(model);
     const { startLineNumber, endColumn } = range;
     let { endLineNumber } = range;
     if (endColumn === 1 && endLineNumber > startLineNumber) {
       endLineNumber -= 1;
     }
-    const startLineMinColumn = model.getLineMinColumn(startLineNumber);
-    const endLineMaxColumn = model.getLineMaxColumn(endLineNumber);
+    const startLineMinColumn = model?.getLineMinColumn(startLineNumber);
+    const endLineMaxColumn = model?.getLineMaxColumn(endLineNumber);
     const wholeLineRange = range
       .setStartPosition(startLineNumber, startLineMinColumn)
       .setEndPosition(endLineNumber, endLineMaxColumn);
-    return model.getValueInRange(wholeLineRange);
+    return model?.getValueInRange(wholeLineRange);
   }
 
-  handleEditorInitialized(editor) {
+  handleEditorInitialized(innerEditor: editor.IStandaloneCodeEditor): void {
     const {
       focusOnMount,
       onChange,
@@ -112,44 +154,44 @@ class ScriptEditor extends Component {
 
     log.debug('handleEditorInitialized', sessionLanguage, session, settings);
 
-    this.editor = editor;
+    this.editor = innerEditor;
     this.setState({ model: this.editor.getModel() });
 
-    MonacoUtils.setEOL(editor);
-    MonacoUtils.registerPasteHandler(editor);
+    MonacoUtils.setEOL(innerEditor);
+    MonacoUtils.registerPasteHandler(innerEditor);
 
     if (session && settings && sessionLanguage === settings.language) {
       this.initContextActions();
       this.initCodeCompletion();
     }
 
-    editor.onDidChangeModelContent(onChange);
+    innerEditor.onDidChangeModelContent(onChange);
     if (focusOnMount) {
-      editor.focus();
+      innerEditor.focus();
     }
   }
 
-  handleEditorWillDestroy() {
+  handleEditorWillDestroy(): void {
     log.debug('handleEditorWillDestroy');
     this.deInitContextActions();
     this.deInitCodeCompletion();
     this.setState({ model: null });
-    this.editor = null;
+    this.editor = undefined;
   }
 
-  handleRun() {
+  handleRun(): void {
     const { onRunCommand } = this.props;
     const command = this.getValue();
     onRunCommand(command);
   }
 
-  handleRunSelected() {
+  handleRunSelected(): void {
     const { onRunCommand } = this.props;
     const command = this.getSelectedCommand();
     onRunCommand(command);
   }
 
-  initContextActions() {
+  initContextActions(): void {
     if (this.contextActionCleanups.length > 0) {
       log.error('Context actions already initialized.');
       return;
@@ -167,15 +209,11 @@ class ScriptEditor extends Component {
         keybindings: [
           MonacoUtils.getMonacoKeyCodeFromShortcut(SHORTCUTS.NOTEBOOK.RUN),
         ],
-        precondition: null,
-
-        keybindingContext: null,
         contextMenuGroupId: 'navigation',
         contextMenuOrder: 1.5,
 
         run: () => {
           this.handleRun();
-          return null;
         },
       })
     );
@@ -189,14 +227,11 @@ class ScriptEditor extends Component {
             SHORTCUTS.NOTEBOOK.RUN_SELECTED
           ),
         ],
-        precondition: null,
-        keybindingContext: null,
         contextMenuGroupId: 'navigation',
         contextMenuOrder: 1.5,
 
         run: () => {
           this.handleRunSelected();
-          return null;
         },
       })
     );
@@ -204,19 +239,19 @@ class ScriptEditor extends Component {
     this.contextActionCleanups = cleanups;
   }
 
-  deInitContextActions() {
+  deInitContextActions(): void {
     if (this.contextActionCleanups.length > 0) {
       this.contextActionCleanups.forEach(cleanup => cleanup.dispose());
       this.contextActionCleanups = [];
     }
   }
 
-  updateShortcuts() {
+  updateShortcuts(): void {
     this.deInitContextActions();
     this.initContextActions();
   }
 
-  initCodeCompletion() {
+  initCodeCompletion(): void {
     if (this.completionCleanup != null) {
       log.error('Code completion already initialized.');
       return;
@@ -228,20 +263,22 @@ class ScriptEditor extends Component {
     }
   }
 
-  deInitCodeCompletion() {
+  deInitCodeCompletion(): void {
     const { session } = this.props;
     log.debug('deInitCodeCompletion', this.editor, session);
     if (this.completionCleanup) {
       this.completionCleanup.dispose();
-      this.completionCleanup = null;
+      this.completionCleanup = undefined;
     }
     if (this.editor && session) {
       MonacoUtils.closeDocument(this.editor, session);
     }
   }
 
-  append(text, focus = true) {
+  append(text: string, focus = true): void {
+    assertNotNull(this.editor);
     const model = this.editor.getModel();
+    assertNotNull(model);
     const currentText = model.getValue();
     if (currentText) {
       model.setValue(`${currentText}\n${text}`);
@@ -259,33 +296,33 @@ class ScriptEditor extends Component {
     }
   }
 
-  updateDimensions() {
+  updateDimensions(): void {
     log.debug('updateDimensions');
     if (this.editor) {
       this.editor.layout();
     }
   }
 
-  focus() {
+  focus(): void {
     log.debug('focus');
     if (this.editor) {
       this.editor.focus();
     }
   }
 
-  toggleFind() {
+  toggleFind(): void {
     if (this.editorComponent.current) {
       this.editorComponent.current.toggleFind();
     }
   }
 
-  setLanguage(language) {
+  setLanguage(language: string): void {
     if (this.editorComponent.current) {
       this.editorComponent.current.setLanguage(language);
     }
   }
 
-  render() {
+  render(): ReactElement {
     const {
       error,
       isLoaded,
@@ -337,31 +374,5 @@ class ScriptEditor extends Component {
     );
   }
 }
-
-ScriptEditor.propTypes = {
-  error: PropTypes.shape({ message: PropTypes.string }),
-  isLoading: PropTypes.bool,
-  isLoaded: PropTypes.bool,
-  focusOnMount: PropTypes.bool,
-  onChange: PropTypes.func,
-  onRunCommand: PropTypes.func.isRequired,
-  session: PropTypes.shape({}),
-  sessionLanguage: PropTypes.string,
-  settings: PropTypes.shape({
-    language: PropTypes.string,
-    value: PropTypes.string,
-  }),
-};
-
-ScriptEditor.defaultProps = {
-  error: null,
-  isLoading: false,
-  isLoaded: false,
-  focusOnMount: true,
-  onChange: () => {},
-  session: null,
-  sessionLanguage: null,
-  settings: null,
-};
 
 export default ScriptEditor;

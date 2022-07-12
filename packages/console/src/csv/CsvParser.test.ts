@@ -5,13 +5,13 @@ const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
 const makeParser = () =>
   new CsvParser({
-    onFileCompleted: () => {},
+    onFileCompleted: () => undefined,
     session: null,
     file: null,
-    type: CsvFormats.DEFAULT_TYPE,
+    type: CsvFormats.TYPES[CsvFormats.DEFAULT_TYPE],
     readHeaders: true,
-    onProgress: () => {},
-    onError: () => {},
+    onProgress: () => undefined,
+    onError: () => undefined,
     timeZone: '',
     isZip: true,
   });
@@ -54,40 +54,40 @@ it('transposes correctly', () => {
   // 3x3
   expect(
     csvParser.transpose(3, [
-      [1, 2, 3],
-      [4, 5, 6],
-      [7, 8, 9],
+      [`1`, `2`, `3`],
+      [`4`, `5`, `6`],
+      [`7`, `8`, `9`],
     ])
   ).toStrictEqual([
-    [1, 4, 7],
-    [2, 5, 8],
-    [3, 6, 9],
+    ['1', '4', '7'],
+    ['2', '5', '8'],
+    ['3', '6', '9'],
   ]);
   // 3x4
   expect(
     csvParser.transpose(4, [
-      [1, 2, 3, 4],
-      [5, 6, 7, 8],
-      [9, 10, 11, 12],
+      ['1', '2', '3', '4'],
+      ['5', '6', '7', '8'],
+      ['9', '10', '11', '12'],
     ])
   ).toStrictEqual([
-    [1, 5, 9],
-    [2, 6, 10],
-    [3, 7, 11],
-    [4, 8, 12],
+    ['1', '5', '9'],
+    ['2', '6', '10'],
+    ['3', '7', '11'],
+    ['4', '8', '12'],
   ]);
   // 4x3
   expect(
     csvParser.transpose(3, [
-      [1, 2, 3],
-      [4, 5, 6],
-      [7, 8, 9],
-      [10, 11, 12],
+      ['1', '2', '3'],
+      ['4', '5', '6'],
+      ['7', '8', '9'],
+      ['10', '11', '12'],
     ])
   ).toStrictEqual([
-    [1, 4, 7, 10],
-    [2, 5, 8, 11],
-    [3, 6, 9, 12],
+    ['1', '4', '7', '10'],
+    ['2', '5', '8', '11'],
+    ['3', '6', '9', '12'],
   ]);
 });
 
@@ -96,27 +96,27 @@ it('drops extra columns', () => {
   expect(
     csvParser.transpose(3, [
       ['col1', 'col2', 'col3', 'col4'],
-      [1, 2, 3, 4],
-      [1, 2, 3],
-      [1, 2, 3, 4, 5],
+      ['1', '2', '3', '4'],
+      ['1', '2', '3'],
+      ['1', '2', '3', '4', '5'],
     ])
   ).toStrictEqual([
-    ['col1', 1, 1, 1],
-    ['col2', 2, 2, 2],
-    ['col3', 3, 3, 3],
+    ['col1', '1', '1', '1'],
+    ['col2', '2', '2', '2'],
+    ['col3', '3', '3', '3'],
   ]);
 
   expect(
     csvParser.transpose(3, [
       ['col1', 'col2', 'col3'],
-      [1, 2, 3, 4],
-      [1, 2, 3],
-      [1, 2, 3, 4, 5],
+      ['1', '2', '3', '4'],
+      ['1', '2', '3'],
+      ['1', '2', '3', '4', '5'],
     ])
   ).toStrictEqual([
-    ['col1', 1, 1, 1],
-    ['col2', 2, 2, 2],
-    ['col3', 3, 3, 3],
+    ['col1', `1`, `1`, `1`],
+    ['col2', '2', '2', `2`],
+    ['col3', '3', '3', '3'],
   ]);
 });
 
@@ -125,9 +125,9 @@ it('throws an error for insufficient columns', () => {
   expect(() =>
     csvParser.transpose(3, [
       ['col1', 'col2', 'col3'],
-      [1, 2, 3, 4],
-      [1, 2, 3],
-      [1, 2],
+      ['1', '2', '3', '4'],
+      ['1', '2', '3'],
+      ['1', '2'],
     ])
   ).toThrow(new Error('Insufficient columns. Expected 3 but found 2\n1,2'));
 });

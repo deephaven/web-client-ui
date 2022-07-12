@@ -2,6 +2,7 @@ import React from 'react';
 import { fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import CommandHistory from './CommandHistory';
+import { CommandHistoryTable } from './CommandHistoryStorage';
 
 jest.mock('pouchdb-browser');
 
@@ -24,7 +25,7 @@ jest.mock('./CommandHistoryViewportUpdater', () =>
   })
 );
 
-function makeCommandHistoryTable(itemLength) {
+function makeCommandHistoryTable(itemLength): CommandHistoryTable {
   return {
     onUpdate: jest.fn(),
     setSearch: jest.fn(),
@@ -32,6 +33,10 @@ function makeCommandHistoryTable(itemLength) {
     setViewport: jest.fn(),
     getSnapshot: jest.fn(),
     size: itemLength,
+    getViewportData: jest.fn(),
+    setFilters: jest.fn(),
+    setSorts: jest.fn(),
+    close: jest.fn(),
   };
 }
 
@@ -41,9 +46,22 @@ function mountItems(itemLength = 10) {
     <CommandHistory
       table={table}
       language="test"
-      sendToConsole={() => {}}
-      sendToNotebook={() => {}}
-      commandHistoryStorage={{ addItem() {}, updateItem() {}, getTable() {} }}
+      sendToConsole={() => undefined}
+      sendToNotebook={() => undefined}
+      commandHistoryStorage={{
+        addItem() {
+          return undefined;
+        },
+        updateItem() {
+          return undefined;
+        },
+        getTable() {
+          return undefined;
+        },
+        listenItem() {
+          return undefined;
+        },
+      }}
     />
   );
   const items = makeItems(itemLength);

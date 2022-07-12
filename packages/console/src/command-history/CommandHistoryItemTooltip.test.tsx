@@ -1,6 +1,7 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { CommandHistoryItemTooltip } from './CommandHistoryItemTooltip';
+import { CommandHistoryStorageItem } from './CommandHistoryStorage';
 
 jest.mock('../common/Code', () => () => 'Code');
 
@@ -13,10 +14,14 @@ function makeCommandHistoryStorage() {
   };
 }
 
-function makeItem(id = 'TestId', name = 'Test command') {
+function makeItem(
+  id = 'TestId',
+  name = 'Test command'
+): CommandHistoryStorageItem {
   return {
     id,
     name,
+    data: { command: name, startTime: `${Date.now()}` },
   };
 }
 
