@@ -75,10 +75,6 @@ export const getDisableMoveConfirmation: Selector<
   WorkspaceSettings['disableMoveConfirmation']
 > = store => getSettings(store).disableMoveConfirmation || false;
 
-export const getShowSystemBadge: Selector<
-  WorkspaceSettings['showSystemBadge']
-> = store => getSettings(store).showSystemBadge;
-
 export const getShortcutOverrides: Selector<
   WorkspaceSettings['shortcutOverrides']
 > = store => getSettings(store).shortcutOverrides;

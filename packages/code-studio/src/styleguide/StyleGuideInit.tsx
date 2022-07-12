@@ -21,7 +21,7 @@ const StyleGuideInit = (props: {
   const { workspace, setWorkspace } = props;
 
   useEffect(() => {
-    setWorkspace(LocalWorkspaceStorage.makeDefaultWorkspace() as Workspace);
+    setWorkspace(LocalWorkspaceStorage.makeDefaultWorkspace());
   }, [setWorkspace]);
 
   return <>{workspace && <StyleGuide />}</>;
