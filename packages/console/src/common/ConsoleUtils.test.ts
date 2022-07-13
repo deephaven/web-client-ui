@@ -44,4 +44,8 @@ describe('parsing shell arguments from text', () => {
 describe('predicates', () => {
   expect(ConsoleUtils.hasComment('asdf')).toBeFalsy();
   expect(ConsoleUtils.hasComment({ comment: '123' })).toBeTruthy();
+  expect(ConsoleUtils.hasOp('asd')).toBeFalsy();
+  expect(ConsoleUtils.hasOp({ op: '||' })).toBeTruthy();
+  expect(ConsoleUtils.hasPattern('asd')).toBeFalsy();
+  expect(ConsoleUtils.hasPattern({ op: 'glob', pattern: '||' })).toBeTruthy();
 });

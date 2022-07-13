@@ -1,17 +1,16 @@
-import { Shortcut } from '@deephaven/components';
+import { ContextAction } from '@deephaven/components';
 import { IconDefinition } from '@deephaven/icons';
 
-export type ItemAction = {
+export type ItemAction = ContextAction & {
   title: string;
   description: string;
   icon: IconDefinition;
-  shortcut?: Shortcut;
   action: () => void;
   group: number;
   order?: number;
 };
 
-export type HistoryAction = {
+export type HistoryAction = ContextAction & {
   action: () => void;
   title: string;
   description: string;

@@ -21,7 +21,7 @@ import dh, {
   VariableDefinition,
 } from '@deephaven/jsapi-shim';
 import Log from '@deephaven/log';
-import { assertNotNull, Pending } from '@deephaven/utils';
+import { assertNotNull, Pending, PromiseUtils } from '@deephaven/utils';
 import ConsoleHistory from './console-history/ConsoleHistory';
 import { ConsoleHistoryActionItem } from './console-history/ConsoleHistoryTypes';
 import SHORTCUTS from './ConsoleShortcuts';
@@ -165,6 +165,7 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
     this.handleTogglePrintStdout = this.handleTogglePrintStdout.bind(this);
     this.handleUploadCsv = this.handleUploadCsv.bind(this);
     this.handleHideCsv = this.handleHideCsv.bind(this);
+    this.handleCsvFileCanceled = this.handleCsvFileCanceled.bind(this);
     this.handleCsvFileOpened = this.handleCsvFileOpened.bind(this);
     this.handleCsvPaste = this.handleCsvPaste.bind(this);
     this.handleDragEnter = this.handleDragEnter.bind(this);
@@ -175,7 +176,6 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
     this.handleCsvError = this.handleCsvError.bind(this);
     this.handleCsvInProgress = this.handleCsvInProgress.bind(this);
 
-    this.cancelListener = undefined;
     this.consolePane = React.createRef();
     this.consoleInput = React.createRef();
     this.consoleHistoryScrollPane = React.createRef();
@@ -362,7 +362,7 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
     historyItem.wrappedResult = undefined;
     historyItem.cancelResult = undefined;
 
-    if (error && ((error as unknown) as { isCanceled: boolean }).isCanceled) {
+    if (PromiseUtils.isCanceled(error)) {
       log.debug('Called handleCommandError on a cancelled promise result');
       return;
     }
@@ -644,7 +644,11 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
     });
   }
 
-  handleCsvFileOpened(file: File | null): void {
+  handleCsvFileCanceled(): void {
+    this.setState({ csvFile: null, csvPaste: null });
+  }
+
+  handleCsvFileOpened(file: File): void {
     this.setState({ csvFile: file, csvPaste: null });
   }
 
@@ -730,13 +734,13 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
     });
   }
 
-  addConsoleHistoryMessage(message: string | null, error?: string): void {
+  addConsoleHistoryMessage(message?: string, error?: string): void {
     const { consoleHistory } = this.state;
     const historyItem = {
       command: '',
       startTime: Date.now(),
       endTime: Date.now(),
-      result: { message: message ?? undefined, error },
+      result: { message, error },
     };
     const history = consoleHistory.concat(historyItem);
     this.setState({
@@ -749,7 +753,7 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
   }
 
   handleCsvError(error: unknown): void {
-    this.addConsoleHistoryMessage(null, error ? `${error}` : undefined);
+    this.addConsoleHistoryMessage(undefined, error ? `${error}` : undefined);
   }
 
   handleCsvInProgress(csvUploadInProgress: boolean): void {
@@ -949,6 +953,7 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
           >
             {showCsvOverlay && (
               <CsvOverlay
+                onCancel={this.handleCsvFileCanceled}
                 onFileOpened={this.handleCsvFileOpened}
                 onPaste={this.handleCsvPaste}
                 clearDragError={this.handleClearDragError}

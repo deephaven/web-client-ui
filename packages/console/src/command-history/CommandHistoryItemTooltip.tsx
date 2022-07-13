@@ -22,8 +22,8 @@ interface CommandHistoryItemTooltipProps {
 
 interface CommandHistoryItemTooltipState {
   currentTime: number;
-  data: CommandHistoryStorageData | null;
-  error: string | null;
+  data?: CommandHistoryStorageData;
+  error?: string;
 }
 
 const LOAD_DATA_DEBOUNCE = 250;
@@ -63,8 +63,6 @@ export class CommandHistoryItemTooltip extends Component<
 
     this.state = {
       currentTime: Date.now(),
-      data: null,
-      error: null,
     };
   }
 
@@ -141,7 +139,7 @@ export class CommandHistoryItemTooltip extends Component<
   }
 
   handleUpdate(item: CommandHistoryStorageItem): void {
-    const { data = null } = item ?? {};
+    const { data } = item ?? {};
     this.setState({ data });
 
     const { onUpdate } = this.props;

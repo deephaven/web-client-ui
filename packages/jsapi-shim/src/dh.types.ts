@@ -38,7 +38,7 @@ const VariableType = {
   TREETABLE: 'TreeTable',
 } as const;
 
-type VariableTypeUnion = typeof VariableType[keyof typeof VariableType];
+export type VariableTypeUnion = typeof VariableType[keyof typeof VariableType];
 
 export interface VariableDefinition<
   T extends VariableTypeUnion = VariableTypeUnion

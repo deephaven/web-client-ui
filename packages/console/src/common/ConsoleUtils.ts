@@ -1,5 +1,8 @@
 import ShellQuote, { ParseEntry, ControlOperator } from 'shell-quote';
-import dh from '@deephaven/jsapi-shim';
+import dh, { VariableTypeUnion } from '@deephaven/jsapi-shim';
+import Log from '@deephaven/log';
+
+const log = Log.module('FigureChartModel');
 
 class ConsoleUtils {
   static hasComment(arg: ParseEntry): arg is { comment: string } {
@@ -29,13 +32,13 @@ class ConsoleUtils {
     return ShellQuote.parse(str as string)
       .filter(arg => !this.hasComment(arg))
       .map(arg => {
-        let ret = `${arg}`;
         if (this.hasPattern(arg)) {
-          ret = arg.pattern;
-        } else if (this.hasOp(arg)) {
-          ret = arg.op;
+          return arg.pattern;
         }
-        return ret;
+        if (this.hasOp(arg)) {
+          return arg.op;
+        }
+        return `${arg}`;
       });
   }
 
@@ -53,22 +56,24 @@ class ConsoleUtils {
   }
 
   static defaultHost(): string {
-    let defaultHost = null;
+    let defaultHost = window.location.hostname;
     const apiUrl = process.env.REACT_APP_CORE_API_URL;
     if (apiUrl != null) {
-      const url = new URL(apiUrl);
-      defaultHost = url.hostname;
-    } else {
-      defaultHost = window.location.hostname;
+      try {
+        const url = new URL(apiUrl);
+        defaultHost = url.hostname;
+      } catch (error: unknown) {
+        log.error('API_URL failed', error);
+      }
     }
     return defaultHost;
   }
 
-  static isTableType(type: unknown): boolean {
+  static isTableType(type: VariableTypeUnion): boolean {
     return type === dh.VariableType.TABLE || type === dh.VariableType.TREETABLE;
   }
 
-  static isWidgetType(type: unknown): boolean {
+  static isWidgetType(type: VariableTypeUnion): boolean {
     return (
       type === dh.VariableType.FIGURE ||
       type === dh.VariableType.OTHERWIDGET ||
@@ -76,15 +81,15 @@ class ConsoleUtils {
     );
   }
 
-  static isOpenableType(type: unknown): boolean {
+  static isOpenableType(type: VariableTypeUnion): boolean {
     return ConsoleUtils.isTableType(type) || ConsoleUtils.isWidgetType(type);
   }
 
-  static isFigureType(type: unknown): boolean {
+  static isFigureType(type: VariableTypeUnion): boolean {
     return type === dh.VariableType.FIGURE;
   }
 
-  static isPandas(type: unknown): boolean {
+  static isPandas(type: VariableTypeUnion): boolean {
     return type === dh.VariableType.PANDAS;
   }
 }

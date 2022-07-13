@@ -28,7 +28,8 @@ import { assertNotNull, TextUtils } from '@deephaven/utils';
 
 interface CsvOverlayProps {
   allowZip: boolean;
-  onFileOpened: (file: File | null) => void;
+  onFileOpened: (file: File) => void;
+  onCancel: () => void;
   onPaste: (clipText: string) => void;
   clearDragError: () => void;
   dragError: string | null;
@@ -169,10 +170,10 @@ class CsvOverlay extends Component<CsvOverlayProps, CsvOverlayState> {
   }
 
   unstageFile(event: MouseEvent<HTMLButtonElement>): void {
-    const { onFileOpened } = this.props;
+    const { onCancel } = this.props;
     event.stopPropagation();
     event.preventDefault();
-    onFileOpened(null);
+    onCancel();
     this.setState({
       selectedFileName: '',
       dropError: null,
