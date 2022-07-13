@@ -442,7 +442,7 @@ class IrisGridRenderer extends GridRenderer {
     }
 
     const text = model.textForColumnHeader(modelColumn);
-    if (!text) {
+    if (text === undefined) {
       return;
     }
 

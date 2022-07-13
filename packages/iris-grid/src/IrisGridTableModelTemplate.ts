@@ -809,6 +809,7 @@ class IrisGridTableModelTemplate<
     }
 
     const originalGroupMap = new Map(groups.map(group => [group.name, group]));
+    const seenChildren = new Set<string>();
 
     const addGroup = (group: ColumnGroup): ColumnHeaderGroup => {
       const { name } = group;
@@ -823,40 +824,49 @@ class IrisGridTableModelTemplate<
         return existingGroup;
       }
 
-      const groupWithDepth = new ColumnHeaderGroup({ ...group, depth: 1 });
+      const childIndexes: ColumnHeaderGroup['childIndexes'] = [];
+      let depth = 1;
 
       group.children.forEach(childName => {
-        if (this.columnHeaderParentMap.has(childName)) {
+        if (seenChildren.has(childName)) {
           throw new Error(
             `Column group child ${childName} specified in multiple groups`
           );
         }
-        this.columnHeaderParentMap.set(childName, groupWithDepth);
+        seenChildren.add(childName);
 
         const childGroup = originalGroupMap.get(childName);
         const childIndex = this.getColumnIndexByName(childName);
         if (childGroup) {
+          // Adding another column header group
           const addedGroup = addGroup(childGroup);
-          groupWithDepth.childIndexes.push(addedGroup.childIndexes.flat());
-          groupWithDepth.depth = Math.max(
-            groupWithDepth.depth,
-            addedGroup.depth + 1
-          );
+          childIndexes.push(addedGroup.childIndexes.flat());
+          depth = Math.max(depth, addedGroup.depth + 1);
         } else if (childIndex != null) {
-          groupWithDepth.childIndexes.push(childIndex);
-          groupWithDepth.depth = Math.max(groupWithDepth.depth, 1);
+          // Adding a base column
+          childIndexes.push(childIndex);
+          depth = Math.max(depth, 1);
         } else {
           throw new Error(`Unknown child ${childName} in group ${name}`);
         }
-
-        this.columnHeaderGroupMap.set(name, groupWithDepth);
       });
+
+      const columnHeaderGroup = new ColumnHeaderGroup({
+        ...group,
+        depth,
+        childIndexes,
+      });
+
+      this.columnHeaderGroupMap.set(name, columnHeaderGroup);
+      group.children.forEach(childName =>
+        this.columnHeaderParentMap.set(childName, columnHeaderGroup)
+      );
 
       this.columnHeaderMaxDepth = Math.max(
         this.columnHeaderMaxDepth,
-        groupWithDepth.depth + 1
+        columnHeaderGroup.depth + 1
       );
-      return groupWithDepth;
+      return columnHeaderGroup;
     };
 
     const groupNames = new Set();

@@ -20,23 +20,26 @@ export default class ColumnHeaderGroup implements IColumnHeaderGroup {
 
   color?: string;
 
-  childIndexes: (ModelIndex | ModelIndex[])[] = [];
+  childIndexes: (ModelIndex | ModelIndex[])[];
 
   constructor({
     name,
     children,
     color,
     depth,
+    childIndexes,
   }: {
     name: string;
     children: string[];
     color?: string;
     depth: number;
+    childIndexes: (ModelIndex | ModelIndex[])[];
   }) {
     this.name = name;
     this.children = children;
     this.color = color;
     this.depth = depth;
+    this.childIndexes = childIndexes;
   }
 
   getVisibleRange = memoizeOne(

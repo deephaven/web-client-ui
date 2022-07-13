@@ -127,13 +127,9 @@ class GridColumnMoveMouseHandler extends GridMouseHandler {
 
   private initialGridPoint?: GridPoint;
 
-  private isDragging = false;
-
   private scrollingInterval?: number;
 
   private scrollingDirection?: 'left' | 'right';
-
-  private draggingDirection?: 'left' | 'right';
 
   private draggingColumn: DraggingColumn | null = null;
 
@@ -255,7 +251,6 @@ class GridColumnMoveMouseHandler extends GridMouseHandler {
     const { rowHeaderWidth } = metrics;
 
     this.initialGridPoint = gridPoint;
-    this.isDragging = false;
     this.draggingColumn = null;
     this.cursor = null;
 
@@ -363,11 +358,6 @@ class GridColumnMoveMouseHandler extends GridMouseHandler {
      * At this point, we have determined we are actually dragging a column
      */
     this.cursor = 'move';
-    if (event.movementX !== 0) {
-      this.draggingDirection = event.movementX < 0 ? 'left' : 'right';
-    } else {
-      this.draggingDirection = undefined;
-    }
 
     this.moveDraggingColumn(gridPoint, grid, event.movementX);
 
@@ -511,16 +501,19 @@ class GridColumnMoveMouseHandler extends GridMouseHandler {
       return;
     }
 
-    movedColumns = [...movedColumns, columnMove];
+    movedColumns =
+      typeof columnMove.from === 'number'
+        ? GridUtils.moveItem(columnMove.from, columnMove.to, movedColumns)
+        : GridUtils.moveRange(columnMove.from, columnMove.to, movedColumns);
 
-    const newDraggingRange = GridUtils.applyItemMoves(
-      draggingColumn.range[0],
-      draggingColumn.range[1],
-      [columnMove]
-    );
+    const moveDistance = columnMove.to - draggingColumn.range[0];
+    const newDraggingRange: BoundedAxisRange = [
+      draggingColumn.range[0] + moveDistance,
+      draggingColumn.range[1] + moveDistance,
+    ];
 
     this.draggingColumn = {
-      range: newDraggingRange[0],
+      range: newDraggingRange,
       depth: this.draggingColumn.depth,
     };
 
