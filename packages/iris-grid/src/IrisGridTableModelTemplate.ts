@@ -600,12 +600,21 @@ class IrisGridTableModelTemplate<
   getColumnHeaderGroup(
     modelIndex: ModelIndex,
     depth: number
-  ): IColumnHeaderGroup | null {
+  ): IColumnHeaderGroup | undefined {
     const group = this.columnAtDepth(modelIndex, depth);
     if (isColumnHeaderGroup(group)) {
       return group;
     }
-    return null;
+    return undefined;
+  }
+
+  getColumnHeaderParentGroup(
+    modelIndex: ModelIndex,
+    depth: number
+  ): IColumnHeaderGroup | undefined {
+    return this.columnHeaderParentMap.get(
+      this.columnAtDepth(modelIndex, depth)?.name ?? ''
+    );
   }
 
   columnAtDepth(
@@ -1524,120 +1533,6 @@ class IrisGridTableModelTemplate<
       return false;
     }
     return !this.isKeyColumn(modelIndex);
-  }
-
-  /**
-   * Checks if a column can be moved to a specific index
-   * Columns being dragged outside of their group cannot be moved
-   * @param fromIndex The index to move from
-   * @param toIndex The index to move to
-   * @param depth The depth the movement is occurring at
-   * @returns If the column can be moved to the given index at the given depth
-   */
-  isColumnMovableTo(
-    fromIndex: ModelIndex,
-    toIndex: ModelIndex,
-    depth: number
-  ): boolean {
-    if (
-      !this.isColumnMovable(fromIndex, depth) ||
-      !this.isColumnMovable(toIndex, depth)
-    ) {
-      return false;
-    }
-
-    const fromParentGroup = this.columnHeaderParentMap.get(
-      this.columnAtDepth(fromIndex, depth)?.name ?? ''
-    );
-
-    if (!fromParentGroup) {
-      return true;
-    }
-    const toGroup = this.columnAtDepth(toIndex, fromParentGroup.depth);
-
-    // Can move the column here if the to group is in the parent of the from group
-    return fromParentGroup === toGroup;
-  }
-
-  /**
-   * Checks if a column can be dropped between 2 columns
-   * Assumes the left and right indexes are adjacent to each other
-   * Used to prevent dropping columns into groups they are not part of
-   * @param fromIndex The index to move from
-   * @param leftIndex The index on the left of the drop spot
-   * @param rightIndex The index on the right of the drop spot
-   * @param depth The depth the movement is occurring at
-   * @returns If the column can be dropped between the given indexes at the given depth
-   */
-  isColumnDroppableBetween(
-    fromIndex: ModelIndex,
-    leftIndex: ModelIndex,
-    rightIndex: ModelIndex,
-    depth: number
-  ): boolean {
-    if (
-      !this.isColumnMovable(fromIndex, depth) ||
-      (leftIndex != null &&
-        !this.isColumnMovable(leftIndex, depth) &&
-        rightIndex != null &&
-        !this.isColumnMovable(rightIndex, depth))
-    ) {
-      return false;
-    }
-
-    const fromParent = this.columnHeaderParentMap.get(
-      this.columnAtDepth(fromIndex, depth)?.name ?? ''
-    );
-    const leftParent = this.columnHeaderParentMap.get(
-      this.columnAtDepth(leftIndex, depth)?.name ?? ''
-    );
-    const rightParent = this.columnHeaderParentMap.get(
-      this.columnAtDepth(rightIndex, depth)?.name ?? ''
-    );
-
-    // Dropping a column not in a group between columns not in groups
-    if (!fromParent && !leftParent && !rightParent) {
-      return true;
-    }
-
-    // Dropping between 2 columns in the same group
-    if (leftParent != null && leftParent === rightParent) {
-      return fromParent === leftParent;
-    }
-
-    // Dropping a column in a group between columns in different groups
-    if (fromParent) {
-      const leftParentAtDepth = this.columnAtDepth(leftIndex, fromParent.depth);
-      const rightParentAtDepth = this.columnAtDepth(
-        rightIndex,
-        fromParent.depth
-      );
-
-      if (leftParentAtDepth === rightParentAtDepth) {
-        return fromParent === leftParentAtDepth;
-      }
-
-      return (
-        fromParent === leftParentAtDepth || fromParent === rightParentAtDepth
-      );
-    }
-
-    // Dropping a column not in a group between columns in differnt groups
-    // Only valid if the other columns are not in the same max group
-
-    let leftMaxParent = leftParent;
-    while (this.columnHeaderParentMap.has(leftMaxParent?.name ?? '')) {
-      leftMaxParent = this.columnHeaderParentMap.get(leftMaxParent?.name ?? '');
-    }
-
-    let rightMaxParent = rightParent;
-    while (this.columnHeaderParentMap.has(rightMaxParent?.name ?? '')) {
-      rightMaxParent = this.columnHeaderParentMap.get(
-        rightMaxParent?.name ?? ''
-      );
-    }
-
-    return leftMaxParent !== rightMaxParent;
   }
 
   isKeyColumn(x: ModelIndex): boolean {

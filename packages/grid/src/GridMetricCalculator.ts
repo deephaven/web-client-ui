@@ -299,15 +299,27 @@ export class GridMetricCalculator {
       visibleColumnWidths
     );
 
-    const columnWidthValues = Array.from(visibleColumnWidths.values());
-    const rowHeightValues = Array.from(visibleRowHeights.values());
-    const maxX = columnWidthValues.reduce((x, w) => x + w, 0) - leftOffset;
-    const maxY = rowHeightValues.reduce((y, h) => y + h, 0) - topOffset;
-
+    const floatingTopHeight = this.getFloatingTopHeight(
+      state,
+      visibleRowHeights
+    );
     const floatingBottomHeight = this.getFloatingBottomHeight(
       state,
       visibleRowHeights
     );
+    const floatingLeftWidth = this.getFloatingLeftWidth(
+      state,
+      visibleColumnWidths
+    );
+    const floatingRightWidth = this.getFloatingRightWidth(
+      state,
+      visibleColumnWidths
+    );
+
+    const columnWidthValues = Array.from(visibleColumnWidths.values());
+    const rowHeightValues = Array.from(visibleRowHeights.values());
+    const maxX = columnWidthValues.reduce((x, w) => x + w, 0) - leftOffset;
+    const maxY = rowHeightValues.reduce((y, h) => y + h, 0) - topOffset;
 
     const lastLeft = this.getLastLeft(
       state,
@@ -469,19 +481,6 @@ export class GridMetricCalculator {
             gridX
           )
         : right;
-
-    const floatingTopHeight = this.getFloatingTopHeight(
-      state,
-      visibleRowHeights
-    );
-    const floatingLeftWidth = this.getFloatingLeftWidth(
-      state,
-      visibleColumnWidths
-    );
-    const floatingRightWidth = this.getFloatingRightWidth(
-      state,
-      visibleColumnWidths
-    );
 
     const {
       fontWidths,

@@ -163,35 +163,6 @@ abstract class GridModel<
   }
 
   /**
-   * Checks if a column can be moved to a specific index
-   * @param fromIndex The index to move from
-   * @param toIndex The index to move to
-   * @param depth The depth the movement is occurring at
-   * @returns If the column can be moved to the given index at the given depth
-   */
-  isColumnMovableTo(column: ModelIndex, to: ModelIndex, depth = 0): boolean {
-    return true;
-  }
-
-  /**
-   * Checks if a column can be dropped between 2 columns
-   * Assumes the left and right indexes are adjacent to each other
-   * @param fromIndex The index to move from
-   * @param leftIndex The index on the left of the drop spot
-   * @param rightIndex The index on the right of the drop spot
-   * @param depth The depth the movement is occurring at
-   * @returns If the column can be dropped between the given indexes at the given depth
-   */
-  isColumnDroppableBetween(
-    column: ModelIndex,
-    left: ModelIndex | null,
-    right: ModelIndex | null,
-    depth = 0
-  ): boolean {
-    return true;
-  }
-
-  /**
    * @param row Row to check
    * @returns True if the row is movable
    */
@@ -202,8 +173,15 @@ abstract class GridModel<
   getColumnHeaderGroup(
     modelIndex: ModelIndex,
     depth: number
-  ): IColumnHeaderGroup | null {
-    return null;
+  ): IColumnHeaderGroup | undefined {
+    return undefined;
+  }
+
+  getColumnHeaderParentGroup(
+    modelIndex: ModelIndex,
+    depth: number
+  ): IColumnHeaderGroup | undefined {
+    return undefined;
   }
 }
 
