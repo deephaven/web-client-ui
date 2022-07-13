@@ -55,7 +55,7 @@ class DefaultLogger extends Logger {
     return this.modules[name];
   }
 
-  setLogLevel(level: number | undefined): void {
+  setLogLevel(level: number): void {
     super.setLogLevel(level);
 
     if (!this.modules) {

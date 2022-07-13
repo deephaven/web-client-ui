@@ -15,7 +15,9 @@ class Logger {
     this.debug = silent;
     this.debug2 = silent;
 
-    this.setLogLevel(level);
+    if (level !== undefined) {
+      this.setLogLevel(level);
+    }
   }
 
   name: string | null;
@@ -36,30 +38,19 @@ class Logger {
 
   debug2: (...data: unknown[]) => void;
 
-  setLogLevel(level?: number): void {
+  setLogLevel(level: number): void {
     this.level = level;
 
     this.error =
-      level != null && ERROR <= level
-        ? console.error.bind(console, this.prefix)
-        : silent;
+      level >= ERROR ? console.error.bind(console, this.prefix) : silent;
     this.warn =
-      level != null && WARN <= level
-        ? console.warn.bind(console, this.prefix)
-        : silent;
-    this.log =
-      level != null && INFO <= level
-        ? console.log.bind(console, this.prefix)
-        : silent;
+      level >= WARN ? console.warn.bind(console, this.prefix) : silent;
+    this.log = level >= INFO ? console.log.bind(console, this.prefix) : silent;
     this.info = this.log;
     this.debug =
-      level != null && DEBUG <= level
-        ? console.debug.bind(console, this.prefix)
-        : silent;
+      level >= DEBUG ? console.debug.bind(console, this.prefix) : silent;
     this.debug2 =
-      level != null && DEBUG2 <= level
-        ? console.debug.bind(console, this.prefix)
-        : silent;
+      level >= DEBUG2 ? console.debug.bind(console, this.prefix) : silent;
   }
 }
 
