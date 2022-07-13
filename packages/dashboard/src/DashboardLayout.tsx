@@ -6,7 +6,11 @@ import React, {
   useState,
 } from 'react';
 import PropTypes from 'prop-types';
-import GoldenLayout, { ItemConfigType } from '@deephaven/golden-layout';
+import GoldenLayout, {
+  Container,
+  EventEmitter,
+  ItemConfigType,
+} from '@deephaven/golden-layout';
 import Log from '@deephaven/log';
 import { usePrevious } from '@deephaven/react-hooks';
 import { Provider, useDispatch, useSelector, useStore } from 'react-redux';
@@ -101,7 +105,7 @@ export const DashboardLayout = ({
       );
 
       function renderComponent(
-        props: { glContainer: unknown; glEventHub: unknown },
+        props: { glContainer: Container; glEventHub: EventEmitter },
         ref: unknown
       ) {
         // Cast it to an `any` type so we can pass the ref in correctly.
