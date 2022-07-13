@@ -1433,7 +1433,10 @@ export class GridRenderer {
       headerSeparatorHoverColor,
     } = theme;
     const hiddenSeparatorHeight = columnHeaderHeight * 0.5;
-    const hiddenY = columnHeaderHeight * 0.5 - hiddenSeparatorHeight * 0.5;
+    const hiddenY =
+      columnHeaderHeight * (columnHeaderMaxDepth - 1) +
+      columnHeaderHeight * 0.5 -
+      hiddenSeparatorHeight * 0.5;
     const containsFrozenColumns = floatingLeftColumnCount > 0;
 
     context.save();
@@ -1523,10 +1526,6 @@ export class GridRenderer {
         depth != null &&
         (!isDragging || draggingColumnSeparator != null)
       ) {
-        context.translate(
-          0,
-          (columnHeaderMaxDepth - depth - 1) * columnHeaderHeight
-        );
         context.strokeStyle = headerSeparatorHoverColor;
 
         const columnX = getOrThrow(visibleColumnXs, highlightedSeparator);
@@ -1566,13 +1565,15 @@ export class GridRenderer {
 
         // column seperator hover line
         context.beginPath();
-        context.moveTo(x, 0);
-        context.lineTo(x, columnHeaderHeight - 1);
-        context.stroke();
-        context.translate(
-          0,
-          -1 * (columnHeaderMaxDepth - depth - 1) * columnHeaderHeight
+        context.moveTo(
+          x,
+          (columnHeaderMaxDepth - depth - 1) * columnHeaderHeight
         );
+        context.lineTo(
+          x,
+          (columnHeaderMaxDepth - depth) * columnHeaderHeight - 1
+        );
+        context.stroke();
       }
     }
 
@@ -1825,9 +1826,6 @@ export class GridRenderer {
 
     const maxWidth = columnWidth - headerHorizontalPadding * 2;
     const maxLength = maxWidth / fontWidth;
-    if (maxLength <= 0) {
-      return;
-    }
 
     const { backgroundColor, textColor = '#ffffff', separatorColor } =
       style ?? {};
@@ -1868,7 +1866,9 @@ export class GridRenderer {
 
     let renderText = columnText;
 
-    if (renderText.length > maxLength) {
+    if (maxLength <= 0) {
+      renderText = '';
+    } else if (renderText.length > maxLength) {
       renderText = `${renderText.substring(0, maxLength - 1)}…`;
     }
 

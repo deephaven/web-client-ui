@@ -48,7 +48,7 @@ abstract class GridModel<
    * Used for column grouping where columns at depth 0 are the base columns
    *
    * A grid with 1-level grouping would have a columnHeaderDepth of 2
-   * and columns at depths 0 and 1
+   * and column headers at depths 0 and 1
    */
   get columnHeaderMaxDepth(): number {
     return 1;

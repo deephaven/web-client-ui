@@ -1,4 +1,4 @@
-import { AxisRange } from '.';
+import { AxisRange } from './GridAxisRange';
 import GridMetrics, { ModelIndex, MoveOperation } from './GridMetrics';
 import GridRange, { GridRangeIndex } from './GridRange';
 import GridUtils, { BoundedAxisRange } from './GridUtils';

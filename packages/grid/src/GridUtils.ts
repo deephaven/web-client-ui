@@ -61,13 +61,7 @@ export class GridUtils {
   ): GridPoint {
     const column = GridUtils.getColumnAtX(x, metrics);
     const row = GridUtils.getRowAtY(y, metrics);
-    const { columnHeaderHeight, columnHeaderMaxDepth } = metrics;
-
-    let columnHeaderDepth: number | undefined;
-    if (row === null && y <= columnHeaderHeight * columnHeaderMaxDepth) {
-      columnHeaderDepth =
-        columnHeaderMaxDepth - Math.ceil(y / columnHeaderHeight);
-    }
+    const columnHeaderDepth = GridUtils.getColumnHeaderDepthAtY(y, metrics);
 
     return { x, y, row, column, columnHeaderDepth };
   }
@@ -106,6 +100,20 @@ export class GridUtils {
       columnWidth: columnWidth ?? null,
       rowHeight: rowHeight ?? null,
     };
+  }
+
+  static getColumnHeaderDepthAtY(
+    y: Coordinate,
+    metrics: GridMetrics
+  ): number | undefined {
+    const row = GridUtils.getRowAtY(y, metrics);
+    const { columnHeaderHeight, columnHeaderMaxDepth } = metrics;
+
+    if (row === null && y <= columnHeaderHeight * columnHeaderMaxDepth) {
+      return columnHeaderMaxDepth - Math.ceil(y / columnHeaderHeight);
+    }
+
+    return undefined;
   }
 
   /**
@@ -737,15 +745,22 @@ export class GridUtils {
     const movedItems: MoveOperation[] = [...oldMovedItems];
     const lastMovedItem = movedItems[movedItems.length - 1];
 
+    // Check if we should combine with the previous move
+    // E.g. 1 -> 2, 2 -> 3 can just be 1 -> 3
     if (
       lastMovedItem &&
       !isBoundedAxisRange(lastMovedItem.from) &&
       lastMovedItem.to === from
     ) {
-      movedItems[movedItems.length - 1] = {
-        ...lastMovedItem,
-        to,
-      };
+      // Remove the move if it is now a no-op
+      if (lastMovedItem.from === to) {
+        movedItems.pop();
+      } else {
+        movedItems[movedItems.length - 1] = {
+          ...lastMovedItem,
+          to,
+        };
+      }
     } else {
       movedItems.push({ from, to });
     }
@@ -776,18 +791,34 @@ export class GridUtils {
 
     const movedItems: MoveOperation[] = [...oldMovedItems];
     const lastMovedItem = movedItems[movedItems.length - 1];
+
+    // Check if we should combine with the previous move
+    // E.g. [1, 2] -> 2, [2, 3] -> 3 can just be [1, 2] -> 3
     if (
       lastMovedItem &&
       isBoundedAxisRange(lastMovedItem.from) &&
       lastMovedItem.from[1] - lastMovedItem.from[0] === from[1] - from[0] &&
       lastMovedItem.to === from[0]
     ) {
-      movedItems[movedItems.length - 1] = {
-        ...lastMovedItem,
-        to,
-      };
+      // Remove the move if it is now a no-op
+      if (lastMovedItem.from[0] === to) {
+        movedItems.pop();
+      } else {
+        movedItems[movedItems.length - 1] = {
+          ...lastMovedItem,
+          to,
+        };
+      }
     } else {
       movedItems.push({ from, to });
+    }
+
+    // Remove the move if it is now a no-op
+    if (
+      movedItems[movedItems.length - 1].from ===
+      movedItems[movedItems.length - 1].to
+    ) {
+      movedItems.pop();
     }
 
     return movedItems;
