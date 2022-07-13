@@ -259,13 +259,6 @@ class IrisGridProxyModel extends IrisGridModel {
   isColumnMovable: IrisGridModel['isColumnMovable'] = (...args) =>
     this.model.isColumnMovable(...args);
 
-  isColumnMovableTo: IrisGridModel['isColumnMovableTo'] = (...args) =>
-    this.model.isColumnMovableTo(...args);
-
-  isColumnDroppableBetween: IrisGridModel['isColumnDroppableBetween'] = (
-    ...args
-  ) => this.model.isColumnDroppableBetween(...args);
-
   isColumnFrozen(x: ModelIndex): boolean {
     return this.model.isColumnFrozen(x);
   }
@@ -387,6 +380,10 @@ class IrisGridProxyModel extends IrisGridModel {
 
   getColumnHeaderGroup: IrisGridModel['getColumnHeaderGroup'] = (...args) =>
     this.model.getColumnHeaderGroup(...args);
+
+  getColumnHeaderParentGroup: IrisGridModel['getColumnHeaderParentGroup'] = (
+    ...args
+  ) => this.model.getColumnHeaderParentGroup(...args);
 
   get columnHeaderMaxDepth(): number {
     return this.model.columnHeaderMaxDepth;
