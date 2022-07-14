@@ -1,5 +1,5 @@
 import { FileStat, WebDAVClient } from 'webdav/web';
-import LayoutStorage, { ExportedLayout } from './LayoutStorage';
+import LayoutStorage, { ExportedLayout } from '../main/LayoutStorage';
 
 export class WebdavLayoutStorage implements LayoutStorage {
   readonly client: WebDAVClient;
