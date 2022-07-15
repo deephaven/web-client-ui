@@ -13,7 +13,7 @@ import LayoutStorage, {
   ExportedLayoutV2,
   isLayoutV1,
   isLayoutV2,
-} from './LayoutStorage';
+} from '../storage/LayoutStorage';
 
 const log = Log.module('UserLayoutUtils');
 
