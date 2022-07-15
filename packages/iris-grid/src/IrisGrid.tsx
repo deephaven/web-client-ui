@@ -1,4 +1,5 @@
 import React, {
+  ChangeEvent,
   Component,
   CSSProperties,
   ReactElement,
@@ -387,6 +388,10 @@ export interface IrisGridState {
   showOverflowModal: boolean;
   overflowText: string;
   overflowButtonTooltipProps: CSSProperties | null;
+
+  selectGotoRowInput: boolean;
+  gotoRow: string;
+  gotoRowError: string;
   isGotoRowShown: boolean;
 }
 
@@ -591,7 +596,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     };
 
     this.toggleGotoRowAction = {
-      action: () => this.toggleGotoRow(),
+      action: () => this.toggleGotoRow(''),
       shortcut: SHORTCUTS.TABLE.GOTO_ROW,
     };
 
@@ -774,6 +779,9 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       overflowText: '',
       overflowButtonTooltipProps: null,
       isGotoRowShown: false,
+      gotoRow: '',
+      gotoRowError: '',
+      selectGotoRowInput: false,
     };
   }
 
@@ -2330,9 +2338,13 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     );
   }
 
-  toggleGotoRow(): void {
+  toggleGotoRow(row: string): void {
     const { isGotoRowShown } = this.state;
-    this.setState({ isGotoRowShown: !isGotoRowShown });
+    this.setState({
+      isGotoRowShown: !isGotoRowShown,
+      gotoRow: row,
+      selectGotoRowInput: true,
+    });
   }
 
   async commitPending(): Promise<void> {
@@ -3211,8 +3223,30 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     }
   );
 
-  handleGotoRowSelectedRowNumberChanged(rowValue: number): void {
-    this.grid?.setFocusRow(rowValue);
+  handleGotoRowSelectedRowNumberChanged(
+    event: ChangeEvent<HTMLInputElement>
+  ): void {
+    const { model } = this.props;
+    const { rowCount } = model;
+    const rowNumber = event.target.value;
+    this.setState({ gotoRow: rowNumber, selectGotoRowInput: false });
+    if (rowNumber === '') {
+      this.setState({ gotoRowError: '' });
+      return;
+    }
+    const rowInt = parseInt(event.target.value, 10);
+    if (rowInt > rowCount || rowInt < -rowCount) {
+      this.setState({ gotoRowError: 'Invalid row index' });
+    } else if (rowInt === 0) {
+      this.setState({ gotoRowError: '' });
+      this.grid?.setFocusRow(0);
+    } else if (rowInt < 0) {
+      this.setState({ gotoRowError: '' });
+      this.grid?.setFocusRow(rowInt + rowCount);
+    } else {
+      this.grid?.setFocusRow(rowInt - 1);
+      this.setState({ gotoRowError: '' });
+    }
   }
 
   getColumnTooltip(
@@ -3395,6 +3429,9 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       overflowText,
       overflowButtonTooltipProps,
       isGotoRowShown,
+      gotoRow,
+      gotoRowError,
+      selectGotoRowInput,
     } = this.state;
     if (!isReady) {
       return null;
@@ -3996,6 +4033,9 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
           <GotoRow
             model={model}
             isShown={isGotoRowShown}
+            gotoRow={gotoRow}
+            selectGotoRowInput={selectGotoRowInput}
+            gotoRowError={gotoRowError}
             onGotoRowNumberChanged={this.handleGotoRowSelectedRowNumberChanged}
             onClose={this.handleGotoRowClosed}
             onEntering={this.handleAnimationStart}
