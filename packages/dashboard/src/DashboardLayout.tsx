@@ -10,9 +10,11 @@ import GoldenLayout, {
   Container,
   EventEmitter,
   ItemConfigType,
+  ReactComponentConfig,
 } from '@deephaven/golden-layout';
 import Log from '@deephaven/log';
 import { usePrevious } from '@deephaven/react-hooks';
+import { RootState } from '@deephaven/redux';
 import { Provider, useDispatch, useSelector, useStore } from 'react-redux';
 import PanelManager, { ClosedPanels } from './PanelManager';
 import PanelErrorBoundary from './PanelErrorBoundary';
@@ -78,12 +80,15 @@ export const DashboardLayout = ({
 }: DashboardLayoutProps): JSX.Element => {
   const dispatch = useDispatch();
   const data =
-    useSelector(state => getDashboardData(state, id)) ?? EMPTY_OBJECT;
+    useSelector<RootState>(state => getDashboardData(state, id)) ??
+    EMPTY_OBJECT;
 
   const [isDashboardEmpty, setIsDashboardEmpty] = useState(false);
   const [isItemDragging, setIsItemDragging] = useState(false);
   const [lastConfig, setLastConfig] = useState<DashboardLayoutConfig>();
-  const [initialClosedPanels] = useState(data?.closed ?? []);
+  const [initialClosedPanels] = useState<ReactComponentConfig[] | undefined>(
+    (data as DashboardData)?.closed ?? []
+  );
   const [isDashboardInitialized, setIsDashboardInitialized] = useState(false);
 
   const hydrateMap = useMemo(() => new Map(), []);

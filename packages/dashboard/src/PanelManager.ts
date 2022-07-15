@@ -1,8 +1,12 @@
 import { ComponentType } from 'react';
-import GoldenLayout, { ReactComponentConfig } from '@deephaven/golden-layout';
+import GoldenLayout, {
+  ContentItem,
+  ItemConfigType,
+  ReactComponentConfig,
+} from '@deephaven/golden-layout';
 import Log from '@deephaven/log';
 import PanelEvent from './PanelEvent';
-import LayoutUtils from './layout/LayoutUtils';
+import LayoutUtils, { isReactComponentConfig } from './layout/LayoutUtils';
 import {
   isWrappedComponent,
   PanelComponent,
@@ -125,26 +129,27 @@ class PanelManager {
     return Array.from(this.openedMap.values());
   }
 
-  getOpenedPanelConfigs(): GoldenLayout.ReactComponentConfig[] {
+  getOpenedPanelConfigs(): (ItemConfigType | null)[] {
     return this.getOpenedPanels().map(panel => {
       const { glContainer } = panel.props;
       return LayoutUtils.getComponentConfigFromContainer(glContainer);
     });
   }
 
-  getOpenedPanelConfigsOfType(
-    typeString: string
-  ): GoldenLayout.ReactComponentConfig[] {
+  getOpenedPanelConfigsOfType(typeString: string): ReactComponentConfig[] {
     return this.getOpenedPanelConfigs().filter(
-      config => config != null && config.component === typeString
-    );
+      config =>
+        config != null &&
+        isReactComponentConfig(config) &&
+        config.component === typeString
+    ) as ReactComponentConfig[];
   }
 
   getOpenedPanelById(panelId: string): PanelComponent | undefined {
     return this.openedMap.get(panelId);
   }
 
-  getContainerByPanelId(panelId: string): GoldenLayout.Container {
+  getContainerByPanelId(panelId: string): ContentItem | null {
     const stack = LayoutUtils.getStackForConfig(this.layout.root, {
       id: panelId,
     });
@@ -200,8 +205,11 @@ class PanelManager {
     // Delete the entry before it's set to maintain correct ordering in the open panels map.
     // The last updated (focused) panel should be the last inserted.
     // Deleting the entry from the map directly instead of calling this.removePanel to skip the checks.
-    this.openedMap.delete(panelId);
-    this.openedMap.set(panelId, panel);
+    this.openedMap.delete(typeof panelId === 'string' ? panelId : panelId[0]);
+    this.openedMap.set(
+      typeof panelId === 'string' ? panelId : panelId[0],
+      panel
+    );
   }
 
   removePanel(panel: PanelComponent): void {
@@ -210,11 +218,16 @@ class PanelManager {
       log.error('removePanel Panel did not have an ID', panel);
       return;
     }
-    if (!this.openedMap.has(panelId)) {
+    if (
+      !this.openedMap.has(typeof panelId === 'string' ? panelId : panelId[0])
+    ) {
       log.error(`Missing panel ID ${panelId} in open panels map`);
       return;
     }
-    if (this.openedMap.get(panelId) !== panel) {
+    if (
+      this.openedMap.get(typeof panelId === 'string' ? panelId : panelId[0]) !==
+      panel
+    ) {
       // We mount a new panel before un-mounting the existing one
       // when replacing existing panels in openComponent/openComponentInStack.
       // Skip map delete if the panelId entry already refers to the new panel.
@@ -224,7 +237,7 @@ class PanelManager {
       return;
     }
     log.debug2(`Removing panel ID ${panelId} from open panels map`);
-    this.openedMap.delete(panelId);
+    this.openedMap.delete(typeof panelId === 'string' ? panelId : panelId[0]);
   }
 
   removeClosedPanelConfig(panelConfig: ClosedPanel): void {
@@ -262,7 +275,10 @@ class PanelManager {
    * @param {Object} panelConfig The config to hydrate and load
    * @param {Object} replaceConfig The config to place
    */
-  handleReopen(panelConfig: ClosedPanel, replaceConfig = null): void {
+  handleReopen(
+    panelConfig: ClosedPanel,
+    replaceConfig?: Partial<ItemConfigType>
+  ): void {
     log.debug2('Reopen:', panelConfig, replaceConfig);
 
     this.removeClosedPanelConfig(panelConfig);
@@ -306,11 +322,9 @@ class PanelManager {
 
   addClosedPanel(glContainer: GoldenLayout.Container): void {
     const config = LayoutUtils.getComponentConfigFromContainer(glContainer);
-    if (config) {
-      const dehydratedConfig = this.dehydrateComponent(
-        config.component,
-        config
-      );
+    let dehydratedConfig;
+    if (config && isReactComponentConfig(config)) {
+      dehydratedConfig = this.dehydrateComponent(config.component, config);
       if (dehydratedConfig) {
         this.closed.push(dehydratedConfig);
       }

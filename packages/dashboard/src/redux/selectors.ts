@@ -1,5 +1,5 @@
-import { DefaultRootState } from 'react-redux';
-import { ClosedPanels } from '../PanelManager';
+import { DashboardData, RootState } from '@deephaven/redux';
+import { ClosedPanels, OpenedPanelMap } from '../PanelManager';
 
 const EMPTY_MAP = new Map();
 
@@ -7,24 +7,26 @@ const EMPTY_OBJECT = Object.freeze({});
 
 const EMPTY_ARRAY = Object.freeze([]);
 
+type Selector<R> = (state: RootState) => R;
+
 /**
  * Retrieve the data for all dashboards
  * @param store The redux store
  * @returns Property mapping dashboard ID to data for that dashboard
  */
-export const getAllDashboardsData = <T>(store: { dashboardData: T }): T =>
-  store.dashboardData;
+export const getAllDashboardsData: Selector<
+  Record<string, DashboardData>
+> = store => store.dashboardData;
 
 /**
  * @param {Store} store The redux store
  * @param dashboardId The dashboard ID to get data for
  * @returns The data object for the dashboard with the specified ID
  */
-export const getDashboardData = <T>(
-  store: { dashboard: T },
+export const getDashboardData = (
+  store: RootState,
   dashboardId: string
-): Record<string, unknown> =>
-  getAllDashboardsData(store)[dashboardId] ?? EMPTY_OBJECT;
+): DashboardData => getAllDashboardsData(store)[dashboardId] ?? EMPTY_OBJECT;
 
 /**
  * @param {Store} store The redux store
@@ -32,14 +34,19 @@ export const getDashboardData = <T>(
  * @returns The ClosedPanel array of panels that were previously closed/dehydrated
  */
 export const getClosedPanelsForDashboard = (
-  store,
+  store: RootState,
   dashboardId: string
-): ClosedPanels => getDashboardData(store, dashboardId).closed ?? EMPTY_ARRAY;
+): ClosedPanels =>
+  (getDashboardData(store, dashboardId).closed ?? EMPTY_ARRAY) as ClosedPanels;
 
 /**
  * @param {Store} store The redux store
  * @param {string} dashboardId The dashboard ID to get data for
  * @returns {OpenedPanelMap} The map of panel IDs to components of all currently open components
  */
-export const getOpenedPanelMapForDashboard = (store, dashboardId: string) =>
-  getDashboardData(store, dashboardId).openedMap ?? EMPTY_MAP;
+export const getOpenedPanelMapForDashboard = (
+  store: RootState,
+  dashboardId: string
+): OpenedPanelMap =>
+  (getDashboardData(store, dashboardId).openedMap ??
+    EMPTY_MAP) as OpenedPanelMap;

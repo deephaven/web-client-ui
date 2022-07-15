@@ -1,17 +1,57 @@
-import { PanelComponent } from './../DashboardPlugin';
 import deepEqual from 'deep-equal';
 import shortid from 'shortid';
 import isMatch from 'lodash.ismatch';
 import Log from '@deephaven/log';
-import GoldenLayout, { Config, Container, ContentItem, ItemConfigType } from '@deephaven/golden-layout';
+import GoldenLayout, {
+  ComponentConfig,
+  Config,
+  Container,
+  ContentItem,
+  ItemConfig,
+  ItemConfigType,
+  ReactComponentConfig,
+  Tab,
+} from '@deephaven/golden-layout';
+import { assertNotNull } from '@deephaven/utils';
 import GoldenLayoutThemeExport from './GoldenLayoutThemeExport';
 import { DashboardLayoutConfig } from '../DashboardLayout';
-import { Component, DOMElement } from 'react';
+import { PanelComponent, PanelConfig } from '../DashboardPlugin';
 
 const log = Log.module('LayoutUtils');
 
 type LayoutConfig = { id?: string; component?: string };
 
+export type StackItemConfig = ReactComponentConfig & {
+  activeItemIndex?: number;
+};
+
+export function isReactComponentConfig(
+  config: ItemConfigType
+): config is ReactComponentConfig {
+  return (config as ReactComponentConfig).component !== undefined;
+}
+
+function isComponentConfig(config: ItemConfigType): config is ComponentConfig {
+  return (config as ComponentConfig).componentName !== undefined;
+}
+
+function isHTMLElement(element: Element): element is HTMLElement {
+  return (element as HTMLElement).focus !== undefined;
+}
+
+function assertReactComponentConfig(
+  config: ItemConfigType
+): asserts config is ReactComponentConfig {
+  if (!isReactComponentConfig(config)) {
+    throw new Error('config is not react component config');
+  }
+}
+
+function isStackItemConfig(
+  config: ReactComponentConfig
+): config is StackItemConfig {
+  return (config as StackItemConfig).activeItemIndex !== undefined;
+}
 class LayoutUtils {
   static DEFAULT_FOCUS_SELECTOR = 'input, select, textarea, button';
 
@@ -23,7 +63,9 @@ class LayoutUtils {
     }
     // Find the tab with the specified table and activate it
     const contentItem = LayoutUtils.getContentItemInStack(stack, config);
-    stack.setActiveContentItem(contentItem);
+    if (contentItem) {
+      stack.setActiveContentItem(contentItem);
+    }
   }
 
   /**
@@ -144,7 +186,7 @@ class LayoutUtils {
    */
   static getStackForRoot(
     root: ContentItem,
-    config: LayoutConfig,
+    config: Partial<ReactComponentConfig>,
     createIfNecessary = true,
     matchComponentType = true,
     allowEmptyStack = true
@@ -224,15 +266,21 @@ class LayoutUtils {
    * @param {(name: string, config: PanelConfig) => PanelConfig | null}
    * @returns {Array} Dehydrated config
    */
-  static dehydrateLayoutConfig(config, dehydrateComponent: (name: string, config: T)) {
+  static dehydrateLayoutConfig(
+    config: ItemConfigType[],
+    dehydrateComponent: (
+      componentName: string,
+      config: ItemConfigType
+    ) => PanelConfig
+  ): (PanelConfig | ItemConfig)[] {
     if (!config || !config.length) {
       return [];
     }
-    const dehydratedConfig = [];
+    const dehydratedConfig: (PanelConfig | ItemConfig)[] = [];
 
     for (let i = 0; i < config.length; i += 1) {
       const itemConfig = config[i];
-      const { component, content } = itemConfig;
+      const { component, content } = itemConfig as ReactComponentConfig;
       if (component) {
         const dehydratedComponent = dehydrateComponent(component, itemConfig);
         if (dehydratedComponent) {
@@ -279,20 +327,23 @@ class LayoutUtils {
    *
    * item id is also removed
    */
-  static dropLayoutMinorChange(config: ItemConfigType[]) {
+  static dropLayoutMinorChange(config: DashboardLayoutConfig): void {
     for (let i = 0; i < config.length; i += 1) {
       const itemConfig = config[i];
-      const { component, content, activeItemIndex } = itemConfig;
-      if (content) {
-        if (activeItemIndex || activeItemIndex === 0) {
-          delete itemConfig.activeItemIndex;
-        }
-        LayoutUtils.dropLayoutMinorChange(content);
-      } else if (component === 'IrisGridPanel') {
-        if (itemConfig.props.panelState) {
-          delete itemConfig.id;
-          itemConfig.props.panelState.irisGridState.sorts = [];
-          itemConfig.props.panelState.irisGridState.quickFilters = [];
+
+      if (isReactComponentConfig(itemConfig)) {
+        const { component, content } = itemConfig;
+        if (content) {
+          if (isStackItemConfig(itemConfig)) {
+            delete itemConfig.activeItemIndex;
+          }
+          LayoutUtils.dropLayoutMinorChange(content);
+        } else if (component === 'IrisGridPanel') {
+          if (itemConfig.props.panelState) {
+            delete itemConfig.id;
+            itemConfig.props.panelState.irisGridState.sorts = [];
+            itemConfig.props.panelState.irisGridState.quickFilters = [];
+          }
         }
       }
     }
@@ -304,7 +355,11 @@ class LayoutUtils {
    * @param layout2 Another Golden layout config object
    * @param major When true, will ignore "minor" property differences (eg. sorts)
    */
-  static isEqual(layout1:DashboardLayoutConfig, layout2: DashboardLayoutConfig, major = false): boolean {
+  static isEqual(
+    layout1: DashboardLayoutConfig,
+    layout2: DashboardLayoutConfig,
+    major = false
+  ): boolean {
     if (major) {
       const layout1Clone = LayoutUtils.cloneLayout(layout1);
       const layout2Clone = LayoutUtils.cloneLayout(layout2);
@@ -325,7 +380,13 @@ class LayoutUtils {
    * @param {(name: string, config: PanelProps) => PanelProps} hydrateComponent Function to hydrate the component
    * @returns {Array} Hydrated config
    */
-  static hydrateLayoutConfig(config: GoldenLayout.Config, hydrateComponent) {
+  static hydrateLayoutConfig(
+    config: (PanelConfig | ItemConfig)[],
+    hydrateComponent: (
+      componentName: string,
+      config: PanelConfig | ItemConfig
+    ) => ReactComponentConfig
+  ): DashboardLayoutConfig {
     if (!config || !config.length) {
       return [];
     }
@@ -333,6 +394,7 @@ class LayoutUtils {
 
     for (let i = 0; i < config.length; i += 1) {
       const itemConfig = config[i];
+      assertReactComponentConfig(itemConfig);
       const { component, content, props = {}, type } = itemConfig;
       if (type === 'react-component') {
         hydratedConfig.push({
@@ -345,25 +407,28 @@ class LayoutUtils {
           content,
           hydrateComponent
         );
+        const reactConfig: ReactComponentConfig = itemConfig;
         if (
-          itemConfig.activeItemIndex != null &&
-          itemConfig.activeItemIndex >= contentConfig.length
+          isStackItemConfig(reactConfig) &&
+          reactConfig.activeItemIndex != null &&
+          reactConfig.activeItemIndex >= contentConfig.length
         ) {
           log.warn(
             'Fixing bad activeItemIndex!',
-            itemConfig.activeItemIndex,
-            itemConfig
+            reactConfig.activeItemIndex,
+            reactConfig
           );
-          itemConfig.activeItemIndex = 0;
+          reactConfig.activeItemIndex = 0;
         }
         hydratedConfig.push({
-          ...itemConfig,
+          ...reactConfig,
           content: contentConfig,
         });
       } else {
         hydratedConfig.push(itemConfig);
       }
     }
+
     return hydratedConfig;
   }
 
@@ -371,13 +436,13 @@ class LayoutUtils {
    * Opens a component. It will try and open the component in an existing stack of the same component.
    * If `replaceExisting` is true and there is a component found with the same `config.id`, it will replace that component with this one.
    * If `allowStack` is true and there is a component of the same type found, it will open in that stack (potentially covering up a panel).
-   * @param {ContentItem} root The GoldenLayout root to open the component in
-   * @param {Config} config The component config definition to open
-   * @param {Boolean} replaceExisting Whether it should replace the existing one matching component type and id, or open a new one
-   * @param {Config} replaceConfig The component config to replace
-   * @param {Boolean} createNewStack True to force opening in a new stack, false to try and open in a stack with the same type of component.
-   * @param {String} focusElement The element to focus on
-   * @param {MouseEvent} dragEvent Whether component is being created with a drag, mouse event is initial position for drag proxy
+   * @param root The GoldenLayout root to open the component in
+   * @param config The component config definition to open
+   * @param replaceExisting Whether it should replace the existing one matching component type and id, or open a new one
+   * @param replaceConfig The component config to replace
+   * @param createNewStack True to force opening in a new stack, false to try and open in a stack with the same type of component.
+   * @param focusElement The element to focus on
+   * @param dragEvent Whether component is being created with a drag, mouse event is initial position for drag proxy
    */
   static openComponent({
     root,
@@ -387,10 +452,18 @@ class LayoutUtils {
     createNewStack = false,
     focusElement = undefined,
     dragEvent = undefined,
-  }: {root?: ContentItem; config?: Partial<ItemConfigType>; replaceExisting?: boolean; replaceConfig?:Partial<ItemConfigType>; createNewStack?: boolean; focusElement?: string; dragEvent?: MouseEvent} = {}) {
+  }: {
+    root?: ContentItem;
+    config?: ReactComponentConfig;
+    replaceExisting?: boolean;
+    replaceConfig?: Partial<ItemConfigType>;
+    createNewStack?: boolean;
+    focusElement?: string;
+    dragEvent?: MouseEvent;
+  } = {}): void {
     // attempt to retain focus after dom manipulation, which can break focus
     const maintainFocusElement = document.activeElement;
-    const config: Partial<ItemConfigType> = { ...configParam };
+    const config = { ...configParam } as ReactComponentConfig;
 
     if (!config.id) {
       config.id = shortid.generate();
@@ -405,10 +478,12 @@ class LayoutUtils {
       id: config.id,
       component: config.component,
     };
+    assertNotNull(root);
     const stack = createNewStack
       ? LayoutUtils.addStack(root)
       : LayoutUtils.getStackForRoot(root, searchConfig);
 
+    assertNotNull(stack);
     const oldContentItem = LayoutUtils.getContentItemInStack(
       stack,
       searchConfig
@@ -416,7 +491,9 @@ class LayoutUtils {
 
     if (focusElement) {
       // We need to listen for when the stack is created
-      const onComponentCreated = event => {
+      const onComponentCreated = (event: {
+        origin: { element: Element[] };
+      }) => {
         log.debug('Component created, focusing element', focusElement);
 
         stack.off('componentCreated', onComponentCreated);
@@ -443,7 +520,11 @@ class LayoutUtils {
       stack.addChild(config);
     }
 
-    if (!focusElement && maintainFocusElement) {
+    if (
+      !focusElement &&
+      maintainFocusElement &&
+      isHTMLElement(maintainFocusElement)
+    ) {
       maintainFocusElement.focus();
     }
   }
@@ -451,11 +532,15 @@ class LayoutUtils {
   /**
    * Opens a component in an given stack.
    * If `replaceExisting` is true and there is a component found with the same `config.id`, it will replace that component with this one
-   * @param {ContentItem} stack The GoldenLayout stack to open the component in
-   * @param {Config} config The component config definition to open
-   * @param {Boolean} replaceExisting Whether it should replace the existing one matching component type and id, or open a new one
+   * @param stack The GoldenLayout stack to open the component in
+   * @param config The component config definition to open
+   * @param replaceExisting Whether it should replace the existing one matching component type and id, or open a new one
    */
-  static openComponentInStack(stack: ContentItem, config: ItemConfigType, replaceExisting = true) {
+  static openComponentInStack(
+    stack: ContentItem,
+    config: ItemConfigType,
+    replaceExisting = true
+  ): void {
     const maintainFocusElement = document.activeElement; // attempt to retain focus after dom manipulation, which can break focus
 
     const searchConfig = { id: config.id };
@@ -478,7 +563,9 @@ class LayoutUtils {
       stack.addChild(config);
     }
 
-    if (maintainFocusElement && (maintainFocusElement as HTMLElement).focus) (maintainFocusElement as HTMLElement).focus();
+    if (maintainFocusElement && isHTMLElement(maintainFocusElement)) {
+      maintainFocusElement.focus();
+    }
   }
 
   /**
@@ -486,7 +573,7 @@ class LayoutUtils {
    * @param {ContentItem} root The GoldenLayout root to search and close the component in
    * @param {Config} config The GoldenLayout component config definition to close, eg. { component: 'IrisGridPanel', id: 'table-t' }
    */
-  static closeComponent(root: ContentItem, config) {
+  static closeComponent(root: ContentItem, config: LayoutConfig): void {
     const stack = LayoutUtils.getStackForRoot(
       root,
       config,
@@ -504,18 +591,32 @@ class LayoutUtils {
     // Same component was used to get the stack above, so getContentItemInStack shouldn't return null
     const oldContentItem = LayoutUtils.getContentItemInStack(stack, config);
     const maintainFocusElement = document.activeElement; // attempt to retain focus after dom manipulation, which can break focus
-    if (oldContentItem.isComponent) {
-      oldContentItem.container.close();
-    } else {
-      stack.removeChild(oldContentItem);
+    if (oldContentItem) {
+      if (oldContentItem.isComponent) {
+        // container property exists on a contentItem if contentItem is a component,
+        // however, this is not included in the types for a contentitem, thus the casting
+        ((oldContentItem as unknown) as {
+          container: { close: () => void };
+        }).container.close();
+      } else {
+        stack.removeChild(oldContentItem);
+      }
     }
     // if focused element is still in dom restore focus, note it could have been in the removed panel so check first
-    if (maintainFocusElement && document.contains(maintainFocusElement)) {
+    if (
+      maintainFocusElement &&
+      document.contains(maintainFocusElement) &&
+      isHTMLElement(maintainFocusElement)
+    ) {
       maintainFocusElement.focus();
     }
   }
 
-  static renameComponent(root, config, newTitle) {
+  static renameComponent(
+    root: ContentItem,
+    config: ItemConfigType,
+    newTitle: string
+  ): void {
     const stack = LayoutUtils.getStackForRoot(root, config, false);
     if (!stack) {
       log.error('Could not find stack for config', config);
@@ -523,16 +624,21 @@ class LayoutUtils {
     }
     // Find the tab with the specified config and rename it
     const contentItem = LayoutUtils.getContentItemInStack(stack, config);
-    contentItem.setTitle(newTitle);
+    if (contentItem) {
+      contentItem.setTitle(newTitle);
+    }
   }
 
   /**
    * Create a component clone based on the given config
-   * @param {ContentItem} root The GoldenLayout root to clone the component in
-   * @param {Config} config The config to clone
-   * @returns {Config} Clone config
+   * @param root The GoldenLayout root to clone the component in
+   * @param config The config to clone
+   * @returns Clone config
    */
-  static cloneComponent(root: ContentItem, config) {
+  static cloneComponent(
+    root: ContentItem,
+    config: ReactComponentConfig
+  ): ReactComponentConfig | null {
     const stack = LayoutUtils.getStackForRoot(root, config, false);
     if (!stack) {
       log.error('Could not find stack for config', config);
@@ -559,14 +665,17 @@ class LayoutUtils {
    * @param {Object} config Panel config
    * @returns {Object} Panel state
    */
-  static getPanelComponentState(config) {
-    return (
-      // Fallback to props.panelState for uninitialized panels
-      config.componentState?.panelState ?? config.props?.panelState ?? null
-    );
+  static getPanelComponentState(config: ItemConfigType): unknown {
+    if (isComponentConfig(config)) {
+      return config.componentState?.panelState;
+    }
+    if (isReactComponentConfig(config)) {
+      return config.props?.panelState;
+    }
+    return null;
   }
 
-  static makeDefaultLayout() {
+  static makeDefaultLayout(): Config {
     return {
       dimensions: {
         headerHeight: GoldenLayoutThemeExport.tabHeight,
@@ -578,7 +687,7 @@ class LayoutUtils {
         showCloseIcon: false,
         constrainDragToContainer: false,
       },
-    };
+    } as Config;
   }
 
   /**
@@ -593,29 +702,34 @@ class LayoutUtils {
    * Gets the config for the panel component given a glContainer
    * @param {GlContainer} container The Golden Layout container to get the config for
    */
-  static getComponentConfigFromContainer(container: Container): ItemConfigType | null {
+  static getComponentConfigFromContainer(
+    container?: Container
+  ): ItemConfigType | null {
     if (container) {
       if (container.tab && container.tab.contentItem) {
         return container.tab.contentItem.config;
       }
 
       // If the container hasn't populated the tab yet, just get the config directly from the container
-      // eslint-disable-next-line no-underscore-dangle
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore private api usage
+      // eslint-disable-next-line no-underscore-dangle
       return container._config;
     }
 
     return null;
   }
 
-  static getTitleFromContainer(container: Container): string | null | undefined {
+  static getTitleFromContainer(
+    container: Container
+  ): string | null | undefined {
     if (container && container.tab && container.tab.contentItem) {
       return container.tab.contentItem.config.title;
     }
     return null;
   }
 
-  static getTitleFromTab(tab) {
+  static getTitleFromTab(tab: Tab): string | null | undefined {
     if (tab && tab.contentItem) {
       return tab.contentItem.config.title;
     }
@@ -627,7 +741,9 @@ class LayoutUtils {
    * @param {GlContainer} glContainer The container to get the panel ID for
    * @returns {string|null} Panel ID
    */
-  static getIdFromContainer(glContainer: Container): string |string[]| null | undefined{
+  static getIdFromContainer(
+    glContainer: Container
+  ): string | string[] | null | undefined {
     const config = LayoutUtils.getComponentConfigFromContainer(glContainer);
     if (config) {
       return config.id;
@@ -640,7 +756,9 @@ class LayoutUtils {
    * @param panel The panel to get the ID for
    * @returns Panel ID
    */
-  static getIdFromPanel(panel:PanelComponent) {
+  static getIdFromPanel(
+    panel: PanelComponent
+  ): string | string[] | null | undefined {
     const { glContainer } = panel.props;
     return LayoutUtils.getIdFromContainer(glContainer);
   }
@@ -650,23 +768,32 @@ class LayoutUtils {
    * @param panel Panel to get component name for
    * @returns Component name or null if unable to retrieve name
    */
-  static getComponentNameFromPanel(panel: PanelComponent) {
+  static getComponentNameFromPanel(panel: {
+    props: { glContainer: GoldenLayout.Container };
+  }): string | null {
     const { glContainer } = panel.props;
     const config = LayoutUtils.getComponentConfigFromContainer(glContainer);
-    return config?.component ?? null;
+    if (config) {
+      assertReactComponentConfig(config);
+      return config?.component ?? null;
+    }
+    return null;
   }
 
   /**
    * Get component name for wrapped and un-wrapped components
-   * @param {Component} component Component to get name for
-   * @returns {string} Component name
+   * @param component Component to get name for
+   * @returns Component name
    * @throws If displayName for the component is not defined
    */
-  static getComponentName(component) {
+  static getComponentName(component: {
+    displayName?: string;
+    WrappedComponent?: { displayName: string };
+  }): string {
     const name =
       component.WrappedComponent?.displayName ?? component.displayName;
     if (name == null) {
-      throw new Error('Component displayName not defined', component);
+      throw new Error(`Component displayName not defined ${component}`);
     }
     return name;
   }
@@ -674,11 +801,14 @@ class LayoutUtils {
   /**
    * Put focus on the first "input" element (input, button, select, textarea) within an element
    * If element is null or input element not found, does nothing
-   * @param {DOMElement} element The element to put focus in.
-   * @param {String} selector The first element matching this selector will be focused.
-   * @returns {DOMElement} The element that was focused, null if not focused
+   * @param element The element to put focus in.
+   * @param selector The first element matching this selector will be focused.
+   * @returns The element that was focused, null if not focused
    */
-  static focusElement(element: DOMElement, selector = LayoutUtils.DEFAULT_FOCUS_SELECTOR) {
+  static focusElement(
+    element: Element,
+    selector = LayoutUtils.DEFAULT_FOCUS_SELECTOR
+  ): Element | null {
     if (element == null) {
       return null;
     }
@@ -687,7 +817,9 @@ class LayoutUtils {
       return null;
     }
 
-    focusElement.focus();
+    if (isHTMLElement(focusElement)) {
+      focusElement.focus();
+    }
     return focusElement;
   }
 

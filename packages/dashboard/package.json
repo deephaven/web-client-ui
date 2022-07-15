@@ -31,6 +31,7 @@
   },
   "dependencies": {
     "@deephaven/components": "file:../components",
+    "@deephaven/utils": "file:../util",
     "@deephaven/golden-layout": "file:../golden-layout",
     "@deephaven/log": "file:../log",
     "@deephaven/react-hooks": "file:../react-hooks",
