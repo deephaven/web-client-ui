@@ -4,7 +4,7 @@ import { ERROR, WARN, INFO, DEBUG, DEBUG2 } from './LoggerLevel';
 const silent = () => undefined;
 
 class Logger {
-  constructor(name: string | null, level: number | undefined) {
+  constructor(name: string | null, level: number) {
     this.name = name;
     this.prefix = name ? `[${name}]` : ``;
 
@@ -14,17 +14,16 @@ class Logger {
     this.info = silent;
     this.debug = silent;
     this.debug2 = silent;
+    this.level = level;
 
-    if (level !== undefined) {
-      this.setLogLevel(level);
-    }
+    this.setLogLevel(level);
   }
 
   name: string | null;
 
   prefix: string;
 
-  level?: number;
+  level: number;
 
   error: (...data: unknown[]) => void;
 
