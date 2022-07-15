@@ -6,6 +6,7 @@ import {
   vsRemove,
   vsCheck,
   vsFilter,
+  vsReply,
   IconDefinition,
 } from '@deephaven/icons';
 import debounce from 'lodash.debounce';
@@ -65,6 +66,8 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
   static GROUP_HIDE_COLUMNS = ContextActions.groups.high + 25;
 
   static GROUP_FILTER = ContextActions.groups.high + 50;
+
+  static GROUP_GOTO = ContextActions.groups.high + 51;
 
   static GROUP_SORT = ContextActions.groups.high + 75;
 
@@ -433,6 +436,16 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
           disabled: boolean;
         };
 
+        const gotoRow = {
+          title: 'Go to',
+          icon: vsReply,
+          iconColor: filterIconColor,
+          shortcut: SHORTCUTS.TABLE.GOTO_ROW,
+          group: IrisGridContextMenuHandler.GROUP_GOTO,
+          order: 10,
+          action: () => this.irisGrid.handleGotoRowOpened(),
+        };
+
         if (value != null) {
           // Chars get treated like numbers in terms of which filters are available
           if (
@@ -512,6 +525,8 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
         if (andFilterMenu.actions != null && andFilterMenu.actions.length > 0) {
           actions.push(andFilterMenu);
         }
+
+        actions.push(gotoRow);
       }
 
       if (canCopy) {

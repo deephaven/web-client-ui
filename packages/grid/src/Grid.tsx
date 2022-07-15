@@ -1034,6 +1034,34 @@ class Grid extends PureComponent<GridProps, GridState> {
     });
   }
 
+  setFocusRow(focusedRow: number): void {
+    if (!this.metrics || !this.prevMetrics) {
+      return;
+    }
+
+    const { gridY, height, lastTop, userRowHeights, rowHeight } = this.metrics;
+
+    const tableHeight = height - gridY;
+
+    const halfViewportHeight =
+      Math.round(tableHeight / 2) +
+      (userRowHeights.get(focusedRow) ?? rowHeight);
+
+    const metricState = this.getMetricState();
+    const newTop = this.metricCalculator.getLastTop(
+      metricState,
+      focusedRow,
+      halfViewportHeight
+    );
+
+    this.setState({
+      top: Math.min(lastTop, newTop),
+      selectedRanges: [
+        new GridRange(null, focusedRow - 1, null, focusedRow - 1),
+      ],
+    });
+  }
+
   /**
    * Set the selection to the entire grid
    */

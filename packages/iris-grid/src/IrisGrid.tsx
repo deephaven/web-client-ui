@@ -50,6 +50,7 @@ import {
   vsEdit,
   vsFilter,
   vsMenu,
+  vsReply,
   vsRuby,
   vsSearch,
   vsSplitHorizontal,
@@ -140,11 +141,11 @@ import ConditionalFormattingMenu from './sidebar/conditional-formatting/Conditio
 
 import ConditionalFormatEditor from './sidebar/conditional-formatting/ConditionalFormatEditor';
 import IrisGridCellOverflowModal from './IrisGridCellOverflowModal';
+import GotoRow from './GotoRow';
 import {
   Aggregation,
   AggregationSettings,
 } from './sidebar/aggregations/Aggregations';
-
 import { ChartBuilderSettings } from './sidebar/ChartBuilder';
 import AggregationOperation from './sidebar/aggregations/AggregationOperation';
 import { UIRollupConfig } from './sidebar/RollupRows';
@@ -386,6 +387,7 @@ export interface IrisGridState {
   showOverflowModal: boolean;
   overflowText: string;
   overflowButtonTooltipProps: CSSProperties | null;
+  isGotoRowShown: boolean;
 }
 
 export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
@@ -488,6 +490,8 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     );
     this.handleAdvancedFilterDone = this.handleAdvancedFilterDone.bind(this);
     this.handleAdvancedMenuOpened = this.handleAdvancedMenuOpened.bind(this);
+    this.handleGotoRowOpened = this.handleGotoRowOpened.bind(this);
+    this.handleGotoRowClosed = this.handleGotoRowClosed.bind(this);
     this.handleAdvancedMenuClosed = this.handleAdvancedMenuClosed.bind(this);
     this.handleAggregationChange = this.handleAggregationChange.bind(this);
     this.handleAggregationsChange = this.handleAggregationsChange.bind(this);
@@ -556,13 +560,15 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     this.handleRollupChange = this.handleRollupChange.bind(this);
     this.handleOverflowClose = this.handleOverflowClose.bind(this);
     this.getColumnBoundingRect = this.getColumnBoundingRect.bind(this);
+    this.handleGotoRowSelectedRowNumberChanged = this.handleGotoRowSelectedRowNumberChanged.bind(
+      this
+    );
 
     this.grid = null;
     this.gridWrapper = null;
     this.lastLoadedConfig = null;
     this.pending = new Pending();
     this.globalColumnFormats = [];
-    this.dateTimeFormatterOptions = {};
     this.decimalFormatOptions = {};
     this.integerFormatOptions = {};
     this.truncateNumbersWithPound = false;
@@ -578,10 +584,17 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       action: () => this.toggleFilterBar(),
       shortcut: SHORTCUTS.TABLE.TOGGLE_QUICK_FILTER,
     };
+
     this.toggleSearchBarAction = {
       action: () => this.toggleSearchBar(),
       shortcut: SHORTCUTS.TABLE.TOGGLE_SEARCH,
     };
+
+    this.toggleGotoRowAction = {
+      action: () => this.toggleGotoRow(),
+      shortcut: SHORTCUTS.TABLE.GOTO_ROW,
+    };
+
     this.discardAction = {
       action: () => {
         const { model } = this.props;
@@ -612,6 +625,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     this.contextActions = [
       this.toggleFilterBarAction,
       this.toggleSearchBarAction,
+      this.toggleGotoRowAction,
       this.discardAction,
       this.commitAction,
     ];
@@ -759,6 +773,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       showOverflowModal: false,
       overflowText: '',
       overflowButtonTooltipProps: null,
+      isGotoRowShown: false,
     };
   }
 
@@ -922,6 +937,8 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
   toggleSearchBarAction: Action;
 
+  toggleGotoRowAction: Action;
+
   discardAction: Action;
 
   commitAction: Action;
@@ -966,10 +983,12 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       isExportAvailable,
       toggleFilterBarAction,
       toggleSearchBarAction,
+      toggleGotoRowAction,
       isFilterBarShown,
       showSearchBar,
       canDownloadCsv,
-      canToggleSearch
+      canToggleSearch,
+      showGotoRow
     ) => {
       const optionItems: OptionItem[] = [];
       if (isChartBuilderAvailable) {
@@ -1049,6 +1068,14 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
           onChange: toggleSearchBarAction.action,
         });
       }
+      optionItems.push({
+        type: OptionType.GOTO,
+        title: 'Go to',
+        subtitle: toggleGotoRowAction.shortcut.getDisplayText(),
+        icon: vsReply,
+        isOn: showGotoRow,
+        onChange: toggleGotoRowAction.action,
+      });
 
       return optionItems;
     },
@@ -2303,6 +2330,11 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     );
   }
 
+  toggleGotoRow(): void {
+    const { isGotoRowShown } = this.state;
+    this.setState({ isGotoRowShown: !isGotoRowShown });
+  }
+
   async commitPending(): Promise<void> {
     const { model } = this.props;
     if (!isEditableGridModel(model) || !model.isEditable) {
@@ -2432,6 +2464,14 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
   handleAdvancedMenuOpened(column: GridRangeIndex): void {
     this.setState({ shownAdvancedFilter: column });
+  }
+
+  handleGotoRowOpened(): void {
+    this.setState({ isGotoRowShown: true });
+  }
+
+  handleGotoRowClosed(): void {
+    this.setState({ isGotoRowShown: false });
   }
 
   handleAdvancedMenuClosed(columnIndex: number): void {
@@ -3171,6 +3211,10 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     }
   );
 
+  handleGotoRowSelectedRowNumberChanged(rowValue: number): void {
+    this.grid?.setFocusRow(rowValue);
+  }
+
   getColumnTooltip(
     visibleIndex: VisibleIndex,
     metrics: GridMetrics,
@@ -3350,6 +3394,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       showOverflowModal,
       overflowText,
       overflowButtonTooltipProps,
+      isGotoRowShown,
     } = this.state;
     if (!isReady) {
       return null;
@@ -3655,10 +3700,12 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       model.isExportAvailable,
       this.toggleFilterBarAction,
       this.toggleSearchBarAction,
+      this.toggleGotoRowAction,
       isFilterBarShown,
       showSearchBar,
       canDownloadCsv,
-      this.isTableSearchAvailable()
+      this.isTableSearchAvailable(),
+      isGotoRowShown
     );
 
     const openOptionsStack = openOptions.map(option => {
@@ -3946,6 +3993,17 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
             {overflowButtonTooltipProps &&
               this.getOverflowButtonTooltip(overflowButtonTooltipProps)}
           </div>
+          <GotoRow
+            model={model}
+            isShown={isGotoRowShown}
+            onGotoRowNumberChanged={this.handleGotoRowSelectedRowNumberChanged}
+            onClose={this.handleGotoRowClosed}
+            onEntering={this.handleAnimationStart}
+            onEntered={this.handleAnimationEnd}
+            onExiting={this.handleAnimationStart}
+            onExited={this.handleAnimationEnd}
+          />
+
           <PendingDataBottomBar
             error={pendingSaveError}
             isSaving={pendingSavePromise != null}

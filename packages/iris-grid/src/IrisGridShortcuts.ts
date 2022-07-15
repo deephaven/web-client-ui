@@ -31,6 +31,12 @@ const TABLE = {
     shortcut: [MODIFIER.CTRL, MODIFIER.SHIFT, KEY.F],
     macShortcut: [MODIFIER.CMD, MODIFIER.SHIFT, KEY.F],
   }),
+  GOTO_ROW: ShortcutRegistry.createAndAdd({
+    id: 'TABLE.GOTO_ROW',
+    name: 'GOTO_ROW',
+    shortcut: [MODIFIER.CTRL, KEY.G],
+    macShortcut: [MODIFIER.CMD, KEY.G],
+  }),
 };
 
 const INPUT_TABLE = {

@@ -1,0 +1,33 @@
+@import '../../components/scss/custom.scss';
+
+.goto-row {
+  display: inline-block;
+  background-color: $content-bg;
+  padding: 3px;
+  border-style: solid;
+  border-width: $border-width;
+  border-color: $black;
+
+  .goto-row-text {
+    padding: 5px;
+    display: inline-block;
+  }
+
+  .goto-row-input {
+    padding: 5px;
+    display: inline-block;
+    width: 180px;
+  }
+
+  .goto-row-error {
+    padding: 5px;
+    display: inline-block;
+    max-width: 200px;
+    color: $red;
+  }
+
+  .goto-row-close {
+    padding: 5px;
+    float: right;
+  }
+}
