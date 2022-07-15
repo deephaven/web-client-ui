@@ -12,15 +12,15 @@
   padding: $spacer-2;
   border-top: $border-width solid black;
   gap: $spacer-2;
-  // overflow: hidden;
 
-  input {
-    max-width: calc($input-padding-x + 12ch + $input-padding-x);
-  }
   .goto-row-wrapper {
     display: flex;
     align-items: center;
     gap: $spacer-2;
     flex-wrap: wrap;
+  }
+
+  input {
+    max-width: calc($input-padding-x + 12ch + $input-padding-x);
   }
 }
