@@ -75,14 +75,6 @@ import DbLang from './lang/db';
 import LogLang from './lang/log';
 
 const log = Log.module('MonacoUtils');
-
-type Language = {
-  id: string;
-  conf: monaco.languages.LanguageConfiguration;
-  language:
-    | monaco.languages.IMonarchLanguage
-    | monaco.Thenable<monaco.languages.IMonarchLanguage>;
-};
 class MonacoUtils {
   static init(): void {
     log.debug('Initializing Monaco...');

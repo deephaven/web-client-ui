@@ -1,3 +1,5 @@
+import { Language } from './Language';
+
 /* eslint no-useless-escape: "off" */
 const id = 'deephavenDb';
 
