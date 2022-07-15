@@ -4000,7 +4000,10 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
             onClose={this.handleGotoRowClosed}
             onEntering={this.handleAnimationStart}
             onEntered={this.handleAnimationEnd}
-            onExiting={this.handleAnimationStart}
+            onExiting={() => {
+              this.handleAnimationStart();
+              this.focus();
+            }}
             onExited={this.handleAnimationEnd}
           />
 

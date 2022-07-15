@@ -1,33 +1,26 @@
 @import '../../components/scss/custom.scss';
 
+.iris-grid-bottom-bar.goto-row {
+  height: auto;
+}
+
 .goto-row {
-  display: inline-block;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
   background-color: $content-bg;
-  padding: 3px;
-  border-style: solid;
-  border-width: $border-width;
-  border-color: $black;
+  padding: $spacer-2;
+  border-top: $border-width solid black;
+  gap: $spacer-2;
+  // overflow: hidden;
 
-  .goto-row-text {
-    padding: 5px;
-    display: inline-block;
+  input {
+    max-width: calc($input-padding-x + 12ch + $input-padding-x);
   }
-
-  .goto-row-input {
-    padding: 5px;
-    display: inline-block;
-    width: 180px;
-  }
-
-  .goto-row-error {
-    padding: 5px;
-    display: inline-block;
-    max-width: 200px;
-    color: $red;
-  }
-
-  .goto-row-close {
-    padding: 5px;
-    float: right;
+  .goto-row-wrapper {
+    display: flex;
+    align-items: center;
+    gap: $spacer-2;
+    flex-wrap: wrap;
   }
 }
