@@ -125,7 +125,7 @@ class CsvFormats {
 
     AUTODETECT: {
       name: 'autodetect',
-      delimiter: '', // autodetect
+      delimiter: undefined, // autodetect
       newline: undefined, // autodetect
       escapeChar: '"',
       shouldTrim: true,

@@ -39,7 +39,7 @@ interface CsvOverlayProps {
 
 interface CsvOverlayState {
   selectedFileName: string;
-  dropError: string | null;
+  dropError?: string;
 }
 
 const PASTED_VALUES = 'pasted values';
@@ -111,7 +111,6 @@ class CsvOverlay extends Component<CsvOverlayProps, CsvOverlayState> {
 
     this.state = {
       selectedFileName: '',
-      dropError: null,
     };
   }
 
@@ -176,7 +175,7 @@ class CsvOverlay extends Component<CsvOverlayProps, CsvOverlayState> {
     onCancel();
     this.setState({
       selectedFileName: '',
-      dropError: null,
+      dropError: undefined,
     });
   }
 
@@ -185,7 +184,7 @@ class CsvOverlay extends Component<CsvOverlayProps, CsvOverlayState> {
     onFileOpened(file);
     this.setState({
       selectedFileName: file.name,
-      dropError: null,
+      dropError: undefined,
     });
   }
 
@@ -200,7 +199,7 @@ class CsvOverlay extends Component<CsvOverlayProps, CsvOverlayState> {
         onPaste(clipText);
         this.setState({
           selectedFileName: PASTED_VALUES,
-          dropError: null,
+          dropError: undefined,
         });
       })
       .catch((e: unknown) => onError(e));

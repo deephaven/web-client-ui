@@ -286,4 +286,5 @@ const language = {
   },
 };
 
-export default { id, conf, language };
+const lang: Language = { id, conf, language } as const;
+export default lang;

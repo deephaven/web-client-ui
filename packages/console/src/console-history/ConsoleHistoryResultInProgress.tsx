@@ -30,7 +30,6 @@ class ConsoleHistoryResultInProgress extends Component<
 
     this.updateElapsed = this.updateElapsed.bind(this);
 
-    this.timer = null;
     this.startTime = Date.now();
 
     this.state = {
@@ -47,10 +46,10 @@ class ConsoleHistoryResultInProgress extends Component<
       clearInterval(this.timer);
     }
 
-    this.timer = null;
+    this.timer = undefined;
   }
 
-  timer: NodeJS.Timer | null;
+  timer?: NodeJS.Timer;
 
   startTime: number;
 

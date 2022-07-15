@@ -197,13 +197,7 @@ class MonacoUtils {
     log.debug2('monaco theme: ', MonacoTheme);
     monaco.editor.setTheme('dh-dark');
 
-    registerLanguages(([
-      DbLang,
-      PyLang,
-      GroovyLang,
-      LogLang,
-      ScalaLang,
-    ] as unknown[]) as Language[]);
+    registerLanguages([DbLang, PyLang, GroovyLang, LogLang, ScalaLang]);
 
     log.debug('Monaco initialized.');
   }

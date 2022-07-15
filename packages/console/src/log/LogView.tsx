@@ -117,7 +117,7 @@ class LogView extends PureComponent<LogViewProps, LogViewState> {
 
   editorContainer: HTMLDivElement | null;
 
-  logLevelMenuItems: Record<string, LogLevelMenuItem | null>;
+  logLevelMenuItems: Record<string, LogLevelMenuItem>;
 
   flushTimer?: ReturnType<typeof setTimeout>;
 
@@ -151,7 +151,9 @@ class LogView extends PureComponent<LogViewProps, LogViewState> {
             on={on}
             onClick={this.handleMenuItemClick}
             ref={element => {
-              this.logLevelMenuItems[logLevel] = element;
+              if (element != null) {
+                this.logLevelMenuItems[logLevel] = element;
+              }
             }}
           />
         ),
