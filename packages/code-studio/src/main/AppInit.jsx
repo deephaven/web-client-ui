@@ -36,10 +36,10 @@ import { createClient } from 'webdav/web';
 import { setLayoutStorage as setLayoutStorageAction } from '../redux/actions';
 import App from './App';
 import PouchCommandHistoryStorage from '../storage/PouchCommandHistoryStorage';
-import LocalWorkspaceStorage from '../storage/LocalWorkspaceStorage';
-import WebdavLayoutStorage from './WebdavLayoutStorage';
+import LocalWorkspaceStorage, {
+  LAYOUT_STORAGE,
+} from '../storage/LocalWorkspaceStorage';
 import { createSessionWrapper } from './SessionUtils';
-import UserLayoutUtils from './UserLayoutUtils';
 import { PluginUtils } from '../plugins';
 
 const log = Log.module('AppInit');
@@ -66,9 +66,6 @@ const WORKSPACE_STORAGE = new LocalWorkspaceStorage();
 const COMMAND_HISTORY_STORAGE = new PouchCommandHistoryStorage();
 const FILE_STORAGE = new WebdavFileStorage(
   createClient(process.env.REACT_APP_NOTEBOOKS_URL ?? '')
-);
-const LAYOUT_STORAGE = new WebdavLayoutStorage(
-  createClient(process.env.REACT_APP_LAYOUTS_URL ?? '')
 );
 /**
  * Component that sets some default values needed
@@ -140,17 +137,6 @@ const AppInit = props => {
       );
 
       const { data } = loadedWorkspace;
-      if (data.layoutConfig == null) {
-        // User doesn't have a saved layout yet, load the default
-        const {
-          filterSets,
-          links,
-          layoutConfig,
-        } = await UserLayoutUtils.getDefaultLayout(LAYOUT_STORAGE);
-        data.layoutConfig = layoutConfig;
-        data.filterSets = filterSets;
-        data.links = links;
-      }
 
       // Fill in settings that have not yet been set
       const { settings } = data;

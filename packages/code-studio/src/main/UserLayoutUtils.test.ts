@@ -4,7 +4,7 @@ import LayoutStorage, {
   ExportedLayout,
   ExportedLayoutV1,
   ExportedLayoutV2,
-} from './LayoutStorage';
+} from '../storage/LayoutStorage';
 import UserLayoutUtils, { DEFAULT_LAYOUT_CONFIG } from './UserLayoutUtils';
 
 const links: Link[] = [

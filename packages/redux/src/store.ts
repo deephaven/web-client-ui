@@ -46,10 +46,11 @@ export interface WorkspaceSettings {
 }
 
 export interface WorkspaceData {
+  closed: unknown[];
+  filterSets: unknown[];
+  layoutConfig: unknown[];
+  links: unknown;
   settings: WorkspaceSettings;
-  data: Record<string, unknown>;
-  layoutConfig: Record<string, unknown>[];
-  closed: Record<string, unknown>[];
 }
 
 export interface Workspace {
