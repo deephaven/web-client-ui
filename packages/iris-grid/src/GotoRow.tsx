@@ -20,6 +20,7 @@ interface GotoRowProps {
   gotoRow: string;
   gotoRowError: string;
   selectGotoRowInput: boolean;
+  onSubmit: () => void;
   model: IrisGridModel;
   onGotoRowNumberChanged: (event: ChangeEvent<HTMLInputElement>) => void;
   onClose: () => void;
@@ -34,6 +35,7 @@ const GotoRow = ({
   gotoRow,
   gotoRowError,
   selectGotoRowInput,
+  onSubmit,
   isShown,
   onEntering,
   onEntered,
@@ -73,6 +75,11 @@ const GotoRow = ({
             <input
               ref={inputRef}
               type="number"
+              onKeyDown={e => {
+                if (e.key === 'Enter') {
+                  onSubmit();
+                }
+              }}
               className={classNames('form-control', {
                 'is-invalid': gotoRowError !== '',
               })}

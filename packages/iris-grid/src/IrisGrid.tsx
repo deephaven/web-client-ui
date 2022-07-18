@@ -548,7 +548,10 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     this.handlePendingDiscardClicked = this.handlePendingDiscardClicked.bind(
       this
     );
-
+    this.handleGotoRowSelectedRowNumberSubmit = this.handleGotoRowSelectedRowNumberSubmit.bind(
+      this
+    );
+    this.focusRowInGrid = this.focusRowInGrid.bind(this);
     this.handleDownloadTable = this.handleDownloadTable.bind(this);
     this.handleDownloadTableStart = this.handleDownloadTableStart.bind(this);
     this.handleCancelDownloadTable = this.handleCancelDownloadTable.bind(this);
@@ -2344,6 +2347,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       this.setState({
         isGotoRowShown: !isGotoRowShown,
         gotoRow: row,
+        gotoRowError: '',
         selectGotoRowInput: true,
       });
       return;
@@ -2351,6 +2355,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     this.setState({
       isGotoRowShown: !isGotoRowShown,
       gotoRow: row,
+      gotoRowError: '',
       selectGotoRowInput: false,
     });
   }
@@ -3231,18 +3236,20 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     }
   );
 
-  handleGotoRowSelectedRowNumberChanged(
-    event: ChangeEvent<HTMLInputElement>
-  ): void {
+  handleGotoRowSelectedRowNumberSubmit(): void {
+    const { gotoRow: rowNumber } = this.state;
+    this.focusRowInGrid(rowNumber);
+  }
+
+  focusRowInGrid(rowNumber: string): void {
     const { model } = this.props;
     const { rowCount } = model;
-    const rowNumber = event.target.value;
     this.setState({ gotoRow: rowNumber, selectGotoRowInput: false });
     if (rowNumber === '') {
       this.setState({ gotoRowError: '' });
       return;
     }
-    const rowInt = parseInt(event.target.value, 10);
+    const rowInt = parseInt(rowNumber, 10);
     if (rowInt > rowCount || rowInt < -rowCount) {
       this.setState({ gotoRowError: 'Invalid row index' });
     } else if (rowInt === 0) {
@@ -3255,6 +3262,13 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       this.grid?.setFocusRow(rowInt - 1);
       this.setState({ gotoRowError: '' });
     }
+  }
+
+  handleGotoRowSelectedRowNumberChanged(
+    event: ChangeEvent<HTMLInputElement>
+  ): void {
+    const rowNumber = event.target.value;
+    this.focusRowInGrid(rowNumber);
   }
 
   getColumnTooltip(
@@ -4044,6 +4058,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
             gotoRow={gotoRow}
             selectGotoRowInput={selectGotoRowInput}
             gotoRowError={gotoRowError}
+            onSubmit={this.handleGotoRowSelectedRowNumberSubmit}
             onGotoRowNumberChanged={this.handleGotoRowSelectedRowNumberChanged}
             onClose={this.handleGotoRowClosed}
             onEntering={this.handleAnimationStart}
