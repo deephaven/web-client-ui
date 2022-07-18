@@ -13,6 +13,7 @@ import {
   GLOBAL_SHORTCUTS,
   Popper,
 } from '@deephaven/components';
+import { SHORTCUTS as IRIS_GRID_SHORTCUTS } from '@deephaven/iris-grid';
 import {
   Dashboard,
   DashboardUtils,
@@ -132,7 +133,7 @@ export class AppMainContainer extends Component {
             this.sendClearFilter();
           },
           order: 50,
-          shortcut: GLOBAL_SHORTCUTS.CLEAR_ALL_FILTERS,
+          shortcut: IRIS_GRID_SHORTCUTS.TABLE.CLEAR_ALL_FILTERS,
           isGlobal: true,
         },
         {
