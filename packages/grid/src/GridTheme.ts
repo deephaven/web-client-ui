@@ -74,6 +74,7 @@ export type GridTheme = {
   scrollSnapToColumn: boolean;
   scrollSnapToRow: boolean;
 
+  scrollBarSelectionTick: boolean;
   scrollBarSelectionTickColor: NullableGridColor;
   scrollBarActiveSelectionTickColor: NullableGridColor;
 
@@ -173,6 +174,7 @@ export default Object.freeze({
   selectionColor: '#4286f433',
   selectionOutlineColor: '#4286f4',
   selectionOutlineCasingColor: '#222222',
+  scrollBarSelectionTick: true,
   scrollBarSelectionTickColor: '#4286f433',
   scrollBarActiveSelectionTickColor: '#4286f480',
   shadowBlur: 8,

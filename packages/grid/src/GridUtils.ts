@@ -18,7 +18,6 @@ import { GridWheelEvent } from './GridMouseHandler';
 type Range<T> = [start: T, end: T];
 
 export type AxisRange = Range<GridRangeIndex>;
-export type NoneNullAxisRange = Range<number>;
 export type BoundedAxisRange = Range<VisibleIndex>;
 
 export function isAxisRange(range: unknown): range is AxisRange {
@@ -1291,8 +1290,8 @@ export class GridUtils {
       : range1[1] - range2[1];
   }
 
-  static mergeSortedRanges(ranges: NoneNullAxisRange[]): NoneNullAxisRange[] {
-    const mergedRanges: NoneNullAxisRange[] = [];
+  static mergeSortedRanges(ranges: BoundedAxisRange[]): BoundedAxisRange[] {
+    const mergedRanges: BoundedAxisRange[] = [];
 
     for (let i = 0; i < ranges.length; i += 1) {
       const range = ranges[i];

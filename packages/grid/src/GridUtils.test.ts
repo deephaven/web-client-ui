@@ -1,7 +1,7 @@
 import { AxisRange } from '.';
 import GridMetrics, { ModelIndex, MoveOperation } from './GridMetrics';
 import GridRange, { GridRangeIndex } from './GridRange';
-import GridUtils, { NoneNullAxisRange } from './GridUtils';
+import GridUtils, { BoundedAxisRange } from './GridUtils';
 
 function expectModelIndexes(
   movedItems: MoveOperation[],
@@ -948,12 +948,12 @@ describe('compareRange function works', () => {
 
 describe('for each', () => {
   it('works on a single array', () => {
-    const ranges: NoneNullAxisRange[] = [[1, 2]];
+    const ranges: BoundedAxisRange[] = [[1, 2]];
     expect(GridUtils.mergeSortedRanges(ranges)).toEqual(ranges);
   });
 
   it('works on a non-overlapping array', () => {
-    const ranges: NoneNullAxisRange[] = [
+    const ranges: BoundedAxisRange[] = [
       [1, 2],
       [4, 5],
       [7, 8],
@@ -962,7 +962,7 @@ describe('for each', () => {
   });
 
   it('works on a all overlapping array', () => {
-    const ranges: NoneNullAxisRange[] = [
+    const ranges: BoundedAxisRange[] = [
       [1, 2],
       [3, 4],
       [5, 6],
@@ -971,7 +971,7 @@ describe('for each', () => {
   });
 
   it('works on a partially overlapping array', () => {
-    const ranges: NoneNullAxisRange[] = [
+    const ranges: BoundedAxisRange[] = [
       [1, 2],
       [3, 4],
       [7, 11],
