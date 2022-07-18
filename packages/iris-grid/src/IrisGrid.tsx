@@ -2340,10 +2340,18 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
   toggleGotoRow(row: string): void {
     const { isGotoRowShown } = this.state;
+    if (!isGotoRowShown) {
+      this.setState({
+        isGotoRowShown: !isGotoRowShown,
+        gotoRow: row,
+        selectGotoRowInput: true,
+      });
+      return;
+    }
     this.setState({
       isGotoRowShown: !isGotoRowShown,
       gotoRow: row,
-      selectGotoRowInput: true,
+      selectGotoRowInput: false,
     });
   }
 
