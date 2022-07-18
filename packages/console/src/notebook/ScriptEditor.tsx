@@ -20,7 +20,7 @@ interface ScriptEditorProps {
   isLoaded: boolean;
   focusOnMount?: boolean;
   onChange: (e: editor.IModelContentChangedEvent) => void;
-  onRunCommand: (command: string | null) => void;
+  onRunCommand: (command: string) => void;
   session: IdeSession;
   sessionLanguage?: string;
   settings?: {
@@ -67,10 +67,9 @@ class ScriptEditor extends Component<ScriptEditorProps, ScriptEditorState> {
 
   componentDidUpdate(prevProps: ScriptEditorProps): void {
     const { sessionLanguage, settings } = this.props;
-    let language = '';
-    if (settings) {
-      language = settings.language;
-    }
+
+    const language = settings?.language;
+
     const languageChanged = language !== prevProps.settings?.language;
     if (languageChanged) {
       log.debug('Set language', language);
@@ -182,7 +181,9 @@ class ScriptEditor extends Component<ScriptEditorProps, ScriptEditorState> {
   handleRun(): void {
     const { onRunCommand } = this.props;
     const command = this.getValue();
-    onRunCommand(command);
+    if (command != null) {
+      onRunCommand(command);
+    }
   }
 
   handleRunSelected(): void {
@@ -316,8 +317,8 @@ class ScriptEditor extends Component<ScriptEditorProps, ScriptEditorState> {
     }
   }
 
-  setLanguage(language: string): void {
-    if (this.editorComponent.current) {
+  setLanguage(language?: string): void {
+    if (this.editorComponent.current && language) {
       this.editorComponent.current.setLanguage(language);
     }
   }

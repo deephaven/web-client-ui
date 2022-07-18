@@ -94,16 +94,15 @@ class ConsoleHistoryItem extends PureComponent<
       }
 
       // If the error has an associated command, we'll actually get a separate ERROR item printed out, so only print an error if there isn't an associated command
-      let errorMessage = error;
-      if (typeof error !== 'string' && error && !item.command) {
-        errorMessage = (error as { message: string }).message;
+      if (error && !item.command) {
+        let errorMessage = `${(error as { message: string }).message ?? error}`;
         if (!errorMessage) {
-          errorMessage = error;
+          errorMessage = error as string;
         }
         const element = (
           <ConsoleHistoryResultErrorMessage
             key="result-error"
-            message={errorMessage as string}
+            message={errorMessage}
           />
         );
         resultElements.push(element);

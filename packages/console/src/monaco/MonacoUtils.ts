@@ -73,6 +73,7 @@ import GroovyLang from './lang/groovy';
 import ScalaLang from './lang/scala';
 import DbLang from './lang/db';
 import LogLang from './lang/log';
+import { Language } from './lang/Language';
 
 const log = Log.module('MonacoUtils');
 class MonacoUtils {
@@ -189,7 +190,13 @@ class MonacoUtils {
     log.debug2('monaco theme: ', MonacoTheme);
     monaco.editor.setTheme('dh-dark');
 
-    registerLanguages([DbLang, PyLang, GroovyLang, LogLang, ScalaLang]);
+    registerLanguages([
+      DbLang,
+      PyLang,
+      GroovyLang,
+      LogLang,
+      ScalaLang,
+    ] as Language[]);
 
     log.debug('Monaco initialized.');
   }
@@ -203,15 +210,7 @@ class MonacoUtils {
     return color.substring(1);
   }
 
-  static registerLanguages(
-    languages: {
-      id: string;
-      conf: monaco.languages.LanguageConfiguration;
-      language:
-        | monaco.languages.IMonarchLanguage
-        | monaco.Thenable<monaco.languages.IMonarchLanguage>;
-    }[]
-  ): void {
+  static registerLanguages(languages: Language[]): void {
     // First override the default loader for any language we have a custom definition for
     // https://github.com/Microsoft/monaco-editor/issues/252#issuecomment-482786867
     const languageIds = languages.map(({ id }) => id);
@@ -221,11 +220,6 @@ class MonacoUtils {
       .forEach(languageParam => {
         const language = languageParam;
         log.debug2('Overriding default language loader:', language.id);
-
-        // @ts-ignore
-        // language.loader = () => ({
-        //   then: () => undefined,
-        // });
       });
 
     // Then register our language definitions
@@ -234,13 +228,7 @@ class MonacoUtils {
     });
   }
 
-  static registerLanguage(language: {
-    id: string;
-    conf: monaco.languages.LanguageConfiguration;
-    language:
-      | monaco.languages.IMonarchLanguage
-      | monaco.Thenable<monaco.languages.IMonarchLanguage>;
-  }): void {
+  static registerLanguage(language: Language): void {
     log.debug2('Registering language: ', language.id);
     monaco.languages.register(language);
 
@@ -398,14 +386,20 @@ class MonacoUtils {
     ];
 
     try {
-      keybindings.forEach(keybinding =>
+      keybindings.forEach(keybinding => {
+        if (
+          (MonacoUtils.isMacPlatform() && keybinding.mac === '') ||
+          (!MonacoUtils.isMacPlatform() && keybinding.windows === '')
+        ) {
+          return;
+        }
         MonacoUtils.removeKeybinding(
           editor,
           (MonacoUtils.isMacPlatform()
             ? keybinding.mac
             : keybinding.windows) as string
-        )
-      );
+        );
+      });
     } catch (err) {
       // This is probably only caused by Monaco changing private methods used here
       log.error(err);
@@ -428,9 +422,6 @@ class MonacoUtils {
     editor: monaco.editor.IStandaloneCodeEditor,
     keybinding: string
   ): void {
-    if (!keybinding) {
-      return;
-    }
     /* eslint-disable no-underscore-dangle */
     // It's possible a single keybinding has multiple commands depending on context
     // @ts-ignore

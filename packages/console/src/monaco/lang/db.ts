@@ -1,5 +1,3 @@
-import { Language } from './Language';
-
 /* eslint no-useless-escape: "off" */
 const id = 'deephavenDb';
 
@@ -288,5 +286,4 @@ const language = {
   },
 };
 
-const lang: Language = { id, conf, language } as const;
-export default lang;
+export default { id, conf, language };
