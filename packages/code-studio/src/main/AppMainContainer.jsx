@@ -133,22 +133,14 @@ export class AppMainContainer extends Component {
           },
           order: 50,
           shortcut: GLOBAL_SHORTCUTS.CLEAR_ALL_FILTERS,
+          isGlobal: true,
         },
         {
           action: () => {
             log.debug('Consume unhandled save shortcut');
           },
           shortcut: GLOBAL_SHORTCUTS.SAVE,
-        },
-        {
-          action: () => {
-            this.sendRestartSession();
-          },
-        },
-        {
-          action: () => {
-            this.sendDisconnectSession();
-          },
+          isGlobal: true,
         },
       ],
       isPanelsMenuShown: false,
