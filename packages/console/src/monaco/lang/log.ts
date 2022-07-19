@@ -1,10 +1,14 @@
 /* eslint no-useless-escape: "off" */
+import * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js';
+import { Language } from './Language';
 
 const id = 'log';
 
 const conf = {};
 
-const language = {
+const language:
+  | monaco.languages.IMonarchLanguage
+  | monaco.Thenable<monaco.languages.IMonarchLanguage> = {
   tokenizer: {
     root: [
       [/ FATAL[\s\S]*/, { token: 'error', next: '@error' }],
@@ -30,4 +34,5 @@ const language = {
   },
 };
 
-export default { id, conf, language };
+const lang: Language = { id, conf, language };
+export default lang;

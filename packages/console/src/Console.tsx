@@ -122,7 +122,7 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
   /**
    * Check if the provided log level is an error type
    * @param logLevel The LogLevel being checked
-   * @returns= true if the log level is an error level log
+   * @returns true if the log level is an error level log
    */
   static isErrorLevel(
     logLevel: typeof LogLevel[keyof typeof LogLevel]
@@ -136,7 +136,7 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
 
   /**
    * Check if the provided log level is output level
-   * @para logLevel The LogLevel being checked
+   * @param logLevel The LogLevel being checked
    * @return true if the log level should be output to the console
    */
   static isOutputLevel(logLevel: string): boolean {
@@ -513,13 +513,13 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
         const oldIndex = objectHistoryMap.get(title);
         // oldIndex can be -1 if a object is active but doesn't have a command in consoleHistory
         // this can happen after clearing the console using 'clear' or 'cls' command
-        assertNotNull(oldIndex);
-        if (oldIndex >= 0) {
+
+        if (oldIndex != null && oldIndex >= 0) {
           // disable outdated object variable in the old consoleHistory item
-          history[oldIndex].disabledObjects = history[
-            oldIndex
-          ].disabledObjects?.concat(title);
-          history[oldIndex] = { ...history[oldIndex] };
+          history[oldIndex].disabledObjects = [
+            ...(history[oldIndex].disabledObjects ?? []),
+            title,
+          ];
         }
         objectHistoryMap.set(title, itemIndex);
         if (isRemoved) {

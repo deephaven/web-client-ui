@@ -26,9 +26,12 @@
  *  - https://github.com/microsoft/monaco-languages/blob/main/src/scala/scala.ts
  *--------------------------------------------------------------------------------------------*/
 
+import * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js';
+import { Language } from './Language';
+
 const id = 'scala';
 
-const conf = {
+const conf: monaco.languages.LanguageConfiguration = {
   /*
    * `...` is allowed as an identifier.
    * $ is allowed in identifiers.
@@ -67,7 +70,9 @@ const conf = {
   },
 };
 
-const language = {
+const language:
+  | monaco.languages.IMonarchLanguage
+  | monaco.Thenable<monaco.languages.IMonarchLanguage> = {
   // tokenPostfix: '.scala',
 
   // We can't easily add everything from Dotty, but we can at least add some of its keywords
@@ -194,7 +199,7 @@ const language = {
       [
         /(\.)(@name|@symbols)/,
         [
-          'operator',
+          { token: 'operator' },
           {
             token: '@rematch',
             next: '@allowMethod',
@@ -249,8 +254,8 @@ const language = {
       [
         /(')(@escapes)(')/,
         [
-          'string',
-          'string.escape',
+          { token: 'string' },
+          { token: 'string.escape' },
           {
             token: 'string',
             next: '@allowMethod',
@@ -482,4 +487,5 @@ const language = {
   },
 };
 
-export default { id, conf, language };
+const lang: Language = { id, conf, language };
+export default lang;
