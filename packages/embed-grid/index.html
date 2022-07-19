@@ -1,10 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <meta
-      name="ui-version"
-      content="v%REACT_APP_VERSION% (%REACT_APP_GIT_SHA%)"
-    />
+    <meta name="ui-version" content="v%VITE_VERSION%" />
     <meta charset="utf-8" />
     <meta
       name="viewport"
@@ -15,31 +12,17 @@
       manifest.json provides metadata used when your web app is added to the
       homescreen on Android. See https://developers.google.com/web/fundamentals/engage-and-retain/web-app-manifest/
     -->
-    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+    <link rel="manifest" href="/manifest.json" />
 
-    <% if (process.env.NODE_ENV === 'development') { %>
-    <link rel="icon" href="%PUBLIC_URL%/favicon-cc-app-dev.svg" />
-    <% } else { %>
-    <link rel="icon" href="%PUBLIC_URL%/favicon-cc-app.svg" />
-    <% } %>
-
-    <!--
-      Notice the use of %PUBLIC_URL% in the tags above.
-      It will be replaced with the URL of the `public` folder during the build.
-      Only files inside the `public` folder can be referenced from the HTML.
-
-      Unlike "/favicon.ico" or "favicon.ico", "%PUBLIC_URL%/favicon.ico" will
-      work correctly both with client-side routing and a non-root public URL.
-      Learn how to configure a non-root public URL by running `npm run build`.
-    -->
+    <link rel="icon" href="%VITE_FAVICON%" />
 
     <!-- The script is currently tightly coupled with the server -->
     <script
-      src="%REACT_APP_CORE_API_URL%/%REACT_APP_OPEN_API_NAME%"
+      src="%VITE_CORE_API_URL%/%VITE_OPEN_API_NAME%"
       type="text/javascript"
     ></script>
     <script
-      src="%REACT_APP_CORE_API_URL%/%REACT_APP_CORE_API_NAME%"
+      src="%VITE_CORE_API_URL%/%VITE_CORE_API_NAME%"
       type="text/javascript"
     ></script>
     <script>
@@ -54,7 +37,7 @@
                   <div class="modal-content">
                     <div class="modal-body">
                       <h5 class="modal-title">Error: Unable to load API</h5>
-                      <p class="text-break">Ensure the server is running and you are able to reach %REACT_APP_CORE_API_URL%/%REACT_APP_CORE_API_NAME%, then refresh the page.</p>
+                      <p class="text-break">Ensure the server is running and you are able to reach %VITE_CORE_API_URL%/%VITE_CORE_API_NAME%, then refresh the page.</p>
                     </div>
                   </div>
                 </div>

@@ -19,7 +19,7 @@ export default defineConfig(({ mode }) => {
 
   return {
     server: {
-      port: Number.parseInt(env.PORT, 10) ?? 4000,
+      port: Number.parseInt(env.PORT, 10) ?? 4010,
     },
     define: {
       global: 'window',
@@ -72,11 +72,6 @@ export default defineConfig(({ mode }) => {
           },
         },
       },
-    },
-    // This and the build.commonjsOptions are needed b/c golden-layout is not ESM
-    // https://vitejs.dev/guide/dep-pre-bundling.html#monorepos-and-linked-dependencies
-    optimizeDeps: {
-      include: ['@deephaven/golden-layout'],
     },
     plugins: [htmlPlugin(), react()],
   };
