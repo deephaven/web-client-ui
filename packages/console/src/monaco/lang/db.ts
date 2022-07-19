@@ -1,7 +1,10 @@
+import * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js';
+import { Language } from './Language';
+
 /* eslint no-useless-escape: "off" */
 const id = 'deephavenDb';
 
-const conf = {
+const conf: monaco.languages.LanguageConfiguration = {
   comments: {
     lineComment: '#',
     blockComment: ["'''", "'''"],
@@ -42,7 +45,9 @@ const conf = {
   },
 };
 
-const language = {
+const language:
+  | monaco.languages.IMonarchLanguage
+  | monaco.Thenable<monaco.languages.IMonarchLanguage> = {
   tokenPostfix: '.js',
 
   keywords: [
@@ -150,9 +155,9 @@ const language = {
 
   // define our own brackets as '<' and '>' do not match in javascript
   brackets: [
-    ['(', ')', 'bracket.parenthesis'],
-    ['{', '}', 'bracket.curly'],
-    ['[', ']', 'bracket.square'],
+    { open: '{', close: '}', token: 'delimiter.curly' },
+    { open: '[', close: ']', token: 'delimiter.bracket' },
+    { open: '(', close: ')', token: 'delimiter.parenthesis' },
   ],
 
   // common regular expressions
@@ -257,7 +262,7 @@ const language = {
       [
         /(\[)(\^?)(?=(?:[^\]\\\/]|\\.)+)/,
         [
-          '@brackets.regexp.escape.control',
+          { token: '@brackets.regexp.escape.control' },
           {
             token: 'regexp.escape.control',
             next: '@regexrange',
@@ -286,4 +291,5 @@ const language = {
   },
 };
 
-export default { id, conf, language };
+const lang: Language = { id, conf, language };
+export default lang;

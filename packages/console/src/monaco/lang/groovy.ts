@@ -1,6 +1,9 @@
+import * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js';
+import { Language } from './Language';
+
 const id = 'groovy';
 
-const conf = {
+const conf: monaco.languages.LanguageConfiguration = {
   comments: {
     lineComment: '//',
     blockComment: ['/*', '*/'],
@@ -120,9 +123,9 @@ const language = {
   ],
 
   brackets: [
-    ['(', ')', 'delimiter.parenthesis'],
-    ['{', '}', 'delimiter.curly'],
-    ['[', ']', 'delimiter.square'],
+    { open: '{', close: '}', token: 'delimiter.curly' },
+    { open: '[', close: ']', token: 'delimiter.square' },
+    { open: '(', close: ')', token: 'delimiter.parenthesis' },
   ],
 
   // operator symbols
@@ -339,4 +342,5 @@ const language = {
   },
 };
 
-export default { id, conf, language };
+const lang: Language = { id, conf, language };
+export default lang;
