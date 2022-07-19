@@ -31,11 +31,11 @@
   },
   "dependencies": {
     "@deephaven/components": "file:../components",
-    "@deephaven/utils": "file:../util",
     "@deephaven/golden-layout": "file:../golden-layout",
     "@deephaven/log": "file:../log",
     "@deephaven/react-hooks": "file:../react-hooks",
     "@deephaven/redux": "file:../redux",
+    "@deephaven/utils": "file:../util",
     "deep-equal": "^2.0.5",
     "jquery": "^3.6.0",
     "lodash.ismatch": "^4.1.1",
@@ -51,7 +51,7 @@
   "devDependencies": {
     "@deephaven/mocks": "file:../mocks",
     "@deephaven/tsconfig": "file:../tsconfig",
-    "@types/lodash.ismatch": "^4.4.7"
+    "@types/lodash.ismatch": "^4.4.0"
   },
   "files": [
     "dist"

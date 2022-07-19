@@ -1,6 +1,7 @@
 import deepEqual from 'deep-equal';
 import shortid from 'shortid';
 import isMatch from 'lodash.ismatch';
+import { DragEvent } from 'react';
 import Log from '@deephaven/log';
 import GoldenLayout, {
   ComponentConfig,
@@ -246,9 +247,12 @@ class LayoutUtils {
    * @returns Returns the found content item, null if not found.
    */
   static getContentItemInStack(
-    stack: ContentItem,
+    stack: ContentItem | null,
     config: Partial<ItemConfigType>
   ): ContentItem | null {
+    if (!stack) {
+      return null;
+    }
     for (let i = 0; i < stack.contentItems.length; i += 1) {
       const contentItem = stack.contentItems[i];
       if (contentItem.isComponent && contentItem.config) {
@@ -459,7 +463,7 @@ class LayoutUtils {
     replaceConfig?: Partial<ItemConfigType>;
     createNewStack?: boolean;
     focusElement?: string;
-    dragEvent?: MouseEvent;
+    dragEvent?: DragEvent;
   } = {}): void {
     // attempt to retain focus after dom manipulation, which can break focus
     const maintainFocusElement = document.activeElement;
@@ -537,7 +541,7 @@ class LayoutUtils {
    * @param replaceExisting Whether it should replace the existing one matching component type and id, or open a new one
    */
   static openComponentInStack(
-    stack: ContentItem,
+    stack: ContentItem | null,
     config: ItemConfigType,
     replaceExisting = true
   ): void {
@@ -550,8 +554,8 @@ class LayoutUtils {
       searchConfig
     );
 
-    if (replaceExisting && oldContentItem) {
-      const index = stack.contentItems.indexOf(oldContentItem);
+    if (replaceExisting && oldContentItem && stack) {
+      const index = stack?.contentItems.indexOf(oldContentItem);
 
       // Using remove/add here instead of replaceChild because I was getting errors with replaceChild... should be the same.
       // Add first so that the stack doesn't get screwed up
@@ -560,7 +564,7 @@ class LayoutUtils {
 
       stack.setActiveContentItem(stack.contentItems[index]);
     } else {
-      stack.addChild(config);
+      stack?.addChild(config);
     }
 
     if (maintainFocusElement && isHTMLElement(maintainFocusElement)) {
@@ -614,7 +618,7 @@ class LayoutUtils {
 
   static renameComponent(
     root: ContentItem,
-    config: ItemConfigType,
+    config: Partial<ItemConfigType>,
     newTitle: string
   ): void {
     const stack = LayoutUtils.getStackForRoot(root, config, false);
