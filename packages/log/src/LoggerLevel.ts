@@ -12,4 +12,4 @@ export default Object.freeze({
   INFO,
   DEBUG,
   DEBUG2,
-});
+} as Record<string, number>);

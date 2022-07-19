@@ -7,10 +7,10 @@ import LoggerLevel, { DEBUG2, INFO, SILENT } from './LoggerLevel';
  * development mode defaults to DEBUG2 (most verbose).
  * test mode defaults to SILENT.
  * Override by setting environment variable `process.env.DEEPHAVEN_LOG_LEVEL`
- * @returns {number} The default log level to use
+ * @returns The default log level to use
  */
-function getDefaultLevel() {
-  let envValue = '';
+function getDefaultLevel(): number {
+  let envValue: string | undefined = '';
   try {
     envValue = process.env.DEEPHAVEN_LOG_LEVEL;
   } catch {
@@ -45,7 +45,9 @@ class DefaultLogger extends Logger {
     this.modules = {};
   }
 
-  module(name) {
+  modules: Record<string, Logger>;
+
+  module(name: string): Logger {
     if (!this.modules[name]) {
       this.modules[name] = new Logger(name, this.level);
     }
@@ -53,7 +55,7 @@ class DefaultLogger extends Logger {
     return this.modules[name];
   }
 
-  setLogLevel(level) {
+  setLogLevel(level: number): void {
     super.setLogLevel(level);
 
     if (!this.modules) {
