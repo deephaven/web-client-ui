@@ -4,10 +4,11 @@
  *
  * Dependencies for Remote Components
  */
-module.exports = {
-  resolve: {
-    react: require('react'),
-    reactstrap: require('reactstrap'),
-    regeneratorRuntime: require('regenerator-runtime/runtime'),
-  },
+import react from 'react';
+import * as reactstrap from 'reactstrap';
+
+// eslint-disable-next-line import/prefer-default-export
+export const resolve = {
+  react,
+  reactstrap,
 };

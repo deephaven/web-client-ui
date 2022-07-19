@@ -1,6 +1,7 @@
 import { Component, ComponentType } from 'react';
 import { ConnectedComponent } from 'react-redux';
-import GoldenLayout, { ReactComponentConfig } from '@deephaven/golden-layout';
+import GoldenLayout from '@deephaven/golden-layout';
+import type { ReactComponentConfig } from '@deephaven/golden-layout';
 import PanelManager from './PanelManager';
 
 export type WrappedComponentType<

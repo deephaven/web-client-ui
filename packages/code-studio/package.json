@@ -70,8 +70,8 @@
   ],
   "scripts": {
     "analyze": "source-map-explorer 'build/static/js/*.js'",
-    "start": "react-scripts --max-old-space-size=4096 start",
-    "build-js": "react-scripts --max-old-space-size=4096 build",
+    "start": "vite",
+    "build-js": "vite build",
     "build": "npm-run-all build-js clean-mocks",
     "clean-mocks": "rm -rf build/__mocks__",
     "eject": "react-scripts eject",
@@ -82,7 +82,9 @@
     "@deephaven/mocks": "file:../mocks",
     "@deephaven/prettier-config": "file:../prettier-config",
     "@deephaven/stylelint-config": "file:../stylelint-config",
-    "@deephaven/tsconfig": "file:../tsconfig"
+    "@deephaven/tsconfig": "file:../tsconfig",
+    "@vitejs/plugin-react": "^2.0.0",
+    "vite": "^3.0.2"
   },
   "browserslist": [
     ">0.2%",

@@ -84,9 +84,9 @@ export class SettingsMenu extends Component<
   }
 
   render(): ReactElement {
-    const version = process.env.REACT_APP_VERSION;
-    const supportLink = process.env.REACT_APP_SUPPORT_LINK;
-    const docsLink = process.env.REACT_APP_DOCS_LINK;
+    const version = import.meta.env.VITE_VERSION;
+    const supportLink = import.meta.env.VITE_SUPPORT_LINK;
+    const docsLink = import.meta.env.VITE_DOCS_LINK;
 
     return (
       <div className="app-settings-menu">

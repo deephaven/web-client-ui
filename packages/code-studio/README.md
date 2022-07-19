@@ -14,20 +14,20 @@ you should be modifying `.env.development.local`.
 For more information on `.env`, see https://create-react-app.dev/docs/adding-custom-environment-variables#adding-development-environment-variables-in-env
 Below are some of the common properties which are configurable in the `.env` file.
 
-### REACT_APP_CORE_API_URL
+### VITE_CORE_API_URL
 
 One common setup is to override the API server URL to point to another server. For example, add the following block to `.env.development.local` to have `npm start` point to a remote server for the API:
 
 ```shell
-REACT_APP_CORE_API_URL=https://www.myserver.com/jsapi
+VITE_CORE_API_URL=https://www.myserver.com/jsapi
 ```
 
-### REACT_APP_NOTEBOOKS_URL
+### VITE_NOTEBOOKS_URL
 
 One common setup is to override the API server URL to point to another server. For example, add the following block to `.env.development.local` to have `npm start` point to a remote server for the API:
 
 ```shell
-REACT_APP_CORE_API_URL=https://www.myserver.com/notebooks
+VITE_CORE_API_URL=https://www.myserver.com/notebooks
 ```
 
 ### REACT_APP_LOG_LEVEL
@@ -40,7 +40,7 @@ REACT_APP_LOG_LEVEL=2 # Warn/Error
 
 See [@deephaven/log](../log) for more details on the logger.
 
-### REACT_APP_ENABLE_LOG_PROXY
+### VITE_ENABLE_LOG_PROXY
 
 Set to `true` or `false`
 

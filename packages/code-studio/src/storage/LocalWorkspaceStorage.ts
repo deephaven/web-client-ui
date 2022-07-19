@@ -12,7 +12,7 @@ import WebdavLayoutStorage from './WebdavLayoutStorage';
 const log = Log.module('LocalWorkspaceStorage');
 
 export const LAYOUT_STORAGE = new WebdavLayoutStorage(
-  createClient(process.env.REACT_APP_LAYOUTS_URL ?? '')
+  createClient(import.meta.env.VITE_LAYOUTS_URL ?? '')
 );
 
 /**

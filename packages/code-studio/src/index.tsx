@@ -2,8 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
 import 'fira';
-// eslint-disable-next-line import/no-unresolved
-import '@deephaven/components/dist/BaseStyleSheet.css';
+import '@deephaven/components/scss/BaseStyleSheet.scss';
 import { MonacoUtils } from '@deephaven/console';
 import { store } from '@deephaven/redux';
 import AppRouter from './main/AppRouter';

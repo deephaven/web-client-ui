@@ -10,7 +10,7 @@
     "url": "https://github.com/deephaven/web-client-ui.git",
     "directory": "packages/console"
   },
-  "main": "dist/index.js",
+  "main": "src/index.js",
   "source": "src/index.js",
   "types": "dist/index.d.ts",
   "engines": {

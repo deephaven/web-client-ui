@@ -72,7 +72,7 @@ function getReduxDataString(): string {
 
 function getMetadata(): string {
   const metadata = {
-    uiVersion: process.env.REACT_APP_VERSION,
+    uiVersion: import.meta.env.VITE_VERSION,
     userAgent: navigator.userAgent,
   };
 
