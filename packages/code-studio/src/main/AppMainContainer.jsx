@@ -132,7 +132,6 @@ export class AppMainContainer extends Component {
             // widget panels can subscribe to his event, and execute their own clearing logic
             this.sendClearFilter();
           },
-          order: 50,
           shortcut: IRIS_GRID_SHORTCUTS.TABLE.CLEAR_ALL_FILTERS,
           isGlobal: true,
         },
