@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, RefObject } from 'react';
 import classNames from 'classnames';
 import PropTypes from 'prop-types';
 import memoize from 'memoize-one';
@@ -39,7 +39,10 @@ import {
   ChartBuilderPlugin,
 } from '@deephaven/dashboard-core-plugins';
 import { vsGear, dhShapes, dhPanels } from '@deephaven/icons';
-import dh, { PropTypes as APIPropTypes } from '@deephaven/jsapi-shim';
+import dh, {
+  IdeSession,
+  PropTypes as APIPropTypes,
+} from '@deephaven/jsapi-shim';
 import Log from '@deephaven/log';
 import {
   getActiveTool,
@@ -48,6 +51,8 @@ import {
   setActiveTool as setActiveToolAction,
   updateWorkspaceData as updateWorkspaceDataAction,
   getPlugins,
+  Workspace,
+  DeephavenPluginModuleMap,
 } from '@deephaven/redux';
 import { PromiseUtils } from '@deephaven/utils';
 import JSZip from 'jszip';
@@ -62,10 +67,36 @@ import EmptyDashboard from './EmptyDashboard';
 import UserLayoutUtils from './UserLayoutUtils';
 import DownloadServiceWorkerUtils from '../DownloadServiceWorkerUtils';
 import { PluginUtils } from '../plugins';
+import GoldenLayout from '@deephaven/golden-layout';
 
 const log = Log.module('AppMainContainer');
 
-export class AppMainContainer extends Component {
+interface AppMainContainerProps {
+  activeTool: string;
+  dashboardData: Record<string, unknown>;
+  layoutStorage: {};
+  match: {
+    params: { notebookPath: string };
+  };
+  session: IdeSession;
+  sessionConfig: {
+    type: string;
+    id: string;
+  };
+  setActiveTool: (tool: string) => void;
+  updateDashboardData: () => void;
+  updateWorkspaceData: () => void;
+  user: typeof UIPropTypes.User;
+  workspace: Workspace;
+  plugins: DeephavenPluginModuleMap;
+}
+
+interface AppMainContainerState {}
+
+export class AppMainContainer extends Component<
+  AppMainContainerProps,
+  AppMainContainerState
+> {
   static handleWindowBeforeUnload(event) {
     event.preventDefault();
     // returnValue is required for beforeReload event prompt
@@ -85,7 +116,7 @@ export class AppMainContainer extends Component {
     );
   }
 
-  constructor(props) {
+  constructor(props: AppMainContainerProps) {
     super(props);
     this.handleSettingsMenuHide = this.handleSettingsMenuHide.bind(this);
     this.handleSettingsMenuShow = this.handleSettingsMenuShow.bind(this);
@@ -182,6 +213,12 @@ export class AppMainContainer extends Component {
     );
   }
 
+  goldenLayout?: GoldenLayout;
+
+  importElement: RefObject<HTMLInputElement>;
+
+  widgetListenerRemover = null;
+
   initWidgets() {
     const { session } = this.props;
     if (!session.connection.subscribeToFieldUpdates) {
@@ -191,31 +228,29 @@ export class AppMainContainer extends Component {
       return;
     }
 
-    this.widgetListenerRemover = session.connection.subscribeToFieldUpdates(
-      updates => {
-        log.debug('Got updates', updates);
-        this.setState(({ widgets }) => {
-          const { updated, created, removed } = updates;
+    this.widgetListenerRemover = session.subscribeToFieldUpdates(updates => {
+      log.debug('Got updates', updates);
+      this.setState(({ widgets }) => {
+        const { updated, created, removed } = updates;
 
-          // Remove from the array if it's been removed OR modified. We'll add it back after if it was modified.
-          const widgetsToRemove = [...updated, ...removed];
-          const newWidgets = widgets.filter(
-            widget =>
-              !widgetsToRemove.some(toRemove => toRemove.name === widget.name)
-          );
+        // Remove from the array if it's been removed OR modified. We'll add it back after if it was modified.
+        const widgetsToRemove = [...updated, ...removed];
+        const newWidgets = widgets.filter(
+          widget =>
+            !widgetsToRemove.some(toRemove => toRemove.name === widget.name)
+        );
 
-          // Now add all the modified and updated widgets back in
-          const widgetsToAdd = [...updated, ...created];
-          widgetsToAdd.forEach(toAdd => {
-            if (toAdd.name) {
-              newWidgets.push(toAdd);
-            }
-          });
-
-          return { widgets: newWidgets };
+        // Now add all the modified and updated widgets back in
+        const widgetsToAdd = [...updated, ...created];
+        widgetsToAdd.forEach(toAdd => {
+          if (toAdd.name) {
+            newWidgets.push(toAdd);
+          }
         });
-      }
-    );
+
+        return { widgets: newWidgets };
+      });
+    });
   }
 
   deinitWidgets() {
