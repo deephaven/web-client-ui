@@ -11,6 +11,7 @@ interface CheckboxProps {
   inputClassName?: string;
   isInvalid?: boolean;
   labelClassName?: string;
+  name?: string;
   onChange?: React.ChangeEventHandler<HTMLInputElement>;
   children?: React.ReactNode;
   'data-testid'?: string;
@@ -29,6 +30,7 @@ const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
       inputClassName,
       isInvalid,
       labelClassName,
+      name,
       onChange,
       'data-testid': dataTestId,
     } = props;
@@ -72,6 +74,7 @@ const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
           })}
           disabled={disabled}
           id={id}
+          name={name}
           onChange={handleOnChange}
           data-testid={dataTestId}
         />
@@ -118,6 +121,9 @@ Checkbox.propTypes = {
   /** An extra class name for the label component */
   labelClassName: PropTypes.string,
 
+  /** Checkbox input name attribute */
+  name: PropTypes.string,
+
   /** Triggered when the input is checked/unchecked */
   onChange: PropTypes.func,
 
@@ -131,6 +137,7 @@ Checkbox.defaultProps = {
   inputClassName: '',
   isInvalid: false,
   labelClassName: '',
+  name: undefined,
   onChange: undefined,
   'data-testid': undefined,
 };
