@@ -70,9 +70,7 @@ const conf: monaco.languages.LanguageConfiguration = {
   },
 };
 
-const language:
-  | monaco.languages.IMonarchLanguage
-  | monaco.Thenable<monaco.languages.IMonarchLanguage> = {
+const language: monaco.languages.IMonarchLanguage = {
   // tokenPostfix: '.scala',
 
   // We can't easily add everything from Dotty, but we can at least add some of its keywords
