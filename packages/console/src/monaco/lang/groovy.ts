@@ -44,9 +44,7 @@ const conf: monaco.languages.LanguageConfiguration = {
   },
 };
 
-const language:
-  | monaco.languages.IMonarchLanguage
-  | monaco.Thenable<monaco.languages.IMonarchLanguage> = {
+const language: monaco.languages.IMonarchLanguage = {
   // Set defaultToken to invalid to see what you do not tokenize yet
   // defaultToken: 'invalid',
 
