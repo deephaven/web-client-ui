@@ -40,6 +40,7 @@ interface ConsoleInputState {
   isFocused: boolean;
   model: monaco.editor.ITextModel | null;
 }
+
 /**
  * Component for input in a console session. Handles loading the recent command history
  */
