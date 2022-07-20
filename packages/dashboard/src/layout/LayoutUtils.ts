@@ -266,9 +266,8 @@ class LayoutUtils {
 
   /**
    * Removes dynamic props from components in the given config so this config could be serialized
-   * @param {Array} config Config object
-   * @param {(name: string, config: PanelConfig) => PanelConfig | null}
-   * @returns {Array} Dehydrated config
+   * @param config Config objec
+   * @returns Dehydrated config
    */
   static dehydrateLayoutConfig(
     config: ItemConfigType[],
@@ -322,7 +321,7 @@ class LayoutUtils {
 
   /**
    * Drop minor changes in Layout Configuration for deep comparison
-   * @param {Object} config Layout Configuration
+   * @param config Layout Configuration
    *
    * minor changes:
    * 1. sorts in grid
@@ -380,9 +379,9 @@ class LayoutUtils {
 
   /**
    * Adds dynamic props to components in the given config so this config could be used to initialize a layout
-   * @param {GoldenLayout.Config} config Dehydrated config object
-   * @param {(name: string, config: PanelProps) => PanelProps} hydrateComponent Function to hydrate the component
-   * @returns {Array} Hydrated config
+   * @param config Dehydrated config object
+   * @param hydrateComponent Function to hydrate the component
+   * @returns Hydrated config
    */
   static hydrateLayoutConfig(
     config: (PanelConfig | ItemConfig)[],
@@ -574,8 +573,8 @@ class LayoutUtils {
 
   /**
    * Close the specified component and remove it from the stack it's currently in
-   * @param {ContentItem} root The GoldenLayout root to search and close the component in
-   * @param {Config} config The GoldenLayout component config definition to close, eg. { component: 'IrisGridPanel', id: 'table-t' }
+   * @param root The GoldenLayout root to search and close the component in
+   * @param config The GoldenLayout component config definition to close, eg. { component: 'IrisGridPanel', id: 'table-t' }
    */
   static closeComponent(root: ContentItem, config: LayoutConfig): void {
     const stack = LayoutUtils.getStackForRoot(
@@ -666,8 +665,8 @@ class LayoutUtils {
 
   /**
    * Get panel component state for the given config
-   * @param {Object} config Panel config
-   * @returns {Object} Panel state
+   * @param config Panel config
+   * @returns Panel state
    */
   static getPanelComponentState(config: ItemConfigType): unknown {
     if (isComponentConfig(config)) {
@@ -696,7 +695,7 @@ class LayoutUtils {
 
   /**
    * Gets a containers root node
-   * @param {GlContainer} container The Golden Layout container to get the root for
+   * @param container The Golden Layout container to get the root for
    */
   static getRootFromContainer(container: Container): ContentItem {
     return container.layoutManager.root;
@@ -704,7 +703,7 @@ class LayoutUtils {
 
   /**
    * Gets the config for the panel component given a glContainer
-   * @param {GlContainer} container The Golden Layout container to get the config for
+   * @param container The Golden Layout container to get the config for
    */
   static getComponentConfigFromContainer(
     container?: Container
@@ -742,8 +741,8 @@ class LayoutUtils {
 
   /**
    * Retrieve the panel ID for the provided golden layout container
-   * @param {GlContainer} glContainer The container to get the panel ID for
-   * @returns {string|null} Panel ID
+   * @param glContainer The container to get the panel ID for
+   * @returns Panel ID
    */
   static getIdFromContainer(
     glContainer: Container
@@ -829,7 +828,7 @@ class LayoutUtils {
 
   /**
    * Get a promise that initializes when layout is initialized
-   * @param {GoldenLayout} layout The layout to await initialization on
+   * @param layout The layout to await initialization on
    * @returns Promise that resolves when layout is initialized
    */
   static onInitialized(layout: GoldenLayout): Promise<void> {

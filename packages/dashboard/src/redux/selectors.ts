@@ -19,7 +19,7 @@ export const getAllDashboardsData: Selector<
 > = store => store.dashboardData;
 
 /**
- * @param {Store} store The redux store
+ * @param store The redux store
  * @param dashboardId The dashboard ID to get data for
  * @returns The data object for the dashboard with the specified ID
  */
@@ -29,7 +29,7 @@ export const getDashboardData = (
 ): DashboardData => getAllDashboardsData(store)[dashboardId] ?? EMPTY_OBJECT;
 
 /**
- * @param {Store} store The redux store
+ * @param store The redux store
  * @param dashboardId The dashboard ID to get data for
  * @returns The ClosedPanel array of panels that were previously closed/dehydrated
  */
@@ -40,9 +40,9 @@ export const getClosedPanelsForDashboard = (
   (getDashboardData(store, dashboardId).closed ?? EMPTY_ARRAY) as ClosedPanels;
 
 /**
- * @param {Store} store The redux store
- * @param {string} dashboardId The dashboard ID to get data for
- * @returns {OpenedPanelMap} The map of panel IDs to components of all currently open components
+ * @param store The redux store
+ * @param dashboardId The dashboard ID to get data for
+ * @returns The map of panel IDs to components of all currently open components
  */
 export const getOpenedPanelMapForDashboard = (
   store: RootState,

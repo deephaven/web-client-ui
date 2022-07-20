@@ -264,8 +264,8 @@ class PanelManager {
 
   /**
    *
-   * @param {Object} panelConfig The config to hydrate and load
-   * @param {Object} replaceConfig The config to place
+   * @param panelConfig The config to hydrate and load
+   * @param replaceConfig The config to place
    */
   handleReopen(
     panelConfig: ClosedPanel,
