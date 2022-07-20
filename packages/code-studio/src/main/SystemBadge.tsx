@@ -3,11 +3,23 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import classNames from 'classnames';
 import { Tooltip } from '@deephaven/components';
-import { getServerConfigValues } from '@deephaven/redux';
+import { getServerConfigValues, RootState } from '@deephaven/redux';
 import { ColorUtils } from '@deephaven/utils';
 import './SystemBadge.scss';
 
-const SystemBadge = ({ systemName, hostName, systemType, systemColor }) => (
+interface SystemBadgeProps {
+  systemName: string;
+  hostName: string;
+  systemType: string;
+  systemColor?: string;
+}
+
+const SystemBadge = ({
+  systemName,
+  hostName,
+  systemType,
+  systemColor,
+}: SystemBadgeProps) => (
   <div
     className={classNames(
       'system-badge',
@@ -45,7 +57,7 @@ SystemBadge.defaultProps = {
   systemColor: null,
 };
 
-const mapStateToProps = state => {
+const mapStateToProps = (state: RootState) => {
   const {
     systemName,
     hostName,

@@ -799,6 +799,7 @@ export interface IdeConnectionOptions {
 }
 
 export interface IdeConnectionConstructor {
+  HACK_CONNECTION_FAILURE: string;
   new (serverUrl: string, options?: IdeConnectionOptions): IdeConnection;
 }
 

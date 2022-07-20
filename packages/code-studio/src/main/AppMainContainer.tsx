@@ -15,6 +15,7 @@ import {
 } from '@deephaven/components';
 import {
   Dashboard,
+  DashboardLayoutConfig,
   DashboardUtils,
   DEFAULT_DASHBOARD_ID,
   getDashboardData,
@@ -85,7 +86,7 @@ interface AppMainContainerProps {
   };
   setActiveTool: (tool: string) => void;
   updateDashboardData: () => void;
-  updateWorkspaceData: () => void;
+  updateWorkspaceData: (workspaceData: Record<string, unknown>) => void;
   user: typeof UIPropTypes.User;
   workspace: Workspace;
   plugins: DeephavenPluginModuleMap;
@@ -143,9 +144,7 @@ export class AppMainContainer extends Component<
     this.hydrateDefault = this.hydrateDefault.bind(this);
     this.openNotebookFromURL = this.openNotebookFromURL.bind(this);
 
-    this.goldenLayout = null;
     this.importElement = React.createRef();
-    this.widgetListenerRemover = null;
 
     this.state = {
       contextActions: [
@@ -188,7 +187,7 @@ export class AppMainContainer extends Component<
     };
   }
 
-  componentDidMount() {
+  componentDidMount(): void {
     this.initWidgets();
 
     window.addEventListener(
@@ -197,14 +196,14 @@ export class AppMainContainer extends Component<
     );
   }
 
-  componentDidUpdate(prevProps) {
+  componentDidUpdate(prevProps: AppMainContainerProps): void {
     const { dashboardData } = this.props;
     if (prevProps.dashboardData !== dashboardData) {
       this.handleDataChange(dashboardData);
     }
   }
 
-  componentWillUnmount() {
+  componentWillUnmount(): void {
     this.deinitWidgets();
 
     window.removeEventListener(
@@ -371,11 +370,11 @@ export class AppMainContainer extends Component<
     updateWorkspaceData({ closed, filterSets, links });
   }
 
-  handleGoldenLayoutChange(goldenLayout) {
+  handleGoldenLayoutChange(goldenLayout: GoldenLayout) {
     this.goldenLayout = goldenLayout;
   }
 
-  handleLayoutConfigChange(layoutConfig) {
+  handleLayoutConfigChange(layoutConfig: DashboardLayoutConfig): void {
     const { updateWorkspaceData } = this.props;
     updateWorkspaceData({ layoutConfig });
   }
