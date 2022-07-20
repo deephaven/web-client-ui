@@ -45,9 +45,7 @@ const conf: monaco.languages.LanguageConfiguration = {
   },
 };
 
-const language:
-  | monaco.languages.IMonarchLanguage
-  | monaco.Thenable<monaco.languages.IMonarchLanguage> = {
+const language: monaco.languages.IMonarchLanguage = {
   tokenPostfix: '.js',
 
   keywords: [
