@@ -30,7 +30,7 @@ export type ClosedPanel = ReactComponentConfig;
 
 export type ClosedPanels = ClosedPanel[];
 
-export type OpenedPanelMap = Map<string, PanelComponent>;
+export type OpenedPanelMap = Map<string | string[], PanelComponent>;
 
 export type PanelsUpdateData = {
   closed: ClosedPanels;
@@ -145,11 +145,11 @@ class PanelManager {
     ) as ReactComponentConfig[];
   }
 
-  getOpenedPanelById(panelId: string): PanelComponent | undefined {
+  getOpenedPanelById(panelId: string | string[]): PanelComponent | undefined {
     return this.openedMap.get(panelId);
   }
 
-  getContainerByPanelId(panelId: string): ContentItem | null {
+  getContainerByPanelId(panelId: string | string[]): ContentItem | null {
     const stack = LayoutUtils.getStackForConfig(this.layout.root, {
       id: panelId,
     });
@@ -205,11 +205,8 @@ class PanelManager {
     // Delete the entry before it's set to maintain correct ordering in the open panels map.
     // The last updated (focused) panel should be the last inserted.
     // Deleting the entry from the map directly instead of calling this.removePanel to skip the checks.
-    this.openedMap.delete(typeof panelId === 'string' ? panelId : panelId[0]);
-    this.openedMap.set(
-      typeof panelId === 'string' ? panelId : panelId[0],
-      panel
-    );
+    this.openedMap.delete(panelId);
+    this.openedMap.set(panelId, panel);
   }
 
   removePanel(panel: PanelComponent): void {
@@ -218,16 +215,11 @@ class PanelManager {
       log.error('removePanel Panel did not have an ID', panel);
       return;
     }
-    if (
-      !this.openedMap.has(typeof panelId === 'string' ? panelId : panelId[0])
-    ) {
+    if (!this.openedMap.has(panelId)) {
       log.error(`Missing panel ID ${panelId} in open panels map`);
       return;
     }
-    if (
-      this.openedMap.get(typeof panelId === 'string' ? panelId : panelId[0]) !==
-      panel
-    ) {
+    if (this.openedMap.get(panelId) !== panel) {
       // We mount a new panel before un-mounting the existing one
       // when replacing existing panels in openComponent/openComponentInStack.
       // Skip map delete if the panelId entry already refers to the new panel.
@@ -237,7 +229,7 @@ class PanelManager {
       return;
     }
     log.debug2(`Removing panel ID ${panelId} from open panels map`);
-    this.openedMap.delete(typeof panelId === 'string' ? panelId : panelId[0]);
+    this.openedMap.delete(panelId);
   }
 
   removeClosedPanelConfig(panelConfig: ClosedPanel): void {
