@@ -1,3 +1,4 @@
+export * from './ColumnHeaderGroup';
 export * from './EditableGridModel';
 export * from './ExpandableGridModel';
 export { default as Grid } from './Grid';
@@ -7,6 +8,7 @@ export * from './GridMetrics';
 export { default as GridModel } from './GridModel';
 export * from './GridMouseHandler';
 export * from './GridRange';
+export * from './GridAxisRange';
 export * from './GridRenderer';
 export { default as GridTestUtils } from './GridTestUtils';
 export { default as GridTheme } from './GridTheme';

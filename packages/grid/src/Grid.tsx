@@ -27,6 +27,7 @@ import {
   GridScrollBarCornerMouseHandler,
   GridVerticalScrollBarMouseHandler,
   EditMouseHandler,
+  GridSeparator,
 } from './mouse-handlers';
 import './Grid.scss';
 import KeyHandler, { GridKeyboardEvent } from './KeyHandler';
@@ -53,6 +54,7 @@ import {
 import { EventHandlerResultOptions } from './EventHandlerResult';
 import { assertIsDefined } from './errors';
 import ThemeContext from './ThemeContext';
+import { DraggingColumn } from './mouse-handlers/GridColumnMoveMouseHandler';
 
 type LegacyCanvasRenderingContext2D = CanvasRenderingContext2D & {
   webkitBackingStorePixelRatio?: number;
@@ -126,7 +128,7 @@ export type GridState = {
   leftOffset: number; // Should be less than the width of the column
 
   // current column/row that user is dragging
-  draggingColumn: VisibleIndex | null;
+  draggingColumn: DraggingColumn | null;
   draggingRow: VisibleIndex | null;
 
   // Offset when dragging a column/row
@@ -134,8 +136,9 @@ export type GridState = {
   draggingRowOffset: number | null;
 
   // When drawing header separators for resizing
-  draggingColumnSeparator: VisibleIndex | null;
-  draggingRowSeparator: VisibleIndex | null;
+  // Keeps hover style when mouse is in buffer before resize starts
+  draggingColumnSeparator: GridSeparator | null;
+  draggingRowSeparator: GridSeparator | null;
 
   // Dragging a scroll bar status
   isDraggingHorizontalScrollBar: boolean;

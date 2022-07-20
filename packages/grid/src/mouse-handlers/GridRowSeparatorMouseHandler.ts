@@ -1,26 +1,30 @@
 /* eslint class-methods-use-this: "off" */
 import Grid from '../Grid';
 import GridMetricCalculator from '../GridMetricCalculator';
-import { ModelIndex, VisibleIndex } from '../GridMetrics';
+import type { ModelIndex, GridMetrics } from '../GridMetrics';
+import type GridModel from '../GridModel';
+import { GridTheme } from '../GridTheme';
 import GridUtils, { GridPoint } from '../GridUtils';
-import GridSeparatorMouseHandler from './GridSeparatorMouseHandler';
+import GridSeparatorMouseHandler, {
+  GridSeparator,
+} from './GridSeparatorMouseHandler';
 
 class GridRowSeparatorMouseHandler extends GridSeparatorMouseHandler {
-  static getRowSeparatorIndex(
+  static getRowSeparator(
     gridPoint: GridPoint,
-    grid: Grid,
-    checkAllowResize = true
-  ): VisibleIndex | null {
-    const theme = grid.getTheme();
-    if (checkAllowResize && !theme.allowRowResize) {
+    metrics: GridMetrics,
+    model: GridModel,
+    theme: GridTheme
+  ): GridSeparator | null {
+    if (!theme.allowRowResize) {
       return null;
     }
 
     const { x, y } = gridPoint;
-    const { metrics } = grid;
-    if (!metrics) throw new Error('metrics not set');
 
-    return GridUtils.getRowSeparatorIndex(x, y, metrics, theme);
+    const index = GridUtils.getRowSeparatorIndex(x, y, metrics, theme);
+
+    return index != null ? { index, depth: 0 } : null;
   }
 
   hiddenCursor = 's-resize';
@@ -64,14 +68,14 @@ class GridRowSeparatorMouseHandler extends GridSeparatorMouseHandler {
     metricCalculator.resetRowHeight(modelIndex);
   }
 
-  updateSeparator(grid: Grid, separatorIndex: VisibleIndex | null): void {
+  updateSeparator(grid: Grid, separator: GridSeparator | null): void {
     grid.setState({
-      draggingRowSeparator: separatorIndex,
-      isDragging: separatorIndex !== null,
+      draggingRowSeparator: separator,
+      isDragging: separator !== null,
     });
   }
 
-  getSeparatorIndex = GridRowSeparatorMouseHandler.getRowSeparatorIndex;
+  getSeparator = GridRowSeparatorMouseHandler.getRowSeparator;
 }
 
 export default GridRowSeparatorMouseHandler;

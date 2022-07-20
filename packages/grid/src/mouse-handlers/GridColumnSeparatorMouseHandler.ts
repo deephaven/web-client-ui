@@ -1,26 +1,58 @@
 /* eslint class-methods-use-this: "off" */
 import Grid from '../Grid';
 import GridMetricCalculator from '../GridMetricCalculator';
-import { ModelIndex, VisibleIndex } from '../GridMetrics';
+import type { ModelIndex, GridMetrics } from '../GridMetrics';
+import type GridModel from '../GridModel';
+import type { GridTheme } from '../GridTheme';
 import GridUtils, { GridPoint } from '../GridUtils';
-import GridSeparatorMouseHandler from './GridSeparatorMouseHandler';
+import GridSeparatorMouseHandler, {
+  GridSeparator,
+} from './GridSeparatorMouseHandler';
 
 class GridColumnSeparatorMouseHandler extends GridSeparatorMouseHandler {
-  static getColumnSeparatorIndex(
+  static getColumnSeparator(
     gridPoint: GridPoint,
-    grid: Grid,
-    checkAllowResize = true
-  ): VisibleIndex | null {
-    const theme = grid.getTheme();
-    if (checkAllowResize && !theme.allowColumnResize) {
+    metrics: GridMetrics,
+    model: GridModel,
+    theme: GridTheme
+  ): GridSeparator | null {
+    if (!theme.allowColumnResize) {
       return null;
     }
 
-    const { x, y } = gridPoint;
-    const { metrics } = grid;
-    if (!metrics) throw new Error('metrics not set');
+    const { x, y, columnHeaderDepth } = gridPoint;
 
-    return GridUtils.getColumnSeparatorIndex(x, y, metrics, theme);
+    const { modelColumns } = metrics;
+
+    const separatorIndex = GridUtils.getColumnSeparatorIndex(
+      x,
+      y,
+      metrics,
+      theme
+    );
+
+    if (
+      separatorIndex == null ||
+      columnHeaderDepth == null ||
+      columnHeaderDepth > 0
+    ) {
+      return null;
+    }
+
+    const columnIndex = modelColumns.get(separatorIndex);
+    const nextColumnIndex = modelColumns.get(separatorIndex + 1);
+    if (columnIndex == null || nextColumnIndex == null) {
+      return null;
+    }
+
+    if (
+      model.textForColumnHeader(columnIndex, columnHeaderDepth) !==
+      model.textForColumnHeader(nextColumnIndex, columnHeaderDepth)
+    ) {
+      return { index: separatorIndex, depth: columnHeaderDepth };
+    }
+
+    return null;
   }
 
   hiddenCursor = 'e-resize';
@@ -64,14 +96,14 @@ class GridColumnSeparatorMouseHandler extends GridSeparatorMouseHandler {
     metricCalculator.resetColumnWidth(modelIndex);
   }
 
-  updateSeparator(grid: Grid, separatorIndex: VisibleIndex | null): void {
+  updateSeparator(grid: Grid, separator: GridSeparator | null): void {
     grid.setState({
-      draggingColumnSeparator: separatorIndex,
-      isDragging: separatorIndex !== null,
+      draggingColumnSeparator: separator,
+      isDragging: separator !== null,
     });
   }
 
-  getSeparatorIndex = GridColumnSeparatorMouseHandler.getColumnSeparatorIndex;
+  getSeparator = GridColumnSeparatorMouseHandler.getColumnSeparator;
 }
 
 export default GridColumnSeparatorMouseHandler;

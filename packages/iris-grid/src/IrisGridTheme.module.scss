@@ -7,13 +7,17 @@ $selection-outline-casing-color: $gray-900;
 $font-size: 12px;
 $row-height: 19px;
 $row-hover-bg: mix($gray-600, $gray-700, 50%);
+$header-bg: $content-bg;
+$header-separator-color: $gray-900;
+$header-height: 30px;
 
 :export {
   grid-bg: $gray-900;
   font: $font-size Fira Sans, sans-serif; // must be preloaded
-  header-bg: $content-bg;
+  header-bg: $header-bg;
   header-color: $gray-200;
-  header-separator-color: $gray-900;
+  header-height: $header-height;
+  header-separator-color: $header-separator-color;
   header-separator-hover-color: $gray-400;
   header-hidden-separator-hover-color: $primary;
   header-sort-bar-color: $purple;

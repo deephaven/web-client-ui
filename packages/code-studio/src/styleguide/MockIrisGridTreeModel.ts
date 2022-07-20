@@ -113,8 +113,8 @@ class MockIrisGridTreeModel
     return this.model.textForRowHeader(row);
   }
 
-  textForColumnHeader(column: ModelIndex): string {
-    return this.model.textForColumnHeader(column);
+  textForColumnHeader(column: ModelIndex, depth: number): string {
+    return this.model.textForColumnHeader(column, depth);
   }
 
   get hasExpandableRows(): boolean {
@@ -150,7 +150,7 @@ class MockIrisGridTreeModel
     const columns = [];
     for (let i = 0; i < count; i += 1) {
       columns.push({
-        name: this.model.textForColumnHeader(i),
+        name: this.model.textForColumnHeader(i, 0),
         type: 'java.lang.String',
         description: `Mock column ${i}`,
       });

@@ -387,7 +387,11 @@ export interface OneClick {
 }
 
 export interface Column {
+  /**
+   * @deprecated
+   */
   readonly index: number;
+
   readonly type: string;
   readonly name: string;
   readonly description: string;
@@ -476,6 +480,11 @@ export interface InputTable {
   deleteTables(tables: Table[]): Promise<InputTable>;
   table: Table;
 }
+export interface ColumnGroup {
+  name: string;
+  children: string[];
+  color?: string;
+}
 
 export interface LayoutHints {
   areSavedLayoutsAllowed: boolean;
@@ -483,6 +492,7 @@ export interface LayoutHints {
   backColumns: string[];
   hiddenColumns: string[];
   frozenColumns: string[];
+  columnGroups: ColumnGroup[];
   searchDisplayMode?: keyof SearchDisplayModeStatic;
 }
 

@@ -339,9 +339,13 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
       title: 'Copy Column Name',
       group: IrisGridContextMenuHandler.GROUP_COPY,
       action: () => {
-        ContextActionUtils.copyToClipboard(
-          model.textForColumnHeader(modelColumn)
-        ).catch(e => log.error('Unable to copy header', e));
+        const text = model.textForColumnHeader(modelColumn);
+        if (text == null) {
+          return;
+        }
+        ContextActionUtils.copyToClipboard(text).catch(e =>
+          log.error('Unable to copy header', e)
+        );
       },
     });
 
@@ -594,7 +598,12 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
     event: React.MouseEvent<Element, MouseEvent>
   ): EventHandlerResult {
     const { irisGrid } = this;
-    const { y, column: columnIndex, row: rowIndex } = gridPoint;
+    const {
+      y,
+      column: columnIndex,
+      row: rowIndex,
+      columnHeaderDepth,
+    } = gridPoint;
     const modelColumn = irisGrid.getModelColumn(columnIndex);
     const modelRow = irisGrid.getModelRow(rowIndex);
 
@@ -610,7 +619,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
 
     assertNotNull(metrics);
 
-    const { columnHeaderHeight, gridY } = metrics;
+    const { columnHeaderHeight, gridY, columnHeaderMaxDepth } = metrics;
 
     const actions = [] as ContextAction[];
 
@@ -659,12 +668,17 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
     if (modelColumn != null) {
       const column = columns[modelColumn];
 
-      if (isFilterBarShown ? y <= gridY : y <= columnHeaderHeight) {
+      if (
+        isFilterBarShown
+          ? y <= gridY
+          : y <= columnHeaderHeight * columnHeaderMaxDepth &&
+            columnHeaderDepth === 0
+      ) {
         // grid header context menu options
         if (column != null) {
           actions.push(...this.getHeaderActions(modelColumn, gridPoint));
         }
-      } else {
+      } else if (column != null && rowIndex != null) {
         actions.push(...this.getCellActions(modelColumn, grid, gridPoint));
       }
     }

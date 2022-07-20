@@ -244,6 +244,9 @@ class IrisGridProxyModel extends IrisGridModel {
   textForColumnHeader: IrisGridModel['textForColumnHeader'] = (...args) =>
     this.model.textForColumnHeader(...args);
 
+  colorForColumnHeader: IrisGridModel['colorForColumnHeader'] = (...args) =>
+    this.model.colorForColumnHeader(...args);
+
   textForRowHeader: IrisGridModel['textForRowHeader'] = (...args) =>
     this.model.textForRowHeader(...args);
 
@@ -373,6 +376,17 @@ class IrisGridProxyModel extends IrisGridModel {
 
   get frozenColumns(): ColumnName[] {
     return this.model.frozenColumns;
+  }
+
+  getColumnHeaderGroup: IrisGridModel['getColumnHeaderGroup'] = (...args) =>
+    this.model.getColumnHeaderGroup(...args);
+
+  getColumnHeaderParentGroup: IrisGridModel['getColumnHeaderParentGroup'] = (
+    ...args
+  ) => this.model.getColumnHeaderParentGroup(...args);
+
+  get columnHeaderMaxDepth(): number {
+    return this.model.columnHeaderMaxDepth;
   }
 
   updateFrozenColumns(columns: ColumnName[]): void {
