@@ -6,9 +6,7 @@ const id = 'log';
 
 const conf = {};
 
-const language:
-  | monaco.languages.IMonarchLanguage
-  | monaco.Thenable<monaco.languages.IMonarchLanguage> = {
+const language: monaco.languages.IMonarchLanguage = {
   tokenizer: {
     root: [
       [/ FATAL[\s\S]*/, { token: 'error', next: '@error' }],
