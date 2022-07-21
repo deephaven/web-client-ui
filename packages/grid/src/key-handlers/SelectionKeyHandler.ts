@@ -22,23 +22,47 @@ class SelectionKeyHandler extends KeyHandler {
         return this.handleArrowMove(1, 0, event, grid);
       case 'ArrowLeft':
         return this.handleArrowMove(-1, 0, event, grid);
-      case 'k': // h/j/k/l keys are grouped together for quick navigation by power users
-      case 'PageUp':
+      /**
+       * h/j/k/l keys are grouped together for quick navigation by power users.
+       * Bender added these as shortcuts in the original commit of keyboard shortcuts.
+       * We have no idea why, or what might have inspired them (not excel, not swing, vim?).
+       * Maybe lack of page up keys on a laptop at the time?
+       */
+      case 'k':
+      case 'K':
+        if (GridUtils.isModifierKeyDown(event)) return false;
         return this.handlePageUp(event, grid);
       case 'j':
-      case 'PageDown':
+      case 'J':
+        if (GridUtils.isModifierKeyDown(event)) return false;
         return this.handlePageDown(event, grid);
       case 'h':
-        grid.clearSelectedRanges();
-        grid.moveCursorToPosition(0, grid.state.cursorRow);
+      case 'H':
+        if (GridUtils.isModifierKeyDown(event)) return false;
+        if (!event.shiftKey) {
+          grid.clearSelectedRanges();
+        }
+        grid.moveCursorToPosition(0, grid.state.cursorRow, event.shiftKey);
         return true;
-      case 'l': {
+      case 'l':
+      case 'L': {
+        if (GridUtils.isModifierKeyDown(event)) return false;
         const { model } = grid.props;
         const { columnCount } = model;
-        grid.clearSelectedRanges();
-        grid.moveCursorToPosition(columnCount - 1, grid.state.cursorRow);
+        if (!event.shiftKey) {
+          grid.clearSelectedRanges();
+        }
+        grid.moveCursorToPosition(
+          columnCount - 1,
+          grid.state.cursorRow,
+          event.shiftKey
+        );
         return true;
       }
+      case 'PageDown':
+        return this.handlePageDown(event, grid);
+      case 'PageUp':
+        return this.handlePageUp(event, grid);
       case 'Home':
         if (!event.shiftKey) {
           grid.clearSelectedRanges();

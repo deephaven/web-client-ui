@@ -1,6 +1,7 @@
+import { AxisRange } from '.';
 import GridMetrics, { ModelIndex, MoveOperation } from './GridMetrics';
 import GridRange, { GridRangeIndex } from './GridRange';
-import GridUtils from './GridUtils';
+import GridUtils, { BoundedAxisRange } from './GridUtils';
 
 function expectModelIndexes(
   movedItems: MoveOperation[],
@@ -916,5 +917,68 @@ describe('grid range transforms with moved items in both dimensions model to vis
         new GridRange(30, 35, 40, 45),
       ]
     );
+  });
+});
+
+describe('compareRange function works', () => {
+  it("returns negative when first range's start is before the second", () => {
+    const range1: AxisRange = [0, 5];
+    const range2: AxisRange = [1, 3];
+    expect(GridUtils.compareRanges(range1, range2) < 0).toBeTruthy();
+    expect(GridUtils.compareRanges(range1, range2) > 0).toBeFalsy();
+  });
+  it("returns negative when first range's end is before the second", () => {
+    const range1: AxisRange = [1, 2];
+    const range2: AxisRange = [1, 3];
+    expect(GridUtils.compareRanges(range1, range2) < 0).toBeTruthy();
+    expect(GridUtils.compareRanges(range1, range2) > 0).toBeFalsy();
+  });
+  it('returns positive when first range is after the second', () => {
+    const range1: AxisRange = [1, 5];
+    const range2: AxisRange = [1, 3];
+    expect(GridUtils.compareRanges(range1, range2) > 0).toBeTruthy();
+    expect(GridUtils.compareRanges(range1, range2) < 0).toBeFalsy();
+  });
+  it('returns 0 when the ranges are the same', () => {
+    const range1: AxisRange = [1, 3];
+    const range2: AxisRange = [1, 3];
+    expect(GridUtils.compareRanges(range1, range2) === 0).toBeTruthy();
+  });
+});
+
+describe('for each', () => {
+  it('works on a single array', () => {
+    const ranges: BoundedAxisRange[] = [[1, 2]];
+    expect(GridUtils.mergeSortedRanges(ranges)).toEqual(ranges);
+  });
+
+  it('works on a non-overlapping array', () => {
+    const ranges: BoundedAxisRange[] = [
+      [1, 2],
+      [4, 5],
+      [7, 8],
+    ];
+    expect(GridUtils.mergeSortedRanges(ranges)).toEqual(ranges);
+  });
+
+  it('works on a all overlapping array', () => {
+    const ranges: BoundedAxisRange[] = [
+      [1, 2],
+      [3, 4],
+      [5, 6],
+    ];
+    expect(GridUtils.mergeSortedRanges(ranges)).toEqual([[1, 6]]);
+  });
+
+  it('works on a partially overlapping array', () => {
+    const ranges: BoundedAxisRange[] = [
+      [1, 2],
+      [3, 4],
+      [7, 11],
+    ];
+    expect(GridUtils.mergeSortedRanges(ranges)).toEqual([
+      [1, 4],
+      [7, 11],
+    ]);
   });
 });

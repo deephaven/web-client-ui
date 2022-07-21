@@ -27,6 +27,7 @@ $row-hover-bg: mix($gray-600, $gray-700, 50%);
   selection-outline-casing-color: $selection-outline-casing-color;
   row-hover-bg: $row-hover-bg;
   selected-row-hover-bg: rgba($blue, 0.25);
+  scroll-bar-active-selection-tick-color: rgba($blue, 0.5);
 
   scroll-bar-bg: $gray-850;
   scroll-bar-hover-bg: $gray-800;

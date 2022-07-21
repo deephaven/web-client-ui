@@ -1276,6 +1276,41 @@ export class GridUtils {
 
     return { deltaX, deltaY };
   }
+
+  static compareRanges(range1: AxisRange, range2: AxisRange): number {
+    if (
+      range1[0] == null ||
+      range1[1] == null ||
+      range2[0] == null ||
+      range2[1] == null
+    ) {
+      return 0;
+    }
+    return range1[0] !== range2[0]
+      ? range1[0] - range2[0]
+      : range1[1] - range2[1];
+  }
+
+  static mergeSortedRanges(ranges: BoundedAxisRange[]): BoundedAxisRange[] {
+    const mergedRanges: BoundedAxisRange[] = [];
+
+    for (let i = 0; i < ranges.length; i += 1) {
+      const range = ranges[i];
+      const start = range[0];
+      const end = range[1];
+      if (i === 0) {
+        mergedRanges.push([start, end]);
+      } else if (start - 1 <= mergedRanges[mergedRanges.length - 1][1]) {
+        mergedRanges[mergedRanges.length - 1][1] = Math.max(
+          mergedRanges[mergedRanges.length - 1][1],
+          end
+        );
+      } else {
+        mergedRanges.push([start, end]);
+      }
+    }
+    return mergedRanges;
+  }
 }
 
 export default GridUtils;
