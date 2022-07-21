@@ -1,11 +1,28 @@
-import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
+import React, {
+  MouseEventHandler,
+  PureComponent,
+  ReactElement,
+  ReactNode,
+} from 'react';
 import classNames from 'classnames';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { vsEdit } from '@deephaven/icons';
 
-export default class MarkdownContainer extends PureComponent {
-  render() {
+interface MarkdownContainerProps {
+  onDoubleClick: MouseEventHandler;
+  children: ReactNode;
+  isEditing?: boolean;
+}
+
+export default class MarkdownContainer extends PureComponent<
+  MarkdownContainerProps,
+  Record<string, never>
+> {
+  static defaultProps = {
+    isEditing: false,
+  };
+
+  render(): ReactElement {
     const { isEditing, children, onDoubleClick } = this.props;
 
     return (
@@ -27,13 +44,3 @@ export default class MarkdownContainer extends PureComponent {
     );
   }
 }
-
-MarkdownContainer.propTypes = {
-  onDoubleClick: PropTypes.func.isRequired,
-  children: PropTypes.node.isRequired,
-  isEditing: PropTypes.bool,
-};
-
-MarkdownContainer.defaultProps = {
-  isEditing: false,
-};

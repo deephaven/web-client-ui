@@ -6,10 +6,10 @@ class MarkdownUtils {
 
   /**
    * Retrieves a new markdown title that does not conflict with the current titles
-   * @param {Array<String>} usedTitles Markdown titles that are already in use
-   * @returns {String} The new title
+   * @param usedTitles Markdown titles that are already in use
+   * @returns The new title
    */
-  static getNewMarkdownTitle(usedTitles) {
+  static getNewMarkdownTitle(usedTitles: string[]): string {
     let title = `${MarkdownUtils.DEFAULT_TITLE}`;
     let titleIndex = 0;
     while (usedTitles.indexOf(title) >= 0) {

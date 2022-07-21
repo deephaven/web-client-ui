@@ -2,12 +2,18 @@
 /* eslint-disable jsx-a11y/no-static-element-interactions */
 // background click is just a convience method, not an actual a11y issue
 
-import React, { Component } from 'react';
-import PropTypes from 'prop-types';
+import React, {
+  ChangeEvent,
+  Component,
+  RefObject,
+  MouseEvent,
+  KeyboardEvent,
+  ReactElement,
+} from 'react';
 import { CardFlip } from '@deephaven/components';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { vsGear } from '@deephaven/icons';
-import { PropTypes as APIPropTypes } from '@deephaven/jsapi-shim';
+import { Column } from '@deephaven/jsapi-shim';
 import memoizee from 'memoizee';
 import debounce from 'lodash.debounce';
 import Log from '@deephaven/log';
@@ -16,10 +22,35 @@ import './InputFilter.scss';
 const log = Log.module('InputFilter');
 const UPDATE_DEBOUNCE = 150;
 
-class InputFilter extends Component {
+interface InputFilterProps {
+  columns: Column[];
+  column: Column;
+  isValueShown: boolean;
+  value: string;
+  onChange: (change: {
+    column: Partial<Column> | null;
+    isValueShown?: boolean;
+    value?: string;
+  }) => void;
+}
+
+interface InputFilterState {
+  column: Partial<Column> | null;
+  selectedColumn: Partial<Column> | null;
+  value?: string;
+  isValueShown?: boolean;
+}
+
+class InputFilter extends Component<InputFilterProps, InputFilterState> {
   static PLACEHOLDER = 'Enter value...';
 
-  constructor(props) {
+  static defaultProps = {
+    column: null,
+    isValueShown: false,
+    value: null,
+  };
+
+  constructor(props: InputFilterProps) {
     super(props);
 
     this.handleColumnChange = this.handleColumnChange.bind(this);
@@ -29,7 +60,6 @@ class InputFilter extends Component {
     this.handleSettingsClick = this.handleSettingsClick.bind(this);
     this.handleSettingsSave = this.handleSettingsSave.bind(this);
     this.handleBackgroundClick = this.handleBackgroundClick.bind(this);
-    this.sendUpdate = debounce(this.sendUpdate.bind(this), UPDATE_DEBOUNCE);
 
     this.inputRef = React.createRef();
 
@@ -42,7 +72,10 @@ class InputFilter extends Component {
     };
   }
 
-  componentDidUpdate(prevProps, prevState) {
+  componentDidUpdate(
+    prevProps: InputFilterProps,
+    prevState: InputFilterState
+  ): void {
     const { column: propColumn } = this.props;
     const { column, value, isValueShown } = this.state;
 
@@ -64,9 +97,11 @@ class InputFilter extends Component {
     }
   }
 
-  componentWillUnmount() {
+  componentWillUnmount(): void {
     this.sendUpdate.flush();
   }
+
+  inputRef: RefObject<HTMLInputElement>;
 
   getItemLabel = memoizee((columns, index) => {
     const { name, type } = columns[index];
@@ -82,17 +117,17 @@ class InputFilter extends Component {
     return name;
   });
 
-  handleColumnChange(event) {
+  handleColumnChange(event: ChangeEvent<HTMLSelectElement>): void {
     const { columns } = this.props;
     const { value } = event.target;
-    const selectedColumn = columns[value];
+    const selectedColumn = columns[parseInt(value, 10)];
 
     log.debug2('handleColumnChange', selectedColumn);
 
-    this.setState({ selectedColumn, value: null });
+    this.setState({ selectedColumn, value: undefined });
   }
 
-  handleInputKeyPress(event) {
+  handleInputKeyPress(event: KeyboardEvent<HTMLInputElement>): void {
     if (event.key === 'Enter') {
       event.preventDefault();
       event.stopPropagation();
@@ -106,7 +141,7 @@ class InputFilter extends Component {
     }
   }
 
-  handleValueChange(event) {
+  handleValueChange(event: ChangeEvent<HTMLInputElement>): void {
     const { value } = event.target;
 
     log.debug2('handleValueChange', value);
@@ -114,41 +149,51 @@ class InputFilter extends Component {
     this.setState({ value });
   }
 
-  handleSettingsCancel() {
+  handleSettingsCancel(): void {
     const { column } = this.state;
     this.setState({ selectedColumn: column, isValueShown: true });
   }
 
-  handleSettingsSave() {
+  handleSettingsSave(): void {
     const { selectedColumn } = this.state;
     this.setState({ column: selectedColumn, isValueShown: true });
   }
 
-  handleSettingsClick(event) {
+  handleSettingsClick(event: MouseEvent<HTMLButtonElement>): void {
     const { column } = this.state;
     this.setState({ selectedColumn: column, isValueShown: false });
     event.stopPropagation();
   }
 
-  handleBackgroundClick(event) {
+  handleBackgroundClick(event: MouseEvent<HTMLDivElement>): void {
     // allow clicking anywhere in the background to select and focus the input
     if (event.target !== this.inputRef.current) {
       this.focusInput();
     }
   }
 
-  focusInput() {
+  focusInput(): void {
     if (this.inputRef.current !== null) {
       this.inputRef.current.select();
       this.inputRef.current.focus();
     }
   }
 
-  clearFilter() {
+  clearFilter(): void {
     this.setState({ value: '' });
   }
 
-  setFilterState({ name, type, value, isValueShown }) {
+  setFilterState({
+    name,
+    type,
+    value,
+    isValueShown,
+  }: {
+    name: string;
+    type: string;
+    value: string;
+    isValueShown: boolean;
+  }): void {
     const column = name != null && type != null ? { name, type } : null;
     const update =
       isValueShown === undefined
@@ -157,13 +202,13 @@ class InputFilter extends Component {
     this.setState(update);
   }
 
-  sendUpdate() {
+  sendUpdate = debounce(() => {
     const { onChange } = this.props;
     const { column, value, isValueShown } = this.state;
     onChange({ column, isValueShown, value });
-  }
+  }, UPDATE_DEBOUNCE);
 
-  render() {
+  render(): ReactElement {
     const { columns } = this.props;
     const { column, isValueShown, selectedColumn, value } = this.state;
     const inputLength =
@@ -184,7 +229,7 @@ class InputFilter extends Component {
     return (
       <CardFlip
         className="input-filter fill-parent-absolute"
-        isFlipped={isValueShown}
+        isFlipped={isValueShown ?? false}
       >
         <div className="input-filter-settings-card">
           <div className="input-filter-settings-content">
@@ -274,19 +319,5 @@ class InputFilter extends Component {
     );
   }
 }
-
-InputFilter.propTypes = {
-  columns: PropTypes.arrayOf(APIPropTypes.Column).isRequired,
-  column: APIPropTypes.Column,
-  isValueShown: PropTypes.bool,
-  value: PropTypes.string,
-  onChange: PropTypes.func.isRequired,
-};
-
-InputFilter.defaultProps = {
-  column: null,
-  isValueShown: false,
-  value: null,
-};
 
 export default InputFilter;

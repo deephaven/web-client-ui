@@ -2,12 +2,12 @@
 /* eslint-disable jsx-a11y/no-static-element-interactions */
 // background click is just a convenience method, not an actual a11y issue
 
-import React, { Component } from 'react';
+import React, { Component, RefObject } from 'react';
 import PropTypes from 'prop-types';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Button, CardFlip, SocketedButton } from '@deephaven/components';
 import { vsGear } from '@deephaven/icons';
-import { PropTypes as APIPropTypes } from '@deephaven/jsapi-shim';
+import { Column, PropTypes as APIPropTypes } from '@deephaven/jsapi-shim';
 import { TableUtils } from '@deephaven/jsapi-utils';
 import memoizee from 'memoizee';
 import memoize from 'memoize-one';
@@ -15,18 +15,47 @@ import debounce from 'lodash.debounce';
 import Log from '@deephaven/log';
 import { UIPropTypes } from '../../prop-types';
 import './DropdownFilter.scss';
+import { LinkPoint } from '../../linker/LinkerUtils';
 
 const log = Log.module('DropdownFilter');
 const UPDATE_DEBOUNCE = 150;
 
-class DropdownFilter extends Component {
+interface DropdownFilterProps {
+  column: Column;
+  columns: Column[];
+  onSourceMouseEnter: () => void;
+  onSourceMouseLeave: () => void;
+  disableLinking: boolean;
+  isLinkerActive: boolean;
+  isLoaded: boolean;
+  isValueShown: boolean;
+  settingsError: string;
+  source: LinkPoint;
+  value: string;
+  values: string[];
+  onChange: () => void;
+  onColumnSelected: () => void;
+}
+
+interface DropdownFilterState {
+  column: Column;
+  selectedColumn: Column;
+  disableCancel: boolean;
+  isValueShown: boolean;
+  value: string;
+}
+
+class DropdownFilter extends Component<
+  DropdownFilterProps,
+  DropdownFilterState
+> {
   static PLACEHOLDER = 'Select a value...';
 
   static SOURCE_BUTTON_CLASS_NAME = 'btn-dropdown-filter-selector';
 
   static SOURCE_BUTTON_PLACEHOLDER = 'Select a column';
 
-  constructor(props) {
+  constructor(props: DropdownFilterProps) {
     super(props);
 
     this.handleColumnChange = this.handleColumnChange.bind(this);
@@ -51,7 +80,10 @@ class DropdownFilter extends Component {
     };
   }
 
-  componentDidUpdate(prevProps, prevState) {
+  componentDidUpdate(
+    prevProps: DropdownFilterProps,
+    prevState: DropdownFilterState
+  ) {
     const { source, values, isLoaded } = this.props;
     const { column, value, isValueShown } = this.state;
 
@@ -85,9 +117,11 @@ class DropdownFilter extends Component {
     }
   }
 
-  componentWillUnmount() {
+  componentWillUnmount(): void {
     this.sendUpdate.flush();
   }
+
+  dropdownRef: RefObject<HTMLSelectElement>;
 
   getCompatibleColumns = memoize((source, columns) =>
     source

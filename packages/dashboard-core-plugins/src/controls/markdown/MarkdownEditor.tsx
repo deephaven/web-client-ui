@@ -1,15 +1,31 @@
-import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
+import React, { PureComponent, ReactElement } from 'react';
 import Markdown from 'react-markdown';
+import { CodeComponent } from 'react-markdown/src/ast-to-react';
 import { Code, Editor } from '@deephaven/console';
+import type * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js';
 
-export default class MarkdownEditor extends PureComponent {
-  constructor(props) {
+interface MarkdownEditorProps {
+  isEditing: boolean;
+  content: string;
+  onEditorInitialized: (editor: monaco.editor.IStandaloneCodeEditor) => void;
+}
+export default class MarkdownEditor extends PureComponent<
+  MarkdownEditorProps,
+  Record<string, never>
+> {
+  static defaultProps = {
+    isEditing: false,
+    content: '',
+  };
+
+  constructor(props: MarkdownEditorProps) {
     super(props);
     this.container = null;
   }
 
-  renderMarkdown = props => {
+  container: HTMLDivElement | null;
+
+  renderMarkdown: CodeComponent = props => {
     const { children, className } = props;
     const language = className?.startsWith('language-')
       ? className.substring(9)
@@ -27,7 +43,7 @@ export default class MarkdownEditor extends PureComponent {
     );
   };
 
-  render() {
+  render(): ReactElement {
     const { isEditing, content, onEditorInitialized } = this.props;
     return (
       <div
@@ -54,14 +70,3 @@ export default class MarkdownEditor extends PureComponent {
     );
   }
 }
-
-MarkdownEditor.propTypes = {
-  isEditing: PropTypes.bool,
-  content: PropTypes.string,
-  onEditorInitialized: PropTypes.func.isRequired,
-};
-
-MarkdownEditor.defaultProps = {
-  isEditing: false,
-  content: '',
-};
