@@ -19,7 +19,6 @@ const DEFAULT_FORMAT_STRING = '###,##0';
 interface GotoRowProps {
   gotoRow: string;
   gotoRowError: string;
-  selectGotoRowInput: boolean;
   onSubmit: () => void;
   model: IrisGridModel;
   onGotoRowNumberChanged: (event: ChangeEvent<HTMLInputElement>) => void;
@@ -34,7 +33,6 @@ interface GotoRowProps {
 const GotoRow = ({
   gotoRow,
   gotoRowError,
-  selectGotoRowInput,
   onSubmit,
   isShown,
   onEntering,
@@ -52,10 +50,12 @@ const GotoRow = ({
   const { rowCount } = model;
 
   useEffect(() => {
-    if (selectGotoRowInput) {
+    // when row changes without focus (i.e. via context menu), re-select input
+    if (document.activeElement !== inputRef.current) {
       inputRef.current?.select();
     }
-  }, [selectGotoRowInput]);
+  }, [gotoRow]);
+
   return (
     <IrisGridBottomBar
       isShown={isShown}
@@ -63,7 +63,7 @@ const GotoRow = ({
       onEntering={onEntering}
       onEntered={() => {
         onEntered();
-        inputRef.current?.focus();
+        inputRef.current?.select();
       }}
       onExiting={onExiting}
       onExited={onExited}
@@ -77,6 +77,8 @@ const GotoRow = ({
               type="number"
               onKeyDown={e => {
                 if (e.key === 'Enter') {
+                  e.stopPropagation();
+                  e.preventDefault();
                   onSubmit();
                 }
               }}

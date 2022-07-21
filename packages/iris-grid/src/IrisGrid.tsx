@@ -389,7 +389,6 @@ export interface IrisGridState {
   overflowText: string;
   overflowButtonTooltipProps: CSSProperties | null;
 
-  selectGotoRowInput: boolean;
   gotoRow: string;
   gotoRowError: string;
   isGotoRowShown: boolean;
@@ -599,7 +598,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     };
 
     this.toggleGotoRowAction = {
-      action: () => this.toggleGotoRow(''),
+      action: () => this.toggleGotoRow(),
       shortcut: SHORTCUTS.TABLE.GOTO_ROW,
     };
 
@@ -784,7 +783,6 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       isGotoRowShown: false,
       gotoRow: '',
       gotoRowError: '',
-      selectGotoRowInput: false,
     };
   }
 
@@ -2341,22 +2339,21 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     );
   }
 
-  toggleGotoRow(row: string): void {
+  toggleGotoRow(row = ''): void {
     const { isGotoRowShown } = this.state;
-    if (!isGotoRowShown) {
+    if (row) {
+      // if invoked with a row, keep open instead of toggle
       this.setState({
-        isGotoRowShown: !isGotoRowShown,
+        isGotoRowShown: true,
         gotoRow: row,
         gotoRowError: '',
-        selectGotoRowInput: true,
       });
       return;
     }
     this.setState({
       isGotoRowShown: !isGotoRowShown,
-      gotoRow: row,
+      gotoRow: '',
       gotoRowError: '',
-      selectGotoRowInput: false,
     });
   }
 
@@ -3244,7 +3241,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   focusRowInGrid(rowNumber: string): void {
     const { model } = this.props;
     const { rowCount } = model;
-    this.setState({ gotoRow: rowNumber, selectGotoRowInput: false });
+    this.setState({ gotoRow: rowNumber });
     if (rowNumber === '') {
       this.setState({ gotoRowError: '' });
       return;
@@ -3453,7 +3450,6 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       isGotoRowShown,
       gotoRow,
       gotoRowError,
-      selectGotoRowInput,
     } = this.state;
     if (!isReady) {
       return null;
@@ -4056,7 +4052,6 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
             model={model}
             isShown={isGotoRowShown}
             gotoRow={gotoRow}
-            selectGotoRowInput={selectGotoRowInput}
             gotoRowError={gotoRowError}
             onSubmit={this.handleGotoRowSelectedRowNumberSubmit}
             onGotoRowNumberChanged={this.handleGotoRowSelectedRowNumberChanged}
