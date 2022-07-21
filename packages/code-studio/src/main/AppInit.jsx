@@ -65,7 +65,7 @@ const USER = {
 const WORKSPACE_STORAGE = new LocalWorkspaceStorage();
 const COMMAND_HISTORY_STORAGE = new PouchCommandHistoryStorage();
 const FILE_STORAGE = new WebdavFileStorage(
-  createClient(process.env.REACT_APP_NOTEBOOKS_URL ?? '')
+  createClient('http://localhost:8080')
 );
 /**
  * Component that sets some default values needed
