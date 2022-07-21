@@ -10,8 +10,11 @@ export default defineConfig(({ mode }) => {
   // https://github.com/vitejs/vite/issues/3105#issuecomment-939703781
   const htmlPlugin = () => ({
     name: 'html-transform',
-    transformIndexHtml(html: string) {
-      return html.replace(/%(.*?)%/g, (_, p1) => env[p1]);
+    transformIndexHtml: {
+      enforce: 'pre' as const,
+      transform(html: string) {
+        return html.replace(/#(.*?)#/g, (_, p1) => env[p1]);
+      },
     },
   });
 
@@ -20,6 +23,13 @@ export default defineConfig(({ mode }) => {
   return {
     server: {
       port: Number.parseInt(env.PORT, 10) ?? 4000,
+      open: true,
+      proxy: {
+        '/notebook': {
+          target: 'http://localhost:10000',
+          changeOrigin: true,
+        },
+      },
     },
     define: {
       global: 'window',
@@ -49,7 +59,7 @@ export default defineConfig(({ mode }) => {
       ],
       // TODO: See if this is better than the last find/replace above
       // In theory this can load from package.json source field instead of main
-      // mainFields: ['source', 'module', 'main', 'jsnext:main', 'jsnext'],
+      mainFields: ['source', 'module', 'main', 'jsnext:main', 'jsnext'],
     },
     build: {
       outDir: env.VITE_BUILD_PATH,

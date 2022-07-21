@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <meta name="ui-version" content="v%VITE_VERSION%" />
+    <meta name="ui-version" content="v#VITE_VERSION#" />
     <meta charset="utf-8" />
     <meta
       name="viewport"
@@ -14,15 +14,15 @@
     -->
     <link rel="manifest" href="/manifest.json" />
 
-    <link rel="icon" href="%VITE_FAVICON%" />
+    <link rel="icon" href="#VITE_FAVICON#" />
 
     <!-- The script is currently tightly coupled with the server -->
     <script
-      src="%VITE_CORE_API_URL%/%VITE_OPEN_API_NAME%"
+      src="#VITE_CORE_API_URL#/#VITE_OPEN_API_NAME#"
       type="text/javascript"
     ></script>
     <script
-      src="%VITE_CORE_API_URL%/%VITE_CORE_API_NAME%"
+      src="#VITE_CORE_API_URL#/#VITE_CORE_API_NAME#"
       type="text/javascript"
     ></script>
     <script>
@@ -37,7 +37,7 @@
                   <div class="modal-content">
                     <div class="modal-body">
                       <h5 class="modal-title">Error: Unable to load API</h5>
-                      <p class="text-break">Ensure the server is running and you are able to reach %VITE_CORE_API_URL%/%VITE_CORE_API_NAME%, then refresh the page.</p>
+                      <p class="text-break">Ensure the server is running and you are able to reach #VITE_CORE_API_URL#/#VITE_CORE_API_NAME#, then refresh the page.</p>
                     </div>
                   </div>
                 </div>
