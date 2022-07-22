@@ -50,7 +50,7 @@ export const deleteDashboardLinks = (id, linkIds) => (dispatch, getState) => {
 /**
  * Set the isolated linker panel ID for a dashboard
  * @param {string} id The ID of the dashboard to set the isolated linker panel ID in
- * @param {string|undefined} isolatedLinkerPanelId The isolated panel ID, or undefined to unset
+ * @param {string | string[] | undefined} isolatedLinkerPanelId The isolated panel ID, or undefined to unset
  */
 export const setDashboardIsolatedLinkerPanelId = (
   id,
