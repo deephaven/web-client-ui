@@ -6,7 +6,6 @@ import {
   vsRemove,
   vsCheck,
   vsFilter,
-  vsReply,
   IconDefinition,
 } from '@deephaven/icons';
 import debounce from 'lodash.debounce';
@@ -438,12 +437,10 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
 
         const gotoRow = {
           title: 'Go to',
-          icon: vsReply,
-          iconColor: filterIconColor,
           shortcut: SHORTCUTS.TABLE.GOTO_ROW,
           group: IrisGridContextMenuHandler.GROUP_GOTO,
           order: 10,
-          action: () => this.irisGrid.handleGotoRowOpened(),
+          action: () => this.irisGrid.toggleGotoRow(`${rowIndex + 1}`),
         };
 
         if (value != null) {

@@ -1,4 +1,5 @@
 import React, {
+  ChangeEvent,
   Component,
   CSSProperties,
   ReactElement,
@@ -387,6 +388,9 @@ export interface IrisGridState {
   showOverflowModal: boolean;
   overflowText: string;
   overflowButtonTooltipProps: CSSProperties | null;
+
+  gotoRow: string;
+  gotoRowError: string;
   isGotoRowShown: boolean;
 }
 
@@ -543,7 +547,10 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     this.handlePendingDiscardClicked = this.handlePendingDiscardClicked.bind(
       this
     );
-
+    this.handleGotoRowSelectedRowNumberSubmit = this.handleGotoRowSelectedRowNumberSubmit.bind(
+      this
+    );
+    this.focusRowInGrid = this.focusRowInGrid.bind(this);
     this.handleDownloadTable = this.handleDownloadTable.bind(this);
     this.handleDownloadTableStart = this.handleDownloadTableStart.bind(this);
     this.handleCancelDownloadTable = this.handleCancelDownloadTable.bind(this);
@@ -774,6 +781,8 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       overflowText: '',
       overflowButtonTooltipProps: null,
       isGotoRowShown: false,
+      gotoRow: '',
+      gotoRowError: '',
     };
   }
 
@@ -2330,9 +2339,22 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     );
   }
 
-  toggleGotoRow(): void {
+  toggleGotoRow(row = ''): void {
     const { isGotoRowShown } = this.state;
-    this.setState({ isGotoRowShown: !isGotoRowShown });
+    if (row) {
+      // if invoked with a row, keep open instead of toggle
+      this.setState({
+        isGotoRowShown: true,
+        gotoRow: row,
+        gotoRowError: '',
+      });
+      return;
+    }
+    this.setState({
+      isGotoRowShown: !isGotoRowShown,
+      gotoRow: '',
+      gotoRowError: '',
+    });
   }
 
   async commitPending(): Promise<void> {
@@ -3211,8 +3233,39 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     }
   );
 
-  handleGotoRowSelectedRowNumberChanged(rowValue: number): void {
-    this.grid?.setFocusRow(rowValue);
+  handleGotoRowSelectedRowNumberSubmit(): void {
+    const { gotoRow: rowNumber } = this.state;
+    this.focusRowInGrid(rowNumber);
+  }
+
+  focusRowInGrid(rowNumber: string): void {
+    const { model } = this.props;
+    const { rowCount } = model;
+    this.setState({ gotoRow: rowNumber });
+    if (rowNumber === '') {
+      this.setState({ gotoRowError: '' });
+      return;
+    }
+    const rowInt = parseInt(rowNumber, 10);
+    if (rowInt > rowCount || rowInt < -rowCount) {
+      this.setState({ gotoRowError: 'Invalid row index' });
+    } else if (rowInt === 0) {
+      this.setState({ gotoRowError: '' });
+      this.grid?.setFocusRow(0);
+    } else if (rowInt < 0) {
+      this.setState({ gotoRowError: '' });
+      this.grid?.setFocusRow(rowInt + rowCount);
+    } else {
+      this.grid?.setFocusRow(rowInt - 1);
+      this.setState({ gotoRowError: '' });
+    }
+  }
+
+  handleGotoRowSelectedRowNumberChanged(
+    event: ChangeEvent<HTMLInputElement>
+  ): void {
+    const rowNumber = event.target.value;
+    this.focusRowInGrid(rowNumber);
   }
 
   getColumnTooltip(
@@ -3395,6 +3448,8 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       overflowText,
       overflowButtonTooltipProps,
       isGotoRowShown,
+      gotoRow,
+      gotoRowError,
     } = this.state;
     if (!isReady) {
       return null;
@@ -3996,11 +4051,17 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
           <GotoRow
             model={model}
             isShown={isGotoRowShown}
+            gotoRow={gotoRow}
+            gotoRowError={gotoRowError}
+            onSubmit={this.handleGotoRowSelectedRowNumberSubmit}
             onGotoRowNumberChanged={this.handleGotoRowSelectedRowNumberChanged}
             onClose={this.handleGotoRowClosed}
             onEntering={this.handleAnimationStart}
             onEntered={this.handleAnimationEnd}
-            onExiting={this.handleAnimationStart}
+            onExiting={() => {
+              this.handleAnimationStart();
+              this.focus();
+            }}
             onExited={this.handleAnimationEnd}
           />
 

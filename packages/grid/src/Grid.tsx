@@ -1050,16 +1050,15 @@ class Grid extends PureComponent<GridProps, GridState> {
     const metricState = this.getMetricState();
     const newTop = this.metricCalculator.getLastTop(
       metricState,
-      focusedRow,
+      focusedRow + 1,
       halfViewportHeight
     );
-
     this.setState({
       top: Math.min(lastTop, newTop),
-      selectedRanges: [
-        new GridRange(null, focusedRow - 1, null, focusedRow - 1),
-      ],
+      selectedRanges: [new GridRange(null, focusedRow, null, focusedRow)],
     });
+    const { cursorColumn } = this.state;
+    this.moveCursorToPosition(cursorColumn, focusedRow, false, false);
   }
 
   /**

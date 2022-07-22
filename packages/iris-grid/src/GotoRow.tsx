@@ -1,6 +1,6 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { vsClose } from '@deephaven/icons';
-import React, { ReactElement, useState } from 'react';
+import React, { ChangeEvent, ReactElement, useEffect, useRef } from 'react';
 import { Button } from '@deephaven/components';
 import classNames from 'classnames';
 import './GotoRow.scss';
@@ -17,8 +17,11 @@ export function isIrisGridProxyModel(
 const DEFAULT_FORMAT_STRING = '###,##0';
 
 interface GotoRowProps {
+  gotoRow: string;
+  gotoRowError: string;
+  onSubmit: () => void;
   model: IrisGridModel;
-  onGotoRowNumberChanged: (rowValue: number) => void;
+  onGotoRowNumberChanged: (event: ChangeEvent<HTMLInputElement>) => void;
   onClose: () => void;
   isShown: boolean;
   onEntering: () => void;
@@ -28,6 +31,9 @@ interface GotoRowProps {
 }
 
 const GotoRow = ({
+  gotoRow,
+  gotoRowError,
+  onSubmit,
   isShown,
   onEntering,
   onEntered,
@@ -37,67 +43,62 @@ const GotoRow = ({
   onGotoRowNumberChanged,
   onClose,
 }: GotoRowProps): ReactElement => {
-  const [row, setRow] = useState('');
-  const [error, setError] = useState('');
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const res = 'Row number';
 
   const { rowCount } = model;
+
+  useEffect(() => {
+    // when row changes without focus (i.e. via context menu), re-select input
+    if (document.activeElement !== inputRef.current) {
+      inputRef.current?.select();
+    }
+  }, [gotoRow]);
 
   return (
     <IrisGridBottomBar
       isShown={isShown}
       className={classNames('goto-row')}
       onEntering={onEntering}
-      onEntered={onEntered}
+      onEntered={() => {
+        onEntered();
+        inputRef.current?.select();
+      }}
       onExiting={onExiting}
       onExited={onExited}
     >
       <>
-        <div className="goto-row-text">
-          <h6>Go to row</h6>
-        </div>
-        <div className="goto-row-input">
-          <input
-            type="number"
-            className={classNames('form-control', {
-              'is-invalid': error !== '',
-            })}
-            placeholder={res}
-            onChange={event => {
-              const rowNumber = event.target.value;
-              setRow(rowNumber);
-              if (rowNumber === '') {
-                setError('');
-                return;
-              }
-              const rowInt = parseInt(event.target.value, 10);
-              if (rowInt > rowCount || rowInt < -rowCount) {
-                setError('Invalid row index');
-              } else if (rowInt === 0) {
-                onGotoRowNumberChanged(1);
-                setError('');
-              } else if (rowInt < 0) {
-                onGotoRowNumberChanged(rowInt + rowCount + 1);
-                setError('');
-              } else {
-                onGotoRowNumberChanged(parseInt(event.target.value, 10));
-                setError('');
-              }
-            }}
-            value={row}
-          />
-        </div>
-        <div className="goto-row-text">
-          <h6>
-            of {dh.i18n.NumberFormat.format(DEFAULT_FORMAT_STRING, rowCount)}
-          </h6>
-        </div>
-        {error && (
-          <div className="goto-row-error">
-            <h6>{error}</h6>
+        <div className="goto-row-wrapper">
+          <div className="goto-row-text">Go to row</div>
+          <div className="goto-row-input">
+            <input
+              ref={inputRef}
+              type="number"
+              onKeyDown={e => {
+                if (e.key === 'Enter') {
+                  e.stopPropagation();
+                  e.preventDefault();
+                  onSubmit();
+                }
+              }}
+              className={classNames('form-control', {
+                'is-invalid': gotoRowError !== '',
+              })}
+              placeholder={res}
+              onChange={event => {
+                onGotoRowNumberChanged(event);
+              }}
+              value={gotoRow}
+            />
           </div>
-        )}
+          <div className="goto-row-text">
+            of {dh.i18n.NumberFormat.format(DEFAULT_FORMAT_STRING, rowCount)}
+          </div>
+          {gotoRowError && (
+            <div className="goto-row-error text-danger">{gotoRowError}</div>
+          )}
+        </div>
         <div className="goto-row-close">
           <Button kind="ghost" onClick={onClose}>
             <FontAwesomeIcon icon={vsClose} style={{ marginRight: '0' }} />
