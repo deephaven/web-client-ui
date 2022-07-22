@@ -20,7 +20,8 @@ import { getOrThrow } from './GridMetricCalculator';
 import { isEditableGridModel } from './EditableGridModel';
 import type { GridSeparator } from './mouse-handlers/GridSeparatorMouseHandler';
 import { DraggingColumn } from './mouse-handlers/GridColumnMoveMouseHandler';
-import { BoundedAxisRange, GridColumnSeparatorMouseHandler } from '.';
+import GridColumnSeparatorMouseHandler from './mouse-handlers/GridColumnSeparatorMouseHandler';
+import { BoundedAxisRange } from './GridAxisRange';
 
 export type EditingCellTextSelectionRange = [start: number, end: number];
 
@@ -2294,7 +2295,7 @@ export class GridRenderer {
       height,
     } = metrics;
     const {
-      left = metrics.leftVisible,
+      left = metrics.left,
       top = metrics.top,
       right = metrics.right,
       bottom = metrics.bottom,
@@ -2519,7 +2520,6 @@ export class GridRenderer {
       columnHeaderMaxDepth,
       columnHeaderHeight,
       movedColumns,
-      left,
       modelColumns,
     } = metrics;
 
@@ -2538,8 +2538,7 @@ export class GridRenderer {
 
     const [startIndex, endIndex] = draggingColumnVisibleRange;
 
-    const xLeft =
-      startIndex >= left ? getOrThrow(visibleColumnXs, startIndex) : 0;
+    const xLeft = getOrThrow(visibleColumnXs, startIndex, 0);
     const xRight =
       getOrThrow(visibleColumnXs, endIndex, xLeft) +
       getOrThrow(visibleColumnWidths, endIndex, 0);

@@ -1,5 +1,5 @@
 import { EventTarget, Event } from 'event-target-shim';
-import { IColumnHeaderGroup } from '.';
+import type { IColumnHeaderGroup } from './ColumnHeaderGroup';
 import { ModelIndex } from './GridMetrics';
 import { GridColor, GridTheme, NullableGridColor } from './GridTheme';
 

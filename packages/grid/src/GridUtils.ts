@@ -736,7 +736,7 @@ export class GridUtils {
   static moveItem(
     from: VisibleIndex,
     to: VisibleIndex,
-    oldMovedItems: MoveOperation[] = []
+    oldMovedItems: MoveOperation[]
   ): MoveOperation[] {
     if (from === to) {
       return oldMovedItems;
@@ -783,7 +783,7 @@ export class GridUtils {
   static moveRange(
     from: BoundedAxisRange,
     to: VisibleIndex,
-    oldMovedItems: MoveOperation[] = []
+    oldMovedItems: MoveOperation[]
   ): MoveOperation[] {
     if (from[0] === to) {
       return oldMovedItems;

@@ -18,8 +18,6 @@ export interface IrisGridMetricState extends GridMetricState {
   reverseType: string;
 }
 
-/* eslint class-methods-use-this: "off" */
-/* eslint react/destructuring-assignment: "off" */
 /**
  * Class to calculate all the metrics for a grid.
  * Call getMetrics() with the state to get metrics
@@ -45,7 +43,7 @@ class IrisGridMetricCalculator extends GridMetricCalculator {
     const hasUserSetWidth = this.userColumnWidths.has(modelColumn);
     if (
       !hasUserSetWidth &&
-      hiddenColumns.includes(model.columns[modelColumn].name)
+      hiddenColumns.includes(model.columns[modelColumn]?.name)
     ) {
       return 0;
     }

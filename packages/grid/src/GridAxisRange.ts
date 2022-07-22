@@ -1,4 +1,5 @@
-import { GridRangeIndex, VisibleIndex } from '.';
+import type { GridRangeIndex } from './GridRange';
+import type { VisibleIndex } from './GridMetrics';
 
 export type Range<T> = [start: T, end: T];
 
