@@ -2,6 +2,7 @@ import React, { Component, PureComponent } from 'react';
 import classNames from 'classnames';
 import memoize from 'memoize-one';
 import PropTypes from 'prop-types';
+import { ContextActions, ContextActionUtils } from '@deephaven/components';
 import { GLPropTypes } from '@deephaven/dashboard';
 import Panel from './Panel';
 import WidgetPanelTooltip from './WidgetPanelTooltip';
@@ -16,6 +17,7 @@ class WidgetPanel extends PureComponent {
 
     this.handleSessionClosed = this.handleSessionClosed.bind(this);
     this.handleSessionOpened = this.handleSessionOpened.bind(this);
+    this.handleCopyName = this.handleCopyName.bind(this);
 
     this.state = {
       isClientDisconnected: false,
@@ -24,6 +26,11 @@ class WidgetPanel extends PureComponent {
       isWaitingForReconnect: false,
       isPanelInactive: false,
     };
+  }
+
+  handleCopyName() {
+    const { widgetName } = this.props;
+    ContextActionUtils.copyToClipboard(widgetName);
   }
 
   getErrorMessage() {
@@ -128,6 +135,15 @@ class WidgetPanel extends PureComponent {
         description
       );
 
+    const additionalActions = [
+      {
+        title: `Copy ${widgetType} Name`,
+        group: ContextActions.groups.medium,
+        order: 20,
+        action: this.handleCopyName,
+      },
+    ];
+
     return (
       <Panel
         className={classNames(className, {
@@ -155,6 +171,7 @@ class WidgetPanel extends PureComponent {
         isLoading={isLoading}
         isClonable={isClonable}
         isRenamable={isRenamable}
+        additionalActions={additionalActions}
       >
         {children}
         {isPanelInactive && <div className="fill-parent-absolute" />}
