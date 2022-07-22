@@ -633,6 +633,7 @@ export class IrisGridPanel extends PureComponent {
       visibleColumnXs,
       visibleColumnWidths,
       right,
+      columnHeaderMaxDepth,
     } = metrics;
     const visibleIndex = irisGrid.getVisibleColumn(
       model.getColumnIndexByName(columnName)
@@ -649,7 +650,7 @@ export class IrisGridPanel extends PureComponent {
         rect.right
       )
     );
-    const y = rect.top + columnHeaderHeight;
+    const y = rect.top + columnHeaderHeight * columnHeaderMaxDepth;
 
     return [x, y];
   }

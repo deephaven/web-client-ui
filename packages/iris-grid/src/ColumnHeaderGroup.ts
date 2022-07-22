@@ -6,6 +6,9 @@ import {
   IColumnHeaderGroup,
 } from '@deephaven/grid';
 import memoizeOne from 'memoize-one';
+import Log from '@deephaven/log';
+
+const log = Log.module('ColumnHeaderGroup');
 
 export function isColumnHeaderGroup(x: unknown): x is ColumnHeaderGroup {
   return x instanceof ColumnHeaderGroup;
@@ -54,7 +57,7 @@ export default class ColumnHeaderGroup implements IColumnHeaderGroup {
       const end = Math.max(...visibleIndexes);
 
       if (end - start !== flattenedIndexes.length - 1) {
-        throw new Error(`Column header group ${this.name} is not contiguous`);
+        log.warn(`Column header group ${this.name} is not contiguous`);
       }
 
       return [start, end];

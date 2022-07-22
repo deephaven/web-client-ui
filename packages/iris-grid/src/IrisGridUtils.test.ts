@@ -1,6 +1,6 @@
 import { GridUtils, GridRange, MoveOperation } from '@deephaven/grid';
 import dh, { Column, Table, Sort } from '@deephaven/jsapi-shim';
-import { AdvancedFilter } from '.';
+import type { AdvancedFilter } from './CommonTypes';
 import IrisGridTestUtils from './IrisGridTestUtils';
 import IrisGridUtils from './IrisGridUtils';
 
@@ -267,7 +267,7 @@ describe('remove columns in moved columns', () => {
       movedColumns,
       ['3']
     );
-    expect(newMovedColumns).toEqual(GridUtils.moveItem(3, 1)); // new move should be {from: 3, to: 1}
+    expect(newMovedColumns).toEqual(GridUtils.moveItem(3, 1, [])); // new move should be {from: 3, to: 1}
   });
 
   it('delete the move when the move origin column is removed & alter move origin when a column is removed', () => {
@@ -284,7 +284,7 @@ describe('remove columns in moved columns', () => {
     // columns after move should be [4,0,1,2,5,...]; after columns '3' is removed;
     // move {from: 3, to: 0} is deleted because it is origin column is removed,
     // move {from: 4, to: 1 } is changed into {from: 3, to: 0};
-    expect(newMovedColumns).toEqual(GridUtils.moveItem(3, 0));
+    expect(newMovedColumns).toEqual(GridUtils.moveItem(3, 0, []));
   });
 
   it('delete the move when the origin and destination column is the same after the removal of a column', () => {
@@ -312,7 +312,7 @@ describe('remove columns in moved columns', () => {
     // columns' original state should be [0,1,4,5,...] after '2' & '3' are removed;
     // columns after move should be [0,1,4,5,...]; after columns '2' & '3' are removed;
     // move {from: 4, to: 1 } is changed into {from: 2, to: 1};
-    expect(newMovedColumns).toEqual(GridUtils.moveItem(2, 1));
+    expect(newMovedColumns).toEqual(GridUtils.moveItem(2, 1, []));
   });
 
   it('remove multiple columns - 2', () => {
@@ -327,7 +327,7 @@ describe('remove columns in moved columns', () => {
     // columns' original state should be [0,1,4,5,...] after '2' & '3' are removed;
     // columns after move should be [0,4,1,5,...]; after columns '2' & '3' are removed;
     // move {from: 1, to: 4 } is changed into {from: 1, to: 2};
-    expect(newMovedColumns).toEqual(GridUtils.moveItem(1, 2));
+    expect(newMovedColumns).toEqual(GridUtils.moveItem(1, 2, []));
   });
 
   it('remove multiple columns - 3', () => {
@@ -344,7 +344,7 @@ describe('remove columns in moved columns', () => {
     // columns after moves should be [0,4,1,6,5...]; after columns '2' & '3' are removed;
     // move {from: 4, to: 1 } is changed into {from: 2, to: 1};
     // move {from: 5, to: 6 } is changed into {from: 3, to: 4};
-    let expectMovedColumns = GridUtils.moveItem(2, 1);
+    let expectMovedColumns = GridUtils.moveItem(2, 1, []);
     expectMovedColumns = GridUtils.moveItem(3, 4, expectMovedColumns);
     expect(newMovedColumns).toEqual(expectMovedColumns);
   });

@@ -1,6 +1,6 @@
-/* eslint class-methods-use-this: "off" */
-/* eslint no-unused-vars: "off" */
-import type { Grid, GridMetricCalculator, GridModel } from '..';
+import type Grid from '../Grid';
+import type { GridMetricCalculator } from '../GridMetricCalculator';
+import type GridModel from '../GridModel';
 import { EventHandlerResult } from '../EventHandlerResult';
 import { getOrThrow } from '../GridMetricCalculator';
 import GridMetrics, { ModelIndex, VisibleIndex } from '../GridMetrics';

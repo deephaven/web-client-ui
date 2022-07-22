@@ -41,6 +41,7 @@ import {
   VisibleIndex,
   GridState,
   isEditableGridModel,
+  BoundedAxisRange,
 } from '@deephaven/grid';
 import {
   dhEye,
@@ -1665,7 +1666,8 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       columns: Column[],
       movedColumns: MoveOperation[],
       floatingLeftColumnCount: number,
-      floatingRightColumnCount: number
+      floatingRightColumnCount: number,
+      draggingRange?: BoundedAxisRange
     ) => {
       const floatingColumns: ColumnName[] = [];
 
@@ -1680,6 +1682,14 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
           columns[GridUtils.getModelIndex(columns.length - 1 - i, movedColumns)]
             .name
         );
+      }
+
+      if (draggingRange) {
+        for (let i = draggingRange[0]; i <= draggingRange[1]; i += 1) {
+          floatingColumns.push(
+            columns[GridUtils.getModelIndex(i, movedColumns)].name
+          );
+        }
       }
 
       const columnSet = new Set([...alwaysFetchColumns, ...floatingColumns]);
@@ -4005,7 +4015,8 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
                   model.columns,
                   movedColumns,
                   model.floatingLeftColumnCount,
-                  model.floatingRightColumnCount
+                  model.floatingRightColumnCount,
+                  this.grid?.state.draggingColumn?.range
                 )}
                 formatColumns={this.getCachedPreviewFormatColumns(
                   this.getCachedModelColumns(model, customColumns),

@@ -154,9 +154,12 @@ class IrisGridRenderer extends GridRenderer {
     const { metrics, model } = state;
     const { modelColumns, modelRows } = metrics;
     const modelRow = getOrThrow(modelRows, row);
-    const modelColumn = getOrThrow(modelColumns, column);
+    const modelColumn = modelColumns.get(column);
+    if (modelColumn === undefined) {
+      return;
+    }
     const value = model.valueForCell(modelColumn, modelRow);
-    if (TableUtils.isTextType(model.columns[modelColumn].type)) {
+    if (TableUtils.isTextType(model.columns[modelColumn]?.type)) {
       if (value === null || value === '') {
         const originalFont = context.font;
         context.font = `italic ${originalFont}`;
@@ -422,7 +425,7 @@ class IrisGridRenderer extends GridRenderer {
     } = metrics;
 
     const { headerHorizontalPadding } = theme;
-    const columnWidth = getOrThrow(visibleColumnWidths, index);
+    const columnWidth = getOrThrow(visibleColumnWidths, index, 0);
     const columnX = getOrThrow(visibleColumnXs, index) + gridX;
     const modelColumn = modelColumns.get(index);
 
