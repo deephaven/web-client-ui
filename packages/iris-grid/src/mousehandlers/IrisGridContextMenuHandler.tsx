@@ -406,175 +406,174 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
       defaultDateTimeFormatString: CONTEXT_MENU_DATE_FORMAT,
     });
 
+    if (column == null || rowIndex == null) return actions;
+
     // grid data area context menu options
-    if (column != null && rowIndex != null) {
-      if (model.isFilterable(modelColumn)) {
-        // cell data area contextmenu options
-        const filterMenu = {
-          title: 'Filter By Value',
-          icon: vsRemove,
-          iconColor: filterIconColor,
-          group: IrisGridContextMenuHandler.GROUP_FILTER,
-          order: 10,
-          actions: [],
-        } as {
-          title: string;
-          icon: IconDefinition;
-          iconColor: string;
-          group: number;
-          order: number;
-          actions: ContextAction[];
-        };
+    if (model.isFilterable(modelColumn)) {
+      // cell data area contextmenu options
+      const filterMenu = {
+        title: 'Filter By Value',
+        icon: vsRemove,
+        iconColor: filterIconColor,
+        group: IrisGridContextMenuHandler.GROUP_FILTER,
+        order: 10,
+        actions: [],
+      } as {
+        title: string;
+        icon: IconDefinition;
+        iconColor: string;
+        group: number;
+        order: number;
+        actions: ContextAction[];
+      };
 
-        if (value == null) {
-          if (quickFilters.get(modelColumn)) {
-            filterMenu.actions.push({
-              title: 'And',
-              actions: this.nullFilterActions(
-                column,
-                quickFilters.get(modelColumn),
-                '&&'
-              ),
-              order: 2,
-              group: ContextActions.groups.high,
-            });
-          }
-          filterMenu.actions.push(...this.nullFilterActions(column));
-        } else if (TableUtils.isBooleanType(column.type)) {
-          // boolean should have OR condition, and handles it's own null menu options
-          if (quickFilters.get(modelColumn)) {
-            filterMenu.actions.push({
-              title: 'Or',
-              actions: this.booleanFilterActions(
-                column,
-                valueText,
-                quickFilters.get(modelColumn),
-                '||'
-              ),
-              order: 2,
-              group: ContextActions.groups.high,
-            });
-          }
-          filterMenu.actions.push(
-            ...this.booleanFilterActions(column, valueText)
-          );
-        } else if (
-          TableUtils.isNumberType(column.type) ||
-          TableUtils.isCharType(column.type)
-        ) {
-          // Chars get treated like numbers in terms of which filters are available
-          assertNotNull(modelColumn);
-          // We want to show the full unformatted value if it's a number, so user knows which value they are matching
-          // If it's a Char we just show the char
-          const numberValueText = TableUtils.isCharType(column.type)
-            ? String.fromCharCode(value as number)
-            : `${value}`;
+      if (value == null) {
+        if (quickFilters.get(modelColumn)) {
+          filterMenu.actions.push({
+            title: 'And',
+            actions: this.nullFilterActions(
+              column,
+              quickFilters.get(modelColumn),
+              '&&'
+            ),
+            order: 2,
+            group: ContextActions.groups.high,
+          });
+        }
+        filterMenu.actions.push(...this.nullFilterActions(column));
+      } else if (TableUtils.isBooleanType(column.type)) {
+        // boolean should have OR condition, and handles it's own null menu options
+        if (quickFilters.get(modelColumn)) {
+          filterMenu.actions.push({
+            title: 'Or',
+            actions: this.booleanFilterActions(
+              column,
+              valueText,
+              quickFilters.get(modelColumn),
+              '||'
+            ),
+            order: 2,
+            group: ContextActions.groups.high,
+          });
+        }
+        filterMenu.actions.push(
+          ...this.booleanFilterActions(column, valueText)
+        );
+      } else if (
+        TableUtils.isNumberType(column.type) ||
+        TableUtils.isCharType(column.type)
+      ) {
+        // Chars get treated like numbers in terms of which filters are available
+        assertNotNull(modelColumn);
+        // We want to show the full unformatted value if it's a number, so user knows which value they are matching
+        // If it's a Char we just show the char
+        const numberValueText = TableUtils.isCharType(column.type)
+          ? String.fromCharCode(value as number)
+          : `${value}`;
 
-          if (quickFilters.get(modelColumn)) {
-            filterMenu.actions.push({
-              title: 'And',
-              actions: this.numberFilterActions(
-                column,
-                numberValueText,
-                value,
-                quickFilters.get(modelColumn),
-                '&&'
-              ),
-              order: 2,
-              group: ContextActions.groups.high,
-            });
-          }
-          filterMenu.actions.push(
-            ...this.numberFilterActions(
+        if (quickFilters.get(modelColumn)) {
+          filterMenu.actions.push({
+            title: 'And',
+            actions: this.numberFilterActions(
               column,
               numberValueText,
               value,
-              quickFilters.get(modelColumn)
-            )
-          );
-        } else if (TableUtils.isDateType(column.type)) {
-          const dateValueText = dateFilterFormatter.format(value as Date);
-          const previewValue = previewFilterFormatter.format(value as Date);
-          if (quickFilters.get(modelColumn)) {
-            filterMenu.actions.push({
-              title: 'And',
-              actions: this.dateFilterActions(
-                column,
-                dateValueText,
-                previewValue,
-                value,
-                quickFilters.get(modelColumn),
-                '&&'
-              ),
-              order: 2,
-              group: ContextActions.groups.high,
-            });
-          }
-          filterMenu.actions.push(
-            ...this.dateFilterActions(
+              quickFilters.get(modelColumn),
+              '&&'
+            ),
+            order: 2,
+            group: ContextActions.groups.high,
+          });
+        }
+        filterMenu.actions.push(
+          ...this.numberFilterActions(
+            column,
+            numberValueText,
+            value,
+            quickFilters.get(modelColumn)
+          )
+        );
+      } else if (TableUtils.isDateType(column.type)) {
+        const dateValueText = dateFilterFormatter.format(value as Date);
+        const previewValue = previewFilterFormatter.format(value as Date);
+        if (quickFilters.get(modelColumn)) {
+          filterMenu.actions.push({
+            title: 'And',
+            actions: this.dateFilterActions(
               column,
               dateValueText,
               previewValue,
               value,
-              quickFilters.get(modelColumn)
-            )
-          );
-        } else {
-          if (quickFilters.get(modelColumn)) {
-            filterMenu.actions.push({
-              title: 'And',
-
-              actions: this.stringFilterActions(
-                column,
-                valueText,
-                value,
-                quickFilters.get(modelColumn),
-                '&&'
-              ),
-              order: 2,
-              group: ContextActions.groups.high,
-            });
-          }
-          filterMenu.actions.push(
-            ...this.stringFilterActions(column, valueText, value)
-          );
+              quickFilters.get(modelColumn),
+              '&&'
+            ),
+            order: 2,
+            group: ContextActions.groups.high,
+          });
         }
+        filterMenu.actions.push(
+          ...this.dateFilterActions(
+            column,
+            dateValueText,
+            previewValue,
+            value,
+            quickFilters.get(modelColumn)
+          )
+        );
+      } else {
+        if (quickFilters.get(modelColumn)) {
+          filterMenu.actions.push({
+            title: 'And',
 
-        if (filterMenu.actions != null && filterMenu.actions.length > 0) {
-          actions.push(filterMenu);
+            actions: this.stringFilterActions(
+              column,
+              valueText,
+              value,
+              quickFilters.get(modelColumn),
+              '&&'
+            ),
+            order: 2,
+            group: ContextActions.groups.high,
+          });
         }
-
-        const gotoRow = {
-          title: 'Go to',
-          icon: vsReply,
-          iconColor: filterIconColor,
-          shortcut: SHORTCUTS.TABLE.GOTO_ROW,
-          group: IrisGridContextMenuHandler.GROUP_GOTO,
-          order: 10,
-          action: () => this.irisGrid.toggleGotoRow(`${rowIndex + 1}`),
-        };
-        actions.push(gotoRow);
+        filterMenu.actions.push(
+          ...this.stringFilterActions(column, valueText, value)
+        );
       }
 
-      if (canCopy) {
-        actions.push({
-          title: 'Copy Cell',
-          group: IrisGridContextMenuHandler.GROUP_COPY,
-          order: 10,
-          action: () => {
-            irisGrid.copyCell(columnIndex, rowIndex);
-          },
-        });
-
-        actions.push({
-          title: 'Copy Cell Unformatted',
-          group: IrisGridContextMenuHandler.GROUP_COPY,
-          order: 20,
-          action: () => {
-            irisGrid.copyCell(columnIndex, rowIndex, true);
-          },
-        });
+      if (filterMenu.actions != null && filterMenu.actions.length > 0) {
+        actions.push(filterMenu);
       }
+    }
+
+    const gotoRow = {
+      title: 'Go to',
+      iconColor: filterIconColor,
+      shortcut: SHORTCUTS.TABLE.GOTO_ROW,
+      group: IrisGridContextMenuHandler.GROUP_GOTO,
+      order: 10,
+      action: () => this.irisGrid.toggleGotoRow(`${rowIndex + 1}`),
+    };
+    actions.push(gotoRow);
+
+    if (canCopy) {
+      actions.push({
+        title: 'Copy Cell',
+        group: IrisGridContextMenuHandler.GROUP_COPY,
+        order: 10,
+        action: () => {
+          irisGrid.copyCell(columnIndex, rowIndex);
+        },
+      });
+
+      actions.push({
+        title: 'Copy Cell Unformatted',
+        group: IrisGridContextMenuHandler.GROUP_COPY,
+        order: 20,
+        action: () => {
+          irisGrid.copyCell(columnIndex, rowIndex, true);
+        },
+      });
     }
 
     return actions;
