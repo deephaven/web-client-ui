@@ -535,10 +535,10 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
       // Created objects have to be processed after removed
       // in case the same object name is present in both removed and created
       changes?.created.forEach(object => {
-        const { title } = object;
-        assertNotNull(title);
-        objectHistoryMap.set(title, itemIndex);
-        objectMap.set(title, object);
+        const { name } = object;
+        assertNotNull(name);
+        objectHistoryMap.set(name, itemIndex);
+        objectMap.set(name, object);
       });
 
       return { objectHistoryMap, objectMap, consoleHistory: history };
@@ -702,11 +702,11 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
     this.setState({ dragError: null });
   }
 
-  handleOpenCsvTable(name: string): void {
+  handleOpenCsvTable(title: string): void {
     const { openObject, commandHistoryStorage, language, scope } = this.props;
     const { consoleHistory, objectMap } = this.state;
-    const object = { name, type: dh.VariableType.TABLE };
-    const isExistingObject = objectMap.has(name);
+    const object = { name: title, title, type: dh.VariableType.TABLE };
+    const isExistingObject = objectMap.has(title);
     const historyItem = {
       startTime: Date.now(),
       endTime: Date.now(),
@@ -726,9 +726,9 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
     });
     this.scrollConsoleHistoryToBottom(true);
     this.updateKnownObjects(historyItem);
-    openObject({ name, type: dh.VariableType.TABLE });
-    commandHistoryStorage.addItem(language, scope, name, {
-      command: name,
+    openObject({ name: title, title, type: dh.VariableType.TABLE });
+    commandHistoryStorage.addItem(language, scope, title, {
+      command: title,
       startTime: new Date().toJSON(),
       endTime: new Date().toJSON(),
     });
