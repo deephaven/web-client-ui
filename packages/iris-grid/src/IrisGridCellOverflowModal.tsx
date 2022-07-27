@@ -1,8 +1,14 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Editor } from '@deephaven/console';
 import * as monaco from 'monaco-editor';
-import { Button, Modal, ModalBody, ModalHeader } from '@deephaven/components';
-import { vsJson, vsListOrdered } from '@deephaven/icons';
+import {
+  Button,
+  ContextActionUtils,
+  Modal,
+  ModalBody,
+  ModalHeader,
+} from '@deephaven/components';
+import { vsCopy, vsJson, vsListOrdered } from '@deephaven/icons';
 import './IrisGridCellOverflowModal.scss';
 
 interface IrisGridCellOverflowModalProps {
@@ -62,6 +68,10 @@ export default function IrisGridCellOverflowModal({
     },
     [showLineNumbers]
   );
+
+  function copyContents() {
+    ContextActionUtils.copyToClipboard(text);
+  }
 
   function toggleLineNumbers() {
     setShowLineNumbers(!showLineNumbers);
@@ -126,6 +136,12 @@ export default function IrisGridCellOverflowModal({
     >
       <ModalHeader toggle={onClose}>
         <h5 className="overflow-modal-title">Cell Contents</h5>
+        <Button
+          kind="inline"
+          icon={vsCopy}
+          tooltip="Copy contents"
+          onClick={copyContents}
+        />
         <Button
           kind="inline"
           active={showLineNumbers}
