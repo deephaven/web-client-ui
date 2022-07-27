@@ -45,7 +45,7 @@ interface AdvancedFilterCreatorProps {
   column: Column;
   onFilterChange: (
     column: Column,
-    filter: FilterCondition,
+    filter: FilterCondition | null,
     options: AdvancedFilterOptions
   ) => void;
   onSortChange: (
@@ -121,19 +121,17 @@ class AdvancedFilterCreator extends PureComponent<
     this.handleUpdateTimeout = this.handleUpdateTimeout.bind(this);
 
     this.focusTrapContainer = React.createRef();
-    this.filterKey = 0;
 
     const { options } = props;
     let { filterOperators, invertSelection, selectedValues } = options;
 
-    let filterItems: AdvancedFilterItem[] = options.filterItems.map(
-      ({ selectedType, value }) => ({
+    let filterItems: AdvancedFilterItem[] =
+      options.filterItems?.map(({ selectedType, value }) => ({
         selectedType,
         value,
         key: shortid(),
-      })
-    );
-    if (filterItems == null) {
+      })) ?? [];
+    if (filterItems.length === 0) {
       filterItems = [AdvancedFilterCreator.makeFilterItem()];
     }
     if (filterOperators == null) {
@@ -179,8 +177,6 @@ class AdvancedFilterCreator extends PureComponent<
   focusTrapContainer: React.RefObject<HTMLFormElement>;
 
   debounceTimeout?: ReturnType<typeof setTimeout>;
-
-  filterKey: number;
 
   valuesTablePromise?: CancelablePromise<Table>;
 
@@ -592,19 +588,17 @@ class AdvancedFilterCreator extends PureComponent<
           {isValuesTableAvailable && !valuesTableError && (
             <>
               {!isBoolean && <hr />}
-              {valuesTable && (
-                <div className="form-group">
-                  <AdvancedFilterCreatorSelectValue<unknown>
-                    table={valuesTable}
-                    onChange={this.handleSelectValueChange}
-                    invertSelection={invertSelection}
-                    selectedValues={selectedValues}
-                    formatter={formatter}
-                    showSearch={!isDateType}
-                    timeZone={formatter.timeZone}
-                  />
-                </div>
-              )}
+              <div className="form-group">
+                <AdvancedFilterCreatorSelectValue<unknown>
+                  table={valuesTable}
+                  onChange={this.handleSelectValueChange}
+                  invertSelection={invertSelection}
+                  selectedValues={selectedValues}
+                  formatter={formatter}
+                  showSearch={!isDateType}
+                  timeZone={formatter.timeZone}
+                />
+              </div>
             </>
           )}
           <div className="form-row justify-content-end">

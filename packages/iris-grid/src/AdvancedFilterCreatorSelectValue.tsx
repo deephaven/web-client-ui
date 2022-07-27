@@ -290,16 +290,14 @@ class AdvancedFilterCreatorSelectValue<T = unknown> extends PureComponent<
             />
           )}
         </div>
-        {table && (
-          <AdvancedFilterCreatorSelectValueList
-            table={table}
-            filters={filters}
-            invertSelection={invertSelection}
-            selectedValues={selectedValues}
-            formatter={formatter}
-            onChange={this.handleListChange}
-          />
-        )}
+        <AdvancedFilterCreatorSelectValueList
+          table={table}
+          filters={filters}
+          invertSelection={invertSelection}
+          selectedValues={selectedValues}
+          formatter={formatter}
+          onChange={this.handleListChange}
+        />
         <div className="advanced-filter-creator-select-meta-row">
           <div>
             <button

@@ -210,10 +210,12 @@ class AdvancedFilterCreatorSelectValueList<T = unknown> extends PureComponent<
   }
 
   startListening(table: Table): void {
+    if (!table) return;
     table.addEventListener(dh.Table.EVENT_UPDATED, this.handleTableUpdate);
   }
 
   stopListening(table: Table): void {
+    if (!table) return;
     table.removeEventListener(dh.Table.EVENT_UPDATED, this.handleTableUpdate);
   }
 
