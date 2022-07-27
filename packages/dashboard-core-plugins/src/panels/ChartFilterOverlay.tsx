@@ -1,11 +1,25 @@
-import React, { useCallback, useMemo } from 'react';
+import React, { MouseEvent, useCallback, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { ButtonOld } from '@deephaven/components';
 import { vsPass, vsWarning } from '@deephaven/icons';
 import { TextUtils } from '@deephaven/utils';
+import { ColumnName, InputFilter } from '@deephaven/iris-grid';
+import { Column } from '@deephaven/jsapi-shim';
 import './ChartFilterOverlay.scss';
+
+export type ColumnMap = Map<ColumnName, Column>
+
+interface ChartFilterOverlayProps {
+  columnMap: ColumnMap,
+  inputFilterMap: Map<ColumnName, InputFilter>,
+  linkedColumnMap: Map<string, unknown>,
+  onAdd: (filters),
+  onOpenLinker:,
+  waitingFilterMap: Map<string, InputFilter>,
+  waitingInputMap:Map<ColumnName, unknown> ,
+};
 
 const ChartFilterOverlay = ({
   columnMap,
@@ -15,11 +29,11 @@ const ChartFilterOverlay = ({
   onOpenLinker,
   waitingFilterMap,
   waitingInputMap,
-}) => {
+}: ChartFilterOverlayProps) => {
   const inputMessage = useMemo(() => {
     const waitingColumns = Array.from(waitingInputMap.keys());
     const needsInputFilterValue = waitingColumns.find(
-      columnName => inputFilterMap.get(columnName) != null
+      (columnName: ColumnName) => inputFilterMap.get(columnName) != null
     );
     const needsLinkValue = waitingColumns.find(
       columnName => linkedColumnMap.get(columnName) != null
@@ -37,12 +51,12 @@ const ChartFilterOverlay = ({
   const columns = useMemo(() => Array.from(columnMap.values()), [columnMap]);
 
   const handleAddClick = useCallback(
-    event => {
+    (event: MouseEvent<HTMLButtonElement>) => {
       event.stopPropagation();
       event.preventDefault();
 
       onAdd(Array.from(waitingFilterMap.values()));
-    },
+    },s
     [onAdd, waitingFilterMap]
   );
 

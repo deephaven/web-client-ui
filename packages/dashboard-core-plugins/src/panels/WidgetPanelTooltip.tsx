@@ -1,9 +1,18 @@
-import React from 'react';
+import React, { ReactNode } from 'react';
 import PropTypes from 'prop-types';
 import { GLPropTypes, LayoutUtils } from '@deephaven/dashboard';
 import './WidgetPanelTooltip.scss';
+import { ReactElement } from 'react-markdown';
+import GoldenLayout from '@deephaven/golden-layout';
 
-const WidgetPanelTooltip = props => {
+interface WidgetPanelTooltipProps {
+  glContainer: GoldenLayout.Container;
+  widgetType: string;
+  widgetName: string;
+  description: string;
+  children: ReactNode;
+}
+const WidgetPanelTooltip = (props: WidgetPanelTooltipProps): ReactElement => {
   const { widgetType, widgetName, glContainer, description, children } = props;
   const panelTitle = LayoutUtils.getTitleFromContainer(glContainer);
 

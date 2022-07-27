@@ -10,7 +10,7 @@ import CommandHistoryStorage, {
 
 interface CommandHistoryItemProps {
   item: CommandHistoryStorageItem;
-  language: string;
+  language?: string;
   isSelected?: boolean;
   commandHistoryStorage: CommandHistoryStorage;
 }

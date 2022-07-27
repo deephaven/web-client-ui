@@ -15,7 +15,7 @@ import CommandHistoryStorage, {
 
 interface CommandHistoryItemTooltipProps {
   item: CommandHistoryStorageItem;
-  language: string;
+  language?: string;
   onUpdate?: (data: CommandHistoryStorageData | null) => void;
   commandHistoryStorage: CommandHistoryStorage;
 }
@@ -107,12 +107,14 @@ export class CommandHistoryItemTooltip extends Component<
   loadData = debounce((): void => {
     const { commandHistoryStorage, item, language } = this.props;
     const { id } = item;
-    this.cleanup = commandHistoryStorage.listenItem(
-      language,
-      id,
-      this.handleUpdate,
-      this.handleError
-    );
+    if (language !== undefined) {
+      this.cleanup = commandHistoryStorage.listenItem(
+        language,
+        id,
+        this.handleUpdate,
+        this.handleError
+      );
+    }
   }, LOAD_DATA_DEBOUNCE);
 
   startTimer(): void {

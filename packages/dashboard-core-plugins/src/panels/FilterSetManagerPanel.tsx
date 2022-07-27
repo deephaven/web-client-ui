@@ -7,6 +7,7 @@ import {
   LayoutUtils,
 } from '@deephaven/dashboard';
 import Log from '@deephaven/log';
+import { Container, EventEmitter } from '@deephaven/golden-layout';
 import {
   getFilterSetsForDashboard,
   getInputFiltersForDashboard,
@@ -14,16 +15,38 @@ import {
   setDashboardFilterSets as setDashboardFilterSetsAction,
 } from '../redux';
 import Panel from './Panel';
-import FilterSetManager from './FilterSetManager';
+import FilterSetManager, { FilterSet } from './FilterSetManager';
 import IrisGridPanel from './IrisGridPanel';
 import InputFilterPanel from './InputFilterPanel';
 import DropdownFilterPanel from './DropdownFilterPanel';
 
 import './FilterSetManagerPanel.scss';
+import { PanelState } from './PandasPanel';
 
 const log = Log.module('FilterSetManagerPanel');
 
-export class FilterSetManagerPanel extends Component {
+interface FilterSetManagerPanelProps {
+  glContainer: Container;
+  glEventHub: EventEmitter;
+  panelState: PanelState;
+  filterSets: FilterSet[];
+  localDashboardId: string;
+  dashboardOpenedPanelMap: Map<>;
+  setDashboardFilterSets: () => void;
+  panelTableMap: Map<>;
+}
+
+interface FilterSetManagerPanelState {
+  selectedId: string;
+  isValueShown: boolean;
+  // eslint-disable-next-line react/no-unused-state
+  panelState: PanelState; // Dehydrated panel state that can load this panel
+}
+
+export class FilterSetManagerPanel extends Component<
+  FilterSetManagerPanelProps,
+  FilterSetManagerPanelState
+> {
   static COMPONENT = 'FilterSetManagerPanel';
 
   static changeFilterIndexesToColumnNames(table, configs) {
@@ -38,7 +61,7 @@ export class FilterSetManagerPanel extends Component {
       .filter(config => config != null);
   }
 
-  constructor(props) {
+  constructor(props: FilterSetManagerPanelProps) {
     super(props);
 
     this.handleChange = this.handleChange.bind(this);
@@ -99,7 +122,7 @@ export class FilterSetManagerPanel extends Component {
         }
         case LayoutUtils.getComponentName(InputFilterPanel):
         case LayoutUtils.getComponentName(DropdownFilterPanel): {
-          const { isValueShown, name, type, value } = panelState;
+          const { isValueShown, name, type, value } = panselState;
           panels.push({
             panelId,
             type: componentName,
@@ -179,7 +202,7 @@ export class FilterSetManagerPanel extends Component {
     });
   }
 
-  handleSetsUpdate(modifiedFilterSets) {
+  handleSetsUpdate(modifiedFilterSets): void {
     const { setDashboardFilterSets, localDashboardId } = this.props;
     log.debug('Saving updated sets', modifiedFilterSets);
     // Filter sets are stored in dashboard data instead of the panelState
@@ -287,7 +310,10 @@ FilterSetManagerPanel.defaultProps = {
   panelState: null,
 };
 
-const mapStateToProps = (state, ownProps) => {
+const mapStateToProps = (
+  state: RootState,
+  ownProps: { localDashboardId: string }
+) => {
   const { localDashboardId } = ownProps;
   return {
     filterSets: getFilterSetsForDashboard(state, localDashboardId),

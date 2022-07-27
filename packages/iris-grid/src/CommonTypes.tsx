@@ -46,7 +46,12 @@ export interface UITotalsTableConfig extends TotalsTableConfig {
   showOnTop: boolean;
 }
 
-export type InputFilter = { name: string; type: string; value: string };
+export type InputFilter = {
+  name: string;
+  type: string;
+  value: string;
+  excludePanelIds?: string[];
+};
 
 export interface UIRow {
   data: Map<ModelIndex, CellData>;

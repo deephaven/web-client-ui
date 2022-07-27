@@ -1,26 +1,58 @@
-import React, { Component } from 'react';
-import PropTypes from 'prop-types';
+import React, { Component, FocusEvent, MouseEvent, ReactElement } from 'react';
 import memoize from 'memoize-one';
 import { connect } from 'react-redux';
 import {
+  ClosedPanel,
+  ClosedPanels,
   getClosedPanelsForDashboard,
-  GLPropTypes,
   LayoutUtils,
   PanelEvent,
 } from '@deephaven/dashboard';
 import Log from '@deephaven/log';
+import {
+  Container,
+  EventEmitter,
+  ReactComponentConfig,
+} from '@deephaven/golden-layout';
+import type * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js';
+import { assertNotNull } from '@deephaven/utils';
+import { RootState } from '@deephaven/redux';
 import Panel from './Panel';
 import MarkdownContainer from '../controls/markdown/MarkdownContainer';
 import MarkdownStartPage from '../controls/markdown/MarkdownStartPage';
 import MarkdownEditor from '../controls/markdown/MarkdownEditor';
 import './MarkdownPanel.scss';
+import { PanelState } from './PandasPanel';
 
 const log = Log.module('MarkdownPanel');
 
-export class MarkdownPanel extends Component {
+interface MarkdownPanelProps {
+  glContainer: Container;
+  glEventHub: EventEmitter;
+  panelState: PanelState;
+  closedPanels: ClosedPanel[];
+}
+
+interface MarkdownPanelState {
+  isStartPageShown: boolean;
+  isEditing: boolean;
+  content?: string | null;
+
+  // eslint-disable-next-line react/no-unused-state
+  panelState: PanelState;
+}
+
+export class MarkdownPanel extends Component<
+  MarkdownPanelProps,
+  MarkdownPanelState
+> {
+  static defaultProps = {
+    panelState: null,
+  };
+
   static COMPONENT = 'MarkdownPanel';
 
-  constructor(props) {
+  constructor(props: MarkdownPanelProps) {
     super(props);
 
     this.handleContainerDoubleClick = this.handleContainerDoubleClick.bind(
@@ -49,16 +81,20 @@ export class MarkdownPanel extends Component {
     };
 
     this.markdownEditor = null;
-    this.editor = null;
   }
 
-  setEditorPosition(clickPositionY) {
+  markdownEditor: MarkdownEditor | null;
+
+  editor?: monaco.editor.IStandaloneCodeEditor;
+
+  setEditorPosition(clickPositionY: number): void {
+    assertNotNull(this.markdownEditor);
     const { container: markdownEditorContainer } = this.markdownEditor;
     if (this.editor && markdownEditorContainer) {
       const contentTop = markdownEditorContainer.getBoundingClientRect().top;
       const contentScrollTop = markdownEditorContainer.scrollTop;
       const contentScrollHeight = markdownEditorContainer.scrollHeight;
-      const totalLines = this.editor.getModel().getLineCount();
+      const totalLines = this.editor.getModel()?.getLineCount() ?? 0;
 
       let lineToFocus = Math.round(
         ((contentScrollTop + clickPositionY - contentTop) /
@@ -78,11 +114,11 @@ export class MarkdownPanel extends Component {
     }
   }
 
-  getClosedMarkdowns = memoize(closedPanels =>
+  getClosedMarkdowns = memoize((closedPanels: ClosedPanels) =>
     closedPanels.filter(panel => panel.component === 'MarkdownPanel').reverse()
   );
 
-  handleContainerDoubleClick(event) {
+  handleContainerDoubleClick(event: MouseEvent<Element>): void {
     const { isEditing } = this.state;
     const dbClickPositionY = event.clientY;
 
@@ -93,12 +129,12 @@ export class MarkdownPanel extends Component {
     }
   }
 
-  handleEditorInitialized(editor) {
+  handleEditorInitialized(editor: monaco.editor.IStandaloneCodeEditor): void {
     log.debug('Markdown Editor Initialized...');
     this.editor = editor;
   }
 
-  handleCreateMarkdown() {
+  handleCreateMarkdown(): void {
     log.debug('create markdown...');
 
     this.setState(
@@ -118,7 +154,7 @@ export class MarkdownPanel extends Component {
     );
   }
 
-  handleOpenMarkdown(markdown) {
+  handleOpenMarkdown(markdown: ReactComponentConfig): void {
     log.debug('open markdown...', markdown);
 
     const { glContainer, glEventHub } = this.props;
@@ -126,12 +162,12 @@ export class MarkdownPanel extends Component {
     glEventHub.emit(PanelEvent.REOPEN, markdown, config);
   }
 
-  handleDeleteMarkdown(markdown) {
+  handleDeleteMarkdown(markdown: ReactComponentConfig): void {
     const { glEventHub } = this.props;
     glEventHub.emit(PanelEvent.DELETE, markdown);
   }
 
-  handleEditorBlur(event) {
+  handleEditorBlur(event: FocusEvent<HTMLDivElement>): void {
     log.debug(`markdown content changed, saving...`);
     const { isEditing } = this.state;
 
@@ -143,7 +179,7 @@ export class MarkdownPanel extends Component {
       return;
     }
 
-    const content = this.editor.getValue();
+    const content = this.editor?.getValue();
 
     this.setState({
       content,
@@ -154,14 +190,14 @@ export class MarkdownPanel extends Component {
     });
   }
 
-  handleEditorResize() {
+  handleEditorResize(): void {
     const { isEditing } = this.state;
     if (isEditing && this.editor) {
       this.editor.layout();
     }
   }
 
-  render() {
+  render(): ReactElement {
     const { glContainer, glEventHub, closedPanels } = this.props;
     const { isEditing, isStartPageShown, content } = this.state;
     const closedMarkdowns = this.getClosedMarkdowns(closedPanels);
@@ -194,7 +230,7 @@ export class MarkdownPanel extends Component {
                 this.markdownEditor = markdownEditor;
               }}
               isEditing={isEditing}
-              content={content}
+              content={content ?? undefined}
               onEditorInitialized={this.handleEditorInitialized}
             />
           </MarkdownContainer>
@@ -204,20 +240,10 @@ export class MarkdownPanel extends Component {
   }
 }
 
-MarkdownPanel.propTypes = {
-  glContainer: GLPropTypes.Container.isRequired,
-  glEventHub: GLPropTypes.EventHub.isRequired,
-  panelState: PropTypes.shape({
-    content: PropTypes.string,
-  }),
-  closedPanels: PropTypes.arrayOf(PropTypes.object).isRequired,
-};
-
-MarkdownPanel.defaultProps = {
-  panelState: null,
-};
-
-const mapStateToProps = (state, ownProps) => {
+const mapStateToProps = (
+  state: RootState,
+  ownProps: { localDashboardId: string }
+) => {
   const { localDashboardId } = ownProps;
   return {
     closedPanels: getClosedPanelsForDashboard(state, localDashboardId),

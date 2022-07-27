@@ -1,20 +1,44 @@
 /* eslint-disable react/jsx-props-no-spreading */
 /* eslint-disable react/no-unused-state */
-import React, { Component } from 'react';
-import PropTypes from 'prop-types';
+import React, { Component, ReactElement, RefObject } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { dhRefresh } from '@deephaven/icons';
 import { Tooltip } from '@deephaven/components';
+import { CommandHistoryTable } from '@deephaven/console';
 import IrisGridPanel from './IrisGridPanel';
 import './PandasPanel.scss';
+
+export interface PanelState {
+  CommandHistoryTable?: CommandHistoryTable;
+  content?: string;
+  name?: string;
+  type?: string;
+  value?: string;
+  isValueShown?: boolean;
+  timestamp?: number;
+  selectedId?: string;
+}
+
+interface PandasPanelProps {
+  panelState: PanelState;
+}
+
+interface PandasPanelState {
+  shouldFocusGrid: boolean;
+  panelState: PanelState | null;
+}
 
 /**
  * Wraps and IrisGridPanel to add a refresh button for Pandas.
  */
-class PandasPanel extends Component {
+class PandasPanel extends Component<PandasPanelProps, PandasPanelState> {
+  static defaultProps = {
+    panelState: null,
+  };
+
   static COMPONENT = 'PandasPanel';
 
-  constructor(props) {
+  constructor(props: PandasPanelProps) {
     super(props);
 
     this.irisGridRef = React.createRef();
@@ -31,15 +55,19 @@ class PandasPanel extends Component {
     };
   }
 
-  handleReload() {
-    this.irisGridRef.current.initModel();
-    this.buttonRef.current.blur();
+  buttonRef: RefObject<HTMLButtonElement>;
+
+  irisGridRef: RefObject<IrisGridPanel>;
+
+  handleReload(): void {
+    this.irisGridRef.current?.initModel();
+    this.buttonRef.current?.blur();
     this.setState({
       shouldFocusGrid: true,
     });
   }
 
-  handleGridStateChange() {
+  handleGridStateChange(): void {
     const { shouldFocusGrid } = this.state;
     if (shouldFocusGrid && this.irisGridRef.current?.irisGrid?.current?.grid) {
       this.irisGridRef.current.irisGrid.current.grid.focus();
@@ -49,13 +77,13 @@ class PandasPanel extends Component {
     }
   }
 
-  handlePanelStateUpdate(panelState) {
+  handlePanelStateUpdate(panelState: PanelState): void {
     this.setState({
       panelState,
     });
   }
 
-  render() {
+  render(): ReactElement {
     const { ...props } = this.props;
 
     return (
@@ -89,13 +117,5 @@ class PandasPanel extends Component {
     );
   }
 }
-
-PandasPanel.propTypes = {
-  panelState: PropTypes.shape({}),
-};
-
-PandasPanel.defaultProps = {
-  panelState: null,
-};
 
 export default PandasPanel;

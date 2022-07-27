@@ -23,3 +23,7 @@ export {
   TableSaver,
   VisibilityOrderingBuilder,
 };
+
+export * from './aggregations';
+export * from './AdvancedSettingsType';
+export * from './RollupRows';

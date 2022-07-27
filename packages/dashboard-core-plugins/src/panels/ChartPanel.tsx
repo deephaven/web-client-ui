@@ -1,29 +1,38 @@
-import React, { Component } from 'react';
+import React, { Component, ReactElement, RefObject } from 'react';
 import classNames from 'classnames';
-import PropTypes from 'prop-types';
 import memoize from 'memoize-one';
 import { connect } from 'react-redux';
 import { CSSTransition } from 'react-transition-group';
 import debounce from 'lodash.debounce';
-import { Chart, ChartUtils } from '@deephaven/chart';
+import {
+  Chart,
+  ChartModel,
+  ChartUtils,
+  isFigureChartModel,
+} from '@deephaven/chart';
 import {
   getOpenedPanelMapForDashboard,
-  GLPropTypes,
   LayoutUtils,
 } from '@deephaven/dashboard';
-import { IrisGridUtils } from '@deephaven/iris-grid';
-import dh, { PropTypes as APIPropTypes } from '@deephaven/jsapi-shim';
+import { IrisGridUtils, InputFilter, ColumnName } from '@deephaven/iris-grid';
+import dh, { Column, TableTemplate } from '@deephaven/jsapi-shim';
 import { ThemeExport } from '@deephaven/components';
 import Log from '@deephaven/log';
 import {
   getActiveTool,
   getSettings,
+  RootState,
   setActiveTool as setActiveToolAction,
 } from '@deephaven/redux';
-import { Pending, PromiseUtils, TextUtils } from '@deephaven/utils';
+import {
+  assertNotNull,
+  Pending,
+  PromiseUtils,
+  TextUtils,
+} from '@deephaven/utils';
+import GoldenLayout from '@deephaven/golden-layout';
 import WidgetPanel from './WidgetPanel';
 import ToolType from '../linker/ToolType';
-import { UIPropTypes } from '../prop-types';
 import { InputFilterEvent, ChartEvent } from '../events';
 import {
   getColumnSelectionValidatorForDashboard,
@@ -33,17 +42,97 @@ import {
   getTableMapForDashboard,
   setDashboardIsolatedLinkerPanelId as setDashboardIsolatedLinkerPanelIdAction,
 } from '../redux';
-import ChartFilterOverlay from './ChartFilterOverlay';
-import ChartColumnSelectorOverlay from './ChartColumnSelectorOverlay';
+import ChartFilterOverlay, { ColumnMap } from './ChartFilterOverlay';
+import ChartColumnSelectorOverlay, {
+  SelectorColumn,
+} from './ChartColumnSelectorOverlay';
 import './ChartPanel.scss';
+import { Link } from '../linker/LinkerUtils';
+import Panel from './Panel';
+import { PanelState } from './PandasPanel';
 
 const log = Log.module('ChartPanel');
 const UPDATE_MODEL_DEBOUNCE = 150;
 
-export class ChartPanel extends Component {
+export type InputFilterMap = Map<string, InputFilter>;
+
+export type FilterMap = Map<string, string>;
+
+export type LinkedColumnMap = Map<string, Column>;
+
+interface ChartPanelProps {
+  glContainer: GoldenLayout.Container;
+  glEventHub: GoldenLayout.EventEmitter;
+
+  metadata: {
+    figure: string;
+    table: string;
+    query: string;
+    querySerial: string;
+    sourcePanelId: string;
+    settings: { isLinked: boolean };
+  };
+  /** Function to build the ChartModel used by this ChartPanel. Can return a promise. */
+  makeModel: () => ChartModel;
+  inputFilters: InputFilter[];
+  links: Link[];
+  localDashboardId: string;
+  isLinkerActive: boolean;
+  source: TableTemplate;
+  sourcePanel: Panel;
+  columnSelectionValidator: (
+    value: unknown,
+    column: { name: string; type: string } | null
+  ) => boolean;
+  setActiveTool: (tool: string) => void;
+  setDashboardIsolatedLinkerPanelId: (
+    id: string,
+    secondParam: undefined
+  ) => void;
+
+  panelState: PanelState;
+  settings: {};
+}
+
+interface ChartPanelState {
+  settings: {};
+  error?: unknown;
+  isActive: boolean;
+  isDisconnected: boolean;
+  isLoading: boolean;
+  isLoaded: boolean;
+  isLinked: boolean;
+
+  // Map of all non-empty filters applied to the chart.
+  // Initialize the filter map to the previously stored values; input filters will be applied after load.
+  filterMap: Map<string, string>;
+  // Map of filter values set from links, stored in panelState.
+  // Combined with inputFilters to get applied filters (filterMap).
+  filterValueMap: Map<string, string>;
+  model?: ChartModel;
+  columnMap: ColumnMap;
+
+  queryName: string;
+
+  // eslint-disable-next-line react/no-unused-state
+  panelState: PanelState;
+}
+
+export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
+  static defaultProps = {
+    columnSelectionValidator: null,
+    isLinkerActive: false,
+    source: null,
+    sourcePanel: null,
+    panelState: null,
+    settings: {},
+  };
+
+  static displayName = 'ChartPanel';
+
   static COMPONENT = 'ChartPanel';
 
-  constructor(props) {
+  constructor(props: ChartPanelProps) {
     super(props);
 
     this.handleColumnSelected = this.handleColumnSelected.bind(this);
@@ -82,7 +171,7 @@ export class ChartPanel extends Component {
 
     this.state = {
       settings,
-      error: null,
+      error: undefined,
       isActive: false,
       isDisconnected: false,
       isLoading: false,
@@ -95,7 +184,7 @@ export class ChartPanel extends Component {
       // Map of filter values set from links, stored in panelState.
       // Combined with inputFilters to get applied filters (filterMap).
       filterValueMap: new Map(filterValueMap),
-      model: null,
+      model: undefined,
       columnMap: new Map(),
 
       queryName,
@@ -105,14 +194,17 @@ export class ChartPanel extends Component {
     };
   }
 
-  componentDidMount() {
+  componentDidMount(): void {
     if (!this.isHidden()) {
       this.setState({ isActive: true });
       this.initModel();
     }
   }
 
-  componentDidUpdate(prevProps, prevState) {
+  componentDidUpdate(
+    prevProps: ChartPanelProps,
+    prevState: ChartPanelState
+  ): void {
     const { inputFilters, source } = this.props;
     const {
       columnMap,
@@ -140,7 +232,7 @@ export class ChartPanel extends Component {
       this.updatePanelState();
     }
 
-    if (settings !== prevState.settings) {
+    if (settings !== prevState.settings && isFigureChartModel(model)) {
       model.updateSettings(settings);
       this.updatePanelState();
     }
@@ -165,7 +257,7 @@ export class ChartPanel extends Component {
     }
   }
 
-  componentWillUnmount() {
+  componentWillUnmount(): void {
     this.pending.cancel();
 
     const { source } = this.props;
@@ -174,8 +266,14 @@ export class ChartPanel extends Component {
     }
   }
 
-  initModel() {
-    this.setState({ isLoading: true, isLoaded: false, error: null });
+  panelContainer: RefObject<HTMLDivElement>;
+
+  chart: RefObject<Chart>;
+
+  pending: Pending;
+
+  initModel(): void {
+    this.setState({ isLoading: true, isLoaded: false, error: undefined });
 
     const { makeModel } = this.props;
     this.pending
@@ -185,24 +283,30 @@ export class ChartPanel extends Component {
       .then(this.handleLoadSuccess, this.handleLoadError);
   }
 
-  getWaitingInputMap = memoize((isFilterRequired, columnMap, filterMap) => {
-    if (!isFilterRequired) {
-      return new Map();
+  getWaitingInputMap = memoize(
+    (
+      isFilterRequired: boolean,
+      columnMap: ColumnMap,
+      filterMap: FilterMap
+    ): Map<string, Column> => {
+      if (!isFilterRequired) {
+        return new Map();
+      }
+      const waitingInputMap = new Map(columnMap);
+      filterMap.forEach((filter, name) => {
+        waitingInputMap.delete(name);
+      });
+      return waitingInputMap;
     }
-    const waitingInputMap = new Map(columnMap);
-    filterMap.forEach((filter, name) => {
-      waitingInputMap.delete(name);
-    });
-    return waitingInputMap;
-  });
+  );
 
   getWaitingFilterMap = memoize(
     (
-      isFilterRequired,
-      columnMap,
-      filterMap,
-      linkedColumnMap,
-      inputFilterMap
+      isFilterRequired: boolean,
+      columnMap: ColumnMap,
+      filterMap: FilterMap,
+      linkedColumnMap: LinkedColumnMap,
+      inputFilterMap: InputFilterMap
     ) => {
       if (!isFilterRequired) {
         return new Map();
@@ -222,21 +326,23 @@ export class ChartPanel extends Component {
     }
   );
 
-  getInputFilterColumnMap = memoize((columnMap, inputFilters) => {
-    const inputFilterMap = new Map();
-    for (let i = 0; i < inputFilters.length; i += 1) {
-      const inputFilter = inputFilters[i];
-      const { name, type } = inputFilter;
-      const column = columnMap.get(name);
-      if (column != null && column.type === type) {
-        inputFilterMap.set(name, inputFilter);
+  getInputFilterColumnMap = memoize(
+    (columnMap: ColumnMap, inputFilters: InputFilter[]) => {
+      const inputFilterMap = new Map<string, InputFilter>();
+      for (let i = 0; i < inputFilters.length; i += 1) {
+        const inputFilter = inputFilters[i];
+        const { name, type } = inputFilter;
+        const column = columnMap.get(name);
+        if (column != null && column.type === type) {
+          inputFilterMap.set(name, inputFilter);
+        }
       }
+      return inputFilterMap;
     }
-    return inputFilterMap;
-  });
+  );
 
-  getLinkedColumnMap = memoize((columnMap, links) => {
-    const linkedColumnMap = new Map();
+  getLinkedColumnMap = memoize((columnMap: ColumnMap, links: Link[]) => {
+    const linkedColumnMap = new Map<string, Column>();
     const panelId = LayoutUtils.getIdFromPanel(this);
     for (let i = 0; i < links.length; i += 1) {
       const link = links[i];
@@ -256,14 +362,23 @@ export class ChartPanel extends Component {
       }
 
       if (columnName != null && columnMap.has(columnName)) {
-        linkedColumnMap.set(columnName, columnMap.get(columnName));
+        const column = columnMap.get(columnName);
+        assertNotNull(column);
+        linkedColumnMap.set(columnName, column);
       }
     }
     return linkedColumnMap;
   });
 
   getSelectorColumns = memoize(
-    (columnMap, linkedColumnMap, columnSelectionValidator) =>
+    (
+      columnMap: ColumnMap,
+      linkedColumnMap: LinkedColumnMap,
+      columnSelectionValidator: (
+        value: unknown,
+        column: { name: string; type: string } | null
+      ) => boolean
+    ) =>
       Array.from(columnMap.values()).map(column => ({
         name: column.name,
         type: column.type,
@@ -274,7 +389,7 @@ export class ChartPanel extends Component {
       }))
   );
 
-  startListeningToSource(table) {
+  startListeningToSource(table: TableTemplate): void {
     log.debug('startListeningToSource', table);
 
     table.addEventListener(
@@ -291,7 +406,7 @@ export class ChartPanel extends Component {
     );
   }
 
-  stopListeningToSource(table) {
+  stopListeningToSource(table: TableTemplate): void {
     log.debug('stopListeningToSource', table);
 
     table.removeEventListener(
@@ -308,20 +423,20 @@ export class ChartPanel extends Component {
     );
   }
 
-  loadModelIfNecessary() {
+  loadModelIfNecessary(): void {
     const { isActive, isLoaded, isLoading } = this.state;
     if (isActive && !isLoaded && !isLoading) {
       this.initModel();
     }
   }
 
-  isHidden() {
+  isHidden(): boolean {
     const { glContainer } = this.props;
     const { isHidden } = glContainer;
     return isHidden;
   }
 
-  handleColumnSelected(columnName) {
+  handleColumnSelected(columnName: string): void {
     const { glEventHub } = this.props;
     const { columnMap } = this.state;
     glEventHub.emit(
@@ -331,7 +446,7 @@ export class ChartPanel extends Component {
     );
   }
 
-  handleColumnMouseEnter({ type, name }) {
+  handleColumnMouseEnter({ type, name }: SelectorColumn): void {
     const { columnSelectionValidator } = this.props;
     log.debug('handleColumnMouseEnter', columnSelectionValidator, type, name);
     if (!columnSelectionValidator) {
@@ -340,7 +455,7 @@ export class ChartPanel extends Component {
     columnSelectionValidator(this, { type, name });
   }
 
-  handleColumnMouseLeave() {
+  handleColumnMouseLeave(): void {
     const { columnSelectionValidator } = this.props;
     log.debug('handleColumnMouseLeave', columnSelectionValidator);
     if (!columnSelectionValidator) {
@@ -349,20 +464,20 @@ export class ChartPanel extends Component {
     columnSelectionValidator(this, null);
   }
 
-  handleDisconnect() {
+  handleDisconnect(): void {
     this.setState({
       error: new Error('Figure disconnected'),
       isDisconnected: true,
     });
   }
 
-  handleFilterAdd(columns) {
+  handleFilterAdd(columns: Column[]): void {
     for (let i = 0; i < columns.length; i += 1) {
       this.openInputFilter(columns[i]);
     }
   }
 
-  handleOpenLinker() {
+  handleOpenLinker(): void {
     const {
       localDashboardId,
       setActiveTool,
@@ -372,13 +487,13 @@ export class ChartPanel extends Component {
     setActiveTool(ToolType.LINKER);
   }
 
-  handleReconnect() {
-    this.setState({ isDisconnected: false, error: null });
+  handleReconnect(): void {
+    this.setState({ isDisconnected: false, error: undefined });
     this.sendColumnChange();
     this.updateColumnFilters();
   }
 
-  handleLoadSuccess(model) {
+  handleLoadSuccess(model: ChartModel): void {
     log.debug('handleLoadSuccess');
 
     const { model: prevModel } = this.state;
@@ -406,7 +521,7 @@ export class ChartPanel extends Component {
     );
   }
 
-  handleLoadError(error) {
+  handleLoadError(error: unknown): void {
     if (PromiseUtils.isCanceled(error)) {
       return;
     }
@@ -415,19 +530,19 @@ export class ChartPanel extends Component {
     this.setState({ error, isLoading: false });
   }
 
-  handleSourceColumnChange() {
+  handleSourceColumnChange(): void {
     this.updateModelFromSource();
   }
 
-  handleSourceFilterChange() {
+  handleSourceFilterChange(): void {
     this.updateModelFromSource();
   }
 
-  handleSourceSortChange() {
+  handleSourceSortChange(): void {
     this.updateModelFromSource();
   }
 
-  updateModelFromSource() {
+  updateModelFromSource(): void {
     const { metadata, source } = this.props;
     const { isLinked, model } = this.state;
     const { settings } = metadata;
@@ -443,14 +558,16 @@ export class ChartPanel extends Component {
         dh.plot.Figure.create(ChartUtils.makeFigureSettings(settings, source))
       )
       .then(figure => {
-        model.setFigure(figure);
+        if (isFigureChartModel(model)) {
+          model.setFigure(figure);
+        }
       })
       .catch(this.handleLoadError);
 
     this.updatePanelState();
   }
 
-  updatePanelState() {
+  updatePanelState(): void {
     const { sourcePanel } = this.props;
     const { panelState, filterValueMap, settings } = this.state;
     let { tableSettings } = panelState ?? {};
@@ -477,13 +594,13 @@ export class ChartPanel extends Component {
     });
   }
 
-  handleError() {
+  handleError(): void {
     // Don't want to set an error state, because the user can fix a chart error within the chart itself.
     // We're not loading anymore either so stop showing the spinner so the user can actually click those buttons.
     this.setState({ isLoading: false });
   }
 
-  handleResize() {
+  handleResize(): void {
     this.updateChart();
   }
 
@@ -498,28 +615,28 @@ export class ChartPanel extends Component {
     });
   }
 
-  handleHide() {
+  handleHide(): void {
     this.setActive(false);
   }
 
-  handleShow() {
+  handleShow(): void {
     this.setActive(true);
   }
 
-  handleTabBlur() {
+  handleTabBlur(): void {
     this.setActive(false);
   }
 
-  handleTabFocus() {
+  handleTabFocus(): void {
     const isHidden = this.isHidden();
     this.setActive(!isHidden);
   }
 
-  handleUpdate() {
+  handleUpdate(): void {
     this.setState({ isLoading: false });
   }
 
-  handleClearAllFilters() {
+  handleClearAllFilters(): void {
     // nuke link filter and input filter map
     // input filters only clear themselves if they are not yet empty
     this.setState({
@@ -531,9 +648,9 @@ export class ChartPanel extends Component {
 
   /**
    * Create an input filter panel for the provided column
-   * @param {dh.Column} column The column to create the input filter for
+   * @param column The column to create the input filter for
    */
-  openInputFilter(column) {
+  openInputFilter(column: Column): void {
     const { glEventHub } = this.props;
     const { name, type } = column;
     glEventHub.emit(InputFilterEvent.OPEN_INPUT, {
@@ -548,7 +665,7 @@ export class ChartPanel extends Component {
     });
   }
 
-  setActive(isActive) {
+  setActive(isActive: boolean): void {
     this.setState({ isActive }, () => {
       if (isActive) {
         this.loadModelIfNecessary();
@@ -557,7 +674,7 @@ export class ChartPanel extends Component {
     });
   }
 
-  sendColumnChange() {
+  sendColumnChange(): void {
     const { model } = this.state;
     if (!model) {
       return;
@@ -570,7 +687,7 @@ export class ChartPanel extends Component {
     );
   }
 
-  getCoordinateForColumn(columnName) {
+  getCoordinateForColumn(columnName: ColumnName): [number, number] | null {
     const className = ChartColumnSelectorOverlay.makeButtonClassName(
       columnName
     );
@@ -593,11 +710,13 @@ export class ChartPanel extends Component {
    * Set chart filters based on the filter map
    * @param {Map<string, Object>} filterMapParam Filter map
    */
-  setFilterMap(filterMapParam) {
+  setFilterMap(
+    filterMapParam: Map<string, { columnType: string; value: string }>
+  ): void {
     log.debug('setFilterMap', filterMapParam);
     this.setState(state => {
       const { columnMap, filterMap } = state;
-      let updatedFilterMap = null;
+      let updatedFilterMap: null | Map<string, string> = null;
       const filterValueMap = new Map(state.filterValueMap);
 
       filterMapParam.forEach(({ columnType, value }, columnName) => {
@@ -621,7 +740,7 @@ export class ChartPanel extends Component {
     });
   }
 
-  unsetFilterValue(columnName) {
+  unsetFilterValue(columnName: ColumnName): void {
     this.setState(state => {
       // We want to unset a value unless there's an input filter for it
       // If there's an input filter, then we want to just set it to that value
@@ -643,7 +762,7 @@ export class ChartPanel extends Component {
 
       if (inputFilterMap.has(columnName)) {
         const filterValue = filterMap.get(columnName);
-        const inputFilterValue = inputFilterMap.get(columnName).value;
+        const inputFilterValue = inputFilterMap.get(columnName)?.value;
         if (inputFilterValue != null && filterValue !== inputFilterValue) {
           filterMap = new Map(state.filterMap);
           if (inputFilterValue.length > 0) {
@@ -660,7 +779,10 @@ export class ChartPanel extends Component {
     });
   }
 
-  updateChangedInputFilters(inputFilters, prevInputFilters) {
+  updateChangedInputFilters(
+    inputFilters: InputFilter[],
+    prevInputFilters: InputFilter[]
+  ): void {
     const deletedInputFilters = prevInputFilters.filter(
       prevInputFilter =>
         !inputFilters.find(
@@ -681,12 +803,14 @@ export class ChartPanel extends Component {
     }
   }
 
-  updateInputFilters(inputFilters, forceUpdate = false) {
+  updateInputFilters(inputFilters: InputFilter[], forceUpdate = false): void {
     this.setState(state => {
       const { columnMap } = state;
       const filterValueMap = new Map(state.filterValueMap);
       const filterMap = new Map(state.filterMap);
-      const update = forceUpdate ? { filterMap, filterValueMap } : {};
+      const update = forceUpdate
+        ? { filterMap, filterValueMap }
+        : { filterMap: new Map(), filterValueMap: new Map() };
 
       for (let i = 0; i < inputFilters.length; i += 1) {
         const { name, type, value } = inputFilters[i];
@@ -714,7 +838,7 @@ export class ChartPanel extends Component {
     });
   }
 
-  deleteInputFilters(inputFilters, forceUpdate = false) {
+  deleteInputFilters(inputFilters: InputFilter[], forceUpdate = false): void {
     this.setState(state => {
       const { columnMap, filterValueMap } = state;
       const filterMap = new Map(state.filterMap);
@@ -728,7 +852,7 @@ export class ChartPanel extends Component {
             const filterValue = filterMap.get(name);
             if (filterValueMap.has(name)) {
               const linkValue = filterValueMap.get(name);
-              if (linkValue !== filterValue) {
+              if (linkValue !== filterValue && linkValue != null) {
                 needsUpdate = true;
                 filterMap.set(name, linkValue);
               }
@@ -745,7 +869,7 @@ export class ChartPanel extends Component {
     });
   }
 
-  updateColumnFilters() {
+  updateColumnFilters(): void {
     this.setState(({ model }) => {
       if (!model) {
         return null;
@@ -755,14 +879,19 @@ export class ChartPanel extends Component {
     });
   }
 
-  updateFilters() {
+  updateFilters(): void {
     const { columnMap, filterMap, model } = this.state;
+    assertNotNull(model);
     const waitingInputMap = this.getWaitingInputMap(
       model.isFilterRequired(),
       columnMap,
       filterMap
     );
-    model.setFilter(filterMap);
+    if (isFigureChartModel(model)) {
+      model.setFilter(filterMap);
+    } else {
+      model.setFilter();
+    }
 
     if (filterMap.size > 0 && waitingInputMap.size === 0) {
       const defaultTitle = model.getDefaultTitle();
@@ -793,12 +922,15 @@ export class ChartPanel extends Component {
   /**
    * Removes any set filter values that are no longer part of the model
    */
-  pruneFilterMaps() {
+  pruneFilterMaps(): void {
     this.setState(state => {
       const { columnMap } = state;
       const filterMap = new Map(state.filterMap);
       const filterValueMap = new Map(state.filterValueMap);
-      const newState = {};
+      const newState = {
+        filterMap: new Map(),
+        filterValueMap: new Map(),
+      };
 
       state.filterValueMap.forEach((value, name) => {
         if (!columnMap.has(name)) {
@@ -812,18 +944,17 @@ export class ChartPanel extends Component {
           newState.filterMap = filterMap;
         }
       });
-
       return newState;
     });
   }
 
-  updateChart() {
+  updateChart(): void {
     if (this.chart.current) {
       this.chart.current.updateDimensions();
     }
   }
 
-  render() {
+  render(): ReactElement {
     const {
       columnSelectionValidator,
       glContainer,
@@ -839,13 +970,12 @@ export class ChartPanel extends Component {
       filterMap,
       error,
       model,
-      queryName,
       isActive,
       isDisconnected,
       isLoaded,
       isLoading,
     } = this.state;
-    const { figure: figureName, querySerial, table: tableName } = metadata;
+    const { figure: figureName, table: tableName } = metadata;
     const inputFilterMap = this.getInputFilterColumnMap(
       columnMap,
       inputFilters
@@ -869,7 +999,7 @@ export class ChartPanel extends Component {
             inputFilterMap
           )
         : new Map();
-    const errorMessage = error ? `Unable to open chart. ${error}` : null;
+    const errorMessage = error ? `Unable to open chart. ${error}` : undefined;
     const isWaitingForFilter = waitingInputMap.size > 0;
     const isSelectingColumn = columnMap.size > 0 && isLinkerActive;
     return (
@@ -890,8 +1020,6 @@ export class ChartPanel extends Component {
         isDisconnected={isDisconnected}
         isLoading={isLoading}
         isLoaded={isLoaded}
-        queryName={queryName}
-        querySerial={querySerial}
         widgetName={figureName || tableName}
         widgetType="Chart"
       >
@@ -955,50 +1083,16 @@ export class ChartPanel extends Component {
   }
 }
 
-ChartPanel.propTypes = {
-  glContainer: GLPropTypes.Container.isRequired,
-  glEventHub: GLPropTypes.EventHub.isRequired,
+const mapStateToProps = (
+  state: RootState,
+  ownProps: { localDashboardId: string; metadata: { sourcePanelId: string } }
+) => {
+  const { localDashboardId, metadata } = ownProps;
 
-  metadata: PropTypes.shape({
-    figure: PropTypes.string,
-    table: PropTypes.string,
-    query: PropTypes.string,
-    querySerial: PropTypes.string,
-    sourcePanelId: PropTypes.string,
-    settings: PropTypes.shape({
-      isLinked: PropTypes.bool,
-    }),
-  }).isRequired,
-  /** Function to build the ChartModel used by this ChartPanel. Can return a promise. */
-  makeModel: PropTypes.func.isRequired,
-  inputFilters: PropTypes.arrayOf(UIPropTypes.InputFilter).isRequired,
-  links: UIPropTypes.Links.isRequired,
-  localDashboardId: PropTypes.string.isRequired,
-  isLinkerActive: PropTypes.bool,
-  source: APIPropTypes.Table,
-  sourcePanel: UIPropTypes.Panel,
-  columnSelectionValidator: PropTypes.func,
-  setActiveTool: PropTypes.func.isRequired,
-  setDashboardIsolatedLinkerPanelId: PropTypes.func.isRequired,
-
-  panelState: PropTypes.shape({}),
-  settings: PropTypes.shape({}),
-};
-
-ChartPanel.defaultProps = {
-  columnSelectionValidator: null,
-  isLinkerActive: false,
-  source: null,
-  sourcePanel: null,
-  panelState: null,
-  settings: {},
-};
-
-ChartPanel.displayName = 'ChartPanel';
-
-const mapStateToProps = (state, ownProps) => {
-  const { localDashboardId, metadata = {} } = ownProps;
-  const { sourcePanelId } = metadata;
+  let sourcePanelId;
+  if (metadata) {
+    sourcePanelId = metadata.sourcePanelId;
+  }
   const panelTableMap = getTableMapForDashboard(state, localDashboardId);
   const openedPanelMap = getOpenedPanelMapForDashboard(state, localDashboardId);
   const activeTool = getActiveTool(state);
@@ -1016,7 +1110,7 @@ const mapStateToProps = (state, ownProps) => {
     isLinkerActive,
     inputFilters: getInputFiltersForDashboard(state, localDashboardId),
     links: getLinksForDashboard(state, localDashboardId),
-    source: panelTableMap.get(sourcePanelId),
+    source: sourcePanelId ? panelTableMap.get(sourcePanelId) : '',
     sourcePanel: openedPanelMap.get(sourcePanelId),
     settings: getSettings(state),
   };

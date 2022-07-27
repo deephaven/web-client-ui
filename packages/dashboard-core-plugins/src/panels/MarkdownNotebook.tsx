@@ -1,15 +1,55 @@
-import React, { PureComponent } from 'react';
+import React, {
+  PureComponent,
+  ReactElement,
+  RefObject,
+  MouseEvent,
+  MouseEventHandler,
+} from 'react';
 import classNames from 'classnames';
-import PropTypes from 'prop-types';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Button } from '@deephaven/components';
 import { Code } from '@deephaven/console';
 import { vsPlay } from '@deephaven/icons';
 import './MarkdownNotebook.scss';
+import {
+  ReactMarkdownProps,
+  TransformImage,
+  TransformLink,
+} from 'react-markdown/src/ast-to-react';
+import { assertNotNull } from '@deephaven/utils';
 
-export class MarkdownNotebook extends PureComponent {
-  constructor(props) {
+interface MarkdownNotebookProps {
+  onRunCode: (command?: string) => void;
+  content: string;
+  onLinkClick: MouseEventHandler<HTMLAnchorElement>;
+  transformImageUri?: TransformImage;
+  transformLinkUri?: false | TransformLink | null;
+}
+
+interface MarkdownNotebookState {
+  hasCode: boolean;
+
+  // Keep track if any code has been executed yet. If not, make the run button flash
+  hasRunCode: boolean;
+
+  // Line of the next block to execute. Null to start at the first block
+  nextStartLine: number | null;
+}
+
+export class MarkdownNotebook extends PureComponent<
+  MarkdownNotebookProps,
+  MarkdownNotebookState
+> {
+  static defaultProps = {
+    content: '',
+    onLinkClick: undefined,
+    onRunCode: (): void => undefined,
+    transformImageUri: undefined,
+    transformLinkUri: undefined,
+  };
+
+  constructor(props: MarkdownNotebookProps) {
     super(props);
 
     this.handleRunSelected = this.handleRunSelected.bind(this);
@@ -32,15 +72,21 @@ export class MarkdownNotebook extends PureComponent {
     };
   }
 
-  componentDidMount() {
+  componentDidMount(): void {
     this.updateHasCode();
   }
 
-  componentDidUpdate() {
+  componentDidUpdate(): void {
     this.updateHasCode();
   }
 
-  updateHasCode() {
+  commands: Map<number, string>;
+
+  codeElements;
+
+  editorScrollView: RefObject<HTMLDivElement>;
+
+  updateHasCode(): void {
     const { hasCode } = this.state;
     if (this.commands.size === 0 && hasCode) {
       this.setState({ hasCode: false });
@@ -50,10 +96,10 @@ export class MarkdownNotebook extends PureComponent {
   }
 
   /**
-   * @param {number|null} line The line of the code block to start from
-   * @returns {number} The next line of the code block to start from
+   * @param line The line of the code block to start from
+   * @returns The next line of the code block to start from
    */
-  getNextStartLine(line) {
+  getNextStartLine(line: number | null): number | null {
     const keys = [...this.commands.keys()];
     const nextIndex = keys.findIndex(key => key === line) + 1;
     if (nextIndex >= keys.length) {
@@ -64,7 +110,7 @@ export class MarkdownNotebook extends PureComponent {
     return keys[nextIndex];
   }
 
-  handleRunSelected(event) {
+  handleRunSelected(event: MouseEvent<HTMLButtonElement>): void {
     event.preventDefault();
     event.stopPropagation();
 
@@ -84,7 +130,7 @@ export class MarkdownNotebook extends PureComponent {
     if (nextElement) {
       const { offsetTop } = nextElement;
       const top = offsetTop;
-      this.editorScrollView.current.scroll({
+      this.editorScrollView.current?.scroll({
         top,
         left: 0,
       });
@@ -94,21 +140,27 @@ export class MarkdownNotebook extends PureComponent {
     this.setState({ nextStartLine: newNextStartLine });
   }
 
-  runCode(command) {
+  runCode(command?: string): void {
     const { onRunCode } = this.props;
     onRunCode(command);
 
     this.setState({ hasRunCode: true });
   }
 
-  renderCodeBlock(props) {
+  renderCodeBlock(
+    props: JSX.IntrinsicElements['code'] &
+      ReactMarkdownProps & {
+        inline?: boolean;
+      }
+  ): ReactElement {
     const { children, className, inline, node } = props;
     const { hasRunCode, nextStartLine } = this.state;
     const { children: nodeChildren, position } = node;
+    assertNotNull(position);
     const { start } = position;
     const { line } = start;
-    const command = nodeChildren[0].value;
-    const ref = React.createRef();
+    const command = (nodeChildren[0] as { value: string }).value;
+    const ref = React.createRef<HTMLDivElement>();
     const isFirstBlock = this.commands.size === 0;
     const isSelected =
       nextStartLine === line ||
@@ -159,7 +211,11 @@ export class MarkdownNotebook extends PureComponent {
     );
   }
 
-  renderLink(props) {
+  renderLink(
+    props: React.ClassAttributes<HTMLAnchorElement> &
+      React.AnchorHTMLAttributes<HTMLAnchorElement> &
+      ReactMarkdownProps
+  ): ReactElement {
     const { onLinkClick } = this.props;
     const { href, children, target } = props;
     return (
@@ -169,7 +225,7 @@ export class MarkdownNotebook extends PureComponent {
     );
   }
 
-  render() {
+  render(): ReactElement {
     const { content, transformImageUri, transformLinkUri } = this.props;
     const { hasCode, hasRunCode, nextStartLine } = this.state;
     return (
@@ -204,21 +260,5 @@ export class MarkdownNotebook extends PureComponent {
     );
   }
 }
-
-MarkdownNotebook.propTypes = {
-  onRunCode: PropTypes.func,
-  content: PropTypes.string,
-  onLinkClick: PropTypes.func,
-  transformImageUri: PropTypes.func,
-  transformLinkUri: PropTypes.func,
-};
-
-MarkdownNotebook.defaultProps = {
-  content: '',
-  onLinkClick: undefined,
-  onRunCode: () => {},
-  transformImageUri: undefined,
-  transformLinkUri: undefined,
-};
 
 export default MarkdownNotebook;

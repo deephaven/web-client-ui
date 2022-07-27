@@ -14,25 +14,20 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { vsTrash } from '@deephaven/icons';
 
 import Log from '@deephaven/log';
+import { ReactComponentConfig } from '@deephaven/golden-layout';
 
 const log = Log.module('MarkdownStartPage');
 
-interface Markdown {
-  title: string;
-  content: string;
-  id?: Key;
-}
-
 interface MarkdownStartPageProps {
-  closedMarkdowns: Markdown[];
-  onOpen: (markdown: Markdown) => void;
+  closedMarkdowns: ReactComponentConfig[];
+  onOpen: (markdown: ReactComponentConfig) => void;
   onCreate: MouseEventHandler<HTMLButtonElement>;
-  onDelete: (markdown: Markdown) => void;
+  onDelete: (markdown: ReactComponentConfig) => void;
 }
 
 interface MarkdownStartPageState {
   isDeleteModalShown: boolean;
-  toBeDeleted?: Markdown;
+  toBeDeleted?: ReactComponentConfig;
 }
 
 class MarkdownStartPage extends PureComponent<
@@ -55,7 +50,7 @@ class MarkdownStartPage extends PureComponent<
     };
   }
 
-  handleDeleteButtonClick(markdown: Markdown): void {
+  handleDeleteButtonClick(markdown: ReactComponentConfig): void {
     this.setState({ isDeleteModalShown: true, toBeDeleted: markdown });
   }
 
@@ -63,7 +58,7 @@ class MarkdownStartPage extends PureComponent<
     this.setState({ isDeleteModalShown: false, toBeDeleted: undefined });
   }
 
-  handleDeleteMarkdown(markdown?: Markdown): void {
+  handleDeleteMarkdown(markdown?: ReactComponentConfig): void {
     log.debug('delete markdown: ', markdown);
 
     if (markdown !== undefined) {
@@ -96,7 +91,7 @@ class MarkdownStartPage extends PureComponent<
           <div className="markdown-panel-start-list">
             <h3 className="list-title">Recently Closed from Dashboard</h3>
             {closedMarkdowns.map(markdown => (
-              <div className="list-item" key={markdown.id}>
+              <div className="list-item" key={markdown.id as Key}>
                 <button
                   className="btn btn-link title"
                   type="button"

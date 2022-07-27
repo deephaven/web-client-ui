@@ -1,10 +1,40 @@
-import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
+import React, {
+  ChangeEvent,
+  FormEvent,
+  PureComponent,
+  ReactElement,
+  RefObject,
+} from 'react';
 import classNames from 'classnames';
 import { Popper } from '@deephaven/components';
 
-export default class RenameDialog extends PureComponent {
-  constructor(props) {
+interface RenameDialogProps {
+  isShared: boolean;
+  isOwner: boolean;
+  isShown: boolean;
+  itemType: string;
+  onSubmit: (title: string) => void;
+  onCancel: () => void;
+  value?: string | null;
+}
+
+interface RenameDialogState {
+  value?: string | null;
+  valueWasValidated: boolean;
+}
+
+export default class RenameDialog extends PureComponent<
+  RenameDialogProps,
+  RenameDialogState
+> {
+  static defaultProps = {
+    isShared: false,
+    isOwner: true,
+    itemType: 'Item',
+    value: '',
+  };
+
+  constructor(props: RenameDialogProps) {
     super(props);
 
     this.handleRenameDialogOpened = this.handleRenameDialogOpened.bind(this);
@@ -22,7 +52,7 @@ export default class RenameDialog extends PureComponent {
     };
   }
 
-  componentDidUpdate(prevProps) {
+  componentDidUpdate(prevProps: RenameDialogProps): void {
     const { isShown: prevIsShown } = prevProps;
     const { isShown } = this.props;
     // Reset the state on dialog shown and not on the `value` prop change
@@ -34,32 +64,34 @@ export default class RenameDialog extends PureComponent {
     }
   }
 
-  resetState() {
+  renameInputRef: RefObject<HTMLInputElement>;
+
+  resetState(): void {
     const { value } = this.props;
     this.setState({ value, valueWasValidated: false });
   }
 
-  handleRenameDialogOpened() {
+  handleRenameDialogOpened(): void {
     if (this.renameInputRef) {
-      this.renameInputRef.current.focus();
+      this.renameInputRef.current?.focus();
     }
   }
 
-  handleRenameInputChange(event) {
+  handleRenameInputChange(event: ChangeEvent<HTMLInputElement>): void {
     this.setState({ value: event.target.value });
   }
 
-  handleRenameCancel() {
+  handleRenameCancel(): void {
     const { onCancel } = this.props;
     onCancel();
   }
 
-  handleRenameSubmit(event) {
+  handleRenameSubmit(event: FormEvent<HTMLFormElement>): void {
     event.stopPropagation();
     event.preventDefault();
     const { value } = this.state;
-    const newTitle = value.trim();
-    if (newTitle !== '') {
+    const newTitle = value?.trim();
+    if (newTitle !== undefined && newTitle !== '') {
       const { onSubmit } = this.props;
       onSubmit(newTitle);
     } else {
@@ -67,7 +99,7 @@ export default class RenameDialog extends PureComponent {
     }
   }
 
-  renderRenameDialog() {
+  renderRenameDialog(): ReactElement {
     const { isShared, isOwner, itemType } = this.props;
     const { value, valueWasValidated } = this.state;
 
@@ -93,7 +125,7 @@ export default class RenameDialog extends PureComponent {
             type="text"
             className="form-control"
             id={`rename-dialog-${itemType}-input`}
-            value={value}
+            value={value ?? undefined}
             ref={this.renameInputRef}
             onChange={this.handleRenameInputChange}
             required
@@ -124,7 +156,7 @@ export default class RenameDialog extends PureComponent {
     );
   }
 
-  render() {
+  render(): ReactElement {
     const { isShown, onCancel } = this.props;
     return (
       <Popper
@@ -143,23 +175,3 @@ export default class RenameDialog extends PureComponent {
     );
   }
 }
-
-RenameDialog.propTypes = {
-  isShared: PropTypes.bool,
-  isOwner: PropTypes.bool,
-  isShown: PropTypes.bool.isRequired,
-  itemType: PropTypes.string,
-  onSubmit: PropTypes.func.isRequired,
-  onCancel: PropTypes.func.isRequired,
-  value: PropTypes.string,
-};
-
-RenameDialog.defaultProps = {
-  isShared: false,
-  isOwner: true,
-  itemType: 'Item',
-};
-
-RenameDialog.defaultProps = {
-  value: '',
-};

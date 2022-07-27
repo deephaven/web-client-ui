@@ -2,18 +2,23 @@
 /* eslint-disable jsx-a11y/no-static-element-interactions */
 // background click is just a convenience method, not an actual a11y issue
 
-import React, { Component, RefObject } from 'react';
-import PropTypes from 'prop-types';
+import React, {
+  ChangeEvent,
+  Component,
+  KeyboardEvent,
+  MouseEvent,
+  ReactElement,
+  RefObject,
+} from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Button, CardFlip, SocketedButton } from '@deephaven/components';
 import { vsGear } from '@deephaven/icons';
-import { Column, PropTypes as APIPropTypes } from '@deephaven/jsapi-shim';
+import { Column } from '@deephaven/jsapi-shim';
 import { TableUtils } from '@deephaven/jsapi-utils';
 import memoizee from 'memoizee';
 import memoize from 'memoize-one';
 import debounce from 'lodash.debounce';
 import Log from '@deephaven/log';
-import { UIPropTypes } from '../../prop-types';
 import './DropdownFilter.scss';
 import { LinkPoint } from '../../linker/LinkerUtils';
 
@@ -33,13 +38,17 @@ interface DropdownFilterProps {
   source: LinkPoint;
   value: string;
   values: string[];
-  onChange: () => void;
+  onChange: (change: {
+    column: Partial<Column> | null;
+    isValueShown?: boolean;
+    value?: string;
+  }) => void;
   onColumnSelected: () => void;
 }
 
 interface DropdownFilterState {
-  column: Column;
-  selectedColumn: Column;
+  column: Pick<Column, 'name' | 'type'> | null;
+  selectedColumn: Pick<Column, 'name' | 'type'> | null;
   disableCancel: boolean;
   isValueShown: boolean;
   value: string;
@@ -49,6 +58,22 @@ class DropdownFilter extends Component<
   DropdownFilterProps,
   DropdownFilterState
 > {
+  static defaultProps = {
+    column: null,
+    disableLinking: false,
+    isLinkerActive: false,
+    isLoaded: false,
+    isValueShown: false,
+
+    settingsError: null,
+    source: null,
+    value: '',
+    values: [],
+    onColumnSelected: (): void => undefined,
+    onSourceMouseEnter: (): void => undefined,
+    onSourceMouseLeave: (): void => undefined,
+  };
+
   static PLACEHOLDER = 'Select a value...';
 
   static SOURCE_BUTTON_CLASS_NAME = 'btn-dropdown-filter-selector';
@@ -66,8 +91,6 @@ class DropdownFilter extends Component<
     this.handleDropdownKeyPress = this.handleDropdownKeyPress.bind(this);
     this.handleValueChange = this.handleValueChange.bind(this);
 
-    this.sendUpdate = debounce(this.sendUpdate.bind(this), UPDATE_DEBOUNCE);
-
     this.dropdownRef = React.createRef();
 
     const { column, isValueShown, value } = props;
@@ -83,7 +106,7 @@ class DropdownFilter extends Component<
   componentDidUpdate(
     prevProps: DropdownFilterProps,
     prevState: DropdownFilterState
-  ) {
+  ): void {
     const { source, values, isLoaded } = this.props;
     const { column, value, isValueShown } = this.state;
 
@@ -123,7 +146,7 @@ class DropdownFilter extends Component<
 
   dropdownRef: RefObject<HTMLSelectElement>;
 
-  getCompatibleColumns = memoize((source, columns) =>
+  getCompatibleColumns = memoize((source: LinkPoint, columns: Column[]) =>
     source
       ? columns.filter(({ type }) =>
           TableUtils.isCompatibleType(type, source.columnType)
@@ -131,34 +154,41 @@ class DropdownFilter extends Component<
       : []
   );
 
-  getColumnOptions = memoize((columns, selectedColumn) => {
-    let selectedIndex = -1;
-    const options = [];
-    options.push(
-      <option key="placeholder" value="-1">
-        Select a column
-      </option>
-    );
-    columns.forEach((columnItem, index) => {
+  getColumnOptions = memoize(
+    (
+      columns: Pick<Column, 'name' | 'type'>[],
+      selectedColumn: Pick<Column, 'name' | 'type'> | null
+    ): [JSX.Element[], number] => {
+      let selectedIndex = -1;
+      const options = [];
       options.push(
-        <option key={`${columnItem.name}/${columnItem.type}`} value={index}>
-          {this.getItemLabel(columns, index)}
+        <option key="placeholder" value="-1">
+          Select a column
         </option>
       );
-      if (
-        selectedColumn !== null &&
-        columnItem.name === selectedColumn.name &&
-        columnItem.type === selectedColumn.type
-      ) {
-        selectedIndex = index;
-      }
-    });
-    return [options, selectedIndex];
-  });
+      columns.forEach((columnItem, index) => {
+        options.push(
+          <option key={`${columnItem.name}/${columnItem.type}`} value={index}>
+            {this.getItemLabel(columns, index)}
+          </option>
+        );
+        if (
+          selectedColumn !== null &&
+          columnItem.name === selectedColumn.name &&
+          columnItem.type === selectedColumn.type
+        ) {
+          selectedIndex = index;
+        }
+      });
+      return [options, selectedIndex];
+    }
+  );
 
-  getSelectedOptionIndex = memoize((values, value) => values.indexOf(value));
+  getSelectedOptionIndex = memoize((values: string[], value: string) =>
+    values.indexOf(value)
+  );
 
-  getValueOptions = memoize(values => [
+  getValueOptions = memoize((values: string[]) => [
     <option value="-1" key="-1">
       {DropdownFilter.PLACEHOLDER}
     </option>,
@@ -187,10 +217,10 @@ class DropdownFilter extends Component<
     return name;
   });
 
-  handleColumnChange(event) {
+  handleColumnChange(event: ChangeEvent<HTMLSelectElement>): void {
     const { value } = event.target;
     log.debug2('handleColumnChange', value);
-    if (value < 0) {
+    if (value != null && parseInt(value, 10) < 0) {
       this.setState({
         selectedColumn: null,
       });
@@ -199,11 +229,11 @@ class DropdownFilter extends Component<
     const { columns: allColumns, source } = this.props;
     const columns = this.getCompatibleColumns(source, allColumns);
     this.setState({
-      selectedColumn: columns[value],
+      selectedColumn: columns[parseInt(value, 10)],
     });
   }
 
-  handleDropdownKeyPress(event) {
+  handleDropdownKeyPress(event: KeyboardEvent<HTMLSelectElement>): void {
     if (event.key === 'Enter') {
       event.preventDefault();
       event.stopPropagation();
@@ -215,7 +245,7 @@ class DropdownFilter extends Component<
     }
   }
 
-  handleValueChange(event) {
+  handleValueChange(event: ChangeEvent<HTMLSelectElement>): void {
     const { value: valueIndex } = event.target;
     const index = parseInt(valueIndex, 10);
     // Default empty string value for 'clear filter'
@@ -235,14 +265,14 @@ class DropdownFilter extends Component<
     this.setState({ value });
   }
 
-  handleSettingsCancel() {
+  handleSettingsCancel(): void {
     this.setState(({ column }) => ({
       selectedColumn: column,
       isValueShown: true,
     }));
   }
 
-  handleSettingsSave() {
+  handleSettingsSave(): void {
     this.setState(({ column, selectedColumn, value }) => ({
       column: selectedColumn,
       // Reset value if column changed
@@ -252,29 +282,29 @@ class DropdownFilter extends Component<
     }));
   }
 
-  handleSettingsClick(event) {
+  handleSettingsClick(event: MouseEvent<HTMLButtonElement>): void {
     event.stopPropagation();
     this.showSettings();
   }
 
-  handleBackgroundClick(event) {
+  handleBackgroundClick(event: MouseEvent<HTMLDivElement>): void {
     // allow clicking anywhere in the background to select and focus the input
     if (event.target !== this.dropdownRef.current) {
       this.focusInput();
     }
   }
 
-  handleMouseEnter() {
+  handleMouseEnter(): void {
     const { onSourceMouseEnter } = this.props;
     onSourceMouseEnter();
   }
 
-  handleMouseLeave() {
+  handleMouseLeave(): void {
     const { onSourceMouseLeave } = this.props;
     onSourceMouseLeave();
   }
 
-  sourceUpdated() {
+  sourceUpdated(): void {
     this.setState({
       column: null,
       selectedColumn: null,
@@ -284,38 +314,48 @@ class DropdownFilter extends Component<
     });
   }
 
-  showSettings() {
+  showSettings(): void {
     const { column } = this.state;
     this.setState({ selectedColumn: column, isValueShown: false });
   }
 
-  focusInput() {
+  focusInput(): void {
     if (this.dropdownRef.current !== null) {
       this.dropdownRef.current.focus();
     }
   }
 
-  resetValue() {
+  resetValue(): void {
     this.setState({ value: '' });
   }
 
   // Called by the parent component via ref
-  clearFilter() {
+  clearFilter(): void {
     this.resetValue();
   }
 
-  setFilterState({ name, type, value, isValueShown }) {
+  setFilterState({
+    name,
+    type,
+    value,
+    isValueShown,
+  }: {
+    name: string;
+    type: string;
+    value: string;
+    isValueShown: boolean;
+  }): void {
     const column = name != null && type != null ? { name, type } : null;
     this.setState({ column, value, isValueShown });
   }
 
-  sendUpdate() {
+  sendUpdate = debounce(() => {
     const { onChange } = this.props;
     const { column, value, isValueShown } = this.state;
     onChange({ column, isValueShown, value });
-  }
+  }, UPDATE_DEBOUNCE);
 
-  render() {
+  render(): ReactElement {
     const {
       columns: allColumns,
       disableLinking,
@@ -400,7 +440,9 @@ class DropdownFilter extends Component<
                   onClick={this.handleSettingsCancel}
                   disabled={disableCancel || isValueShown || isLinkerActive}
                   tooltip={
-                    isLinkerActive ? 'Cancel disabled while linker open' : null
+                    isLinkerActive
+                      ? 'Cancel disabled while linker open'
+                      : undefined
                   }
                 >
                   Cancel
@@ -412,7 +454,9 @@ class DropdownFilter extends Component<
                   onClick={this.handleSettingsSave}
                   disabled={disableSave || isValueShown || isLinkerActive}
                   tooltip={
-                    isLinkerActive ? 'Save disabled while linker open' : null
+                    isLinkerActive
+                      ? 'Save disabled while linker open'
+                      : undefined
                   }
                 >
                   Save
@@ -467,38 +511,5 @@ class DropdownFilter extends Component<
     );
   }
 }
-
-DropdownFilter.propTypes = {
-  column: APIPropTypes.Column,
-  columns: PropTypes.arrayOf(APIPropTypes.Column).isRequired,
-  onSourceMouseEnter: PropTypes.func,
-  onSourceMouseLeave: PropTypes.func,
-  disableLinking: PropTypes.bool,
-  isLinkerActive: PropTypes.bool,
-  isLoaded: PropTypes.bool,
-  isValueShown: PropTypes.bool,
-  settingsError: PropTypes.string,
-  source: UIPropTypes.LinkPoint,
-  value: PropTypes.string,
-  values: PropTypes.arrayOf(PropTypes.string),
-  onChange: PropTypes.func.isRequired,
-  onColumnSelected: PropTypes.func,
-};
-
-DropdownFilter.defaultProps = {
-  column: null,
-  disableLinking: false,
-  isLinkerActive: false,
-  isLoaded: false,
-  isValueShown: false,
-
-  settingsError: null,
-  source: null,
-  value: '',
-  values: [],
-  onColumnSelected: () => {},
-  onSourceMouseEnter: () => {},
-  onSourceMouseLeave: () => {},
-};
 
 export default DropdownFilter;

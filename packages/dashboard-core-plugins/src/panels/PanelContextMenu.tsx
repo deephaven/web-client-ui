@@ -1,10 +1,26 @@
-import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
-import { ContextActions } from '@deephaven/components';
-import { GLPropTypes } from '@deephaven/dashboard';
+import React, { PureComponent, ReactElement } from 'react';
+import { ContextAction, ContextActions } from '@deephaven/components';
+import { Container, Tab } from '@deephaven/golden-layout';
 
-class PanelContextMenu extends PureComponent {
-  constructor(props) {
+interface PanelContextMenuProps {
+  additionalActions: ContextAction[];
+  glContainer: Container;
+}
+
+interface HasContainer {
+  container: {
+    close: () => void;
+  };
+}
+class PanelContextMenu extends PureComponent<
+  PanelContextMenuProps,
+  Record<string, never>
+> {
+  static defaultProps = {
+    additionalActions: [],
+  };
+
+  constructor(props: PanelContextMenuProps) {
     super(props);
 
     this.handleCloseTab = this.handleCloseTab.bind(this);
@@ -12,26 +28,28 @@ class PanelContextMenu extends PureComponent {
     this.handleCloseTabsAll = this.handleCloseTabsAll.bind(this);
   }
 
-  getAllTabs() {
+  getAllTabs(): Tab[] {
     // return a clone of the tabs array, or returns empty array if null
     const { glContainer } = this.props;
     return [...(glContainer?.tab?.header?.tabs ?? [])];
   }
 
-  handleCloseTab() {
+  handleCloseTab(): void {
     const { glContainer } = this.props;
     glContainer.close();
   }
 
-  handleCloseTabsAll() {
+  handleCloseTabsAll(): void {
     const tabs = this.getAllTabs();
 
     // No need to check if isClosable, golden-layout returns
     // false when attempting to close tabs that you can't
-    tabs.forEach(tab => tab?.contentItem?.container?.close());
+    tabs.forEach(tab =>
+      ((tab?.contentItem as unknown) as HasContainer).container?.close()
+    );
   }
 
-  handleCloseTabsRight() {
+  handleCloseTabsRight(): void {
     const { glContainer } = this.props;
     const tabs = this.getAllTabs();
 
@@ -44,11 +62,11 @@ class PanelContextMenu extends PureComponent {
       }
 
       // eslint-disable-next-line no-unused-expressions
-      tabs[i]?.contentItem?.container?.close();
+      ((tabs[i]?.contentItem as unknown) as HasContainer).container?.close();
     }
   }
 
-  canCloseTabsRight() {
+  canCloseTabsRight(): boolean {
     const { glContainer } = this.props;
     const tabs = this.getAllTabs();
 
@@ -68,7 +86,7 @@ class PanelContextMenu extends PureComponent {
     return disabled;
   }
 
-  canCloseAny() {
+  canCloseAny(): boolean {
     const tabs = this.getAllTabs();
 
     let disabled = true;
@@ -81,10 +99,12 @@ class PanelContextMenu extends PureComponent {
     return disabled;
   }
 
-  render() {
+  render(): ReactElement {
     const { additionalActions, glContainer } = this.props;
 
-    const contextActions = [].concat(additionalActions);
+    const contextActions: (ContextAction | (() => ContextAction))[] = [
+      ...additionalActions,
+    ];
 
     contextActions.push({
       title: 'Close',
@@ -114,14 +134,5 @@ class PanelContextMenu extends PureComponent {
     return <ContextActions actions={contextActions} />;
   }
 }
-
-PanelContextMenu.propTypes = {
-  additionalActions: PropTypes.oneOfType([PropTypes.array, PropTypes.func]),
-  glContainer: GLPropTypes.Container.isRequired,
-};
-
-PanelContextMenu.defaultProps = {
-  additionalActions: [],
-};
 
 export default PanelContextMenu;

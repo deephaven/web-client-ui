@@ -3,21 +3,36 @@
 import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
 import { LogView } from '@deephaven/console';
-import { GLPropTypes } from '@deephaven/dashboard';
-import { PropTypes as APIPropTypes } from '@deephaven/jsapi-shim';
+import { IdeSession } from '@deephaven/jsapi-shim';
 import Log from '@deephaven/log';
+import { Container, EventEmitter } from '@deephaven/golden-layout';
+import { RootState } from '@deephaven/redux';
 import './LogPanel.scss';
 import Panel from './Panel';
 import { getDashboardSessionWrapper } from '../redux';
 
 const log = Log.module('LogPanel');
 
-class LogPanel extends PureComponent {
+interface LogPanelProps {
+  glContainer: Container;
+  glEventHub: EventEmitter;
+  session: IdeSession;
+}
+
+interface LogPanelState {
+  session: IdeSession;
+}
+
+class LogPanel extends PureComponent<LogPanelProps, LogPanelState> {
+  static defaultProps = {
+    session: null,
+  };
+
   static COMPONENT = 'LogPanel';
 
   static TITLE = 'Log';
 
-  constructor(props) {
+  constructor(props: LogPanelProps) {
     super(props);
 
     this.handleResize = this.handleResize.bind(this);
@@ -33,6 +48,10 @@ class LogPanel extends PureComponent {
 
     this.state = { session };
   }
+
+  isBottomVisible: boolean;
+
+  logView: LogView | null;
 
   handleResize() {
     this.updateDimensions();
@@ -55,13 +74,13 @@ class LogPanel extends PureComponent {
     }
   }
 
-  handleSessionOpened(session) {
+  handleSessionOpened(session: IdeSession) {
     log.debug('Session opened', [session]);
     this.setState({ session });
   }
 
   // eslint-disable-next-line class-methods-use-this
-  handleSessionClosed(session) {
+  handleSessionClosed(session: IdeSession) {
     log.debug('Session closed', session);
     // Keep the session reference in state unchanged until the session is re-connected
   }
@@ -104,17 +123,10 @@ class LogPanel extends PureComponent {
   }
 }
 
-LogPanel.propTypes = {
-  glContainer: GLPropTypes.Container.isRequired,
-  glEventHub: GLPropTypes.EventHub.isRequired,
-  session: APIPropTypes.IdeSession,
-};
-
-LogPanel.defaultProps = {
-  session: null,
-};
-
-const mapStateToProps = (state, ownProps) => ({
+const mapStateToProps = (
+  state: RootState,
+  ownProps: { localDashboardId: string }
+) => ({
   session: getDashboardSessionWrapper(state, ownProps.localDashboardId)
     ?.session,
 });

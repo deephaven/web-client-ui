@@ -1,24 +1,102 @@
-import React, { Component, PureComponent } from 'react';
+import React, {
+  Component,
+  FocusEvent,
+  FocusEventHandler,
+  PureComponent,
+  ReactElement,
+  ReactNode,
+} from 'react';
 import ReactDOM from 'react-dom';
-import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import memoize from 'memoize-one';
-import { ContextActions, LoadingOverlay, Tooltip } from '@deephaven/components';
-import { GLPropTypes, LayoutUtils, PanelEvent } from '@deephaven/dashboard';
+import {
+  ContextAction,
+  ContextActions,
+  LoadingOverlay,
+  Tooltip,
+} from '@deephaven/components';
+import { LayoutUtils, PanelEvent } from '@deephaven/dashboard';
+import {
+  Container,
+  EventEmitter,
+  ReactComponentConfig,
+  Tab,
+} from '@deephaven/golden-layout';
+import { assertNotNull } from '@deephaven/utils';
 import Log from '@deephaven/log';
+import { IdeSession } from '@deephaven/jsapi-shim';
 import { ConsoleEvent, InputFilterEvent, TabEvent } from '../events';
 import PanelContextMenu from './PanelContextMenu';
 import RenameDialog from './RenameDialog';
 
 const log = Log.module('Panel');
 
+interface PanelProps {
+  componentPanel: Component;
+  children: ReactNode;
+  glContainer: Container;
+  glEventHub: EventEmitter;
+  className: string;
+  onFocus: FocusEventHandler<HTMLDivElement>;
+  onBlur: FocusEventHandler<HTMLDivElement>;
+  onTab: (tab: Tab) => void;
+  onTabClicked: (...args: unknown[]) => void;
+  onClearAllFilters: (...args: unknown[]) => void;
+  onHide: (...args: unknown[]) => void;
+  onResize: (...args: unknown[]) => void;
+  onSessionClose: (session: IdeSession) => void;
+  onSessionOpen: (
+    session: IdeSession,
+    { language, sessionId }: { language: string; sessionId: string }
+  ) => void;
+  onBeforeShow: (...args: unknown[]) => void;
+  onShow: (...args: unknown[]) => void;
+  onTabBlur: (...args: unknown[]) => void;
+  onTabFocus: (...args: unknown[]) => void;
+  renderTabTooltip: () => ReactNode;
+  additionalActions: ContextAction[];
+  errorMessage: string;
+  isLoading: boolean;
+  isLoaded: boolean;
+  isClonable: boolean;
+  isRenamable: boolean;
+}
+
+interface PanelState {
+  title?: string | null;
+  showRenameDialog: boolean;
+}
 /**
  * Generic panel component that emits mount/unmount/focus events.
  * Also wires up some triggers for common events:
  * Focus, Resize, Show, Session open/close, client disconnect/reconnect.
  */
-class Panel extends PureComponent {
-  constructor(props) {
+class Panel extends PureComponent<PanelProps, PanelState> {
+  static defaultProps = {
+    className: '',
+    onTab: (): void => undefined,
+    onTabClicked: (): void => undefined,
+    onClearAllFilters: (): void => undefined,
+    onFocus: (): void => undefined,
+    onBlur: (): void => undefined,
+    onHide: (): void => undefined,
+    onResize: (): void => undefined,
+    onSessionClose: (): void => undefined,
+    onSessionOpen: (): void => undefined,
+    onBeforeShow: (): void => undefined,
+    onShow: (): void => undefined,
+    onTabBlur: (): void => undefined,
+    onTabFocus: (): void => undefined,
+    renderTabTooltip: null,
+    additionalActions: [],
+    errorMessage: null,
+    isLoading: false,
+    isLoaded: true,
+    isClonable: false,
+    isRenamable: false,
+  };
+
+  constructor(props: PanelProps) {
     super(props);
 
     this.handleClearAllFilters = this.handleClearAllFilters.bind(this);
@@ -46,7 +124,7 @@ class Panel extends PureComponent {
     };
   }
 
-  componentDidMount() {
+  componentDidMount(): void {
     const { componentPanel, glContainer, glEventHub } = this.props;
 
     glContainer.on('resize', this.handleResize);
@@ -67,7 +145,7 @@ class Panel extends PureComponent {
     glEventHub.emit(PanelEvent.MOUNT, componentPanel);
   }
 
-  componentWillUnmount() {
+  componentWillUnmount(): void {
     const { componentPanel, glContainer, glEventHub } = this.props;
 
     glContainer.off('resize', this.handleResize);
@@ -88,7 +166,7 @@ class Panel extends PureComponent {
     glEventHub.emit(PanelEvent.UNMOUNT, componentPanel);
   }
 
-  handleTab(tab) {
+  handleTab(tab: Tab): void {
     if (tab) {
       this.setState({
         title: LayoutUtils.getTitleFromTab(tab),
@@ -102,86 +180,90 @@ class Panel extends PureComponent {
     onTab(tab);
   }
 
-  handleTabClicked(...args) {
+  handleTabClicked(...args: unknown[]): void {
     const { onTabClicked } = this.props;
     onTabClicked(...args);
   }
 
-  handleClearAllFilters(...args) {
+  handleClearAllFilters(...args: unknown[]): void {
     const { onClearAllFilters } = this.props;
     onClearAllFilters(...args);
   }
 
-  handleFocus(...args) {
+  handleFocus(event: FocusEvent<HTMLDivElement>): void {
     const { componentPanel, glEventHub } = this.props;
     glEventHub.emit(PanelEvent.FOCUS, componentPanel);
 
     const { onFocus } = this.props;
-    onFocus(...args);
+    onFocus(event);
   }
 
-  handleBlur(...args) {
+  handleBlur(event: FocusEvent<HTMLDivElement>): void {
     const { onBlur } = this.props;
-    onBlur(...args);
+    onBlur(event);
   }
 
-  handleHide(...args) {
+  handleHide(...args: unknown[]): void {
     const { onHide } = this.props;
     onHide(...args);
   }
 
-  handleResize(...args) {
+  handleResize(...args: unknown[]): void {
     const { onResize } = this.props;
     onResize(...args);
   }
 
-  handleSessionClosed(...args) {
+  handleSessionClosed(session: IdeSession): void {
     const { onSessionClose } = this.props;
-    onSessionClose(...args);
+    onSessionClose(session);
   }
 
-  handleSessionOpened(...args) {
+  handleSessionOpened(
+    session: IdeSession,
+    params: { language: string; sessionId: string }
+  ): void {
     const { onSessionOpen } = this.props;
-    onSessionOpen(...args);
+    onSessionOpen(session, params);
   }
 
-  handleBeforeShow(...args) {
+  handleBeforeShow(...args: unknown[]): void {
     const { onBeforeShow } = this.props;
     onBeforeShow(...args);
   }
 
-  handleShow(...args) {
+  handleShow(...args: unknown[]): void {
     const { onShow } = this.props;
     onShow(...args);
   }
 
-  handleTabBlur(...args) {
+  handleTabBlur(...args: unknown[]): void {
     const { onTabBlur } = this.props;
     onTabBlur(...args);
   }
 
-  handleTabFocus(...args) {
+  handleTabFocus(...args: unknown[]): void {
     const { onTabFocus } = this.props;
     onTabFocus(...args);
   }
 
-  handleRenameCancel() {
+  handleRenameCancel(): void {
     this.setState({ showRenameDialog: false });
   }
 
-  handleShowRenameDialog() {
+  handleShowRenameDialog(): void {
     this.setState({ showRenameDialog: true });
   }
 
-  handleRenameSubmit(newTitle) {
+  handleRenameSubmit(newTitle: string): void {
     const { glContainer } = this.props;
     this.setState({ showRenameDialog: false, title: newTitle });
     const root = LayoutUtils.getRootFromContainer(glContainer);
     const config = LayoutUtils.getComponentConfigFromContainer(glContainer);
+    assertNotNull(config);
     LayoutUtils.renameComponent(root, config, newTitle);
   }
 
-  handleCopyPanel() {
+  handleCopyPanel(): void {
     const { glContainer, glEventHub } = this.props;
     const root = LayoutUtils.getRootFromContainer(glContainer);
     const config = LayoutUtils.getComponentConfigFromContainer(glContainer);
@@ -189,13 +271,16 @@ class Panel extends PureComponent {
       log.error('Could not get component config from container', glContainer);
       return;
     }
-    const cloneConfig = LayoutUtils.cloneComponent(root, config);
+    const cloneConfig = LayoutUtils.cloneComponent(
+      root,
+      config as ReactComponentConfig
+    );
     if (cloneConfig !== null) {
       glEventHub.emit(PanelEvent.CLONED, this, cloneConfig);
     }
   }
 
-  getCloneAction() {
+  getCloneAction(): ContextAction {
     return {
       title: 'Copy Panel',
       order: 10,
@@ -204,7 +289,7 @@ class Panel extends PureComponent {
     };
   }
 
-  getRenameAction() {
+  getRenameAction(): ContextAction {
     return {
       title: 'Rename',
       order: 10,
@@ -224,7 +309,7 @@ class Panel extends PureComponent {
     return [...additionalActions, ...actions];
   });
 
-  render() {
+  render(): ReactElement {
     const {
       children,
       className,
@@ -290,57 +375,5 @@ class Panel extends PureComponent {
     );
   }
 }
-
-Panel.propTypes = {
-  componentPanel: PropTypes.instanceOf(Component).isRequired,
-  children: PropTypes.node.isRequired,
-  glContainer: GLPropTypes.Container.isRequired,
-  glEventHub: GLPropTypes.EventHub.isRequired,
-  className: PropTypes.string,
-  onFocus: PropTypes.func,
-  onBlur: PropTypes.func,
-  onTab: PropTypes.func,
-  onTabClicked: PropTypes.func,
-  onClearAllFilters: PropTypes.func,
-  onHide: PropTypes.func,
-  onResize: PropTypes.func,
-  onSessionClose: PropTypes.func,
-  onSessionOpen: PropTypes.func,
-  onBeforeShow: PropTypes.func,
-  onShow: PropTypes.func,
-  onTabBlur: PropTypes.func,
-  onTabFocus: PropTypes.func,
-  renderTabTooltip: PropTypes.func,
-  additionalActions: PropTypes.oneOfType([PropTypes.array, PropTypes.func]),
-  errorMessage: PropTypes.string,
-  isLoading: PropTypes.bool,
-  isLoaded: PropTypes.bool,
-  isClonable: PropTypes.bool,
-  isRenamable: PropTypes.bool,
-};
-
-Panel.defaultProps = {
-  className: '',
-  onTab: () => {},
-  onTabClicked: () => {},
-  onClearAllFilters: () => {},
-  onFocus: () => {},
-  onBlur: () => {},
-  onHide: () => {},
-  onResize: () => {},
-  onSessionClose: () => {},
-  onSessionOpen: () => {},
-  onBeforeShow: () => {},
-  onShow: () => {},
-  onTabBlur: () => {},
-  onTabFocus: () => {},
-  renderTabTooltip: null,
-  additionalActions: [],
-  errorMessage: null,
-  isLoading: false,
-  isLoaded: true,
-  isClonable: false,
-  isRenamable: false,
-};
 
 export default Panel;

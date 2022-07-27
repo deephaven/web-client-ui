@@ -1,15 +1,25 @@
 // Wrapper for the Console for use in a golden layout container
 // Will probably need to handle window popping out from golden layout here.
-import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
+import React, { PureComponent, ReactElement, RefObject } from 'react';
 import shortid from 'shortid';
 import debounce from 'lodash.debounce';
 import { connect } from 'react-redux';
-import { Console, ConsoleConstants } from '@deephaven/console';
-import { GLPropTypes, PanelEvent } from '@deephaven/dashboard';
-import { PropTypes as APIPropTypes } from '@deephaven/jsapi-shim';
+import {
+  CommandHistoryStorage,
+  Console,
+  ConsoleConstants,
+} from '@deephaven/console';
+import { PanelEvent } from '@deephaven/dashboard';
+import { IdeSession, VariableDefinition } from '@deephaven/jsapi-shim';
 import Log from '@deephaven/log';
-import { getCommandHistoryStorage, getTimeZone } from '@deephaven/redux';
+import {
+  getCommandHistoryStorage,
+  getTimeZone,
+  RootState,
+} from '@deephaven/redux';
+import { Container, EventEmitter } from '@deephaven/golden-layout';
+import { assertNotNull } from '@deephaven/utils';
+import JSZip from 'jszip';
 import { ConsoleEvent } from '../events';
 import './ConsolePanel.scss';
 import Panel from './Panel';
@@ -24,12 +34,62 @@ const DEFAULT_PANEL_STATE = Object.freeze({
   itemIds: [],
 });
 
-export class ConsolePanel extends PureComponent {
+interface ConsoleSettings {
+  isClosePanelsOnDisconnectEnabled?: boolean;
+}
+
+interface PanelState {
+  consoleSettings: ConsoleSettings;
+  itemIds: [string, string][];
+}
+
+type ItemIds = Map<string, string>;
+
+interface SessionWrapper {
+  session: IdeSession;
+  config: {
+    type: string;
+    id: string;
+  };
+}
+interface ConsolePanelProps {
+  commandHistoryStorage: CommandHistoryStorage;
+  glContainer: Container;
+  glEventHub: EventEmitter;
+
+  panelState: PanelState;
+
+  sessionWrapper: SessionWrapper;
+
+  timeZone: string;
+  unzip: (file: File) => Promise<JSZip.JSZipObject[]>;
+}
+
+interface ConsolePanelState {
+  consoleSettings: ConsoleSettings;
+  itemIds: ItemIds;
+
+  objectMap: Map<string, VariableDefinition>;
+
+  // eslint-disable-next-line react/no-unused-state
+  panelState: PanelState;
+  error: unknown;
+}
+
+export class ConsolePanel extends PureComponent<
+  ConsolePanelProps,
+  ConsolePanelState
+> {
+  static defaultProps = {
+    panelState: null,
+    unzip: null,
+  };
+
   static COMPONENT = 'ConsolePanel';
 
   static TITLE = 'Console';
 
-  constructor(props) {
+  constructor(props: ConsolePanelProps) {
     super(props);
 
     this.handleFocusCommandHistory = this.handleFocusCommandHistory.bind(this);
@@ -42,13 +102,7 @@ export class ConsolePanel extends PureComponent {
     this.handleTabFocus = this.handleTabFocus.bind(this);
     this.handlePanelMount = this.handlePanelMount.bind(this);
 
-    this.savePanelState = debounce(
-      this.savePanelState.bind(this),
-      DEBOUNCE_PANEL_STATE_UPDATE
-    );
-
     this.consoleRef = React.createRef();
-    this.objectSubscriptionCleanup = null;
 
     const { panelState: initialPanelState } = props;
     const panelState = {
@@ -62,13 +116,13 @@ export class ConsolePanel extends PureComponent {
       itemIds: new Map(itemIds),
 
       objectMap: new Map(),
-
+      error: undefined,
       // eslint-disable-next-line react/no-unused-state
       panelState, // Dehydrated panel state that can load this panel
     };
   }
 
-  componentDidMount() {
+  componentDidMount(): void {
     const { glEventHub } = this.props;
     // Need to close the disconnected panels when we're first loaded,
     // as they may have been saved with the dashboard
@@ -77,7 +131,10 @@ export class ConsolePanel extends PureComponent {
     this.subscribeToFieldUpdates();
   }
 
-  componentDidUpdate(prevProps, prevState) {
+  componentDidUpdate(
+    prevProps: ConsolePanelProps,
+    prevState: ConsolePanelState
+  ): void {
     const { consoleSettings, itemIds } = this.state;
     if (
       prevState.consoleSettings !== consoleSettings ||
@@ -87,18 +144,22 @@ export class ConsolePanel extends PureComponent {
     }
   }
 
-  componentWillUnmount() {
+  componentWillUnmount(): void {
     const { glEventHub } = this.props;
     this.savePanelState.flush();
     glEventHub.off(PanelEvent.MOUNT, this.handlePanelMount);
-    this.objectSubscriptionCleanup();
+    this.objectSubscriptionCleanup?.();
   }
 
-  subscribeToFieldUpdates() {
+  consoleRef: RefObject<Console>;
+
+  objectSubscriptionCleanup?: () => void;
+
+  subscribeToFieldUpdates(): void {
     const { sessionWrapper } = this.props;
     const { session } = sessionWrapper;
 
-    this.objectSubscriptionCleanup = session.connection.subscribeToFieldUpdates(
+    this.objectSubscriptionCleanup = session.subscribeToFieldUpdates(
       updates => {
         log.debug('Got updates', updates);
         this.setState(({ objectMap }) => {
@@ -108,14 +169,17 @@ export class ConsolePanel extends PureComponent {
           const objectsToRemove = [...updated, ...removed];
           const newObjectMap = new Map(objectMap);
           objectsToRemove.forEach(toRemove => {
-            newObjectMap.delete(toRemove.name);
+            const { title } = toRemove;
+            if (title) {
+              newObjectMap.delete(title);
+            }
           });
 
           // Now add all the modified and updated widgets back in
           const objectsToAdd = [...updated, ...created];
           objectsToAdd.forEach(toAdd => {
-            if (toAdd.name) {
-              newObjectMap.set(toAdd.name, toAdd);
+            if (toAdd.title) {
+              newObjectMap.set(toAdd.title, toAdd);
             }
           });
 
@@ -125,7 +189,7 @@ export class ConsolePanel extends PureComponent {
     );
   }
 
-  setItemId(name, id) {
+  setItemId(name: string, id: string): void {
     this.setState(({ itemIds }) => {
       const newItemIds = new Map(itemIds);
       newItemIds.set(name, id);
@@ -133,7 +197,7 @@ export class ConsolePanel extends PureComponent {
     });
   }
 
-  getItemId(name, createIfNecessary = true) {
+  getItemId(name: string, createIfNecessary = true): string | undefined {
     const { itemIds } = this.state;
     let id = itemIds.get(name);
     if (id == null && createIfNecessary) {
@@ -143,19 +207,21 @@ export class ConsolePanel extends PureComponent {
     return id;
   }
 
-  handleTabBlur() {
-    if (this.consoleRef) {
-      this.consoleRef.blur();
+  handleTabBlur(): void {
+    if (this.consoleRef && this.consoleRef.current) {
+      ((this.consoleRef.current as unknown) as HTMLElement).blur();
     }
   }
 
-  handleTabFocus() {
+  handleTabFocus(): void {
     if (this.consoleRef) {
-      this.consoleRef.focus();
+      this.consoleRef.current?.focus();
     }
   }
 
-  handlePanelMount(panel) {
+  handlePanelMount(panel: {
+    props: { id: string; metadata: { sourcePanelId: string } };
+  }): void {
     const { itemIds } = this.state;
     const panelId = panel?.props?.id;
     const sourceId = panel?.props?.metadata?.sourcePanelId;
@@ -169,33 +235,35 @@ export class ConsolePanel extends PureComponent {
     }
   }
 
-  handleFocusCommandHistory() {
+  handleFocusCommandHistory(): void {
     const { glEventHub } = this.props;
     glEventHub.emit(ConsoleEvent.FOCUS_HISTORY);
   }
 
-  handleResize() {
+  handleResize(): void {
     this.updateDimensions();
   }
 
-  handleShow() {
+  handleShow(): void {
     this.updateDimensions();
   }
 
-  handleOpenObject(object) {
+  handleOpenObject(object: VariableDefinition): void {
     const { sessionWrapper } = this.props;
     const { session } = sessionWrapper;
     this.openWidget(object, session);
   }
 
-  handleCloseObject(object) {
-    const { name } = object;
-    const id = this.getItemId(name, false);
-    const { glEventHub } = this.props;
-    glEventHub.emit(PanelEvent.CLOSE, id);
+  handleCloseObject(object: VariableDefinition): void {
+    const { title } = object;
+    if (title) {
+      const id = this.getItemId(title, false);
+      const { glEventHub } = this.props;
+      glEventHub.emit(PanelEvent.CLOSE, id);
+    }
   }
 
-  handleSettingsChange(consoleSettings) {
+  handleSettingsChange(consoleSettings: Record<string, unknown>): void {
     const { glEventHub } = this.props;
     log.debug('handleSettingsChange', consoleSettings);
     this.setState({
@@ -208,10 +276,11 @@ export class ConsolePanel extends PureComponent {
    * @param {VariableDefinition} widget The widget to open
    * @param {dh.Session} session The session object
    */
-  openWidget(widget, session) {
+  openWidget(widget: VariableDefinition, session: IdeSession): void {
     const { glEventHub } = this.props;
-    const { name } = widget;
-    const panelId = this.getItemId(name);
+    const { title } = widget;
+    assertNotNull(title);
+    const panelId = this.getItemId(title);
     const openOptions = {
       fetch: () => session.getObject(widget),
       panelId,
@@ -223,7 +292,7 @@ export class ConsolePanel extends PureComponent {
     glEventHub.emit(PanelEvent.OPEN, openOptions);
   }
 
-  addCommand(command, focus = true, execute = false) {
+  addCommand(command: string, focus = true, execute = false): void {
     this.consoleRef.current?.addCommand(command, focus, execute);
   }
 
@@ -231,7 +300,7 @@ export class ConsolePanel extends PureComponent {
    * Close the disconnected panels from this session
    * @param {boolean} force True to force the panels closed regardless of the current setting
    */
-  closeDisconnectedPanels(force = false) {
+  closeDisconnectedPanels(force = false): void {
     const { consoleSettings, itemIds } = this.state;
     const { isClosePanelsOnDisconnectEnabled = true } = consoleSettings;
     if (!isClosePanelsOnDisconnectEnabled && !force) {
@@ -247,7 +316,7 @@ export class ConsolePanel extends PureComponent {
     this.setState({ itemIds: new Map() });
   }
 
-  savePanelState() {
+  savePanelState = debounce((): void => {
     const { consoleSettings, itemIds } = this.state;
     const panelState = {
       consoleSettings,
@@ -256,13 +325,13 @@ export class ConsolePanel extends PureComponent {
     log.debug('Saving panel state', panelState);
     // eslint-disable-next-line react/no-unused-state
     this.setState({ panelState });
-  }
+  }, DEBOUNCE_PANEL_STATE_UPDATE);
 
-  updateDimensions() {
+  updateDimensions(): void {
     this.consoleRef.current?.updateDimensions();
   }
 
-  render() {
+  render(): ReactElement {
     const {
       commandHistoryStorage,
       glContainer,
@@ -284,7 +353,7 @@ export class ConsolePanel extends PureComponent {
         onShow={this.handleShow}
         onTabFocus={this.handleTabFocus}
         onTabBlur={this.handleTabBlur}
-        errorMessage={error != null ? `${error}` : null}
+        errorMessage={error != null ? `${error}` : undefined}
       >
         <>
           {session && (
@@ -316,33 +385,10 @@ export class ConsolePanel extends PureComponent {
   }
 }
 
-ConsolePanel.propTypes = {
-  commandHistoryStorage: PropTypes.shape({}).isRequired,
-  glContainer: GLPropTypes.Container.isRequired,
-  glEventHub: GLPropTypes.EventHub.isRequired,
-
-  panelState: PropTypes.shape({
-    consoleCreatorSettings: PropTypes.shape({}),
-    consoleSettings: PropTypes.shape({}),
-    itemIds: PropTypes.array,
-  }),
-
-  sessionWrapper: PropTypes.shape({
-    session: APIPropTypes.IdeSession.isRequired,
-    config: PropTypes.shape({ type: PropTypes.string, id: PropTypes.string })
-      .isRequired,
-  }).isRequired,
-
-  timeZone: PropTypes.string.isRequired,
-  unzip: PropTypes.func,
-};
-
-ConsolePanel.defaultProps = {
-  panelState: null,
-  unzip: null,
-};
-
-const mapStateToProps = (state, ownProps) => ({
+const mapStateToProps = (
+  state: RootState,
+  ownProps: { localDashboardId: string }
+) => ({
   commandHistoryStorage: getCommandHistoryStorage(state),
   sessionWrapper: getDashboardSessionWrapper(state, ownProps.localDashboardId),
   timeZone: getTimeZone(state),

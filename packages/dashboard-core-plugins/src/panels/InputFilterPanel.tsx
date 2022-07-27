@@ -1,19 +1,58 @@
-import React, { Component } from 'react';
-import PropTypes from 'prop-types';
+import React, { Component, RefObject } from 'react';
 import { connect } from 'react-redux';
 import debounce from 'lodash.debounce';
-import { GLPropTypes } from '@deephaven/dashboard';
+import { Container, EventEmitter } from '@deephaven/golden-layout';
+import { RootState } from '@deephaven/redux';
 import Panel from './Panel';
-import InputFilter from '../controls/input-filter/InputFilter';
+import InputFilter, {
+  InputFilterColumn,
+} from '../controls/input-filter/InputFilter';
 import { InputFilterEvent } from '../events';
 import { getColumnsForDashboard } from '../redux';
 
 const INPUT_FILTER_DEBOUNCE = 250;
 
-class InputFilterPanel extends Component {
+interface PanelState {
+  name?: string;
+  type?: string;
+  value?: string;
+  isValueShown?: boolean;
+  timestamp?: number;
+}
+
+interface InputFilterPanelProps {
+  glContainer: Container;
+  glEventHub: EventEmitter;
+  panelState: PanelState;
+  columns: InputFilterColumn[];
+}
+
+interface InputFilterPanelState {
+  columns: InputFilterColumn[];
+  column?: InputFilterColumn;
+  value?: string;
+  timestamp?: number;
+  isValueShown: boolean;
+  wasFlipped: boolean;
+  skipUpdate: boolean;
+  // eslint-disable-next-line react/no-unused-state
+  panelState: PanelState; // Dehydrated panel state that can load this panel}
+}
+class InputFilterPanel extends Component<
+  InputFilterPanelProps,
+  InputFilterPanelState
+> {
+  static defaultProps = {
+    panelState: null,
+  };
+
   static COMPONENT = 'InputFilterPanel';
 
-  constructor(props) {
+  // Have to explicitly specify displayName
+  // otherwise it gets minified and breaks LayoutUtils.getComponentName
+  static displayName = 'InputFilterPanel';
+
+  constructor(props: InputFilterPanelProps) {
     super(props);
 
     this.handleChange = debounce(
@@ -26,12 +65,12 @@ class InputFilterPanel extends Component {
 
     const { panelState } = props;
     // if panelstate is null, use destructured defaults
-    const { value = null, isValueShown = false, name, type, timestamp = null } =
+    const { value, isValueShown = false, name, type, timestamp } =
       panelState ?? {};
 
     this.state = {
       columns: [],
-      column: name && type ? { name, type } : null,
+      column: name && type ? { name, type } : undefined,
       value,
       timestamp,
       isValueShown,
@@ -52,17 +91,31 @@ class InputFilterPanel extends Component {
     }
   }
 
-  componentDidUpdate(prevProps) {
+  componentDidUpdate(prevProps: InputFilterPanelProps) {
     const { columns } = this.props;
     if (columns !== prevProps.columns) {
       this.updateColumns();
     }
   }
 
-  handleChange({ column, isValueShown, value }) {
-    const { name, type } = column;
+  inputFilterRef: RefObject<InputFilter>;
+
+  handleChange({
+    column,
+    isValueShown,
+    value,
+  }: {
+    column?: InputFilterColumn;
+    isValueShown?: boolean;
+    value?: string;
+  }) {
+    let name: string | undefined;
+    let type: string | undefined;
+    if (column != null) {
+      ({ name, type } = column);
+    }
     let sendUpdate = true;
-    let timestamp = Date.now();
+    let timestamp: number | undefined = Date.now();
     this.setState(
       ({ panelState, timestamp: prevTimestamp, wasFlipped, skipUpdate }) => {
         // If the user had a value set, and they flip the card over and flip it back without changing any settings, ignore it
@@ -72,7 +125,8 @@ class InputFilterPanel extends Component {
           name === panelState.name &&
           type === panelState.type &&
           value === panelState.value;
-        sendUpdate = !skipUpdate && isValueShown && (!isFlip || !wasFlipped);
+        sendUpdate =
+          (!skipUpdate && isValueShown && (!isFlip || !wasFlipped)) ?? false;
 
         if (!sendUpdate) {
           timestamp = prevTimestamp;
@@ -99,11 +153,11 @@ class InputFilterPanel extends Component {
     );
   }
 
-  handleClearAllFilters() {
-    this.inputFilterRef.current.clearFilter();
+  handleClearAllFilters(): void {
+    this.inputFilterRef.current?.clearFilter();
   }
 
-  sendUpdate(name, type, value, timestamp) {
+  sendUpdate(name?: string, type?: string, value?: string, timestamp?: number) {
     const { glEventHub } = this.props;
     glEventHub.emit(InputFilterEvent.FILTERS_CHANGED, this, {
       name,
@@ -118,7 +172,7 @@ class InputFilterPanel extends Component {
    * @param {Object} state Filter state to set
    * @param {boolean} sendUpdate Emit filters changed event if true
    */
-  setPanelState(state, sendUpdate = false) {
+  setPanelState(state: PanelState, sendUpdate = false) {
     // Set the skipUpdate flag so the next onChange handler call doesn't emit the FILTERS_CHANGED event
     this.setState({ skipUpdate: !sendUpdate });
 
@@ -182,27 +236,10 @@ class InputFilterPanel extends Component {
   }
 }
 
-InputFilterPanel.propTypes = {
-  glContainer: GLPropTypes.Container.isRequired,
-  glEventHub: GLPropTypes.EventHub.isRequired,
-  panelState: PropTypes.shape({
-    name: PropTypes.string,
-    type: PropTypes.string,
-    value: PropTypes.string,
-    isValueShown: PropTypes.bool,
-  }),
-  columns: PropTypes.arrayOf(PropTypes.shape({})).isRequired,
-};
-
-InputFilterPanel.defaultProps = {
-  panelState: null,
-};
-
-// Have to explicitly specify displayName
-// otherwise it gets minified and breaks LayoutUtils.getComponentName
-InputFilterPanel.displayName = 'InputFilterPanel';
-
-const mapStateToProps = (state, ownProps) => {
+const mapStateToProps = (
+  state: RootState,
+  ownProps: { localDashboardId: string }
+) => {
   const { localDashboardId } = ownProps;
 
   return {

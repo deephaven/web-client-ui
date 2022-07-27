@@ -1,17 +1,88 @@
-import React, { Component, PureComponent } from 'react';
+import React, {
+  Component,
+  PureComponent,
+  ReactElement,
+  ReactNode,
+} from 'react';
 import classNames from 'classnames';
 import memoize from 'memoize-one';
-import PropTypes from 'prop-types';
-import { GLPropTypes } from '@deephaven/dashboard';
+import { Container, EventEmitter } from '@deephaven/golden-layout';
 import Panel from './Panel';
 import WidgetPanelTooltip from './WidgetPanelTooltip';
 import './WidgetPanel.scss';
 
+interface WidgetPanelProps {
+  children: ReactNode;
+  componentPanel: Component;
+
+  glContainer: Container;
+  glEventHub: EventEmitter;
+
+  className: string;
+  errorMessage: string;
+  isClonable: boolean;
+  isDisconnected: boolean;
+  isLoading: boolean;
+  isLoaded: boolean;
+  isRenamable: boolean;
+  showTabTooltip: boolean;
+  widgetName: string;
+  widgetType: string;
+  renderTabTooltip: () => ReactNode;
+  description: string;
+
+  onFocus: () => void;
+  onBlur: () => void;
+  onHide: () => void;
+  onClearAllFilters: () => void;
+  onResize: () => void;
+  onSessionClose: (...args: unknown[]) => void;
+  onSessionOpen: (...args: unknown[]) => void;
+  onShow: () => void;
+  onTabBlur: () => void;
+  onTabFocus: () => void;
+  onTabClicked: () => void;
+}
+
+interface WidgetPanelState {
+  isClientDisconnected: boolean;
+  isPanelDisconnected: boolean;
+  isWidgetDisconnected: boolean;
+  isWaitingForReconnect: boolean;
+  isPanelInactive: boolean;
+}
 /**
  * Widget panel component that has a loading spinner and displays an error message when set
  */
-class WidgetPanel extends PureComponent {
-  constructor(props) {
+class WidgetPanel extends PureComponent<WidgetPanelProps, WidgetPanelState> {
+  static defaultProps = {
+    className: '',
+    errorMessage: null,
+    isClonable: true,
+    isDisconnected: false,
+    isLoading: false,
+    isLoaded: true,
+    isRenamable: true,
+    showTabTooltip: true,
+    widgetName: 'Widget',
+    widgetType: 'Widget',
+    renderTabTooltip: null,
+    description: '',
+
+    onFocus: (): void => undefined,
+    onBlur: (): void => undefined,
+    onHide: (): void => undefined,
+    onClearAllFilters: (): void => undefined,
+    onResize: (): void => undefined,
+    onSessionClose: (): void => undefined,
+    onSessionOpen: (): void => undefined,
+    onShow: (): void => undefined,
+    onTabBlur: (): void => undefined,
+    onTabFocus: (): void => undefined,
+    onTabClicked: (): void => undefined,
+  };
+
+  constructor(props: WidgetPanelProps) {
     super(props);
 
     this.handleSessionClosed = this.handleSessionClosed.bind(this);
@@ -26,7 +97,7 @@ class WidgetPanel extends PureComponent {
     };
   }
 
-  getErrorMessage() {
+  getErrorMessage(): string | undefined {
     const { errorMessage } = this.props;
     const {
       isClientDisconnected,
@@ -51,11 +122,17 @@ class WidgetPanel extends PureComponent {
       const { widgetName } = this.props;
       return `${widgetName} is unavailable.`;
     }
-    return null;
+    return undefined;
   }
 
   getCachedRenderTabTooltip = memoize(
-    (showTabTooltip, glContainer, widgetType, widgetName, description) =>
+    (
+      showTabTooltip: boolean,
+      glContainer: Container,
+      widgetType: string,
+      widgetName: string,
+      description: string
+    ) =>
       showTabTooltip
         ? () => (
             <WidgetPanelTooltip
@@ -68,7 +145,7 @@ class WidgetPanel extends PureComponent {
         : null
   );
 
-  handleSessionClosed(...args) {
+  handleSessionClosed(...args: unknown[]): void {
     const { onSessionClose } = this.props;
     // The session has closed and we won't be able to reconnect, as this widget isn't persisted
     this.setState({
@@ -78,12 +155,12 @@ class WidgetPanel extends PureComponent {
     onSessionClose(...args);
   }
 
-  handleSessionOpened(...args) {
+  handleSessionOpened(...args: unknown[]): void {
     const { onSessionOpen } = this.props;
     onSessionOpen(...args);
   }
 
-  render() {
+  render(): ReactElement {
     const {
       children,
       className,
@@ -162,65 +239,5 @@ class WidgetPanel extends PureComponent {
     );
   }
 }
-
-WidgetPanel.propTypes = {
-  children: PropTypes.node.isRequired,
-  componentPanel: PropTypes.instanceOf(Component).isRequired,
-
-  glContainer: GLPropTypes.Container.isRequired,
-  glEventHub: GLPropTypes.EventHub.isRequired,
-
-  className: PropTypes.string,
-  errorMessage: PropTypes.string,
-  isClonable: PropTypes.bool,
-  isDisconnected: PropTypes.bool,
-  isLoading: PropTypes.bool,
-  isLoaded: PropTypes.bool,
-  isRenamable: PropTypes.bool,
-  showTabTooltip: PropTypes.bool,
-  widgetName: PropTypes.string,
-  widgetType: PropTypes.string,
-  renderTabTooltip: PropTypes.func,
-  description: PropTypes.string,
-
-  onFocus: PropTypes.func,
-  onBlur: PropTypes.func,
-  onHide: PropTypes.func,
-  onClearAllFilters: PropTypes.func,
-  onResize: PropTypes.func,
-  onSessionClose: PropTypes.func,
-  onSessionOpen: PropTypes.func,
-  onShow: PropTypes.func,
-  onTabBlur: PropTypes.func,
-  onTabFocus: PropTypes.func,
-  onTabClicked: PropTypes.func,
-};
-
-WidgetPanel.defaultProps = {
-  className: '',
-  errorMessage: null,
-  isClonable: true,
-  isDisconnected: false,
-  isLoading: false,
-  isLoaded: true,
-  isRenamable: true,
-  showTabTooltip: true,
-  widgetName: 'Widget',
-  widgetType: 'Widget',
-  renderTabTooltip: null,
-  description: '',
-
-  onFocus: () => {},
-  onBlur: () => {},
-  onHide: () => {},
-  onClearAllFilters: () => {},
-  onResize: () => {},
-  onSessionClose: () => {},
-  onSessionOpen: () => {},
-  onShow: () => {},
-  onTabBlur: () => {},
-  onTabFocus: () => {},
-  onTabClicked: () => {},
-};
 
 export default WidgetPanel;

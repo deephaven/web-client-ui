@@ -102,6 +102,9 @@ export interface IdeSessionStatic {
 }
 
 export interface IdeSession extends Evented {
+  subscribeToFieldUpdates(
+    param: (changes: VariableChanges) => void
+  ): () => void;
   getTable(name: string): Promise<Table>;
   getFigure(name: string): Promise<Figure>;
   getTreeTable(name: string): Promise<TreeTable>;
@@ -751,7 +754,7 @@ export interface TreeTableStatic {
   readonly EVENT_RECONNECTFAILED: string;
 }
 
-export interface TableTemplate<T> extends Evented {
+export interface TableTemplate<T = Table> extends Evented {
   readonly size: number;
   readonly columns: Column[];
   readonly sort: Sort[];

@@ -22,21 +22,23 @@ import './InputFilter.scss';
 const log = Log.module('InputFilter');
 const UPDATE_DEBOUNCE = 150;
 
+export type InputFilterColumn = Pick<Column, 'type' | 'name'>;
+
 interface InputFilterProps {
-  columns: Column[];
-  column: Column;
+  columns: InputFilterColumn[];
+  column: InputFilterColumn;
   isValueShown: boolean;
   value: string;
   onChange: (change: {
-    column: Partial<Column> | null;
+    column?: InputFilterColumn;
     isValueShown?: boolean;
     value?: string;
   }) => void;
 }
 
-interface InputFilterState {
-  column: Partial<Column> | null;
-  selectedColumn: Partial<Column> | null;
+export interface InputFilterState {
+  column?: InputFilterColumn;
+  selectedColumn?: InputFilterColumn;
   value?: string;
   isValueShown?: boolean;
 }
@@ -189,12 +191,12 @@ class InputFilter extends Component<InputFilterProps, InputFilterState> {
     value,
     isValueShown,
   }: {
-    name: string;
-    type: string;
-    value: string;
-    isValueShown: boolean;
+    name?: string;
+    type?: string;
+    value?: string;
+    isValueShown?: boolean;
   }): void {
-    const column = name != null && type != null ? { name, type } : null;
+    const column = name != null && type != null ? { name, type } : undefined;
     const update =
       isValueShown === undefined
         ? { column, value }

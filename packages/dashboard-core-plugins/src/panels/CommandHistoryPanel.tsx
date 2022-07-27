@@ -1,29 +1,65 @@
-import React, { Component } from 'react';
-import PropTypes from 'prop-types';
+import React, { Component, RefObject } from 'react';
 import { connect } from 'react-redux';
-import { ContextActions } from '@deephaven/components';
-import { CommandHistory, SHORTCUTS } from '@deephaven/console';
-import { GLPropTypes } from '@deephaven/dashboard';
+import { ContextAction, ContextActions } from '@deephaven/components';
+import {
+  CommandHistory,
+  CommandHistoryStorage,
+  SHORTCUTS,
+  CommandHistorySettings,
+  CommandHistoryTable,
+} from '@deephaven/console';
 import Log from '@deephaven/log';
-import { getCommandHistoryStorage } from '@deephaven/redux';
-import { Pending } from '@deephaven/utils';
+import { getCommandHistoryStorage, RootState } from '@deephaven/redux';
+import { assertNotNull, Pending } from '@deephaven/utils';
+import { Container, EventEmitter } from '@deephaven/golden-layout';
+import { IdeSession } from '@deephaven/jsapi-shim';
 import { ConsoleEvent, NotebookEvent } from '../events';
 import './CommandHistoryPanel.scss';
 import Panel from './Panel';
 import { getDashboardSessionWrapper } from '../redux';
+import { PanelState } from './PandasPanel';
 
 const log = Log.module('CommandHistoryPanel');
 
-class CommandHistoryPanel extends Component {
+interface CommandHistoryPanelProps {
+  glContainer: Container;
+  glEventHub: EventEmitter;
+  panelState: PanelState;
+  session: IdeSession;
+  sessionId: string;
+  language: string;
+  commandHistoryStorage: CommandHistoryStorage;
+}
+
+interface CommandHistoryPanelState {
+  panelState: PanelState;
+  session?: IdeSession;
+  sessionId?: string;
+  language?: string;
+  contextActions: ContextAction[];
+  table?: CommandHistoryTable;
+}
+
+class CommandHistoryPanel extends Component<
+  CommandHistoryPanelProps,
+  CommandHistoryPanelState
+> {
+  static defaultProps = {
+    panelState: null,
+    session: null,
+    sessionId: null,
+    language: null,
+  };
+
   static COMPONENT = 'CommandHistoryPanel';
 
   static TITLE = 'Command History';
 
-  static handleError(error) {
+  static handleError(error: unknown) {
     log.error(error);
   }
 
-  constructor(props) {
+  constructor(props: CommandHistoryPanelProps) {
     super(props);
 
     this.handleFocusHistory = this.handleFocusHistory.bind(this);
@@ -35,12 +71,7 @@ class CommandHistoryPanel extends Component {
     this.container = React.createRef();
     this.pending = new Pending();
 
-    const { session, sessionId, language, panelState } = props;
-
-    let expandedState = null;
-    if (panelState) {
-      ({ expandedState = expandedState } = panelState);
-    }
+    const { session, sessionId, language } = props;
 
     this.state = {
       // eslint-disable-next-line react/no-unused-state
@@ -57,7 +88,7 @@ class CommandHistoryPanel extends Component {
     };
   }
 
-  componentDidMount() {
+  componentDidMount(): void {
     const { glEventHub, session } = this.props;
     glEventHub.on(ConsoleEvent.FOCUS_HISTORY, this.handleFocusHistory);
     if (session != null) {
@@ -65,20 +96,27 @@ class CommandHistoryPanel extends Component {
     }
   }
 
-  componentWillUnmount() {
+  componentWillUnmount(): void {
     const { glEventHub } = this.props;
     glEventHub.off(ConsoleEvent.FOCUS_HISTORY, this.handleFocusHistory);
 
     this.pending.cancel();
   }
 
-  handleFocusHistory() {
+  container: RefObject<CommandHistory>;
+
+  pending: Pending;
+
+  handleFocusHistory(): void {
     if (this.container.current) {
       this.container.current.focus();
     }
   }
 
-  handleSessionOpened(session, { language, sessionId }) {
+  handleSessionOpened(
+    session: IdeSession,
+    { language, sessionId }: { language: string; sessionId: string }
+  ): void {
     this.setState(
       {
         session,
@@ -94,13 +132,16 @@ class CommandHistoryPanel extends Component {
   handleSessionClosed() {
     this.pending.cancel();
     this.setState({
-      session: null,
-      language: null,
-      table: null,
+      session: undefined,
+      language: undefined,
+      table: undefined,
     });
   }
 
-  handleSendToNotebook(settings, forceNewNotebook = false) {
+  handleSendToNotebook(
+    settings: CommandHistorySettings,
+    forceNewNotebook = false
+  ) {
     const { session, language } = this.state;
     log.debug('handleSendToNotebook', session, settings);
     if (!session) {
@@ -118,7 +159,7 @@ class CommandHistoryPanel extends Component {
     );
   }
 
-  handleSendToConsole(command, focus = true, execute = false) {
+  handleSendToConsole(command: string, focus = true, execute = false) {
     log.debug('handleSendToConsole', command);
     const { glEventHub } = this.props;
     glEventHub.emit(ConsoleEvent.SEND_COMMAND, command, focus, execute);
@@ -127,6 +168,8 @@ class CommandHistoryPanel extends Component {
   loadTable() {
     const { commandHistoryStorage } = this.props;
     const { language, sessionId } = this.state;
+    assertNotNull(language);
+    assertNotNull(sessionId);
     this.pending
       .add(
         commandHistoryStorage.getTable(language, sessionId, Date.now()),
@@ -173,25 +216,10 @@ class CommandHistoryPanel extends Component {
   }
 }
 
-CommandHistoryPanel.propTypes = {
-  glContainer: GLPropTypes.Container.isRequired,
-  glEventHub: GLPropTypes.EventHub.isRequired,
-  panelState: PropTypes.shape({}),
-  session: PropTypes.shape({}),
-  sessionId: PropTypes.string,
-  language: PropTypes.string,
-  commandHistoryStorage: PropTypes.shape({ getTable: PropTypes.func })
-    .isRequired,
-};
-
-CommandHistoryPanel.defaultProps = {
-  panelState: null,
-  session: null,
-  sessionId: null,
-  language: null,
-};
-
-const mapStateToProps = (state, ownProps) => {
+const mapStateToProps = (
+  state: RootState,
+  ownProps: { localDashboardId: string }
+) => {
   const commandHistoryStorage = getCommandHistoryStorage(state);
   const sessionWrapper = getDashboardSessionWrapper(
     state,
