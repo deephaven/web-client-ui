@@ -535,10 +535,10 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
       // Created objects have to be processed after removed
       // in case the same object name is present in both removed and created
       changes?.created.forEach(object => {
-        const { name } = object;
-        assertNotNull(name);
-        objectHistoryMap.set(name, itemIndex);
-        objectMap.set(name, object);
+        const { title } = object;
+        assertNotNull(title);
+        objectHistoryMap.set(title, itemIndex);
+        objectMap.set(title, object);
       });
 
       return { objectHistoryMap, objectMap, consoleHistory: history };
