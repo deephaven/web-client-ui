@@ -8,7 +8,7 @@ import {
   ModalBody,
   ModalHeader,
 } from '@deephaven/components';
-import { vsCopy, vsJson, vsListOrdered } from '@deephaven/icons';
+import { vsCopy, vsJson, vsListOrdered, vsPassFilled } from '@deephaven/icons';
 import './IrisGridCellOverflowModal.scss';
 
 interface IrisGridCellOverflowModalProps {
@@ -28,6 +28,9 @@ export default function IrisGridCellOverflowModal({
   const [isFormatted, setIsFormatted] = useState(false);
   const [canFormat, setCanFormat] = useState(false);
   const editorRef = useRef<monaco.editor.IStandaloneCodeEditor>();
+
+  const copiedTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [copied, setCopied] = useState(false);
 
   // Update format button on open
   useEffect(
@@ -69,8 +72,22 @@ export default function IrisGridCellOverflowModal({
     [showLineNumbers]
   );
 
+  useEffect(() => {
+    if (copiedTimeout.current) clearTimeout(copiedTimeout.current);
+    copiedTimeout.current = setTimeout(() => {
+      setCopied(false);
+    }, 1000);
+    return () => {
+      if (copiedTimeout.current) clearTimeout(copiedTimeout.current);
+    };
+  }, [copied]);
+
   function copyContents() {
-    ContextActionUtils.copyToClipboard(text);
+    ContextActionUtils.copyToClipboard(
+      editorRef.current?.getValue() ?? ''
+    ).then(() => {
+      setCopied(true);
+    });
   }
 
   function toggleLineNumbers() {
@@ -138,8 +155,8 @@ export default function IrisGridCellOverflowModal({
         <h5 className="overflow-modal-title">Cell Contents</h5>
         <Button
           kind="inline"
-          icon={vsCopy}
-          tooltip="Copy contents"
+          icon={copied ? vsPassFilled : vsCopy}
+          tooltip={copied ? 'Copied contents' : 'Copy contents'}
           onClick={copyContents}
         />
         <Button
