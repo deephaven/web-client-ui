@@ -126,13 +126,12 @@ class AdvancedFilterCreator extends PureComponent<
     let { filterOperators, invertSelection, selectedValues } = options;
 
     // can be null or an empty array
-    const filterItems: AdvancedFilterItem[] = options.filterItems?.map(
-      ({ selectedType, value }) => ({
+    const filterItems: AdvancedFilterItem[] =
+      options.filterItems?.map(({ selectedType, value }) => ({
         selectedType,
         value,
         key: shortid(),
-      })
-    ) ?? [AdvancedFilterCreator.makeFilterItem()];
+      })) ?? [];
     if (filterItems.length === 0) {
       filterItems.push(AdvancedFilterCreator.makeFilterItem());
     }
@@ -423,11 +422,25 @@ class AdvancedFilterCreator extends PureComponent<
     const { column, onFilterChange, model } = this.props;
     const { formatter } = model;
 
+    const items = filterItems.filter(
+      ({ selectedType, value }) =>
+        selectedType != null && value != null && value !== ''
+    ) as FilterItem[];
+
+    const operators = filterOperators
+      .filter(
+        (operator, i) =>
+          operator != null &&
+          filterItems[i].selectedType != null &&
+          filterItems[i].value != null &&
+          filterItems[i].value !== ''
+      )
+      .slice(0, items.length - 1);
+    // slice last operator, user may have set an operator but not a value
+
     const options = {
-      filterItems: filterItems.filter(
-        ({ selectedType, value }) => selectedType != null && value != null
-      ) as FilterItem[],
-      filterOperators,
+      filterItems: items,
+      filterOperators: operators,
       invertSelection,
       selectedValues,
     };
