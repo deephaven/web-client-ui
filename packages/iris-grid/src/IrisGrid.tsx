@@ -353,7 +353,7 @@ export interface IrisGridState {
 
   conditionalFormats: SidebarFormattingRule[];
   conditionalFormatEditIndex: number | null;
-  conditionalFormatPreview?: SidebarFormattingRule | null;
+  conditionalFormatPreview?: SidebarFormattingRule;
 
   // Column user is hovering over for selection
   hoverSelectColumn: GridRangeIndex;
@@ -531,6 +531,9 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       this
     );
     this.handleConditionalFormatEditorSave = this.handleConditionalFormatEditorSave.bind(
+      this
+    );
+    this.handleConditionalFormatEditorCancel = this.handleConditionalFormatEditorCancel.bind(
       this
     );
     this.handleUpdateCustomColumns = this.handleUpdateCustomColumns.bind(this);
@@ -745,7 +748,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
       conditionalFormats,
       conditionalFormatEditIndex: null,
-      conditionalFormatPreview: null,
+      conditionalFormatPreview: undefined,
 
       // Column user is hovering over for selection
       hoverSelectColumn: null,
@@ -3796,7 +3799,6 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
           );
         case OptionType.CONDITIONAL_FORMATTING_EDIT:
           assertNotNull(model.columns);
-          assertNotNull(conditionalFormatPreview);
           assertNotNull(this.handleConditionalFormatEditorUpdate);
           return (
             <ConditionalFormatEditor
@@ -4001,9 +4003,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
                 formatColumns={this.getCachedPreviewFormatColumns(
                   this.getCachedModelColumns(model, customColumns),
                   conditionalFormats,
-                  conditionalFormatPreview === null
-                    ? undefined
-                    : conditionalFormatPreview,
+                  conditionalFormatPreview,
                   // Disable the preview format when we press Back on the format edit page
                   openOptions[openOptions.length - 1]?.type ===
                     OptionType.CONDITIONAL_FORMATTING_EDIT
