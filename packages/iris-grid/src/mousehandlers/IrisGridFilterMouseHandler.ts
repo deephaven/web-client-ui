@@ -21,14 +21,19 @@ class IrisGridFilterMouseHandler extends GridMouseHandler {
   onDown(gridPoint: GridPoint): EventHandlerResult {
     const { y, column, row } = gridPoint;
     if (column !== null && row === null) {
-      const { isFilterBarShown } = this.irisGrid.state;
+      const { isFilterBarShown, metrics } = this.irisGrid.state;
+      if (!metrics) throw new Error('Metrics not set');
+
+      const { columnHeaderMaxDepth } = metrics;
       const theme = this.irisGrid.getTheme();
       if (
         isFilterBarShown &&
         theme.columnHeaderHeight &&
         theme.filterBarHeight &&
-        y > theme.columnHeaderHeight &&
-        y <= theme.columnHeaderHeight + theme.filterBarHeight
+        y > theme.columnHeaderHeight * columnHeaderMaxDepth &&
+        y <=
+          theme.columnHeaderHeight * columnHeaderMaxDepth +
+            theme.filterBarHeight
       ) {
         this.irisGrid.focusFilterBar(column);
         return true;
@@ -40,16 +45,24 @@ class IrisGridFilterMouseHandler extends GridMouseHandler {
 
   onMove(gridPoint: GridPoint): EventHandlerResult {
     const { y, column } = gridPoint;
-    const { isFilterBarShown, hoverAdvancedFilter } = this.irisGrid.state;
+    const {
+      isFilterBarShown,
+      hoverAdvancedFilter,
+      metrics,
+    } = this.irisGrid.state;
+    if (!metrics) throw new Error('Metrics not set');
+    const { columnHeaderMaxDepth } = metrics;
     const theme = this.irisGrid.getTheme();
+
     let newHoverAdvancedFilter = null;
     if (
       isFilterBarShown &&
       theme.columnHeaderHeight &&
       theme.filterBarHeight &&
       column !== null &&
-      y >= theme.columnHeaderHeight &&
-      y <= theme.columnHeaderHeight + theme.filterBarHeight
+      y >= theme.columnHeaderHeight * columnHeaderMaxDepth &&
+      y <=
+        theme.columnHeaderHeight * columnHeaderMaxDepth + theme.filterBarHeight
     ) {
       newHoverAdvancedFilter = column;
     }
