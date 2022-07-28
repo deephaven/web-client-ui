@@ -314,9 +314,11 @@ class PanelManager {
 
   addClosedPanel(glContainer: GoldenLayout.Container): void {
     const config = LayoutUtils.getComponentConfigFromContainer(glContainer);
-    let dehydratedConfig;
     if (config && isReactComponentConfig(config)) {
-      dehydratedConfig = this.dehydrateComponent(config.component, config);
+      const dehydratedConfig = this.dehydrateComponent(
+        config.component,
+        config
+      );
       if (dehydratedConfig) {
         this.closed.push(dehydratedConfig);
       }
