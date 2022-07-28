@@ -256,7 +256,7 @@ export class Linker extends Component<LinkerProps, LinkerState> {
     panel: PanelComponent,
     column: LinkColumn,
     isAlwaysEndPoint = false,
-    overrideIsolatedLinkerPanelId?: string
+    overrideIsolatedLinkerPanelId?: string | string[]
   ): void {
     if (overrideIsolatedLinkerPanelId === undefined && !this.isOverlayShown()) {
       return;

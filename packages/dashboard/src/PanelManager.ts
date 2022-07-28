@@ -1,8 +1,12 @@
 import { ComponentType } from 'react';
-import GoldenLayout, { ReactComponentConfig } from '@deephaven/golden-layout';
+import GoldenLayout, {
+  ContentItem,
+  ItemConfigType,
+  ReactComponentConfig,
+} from '@deephaven/golden-layout';
 import Log from '@deephaven/log';
 import PanelEvent from './PanelEvent';
-import LayoutUtils from './layout/LayoutUtils';
+import LayoutUtils, { isReactComponentConfig } from './layout/LayoutUtils';
 import {
   isWrappedComponent,
   PanelComponent,
@@ -26,7 +30,7 @@ export type ClosedPanel = ReactComponentConfig;
 
 export type ClosedPanels = ClosedPanel[];
 
-export type OpenedPanelMap = Map<string, PanelComponent>;
+export type OpenedPanelMap = Map<string | string[], PanelComponent>;
 
 export type PanelsUpdateData = {
   closed: ClosedPanels;
@@ -125,26 +129,27 @@ class PanelManager {
     return Array.from(this.openedMap.values());
   }
 
-  getOpenedPanelConfigs(): GoldenLayout.ReactComponentConfig[] {
+  getOpenedPanelConfigs(): (ItemConfigType | null)[] {
     return this.getOpenedPanels().map(panel => {
       const { glContainer } = panel.props;
       return LayoutUtils.getComponentConfigFromContainer(glContainer);
     });
   }
 
-  getOpenedPanelConfigsOfType(
-    typeString: string
-  ): GoldenLayout.ReactComponentConfig[] {
+  getOpenedPanelConfigsOfType(typeString: string): ReactComponentConfig[] {
     return this.getOpenedPanelConfigs().filter(
-      config => config != null && config.component === typeString
-    );
+      config =>
+        config != null &&
+        isReactComponentConfig(config) &&
+        config.component === typeString
+    ) as ReactComponentConfig[];
   }
 
-  getOpenedPanelById(panelId: string): PanelComponent | undefined {
+  getOpenedPanelById(panelId: string | string[]): PanelComponent | undefined {
     return this.openedMap.get(panelId);
   }
 
-  getContainerByPanelId(panelId: string): GoldenLayout.Container {
+  getContainerByPanelId(panelId: string | string[]): ContentItem | null {
     const stack = LayoutUtils.getStackForConfig(this.layout.root, {
       id: panelId,
     });
@@ -259,10 +264,13 @@ class PanelManager {
 
   /**
    *
-   * @param {Object} panelConfig The config to hydrate and load
-   * @param {Object} replaceConfig The config to place
+   * @param panelConfig The config to hydrate and load
+   * @param replaceConfig The config to place
    */
-  handleReopen(panelConfig: ClosedPanel, replaceConfig = null): void {
+  handleReopen(
+    panelConfig: ClosedPanel,
+    replaceConfig?: Partial<ItemConfigType>
+  ): void {
     log.debug2('Reopen:', panelConfig, replaceConfig);
 
     this.removeClosedPanelConfig(panelConfig);
@@ -306,7 +314,7 @@ class PanelManager {
 
   addClosedPanel(glContainer: GoldenLayout.Container): void {
     const config = LayoutUtils.getComponentConfigFromContainer(glContainer);
-    if (config) {
+    if (config && isReactComponentConfig(config)) {
       const dehydratedConfig = this.dehydrateComponent(
         config.component,
         config

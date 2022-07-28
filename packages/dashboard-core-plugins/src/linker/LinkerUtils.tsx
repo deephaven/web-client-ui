@@ -7,8 +7,8 @@ import { ChartPanel, IrisGridPanel, DropdownFilterPanel } from '../panels';
 export type LinkType = 'invalid' | 'filterSource' | 'tableLink';
 
 export type LinkPoint = {
-  panelId: string;
-  panelComponent?: string;
+  panelId: string | string[];
+  panelComponent?: string | null;
   columnName: string;
   columnType: string;
 };
@@ -97,7 +97,7 @@ class LinkerUtils {
   static getLinkType(
     start?: LinkPoint,
     end?: LinkPoint,
-    isolatedLinkerPanelId?: string
+    isolatedLinkerPanelId?: string | string[]
   ): LinkType {
     // Panel compatibility checks:
     // Link ends should point to different non-null panelIds
@@ -182,7 +182,7 @@ class LinkerUtils {
    */
   static cloneLinksForPanel(
     links: Link[],
-    panelId: string,
+    panelId: string | string[],
     cloneId: string
   ): Link[] {
     const clonedLinks: Link[] = [];
