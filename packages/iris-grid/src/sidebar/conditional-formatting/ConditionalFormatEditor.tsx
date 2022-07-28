@@ -24,7 +24,7 @@ export type CancelCallback = () => void;
 
 export interface ConditionalFormatEditorProps {
   columns: ModelColumn[];
-  rule?: FormattingRule;
+  rule?: FormattingRule | undefined;
   onCancel?: CancelCallback;
   onSave?: SaveCallback;
   onUpdate?: UpdateCallback;
