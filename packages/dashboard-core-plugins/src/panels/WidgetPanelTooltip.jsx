@@ -15,7 +15,7 @@ const WidgetPanelTooltip = props => {
 
   return (
     <div className="tab-tooltip-container">
-      <div className="row">
+      <div className="row flex-nowrap align-items-start">
         <span className="tab-tooltip-title">
           <b>{widgetType} Name </b>
         </span>
