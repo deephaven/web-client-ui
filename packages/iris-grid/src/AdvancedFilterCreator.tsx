@@ -125,15 +125,13 @@ class AdvancedFilterCreator extends PureComponent<
     const { options } = props;
     let { filterOperators, invertSelection, selectedValues } = options;
 
-    let filterItems: AdvancedFilterItem[] =
-      options.filterItems?.map(({ selectedType, value }) => ({
+    const filterItems: AdvancedFilterItem[] = options.filterItems?.map(
+      ({ selectedType, value }) => ({
         selectedType,
         value,
         key: shortid(),
-      })) ?? [];
-    if (filterItems.length === 0) {
-      filterItems = [AdvancedFilterCreator.makeFilterItem()];
-    }
+      })
+    ) ?? [AdvancedFilterCreator.makeFilterItem()];
     if (filterOperators == null) {
       filterOperators = [];
     }
