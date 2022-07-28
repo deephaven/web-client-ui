@@ -353,7 +353,7 @@ export interface IrisGridState {
 
   conditionalFormats: SidebarFormattingRule[];
   conditionalFormatEditIndex: number | null;
-  conditionalFormatPreview?: SidebarFormattingRule | undefined;
+  conditionalFormatPreview?: SidebarFormattingRule;
 
   // Column user is hovering over for selection
   hoverSelectColumn: GridRangeIndex;
