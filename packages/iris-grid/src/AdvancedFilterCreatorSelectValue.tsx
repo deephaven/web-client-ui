@@ -11,7 +11,7 @@ import { ColumnName } from './CommonTypes';
 interface AdvancedFilterCreatorSelectValueProps<T> {
   invertSelection: boolean;
   selectedValues: T[];
-  table: Table;
+  table?: Table;
   formatter: Formatter;
   onChange: (selectedValues: T[], invertSelection: boolean) => void;
   showSearch: boolean;
@@ -34,7 +34,6 @@ class AdvancedFilterCreatorSelectValue<T = unknown> extends PureComponent<
   static searchDebounceTime = 250;
 
   static defaultProps = {
-    table: null,
     invertSelection: true,
     selectedValues: [],
     onChange: (): void => undefined,
