@@ -116,6 +116,11 @@ class ContextActionUtils {
    * @returns Promise Resolved on success, rejected on failure
    */
   static copyToClipboard(text: string): Promise<void> {
+    const { clipboard } = navigator;
+    if (clipboard === undefined) {
+      ContextActionUtils.copyToClipboardExecCommand(text);
+      return Promise.resolve();
+    }
     return navigator.clipboard.writeText(text).catch(() => {
       ContextActionUtils.copyToClipboardExecCommand(text);
     });
