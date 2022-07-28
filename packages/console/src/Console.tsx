@@ -702,11 +702,11 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
     this.setState({ dragError: null });
   }
 
-  handleOpenCsvTable(name: string): void {
+  handleOpenCsvTable(title: string): void {
     const { openObject, commandHistoryStorage, language, scope } = this.props;
     const { consoleHistory, objectMap } = this.state;
-    const object = { name, type: dh.VariableType.TABLE };
-    const isExistingObject = objectMap.has(name);
+    const object = { name: title, title, type: dh.VariableType.TABLE };
+    const isExistingObject = objectMap.has(title);
     const historyItem = {
       startTime: Date.now(),
       endTime: Date.now(),
@@ -726,9 +726,9 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
     });
     this.scrollConsoleHistoryToBottom(true);
     this.updateKnownObjects(historyItem);
-    openObject({ name, type: dh.VariableType.TABLE });
-    commandHistoryStorage.addItem(language, scope, name, {
-      command: name,
+    openObject({ name: title, title, type: dh.VariableType.TABLE });
+    commandHistoryStorage.addItem(language, scope, title, {
+      command: title,
       startTime: new Date().toJSON(),
       endTime: new Date().toJSON(),
     });
