@@ -1,4 +1,4 @@
-import React, { MouseEvent, useCallback, useMemo } from 'react';
+import React, { MouseEvent, ReactElement, useCallback, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -9,17 +9,17 @@ import { ColumnName, InputFilter } from '@deephaven/iris-grid';
 import { Column } from '@deephaven/jsapi-shim';
 import './ChartFilterOverlay.scss';
 
-export type ColumnMap = Map<ColumnName, Column>
+export type ColumnMap = Map<ColumnName, Column>;
 
 interface ChartFilterOverlayProps {
-  columnMap: ColumnMap,
-  inputFilterMap: Map<ColumnName, InputFilter>,
-  linkedColumnMap: Map<string, unknown>,
-  onAdd: (filters),
-  onOpenLinker:,
-  waitingFilterMap: Map<string, InputFilter>,
-  waitingInputMap:Map<ColumnName, unknown> ,
-};
+  columnMap: ColumnMap;
+  inputFilterMap: Map<ColumnName, InputFilter>;
+  linkedColumnMap: Map<string, unknown>;
+  onAdd: (columns: InputFilter[]) => void;
+  onOpenLinker: () => void;
+  waitingFilterMap: Map<string, InputFilter>;
+  waitingInputMap: Map<ColumnName, unknown>;
+}
 
 const ChartFilterOverlay = ({
   columnMap,
@@ -29,7 +29,7 @@ const ChartFilterOverlay = ({
   onOpenLinker,
   waitingFilterMap,
   waitingInputMap,
-}: ChartFilterOverlayProps) => {
+}: ChartFilterOverlayProps): ReactElement => {
   const inputMessage = useMemo(() => {
     const waitingColumns = Array.from(waitingInputMap.keys());
     const needsInputFilterValue = waitingColumns.find(
@@ -56,7 +56,7 @@ const ChartFilterOverlay = ({
       event.preventDefault();
 
       onAdd(Array.from(waitingFilterMap.values()));
-    },s
+    },
     [onAdd, waitingFilterMap]
   );
 

@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, ReactElement } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import {
@@ -178,7 +178,7 @@ export class FilterSetManagerPanel extends Component<
     this.updatePanelState();
   }
 
-  handleFilterApply(filterSet) {
+  handleFilterApply(filterSet: FilterSet): void {
     const { dashboardOpenedPanelMap } = this.props;
     const { panels, restoreFullState = false } = filterSet;
     log.debug(`Apply filters from filter set`, filterSet);
@@ -256,7 +256,7 @@ export class FilterSetManagerPanel extends Component<
     panel.setPanelState(inputFilterState);
   }
 
-  render() {
+  render(): ReactElement {
     const { glContainer, glEventHub, filterSets } = this.props;
     const { isValueShown, selectedId } = this.state;
     return (

@@ -9,6 +9,8 @@ import RollupRows from './RollupRows';
 import TableCsvExporter from './TableCsvExporter';
 import TableSaver from './TableSaver';
 import VisibilityOrderingBuilder from './VisibilityOrderingBuilder';
+import { FormattingRule } from './conditional-formatting/ConditionalFormattingUtils';
+import AdvancedSettingsType from './AdvancedSettingsType';
 
 export {
   AdvancedSettings,
@@ -22,8 +24,10 @@ export {
   TableCsvExporter,
   TableSaver,
   VisibilityOrderingBuilder,
+  AdvancedSettingsType,
 };
 
+export type { FormattingRule as SidebarFormattingRule };
 export * from './aggregations';
-export * from './AdvancedSettingsType';
 export * from './RollupRows';
+export * from './ChartBuilder';

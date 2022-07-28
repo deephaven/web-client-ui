@@ -1,4 +1,5 @@
 import {
+  GridMetrics,
   GridRange,
   GridUtils,
   ModelIndex,
@@ -47,6 +48,29 @@ import { FormattingRule as SidebarFormattingRule } from './sidebar/conditional-f
 import IrisGridModel from './IrisGridModel';
 
 const log = Log.module('IrisGridUtils');
+
+type HydratedIrisGridState = Pick<
+  IrisGridState,
+  | 'advancedFilters'
+  | 'aggregationSettings'
+  | 'customColumnFormatMap'
+  | 'isFilterBarShown'
+  | 'quickFilters'
+  | 'customColumns'
+  | 'reverseType'
+  | 'rollupConfig'
+  | 'showSearchBar'
+  | 'searchValue'
+  | 'selectDistinctColumns'
+  | 'selectedSearchColumns'
+  | 'sorts'
+  | 'invertSearchColumns'
+  | 'pendingDataMap'
+  | 'frozenColumns'
+  | 'conditionalFormats'
+> & {
+  metrics: Pick<GridMetrics, 'userColumnWidths' | 'userRowHeights'>;
+};
 
 export interface DehydratedIrisGridState {
   advancedFilters: [
@@ -142,7 +166,7 @@ class IrisGridUtils {
       movedColumns: { from: string | ModelIndex; to: string | ModelIndex }[];
       movedRows: MoveOperation[];
     },
-    customColumns = []
+    customColumns: string[] = []
   ): Pick<
     IrisGridProps,
     'isStuckToBottom' | 'isStuckToRight' | 'movedColumns' | 'movedRows'
@@ -200,7 +224,7 @@ class IrisGridUtils {
    */
   static dehydrateIrisGridState(
     model: IrisGridModel,
-    irisGridState: IrisGridState
+    irisGridState: HydratedIrisGridState
   ): DehydratedIrisGridState {
     const {
       aggregationSettings = { aggregations: [], showOnTop: false },
@@ -269,7 +293,26 @@ class IrisGridUtils {
   static hydrateIrisGridState(
     model: IrisGridModel,
     irisGridState: DehydratedIrisGridState
-  ): Partial<IrisGridProps> {
+  ): Pick<
+    IrisGridState,
+    | 'advancedFilters'
+    | 'customColumnFormatMap'
+    | 'isFilterBarShown'
+    | 'quickFilters'
+    | 'sorts'
+    | 'customColumns'
+    | 'conditionalFormats'
+    | 'reverseType'
+    | 'rollupConfig'
+    | 'showSearchBar'
+    | 'searchValue'
+    | 'selectDistinctColumns'
+    | 'selectedSearchColumns'
+    | 'invertSearchColumns'
+    | 'pendingDataMap'
+    | 'frozenColumns'
+    | 'aggregationSettings'
+  > & { userColumnWidths: ModelSizeMap; userRowHeights: ModelSizeMap } {
     const {
       advancedFilters,
       aggregationSettings = { aggregations: [], showOnTop: false },
@@ -357,7 +400,6 @@ class IrisGridUtils {
       isSelectingPartition: boolean;
       partition: string;
       partitionColumn: Column;
-      advancedSettings: unknown;
     }
   ): {
     isSelectingPartition: boolean;
@@ -394,7 +436,7 @@ class IrisGridUtils {
   ): {
     isSelectingPartition: boolean;
     partition: string;
-    partitionColumn?: Column | null;
+    partitionColumn?: Column;
   } {
     const {
       isSelectingPartition,
@@ -409,7 +451,7 @@ class IrisGridUtils {
       partitionColumn:
         partitionColumn != null
           ? IrisGridUtils.getColumnByName(columns, partitionColumn)
-          : null,
+          : undefined,
     };
   }
 
@@ -751,9 +793,9 @@ class IrisGridUtils {
    * @param  panelState The dehydrated panel state
    * @returns A dehydrated table settings object, { partition, partitionColumn, advancedFilters, quickFilters, sorts }
    */
-  static extractTableSettings(
+  static extractTableSettings<AF, QF, S>(
     panelState: {
-      irisGridState: IrisGridState;
+      irisGridState: { advancedFilters: AF; quickFilters: QF; sorts: S };
       irisGridPanelState: {
         partitionColumn: ColumnName;
         partition: unknown;
@@ -763,10 +805,10 @@ class IrisGridUtils {
   ): {
     partitionColumn: ColumnName;
     partition: unknown;
-    advancedFilters: AdvancedFilterMap;
+    advancedFilters: AF;
     inputFilters: InputFilter[];
-    quickFilters: QuickFilterMap;
-    sorts: Sort[];
+    quickFilters: QF;
+    sorts: S;
   } {
     const { irisGridPanelState, irisGridState } = panelState;
     const { partitionColumn, partition } = irisGridPanelState;
@@ -1422,13 +1464,13 @@ class IrisGridUtils {
   static changeFilterColumnNamesToIndexes<T>(
     columns: Column[],
     filters: { name: ColumnName; filter: T }[]
-  ): ([number, unknown] | null)[] {
+  ): [number, T][] {
     return filters
       .map(({ name, filter }): null | [number, T] => {
         const index = columns.findIndex(column => column.name === name);
         return index < 0 ? null : [index, filter];
       })
-      .filter(filterConfig => filterConfig != null);
+      .filter(filterConfig => filterConfig != null) as [number, T][];
   }
 }
 

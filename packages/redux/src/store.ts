@@ -14,6 +14,7 @@ export interface DeephavenPluginModule {}
 export type DeephavenPluginModuleMap = Map<string, DeephavenPluginModule>;
 
 export interface User {
+  permissions: { canCopy: boolean; canDownloadCsv: boolean };
   name: string;
   operateAs: string;
   groups: string[];

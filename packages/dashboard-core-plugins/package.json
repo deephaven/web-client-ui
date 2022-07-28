@@ -37,6 +37,7 @@
     "@deephaven/file-explorer": "file:../file-explorer",
     "@deephaven/golden-layout": "file:../golden-layout",
     "@deephaven/icons": "file:../icons",
+    "@deephaven/grid": "file:../grid",
     "@deephaven/iris-grid": "file:../iris-grid",
     "@deephaven/jsapi-shim": "file:../jsapi-shim",
     "@deephaven/jsapi-utils": "file:../jsapi-utils",

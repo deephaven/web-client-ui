@@ -15,7 +15,12 @@ import {
   LayoutUtils,
 } from '@deephaven/dashboard';
 import { IrisGridUtils, InputFilter, ColumnName } from '@deephaven/iris-grid';
-import dh, { Column, TableTemplate } from '@deephaven/jsapi-shim';
+import dh, {
+  Column,
+  FigureDescriptor,
+  SeriesPlotStyle,
+  TableTemplate,
+} from '@deephaven/jsapi-shim';
 import { ThemeExport } from '@deephaven/components';
 import Log from '@deephaven/log';
 import {
@@ -48,8 +53,6 @@ import ChartColumnSelectorOverlay, {
 } from './ChartColumnSelectorOverlay';
 import './ChartPanel.scss';
 import { Link } from '../linker/LinkerUtils';
-import Panel from './Panel';
-import { PanelState } from './PandasPanel';
 
 const log = Log.module('ChartPanel');
 const UPDATE_MODEL_DEBOUNCE = 150;
@@ -60,6 +63,21 @@ export type FilterMap = Map<string, string>;
 
 export type LinkedColumnMap = Map<string, Column>;
 
+interface Settings {}
+interface PanelState {
+  filterValueMap: [string, string][];
+  settings: Settings;
+  tableSettings: unknown;
+  irisGridState?: {
+    advancedFilters: unknown;
+    quickFilters: unknown;
+    sorts: unknown;
+  };
+  irisGridPanelState?: {
+    partitionColumn: string;
+    partition: unknown;
+  };
+}
 interface ChartPanelProps {
   glContainer: GoldenLayout.Container;
   glEventHub: GoldenLayout.EventEmitter;
@@ -70,7 +88,13 @@ interface ChartPanelProps {
     query: string;
     querySerial: string;
     sourcePanelId: string;
-    settings: { isLinked: boolean };
+    settings: {
+      isLinked: boolean;
+      title: string;
+      xAxis: string;
+      series: string[];
+      type: SeriesPlotStyle;
+    };
   };
   /** Function to build the ChartModel used by this ChartPanel. Can return a promise. */
   makeModel: () => ChartModel;
@@ -79,7 +103,7 @@ interface ChartPanelProps {
   localDashboardId: string;
   isLinkerActive: boolean;
   source: TableTemplate;
-  sourcePanel: Panel;
+  sourcePanel: ChartPanel;
   columnSelectionValidator: (
     value: unknown,
     column: { name: string; type: string } | null
@@ -91,11 +115,11 @@ interface ChartPanelProps {
   ) => void;
 
   panelState: PanelState;
-  settings: {};
+  settings: Settings;
 }
 
 interface ChartPanelState {
-  settings: {};
+  settings: Settings;
   error?: unknown;
   isActive: boolean;
   isDisconnected: boolean;
@@ -111,8 +135,6 @@ interface ChartPanelState {
   filterValueMap: Map<string, string>;
   model?: ChartModel;
   columnMap: ColumnMap;
-
-  queryName: string;
 
   // eslint-disable-next-line react/no-unused-state
   panelState: PanelState;
@@ -167,7 +189,6 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
 
     const { metadata, panelState } = props;
     const { filterValueMap = [], settings = {} } = panelState ?? {};
-    const queryName = metadata.query;
 
     this.state = {
       settings,
@@ -186,8 +207,6 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
       filterValueMap: new Map(filterValueMap),
       model: undefined,
       columnMap: new Map(),
-
-      queryName,
 
       // eslint-disable-next-line react/no-unused-state
       panelState,
@@ -471,7 +490,7 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
     });
   }
 
-  handleFilterAdd(columns: Column[]): void {
+  handleFilterAdd(columns: InputFilter[]): void {
     for (let i = 0; i < columns.length; i += 1) {
       this.openInputFilter(columns[i]);
     }
@@ -555,7 +574,12 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
     this.pending.cancel();
     this.pending
       .add(
-        dh.plot.Figure.create(ChartUtils.makeFigureSettings(settings, source))
+        dh.plot.Figure.create(
+          (ChartUtils.makeFigureSettings(
+            settings,
+            source
+          ) as unknown) as FigureDescriptor
+        )
       )
       .then(figure => {
         if (isFigureChartModel(model)) {
@@ -604,7 +628,7 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
     this.updateChart();
   }
 
-  handleSettingsChanged(update) {
+  handleSettingsChanged(update: Partial<Settings>): void {
     this.setState(({ settings: prevSettings }) => {
       const settings = {
         ...prevSettings,
@@ -650,7 +674,7 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
    * Create an input filter panel for the provided column
    * @param column The column to create the input filter for
    */
-  openInputFilter(column: Column): void {
+  openInputFilter(column: InputFilter): void {
     const { glEventHub } = this.props;
     const { name, type } = column;
     glEventHub.emit(InputFilterEvent.OPEN_INPUT, {
