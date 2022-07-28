@@ -879,7 +879,9 @@ class ChartUtils {
     const isYAxis = axis.type === dh.plot.AxisType.Y;
     const axisSize = isYAxis ? yAxisSize : xAxisSize;
     const layoutAxis = layoutAxisParam;
-    layoutAxis.title.text = axis.label;
+    // Enterprise API returns null for empty axis labels
+    // Passing null title text to Plotly results in incorrect axis position, DH-9164
+    layoutAxis.title.text = axis.label ?? '';
     if (axis.log) {
       layoutAxis.type = 'log';
     }
