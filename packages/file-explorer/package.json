@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/file-explorer",
-  "version": "0.15.1",
+  "version": "0.15.2",
   "description": "Deephaven File Explorer React component",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
