@@ -113,7 +113,7 @@ class AdvancedFilterCreatorSelectValueList<T = unknown> extends PureComponent<
     }
 
     if (prevProps.filters !== filters) {
-      if (table) table.applyFilter(filters);
+      table?.applyFilter(filters);
       this.resetViewport();
     }
   }
