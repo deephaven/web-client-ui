@@ -1,9 +1,9 @@
 // Wrapper for the Notebook for use in a golden layout container
-import React, { Component } from 'react';
+import React, { Component, MouseEvent, ReactElement } from 'react';
 import ReactDOM from 'react-dom';
-import PropTypes from 'prop-types';
 import memoize from 'memoize-one';
 import { connect } from 'react-redux';
+import type { editor } from 'monaco-editor';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   BasicModal,
@@ -13,8 +13,12 @@ import {
   GLOBAL_SHORTCUTS,
 } from '@deephaven/components';
 import { ScriptEditor, ScriptEditorUtils, SHORTCUTS } from '@deephaven/console';
-import { GLPropTypes } from '@deephaven/dashboard';
-import { FileUtils, NewItemModal } from '@deephaven/file-explorer';
+import {
+  FileStorage,
+  FileUtils,
+  NewItemModal,
+  File,
+} from '@deephaven/file-explorer';
 import {
   vsSave,
   vsKebabVertical,
@@ -22,11 +26,13 @@ import {
   vsPlay,
   dhRunSelection,
 } from '@deephaven/icons';
-import { getFileStorage } from '@deephaven/redux';
+import { getFileStorage, RootState } from '@deephaven/redux';
 import classNames from 'classnames';
 import debounce from 'lodash.debounce';
 import Log from '@deephaven/log';
-import { Pending, PromiseUtils } from '@deephaven/utils';
+import { assertNotNull, Pending, PromiseUtils } from '@deephaven/utils';
+import { Container, EventEmitter, Tab } from '@deephaven/golden-layout';
+import { IdeSession } from '@deephaven/jsapi-shim';
 import { ConsoleEvent, NotebookEvent } from '../events';
 import { getDashboardSessionWrapper } from '../redux';
 import Panel from './Panel';
@@ -37,21 +43,94 @@ const log = Log.module('NotebookPanel');
 
 const DEBOUNCE_PANEL_STATE_UPDATE = 400;
 
-class NotebookPanel extends Component {
+interface Metadata {
+  id: string;
+}
+
+interface Settings {
+  language?: string;
+  value: string;
+}
+
+interface FileMetadata {
+  itemName: string;
+  id: string;
+}
+
+interface PanelState {
+  isPreview?: boolean;
+  settings: Settings;
+  fileMetadata: FileMetadata | null;
+}
+
+interface NotebookPanelProps {
+  fileStorage: FileStorage;
+  glContainer: Container;
+  glEventHub: EventEmitter;
+  isDashboardActive: boolean;
+  isPreview: boolean;
+  metadata: Metadata;
+  session: IdeSession;
+  sessionLanguage: string;
+  panelState: PanelState;
+  notebooksUrl: string;
+}
+
+interface NotebookPanelState {
+  error?: {
+    message?: string | undefined;
+  };
+  isDashboardActive: boolean;
+  isFocused: boolean;
+  isLoading: boolean;
+  isLoaded: boolean;
+  isPreview: boolean;
+
+  savedChangeCount: number;
+  changeCount: number;
+  fileMetadata: FileMetadata | null;
+  settings: Settings;
+
+  session?: IdeSession;
+  sessionLanguage?: string;
+
+  // eslint-disable-next-line react/no-unused-state
+  panelState: PanelState;
+
+  showCloseModal: boolean;
+  showSaveAsModal: boolean;
+
+  scriptCode: string;
+
+  itemName?: string;
+}
+
+class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
   static COMPONENT = 'NotebookPanel';
 
-  static POPPER_OPTIONS = { placement: 'bottom-end' };
+  static POPPER_OPTIONS = { placement: 'bottom-end' } as const;
 
   static DEFAULT_NAME = 'Untitled';
 
-  static handleError(error) {
+  static handleError(error: unknown): void {
     if (PromiseUtils.isCanceled(error)) {
       return;
     }
     log.error(error);
   }
 
-  static languageFromFileName(fileName) {
+  static defaultProps = {
+    isDashboardActive: true,
+    isPreview: false,
+    session: null,
+    sessionLanguage: null,
+    notebooksUrl: new URL(
+      `${process.env.REACT_APP_NOTEBOOKS_URL}/`,
+      window.location
+    ).href,
+  };
+
+  static languageFromFileName(fileName: string): string | null {
     const extension = FileUtils.getExtension(fileName).toLowerCase();
     switch (extension) {
       case 'py':
@@ -66,7 +145,7 @@ class NotebookPanel extends Component {
     }
   }
 
-  constructor(props) {
+  constructor(props: NotebookPanelProps) {
     super(props);
 
     this.handleBlur = this.handleBlur.bind(this);
@@ -115,13 +194,13 @@ class NotebookPanel extends Component {
     this.notebook = null;
 
     this.tabTitleElement = null;
-    this.unsavedIndicator = null;
+
     this.tabInitOnce = false;
     this.shouldPromptClose = true;
 
     const { isDashboardActive, session, sessionLanguage, panelState } = props;
 
-    let settings = {
+    let settings: { value: string | null } = {
       value: '',
     };
     let fileMetadata = null;
@@ -137,7 +216,7 @@ class NotebookPanel extends Component {
     // Not showing the unsaved indicator for null file id and editor content === '',
     // may need to implement some other indication that this notebook has never been saved
     const hasFileId =
-      fileMetadata.itemName && FileUtils.hasPath(fileMetadata.itemName);
+      fileMetadata?.itemName && FileUtils.hasPath(fileMetadata.itemName);
 
     // Unsaved if file id != null and content != null
     // OR file id is null AND content is not null or ''
@@ -146,7 +225,7 @@ class NotebookPanel extends Component {
     const changeCount = isUnsaved ? 1 : 0;
 
     this.state = {
-      error: null,
+      error: undefined,
       isDashboardActive,
       isFocused: false,
       isLoading: true,
@@ -185,14 +264,17 @@ class NotebookPanel extends Component {
     glContainer.on('tabClicked', this.handlePanelTabClick);
   }
 
-  componentDidUpdate(prevProps, prevState) {
+  componentDidUpdate(
+    prevProps: NotebookPanelProps,
+    prevState: NotebookPanelState
+  ): void {
     const { isPreview } = this.state;
     if (isPreview !== prevState.isPreview) {
-      this.setPreviewStatus(isPreview);
+      this.setPreviewStatus();
     }
   }
 
-  componentWillUnmount() {
+  componentWillUnmount(): void {
     this.debouncedSavePanelState.flush();
     this.pending.cancel();
 
@@ -204,9 +286,23 @@ class NotebookPanel extends Component {
     glEventHub.emit(NotebookEvent.UNREGISTER_FILE, fileMetadata, isPreview);
   }
 
+  pending: Pending;
+
+  debouncedSavePanelState;
+
+  debouncedLoad;
+
+  notebook: ScriptEditor | null;
+
+  tabTitleElement: Element | null;
+
+  tabInitOnce: boolean;
+
+  shouldPromptClose: boolean;
+
   // Called by TabEvent. Happens once when created, but also each time its moved.
   // when moved, need to re-init the unsaved indicators on title elements
-  initTab(tab) {
+  initTab(tab: Tab): void {
     if (!this.tabInitOnce) {
       this.tabInitOnce = true;
       this.initTabCloseOverride();
@@ -225,18 +321,20 @@ class NotebookPanel extends Component {
       } else {
         close();
       }
+      return true;
     };
   }
 
-  initTabClasses(tab) {
+  initTabClasses(tab: Tab) {
     const tabElement = tab.element.get(0);
+    assertNotNull(tabElement);
     const titleElement = tabElement.querySelector('.lm_title');
     this.tabTitleElement = titleElement;
-    titleElement.classList.add('notebook-title');
+    titleElement?.classList.add('notebook-title');
     this.setPreviewStatus();
   }
 
-  getNotebookValue() {
+  getNotebookValue(): string {
     const { changeCount, savedChangeCount, settings } = this.state;
     const { value } = settings;
     if (changeCount !== savedChangeCount && this.notebook) {
@@ -246,7 +344,7 @@ class NotebookPanel extends Component {
     return value;
   }
 
-  initNotebookContent() {
+  initNotebookContent(): void {
     // Init from file,
     // fallback to content from settings for unsaved notebook
     const { fileMetadata, settings, isPreview } = this.state;
@@ -265,14 +363,14 @@ class NotebookPanel extends Component {
     this.handleLoadError(new Error('Missing file metadata'));
   }
 
-  closeFileTabById(id) {
+  closeFileTabById(id: string): void {
     const { glEventHub } = this.props;
     glEventHub.emit(NotebookEvent.CLOSE_FILE, { id });
   }
 
   // Associate file id with the current tab
   // so the next time the file is opened this tab can be focused instead of opening a new tab
-  registerFileMetadata(fileMetadata, isPreview) {
+  registerFileMetadata(fileMetadata: FileMetadata, isPreview: boolean): void {
     const { glEventHub, metadata } = this.props;
     const { id: tabId } = metadata;
     glEventHub.emit(
@@ -283,13 +381,14 @@ class NotebookPanel extends Component {
     );
   }
 
-  renameTab(id, title) {
+  renameTab(id: string, title: string): void {
     const { glEventHub } = this.props;
     glEventHub.emit(NotebookEvent.RENAME, id, title);
   }
 
   load() {
     const { fileMetadata, settings } = this.state;
+    assertNotNull(fileMetadata);
     const { id } = fileMetadata;
     const { fileStorage } = this.props;
     this.pending
@@ -305,7 +404,7 @@ class NotebookPanel extends Component {
         }
         const updatedSettings = {
           ...settings,
-          language: NotebookPanel.languageFromFileName(itemName),
+          language: NotebookPanel.languageFromFileName(itemName) ?? undefined,
         };
         if (settings.value == null) {
           updatedSettings.value = loadedFile.content;
@@ -322,14 +421,17 @@ class NotebookPanel extends Component {
 
   /**
    * Attempts to save the notebook.
-   * @returns {boolean} Returns true if save has begun, false if user needed to be prompted
+   * @returns Returns true if save has begun, false if user needed to be prompted
    */
-  save() {
+  save(): boolean {
     const { fileMetadata } = this.state;
     if (fileMetadata && FileUtils.hasPath(fileMetadata.itemName)) {
       const content = this.getNotebookValue();
-      this.saveContent(fileMetadata.itemName, content);
-      return true;
+      if (content != null) {
+        this.saveContent(fileMetadata.itemName, content);
+        return true;
+      }
+      return false;
     }
 
     this.setState({ showSaveAsModal: true });
@@ -338,15 +440,15 @@ class NotebookPanel extends Component {
 
   /**
    * Update existing file content
-   * @param {string} filename The name of the file
-   * @param {string} content New file content
+   * @param filename The name of the file
+   * @param content New file content
    */
-  saveContent(filename, content) {
+  saveContent(filename: string, content: string): void {
     log.debug('saveContent', filename, content);
     this.updateSavedChangeCount();
     const { fileStorage } = this.props;
     this.pending
-      .add(fileStorage.saveFile({ filename, content }))
+      .add(fileStorage.saveFile({ filename, content, basename: filename }))
       .then(this.handleSaveSuccess)
       .catch(this.handleSaveError);
   }
@@ -414,14 +516,14 @@ class NotebookPanel extends Component {
     });
   }
 
-  handleCloseDiscard() {
+  handleCloseDiscard(): void {
     this.shouldPromptClose = false;
     this.setState({ showCloseModal: false });
     const { glContainer } = this.props;
     glContainer.close();
   }
 
-  handleCloseSave() {
+  handleCloseSave(): void {
     this.shouldPromptClose = false;
     this.setState({ showCloseModal: false });
     if (this.save()) {
@@ -430,13 +532,14 @@ class NotebookPanel extends Component {
     }
   }
 
-  handleCloseCancel() {
+  handleCloseCancel(): void {
     this.shouldPromptClose = true;
     this.setState({ showCloseModal: false });
   }
 
-  handleCopy() {
+  handleCopy(): void {
     const { fileMetadata, settings } = this.state;
+    assertNotNull(fileMetadata);
     const content = this.getNotebookValue();
     const { language } = settings;
     const { itemName } = fileMetadata;
@@ -445,16 +548,17 @@ class NotebookPanel extends Component {
     this.createNotebook(copyName, language, content);
   }
 
-  handleEditorChange(e) {
+  handleEditorChange(e: editor.IModelContentChangedEvent): void {
     log.debug2('handleEditorChanged', e);
 
     this.removePreviewStatus();
 
-    this.setState(({ changeCount, savedChangeCount }) => {
+    this.setState(state => {
+      const { changeCount, savedChangeCount } = state;
       const { isUndoing, isRedoing } = e;
       if (isUndoing) {
         // Note that it's possible to undo past where the user last saved, if they save and then undo for example
-        return { changeCount: changeCount - 1 };
+        return { changeCount: changeCount - 1, savedChangeCount };
       }
 
       if (!isRedoing && changeCount < savedChangeCount) {
@@ -464,7 +568,7 @@ class NotebookPanel extends Component {
         return { changeCount: changeCount + 1, savedChangeCount: 0 };
       }
 
-      return { changeCount: changeCount + 1 };
+      return { changeCount: changeCount + 1, savedChangeCount };
     });
     this.debouncedSavePanelState();
   }
@@ -475,12 +579,12 @@ class NotebookPanel extends Component {
     }
   }
 
-  handleBlur() {
+  handleBlur(): void {
     log.debug('handleBlur');
     this.setState({ isFocused: false });
   }
 
-  handleFocus() {
+  handleFocus(): void {
     log.debug('handleFocus');
     this.setState({ isFocused: true });
   }
@@ -488,9 +592,9 @@ class NotebookPanel extends Component {
   /**
    * @param {MouseEvent} event The click event from clicking on the link
    */
-  handleLinkClick(event) {
+  handleLinkClick(event: MouseEvent<HTMLAnchorElement>) {
     const { notebooksUrl, session, sessionLanguage } = this.props;
-    const { href } = event.target;
+    const { href } = event.currentTarget;
     if (!href || !href.startsWith(notebooksUrl)) {
       return;
     }
@@ -526,13 +630,13 @@ class NotebookPanel extends Component {
 
   handleLoadSuccess() {
     this.setState({
-      error: null,
+      error: undefined,
       isLoaded: true,
       isLoading: false,
     });
   }
 
-  handleLoadError(errorParam) {
+  handleLoadError(errorParam: { message?: string | undefined }) {
     let error = errorParam;
     if (PromiseUtils.isCanceled(error)) {
       return;
@@ -549,10 +653,11 @@ class NotebookPanel extends Component {
     this.save();
   }
 
-  handleSaveSuccess(file) {
+  handleSaveSuccess(file: File) {
     const { fileStorage } = this.props;
     const fileMetadata = { id: file.filename, itemName: file.filename };
-    const language = NotebookPanel.languageFromFileName(file.filename);
+    const language =
+      NotebookPanel.languageFromFileName(file.filename) ?? undefined;
     this.setState(state => {
       const { fileMetadata: oldMetadata } = state;
       const settings = {
@@ -561,6 +666,7 @@ class NotebookPanel extends Component {
       };
       log.debug('handleSaveSuccess', fileMetadata, oldMetadata, settings);
       if (
+        oldMetadata &&
         FileUtils.hasPath(oldMetadata.itemName) &&
         oldMetadata.itemName !== fileMetadata.itemName
       ) {
@@ -579,7 +685,7 @@ class NotebookPanel extends Component {
     this.registerFileMetadata(fileMetadata, false);
   }
 
-  handleSaveError(error) {
+  handleSaveError(error: unknown) {
     if (PromiseUtils.isCanceled(error)) {
       return;
     }
@@ -594,11 +700,14 @@ class NotebookPanel extends Component {
     this.setState({ showSaveAsModal: false });
   }
 
-  handleSaveAsSubmit(name) {
+  handleSaveAsSubmit(name: string): void {
     log.debug('handleSaveAsSubmit', name);
     const { fileMetadata } = this.state;
+    if (!fileMetadata) {
+      return;
+    }
     const { itemName: prevItemName } = fileMetadata;
-    const content = this.getNotebookValue();
+    const content = this.getNotebookValue() ?? '';
     this.setState({
       showSaveAsModal: false,
     });
@@ -612,31 +721,31 @@ class NotebookPanel extends Component {
     this.saveContent(name, content);
   }
 
-  handleRenameFile(oldName, newName) {
+  handleRenameFile(oldName: string, newName: string) {
     const { fileMetadata } = this.state;
-    if (fileMetadata.id === oldName) {
+    if (fileMetadata && fileMetadata.id === oldName) {
       this.setState({ fileMetadata: { id: newName, itemName: newName } });
       this.debouncedSavePanelState();
     }
   }
 
-  handleResize() {
+  handleResize(): void {
     this.notebook?.updateDimensions();
   }
 
-  handleRunCommand(command) {
+  handleRunCommand(command?: string): void {
     this.runCommand(command);
   }
 
-  handleRunAll() {
+  handleRunAll(): void {
     if (!this.notebook) {
       log.error('Editor is not initialized.');
       return;
     }
-    this.runCommand(this.notebook.getValue());
+    this.runCommand(this.notebook.getValue() ?? undefined);
   }
 
-  handleRunSelected() {
+  handleRunSelected(): void {
     if (!this.notebook) {
       log.error('Editor is not initialized.');
       return;
@@ -644,35 +753,38 @@ class NotebookPanel extends Component {
     this.runCommand(this.notebook.getSelectedCommand());
   }
 
-  handleSessionOpened(session, { language }) {
+  handleSessionOpened(
+    session: IdeSession,
+    { language }: { language: string }
+  ): void {
     this.setState({
       session,
       sessionLanguage: language,
     });
   }
 
-  handleSessionClosed() {
+  handleSessionClosed(): void {
     this.setState({
-      session: null,
-      sessionLanguage: null,
+      session: undefined,
+      sessionLanguage: undefined,
     });
   }
 
-  handleShow() {
+  handleShow(): void {
     log.debug('handleShow');
     this.notebook?.updateDimensions();
   }
 
-  handleShowRename() {
+  handleShowRename(): void {
     this.setState({ showSaveAsModal: true });
   }
 
-  handleTab(tab) {
+  handleTab(tab: Tab): void {
     log.debug('NotebookPanel tab event', tab);
     this.initTab(tab);
   }
 
-  handleTabFocus(...args) {
+  handleTabFocus(...args: unknown[]): void {
     log.debug('handleTabFocus', ...args);
     const { glContainer } = this.props;
     this.setState({
@@ -683,24 +795,24 @@ class NotebookPanel extends Component {
     }
   }
 
-  handleTabBlur() {
+  handleTabBlur(): void {
     log.debug('handleTabBlur');
     this.setState({
       isDashboardActive: false,
     });
   }
 
-  handlePanelTabClick() {
+  handlePanelTabClick(): void {
     log.debug('handlePanelTabClick');
     this.focus();
   }
 
   /**
    * Transform the link URI to load from where the notebook is if it's relative
-   * @param {String} src The link to transform
+   * @param src The link to transform
    * @returns String the transformed link
    */
-  handleTransformLinkUri(src) {
+  handleTransformLinkUri(src: string): string {
     const { notebooksUrl } = this.props;
     const { fileMetadata } = this.state;
 
@@ -724,7 +836,7 @@ class NotebookPanel extends Component {
     return new URL(src, itemUri).href;
   }
 
-  focus() {
+  focus(): void {
     requestAnimationFrame(() => {
       if (this.notebook) {
         this.notebook.focus();
@@ -732,7 +844,11 @@ class NotebookPanel extends Component {
     });
   }
 
-  createNotebook(itemName, language, content) {
+  createNotebook(
+    itemName: string,
+    language: string | undefined,
+    content = ''
+  ): void {
     const { glEventHub } = this.props;
     const { session, sessionLanguage, settings } = this.state;
     const notebookSettings = {
@@ -760,7 +876,7 @@ class NotebookPanel extends Component {
     );
   }
 
-  runCommand(command) {
+  runCommand(command?: string): void {
     if (!command) {
       log.debug('Ignoring empty command.');
       return;
@@ -772,18 +888,20 @@ class NotebookPanel extends Component {
     glEventHub.emit(ConsoleEvent.SEND_COMMAND, command, false, true);
   }
 
-  removePreviewStatus() {
+  removePreviewStatus(): void {
     this.setState(({ isPreview }) => {
       if (isPreview) {
         const { fileMetadata } = this.state;
-        this.registerFileMetadata(fileMetadata, false);
+        if (fileMetadata) {
+          this.registerFileMetadata(fileMetadata, false);
+        }
         return { isPreview: false };
       }
       return null;
     });
   }
 
-  render() {
+  render(): ReactElement {
     const {
       fileStorage,
       glContainer,
@@ -854,6 +972,9 @@ class NotebookPanel extends Component {
       },
     ];
 
+    const portal = tab.element.find('.lm_title_before').get(0);
+    assertNotNull(portal);
+
     return (
       <>
         {tab &&
@@ -863,7 +984,7 @@ class NotebookPanel extends Component {
                 'is-unsaved': changeCount !== savedChangeCount,
               })}
             />,
-            tab.element.find('.lm_title_before').get(0) // tab.element is jquery element, we want a dom element
+            portal // tab.element is jquery element, we want a dom element
           )}
 
         <Panel
@@ -959,7 +1080,7 @@ class NotebookPanel extends Component {
           )}
           {isMarkdown && (
             <MarkdownNotebook
-              content={settings.value}
+              content={settings.value ?? undefined}
               onLinkClick={this.handleLinkClick}
               onRunCode={this.handleRunCommand}
               transformImageUri={this.handleTransformLinkUri}
@@ -993,40 +1114,10 @@ class NotebookPanel extends Component {
   }
 }
 
-NotebookPanel.propTypes = {
-  fileStorage: PropTypes.shape({
-    deleteFile: PropTypes.func.isRequired,
-    loadFile: PropTypes.func.isRequired,
-    saveFile: PropTypes.func.isRequired,
-  }).isRequired,
-  glContainer: GLPropTypes.Container.isRequired,
-  glEventHub: GLPropTypes.EventHub.isRequired,
-  isDashboardActive: PropTypes.bool,
-  isPreview: PropTypes.bool,
-  metadata: PropTypes.shape({
-    id: PropTypes.string.isRequired,
-  }).isRequired,
-  session: PropTypes.shape({}),
-  sessionLanguage: PropTypes.string,
-  panelState: PropTypes.shape({
-    settings: PropTypes.shape({}),
-    fileMetadata: PropTypes.shape({}),
-  }).isRequired,
-  notebooksUrl: PropTypes.string,
-};
-
-NotebookPanel.defaultProps = {
-  isDashboardActive: true,
-  isPreview: false,
-  session: null,
-  sessionLanguage: null,
-  notebooksUrl: new URL(
-    `${process.env.REACT_APP_NOTEBOOKS_URL}/`,
-    window.location
-  ).href,
-};
-
-const mapStateToProps = (state, ownProps) => {
+const mapStateToProps = (
+  state: RootState,
+  ownProps: { localDashboardId: string }
+) => {
   const fileStorage = getFileStorage(state);
   const sessionWrapper = getDashboardSessionWrapper(
     state,

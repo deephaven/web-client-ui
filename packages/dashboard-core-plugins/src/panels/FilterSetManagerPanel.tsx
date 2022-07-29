@@ -5,6 +5,7 @@ import {
   getOpenedPanelMapForDashboard,
   GLPropTypes,
   LayoutUtils,
+  PanelComponent,
 } from '@deephaven/dashboard';
 import Log from '@deephaven/log';
 import { Container, EventEmitter } from '@deephaven/golden-layout';
@@ -31,7 +32,7 @@ interface FilterSetManagerPanelProps {
   panelState: PanelState;
   filterSets: FilterSet[];
   localDashboardId: string;
-  dashboardOpenedPanelMap: Map<>;
+  dashboardOpenedPanelMap: Map<string, PanelComponent>;
   setDashboardFilterSets: () => void;
   panelTableMap: Map<>;
 }
@@ -93,6 +94,10 @@ export class FilterSetManagerPanel extends Component<
       const panelId = LayoutUtils.getIdFromPanel(panel);
       log.debug('Panel:', panel, componentName);
 
+      if (panel === undefined) {
+        log.error('Could not get panel', panel);
+        return;
+      }
       const { glContainer = null } = panel.props;
       if (glContainer == null) {
         log.error('Could not get panel container', panel);
