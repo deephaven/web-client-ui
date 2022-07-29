@@ -10,6 +10,12 @@ import { Container, EventEmitter } from '@deephaven/golden-layout';
 import { TableTemplate } from '@deephaven/jsapi-shim';
 import { RootState } from '@deephaven/redux';
 import {
+  AdvancedFilter,
+  DehydratedIrisGridState,
+  QuickFilter,
+} from '@deephaven/iris-grid';
+import { GridState } from '@deephaven/grid';
+import {
   getFilterSetsForDashboard,
   getInputFiltersForDashboard,
   getTableMapForDashboard,
@@ -21,22 +27,29 @@ import FilterSetManager, {
   FilterSet,
   FilterSetPanel,
 } from './FilterSetManager';
-import IrisGridPanel from './IrisGridPanel';
-import InputFilterPanel from './InputFilterPanel';
+import { IrisGridPanel } from './IrisGridPanel';
 import DropdownFilterPanel from './DropdownFilterPanel';
+import {
+  InputFilterPanel,
+  PanelState as InputFilterPanelState,
+} from './InputFilterPanel';
 
 import './FilterSetManagerPanel.scss';
 
 const log = Log.module('FilterSetManagerPanel');
+interface IrisGridState {
+  advancedFilters: [number, AdvancedFilter][];
+  quickFilters: [number, QuickFilter][];
+}
 
 interface PanelState {
   irisGridState?: IrisGridState;
-  gridState?: unkmown;
+  gridState?: unknown;
   selectedId?: string | string[];
-  isValueShown: boolean;
-  name: string;
-  type: string;
-  value: string;
+  isValueShown?: boolean;
+  name?: string;
+  type?: string;
+  value?: string;
 }
 
 interface FilterSetManagerPanelProps {
@@ -50,7 +63,7 @@ interface FilterSetManagerPanelProps {
     dashboardId: string,
     filterSets: FilterSet[]
   ) => void;
-  panelTableMap: Map<>;
+  panelTableMap: Map<string | string[], TableTemplate>;
 }
 
 interface FilterSetManagerPanelState {
@@ -142,11 +155,13 @@ export class FilterSetManagerPanel extends Component<
       }
       switch (componentName) {
         case LayoutUtils.getComponentName(IrisGridPanel): {
-          const state = this.getIrisGridPanelFilters(panelId, panelState);
+          let state;
+          if (panelId != null) {
+            state = this.getIrisGridPanelFilters(panelId, panelState);
+          }
           if (state != null) {
             panels.push({
               panelId,
-              id: panelId,
               type: componentName,
               state,
             });
@@ -170,9 +185,12 @@ export class FilterSetManagerPanel extends Component<
   }
 
   getIrisGridPanelFilters(
-    panelId: string | string[] | null | undefined,
+    panelId: string | string[],
     panelState: PanelState
-  ): { irisGridState: IrisGridState; GridState: unknown } | null {
+  ): {
+    irisGridState: Partial<DehydratedIrisGridState>;
+    gridState: Partial<GridState>;
+  } | null {
     const { panelTableMap } = this.props;
     const table = panelTableMap.get(panelId);
     if (table == null) {
@@ -189,14 +207,21 @@ export class FilterSetManagerPanel extends Component<
       advancedFilters: indexedAdvancedFilters,
       quickFilters: indexedQuickFilters,
     } = irisGridState;
-    const advancedFilters = FilterSetManagerPanel.changeFilterIndexesToColumnNames(
-      table,
-      indexedAdvancedFilters
-    );
-    const quickFilters = FilterSetManagerPanel.changeFilterIndexesToColumnNames(
-      table,
-      indexedQuickFilters
-    );
+    let advancedFilters;
+    if (indexedAdvancedFilters) {
+      advancedFilters = FilterSetManagerPanel.changeFilterIndexesToColumnNames(
+        table,
+        indexedAdvancedFilters
+      );
+    }
+
+    let quickFilters;
+    if (indexedQuickFilters) {
+      quickFilters = FilterSetManagerPanel.changeFilterIndexesToColumnNames(
+        table,
+        indexedQuickFilters
+      );
+    }
     return {
       irisGridState: {
         ...irisGridState,
@@ -234,11 +259,18 @@ export class FilterSetManagerPanel extends Component<
       const panel = dashboardOpenedPanelMap.get(panelId);
       switch (type) {
         case LayoutUtils.getComponentName(IrisGridPanel):
-          this.restoreIrisGridFilters(panel, state, restoreFullState);
+          this.restoreIrisGridFilters(
+            panel as IrisGridPanel,
+            state as {
+              irisGridState: Partial<DehydratedIrisGridState>;
+              gridState: Partial<GridState>;
+            },
+            restoreFullState
+          );
           break;
         case LayoutUtils.getComponentName(InputFilterPanel):
         case LayoutUtils.getComponentName(DropdownFilterPanel):
-          this.restoreInputFilterState(panel, state);
+          this.restoreInputFilterState(panel, state as InputFilterPanelState);
           break;
         default:
       }
@@ -263,7 +295,14 @@ export class FilterSetManagerPanel extends Component<
     }));
   }
 
-  restoreIrisGridFilters(panel, state, restoreFullState) {
+  restoreIrisGridFilters(
+    panel: IrisGridPanel,
+    state: {
+      irisGridState: Partial<DehydratedIrisGridState>;
+      gridState: Partial<GridState>;
+    },
+    restoreFullState: boolean
+  ): void {
     // Fall back to state.advancedFilters and state.quickFilters
     // for backward compatibility with filter sets that only contain filters
     const {
@@ -277,6 +316,10 @@ export class FilterSetManagerPanel extends Component<
     } = irisGridState;
     const { panelTableMap } = this.props;
     const panelId = LayoutUtils.getIdFromPanel(panel);
+    if (panelId == null) {
+      log.error(`Panel Id is null.`);
+      return;
+    }
     const table = panelTableMap.get(panelId);
     if (table == null) {
       log.error(`Unable to get table for panel ${panelId}.`);
@@ -291,7 +334,10 @@ export class FilterSetManagerPanel extends Component<
   }
 
   // eslint-disable-next-line class-methods-use-this
-  restoreInputFilterState(panel, state) {
+  restoreInputFilterState(
+    panel: InputFilterPanel,
+    state: InputFilterPanelState
+  ): void {
     const inputFilterState = { ...state };
     // Restore state but don't flip the card
     delete inputFilterState.isValueShown;
@@ -318,7 +364,7 @@ export class FilterSetManagerPanel extends Component<
             onUpdateSets={this.handleSetsUpdate}
             isValueShown={isValueShown}
             filterSets={filterSets}
-            selectedId={selectedId}
+            selectedId={selectedId as string}
             getFilterState={this.handleGetFilterState}
           />
         </div>

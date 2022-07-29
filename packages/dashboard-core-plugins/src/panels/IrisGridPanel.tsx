@@ -76,6 +76,7 @@ import WidgetPanel from './WidgetPanel';
 import WidgetPanelTooltip from './WidgetPanelTooltip';
 import './IrisGridPanel.scss';
 import { Link } from '../linker/LinkerUtils';
+import { PanelState as PandasPanelState } from './PandasPanel';
 
 const log = Log.module('IrisGridPanel');
 
@@ -122,7 +123,7 @@ interface IrisGridPanelProps {
     Column: { name: string; type: string }
   ) => boolean;
   onStateChange: (irisGridState: IrisGridState, gridState: GridState) => void;
-  onPanelStateUpdate: (panelState: PanelState) => void;
+  onPanelStateUpdate: (panelState: PandasPanelState) => void;
   user: User;
   workspace: Workspace;
   settings: { timeZone: string };

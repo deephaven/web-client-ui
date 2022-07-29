@@ -1,21 +1,24 @@
-import React, { Component } from 'react';
-import PropTypes from 'prop-types';
+import React, { Component, RefObject } from 'react';
 import { connect } from 'react-redux';
 import debounce from 'lodash.debounce';
 import deepEqual from 'deep-equal';
 import memoize from 'memoize-one';
-import { GLPropTypes, LayoutUtils } from '@deephaven/dashboard';
-import dh from '@deephaven/jsapi-shim';
+import { LayoutUtils } from '@deephaven/dashboard';
+import dh, { Column, Row, TableTemplate } from '@deephaven/jsapi-shim';
 import {
   DateTimeColumnFormatter,
   Formatter,
   FormatterUtils,
+  FormattingRule,
   TableUtils,
 } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
-import { getActiveTool, getSettings } from '@deephaven/redux';
+import { getActiveTool, getSettings, RootState } from '@deephaven/redux';
 import { Pending, PromiseUtils } from '@deephaven/utils';
-import DropdownFilter from '../controls/dropdown-filter/DropdownFilter';
+import { Container, EventEmitter } from '@deephaven/golden-layout';
+import DropdownFilter, {
+  DropdownFilterColumn,
+} from '../controls/dropdown-filter/DropdownFilter';
 import { InputFilterEvent } from '../events';
 import {
   getColumnsForDashboard,
@@ -25,17 +28,75 @@ import {
   getTableMapForDashboard,
 } from '../redux';
 import './DropdownFilterPanel.scss';
-import { UIPropTypes } from '../prop-types';
 import ToolType from '../linker/ToolType';
 import WidgetPanel from './WidgetPanel';
+import { Link } from '../linker/LinkerUtils';
 
 const log = Log.module('DropdownFilterPanel');
 
 const DROPDOWN_FILTER_DEBOUNCE = 250;
 
-class DropdownFilterPanel extends Component {
+interface PanelState {
+  name?: string;
+  type?: string;
+  value?: string;
+  isValueShown?: boolean;
+  timestamp?: number;
+}
+
+interface DropdownFilterPanelProps {
+  glContainer: Container;
+  glEventHub: EventEmitter;
+  panelState: PanelState;
+  isLinkerActive: boolean;
+  columns: Column[];
+  columnSelectionValidator: (
+    value: unknown,
+    column: DropdownFilterColumn | null
+  ) => boolean;
+  disableLinking: boolean;
+  settings: {
+    columnFormats: FormattingRule[];
+  };
+  // eslint-disable-next-line react/no-unused-prop-types
+  panelTableMap: Map<string | string[], TableTemplate>;
+  // eslint-disable-next-line react/no-unused-prop-types
+  dashboardLinks: Link[];
+}
+
+interface DropdownFilterPanelState {
+  column?: DropdownFilterColumn;
+  formatter: Formatter;
+  valuesTable?: TableTemplate;
+  valuesColumn?: Column;
+  sourceSize: number;
+  value: string;
+  timestamp: number | null;
+  values: unknown[];
+  isValueShown: boolean;
+  wasFlipped: boolean;
+  skipUpdate: boolean;
+
+  // eslint-disable-next-line react/no-unused-state
+  panelState: PanelState; // Dehydrated panel state that can load this panel
+
+  isDisconnected: boolean;
+  isLoading: boolean;
+  isLoaded: boolean;
+  error: unknown | null;
+}
+
+class DropdownFilterPanel extends Component<
+  DropdownFilterPanelProps,
+  DropdownFilterPanelState
+> {
+  static defaultProps = {
+    columnSelectionValidator: null,
+    panelState: null,
+  };
+
   static displayName = 'DropdownFilterPanel';
-  
+
   static COMPONENT = 'DropdownFilterPanel';
 
   static MAX_TABLE_SIZE = 256;
@@ -49,10 +110,10 @@ class DropdownFilterPanel extends Component {
 
   static SOURCE_COLUMN = Object.freeze({
     name: 'FilterSource',
-    type: null,
+    type: undefined,
   });
 
-  constructor(props) {
+  constructor(props: DropdownFilterPanelProps) {
     super(props);
 
     this.handleChange = debounce(
@@ -73,18 +134,17 @@ class DropdownFilterPanel extends Component {
     this.dropdownFilterRef = React.createRef();
     this.panelContainer = React.createRef();
     this.pending = new Pending();
-    this.cleanup = null;
 
     const { panelState, settings } = props;
     this.columnFormats = settings.columnFormats;
     const { value = '', isValueShown = false, name, type, timestamp = null } =
       panelState ?? {};
-    const column = name != null && type != null ? { name, type } : null;
+    const column = name != null && type != null ? { name, type } : undefined;
     this.state = {
       column,
       formatter: new Formatter(this.columnFormats),
-      valuesTable: null,
-      valuesColumn: null,
+      valuesTable: undefined,
+      valuesColumn: undefined,
       sourceSize: 0,
       value,
       timestamp,
@@ -116,7 +176,10 @@ class DropdownFilterPanel extends Component {
     }
   }
 
-  componentDidUpdate(prevProps, prevState) {
+  componentDidUpdate(
+    prevProps: DropdownFilterPanelProps,
+    prevState: DropdownFilterPanelState
+  ) {
     const { valuesTable } = this.state;
     const { settings } = this.props;
     const source = this.getSource();
@@ -124,7 +187,7 @@ class DropdownFilterPanel extends Component {
     const prevSource = this.getSource(prevProps);
     const prevSourceTable = this.getSourceTable(prevProps);
 
-    if (settings !== prevProps.settings) {
+    if (settings !== prevProps.settings && settings !== undefined) {
       this.updateFormatterSettings(settings);
     }
 
@@ -133,7 +196,7 @@ class DropdownFilterPanel extends Component {
       prevState.valuesTable !== null
     ) {
       log.debug('Table in state modified, closing the old table.');
-      prevState.valuesTable.close();
+      prevState.valuesTable?.close();
     }
 
     // Checking source change in addition to table change
@@ -152,7 +215,7 @@ class DropdownFilterPanel extends Component {
     }
   }
 
-  componentWillUnmount() {
+  componentWillUnmount(): void {
     const { valuesTable } = this.state;
     const sourceTable = this.getSourceTable();
     this.pending.cancel();
@@ -162,25 +225,43 @@ class DropdownFilterPanel extends Component {
     if (this.cleanup) {
       this.cleanup();
     }
-    if (valuesTable !== null) {
+    if (valuesTable != null) {
       valuesTable.close();
     }
   }
 
-  getCachedValues = memoize((rawValues, { type, name }, formatter) => {
-    if (TableUtils.isDateType(type)) {
+  dropdownFilterRef: RefObject<DropdownFilter> | null;
+
+  panelContainer: RefObject<HTMLDivElement> | null;
+
+  pending: Pending;
+
+  cleanup?: () => void;
+
+  columnFormats?: FormattingRule[];
+
+  getCachedValues = memoize(
+    (
+      rawValues: unknown[],
+      { type, name }: DropdownFilterColumn,
+      formatter: Formatter
+    ) => {
+      if (TableUtils.isDateType(type)) {
+        return rawValues.map(value =>
+          DropdownFilterPanel.DATETIME_FORMATTER.format(value as number)
+        );
+      }
       return rawValues.map(value =>
-        DropdownFilterPanel.DATETIME_FORMATTER.format(value)
+        // Skip formatting for nulls so they don't get converted to ''
+        value != null && type != null
+          ? formatter.getFormattedString(value, type, name)
+          : null
       );
     }
-    return rawValues.map(value =>
-      // Skip formatting for nulls so they don't get converted to ''
-      value != null ? formatter.getFormattedString(value, type, name) : null
-    );
-  });
+  );
 
-  getCoordinateForColumn() {
-    if (!this.panelContainer.current) {
+  getCoordinateForColumn(): [number, number] | null {
+    if (!this.panelContainer?.current) {
       return null;
     }
 
@@ -196,20 +277,20 @@ class DropdownFilterPanel extends Component {
     return [x, y];
   }
 
-  getSettingsErrorMessage() {
+  getSettingsErrorMessage(): string | undefined {
     const { sourceSize } = this.state;
     if (sourceSize > DropdownFilterPanel.MAX_TABLE_SIZE) {
       return `Table too large, must have fewer than ${DropdownFilterPanel.MAX_TABLE_SIZE} options.`;
     }
-    return null;
+    return undefined;
   }
 
-  getPanelErrorMessage() {
+  getPanelErrorMessage(): string | undefined {
     const { error } = this.state;
-    return error ? `${error}` : null;
+    return error ? `${error}` : undefined;
   }
 
-  getCachedPanelLinks = memoize((dashboardLinks, panel) => {
+  getCachedPanelLinks = memoize((dashboardLinks: Link[], panel) => {
     const panelId = LayoutUtils.getIdFromPanel(panel);
     log.debug('getCachedPanelLinks', dashboardLinks, panelId);
     return dashboardLinks.filter(link => link.end?.panelId === panelId);
@@ -237,7 +318,7 @@ class DropdownFilterPanel extends Component {
     return panelTableMap.get(panelId) ?? null;
   });
 
-  getCachedSourceColumn = memoize((table, source) => {
+  getCachedSourceColumn = memoize((table: TableTemplate, source) => {
     log.debug('getCachedSourceColumn', table, source);
     if (table == null || source == null) {
       return null;
@@ -262,12 +343,12 @@ class DropdownFilterPanel extends Component {
     return this.getCachedSourceTable(panelTableMap, source);
   }
 
-  getValuesColumn(valuesTable) {
+  getValuesColumn(valuesTable: TableTemplate): Column | null {
     const source = this.getSource();
     return this.getCachedSourceColumn(valuesTable, source);
   }
 
-  startListeningToSource(sourceTable) {
+  startListeningToSource(sourceTable: TableTemplate): void {
     log.debug('startListeningToSource');
     sourceTable.addEventListener(
       dh.Table.EVENT_FILTERCHANGED,
@@ -291,7 +372,7 @@ class DropdownFilterPanel extends Component {
     );
   }
 
-  stopListeningToSource(sourceTable) {
+  stopListeningToSource(sourceTable: TableTemplate): void {
     log.debug('stopListeningToSource');
     sourceTable.removeEventListener(
       dh.Table.EVENT_FILTERCHANGED,
@@ -315,10 +396,18 @@ class DropdownFilterPanel extends Component {
     );
   }
 
-  handleChange({ column, isValueShown, value }) {
-    const { name = null, type = null } = column ?? {};
+  handleChange({
+    column,
+    isValueShown,
+    value,
+  }: {
+    column: Partial<Column> | null;
+    isValueShown?: boolean | undefined;
+    value?: string | undefined;
+  }) {
+    const { name = undefined, type = undefined } = column ?? {};
     let sendUpdate = true;
-    let timestamp = Date.now();
+    let timestamp: number | null = Date.now();
     this.setState(
       ({ panelState, timestamp: prevTimestamp, wasFlipped, skipUpdate }) => {
         // If the user had a value set, and they flip the card over and flip it back without changing any settings, ignore it
@@ -328,7 +417,8 @@ class DropdownFilterPanel extends Component {
           name === panelState.name &&
           type === panelState.type &&
           value === panelState.value;
-        sendUpdate = !skipUpdate && isValueShown && (!isFlip || !wasFlipped);
+        sendUpdate =
+          (!skipUpdate && isValueShown && (!isFlip || !wasFlipped)) ?? false;
 
         if (!sendUpdate) {
           timestamp = prevTimestamp;
@@ -340,7 +430,7 @@ class DropdownFilterPanel extends Component {
             name,
             type,
             value,
-            timestamp,
+            timestamp: timestamp ?? undefined,
           },
           timestamp,
           wasFlipped: isFlip,
@@ -349,7 +439,7 @@ class DropdownFilterPanel extends Component {
       },
       () => {
         if (sendUpdate) {
-          this.sendUpdate(name, type, value, timestamp);
+          this.sendUpdate(name ?? null, type, value, timestamp);
         }
       }
     );
@@ -375,11 +465,11 @@ class DropdownFilterPanel extends Component {
     this.applySourceSorts();
   }
 
-  handleSourceSizeChange({ detail }) {
+  handleSourceSizeChange({ detail }: { detail: number }) {
     this.setState({ sourceSize: detail });
   }
 
-  handleColumnSelected() {
+  handleColumnSelected(): void {
     log.debug('handleColumnSelected');
     const { glEventHub } = this.props;
     glEventHub.emit(
@@ -389,8 +479,8 @@ class DropdownFilterPanel extends Component {
     );
   }
 
-  handleClearAllFilters() {
-    this.dropdownFilterRef.current.clearFilter();
+  handleClearAllFilters(): void {
+    this.dropdownFilterRef?.current?.clearFilter();
   }
 
   /**
@@ -398,7 +488,15 @@ class DropdownFilterPanel extends Component {
    * @param {Object} state Filter state to set
    * @param {boolean} sendUpdate Emit filters changed event if true
    */
-  setPanelState(state, sendUpdate = false) {
+  setPanelState(
+    state: {
+      name: string;
+      type: string;
+      value: string;
+      isValueShown: boolean;
+    },
+    sendUpdate = false
+  ): void {
     if (this.getSource() == null) {
       log.debug('Ignore state update for unlinked filter', state);
       return;
@@ -408,10 +506,15 @@ class DropdownFilterPanel extends Component {
 
     // Changing the inputFilter state via props doesn't quite work because of the delays on manual input changes
     // Setting the ref state directly triggers the onChange handler and updates the panelState
-    this.dropdownFilterRef.current?.setFilterState(state);
+    this.dropdownFilterRef?.current?.setFilterState(state);
   }
 
-  sendUpdate(name, type, value, timestamp) {
+  sendUpdate(
+    name: string | null,
+    type: string | undefined,
+    value: string | undefined,
+    timestamp: number | null
+  ): void {
     const { glEventHub } = this.props;
     const sourcePanelId = this.getSource()?.panelId;
     const excludePanelIds = sourcePanelId === null ? [] : [sourcePanelId];
@@ -432,14 +535,14 @@ class DropdownFilterPanel extends Component {
     });
   }
 
-  updateValuesTable() {
+  updateValuesTable(): void {
     const source = this.getSource();
     const sourceTable = this.getSourceTable();
     log.debug('updateValuesTable', source, sourceTable);
 
     this.setState({
       values: [],
-      valuesTable: null,
+      valuesTable: undefined,
       error: null,
     });
 
@@ -469,8 +572,8 @@ class DropdownFilterPanel extends Component {
         this.updateViewportListener(valuesTable);
         this.setState({ valuesTable });
       })
-      .catch(error => {
-        if (PromiseUtils.isCancelled(error)) {
+      .catch((error: unknown) => {
+        if (PromiseUtils.isCanceled(error)) {
           return;
         }
         log.error(error);
@@ -491,7 +594,7 @@ class DropdownFilterPanel extends Component {
     this.setViewport(valuesTable);
   }
 
-  applySourceFilters() {
+  applySourceFilters(): void {
     const { valuesTable } = this.state;
     const sourceTable = this.getSourceTable();
     log.debug('applySourceFilters', sourceTable.filter);
@@ -504,7 +607,7 @@ class DropdownFilterPanel extends Component {
     this.setViewport(valuesTable);
   }
 
-  updateViewportListener(valuesTable) {
+  updateViewportListener(valuesTable: TableTemplate): void {
     log.debug('updateViewportListener', valuesTable?.size);
 
     if (this.cleanup) {
@@ -512,7 +615,7 @@ class DropdownFilterPanel extends Component {
     }
 
     if (valuesTable == null) {
-      this.cleanup = null;
+      this.cleanup = undefined;
       return;
     }
 
@@ -524,14 +627,20 @@ class DropdownFilterPanel extends Component {
     this.setViewport(valuesTable);
   }
 
-  setViewport(valuesTable) {
+  setViewport(valuesTable: TableTemplate): void {
     const valuesColumn = this.getValuesColumn(valuesTable);
+    if (!valuesColumn) {
+      log.error('values column is null');
+      return;
+    }
     valuesTable.setViewport(0, DropdownFilterPanel.MAX_TABLE_SIZE - 1, [
       valuesColumn,
     ]);
   }
 
-  updateFormatterSettings(settings) {
+  updateFormatterSettings(settings: {
+    formatter?: FormattingRule[] | undefined;
+  }) {
     const columnFormats = FormatterUtils.getColumnFormats(settings);
     if (!deepEqual(this.columnFormats, columnFormats)) {
       this.columnFormats = columnFormats;
@@ -539,9 +648,13 @@ class DropdownFilterPanel extends Component {
     }
   }
 
-  handleValuesTableUpdate({ detail }) {
+  handleValuesTableUpdate({ detail }: { detail: { rows: Row[] } }) {
     const { rows } = detail;
     const { valuesTable } = this.state;
+    if (!valuesTable) {
+      log.error('valuesTable is null');
+      return;
+    }
     const valuesColumn = this.getValuesColumn(valuesTable);
     if (!valuesColumn) {
       log.error('Values column not found');
@@ -636,36 +749,10 @@ class DropdownFilterPanel extends Component {
   }
 }
 
-DropdownFilterPanel.propTypes = {
-  glContainer: GLPropTypes.Container.isRequired,
-  glEventHub: GLPropTypes.EventHub.isRequired,
-  panelState: PropTypes.shape({
-    name: PropTypes.string,
-    type: PropTypes.string,
-    value: PropTypes.string,
-    isValueShown: PropTypes.bool,
-  }),
-  isLinkerActive: PropTypes.bool.isRequired,
-  columns: PropTypes.arrayOf(PropTypes.shape({})).isRequired,
-  columnSelectionValidator: PropTypes.func,
-  disableLinking: PropTypes.bool.isRequired,
-  settings: PropTypes.shape({
-    columnFormats: PropTypes.arrayOf(PropTypes.shape({})),
-  }).isRequired,
-  // eslint-disable-next-line react/no-unused-prop-types
-  panelTableMap: PropTypes.instanceOf(Map).isRequired,
-  // eslint-disable-next-line react/no-unused-prop-types
-  dashboardLinks: UIPropTypes.Links.isRequired,
-};
-
-DropdownFilterPanel.defaultProps = {
-  columnSelectionValidator: null,
-  panelState: null,
-};
-
-DropdownFilterPanel.
-
-const mapStateToProps = (state, ownProps) => {
+const mapStateToProps = (
+  state: RootState,
+  ownProps: { localDashboardId: string }
+) => {
   const { localDashboardId } = ownProps;
   const panelId = LayoutUtils.getIdFromPanel({ props: ownProps });
   const panelTableMap = getTableMapForDashboard(state, localDashboardId);

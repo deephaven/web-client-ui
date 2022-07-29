@@ -25,9 +25,13 @@ import { LinkPoint } from '../../linker/LinkerUtils';
 const log = Log.module('DropdownFilter');
 const UPDATE_DEBOUNCE = 150;
 
+export interface DropdownFilterColumn {
+  name: string;
+  type?: string;
+}
 interface DropdownFilterProps {
-  column: Column;
-  columns: Column[];
+  column: DropdownFilterColumn;
+  columns: DropdownFilterColumn[];
   onSourceMouseEnter: () => void;
   onSourceMouseLeave: () => void;
   disableLinking: boolean;
@@ -37,7 +41,7 @@ interface DropdownFilterProps {
   settingsError: string;
   source: LinkPoint;
   value: string;
-  values: string[];
+  values: (string | null)[];
   onChange: (change: {
     column: Partial<Column> | null;
     isValueShown?: boolean;
@@ -47,11 +51,11 @@ interface DropdownFilterProps {
 }
 
 interface DropdownFilterState {
-  column: Pick<Column, 'name' | 'type'> | null;
-  selectedColumn: Pick<Column, 'name' | 'type'> | null;
+  column: DropdownFilterColumn | null;
+  selectedColumn: DropdownFilterColumn | null;
   disableCancel: boolean;
   isValueShown: boolean;
-  value: string;
+  value: string | null;
 }
 
 class DropdownFilter extends Component<
@@ -146,18 +150,21 @@ class DropdownFilter extends Component<
 
   dropdownRef: RefObject<HTMLSelectElement>;
 
-  getCompatibleColumns = memoize((source: LinkPoint, columns: Column[]) =>
-    source
-      ? columns.filter(({ type }) =>
-          TableUtils.isCompatibleType(type, source.columnType)
-        )
-      : []
+  getCompatibleColumns = memoize(
+    (source: LinkPoint, columns: DropdownFilterColumn[]) =>
+      source
+        ? columns.filter(
+            ({ type }) =>
+              type !== undefined &&
+              TableUtils.isCompatibleType(type, source.columnType)
+          )
+        : []
   );
 
   getColumnOptions = memoize(
     (
-      columns: Pick<Column, 'name' | 'type'>[],
-      selectedColumn: Pick<Column, 'name' | 'type'> | null
+      columns: DropdownFilterColumn[],
+      selectedColumn: DropdownFilterColumn | null
     ): [JSX.Element[], number] => {
       let selectedIndex = -1;
       const options = [];
@@ -184,11 +191,11 @@ class DropdownFilter extends Component<
     }
   );
 
-  getSelectedOptionIndex = memoize((values: string[], value: string) =>
-    values.indexOf(value)
+  getSelectedOptionIndex = memoize(
+    (values: (string | null)[], value: string | null) => values.indexOf(value)
   );
 
-  getValueOptions = memoize((values: string[]) => [
+  getValueOptions = memoize((values: (string | null)[]) => [
     <option value="-1" key="-1">
       {DropdownFilter.PLACEHOLDER}
     </option>,
@@ -249,7 +256,7 @@ class DropdownFilter extends Component<
     const { value: valueIndex } = event.target;
     const index = parseInt(valueIndex, 10);
     // Default empty string value for 'clear filter'
-    let value = '';
+    let value: string | null = '';
     const { values } = this.props;
     if (index === -1) {
       log.debug2('Selected default item');
@@ -352,7 +359,7 @@ class DropdownFilter extends Component<
   sendUpdate = debounce(() => {
     const { onChange } = this.props;
     const { column, value, isValueShown } = this.state;
-    onChange({ column, isValueShown, value });
+    onChange({ column, isValueShown, value: value ?? undefined });
   }, UPDATE_DEBOUNCE);
 
   render(): ReactElement {

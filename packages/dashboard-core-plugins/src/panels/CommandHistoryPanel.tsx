@@ -17,14 +17,13 @@ import { ConsoleEvent, NotebookEvent } from '../events';
 import './CommandHistoryPanel.scss';
 import Panel from './Panel';
 import { getDashboardSessionWrapper } from '../redux';
-import { PanelState } from './PandasPanel';
 
 const log = Log.module('CommandHistoryPanel');
 
 interface CommandHistoryPanelProps {
   glContainer: Container;
   glEventHub: EventEmitter;
-  panelState: PanelState;
+  panelState: Record<string, never>;
   session: IdeSession;
   sessionId: string;
   language: string;
@@ -32,7 +31,7 @@ interface CommandHistoryPanelProps {
 }
 
 interface CommandHistoryPanelState {
-  panelState: PanelState;
+  panelState: Record<string, never>;
   session?: IdeSession;
   sessionId?: string;
   language?: string;

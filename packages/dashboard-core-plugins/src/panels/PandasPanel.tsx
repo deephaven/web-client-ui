@@ -5,7 +5,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { dhRefresh } from '@deephaven/icons';
 import { Tooltip } from '@deephaven/components';
 import { CommandHistoryTable } from '@deephaven/console';
-import IrisGridPanel from './IrisGridPanel';
+import { IrisGridPanel } from './IrisGridPanel';
 import './PandasPanel.scss';
 
 export interface PanelState {

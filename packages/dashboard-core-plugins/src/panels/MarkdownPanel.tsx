@@ -22,9 +22,12 @@ import MarkdownContainer from '../controls/markdown/MarkdownContainer';
 import MarkdownStartPage from '../controls/markdown/MarkdownStartPage';
 import MarkdownEditor from '../controls/markdown/MarkdownEditor';
 import './MarkdownPanel.scss';
-import { PanelState } from './PandasPanel';
 
 const log = Log.module('MarkdownPanel');
+
+interface PanelState {
+  content?: string;
+}
 
 interface MarkdownPanelProps {
   glContainer: Container;

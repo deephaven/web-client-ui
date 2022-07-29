@@ -13,6 +13,7 @@ import {
 import {
   getOpenedPanelMapForDashboard,
   LayoutUtils,
+  PanelComponent,
 } from '@deephaven/dashboard';
 import { IrisGridUtils, InputFilter, ColumnName } from '@deephaven/iris-grid';
 import dh, {
@@ -63,7 +64,7 @@ export type FilterMap = Map<string, string>;
 
 export type LinkedColumnMap = Map<string, Column>;
 
-interface Settings {}
+type Settings = Record<string, unknown>;
 interface PanelState {
   filterValueMap: [string, string][];
   settings: Settings;
@@ -103,7 +104,7 @@ interface ChartPanelProps {
   localDashboardId: string;
   isLinkerActive: boolean;
   source: TableTemplate;
-  sourcePanel: ChartPanel;
+  sourcePanel?: PanelComponent;
   columnSelectionValidator: (
     value: unknown,
     column: { name: string; type: string } | null
@@ -602,7 +603,17 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
       const { panelState: sourcePanelState } = sourcePanel.state;
       if (sourcePanelState) {
         tableSettings = IrisGridUtils.extractTableSettings(
-          sourcePanelState,
+          sourcePanelState as {
+            irisGridState: {
+              advancedFilters: unknown;
+              quickFilters: unknown;
+              sorts: unknown;
+            };
+            irisGridPanelState: {
+              partitionColumn: string;
+              partition: unknown;
+            };
+          },
           inputFilters
         );
       }
@@ -1135,7 +1146,7 @@ const mapStateToProps = (
     inputFilters: getInputFiltersForDashboard(state, localDashboardId),
     links: getLinksForDashboard(state, localDashboardId),
     source: sourcePanelId ? panelTableMap.get(sourcePanelId) : '',
-    sourcePanel: openedPanelMap.get(sourcePanelId),
+    sourcePanel: sourcePanelId ? openedPanelMap.get(sourcePanelId) : undefined,
     settings: getSettings(state),
   };
 };

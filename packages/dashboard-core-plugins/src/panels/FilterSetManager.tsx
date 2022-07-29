@@ -34,7 +34,7 @@ const log = Log.module('FilterSetManager');
 export interface FilterSetPanel {
   panelId?: string | string[] | null;
   type: string;
-  id?: string | string[] | null;
+  id?: string;
   state: unknown;
 }
 
