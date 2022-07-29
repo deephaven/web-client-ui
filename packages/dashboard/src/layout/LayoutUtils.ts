@@ -22,14 +22,18 @@ const log = Log.module('LayoutUtils');
 
 type LayoutConfig = { id?: string; component?: string };
 
-export type StackItemConfig = ReactComponentConfig & {
+export type StackItemConfig = ItemConfig & {
   activeItemIndex?: number;
 };
 
 export function isReactComponentConfig(
   config: ItemConfigType
 ): config is ReactComponentConfig {
-  return (config as ReactComponentConfig).component !== undefined;
+  const reactConfig = config as ReactComponentConfig;
+  return (
+    reactConfig.type === 'react-component' &&
+    reactConfig.component !== undefined
+  );
 }
 
 function isComponentConfig(config: ItemConfigType): config is ComponentConfig {
@@ -48,10 +52,8 @@ function assertReactComponentConfig(
   }
 }
 
-function isStackItemConfig(
-  config: ReactComponentConfig
-): config is StackItemConfig {
-  return (config as StackItemConfig).activeItemIndex !== undefined;
+function isStackItemConfig(config: ItemConfigType): config is StackItemConfig {
+  return config.type === 'stack';
 }
 class LayoutUtils {
   static DEFAULT_FOCUS_SELECTOR = 'input, select, textarea, button';
@@ -333,20 +335,20 @@ class LayoutUtils {
   static dropLayoutMinorChange(config: DashboardLayoutConfig): void {
     for (let i = 0; i < config.length; i += 1) {
       const itemConfig = config[i];
-
-      if (isReactComponentConfig(itemConfig)) {
-        const { component, content } = itemConfig;
-        if (content) {
-          if (isStackItemConfig(itemConfig)) {
-            delete itemConfig.activeItemIndex;
-          }
-          LayoutUtils.dropLayoutMinorChange(content);
-        } else if (component === 'IrisGridPanel') {
-          if (itemConfig.props.panelState) {
-            delete itemConfig.id;
-            itemConfig.props.panelState.irisGridState.sorts = [];
-            itemConfig.props.panelState.irisGridState.quickFilters = [];
-          }
+      const { content } = itemConfig;
+      if (content !== undefined) {
+        if (isStackItemConfig(itemConfig)) {
+          delete itemConfig.activeItemIndex;
+        }
+        LayoutUtils.dropLayoutMinorChange(content);
+      } else if (
+        isReactComponentConfig(itemConfig) &&
+        itemConfig.component === 'IrisGridPanel'
+      ) {
+        if (itemConfig.props.panelState) {
+          delete itemConfig.id;
+          itemConfig.props.panelState.irisGridState.sorts = [];
+          itemConfig.props.panelState.irisGridState.quickFilters = [];
         }
       }
     }
@@ -397,34 +399,32 @@ class LayoutUtils {
 
     for (let i = 0; i < config.length; i += 1) {
       const itemConfig = config[i];
-      assertReactComponentConfig(itemConfig);
-      const { component, content, props = {}, type } = itemConfig;
-      if (type === 'react-component') {
+      if (isReactComponentConfig(itemConfig)) {
+        const { component, props = {} } = itemConfig;
         hydratedConfig.push({
           ...itemConfig,
           id: itemConfig?.id ?? shortid(),
           props: hydrateComponent(component, props),
         });
-      } else if (content) {
+      } else if (itemConfig.content !== undefined) {
         const contentConfig = LayoutUtils.hydrateLayoutConfig(
-          content,
+          itemConfig.content,
           hydrateComponent
         );
-        const reactConfig: ReactComponentConfig = itemConfig;
         if (
-          isStackItemConfig(reactConfig) &&
-          reactConfig.activeItemIndex != null &&
-          reactConfig.activeItemIndex >= contentConfig.length
+          isStackItemConfig(itemConfig) &&
+          itemConfig.activeItemIndex != null &&
+          itemConfig.activeItemIndex >= contentConfig.length
         ) {
           log.warn(
             'Fixing bad activeItemIndex!',
-            reactConfig.activeItemIndex,
-            reactConfig
+            itemConfig.activeItemIndex,
+            itemConfig
           );
-          reactConfig.activeItemIndex = 0;
+          itemConfig.activeItemIndex = 0;
         }
         hydratedConfig.push({
-          ...reactConfig,
+          ...itemConfig,
           content: contentConfig,
         });
       } else {
@@ -778,7 +778,7 @@ class LayoutUtils {
     const config = LayoutUtils.getComponentConfigFromContainer(glContainer);
     if (config) {
       assertReactComponentConfig(config);
-      return config?.component ?? null;
+      return config.component;
     }
     return null;
   }
