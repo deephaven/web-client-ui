@@ -1,8 +1,14 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Editor } from '@deephaven/console';
 import * as monaco from 'monaco-editor';
-import { Button, Modal, ModalBody, ModalHeader } from '@deephaven/components';
-import { vsJson, vsListOrdered } from '@deephaven/icons';
+import {
+  Button,
+  ContextActionUtils,
+  Modal,
+  ModalBody,
+  ModalHeader,
+} from '@deephaven/components';
+import { vsCopy, vsJson, vsListOrdered, vsPassFilled } from '@deephaven/icons';
 import './IrisGridCellOverflowModal.scss';
 
 interface IrisGridCellOverflowModalProps {
@@ -22,6 +28,9 @@ export default function IrisGridCellOverflowModal({
   const [isFormatted, setIsFormatted] = useState(false);
   const [canFormat, setCanFormat] = useState(false);
   const editorRef = useRef<monaco.editor.IStandaloneCodeEditor>();
+
+  const copiedTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [copied, setCopied] = useState(false);
 
   // Update format button on open
   useEffect(
@@ -62,6 +71,24 @@ export default function IrisGridCellOverflowModal({
     },
     [showLineNumbers]
   );
+
+  useEffect(() => {
+    if (copiedTimeout.current) clearTimeout(copiedTimeout.current);
+    copiedTimeout.current = setTimeout(() => {
+      setCopied(false);
+    }, 1000);
+    return () => {
+      if (copiedTimeout.current) clearTimeout(copiedTimeout.current);
+    };
+  }, [copied]);
+
+  function copyContents() {
+    ContextActionUtils.copyToClipboard(
+      editorRef.current?.getValue() ?? text
+    ).then(() => {
+      setCopied(true);
+    });
+  }
 
   function toggleLineNumbers() {
     setShowLineNumbers(!showLineNumbers);
@@ -126,6 +153,12 @@ export default function IrisGridCellOverflowModal({
     >
       <ModalHeader toggle={onClose}>
         <h5 className="overflow-modal-title">Cell Contents</h5>
+        <Button
+          kind="inline"
+          icon={copied ? vsPassFilled : vsCopy}
+          tooltip={copied ? 'Copied contents' : 'Copy contents'}
+          onClick={copyContents}
+        />
         <Button
           kind="inline"
           active={showLineNumbers}
