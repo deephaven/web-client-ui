@@ -137,8 +137,6 @@ class GridColumnMoveMouseHandler extends GridMouseHandler {
 
   private draggingColumn: DraggingColumn | null = null;
 
-  private updateDraggingColumn(column: DraggingColumn, grid: Grid): void {}
-
   private setScrollInterval(grid: Grid, direction: 'left' | 'right'): void {
     if (
       this.scrollingInterval != null &&
