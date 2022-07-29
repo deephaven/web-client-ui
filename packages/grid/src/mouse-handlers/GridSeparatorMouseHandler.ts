@@ -1,11 +1,12 @@
-/* eslint class-methods-use-this: "off" */
-/* eslint no-unused-vars: "off" */
-import { Grid, GridMetricCalculator } from '..';
+import type Grid from '../Grid';
+import type { GridMetricCalculator } from '../GridMetricCalculator';
+import type GridModel from '../GridModel';
 import { EventHandlerResult } from '../EventHandlerResult';
 import { getOrThrow } from '../GridMetricCalculator';
 import GridMetrics, { ModelIndex, VisibleIndex } from '../GridMetrics';
 import GridMouseHandler from '../GridMouseHandler';
-import { GridPoint } from '../GridUtils';
+import type { GridTheme } from '../GridTheme';
+import type { GridPoint } from '../GridUtils';
 
 // The different properties that can be used by implementing classes, whether for rows or columns
 export type PointProperty = 'x' | 'y';
@@ -19,6 +20,10 @@ export type CalculatedSizeProperty =
 export type ModelIndexesProperty = 'modelRows' | 'modelColumns';
 export type FirstIndexProperty = 'firstRow' | 'firstColumn';
 export type TreePaddingProperty = 'treePaddingX' | 'treePaddingY';
+export interface GridSeparator {
+  index: VisibleIndex;
+  depth: number;
+}
 
 /**
  * Abstract class that should be extended for column/row behaviour
@@ -83,23 +88,25 @@ abstract class GridSeparatorMouseHandler extends GridMouseHandler {
     modelIndex: ModelIndex
   ): void;
 
-  abstract updateSeparator(
-    grid: Grid,
-    separatorIndex: VisibleIndex | null
-  ): void;
+  abstract updateSeparator(grid: Grid, separator: GridSeparator | null): void;
 
-  abstract getSeparatorIndex(
+  abstract getSeparator(
     gridPoint: GridPoint,
-    grid: Grid,
-    checkAllowResize?: boolean
-  ): VisibleIndex | null;
+    metrics: GridMetrics,
+    model: GridModel,
+    theme: GridTheme
+  ): GridSeparator | null;
   // End of overrides
 
   onDown(gridPoint: GridPoint, grid: Grid): EventHandlerResult {
-    const separatorIndex = this.getSeparatorIndex(gridPoint, grid);
-    if (separatorIndex != null) {
-      const { metrics } = grid;
-      if (!metrics) throw new Error('metrics not set');
+    const { metrics } = grid;
+    const { model } = grid.props;
+    const theme = grid.getTheme();
+    if (!metrics) throw new Error('metrics not set');
+
+    const separator = this.getSeparator(gridPoint, metrics, model, theme);
+    if (separator != null) {
+      const separatorIndex = separator.index;
 
       this.dragOffset = 0;
       this.draggingIndex = separatorIndex;
@@ -111,7 +118,7 @@ abstract class GridSeparatorMouseHandler extends GridMouseHandler {
 
       this.updateCursor(metrics, separatorIndex);
 
-      this.updateSeparator(grid, separatorIndex);
+      this.updateSeparator(grid, separator);
 
       return true;
     }
@@ -119,12 +126,15 @@ abstract class GridSeparatorMouseHandler extends GridMouseHandler {
   }
 
   onMove(gridPoint: GridPoint, grid: Grid): EventHandlerResult {
-    const separatorIndex = this.getSeparatorIndex(gridPoint, grid);
-    if (separatorIndex != null) {
-      const { metrics } = grid;
-      if (!metrics) throw new Error('metrics not set');
+    const { metrics } = grid;
+    const { model } = grid.props;
+    const theme = grid.getTheme();
+    if (!metrics) throw new Error('metrics not set');
 
-      this.updateCursor(metrics, separatorIndex);
+    const separator = this.getSeparator(gridPoint, metrics, model, theme);
+
+    if (separator != null) {
+      this.updateCursor(metrics, separator.index);
       return true;
     }
     return false;
@@ -252,14 +262,16 @@ abstract class GridSeparatorMouseHandler extends GridMouseHandler {
   }
 
   onDoubleClick(gridPoint: GridPoint, grid: Grid): EventHandlerResult {
-    const separatorIndex = this.getSeparatorIndex(gridPoint, grid);
+    const { metrics, metricCalculator } = grid;
+    const { model } = grid.props;
+    const theme = grid.getTheme();
+    if (!metrics) throw new Error('metrics not set');
 
-    if (separatorIndex != null) {
-      const { metricCalculator, metrics } = grid;
-      if (!metrics) throw new Error('metrics not set');
+    const separator = this.getSeparator(gridPoint, metrics, model, theme);
 
+    if (separator != null) {
       const modelIndexes = metrics[this.modelIndexesProperty];
-      const modelIndex = getOrThrow(modelIndexes, separatorIndex);
+      const modelIndex = getOrThrow(modelIndexes, separator.index);
 
       this.resetSize(metricCalculator, modelIndex);
 

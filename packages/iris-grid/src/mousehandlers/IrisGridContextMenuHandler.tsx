@@ -348,7 +348,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
       group: IrisGridContextMenuHandler.GROUP_COPY,
       action: () => {
         ContextActionUtils.copyToClipboard(
-          model.textForColumnHeader(modelColumn)
+          model.textForColumnHeader(modelColumn) ?? ''
         ).catch(e => log.error('Unable to copy header', e));
       },
     });
@@ -585,7 +585,12 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
     event: React.MouseEvent<Element, MouseEvent>
   ): EventHandlerResult {
     const { irisGrid } = this;
-    const { y, column: columnIndex, row: rowIndex } = gridPoint;
+    const {
+      y,
+      column: columnIndex,
+      row: rowIndex,
+      columnHeaderDepth,
+    } = gridPoint;
     const modelColumn = irisGrid.getModelColumn(columnIndex);
     const modelRow = irisGrid.getModelRow(rowIndex);
 
@@ -602,7 +607,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
 
     assertNotNull(metrics);
 
-    const { columnHeaderHeight, gridY } = metrics;
+    const { columnHeaderHeight, gridY, columnHeaderMaxDepth } = metrics;
 
     const actions = [] as ContextAction[];
 
@@ -646,7 +651,12 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
       });
     }
 
-    if (isFilterBarShown ? y <= gridY : y <= columnHeaderHeight) {
+    if (
+      isFilterBarShown
+        ? y <= gridY
+        : y <= columnHeaderHeight * columnHeaderMaxDepth &&
+          columnHeaderDepth === 0
+    ) {
       // grid header context menu options
       if (modelColumn != null) {
         actions.push(...this.getHeaderActions(modelColumn, gridPoint));

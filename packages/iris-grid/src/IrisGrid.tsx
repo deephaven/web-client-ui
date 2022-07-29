@@ -41,6 +41,7 @@ import {
   VisibleIndex,
   GridState,
   isEditableGridModel,
+  BoundedAxisRange,
 } from '@deephaven/grid';
 import {
   dhEye,
@@ -1221,7 +1222,8 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       advancedFilters,
       sorts,
       reverseType,
-      rollupConfig
+      rollupConfig,
+      isMenuShown
     ) => ({
       hoverSelectColumn,
       isFilterBarShown,
@@ -1232,6 +1234,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       sorts,
       reverseType,
       rollupConfig,
+      isMenuShown,
     }),
     { max: 1 }
   );
@@ -1663,7 +1666,8 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       columns: Column[],
       movedColumns: MoveOperation[],
       floatingLeftColumnCount: number,
-      floatingRightColumnCount: number
+      floatingRightColumnCount: number,
+      draggingRange?: BoundedAxisRange
     ) => {
       const floatingColumns: ColumnName[] = [];
 
@@ -1678,6 +1682,14 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
           columns[GridUtils.getModelIndex(columns.length - 1 - i, movedColumns)]
             .name
         );
+      }
+
+      if (draggingRange) {
+        for (let i = draggingRange[0]; i <= draggingRange[1]; i += 1) {
+          floatingColumns.push(
+            columns[GridUtils.getModelIndex(i, movedColumns)].name
+          );
+        }
       }
 
       const columnSet = new Set([...alwaysFetchColumns, ...floatingColumns]);
@@ -3172,6 +3184,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       visibleColumnXs,
       visibleColumnWidths,
       width,
+      columnHeaderMaxDepth,
     } = metrics;
     const columnX = visibleColumnXs.get(shownColumnTooltip);
     const columnWidth = visibleColumnWidths.get(shownColumnTooltip);
@@ -3184,9 +3197,11 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       clamp(columnX + columnWidth / 2, popperMargin, width - popperMargin);
 
     return {
-      top: gridRect.top,
-      left,
-      bottom: gridRect.top + columnHeaderHeight,
+      top: gridRect.top + (columnHeaderMaxDepth - 1) * columnHeaderHeight,
+      left:
+        gridRect.left +
+        clamp(columnX + columnWidth / 2, popperMargin, width - popperMargin),
+      bottom: gridRect.top + columnHeaderMaxDepth * columnHeaderHeight,
       right:
         gridRect.left +
         clamp(columnX + columnWidth / 2, popperMargin, width - popperMargin) +
@@ -3278,6 +3293,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   ): ReactNode {
     const {
       columnHeaderHeight,
+      columnHeaderMaxDepth,
       visibleColumnXs,
       visibleColumnWidths,
       width,
@@ -3308,7 +3324,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
     const wrapperStyle: CSSProperties = {
       position: 'absolute',
-      top: 0,
+      top: (columnHeaderMaxDepth - 1) * columnHeaderHeight,
       left: boundedLeft,
       width: boundedWidth,
       height: columnHeaderHeight,
@@ -3478,7 +3494,8 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       advancedFilters,
       sorts,
       reverseType,
-      rollupConfig
+      rollupConfig,
+      isMenuShown
     );
     const top = metrics ? metrics.top : 0;
     const bottom = metrics ? metrics.bottomViewport : 0;
@@ -3998,7 +4015,8 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
                   model.columns,
                   movedColumns,
                   model.floatingLeftColumnCount,
-                  model.floatingRightColumnCount
+                  model.floatingRightColumnCount,
+                  this.grid?.state.draggingColumn?.range
                 )}
                 formatColumns={this.getCachedPreviewFormatColumns(
                   this.getCachedModelColumns(model, customColumns),
@@ -4026,20 +4044,18 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
                 frozenColumns={frozenColumns}
               />
             )}
-            <div
-              className={classNames('grid-settings-button', {
-                'is-menu-shown': isMenuShown,
-              })}
-            >
-              <button
-                type="button"
-                data-testid={`btn-iris-grid-settings-button-${name}`}
-                className="btn btn-link btn-link-icon"
-                onClick={this.handleMenu}
-              >
-                <FontAwesomeIcon icon={vsMenu} transform="up-1" />
-              </button>
-            </div>
+            {!isMenuShown && (
+              <div className="grid-settings-button">
+                <button
+                  type="button"
+                  data-testid={`btn-iris-grid-settings-button-${name}`}
+                  className="btn btn-link btn-link-icon"
+                  onClick={this.handleMenu}
+                >
+                  <FontAwesomeIcon icon={vsMenu} transform="up-1" />
+                </button>
+              </div>
+            )}
             {focusField}
             {loadingElement}
             {filterBar}

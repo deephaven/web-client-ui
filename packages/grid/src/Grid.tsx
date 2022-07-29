@@ -27,6 +27,7 @@ import {
   GridScrollBarCornerMouseHandler,
   GridVerticalScrollBarMouseHandler,
   EditMouseHandler,
+  GridSeparator,
 } from './mouse-handlers';
 import './Grid.scss';
 import KeyHandler, { GridKeyboardEvent } from './KeyHandler';
@@ -53,6 +54,7 @@ import {
 import { EventHandlerResultOptions } from './EventHandlerResult';
 import { assertIsDefined } from './errors';
 import ThemeContext from './ThemeContext';
+import { DraggingColumn } from './mouse-handlers/GridColumnMoveMouseHandler';
 
 type LegacyCanvasRenderingContext2D = CanvasRenderingContext2D & {
   webkitBackingStorePixelRatio?: number;
@@ -126,16 +128,16 @@ export type GridState = {
   leftOffset: number; // Should be less than the width of the column
 
   // current column/row that user is dragging
-  draggingColumn: VisibleIndex | null;
+  draggingColumn: DraggingColumn | null;
   draggingRow: VisibleIndex | null;
 
-  // Offset when dragging a column/row
-  draggingColumnOffset: number | null;
+  // Offset when dragging a row
   draggingRowOffset: number | null;
 
   // When drawing header separators for resizing
-  draggingColumnSeparator: VisibleIndex | null;
-  draggingRowSeparator: VisibleIndex | null;
+  // Keeps hover style when mouse is in buffer before resize starts
+  draggingColumnSeparator: GridSeparator | null;
+  draggingRowSeparator: GridSeparator | null;
 
   // Dragging a scroll bar status
   isDraggingHorizontalScrollBar: boolean;
@@ -371,8 +373,7 @@ class Grid extends PureComponent<GridProps, GridState> {
       draggingColumn: null,
       draggingRow: null,
 
-      // Offset when dragging a column/row
-      draggingColumnOffset: null,
+      // Offset when dragging a row
       draggingRowOffset: null,
 
       // When drawing header separators for resizing
@@ -611,6 +612,7 @@ class Grid extends PureComponent<GridProps, GridState> {
       movedRows,
       isDraggingHorizontalScrollBar,
       isDraggingVerticalScrollBar,
+      draggingColumn,
     } = state;
 
     return {
@@ -627,6 +629,7 @@ class Grid extends PureComponent<GridProps, GridState> {
       movedRows,
       isDraggingHorizontalScrollBar,
       isDraggingVerticalScrollBar,
+      draggingColumn,
       ...stateOverride,
     };
   }
@@ -1525,7 +1528,6 @@ class Grid extends PureComponent<GridProps, GridState> {
       cursorColumn,
       cursorRow,
       draggingColumn,
-      draggingColumnOffset,
       draggingColumnSeparator,
       draggingRow,
       draggingRowOffset,
@@ -1557,7 +1559,6 @@ class Grid extends PureComponent<GridProps, GridState> {
       mouseY,
       selectedRanges,
       draggingColumn,
-      draggingColumnOffset,
       draggingColumnSeparator,
       draggingRow,
       draggingRowOffset,

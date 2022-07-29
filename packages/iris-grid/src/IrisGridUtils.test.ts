@@ -1,6 +1,6 @@
-import { GridUtils, GridRange } from '@deephaven/grid';
-import dh, { Column, Table } from '@deephaven/jsapi-shim';
-import { AdvancedFilter } from '.';
+import { GridUtils, GridRange, MoveOperation } from '@deephaven/grid';
+import dh, { Column, Table, Sort } from '@deephaven/jsapi-shim';
+import type { AdvancedFilter } from './CommonTypes';
 import IrisGridTestUtils from './IrisGridTestUtils';
 import IrisGridUtils from './IrisGridUtils';
 
@@ -10,7 +10,7 @@ function makeFilter() {
 }
 
 function makeColumns(count = 30) {
-  const columns = [];
+  const columns: Column[] = [];
 
   for (let i = 0; i < count; i += 1) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -21,7 +21,10 @@ function makeColumns(count = 30) {
   return columns;
 }
 
-function makeTable({ columns = makeColumns(), sort = [] } = {}): Table {
+function makeTable({
+  columns = makeColumns(),
+  sort = [] as Sort[],
+} = {}): Table {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return new (dh as any).Table({ columns, sort });
 }
@@ -234,18 +237,18 @@ describe('pendingDataMap hydration/dehydration', () => {
       dehydratedMap
     );
     expect(hydratedMap.size).toBe(2);
-    expect(hydratedMap.get(1).data.size).toBe(2);
-    expect(hydratedMap.get(1).data.get(3)).toEqual('Foo');
-    expect(hydratedMap.get(1).data.get(4)).toEqual('Bar');
-    expect(hydratedMap.get(10).data.size).toBe(1);
-    expect(hydratedMap.get(10).data.get(7)).toEqual('Baz');
+    expect(hydratedMap.get(1)?.data.size).toBe(2);
+    expect(hydratedMap.get(1)?.data.get(3)).toEqual('Foo');
+    expect(hydratedMap.get(1)?.data.get(4)).toEqual('Bar');
+    expect(hydratedMap.get(10)?.data.size).toBe(1);
+    expect(hydratedMap.get(10)?.data.get(7)).toEqual('Baz');
   });
 });
 
 describe('remove columns in moved columns', () => {
   it('delete the move when the move origin column is removed', () => {
     const table = makeTable();
-    let movedColumns = [];
+    let movedColumns: MoveOperation[] = [];
     movedColumns = GridUtils.moveItem(3, 0, movedColumns); // move column '3' to '0'
     const newMovedColumns = IrisGridUtils.removeColumnFromMovedColumns(
       table.columns,
@@ -257,19 +260,19 @@ describe('remove columns in moved columns', () => {
 
   it('alter move origin when a column is removed', () => {
     const table = makeTable();
-    let movedColumns = [];
+    let movedColumns: MoveOperation[] = [];
     movedColumns = GridUtils.moveItem(4, 1, movedColumns); // move column '4' to '1'
     const newMovedColumns = IrisGridUtils.removeColumnFromMovedColumns(
       table.columns,
       movedColumns,
       ['3']
     );
-    expect(newMovedColumns).toEqual(GridUtils.moveItem(3, 1)); // new move should be {from: 3, to: 1}
+    expect(newMovedColumns).toEqual(GridUtils.moveItem(3, 1, [])); // new move should be {from: 3, to: 1}
   });
 
   it('delete the move when the move origin column is removed & alter move origin when a column is removed', () => {
     const table = makeTable();
-    let movedColumns = [];
+    let movedColumns: MoveOperation[] = [];
     movedColumns = GridUtils.moveItem(3, 0, movedColumns); // move column '3' to '0', columns should be [3,0,1,2,4,5,...] after the move;
     movedColumns = GridUtils.moveItem(4, 1, movedColumns); // move column '4' to '1', columns should be [3,4,1,2,5,...] after the move;
     const newMovedColumns = IrisGridUtils.removeColumnFromMovedColumns(
@@ -281,12 +284,12 @@ describe('remove columns in moved columns', () => {
     // columns after move should be [4,0,1,2,5,...]; after columns '3' is removed;
     // move {from: 3, to: 0} is deleted because it is origin column is removed,
     // move {from: 4, to: 1 } is changed into {from: 3, to: 0};
-    expect(newMovedColumns).toEqual(GridUtils.moveItem(3, 0));
+    expect(newMovedColumns).toEqual(GridUtils.moveItem(3, 0, []));
   });
 
   it('delete the move when the origin and destination column is the same after the removal of a column', () => {
     const table = makeTable();
-    let movedColumns = [];
+    let movedColumns: MoveOperation[] = [];
     movedColumns = GridUtils.moveItem(3, 4, movedColumns); // move a column from 3 to 4
     const newMovedColumns = IrisGridUtils.removeColumnFromMovedColumns(
       table.columns,
@@ -299,7 +302,7 @@ describe('remove columns in moved columns', () => {
 
   it('remove multiple columns - 1', () => {
     const table = makeTable();
-    let movedColumns = [];
+    let movedColumns: MoveOperation[] = [];
     movedColumns = GridUtils.moveItem(4, 1, movedColumns); // move column '4' to '1', columns should be [0,4,1,2,3,5,...] after the move;
     const newMovedColumns = IrisGridUtils.removeColumnFromMovedColumns(
       table.columns,
@@ -309,12 +312,12 @@ describe('remove columns in moved columns', () => {
     // columns' original state should be [0,1,4,5,...] after '2' & '3' are removed;
     // columns after move should be [0,1,4,5,...]; after columns '2' & '3' are removed;
     // move {from: 4, to: 1 } is changed into {from: 2, to: 1};
-    expect(newMovedColumns).toEqual(GridUtils.moveItem(2, 1));
+    expect(newMovedColumns).toEqual(GridUtils.moveItem(2, 1, []));
   });
 
   it('remove multiple columns - 2', () => {
     const table = makeTable();
-    let movedColumns = [];
+    let movedColumns: MoveOperation[] = [];
     movedColumns = GridUtils.moveItem(1, 4, movedColumns); // move column '1' to '4', columns should be [0,2,3,1,4,5,...] after the move;
     const newMovedColumns = IrisGridUtils.removeColumnFromMovedColumns(
       table.columns,
@@ -324,12 +327,12 @@ describe('remove columns in moved columns', () => {
     // columns' original state should be [0,1,4,5,...] after '2' & '3' are removed;
     // columns after move should be [0,4,1,5,...]; after columns '2' & '3' are removed;
     // move {from: 1, to: 4 } is changed into {from: 1, to: 2};
-    expect(newMovedColumns).toEqual(GridUtils.moveItem(1, 2));
+    expect(newMovedColumns).toEqual(GridUtils.moveItem(1, 2, []));
   });
 
   it('remove multiple columns - 3', () => {
     const table = makeTable();
-    let movedColumns = [];
+    let movedColumns: MoveOperation[] = [];
     movedColumns = GridUtils.moveItem(4, 1, movedColumns); // move column '4' to '1', columns should be [0,4,1,2,3,5,6,...] after the move;
     movedColumns = GridUtils.moveItem(5, 6, movedColumns); // move column '3' to '0', columns should be [0,4,1,2,3,6,5...];
     const newMovedColumns = IrisGridUtils.removeColumnFromMovedColumns(
@@ -341,7 +344,7 @@ describe('remove columns in moved columns', () => {
     // columns after moves should be [0,4,1,6,5...]; after columns '2' & '3' are removed;
     // move {from: 4, to: 1 } is changed into {from: 2, to: 1};
     // move {from: 5, to: 6 } is changed into {from: 3, to: 4};
-    let expectMovedColumns = GridUtils.moveItem(2, 1);
+    let expectMovedColumns = GridUtils.moveItem(2, 1, []);
     expectMovedColumns = GridUtils.moveItem(3, 4, expectMovedColumns);
     expect(newMovedColumns).toEqual(expectMovedColumns);
   });

@@ -1,12 +1,6 @@
 /* eslint class-methods-use-this: "off" */
 import memoize from 'memoize-one';
-import {
-  GridRange,
-  GridUtils,
-  ModelIndex,
-  MoveOperation,
-  VisibleIndex,
-} from '@deephaven/grid';
+import { GridRange, ModelIndex } from '@deephaven/grid';
 import {
   Column,
   ColumnStatistics,
@@ -83,53 +77,6 @@ class IrisGridTableModel extends IrisGridTableModelTemplate<Table, UIRow> {
 
   get isFormatColumnsAvailable(): boolean {
     return this.table.applyCustomColumns != null;
-  }
-
-  /**
-   * Used to get the initial moved columns based on layout hints
-   */
-  get movedColumns(): MoveOperation[] {
-    let movedColumns: MoveOperation[] = [];
-
-    if (
-      this.frontColumns.length ||
-      this.backColumns.length ||
-      this.frozenColumns.length
-    ) {
-      const usedColumns = new Set();
-
-      const moveColumn = (name: string, toIndex: VisibleIndex) => {
-        if (usedColumns.has(name)) {
-          throw new Error(`Column specified in multiple layout hints: ${name}`);
-        }
-        const modelIndex = this.getColumnIndexByName(name);
-        if (!modelIndex) {
-          throw new Error(`Unknown layout hint column: ${name}`);
-        }
-        const visibleIndex = GridUtils.getVisibleIndex(
-          modelIndex,
-          movedColumns
-        );
-        movedColumns = GridUtils.moveItem(visibleIndex, toIndex, movedColumns);
-      };
-
-      let frontIndex = 0;
-      this.frozenColumns.forEach(name => {
-        moveColumn(name, frontIndex);
-        frontIndex += 1;
-      });
-      this.frontColumns.forEach(name => {
-        moveColumn(name, frontIndex);
-        frontIndex += 1;
-      });
-
-      let backIndex = this.columnMap.size - 1;
-      this.backColumns.forEach(name => {
-        moveColumn(name, backIndex);
-        backIndex -= 1;
-      });
-    }
-    return movedColumns;
   }
 
   getMemoizedFrontColumns = memoize(
