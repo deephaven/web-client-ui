@@ -84,7 +84,7 @@ export default function IrisGridCellOverflowModal({
 
   function copyContents() {
     ContextActionUtils.copyToClipboard(
-      editorRef.current?.getValue() ?? ''
+      editorRef.current?.getValue() ?? text
     ).then(() => {
       setCopied(true);
     });
