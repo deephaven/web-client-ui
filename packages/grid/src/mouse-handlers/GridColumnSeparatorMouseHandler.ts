@@ -31,6 +31,7 @@ class GridColumnSeparatorMouseHandler extends GridSeparatorMouseHandler {
       theme
     );
 
+    // TODO: Allow resizing of column groups as well. Right now just allow resizing from base columns
     if (
       separatorIndex == null ||
       columnHeaderDepth == null ||
@@ -40,16 +41,8 @@ class GridColumnSeparatorMouseHandler extends GridSeparatorMouseHandler {
     }
 
     const columnIndex = modelColumns.get(separatorIndex);
-    const nextColumnIndex = modelColumns.get(separatorIndex + 1);
-    if (columnIndex == null || nextColumnIndex == null) {
-      return null;
-    }
-
-    if (
-      model.textForColumnHeader(columnIndex, columnHeaderDepth) !==
-      model.textForColumnHeader(nextColumnIndex, columnHeaderDepth)
-    ) {
-      return { index: separatorIndex, depth: columnHeaderDepth };
+    if (columnIndex != null) {
+      return { index: separatorIndex, depth: 0 };
     }
 
     return null;

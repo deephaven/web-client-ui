@@ -664,7 +664,7 @@ class IrisGridTableModelTemplate<
 
     const moveColumn = (name: string, toIndex: VisibleIndex) => {
       const modelIndex = this.getColumnIndexByName(name);
-      if (!modelIndex) {
+      if (modelIndex == null) {
         throw new Error(`Unknown layout hint column: ${name}`);
       }
       const visibleIndex = GridUtils.getVisibleIndex(modelIndex, movedColumns);

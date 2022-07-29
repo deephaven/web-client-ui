@@ -1,4 +1,5 @@
 import React from 'react';
+import clamp from 'lodash.clamp';
 import GridRange, { GridRangeIndex } from './GridRange';
 import {
   BoxCoordinates,
@@ -110,7 +111,11 @@ export class GridUtils {
     const { columnHeaderHeight, columnHeaderMaxDepth } = metrics;
 
     if (row === null && y <= columnHeaderHeight * columnHeaderMaxDepth) {
-      return columnHeaderMaxDepth - Math.ceil(y / columnHeaderHeight);
+      return clamp(
+        columnHeaderMaxDepth - Math.ceil(y / columnHeaderHeight),
+        0,
+        columnHeaderMaxDepth - 1
+      );
     }
 
     return undefined;
