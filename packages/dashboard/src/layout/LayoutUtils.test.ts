@@ -1,6 +1,7 @@
+import { ContentItem } from '@deephaven/golden-layout';
 import LayoutUtils from './LayoutUtils';
 
-function makeContentItem(type = 'root') {
+function makeContentItem(type = 'root'): Partial<ContentItem> {
   const contentItems = [];
   return {
     contentItems,
@@ -77,8 +78,8 @@ describe('add stack functions properly', () => {
     const root = makeContentItem('column');
     const child1 = makeContentItem('component');
     const child2 = makeContentItem('component');
-    root.addChild(child1);
-    root.addChild(child2);
+    root.addChild(child1 as ContentItem);
+    root.addChild(child2 as ContentItem);
 
     const stack = addStack(root);
     expect(stack).toBe(dummyStack);
@@ -93,16 +94,16 @@ describe('getContentItemInStack', () => {
   it('finds item with the specified config', () => {
     const root = makeContentItem('column');
     const needle1 = Object.assign(makeContentItem('component'), {
-      config: { configProperty: 'needle1' },
+      config: { id: 'needle1' },
     });
     const needle2 = Object.assign(makeContentItem('component'), {
-      config: { configProperty: 'needle2' },
+      config: { id: 'needle2' },
     });
-    root.addChild(needle1);
-    root.addChild(needle2);
+    root.addChild(needle1 as ContentItem);
+    root.addChild(needle2 as ContentItem);
 
-    const found = LayoutUtils.getContentItemInStack(root, {
-      configProperty: 'needle2',
+    const found = LayoutUtils.getContentItemInStack(root as ContentItem, {
+      id: 'needle2',
     });
     expect(found).toEqual(needle2);
   });
@@ -110,16 +111,16 @@ describe('getContentItemInStack', () => {
   it('returns null if item with the specified config not found', () => {
     const root = makeContentItem('column');
     const needle1 = Object.assign(makeContentItem('component'), {
-      config: { configProperty: 'needle1' },
+      config: { id: 'needle1' },
     });
     const needle2 = Object.assign(makeContentItem('component'), {
-      config: { configProperty: 'needle2' },
+      config: { id: 'needle2' },
     });
-    root.addChild(needle1);
-    root.addChild(needle2);
+    root.addChild(needle1 as ContentItem);
+    root.addChild(needle2 as ContentItem);
 
-    const found = LayoutUtils.getContentItemInStack(root, {
-      configProperty: 'noSuchItem',
+    const found = LayoutUtils.getContentItemInStack(root as ContentItem, {
+      id: 'noItemFound',
     });
     expect(found).toBeNull();
   });

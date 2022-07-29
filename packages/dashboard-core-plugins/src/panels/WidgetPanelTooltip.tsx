@@ -1,9 +1,14 @@
-import React, { ReactNode } from 'react';
+import React, { ReactNode, useState } from 'react';
 import PropTypes from 'prop-types';
+import { Button, ContextActionUtils } from '@deephaven/components';
+import { vsCopy, vsPassFilled } from '@deephaven/icons';
 import { GLPropTypes, LayoutUtils } from '@deephaven/dashboard';
+import Log from '@deephaven/log';
 import './WidgetPanelTooltip.scss';
 import { ReactElement } from 'react-markdown';
 import GoldenLayout from '@deephaven/golden-layout';
+
+const log = Log.module('WidgetPanelTooltip');
 
 interface WidgetPanelTooltipProps {
   glContainer: GoldenLayout.Container;
@@ -15,14 +20,27 @@ interface WidgetPanelTooltipProps {
 const WidgetPanelTooltip = (props: WidgetPanelTooltipProps): ReactElement => {
   const { widgetType, widgetName, glContainer, description, children } = props;
   const panelTitle = LayoutUtils.getTitleFromContainer(glContainer);
+  const [copied, setCopied] = useState(false);
 
   return (
     <div className="tab-tooltip-container">
-      <div className="row">
+      <div className="row flex-nowrap align-items-start">
         <span className="tab-tooltip-title">
           <b>{widgetType} Name </b>
         </span>
         <span className="tab-tooltip-name">{widgetName}</span>
+
+        <Button
+          kind="ghost"
+          className="tab-tooltip-copy"
+          icon={copied ? vsPassFilled : vsCopy}
+          onClick={() => {
+            ContextActionUtils.copyToClipboard(widgetName)
+              .then(() => setCopied(true))
+              .catch(e => log.error('Unable to column name', e));
+          }}
+          tooltip={copied ? 'Copied text' : 'Copy name'}
+        />
       </div>
       {widgetName !== panelTitle && (
         <div className="row">

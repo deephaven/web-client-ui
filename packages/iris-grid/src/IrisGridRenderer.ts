@@ -683,10 +683,9 @@ class IrisGridRenderer extends GridRenderer {
     const { modelColumns, gridY } = metrics;
     const modelColumn = modelColumns.get(column);
 
-    const quickFilter = modelColumn ? quickFilters.get(modelColumn) : null;
-    const advancedFilter = modelColumn
-      ? advancedFilters.get(modelColumn)
-      : null;
+    if (modelColumn === undefined) return;
+    const quickFilter = quickFilters.get(modelColumn);
+    const advancedFilter = advancedFilters.get(modelColumn);
 
     const {
       filterBarCollapsedHeight,
@@ -701,6 +700,7 @@ class IrisGridRenderer extends GridRenderer {
       advancedFilter,
       quickFilter
     );
+
     if (
       filterBarActiveBackgroundColor &&
       quickFilter == null &&

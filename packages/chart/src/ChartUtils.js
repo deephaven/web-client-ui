@@ -181,7 +181,7 @@ class ChartUtils {
 
   static getPlotlySeriesOrientation(series) {
     const { sources } = series;
-    if (sources.length === 2 && sources[0].axis.type === dh.plot.AxisType.Y) {
+    if (sources.length === 2 && sources[0]?.axis?.type === dh.plot.AxisType.Y) {
       return ChartUtils.ORIENTATION.HORIZONTAL;
     }
 

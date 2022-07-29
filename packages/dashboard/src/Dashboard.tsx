@@ -15,6 +15,7 @@ import DashboardLayout from './DashboardLayout';
 import {
   PanelDehydrateFunction,
   PanelHydrateFunction,
+  PanelProps,
 } from './DashboardPlugin';
 import './Dashboard.scss';
 
@@ -33,7 +34,9 @@ export type DashboardProps = {
   onLayoutConfigChange?: () => void;
   onGoldenLayoutChange?: (goldenLayout: GoldenLayout) => void;
   onLayoutInitialized?: () => void;
-  fallbackComponent?: ForwardRefExoticComponent<RefAttributes<unknown>>;
+  fallbackComponent?: ForwardRefExoticComponent<
+    PanelProps & RefAttributes<HTMLDivElement>
+  >;
   hydrate?: PanelHydrateFunction;
   dehydrate?: PanelDehydrateFunction;
 };
