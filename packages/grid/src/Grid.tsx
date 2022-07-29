@@ -131,8 +131,7 @@ export type GridState = {
   draggingColumn: DraggingColumn | null;
   draggingRow: VisibleIndex | null;
 
-  // Offset when dragging a column/row
-  draggingColumnOffset: number | null;
+  // Offset when dragging a row
   draggingRowOffset: number | null;
 
   // When drawing header separators for resizing
@@ -374,8 +373,7 @@ class Grid extends PureComponent<GridProps, GridState> {
       draggingColumn: null,
       draggingRow: null,
 
-      // Offset when dragging a column/row
-      draggingColumnOffset: null,
+      // Offset when dragging a row
       draggingRowOffset: null,
 
       // When drawing header separators for resizing
@@ -614,6 +612,7 @@ class Grid extends PureComponent<GridProps, GridState> {
       movedRows,
       isDraggingHorizontalScrollBar,
       isDraggingVerticalScrollBar,
+      draggingColumn,
     } = state;
 
     return {
@@ -630,6 +629,7 @@ class Grid extends PureComponent<GridProps, GridState> {
       movedRows,
       isDraggingHorizontalScrollBar,
       isDraggingVerticalScrollBar,
+      draggingColumn,
       ...stateOverride,
     };
   }
@@ -1528,7 +1528,6 @@ class Grid extends PureComponent<GridProps, GridState> {
       cursorColumn,
       cursorRow,
       draggingColumn,
-      draggingColumnOffset,
       draggingColumnSeparator,
       draggingRow,
       draggingRowOffset,
@@ -1560,7 +1559,6 @@ class Grid extends PureComponent<GridProps, GridState> {
       mouseY,
       selectedRanges,
       draggingColumn,
-      draggingColumnOffset,
       draggingColumnSeparator,
       draggingRow,
       draggingRowOffset,

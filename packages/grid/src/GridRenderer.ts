@@ -1,6 +1,6 @@
 import clamp from 'lodash.clamp';
 import memoizeClear from './memoizeClear';
-import GridUtils, { BoundedAxisRange } from './GridUtils';
+import GridUtils from './GridUtils';
 import GridColorUtils from './GridColorUtils';
 import { isExpandableGridModel } from './ExpandableGridModel';
 import {
@@ -78,7 +78,6 @@ export type GridRenderState = {
 
   // Currently dragged column/row information
   draggingColumn: DraggingColumn | null;
-  draggingColumnOffset: number | null;
   draggingColumnSeparator: GridSeparator | null;
   draggingRow: VisibleIndex | null;
   draggingRowOffset: number | null;
@@ -2498,14 +2497,7 @@ export class GridRenderer {
     context: CanvasRenderingContext2D,
     state: GridRenderState
   ): void {
-    const {
-      draggingColumn,
-      draggingColumnOffset,
-      metrics,
-      mouseX,
-      theme,
-      model,
-    } = state;
+    const { draggingColumn, metrics, mouseX, theme, model } = state;
     if (draggingColumn == null || mouseX == null) {
       return;
     }
@@ -2521,10 +2513,12 @@ export class GridRenderer {
       visibleColumnXs,
       visibleColumnWidths,
       height,
+      width,
       columnHeaderMaxDepth,
       columnHeaderHeight,
       movedColumns,
       modelColumns,
+      floatingLeftWidth,
     } = metrics;
 
     const draggingModelIndex =
@@ -2542,12 +2536,14 @@ export class GridRenderer {
 
     const [startIndex, endIndex] = draggingColumnVisibleRange;
 
-    const xLeft = getOrThrow(visibleColumnXs, startIndex, 0);
-    const xRight =
-      getOrThrow(visibleColumnXs, endIndex, xLeft) +
-      getOrThrow(visibleColumnWidths, endIndex, 0);
+    const originalLeft = getOrThrow(visibleColumnXs, startIndex);
+    const originalRight =
+      getOrThrow(visibleColumnXs, endIndex) +
+      getOrThrow(visibleColumnWidths, endIndex);
+    const originalWidth = originalRight - originalLeft;
 
-    const columnWidth = xRight - xLeft;
+    const draggingLeft = draggingColumn.left;
+
     const {
       backgroundColor,
       font,
@@ -2564,31 +2560,74 @@ export class GridRenderer {
 
     context.translate(gridX, 0);
 
-    // First, we need to draw over the row stripes where the column is coming from
-    context.fillStyle = backgroundColor;
-    context.fillRect(xLeft, columnHeaderOffset, columnWidth, height);
+    context.save();
+    context.beginPath();
 
-    context.translate(
-      mouseX - xLeft - gridX - (draggingColumnOffset ?? 0),
-      gridY + reorderOffset
-    );
+    // Don't draw over frozen columns
+    context.rect(floatingLeftWidth, 0, width, height);
+    context.clip();
+
+    // First, we need to draw over where the column is coming from
+    context.fillStyle = backgroundColor;
+    context.fillRect(originalLeft, columnHeaderOffset, originalWidth, height);
+    context.restore();
 
     // Then draw the shadow of the moving column
-    context.save();
+    context.translate(0, reorderOffset);
 
+    context.save();
     context.shadowColor = shadowColor;
     context.shadowBlur = shadowBlur;
 
     context.fillStyle = backgroundColor;
-    context.fillRect(xLeft, -gridY + columnHeaderOffset, columnWidth, height);
-
-    context.restore();
+    context.fillRect(
+      draggingColumn.left,
+      columnHeaderOffset + reorderOffset,
+      draggingColumn.width,
+      height
+    );
+    context.restore(); // Reset style
 
     // Now set the clipping region and pretty much just redraw this column and all it's contents
     context.beginPath();
-    context.rect(xLeft, -gridY + columnHeaderOffset, columnWidth, height);
+    context.rect(
+      draggingColumn.left,
+      columnHeaderOffset,
+      draggingColumn.width + 1,
+      height
+    );
     context.clip();
 
+    context.translate(draggingLeft - originalLeft, 0);
+    context.font = headerFont;
+
+    const visibleColumns: VisibleIndex[] = [];
+    for (
+      let i = draggingColumn.range[0];
+      i <= draggingColumn.range[1];
+      i += 1
+    ) {
+      visibleColumns.push(i);
+    }
+
+    /**
+     * This will not draw the header text properly, but extensions of Grid
+     * may draw extra things in the header like sorts and filters
+     */
+    this.drawColumnHeaders(context, state);
+
+    // Ensure the column header gets drawn
+    this.drawColumnHeadersForRange(
+      context,
+      state,
+      [visibleColumns[0], visibleColumns[visibleColumns.length - 1]],
+      {
+        minX: originalLeft,
+        maxX: width,
+      }
+    );
+
+    context.translate(0, gridY);
     context.font = font;
 
     this.drawGridBackground(context, state);
@@ -2596,16 +2635,6 @@ export class GridRenderer {
     for (let i = startIndex; i <= endIndex; i += 1) {
       this.drawColumnCellContents(context, state, i);
     }
-
-    // Now translate it back up and draw the header
-    context.translate(-gridX, -gridY);
-
-    context.font = headerFont;
-
-    this.drawColumnHeadersForRange(context, state, [startIndex, endIndex], {
-      minX: xLeft,
-      maxX: xRight,
-    });
 
     context.restore();
   }

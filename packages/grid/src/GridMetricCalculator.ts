@@ -15,6 +15,7 @@ import type {
 import GridUtils from './GridUtils';
 import { GridFont, GridTheme } from './GridTheme';
 import { isExpandableGridModel } from './ExpandableGridModel';
+import { DraggingColumn } from './mouse-handlers/GridColumnMoveMouseHandler';
 
 /* eslint class-methods-use-this: "off" */
 /* eslint react/destructuring-assignment: "off" */
@@ -48,6 +49,8 @@ export interface GridMetricState {
   // Whether the scrollbars are currently being dragged
   isDraggingHorizontalScrollBar: boolean;
   isDraggingVerticalScrollBar: boolean;
+
+  draggingColumn: DraggingColumn | null;
 }
 
 /**
@@ -202,6 +205,7 @@ export class GridMetricCalculator {
       model,
       movedRows,
       movedColumns,
+      draggingColumn,
     } = state;
     const {
       rowHeight,
@@ -437,8 +441,28 @@ export class GridMetricCalculator {
       ]);
     }
 
+    const draggingColumns: VisibleIndex[] = [];
+    if (draggingColumn) {
+      for (
+        let i = draggingColumn.range[0];
+        i <= draggingColumn.range[1];
+        i += 1
+      ) {
+        draggingColumns.push(i);
+        if (!visibleColumnWidths.has(i)) {
+          visibleColumnWidths.set(i, this.getVisibleColumnWidth(i, state));
+        }
+
+        if (!visibleColumnXs.has(i)) {
+          visibleColumnXs.set(i, 0);
+        }
+      }
+    }
+
     const allRows = visibleRows.concat(floatingRows);
-    const allColumns = visibleColumns.concat(floatingColumns);
+    const allColumns = visibleColumns
+      .concat(floatingColumns)
+      .concat(draggingColumns);
     const modelRows = this.getModelRows(allRows, state);
     const modelColumns = this.getModelColumns(allColumns, state);
 

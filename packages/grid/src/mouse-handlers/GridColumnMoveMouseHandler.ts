@@ -8,6 +8,7 @@ import type {
   ModelIndex,
   GridMetrics,
   MoveOperation,
+  Coordinate,
 } from '../GridMetrics';
 import type { BoundedAxisRange } from '../GridAxisRange';
 import type GridModel from '../GridModel';
@@ -20,6 +21,8 @@ const SCROLL_DELTA = 10;
 export interface DraggingColumn {
   range: BoundedAxisRange;
   depth: number;
+  left: Coordinate;
+  width: number;
 }
 
 interface ColumnInfo {
@@ -134,6 +137,8 @@ class GridColumnMoveMouseHandler extends GridMouseHandler {
 
   private draggingColumn: DraggingColumn | null = null;
 
+  private updateDraggingColumn(column: DraggingColumn, grid: Grid): void {}
+
   private setScrollInterval(grid: Grid, direction: 'left' | 'right'): void {
     if (
       this.scrollingInterval != null &&
@@ -197,7 +202,6 @@ class GridColumnMoveMouseHandler extends GridMouseHandler {
         }
       }
 
-      // metrics = grid.updateMetrics(grid.state);
       const { mouseX, mouseY } = grid.state;
 
       if (!metrics || mouseX == null || mouseY == null) {
@@ -261,7 +265,6 @@ class GridColumnMoveMouseHandler extends GridMouseHandler {
     ) {
       this.draggingOffset = x - columnInfo.left - rowHeaderWidth;
       this.initialOffset = this.draggingOffset;
-      grid.setState({ draggingColumnOffset: this.draggingOffset });
     }
     return false;
   }
@@ -327,6 +330,8 @@ class GridColumnMoveMouseHandler extends GridMouseHandler {
       draggingColumn = {
         range: initialColumnInfo.range,
         depth: columnHeaderDepth,
+        left: initialColumnInfo.left,
+        width: initialColumnInfo.width,
       };
 
       const startColumn = getColumnInfo(
@@ -391,13 +396,17 @@ class GridColumnMoveMouseHandler extends GridMouseHandler {
           this.initialOffset > this.draggingOffset + deltaX)
       ) {
         this.draggingOffset = this.initialOffset;
-        grid.setState({ draggingColumnOffset: this.draggingOffset });
       } else {
         // Column can't move since we aren't back at the initial offset yet
         this.draggingOffset += deltaX;
-        grid.setState({ draggingColumnOffset: this.draggingOffset });
-        return;
       }
+
+      this.draggingColumn = {
+        ...this.draggingColumn,
+        left: mouseX - this.draggingOffset,
+      };
+      grid.setState({ draggingColumn: this.draggingColumn });
+      return;
     }
 
     const { depth: draggingColumnDepth } = this.draggingColumn;
@@ -431,6 +440,14 @@ class GridColumnMoveMouseHandler extends GridMouseHandler {
     // This is where the dragging column's floating position accounting for dragged distance
     const floatingDraggingLeft = mouseX - this.draggingOffset;
     const floatingDraggingRight = floatingDraggingLeft + draggingColumn.width;
+
+    this.draggingColumn = {
+      ...this.draggingColumn,
+      left: floatingDraggingLeft,
+    };
+    grid.setState({
+      draggingColumn: this.draggingColumn,
+    });
 
     const swapColumn = getColumnInfo(
       GridUtils.getColumnAtX(
@@ -469,10 +486,13 @@ class GridColumnMoveMouseHandler extends GridMouseHandler {
 
         this.draggingOffset =
           mouseX - (visibleColumnXs.get(parentVisibleRange[0]) ?? 0);
+        this.draggingColumn = {
+          ...this.draggingColumn,
+          left: mouseX - this.draggingOffset,
+        };
         this.clearScrollInterval();
         grid.setState({
           draggingColumn: this.draggingColumn,
-          draggingColumnOffset: this.draggingOffset,
           movedColumns: newMovedColumns,
         });
         return;
@@ -491,10 +511,13 @@ class GridColumnMoveMouseHandler extends GridMouseHandler {
           getColumnInfo(parentVisibleRange[1], 0, metrics, model) ?? {};
 
         this.draggingOffset = mouseX - (parentRight - draggingColumn.width);
+        this.draggingColumn = {
+          ...this.draggingColumn,
+          left: mouseX - this.draggingOffset,
+        };
         this.clearScrollInterval();
         grid.setState({
           draggingColumn: this.draggingColumn,
-          draggingColumnOffset: this.draggingOffset,
           movedColumns: newMovedColumns,
         });
         return;
@@ -552,8 +575,13 @@ class GridColumnMoveMouseHandler extends GridMouseHandler {
           mouseX - ((toColumnInfo?.right ?? 0) - draggingColumn.width);
       }
 
+      this.draggingColumn = {
+        ...this.draggingColumn,
+        left: mouseX - this.draggingOffset,
+      };
+
       grid.setState({
-        draggingColumnOffset: this.draggingOffset,
+        draggingColumn: this.draggingColumn,
       });
 
       return;
@@ -634,6 +662,11 @@ class GridColumnMoveMouseHandler extends GridMouseHandler {
       return;
     }
 
+    this.draggingColumn = {
+      ...this.draggingColumn,
+      left: floatingDraggingLeft,
+    };
+
     grid.setState({
       movedColumns: newMovedColumns,
       draggingColumn: this.draggingColumn,
@@ -681,7 +714,6 @@ class GridColumnMoveMouseHandler extends GridMouseHandler {
     if (this.draggingOffset != null) {
       this.draggingOffset = undefined;
       grid.setState({
-        draggingColumnOffset: null,
         draggingColumn: null,
         isDragging: false,
       });
