@@ -31,7 +31,7 @@ class GridColumnSeparatorMouseHandler extends GridSeparatorMouseHandler {
       theme
     );
 
-    // TODO: Allow resizing of column groups as well. Right now just allow resizing from base columns
+    // TODO #695: Allow resizing of column groups as well. Right now just allow resizing from base columns
     if (
       separatorIndex == null ||
       columnHeaderDepth == null ||
