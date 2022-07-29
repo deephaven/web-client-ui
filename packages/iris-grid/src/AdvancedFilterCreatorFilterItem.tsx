@@ -78,21 +78,20 @@ export class AdvancedFilterCreatorFilterItem extends PureComponent<
   }
 
   componentDidUpdate(prevProps: AdvancedFilterCreatorFilterItemProps): void {
-    const {
-      value = '',
-      filterTypes,
-      selectedType = filterTypes[0],
-    } = this.props;
-    if (prevProps.selectedType !== selectedType || prevProps.value !== value) {
-      this.setState({ selectedType, value });
+    const { value, selectedType } = this.props;
+    if (selectedType !== undefined && prevProps.selectedType !== selectedType) {
+      this.setState({ selectedType });
+    }
+    if (value !== undefined && prevProps.value !== value) {
+      this.setState({ value });
     }
   }
 
   typeDropdown: HTMLSelectElement | null;
 
   handleTypeChange(event: React.ChangeEvent<HTMLSelectElement>): void {
-    log.debug2('typeChange');
     const selectedType = event.target.value as FilterTypeValue;
+    log.debug2('typeChange', selectedType);
     this.setState({ selectedType });
 
     const { onChange } = this.props;

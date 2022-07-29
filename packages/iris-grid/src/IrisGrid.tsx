@@ -1403,7 +1403,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
   setAdvancedFilter(
     modelIndex: ModelIndex,
-    filter: FilterCondition,
+    filter: FilterCondition | null,
     options: AdvancedFilterOptions
   ): void {
     log.debug('Setting advanced filter', modelIndex, filter);
@@ -2441,7 +2441,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
   handleAdvancedFilterChange(
     column: Column,
-    filter: FilterCondition,
+    filter: FilterCondition | null,
     options: AdvancedFilterOptions
   ): void {
     const { model } = this.props;
