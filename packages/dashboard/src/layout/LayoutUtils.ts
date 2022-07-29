@@ -791,7 +791,7 @@ class LayoutUtils {
    */
   static getComponentName(component: {
     displayName?: string;
-    WrappedComponent?: { displayName: string };
+    WrappedComponent?: { displayName?: string };
   }): string {
     const name =
       component.WrappedComponent?.displayName ?? component.displayName;

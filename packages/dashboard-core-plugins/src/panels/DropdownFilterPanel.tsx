@@ -34,6 +34,8 @@ const log = Log.module('DropdownFilterPanel');
 const DROPDOWN_FILTER_DEBOUNCE = 250;
 
 class DropdownFilterPanel extends Component {
+  static displayName = 'DropdownFilterPanel';
+  
   static COMPONENT = 'DropdownFilterPanel';
 
   static MAX_TABLE_SIZE = 256;
@@ -661,7 +663,7 @@ DropdownFilterPanel.defaultProps = {
   panelState: null,
 };
 
-DropdownFilterPanel.displayName = 'DropdownFilterPanel';
+DropdownFilterPanel.
 
 const mapStateToProps = (state, ownProps) => {
   const { localDashboardId } = ownProps;

@@ -1,14 +1,14 @@
 import React, { Component, ReactElement } from 'react';
-import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import {
   getOpenedPanelMapForDashboard,
-  GLPropTypes,
   LayoutUtils,
   PanelComponent,
 } from '@deephaven/dashboard';
 import Log from '@deephaven/log';
 import { Container, EventEmitter } from '@deephaven/golden-layout';
+import { TableTemplate } from '@deephaven/jsapi-shim';
+import { RootState } from '@deephaven/redux';
 import {
   getFilterSetsForDashboard,
   getInputFiltersForDashboard,
@@ -16,15 +16,28 @@ import {
   setDashboardFilterSets as setDashboardFilterSetsAction,
 } from '../redux';
 import Panel from './Panel';
-import FilterSetManager, { FilterSet } from './FilterSetManager';
+import FilterSetManager, {
+  ChangeHandlerArgs,
+  FilterSet,
+  FilterSetPanel,
+} from './FilterSetManager';
 import IrisGridPanel from './IrisGridPanel';
 import InputFilterPanel from './InputFilterPanel';
 import DropdownFilterPanel from './DropdownFilterPanel';
 
 import './FilterSetManagerPanel.scss';
-import { PanelState } from './PandasPanel';
 
 const log = Log.module('FilterSetManagerPanel');
+
+interface PanelState {
+  irisGridState?: IrisGridState;
+  gridState?: unkmown;
+  selectedId?: string | string[];
+  isValueShown: boolean;
+  name: string;
+  type: string;
+  value: string;
+}
 
 interface FilterSetManagerPanelProps {
   glContainer: Container;
@@ -32,13 +45,16 @@ interface FilterSetManagerPanelProps {
   panelState: PanelState;
   filterSets: FilterSet[];
   localDashboardId: string;
-  dashboardOpenedPanelMap: Map<string, PanelComponent>;
-  setDashboardFilterSets: () => void;
+  dashboardOpenedPanelMap: Map<string | string[], PanelComponent>;
+  setDashboardFilterSets: (
+    dashboardId: string,
+    filterSets: FilterSet[]
+  ) => void;
   panelTableMap: Map<>;
 }
 
 interface FilterSetManagerPanelState {
-  selectedId: string;
+  selectedId?: string | string[];
   isValueShown: boolean;
   // eslint-disable-next-line react/no-unused-state
   panelState: PanelState; // Dehydrated panel state that can load this panel
@@ -48,9 +64,16 @@ export class FilterSetManagerPanel extends Component<
   FilterSetManagerPanelProps,
   FilterSetManagerPanelState
 > {
+  static defaultProps = {
+    panelState: null,
+  };
+
   static COMPONENT = 'FilterSetManagerPanel';
 
-  static changeFilterIndexesToColumnNames(table, configs) {
+  static changeFilterIndexesToColumnNames<T>(
+    table: TableTemplate,
+    configs: [number, T][]
+  ): { name: string; filter: T }[] {
     return configs
       .map(([index, filter]) => {
         if (index >= table.columns.length) {
@@ -59,7 +82,7 @@ export class FilterSetManagerPanel extends Component<
         const { name } = table.columns[index];
         return { name, filter };
       })
-      .filter(config => config != null);
+      .filter(config => config != null) as { name: string; filter: T }[];
   }
 
   constructor(props: FilterSetManagerPanelProps) {
@@ -85,19 +108,21 @@ export class FilterSetManagerPanel extends Component<
   }
 
   // Collect all filter values for each dashboard panel
-  getFilterState() {
+  getFilterState(): FilterSetPanel[] {
     const { dashboardOpenedPanelMap } = this.props;
-    const panels = [];
+    const panels: FilterSetPanel[] = [];
     [...dashboardOpenedPanelMap.keys()].forEach(key => {
       const panel = dashboardOpenedPanelMap.get(key);
-      const componentName = LayoutUtils.getComponentNameFromPanel(panel);
-      const panelId = LayoutUtils.getIdFromPanel(panel);
-      log.debug('Panel:', panel, componentName);
 
       if (panel === undefined) {
         log.error('Could not get panel', panel);
         return;
       }
+
+      const componentName = LayoutUtils.getComponentNameFromPanel(panel);
+      const panelId = LayoutUtils.getIdFromPanel(panel);
+      log.debug('Panel:', panel, componentName);
+
       const { glContainer = null } = panel.props;
       if (glContainer == null) {
         log.error('Could not get panel container', panel);
@@ -108,7 +133,9 @@ export class FilterSetManagerPanel extends Component<
         log.error('Could not get component config from container', glContainer);
         return;
       }
-      const panelState = LayoutUtils.getPanelComponentState(config);
+      const panelState = LayoutUtils.getPanelComponentState(
+        config
+      ) as PanelState;
       if (panelState == null) {
         log.debug(`Panel state is null ${panelId}`);
         return;
@@ -119,6 +146,7 @@ export class FilterSetManagerPanel extends Component<
           if (state != null) {
             panels.push({
               panelId,
+              id: panelId,
               type: componentName,
               state,
             });
@@ -127,7 +155,7 @@ export class FilterSetManagerPanel extends Component<
         }
         case LayoutUtils.getComponentName(InputFilterPanel):
         case LayoutUtils.getComponentName(DropdownFilterPanel): {
-          const { isValueShown, name, type, value } = panselState;
+          const { isValueShown, name, type, value } = panelState;
           panels.push({
             panelId,
             type: componentName,
@@ -141,7 +169,10 @@ export class FilterSetManagerPanel extends Component<
     return panels;
   }
 
-  getIrisGridPanelFilters(panelId, panelState) {
+  getIrisGridPanelFilters(
+    panelId: string | string[] | null | undefined,
+    panelState: PanelState
+  ): { irisGridState: IrisGridState; GridState: unknown } | null {
     const { panelTableMap } = this.props;
     const table = panelTableMap.get(panelId);
     if (table == null) {
@@ -150,7 +181,10 @@ export class FilterSetManagerPanel extends Component<
     }
     // IrisGridUtils.hydrate uses numeric indexes for columns
     // Change indexes to column names to make it work for proxy models
-    const { irisGridState = {}, gridState = {} } = panelState;
+    const {
+      irisGridState = { advancedFilters: undefined, quickFilters: undefined },
+      gridState = {},
+    } = panelState;
     const {
       advancedFilters: indexedAdvancedFilters,
       quickFilters: indexedQuickFilters,
@@ -173,11 +207,11 @@ export class FilterSetManagerPanel extends Component<
     };
   }
 
-  handleGetFilterState() {
+  handleGetFilterState(): FilterSetPanel[] {
     return this.getFilterState();
   }
 
-  handleChange({ isValueShown, selectedId }) {
+  handleChange({ isValueShown, selectedId }: ChangeHandlerArgs): void {
     log.debug('handleChange', isValueShown, selectedId);
     this.setState({ isValueShown, selectedId });
     this.updatePanelState();
@@ -188,6 +222,10 @@ export class FilterSetManagerPanel extends Component<
     const { panels, restoreFullState = false } = filterSet;
     log.debug(`Apply filters from filter set`, filterSet);
     panels.forEach(({ panelId, type, state }) => {
+      if (panelId == null) {
+        log.debug('panel is null', panelId);
+        return;
+      }
       if (!dashboardOpenedPanelMap.has(panelId)) {
         log.debug('Ignore closed panel', panelId);
         return;
@@ -207,7 +245,7 @@ export class FilterSetManagerPanel extends Component<
     });
   }
 
-  handleSetsUpdate(modifiedFilterSets): void {
+  handleSetsUpdate(modifiedFilterSets: FilterSet[]): void {
     const { setDashboardFilterSets, localDashboardId } = this.props;
     log.debug('Saving updated sets', modifiedFilterSets);
     // Filter sets are stored in dashboard data instead of the panelState
@@ -215,7 +253,7 @@ export class FilterSetManagerPanel extends Component<
     setDashboardFilterSets(localDashboardId, [...modifiedFilterSets]);
   }
 
-  updatePanelState() {
+  updatePanelState(): void {
     this.setState(({ selectedId, isValueShown }) => ({
       // eslint-disable-next-line react/no-unused-state
       panelState: {
@@ -288,32 +326,6 @@ export class FilterSetManagerPanel extends Component<
     );
   }
 }
-
-FilterSetManagerPanel.propTypes = {
-  glContainer: GLPropTypes.Container.isRequired,
-  glEventHub: GLPropTypes.EventHub.isRequired,
-  panelState: PropTypes.shape({
-    name: PropTypes.string,
-    type: PropTypes.string,
-    selectedId: PropTypes.string,
-    isValueShown: PropTypes.bool,
-  }),
-  filterSets: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.string.isRequired,
-      title: PropTypes.string.isRequired,
-      panels: PropTypes.arrayOf(PropTypes.shape({})).isRequired,
-    })
-  ).isRequired,
-  localDashboardId: PropTypes.string.isRequired,
-  dashboardOpenedPanelMap: PropTypes.instanceOf(Map).isRequired,
-  setDashboardFilterSets: PropTypes.func.isRequired,
-  panelTableMap: PropTypes.instanceOf(Map).isRequired,
-};
-
-FilterSetManagerPanel.defaultProps = {
-  panelState: null,
-};
 
 const mapStateToProps = (
   state: RootState,
