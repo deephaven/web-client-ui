@@ -524,6 +524,14 @@ class IrisGridProxyModel extends IrisGridModel {
     this.setNextModel(modelPromise);
   }
 
+  get table(): Table | TreeTable | undefined {
+    if (isIrisGridTableModelTemplate(this.model)) {
+      return this.model.table;
+    }
+
+    return undefined;
+  }
+
   get totalsConfig(): UITotalsTableConfig | null {
     return this.model.totalsConfig;
   }
