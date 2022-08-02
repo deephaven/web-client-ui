@@ -42,14 +42,6 @@ import LocalWorkspaceStorage, {
 import { createSessionWrapper } from './SessionUtils';
 import { PluginUtils } from '../plugins';
 
-const logLevel = parseInt(process.env.REACT_APP_LOG_LEVEL, 10);
-if (!Number.isNaN(logLevel)) {
-  Log.setLogLevel(logLevel);
-}
-
-// Expose so we can change log level if needed in the browser console
-window.Log = Log;
-
 const log = Log.module('AppInit');
 
 // Default values used

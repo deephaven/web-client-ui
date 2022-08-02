@@ -30,18 +30,18 @@ One common setup is to override the API server URL to point to another server. F
 REACT_APP_CORE_API_URL=https://www.myserver.com/notebooks
 ```
 
-### DEEPHAVEN_LOG_LEVEL
+### REACT_APP_LOG_LEVEL
 
-Printing detailed logs when debugging can be handy. To enable the highest level of logging, set the log level in your `.env.development.local` file:
+Printing detailed logs when debugging can be handy. The highest level of logging is already set in your `.env.development` file. You can change it in `.env.development.local` if desired.
 
 ```shell
-DEEPHAVEN_LOG_LEVEL=4
+REACT_APP_LOG_LEVEL=2 # Warn/Error
 ```
 
-When running the unit tests, you often do not want any logs to be printed out. To disable the logs while running the unit tests, set the log level in your `.env.test.local` file:
+When running the unit tests, you often do not want any logs to be printed out. Logging is disabled in unit tests in your `.env.test` To enable the logs while running the unit tests, set the log level in your `.env.test.local` file:
 
 ```shell
-DEEPHAVEN_LOG_LEVEL=-1
+REACT_APP_LOG_LEVEL=2 # Warn/Error
 ```
 
 See [@deephaven/log](../log) for more details on the logger.

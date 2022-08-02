@@ -11,6 +11,8 @@ import { TableUtils } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
 import './App.scss'; // Styles for in this app
 
+Log.setLogLevel(parseInt(process.env.REACT_APP_LOG_LEVEL ?? '', 10));
+
 const log = Log.module('EmbedGrid.App');
 
 export type Command = 'filter' | 'sort';
