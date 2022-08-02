@@ -2,6 +2,11 @@
 import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
+import dns from 'dns';
+
+// Open on localhost instead of 127.0.0.1 for Node < 17
+// https://github.com/vitejs/vite/issues/9195
+dns.setDefaultResultOrder('verbatim');
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
