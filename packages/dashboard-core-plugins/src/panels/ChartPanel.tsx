@@ -67,6 +67,21 @@ export type FilterMap = Map<string, string>;
 
 export type LinkedColumnMap = Map<string, Column>;
 
+export interface ChartPanelMetaData {
+  figure: string;
+  table: string;
+  query: string;
+  querySerial: string;
+  sourcePanelId: string;
+  settings: {
+    isLinked: boolean;
+    title: string;
+    xAxis: string;
+    series: string[];
+    type: SeriesPlotStyle;
+  };
+}
+
 type Settings = Record<string, unknown>;
 
 interface PanelState {
@@ -87,20 +102,7 @@ interface ChartPanelProps {
   glContainer: GoldenLayout.Container;
   glEventHub: GoldenLayout.EventEmitter;
 
-  metadata: {
-    figure: string;
-    table: string;
-    query: string;
-    querySerial: string;
-    sourcePanelId: string;
-    settings: {
-      isLinked: boolean;
-      title: string;
-      xAxis: string;
-      series: string[];
-      type: SeriesPlotStyle;
-    };
-  };
+  metadata: ChartPanelMetaData;
   /** Function to build the ChartModel used by this ChartPanel. Can return a promise. */
   makeModel: () => ChartModel;
   inputFilters: InputFilter[];
@@ -935,11 +937,7 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
       columnMap,
       filterMap
     );
-    if (isFigureChartModel(model)) {
-      model.setFilter(filterMap);
-    } else {
-      model.setFilter();
-    }
+    model.setFilter(filterMap);
 
     if (filterMap.size > 0 && waitingInputMap.size === 0) {
       const defaultTitle = model.getDefaultTitle();
@@ -1077,7 +1075,7 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
           className="chart-panel-container h-100 w-100"
         >
           <div className="chart-container h-100 w-100">
-            {isLoaded && (
+            {isLoaded && model && (
               <Chart
                 isActive={isActive}
                 model={model}

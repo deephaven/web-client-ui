@@ -7,6 +7,7 @@ import {
   KEY,
   MODIFIER,
   Shortcut,
+  ResolvableContextAction,
 } from '@deephaven/components';
 import {
   vsBell,
@@ -129,7 +130,9 @@ class ContextMenus extends Component {
           }}
         >
           Right Click Me
-          <ContextActions actions={delayedActions} />
+          <ContextActions
+            actions={(delayedActions as unknown) as ResolvableContextAction[]}
+          />
         </button>
       </div>
     );

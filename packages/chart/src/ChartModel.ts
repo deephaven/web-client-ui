@@ -1,5 +1,10 @@
 /* eslint class-methods-use-this: "off" */
 /* eslint no-unused-vars: "off" */
+
+import { Column } from '@deephaven/jsapi-shim';
+import { Formatter } from '@deephaven/jsapi-utils';
+
+type ChartEvent = CustomEvent;
 /**
  * Model for a Chart
  * All of these methods should return very quickly.
@@ -24,44 +29,53 @@ class ChartModel {
 
   constructor() {
     this.listeners = [];
-    this.formatter = null;
-    this.rect = null;
     this.isDownsamplingDisabled = false;
-    this.title = null;
   }
 
-  getData() {
+  listeners: ((event: ChartEvent) => void)[];
+
+  formatter?: Formatter;
+
+  rect?: DOMRect;
+
+  isDownsamplingDisabled: boolean;
+
+  title?: string;
+
+  getData(): [] {
     return [];
   }
 
-  getDefaultTitle() {
+  getDefaultTitle(): string {
     return '';
   }
 
-  getLayout() {
+  getLayout(): Record<string, unknown> {
     return {};
   }
 
-  getFilterColumnMap() {
+  getFilterColumnMap(): Map<string, Column> {
     return new Map();
   }
 
-  isFilterRequired() {
+  isFilterRequired(): boolean {
     return false;
   }
 
-  setFilter() {}
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  setFilter(filter: Map<string, string>): void {}
 
   /**
    * Close this model, clean up any underlying subscriptions
    */
-  close() {}
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  close(): void {}
 
   /**
    * Set the formatter to use when charting the data.
-   * @param {Formatter} formatter The formatter to use to format the charting data
+   * @param formatter The formatter to use to format the charting data
    */
-  setFormatter(formatter) {
+  setFormatter(formatter: Formatter): void {
     this.formatter = formatter;
   }
 
@@ -69,7 +83,7 @@ class ChartModel {
    * Disable downsampling
    * @param {boolean} isDownsamplingDisabled True if downsampling should be disabled
    */
-  setDownsamplingDisabled(isDownsamplingDisabled) {
+  setDownsamplingDisabled(isDownsamplingDisabled: boolean): void {
     this.isDownsamplingDisabled = isDownsamplingDisabled;
   }
 
@@ -77,11 +91,11 @@ class ChartModel {
    * Set the dimensions of the plot. May be needed to evaluate some of the percents
    * @param {DOMRect} rect The bounding rectangle of the plot
    */
-  setDimensions(rect) {
+  setDimensions(rect: DOMRect): void {
     this.rect = rect;
   }
 
-  setTitle(title) {
+  setTitle(title: string): void {
     this.title = title;
   }
 
@@ -89,57 +103,57 @@ class ChartModel {
    * Subscribe to this ChartModel and start listening for all events.
    * @param {Function<Event>} callback Callback when an event occurs
    */
-  subscribe(callback) {
+  subscribe(callback: (event: ChartEvent) => void): void {
     this.listeners.push(callback);
   }
 
-  unsubscribe(callback) {
+  unsubscribe(callback: (event: ChartEvent) => void): void {
     this.listeners = this.listeners.filter(listener => listener !== callback);
   }
 
-  fireEvent(event) {
+  fireEvent(event: ChartEvent): void {
     for (let i = 0; i < this.listeners.length; i += 1) {
       this.listeners[i](event);
     }
   }
 
-  fireUpdate(data) {
+  fireUpdate(data: unknown): void {
     this.fireEvent(new CustomEvent(ChartModel.EVENT_UPDATED, { detail: data }));
   }
 
-  fireDisconnect() {
+  fireDisconnect(): void {
     this.fireEvent(new CustomEvent(ChartModel.EVENT_DISCONNECT));
   }
 
-  fireReconnect() {
+  fireReconnect(): void {
     this.fireEvent(new CustomEvent(ChartModel.EVENT_RECONNECT));
   }
 
-  fireDownsampleStart(detail) {
+  fireDownsampleStart(detail: unknown): void {
     this.fireEvent(
       new CustomEvent(ChartModel.EVENT_DOWNSAMPLESTARTED, { detail })
     );
   }
 
-  fireDownsampleFinish(detail) {
+  fireDownsampleFinish(detail: unknown): void {
     this.fireEvent(
       new CustomEvent(ChartModel.EVENT_DOWNSAMPLEFINISHED, { detail })
     );
   }
 
-  fireDownsampleFail(detail) {
+  fireDownsampleFail(detail: unknown): void {
     this.fireEvent(
       new CustomEvent(ChartModel.EVENT_DOWNSAMPLEFAILED, { detail })
     );
   }
 
-  fireDownsampleNeeded(detail) {
+  fireDownsampleNeeded(detail: unknown): void {
     this.fireEvent(
       new CustomEvent(ChartModel.EVENT_DOWNSAMPLENEEDED, { detail })
     );
   }
 
-  fireLoadFinished() {
+  fireLoadFinished(): void {
     this.fireEvent(new CustomEvent(ChartModel.EVENT_LOADFINISHED));
   }
 }

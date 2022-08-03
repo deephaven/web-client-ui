@@ -19,7 +19,7 @@ import {
 } from '@deephaven/redux';
 import { Container, EventEmitter } from '@deephaven/golden-layout';
 import { assertNotNull } from '@deephaven/utils';
-import JSZip from 'jszip';
+import { JSZipObject } from 'jszip';
 import { ConsoleEvent } from '../events';
 import './ConsolePanel.scss';
 import Panel from './Panel';
@@ -62,7 +62,7 @@ interface ConsolePanelProps {
   sessionWrapper: SessionWrapper;
 
   timeZone: string;
-  unzip: (file: File) => Promise<JSZip.JSZipObject[]>;
+  unzip: (file: File) => Promise<JSZipObject[]>;
 }
 
 interface ConsolePanelState {

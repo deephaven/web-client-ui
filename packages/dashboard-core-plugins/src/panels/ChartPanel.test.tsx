@@ -6,7 +6,7 @@ import dh from '@deephaven/jsapi-shim';
 import { MockChartModel } from '@deephaven/chart';
 import { Container } from '@deephaven/golden-layout';
 import { PanelComponent } from '@deephaven/dashboard';
-import { ChartPanel } from './ChartPanel';
+import { ChartPanel, ChartPanelMetaData } from './ChartPanel';
 import ChartColumnSelectorOverlay from './ChartColumnSelectorOverlay';
 
 const DASHBOARD_ID = 'TEST_DASHBOARD_ID';
@@ -92,7 +92,7 @@ function makeChartPanelWrapper({
       client={client}
       columnSelectionValidator={columnSelectionValidator}
       makeModel={makeModel}
-      metadata={metadata}
+      metadata={metadata as ChartPanelMetaData}
       glContainer={(glContainer as unknown) as Container}
       glEventHub={glEventHub}
       inputFilters={inputFilters}
@@ -102,13 +102,13 @@ function makeChartPanelWrapper({
       setActiveTool={setActiveTool}
       setDashboardIsolatedLinkerPanelId={setDashboardIsolatedLinkerPanelId}
       source={source}
-      sourcePanel={sourcePanel as PanelComponent}
+      sourcePanel={(sourcePanel as unknown) as PanelComponent}
     />
   );
 }
 
 function callUpdateFunction() {
-  MockChart.mock.calls?.[MockChart.mock.calls.length - 1][0].onUpdate();
+  (MockChart.mock.calls?.[MockChart.mock.calls.length - 1][0]).onUpdate();
 }
 
 function callErrorFunction() {

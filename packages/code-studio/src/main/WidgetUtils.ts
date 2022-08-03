@@ -1,4 +1,8 @@
-import { ChartModel, ChartModelFactory } from '@deephaven/chart';
+import {
+  ChartModel,
+  ChartModelFactory,
+  FigureChartModel,
+} from '@deephaven/chart';
 import dh, { IdeSession } from '@deephaven/jsapi-shim';
 import { SortDirection } from '@deephaven/jsapi-utils';
 import {
@@ -49,7 +53,7 @@ export const createChartModel = async (
   session: IdeSession,
   metadata: ChartPanelMetadata,
   panelState?: ChartPanelPanelState
-): Promise<ChartModel> => {
+): Promise<ChartModel | FigureChartModel> => {
   let {
     settings = {},
     table: tableName = '',
