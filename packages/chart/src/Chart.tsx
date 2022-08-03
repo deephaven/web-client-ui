@@ -2,7 +2,12 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import deepEqual from 'deep-equal';
 import memoize from 'memoize-one';
-import { vsLoading, dhGraphLineDown, dhWarningFilled } from '@deephaven/icons';
+import {
+  vsLoading,
+  dhGraphLineDown,
+  dhWarningFilled,
+  IconDefinition,
+} from '@deephaven/icons';
 import { Formatter, FormatterUtils, DateUtils } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
 import Plotly from './plotly/Plotly';
@@ -14,12 +19,36 @@ import './Chart.scss';
 
 const log = Log.module('Chart');
 
+interface ChartProps {
+  model: ChartModel;
+  // These settings come from the redux store
+  settings: WorkspaceSettings;
+  isActive: boolean;
+  onDisconnect: () => void;
+  onReconnect: () => void;
+  onUpdate: () => void;
+  onError: () => void;
+  onSettingsChanged: () => void;
+}
+
+interface ChartState {
+  data: null;
+  downsamplingError: null;
+  isDownsampleFinished: false;
+  isDownsampleInProgress: false;
+  isDownsamplingDisabled: false;
+  layout: {
+    datarevision: 0;
+  };
+  revision: 0;
+}
+
 export class Chart extends Component {
   /**
    * Convert a font awesome icon definition to a plotly icon definition
    * @param {FontAwesome.IconDefinition} faIcon The icon to convert
    */
-  static convertIcon(faIcon) {
+  static convertIcon(faIcon: IconDefinition) {
     const [width, , , , path] = faIcon.icon;
     // By default the icons are flipped upside down, so we need to add our own transform
     // https://github.com/plotly/plotly.js/issues/1335
@@ -32,7 +61,10 @@ export class Chart extends Component {
     };
   }
 
-  static downsampleButtonTitle(isDownsampleInProgress, isDownsamplingDisabled) {
+  static downsampleButtonTitle(
+    isDownsampleInProgress: boolean,
+    isDownsamplingDisabled: boolean
+  ): string {
     if (isDownsampleInProgress) {
       return 'Downsampling in progress...';
     }
@@ -42,7 +74,10 @@ export class Chart extends Component {
       : 'Downsampling enabled, click to disable';
   }
 
-  static downsampleButtonAttr(isDownsampleInProgress, isDownsamplingDisabled) {
+  static downsampleButtonAttr(
+    isDownsampleInProgress: boolean,
+    isDownsamplingDisabled: boolean
+  ): string | undefined {
     if (isDownsampleInProgress) {
       return 'animation-spin';
     }

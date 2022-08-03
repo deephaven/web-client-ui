@@ -33,6 +33,7 @@
     "@deephaven/icons": "file:../icons",
     "@deephaven/jsapi-shim": "file:../jsapi-shim",
     "@deephaven/jsapi-utils": "file:../jsapi-utils",
+    "@deephaven/redux": "file:../redux",
     "@deephaven/log": "file:../log",
     "deep-equal": "^2.0.5",
     "lodash.debounce": "^4.0.8",
@@ -48,7 +49,8 @@
   },
   "devDependencies": {
     "@deephaven/mocks": "file:../mocks",
-    "@deephaven/tsconfig": "file:../tsconfig"
+    "@deephaven/tsconfig": "file:../tsconfig",
+    "@types/plotly.js": "^2.12.2"
   },
   "files": [
     "dist"
