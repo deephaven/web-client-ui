@@ -5,7 +5,6 @@ import {
   EventHandlerResult,
 } from '@deephaven/grid';
 import type { Column } from '@deephaven/jsapi-shim';
-import { assertNotNull } from '@deephaven/utils';
 import { IrisGrid } from '../IrisGrid';
 
 /**
@@ -120,8 +119,7 @@ class IrisGridColumnSelectMouseHandler extends GridMouseHandler {
 
     const { column } = gridPoint;
     const tableColumn = this.getTableColumn(column);
-    assertNotNull(tableColumn);
-    if (this.isValidColumn(tableColumn)) {
+    if (tableColumn != null && this.isValidColumn(tableColumn)) {
       this.irisGrid.selectColumn(tableColumn);
     }
 
