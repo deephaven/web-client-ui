@@ -34,16 +34,16 @@ interface ChartProps {
 interface ChartState {
   data: null;
   downsamplingError: null;
-  isDownsampleFinished: false;
-  isDownsampleInProgress: false;
-  isDownsamplingDisabled: false;
+  isDownsampleFinished: boolean;
+  isDownsampleInProgress: boolean;
+  isDownsamplingDisabled: boolean;
   layout: {
-    datarevision: 0;
+    datarevision: number;
   };
-  revision: 0;
+  revision: number;
 }
 
-export class Chart extends Component {
+export class Chart extends Component<ChartProps, ChartState> {
   /**
    * Convert a font awesome icon definition to a plotly icon definition
    * @param {FontAwesome.IconDefinition} faIcon The icon to convert
