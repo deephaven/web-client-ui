@@ -1,8 +1,11 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint func-names: "off" */
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import dh from '@deephaven/jsapi-shim';
 import { MockChartModel } from '@deephaven/chart';
+import { Container } from '@deephaven/golden-layout';
+import { PanelComponent } from '@deephaven/dashboard';
 import { ChartPanel } from './ChartPanel';
 import ChartColumnSelectorOverlay from './ChartColumnSelectorOverlay';
 
@@ -12,13 +15,13 @@ const PANEL_ID = 'TEST_PANEL_ID';
 jest.mock('@deephaven/chart', () => {
   const MockReact = jest.requireActual('react');
   return {
-    ...jest.requireActual('@deephaven/chart'),
+    ...(jest.requireActual('@deephaven/chart') as Record<string, unknown>),
     Chart: MockReact.forwardRef(() => null),
   };
 });
 
 jest.mock('@deephaven/dashboard', () => ({
-  ...jest.requireActual('@deephaven/dashboard'),
+  ...(jest.requireActual('@deephaven/dashboard') as Record<string, unknown>),
   LayoutUtils: {
     getIdFromPanel: jest.fn(() => 'TEST_PANEL_ID'),
     getTitleFromContainer: jest.fn(() => 'TEST_PANEL_TITLE'),
@@ -36,7 +39,7 @@ jest.mock('react-transition-group', () => ({
 const MockChart = jest.fn(() => null);
 
 jest.mock('@deephaven/chart', () => ({
-  ...jest.requireActual('@deephaven/chart'),
+  ...(jest.requireActual('@deephaven/chart') as Record<string, unknown>),
   __esModule: true,
   // eslint-disable-next-line react/jsx-props-no-spreading
   Chart: jest.fn(props => <MockChart {...props} />),
@@ -44,11 +47,17 @@ jest.mock('@deephaven/chart', () => ({
 }));
 
 function makeGlComponent() {
-  return { on: jest.fn(), off: jest.fn(), emit: jest.fn() };
+  return {
+    on: jest.fn(),
+    off: jest.fn(),
+    emit: jest.fn(),
+    trigger: jest.fn(),
+    unbind: jest.fn(),
+  };
 }
 
 function makeTable() {
-  const table = new dh.Table();
+  const table = new (dh as any).Table();
   const { addEventListener, removeEventListener } = table;
   table.addEventListener = jest.fn(addEventListener);
   table.removeEventListener = jest.fn(removeEventListener);
@@ -65,7 +74,7 @@ function makeGridPanel() {
 function makeChartPanelWrapper({
   glContainer = makeGlComponent(),
   glEventHub = makeGlComponent(),
-  client = new dh.Client({}),
+  client = new (dh as any).Client({}),
   columnSelectionValidator = null,
   makeModel = () => Promise.resolve(new MockChartModel()),
   metadata = { figure: 'testFigure' },
@@ -84,7 +93,7 @@ function makeChartPanelWrapper({
       columnSelectionValidator={columnSelectionValidator}
       makeModel={makeModel}
       metadata={metadata}
-      glContainer={glContainer}
+      glContainer={(glContainer as unknown) as Container}
       glEventHub={glEventHub}
       inputFilters={inputFilters}
       links={links}
@@ -93,13 +102,16 @@ function makeChartPanelWrapper({
       setActiveTool={setActiveTool}
       setDashboardIsolatedLinkerPanelId={setDashboardIsolatedLinkerPanelId}
       source={source}
-      sourcePanel={sourcePanel}
+      sourcePanel={sourcePanel as PanelComponent}
     />
   );
 }
 
 function callUpdateFunction() {
-  MockChart.mock.calls[MockChart.mock.calls.length - 1][0].onUpdate();
+  const { calls } = MockChart.mock;
+
+  const lastCall = calls[MockChart.mock.calls.length - 1];
+  calls[MockChart.mock.calls.length - 1][0].onUpdate();
 }
 
 function callErrorFunction() {
@@ -274,6 +286,8 @@ it('shows loading spinner until an error is received', async () => {
     })
   );
 
+  expectLoading(container);
+
   await expect(modelPromise).resolves.toBe(model);
 
   // Overlays shouldn't appear yet because we haven't received an update or error event, should just see loading
@@ -357,8 +371,8 @@ it('shows prompt if input filters are cleared', async () => {
   });
 });
 
-it('shows loading spinner until an error is received', async () => {
-  const filterFields = ['Field_A', 'Field_B'];
+it('shows loading spinner until an error is received B', async () => {
+  const filterFields = [];
   const model = new MockChartModel({ filterFields });
   const modelPromise = Promise.resolve(model);
   const makeModel = () => modelPromise;

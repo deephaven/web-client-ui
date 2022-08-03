@@ -3,7 +3,10 @@
  */
 import React, { Component } from 'react';
 import Log from '@deephaven/log';
-import ContextActionUtils from './ContextActionUtils';
+import ContextActionUtils, {
+  ResolvableContextAction,
+  isPromise,
+} from './ContextActionUtils';
 import type { ContextAction, ContextActionEvent } from './ContextActionUtils';
 import GlobalContextActions from './GlobalContextActions';
 import './ContextActions.scss';
@@ -11,10 +14,7 @@ import './ContextActions.scss';
 const log = Log.module('ContextActions');
 
 interface ContextActionsProps {
-  actions:
-    | ContextAction[]
-    | (() => ContextAction[])
-    | (() => Promise<ContextAction[]>);
+  actions: ResolvableContextAction[];
   ignoreClassNames?: string[];
   'data-testid'?: string;
 }
@@ -111,10 +111,17 @@ class ContextActions extends Component<
     if (!props.actions || !Array.isArray(props.actions)) {
       return { globalActions: [], keyboardActions: [] };
     }
-    const globalActions = props.actions.filter(action => action.isGlobal);
+    const globalActions = props.actions.filter(
+      action =>
+        !isPromise(action) && typeof action !== 'function' && action.isGlobal
+    ) as ContextAction[];
     const keyboardActions = props.actions.filter(
-      action => !action.isGlobal && action.shortcut != null
-    );
+      action =>
+        !isPromise(action) &&
+        typeof action !== 'function' &&
+        !action.isGlobal &&
+        action.shortcut != null
+    ) as ContextAction[];
 
     return { globalActions, keyboardActions };
   }
@@ -177,7 +184,12 @@ class ContextActions extends Component<
     if (actions) {
       let contextActions = actions;
       if (Array.isArray(contextActions)) {
-        contextActions = contextActions.filter(action => !action.isGlobal);
+        contextActions = contextActions.filter(
+          action =>
+            isPromise(action) ||
+            typeof action === 'function' ||
+            !action.isGlobal
+        );
       }
 
       e.contextActions = e.contextActions.concat(contextActions);

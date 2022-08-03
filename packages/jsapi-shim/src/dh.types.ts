@@ -101,6 +101,12 @@ export interface IdeSessionStatic {
   EVENT_COMMANDSTARTED: 'commandstarted';
 }
 
+export interface WorkerConnection {
+  subscribeToFieldUpdates(
+    param: (changes: VariableChanges) => void
+  ): () => void;
+}
+
 export interface IdeSession extends Evented {
   subscribeToFieldUpdates(
     param: (changes: VariableChanges) => void
@@ -596,6 +602,7 @@ export interface Table extends TableTemplate<Table>, TableStatic {
   readonly hasInputTable: boolean;
 
   readonly isClosed: boolean;
+  readonly pluginName: string;
 
   applyCustomColumns(columns: (CustomColumn | string)[]): string[];
 

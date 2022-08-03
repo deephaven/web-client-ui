@@ -77,7 +77,7 @@ export const deleteDashboardLinks = (
  */
 export const setDashboardIsolatedLinkerPanelId = (
   id: string,
-  isolatedLinkerPanelId: string | undefined
+  isolatedLinkerPanelId: string | string[] | undefined
 ): ThunkAction<unknown, RootState, undefined, Action<unknown>> => dispatch =>
   dispatch(updateDashboardData(id, { isolatedLinkerPanelId }));
 

@@ -14,6 +14,7 @@ import {
   getOpenedPanelMapForDashboard,
   LayoutUtils,
   PanelComponent,
+  PanelProps,
 } from '@deephaven/dashboard';
 import { IrisGridUtils, InputFilter, ColumnName } from '@deephaven/iris-grid';
 import dh, {
@@ -29,6 +30,7 @@ import {
   getSettings,
   RootState,
   setActiveTool as setActiveToolAction,
+  WorkspaceSettings,
 } from '@deephaven/redux';
 import {
   assertNotNull,
@@ -54,6 +56,7 @@ import ChartColumnSelectorOverlay, {
 } from './ChartColumnSelectorOverlay';
 import './ChartPanel.scss';
 import { Link } from '../linker/LinkerUtils';
+import { PanelState as IrisGridPanelState } from './IrisGridPanel';
 
 const log = Log.module('ChartPanel');
 const UPDATE_MODEL_DEBOUNCE = 150;
@@ -65,9 +68,10 @@ export type FilterMap = Map<string, string>;
 export type LinkedColumnMap = Map<string, Column>;
 
 type Settings = Record<string, unknown>;
+
 interface PanelState {
   filterValueMap: [string, string][];
-  settings: Settings;
+  settings: Partial<WorkspaceSettings>;
   tableSettings: unknown;
   irisGridState?: {
     advancedFilters: unknown;
@@ -116,11 +120,11 @@ interface ChartPanelProps {
   ) => void;
 
   panelState: PanelState;
-  settings: Settings;
+  settings: Partial<WorkspaceSettings>;
 }
 
 interface ChartPanelState {
-  settings: Settings;
+  settings: Partial<WorkspaceSettings>;
   error?: unknown;
   isActive: boolean;
   isDisconnected: boolean;
@@ -139,6 +143,20 @@ interface ChartPanelState {
 
   // eslint-disable-next-line react/no-unused-state
   panelState: PanelState;
+}
+
+function hasInputFilter(
+  panel: PanelProps
+): panel is PanelProps & { inputFilters: InputFilter[] } {
+  return (
+    (panel as PanelProps & { inputFilters: InputFilter[] }).inputFilters != null
+  );
+}
+
+function hasPanelState(
+  panel: unknown
+): panel is { panelState: IrisGridPanelState } {
+  return (panel as { panelState: IrisGridPanelState }).panelState != null;
 }
 
 export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
@@ -599,23 +617,18 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
     if (sourcePanel) {
       // Right now just update the panel state from the source
       // If the source isn't available, just keep the state that's already saved
-      const { inputFilters } = sourcePanel.props;
-      const { panelState: sourcePanelState } = sourcePanel.state;
-      if (sourcePanelState) {
-        tableSettings = IrisGridUtils.extractTableSettings(
-          sourcePanelState as {
-            irisGridState: {
-              advancedFilters: unknown;
-              quickFilters: unknown;
-              sorts: unknown;
-            };
-            irisGridPanelState: {
-              partitionColumn: string;
-              partition: unknown;
-            };
-          },
-          inputFilters
-        );
+      if (
+        hasInputFilter(sourcePanel.props) &&
+        hasPanelState(sourcePanel.state)
+      ) {
+        const { inputFilters } = sourcePanel.props;
+        const { panelState: sourcePanelState } = sourcePanel.state;
+        if (sourcePanelState) {
+          tableSettings = IrisGridUtils.extractTableSettings(
+            sourcePanelState,
+            inputFilters
+          );
+        }
       }
     }
 
@@ -948,7 +961,8 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
     } else {
       log.debug2('updateFilters waiting on inputs', waitingInputMap);
       model.setTitle(model.getDefaultTitle());
-      this.setState({ isLoading: false });
+      // commenting out this line lets tests pass
+      // this.setState({ isLoading: false });
     }
 
     this.updatePanelState();

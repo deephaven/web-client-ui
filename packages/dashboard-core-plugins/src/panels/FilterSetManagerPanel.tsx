@@ -11,6 +11,7 @@ import { TableTemplate } from '@deephaven/jsapi-shim';
 import { RootState } from '@deephaven/redux';
 import {
   AdvancedFilter,
+  ColumnName,
   DehydratedIrisGridState,
   QuickFilter,
 } from '@deephaven/iris-grid';
@@ -29,11 +30,9 @@ import FilterSetManager, {
 } from './FilterSetManager';
 import { IrisGridPanel } from './IrisGridPanel';
 import DropdownFilterPanel from './DropdownFilterPanel';
-import {
-  InputFilterPanel,
+import InputFilterPanel, {
   PanelState as InputFilterPanelState,
 } from './InputFilterPanel';
-
 import './FilterSetManagerPanel.scss';
 
 const log = Log.module('FilterSetManagerPanel');
@@ -44,7 +43,7 @@ interface IrisGridState {
 
 interface PanelState {
   irisGridState?: IrisGridState;
-  gridState?: unknown;
+  gridState?: Partial<GridState>;
   selectedId?: string | string[];
   isValueShown?: boolean;
   name?: string;
@@ -73,6 +72,17 @@ interface FilterSetManagerPanelState {
   panelState: PanelState; // Dehydrated panel state that can load this panel
 }
 
+function hasSetPanelState(
+  panel: PanelComponent
+): panel is PanelComponent & {
+  setPanelState: (state: InputFilterPanelState) => void;
+} {
+  return (
+    (panel as PanelComponent & {
+      setPanelState: (state: InputFilterPanelState) => void;
+    }).setPanelState != null
+  );
+}
 export class FilterSetManagerPanel extends Component<
   FilterSetManagerPanelProps,
   FilterSetManagerPanelState
@@ -188,7 +198,16 @@ export class FilterSetManagerPanel extends Component<
     panelId: string | string[],
     panelState: PanelState
   ): {
-    irisGridState: Partial<DehydratedIrisGridState>;
+    irisGridState: Omit<IrisGridState, 'advancedFilters' | 'quickFilters'> & {
+      advancedFilters?: {
+        name: string;
+        filter: AdvancedFilter;
+      }[];
+      quickFilters?: {
+        name: string;
+        filter: QuickFilter;
+      }[];
+    };
     gridState: Partial<GridState>;
   } | null {
     const { panelTableMap } = this.props;
@@ -264,6 +283,8 @@ export class FilterSetManagerPanel extends Component<
             state as {
               irisGridState: Partial<DehydratedIrisGridState>;
               gridState: Partial<GridState>;
+              advancedFilters: { name: string; filter: AdvancedFilter }[];
+              quickFilters: { name: string; filter: QuickFilter }[];
             },
             restoreFullState
           );
@@ -300,6 +321,8 @@ export class FilterSetManagerPanel extends Component<
     state: {
       irisGridState: Partial<DehydratedIrisGridState>;
       gridState: Partial<GridState>;
+      advancedFilters: { name: ColumnName; filter: AdvancedFilter }[];
+      quickFilters: { name: ColumnName; filter: QuickFilter }[];
     },
     restoreFullState: boolean
   ): void {
@@ -329,20 +352,31 @@ export class FilterSetManagerPanel extends Component<
     if (restoreFullState) {
       panel.setStateOverrides(state);
     } else {
-      panel.setFilters({ quickFilters, advancedFilters });
+      panel.setFilters({
+        quickFilters: quickFilters as {
+          name: string;
+          filter: QuickFilter;
+        }[],
+        advancedFilters: advancedFilters as {
+          name: string;
+          filter: AdvancedFilter;
+        }[],
+      });
     }
   }
 
   // eslint-disable-next-line class-methods-use-this
   restoreInputFilterState(
-    panel: InputFilterPanel,
+    panel: PanelComponent | undefined,
     state: InputFilterPanelState
   ): void {
     const inputFilterState = { ...state };
     // Restore state but don't flip the card
     delete inputFilterState.isValueShown;
     log.debug('restoreInputFilterState', panel, inputFilterState);
-    panel.setPanelState(inputFilterState);
+    if (panel && hasSetPanelState(panel)) {
+      panel.setPanelState(inputFilterState);
+    }
   }
 
   render(): ReactElement {

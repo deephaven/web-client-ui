@@ -389,7 +389,9 @@ const mapStateToProps = (
   state: RootState,
   ownProps: { localDashboardId: string }
 ) => ({
-  commandHistoryStorage: getCommandHistoryStorage(state),
+  commandHistoryStorage: getCommandHistoryStorage(
+    state
+  ) as CommandHistoryStorage,
   sessionWrapper: getDashboardSessionWrapper(state, ownProps.localDashboardId),
   timeZone: getTimeZone(state),
 });

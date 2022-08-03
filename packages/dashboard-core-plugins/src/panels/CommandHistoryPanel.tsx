@@ -219,7 +219,9 @@ const mapStateToProps = (
   state: RootState,
   ownProps: { localDashboardId: string }
 ) => {
-  const commandHistoryStorage = getCommandHistoryStorage(state);
+  const commandHistoryStorage = getCommandHistoryStorage(
+    state
+  ) as CommandHistoryStorage;
   const sessionWrapper = getDashboardSessionWrapper(
     state,
     ownProps.localDashboardId

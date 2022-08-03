@@ -50,7 +50,7 @@ export type InputFilter = {
   name: string;
   type: string;
   value: string;
-  excludePanelIds?: string[];
+  excludePanelIds?: (string | string[])[];
 };
 
 export interface UIRow {

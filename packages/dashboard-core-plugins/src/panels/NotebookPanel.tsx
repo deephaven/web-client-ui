@@ -49,7 +49,7 @@ interface Metadata {
 
 interface Settings {
   language?: string;
-  value: string;
+  value: string | null;
 }
 
 interface FileMetadata {
@@ -126,7 +126,7 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     sessionLanguage: null,
     notebooksUrl: new URL(
       `${process.env.REACT_APP_NOTEBOOKS_URL}/`,
-      window.location
+      `${window.location}`
     ).href,
   };
 
@@ -334,7 +334,7 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     this.setPreviewStatus();
   }
 
-  getNotebookValue(): string {
+  getNotebookValue(): string | null {
     const { changeCount, savedChangeCount, settings } = this.state;
     const { value } = settings;
     if (changeCount !== savedChangeCount && this.notebook) {
@@ -545,7 +545,7 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     const { itemName } = fileMetadata;
     const copyName = FileUtils.getCopyFileName(itemName);
     log.debug('handleCopy', fileMetadata, itemName, copyName);
-    this.createNotebook(copyName, language, content);
+    this.createNotebook(copyName, language, content ?? undefined);
   }
 
   handleEditorChange(e: editor.IModelContentChangedEvent): void {

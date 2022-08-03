@@ -13,9 +13,7 @@ jest.mock('./Panel', () => jest.fn(() => null));
 function makeSession() {
   return {
     addEventListener: jest.fn(),
-    connection: {
-      subscribeToFieldUpdates: jest.fn(() => () => null),
-    },
+    subscribeToFieldUpdates: jest.fn(() => () => null),
     removeEventListener: jest.fn(),
     getTable: jest.fn(),
     getObject: jest.fn(),

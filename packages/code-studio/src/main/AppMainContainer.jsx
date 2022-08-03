@@ -176,38 +176,36 @@ export class AppMainContainer extends Component {
 
   initWidgets() {
     const { session } = this.props;
-    if (!session.connection.subscribeToFieldUpdates) {
+    if (!session.subscribeToFieldUpdates) {
       log.warn(
         'subscribeToFieldUpdates not supported, not initializing widgets'
       );
       return;
     }
 
-    this.widgetListenerRemover = session.connection.subscribeToFieldUpdates(
-      updates => {
-        log.debug('Got updates', updates);
-        this.setState(({ widgets }) => {
-          const { updated, created, removed } = updates;
+    this.widgetListenerRemover = session.subscribeToFieldUpdates(updates => {
+      log.debug('Got updates', updates);
+      this.setState(({ widgets }) => {
+        const { updated, created, removed } = updates;
 
-          // Remove from the array if it's been removed OR modified. We'll add it back after if it was modified.
-          const widgetsToRemove = [...updated, ...removed];
-          const newWidgets = widgets.filter(
-            widget =>
-              !widgetsToRemove.some(toRemove => toRemove.name === widget.name)
-          );
+        // Remove from the array if it's been removed OR modified. We'll add it back after if it was modified.
+        const widgetsToRemove = [...updated, ...removed];
+        const newWidgets = widgets.filter(
+          widget =>
+            !widgetsToRemove.some(toRemove => toRemove.name === widget.name)
+        );
 
-          // Now add all the modified and updated widgets back in
-          const widgetsToAdd = [...updated, ...created];
-          widgetsToAdd.forEach(toAdd => {
-            if (toAdd.name) {
-              newWidgets.push(toAdd);
-            }
-          });
-
-          return { widgets: newWidgets };
+        // Now add all the modified and updated widgets back in
+        const widgetsToAdd = [...updated, ...created];
+        widgetsToAdd.forEach(toAdd => {
+          if (toAdd.name) {
+            newWidgets.push(toAdd);
+          }
         });
-      }
-    );
+
+        return { widgets: newWidgets };
+      });
+    });
   }
 
   deinitWidgets() {

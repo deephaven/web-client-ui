@@ -1,11 +1,4 @@
 import PropTypes from 'prop-types';
-import CommonPropTypes from './CommonPropTypes';
-
-const InputFilter = PropTypes.shape({
-  name: PropTypes.string.isRequired,
-  type: PropTypes.string.isRequired,
-  value: CommonPropTypes.nullableString.isRequired,
-});
 
 const Panel = PropTypes.shape({
   state: PropTypes.shape({
@@ -51,7 +44,6 @@ const User = PropTypes.shape({
 });
 
 const UIPropTypes = Object.freeze({
-  InputFilter,
   LinkPoint,
   Link,
   Links,

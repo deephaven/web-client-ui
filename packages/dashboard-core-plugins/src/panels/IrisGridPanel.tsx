@@ -1,7 +1,6 @@
 // Wrapper for the IrisGrid for use in a golden layout container
 // Will probably need to handle window popping out from golden layout here.
 import React, {
-  Component,
   PureComponent,
   ReactElement,
   ReactNode,
@@ -76,7 +75,6 @@ import WidgetPanel from './WidgetPanel';
 import WidgetPanelTooltip from './WidgetPanelTooltip';
 import './IrisGridPanel.scss';
 import { Link } from '../linker/LinkerUtils';
-import { PanelState as PandasPanelState } from './PandasPanel';
 
 const log = Log.module('IrisGridPanel');
 
@@ -94,7 +92,7 @@ interface Metadata {
   querySerial?: string;
 }
 
-interface PanelState {
+export interface PanelState {
   gridState: {
     isStuckToBottom: boolean;
     isStuckToRight: boolean;
@@ -109,21 +107,22 @@ interface PanelState {
   };
   pluginState: number;
 }
-interface IrisGridPanelProps {
-  children: ReactNode;
+
+export interface IrisGridPanelProps {
+  children?: ReactNode;
   glContainer: Container;
   glEventHub: EventEmitter;
   metadata: Metadata;
-  panelState: PanelState;
+  panelState: PanelState | null;
   makeModel: () => IrisGridModel;
   inputFilters: InputFilter[];
   links: Link[];
-  columnSelectionValidator: (
+  columnSelectionValidator?: (
     value: unknown,
     Column: { name: string; type: string }
   ) => boolean;
-  onStateChange: (irisGridState: IrisGridState, gridState: GridState) => void;
-  onPanelStateUpdate: (panelState: PandasPanelState) => void;
+  onStateChange?: (irisGridState: IrisGridState, gridState: GridState) => void;
+  onPanelStateUpdate?: (panelState: PanelState) => void;
   user: User;
   workspace: Workspace;
   settings: { timeZone: string };
@@ -175,13 +174,13 @@ interface IrisGridPanelState {
   invertSearchColumns: boolean;
   Plugin?: Plugin;
   pluginFilters: FilterCondition[];
-  pluginFetchColumns: [];
+  pluginFetchColumns: unknown[];
   modelQueue: ModelQueue;
   pendingDataMap?: PendingDataMap<UIRow>;
   frozenColumns?: ColumnName[];
 
   // eslint-disable-next-line react/no-unused-state
-  panelState: PanelState; // Dehydrated panel state that can load this panel
+  panelState: PanelState | null; // Dehydrated panel state that can load this panel
   irisGridStateOverrides: Partial<DehydratedIrisGridState>;
   gridStateOverrides: Partial<GridState>;
 }
@@ -322,7 +321,8 @@ export class IrisGridPanel extends PureComponent<
 
   irisGrid: RefObject<IrisGrid>;
 
-  pluginRef: RefObject<Plugin>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  pluginRef: RefObject<any>;
 
   modelPromise?: CancelablePromise<IrisGridModel>;
 
@@ -330,7 +330,7 @@ export class IrisGridPanel extends PureComponent<
 
   gridState?: GridState;
 
-  pluginState = null;
+  pluginState: unknown;
 
   getTableName(): string {
     const { metadata } = this.props;
@@ -368,9 +368,16 @@ export class IrisGridPanel extends PureComponent<
   );
 
   getPluginContent = memoize(
-    // eslint-disable-next-line @typescript-eslint/no-shadow
-    (Plugin: Component, model: IrisGridModel, user, workspace, pluginState) => {
+    (
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      Plugin: any,
+      model: IrisGridModel | undefined,
+      user,
+      workspace,
+      pluginState
+    ) => {
       if (
+        !model ||
         !isIrisGridTableModelTemplate(model) ||
         Plugin == null ||
         model.table == null
@@ -469,7 +476,12 @@ export class IrisGridPanel extends PureComponent<
   );
 
   getCachedPanelState = memoize(
-    (irisGridPanelState, irisGridState, gridState, pluginState) => ({
+    (
+      irisGridPanelState,
+      irisGridState,
+      gridState,
+      pluginState
+    ): PanelState => ({
       irisGridPanelState,
       irisGridState,
       gridState,
@@ -575,23 +587,21 @@ export class IrisGridPanel extends PureComponent<
     this.setState({ pluginFilters });
   }
 
-  handlePluginFetchColumns(pluginFetchColumns): void {
+  handlePluginFetchColumns(pluginFetchColumns: unknown[]): void {
     this.setState({ pluginFetchColumns });
   }
 
-  handleContextMenu(data: {
-    obj: {
-      model: IrisGridModel;
-      value: unknown;
-      valueText: string | null;
-      column: Column;
-      rowIndex: GridRangeIndex;
-      columnIndex: GridRangeIndex;
-      modelRow: GridRangeIndex;
-      modelColumn: GridRangeIndex;
-    };
+  handleContextMenu(obj: {
+    model: IrisGridModel;
+    value: unknown;
+    valueText: string | null;
+    column: Column;
+    rowIndex: GridRangeIndex;
+    columnIndex: GridRangeIndex;
+    modelRow: GridRangeIndex;
+    modelColumn: GridRangeIndex;
   }): ContextAction {
-    return this.pluginRef.current?.getMenu?.(data) ?? [];
+    return this.pluginRef.current.getMenu?.({ data: obj }) ?? [];
   }
 
   isColumnSelectionValid(tableColumn: Column | null): boolean {
@@ -616,10 +626,10 @@ export class IrisGridPanel extends PureComponent<
 
     const { glEventHub, onStateChange } = this.props;
     glEventHub.emit(IrisGridEvent.STATE_CHANGED, this);
-    onStateChange(irisGridState, gridState);
+    onStateChange?.(irisGridState, gridState);
   }
 
-  handlePluginStateChange(pluginState): void {
+  handlePluginStateChange(pluginState: unknown): void {
     const { irisGridState, gridState } = this;
     this.pluginState = pluginState;
     // Do not save if there is null state
@@ -675,10 +685,14 @@ export class IrisGridPanel extends PureComponent<
         const { table } = metadata;
         const { panelState } = this.state;
         const sourcePanelId = LayoutUtils.getIdFromPanel(this);
-        const tableSettings = IrisGridUtils.extractTableSettings(
-          panelState,
-          inputFilters
-        );
+        let tableSettings;
+
+        if (panelState) {
+          tableSettings = IrisGridUtils.extractTableSettings(
+            panelState,
+            inputFilters
+          );
+        }
         glEventHub.emit(IrisGridEvent.CREATE_CHART, {
           metadata: {
             settings,
@@ -1123,7 +1137,7 @@ export class IrisGridPanel extends PureComponent<
       log.debug('Saving panel state', this, panelState);
 
       this.setState({ panelState });
-      onPanelStateUpdate(panelState);
+      onPanelStateUpdate?.(panelState);
     }
   }, DEBOUNCE_PANEL_STATE_UPDATE);
 

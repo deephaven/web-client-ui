@@ -4,23 +4,11 @@ import React, { Component, ReactElement, RefObject } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { dhRefresh } from '@deephaven/icons';
 import { Tooltip } from '@deephaven/components';
-import { CommandHistoryTable } from '@deephaven/console';
-import { IrisGridPanel } from './IrisGridPanel';
+import { IrisGridPanel, IrisGridPanelProps, PanelState } from './IrisGridPanel';
 import './PandasPanel.scss';
 
-export interface PanelState {
-  CommandHistoryTable?: CommandHistoryTable;
-  content?: string;
-  name?: string;
-  type?: string;
-  value?: string;
-  isValueShown?: boolean;
-  timestamp?: number;
-  selectedId?: string;
-}
-
-interface PandasPanelProps {
-  panelState: PanelState;
+interface PandasPanelProps extends IrisGridPanelProps {
+  panelState: PanelState | null;
 }
 
 interface PandasPanelState {

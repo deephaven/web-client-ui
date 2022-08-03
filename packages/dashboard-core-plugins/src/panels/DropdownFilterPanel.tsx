@@ -56,7 +56,7 @@ interface DropdownFilterPanelProps {
   ) => boolean;
   disableLinking: boolean;
   settings: {
-    columnFormats: FormattingRule[];
+    formatter: FormattingRule[];
   };
   // eslint-disable-next-line react/no-unused-prop-types
   panelTableMap: Map<string | string[], TableTemplate>;
@@ -136,7 +136,7 @@ class DropdownFilterPanel extends Component<
     this.pending = new Pending();
 
     const { panelState, settings } = props;
-    this.columnFormats = settings.columnFormats;
+    this.columnFormats = FormatterUtils.getColumnFormats(settings);
     const { value = '', isValueShown = false, name, type, timestamp = null } =
       panelState ?? {};
     const column = name != null && type != null ? { name, type } : undefined;
@@ -751,7 +751,7 @@ class DropdownFilterPanel extends Component<
 
 const mapStateToProps = (
   state: RootState,
-  ownProps: { localDashboardId: string }
+  ownProps: { localDashboardId: string; glContainer: Container }
 ) => {
   const { localDashboardId } = ownProps;
   const panelId = LayoutUtils.getIdFromPanel({ props: ownProps });
