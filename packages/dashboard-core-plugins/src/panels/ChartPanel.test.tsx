@@ -108,10 +108,7 @@ function makeChartPanelWrapper({
 }
 
 function callUpdateFunction() {
-  const { calls } = MockChart.mock;
-
-  const lastCall = calls[MockChart.mock.calls.length - 1];
-  calls[MockChart.mock.calls.length - 1][0].onUpdate();
+  MockChart.mock.calls?.[MockChart.mock.calls.length - 1][0].onUpdate();
 }
 
 function callErrorFunction() {
