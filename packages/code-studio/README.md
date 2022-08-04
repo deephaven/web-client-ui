@@ -38,11 +38,7 @@ Printing detailed logs when debugging can be handy. The highest level of logging
 REACT_APP_LOG_LEVEL=2 # Warn/Error
 ```
 
-When running the unit tests, you often do not want any logs to be printed out. Logging is disabled in unit tests in your `.env.test` To enable the logs while running the unit tests, set the log level in your `.env.test.local` file:
-
-```shell
-REACT_APP_LOG_LEVEL=2 # Warn/Error
-```
+When running the unit tests, you often do not want any logs to be printed out. Logging is disabled in unit tests in the root `jest.setup.ts`.
 
 See [@deephaven/log](../log) for more details on the logger.
 
