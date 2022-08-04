@@ -1,0 +1,25 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "rootDir": "src/",
+    "outDir": "dist/",
+    "noEmit": true
+  },
+  "include": [
+    "src"
+  ],
+  "references": [
+    {
+      "path": "../chart"
+    },
+    {
+      "path": "../components"
+    },
+    {
+      "path": "../jsapi-shim"
+    },
+    {
+      "path": "../log"
+    }
+  ]
+}
