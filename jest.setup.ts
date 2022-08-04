@@ -4,7 +4,11 @@ import 'jest-canvas-mock';
 import './__mocks__/dh-core';
 import Log from '@deephaven/log';
 
-Log.setLogLevel(-1);
+let logLevel = parseInt(process.env.DH_LOG_LEVEL ?? '', 10);
+if (!Number.isFinite(logLevel)) {
+  logLevel = -1;
+}
+Log.setLogLevel(logLevel);
 
 // disable annoying dnd-react warnings
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
