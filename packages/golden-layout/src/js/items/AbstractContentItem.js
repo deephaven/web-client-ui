@@ -1,3 +1,7 @@
+import $ from 'jquery';
+import utils from '../utils';
+import errors from '../errors';
+
 /**
  * This is the baseclass that all content items inherit from.
  * Most methods provide a subset of what the sub-classes do.
@@ -19,8 +23,8 @@
  *
  * @constructor
  */
-lm.items.AbstractContentItem = function (layoutManager, config, parent) {
-  lm.utils.EventEmitter.call(this);
+const AbstractContentItem = function (layoutManager, config, parent) {
+  utils.EventEmitter.call(this);
 
   this.config = this._extendItemNode(config);
   this.type = config.type;
@@ -39,14 +43,14 @@ lm.items.AbstractContentItem = function (layoutManager, config, parent) {
   this._pendingEventPropagations = {};
   this._throttledEvents = ['stateChanged'];
 
-  this.on(lm.utils.EventEmitter.ALL_EVENT, this._propagateEvent, this);
+  this.on(utils.EventEmitter.ALL_EVENT, this._propagateEvent, this);
 
   if (config.content) {
     this._createContentItems(config);
   }
 };
 
-lm.utils.copy(lm.items.AbstractContentItem.prototype, {
+utils.copy(AbstractContentItem.prototype, {
   /**
    * Set the size of the component and its children, called recursively
    *
@@ -101,7 +105,7 @@ lm.utils.copy(lm.items.AbstractContentItem.prototype, {
     /*
      * Get the position of the item that's to be removed within all content items this node contains
      */
-    var index = lm.utils.indexOf(contentItem, this.contentItems);
+    var index = utils.indexOf(contentItem, this.contentItems);
 
     /*
      * Make sure the content item to be removed is actually a child of this item
@@ -136,10 +140,7 @@ lm.utils.copy(lm.items.AbstractContentItem.prototype, {
       /**
        * If this was the last content item, remove this node as well
        */
-    } else if (
-      !(this instanceof lm.items.Root) &&
-      this.config.isClosable === true
-    ) {
+    } else if (this.type !== 'root' && this.config.isClosable) {
       this.parent.removeChild(this);
     }
   },
@@ -186,7 +187,7 @@ lm.utils.copy(lm.items.AbstractContentItem.prototype, {
   replaceChild: function (oldChild, newChild, _$destroyOldChild) {
     newChild = this.layoutManager._$normalizeContentItem(newChild);
 
-    var index = lm.utils.indexOf(oldChild, this.contentItems),
+    var index = utils.indexOf(oldChild, this.contentItems),
       parentNode = oldChild.element[0].parentNode;
 
     if (index === -1) {
@@ -318,7 +319,7 @@ lm.utils.copy(lm.items.AbstractContentItem.prototype, {
     } else if (typeof this.config.id === 'string') {
       return this.config.id === id;
     } else if (this.config.id instanceof Array) {
-      return lm.utils.indexOf(id, this.config.id) !== -1;
+      return utils.indexOf(id, this.config.id) !== -1;
     }
   },
 
@@ -362,7 +363,7 @@ lm.utils.copy(lm.items.AbstractContentItem.prototype, {
     if (typeof this.config.id === 'string') {
       delete this.config.id;
     } else if (this.config.id instanceof Array) {
-      var index = lm.utils.indexOf(id, this.config.id);
+      var index = utils.indexOf(id, this.config.id);
       this.config.id.splice(index, 1);
     }
   },
@@ -389,7 +390,7 @@ lm.utils.copy(lm.items.AbstractContentItem.prototype, {
   getItemsById: function (id) {
     return this.getItemsByFilter(function (item) {
       if (item.config.id instanceof Array) {
-        return lm.utils.indexOf(id, item.config.id) !== -1;
+        return utils.indexOf(id, item.config.id) !== -1;
       } else {
         return item.config.id === id;
       }
@@ -531,7 +532,7 @@ lm.utils.copy(lm.items.AbstractContentItem.prototype, {
    * @returns {void}
    */
   emitBubblingEvent: function (name) {
-    var event = new lm.utils.BubblingEvent(name, this);
+    var event = new utils.BubblingEvent(name, this);
     this.emit(name, event);
   },
 
@@ -547,10 +548,7 @@ lm.utils.copy(lm.items.AbstractContentItem.prototype, {
     var oContentItem, i;
 
     if (!(config.content instanceof Array)) {
-      throw new lm.errors.ConfigurationError(
-        'content must be an Array',
-        config
-      );
+      throw new errors.ConfigurationError('content must be an Array', config);
     }
 
     for (i = 0; i < config.content.length; i++) {
@@ -570,9 +568,9 @@ lm.utils.copy(lm.items.AbstractContentItem.prototype, {
    * @returns {configuration item node} extended config
    */
   _extendItemNode: function (config) {
-    for (var key in lm.config.itemDefaultConfig) {
+    for (var key in config.itemDefaultConfig) {
       if (config[key] === undefined) {
-        config[key] = lm.config.itemDefaultConfig[key];
+        config[key] = config.itemDefaultConfig[key];
       }
     }
 
@@ -590,7 +588,7 @@ lm.utils.copy(lm.items.AbstractContentItem.prototype, {
    */
   _propagateEvent: function (name, event) {
     if (
-      event instanceof lm.utils.BubblingEvent &&
+      event instanceof utils.BubblingEvent &&
       event.isPropagationStopped === false &&
       this.isInitialised === true
     ) {
@@ -622,16 +620,13 @@ lm.utils.copy(lm.items.AbstractContentItem.prototype, {
    * @returns {void}
    */
   _scheduleEventPropagationToLayoutManager: function (name, event) {
-    if (lm.utils.indexOf(name, this._throttledEvents) === -1) {
+    if (utils.indexOf(name, this._throttledEvents) === -1) {
       this.layoutManager.emit(name, event.origin);
     } else {
       if (this._pendingEventPropagations[name] !== true) {
         this._pendingEventPropagations[name] = true;
-        lm.utils.animFrame(
-          lm.utils.fnBind(this._propagateEventToLayoutManager, this, [
-            name,
-            event,
-          ])
+        utils.animFrame(
+          utils.fnBind(this._propagateEventToLayoutManager, this, [name, event])
         );
       }
     }
@@ -650,3 +645,5 @@ lm.utils.copy(lm.items.AbstractContentItem.prototype, {
     this.layoutManager.emit(name, event);
   },
 });
+
+export default AbstractContentItem;

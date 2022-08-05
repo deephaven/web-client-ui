@@ -1,5 +1,9 @@
-lm.utils.DragListener = function (eElement, destroyAfterMouseUp) {
-  lm.utils.EventEmitter.call(this);
+import $ from 'jquery';
+import utils from './utils';
+import EventEmitter from './EventEmitter';
+
+const DragListener = function (eElement, destroyAfterMouseUp) {
+  EventEmitter.call(this);
 
   this._eElement = $(eElement);
   this._oDocument = $(document);
@@ -26,16 +30,16 @@ lm.utils.DragListener = function (eElement, destroyAfterMouseUp) {
 
   this._bDragging = false;
 
-  this._fMove = lm.utils.fnBind(this.onMouseMove, this);
-  this._fUp = lm.utils.fnBind(this.onMouseUp, this);
-  this._fDown = lm.utils.fnBind(this.onMouseDown, this);
+  this._fMove = utils.fnBind(this.onMouseMove, this);
+  this._fUp = utils.fnBind(this.onMouseUp, this);
+  this._fDown = utils.fnBind(this.onMouseDown, this);
 
   this._eElement.on('mousedown', this._fDown);
 };
 
-lm.utils.DragListener.timeout = null;
+DragListener.timeout = null;
 
-lm.utils.copy(lm.utils.DragListener.prototype, {
+utils.copy(DragListener.prototype, {
   destroy: function () {
     this._eElement.unbind('mousedown', this._fDown);
     this._oDocument.unbind('mouseup', this._fUp);
@@ -61,7 +65,7 @@ lm.utils.copy(lm.utils.DragListener.prototype, {
       this._oDocument.one('mouseup', this._fUp);
 
       this._timeout = setTimeout(
-        lm.utils.fnBind(this._startDrag, this),
+        utils.fnBind(this._startDrag, this),
         this._nDelay
       );
     }
@@ -132,3 +136,5 @@ lm.utils.copy(lm.utils.DragListener.prototype, {
     };
   },
 });
+
+export default DragListener;

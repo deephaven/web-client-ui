@@ -6,7 +6,7 @@ import {
   Link,
   LogPanel,
 } from '@deephaven/dashboard-core-plugins';
-import { ItemConfigType } from '@deephaven/golden-layout';
+import type { ItemConfigType } from '@deephaven/golden-layout';
 import Log from '@deephaven/log';
 import LayoutStorage, {
   ExportedLayout,

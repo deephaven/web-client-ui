@@ -1,3 +1,5 @@
+import utils from './utils';
+
 /**
  * Minifies and unminifies configs by replacing frequent keys
  * and values with one letter substitutes. Config options must
@@ -5,7 +7,7 @@
  *
  * @constructor
  */
-lm.utils.ConfigMinifier = function () {
+const ConfigMinifier = function () {
   this._keys = [
     'settings',
     'hasHeaders',
@@ -59,7 +61,7 @@ lm.utils.ConfigMinifier = function () {
   ];
 };
 
-lm.utils.copy(lm.utils.ConfigMinifier.prototype, {
+utils.copy(ConfigMinifier.prototype, {
   /**
    * Takes a GoldenLayout configuration object and
    * replaces its keys and values recursively with
@@ -152,7 +154,7 @@ lm.utils.copy(lm.utils.ConfigMinifier.prototype, {
       return '___' + value;
     }
 
-    var index = lm.utils.indexOf(value, dictionary);
+    var index = utils.indexOf(value, dictionary);
 
     /**
      * value not found in the dictionary, return it unmodified
@@ -191,3 +193,5 @@ lm.utils.copy(lm.utils.ConfigMinifier.prototype, {
     return value;
   },
 });
+
+export default ConfigMinifier;

@@ -7,7 +7,8 @@ import React, {
   useState,
 } from 'react';
 import throttle from 'lodash.throttle';
-import GoldenLayout, { ItemConfigType } from '@deephaven/golden-layout';
+import GoldenLayout from '@deephaven/golden-layout';
+import type { ItemConfigType } from '@deephaven/golden-layout';
 import './layout/golden-layout';
 import LayoutUtils from './layout/LayoutUtils';
 import PanelPlaceholder from './PanelPlaceholder';

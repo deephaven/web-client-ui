@@ -1,3 +1,6 @@
+import $ from 'jquery';
+import utils from './utils';
+
 /**
  * A specialised GoldenLayout component that binds GoldenLayout container
  * lifecycle events to react components
@@ -7,7 +10,7 @@
  * @param {lm.container.ItemContainer} container
  * @param {Object} state state is not required for react components
  */
-lm.utils.ReactComponentHandler = function (container, state) {
+const ReactComponentHandler = function (container, state) {
   this._reactComponent = null;
   this._originalComponentWillUpdate = null;
   this._container = container;
@@ -17,7 +20,7 @@ lm.utils.ReactComponentHandler = function (container, state) {
   this._container.on('destroy', this._destroy, this);
 };
 
-lm.utils.copy(lm.utils.ReactComponentHandler.prototype, {
+utils.copy(ReactComponentHandler.prototype, {
   /**
    * Creates the react class and component and hydrates it with
    * the initial state - if one is present
@@ -132,3 +135,5 @@ lm.utils.copy(lm.utils.ReactComponentHandler.prototype, {
     return React.createElement(this._reactClass, props);
   },
 });
+
+export default ReactComponentHandler;

@@ -1,5 +1,6 @@
 import { ComponentType } from 'react';
-import GoldenLayout, {
+import type GoldenLayout from '@deephaven/golden-layout';
+import type {
   ContentItem,
   ItemConfigType,
   ReactComponentConfig,

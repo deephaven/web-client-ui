@@ -1,5 +1,8 @@
-lm.container.ItemContainer = function (config, parent, layoutManager) {
-  lm.utils.EventEmitter.call(this);
+import $ from 'jquery';
+import utils from '../utils';
+
+const ItemContainer = function (config, parent, layoutManager) {
+  utils.EventEmitter.call(this);
 
   this.width = null;
   this.height = null;
@@ -20,7 +23,7 @@ lm.container.ItemContainer = function (config, parent, layoutManager) {
   this._contentElement = this._element.find('.lm_content');
 };
 
-lm.utils.copy(lm.container.ItemContainer.prototype, {
+utils.copy(ItemContainer.prototype, {
   /**
    * Get the inner DOM element the container's content
    * is intended to live in
@@ -196,3 +199,5 @@ lm.utils.copy(lm.container.ItemContainer.prototype, {
     }
   },
 });
+
+export default ItemContainer;

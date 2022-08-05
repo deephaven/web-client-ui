@@ -1,5 +1,10 @@
-lm.items.Root = function (layoutManager, config, containerElement) {
-  lm.items.AbstractContentItem.call(this, layoutManager, config, null);
+import $ from 'jquery';
+import utils from '../utils';
+import AbstractContentItem from './AbstractContentItem';
+import RowOrColumn from './RowOrColumn';
+
+const Root = function (layoutManager, config, containerElement) {
+  AbstractContentItem.call(this, layoutManager, config, null);
   this.isRoot = true;
   this.type = 'root';
   this.element = $('<div class="lm_goldenlayout lm_item lm_root"></div>');
@@ -8,9 +13,9 @@ lm.items.Root = function (layoutManager, config, containerElement) {
   this._containerElement.append(this.element);
 };
 
-lm.utils.extend(lm.items.Root, lm.items.AbstractContentItem);
+utils.extend(Root, AbstractContentItem);
 
-lm.utils.copy(lm.items.Root.prototype, {
+utils.copy(Root.prototype, {
   addChild: function (contentItem) {
     if (this.contentItems.length > 0) {
       throw new Error('Root node can only have a single child');
@@ -18,7 +23,7 @@ lm.utils.copy(lm.items.Root.prototype, {
 
     contentItem = this.layoutManager._$normalizeContentItem(contentItem, this);
     this.childElementContainer.append(contentItem.element);
-    lm.items.AbstractContentItem.prototype.addChild.call(this, contentItem);
+    AbstractContentItem.prototype.addChild.call(this, contentItem);
 
     this.callDownwards('setSize');
     this.emitBubblingEvent('stateChanged');
@@ -44,10 +49,7 @@ lm.utils.copy(lm.items.Root.prototype, {
 
   _$highlightDropZone: function (x, y, area) {
     this.layoutManager.tabDropPlaceholder.remove();
-    lm.items.AbstractContentItem.prototype._$highlightDropZone.apply(
-      this,
-      arguments
-    );
+    AbstractContentItem.prototype._$highlightDropZone.apply(this, arguments);
   },
 
   _$onDrop: function (contentItem, area) {
@@ -73,7 +75,7 @@ lm.utils.copy(lm.items.Root.prototype, {
       var dimension = area.side[0] == 'x' ? 'width' : 'height';
       var insertBefore = area.side[1] == '2';
       var column = this.contentItems[0];
-      if (!column instanceof lm.items.RowOrColumn || column.type != type) {
+      if (!column instanceof RowOrColumn || column.type != type) {
         var rowOrColumn = this.layoutManager.createContentItem(
           { type: type },
           this
@@ -97,3 +99,5 @@ lm.utils.copy(lm.items.Root.prototype, {
     }
   },
 });
+
+export default Root;

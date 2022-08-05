@@ -1,18 +1,23 @@
+import $ from 'jquery';
+import utils from '../utils';
+import HeaderButton from './HeaderButton';
+import Tab from './Tab';
+
 /**
  * This class represents a header above a Stack ContentItem.
  *
  * @param {lm.LayoutManager} layoutManager
  * @param {lm.item.AbstractContentItem} parent
  */
-lm.controls.Header = function (layoutManager, parent) {
-  lm.utils.EventEmitter.call(this);
+const Header = function (layoutManager, parent) {
+  utils.EventEmitter.call(this);
 
   this.layoutManager = layoutManager;
-  this.element = $(lm.controls.Header._template);
+  this.element = $(Header._template);
 
   if (this.layoutManager.config.settings.selectionEnabled === true) {
     this.element.addClass('lm_selectable');
-    this.element.on('click', lm.utils.fnBind(this._onHeaderClick, this));
+    this.element.on('click', utils.fnBind(this._onHeaderClick, this));
   }
 
   this.tabsContainer = this.element.find('.lm_tabs');
@@ -35,8 +40,8 @@ lm.controls.Header = function (layoutManager, parent) {
   this.closeButton = null;
 
   this.tabDropdownButton = null;
-  this.tabNextButton = $(lm.controls.Header._nextButtonTemplate);
-  this.tabPreviousButton = $(lm.controls.Header._previousButtonTemplate);
+  this.tabNextButton = $(Header._nextButtonTemplate);
+  this.tabPreviousButton = $(Header._previousButtonTemplate);
 
   this._handleItemPickedUp = this._handleItemPickedUp.bind(this);
   this._handleItemDropped = this._handleItemDropped.bind(this);
@@ -98,7 +103,7 @@ lm.controls.Header = function (layoutManager, parent) {
   this._createControls();
 };
 
-lm.controls.Header._template = [
+Header._template = [
   '<div class="lm_header">',
   '<ul class="lm_tabs"></ul>',
   '<ul class="lm_controls"></ul>',
@@ -108,17 +113,15 @@ lm.controls.Header._template = [
   '</div>',
 ].join('');
 
-lm.controls.Header._previousButtonTemplate = [
+Header._previousButtonTemplate = [
   '<ul class="lm_controls">',
   '<li class="lm_tabpreviousbutton"></li>',
   '</ul>',
 ].join('');
 
-lm.controls.Header._nextButtonTemplate = [
-  '<li class="lm_tabnextbutton"></li>',
-].join('');
+Header._nextButtonTemplate = ['<li class="lm_tabnextbutton"></li>'].join('');
 
-lm.utils.copy(lm.controls.Header.prototype, {
+utils.copy(Header.prototype, {
   /**
    * Creates a new tab and associates it with a contentItem
    *
@@ -138,7 +141,7 @@ lm.utils.copy(lm.controls.Header.prototype, {
       }
     }
 
-    tab = new lm.controls.Tab(this, contentItem);
+    tab = new Tab(this, contentItem);
 
     if (this.tabs.length === 0) {
       this.tabs.push(tab);
@@ -525,7 +528,7 @@ lm.utils.copy(lm.controls.Header.prototype, {
     tabOverflowPreviousLabel = this.layoutManager.config.labels
       .tabPreviousLabel;
 
-    this.tabDropdownButton = new lm.controls.HeaderButton(
+    this.tabDropdownButton = new HeaderButton(
       this,
       tabDropdownLabel,
       'lm_tabdropdown',
@@ -540,19 +543,19 @@ lm.utils.copy(lm.controls.Header.prototype, {
      * Popout control to launch component in new window.
      */
     if (this._getHeaderSetting('popout')) {
-      popout = lm.utils.fnBind(this._onPopoutClick, this);
+      popout = utils.fnBind(this._onPopoutClick, this);
       label = this._getHeaderSetting('popout');
-      new lm.controls.HeaderButton(this, label, 'lm_popout', popout);
+      new HeaderButton(this, label, 'lm_popout', popout);
     }
 
     /**
      * Maximise control - set the component to the full size of the layout
      */
     if (this._getHeaderSetting('maximise')) {
-      maximise = lm.utils.fnBind(this.parent.toggleMaximise, this.parent);
+      maximise = utils.fnBind(this.parent.toggleMaximise, this.parent);
       maximiseLabel = this._getHeaderSetting('maximise');
       minimiseLabel = this._getHeaderSetting('minimise');
-      maximiseButton = new lm.controls.HeaderButton(
+      maximiseButton = new HeaderButton(
         this,
         maximiseLabel,
         'lm_maximise',
@@ -572,14 +575,9 @@ lm.utils.copy(lm.controls.Header.prototype, {
      * Close button
      */
     if (this._isClosable()) {
-      closeStack = lm.utils.fnBind(this.parent.remove, this.parent);
+      closeStack = utils.fnBind(this.parent.remove, this.parent);
       label = this._getHeaderSetting('close');
-      this.closeButton = new lm.controls.HeaderButton(
-        this,
-        label,
-        'lm_close',
-        closeStack
-      );
+      this.closeButton = new HeaderButton(this, label, 'lm_close', closeStack);
     }
   },
 
@@ -829,3 +827,5 @@ lm.utils.copy(lm.controls.Header.prototype, {
     if (this.isOverflowing) this._checkScrollArrows();
   },
 });
+
+export default Header;

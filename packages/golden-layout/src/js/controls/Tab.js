@@ -1,3 +1,7 @@
+import $ from 'jquery';
+import utils from '../utils';
+import DragProxy from './DragProxy';
+
 /**
  * Represents an individual tab within a Stack's header
  *
@@ -6,10 +10,10 @@
  *
  * @constructor
  */
-lm.controls.Tab = function (header, contentItem) {
+const Tab = function (header, contentItem) {
   this.header = header;
   this.contentItem = contentItem;
-  this.element = $(lm.controls.Tab._template);
+  this.element = $(Tab._template);
   this.titleElement = this.element.find('.lm_title');
   this.closeElement = this.element.find('.lm_close_tab');
   this.closeElement[contentItem.config.isClosable ? 'show' : 'hide']();
@@ -24,7 +28,7 @@ lm.controls.Tab = function (header, contentItem) {
     this._layoutManager.config.settings.reorderEnabled === true &&
     contentItem.config.reorderEnabled === true
   ) {
-    this._dragListener = new lm.utils.DragListener(this.element);
+    this._dragListener = new utils.DragListener(this.element);
     this._dragListener.on('dragStart', this._onDragStart, this);
     this.contentItem.on(
       'destroy',
@@ -33,16 +37,10 @@ lm.controls.Tab = function (header, contentItem) {
     );
   }
 
-  this._onTabClickFn = lm.utils.fnBind(this._onTabClick, this);
-  this._onCloseClickFn = lm.utils.fnBind(this._onCloseClick, this);
-  this._onTabContentFocusInFn = lm.utils.fnBind(
-    this._onTabContentFocusIn,
-    this
-  );
-  this._onTabContentFocusOutFn = lm.utils.fnBind(
-    this._onTabContentFocusOut,
-    this
-  );
+  this._onTabClickFn = utils.fnBind(this._onTabClick, this);
+  this._onCloseClickFn = utils.fnBind(this._onCloseClick, this);
+  this._onTabContentFocusInFn = utils.fnBind(this._onTabContentFocusIn, this);
+  this._onTabContentFocusOutFn = utils.fnBind(this._onTabContentFocusOut, this);
 
   this.element.on('click', this._onTabClickFn);
   this.element.on('auxclick', this._onTabClickFn);
@@ -74,7 +72,7 @@ lm.controls.Tab = function (header, contentItem) {
  *
  * @type {String}
  */
-lm.controls.Tab._template = [
+Tab._template = [
   '<li class="lm_tab">',
   '<span class="lm_title_before"></span>',
   '<span class="lm_title"></span>',
@@ -82,7 +80,7 @@ lm.controls.Tab._template = [
   '</li>',
 ].join('');
 
-lm.utils.copy(lm.controls.Tab.prototype, {
+utils.copy(Tab.prototype, {
   /**
    * Sets the tab's title to the provided string and sets
    * its title attribute to a pure text representation (without
@@ -156,7 +154,7 @@ lm.utils.copy(lm.controls.Tab.prototype, {
       this.contentItem.parent.toggleMaximise();
     }
 
-    new lm.controls.DragProxy(
+    new DragProxy(
       x,
       y,
       this._dragListener,
@@ -289,3 +287,5 @@ lm.utils.copy(lm.controls.Tab.prototype, {
     event.stopPropagation();
   },
 });
+
+export default Tab;

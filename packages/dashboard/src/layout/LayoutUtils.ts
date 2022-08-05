@@ -3,7 +3,8 @@ import shortid from 'shortid';
 import isMatch from 'lodash.ismatch';
 import { DragEvent } from 'react';
 import Log from '@deephaven/log';
-import GoldenLayout, {
+import type GoldenLayout from '@deephaven/golden-layout';
+import type {
   ComponentConfig,
   Config,
   Container,

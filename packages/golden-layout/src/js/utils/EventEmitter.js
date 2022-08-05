@@ -1,18 +1,20 @@
+import utils from './utils';
+
 /**
  * A generic and very fast EventEmitter
  * implementation. On top of emitting the
  * actual event it emits an
  *
- * lm.utils.EventEmitter.ALL_EVENT
+ * EventEmitter.ALL_EVENT
  *
  * event for every event triggered. This allows
  * to hook into it and proxy events forwards
  *
  * @constructor
  */
-lm.utils.EventEmitter = function () {
+const EventEmitter = function () {
   this._mSubscriptions = {};
-  this._mSubscriptions[lm.utils.EventEmitter.ALL_EVENT] = [];
+  this._mSubscriptions[EventEmitter.ALL_EVENT] = [];
 
   /**
    * Listen for events
@@ -24,7 +26,7 @@ lm.utils.EventEmitter = function () {
    * @returns {void}
    */
   this.on = function (sEvent, fCallback, oContext) {
-    if (!lm.utils.isFunction(fCallback)) {
+    if (!utils.isFunction(fCallback)) {
       throw new Error(
         'Tried to listen to event ' +
           sEvent +
@@ -65,9 +67,7 @@ lm.utils.EventEmitter = function () {
 
     args.unshift(sEvent);
 
-    var allEventSubs = this._mSubscriptions[
-      lm.utils.EventEmitter.ALL_EVENT
-    ].slice();
+    var allEventSubs = this._mSubscriptions[EventEmitter.ALL_EVENT].slice();
 
     for (i = 0; i < allEventSubs.length; i++) {
       ctx = allEventSubs[i].ctx || {};
@@ -123,10 +123,12 @@ lm.utils.EventEmitter = function () {
  *
  * usage
  *
- * myEmitter.on( lm.utils.EventEmitter.ALL_EVENT, function( eventName, argsArray ){
+ * myEmitter.on( EventEmitter.ALL_EVENT, function( eventName, argsArray ){
  * 	//do stuff
  * });
  *
  * @type {String}
  */
-lm.utils.EventEmitter.ALL_EVENT = '__all';
+EventEmitter.ALL_EVENT = '__all';
+
+export default EventEmitter;

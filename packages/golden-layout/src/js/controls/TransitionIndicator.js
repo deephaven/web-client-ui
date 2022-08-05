@@ -1,4 +1,7 @@
-lm.controls.TransitionIndicator = function () {
+import $ from 'jquery';
+import utils from '../utils';
+
+const TransitionIndicator = function () {
   this._element = $('<div class="lm_transition_indicator"></div>');
   $(document.body).append(this._element);
 
@@ -8,7 +11,7 @@ lm.controls.TransitionIndicator = function () {
   this._animationStartTime = null;
 };
 
-lm.utils.copy(lm.controls.TransitionIndicator.prototype, {
+utils.copy(TransitionIndicator.prototype, {
   destroy: function () {
     this._element.remove();
   },
@@ -19,18 +22,17 @@ lm.utils.copy(lm.controls.TransitionIndicator.prototype, {
      */
     return;
     this._toElement = toElement;
-    this._animationStartTime = lm.utils.now();
+    this._animationStartTime = utils.now();
     this._fromDimensions = this._measure(fromElement);
     this._fromDimensions.opacity = 0.8;
     this._element.show().css(this._fromDimensions);
-    lm.utils.animFrame(lm.utils.fnBind(this._nextAnimationFrame, this));
+    utils.animFrame(utils.fnBind(this._nextAnimationFrame, this));
   },
 
   _nextAnimationFrame: function () {
     var toDimensions = this._measure(this._toElement),
       animationProgress =
-        (lm.utils.now() - this._animationStartTime) /
-        this._totalAnimationDuration,
+        (utils.now() - this._animationStartTime) / this._totalAnimationDuration,
       currentFrameStyles = {},
       cssProperty;
 
@@ -49,7 +51,7 @@ lm.utils.copy(lm.controls.TransitionIndicator.prototype, {
     }
 
     this._element.css(currentFrameStyles);
-    lm.utils.animFrame(lm.utils.fnBind(this._nextAnimationFrame, this));
+    utils.animFrame(utils.fnBind(this._nextAnimationFrame, this));
   },
 
   _measure: function (element) {
@@ -63,3 +65,5 @@ lm.utils.copy(lm.controls.TransitionIndicator.prototype, {
     };
   },
 });
+
+export default TransitionIndicator;

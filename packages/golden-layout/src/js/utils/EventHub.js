@@ -1,3 +1,7 @@
+import $ from 'jquery';
+import utils from './utils';
+import EventEmitter from './EventEmitter';
+
 /**
  * An EventEmitter singleton that propagates events
  * across multiple windows. This is a little bit trickier since
@@ -13,16 +17,13 @@
  *
  * @param {lm.LayoutManager} layoutManager
  */
-lm.utils.EventHub = function (layoutManager) {
-  lm.utils.EventEmitter.call(this);
+const EventHub = function (layoutManager) {
+  EventEmitter.call(this);
   this._layoutManager = layoutManager;
   this._dontPropagateToParent = null;
   this._childEventSource = null;
-  this.on(
-    lm.utils.EventEmitter.ALL_EVENT,
-    lm.utils.fnBind(this._onEventFromThis, this)
-  );
-  this._boundOnEventFromChild = lm.utils.fnBind(this._onEventFromChild, this);
+  this.on(EventEmitter.ALL_EVENT, utils.fnBind(this._onEventFromThis, this));
+  this._boundOnEventFromChild = utils.fnBind(this._onEventFromChild, this);
   $(window).on('gl_child_event', this._boundOnEventFromChild);
 };
 
@@ -35,7 +36,7 @@ lm.utils.EventHub = function (layoutManager) {
  *
  * @returns {void}
  */
-lm.utils.EventHub.prototype._onEventFromThis = function () {
+EventHub.prototype._onEventFromThis = function () {
   var args = Array.prototype.slice.call(arguments);
 
   if (
@@ -58,7 +59,7 @@ lm.utils.EventHub.prototype._onEventFromThis = function () {
  *
  * @returns {void}
  */
-lm.utils.EventHub.prototype._$onEventFromParent = function (args) {
+EventHub.prototype._$onEventFromParent = function (args) {
   this._dontPropagateToParent = args[0];
   this.emit.apply(this, args);
 };
@@ -71,7 +72,7 @@ lm.utils.EventHub.prototype._$onEventFromParent = function (args) {
  *
  * @returns {void}
  */
-lm.utils.EventHub.prototype._onEventFromChild = function (event) {
+EventHub.prototype._onEventFromChild = function (event) {
   this._childEventSource = event.originalEvent.__gl;
   this.emit.apply(this, event.originalEvent.__glArgs);
 };
@@ -85,7 +86,7 @@ lm.utils.EventHub.prototype._onEventFromChild = function (event) {
  *
  * @returns {void}
  */
-lm.utils.EventHub.prototype._propagateToParent = function (args) {
+EventHub.prototype._propagateToParent = function (args) {
   var event,
     eventName = 'gl_child_event';
 
@@ -116,7 +117,7 @@ lm.utils.EventHub.prototype._propagateToParent = function (args) {
  *
  * @returns {void}
  */
-lm.utils.EventHub.prototype._propagateToChildren = function (args) {
+EventHub.prototype._propagateToChildren = function (args) {
   var childGl, i;
 
   for (i = 0; i < this._layoutManager.openPopouts.length; i++) {
@@ -135,6 +136,8 @@ lm.utils.EventHub.prototype._propagateToChildren = function (args) {
  * @returns {void}
  */
 
-lm.utils.EventHub.prototype.destroy = function () {
+EventHub.prototype.destroy = function () {
   $(window).off('gl_child_event', this._boundOnEventFromChild);
 };
+
+export default EventHub;

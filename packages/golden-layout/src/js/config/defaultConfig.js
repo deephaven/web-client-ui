@@ -1,4 +1,4 @@
-lm.config.defaultConfig = {
+const defaultConfig = {
   openPopouts: [],
   settings: {
     hasHeaders: true,
@@ -36,3 +36,5 @@ lm.config.defaultConfig = {
     tabPreviousLabel: 'Previous',
   },
 };
+
+export default defaultConfig;

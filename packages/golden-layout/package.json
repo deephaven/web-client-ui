@@ -4,7 +4,7 @@
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
   "description": "A multi-screen javascript Layout manager",
-  "main": "./dist/goldenlayout.js",
+  "main": "./dist/babel/index.js",
   "types": "./index.d.ts",
   "directories": {
     "test": "test"
@@ -18,6 +18,7 @@
     "sass": "sass ./src/scss:./dist/css -s compressed",
     "build:gulp": "gulp build",
     "build:sass": "npm run sass",
+    "babel": "babel ./src/js --out-dir ./dist/babel --extensions \".js\" --root-mode upward",
     "watch": "run-p watch:*",
     "watch:gulp": "gulp dev",
     "watch:sass": "npm run sass -- --watch --update",

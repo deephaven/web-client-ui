@@ -1,3 +1,6 @@
+import $ from 'jquery';
+import utils from '../utils';
+
 /**
  * This class creates a temporary container
  * for the component whilst it is being dragged
@@ -13,7 +16,7 @@
  * @param {lm.item.AbstractContentItem} contentItem
  * @param {lm.item.AbstractContentItem} originalParent
  */
-lm.controls.DragProxy = function (
+const DragProxy = function (
   x,
   y,
   dragListener,
@@ -21,7 +24,7 @@ lm.controls.DragProxy = function (
   contentItem,
   originalParent
 ) {
-  lm.utils.EventEmitter.call(this);
+  utils.EventEmitter.call(this);
 
   this._dragListener = dragListener;
   this._layoutManager = layoutManager;
@@ -44,7 +47,7 @@ lm.controls.DragProxy = function (
     );
   }
 
-  this.element = $(lm.controls.DragProxy._template);
+  this.element = $(DragProxy._template);
   if (originalParent && originalParent._side) {
     this._sided = originalParent._sided;
     this.element.addClass('lm_' + originalParent._side);
@@ -53,10 +56,7 @@ lm.controls.DragProxy = function (
   }
   this.element.css({ left: x, top: y });
   this._proxyTab = this.element.find('.lm_tab');
-  this._proxyTab.attr(
-    'title',
-    lm.utils.stripTags(this._contentItem.config.title)
-  );
+  this._proxyTab.attr('title', utils.stripTags(this._contentItem.config.title));
   this.element.find('.lm_title').html(this._contentItem.config.title);
   this.childElementContainer = this.element.find('.lm_content');
   this.childElementContainer.append(contentItem.element);
@@ -91,7 +91,7 @@ lm.controls.DragProxy = function (
   this._layoutManager.emit('itemPickedUp', this._contentItem);
 };
 
-lm.controls.DragProxy._template =
+DragProxy._template =
   '<div class="lm_dragProxy">' +
   '<div class="lm_header">' +
   '<ul class="lm_tabs">' +
@@ -103,7 +103,7 @@ lm.controls.DragProxy._template =
   '<div class="lm_content"></div>' +
   '</div>';
 
-lm.utils.copy(lm.controls.DragProxy.prototype, {
+utils.copy(DragProxy.prototype, {
   /**
    * Callback on every mouseMove event during a drag. Determines if the drag is
    * still within the valid drag area and calls the layoutManager to highlight the
@@ -252,3 +252,5 @@ lm.utils.copy(lm.controls.DragProxy.prototype, {
     this._contentItem.callDownwards('setSize');
   },
 });
+
+export default DragProxy;

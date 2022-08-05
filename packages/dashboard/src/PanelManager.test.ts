@@ -4,7 +4,8 @@
 /* eslint max-classes-per-file: "off" */
 
 import { Component } from 'react';
-import GoldenLayout, { ContentItem, Tab } from '@deephaven/golden-layout';
+import GoldenLayout from '@deephaven/golden-layout';
+import type { ContentItem, Tab } from '@deephaven/golden-layout';
 import './layout/jquery';
 import PanelManager from './PanelManager';
 import PanelEvent from './PanelEvent';

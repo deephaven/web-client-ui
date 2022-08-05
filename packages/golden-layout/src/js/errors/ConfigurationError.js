@@ -1,4 +1,4 @@
-lm.errors.ConfigurationError = function (message, node) {
+const ConfigurationError = function (message, node) {
   Error.call(this);
 
   this.name = 'Configuration Error';
@@ -6,4 +6,6 @@ lm.errors.ConfigurationError = function (message, node) {
   this.node = node;
 };
 
-lm.errors.ConfigurationError.prototype = new Error();
+ConfigurationError.prototype = new Error();
+
+export default ConfigurationError;

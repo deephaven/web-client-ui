@@ -1,3 +1,7 @@
+import $ from 'jquery';
+import utils from '../utils';
+import DragProxy from './DragProxy';
+
 /**
  * Allows for any DOM item to create a component on drag
  * start tobe dragged into the Layout
@@ -8,7 +12,7 @@
  *
  * @constructor
  */
-lm.controls.DragSource = function (element, itemConfig, layoutManager) {
+const DragSource = function (element, itemConfig, layoutManager) {
   this._element = element;
   this._itemConfig = itemConfig;
   this._layoutManager = layoutManager;
@@ -17,14 +21,14 @@ lm.controls.DragSource = function (element, itemConfig, layoutManager) {
   this._createDragListener();
 };
 
-lm.utils.copy(lm.controls.DragSource.prototype, {
+utils.copy(DragSource.prototype, {
   /**
    * Called initially and after every drag
    *
    * @returns {void}
    */
   _createDragListener: function () {
-    this._dragListener = new lm.utils.DragListener(this._element, true);
+    this._dragListener = new utils.DragListener(this._element, true);
     this._dragListener.on('dragStart', this._onDragStart, this);
     this._dragListener.on('dragStop', this._createDragListener, this);
   },
@@ -39,13 +43,13 @@ lm.utils.copy(lm.controls.DragSource.prototype, {
    */
   _onDragStart: function (x, y) {
     var itemConfig = this._itemConfig;
-    if (lm.utils.isFunction(itemConfig)) {
+    if (utils.isFunction(itemConfig)) {
       itemConfig = itemConfig();
     }
     var contentItem = this._layoutManager._$normalizeContentItem(
         $.extend(true, {}, itemConfig)
       ),
-      dragProxy = new lm.controls.DragProxy(
+      dragProxy = new DragProxy(
         x,
         y,
         this._dragListener,
@@ -60,3 +64,5 @@ lm.utils.copy(lm.controls.DragSource.prototype, {
     );
   },
 });
+
+export default DragSource;

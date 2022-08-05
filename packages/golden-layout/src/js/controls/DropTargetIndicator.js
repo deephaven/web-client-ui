@@ -1,12 +1,15 @@
-lm.controls.DropTargetIndicator = function () {
-  this.element = $(lm.controls.DropTargetIndicator._template);
+import $ from 'jquery';
+import utils from '../utils';
+
+const DropTargetIndicator = function () {
+  this.element = $(DropTargetIndicator._template);
   $(document.body).append(this.element);
 };
 
-lm.controls.DropTargetIndicator._template =
+DropTargetIndicator._template =
   '<div class="lm_dropTargetIndicator"><div class="lm_inner"></div></div>';
 
-lm.utils.copy(lm.controls.DropTargetIndicator.prototype, {
+utils.copy(DropTargetIndicator.prototype, {
   destroy: function () {
     this.element.remove();
   },
@@ -27,3 +30,5 @@ lm.utils.copy(lm.controls.DropTargetIndicator.prototype, {
     this.element.hide();
   },
 });
+
+export default DropTargetIndicator;

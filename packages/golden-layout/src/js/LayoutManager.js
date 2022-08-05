@@ -1,3 +1,6 @@
+import $ from 'jquery';
+import lm from './base';
+
 /**
  * The main class that will be exposed as GoldenLayout.
  *
@@ -8,7 +11,7 @@
  *
  * @returns {VOID}
  */
-lm.LayoutManager = function (config, container) {
+const LayoutManager = function (config, container) {
   if (!$ || typeof $.noConflict !== 'function') {
     var errorMsg = 'jQuery is missing as dependency for GoldenLayout. ';
     errorMsg +=
@@ -64,7 +67,7 @@ lm.LayoutManager = function (config, container) {
 /**
  * Hook that allows to access private classes
  */
-lm.LayoutManager.__lm = lm;
+LayoutManager.__lm = lm;
 
 /**
  * Takes a GoldenLayout configuration object and
@@ -77,8 +80,8 @@ lm.LayoutManager.__lm = lm;
  *
  * @returns {Object} minified config
  */
-lm.LayoutManager.minifyConfig = function (config) {
-  return new lm.utils.ConfigMinifier().minifyConfig(config);
+LayoutManager.minifyConfig = function (config) {
+  return new utils.ConfigMinifier().minifyConfig(config);
 };
 
 /**
@@ -91,11 +94,11 @@ lm.LayoutManager.minifyConfig = function (config) {
  *
  * @returns {Object} the original configuration
  */
-lm.LayoutManager.unminifyConfig = function (config) {
+LayoutManager.unminifyConfig = function (config) {
   return new lm.utils.ConfigMinifier().unminifyConfig(config);
 };
 
-lm.utils.copy(lm.LayoutManager.prototype, {
+lm.utils.copy(LayoutManager.prototype, {
   /**
    * Register a component with the layout manager. If a configuration node
    * of type component is reached it will look up componentName and create the
@@ -1182,19 +1185,4 @@ lm.utils.copy(lm.LayoutManager.prototype, {
   },
 });
 
-/**
- * Expose the Layoutmanager as the single entrypoint using UMD
- */
-(function () {
-  /* global define */
-  if (typeof define === 'function' && define.amd) {
-    define(['jquery'], function (jquery) {
-      $ = jquery;
-      return lm.LayoutManager;
-    }); // jshint ignore:line
-  } else if (typeof exports === 'object') {
-    module.exports = lm.LayoutManager;
-  } else {
-    window.GoldenLayout = lm.LayoutManager;
-  }
-})();
+export default LayoutManager;

@@ -1,3 +1,6 @@
+import $ from 'jquery';
+import utils from '../utils';
+
 /**
  * Pops a content item out into a new browser window.
  * This is achieved by
@@ -14,14 +17,14 @@
  * @param {Number} indexInParent The position of this element within its parent
  * @param {lm.LayoutManager} layoutManager
  */
-lm.controls.BrowserPopout = function (
+const BrowserPopout = function (
   config,
   dimensions,
   parentId,
   indexInParent,
   layoutManager
 ) {
-  lm.utils.EventEmitter.call(this);
+  utils.EventEmitter.call(this);
   this.isInitialised = false;
 
   this._config = config;
@@ -34,7 +37,7 @@ lm.controls.BrowserPopout = function (
   this._createWindow();
 };
 
-lm.utils.copy(lm.controls.BrowserPopout.prototype, {
+utils.copy(BrowserPopout.prototype, {
   toConfig: function () {
     if (this.isInitialised === false) {
       throw new Error("Can't create config, layout not yet initialised");
@@ -161,8 +164,8 @@ lm.utils.copy(lm.controls.BrowserPopout.prototype, {
     }
 
     $(this._popoutWindow)
-      .on('load', lm.utils.fnBind(this._positionWindow, this))
-      .on('unload beforeunload', lm.utils.fnBind(this._onClose, this));
+      .on('load', utils.fnBind(this._positionWindow, this))
+      .on('unload beforeunload', utils.fnBind(this._onClose, this));
 
     /**
      * Polling the childwindow to find out if GoldenLayout has been initialised
@@ -171,7 +174,7 @@ lm.utils.copy(lm.controls.BrowserPopout.prototype, {
      * about the parent to the child window which we'd rather avoid
      */
     checkReadyInterval = setInterval(
-      lm.utils.fnBind(function () {
+      utils.fnBind(function () {
         if (
           this._popoutWindow.__glInstance &&
           this._popoutWindow.__glInstance.isInitialised
@@ -210,10 +213,10 @@ lm.utils.copy(lm.controls.BrowserPopout.prototype, {
    */
   _createUrl: function () {
     var config = { content: this._config },
-      storageKey = 'gl-window-config-' + lm.utils.getUniqueId(),
+      storageKey = 'gl-window-config-' + utils.getUniqueId(),
       urlParts;
 
-    config = new lm.utils.ConfigMinifier().minifyConfig(config);
+    config = new utils.ConfigMinifier().minifyConfig(config);
 
     try {
       localStorage.setItem(storageKey, JSON.stringify(config));
@@ -266,6 +269,8 @@ lm.utils.copy(lm.controls.BrowserPopout.prototype, {
    * @returns {void}
    */
   _onClose: function () {
-    setTimeout(lm.utils.fnBind(this.emit, this, ['closed']), 50);
+    setTimeout(utils.fnBind(this.emit, this, ['closed']), 50);
   },
 });
+
+export default BrowserPopout;

@@ -1,5 +1,10 @@
-lm.items.RowOrColumn = function (isColumn, layoutManager, config, parent) {
-  lm.items.AbstractContentItem.call(this, layoutManager, config, parent);
+import $ from 'jquery';
+import AbstractContentItem from './AbstractContentItem';
+import utils from '../utils';
+import controls from '../controls';
+
+const RowOrColumn = function (isColumn, layoutManager, config, parent) {
+  AbstractContentItem.call(this, layoutManager, config, parent);
 
   this.isRow = !isColumn;
   this.isColumn = isColumn;
@@ -18,9 +23,9 @@ lm.items.RowOrColumn = function (isColumn, layoutManager, config, parent) {
   this._splitterMaxPosition = null;
 };
 
-lm.utils.extend(lm.items.RowOrColumn, lm.items.AbstractContentItem);
+utils.extend(RowOrColumn, AbstractContentItem);
 
-lm.utils.copy(lm.items.RowOrColumn.prototype, {
+utils.copy(RowOrColumn.prototype, {
   /**
    * Add a new contentItem to the Row or Column
    *
@@ -56,11 +61,7 @@ lm.utils.copy(lm.items.RowOrColumn.prototype, {
       this.childElementContainer.append(contentItem.element);
     }
 
-    lm.items.AbstractContentItem.prototype.addChild.call(
-      this,
-      contentItem,
-      index
-    );
+    AbstractContentItem.prototype.addChild.call(this, contentItem, index);
 
     newItemSize = (1 / this.contentItems.length) * 100;
 
@@ -93,7 +94,7 @@ lm.utils.copy(lm.items.RowOrColumn.prototype, {
    */
   removeChild: function (contentItem, keepChild) {
     var removedItemSize = contentItem.config[this._dimension],
-      index = lm.utils.indexOf(contentItem, this.contentItems),
+      index = utils.indexOf(contentItem, this.contentItems),
       splitterIndex = Math.max(index - 1, 0),
       i,
       childItem;
@@ -123,7 +124,7 @@ lm.utils.copy(lm.items.RowOrColumn.prototype, {
       }
     }
 
-    lm.items.AbstractContentItem.prototype.removeChild.call(
+    AbstractContentItem.prototype.removeChild.call(
       this,
       contentItem,
       keepChild
@@ -149,11 +150,7 @@ lm.utils.copy(lm.items.RowOrColumn.prototype, {
    */
   replaceChild: function (oldChild, newChild) {
     var size = oldChild.config[this._dimension];
-    lm.items.AbstractContentItem.prototype.replaceChild.call(
-      this,
-      oldChild,
-      newChild
-    );
+    AbstractContentItem.prototype.replaceChild.call(this, oldChild, newChild);
     newChild.config[this._dimension] = size;
     this.callDownwards('setSize');
     this.emitBubblingEvent('stateChanged');
@@ -187,7 +184,7 @@ lm.utils.copy(lm.items.RowOrColumn.prototype, {
 
     var i;
 
-    lm.items.AbstractContentItem.prototype._$init.call(this);
+    AbstractContentItem.prototype._$init.call(this);
 
     for (i = 0; i < this.contentItems.length - 1; i++) {
       this.contentItems[i].element.after(this._createSplitter(i).element);
@@ -440,24 +437,24 @@ lm.utils.copy(lm.items.RowOrColumn.prototype, {
    */
   _createSplitter: function (index) {
     var splitter;
-    splitter = new lm.controls.Splitter(
+    splitter = new controls.Splitter(
       this._isColumn,
       this._splitterSize,
       this._splitterGrabSize
     );
     splitter.on(
       'drag',
-      lm.utils.fnBind(this._onSplitterDrag, this, [splitter]),
+      utils.fnBind(this._onSplitterDrag, this, [splitter]),
       this
     );
     splitter.on(
       'dragStop',
-      lm.utils.fnBind(this._onSplitterDragStop, this, [splitter]),
+      utils.fnBind(this._onSplitterDragStop, this, [splitter]),
       this
     );
     splitter.on(
       'dragStart',
-      lm.utils.fnBind(this._onSplitterDragStart, this, [splitter]),
+      utils.fnBind(this._onSplitterDragStart, this, [splitter]),
       this
     );
     this._splitter.splice(index, 0, splitter);
@@ -475,7 +472,7 @@ lm.utils.copy(lm.items.RowOrColumn.prototype, {
    * @returns {Object} A map of contentItems that the splitter affects
    */
   _getItemsForSplitter: function (splitter) {
-    var index = lm.utils.indexOf(splitter, this._splitter);
+    var index = utils.indexOf(splitter, this._splitter);
 
     return {
       before: this.contentItems[index],
@@ -583,6 +580,8 @@ lm.utils.copy(lm.items.RowOrColumn.prototype, {
       left: 0,
     });
 
-    lm.utils.animFrame(lm.utils.fnBind(this.callDownwards, this, ['setSize']));
+    utils.animFrame(utils.fnBind(this.callDownwards, this, ['setSize']));
   },
 });
+
+export default RowOrColumn;

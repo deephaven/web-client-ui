@@ -1,10 +1,16 @@
+import $ from 'jquery';
+import AbstractContentItem from './AbstractContentItem';
+import utils from '../utils';
+import errors from '../errors';
+import container from '../container';
+
 /**
  * @param {[type]} layoutManager [description]
  * @param {[type]} config      [description]
  * @param {[type]} parent        [description]
  */
-lm.items.Component = function (layoutManager, config, parent) {
-  lm.items.AbstractContentItem.call(this, layoutManager, config, parent);
+const Component = function (layoutManager, config, parent) {
+  AbstractContentItem.call(this, layoutManager, config, parent);
 
   var ComponentConstructor =
       layoutManager.getComponent(this.config.componentName) ||
@@ -12,7 +18,7 @@ lm.items.Component = function (layoutManager, config, parent) {
     componentConfig = $.extend(true, {}, this.config.componentState || {});
 
   if (ComponentConstructor == null) {
-    throw new lm.errors.ConfigurationError(
+    throw new errors.ConfigurationError(
       'Unknown component "' + this.config.componentName + '"'
     );
   }
@@ -24,7 +30,7 @@ lm.items.Component = function (layoutManager, config, parent) {
   }
 
   this.isComponent = true;
-  this.container = new lm.container.ItemContainer(
+  this.container = new container.ItemContainer(
     this.config,
     this,
     layoutManager
@@ -33,9 +39,9 @@ lm.items.Component = function (layoutManager, config, parent) {
   this.element = this.container._element;
 };
 
-lm.utils.extend(lm.items.Component, lm.items.AbstractContentItem);
+utils.extend(Component, AbstractContentItem);
 
-lm.utils.copy(lm.items.Component.prototype, {
+utils.copy(Component.prototype, {
   close: function () {
     this.parent.removeChild(this);
   },
@@ -48,13 +54,13 @@ lm.utils.copy(lm.items.Component.prototype, {
   },
 
   _$init: function () {
-    lm.items.AbstractContentItem.prototype._$init.call(this);
+    AbstractContentItem.prototype._$init.call(this);
     this.container.emit('open');
   },
 
   _$hide: function () {
     this.container.hide();
-    lm.items.AbstractContentItem.prototype._$hide.call(this);
+    AbstractContentItem.prototype._$hide.call(this);
   },
 
   _$show: function () {
@@ -64,12 +70,12 @@ lm.utils.copy(lm.items.Component.prototype, {
       // preventScroll isn't supported in safari, but also doesn't matter for illumon when 100% window
       this.container._contentElement[0].focus({ preventScroll: true });
     }
-    lm.items.AbstractContentItem.prototype._$show.call(this);
+    AbstractContentItem.prototype._$show.call(this);
   },
 
   _$destroy: function () {
     this.container.emit('destroy', this);
-    lm.items.AbstractContentItem.prototype._$destroy.call(this);
+    AbstractContentItem.prototype._$destroy.call(this);
   },
 
   /**
@@ -81,3 +87,5 @@ lm.utils.copy(lm.items.Component.prototype, {
     return null;
   },
 });
+
+export default Component;

@@ -1,20 +1,24 @@
-lm.utils.F = function () {};
+import $ from 'jquery';
 
-lm.utils.extend = function (subClass, superClass) {
-  subClass.prototype = lm.utils.createObject(superClass.prototype);
+const utils = {};
+
+utils.F = function () {};
+
+utils.extend = function (subClass, superClass) {
+  subClass.prototype = utils.createObject(superClass.prototype);
   subClass.prototype.contructor = subClass;
 };
 
-lm.utils.createObject = function (prototype) {
+utils.createObject = function (prototype) {
   if (typeof Object.create === 'function') {
     return Object.create(prototype);
   } else {
-    lm.utils.F.prototype = prototype;
-    return new lm.utils.F();
+    utils.F.prototype = prototype;
+    return new utils.F();
   }
 };
 
-lm.utils.objectKeys = function (object) {
+utils.objectKeys = function (object) {
   var keys, key;
 
   if (typeof Object.keys === 'function') {
@@ -28,14 +32,14 @@ lm.utils.objectKeys = function (object) {
   }
 };
 
-lm.utils.getHashValue = function (key) {
+utils.getHashValue = function (key) {
   var matches = location.hash.match(new RegExp(key + '=([^&]*)'));
   return matches ? matches[1] : null;
 };
 
-lm.utils.getQueryStringParam = function (param) {
+utils.getQueryStringParam = function (param) {
   if (window.location.hash) {
-    return lm.utils.getHashValue(param);
+    return utils.getHashValue(param);
   } else if (!window.location.search) {
     return null;
   }
@@ -53,7 +57,7 @@ lm.utils.getQueryStringParam = function (param) {
   return params[param] || null;
 };
 
-lm.utils.copy = function (target, source) {
+utils.copy = function (target, source) {
   for (var key in source) {
     target[key] = source[key];
   }
@@ -70,7 +74,7 @@ lm.utils.copy = function (target, source) {
  *
  * @returns {void}
  */
-lm.utils.animFrame = function (fn) {
+utils.animFrame = function (fn) {
   return (
     window.requestAnimationFrame ||
     window.webkitRequestAnimationFrame ||
@@ -83,7 +87,7 @@ lm.utils.animFrame = function (fn) {
   });
 };
 
-lm.utils.indexOf = function (needle, haystack) {
+utils.indexOf = function (needle, haystack) {
   if (!(haystack instanceof Array)) {
     throw new Error('Haystack is not an Array');
   }
@@ -101,16 +105,16 @@ lm.utils.indexOf = function (needle, haystack) {
 };
 
 if (typeof /./ != 'function' && typeof Int8Array != 'object') {
-  lm.utils.isFunction = function (obj) {
+  utils.isFunction = function (obj) {
     return typeof obj == 'function' || false;
   };
 } else {
-  lm.utils.isFunction = function (obj) {
+  utils.isFunction = function (obj) {
     return toString.call(obj) === '[object Function]';
   };
 }
 
-lm.utils.fnBind = function (fn, context, boundArgs) {
+utils.fnBind = function (fn, context, boundArgs) {
   if (Function.prototype.bind !== undefined) {
     return Function.prototype.bind.apply(fn, [context].concat(boundArgs || []));
   }
@@ -134,8 +138,8 @@ lm.utils.fnBind = function (fn, context, boundArgs) {
   return bound;
 };
 
-lm.utils.removeFromArray = function (item, array) {
-  var index = lm.utils.indexOf(item, array);
+utils.removeFromArray = function (item, array) {
+  var index = utils.indexOf(item, array);
 
   if (index === -1) {
     throw new Error("Can't remove item from array. Item is not in the array");
@@ -144,7 +148,7 @@ lm.utils.removeFromArray = function (item, array) {
   array.splice(index, 1);
 };
 
-lm.utils.now = function () {
+utils.now = function () {
   if (typeof Date.now === 'function') {
     return Date.now();
   } else {
@@ -152,7 +156,7 @@ lm.utils.now = function () {
   }
 };
 
-lm.utils.getUniqueId = function () {
+utils.getUniqueId = function () {
   return (Math.random() * 1000000000000000).toString(36).replace('.', '');
 };
 
@@ -166,7 +170,7 @@ lm.utils.getUniqueId = function () {
  *
  * @returns {String} filtered input
  */
-lm.utils.filterXss = function (input, keepTags) {
+utils.filterXss = function (input, keepTags) {
   var output = input
     .replace(/javascript/gi, 'j&#97;vascript')
     .replace(/expression/gi, 'expr&#101;ssion')
@@ -188,6 +192,8 @@ lm.utils.filterXss = function (input, keepTags) {
  *
  * @returns {String} input without tags
  */
-lm.utils.stripTags = function (input) {
+utils.stripTags = function (input) {
   return $.trim(input.replace(/(<([^>]+)>)/gi, ''));
 };
+
+export default utils;

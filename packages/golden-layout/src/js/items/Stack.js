@@ -1,5 +1,10 @@
-lm.items.Stack = function (layoutManager, config, parent) {
-  lm.items.AbstractContentItem.call(this, layoutManager, config, parent);
+import $ from 'jquery';
+import AbstractContentItem from './AbstractContentItem';
+import utils from '../utils';
+import controls from '../controls';
+
+const Stack = function (layoutManager, config, parent) {
+  AbstractContentItem.call(this, layoutManager, config, parent);
 
   this.element = $('<div class="lm_item lm_stack"></div>');
   this._activeContentItem = null;
@@ -15,13 +20,13 @@ lm.items.Stack = function (layoutManager, config, parent) {
   };
 
   // load simplified version of header configuration (https://github.com/deepstreamIO/golden-layout/pull/245)
-  if (cfg.header) lm.utils.copy(this._header, cfg.header);
+  if (cfg.header) utils.copy(this._header, cfg.header);
   if (config.header)
     // load from stack
-    lm.utils.copy(this._header, config.header);
+    utils.copy(this._header, config.header);
   if (config.content && config.content[0] && config.content[0].header)
     // load from component if stack omitted
-    lm.utils.copy(this._header, config.content[0].header);
+    utils.copy(this._header, config.content[0].header);
 
   this._dropZones = {};
   this._dropSegment = null;
@@ -31,7 +36,7 @@ lm.items.Stack = function (layoutManager, config, parent) {
   this.isStack = true;
 
   this.childElementContainer = $('<div class="lm_items"></div>');
-  this.header = new lm.controls.Header(layoutManager, this);
+  this.header = new controls.Header(layoutManager, this);
 
   this.element.append(this.header.element);
   this.element.append(this.childElementContainer);
@@ -39,9 +44,9 @@ lm.items.Stack = function (layoutManager, config, parent) {
   this._$validateClosability();
 };
 
-lm.utils.extend(lm.items.Stack, lm.items.AbstractContentItem);
+utils.extend(Stack, AbstractContentItem);
 
-lm.utils.copy(lm.items.Stack.prototype, {
+utils.copy(Stack.prototype, {
   setSize: function () {
     var i,
       headerSize = this._header.show
@@ -67,7 +72,7 @@ lm.utils.copy(lm.items.Stack.prototype, {
 
     this.header._attachWheelListener();
 
-    lm.items.AbstractContentItem.prototype._$init.call(this);
+    AbstractContentItem.prototype._$init.call(this);
 
     for (i = 0; i < this.contentItems.length; i++) {
       this.header.createTab(this.contentItems[i]);
@@ -86,7 +91,7 @@ lm.utils.copy(lm.items.Stack.prototype, {
   },
 
   setActiveContentItem: function (contentItem) {
-    if (lm.utils.indexOf(contentItem, this.contentItems) === -1) {
+    if (utils.indexOf(contentItem, this.contentItems) === -1) {
       throw new Error('contentItem is not a child of this stack');
     }
 
@@ -108,11 +113,7 @@ lm.utils.copy(lm.items.Stack.prototype, {
 
   addChild: function (contentItem, index) {
     contentItem = this.layoutManager._$normalizeContentItem(contentItem, this);
-    lm.items.AbstractContentItem.prototype.addChild.call(
-      this,
-      contentItem,
-      index
-    );
+    AbstractContentItem.prototype.addChild.call(this, contentItem, index);
     this.childElementContainer.append(contentItem.element);
     this.header.createTab(contentItem, index);
     this.setActiveContentItem(contentItem);
@@ -122,8 +123,8 @@ lm.utils.copy(lm.items.Stack.prototype, {
   },
 
   removeChild: function (contentItem, keepChild) {
-    var index = lm.utils.indexOf(contentItem, this.contentItems);
-    lm.items.AbstractContentItem.prototype.removeChild.call(
+    var index = utils.indexOf(contentItem, this.contentItems);
+    AbstractContentItem.prototype.removeChild.call(
       this,
       contentItem,
       keepChild
@@ -165,7 +166,7 @@ lm.utils.copy(lm.items.Stack.prototype, {
   },
 
   _$destroy: function () {
-    lm.items.AbstractContentItem.prototype._$destroy.call(this);
+    AbstractContentItem.prototype._$destroy.call(this);
     this.header._$destroy();
   },
 
@@ -249,7 +250,7 @@ lm.utils.copy(lm.items.Stack.prototype, {
      * layd out in the correct way. Just add it as a child
      */
     if (hasCorrectParent) {
-      index = lm.utils.indexOf(this, this.parent.contentItems);
+      index = utils.indexOf(this, this.parent.contentItems);
       this.parent.addChild(contentItem, insertBefore ? index : index + 1, true);
       this.config[dimension] *= 0.5;
       contentItem.config[dimension] = this.config[dimension];
@@ -306,7 +307,7 @@ lm.utils.copy(lm.items.Stack.prototype, {
       return null;
     }
 
-    var getArea = lm.items.AbstractContentItem.prototype._$getArea,
+    var getArea = AbstractContentItem.prototype._$getArea,
       headerArea = getArea.call(this, this.header.element),
       contentArea = getArea.call(this, this.childElementContainer),
       contentWidth = contentArea.x2 - contentArea.x1,
@@ -535,3 +536,5 @@ lm.utils.copy(lm.items.Stack.prototype, {
     this._dropSegment = segment;
   },
 });
+
+export default Stack;

@@ -1,3 +1,7 @@
+import $ from 'jquery';
+import utils from '../utils';
+import DragProxy from './DragProxy';
+
 /**
  * Creates a drag item given a starting mouseevent
  * that can then be dragged into the Layout
@@ -8,7 +12,7 @@
  *
  * @constructor
  */
-lm.controls.DragSourceFromEvent = function (itemConfig, layoutManager, event) {
+const DragSourceFromEvent = function (itemConfig, layoutManager, event) {
   this._element = $(window); // we need something to listen for mousemoves against
   this._itemConfig = itemConfig;
   this._layoutManager = layoutManager;
@@ -17,7 +21,7 @@ lm.controls.DragSourceFromEvent = function (itemConfig, layoutManager, event) {
   this._createDragListener(event);
 };
 
-lm.utils.copy(lm.controls.DragSourceFromEvent.prototype, {
+utils.copy(DragSourceFromEvent.prototype, {
   /**
    * Called initially and after every drag
    *
@@ -28,7 +32,7 @@ lm.utils.copy(lm.controls.DragSourceFromEvent.prototype, {
       this._dragListener.destroy();
     }
 
-    this._dragListener = new lm.utils.DragListener(this._element, true);
+    this._dragListener = new utils.DragListener(this._element, true);
     this._dragListener.on('dragStart', this._onDragStart, this);
     this._dragListener.on('dragStop', this._destroy, this);
 
@@ -54,13 +58,13 @@ lm.utils.copy(lm.controls.DragSourceFromEvent.prototype, {
    */
   _onDragStart: function (x, y) {
     var itemConfig = this._itemConfig;
-    if (lm.utils.isFunction(itemConfig)) {
+    if (utils.isFunction(itemConfig)) {
       itemConfig = itemConfig();
     }
     var contentItem = this._layoutManager._$normalizeContentItem(
       $.extend(true, {}, itemConfig)
     );
-    new lm.controls.DragProxy(
+    new DragProxy(
       x,
       y,
       this._dragListener,
@@ -70,3 +74,5 @@ lm.utils.copy(lm.controls.DragSourceFromEvent.prototype, {
     );
   },
 });
+
+export default DragSourceFromEvent;
