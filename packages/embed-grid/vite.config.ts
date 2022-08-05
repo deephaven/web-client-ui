@@ -53,10 +53,6 @@ export default defineConfig(({ mode }) => {
     },
     build: {
       outDir: env.VITE_BUILD_PATH,
-      commonjsOptions: {
-        exclude: ['@deephaven/golden-layout'],
-        include: [],
-      },
       rollupOptions: {
         output: {
           manualChunks: id => {

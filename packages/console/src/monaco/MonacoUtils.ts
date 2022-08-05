@@ -66,6 +66,8 @@ import 'monaco-editor/esm/vs/basic-languages/typescript/typescript.contribution.
 import { KeyCodeUtils } from 'monaco-editor/esm/vs/base/common/keyCodes.js';
 // @ts-ignore
 import { KeyMod } from 'monaco-editor/esm/vs/editor/common/standalone/standaloneBase.js';
+// @ts-ignore
+import editorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker';
 import Log from '@deephaven/log';
 import MonacoTheme from './MonacoTheme.module.scss';
 import PyLang from './lang/python';
@@ -76,6 +78,19 @@ import LogLang from './lang/log';
 import { Language } from './lang/Language';
 
 const log = Log.module('MonacoUtils');
+
+declare global {
+  interface Window {
+    MonacoEnvironment: monaco.Environment;
+  }
+}
+
+window.MonacoEnvironment = {
+  getWorker(workerId, label) {
+    return editorWorker();
+  },
+};
+
 class MonacoUtils {
   static init(): void {
     log.debug('Initializing Monaco...');
