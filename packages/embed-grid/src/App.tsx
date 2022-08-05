@@ -11,7 +11,7 @@ import { TableUtils } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
 import './App.scss'; // Styles for in this app
 
-Log.setLogLevel(parseInt(process.env.REACT_APP_LOG_LEVEL ?? '', 10));
+Log.setLogLevel(parseInt(import.meta.env.VITE_LOG_LEVEL ?? '', 10));
 
 const log = Log.module('EmbedGrid.App');
 
@@ -66,7 +66,7 @@ function App(): JSX.Element {
     try {
       // Connect to the Web API server
       const baseUrl = new URL(
-        import.meta.VITE_CORE_API_URL ?? '',
+        import.meta.env.VITE_CORE_API_URL ?? '',
         `${window.location}`
       );
 

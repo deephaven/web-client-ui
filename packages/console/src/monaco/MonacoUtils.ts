@@ -389,9 +389,7 @@ class MonacoUtils {
         }
         MonacoUtils.removeKeybinding(
           editor,
-          (MonacoUtils.isMacPlatform()
-            ? keybinding.mac
-            : keybinding.windows) as string
+          MonacoUtils.isMacPlatform() ? keybinding.mac : keybinding.windows
         );
       });
     } catch (err) {
@@ -414,8 +412,12 @@ class MonacoUtils {
    */
   static removeKeybinding(
     editor: monaco.editor.IStandaloneCodeEditor,
-    keybinding: string
+    keybinding: string | undefined
   ): void {
+    if (!keybinding) {
+      return;
+    }
+
     /* eslint-disable no-underscore-dangle */
     // It's possible a single keybinding has multiple commands depending on context
     // @ts-ignore

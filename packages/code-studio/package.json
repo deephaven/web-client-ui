@@ -4,7 +4,6 @@
   "description": "Deephaven Code Studio",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
-  "type": "module",
   "repository": {
     "type": "git",
     "url": "https://github.com/deephaven/web-client-ui.git",
@@ -51,7 +50,6 @@
     "react-redux": "^7.2.4",
     "react-router-dom": "^5.1.2",
     "react-transition-group": "^4.4.2",
-    "reactstrap": "^8.10.0",
     "redux": "^4.2.0",
     "redux-thunk": "^2.4.1",
     "regenerator-runtime": "^0.13.9",
@@ -70,9 +68,8 @@
   "scripts": {
     "analyze": "source-map-explorer 'build/static/js/*.js'",
     "start": "vite",
-    "build-js": "vite build",
-    "build": "npm-run-all build-js clean-mocks",
-    "clean-mocks": "rm -rf build/__mocks__",
+    "build": "vite build",
+    "preview": "vite preview",
     "update-licenses": "npm-license > licenses.txt"
   },
   "devDependencies": {
@@ -82,6 +79,8 @@
     "@deephaven/stylelint-config": "file:../stylelint-config",
     "@deephaven/tsconfig": "file:../tsconfig",
     "@vitejs/plugin-react": "^2.0.0",
+    "autoprefixer": "^10.4.8",
+    "postcss": "^8.4.14",
     "vite": "^3.0.4"
   },
   "browserslist": [

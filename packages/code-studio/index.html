@@ -47,6 +47,15 @@
         });
       })();
     </script>
+    <script>
+      // Plotly imports has-hover which needs global to exist
+      // Without this, dev mode does not start properly
+      // Using the define key in vite.config, build does not work properly
+      // Maybe related: https://github.com/vitejs/vite/issues/5142
+      if (window.global === undefined) {
+        window.global = globalThis;
+      }
+    </script>
     <title>Deephaven</title>
   </head>
   <body>

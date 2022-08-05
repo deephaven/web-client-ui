@@ -36,7 +36,6 @@
     "classnames": "^2.3.1",
     "deep-equal": "^2.0.5",
     "fira": "mozilla/fira#4.202",
-    "jquery": "^3.6.0",
     "lodash.flatten": "^4.4.0",
     "lodash.throttle": "^4.1.1",
     "monaco-editor": "^0.27.0",
@@ -47,7 +46,6 @@
     "react-transition-group": "^4.4.2",
     "react-virtualized-auto-sizer": "^1.0.6",
     "react-window": "^1.8.6",
-    "reactstrap": "^8.10.0",
     "sass": "^1.39.0",
     "shortid": "^2.2.16",
     "typescript": "~4.5.4"

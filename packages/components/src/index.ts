@@ -1,5 +1,5 @@
 /** Shim for using jquery in frameworks included by react (such as bootstrap) */
-import * as $ from 'jquery';
+import $ from 'jquery';
 
 declare global {
   interface Window {

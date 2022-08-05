@@ -11,6 +11,7 @@
     "directory": "packages/iris-grid"
   },
   "main": "dist/index.js",
+  "module": "dist/index.js",
   "source": "src/index.js",
   "types": "dist/index.d.ts",
   "engines": {
@@ -53,7 +54,6 @@
     "prop-types": "^15.7.2",
     "react-beautiful-dnd": "^13.1.0",
     "react-transition-group": "^4.4.2",
-    "reactstrap": "^8.10.0",
     "shortid": "^2.2.16",
     "web-streams-polyfill": "^2.1.0"
   },

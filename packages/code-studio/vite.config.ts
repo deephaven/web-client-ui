@@ -25,21 +25,32 @@ export default defineConfig(({ mode }) => {
 
   const packagesDir = path.resolve(__dirname, '..');
 
+  // These are paths which should be proxied to the core server
+  // https://vitejs.dev/config/server-options.html#server-proxy
+  const proxy = {};
+  const proxyPaths = [
+    env.VITE_CORE_API_URL,
+    env.VITE_NOTEBOOKS_URL,
+    env.VITE_LAYOUTS_URL,
+  ];
+
+  if (env.VITE_PROXY_URL) {
+    proxyPaths.forEach(p => {
+      proxy[p] = {
+        target: env.VITE_PROXY_URL,
+        changeOrigin: true,
+      };
+    });
+  }
+
   return {
     server: {
       port: Number.parseInt(env.PORT, 10) ?? 4000,
       open: true,
-      proxy: {
-        '/notebook': {
-          target: 'http://localhost:10000',
-          changeOrigin: true,
-        },
-      },
-    },
-    define: {
-      global: 'window',
+      proxy,
     },
     resolve: {
+      dedupe: ['react', 'react-redux', 'redux'],
       alias: [
         {
           find: /^@deephaven\/components\/scss\/(.*)/,
@@ -64,18 +75,19 @@ export default defineConfig(({ mode }) => {
       ],
       // TODO: See if this is better than the last find/replace above
       // In theory this can load from package.json source field instead of main
-      mainFields: ['source', 'module', 'main', 'jsnext:main', 'jsnext'],
+      // It seems there is currently a bug though
+      // https://github.com/vitejs/vite/issues/8659
+      // mainFields: ['source', 'module', 'main', 'jsnext:main', 'jsnext'],
     },
     build: {
       outDir: env.VITE_BUILD_PATH,
       commonjsOptions: {
-        exclude: ['@deephaven/golden-layout'],
-        include: [],
+        include: [/node_modules/, /golden-layout/],
       },
       rollupOptions: {
         output: {
           manualChunks: id => {
-            if (id.includes('node_modules')) {
+            if (id.includes('node_modules') && !id.includes('jquery')) {
               if (id.includes('monaco-editor')) {
                 return 'monaco';
               }
@@ -93,6 +105,11 @@ export default defineConfig(({ mode }) => {
     optimizeDeps: {
       include: ['@deephaven/golden-layout'],
     },
-    plugins: [htmlPlugin(), react()],
+    plugins: [
+      htmlPlugin(),
+      react({
+        jsxRuntime: 'classic',
+      }),
+    ],
   };
 });
