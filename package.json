@@ -30,6 +30,7 @@
     "build:packages": "lerna run --ignore=@deephaven/{code-studio,embed-chart,embed-grid} build --stream",
     "build:profile": "lerna run build --stream --profile",
     "build:necessary": "lerna run build --scope=@deephaven/{icons,golden-layout}",
+    "preview": "lerna run --scope=@deephaven/code-studio preview",
     "start": "npm-run-all build:necessary --parallel watch:types start:app",
     "start:app": "lerna run start --scope=@deephaven/code-studio --stream",
     "start:embed-chart": "lerna run start --scope=@deephaven/embed-chart --stream",
@@ -46,8 +47,8 @@
   },
   "repository": "https://github.com/deephaven/web-client-ui",
   "devDependencies": {
-    "@babel/cli": "^7.16.0",
-    "@babel/core": "^7.16.0",
+    "@babel/cli": "7.17.6",
+    "@babel/core": "7.17.7",
     "@deephaven/components": "file:../components",
     "@deephaven/console": "file:../console",
     "@deephaven/eslint-config": "file:../eslint-config",
