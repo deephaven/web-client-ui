@@ -19,7 +19,7 @@ import {
 } from '@deephaven/redux';
 import { Container, EventEmitter } from '@deephaven/golden-layout';
 import { assertNotNull } from '@deephaven/utils';
-import { JSZipObject } from 'jszip';
+import type { JSZipObject } from 'jszip';
 import { ConsoleEvent } from '../events';
 import './ConsolePanel.scss';
 import Panel from './Panel';

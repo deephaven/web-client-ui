@@ -18,9 +18,7 @@ import {
 } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
 import { WorkspaceSettings } from '@deephaven/redux';
-import { Layout } from 'plotly.js';
-import { assertNotNull } from '@deephaven/utils';
-import type { IconPathData } from '@fortawesome/fontawesome-common-types';
+import { Layout, Icon } from 'plotly.js';
 import Plotly from './plotly/Plotly';
 import Plot from './plotly/Plot';
 
@@ -34,14 +32,6 @@ type FormatterSettings = Partial<WorkspaceSettings> & {
   decimalFormatOptions: DecimalColumnFormatterOptions;
   integerFormatOptions: IntegerColumnFormatterOptions;
 };
-
-interface ConvertedIcon {
-  width: number;
-  path: IconPathData;
-  ascent: number;
-  descent: number;
-  transform: string;
-}
 
 interface ChartProps {
   model: ChartModel;
@@ -60,7 +50,7 @@ interface ChartModelSettings {
 }
 
 interface ChartState {
-  data: [] | null;
+  data: { name: string; visible: string }[] | null;
   downsamplingError: unknown;
   isDownsampleFinished: boolean;
   isDownsampleInProgress: boolean;
@@ -90,15 +80,16 @@ export class Chart extends Component<ChartProps, ChartState> {
 
   /**
    * Convert a font awesome icon definition to a plotly icon definition
-   * @param {FontAwesome.IconDefinition} faIcon The icon to convert
+   * @param faIcon The icon to convert
    */
-  static convertIcon(faIcon: IconDefinition): ConvertedIcon {
+  static convertIcon(faIcon: IconDefinition): Icon {
     const [width, , , , path] = faIcon.icon;
     // By default the icons are flipped upside down, so we need to add our own transform
     // https://github.com/plotly/plotly.js/issues/1335
+    const stringPath = `${path}`;
     return {
       width,
-      path,
+      path: stringPath,
       ascent: width,
       descent: 0,
       transform: `matrix(1, 0, 0, 1, 0, 0)`,
@@ -427,11 +418,13 @@ export class Chart extends Component<ChartProps, ChartState> {
 
   handleRelayout(changes: { hiddenlabels?: string[] }): void {
     log.debug('handleRelayout', changes);
-    if (Object.keys(changes).includes('hiddenlabels')) {
+    if (
+      Object.keys(changes).includes('hiddenlabels') &&
+      changes.hiddenlabels != null
+    ) {
       const { onSettingsChanged } = this.props;
       // Pie charts store series visibility in layout.hiddenlabels and trigger relayout on changes
       // Series visibility for other types of charts is handled in handleRestyle
-      assertNotNull(changes.hiddenlabels);
       const hiddenSeries = [...changes.hiddenlabels];
       onSettingsChanged({ hiddenSeries });
     }
@@ -449,7 +442,7 @@ export class Chart extends Component<ChartProps, ChartState> {
       const { onSettingsChanged } = this.props;
       if (data != null) {
         const hiddenSeries = data.reduce(
-          (acc, { name, visible }) =>
+          (acc: string[], { name, visible }) =>
             visible === 'legendonly' ? [...acc, name] : acc,
           []
         );

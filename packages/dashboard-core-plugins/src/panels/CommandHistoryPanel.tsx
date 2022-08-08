@@ -197,7 +197,7 @@ class CommandHistoryPanel extends Component<
             Waiting for console connection
           </div>
         )}
-        {table && (
+        {table && language && (
           <>
             <CommandHistory
               ref={this.container}

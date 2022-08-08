@@ -2,12 +2,11 @@
 /* eslint no-console: "off" */
 import React, { Component } from 'react';
 import {
-  ContextAction,
   ContextActions,
   KEY,
   MODIFIER,
-  Shortcut,
   ResolvableContextAction,
+  Shortcut,
 } from '@deephaven/components';
 import {
   vsBell,
@@ -98,12 +97,12 @@ class ContextMenus extends Component {
 
     const actions = globalActions.concat(contextActions);
 
-    const delayedActions = () =>
+    const delayedActions: ResolvableContextAction = () =>
       new Promise(resolve => {
         setTimeout(() => {
           resolve(contextActions);
         }, 3000);
-      }) as Promise<ContextAction[]>;
+      });
 
     return (
       <div>
@@ -130,9 +129,7 @@ class ContextMenus extends Component {
           }}
         >
           Right Click Me
-          <ContextActions
-            actions={(delayedActions as unknown) as ResolvableContextAction[]}
-          />
+          <ContextActions actions={delayedActions} />
         </button>
       </div>
     );

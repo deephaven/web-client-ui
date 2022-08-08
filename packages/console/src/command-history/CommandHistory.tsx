@@ -34,10 +34,10 @@ const log = Log.module('CommandHistory');
 
 export type CommandHistorySettings = {
   value: string;
-  language?: string;
+  language: string;
 };
 interface CommandHistoryProps {
-  language?: string;
+  language: string;
   sendToConsole: (command: string, focus?: boolean, execute?: boolean) => void;
   sendToNotebook: (
     settings: CommandHistorySettings,

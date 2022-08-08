@@ -23,7 +23,7 @@ class ChartModelFactory {
    * @param [settings.hiddenSeries] Array of hidden series names
    * @param table The table to build the model for
    * @param theme The theme for the figure. Defaults to ChartTheme
-   * @returns The FigureChartModel representing the figure
+   * @returns The ChartModel Promise representing the figure
    * CRA sets tsconfig to type check JS based on jsdoc comments. It isn't able to figure out FigureChartModel extends ChartModel
    * This causes TS issues in 1 or 2 spots. Once this is TS it can be returned to just FigureChartModel
    */
@@ -31,7 +31,7 @@ class ChartModelFactory {
     settings: ChartModelSettings,
     table: Table,
     theme = ChartTheme
-  ): Promise<FigureChartModel> {
+  ): Promise<ChartModel> {
     const figure = await ChartModelFactory.makeFigureFromSettings(
       settings,
       table
@@ -88,7 +88,7 @@ class ChartModelFactory {
     settings: Record<string, unknown> | undefined,
     figure: Figure,
     theme = ChartTheme
-  ): Promise<ChartModel | FigureChartModel> {
+  ): Promise<ChartModel> {
     return new FigureChartModel(figure, settings, theme);
   }
 }

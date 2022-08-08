@@ -42,7 +42,7 @@ class ChartModel {
 
   title?: string;
 
-  getData(): [] {
+  getData(): { name: string; visible: string }[] {
     return [];
   }
 

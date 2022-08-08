@@ -14,7 +14,7 @@ import './ContextActions.scss';
 const log = Log.module('ContextActions');
 
 interface ContextActionsProps {
-  actions: ResolvableContextAction[];
+  actions: ResolvableContextAction | ResolvableContextAction[];
   ignoreClassNames?: string[];
   'data-testid'?: string;
 }

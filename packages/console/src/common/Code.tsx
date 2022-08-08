@@ -3,7 +3,7 @@ import * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js';
 
 interface CodeProps {
   children: ReactNode;
-  language?: string;
+  language: string;
 }
 
 class Code extends Component<CodeProps, Record<string, never>> {
