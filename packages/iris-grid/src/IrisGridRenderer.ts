@@ -10,6 +10,7 @@ import {
   IconDefinition,
 } from '@deephaven/icons';
 import {
+  BoundedAxisRange,
   BoxCoordinates,
   Coordinate,
   getOrThrow,
@@ -53,6 +54,7 @@ export type IrisGridRenderState = GridRenderState & {
   isFilterBarShown: boolean;
   advancedFilters: AdvancedFilterMap;
   quickFilters: QuickFilterMap;
+  isMenuShown: boolean;
 };
 /**
  * Handles rendering some of the Iris specific features, such as sorting icons, sort bar display
@@ -152,9 +154,12 @@ class IrisGridRenderer extends GridRenderer {
     const { metrics, model } = state;
     const { modelColumns, modelRows } = metrics;
     const modelRow = getOrThrow(modelRows, row);
-    const modelColumn = getOrThrow(modelColumns, column);
+    const modelColumn = modelColumns.get(column);
+    if (modelColumn === undefined) {
+      return;
+    }
     const value = model.valueForCell(modelColumn, modelRow);
-    if (TableUtils.isTextType(model.columns[modelColumn].type)) {
+    if (TableUtils.isTextType(model.columns[modelColumn]?.type)) {
       if (value === null || value === '') {
         const originalFont = context.font;
         context.font = `italic ${originalFont}`;
@@ -356,7 +361,7 @@ class IrisGridRenderer extends GridRenderer {
     barHeight: number,
     interior = true
   ): void {
-    const { theme, metrics } = state;
+    const { theme, metrics, model } = state;
     const { columnHeaderHeight, width } = metrics;
     // Draw casing with 1 pixel above and below the bar,
     // 1px falls on the existing split between grid/headers
@@ -368,7 +373,7 @@ class IrisGridRenderer extends GridRenderer {
     context.fillStyle = theme.headerBarCasingColor;
     context.fillRect(
       0,
-      columnHeaderHeight - barHeight - 2 + offset,
+      model.columnHeaderMaxDepth * columnHeaderHeight - barHeight - 2 + offset,
       width,
       barHeight + 2
     );
@@ -376,24 +381,57 @@ class IrisGridRenderer extends GridRenderer {
     context.fillStyle = color;
     context.fillRect(
       0,
-      columnHeaderHeight - barHeight - 1 + offset,
+      model.columnHeaderMaxDepth * columnHeaderHeight - barHeight - 1 + offset,
       width,
       barHeight
     );
   }
 
-  drawColumnHeader(
+  drawColumnHeadersAtDepth(
     context: CanvasRenderingContext2D,
     state: IrisGridRenderState,
-    column: VisibleIndex,
-    columnX: Coordinate,
-    columnWidth: number
+    range: BoundedAxisRange,
+    boundsProp: { minX: number; maxX: number },
+    depth: number
   ): void {
-    super.drawColumnHeader(context, state, column, columnX, columnWidth);
+    const { metrics, model, isMenuShown } = state;
+    const { columnHeaderMaxDepth } = model;
+    const { width } = metrics;
+    const bounds = {
+      ...boundsProp,
+      maxX:
+        depth === columnHeaderMaxDepth - 1 && boundsProp.maxX === width
+          ? width - (isMenuShown ? 0 : 30) // Account for the menu button
+          : boundsProp.maxX,
+    };
+    super.drawColumnHeadersAtDepth(context, state, range, bounds, depth);
+  }
 
+  drawColumnHeaderAtIndex(
+    context: CanvasRenderingContext2D,
+    state: IrisGridRenderState,
+    index: VisibleIndex,
+    bounds: { minX: number; maxX: number }
+  ): void {
+    super.drawColumnHeaderAtIndex(context, state, index, bounds);
     const { metrics, model, theme } = state;
-    const { modelColumns } = metrics;
-    const modelColumn = getOrThrow(modelColumns, column);
+    const {
+      modelColumns,
+      visibleColumnWidths,
+      visibleColumnXs,
+      gridX,
+      columnHeaderHeight,
+      fontWidths,
+    } = metrics;
+
+    const { headerHorizontalPadding } = theme;
+    const columnWidth = getOrThrow(visibleColumnWidths, index, 0);
+    const columnX = getOrThrow(visibleColumnXs, index) + gridX;
+    const modelColumn = modelColumns.get(index);
+
+    if (modelColumn == null) {
+      return;
+    }
 
     const sort = TableUtils.getSortForColumn(model.sort, modelColumn);
 
@@ -406,32 +444,30 @@ class IrisGridRenderer extends GridRenderer {
       return;
     }
 
-    const { columnHeaderHeight, gridX } = metrics;
+    const text = model.textForColumnHeader(modelColumn);
+    if (text === undefined) {
+      return;
+    }
 
-    const x = gridX + columnX + columnWidth - 13;
+    const fontWidth =
+      fontWidths.get(context.font) || GridRenderer.DEFAULT_FONT_WIDTH;
+    const textWidth = text.length * fontWidth;
+    const textRight = gridX + columnX + textWidth + headerHorizontalPadding;
+    let { maxX } = bounds;
+    maxX -= headerHorizontalPadding;
+    const defaultX =
+      gridX + columnX + columnWidth - headerHorizontalPadding - 1;
+
+    const x = textRight > maxX ? textRight + 1 : Math.min(maxX, defaultX);
     const yOffset =
       sort.direction === TableUtils.sortDirection.ascending ? -6 : -12;
     const y = columnHeaderHeight * 0.5 + yOffset;
-    const gradientWidth = 12;
-    const gradientX = x - 3;
 
     context.save();
 
     context.beginPath();
     context.rect(columnX, 0, columnWidth, columnHeaderHeight);
     context.clip();
-
-    const gradient = context.createLinearGradient(
-      gradientX,
-      0,
-      gradientX + 5,
-      0
-    );
-    gradient.addColorStop(0, `${theme.headerBackgroundColor}00`);
-    gradient.addColorStop(1, `${theme.headerBackgroundColor}CD`);
-
-    context.fillStyle = gradient;
-    context.fillRect(gradientX, 0, gradientWidth, columnHeaderHeight);
 
     context.fillStyle = theme.headerSortBarColor;
     context.translate(x, y);

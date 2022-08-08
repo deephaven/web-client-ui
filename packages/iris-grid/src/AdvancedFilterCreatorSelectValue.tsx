@@ -11,7 +11,7 @@ import { ColumnName } from './CommonTypes';
 interface AdvancedFilterCreatorSelectValueProps<T> {
   invertSelection: boolean;
   selectedValues: T[];
-  table: Table;
+  table?: Table;
   formatter: Formatter;
   onChange: (selectedValues: T[], invertSelection: boolean) => void;
   showSearch: boolean;
@@ -34,7 +34,6 @@ class AdvancedFilterCreatorSelectValue<T = unknown> extends PureComponent<
   static searchDebounceTime = 250;
 
   static defaultProps = {
-    table: null,
     invertSelection: true,
     selectedValues: [],
     onChange: (): void => undefined,
@@ -290,16 +289,14 @@ class AdvancedFilterCreatorSelectValue<T = unknown> extends PureComponent<
             />
           )}
         </div>
-        {table && (
-          <AdvancedFilterCreatorSelectValueList
-            table={table}
-            filters={filters}
-            invertSelection={invertSelection}
-            selectedValues={selectedValues}
-            formatter={formatter}
-            onChange={this.handleListChange}
-          />
-        )}
+        <AdvancedFilterCreatorSelectValueList
+          table={table}
+          filters={filters}
+          invertSelection={invertSelection}
+          selectedValues={selectedValues}
+          formatter={formatter}
+          onChange={this.handleListChange}
+        />
         <div className="advanced-filter-creator-select-meta-row">
           <div>
             <button

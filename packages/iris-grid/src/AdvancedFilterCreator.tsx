@@ -45,7 +45,7 @@ interface AdvancedFilterCreatorProps {
   column: Column;
   onFilterChange: (
     column: Column,
-    filter: FilterCondition,
+    filter: FilterCondition | null,
     options: AdvancedFilterOptions
   ) => void;
   onSortChange: (
@@ -121,20 +121,19 @@ class AdvancedFilterCreator extends PureComponent<
     this.handleUpdateTimeout = this.handleUpdateTimeout.bind(this);
 
     this.focusTrapContainer = React.createRef();
-    this.filterKey = 0;
 
     const { options } = props;
     let { filterOperators, invertSelection, selectedValues } = options;
 
-    let filterItems: AdvancedFilterItem[] = options.filterItems.map(
-      ({ selectedType, value }) => ({
+    // can be null or an empty array
+    const filterItems: AdvancedFilterItem[] =
+      options.filterItems?.map(({ selectedType, value }) => ({
         selectedType,
         value,
         key: shortid(),
-      })
-    );
-    if (filterItems == null) {
-      filterItems = [AdvancedFilterCreator.makeFilterItem()];
+      })) ?? [];
+    if (filterItems.length === 0) {
+      filterItems.push(AdvancedFilterCreator.makeFilterItem());
     }
     if (filterOperators == null) {
       filterOperators = [];
@@ -179,8 +178,6 @@ class AdvancedFilterCreator extends PureComponent<
   focusTrapContainer: React.RefObject<HTMLFormElement>;
 
   debounceTimeout?: ReturnType<typeof setTimeout>;
-
-  filterKey: number;
 
   valuesTablePromise?: CancelablePromise<Table>;
 
@@ -425,11 +422,25 @@ class AdvancedFilterCreator extends PureComponent<
     const { column, onFilterChange, model } = this.props;
     const { formatter } = model;
 
+    const items = filterItems.filter(
+      ({ selectedType, value }) =>
+        selectedType != null && value != null && value !== ''
+    ) as FilterItem[];
+
+    const operators = filterOperators
+      .filter(
+        (operator, i) =>
+          operator != null &&
+          filterItems[i].selectedType != null &&
+          filterItems[i].value != null &&
+          filterItems[i].value !== ''
+      )
+      .slice(0, items.length - 1);
+    // slice last operator, user may have set an operator but not a value
+
     const options = {
-      filterItems: filterItems.filter(
-        ({ selectedType, value }) => selectedType != null && value != null
-      ) as FilterItem[],
-      filterOperators,
+      filterItems: items,
+      filterOperators: operators,
       invertSelection,
       selectedValues,
     };
@@ -592,19 +603,17 @@ class AdvancedFilterCreator extends PureComponent<
           {isValuesTableAvailable && !valuesTableError && (
             <>
               {!isBoolean && <hr />}
-              {valuesTable && (
-                <div className="form-group">
-                  <AdvancedFilterCreatorSelectValue<unknown>
-                    table={valuesTable}
-                    onChange={this.handleSelectValueChange}
-                    invertSelection={invertSelection}
-                    selectedValues={selectedValues}
-                    formatter={formatter}
-                    showSearch={!isDateType}
-                    timeZone={formatter.timeZone}
-                  />
-                </div>
-              )}
+              <div className="form-group">
+                <AdvancedFilterCreatorSelectValue<unknown>
+                  table={valuesTable}
+                  onChange={this.handleSelectValueChange}
+                  invertSelection={invertSelection}
+                  selectedValues={selectedValues}
+                  formatter={formatter}
+                  showSearch={!isDateType}
+                  timeZone={formatter.timeZone}
+                />
+              </div>
             </>
           )}
           <div className="form-row justify-content-end">

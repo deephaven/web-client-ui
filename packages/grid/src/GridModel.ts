@@ -1,4 +1,5 @@
 import { EventTarget, Event } from 'event-target-shim';
+import type { IColumnHeaderGroup } from './ColumnHeaderGroup';
 import { ModelIndex } from './GridMetrics';
 import { GridColor, GridTheme, NullableGridColor } from './GridTheme';
 
@@ -40,6 +41,17 @@ abstract class GridModel<
   /** Count of columns that are frozen (or 'floating') at the right */
   get floatingRightColumnCount(): number {
     return 0;
+  }
+
+  /**
+   * How many columns header levels are in the grid
+   * Used for column grouping where columns at depth 0 are the base columns
+   *
+   * A grid with 1-level grouping would have a columnHeaderDepth of 2
+   * and column headers at depths 0 and 1
+   */
+  get columnHeaderMaxDepth(): number {
+    return 1;
   }
 
   /**
@@ -107,10 +119,21 @@ abstract class GridModel<
   /**
    * Text for the column header
    * @param column Column to get the header for
+   * @param depth Depth to get the header text for. 0 is base columns
    * @returns Text to put in the column header
    */
-  textForColumnHeader(column: ModelIndex): string {
-    return '';
+  abstract textForColumnHeader(
+    column: ModelIndex,
+    depth?: number
+  ): string | undefined;
+
+  /** Color for column header
+   * @param column Column to get the color for
+   * @param depth Header depth to get the color for
+   * @returns Color for the header at the depth or null
+   */
+  colorForColumnHeader(column: ModelIndex, depth = 0): string | null {
+    return null;
   }
 
   /**
@@ -135,7 +158,7 @@ abstract class GridModel<
    * @param column Column to check
    * @returns True if the column is movable
    */
-  isColumnMovable(column: ModelIndex): boolean {
+  isColumnMovable(column: ModelIndex, depth = 0): boolean {
     return true;
   }
 
@@ -145,6 +168,20 @@ abstract class GridModel<
    */
   isRowMovable(row: ModelIndex): boolean {
     return true;
+  }
+
+  getColumnHeaderGroup(
+    modelIndex: ModelIndex,
+    depth: number
+  ): IColumnHeaderGroup | undefined {
+    return undefined;
+  }
+
+  getColumnHeaderParentGroup(
+    modelIndex: ModelIndex,
+    depth: number
+  ): IColumnHeaderGroup | undefined {
+    return undefined;
   }
 }
 

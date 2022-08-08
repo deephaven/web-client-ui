@@ -26,30 +26,25 @@ export type StackItemConfig = ItemConfig & {
   activeItemIndex?: number;
 };
 
-export function isReactComponentConfig(
-  config: ItemConfigType
-): config is ReactComponentConfig {
-  const reactConfig = config as ReactComponentConfig;
-  return (
-    reactConfig.type === 'react-component' &&
-    reactConfig.component !== undefined
-  );
-}
-
 function isComponentConfig(config: ItemConfigType): config is ComponentConfig {
   return (config as ComponentConfig).componentName !== undefined;
 }
 
-function isHTMLElement(element: Element): element is HTMLElement {
-  return (element as HTMLElement).focus !== undefined;
+export function isReactComponentConfig(
+  config: ItemConfigType
+): config is ReactComponentConfig {
+  const reactConfig = config as ReactComponentConfig;
+  // Golden layout sets the type to 'component' and componentName to 'lm-react-component' in `createContentItem`, then changes it back in `toConfig`
+  // Just check `componentName` instead of checking `component.type`.
+  return (
+    isComponentConfig(config) &&
+    config.componentName === 'lm-react-component' &&
+    reactConfig.component !== undefined
+  );
 }
 
-function assertReactComponentConfig(
-  config: ItemConfigType
-): asserts config is ReactComponentConfig {
-  if (!isReactComponentConfig(config)) {
-    throw new Error('config is not react component config');
-  }
+function isHTMLElement(element: Element): element is HTMLElement {
+  return (element as HTMLElement).focus !== undefined;
 }
 
 function isStackItemConfig(config: ItemConfigType): config is StackItemConfig {
@@ -776,9 +771,8 @@ class LayoutUtils {
   }): string | null {
     const { glContainer } = panel.props;
     const config = LayoutUtils.getComponentConfigFromContainer(glContainer);
-    if (config) {
-      assertReactComponentConfig(config);
-      return config.component;
+    if (config && isReactComponentConfig(config)) {
+      return config.component ?? null;
     }
     return null;
   }

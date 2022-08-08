@@ -14,7 +14,7 @@ const log = Log.module('AdvancedFilterCreatorSelectValueList');
 
 interface AdvancedFilterCreatorSelectValueListProps<T> {
   selectedValues: T[];
-  table: Table;
+  table?: Table;
   filters: FilterCondition[];
   invertSelection: boolean;
   onChange: (selectedValues: T[], invertSelection: boolean) => void;
@@ -37,7 +37,6 @@ class AdvancedFilterCreatorSelectValueList<T = unknown> extends PureComponent<
   AdvancedFilterCreatorSelectValueListState<T>
 > {
   static defaultProps = {
-    table: null,
     invertSelection: true,
     selectedValues: [],
     onChange: (): void => undefined,
@@ -92,7 +91,7 @@ class AdvancedFilterCreatorSelectValueList<T = unknown> extends PureComponent<
 
   componentDidMount(): void {
     const { table } = this.props;
-    this.startListening(table);
+    if (table) this.startListening(table);
   }
 
   componentDidUpdate(
@@ -100,8 +99,8 @@ class AdvancedFilterCreatorSelectValueList<T = unknown> extends PureComponent<
   ): void {
     const { filters, invertSelection, selectedValues, table } = this.props;
     if (prevProps.table !== table) {
-      this.stopListening(prevProps.table);
-      this.startListening(table);
+      if (prevProps.table) this.stopListening(prevProps.table);
+      if (table) this.startListening(table);
       this.resetViewport();
     }
 
@@ -114,14 +113,14 @@ class AdvancedFilterCreatorSelectValueList<T = unknown> extends PureComponent<
     }
 
     if (prevProps.filters !== filters) {
-      table.applyFilter(filters);
+      table?.applyFilter(filters);
       this.resetViewport();
     }
   }
 
   componentWillUnmount(): void {
     const { table } = this.props;
-    this.stopListening(table);
+    if (table) this.stopListening(table);
   }
 
   list: SelectValueList<T> | null;
@@ -168,11 +167,12 @@ class AdvancedFilterCreatorSelectValueList<T = unknown> extends PureComponent<
   }
 
   handleTableUpdate(event: CustomEvent): void {
+    const { table, formatter } = this.props;
+    if (!table) return;
+
     const data = event.detail;
     const { offset } = data;
-
     const items = [];
-    const { table, formatter } = this.props;
     const column = table.columns[0];
     for (let r = 0; r < data.rows.length; r += 1) {
       const row = data.rows[r];

@@ -78,19 +78,11 @@ class IrisGridColumnTooltipMouseHandler extends GridMouseHandler {
   }
 
   onMove(gridPoint: GridPoint): EventHandlerResult {
-    const { y, column, row } = gridPoint;
+    const { column, row, columnHeaderDepth } = gridPoint;
     const { shownColumnTooltip } = this.irisGrid.state;
-    const theme = this.irisGrid.getTheme();
     let newTooltip = null;
-    if (column !== null && row === null) {
-      /**
-       * one would expect at y == theme.columnHeaderHeight, row == null
-       * however, gridY also == theme.columnHeaderHeight, so row still has a value
-       * so this tooltip won't actually show until row is null at columnHeaderHeight - 1
-       */
-      if (theme.columnHeaderHeight && y >= 0 && y <= theme.columnHeaderHeight) {
-        newTooltip = column;
-      }
+    if (column !== null && row === null && columnHeaderDepth === 0) {
+      newTooltip = column;
     }
 
     if (newTooltip !== shownColumnTooltip) {

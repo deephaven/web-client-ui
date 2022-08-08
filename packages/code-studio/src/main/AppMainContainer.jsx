@@ -681,7 +681,15 @@ export class AppMainContainer extends Component {
           />
           <ChartPlugin hydrate={this.hydrateChart} />
           <ChartBuilderPlugin />
-          <ConsolePlugin hydrateConsole={AppMainContainer.hydrateConsole} />
+          <ConsolePlugin
+            hydrateConsole={AppMainContainer.hydrateConsole}
+            notebooksUrl={
+              new URL(
+                `${process.env.REACT_APP_NOTEBOOKS_URL}/`,
+                window.location
+              ).href
+            }
+          />
           <FilterPlugin />
           <PandasPlugin hydrate={this.hydratePandas} />
           <MarkdownPlugin />

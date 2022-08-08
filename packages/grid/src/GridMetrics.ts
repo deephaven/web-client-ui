@@ -1,3 +1,5 @@
+import type { BoundedAxisRange } from './GridAxisRange';
+
 /** A grid coordinate value */
 export type Coordinate = number;
 
@@ -25,12 +27,11 @@ export type SizeMap = Map<VisibleIndex, number>;
 export type ModelSizeMap = Map<ModelIndex, number>;
 
 /** Map from visible Index to ModelIndex */
-export type IndexModelMap = Map<VisibleIndex, ModelIndex>;
+export type VisibleToModelMap = Map<VisibleIndex, ModelIndex>;
 
-// TODO #620
 /** Represents a move operation from one index to another */
 export type MoveOperation = {
-  from: VisibleIndex;
+  from: VisibleIndex | BoundedAxisRange;
   to: VisibleIndex;
 };
 
@@ -146,8 +147,11 @@ export type GridMetrics = {
   visibleRowTreeBoxes: Map<VisibleIndex, BoxCoordinates>;
 
   // Mapping from visible row indexes to the model row/columns they pull from
-  modelRows: IndexModelMap;
-  modelColumns: IndexModelMap;
+  modelRows: VisibleToModelMap;
+  modelColumns: VisibleToModelMap;
+
+  movedRows: MoveOperation[];
+  movedColumns: MoveOperation[];
 
   // Map of the width of the fonts
   fontWidths: Map<string, number>;
@@ -159,6 +163,9 @@ export type GridMetrics = {
   // Map of calculated row/column height/width
   calculatedRowHeights: ModelSizeMap;
   calculatedColumnWidths: ModelSizeMap;
+
+  // Max depth of column headers. Depth of 1 for a table without column groups
+  columnHeaderMaxDepth: number;
 };
 
 export default GridMetrics;

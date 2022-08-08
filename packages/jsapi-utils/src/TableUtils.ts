@@ -1066,7 +1066,7 @@ export class TableUtils {
     column: Column,
     options: AdvancedFilterOptions,
     timeZone: string
-  ): FilterCondition {
+  ): FilterCondition | null {
     const {
       filterItems,
       filterOperators,
@@ -1133,9 +1133,6 @@ export class TableUtils {
       }
     }
 
-    if (filter === null) {
-      throw new Error('filter is null');
-    }
     return filter;
   }
 

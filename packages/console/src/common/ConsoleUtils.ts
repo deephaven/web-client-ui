@@ -1,8 +1,5 @@
 import ShellQuote, { ParseEntry, ControlOperator } from 'shell-quote';
 import dh, { VariableTypeUnion } from '@deephaven/jsapi-shim';
-import Log from '@deephaven/log';
-
-const log = Log.module('FigureChartModel');
 
 class ConsoleUtils {
   static hasComment(arg: ParseEntry): arg is { comment: string } {
@@ -53,20 +50,6 @@ class ConsoleUtils {
     const milliseconds = `${date.getMilliseconds()}`.padStart(3, '0');
 
     return `${hours}:${minutes}:${seconds}.${milliseconds}`;
-  }
-
-  static defaultHost(): string {
-    let defaultHost = window.location.hostname;
-    const apiUrl = process.env.REACT_APP_CORE_API_URL;
-    if (apiUrl != null) {
-      try {
-        const url = new URL(apiUrl);
-        defaultHost = url.hostname;
-      } catch (error: unknown) {
-        log.error('API_URL failed', error);
-      }
-    }
-    return defaultHost;
   }
 
   static isTableType(type: VariableTypeUnion): boolean {
