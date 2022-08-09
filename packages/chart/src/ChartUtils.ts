@@ -2,6 +2,7 @@ import Log from '@deephaven/log';
 import { TableUtils } from '@deephaven/jsapi-utils';
 import dh from '@deephaven/jsapi-shim';
 import set from 'lodash.set';
+import { Layout } from 'plotly.js';
 
 const log = Log.module('ChartUtils');
 
@@ -1284,7 +1285,7 @@ class ChartUtils {
     return colorway;
   }
 
-  static makeDefaultLayout(theme = {}) {
+  static makeDefaultLayout(theme: Partial<Layout> = {}): Layout {
     const layout = {
       ...theme,
       autosize: true,

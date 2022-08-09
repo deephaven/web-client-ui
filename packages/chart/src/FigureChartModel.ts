@@ -2,10 +2,11 @@
 import memoize from 'memoizee';
 import debounce from 'lodash.debounce';
 import set from 'lodash.set';
-import dh from '@deephaven/jsapi-shim';
+import dh, { Figure } from '@deephaven/jsapi-shim';
 import Log from '@deephaven/log';
 import ChartModel from './ChartModel';
 import ChartUtils from './ChartUtils';
+import { Layout } from 'plotly.js';
 
 const log = Log.module('FigureChartModel');
 
@@ -19,7 +20,7 @@ class FigureChartModel extends ChartModel {
    * @param {dh.plot.Figure} figure The figure object created by the API
    * @param {Object} settings Chart settings
    */
-  constructor(figure, settings = {}, theme = {}) {
+  constructor(figure: Figure, settings = {}, theme = {}) {
     super();
 
     this.handleFigureUpdated = this.handleFigureUpdated.bind(this);
@@ -57,6 +58,19 @@ class FigureChartModel extends ChartModel {
     this.updateAxisPositions();
     this.startListeningFigure();
   }
+
+  figure : Figure;
+    settings : settings;
+    theme : theme;
+    data : [];
+    layout : Layout;
+    seriesDataMap : Map;
+    pendingSeries : [];
+    oneClicks : [];
+    filterColumnMap : Map();
+    lastFilter : Map();
+    isConnected : boolean; // Assume figure is connected to start
+    seriesToProcess
 
   close() {
     this.figure.close();

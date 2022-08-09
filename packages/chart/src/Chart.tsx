@@ -1,10 +1,24 @@
-import React, { Component } from 'react';
-import PropTypes from 'prop-types';
+import React, { Component, ReactElement, RefObject } from 'react';
 import deepEqual from 'deep-equal';
 import memoize from 'memoize-one';
-import { vsLoading, dhGraphLineDown, dhWarningFilled } from '@deephaven/icons';
-import { Formatter, FormatterUtils, DateUtils } from '@deephaven/jsapi-utils';
+import {
+  vsLoading,
+  dhGraphLineDown,
+  dhWarningFilled,
+  IconDefinition,
+} from '@deephaven/icons';
+import {
+  Formatter,
+  FormatterUtils,
+  DateUtils,
+  DateTimeColumnFormatterOptions,
+  DecimalColumnFormatterOptions,
+  IntegerColumnFormatterOptions,
+  FormattingRule,
+} from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
+import { WorkspaceSettings } from '@deephaven/redux';
+import { Layout, Icon } from 'plotly.js';
 import Plotly from './plotly/Plotly';
 import Plot from './plotly/Plot';
 
@@ -14,25 +28,78 @@ import './Chart.scss';
 
 const log = Log.module('Chart');
 
-export class Chart extends Component {
+type FormatterSettings = Partial<WorkspaceSettings> & {
+  decimalFormatOptions: DecimalColumnFormatterOptions;
+  integerFormatOptions: IntegerColumnFormatterOptions;
+};
+
+interface ChartProps {
+  model: ChartModel;
+  // These settings come from the redux store
+  settings: Partial<WorkspaceSettings>;
+  isActive: boolean;
+  onDisconnect: () => void;
+  onReconnect: () => void;
+  onUpdate: (obj: { isLoading: boolean }) => void;
+  onError: (error: Error) => void;
+  onSettingsChanged: (settings: Partial<ChartModelSettings>) => void;
+}
+
+interface ChartModelSettings {
+  hiddenSeries: string[];
+}
+
+interface ChartState {
+  data: { name: string; visible: string }[] | null;
+  downsamplingError: unknown;
+  isDownsampleFinished: boolean;
+  isDownsampleInProgress: boolean;
+  isDownsamplingDisabled: boolean;
+  layout: {
+    datarevision: number;
+  };
+  revision: number;
+}
+
+export class Chart extends Component<ChartProps, ChartState> {
+  static defaultProps = {
+    isActive: true,
+    settings: {
+      timeZone: 'America/New_York',
+      defaultDateTimeFormat: DateUtils.FULL_DATE_FORMAT,
+      showTimeZone: false,
+      showTSeparator: true,
+      formatter: [],
+    },
+    onDisconnect: (): void => undefined,
+    onReconnect: (): void => undefined,
+    onUpdate: (): void => undefined,
+    onError: (): void => undefined,
+    onSettingsChanged: (): void => undefined,
+  };
+
   /**
    * Convert a font awesome icon definition to a plotly icon definition
-   * @param {FontAwesome.IconDefinition} faIcon The icon to convert
+   * @param faIcon The icon to convert
    */
-  static convertIcon(faIcon) {
+  static convertIcon(faIcon: IconDefinition): Icon {
     const [width, , , , path] = faIcon.icon;
     // By default the icons are flipped upside down, so we need to add our own transform
     // https://github.com/plotly/plotly.js/issues/1335
+    const stringPath = `${path}`;
     return {
       width,
-      path,
+      path: stringPath,
       ascent: width,
       descent: 0,
       transform: `matrix(1, 0, 0, 1, 0, 0)`,
     };
   }
 
-  static downsampleButtonTitle(isDownsampleInProgress, isDownsamplingDisabled) {
+  static downsampleButtonTitle(
+    isDownsampleInProgress: boolean,
+    isDownsamplingDisabled: boolean
+  ): string {
     if (isDownsampleInProgress) {
       return 'Downsampling in progress...';
     }
@@ -42,7 +109,10 @@ export class Chart extends Component {
       : 'Downsampling enabled, click to disable';
   }
 
-  static downsampleButtonAttr(isDownsampleInProgress, isDownsamplingDisabled) {
+  static downsampleButtonAttr(
+    isDownsampleInProgress: boolean,
+    isDownsamplingDisabled: boolean
+  ): string | undefined {
     if (isDownsampleInProgress) {
       return 'animation-spin';
     }
@@ -50,7 +120,7 @@ export class Chart extends Component {
     return isDownsamplingDisabled ? undefined : 'fill-active';
   }
 
-  constructor(props) {
+  constructor(props: ChartProps) {
     super(props);
 
     this.handleAfterPlot = this.handleAfterPlot.bind(this);
@@ -66,10 +136,9 @@ export class Chart extends Component {
     this.dateTimeFormatterOptions = {};
     this.decimalFormatOptions = {};
     this.integerFormatOptions = {};
-    this.rect = null;
-    this.ranges = null;
     this.isSubscribed = false;
     this.isLoadedFired = false;
+    this.currentSeries = 0;
 
     this.state = {
       data: null,
@@ -84,7 +153,7 @@ export class Chart extends Component {
     };
   }
 
-  componentDidMount() {
+  componentDidMount(): void {
     // Need to make sure the model dimensions are up to date before initializing the data
     this.updateDimensions();
     this.updateModelDimensions();
@@ -98,9 +167,9 @@ export class Chart extends Component {
     }
   }
 
-  componentDidUpdate(prevProps) {
+  componentDidUpdate(prevProps: ChartProps): void {
     const { isActive, settings } = this.props;
-    this.updateFormatterSettings(settings);
+    this.updateFormatterSettings(settings as FormatterSettings);
 
     if (isActive !== prevProps.isActive) {
       if (isActive) {
@@ -111,9 +180,31 @@ export class Chart extends Component {
     }
   }
 
-  componentWillUnmount() {
+  componentWillUnmount(): void {
     this.unsubscribe();
   }
+
+  currentSeries: number;
+
+  plot: RefObject<typeof Plot>;
+
+  plotWrapper: RefObject<HTMLDivElement>;
+
+  columnFormats?: FormattingRule[];
+
+  dateTimeFormatterOptions?: DateTimeColumnFormatterOptions;
+
+  decimalFormatOptions: DecimalColumnFormatterOptions;
+
+  integerFormatOptions: IntegerColumnFormatterOptions;
+
+  rect?: DOMRect;
+
+  ranges?: unknown;
+
+  isSubscribed: boolean;
+
+  isLoadedFired: boolean;
 
   getCachedConfig = memoize(
     (
@@ -126,7 +217,7 @@ export class Chart extends Component {
       if (downsamplingError) {
         customButtons.push({
           name: `Downsampling failed: ${downsamplingError}`,
-          click: () => {},
+          click: () => undefined,
           icon: Chart.convertIcon(dhWarningFilled),
           attr: 'fill-warning',
         });
@@ -175,11 +266,11 @@ export class Chart extends Component {
     }
   );
 
-  getPlotRect() {
+  getPlotRect(): DOMRect | null {
     return this.plotWrapper.current?.getBoundingClientRect() ?? null;
   }
 
-  initData() {
+  initData(): void {
     const { model } = this.props;
     const { layout } = this.state;
     this.setState({
@@ -191,7 +282,7 @@ export class Chart extends Component {
     });
   }
 
-  subscribe() {
+  subscribe(): void {
     if (this.isSubscribed) {
       return;
     }
@@ -205,7 +296,7 @@ export class Chart extends Component {
     this.isSubscribed = true;
   }
 
-  unsubscribe() {
+  unsubscribe(): void {
     if (!this.isSubscribed) {
       return;
     }
@@ -215,13 +306,13 @@ export class Chart extends Component {
     this.isSubscribed = false;
   }
 
-  handleAfterPlot() {
+  handleAfterPlot(): void {
     if (this.plot.current) {
       // TODO: Translate whatever Don was doing in plotting.js in the afterplot here so that area graphs show up properly
     }
   }
 
-  handleDownsampleClick() {
+  handleDownsampleClick(): void {
     this.setState(
       ({ isDownsamplingDisabled }) => ({
         downsamplingError: null,
@@ -237,7 +328,7 @@ export class Chart extends Component {
     );
   }
 
-  handleModelEvent(event) {
+  handleModelEvent(event: CustomEvent): void {
     const { type, detail } = event;
     log.debug2('Received data update', type, detail);
 
@@ -309,7 +400,7 @@ export class Chart extends Component {
     }
   }
 
-  handlePlotUpdate(figure) {
+  handlePlotUpdate(figure: { layout: Layout }): void {
     // User could have modified zoom/pan here, update the model dimensions
     // We don't need to update the datarevision, as we don't have any data changes
     // until an update comes back from the server anyway
@@ -325,9 +416,9 @@ export class Chart extends Component {
     }
   }
 
-  handleRelayout(changes) {
+  handleRelayout(changes: { hiddenlabels?: string[] }): void {
     log.debug('handleRelayout', changes);
-    if (Object.keys(changes).includes('hiddenlabels')) {
+    if (changes.hiddenlabels != null) {
       const { onSettingsChanged } = this.props;
       // Pie charts store series visibility in layout.hiddenlabels and trigger relayout on changes
       // Series visibility for other types of charts is handled in handleRestyle
@@ -338,17 +429,22 @@ export class Chart extends Component {
     this.updateModelDimensions();
   }
 
-  handleRestyle([changes, seriesIndexes]) {
+  handleRestyle([changes, seriesIndexes]: [
+    Record<string, unknown>,
+    number[]
+  ]): void {
     log.debug('handleRestyle', changes, seriesIndexes);
     if (Object.keys(changes).includes('visible')) {
       const { data } = this.state;
       const { onSettingsChanged } = this.props;
-      const hiddenSeries = data.reduce(
-        (acc, { name, visible }) =>
-          visible === 'legendonly' ? [...acc, name] : acc,
-        []
-      );
-      onSettingsChanged({ hiddenSeries });
+      if (data != null) {
+        const hiddenSeries = data.reduce(
+          (acc: string[], { name, visible }) =>
+            visible === 'legendonly' ? [...acc, name] : acc,
+          []
+        );
+        onSettingsChanged({ hiddenSeries });
+      }
     }
   }
 
@@ -360,7 +456,7 @@ export class Chart extends Component {
    * ChartModel API a bit cleaner.
    * @param {boolean} force Force a change even if the chart dimensions haven't changed (eg. after pan/zoom)
    */
-  updateModelDimensions(force = false) {
+  updateModelDimensions(force = false): void {
     const rect = this.getPlotRect();
     if (!rect) {
       log.warn('Unable to get plotting rect');
@@ -384,12 +480,17 @@ export class Chart extends Component {
     }
   }
 
-  initFormatter() {
+  initFormatter(): void {
     const { settings } = this.props;
-    this.updateFormatterSettings(settings);
+    this.updateFormatterSettings(settings as FormatterSettings);
   }
 
-  updateFormatterSettings(settings) {
+  updateFormatterSettings(
+    settings: Partial<WorkspaceSettings> & {
+      decimalFormatOptions: DecimalColumnFormatterOptions;
+      integerFormatOptions: IntegerColumnFormatterOptions;
+    }
+  ): void {
     const columnFormats = FormatterUtils.getColumnFormats(settings);
     const dateTimeFormatterOptions = FormatterUtils.getDateTimeFormatterOptions(
       settings
@@ -410,7 +511,7 @@ export class Chart extends Component {
     }
   }
 
-  updateFormatter() {
+  updateFormatter(): void {
     const formatter = new Formatter(
       this.columnFormats,
       this.dateTimeFormatterOptions,
@@ -422,7 +523,7 @@ export class Chart extends Component {
     model.setFormatter(formatter);
   }
 
-  updateDimensions() {
+  updateDimensions(): void {
     const rect = this.getPlotRect();
     if (
       this.plot.current != null &&
@@ -438,7 +539,7 @@ export class Chart extends Component {
     }
   }
 
-  render() {
+  render(): ReactElement {
     const {
       data,
       downsamplingError,
@@ -477,45 +578,5 @@ export class Chart extends Component {
     );
   }
 }
-
-Chart.propTypes = {
-  model: PropTypes.instanceOf(ChartModel).isRequired,
-  // These settings come from the redux store
-  settings: PropTypes.shape({
-    timeZone: PropTypes.string.isRequired,
-    defaultDateTimeFormat: PropTypes.string.isRequired,
-    showTimeZone: PropTypes.bool.isRequired,
-    showTSeparator: PropTypes.bool.isRequired,
-    formatter: PropTypes.arrayOf(PropTypes.shape({})).isRequired,
-    decimalFormatOptions: PropTypes.shape({
-      defaultFormatString: PropTypes.string,
-    }),
-    integerFormatOptions: PropTypes.shape({
-      defaultFormatString: PropTypes.string,
-    }),
-  }),
-  isActive: PropTypes.bool,
-  onDisconnect: PropTypes.func,
-  onReconnect: PropTypes.func,
-  onUpdate: PropTypes.func,
-  onError: PropTypes.func,
-  onSettingsChanged: PropTypes.func,
-};
-
-Chart.defaultProps = {
-  isActive: true,
-  settings: {
-    timeZone: 'America/New_York',
-    defaultDateTimeFormat: DateUtils.FULL_DATE_FORMAT,
-    showTimeZone: false,
-    showTSeparator: true,
-    formatter: [],
-  },
-  onDisconnect: () => {},
-  onReconnect: () => {},
-  onUpdate: () => {},
-  onError: () => {},
-  onSettingsChanged: () => {},
-};
 
 export default Chart;

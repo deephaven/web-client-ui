@@ -20,6 +20,7 @@ export interface dh {
   FilterCondition: FilterConditionStatic;
   FilterValue: FilterValueStatic;
   plot: Plot;
+  Axis: Axis;
   Table: TableStatic;
   Client: ClientStatic;
   TreeTable: TreeTableStatic;
@@ -427,6 +428,8 @@ export interface Axis {
   readonly tickLabelAngle: number;
   readonly isInvert: boolean;
   readonly isTimeAxis: boolean;
+
+  readonly FORMAT_TYPE_NUMBER: unknown;
 
   /**
    * Indicate the density and range of data that the UI needs for this axis, across any series which
