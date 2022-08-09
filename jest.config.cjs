@@ -4,7 +4,7 @@ const lintConfig = require('./jest.config.lint.cjs');
 
 module.exports = {
   ...baseConfig,
-  projects: [...unitConfig.projects],
+  projects: [...lintConfig.projects, ...unitConfig.projects],
   watchPlugins: [
     'jest-watch-typeahead/filename',
     'jest-watch-typeahead/testname',
