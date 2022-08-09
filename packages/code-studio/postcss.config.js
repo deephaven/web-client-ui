@@ -1,6 +1,6 @@
 /* eslint-disable import/no-extraneous-dependencies */
-const autoprefixer = require('autoprefixer');
+import autoprefixer from 'autoprefixer';
 
-module.exports = {
+export default {
   plugins: [autoprefixer],
 };
