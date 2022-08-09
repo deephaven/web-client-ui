@@ -418,10 +418,7 @@ export class Chart extends Component<ChartProps, ChartState> {
 
   handleRelayout(changes: { hiddenlabels?: string[] }): void {
     log.debug('handleRelayout', changes);
-    if (
-      Object.keys(changes).includes('hiddenlabels') &&
-      changes.hiddenlabels != null
-    ) {
+    if (changes.hiddenlabels != null) {
       const { onSettingsChanged } = this.props;
       // Pie charts store series visibility in layout.hiddenlabels and trigger relayout on changes
       // Series visibility for other types of charts is handled in handleRestyle

@@ -48,7 +48,7 @@ interface Metadata {
 }
 
 interface Settings {
-  language?: string;
+  language: string;
   value: string | null;
 }
 
@@ -200,8 +200,9 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
 
     const { isDashboardActive, session, sessionLanguage, panelState } = props;
 
-    let settings: { value: string | null } = {
+    let settings: { value: string | null; language: string } = {
       value: '',
+      language: '',
     };
     let fileMetadata = null;
     let { isPreview } = props;
@@ -404,7 +405,7 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
         }
         const updatedSettings = {
           ...settings,
-          language: NotebookPanel.languageFromFileName(itemName) ?? undefined,
+          language: NotebookPanel.languageFromFileName(itemName) ?? '',
         };
         if (settings.value == null) {
           updatedSettings.value = loadedFile.content;
@@ -656,8 +657,7 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
   handleSaveSuccess(file: File) {
     const { fileStorage } = this.props;
     const fileMetadata = { id: file.filename, itemName: file.filename };
-    const language =
-      NotebookPanel.languageFromFileName(file.filename) ?? undefined;
+    const language = NotebookPanel.languageFromFileName(file.filename) ?? '';
     this.setState(state => {
       const { fileMetadata: oldMetadata } = state;
       const settings = {

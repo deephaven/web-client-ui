@@ -11,7 +11,7 @@ const log = Log.module('MonacoCompletionProvider');
 interface MonacoCompletionProviderProps {
   model: monaco.editor.ITextModel;
   session: IdeSession;
-  language?: string;
+  language: string;
 }
 
 /**

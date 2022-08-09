@@ -109,7 +109,7 @@ interface ChartPanelProps {
   links: Link[];
   localDashboardId: string;
   isLinkerActive: boolean;
-  source: TableTemplate;
+  source?: TableTemplate;
   sourcePanel?: PanelComponent;
   columnSelectionValidator: (
     value: unknown,
@@ -858,9 +858,7 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
       const { columnMap } = state;
       const filterValueMap = new Map(state.filterValueMap);
       const filterMap = new Map(state.filterMap);
-      const update = forceUpdate
-        ? { filterMap, filterValueMap }
-        : { filterMap: new Map(), filterValueMap: new Map() };
+      const update = forceUpdate ? { filterMap, filterValueMap } : {};
 
       for (let i = 0; i < inputFilters.length; i += 1) {
         const { name, type, value } = inputFilters[i];
@@ -884,7 +882,7 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
       }
 
       log.debug('updateInputFilters', update);
-      return update;
+      return update as unknown;
     });
   }
 
@@ -959,8 +957,7 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
     } else {
       log.debug2('updateFilters waiting on inputs', waitingInputMap);
       model.setTitle(model.getDefaultTitle());
-      // commenting out this line lets tests pass
-      // this.setState({ isLoading: false });
+      this.setState({ isLoading: false });
     }
 
     this.updatePanelState();
@@ -974,10 +971,10 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
       const { columnMap } = state;
       const filterMap = new Map(state.filterMap);
       const filterValueMap = new Map(state.filterValueMap);
-      const newState = {
-        filterMap: new Map(),
-        filterValueMap: new Map(),
-      };
+      const newState: Pick<
+        Partial<ChartPanelState>,
+        'filterMap' | 'filterValueMap'
+      > = {};
 
       state.filterValueMap.forEach((value, name) => {
         if (!columnMap.has(name)) {
@@ -991,7 +988,7 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
           newState.filterMap = filterMap;
         }
       });
-      return newState;
+      return newState as unknown;
     });
   }
 
@@ -1157,8 +1154,10 @@ const mapStateToProps = (
     isLinkerActive,
     inputFilters: getInputFiltersForDashboard(state, localDashboardId),
     links: getLinksForDashboard(state, localDashboardId),
-    source: sourcePanelId ? panelTableMap.get(sourcePanelId) : '',
-    sourcePanel: sourcePanelId ? openedPanelMap.get(sourcePanelId) : undefined,
+    source:
+      sourcePanelId != null ? panelTableMap.get(sourcePanelId) : undefined,
+    sourcePanel:
+      sourcePanelId != null ? openedPanelMap.get(sourcePanelId) : undefined,
     settings: getSettings(state),
   };
 };

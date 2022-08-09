@@ -47,10 +47,10 @@ interface PanelState {
 interface DropdownFilterPanelProps {
   glContainer: Container;
   glEventHub: EventEmitter;
-  panelState: PanelState;
+  panelState?: PanelState;
   isLinkerActive: boolean;
   columns: Column[];
-  columnSelectionValidator: (
+  columnSelectionValidator?: (
     value: unknown,
     column: DropdownFilterColumn | null
   ) => boolean;
@@ -71,14 +71,13 @@ interface DropdownFilterPanelState {
   valuesColumn?: Column;
   sourceSize: number;
   value: string;
-  timestamp: number | null;
+  timestamp?: number;
   values: unknown[];
   isValueShown: boolean;
   wasFlipped: boolean;
   skipUpdate: boolean;
 
-  // eslint-disable-next-line react/no-unused-state
-  panelState: PanelState; // Dehydrated panel state that can load this panel
+  panelState?: PanelState; // Dehydrated panel state that can load this panel
 
   isDisconnected: boolean;
   isLoading: boolean;
@@ -90,11 +89,6 @@ class DropdownFilterPanel extends Component<
   DropdownFilterPanelProps,
   DropdownFilterPanelState
 > {
-  static defaultProps = {
-    columnSelectionValidator: null,
-    panelState: null,
-  };
-
   static displayName = 'DropdownFilterPanel';
 
   static COMPONENT = 'DropdownFilterPanel';
@@ -137,7 +131,7 @@ class DropdownFilterPanel extends Component<
 
     const { panelState, settings } = props;
     this.columnFormats = FormatterUtils.getColumnFormats(settings);
-    const { value = '', isValueShown = false, name, type, timestamp = null } =
+    const { value = '', isValueShown = false, name, type, timestamp } =
       panelState ?? {};
     const column = name != null && type != null ? { name, type } : undefined;
     this.state = {
@@ -193,10 +187,10 @@ class DropdownFilterPanel extends Component<
 
     if (
       valuesTable !== prevState.valuesTable &&
-      prevState.valuesTable !== null
+      prevState.valuesTable != null
     ) {
       log.debug('Table in state modified, closing the old table.');
-      prevState.valuesTable?.close();
+      prevState.valuesTable.close();
     }
 
     // Checking source change in addition to table change
@@ -230,9 +224,9 @@ class DropdownFilterPanel extends Component<
     }
   }
 
-  dropdownFilterRef: RefObject<DropdownFilter> | null;
+  dropdownFilterRef: RefObject<DropdownFilter>;
 
-  panelContainer: RefObject<HTMLDivElement> | null;
+  panelContainer: RefObject<HTMLDivElement>;
 
   pending: Pending;
 
@@ -261,7 +255,7 @@ class DropdownFilterPanel extends Component<
   );
 
   getCoordinateForColumn(): [number, number] | null {
-    if (!this.panelContainer?.current) {
+    if (this.panelContainer.current == null) {
       return null;
     }
 
@@ -407,7 +401,7 @@ class DropdownFilterPanel extends Component<
   }) {
     const { name = undefined, type = undefined } = column ?? {};
     let sendUpdate = true;
-    let timestamp: number | null = Date.now();
+    let timestamp: number | undefined = Date.now();
     this.setState(
       ({ panelState, timestamp: prevTimestamp, wasFlipped, skipUpdate }) => {
         // If the user had a value set, and they flip the card over and flip it back without changing any settings, ignore it
@@ -513,7 +507,7 @@ class DropdownFilterPanel extends Component<
     name: string | null,
     type: string | undefined,
     value: string | undefined,
-    timestamp: number | null
+    timestamp?: number
   ): void {
     const { glEventHub } = this.props;
     const sourcePanelId = this.getSource()?.panelId;

@@ -364,9 +364,8 @@ class CommandHistory extends Component<
       offset,
       selectedRanges,
     } = this.state;
-    const languageDisplayString = language
-      ? ConsoleConstants.LANGUAGE_MAP.get(language)
-      : '';
+    const languageDisplayString =
+      ConsoleConstants.LANGUAGE_MAP.get(language) ?? '';
     return (
       <div className="command-history">
         <div className="command-history-search-bar">

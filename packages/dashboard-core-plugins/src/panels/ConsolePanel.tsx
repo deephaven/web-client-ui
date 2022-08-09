@@ -57,12 +57,12 @@ interface ConsolePanelProps {
   glContainer: Container;
   glEventHub: EventEmitter;
 
-  panelState: PanelState;
+  panelState?: PanelState;
 
   sessionWrapper: SessionWrapper;
 
   timeZone: string;
-  unzip: (file: File) => Promise<JSZipObject[]>;
+  unzip?: (file: File) => Promise<JSZipObject[]>;
 }
 
 interface ConsolePanelState {
@@ -80,11 +80,6 @@ export class ConsolePanel extends PureComponent<
   ConsolePanelProps,
   ConsolePanelState
 > {
-  static defaultProps = {
-    panelState: null,
-    unzip: null,
-  };
-
   static COMPONENT = 'ConsolePanel';
 
   static TITLE = 'Console';
@@ -98,8 +93,6 @@ export class ConsolePanel extends PureComponent<
     this.handleResize = this.handleResize.bind(this);
     this.handleSettingsChange = this.handleSettingsChange.bind(this);
     this.handleShow = this.handleShow.bind(this);
-    this.handleTabBlur = this.handleTabBlur.bind(this);
-    this.handleTabFocus = this.handleTabFocus.bind(this);
     this.handlePanelMount = this.handlePanelMount.bind(this);
 
     this.consoleRef = React.createRef();
@@ -205,12 +198,6 @@ export class ConsolePanel extends PureComponent<
       this.setItemId(name, id);
     }
     return id;
-  }
-
-  handleTabBlur(): void {
-    if (this.consoleRef && this.consoleRef.current) {
-      ((this.consoleRef.current as unknown) as HTMLElement).blur();
-    }
   }
 
   handleTabFocus(): void {
@@ -352,7 +339,6 @@ export class ConsolePanel extends PureComponent<
         onResize={this.handleResize}
         onShow={this.handleShow}
         onTabFocus={this.handleTabFocus}
-        onTabBlur={this.handleTabBlur}
         errorMessage={error != null ? `${error}` : undefined}
       >
         <>

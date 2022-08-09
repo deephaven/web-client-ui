@@ -23,10 +23,10 @@ const log = Log.module('CommandHistoryPanel');
 interface CommandHistoryPanelProps {
   glContainer: Container;
   glEventHub: EventEmitter;
-  panelState: Record<string, never>;
-  session: IdeSession;
-  sessionId: string;
-  language: string;
+  panelState?: Record<string, never>;
+  session?: IdeSession;
+  sessionId?: string;
+  language?: string;
   commandHistoryStorage: CommandHistoryStorage;
 }
 
@@ -43,13 +43,6 @@ class CommandHistoryPanel extends Component<
   CommandHistoryPanelProps,
   CommandHistoryPanelState
 > {
-  static defaultProps = {
-    panelState: null,
-    session: null,
-    sessionId: null,
-    language: null,
-  };
-
   static COMPONENT = 'CommandHistoryPanel';
 
   static TITLE = 'Command History';
