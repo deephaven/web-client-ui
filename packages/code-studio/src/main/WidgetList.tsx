@@ -31,10 +31,10 @@ export type SelectStartEvent = {
 };
 
 export interface WidgetListProps {
-  onSelect: (widget: VariableDefinition, e?: WindowMouseEvent) => undefined;
-  onExportLayout: () => undefined;
-  onImportLayout: () => undefined;
-  onResetLayout: () => undefined;
+  onSelect: (widget: VariableDefinition, e?: WindowMouseEvent) => void;
+  onExportLayout: () => void;
+  onImportLayout: () => void;
+  onResetLayout: () => void;
   widgets?: VariableDefinition[];
 }
 

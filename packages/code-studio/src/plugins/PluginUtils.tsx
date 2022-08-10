@@ -1,4 +1,4 @@
-import React, { Suspense } from 'react';
+import React, { ForwardRefExoticComponent, Suspense } from 'react';
 import Log from '@deephaven/log';
 import RemoteComponent from './RemoteComponent';
 import loadRemoteModule from './loadRemoteModule';
@@ -11,7 +11,9 @@ class PluginUtils {
    * @param pluginName Name of the table plugin to load
    * @return A lazily loaded JSX.Element from the plugin
    */
-  static loadComponentPlugin(pluginName: string): JSX.Element {
+  static loadComponentPlugin(
+    pluginName: string
+  ): ForwardRefExoticComponent<React.RefAttributes<unknown>> {
     if (
       process.env.REACT_APP_INTERNAL_COMPONENT_PLUGINS?.split(',').includes(
         pluginName

@@ -51,6 +51,7 @@ export interface VariableDefinition<
   name?: string;
 
   title?: string;
+
   id?: string;
 }
 
@@ -102,6 +103,9 @@ export interface IdeSessionStatic {
 }
 
 export interface IdeSession extends Evented {
+  subscribeToFieldUpdates(
+    param: (changes: VariableChanges) => void
+  ): () => void;
   getTable(name: string): Promise<Table>;
   getFigure(name: string): Promise<Figure>;
   getTreeTable(name: string): Promise<TreeTable>;

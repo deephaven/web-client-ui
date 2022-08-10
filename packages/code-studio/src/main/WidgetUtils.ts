@@ -76,14 +76,22 @@ export const createChartModel = async (
   }
 
   if (figureName) {
-    const definition = { name: figureName, type: dh.VariableType.FIGURE };
+    const definition = {
+      title: figureName,
+      name: figureName,
+      type: dh.VariableType.FIGURE,
+    };
     const figure = await session.getObject(definition);
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return ChartModelFactory.makeModel(settings as any, figure);
   }
 
-  const definition = { name: tableName, type: dh.VariableType.TABLE };
+  const definition = {
+    title: figureName,
+    name: tableName,
+    type: dh.VariableType.TABLE,
+  };
   const table = await session.getObject(definition);
 
   IrisGridUtils.applyTableSettings(
@@ -99,10 +107,10 @@ export const createChartModel = async (
 export const createGridModel = async (
   session: DhSession,
   metadata: GridPanelMetadata,
-  type = dh.VariableType.TABLE
+  type: string = dh.VariableType.TABLE
 ): Promise<IrisGridModel> => {
   const { table: tableName } = metadata;
-  const definition = { name: tableName, type };
+  const definition = { title: tableName, name: tableName, type };
   const table = await session.getObject(definition);
   return IrisGridModelFactory.makeModel(table);
 };
