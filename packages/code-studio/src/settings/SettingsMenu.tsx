@@ -1,5 +1,4 @@
-import React, { Component } from 'react';
-import PropTypes from 'prop-types';
+import React, { Component, ReactElement, RefObject } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { vsClose, vsWatch, vsRecordKeys } from '@deephaven/icons';
 import Logo from './community-wordmark-app.svg';
@@ -10,25 +9,40 @@ import ShortcutSectionContent from './ShortcutsSectionContent';
 import { exportLogs } from '../log/LogExport';
 import './SettingsMenu.scss';
 
-export class SettingsMenu extends Component {
+interface SettingsMenuProps {
+  onDone: () => void;
+}
+
+interface SettingsMenuState {
+  expandedSectionKey?: string;
+}
+
+export class SettingsMenu extends Component<
+  SettingsMenuProps,
+  SettingsMenuState
+> {
+  static defaultProps = {
+    onDone: (): void => undefined,
+  };
+
   static FORMATTING_SECTION_KEY = 'SettingsMenu.formatting';
 
   static APPLICATION_SECTION_KEY = 'ApplicationMenu.settings';
 
   static SHORTCUT_SECTION_KEY = 'SettingsMenu.shortcuts';
 
-  static focusFirstInputInContainer(container) {
-    const input = container.querySelector('input, select, textarea');
+  static focusFirstInputInContainer(container: HTMLDivElement | null): void {
+    const input = container?.querySelector('input, select, textarea');
     if (input) {
-      input.focus();
+      (input as HTMLElement).focus();
     }
   }
 
-  static handleExportSupportLogs() {
+  static handleExportSupportLogs(): void {
     exportLogs();
   }
 
-  constructor(props) {
+  constructor(props: SettingsMenuProps) {
     super(props);
 
     this.handleClose = this.handleClose.bind(this);
@@ -42,32 +56,34 @@ export class SettingsMenu extends Component {
     };
   }
 
-  componentDidMount() {
+  componentDidMount(): void {
     SettingsMenu.focusFirstInputInContainer(this.menuContentRef.current);
   }
 
-  isSectionExpanded(sectionKey) {
+  menuContentRef: RefObject<HTMLDivElement>;
+
+  isSectionExpanded(sectionKey: string): boolean {
     const { expandedSectionKey } = this.state;
     return expandedSectionKey === sectionKey;
   }
 
-  handleScrollTo(x, y) {
-    this.menuContentRef.current.scrollTo(x, y);
+  handleScrollTo(x: number, y: number): void {
+    this.menuContentRef.current?.scrollTo(x, y);
   }
 
-  handleSectionToggle(sectionKey) {
+  handleSectionToggle(sectionKey: string): void {
     this.setState(state => ({
       expandedSectionKey:
-        state.expandedSectionKey === sectionKey ? null : sectionKey,
+        state.expandedSectionKey === sectionKey ? undefined : sectionKey,
     }));
   }
 
-  handleClose() {
+  handleClose(): void {
     const { onDone } = this.props;
     onDone();
   }
 
-  render() {
+  render(): ReactElement {
     const version = process.env.REACT_APP_VERSION;
     const supportLink = process.env.REACT_APP_SUPPORT_LINK;
     const docsLink = process.env.REACT_APP_DOCS_LINK;
@@ -184,13 +200,5 @@ export class SettingsMenu extends Component {
     );
   }
 }
-
-SettingsMenu.propTypes = {
-  onDone: PropTypes.func,
-};
-
-SettingsMenu.defaultProps = {
-  onDone: () => {},
-};
 
 export default SettingsMenu;

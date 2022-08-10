@@ -12,6 +12,7 @@ import {
   ThemeExport,
   GLOBAL_SHORTCUTS,
   Popper,
+  ContextAction,
 } from '@deephaven/components';
 import {
   Dashboard,
@@ -38,6 +39,8 @@ import {
   ControlType,
   ToolType,
   ChartBuilderPlugin,
+  FilterSet,
+  Link,
 } from '@deephaven/dashboard-core-plugins';
 import { vsGear, dhShapes, dhPanels } from '@deephaven/icons';
 import dh, {
@@ -54,8 +57,10 @@ import {
   getPlugins,
   Workspace,
   DeephavenPluginModuleMap,
+  WorkspaceData,
 } from '@deephaven/redux';
 import { PromiseUtils } from '@deephaven/utils';
+import GoldenLayout from '@deephaven/golden-layout';
 import JSZip from 'jszip';
 import SettingsMenu from '../settings/SettingsMenu';
 import AppControlsMenu from './AppControlsMenu';
@@ -68,13 +73,20 @@ import EmptyDashboard from './EmptyDashboard';
 import UserLayoutUtils from './UserLayoutUtils';
 import DownloadServiceWorkerUtils from '../DownloadServiceWorkerUtils';
 import { PluginUtils } from '../plugins';
-import GoldenLayout from '@deephaven/golden-layout';
 
 const log = Log.module('AppMainContainer');
 
+type DashboadData = {
+  closed: [];
+  columnSelectionValidator?: unknown;
+  filterSets: FilterSet[];
+  links: Link[];
+  openedMap: Map<string | string[], Component>;
+};
+
 interface AppMainContainerProps {
   activeTool: string;
-  dashboardData: Record<string, unknown>;
+  dashboardData: DashboadData;
   layoutStorage: {};
   match: {
     params: { notebookPath: string };
@@ -85,20 +97,25 @@ interface AppMainContainerProps {
     id: string;
   };
   setActiveTool: (tool: string) => void;
-  updateDashboardData: () => void;
-  updateWorkspaceData: (workspaceData: Record<string, unknown>) => void;
+  updateDashboardData: (data: DashboadData) => void;
+  updateWorkspaceData: (workspaceData: Partial<WorkspaceData>) => void;
   user: typeof UIPropTypes.User;
   workspace: Workspace;
   plugins: DeephavenPluginModuleMap;
 }
 
-interface AppMainContainerState {}
+interface AppMainContainerState {
+  contextActions: ContextAction[];
+  isPanelsMenuShown: boolean;
+  isSettingsMenuShown: boolean;
+  widgets: [];
+}
 
 export class AppMainContainer extends Component<
   AppMainContainerProps,
   AppMainContainerState
 > {
-  static handleWindowBeforeUnload(event) {
+  static handleWindowBeforeUnload(event: Event): void {
     event.preventDefault();
     // returnValue is required for beforeReload event prompt
     // https://developer.mozilla.org/en-US/docs/Web/API/WindowEventHandlers/onbeforeunload#example
@@ -220,7 +237,7 @@ export class AppMainContainer extends Component<
 
   initWidgets() {
     const { session } = this.props;
-    if (!session.connection.subscribeToFieldUpdates) {
+    if (!session.subscribeToFieldUpdates) {
       log.warn(
         'subscribeToFieldUpdates not supported, not initializing widgets'
       );
@@ -284,31 +301,31 @@ export class AppMainContainer extends Component<
     }
   }
 
-  sendClearFilter() {
+  sendClearFilter(): void {
     this.emitLayoutEvent(InputFilterEvent.CLEAR_ALL_FILTERS);
   }
 
-  emitLayoutEvent(event, ...args) {
+  emitLayoutEvent(event, ...args: unknown[]): void {
     this.goldenLayout?.eventHub.emit(event, ...args);
   }
 
   // eslint-disable-next-line class-methods-use-this
-  handleError(error) {
+  handleError(error): void {
     if (PromiseUtils.isCanceled(error)) {
       return;
     }
     log.error(error);
   }
 
-  handleSettingsMenuHide() {
+  handleSettingsMenuHide(): void {
     this.setState({ isSettingsMenuShown: false });
   }
 
-  handleSettingsMenuShow() {
+  handleSettingsMenuShow(): void {
     this.setState({ isSettingsMenuShown: true });
   }
 
-  handleControlSelect(type, dragEvent = null) {
+  handleControlSelect(type, dragEvent = null): void {
     log.debug('handleControlSelect', type);
 
     switch (type) {
@@ -347,7 +364,7 @@ export class AppMainContainer extends Component<
     }
   }
 
-  handleToolSelect(toolType) {
+  handleToolSelect(toolType: string): void {
     log.debug('handleToolSelect', toolType);
 
     const { activeTool, setActiveTool } = this.props;
@@ -358,11 +375,11 @@ export class AppMainContainer extends Component<
     }
   }
 
-  handleClearFilter() {
+  handleClearFilter(): void {
     this.sendClearFilter();
   }
 
-  handleDataChange(data) {
+  handleDataChange(data: DashboadData): void {
     const { updateWorkspaceData } = this.props;
 
     // Only save the data that is serializable/we want to persist to the workspace
