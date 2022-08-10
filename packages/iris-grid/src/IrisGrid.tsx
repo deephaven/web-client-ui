@@ -1,4 +1,5 @@
 import React, {
+  ChangeEvent,
   Component,
   CSSProperties,
   ReactElement,
@@ -40,6 +41,7 @@ import {
   VisibleIndex,
   GridState,
   isEditableGridModel,
+  BoundedAxisRange,
 } from '@deephaven/grid';
 import {
   dhEye,
@@ -352,7 +354,7 @@ export interface IrisGridState {
 
   conditionalFormats: SidebarFormattingRule[];
   conditionalFormatEditIndex: number | null;
-  conditionalFormatPreview?: SidebarFormattingRule | null;
+  conditionalFormatPreview?: SidebarFormattingRule;
 
   // Column user is hovering over for selection
   hoverSelectColumn: GridRangeIndex;
@@ -387,6 +389,9 @@ export interface IrisGridState {
   showOverflowModal: boolean;
   overflowText: string;
   overflowButtonTooltipProps: CSSProperties | null;
+
+  gotoRow: string;
+  gotoRowError: string;
   isGotoRowShown: boolean;
 }
 
@@ -529,6 +534,9 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     this.handleConditionalFormatEditorSave = this.handleConditionalFormatEditorSave.bind(
       this
     );
+    this.handleConditionalFormatEditorCancel = this.handleConditionalFormatEditorCancel.bind(
+      this
+    );
     this.handleUpdateCustomColumns = this.handleUpdateCustomColumns.bind(this);
     this.handleCustomColumnsChanged = this.handleCustomColumnsChanged.bind(
       this
@@ -543,7 +551,10 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     this.handlePendingDiscardClicked = this.handlePendingDiscardClicked.bind(
       this
     );
-
+    this.handleGotoRowSelectedRowNumberSubmit = this.handleGotoRowSelectedRowNumberSubmit.bind(
+      this
+    );
+    this.focusRowInGrid = this.focusRowInGrid.bind(this);
     this.handleDownloadTable = this.handleDownloadTable.bind(this);
     this.handleDownloadTableStart = this.handleDownloadTableStart.bind(this);
     this.handleCancelDownloadTable = this.handleCancelDownloadTable.bind(this);
@@ -738,7 +749,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
       conditionalFormats,
       conditionalFormatEditIndex: null,
-      conditionalFormatPreview: null,
+      conditionalFormatPreview: undefined,
 
       // Column user is hovering over for selection
       hoverSelectColumn: null,
@@ -774,6 +785,8 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       overflowText: '',
       overflowButtonTooltipProps: null,
       isGotoRowShown: false,
+      gotoRow: '',
+      gotoRowError: '',
     };
   }
 
@@ -1209,7 +1222,8 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       advancedFilters,
       sorts,
       reverseType,
-      rollupConfig
+      rollupConfig,
+      isMenuShown
     ) => ({
       hoverSelectColumn,
       isFilterBarShown,
@@ -1220,6 +1234,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       sorts,
       reverseType,
       rollupConfig,
+      isMenuShown,
     }),
     { max: 1 }
   );
@@ -1391,7 +1406,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
   setAdvancedFilter(
     modelIndex: ModelIndex,
-    filter: FilterCondition,
+    filter: FilterCondition | null,
     options: AdvancedFilterOptions
   ): void {
     log.debug('Setting advanced filter', modelIndex, filter);
@@ -1651,7 +1666,8 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       columns: Column[],
       movedColumns: MoveOperation[],
       floatingLeftColumnCount: number,
-      floatingRightColumnCount: number
+      floatingRightColumnCount: number,
+      draggingRange?: BoundedAxisRange
     ) => {
       const floatingColumns: ColumnName[] = [];
 
@@ -1666,6 +1682,14 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
           columns[GridUtils.getModelIndex(columns.length - 1 - i, movedColumns)]
             .name
         );
+      }
+
+      if (draggingRange) {
+        for (let i = draggingRange[0]; i <= draggingRange[1]; i += 1) {
+          floatingColumns.push(
+            columns[GridUtils.getModelIndex(i, movedColumns)].name
+          );
+        }
       }
 
       const columnSet = new Set([...alwaysFetchColumns, ...floatingColumns]);
@@ -2330,9 +2354,22 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     );
   }
 
-  toggleGotoRow(): void {
+  toggleGotoRow(row = ''): void {
     const { isGotoRowShown } = this.state;
-    this.setState({ isGotoRowShown: !isGotoRowShown });
+    if (row) {
+      // if invoked with a row, keep open instead of toggle
+      this.setState({
+        isGotoRowShown: true,
+        gotoRow: row,
+        gotoRowError: '',
+      });
+      return;
+    }
+    this.setState({
+      isGotoRowShown: !isGotoRowShown,
+      gotoRow: '',
+      gotoRowError: '',
+    });
   }
 
   async commitPending(): Promise<void> {
@@ -2416,7 +2453,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
   handleAdvancedFilterChange(
     column: Column,
-    filter: FilterCondition,
+    filter: FilterCondition | null,
     options: AdvancedFilterOptions
   ): void {
     const { model } = this.props;
@@ -3147,6 +3184,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       visibleColumnXs,
       visibleColumnWidths,
       width,
+      columnHeaderMaxDepth,
     } = metrics;
     const columnX = visibleColumnXs.get(shownColumnTooltip);
     const columnWidth = visibleColumnWidths.get(shownColumnTooltip);
@@ -3159,9 +3197,11 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       clamp(columnX + columnWidth / 2, popperMargin, width - popperMargin);
 
     return {
-      top: gridRect.top,
-      left,
-      bottom: gridRect.top + columnHeaderHeight,
+      top: gridRect.top + (columnHeaderMaxDepth - 1) * columnHeaderHeight,
+      left:
+        gridRect.left +
+        clamp(columnX + columnWidth / 2, popperMargin, width - popperMargin),
+      bottom: gridRect.top + columnHeaderMaxDepth * columnHeaderHeight,
       right:
         gridRect.left +
         clamp(columnX + columnWidth / 2, popperMargin, width - popperMargin) +
@@ -3211,8 +3251,39 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     }
   );
 
-  handleGotoRowSelectedRowNumberChanged(rowValue: number): void {
-    this.grid?.setFocusRow(rowValue);
+  handleGotoRowSelectedRowNumberSubmit(): void {
+    const { gotoRow: rowNumber } = this.state;
+    this.focusRowInGrid(rowNumber);
+  }
+
+  focusRowInGrid(rowNumber: string): void {
+    const { model } = this.props;
+    const { rowCount } = model;
+    this.setState({ gotoRow: rowNumber });
+    if (rowNumber === '') {
+      this.setState({ gotoRowError: '' });
+      return;
+    }
+    const rowInt = parseInt(rowNumber, 10);
+    if (rowInt > rowCount || rowInt < -rowCount) {
+      this.setState({ gotoRowError: 'Invalid row index' });
+    } else if (rowInt === 0) {
+      this.setState({ gotoRowError: '' });
+      this.grid?.setFocusRow(0);
+    } else if (rowInt < 0) {
+      this.setState({ gotoRowError: '' });
+      this.grid?.setFocusRow(rowInt + rowCount);
+    } else {
+      this.grid?.setFocusRow(rowInt - 1);
+      this.setState({ gotoRowError: '' });
+    }
+  }
+
+  handleGotoRowSelectedRowNumberChanged(
+    event: ChangeEvent<HTMLInputElement>
+  ): void {
+    const rowNumber = event.target.value;
+    this.focusRowInGrid(rowNumber);
   }
 
   getColumnTooltip(
@@ -3222,6 +3293,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   ): ReactNode {
     const {
       columnHeaderHeight,
+      columnHeaderMaxDepth,
       visibleColumnXs,
       visibleColumnWidths,
       width,
@@ -3252,7 +3324,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
     const wrapperStyle: CSSProperties = {
       position: 'absolute',
-      top: 0,
+      top: (columnHeaderMaxDepth - 1) * columnHeaderHeight,
       left: boundedLeft,
       width: boundedWidth,
       height: columnHeaderHeight,
@@ -3395,6 +3467,8 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       overflowText,
       overflowButtonTooltipProps,
       isGotoRowShown,
+      gotoRow,
+      gotoRowError,
     } = this.state;
     if (!isReady) {
       return null;
@@ -3420,7 +3494,8 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       advancedFilters,
       sorts,
       reverseType,
-      rollupConfig
+      rollupConfig,
+      isMenuShown
     );
     const top = metrics ? metrics.top : 0;
     const bottom = metrics ? metrics.bottomViewport : 0;
@@ -3741,7 +3816,6 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
           );
         case OptionType.CONDITIONAL_FORMATTING_EDIT:
           assertNotNull(model.columns);
-          assertNotNull(conditionalFormatPreview);
           assertNotNull(this.handleConditionalFormatEditorUpdate);
           return (
             <ConditionalFormatEditor
@@ -3941,14 +4015,13 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
                   model.columns,
                   movedColumns,
                   model.floatingLeftColumnCount,
-                  model.floatingRightColumnCount
+                  model.floatingRightColumnCount,
+                  this.grid?.state.draggingColumn?.range
                 )}
                 formatColumns={this.getCachedPreviewFormatColumns(
                   this.getCachedModelColumns(model, customColumns),
                   conditionalFormats,
-                  conditionalFormatPreview === null
-                    ? undefined
-                    : conditionalFormatPreview,
+                  conditionalFormatPreview,
                   // Disable the preview format when we press Back on the format edit page
                   openOptions[openOptions.length - 1]?.type ===
                     OptionType.CONDITIONAL_FORMATTING_EDIT
@@ -3971,20 +4044,18 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
                 frozenColumns={frozenColumns}
               />
             )}
-            <div
-              className={classNames('grid-settings-button', {
-                'is-menu-shown': isMenuShown,
-              })}
-            >
-              <button
-                type="button"
-                data-testid={`btn-iris-grid-settings-button-${name}`}
-                className="btn btn-link btn-link-icon"
-                onClick={this.handleMenu}
-              >
-                <FontAwesomeIcon icon={vsMenu} transform="up-1" />
-              </button>
-            </div>
+            {!isMenuShown && (
+              <div className="grid-settings-button">
+                <button
+                  type="button"
+                  data-testid={`btn-iris-grid-settings-button-${name}`}
+                  className="btn btn-link btn-link-icon"
+                  onClick={this.handleMenu}
+                >
+                  <FontAwesomeIcon icon={vsMenu} transform="up-1" />
+                </button>
+              </div>
+            )}
             {focusField}
             {loadingElement}
             {filterBar}
@@ -3996,6 +4067,9 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
           <GotoRow
             model={model}
             isShown={isGotoRowShown}
+            gotoRow={gotoRow}
+            gotoRowError={gotoRowError}
+            onSubmit={this.handleGotoRowSelectedRowNumberSubmit}
             onGotoRowNumberChanged={this.handleGotoRowSelectedRowNumberChanged}
             onClose={this.handleGotoRowClosed}
             onEntering={this.handleAnimationStart}

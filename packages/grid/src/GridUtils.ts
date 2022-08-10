@@ -1,11 +1,12 @@
 import React from 'react';
+import clamp from 'lodash.clamp';
 import GridRange, { GridRangeIndex } from './GridRange';
 import {
   BoxCoordinates,
   Coordinate,
   CoordinateMap,
   VisibleIndex,
-  IndexModelMap,
+  VisibleToModelMap,
   ModelIndex,
   ModelSizeMap,
   MoveOperation,
@@ -14,44 +15,19 @@ import {
 import type { GridMetrics } from './GridMetrics';
 import { GridTheme } from './GridTheme';
 import { GridWheelEvent } from './GridMouseHandler';
-
-type Range<T> = [start: T, end: T];
-
-export type AxisRange = Range<GridRangeIndex>;
-export type BoundedAxisRange = Range<VisibleIndex>;
-
-export function isAxisRange(range: unknown): range is AxisRange {
-  return (
-    Array.isArray(range) &&
-    range.length === 2 &&
-    (range[0] === null || typeof range[0] === 'number') &&
-    (range[1] === null || typeof range[1] === 'number')
-  );
-}
-
-export function assertAxisRange(range: unknown): asserts range is AxisRange {
-  if (!isAxisRange(range)) {
-    throw new Error(`Expected axis range. Received: ${range}`);
-  }
-}
-
-export function isBoundedAxisRange(range: unknown): range is BoundedAxisRange {
-  return isAxisRange(range) && range[0] != null && range[1] != null;
-}
-
-export function assertBoundedAxisRange(
-  range: unknown
-): asserts range is BoundedAxisRange {
-  if (!isBoundedAxisRange(range)) {
-    throw new Error(`Expected bounded axis range. Received: ${range}`);
-  }
-}
+import {
+  AxisRange,
+  BoundedAxisRange,
+  isBoundedAxisRange,
+  Range,
+} from './GridAxisRange';
 
 export type GridPoint = {
   x: Coordinate;
   y: Coordinate;
   column: GridRangeIndex;
   row: GridRangeIndex;
+  columnHeaderDepth?: number;
 };
 
 export interface CellInfo {
@@ -86,8 +62,9 @@ export class GridUtils {
   ): GridPoint {
     const column = GridUtils.getColumnAtX(x, metrics);
     const row = GridUtils.getRowAtY(y, metrics);
+    const columnHeaderDepth = GridUtils.getColumnHeaderDepthAtY(y, metrics);
 
-    return { x, y, row, column };
+    return { x, y, row, column, columnHeaderDepth };
   }
 
   static getCellInfoFromXY(
@@ -124,6 +101,24 @@ export class GridUtils {
       columnWidth: columnWidth ?? null,
       rowHeight: rowHeight ?? null,
     };
+  }
+
+  static getColumnHeaderDepthAtY(
+    y: Coordinate,
+    metrics: GridMetrics
+  ): number | undefined {
+    const row = GridUtils.getRowAtY(y, metrics);
+    const { columnHeaderHeight, columnHeaderMaxDepth } = metrics;
+
+    if (row === null && y <= columnHeaderHeight * columnHeaderMaxDepth) {
+      return clamp(
+        columnHeaderMaxDepth - Math.ceil(y / columnHeaderHeight),
+        0,
+        columnHeaderMaxDepth - 1
+      );
+    }
+
+    return undefined;
   }
 
   /**
@@ -271,20 +266,23 @@ export class GridUtils {
     floatingEnd: number,
     items: VisibleIndex[],
     itemCoordinates: CoordinateMap,
-    itemSizes: SizeMap
+    itemSizes: SizeMap,
+    ignoreFloating = false
   ): VisibleIndex | null {
-    const floatingItem = GridUtils.iterateFloating(
-      floatingStart,
-      floatingEnd,
-      itemCount,
-      item => {
-        if (GridUtils.isInItem(item, itemCoordinates, itemSizes, offset)) {
-          return item;
-        }
-        return undefined;
-      }
-    );
-    if (floatingItem !== undefined) {
+    const floatingItem = ignoreFloating
+      ? undefined
+      : GridUtils.iterateFloating(
+          floatingStart,
+          floatingEnd,
+          itemCount,
+          item => {
+            if (GridUtils.isInItem(item, itemCoordinates, itemSizes, offset)) {
+              return item;
+            }
+            return undefined;
+          }
+        );
+    if (!ignoreFloating && floatingItem !== undefined) {
       return floatingItem;
     }
 
@@ -306,7 +304,8 @@ export class GridUtils {
    */
   static getColumnAtX(
     x: Coordinate,
-    metrics: GridMetrics
+    metrics: GridMetrics,
+    ignoreFloating = false
   ): VisibleIndex | null {
     const {
       columnCount,
@@ -329,7 +328,8 @@ export class GridUtils {
       floatingRightColumnCount,
       visibleColumns,
       visibleColumnXs,
-      visibleColumnWidths
+      visibleColumnWidths,
+      ignoreFloating
     );
   }
 
@@ -375,7 +375,7 @@ export class GridUtils {
    */
   static getNextShownItem(
     startIndex: VisibleIndex,
-    modelIndexes: IndexModelMap,
+    modelIndexes: VisibleToModelMap,
     visibleItems: VisibleIndex[],
     userSizes: ModelSizeMap
   ): VisibleIndex | null {
@@ -455,11 +455,12 @@ export class GridUtils {
       visibleColumns,
       visibleColumnXs,
       visibleColumnWidths,
+      columnHeaderMaxDepth,
     } = metrics;
     const { allowColumnResize, headerSeparatorHandleSize } = theme;
 
     if (
-      columnHeaderHeight < y ||
+      columnHeaderMaxDepth * columnHeaderHeight < y ||
       !allowColumnResize ||
       headerSeparatorHandleSize <= 0
     ) {
@@ -733,29 +734,38 @@ export class GridUtils {
   /**
    * Set a new order for items in the grid
    * @param from The visible index to move from
-   * @param to The visible index to move the itme to
+   * @param to The visible index to move the item to
    * @param oldMovedItems The old reordered items
    * @returns The new reordered items
    */
   static moveItem(
     from: VisibleIndex,
     to: VisibleIndex,
-    oldMovedItems: MoveOperation[] = []
+    oldMovedItems: MoveOperation[]
   ): MoveOperation[] {
     if (from === to) {
       return oldMovedItems;
     }
 
     const movedItems: MoveOperation[] = [...oldMovedItems];
+    const lastMovedItem = movedItems[movedItems.length - 1];
 
+    // Check if we should combine with the previous move
+    // E.g. 1 -> 2, 2 -> 3 can just be 1 -> 3
     if (
-      movedItems.length > 0 &&
-      movedItems[movedItems.length - 1].to === from
+      lastMovedItem &&
+      !isBoundedAxisRange(lastMovedItem.from) &&
+      lastMovedItem.to === from
     ) {
-      movedItems[movedItems.length - 1] = {
-        ...movedItems[movedItems.length - 1],
-        to,
-      };
+      // Remove the move if it is now a no-op
+      if (lastMovedItem.from === to) {
+        movedItems.pop();
+      } else {
+        movedItems[movedItems.length - 1] = {
+          ...lastMovedItem,
+          to,
+        };
+      }
     } else {
       movedItems.push({ from, to });
     }
@@ -778,7 +788,7 @@ export class GridUtils {
   static moveRange(
     from: BoundedAxisRange,
     to: VisibleIndex,
-    oldMovedItems: MoveOperation[] = []
+    oldMovedItems: MoveOperation[]
   ): MoveOperation[] {
     if (from[0] === to) {
       return oldMovedItems;
@@ -786,42 +796,37 @@ export class GridUtils {
 
     const movedItems: MoveOperation[] = [...oldMovedItems];
     const lastMovedItem = movedItems[movedItems.length - 1];
+
+    // Check if we should combine with the previous move
+    // E.g. [1, 2] -> 2, [2, 3] -> 3 can just be [1, 2] -> 3
     if (
       lastMovedItem &&
       isBoundedAxisRange(lastMovedItem.from) &&
       lastMovedItem.from[1] - lastMovedItem.from[0] === from[1] - from[0] &&
       lastMovedItem.to === from[0]
     ) {
-      movedItems[movedItems.length - 1] = {
-        ...movedItems[movedItems.length - 1],
-        to,
-      };
+      // Remove the move if it is now a no-op
+      if (lastMovedItem.from[0] === to) {
+        movedItems.pop();
+      } else {
+        movedItems[movedItems.length - 1] = {
+          ...lastMovedItem,
+          to,
+        };
+      }
     } else {
-      // TODO #620
-      movedItems.push({ from: (from as unknown) as number, to });
+      movedItems.push({ from, to });
+    }
+
+    // Remove the move if it is now a no-op
+    if (
+      movedItems[movedItems.length - 1].from ===
+      movedItems[movedItems.length - 1].to
+    ) {
+      movedItems.pop();
     }
 
     return movedItems;
-  }
-
-  /**
-   * Retrieve the model index given the currently moved items
-   * @param visibleIndex The visible index of the item to get the model index for
-   * @param movedItems The moved items
-   * @returns The model index of the item
-   */
-  static getModelIndex(
-    visibleIndex: VisibleIndex,
-    movedItems: MoveOperation[] = []
-  ): ModelIndex {
-    const modelIndex = GridUtils.applyItemMoves(
-      visibleIndex,
-      visibleIndex,
-      movedItems,
-      true
-    )[0][0];
-
-    return modelIndex;
   }
 
   /**
@@ -832,7 +837,7 @@ export class GridUtils {
    * @param reverse If the moved items should be applied in reverse (this reverses the effects of the moves)
    * @returns A list of AxisRanges in the translated space. Possibly multiple non-continuous ranges
    */
-  private static applyItemMoves<T extends number | GridRangeIndex>(
+  static applyItemMoves<T extends number | GridRangeIndex>(
     start: T,
     end: T,
     movedItems: MoveOperation[],
@@ -968,6 +973,39 @@ export class GridUtils {
   }
 
   /**
+   * Retrieve the model index given the currently moved items
+   * @param visibleIndex The visible index of the item to get the model index for
+   * @param movedItems The moved items
+   * @returns The model index of the item
+   */
+  static getModelIndex(
+    visibleIndex: VisibleIndex,
+    movedItems: MoveOperation[]
+  ): ModelIndex {
+    const modelIndex = GridUtils.applyItemMoves(
+      visibleIndex,
+      visibleIndex,
+      movedItems,
+      true
+    )[0][0];
+
+    return modelIndex;
+  }
+
+  /**
+   * Retrieve the model indexes given the currently moved items
+   * @param visibleIndexes The visible indexes of the item to get the model indexes for
+   * @param movedItems The moved items
+   * @returns The model indexes of the item
+   */
+  static getModelIndexes(
+    visibleIndexes: ModelIndex[],
+    movedItems: MoveOperation[]
+  ): VisibleIndex[] {
+    return visibleIndexes.map(i => GridUtils.getModelIndex(i, movedItems));
+  }
+
+  /**
    * Translate the provided UI start/end indexes to the model start/end indexes by applying the `movedItems` transformations.
    * Since moved items can split apart a range, multiple pairs of indexes are returned
    *
@@ -1042,7 +1080,7 @@ export class GridUtils {
   }
 
   /**
-   * Translate the provided UI range into model range, using the `movedColumns` and `movedRows` to apply the necessary transforms.
+   * Translate the provided UI range into visible range, using the `movedColumns` and `movedRows` to apply the necessary transforms.
    * `movedColumns` and `movedRows` are array of operations done to the UI indexes to re-order items
    *
    * @param uiRange The currently selected UI ranges
@@ -1089,7 +1127,7 @@ export class GridUtils {
    */
   static getVisibleIndex(
     modelIndex: ModelIndex,
-    movedItems: MoveOperation[] = []
+    movedItems: MoveOperation[]
   ): VisibleIndex {
     const visibleIndex = GridUtils.applyItemMoves(
       modelIndex,
@@ -1098,6 +1136,19 @@ export class GridUtils {
     )[0][0];
 
     return visibleIndex;
+  }
+
+  /**
+   * Retrieve the visible indexes given the currently moved items
+   * @param modelIndexes The model indexes to get the visible indexes for
+   * @param movedItems Moved items
+   * @returns The visible indexes of the item
+   */
+  static getVisibleIndexes(
+    modelIndexes: ModelIndex[],
+    movedItems: MoveOperation[]
+  ): VisibleIndex[] {
+    return modelIndexes.map(i => GridUtils.getVisibleIndex(i, movedItems));
   }
 
   /**
@@ -1275,6 +1326,41 @@ export class GridUtils {
     }
 
     return { deltaX, deltaY };
+  }
+
+  static compareRanges(range1: AxisRange, range2: AxisRange): number {
+    if (
+      range1[0] == null ||
+      range1[1] == null ||
+      range2[0] == null ||
+      range2[1] == null
+    ) {
+      return 0;
+    }
+    return range1[0] !== range2[0]
+      ? range1[0] - range2[0]
+      : range1[1] - range2[1];
+  }
+
+  static mergeSortedRanges(ranges: BoundedAxisRange[]): BoundedAxisRange[] {
+    const mergedRanges: BoundedAxisRange[] = [];
+
+    for (let i = 0; i < ranges.length; i += 1) {
+      const range = ranges[i];
+      const start = range[0];
+      const end = range[1];
+      if (i === 0) {
+        mergedRanges.push([start, end]);
+      } else if (start - 1 <= mergedRanges[mergedRanges.length - 1][1]) {
+        mergedRanges[mergedRanges.length - 1][1] = Math.max(
+          mergedRanges[mergedRanges.length - 1][1],
+          end
+        );
+      } else {
+        mergedRanges.push([start, end]);
+      }
+    }
+    return mergedRanges;
   }
 }
 

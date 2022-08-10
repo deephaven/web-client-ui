@@ -1012,7 +1012,7 @@ NotebookPanel.propTypes = {
     settings: PropTypes.shape({}),
     fileMetadata: PropTypes.shape({}),
   }).isRequired,
-  notebooksUrl: PropTypes.string,
+  notebooksUrl: PropTypes.string.isRequired,
 };
 
 NotebookPanel.defaultProps = {
@@ -1020,10 +1020,6 @@ NotebookPanel.defaultProps = {
   isPreview: false,
   session: null,
   sessionLanguage: null,
-  notebooksUrl: new URL(
-    `${process.env.REACT_APP_NOTEBOOKS_URL}/`,
-    window.location
-  ).href,
 };
 
 const mapStateToProps = (state, ownProps) => {

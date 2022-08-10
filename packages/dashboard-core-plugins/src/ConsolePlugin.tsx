@@ -37,6 +37,7 @@ function isNotebookPanel(
 
 export type ConsolePluginProps = DashboardPluginComponentProps & {
   hydrateConsole?: PanelHydrateFunction;
+  notebooksUrl: string;
 };
 
 export function assertIsConsolePluginProps(
@@ -49,7 +50,14 @@ export const ConsolePlugin = (
   props: Partial<ConsolePluginProps>
 ): JSX.Element => {
   assertIsConsolePluginProps(props);
-  const { id, hydrateConsole, layout, panelManager, registerComponent } = props;
+  const {
+    id,
+    hydrateConsole,
+    layout,
+    panelManager,
+    registerComponent,
+    notebooksUrl,
+  } = props;
   const notebookIndex = useRef(0);
   // Map from file ID to panel ID
   const [openFileMap] = useState(new Map<string, string>());
@@ -316,12 +324,13 @@ export const ConsolePlugin = (
           sessionLanguage,
           panelState,
           isPreview,
+          notebooksUrl,
         },
         title,
         id: panelId,
       };
     },
-    [getNotebookTitle, id]
+    [getNotebookTitle, id, notebooksUrl]
   );
 
   const createNotebook = useCallback(

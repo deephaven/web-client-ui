@@ -26,6 +26,7 @@ export interface dh {
   Column: Column;
   SearchDisplayMode?: SearchDisplayModeStatic;
   RangeSet: RangeSet;
+  IdeSession: IdeSessionStatic;
 }
 
 const VariableType = {
@@ -37,18 +38,70 @@ const VariableType = {
   TREETABLE: 'TreeTable',
 } as const;
 
-type VariableTypeUnion = typeof VariableType[keyof typeof VariableType];
+export type VariableTypeUnion = typeof VariableType[keyof typeof VariableType];
 
 export interface VariableDefinition<
   T extends VariableTypeUnion = VariableTypeUnion
 > {
   type: T;
+
+  /**
+   * @deprecated
+   */
   name?: string;
+
   title?: string;
   id?: string;
 }
 
-export interface IdeSession {
+export interface LogItem {
+  micros: number;
+  logLevel: string;
+  message: string;
+}
+
+export interface VariableChanges {
+  created: VariableDefinition[];
+  updated: VariableDefinition[];
+  removed: VariableDefinition[];
+}
+
+export interface CommandResult {
+  changes: VariableChanges;
+  error: string;
+}
+
+export interface Position {
+  line: number;
+  character: number;
+}
+
+export interface DocumentRange {
+  start: Position;
+  end: Position;
+}
+
+export interface TextEdit {
+  text: string;
+  range: DocumentRange;
+}
+
+export interface CompletionItem {
+  label: string;
+  kind: number;
+  detail: string;
+  documentation: string;
+  sortText: string;
+  filterText: string;
+  textEdit: TextEdit;
+  insertTextFormat: number;
+}
+
+export interface IdeSessionStatic {
+  EVENT_COMMANDSTARTED: 'commandstarted';
+}
+
+export interface IdeSession extends Evented {
   getTable(name: string): Promise<Table>;
   getFigure(name: string): Promise<Figure>;
   getTreeTable(name: string): Promise<TreeTable>;
@@ -62,6 +115,20 @@ export interface IdeSession {
     definition: VariableDefinition<typeof VariableType.TREETABLE>
   ): Promise<TreeTable>;
   getObject(definition: VariableDefinition): Promise<unknown>;
+  onLogMessage(logHandler: (logItem: LogItem) => void): () => void;
+  runCode(code: string): Promise<CommandResult>;
+  bindTableToVariable(table: Table, variableName: string): Promise<void>;
+  mergeTables(tables: Table[]): Promise<Table>;
+  newTable(
+    columnNames: string[],
+    columnTypes: string[],
+    data: string[][],
+    userTimeZone: string
+  ): Promise<Table>;
+  getCompletionItems(params: unknown): Promise<CompletionItem[]>;
+  closeDocument(params: unknown): void;
+  openDocument(params: unknown): void;
+  changeDocument(params: unknown): void;
 }
 
 export interface Evented {
@@ -387,7 +454,11 @@ export interface OneClick {
 }
 
 export interface Column {
+  /**
+   * @deprecated
+   */
   readonly index: number;
+
   readonly type: string;
   readonly name: string;
   readonly description: string;
@@ -476,6 +547,11 @@ export interface InputTable {
   deleteTables(tables: Table[]): Promise<InputTable>;
   table: Table;
 }
+export interface ColumnGroup {
+  name: string;
+  children: string[];
+  color?: string;
+}
 
 export interface LayoutHints {
   areSavedLayoutsAllowed: boolean;
@@ -483,6 +559,7 @@ export interface LayoutHints {
   backColumns: string[];
   hiddenColumns: string[];
   frozenColumns: string[];
+  columnGroups: ColumnGroup[];
   searchDisplayMode?: keyof SearchDisplayModeStatic;
 }
 

@@ -1,6 +1,7 @@
+import { AxisRange } from './GridAxisRange';
 import GridMetrics, { ModelIndex, MoveOperation } from './GridMetrics';
 import GridRange, { GridRangeIndex } from './GridRange';
-import GridUtils from './GridUtils';
+import GridUtils, { BoundedAxisRange } from './GridUtils';
 
 function expectModelIndexes(
   movedItems: MoveOperation[],
@@ -22,7 +23,7 @@ function expectVisibleIndexes(
 
 describe('move items', () => {
   it('returns the proper model/visible index when one column is moved', () => {
-    const movedItems = GridUtils.moveItem(2, 1);
+    const movedItems = GridUtils.moveItem(2, 1, []);
 
     expectModelIndexes(movedItems, [0, 2, 1, 3]);
     expectVisibleIndexes(movedItems, [0, 2, 1, 3]);
@@ -82,14 +83,14 @@ describe('move items', () => {
 
 describe('move ranges', () => {
   it('returns the proper model/visible index when one range is moved', () => {
-    const movedItems = GridUtils.moveRange([3, 5], 1);
+    const movedItems = GridUtils.moveRange([3, 5], 1, []);
 
     expectModelIndexes(movedItems, [0, 3, 4, 5, 1, 2]);
     expectVisibleIndexes(movedItems, [0, 4, 5, 1, 2, 3]);
   });
 
   it('returns the proper model/visible index when two ranges are moved', () => {
-    let movedItems = GridUtils.moveRange([3, 5], 1);
+    let movedItems = GridUtils.moveRange([3, 5], 1, []);
     movedItems = GridUtils.moveRange([2, 4], 5, movedItems);
 
     expectModelIndexes(movedItems, [0, 3, 2, 6, 7, 4, 5, 1]);
@@ -224,7 +225,7 @@ describe('start/end range adjustment in one dimension visible to model', () => {
     start: GridRangeIndex,
     end: GridRangeIndex,
     movedItems: MoveOperation[] = [],
-    expectedResult = [[start, end]]
+    expectedResult: AxisRange[] = [[start, end]]
   ) {
     expect(GridUtils.getModelRangeIndexes(start, end, movedItems)).toEqual(
       expectedResult
@@ -235,59 +236,59 @@ describe('start/end range adjustment in one dimension visible to model', () => {
     testRange(100, 100);
   });
   it('handles transforms outside of range', () => {
-    let movedItems = GridUtils.moveItem(2, 1);
+    let movedItems = GridUtils.moveItem(2, 1, []);
     movedItems = GridUtils.moveItem(100, 200, movedItems);
     testRange(5, 10, movedItems);
     testRange(10, 20, movedItems);
   });
   it('handles items moved into the range', () => {
-    testRange(5, 10, GridUtils.moveItem(1, 7), [
+    testRange(5, 10, GridUtils.moveItem(1, 7, []), [
       [6, 7],
       [1, 1],
       [8, 10],
     ]);
 
-    testRange(5, 10, GridUtils.moveItem(100, 7), [
+    testRange(5, 10, GridUtils.moveItem(100, 7, []), [
       [5, 6],
       [100, 100],
       [7, 9],
     ]);
 
-    testRange(5, 10, GridUtils.moveItem(1, 5), [
+    testRange(5, 10, GridUtils.moveItem(1, 5, []), [
       [1, 1],
       [6, 10],
     ]);
 
-    testRange(5, 10, GridUtils.moveItem(1, 10), [
+    testRange(5, 10, GridUtils.moveItem(1, 10, []), [
       [6, 10],
       [1, 1],
     ]);
 
-    testRange(5, 10, GridUtils.moveItem(100, 5), [
+    testRange(5, 10, GridUtils.moveItem(100, 5, []), [
       [100, 100],
       [5, 9],
     ]);
 
-    testRange(5, 10, GridUtils.moveItem(100, 10), [
+    testRange(5, 10, GridUtils.moveItem(100, 10, []), [
       [5, 9],
       [100, 100],
     ]);
   });
   it('handles items moved outside the range', () => {
-    testRange(5, 10, GridUtils.moveItem(7, 100), [
+    testRange(5, 10, GridUtils.moveItem(7, 100, []), [
       [5, 6],
       [8, 11],
     ]);
   });
   it('handles items moved from before to after range', () => {
-    const movedItems = GridUtils.moveItem(1, 100);
+    const movedItems = GridUtils.moveItem(1, 100, []);
     testRange(5, 10, movedItems, [[6, 11]]);
   });
   it('handles items moved from after to before range', () => {
-    testRange(5, 10, GridUtils.moveItem(100, 1), [[4, 9]]);
+    testRange(5, 10, GridUtils.moveItem(100, 1, []), [[4, 9]]);
   });
   it('handles multiple operations', () => {
-    let movedItems = GridUtils.moveItem(1, 100);
+    let movedItems = GridUtils.moveItem(1, 100, []);
     testRange(5, 10, movedItems, [[6, 11]]);
     movedItems = GridUtils.moveItem(7, 100, movedItems);
     testRange(5, 10, movedItems, [
@@ -303,52 +304,52 @@ describe('start/end range adjustment in one dimension visible to model', () => {
     ]);
   });
   it('handles moves within the range', () => {
-    testRange(5, 10, GridUtils.moveItem(9, 6), [
+    testRange(5, 10, GridUtils.moveItem(9, 6, []), [
       [5, 5],
       [9, 9],
       [6, 8],
       [10, 10],
     ]);
 
-    testRange(5, 10, GridUtils.moveItem(6, 9), [
+    testRange(5, 10, GridUtils.moveItem(6, 9, []), [
       [5, 5],
       [7, 9],
       [6, 6],
       [10, 10],
     ]);
 
-    testRange(5, 10, GridUtils.moveItem(9, 5), [
+    testRange(5, 10, GridUtils.moveItem(9, 5, []), [
       [9, 9],
       [5, 8],
       [10, 10],
     ]);
 
-    testRange(5, 10, GridUtils.moveItem(6, 10), [
+    testRange(5, 10, GridUtils.moveItem(6, 10, []), [
       [5, 5],
       [7, 10],
       [6, 6],
     ]);
 
-    testRange(5, 10, GridUtils.moveItem(5, 10), [
+    testRange(5, 10, GridUtils.moveItem(5, 10, []), [
       [6, 10],
       [5, 5],
     ]);
 
-    testRange(5, 10, GridUtils.moveItem(10, 5), [
+    testRange(5, 10, GridUtils.moveItem(10, 5, []), [
       [10, 10],
       [5, 9],
     ]);
   });
 
   it('handles transforms with infinite ranges', () => {
-    testRange(null, null, GridUtils.moveItem(1, 10), [
+    testRange(null, null, GridUtils.moveItem(1, 10, []), [
       [null, 0],
       [2, 10],
       [1, 1],
       [11, null],
     ]);
 
-    testRange(null, null, GridUtils.moveItem(0, 10), [
+    testRange(null, null, GridUtils.moveItem(0, 10, []), [
       // We don't normally think of using negative indexes, but this is valid
       // We go from the start (null) to the element before index 0 since 0 is moved
       [null, -1],
@@ -357,23 +358,23 @@ describe('start/end range adjustment in one dimension visible to model', () => {
       [11, null],
     ]);
 
-    testRange(5, null, GridUtils.moveItem(1, 10), [
+    testRange(5, null, GridUtils.moveItem(1, 10, []), [
       [6, 10],
       [1, 1],
       [11, null],
     ]);
 
-    testRange(5, null, GridUtils.moveItem(10, 1), [
+    testRange(5, null, GridUtils.moveItem(10, 1, []), [
       [4, 9],
       [11, null],
     ]);
 
-    testRange(null, 10, GridUtils.moveItem(1, 15), [
+    testRange(null, 10, GridUtils.moveItem(1, 15, []), [
       [null, 0],
       [2, 11],
     ]);
 
-    testRange(null, 10, GridUtils.moveItem(15, 1), [
+    testRange(null, 10, GridUtils.moveItem(15, 1, []), [
       [null, 0],
       [15, 15],
       [1, 9],
@@ -386,7 +387,7 @@ describe('start/end range adjustment in one dimension model to visible', () => {
     start: GridRangeIndex,
     end: GridRangeIndex,
     movedItems: MoveOperation[] = [],
-    expectedResult = [[start, end]]
+    expectedResult: AxisRange[] = [[start, end]]
   ) {
     expect(GridUtils.getVisibleRangeIndexes(start, end, movedItems)).toEqual(
       expectedResult
@@ -397,57 +398,57 @@ describe('start/end range adjustment in one dimension model to visible', () => {
     testRange(100, 100);
   });
   it('handles transforms outside of range', () => {
-    let movedItems = GridUtils.moveItem(2, 1);
+    let movedItems = GridUtils.moveItem(2, 1, []);
     movedItems = GridUtils.moveItem(100, 200, movedItems);
     testRange(5, 10, movedItems);
     testRange(10, 20, movedItems);
   });
   it('handles items moved into the range', () => {
-    testRange(5, 10, GridUtils.moveItem(1, 7), [
+    testRange(5, 10, GridUtils.moveItem(1, 7, []), [
       [4, 6],
       [8, 10],
     ]);
 
-    testRange(5, 10, GridUtils.moveItem(100, 7), [
+    testRange(5, 10, GridUtils.moveItem(100, 7, []), [
       [5, 6],
       [8, 11],
     ]);
 
-    testRange(5, 10, GridUtils.moveItem(1, 5), [
+    testRange(5, 10, GridUtils.moveItem(1, 5, []), [
       [4, 4],
       [6, 10],
     ]);
 
-    testRange(5, 10, GridUtils.moveItem(1, 10), [[4, 9]]);
+    testRange(5, 10, GridUtils.moveItem(1, 10, []), [[4, 9]]);
 
-    testRange(5, 10, GridUtils.moveItem(100, 5), [[6, 11]]);
+    testRange(5, 10, GridUtils.moveItem(100, 5, []), [[6, 11]]);
 
-    testRange(5, 10, GridUtils.moveItem(100, 10), [
+    testRange(5, 10, GridUtils.moveItem(100, 10, []), [
       [5, 9],
       [11, 11],
     ]);
   });
   it('handles items moved outside the range', () => {
-    testRange(5, 10, GridUtils.moveItem(7, 100), [
+    testRange(5, 10, GridUtils.moveItem(7, 100, []), [
       [5, 6],
       [100, 100],
       [7, 9],
     ]);
 
-    testRange(5, 10, GridUtils.moveItem(7, 1), [
+    testRange(5, 10, GridUtils.moveItem(7, 1, []), [
       [6, 7],
       [1, 1],
       [8, 10],
     ]);
   });
   it('handles items moved from before to after range', () => {
-    testRange(5, 10, GridUtils.moveItem(1, 100), [[4, 9]]);
+    testRange(5, 10, GridUtils.moveItem(1, 100, []), [[4, 9]]);
   });
   it('handles items moved from after to before range', () => {
-    testRange(5, 10, GridUtils.moveItem(100, 1), [[6, 11]]);
+    testRange(5, 10, GridUtils.moveItem(100, 1, []), [[6, 11]]);
   });
   it('handles multiple operations', () => {
-    let movedItems = GridUtils.moveItem(1, 100);
+    let movedItems = GridUtils.moveItem(1, 100, []);
     testRange(5, 10, movedItems, [[4, 9]]);
     movedItems = GridUtils.moveItem(7, 100, movedItems);
     testRange(5, 10, movedItems, [
@@ -465,52 +466,52 @@ describe('start/end range adjustment in one dimension model to visible', () => {
   });
 
   it('handles moves within the range', () => {
-    testRange(5, 10, GridUtils.moveItem(9, 6), [
+    testRange(5, 10, GridUtils.moveItem(9, 6, []), [
       [5, 5],
       [7, 9],
       [6, 6],
       [10, 10],
     ]);
 
-    testRange(5, 10, GridUtils.moveItem(6, 9), [
+    testRange(5, 10, GridUtils.moveItem(6, 9, []), [
       [5, 5],
       [9, 9],
       [6, 8],
       [10, 10],
     ]);
 
-    testRange(5, 10, GridUtils.moveItem(9, 5), [
+    testRange(5, 10, GridUtils.moveItem(9, 5, []), [
       [6, 9],
       [5, 5],
       [10, 10],
     ]);
 
-    testRange(5, 10, GridUtils.moveItem(6, 10), [
+    testRange(5, 10, GridUtils.moveItem(6, 10, []), [
       [5, 5],
       [10, 10],
       [6, 9],
     ]);
 
-    testRange(5, 10, GridUtils.moveItem(5, 10), [
+    testRange(5, 10, GridUtils.moveItem(5, 10, []), [
       [10, 10],
       [5, 9],
     ]);
 
-    testRange(5, 10, GridUtils.moveItem(10, 5), [
+    testRange(5, 10, GridUtils.moveItem(10, 5, []), [
       [6, 10],
       [5, 5],
     ]);
   });
 
   it('handles transforms with infinite ranges', () => {
-    testRange(null, null, GridUtils.moveItem(1, 10), [
+    testRange(null, null, GridUtils.moveItem(1, 10, []), [
       [null, 0],
       [10, 10],
       [1, 9],
       [11, null],
     ]);
 
-    testRange(null, null, GridUtils.moveItem(0, 10), [
+    testRange(null, null, GridUtils.moveItem(0, 10, []), [
       // We don't normally think of using negative indexes, but this is valid
       // We go from the start (null) to the element before index 0 since 0 is moved
       [null, -1],
@@ -519,24 +520,24 @@ describe('start/end range adjustment in one dimension model to visible', () => {
       [11, null],
     ]);
 
-    testRange(5, null, GridUtils.moveItem(1, 10), [
+    testRange(5, null, GridUtils.moveItem(1, 10, []), [
       [4, 9],
       [11, null],
     ]);
 
-    testRange(5, null, GridUtils.moveItem(10, 1), [
+    testRange(5, null, GridUtils.moveItem(10, 1, []), [
       [6, 10],
       [1, 1],
       [11, null],
     ]);
 
-    testRange(null, 10, GridUtils.moveItem(1, 15), [
+    testRange(null, 10, GridUtils.moveItem(1, 15, []), [
       [null, 0],
       [15, 15],
       [1, 9],
     ]);
 
-    testRange(null, 10, GridUtils.moveItem(15, 1), [
+    testRange(null, 10, GridUtils.moveItem(15, 1, []), [
       [null, 0],
       [2, 11],
     ]);
@@ -548,7 +549,7 @@ describe('Move ranges of items', () => {
     start: GridRangeIndex,
     end: GridRangeIndex,
     movedItems: MoveOperation[] = [],
-    expectedResult = [[start, end]]
+    expectedResult: AxisRange[] = [[start, end]]
   ) {
     expect(GridUtils.getVisibleRangeIndexes(start, end, movedItems)).toEqual(
       expectedResult
@@ -559,7 +560,7 @@ describe('Move ranges of items', () => {
     start: GridRangeIndex,
     end: GridRangeIndex,
     movedItems: MoveOperation[] = [],
-    expectedResult = [[start, end]]
+    expectedResult: AxisRange[] = [[start, end]]
   ) {
     expect(GridUtils.getModelRangeIndexes(start, end, movedItems)).toEqual(
       expectedResult
@@ -567,7 +568,7 @@ describe('Move ranges of items', () => {
   }
 
   it('handles transforms outside of range', () => {
-    let movedItems = GridUtils.moveRange([2, 3], 1);
+    let movedItems = GridUtils.moveRange([2, 3], 1, []);
     movedItems = GridUtils.moveRange([100, 104], 200, movedItems);
     testModelToVisible(5, 10, movedItems);
     testVisibleToModel(5, 10, movedItems);
@@ -575,7 +576,7 @@ describe('Move ranges of items', () => {
 
   it('handles items moved into the range', () => {
     // Before to start
-    let movedItems = GridUtils.moveRange([1, 3], 5);
+    let movedItems = GridUtils.moveRange([1, 3], 5, []);
     // 0 1 2 3 4 5 6 7 8 9 10 Before/Visible
     // 0 4 5 6 7 1 2 3 8 9 10 After/Model
     testModelToVisible(5, 10, movedItems, [
@@ -588,7 +589,7 @@ describe('Move ranges of items', () => {
     ]);
 
     // Before to within
-    movedItems = GridUtils.moveRange([1, 3], 6);
+    movedItems = GridUtils.moveRange([1, 3], 6, []);
     // 0 1 2 3 4 5 6 7 8 9 10 Before/Visible
     // 0 4 5 6 7 8 1 2 3 9 10 After/Model
     testModelToVisible(5, 10, movedItems, [
@@ -602,7 +603,7 @@ describe('Move ranges of items', () => {
     ]);
 
     // Before to end
-    movedItems = GridUtils.moveRange([1, 3], 8);
+    movedItems = GridUtils.moveRange([1, 3], 8, []);
     // 0 1 2 3 4 5 6 7  8 9 10 Before/Visible
     // 0 4 5 6 7 8 9 10 1 2 3 After/Model
     testModelToVisible(5, 10, movedItems, [[2, 7]]);
@@ -612,7 +613,7 @@ describe('Move ranges of items', () => {
     ]);
 
     // Before to partially in start
-    movedItems = GridUtils.moveRange([1, 3], 4);
+    movedItems = GridUtils.moveRange([1, 3], 4, []);
     // 0 1 2 3 4 5 6 7 8 9 10 Before/Visible
     // 0 4 5 6 1 2 3 7 8 9 10 After/Model
     testModelToVisible(5, 10, movedItems, [
@@ -625,7 +626,7 @@ describe('Move ranges of items', () => {
     ]);
 
     // Before to partially in end
-    movedItems = GridUtils.moveRange([1, 3], 9);
+    movedItems = GridUtils.moveRange([1, 3], 9, []);
     // 0 1 2 3 4 5 6 7  8  9 10 11 Before/Visible
     // 0 4 5 6 7 8 9 10 11 1 2  3 After/Model
     testModelToVisible(5, 10, movedItems, [[2, 7]]);
@@ -635,7 +636,7 @@ describe('Move ranges of items', () => {
     ]);
 
     // After to end
-    movedItems = GridUtils.moveRange([12, 14], 8);
+    movedItems = GridUtils.moveRange([12, 14], 8, []);
     // 5 6 7  8  9  10 11 12 13 Before/Visible
     // 5 6 7  12 13 14 8  9  10  After/Model
     testModelToVisible(5, 10, movedItems, [
@@ -648,7 +649,7 @@ describe('Move ranges of items', () => {
     ]);
 
     // After to within
-    movedItems = GridUtils.moveRange([12, 14], 7);
+    movedItems = GridUtils.moveRange([12, 14], 7, []);
     // 5 6 7  8  9  10 11 12 13 Before/Visible
     // 5 6 12 13 14 7  8  9  10 After/Model
     testModelToVisible(5, 10, movedItems, [
@@ -664,7 +665,7 @@ describe('Move ranges of items', () => {
 
   it('handles items moved outside the range', () => {
     // Within to before
-    let movedItems = GridUtils.moveRange([6, 8], 2);
+    let movedItems = GridUtils.moveRange([6, 8], 2, []);
     // 0 1 2 3 4 5 6 7 8 9 10 Before/Visible
     // 0 1 6 7 8 2 3 4 5 9 10 After/Model
     testModelToVisible(5, 10, movedItems, [
@@ -678,7 +679,7 @@ describe('Move ranges of items', () => {
     ]);
 
     // Start to before
-    movedItems = GridUtils.moveRange([5, 7], 2);
+    movedItems = GridUtils.moveRange([5, 7], 2, []);
     // 0 1 2 3 4 5 6 7 8 9 10 Before/Visible
     // 0 1 5 6 7 2 3 4 8 9 10 After/Model
     testModelToVisible(5, 10, movedItems, [
@@ -691,7 +692,7 @@ describe('Move ranges of items', () => {
     ]);
 
     // End to before
-    movedItems = GridUtils.moveRange([8, 10], 2);
+    movedItems = GridUtils.moveRange([8, 10], 2, []);
     // 0 1 2 3 4  5 6 7 8 9 10 Before/Visible
     // 0 1 8 9 10 2 3 4 5 6 7 After/Model
     testModelToVisible(5, 10, movedItems, [
@@ -701,7 +702,7 @@ describe('Move ranges of items', () => {
     testVisibleToModel(5, 10, movedItems, [[2, 7]]);
 
     // Within to after
-    movedItems = GridUtils.moveRange([6, 8], 11);
+    movedItems = GridUtils.moveRange([6, 8], 11, []);
     // 5 6 7  8  9  10 11 12 13 Before/Visible
     // 5 9 10 11 12 13 6  7  8 After/Model
     testModelToVisible(5, 10, movedItems, [
@@ -715,7 +716,7 @@ describe('Move ranges of items', () => {
     ]);
 
     // Start to after
-    movedItems = GridUtils.moveRange([5, 7], 11);
+    movedItems = GridUtils.moveRange([5, 7], 11, []);
     // 5 6 7  8  9  10 11 12 13 Before/Visible
     // 8 9 10 11 12 13 5  6  7 After/Model
     testModelToVisible(5, 10, movedItems, [
@@ -725,7 +726,7 @@ describe('Move ranges of items', () => {
     testVisibleToModel(5, 10, movedItems, [[8, 13]]);
 
     // End to after
-    movedItems = GridUtils.moveRange([8, 10], 11);
+    movedItems = GridUtils.moveRange([8, 10], 11, []);
     // 5 6 7 8  9  10 11 12 13 Before/Visible
     // 5 6 7 11 12 13 8  9  10 After/Model
     testModelToVisible(5, 10, movedItems, [
@@ -740,14 +741,14 @@ describe('Move ranges of items', () => {
 
   it('handles ranges moved from before to after range', () => {
     // Before to after
-    let movedItems = GridUtils.moveRange([2, 4], 11);
+    let movedItems = GridUtils.moveRange([2, 4], 11, []);
     // 2 3 4 5 6 7  8  9  10 11 12 13 Before/Visible
     // 5 6 7 8 9 10 11 12 13 2  3  4 After/Model
     testModelToVisible(5, 10, movedItems, [[2, 7]]);
     testVisibleToModel(5, 10, movedItems, [[8, 13]]);
 
     // After to before
-    movedItems = GridUtils.moveRange([11, 13], 4);
+    movedItems = GridUtils.moveRange([11, 13], 4, []);
     // 4  5  6  7 8 9 10 11 12 13 Before/Visible
     // 11 12 13 4 5 6 7  8  9  10 After/Model
     testModelToVisible(5, 10, movedItems, [[8, 13]]);
@@ -758,7 +759,7 @@ describe('Move ranges of items', () => {
   });
 
   it('handles ranges moved that contain the target range', () => {
-    let movedItems = GridUtils.moveRange([4, 11], 6);
+    let movedItems = GridUtils.moveRange([4, 11], 6, []);
     // 2 3 4  5  6 7 8 9 10 11 12 13 Before/Visible
     // 2 3 12 13 4 5 6 7 8  9  10 11 After/Model
     testModelToVisible(5, 10, movedItems, [[7, 12]]);
@@ -767,7 +768,7 @@ describe('Move ranges of items', () => {
       [4, 8],
     ]);
 
-    movedItems = GridUtils.moveRange([5, 10], 3);
+    movedItems = GridUtils.moveRange([5, 10], 3, []);
     // 2 3 4 5 6 7 8  9 10 11 Before/Visible
     // 2 5 6 7 8 9 10 3 4  11 After/Model
     testModelToVisible(5, 10, movedItems, [[3, 8]]);
@@ -777,8 +778,8 @@ describe('Move ranges of items', () => {
     ]);
   });
   it('handles multiple operations', () => {
-    let movedItems = GridUtils.moveRange([2, 4], 11);
-    movedItems = GridUtils.moveRange([5, 10], 3);
+    let movedItems = GridUtils.moveRange([2, 4], 11, []);
+    movedItems = GridUtils.moveRange([5, 10], 3, []);
     // 2 3 4 5 6 7  8  9  10 11 12 13 Before/Visible
     // 5 6 7 8 9 10 11 12 13 2  3  4 After 1st
     // 2 5 6 7 8 9  10 3  4  11 12 13 After 2nd/Model
@@ -815,7 +816,7 @@ describe('grid range transforms with moved items in both dimensions visible to m
     testRange(new GridRange(1, 4, 2, 6));
   });
   it('handles transformations that do not affect the range', () => {
-    let movedItems: MoveOperation[] = GridUtils.moveItem(2, 1);
+    let movedItems: MoveOperation[] = GridUtils.moveItem(2, 1, []);
     movedItems = GridUtils.moveItem(5, 0, movedItems);
     movedItems = GridUtils.moveItem(100, 110, movedItems);
     movedItems = GridUtils.moveItem(200, 220, movedItems);
@@ -823,8 +824,8 @@ describe('grid range transforms with moved items in both dimensions visible to m
     testRange(new GridRange(50, 55, 60, 65), movedItems, movedItems);
   });
   it('handles moving items into the range', () => {
-    const movedColumns: MoveOperation[] = GridUtils.moveItem(25, 15);
-    const movedRows: MoveOperation[] = GridUtils.moveItem(27, 17);
+    const movedColumns: MoveOperation[] = GridUtils.moveItem(25, 15, []);
+    const movedRows: MoveOperation[] = GridUtils.moveItem(27, 17, []);
     testRange(new GridRange(10, 15, 20, 25), movedColumns, movedRows, [
       new GridRange(10, 15, 14, 16),
       new GridRange(10, 27, 14, 27),
@@ -838,8 +839,8 @@ describe('grid range transforms with moved items in both dimensions visible to m
     ]);
   });
   it('handles multiple ranges', () => {
-    const movedColumns = GridUtils.moveItem(25, 15);
-    const movedRows = GridUtils.moveItem(27, 17);
+    const movedColumns = GridUtils.moveItem(25, 15, []);
+    const movedRows = GridUtils.moveItem(27, 17, []);
     testRanges(
       [new GridRange(10, 15, 20, 25), new GridRange(30, 35, 40, 45)],
       movedColumns,
@@ -884,7 +885,7 @@ describe('grid range transforms with moved items in both dimensions model to vis
     testRange(new GridRange(1, 4, 2, 6));
   });
   it('handles transformations that do not affect the range', () => {
-    let movedItems: MoveOperation[] = GridUtils.moveItem(2, 1);
+    let movedItems: MoveOperation[] = GridUtils.moveItem(2, 1, []);
     movedItems = GridUtils.moveItem(5, 0, movedItems);
     movedItems = GridUtils.moveItem(100, 110, movedItems);
     movedItems = GridUtils.moveItem(200, 220, movedItems);
@@ -892,8 +893,8 @@ describe('grid range transforms with moved items in both dimensions model to vis
     testRange(new GridRange(50, 55, 60, 65), movedItems, movedItems);
   });
   it('handles moving items into the range', () => {
-    const movedColumns: MoveOperation[] = GridUtils.moveItem(25, 15);
-    const movedRows: MoveOperation[] = GridUtils.moveItem(27, 17);
+    const movedColumns: MoveOperation[] = GridUtils.moveItem(25, 15, []);
+    const movedRows: MoveOperation[] = GridUtils.moveItem(27, 17, []);
     testRange(new GridRange(10, 15, 20, 25), movedColumns, movedRows, [
       new GridRange(10, 15, 14, 16),
       new GridRange(10, 18, 14, 26),
@@ -902,8 +903,8 @@ describe('grid range transforms with moved items in both dimensions model to vis
     ]);
   });
   it('handles multiple ranges', () => {
-    const movedColumns = GridUtils.moveItem(25, 15);
-    const movedRows = GridUtils.moveItem(27, 17);
+    const movedColumns = GridUtils.moveItem(25, 15, []);
+    const movedRows = GridUtils.moveItem(27, 17, []);
     testRanges(
       [new GridRange(10, 15, 20, 25), new GridRange(30, 35, 40, 45)],
       movedColumns,
@@ -916,5 +917,68 @@ describe('grid range transforms with moved items in both dimensions model to vis
         new GridRange(30, 35, 40, 45),
       ]
     );
+  });
+});
+
+describe('compareRange function works', () => {
+  it("returns negative when first range's start is before the second", () => {
+    const range1: AxisRange = [0, 5];
+    const range2: AxisRange = [1, 3];
+    expect(GridUtils.compareRanges(range1, range2) < 0).toBeTruthy();
+    expect(GridUtils.compareRanges(range1, range2) > 0).toBeFalsy();
+  });
+  it("returns negative when first range's end is before the second", () => {
+    const range1: AxisRange = [1, 2];
+    const range2: AxisRange = [1, 3];
+    expect(GridUtils.compareRanges(range1, range2) < 0).toBeTruthy();
+    expect(GridUtils.compareRanges(range1, range2) > 0).toBeFalsy();
+  });
+  it('returns positive when first range is after the second', () => {
+    const range1: AxisRange = [1, 5];
+    const range2: AxisRange = [1, 3];
+    expect(GridUtils.compareRanges(range1, range2) > 0).toBeTruthy();
+    expect(GridUtils.compareRanges(range1, range2) < 0).toBeFalsy();
+  });
+  it('returns 0 when the ranges are the same', () => {
+    const range1: AxisRange = [1, 3];
+    const range2: AxisRange = [1, 3];
+    expect(GridUtils.compareRanges(range1, range2) === 0).toBeTruthy();
+  });
+});
+
+describe('for each', () => {
+  it('works on a single array', () => {
+    const ranges: BoundedAxisRange[] = [[1, 2]];
+    expect(GridUtils.mergeSortedRanges(ranges)).toEqual(ranges);
+  });
+
+  it('works on a non-overlapping array', () => {
+    const ranges: BoundedAxisRange[] = [
+      [1, 2],
+      [4, 5],
+      [7, 8],
+    ];
+    expect(GridUtils.mergeSortedRanges(ranges)).toEqual(ranges);
+  });
+
+  it('works on a all overlapping array', () => {
+    const ranges: BoundedAxisRange[] = [
+      [1, 2],
+      [3, 4],
+      [5, 6],
+    ];
+    expect(GridUtils.mergeSortedRanges(ranges)).toEqual([[1, 6]]);
+  });
+
+  it('works on a partially overlapping array', () => {
+    const ranges: BoundedAxisRange[] = [
+      [1, 2],
+      [3, 4],
+      [7, 11],
+    ];
+    expect(GridUtils.mergeSortedRanges(ranges)).toEqual([
+      [1, 4],
+      [7, 11],
+    ]);
   });
 });

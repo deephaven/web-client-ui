@@ -208,7 +208,7 @@ class Panel extends PureComponent {
     return {
       title: 'Rename',
       order: 10,
-      group: ContextActions.groups.high,
+      group: ContextActions.groups.medium,
       action: this.handleShowRenameDialog,
     };
   }

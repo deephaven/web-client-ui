@@ -56,6 +56,7 @@ export interface WorkspaceData {
 export interface Workspace {
   data: WorkspaceData;
 }
+export type DashboardData = Record<string, unknown>;
 
 export interface WorkspaceStorage {
   load(): Promise<Workspace>;
@@ -68,6 +69,7 @@ export type RootState = {
   storage: Storage;
   user: User;
   workspace: Workspace;
+  dashboardData: Record<string, DashboardData>;
 };
 
 Object.entries(reducers).map(([name, reducer]) =>

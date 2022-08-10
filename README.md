@@ -22,6 +22,11 @@ We are still using node 16.x and npm 8.x. If you are [using nvm](https://github.
 - `npm install` : Install all dependencies and automatically bootstrap packages. Should be run before any of the other steps.
 - `npm start`: Start building all packages and watching them (when possible). Use when you're developing, and your changes will be picked up automatically.
 - `npm test`: Start running tests in all packages and watching (when possible). Use when you're developing, and any breaking changes will be printed out automatically.
+
+  Log messages from our log package are disabled by default in tests in [jest.setup.ts](./jest.setup.ts). To change the log level, set the `DH_LOG_LEVEL` env variable. For example, to enable all log messages run `DH_LOG_LEVEL=4 npm test`.
+
+  Note that log messages from other sources such as react prop types will still be printed since they do not go through our logger.
+
 - `npm run build`: Create a production build of all packages. Mainly used by CI when packaging up a production version of the app.
 
 ## Package Overview

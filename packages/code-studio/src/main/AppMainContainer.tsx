@@ -14,6 +14,7 @@ import {
   Popper,
   ContextAction,
 } from '@deephaven/components';
+import { SHORTCUTS as IRIS_GRID_SHORTCUTS } from '@deephaven/iris-grid';
 import {
   Dashboard,
   DashboardLayoutConfig,
@@ -178,24 +179,15 @@ export class AppMainContainer extends Component<
             // widget panels can subscribe to his event, and execute their own clearing logic
             this.sendClearFilter();
           },
-          order: 50,
-          shortcut: GLOBAL_SHORTCUTS.CLEAR_ALL_FILTERS,
+          shortcut: IRIS_GRID_SHORTCUTS.TABLE.CLEAR_ALL_FILTERS,
+          isGlobal: true,
         },
         {
           action: () => {
             log.debug('Consume unhandled save shortcut');
           },
           shortcut: GLOBAL_SHORTCUTS.SAVE,
-        },
-        {
-          action: () => {
-            this.sendRestartSession();
-          },
-        },
-        {
-          action: () => {
-            this.sendDisconnectSession();
-          },
+          isGlobal: true,
         },
       ],
       isPanelsMenuShown: false,
@@ -742,7 +734,15 @@ export class AppMainContainer extends Component<
           />
           <ChartPlugin hydrate={this.hydrateChart} />
           <ChartBuilderPlugin />
-          <ConsolePlugin hydrateConsole={AppMainContainer.hydrateConsole} />
+          <ConsolePlugin
+            hydrateConsole={AppMainContainer.hydrateConsole}
+            notebooksUrl={
+              new URL(
+                `${process.env.REACT_APP_NOTEBOOKS_URL}/`,
+                window.location
+              ).href
+            }
+          />
           <FilterPlugin />
           <PandasPlugin hydrate={this.hydratePandas} />
           <MarkdownPlugin />

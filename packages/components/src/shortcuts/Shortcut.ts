@@ -145,7 +145,7 @@ export default class Shortcut extends EventTarget<EventMap, 'strict'> {
 
   private readonly defaultKeyState: ValidKeyState;
 
-  private keyState: ValidKeyState;
+  keyState: ValidKeyState;
 
   static NULL_KEY_STATE: ValidKeyState = {
     metaKey: false,

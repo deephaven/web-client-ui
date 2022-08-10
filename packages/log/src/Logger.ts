@@ -38,6 +38,12 @@ class Logger {
   debug2: (...data: unknown[]) => void;
 
   setLogLevel(level: number): void {
+    if (!Number.isFinite(level)) {
+      console.warn(
+        `Expected a number for log level. Received: ${level}. Ignoring`
+      );
+      return;
+    }
     this.level = level;
 
     this.error =

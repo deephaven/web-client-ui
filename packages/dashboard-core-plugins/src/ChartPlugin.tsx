@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback, useEffect, DragEvent } from 'react';
 import { ChartModelFactory } from '@deephaven/chart';
 import {
   assertIsDashboardPluginProps,

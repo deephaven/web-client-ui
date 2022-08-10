@@ -65,6 +65,9 @@ const theme: Partial<IrisGridThemeType> = Object.freeze({
   scrollBarColor: IrisGridTheme['scroll-bar-color'],
   scrollBarHoverColor: IrisGridTheme['scroll-bar-hover-color'],
   scrollBarActiveColor: IrisGridTheme['scroll-bar-active-color'],
+  scrollBarSelectionTickColor: IrisGridTheme['selected-row-hover-bg'],
+  scrollBarActiveSelectionTickColor:
+    IrisGridTheme['scroll-bar-active-selection-tick-color'],
   textColor: IrisGridTheme['text-color'],
   positiveNumberColor: IrisGridTheme['positive-number-color'],
   negativeNumberColor: IrisGridTheme['negative-number-color'],
@@ -101,7 +104,7 @@ const theme: Partial<IrisGridThemeType> = Object.freeze({
   columnWidth: 100,
   rowHeaderWidth: 0,
   rowFooterWidth: 60,
-  columnHeaderHeight: 30,
+  columnHeaderHeight: parseInt(IrisGridTheme['header-height'], 10) || 30,
   filterBarHeight: 30, // includes 1px casing at bottom
   filterBarCollapsedHeight: 5, // includes 1px casing at bottom
   sortHeaderBarHeight: 2,

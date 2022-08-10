@@ -566,6 +566,13 @@ class FigureChartModel extends ChartModel {
       if (yLow && yHigh && yLow !== y) {
         seriesData.error_y = ChartUtils.getPlotlyErrorBars(y, yLow, yHigh);
       }
+    } else if (plotStyle === dh.plot.SeriesPlotStyle.TREEMAP) {
+      const { ids, labels } = seriesData;
+      if (ids !== undefined && labels === undefined) {
+        // If the user only provided IDs, we assign the IDs to the labels property as well automatically
+        // Plotly uses the labels primarily, which from our API perspective seems kind of backwards
+        seriesData.labels = ids;
+      }
     }
   }
 
