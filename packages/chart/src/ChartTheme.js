@@ -1,4 +1,5 @@
 import ChartTheme from './ChartTheme.module.scss';
+import ChartUtils from './ChartUtils';
 
 export default Object.freeze({
   paper_bgcolor: ChartTheme['paper-bgcolor'],

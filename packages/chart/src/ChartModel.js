@@ -42,6 +42,10 @@ class ChartModel {
     return {};
   }
 
+  getFrames() {
+    return undefined;
+  }
+
   getFilterColumnMap() {
     return new Map();
   }

@@ -32,6 +32,7 @@ import {
   NotebookEvent,
   MarkdownPlugin,
   PandasPlugin,
+  PlotlyChartPlugin,
   getDashboardSessionWrapper,
   UIPropTypes,
   ControlType,
@@ -556,6 +557,15 @@ export class AppMainContainer extends Component {
     };
   }
 
+  // eslint-disable-next-line class-methods-use-this
+  hydratePlotlyChart(props, id) {
+    return {
+      ...props,
+      localDashboardId: id,
+      makeModel: () => Promise.reject(new Error('Chart data not available')),
+    };
+  }
+
   /**
    * Open a widget up, using a drag event if specified.
    * @param {VariableDefinition} widget The widget to open
@@ -685,6 +695,7 @@ export class AppMainContainer extends Component {
           <ConsolePlugin hydrateConsole={AppMainContainer.hydrateConsole} />
           <FilterPlugin />
           <PandasPlugin />
+          <PlotlyChartPlugin hydrate={this.hydratePlotlyChart} />
           <MarkdownPlugin />
           <LinkerPlugin />
           {dashboardPlugins}

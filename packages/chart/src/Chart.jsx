@@ -74,6 +74,7 @@ export class Chart extends Component {
     this.state = {
       data: null,
       downsamplingError: null,
+      frames: undefined,
       isDownsampleFinished: false,
       isDownsampleInProgress: false,
       isDownsamplingDisabled: false,
@@ -188,6 +189,7 @@ export class Chart extends Component {
         ...layout,
         ...model.getLayout(),
       },
+      frames: model.getFrames(),
     });
   }
 
@@ -260,8 +262,10 @@ export class Chart extends Component {
       }
       case ChartModel.EVENT_LOADFINISHED: {
         const { onUpdate } = this.props;
-        this.isLoadedFired = true;
-        onUpdate({ isLoading: false });
+        if (!this.isLoadedFired) {
+          this.isLoadedFired = true;
+          onUpdate({ isLoading: false });
+        }
         break;
       }
       case ChartModel.EVENT_DISCONNECT: {
@@ -442,6 +446,7 @@ export class Chart extends Component {
     const {
       data,
       downsamplingError,
+      frames,
       isDownsampleFinished,
       isDownsampleInProgress,
       isDownsamplingDisabled,
@@ -462,6 +467,7 @@ export class Chart extends Component {
             ref={this.plot}
             data={data}
             layout={layout}
+            frames={frames}
             revision={revision}
             config={config}
             onAfterPlot={this.handleAfterPlot}

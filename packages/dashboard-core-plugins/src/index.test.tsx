@@ -11,6 +11,7 @@ import {
   LinkerPlugin,
   MarkdownPlugin,
   PandasPlugin,
+  PlotlyChartPlugin,
 } from '.';
 
 it('handles mounting and unmount core plugins properly', () => {
@@ -21,6 +22,7 @@ it('handles mounting and unmount core plugins properly', () => {
         <FilterPlugin />
         <GridPlugin hydrate={() => undefined} />
         <ChartPlugin hydrate={() => undefined} />
+        <PlotlyChartPlugin hydrate={() => undefined} />
         <ConsolePlugin />
         <LinkerPlugin />
         <MarkdownPlugin />
