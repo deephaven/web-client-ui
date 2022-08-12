@@ -481,7 +481,7 @@ class VisibilityOrderingBuilder extends Component<
         });
         scrollListAfterMove = () => {
           assertNotNull(this.list);
-          this.list.scrollTop = 0;
+          this.list.parentElement?.scroll({ top: 0 });
         };
         break;
       case VisibilityOrderingBuilder.MOVE_OPTIONS.BOTTOM:
@@ -498,7 +498,9 @@ class VisibilityOrderingBuilder extends Component<
         });
         scrollListAfterMove = () => {
           assertNotNull(this.list);
-          this.list.scrollTop = this.list.scrollHeight;
+          this.list.parentElement?.scroll({
+            top: this.list.parentElement.scrollHeight,
+          });
         };
 
         break;
