@@ -1,0 +1,57 @@
+@import '../../../components/scss/custom.scss';
+
+.max-memory {
+  position: relative;
+  background-color: $gray-900;
+  width: 4rem;
+  vertical-align: middle;
+  text-align: center;
+  border: $black;
+  z-index: 1;
+}
+
+.total-memory,
+.used-memory {
+  position: absolute;
+  inset: 1px;
+  z-index: -1;
+}
+
+.total-memory {
+  background-color: $gray-700;
+}
+
+.used-memory {
+  background-color: $gray-500;
+}
+
+.heap-overflow {
+  background-color: $red;
+}
+
+.heap-tooltip {
+  padding: $spacer-1;
+  width: 200px;
+}
+
+.heap-usage-info-row {
+  display: flex;
+  color: white;
+  padding: $spacer-1;
+  justify-content: space-between;
+}
+
+.heap-plot {
+  display: flex;
+  align-items: center;
+}
+
+.heading-bottom-border {
+  border-bottom: 1px solid $gray-900;
+  margin-bottom: 0.5rem;
+}
+
+.heap-utilisation-text {
+  margin-top: $spacer-1;
+  color: $gray-400;
+}

@@ -5,7 +5,7 @@ import PropTypes from 'prop-types';
 import shortid from 'shortid';
 import debounce from 'lodash.debounce';
 import { connect } from 'react-redux';
-import { Console, ConsoleConstants } from '@deephaven/console';
+import { Console, ConsoleConstants, SizeUsageUI } from '@deephaven/console';
 import { GLPropTypes, PanelEvent } from '@deephaven/dashboard';
 import { PropTypes as APIPropTypes } from '@deephaven/jsapi-shim';
 import Log from '@deephaven/log';
@@ -272,7 +272,8 @@ export class ConsolePanel extends PureComponent {
       unzip,
     } = this.props;
     const { consoleSettings, error, objectMap } = this.state;
-    const { config, session } = sessionWrapper;
+    // eslint-disable-next-line react/prop-types
+    const { config, session, connection } = sessionWrapper;
     const { id: sessionId, type: language } = config;
 
     return (
@@ -302,6 +303,18 @@ export class ConsolePanel extends PureComponent {
                 <>
                   <div>&nbsp;</div>
                   <div>{ConsoleConstants.LANGUAGE_MAP.get(language)}</div>
+                  <div>&nbsp;</div>
+                  <div>
+                    <SizeUsageUI
+                      connection={connection}
+                      UIParams={{
+                        defaultUpdateInterval: 10000,
+                        hoverUpdateInterval: 3000,
+                      }}
+                      monitorDuration={60 * 10}
+                    />
+                  </div>
+                  <div>&nbsp;</div>
                 </>
               }
               scope={sessionId}
