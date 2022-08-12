@@ -8,7 +8,7 @@ import classNames from 'classnames';
 interface SIzeUsageUIProps {
   connection: QueryConnectable;
   UIParams: { defaultUpdateInterval: number; hoverUpdateInterval: number };
-  bgMonitoring: boolean;
+  bgMonitoring?: boolean;
 
   // in seconds
   monitorDuration: number;
@@ -17,7 +17,7 @@ interface SIzeUsageUIProps {
 const SizeUsageUI = ({
   connection,
   UIParams,
-  bgMonitoring,
+  bgMonitoring = true,
   monitorDuration,
 }: SIzeUsageUIProps): ReactElement => {
   const [freeMemory, setFreeMemory] = useState<number>(0);
