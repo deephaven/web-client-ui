@@ -20,6 +20,12 @@ import {
   vsChevronUp,
   vsChevronDown,
   vsGripper,
+  vsSymbolStructure,
+  vsRefresh,
+  dhNewCircleLargeFilled,
+  vsCircleFilled,
+  vsCircleLargeFilled,
+  vsAdd,
 } from '@deephaven/icons';
 import {
   DragDropContext,
@@ -30,7 +36,12 @@ import {
 } from 'react-beautiful-dnd';
 import memoize from 'memoizee';
 import debounce from 'lodash.debounce';
-import { Button, SearchInput, Tooltip } from '@deephaven/components';
+import {
+  Button,
+  SearchInput,
+  ThemeExport,
+  Tooltip,
+} from '@deephaven/components';
 import type { Column } from '@deephaven/jsapi-shim';
 import Log from '@deephaven/log';
 import './VisibilityOrderingBuilder.scss';
@@ -142,7 +153,7 @@ class VisibilityOrderingBuilder extends Component<
       lastSelectedColumns: [],
       searchFilter: '',
     });
-    onMovedColumnsChanged([]);
+    onMovedColumnsChanged(model.movedColumns);
   }
 
   resetSelection(): void {
@@ -425,8 +436,16 @@ class VisibilityOrderingBuilder extends Component<
       return;
     }
 
-    const firstMovableIndex = this.getFirstMovableIndex(model, columns);
-    const lastMovableIndex = this.getLastMovableIndex(model, columns);
+    const firstMovableIndex = this.getFirstMovableIndex(
+      model,
+      columns,
+      movedColumns
+    );
+    const lastMovableIndex = this.getLastMovableIndex(
+      model,
+      columns,
+      movedColumns
+    );
     if (firstMovableIndex == null || lastMovableIndex == null) {
       return;
     }
@@ -528,45 +547,40 @@ class VisibilityOrderingBuilder extends Component<
   }
 
   handleSortColumns(option: string): void {
-    const { model, onMovedColumnsChanged } = this.props;
+    const { model, movedColumns, onMovedColumnsChanged } = this.props;
     const { columns } = model;
+    const firstIndex =
+      this.getFirstMovableIndex(model, columns, movedColumns) ?? 0;
+    const lastIndex =
+      this.getLastMovableIndex(model, columns, movedColumns) ??
+      columns.length - 1;
+
+    const modelIndexes = GridUtils.getModelIndexes(
+      Array(columns.length)
+        .fill(0)
+        .map((_, i) => i),
+      movedColumns
+    );
 
     // We can't move the immovable columns when sorting, so separate them out first
-    const movableColumns = [];
-    const immovableColumns = [];
-    for (let modelIndex = 0; modelIndex < columns.length; modelIndex += 1) {
-      if (model.isColumnMovable(modelIndex)) {
-        movableColumns.push(modelIndex);
-      } else {
-        immovableColumns.push(modelIndex);
-      }
-    }
+    const frontImmovable = modelIndexes.slice(0, firstIndex);
+    const backImmovable = modelIndexes.slice(lastIndex + 1);
+    const movableColumns = modelIndexes.slice(firstIndex, lastIndex + 1);
 
     // Sort all the movable columns
+    const isAscending =
+      option === VisibilityOrderingBuilder.SORTING_OPTIONS.ASC;
     const movableColumnsSorted = movableColumns.sort((a, b) => {
-      const isAscending =
-        option === VisibilityOrderingBuilder.SORTING_OPTIONS.ASC;
       const aName = columns[a].name.toUpperCase();
       const bName = columns[b].name.toUpperCase();
       return TextUtils.sort(aName, bName, isAscending);
     });
 
     // Place all the immovable columns where they need to be
-    const modelIndexAlphaSorted = [];
-    for (let i = 0; i < immovableColumns.length; i += 1) {
-      const modelIndex = immovableColumns[i];
-      modelIndexAlphaSorted[modelIndex] = modelIndex;
-    }
-
-    // Then the rest of the sorted columns can be put in the empty spaces
-    let insertIndex = 0;
-    for (let i = 0; i < movableColumnsSorted.length; i += 1) {
-      while (modelIndexAlphaSorted[insertIndex] != null) {
-        insertIndex += 1;
-      }
-
-      modelIndexAlphaSorted[insertIndex] = movableColumnsSorted[i];
-    }
+    const modelIndexAlphaSorted = frontImmovable.concat(
+      movableColumnsSorted,
+      backImmovable
+    );
 
     let newMoves = [] as MoveOperation[];
     modelIndexAlphaSorted.forEach((modelIndex, index) => {
@@ -727,9 +741,13 @@ class VisibilityOrderingBuilder extends Component<
     return elements;
   }
 
+  /**
+   * Gets the first movable visible index
+   */
   getFirstMovableIndex = memoize((model: IrisGridModel, columns: Column[]) => {
     for (let i = 0; i < columns.length; i += 1) {
-      if (model.isColumnMovable(i)) {
+      const modelIndex = GridUtils.getModelIndex(i, movedColumns);
+      if (model.isColumnMovable(modelIndex)) {
         return i;
       }
     }
@@ -737,9 +755,13 @@ class VisibilityOrderingBuilder extends Component<
     return null;
   });
 
+  /**
+   * Gets the last movable visible index
+   */
   getLastMovableIndex = memoize((model: IrisGridModel, columns: Column[]) => {
     for (let i = columns.length - 1; i >= 0; i -= 1) {
-      if (model.isColumnMovable(i)) {
+      const modelIndex = GridUtils.getModelIndex(i, movedColumns);
+      if (model.isColumnMovable(modelIndex)) {
         return i;
       }
     }
@@ -887,6 +909,7 @@ class VisibilityOrderingBuilder extends Component<
         <div className="top-menu">
           <Button
             kind="ghost"
+            className="toggle-visibility-btn"
             onClick={() => {
               onColumnVisibilityChanged(
                 columnsToToggle,
@@ -901,102 +924,103 @@ class VisibilityOrderingBuilder extends Component<
             {noSelection ? 'Toggle All' : selectedToggleText}
           </Button>
 
-          <div>
-            <Button
-              kind="ghost"
-              className="text-muted"
-              onClick={() => {
-                this.resetVisibilityOrdering();
-              }}
-              tooltip="Reset to default"
-            >
-              Reset
-            </Button>
-            <Button
-              kind="ghost"
-              className="btn-link-icon"
-              onClick={() => {
-                this.handleSortColumns(
-                  VisibilityOrderingBuilder.SORTING_OPTIONS.ASC
-                );
-              }}
-              tooltip="Sort ascending"
-            >
-              <FontAwesomeIcon icon={dhSortAlphaDown} />
-            </Button>
-            <Button
-              kind="ghost"
-              className="btn-link-icon"
-              onClick={() => {
-                this.handleSortColumns(
-                  VisibilityOrderingBuilder.SORTING_OPTIONS.DSC
-                );
-              }}
-              tooltip="Sort descending"
-            >
-              <FontAwesomeIcon icon={dhSortAlphaUp} />
-            </Button>
-            <span className="vertical-divider" />
-            <Button
-              kind="ghost"
-              className="btn-link-icon"
-              onClick={() => {
-                this.handleMoveColumns(
-                  VisibilityOrderingBuilder.MOVE_OPTIONS.UP
-                );
-              }}
-              disabled={noSelection}
-              tooltip="Move selection up"
-            >
-              <FontAwesomeIcon icon={vsChevronUp} />
-            </Button>
-            <Button
-              kind="ghost"
-              className="btn-link-icon"
-              onClick={() => {
-                this.handleMoveColumns(
-                  VisibilityOrderingBuilder.MOVE_OPTIONS.DOWN
-                );
-              }}
-              disabled={noSelection}
-              tooltip="Move selection down"
-            >
-              <FontAwesomeIcon icon={vsChevronDown} />
-            </Button>
-            <Button
-              kind="ghost"
-              className="btn-link-icon"
-              onClick={() => {
-                this.handleMoveColumns(
-                  VisibilityOrderingBuilder.MOVE_OPTIONS.TOP
-                );
-              }}
-              disabled={noSelection}
-              tooltip="Move selection to top"
-            >
-              <FontAwesomeIcon icon={dhArrowToTop} />
-            </Button>
-            <Button
-              kind="ghost"
-              className="btn-link-icon"
-              onClick={() => {
-                this.handleMoveColumns(
-                  VisibilityOrderingBuilder.MOVE_OPTIONS.BOTTOM
-                );
-              }}
-              disabled={noSelection}
-              tooltip="Move selection to bottom"
-            >
-              <FontAwesomeIcon icon={dhArrowToBottom} />
-            </Button>
-          </div>
-        </div>
-        <div className="top-menu">
           <SearchInput
-            className="w-100"
+            className="visibility-search"
             value={searchFilter}
             matchCount={searchFilter ? selectedColumns.length : undefined}
             onChange={this.handleSearchInputChange}
+          />
+        </div>
+        <div className="top-menu">
+          <Button
+            kind="ghost"
+            icon={vsRefresh}
+            tooltip="Reset to default"
+            onClick={() => {
+              this.resetVisibilityOrdering();
+            }}
+          >
+            Reset
+          </Button>
+          <span className="vertical-divider" />
+          <Button kind="ghost" tooltip="Create group">
+            <span className="fa-layers" style={{ marginRight: '0.75rem' }}>
+              <FontAwesomeIcon
+                mask={vsSymbolStructure}
+                icon={vsCircleLargeFilled}
+                transform="right-7 down-5 shrink-6"
+              />
+              <FontAwesomeIcon
+                icon={vsAdd}
+                transform="right-8 down-6 shrink-8"
+                color={ThemeExport.white}
+              />
+            </span>
+            Group
+          </Button>
+          <span className="vertical-divider" />
+          <Button
+            kind="ghost"
+            icon={dhSortAlphaDown}
+            tooltip="Sort ascending"
+            onClick={() => {
+              this.handleSortColumns(
+                VisibilityOrderingBuilder.SORTING_OPTIONS.ASC
+              );
+            }}
+          />
+          <Button
+            kind="ghost"
+            icon={dhSortAlphaUp}
+            tooltip="Sort descending"
+            onClick={() => {
+              this.handleSortColumns(
+                VisibilityOrderingBuilder.SORTING_OPTIONS.DSC
+              );
+            }}
+          />
+          <span className="vertical-divider" />
+          <Button
+            kind="ghost"
+            icon={vsChevronUp}
+            tooltip="Move selection up"
+            onClick={() => {
+              this.handleMoveColumns(VisibilityOrderingBuilder.MOVE_OPTIONS.UP);
+            }}
+            disabled={noSelection}
+          />
+          <Button
+            kind="ghost"
+            icon={vsChevronDown}
+            tooltip="Move selection down"
+            onClick={() => {
+              this.handleMoveColumns(
+                VisibilityOrderingBuilder.MOVE_OPTIONS.DOWN
+              );
+            }}
+            disabled={noSelection}
+          />
+          <Button
+            kind="ghost"
+            icon={dhArrowToTop}
+            tooltip="Move selection to top"
+            onClick={() => {
+              this.handleMoveColumns(
+                VisibilityOrderingBuilder.MOVE_OPTIONS.TOP
+              );
+            }}
+            disabled={noSelection}
+          />
+          <Button
+            kind="ghost"
+            icon={dhArrowToBottom}
+            tooltip="Move selection to bottom"
+            onClick={() => {
+              this.handleMoveColumns(
+                VisibilityOrderingBuilder.MOVE_OPTIONS.BOTTOM
+              );
+            }}
+            disabled={noSelection}
           />
         </div>
         <DragDropContext
@@ -1005,7 +1029,6 @@ class VisibilityOrderingBuilder extends Component<
         >
           <Droppable droppableId="droppable-visibility-order-list">
             {(provided, snapshot) => (
-              // eslint-disable-next-line jsx-a11y/interactive-supports-focus
               <div
                 role="menu"
                 className={classNames('visibility-ordering-list', {
