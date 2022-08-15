@@ -38,7 +38,6 @@
     "@deephaven/utils": "file:../utils",
     "@deephaven/chart": "file:../chart",
     "@fortawesome/react-fontawesome": "^0.1.18",
-    "@types/recharts": "^1.8.23",
     "classnames": "^2.3.1",
     "lodash.debounce": "^4.0.8",
     "lodash.throttle": "^4.1.1",
@@ -48,7 +47,6 @@
     "papaparse": "^5.3.2",
     "popper.js": "^1.16.1",
     "prop-types": "^15.7.2",
-    "recharts": "^2.1.13",
     "shell-quote": "^1.7.2"
   },
   "peerDependencies": {
