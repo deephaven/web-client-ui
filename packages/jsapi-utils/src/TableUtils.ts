@@ -334,7 +334,7 @@ export class TableUtils {
     }
   }
 
-  static isDateType(columnType: string | undefined): boolean {
+  static isDateType(columnType: string): boolean {
     switch (columnType) {
       case 'io.deephaven.db.tables.utils.DBDateTime':
       case 'io.deephaven.time.DateTime':

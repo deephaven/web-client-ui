@@ -3,10 +3,20 @@ import { updateDashboardData } from '@deephaven/dashboard';
 import { ThunkAction } from 'redux-thunk';
 import { RootState } from '@deephaven/redux';
 import { Action } from 'redux';
+import { IdeConnection, IdeSession } from '@deephaven/jsapi-shim';
 import { getLinksForDashboard } from './selectors';
 import { FilterSet } from '../panels';
 import { Link } from '../linker/LinkerUtils';
+import { ColumnSelectionValidator } from '../panels/ColumnSelectionValidator';
 
+export interface SessionWrapper {
+  session: IdeSession;
+  connection: IdeConnection;
+  config: {
+    type: string;
+    id: string;
+  };
+}
 /**
  * Set the session wrapper for the dashboard specified
  * @param id The ID of the dashboard to set the session for
@@ -14,7 +24,7 @@ import { Link } from '../linker/LinkerUtils';
  */
 export const setDashboardSessionWrapper = (
   id: string,
-  sessionWrapper: unknown
+  sessionWrapper: SessionWrapper
 ): ThunkAction<unknown, RootState, undefined, Action<unknown>> => dispatch =>
   dispatch(updateDashboardData(id, { sessionWrapper }));
 
@@ -88,25 +98,25 @@ export const setDashboardIsolatedLinkerPanelId = (
  */
 export const setDashboardColumnSelectionValidator = (
   id: string,
-  columnSelectionValidator: unknown
+  columnSelectionValidator: ColumnSelectionValidator | undefined
 ): ThunkAction<unknown, RootState, undefined, Action<unknown>> => dispatch =>
   dispatch(updateDashboardData(id, { columnSelectionValidator }));
 
 /**
  * Set the console settings for a dashboard
- * @param {string} id The ID of the dashboard to set the console settings on
- * @param {ConsoleSettings} consoleSettings The console settings to set for the dashboard
+ * @param id The ID of the dashboard to set the console settings on
+ * @param consoleSettings The console settings to set for the dashboard
  */
 export const setDashboardConsoleSettings = (
   id: string,
-  consoleSettings: unknown
+  consoleSettings: Record<string, unknown>
 ): ThunkAction<unknown, RootState, undefined, Action<unknown>> => dispatch =>
   dispatch(updateDashboardData(id, { consoleSettings }));
 
 /**
  * Set the filter sets for a specific dashboard
- * @param {string} id The ID of the dashboard to set the filter sets for
- * @param {FilterSet[]} filterSets The filter sets to set
+ * @param id The ID of the dashboard to set the filter sets for
+ * @param filterSets The filter sets to set
  */
 export const setDashboardFilterSets = (
   id: string,

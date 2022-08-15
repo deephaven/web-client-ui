@@ -23,7 +23,7 @@ import type { JSZipObject } from 'jszip';
 import { ConsoleEvent } from '../events';
 import './ConsolePanel.scss';
 import Panel from './Panel';
-import { getDashboardSessionWrapper } from '../redux';
+import { getDashboardSessionWrapper, SessionWrapper } from '../redux';
 
 const log = Log.module('ConsolePanel');
 
@@ -45,13 +45,6 @@ interface PanelState {
 
 type ItemIds = Map<string, string>;
 
-interface SessionWrapper {
-  session: IdeSession;
-  config: {
-    type: string;
-    id: string;
-  };
-}
 interface ConsolePanelProps {
   commandHistoryStorage: CommandHistoryStorage;
   glContainer: Container;
@@ -260,8 +253,8 @@ export class ConsolePanel extends PureComponent<
   }
 
   /**
-   * @param {VariableDefinition} widget The widget to open
-   * @param {dh.Session} session The session object
+   * @param widget The widget to open
+   * @param session The session object
    */
   openWidget(widget: VariableDefinition, session: IdeSession): void {
     const { glEventHub } = this.props;
@@ -285,7 +278,7 @@ export class ConsolePanel extends PureComponent<
 
   /**
    * Close the disconnected panels from this session
-   * @param {boolean} force True to force the panels closed regardless of the current setting
+   * @param force True to force the panels closed regardless of the current setting
    */
   closeDisconnectedPanels(force = false): void {
     const { consoleSettings, itemIds } = this.state;

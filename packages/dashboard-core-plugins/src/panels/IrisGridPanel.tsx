@@ -9,7 +9,7 @@ import React, {
 import memoize from 'memoize-one';
 import { connect } from 'react-redux';
 import debounce from 'lodash.debounce';
-import { LayoutUtils } from '@deephaven/dashboard';
+import { LayoutUtils, PanelComponent } from '@deephaven/dashboard';
 import {
   AdvancedSettings,
   IrisGrid,
@@ -74,7 +74,7 @@ import {
 import WidgetPanel from './WidgetPanel';
 import WidgetPanelTooltip from './WidgetPanelTooltip';
 import './IrisGridPanel.scss';
-import { Link } from '../linker/LinkerUtils';
+import { Link, LinkColumn } from '../linker/LinkerUtils';
 
 const log = Log.module('IrisGridPanel');
 
@@ -105,7 +105,7 @@ export interface PanelState {
     partition: string;
     isSelectingPartition: boolean;
   };
-  pluginState: number;
+  pluginState: unknown;
 }
 
 export interface IrisGridPanelProps {
@@ -114,12 +114,12 @@ export interface IrisGridPanelProps {
   glEventHub: EventEmitter;
   metadata: Metadata;
   panelState: PanelState | null;
-  makeModel: () => IrisGridModel;
+  makeModel: () => IrisGridModel | Promise<IrisGridModel>;
   inputFilters: InputFilter[];
   links: Link[];
   columnSelectionValidator?: (
-    value: unknown,
-    Column: { name: string; type: string }
+    panel: PanelComponent,
+    tableColumn?: LinkColumn
   ) => boolean;
   onStateChange?: (irisGridState: IrisGridState, gridState: GridState) => void;
   onPanelStateUpdate?: (panelState: PanelState) => void;
@@ -166,7 +166,6 @@ interface IrisGridPanelState {
   isSelectingPartition: boolean;
   partition?: string;
   partitionColumn?: Column;
-  queryName?: string;
   rollupConfig?: UIRollupConfig;
   showSearchBar: boolean;
   searchValue: string;
@@ -190,14 +189,8 @@ export class IrisGridPanel extends PureComponent<
   IrisGridPanelState
 > {
   static defaultProps = {
-    children: null,
-    panelState: null,
-    columnSelectionValidator: null,
     onStateChange: (): void => undefined,
     onPanelStateUpdate: (): void => undefined,
-    getDownloadWorker: undefined,
-    loadPlugin: undefined,
-    theme: undefined,
   };
 
   static displayName = 'IrisGridPanel';
@@ -667,9 +660,9 @@ export class IrisGridPanel extends PureComponent<
   /**
    * Create a chart with the specified settings
    * @param settings The settings from the chart builder
-   * @param {string} settings.type The settings from the chart builder
-   * @param {string[]} settings.series The names of the series
-   * @param {IrisGridModel} model The IrisGridModel object
+   * @param settings.type The settings from the chart builder
+   * @param settings.series The names of the series
+   * @param model The IrisGridModel object
    */
   handleCreateChart(
     settings: ChartBuilderSettings,

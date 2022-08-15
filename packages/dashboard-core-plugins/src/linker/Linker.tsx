@@ -43,6 +43,7 @@ import LinkerUtils, {
   LinkFilterMap,
   LinkType,
 } from './LinkerUtils';
+import { ColumnSelectionValidator } from '../panels/ColumnSelectionValidator';
 
 const log = Log.module('Linker');
 
@@ -550,7 +551,7 @@ export class Linker extends Component<LinkerProps, LinkerState> {
       case ToolType.LINKER:
         setDashboardColumnSelectionValidator(
           localDashboardId,
-          this.isColumnSelectionValid
+          this.isColumnSelectionValid as ColumnSelectionValidator
         );
         break;
       default:

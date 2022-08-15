@@ -57,6 +57,7 @@ import ChartColumnSelectorOverlay, {
 import './ChartPanel.scss';
 import { Link } from '../linker/LinkerUtils';
 import { PanelState as IrisGridPanelState } from './IrisGridPanel';
+import { ColumnSelectionValidator } from './ColumnSelectionValidator';
 
 const log = Log.module('ChartPanel');
 const UPDATE_MODEL_DEBOUNCE = 150;
@@ -111,10 +112,7 @@ interface ChartPanelProps {
   isLinkerActive: boolean;
   source?: TableTemplate;
   sourcePanel?: PanelComponent;
-  columnSelectionValidator: (
-    value: unknown,
-    column: { name: string; type: string } | null
-  ) => boolean;
+  columnSelectionValidator?: ColumnSelectionValidator;
   setActiveTool: (tool: string) => void;
   setDashboardIsolatedLinkerPanelId: (
     id: string,
@@ -414,10 +412,7 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
     (
       columnMap: ColumnMap,
       linkedColumnMap: LinkedColumnMap,
-      columnSelectionValidator: (
-        value: unknown,
-        column: { name: string; type: string } | null
-      ) => boolean
+      columnSelectionValidator?: ColumnSelectionValidator
     ) =>
       Array.from(columnMap.values()).map(column => ({
         name: column.name,
@@ -501,7 +496,7 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
     if (!columnSelectionValidator) {
       return;
     }
-    columnSelectionValidator(this, null);
+    columnSelectionValidator(this, undefined);
   }
 
   handleDisconnect(): void {
@@ -758,7 +753,7 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
 
   /**
    * Set chart filters based on the filter map
-   * @param {Map<string, Object>} filterMapParam Filter map
+   * @param filterMapParam Filter map
    */
   setFilterMap(
     filterMapParam: Map<string, { columnType: string; value: string }>

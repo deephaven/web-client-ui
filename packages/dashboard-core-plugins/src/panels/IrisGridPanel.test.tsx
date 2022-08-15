@@ -1,21 +1,24 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint func-names: "off" */
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { IrisGridModelFactory } from '@deephaven/iris-grid';
 import dh from '@deephaven/jsapi-shim';
 import { TestUtils } from '@deephaven/utils';
+import { Container } from '@deephaven/golden-layout';
+import { Workspace } from '@deephaven/redux';
 import { IrisGridPanel } from './IrisGridPanel';
 
 const MockIrisGrid = jest.fn(() => null);
 
 jest.mock('@deephaven/iris-grid', () => ({
-  ...jest.requireActual('@deephaven/iris-grid'),
+  ...(jest.requireActual('@deephaven/iris-grid') as Record<string, unknown>),
   // eslint-disable-next-line react/jsx-props-no-spreading
   IrisGrid: jest.fn(props => <MockIrisGrid {...props} />),
 }));
 
 jest.mock('@deephaven/dashboard', () => ({
-  ...jest.requireActual('@deephaven/dashboard'),
+  ...(jest.requireActual('@deephaven/dashboard') as Record<string, unknown>),
   LayoutUtils: {
     getIdFromPanel: jest.fn(() => 'TEST_ID'),
     getTitleFromContainer: jest.fn(() => 'TEST_PANEL_TITLE'),
@@ -23,12 +26,18 @@ jest.mock('@deephaven/dashboard', () => ({
 }));
 
 function makeTable() {
-  const columns = [new dh.Column({ index: 0, name: '0' })];
-  return new dh.Table({ columns });
+  const columns = [new (dh as any).Column({ index: 0, name: '0' })];
+  return new (dh as any).Table({ columns });
 }
 
 function makeGlComponent() {
-  return { on: jest.fn(), off: jest.fn(), emit: jest.fn() };
+  return {
+    on: jest.fn(),
+    off: jest.fn(),
+    emit: jest.fn(),
+    trigger: jest.fn(),
+    unbind: jest.fn(),
+  };
 }
 
 function makeMakeModel(table = makeTable()) {
@@ -43,7 +52,7 @@ function makeIrisGridPanelWrapper(
   inputFilters = [],
   links = [],
   user = TestUtils.REGULAR_USER,
-  client = new dh.Client(),
+  client = new (dh as any).Client(),
   workspace = {},
   settings = { timeZone: 'America/New_York' }
 ) {
@@ -51,14 +60,17 @@ function makeIrisGridPanelWrapper(
     <IrisGridPanel
       makeModel={makeModel}
       metadata={metadata}
-      glContainer={glContainer}
+      glContainer={(glContainer as unknown) as Container}
       glEventHub={glEventHub}
-      client={client}
       user={user}
       inputFilters={inputFilters}
       links={links}
-      workspace={workspace}
+      workspace={workspace as Workspace}
       settings={settings}
+      panelState={undefined}
+      getDownloadWorker={() => undefined}
+      loadPlugin={() => undefined}
+      theme={undefined}
     />
   );
 }
@@ -119,7 +131,11 @@ it('shows the loading spinner until grid is ready', async () => {
   await TestUtils.flushPromises();
 
   expectLoading(container);
-  const params = MockIrisGrid.mock.calls[MockIrisGrid.mock.calls.length - 1][0];
+  const params = ((MockIrisGrid.mock.calls[
+    MockIrisGrid.mock.calls.length - 1
+  ] as unknown) as {
+    onStateChange(param1: unknown, param2: unknown);
+  }[])[0];
   params.onStateChange({}, {});
 
   expectNotLoading(container);

@@ -312,26 +312,10 @@ class IrisGridUtils {
   static hydrateIrisGridState(
     model: IrisGridModel,
     irisGridState: DehydratedIrisGridState
-  ): Pick<
-    IrisGridState,
-    | 'advancedFilters'
-    | 'customColumnFormatMap'
-    | 'isFilterBarShown'
-    | 'quickFilters'
-    | 'sorts'
-    | 'customColumns'
-    | 'conditionalFormats'
-    | 'reverseType'
-    | 'rollupConfig'
-    | 'showSearchBar'
-    | 'searchValue'
-    | 'selectDistinctColumns'
-    | 'selectedSearchColumns'
-    | 'invertSearchColumns'
-    | 'pendingDataMap'
-    | 'frozenColumns'
-    | 'aggregationSettings'
-  > & { userColumnWidths: ModelSizeMap; userRowHeights: ModelSizeMap } {
+  ): Omit<HydratedIrisGridState, 'metrics'> & {
+    userColumnWidths: ModelSizeMap;
+    userRowHeights: ModelSizeMap;
+  } {
     const {
       advancedFilters,
       aggregationSettings = { aggregations: [], showOnTop: false },

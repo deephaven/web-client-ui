@@ -169,8 +169,8 @@ class InputFilterPanel extends Component<
 
   /**
    * Set the filter value, card side, selected column
-   * @param {Object} state Filter state to set
-   * @param {boolean} sendUpdate Emit filters changed event if true
+   * @param state Filter state to set
+   * @param sendUpdate Emit filters changed event if true
    */
   setPanelState(state: PanelState, sendUpdate = false) {
     // Set the skipUpdate flag so the next onChange handler call doesn't emit the FILTERS_CHANGED event

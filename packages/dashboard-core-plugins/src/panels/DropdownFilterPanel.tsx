@@ -31,6 +31,7 @@ import './DropdownFilterPanel.scss';
 import ToolType from '../linker/ToolType';
 import WidgetPanel from './WidgetPanel';
 import { Link } from '../linker/LinkerUtils';
+import { ColumnSelectionValidator } from './ColumnSelectionValidator';
 
 const log = Log.module('DropdownFilterPanel');
 
@@ -50,10 +51,7 @@ interface DropdownFilterPanelProps {
   panelState?: PanelState;
   isLinkerActive: boolean;
   columns: Column[];
-  columnSelectionValidator?: (
-    value: unknown,
-    column: DropdownFilterColumn | null
-  ) => boolean;
+  columnSelectionValidator?: ColumnSelectionValidator;
   disableLinking: boolean;
   settings: {
     formatter: FormattingRule[];
@@ -240,7 +238,7 @@ class DropdownFilterPanel extends Component<
       { type, name }: DropdownFilterColumn,
       formatter: Formatter
     ) => {
-      if (TableUtils.isDateType(type)) {
+      if (type && TableUtils.isDateType(type)) {
         return rawValues.map(value =>
           DropdownFilterPanel.DATETIME_FORMATTER.format(value as number)
         );
@@ -479,8 +477,8 @@ class DropdownFilterPanel extends Component<
 
   /**
    * Set the filter value, card side, selected column
-   * @param {Object} state Filter state to set
-   * @param {boolean} sendUpdate Emit filters changed event if true
+   * @param state Filter state to set
+   * @param sendUpdate Emit filters changed event if true
    */
   setPanelState(
     state: {
@@ -671,7 +669,7 @@ class DropdownFilterPanel extends Component<
     if (!columnSelectionValidator) {
       return;
     }
-    columnSelectionValidator(this, null);
+    columnSelectionValidator(this, undefined);
   }
 
   render() {

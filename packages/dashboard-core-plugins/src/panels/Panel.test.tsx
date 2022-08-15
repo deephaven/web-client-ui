@@ -2,8 +2,8 @@
 /* eslint-disable react/prefer-stateless-function */
 /* eslint func-names: "off" */
 import React, { Component } from 'react';
-import GoldenLayout from '@deephaven/golden-layout';
 import { render } from '@testing-library/react';
+import { Container } from '@deephaven/golden-layout';
 import Panel from './Panel';
 
 class TestComponentPanel extends Component {}
@@ -13,15 +13,17 @@ function makeChildren() {
 }
 
 function makeComponentPanel() {
-  return new TestComponentPanel();
+  return new TestComponentPanel({});
 }
 
 function makeGlComponent({
   on = jest.fn(),
   off = jest.fn(),
   emit = jest.fn(),
+  unbind = jest.fn(),
+  trigger = jest.fn(),
 } = {}) {
-  return { on, off, emit: jest.fn() };
+  return { on, off, emit, unbind, trigger };
 }
 
 function renderPanel({
@@ -39,7 +41,7 @@ function renderPanel({
   return render(
     <Panel
       componentPanel={componentPanel}
-      glContainer={glContainer}
+      glContainer={(glContainer as unknown) as Container}
       glEventHub={glEventHub}
       onResize={onResize}
       onShow={onShow}

@@ -42,11 +42,7 @@ export class MarkdownNotebook extends PureComponent<
   MarkdownNotebookState
 > {
   static defaultProps = {
-    content: '',
-    onLinkClick: undefined,
     onRunCode: (): void => undefined,
-    transformImageUri: undefined,
-    transformLinkUri: undefined,
   };
 
   constructor(props: MarkdownNotebookProps) {

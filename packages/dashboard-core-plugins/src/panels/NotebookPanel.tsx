@@ -591,7 +591,7 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
   }
 
   /**
-   * @param {MouseEvent} event The click event from clicking on the link
+   * @param event The click event from clicking on the link
    */
   handleLinkClick(event: MouseEvent<HTMLAnchorElement>) {
     const { notebooksUrl, session, sessionLanguage } = this.props;
@@ -1080,7 +1080,7 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
           )}
           {isMarkdown && (
             <MarkdownNotebook
-              content={settings.value ?? undefined}
+              content={settings.value ?? ''}
               onLinkClick={this.handleLinkClick}
               onRunCode={this.handleRunCommand}
               transformImageUri={this.handleTransformLinkUri}
