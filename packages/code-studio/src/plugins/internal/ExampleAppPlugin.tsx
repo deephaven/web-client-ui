@@ -1,4 +1,5 @@
 /* eslint-disable */
+// @ts-nocheck
 import React, { Component } from 'react';
 // import Glue from '@glue42/core'; // uncomment this when glue core is installed
 

@@ -27,10 +27,12 @@ import {
 import {
   Dashboard,
   DashboardLayoutConfig,
+  DashboardPanelProps,
   DashboardUtils,
   DEFAULT_DASHBOARD_ID,
   getDashboardData,
   PanelEvent,
+  PanelProps,
   updateDashboardData as updateDashboardDataAction,
 } from '@deephaven/dashboard';
 import {
@@ -52,7 +54,11 @@ import {
   Link,
 } from '@deephaven/dashboard-core-plugins';
 import { vsGear, dhShapes, dhPanels } from '@deephaven/icons';
-import dh, { IdeSession, VariableDefinition } from '@deephaven/jsapi-shim';
+import dh, {
+  IdeSession,
+  VariableDefinition,
+  VariableTypeUnion,
+} from '@deephaven/jsapi-shim';
 import Log from '@deephaven/log';
 import {
   getActiveTool,
@@ -87,6 +93,14 @@ import { PluginUtils } from '../plugins';
 import LayoutStorage from '../storage/LayoutStorage';
 
 const log = Log.module('AppMainContainer');
+
+type InputFileFormat =
+  | string
+  | number[]
+  | Uint8Array
+  | ArrayBuffer
+  | Blob
+  | NodeJS.ReadableStream;
 
 type DashboadData = {
   closed: [];
@@ -154,7 +168,7 @@ export class AppMainContainer extends Component<
     event.returnValue = '';
   }
 
-  static hydrateConsole<T>(props: T, id: string): T & { unzip: () => void } {
+  static hydrateConsole(props: PanelProps, id: string): DashboardPanelProps {
     return DashboardUtils.hydrate(
       {
         ...props,
@@ -447,8 +461,8 @@ export class AppMainContainer extends Component<
 
     log.debug('handleAutoFillClick', widgets);
 
-    const sortedWidgets = widgets.sort(
-      (a, b) => (a.title != null && b.title != null) ? a.title.localeCompare(b.title)) ?? 0
+    const sortedWidgets = widgets.sort((a, b) =>
+      a.title != null && b.title != null ? a.title.localeCompare(b.title) : 0
     );
     for (let i = 0; i < sortedWidgets.length; i += 1) {
       this.openWidget(sortedWidgets[i]);
@@ -643,7 +657,7 @@ export class AppMainContainer extends Component<
   hydrateTable<T extends { metadata: GridPanelMetadata }>(
     props: T,
     id: string,
-    type: string = dh.VariableType.TABLE
+    type: VariableTypeUnion = dh.VariableType.TABLE
   ): T & {
     getDownloadWorker: () => Promise<ServiceWorker>;
     loadPlugin: (

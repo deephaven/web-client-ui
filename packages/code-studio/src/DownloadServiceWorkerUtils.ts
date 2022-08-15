@@ -5,7 +5,7 @@ const log = Log.module('DownloadServiceWorkerUtils');
 class DownloadServiceWorkerUtils {
   static DOWNLOAD_PATH = '/download/';
 
-  static registerOnLoaded() {
+  static registerOnLoaded(): void {
     const publicUrl = new URL(process.env.PUBLIC_URL, window.location.href);
     if (publicUrl.origin !== window.location.origin) {
       // Our service worker won't work if PUBLIC_URL is on a different origin
@@ -38,7 +38,7 @@ class DownloadServiceWorkerUtils {
     }
   }
 
-  static async getServiceWorker() {
+  static async getServiceWorker(): Promise<ServiceWorker> {
     if ('serviceWorker' in navigator) {
       const regs = await navigator.serviceWorker.getRegistrations();
       const swReg = regs.find(reg =>
@@ -53,6 +53,8 @@ class DownloadServiceWorkerUtils {
     throw new Error('Download service worker is not available.');
   }
 
-  static unregisterSW() {}
+  static unregisterSW(): undefined {
+    return undefined;
+  }
 }
 export default DownloadServiceWorkerUtils;

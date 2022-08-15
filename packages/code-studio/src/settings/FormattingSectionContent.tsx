@@ -437,7 +437,7 @@ export class FormattingSectionContent extends PureComponent<
   handleFormatRuleChange(
     index: number,
     key: string,
-    value: TableColumnFormat | string
+    value: TableColumnFormat | string | boolean
   ): void {
     this.setState(
       state => {

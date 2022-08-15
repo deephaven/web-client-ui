@@ -1,5 +1,5 @@
 import { ChartModel, ChartModelFactory } from '@deephaven/chart';
-import dh from '@deephaven/jsapi-shim';
+import dh, { Table, VariableTypeUnion } from '@deephaven/jsapi-shim';
 import { SortDirection } from '@deephaven/jsapi-utils';
 import {
   InputFilter,
@@ -107,11 +107,11 @@ export const createChartModel = async (
 export const createGridModel = async (
   session: DhSession,
   metadata: GridPanelMetadata,
-  type: string = dh.VariableType.TABLE
+  type: VariableTypeUnion = dh.VariableType.TABLE
 ): Promise<IrisGridModel> => {
   const { table: tableName } = metadata;
   const definition = { title: tableName, name: tableName, type };
-  const table = await session.getObject(definition);
+  const table = (await session.getObject(definition)) as Table;
   return IrisGridModelFactory.makeModel(table);
 };
 
