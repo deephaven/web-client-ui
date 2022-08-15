@@ -35,10 +35,11 @@ export function isReactComponentConfig(
 ): config is ReactComponentConfig {
   const reactConfig = config as ReactComponentConfig;
   // Golden layout sets the type to 'component' and componentName to 'lm-react-component' in `createContentItem`, then changes it back in `toConfig`
-  // Just check `componentName` instead of checking `component.type`.
+  // For our purposes, we need to check both.
   return (
-    isComponentConfig(config) &&
-    config.componentName === 'lm-react-component' &&
+    ((isComponentConfig(config) &&
+      config.componentName === 'lm-react-component') ||
+      config.type === 'react-component') &&
     reactConfig.component !== undefined
   );
 }
