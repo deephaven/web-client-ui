@@ -44,7 +44,9 @@ const SizeUsageUI = ({
         const newUsage = await connection.getWorkerHeapInfo();
 
         if (bgMonitoring || hover) {
-          const usage = newUsage.freeMemory / newUsage.maximumHeapSize;
+          const usage =
+            (newUsage.totalHeapSize - newUsage.freeMemory) /
+            newUsage.maximumHeapSize;
           const time = Date.now();
 
           const past = historyUsage.current;
@@ -200,7 +202,7 @@ const SizeUsageUI = ({
             />
           </div>
           <div className="heap-utilisation-text">
-            <h6>% utilisation over {Math.round(monitorDuration / 60)} min.</h6>
+            <h6>% utilization over {Math.round(monitorDuration / 60)} min.</h6>
           </div>
         </div>
       </Tooltip>

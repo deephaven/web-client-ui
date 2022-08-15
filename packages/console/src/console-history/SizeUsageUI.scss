@@ -8,12 +8,15 @@
   text-align: center;
   border: $black;
   z-index: 1;
+  user-select: none;
 }
 
 .total-memory,
 .used-memory {
+  background-clip: content-box;
   position: absolute;
-  inset: 1px;
+  inset: 0;
+  padding: 1px;
   z-index: -1;
 }
 
