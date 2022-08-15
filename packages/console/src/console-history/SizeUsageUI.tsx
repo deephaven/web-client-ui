@@ -123,6 +123,9 @@ const SizeUsageUI = ({
   const timestamps = historyUsage.current.time;
   const usages = historyUsage.current.usage;
   const lastTimestamp = timestamps[timestamps.length - 1] ?? 0;
+
+  const totalPercentage = totalHeapSize / maxHeapSize;
+  const usedPercentage = (totalHeapSize - freeMemory) / maxHeapSize;
   return (
     <>
       <div
@@ -132,14 +135,16 @@ const SizeUsageUI = ({
       >
         <div
           className="total-memory"
-          style={{ width: `${(totalHeapSize * 100) / maxHeapSize}%` }}
+          style={{
+            width: `calc(${totalPercentage * 100}% - ${totalPercentage * 2}px`,
+          }}
         />
         <div
           className={classNames('used-memory', {
             'heap-overflow': (totalHeapSize - freeMemory) / maxHeapSize > 0.95,
           })}
           style={{
-            width: `${((totalHeapSize - freeMemory) * 100) / maxHeapSize}%`,
+            width: `calc(${usedPercentage * 100}% - ${usedPercentage * 2}px`,
           }}
         />
 

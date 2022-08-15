@@ -13,10 +13,9 @@
 
 .total-memory,
 .used-memory {
-  background-clip: content-box;
   position: absolute;
   inset: 0;
-  padding: 1px;
+  margin: 1px;
   z-index: -1;
 }
 
