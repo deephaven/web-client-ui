@@ -63,8 +63,8 @@ const USER = {
     canCreateDashboard: true,
     canCreateCodeStudio: true,
     canCreateQueryMonitor: true,
-    canCopy: true,
-    canDownloadCsv: true,
+    canCopy: false,
+    canDownloadCsv: false,
   },
 };
 const WORKSPACE_STORAGE = new LocalWorkspaceStorage();
