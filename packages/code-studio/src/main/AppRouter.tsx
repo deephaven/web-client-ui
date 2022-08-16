@@ -9,7 +9,7 @@ import AppInit from './AppInit';
 import StyleGuideInit from '../styleguide/StyleGuideInit';
 
 const AppRouter = (): ReactElement => (
-  <Router basename={import.meta.env.PUBLIC_URL}>
+  <Router basename={import.meta.env.BASE_URL}>
     <Switch>
       <Route exact path="/" component={AppInit} />
       <Route path="/notebook/:notebookPath+" component={AppInit} />

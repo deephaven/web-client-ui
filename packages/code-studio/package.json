@@ -62,12 +62,12 @@
     "jszip": "Pinned to 3.2.2 b/c 3.3.0+ breaks nodestream usage. Not fixed as of 3.5.0. https://github.com/Stuk/jszip/issues/663"
   },
   "homepage": ".",
-  "main": "public/index.js",
+  "main": "build/index.html",
   "files": [
     "build"
   ],
   "scripts": {
-    "analyze": "source-map-explorer 'build/static/js/*.js'",
+    "analyze": "source-map-explorer 'build/assets/*.js'",
     "start": "vite",
     "build": "vite build",
     "preview": "vite preview",

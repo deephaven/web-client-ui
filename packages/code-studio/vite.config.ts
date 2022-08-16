@@ -44,6 +44,7 @@ export default defineConfig(({ mode }) => {
   }
 
   return {
+    base: env.BASE_URL,
     server: {
       port: Number.parseInt(env.PORT, 10) ?? 4000,
       open: true,
@@ -80,7 +81,8 @@ export default defineConfig(({ mode }) => {
       // mainFields: ['source', 'module', 'main', 'jsnext:main', 'jsnext'],
     },
     build: {
-      outDir: env.VITE_BUILD_PATH,
+      outDir: path.resolve(__dirname, env.VITE_BUILD_PATH),
+      emptyOutDir: true,
       commonjsOptions: {
         include: [/node_modules/, /golden-layout/],
       },
