@@ -7,7 +7,7 @@ import { IdeConnection, IdeSession } from '@deephaven/jsapi-shim';
 import { getLinksForDashboard } from './selectors';
 import { FilterSet } from '../panels';
 import { Link } from '../linker/LinkerUtils';
-import { ColumnSelectionValidator } from '../panels/ColumnSelectionValidator';
+import { ColumnSelectionValidator } from '../linker/ColumnSelectionValidator';
 
 export interface SessionWrapper {
   session: IdeSession;

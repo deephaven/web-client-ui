@@ -31,7 +31,7 @@ import './DropdownFilterPanel.scss';
 import ToolType from '../linker/ToolType';
 import WidgetPanel from './WidgetPanel';
 import { Link } from '../linker/LinkerUtils';
-import { ColumnSelectionValidator } from './ColumnSelectionValidator';
+import { ColumnSelectionValidator } from '../linker/ColumnSelectionValidator';
 
 const log = Log.module('DropdownFilterPanel');
 
