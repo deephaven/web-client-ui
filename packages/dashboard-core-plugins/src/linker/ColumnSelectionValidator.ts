@@ -1,8 +1,7 @@
 import { PanelComponent } from '@deephaven/dashboard';
-
-export type LinkColumnSelection = { name: string; type?: string };
+import { LinkColumn } from './LinkerUtils';
 
 export type ColumnSelectionValidator = (
   panel: PanelComponent,
-  tableColumn?: LinkColumnSelection
+  tableColumn?: LinkColumn
 ) => boolean;

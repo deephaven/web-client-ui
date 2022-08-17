@@ -10,7 +10,7 @@ export type LinkPoint = {
   panelId: string | string[];
   panelComponent?: string | null;
   columnName: string;
-  columnType: string;
+  columnType: string | null;
 };
 
 export type Link = {
@@ -23,7 +23,7 @@ export type Link = {
 
 export type LinkColumn = {
   name: string;
-  type: string;
+  type: string | null;
 };
 
 export type LinkFilterMapValue<T = unknown> = {
@@ -95,8 +95,8 @@ class LinkerUtils {
    * @returns The type of link, or invalid if there's an error
    */
   static getLinkType(
-    start?: Omit<LinkPoint, 'columnType'> & { columnType?: null | string },
-    end?: Omit<LinkPoint, 'columnType'> & { columnType?: null | string },
+    start?: LinkPoint,
+    end?: LinkPoint,
     isolatedLinkerPanelId?: string | string[]
   ): LinkType {
     // Panel compatibility checks:

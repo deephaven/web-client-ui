@@ -43,7 +43,6 @@ import LinkerUtils, {
   LinkFilterMap,
   LinkType,
 } from './LinkerUtils';
-import { LinkColumnSelection } from './ColumnSelectionValidator';
 
 const log = Log.module('Linker');
 
@@ -354,7 +353,7 @@ export class Linker extends Component<LinkerProps, LinkerState> {
           'endPanel no longer exists, ignoring unsetFilterValue',
           panelId
         );
-      } else if (isLinkablePanel(endPanel)) {
+      } else if (isLinkablePanel(endPanel) && columnType != null) {
         endPanel.unsetFilterValue(columnName, columnType);
       } else {
         log.debug('endPanel.unsetFilterValue not implemented', endPanel);
@@ -442,7 +441,7 @@ export class Linker extends Component<LinkerProps, LinkerState> {
           : new Map();
         const { value } = dataMap[start.columnName];
         let text = `${value}`;
-        if (TableUtils.isDateType(columnType)) {
+        if (columnType != null && TableUtils.isDateType(columnType)) {
           const dateFilterFormatter = new DateTimeColumnFormatter({
             timeZone,
             showTimeZone: false,
@@ -574,7 +573,7 @@ export class Linker extends Component<LinkerProps, LinkerState> {
 
   isColumnSelectionValid(
     panel: PanelComponent,
-    tableColumn?: LinkColumnSelection
+    tableColumn?: LinkColumn
   ): boolean {
     const { linkInProgress } = this.state;
     const { isolatedLinkerPanelId } = this.props;

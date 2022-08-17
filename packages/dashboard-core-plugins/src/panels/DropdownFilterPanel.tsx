@@ -102,7 +102,7 @@ class DropdownFilterPanel extends Component<
 
   static SOURCE_COLUMN = Object.freeze({
     name: 'FilterSource',
-    type: undefined,
+    type: null,
   });
 
   constructor(props: DropdownFilterPanelProps) {
