@@ -353,7 +353,7 @@ export class Linker extends Component<LinkerProps, LinkerState> {
           'endPanel no longer exists, ignoring unsetFilterValue',
           panelId
         );
-      } else if (isLinkablePanel(endPanel) && columnType != null) {
+      } else if (isLinkablePanel(endPanel)) {
         endPanel.unsetFilterValue(columnName, columnType);
       } else {
         log.debug('endPanel.unsetFilterValue not implemented', endPanel);

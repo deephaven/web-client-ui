@@ -51,7 +51,7 @@ export type LinkableFromPanel = PanelComponent & {
 
 export type LinkablePanel = LinkableFromPanel & {
   setFilterMap: (filterMap: LinkFilterMap) => void;
-  unsetFilterValue: (name: string, type: string) => void;
+  unsetFilterValue: (name: string, type: string | null) => void;
 };
 
 export function isLinkableFromPanel(
