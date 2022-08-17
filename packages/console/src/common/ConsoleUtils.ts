@@ -17,7 +17,7 @@ class ConsoleUtils {
   /**
    * Given the provided text, parse out arguments using shell quoting rules.
    * @param str The text to parse.
-   * @return string[] of the arguments. Empty if no arguments found.
+   * @returns string[] of the arguments. Empty if no arguments found.
    */
   static parseArguments(str: unknown): string[] {
     if (!str || !(typeof str === 'string' || str instanceof String)) {

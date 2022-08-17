@@ -9,7 +9,7 @@ class PluginUtils {
   /**
    * Load a component plugin either specified in the REACT_APP_COMPONENT_TABLE_PLUGINS environment variable, or from the server if it's not internal.
    * @param pluginName Name of the table plugin to load
-   * @return A lazily loaded JSX.Element from the plugin
+   * @returns A lazily loaded JSX.Element from the plugin
    */
   static loadComponentPlugin(
     pluginName: string
@@ -60,7 +60,7 @@ class PluginUtils {
 
   /**
    * Imports a commonjs plugin module from the provided URL
-   * @param {string} pluginUrl The URL of the plugin to load
+   * @param pluginUrl The URL of the plugin to load
    * @returns The loaded module
    */
   static async loadModulePlugin(pluginUrl: string): Promise<unknown> {

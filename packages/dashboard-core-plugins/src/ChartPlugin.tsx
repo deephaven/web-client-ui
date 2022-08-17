@@ -10,10 +10,10 @@ import {
 } from '@deephaven/dashboard';
 import { Figure, VariableDefinition } from '@deephaven/jsapi-shim';
 import shortid from 'shortid';
-import { ChartPanel } from './panels';
+import { ChartPanel, ChartPanelProps } from './panels';
 
 export type ChartPluginProps = Partial<DashboardPluginComponentProps> & {
-  hydrate: PanelHydrateFunction;
+  hydrate: PanelHydrateFunction<ChartPanelProps>;
 };
 
 export const ChartPlugin = (props: ChartPluginProps): JSX.Element => {

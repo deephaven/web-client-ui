@@ -362,7 +362,7 @@ abstract class IrisGridModel<
   }
 
   /**
-   * @return True if select distinct functionality is available
+   * @returns True if select distinct functionality is available
    */
   get isSelectDistinctAvailable(): boolean {
     return false;

@@ -39,6 +39,8 @@ import {
   TextUtils,
 } from '@deephaven/utils';
 import GoldenLayout from '@deephaven/golden-layout';
+import { ModelIndex } from '@deephaven/grid';
+import { AdvancedFilterOptions, SortDirection } from '@deephaven/jsapi-utils';
 import WidgetPanel from './WidgetPanel';
 import ToolType from '../linker/ToolType';
 import { InputFilterEvent, ChartEvent } from '../events';
@@ -68,7 +70,7 @@ export type FilterMap = Map<string, string>;
 
 export type LinkedColumnMap = Map<string, Column>;
 
-export interface ChartPanelMetaData {
+export interface ChartPanelMetadata {
   figure: string;
   table: string;
   query: string;
@@ -81,14 +83,37 @@ export interface ChartPanelMetaData {
     series: string[];
     type: SeriesPlotStyle;
   };
+  tableSettings: ChartPanelTableSettings;
 }
 
 type Settings = Record<string, unknown>;
 
-interface PanelState {
+export interface ChartPanelTableSettings {
+  quickFilters?: [
+    ModelIndex,
+    {
+      text: string;
+    }
+  ][];
+  advancedFilters?: [
+    ModelIndex,
+    {
+      options: AdvancedFilterOptions;
+    }
+  ][];
+  inputFilters?: InputFilter[];
+  sorts?: {
+    column: ModelIndex;
+    isAbs: boolean;
+    direction: SortDirection;
+  }[];
+  partition?: unknown;
+  partitionColumn?: string;
+}
+export interface GLChartPanelState {
   filterValueMap: [string, string][];
   settings: Partial<WorkspaceSettings>;
-  tableSettings: unknown;
+  tableSettings: ChartPanelTableSettings;
   irisGridState?: {
     advancedFilters: unknown;
     quickFilters: unknown;
@@ -98,14 +123,16 @@ interface PanelState {
     partitionColumn: string;
     partition: unknown;
   };
+  table?: string;
+  figure?: string;
 }
-interface ChartPanelProps {
+export interface ChartPanelProps {
   glContainer: GoldenLayout.Container;
   glEventHub: GoldenLayout.EventEmitter;
 
-  metadata: ChartPanelMetaData;
+  metadata: ChartPanelMetadata;
   /** Function to build the ChartModel used by this ChartPanel. Can return a promise. */
-  makeModel: () => ChartModel;
+  makeModel: () => Promise<ChartModel>;
   inputFilters: InputFilter[];
   links: Link[];
   localDashboardId: string;
@@ -119,7 +146,7 @@ interface ChartPanelProps {
     secondParam: undefined
   ) => void;
 
-  panelState: PanelState;
+  panelState: GLChartPanelState;
   settings: Partial<WorkspaceSettings>;
 }
 
@@ -142,7 +169,7 @@ interface ChartPanelState {
   columnMap: ColumnMap;
 
   // eslint-disable-next-line react/no-unused-state
-  panelState: PanelState;
+  panelState: GLChartPanelState;
 }
 
 function hasInputFilter(

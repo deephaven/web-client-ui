@@ -71,6 +71,7 @@ export type RootState = {
   user: User;
   workspace: Workspace;
   dashboardData: Record<string, DashboardData>;
+  layoutStorage: unknown;
 };
 
 Object.entries(reducers).map(([name, reducer]) =>

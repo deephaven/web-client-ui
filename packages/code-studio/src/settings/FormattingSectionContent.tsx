@@ -54,6 +54,14 @@ type FormatOption = {
   defaultFormatString?: string;
 };
 
+function isFormatStringFormat(
+  format: Partial<TableColumnFormat>
+): format is Pick<TableColumnFormat, 'formatString'> {
+  return (
+    (format as Pick<TableColumnFormat, 'formatString'>).formatString != null
+  );
+}
+
 interface FormattingSectionContentProps {
   formatter?: FormatterItem[];
   defaultDateTimeFormat?: string;
@@ -113,9 +121,11 @@ export class FormattingSectionContent extends PureComponent<
   static inputDebounceTime = 250;
 
   static focusFirstInputInContainer(container: HTMLElement | null): void {
-    const input = container?.querySelector('input, select, textarea');
+    const input: HTMLElement | null | undefined = container?.querySelector(
+      'input, select, textarea'
+    );
     if (input) {
-      (input as HTMLElement).focus();
+      input.focus();
     }
   }
 
@@ -151,21 +161,16 @@ export class FormattingSectionContent extends PureComponent<
     format: Partial<TableColumnFormat>
   ): boolean {
     // Undefined or empty string formats are always invalid
-    if (!columnType || !format.formatString) {
+    if (!columnType || !format.formatString || !isFormatStringFormat(format)) {
       return false;
     }
-
-    const { formatString } = format;
-    assertNotNull(formatString);
-
-    const nullCheckedFormat = { formatString };
     switch (columnType) {
       case 'datetime':
-        return DateTimeColumnFormatter.isValid(nullCheckedFormat);
+        return DateTimeColumnFormatter.isValid(format);
       case 'decimal':
-        return DecimalColumnFormatter.isValid(nullCheckedFormat);
+        return DecimalColumnFormatter.isValid(format);
       case 'int':
-        return IntegerColumnFormatter.isValid(nullCheckedFormat);
+        return IntegerColumnFormatter.isValid(format);
       default: {
         log.warn('Trying to validate format of unknown type');
         return true;
@@ -175,15 +180,15 @@ export class FormattingSectionContent extends PureComponent<
 
   static removeFormatRuleExtraProps(
     item: FormatterItem
-  ): Pick<FormatterItem, 'columnName' | 'columnType' | 'format'> {
+  ): Omit<FormatterItem, 'id' | 'isNewRule'> {
     const { id, isNewRule, ...rest } = item;
     return rest;
   }
 
   static isFormatRuleValidForSave(rule: FormatterItem): boolean {
     return (
-      FormattingSectionContent.isValidFormat(rule.columnType, rule.format) &&
-      FormattingSectionContent.isValidColumnName(rule.columnName)
+      FormattingSectionContent.isValidColumnName(rule.columnName) &&
+      FormattingSectionContent.isValidFormat(rule.columnType, rule.format)
     );
   }
 

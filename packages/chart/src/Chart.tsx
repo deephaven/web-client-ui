@@ -454,7 +454,7 @@ export class Chart extends Component<ChartProps, ChartState> {
    * the user is looking at has changed (eg. panning/zooming).
    * Could update each independently, but doing them at the same time keeps the
    * ChartModel API a bit cleaner.
-   * @param {boolean} force Force a change even if the chart dimensions haven't changed (eg. after pan/zoom)
+   * @param force Force a change even if the chart dimensions haven't changed (eg. after pan/zoom)
    */
   updateModelDimensions(force = false): void {
     const rect = this.getPlotRect();

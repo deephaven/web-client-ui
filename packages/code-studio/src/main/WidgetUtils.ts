@@ -4,46 +4,18 @@ import dh, {
   VariableTypeUnion,
   IdeSession,
 } from '@deephaven/jsapi-shim';
-import { SortDirection } from '@deephaven/jsapi-utils';
 import {
-  InputFilter,
   IrisGridModel,
   IrisGridModelFactory,
   IrisGridUtils,
-  AdvancedFilterOptions,
 } from '@deephaven/iris-grid';
 import { getTimeZone, store } from '@deephaven/redux';
-import { ModelIndex } from '@deephaven/grid';
+import {
+  ChartPanelMetadata,
+  GLChartPanelState,
+} from '@deephaven/dashboard-core-plugins';
 
-export type ChartPanelMetadata = {
-  settings: Record<string, unknown>;
-  tableSettings: {
-    quickFilters?: [
-      ModelIndex,
-      {
-        text: string;
-      }
-    ][];
-    advancedFilters?: [
-      ModelIndex,
-      {
-        options: AdvancedFilterOptions;
-      }
-    ][];
-    inputFilters?: InputFilter[];
-    sorts?: {
-      column: ModelIndex;
-      isAbs: boolean;
-      direction: SortDirection;
-    }[];
-    partition?: unknown;
-    partitionColumn?: string;
-  };
-  table?: string;
-  figure?: string;
-};
-
-export type ChartPanelPanelState = Partial<ChartPanelMetadata>;
+// export type ChartPanelPanelState = Partial<ChartPanelMetadata>;
 
 export type GridPanelMetadata = {
   table: string;
@@ -52,7 +24,7 @@ export type GridPanelMetadata = {
 export const createChartModel = async (
   session: IdeSession,
   metadata: ChartPanelMetadata,
-  panelState?: ChartPanelPanelState
+  panelState?: GLChartPanelState
 ): Promise<ChartModel> => {
   let {
     settings = {},

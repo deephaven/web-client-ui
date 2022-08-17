@@ -2,6 +2,8 @@ import React from 'react';
 import { render } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { DateTimeColumnFormatter } from '@deephaven/jsapi-utils';
+import { WorkspaceSettings } from '@deephaven/redux';
+import { assertNotNull } from '@deephaven/utils';
 import { FormattingSectionContent } from './FormattingSectionContent';
 
 const DEFAULT_DECIMAL_STRING = '###,#00.00';
@@ -44,7 +46,7 @@ function renderSectionContent({
   // eslint-disable-next-line react/jsx-props-no-spreading
   return render(
     <FormattingSectionContent
-      settings={settings}
+      settings={settings as WorkspaceSettings}
       formatter={formatter}
       showTimeZone={showTimeZone}
       showTSeparator={showTSeparator}
@@ -74,7 +76,9 @@ it('should mount and unmount without errors', () => {
 describe('default decimal formatting', () => {
   it('shows the currently set default', () => {
     const { getByLabelText, unmount } = renderSectionContent();
-    expect(getByLabelText('Decimal').value).toEqual(DEFAULT_DECIMAL_STRING);
+    expect((getByLabelText('Decimal') as HTMLOptionElement).value).toEqual(
+      DEFAULT_DECIMAL_STRING
+    );
     unmount();
   });
 
@@ -111,7 +115,10 @@ describe('default decimal formatting', () => {
       }),
     });
 
-    userEvent.click(container.querySelector('.btn-reset-decimal'));
+    const element = container.querySelector('.btn-reset-decimal');
+    expect(element).not.toBeNull();
+    assertNotNull(element);
+    userEvent.click(element);
 
     jest.runOnlyPendingTimers();
 
@@ -126,7 +133,9 @@ describe('default decimal formatting', () => {
 describe('default integer formatting', () => {
   it('shows the currently set default', () => {
     const { getByLabelText, unmount } = renderSectionContent();
-    expect(getByLabelText('Integer').value).toEqual(DEFAULT_INTEGER_STRING);
+    expect((getByLabelText('Integer') as HTMLOptionElement).value).toEqual(
+      DEFAULT_INTEGER_STRING
+    );
     unmount();
   });
 
@@ -163,7 +172,10 @@ describe('default integer formatting', () => {
       }),
     });
 
-    userEvent.click(container.querySelector('.btn-reset-integer'));
+    const element = container.querySelector('.btn-reset-integer');
+    expect(element).not.toBeNull();
+    assertNotNull(element);
+    userEvent.click(element);
 
     jest.runOnlyPendingTimers();
 

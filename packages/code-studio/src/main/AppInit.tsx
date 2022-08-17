@@ -14,7 +14,7 @@ import {
   setDashboardSessionWrapper as setDashboardSessionWrapperAction,
   ToolType,
 } from '@deephaven/dashboard-core-plugins';
-import { WebdavFileStorage } from '@deephaven/file-explorer';
+import { FileStorage, WebdavFileStorage } from '@deephaven/file-explorer';
 import dh from '@deephaven/jsapi-shim';
 import {
   DecimalColumnFormatter,
@@ -45,7 +45,7 @@ import LocalWorkspaceStorage, {
 } from '../storage/LocalWorkspaceStorage';
 import { createSessionWrapper, SessionWrapper } from './SessionUtils';
 import { PluginUtils } from '../plugins';
-import WebdavLayoutStorage from '../storage/WebdavLayoutStorage';
+import LayoutStorage from '../storage/LayoutStorage';
 
 const log = Log.module('AppInit');
 
@@ -83,8 +83,8 @@ interface AppInitProps {
     id: string,
     dashboardData: Record<string, unknown>
   ) => void;
-  setFileStorage: (fileStorage: WebdavFileStorage) => void;
-  setLayoutStorage: (layoutStorage: WebdavLayoutStorage) => void;
+  setFileStorage: (fileStorage: FileStorage) => void;
+  setLayoutStorage: (layoutStorage: LayoutStorage) => void;
   setDashboardSessionWrapper: (id: string, wrapper: SessionWrapper) => void;
   setPlugins: (map: DeephavenPluginModuleMap) => void;
   setUser: (user: typeof USER) => void;
@@ -115,7 +115,7 @@ const AppInit = (props: AppInitProps) => {
 
   /**
    * Load all plugin modules available.
-   * @returns {Promise<Map<string, DeephavenPlugin>>} A map from the name of the plugin to the plugin module that was loaded
+   * @returns A map from the name of the plugin to the plugin module that was loaded
    */
   const loadPlugins = useCallback(async () => {
     log.debug('Loading plugins...');

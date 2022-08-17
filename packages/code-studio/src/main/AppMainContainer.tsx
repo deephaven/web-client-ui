@@ -52,6 +52,9 @@ import {
   ChartBuilderPlugin,
   FilterSet,
   Link,
+  ChartPanelProps,
+  PandasPanelProps,
+  IrisGridPanelProps,
 } from '@deephaven/dashboard-core-plugins';
 import { vsGear, dhShapes, dhPanels } from '@deephaven/icons';
 import dh, {
@@ -102,7 +105,7 @@ type InputFileFormat =
   | Blob
   | NodeJS.ReadableStream;
 
-type DashboadData = {
+export type DashboadData = {
   closed: [];
   columnSelectionValidator?: unknown;
   filterSets: FilterSet[];
@@ -534,7 +537,7 @@ export class AppMainContainer extends Component<
 
   /**
    * Import the provided file and set it in the workspace data (which should then load it in the dashboard)
-   * @param {File} file JSON file to import
+   * @param file JSON file to import
    */
   async importLayoutFile(file: File): Promise<void> {
     try {
@@ -587,7 +590,7 @@ export class AppMainContainer extends Component<
       element = element.parentElement;
     }
 
-    const clipboardData = event.clipboardData || window.clipboardData;
+    const { clipboardData } = event;
     const pastedData = clipboardData.getData('Text');
     const replacedChars = /“|”/g;
     if (replacedChars.test(pastedData)) {
@@ -626,12 +629,17 @@ export class AppMainContainer extends Component<
     return PluginUtils.loadComponentPlugin(pluginName);
   }
 
-  hydrateDefault(props, id: string) {
+  hydrateDefault(
+    props: {
+      metadata?: { type?: VariableTypeUnion; id?: string; name?: string };
+    } & PanelProps,
+    id: string
+  ): DashboardPanelProps & { fetch?: () => Promise<unknown> } {
     const { session } = this.props;
     const { metadata } = props;
     if (metadata?.type && (metadata?.id || metadata?.name)) {
       // Looks like a widget, hydrate it as such
-      const widget = metadata.id
+      const widget: VariableDefinition = metadata.id
         ? {
             type: metadata.type,
             id: metadata.id,
@@ -646,11 +654,11 @@ export class AppMainContainer extends Component<
     return DashboardUtils.hydrate(props, id);
   }
 
-  hydrateGrid(props, id: string) {
+  hydrateGrid(props: IrisGridPanelProps, id: string): IrisGridPanelProps {
     return this.hydrateTable(props, id, dh.VariableType.TABLE);
   }
 
-  hydratePandas(props, id: string) {
+  hydratePandas(props: PandasPanelProps, id: string): PandasPanelProps {
     return this.hydrateTable(props, id, dh.VariableType.PANDAS);
   }
 
@@ -676,7 +684,7 @@ export class AppMainContainer extends Component<
     };
   }
 
-  hydrateChart(props, id: string) {
+  hydrateChart(props: ChartPanelProps, id: string): ChartPanelProps {
     const { session } = this.props;
     return {
       ...props,
@@ -866,4 +874,6 @@ export default connect(mapStateToProps, {
   setActiveTool: setActiveToolAction,
   updateDashboardData: updateDashboardDataAction,
   updateWorkspaceData: updateWorkspaceDataAction,
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
 })(withRouter(AppMainContainer));
