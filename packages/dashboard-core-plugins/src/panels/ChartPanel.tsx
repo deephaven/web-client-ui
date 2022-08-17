@@ -57,7 +57,7 @@ import ChartColumnSelectorOverlay, {
 import './ChartPanel.scss';
 import { Link } from '../linker/LinkerUtils';
 import { PanelState as IrisGridPanelState } from './IrisGridPanel';
-import { ColumnSelectionValidator } from './ColumnSelectionValidator';
+import { ColumnSelectionValidator } from '../linker/ColumnSelectionValidator';
 
 const log = Log.module('ChartPanel');
 const UPDATE_MODEL_DEBOUNCE = 150;
