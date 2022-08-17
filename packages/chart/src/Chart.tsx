@@ -272,8 +272,8 @@ export class Chart extends Component<ChartProps, ChartState> {
     this.setState({
       data: model.getData(),
       layout: {
-        ...layout,
         ...model.getLayout(),
+        ...layout,
       },
     });
   }

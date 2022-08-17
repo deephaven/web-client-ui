@@ -1,8 +1,16 @@
 /* eslint class-methods-use-this: "off" */
 /* eslint no-unused-vars: "off" */
 
-import { Column } from '@deephaven/jsapi-shim';
 import { Formatter } from '@deephaven/jsapi-utils';
+import { Layout, PlotData } from 'plotly.js';
+
+export type FilterColumnMap = Map<
+  string,
+  {
+    name: string;
+    type: string;
+  }
+>;
 
 export type ChartEvent = CustomEvent;
 /**
@@ -42,7 +50,7 @@ class ChartModel {
 
   title?: string;
 
-  getData(): { name: string; visible: string }[] {
+  getData(): PlotData[] {
     return [];
   }
 
@@ -50,11 +58,11 @@ class ChartModel {
     return '';
   }
 
-  getLayout(): Record<string, unknown> {
+  getLayout(): Partial<Layout> {
     return {};
   }
 
-  getFilterColumnMap(): Map<string, Column> {
+  getFilterColumnMap(): FilterColumnMap {
     return new Map();
   }
 

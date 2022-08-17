@@ -271,6 +271,8 @@ export interface Figure extends Evented {
    * Unsubscribes to all series in this figure.
    */
   unsubscribe(): void;
+
+  close(): void;
 }
 
 export interface FigureDataUpdatedEvent {

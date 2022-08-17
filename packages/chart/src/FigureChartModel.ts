@@ -2,23 +2,25 @@
 import memoize from 'memoizee';
 import debounce from 'lodash.debounce';
 import set from 'lodash.set';
-import dh, { Axis, Chart, Figure, Series, SourceType } from '@deephaven/jsapi-shim';
+import dh, {
+  Axis,
+  Chart,
+  Figure,
+  OneClick,
+  Series,
+  SourceType,
+} from '@deephaven/jsapi-shim';
 import Log from '@deephaven/log';
-import { Layout } from 'plotly.js';
+import { Layout, PlotData } from 'plotly.js';
 import { Formatter } from '@deephaven/jsapi-utils';
 import ChartModel, { ChartEvent } from './ChartModel';
-import ChartUtils, { SeriesData } from './ChartUtils';
+import ChartUtils, { ChartModelSettings } from './ChartUtils';
 import { Range } from '@deephaven/utils';
+import ChartTheme from './ChartTheme';
+import { FilterColumnMap } from './Chart';
 
 const log = Log.module('FigureChartModel');
 
-type FilterColumnMap = Map<
-  string,
-  {
-    name: string;
-    type: string;
-  }[]
->;
 /**
  * Takes a Figure object from a widget to make a model for a chart
  */
@@ -26,10 +28,14 @@ class FigureChartModel extends ChartModel {
   static ADD_SERIES_DEBOUNCE = 50;
 
   /**
-   * @param {dh.plot.Figure} figure The figure object created by the API
-   * @param {Object} settings Chart settings
+   * @param figure The figure object created by the API
+   * @param settings Chart settings
    */
-  constructor(figure: Figure, settings = {}, theme = {}) {
+  constructor(
+    figure: Figure,
+    settings: ChartModelSettings = {},
+    theme: typeof ChartTheme = ChartTheme
+  ) {
     super();
 
     this.handleFigureUpdated = this.handleFigureUpdated.bind(this);
@@ -70,19 +76,19 @@ class FigureChartModel extends ChartModel {
 
   figure: Figure;
 
-  settings: settings;
+  settings: ChartModelSettings;
 
-  theme: theme;
+  theme: typeof ChartTheme;
 
-  data: [];
+  data: PlotData[];
 
   layout: Layout;
 
-  seriesDataMap: Map<string, SeriesData>;
+  seriesDataMap: Map<string, PlotData>;
 
   pendingSeries: Series[];
 
-  oneClicks: [];
+  oneClicks: OneClick[];
 
   filterColumnMap: FilterColumnMap;
 
@@ -321,31 +327,36 @@ class FigureChartModel extends ChartModel {
   /** Gets the parser for a value with the provided column type */
   getValueParser = memoize((columnType, formatter) => {
     const timeZone = this.getTimeZone(columnType, formatter);
-    return (value: unknown) => ChartUtils.wrapValue(value, columnType, timeZone);
+    return (value: unknown) =>
+      ChartUtils.wrapValue(value, columnType, timeZone);
   });
 
   /**
    * Gets the range parser for a particular column type
    */
-  getRangeParser = memoize((columnType: string, formatter: Formatter) => (range: Range) => {
-    let [rangeStart, rangeEnd] = range;
-    const valueParser = this.getValueParser(columnType, formatter);
-    rangeStart = valueParser(rangeStart);
-    rangeEnd = valueParser(rangeEnd);
-    return [rangeStart, rangeEnd];
-  });
+  getRangeParser = memoize(
+    (columnType: string, formatter: Formatter) => (range: Range) => {
+      let [rangeStart, rangeEnd]: [unknown, unknown] = range;
+      const valueParser = this.getValueParser(columnType, formatter);
+      rangeStart = valueParser(rangeStart);
+      rangeEnd = valueParser(rangeEnd);
+      return [rangeStart, rangeEnd];
+    }
+  );
 
   /**
    * Gets the parser for parsing the range from an axis within the given chart
    */
-  getAxisRangeParser = memoize((chart: Chart, formatter: Formatter) => (axis: Axis)  => {
-    const source = ChartUtils.getSourceForAxis(chart, axis);
-    if (source) {
-      return this.getRangeParser(source.columnType, formatter);
-    }
+  getAxisRangeParser = memoize(
+    (chart: Chart, formatter: Formatter) => (axis: Axis) => {
+      const source = ChartUtils.getSourceForAxis(chart, axis);
+      if (source) {
+        return this.getRangeParser(source.columnType, formatter);
+      }
 
-    return range => range;
-  });
+      return (range: [unknown, unknown]) => range;
+    }
+  );
 
   handleDownsampleStart(event: ChartEvent): void {
     log.debug('Downsample started', event);
@@ -491,7 +502,7 @@ class FigureChartModel extends ChartModel {
     this.layout.margin.t =
       ChartUtils.DEFAULT_MARGIN.t +
       subtitleCount * ChartUtils.SUBTITLE_LINE_HEIGHT;
-    this.layout.title.text = title;
+    this.layout.title = title;
     this.layout.title.pad.t =
       ChartUtils.DEFAULT_TITLE_PADDING.t +
       subtitleCount * ChartUtils.SUBTITLE_LINE_HEIGHT * 0.5;
@@ -503,7 +514,9 @@ class FigureChartModel extends ChartModel {
     }
 
     return Math.max(
-      this.rect.width - this.layout.margin.l - this.layout.margin.r,
+      this.rect.width -
+        (this.layout.margin.l ?? 0) -
+        (this.layout.margin.r ?? 0),
       0
     );
   }
@@ -514,10 +527,12 @@ class FigureChartModel extends ChartModel {
     }
 
     return Math.max(
-      this.rect.height - this.layout.margin.t - this.layout.margin.b,
+      this.rect.height -
+        (this.layout.margin.t ?? 0) -
+        (this.layout.margin.b ?? 0),
       0
     );
-  }?
+  }
 
   updateAxisPositions(): void {
     const plotWidth = this.getPlotWidth();
@@ -587,7 +602,7 @@ class FigureChartModel extends ChartModel {
   cleanSeries(series: Series): void {
     const { name, plotStyle } = series;
     const seriesData = this.seriesDataMap.get(name);
-    if (plotStyle === dh.plot.SeriesPlotStyle.HISTOGRAM) {
+    if (seriesData != null && plotStyle === dh.plot.SeriesPlotStyle.HISTOGRAM) {
       const { xLow, xHigh } = seriesData;
       if (xLow && xHigh && xLow.length === xHigh.length) {
         const width = [];
@@ -614,7 +629,7 @@ class FigureChartModel extends ChartModel {
     }
   }
 
-  getData() {
+  getData(): PlotData[] {
     return this.data;
   }
 
@@ -622,13 +637,13 @@ class FigureChartModel extends ChartModel {
     return this.layout;
   }
 
-  getFilterColumnMap() {
+  getFilterColumnMap(): FilterColumnMap {
     return new Map(this.filterColumnMap);
   }
 
-  isFilterRequired() {
+  isFilterRequired(): boolean {
     return (
-      this.oneClicks.find(oneClick => oneClick.requireAllFiltersToDisplay) !=
+      this.oneClicks.find(oneClick => oneClick.isRequireAllFiltersToDisplay) !=
       null
     );
   }
@@ -678,7 +693,7 @@ class FigureChartModel extends ChartModel {
     }
   }
 
-  updateSettings(settings) {
+  updateSettings(settings: ChartModelSettings): void {
     this.settings = settings;
   }
 }

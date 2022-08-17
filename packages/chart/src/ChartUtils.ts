@@ -14,13 +14,13 @@ import dh, {
   TimeZone,
 } from '@deephaven/jsapi-shim';
 import set from 'lodash.set';
-import { Layout } from 'plotly.js';
+import { Layout, PlotData, PlotType, Axis as PlotlyAxis } from 'plotly.js';
 import { assertNotNull } from '@deephaven/utils';
 import ChartTheme from './ChartTheme';
 
 export interface ChartModelSettings {
-  hiddenSeries: string[];
-  type: string;
+  hiddenSeries?: string[];
+  type?: string;
 }
 
 export interface SeriesData {
@@ -74,7 +74,7 @@ class ChartUtils {
   static ORIENTATION = Object.freeze({
     HORIZONTAL: 'h',
     VERTICAL: 'v',
-  });
+  } as const);
 
   static DATE_FORMAT = 'yyyy-MM-dd HH:mm:ss.SSSSSS';
 
@@ -92,7 +92,7 @@ class ChartUtils {
   static getPlotlyChartType(
     plotStyle: SeriesPlotStyle,
     isBusinessTime: boolean
-  ): string | null {
+  ): PlotType | null {
     switch (plotStyle) {
       case dh.plot.SeriesPlotStyle.SCATTER:
         // scattergl mode is more performant, but doesn't support the rangebreaks we need for businessTime calendars
@@ -272,7 +272,7 @@ class ChartUtils {
     formatter: Formatter | null,
     columnType: string,
     formatPattern: string
-  ): PlotlyFormat {
+  ): PlotlyAxis {
     const tickformat =
       formatPattern == null
         ? null
@@ -319,7 +319,7 @@ class ChartUtils {
       );
     }
 
-    return { tickformat, ticksuffix, automargin: true };
+    return { tickformat: tickformat as string, ticksuffix: ticksuffix as string, automargin: true };
   }
 
   static convertNumberPrefix(prefix: string): string {
@@ -330,7 +330,7 @@ class ChartUtils {
     formatter: Formatter | null,
     columnType: string,
     formatPattern: string
-  ): PlotlyFormat | null {
+  ): PlotlyAxis | null {
     if (!formatPattern) {
       return null;
     }
@@ -427,13 +427,13 @@ class ChartUtils {
    * @param isDateType indicates if the columns is a date type
    */
   static addTickSpacing(
-    axisFormat: PlotlyFormat | null,
+    axisFormat: PlotlyAxis | null,
     axis: Axis,
     isDateType: boolean
-  ): PlotlyFormat | null {
+  ): Partial<PlotlyAxis> | null {
     const { gapBetweenMajorTicks } = axis;
     if (gapBetweenMajorTicks > 0) {
-      const updatedFormat: Partial<PlotlyFormat> = axisFormat || {};
+      const updatedFormat: Partial<PlotlyAxis> = axisFormat || {};
       let tickSpacing = gapBetweenMajorTicks;
       if (isDateType) {
         // Need to convert from nanoseconds to milliseconds
@@ -504,11 +504,11 @@ class ChartUtils {
    * @returns {Object} A simple series data object with no styling
    */
   static makeSeriesData(
-    type: string | null,
-    mode: string | null,
+    type: PlotType,
+    mode: PlotData['mode'],
     name: string,
-    orientation = ChartUtils.ORIENTATION.VERTICAL
-  ): SeriesData {
+    orientation: "h" | "v" = ChartUtils.ORIENTATION.VERTICAL
+  ): Partial<PlotData> {
     return { type, mode, name, orientation };
   }
 
@@ -525,7 +525,7 @@ class ChartUtils {
     axisTypeMap: AxisTypeMap,
     seriesVisibility: boolean | string,
     theme: Record<string, unknown>
-  ): SeriesData {
+  ): PlotData {
     const { name, plotStyle, lineColor, shapeColor, sources } = series;
 
     const isBusinessTime = sources.some(
@@ -557,7 +557,7 @@ class ChartUtils {
   }
 
   static addSourcesToSeriesData(
-    seriesDataParam: SeriesData,
+    seriesDataParam: PlotData,
     plotStyle: SeriesPlotStyle,
     sources: SeriesDataSource[],
     axisTypeMap: AxisTypeMap
@@ -590,7 +590,7 @@ class ChartUtils {
   }
 
   static addStylingToSeriesData(
-    seriesDataParam: SeriesData,
+    seriesDataParam: Partial<PlotData>,
     plotStyle: SeriesPlotStyle,
     theme: Record<string, unknown> = {},
     lineColor: string | null = null,
@@ -664,7 +664,7 @@ class ChartUtils {
    * @param formatter The formatter to use when getting the axis format
    * @returns A map of axis layout property names to axis formats
    */
-  static getAxisFormats(figure: Figure, formatter: Formatter) {
+  static getAxisFormats(figure: Figure, formatter: Formatter): Map<string, PlotlyFormat> {
     const axisFormats = new Map();
     const nullFormat = { tickformat: null, ticksuffix: null };
 
@@ -762,7 +762,7 @@ class ChartUtils {
     return axisFormats;
   }
 
-  static getChartType(plotStyle, isBusinessTime) {
+  static getChartType(plotStyle, isBusinessTime): PlotType {
     switch (plotStyle) {
       case dh.plot.SeriesPlotStyle.HISTOGRAM:
         // When reading data from the `Figure`, it already provides bins and values, so rather than using
@@ -862,7 +862,7 @@ class ChartUtils {
     axes: Axis[],
     plotWidth = 0,
     plotHeight = 0,
-    getRangeParser = null,
+    getRangeParser: ((axis: Axis) => (range: Range) => unknown[]) | null = null,
     theme: Partial<typeof ChartTheme> = {}
   ) {
     const xAxisSize =
@@ -1371,7 +1371,7 @@ class ChartUtils {
    * @param {ChartTheme} theme The theme to get colorway from
    * @returns {string[]} Colorway array for the theme
    */
-  static getColorwayFromTheme(theme: typeof ChartTheme): string[] {
+  static getColorwayFromTheme(theme: Partial<typeof ChartTheme>): string[] {
     let colorway: string[] = [];
     if (theme.colorway) {
       if (Array.isArray(theme.colorway)) {
@@ -1386,7 +1386,7 @@ class ChartUtils {
     return colorway;
   }
 
-  static makeDefaultLayout(theme: Partial<Layout> = {}): Layout {
+  static makeDefaultLayout(theme: Partial<typeof ChartTheme> = {}): Layout {
     const layout = {
       ...theme,
       autosize: true,
