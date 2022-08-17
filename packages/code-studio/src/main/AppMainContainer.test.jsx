@@ -11,9 +11,7 @@ import LocalWorkspaceStorage from '../storage/LocalWorkspaceStorage';
 function makeSession() {
   return {
     addEventListener: jest.fn(),
-    connection: {
-      subscribeToFieldUpdates: jest.fn(),
-    },
+    subscribeToFieldUpdates: jest.fn(),
     removeEventListener: jest.fn(),
     getTable: jest.fn(),
     getObject: jest.fn(),
@@ -116,13 +114,13 @@ it('listens for widgets properly', () => {
   let callback = null;
 
   const session = makeSession();
-  session.connection.subscribeToFieldUpdates = jest.fn(cb => {
+  session.subscribeToFieldUpdates = jest.fn(cb => {
     callback = cb;
   });
 
   renderAppMainContainer({ session });
 
-  expect(session.connection.subscribeToFieldUpdates).toHaveBeenCalled();
+  expect(session.subscribeToFieldUpdates).toHaveBeenCalled();
 
   const panelsButton = screen.getByRole('button', { name: 'Panels' });
   userEvent.click(panelsButton);

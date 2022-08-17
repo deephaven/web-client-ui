@@ -2,10 +2,10 @@
 /* eslint no-console: "off" */
 import React, { Component } from 'react';
 import {
-  ContextAction,
   ContextActions,
   KEY,
   MODIFIER,
+  ResolvableContextAction,
   Shortcut,
 } from '@deephaven/components';
 import {
@@ -97,12 +97,12 @@ class ContextMenus extends Component {
 
     const actions = globalActions.concat(contextActions);
 
-    const delayedActions = () =>
+    const delayedActions: ResolvableContextAction = () =>
       new Promise(resolve => {
         setTimeout(() => {
           resolve(contextActions);
         }, 3000);
-      }) as Promise<ContextAction[]>;
+      });
 
     return (
       <div>

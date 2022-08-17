@@ -32,14 +32,17 @@ import { ItemAction, HistoryAction } from './CommandHistoryTypes';
 
 const log = Log.module('CommandHistory');
 
-type Settings = {
+export type CommandHistorySettings = {
   value: string;
   language: string;
 };
 interface CommandHistoryProps {
   language: string;
   sendToConsole: (command: string, focus?: boolean, execute?: boolean) => void;
-  sendToNotebook: (settings: Settings, forceNewNotebook?: boolean) => void;
+  sendToNotebook: (
+    settings: CommandHistorySettings,
+    forceNewNotebook?: boolean
+  ) => void;
   table: CommandHistoryTable;
   commandHistoryStorage: CommandHistoryStorage;
 }
@@ -361,7 +364,8 @@ class CommandHistory extends Component<
       offset,
       selectedRanges,
     } = this.state;
-    const languageDisplayString = ConsoleConstants.LANGUAGE_MAP.get(language);
+    const languageDisplayString =
+      ConsoleConstants.LANGUAGE_MAP.get(language) ?? '';
     return (
       <div className="command-history">
         <div className="command-history-search-bar">

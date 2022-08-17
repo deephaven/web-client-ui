@@ -10,7 +10,7 @@ export type LinkPoint = {
   panelId: string | string[];
   panelComponent?: string | null;
   columnName: string;
-  columnType: string;
+  columnType: string | null;
 };
 
 export type Link = {
@@ -23,7 +23,7 @@ export type Link = {
 
 export type LinkColumn = {
   name: string;
-  type: string;
+  type: string | null;
 };
 
 export type LinkFilterMapValue<T = unknown> = {
@@ -51,7 +51,7 @@ export type LinkableFromPanel = PanelComponent & {
 
 export type LinkablePanel = LinkableFromPanel & {
   setFilterMap: (filterMap: LinkFilterMap) => void;
-  unsetFilterValue: (name: string, type: string) => void;
+  unsetFilterValue: (name: string, type: string | null) => void;
 };
 
 export function isLinkableFromPanel(
