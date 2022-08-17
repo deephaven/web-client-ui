@@ -4,7 +4,7 @@
 import { Column } from '@deephaven/jsapi-shim';
 import { Formatter } from '@deephaven/jsapi-utils';
 
-type ChartEvent = CustomEvent;
+export type ChartEvent = CustomEvent;
 /**
  * Model for a Chart
  * All of these methods should return very quickly.

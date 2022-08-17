@@ -23,7 +23,7 @@ import Plotly from './plotly/Plotly';
 import Plot from './plotly/Plot';
 
 import ChartModel from './ChartModel';
-import ChartUtils from './ChartUtils';
+import ChartUtils, { ChartModelSettings } from './ChartUtils';
 import './Chart.scss';
 
 const log = Log.module('Chart');
@@ -43,10 +43,6 @@ interface ChartProps {
   onUpdate: (obj: { isLoading: boolean }) => void;
   onError: (error: Error) => void;
   onSettingsChanged: (settings: Partial<ChartModelSettings>) => void;
-}
-
-interface ChartModelSettings {
-  hiddenSeries: string[];
 }
 
 interface ChartState {

@@ -3,6 +3,7 @@
 /* eslint-disable @typescript-eslint/no-empty-interface */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable lines-between-class-members */
+
 /* eslint-disable max-classes-per-file */
 export default dh;
 
@@ -28,6 +29,7 @@ export interface dh {
   SearchDisplayMode?: SearchDisplayModeStatic;
   RangeSet: RangeSet;
   IdeSession: IdeSessionStatic;
+  calendar: CalendarStatic;
 }
 
 const VariableType = {
@@ -38,6 +40,10 @@ const VariableType = {
   TABLEMAP: 'TableMap',
   TREETABLE: 'TreeTable',
 } as const;
+
+export interface CalendarStatic {
+  DayOfWeek: Record<string, string>;
+}
 
 export type VariableTypeUnion = typeof VariableType[keyof typeof VariableType];
 
@@ -154,6 +160,7 @@ export interface Plot {
   ChartDescriptor: ChartDescriptor;
   SeriesDescriptor: SeriesDescriptor;
   SourceDescriptor: SourceDescriptor;
+  DownsampleOptions: DownsampleOptions;
 }
 
 export interface RemoverFn {
@@ -239,6 +246,7 @@ export interface Figure extends Evented {
   readonly EVENT_DOWNSAMPLEFINISHED: string;
   readonly EVENT_DOWNSAMPLEFAILED: string;
   readonly EVENT_DOWNSAMPLENEEDED: string;
+  readonly EVENT_SERIES_ADDED: string;
 
   /** Given a client-created figure descriptor, generate a figure that can be subscribed to */
   create(figure: FigureDescriptor): Figure;
@@ -395,6 +403,7 @@ export interface Series {
   readonly shapeLabel: string;
   readonly shapeSize: number;
   readonly shape: string;
+  readonly shapeColor: string;
   readonly sources: SeriesDataSource[];
   readonly multiSeries: MultiSeries;
   readonly oneClick: OneClick;
@@ -406,6 +415,27 @@ export interface Series {
 export interface MultiSeries {
   readonly plotStyle: SeriesPlotStyle;
   readonly name: string;
+}
+
+export interface BusinessPeriod {
+  open: string;
+  close: string;
+}
+
+export interface LocalDateWrapper {
+  toString: () => string;
+}
+export interface Holiday {
+  date: LocalDateWrapper;
+  businessPeriods: BusinessPeriod[];
+}
+
+export interface BusinessCalendar {
+  getName: () => string;
+  timeZone: TimeZone;
+  businessPeriods: BusinessPeriod[];
+  businessDays: string[];
+  holidays: Holiday[];
 }
 
 export interface Axis {
@@ -430,6 +460,7 @@ export interface Axis {
   readonly isTimeAxis: boolean;
 
   readonly FORMAT_TYPE_NUMBER: unknown;
+  readonly businessCalendar: BusinessCalendar;
 
   /**
    * Indicate the density and range of data that the UI needs for this axis, across any series which
@@ -445,7 +476,7 @@ export interface Axis {
 export interface SeriesDataSource {
   readonly axis: Axis;
   readonly type: SourceType;
-  readonly columnName: string;
+  readonly columnType: string;
 }
 
 export interface OneClick {

@@ -2,14 +2,23 @@
 import memoize from 'memoizee';
 import debounce from 'lodash.debounce';
 import set from 'lodash.set';
-import dh, { Figure } from '@deephaven/jsapi-shim';
+import dh, { Axis, Chart, Figure, Series, SourceType } from '@deephaven/jsapi-shim';
 import Log from '@deephaven/log';
-import ChartModel from './ChartModel';
-import ChartUtils from './ChartUtils';
 import { Layout } from 'plotly.js';
+import { Formatter } from '@deephaven/jsapi-utils';
+import ChartModel, { ChartEvent } from './ChartModel';
+import ChartUtils, { SeriesData } from './ChartUtils';
+import { Range } from '@deephaven/utils';
 
 const log = Log.module('FigureChartModel');
 
+type FilterColumnMap = Map<
+  string,
+  {
+    name: string;
+    type: string;
+  }[]
+>;
 /**
  * Takes a Figure object from a widget to make a model for a chart
  */
@@ -59,26 +68,37 @@ class FigureChartModel extends ChartModel {
     this.startListeningFigure();
   }
 
-  figure : Figure;
-    settings : settings;
-    theme : theme;
-    data : [];
-    layout : Layout;
-    seriesDataMap : Map;
-    pendingSeries : [];
-    oneClicks : [];
-    filterColumnMap : Map();
-    lastFilter : Map();
-    isConnected : boolean; // Assume figure is connected to start
-    seriesToProcess
+  figure: Figure;
 
-  close() {
+  settings: settings;
+
+  theme: theme;
+
+  data: [];
+
+  layout: Layout;
+
+  seriesDataMap: Map<string, SeriesData>;
+
+  pendingSeries: Series[];
+
+  oneClicks: [];
+
+  filterColumnMap: FilterColumnMap;
+
+  lastFilter: Map<string, string>;
+
+  isConnected: boolean; // Assume figure is connected to start
+
+  seriesToProcess;
+
+  close(): void {
     this.figure.close();
     this.addPendingSeries.cancel();
     this.stopListeningFigure();
   }
 
-  getDefaultTitle() {
+  getDefaultTitle(): string {
     if (this.figure.charts.length > 0) {
       const chart = this.figure.charts[0];
       return chart.title;
@@ -87,12 +107,12 @@ class FigureChartModel extends ChartModel {
     return '';
   }
 
-  initAllSeries() {
+  initAllSeries(): void {
     this.oneClicks = [];
     this.filterColumnMap.clear();
 
     const { charts } = this.figure;
-    const activeSeriesNames = [];
+    const activeSeriesNames: string[] = [];
     for (let i = 0; i < charts.length; i += 1) {
       const chart = charts[i];
 
@@ -108,14 +128,14 @@ class FigureChartModel extends ChartModel {
     const inactiveSeriesNames = allSeriesNames.filter(
       seriesName => activeSeriesNames.indexOf(seriesName) < 0
     );
-    for (let i = 0; i < inactiveSeriesNames; i += 1) {
+    for (let i = 0; i < inactiveSeriesNames.length; i += 1) {
       const seriesName = inactiveSeriesNames[i];
       this.seriesDataMap.delete(seriesName);
     }
     this.seriesToProcess = new Set([...this.seriesDataMap.keys()]);
   }
 
-  addSeries(series) {
+  addSeries(series: Series): void {
     const chart = ChartUtils.getChartForSeries(this.figure, series);
     if (chart == null) {
       log.error('Unable to find matching chart for series', series);
@@ -157,7 +177,7 @@ class FigureChartModel extends ChartModel {
     this.updateLayoutFormats();
   }
 
-  addPendingSeries() {
+  addPendingSeries = debounce(() => {
     const { pendingSeries } = this;
     for (let i = 0; i < pendingSeries.length; i += 1) {
       const series = pendingSeries[i];
@@ -168,10 +188,10 @@ class FigureChartModel extends ChartModel {
     }
 
     this.pendingSeries = [];
-  }
+  }, FigureChartModel.ADD_SERIES_DEBOUNCE);
 
-  subscribe(...args) {
-    super.subscribe(...args);
+  subscribe(callback: (event: ChartEvent) => void): void {
+    super.subscribe(callback);
 
     if (this.listeners.length === 1) {
       // Need to initialize the series here as we may have missed some series when not subscribed
@@ -180,15 +200,15 @@ class FigureChartModel extends ChartModel {
     }
   }
 
-  unsubscribe(...args) {
-    super.unsubscribe(...args);
+  unsubscribe(callback: (event: ChartEvent) => void): void {
+    super.unsubscribe(callback);
 
     if (this.listeners.length === 0) {
       this.unsubscribeFigure();
     }
   }
 
-  subscribeFigure() {
+  subscribeFigure(): void {
     if (!this.isConnected) {
       log.debug('Ignoring subscribe when figure in disconnected state');
       return;
@@ -201,11 +221,11 @@ class FigureChartModel extends ChartModel {
     );
   }
 
-  unsubscribeFigure() {
+  unsubscribeFigure(): void {
     this.figure.unsubscribe();
   }
 
-  startListeningFigure() {
+  startListeningFigure(): void {
     this.figure.addEventListener(
       dh.plot.Figure.EVENT_UPDATED,
       this.handleFigureUpdated
@@ -244,7 +264,7 @@ class FigureChartModel extends ChartModel {
     );
   }
 
-  stopListeningFigure() {
+  stopListeningFigure(): void {
     this.figure.removeEventListener(
       dh.plot.Figure.EVENT_UPDATED,
       this.handleFigureUpdated
@@ -295,19 +315,19 @@ class FigureChartModel extends ChartModel {
 
   getValueTranslator = memoize((columnType, formatter) => {
     const timeZone = this.getTimeZone(columnType, formatter);
-    return value => ChartUtils.unwrapValue(value, timeZone);
+    return (value: unknown) => ChartUtils.unwrapValue(value, timeZone);
   });
 
   /** Gets the parser for a value with the provided column type */
   getValueParser = memoize((columnType, formatter) => {
     const timeZone = this.getTimeZone(columnType, formatter);
-    return value => ChartUtils.wrapValue(value, columnType, timeZone);
+    return (value: unknown) => ChartUtils.wrapValue(value, columnType, timeZone);
   });
 
   /**
    * Gets the range parser for a particular column type
    */
-  getRangeParser = memoize((columnType, formatter) => range => {
+  getRangeParser = memoize((columnType: string, formatter: Formatter) => (range: Range) => {
     let [rangeStart, rangeEnd] = range;
     const valueParser = this.getValueParser(columnType, formatter);
     rangeStart = valueParser(rangeStart);
@@ -318,7 +338,7 @@ class FigureChartModel extends ChartModel {
   /**
    * Gets the parser for parsing the range from an axis within the given chart
    */
-  getAxisRangeParser = memoize((chart, formatter) => axis => {
+  getAxisRangeParser = memoize((chart: Chart, formatter: Formatter) => (axis: Axis)  => {
     const source = ChartUtils.getSourceForAxis(chart, axis);
     if (source) {
       return this.getRangeParser(source.columnType, formatter);
@@ -327,31 +347,31 @@ class FigureChartModel extends ChartModel {
     return range => range;
   });
 
-  handleDownsampleStart(event) {
+  handleDownsampleStart(event: ChartEvent): void {
     log.debug('Downsample started', event);
 
     this.fireDownsampleStart(event.detail);
   }
 
-  handleDownsampleFinish(event) {
+  handleDownsampleFinish(event: ChartEvent): void {
     log.debug('Downsample finished', event);
 
     this.fireDownsampleFinish(event.detail);
   }
 
-  handleDownsampleFail(event) {
+  handleDownsampleFail(event: ChartEvent): void {
     log.error('Downsample failed', event);
 
     this.fireDownsampleFail(event.detail);
   }
 
-  handleDownsampleNeeded(event) {
+  handleDownsampleNeeded(event: ChartEvent): void {
     log.info('Downsample needed', event);
 
     this.fireDownsampleNeeded(event.detail);
   }
 
-  handleFigureUpdated(event) {
+  handleFigureUpdated(event: ChartEvent): void {
     const { detail: figureUpdateEvent } = event;
     const { series: seriesArray } = figureUpdateEvent;
 
@@ -390,21 +410,21 @@ class FigureChartModel extends ChartModel {
     this.fireUpdate(data);
   }
 
-  handleRequestFailed(event) {
+  handleRequestFailed(event: ChartEvent): void {
     log.error('Request failed', event);
   }
 
   /**
    * Resubscribe to the figure, should be done if settings change
    */
-  resubscribe() {
+  resubscribe(): void {
     if (this.listeners.length > 0) {
       this.unsubscribeFigure();
       this.subscribeFigure();
     }
   }
 
-  setFormatter(formatter) {
+  setFormatter(formatter: Formatter): void {
     super.setFormatter(formatter);
 
     this.updateLayoutFormats();
@@ -414,13 +434,13 @@ class FigureChartModel extends ChartModel {
     this.resubscribe();
   }
 
-  setDownsamplingDisabled(...args) {
-    super.setDownsamplingDisabled(...args);
+  setDownsamplingDisabled(isDownsamplingDisabled: boolean): void {
+    super.setDownsamplingDisabled(isDownsamplingDisabled);
 
     this.resubscribe();
   }
 
-  handleFigureDisconnected(event) {
+  handleFigureDisconnected(event: CustomEvent): void {
     log.debug('Figure disconnected', event);
 
     this.isConnected = false;
@@ -432,7 +452,7 @@ class FigureChartModel extends ChartModel {
     this.fireDisconnect();
   }
 
-  handleFigureReconnected(event) {
+  handleFigureReconnected(event: CustomEvent): void {
     log.debug('Figure reconnected', event);
 
     this.isConnected = true;
@@ -447,7 +467,7 @@ class FigureChartModel extends ChartModel {
     }
   }
 
-  handleFigureSeriesAdded(event) {
+  handleFigureSeriesAdded(event: { detail: Series }): void {
     const { detail: series } = event;
     log.debug('handleFigureSeriesAdded', series);
 
@@ -456,13 +476,13 @@ class FigureChartModel extends ChartModel {
     this.addPendingSeries();
   }
 
-  setDimensions(rect) {
+  setDimensions(rect: DOMRect): void {
     super.setDimensions(rect);
 
     this.updateAxisPositions();
   }
 
-  setTitle(title) {
+  setTitle(title: string): void {
     super.setTitle(title);
 
     // Need to recalculate the padding based on how many lines of text the title is
@@ -477,7 +497,7 @@ class FigureChartModel extends ChartModel {
       subtitleCount * ChartUtils.SUBTITLE_LINE_HEIGHT * 0.5;
   }
 
-  getPlotWidth() {
+  getPlotWidth(): number {
     if (!this.rect || !this.rect.width) {
       return 0;
     }
@@ -488,7 +508,7 @@ class FigureChartModel extends ChartModel {
     );
   }
 
-  getPlotHeight() {
+  getPlotHeight(): number {
     if (!this.rect || !this.rect.height) {
       return 0;
     }
@@ -497,9 +517,9 @@ class FigureChartModel extends ChartModel {
       this.rect.height - this.layout.margin.t - this.layout.margin.b,
       0
     );
-  }
+  }?
 
-  updateAxisPositions() {
+  updateAxisPositions(): void {
     const plotWidth = this.getPlotWidth();
     const plotHeight = this.getPlotHeight();
 
@@ -520,7 +540,7 @@ class FigureChartModel extends ChartModel {
   /**
    * Updates the format patterns used
    */
-  updateLayoutFormats() {
+  updateLayoutFormats(): void {
     if (!this.formatter) {
       return;
     }
@@ -542,11 +562,15 @@ class FigureChartModel extends ChartModel {
 
   /**
    * Set a specific array for the array of series properties specified.
-   * @param {dh.Series} series The series to set the data array for.
-   * @param {dh.plot.SourceType} sourceType The source type within that series to set the data for.
-   * @param {Any[]} dataArray The array to use for the data for this series source.
+   * @param series The series to set the data array for.
+   * @param sourceType The source type within that series to set the data for.
+   * @param dataArray The array to use for the data for this series source.
    */
-  setDataArrayForSeries(series, sourceType, dataArray) {
+  setDataArrayForSeries(
+    series: Series,
+    sourceType: SourceType,
+    dataArray: unknown[]
+  ): void {
     const { name, plotStyle } = series;
 
     const seriesData = this.seriesDataMap.get(name);
@@ -560,7 +584,7 @@ class FigureChartModel extends ChartModel {
    * value for x.
    * @param {dh.Series} series The series to clean the data for
    */
-  cleanSeries(series) {
+  cleanSeries(series: Series): void {
     const { name, plotStyle } = series;
     const seriesData = this.seriesDataMap.get(name);
     if (plotStyle === dh.plot.SeriesPlotStyle.HISTOGRAM) {
@@ -594,7 +618,7 @@ class FigureChartModel extends ChartModel {
     return this.data;
   }
 
-  getLayout() {
+  getLayout(): Layout {
     return this.layout;
   }
 
@@ -613,7 +637,7 @@ class FigureChartModel extends ChartModel {
    * Sets the filter on the model. Will only set the values that have changed.
    * @param {Map<String, String>} filterMap Map of filter column names to values
    */
-  setFilter(filterMap) {
+  setFilter(filterMap: Map<string, string>): void {
     if (this.oneClicks.length === 0) {
       log.warn('Trying to set a filter, but no one click!');
       return;
@@ -640,7 +664,7 @@ class FigureChartModel extends ChartModel {
     this.lastFilter = new Map(filterMap);
   }
 
-  setFigure(figure) {
+  setFigure(figure: Figure): void {
     this.close();
 
     this.figure = figure;
