@@ -1,72 +1,66 @@
 import { Tooltip } from '@deephaven/components';
-import { QueryConnectable, WorkerHeapInfo } from '@deephaven/jsapi-shim';
+import { QueryConnectable } from '@deephaven/jsapi-shim';
 import React, { useEffect, useState, ReactElement, useRef } from 'react';
 import { Plot, ChartTheme } from '@deephaven/chart';
-import './SizeUsageUI.scss';
+import './HeapUsage.scss';
 import classNames from 'classnames';
 
-interface SIzeUsageUIProps {
+interface HeapUsageProps {
   connection: QueryConnectable;
-  UIParams: { defaultUpdateInterval: number; hoverUpdateInterval: number };
+  defaultUpdateInterval: number;
+  hoverUpdateInterval: number;
   bgMonitoring?: boolean;
 
-  // in seconds
+  // in millis
   monitorDuration: number;
 }
 
-const SizeUsageUI = ({
+const HeapUsage = ({
   connection,
-  UIParams,
+  defaultUpdateInterval,
+  hoverUpdateInterval,
   bgMonitoring = true,
   monitorDuration,
-}: SIzeUsageUIProps): ReactElement => {
-  const [freeMemory, setFreeMemory] = useState<number>(0);
-  const [maxHeapSize, setMaxHeapSize] = useState<number>(999);
-  const [totalHeapSize, setTotalHeapSize] = useState<number>(0);
-  const [hover, setHover] = useState(false);
-
-  const historyUsage = useRef<{ time: number[]; usage: number[] }>({
-    time: [],
-    usage: [],
+}: HeapUsageProps): ReactElement => {
+  const [memoryUsage, setMemoryUsage] = useState({
+    freeMemory: 0,
+    maximumHeapSize: 999,
+    totalHeapSize: 0,
   });
 
-  const { defaultUpdateInterval, hoverUpdateInterval } = UIParams;
+  const [hover, setHover] = useState(false);
 
-  const setUsage = (usage: WorkerHeapInfo) => {
-    setFreeMemory(usage.freeMemory);
-    setMaxHeapSize(usage.maximumHeapSize);
-    setTotalHeapSize(usage.totalHeapSize);
-  };
+  const historyUsage = useRef<{ timestamps: number[]; usages: number[] }>({
+    timestamps: [],
+    usages: [],
+  });
 
   useEffect(
     function setUsageUpdateInterval() {
       const fetchAndUpdate = async () => {
         const newUsage = await connection.getWorkerHeapInfo();
+        setMemoryUsage(newUsage);
 
         if (bgMonitoring || hover) {
-          const usage =
+          const currentUsage =
             (newUsage.totalHeapSize - newUsage.freeMemory) /
             newUsage.maximumHeapSize;
-          const time = Date.now();
+          const currentTime = Date.now();
 
-          const past = historyUsage.current;
+          const { timestamps, usages } = historyUsage.current;
           while (
-            past.time.length !== 0 &&
-            time - past.time[0] > monitorDuration * 1000 * 1.5
+            timestamps.length !== 0 &&
+            currentTime - timestamps[0] > monitorDuration * 1.5
           ) {
-            past.time.shift();
-            past.usage.shift();
+            timestamps.shift();
+            usages.shift();
           }
 
-          past.time.push(time);
-          past.usage.push(usage);
-
-          historyUsage.current = past;
+          timestamps.push(currentTime);
+          usages.push(currentUsage);
         } else {
-          historyUsage.current = { time: [], usage: [] };
+          historyUsage.current = { timestamps: [], usages: [] };
         }
-
-        setUsage(newUsage);
       };
       fetchAndUpdate();
 
@@ -94,9 +88,11 @@ const SizeUsageUI = ({
   const decimalPlace = 2;
   const GbToByte = 1024 ** 3;
 
+  const { freeMemory, totalHeapSize, maximumHeapSize } = memoryUsage;
+
   const freeMemoryGB = toDecimalPlace(freeMemory / GbToByte, decimalPlace);
   const totalHeapGB = toDecimalPlace(totalHeapSize / GbToByte, decimalPlace);
-  const maxHeapGB = toDecimalPlace(maxHeapSize / GbToByte, decimalPlace);
+  const maxHeapGB = toDecimalPlace(maximumHeapSize / GbToByte, decimalPlace);
   const inUseGB = totalHeapGB - freeMemoryGB;
 
   const getRow = (text: string, size: string, bottomBorder = false) => (
@@ -114,18 +110,21 @@ const SizeUsageUI = ({
           {text}
         </h6>
       </div>
-      <div style={{}}>
-        <h6>{size}</h6>
+      <div>
+        {/* <h6> */}
+        {size}
+        {/* </h6> */}
       </div>
     </div>
   );
 
-  const timestamps = historyUsage.current.time;
-  const usages = historyUsage.current.usage;
+  const { timestamps, usages } = historyUsage.current;
+
   const lastTimestamp = timestamps[timestamps.length - 1] ?? 0;
 
-  const totalPercentage = totalHeapSize / maxHeapSize;
-  const usedPercentage = (totalHeapSize - freeMemory) / maxHeapSize;
+  const totalPercentage = totalHeapSize / maximumHeapSize;
+  const usedPercentage = (totalHeapSize - freeMemory) / maximumHeapSize;
+
   return (
     <>
       <div
@@ -141,7 +140,8 @@ const SizeUsageUI = ({
         />
         <div
           className={classNames('used-memory', {
-            'heap-overflow': (totalHeapSize - freeMemory) / maxHeapSize > 0.95,
+            'heap-overflow':
+              (totalHeapSize - freeMemory) / maximumHeapSize > 0.95,
           })}
           style={{
             width: `calc(${usedPercentage * 100}% - ${usedPercentage * 2}px`,
@@ -185,12 +185,9 @@ const SizeUsageUI = ({
                 paper_bgcolor: 'transparent',
                 colorway: ['#4878ea'],
                 xaxis: {
-                  dtick: Math.round((monitorDuration * 1000) / 6),
+                  dtick: Math.round(monitorDuration / 6),
                   gridcolor: ChartTheme.linecolor,
-                  range: [
-                    lastTimestamp - monitorDuration * 1000,
-                    lastTimestamp,
-                  ],
+                  range: [lastTimestamp - monitorDuration, lastTimestamp],
                   linecolor: ChartTheme.linecolor,
                   linewidth: 2,
                   mirror: true,
@@ -207,7 +204,9 @@ const SizeUsageUI = ({
             />
           </div>
           <div className="heap-utilisation-text">
-            <h6>% utilization over {Math.round(monitorDuration / 60)} min.</h6>
+            <h6>
+              % utilization over {Math.round(monitorDuration / 1000 / 60)} min.
+            </h6>
           </div>
         </div>
       </Tooltip>
@@ -215,4 +214,4 @@ const SizeUsageUI = ({
   );
 };
 
-export default SizeUsageUI;
+export default HeapUsage;

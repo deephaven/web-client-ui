@@ -869,9 +869,6 @@ export interface WorkerHeapInfo {
   readonly maximumHeapSize: number;
   readonly freeMemory: number;
   readonly totalHeapSize: number;
-  getMaximumHeapSize: () => number;
-  getFreeMemory: () => number;
-  getTotalHeapSize: () => number;
 }
 
 export interface QueryConnectable extends Evented {
