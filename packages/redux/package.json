@@ -30,13 +30,13 @@
     "@deephaven/jsapi-utils": "file:../jsapi-utils",
     "@deephaven/log": "file:../log",
     "deep-equal": "^2.0.5",
-    "redux-thunk": "^2.3.0"
+    "redux-thunk": "2.4.1 "
   },
   "devDependencies": {
     "@deephaven/tsconfig": "file:../tsconfig"
   },
   "peerDependencies": {
-    "redux": "^4.0.5"
+    "redux": "^4.2.0"
   },
   "files": [
     "dist"

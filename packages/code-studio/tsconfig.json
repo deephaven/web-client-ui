@@ -5,7 +5,9 @@
     "noEmit": true,
     "emitDeclarationOnly": false
   },
-  "include": ["src"],
+  "include": [
+    "src"
+  ],
   "references": [
     {
       "path": "../chart"

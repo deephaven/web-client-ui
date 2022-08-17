@@ -29,7 +29,7 @@ type TimeSliderProps = {
 
 /**
  * Creates a time slider for setting a start and end time, that can also run overnight
- * @param {startTime, endTime, onChange} props takes times in seconds 0 - 86399 and a callback
+ * @param props takes times in seconds 0 - 86399 and a callback
  */
 const TimeSlider = ({
   startTime: propStartTime,
@@ -293,7 +293,7 @@ const Handle = (props: HandleProps): JSX.Element => {
    * The handle offset changes for the first and last tick range dynmaically. Normally,
    * the center of the handle (size/2) is the selection origin, but at edges, it becomes either
    * end of the handle, requireing a relative offset range of 0 - 0.5,  and 0.5 - 1 of handle size.
-   * @param {number} t time in seconds
+   * @param t time in seconds
    */
   const transform = useMemo(() => {
     const ONE_HOUR = 60 * 60;

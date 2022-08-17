@@ -34,6 +34,9 @@
     "@deephaven/jsapi-shim": "file:../jsapi-shim",
     "@deephaven/jsapi-utils": "file:../jsapi-utils",
     "@deephaven/log": "file:../log",
+    "@deephaven/redux": "file:../redux",
+    "@deephaven/utils": "file:../utils",
+    "@fortawesome/fontawesome-common-types": "^6.1.2",
     "deep-equal": "^2.0.5",
     "lodash.debounce": "^4.0.8",
     "lodash.set": "^4.3.2",
@@ -48,7 +51,8 @@
   },
   "devDependencies": {
     "@deephaven/mocks": "file:../mocks",
-    "@deephaven/tsconfig": "file:../tsconfig"
+    "@deephaven/tsconfig": "file:../tsconfig",
+    "@types/plotly.js": "^2.12.2"
   },
   "files": [
     "dist"

@@ -441,7 +441,7 @@ export class Linker extends Component<LinkerProps, LinkerState> {
           : new Map();
         const { value } = dataMap[start.columnName];
         let text = `${value}`;
-        if (TableUtils.isDateType(columnType)) {
+        if (columnType != null && TableUtils.isDateType(columnType)) {
           const dateFilterFormatter = new DateTimeColumnFormatter({
             timeZone,
             showTimeZone: false,
