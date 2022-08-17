@@ -95,8 +95,8 @@ class LinkerUtils {
    * @returns The type of link, or invalid if there's an error
    */
   static getLinkType(
-    start?: LinkPoint,
-    end?: LinkPoint,
+    start?: Omit<LinkPoint, 'columnType'> & { columnType?: null | string },
+    end?: Omit<LinkPoint, 'columnType'> & { columnType?: null | string },
     isolatedLinkerPanelId?: string | string[]
   ): LinkType {
     // Panel compatibility checks:

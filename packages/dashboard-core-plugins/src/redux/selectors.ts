@@ -4,7 +4,7 @@ import { RootState } from '@deephaven/redux';
 import { FilterChangeEvent } from '../FilterPlugin';
 import { Link } from '../linker/LinkerUtils';
 import { FilterSet } from '../panels';
-import { ColumnSelectionValidator } from '../panels/ColumnSelectionValidator';
+import { ColumnSelectionValidator } from '../linker/ColumnSelectionValidator';
 import { SessionWrapper } from './actions';
 
 const EMPTY_MAP = new Map();

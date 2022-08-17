@@ -43,7 +43,7 @@ import LinkerUtils, {
   LinkFilterMap,
   LinkType,
 } from './LinkerUtils';
-import { ColumnSelectionValidator } from '../panels/ColumnSelectionValidator';
+import { LinkColumnSelection } from './ColumnSelectionValidator';
 
 const log = Log.module('Linker');
 
@@ -551,7 +551,7 @@ export class Linker extends Component<LinkerProps, LinkerState> {
       case ToolType.LINKER:
         setDashboardColumnSelectionValidator(
           localDashboardId,
-          this.isColumnSelectionValid as ColumnSelectionValidator
+          this.isColumnSelectionValid
         );
         break;
       default:
@@ -574,7 +574,7 @@ export class Linker extends Component<LinkerProps, LinkerState> {
 
   isColumnSelectionValid(
     panel: PanelComponent,
-    tableColumn?: LinkColumn
+    tableColumn?: LinkColumnSelection
   ): boolean {
     const { linkInProgress } = this.state;
     const { isolatedLinkerPanelId } = this.props;
