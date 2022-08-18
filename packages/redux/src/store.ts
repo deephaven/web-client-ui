@@ -69,12 +69,7 @@ export interface WorkspaceData {
 export interface Workspace {
   data: WorkspaceData;
 }
-export type DashboardData = {
-  closed: unknown[];
-  filterSets: unknown[];
-  links: unknown[];
-  openedMap: Map<string | string[], unknown>;
-};
+export type DashboardData = Record<string, unknown>;
 
 export interface WorkspaceStorage {
   load(): Promise<Workspace>;
