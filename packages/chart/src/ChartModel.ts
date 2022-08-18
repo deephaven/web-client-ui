@@ -50,7 +50,7 @@ class ChartModel {
 
   title?: string;
 
-  getData(): PlotData[] {
+  getData(): Partial<PlotData>[] {
     return [];
   }
 

@@ -18,7 +18,7 @@ import {
 } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
 import { WorkspaceSettings } from '@deephaven/redux';
-import { Layout, Icon } from 'plotly.js';
+import { Layout, Icon, PlotData } from 'plotly.js';
 import Plotly from './plotly/Plotly';
 import Plot from './plotly/Plot';
 
@@ -46,7 +46,7 @@ interface ChartProps {
 }
 
 interface ChartState {
-  data: { name: string; visible: string }[] | null;
+  data: Partial<PlotData>[] | null;
   downsamplingError: unknown;
   isDownsampleFinished: boolean;
   isDownsampleInProgress: boolean;
@@ -436,7 +436,7 @@ export class Chart extends Component<ChartProps, ChartState> {
       if (data != null) {
         const hiddenSeries = data.reduce(
           (acc: string[], { name, visible }) =>
-            visible === 'legendonly' ? [...acc, name] : acc,
+            name != null && visible === 'legendonly' ? [...acc, name] : acc,
           []
         );
         onSettingsChanged({ hiddenSeries });

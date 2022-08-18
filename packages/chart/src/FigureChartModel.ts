@@ -11,13 +11,12 @@ import dh, {
   SourceType,
 } from '@deephaven/jsapi-shim';
 import Log from '@deephaven/log';
+import { assertNotNull, Range } from '@deephaven/utils';
 import { Layout, PlotData } from 'plotly.js';
 import { Formatter } from '@deephaven/jsapi-utils';
-import ChartModel, { ChartEvent } from './ChartModel';
-import ChartUtils, { ChartModelSettings } from './ChartUtils';
-import { Range } from '@deephaven/utils';
+import ChartModel, { ChartEvent, FilterColumnMap } from './ChartModel';
+import ChartUtils, { AxisTypeMap, ChartModelSettings } from './ChartUtils';
 import ChartTheme from './ChartTheme';
-import { FilterColumnMap } from './Chart';
 
 const log = Log.module('FigureChartModel');
 
@@ -33,7 +32,7 @@ class FigureChartModel extends ChartModel {
    */
   constructor(
     figure: Figure,
-    settings: ChartModelSettings = {},
+    settings: Partial<ChartModelSettings> = {},
     theme: typeof ChartTheme = ChartTheme
   ) {
     super();
@@ -76,15 +75,23 @@ class FigureChartModel extends ChartModel {
 
   figure: Figure;
 
-  settings: ChartModelSettings;
+  settings: Partial<ChartModelSettings>;
 
   theme: typeof ChartTheme;
 
-  data: PlotData[];
+  data: Partial<PlotData>[];
 
-  layout: Layout;
+  layout: Partial<Layout>;
 
-  seriesDataMap: Map<string, PlotData>;
+  seriesDataMap: Map<
+    string,
+    Partial<PlotData> & {
+      xLow?: number[];
+      xHigh?: number[];
+      yLow?: number[];
+      yHigh?: number[];
+    }
+  >;
 
   pendingSeries: Series[];
 
@@ -148,7 +155,7 @@ class FigureChartModel extends ChartModel {
       return;
     }
 
-    const axisTypeMap = ChartUtils.groupArray(chart.axes, 'type');
+    const axisTypeMap: AxisTypeMap = ChartUtils.groupArray(chart.axes, 'type');
 
     const seriesData = ChartUtils.makeSeriesDataFromSeries(
       series,
@@ -335,7 +342,7 @@ class FigureChartModel extends ChartModel {
    * Gets the range parser for a particular column type
    */
   getRangeParser = memoize(
-    (columnType: string, formatter: Formatter) => (range: Range) => {
+    (columnType: string, formatter?: Formatter) => (range: Range) => {
       let [rangeStart, rangeEnd]: [unknown, unknown] = range;
       const valueParser = this.getValueParser(columnType, formatter);
       rangeStart = valueParser(rangeStart);
@@ -348,7 +355,7 @@ class FigureChartModel extends ChartModel {
    * Gets the parser for parsing the range from an axis within the given chart
    */
   getAxisRangeParser = memoize(
-    (chart: Chart, formatter: Formatter) => (axis: Axis) => {
+    (chart: Chart, formatter?: Formatter) => (axis: Axis) => {
       const source = ChartUtils.getSourceForAxis(chart, axis);
       if (source) {
         return this.getRangeParser(source.columnType, formatter);
@@ -499,13 +506,26 @@ class FigureChartModel extends ChartModel {
     // Need to recalculate the padding based on how many lines of text the title is
     // Plotly doesn't handle positioning it correctly, and it's an undocumented feature
     const subtitleCount = (title ?? '').match(/<br>/g)?.length ?? 0;
-    this.layout.margin.t =
+    const margin =
       ChartUtils.DEFAULT_MARGIN.t +
       subtitleCount * ChartUtils.SUBTITLE_LINE_HEIGHT;
-    this.layout.title = title;
-    this.layout.title.pad.t =
-      ChartUtils.DEFAULT_TITLE_PADDING.t +
-      subtitleCount * ChartUtils.SUBTITLE_LINE_HEIGHT * 0.5;
+
+    if (this.layout.margin) {
+      this.layout.margin.t = margin;
+    } else {
+      this.layout.margin = { t: margin };
+    }
+
+    if (typeof this.layout.title === 'string') {
+      this.layout.title = title;
+    } else {
+      this.layout.title = { ...this.layout.title };
+      this.layout.title.text = title;
+      this.layout.title.pad = { ...this.layout.title.pad };
+      this.layout.title.pad.t =
+        ChartUtils.DEFAULT_TITLE_PADDING.t +
+        subtitleCount * ChartUtils.SUBTITLE_LINE_HEIGHT * 0.5;
+    }
   }
 
   getPlotWidth(): number {
@@ -515,8 +535,8 @@ class FigureChartModel extends ChartModel {
 
     return Math.max(
       this.rect.width -
-        (this.layout.margin.l ?? 0) -
-        (this.layout.margin.r ?? 0),
+        (this.layout.margin?.l ?? 0) -
+        (this.layout.margin?.r ?? 0),
       0
     );
   }
@@ -528,8 +548,8 @@ class FigureChartModel extends ChartModel {
 
     return Math.max(
       this.rect.height -
-        (this.layout.margin.t ?? 0) -
-        (this.layout.margin.b ?? 0),
+        (this.layout.margin?.t ?? 0) -
+        (this.layout.margin?.b ?? 0),
       0
     );
   }
@@ -590,7 +610,10 @@ class FigureChartModel extends ChartModel {
 
     const seriesData = this.seriesDataMap.get(name);
     const property = ChartUtils.getPlotlyProperty(plotStyle, sourceType);
-    set(seriesData, property, dataArray);
+
+    if (seriesData) {
+      set(seriesData, property, dataArray);
+    }
   }
 
   /**
@@ -612,14 +635,24 @@ class FigureChartModel extends ChartModel {
         seriesData.width = width;
       }
     } else if (plotStyle === dh.plot.SeriesPlotStyle.LINE) {
+      assertNotNull(seriesData);
       const { x, xLow, xHigh, y, yLow, yHigh } = seriesData;
       if (xLow && xHigh && xLow !== x) {
-        seriesData.error_x = ChartUtils.getPlotlyErrorBars(x, xLow, xHigh);
+        seriesData.error_x = ChartUtils.getPlotlyErrorBars(
+          x as number[],
+          xLow,
+          xHigh
+        );
       }
       if (yLow && yHigh && yLow !== y) {
-        seriesData.error_y = ChartUtils.getPlotlyErrorBars(y, yLow, yHigh);
+        seriesData.error_y = ChartUtils.getPlotlyErrorBars(
+          y as number[],
+          yLow,
+          yHigh
+        );
       }
     } else if (plotStyle === dh.plot.SeriesPlotStyle.TREEMAP) {
+      assertNotNull(seriesData);
       const { ids, labels } = seriesData;
       if (ids !== undefined && labels === undefined) {
         // If the user only provided IDs, we assign the IDs to the labels property as well automatically
@@ -629,11 +662,11 @@ class FigureChartModel extends ChartModel {
     }
   }
 
-  getData(): PlotData[] {
+  getData(): Partial<PlotData>[] {
     return this.data;
   }
 
-  getLayout(): Layout {
+  getLayout(): Partial<Layout> {
     return this.layout;
   }
 

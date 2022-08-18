@@ -42,7 +42,7 @@ const VariableType = {
 } as const;
 
 export interface CalendarStatic {
-  DayOfWeek: Record<string, string>;
+  DayOfWeek: { values: () => string[] };
 }
 
 export type VariableTypeUnion = typeof VariableType[keyof typeof VariableType];
@@ -180,13 +180,13 @@ export interface FigureDescriptor {
   updateInterval: number;
   rows: number;
   cols: number;
-  charts: ChartDescriptor[];
+  charts: Partial<ChartDescriptor>[];
 }
 export interface ChartDescriptor {
   rowspan: number;
   colspan: number;
-  series: SeriesDescriptor[];
-  axes: AxisDescriptor[];
+  series: Partial<SeriesDescriptor>[];
+  axes: Partial<AxisDescriptor>[];
   chartType: string;
   title: string;
   titleFont: string;
@@ -249,7 +249,7 @@ export interface Figure extends Evented {
   readonly EVENT_SERIES_ADDED: string;
 
   /** Given a client-created figure descriptor, generate a figure that can be subscribed to */
-  create(figure: FigureDescriptor): Figure;
+  create(figure: Partial<FigureDescriptor>): Figure;
 
   readonly title: string;
   readonly titleFont: string;
