@@ -1,5 +1,4 @@
 import dh from '@deephaven/jsapi-shim';
-import ChartUtils from './ChartUtils';
 import ChartTestUtils from './ChartTestUtils';
 import FigureChartModel from './FigureChartModel';
 
@@ -184,20 +183,6 @@ describe('axis transform tests', () => {
 });
 
 describe('multiple axes', () => {
-  let originalOffset = null;
-  let originalMaxDomain = null;
-
-  beforeAll(() => {
-    originalOffset = ChartUtils.MULTIPLE_AXIS_OFFSET;
-    originalMaxDomain = ChartUtils.MULTIPLE_AXIS_MAX_X_DOMAIN;
-    ChartUtils.MULTIPLE_AXIS_OFFSET = 0.15;
-    ChartUtils.MULTIPLE_AXIS_MAX_X_DOMAIN = 0.85;
-  });
-
-  afterAll(() => {
-    ChartUtils.MULTIPLE_AXIS_OFFSET = originalOffset;
-    ChartUtils.MULTIPLE_AXIS_MAX_X_DOMAIN = originalMaxDomain;
-  });
   it('handles two y-axes properly', () => {
     const xaxis = ChartTestUtils.makeAxis({
       label: 'x1',
@@ -442,10 +427,7 @@ it('adds new series', () => {
     charts: [chart],
   });
   const model = new FigureChartModel(figure);
-  model.subscribe(
-    () => {},
-    () => {}
-  );
+  model.subscribe(jest.fn(), jest.fn());
 
   expect(model.getData()).toEqual([
     expect.objectContaining({

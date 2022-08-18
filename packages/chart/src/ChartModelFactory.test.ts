@@ -5,8 +5,9 @@ import FigureChartModel from './FigureChartModel';
 describe('creating model from metadata', () => {
   it('handles loading a FigureChartModel from table settings', async () => {
     const columns = [{ name: 'A' }, { name: 'B' }, { name: 'C' }];
-    const table = new dh.Table({ columns });
-    const settings = { series: ['C'], xAxis: 'name' };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const table = new (dh as any).Table({ columns });
+    const settings = { series: ['C'], xAxis: 'name', type: 'PIE' as const };
     const model = await ChartModelFactory.makeModelFromSettings(
       settings,
       table
