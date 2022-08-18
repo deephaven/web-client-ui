@@ -1,8 +1,10 @@
+// This is a dev dependency for building, so importing dev deps is fine
 /* eslint-disable import/no-extraneous-dependencies */
 import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
 import dns from 'dns';
+import { resolve } from 'path/posix';
 
 // Open on localhost instead of 127.0.0.1 for Node < 17
 // https://github.com/vitejs/vite/issues/9195
@@ -28,14 +30,17 @@ export default defineConfig(({ mode }) => {
   // These are paths which should be proxied to the core server
   // https://vitejs.dev/config/server-options.html#server-proxy
   const proxy = {};
-  const proxyPaths = [
-    env.VITE_CORE_API_URL,
-    env.VITE_NOTEBOOKS_URL,
-    env.VITE_LAYOUTS_URL,
-  ];
 
+  // Some paths need to proxy to the engine server
+  // Vite does not have a "any unknown fallback to proxy" like CRA
+  // It is possible to add one with a custom middleware though if this list grows
   if (env.VITE_PROXY_URL) {
-    proxyPaths.forEach(p => {
+    [
+      env.VITE_CORE_API_URL,
+      env.VITE_NOTEBOOKS_URL,
+      env.VITE_LAYOUTS_URL,
+      env.VITE_MODULE_PLUGINS_URL,
+    ].forEach(p => {
       proxy[p] = {
         target: env.VITE_PROXY_URL,
         changeOrigin: true,
@@ -43,10 +48,15 @@ export default defineConfig(({ mode }) => {
     });
   }
 
+  let port = Number.parseInt(env.PORT, 10);
+  if (Number.isNaN(port) || port <= 0) {
+    port = 4000;
+  }
+
   return {
     base: env.BASE_URL,
     server: {
-      port: Number.parseInt(env.PORT, 10) ?? 4000,
+      port,
       open: true,
       proxy,
     },
@@ -74,11 +84,6 @@ export default defineConfig(({ mode }) => {
           replacement: `${packagesDir}/$1/src`,
         },
       ],
-      // TODO: See if this is better than the last find/replace above
-      // In theory this can load from package.json source field instead of main
-      // It seems there is currently a bug though
-      // https://github.com/vitejs/vite/issues/8659
-      // mainFields: ['source', 'module', 'main', 'jsnext:main', 'jsnext'],
     },
     build: {
       outDir: path.resolve(__dirname, env.VITE_BUILD_PATH),
@@ -106,6 +111,16 @@ export default defineConfig(({ mode }) => {
     // https://vitejs.dev/guide/dep-pre-bundling.html#monorepos-and-linked-dependencies
     optimizeDeps: {
       include: ['@deephaven/golden-layout'],
+      // plotly.js requires buffer and vite tries to externalize it
+      // dev mode fails to start if it isn't excluded from being externalized
+      exclude: ['buffer'],
+      esbuildOptions: {
+        // Plotly imports has-hover which needs global to exist
+        // Without this, dev mode does not start properly
+        define: {
+          global: 'globalThis',
+        },
+      },
     },
     plugins: [
       htmlPlugin(),

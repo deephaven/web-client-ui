@@ -20,7 +20,6 @@ module.exports = api => ({
     ['@babel/preset-typescript', { allowDeclareFields: true }],
   ],
   plugins: [
-    api.env('test') ? false : ['babel-plugin-add-import-extension'],
     api.env('test')
       ? [
           // This is needed to replace import.meta w/ process in Jest
@@ -28,7 +27,8 @@ module.exports = api => ({
           // import.meta is only avaialable in ESM
           path.resolve(__dirname, 'importMetaEnvPlugin'),
         ]
-      : false,
+      : // The add-import-extension plugin causes Jest to error, but is needed for proper ESM builds
+        ['babel-plugin-add-import-extension'],
     [
       'transform-rename-import',
       {
