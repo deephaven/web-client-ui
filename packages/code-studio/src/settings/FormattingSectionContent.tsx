@@ -63,17 +63,17 @@ function isFormatStringFormat(
 }
 
 interface FormattingSectionContentProps {
-  formatter?: FormatterItem[];
-  defaultDateTimeFormat?: string;
-  showTimeZone?: boolean;
-  showTSeparator?: boolean;
-  timeZone?: string;
-  truncateNumbersWithPound?: boolean;
-  settings?: WorkspaceSettings;
-  saveSettings?: (settings: WorkspaceSettings) => void;
+  formatter: FormatterItem[];
+  defaultDateTimeFormat: string;
+  showTimeZone: boolean;
+  showTSeparator: boolean;
+  timeZone: string;
+  truncateNumbersWithPound: boolean;
+  settings: WorkspaceSettings;
+  saveSettings: (settings: WorkspaceSettings) => void;
   scrollTo: (x: number, y: number) => void;
-  defaultDecimalFormatOptions?: FormatOption;
-  defaultIntegerFormatOptions?: FormatOption;
+  defaultDecimalFormatOptions: FormatOption;
+  defaultIntegerFormatOptions: FormatOption;
   defaults: {
     defaultDateTimeFormat: string;
     defaultDecimalFormatOptions: FormatOption;
@@ -85,15 +85,15 @@ interface FormattingSectionContentProps {
 }
 
 interface FormattingSectionContentState {
-  formatSettings?: FormatterItem[];
+  formatSettings: FormatterItem[];
   formatRulesChanged: boolean;
-  showTimeZone?: boolean;
-  showTSeparator?: boolean;
-  timeZone?: string;
-  defaultDateTimeFormat?: string;
-  defaultDecimalFormatOptions?: FormatOption;
-  defaultIntegerFormatOptions?: FormatOption;
-  truncateNumbersWithPound?: boolean;
+  showTimeZone: boolean;
+  showTSeparator: boolean;
+  timeZone: string;
+  defaultDateTimeFormat: string;
+  defaultDecimalFormatOptions: FormatOption;
+  defaultIntegerFormatOptions: FormatOption;
+  truncateNumbersWithPound: boolean;
   timestampAtMenuOpen: Date;
 }
 
@@ -130,30 +130,28 @@ export class FormattingSectionContent extends PureComponent<
   }
 
   static isSameOptions(
-    options1?: FormatOption,
-    options2?: FormatOption
+    options1: FormatOption,
+    options2: FormatOption
   ): boolean {
-    return options1?.defaultFormatString === options2?.defaultFormatString;
+    return options1.defaultFormatString === options2.defaultFormatString;
   }
 
   static isSameDecimalOptions(
-    options1?: FormatOption,
-    options2?: FormatOption
+    options1: FormatOption,
+    options2: FormatOption
   ): boolean {
     return FormattingSectionContent.isSameOptions(options1, options2);
   }
 
   static isSameIntegerOptions(
-    options1?: FormatOption,
-    options2?: FormatOption
+    options1: FormatOption,
+    options2: FormatOption
   ): boolean {
     return FormattingSectionContent.isSameOptions(options1, options2);
   }
 
   static isValidColumnName(name: string): boolean {
-    return (
-      name != null && name !== '' && DbNameValidator.isValidColumnName(name)
-    );
+    return name !== '' && DbNameValidator.isValidColumnName(name);
   }
 
   static isValidFormat(
@@ -313,7 +311,7 @@ export class FormattingSectionContent extends PureComponent<
       truncateNumbersWithPound,
     } = props;
 
-    const formatSettings = formatter?.map((item, i) => ({
+    const formatSettings = formatter.map((item, i) => ({
       ...item,
       id: i,
     }));
@@ -321,7 +319,7 @@ export class FormattingSectionContent extends PureComponent<
     this.containerRef = React.createRef();
     this.addFormatRuleButtonRef = React.createRef();
 
-    this.lastFormatRuleIndex = formatSettings?.length ?? 0;
+    this.lastFormatRuleIndex = formatSettings.length;
 
     this.state = {
       formatSettings,
@@ -358,7 +356,7 @@ export class FormattingSectionContent extends PureComponent<
   isDuplicateRule(rule: FormatterItem): boolean {
     const { formatSettings } = this.state;
     return (
-      formatSettings?.some(
+      formatSettings.some(
         item =>
           item.id !== rule.id &&
           item.columnName === rule.columnName &&
@@ -495,7 +493,7 @@ export class FormattingSectionContent extends PureComponent<
     this.setState(
       state => {
         const { formatSettings: oldFormatSettings } = state;
-        const formatSettings = oldFormatSettings?.filter(
+        const formatSettings = oldFormatSettings.filter(
           (item, i) => i !== index
         );
         return {
@@ -630,11 +628,11 @@ export class FormattingSectionContent extends PureComponent<
 
     const formatter =
       formatSettings
-        ?.filter(FormattingSectionContent.isFormatRuleValidForSave)
+        .filter(FormattingSectionContent.isFormatRuleValidForSave)
         .map(FormattingSectionContent.removeFormatRuleExtraProps) ?? [];
 
     const { settings, saveSettings } = this.props;
-    const newSettings: Partial<WorkspaceSettings> = {
+    const newSettings: WorkspaceSettings = {
       ...settings,
       formatter: formatter as FormattingRule[],
       defaultDateTimeFormat,
@@ -647,7 +645,7 @@ export class FormattingSectionContent extends PureComponent<
       FormattingSectionContent.isValidFormat(
         TableUtils.dataType.DECIMAL,
         DecimalColumnFormatter.makeCustomFormat(
-          defaultDecimalFormatOptions?.defaultFormatString
+          defaultDecimalFormatOptions.defaultFormatString
         )
       )
     ) {
@@ -657,13 +655,13 @@ export class FormattingSectionContent extends PureComponent<
       FormattingSectionContent.isValidFormat(
         TableUtils.dataType.INT,
         IntegerColumnFormatter.makeCustomFormat(
-          defaultIntegerFormatOptions?.defaultFormatString
+          defaultIntegerFormatOptions.defaultFormatString
         )
       )
     ) {
       newSettings.defaultIntegerFormatOptions = defaultIntegerFormatOptions;
     }
-    saveSettings?.(newSettings as WorkspaceSettings);
+    saveSettings(newSettings);
   }
 
   scrollToFormatBlockBottom(): void {
@@ -943,7 +941,7 @@ export class FormattingSectionContent extends PureComponent<
       defaultFormatString: defaultIntegerFormatString = IntegerColumnFormatter.DEFAULT_FORMAT_STRING,
     } = defaultIntegerFormatOptions ?? {};
 
-    const formatRules = formatSettings?.map((rule, index) => (
+    const formatRules = formatSettings.map((rule, index) => (
       <CSSTransition
         key={rule.id}
         classNames="fade"

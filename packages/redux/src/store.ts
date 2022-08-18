@@ -28,10 +28,10 @@ export interface Storage {
 
 export interface WorkspaceSettings {
   defaultDateTimeFormat: string;
-  defaultDecimalFormatOptions?: {
+  defaultDecimalFormatOptions: {
     defaultFormatString?: string;
   };
-  defaultIntegerFormatOptions?: {
+  defaultIntegerFormatOptions: {
     defaultFormatString?: string;
   };
   formatter: FormattingRule[];

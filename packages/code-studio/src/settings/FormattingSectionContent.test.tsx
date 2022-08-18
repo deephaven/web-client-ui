@@ -42,6 +42,7 @@ function renderSectionContent({
     defaultFormatString: DEFAULT_INTEGER_STRING,
   },
   defaults = makeDefaults(),
+  truncateNumbersWithPound = false,
 } = {}) {
   // eslint-disable-next-line react/jsx-props-no-spreading
   return render(
@@ -52,6 +53,7 @@ function renderSectionContent({
       showTSeparator={showTSeparator}
       timeZone={timeZone}
       defaultDateTimeFormat={defaultDateTimeFormat}
+      truncateNumbersWithPound={truncateNumbersWithPound}
       saveSettings={saveSettings}
       scrollTo={scrollTo}
       defaultDecimalFormatOptions={defaultDecimalFormatOptions}
