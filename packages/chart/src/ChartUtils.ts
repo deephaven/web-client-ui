@@ -18,7 +18,7 @@ import dh, {
   SeriesDataSource,
   SeriesPlotStyle,
   SourceType,
-  Table,
+  TableTemplate,
   TimeZone,
 } from '@deephaven/jsapi-shim';
 import set from 'lodash.set';
@@ -720,7 +720,8 @@ class ChartUtils {
         pad: 0,
       };
       seriesData.textposition = 'middle center';
-      seriesData.outsidetextfont = { color: theme.title_color };
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (seriesData as any).outsidetextfont = { color: theme.title_color };
     }
 
     if (lineColor != null) {
@@ -1599,7 +1600,7 @@ class ChartUtils {
    */
   static makeFigureSettings(
     settings: ChartModelSettings,
-    table: Table
+    table: TableTemplate
   ): {
     charts: {
       chartType: string;
@@ -1611,7 +1612,7 @@ class ChartUtils {
           type: string;
           columnName: string;
           axis: { formatType: string; type: string; position: string };
-          table: Table;
+          table: TableTemplate;
         }[];
       }[];
     }[];

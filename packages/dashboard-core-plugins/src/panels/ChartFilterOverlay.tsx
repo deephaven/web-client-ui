@@ -6,10 +6,9 @@ import { ButtonOld } from '@deephaven/components';
 import { vsPass, vsWarning } from '@deephaven/icons';
 import { TextUtils } from '@deephaven/utils';
 import { ColumnName, InputFilter } from '@deephaven/iris-grid';
-import { Column } from '@deephaven/jsapi-shim';
 import './ChartFilterOverlay.scss';
 
-export type ColumnMap = Map<ColumnName, Column>;
+export type ColumnMap = Map<ColumnName, { name: string; type: string }>;
 
 interface ChartFilterOverlayProps {
   columnMap: ColumnMap;
