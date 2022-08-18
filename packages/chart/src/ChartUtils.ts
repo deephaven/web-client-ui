@@ -1,5 +1,10 @@
 import Log from '@deephaven/log';
-import { Formatter, TableUtils } from '@deephaven/jsapi-utils';
+import {
+  DateTimeColumnFormatter,
+  Formatter,
+  TableColumnFormatter,
+  TableUtils,
+} from '@deephaven/jsapi-utils';
 import dh, {
   Axis,
   AxisPosition,
@@ -25,6 +30,7 @@ import {
   ErrorBar,
   LayoutAxis,
   AxisType as PlotlyAxisType,
+  OhclData,
 } from 'plotly.js';
 import { assertNotNull, Range } from '@deephaven/utils';
 import ChartTheme from './ChartTheme';
@@ -34,7 +40,7 @@ export interface ChartModelSettings {
   type: keyof SeriesPlotStyle;
   series: string[];
   xAxis: string;
-  title: string;
+  title?: string;
 }
 
 export interface SeriesData {
@@ -48,6 +54,44 @@ export interface SeriesData {
   xHigh?: number;
 }
 
+type LayoutAxisKey =
+  | 'xaxis'
+  | 'xaxis2'
+  | 'xaxis3'
+  | 'xaxis4'
+  | 'xaxis5'
+  | 'xaxis6'
+  | 'xaxis7'
+  | 'xaxis8'
+  | 'xaxis9'
+  | 'yaxis'
+  | 'yaxis2'
+  | 'yaxis3'
+  | 'yaxis4'
+  | 'yaxis5'
+  | 'yaxis6'
+  | 'yaxis7'
+  | 'yaxis8'
+  | 'yaxis9';
+
+export interface TreeMapData extends PlotData {
+  tiling: {
+    packing: 'squarify';
+    pad: 0;
+  };
+}
+
+interface Rangebreaks {
+  bounds?: number[];
+  dvalue?: number;
+  enable?: boolean;
+  name?: string;
+  pattern?: 'day of week' | 'hour' | '';
+  values?: string[];
+}
+interface RangebreakAxisFormat extends PlotlyAxis {
+  rangebreaks: Rangebreaks[];
+}
 interface PlotlyFormat {
   tickprefix?: string;
   tickformat?: string | null;
@@ -78,6 +122,12 @@ function isDateWrapper(value: unknown): value is DateWrapper {
 
 function isLongWrapper(value: unknown): value is LongWrapper {
   return (value as LongWrapper).asNumber !== undefined;
+}
+
+function isDateTimeColumnFormatter(
+  value: TableColumnFormatter
+): value is DateTimeColumnFormatter {
+  return (value as DateTimeColumnFormatter).dhTimeZone !== undefined;
 }
 
 class ChartUtils {
@@ -328,6 +378,7 @@ class ChartUtils {
     const dataFormatter = formatter?.getColumnTypeFormatter(columnType);
     if (
       dataFormatter != null &&
+      isDateTimeColumnFormatter(dataFormatter) &&
       dataFormatter.dhTimeZone != null &&
       dataFormatter.showTimeZone
     ) {
@@ -466,7 +517,7 @@ class ChartUtils {
         // Need to convert from nanoseconds to milliseconds
         tickSpacing = gapBetweenMajorTicks / NANOS_PER_MILLI;
       }
-      if (axis.isLog) {
+      if (axis.log) {
         tickSpacing = Math.log(tickSpacing);
       }
       // Note that tickmode defaults to 'auto'
@@ -551,7 +602,7 @@ class ChartUtils {
     series: Series,
     axisTypeMap: AxisTypeMap,
     seriesVisibility: boolean | 'legendonly',
-    theme: Record<string, unknown>
+    theme = ChartTheme
   ): Partial<PlotData> {
     const { name, plotStyle, lineColor, shapeColor, sources } = series;
 
@@ -619,7 +670,7 @@ class ChartUtils {
   static addStylingToSeriesData(
     seriesDataParam: Partial<PlotData>,
     plotStyle: SeriesPlotStyle,
-    theme: Record<string, unknown> = {},
+    theme: typeof ChartTheme = ChartTheme,
     lineColor: string | null = null,
     shapeColor: string | null = null,
     seriesVisibility: 'legendonly' | boolean | null = null
@@ -646,19 +697,25 @@ class ChartUtils {
         width: 1,
       });
     } else if (plotStyle === dh.plot.SeriesPlotStyle.OHLC) {
-      seriesData.increasing = {
+      (seriesData as Partial<OhclData>).increasing = {
         line: { color: theme.ohlc_increasing },
       };
-      seriesData.decreasing = {
+      (seriesData as Partial<OhclData>).decreasing = {
         line: { color: theme.ohlc_decreasing },
       };
     } else if (plotStyle === dh.plot.SeriesPlotStyle.PIE) {
       seriesData.textinfo = 'label+percent';
-      seriesData.outsidetextfont = { color: theme.title_color };
+
+      // TODO Open DefinitelyTyped/Plotly PR to mark family and size as optional
+      // https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/plotly.js/lib/traces/pie.d.ts#L6
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (seriesData as any).outsidetextfont = {
+        color: theme.title_color,
+      };
     } else if (plotStyle === dh.plot.SeriesPlotStyle.TREEMAP) {
       seriesData.hoverinfo = 'text';
       seriesData.textinfo = 'label+text';
-      seriesData.tiling = {
+      (seriesData as TreeMapData).tiling = {
         packing: 'squarify',
         pad: 0,
       };
@@ -736,23 +793,27 @@ class ChartUtils {
 
               const { businessCalendar } = axis;
               if (businessCalendar) {
-                axisFormat.rangebreaks = [];
+                (axisFormat as RangebreakAxisFormat).rangebreaks = [];
                 const {
                   businessPeriods,
                   businessDays,
                   holidays,
                   timeZone: calendarTimeZone,
                 } = businessCalendar;
-                const formatterTimeZone = formatter?.getColumnTypeFormatter(
+                const typeFormatter = formatter?.getColumnTypeFormatter(
                   BUSINESS_COLUMN_TYPE
-                )?.dhTimeZone;
+                );
+                let formatterTimeZone;
+                if (isDateTimeColumnFormatter(typeFormatter)) {
+                  formatterTimeZone = typeFormatter.dhTimeZone;
+                }
                 const timeZoneDiff = formatterTimeZone
                   ? (calendarTimeZone.standardOffset -
                       formatterTimeZone.standardOffset) /
                     60
                   : 0;
                 if (holidays.length > 0) {
-                  axisFormat.rangebreaks.push(
+                  (axisFormat as RangebreakAxisFormat).rangebreaks.push(
                     ...ChartUtils.createRangeBreakValuesFromHolidays(
                       holidays,
                       calendarTimeZone,
@@ -761,7 +822,7 @@ class ChartUtils {
                   );
                 }
                 businessPeriods.forEach(period =>
-                  axisFormat.rangebreaks.push({
+                  (axisFormat as RangebreakAxisFormat).rangebreaks.push({
                     pattern: 'hour',
                     bounds: [
                       ChartUtils.periodToDecimal(period.close) + timeZoneDiff,
@@ -773,7 +834,7 @@ class ChartUtils {
                 if (businessDays.length < DAYS.length) {
                   ChartUtils.createBoundsFromDays(businessDays).forEach(
                     weekendBounds =>
-                      axisFormat.rangebreaks.push({
+                      (axisFormat as RangebreakAxisFormat).rangebreaks.push({
                         pattern: 'day of week',
                         bounds: weekendBounds,
                       })
@@ -904,7 +965,7 @@ class ChartUtils {
     plotWidth = 0,
     plotHeight = 0,
     getRangeParser: ((axis: Axis) => (range: Range) => unknown[]) | null = null,
-    theme: Partial<typeof ChartTheme> = {}
+    theme = ChartTheme
   ): void {
     const xAxisSize =
       plotWidth > 0
@@ -972,7 +1033,7 @@ class ChartUtils {
           const axisLayoutProperty = ChartUtils.getAxisLayoutProperty(
             axisProperty,
             axisIndex
-          ) as keyof Layout;
+          );
           if (layout[axisLayoutProperty] == null) {
             layout[axisLayoutProperty] = ChartUtils.makeLayoutAxis(
               axisType,
@@ -981,30 +1042,33 @@ class ChartUtils {
           }
 
           const layoutAxis = layout[axisLayoutProperty];
-          ChartUtils.updateLayoutAxis(
-            layoutAxis,
-            axis,
-            axisIndex,
-            axisPositionMap,
-            xAxisSize,
-            yAxisSize,
-            bounds
-          );
-          const { range, autorange } = layoutAxis;
-          if (getRangeParser && range && !autorange) {
-            const rangeParser = getRangeParser(axis);
-            const [rangeStart, rangeEnd] = rangeParser(range);
-
-            log.debug(
-              'Setting downsample range',
-              plotSize,
-              rangeStart,
-              rangeEnd
+          if (layoutAxis != null) {
+            ChartUtils.updateLayoutAxis(
+              layoutAxis,
+              axis,
+              axisIndex,
+              axisPositionMap,
+              xAxisSize,
+              yAxisSize,
+              bounds
             );
 
-            axis.range(plotSize, rangeStart, rangeEnd);
-          } else {
-            axis.range(plotSize);
+            const { range, autorange } = layoutAxis;
+            if (getRangeParser && range && !autorange) {
+              const rangeParser = getRangeParser(axis);
+              const [rangeStart, rangeEnd] = rangeParser(range as Range);
+
+              log.debug(
+                'Setting downsample range',
+                plotSize,
+                rangeStart,
+                rangeEnd
+              );
+
+              axis.range(plotSize, rangeStart, rangeEnd);
+            } else {
+              axis.range(plotSize);
+            }
           }
         }
 
@@ -1028,9 +1092,9 @@ class ChartUtils {
   static getAxisLayoutProperty(
     axisProperty: 'x' | 'y' | null,
     axisIndex: number
-  ): string {
+  ): LayoutAxisKey {
     const axisIndexString = axisIndex > 0 ? `${axisIndex + 1}` : '';
-    return `${axisProperty ?? ''}axis${axisIndexString}`;
+    return `${axisProperty ?? ''}axis${axisIndexString}` as LayoutAxisKey;
   }
 
   /**
@@ -1043,7 +1107,7 @@ class ChartUtils {
    * @param bounds The bounds of the axes domains
    */
   static updateLayoutAxis(
-    layoutAxisParam: LayoutAxis,
+    layoutAxisParam: Partial<LayoutAxis>,
     axis: Axis,
     axisIndex: number,
     axisPositionMap: AxisPositionMap,
@@ -1059,13 +1123,16 @@ class ChartUtils {
     const isYAxis = axis.type === dh.plot.AxisType.Y;
     const axisSize = isYAxis ? yAxisSize : xAxisSize;
     const layoutAxis = layoutAxisParam;
-    if (typeof layoutAxis.title !== 'string') {
+    if (
+      layoutAxis.title !== undefined &&
+      typeof layoutAxis.title !== 'string'
+    ) {
       layoutAxis.title.text = axis.label;
     } else {
       layoutAxis.title = { text: axis.label };
     }
 
-    if (axis.isLog) {
+    if (axis.log) {
       layoutAxis.type = 'log';
     }
 
@@ -1074,7 +1141,8 @@ class ChartUtils {
       layoutAxis.side = side;
     }
     if (axisIndex > 0) {
-      layoutAxis.overlaying = ChartUtils.getAxisPropertyName(axis.type);
+      layoutAxis.overlaying =
+        ChartUtils.getAxisPropertyName(axis.type) ?? undefined;
 
       const positionAxes = axisPositionMap.get(axis.position) ?? [];
       const sideIndex = positionAxes.indexOf(axis);
@@ -1181,7 +1249,7 @@ class ChartUtils {
   static createRangeBreakValuesFromHolidays(
     holidays: Holiday[],
     calendarTimeZone: TimeZone,
-    formatterTimeZone: TimeZone
+    formatterTimeZone?: TimeZone
   ): { dvalue?: number; values: string[] }[] {
     const fullHolidays: string[] = [];
     const partialHolidays: {
@@ -1220,7 +1288,7 @@ class ChartUtils {
   static createFullHoliday(
     holiday: Holiday,
     calendarTimeZone: TimeZone,
-    formatterTimeZone: TimeZone
+    formatterTimeZone?: TimeZone
   ): string {
     return ChartUtils.adjustDateForTimeZone(
       `${holiday.date.toString()} 00:00:00.000000`,
@@ -1240,7 +1308,7 @@ class ChartUtils {
   static createPartialHoliday(
     holiday: Holiday,
     calendarTimeZone: TimeZone,
-    formatterTimeZone: TimeZone
+    formatterTimeZone?: TimeZone
   ): {
     values: string[];
     dvalue: number;
@@ -1292,7 +1360,7 @@ class ChartUtils {
   static adjustDateForTimeZone(
     dateString: string,
     calendarTimeZone: TimeZone,
-    formatterTimeZone: TimeZone
+    formatterTimeZone?: TimeZone
   ): string {
     if (
       formatterTimeZone &&
@@ -1409,7 +1477,7 @@ class ChartUtils {
 
   static makeLayoutAxis(
     type: AxisType,
-    theme: Partial<typeof ChartTheme> = {}
+    theme = ChartTheme
   ): Partial<LayoutAxis> {
     const axis = {
       automargin: true,
@@ -1449,7 +1517,7 @@ class ChartUtils {
    * @param {ChartTheme} theme The theme to get colorway from
    * @returns {string[]} Colorway array for the theme
    */
-  static getColorwayFromTheme(theme: Partial<typeof ChartTheme>): string[] {
+  static getColorwayFromTheme(theme = ChartTheme): string[] {
     let colorway: string[] = [];
     if (theme.colorway) {
       if (Array.isArray(theme.colorway)) {
@@ -1464,9 +1532,7 @@ class ChartUtils {
     return colorway;
   }
 
-  static makeDefaultLayout(
-    theme: Partial<typeof ChartTheme> = {}
-  ): Partial<Layout> {
+  static makeDefaultLayout(theme = ChartTheme): Partial<Layout> {
     const layout: Partial<Layout> = {
       ...theme,
       autosize: true,

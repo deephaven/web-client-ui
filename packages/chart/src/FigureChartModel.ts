@@ -46,13 +46,8 @@ class FigureChartModel extends ChartModel {
     this.handleDownsampleFail = this.handleDownsampleFail.bind(this);
     this.handleDownsampleNeeded = this.handleDownsampleNeeded.bind(this);
     this.handleRequestFailed = this.handleRequestFailed.bind(this);
-
     // We need to debounce adding series so we subscribe to them all in the same tick
     // This should no longer be necessary after IDS-5049 lands
-    this.addPendingSeries = debounce(
-      this.addPendingSeries.bind(this),
-      FigureChartModel.ADD_SERIES_DEBOUNCE
-    );
 
     this.figure = figure;
     this.settings = settings;
@@ -490,7 +485,6 @@ class FigureChartModel extends ChartModel {
     log.debug('handleFigureSeriesAdded', series);
 
     this.pendingSeries.push(series);
-
     this.addPendingSeries();
   }
 

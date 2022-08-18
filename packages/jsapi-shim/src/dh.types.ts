@@ -445,7 +445,7 @@ export interface Axis {
   readonly formatType: AxisFormatType;
   readonly type: AxisType;
   readonly position: AxisPosition;
-  readonly isLog: boolean;
+  readonly log: boolean;
   readonly label: string;
   readonly labelFont: string;
   readonly ticksFont: string;
