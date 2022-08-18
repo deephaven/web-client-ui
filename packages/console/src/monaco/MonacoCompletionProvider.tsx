@@ -30,7 +30,7 @@ class MonacoCompletionProvider extends PureComponent<
   componentDidMount(): void {
     const { language } = this.props;
     this.registeredCompletionProvider = monaco.languages.registerCompletionItemProvider(
-      language,
+      language ?? '',
       {
         provideCompletionItems: this.handleCompletionRequest,
         triggerCharacters: ['"', '.', "'", '(', '[', '{', ','],

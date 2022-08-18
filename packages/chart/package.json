@@ -50,7 +50,8 @@
   },
   "devDependencies": {
     "@deephaven/mocks": "file:../mocks",
-    "@deephaven/tsconfig": "file:../tsconfig"
+    "@deephaven/tsconfig": "file:../tsconfig",
+    "@types/plotly.js": "^2.12.2"
   },
   "files": [
     "dist"

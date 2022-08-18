@@ -720,6 +720,7 @@ class ChartUtils {
         pad: 0,
       };
       seriesData.textposition = 'middle center';
+      seriesData.outsidetextfont = { color: theme.title_color };
     }
 
     if (lineColor != null) {

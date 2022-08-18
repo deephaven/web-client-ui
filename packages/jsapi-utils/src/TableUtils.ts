@@ -283,7 +283,7 @@ export class TableUtils {
     return sorts;
   }
 
-  static getNormalizedType(columnType: string): DataType {
+  static getNormalizedType(columnType?: string | null): DataType {
     switch (columnType) {
       case 'boolean':
       case 'java.lang.Boolean':
@@ -430,7 +430,10 @@ export class TableUtils {
    * @param type2 Column type to check
    * @returns True, if types are compatible
    */
-  static isCompatibleType(type1: string, type2: string): boolean {
+  static isCompatibleType(
+    type1?: string | null,
+    type2?: string | null
+  ): boolean {
     return (
       TableUtils.getNormalizedType(type1) ===
       TableUtils.getNormalizedType(type2)

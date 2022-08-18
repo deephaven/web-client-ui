@@ -53,8 +53,8 @@
     "react-scripts": "4.0.3",
     "react-transition-group": "^4.4.2",
     "reactstrap": "^8.10.0",
-    "redux": "^4.0.5",
-    "redux-thunk": "^2.3.0",
+    "redux": "^4.2.0",
+    "redux-thunk": "^2.4.1",
     "regenerator-runtime": "^0.13.9",
     "shortid": "^2.2.16",
     "webdav": "^4.6.1"

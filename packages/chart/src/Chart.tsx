@@ -529,9 +529,11 @@ export class Chart extends Component<ChartProps, ChartState> {
     ) {
       // Call relayout to resize avoiding the debouncing plotly does
       // https://github.com/plotly/plotly.js/issues/2769#issuecomment-402099552
-      Plotly.relayout(this.plot.current.el, { autosize: true }).catch(e => {
-        log.debug('Unable to resize, promise rejected', e);
-      });
+      Plotly.relayout(this.plot.current.el, { autosize: true }).catch(
+        (e: unknown) => {
+          log.debug('Unable to resize, promise rejected', e);
+        }
+      );
     }
   }
 

@@ -27,6 +27,8 @@ We are still using node 16.x and npm 8.x. If you are [using nvm](https://github.
 
   Note that log messages from other sources such as react prop types will still be printed since they do not go through our logger.
 
+  If you want to collect coverage locally, run `npm test -- --coverage`
+
 - `npm run build`: Create a production build of all packages. Mainly used by CI when packaging up a production version of the app.
 
 ## Package Overview

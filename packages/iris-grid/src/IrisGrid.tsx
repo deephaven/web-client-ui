@@ -228,6 +228,10 @@ type Settings = {
   truncateNumbersWithPound?: boolean;
 };
 
+export type FilterMap = Map<
+  ColumnName,
+  { columnType: string; text: string; value: unknown }
+>;
 export interface IrisGridProps {
   children: React.ReactNode;
   advancedFilters: AdvancedFilterMap;
@@ -270,7 +274,7 @@ export interface IrisGridProps {
   isStuckToRight: boolean;
 
   // eslint-disable-next-line react/no-unused-prop-types
-  columnSelectionValidator: (value: Column | null) => false;
+  columnSelectionValidator: (value: Column | null) => boolean;
   columnAllowedCursor: string;
 
   // eslint-disable-next-line react/no-unused-prop-types
@@ -1404,6 +1408,10 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     return quickFilters.delete(modelIndex);
   }
 
+  setAdvancedFilterMap(advancedFilters: AdvancedFilterMap): void {
+    this.setState({ advancedFilters });
+  }
+
   setAdvancedFilter(
     modelIndex: ModelIndex,
     filter: FilterCondition | null,
@@ -1453,12 +1461,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
    * Set grid filters based on the filter map
    * @param filterMap Filter map
    */
-  setFilterMap(
-    filterMap: Map<
-      ColumnName,
-      { columnType: string; text: string; value: unknown }
-    >
-  ): void {
+  setFilterMap(filterMap: FilterMap): void {
     log.debug('setFilterMap', filterMap);
 
     const { advancedSettings } = this.props;
