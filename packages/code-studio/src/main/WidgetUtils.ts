@@ -13,6 +13,7 @@ import { getTimeZone, store } from '@deephaven/redux';
 import {
   ChartPanelMetadata,
   GLChartPanelState,
+  isChartPanelTableMetadata,
 } from '@deephaven/dashboard-core-plugins';
 
 export type GridPanelMetadata = {
@@ -24,12 +25,22 @@ export const createChartModel = async (
   metadata: ChartPanelMetadata,
   panelState?: GLChartPanelState
 ): Promise<ChartModel> => {
-  let {
-    settings = {},
-    table: tableName = '',
-    figure: figureName = '',
-    tableSettings = {},
-  } = metadata;
+  let settings;
+  let tableName;
+  let figureName;
+  let tableSettings;
+
+  if (isChartPanelTableMetadata(metadata)) {
+    settings = metadata.settings;
+    tableName = metadata.table;
+    figureName = '';
+    tableSettings = metadata.tableSettings;
+  } else {
+    settings = {};
+    tableName = '';
+    figureName = metadata.figure;
+    tableSettings = {};
+  }
   if (panelState) {
     if (panelState.tableSettings) {
       tableSettings = panelState.tableSettings;

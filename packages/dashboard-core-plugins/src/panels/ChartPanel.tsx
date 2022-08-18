@@ -70,7 +70,7 @@ export type FilterMap = Map<string, string>;
 
 export type LinkedColumnMap = Map<string, Column>;
 
-function isChartPanelTableMetadata(
+export function isChartPanelTableMetadata(
   metadata: ChartPanelMetadata
 ): metadata is ChartPanelTableMetadata {
   return (metadata as ChartPanelTableMetadata).settings !== undefined;

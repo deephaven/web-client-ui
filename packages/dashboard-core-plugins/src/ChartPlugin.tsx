@@ -63,7 +63,11 @@ export const ChartPlugin = (props: ChartPluginProps): JSX.Element => {
   useEffect(
     function registerComponentsAndReturnCleanup() {
       const cleanups = [
-        registerComponent(ChartPanel.COMPONENT, ChartPanel, hydrate),
+        registerComponent(
+          ChartPanel.COMPONENT,
+          ChartPanel,
+          hydrate as PanelHydrateFunction
+        ),
       ];
       return () => {
         cleanups.forEach(cleanup => cleanup());
