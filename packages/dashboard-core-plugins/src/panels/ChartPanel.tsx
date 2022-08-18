@@ -70,11 +70,17 @@ export type FilterMap = Map<string, string>;
 
 export type LinkedColumnMap = Map<string, Column>;
 
-export interface ChartPanelMetadata {
+function isChartPanelTableMetadata(
+  metadata: ChartPanelMetadata
+): metadata is ChartPanelTableMetadata {
+  return (metadata as ChartPanelTableMetadata).settings !== undefined;
+}
+export type ChartPanelFigureMetadata = {
   figure: string;
+};
+
+export type ChartPanelTableMetadata = {
   table: string;
-  query: string;
-  querySerial: string;
   sourcePanelId: string;
   settings: {
     isLinked: boolean;
@@ -84,7 +90,11 @@ export interface ChartPanelMetadata {
     type: SeriesPlotStyle;
   };
   tableSettings: ChartPanelTableSettings;
-}
+};
+
+export type ChartPanelMetadata =
+  | ChartPanelFigureMetadata
+  | ChartPanelTableMetadata;
 
 type Settings = Record<string, unknown>;
 
@@ -243,7 +253,11 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
       isDisconnected: false,
       isLoading: false,
       isLoaded: false,
-      isLinked: metadata && metadata.settings && metadata.settings.isLinked,
+      isLinked:
+        metadata &&
+        isChartPanelTableMetadata(metadata) &&
+        metadata.settings &&
+        metadata.settings.isLinked,
 
       // Map of all non-empty filters applied to the chart.
       // Initialize the filter map to the previously stored values; input filters will be applied after load.
@@ -607,7 +621,6 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
   updateModelFromSource(): void {
     const { metadata, source } = this.props;
     const { isLinked, model } = this.state;
-    const { settings } = metadata;
     if (!isLinked || !model || !source) {
       log.debug2('updateModelFromSource ignoring', isLinked, model, source);
       return;
@@ -615,21 +628,24 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
 
     // By now the model has already been loaded, which is the only other cancelable thing in pending
     this.pending.cancel();
-    this.pending
-      .add(
-        dh.plot.Figure.create(
-          (ChartUtils.makeFigureSettings(
-            settings,
-            source
-          ) as unknown) as FigureDescriptor
+    if (isChartPanelTableMetadata(metadata)) {
+      const { settings } = metadata;
+      this.pending
+        .add(
+          dh.plot.Figure.create(
+            (ChartUtils.makeFigureSettings(
+              settings,
+              source
+            ) as unknown) as FigureDescriptor
+          )
         )
-      )
-      .then(figure => {
-        if (isFigureChartModel(model)) {
-          model.setFigure(figure);
-        }
-      })
-      .catch(this.handleLoadError);
+        .then(figure => {
+          if (isFigureChartModel(model)) {
+            model.setFigure(figure);
+          }
+        })
+        .catch(this.handleLoadError);
+    }
 
     this.updatePanelState();
   }
@@ -1041,7 +1057,12 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
       isLoaded,
       isLoading,
     } = this.state;
-    const { figure: figureName, table: tableName } = metadata;
+    let name;
+    if (isChartPanelTableMetadata(metadata)) {
+      name = metadata.table;
+    } else {
+      name = metadata.figure;
+    }
     const inputFilterMap = this.getInputFilterColumnMap(
       columnMap,
       inputFilters
@@ -1086,7 +1107,7 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
         isDisconnected={isDisconnected}
         isLoading={isLoading}
         isLoaded={isLoaded}
-        widgetName={figureName || tableName}
+        widgetName={name}
         widgetType="Chart"
       >
         <div

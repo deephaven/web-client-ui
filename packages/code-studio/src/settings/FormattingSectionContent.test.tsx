@@ -1,5 +1,5 @@
 import React from 'react';
-import { render } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { DateTimeColumnFormatter } from '@deephaven/jsapi-utils';
 import { WorkspaceSettings } from '@deephaven/redux';
@@ -107,7 +107,7 @@ describe('default decimal formatting', () => {
     const defaultFormatOptions = {
       defaultFormatString: DEFAULT_DECIMAL_STRING,
     };
-    const { container } = renderSectionContent({
+    renderSectionContent({
       saveSettings,
       defaultDecimalFormatOptions: {
         defaultFormatString: '000',
@@ -117,7 +117,7 @@ describe('default decimal formatting', () => {
       }),
     });
 
-    const element = container.querySelector('.btn-reset-decimal');
+    const element = screen.getByTestId('btn-reset-decimal');
     expect(element).not.toBeNull();
     assertNotNull(element);
     userEvent.click(element);
@@ -164,7 +164,7 @@ describe('default integer formatting', () => {
     const defaultFormatOptions = {
       defaultFormatString: DEFAULT_INTEGER_STRING,
     };
-    const { container } = renderSectionContent({
+    renderSectionContent({
       saveSettings,
       defaultIntegerFormatOptions: {
         defaultFormatString: '000',
@@ -174,7 +174,7 @@ describe('default integer formatting', () => {
       }),
     });
 
-    const element = container.querySelector('.btn-reset-integer');
+    const element = screen.getByTestId('btn-reset-integer');
     expect(element).not.toBeNull();
     assertNotNull(element);
     userEvent.click(element);

@@ -15,8 +15,6 @@ import {
   GLChartPanelState,
 } from '@deephaven/dashboard-core-plugins';
 
-// export type ChartPanelPanelState = Partial<ChartPanelMetadata>;
-
 export type GridPanelMetadata = {
   table: string;
 };

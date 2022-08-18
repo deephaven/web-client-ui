@@ -1,5 +1,4 @@
 /* eslint-disable */
-// @ts-nocheck
 import React, { Component } from 'react';
 import {
   Modal,

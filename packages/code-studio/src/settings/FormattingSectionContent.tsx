@@ -1109,6 +1109,7 @@ export class FormattingSectionContent extends PureComponent<
                 className={classNames('btn-reset', 'btn-reset-decimal', {
                   hidden: isDecimalOptionsDefault,
                 })}
+                data-testid="btn-reset-decimal"
               />
             </div>
           </div>
@@ -1151,6 +1152,7 @@ export class FormattingSectionContent extends PureComponent<
                 className={classNames('btn-reset', 'btn-reset-integer', {
                   hidden: isIntegerOptionsDefault,
                 })}
+                data-testid="btn-reset-integer"
               />
             </div>
           </div>
