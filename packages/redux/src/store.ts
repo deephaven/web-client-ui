@@ -13,8 +13,20 @@ export interface DeephavenPluginModule {}
 
 export type DeephavenPluginModuleMap = Map<string, DeephavenPluginModule>;
 
+export interface UserPermissions {
+  isSuperUser: boolean;
+  isQueryViewOnly: boolean;
+  isNonInteractive: boolean;
+  canUsePanels: boolean;
+  canCreateDashboard: boolean;
+  canCreateCodeStudio: boolean;
+  canCreateQueryMonitor: boolean;
+  canCopy: boolean;
+  canDownloadCsv: boolean;
+}
+
 export interface User {
-  permissions: { canCopy: boolean; canDownloadCsv: boolean };
+  permissions: UserPermissions;
   name: string;
   operateAs: string;
   groups: string[];
@@ -57,7 +69,12 @@ export interface WorkspaceData {
 export interface Workspace {
   data: WorkspaceData;
 }
-export type DashboardData = Record<string, unknown>;
+export type DashboardData = {
+  closed: unknown[];
+  filterSets: unknown[];
+  links: unknown[];
+  openedMap: Map<string | string[], unknown>;
+};
 
 export interface WorkspaceStorage {
   load(): Promise<Workspace>;

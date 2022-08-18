@@ -10,7 +10,7 @@ import classNames from 'classnames';
 import memoize from 'memoize-one';
 import { CSSTransition } from 'react-transition-group';
 import { connect } from 'react-redux';
-import { withRouter } from 'react-router-dom';
+import { RouteComponentProps, withRouter } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   ContextActions,
@@ -25,6 +25,7 @@ import {
   SHORTCUTS as IRIS_GRID_SHORTCUTS,
 } from '@deephaven/iris-grid';
 import {
+  ClosedPanels,
   Dashboard,
   DashboardLayoutConfig,
   DashboardPanelProps,
@@ -55,6 +56,7 @@ import {
   ChartPanelProps,
   PandasPanelProps,
   IrisGridPanelProps,
+  ColumnSelectionValidator,
 } from '@deephaven/dashboard-core-plugins';
 import { vsGear, dhShapes, dhPanels } from '@deephaven/icons';
 import dh, {
@@ -74,6 +76,7 @@ import {
   DeephavenPluginModuleMap,
   WorkspaceData,
   RootState,
+  UserPermissions,
 } from '@deephaven/redux';
 import { PromiseUtils } from '@deephaven/utils';
 import GoldenLayout, { ItemConfigType } from '@deephaven/golden-layout';
@@ -105,25 +108,13 @@ type InputFileFormat =
   | Blob
   | NodeJS.ReadableStream;
 
-export type DashboadData = {
-  closed: [];
-  columnSelectionValidator?: unknown;
+export type AppDashboardData = {
+  closed: ClosedPanels;
+  columnSelectionValidator?: ColumnSelectionValidator;
   filterSets: FilterSet[];
   links: Link[];
   openedMap: Map<string | string[], Component>;
 };
-
-interface UserPermissions {
-  isSuperUser: boolean;
-  isQueryViewOnly: boolean;
-  isNonInteractive: boolean;
-  canUsePanels: boolean;
-  canCreateDashboard: boolean;
-  canCreateCodeStudio: boolean;
-  canCreateQueryMonitor: boolean;
-  canCopy: boolean;
-  canDownloadCsv: boolean;
-}
 
 interface User {
   name: string;
@@ -134,7 +125,7 @@ interface User {
 
 interface AppMainContainerProps {
   activeTool: string;
-  dashboardData: DashboadData;
+  dashboardData: AppDashboardData;
   layoutStorage: LayoutStorage;
   match: {
     params: { notebookPath: string };
@@ -145,7 +136,7 @@ interface AppMainContainerProps {
     id: string;
   };
   setActiveTool: (tool: string) => void;
-  updateDashboardData: (id: string, data: Partial<DashboadData>) => void;
+  updateDashboardData: (id: string, data: Partial<AppDashboardData>) => void;
   updateWorkspaceData: (workspaceData: Partial<WorkspaceData>) => void;
   user: User;
   workspace: Workspace;
@@ -160,7 +151,7 @@ interface AppMainContainerState {
 }
 
 export class AppMainContainer extends Component<
-  AppMainContainerProps,
+  AppMainContainerProps & RouteComponentProps,
   AppMainContainerState
 > {
   static handleWindowBeforeUnload(event: BeforeUnloadEvent): void {
@@ -182,7 +173,7 @@ export class AppMainContainer extends Component<
     );
   }
 
-  constructor(props: AppMainContainerProps) {
+  constructor(props: AppMainContainerProps & RouteComponentProps) {
     super(props);
     this.handleSettingsMenuHide = this.handleSettingsMenuHide.bind(this);
     this.handleSettingsMenuShow = this.handleSettingsMenuShow.bind(this);
@@ -421,7 +412,7 @@ export class AppMainContainer extends Component<
     this.sendClearFilter();
   }
 
-  handleDataChange(data: DashboadData): void {
+  handleDataChange(data: AppDashboardData): void {
     const { updateWorkspaceData } = this.props;
 
     // Only save the data that is serializable/we want to persist to the workspace
@@ -861,7 +852,10 @@ export class AppMainContainer extends Component<
 
 const mapStateToProps = (state: RootState) => ({
   activeTool: getActiveTool(state),
-  dashboardData: getDashboardData(state, DEFAULT_DASHBOARD_ID),
+  dashboardData: getDashboardData(
+    state,
+    DEFAULT_DASHBOARD_ID
+  ) as AppDashboardData,
   layoutStorage: getLayoutStorage(state),
   plugins: getPlugins(state),
   session: getDashboardSessionWrapper(state, DEFAULT_DASHBOARD_ID).session,
@@ -874,6 +868,4 @@ export default connect(mapStateToProps, {
   setActiveTool: setActiveToolAction,
   updateDashboardData: updateDashboardDataAction,
   updateWorkspaceData: updateWorkspaceDataAction,
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
 })(withRouter(AppMainContainer));
