@@ -13,6 +13,7 @@ type TooltipProps = typeof Tooltip.defaultProps & {
   reshowTimeout?: number;
   timeout?: number;
   referenceObject?: ReferenceObject | null;
+  onEntered?: () => void;
   onExited?: () => void;
   'data-testid'?: string;
 };
@@ -49,6 +50,7 @@ class Tooltip extends Component<TooltipProps, TooltipState> {
     popperClassName: '',
     reshowTimeout: Tooltip.defaultReshowTimeout,
     timeout: Tooltip.defaultTimeout,
+    onEntered: (): void => undefined,
     onExited: (): void => undefined,
     'data-testid': undefined,
   };
@@ -293,6 +295,7 @@ class Tooltip extends Component<TooltipProps, TooltipState> {
       referenceObject,
       popperClassName,
       'data-testid': dataTestId,
+      onEntered,
     } = this.props;
     const { isShown } = this.state;
     return (
@@ -305,6 +308,7 @@ class Tooltip extends Component<TooltipProps, TooltipState> {
           className={classNames(popperClassName)}
           options={options}
           ref={this.popper}
+          onEntered={onEntered}
           onExited={this.handleExited}
           interactive={interactive}
           referenceObject={referenceObject}

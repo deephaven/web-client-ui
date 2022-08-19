@@ -28,7 +28,7 @@ const HeapUsage = ({
     totalHeapSize: 0,
   });
 
-  const [hover, setHover] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
 
   const historyUsage = useRef<{ timestamps: number[]; usages: number[] }>({
     timestamps: [],
@@ -41,7 +41,7 @@ const HeapUsage = ({
         const newUsage = await connection.getWorkerHeapInfo();
         setMemoryUsage(newUsage);
 
-        if (bgMonitoring || hover) {
+        if (bgMonitoring || isOpen) {
           const currentUsage =
             (newUsage.totalHeapSize - newUsage.freeMemory) /
             newUsage.maximumHeapSize;
@@ -66,14 +66,14 @@ const HeapUsage = ({
 
       const updateUsage = setInterval(
         fetchAndUpdate,
-        hover ? hoverUpdateInterval : defaultUpdateInterval
+        isOpen ? hoverUpdateInterval : defaultUpdateInterval
       );
       return () => {
         clearInterval(updateUsage);
       };
     },
     [
-      hover,
+      isOpen,
       hoverUpdateInterval,
       connection,
       defaultUpdateInterval,
@@ -101,20 +101,8 @@ const HeapUsage = ({
         'heading-bottom-border': bottomBorder,
       })}
     >
-      <div>
-        <h6
-          style={{
-            fontWeight: 'bold',
-          }}
-        >
-          {text}
-        </h6>
-      </div>
-      <div>
-        {/* <h6> */}
-        {size}
-        {/* </h6> */}
-      </div>
+      <div className="font-weight-bold">{text}</div>
+      <div>{size}</div>
     </div>
   );
 
@@ -127,11 +115,7 @@ const HeapUsage = ({
 
   return (
     <>
-      <div
-        className="max-memory"
-        onMouseEnter={() => setHover(true)}
-        onMouseLeave={() => setHover(false)}
-      >
+      <div className="max-memory">
         <div
           className="total-memory"
           style={{
@@ -147,11 +131,14 @@ const HeapUsage = ({
             width: `calc(${usedPercentage * 100}% - ${usedPercentage * 2}px`,
           }}
         />
-
         <div className="memory-text">{maxHeapGB.toFixed(1)} GB</div>
       </div>
 
-      <Tooltip>
+      <Tooltip
+        onEntered={() => setIsOpen(true)}
+        onExited={() => setIsOpen(false)}
+        interactive
+      >
         <div className="heap-tooltip">
           {getRow(
             'In use:',
@@ -204,9 +191,7 @@ const HeapUsage = ({
             />
           </div>
           <div className="heap-utilisation-text">
-            <h6>
-              % utilization over {Math.round(monitorDuration / 1000 / 60)} min.
-            </h6>
+            % utilization over {Math.round(monitorDuration / 1000 / 60)} min.
           </div>
         </div>
       </Tooltip>
