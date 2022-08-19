@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/dashboard-core-plugins",
-  "version": "0.15.4",
+  "version": "0.15.5",
   "description": "Deephaven Dashboard Core Plugins",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
@@ -36,8 +36,8 @@
     "@deephaven/dashboard": "file:../dashboard",
     "@deephaven/file-explorer": "file:../file-explorer",
     "@deephaven/golden-layout": "file:../golden-layout",
-    "@deephaven/icons": "file:../icons",
     "@deephaven/grid": "file:../grid",
+    "@deephaven/icons": "file:../icons",
     "@deephaven/iris-grid": "file:../iris-grid",
     "@deephaven/jsapi-shim": "file:../jsapi-shim",
     "@deephaven/jsapi-utils": "file:../jsapi-utils",
