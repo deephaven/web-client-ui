@@ -31,6 +31,16 @@ jobs:
           node-version: '16.x'
           cache: 'npm'
 
+      - name: Cache jest
+        uses: actions/cache@v2
+        with:
+          path: |
+            .jest-cache
+            packages/*/.jest-cache
+          key: ${{ runner.os }}-jestcache-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-jestcache-
+
       - name: Cache linters
         uses: actions/cache@v2
         with:
@@ -51,18 +61,20 @@ jobs:
 
       # Run unit tests on all files for accurate code coverage
       # Lint only changed files so linting is faster
+      # Caching with the absolute path b/c Jest will make a folder in each project
+      # Then there's caches in all package folders
       - name: Test (Pull Request)
         if: ${{ github.event_name == 'pull_request' }}
         run: |
-          npm run test:unit -- --cacheDirectory node_modules/.cache/jest
-          npm run test:lint -- --changedSince origin/${{ github.event.pull_request.base.ref }} --cacheDirectory node_modules/.cache/jest
+          npm run test:unit -- --cacheDirectory $PWD/.jest-cache
+          npm run test:lint -- --changedSince origin/${{ github.event.pull_request.base.ref }} --cacheDirectory $PWD/.jest-cache
           npm run test:golden-layout
 
       - name: Test (Push)
         if: ${{ github.event_name == 'push' }}
         run: |
-          npm run test:unit -- --cacheDirectory node_modules/.cache/jest
-          npm run test:lint -- --lastCommit --cacheDirectory node_modules/.cache/jest
+          npm run test:unit -- --cacheDirectory $PWD/.jest-cache
+          npm run test:lint -- --lastCommit --cacheDirectory $PWD/.jest-cache
           npm run test:golden-layout
 
       - name: Codecov report
