@@ -492,7 +492,7 @@ export interface SeriesDataSource {
 
 export interface OneClick {
   readonly columns: { name: string; type: string }[];
-  readonly isRequireAllFiltersToDisplay: boolean;
+  readonly requireAllFiltersToDisplay: boolean;
 
   setValueForColumn(columnName: string, value: any): void;
   getValueForColumn(columnName: string): any;

@@ -51,9 +51,7 @@ interface ChartState {
   isDownsampleFinished: boolean;
   isDownsampleInProgress: boolean;
   isDownsamplingDisabled: boolean;
-  layout: {
-    datarevision: number;
-  };
+  layout: Partial<Layout>;
   revision: number;
 }
 
@@ -272,8 +270,8 @@ export class Chart extends Component<ChartProps, ChartState> {
     this.setState({
       data: model.getData(),
       layout: {
-        ...model.getLayout(),
         ...layout,
+        ...model.getLayout(),
       },
     });
   }
@@ -333,7 +331,9 @@ export class Chart extends Component<ChartProps, ChartState> {
         this.currentSeries += 1;
         this.setState(state => {
           const { layout, revision } = state;
-          layout.datarevision += 1;
+          if (typeof layout.datarevision === 'number') {
+            layout.datarevision += 1;
+          }
           return {
             data: detail,
             layout,
@@ -450,7 +450,7 @@ export class Chart extends Component<ChartProps, ChartState> {
    * the user is looking at has changed (eg. panning/zooming).
    * Could update each independently, but doing them at the same time keeps the
    * ChartModel API a bit cleaner.
-   * @param {boolean} force Force a change even if the chart dimensions haven't changed (eg. after pan/zoom)
+   * @param force Force a change even if the chart dimensions haven't changed (eg. after pan/zoom)
    */
   updateModelDimensions(force = false): void {
     const rect = this.getPlotRect();

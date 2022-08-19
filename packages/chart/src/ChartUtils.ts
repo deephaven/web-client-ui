@@ -92,16 +92,6 @@ interface Rangebreaks {
 interface RangebreakAxisFormat extends PlotlyAxis {
   rangebreaks: Rangebreaks[];
 }
-interface PlotlyFormat {
-  tickprefix?: string;
-  tickformat?: string | null;
-  ticksuffix?: string | null;
-  automargin?: boolean;
-  type?: string;
-  tickmode?: string;
-  dtick?: string;
-  rangebreaks?: [];
-}
 
 export type AxisTypeMap = Map<AxisType, Axis[]>;
 type AxisPositionMap = Map<AxisPosition, Axis[]>;
@@ -128,6 +118,14 @@ function isDateTimeColumnFormatter(
   value: TableColumnFormatter
 ): value is DateTimeColumnFormatter {
   return (value as DateTimeColumnFormatter).dhTimeZone !== undefined;
+}
+
+function isRangedPlotlyAxis(value: unknown): value is { range: Range[] } {
+  return (
+    value != null &&
+    (value as PlotlyAxis).range &&
+    !(value as PlotlyAxis).autorange
+  );
 }
 
 class ChartUtils {
@@ -579,7 +577,7 @@ class ChartUtils {
 
   /**
    * Create a default series data object. Apply styling to the object afterward.
-   * @returns {Object} A simple series data object with no styling
+   * @returns A simple series data object with no styling
    */
   static makeSeriesData(
     type: PlotType | undefined,
@@ -753,7 +751,7 @@ class ChartUtils {
   static getAxisFormats(
     figure: Figure,
     formatter: Formatter
-  ): Map<keyof Layout, PlotlyFormat> {
+  ): Map<LayoutAxisKey, Partial<PlotlyAxis>> {
     const axisFormats = new Map();
     const nullFormat = { tickformat: null, ticksuffix: null };
 
@@ -775,77 +773,81 @@ class ChartUtils {
           assertNotNull(typeAxes);
           const axisIndex = typeAxes.indexOf(axis);
           const axisProperty = ChartUtils.getAxisPropertyName(axisType);
-          const axisLayoutProperty = ChartUtils.getAxisLayoutProperty(
-            axisProperty,
-            axisIndex
-          );
-
-          if (axisFormats.has(axisLayoutProperty)) {
-            log.debug(`${axisLayoutProperty} already added.`);
-          } else {
-            log.debug(`Adding ${axisLayoutProperty} to axisFormats.`);
-            const axisFormat = ChartUtils.getPlotlyAxisFormat(
-              source,
-              formatter
+          if (axisProperty != null) {
+            const axisLayoutProperty = ChartUtils.getAxisLayoutProperty(
+              axisProperty,
+              axisIndex
             );
-            if (axisFormat === null) {
-              axisFormats.set(axisLayoutProperty, nullFormat);
+
+            if (axisFormats.has(axisLayoutProperty)) {
+              log.debug(`${axisLayoutProperty} already added.`);
             } else {
-              axisFormats.set(axisLayoutProperty, axisFormat);
+              log.debug(`Adding ${axisLayoutProperty} to axisFormats.`);
+              const axisFormat = ChartUtils.getPlotlyAxisFormat(
+                source,
+                formatter
+              );
+              if (axisFormat === null) {
+                axisFormats.set(axisLayoutProperty, nullFormat);
+              } else {
+                axisFormats.set(axisLayoutProperty, axisFormat);
 
-              const { businessCalendar } = axis;
-              if (businessCalendar) {
-                (axisFormat as RangebreakAxisFormat).rangebreaks = [];
-                const {
-                  businessPeriods,
-                  businessDays,
-                  holidays,
-                  timeZone: calendarTimeZone,
-                } = businessCalendar;
-                const typeFormatter = formatter?.getColumnTypeFormatter(
-                  BUSINESS_COLUMN_TYPE
-                );
-                let formatterTimeZone;
-                if (isDateTimeColumnFormatter(typeFormatter)) {
-                  formatterTimeZone = typeFormatter.dhTimeZone;
-                }
-                const timeZoneDiff = formatterTimeZone
-                  ? (calendarTimeZone.standardOffset -
-                      formatterTimeZone.standardOffset) /
-                    60
-                  : 0;
-                if (holidays.length > 0) {
-                  (axisFormat as RangebreakAxisFormat).rangebreaks.push(
-                    ...ChartUtils.createRangeBreakValuesFromHolidays(
-                      holidays,
-                      calendarTimeZone,
-                      formatterTimeZone
-                    )
+                const { businessCalendar } = axis;
+                if (businessCalendar) {
+                  const rangebreaks: Rangebreaks[] = [];
+                  const {
+                    businessPeriods,
+                    businessDays,
+                    holidays,
+                    timeZone: calendarTimeZone,
+                  } = businessCalendar;
+                  const typeFormatter = formatter?.getColumnTypeFormatter(
+                    BUSINESS_COLUMN_TYPE
                   );
-                }
-                businessPeriods.forEach(period =>
-                  (axisFormat as RangebreakAxisFormat).rangebreaks.push({
-                    pattern: 'hour',
-                    bounds: [
-                      ChartUtils.periodToDecimal(period.close) + timeZoneDiff,
-                      ChartUtils.periodToDecimal(period.open) + timeZoneDiff,
-                    ],
-                  })
-                );
-                // If there are seven business days, then there is no weekend
-                if (businessDays.length < DAYS.length) {
-                  ChartUtils.createBoundsFromDays(businessDays).forEach(
-                    weekendBounds =>
-                      (axisFormat as RangebreakAxisFormat).rangebreaks.push({
-                        pattern: 'day of week',
-                        bounds: weekendBounds,
-                      })
+                  let formatterTimeZone;
+                  if (isDateTimeColumnFormatter(typeFormatter)) {
+                    formatterTimeZone = typeFormatter.dhTimeZone;
+                  }
+                  const timeZoneDiff = formatterTimeZone
+                    ? (calendarTimeZone.standardOffset -
+                        formatterTimeZone.standardOffset) /
+                      60
+                    : 0;
+                  if (holidays.length > 0) {
+                    rangebreaks.push(
+                      ...ChartUtils.createRangeBreakValuesFromHolidays(
+                        holidays,
+                        calendarTimeZone,
+                        formatterTimeZone
+                      )
+                    );
+                  }
+                  businessPeriods.forEach(period =>
+                    rangebreaks.push({
+                      pattern: 'hour',
+                      bounds: [
+                        ChartUtils.periodToDecimal(period.close) + timeZoneDiff,
+                        ChartUtils.periodToDecimal(period.open) + timeZoneDiff,
+                      ],
+                    })
                   );
-                }
-              }
+                  // If there are seven business days, then there is no weekend
+                  if (businessDays.length < DAYS.length) {
+                    ChartUtils.createBoundsFromDays(businessDays).forEach(
+                      weekendBounds =>
+                        rangebreaks.push({
+                          pattern: 'day of week',
+                          bounds: weekendBounds,
+                        })
+                    );
+                  }
 
-              if (axisFormats.size === chart.axes.length) {
-                return axisFormats;
+                  (axisFormat as RangebreakAxisFormat).rangebreaks = rangebreaks;
+                }
+
+                if (axisFormats.size === chart.axes.length) {
+                  return axisFormats;
+                }
               }
             }
           }
@@ -872,7 +874,7 @@ class ChartUtils {
 
   /**
    * Return the plotly axis property name
-   * @param {dh.plot.AxisType} axisType The axis type to get the property name for
+   * @param axisType The axis type to get the property name for
    */
   static getAxisPropertyName(axisType: AxisType): 'x' | 'y' | null {
     switch (axisType) {
@@ -887,9 +889,11 @@ class ChartUtils {
 
   /**
    * Returns the plotly "side" value for the provided axis position
-   * @param {dh.plot.AxisPosition} axisPosition The Iris AxisPosition of the axis
+   * @param axisPosition The Iris AxisPosition of the axis
    */
-  static getAxisSide(axisPosition: AxisPosition): LayoutAxis['side'] | null {
+  static getAxisSide(
+    axisPosition: AxisPosition
+  ): LayoutAxis['side'] | undefined {
     switch (axisPosition) {
       case dh.plot.AxisPosition.BOTTOM:
         return 'bottom';
@@ -900,7 +904,7 @@ class ChartUtils {
       case dh.plot.AxisPosition.RIGHT:
         return 'right';
       default:
-        return null;
+        return undefined;
     }
   }
 
@@ -927,21 +931,17 @@ class ChartUtils {
   /**
    * Get an object mapping axis to their ranges
    * @param layout The plotly layout object to get the ranges from
-   * @returns {object} An object mapping the axis name to it's range
+   * @returns An object mapping the axis name to it's range
    */
   static getLayoutRanges(layout: Layout): Record<string, Range[]> {
     const ranges: Record<string, Range[]> = {};
     const keys: (keyof Layout)[] = Object.keys(layout).filter(
       key => key.indexOf('axis') >= 0
-    ) as (keyof Layout)[];
+    ) as LayoutAxisKey[];
     for (let i = 0; i < keys.length; i += 1) {
       const key = keys[i];
       const value = layout[key];
-      if (
-        value &&
-        (value as PlotlyAxis).range &&
-        !(value as PlotlyAxis).autorange
-      ) {
+      if (isRangedPlotlyAxis(value)) {
         // Only want to add the range if it's not autoranged
         ranges[key] = [...(value as PlotlyAxis).range];
       }
@@ -1092,7 +1092,7 @@ class ChartUtils {
   }
 
   static getAxisLayoutProperty(
-    axisProperty: 'x' | 'y' | null,
+    axisProperty: 'x' | 'y',
     axisIndex: number
   ): LayoutAxisKey {
     const axisIndexString = axisIndex > 0 ? `${axisIndex + 1}` : '';
@@ -1138,10 +1138,8 @@ class ChartUtils {
       layoutAxis.type = 'log';
     }
 
-    const side = ChartUtils.getAxisSide(axis.position);
-    if (side != null) {
-      layoutAxis.side = side;
-    }
+    layoutAxis.side = ChartUtils.getAxisSide(axis.position);
+
     if (axisIndex > 0) {
       layoutAxis.overlaying =
         ChartUtils.getAxisPropertyName(axis.type) ?? undefined;
@@ -1195,7 +1193,7 @@ class ChartUtils {
   /**
    * Converts an open or close period to a declimal. e.g '09:30" to 9.5
    *
-   * @param {String} period the open or close value of the period
+   * @param period the open or close value of the period
    */
   static periodToDecimal(period: string): number {
     const values = period.split(':');
@@ -1252,7 +1250,7 @@ class ChartUtils {
     holidays: Holiday[],
     calendarTimeZone: TimeZone,
     formatterTimeZone?: TimeZone
-  ): { dvalue?: number; values: string[] }[] {
+  ): Rangebreaks[] {
     const fullHolidays: string[] = [];
     const partialHolidays: {
       values: string[];
@@ -1283,9 +1281,9 @@ class ChartUtils {
   /**
    * Creates the range break value for a full holiday. A full holiday is day that has no business periods.
    *
-   * @param {Holiday} holiday the full holiday
-   * @param {TimeZone} calendarTimeZone the time zone for the business calendar
-   * @param {TimeZone} formatterTimeZone the time zone for the formatter
+   * @param holiday the full holiday
+   * @param calendarTimeZone the time zone for the business calendar
+   * @param formatterTimeZone the time zone for the formatter
    */
   static createFullHoliday(
     holiday: Holiday,
@@ -1355,9 +1353,9 @@ class ChartUtils {
   /**
    * Adjusts a date string from the calendar time zone to the formatter time zone.
    *
-   * @param {string} dateString the date string
-   * @param {TimeZone} calendarTimeZone the time zone for the business calendar
-   * @param {TimeZone} formatterTimeZone the time zone for the formatter
+   * @param dateString the date string
+   * @param calendarTimeZone the time zone for the business calendar
+   * @param formatterTimeZone the time zone for the formatter
    */
   static adjustDateForTimeZone(
     dateString: string,
@@ -1382,9 +1380,9 @@ class ChartUtils {
 
   /**
    * Groups an array and returns a map
-   * @param {object[]} array The object to group
-   * @param {string} property The property name to group by
-   * @returns {Map<object, object>} A map containing the items grouped by their values for the property
+   * @param array The object to group
+   * @param property The property name to group by
+   * @returns A map containing the items grouped by their values for the property
    */
   static groupArray<T, P extends keyof T>(
     array: T[],
@@ -1400,26 +1398,16 @@ class ChartUtils {
   }
 
   /**
-   * Update
-   */
-  static updateRanges(): undefined {
-    return undefined;
-  }
-
-  /**
    * Unwraps a value provided from API to a value plotly can understand
    * Eg. Unwraps DateWrapper, LongWrapper objects.
    */
-  static unwrapValue(
-    value: unknown,
-    timeZone: TimeZone | null = null
-  ): unknown {
+  static unwrapValue(value: unknown, timeZone?: TimeZone): unknown {
     if (value != null) {
       if (isDateWrapper(value)) {
         return dh.i18n.DateTimeFormat.format(
           ChartUtils.DATE_FORMAT,
-          value as DateWrapper,
-          timeZone ?? undefined
+          value,
+          timeZone
         );
       }
 
@@ -1516,8 +1504,8 @@ class ChartUtils {
   /**
    * Parses the colorway property of a theme and returns an array of colors
    * Theme could have a single string with space separated colors or an array of strings representing the colorway
-   * @param {ChartTheme} theme The theme to get colorway from
-   * @returns {string[]} Colorway array for the theme
+   * @param theme The theme to get colorway from
+   * @returns Colorway array for the theme
    */
   static getColorwayFromTheme(theme = ChartTheme): string[] {
     let colorway: string[] = [];
@@ -1565,7 +1553,7 @@ class ChartUtils {
 
   /**
    * Hydrate settings from a JSONable object
-   * @param {object} settings Dehydrated settings
+   * @param settings Dehydrated settings
    */
   static hydrateSettings(
     settings: ChartModelSettings

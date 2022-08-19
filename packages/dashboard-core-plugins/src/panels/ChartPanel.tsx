@@ -7,6 +7,7 @@ import debounce from 'lodash.debounce';
 import {
   Chart,
   ChartModel,
+  ChartModelSettings,
   ChartUtils,
   isFigureChartModel,
 } from '@deephaven/chart';
@@ -86,7 +87,7 @@ type Settings = Record<string, unknown>;
 
 interface PanelState {
   filterValueMap: [string, string][];
-  settings: Partial<WorkspaceSettings>;
+  settings: Partial<ChartModelSettings>;
   tableSettings: unknown;
   irisGridState?: {
     advancedFilters: unknown;
@@ -123,7 +124,7 @@ interface ChartPanelProps {
 }
 
 interface ChartPanelState {
-  settings: Partial<WorkspaceSettings>;
+  settings: Partial<ChartModelSettings>;
   error?: unknown;
   isActive: boolean;
   isDisconnected: boolean;
@@ -242,7 +243,7 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
     prevProps: ChartPanelProps,
     prevState: ChartPanelState
   ): void {
-    const { inputFilters, source, metadata } = this.props;
+    const { inputFilters, source } = this.props;
     const {
       columnMap,
       model,
@@ -252,7 +253,6 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
       settings,
     } = this.state;
 
-    const { settings: ChartSettings } = metadata;
     if (!model) {
       return;
     }
@@ -272,16 +272,10 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
     }
 
     if (settings !== prevState.settings && isFigureChartModel(model)) {
+      model.updateSettings(settings);
       this.updatePanelState();
     }
 
-    if (
-      ChartSettings !== prevProps.metadata.settings &&
-      isFigureChartModel(model)
-    ) {
-      model.updateSettings(ChartSettings);
-      this.updatePanelState();
-    }
     if (isLinked !== prevState.isLinked) {
       if (source) {
         if (isLinked) {

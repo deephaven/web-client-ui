@@ -89,7 +89,7 @@ class ChartModel {
 
   /**
    * Disable downsampling
-   * @param {boolean} isDownsamplingDisabled True if downsampling should be disabled
+   * @param isDownsamplingDisabled True if downsampling should be disabled
    */
   setDownsamplingDisabled(isDownsamplingDisabled: boolean): void {
     this.isDownsamplingDisabled = isDownsamplingDisabled;
@@ -97,7 +97,7 @@ class ChartModel {
 
   /**
    * Set the dimensions of the plot. May be needed to evaluate some of the percents
-   * @param {DOMRect} rect The bounding rectangle of the plot
+   * @param rect The bounding rectangle of the plot
    */
   setDimensions(rect: DOMRect): void {
     this.rect = rect;
@@ -109,7 +109,7 @@ class ChartModel {
 
   /**
    * Subscribe to this ChartModel and start listening for all events.
-   * @param {Function<Event>} callback Callback when an event occurs
+   * @param callback Callback when an event occurs
    */
   subscribe(callback: (event: ChartEvent) => void): void {
     this.listeners.push(callback);

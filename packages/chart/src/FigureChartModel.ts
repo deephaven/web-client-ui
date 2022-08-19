@@ -614,12 +614,15 @@ class FigureChartModel extends ChartModel {
    * After setting all the data in the series data, we may need to adjust some other properties
    * Eg. Calculating the width from the xLow/xHigh values; Plot.ly uses `width` instead of a low/high
    * value for x.
-   * @param {dh.Series} series The series to clean the data for
+   * @param series The series to clean the data for
    */
   cleanSeries(series: Series): void {
     const { name, plotStyle } = series;
     const seriesData = this.seriesDataMap.get(name);
-    if (seriesData != null && plotStyle === dh.plot.SeriesPlotStyle.HISTOGRAM) {
+    if (seriesData == null) {
+      return;
+    }
+    if (plotStyle === dh.plot.SeriesPlotStyle.HISTOGRAM) {
       const { xLow, xHigh } = seriesData;
       if (xLow && xHigh && xLow.length === xHigh.length) {
         const width = [];
@@ -670,14 +673,14 @@ class FigureChartModel extends ChartModel {
 
   isFilterRequired(): boolean {
     return (
-      this.oneClicks.find(oneClick => oneClick.isRequireAllFiltersToDisplay) !=
+      this.oneClicks.find(oneClick => oneClick.requireAllFiltersToDisplay) !=
       null
     );
   }
 
   /**
    * Sets the filter on the model. Will only set the values that have changed.
-   * @param {Map<String, String>} filterMap Map of filter column names to values
+   * @param filterMap Map of filter column names to values
    */
   setFilter(filterMap: Map<string, string>): void {
     if (this.oneClicks.length === 0) {
@@ -720,7 +723,7 @@ class FigureChartModel extends ChartModel {
     }
   }
 
-  updateSettings(settings: ChartModelSettings): void {
+  updateSettings(settings: Partial<ChartModelSettings>): void {
     this.settings = settings;
   }
 }
