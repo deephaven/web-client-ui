@@ -93,12 +93,12 @@ export const FilterPlugin = (props: FilterPluginProps): JSX.Element => {
   /**
    * Handler for the COLUMNS_CHANGED event.
    * @param panel The component that's emitting the filter change
-   * @param {Column|Array<Column>} columns The columns in this panel
+   * @param columns The columns in this panel
    */
   const handleColumnsChanged = useCallback(
-    (panel: Component, columns) => {
+    (panel: Component, columns: Column | Column[]) => {
       log.debug2('handleColumnsChanged', panel, columns);
-      panelColumns.set(panel, [].concat(columns) as Column[]);
+      panelColumns.set(panel, ([] as Column[]).concat(columns));
       sendUpdate();
     },
     [panelColumns, sendUpdate]

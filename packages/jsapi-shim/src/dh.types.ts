@@ -101,7 +101,16 @@ export interface IdeSessionStatic {
   EVENT_COMMANDSTARTED: 'commandstarted';
 }
 
+export interface WorkerConnection {
+  subscribeToFieldUpdates(
+    param: (changes: VariableChanges) => void
+  ): () => void;
+}
+
 export interface IdeSession extends Evented {
+  subscribeToFieldUpdates(
+    param: (changes: VariableChanges) => void
+  ): () => void;
   getTable(name: string): Promise<Table>;
   getFigure(name: string): Promise<Figure>;
   getTreeTable(name: string): Promise<TreeTable>;
@@ -165,43 +174,43 @@ export interface EventListener {
 
 export interface FigureDescriptor {
   title: string;
-  titleFont: string;
-  titleColor: string;
-  isResizable: boolean;
-  isDefaultTheme: boolean;
-  updateInterval: number;
-  rows: number;
-  cols: number;
+  titleFont?: string;
+  titleColor?: string;
+  isResizable?: boolean;
+  isDefaultTheme?: boolean;
+  updateInterval?: number;
+  rows?: number;
+  cols?: number;
   charts: ChartDescriptor[];
 }
 export interface ChartDescriptor {
-  rowspan: number;
-  colspan: number;
+  rowspan?: number;
+  colspan?: number;
   series: SeriesDescriptor[];
   axes: AxisDescriptor[];
   chartType: string;
-  title: string;
-  titleFont: string;
-  titleColor: string;
-  showLegend: boolean;
-  legendFont: string;
-  legendColor: string;
-  is3d: boolean;
+  title?: string;
+  titleFont?: string;
+  titleColor?: string;
+  showLegend?: boolean;
+  legendFont?: string;
+  legendColor?: string;
+  is3d?: boolean;
 }
 export interface SeriesDescriptor {
   plotStyle: string;
   name: string;
-  linesVisible: boolean;
-  shapesVisible: boolean;
-  gradientVisible: boolean;
-  lineColor: string;
-  pointLabelFormat: string;
-  xToolTipPattern: string;
-  yToolTipPattern: string;
-  shapeLabel: string;
-  shapeSize: number;
-  shapeColor: string;
-  shape: string;
+  linesVisible?: boolean;
+  shapesVisible?: boolean;
+  gradientVisible?: boolean;
+  lineColor?: string;
+  pointLabelFormat?: string;
+  xToolTipPattern?: string;
+  yToolTipPattern?: string;
+  shapeLabel?: string;
+  shapeSize?: number;
+  shapeColor?: string;
+  shape?: string;
 }
 export interface SourceDescriptor {
   axis?: AxisDescriptor;
@@ -213,21 +222,21 @@ export interface AxisDescriptor {
   formatType: string;
   type: string;
   position: string;
-  log: boolean;
-  label: string;
-  labelFont: string;
-  ticksFont: string;
-  formatPattern: string;
-  color: string;
-  minRange: number;
-  maxRange: number;
-  minorTicksVisible: boolean;
-  majorTicksVisible: boolean;
-  minorTickCount: number;
-  gapBetweenMajorTicks: number;
-  tickLabelAngle: number;
-  invert: boolean;
-  isTimeAxis: boolean;
+  log?: boolean;
+  label?: string;
+  labelFont?: string;
+  ticksFont?: string;
+  formatPattern?: string;
+  color?: string;
+  minRange?: number;
+  maxRange?: number;
+  minorTicksVisible?: boolean;
+  majorTicksVisible?: boolean;
+  minorTickCount?: number;
+  gapBetweenMajorTicks?: number;
+  tickLabelAngle?: number;
+  invert?: boolean;
+  isTimeAxis?: boolean;
 }
 export interface Figure extends Evented {
   readonly EVENT_UPDATED: string;
@@ -603,6 +612,7 @@ export interface Table extends TableTemplate<Table>, TableStatic {
   readonly hasInputTable: boolean;
 
   readonly isClosed: boolean;
+  readonly pluginName: string;
 
   applyCustomColumns(columns: (CustomColumn | string)[]): string[];
 
@@ -761,7 +771,7 @@ export interface TreeTableStatic {
   readonly EVENT_RECONNECTFAILED: string;
 }
 
-export interface TableTemplate<T> extends Evented {
+export interface TableTemplate<T = Table> extends Evented {
   readonly size: number;
   readonly columns: Column[];
   readonly sort: Sort[];

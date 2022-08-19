@@ -25,7 +25,7 @@ interface ScriptEditorProps {
   sessionLanguage?: string;
   settings?: {
     language: string;
-    value?: string;
+    value: string | null;
   };
 }
 

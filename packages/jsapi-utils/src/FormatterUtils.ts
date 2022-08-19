@@ -2,10 +2,21 @@ import type { FormattingRule } from './Formatter';
 import Formatter from './Formatter';
 import { DateTimeColumnFormatter, TableColumnFormatter } from './formatters';
 
+export interface ColumnFormatSettings {
+  formatter?: FormattingRule[];
+}
+
+export interface DateTimeFormatSettings {
+  timeZone?: string;
+  defaultDateTimeFormat?: string;
+  showTimeZone?: boolean;
+  showTSeparator?: boolean;
+}
+
 class FormatterUtils {
-  static getColumnFormats(settings?: {
-    formatter?: FormattingRule[];
-  }): FormattingRule[] | undefined {
+  static getColumnFormats(
+    settings?: ColumnFormatSettings
+  ): FormattingRule[] | undefined {
     if (settings && settings.formatter) {
       const { formatter } = settings;
       return formatter;
@@ -14,12 +25,7 @@ class FormatterUtils {
   }
 
   static getDateTimeFormatterOptions(
-    settings?: {
-      timeZone?: string;
-      defaultDateTimeFormat?: string;
-      showTimeZone?: boolean;
-      showTSeparator?: boolean;
-    } | null
+    settings?: DateTimeFormatSettings | null
   ): ConstructorParameters<typeof DateTimeColumnFormatter>[0] {
     return {
       timeZone: settings?.timeZone,

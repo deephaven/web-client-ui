@@ -32,7 +32,9 @@ import './FilterSetManager.scss';
 const log = Log.module('FilterSetManager');
 
 export interface FilterSetPanel {
-  id: string;
+  panelId?: string | string[] | null;
+  type: string;
+  id?: string;
   state: unknown;
 }
 

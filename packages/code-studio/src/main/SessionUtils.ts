@@ -4,9 +4,9 @@ import shortid from 'shortid';
 
 const log = Log.module('SessionUtils');
 
-export type DhSession = typeof dh.Session;
-
 export type ListenerRemover = () => void;
+
+export type DhSession = typeof dh.Session;
 
 export type SessionConfig = {
   id: string;

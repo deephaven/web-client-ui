@@ -1,5 +1,5 @@
 import { ChartModel, ChartModelFactory } from '@deephaven/chart';
-import dh from '@deephaven/jsapi-shim';
+import dh, { IdeSession } from '@deephaven/jsapi-shim';
 import { SortDirection } from '@deephaven/jsapi-utils';
 import {
   InputFilter,
@@ -10,7 +10,6 @@ import {
 } from '@deephaven/iris-grid';
 import { getTimeZone, store } from '@deephaven/redux';
 import { ModelIndex } from '@deephaven/grid';
-import { DhSession } from './SessionUtils';
 
 export type ChartPanelMetadata = {
   settings: Record<string, unknown>;
@@ -47,7 +46,7 @@ export type GridPanelMetadata = {
 };
 
 export const createChartModel = async (
-  session: DhSession,
+  session: IdeSession,
   metadata: ChartPanelMetadata,
   panelState?: ChartPanelPanelState
 ): Promise<ChartModel> => {
@@ -97,7 +96,7 @@ export const createChartModel = async (
 };
 
 export const createGridModel = async (
-  session: DhSession,
+  session: IdeSession,
   metadata: GridPanelMetadata,
   type = dh.VariableType.TABLE
 ): Promise<IrisGridModel> => {

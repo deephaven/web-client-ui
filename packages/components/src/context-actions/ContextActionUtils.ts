@@ -29,6 +29,10 @@ export interface ContextActionEvent extends MouseEvent {
   contextActions: ResolvableContextAction[];
 }
 
+export function isPromise<A, T>(value: A | Promise<T>): value is Promise<T> {
+  return (value as Promise<T>).then !== undefined;
+}
+
 class ContextActionUtils {
   static actionsDisabled = false;
 
