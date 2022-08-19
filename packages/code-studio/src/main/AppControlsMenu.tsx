@@ -4,9 +4,15 @@ import React, {
   useCallback,
   useState,
   useMemo,
+  ReactNode,
+  ReactElement,
 } from 'react';
 import classNames from 'classnames';
-import { DropdownMenu, GLOBAL_SHORTCUTS } from '@deephaven/components';
+import {
+  DropdownAction,
+  DropdownMenu,
+  GLOBAL_SHORTCUTS,
+} from '@deephaven/components';
 import { ControlType, ToolType } from '@deephaven/dashboard-core-plugins';
 import { SHORTCUTS as IRIS_GRID_SHORTCUTS } from '@deephaven/iris-grid';
 import {
@@ -21,6 +27,21 @@ import PropTypes from 'prop-types';
 
 const MINIMUM_DRAG_DISTANCE = 10;
 
+interface DragSourceMenuItemProps {
+  forwardedProps: {
+    iconElement: ReactNode;
+    displayShortcut: string;
+    isMouseSelected: boolean;
+    isKeyboardSelected: boolean;
+    closeMenu: () => void;
+    menuItem: {
+      action: (event?: MouseEvent) => void;
+      title: string;
+      disabled: boolean;
+    };
+  };
+}
+
 /**
  * helper component that renders a menu item
  * props are fowarded from ContextMenuItem
@@ -28,7 +49,7 @@ const MINIMUM_DRAG_DISTANCE = 10;
  * for dragging panels directly from menu
  */
 
-const DragSourceMenuItem = props => {
+const DragSourceMenuItem = (props: DragSourceMenuItemProps) => {
   const {
     forwardedProps: {
       menuItem: { action, title, disabled: menuItemDisabled },
@@ -40,16 +61,18 @@ const DragSourceMenuItem = props => {
     },
   } = props;
 
-  const startX = useRef();
-  const startY = useRef();
-  const startObject = useRef(null);
+  const startX = useRef<number>();
+  const startY = useRef<number>();
+  const startObject = useRef<EventTarget | null>(null);
 
   // used to prevent double clicking inserting an object twice
   const [disableDoubleClick, setDisableDoubleClick] = useState(false);
 
   const handleMouseMove = useCallback(
-    event => {
+    (event: MouseEvent) => {
       if (
+        startX.current &&
+        startY.current &&
         startObject.current &&
         (Math.abs(startX.current - event.clientX) >= MINIMUM_DRAG_DISTANCE ||
           Math.abs(startY.current - event.clientY) >= MINIMUM_DRAG_DISTANCE)
@@ -64,14 +87,14 @@ const DragSourceMenuItem = props => {
     [action, closeMenu]
   );
 
-  function handleMouseDown(event) {
+  function handleMouseDown(event: React.MouseEvent<HTMLButtonElement>) {
     startX.current = event.clientX;
     startY.current = event.clientY;
     startObject.current = event.target;
     window.addEventListener('mousemove', handleMouseMove);
   }
 
-  function handleMouseUp(event) {
+  function handleMouseUp(event: React.MouseEvent<HTMLButtonElement>) {
     // down and up need to occur on same object to constitute a click event
     if (startObject.current === event.target) {
       setDisableDoubleClick(true);
@@ -114,15 +137,21 @@ const DragSourceMenuItem = props => {
   );
 };
 
-const AppControlsMenu = props => {
+interface AppControlsMenuProps {
+  handleControlSelect: (type: string, event?: KeyboardEvent) => void;
+  handleToolSelect: (type: string) => void;
+  onClearFilter: () => void;
+}
+
+const AppControlsMenu = (props: AppControlsMenuProps): ReactElement => {
   const { handleControlSelect, handleToolSelect, onClearFilter } = props;
-  const controlMenuActions = useMemo(
+  const controlMenuActions: DropdownAction[] = useMemo(
     () => [
       {
         title: 'Input Filter',
         icon: dhInput,
         menuElement: <DragSourceMenuItem />,
-        action: (dragEvent = null) => {
+        action: (dragEvent?) => {
           handleControlSelect(ControlType.INPUT_FILTER, dragEvent);
         },
         order: 10,
@@ -131,7 +160,7 @@ const AppControlsMenu = props => {
         title: 'Dropdown Filter',
         icon: dhTriangleDownSquare,
         menuElement: <DragSourceMenuItem />,
-        action: (dragEvent = null) => {
+        action: (dragEvent?) => {
           handleControlSelect(ControlType.DROPDOWN_FILTER, dragEvent);
         },
         order: 15,
@@ -140,7 +169,7 @@ const AppControlsMenu = props => {
         title: 'Markdown Widget',
         icon: vsMarkdown,
         menuElement: <DragSourceMenuItem />,
-        action: (dragEvent = null) => {
+        action: (dragEvent?) => {
           handleControlSelect(ControlType.MARKDOWN, dragEvent);
         },
         order: 20,
@@ -149,7 +178,7 @@ const AppControlsMenu = props => {
         title: 'Filter Sets',
         icon: vsDeviceCamera,
         menuElement: <DragSourceMenuItem />,
-        action: (dragEvent = null) => {
+        action: (dragEvent?) => {
           handleControlSelect(ControlType.FILTER_SET_MANAGER, dragEvent);
         },
         order: 25,
@@ -201,9 +230,9 @@ AppControlsMenu.propTypes = {
 };
 
 AppControlsMenu.defaultProps = {
-  handleControlSelect: () => {},
-  handleToolSelect: () => {},
-  onClearFilter: () => {},
+  handleControlSelect: () => undefined,
+  handleToolSelect: () => undefined,
+  onClearFilter: () => undefined,
 };
 
 DragSourceMenuItem.propTypes = {

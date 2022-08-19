@@ -13,8 +13,20 @@ export interface DeephavenPluginModule {}
 
 export type DeephavenPluginModuleMap = Map<string, DeephavenPluginModule>;
 
+export interface UserPermissions {
+  isSuperUser: boolean;
+  isQueryViewOnly: boolean;
+  isNonInteractive: boolean;
+  canUsePanels: boolean;
+  canCreateDashboard: boolean;
+  canCreateCodeStudio: boolean;
+  canCreateQueryMonitor: boolean;
+  canCopy: boolean;
+  canDownloadCsv: boolean;
+}
+
 export interface User {
-  permissions: { canCopy: boolean; canDownloadCsv: boolean };
+  permissions: UserPermissions;
   name: string;
   operateAs: string;
   groups: string[];
@@ -28,10 +40,10 @@ export interface Storage {
 
 export interface WorkspaceSettings {
   defaultDateTimeFormat: string;
-  defaultDecimalFormatOptions?: {
+  defaultDecimalFormatOptions: {
     defaultFormatString?: string;
   };
-  defaultIntegerFormatOptions?: {
+  defaultIntegerFormatOptions: {
     defaultFormatString?: string;
   };
   formatter: FormattingRule[];
@@ -71,6 +83,7 @@ export type RootState = {
   user: User;
   workspace: Workspace;
   dashboardData: Record<string, DashboardData>;
+  layoutStorage: unknown;
 };
 
 Object.entries(reducers).map(([name, reducer]) =>

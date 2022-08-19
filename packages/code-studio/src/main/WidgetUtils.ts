@@ -1,45 +1,20 @@
 import { ChartModel, ChartModelFactory } from '@deephaven/chart';
-import dh, { IdeSession } from '@deephaven/jsapi-shim';
-import { SortDirection } from '@deephaven/jsapi-utils';
+import dh, {
+  Table,
+  VariableTypeUnion,
+  IdeSession,
+} from '@deephaven/jsapi-shim';
 import {
-  InputFilter,
   IrisGridModel,
   IrisGridModelFactory,
   IrisGridUtils,
-  AdvancedFilterOptions,
 } from '@deephaven/iris-grid';
 import { getTimeZone, store } from '@deephaven/redux';
-import { ModelIndex } from '@deephaven/grid';
-
-export type ChartPanelMetadata = {
-  settings: Record<string, unknown>;
-  tableSettings: {
-    quickFilters?: [
-      ModelIndex,
-      {
-        text: string;
-      }
-    ][];
-    advancedFilters?: [
-      ModelIndex,
-      {
-        options: AdvancedFilterOptions;
-      }
-    ][];
-    inputFilters?: InputFilter[];
-    sorts?: {
-      column: ModelIndex;
-      isAbs: boolean;
-      direction: SortDirection;
-    }[];
-    partition?: unknown;
-    partitionColumn?: string;
-  };
-  table?: string;
-  figure?: string;
-};
-
-export type ChartPanelPanelState = Partial<ChartPanelMetadata>;
+import {
+  ChartPanelMetadata,
+  GLChartPanelState,
+  isChartPanelTableMetadata,
+} from '@deephaven/dashboard-core-plugins';
 
 export type GridPanelMetadata = {
   table: string;
@@ -48,14 +23,24 @@ export type GridPanelMetadata = {
 export const createChartModel = async (
   session: IdeSession,
   metadata: ChartPanelMetadata,
-  panelState?: ChartPanelPanelState
+  panelState?: GLChartPanelState
 ): Promise<ChartModel> => {
-  let {
-    settings = {},
-    table: tableName = '',
-    figure: figureName = '',
-    tableSettings = {},
-  } = metadata;
+  let settings;
+  let tableName;
+  let figureName;
+  let tableSettings;
+
+  if (isChartPanelTableMetadata(metadata)) {
+    settings = metadata.settings;
+    tableName = metadata.table;
+    figureName = '';
+    tableSettings = metadata.tableSettings;
+  } else {
+    settings = {};
+    tableName = '';
+    figureName = metadata.figure;
+    tableSettings = {};
+  }
   if (panelState) {
     if (panelState.tableSettings) {
       tableSettings = panelState.tableSettings;
@@ -75,14 +60,22 @@ export const createChartModel = async (
   }
 
   if (figureName) {
-    const definition = { name: figureName, type: dh.VariableType.FIGURE };
+    const definition = {
+      title: figureName,
+      name: figureName,
+      type: dh.VariableType.FIGURE,
+    };
     const figure = await session.getObject(definition);
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return ChartModelFactory.makeModel(settings as any, figure);
   }
 
-  const definition = { name: tableName, type: dh.VariableType.TABLE };
+  const definition = {
+    title: figureName,
+    name: tableName,
+    type: dh.VariableType.TABLE,
+  };
   const table = await session.getObject(definition);
 
   IrisGridUtils.applyTableSettings(
@@ -98,11 +91,11 @@ export const createChartModel = async (
 export const createGridModel = async (
   session: IdeSession,
   metadata: GridPanelMetadata,
-  type = dh.VariableType.TABLE
+  type: VariableTypeUnion = dh.VariableType.TABLE
 ): Promise<IrisGridModel> => {
   const { table: tableName } = metadata;
-  const definition = { name: tableName, type };
-  const table = await session.getObject(definition);
+  const definition = { title: tableName, name: tableName, type };
+  const table = (await session.getObject(definition)) as Table;
   return IrisGridModelFactory.makeModel(table);
 };
 

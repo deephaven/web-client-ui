@@ -2,7 +2,7 @@ class ColorUtils {
   /**
    * Checks if a background color is dark (i.e. should use a light foreground).
    *
-   * @param {string} background the background color
+   * @param background the background color
    */
   static isDark(background: string): boolean {
     const d = document.createElement('div');

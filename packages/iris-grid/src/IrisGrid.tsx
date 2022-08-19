@@ -1973,7 +1973,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
   /**
    * Check if we can rollback the current state to a safe state.
-   * @returns {boolean} true if there's a previously known safe state or if some of the current state isn't empty.
+   * @returns true if there's a previously known safe state or if some of the current state isn't empty.
    */
   canRollback(): boolean {
     return this.lastLoadedConfig != null || !isEmptyConfig(this.state);

@@ -21,7 +21,7 @@ export type SessionWrapper = {
 
 /**
  * Create a new session using the default URL
- * @returns {Promise<SessionWrapper>} A session and config that is ready to use
+ * @returns A session and config that is ready to use
  */
 export const createSessionWrapper = async (): Promise<SessionWrapper> => {
   const baseUrl = new URL(

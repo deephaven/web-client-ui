@@ -5,7 +5,7 @@ import { vsArrowUp } from '@deephaven/icons';
 import './EmptyDashboard.scss';
 
 export interface EmptyDashboardProps {
-  onAutoFillClick?: (event: MouseEvent) => undefined;
+  onAutoFillClick?: (event: MouseEvent) => void;
 }
 
 export const EmptyDashboard = ({

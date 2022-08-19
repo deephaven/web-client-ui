@@ -10,7 +10,7 @@ import {
 import { IrisGridModelFactory, IrisGridThemeType } from '@deephaven/iris-grid';
 import { Table, VariableDefinition } from '@deephaven/jsapi-shim';
 import shortid from 'shortid';
-import { IrisGridPanel } from './panels';
+import { IrisGridPanel, IrisGridPanelProps } from './panels';
 
 export const SUPPORTED_TYPES: string[] = [
   dh.VariableType.TABLE,
@@ -20,7 +20,7 @@ export const SUPPORTED_TYPES: string[] = [
 export type GridPluginProps = Partial<DashboardPluginComponentProps> & {
   getDownloadWorker?: () => Promise<ServiceWorker>;
   loadPlugin?: (name: string) => ReturnType<typeof React.forwardRef>;
-  hydrate: PanelHydrateFunction;
+  hydrate: PanelHydrateFunction<IrisGridPanelProps>;
   theme?: Partial<IrisGridThemeType>;
 };
 
@@ -80,7 +80,11 @@ export const GridPlugin = (props: GridPluginProps): JSX.Element => {
   useEffect(
     function registerComponentsAndReturnCleanup() {
       const cleanups = [
-        registerComponent(IrisGridPanel.COMPONENT, IrisGridPanel, hydrate),
+        registerComponent(
+          IrisGridPanel.COMPONENT,
+          IrisGridPanel,
+          hydrate as PanelHydrateFunction
+        ),
       ];
       return () => {
         cleanups.forEach(cleanup => cleanup());

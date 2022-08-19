@@ -159,8 +159,8 @@ export const renderFileListItem = (
 
 /**
  * Get the icon definition for a file or folder item
- * @param {FileStorageItem} item Item to get the icon for
- * @returns {IconDefinition} Icon definition to pass in the FontAwesomeIcon icon prop
+ * @param item Item to get the icon for
+ * @returns Icon definition to pass in the FontAwesomeIcon icon prop
  */
 export function getItemIcon(item: FileStorageItem): IconDefinition {
   if (isDirectory(item)) {

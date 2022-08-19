@@ -51,6 +51,7 @@ export interface VariableDefinition<
   name?: string;
 
   title?: string;
+
   id?: string;
 }
 
@@ -886,6 +887,7 @@ export interface IdeConnectionOptions {
 }
 
 export interface IdeConnectionConstructor {
+  HACK_CONNECTION_FAILURE: string;
   new (serverUrl: string, options?: IdeConnectionOptions): IdeConnection;
 }
 

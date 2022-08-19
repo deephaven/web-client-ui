@@ -44,8 +44,8 @@ export interface DashboardPanelDefinition {
 
 export type DeregisterComponentFunction = () => void;
 
-export type PanelHydrateFunction = (
-  props: PanelProps,
+export type PanelHydrateFunction<T = PanelProps> = (
+  props: T,
   dashboardId: string
 ) => PanelProps;
 
@@ -61,7 +61,7 @@ export type DashboardPluginComponentProps = {
   registerComponent: <P extends PanelProps, C extends ComponentType<P>>(
     name: string,
     ComponentType: PanelComponentType<P, C>,
-    hydrate?: PanelHydrateFunction,
+    hydrate?: PanelHydrateFunction<P>,
     dehydrate?: PanelDehydrateFunction
   ) => DeregisterComponentFunction;
 };

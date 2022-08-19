@@ -43,7 +43,7 @@ export function dehydrate(config: PanelConfig): PanelConfig | null {
  * @returns The hydrated panel props
  */
 export function hydrate(
-  props: PanelProps,
+  props: PanelProps & Record<string, unknown>,
   localDashboardId = ''
 ): DashboardPanelProps {
   return {

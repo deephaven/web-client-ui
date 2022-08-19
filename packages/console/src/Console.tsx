@@ -137,7 +137,7 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
   /**
    * Check if the provided log level is output level
    * @param logLevel The LogLevel being checked
-   * @return true if the log level should be output to the console
+   * @returns true if the log level should be output to the console
    */
   static isOutputLevel(logLevel: string): boolean {
     // We want all errors to be output, in addition to STDOUT.
