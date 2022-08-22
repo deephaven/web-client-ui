@@ -41,9 +41,7 @@ export const setWorkspaceStorage: PayloadActionCreator<WorkspaceStorage> = works
   payload: workspaceStorage,
 });
 
-export const setCommandHistoryStorage: PayloadActionCreator<
-  Record<string, unknown>
-> = commandHistoryStorage => ({
+export const setCommandHistoryStorage: PayloadActionCreator<unknown> = commandHistoryStorage => ({
   type: SET_COMMAND_HISTORY_STORAGE,
   payload: commandHistoryStorage,
 });
