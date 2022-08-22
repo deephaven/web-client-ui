@@ -1,10 +1,16 @@
-import React, { Component } from 'react';
+import React, {
+  ClipboardEvent,
+  ChangeEvent,
+  Component,
+  ReactElement,
+  RefObject,
+  ForwardRefExoticComponent,
+} from 'react';
 import classNames from 'classnames';
-import PropTypes from 'prop-types';
 import memoize from 'memoize-one';
 import { CSSTransition } from 'react-transition-group';
 import { connect } from 'react-redux';
-import { withRouter } from 'react-router-dom';
+import { RouteComponentProps, withRouter } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   ContextActions,
@@ -12,14 +18,22 @@ import {
   ThemeExport,
   GLOBAL_SHORTCUTS,
   Popper,
+  ContextAction,
 } from '@deephaven/components';
-import { SHORTCUTS as IRIS_GRID_SHORTCUTS } from '@deephaven/iris-grid';
 import {
+  IrisGridModel,
+  SHORTCUTS as IRIS_GRID_SHORTCUTS,
+} from '@deephaven/iris-grid';
+import {
+  ClosedPanels,
   Dashboard,
+  DashboardLayoutConfig,
+  DashboardPanelProps,
   DashboardUtils,
   DEFAULT_DASHBOARD_ID,
   getDashboardData,
   PanelEvent,
+  PanelProps,
   updateDashboardData as updateDashboardDataAction,
 } from '@deephaven/dashboard';
 import {
@@ -34,13 +48,22 @@ import {
   MarkdownPlugin,
   PandasPlugin,
   getDashboardSessionWrapper,
-  UIPropTypes,
   ControlType,
   ToolType,
   ChartBuilderPlugin,
+  FilterSet,
+  Link,
+  ChartPanelProps,
+  PandasPanelProps,
+  IrisGridPanelProps,
+  ColumnSelectionValidator,
 } from '@deephaven/dashboard-core-plugins';
 import { vsGear, dhShapes, dhPanels } from '@deephaven/icons';
-import dh, { PropTypes as APIPropTypes } from '@deephaven/jsapi-shim';
+import dh, {
+  IdeSession,
+  VariableDefinition,
+  VariableTypeUnion,
+} from '@deephaven/jsapi-shim';
 import Log from '@deephaven/log';
 import {
   getActiveTool,
@@ -49,25 +72,89 @@ import {
   setActiveTool as setActiveToolAction,
   updateWorkspaceData as updateWorkspaceDataAction,
   getPlugins,
+  Workspace,
+  DeephavenPluginModuleMap,
+  WorkspaceData,
+  RootState,
+  UserPermissions,
 } from '@deephaven/redux';
 import { PromiseUtils } from '@deephaven/utils';
+import GoldenLayout, { ItemConfigType } from '@deephaven/golden-layout';
 import JSZip from 'jszip';
 import SettingsMenu from '../settings/SettingsMenu';
 import AppControlsMenu from './AppControlsMenu';
 import { getLayoutStorage } from '../redux';
 import Logo from '../settings/community-wordmark-app.svg';
 import './AppMainContainer.scss';
-import WidgetList from './WidgetList';
-import { createChartModel, createGridModel } from './WidgetUtils';
+import WidgetList, { WindowMouseEvent } from './WidgetList';
+import {
+  createChartModel,
+  createGridModel,
+  GridPanelMetadata,
+} from './WidgetUtils';
 import EmptyDashboard from './EmptyDashboard';
 import UserLayoutUtils from './UserLayoutUtils';
 import DownloadServiceWorkerUtils from '../DownloadServiceWorkerUtils';
 import { PluginUtils } from '../plugins';
+import LayoutStorage from '../storage/LayoutStorage';
 
 const log = Log.module('AppMainContainer');
 
-export class AppMainContainer extends Component {
-  static handleWindowBeforeUnload(event) {
+type InputFileFormat =
+  | string
+  | number[]
+  | Uint8Array
+  | ArrayBuffer
+  | Blob
+  | NodeJS.ReadableStream;
+
+export type AppDashboardData = {
+  closed: ClosedPanels;
+  columnSelectionValidator?: ColumnSelectionValidator;
+  filterSets: FilterSet[];
+  links: Link[];
+  openedMap: Map<string | string[], Component>;
+};
+
+interface User {
+  name: string;
+  operateAs: string;
+  groups: string[];
+  permissions: UserPermissions;
+}
+
+interface AppMainContainerProps {
+  activeTool: string;
+  dashboardData: AppDashboardData;
+  layoutStorage: LayoutStorage;
+  match: {
+    params: { notebookPath: string };
+  };
+  session: IdeSession;
+  sessionConfig: {
+    type: string;
+    id: string;
+  };
+  setActiveTool: (tool: string) => void;
+  updateDashboardData: (id: string, data: Partial<AppDashboardData>) => void;
+  updateWorkspaceData: (workspaceData: Partial<WorkspaceData>) => void;
+  user: User;
+  workspace: Workspace;
+  plugins: DeephavenPluginModuleMap;
+}
+
+interface AppMainContainerState {
+  contextActions: ContextAction[];
+  isPanelsMenuShown: boolean;
+  isSettingsMenuShown: boolean;
+  widgets: VariableDefinition[];
+}
+
+export class AppMainContainer extends Component<
+  AppMainContainerProps & RouteComponentProps,
+  AppMainContainerState
+> {
+  static handleWindowBeforeUnload(event: BeforeUnloadEvent): void {
     event.preventDefault();
     // returnValue is required for beforeReload event prompt
     // https://developer.mozilla.org/en-US/docs/Web/API/WindowEventHandlers/onbeforeunload#example
@@ -75,18 +162,18 @@ export class AppMainContainer extends Component {
     event.returnValue = '';
   }
 
-  static hydrateConsole(props, id) {
+  static hydrateConsole(props: PanelProps, id: string): DashboardPanelProps {
     return DashboardUtils.hydrate(
       {
         ...props,
-        unzip: zipFile =>
+        unzip: (zipFile: InputFileFormat) =>
           JSZip.loadAsync(zipFile).then(zip => Object.values(zip.files)),
       },
       id
     );
   }
 
-  constructor(props) {
+  constructor(props: AppMainContainerProps & RouteComponentProps) {
     super(props);
     this.handleSettingsMenuHide = this.handleSettingsMenuHide.bind(this);
     this.handleSettingsMenuShow = this.handleSettingsMenuShow.bind(this);
@@ -113,9 +200,7 @@ export class AppMainContainer extends Component {
     this.hydrateDefault = this.hydrateDefault.bind(this);
     this.openNotebookFromURL = this.openNotebookFromURL.bind(this);
 
-    this.goldenLayout = null;
     this.importElement = React.createRef();
-    this.widgetListenerRemover = null;
 
     this.state = {
       contextActions: [
@@ -149,7 +234,7 @@ export class AppMainContainer extends Component {
     };
   }
 
-  componentDidMount() {
+  componentDidMount(): void {
     this.initWidgets();
 
     window.addEventListener(
@@ -158,14 +243,14 @@ export class AppMainContainer extends Component {
     );
   }
 
-  componentDidUpdate(prevProps) {
+  componentDidUpdate(prevProps: AppMainContainerProps): void {
     const { dashboardData } = this.props;
     if (prevProps.dashboardData !== dashboardData) {
       this.handleDataChange(dashboardData);
     }
   }
 
-  componentWillUnmount() {
+  componentWillUnmount(): void {
     this.deinitWidgets();
 
     window.removeEventListener(
@@ -174,7 +259,13 @@ export class AppMainContainer extends Component {
     );
   }
 
-  initWidgets() {
+  goldenLayout?: GoldenLayout;
+
+  importElement: RefObject<HTMLInputElement>;
+
+  widgetListenerRemover?: () => void;
+
+  initWidgets(): void {
     const { session } = this.props;
     if (!session.subscribeToFieldUpdates) {
       log.warn(
@@ -208,11 +299,11 @@ export class AppMainContainer extends Component {
     });
   }
 
-  deinitWidgets() {
+  deinitWidgets(): void {
     this.widgetListenerRemover?.();
   }
 
-  openNotebookFromURL() {
+  openNotebookFromURL(): void {
     const { match } = this.props;
     const { notebookPath } = match.params;
 
@@ -240,31 +331,34 @@ export class AppMainContainer extends Component {
     }
   }
 
-  sendClearFilter() {
+  sendClearFilter(): void {
     this.emitLayoutEvent(InputFilterEvent.CLEAR_ALL_FILTERS);
   }
 
-  emitLayoutEvent(event, ...args) {
+  emitLayoutEvent(event: string, ...args: unknown[]): void {
     this.goldenLayout?.eventHub.emit(event, ...args);
   }
 
   // eslint-disable-next-line class-methods-use-this
-  handleError(error) {
+  handleError(error: unknown): void {
     if (PromiseUtils.isCanceled(error)) {
       return;
     }
     log.error(error);
   }
 
-  handleSettingsMenuHide() {
+  handleSettingsMenuHide(): void {
     this.setState({ isSettingsMenuShown: false });
   }
 
-  handleSettingsMenuShow() {
+  handleSettingsMenuShow(): void {
     this.setState({ isSettingsMenuShown: true });
   }
 
-  handleControlSelect(type, dragEvent = null) {
+  handleControlSelect(
+    type: string,
+    dragEvent: KeyboardEvent | null = null
+  ): void {
     log.debug('handleControlSelect', type);
 
     switch (type) {
@@ -299,11 +393,11 @@ export class AppMainContainer extends Component {
         });
         break;
       default:
-        throw new Error('Unrecognized control type', type);
+        throw new Error(`Unrecognized control type ${type}`);
     }
   }
 
-  handleToolSelect(toolType) {
+  handleToolSelect(toolType: string): void {
     log.debug('handleToolSelect', toolType);
 
     const { activeTool, setActiveTool } = this.props;
@@ -314,11 +408,11 @@ export class AppMainContainer extends Component {
     }
   }
 
-  handleClearFilter() {
+  handleClearFilter(): void {
     this.sendClearFilter();
   }
 
-  handleDataChange(data) {
+  handleDataChange(data: AppDashboardData): void {
     const { updateWorkspaceData } = this.props;
 
     // Only save the data that is serializable/we want to persist to the workspace
@@ -326,22 +420,25 @@ export class AppMainContainer extends Component {
     updateWorkspaceData({ closed, filterSets, links });
   }
 
-  handleGoldenLayoutChange(goldenLayout) {
+  handleGoldenLayoutChange(goldenLayout: GoldenLayout): void {
     this.goldenLayout = goldenLayout;
   }
 
-  handleLayoutConfigChange(layoutConfig) {
+  handleLayoutConfigChange(layoutConfig?: DashboardLayoutConfig): void {
     const { updateWorkspaceData } = this.props;
     updateWorkspaceData({ layoutConfig });
   }
 
-  handleWidgetMenuClick() {
+  handleWidgetMenuClick(): void {
     this.setState(({ isPanelsMenuShown }) => ({
       isPanelsMenuShown: !isPanelsMenuShown,
     }));
   }
 
-  handleWidgetSelect(widget, dragEvent) {
+  handleWidgetSelect(
+    widget: VariableDefinition,
+    dragEvent?: WindowMouseEvent
+  ): void {
     this.setState({ isPanelsMenuShown: false });
 
     log.debug('handleWidgetSelect', widget, dragEvent);
@@ -349,22 +446,24 @@ export class AppMainContainer extends Component {
     this.openWidget(widget, dragEvent);
   }
 
-  handleWidgetsMenuClose() {
+  handleWidgetsMenuClose(): void {
     this.setState({ isPanelsMenuShown: false });
   }
 
-  handleAutoFillClick() {
+  handleAutoFillClick(): void {
     const { widgets } = this.state;
 
     log.debug('handleAutoFillClick', widgets);
 
-    const sortedWidgets = widgets.sort((a, b) => a.name.localeCompare(b.name));
+    const sortedWidgets = widgets.sort((a, b) =>
+      a.title != null && b.title != null ? a.title.localeCompare(b.title) : 0
+    );
     for (let i = 0; i < sortedWidgets.length; i += 1) {
       this.openWidget(sortedWidgets[i]);
     }
   }
 
-  handleExportLayoutClick() {
+  handleExportLayoutClick(): void {
     log.info('handleExportLayoutClick');
 
     this.setState({ isPanelsMenuShown: false });
@@ -372,12 +471,18 @@ export class AppMainContainer extends Component {
     try {
       const { workspace } = this.props;
       const { data } = workspace;
-      const exportedConfig = UserLayoutUtils.exportLayout(data);
+      const exportedConfig = UserLayoutUtils.exportLayout(
+        data as {
+          filterSets: FilterSet[];
+          links: Link[];
+          layoutConfig: GoldenLayout.ItemConfigType[];
+        }
+      );
 
       log.info('handleExportLayoutClick exportedConfig', exportedConfig);
 
       const blob = new Blob([JSON.stringify(exportedConfig)], {
-        mimeType: 'application/json',
+        type: 'application/json',
       });
       const timestamp = dh.i18n.DateTimeFormat.format(
         'yyyy-MM-dd-HHmmss',
@@ -392,17 +497,19 @@ export class AppMainContainer extends Component {
     }
   }
 
-  handleImportLayoutClick() {
+  handleImportLayoutClick(): void {
     log.info('handleImportLayoutClick');
 
     this.setState({ isPanelsMenuShown: false });
 
     // Reset the file list on the import element, otherwise user won't be prompted again
-    this.importElement.current.value = '';
-    this.importElement.current.click();
+    if (this.importElement.current != null) {
+      this.importElement.current.value = '';
+      this.importElement.current.click();
+    }
   }
 
-  handleResetLayoutClick() {
+  handleResetLayoutClick(): void {
     log.info('handleResetLayoutClick');
 
     this.setState({ isPanelsMenuShown: false });
@@ -410,18 +517,20 @@ export class AppMainContainer extends Component {
     this.resetLayout();
   }
 
-  handleImportLayoutFiles(event) {
+  handleImportLayoutFiles(event: ChangeEvent<HTMLInputElement>): void {
     event.stopPropagation();
     event.preventDefault();
 
-    this.importLayoutFile(event.target.files[0]);
+    if (event.target.files != null) {
+      this.importLayoutFile(event.target.files?.[0]);
+    }
   }
 
   /**
    * Import the provided file and set it in the workspace data (which should then load it in the dashboard)
-   * @param {File} file JSON file to import
+   * @param file JSON file to import
    */
-  async importLayoutFile(file) {
+  async importLayoutFile(file: File): Promise<void> {
     try {
       const { updateDashboardData, updateWorkspaceData } = this.props;
       const fileText = await file.text();
@@ -445,7 +554,7 @@ export class AppMainContainer extends Component {
   /**
    * Resets the users layout to the default layout
    */
-  async resetLayout() {
+  async resetLayout(): Promise<void> {
     const { layoutStorage } = this.props;
     const {
       filterSets,
@@ -462,8 +571,8 @@ export class AppMainContainer extends Component {
   }
 
   // eslint-disable-next-line class-methods-use-this
-  handlePaste(event) {
-    let element = event.target.parentElement;
+  handlePaste(event: ClipboardEvent<HTMLDivElement>): void {
+    let element = event.currentTarget.parentElement;
 
     while (element != null) {
       if (element.classList.contains('monaco-editor')) {
@@ -472,7 +581,7 @@ export class AppMainContainer extends Component {
       element = element.parentElement;
     }
 
-    const clipboardData = event.clipboardData || window.clipboardData;
+    const { clipboardData } = event;
     const pastedData = clipboardData.getData('Text');
     const replacedChars = /“|”/g;
     if (replacedChars.test(pastedData)) {
@@ -489,32 +598,44 @@ export class AppMainContainer extends Component {
 
   /**
    * Load a Table plugin specified by a table
-   * @param {string} pluginName The name of the plugin to load
-   * @returns {JSX.Element} An element from the plugin
+   * @param pluginName The name of the plugin to load
+   * @returns An element from the plugin
    */
-  handleLoadTablePlugin(pluginName) {
+  handleLoadTablePlugin(
+    pluginName: string
+  ): ForwardRefExoticComponent<React.RefAttributes<unknown>> {
     const { plugins } = this.props;
 
     // First check if we have any plugin modules loaded that match the TablePlugin.
     const pluginModule = plugins.get(pluginName);
-    if (pluginModule?.TablePlugin) {
-      return pluginModule.TablePlugin;
+    if (
+      pluginModule != null &&
+      (pluginModule as { TablePlugin: ReactElement }).TablePlugin
+    ) {
+      return (pluginModule as {
+        TablePlugin: ForwardRefExoticComponent<React.RefAttributes<unknown>>;
+      }).TablePlugin;
     }
 
     return PluginUtils.loadComponentPlugin(pluginName);
   }
 
-  hydrateDefault(props, id) {
+  hydrateDefault(
+    props: {
+      metadata?: { type?: VariableTypeUnion; id?: string; name?: string };
+    } & PanelProps,
+    id: string
+  ): DashboardPanelProps & { fetch?: () => Promise<unknown> } {
     const { session } = this.props;
     const { metadata } = props;
     if (metadata?.type && (metadata?.id || metadata?.name)) {
       // Looks like a widget, hydrate it as such
-      const widget = metadata.id
+      const widget: VariableDefinition = metadata.id
         ? {
             type: metadata.type,
             id: metadata.id,
           }
-        : { type: metadata.type, name: metadata.name };
+        : { type: metadata.type, name: metadata.name, title: metadata.name };
       return {
         fetch: () => session.getObject(widget),
         localDashboardId: id,
@@ -524,15 +645,26 @@ export class AppMainContainer extends Component {
     return DashboardUtils.hydrate(props, id);
   }
 
-  hydrateGrid(props, id) {
+  hydrateGrid(props: IrisGridPanelProps, id: string): IrisGridPanelProps {
     return this.hydrateTable(props, id, dh.VariableType.TABLE);
   }
 
-  hydratePandas(props, id) {
+  hydratePandas(props: PandasPanelProps, id: string): PandasPanelProps {
     return this.hydrateTable(props, id, dh.VariableType.PANDAS);
   }
 
-  hydrateTable(props, id, type = dh.VariableType.TABLE) {
+  hydrateTable<T extends { metadata: GridPanelMetadata }>(
+    props: T,
+    id: string,
+    type: VariableTypeUnion = dh.VariableType.TABLE
+  ): T & {
+    getDownloadWorker: () => Promise<ServiceWorker>;
+    loadPlugin: (
+      pluginName: string
+    ) => React.ForwardRefExoticComponent<React.RefAttributes<unknown>>;
+    localDashboardId: string;
+    makeModel: () => Promise<IrisGridModel>;
+  } {
     const { session } = this.props;
     return {
       ...props,
@@ -543,7 +675,7 @@ export class AppMainContainer extends Component {
     };
   }
 
-  hydrateChart(props, id) {
+  hydrateChart(props: ChartPanelProps, id: string): ChartPanelProps {
     const { session } = this.props;
     return {
       ...props,
@@ -557,10 +689,10 @@ export class AppMainContainer extends Component {
 
   /**
    * Open a widget up, using a drag event if specified.
-   * @param {VariableDefinition} widget The widget to open
-   * @param {DragEvent} dragEvent The mouse drag event that trigger it, undefined if it was not triggered by a drag
+   * @param widget The widget to open
+   * @param dragEvent The mouse drag event that trigger it, undefined if it was not triggered by a drag
    */
-  openWidget(widget, dragEvent) {
+  openWidget(widget: VariableDefinition, dragEvent?: WindowMouseEvent): void {
     const { session } = this.props;
     this.emitLayoutEvent(PanelEvent.OPEN, {
       dragEvent,
@@ -575,9 +707,9 @@ export class AppMainContainer extends Component {
       .map(([name, { DashboardPlugin }]) => <DashboardPlugin key={name} />)
   );
 
-  render() {
+  render(): ReactElement {
     const { activeTool, plugins, user, workspace } = this.props;
-    const { data: workspaceData = {} } = workspace;
+    const { data: workspaceData } = workspace;
     const { layoutConfig } = workspaceData;
     const { permissions } = user;
     const { canUsePanels } = permissions;
@@ -668,7 +800,7 @@ export class AppMainContainer extends Component {
             <EmptyDashboard onAutoFillClick={this.handleAutoFillClick} />
           }
           id={DEFAULT_DASHBOARD_ID}
-          layoutConfig={layoutConfig}
+          layoutConfig={layoutConfig as ItemConfigType[]}
           onGoldenLayoutChange={this.handleGoldenLayoutChange}
           onLayoutConfigChange={this.handleLayoutConfigChange}
           onLayoutInitialized={this.openNotebookFromURL}
@@ -686,7 +818,7 @@ export class AppMainContainer extends Component {
             notebooksUrl={
               new URL(
                 `${process.env.REACT_APP_NOTEBOOKS_URL}/`,
-                window.location
+                `${window.location}`
               ).href
             }
           />
@@ -718,37 +850,12 @@ export class AppMainContainer extends Component {
   }
 }
 
-AppMainContainer.propTypes = {
-  activeTool: PropTypes.string.isRequired,
-  dashboardData: PropTypes.shape({}).isRequired,
-  layoutStorage: PropTypes.shape({}).isRequired,
-  match: PropTypes.shape({
-    params: PropTypes.shape({ notebookPath: PropTypes.string }),
-  }).isRequired,
-  session: APIPropTypes.IdeSession.isRequired,
-  sessionConfig: PropTypes.shape({
-    type: PropTypes.string,
-    id: PropTypes.string,
-  }).isRequired,
-  setActiveTool: PropTypes.func.isRequired,
-  updateDashboardData: PropTypes.func.isRequired,
-  updateWorkspaceData: PropTypes.func.isRequired,
-  user: UIPropTypes.User.isRequired,
-  workspace: PropTypes.shape({
-    data: PropTypes.shape({
-      data: PropTypes.shape({}),
-      filterSets: PropTypes.arrayOf(PropTypes.shape({})),
-      layoutConfig: PropTypes.arrayOf(PropTypes.shape({})),
-      settings: PropTypes.shape({}),
-      links: PropTypes.arrayOf(PropTypes.shape({})),
-    }),
-  }).isRequired,
-  plugins: PropTypes.instanceOf(Map).isRequired,
-};
-
-const mapStateToProps = state => ({
+const mapStateToProps = (state: RootState) => ({
   activeTool: getActiveTool(state),
-  dashboardData: getDashboardData(state, DEFAULT_DASHBOARD_ID),
+  dashboardData: getDashboardData(
+    state,
+    DEFAULT_DASHBOARD_ID
+  ) as AppDashboardData,
   layoutStorage: getLayoutStorage(state),
   plugins: getPlugins(state),
   session: getDashboardSessionWrapper(state, DEFAULT_DASHBOARD_ID).session,

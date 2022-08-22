@@ -23,7 +23,7 @@ export class IntegerColumnFormatter extends TableColumnFormatter<number> {
    * @param format Format object
    * @returns true for valid object
    */
-  static isValid(format: IntegerColumnFormat): boolean {
+  static isValid(format: Pick<TableColumnFormat, 'formatString'>): boolean {
     try {
       dh.i18n.NumberFormat.format(format.formatString, 0);
       return true;

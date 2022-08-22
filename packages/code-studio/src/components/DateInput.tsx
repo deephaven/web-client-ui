@@ -1,8 +1,7 @@
-import React, { useState } from 'react';
-import PropTypes from 'prop-types';
-import dh from '@deephaven/jsapi-shim';
+import React, { useState, ReactElement } from 'react';
+import dh, { DateWrapper } from '@deephaven/jsapi-shim';
 import Log from '@deephaven/log';
-import { MaskedInput } from '@deephaven/components';
+import { MaskedInput, SelectionSegment } from '@deephaven/components';
 
 const log = Log.module('DateInput');
 
@@ -17,13 +16,13 @@ const DH_FORMAT_PATTERN = 'yyyy-MM-dd HH:mm:ss.SSSSSSSSS';
 const DEFAULT_VALUE_STRING = '2019-01-01 00:00:00.000\u200B000\u200B000';
 const EXAMPLES = [DEFAULT_VALUE_STRING];
 
-const parseDateString = dateString =>
+const parseDateString = (dateString: string) =>
   dh.i18n.DateTimeFormat.parse(
     DH_FORMAT_PATTERN,
     dateString.replace(/\u200B/g, '')
   );
 
-const formatDateAsString = date => {
+const formatDateAsString = (date: number | DateWrapper | Date) => {
   const formattedString = dh.i18n.DateTimeFormat.format(
     DH_FORMAT_PATTERN,
     date
@@ -36,18 +35,29 @@ const formatDateAsString = date => {
   )}\u200B${formattedString.substring(26)}`;
 };
 
-const DateInput = props => {
-  const { className, defaultValue, onChange } = props;
+interface DateInputProps {
+  className?: string;
+  defaultValue?: DateWrapper;
+  onChange?: (value: string) => void;
+}
+
+const DateInput = ({
+  className = '',
+  defaultValue = parseDateString(DEFAULT_VALUE_STRING),
+  onChange = (): void => undefined,
+}: DateInputProps): ReactElement => {
   const [value, setValue] = useState(formatDateAsString(defaultValue));
-  const [selection, setSelection] = useState(null);
+  const [selection, setSelection] = useState<SelectionSegment | undefined>(
+    undefined
+  );
 
   function getNextNumberSegmentValue(
-    delta,
-    segmentValue,
-    lowerBound,
-    upperBound,
-    length
-  ) {
+    delta: number,
+    segmentValue: string,
+    lowerBound: number,
+    upperBound: number,
+    length: number
+  ): string {
     const modValue = upperBound - lowerBound + 1;
     const newSegmentValue =
       ((((parseInt(segmentValue, 10) - delta - lowerBound) % modValue) +
@@ -57,7 +67,11 @@ const DateInput = props => {
     return `${newSegmentValue}`.padStart(length, '0');
   }
 
-  function getNextSegmentValue(range, delta, segmentValue) {
+  function getNextSegmentValue(
+    range: SelectionSegment,
+    delta: number,
+    segmentValue: string
+  ) {
     const { selectionStart } = range;
     if (selectionStart === 0) {
       return getNextNumberSegmentValue(delta, segmentValue, 1900, 2099, 4);
@@ -88,13 +102,13 @@ const DateInput = props => {
     return segmentValue;
   }
 
-  function handleChange(newValue) {
+  function handleChange(newValue: string) {
     log.debug('handleChange', newValue);
     setValue(newValue);
     onChange(newValue);
   }
 
-  function handleSelect(newSelection) {
+  function handleSelect(newSelection: SelectionSegment) {
     setSelection(newSelection);
   }
 
@@ -110,18 +124,6 @@ const DateInput = props => {
       selection={selection}
     />
   );
-};
-
-DateInput.propTypes = {
-  className: PropTypes.string,
-  defaultValue: PropTypes.shape({}),
-  onChange: PropTypes.func,
-};
-
-DateInput.defaultProps = {
-  className: '',
-  defaultValue: parseDateString(DEFAULT_VALUE_STRING),
-  onChange: () => {},
 };
 
 export default DateInput;

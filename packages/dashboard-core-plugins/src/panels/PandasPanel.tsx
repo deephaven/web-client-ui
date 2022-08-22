@@ -7,7 +7,7 @@ import { Tooltip } from '@deephaven/components';
 import { IrisGridPanel, IrisGridPanelProps, PanelState } from './IrisGridPanel';
 import './PandasPanel.scss';
 
-interface PandasPanelProps extends IrisGridPanelProps {
+export interface PandasPanelProps extends IrisGridPanelProps {
   panelState: PanelState | null;
 }
 

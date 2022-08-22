@@ -248,7 +248,7 @@ class MonacoUtils {
    * Links an editor with a provided session to provide completion items.
    * @param session The IdeSession to link
    * @param editor The editor to link the session to
-   * @return A cleanup function for disposing of the created listeners
+   * @returns A cleanup function for disposing of the created listeners
    */
   static openDocument(
     editor: monaco.editor.IStandaloneCodeEditor,

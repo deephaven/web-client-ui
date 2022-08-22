@@ -88,7 +88,7 @@ export class TableUtils {
   /**
    * @param tableSort The sorts from the table to get the sort from
    * @param columnIndex The index of the column to get the sort for
-   * @return The sort for the column, or null if it's not sorted
+   * @returns The sort for the column, or null if it's not sorted
    */
   static getSortForColumn(tableSort: Sort[], columnIndex: number): Sort | null {
     const sortIndex = TableUtils.getSortIndex(tableSort, columnIndex);
