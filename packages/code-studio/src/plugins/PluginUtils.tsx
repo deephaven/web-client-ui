@@ -19,7 +19,9 @@ class PluginUtils {
         pluginName
       )
     ) {
-      const LazyPlugin = React.lazy(() => import(`./internal/${pluginName}`));
+      const LazyPlugin = React.lazy(
+        () => import(/* @vite-ignore */ `./internal/${pluginName}`)
+      );
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const LocalPlugin: any = React.forwardRef((props, ref) => (
         <Suspense fallback={<div>Loading Plugin...</div>}>

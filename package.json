@@ -31,7 +31,7 @@
     "build:profile": "lerna run build --stream --profile",
     "build:necessary": "lerna run build --scope=@deephaven/{icons,golden-layout}",
     "preview": "lerna run --scope=@deephaven/code-studio preview",
-    "start": "npm-run-all build:necessary --parallel watch:types start:app",
+    "start": "npm-run-all build:necessary --parallel watch:types start:app start:embed-grid",
     "start:app": "lerna run start --scope=@deephaven/code-studio --stream",
     "start:embed-chart": "lerna run start --scope=@deephaven/embed-chart --stream",
     "start:embed-grid": "lerna run start --scope=@deephaven/embed-grid --stream",
