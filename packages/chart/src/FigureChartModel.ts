@@ -11,7 +11,7 @@ import dh, {
   SourceType,
 } from '@deephaven/jsapi-shim';
 import Log from '@deephaven/log';
-import { assertNotNull, Range } from '@deephaven/utils';
+import { Range } from '@deephaven/utils';
 import { Layout, PlotData } from 'plotly.js';
 import { Formatter } from '@deephaven/jsapi-utils';
 import ChartModel, { ChartEvent, FilterColumnMap } from './ChartModel';
@@ -632,7 +632,6 @@ class FigureChartModel extends ChartModel {
         seriesData.width = width;
       }
     } else if (plotStyle === dh.plot.SeriesPlotStyle.LINE) {
-      assertNotNull(seriesData);
       const { x, xLow, xHigh, y, yLow, yHigh } = seriesData;
       if (xLow && xHigh && xLow !== x) {
         seriesData.error_x = ChartUtils.getPlotlyErrorBars(
@@ -649,7 +648,6 @@ class FigureChartModel extends ChartModel {
         );
       }
     } else if (plotStyle === dh.plot.SeriesPlotStyle.TREEMAP) {
-      assertNotNull(seriesData);
       const { ids, labels } = seriesData;
       if (ids !== undefined && labels === undefined) {
         // If the user only provided IDs, we assign the IDs to the labels property as well automatically
