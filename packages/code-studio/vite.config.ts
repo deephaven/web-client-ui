@@ -53,6 +53,8 @@ export default defineConfig(({ mode }) => {
   }
 
   return {
+    // Vite does not read this env variable, it sets it based on the config
+    // For easy changes using our .env files, read it here and vite will just set it to the existing value
     base: env.BASE_URL,
     server: {
       port,

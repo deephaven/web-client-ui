@@ -17,9 +17,15 @@ export default defineConfig(({ mode }) => {
 
   const packagesDir = path.resolve(__dirname, '..');
 
+  let port = Number.parseInt(env.PORT, 10);
+  if (Number.isNaN(port) || port <= 0) {
+    port = 4010;
+  }
+
   return {
+    base: './', // Vite defaults to absolute URLs, but embed-grid is an embedded deployment so all assets are relative paths
     server: {
-      port: Number.parseInt(env.PORT, 10) ?? 4010,
+      port,
     },
     define: {
       global: 'window',
@@ -53,6 +59,7 @@ export default defineConfig(({ mode }) => {
     },
     build: {
       outDir: env.VITE_BUILD_PATH,
+      emptyOutDir: true,
       rollupOptions: {
         output: {
           manualChunks: id => {
