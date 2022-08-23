@@ -30,12 +30,12 @@ One common setup is to override the API server URL to point to another server. F
 VITE_CORE_API_URL=https://www.myserver.com/notebooks
 ```
 
-### REACT_APP_LOG_LEVEL
+### VITE_LOG_LEVEL
 
 Printing detailed logs when debugging can be handy. The highest level of logging is already set in your `.env.development` file. You can change it in `.env.development.local` if desired.
 
 ```shell
-REACT_APP_LOG_LEVEL=2 # Warn/Error
+VITE_LOG_LEVEL=2 # Warn/Error
 ```
 
 See [@deephaven/log](../log) for more details on the logger.
