@@ -11,7 +11,7 @@ export default defineConfig(({ mode }) => {
   const htmlPlugin = () => ({
     name: 'html-transform',
     transformIndexHtml(html: string) {
-      return html.replace(/%(.*?)%/g, (_, p1) => env[p1]);
+      return html.replace(/#(.*?)#/g, (_, p1) => env[p1]);
     },
   });
 
