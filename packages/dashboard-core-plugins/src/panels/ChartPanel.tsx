@@ -105,7 +105,7 @@ interface ChartPanelProps {
 
   metadata: ChartPanelMetaData;
   /** Function to build the ChartModel used by this ChartPanel. Can return a promise. */
-  makeModel: () => ChartModel;
+  makeModel: () => Promise<ChartModel>;
   inputFilters: InputFilter[];
   links: Link[];
   localDashboardId: string;

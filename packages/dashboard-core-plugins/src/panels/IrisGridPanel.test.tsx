@@ -11,11 +11,14 @@ import { IrisGridPanel } from './IrisGridPanel';
 
 const MockIrisGrid = jest.fn(() => null);
 
-jest.mock('@deephaven/iris-grid', () => ({
-  ...(jest.requireActual('@deephaven/iris-grid') as Record<string, unknown>),
-  // eslint-disable-next-line react/jsx-props-no-spreading
-  IrisGrid: jest.fn(props => <MockIrisGrid {...props} />),
-}));
+jest.mock('@deephaven/iris-grid', () => {
+  const { forwardRef } = jest.requireActual('react');
+  return {
+    ...(jest.requireActual('@deephaven/iris-grid') as Record<string, unknown>),
+    // eslint-disable-next-line react/jsx-props-no-spreading
+    IrisGrid: forwardRef((props, ref) => <MockIrisGrid {...props} />),
+  };
+});
 
 jest.mock('@deephaven/dashboard', () => ({
   ...(jest.requireActual('@deephaven/dashboard') as Record<string, unknown>),
@@ -91,12 +94,9 @@ function expectNotLoading(container) {
   ).not.toBeInTheDocument();
 }
 
-it('renders without crashing', () => {
+it('mounts and unmounts without crashing', async () => {
   makeIrisGridPanelWrapper();
-});
-
-it('unmounts successfully without crashing', () => {
-  makeIrisGridPanelWrapper();
+  await TestUtils.flushPromises();
 });
 
 it('unmounts while still resolving a table successfully', async () => {
