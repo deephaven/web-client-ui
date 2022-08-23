@@ -972,12 +972,11 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
       },
     ];
 
-    const portal = tab.element.find('.lm_title_before').get(0);
-    assertNotNull(portal);
+    const portal = tab?.element.find('.lm_title_before').get(0);
 
     return (
       <>
-        {tab &&
+        {portal &&
           ReactDOM.createPortal(
             <span
               className={classNames('editor-unsaved-indicator', {
