@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { ReactElement } from 'react';
 import {
   BrowserRouter as Router,
   Route,
@@ -8,7 +8,7 @@ import {
 import AppInit from './AppInit';
 import StyleGuideInit from '../styleguide/StyleGuideInit';
 
-const AppRouter = () => (
+const AppRouter = (): ReactElement => (
   <Router basename={process.env.PUBLIC_URL}>
     <Switch>
       <Route exact path="/" component={AppInit} />

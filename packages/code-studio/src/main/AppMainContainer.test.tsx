@@ -1,14 +1,17 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { ToolType } from '@deephaven/dashboard-core-plugins';
-import dh from '@deephaven/jsapi-shim';
+import dh, { IdeSession, VariableChanges } from '@deephaven/jsapi-shim';
 import { TestUtils } from '@deephaven/utils';
+import { Workspace } from '@deephaven/redux';
 import userEvent from '@testing-library/user-event';
 import { DEFAULT_DASHBOARD_ID } from '@deephaven/dashboard';
-import { AppMainContainer } from './AppMainContainer';
+import { AppMainContainer, DashboadData } from './AppMainContainer';
 import LocalWorkspaceStorage from '../storage/LocalWorkspaceStorage';
+import LayoutStorage from '../storage/LayoutStorage';
 
-function makeSession() {
+function makeSession(): Partial<IdeSession> {
   return {
     addEventListener: jest.fn(),
     subscribeToFieldUpdates: jest.fn(),
@@ -16,11 +19,11 @@ function makeSession() {
     getTable: jest.fn(),
     getObject: jest.fn(),
     runCode: jest.fn(),
-  };
+  } as Partial<IdeSession>;
 }
 
 function makeSessionConfig() {
-  return { type: 'Test' };
+  return { type: 'Test', id: 'test' };
 }
 
 function makeMatch() {
@@ -43,7 +46,7 @@ function renderAppMainContainer({
   activeTool = ToolType.DEFAULT,
   setActiveTool = jest.fn(),
   setDashboardIsolatedLinkerPanelId = jest.fn(),
-  client = new dh.Client({}),
+  client = new (dh as any).Client({}),
   serverConfigValues = {},
   dashboardOpenedPanelMaps = {},
   session = makeSession(),
@@ -53,13 +56,13 @@ function renderAppMainContainer({
 } = {}) {
   return render(
     <AppMainContainer
-      dashboardData={dashboardData}
-      layoutStorage={layoutStorage}
+      dashboardData={dashboardData as DashboadData}
+      layoutStorage={layoutStorage as LayoutStorage}
       saveWorkspace={saveWorkspace}
       updateDashboardData={updateDashboardData}
       updateWorkspaceData={updateWorkspaceData}
       user={user}
-      workspace={workspace}
+      workspace={workspace as Workspace}
       workspaceStorage={workspaceStorage}
       activeTool={activeTool}
       setActiveTool={setActiveTool}
@@ -67,7 +70,7 @@ function renderAppMainContainer({
       client={client}
       serverConfigValues={serverConfigValues}
       dashboardOpenedPanelMaps={dashboardOpenedPanelMaps}
-      session={session}
+      session={(session as unknown) as IdeSession}
       sessionConfig={sessionConfig}
       match={match}
       plugins={plugins}
@@ -89,7 +92,7 @@ jest.mock('@deephaven/dashboard', () => ({
   default: jest.fn(),
 }));
 
-let spy;
+let spy: jest.SpyInstance<number, [callback: FrameRequestCallback]>;
 beforeEach(() => {
   spy = jest.spyOn(window, 'requestAnimationFrame').mockImplementation(cb => {
     // mock request animation frame
@@ -111,7 +114,9 @@ it('mounts and unmounts AppMainContainer without crashing', () => {
 it('listens for widgets properly', () => {
   const TABLE_A = { name: 'a', type: 'Table' };
   const TABLE_B = { name: 'b', type: 'Table' };
-  let callback = null;
+  let callback: (obj: VariableChanges) => void = (null as unknown) as (
+    obj: VariableChanges
+  ) => void;
 
   const session = makeSession();
   session.subscribeToFieldUpdates = jest.fn(cb => {
@@ -165,7 +170,7 @@ it('listens for widgets properly', () => {
 
 describe('hydrates widgets correctly', () => {
   const localDashboardId = DEFAULT_DASHBOARD_ID;
-  let session = null;
+  let session: Partial<IdeSession> = (null as unknown) as Partial<IdeSession>;
   beforeEach(() => {
     session = makeSession();
   });

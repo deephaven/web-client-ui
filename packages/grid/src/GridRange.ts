@@ -806,10 +806,10 @@ export class GridRange {
    * If at the end of the entire range, return null
    * If outside of the range, returns the next cell closest within this range.
    *
-   * @param {number} column The cursor column
-   * @param {number} row The cursor row
-   * @param {SELECTION_DIRECTION} direction The direction to go in
-   * @returns {GridCell|null} The next cell in the direction specified, or `null` if at the end of the range
+   * @param column The cursor column
+   * @param row The cursor row
+   * @param direction The direction to go in
+   * @returns The next cell in the direction specified, or `null` if at the end of the range
    */
   nextCell(
     column: GridRangeIndex,

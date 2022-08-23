@@ -97,7 +97,7 @@ export const updateWorkspaceData = (
 
 /**
  * Sets the specified settings locally and saves them remotely
- * @param {Object} settings The settings to save
+ * @param settings The settings to save
  */
 export const saveSettings = (
   settings: WorkspaceSettings

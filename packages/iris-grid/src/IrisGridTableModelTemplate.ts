@@ -1592,7 +1592,7 @@ class IrisGridTableModelTemplate<
   }
 
   /**
-   * @returns {GridRange} A range corresponding to the pending new rows
+   * @returns A range corresponding to the pending new rows
    */
   getPendingAreaRange(): GridRange {
     return new GridRange(

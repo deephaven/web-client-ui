@@ -15,3 +15,4 @@ export * from './events';
 export * from './panels';
 export * from './redux';
 export * from './prop-types';
+export * from './linker';

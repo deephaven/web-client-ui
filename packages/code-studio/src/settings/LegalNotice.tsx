@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React, { ReactElement, useState } from 'react';
 import { Modal, ModalBody, ModalHeader } from '@deephaven/components';
 import { vsLaw } from '@deephaven/icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
-const LegalNotice = () => {
+const LegalNotice = (): ReactElement => {
   const [modal, setModal] = useState(false);
   const toggle = () => {
     setModal(!modal);

@@ -14,7 +14,7 @@ import {
   setDashboardSessionWrapper as setDashboardSessionWrapperAction,
   ToolType,
 } from '@deephaven/dashboard-core-plugins';
-import { WebdavFileStorage } from '@deephaven/file-explorer';
+import { FileStorage, WebdavFileStorage } from '@deephaven/file-explorer';
 import dh from '@deephaven/jsapi-shim';
 import {
   DecimalColumnFormatter,
@@ -22,8 +22,10 @@ import {
 } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
 import {
+  DeephavenPluginModuleMap,
   getWorkspace,
   getWorkspaceStorage,
+  RootState,
   setActiveTool as setActiveToolAction,
   setCommandHistoryStorage as setCommandHistoryStorageAction,
   setFileStorage as setFileStorageAction,
@@ -31,6 +33,8 @@ import {
   setUser as setUserAction,
   setWorkspace as setWorkspaceAction,
   setWorkspaceStorage as setWorkspaceStorageAction,
+  Workspace,
+  WorkspaceStorage,
 } from '@deephaven/redux';
 import { createClient } from 'webdav/web';
 import { setLayoutStorage as setLayoutStorageAction } from '../redux/actions';
@@ -39,8 +43,9 @@ import PouchCommandHistoryStorage from '../storage/PouchCommandHistoryStorage';
 import LocalWorkspaceStorage, {
   LAYOUT_STORAGE,
 } from '../storage/LocalWorkspaceStorage';
-import { createSessionWrapper } from './SessionUtils';
+import { createSessionWrapper, SessionWrapper } from './SessionUtils';
 import { PluginUtils } from '../plugins';
+import LayoutStorage from '../storage/LayoutStorage';
 
 const log = Log.module('AppInit');
 
@@ -67,10 +72,30 @@ const COMMAND_HISTORY_STORAGE = new PouchCommandHistoryStorage();
 const FILE_STORAGE = new WebdavFileStorage(
   createClient(process.env.REACT_APP_NOTEBOOKS_URL ?? '')
 );
+
+interface AppInitProps {
+  workspace: Workspace;
+  workspaceStorage: WorkspaceStorage;
+
+  setActiveTool: (type: typeof ToolType[keyof typeof ToolType]) => void;
+  setCommandHistoryStorage: (storage: PouchCommandHistoryStorage) => void;
+  setDashboardData: (
+    id: string,
+    dashboardData: Record<string, unknown>
+  ) => void;
+  setFileStorage: (fileStorage: FileStorage) => void;
+  setLayoutStorage: (layoutStorage: LayoutStorage) => void;
+  setDashboardSessionWrapper: (id: string, wrapper: SessionWrapper) => void;
+  setPlugins: (map: DeephavenPluginModuleMap) => void;
+  setUser: (user: typeof USER) => void;
+  setWorkspace: (workspace: Workspace) => void;
+  setWorkspaceStorage: (workspaceStorage: WorkspaceStorage) => void;
+}
+
 /**
  * Component that sets some default values needed
  */
-const AppInit = props => {
+const AppInit = (props: AppInitProps) => {
   const {
     workspace,
     setActiveTool,
@@ -85,12 +110,12 @@ const AppInit = props => {
     setWorkspaceStorage,
   } = props;
 
-  const [error, setError] = useState();
+  const [error, setError] = useState<unknown>();
   const [isFontLoading, setIsFontLoading] = useState(true);
 
   /**
    * Load all plugin modules available.
-   * @returns {Promise<Map<string, DeephavenPlugin>>} A map from the name of the plugin to the plugin module that was loaded
+   * @returns A map from the name of the plugin to the plugin module that was loaded
    */
   const loadPlugins = useCallback(async () => {
     log.debug('Loading plugins...');
@@ -182,7 +207,7 @@ const AppInit = props => {
       setUser(USER);
       setWorkspaceStorage(WORKSPACE_STORAGE);
       setWorkspace(loadedWorkspace);
-    } catch (e) {
+    } catch (e: unknown) {
       log.error(e);
       setError(e);
     }
@@ -274,7 +299,7 @@ AppInit.defaultProps = {
   workspaceStorage: null,
 };
 
-const mapStateToProps = state => ({
+const mapStateToProps = (state: RootState) => ({
   workspace: getWorkspace(state),
   workspaceStorage: getWorkspaceStorage(state),
 });

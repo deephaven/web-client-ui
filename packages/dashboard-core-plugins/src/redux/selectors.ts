@@ -64,7 +64,7 @@ export const getTableMapForDashboard = (
 /**
  * @param store The redux store
  * @param dashboardId The dashboard ID to get the data for
- * @return The panel ID that is isolated, undefined if none is isolated
+ * @returns The panel ID that is isolated, undefined if none is isolated
  */
 export const getIsolatedLinkerPanelIdForDashboard = (
   store: RootState,
@@ -99,9 +99,9 @@ export const getColumnSelectionValidatorForDashboard = (
     | undefined;
 
 /**
- * @param {Store} store The redux store
- * @param {string} dashboardId The dashboard ID to get the console settings for
- * @returns {ConsoleSettings|undefined} Console settings for this dashboard
+ * @param store The redux store
+ * @param dashboardId The dashboard ID to get the console settings for
+ * @returns Console settings for this dashboard
  */
 export const getDashboardConsoleSettings = (
   store: RootState,

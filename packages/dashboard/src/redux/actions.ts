@@ -1,4 +1,4 @@
-import { RootState } from '@deephaven/redux';
+import { DashboardData, RootState } from '@deephaven/redux';
 import type { Action } from 'redux';
 import type { ThunkAction } from 'redux-thunk';
 import { SET_DASHBOARD_DATA } from './actionTypes';
@@ -12,11 +12,11 @@ import { getDashboardData } from './selectors';
  */
 export const setDashboardData = (
   id: string,
-  data: Record<string, unknown>
+  data: DashboardData
 ): {
   type: string;
   id: string;
-  payload: Record<string, unknown>;
+  payload: DashboardData;
 } => ({
   type: SET_DASHBOARD_DATA,
   id,
@@ -31,7 +31,7 @@ export const setDashboardData = (
  */
 export const updateDashboardData = (
   id: string,
-  data: Record<string, unknown>
+  data: DashboardData
 ): ThunkAction<unknown, RootState, undefined, Action<unknown>> => (
   dispatch,
   getState
