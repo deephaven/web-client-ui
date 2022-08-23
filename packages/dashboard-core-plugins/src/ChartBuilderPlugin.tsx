@@ -6,7 +6,7 @@ import {
   LayoutUtils,
   useListener,
 } from '@deephaven/dashboard';
-import { Table } from '@deephaven/jsapi-shim';
+import { SeriesPlotStyle, Table } from '@deephaven/jsapi-shim';
 import shortid from 'shortid';
 import { IrisGridEvent } from './events';
 import { ChartPanel } from './panels';
@@ -30,7 +30,7 @@ export const ChartBuilderPlugin = (
     }: {
       metadata: {
         settings: {
-          type: string;
+          type: keyof SeriesPlotStyle;
           series: string[];
           xAxis: string;
           isLinked: boolean;

@@ -1,4 +1,10 @@
-import dh from '@deephaven/jsapi-shim';
+import dh, {
+  Axis,
+  Chart,
+  Figure,
+  Series,
+  SeriesDataSource,
+} from '@deephaven/jsapi-shim';
 
 class ChartTestUtils {
   static DEFAULT_CHART_TITLE = 'Chart Title';
@@ -16,8 +22,9 @@ class ChartTestUtils {
     formatType = dh.Axis.FORMAT_TYPE_NUMBER,
     formatPattern = '###,###0.00',
     log = false,
-  } = {}) {
-    return new dh.Axis({
+  } = {}): Axis {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return new (dh as any).Axis({
       label,
       type,
       position,
@@ -27,7 +34,7 @@ class ChartTestUtils {
     });
   }
 
-  static makeDefaultAxes() {
+  static makeDefaultAxes(): Axis[] {
     return [
       ChartTestUtils.makeAxis({
         label: ChartTestUtils.DEFAULT_X_TITLE,
@@ -40,11 +47,16 @@ class ChartTestUtils {
     ];
   }
 
-  static makeSource({ axis = ChartTestUtils.makeAxis() }) {
-    return new dh.SeriesDataSource({ axis, type: axis.type });
+  static makeSource({
+    axis = ChartTestUtils.makeAxis(),
+  }: {
+    axis: Axis;
+  }): SeriesDataSource {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return new (dh as any).SeriesDataSource({ axis, type: axis.type });
   }
 
-  static makeDefaultSources() {
+  static makeDefaultSources(): SeriesDataSource[] {
     const axes = ChartTestUtils.makeDefaultAxes();
     return axes.map(axis => ChartTestUtils.makeSource({ axis }));
   }
@@ -55,23 +67,32 @@ class ChartTestUtils {
     sources = ChartTestUtils.makeDefaultSources(),
     lineColor = null,
     shapeColor = null,
-  } = {}) {
-    return new dh.Series(name, plotStyle, sources, lineColor, shapeColor);
+  } = {}): Series {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return new (dh as any).Series(
+      name,
+      plotStyle,
+      sources,
+      lineColor,
+      shapeColor
+    );
   }
 
   static makeChart({
     title = ChartTestUtils.DEFAULT_CHART_TITLE,
     series = [ChartTestUtils.makeSeries()],
     axes = ChartTestUtils.makeDefaultAxes(),
-  } = {}) {
-    return new dh.Chart({ title, series, axes });
+  } = {}): Chart {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return new (dh as any).Chart({ title, series, axes });
   }
 
   static makeFigure({
     title = 'Figure',
     charts = [ChartTestUtils.makeChart()],
-  } = {}) {
-    return new dh.plot.Figure({ title, charts });
+  } = {}): Figure {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return new (dh as any).plot.Figure({ title, charts });
   }
 }
 

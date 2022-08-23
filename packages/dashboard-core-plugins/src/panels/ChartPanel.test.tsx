@@ -12,14 +12,6 @@ import ChartColumnSelectorOverlay from './ChartColumnSelectorOverlay';
 const DASHBOARD_ID = 'TEST_DASHBOARD_ID';
 const PANEL_ID = 'TEST_PANEL_ID';
 
-jest.mock('@deephaven/chart', () => {
-  const MockReact = jest.requireActual('react');
-  return {
-    ...(jest.requireActual('@deephaven/chart') as Record<string, unknown>),
-    Chart: MockReact.forwardRef(() => null),
-  };
-});
-
 jest.mock('@deephaven/dashboard', () => ({
   ...(jest.requireActual('@deephaven/dashboard') as Record<string, unknown>),
   LayoutUtils: {
@@ -38,13 +30,16 @@ jest.mock('react-transition-group', () => ({
 
 const MockChart = jest.fn(() => null);
 
-jest.mock('@deephaven/chart', () => ({
-  ...(jest.requireActual('@deephaven/chart') as Record<string, unknown>),
-  __esModule: true,
-  // eslint-disable-next-line react/jsx-props-no-spreading
-  Chart: jest.fn(props => <MockChart {...props} />),
-  default: jest.fn(),
-}));
+jest.mock('@deephaven/chart', () => {
+  const { forwardRef } = jest.requireActual('react');
+  return {
+    ...(jest.requireActual('@deephaven/chart') as Record<string, unknown>),
+    __esModule: true,
+    // eslint-disable-next-line react/jsx-props-no-spreading
+    Chart: forwardRef((props, ref) => <MockChart {...props} />),
+    default: jest.fn(),
+  };
+});
 
 function makeGlComponent() {
   return {
@@ -74,8 +69,7 @@ function makeGridPanel() {
 function makeChartPanelWrapper({
   glContainer = makeGlComponent(),
   glEventHub = makeGlComponent(),
-  client = new (dh as any).Client({}),
-  columnSelectionValidator = null,
+  columnSelectionValidator = undefined,
   makeModel = () => Promise.resolve(new MockChartModel()),
   metadata = { figure: 'testFigure' },
   inputFilters = [],
@@ -89,7 +83,6 @@ function makeChartPanelWrapper({
 } = {}) {
   return (
     <ChartPanel
-      client={client}
       columnSelectionValidator={columnSelectionValidator}
       makeModel={makeModel}
       metadata={metadata as ChartPanelMetaData}

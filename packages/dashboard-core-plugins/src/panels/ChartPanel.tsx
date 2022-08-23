@@ -7,6 +7,7 @@ import debounce from 'lodash.debounce';
 import {
   Chart,
   ChartModel,
+  ChartModelSettings,
   ChartUtils,
   isFigureChartModel,
 } from '@deephaven/chart';
@@ -18,7 +19,6 @@ import {
 } from '@deephaven/dashboard';
 import { IrisGridUtils, InputFilter, ColumnName } from '@deephaven/iris-grid';
 import dh, {
-  Column,
   FigureDescriptor,
   SeriesPlotStyle,
   TableTemplate,
@@ -68,7 +68,7 @@ export type InputFilterMap = Map<string, InputFilter>;
 
 export type FilterMap = Map<string, string>;
 
-export type LinkedColumnMap = Map<string, Column>;
+export type LinkedColumnMap = Map<string, { name: string; type: string }>;
 
 export function isChartPanelTableMetadata(
   metadata: ChartPanelMetadata
@@ -87,7 +87,7 @@ export type ChartPanelTableMetadata = {
     title: string;
     xAxis: string;
     series: string[];
-    type: SeriesPlotStyle;
+    type: keyof SeriesPlotStyle;
   };
   tableSettings: ChartPanelTableSettings;
 };
@@ -122,7 +122,7 @@ export interface ChartPanelTableSettings {
 }
 export interface GLChartPanelState {
   filterValueMap: [string, string][];
-  settings: Partial<WorkspaceSettings>;
+  settings: Partial<ChartModelSettings>;
   tableSettings: ChartPanelTableSettings;
   irisGridState?: {
     advancedFilters: unknown;
@@ -161,7 +161,7 @@ export interface ChartPanelProps {
 }
 
 interface ChartPanelState {
-  settings: Partial<WorkspaceSettings>;
+  settings: Partial<ChartModelSettings>;
   error?: unknown;
   isActive: boolean;
   isDisconnected: boolean;
@@ -293,6 +293,7 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
       isLinked,
       settings,
     } = this.state;
+
     if (!model) {
       return;
     }
@@ -367,7 +368,7 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
       isFilterRequired: boolean,
       columnMap: ColumnMap,
       filterMap: FilterMap
-    ): Map<string, Column> => {
+    ): Map<string, { name: string; type: string }> => {
       if (!isFilterRequired) {
         return new Map();
       }
@@ -421,7 +422,7 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
   );
 
   getLinkedColumnMap = memoize((columnMap: ColumnMap, links: Link[]) => {
-    const linkedColumnMap = new Map<string, Column>();
+    const linkedColumnMap = new Map<string, { name: string; type: string }>();
     const panelId = LayoutUtils.getIdFromPanel(this);
     for (let i = 0; i < links.length; i += 1) {
       const link = links[i];

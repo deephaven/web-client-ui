@@ -1,15 +1,8 @@
-import dh, { Figure, SeriesPlotStyle, Table } from '@deephaven/jsapi-shim';
-import ChartUtils from './ChartUtils';
+import dh, { Figure, Table } from '@deephaven/jsapi-shim';
+import ChartUtils, { ChartModelSettings } from './ChartUtils';
 import FigureChartModel from './FigureChartModel';
 import ChartTheme from './ChartTheme';
 import ChartModel from './ChartModel';
-
-interface ChartModelSettings {
-  title: string;
-  xAxis: string;
-  series: string[];
-  type: SeriesPlotStyle;
-}
 
 class ChartModelFactory {
   /**

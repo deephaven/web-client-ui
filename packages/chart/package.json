@@ -36,7 +36,6 @@
     "@deephaven/log": "file:../log",
     "@deephaven/redux": "file:../redux",
     "@deephaven/utils": "file:../utils",
-    "@fortawesome/fontawesome-common-types": "^6.1.2",
     "deep-equal": "^2.0.5",
     "lodash.debounce": "^4.0.8",
     "lodash.set": "^4.3.2",

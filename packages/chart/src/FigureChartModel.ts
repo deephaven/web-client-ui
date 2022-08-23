@@ -2,10 +2,21 @@
 import memoize from 'memoizee';
 import debounce from 'lodash.debounce';
 import set from 'lodash.set';
-import dh from '@deephaven/jsapi-shim';
+import dh, {
+  Axis,
+  Chart,
+  Figure,
+  OneClick,
+  Series,
+  SourceType,
+} from '@deephaven/jsapi-shim';
 import Log from '@deephaven/log';
-import ChartModel from './ChartModel';
-import ChartUtils from './ChartUtils';
+import { Range } from '@deephaven/utils';
+import { Layout, PlotData } from 'plotly.js';
+import { Formatter } from '@deephaven/jsapi-utils';
+import ChartModel, { ChartEvent, FilterColumnMap } from './ChartModel';
+import ChartUtils, { AxisTypeMap, ChartModelSettings } from './ChartUtils';
+import ChartTheme from './ChartTheme';
 
 const log = Log.module('FigureChartModel');
 
@@ -16,10 +27,14 @@ class FigureChartModel extends ChartModel {
   static ADD_SERIES_DEBOUNCE = 50;
 
   /**
-   * @param {dh.plot.Figure} figure The figure object created by the API
-   * @param {Object} settings Chart settings
+   * @param figure The figure object created by the API
+   * @param settings Chart settings
    */
-  constructor(figure, settings = {}, theme = {}) {
+  constructor(
+    figure: Figure,
+    settings: Partial<ChartModelSettings> = {},
+    theme: typeof ChartTheme = ChartTheme
+  ) {
     super();
 
     this.handleFigureUpdated = this.handleFigureUpdated.bind(this);
@@ -31,13 +46,8 @@ class FigureChartModel extends ChartModel {
     this.handleDownsampleFail = this.handleDownsampleFail.bind(this);
     this.handleDownsampleNeeded = this.handleDownsampleNeeded.bind(this);
     this.handleRequestFailed = this.handleRequestFailed.bind(this);
-
     // We need to debounce adding series so we subscribe to them all in the same tick
     // This should no longer be necessary after IDS-5049 lands
-    this.addPendingSeries = debounce(
-      this.addPendingSeries.bind(this),
-      FigureChartModel.ADD_SERIES_DEBOUNCE
-    );
 
     this.figure = figure;
     this.settings = settings;
@@ -58,13 +68,45 @@ class FigureChartModel extends ChartModel {
     this.startListeningFigure();
   }
 
-  close() {
+  figure: Figure;
+
+  settings: Partial<ChartModelSettings>;
+
+  theme: typeof ChartTheme;
+
+  data: Partial<PlotData>[];
+
+  layout: Partial<Layout>;
+
+  seriesDataMap: Map<
+    string,
+    Partial<PlotData> & {
+      xLow?: number[];
+      xHigh?: number[];
+      yLow?: number[];
+      yHigh?: number[];
+    }
+  >;
+
+  pendingSeries: Series[];
+
+  oneClicks: OneClick[];
+
+  filterColumnMap: FilterColumnMap;
+
+  lastFilter: Map<string, string>;
+
+  isConnected: boolean; // Assume figure is connected to start
+
+  seriesToProcess;
+
+  close(): void {
     this.figure.close();
     this.addPendingSeries.cancel();
     this.stopListeningFigure();
   }
 
-  getDefaultTitle() {
+  getDefaultTitle(): string {
     if (this.figure.charts.length > 0) {
       const chart = this.figure.charts[0];
       return chart.title;
@@ -73,12 +115,12 @@ class FigureChartModel extends ChartModel {
     return '';
   }
 
-  initAllSeries() {
+  initAllSeries(): void {
     this.oneClicks = [];
     this.filterColumnMap.clear();
 
     const { charts } = this.figure;
-    const activeSeriesNames = [];
+    const activeSeriesNames: string[] = [];
     for (let i = 0; i < charts.length; i += 1) {
       const chart = charts[i];
 
@@ -94,21 +136,21 @@ class FigureChartModel extends ChartModel {
     const inactiveSeriesNames = allSeriesNames.filter(
       seriesName => activeSeriesNames.indexOf(seriesName) < 0
     );
-    for (let i = 0; i < inactiveSeriesNames; i += 1) {
+    for (let i = 0; i < inactiveSeriesNames.length; i += 1) {
       const seriesName = inactiveSeriesNames[i];
       this.seriesDataMap.delete(seriesName);
     }
     this.seriesToProcess = new Set([...this.seriesDataMap.keys()]);
   }
 
-  addSeries(series) {
+  addSeries(series: Series): void {
     const chart = ChartUtils.getChartForSeries(this.figure, series);
     if (chart == null) {
       log.error('Unable to find matching chart for series', series);
       return;
     }
 
-    const axisTypeMap = ChartUtils.groupArray(chart.axes, 'type');
+    const axisTypeMap: AxisTypeMap = ChartUtils.groupArray(chart.axes, 'type');
 
     const seriesData = ChartUtils.makeSeriesDataFromSeries(
       series,
@@ -143,7 +185,7 @@ class FigureChartModel extends ChartModel {
     this.updateLayoutFormats();
   }
 
-  addPendingSeries() {
+  addPendingSeries = debounce(() => {
     const { pendingSeries } = this;
     for (let i = 0; i < pendingSeries.length; i += 1) {
       const series = pendingSeries[i];
@@ -154,10 +196,10 @@ class FigureChartModel extends ChartModel {
     }
 
     this.pendingSeries = [];
-  }
+  }, FigureChartModel.ADD_SERIES_DEBOUNCE);
 
-  subscribe(...args) {
-    super.subscribe(...args);
+  subscribe(callback: (event: ChartEvent) => void): void {
+    super.subscribe(callback);
 
     if (this.listeners.length === 1) {
       // Need to initialize the series here as we may have missed some series when not subscribed
@@ -166,15 +208,15 @@ class FigureChartModel extends ChartModel {
     }
   }
 
-  unsubscribe(...args) {
-    super.unsubscribe(...args);
+  unsubscribe(callback: (event: ChartEvent) => void): void {
+    super.unsubscribe(callback);
 
     if (this.listeners.length === 0) {
       this.unsubscribeFigure();
     }
   }
 
-  subscribeFigure() {
+  subscribeFigure(): void {
     if (!this.isConnected) {
       log.debug('Ignoring subscribe when figure in disconnected state');
       return;
@@ -187,11 +229,11 @@ class FigureChartModel extends ChartModel {
     );
   }
 
-  unsubscribeFigure() {
+  unsubscribeFigure(): void {
     this.figure.unsubscribe();
   }
 
-  startListeningFigure() {
+  startListeningFigure(): void {
     this.figure.addEventListener(
       dh.plot.Figure.EVENT_UPDATED,
       this.handleFigureUpdated
@@ -230,7 +272,7 @@ class FigureChartModel extends ChartModel {
     );
   }
 
-  stopListeningFigure() {
+  stopListeningFigure(): void {
     this.figure.removeEventListener(
       dh.plot.Figure.EVENT_UPDATED,
       this.handleFigureUpdated
@@ -281,63 +323,68 @@ class FigureChartModel extends ChartModel {
 
   getValueTranslator = memoize((columnType, formatter) => {
     const timeZone = this.getTimeZone(columnType, formatter);
-    return value => ChartUtils.unwrapValue(value, timeZone);
+    return (value: unknown) => ChartUtils.unwrapValue(value, timeZone);
   });
 
   /** Gets the parser for a value with the provided column type */
   getValueParser = memoize((columnType, formatter) => {
     const timeZone = this.getTimeZone(columnType, formatter);
-    return value => ChartUtils.wrapValue(value, columnType, timeZone);
+    return (value: unknown) =>
+      ChartUtils.wrapValue(value, columnType, timeZone);
   });
 
   /**
    * Gets the range parser for a particular column type
    */
-  getRangeParser = memoize((columnType, formatter) => range => {
-    let [rangeStart, rangeEnd] = range;
-    const valueParser = this.getValueParser(columnType, formatter);
-    rangeStart = valueParser(rangeStart);
-    rangeEnd = valueParser(rangeEnd);
-    return [rangeStart, rangeEnd];
-  });
+  getRangeParser = memoize(
+    (columnType: string, formatter?: Formatter) => (range: Range) => {
+      let [rangeStart, rangeEnd]: [unknown, unknown] = range;
+      const valueParser = this.getValueParser(columnType, formatter);
+      rangeStart = valueParser(rangeStart);
+      rangeEnd = valueParser(rangeEnd);
+      return [rangeStart, rangeEnd];
+    }
+  );
 
   /**
    * Gets the parser for parsing the range from an axis within the given chart
    */
-  getAxisRangeParser = memoize((chart, formatter) => axis => {
-    const source = ChartUtils.getSourceForAxis(chart, axis);
-    if (source) {
-      return this.getRangeParser(source.columnType, formatter);
+  getAxisRangeParser = memoize(
+    (chart: Chart, formatter?: Formatter) => (axis: Axis) => {
+      const source = ChartUtils.getSourceForAxis(chart, axis);
+      if (source) {
+        return this.getRangeParser(source.columnType, formatter);
+      }
+
+      return (range: [unknown, unknown]) => range;
     }
+  );
 
-    return range => range;
-  });
-
-  handleDownsampleStart(event) {
+  handleDownsampleStart(event: ChartEvent): void {
     log.debug('Downsample started', event);
 
     this.fireDownsampleStart(event.detail);
   }
 
-  handleDownsampleFinish(event) {
+  handleDownsampleFinish(event: ChartEvent): void {
     log.debug('Downsample finished', event);
 
     this.fireDownsampleFinish(event.detail);
   }
 
-  handleDownsampleFail(event) {
+  handleDownsampleFail(event: ChartEvent): void {
     log.error('Downsample failed', event);
 
     this.fireDownsampleFail(event.detail);
   }
 
-  handleDownsampleNeeded(event) {
+  handleDownsampleNeeded(event: ChartEvent): void {
     log.info('Downsample needed', event);
 
     this.fireDownsampleNeeded(event.detail);
   }
 
-  handleFigureUpdated(event) {
+  handleFigureUpdated(event: ChartEvent): void {
     const { detail: figureUpdateEvent } = event;
     const { series: seriesArray } = figureUpdateEvent;
 
@@ -376,21 +423,21 @@ class FigureChartModel extends ChartModel {
     this.fireUpdate(data);
   }
 
-  handleRequestFailed(event) {
+  handleRequestFailed(event: ChartEvent): void {
     log.error('Request failed', event);
   }
 
   /**
    * Resubscribe to the figure, should be done if settings change
    */
-  resubscribe() {
+  resubscribe(): void {
     if (this.listeners.length > 0) {
       this.unsubscribeFigure();
       this.subscribeFigure();
     }
   }
 
-  setFormatter(formatter) {
+  setFormatter(formatter: Formatter): void {
     super.setFormatter(formatter);
 
     this.updateLayoutFormats();
@@ -400,13 +447,13 @@ class FigureChartModel extends ChartModel {
     this.resubscribe();
   }
 
-  setDownsamplingDisabled(...args) {
-    super.setDownsamplingDisabled(...args);
+  setDownsamplingDisabled(isDownsamplingDisabled: boolean): void {
+    super.setDownsamplingDisabled(isDownsamplingDisabled);
 
     this.resubscribe();
   }
 
-  handleFigureDisconnected(event) {
+  handleFigureDisconnected(event: CustomEvent): void {
     log.debug('Figure disconnected', event);
 
     this.isConnected = false;
@@ -418,7 +465,7 @@ class FigureChartModel extends ChartModel {
     this.fireDisconnect();
   }
 
-  handleFigureReconnected(event) {
+  handleFigureReconnected(event: CustomEvent): void {
     log.debug('Figure reconnected', event);
 
     this.isConnected = true;
@@ -433,59 +480,75 @@ class FigureChartModel extends ChartModel {
     }
   }
 
-  handleFigureSeriesAdded(event) {
+  handleFigureSeriesAdded(event: { detail: Series }): void {
     const { detail: series } = event;
     log.debug('handleFigureSeriesAdded', series);
 
     this.pendingSeries.push(series);
-
     this.addPendingSeries();
   }
 
-  setDimensions(rect) {
+  setDimensions(rect: DOMRect): void {
     super.setDimensions(rect);
 
     this.updateAxisPositions();
   }
 
-  setTitle(title) {
+  setTitle(title: string): void {
     super.setTitle(title);
 
     // Need to recalculate the padding based on how many lines of text the title is
     // Plotly doesn't handle positioning it correctly, and it's an undocumented feature
     const subtitleCount = (title ?? '').match(/<br>/g)?.length ?? 0;
-    this.layout.margin.t =
+    const margin =
       ChartUtils.DEFAULT_MARGIN.t +
       subtitleCount * ChartUtils.SUBTITLE_LINE_HEIGHT;
-    this.layout.title.text = title;
-    this.layout.title.pad.t =
-      ChartUtils.DEFAULT_TITLE_PADDING.t +
-      subtitleCount * ChartUtils.SUBTITLE_LINE_HEIGHT * 0.5;
+
+    if (this.layout.margin) {
+      this.layout.margin.t = margin;
+    } else {
+      this.layout.margin = { t: margin };
+    }
+
+    if (typeof this.layout.title === 'string') {
+      this.layout.title = title;
+    } else {
+      this.layout.title = { ...this.layout.title };
+      this.layout.title.text = title;
+      this.layout.title.pad = { ...this.layout.title.pad };
+      this.layout.title.pad.t =
+        ChartUtils.DEFAULT_TITLE_PADDING.t +
+        subtitleCount * ChartUtils.SUBTITLE_LINE_HEIGHT * 0.5;
+    }
   }
 
-  getPlotWidth() {
+  getPlotWidth(): number {
     if (!this.rect || !this.rect.width) {
       return 0;
     }
 
     return Math.max(
-      this.rect.width - this.layout.margin.l - this.layout.margin.r,
+      this.rect.width -
+        (this.layout.margin?.l ?? 0) -
+        (this.layout.margin?.r ?? 0),
       0
     );
   }
 
-  getPlotHeight() {
+  getPlotHeight(): number {
     if (!this.rect || !this.rect.height) {
       return 0;
     }
 
     return Math.max(
-      this.rect.height - this.layout.margin.t - this.layout.margin.b,
+      this.rect.height -
+        (this.layout.margin?.t ?? 0) -
+        (this.layout.margin?.b ?? 0),
       0
     );
   }
 
-  updateAxisPositions() {
+  updateAxisPositions(): void {
     const plotWidth = this.getPlotWidth();
     const plotHeight = this.getPlotHeight();
 
@@ -506,7 +569,7 @@ class FigureChartModel extends ChartModel {
   /**
    * Updates the format patterns used
    */
-  updateLayoutFormats() {
+  updateLayoutFormats(): void {
     if (!this.formatter) {
       return;
     }
@@ -528,27 +591,37 @@ class FigureChartModel extends ChartModel {
 
   /**
    * Set a specific array for the array of series properties specified.
-   * @param {dh.Series} series The series to set the data array for.
-   * @param {dh.plot.SourceType} sourceType The source type within that series to set the data for.
-   * @param {Any[]} dataArray The array to use for the data for this series source.
+   * @param series The series to set the data array for.
+   * @param sourceType The source type within that series to set the data for.
+   * @param dataArray The array to use for the data for this series source.
    */
-  setDataArrayForSeries(series, sourceType, dataArray) {
+  setDataArrayForSeries(
+    series: Series,
+    sourceType: SourceType,
+    dataArray: unknown[]
+  ): void {
     const { name, plotStyle } = series;
 
     const seriesData = this.seriesDataMap.get(name);
     const property = ChartUtils.getPlotlyProperty(plotStyle, sourceType);
-    set(seriesData, property, dataArray);
+
+    if (seriesData) {
+      set(seriesData, property, dataArray);
+    }
   }
 
   /**
    * After setting all the data in the series data, we may need to adjust some other properties
    * Eg. Calculating the width from the xLow/xHigh values; Plot.ly uses `width` instead of a low/high
    * value for x.
-   * @param {dh.Series} series The series to clean the data for
+   * @param series The series to clean the data for
    */
-  cleanSeries(series) {
+  cleanSeries(series: Series): void {
     const { name, plotStyle } = series;
     const seriesData = this.seriesDataMap.get(name);
+    if (seriesData == null) {
+      return;
+    }
     if (plotStyle === dh.plot.SeriesPlotStyle.HISTOGRAM) {
       const { xLow, xHigh } = seriesData;
       if (xLow && xHigh && xLow.length === xHigh.length) {
@@ -561,10 +634,18 @@ class FigureChartModel extends ChartModel {
     } else if (plotStyle === dh.plot.SeriesPlotStyle.LINE) {
       const { x, xLow, xHigh, y, yLow, yHigh } = seriesData;
       if (xLow && xHigh && xLow !== x) {
-        seriesData.error_x = ChartUtils.getPlotlyErrorBars(x, xLow, xHigh);
+        seriesData.error_x = ChartUtils.getPlotlyErrorBars(
+          x as number[],
+          xLow,
+          xHigh
+        );
       }
       if (yLow && yHigh && yLow !== y) {
-        seriesData.error_y = ChartUtils.getPlotlyErrorBars(y, yLow, yHigh);
+        seriesData.error_y = ChartUtils.getPlotlyErrorBars(
+          y as number[],
+          yLow,
+          yHigh
+        );
       }
     } else if (plotStyle === dh.plot.SeriesPlotStyle.TREEMAP) {
       const { ids, labels } = seriesData;
@@ -576,19 +657,19 @@ class FigureChartModel extends ChartModel {
     }
   }
 
-  getData() {
+  getData(): Partial<PlotData>[] {
     return this.data;
   }
 
-  getLayout() {
+  getLayout(): Partial<Layout> {
     return this.layout;
   }
 
-  getFilterColumnMap() {
+  getFilterColumnMap(): FilterColumnMap {
     return new Map(this.filterColumnMap);
   }
 
-  isFilterRequired() {
+  isFilterRequired(): boolean {
     return (
       this.oneClicks.find(oneClick => oneClick.requireAllFiltersToDisplay) !=
       null
@@ -597,9 +678,9 @@ class FigureChartModel extends ChartModel {
 
   /**
    * Sets the filter on the model. Will only set the values that have changed.
-   * @param {Map<String, String>} filterMap Map of filter column names to values
+   * @param filterMap Map of filter column names to values
    */
-  setFilter(filterMap) {
+  setFilter(filterMap: Map<string, string>): void {
     if (this.oneClicks.length === 0) {
       log.warn('Trying to set a filter, but no one click!');
       return;
@@ -626,7 +707,7 @@ class FigureChartModel extends ChartModel {
     this.lastFilter = new Map(filterMap);
   }
 
-  setFigure(figure) {
+  setFigure(figure: Figure): void {
     this.close();
 
     this.figure = figure;
@@ -640,7 +721,7 @@ class FigureChartModel extends ChartModel {
     }
   }
 
-  updateSettings(settings) {
+  updateSettings(settings: Partial<ChartModelSettings>): void {
     this.settings = settings;
   }
 }

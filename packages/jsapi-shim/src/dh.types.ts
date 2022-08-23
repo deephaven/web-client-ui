@@ -3,6 +3,7 @@
 /* eslint-disable @typescript-eslint/no-empty-interface */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable lines-between-class-members */
+
 /* eslint-disable max-classes-per-file */
 export default dh;
 
@@ -20,6 +21,7 @@ export interface dh {
   FilterCondition: FilterConditionStatic;
   FilterValue: FilterValueStatic;
   plot: Plot;
+  Axis: Axis;
   Table: TableStatic;
   Client: ClientStatic;
   TreeTable: TreeTableStatic;
@@ -27,6 +29,7 @@ export interface dh {
   SearchDisplayMode?: SearchDisplayModeStatic;
   RangeSet: RangeSet;
   IdeSession: IdeSessionStatic;
+  calendar: CalendarStatic;
 }
 
 const VariableType = {
@@ -37,6 +40,10 @@ const VariableType = {
   TABLEMAP: 'TableMap',
   TREETABLE: 'TreeTable',
 } as const;
+
+export interface CalendarStatic {
+  DayOfWeek: { values: () => string[] };
+}
 
 export type VariableTypeUnion = typeof VariableType[keyof typeof VariableType];
 
@@ -163,6 +170,7 @@ export interface Plot {
   ChartDescriptor: ChartDescriptor;
   SeriesDescriptor: SeriesDescriptor;
   SourceDescriptor: SourceDescriptor;
+  DownsampleOptions: DownsampleOptions;
 }
 
 export interface RemoverFn {
@@ -182,13 +190,13 @@ export interface FigureDescriptor {
   updateInterval?: number;
   rows?: number;
   cols?: number;
-  charts: ChartDescriptor[];
+  charts: Partial<ChartDescriptor>[];
 }
 export interface ChartDescriptor {
   rowspan?: number;
   colspan?: number;
-  series: SeriesDescriptor[];
-  axes: AxisDescriptor[];
+  series: Partial<SeriesDescriptor>[];
+  axes: Partial<AxisDescriptor>[];
   chartType: string;
   title?: string;
   titleFont?: string;
@@ -248,9 +256,10 @@ export interface Figure extends Evented {
   readonly EVENT_DOWNSAMPLEFINISHED: string;
   readonly EVENT_DOWNSAMPLEFAILED: string;
   readonly EVENT_DOWNSAMPLENEEDED: string;
+  readonly EVENT_SERIES_ADDED: string;
 
   /** Given a client-created figure descriptor, generate a figure that can be subscribed to */
-  create(figure: FigureDescriptor): Figure;
+  create(figure: Partial<FigureDescriptor>): Figure;
 
   readonly title: string;
   readonly titleFont: string;
@@ -272,6 +281,8 @@ export interface Figure extends Evented {
    * Unsubscribes to all series in this figure.
    */
   unsubscribe(): void;
+
+  close(): void;
 }
 
 export interface FigureDataUpdatedEvent {
@@ -404,6 +415,7 @@ export interface Series {
   readonly shapeLabel: string;
   readonly shapeSize: number;
   readonly shape: string;
+  readonly shapeColor: string;
   readonly sources: SeriesDataSource[];
   readonly multiSeries: MultiSeries;
   readonly oneClick: OneClick;
@@ -417,12 +429,33 @@ export interface MultiSeries {
   readonly name: string;
 }
 
+export interface BusinessPeriod {
+  open: string;
+  close: string;
+}
+
+export interface LocalDateWrapper {
+  toString: () => string;
+}
+export interface Holiday {
+  date: LocalDateWrapper;
+  businessPeriods: BusinessPeriod[];
+}
+
+export interface BusinessCalendar {
+  getName: () => string;
+  timeZone: TimeZone;
+  businessPeriods: BusinessPeriod[];
+  businessDays: string[];
+  holidays: Holiday[];
+}
+
 export interface Axis {
   readonly id: string;
   readonly formatType: AxisFormatType;
   readonly type: AxisType;
   readonly position: AxisPosition;
-  readonly isLog: boolean;
+  readonly log: boolean;
   readonly label: string;
   readonly labelFont: string;
   readonly ticksFont: string;
@@ -438,6 +471,9 @@ export interface Axis {
   readonly isInvert: boolean;
   readonly isTimeAxis: boolean;
 
+  readonly FORMAT_TYPE_NUMBER: unknown;
+  readonly businessCalendar: BusinessCalendar;
+
   /**
    * Indicate the density and range of data that the UI needs for this axis, across any series which
    * draws on this axis. Ignored for non-time series data, for non-line series.
@@ -452,12 +488,12 @@ export interface Axis {
 export interface SeriesDataSource {
   readonly axis: Axis;
   readonly type: SourceType;
-  readonly columnName: string;
+  readonly columnType: string;
 }
 
 export interface OneClick {
   readonly columns: { name: string; type: string }[];
-  readonly isRequireAllFiltersToDisplay: boolean;
+  readonly requireAllFiltersToDisplay: boolean;
 
   setValueForColumn(columnName: string, value: any): void;
   getValueForColumn(columnName: string): any;
