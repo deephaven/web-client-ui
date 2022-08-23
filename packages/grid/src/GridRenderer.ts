@@ -1657,6 +1657,7 @@ export class GridRenderer {
       let columnIndex = startIndex;
 
       while (columnIndex <= endIndex) {
+        const { columnCount } = metrics;
         const modelColumn = getOrThrow(modelColumns, columnIndex);
         const columnGroupName = model.textForColumnHeader(modelColumn, depth);
         const columnGroupColor = model.colorForColumnHeader(modelColumn, depth);
@@ -1670,8 +1671,9 @@ export class GridRenderer {
           // The group will be drawn as if it were a column with a max width of the bounds width
           let prevColumnIndex = columnIndex - 1;
           while (
-            columnGroupRight - columnGroupLeft < visibleWidth ||
-            columnGroupLeft > minX
+            prevColumnIndex >= 0 &&
+            (columnGroupRight - columnGroupLeft < visibleWidth ||
+              columnGroupLeft > minX)
           ) {
             const prevModelIndex =
               modelColumns.get(prevColumnIndex) ??
@@ -1697,8 +1699,9 @@ export class GridRenderer {
 
           let nextColumnIndex = columnIndex + 1;
           while (
-            columnGroupRight - columnGroupLeft < visibleWidth ||
-            columnGroupRight < maxX
+            nextColumnIndex < columnCount &&
+            (columnGroupRight - columnGroupLeft < visibleWidth ||
+              columnGroupRight < maxX)
           ) {
             const nextModelIndex =
               modelColumns.get(nextColumnIndex) ??
