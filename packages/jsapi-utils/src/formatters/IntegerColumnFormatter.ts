@@ -99,8 +99,8 @@ export class IntegerColumnFormatter extends TableColumnFormatter<number> {
    * @returns True if the formats match
    */
   static isSameFormat(
-    formatA?: IntegerColumnFormat,
-    formatB?: IntegerColumnFormat
+    formatA: IntegerColumnFormat | null,
+    formatB: IntegerColumnFormat | null
   ): boolean {
     return (
       formatA === formatB ||

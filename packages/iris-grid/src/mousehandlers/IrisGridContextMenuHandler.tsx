@@ -724,7 +724,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
     const { model } = this.irisGrid.props;
     const { formatter } = model;
     const selectedFormat = formatter.getColumnFormat(column.type, column.name);
-    assertNotNull(selectedFormat);
+
     const formatOptions = DateTimeFormatContextMenu.getOptions(
       formatter,
       selectedFormat

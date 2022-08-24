@@ -23,7 +23,7 @@ class DateTimeFormatContextMenu {
    */
   static getOptions(
     formatter: Formatter,
-    selectedFormat: TableColumnFormat
+    selectedFormat: TableColumnFormat | null
   ): FormatContextMenuOption[] {
     const currentTime = new Date();
     const formatItems = [

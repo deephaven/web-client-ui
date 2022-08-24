@@ -57,13 +57,13 @@ export class DateTimeColumnFormatter extends TableColumnFormatter<
    * @returns True if the formats match
    */
   static isSameFormat(
-    formatA?: TableColumnFormat,
-    formatB?: TableColumnFormat
+    formatA: TableColumnFormat | null,
+    formatB: TableColumnFormat | null
   ): boolean {
     return (
       formatA === formatB ||
-      (formatA != null &&
-        formatB != null &&
+      (formatA !== null &&
+        formatB !== null &&
         formatA.type === formatB.type &&
         formatA.formatString === formatB.formatString)
     );
