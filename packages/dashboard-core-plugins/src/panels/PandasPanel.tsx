@@ -4,7 +4,11 @@ import React, { Component, ReactElement, RefObject } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { dhRefresh } from '@deephaven/icons';
 import { Tooltip } from '@deephaven/components';
-import { IrisGridPanel, IrisGridPanelProps, PanelState } from './IrisGridPanel';
+import ConnectedIrisGridPanel, {
+  IrisGridPanel,
+  IrisGridPanelProps,
+  PanelState,
+} from './IrisGridPanel';
 import './PandasPanel.scss';
 
 export interface PandasPanelProps extends IrisGridPanelProps {
@@ -75,7 +79,7 @@ class PandasPanel extends Component<PandasPanelProps, PandasPanelState> {
     const { ...props } = this.props;
 
     return (
-      <IrisGridPanel
+      <ConnectedIrisGridPanel
         ref={this.irisGridRef}
         onStateChange={this.handleGridStateChange}
         onPanelStateUpdate={this.handlePanelStateUpdate}
@@ -101,7 +105,7 @@ class PandasPanel extends Component<PandasPanelProps, PandasPanelState> {
             automatically.
           </Tooltip>
         </button>
-      </IrisGridPanel>
+      </ConnectedIrisGridPanel>
     );
   }
 }

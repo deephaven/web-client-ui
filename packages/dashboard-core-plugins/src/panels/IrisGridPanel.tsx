@@ -9,7 +9,11 @@ import React, {
 import memoize from 'memoize-one';
 import { connect } from 'react-redux';
 import debounce from 'lodash.debounce';
-import { LayoutUtils, PanelComponent } from '@deephaven/dashboard';
+import {
+  DEFAULT_DASHBOARD_ID,
+  LayoutUtils,
+  PanelComponent,
+} from '@deephaven/dashboard';
 import {
   AdvancedSettings,
   IrisGrid,
@@ -1313,21 +1317,18 @@ export class IrisGridPanel extends PureComponent<
 
 const mapStateToProps = (
   state: RootState,
-  ownProps: { localDashboardId: string }
-) => {
-  const { localDashboardId } = ownProps;
-  return {
-    inputFilters: getInputFiltersForDashboard(state, localDashboardId),
-    links: getLinksForDashboard(state, localDashboardId),
-    columnSelectionValidator: getColumnSelectionValidatorForDashboard(
-      state,
-      localDashboardId
-    ),
-    user: getUser(state),
-    workspace: getWorkspace(state),
-    settings: getSettings(state),
-  };
-};
+  { localDashboardId = DEFAULT_DASHBOARD_ID }: { localDashboardId?: string }
+) => ({
+  inputFilters: getInputFiltersForDashboard(state, localDashboardId),
+  links: getLinksForDashboard(state, localDashboardId),
+  columnSelectionValidator: getColumnSelectionValidatorForDashboard(
+    state,
+    localDashboardId
+  ),
+  user: getUser(state),
+  workspace: getWorkspace(state),
+  settings: getSettings(state),
+});
 
 export default connect(mapStateToProps, null, null, { forwardRef: true })(
   IrisGridPanel
