@@ -38,8 +38,8 @@ export class TableColumnFormatter<T = unknown> {
    * @returns True if the formats match
    */
   static isSameFormat(
-    formatA?: TableColumnFormat,
-    formatB?: TableColumnFormat
+    formatA: TableColumnFormat | null,
+    formatB: TableColumnFormat | null
   ): boolean {
     throw new Error('isSameFormat not implemented');
   }

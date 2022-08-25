@@ -22,7 +22,7 @@ class FormatContextMenuUtils {
    * Returns true if default option should be active in the context menu
    * @param selectedFormat selected format object or null
    */
-  static isDefaultSelected(selectedFormat: TableColumnFormat): boolean {
+  static isDefaultSelected(selectedFormat: TableColumnFormat | null): boolean {
     return (
       !selectedFormat ||
       ![

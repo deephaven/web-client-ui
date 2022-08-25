@@ -132,8 +132,8 @@ export class DecimalColumnFormatter extends TableColumnFormatter<number> {
    * @returns True if the formats match
    */
   static isSameFormat(
-    formatA?: DecimalColumnFormat,
-    formatB?: DecimalColumnFormat
+    formatA: DecimalColumnFormat | null,
+    formatB: DecimalColumnFormat | null
   ): boolean {
     return (
       formatA === formatB ||
