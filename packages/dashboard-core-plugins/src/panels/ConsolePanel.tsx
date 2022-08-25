@@ -322,7 +322,6 @@ export class ConsolePanel extends PureComponent<
       unzip,
     } = this.props;
     const { consoleSettings, error, objectMap } = this.state;
-    // eslint-disable-next-line react/prop-types
     const { config, session, connection } = sessionWrapper;
     const { id: sessionId, type: language } = config;
 
