@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/console",
-  "version": "0.15.5",
+  "version": "0.15.6",
   "description": "Deephaven Console",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
@@ -30,13 +30,13 @@
     "start": "cross-env NODE_ENV=development npm run watch"
   },
   "dependencies": {
+    "@deephaven/chart": "file:../chart",
     "@deephaven/components": "file:../components",
     "@deephaven/icons": "file:../icons",
     "@deephaven/jsapi-shim": "file:../jsapi-shim",
     "@deephaven/log": "file:../log",
     "@deephaven/storage": "file:../storage",
     "@deephaven/utils": "file:../utils",
-    "@deephaven/chart": "file:../chart",
     "@fortawesome/react-fontawesome": "^0.1.18",
     "classnames": "^2.3.1",
     "lodash.debounce": "^4.0.8",
