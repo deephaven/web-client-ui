@@ -8,6 +8,7 @@ import {
   CommandHistoryStorage,
   Console,
   ConsoleConstants,
+  HeapUsage,
 } from '@deephaven/console';
 import { PanelEvent } from '@deephaven/dashboard';
 import { IdeSession, VariableDefinition } from '@deephaven/jsapi-shim';
@@ -321,7 +322,7 @@ export class ConsolePanel extends PureComponent<
       unzip,
     } = this.props;
     const { consoleSettings, error, objectMap } = this.state;
-    const { config, session } = sessionWrapper;
+    const { config, session, connection } = sessionWrapper;
     const { id: sessionId, type: language } = config;
 
     return (
@@ -350,6 +351,16 @@ export class ConsolePanel extends PureComponent<
                 <>
                   <div>&nbsp;</div>
                   <div>{ConsoleConstants.LANGUAGE_MAP.get(language)}</div>
+                  <div>&nbsp;</div>
+                  <div>
+                    <HeapUsage
+                      connection={connection}
+                      defaultUpdateInterval={10 * 1000}
+                      hoverUpdateInterval={3 * 1000}
+                      monitorDuration={10 * 60 * 1000}
+                    />
+                  </div>
+                  <div>&nbsp;</div>
                 </>
               }
               scope={sessionId}

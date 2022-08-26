@@ -912,7 +912,14 @@ export interface TableMap extends Evented {
   getTable(key: object): Promise<Table>;
 }
 
+export interface WorkerHeapInfo {
+  readonly maximumHeapSize: number;
+  readonly freeMemory: number;
+  readonly totalHeapSize: number;
+}
+
 export interface QueryConnectable extends Evented {
+  getWorkerHeapInfo(): Promise<WorkerHeapInfo>;
   getConsoleTypes(): Promise<string[]>;
   startSession(type: string): Promise<IdeSession>;
 }

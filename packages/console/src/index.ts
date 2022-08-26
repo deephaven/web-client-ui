@@ -11,5 +11,6 @@ export * from './common';
 export * from './command-history';
 export * from './console-history';
 export { default as LogView } from './log/LogView';
+export { default as HeapUsage } from './HeapUsage';
 
 export { default } from './Console';

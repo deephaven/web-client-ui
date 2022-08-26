@@ -36,6 +36,7 @@
     "@deephaven/log": "file:../log",
     "@deephaven/storage": "file:../storage",
     "@deephaven/utils": "file:../utils",
+    "@deephaven/chart": "file:../chart",
     "@fortawesome/react-fontawesome": "^0.1.18",
     "classnames": "^2.3.1",
     "lodash.debounce": "^4.0.8",
