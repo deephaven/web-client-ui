@@ -10,6 +10,6 @@ if (!Number.isFinite(logLevel)) {
 }
 Log.setLogLevel(logLevel);
 
-// disable annoying dnd-react warnings
+// disable annoying dnd warnings
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-window['__react-beautiful-dnd-disable-dev-warnings' as any] = true;
+window['__@hello-pangea/dnd-disable-dev-warnings' as any] = true;

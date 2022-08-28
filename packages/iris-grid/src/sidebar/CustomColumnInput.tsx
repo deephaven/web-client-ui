@@ -1,6 +1,6 @@
 import React, { PureComponent, ReactElement } from 'react';
 import classNames from 'classnames';
-import { Draggable } from 'react-beautiful-dnd';
+import { Draggable } from '@hello-pangea/dnd';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Tooltip } from '@deephaven/components';
 import { vsTrash, vsGripper } from '@deephaven/icons';

@@ -1,7 +1,7 @@
 import React, { PureComponent } from 'react';
 import classNames from 'classnames';
 import memoize from 'memoizee';
-import { Draggable, Droppable, DraggableChildrenFn } from 'react-beautiful-dnd';
+import { Draggable, Droppable, DraggableChildrenFn } from '@hello-pangea/dnd';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { vsGripper } from '@deephaven/icons';
 import { RangeUtils, Range } from '@deephaven/utils';
@@ -49,9 +49,9 @@ type DraggableItemListState = {
 
 /**
  * Show a draggable item list. It _must_ be used within a `DragDropContext`.
- * This implementation uses react-beautiful-dnd for handling dragging and dropping of items.
- * We use ItemList to handle selection for multi drag and drop (not built in to react-beautiful-dnd).
- * One caveat with the use of react-beautiful-dnd is that it doesn't allow a drag to be initiated while
+ * This implementation uses @hello-pangea/dnd for handling dragging and dropping of items.
+ * We use ItemList to handle selection for multi drag and drop (not built in to @hello-pangea/dnd).
+ * One caveat with the use of @hello-pangea/dnd is that it doesn't allow a drag to be initiated while
  * using a modifier key: https://github.com/atlassian/react-beautiful-dnd/issues/1678
  */
 class DraggableItemList<T> extends PureComponent<

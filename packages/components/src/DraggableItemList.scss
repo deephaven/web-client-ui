@@ -141,7 +141,7 @@ $draggable-item-grip-color: $mid;
     }
   }
 
-  // Sometimes react-beautiful-dnd still adds the `is-dragging-over` class even though drop is disabled
+  // Sometimes @hello-pangea/dnd still adds the `is-dragging-over` class even though drop is disabled
   // only show the ants if drop isn't disabled
   &.is-dragging-over:not(.is-drop-disabled) {
     .item-list-scroll-pane {

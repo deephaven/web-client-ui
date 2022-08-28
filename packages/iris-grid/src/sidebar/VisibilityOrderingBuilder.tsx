@@ -27,7 +27,7 @@ import {
   DragStart,
   Droppable,
   DropResult,
-} from 'react-beautiful-dnd';
+} from '@hello-pangea/dnd';
 import memoize from 'memoizee';
 import debounce from 'lodash.debounce';
 import { SearchInput, Tooltip } from '@deephaven/components';
@@ -251,7 +251,7 @@ class VisibilityOrderingBuilder extends Component<
     const orderDraggingColumn = parseInt(draggableId, 10);
 
     // we want to clear focus from any eye toggles
-    // however to maintain react-beautiful-dnd keyboard functionality the only valid
+    // however to maintain @hello-pangea/dnd keyboard functionality the only valid
     // focus target is the drag target itself, so we set it there instead of blurring
     (this.list?.querySelectorAll('.column-item')[
       startIndex
