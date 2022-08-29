@@ -1174,6 +1174,36 @@ class ErrorResult {
     this.stacktrace = stacktrace;
   }
 }
+
+class IdeConnection extends DeephavenObject {
+  /**
+   * Retrieve an object with the specified definition
+   * @param {JsVariableDefinition} variableDefinition The object definition to retrieve
+   * @returns {Promise<Table>} A promise that resolves to the retrieved table
+   */
+  getObject(variableDefinition) {
+    return new Promise((resolve, reject) => {
+      try {
+        const { type } = variableDefinition;
+        switch (type) {
+          case VariableType.FIGURE:
+            const figure = makeDummyFigure(name);
+            setTimeout(resolve, NETWORK_DELAY, figure);
+            break;
+          case VariableType.TABLE:
+            const table = makeDummyTable();
+            setTimeout(resolve, NETWORK_DELAY, table);
+            break;
+          default:
+            throw new Error(`Unexpected object type ${type}`);
+        }
+      } catch (e) {
+        reject(e);
+      }
+    });
+  }
+}
+
 class IdeSession extends DeephavenObject {
   constructor(language) {
     super();
@@ -1751,6 +1781,7 @@ const dh = {
   RangeSet,
   Row: Row,
   Sort: Sort,
+  IdeConnection: IdeConnection,
   IdeSession: IdeSession,
   QueryInfo,
   Chart,

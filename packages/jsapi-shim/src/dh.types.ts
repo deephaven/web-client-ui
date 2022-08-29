@@ -938,7 +938,16 @@ export interface IdeConnection
   extends QueryConnectable,
     IdeConnectionConstructor {
   close(): void;
-  getServerUrl(): string;
-  running(): Promise<IdeConnection>;
+  running(): Promise<IdeConnection>;  
   disconnected(): void;
+  getObject(
+    definition: VariableDefinition<typeof VariableType.TABLE>
+  ): Promise<Table>;
+  getObject(
+    definition: VariableDefinition<typeof VariableType.FIGURE>
+  ): Promise<Figure>;
+  getObject(
+    definition: VariableDefinition<typeof VariableType.TREETABLE>
+  ): Promise<TreeTable>;
+  getObject(definition: VariableDefinition): Promise<unknown>;
 }

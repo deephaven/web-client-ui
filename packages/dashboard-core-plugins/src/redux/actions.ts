@@ -9,14 +9,28 @@ import { FilterSet } from '../panels';
 import { Link } from '../linker/LinkerUtils';
 import { ColumnSelectionValidator } from '../linker/ColumnSelectionValidator';
 
+export interface SessionConfig {
+  type: string;
+  id: string;
+}
+
 export interface SessionWrapper {
   session: IdeSession;
   connection: IdeConnection;
-  config: {
-    type: string;
-    id: string;
-  };
+  config: SessionConfig;
 }
+
+/**
+ * Set the connection for the dashboard specified
+ * @param id The ID of the dashboard to set the connection for
+ * @param connection The connection object to set for the dashboard
+ */
+ export const setDashboardConnection = (
+  id: string,
+  connection: IdeConnection
+): ThunkAction<unknown, RootState, undefined, Action<unknown>> => dispatch =>
+  dispatch(updateDashboardData(id, { connection }));
+
 /**
  * Set the session wrapper for the dashboard specified
  * @param id The ID of the dashboard to set the session for

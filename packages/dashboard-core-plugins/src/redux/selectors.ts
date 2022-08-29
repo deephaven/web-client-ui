@@ -1,5 +1,5 @@
 import { getDashboardData } from '@deephaven/dashboard';
-import { Column, Table } from '@deephaven/jsapi-shim';
+import { Column, IdeConnection, Table } from '@deephaven/jsapi-shim';
 import { RootState } from '@deephaven/redux';
 import { FilterChangeEvent } from '../FilterPlugin';
 import { Link } from '../linker/LinkerUtils';
@@ -111,6 +111,19 @@ export const getDashboardConsoleSettings = (
     string,
     unknown
   >;
+
+/**
+ *
+ * @param store The redux store
+ * @param dashboardId The dashboard ID to get the IdeConnection for
+ * @returns The connection for the dashboard
+ */
+ export const getDashboardConnection = (
+  store: RootState,
+  dashboardId: string
+): IdeConnection =>
+  getDashboardData(store, dashboardId).connection as IdeConnection;
+
 
 /**
  *

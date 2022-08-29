@@ -11,6 +11,7 @@ import {
   setDashboardData as setDashboardDataAction,
 } from '@deephaven/dashboard';
 import {
+  SessionWrapper,
   setDashboardSessionWrapper as setDashboardSessionWrapperAction,
   ToolType,
 } from '@deephaven/dashboard-core-plugins';
@@ -43,9 +44,10 @@ import PouchCommandHistoryStorage from '../storage/PouchCommandHistoryStorage';
 import LocalWorkspaceStorage, {
   LAYOUT_STORAGE,
 } from '../storage/LocalWorkspaceStorage';
-import { createSessionWrapper, SessionWrapper } from './SessionUtils';
+import { createConnection, createSessionWrapper } from './SessionUtils';
 import { PluginUtils } from '../plugins';
 import LayoutStorage from '../storage/LayoutStorage';
+import { isNoConsolesError } from './NoConsolesError';
 
 const log = Log.module('AppInit');
 
@@ -151,8 +153,8 @@ const AppInit = (props: AppInitProps) => {
     try {
       const newPlugins = await loadPlugins();
       const loadedWorkspace = await WORKSPACE_STORAGE.load();
-      const sessionWrapper = await createSessionWrapper();
-      sessionWrapper.connection.addEventListener(
+      const connection = createConnection();
+      connection.addEventListener(
         dh.IdeConnection.HACK_CONNECTION_FAILURE,
         event => {
           const { detail } = event;
@@ -202,7 +204,17 @@ const AppInit = (props: AppInitProps) => {
       setDashboardData(DEFAULT_DASHBOARD_ID, dashboardData);
       setFileStorage(FILE_STORAGE);
       setLayoutStorage(LAYOUT_STORAGE);
-      setDashboardSessionWrapper(DEFAULT_DASHBOARD_ID, sessionWrapper);
+
+
+      try {
+        const sessionWrapper = await createSessionWrapper(connection);
+        setDashboardSessionWrapper(DEFAULT_DASHBOARD_ID, sessionWrapper);
+      } catch (e) {
+        // Consoles may be disabled on the server, but we should still be able to start up and open existing objects
+        if (!isNoConsolesError(e)) {
+          throw e;
+        }
+      }
       setPlugins(newPlugins);
       setUser(USER);
       setWorkspaceStorage(WORKSPACE_STORAGE);

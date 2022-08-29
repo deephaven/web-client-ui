@@ -80,6 +80,13 @@ export const DEFAULT_LAYOUT_CONFIG: ExportedLayoutV2 = {
   version: 2,
 };
 
+export const DEFAULT_LAYOUT_CONFIG_NO_CONSOLE: ExportedLayoutV2 = {
+  layoutConfig: [],
+  links: [],
+  filterSets: [],
+  version: 2,
+};
+
 export function normalizeLayout(layout: ExportedLayout): ExportedLayoutV2 {
   if (isLayoutV2(layout)) {
     return layout;
@@ -100,10 +107,12 @@ export function normalizeLayout(layout: ExportedLayout): ExportedLayoutV2 {
 /**
  * Get the default layout for the user to use. Checks layout storage for any layouts, and uses the first one if found.
  * @param layoutStorage  The layout storage to get the default layouts from
+ * @param isConsoleAvailable Whether console sessions are available.
  * @returns The default layout config to use
  */
 export async function getDefaultLayout(
-  layoutStorage: LayoutStorage
+  layoutStorage: LayoutStorage,
+  isConsoleAvailable = true
 ): Promise<ExportedLayoutV2> {
   try {
     const layouts = await layoutStorage.getLayouts();
@@ -122,7 +131,9 @@ export async function getDefaultLayout(
     log.warn('Falling back to default layout');
   }
   // Otherwise, do the default layout
-  return DEFAULT_LAYOUT_CONFIG;
+  return isConsoleAvailable
+    ? DEFAULT_LAYOUT_CONFIG
+    : DEFAULT_LAYOUT_CONFIG_NO_CONSOLE;
 }
 
 export function exportLayout(data: {

@@ -71,8 +71,12 @@ export interface Workspace {
 }
 export type DashboardData = Record<string, unknown>;
 
+export type WorkspaceStorageLoadOptions = {
+  isConsoleAvailable: boolean
+}
+
 export interface WorkspaceStorage {
-  load(): Promise<Workspace>;
+  load(options?: WorkspaceStorageLoadOptions): Promise<Workspace>;
   save(workspace: Workspace): Promise<Workspace>;
 }
 

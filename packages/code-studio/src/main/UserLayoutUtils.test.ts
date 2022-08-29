@@ -5,7 +5,7 @@ import LayoutStorage, {
   ExportedLayoutV1,
   ExportedLayoutV2,
 } from '../storage/LayoutStorage';
-import UserLayoutUtils, { DEFAULT_LAYOUT_CONFIG } from './UserLayoutUtils';
+import UserLayoutUtils, { DEFAULT_LAYOUT_CONFIG, DEFAULT_LAYOUT_CONFIG_NO_CONSOLE } from './UserLayoutUtils';
 
 const links: Link[] = [
   {
@@ -97,6 +97,20 @@ describe('default layout', () => {
     };
     const layout = await UserLayoutUtils.getDefaultLayout(layoutStorage);
     expect(layout).toEqual(DEFAULT_LAYOUT_CONFIG);
+    expect(layoutStorage.getLayouts).toHaveBeenCalled();
+    expect(layoutStorage.getLayout).toHaveBeenCalledWith(layoutNames[0]);
+  });
+
+  it('falls back to default no console when stored layout cannot be loaded and no consoles are available', async () => {
+    const layoutNames = ['first', 'second'];
+    const layoutStorage: LayoutStorage = {
+      getLayouts: jest.fn(() => Promise.resolve(layoutNames)),
+      getLayout: jest.fn(() =>
+        Promise.reject(new Error('Test corrupt layout'))
+      ),
+    };
+    const layout = await UserLayoutUtils.getDefaultLayout(layoutStorage, false);
+    expect(layout).toEqual(DEFAULT_LAYOUT_CONFIG_NO_CONSOLE);
     expect(layoutStorage.getLayouts).toHaveBeenCalled();
     expect(layoutStorage.getLayout).toHaveBeenCalledWith(layoutNames[0]);
   });

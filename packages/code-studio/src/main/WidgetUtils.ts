@@ -2,7 +2,7 @@ import { ChartModel, ChartModelFactory } from '@deephaven/chart';
 import dh, {
   Table,
   VariableTypeUnion,
-  IdeSession,
+  IdeConnection,
 } from '@deephaven/jsapi-shim';
 import {
   IrisGridModel,
@@ -21,7 +21,7 @@ export type GridPanelMetadata = {
 };
 
 export const createChartModel = async (
-  session: IdeSession,
+  connection: IdeConnection,
   metadata: ChartPanelMetadata,
   panelState?: GLChartPanelState
 ): Promise<ChartModel> => {
@@ -65,7 +65,7 @@ export const createChartModel = async (
       name: figureName,
       type: dh.VariableType.FIGURE,
     };
-    const figure = await session.getObject(definition);
+    const figure = await connection.getObject(definition);
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return ChartModelFactory.makeModel(settings as any, figure);
@@ -76,7 +76,7 @@ export const createChartModel = async (
     name: tableName,
     type: dh.VariableType.TABLE,
   };
-  const table = await session.getObject(definition);
+  const table = await connection.getObject(definition);
 
   IrisGridUtils.applyTableSettings(
     table,
@@ -89,13 +89,13 @@ export const createChartModel = async (
 };
 
 export const createGridModel = async (
-  session: IdeSession,
+  connection: IdeConnection,
   metadata: GridPanelMetadata,
   type: VariableTypeUnion = dh.VariableType.TABLE
 ): Promise<IrisGridModel> => {
   const { table: tableName } = metadata;
   const definition = { title: tableName, name: tableName, type };
-  const table = (await session.getObject(definition)) as Table;
+  const table = (await connection.getObject(definition)) as Table;
   return IrisGridModelFactory.makeModel(table);
 };
 
