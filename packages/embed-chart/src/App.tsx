@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Chart, ChartModel, ChartModelFactory } from '@deephaven/chart'; // chart is used to display Deephaven charts
 import { ContextMenuRoot, LoadingOverlay } from '@deephaven/components'; // Use the loading spinner from the Deephaven components package
 import dh from '@deephaven/jsapi-shim'; // Import the shim to use the JS API
@@ -37,67 +37,66 @@ function App(): JSX.Element {
     []
   );
 
-  const initApp = useCallback(async () => {
-    try {
-      // Connect to the Web API server
-      const baseUrl = new URL(
-        process.env.REACT_APP_CORE_API_URL ?? '',
-        `${window.location}`
-      );
-
-      const websocketUrl = `${baseUrl.protocol}//${baseUrl.host}`;
-
-      log.debug(`Starting connection...`);
-      const connection = new dh.IdeConnection(websocketUrl);
-
-      log.debug('Getting console types...');
-
-      const types = await connection.getConsoleTypes();
-
-      log.debug('Available types:', types);
-
-      if (types.length === 0) {
-        throw new Error('No console types available');
-      }
-
-      const type = types[0];
-
-      log.debug('Starting session with type', type);
-
-      const session = await connection.startSession(type);
-
-      // Get the table name from the query param `name`.
-      const name = searchParams.get('name');
-
-      if (!name) {
-        throw new Error('No name param provided');
-      }
-
-      log.debug('Loading figure', name, '...');
-
-      // Load the figure up.
-      const figure = await loadFigure(session, name);
-
-      // Create the `ChartModel` for use with the `Chart` component
-      log.debug(`Creating model...`);
-
-      const newModel = await ChartModelFactory.makeModel(undefined, figure);
-
-      setModel(newModel);
-
-      log.debug('Figure successfully loaded!');
-    } catch (e: unknown) {
-      log.error('Unable to load figure', e);
-      setError(`${e}`);
-    }
-    setIsLoading(false);
-  }, [searchParams]);
-
   useEffect(
     function initializeApp() {
+      async function initApp() {
+        try {
+          // Connect to the Web API server
+          const baseUrl = new URL(
+            process.env.REACT_APP_CORE_API_URL ?? '',
+            `${window.location}`
+          );
+
+          const websocketUrl = `${baseUrl.protocol}//${baseUrl.host}`;
+
+          log.debug(`Starting connection...`);
+          const connection = new dh.IdeConnection(websocketUrl);
+
+          log.debug('Getting console types...');
+
+          const types = await connection.getConsoleTypes();
+
+          log.debug('Available types:', types);
+
+          if (types.length === 0) {
+            throw new Error('No console types available');
+          }
+
+          const type = types[0];
+
+          log.debug('Starting session with type', type);
+
+          const session = await connection.startSession(type);
+
+          // Get the table name from the query param `name`.
+          const name = searchParams.get('name');
+
+          if (!name) {
+            throw new Error('No name param provided');
+          }
+
+          log.debug('Loading figure', name, '...');
+
+          // Load the figure up.
+          const figure = await loadFigure(session, name);
+
+          // Create the `ChartModel` for use with the `Chart` component
+          log.debug(`Creating model...`);
+
+          const newModel = await ChartModelFactory.makeModel(undefined, figure);
+
+          setModel(newModel);
+
+          log.debug('Figure successfully loaded!');
+        } catch (e: unknown) {
+          log.error('Unable to load figure', e);
+          setError(`${e}`);
+        }
+        setIsLoading(false);
+      }
       initApp();
     },
-    [initApp]
+    [searchParams]
   );
 
   const isLoaded = model != null;
