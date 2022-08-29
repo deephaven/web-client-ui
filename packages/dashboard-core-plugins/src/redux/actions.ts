@@ -25,7 +25,7 @@ export interface SessionWrapper {
  * @param id The ID of the dashboard to set the connection for
  * @param connection The connection object to set for the dashboard
  */
- export const setDashboardConnection = (
+export const setDashboardConnection = (
   id: string,
   connection: IdeConnection
 ): ThunkAction<unknown, RootState, undefined, Action<unknown>> => dispatch =>

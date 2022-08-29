@@ -938,7 +938,7 @@ export interface IdeConnection
   extends QueryConnectable,
     IdeConnectionConstructor {
   close(): void;
-  running(): Promise<IdeConnection>;  
+  running(): Promise<IdeConnection>;
   disconnected(): void;
   getObject(
     definition: VariableDefinition<typeof VariableType.TABLE>
@@ -950,4 +950,7 @@ export interface IdeConnection
     definition: VariableDefinition<typeof VariableType.TREETABLE>
   ): Promise<TreeTable>;
   getObject(definition: VariableDefinition): Promise<unknown>;
+  subscribeToFieldUpdates(
+    param: (changes: VariableChanges) => void
+  ): () => void;
 }

@@ -12,11 +12,12 @@ import {
 } from '@deephaven/dashboard';
 import {
   SessionWrapper,
+  setDashboardConnection as setDashboardConnectionAction,
   setDashboardSessionWrapper as setDashboardSessionWrapperAction,
   ToolType,
 } from '@deephaven/dashboard-core-plugins';
 import { FileStorage, WebdavFileStorage } from '@deephaven/file-explorer';
-import dh from '@deephaven/jsapi-shim';
+import dh, { IdeConnection } from '@deephaven/jsapi-shim';
 import {
   DecimalColumnFormatter,
   IntegerColumnFormatter,
@@ -87,6 +88,7 @@ interface AppInitProps {
   ) => void;
   setFileStorage: (fileStorage: FileStorage) => void;
   setLayoutStorage: (layoutStorage: LayoutStorage) => void;
+  setDashboardConnection: (id: string, connection: IdeConnection) => void;
   setDashboardSessionWrapper: (id: string, wrapper: SessionWrapper) => void;
   setPlugins: (map: DeephavenPluginModuleMap) => void;
   setUser: (user: typeof USER) => void;
@@ -105,6 +107,7 @@ const AppInit = (props: AppInitProps) => {
     setDashboardData,
     setFileStorage,
     setLayoutStorage,
+    setDashboardConnection,
     setDashboardSessionWrapper,
     setPlugins,
     setUser,
@@ -152,8 +155,16 @@ const AppInit = (props: AppInitProps) => {
   const initClient = useCallback(async () => {
     try {
       const newPlugins = await loadPlugins();
-      const loadedWorkspace = await WORKSPACE_STORAGE.load();
       const connection = createConnection();
+      let sessionWrapper: SessionWrapper | undefined;
+      try {
+        sessionWrapper = await createSessionWrapper(connection);
+      } catch (e) {
+        // Consoles may be disabled on the server, but we should still be able to start up and open existing objects
+        if (!isNoConsolesError(e)) {
+          throw e;
+        }
+      }
       connection.addEventListener(
         dh.IdeConnection.HACK_CONNECTION_FAILURE,
         event => {
@@ -163,6 +174,9 @@ const AppInit = (props: AppInitProps) => {
         }
       );
 
+      const loadedWorkspace = await WORKSPACE_STORAGE.load({
+        isConsoleAvailable: sessionWrapper !== undefined,
+      });
       const { data } = loadedWorkspace;
 
       // Fill in settings that have not yet been set
@@ -204,16 +218,9 @@ const AppInit = (props: AppInitProps) => {
       setDashboardData(DEFAULT_DASHBOARD_ID, dashboardData);
       setFileStorage(FILE_STORAGE);
       setLayoutStorage(LAYOUT_STORAGE);
-
-
-      try {
-        const sessionWrapper = await createSessionWrapper(connection);
+      setDashboardConnection(DEFAULT_DASHBOARD_ID, connection);
+      if (sessionWrapper !== undefined) {
         setDashboardSessionWrapper(DEFAULT_DASHBOARD_ID, sessionWrapper);
-      } catch (e) {
-        // Consoles may be disabled on the server, but we should still be able to start up and open existing objects
-        if (!isNoConsolesError(e)) {
-          throw e;
-        }
       }
       setPlugins(newPlugins);
       setUser(USER);
@@ -230,6 +237,7 @@ const AppInit = (props: AppInitProps) => {
     setDashboardData,
     setFileStorage,
     setLayoutStorage,
+    setDashboardConnection,
     setDashboardSessionWrapper,
     setPlugins,
     setUser,
@@ -299,6 +307,7 @@ AppInit.propTypes = {
   setDashboardData: PropTypes.func.isRequired,
   setFileStorage: PropTypes.func.isRequired,
   setLayoutStorage: PropTypes.func.isRequired,
+  setDashboardConnection: PropTypes.func.isRequired,
   setDashboardSessionWrapper: PropTypes.func.isRequired,
   setPlugins: PropTypes.func.isRequired,
   setUser: PropTypes.func.isRequired,
@@ -322,6 +331,7 @@ export default connect(mapStateToProps, {
   setDashboardData: setDashboardDataAction,
   setFileStorage: setFileStorageAction,
   setLayoutStorage: setLayoutStorageAction,
+  setDashboardConnection: setDashboardConnectionAction,
   setDashboardSessionWrapper: setDashboardSessionWrapperAction,
   setPlugins: setPluginsAction,
   setUser: setUserAction,

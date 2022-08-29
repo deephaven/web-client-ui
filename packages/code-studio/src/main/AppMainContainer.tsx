@@ -133,7 +133,7 @@ interface AppMainContainerProps {
   match: {
     params: { notebookPath: string };
   };
-  connection: IdeConnection,
+  connection: IdeConnection;
   session?: IdeSession;
   sessionConfig?: SessionConfig;
   setActiveTool: (tool: string) => void;
@@ -565,7 +565,10 @@ export class AppMainContainer extends Component<
       filterSets,
       layoutConfig,
       links,
-    } = await UserLayoutUtils.getDefaultLayout(layoutStorage, session !== undefined);
+    } = await UserLayoutUtils.getDefaultLayout(
+      layoutStorage,
+      session !== undefined
+    );
 
     const { updateDashboardData, updateWorkspaceData } = this.props;
     updateWorkspaceData({ layoutConfig });
@@ -865,7 +868,8 @@ const mapStateToProps = (state: RootState) => ({
   plugins: getPlugins(state),
   connection: getDashboardConnection(state, DEFAULT_DASHBOARD_ID),
   session: getDashboardSessionWrapper(state, DEFAULT_DASHBOARD_ID)?.session,
-  sessionConfig: getDashboardSessionWrapper(state, DEFAULT_DASHBOARD_ID)?.config,
+  sessionConfig: getDashboardSessionWrapper(state, DEFAULT_DASHBOARD_ID)
+    ?.config,
   user: getUser(state),
   workspace: getWorkspace(state),
 });

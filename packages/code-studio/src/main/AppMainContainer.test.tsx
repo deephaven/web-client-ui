@@ -16,7 +16,11 @@ import LocalWorkspaceStorage from '../storage/LocalWorkspaceStorage';
 import LayoutStorage from '../storage/LayoutStorage';
 
 function makeConnection(): IdeConnection {
-  return new dh.IdeConnection('http://mockserver');
+  const connection = new dh.IdeConnection('http://mockserver');
+  connection.getTable = jest.fn();
+  connection.getObject = jest.fn();
+  connection.subscribeToFieldUpdates = jest.fn();
+  return connection;
 }
 
 function makeSession(): Partial<IdeSession> {
