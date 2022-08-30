@@ -45,8 +45,8 @@ async function loadTable(session: typeof dh.Session, name: string) {
  * A functional React component that displays a Deephaven table in an IrisGrid using the @deephaven/iris-grid package.
  * It will attempt to open and display the table specified with the `name` parameter, expecting it to be present on the server.
  * E.g. http://localhost:3000/?name=myTable will attempt to open a table `myTable`
- * If no query param is provided, it will attempt to open a new session and create a basic time table and display that.
- * By default, tries to connect to the server defined in the REACT_APP_CORE_API_URL variable, which is set to http://localhost:1000/jsapi
+ * If no query param is provided, it will display an error.
+ * By default, tries to connect to the server defined in the REACT_APP_CORE_API_URL variable, which is set to http://localhost:10000/jsapi
  * See create-react-app docs for how to update these env vars: https://create-react-app.dev/docs/adding-custom-environment-variables/
  */
 function App(): JSX.Element {

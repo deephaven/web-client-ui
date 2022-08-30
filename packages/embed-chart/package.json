@@ -1,0 +1,64 @@
+{
+  "name": "@deephaven/embed-chart",
+  "version": "0.15.4",
+  "description": "Deephaven Embedded Chart",
+  "author": "Deephaven Data Labs LLC",
+  "license": "Apache-2.0",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/deephaven/web-client-ui.git",
+    "directory": "packages/embed-chart"
+  },
+  "homepage": ".",
+  "main": "public/index.js",
+  "files": [
+    "build"
+  ],
+  "dependencies": {
+    "@deephaven/chart": "file:../chart",
+    "@deephaven/components": "file:../components",
+    "@deephaven/icons": "file:../icons",
+    "@deephaven/jsapi-shim": "file:../jsapi-shim",
+    "@deephaven/jsapi-utils": "file:../jsapi-utils",
+    "@deephaven/log": "file:../log",
+    "@fortawesome/fontawesome-svg-core": "1.2.36",
+    "@fortawesome/react-fontawesome": "^0.1.15",
+    "classnames": "^2.3.1",
+    "deep-equal": "^2.0.5",
+    "fira": "mozilla/fira#4.202",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
+    "shortid": "^2.2.16"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "eject": "react-scripts eject"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.16.0",
+    "@deephaven/eslint-config": "file:../eslint-config",
+    "@deephaven/mocks": "file:../mocks",
+    "@deephaven/prettier-config": "file:../prettier-config",
+    "@deephaven/stylelint-config": "file:../stylelint-config",
+    "@deephaven/tsconfig": "file:../tsconfig",
+    "@types/jest": "^26.0.24",
+    "@types/node": "^16.11.7",
+    "@types/react": "^17.0.2",
+    "@types/react-dom": "^17.0.9",
+    "react-scripts": "4.0.3",
+    "sass": "^1.39.0",
+    "typescript": "~4.5.4"
+  },
+  "browserslist": [
+    ">0.2%",
+    "not dead",
+    "not ie >= 0",
+    "not op_mini all"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "proxy": "http://localhost:10000"
+}
