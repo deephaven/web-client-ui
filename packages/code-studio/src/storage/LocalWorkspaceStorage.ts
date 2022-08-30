@@ -4,7 +4,12 @@ import {
   DecimalColumnFormatter,
   IntegerColumnFormatter,
 } from '@deephaven/jsapi-utils';
-import { WorkspaceStorage, Workspace, WorkspaceData, WorkspaceStorageLoadOptions } from '@deephaven/redux';
+import {
+  WorkspaceStorage,
+  Workspace,
+  WorkspaceData,
+  WorkspaceStorageLoadOptions,
+} from '@deephaven/redux';
 import { createClient } from 'webdav/web';
 import UserLayoutUtils from '../main/UserLayoutUtils';
 import WebdavLayoutStorage from './WebdavLayoutStorage';
@@ -21,12 +26,17 @@ export const LAYOUT_STORAGE = new WebdavLayoutStorage(
 export class LocalWorkspaceStorage implements WorkspaceStorage {
   static readonly STORAGE_KEY = 'deephaven.WorkspaceStorage';
 
-  static async makeDefaultWorkspaceData(options?: WorkspaceStorageLoadOptions): Promise<WorkspaceData> {
+  static async makeDefaultWorkspaceData(
+    options?: WorkspaceStorageLoadOptions
+  ): Promise<WorkspaceData> {
     const {
       filterSets,
       links,
       layoutConfig,
-    } = await UserLayoutUtils.getDefaultLayout(LAYOUT_STORAGE, options?.isConsoleAvailable);
+    } = await UserLayoutUtils.getDefaultLayout(
+      LAYOUT_STORAGE,
+      options?.isConsoleAvailable
+    );
 
     return {
       settings: {
@@ -52,8 +62,12 @@ export class LocalWorkspaceStorage implements WorkspaceStorage {
     };
   }
 
-  static async makeDefaultWorkspace(options?: WorkspaceStorageLoadOptions): Promise<Workspace> {
-    return { data: await LocalWorkspaceStorage.makeDefaultWorkspaceData(options) };
+  static async makeDefaultWorkspace(
+    options?: WorkspaceStorageLoadOptions
+  ): Promise<Workspace> {
+    return {
+      data: await LocalWorkspaceStorage.makeDefaultWorkspaceData(options),
+    };
   }
 
   // eslint-disable-next-line class-methods-use-this

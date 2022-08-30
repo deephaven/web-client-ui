@@ -26,7 +26,9 @@ export function createConnection(): IdeConnection {
  * Create a new session using the default URL
  * @returns A session and config that is ready to use
  */
-export async function createSessionWrapper(connection: IdeConnection): Promise<SessionWrapper> {
+export async function createSessionWrapper(
+  connection: IdeConnection
+): Promise<SessionWrapper> {
   log.info('Getting console types...');
 
   const types = await connection.getConsoleTypes();
@@ -48,6 +50,6 @@ export async function createSessionWrapper(connection: IdeConnection): Promise<S
   log.info('Console session established', config);
 
   return { session, config, connection };
-};
+}
 
 export default { createSessionWrapper };

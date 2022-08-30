@@ -118,12 +118,11 @@ export const getDashboardConsoleSettings = (
  * @param dashboardId The dashboard ID to get the IdeConnection for
  * @returns The connection for the dashboard
  */
- export const getDashboardConnection = (
+export const getDashboardConnection = (
   store: RootState,
   dashboardId: string
 ): IdeConnection =>
   getDashboardData(store, dashboardId).connection as IdeConnection;
-
 
 /**
  *

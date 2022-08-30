@@ -5,7 +5,10 @@ import LayoutStorage, {
   ExportedLayoutV1,
   ExportedLayoutV2,
 } from '../storage/LayoutStorage';
-import UserLayoutUtils, { DEFAULT_LAYOUT_CONFIG, DEFAULT_LAYOUT_CONFIG_NO_CONSOLE } from './UserLayoutUtils';
+import UserLayoutUtils, {
+  DEFAULT_LAYOUT_CONFIG,
+  DEFAULT_LAYOUT_CONFIG_NO_CONSOLE,
+} from './UserLayoutUtils';
 
 const links: Link[] = [
   {
