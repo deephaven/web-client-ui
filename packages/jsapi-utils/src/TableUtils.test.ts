@@ -1299,7 +1299,7 @@ describe('quick filter tests', () => {
     }
 
     it('handles default operation', () => {
-      testCharFilter('c', FilterType.eq, '"c"');
+      testCharFilter('c', FilterType.eq, 'c');
     });
 
     it('handles empty cases', () => {
