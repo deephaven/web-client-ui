@@ -1392,17 +1392,10 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
           return false;
         }
       }
-      const filter = IrisGrid.makeQuickFilter(
-        column,
-        value,
-        formatter.timeZone
-      );
-      if (filter) {
-        quickFilters.set(modelIndex, {
-          text: value,
-          filter,
-        });
-      }
+      quickFilters.set(modelIndex, {
+        text: value,
+        filter: IrisGrid.makeQuickFilter(column, value, formatter.timeZone),
+      });
       return true;
     }
     return quickFilters.delete(modelIndex);
