@@ -7,7 +7,6 @@ import classNames from 'classnames';
 import TimeInput from './TimeInput';
 import DropdownMenu from './menu-actions/DropdownMenu';
 import './CustomTimeSelect.scss';
-import './context-actions/ContextActions.scss';
 
 const CUSTOM_OPTION = -1;
 

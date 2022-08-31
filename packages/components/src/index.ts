@@ -56,3 +56,4 @@ export { default as TimeInput } from './TimeInput';
 export { default as TimeSlider } from './TimeSlider';
 export { default as ToastNotification } from './ToastNotification';
 export { default as UISwitch } from './UISwitch';
+export { default as ValidateLabelInput } from './ValidateLabelInput';

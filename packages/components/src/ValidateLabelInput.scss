@@ -1,0 +1,7 @@
+@import '../scss/custom.scss';
+
+$modified: lighten($yellow, 10%);
+
+.validate-label.modified {
+  color: $modified;
+}
