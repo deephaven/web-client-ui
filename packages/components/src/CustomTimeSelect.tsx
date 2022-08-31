@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { vsCheck, dhSort, IconDefinition } from '@deephaven/icons';
 import { TimeUtils } from '@deephaven/utils';
 import classNames from 'classnames';
-import TimeInput from './TimeInput';
+import TimeInput, { TimeInputElement } from './TimeInput';
 import DropdownMenu from './menu-actions/DropdownMenu';
 import './CustomTimeSelect.scss';
 import './context-actions/ContextActions.scss';
@@ -103,7 +103,7 @@ class CustomTimeSelect extends Component<
 
   button: React.RefObject<HTMLButtonElement>;
 
-  input: React.RefObject<HTMLInputElement>;
+  input: React.RefObject<TimeInputElement>;
 
   getSelectedText(): string {
     const { options, value, placeholder } = this.props;

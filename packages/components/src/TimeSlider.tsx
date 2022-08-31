@@ -9,7 +9,7 @@ import React, {
   useEffect,
 } from 'react';
 import classNames from 'classnames';
-import TimeInput from './TimeInput';
+import TimeInput, { SelectionSegment, TimeInputElement } from './TimeInput';
 import StyleExports from './TimeSlider.module.scss';
 import './TimeSlider.scss';
 
@@ -148,12 +148,15 @@ const PopOvers = (props: PopOversProps): JSX.Element => {
     'data-testid': dataTestId,
   } = props;
 
-  const [firstTime, setFirstTime] = useState(
-    startTime > endTime ? endTime : startTime
-  );
-  const [secondTime, setSecondTime] = useState(
-    startTime > endTime ? startTime : endTime
-  );
+  const swapTimes = startTime > endTime;
+
+  const [firstTime, setFirstTime] = useState(swapTimes ? endTime : startTime);
+  const [secondTime, setSecondTime] = useState(swapTimes ? startTime : endTime);
+  const firstTimeRef = useRef<TimeInputElement>(null);
+  const secondTimeRef = useRef<TimeInputElement>(null);
+  // Keep track of selection in both time inputs
+  const firstTimeSelectionRef = useRef<SelectionSegment | null>(null);
+  const secondTimeSelectionRef = useRef<SelectionSegment | null>(null);
 
   useEffect(
     function setTimeOnPropTimeChange() {
@@ -161,6 +164,18 @@ const PopOvers = (props: PopOversProps): JSX.Element => {
       setSecondTime(startTime > endTime ? startTime : endTime);
     },
     [startTime, endTime]
+  );
+
+  useEffect(
+    function setFocusOnSwapTimesChange() {
+      if (firstTimeSelectionRef.current !== null) {
+        secondTimeRef.current?.setSelection(firstTimeSelectionRef.current);
+      }
+      if (secondTimeSelectionRef.current !== null) {
+        firstTimeRef.current?.setSelection(secondTimeSelectionRef.current);
+      }
+    },
+    [swapTimes]
   );
 
   function onFirstTimeChange(value: number) {
@@ -179,6 +194,16 @@ const PopOvers = (props: PopOversProps): JSX.Element => {
     }
   }
 
+  const onFirstTimeSelect = useCallback(selection => {
+    firstTimeSelectionRef.current = selection;
+    secondTimeSelectionRef.current = null;
+  }, []);
+
+  const onSecondTimeSelect = useCallback(selection => {
+    firstTimeSelectionRef.current = null;
+    secondTimeSelectionRef.current = selection;
+  }, []);
+
   return (
     <div className="time-slider-popovers">
       <div
@@ -192,15 +217,17 @@ const PopOvers = (props: PopOversProps): JSX.Element => {
       <div className="handle-popper">
         <label
           className={classNames({
-            modified: startTime < endTime ? isStartModified : isEndModified,
+            modified: swapTimes ? isEndModified : isStartModified,
           })}
         >
-          {startTime <= endTime ? 'Start Time' : 'End Time'}
+          {swapTimes ? 'End Time' : 'Start Time'}
         </label>
         <TimeInput
+          ref={firstTimeRef}
           allowValueWrapping={false}
           value={firstTime}
           onChange={onFirstTimeChange}
+          onSelect={onFirstTimeSelect}
           data-testid={dataTestId ? `${dataTestId}-input-1` : undefined}
         />
       </div>
@@ -208,15 +235,17 @@ const PopOvers = (props: PopOversProps): JSX.Element => {
       <div className="handle-popper">
         <label
           className={classNames({
-            modified: startTime > endTime ? isStartModified : isEndModified,
+            modified: swapTimes ? isStartModified : isEndModified,
           })}
         >
-          {startTime > endTime ? 'Start Time' : 'End Time'}
+          {swapTimes ? 'Start Time' : 'End Time'}
         </label>
         <TimeInput
+          ref={secondTimeRef}
           allowValueWrapping={false}
           value={secondTime}
           onChange={onSecondTimeChange}
+          onSelect={onSecondTimeSelect}
           data-testid={dataTestId ? `${dataTestId}-input-2` : undefined}
         />
       </div>
