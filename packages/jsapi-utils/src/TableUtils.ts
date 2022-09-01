@@ -922,7 +922,7 @@ export class TableUtils {
   static quoteValue(value: string): string {
     if (
       value.length >= 2 &&
-      ((value.charAt(0) === '"' && value.charAt(value.length - 1)) ||
+      ((value.charAt(0) === '"' && value.charAt(value.length - 1) === '"') ||
         (value.charAt(0) === "'" && value.charAt(value.length - 1) === "'"))
     ) {
       return value;
