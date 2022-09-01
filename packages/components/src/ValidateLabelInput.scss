@@ -2,6 +2,9 @@
 
 $modified: lighten($yellow, 10%);
 
-.validate-label.modified {
-  color: $modified;
+.validate-label {
+  padding-right: $spacer-2;
+  &.modified {
+    color: $modified;
+  }
 }

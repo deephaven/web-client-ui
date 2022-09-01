@@ -284,15 +284,10 @@ function Inputs(): React.ReactElement {
           <div className="form-group">
             <h5>Validate Label</h5>
             <ValidateLabelInput
-              validationError={!on ? 'Toggle is off' : undefined}
-            >
-              <UISwitch on={on} onClick={handleToggleClick} />
-            </ValidateLabelInput>
-            <ValidateLabelInput
               validationError={!validateValue ? 'Value not set' : undefined}
               isModified={!!validateValue}
               id="validateInput1"
-              labelText="Validate Label"
+              labelText="Input Field"
               hintText="Hint text"
             >
               <input
@@ -308,6 +303,7 @@ function Inputs(): React.ReactElement {
                 validateOption === 'Invalid' ? 'Invalid value' : undefined
               }
               id="validateLabelInput2"
+              labelText="Dropdown"
             >
               <Select
                 onChange={newValue => setValidateOption(newValue)}
@@ -319,6 +315,9 @@ function Inputs(): React.ReactElement {
                   </Option>
                 ))}
               </Select>
+            </ValidateLabelInput>
+            <ValidateLabelInput labelText="Switch" isModified={on}>
+              <UISwitch on={on} onClick={handleToggleClick} />
             </ValidateLabelInput>
           </div>
         </div>
