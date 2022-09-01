@@ -1,10 +1,18 @@
-import React, { useEffect, useState } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useRef,
+  useState,
+} from 'react';
 import Log from '@deephaven/log';
 import { TimeUtils } from '@deephaven/utils';
 import MaskedInput, {
   DEFAULT_GET_PREFERRED_REPLACEMENT_STRING,
   SelectionSegment,
 } from './MaskedInput';
+
+export type { SelectionSegment } from './MaskedInput';
 
 const log = Log.module('TimeInput');
 
@@ -15,16 +23,22 @@ type TimeInputProps = {
   allowValueWrapping?: boolean;
   className?: string;
   onChange?(timeInSec: number): void;
+  onSelect?(selection: SelectionSegment): void;
   value?: number;
   onFocus?(): void;
   onBlur?(): void;
   'data-testid'?: string;
 };
 
+export type TimeInputElement = {
+  focus: () => void;
+  setSelection: (newSelection: SelectionSegment) => void;
+};
+
 // Forward ref causes a false positive for display-name in eslint:
 // https://github.com/yannickcr/eslint-plugin-react/issues/2269
 // eslint-disable-next-line react/display-name
-const TimeInput = React.forwardRef<HTMLInputElement, TimeInputProps>(
+const TimeInput = React.forwardRef<TimeInputElement, TimeInputProps>(
   (props: TimeInputProps, ref) => {
     const {
       allowValueWrapping = true,
@@ -33,10 +47,27 @@ const TimeInput = React.forwardRef<HTMLInputElement, TimeInputProps>(
       value: propsValue = 0,
       onFocus = () => false,
       onBlur = () => false,
+      onSelect = () => false,
       'data-testid': dataTestId,
     } = props;
     const [value, setValue] = useState(TimeUtils.formatTime(propsValue));
     const [selection, setSelection] = useState<SelectionSegment>();
+    const inputRef = useRef<HTMLInputElement>(null);
+
+    useImperativeHandle(
+      ref,
+      () => ({
+        focus: () => {
+          inputRef.current?.focus();
+        },
+        setSelection: newSelection => {
+          inputRef.current?.focus();
+          setSelection(newSelection);
+        },
+      }),
+      []
+    );
+
     useEffect(
       function setFormattedTime() {
         setValue(TimeUtils.formatTime(propsValue));
@@ -96,13 +127,17 @@ const TimeInput = React.forwardRef<HTMLInputElement, TimeInputProps>(
       }
     }
 
-    function handleSelect(newSelection: SelectionSegment) {
-      setSelection(newSelection);
-    }
+    const handleSelect = useCallback(
+      (newSelection: SelectionSegment) => {
+        setSelection(newSelection);
+        onSelect(newSelection);
+      },
+      [onSelect]
+    );
 
     return (
       <MaskedInput
-        ref={ref}
+        ref={inputRef}
         className={className}
         example={EXAMPLES}
         getNextSegmentValue={getNextSegmentValue}
@@ -124,6 +159,7 @@ TimeInput.defaultProps = {
   allowValueWrapping: true,
   className: '',
   onChange: () => false,
+  onSelect: () => false,
   value: 0,
   onFocus: () => false,
   onBlur: () => false,

@@ -1,4 +1,4 @@
-import React, { useMemo, useEffect } from 'react';
+import React, { useMemo, useEffect, useCallback } from 'react';
 import classNames from 'classnames';
 import Log from '@deephaven/log';
 import { useForwardedRef } from '@deephaven/react-hooks';
@@ -124,38 +124,41 @@ const MaskedInput = React.forwardRef<HTMLInputElement, MaskedInputProps>(
      * Returns the selection range for the segment at the given cursor position
      * @param cursorPosition The current position of the cursor
      */
-    function getSegment(cursorPosition: number) {
-      let selectionStart = cursorPosition;
-      let selectionEnd = cursorPosition;
-      const testValue = examples.length > 0 ? examples[0] : value;
+    const getSegment = useCallback(
+      (cursorPosition: number) => {
+        let selectionStart = cursorPosition;
+        let selectionEnd = cursorPosition;
+        const testValue = examples.length > 0 ? examples[0] : value;
 
-      for (let i = selectionStart - 1; i >= 0; i -= 1) {
-        if (!/[a-zA-Z0-9]/g.test(testValue.charAt(i))) {
-          break;
+        for (let i = selectionStart - 1; i >= 0; i -= 1) {
+          if (!/[a-zA-Z0-9]/g.test(testValue.charAt(i))) {
+            break;
+          }
+
+          selectionStart = i;
         }
 
-        selectionStart = i;
-      }
+        for (let i = selectionEnd; i < testValue.length; i += 1) {
+          if (!/[a-zA-Z0-9]/g.test(testValue.charAt(i))) {
+            break;
+          }
 
-      for (let i = selectionEnd; i < testValue.length; i += 1) {
-        if (!/[a-zA-Z0-9]/g.test(testValue.charAt(i))) {
-          break;
+          selectionEnd = i + 1;
         }
 
-        selectionEnd = i + 1;
-      }
+        const selectionDirection =
+          selectionStart === selectionEnd
+            ? SELECTION_DIRECTION.NONE
+            : SELECTION_DIRECTION.BACKWARD;
 
-      const selectionDirection =
-        selectionStart === selectionEnd
-          ? SELECTION_DIRECTION.NONE
-          : SELECTION_DIRECTION.BACKWARD;
-
-      return {
-        selectionStart,
-        selectionEnd,
-        selectionDirection,
-      };
-    }
+        return {
+          selectionStart,
+          selectionEnd,
+          selectionDirection,
+        };
+      },
+      [examples, value]
+    );
 
     /**
      * Replaces all blank spaces and everything after the current cursor position with the example value
@@ -258,68 +261,87 @@ const MaskedInput = React.forwardRef<HTMLInputElement, MaskedInputProps>(
       }
     }
 
-    function handleSelect(event: React.UIEvent<HTMLInputElement>) {
-      const {
-        selectionStart = 0,
-        selectionEnd = 0,
-        selectionDirection = 'none',
-      } = event.target as HTMLInputElement;
+    const handleSelect = useCallback(
+      (event: React.UIEvent<HTMLInputElement>) => {
+        const {
+          selectionStart = 0,
+          selectionEnd = 0,
+          selectionDirection = 'none',
+        } = event.target as HTMLInputElement;
 
-      if (
-        selectionStart === null ||
-        selectionEnd === null ||
-        selectionDirection === null
-      ) {
-        log.error(
-          'Selection attempted on non-text input element',
-          event.target
-        );
-        return;
-      }
+        if (
+          selectionStart === null ||
+          selectionEnd === null ||
+          selectionDirection === null
+        ) {
+          log.error(
+            'Selection attempted on non-text input element',
+            event.target
+          );
+          return;
+        }
 
-      log.debug2(
-        'handleSelect',
-        selectionStart,
-        selectionEnd,
-        selectionDirection
-      );
-      if (
-        selection != null &&
-        selectionStart === selection.selectionStart &&
-        selectionEnd === selection.selectionEnd
-      ) {
-        return;
-      }
-      if (selectionStart === selectionEnd) {
-        const newSelection = getSegment(selectionStart);
-        log.debug(
-          'Selection segment from ',
+        log.debug2(
+          'handleSelect',
           selectionStart,
           selectionEnd,
-          '=>',
-          newSelection
+          selectionDirection
         );
-        onSelect(newSelection);
-      } else {
-        onSelect({ selectionStart, selectionEnd, selectionDirection });
-      }
-    }
+        if (
+          selection != null &&
+          selectionStart === selection.selectionStart &&
+          selectionEnd === selection.selectionEnd
+        ) {
+          return;
+        }
+        if (
+          selection != null &&
+          selectionStart === value.length &&
+          selectionEnd === value.length &&
+          event.nativeEvent.type !== 'mouseup'
+        ) {
+          // React triggers onSelect event with the cursor at the end of the input content
+          // when the component is rendered at a different location in the DOM,
+          // i.e. when start/end times switch places in the TimeSlider.
+          // Ignore this event and reset the selection to its previous state.
+          onSelect({ ...selection });
+          return;
+        }
+        if (selectionStart === selectionEnd) {
+          const newSelection = getSegment(selectionStart);
+          log.debug(
+            'Selection segment from ',
+            selectionStart,
+            selectionEnd,
+            '=>',
+            newSelection
+          );
+          onSelect(newSelection);
+        } else {
+          onSelect({ selectionStart, selectionEnd, selectionDirection });
+        }
+      },
+      [getSegment, onSelect, selection, value]
+    );
 
-    function handleSelectCapture(event: React.UIEvent<HTMLInputElement>) {
-      if (!input.current) {
-        return;
-      }
-      log.debug('handleSelectCapture', event);
-      const selectionStart = input.current.selectionStart || 0;
-      if (
-        selectionStart === value.length &&
-        selection != null &&
-        selectionStart !== selection.selectionStart
-      ) {
-        event.preventDefault();
-        event.stopPropagation();
-      }
-    }
+    const handleSelectCapture = useCallback(
+      (event: React.UIEvent<HTMLInputElement>) => {
+        if (!input.current) {
+          return;
+        }
+        log.debug('handleSelectCapture', event);
+        const selectionStart = input.current.selectionStart || 0;
+        if (
+          selectionStart === value.length &&
+          selection != null &&
+          selectionStart !== selection.selectionStart
+        ) {
+          event.preventDefault();
+          event.stopPropagation();
+        }
+      },
+      [input, selection, value]
+    );
 
     function handleArrowKey(event: React.KeyboardEvent<HTMLInputElement>) {
       event.preventDefault();
