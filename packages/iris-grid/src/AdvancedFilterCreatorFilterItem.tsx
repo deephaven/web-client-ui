@@ -10,18 +10,27 @@ import {
   TypeValue as FilterTypeValue,
 } from '@deephaven/filters';
 import { vsTrash } from '@deephaven/icons';
-import { AdvancedFilterItemType, TableUtils } from '@deephaven/jsapi-utils';
+import { Column } from '@deephaven/jsapi-shim';
+import {
+  AdvancedFilterItemType,
+  Formatter,
+  TableUtils,
+} from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
+import classNames from 'classnames';
+import memoizeOne from 'memoize-one';
+import './AdvancedFilterCreatorFilterItem.scss';
 
 const log = Log.module('AdvancedFilterCreatorFilterItem');
 
 export interface AdvancedFilterCreatorFilterItemProps {
-  column: { type: string };
+  column: Column;
   filterTypes: FilterTypeValue[];
   onChange(type: FilterTypeValue, value: string): void;
   onDelete(): void;
   selectedType?: FilterTypeValue;
   value?: string;
+  formatter: Formatter;
 }
 
 export type AdvancedFilterCreatorFilterItemState = AdvancedFilterItemType;
@@ -123,11 +132,41 @@ export class AdvancedFilterCreatorFilterItem extends PureComponent<
     onDelete();
   }
 
+  getCachedIsValid = memoizeOne(
+    (
+      column: Column,
+      operation: FilterTypeValue,
+      value: string,
+      timeZone: string
+    ): boolean => {
+      try {
+        // We don't want to show an error for an empty value
+        return (
+          !value ||
+          TableUtils.makeAdvancedValueFilter(
+            column,
+            operation,
+            value,
+            timeZone
+          ) != null
+        );
+      } catch (e) {
+        return false;
+      }
+    }
+  );
+
   render(): JSX.Element {
-    const { column, filterTypes } = this.props;
+    const { column, filterTypes, formatter } = this.props;
     const { selectedType, value } = this.state;
     const showValueInput = !TableUtils.isBooleanType(column.type);
     const typeOptionElements = [];
+    const isValid = this.getCachedIsValid(
+      column,
+      selectedType,
+      value,
+      formatter.timeZone
+    );
     for (let i = 0; i < filterTypes.length; i += 1) {
       const type = filterTypes[i];
       const label = AdvancedFilterCreatorFilterItem.getLabelForFilter(
@@ -162,7 +201,7 @@ export class AdvancedFilterCreatorFilterItem extends PureComponent<
               <div className="input-group">
                 <input
                   type="text"
-                  className="form-control"
+                  className={classNames('form-control', { error: !isValid })}
                   placeholder="Enter value"
                   value={value}
                   onChange={this.handleValueChange}

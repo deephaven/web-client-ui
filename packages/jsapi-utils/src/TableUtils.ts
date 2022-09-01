@@ -97,13 +97,8 @@ export class TableUtils {
     if (TableUtils.isBooleanType(columnType)) {
       return [FilterType.isTrue, FilterType.isFalse, FilterType.isNull];
     }
-    // TODO (DH-11799): In Bard (and beyond), we should use the same types as numbers
-    // It should just work after the merge for DH-11040: https://gitlab.eng.illumon.com/illumon/iris/merge_requests/5801
-    // In Powell though, just support equals/not equals
-    if (TableUtils.isCharType(columnType)) {
-      return [FilterType.eq, FilterType.notEq];
-    }
     if (
+      TableUtils.isCharType(columnType) ||
       TableUtils.isNumberType(columnType) ||
       TableUtils.isDateType(columnType)
     ) {
@@ -909,6 +904,35 @@ export class TableUtils {
     }
   }
 
+  /**
+   * Adds quotes to a value if they're not already added
+   * @param value Value to add quotes around
+   */
+  static quoteValue(value: string): string {
+    if (
+      value.length >= 2 &&
+      ((value.charAt(0) === '"' && value.charAt(value.length - 1) === '"') ||
+        (value.charAt(0) === "'" && value.charAt(value.length - 1) === "'"))
+    ) {
+      return value;
+    }
+    return `"${value}"`;
+  }
+
+  static isRangeOperation(operation: string): boolean {
+    switch (operation) {
+      case '<':
+      case '<=':
+      case '=<':
+      case '>':
+      case '>=':
+      case '=>':
+        return true;
+      default:
+        return false;
+    }
+  }
+
   static makeQuickCharFilter(
     column: Column,
     text: string
@@ -918,7 +942,7 @@ export class TableUtils {
     }
 
     const cleanText = `${text}`.trim();
-    const regex = /^(!=|=|!)?(null|.)?(.*)/;
+    const regex = /^(>=|<=|=>|=<|>|<|!=|=|!)?(null|"."|'.'|.)?(.*)/;
     const result = regex.exec(cleanText);
 
     let operation = null;
@@ -954,10 +978,16 @@ export class TableUtils {
       }
     }
 
+    // We need to put quotes around range operations or else the API fails
+    const filterValue = dh.FilterValue.ofString(
+      TableUtils.isRangeOperation(operation)
+        ? TableUtils.quoteValue(value)
+        : value
+    );
     return TableUtils.makeRangeFilterWithOperation(
       filter,
       operation,
-      dh.FilterValue.ofString(value)
+      filterValue
     );
   }
 
@@ -1269,18 +1299,51 @@ export class TableUtils {
     throw new Error(`Invalid number '${text}'`);
   }
 
+  static getFilterOperatorString(operation: FilterTypeValue): string {
+    switch (operation) {
+      case FilterType.eq:
+        return '=';
+      case FilterType.notEq:
+        return '!=';
+      case FilterType.greaterThan:
+        return '>';
+      case FilterType.greaterThanOrEqualTo:
+        return '>=';
+      case FilterType.lessThan:
+        return '<';
+      case FilterType.lessThanOrEqualTo:
+        return '<=';
+      case FilterType.contains:
+        return '~';
+      case FilterType.notContains:
+        return '!~';
+      default:
+        throw new Error(`Unexpected filter type ${operation}`);
+    }
+  }
+
   static makeAdvancedValueFilter(
     column: Column,
     operation: FilterTypeValue,
     value: string,
     timeZone: string
-  ): FilterCondition {
+  ): FilterCondition | null {
     if (TableUtils.isDateType(column.type)) {
       return TableUtils.makeQuickDateFilterWithOperation(
         column,
         value,
         operation,
         timeZone
+      );
+    }
+
+    if (
+      TableUtils.isNumberType(column.type) ||
+      TableUtils.isCharType(column.type)
+    ) {
+      return TableUtils.makeQuickFilter(
+        column,
+        `${TableUtils.getFilterOperatorString(operation)}${value}`
       );
     }
 
