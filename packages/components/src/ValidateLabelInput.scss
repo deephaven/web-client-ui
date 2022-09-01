@@ -1,0 +1,10 @@
+@import '../scss/custom.scss';
+
+$modified: lighten($yellow, 10%);
+
+.validate-label {
+  padding-right: $spacer-2;
+  &.modified {
+    color: $modified;
+  }
+}
