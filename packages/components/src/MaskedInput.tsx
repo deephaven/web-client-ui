@@ -300,10 +300,10 @@ const MaskedInput = React.forwardRef<HTMLInputElement, MaskedInputProps>(
           selectionEnd === value.length &&
           event.nativeEvent.type !== 'mouseup'
         ) {
-          // React triggers onSelect event with start/end set after the last char
+          // React triggers onSelect event with the cursor at the end of the input content
           // when the component is rendered at a different location in the DOM,
-          // i.e. start/end time switch places in the TimeSlider.
-          // Ignore this event and reset the selection to it's previous state.
+          // i.e. when start/end times switch places in the TimeSlider.
+          // Ignore this event and reset the selection to its previous state.
           onSelect({ ...selection });
           return;
         }
