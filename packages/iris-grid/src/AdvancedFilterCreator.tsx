@@ -484,6 +484,7 @@ class AdvancedFilterCreator extends PureComponent<
             onDelete={this.getFilterDeleteHandler(i)}
             selectedType={selectedType}
             value={value}
+            formatter={formatter}
           />
         );
         filterItemElements.push(element);

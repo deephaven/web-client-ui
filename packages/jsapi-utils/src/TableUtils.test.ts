@@ -7,6 +7,7 @@ import dh, {
 import {
   Operator as FilterOperator,
   Type as FilterType,
+  TypeValue as FilterTypeValue,
 } from '@deephaven/filters';
 import TableUtils from './TableUtils';
 import DateUtils from './DateUtils';
@@ -1324,8 +1325,24 @@ describe('quick filter tests', () => {
       testCharFilter('F', FilterType.eq, 'F');
     });
 
-    it('handles = operation', () => {
+    it('handles shorthand operations', () => {
       testCharFilter('=c', FilterType.eq, 'c');
+      testCharFilter('!=c', FilterType.notEq, 'c');
+      testCharFilter('!c', FilterType.notEq, 'c');
+    });
+
+    it('handles range operations', () => {
+      testCharFilter('>c', FilterType.greaterThan, '"c"');
+      testCharFilter('>=c', FilterType.greaterThanOrEqualTo, '"c"');
+      testCharFilter('=>c', FilterType.greaterThanOrEqualTo, '"c"');
+      testCharFilter('<c', FilterType.lessThan, '"c"');
+      testCharFilter('<=c', FilterType.lessThanOrEqualTo, '"c"');
+      testCharFilter('=<c', FilterType.lessThanOrEqualTo, '"c"');
+    });
+
+    it('handles values that are already quoted', () => {
+      testCharFilter('"c"', FilterType.eq, '"c"');
+      testCharFilter("'c'", FilterType.eq, "'c'");
     });
 
     it('handles null', () => {
@@ -1390,5 +1407,81 @@ describe('makeCancelableTableEventPromise', () => {
     jest.runOnlyPendingTimers();
     cancelablePromise.cancel();
     expect(DEFAULT_TABLE.removeEventListener).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('converts filter type to appropriate string value for quick filters', () => {
+  function testFilterType(filterType: FilterTypeValue, expectedResult: string) {
+    expect(TableUtils.getFilterOperatorString(filterType)).toBe(expectedResult);
+  }
+  function testFilterTypeThrows(filterType: FilterTypeValue) {
+    expect(() => TableUtils.getFilterOperatorString(filterType)).toThrow();
+  }
+  it('handles valid options correctly', () => {
+    testFilterType(FilterType.eq, '=');
+    testFilterType(FilterType.notEq, '!=');
+    testFilterType(FilterType.greaterThan, '>');
+    testFilterType(FilterType.greaterThanOrEqualTo, '>=');
+    testFilterType(FilterType.lessThan, '<');
+    testFilterType(FilterType.lessThanOrEqualTo, '<=');
+    testFilterType(FilterType.contains, '~');
+    testFilterType(FilterType.notContains, '!~');
+  });
+  it('throws for types without a shorthand string', () => {
+    testFilterTypeThrows(FilterType.eqIgnoreCase);
+    testFilterTypeThrows(FilterType.notEqIgnoreCase);
+    testFilterTypeThrows(FilterType.startsWith);
+    testFilterTypeThrows(FilterType.endsWith);
+    testFilterTypeThrows(FilterType.in);
+    testFilterTypeThrows(FilterType.inIgnoreCase);
+    testFilterTypeThrows(FilterType.notIn);
+    testFilterTypeThrows(FilterType.notInIgnoreCase);
+    testFilterTypeThrows(FilterType.isTrue);
+    testFilterTypeThrows(FilterType.isFalse);
+    testFilterTypeThrows(FilterType.isNull);
+    testFilterTypeThrows(FilterType.invoke);
+    testFilterTypeThrows(FilterType.containsAny);
+  });
+});
+
+describe('quote values', () => {
+  function testQuoteValue(value: string, expectedValue: string) {
+    expect(TableUtils.quoteValue(value)).toBe(expectedValue);
+  }
+  it('quotes unquoted values properly', () => {
+    testQuoteValue('', '""');
+    testQuoteValue('c', '"c"');
+    testQuoteValue('hello', '"hello"');
+  });
+  it('does not add quotes if already quoted', () => {
+    testQuoteValue('"c"', '"c"');
+    testQuoteValue("'c'", "'c'");
+    testQuoteValue("''", "''");
+    testQuoteValue('""', '""');
+    testQuoteValue('"hello"', '"hello"');
+  });
+});
+
+describe('range operations', () => {
+  function testIsRangeOperation(operation: string, expectedResult = true) {
+    expect(TableUtils.isRangeOperation(operation)).toBe(expectedResult);
+  }
+
+  it('returns true for range operations', () => {
+    testIsRangeOperation('<');
+    testIsRangeOperation('<=');
+    testIsRangeOperation('=<');
+    testIsRangeOperation('>');
+    testIsRangeOperation('>=');
+    testIsRangeOperation('=>');
+  });
+
+  it('returns false for other operations', () => {
+    testIsRangeOperation('!', false);
+    testIsRangeOperation('!=', false);
+    testIsRangeOperation('=', false);
+    testIsRangeOperation('', false);
+    testIsRangeOperation('!~', false);
+    testIsRangeOperation('~', false);
   });
 });
