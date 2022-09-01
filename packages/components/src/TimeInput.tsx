@@ -9,8 +9,10 @@ import Log from '@deephaven/log';
 import { TimeUtils } from '@deephaven/utils';
 import MaskedInput, {
   DEFAULT_GET_PREFERRED_REPLACEMENT_STRING,
-  SelectionSegment as MaskedInputSelectionSegment,
+  SelectionSegment,
 } from './MaskedInput';
+
+export type { SelectionSegment } from './MaskedInput';
 
 const log = Log.module('TimeInput');
 
