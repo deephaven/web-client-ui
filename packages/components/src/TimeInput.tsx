@@ -35,8 +35,6 @@ export type TimeInputElement = {
   setSelection: (newSelection: SelectionSegment) => void;
 };
 
-export type SelectionSegment = MaskedInputSelectionSegment;
-
 // Forward ref causes a false positive for display-name in eslint:
 // https://github.com/yannickcr/eslint-plugin-react/issues/2269
 // eslint-disable-next-line react/display-name
