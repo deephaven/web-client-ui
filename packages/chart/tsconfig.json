@@ -23,9 +23,6 @@
       "path": "../log"
     },
     {
-      "path": "../redux"
-    },
-    {
       "path": "../utils"
     }
   ]

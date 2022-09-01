@@ -15,28 +15,28 @@ import {
   DecimalColumnFormatterOptions,
   IntegerColumnFormatterOptions,
   FormattingRule,
+  ColumnFormatSettings,
+  DateTimeFormatSettings,
 } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
-import { WorkspaceSettings } from '@deephaven/redux';
 import { Layout, Icon, PlotData } from 'plotly.js';
 import Plotly from './plotly/Plotly';
 import Plot from './plotly/Plot';
-
 import ChartModel from './ChartModel';
 import ChartUtils, { ChartModelSettings } from './ChartUtils';
 import './Chart.scss';
 
 const log = Log.module('Chart');
 
-type FormatterSettings = Partial<WorkspaceSettings> & {
-  decimalFormatOptions: DecimalColumnFormatterOptions;
-  integerFormatOptions: IntegerColumnFormatterOptions;
-};
+type FormatterSettings = ColumnFormatSettings &
+  DateTimeFormatSettings & {
+    decimalFormatOptions?: DecimalColumnFormatterOptions;
+    integerFormatOptions?: IntegerColumnFormatterOptions;
+  };
 
 interface ChartProps {
   model: ChartModel;
-  // These settings come from the redux store
-  settings: Partial<WorkspaceSettings>;
+  settings: FormatterSettings;
   isActive: boolean;
   onDisconnect: () => void;
   onReconnect: () => void;
@@ -481,12 +481,7 @@ export class Chart extends Component<ChartProps, ChartState> {
     this.updateFormatterSettings(settings as FormatterSettings);
   }
 
-  updateFormatterSettings(
-    settings: Partial<WorkspaceSettings> & {
-      decimalFormatOptions: DecimalColumnFormatterOptions;
-      integerFormatOptions: IntegerColumnFormatterOptions;
-    }
-  ): void {
+  updateFormatterSettings(settings: FormatterSettings): void {
     const columnFormats = FormatterUtils.getColumnFormats(settings);
     const dateTimeFormatterOptions = FormatterUtils.getDateTimeFormatterOptions(
       settings
