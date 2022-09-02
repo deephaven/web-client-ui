@@ -77,6 +77,7 @@ import {
   SortDirection,
   DateTimeColumnFormatterOptions,
   TableColumnFormat,
+  Settings,
 } from '@deephaven/jsapi-utils';
 import {
   assertNotNull,
@@ -213,21 +214,6 @@ function isEmptyConfig({
   );
 }
 
-type Settings = {
-  defaultDateTimeFormat?: string;
-  defaultDecimalFormatOptions?: {
-    defaultFormatString?: string;
-  };
-  defaultIntegerFormatOptions?: {
-    defaultFormatString?: string;
-  };
-  formatter?: FormattingRule[];
-  timeZone?: string;
-  showTimeZone?: boolean;
-  showTSeparator?: boolean;
-  truncateNumbersWithPound?: boolean;
-};
-
 export type FilterMap = Map<
   ColumnName,
   { columnType: string; text: string; value: unknown }
@@ -260,7 +246,6 @@ export interface IrisGridProps {
   quickFilters: QuickFilterMap | null;
   customColumns: ColumnName[];
   selectDistinctColumns: ColumnName[];
-  // These settings come from the redux store
   settings?: Settings;
   userColumnWidths: ModelSizeMap;
   userRowHeights: ModelSizeMap;

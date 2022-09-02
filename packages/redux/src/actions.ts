@@ -1,5 +1,6 @@
 import type { Action } from 'redux';
 import type { ThunkAction } from 'redux-thunk';
+import type { CommandHistoryStorage } from '@deephaven/console';
 import type { FileStorage } from '@deephaven/file-explorer';
 import {
   SET_PLUGINS,
@@ -41,7 +42,7 @@ export const setWorkspaceStorage: PayloadActionCreator<WorkspaceStorage> = works
   payload: workspaceStorage,
 });
 
-export const setCommandHistoryStorage: PayloadActionCreator<unknown> = commandHistoryStorage => ({
+export const setCommandHistoryStorage: PayloadActionCreator<CommandHistoryStorage> = commandHistoryStorage => ({
   type: SET_COMMAND_HISTORY_STORAGE,
   payload: commandHistoryStorage,
 });
