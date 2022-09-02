@@ -1125,13 +1125,16 @@ class ChartUtils {
     const isYAxis = axis.type === dh.plot.AxisType.Y;
     const axisSize = isYAxis ? yAxisSize : xAxisSize;
     const layoutAxis = layoutAxisParam;
+    // Enterprise API returns null for empty axis labels
+    // Passing null title text to Plotly results in incorrect axis position, DH-9164
+    const label = axis.label ?? '';
     if (
       layoutAxis.title !== undefined &&
       typeof layoutAxis.title !== 'string'
     ) {
-      layoutAxis.title.text = axis.label;
+      layoutAxis.title.text = label;
     } else {
-      layoutAxis.title = { text: axis.label };
+      layoutAxis.title = { text: label };
     }
 
     if (axis.log) {
