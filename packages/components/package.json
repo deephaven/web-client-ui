@@ -40,6 +40,7 @@
     "classnames": "^2.3.1",
     "event-target-shim": "^6.0.2",
     "jquery": "^3.6.0",
+    "lodash.clamp": "^4.0.3",
     "lodash.debounce": "^4.0.8",
     "lodash.flatten": "^4.4.0",
     "memoizee": "^0.4.15",
