@@ -22,7 +22,7 @@ Once Deephaven is running, you can open a chart with a specific name by adding t
 
 ### Configuring Server Address
 
-By default, this project assumes you are hosting Deephaven with Python on the default port at http://localhost:10000. If Deephaven is running on a different port/server, update the `REACT_APP_CORE_API_URL` environment variable to point to the correct server. See [.env](./.env) file for the default definition, and [create-react-app docs](https://create-react-app.dev/docs/adding-custom-environment-variables/) for other ways to set this environment variable.
+By default, this project assumes you are hosting Deephaven with Python on the default port at http://localhost:10000. If Deephaven is running on a different port/server, update the `VITE_CORE_API_URL` environment variable to point to the correct server. See [.env](./.env) file for the default definition, and [create-react-app docs](https://create-react-app.dev/docs/adding-custom-environment-variables/) for other ways to set this environment variable.
 
 ## Available Scripts
 

@@ -1,13 +1,7 @@
-// This is a dev dependency for building, so importing dev deps is fine
 /* eslint-disable import/no-extraneous-dependencies */
 import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
-import dns from 'dns';
-
-// Open on localhost instead of 127.0.0.1 for Node < 17
-// https://github.com/vitejs/vite/issues/9195
-dns.setDefaultResultOrder('verbatim');
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
@@ -16,53 +10,27 @@ export default defineConfig(({ mode }) => {
   // https://github.com/vitejs/vite/issues/3105#issuecomment-939703781
   const htmlPlugin = () => ({
     name: 'html-transform',
-    transformIndexHtml: {
-      enforce: 'pre' as const,
-      transform(html: string) {
-        return html.replace(/#(.*?)#/g, (_, p1) => env[p1]);
-      },
+    transformIndexHtml(html: string) {
+      return html.replace(/#(.*?)#/g, (_, p1) => env[p1]);
     },
   });
 
   const packagesDir = path.resolve(__dirname, '..');
 
-  // These are paths which should be proxied to the core server
-  // https://vitejs.dev/config/server-options.html#server-proxy
-  const proxy = {};
-
-  // Some paths need to proxy to the engine server
-  // Vite does not have a "any unknown fallback to proxy" like CRA
-  // It is possible to add one with a custom middleware though if this list grows
-  if (env.VITE_PROXY_URL) {
-    [
-      env.VITE_CORE_API_URL,
-      env.VITE_NOTEBOOKS_URL,
-      env.VITE_LAYOUTS_URL,
-      env.VITE_MODULE_PLUGINS_URL,
-    ].forEach(p => {
-      proxy[p] = {
-        target: env.VITE_PROXY_URL,
-        changeOrigin: true,
-      };
-    });
-  }
-
   let port = Number.parseInt(env.PORT, 10);
   if (Number.isNaN(port) || port <= 0) {
-    port = 4000;
+    port = 4020;
   }
 
   return {
-    // Vite does not read this env variable, it sets it based on the config
-    // For easy changes using our .env files, read it here and vite will just set it to the existing value
-    base: env.BASE_URL,
+    base: './', // Vite defaults to absolute URLs, but embed-chart is an embedded deployment so all assets are relative paths
     server: {
       port,
-      open: true,
-      proxy,
+    },
+    define: {
+      global: 'window',
     },
     resolve: {
-      dedupe: ['react', 'react-redux', 'redux'],
       alias: [
         {
           find: /^@deephaven\/components\/scss\/(.*)/,
@@ -85,17 +53,17 @@ export default defineConfig(({ mode }) => {
           replacement: `${packagesDir}/$1/src`,
         },
       ],
+      // TODO: See if this is better than the last find/replace above
+      // In theory this can load from package.json source field instead of main
+      // mainFields: ['source', 'module', 'main', 'jsnext:main', 'jsnext'],
     },
     build: {
-      outDir: path.resolve(__dirname, env.VITE_BUILD_PATH),
+      outDir: env.VITE_BUILD_PATH,
       emptyOutDir: true,
-      commonjsOptions: {
-        include: [/node_modules/, /golden-layout/],
-      },
       rollupOptions: {
         output: {
           manualChunks: id => {
-            if (id.includes('node_modules') && !id.includes('jquery')) {
+            if (id.includes('node_modules')) {
               if (id.includes('monaco-editor')) {
                 return 'monaco';
               }
@@ -108,10 +76,7 @@ export default defineConfig(({ mode }) => {
         },
       },
     },
-    // This and the build.commonjsOptions are needed b/c golden-layout is not ESM
-    // https://vitejs.dev/guide/dep-pre-bundling.html#monorepos-and-linked-dependencies
     optimizeDeps: {
-      include: ['@deephaven/golden-layout'],
       // plotly.js requires buffer and vite tries to externalize it
       // dev mode fails to start if it isn't excluded from being externalized
       exclude: ['buffer'],

@@ -27,9 +27,6 @@ export default defineConfig(({ mode }) => {
     server: {
       port,
     },
-    define: {
-      global: 'window',
-    },
     resolve: {
       alias: [
         {
@@ -76,6 +73,18 @@ export default defineConfig(({ mode }) => {
         },
       },
     },
+    // optimizeDeps: {
+    //   // plotly.js requires buffer and vite tries to externalize it
+    //   // dev mode fails to start if it isn't excluded from being externalized
+    //   // exclude: ['buffer'],
+    //   esbuildOptions: {
+    //     // Plotly imports has-hover which needs global to exist
+    //     // Without this, dev mode does not start properly
+    //     define: {
+    //       global: 'globalThis',
+    //     },
+    //   },
+    // },
     plugins: [htmlPlugin(), react()],
   };
 });
