@@ -444,7 +444,9 @@ export class ConsoleInput extends PureComponent<
 
     const command = this.commandEditor?.getValue().trim();
     assertNotNull(command);
-    this.history.push(command);
+    if (command !== '') {
+      this.history.push(command);
+    }
     this.commandEditor?.setValue('');
     this.updateDimensions();
 
