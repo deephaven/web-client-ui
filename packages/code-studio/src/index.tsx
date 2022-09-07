@@ -1,3 +1,7 @@
+// // Need to import the API first...
+// import('http://localhost:10000/jsapi/dh-core.js').then(module => {
+//   console.log('MJB got module', module);
+// });
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
