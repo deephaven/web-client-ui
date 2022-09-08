@@ -1,6 +1,6 @@
 import React, { PureComponent, ReactElement, RefObject } from 'react';
 import classNames from 'classnames';
-import * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js';
+import * as monaco from 'monaco-editor';
 import Log from '@deephaven/log';
 import {
   assertNotNull,

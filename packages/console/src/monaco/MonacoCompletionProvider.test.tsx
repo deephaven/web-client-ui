@@ -1,6 +1,6 @@
 import React from 'react';
 import { render } from '@testing-library/react';
-import * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js';
+import * as monaco from 'monaco-editor';
 import dh from '@deephaven/jsapi-shim';
 import MonacoCompletionProvider from './MonacoCompletionProvider';
 
