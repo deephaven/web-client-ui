@@ -98,7 +98,7 @@ class Editor extends Component<EditorProps, Record<string, never>> {
       label: 'Find',
       keybindings: [
         // eslint-disable-next-line no-bitwise
-        monaco.KeyMod.CtrlCmd | monaco.KeyCode.KEY_F,
+        monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyF,
       ],
       precondition: undefined,
       keybindingContext: undefined,

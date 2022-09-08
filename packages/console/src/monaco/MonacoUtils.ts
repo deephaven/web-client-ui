@@ -2,70 +2,12 @@
 /**
  * Exports a function for initializing monaco with the deephaven theme/config
  */
-// Instead of importing just 'monaco-editor' and importing all languages and features, just import the features and don't import all the languages we don't care about
-// Default list of features here: https://github.com/microsoft/monaco-editor-webpack-plugin
-// Mapping to paths here: https://github.com/microsoft/monaco-editor-webpack-plugin/blob/main/src/features.ts
-// Importing this way rather than using the plugin because I don't want to hook up react-app-rewired for the build
-
 import { Shortcut } from '@deephaven/components';
 import { IdeSession } from '@deephaven/jsapi-shim';
 import { assertNotNull } from '@deephaven/utils';
-import * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js';
-import 'monaco-editor/esm/vs/editor/standalone/browser/accessibilityHelp/accessibilityHelp.js';
-import 'monaco-editor/esm/vs/editor/contrib/anchorSelect/anchorSelect.js';
-import 'monaco-editor/esm/vs/editor/contrib/bracketMatching/bracketMatching.js';
-import 'monaco-editor/esm/vs/editor/contrib/caretOperations/caretOperations.js';
-import 'monaco-editor/esm/vs/editor/contrib/clipboard/clipboard.js';
-import 'monaco-editor/esm/vs/editor/contrib/codeAction/codeActionContributions.js';
-import 'monaco-editor/esm/vs/editor/contrib/codelens/codelensController.js';
-import 'monaco-editor/esm/vs/editor/contrib/colorPicker/colorContributions.js';
-import 'monaco-editor/esm/vs/editor/contrib/comment/comment.js';
-import 'monaco-editor/esm/vs/editor/contrib/contextmenu/contextmenu.js';
-import 'monaco-editor/esm/vs/editor/browser/controller/coreCommands.js';
-import 'monaco-editor/esm/vs/editor/contrib/cursorUndo/cursorUndo.js';
-import 'monaco-editor/esm/vs/editor/contrib/dnd/dnd.js';
-import 'monaco-editor/esm/vs/editor/contrib/documentSymbols/documentSymbols.js';
-import 'monaco-editor/esm/vs/editor/contrib/find/findController.js';
-import 'monaco-editor/esm/vs/editor/contrib/folding/folding.js';
-import 'monaco-editor/esm/vs/editor/contrib/fontZoom/fontZoom.js';
-import 'monaco-editor/esm/vs/editor/contrib/format/formatActions.js';
-import 'monaco-editor/esm/vs/editor/contrib/gotoError/gotoError.js';
-import 'monaco-editor/esm/vs/editor/standalone/browser/quickAccess/standaloneGotoLineQuickAccess.js';
-import 'monaco-editor/esm/vs/editor/contrib/gotoSymbol/goToCommands.js';
-import 'monaco-editor/esm/vs/editor/contrib/gotoSymbol/link/goToDefinitionAtPosition.js';
-import 'monaco-editor/esm/vs/editor/contrib/hover/hover.js';
-import 'monaco-editor/esm/vs/editor/standalone/browser/iPadShowKeyboard/iPadShowKeyboard.js';
-import 'monaco-editor/esm/vs/editor/contrib/inPlaceReplace/inPlaceReplace.js';
-import 'monaco-editor/esm/vs/editor/contrib/indentation/indentation.js';
-import 'monaco-editor/esm/vs/editor/contrib/inlineCompletions/ghostTextController.js';
-import 'monaco-editor/esm/vs/editor/contrib/inlayHints/inlayHintsController.js';
-import 'monaco-editor/esm/vs/editor/standalone/browser/inspectTokens/inspectTokens.js';
-import 'monaco-editor/esm/vs/editor/contrib/linesOperations/linesOperations.js';
-import 'monaco-editor/esm/vs/editor/contrib/linkedEditing/linkedEditing.js';
-import 'monaco-editor/esm/vs/editor/contrib/links/links.js';
-import 'monaco-editor/esm/vs/editor/contrib/multicursor/multicursor.js';
-import 'monaco-editor/esm/vs/editor/contrib/parameterHints/parameterHints.js';
-import 'monaco-editor/esm/vs/editor/standalone/browser/quickAccess/standaloneCommandsQuickAccess.js';
-import 'monaco-editor/esm/vs/editor/standalone/browser/quickAccess/standaloneHelpQuickAccess.js';
-import 'monaco-editor/esm/vs/editor/standalone/browser/quickAccess/standaloneGotoSymbolQuickAccess.js';
-import 'monaco-editor/esm/vs/editor/standalone/browser/referenceSearch/standaloneReferenceSearch.js';
-import 'monaco-editor/esm/vs/editor/contrib/rename/rename.js';
-import 'monaco-editor/esm/vs/editor/contrib/smartSelect/smartSelect.js';
-import 'monaco-editor/esm/vs/editor/contrib/snippet/snippetController2.js';
-import 'monaco-editor/esm/vs/editor/contrib/suggest/suggestController.js';
-import 'monaco-editor/esm/vs/editor/standalone/browser/toggleHighContrast/toggleHighContrast.js';
-import 'monaco-editor/esm/vs/editor/contrib/toggleTabFocusMode/toggleTabFocusMode.js';
-import 'monaco-editor/esm/vs/editor/contrib/caretOperations/transpose.js';
-import 'monaco-editor/esm/vs/editor/contrib/unusualLineTerminators/unusualLineTerminators.js';
-import 'monaco-editor/esm/vs/editor/contrib/viewportSemanticTokens/viewportSemanticTokens.js';
-import 'monaco-editor/esm/vs/editor/contrib/wordHighlighter/wordHighlighter.js';
-import 'monaco-editor/esm/vs/editor/contrib/wordOperations/wordOperations.js';
-import 'monaco-editor/esm/vs/editor/contrib/wordPartOperations/wordPartOperations.js';
-import 'monaco-editor/esm/vs/basic-languages/typescript/typescript.contribution.js';
+import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
 // @ts-ignore
 import { KeyCodeUtils } from 'monaco-editor/esm/vs/base/common/keyCodes.js';
-// @ts-ignore
-import { KeyMod } from 'monaco-editor/esm/vs/editor/common/standalone/standaloneBase.js';
 import Log from '@deephaven/log';
 import MonacoTheme from './MonacoTheme.module.scss';
 import PyLang from './lang/python';
@@ -259,7 +201,7 @@ class MonacoUtils {
     const didOpenDocumentParams = {
       textDocument: {
         uri: `${model.uri}`,
-        languageId: model.getModeId(),
+        languageId: model.getLanguageId(),
         version: model.getVersionId(),
         text: model.getValue(),
       },
@@ -453,20 +395,20 @@ class MonacoUtils {
     if (isMac) {
       return (
         // eslint-disable-next-line no-bitwise
-        (keyState.metaKey && KeyMod.CtrlCmd) |
-        (keyState.shiftKey && KeyMod.Shift) |
-        (keyState.altKey && KeyMod.Alt) |
-        (keyState.ctrlKey && KeyMod.WinCtrl) |
+        (keyState.metaKey ? monaco.KeyMod.CtrlCmd : 0) |
+        (keyState.shiftKey ? monaco.KeyMod.Shift : 0) |
+        (keyState.altKey ? monaco.KeyMod.Alt : 0) |
+        (keyState.ctrlKey ? monaco.KeyMod.WinCtrl : 0) |
         KeyCodeUtils.fromString(keyValue)
       );
     }
 
     return (
       // eslint-disable-next-line no-bitwise
-      (keyState.ctrlKey && KeyMod.CtrlCmd) |
-      (keyState.shiftKey && KeyMod.Shift) |
-      (keyState.altKey && KeyMod.Alt) |
-      (keyState.metaKey && KeyMod.WinCtrl) |
+      (keyState.ctrlKey ? monaco.KeyMod.CtrlCmd : 0) |
+      (keyState.shiftKey ? monaco.KeyMod.Shift : 0) |
+      (keyState.altKey ? monaco.KeyMod.Alt : 0) |
+      (keyState.metaKey ? monaco.KeyMod.WinCtrl : 0) |
       KeyCodeUtils.fromString(keyValue)
     );
   }
