@@ -27,19 +27,14 @@ export default defineConfig(({ mode }) => {
     server: {
       port,
     },
+    preview: {
+      port,
+    },
     resolve: {
       alias: [
         {
           find: /^@deephaven\/components\/scss\/(.*)/,
           replacement: `${packagesDir}/components/scss/$1`,
-        },
-        {
-          find: /^@deephaven\/golden-layout$/,
-          replacement: `${packagesDir}/golden-layout/dist/goldenlayout.js`,
-        },
-        {
-          find: /^@deephaven\/golden-layout\/(.*)$/,
-          replacement: `${packagesDir}/golden-layout/$1`,
         },
         {
           find: /^@deephaven\/icons$/,
@@ -50,9 +45,6 @@ export default defineConfig(({ mode }) => {
           replacement: `${packagesDir}/$1/src`,
         },
       ],
-      // TODO: See if this is better than the last find/replace above
-      // In theory this can load from package.json source field instead of main
-      // mainFields: ['source', 'module', 'main', 'jsnext:main', 'jsnext'],
     },
     build: {
       outDir: env.VITE_BUILD_PATH,
@@ -60,6 +52,17 @@ export default defineConfig(({ mode }) => {
       rollupOptions: {
         output: {
           manualChunks: id => {
+            /**
+             * Without this, our chunk order may cause a circular reference
+             * by putting the helpers in the vendor or plotly chunk
+             * This causes failures with loading the compiled version
+             *
+             * See https://github.com/rollup/plugins/issues/591
+             */
+            if (id === '\0commonjsHelpers.js') {
+              return 'helpers';
+            }
+
             if (id.includes('node_modules')) {
               if (id.includes('monaco-editor')) {
                 return 'monaco';
@@ -73,18 +76,18 @@ export default defineConfig(({ mode }) => {
         },
       },
     },
-    // optimizeDeps: {
-    //   // plotly.js requires buffer and vite tries to externalize it
-    //   // dev mode fails to start if it isn't excluded from being externalized
-    //   // exclude: ['buffer'],
-    //   esbuildOptions: {
-    //     // Plotly imports has-hover which needs global to exist
-    //     // Without this, dev mode does not start properly
-    //     define: {
-    //       global: 'globalThis',
-    //     },
-    //   },
-    // },
+    optimizeDeps: {
+      // plotly.js requires buffer and vite tries to externalize it
+      // dev mode fails to start if it isn't excluded from being externalized
+      exclude: ['buffer'],
+      esbuildOptions: {
+        // Plotly imports has-hover which needs global to exist
+        // Without this, dev mode does not start properly
+        define: {
+          global: 'globalThis',
+        },
+      },
+    },
     plugins: [htmlPlugin(), react()],
   };
 });
