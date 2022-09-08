@@ -14,20 +14,6 @@ module.exports = {
       __dirname,
       './__mocks__/fileMock.js'
     ),
-    '^monaco-editor/esm/vs/editor/editor.api.js$': path.join(
-      __dirname,
-      './__mocks__/monaco-editor.js'
-    ),
-    // Used for MonacoUtils test
-    '^monaco-editor/esm/vs/editor/common/services/(.*)': path.join(
-      __dirname,
-      'node_modules',
-      'monaco-editor/esm/vs/editor/common/services/$1'
-    ),
-    '^monaco-editor/esm/vs/editor/(.*)': path.join(
-      __dirname,
-      './__mocks__/monaco-editor-empty.js'
-    ),
     '^monaco-editor$': path.join(__dirname, './__mocks__/monaco-editor.js'),
     '^@deephaven/golden-layout$': path.join(
       __dirname,
