@@ -4,11 +4,11 @@
  * https://github.com/facebook/create-react-app/issues/5881
  */
 import { createMonacoBaseAPI } from '../../../node_modules/monaco-editor/esm/vs/editor/common/services/editorBaseApi.js';
+import { createMonacoEditorAPI } from '../../../node_modules/monaco-editor/esm/vs/editor/standalone/browser/standaloneEditor.js';
+import { createMonacoLanguagesAPI } from '../../../node_modules/monaco-editor/esm/vs/editor/standalone/browser/standaloneLanguages.js';
 
 const monaco = createMonacoBaseAPI();
-
-monaco.languages = {
-  registerCompletionItemProvider: () => {},
-};
+monaco.editor = createMonacoEditorAPI();
+monaco.languages = createMonacoLanguagesAPI();
 
 module.exports = monaco;

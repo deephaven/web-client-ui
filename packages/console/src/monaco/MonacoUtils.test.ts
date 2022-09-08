@@ -1,9 +1,7 @@
 /* eslint-disable no-bitwise */
-import { createMonacoBaseAPI } from 'monaco-editor/esm/vs/editor/common/services/editorBaseApi.js';
+import * as monaco from 'monaco-editor';
 import { Shortcut, KEY, MODIFIER } from '@deephaven/components';
 import MonacoUtils from './MonacoUtils';
-
-const monaco = createMonacoBaseAPI();
 
 const SINGLE_KEY_PARAMS: ConstructorParameters<typeof Shortcut>[0] = {
   id: 'Single key',
