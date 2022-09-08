@@ -1,17 +1,9 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
 /* eslint-disable no-bitwise */
-// Monaco exports its types only at the root. TS complains there's no types if these ignores aren't added
-// @ts-ignore
-import { KeyCode } from 'monaco-editor/esm/vs/editor/common/standalone/standaloneEnums.js';
-// @ts-ignore
-import { KeyMod } from 'monaco-editor';
+import { createMonacoBaseAPI } from 'monaco-editor/esm/vs/editor/common/services/editorBaseApi.js';
 import { Shortcut, KEY, MODIFIER } from '@deephaven/components';
 import MonacoUtils from './MonacoUtils';
 
-const monaco = {
-  KeyCode,
-  KeyMod,
-};
+const monaco = createMonacoBaseAPI();
 
 const SINGLE_KEY_PARAMS: ConstructorParameters<typeof Shortcut>[0] = {
   id: 'Single key',

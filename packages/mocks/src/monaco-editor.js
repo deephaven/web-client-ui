@@ -25,7 +25,10 @@ const languages = {
 };
 
 const KeyMod = {
-  CtrlCmd: 'C',
+  CtrlCmd: 2048,
+  Shift: 1024,
+  Alt: 512,
+  WinCtrl: 256,
 };
 
 const KeyCode = {
