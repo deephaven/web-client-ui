@@ -28,6 +28,7 @@ module.exports = {
       __dirname,
       './__mocks__/monaco-editor-empty.js'
     ),
+    '^monaco-editor$': path.join(__dirname, './__mocks__/monaco-editor.js'),
     '^@deephaven/golden-layout$': path.join(
       __dirname,
       './packages/golden-layout/dist/goldenlayout.js'

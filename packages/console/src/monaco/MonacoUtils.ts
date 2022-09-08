@@ -5,7 +5,7 @@
 import { Shortcut } from '@deephaven/components';
 import { IdeSession } from '@deephaven/jsapi-shim';
 import { assertNotNull } from '@deephaven/utils';
-import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
+import * as monaco from 'monaco-editor';
 // @ts-ignore
 import { KeyCodeUtils } from 'monaco-editor/esm/vs/base/common/keyCodes.js';
 import Log from '@deephaven/log';
