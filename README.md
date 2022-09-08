@@ -30,9 +30,9 @@ We are still using node 16.x and npm 8.x. If you are [using nvm](https://github.
   If you want to collect coverage locally, run `npm test -- --coverage`
 
 - `npm run build`: Create a production build of all packages. Mainly used by CI when packaging up a production version of the app.
-- `npm run preview`: Runs the Vite preview server for the built code-studio.
+- `npm run preview`: Runs the Vite preview server for the built code-studio, embed-grid, and embed-chart. These will open on ports 4000, 4010, and 4020.
 
-Edit `.env.local` to contain the following pointing to your local DHC address. These are needed for the session websocket and for things like notebooks to be proxied correctly by Vite.
+Edit `.env.local` in each package to contain the following pointing to your local DHC address. These are needed for the session websocket and for things like notebooks to be proxied correctly by Vite.
 
 ```
 VITE_CORE_API_URL=http://localhost:10000/jsapi
