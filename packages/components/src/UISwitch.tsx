@@ -5,6 +5,7 @@ import './UISwitch.scss';
 export type UISwitchProps = {
   on: boolean;
   onClick: React.MouseEventHandler<HTMLButtonElement>;
+  onBlur?: React.FocusEventHandler<HTMLButtonElement>;
   id?: string;
   className?: string;
   isInvalid?: boolean;
@@ -19,6 +20,7 @@ const UISwitch = ({
   isInvalid,
   disabled = false,
   onClick,
+  onBlur,
   'data-testid': dataTestId,
 }: UISwitchProps): JSX.Element => (
   <button
@@ -32,6 +34,7 @@ const UISwitch = ({
     )}
     id={id}
     onClick={onClick}
+    onBlur={onBlur}
     disabled={disabled}
     data-testid={dataTestId}
   >
