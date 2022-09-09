@@ -11,7 +11,7 @@ const useOptional = (
   isOptional: boolean,
   defaultValue: string | undefined,
   onToggle: (isEnabled: boolean) => void,
-  onBlur: (e: FocusEventHandler<HTMLButtonElement>) => void
+  onBlur: FocusEventHandler<HTMLButtonElement>
 ): [boolean, ReactElement | null] => {
   const [isEnabled, setEnabled] = useState(
     !isOptional || defaultValue !== undefined

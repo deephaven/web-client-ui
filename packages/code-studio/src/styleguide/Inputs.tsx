@@ -7,6 +7,8 @@ import {
   RadioItem,
   RadioGroup,
   SearchInput,
+  DateInput,
+  DateTimeInput,
   TimeInput,
   CustomTimeSelect,
   UISwitch,
@@ -14,7 +16,6 @@ import {
   Select,
   Option,
 } from '@deephaven/components';
-import DateInput from '../components/DateInput';
 
 const EXAMPLES = [
   { title: 'Title 1', value: 'Value 1' },
@@ -51,6 +52,7 @@ function Inputs(): React.ReactElement {
   const [check3, setCheck3] = useState(false);
   const [check4, setCheck4] = useState(false);
   const [check5, setCheck5] = useState<boolean | null>(null);
+  const [dateTimeOptional, setDateTimeOptional] = useState(false);
   const [radioValue, setRadioValue] = useState('1');
   const [customTimeValue, setCustomTimeValue] = useState<number>();
   const [autoResizeTextareaValue, setAutoResizeTextareaValue] = useState(
@@ -69,6 +71,10 @@ function Inputs(): React.ReactElement {
   const handleToggleClick = useCallback(() => {
     setOn(!on);
   }, [on]);
+
+  const handleDateTimeToggleClick = useCallback(() => {
+    setDateTimeOptional(!dateTimeOptional);
+  }, [dateTimeOptional]);
 
   const handleSearchInputChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -328,7 +334,13 @@ function Inputs(): React.ReactElement {
             <TimeInput />
             <br />
             <h5>Date Input</h5>
-            <DateInput />
+            <DateInput defaultValue="2020-12-31" optional={dateTimeOptional} />
+            <br />
+            <h5>DateTime Input</h5>
+            <DateTimeInput
+              defaultValue="2020-12-31 23:59:59.000000000"
+              optional={dateTimeOptional}
+            />
             <small className="text-muted">Does not work in mock</small>
             <br />
             <h5>Custom Timeselect</h5>
@@ -341,6 +353,14 @@ function Inputs(): React.ReactElement {
               valueToTime={(value: number) => Math.round(value / 1000)}
               timeToValue={time => time * 1000}
             />
+            <br />
+            <div className="form-inline justify-content-between">
+              <label>Optional</label>
+              <UISwitch
+                on={dateTimeOptional}
+                onClick={handleDateTimeToggleClick}
+              />
+            </div>
           </div>
         </div>
       </div>
