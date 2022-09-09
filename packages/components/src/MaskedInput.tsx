@@ -41,6 +41,8 @@ type MaskedInputProps = {
   className?: string;
   /** Disable input */
   disabled?: boolean;
+  /** Input name */
+  name?: string;
   /** The regex pattern this masked input must match */
   pattern: string;
   /** The current value to display */
@@ -86,6 +88,7 @@ const MaskedInput = React.forwardRef<HTMLInputElement, MaskedInputProps>(
       className,
       disabled,
       example,
+      name,
       getNextSegmentValue = (range, delta, segmentValue) => segmentValue,
       getPreferredReplacementString = DEFAULT_GET_PREFERRED_REPLACEMENT_STRING,
       onChange = () => false,
@@ -508,6 +511,7 @@ const MaskedInput = React.forwardRef<HTMLInputElement, MaskedInputProps>(
         ref={input}
         className={classNames('form-control masked-input', className)}
         disabled={disabled}
+        name={name}
         type="text"
         pattern={pattern}
         value={value}
@@ -526,6 +530,7 @@ const MaskedInput = React.forwardRef<HTMLInputElement, MaskedInputProps>(
 MaskedInput.defaultProps = {
   className: '',
   disabled: false,
+  name: undefined,
   onChange(): void {
     // no-op
   },

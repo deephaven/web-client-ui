@@ -21,6 +21,7 @@ import Typograpy from './Typography';
 import './StyleGuide.scss';
 import DraggableLists from './DraggableLists';
 import Navigations from './Navigations';
+import DateTimeInputs from './DateTimeInputs';
 
 const StyleGuide = (): React.ReactElement => (
   <div className="container style-guide-container">
@@ -45,6 +46,8 @@ const StyleGuide = (): React.ReactElement => (
     <DraggableLists />
 
     <TimeSliderInputs />
+
+    <DateTimeInputs />
 
     <Dialog />
 
