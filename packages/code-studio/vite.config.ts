@@ -26,9 +26,21 @@ export default defineConfig(({ mode }) => {
 
   const packagesDir = path.resolve(__dirname, '..');
 
+  let port = Number.parseInt(env.PORT, 10);
+  if (Number.isNaN(port) || port <= 0) {
+    port = 4000;
+  }
+
   // These are paths which should be proxied to the core server
   // https://vitejs.dev/config/server-options.html#server-proxy
-  const proxy = {};
+  const proxy = {
+    // Proxy styleguide here instead of as a route in our app router
+    // That way, it is not included in the production build
+    '/styleguide': {
+      target: `http://localhost:${port}/src/styleguide/index.html`,
+      rewrite: () => '',
+    },
+  };
 
   // Some paths need to proxy to the engine server
   // Vite does not have a "any unknown fallback to proxy" like CRA
@@ -45,11 +57,6 @@ export default defineConfig(({ mode }) => {
         changeOrigin: true,
       };
     });
-  }
-
-  let port = Number.parseInt(env.PORT, 10);
-  if (Number.isNaN(port) || port <= 0) {
-    port = 4000;
   }
 
   return {
@@ -138,6 +145,9 @@ export default defineConfig(({ mode }) => {
           global: 'globalThis',
         },
       },
+    },
+    css: {
+      devSourcemap: true,
     },
     plugins: [htmlPlugin(), react()],
   };
