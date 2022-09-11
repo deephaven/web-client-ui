@@ -3,7 +3,7 @@
  */
 import React, { Component, ReactElement } from 'react';
 import classNames from 'classnames';
-import * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js';
+import * as monaco from 'monaco-editor';
 import { assertNotNull } from '@deephaven/utils';
 import MonacoUtils from '../monaco/MonacoUtils';
 
@@ -98,7 +98,7 @@ class Editor extends Component<EditorProps, Record<string, never>> {
       label: 'Find',
       keybindings: [
         // eslint-disable-next-line no-bitwise
-        monaco.KeyMod.CtrlCmd | monaco.KeyCode.KEY_F,
+        monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyF,
       ],
       precondition: undefined,
       keybindingContext: undefined,

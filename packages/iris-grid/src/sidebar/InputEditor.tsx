@@ -1,5 +1,5 @@
 import React, { Component, ReactElement } from 'react';
-import * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js';
+import * as monaco from 'monaco-editor';
 import classNames from 'classnames';
 import './InputEditor.scss';
 

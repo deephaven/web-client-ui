@@ -1,6 +1,6 @@
 import React, { PureComponent, ReactElement, RefObject } from 'react';
 import classNames from 'classnames';
-import * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js';
+import * as monaco from 'monaco-editor';
 import Log from '@deephaven/log';
 import {
   assertNotNull,
@@ -278,7 +278,7 @@ export class ConsoleInput extends PureComponent<
 
     // Override the Ctrl+F functionality so that the find window doesn't appear
     this.commandEditor.addCommand(
-      monaco.KeyMod.CtrlCmd | monaco.KeyCode.KEY_F, // eslint-disable-line no-bitwise
+      monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyF, // eslint-disable-line no-bitwise
       () => undefined
     );
 
@@ -444,7 +444,9 @@ export class ConsoleInput extends PureComponent<
 
     const command = this.commandEditor?.getValue().trim();
     assertNotNull(command);
-    this.history.push(command);
+    if (command !== '') {
+      this.history.push(command);
+    }
     this.commandEditor?.setValue('');
     this.updateDimensions();
 
