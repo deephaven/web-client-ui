@@ -24,6 +24,7 @@ export default defineConfig(({ mode }) => {
 
   return {
     base: './', // Vite defaults to absolute URLs, but embed-chart is an embedded deployment so all assets are relative paths
+    envPrefix: ['VITE_', 'npm_'], // Needed to use $npm_package_version
     server: {
       port,
     },
@@ -49,6 +50,7 @@ export default defineConfig(({ mode }) => {
     build: {
       outDir: env.VITE_BUILD_PATH,
       emptyOutDir: true,
+      sourcemap: true,
       rollupOptions: {
         output: {
           manualChunks: id => {

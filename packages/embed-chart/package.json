@@ -26,6 +26,7 @@
     "react-dom": "^17.0.2"
   },
   "scripts": {
+    "analyze": "source-map-explorer build/assets/*.js --no-border-checks",
     "start": "vite",
     "build": "vite build",
     "preview": "vite preview"
@@ -47,6 +48,5 @@
   ],
   "publishConfig": {
     "access": "public"
-  },
-  "proxy": "http://localhost:10000"
+  }
 }

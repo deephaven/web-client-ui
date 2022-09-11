@@ -65,7 +65,7 @@
     "build"
   ],
   "scripts": {
-    "analyze": "source-map-explorer 'build/assets/*.js'",
+    "analyze": "source-map-explorer build/assets/*.js --no-border-checks --sort",
     "start": "vite",
     "build": "vite build",
     "preview": "vite preview",
@@ -89,6 +89,5 @@
   ],
   "publishConfig": {
     "access": "public"
-  },
-  "proxy": "http://localhost:10000"
+  }
 }

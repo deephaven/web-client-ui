@@ -84,7 +84,7 @@ export class SettingsMenu extends Component<
   }
 
   render(): ReactElement {
-    const version = import.meta.env.VITE_VERSION;
+    const version = import.meta.env.npm_package_version;
     const supportLink = import.meta.env.VITE_SUPPORT_LINK;
     const docsLink = import.meta.env.VITE_DOCS_LINK;
 

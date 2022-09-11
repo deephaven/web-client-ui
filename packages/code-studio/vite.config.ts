@@ -63,6 +63,7 @@ export default defineConfig(({ mode }) => {
     // Vite does not read this env variable, it sets it based on the config
     // For easy changes using our .env files, read it here and vite will just set it to the existing value
     base: env.BASE_URL,
+    envPrefix: ['VITE_', 'npm_'], // Needed to use $npm_package_version
     server: {
       port,
       open: true,
@@ -101,6 +102,7 @@ export default defineConfig(({ mode }) => {
     build: {
       outDir: path.resolve(__dirname, env.VITE_BUILD_PATH),
       emptyOutDir: true,
+      sourcemap: true,
       commonjsOptions: {
         include: [/node_modules/, /golden-layout/],
       },
