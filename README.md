@@ -96,3 +96,12 @@ Nightly releases are published every night with the dist-tag `nightly` to npm. Y
 ### Hotfix Releases
 
 For Long Term Support releases, we create a new branch in Community matching the LTS version number (e.g. [v0.6](https://github.com/deephaven/web-client-ui/tree/v0.6)), then adding a matching [dist-tag](https://github.com/lerna/lerna/blob/main/commands/publish/README.md#--dist-tag-tag) to the [publish-packages.yml](.github/workflows/publish-packages.yml#L24) for that branch. Bug fixes/hotfixes are then either cherry-picked from `main` (if the fix has been merged to main), or directly merged into the hotfix branch (if code has changed in `main` and the fix only applies in the hotfix branch). Once the branch is pushed to origin, the publish step is kicked off by creating a release as instructed in the [Releasing a New Version](#releasing-a-new-version) section.
+
+## Analyzing Bundle Size
+
+When adding new features, it can be useful to analyze the final package size to see what's in the package. Use [source-map-explorer](https://www.npmjs.com/package/source-map-explorer) to see what's taking up the most size in the package. First run `npm run build` to build a production bundle, then run `npx source-map-explorer 'packages/<package-name>/build/static/js/*.js'`, e.g.:
+
+```
+npm run build
+npx source-map-explorer 'packages/code-studio/build/static/js/*.js'
+```

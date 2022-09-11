@@ -1,5 +1,5 @@
 /* eslint no-useless-escape: "off" */
-import * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js';
+import * as monaco from 'monaco-editor';
 import { Language } from './Language';
 
 const id = 'log';

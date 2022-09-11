@@ -13,7 +13,6 @@ function makeMockCommandHistoryStorage(): CommandHistoryStorage {
   };
 }
 
-jest.mock('./ConsoleInput', () => () => null);
 jest.mock('./Console', () => ({
   ...(jest.requireActual('./Console') as Record<string, unknown>),
   commandHistory: jest.fn(),

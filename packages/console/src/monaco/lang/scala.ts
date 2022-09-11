@@ -26,7 +26,7 @@
  *  - https://github.com/microsoft/monaco-languages/blob/main/src/scala/scala.ts
  *--------------------------------------------------------------------------------------------*/
 
-import * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js';
+import * as monaco from 'monaco-editor';
 import { Language } from './Language';
 
 const id = 'scala';

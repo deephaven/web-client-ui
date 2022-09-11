@@ -5,7 +5,7 @@ import { vsGear, dhTrashUndo } from '@deephaven/icons';
 import { assertNotNull } from '@deephaven/utils';
 import { IdeSession, LogItem } from '@deephaven/jsapi-shim';
 import { Placement } from 'popper.js';
-import * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js';
+import * as monaco from 'monaco-editor';
 import ConsoleUtils from '../common/ConsoleUtils';
 import LogLevel from './LogLevel';
 import './LogView.scss';

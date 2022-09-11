@@ -2,7 +2,7 @@ import React, { PureComponent, ReactElement } from 'react';
 import Markdown from 'react-markdown';
 import { CodeComponent } from 'react-markdown/src/ast-to-react';
 import { Code, Editor } from '@deephaven/console';
-import type * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js';
+import type * as monaco from 'monaco-editor';
 
 interface MarkdownEditorProps {
   isEditing: boolean;
