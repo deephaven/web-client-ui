@@ -19,6 +19,8 @@ module.exports = {
       'node_modules',
       'monaco-editor/esm/vs/editor/editor.api.js'
     ),
+    // Handle monaco worker files
+    '\\.worker.*$': 'identity-obj-proxy',
     '^@deephaven/golden-layout$': path.join(
       __dirname,
       './packages/golden-layout/dist/goldenlayout.js'
