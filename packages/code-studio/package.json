@@ -67,7 +67,7 @@
   "scripts": {
     "analyze": "source-map-explorer build/assets/*.js --no-border-checks",
     "start": "vite",
-    "build": "vite build --max-old-space-size=4096",
+    "build": "NODE_OPTIONS='--max-old-space-size=4096' vite build",
     "preview": "vite preview",
     "update-licenses": "npm-license > licenses.txt"
   },
