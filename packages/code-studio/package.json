@@ -65,9 +65,9 @@
     "build"
   ],
   "scripts": {
-    "analyze": "source-map-explorer build/assets/*.js --no-border-checks --sort",
+    "analyze": "source-map-explorer build/assets/*.js --no-border-checks",
     "start": "vite",
-    "build": "vite build",
+    "build": "vite build --max-old-space-size=4096",
     "preview": "vite preview",
     "update-licenses": "npm-license > licenses.txt"
   },
