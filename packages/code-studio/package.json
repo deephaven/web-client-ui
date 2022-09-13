@@ -47,15 +47,11 @@
     "react": "^17.0.2",
     "react-beautiful-dnd": "^13.1.0",
     "react-dom": "^17.0.2",
-    "react-error-overlay": "6.0.9",
     "react-redux": "^7.2.4",
     "react-router-dom": "^5.1.2",
-    "react-scripts": "4.0.3",
     "react-transition-group": "^4.4.2",
-    "reactstrap": "^8.10.0",
     "redux": "^4.2.0",
     "redux-thunk": "^2.4.1",
-    "regenerator-runtime": "^0.13.9",
     "shortid": "^2.2.16",
     "webdav": "^4.6.1"
   },
@@ -64,17 +60,15 @@
     "jszip": "Pinned to 3.2.2 b/c 3.3.0+ breaks nodestream usage. Not fixed as of 3.5.0. https://github.com/Stuk/jszip/issues/663"
   },
   "homepage": ".",
-  "main": "public/index.js",
+  "main": "build/index.html",
   "files": [
     "build"
   ],
   "scripts": {
-    "analyze": "source-map-explorer 'build/static/js/*.js'",
-    "start": "react-scripts --max-old-space-size=4096 start",
-    "build-js": "react-scripts --max-old-space-size=4096 build",
-    "build": "npm-run-all build-js clean-mocks",
-    "clean-mocks": "rm -rf build/__mocks__",
-    "eject": "react-scripts eject",
+    "analyze": "source-map-explorer build/assets/*.js --no-border-checks",
+    "start": "vite",
+    "build": "NODE_OPTIONS='--max-old-space-size=4096' vite build",
+    "preview": "vite preview",
     "update-licenses": "npm-license > licenses.txt"
   },
   "devDependencies": {
@@ -82,7 +76,10 @@
     "@deephaven/mocks": "file:../mocks",
     "@deephaven/prettier-config": "file:../prettier-config",
     "@deephaven/stylelint-config": "file:../stylelint-config",
-    "@deephaven/tsconfig": "file:../tsconfig"
+    "@deephaven/tsconfig": "file:../tsconfig",
+    "@vitejs/plugin-react": "^2.0.0",
+    "autoprefixer": "^10.4.8",
+    "vite": "^3.1.0"
   },
   "browserslist": [
     ">0.2%",
@@ -92,6 +89,5 @@
   ],
   "publishConfig": {
     "access": "public"
-  },
-  "proxy": "http://localhost:10000"
+  }
 }

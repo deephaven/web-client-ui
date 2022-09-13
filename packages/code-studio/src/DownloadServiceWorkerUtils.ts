@@ -6,9 +6,9 @@ class DownloadServiceWorkerUtils {
   static DOWNLOAD_PATH = '/download/';
 
   static registerOnLoaded(): void {
-    const publicUrl = new URL(process.env.PUBLIC_URL, window.location.href);
+    const publicUrl = new URL(import.meta.env.BASE_URL, window.location.href);
     if (publicUrl.origin !== window.location.origin) {
-      // Our service worker won't work if PUBLIC_URL is on a different origin
+      // Our service worker won't work if BASE_URL is on a different origin
       // from what our page is served on. This might happen if a CDN is used to
       // serve assets; see https://github.com/facebook/create-react-app/issues/2374
       return;
@@ -18,7 +18,7 @@ class DownloadServiceWorkerUtils {
       window.addEventListener('load', () => {
         const swUrl = new URL(
           `${
-            process.env.PUBLIC_URL ? `${process.env.PUBLIC_URL}` : ''
+            import.meta.env.BASE_URL ? `${import.meta.env.BASE_URL}` : ''
           }download/serviceWorker.js`,
           window.location.href
         );

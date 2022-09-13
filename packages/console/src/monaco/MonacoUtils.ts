@@ -8,6 +8,8 @@ import { assertNotNull } from '@deephaven/utils';
 import * as monaco from 'monaco-editor';
 // @ts-ignore
 import { KeyCodeUtils } from 'monaco-editor/esm/vs/base/common/keyCodes.js';
+// @ts-ignore
+import editorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker';
 import Log from '@deephaven/log';
 import MonacoTheme from './MonacoTheme.module.scss';
 import PyLang from './lang/python';
@@ -18,6 +20,13 @@ import LogLang from './lang/log';
 import { Language } from './lang/Language';
 
 const log = Log.module('MonacoUtils');
+
+window.MonacoEnvironment = {
+  getWorker(workerId, label) {
+    return editorWorker();
+  },
+};
+
 class MonacoUtils {
   static init(): void {
     log.debug('Initializing Monaco...');
@@ -331,9 +340,7 @@ class MonacoUtils {
         }
         MonacoUtils.removeKeybinding(
           editor,
-          (MonacoUtils.isMacPlatform()
-            ? keybinding.mac
-            : keybinding.windows) as string
+          MonacoUtils.isMacPlatform() ? keybinding.mac : keybinding.windows
         );
       });
     } catch (err) {
@@ -356,8 +363,12 @@ class MonacoUtils {
    */
   static removeKeybinding(
     editor: monaco.editor.IStandaloneCodeEditor,
-    keybinding: string
+    keybinding: string | undefined
   ): void {
+    if (!keybinding) {
+      return;
+    }
+
     /* eslint-disable no-underscore-dangle */
     // It's possible a single keybinding has multiple commands depending on context
     // @ts-ignore

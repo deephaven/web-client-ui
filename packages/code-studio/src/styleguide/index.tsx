@@ -5,16 +5,16 @@ import 'fira';
 import '@deephaven/components/scss/BaseStyleSheet.scss';
 import { MonacoUtils } from '@deephaven/console';
 import { store } from '@deephaven/redux';
-import AppRouter from './main/AppRouter';
-import DownloadServiceWorkerUtils from './DownloadServiceWorkerUtils';
-import logInit from './log/LogInit';
-import { unregister } from './serviceWorker';
+import DownloadServiceWorkerUtils from '../DownloadServiceWorkerUtils';
+import logInit from '../log/LogInit';
+import { unregister } from '../serviceWorker';
+import StyleGuideInit from './StyleGuideInit';
 
 logInit();
 
 ReactDOM.render(
   <Provider store={store}>
-    <AppRouter />
+    <StyleGuideInit />
   </Provider>,
   document.getElementById('root')
 );

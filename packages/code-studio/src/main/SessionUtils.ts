@@ -25,7 +25,7 @@ export type SessionWrapper = {
  */
 export const createSessionWrapper = async (): Promise<SessionWrapper> => {
   const baseUrl = new URL(
-    process.env.REACT_APP_CORE_API_URL ?? '',
+    import.meta.env.VITE_CORE_API_URL ?? '',
     `${window.location}`
   );
 

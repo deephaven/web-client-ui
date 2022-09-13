@@ -11,6 +11,7 @@
     "directory": "packages/components"
   },
   "main": "dist/index.js",
+  "module": "dist/index.js",
   "source": "src/index.js",
   "types": "dist/index.d.ts",
   "engines": {
@@ -50,7 +51,6 @@
     "react-transition-group": "^4.4.2",
     "react-virtualized-auto-sizer": "^1.0.6",
     "react-window": "^1.8.6",
-    "reactstrap": "^8.10.0",
     "shortid": "^2.2.16"
   },
   "peerDependencies": {

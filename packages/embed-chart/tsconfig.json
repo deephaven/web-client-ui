@@ -19,6 +19,9 @@
       "path": "../jsapi-shim"
     },
     {
+      "path": "../jsapi-utils"
+    },
+    {
       "path": "../log"
     }
   ]

@@ -38,7 +38,6 @@ Javascript plugins allow a user to write arbitrary Javascript code and attach it
       },
       externals: {
         react: "react",
-        reactstrap: "reactstrap",
       },
       module: {
         rules: [

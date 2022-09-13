@@ -1,6 +1,6 @@
 # Embedded Deephaven Grid
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app). It is to provide an example React application connecting to Deephaven and displaying a table of data.
+This project uses [Vite](https://vitejs.dev/). It is to provide an example React application connecting to Deephaven and displaying a table of data.
 
 ## Getting Started
 
@@ -40,7 +40,7 @@ Once Deephaven is running, you can open a table with a specific name by adding t
 
 ### Configuring Server Address
 
-By default, this project assumes you are hosting Deephaven with Python on the default port at http://localhost:10000. If Deephaven is running on a different port/server, update the `REACT_APP_CORE_API_URL` environment variable to point to the correct server. See [.env](./.env) file for the default definition, and [create-react-app docs](https://create-react-app.dev/docs/adding-custom-environment-variables/) for other ways to set this environment variable.
+By default, this project assumes you are hosting Deephaven with Python on the default port at http://localhost:10000. If Deephaven is running on a different port/server, update the `VITE_CORE_API_URL` environment variable to point to the correct server. See [.env](./.env) file for the default definition, and [Vite docs](https://vitejs.dev/guide/env-and-mode.html) for other info about environment variables.
 
 ## Available Scripts
 
@@ -81,6 +81,6 @@ You don’t have to ever use `eject`. The curated feature set is suitable for sm
 
 ## Learn More
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+You can learn more in the [Vite documentation](https://vitejs.dev/guide/).
 
 To learn React, check out the [React documentation](https://reactjs.org/).

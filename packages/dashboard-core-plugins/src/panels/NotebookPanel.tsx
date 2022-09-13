@@ -124,10 +124,6 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     isPreview: false,
     session: null,
     sessionLanguage: null,
-    notebooksUrl: new URL(
-      `${process.env.REACT_APP_NOTEBOOKS_URL}/`,
-      `${window.location}`
-    ).href,
   };
 
   static languageFromFileName(fileName: string): string | null {

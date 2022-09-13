@@ -14,33 +14,33 @@ you should be modifying `.env.development.local`.
 For more information on `.env`, see https://create-react-app.dev/docs/adding-custom-environment-variables#adding-development-environment-variables-in-env
 Below are some of the common properties which are configurable in the `.env` file.
 
-### REACT_APP_CORE_API_URL
+### VITE_CORE_API_URL
 
 One common setup is to override the API server URL to point to another server. For example, add the following block to `.env.development.local` to have `npm start` point to a remote server for the API:
 
 ```shell
-REACT_APP_CORE_API_URL=https://www.myserver.com/jsapi
+VITE_CORE_API_URL=https://www.myserver.com/jsapi
 ```
 
-### REACT_APP_NOTEBOOKS_URL
+### VITE_NOTEBOOKS_URL
 
 One common setup is to override the API server URL to point to another server. For example, add the following block to `.env.development.local` to have `npm start` point to a remote server for the API:
 
 ```shell
-REACT_APP_CORE_API_URL=https://www.myserver.com/notebooks
+VITE_CORE_API_URL=https://www.myserver.com/notebooks
 ```
 
-### REACT_APP_LOG_LEVEL
+### VITE_LOG_LEVEL
 
 Printing detailed logs when debugging can be handy. The highest level of logging is already set in your `.env.development` file. You can change it in `.env.development.local` if desired.
 
 ```shell
-REACT_APP_LOG_LEVEL=2 # Warn/Error
+VITE_LOG_LEVEL=2 # Warn/Error
 ```
 
 See [@deephaven/log](../log) for more details on the logger.
 
-### REACT_APP_ENABLE_LOG_PROXY
+### VITE_ENABLE_LOG_PROXY
 
 Set to `true` or `false`
 
@@ -88,11 +88,11 @@ Each Dashboard is composed of panels. There are many different kinds of panels, 
 
 # Initial Project Setup
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+This project uses [Vite](https://vitejs.dev/).
 
 ## Learn More
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+You can learn more in the [Vite documentation](https://vitejs.dev/guide/).
 
 To learn React, check out the [React documentation](https://reactjs.org/).
 
