@@ -23,12 +23,14 @@ export const FileExplorerToolbar = ({
         icon={vsNewFile}
         tooltip="New notebook"
         onClick={createFile}
+        aria-label="New notebook"
       />
       <Button
         kind="ghost"
         icon={vsNewFolder}
         tooltip="New folder"
         onClick={createFolder}
+        aria-label="New folder"
       />
     </div>
     {onSearchChange && (
