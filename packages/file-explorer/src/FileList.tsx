@@ -140,6 +140,7 @@ export const renderFileListItem = (
       onDrop={e => onDrop(itemIndex, e)}
       draggable
       role="presentation"
+      aria-label={item.basename}
     >
       {depthLines}{' '}
       <FontAwesomeIcon icon={icon} className="item-icon" fixedWidth />{' '}
