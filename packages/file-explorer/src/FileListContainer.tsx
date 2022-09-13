@@ -25,6 +25,7 @@ export interface FileListContainerProps {
   onRename?: (file: FileStorageItem, newName: string) => void;
   onSelect: (file: FileStorageItem, event: React.SyntheticEvent) => void;
   validateRename?: (file: FileStorageItem, newName: string) => Promise<void>;
+  pathGetter?: (file: FileStorageItem) => void;
 
   /** Height of each item in the list */
   rowHeight?: number;
@@ -46,6 +47,7 @@ export const FileListContainer = (
     onMove = () => undefined,
     onRename,
     onSelect,
+    pathGetter,
     table,
     rowHeight = DEFAULT_ROW_HEIGHT,
     validateRename = () => Promise.resolve(),
@@ -210,6 +212,7 @@ export const FileListContainer = (
           onMove={onMove}
           onSelect={onSelect}
           onSelectionChange={handleSelectionChange}
+          pathGetter={pathGetter}
           onFocusChange={handleFocusChange}
           renderItem={renderItem}
           rowHeight={rowHeight}

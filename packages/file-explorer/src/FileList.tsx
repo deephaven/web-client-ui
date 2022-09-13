@@ -56,6 +56,7 @@ export interface FileListProps {
   onMove: (files: FileStorageItem[], path: string) => void;
   onSelect: (file: FileStorageItem, event: React.SyntheticEvent) => void;
   onSelectionChange?: (selectedItems: FileStorageItem[]) => void;
+  pathGetter?: (file: FileStorageItem) => void;
 
   renderItem?: (props: FileListRenderItemProps) => JSX.Element;
 
@@ -219,6 +220,7 @@ export const FileList = (props: FileListProps): JSX.Element => {
     onMove,
     onSelect,
     onSelectionChange = () => undefined,
+    pathGetter,
     renderItem = renderFileListItem,
     rowHeight = DEFAULT_ROW_HEIGHT,
     overscanCount = ItemList.DEFAULT_OVERSCAN,
@@ -441,9 +443,23 @@ export const FileList = (props: FileListProps): JSX.Element => {
         setSelectedRanges(newSelectedRanges);
         const selectedItems = getItems(newSelectedRanges);
         onSelectionChange(selectedItems);
+        if (
+          selectedItems.length === 1 &&
+          selectedItems[0].type === 'directory'
+        ) {
+          pathGetter?.(selectedItems[0]);
+        } else {
+          const root: FileStorageItem = {
+            type: 'directory',
+            id: '/',
+            filename: '/',
+            basename: '',
+          };
+          pathGetter?.(root);
+        }
       }
     },
-    [getItems, onSelectionChange, selectedRanges]
+    [getItems, onSelectionChange, selectedRanges, pathGetter]
   );
 
   const handleFocusChange = useCallback(
