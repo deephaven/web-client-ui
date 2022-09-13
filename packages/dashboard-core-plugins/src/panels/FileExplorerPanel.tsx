@@ -5,6 +5,7 @@ import FileExplorer, {
   FileExplorerToolbar,
   FileStorage,
   FileStorageItem,
+  FileUtils,
   NewItemModal,
 } from '@deephaven/file-explorer';
 import React, { ReactNode } from 'react';
@@ -52,6 +53,7 @@ export type FileExplorerPanelState = {
   language?: string;
   session?: IdeSession;
   showCreateFolder: boolean;
+  focusedFilePath: string;
 };
 
 function isMouseEvent<T>(e: React.SyntheticEvent<T>): e is React.MouseEvent<T> {
@@ -105,6 +107,7 @@ export class FileExplorerPanel extends React.Component<
     this.handleSessionOpened = this.handleSessionOpened.bind(this);
     this.handleSessionClosed = this.handleSessionClosed.bind(this);
     this.handleShow = this.handleShow.bind(this);
+    this.getPath = this.getPath.bind(this);
 
     const { session, language } = props;
     this.state = {
@@ -112,6 +115,7 @@ export class FileExplorerPanel extends React.Component<
       language,
       session,
       showCreateFolder: false,
+      focusedFilePath: '/',
     };
   }
 
@@ -163,6 +167,11 @@ export class FileExplorerPanel extends React.Component<
         itemName: file.filename,
       });
     });
+  }
+
+  getPath(file: FileStorageItem): void {
+    const path = FileUtils.makePath(file.filename);
+    this.setState({ focusedFilePath: path });
   }
 
   handleFileSelect(file: FileStorageItem, event: React.SyntheticEvent): void {
@@ -224,7 +233,7 @@ export class FileExplorerPanel extends React.Component<
 
   render(): ReactNode {
     const { fileStorage, glContainer, glEventHub } = this.props;
-    const { isShown, showCreateFolder } = this.state;
+    const { isShown, showCreateFolder, focusedFilePath } = this.state;
     return (
       <Panel
         className="file-explorer-panel"
@@ -246,6 +255,7 @@ export class FileExplorerPanel extends React.Component<
             onDelete={this.handleDelete}
             onRename={this.handleRename}
             onSelect={this.handleFileSelect}
+            pathGetter={this.getPath}
           />
         )}
         <NewItemModal
@@ -255,6 +265,7 @@ export class FileExplorerPanel extends React.Component<
           storage={fileStorage}
           onSubmit={this.handleCreateDirectorySubmit}
           onCancel={this.handleCreateDirectoryCancel}
+          defaultValue={focusedFilePath}
         />
       </Panel>
     );
