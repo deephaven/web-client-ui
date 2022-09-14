@@ -38,17 +38,6 @@ function makeDirectories(count = 5) {
   return result;
 }
 
-function makeSession() {
-  return {
-    addEventListener: jest.fn(),
-    subscribeToFieldUpdates: jest.fn(() => () => null),
-    removeEventListener: jest.fn(),
-    getTable: jest.fn(),
-    getObject: jest.fn(),
-    runCode: jest.fn(),
-  };
-}
-
 const eventHub = {
   emit: () => undefined,
   on: () => undefined,
@@ -61,7 +50,6 @@ const container: Partial<Container> = {
   on: () => undefined,
   off: () => undefined,
 };
-const session = makeSession();
 
 function makeContainer({ fileStorage }: Partial<FileExplorerPanelProps> = {}) {
   return render(
@@ -114,6 +102,18 @@ describe('selects directory for NewItemModal correctly', () => {
     userEvent.click(screen.getAllByRole('listitem')[0]);
     userEvent.click(screen.getAllByRole('listitem')[3]);
 
+    userEvent.click(screen.getByRole('button', { name: 'New folder' }));
+
+    const foundModal = await screen.findAllByRole('dialog');
+    expect(foundModal).toHaveLength(1);
+
+    const NewItemModal = foundModal[0];
+
+    const foundPath = within(NewItemModal).getByText(/Directory/);
+    expect(foundPath).toHaveTextContent(`/`);
+  });
+
+  it('selects root directory when no directories are selected', async () => {
     userEvent.click(screen.getByRole('button', { name: 'New folder' }));
 
     const foundModal = await screen.findAllByRole('dialog');

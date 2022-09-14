@@ -99,6 +99,7 @@ class NewItemModal extends PureComponent<NewItemModalProps, NewItemModalState> {
     this.handleExtensionChangeConfirm = this.handleExtensionChangeConfirm.bind(
       this
     );
+    this.handleBreadcrumbSelect = this.handleBreadcrumbSelect.bind(this);
 
     const { defaultValue } = props;
 
@@ -374,6 +375,38 @@ class NewItemModal extends PureComponent<NewItemModalProps, NewItemModalState> {
     });
   }
 
+  handleBreadcrumbSelect(directoryPath: string): void {
+    this.setState({ path: directoryPath.slice(4) });
+  }
+
+  renderPathButtons(path: string): React.ReactElement {
+    const pathAsList = path.split('/');
+    pathAsList[0] = 'root';
+    pathAsList.pop();
+    const buttonList = pathAsList.map((basename, index) => {
+      let directoryPath = '';
+      for (let i = 0; i < index; i += 1) {
+        directoryPath += `${pathAsList[i]}/`;
+      }
+      directoryPath += `${basename}/`;
+
+      return (
+        <>
+          <button
+            key={directoryPath}
+            onClick={() => this.handleBreadcrumbSelect(directoryPath)}
+            type="button"
+            className="directory-breadcrumbs"
+          >
+            {basename}
+          </button>
+          /
+        </>
+      );
+    });
+    return <span className="new-item-parentId">{buttonList}</span>;
+  }
+
   render(): React.ReactNode {
     const { storage, isOpen, onCancel, placeholder, title, type } = this.props;
     const {
@@ -430,9 +463,7 @@ class NewItemModal extends PureComponent<NewItemModalProps, NewItemModalState> {
                   )}
                 </div>
                 <div className="flex-grow-0">
-                  <label>
-                    Directory: <span className="new-item-parentId">{path}</span>
-                  </label>
+                  <label>Directory: /{this.renderPathButtons(path)}</label>
                 </div>
                 <div className="flex-grow-1 file-explorer-container">
                   <FileExplorer

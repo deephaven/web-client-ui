@@ -1,9 +1,4 @@
-import {
-  File,
-  FileStorage,
-  FileStorageItem,
-  FileStorageTable,
-} from '@deephaven/file-explorer';
+import { FileStorageItem, FileStorageTable } from '@deephaven/file-explorer';
 import {
   ViewportData,
   IndexRange,
