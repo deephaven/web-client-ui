@@ -41,6 +41,8 @@ type MaskedInputProps = {
   className?: string;
   /** The regex pattern this masked input must match */
   pattern: string;
+  /** Input placeholder */
+  placeholder?: string;
   /** The current value to display */
   value: string;
   /** One or more examples of valid values. Used when deciding if next keystroke is valid (as rest of the current value may be incomplete) */
@@ -67,7 +69,7 @@ type MaskedInputProps = {
   ): string;
   onFocus?: React.FocusEventHandler;
   onBlur?: React.FocusEventHandler;
-
+  optional?: boolean;
   'data-testid'?: string;
 };
 
@@ -87,7 +89,9 @@ const MaskedInput = React.forwardRef<HTMLInputElement, MaskedInputProps>(
       getPreferredReplacementString = DEFAULT_GET_PREFERRED_REPLACEMENT_STRING,
       onChange = () => false,
       onSelect = () => false,
+      optional = false,
       pattern,
+      placeholder,
       selection,
       value,
       onFocus = () => false,
@@ -484,6 +488,7 @@ const MaskedInput = React.forwardRef<HTMLInputElement, MaskedInputProps>(
         className={classNames('form-control masked-input', className)}
         type="text"
         pattern={pattern}
+        placeholder={placeholder}
         value={value}
         onChange={() => undefined}
         onKeyDown={handleKeyDown}
@@ -499,6 +504,7 @@ const MaskedInput = React.forwardRef<HTMLInputElement, MaskedInputProps>(
 
 MaskedInput.defaultProps = {
   className: '',
+  placeholder: undefined,
   onChange(): void {
     // no-op
   },
@@ -514,6 +520,7 @@ MaskedInput.defaultProps = {
   onBlur(): void {
     // no-op
   },
+  optional: false,
   'data-testid': undefined,
 };
 
