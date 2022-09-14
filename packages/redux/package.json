@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/redux",
-  "version": "0.15.6",
+  "version": "0.16.0",
   "description": "Deephaven Redux",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
@@ -12,6 +12,7 @@
   },
   "source": "src/index.js",
   "main": "dist/index.js",
+  "module": "dist/index.js",
   "types": "dist/index.d.ts",
   "engines": {
     "node": ">=16"
@@ -30,7 +31,7 @@
     "@deephaven/jsapi-utils": "file:../jsapi-utils",
     "@deephaven/log": "file:../log",
     "deep-equal": "^2.0.5",
-    "redux-thunk": "2.4.1 "
+    "redux-thunk": "2.4.1"
   },
   "devDependencies": {
     "@deephaven/tsconfig": "file:../tsconfig"

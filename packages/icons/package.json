@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/icons",
-  "version": "0.15.0",
+  "version": "0.16.0",
   "description": "Icons used in Deephaven client apps. Extends vscode-codicons to be font-awesome svg-core compatible and adds additional icons in a similar style.",
   "main": "dist/index.js",
   "module": "dist/index.es.js",
@@ -31,6 +31,11 @@
   "license": "Apache-2.0",
   "dependencies": {
     "@fortawesome/fontawesome-common-types": "^6.1.1"
+  },
+  "devDependencies": {
+    "svg-parser": "^2.0.4",
+    "svg-path-tools": "^1.0.0",
+    "svgo": "^2.8.0"
   },
   "peerDependencies": {
     "@fortawesome/fontawesome-svg-core": "^6.1.1",

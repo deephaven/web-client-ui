@@ -14,20 +14,13 @@ module.exports = {
       __dirname,
       './__mocks__/fileMock.js'
     ),
-    '^monaco-editor/esm/vs/editor/editor.api.js$': path.join(
-      __dirname,
-      './__mocks__/monaco-editor.js'
-    ),
-    // Used for MonacoUtils test
-    '^monaco-editor/esm/vs/editor/common/standalone/(.*)': path.join(
+    '^monaco-editor$': path.join(
       __dirname,
       'node_modules',
-      'monaco-editor/esm/vs/editor/common/standalone/$1'
+      'monaco-editor/esm/vs/editor/editor.api.js'
     ),
-    '^monaco-editor/esm/vs/editor/(.*)': path.join(
-      __dirname,
-      './__mocks__/monaco-editor-empty.js'
-    ),
+    // Handle monaco worker files
+    '\\.worker.*$': 'identity-obj-proxy',
     '^@deephaven/golden-layout$': path.join(
       __dirname,
       './packages/golden-layout/dist/goldenlayout.js'

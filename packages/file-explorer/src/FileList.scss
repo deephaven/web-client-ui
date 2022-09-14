@@ -38,6 +38,7 @@ $item-list-drop-target-color: $white;
     transition: $btn-transition;
     border: 1px solid transparent; // we need a spacer border so stuff doesn't move on us when we apply a border-color
     -webkit-user-drag: none; // we need to disable webkit-user-drag or else Chrome switches to a Copy icon when dragging on Mac
+    cursor: pointer;
 
     &.is-focused {
       background-color: $item-list-selected-nofocus-bg;

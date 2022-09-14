@@ -7,7 +7,7 @@ const log = Log.module('PluginUtils');
 
 class PluginUtils {
   /**
-   * Load a component plugin either specified in the REACT_APP_COMPONENT_TABLE_PLUGINS environment variable, or from the server if it's not internal.
+   * Load a component plugin either specified in the VITE_INTERNAL_COMPONENT_PLUGINS environment variable, or from the server if it's not internal.
    * @param pluginName Name of the table plugin to load
    * @returns A lazily loaded JSX.Element from the plugin
    */
@@ -15,11 +15,13 @@ class PluginUtils {
     pluginName: string
   ): ForwardRefExoticComponent<React.RefAttributes<unknown>> {
     if (
-      process.env.REACT_APP_INTERNAL_COMPONENT_PLUGINS?.split(',').includes(
+      import.meta.env.VITE_INTERNAL_COMPONENT_PLUGINS?.split(',').includes(
         pluginName
       )
     ) {
-      const LazyPlugin = React.lazy(() => import(`./internal/${pluginName}`));
+      const LazyPlugin = React.lazy(
+        () => import(/* @vite-ignore */ `./internal/${pluginName}`)
+      );
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const LocalPlugin: any = React.forwardRef((props, ref) => (
         <Suspense fallback={<div>Loading Plugin...</div>}>
@@ -33,7 +35,7 @@ class PluginUtils {
     }
 
     const baseUrl = new URL(
-      process.env.REACT_APP_COMPONENT_PLUGINS_URL ?? '',
+      import.meta.env.VITE_COMPONENT_PLUGINS_URL ?? '',
       `${window.location}`
     );
     const pluginUrl = new URL(`${pluginName}.js`, baseUrl);

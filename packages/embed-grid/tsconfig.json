@@ -13,22 +13,16 @@
       "path": "../components"
     },
     {
-      "path": "../grid"
-    },
-    {
       "path": "../iris-grid"
     },
     {
       "path": "../jsapi-shim"
     },
     {
+      "path": "../jsapi-utils"
+    },
+    {
       "path": "../log"
-    },
-    {
-      "path": "../react-hooks"
-    },
-    {
-      "path": "../utils"
     }
   ]
 }

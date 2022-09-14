@@ -1,5 +1,5 @@
 /** Shim for using jquery in frameworks included by react (such as bootstrap) */
-import * as $ from 'jquery';
+import $ from 'jquery';
 
 declare global {
   interface Window {
@@ -29,6 +29,7 @@ export { default as DeephavenSpinner } from './DeephavenSpinner';
 export { default as DraggableItemList } from './DraggableItemList';
 export * from './DraggableItemList';
 export { default as DragUtils } from './DragUtils';
+export { default as EditableItemList } from './EditableItemList';
 export { default as HierarchicalCheckboxMenu } from './HierarchicalCheckboxMenu';
 export * from './HierarchicalCheckboxMenu';
 export * from './ItemList';

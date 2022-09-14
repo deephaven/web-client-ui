@@ -11,7 +11,7 @@ const log = Log.module('SessionUtils');
  */
 export function createConnection(): IdeConnection {
   const baseUrl = new URL(
-    process.env.REACT_APP_CORE_API_URL ?? '',
+    import.meta.env.VITE_CORE_API_URL ?? '',
     `${window.location}`
   );
 

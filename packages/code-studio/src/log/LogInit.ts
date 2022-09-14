@@ -12,9 +12,9 @@ export const logProxy = new LogProxy();
 export const logHistory = new LogHistory(logProxy);
 
 export default function logInit(): void {
-  Log.setLogLevel(parseInt(process.env.REACT_APP_LOG_LEVEL ?? '', 10));
+  Log.setLogLevel(parseInt(import.meta.env.VITE_LOG_LEVEL ?? '', 10));
 
-  if (process.env.REACT_APP_ENABLE_LOG_PROXY === 'true') {
+  if (import.meta.env.VITE_ENABLE_LOG_PROXY === 'true') {
     logProxy.enable();
     logHistory.enable();
   }

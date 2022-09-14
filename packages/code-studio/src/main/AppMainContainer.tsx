@@ -825,7 +825,7 @@ export class AppMainContainer extends Component<
             hydrateConsole={AppMainContainer.hydrateConsole}
             notebooksUrl={
               new URL(
-                `${process.env.REACT_APP_NOTEBOOKS_URL}/`,
+                `${import.meta.env.VITE_NOTEBOOKS_URL}/`,
                 `${window.location}`
               ).href
             }

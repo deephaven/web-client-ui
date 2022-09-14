@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/utils",
-  "version": "0.15.6",
+  "version": "0.16.0",
   "description": "Deephaven Utils",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
@@ -12,6 +12,7 @@
   },
   "source": "src/index.js",
   "main": "dist/index.js",
+  "module": "dist/index.js",
   "types": "dist/index.d.ts",
   "engines": {
     "node": ">=16"

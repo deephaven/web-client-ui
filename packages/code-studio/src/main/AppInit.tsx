@@ -73,7 +73,7 @@ const USER = {
 const WORKSPACE_STORAGE = new LocalWorkspaceStorage();
 const COMMAND_HISTORY_STORAGE = new PouchCommandHistoryStorage();
 const FILE_STORAGE = new WebdavFileStorage(
-  createClient(process.env.REACT_APP_NOTEBOOKS_URL ?? '')
+  createClient(import.meta.env.VITE_NOTEBOOKS_URL ?? '')
 );
 
 interface AppInitProps {
@@ -126,14 +126,16 @@ const AppInit = (props: AppInitProps) => {
     log.debug('Loading plugins...');
     try {
       const manifest = await PluginUtils.loadJson(
-        `${process.env.REACT_APP_MODULE_PLUGINS_URL}/manifest.json`
+        `${import.meta.env.VITE_MODULE_PLUGINS_URL}/manifest.json`
       );
 
       log.debug('Plugin manifest loaded:', manifest);
       const pluginPromises = [];
       for (let i = 0; i < manifest.plugins.length; i += 1) {
         const { name, main } = manifest.plugins[i];
-        const pluginMainUrl = `${process.env.REACT_APP_MODULE_PLUGINS_URL}/${name}/${main}`;
+        const pluginMainUrl = `${
+          import.meta.env.VITE_MODULE_PLUGINS_URL
+        }/${name}/${main}`;
         pluginPromises.push(PluginUtils.loadModulePlugin(pluginMainUrl));
       }
       const pluginModules = await Promise.all(pluginPromises);

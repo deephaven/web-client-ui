@@ -6,7 +6,7 @@ import 'fira';
 
 // Need to import the base style sheet for proper styling
 // eslint-disable-next-line import/no-unresolved
-import '@deephaven/components/dist/BaseStyleSheet.css';
+import '@deephaven/components/scss/BaseStyleSheet.scss';
 import './index.scss';
 import App from './App';
 

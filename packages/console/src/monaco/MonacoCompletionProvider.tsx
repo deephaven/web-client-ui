@@ -2,7 +2,7 @@
  * Completion provider for a code session
  */
 import { PureComponent } from 'react';
-import * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js';
+import * as monaco from 'monaco-editor';
 import Log from '@deephaven/log';
 import { IdeSession } from '@deephaven/jsapi-shim';
 

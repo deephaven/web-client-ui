@@ -14,7 +14,7 @@ import {
   EventEmitter,
   ReactComponentConfig,
 } from '@deephaven/golden-layout';
-import type * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js';
+import type * as monaco from 'monaco-editor';
 import { assertNotNull } from '@deephaven/utils';
 import { RootState } from '@deephaven/redux';
 import Panel from './Panel';

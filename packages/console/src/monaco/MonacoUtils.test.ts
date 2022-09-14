@@ -1,17 +1,7 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
 /* eslint-disable no-bitwise */
-// Monaco exports its types only at the root. TS complains there's no types if these ignores aren't added
-// @ts-ignore
-import { KeyCode } from 'monaco-editor/esm/vs/editor/common/standalone/standaloneEnums.js';
-// @ts-ignore
-import { KeyMod } from 'monaco-editor/esm/vs/editor/common/standalone/standaloneBase';
+import * as monaco from 'monaco-editor';
 import { Shortcut, KEY, MODIFIER } from '@deephaven/components';
 import MonacoUtils from './MonacoUtils';
-
-const monaco = {
-  KeyCode,
-  KeyMod,
-};
 
 const SINGLE_KEY_PARAMS: ConstructorParameters<typeof Shortcut>[0] = {
   id: 'Single key',
@@ -64,42 +54,42 @@ describe('Windows shortcuts', () => {
   it('Converts a single key shortcut', () => {
     const s = new Shortcut(SINGLE_KEY_PARAMS);
     expect(MonacoUtils.getMonacoKeyCodeFromShortcut(s)).toEqual(
-      monaco.KeyCode.KEY_A
+      monaco.KeyCode.KeyA
     );
   });
 
   it('Converts a shortcut with ctrl', () => {
     const s = new Shortcut(CTRL_MOD_PARAMS);
     expect(MonacoUtils.getMonacoKeyCodeFromShortcut(s)).toEqual(
-      monaco.KeyMod.CtrlCmd | monaco.KeyCode.KEY_A
+      monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyA
     );
   });
 
   it('Converts a shortcut with shift', () => {
     const s = new Shortcut(SHIFT_MOD_PARAMS);
     expect(MonacoUtils.getMonacoKeyCodeFromShortcut(s)).toEqual(
-      monaco.KeyMod.Shift | monaco.KeyCode.KEY_A
+      monaco.KeyMod.Shift | monaco.KeyCode.KeyA
     );
   });
 
   it('Converts a shortcut with alt', () => {
     const s = new Shortcut(ALT_MOD_PARAMS);
     expect(MonacoUtils.getMonacoKeyCodeFromShortcut(s)).toEqual(
-      monaco.KeyMod.Alt | monaco.KeyCode.KEY_A
+      monaco.KeyMod.Alt | monaco.KeyCode.KeyA
     );
   });
 
   it('Converts a shortcut with meta', () => {
     const s = new Shortcut(META_MOD_PARAMS);
     expect(MonacoUtils.getMonacoKeyCodeFromShortcut(s)).toEqual(
-      monaco.KeyMod.WinCtrl | monaco.KeyCode.KEY_A
+      monaco.KeyMod.WinCtrl | monaco.KeyCode.KeyA
     );
   });
 
   it('Converts a shortcut with multiple modifiers', () => {
     const s = new Shortcut(MULTI_MOD_PARAMS);
     expect(MonacoUtils.getMonacoKeyCodeFromShortcut(s)).toEqual(
-      monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.KEY_A
+      monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.KeyA
     );
   });
 });
@@ -113,42 +103,42 @@ describe('Mac shortcuts', () => {
   it('Converts a single key shortcut', () => {
     const s = new Shortcut(SINGLE_KEY_PARAMS);
     expect(MonacoUtils.getMonacoKeyCodeFromShortcut(s)).toEqual(
-      monaco.KeyCode.KEY_B
+      monaco.KeyCode.KeyB
     );
   });
 
   it('Converts a shortcut with ctrl', () => {
     const s = new Shortcut(CTRL_MOD_PARAMS);
     expect(MonacoUtils.getMonacoKeyCodeFromShortcut(s)).toEqual(
-      monaco.KeyMod.WinCtrl | monaco.KeyCode.KEY_B
+      monaco.KeyMod.WinCtrl | monaco.KeyCode.KeyB
     );
   });
 
   it('Converts a shortcut with shift', () => {
     const s = new Shortcut(SHIFT_MOD_PARAMS);
     expect(MonacoUtils.getMonacoKeyCodeFromShortcut(s)).toEqual(
-      monaco.KeyMod.Shift | monaco.KeyCode.KEY_B
+      monaco.KeyMod.Shift | monaco.KeyCode.KeyB
     );
   });
 
   it('Converts a shortcut with alt', () => {
     const s = new Shortcut(ALT_MOD_PARAMS);
     expect(MonacoUtils.getMonacoKeyCodeFromShortcut(s)).toEqual(
-      monaco.KeyMod.Alt | monaco.KeyCode.KEY_B
+      monaco.KeyMod.Alt | monaco.KeyCode.KeyB
     );
   });
 
   it('Converts a shortcut with meta', () => {
     const s = new Shortcut(META_MOD_PARAMS);
     expect(MonacoUtils.getMonacoKeyCodeFromShortcut(s)).toEqual(
-      monaco.KeyMod.CtrlCmd | monaco.KeyCode.KEY_B
+      monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyB
     );
   });
 
   it('Converts a shortcut with multiple modifiers', () => {
     const s = new Shortcut(MULTI_MOD_PARAMS);
     expect(MonacoUtils.getMonacoKeyCodeFromShortcut(s)).toEqual(
-      monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.KEY_B
+      monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.KeyB
     );
   });
 });
