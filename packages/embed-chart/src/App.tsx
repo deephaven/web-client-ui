@@ -1,23 +1,23 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Chart, ChartModel, ChartModelFactory } from '@deephaven/chart'; // chart is used to display Deephaven charts
 import { ContextMenuRoot, LoadingOverlay } from '@deephaven/components'; // Use the loading spinner from the Deephaven components package
-import dh from '@deephaven/jsapi-shim'; // Import the shim to use the JS API
+import dh, { IdeConnection } from '@deephaven/jsapi-shim'; // Import the shim to use the JS API
 import Log from '@deephaven/log';
 import './App.scss'; // Styles for in this app
 
 const log = Log.module('EmbedChart.App');
 
 /**
- * Load an existing Deephaven figure with the session provided
- * @param session The Deephaven session object
+ * Load an existing Deephaven figure with the connection provided
+ * @param connection The Deephaven session object
  * @param name Name of the figure to load
  * @returns Deephaven figure
  */
-async function loadFigure(session: typeof dh.Session, name: string) {
+async function loadFigure(connection: IdeConnection, name: string) {
   log.info(`Fetching figure ${name}...`);
 
   const definition = { name, type: dh.VariableType.FIGURE };
-  return session.getObject(definition);
+  return connection.getObject(definition);
 }
 
 /**
@@ -41,6 +41,13 @@ function App(): JSX.Element {
     function initializeApp() {
       async function initApp() {
         try {
+          // Get the table name from the query param `name`.
+          const name = searchParams.get('name');
+
+          if (!name) {
+            throw new Error('No name param provided');
+          }
+
           // Connect to the Web API server
           const baseUrl = new URL(
             import.meta.env.VITE_CORE_API_URL ?? '',
@@ -52,33 +59,10 @@ function App(): JSX.Element {
           log.debug(`Starting connection...`);
           const connection = new dh.IdeConnection(websocketUrl);
 
-          log.debug('Getting console types...');
-
-          const types = await connection.getConsoleTypes();
-
-          log.debug('Available types:', types);
-
-          if (types.length === 0) {
-            throw new Error('No console types available');
-          }
-
-          const type = types[0];
-
-          log.debug('Starting session with type', type);
-
-          const session = await connection.startSession(type);
-
-          // Get the table name from the query param `name`.
-          const name = searchParams.get('name');
-
-          if (!name) {
-            throw new Error('No name param provided');
-          }
-
           log.debug('Loading figure', name, '...');
 
           // Load the figure up.
-          const figure = await loadFigure(session, name);
+          const figure = await loadFigure(connection, name);
 
           // Create the `ChartModel` for use with the `Chart` component
           log.debug(`Creating model...`);

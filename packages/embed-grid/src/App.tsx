@@ -75,7 +75,7 @@ function App(): JSX.Element {
 
           // Connect to the Web API server
           const baseUrl = new URL(
-            process.env.VITE_CORE_API_URL ?? '',
+            import.meta.env.VITE_CORE_API_URL ?? '',
             `${window.location}`
           );
 
