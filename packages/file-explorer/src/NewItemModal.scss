@@ -18,16 +18,6 @@ $file-list-height: 250px;
   }
 
   .directory-breadcrumbs {
-    color: #235de6;
-    background: none;
-    margin: 0;
-    border: 0;
-    cursor: pointer;
+    color: $primary;
   }
-  // .directory-breadcrumbs:hover {
-  //   background: #235de6;
-  //   border: 0.1em solid #f0f0ee;
-  //   border-radius: 25px;
-  //   padding: 0.25em;
-  // }
 }

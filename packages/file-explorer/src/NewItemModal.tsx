@@ -7,6 +7,7 @@ import {
   ModalFooter,
   ModalHeader,
   BasicModal,
+  Button,
 } from '@deephaven/components';
 import {
   CancelablePromise,
@@ -379,11 +380,11 @@ class NewItemModal extends PureComponent<NewItemModalProps, NewItemModalState> {
     this.setState({ path: directoryPath.slice(4) });
   }
 
-  renderPathButtons(path: string): React.ReactElement {
+  renderPathButtons(path: string): React.ReactNode {
     const pathAsList = path.split('/');
     pathAsList[0] = 'root';
     pathAsList.pop();
-    const buttonList = pathAsList.map((basename, index) => {
+    return pathAsList.map((basename, index) => {
       let directoryPath = '';
       for (let i = 0; i < index; i += 1) {
         directoryPath += `${pathAsList[i]}/`;
@@ -391,20 +392,18 @@ class NewItemModal extends PureComponent<NewItemModalProps, NewItemModalState> {
       directoryPath += `${basename}/`;
 
       return (
-        <>
-          <button
-            key={directoryPath}
-            onClick={() => this.handleBreadcrumbSelect(directoryPath)}
-            type="button"
+        <React.Fragment key={directoryPath}>
+          <Button
+            kind="ghost"
             className="directory-breadcrumbs"
+            onClick={() => this.handleBreadcrumbSelect(directoryPath)}
           >
             {basename}
-          </button>
+          </Button>
           /
-        </>
+        </React.Fragment>
       );
     });
-    return <span className="new-item-parentId">{buttonList}</span>;
   }
 
   render(): React.ReactNode {
@@ -463,7 +462,8 @@ class NewItemModal extends PureComponent<NewItemModalProps, NewItemModalState> {
                   )}
                 </div>
                 <div className="flex-grow-0">
-                  <label>Directory: /{this.renderPathButtons(path)}</label>
+                  <label>Directory: /</label>
+                  {this.renderPathButtons(path)}
                 </div>
                 <div className="flex-grow-1 file-explorer-container">
                   <FileExplorer

@@ -1,5 +1,10 @@
 import React from 'react';
-import { render, screen, within } from '@testing-library/react';
+import {
+  findAllByRole,
+  fireEvent,
+  render,
+  screen,
+} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { FileStorageItem } from '@deephaven/file-explorer';
 import { Container } from '@deephaven/golden-layout';
@@ -76,6 +81,18 @@ it('mounts properly and shows file list', async () => {
 });
 
 describe('selects directory for NewItemModal correctly', () => {
+  function clickItem(itemIndex: number, options = {}): void {
+    userEvent.click(screen.getAllByRole('listitem')[itemIndex], options);
+  }
+
+  async function getNewItemModal(): Promise<HTMLElement> {
+    userEvent.click(screen.getByRole('button', { name: 'New folder' }));
+    const foundModal = await screen.findAllByRole('dialog');
+    expect(foundModal).toHaveLength(1);
+
+    return foundModal[0];
+  }
+
   beforeEach(async () => {
     const dirs = makeDirectories();
     const fileStorage = new MockFileStorage(dirs);
@@ -85,43 +102,37 @@ describe('selects directory for NewItemModal correctly', () => {
   });
 
   it('selects directory correctly', async () => {
-    userEvent.click(screen.getAllByRole('listitem')[0]);
+    clickItem(0);
+    const NewItemModal = await getNewItemModal();
 
-    userEvent.click(screen.getByRole('button', { name: 'New folder' }));
-
-    const foundModal = await screen.findAllByRole('dialog');
-    expect(foundModal).toHaveLength(1);
-
-    const NewItemModal = foundModal[0];
-
-    const foundPath = within(NewItemModal).getByText(/Directory/);
-    expect(foundPath).toHaveTextContent(`/testdir0/`);
+    const foundPath = await findAllByRole(NewItemModal, 'button');
+    // number of buttons includes 'close', 'cancel', and 'create'
+    expect(foundPath).toHaveLength(5);
   });
 
   it('selects root directory when multiple directories are selected', async () => {
-    userEvent.click(screen.getAllByRole('listitem')[0]);
-    userEvent.click(screen.getAllByRole('listitem')[3]);
+    clickItem(0);
+    clickItem(3, { ctrlKey: true });
+    const NewItemModal = await getNewItemModal();
 
-    userEvent.click(screen.getByRole('button', { name: 'New folder' }));
-
-    const foundModal = await screen.findAllByRole('dialog');
-    expect(foundModal).toHaveLength(1);
-
-    const NewItemModal = foundModal[0];
-
-    const foundPath = within(NewItemModal).getByText(/Directory/);
-    expect(foundPath).toHaveTextContent(`/`);
+    const foundPath = await findAllByRole(NewItemModal, 'button');
+    expect(foundPath).toHaveLength(4);
   });
 
   it('selects root directory when no directories are selected', async () => {
-    userEvent.click(screen.getByRole('button', { name: 'New folder' }));
+    const NewItemModal = await getNewItemModal();
 
-    const foundModal = await screen.findAllByRole('dialog');
-    expect(foundModal).toHaveLength(1);
-
-    const NewItemModal = foundModal[0];
-
-    const foundPath = within(NewItemModal).getByText(/Directory/);
-    expect(foundPath).toHaveTextContent(`/`);
+    const foundPath = await findAllByRole(NewItemModal, 'button');
+    expect(foundPath).toHaveLength(4);
   });
+
+  // it('selects directory correctly through arrow keys', async () => {
+  //   clickItem(1);
+  //   fireEvent.keyDown(fileExplorerPanel, { key: 'ArrowDown' })
+
+  //   const NewItemModal = await getNewItemModal();
+
+  //   const foundPath = await findAllByRole(NewItemModal, 'button');
+  //   expect(foundPath).toHaveTextContent(`/testdir2`);
+  // });
 });

@@ -19,6 +19,7 @@ export class MockFileStorageTable implements FileStorageTable {
     this.items = items;
   }
 
+  /* eslint-disable class-methods-use-this */
   setSearch(search: string): void {
     // no-op
   }

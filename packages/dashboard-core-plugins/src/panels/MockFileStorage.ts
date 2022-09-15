@@ -17,6 +17,7 @@ export class MockFileStorage implements FileStorage {
     return new MockFileStorageTable(this.items);
   }
 
+  /* eslint-disable class-methods-use-this */
   saveFile(file: File): Promise<File> {
     throw new Error('Method not implemented.');
   }
