@@ -1820,6 +1820,8 @@ export class GridRenderer {
       headerBackgroundColor,
       headerColor,
       headerSeparatorColor,
+      black,
+      white,
     } = theme;
     const { fontWidths, width } = metrics;
     const fontWidth =
@@ -1835,12 +1837,17 @@ export class GridRenderer {
 
     let { textColor = headerColor } = style ?? {};
 
-    const isDarkBackground = ColorUtils.isDark(backgroundColor);
-    const isDarkText = ColorUtils.isDark(textColor);
-    if (isDarkBackground && isDarkText) {
-      textColor = '#f0f0ee'; // Deephaven $interfacewhite
-    } else if (!isDarkBackground && !isDarkText) {
-      textColor = '#1a171a'; // Deephaven $interfaceblack
+    try {
+      const isDarkBackground = ColorUtils.isDark(backgroundColor);
+      const isDarkText = ColorUtils.isDark(textColor);
+      if (isDarkBackground && isDarkText) {
+        textColor = white;
+      } else if (!isDarkBackground && !isDarkText) {
+        textColor = black;
+      }
+    } catch {
+      // Invalid color provided
+      // no-op since we don't use logging in base grid
     }
 
     let { minX = 0, maxX = width } = bounds ?? {};
