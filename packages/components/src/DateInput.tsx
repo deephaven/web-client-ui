@@ -71,17 +71,6 @@ const DateInput = React.forwardRef<HTMLInputElement, DateInputProps>(
       return '';
     }
 
-    const handleBlur = useCallback(
-      e => {
-        // Don't trigger onBlur if the focus stays within the same parent
-        // i.e. changing focus between the input and the optional switch
-        if (e.target?.parentElement !== e.relatedTarget?.parentElement) {
-          onBlur();
-        }
-      },
-      [onBlur]
-    );
-
     const handleChange = useCallback(
       (newValue: string): void => {
         log.debug('handleChange', newValue);
@@ -112,7 +101,7 @@ const DateInput = React.forwardRef<HTMLInputElement, DateInputProps>(
           selection={selection}
           value={value}
           onFocus={onFocus}
-          onBlur={handleBlur}
+          onBlur={onBlur}
           data-testid={dataTestId}
         />
       </div>
