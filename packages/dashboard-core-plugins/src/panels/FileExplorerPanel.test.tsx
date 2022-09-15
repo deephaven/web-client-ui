@@ -93,21 +93,29 @@ describe('selects directory for NewItemModal correctly', () => {
     return foundModal[0];
   }
 
+  const dirs = makeDirectories();
+  const files = makeFiles();
+  const items = dirs.concat(files);
+
   beforeEach(async () => {
-    const dirs = makeDirectories();
-    const fileStorage = new MockFileStorage(dirs);
+    const fileStorage = new MockFileStorage(dirs.concat(files));
     makeContainer({ fileStorage });
     const foundItems = await screen.findAllByRole('listitem');
-    expect(foundItems).toHaveLength(dirs.length);
+    expect(foundItems).toHaveLength(items.length);
   });
 
   it('selects directory correctly', async () => {
     clickItem(0);
     const NewItemModal = await getNewItemModal();
 
-    const foundPath = await findAllByRole(NewItemModal, 'button');
-    // number of buttons includes 'close', 'cancel', and 'create'
-    expect(foundPath).toHaveLength(5);
+    const foundButtons = await findAllByRole(NewItemModal, 'button');
+    const buttonContent = foundButtons.map(button => button.innerHTML);
+
+    expect(buttonContent).toContain('root');
+    expect(buttonContent).toContain('testdir0');
+    for (let i = 1; i < 5; i += 1) {
+      expect(buttonContent).not.toContain(`testdir${i}`);
+    }
   });
 
   it('selects root directory when multiple directories are selected', async () => {
@@ -115,24 +123,63 @@ describe('selects directory for NewItemModal correctly', () => {
     clickItem(3, { ctrlKey: true });
     const NewItemModal = await getNewItemModal();
 
-    const foundPath = await findAllByRole(NewItemModal, 'button');
-    expect(foundPath).toHaveLength(4);
+    const foundButtons = await findAllByRole(NewItemModal, 'button');
+    const buttonContent = foundButtons.map(button => button.innerHTML);
+
+    expect(buttonContent).toContain('root');
+    for (let i = 0; i < dirs.length; i += 1) {
+      expect(buttonContent).not.toContain(`testdir${i}`);
+    }
   });
 
   it('selects root directory when no directories are selected', async () => {
     const NewItemModal = await getNewItemModal();
 
-    const foundPath = await findAllByRole(NewItemModal, 'button');
-    expect(foundPath).toHaveLength(4);
+    const foundButtons = await findAllByRole(NewItemModal, 'button');
+    const buttonContent = foundButtons.map(button => button.innerHTML);
+
+    expect(buttonContent).toContain('root');
+    for (let i = 0; i < dirs.length; i += 1) {
+      expect(buttonContent).not.toContain(`testdir${i}`);
+    }
   });
 
-  // it('selects directory correctly through arrow keys', async () => {
-  //   clickItem(1);
-  //   fireEvent.keyDown(fileExplorerPanel, { key: 'ArrowDown' })
+  it('selects directory correctly through arrow keys', async () => {
+    const item = screen.getAllByRole('listitem')[1];
+    userEvent.click(item);
+    fireEvent.keyDown(item, { key: 'ArrowDown' });
+    fireEvent.keyDown(item, { key: 'ArrowDown' });
+    fireEvent.keyDown(item, { key: 'ArrowUp' });
 
-  //   const NewItemModal = await getNewItemModal();
+    const NewItemModal = await getNewItemModal();
 
-  //   const foundPath = await findAllByRole(NewItemModal, 'button');
-  //   expect(foundPath).toHaveTextContent(`/testdir2`);
-  // });
+    const foundButtons = await findAllByRole(NewItemModal, 'button');
+    const buttonContent = foundButtons.map(button => button.innerHTML);
+
+    expect(buttonContent).toContain('root');
+    expect(buttonContent).toContain('testdir2');
+    for (let i = 0; i < dirs.length; i += 1) {
+      if (i !== 2) {
+        expect(buttonContent).not.toContain(`testdir${i}`);
+      }
+    }
+  });
+
+  it('does not set the path if a file (not directory) is selected', async () => {
+    const item = screen.getAllByRole('listitem')[dirs.length + 1];
+    userEvent.click(item);
+
+    const NewItemModal = await getNewItemModal();
+
+    const foundButtons = await findAllByRole(NewItemModal, 'button');
+    const buttonContent = foundButtons.map(button => button.innerHTML);
+
+    expect(buttonContent).toContain('root');
+    for (let i = 0; i < dirs.length; i += 1) {
+      expect(buttonContent).not.toContain(`testdir${i}`);
+    }
+    for (let i = 0; i < files.length; i += 1) {
+      expect(buttonContent).not.toContain(`testfile${i}`);
+    }
+  });
 });
