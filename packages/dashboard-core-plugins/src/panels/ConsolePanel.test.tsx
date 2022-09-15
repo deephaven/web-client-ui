@@ -3,7 +3,7 @@ import { render } from '@testing-library/react';
 import { CommandHistoryStorage } from '@deephaven/console';
 import { Container } from '@deephaven/golden-layout';
 import { ConsolePanel } from './ConsolePanel';
-import { SessionWrapper } from '../../../code-studio/src/main/SessionUtils';
+import { SessionWrapper } from '../redux';
 
 jest.mock('@deephaven/console', () => ({
   ...(jest.requireActual('@deephaven/console') as Record<string, unknown>),

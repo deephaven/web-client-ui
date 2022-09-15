@@ -2,14 +2,26 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { ToolType } from '@deephaven/dashboard-core-plugins';
-import dh, { IdeSession, VariableChanges } from '@deephaven/jsapi-shim';
+import dh, {
+  IdeConnection,
+  IdeSession,
+  VariableChanges,
+} from '@deephaven/jsapi-shim';
 import { TestUtils } from '@deephaven/utils';
 import { Workspace } from '@deephaven/redux';
 import userEvent from '@testing-library/user-event';
 import { DEFAULT_DASHBOARD_ID } from '@deephaven/dashboard';
-import { AppMainContainer, DashboadData } from './AppMainContainer';
+import { AppMainContainer, AppDashboardData } from './AppMainContainer';
 import LocalWorkspaceStorage from '../storage/LocalWorkspaceStorage';
 import LayoutStorage from '../storage/LayoutStorage';
+
+function makeConnection(): IdeConnection {
+  const connection = new dh.IdeConnection('http://mockserver');
+  connection.getTable = jest.fn();
+  connection.getObject = jest.fn();
+  connection.subscribeToFieldUpdates = jest.fn();
+  return connection;
+}
 
 function makeSession(): Partial<IdeSession> {
   return {
@@ -49,6 +61,7 @@ function renderAppMainContainer({
   client = new (dh as any).Client({}),
   serverConfigValues = {},
   dashboardOpenedPanelMaps = {},
+  connection = makeConnection(),
   session = makeSession(),
   sessionConfig = makeSessionConfig(),
   match = makeMatch(),
@@ -56,7 +69,7 @@ function renderAppMainContainer({
 } = {}) {
   return render(
     <AppMainContainer
-      dashboardData={dashboardData as DashboadData}
+      dashboardData={dashboardData as AppDashboardData}
       layoutStorage={layoutStorage as LayoutStorage}
       saveWorkspace={saveWorkspace}
       updateDashboardData={updateDashboardData}
@@ -70,6 +83,7 @@ function renderAppMainContainer({
       client={client}
       serverConfigValues={serverConfigValues}
       dashboardOpenedPanelMaps={dashboardOpenedPanelMaps}
+      connection={connection}
       session={(session as unknown) as IdeSession}
       sessionConfig={sessionConfig}
       match={match}
@@ -118,14 +132,14 @@ it('listens for widgets properly', () => {
     obj: VariableChanges
   ) => void;
 
-  const session = makeSession();
-  session.subscribeToFieldUpdates = jest.fn(cb => {
+  const connection = makeConnection();
+  connection.subscribeToFieldUpdates = jest.fn(cb => {
     callback = cb;
   });
 
-  renderAppMainContainer({ session });
+  renderAppMainContainer({ connection });
 
-  expect(session.subscribeToFieldUpdates).toHaveBeenCalled();
+  expect(connection.subscribeToFieldUpdates).toHaveBeenCalled();
 
   const panelsButton = screen.getByRole('button', { name: 'Panels' });
   userEvent.click(panelsButton);
@@ -170,15 +184,15 @@ it('listens for widgets properly', () => {
 
 describe('hydrates widgets correctly', () => {
   const localDashboardId = DEFAULT_DASHBOARD_ID;
-  let session: Partial<IdeSession> = (null as unknown) as Partial<IdeSession>;
+  let connection: IdeConnection;
   beforeEach(() => {
-    session = makeSession();
+    connection = makeConnection();
   });
 
   it('hydrates empty props with defaults', () => {
     mockProp = {};
     mockId = localDashboardId;
-    renderAppMainContainer({ session });
+    renderAppMainContainer({ connection });
     expect(
       screen.getByText('{"metadata":{},"localDashboardId":"default"}')
     ).toBeTruthy();
@@ -186,7 +200,7 @@ describe('hydrates widgets correctly', () => {
   it('does not try and add fetch when metadata does not have widget metadata', () => {
     mockProp = { metadata: {} };
     mockId = localDashboardId;
-    renderAppMainContainer({ session });
+    renderAppMainContainer({ connection });
     expect(
       screen.getByText('{"metadata":{},"localDashboardId":"default"}')
     ).toBeTruthy();
@@ -194,14 +208,14 @@ describe('hydrates widgets correctly', () => {
   it('hydrates a widget properly', () => {
     mockProp = { metadata: { type: 'TestType', name: 'TestName' } };
     mockId = localDashboardId;
-    expect(session.getObject).not.toHaveBeenCalled();
-    renderAppMainContainer({ session });
+    expect(connection.getObject).not.toHaveBeenCalled();
+    renderAppMainContainer({ connection });
 
     expect(
       screen.getByText(
         '{"localDashboardId":"default","metadata":{"type":"TestType","name":"TestName"}}'
       )
     ).toBeTruthy();
-    expect(session.getObject).toHaveBeenCalled();
+    expect(connection.getObject).toHaveBeenCalled();
   });
 });

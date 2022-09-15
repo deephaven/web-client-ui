@@ -1,29 +1,15 @@
-import dh from '@deephaven/jsapi-shim';
+import { SessionWrapper } from '@deephaven/dashboard-core-plugins';
+import dh, { IdeConnection } from '@deephaven/jsapi-shim';
 import Log from '@deephaven/log';
 import shortid from 'shortid';
+import NoConsolesError from './NoConsolesError';
 
 const log = Log.module('SessionUtils');
 
-export type ListenerRemover = () => void;
-
-export type DhSession = typeof dh.Session;
-
-export type SessionConfig = {
-  id: string;
-  type: string;
-};
-
-export type SessionWrapper = {
-  session: DhSession;
-  config: SessionConfig;
-  connection: InstanceType<typeof dh.IdeConnection>;
-};
-
 /**
- * Create a new session using the default URL
- * @returns A session and config that is ready to use
+ * @returns New connection to the server
  */
-export const createSessionWrapper = async (): Promise<SessionWrapper> => {
+export function createConnection(): IdeConnection {
   const baseUrl = new URL(
     import.meta.env.VITE_CORE_API_URL ?? '',
     `${window.location}`
@@ -33,8 +19,16 @@ export const createSessionWrapper = async (): Promise<SessionWrapper> => {
 
   log.info(`Starting connection to '${websocketUrl}'...`);
 
-  const connection = new dh.IdeConnection(websocketUrl);
+  return new dh.IdeConnection(websocketUrl);
+}
 
+/**
+ * Create a new session using the default URL
+ * @returns A session and config that is ready to use
+ */
+export async function createSessionWrapper(
+  connection: IdeConnection
+): Promise<SessionWrapper> {
   log.info('Getting console types...');
 
   const types = await connection.getConsoleTypes();
@@ -42,7 +36,7 @@ export const createSessionWrapper = async (): Promise<SessionWrapper> => {
   log.info('Available types:', types);
 
   if (types.length === 0) {
-    throw new Error('No console types available');
+    throw new NoConsolesError('No console types available');
   }
 
   const type = types[0];
@@ -56,6 +50,6 @@ export const createSessionWrapper = async (): Promise<SessionWrapper> => {
   log.info('Console session established', config);
 
   return { session, config, connection };
-};
+}
 
 export default { createSessionWrapper };

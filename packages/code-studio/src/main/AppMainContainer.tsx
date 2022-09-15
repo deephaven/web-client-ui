@@ -57,9 +57,12 @@ import {
   PandasPanelProps,
   IrisGridPanelProps,
   ColumnSelectionValidator,
+  SessionConfig,
+  getDashboardConnection,
 } from '@deephaven/dashboard-core-plugins';
 import { vsGear, dhShapes, dhPanels } from '@deephaven/icons';
 import dh, {
+  IdeConnection,
   IdeSession,
   VariableDefinition,
   VariableTypeUnion,
@@ -130,11 +133,9 @@ interface AppMainContainerProps {
   match: {
     params: { notebookPath: string };
   };
-  session: IdeSession;
-  sessionConfig: {
-    type: string;
-    id: string;
-  };
+  connection: IdeConnection;
+  session?: IdeSession;
+  sessionConfig?: SessionConfig;
   setActiveTool: (tool: string) => void;
   updateDashboardData: (id: string, data: Partial<AppDashboardData>) => void;
   updateWorkspaceData: (workspaceData: Partial<WorkspaceData>) => void;
@@ -266,15 +267,15 @@ export class AppMainContainer extends Component<
   widgetListenerRemover?: () => void;
 
   initWidgets(): void {
-    const { session } = this.props;
-    if (!session.subscribeToFieldUpdates) {
+    const { connection } = this.props;
+    if (!connection.subscribeToFieldUpdates) {
       log.warn(
         'subscribeToFieldUpdates not supported, not initializing widgets'
       );
       return;
     }
 
-    this.widgetListenerRemover = session.subscribeToFieldUpdates(updates => {
+    this.widgetListenerRemover = connection.subscribeToFieldUpdates(updates => {
       log.debug('Got updates', updates);
       this.setState(({ widgets }) => {
         const { updated, created, removed } = updates;
@@ -308,12 +309,16 @@ export class AppMainContainer extends Component<
     const { notebookPath } = match.params;
 
     if (notebookPath) {
+      const { session, sessionConfig } = this.props;
+      if (!session || !sessionConfig) {
+        log.error('No session available to open notebook URL', notebookPath);
+        return;
+      }
       const fileMetadata = {
         id: `/${notebookPath}`,
         itemName: `/${notebookPath}`,
       };
 
-      const { session, sessionConfig } = this.props;
       const language = sessionConfig.type;
       const notebookSettings = {
         value: null,
@@ -555,12 +560,15 @@ export class AppMainContainer extends Component<
    * Resets the users layout to the default layout
    */
   async resetLayout(): Promise<void> {
-    const { layoutStorage } = this.props;
+    const { layoutStorage, session } = this.props;
     const {
       filterSets,
       layoutConfig,
       links,
-    } = await UserLayoutUtils.getDefaultLayout(layoutStorage);
+    } = await UserLayoutUtils.getDefaultLayout(
+      layoutStorage,
+      session !== undefined
+    );
 
     const { updateDashboardData, updateWorkspaceData } = this.props;
     updateWorkspaceData({ layoutConfig });
@@ -626,7 +634,7 @@ export class AppMainContainer extends Component<
     } & PanelProps,
     id: string
   ): DashboardPanelProps & { fetch?: () => Promise<unknown> } {
-    const { session } = this.props;
+    const { connection } = this.props;
     const { metadata } = props;
     if (metadata?.type && (metadata?.id || metadata?.name)) {
       // Looks like a widget, hydrate it as such
@@ -637,7 +645,7 @@ export class AppMainContainer extends Component<
           }
         : { type: metadata.type, name: metadata.name, title: metadata.name };
       return {
-        fetch: () => session.getObject(widget),
+        fetch: () => connection.getObject(widget),
         localDashboardId: id,
         ...props,
       };
@@ -665,24 +673,24 @@ export class AppMainContainer extends Component<
     localDashboardId: string;
     makeModel: () => Promise<IrisGridModel>;
   } {
-    const { session } = this.props;
+    const { connection } = this.props;
     return {
       ...props,
       getDownloadWorker: DownloadServiceWorkerUtils.getServiceWorker,
       loadPlugin: this.handleLoadTablePlugin,
       localDashboardId: id,
-      makeModel: () => createGridModel(session, props.metadata, type),
+      makeModel: () => createGridModel(connection, props.metadata, type),
     };
   }
 
   hydrateChart(props: ChartPanelProps, id: string): ChartPanelProps {
-    const { session } = this.props;
+    const { connection } = this.props;
     return {
       ...props,
       localDashboardId: id,
       makeModel: () => {
         const { metadata, panelState } = props;
-        return createChartModel(session, metadata, panelState);
+        return createChartModel(connection, metadata, panelState);
       },
     };
   }
@@ -693,10 +701,10 @@ export class AppMainContainer extends Component<
    * @param dragEvent The mouse drag event that trigger it, undefined if it was not triggered by a drag
    */
   openWidget(widget: VariableDefinition, dragEvent?: WindowMouseEvent): void {
-    const { session } = this.props;
+    const { connection } = this.props;
     this.emitLayoutEvent(PanelEvent.OPEN, {
       dragEvent,
-      fetch: () => session.getObject(widget),
+      fetch: () => connection.getObject(widget),
       widget,
     });
   }
@@ -858,8 +866,10 @@ const mapStateToProps = (state: RootState) => ({
   ) as AppDashboardData,
   layoutStorage: getLayoutStorage(state),
   plugins: getPlugins(state),
-  session: getDashboardSessionWrapper(state, DEFAULT_DASHBOARD_ID).session,
-  sessionConfig: getDashboardSessionWrapper(state, DEFAULT_DASHBOARD_ID).config,
+  connection: getDashboardConnection(state, DEFAULT_DASHBOARD_ID),
+  session: getDashboardSessionWrapper(state, DEFAULT_DASHBOARD_ID)?.session,
+  sessionConfig: getDashboardSessionWrapper(state, DEFAULT_DASHBOARD_ID)
+    ?.config,
   user: getUser(state),
   workspace: getWorkspace(state),
 });

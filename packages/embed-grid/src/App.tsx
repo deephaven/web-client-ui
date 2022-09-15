@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { ContextMenuRoot, LoadingOverlay } from '@deephaven/components'; // Use the loading spinner from the Deephaven components package
 import {
   InputFilter,
@@ -6,7 +6,7 @@ import {
   IrisGridModel,
   IrisGridModelFactory,
 } from '@deephaven/iris-grid'; // iris-grid is used to display Deephaven tables
-import dh, { Sort } from '@deephaven/jsapi-shim'; // Import the shim to use the JS API
+import dh, { IdeConnection, Sort } from '@deephaven/jsapi-shim'; // Import the shim to use the JS API
 import { TableUtils } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
 import './App.scss'; // Styles for in this app
@@ -29,16 +29,16 @@ export type SortCommandType = {
 };
 
 /**
- * Load an existing Deephaven table with the session provided
- * @param session The Deephaven session object
+ * Load an existing Deephaven table with the connection provided
+ * @param connection The Deephaven session object
  * @param name Name of the table to load
  * @returns Deephaven table
  */
-async function loadTable(session: typeof dh.Session, name: string) {
+async function loadTable(connection: IdeConnection, name: string) {
   log.info(`Fetching table ${name}...`);
 
   const definition = { name, type: dh.VariableType.TABLE };
-  return session.getObject(definition);
+  return connection.getObject(definition);
 }
 
 /**
@@ -62,67 +62,50 @@ function App(): JSX.Element {
   const canCopy = searchParams.get('canCopy') != null;
   const canDownloadCsv = searchParams.get('canDownloadCsv') != null;
 
-  const initApp = useCallback(async () => {
-    try {
-      // Connect to the Web API server
-      const baseUrl = new URL(
-        import.meta.env.VITE_CORE_API_URL ?? '',
-        `${window.location}`
-      );
-
-      const websocketUrl = `${baseUrl.protocol}//${baseUrl.host}`;
-
-      log.debug(`Starting connection...`);
-      const connection = new dh.IdeConnection(websocketUrl);
-
-      log.debug('Getting console types...');
-
-      const types = await connection.getConsoleTypes();
-
-      log.debug('Available types:', types);
-
-      if (types.length === 0) {
-        throw new Error('No console types available');
-      }
-
-      const type = types[0];
-
-      log.debug('Starting session with type', type);
-
-      const session = await connection.startSession(type);
-
-      // Get the table name from the query param `name`.
-      const name = searchParams.get('name');
-
-      if (!name) {
-        throw new Error('No name param provided');
-      }
-
-      log.debug('Loading table', name, '...');
-
-      // Load the table up.
-      const table = await loadTable(session, name);
-
-      // Create the `IrisGridModel` for use with the `IrisGrid` component
-      log.debug(`Creating model...`);
-
-      const newModel = await IrisGridModelFactory.makeModel(table);
-
-      setModel(newModel);
-
-      log.debug('Table successfully loaded!');
-    } catch (e: unknown) {
-      log.error('Unable to load table', e);
-      setError(`${e}`);
-    }
-    setIsLoading(false);
-  }, [searchParams]);
-
   useEffect(
     function initializeApp() {
+      async function initApp() {
+        try {
+          // Get the table name from the query param `name`.
+          const name = searchParams.get('name');
+
+          if (!name) {
+            throw new Error('No name param provided');
+          }
+
+          // Connect to the Web API server
+          const baseUrl = new URL(
+            import.meta.env.VITE_CORE_API_URL ?? '',
+            `${window.location}`
+          );
+
+          const websocketUrl = `${baseUrl.protocol}//${baseUrl.host}`;
+
+          log.debug(`Starting connection...`);
+          const connection = new dh.IdeConnection(websocketUrl);
+
+          log.debug('Loading table', name, '...');
+
+          // Load the table up.
+          const table = await loadTable(connection, name);
+
+          // Create the `IrisGridModel` for use with the `IrisGrid` component
+          log.debug(`Creating model...`);
+
+          const newModel = await IrisGridModelFactory.makeModel(table);
+
+          setModel(newModel);
+
+          log.debug('Table successfully loaded!');
+        } catch (e: unknown) {
+          log.error('Unable to load table', e);
+          setError(`${e}`);
+        }
+        setIsLoading(false);
+      }
       initApp();
     },
-    [initApp]
+    [searchParams]
   );
 
   useEffect(
