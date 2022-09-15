@@ -1,6 +1,6 @@
 import React from 'react';
 import { render } from '@testing-library/react';
-import MaskedInput from './MaskedInput';
+import MaskedInput, { fillToLength } from './MaskedInput';
 
 const TIME_PATTERN = '([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]';
 
@@ -15,5 +15,15 @@ function makeMaskedInput({
 }
 
 it('mounts and unmounts properly', () => {
-  makeMaskedInput();
+  const { unmount } = makeMaskedInput();
+  unmount();
+});
+
+describe('fillToLength', () => {
+  it('fills empty string with example value', () => {
+    expect(fillToLength('te', 'TEST', 0)).toBe('te');
+    expect(fillToLength('te', 'TEST', 2)).toBe('te');
+    expect(fillToLength('te', 'TEST', 4)).toBe('teST');
+    expect(fillToLength('te', 'TEST', 10)).toBe('teST');
+  });
 });

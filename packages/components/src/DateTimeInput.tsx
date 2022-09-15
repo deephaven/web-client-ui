@@ -29,10 +29,10 @@ type DateTimeInputProps = {
   defaultValue?: string;
   onFocus?(): void;
   onBlur?(): void;
-  optional?: boolean;
   'data-testid'?: string;
 };
 
+// TODO: only add separators when the string is sufficiently long
 const addSeparators = (value: string) =>
   `${value.substring(0, 23)}\u200B${value.substring(
     23,
@@ -41,6 +41,7 @@ const addSeparators = (value: string) =>
 
 const removeSeparators = (value: string) => value.replace(/\u200B/g, '');
 
+// TODO: test maskedInput with separators
 const EXAMPLES = [addSeparators(DEFAULT_VALUE_STRING)];
 
 // Forward ref causes a false positive for display-name in eslint:
@@ -51,14 +52,13 @@ const DateTimeInput = React.forwardRef<HTMLInputElement, DateTimeInputProps>(
     const {
       className = '',
       onChange = () => false,
-      defaultValue = undefined,
+      defaultValue = '',
       onFocus = () => false,
       onBlur = () => false,
-      optional = false,
       'data-testid': dataTestId,
     } = props;
     const [value, setValue] = useState(
-      addSeparators(defaultValue ?? EMPTY_VALUE_STRING)
+      defaultValue.length > 0 ? addSeparators(defaultValue) : ''
     );
     const [selection, setSelection] = useState<SelectionSegment>();
 
@@ -158,8 +158,6 @@ const DateTimeInput = React.forwardRef<HTMLInputElement, DateTimeInputProps>(
           onFocus={onFocus}
           onBlur={handleBlur}
           data-testid={dataTestId}
-          // TODO: rename?
-          optional={optional}
         />
       </div>
     );
@@ -169,10 +167,9 @@ const DateTimeInput = React.forwardRef<HTMLInputElement, DateTimeInputProps>(
 DateTimeInput.defaultProps = {
   className: '',
   onChange: () => false,
-  defaultValue: undefined,
+  defaultValue: '',
   onFocus: () => false,
   onBlur: () => false,
-  optional: false,
   'data-testid': undefined,
 };
 

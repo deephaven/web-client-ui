@@ -30,6 +30,23 @@ export function DEFAULT_GET_PREFERRED_REPLACEMENT_STRING(
   );
 }
 
+/**
+ * Pad the string on the left with the example value to the given length
+ * @param checkValue Initial string to pad
+ * @param exampleValue Example value
+ * @param length Target length
+ * @returns String padded with the given example value
+ */
+export function fillToLength(
+  checkValue: string,
+  exampleValue: string,
+  length: number
+): string {
+  return checkValue.length < length
+    ? `${checkValue}${exampleValue.substring(checkValue.length, length)}`
+    : checkValue;
+}
+
 export type SelectionSegment = {
   selectionStart: number;
   selectionEnd: number;
@@ -69,7 +86,6 @@ type MaskedInputProps = {
   ): string;
   onFocus?: React.FocusEventHandler;
   onBlur?: React.FocusEventHandler;
-  optional?: boolean;
   'data-testid'?: string;
 };
 
@@ -89,7 +105,6 @@ const MaskedInput = React.forwardRef<HTMLInputElement, MaskedInputProps>(
       getPreferredReplacementString = DEFAULT_GET_PREFERRED_REPLACEMENT_STRING,
       onChange = () => false,
       onSelect = () => false,
-      optional = false,
       pattern,
       placeholder,
       selection,
@@ -378,6 +393,31 @@ const MaskedInput = React.forwardRef<HTMLInputElement, MaskedInputProps>(
         event.preventDefault();
         event.stopPropagation();
 
+        // TODO: trim mask chars on the right before comparison
+        if (selectionEnd === value.length) {
+          const newValue = value.substring(
+            0,
+            // Delete whole selection or the char before the cursor
+            selectionStart === selectionEnd
+              ? selectionStart - 1
+              : selectionStart
+          );
+          // TODO: The char before the cursor is one of the mask chars, delete the mask and the char before
+          // TODO: trim ALL mask chars and fixed spaces on the right after deletion
+          // if (selectionStart === selectionEnd && ) {
+          //   // while mask ... selectionStart > 0
+          // }
+          if (newValue !== value) {
+            onChange(newValue);
+            onSelect({
+              selectionStart: newValue.length,
+              selectionEnd: newValue.length,
+              selectionDirection: SELECTION_DIRECTION.NONE,
+            });
+          }
+          return;
+        }
+
         if (selectionStart !== selectionEnd) {
           // Replace all non-masked characters with blanks, set selection to start
           const newValue =
@@ -441,15 +481,21 @@ const MaskedInput = React.forwardRef<HTMLInputElement, MaskedInputProps>(
 
         // If they're typing an alphanumeric character, be smart and allow it to jump ahead
         const maxReplaceIndex = /[a-zA-Z0-9]/g.test(newChar)
-          ? value.length - 1
+          ? example[0].length - 1
           : selectionStart;
         for (
           let replaceIndex = selectionStart;
           replaceIndex <= maxReplaceIndex;
           replaceIndex += 1
         ) {
-          const newValue = getPreferredReplacementString(
+          // Fill with example chars if necessary
+          const filledValue = fillToLength(
             value,
+            examples[0],
+            replaceIndex + 1
+          );
+          const newValue = getPreferredReplacementString(
+            filledValue,
             replaceIndex,
             newChar,
             selectionStart,
@@ -520,7 +566,6 @@ MaskedInput.defaultProps = {
   onBlur(): void {
     // no-op
   },
-  optional: false,
   'data-testid': undefined,
 };
 

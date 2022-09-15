@@ -10,11 +10,6 @@ const log = Log.module('DateInput');
 
 const DATE_PATTERN = '[12][0-9]{3}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])';
 const DEFAULT_VALUE_STRING = '2022-12-31';
-const FIXED_WIDTH_SPACE = '\u2007';
-const EMPTY_VALUE_STRING = DEFAULT_VALUE_STRING.replace(
-  /[a-zA-Z0-9]/g,
-  FIXED_WIDTH_SPACE
-);
 const EXAMPLES = [DEFAULT_VALUE_STRING];
 const DATE_FORMAT = 'yyyy-MM-dd';
 
@@ -24,7 +19,6 @@ type DateInputProps = {
   defaultValue?: string;
   onFocus?(): void;
   onBlur?(): void;
-  optional?: boolean;
   'data-testid'?: string;
 };
 
@@ -36,13 +30,12 @@ const DateInput = React.forwardRef<HTMLInputElement, DateInputProps>(
     const {
       className = '',
       onChange = () => false,
-      defaultValue = undefined,
+      defaultValue = '',
       onFocus = () => false,
       onBlur = () => false,
-      optional = false,
       'data-testid': dataTestId,
     } = props;
-    const [value, setValue] = useState(defaultValue ?? EMPTY_VALUE_STRING);
+    const [value, setValue] = useState(defaultValue);
     const [selection, setSelection] = useState<SelectionSegment>();
 
     function getNextNumberSegmentValue(
@@ -121,8 +114,6 @@ const DateInput = React.forwardRef<HTMLInputElement, DateInputProps>(
           value={value}
           onFocus={onFocus}
           onBlur={handleBlur}
-          // TODO: rename?
-          optional={optional}
           data-testid={dataTestId}
         />
       </div>
@@ -133,10 +124,9 @@ const DateInput = React.forwardRef<HTMLInputElement, DateInputProps>(
 DateInput.defaultProps = {
   className: '',
   onChange: () => false,
-  defaultValue: undefined,
+  defaultValue: '',
   onFocus: () => false,
   onBlur: () => false,
-  optional: false,
   'data-testid': undefined,
 };
 
