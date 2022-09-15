@@ -206,7 +206,7 @@ describe('select and type', () => {
     testSelectAndType(0, '35', `03:54:56`);
 
     // Should validate whole value
-    // Expected: '03:54:11'
+    // Expected: '12:34:11'
     testSelectAndType(9, '11`"();', `12:34:11\`"();`);
   });
 });

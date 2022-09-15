@@ -15,12 +15,7 @@ const DATE_PATTERN = '[12][0-9]{3}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])';
 const TIME_PATTERN =
   '([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]\\.[0-9]{3}\u200B[0-9]{3}\u200B[0-9]{3}';
 const FULL_DATE_PATTERN = `${DATE_PATTERN} ${TIME_PATTERN}`;
-const DEFAULT_VALUE_STRING = '2022-12-31 00:00:00.000000000';
-const FIXED_WIDTH_SPACE = '\u2007';
-const EMPTY_VALUE_STRING = DEFAULT_VALUE_STRING.replace(
-  /[a-zA-Z0-9]/g,
-  FIXED_WIDTH_SPACE
-);
+const DEFAULT_VALUE_STRING = '2022-01-01 00:00:00.000000000';
 const FULL_DATE_FORMAT = 'yyyy-MM-dd HH:mm:ss.SSSSSSSSS';
 
 type DateTimeInputProps = {
@@ -32,16 +27,15 @@ type DateTimeInputProps = {
   'data-testid'?: string;
 };
 
-// TODO: only add separators when the string is sufficiently long
-const addSeparators = (value: string) =>
-  `${value.substring(0, 23)}\u200B${value.substring(
-    23,
-    26
-  )}\u200B${value.substring(26)}`;
+export function addSeparators(value: string): string {
+  const dateTimeMillis = value.substring(0, 23);
+  const micros = value.substring(23, 26);
+  const nanos = value.substring(26);
+  return [dateTimeMillis, micros, nanos].filter(v => v !== '').join('\u200B');
+}
 
 const removeSeparators = (value: string) => value.replace(/\u200B/g, '');
 
-// TODO: test maskedInput with separators
 const EXAMPLES = [addSeparators(DEFAULT_VALUE_STRING)];
 
 // Forward ref causes a false positive for display-name in eslint:
