@@ -39,6 +39,7 @@
     "dist"
   ],
   "dependencies": {
+    "@deephaven/utils": "file:../utils",
     "classnames": "^2.3.1",
     "color-convert": "^2.0.1",
     "event-target-shim": "^6.0.2",

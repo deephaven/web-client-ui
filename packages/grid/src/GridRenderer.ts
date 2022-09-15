@@ -1,4 +1,5 @@
 import clamp from 'lodash.clamp';
+import { ColorUtils } from '@deephaven/utils';
 import memoizeClear from './memoizeClear';
 import GridUtils from './GridUtils';
 import GridColorUtils from './GridColorUtils';
@@ -1641,10 +1642,7 @@ export class GridRenderer {
 
     if (depth === 0) {
       // Make sure base column header background always goes to the right edge
-      this.drawColumnHeader(context, state, '', minX, maxX, {
-        backgroundColor: headerBackgroundColor,
-        separatorColor: headerSeparatorColor,
-      });
+      this.drawColumnHeader(context, state, '', minX, maxX);
 
       // Draw base column headers
       for (let i = startIndex; i <= endIndex; i += 1) {
@@ -1745,9 +1743,7 @@ export class GridRenderer {
             x,
             Math.min(columnGroupRight - columnGroupLeft, visibleWidth),
             {
-              backgroundColor: columnGroupColor ?? headerBackgroundColor,
-              textColor: headerColor,
-              separatorColor: headerSeparatorColor,
+              backgroundColor: columnGroupColor ?? undefined,
             },
             bounds
           );
@@ -1782,7 +1778,6 @@ export class GridRenderer {
     const x = getOrThrow(visibleColumnXs, index) + gridX;
     const modelColumn = getOrThrow(modelColumns, index);
     const text = model.textForColumnHeader(modelColumn);
-    const { headerBackgroundColor, headerColor, headerSeparatorColor } = theme;
 
     if (text == null) {
       return;
@@ -1795,10 +1790,7 @@ export class GridRenderer {
       x,
       width,
       {
-        backgroundColor:
-          model.colorForColumnHeader(modelColumn) ?? headerBackgroundColor,
-        textColor: headerColor,
-        separatorColor: headerSeparatorColor,
+        backgroundColor: model.colorForColumnHeader(modelColumn) ?? undefined,
       },
       bounds
     );
@@ -1822,7 +1814,13 @@ export class GridRenderer {
     }
     const { metrics, theme } = state;
 
-    const { headerHorizontalPadding, columnHeaderHeight } = theme;
+    const {
+      headerHorizontalPadding,
+      columnHeaderHeight,
+      headerBackgroundColor,
+      headerColor,
+      headerSeparatorColor,
+    } = theme;
     const { fontWidths, width } = metrics;
     const fontWidth =
       fontWidths.get(context.font) || GridRenderer.DEFAULT_FONT_WIDTH;
@@ -1830,8 +1828,21 @@ export class GridRenderer {
     const maxWidth = columnWidth - headerHorizontalPadding * 2;
     const maxLength = maxWidth / fontWidth;
 
-    const { backgroundColor, textColor = '#ffffff', separatorColor } =
-      style ?? {};
+    const {
+      backgroundColor = headerBackgroundColor,
+      separatorColor = headerSeparatorColor,
+    } = style ?? {};
+
+    let { textColor = headerColor } = style ?? {};
+
+    const isDarkBackground = ColorUtils.isDark(backgroundColor);
+    const isDarkText = ColorUtils.isDark(textColor);
+    if (isDarkBackground && isDarkText) {
+      textColor = '#f0f0ee'; // Deephaven $interfacewhite
+    } else if (!isDarkBackground && !isDarkText) {
+      textColor = '#1a171a'; // Deephaven $interfaceblack
+    }
+
     let { minX = 0, maxX = width } = bounds ?? {};
 
     context.save();
