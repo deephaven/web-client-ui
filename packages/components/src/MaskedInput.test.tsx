@@ -20,7 +20,7 @@ it('mounts and unmounts properly', () => {
 });
 
 describe('fillToLength', () => {
-  it('fills empty string with example value', () => {
+  it('fills empty string with the example value', () => {
     expect(fillToLength('te', 'TEST', 0)).toBe('te');
     expect(fillToLength('te', 'TEST', 2)).toBe('te');
     expect(fillToLength('te', 'TEST', 4)).toBe('teST');
@@ -29,13 +29,15 @@ describe('fillToLength', () => {
 });
 
 describe('trimTrailingMask', () => {
-  expect(trimTrailingMask('00:00:00', '  :  :  ')).toBe('00:00:00');
-  expect(trimTrailingMask('00:00:00', '  :  ')).toBe('00:00:00');
-  expect(trimTrailingMask('00:00', '  :  :  ')).toBe('00:00');
-  expect(trimTrailingMask('00:00:  ', '  :  :  ')).toBe('00:00');
-  expect(trimTrailingMask('0 :  :  ', '  :  :  ')).toBe('0');
-  expect(trimTrailingMask('  :  :  ', '  :  :  ')).toBe('');
-  expect(trimTrailingMask('', '  :  :  ')).toBe('');
-  expect(trimTrailingMask('00:00:00', '')).toBe('00:00:00');
-  expect(trimTrailingMask('', '')).toBe('');
+  it('trims characters matching the empty mask on the right', () => {
+    expect(trimTrailingMask('00:00:00', '  :  :  ')).toBe('00:00:00');
+    expect(trimTrailingMask('00:00:00', '  :  ')).toBe('00:00:00');
+    expect(trimTrailingMask('00:00', '  :  :  ')).toBe('00:00');
+    expect(trimTrailingMask('00:00:  ', '  :  :  ')).toBe('00:00');
+    expect(trimTrailingMask('0 :  :  ', '  :  :  ')).toBe('0');
+    expect(trimTrailingMask('  :  :  ', '  :  :  ')).toBe('');
+    expect(trimTrailingMask('', '  :  :  ')).toBe('');
+    expect(trimTrailingMask('00:00:00', '')).toBe('00:00:00');
+    expect(trimTrailingMask('', '')).toBe('');
+  });
 });

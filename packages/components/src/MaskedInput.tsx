@@ -104,6 +104,7 @@ type MaskedInputProps = {
   ): string;
   onFocus?: React.FocusEventHandler;
   onBlur?: React.FocusEventHandler;
+
   'data-testid'?: string;
 };
 
@@ -499,14 +500,14 @@ const MaskedInput = React.forwardRef<HTMLInputElement, MaskedInputProps>(
 
         // If they're typing an alphanumeric character, be smart and allow it to jump ahead
         const maxReplaceIndex = /[a-zA-Z0-9]/g.test(newChar)
-          ? example[0].length - 1
+          ? examples[0].length - 1
           : selectionStart;
         for (
           let replaceIndex = selectionStart;
           replaceIndex <= maxReplaceIndex;
           replaceIndex += 1
         ) {
-          // Fill with example chars if necessary
+          // Fill with the example chars if necessary
           const filledValue = fillToLength(
             value,
             examples[0],
