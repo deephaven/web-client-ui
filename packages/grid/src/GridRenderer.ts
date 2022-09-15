@@ -1616,13 +1616,7 @@ export class GridRenderer {
       visibleColumnWidths,
       movedColumns,
     } = metrics;
-    const {
-      headerBackgroundColor,
-      headerColor,
-      headerSeparatorColor,
-      columnHeaderHeight,
-      columnWidth,
-    } = theme;
+    const { columnHeaderHeight, columnWidth } = theme;
     const { columnHeaderMaxDepth } = model;
     const { minX, maxX } = bounds;
     const visibleWidth = maxX - minX;
@@ -1767,7 +1761,7 @@ export class GridRenderer {
     index: VisibleIndex,
     bounds: { minX: number; maxX: number }
   ): void {
-    const { metrics, model, theme } = state;
+    const { metrics, model } = state;
     const {
       modelColumns,
       visibleColumnWidths,
