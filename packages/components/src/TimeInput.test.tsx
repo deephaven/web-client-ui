@@ -165,10 +165,33 @@ describe('select and type', () => {
     );
 
     // Allow deleting digits from the end
-    testSelectAndType(9, '{backspace}', `12:34:`);
+    testSelectAndType(9, '{backspace}', `12:34`);
 
     // Add missing mask chars
-    testSelectAndType(9, '{backspace}{backspace}1', `12:34:1`);
+    testSelectAndType(9, '{backspace}{backspace}12', `12:31:2`);
+  });
+
+  it('trims trailing mask and spaces', () => {
+    const { unmount } = makeTimeInput();
+    const input: HTMLInputElement = screen.getByRole('textbox');
+
+    input.setSelectionRange(3, 3);
+
+    userEvent.type(input, '{backspace}');
+
+    input.setSelectionRange(9, 9);
+
+    userEvent.type(input, '{backspace}');
+
+    expect(input.value).toEqual(`12`);
+
+    input.setSelectionRange(1, 1);
+
+    userEvent.type(input, '{backspace}');
+
+    expect(input.value).toEqual(``);
+
+    unmount();
   });
 
   it('existing invalid behaviors that might need to be fixed', () => {

@@ -1,6 +1,6 @@
 import React from 'react';
 import { render } from '@testing-library/react';
-import MaskedInput, { fillToLength } from './MaskedInput';
+import MaskedInput, { fillToLength, trimTrailingMask } from './MaskedInput';
 
 const TIME_PATTERN = '([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]';
 
@@ -26,4 +26,16 @@ describe('fillToLength', () => {
     expect(fillToLength('te', 'TEST', 4)).toBe('teST');
     expect(fillToLength('te', 'TEST', 10)).toBe('teST');
   });
+});
+
+describe('trimTrailingMask', () => {
+  expect(trimTrailingMask('00:00:00', '  :  :  ')).toBe('00:00:00');
+  expect(trimTrailingMask('00:00:00', '  :  ')).toBe('00:00:00');
+  expect(trimTrailingMask('00:00', '  :  :  ')).toBe('00:00');
+  expect(trimTrailingMask('00:00:  ', '  :  :  ')).toBe('00:00');
+  expect(trimTrailingMask('0 :  :  ', '  :  :  ')).toBe('0');
+  expect(trimTrailingMask('  :  :  ', '  :  :  ')).toBe('');
+  expect(trimTrailingMask('', '  :  :  ')).toBe('');
+  expect(trimTrailingMask('00:00:00', '')).toBe('00:00:00');
+  expect(trimTrailingMask('', '')).toBe('');
 });

@@ -31,7 +31,7 @@ export function DEFAULT_GET_PREFERRED_REPLACEMENT_STRING(
 }
 
 /**
- * Pad the string on the left with the example value to the given length
+ * Fill the string on the right side with the example value to the given length
  * @param checkValue Initial string to pad
  * @param exampleValue Example value
  * @param length Target length
@@ -45,6 +45,24 @@ export function fillToLength(
   return checkValue.length < length
     ? `${checkValue}${exampleValue.substring(checkValue.length, length)}`
     : checkValue;
+}
+
+/**
+ * Trim all characters matching the empty mask on the right side of the given value
+ * @param value String to trim
+ * @param emptyMask Empty mask
+ * @returns Trimmed string
+ */
+export function trimTrailingMask(value: string, emptyMask: string): string {
+  let { length } = value;
+  for (let i = value.length - 1; i >= 0; i -= 1) {
+    if (emptyMask[i] === value[i]) {
+      length = i;
+    } else {
+      break;
+    }
+  }
+  return value.substring(0, length);
 }
 
 export type SelectionSegment = {
@@ -117,6 +135,10 @@ const MaskedInput = React.forwardRef<HTMLInputElement, MaskedInputProps>(
     const examples = useMemo(
       () => (Array.isArray(example) ? example : [example]),
       [example]
+    );
+    const emptyMask = useMemo(
+      () => examples[0].replace(/[a-zA-Z0-9]/g, FIXED_WIDTH_SPACE),
+      [examples]
     );
 
     useEffect(
@@ -393,25 +415,21 @@ const MaskedInput = React.forwardRef<HTMLInputElement, MaskedInputProps>(
         event.preventDefault();
         event.stopPropagation();
 
-        // TODO: trim mask chars on the right before comparison
-        if (selectionEnd === value.length) {
+        // Deleting at the end of the value
+        if (selectionEnd >= trimTrailingMask(value, emptyMask).length) {
           const newValue = value.substring(
             0,
-            // Delete whole selection or the char before the cursor
+            // Delete whole selection or just the char before the cursor
             selectionStart === selectionEnd
               ? selectionStart - 1
               : selectionStart
           );
-          // TODO: The char before the cursor is one of the mask chars, delete the mask and the char before
-          // TODO: trim ALL mask chars and fixed spaces on the right after deletion
-          // if (selectionStart === selectionEnd && ) {
-          //   // while mask ... selectionStart > 0
-          // }
-          if (newValue !== value) {
-            onChange(newValue);
+          const trimmedValue = trimTrailingMask(newValue, emptyMask);
+          if (trimmedValue !== value) {
+            onChange(trimmedValue);
             onSelect({
-              selectionStart: newValue.length,
-              selectionEnd: newValue.length,
+              selectionStart: trimmedValue.length,
+              selectionEnd: trimmedValue.length,
               selectionDirection: SELECTION_DIRECTION.NONE,
             });
           }

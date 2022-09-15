@@ -9,8 +9,7 @@ import MaskedInput, {
 const log = Log.module('DateInput');
 
 const DATE_PATTERN = '[12][0-9]{3}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])';
-const DEFAULT_VALUE_STRING = '2022-12-31';
-const EXAMPLES = [DEFAULT_VALUE_STRING];
+const EXAMPLES = ['2000-01-01', '2022-12-31'];
 const DATE_FORMAT = 'yyyy-MM-dd';
 
 type DateInputProps = {
