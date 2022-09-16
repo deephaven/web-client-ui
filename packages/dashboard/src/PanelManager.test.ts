@@ -6,7 +6,6 @@
 import { Component } from 'react';
 import GoldenLayout from '@deephaven/golden-layout';
 import type { ContentItem, Tab } from '@deephaven/golden-layout';
-import './layout/jquery';
 import PanelManager from './PanelManager';
 import PanelEvent from './PanelEvent';
 import { PanelProps } from './DashboardPlugin';

@@ -37,7 +37,6 @@
     "@deephaven/redux": "file:../redux",
     "@deephaven/utils": "file:../util",
     "deep-equal": "^2.0.5",
-    "jquery": "^3.6.0",
     "lodash.ismatch": "^4.1.1",
     "lodash.throttle": "^4.1.1",
     "prop-types": "^15.7.2",
