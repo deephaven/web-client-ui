@@ -6,7 +6,7 @@ import React, {
   useState,
 } from 'react';
 import PropTypes from 'prop-types';
-import type GoldenLayout from '@deephaven/golden-layout';
+import GoldenLayout from '@deephaven/golden-layout';
 import type {
   Container,
   EventEmitter,

@@ -6,7 +6,7 @@ import {
   PanelComponent,
 } from '@deephaven/dashboard';
 import Log from '@deephaven/log';
-import { Container, EventEmitter } from '@deephaven/golden-layout';
+import type { Container, EventEmitter } from '@deephaven/golden-layout';
 import { TableTemplate } from '@deephaven/jsapi-shim';
 import { RootState } from '@deephaven/redux';
 import {

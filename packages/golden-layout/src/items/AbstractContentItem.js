@@ -1,6 +1,8 @@
-import $ from 'jquery';
 import utils from '../utils';
 import errors from '../errors';
+import config from '../config';
+
+const { itemDefaultConfig } = config;
 
 /**
  * This is the baseclass that all content items inherit from.
@@ -568,9 +570,9 @@ utils.copy(AbstractContentItem.prototype, {
    * @returns {configuration item node} extended config
    */
   _extendItemNode: function (config) {
-    for (var key in config.itemDefaultConfig) {
+    for (var key in itemDefaultConfig) {
       if (config[key] === undefined) {
-        config[key] = config.itemDefaultConfig[key];
+        config[key] = itemDefaultConfig[key];
       }
     }
 

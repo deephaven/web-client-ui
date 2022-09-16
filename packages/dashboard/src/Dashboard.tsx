@@ -9,7 +9,7 @@ import React, {
 import throttle from 'lodash.throttle';
 import GoldenLayout from '@deephaven/golden-layout';
 import type { ItemConfigType } from '@deephaven/golden-layout';
-import './layout/golden-layout';
+import './layout/GoldenLayout.scss';
 import LayoutUtils from './layout/LayoutUtils';
 import PanelPlaceholder from './PanelPlaceholder';
 import DashboardLayout from './DashboardLayout';

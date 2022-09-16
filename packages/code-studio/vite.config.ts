@@ -82,14 +82,6 @@ export default defineConfig(({ mode }) => {
           replacement: `${packagesDir}/components/scss/$1`,
         },
         {
-          find: /^@deephaven\/golden-layout$/,
-          replacement: `${packagesDir}/golden-layout/dist/goldenlayout.js`,
-        },
-        {
-          find: /^@deephaven\/golden-layout\/(.*)$/,
-          replacement: `${packagesDir}/golden-layout/$1`,
-        },
-        {
           find: /^@deephaven\/icons$/,
           replacement: `${packagesDir}/icons/dist/index.es.js`,
         },
@@ -103,9 +95,6 @@ export default defineConfig(({ mode }) => {
       outDir: path.resolve(__dirname, env.VITE_BUILD_PATH),
       emptyOutDir: true,
       sourcemap: true,
-      commonjsOptions: {
-        include: [/node_modules/, /golden-layout/],
-      },
       rollupOptions: {
         output: {
           manualChunks: id => {
@@ -133,10 +122,7 @@ export default defineConfig(({ mode }) => {
         },
       },
     },
-    // This and the build.commonjsOptions are needed b/c golden-layout is not ESM
-    // https://vitejs.dev/guide/dep-pre-bundling.html#monorepos-and-linked-dependencies
     optimizeDeps: {
-      include: ['@deephaven/golden-layout'],
       // plotly.js requires buffer and vite tries to externalize it
       // dev mode fails to start if it isn't excluded from being externalized
       exclude: ['buffer'],

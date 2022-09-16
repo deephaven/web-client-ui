@@ -15,7 +15,7 @@ import {
 import Log from '@deephaven/log';
 import { getActiveTool, getSettings, RootState } from '@deephaven/redux';
 import { Pending, PromiseUtils } from '@deephaven/utils';
-import { Container, EventEmitter } from '@deephaven/golden-layout';
+import type { Container, EventEmitter } from '@deephaven/golden-layout';
 import DropdownFilter, {
   DropdownFilterColumn,
 } from '../controls/dropdown-filter/DropdownFilter';

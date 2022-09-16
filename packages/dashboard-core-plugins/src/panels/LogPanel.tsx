@@ -5,7 +5,7 @@ import { connect } from 'react-redux';
 import { LogView } from '@deephaven/console';
 import { IdeSession } from '@deephaven/jsapi-shim';
 import Log from '@deephaven/log';
-import { Container, EventEmitter } from '@deephaven/golden-layout';
+import type { Container, EventEmitter } from '@deephaven/golden-layout';
 import { RootState } from '@deephaven/redux';
 import './LogPanel.scss';
 import Panel from './Panel';
