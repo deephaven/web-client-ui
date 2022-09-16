@@ -98,7 +98,7 @@ jest.mock('@deephaven/dashboard', () => ({
   __esModule: true,
   Dashboard: jest.fn(({ hydrate }) => {
     const result = hydrate(mockProp, mockId);
-    if (result.fetch) {
+    if (result.fetch != null) {
       result.fetch();
     }
     return <p>{JSON.stringify(result)}</p>;

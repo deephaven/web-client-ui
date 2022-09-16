@@ -56,7 +56,7 @@ export type FileExplorerPanelState = {
 
 function isMouseEvent<T>(e: React.SyntheticEvent<T>): e is React.MouseEvent<T> {
   const mouseEvent = e as React.MouseEvent<T>;
-  return mouseEvent && typeof mouseEvent.button === 'number';
+  return mouseEvent != null && typeof mouseEvent.button === 'number';
 }
 
 /**

@@ -20,10 +20,10 @@ export function dehydrate(config: PanelConfig): PanelConfig | null {
     ({ panelState } = componentState);
   }
   const newProps: Record<string, unknown> = {};
-  if (metadata) {
+  if (metadata != null) {
     newProps.metadata = metadata;
   }
-  if (panelState) {
+  if (panelState != null) {
     newProps.panelState = panelState;
   }
 

@@ -58,7 +58,7 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
     const { columns } = this.viewport;
     const result = [];
 
-    if (includeHeaders) {
+    if (includeHeaders != null && includeHeaders) {
       result.push(columns.map(c => c.name));
     }
 

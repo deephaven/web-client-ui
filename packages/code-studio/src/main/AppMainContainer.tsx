@@ -268,7 +268,7 @@ export class AppMainContainer extends Component<
 
   initWidgets(): void {
     const { connection } = this.props;
-    if (!connection.subscribeToFieldUpdates) {
+    if (connection.subscribeToFieldUpdates == null) {
       log.warn(
         'subscribeToFieldUpdates not supported, not initializing widgets'
       );
@@ -290,7 +290,7 @@ export class AppMainContainer extends Component<
         // Now add all the modified and updated widgets back in
         const widgetsToAdd = [...updated, ...created];
         widgetsToAdd.forEach(toAdd => {
-          if (toAdd.name) {
+          if (toAdd.name != null) {
             newWidgets.push(toAdd);
           }
         });
@@ -618,7 +618,7 @@ export class AppMainContainer extends Component<
     const pluginModule = plugins.get(pluginName);
     if (
       pluginModule != null &&
-      (pluginModule as { TablePlugin: ReactElement }).TablePlugin
+      (pluginModule as { TablePlugin: ReactElement }).TablePlugin != null
     ) {
       return (pluginModule as {
         TablePlugin: ForwardRefExoticComponent<React.RefAttributes<unknown>>;
@@ -636,14 +636,18 @@ export class AppMainContainer extends Component<
   ): DashboardPanelProps & { fetch?: () => Promise<unknown> } {
     const { connection } = this.props;
     const { metadata } = props;
-    if (metadata?.type && (metadata?.id || metadata?.name)) {
+    if (
+      metadata?.type != null &&
+      (metadata?.id != null || metadata?.name != null)
+    ) {
       // Looks like a widget, hydrate it as such
-      const widget: VariableDefinition = metadata.id
-        ? {
-            type: metadata.type,
-            id: metadata.id,
-          }
-        : { type: metadata.type, name: metadata.name, title: metadata.name };
+      const widget: VariableDefinition =
+        metadata.id != null
+          ? {
+              type: metadata.type,
+              id: metadata.id,
+            }
+          : { type: metadata.type, name: metadata.name, title: metadata.name };
       return {
         fetch: () => connection.getObject(widget),
         localDashboardId: id,
@@ -760,7 +764,7 @@ export class AppMainContainer extends Component<
                   onClearFilter={this.handleClearFilter}
                 />
               </button>
-              {canUsePanels && (
+              {Boolean(canUsePanels) && (
                 <button
                   type="button"
                   className="btn btn-link btn-panels-menu btn-show-panels"

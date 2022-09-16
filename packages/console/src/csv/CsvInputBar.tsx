@@ -87,7 +87,7 @@ class CsvInputBar extends Component<CsvInputBarProps, CsvInputBarState> {
     const { file, paste } = this.props;
     const { tableName, tableNameSet } = this.state;
     // Set the table name from a file
-    if (!tableNameSet && file && !tableName) {
+    if (!tableNameSet && file != null && !tableName) {
       const dotIndex = file.name.lastIndexOf('.');
       const fileTableName = DbNameValidator.legalizeTableName(
         file.name.substring(0, dotIndex)
@@ -97,7 +97,10 @@ class CsvInputBar extends Component<CsvInputBarProps, CsvInputBarState> {
         tableNameSet: true,
       });
       this.inputRef.current?.focus();
-    } else if ((!file && prevProps.file) || (!paste && prevProps.paste)) {
+    } else if (
+      (file == null && prevProps.file != null) ||
+      (paste == null && prevProps.paste != null)
+    ) {
       // The file or paste was unstaged
       this.setState({
         tableName: '',
@@ -106,16 +109,20 @@ class CsvInputBar extends Component<CsvInputBarProps, CsvInputBarState> {
     }
 
     // Focus the name input field on paste
-    if (paste && !tableName && this.inputRef.current) {
+    if (paste != null && paste !== '' && !tableName && this.inputRef.current) {
       this.inputRef.current.focus();
     }
 
     // Determine parser type by file extension
-    if (file && file !== prevProps.file) {
+    if (file != null && file !== prevProps.file) {
       this.setState({
         type: CsvFormats.fromExtension(file.name),
       });
-    } else if (paste && !prevProps.paste) {
+    } else if (
+      paste != null &&
+      paste !== '' &&
+      (prevProps.paste === undefined || prevProps.paste === '')
+    ) {
       this.setState({
         type: CsvFormats.AUTO,
       });
@@ -156,13 +163,13 @@ class CsvInputBar extends Component<CsvInputBarProps, CsvInputBarState> {
     event.stopPropagation();
     event.preventDefault();
     const { file, paste } = this.props;
-    if (file) {
+    if (file != null) {
       if (file.name.endsWith('.zip')) {
         this.handleZipFile(file);
       } else {
         this.handleFile(file);
       }
-    } else if (paste) {
+    } else if (paste !== undefined && paste !== '') {
       this.handleFile(
         new Blob([paste], {
           type: 'text/plain',
@@ -294,7 +301,7 @@ class CsvInputBar extends Component<CsvInputBarProps, CsvInputBarState> {
       type,
     } = this.state;
     // A blank table name is invalid for pasted values
-    const isNameInvalid = paste && !tableName;
+    const isNameInvalid = paste !== undefined && paste !== '' && !tableName;
     return (
       <div className="csv-input-bar">
         {!showProgress && (
@@ -340,7 +347,10 @@ class CsvInputBar extends Component<CsvInputBarProps, CsvInputBarState> {
               <Button
                 kind="primary"
                 type="submit"
-                disabled={!(file || paste) || !tableName}
+                disabled={
+                  !(file !== null || (paste !== undefined && paste !== '')) ||
+                  !tableName
+                }
               >
                 Upload
               </Button>

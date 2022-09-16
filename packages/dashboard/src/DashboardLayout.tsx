@@ -227,7 +227,12 @@ export const DashboardLayout = ({
   const handleComponentCreated = useCallback(item => {
     log.debug2('handleComponentCreated', item);
 
-    if (!item || !item.config || !item.config.component || !item.element) {
+    if (
+      item == null ||
+      item.config == null ||
+      item.config.component == null ||
+      item.element == null
+    ) {
       return;
     }
 
@@ -287,7 +292,7 @@ export const DashboardLayout = ({
     <>
       {isDashboardEmpty && emptyDashboard}
       {React.Children.map(children, child =>
-        child
+        child != null
           ? React.cloneElement(child as ReactElement, {
               id,
               layout,

@@ -48,7 +48,7 @@ interface ContextActionsState {
  * </div>
  *
  * Right clicking the container will then build the context menu, bubbling up until an element with a ContextMenuRoot is on it.
- * You should generally have a ContextMenuRoot on the root node of your document.
+ * You should generally have a ContextMenuRoot on the root node of your docum ent.
  */
 class ContextActions extends Component<
   ContextActionsProps,
@@ -58,7 +58,7 @@ class ContextActions extends Component<
    * Group you can assign to context menu actions to group them together.
    * Lower group IDs appear at the top of the list.
    * Groups are separated by a separator item.
-   * Items within groups are ordered by their order property, then by their title.
+   * Items within groups are ordered by their order property, then by their titl e.
    */
   static groups = {
     default: null,
@@ -76,7 +76,14 @@ class ContextActions extends Component<
     clientY: number,
     actions: ContextAction[]
   ): void {
-    if (!element || !clientX || !clientY || !actions) {
+    if (
+      element == null ||
+      clientX == null ||
+      clientX === 0 ||
+      clientY == null ||
+      clientY === 0 ||
+      actions == null
+    ) {
       return;
     }
 
@@ -108,7 +115,7 @@ class ContextActions extends Component<
   static getDerivedStateFromProps(
     props: ContextActionsProps
   ): ContextActionsState {
-    if (!props.actions || !Array.isArray(props.actions)) {
+    if (props.actions == null || !Array.isArray(props.actions)) {
       return { globalActions: [], keyboardActions: [] };
     }
     const globalActions = props.actions.filter(
@@ -119,6 +126,7 @@ class ContextActions extends Component<
       action =>
         !isPromise(action) &&
         typeof action !== 'function' &&
+        action.isGlobal !== undefined &&
         !action.isGlobal &&
         action.shortcut != null
     ) as ContextAction[];
@@ -181,14 +189,15 @@ class ContextActions extends Component<
     }
 
     const { actions } = this.props;
-    if (actions) {
+    if (actions != null) {
       let contextActions = actions;
       if (Array.isArray(contextActions)) {
         contextActions = contextActions.filter(
           action =>
             isPromise(action) ||
             typeof action === 'function' ||
-            !action.isGlobal
+            action.isGlobal === undefined ||
+            action.isGlobal
         );
       }
 
@@ -207,13 +216,14 @@ class ContextActions extends Component<
       const keyboardAction = keyboardActions[i];
       if (
         !ContextActionUtils.actionsDisabled &&
-        keyboardAction.shortcut?.matchesEvent(e)
+        keyboardAction.shortcut != null &&
+        keyboardAction.shortcut.matchesEvent(e)
       ) {
         log.debug('Context hotkey matched!', e);
 
         const result = keyboardAction.action?.(e);
 
-        if (result || result === undefined) {
+        if (result !== null || result === undefined) {
           e.stopPropagation();
           e.preventDefault();
           return;

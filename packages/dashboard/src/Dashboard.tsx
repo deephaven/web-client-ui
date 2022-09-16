@@ -67,7 +67,9 @@ export const Dashboard = ({
       const config: GoldenLayout.Config = {
         ...LayoutUtils.makeDefaultLayout(),
       };
-      Object.assign(config.settings, layoutSettings);
+      if (config.settings !== undefined) {
+        Object.assign(config.settings, layoutSettings);
+      }
       // Load our content later after plugins have registered
       config.content = [];
 
@@ -79,7 +81,7 @@ export const Dashboard = ({
       };
       newLayout.on('initialised', onInit);
 
-      if (fallbackComponent) {
+      if (fallbackComponent != null) {
         newLayout.setFallbackComponent(fallbackComponent);
       }
 
@@ -105,7 +107,7 @@ export const Dashboard = ({
   const handleResize = useMemo(
     () =>
       throttle(() => {
-        if (layout?.isInitialised) {
+        if (layout != null && layout.isInitialised) {
           layout?.updateSize();
         }
       }, RESIZE_THROTTLE),

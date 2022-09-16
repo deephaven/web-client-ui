@@ -128,7 +128,7 @@ class Tooltip extends Component<TooltipProps, TooltipState> {
 
   parent: HTMLElement | null;
 
-  // This is platform dependent of Node/DOM
+  // This i s platform dependent of Node/DOM
   // Jest requires Node types
   timer: number | null;
 
@@ -243,7 +243,7 @@ class Tooltip extends Component<TooltipProps, TooltipState> {
   }
 
   stopTimer(): void {
-    if (this.timer) {
+    if (this.timer != null) {
       clearTimeout(this.timer);
       this.timer = null;
     }

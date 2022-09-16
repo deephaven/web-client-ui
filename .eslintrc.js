@@ -6,7 +6,7 @@ module.exports = {
     {
       files: ['**/*.@(ts|tsx)'],
       parserOptions: {
-        project: ['./tsconfig.eslint.json'],
+        project: ['./tsconfig.eslint.json', './packages/*/tsconfig.json'],
         tsconfigRootDir: __dirname,
       },
     },

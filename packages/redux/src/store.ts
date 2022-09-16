@@ -96,7 +96,7 @@ Object.entries(reducers).map(([name, reducer]) =>
 
 const composeEnhancers: typeof compose =
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (window as any).__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
+  (window as any).__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ ?? compose;
 
 const store = createStore<RootState, PayloadAction, unknown, unknown>(
   combineReducers(reducerRegistry.reducers),

@@ -65,7 +65,7 @@ class CsvOverlay extends Component<CsvOverlayProps, CsvOverlayState> {
 
   static isValidDropItem(item: DataTransferItem): boolean {
     return (
-      item &&
+      item != null &&
       item.kind === 'file' &&
       !INVALID_MIME_TYPES.find(invalid => invalid.test(item.type))
     );
@@ -148,12 +148,12 @@ class CsvOverlay extends Component<CsvOverlayProps, CsvOverlayState> {
     e.preventDefault();
     e.stopPropagation();
 
-    if (dragError) {
+    if (dragError != null) {
       clearDragError();
       return;
     }
 
-    if (!e.dataTransfer || !e.dataTransfer.items) {
+    if (e.dataTransfer == null || e.dataTransfer.items == null) {
       return;
     }
 
@@ -224,7 +224,7 @@ class CsvOverlay extends Component<CsvOverlayProps, CsvOverlayState> {
     ];
   }
 
-  getValidExtensions = memoize(allowZip =>
+  getValidExtensions = memoize((allowZip: boolean) =>
     allowZip ? [...VALID_EXTENSIONS, ...ZIP_EXTENSIONS] : [...VALID_EXTENSIONS]
   );
 
@@ -239,7 +239,7 @@ class CsvOverlay extends Component<CsvOverlayProps, CsvOverlayState> {
   render(): ReactElement {
     const { allowZip, dragError, uploadInProgress } = this.props;
     const { selectedFileName, dropError } = this.state;
-    const error = dragError || dropError;
+    const error = dragError != null ? dragError : dropError;
     const contextActions = this.makeContextMenuItems();
     return (
       <div
@@ -259,7 +259,7 @@ class CsvOverlay extends Component<CsvOverlayProps, CsvOverlayState> {
           onChange={this.handleFiles}
           data-testid="fileElem"
         />
-        {!selectedFileName && !error && (
+        {!selectedFileName && (error === undefined || error === '') && (
           <div className="message-content">
             <div className="message-icon">
               <FontAwesomeIcon icon={dhFileDownload} />
@@ -277,7 +277,7 @@ class CsvOverlay extends Component<CsvOverlayProps, CsvOverlayState> {
             </button>
           </div>
         )}
-        {selectedFileName && !error && (
+        {selectedFileName && (error === undefined || error === '') && (
           <div className="selected-content">
             <div className="selected-icon">
               <FontAwesomeIcon icon={CsvOverlay.getIcon(selectedFileName)} />
@@ -299,7 +299,7 @@ class CsvOverlay extends Component<CsvOverlayProps, CsvOverlayState> {
             </div>
           </div>
         )}
-        {error && (
+        {(error === undefined || error === '') && (
           <div className="message-content">
             <div className="message-icon">
               <FontAwesomeIcon icon={vsWarning} />

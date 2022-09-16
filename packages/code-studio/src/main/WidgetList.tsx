@@ -65,7 +65,7 @@ export const WidgetList = (props: WidgetListProps): JSX.Element => {
    */
   const sendSelect = useCallback(
     (widget: VariableDefinition, event?: WindowMouseEvent) => {
-      if (widget) onSelect(widget, event);
+      if (widget != null) onSelect(widget, event);
     },
     [onSelect]
   );

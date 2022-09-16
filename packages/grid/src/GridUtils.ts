@@ -753,7 +753,7 @@ export class GridUtils {
     // Check if we should combine with the previous move
     // E.g. 1 -> 2, 2 -> 3 can just be 1 -> 3
     if (
-      lastMovedItem &&
+      lastMovedItem != null &&
       !isBoundedAxisRange(lastMovedItem.from) &&
       lastMovedItem.to === from
     ) {
@@ -800,7 +800,7 @@ export class GridUtils {
     // Check if we should combine with the previous move
     // E.g. [1, 2] -> 2, [2, 3] -> 3 can just be [1, 2] -> 3
     if (
-      lastMovedItem &&
+      lastMovedItem != null &&
       isBoundedAxisRange(lastMovedItem.from) &&
       lastMovedItem.from[1] - lastMovedItem.from[0] === from[1] - from[0] &&
       lastMovedItem.to === from[0]

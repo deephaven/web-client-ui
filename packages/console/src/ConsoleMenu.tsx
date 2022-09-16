@@ -149,7 +149,7 @@ class ConsoleMenu extends PureComponent<ConsoleMenuProps, ConsoleMenuState> {
   }
 
   handleTableMenuOpened(): void {
-    if (this.tableSearchField && this.tableSearchField.focus) {
+    if (this.tableSearchField && this.tableSearchField.focus != null) {
       this.tableSearchField.focus();
     }
   }
@@ -164,7 +164,7 @@ class ConsoleMenu extends PureComponent<ConsoleMenuProps, ConsoleMenuState> {
   }
 
   handleWidgetMenuOpened(): void {
-    if (this.widgetSearchField && this.widgetSearchField.focus) {
+    if (this.widgetSearchField && this.widgetSearchField.focus != null) {
       this.widgetSearchField.focus();
     }
   }

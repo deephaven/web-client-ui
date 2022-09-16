@@ -1,6 +1,7 @@
 {
   "extends": "../../tsconfig.json",
   "compilerOptions": {
+    "jsx": "react",
     "rootDir": "src/",
     "noEmit": true,
     "emitDeclarationOnly": false
@@ -11,9 +12,6 @@
   "references": [
     {
       "path": "../chart"
-    },
-    {
-      "path": "../components"
     },
     {
       "path": "../console"

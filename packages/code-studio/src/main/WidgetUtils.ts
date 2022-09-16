@@ -41,17 +41,17 @@ export const createChartModel = async (
     figureName = metadata.figure;
     tableSettings = {};
   }
-  if (panelState) {
-    if (panelState.tableSettings) {
+  if (panelState !== undefined) {
+    if (panelState.tableSettings != null) {
       tableSettings = panelState.tableSettings;
     }
-    if (panelState.table) {
+    if (panelState.table != null) {
       tableName = panelState.table;
     }
-    if (panelState.figure) {
+    if (panelState.figure != null) {
       figureName = panelState.figure;
     }
-    if (panelState.settings) {
+    if (panelState.settings != null) {
       settings = {
         ...settings,
         ...panelState.settings,
@@ -59,7 +59,7 @@ export const createChartModel = async (
     }
   }
 
-  if (figureName) {
+  if (figureName !== '') {
     const definition = {
       title: figureName,
       name: figureName,

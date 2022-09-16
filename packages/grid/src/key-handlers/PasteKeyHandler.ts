@@ -67,7 +67,9 @@ export function parseValueFromElement(
       hasTabChar &&
       childNodes.length !== 0 &&
       (childNodes.length === 1 ||
-        (childNodes.length > 1 && !childNodes[0].textContent?.includes('\t')))
+        (childNodes.length > 1 &&
+          (childNodes[0].textContent == null ||
+            !childNodes[0].textContent.includes('\t'))))
     ) {
       // When Chrome pastes a single row, it gets split into multiple child nodes
       // If we check the first child node and it doesn't have a tab character, but the full element text content does, then

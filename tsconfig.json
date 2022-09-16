@@ -3,17 +3,13 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@deephaven/*": [
-        "./packages/*/src"
-      ]
-    }
+      "@deephaven/*": ["./packages/*/src"]
+    },
+    "skipLibCheck": true
   },
   "files": [],
   "watchOptions": {
-    "excludeDirectories": [
-      "**/node_modules",
-      "**/dist"
-    ]
+    "excludeDirectories": ["**/node_modules", "**/dist"]
   },
   "references": [
     {

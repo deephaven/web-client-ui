@@ -41,7 +41,7 @@ export class CommandHistoryItemTooltip extends Component<
     startTime: string | undefined,
     endTime: string | number
   ): string | null {
-    if (!startTime || !endTime) {
+    if (startTime == null || Boolean(endTime)) {
       return null;
     }
 
@@ -79,13 +79,14 @@ export class CommandHistoryItemTooltip extends Component<
     if (
       this.timer == null &&
       !data?.result &&
-      data?.startTime &&
-      !data?.endTime
+      Boolean(data?.startTime) &&
+      !(data == null || data.endTime === undefined)
     ) {
       this.startTimer();
     } else if (
       (data?.result && !prevState.data?.result) ||
-      (data?.endTime && !prevState.data?.endTime)
+      (Boolean(data?.endTime) &&
+        !(prevState.data == null || prevState.data.endTime === undefined))
     ) {
       // Command complete
       this.stopTimer();
@@ -167,7 +168,7 @@ export class CommandHistoryItemTooltip extends Component<
 
     const timeString = CommandHistoryItemTooltip.getTimeString(
       startTime,
-      endTime || currentTime
+      endTime != null ? endTime : currentTime
     );
 
     // colorizing in monaco is mostly a function of the number of lines,
@@ -183,21 +184,23 @@ export class CommandHistoryItemTooltip extends Component<
         </div>
         <div className="result-info">
           <div className="d-flex justify-content-between">
-            {errorMessage && (
+            {errorMessage !== undefined && errorMessage !== '' && (
               <div className="text-danger mr-1">
                 <FontAwesomeIcon icon={vsWarning} /> Executed with errors
               </div>
             )}
             <div className="time-wrapper">
               Elapsed time:{' '}
-              {timeString ? (
+              {timeString != null ? (
                 <span className="time-string">{timeString}</span>
               ) : (
                 <LoadingSpinner />
               )}
             </div>
           </div>
-          {errorMessage && <div className="error-message">{errorMessage}</div>}
+          {errorMessage !== undefined && errorMessage !== '' && (
+            <div className="error-message">{errorMessage}</div>
+          )}
         </div>
       </div>
     );

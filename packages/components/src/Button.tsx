@@ -91,7 +91,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       'data-testid': dataTestId,
     } = props;
 
-    const iconOnly = (icon && !children) as boolean;
+    const iconOnly = Boolean(icon && children == null);
     const btnClassName = getClassName(kind, iconOnly);
 
     let variantClassName;
@@ -109,7 +109,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     }
 
     let tooltipElem: JSX.Element | undefined;
-    if (tooltip) {
+    if (tooltip !== undefined) {
       tooltipElem =
         typeof tooltip === 'string' ? <Tooltip>{tooltip}</Tooltip> : tooltip;
     }
@@ -133,17 +133,19 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       >
         {icon && iconElem}
         {children}
-        {tooltip && !disabled && tooltipElem}
+        {tooltip != null &&
+          (disabled === undefined || !disabled) &&
+          tooltipElem}
       </button>
     );
 
     // disabled buttons tooltips need a wrapped element to receive pointer events
     // https://jakearchibald.com/2017/events-and-disabled-form-fields/
 
-    return disabled ? (
+    return disabled !== undefined && disabled ? (
       <span className="btn-disabled-wrapper">
         {button}
-        {tooltip && tooltipElem}
+        {tooltip !== undefined && tooltipElem}
       </span>
     ) : (
       button
@@ -159,18 +161,22 @@ Button.propTypes = {
   type: PropTypes.oneOf<ButtonTypes>(['submit', 'reset', 'button']),
   tooltip(props) {
     const { tooltip, icon, children } = props;
-    if (!tooltip && icon && !children) {
+    if (tooltip === undefined && icon != null && children == null) {
       return new Error('Tooltip is required for icon only buttons');
     }
     return null;
   },
   icon(props) {
     const { children, icon } = props;
-    if (!icon && !children) {
+    if (icon == null && children == null) {
       return new Error('Icon is required if no children are provided');
     }
 
-    if (!children && !React.isValidElement(icon) && !icon?.iconName) {
+    if (
+      children == null &&
+      !React.isValidElement(icon) &&
+      (icon == null || icon.iconName === '' || icon.iconName == null)
+    ) {
       return new Error(
         'Icon must be react element or fontawesome IconDefinition'
       );

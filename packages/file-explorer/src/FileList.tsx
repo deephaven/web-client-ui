@@ -182,7 +182,7 @@ export function getMoveOperation(
   draggedItems: FileStorageItem[],
   targetItem: FileStorageItem
 ): { files: FileStorageItem[]; targetPath: string } {
-  if (draggedItems.length === 0 || !targetItem) {
+  if (draggedItems.length === 0 || targetItem == null) {
     throw new Error('No items to move');
   }
 
@@ -242,7 +242,7 @@ export const FileList = (props: FileListProps): JSX.Element => {
 
   const getItems = useCallback(
     (ranges: Range[]): FileStorageItem[] => {
-      if (ranges.length === 0 || !loadedViewport) {
+      if (ranges.length === 0 || loadedViewport == null) {
         return [];
       }
 

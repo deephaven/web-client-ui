@@ -33,7 +33,7 @@ class ContextMenus extends Component {
   }
 
   makeContextMenuItems(iteration?: number): Array<ContextMenuItem> {
-    const suffix = iteration ? ` ${iteration}` : '';
+    const suffix = iteration !== undefined ? ` ${iteration}` : '';
     return [
       {
         title: `Show Alert${suffix}`,
@@ -63,7 +63,7 @@ class ContextMenus extends Component {
       },
       {
         title: 'Sub-menu',
-        actions: () => this.makeContextMenuItems((iteration || 0) + 1),
+        actions: () => this.makeContextMenuItems((iteration ?? 0) + 1),
         order: 3,
       },
     ].concat(

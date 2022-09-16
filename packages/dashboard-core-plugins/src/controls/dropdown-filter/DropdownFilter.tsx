@@ -152,7 +152,7 @@ class DropdownFilter extends Component<
 
   getCompatibleColumns = memoize(
     (source: LinkPoint, columns: DropdownFilterColumn[]) =>
-      source
+      source != null
         ? columns.filter(
             ({ type }) =>
               type !== undefined &&

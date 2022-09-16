@@ -238,7 +238,7 @@ class DropdownFilterPanel extends Component<
       { type, name }: DropdownFilterColumn,
       formatter: Formatter
     ) => {
-      if (type && TableUtils.isDateType(type)) {
+      if (type !== undefined && TableUtils.isDateType(type)) {
         return rawValues.map(value =>
           DropdownFilterPanel.DATETIME_FORMATTER.format(value as number)
         );
@@ -279,7 +279,7 @@ class DropdownFilterPanel extends Component<
 
   getPanelErrorMessage(): string | undefined {
     const { error } = this.state;
-    return error ? `${error}` : undefined;
+    return error != null ? `${error}` : undefined;
   }
 
   getCachedPanelLinks = memoize((dashboardLinks: Link[], panel) => {

@@ -15,6 +15,7 @@ class PluginUtils {
     pluginName: string
   ): ForwardRefExoticComponent<React.RefAttributes<unknown>> {
     if (
+      import.meta.env.REACT_APP_INTERNAL_COMPONENT_PLUGINS != null &&
       import.meta.env.VITE_INTERNAL_COMPONENT_PLUGINS?.split(',').includes(
         pluginName
       )
@@ -45,7 +46,7 @@ class PluginUtils {
         url={pluginUrl}
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         render={({ err, Component }: { err: unknown; Component: any }) => {
-          if (err) {
+          if (err != null) {
             const errorMessage = `Error loading plugin ${pluginName} from ${pluginUrl} due to ${err}`;
             log.error(errorMessage);
             return <div className="error-message">{`${errorMessage}`}</div>;

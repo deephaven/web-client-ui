@@ -70,7 +70,7 @@ class InputFilterPanel extends Component<
 
     this.state = {
       columns: [],
-      column: name && type ? { name, type } : undefined,
+      column: name != null && type != null ? { name, type } : undefined,
       value,
       timestamp,
       isValueShown,

@@ -165,7 +165,9 @@ export class DecimalColumnFormatter extends TableColumnFormatter<number> {
     const formatString =
       (format && format.formatString) || this.defaultFormatString;
     const value =
-      format && format.multiplier ? valueParam * format.multiplier : valueParam;
+      format && format.multiplier !== undefined && format.multiplier !== 0
+        ? valueParam * format.multiplier
+        : valueParam;
     try {
       return dh.i18n.NumberFormat.format(formatString, value);
     } catch (e) {

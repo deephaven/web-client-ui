@@ -123,7 +123,7 @@ class LinkerUtils {
       start.panelComponent
     )?.includes(end.panelComponent);
 
-    if (!isCompatibleComponent) {
+    if (isCompatibleComponent === undefined || !isCompatibleComponent) {
       log.debug2('Incompatible panel components', start, end);
       return 'invalid';
     }

@@ -49,21 +49,29 @@ class ContextActionUtils {
   }
 
   /**
-   * Compare two action items. Useful in Array.sort
+   * Compare two  action items. Useful in Array.sort
    * @param a First context action to compare
    * @param b Second context action to compare
    */
   static compareActions(a: ContextAction, b: ContextAction): number {
     if (a.group !== b.group) {
-      return (a.group || 0) > (b.group || 0) ? 1 : -1;
+      return (a.group !== undefined ? a.group : 0) >
+        (b.group !== undefined ? b.group : 0)
+        ? 1
+        : -1;
     }
 
     if (a.order !== b.order) {
-      return (a.order || 0) > (b.order || 0) ? 1 : -1;
+      return (a.order !== undefined ? a.order : 0) >
+        (b.order !== undefined ? b.order : 0)
+        ? 1
+        : -1;
     }
 
     if (a.title !== b.title) {
-      return (a.title || '') > (b.title || '') ? 1 : -1;
+      return (a.title != null ? a.title : '') > (b.title != null ? b.title : '')
+        ? 1
+        : -1;
     }
 
     if (a !== b) {
@@ -78,7 +86,7 @@ class ContextActionUtils {
    * @param actions The array of actions to sort
    */
   static sortActions(actions: ContextAction[]): ContextAction[] {
-    if (!actions || !Array.isArray(actions)) {
+    if (actions == null || !Array.isArray(actions)) {
       return [];
     }
 
@@ -104,7 +112,7 @@ class ContextActionUtils {
   }
 
   /**
-   * Returns true if the modifier key for the current platform is down for the event (Ctrl for windows/linux, Command (meta) for mac)
+   * Returns true if the modifier key for the current platform is  down for the event (Ctrl for windows/linux, Command (meta) for mac)
    * @param event The event to get the meta key status from
    */
   static isModifierKeyDown(
@@ -115,7 +123,7 @@ class ContextActionUtils {
   }
 
   /**
-   * Copy the passed in text to the clipboard.
+   * Copy the p assed in text to the clipboard.
    * @param text The text to copy
    * @returns Promise Resolved on success, rejected on failure
    */
@@ -155,7 +163,7 @@ class ContextActionUtils {
   }
 
   /**
-   * Returns the menu items for the provided context actions, or empty array if none found.
+   * Returns the menu items for the provided context actions, or empty array if none foun d.
    * @param actionsParam The actions to get menu items for
    * @param includePromises Whether or not to include promises in the returned menu items
    */
@@ -207,7 +215,7 @@ class ContextActionUtils {
 
     menuItems = menuItems.filter(
       action =>
-        (action as ContextAction).title ||
+        (action as ContextAction).title !== undefined ||
         (action as Promise<ContextAction[]>).then ||
         (action as ContextAction).menuElement
     );

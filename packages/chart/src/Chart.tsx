@@ -202,12 +202,13 @@ export class Chart extends Component<ChartProps, ChartState> {
 
   getCachedConfig = memoize(
     (
-      downsamplingError,
-      isDownsampleFinished,
-      isDownsampleInProgress,
-      isDownsamplingDisabled
+      downsamplingError: unknown,
+      isDownsampleFinished: boolean,
+      isDownsampleInProgress: boolean,
+      isDownsamplingDisabled: boolean
     ) => {
       const customButtons = [];
+      // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
       if (downsamplingError) {
         customButtons.push({
           name: `Downsampling failed: ${downsamplingError}`,
@@ -221,6 +222,7 @@ export class Chart extends Component<ChartProps, ChartState> {
         isDownsampleFinished ||
         isDownsampleInProgress ||
         isDownsamplingDisabled ||
+        // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
         downsamplingError
       ) {
         const name = Chart.downsampleButtonTitle(
@@ -247,6 +249,7 @@ export class Chart extends Component<ChartProps, ChartState> {
         // Display the mode bar if there's an error or downsampling so user can see progress
         // Yes, the value is a boolean or the string 'hover': https://github.com/plotly/plotly.js/blob/master/src/plot_api/plot_config.js#L249
         displayModeBar:
+          // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
           isDownsampleInProgress || downsamplingError ? true : 'hover',
 
         // Each array gets grouped together in the mode bar
@@ -301,7 +304,7 @@ export class Chart extends Component<ChartProps, ChartState> {
   }
 
   handleAfterPlot(): void {
-    if (this.plot.current) {
+    if (this.plot.current != null) {
       // TODO: Translate whatever Don was doing in plotting.js in the afterplot here so that area graphs show up properly
     }
   }
@@ -379,7 +382,8 @@ export class Chart extends Component<ChartProps, ChartState> {
       }
       case ChartModel.EVENT_DOWNSAMPLENEEDED:
       case ChartModel.EVENT_DOWNSAMPLEFAILED: {
-        const downsamplingError = detail.message ? detail.message : detail;
+        const downsamplingError =
+          detail.message !== undefined ? detail.message : detail;
         this.setState({
           isDownsampleFinished: false,
           isDownsampleInProgress: false,

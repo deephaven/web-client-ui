@@ -24,7 +24,7 @@ const StyleGuideInit = (props: {
     LocalWorkspaceStorage.makeDefaultWorkspace().then(setWorkspace);
   }, [setWorkspace]);
 
-  return <>{workspace && <StyleGuide />}</>;
+  return <>{workspace != null && <StyleGuide />}</>;
 };
 
 StyleGuideInit.propTypes = {

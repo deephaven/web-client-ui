@@ -104,8 +104,9 @@ export class DateTimeColumnFormatter extends TableColumnFormatter<
     showTimeZone?: boolean,
     showTSeparator?: boolean
   ): Map<string, string> {
-    const separator = showTSeparator ? `'T'` : ' ';
-    const tz = showTimeZone ? ' z' : '';
+    const separator =
+      showTSeparator !== undefined && showTSeparator ? `'T'` : ' ';
+    const tz = showTimeZone !== undefined && showTimeZone ? ' z' : '';
     return new Map([
       ['yyyy-MM-dd', `yyyy-MM-dd${tz}`],
       ['MM-dd-yyyy', `MM-dd-yyyy${tz}`],
@@ -172,7 +173,7 @@ export class DateTimeColumnFormatter extends TableColumnFormatter<
   }
 
   getEffectiveFormatString(baseFormatString: string): string {
-    return this.formatStringMap.get(baseFormatString) || baseFormatString;
+    return this.formatStringMap.get(baseFormatString) ?? baseFormatString;
   }
 
   format(

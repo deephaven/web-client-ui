@@ -112,7 +112,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
     newFilterText: string,
     operator?: '&&' | '||' | null
   ): string {
-    return operator && filterText
+    return operator && filterText != null
       ? `${filterText} ${operator} ${newFilterText}`
       : newFilterText;
   }
@@ -793,7 +793,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
         order: i,
         action: () => {
           if (
-            !columnIndex &&
+            columnIndex === undefined &&
             format &&
             format.type === TableColumnFormatter.TYPE_CONTEXT_CUSTOM
           ) {
@@ -1172,7 +1172,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
           {operator
             ? IrisGridContextMenuHandler.getOperatorAsText(operator)
             : ''}{' '}
-          &quot;{valueText || 'null'}&quot;
+          &quot;{valueText != null ? valueText : 'null'}&quot;
         </div>
       ),
       order: 1,

@@ -782,7 +782,9 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   componentDidMount(): void {
     const { partitionColumn, model } = this.props;
     const column =
-      partitionColumn || model.columns.find(c => c.isPartitionColumn);
+      partitionColumn != null
+        ? partitionColumn
+        : model.columns.find(c => c.isPartitionColumn);
     if (
       model.isFilterRequired &&
       model.isValuesTableAvailable &&
@@ -878,7 +880,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       clearTimeout(this.loadingTimer);
     }
     this.handleDownloadProgressUpdate.cancel();
-    if (this.animationFrame) {
+    if (this.animationFrame !== undefined) {
       cancelAnimationFrame(this.animationFrame);
     }
   }
@@ -976,21 +978,21 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
   getCachedOptionItems = memoize(
     (
-      isChartBuilderAvailable,
-      isCustomColumnsAvailable,
-      isFormatColumnsAvailable,
-      isRollupAvailable,
-      isTotalsAvailable,
-      isSelectDistinctAvailable,
-      isExportAvailable,
+      isChartBuilderAvailable: boolean,
+      isCustomColumnsAvailable: boolean,
+      isFormatColumnsAvailable: boolean,
+      isRollupAvailable: boolean,
+      isTotalsAvailable: boolean,
+      isSelectDistinctAvailable: boolean,
+      isExportAvailable: boolean,
       toggleFilterBarAction,
       toggleSearchBarAction,
       toggleGotoRowAction,
-      isFilterBarShown,
-      showSearchBar,
-      canDownloadCsv,
-      canToggleSearch,
-      showGotoRow
+      isFilterBarShown: boolean,
+      showSearchBar: boolean,
+      canDownloadCsv: boolean,
+      canToggleSearch: boolean,
+      showGotoRow: boolean
     ) => {
       const optionItems: OptionItem[] = [];
       if (isChartBuilderAvailable) {
@@ -2364,8 +2366,14 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       throw new Error('Save already in progress');
     }
 
-    if (document?.activeElement?.classList.contains('grid-cell-input-field')) {
-      if (document.activeElement.classList.contains('error')) {
+    const containsGridCellInputField = document?.activeElement?.classList.contains(
+      'grid-cell-input-field'
+    );
+    if (containsGridCellInputField != null && containsGridCellInputField) {
+      if (
+        document.activeElement != null &&
+        document.activeElement?.classList.contains('error')
+      ) {
         throw new ValidationError('Current input is invalid');
       }
 
@@ -2716,7 +2724,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
   handleTooltipRef(tooltip: Tooltip): void {
     // Need to start the timer right away, since we're creating the tooltip when we want the timer to start
-    if (tooltip) {
+    if (tooltip != null) {
       tooltip.startTimer();
     }
 
@@ -3891,7 +3899,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     return (
       <div className="iris-grid" role="presentation">
         <div className="iris-grid-column">
-          {children && <div className="iris-grid-bar">{children}</div>}
+          {children != null && <div className="iris-grid-bar">{children}</div>}
           <CSSTransition
             in={isSelectingPartition}
             timeout={ThemeExport.transitionSlowMs}

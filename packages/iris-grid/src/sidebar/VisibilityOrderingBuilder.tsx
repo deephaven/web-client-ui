@@ -726,7 +726,7 @@ class VisibilityOrderingBuilder extends Component<
     return elements;
   }
 
-  getFirstMovableIndex = memoize((model, columns) => {
+  getFirstMovableIndex = memoize((model: IrisGridModel, columns) => {
     for (let i = 0; i < columns.length; i += 1) {
       if (model.isColumnMovable(i)) {
         return i;
@@ -736,7 +736,7 @@ class VisibilityOrderingBuilder extends Component<
     return null;
   });
 
-  getLastMovableIndex = memoize((model, columns) => {
+  getLastMovableIndex = memoize((model: IrisGridModel, columns) => {
     for (let i = columns.length - 1; i >= 0; i -= 1) {
       if (model.isColumnMovable(i)) {
         return i;
@@ -765,7 +765,7 @@ class VisibilityOrderingBuilder extends Component<
       isSelected: boolean,
       isDragging: boolean,
       isDragged: boolean,
-      columnsDragged
+      columnsDragged: number | null
     ) => (
       <Draggable
         draggableId={`${modelIndex}`} // draggableId requires string input
@@ -828,7 +828,10 @@ class VisibilityOrderingBuilder extends Component<
                 { isDragging },
                 { isDragged },
                 { 'two-dragged': columnsDragged === 2 },
-                { 'multiple-dragged': columnsDragged > 2 }
+                {
+                  'multiple-dragged':
+                    columnsDragged != null && columnsDragged > 2,
+                }
               )}
               onClick={event => {
                 this.handleItemClick(modelIndex, event);
@@ -838,7 +841,7 @@ class VisibilityOrderingBuilder extends Component<
             >
               <span className="column-name">{columnName}</span>
               <div>
-                {columnsDragged && (
+                {columnsDragged != null && columnsDragged !== 0 && (
                   <span className="number-badge">{columnsDragged}</span>
                 )}
                 <Tooltip>Drag to re-order</Tooltip>

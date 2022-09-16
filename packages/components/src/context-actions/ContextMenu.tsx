@@ -146,7 +146,10 @@ class ContextMenu extends PureComponent<ContextMenuProps, ContextMenuState> {
     if (prevProps.actions !== actions) {
       this.initMenu();
 
-      if (!this.container.current?.contains(document.activeElement)) {
+      if (
+        this.container.current == null ||
+        !this.container.current.contains(document.activeElement)
+      ) {
         this.container.current?.focus();
       }
     }
@@ -174,7 +177,10 @@ class ContextMenu extends PureComponent<ContextMenuProps, ContextMenuState> {
 
   getKeyboardIndex(): number {
     const { options } = this.props;
-    if (options.separateKeyboardMouse) {
+    if (
+      options.separateKeyboardMouse !== undefined &&
+      options.separateKeyboardMouse
+    ) {
       const { keyboardIndex } = this.state;
       return keyboardIndex;
     }
@@ -184,7 +190,10 @@ class ContextMenu extends PureComponent<ContextMenuProps, ContextMenuState> {
 
   setKeyboardIndex(index: number): void {
     const { options } = this.props;
-    if (options.separateKeyboardMouse) {
+    if (
+      options.separateKeyboardMouse !== undefined &&
+      options.separateKeyboardMouse
+    ) {
       this.setState({ keyboardIndex: index });
     } else {
       this.setMouseIndex(index);
@@ -322,7 +331,10 @@ class ContextMenu extends PureComponent<ContextMenuProps, ContextMenuState> {
       left: oldLeft,
     } = this.props;
 
-    if (!this.container.current || options.doNotVerifyPosition) {
+    if (
+      !this.container.current ||
+      (options.doNotVerifyPosition != null && options.doNotVerifyPosition)
+    ) {
       return;
     }
 
@@ -499,7 +511,10 @@ class ContextMenu extends PureComponent<ContextMenuProps, ContextMenuState> {
     e.stopPropagation();
 
     const { menuItems } = this.state;
-    if (menuItem != null && !menuItem.disabled) {
+    if (
+      menuItem != null &&
+      (menuItem.disabled === undefined || !menuItem.disabled)
+    ) {
       if (menuItem.actions != null) {
         this.openSubMenu(menuItems.indexOf(menuItem));
       } else if (menuItem.action != null) {
@@ -528,7 +543,7 @@ class ContextMenu extends PureComponent<ContextMenuProps, ContextMenuState> {
     if (
       focusIndex >= 0 &&
       focusIndex < menuItems.length &&
-      !menuItem.disabled
+      (menuItem.disabled === undefined || !menuItem.disabled)
     ) {
       this.openSubMenu(focusIndex);
     }

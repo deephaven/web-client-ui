@@ -178,7 +178,7 @@ class SelectionKeyHandler extends KeyHandler {
 
       const { theme } = grid.props;
       const { autoSelectRow, autoSelectColumn } = theme;
-      if (autoSelectRow && deltaColumn !== 0) {
+      if (autoSelectRow !== undefined && autoSelectRow && deltaColumn !== 0) {
         const { lastLeft } = grid.metrics;
         let { left } = grid.state;
 
@@ -187,7 +187,11 @@ class SelectionKeyHandler extends KeyHandler {
         grid.moveCursorToPosition(left, cursorRow, isShiftKey, false);
 
         grid.setViewState({ left });
-      } else if (autoSelectColumn && deltaRow !== 0) {
+      } else if (
+        autoSelectColumn !== undefined &&
+        autoSelectColumn &&
+        deltaRow !== 0
+      ) {
         const { lastTop } = grid.metrics;
         let { top } = grid.state;
 

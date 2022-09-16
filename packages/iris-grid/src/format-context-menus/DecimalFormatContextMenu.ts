@@ -82,7 +82,7 @@ class DecimalFormatContextMenu {
       DecimalColumnFormatter.DEFAULT_FORMAT_STRING,
       isCustomSelected,
       formatString => {
-        if (formatString) {
+        if (formatString != null) {
           const newCustomFormat = DecimalColumnFormatter.makeCustomFormat(
             formatString
           );

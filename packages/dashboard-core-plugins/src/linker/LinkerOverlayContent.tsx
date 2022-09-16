@@ -140,7 +140,7 @@ export class LinkerOverlayContent extends Component<
           if (end != null) {
             [x2, y2] = this.getPointFromLinkPoint(end);
           }
-          if (isReversed) {
+          if (isReversed != null && isReversed) {
             const [tmpX, tmpY] = [x1, y1];
             [x1, y1] = [x2, y2];
             [x2, y2] = [tmpX, tmpY];

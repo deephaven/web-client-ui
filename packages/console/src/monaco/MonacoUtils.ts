@@ -376,7 +376,7 @@ class MonacoUtils {
       ._getResolver()
       ._map.get(keybinding);
 
-    if (keybindings) {
+    if (keybindings != null) {
       keybindings.forEach((elem: { command: unknown }) => {
         log.debug2(
           `Removing Monaco keybinding ${keybinding} for ${elem.command}`

@@ -72,7 +72,7 @@ export default class RenameDialog extends PureComponent<
   }
 
   handleRenameDialogOpened(): void {
-    if (this.renameInputRef) {
+    if (this.renameInputRef != null) {
       this.renameInputRef.current?.focus();
     }
   }

@@ -103,7 +103,7 @@ class DraggableItemList<T> extends PureComponent<
   }
 
   static renderBadge({ text }: { text?: string }): React.ReactNode {
-    return text ? <span className="number-badge">{text}</span> : null;
+    return text != null ? <span className="number-badge">{text}</span> : null;
   }
 
   static renderTextItem({
@@ -111,7 +111,7 @@ class DraggableItemList<T> extends PureComponent<
     badgeText = '',
     className = '',
   }: {
-    text: string;
+    text?: string;
     badgeText?: string;
     className: string;
   }): JSX.Element {
@@ -135,9 +135,12 @@ class DraggableItemList<T> extends PureComponent<
     isClone,
     selectedCount,
   }: DraggableRenderItemProps<P>): JSX.Element {
-    const text = item && (item.displayValue || item.value || `${item}`);
-    const badgeText = isClone ? `${selectedCount}` : '';
-    const className = isClone ? 'item-list-item-clone' : '';
+    const text =
+      item != null ? item.displayValue ?? item.value ?? `${item}` : '';
+    const badgeText =
+      isClone !== undefined && isClone ? `${selectedCount}` : '';
+    const className =
+      isClone !== undefined && isClone ? 'item-list-item-clone' : '';
     return DraggableItemList.renderTextItem({ text, badgeText, className });
   }
 
@@ -146,7 +149,8 @@ class DraggableItemList<T> extends PureComponent<
   }
 
   static getDraggableIndex(draggableId: string): number {
-    return parseInt(draggableId.split('/').pop() || '', 10);
+    const num = draggableId.split('/').pop();
+    return parseInt(num !== undefined ? num : '', 10);
   }
 
   constructor(props: DraggableItemListProps<T>) {

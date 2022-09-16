@@ -105,12 +105,12 @@ class LogPanel extends PureComponent<LogPanelProps, LogPanelState> {
         onSessionOpen={this.handleSessionOpened}
         onSessionClose={this.handleSessionClosed}
       >
-        {!session && (
+        {session == null && (
           <div className="log-panel-disconnected-message">
             Waiting for session connection
           </div>
         )}
-        {session && (
+        {session != null && (
           <LogView
             session={session}
             ref={logView => {

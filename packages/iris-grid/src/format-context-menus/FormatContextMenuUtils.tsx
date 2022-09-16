@@ -38,7 +38,7 @@ class FormatContextMenuUtils {
    */
   static isCustomSelected(selectedFormat: TableColumnFormat): boolean {
     return (
-      selectedFormat &&
+      selectedFormat != null &&
       selectedFormat.type === TableColumnFormatter.TYPE_CONTEXT_CUSTOM
     );
   }

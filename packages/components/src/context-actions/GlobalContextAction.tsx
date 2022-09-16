@@ -29,17 +29,17 @@ class GlobalContextAction extends Component<GlobalContextActionProps> {
 
   handleContextMenu(evt: MouseEvent): void {
     const e = evt as ContextActionEvent;
-    if (!e.contextActions) {
+    if (e.contextActions == null) {
       e.contextActions = [];
     }
 
     const { action } = this.props;
 
-    if (!action.title && !action.menuElement) {
+    if (action.title == null && !action.menuElement) {
       return;
     }
 
-    if (!e.contextActions) {
+    if (e.contextActions == null) {
       e.contextActions = [];
     }
 
@@ -55,12 +55,15 @@ class GlobalContextAction extends Component<GlobalContextActionProps> {
     const { action } = this.props;
     if (
       !ContextActionUtils.actionsDisabled &&
-      action.shortcut?.matchesEvent(e)
+      action.shortcut !== undefined &&
+      action.shortcut.matchesEvent(e)
     ) {
       log.debug('Global hotkey matched!', e);
 
       const result = action.action?.(e);
 
+      // result can be any, so I can't assert all the ways it can be truthy
+      // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
       if (result || result === undefined) {
         e.preventDefault();
         e.stopPropagation();

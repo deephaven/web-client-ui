@@ -70,7 +70,7 @@ export class MarkdownPanel extends Component<
 
     const { panelState } = props;
     let content = null;
-    if (panelState && panelState.content) {
+    if (panelState != null && panelState.content != null) {
       ({ content } = panelState);
     }
 
@@ -150,7 +150,7 @@ export class MarkdownPanel extends Component<
         panelState: { content: '' },
       },
       () => {
-        if (this.editor && this.editor.focus) {
+        if (this.editor != null && this.editor.focus != null) {
           this.editor.focus();
         }
       }
@@ -177,7 +177,9 @@ export class MarkdownPanel extends Component<
     // if not in edit mode, or in edit mode but blur went to an internal monaco field (like search)
     if (
       !isEditing ||
-      this.markdownEditor?.container?.contains(event.relatedTarget)
+      (this.markdownEditor != null &&
+        this.markdownEditor.container != null &&
+        this.markdownEditor.container.contains(event.relatedTarget))
     ) {
       return;
     }

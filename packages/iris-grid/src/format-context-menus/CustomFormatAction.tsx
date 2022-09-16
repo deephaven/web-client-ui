@@ -114,7 +114,7 @@ class CustomFormatAction extends Component<CustomFormatActionProps> {
           <span className="icon">{iconElement}</span>
           <label className="title mb-0" htmlFor="custom-format-input">
             {title}
-            {description && <Tooltip>{description}</Tooltip>}
+            {description != null && <Tooltip>{description}</Tooltip>}
           </label>
         </div>
         <div className="pl-2 pr-2 pb-2">

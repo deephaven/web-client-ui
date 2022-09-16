@@ -172,7 +172,7 @@ class FigureChartModel extends ChartModel {
     this.layout.showlegend =
       this.data.length > 1 || series.plotStyle === dh.plot.SeriesPlotStyle.PIE;
 
-    if (series.oneClick) {
+    if (series.oneClick != null) {
       const { oneClick } = series;
       const { columns } = oneClick;
       for (let i = 0; i < columns.length; i += 1) {
@@ -582,7 +582,7 @@ class FigureChartModel extends ChartModel {
         axisFormat
       );
       if (this.layout[axisLayoutProperty] != null) {
-        Object.assign(this.layout[axisLayoutProperty], axisFormat);
+        Object.assign(this.layout[axisLayoutProperty] ?? {}, axisFormat);
       } else {
         log.debug(`Ignoring null layout.${axisLayoutProperty}`);
       }

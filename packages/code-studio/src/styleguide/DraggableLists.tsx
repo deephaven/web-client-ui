@@ -71,7 +71,7 @@ class DraggableLists extends Component<
   }
 
   componentWillUnmount(): void {
-    if (this.animationFrame) {
+    if (this.animationFrame != null) {
       cancelAnimationFrame(this.animationFrame);
     }
   }
@@ -133,7 +133,7 @@ class DraggableLists extends Component<
         return { items: newItems, selectedRanges: newSelectedRanges };
       },
       () => {
-        if (this.animationFrame) {
+        if (this.animationFrame != null) {
           cancelAnimationFrame(this.animationFrame);
         }
         this.animationFrame = requestAnimationFrame(() => {

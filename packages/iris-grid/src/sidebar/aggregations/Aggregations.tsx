@@ -208,12 +208,15 @@ const Aggregations = ({
       selectedCount,
     }: DraggableRenderItemProps<Aggregation>) => {
       const text = item.operation;
-      const badgeText = isClone ? `${selectedCount}` : undefined;
-      const className = isClone ? 'item-list-item-clone' : undefined;
+      const badgeText =
+        isClone !== undefined && isClone ? `${selectedCount}` : undefined;
+      const className =
+        isClone !== undefined && isClone ? 'item-list-item-clone' : undefined;
       const isRollupOperation = AggregationUtils.isRollupOperation(
         item.operation
       );
-      const isEditable = !isClone && !isRollupOperation;
+      const isEditable =
+        (isClone === undefined || isClone === false) && !isRollupOperation;
       return (
         <>
           <div
@@ -234,7 +237,7 @@ const Aggregations = ({
             {DraggableItemList.renderBadge({ text: badgeText })}
             {DraggableItemList.renderHandle()}
           </div>
-          {!isClone && (
+          {isClone !== undefined && !isClone && (
             <>
               <Button
                 kind="ghost"
