@@ -192,7 +192,7 @@ export class FormattingSectionContent extends PureComponent<
       FormattingSectionContent.isValidColumnName(rule.columnName) &&
       FormattingSectionContent.isValidFormat(rule.columnType, rule.format)
     );
-  } 
+  }
 
   static renderTimeZoneOptions(): JSX.Element[] {
     const options = TimeUtils.TIME_ZONES.map(timeZone => {
