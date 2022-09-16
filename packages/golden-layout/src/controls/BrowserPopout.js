@@ -1,5 +1,5 @@
 import $ from 'jquery';
-import utils from '../utils';
+import utils from '../utils/index.js';
 
 /**
  * Pops a content item out into a new browser window.

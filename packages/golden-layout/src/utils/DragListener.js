@@ -1,6 +1,6 @@
 import $ from 'jquery';
-import utils from './utils';
-import EventEmitter from './EventEmitter';
+import utils from './utils.js';
+import EventEmitter from './EventEmitter.js';
 
 const DragListener = function (eElement, destroyAfterMouseUp) {
   EventEmitter.call(this);

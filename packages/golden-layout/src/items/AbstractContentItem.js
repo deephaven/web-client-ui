@@ -1,6 +1,6 @@
-import utils from '../utils';
-import errors from '../errors';
-import config from '../config';
+import utils from '../utils/index.js';
+import errors from '../errors/index.js';
+import config from '../config/index.js';
 
 const { itemDefaultConfig } = config;
 

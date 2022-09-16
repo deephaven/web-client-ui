@@ -1,7 +1,7 @@
 import $ from 'jquery';
-import AbstractContentItem from './AbstractContentItem';
-import utils from '../utils';
-import controls from '../controls';
+import AbstractContentItem from './AbstractContentItem.js';
+import utils from '../utils/index.js';
+import controls from '../controls/index.js';
 
 const RowOrColumn = function (isColumn, layoutManager, config, parent) {
   AbstractContentItem.call(this, layoutManager, config, parent);

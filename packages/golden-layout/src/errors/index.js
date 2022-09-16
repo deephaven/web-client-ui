@@ -1,4 +1,4 @@
-import ConfigurationError from './ConfigurationError';
+import ConfigurationError from './ConfigurationError.js';
 
 export default {
   ConfigurationError,

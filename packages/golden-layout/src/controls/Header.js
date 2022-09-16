@@ -1,7 +1,7 @@
 import $ from 'jquery';
-import utils from '../utils';
-import HeaderButton from './HeaderButton';
-import Tab from './Tab';
+import utils from '../utils/index.js';
+import HeaderButton from './HeaderButton.js';
+import Tab from './Tab.js';
 
 /**
  * This class represents a header above a Stack ContentItem.

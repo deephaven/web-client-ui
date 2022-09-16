@@ -1,3 +1,3 @@
-import LayoutManager from './LayoutManager';
+import LayoutManager from './LayoutManager.js';
 
 export default LayoutManager;

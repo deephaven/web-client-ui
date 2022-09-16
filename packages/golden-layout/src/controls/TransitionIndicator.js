@@ -1,5 +1,5 @@
 import $ from 'jquery';
-import utils from '../utils';
+import utils from '../utils/index.js';
 
 const TransitionIndicator = function () {
   this._element = $('<div class="lm_transition_indicator"></div>');

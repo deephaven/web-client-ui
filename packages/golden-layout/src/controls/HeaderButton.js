@@ -1,5 +1,5 @@
 import $ from 'jquery';
-import utils from '../utils';
+import utils from '../utils/index.js';
 
 const HeaderButton = function (header, label, cssClass, action) {
   this._header = header;

@@ -1,8 +1,8 @@
 import $ from 'jquery';
-import AbstractContentItem from './AbstractContentItem';
-import utils from '../utils';
-import errors from '../errors';
-import container from '../container';
+import AbstractContentItem from './AbstractContentItem.js';
+import utils from '../utils/index.js';
+import errors from '../errors/index.js';
+import container from '../container/index.js';
 
 /**
  * @param {[type]} layoutManager [description]

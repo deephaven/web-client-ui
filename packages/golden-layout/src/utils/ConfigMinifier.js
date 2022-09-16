@@ -1,4 +1,4 @@
-import utils from './utils';
+import utils from './utils.js';
 
 /**
  * Minifies and unminifies configs by replacing frequent keys

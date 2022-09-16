@@ -1,5 +1,5 @@
-import defaultConfig from './defaultConfig';
-import itemDefaultConfig from './ItemDefaultConfig';
+import defaultConfig from './defaultConfig.js';
+import itemDefaultConfig from './ItemDefaultConfig.js';
 
 export default {
   defaultConfig,

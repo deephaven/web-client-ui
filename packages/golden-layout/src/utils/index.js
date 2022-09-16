@@ -1,10 +1,10 @@
-import utils from './utils';
-import EventEmitter from './EventEmitter';
-import DragListener from './DragListener';
-import ReactComponentHandler from './ReactComponentHandler';
-import ConfigMinifier from './ConfigMinifier';
-import BubblingEvent from './BubblingEvent';
-import EventHub from './EventHub';
+import utils from './utils.js';
+import EventEmitter from './EventEmitter.js';
+import DragListener from './DragListener.js';
+import ReactComponentHandler from './ReactComponentHandler.js';
+import ConfigMinifier from './ConfigMinifier.js';
+import BubblingEvent from './BubblingEvent.js';
+import EventHub from './EventHub.js';
 
 export default {
   ...utils,

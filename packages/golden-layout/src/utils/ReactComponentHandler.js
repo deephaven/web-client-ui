@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import $ from 'jquery';
-import utils from './utils';
+import utils from './utils.js';
 
 /**
  * A specialised GoldenLayout component that binds GoldenLayout container

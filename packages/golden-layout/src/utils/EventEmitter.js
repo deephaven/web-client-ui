@@ -1,4 +1,4 @@
-import utils from './utils';
+import utils from './utils.js';
 
 /**
  * A generic and very fast EventEmitter

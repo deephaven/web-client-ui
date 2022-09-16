@@ -4,11 +4,9 @@
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
   "description": "A multi-screen javascript Layout manager",
-  "main": "./dist/babel/index.js",
+  "main": "./dist/index.js",
   "types": "./index.d.ts",
-  "directories": {
-    "test": "test"
-  },
+  "type": "module",
   "dependencies": {
     "jquery": "^3.6.0"
   },
@@ -29,8 +27,8 @@
     "clean": "rimraf ./dist",
     "start": "cross-env NODE_ENV=development npm run watch",
     "prestart": "npm run build-dev",
-    "test": "karma start karma.conf.js",
-    "test:ci": "karma start karma.conf.js --single-run"
+    "test": "karma start karma.conf.cjs",
+    "test:ci": "karma start karma.conf.cjs --single-run"
   },
   "repository": {
     "type": "git",
@@ -49,5 +47,11 @@
   ],
   "publishConfig": {
     "access": "public"
+  },
+  "devDependencies": {
+    "browserify": "^17.0.0",
+    "esmify": "^2.1.1",
+    "karma-browserify": "^8.1.0",
+    "watchify": "^4.0.0"
   }
 }

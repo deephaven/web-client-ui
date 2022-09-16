@@ -1,5 +1,5 @@
 import $ from 'jquery';
-import utils from '../utils';
+import utils from '../utils/index.js';
 
 const ItemContainer = function (config, parent, layoutManager) {
   utils.EventEmitter.call(this);

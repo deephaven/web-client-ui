@@ -1,4 +1,4 @@
-import ItemContainer from './ItemContainer';
+import ItemContainer from './ItemContainer.js';
 
 export default {
   ItemContainer,

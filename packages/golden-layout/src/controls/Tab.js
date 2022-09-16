@@ -1,6 +1,6 @@
 import $ from 'jquery';
-import utils from '../utils';
-import DragProxy from './DragProxy';
+import utils from '../utils/index.js';
+import DragProxy from './DragProxy.js';
 
 /**
  * Represents an individual tab within a Stack's header

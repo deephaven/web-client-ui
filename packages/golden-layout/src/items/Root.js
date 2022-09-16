@@ -1,7 +1,7 @@
 import $ from 'jquery';
-import utils from '../utils';
-import AbstractContentItem from './AbstractContentItem';
-import RowOrColumn from './RowOrColumn';
+import utils from '../utils/index.js';
+import AbstractContentItem from './AbstractContentItem.js';
+import RowOrColumn from './RowOrColumn.js';
 
 const Root = function (layoutManager, config, containerElement) {
   AbstractContentItem.call(this, layoutManager, config, null);

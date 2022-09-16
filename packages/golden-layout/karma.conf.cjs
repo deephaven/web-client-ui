@@ -8,16 +8,10 @@ module.exports = function (config) {
 
     // frameworks to use
     // available frameworks: https://npmjs.org/browse/keyword/karma-adapter
-    frameworks: ['jasmine'],
+    frameworks: ['browserify', 'jasmine'],
 
     // list of files / patterns to load in the browser
-    files: [
-      './lib/jquery.js',
-      './src/js/base.js',
-      './src/js/utils/utils.js',
-      './src/js/**',
-      './test/**',
-    ],
+    files: ['./test/helper.js', './test/**'],
 
     // list of files to exclude
     exclude: [],
@@ -26,6 +20,11 @@ module.exports = function (config) {
     // available preprocessors: https://npmjs.org/browse/keyword/karma-preprocessor
     preprocessors: {
       // '../src/**': 'coverage'
+      'test/helper.js': ['browserify'],
+    },
+
+    browserify: {
+      plugin: ['esmify'],
     },
 
     // test results reporter to use

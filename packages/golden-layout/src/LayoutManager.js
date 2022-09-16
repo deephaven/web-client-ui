@@ -1,5 +1,5 @@
 import $ from 'jquery';
-import lm from './base';
+import lm from './base.js';
 
 /**
  * The main class that will be exposed as GoldenLayout.
@@ -81,7 +81,7 @@ LayoutManager.__lm = lm;
  * @returns {Object} minified config
  */
 LayoutManager.minifyConfig = function (config) {
-  return new utils.ConfigMinifier().minifyConfig(config);
+  return new lm.utils.ConfigMinifier().minifyConfig(config);
 };
 
 /**
