@@ -16,7 +16,7 @@ const TIME_PATTERN =
   '([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]\\.[0-9]{3}\u200B[0-9]{3}\u200B[0-9]{3}';
 const FULL_DATE_PATTERN = `${DATE_PATTERN} ${TIME_PATTERN}`;
 const DEFAULT_VALUE_STRING = '2022-01-01 00:00:00.000000000';
-const FULL_DATE_FORMAT = 'yyyy-MM-dd HH:mm:ss.SSSSSSSSS';
+const FULL_DATE_FORMAT = 'YYYY-MM-DD HH:MM:SS.SSSSSSSSS';
 
 type DateTimeInputProps = {
   className?: string;

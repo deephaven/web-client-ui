@@ -10,7 +10,7 @@ const log = Log.module('DateInput');
 
 const DATE_PATTERN = '[12][0-9]{3}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])';
 const EXAMPLES = ['2000-01-01', '2022-12-31'];
-const DATE_FORMAT = 'yyyy-MM-dd';
+const DATE_FORMAT = 'YYYY-MM-DD';
 
 type DateInputProps = {
   className?: string;
