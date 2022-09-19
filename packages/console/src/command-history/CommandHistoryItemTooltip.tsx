@@ -41,7 +41,7 @@ export class CommandHistoryItemTooltip extends Component<
     startTime: string | undefined,
     endTime: string | number
   ): string | null {
-    if (startTime == null || Boolean(endTime)) {
+    if (startTime == null || !(endTime !== '' && endTime !== 0)) {
       return null;
     }
 

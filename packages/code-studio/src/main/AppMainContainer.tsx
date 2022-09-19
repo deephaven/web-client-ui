@@ -290,7 +290,7 @@ export class AppMainContainer extends Component<
         // Now add all the modified and updated widgets back in
         const widgetsToAdd = [...updated, ...created];
         widgetsToAdd.forEach(toAdd => {
-          if (toAdd.name != null) {
+          if (toAdd.name != null && toAdd.name !== '') {
             newWidgets.push(toAdd);
           }
         });
@@ -764,7 +764,7 @@ export class AppMainContainer extends Component<
                   onClearFilter={this.handleClearFilter}
                 />
               </button>
-              {Boolean(canUsePanels) && (
+              {canUsePanels && (
                 <button
                   type="button"
                   className="btn btn-link btn-panels-menu btn-show-panels"

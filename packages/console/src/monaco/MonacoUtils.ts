@@ -9,7 +9,7 @@ import * as monaco from 'monaco-editor';
 // @ts-ignore
 import { KeyCodeUtils } from 'monaco-editor/esm/vs/base/common/keyCodes.js';
 // @ts-ignore
-import editorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker';
+import EditorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker';
 import Log from '@deephaven/log';
 import MonacoTheme from './MonacoTheme.module.scss';
 import PyLang from './lang/python';
@@ -23,7 +23,7 @@ const log = Log.module('MonacoUtils');
 
 window.MonacoEnvironment = {
   getWorker(workerId, label) {
-    return editorWorker();
+    return new EditorWorker();
   },
 };
 

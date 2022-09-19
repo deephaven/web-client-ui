@@ -6,7 +6,7 @@ import Stack from './Stack';
 // Mock the CSS transitions to appear right away, and call the entered animation after a timeout
 jest.mock('react-transition-group', () => ({
   CSSTransition: jest.fn(props => {
-    if (props.in == null) {
+    if (props.in === false) {
       return null;
     }
 

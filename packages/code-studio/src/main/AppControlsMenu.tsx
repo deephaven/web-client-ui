@@ -72,7 +72,9 @@ const DragSourceMenuItem = (props: DragSourceMenuItemProps) => {
     (event: MouseEvent) => {
       if (
         startX.current != null &&
+        startX.current !== 0 &&
         startY.current != null &&
+        startY.current !== 0 &&
         startObject.current &&
         (Math.abs(startX.current - event.clientX) >= MINIMUM_DRAG_DISTANCE ||
           Math.abs(startY.current - event.clientY) >= MINIMUM_DRAG_DISTANCE)

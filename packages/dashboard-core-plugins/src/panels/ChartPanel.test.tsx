@@ -24,11 +24,11 @@ jest.mock('@deephaven/dashboard', () => ({
 jest.mock('react-transition-group', () => ({
   // eslint-disable-next-line react/display-name, react/prop-types
   Transition: ({ children, in: inProp }) => (
-    <>{inProp != null ? children : null}</>
+    <>{inProp !== false ? children : null}</>
   ),
   // eslint-disable-next-line react/display-name, react/prop-types
   CSSTransition: ({ children, in: inProp }) => (
-    <>{inProp != null ? children : null}</>
+    <>{inProp !== false ? children : null}</>
   ),
 }));
 

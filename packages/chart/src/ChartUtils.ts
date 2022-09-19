@@ -124,7 +124,8 @@ function isRangedPlotlyAxis(value: unknown): value is { range: Range[] } {
   return (
     value != null &&
     (value as PlotlyAxis).range &&
-    (value as PlotlyAxis).autorange === false
+    ((value as PlotlyAxis).autorange === false ||
+      (value as PlotlyAxis).autorange === undefined)
   );
 }
 
@@ -437,7 +438,9 @@ class ChartUtils {
     const comma = isCommaSeparated ? ',' : '';
     const plotlyNumberType =
       numberType != null && numberType !== '' ? 'e' : 'f';
+
     const type = percentSign !== '' ? percentSign : plotlyNumberType;
+
     const decimalLength = decimalDigits.length + optionalDecimalDigits.length;
     // IDS-4565 Plotly uses an older version of d3 which doesn't support the trim option or negative brackets
     // If plotly updates it's d3 version, this should be re-enabled
@@ -1061,8 +1064,8 @@ class ChartUtils {
 
             const { range, autorange } = layoutAxis;
             if (
-              getRangeParser &&
-              range &&
+              getRangeParser != null &&
+              range !== undefined &&
               (autorange === undefined || autorange === false)
             ) {
               const rangeParser = getRangeParser(axis);
@@ -1401,8 +1404,7 @@ class ChartUtils {
   ): Map<T[P], T[]> {
     return array.reduce((result, item) => {
       const key = item[property];
-      const getKey = result.get(key);
-      const group: T[] = getKey != null ? getKey : [];
+      const group: T[] = result.get(key) ?? [];
       group.push(item);
       result.set(key, group);
       return result;

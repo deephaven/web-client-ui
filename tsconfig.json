@@ -6,7 +6,7 @@
       "@deephaven/*": ["./packages/*/src"]
     },
     "skipLibCheck": true,
-    "types": ["vite/client"]
+    "types": ["vite/client", "jest", "node"]
   },
   "files": [],
   "watchOptions": {

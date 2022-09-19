@@ -1622,7 +1622,7 @@ class Grid extends PureComponent<GridProps, GridState> {
     const mouseHandlers = this.getMouseHandlers();
     for (let i = 0; i < mouseHandlers.length; i += 1) {
       const mouseHandler = mouseHandlers[i];
-      if (mouseHandler.onClick(gridPoint, this, event) != null) {
+      if (mouseHandler.onClick(gridPoint, this, event) !== false) {
         event.stopPropagation();
         event.preventDefault();
         break;
@@ -1659,7 +1659,7 @@ class Grid extends PureComponent<GridProps, GridState> {
     for (let i = 0; i < keyHandlers.length; i += 1) {
       const keyHandler = keyHandlers[i];
       const result = keyHandler.onDown(event, this);
-      if (result != null) {
+      if (result !== false) {
         const options = result as EventHandlerResultOptions;
         if (options?.stopPropagation ?? true) event.stopPropagation();
         if (options?.preventDefault ?? true) event.preventDefault();
@@ -1689,7 +1689,7 @@ class Grid extends PureComponent<GridProps, GridState> {
       const result =
         mouseHandler[functionName] != null &&
         mouseHandler[functionName](gridPoint, this, event);
-      if (result != null) {
+      if (result !== false) {
         if (mouseHandler.cursor != null) {
           ({ cursor } = mouseHandler);
           if (addCursorToDocument) {
