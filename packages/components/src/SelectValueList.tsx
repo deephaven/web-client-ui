@@ -22,6 +22,7 @@ type SelectValueListProps<T> = {
   offset: number;
   items: SelectItem<T>[];
 
+  onBlur?: React.FocusEventHandler<Element>;
   onSelect(itemIndex: number, value: T | null): void;
   onViewportChange(topRow: number, bottomRow: number): void;
 
@@ -36,12 +37,14 @@ class SelectValueList<T> extends PureComponent<SelectValueListProps<T>> {
   static defaultProps = {
     disabled: false,
     rowHeight: 21,
+    onBlur: (): void => undefined,
     'data-testid': undefined,
   };
 
   constructor(props: SelectValueListProps<T>) {
     super(props);
 
+    this.handleBlur = this.handleBlur.bind(this);
     this.handleScroll = this.handleScroll.bind(this);
     this.handleSelect = this.handleSelect.bind(this);
 
@@ -80,7 +83,8 @@ class SelectValueList<T> extends PureComponent<SelectValueListProps<T>> {
       const text = displayValue != null ? displayValue : value;
 
       return (
-        <li className="value-list-item" style={style} key={key}>
+        // Tab index is needed so the item could be a related target in the blur event details
+        <li className="value-list-item" style={style} key={key} tabIndex={-1}>
           <Checkbox
             checked={isSelected}
             disabled={disabled}
@@ -123,6 +127,21 @@ class SelectValueList<T> extends PureComponent<SelectValueListProps<T>> {
     { max: 1 }
   );
 
+  handleBlur(e: React.FocusEvent): void {
+    if (
+      !e.relatedTarget ||
+      (this.list.current &&
+        e.relatedTarget instanceof HTMLElement &&
+        !this.list.current.contains(e.relatedTarget))
+    ) {
+      // Next focused element is outside of the list
+      const { onBlur } = this.props;
+      if (onBlur) {
+        onBlur(e);
+      }
+    }
+  }
+
   handleScroll(): void {
     this.sendViewportUpdate();
   }
@@ -158,6 +177,21 @@ class SelectValueList<T> extends PureComponent<SelectValueListProps<T>> {
     }
   }
 
+  getElement(itemIndex: number): Element | null {
+    if (this.list.current == null) {
+      return null;
+    }
+    const elements = this.list.current.querySelectorAll('.value-list-item');
+    return elements[itemIndex];
+  }
+
+  scrollIntoView(index: number): void {
+    const element = this.getElement(index);
+    if (element != null) {
+      element.scrollIntoView({ block: 'center' });
+    }
+  }
+
   render(): JSX.Element {
     const {
       className,
@@ -183,6 +217,7 @@ class SelectValueList<T> extends PureComponent<SelectValueListProps<T>> {
           { 'is-invalid': isInvalid },
           className
         )}
+        onBlur={this.handleBlur}
         onScroll={this.handleScroll}
         ref={this.list}
         data-testid={dataTestId}

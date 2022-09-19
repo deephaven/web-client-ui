@@ -1,0 +1,15 @@
+@import '../../custom.scss';
+
+.table-input-container {
+  .select-value-list-scroll-pane {
+    min-height: 2.4rem;
+    max-height: 12rem;
+    z-index: 0;
+  }
+  .meta-row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    padding-top: $spacer-1;
+  }
+}
