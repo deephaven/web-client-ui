@@ -469,6 +469,7 @@ class NewItemModal extends PureComponent<NewItemModalProps, NewItemModalState> {
                   <FileExplorer
                     onSelect={this.handleSelect}
                     storage={storage}
+                    isNewItemModalClicked
                   />
                 </div>
               </div>

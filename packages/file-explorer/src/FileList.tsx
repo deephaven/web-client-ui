@@ -51,6 +51,7 @@ export interface FileListProps {
   table: FileStorageTable;
 
   isMultiSelect?: boolean;
+  isNewItemModalClicked?: boolean;
 
   onFocusChange?: (focusedItem?: FileStorageItem) => void;
   onMove: (files: FileStorageItem[], path: string) => void;
@@ -240,6 +241,14 @@ export const FileList = (props: FileListProps): JSX.Element => {
   const [draggedItems, setDraggedItems] = useState<FileStorageItem[]>();
   const [dragPlaceholder, setDragPlaceholder] = useState<HTMLDivElement>();
   const [selectedRanges, setSelectedRanges] = useState([] as Range[]);
+  const [pathAsList, setPathAsList] = useState<string[]>(() => {
+    const path = '/zdir/zdir1/';
+    const list = path.split('/');
+    list.shift();
+    list.pop();
+    return list;
+  });
+
   const itemList = useRef<ItemList<FileStorageItem>>(null);
   const fileList = useRef<HTMLDivElement>(null);
 
@@ -500,6 +509,79 @@ export const FileList = (props: FileListProps): JSX.Element => {
       return false;
     }
   }, [draggedItems, dropTargetItem]);
+
+  function searchPath(
+    viewportItems: FileStorageItem[],
+    targetFileName: string
+  ): number {
+    const findFile = viewportItems.find(element => element.type === 'file');
+    let right =
+      findFile === undefined
+        ? viewportItems.length - 1
+        : viewportItems.indexOf(findFile) - 1;
+    let left = 0;
+    while (left <= right) {
+      const mid = left + Math.floor((right - left) / 2);
+      const { basename } = viewportItems[mid];
+      const stringCompare = targetFileName.localeCompare(basename);
+      if (stringCompare === 0) {
+        return mid;
+      }
+      if (stringCompare > 0) {
+        left = mid + 1;
+      } else {
+        right = mid - 1;
+      }
+    }
+    return -1;
+  }
+
+  const searchRange = useRef(0);
+  const rootSearch = useRef(true);
+  const { isNewItemModalClicked } = props;
+  const makeFoldersOpen = useRef(isNewItemModalClicked);
+  useEffect(() => {
+    function load(basename: string) {
+      const itemIndex = searchPath(
+        loadedViewport.items.slice(
+          searchRange.current + (rootSearch.current ? 0 : 1)
+        ),
+        basename
+      );
+      console.log(searchRange.current, 'and', rootSearch.current);
+      let item;
+      if (itemIndex !== -1) {
+        item =
+          loadedViewport.items[
+            itemIndex + searchRange.current + (rootSearch.current ? 0 : 1)
+          ];
+        searchRange.current = itemIndex;
+      } else {
+        item = undefined;
+        searchRange.current = 0;
+      }
+
+      if (item !== undefined) {
+        log.debug('handleItemClick', item);
+
+        if (isDirectory(item)) {
+          table.setExpanded(item.filename, !item.isExpanded);
+        }
+      }
+    }
+
+    if (pathAsList.length === 0) {
+      makeFoldersOpen.current = false;
+    }
+
+    if (makeFoldersOpen.current && loadedViewport.itemCount !== 0) {
+      load(pathAsList[0]);
+      const pathAsListCopy = [...pathAsList];
+      pathAsListCopy.shift();
+      setPathAsList(pathAsListCopy);
+      rootSearch.current = false;
+    }
+  }, [loadedViewport]);
 
   useEffect(
     function updateTableViewport() {
