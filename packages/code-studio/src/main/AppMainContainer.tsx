@@ -310,7 +310,7 @@ export class AppMainContainer extends Component<
 
     if (notebookPath) {
       const { session, sessionConfig } = this.props;
-      if (!session || !sessionConfig) {
+      if (session == null || sessionConfig == null) {
         log.error('No session available to open notebook URL', notebookPath);
         return;
       }

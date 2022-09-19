@@ -365,7 +365,7 @@ class MonacoUtils {
     editor: monaco.editor.IStandaloneCodeEditor,
     keybinding: string | undefined
   ): void {
-    if (!keybinding) {
+    if (keybinding === undefined) {
       return;
     }
 

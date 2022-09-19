@@ -5,7 +5,8 @@
     "paths": {
       "@deephaven/*": ["./packages/*/src"]
     },
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "types": ["vite/client"]
   },
   "files": [],
   "watchOptions": {

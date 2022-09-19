@@ -18,7 +18,9 @@ class DownloadServiceWorkerUtils {
       window.addEventListener('load', () => {
         const swUrl = new URL(
           `${
-            import.meta.env.BASE_URL ? `${import.meta.env.BASE_URL}` : ''
+            import.meta.env.BASE_URL != null
+              ? `${import.meta.env.BASE_URL}`
+              : ''
           }download/serviceWorker.js`,
           window.location.href
         );

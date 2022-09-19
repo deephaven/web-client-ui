@@ -15,8 +15,8 @@ class PluginUtils {
     pluginName: string
   ): ForwardRefExoticComponent<React.RefAttributes<unknown>> {
     if (
-      import.meta.env.REACT_APP_INTERNAL_COMPONENT_PLUGINS != null &&
-      import.meta.env.VITE_INTERNAL_COMPONENT_PLUGINS?.split(',').includes(
+      import.meta.env.VITE_INTERNAL_COMPONENT_PLUGINS != null &&
+      import.meta.env.VITE_INTERNAL_COMPONENT_PLUGINS.split(',').includes(
         pluginName
       )
     ) {
