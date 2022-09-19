@@ -21,7 +21,7 @@ import {
   FormatterUtils,
   FormattingRule,
   IntegerColumnFormatterOptions,
-} from '.';
+} from '@deephaven/jsapi-utils';
 import useTableColumn from './useTableColumn';
 
 import './TableInput.scss';

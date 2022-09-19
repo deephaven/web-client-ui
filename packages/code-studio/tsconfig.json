@@ -5,9 +5,7 @@
     "noEmit": true,
     "emitDeclarationOnly": false
   },
-  "include": [
-    "src"
-  ],
+  "include": ["src"],
   "references": [
     {
       "path": "../chart"
@@ -32,6 +30,9 @@
     },
     {
       "path": "../iris-grid"
+    },
+    {
+      "path": "../jsapi-components"
     },
     {
       "path": "../jsapi-shim"

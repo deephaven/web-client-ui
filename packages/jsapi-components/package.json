@@ -1,14 +1,14 @@
 {
-  "name": "@deephaven/jsapi-utils",
+  "name": "@deephaven/jsapi-components",
   "version": "0.13.0",
-  "description": "Deephaven JSAPI Utils",
+  "description": "Deephaven JSAPI Components",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
   "type": "module",
   "repository": {
     "type": "git",
     "url": "https://github.com/deephaven/web-client-ui.git",
-    "directory": "packages/jsapi-utils"
+    "directory": "packages/jsapi-components"
   },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -27,14 +27,19 @@
     "start": "cross-env NODE_ENV=development npm run watch"
   },
   "dependencies": {
-    "@deephaven/components": "^0.13.5",
-    "@deephaven/filters": "file:../filters",
+    "@deephaven/components": "file:../components",
     "@deephaven/jsapi-shim": "file:../jsapi-shim",
+    "@deephaven/jsapi-utils": "file:../jsapi-utils",
     "@deephaven/log": "file:../log",
-    "@deephaven/utils": "file:../utils"
+    "@deephaven/utils": "^0.13.0",
+    "classnames": "^2.3.2",
+    "prop-types": "^15.8.1"
   },
   "devDependencies": {
     "@deephaven/tsconfig": "file:../tsconfig"
+  },
+  "peerDependencies": {
+    "react": "^17.x"
   },
   "files": [
     "dist"
