@@ -25,7 +25,7 @@ export interface FileListContainerProps {
   onRename?: (file: FileStorageItem, newName: string) => void;
   onSelect: (file: FileStorageItem, event: React.SyntheticEvent) => void;
   validateRename?: (file: FileStorageItem, newName: string) => Promise<void>;
-  pathGetter?: (file: FileStorageItem) => void;
+  onSelectionChange?: (selectedItems: FileStorageItem[]) => void;
 
   /** Height of each item in the list */
   rowHeight?: number;
@@ -47,7 +47,7 @@ export const FileListContainer = (
     onMove = () => undefined,
     onRename,
     onSelect,
-    pathGetter,
+    onSelectionChange,
     table,
     rowHeight = DEFAULT_ROW_HEIGHT,
     validateRename = () => Promise.resolve(),
@@ -56,9 +56,13 @@ export const FileListContainer = (
   const [selectedItems, setSelectedItems] = useState([] as FileStorageItem[]);
   const [focusedItem, setFocusedItem] = useState<FileStorageItem>();
 
-  const handleSelectionChange = useCallback(newSelectedItems => {
-    setSelectedItems(newSelectedItems);
-  }, []);
+  const handleSelectionChange = useCallback(
+    newSelectedItems => {
+      setSelectedItems(newSelectedItems);
+      onSelectionChange?.(newSelectedItems);
+    },
+    [onSelectionChange]
+  );
 
   const handleFocusChange = useCallback(newFocusedItem => {
     setFocusedItem(newFocusedItem);
@@ -212,7 +216,6 @@ export const FileListContainer = (
           onMove={onMove}
           onSelect={onSelect}
           onSelectionChange={handleSelectionChange}
-          pathGetter={pathGetter}
           onFocusChange={handleFocusChange}
           renderItem={renderItem}
           rowHeight={rowHeight}

@@ -107,7 +107,7 @@ export class FileExplorerPanel extends React.Component<
     this.handleSessionOpened = this.handleSessionOpened.bind(this);
     this.handleSessionClosed = this.handleSessionClosed.bind(this);
     this.handleShow = this.handleShow.bind(this);
-    this.getPath = this.getPath.bind(this);
+    this.handleSelectionChange = this.handleSelectionChange.bind(this);
 
     const { session, language } = props;
     this.state = {
@@ -169,8 +169,12 @@ export class FileExplorerPanel extends React.Component<
     });
   }
 
-  getPath(file: FileStorageItem): void {
-    const path = FileUtils.makePath(file.filename);
+  handleSelectionChange(selectedItems: FileStorageItem[]): void {
+    let path = '/';
+    if (selectedItems.length === 1 && selectedItems[0].type === 'directory') {
+      path = FileUtils.makePath(selectedItems[0].filename);
+    }
+
     this.setState({ focusedFilePath: path });
   }
 
@@ -255,7 +259,7 @@ export class FileExplorerPanel extends React.Component<
             onDelete={this.handleDelete}
             onRename={this.handleRename}
             onSelect={this.handleFileSelect}
-            pathGetter={this.getPath}
+            onSelectionChange={this.handleSelectionChange}
           />
         )}
         <NewItemModal

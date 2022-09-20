@@ -24,7 +24,7 @@ export interface FileExplorerProps {
   onDelete?: (files: FileStorageItem[]) => void;
   onRename?: (oldName: string, newName: string) => void;
   onSelect: (file: FileStorageItem, event: React.SyntheticEvent) => void;
-  pathGetter?: (file: FileStorageItem) => void;
+  onSelectionChange?: (selectedItems: FileStorageItem[]) => void;
 
   /** Height of each item in the list */
   rowHeight?: number;
@@ -40,7 +40,7 @@ export const FileExplorer = (props: FileExplorerProps): JSX.Element => {
     onDelete = () => undefined,
     onRename = () => undefined,
     onSelect,
-    pathGetter,
+    onSelectionChange,
     rowHeight = DEFAULT_ROW_HEIGHT,
   } = props;
   const [itemsToDelete, setItemsToDelete] = useState<FileStorageItem[]>([]);
@@ -184,7 +184,7 @@ export const FileExplorer = (props: FileExplorerProps): JSX.Element => {
           onDelete={handleDelete}
           onRename={handleRename}
           onSelect={onSelect}
-          pathGetter={pathGetter}
+          onSelectionChange={onSelectionChange}
           rowHeight={rowHeight}
           table={table}
           validateRename={handleValidateRename}

@@ -11,6 +11,14 @@ import { Container } from '@deephaven/golden-layout';
 import { FileExplorerPanel, FileExplorerPanelProps } from './FileExplorerPanel';
 import MockFileStorage from './MockFileStorage';
 
+function makeFileName(index = 0): string {
+  return `testfile${index}`;
+}
+
+function makeDirName(index = 0): string {
+  return `testdir${index}`;
+}
+
 function makeFile(basename: string, path = '/'): FileStorageItem {
   const filename = `${path}${basename}`;
   return {
@@ -24,7 +32,7 @@ function makeFile(basename: string, path = '/'): FileStorageItem {
 function makeFiles(count = 5) {
   const result: FileStorageItem[] = [];
   for (let i = 0; i < count; i += 1) {
-    result.push(makeFile(`testfile${i}`));
+    result.push(makeFile(makeFileName(i)));
   }
   return result;
 }
@@ -85,12 +93,9 @@ describe('selects directory for NewItemModal correctly', () => {
     userEvent.click(screen.getAllByRole('listitem')[itemIndex], options);
   }
 
-  async function getNewItemModal(): Promise<HTMLElement> {
+  function getNewItemModal(): HTMLElement {
     userEvent.click(screen.getByRole('button', { name: 'New folder' }));
-    const foundModal = await screen.findAllByRole('dialog');
-    expect(foundModal).toHaveLength(1);
-
-    return foundModal[0];
+    return screen.getByRole('dialog');
   }
 
   const dirs = makeDirectories();
@@ -106,41 +111,41 @@ describe('selects directory for NewItemModal correctly', () => {
 
   it('selects directory correctly', async () => {
     clickItem(0);
-    const NewItemModal = await getNewItemModal();
+    const modal = getNewItemModal();
 
-    const foundButtons = await findAllByRole(NewItemModal, 'button');
+    const foundButtons = await findAllByRole(modal, 'button');
     const buttonContent = foundButtons.map(button => button.innerHTML);
 
     expect(buttonContent).toContain('root');
     expect(buttonContent).toContain('testdir0');
-    for (let i = 1; i < 5; i += 1) {
-      expect(buttonContent).not.toContain(`testdir${i}`);
+    for (let i = 1; i < dirs.length; i += 1) {
+      expect(buttonContent).not.toContain(makeDirName(i));
     }
   });
 
   it('selects root directory when multiple directories are selected', async () => {
     clickItem(0);
     clickItem(3, { ctrlKey: true });
-    const NewItemModal = await getNewItemModal();
+    const modal = getNewItemModal();
 
-    const foundButtons = await findAllByRole(NewItemModal, 'button');
+    const foundButtons = await findAllByRole(modal, 'button');
     const buttonContent = foundButtons.map(button => button.innerHTML);
 
     expect(buttonContent).toContain('root');
     for (let i = 0; i < dirs.length; i += 1) {
-      expect(buttonContent).not.toContain(`testdir${i}`);
+      expect(buttonContent).not.toContain(makeDirName(i));
     }
   });
 
   it('selects root directory when no directories are selected', async () => {
-    const NewItemModal = await getNewItemModal();
+    const modal = getNewItemModal();
 
-    const foundButtons = await findAllByRole(NewItemModal, 'button');
+    const foundButtons = await findAllByRole(modal, 'button');
     const buttonContent = foundButtons.map(button => button.innerHTML);
 
     expect(buttonContent).toContain('root');
     for (let i = 0; i < dirs.length; i += 1) {
-      expect(buttonContent).not.toContain(`testdir${i}`);
+      expect(buttonContent).not.toContain(makeDirName(i));
     }
   });
 
@@ -151,16 +156,16 @@ describe('selects directory for NewItemModal correctly', () => {
     fireEvent.keyDown(item, { key: 'ArrowDown' });
     fireEvent.keyDown(item, { key: 'ArrowUp' });
 
-    const NewItemModal = await getNewItemModal();
+    const modal = getNewItemModal();
 
-    const foundButtons = await findAllByRole(NewItemModal, 'button');
+    const foundButtons = await findAllByRole(modal, 'button');
     const buttonContent = foundButtons.map(button => button.innerHTML);
 
     expect(buttonContent).toContain('root');
     expect(buttonContent).toContain('testdir2');
     for (let i = 0; i < dirs.length; i += 1) {
       if (i !== 2) {
-        expect(buttonContent).not.toContain(`testdir${i}`);
+        expect(buttonContent).not.toContain(makeDirName(i));
       }
     }
   });
@@ -169,17 +174,17 @@ describe('selects directory for NewItemModal correctly', () => {
     const item = screen.getAllByRole('listitem')[dirs.length + 1];
     userEvent.click(item);
 
-    const NewItemModal = await getNewItemModal();
+    const modal = getNewItemModal();
 
-    const foundButtons = await findAllByRole(NewItemModal, 'button');
+    const foundButtons = await findAllByRole(modal, 'button');
     const buttonContent = foundButtons.map(button => button.innerHTML);
 
     expect(buttonContent).toContain('root');
     for (let i = 0; i < dirs.length; i += 1) {
-      expect(buttonContent).not.toContain(`testdir${i}`);
+      expect(buttonContent).not.toContain(makeDirName(i));
     }
     for (let i = 0; i < files.length; i += 1) {
-      expect(buttonContent).not.toContain(`testfile${i}`);
+      expect(buttonContent).not.toContain(makeFileName(i));
     }
   });
 });
