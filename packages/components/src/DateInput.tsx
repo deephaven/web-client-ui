@@ -91,9 +91,6 @@ const DateInput = React.forwardRef<HTMLInputElement, DateInputProps>(
           className={classNames(className)}
           example={EXAMPLES}
           getNextSegmentValue={getNextSegmentValue}
-          getPreferredReplacementString={
-            DEFAULT_GET_PREFERRED_REPLACEMENT_STRING
-          }
           onChange={handleChange}
           onSelect={handleSelect}
           pattern={DATE_PATTERN}
