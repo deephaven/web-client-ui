@@ -21,9 +21,6 @@ type DateInputProps = {
   'data-testid'?: string;
 };
 
-// Forward ref causes a false positive for display-name in eslint:
-// https://github.com/yannickcr/eslint-plugin-react/issues/2269
-// eslint-disable-next-line react/display-name
 const DateInput = React.forwardRef<HTMLInputElement, DateInputProps>(
   (props: DateInputProps, ref) => {
     const {
