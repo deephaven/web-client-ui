@@ -185,9 +185,7 @@ class SelectValueList<T> extends PureComponent<SelectValueListProps<T>> {
 
   scrollIntoView(index: number): void {
     const element = this.getElement(index);
-    if (element != null) {
-      element.scrollIntoView({ block: 'center' });
-    }
+    element?.scrollIntoView({ block: 'center' });
   }
 
   render(): JSX.Element {
