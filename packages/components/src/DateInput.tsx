@@ -106,6 +106,8 @@ const DateInput = React.forwardRef<HTMLInputElement, DateInputProps>(
   }
 );
 
+DateInput.displayName = 'DateInput';
+
 DateInput.defaultProps = {
   className: '',
   onChange: () => false,
