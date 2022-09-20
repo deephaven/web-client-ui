@@ -14,6 +14,8 @@ $header-height: 30px;
 :export {
   grid-bg: $gray-900;
   font: $font-size Fira Sans, sans-serif; // must be preloaded
+  white: $interfacewhite;
+  black: $interfaceblack;
   header-bg: $header-bg;
   header-color: $gray-200;
   header-height: $header-height;

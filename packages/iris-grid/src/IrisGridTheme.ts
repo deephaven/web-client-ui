@@ -41,6 +41,8 @@ export type IrisGridThemeType = GridThemeType & {
 
 const theme: Partial<IrisGridThemeType> = Object.freeze({
   backgroundColor: IrisGridTheme['grid-bg'],
+  white: IrisGridTheme.white,
+  black: IrisGridTheme.black,
   font: IrisGridTheme.font,
   headerBackgroundColor: IrisGridTheme['header-bg'],
   headerColor: IrisGridTheme['header-color'],
