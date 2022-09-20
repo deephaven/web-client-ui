@@ -434,7 +434,7 @@ export class TableUtils {
   static makeQuickFilter(
     column: Column,
     text: string,
-    timeZone: string
+    timeZone?: string
   ): FilterCondition | null {
     const orComponents = text.split('||');
     let orFilter = null;
@@ -482,7 +482,7 @@ export class TableUtils {
   static makeQuickFilterFromComponent(
     column: Column,
     text: string,
-    timeZone: string
+    timeZone?: string
   ): FilterCondition | null {
     const { type } = column;
     if (TableUtils.isNumberType(type)) {
@@ -491,7 +491,7 @@ export class TableUtils {
     if (TableUtils.isBooleanType(type)) {
       return this.makeQuickBooleanFilter(column, text);
     }
-    if (TableUtils.isDateType(type)) {
+    if (timeZone && TableUtils.isDateType(type)) {
       return this.makeQuickDateFilter(column, text, timeZone);
     }
     if (TableUtils.isCharType(type)) {

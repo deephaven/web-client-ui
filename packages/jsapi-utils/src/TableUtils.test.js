@@ -2,7 +2,6 @@ import dh from '@deephaven/jsapi-shim';
 import {
   Operator as FilterOperator,
   Type as FilterType,
-  TypeValue as FilterTypeValue,
 } from '@deephaven/filters';
 import TableUtils from './TableUtils';
 import DateUtils from './DateUtils';
@@ -1378,10 +1377,10 @@ describe('makeCancelableTableEventPromise', () => {
 });
 
 describe('converts filter type to appropriate string value for quick filters', () => {
-  function testFilterType(filterType: FilterTypeValue, expectedResult: string) {
+  function testFilterType(filterType, expectedResult) {
     expect(TableUtils.getFilterOperatorString(filterType)).toBe(expectedResult);
   }
-  function testFilterTypeThrows(filterType: FilterTypeValue) {
+  function testFilterTypeThrows(filterType) {
     expect(() => TableUtils.getFilterOperatorString(filterType)).toThrow();
   }
   it('handles valid options correctly', () => {
@@ -1412,7 +1411,7 @@ describe('converts filter type to appropriate string value for quick filters', (
 });
 
 describe('quote values', () => {
-  function testQuoteValue(value: string, expectedValue: string) {
+  function testQuoteValue(value, expectedValue) {
     expect(TableUtils.quoteValue(value)).toBe(expectedValue);
   }
   it('quotes unquoted values properly', () => {
@@ -1430,7 +1429,7 @@ describe('quote values', () => {
 });
 
 describe('range operations', () => {
-  function testIsRangeOperation(operation: string, expectedResult = true) {
+  function testIsRangeOperation(operation, expectedResult = true) {
     expect(TableUtils.isRangeOperation(operation)).toBe(expectedResult);
   }
 
