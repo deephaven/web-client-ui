@@ -1378,6 +1378,11 @@ export class GridRenderer {
     { max: 1000 }
   );
 
+  getCachedColorIsDark = memoizeClear(
+    (color: string) => ColorUtils.isDark(color),
+    { max: 1000 }
+  );
+
   drawHeaders(context: CanvasRenderingContext2D, state: GridRenderState): void {
     const { theme } = state;
 
@@ -1832,8 +1837,8 @@ export class GridRenderer {
     let { textColor = headerColor } = style ?? {};
 
     try {
-      const isDarkBackground = ColorUtils.isDark(backgroundColor);
-      const isDarkText = ColorUtils.isDark(textColor);
+      const isDarkBackground = this.getCachedColorIsDark(backgroundColor);
+      const isDarkText = this.getCachedColorIsDark(textColor);
       if (isDarkBackground && isDarkText) {
         textColor = white;
       } else if (!isDarkBackground && !isDarkText) {
