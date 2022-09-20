@@ -136,9 +136,7 @@ class SelectValueList<T> extends PureComponent<SelectValueListProps<T>> {
     ) {
       // Next focused element is outside of the list
       const { onBlur } = this.props;
-      if (onBlur) {
-        onBlur(e);
-      }
+      onBlur?.(e);
     }
   }
 
