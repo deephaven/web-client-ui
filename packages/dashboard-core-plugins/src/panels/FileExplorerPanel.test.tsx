@@ -100,6 +100,7 @@ describe('selects directory for NewItemModal correctly', () => {
 
   const dirs = makeDirectories();
   const files = makeFiles();
+  files.push(makeFile(makeFileName(2), `/${makeDirName(2)}/`));
   const items = dirs.concat(files);
 
   beforeEach(async () => {
@@ -170,8 +171,8 @@ describe('selects directory for NewItemModal correctly', () => {
     }
   });
 
-  it('does not set the path if a file (not directory) is selected', async () => {
-    const item = screen.getAllByRole('listitem')[dirs.length + 1];
+  it('sets the path correctly if a non-directory file within a directory is selected', async () => {
+    const item = screen.getAllByRole('listitem')[items.length - 1];
     userEvent.click(item);
 
     const modal = getNewItemModal();
@@ -180,8 +181,11 @@ describe('selects directory for NewItemModal correctly', () => {
     const buttonContent = foundButtons.map(button => button.innerHTML);
 
     expect(buttonContent).toContain('root');
+    expect(buttonContent).toContain('testdir2');
     for (let i = 0; i < dirs.length; i += 1) {
-      expect(buttonContent).not.toContain(makeDirName(i));
+      if (i !== 2) {
+        expect(buttonContent).not.toContain(makeDirName(i));
+      }
     }
     for (let i = 0; i < files.length; i += 1) {
       expect(buttonContent).not.toContain(makeFileName(i));

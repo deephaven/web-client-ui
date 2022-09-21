@@ -171,10 +171,13 @@ export class FileExplorerPanel extends React.Component<
 
   handleSelectionChange(selectedItems: FileStorageItem[]): void {
     let path = '/';
-    if (selectedItems.length === 1 && selectedItems[0].type === 'directory') {
-      path = FileUtils.makePath(selectedItems[0].filename);
+    if (selectedItems.length === 1) {
+      if (selectedItems[0].type === 'directory') {
+        path = FileUtils.makePath(selectedItems[0].filename);
+      } else {
+        path = FileUtils.getPath(selectedItems[0].filename);
+      }
     }
-
     this.setState({ focusedFilePath: path });
   }
 
