@@ -28,6 +28,10 @@ export class MockFileStorageTable implements FileStorageTable {
     return Promise.resolve();
   }
 
+  collapseAll(): Promise<void> {
+    return Promise.resolve();
+  }
+
   getViewportData(): Promise<ViewportData<FileStorageItem>> {
     return Promise.resolve({
       items: this.items, // Fill in with mock items

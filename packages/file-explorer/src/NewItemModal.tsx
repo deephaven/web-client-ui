@@ -470,6 +470,7 @@ class NewItemModal extends PureComponent<NewItemModalProps, NewItemModalState> {
                     onSelect={this.handleSelect}
                     storage={storage}
                     isNewItemModalClicked
+                    focusedPath={path}
                   />
                 </div>
               </div>

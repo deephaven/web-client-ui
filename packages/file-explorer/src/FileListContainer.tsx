@@ -17,6 +17,7 @@ export interface FileListContainerProps {
 
   isMultiSelect?: boolean;
   isNewItemModalClicked?: boolean;
+  focusedPath?: string;
 
   onCreateFile?: (path?: string) => void;
   onCreateFolder?: (path?: string) => void;
@@ -41,6 +42,7 @@ export const FileListContainer = (
   const {
     isMultiSelect = false,
     isNewItemModalClicked,
+    focusedPath,
     showContextMenu = false,
     onCreateFile,
     onCreateFolder,
@@ -224,6 +226,7 @@ export const FileListContainer = (
           table={table}
           isMultiSelect={isMultiSelect}
           isNewItemModalClicked={isNewItemModalClicked}
+          focusedPath={focusedPath}
         />
       )}
       {showContextMenu && <ContextActions actions={actions} />}

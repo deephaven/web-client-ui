@@ -21,6 +21,7 @@ export interface FileExplorerProps {
 
   isMultiSelect?: boolean;
   isNewItemModalClicked?: boolean;
+  focusedPath?: string;
 
   onDelete?: (files: FileStorageItem[]) => void;
   onRename?: (oldName: string, newName: string) => void;
@@ -39,6 +40,7 @@ export const FileExplorer = (props: FileExplorerProps): JSX.Element => {
     storage,
     isMultiSelect = false,
     isNewItemModalClicked,
+    focusedPath,
     onDelete = () => undefined,
     onRename = () => undefined,
     onSelect,
@@ -182,6 +184,7 @@ export const FileExplorer = (props: FileExplorerProps): JSX.Element => {
         <FileListContainer
           isMultiSelect={isMultiSelect}
           isNewItemModalClicked={isNewItemModalClicked}
+          focusedPath={focusedPath}
           showContextMenu
           onMove={handleMove}
           onDelete={handleDelete}

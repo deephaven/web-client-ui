@@ -43,6 +43,7 @@ export interface FileStorageTable extends StorageTable<FileStorageItem> {
    * @param expanded What expanded state to set
    */
   setExpanded(path: string, expanded: boolean): Promise<void>;
+  collapseAll(): Promise<void>;
 }
 
 /**
