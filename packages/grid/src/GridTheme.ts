@@ -29,6 +29,10 @@ export type GridTheme = {
   // Color to draw text
   textColor: GridColor;
 
+  // Black and white to use if needed
+  black: GridColor;
+  white: GridColor;
+
   // Amount of padding within a cell and header
   cellHorizontalPadding: number;
   headerHorizontalPadding: number;
@@ -132,7 +136,7 @@ export type GridTheme = {
 /**
  * Default theme for a Grid.
  */
-export default Object.freeze({
+const defaultTheme: GridTheme = Object.freeze({
   allowColumnResize: true,
   allowRowResize: true,
   autoSelectRow: false, // Select the full row upon selection
@@ -140,6 +144,8 @@ export default Object.freeze({
   autoSizeColumns: true, // Automatically size the columns to fit content
   autoSizeRows: true,
   backgroundColor: '#000000',
+  black: '#000000',
+  white: '#ffffff',
   cellHorizontalPadding: 5,
   headerHorizontalPadding: 5,
   font: '12px Arial, sans serif',
@@ -213,4 +219,6 @@ export default Object.freeze({
   // Divider colors between the floating parts and the grid
   floatingDividerOuterColor: '#000000',
   floatingDividerInnerColor: '#cccccc',
-}) as GridTheme;
+});
+
+export default defaultTheme;
