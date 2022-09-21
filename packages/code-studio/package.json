@@ -22,7 +22,6 @@
     "@deephaven/grid": "file:../grid",
     "@deephaven/icons": "file:../icons",
     "@deephaven/iris-grid": "file:../iris-grid",
-    "@deephaven/jsapi-components": "file:../jsapi-components",
     "@deephaven/jsapi-shim": "file:../jsapi-shim",
     "@deephaven/jsapi-utils": "file:../jsapi-utils",
     "@deephaven/log": "file:../log",
