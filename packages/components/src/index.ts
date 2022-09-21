@@ -24,6 +24,8 @@ export { default as Collapse } from './Collapse';
 export { default as Checkbox } from './Checkbox';
 export { default as ComboBox } from './ComboBox';
 export { default as CustomTimeSelect } from './CustomTimeSelect';
+export { default as DateTimeInput } from './DateTimeInput';
+export { default as DateInput } from './DateInput';
 export { default as DebouncedSearchInput } from './DebouncedSearchInput';
 export { default as DeephavenSpinner } from './DeephavenSpinner';
 export { default as DraggableItemList } from './DraggableItemList';
