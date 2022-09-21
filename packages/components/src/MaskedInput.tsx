@@ -234,7 +234,7 @@ const MaskedInput = React.forwardRef<HTMLInputElement, MaskedInputProps>(
       checkValue: string,
       cursorPosition = checkValue.length
     ): boolean {
-      const patternRegex = new RegExp(pattern);
+      const patternRegex = new RegExp(`^${pattern}$`);
       if (patternRegex.test(checkValue)) {
         return true;
       }

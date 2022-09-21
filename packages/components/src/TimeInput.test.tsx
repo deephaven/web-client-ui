@@ -150,6 +150,12 @@ describe('select and type', () => {
     testSelectAndType(4, '55', '12:55:56');
 
     testSelectAndType(1, '000000', '00:00:00');
+
+    // Jumps to the next section if the previous section is complete
+    testSelectAndType(0, '35', `03:54:56`);
+
+    // Validates the whole value, not just a substring
+    testSelectAndType(9, '11`"();', `12:34:11`);
   });
   it('handles backspace', () => {
     // Replace selected section with fixed-width spaces
@@ -194,20 +200,14 @@ describe('select and type', () => {
     unmount();
   });
 
-  it('existing invalid behaviors that might need to be fixed', () => {
-    // Expected: '20:34:56'?
+  it('existing edge cases', () => {
+    // An edge case not worth fixing
+    // Ideally it should change the first section to 20, i.e. '20:34:56'
     testSelectAndType(1, '5{arrowleft}2', `25:34:56`);
 
-    // Fill in with zeros when skipping positions. Expected: '03:34:56'
+    // An edge case not worth fixing
+    // Ideally it should fill in with zeros when skipping positions, i.e. '03:34:56'
     testSelectAndType(0, '{backspace}3', `${FIXED_WIDTH_SPACE}3:34:56`);
-
-    // Not sure it's ok to skip to the next section when the input isn't valid for the current section
-    // Expected: '03:34:56'?
-    testSelectAndType(0, '35', `03:54:56`);
-
-    // Should validate whole value
-    // Expected: '12:34:11'
-    testSelectAndType(9, '11`"();', `12:34:11\`"();`);
   });
 });
 
