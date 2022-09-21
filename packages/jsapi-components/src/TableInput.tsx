@@ -14,13 +14,7 @@ import {
 import type { LongWrapper, Table } from '@deephaven/jsapi-shim';
 import { PromiseUtils } from '@deephaven/utils';
 import Log from '@deephaven/log';
-import {
-  DecimalColumnFormatterOptions,
-  Formatter,
-  FormatterUtils,
-  FormattingRule,
-  IntegerColumnFormatterOptions,
-} from '@deephaven/jsapi-utils';
+import { Formatter, FormatterUtils, Settings } from '@deephaven/jsapi-utils';
 import useTableColumn from './useTableColumn';
 
 import './TableInput.scss';
@@ -33,16 +27,6 @@ interface SelectValueItem {
   displayValue: string;
   value: Value;
   isSelected: boolean;
-}
-
-interface Settings {
-  formatter: FormattingRule[];
-  timeZone: string;
-  defaultDateTimeFormat: string;
-  showTimeZone: boolean;
-  showTSeparator: boolean;
-  defaultDecimalFormatOptions?: DecimalColumnFormatterOptions;
-  defaultIntegerFormatOptions?: IntegerColumnFormatterOptions;
 }
 
 interface TableInputProps {
