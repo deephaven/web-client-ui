@@ -8,13 +8,14 @@ import {
   RadioGroup,
   SearchInput,
   TimeInput,
+  DateInput,
+  DateTimeInput,
   CustomTimeSelect,
   UISwitch,
   ValidateLabelInput,
   Select,
   Option,
 } from '@deephaven/components';
-import DateInput from '../components/DateInput';
 
 const EXAMPLES = [
   { title: 'Title 1', value: 'Value 1' },
@@ -329,7 +330,9 @@ function Inputs(): React.ReactElement {
             <br />
             <h5>Date Input</h5>
             <DateInput />
-            <small className="text-muted">Does not work in mock</small>
+            <br />
+            <h5>DateTime Input</h5>
+            <DateTimeInput />
             <br />
             <h5>Custom Timeselect</h5>
             <CustomTimeSelect

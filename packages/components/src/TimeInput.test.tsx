@@ -9,6 +9,8 @@ type SelectionDirection = SelectionSegment['selectionDirection'];
 
 const DEFAULT_VALUE = TimeUtils.parseTime('12:34:56');
 
+const FIXED_WIDTH_SPACE = '\u2007';
+
 function makeTimeInput({ value = DEFAULT_VALUE, onChange = jest.fn() } = {}) {
   return render(<TimeInput value={value} onChange={onChange} />);
 }
@@ -148,6 +150,62 @@ describe('select and type', () => {
     testSelectAndType(4, '55', '12:55:56');
 
     testSelectAndType(1, '000000', '00:00:00');
+
+    // Jumps to the next section if the previous section is complete
+    testSelectAndType(0, '35', `03:54:56`);
+
+    // Validates the whole value, not just a substring
+    testSelectAndType(9, '11`"();', `12:34:11`);
+  });
+  it('handles backspace', () => {
+    // Replace selected section with fixed-width spaces
+    testSelectAndType(
+      0,
+      '{backspace}',
+      `${FIXED_WIDTH_SPACE}${FIXED_WIDTH_SPACE}:34:56`
+    );
+    testSelectAndType(
+      3,
+      '{backspace}',
+      `12:${FIXED_WIDTH_SPACE}${FIXED_WIDTH_SPACE}:56`
+    );
+
+    // Allow deleting digits from the end
+    testSelectAndType(9, '{backspace}', `12:34`);
+
+    // Add missing mask chars
+    testSelectAndType(9, '{backspace}{backspace}12', `12:31:2`);
+  });
+
+  it('trims trailing mask and spaces', () => {
+    const { unmount } = makeTimeInput();
+    const input: HTMLInputElement = screen.getByRole('textbox');
+
+    input.setSelectionRange(3, 3);
+
+    userEvent.type(input, '{backspace}');
+
+    input.setSelectionRange(9, 9);
+
+    userEvent.type(input, '{backspace}');
+
+    expect(input.value).toEqual(`12`);
+
+    input.setSelectionRange(1, 1);
+
+    userEvent.type(input, '{backspace}');
+
+    expect(input.value).toEqual(``);
+
+    unmount();
+  });
+
+  it('existing edge cases', () => {
+    // Ideally it should change the first section to 20, i.e. '20:34:56'
+    testSelectAndType(1, '5{arrowleft}2', `25:34:56`);
+
+    // Ideally it should fill in with zeros when skipping positions, i.e. '03:34:56'
+    testSelectAndType(0, '{backspace}3', `${FIXED_WIDTH_SPACE}3:34:56`);
   });
 });
 
