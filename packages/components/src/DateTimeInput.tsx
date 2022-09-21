@@ -42,10 +42,10 @@ const DateTimeInput = React.forwardRef<HTMLInputElement, DateTimeInputProps>(
   (props: DateTimeInputProps, ref) => {
     const {
       className = '',
-      onChange = () => false,
+      onChange = () => undefined,
       defaultValue = '',
-      onFocus = () => false,
-      onBlur = () => false,
+      onFocus = () => undefined,
+      onBlur = () => undefined,
       'data-testid': dataTestId,
     } = props;
     const [value, setValue] = useState(
