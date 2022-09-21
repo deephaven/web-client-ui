@@ -1,8 +1,8 @@
 import React, { useCallback, useState } from 'react';
 import classNames from 'classnames';
 import Log from '@deephaven/log';
-import type { SelectionSegment } from './MaskedInput';
-import MaskedInput from './MaskedInput';
+import MaskedInput, { SelectionSegment } from './MaskedInput';
+import { getNextSegmentValue } from './DateInputUtils';
 
 const log = Log.module('DateInput');
 
@@ -32,40 +32,6 @@ const DateInput = React.forwardRef<HTMLInputElement, DateInputProps>(
     const [value, setValue] = useState(defaultValue);
     const [selection, setSelection] = useState<SelectionSegment>();
 
-    function getNextNumberSegmentValue(
-      delta: number,
-      segmentValue: string,
-      lowerBound: number,
-      upperBound: number,
-      length: number
-    ) {
-      const modValue = upperBound - lowerBound + 1;
-      const newSegmentValue =
-        ((((parseInt(segmentValue, 10) - delta - lowerBound) % modValue) +
-          modValue) %
-          modValue) +
-        lowerBound;
-      return `${newSegmentValue}`.padStart(length, '0');
-    }
-
-    function getNextSegmentValue(
-      range: SelectionSegment,
-      delta: number,
-      segmentValue: string
-    ): string {
-      const { selectionStart } = range;
-      if (selectionStart === 0) {
-        return getNextNumberSegmentValue(delta, segmentValue, 1900, 2099, 4);
-      }
-      if (selectionStart === 5) {
-        return getNextNumberSegmentValue(delta, segmentValue, 1, 12, 2);
-      }
-      if (selectionStart === 8) {
-        return getNextNumberSegmentValue(delta, segmentValue, 1, 31, 2);
-      }
-      return '';
-    }
-
     const handleChange = useCallback(
       (newValue: string): void => {
         log.debug('handleChange', newValue);
@@ -75,10 +41,6 @@ const DateInput = React.forwardRef<HTMLInputElement, DateInputProps>(
       [onChange]
     );
 
-    function handleSelect(newSelection: SelectionSegment) {
-      setSelection(newSelection);
-    }
-
     return (
       <div className="d-flex flex-row align-items-center">
         <MaskedInput
@@ -87,7 +49,7 @@ const DateInput = React.forwardRef<HTMLInputElement, DateInputProps>(
           example={EXAMPLES}
           getNextSegmentValue={getNextSegmentValue}
           onChange={handleChange}
-          onSelect={handleSelect}
+          onSelect={setSelection}
           pattern={DATE_PATTERN}
           placeholder={DATE_FORMAT}
           selection={selection}
