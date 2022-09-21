@@ -4,7 +4,6 @@ import React, {
   useRef,
   useEffect,
   useMemo,
-  ReactNode,
 } from 'react';
 import classNames from 'classnames';
 import {
@@ -59,7 +58,7 @@ interface TableInputProps {
 
 const SIZE_LIMIT = 250;
 
-const TableInput = (props: TableInputProps): ReactNode => {
+function TableInput(props: TableInputProps): JSX.Element {
   const {
     className = undefined,
     columnName,
@@ -96,9 +95,9 @@ const TableInput = (props: TableInputProps): ReactNode => {
 
   const { column, data, error } = useTableColumn(
     table,
-    columnName,
     0,
-    SIZE_LIMIT - 1
+    SIZE_LIMIT - 1,
+    columnName
   );
 
   const formatValue = useCallback(
@@ -148,14 +147,21 @@ const TableInput = (props: TableInputProps): ReactNode => {
   }, [onChange, updatedSelection]);
 
   const initTable = useCallback(async promise => {
-    const resolved = await promise;
-    log.debug('Table resolved', resolved);
-    setTable(resolved);
+    try {
+      const resolved = await promise;
+      log.debug('Table resolved', resolved);
+      setTable(resolved);
+    } catch (e) {
+      if (PromiseUtils.isCanceled(e)) {
+        return;
+      }
+      log.error(e);
+    }
   }, []);
 
   useEffect(() => {
     const cancelablePromise = PromiseUtils.makeCancelable(tablePromise);
-    initTable(tablePromise);
+    initTable(cancelablePromise);
     return () => {
       log.debug2('Cancel table promise');
       cancelablePromise.cancel();
@@ -307,7 +313,7 @@ const TableInput = (props: TableInputProps): ReactNode => {
         ))}
     </div>
   );
-};
+}
 
 TableInput.displayName = 'TableInput';
 

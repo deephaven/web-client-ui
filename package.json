@@ -163,6 +163,7 @@
     "@deephaven/grid": "file:packages/grid",
     "@deephaven/icons": "file:packages/icons",
     "@deephaven/iris-grid": "file:packages/iris-grid",
+    "@deephaven/jsapi-components": "file:packages/jsapi-components",
     "@deephaven/jsapi-shim": "file:packages/jsapi-shim",
     "@deephaven/jsapi-utils": "file:packages/jsapi-utils",
     "@deephaven/log": "file:packages/log",

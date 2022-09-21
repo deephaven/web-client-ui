@@ -7,7 +7,6 @@ const log = Log.module('useTableListener');
 export const useTableListener = (
   eventEmitter: Evented | undefined,
   eventName: string,
-  // eslint-disable-next-line @typescript-eslint/ban-types
   callback: EventListener
 ): void =>
   useEffect(

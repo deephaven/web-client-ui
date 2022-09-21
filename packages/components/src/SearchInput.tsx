@@ -11,7 +11,7 @@ interface SearchInputProps {
   onChange: React.ChangeEventHandler<HTMLInputElement>;
   onKeyDown: React.KeyboardEventHandler<HTMLInputElement>;
   className: string;
-  disabled: boolean;
+  disabled?: boolean;
   matchCount: number;
   id: string;
   'data-testid'?: string;
@@ -21,7 +21,6 @@ class SearchInput extends PureComponent<SearchInputProps> {
   static defaultProps = {
     placeholder: 'Search',
     className: '',
-    disabled: undefined,
     matchCount: null,
     onKeyDown(): void {
       // no-op

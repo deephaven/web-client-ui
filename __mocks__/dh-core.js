@@ -686,6 +686,16 @@ class Table extends DeephavenObject {
     return viewportData;
   }
 
+  findColumns(names) {
+    return names.map(name => {
+      const column = this.columns.find(col => col.name === name);
+      if (column === undefined) {
+        throw new Error(`Column ${name} not found`);
+      }
+      return column;
+    });
+  }
+
   fireViewportUpdate() {
     const viewportData = this.makeViewportData();
     if (viewportData != null) {

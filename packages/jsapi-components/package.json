@@ -20,9 +20,12 @@
     "build": "cross-env NODE_ENV=production run-p build:*",
     "build-dev": "cross-env NODE_ENV=development run-p build:*",
     "babel": "babel ./src --out-dir ./dist --extensions \".ts,.tsx,.js,.jsx\" --source-maps --root-mode upward",
+    "sass": "sass ./src:./dist",
     "build:babel": "npm run babel",
+    "build:sass": "npm run sass",
     "watch": "run-p watch:*",
     "watch:babel": "npm run babel -- -w --skip-initial-build",
+    "watch:sass": "npm run sass -- --watch --update",
     "prestart": "npm run build-dev",
     "start": "cross-env NODE_ENV=development npm run watch"
   },
@@ -31,12 +34,14 @@
     "@deephaven/jsapi-shim": "file:../jsapi-shim",
     "@deephaven/jsapi-utils": "file:../jsapi-utils",
     "@deephaven/log": "file:../log",
-    "@deephaven/utils": "^0.13.0",
+    "@deephaven/utils": "file:../utils",
     "classnames": "^2.3.2",
     "prop-types": "^15.8.1"
   },
   "devDependencies": {
-    "@deephaven/tsconfig": "file:../tsconfig"
+    "@deephaven/tsconfig": "file:../tsconfig",
+    "@testing-library/react-hooks": "^8.0.1",
+    "react-test-renderer": "^17.0.2"
   },
   "peerDependencies": {
     "react": "^17.x"
