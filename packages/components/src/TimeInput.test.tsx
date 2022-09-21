@@ -201,11 +201,9 @@ describe('select and type', () => {
   });
 
   it('existing edge cases', () => {
-    // An edge case not worth fixing
     // Ideally it should change the first section to 20, i.e. '20:34:56'
     testSelectAndType(1, '5{arrowleft}2', `25:34:56`);
 
-    // An edge case not worth fixing
     // Ideally it should fill in with zeros when skipping positions, i.e. '03:34:56'
     testSelectAndType(0, '{backspace}3', `${FIXED_WIDTH_SPACE}3:34:56`);
   });
