@@ -38,9 +38,6 @@ const removeSeparators = (value: string) => value.replace(/\u200B/g, '');
 
 const EXAMPLES = [addSeparators(DEFAULT_VALUE_STRING)];
 
-// Forward ref causes a false positive for display-name in eslint:
-// https://github.com/yannickcr/eslint-plugin-react/issues/2269
-// eslint-disable-next-line react/display-name
 const DateTimeInput = React.forwardRef<HTMLInputElement, DateTimeInputProps>(
   (props: DateTimeInputProps, ref) => {
     const {
