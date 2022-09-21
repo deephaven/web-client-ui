@@ -2,9 +2,7 @@ import React, { useCallback, useState } from 'react';
 import classNames from 'classnames';
 import Log from '@deephaven/log';
 import type { SelectionSegment } from './MaskedInput';
-import MaskedInput, {
-  DEFAULT_GET_PREFERRED_REPLACEMENT_STRING,
-} from './MaskedInput';
+import MaskedInput from './MaskedInput';
 
 const log = Log.module('DateTimeInput');
 
@@ -115,10 +113,6 @@ const DateTimeInput = React.forwardRef<HTMLInputElement, DateTimeInputProps>(
       [onChange]
     );
 
-    function handleSelect(newSelection: SelectionSegment) {
-      setSelection(newSelection);
-    }
-
     return (
       <div className="d-flex flex-row align-items-center">
         <MaskedInput
@@ -126,11 +120,8 @@ const DateTimeInput = React.forwardRef<HTMLInputElement, DateTimeInputProps>(
           className={classNames(className)}
           example={EXAMPLES}
           getNextSegmentValue={getNextSegmentValue}
-          getPreferredReplacementString={
-            DEFAULT_GET_PREFERRED_REPLACEMENT_STRING
-          }
           onChange={handleChange}
-          onSelect={handleSelect}
+          onSelect={setSelection}
           pattern={FULL_DATE_PATTERN}
           placeholder={FULL_DATE_FORMAT}
           selection={selection}
@@ -143,6 +134,8 @@ const DateTimeInput = React.forwardRef<HTMLInputElement, DateTimeInputProps>(
     );
   }
 );
+
+DateTimeInput.displayName = 'DateTimeInput';
 
 DateTimeInput.defaultProps = {
   className: '',

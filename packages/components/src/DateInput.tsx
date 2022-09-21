@@ -2,9 +2,7 @@ import React, { useCallback, useState } from 'react';
 import classNames from 'classnames';
 import Log from '@deephaven/log';
 import type { SelectionSegment } from './MaskedInput';
-import MaskedInput, {
-  DEFAULT_GET_PREFERRED_REPLACEMENT_STRING,
-} from './MaskedInput';
+import MaskedInput from './MaskedInput';
 
 const log = Log.module('DateInput');
 
