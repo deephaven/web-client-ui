@@ -8,10 +8,11 @@ import {
   RadioGroup,
   SearchInput,
   TimeInput,
+  DateInput,
+  DateTimeInput,
   CustomTimeSelect,
   UISwitch,
 } from '@deephaven/components';
-import DateInput from '../components/DateInput';
 
 interface InputsState {
   on: boolean;
@@ -318,7 +319,9 @@ class Inputs extends Component<Record<string, never>, InputsState> {
               <br />
               <h5>Date Input</h5>
               <DateInput />
-              <small className="text-muted">Does not work in mock</small>
+              <br />
+              <h5>DateTime Input</h5>
+              <DateTimeInput />
               <br />
               <h5>Custom Timeselect</h5>
               <CustomTimeSelect
