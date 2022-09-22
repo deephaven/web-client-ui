@@ -1,6 +1,6 @@
 import React, { Component, ReactNode } from 'react';
 import { LoadingOverlay } from '@deephaven/components';
-import { Container, EventEmitter } from '@deephaven/golden-layout';
+import type { Container, EventEmitter } from '@deephaven/golden-layout';
 import Log from '@deephaven/log';
 import PanelEvent from './PanelEvent';
 import LayoutUtils from './layout/LayoutUtils';

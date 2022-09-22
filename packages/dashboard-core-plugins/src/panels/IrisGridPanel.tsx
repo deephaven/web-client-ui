@@ -68,7 +68,7 @@ import {
   ModelSizeMap,
   MoveOperation,
 } from '@deephaven/grid';
-import { Container, EventEmitter } from '@deephaven/golden-layout';
+import type { Container, EventEmitter } from '@deephaven/golden-layout';
 import { ConsoleEvent, InputFilterEvent, IrisGridEvent } from '../events';
 import {
   getInputFiltersForDashboard,

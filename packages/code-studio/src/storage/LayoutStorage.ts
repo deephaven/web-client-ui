@@ -1,4 +1,4 @@
-import { ItemConfigType } from '@deephaven/golden-layout';
+import type { ItemConfigType } from '@deephaven/golden-layout';
 import { FilterSet, Link } from '@deephaven/dashboard-core-plugins';
 
 /**

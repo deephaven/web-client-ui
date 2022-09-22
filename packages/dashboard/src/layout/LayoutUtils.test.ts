@@ -1,4 +1,4 @@
-import { ContentItem } from '@deephaven/golden-layout';
+import type { ContentItem } from '@deephaven/golden-layout';
 import LayoutUtils from './LayoutUtils';
 
 function makeContentItem(type = 'root'): Partial<ContentItem> {
