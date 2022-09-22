@@ -40,6 +40,13 @@ export default defineConfig(({ mode }) => {
       target: `http://localhost:${port}/src/styleguide/index.html`,
       rewrite: () => '',
     },
+    // proxy the websocket, allows tunneling to work with a single port
+    '/': {
+      protocol: 'ws',
+      target: env.VITE_PROXY_WS,
+      changeOrigin: true,
+      ws: true,
+    },
   };
 
   // Some paths need to proxy to the engine server
