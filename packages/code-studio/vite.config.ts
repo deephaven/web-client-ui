@@ -40,15 +40,34 @@ export default defineConfig(({ mode }) => {
       target: `http://localhost:${port}/src/styleguide/index.html`,
       rewrite: () => '',
     },
-  };
-
-  // Proxy all paths, including websocket
-  if (env.VITE_PROXY_URL) {
-    proxy['/'] = {
+    // proxy the websocket requests, allows tunneling to work with a single port
+    '^/arrow.*': {
       target: env.VITE_PROXY_URL,
       changeOrigin: true,
       ws: true,
-    };
+    },
+    '^/io.deephaven.*': {
+      target: env.VITE_PROXY_URL,
+      changeOrigin: true,
+      ws: true,
+    },
+  };
+
+  // Some paths need to proxy to the engine server
+  // Vite does not have a "any unknown fallback to proxy" like CRA
+  // It is possible to add one with a custom middleware though if this list grows
+  if (env.VITE_PROXY_URL) {
+    [
+      env.VITE_CORE_API_URL,
+      env.VITE_NOTEBOOKS_URL,
+      env.VITE_LAYOUTS_URL,
+      env.VITE_MODULE_PLUGINS_URL,
+    ].forEach(p => {
+      proxy[p] = {
+        target: env.VITE_PROXY_URL,
+        changeOrigin: true,
+      };
+    });
   }
 
   return {
