@@ -6,7 +6,7 @@ import React, {
 } from 'react';
 import classNames from 'classnames';
 import memoize from 'memoize-one';
-import { Container, EventEmitter } from '@deephaven/golden-layout';
+import type { Container, EventEmitter } from '@deephaven/golden-layout';
 import { ContextActions, ContextActionUtils } from '@deephaven/components';
 import Panel from './Panel';
 import WidgetPanelTooltip from './WidgetPanelTooltip';

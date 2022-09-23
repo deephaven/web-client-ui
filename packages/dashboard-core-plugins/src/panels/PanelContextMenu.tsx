@@ -1,6 +1,6 @@
 import React, { PureComponent, ReactElement } from 'react';
 import { ContextAction, ContextActions } from '@deephaven/components';
-import { Container, Tab } from '@deephaven/golden-layout';
+import type { Container, Tab } from '@deephaven/golden-layout';
 
 interface PanelContextMenuProps {
   additionalActions: ContextAction[];

@@ -9,7 +9,7 @@ import {
   PanelEvent,
 } from '@deephaven/dashboard';
 import Log from '@deephaven/log';
-import {
+import type {
   Container,
   EventEmitter,
   ReactComponentConfig,
