@@ -31,6 +31,7 @@ interface BaseButtonProps extends React.ComponentPropsWithRef<'button'> {
   icon?: IconDefinition | JSX.Element;
   active?: boolean;
   'data-testid'?: string;
+  'aria-label'?: string;
 }
 
 type ButtonWithChildren = BaseButtonProps & {
@@ -89,6 +90,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       style,
       children,
       'data-testid': dataTestId,
+      'aria-label': ariaLabel,
     } = props;
 
     const iconOnly = (icon && !children) as boolean;
@@ -130,6 +132,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         onClick={onClick}
         style={style}
         disabled={disabled}
+        aria-label={ariaLabel}
       >
         {icon && iconElem}
         {children}

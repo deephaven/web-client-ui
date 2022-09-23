@@ -7,6 +7,7 @@ import {
   ModalFooter,
   ModalHeader,
   BasicModal,
+  Button,
 } from '@deephaven/components';
 import {
   CancelablePromise,
@@ -99,6 +100,7 @@ class NewItemModal extends PureComponent<NewItemModalProps, NewItemModalState> {
     this.handleExtensionChangeConfirm = this.handleExtensionChangeConfirm.bind(
       this
     );
+    this.handleBreadcrumbSelect = this.handleBreadcrumbSelect.bind(this);
 
     const { defaultValue } = props;
 
@@ -374,6 +376,36 @@ class NewItemModal extends PureComponent<NewItemModalProps, NewItemModalState> {
     });
   }
 
+  handleBreadcrumbSelect(directoryPath: string): void {
+    this.setState({ path: directoryPath.slice(4) });
+  }
+
+  renderPathButtons(path: string): React.ReactNode {
+    const pathAsList = path.split('/');
+    pathAsList[0] = 'root';
+    pathAsList.pop();
+    return pathAsList.map((basename, index) => {
+      let directoryPath = '';
+      for (let i = 0; i < index; i += 1) {
+        directoryPath += `${pathAsList[i]}/`;
+      }
+      directoryPath += `${basename}/`;
+
+      return (
+        <React.Fragment key={directoryPath}>
+          <Button
+            kind="ghost"
+            className="directory-breadcrumbs"
+            onClick={() => this.handleBreadcrumbSelect(directoryPath)}
+          >
+            {basename}
+          </Button>
+          /
+        </React.Fragment>
+      );
+    });
+  }
+
   render(): React.ReactNode {
     const { storage, isOpen, onCancel, placeholder, title, type } = this.props;
     const {
@@ -430,9 +462,8 @@ class NewItemModal extends PureComponent<NewItemModalProps, NewItemModalState> {
                   )}
                 </div>
                 <div className="flex-grow-0">
-                  <label>
-                    Directory: <span className="new-item-parentId">{path}</span>
-                  </label>
+                  <label>Directory: /</label>
+                  {this.renderPathButtons(path)}
                 </div>
                 <div className="flex-grow-1 file-explorer-container">
                   <FileExplorer
