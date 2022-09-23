@@ -1,7 +1,7 @@
 import React from 'react';
 import { render } from '@testing-library/react';
 import { CommandHistoryStorage } from '@deephaven/console';
-import { Container } from '@deephaven/golden-layout';
+import type { Container } from '@deephaven/golden-layout';
 import { ConsolePanel } from './ConsolePanel';
 import { SessionWrapper } from '../redux';
 

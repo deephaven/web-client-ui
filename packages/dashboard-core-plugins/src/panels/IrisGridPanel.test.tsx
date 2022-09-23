@@ -5,7 +5,7 @@ import { render, screen } from '@testing-library/react';
 import { IrisGridModelFactory } from '@deephaven/iris-grid';
 import dh from '@deephaven/jsapi-shim';
 import { TestUtils } from '@deephaven/utils';
-import { Container } from '@deephaven/golden-layout';
+import type { Container } from '@deephaven/golden-layout';
 import { Workspace } from '@deephaven/redux';
 import { IrisGridPanel } from './IrisGridPanel';
 

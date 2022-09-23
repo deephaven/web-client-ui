@@ -37,6 +37,9 @@
       "path": "./packages/jsapi-shim"
     },
     {
+      "path": "./packages/jsapi-components"
+    },
+    {
       "path": "./packages/log"
     },
     {
