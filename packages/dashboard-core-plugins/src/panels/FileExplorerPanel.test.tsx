@@ -7,7 +7,7 @@ import {
 } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { FileStorageItem } from '@deephaven/file-explorer';
-import { Container } from '@deephaven/golden-layout';
+import type { Container } from '@deephaven/golden-layout';
 import { FileExplorerPanel, FileExplorerPanelProps } from './FileExplorerPanel';
 import MockFileStorage from './MockFileStorage';
 
