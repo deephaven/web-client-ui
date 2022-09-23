@@ -7,9 +7,11 @@ import './SearchInput.scss';
 interface SearchInputProps {
   value: string;
   placeholder: string;
+  onBlur?: React.FocusEventHandler<HTMLInputElement>;
   onChange: React.ChangeEventHandler<HTMLInputElement>;
   onKeyDown: React.KeyboardEventHandler<HTMLInputElement>;
   className: string;
+  disabled?: boolean;
   matchCount: number;
   id: string;
   'data-testid'?: string;
@@ -42,8 +44,10 @@ class SearchInput extends PureComponent<SearchInputProps> {
     const {
       value,
       placeholder,
+      onBlur,
       onChange,
       className,
+      disabled,
       matchCount,
       id,
       onKeyDown,
@@ -54,9 +58,11 @@ class SearchInput extends PureComponent<SearchInputProps> {
         <input
           type="search"
           value={value}
+          onBlur={onBlur}
           onChange={onChange}
           onKeyDown={onKeyDown}
           className="form-control"
+          disabled={disabled}
           placeholder={placeholder}
           ref={this.inputField}
           id={id}

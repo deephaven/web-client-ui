@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/grid",
-  "version": "0.16.0",
+  "version": "0.17.0",
   "description": "Deephaven React grid component",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
@@ -39,6 +39,7 @@
     "dist"
   ],
   "dependencies": {
+    "@deephaven/utils": "file:../utils",
     "classnames": "^2.3.1",
     "color-convert": "^2.0.1",
     "event-target-shim": "^6.0.2",

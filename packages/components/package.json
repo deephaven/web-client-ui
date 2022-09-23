@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/components",
-  "version": "0.16.0",
+  "version": "0.17.0",
   "description": "Deephaven React component library",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
@@ -40,7 +40,6 @@
     "bootstrap": "4.6.1",
     "classnames": "^2.3.1",
     "event-target-shim": "^6.0.2",
-    "jquery": "^3.6.0",
     "lodash.clamp": "^4.0.3",
     "lodash.debounce": "^4.0.8",
     "lodash.flatten": "^4.4.0",

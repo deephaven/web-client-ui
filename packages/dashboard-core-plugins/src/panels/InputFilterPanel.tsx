@@ -1,7 +1,7 @@
 import React, { Component, RefObject } from 'react';
 import { connect } from 'react-redux';
 import debounce from 'lodash.debounce';
-import { Container, EventEmitter } from '@deephaven/golden-layout';
+import type { Container, EventEmitter } from '@deephaven/golden-layout';
 import { RootState } from '@deephaven/redux';
 import Panel from './Panel';
 import InputFilter, {

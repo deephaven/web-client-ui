@@ -1,31 +1,34 @@
 {
   "name": "@deephaven/golden-layout",
-  "version": "0.16.0",
+  "version": "0.17.0",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
   "description": "A multi-screen javascript Layout manager",
-  "main": "./dist/goldenlayout.js",
+  "main": "./dist/index.js",
   "types": "./index.d.ts",
-  "directories": {
-    "test": "test"
-  },
+  "type": "module",
   "dependencies": {
     "jquery": "^3.6.0"
+  },
+  "peerDependencies": {
+    "react": "^17.x",
+    "react-dom": "^17.x"
   },
   "scripts": {
     "build": "cross-env NODE_ENV=production run-p build:*",
     "build-dev": "cross-env NODE_ENV=development run-p build:*",
     "sass": "sass ./src/scss:./dist/css -s compressed",
-    "build:gulp": "gulp build",
+    "build:babel": "npm run babel",
     "build:sass": "npm run sass",
+    "babel": "babel ./src --out-dir ./dist --extensions \".js\" --source-maps --root-mode upward",
     "watch": "run-p watch:*",
-    "watch:gulp": "gulp dev",
+    "watch:babel": "npm run babel -- -w --skip-initial-build",
     "watch:sass": "npm run sass -- --watch --update",
-    "clean": "rimraf ./dist ./src/css",
+    "clean": "rimraf ./dist",
     "start": "cross-env NODE_ENV=development npm run watch",
     "prestart": "npm run build-dev",
-    "test": "karma start karma.conf.js",
-    "test:ci": "karma start karma.conf.js --single-run"
+    "test": "karma start karma.conf.cjs",
+    "test:ci": "karma start karma.conf.cjs --single-run"
   },
   "repository": {
     "type": "git",
@@ -42,43 +45,13 @@
   "files": [
     "dist"
   ],
-  "npmFileMap": [
-    {
-      "basePath": "/dist/",
-      "files": [
-        "goldenlayout.js",
-        "goldenlayout.min.js"
-      ]
-    },
-    {
-      "basePath": "/src/css/",
-      "files": [
-        "goldenlayout.base.css",
-        "goldenlayout-dark-theme.css",
-        "goldenlayout-light-theme.css"
-      ]
-    },
-    {
-      "basePath": "/",
-      "files": [
-        "typings.json"
-      ]
-    }
-  ],
-  "jspm": {
-    "main": "dist/goldenlayout",
-    "format": "global",
-    "registry": "jspm",
-    "dependencies": {
-      "jquery": "^2.1.0"
-    },
-    "shim": {
-      "dist/goldenlayout": [
-        "jquery"
-      ]
-    }
-  },
   "publishConfig": {
     "access": "public"
+  },
+  "devDependencies": {
+    "browserify": "^17.0.0",
+    "esmify": "^2.1.1",
+    "karma-browserify": "^8.1.0",
+    "watchify": "^4.0.0"
   }
 }

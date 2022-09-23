@@ -1,16 +1,3 @@
-/** Shim for using jquery in frameworks included by react (such as bootstrap) */
-import $ from 'jquery';
-
-declare global {
-  interface Window {
-    $: typeof $;
-    jQuery: typeof $;
-  }
-}
-
-window.$ = $;
-window.jQuery = $;
-
 export type { Range } from '@deephaven/utils';
 export { default as AutoCompleteInput } from './AutoCompleteInput';
 export { default as AutoResizeTextarea } from './AutoResizeTextarea';
@@ -24,6 +11,8 @@ export { default as Collapse } from './Collapse';
 export { default as Checkbox } from './Checkbox';
 export { default as ComboBox } from './ComboBox';
 export { default as CustomTimeSelect } from './CustomTimeSelect';
+export { default as DateTimeInput } from './DateTimeInput';
+export { default as DateInput } from './DateInput';
 export { default as DebouncedSearchInput } from './DebouncedSearchInput';
 export { default as DeephavenSpinner } from './DeephavenSpinner';
 export { default as DraggableItemList } from './DraggableItemList';
