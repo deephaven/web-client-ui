@@ -1,4 +1,8 @@
-import { FileStorageItem, FileStorageTable } from '@deephaven/file-explorer';
+import {
+  FileStorageItem,
+  FileStorageTable,
+  isDirectory,
+} from '@deephaven/file-explorer';
 import {
   ViewportData,
   IndexRange,
@@ -25,6 +29,15 @@ export class MockFileStorageTable implements FileStorageTable {
   }
 
   setExpanded(path: string, expanded: boolean): Promise<void> {
+    for (let i = 0; i < this.items.length; i += 1) {
+      const item = this.items[i];
+      if (
+        isDirectory(item) &&
+        (`${item.filename}/` === path || item.filename === path)
+      ) {
+        item.isExpanded = expanded;
+      }
+    }
     return Promise.resolve();
   }
 
