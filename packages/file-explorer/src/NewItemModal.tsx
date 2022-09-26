@@ -127,9 +127,17 @@ class NewItemModal extends PureComponent<NewItemModalProps, NewItemModalState> {
     const { value, path } = this.state;
     if (!prevIsOpen && isOpen) {
       this.resetValue();
+      this.isInitialLoad = true;
     }
-    if (path !== prevState.path || value !== prevState.value) {
-      this.updateValidationStatus(path, value);
+
+    if (prevIsOpen && isOpen) {
+      if (
+        !this.isInitialLoad &&
+        (path !== prevState.path || value !== prevState.value)
+      ) {
+        this.updateValidationStatus(path, value);
+      }
+      this.isInitialLoad = false;
     }
   }
 
@@ -152,6 +160,8 @@ class NewItemModal extends PureComponent<NewItemModalProps, NewItemModalState> {
   private pending = new Pending();
 
   private pathMap = new Map();
+
+  private isInitialLoad = true;
 
   resetValue(): void {
     const { defaultValue } = this.props as NewItemModalProps;

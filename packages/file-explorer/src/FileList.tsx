@@ -489,19 +489,16 @@ export const FileList = (props: FileListProps): JSX.Element => {
   }, [draggedItems, dropTargetItem]);
 
   const { isNewItemModalClicked, focusedPath } = props;
-  const makeFoldersOpen = useRef(isNewItemModalClicked);
   useEffect(() => {
-    if (makeFoldersOpen) {
-      if (focusedPath !== undefined) {
-        if (focusedPath === '/') {
-          table.collapseAll();
-        } else {
-          table.setExpanded(focusedPath, false);
-          table.setExpanded(focusedPath, true);
-        }
+    if (isNewItemModalClicked && focusedPath !== undefined) {
+      if (focusedPath === '/') {
+        table.collapseAll();
+      } else {
+        table.setExpanded(focusedPath, false);
+        table.setExpanded(focusedPath, true);
       }
     }
-  }, [table, focusedPath]);
+  }, [table, focusedPath, isNewItemModalClicked]);
 
   useEffect(
     function updateTableViewport() {
