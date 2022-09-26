@@ -3,7 +3,7 @@
 /* eslint func-names: "off" */
 import React, { Component } from 'react';
 import { render } from '@testing-library/react';
-import { Container } from '@deephaven/golden-layout';
+import type { Container } from '@deephaven/golden-layout';
 import Panel from './Panel';
 
 class TestComponentPanel extends Component {}

@@ -16,7 +16,7 @@ import {
   Tooltip,
 } from '@deephaven/components';
 import { LayoutUtils, PanelEvent } from '@deephaven/dashboard';
-import {
+import type {
   Container,
   EventEmitter,
   ReactComponentConfig,
