@@ -21,6 +21,7 @@ import {
   IntegerColumnFormatter,
 } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
+import PouchCommandHistoryStorage from '@deephaven/pouch-storage';
 import {
   getWorkspace,
   getWorkspaceStorage,
@@ -35,7 +36,6 @@ import {
 import { createClient } from 'webdav/web';
 import { setLayoutStorage as setLayoutStorageAction } from '../redux/actions';
 import App from './App';
-import PouchCommandHistoryStorage from '../storage/PouchCommandHistoryStorage';
 import LocalWorkspaceStorage from '../storage/LocalWorkspaceStorage';
 import WebdavLayoutStorage from './WebdavLayoutStorage';
 import { createSessionWrapper } from './SessionUtils';

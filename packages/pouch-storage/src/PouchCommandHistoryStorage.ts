@@ -1,14 +1,14 @@
 /* eslint-disable class-methods-use-this */
 import Log from '@deephaven/log';
 import {
+  StorageItemListener,
+  StorageListenerRemover,
+} from '@deephaven/storage';
+import {
   CommandHistoryStorage,
   CommandHistoryStorageData,
   CommandHistoryStorageItem,
 } from '@deephaven/console';
-import {
-  StorageItemListener,
-  StorageListenerRemover,
-} from '@deephaven/storage';
 import PouchCommandHistoryTable from './PouchCommandHistoryTable';
 
 const log = Log.module('PouchCommandHistoryStorage');

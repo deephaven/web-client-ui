@@ -8,10 +8,16 @@
   "exclude": ["node_modules", "src/**/*.test.*", "src/**/__mocks__/*"],
   "references": [
     {
+      "path": "../console"
+    },
+    {
       "path": "../filters"
     },
     {
       "path": "../log"
+    },
+    {
+      "path": "../storage"
     },
     {
       "path": "../utils"

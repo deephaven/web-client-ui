@@ -5,6 +5,7 @@ import {
   Type as FilterType,
 } from '@deephaven/filters';
 import Log from '@deephaven/log';
+import { CancelablePromise, PromiseUtils } from '@deephaven/utils';
 import {
   FilterConfig,
   FilterValue,
@@ -18,7 +19,6 @@ import {
   ViewportData,
   ViewportUpdateCallback,
 } from '@deephaven/storage';
-import { CancelablePromise, PromiseUtils } from '@deephaven/utils';
 
 const log = Log.module('PouchStorageTable');
 

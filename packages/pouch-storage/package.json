@@ -1,14 +1,14 @@
 {
-  "name": "@deephaven/storage",
+  "name": "@deephaven/pouch-storage",
   "version": "0.13.0",
-  "description": "Deephaven Storage abstract classes for storing app data",
+  "description": "Deephaven Storage based on PouchDB",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
   "type": "module",
   "repository": {
     "type": "git",
     "url": "https://github.com/deephaven/web-client-ui.git",
-    "directory": "packages/storage"
+    "directory": "packages/pouch-storage"
   },
   "source": "src/index.js",
   "main": "dist/index.js",
@@ -27,8 +27,10 @@
     "start": "cross-env NODE_ENV=development npm run watch"
   },
   "dependencies": {
-    "@deephaven/filters": "file:../filters",
-    "@deephaven/log": "file:../log",
+    "@deephaven/console": "^0.13.0",
+    "@deephaven/filters": "^0.13.0",
+    "@deephaven/log": "^0.13.0",
+    "@deephaven/storage": "^0.13.0",
     "@deephaven/utils": "^0.13.0",
     "lodash.throttle": "^4.1.1",
     "pouchdb-browser": "^7.3.0",
