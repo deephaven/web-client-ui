@@ -1,8 +1,7 @@
-import { FileStat, WebDAVClient } from 'webdav/web';
-import LayoutStorage, { ExportedLayout } from './LayoutStorage';
+import LayoutStorage, { ExportedLayout } from '../LayoutStorage';
 
-export class WebdavLayoutStorage implements LayoutStorage {
-  readonly client: WebDAVClient;
+export class GrpcLayoutStorage implements LayoutStorage {
+  readonly client: CoreClient;
 
   readonly root: string;
 
@@ -33,4 +32,4 @@ export class WebdavLayoutStorage implements LayoutStorage {
   }
 }
 
-export default WebdavLayoutStorage;
+export default GrpcLayoutStorage;

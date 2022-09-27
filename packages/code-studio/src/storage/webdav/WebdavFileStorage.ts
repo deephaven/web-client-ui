@@ -2,13 +2,14 @@
 
 import { FileStat, WebDAVClient } from 'webdav/web';
 import throttle from 'lodash.throttle';
-import FileNotFoundError from './FileNotFoundError';
-import FileStorage, {
+import {
+  FileNotFoundError,
+  FileStorage,
   File,
   FileStorageItem,
   FileStorageTable,
-} from './FileStorage';
-import FileUtils from './FileUtils';
+  FileUtils,
+} from '@deephaven/file-explorer';
 import WebdavFileStorageTable from './WebdavFileStorageTable';
 
 export class WebdavFileStorage implements FileStorage {

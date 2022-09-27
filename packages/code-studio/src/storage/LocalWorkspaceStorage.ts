@@ -12,7 +12,7 @@ import {
 } from '@deephaven/redux';
 import { createClient } from 'webdav/web';
 import UserLayoutUtils from '../main/UserLayoutUtils';
-import WebdavLayoutStorage from './WebdavLayoutStorage';
+import WebdavLayoutStorage from './webdav/WebdavLayoutStorage';
 
 const log = Log.module('LocalWorkspaceStorage');
 

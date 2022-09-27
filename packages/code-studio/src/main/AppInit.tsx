@@ -16,7 +16,7 @@ import {
   setDashboardSessionWrapper as setDashboardSessionWrapperAction,
   ToolType,
 } from '@deephaven/dashboard-core-plugins';
-import { FileStorage, WebdavFileStorage } from '@deephaven/file-explorer';
+import { FileStorage } from '@deephaven/file-explorer';
 import dh, { IdeConnection } from '@deephaven/jsapi-shim';
 import {
   DecimalColumnFormatter,
@@ -49,6 +49,7 @@ import { createConnection, createSessionWrapper } from './SessionUtils';
 import { PluginUtils } from '../plugins';
 import LayoutStorage from '../storage/LayoutStorage';
 import { isNoConsolesError } from './NoConsolesError';
+import WebdavFileStorage from '../storage/webdav/WebdavFileStorage';
 
 const log = Log.module('AppInit');
 
