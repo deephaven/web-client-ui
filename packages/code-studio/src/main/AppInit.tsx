@@ -23,6 +23,7 @@ import {
   IntegerColumnFormatter,
 } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
+import PouchCommandHistoryStorage from '@deephaven/pouch-storage';
 import {
   DeephavenPluginModuleMap,
   getWorkspace,
@@ -41,7 +42,6 @@ import {
 } from '@deephaven/redux';
 import { setLayoutStorage as setLayoutStorageAction } from '../redux/actions';
 import App from './App';
-import PouchCommandHistoryStorage from '../storage/PouchCommandHistoryStorage';
 import LocalWorkspaceStorage from '../storage/LocalWorkspaceStorage';
 import {
   createConnection,
