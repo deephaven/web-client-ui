@@ -37,7 +37,7 @@
     "@deephaven/utils": "file:../utils",
     "@fortawesome/fontawesome-svg-core": "^6.1.1",
     "@fortawesome/react-fontawesome": "^0.1.18",
-    "bootstrap": "4.6.1",
+    "bootstrap": "4.6.2",
     "classnames": "^2.3.1",
     "event-target-shim": "^6.0.2",
     "lodash.clamp": "^4.0.3",
