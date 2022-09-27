@@ -61,12 +61,9 @@ function makeDirectories(count = 5) {
 }
 
 function makeNested(directories: number[], fileNum: number): FileStorageItem {
-  let basename = '';
-  for (let i = 0; i < directories.length; i += 1) {
-    basename += `/${makeDirName(directories[i])}`;
-  }
-  basename += '/';
-
+  const basename = `/${directories
+    .map(directory => makeDirName(directory))
+    .join('/')}/`;
   return makeFile(makeFileName(fileNum), basename);
 }
 

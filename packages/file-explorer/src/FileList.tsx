@@ -51,7 +51,6 @@ export interface FileListProps {
   table: FileStorageTable;
 
   isMultiSelect?: boolean;
-  isNewItemModalClicked?: boolean;
   focusedPath?: string;
 
   onFocusChange?: (focusedItem?: FileStorageItem) => void;
@@ -488,9 +487,9 @@ export const FileList = (props: FileListProps): JSX.Element => {
     }
   }, [draggedItems, dropTargetItem]);
 
-  const { isNewItemModalClicked, focusedPath } = props;
+  const { focusedPath } = props;
   useEffect(() => {
-    if (isNewItemModalClicked && focusedPath !== undefined) {
+    if (focusedPath !== undefined) {
       if (focusedPath === '/') {
         table.collapseAll();
       } else {
@@ -498,7 +497,7 @@ export const FileList = (props: FileListProps): JSX.Element => {
         table.setExpanded(focusedPath, true);
       }
     }
-  }, [table, focusedPath, isNewItemModalClicked]);
+  }, [table, focusedPath]);
 
   useEffect(
     function updateTableViewport() {

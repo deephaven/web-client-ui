@@ -9,12 +9,7 @@ import {
   StorageSnapshot,
 } from '@deephaven/storage';
 import { CancelablePromise, PromiseUtils } from '@deephaven/utils';
-import {
-  FileStorageTable,
-  FileStorageItem,
-  isDirectory,
-  DirectoryStorageItem,
-} from './FileStorage';
+import { FileStorageTable, FileStorageItem } from './FileStorage';
 
 const log = Log.module('WebdavFileStorageTable');
 
@@ -111,16 +106,9 @@ export class WebdavFileStorageTable implements FileStorageTable {
   }
 
   async collapseAll(): Promise<void> {
-    const directoryData = await this.fetchData();
-    const { items } = directoryData;
-    for (let i = 0; i < items.length; i += 1) {
-      if (
-        isDirectory(items[i]) &&
-        !items[i].filename.includes('/', 1) &&
-        (items[i] as DirectoryStorageItem).isExpanded
-      ) {
-        this.setExpanded(items[i].filename, false);
-      }
+    this.childTables.clear();
+    if (this.currentViewport) {
+      await this.refreshInternal();
     }
   }
 

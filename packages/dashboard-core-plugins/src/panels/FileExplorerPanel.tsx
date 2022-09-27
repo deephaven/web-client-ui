@@ -262,7 +262,6 @@ export class FileExplorerPanel extends React.Component<
             onDelete={this.handleDelete}
             onRename={this.handleRename}
             onSelect={this.handleFileSelect}
-            isNewItemModalClicked={false}
             onSelectionChange={this.handleSelectionChange}
           />
         )}

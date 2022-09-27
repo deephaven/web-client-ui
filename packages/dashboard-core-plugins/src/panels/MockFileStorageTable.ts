@@ -46,7 +46,10 @@ export class MockFileStorageTable implements FileStorageTable {
 
   collapseAll(): Promise<void> {
     for (let i = 0; i < this.items.length; i += 1) {
-      this.setExpanded(`${this.items[i].filename}/`, false);
+      const item = this.items[i];
+      if (isDirectory(item)) {
+        item.isExpanded = false;
+      }
     }
     return Promise.resolve();
   }
