@@ -16,6 +16,7 @@ import {
   ValidationError,
 } from '@deephaven/utils';
 import Log from '@deephaven/log';
+import { vsHome } from '@deephaven/icons';
 import FileExplorer from './FileExplorer';
 import FileStorage, { FileStorageItem, FileType } from './FileStorage';
 import FileUtils from './FileUtils';
@@ -387,12 +388,11 @@ class NewItemModal extends PureComponent<NewItemModalProps, NewItemModalState> {
   }
 
   handleBreadcrumbSelect(directoryPath: string): void {
-    this.setState({ path: directoryPath.slice(4) });
+    this.setState({ path: directoryPath });
   }
 
   renderPathButtons(path: string): React.ReactNode {
     const pathAsList = path.split('/');
-    pathAsList[0] = 'root';
     pathAsList.pop();
     return pathAsList.map((basename, index) => {
       let directoryPath = '';
@@ -407,6 +407,8 @@ class NewItemModal extends PureComponent<NewItemModalProps, NewItemModalState> {
             kind="ghost"
             className="directory-breadcrumbs"
             onClick={() => this.handleBreadcrumbSelect(directoryPath)}
+            aria-label={index === 0 ? 'home' : undefined}
+            icon={index === 0 ? vsHome : undefined}
           >
             {basename}
           </Button>

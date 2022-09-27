@@ -140,8 +140,9 @@ describe('selects and expands directory for NewItemModal correctly', () => {
 
     const foundButtons = await findAllByRole(modal, 'button');
     const buttonContent = foundButtons.map(button => button.innerHTML);
+    const homeButton = await findAllByRole(modal, 'button', { name: 'home' });
 
-    expect(buttonContent).toContain('root');
+    expect(homeButton).toHaveLength(1);
     expect(buttonContent).toContain('testdir0');
     expect(dirs[0].isExpanded).toBe(true);
     for (let i = 1; i < dirs.length; i += 1) {
@@ -160,8 +161,9 @@ describe('selects and expands directory for NewItemModal correctly', () => {
 
     const foundButtons = await findAllByRole(modal, 'button');
     const buttonContent = foundButtons.map(button => button.innerHTML);
+    const homeButton = await findAllByRole(modal, 'button', { name: 'home' });
 
-    expect(buttonContent).toContain('root');
+    expect(homeButton).toHaveLength(1);
     for (let i = 0; i < dirs.length; i += 1) {
       expect(buttonContent).not.toContain(makeDirName(i));
       expect(dirs[i].isExpanded).toBe(false);
@@ -176,8 +178,9 @@ describe('selects and expands directory for NewItemModal correctly', () => {
 
     const foundButtons = await findAllByRole(modal, 'button');
     const buttonContent = foundButtons.map(button => button.innerHTML);
+    const homeButton = await findAllByRole(modal, 'button', { name: 'home' });
 
-    expect(buttonContent).toContain('root');
+    expect(homeButton).toHaveLength(1);
     for (let i = 0; i < dirs.length; i += 1) {
       expect(buttonContent).not.toContain(makeDirName(i));
       expect(dirs[i].isExpanded).toBe(false);
@@ -198,8 +201,9 @@ describe('selects and expands directory for NewItemModal correctly', () => {
 
     const foundButtons = await findAllByRole(modal, 'button');
     const buttonContent = foundButtons.map(button => button.innerHTML);
+    const homeButton = await findAllByRole(modal, 'button', { name: 'home' });
 
-    expect(buttonContent).toContain('root');
+    expect(homeButton).toHaveLength(1);
     expect(buttonContent).toContain('testdir2');
     expect(dirs[2].isExpanded).toBe(true);
 
@@ -222,8 +226,9 @@ describe('selects and expands directory for NewItemModal correctly', () => {
 
     const foundButtons = await findAllByRole(modal, 'button');
     const buttonContent = foundButtons.map(button => button.innerHTML);
+    const homeButton = await findAllByRole(modal, 'button', { name: 'home' });
 
-    expect(buttonContent).toContain('root');
+    expect(homeButton).toHaveLength(1);
     expect(buttonContent).toContain('testdir2');
     expect(dirs[2].isExpanded).toBe(true);
 
@@ -266,15 +271,18 @@ describe('selects and expands directory for NewItemModal correctly', () => {
 
     const foundButtons = await findAllByRole(modal, 'button');
     const buttonContent = foundButtons.map(button => button.innerHTML);
+    const homeButton = await findAllByRole(modal, 'button', { name: 'home' });
 
-    expect(buttonContent).toContain('root');
+    expect(homeButton).toHaveLength(1);
     expect(buttonContent).toContain('testdir0');
     expect(buttonContent).toContain('testdir3');
 
     userEvent.click(within(modal).getByRole('button', { name: 'testdir0' }));
     const newFoundButtons = await findAllByRole(modal, 'button');
     const newButtonContent = newFoundButtons.map(button => button.innerHTML);
-    expect(newButtonContent).toContain('root');
+    const newFoundHome = await findAllByRole(modal, 'button', { name: 'home' });
+
+    expect(newFoundHome).toHaveLength(1);
     expect(newButtonContent).toContain('testdir0');
     expect(newButtonContent).not.toContain('testdir3');
 
@@ -305,7 +313,7 @@ describe('selects and expands directory for NewItemModal correctly', () => {
     expect(dirs[1].isExpanded).toBe(false);
     expect(dirs[2].isExpanded).toBe(false);
 
-    userEvent.click(within(modal).getByRole('button', { name: 'root' }));
+    userEvent.click(within(modal).getByRole('button', { name: 'home' }));
     for (let i = 0; i < dirs.length; i += 1) {
       expect(dirs[i].isExpanded).toBe(false);
     }
