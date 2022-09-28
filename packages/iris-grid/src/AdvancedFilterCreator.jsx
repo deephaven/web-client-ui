@@ -3,9 +3,10 @@
 
 import React, { PureComponent } from 'react';
 import classNames from 'classnames';
-import PropTypes from 'prop-types';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import memoize from 'memoize-one';
+import PropTypes from 'prop-types';
+import shortid from 'shortid';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Operator as FilterOperator } from '@deephaven/filters';
 import { dhSortAmountDown, dhNewCircleLargeFilled } from '@deephaven/icons';
 import { Formatter, TableUtils } from '@deephaven/jsapi-utils';
@@ -21,6 +22,10 @@ const log = Log.module('AdvancedFilterCreator');
 
 class AdvancedFilterCreator extends PureComponent {
   static debounceFilterUpdate = 250;
+
+  static makeFilterItem() {
+    return { key: shortid() };
+  }
 
   constructor(props) {
     super(props);
@@ -44,18 +49,18 @@ class AdvancedFilterCreator extends PureComponent {
 
     this.focusTrapContainer = React.createRef();
     this.debounceTimeout = null;
-    this.filterKey = 0;
     this.valuesTablePromise = null;
 
     const { options } = props;
-    let {
-      filterItems,
-      filterOperators,
-      invertSelection,
-      selectedValues,
-    } = options;
-    if (filterItems == null) {
-      filterItems = [this.makeFilterItem()];
+    let { filterOperators, invertSelection, selectedValues } = options;
+    const filterItems =
+      options.filterItems?.map(({ selectedType, value }) => ({
+        selectedType,
+        value,
+        key: shortid(),
+      })) ?? [];
+    if (filterItems.length === 0) {
+      filterItems.push(AdvancedFilterCreator.makeFilterItem());
     }
     if (filterOperators == null) {
       filterOperators = [];
@@ -150,14 +155,14 @@ class AdvancedFilterCreator extends PureComponent {
 
   handleAddAnd() {
     let { filterItems, filterOperators } = this.state;
-    filterItems = filterItems.concat(this.makeFilterItem());
+    filterItems = filterItems.concat(AdvancedFilterCreator.makeFilterItem());
     filterOperators = filterOperators.concat(FilterOperator.and);
     this.setState({ filterItems, filterOperators });
   }
 
   handleAddOr() {
     let { filterItems, filterOperators } = this.state;
-    filterItems = filterItems.concat(this.makeFilterItem());
+    filterItems = filterItems.concat(AdvancedFilterCreator.makeFilterItem());
     filterOperators = filterOperators.concat(FilterOperator.or);
     this.setState({ filterItems, filterOperators });
   }
@@ -202,7 +207,7 @@ class AdvancedFilterCreator extends PureComponent {
     }
 
     if (filterItems.length === 0) {
-      filterItems.push(this.makeFilterItem());
+      filterItems.push(AdvancedFilterCreator.makeFilterItem());
     }
 
     this.setState({ filterItems, filterOperators });
@@ -220,7 +225,7 @@ class AdvancedFilterCreator extends PureComponent {
     log.debug('Resetting Advanced Filter');
 
     this.setState({
-      filterItems: [this.makeFilterItem()],
+      filterItems: [AdvancedFilterCreator.makeFilterItem()],
       filterOperators: [],
       selectedValues: [],
       invertSelection: true,
@@ -261,14 +266,6 @@ class AdvancedFilterCreator extends PureComponent {
   handleUpdateTimeout() {
     this.debounceTimeout = null;
     this.sendUpdate();
-  }
-
-  makeFilterItem(updateKey = true) {
-    const key = this.filterKey;
-    if (updateKey) {
-      this.filterKey += 1;
-    }
-    return { selectedType: '', value: '', key };
   }
 
   /**
@@ -329,9 +326,25 @@ class AdvancedFilterCreator extends PureComponent {
     const { column, onFilterChange, model } = this.props;
     const { formatter } = model;
 
+    const items = filterItems.filter(
+      ({ selectedType, value }) =>
+        selectedType != null && value != null && value !== ''
+    );
+
+    const operators = filterOperators
+      .filter(
+        (operator, i) =>
+          operator != null &&
+          filterItems[i].selectedType != null &&
+          filterItems[i].value != null &&
+          filterItems[i].value !== ''
+      )
+      .slice(0, items.length - 1);
+    // slice last operator, user may have set an operator but not a value
+
     const options = {
-      filterItems,
-      filterOperators,
+      filterItems: items,
+      filterOperators: operators,
       invertSelection,
       selectedValues,
     };
