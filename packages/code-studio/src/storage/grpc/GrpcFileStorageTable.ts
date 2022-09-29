@@ -1,5 +1,5 @@
-import { FileStat, WebDAVClient } from 'webdav/web';
-import { FileStorageItem, FileStorageTable } from '@deephaven/file-explorer';
+/* eslint-disable class-methods-use-this */
+
 import Log from '@deephaven/log';
 import {
   StorageTableViewport,
@@ -10,15 +10,17 @@ import {
   StorageSnapshot,
 } from '@deephaven/storage';
 import { CancelablePromise, PromiseUtils } from '@deephaven/utils';
+import { FileStorageItem, FileStorageTable } from '@deephaven/file-explorer';
+import { StorageService } from '@deephaven/jsapi-shim';
 
-const log = Log.module('WebdavFileStorageTable');
+const log = Log.module('GrpcFileStorageTable');
 
 /**
- * Implementation of FileStorageTable for WebDAV.
+ * Implementation of FileStorageTable for gRPC service.
  * Takes a path to specify what root this table should start at.
  */
-export class WebdavFileStorageTable implements FileStorageTable {
-  readonly client: WebDAVClient;
+export class GrpcFileStorageTable implements FileStorageTable {
+  readonly storageService: StorageService;
 
   readonly root: string;
 
@@ -37,16 +39,15 @@ export class WebdavFileStorageTable implements FileStorageTable {
   /**
    * Map of expanded directory paths to the tables that manage that path.
    * We use a tree of tables to query the server so we just get the directories that are expanded.
-   * Also the nginx module we are using does not support a depth of infinity: https://github.com/arut/nginx-dav-ext-module/blob/f5e30888a256136d9c550bf1ada77d6ea78a48af/ngx_http_dav_ext_module.c#L757
    */
-  private childTables: Map<string, WebdavFileStorageTable> = new Map();
+  private childTables: Map<string, GrpcFileStorageTable> = new Map();
 
   /**
-   * @param client The WebDAV client instance to use
+   * @param storageService The storage service to use
    * @param root The root path for this storage table
    */
-  constructor(client: WebDAVClient, root = '/') {
-    this.client = client;
+  constructor(storageService: StorageService, root = '/') {
+    this.storageService = storageService;
     this.root = root;
   }
 
@@ -59,7 +60,6 @@ export class WebdavFileStorageTable implements FileStorageTable {
     );
   }
 
-  // eslint-disable-next-line class-methods-use-this
   getSnapshot(
     sortedRanges: IndexRange[]
   ): Promise<StorageSnapshot<FileStorageItem>> {
@@ -82,8 +82,8 @@ export class WebdavFileStorageTable implements FileStorageTable {
     const remainingPath = paths.join('/');
     if (expanded) {
       if (!this.childTables.has(nextPath)) {
-        const childTable = new WebdavFileStorageTable(
-          this.client,
+        const childTable = new GrpcFileStorageTable(
+          this.storageService,
           `${this.root}${nextPath}/`
         );
         this.childTables.set(nextPath, childTable);
@@ -105,7 +105,6 @@ export class WebdavFileStorageTable implements FileStorageTable {
     }
   }
 
-  // eslint-disable-next-line class-methods-use-this
   setSearch(search: string): void {
     throw new Error('Method not implemented.');
   }
@@ -116,17 +115,14 @@ export class WebdavFileStorageTable implements FileStorageTable {
     this.refreshInternal();
   }
 
-  // eslint-disable-next-line class-methods-use-this
   setFilters(): void {
     throw new Error('Method not implemented.');
   }
 
-  // eslint-disable-next-line class-methods-use-this
   setSorts(): void {
     throw new Error('Method not implemented.');
   }
 
-  // eslint-disable-next-line class-methods-use-this
   setReversed(): void {
     throw new Error('Method not implemented.');
   }
@@ -180,24 +176,22 @@ export class WebdavFileStorageTable implements FileStorageTable {
     }
 
     // First get the root directory contents
-    let items = await this.client.getDirectoryContents(this.root).then(
-      dirContents =>
-        (dirContents as FileStat[])
-          .map(file => ({
-            ...file,
-            id: file.filename,
-            isExpanded:
-              file.type === 'directory'
-                ? this.childTables.has(file.basename)
-                : undefined,
-          }))
-          .sort((a, b) => {
-            if (a.type !== b.type) {
-              return a.type === 'directory' ? -1 : 1;
-            }
-            return a.basename.localeCompare(b.basename);
-          }) as FileStorageItem[]
-    );
+    const dirContents = await this.storageService.listItems(this.root);
+    let items = dirContents
+      .map(file => ({
+        ...file,
+        id: file.filename,
+        isExpanded:
+          file.type === 'directory'
+            ? this.childTables.has(file.basename)
+            : undefined,
+      }))
+      .sort((a, b) => {
+        if (a.type !== b.type) {
+          return a.type === 'directory' ? -1 : 1;
+        }
+        return a.basename.localeCompare(b.basename);
+      }) as FileStorageItem[];
 
     // Get the data from all expanded directories
     for (let i = 0; i < items.length; i += 1) {
@@ -234,4 +228,4 @@ export class WebdavFileStorageTable implements FileStorageTable {
   }
 }
 
-export default WebdavFileStorageTable;
+export default GrpcFileStorageTable;

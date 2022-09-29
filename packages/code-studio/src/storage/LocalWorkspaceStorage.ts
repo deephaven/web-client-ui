@@ -10,15 +10,10 @@ import {
   WorkspaceData,
   WorkspaceStorageLoadOptions,
 } from '@deephaven/redux';
-import { createClient } from 'webdav/web';
 import UserLayoutUtils from '../main/UserLayoutUtils';
-import WebdavLayoutStorage from './webdav/WebdavLayoutStorage';
+import LayoutStorage from './LayoutStorage';
 
 const log = Log.module('LocalWorkspaceStorage');
-
-export const LAYOUT_STORAGE = new WebdavLayoutStorage(
-  createClient(import.meta.env.VITE_LAYOUTS_URL ?? '')
-);
 
 /**
  * Implementation of WorkspaceStorage that just stores the workspace data in localStorage
@@ -27,6 +22,7 @@ export class LocalWorkspaceStorage implements WorkspaceStorage {
   static readonly STORAGE_KEY = 'deephaven.WorkspaceStorage';
 
   static async makeDefaultWorkspaceData(
+    layoutStorage: LayoutStorage,
     options?: WorkspaceStorageLoadOptions
   ): Promise<WorkspaceData> {
     const {
@@ -34,7 +30,7 @@ export class LocalWorkspaceStorage implements WorkspaceStorage {
       links,
       layoutConfig,
     } = await UserLayoutUtils.getDefaultLayout(
-      LAYOUT_STORAGE,
+      layoutStorage,
       options?.isConsoleAvailable
     );
 
@@ -63,11 +59,21 @@ export class LocalWorkspaceStorage implements WorkspaceStorage {
   }
 
   static async makeDefaultWorkspace(
+    layoutStorage: LayoutStorage,
     options?: WorkspaceStorageLoadOptions
   ): Promise<Workspace> {
     return {
-      data: await LocalWorkspaceStorage.makeDefaultWorkspaceData(options),
+      data: await LocalWorkspaceStorage.makeDefaultWorkspaceData(
+        layoutStorage,
+        options
+      ),
     };
+  }
+
+  private layoutStorage: LayoutStorage;
+
+  constructor(layoutStorage: LayoutStorage) {
+    this.layoutStorage = layoutStorage;
   }
 
   // eslint-disable-next-line class-methods-use-this
@@ -78,7 +84,10 @@ export class LocalWorkspaceStorage implements WorkspaceStorage {
       );
     } catch (e) {
       log.info('Unable to load workspace data, initializing to default data');
-      return LocalWorkspaceStorage.makeDefaultWorkspace(options);
+      return LocalWorkspaceStorage.makeDefaultWorkspace(
+        this.layoutStorage,
+        options
+      );
     }
   }
 

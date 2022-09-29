@@ -1,43 +1,49 @@
 import { FileUtils } from '@deephaven/file-explorer';
-import { createClient, FileStat, WebDAVClient } from 'webdav/web';
-import WebdavFileStorageTable from './WebdavFileStorageTable';
+import { ItemDetails, StorageService } from '@deephaven/jsapi-shim';
+import GrpcFileStorageTable from './GrpcFileStorageTable';
 
-jest.mock('webdav');
-jest.mock('webdav/web', () => ({
-  createClient: jest.fn(() => ({
-    getDirectoryContents: jest.fn(async () => []),
-  })),
-}));
+let storageService: StorageService;
+function makeTable(path = '/'): GrpcFileStorageTable {
+  return new GrpcFileStorageTable(storageService, path);
+}
 
-let client: WebDAVClient;
-function makeTable(path = '/'): WebdavFileStorageTable {
-  return new WebdavFileStorageTable(client, path);
+function makeStorageService(): StorageService {
+  return {
+    listItems: jest.fn(async () => []),
+    loadFile: jest.fn(async () => {
+      throw new Error('No file loaded');
+    }),
+    deleteItem: jest.fn(async () => undefined),
+    saveFile: jest.fn(async () => undefined),
+    moveItem: jest.fn(async () => undefined),
+    createDirectory: jest.fn(async () => undefined),
+  };
 }
 
 beforeEach(() => {
-  client = createClient('TEST');
+  storageService = makeStorageService();
 });
 
 it('Does not get contents until a viewport is set', () => {
   const table = makeTable();
-  expect(client.getDirectoryContents).not.toHaveBeenCalled();
+  expect(storageService.listItems).not.toHaveBeenCalled();
   table.setViewport({ top: 0, bottom: 10 });
-  expect(client.getDirectoryContents).toHaveBeenCalled();
+  expect(storageService.listItems).toHaveBeenCalled();
 });
 
 describe('directory expansion tests', () => {
-  function makeFile(name: string, path = '/'): FileStat {
+  function makeFile(name: string, path = '/'): ItemDetails {
     return {
       basename: name,
       filename: `${path}${name}`,
-      lastmod: '',
+      dirname: path,
       etag: '',
       size: 1,
       type: 'file',
     };
   }
 
-  function makeDirectory(name: string, path = '/'): FileStat {
+  function makeDirectory(name: string, path = '/'): ItemDetails {
     const file = makeFile(name, path);
     file.type = 'directory';
     return file;
@@ -47,8 +53,8 @@ describe('directory expansion tests', () => {
     path = '/',
     numDirs = 3,
     numFiles = 3
-  ): Array<FileStat> {
-    const results = [] as FileStat[];
+  ): Array<ItemDetails> {
+    const results = [] as ItemDetails[];
 
     for (let i = 0; i < numDirs; i += 1) {
       const name = `dir${i}`;
@@ -64,7 +70,7 @@ describe('directory expansion tests', () => {
   }
 
   beforeEach(() => {
-    client.getDirectoryContents = jest.fn(async path => {
+    storageService.listItems = jest.fn(async path => {
       const depth = FileUtils.getDepth(path) + 1;
       return makeDirectoryContents(path, 5 - depth, 10 - depth);
     });
