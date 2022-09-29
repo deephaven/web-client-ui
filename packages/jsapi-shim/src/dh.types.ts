@@ -30,6 +30,10 @@ export interface dh {
   RangeSet: RangeSet;
   IdeSession: IdeSessionStatic;
   calendar: CalendarStatic;
+  CoreClient: CoreClientContructor;
+  storage: {
+    FileContents: FileContentsStatic;
+  };
 }
 
 const VariableType = {
@@ -953,4 +957,52 @@ export interface IdeConnection
   subscribeToFieldUpdates(
     param: (changes: VariableChanges) => void
   ): () => void;
+}
+
+export interface ItemDetails {
+  filename: string;
+  basename: string;
+  dirname: string;
+  type: 'directory' | 'file';
+  size: number;
+  etag?: string;
+}
+
+export interface FileContentsStatic {
+  blob(blob: Blob): FileContents;
+  text(...text: string[]): FileContents;
+  arrayBuffers(...buffers: ArrayBuffer[]): FileContents;
+}
+
+export interface FileContents {
+  text(): Promise<string>;
+  arrayBuffer(): Promise<ArrayBuffer>;
+  etag?: string;
+}
+
+export interface LoginOptions {
+  type: string;
+}
+
+export interface StorageService {
+  listItems(path: string, glob?: string): Promise<ItemDetails[]>;
+  loadFile(path: string, etag?: string): Promise<FileContents>;
+  deleteItem(path: string): Promise<void>;
+  saveFile(
+    path: string,
+    contents: FileContents,
+    newFile?: boolean
+  ): Promise<void>;
+  moveItem(path: string, newPath: string, newFile?: boolean): Promise<void>;
+  createDirectory(path: string): Promise<void>;
+}
+
+export interface CoreClientContructor {
+  LOGIN_TYPE_ANONYMOUS: string;
+  new (serverUrl: string): CoreClient;
+}
+
+export interface CoreClient extends CoreClientContructor {
+  login(options: LoginOptions): Promise<void>;
+  getStorageService(): StorageService;
 }
