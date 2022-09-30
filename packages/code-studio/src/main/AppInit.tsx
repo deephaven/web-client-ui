@@ -39,7 +39,6 @@ import {
   Workspace,
   WorkspaceStorage,
 } from '@deephaven/redux';
-import { createClient } from 'webdav/web';
 import { setLayoutStorage as setLayoutStorageAction } from '../redux/actions';
 import App from './App';
 import PouchCommandHistoryStorage from '../storage/PouchCommandHistoryStorage';
@@ -52,8 +51,8 @@ import {
 import { PluginUtils } from '../plugins';
 import LayoutStorage from '../storage/LayoutStorage';
 import { isNoConsolesError } from './NoConsolesError';
-import WebdavFileStorage from '../storage/webdav/WebdavFileStorage';
 import GrpcLayoutStorage from '../storage/grpc/GrpcLayoutStorage';
+import GrpcFileStorage from '../storage/grpc/GrpcFileStorage';
 
 const log = Log.module('AppInit');
 
@@ -194,8 +193,9 @@ const AppInit = (props: AppInitProps) => {
 
       const workspaceStorage = new LocalWorkspaceStorage(layoutStorage);
       const commandHistoryStorage = new PouchCommandHistoryStorage();
-      const fileStorage = new WebdavFileStorage(
-        createClient(import.meta.env.VITE_NOTEBOOKS_URL ?? '')
+      const fileStorage = new GrpcFileStorage(
+        storageService,
+        import.meta.env.VITE_NOTEBOOKS_URL ?? ''
       );
 
       const loadedWorkspace = await workspaceStorage.load({

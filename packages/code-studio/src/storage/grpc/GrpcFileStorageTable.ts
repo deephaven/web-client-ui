@@ -179,7 +179,9 @@ export class GrpcFileStorageTable implements FileStorageTable {
     const dirContents = await this.storageService.listItems(this.root);
     let items = dirContents
       .map(file => ({
-        ...file,
+        type: file.type,
+        filename: file.filename,
+        basename: file.basename,
         id: file.filename,
         isExpanded:
           file.type === 'directory'
