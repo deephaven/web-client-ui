@@ -80,7 +80,7 @@ class AdvancedFilterCreatorSelectValueList extends PureComponent {
     }
 
     if (prevProps.filters !== filters) {
-      table.applyFilter(filters);
+      table?.applyFilter(filters);
       this.resetViewport();
     }
   }
@@ -131,11 +131,12 @@ class AdvancedFilterCreatorSelectValueList extends PureComponent {
   }
 
   handleTableUpdate(event) {
+    const { table, formatter } = this.props;
+    if (!table) return;
+
     const data = event.detail;
     const { offset } = data;
-
     const items = [];
-    const { table, formatter } = this.props;
     const column = table.columns[0];
     for (let r = 0; r < data.rows.length; r += 1) {
       const row = data.rows[r];
