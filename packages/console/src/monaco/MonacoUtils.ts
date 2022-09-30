@@ -6,6 +6,7 @@ import { Shortcut } from '@deephaven/components';
 import { IdeSession } from '@deephaven/jsapi-shim';
 import { assertNotNull } from '@deephaven/utils';
 import * as monaco from 'monaco-editor';
+import type { Environment } from 'monaco-editor';
 // @ts-ignore
 import { KeyCodeUtils } from 'monaco-editor/esm/vs/base/common/keyCodes.js';
 // @ts-ignore
@@ -20,6 +21,18 @@ import LogLang from './lang/log';
 import { Language } from './lang/Language';
 
 const log = Log.module('MonacoUtils');
+
+declare global {
+  interface Window {
+    MonacoEnvironment: Environment;
+  }
+}
+
+window.MonacoEnvironment = {
+  getWorker() {
+    return editorWorker();
+  },
+};
 
 class MonacoUtils {
   static init(): void {
