@@ -1,59 +1,80 @@
 import $ from 'jquery';
 import AbstractContentItem from './AbstractContentItem.js';
 import utils from '../utils/index.js';
-import controls from '../controls/index.js';
+import type LayoutManager from '../LayoutManager.js';
+import type { ItemConfigType } from '../config/ItemConfig.js';
+import Header from '../controls/Header.js';
 
-const Stack = function (layoutManager, config, parent) {
-  AbstractContentItem.call(this, layoutManager, config, parent);
+export default class Stack extends AbstractContentItem {
+  private _activeContentItem: AbstractContentItem | null = null;
 
-  this.element = $('<div class="lm_item lm_stack"></div>');
-  this._activeContentItem = null;
-
-  var cfg = layoutManager.config;
-  this._header = {
-    // defaults' reconstruction from old configuration style
-    show: cfg.settings.hasHeaders === true && config.hasHeaders !== false,
-    popout: cfg.settings.showPopoutIcon && cfg.labels.popout,
-    maximise: cfg.settings.showMaximiseIcon && cfg.labels.maximise,
-    close: cfg.settings.showCloseIcon && cfg.labels.close,
-    minimise: cfg.labels.minimise,
+  private _header: {
+    show?: 'top' | 'left' | 'right' | 'bottom';
+    popout?: string;
+    maximise?: string;
+    close?: string;
+    minimise?: string;
   };
 
-  // load simplified version of header configuration (https://github.com/deepstreamIO/golden-layout/pull/245)
-  if (cfg.header) utils.copy(this._header, cfg.header);
-  if (config.header)
-    // load from stack
-    utils.copy(this._header, config.header);
-  if (config.content && config.content[0] && config.content[0].header)
-    // load from component if stack omitted
-    utils.copy(this._header, config.content[0].header);
+  childElementContainer = $('<div class="lm_items"></div>');
+  header: Header;
 
-  this._dropZones = {};
-  this._dropSegment = null;
-  this._contentAreaDimensions = null;
-  this._dropIndex = null;
+  isStack = true;
 
-  this.isStack = true;
+  private _dropZones = {};
+  private _dropSegment = null;
+  private _contentAreaDimensions = null;
+  private _dropIndex = null;
+  _side: 'top' | 'left' | 'right' | 'bottom';
+  _sided: boolean;
 
-  this.childElementContainer = $('<div class="lm_items"></div>');
-  this.header = new controls.Header(layoutManager, this);
+  constructor(
+    layoutManager: LayoutManager,
+    config: ItemConfigType,
+    parent: AbstractContentItem
+  ) {
+    super(layoutManager, config, parent);
 
-  this.element.append(this.header.element);
-  this.element.append(this.childElementContainer);
-  this._setupHeaderPosition();
-  this._$validateClosability();
-};
+    this.element = $('<div class="lm_item lm_stack"></div>');
 
-utils.extend(Stack, AbstractContentItem);
+    const cfg = layoutManager.config;
+    this._header = {
+      // defaults' reconstruction from old configuration style
+      show: Boolean(cfg.settings?.hasHeaders && config.hasHeaders !== false),
+      popout: cfg.settings?.showPopoutIcon ? cfg.labels?.popout : undefined,
+      maximise: cfg.settings?.showMaximiseIcon
+        ? cfg.labels?.maximise
+        : undefined,
+      close: cfg.settings?.showCloseIcon ? cfg.labels?.close : undefined,
+      minimise: cfg.labels?.minimise,
+    };
 
-utils.copy(Stack.prototype, {
-  setSize: function () {
+    // load simplified version of header configuration (https://github.com/deepstreamIO/golden-layout/pull/245)
+    if (cfg.header) utils.copy(this._header, cfg.header);
+    if (config.header)
+      // load from stack
+      utils.copy(this._header, config.header);
+    if (config.content && config.content[0] && config.content[0].header)
+      // load from component if stack omitted
+      utils.copy(this._header, config.content[0].header);
+
+    this.header = new Header(layoutManager, this);
+
+    this.element.append(this.header.element);
+    this.element.append(this.childElementContainer);
+    this._setupHeaderPosition();
+    this._$validateClosability();
+  }
+
+  setSize() {
     var i,
       headerSize = this._header.show
-        ? this.layoutManager.config.dimensions.headerHeight
+        ? this.layoutManager.config.dimensions?.headerHeight ?? 0
         : 0,
-      contentWidth = this.element.width() - (this._sided ? headerSize : 0),
-      contentHeight = this.element.height() - (!this._sided ? headerSize : 0);
+      contentWidth =
+        (this.element.width() ?? 0) - (this._sided ? headerSize : 0),
+      contentHeight =
+        (this.element.height() ?? 0) - (!this._sided ? headerSize : 0);
 
     this.childElementContainer.width(contentWidth);
     this.childElementContainer.height(contentHeight);
@@ -63,24 +84,22 @@ utils.copy(Stack.prototype, {
     }
     this.emit('resize');
     this.emitBubblingEvent('stateChanged');
-  },
+  }
 
-  _$init: function () {
-    var i, initialItem;
-
+  _$init() {
     if (this.isInitialised === true) return;
 
     this.header._attachWheelListener();
 
-    AbstractContentItem.prototype._$init.call(this);
+    super._$init();
 
-    for (i = 0; i < this.contentItems.length; i++) {
+    for (let i = 0; i < this.contentItems.length; i++) {
       this.header.createTab(this.contentItems[i]);
       this.contentItems[i]._$hide();
     }
 
     if (this.contentItems.length > 0) {
-      initialItem = this.contentItems[this.config.activeItemIndex || 0];
+      const initialItem = this.contentItems[this.config.activeItemIndex || 0];
 
       if (!initialItem) {
         throw new Error('Configured activeItemIndex out of bounds');
@@ -88,10 +107,10 @@ utils.copy(Stack.prototype, {
 
       this.setActiveContentItem(initialItem);
     }
-  },
+  }
 
-  setActiveContentItem: function (contentItem) {
-    if (utils.indexOf(contentItem, this.contentItems) === -1) {
+  setActiveContentItem(contentItem) {
+    if (this.contentItems.indexOf(contentItem) === -1) {
       throw new Error('contentItem is not a child of this stack');
     }
 
@@ -105,13 +124,13 @@ utils.copy(Stack.prototype, {
     this.emit('activeContentItemChanged', contentItem);
     this.layoutManager.emit('activeContentItemChanged', contentItem);
     this.emitBubblingEvent('stateChanged');
-  },
+  }
 
-  getActiveContentItem: function () {
+  getActiveContentItem() {
     return this.header.activeContentItem;
-  },
+  }
 
-  addChild: function (contentItem, index) {
+  addChild(contentItem: AbstractContentItem, index?: number) {
     contentItem = this.layoutManager._$normalizeContentItem(contentItem, this);
     AbstractContentItem.prototype.addChild.call(this, contentItem, index);
     this.childElementContainer.append(contentItem.element);
@@ -120,10 +139,10 @@ utils.copy(Stack.prototype, {
     this.callDownwards('setSize');
     this._$validateClosability();
     this.emitBubblingEvent('stateChanged');
-  },
+  }
 
-  removeChild: function (contentItem, keepChild) {
-    var index = utils.indexOf(contentItem, this.contentItems);
+  removeChild(contentItem, keepChild = false) {
+    var index = this.contentItems.indexOf(contentItem);
     AbstractContentItem.prototype.removeChild.call(
       this,
       contentItem,
@@ -140,7 +159,7 @@ utils.copy(Stack.prototype, {
 
     this._$validateClosability();
     this.emitBubblingEvent('stateChanged');
-  },
+  }
 
   /**
    * Validates that the stack is still closable or not. If a stack is able
@@ -149,7 +168,7 @@ utils.copy(Stack.prototype, {
    *
    * @returns {void}
    */
-  _$validateClosability: function () {
+  _$validateClosability() {
     var isClosable, len, i;
 
     isClosable = this.header._isClosable();
@@ -163,12 +182,12 @@ utils.copy(Stack.prototype, {
     }
 
     this.header._$setClosable(isClosable);
-  },
+  }
 
-  _$destroy: function () {
+  _$destroy() {
     AbstractContentItem.prototype._$destroy.call(this);
     this.header._$destroy();
-  },
+  }
 
   /**
    * Ok, this one is going to be the tricky one: The user has dropped {contentItem} onto this stack.
@@ -191,7 +210,7 @@ utils.copy(Stack.prototype, {
    *
    * @returns {void}
    */
-  _$onDrop: function (contentItem) {
+  _$onDrop(contentItem) {
     /*
      * The item was dropped on the header area. Just add it as a child of this stack and
      * get the hell out of this logic
@@ -271,7 +290,7 @@ utils.copy(Stack.prototype, {
       contentItem.config[dimension] = 50;
       rowOrColumn.callDownwards('setSize');
     }
-  },
+  }
 
   /**
    * If the user hovers above the header part of the stack, indicate drop positions for tabs.
@@ -282,7 +301,7 @@ utils.copy(Stack.prototype, {
    *
    * @returns {void}
    */
-  _$highlightDropZone: function (x, y) {
+  _$highlightDropZone(x, y) {
     var segment, area;
 
     for (segment in this._contentAreaDimensions) {
@@ -300,9 +319,9 @@ utils.copy(Stack.prototype, {
         return;
       }
     }
-  },
+  }
 
-  _$getArea: function () {
+  _$getArea() {
     if (this.element.is(':visible') === false) {
       return null;
     }
@@ -424,9 +443,9 @@ utils.copy(Stack.prototype, {
     };
 
     return getArea.call(this, this.element);
-  },
+  }
 
-  _highlightHeaderDropZone: function (x) {
+  _highlightHeaderDropZone(x) {
     var tabsLength = this.header.tabs.length;
     var tabElement = null;
     var tabRect = null;
@@ -507,13 +526,13 @@ utils.copy(Stack.prototype, {
       y1: this.header.element.offset().top,
       y2: this.header.element.offset().top + this.header.element.innerHeight(),
     });
-  },
+  }
 
-  _resetHeaderDropZone: function () {
+  _resetHeaderDropZone() {
     this.layoutManager.tabDropPlaceholder.remove();
-  },
+  }
 
-  _setupHeaderPosition: function () {
+  _setupHeaderPosition() {
     var side =
       ['right', 'left', 'bottom'].indexOf(this._header.show) >= 0 &&
       this._header.show;
@@ -528,13 +547,11 @@ utils.copy(Stack.prototype, {
       this.header.element[headerPosition](this.childElementContainer);
       this.callDownwards('setSize');
     }
-  },
+  }
 
-  _highlightBodyDropZone: function (segment) {
+  _highlightBodyDropZone(segment) {
     var highlightArea = this._contentAreaDimensions[segment].highlightArea;
     this.layoutManager.dropTargetIndicator.highlightArea(highlightArea);
     this._dropSegment = segment;
-  },
-});
-
-export default Stack;
+  }
+}

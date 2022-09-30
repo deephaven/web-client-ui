@@ -2,30 +2,40 @@ import $ from 'jquery';
 import AbstractContentItem from './AbstractContentItem.js';
 import utils from '../utils/index.js';
 import controls from '../controls/index.js';
+import type LayoutManager from '../LayoutManager.js';
+import type { ItemConfigType } from '../config/ItemConfig.js';
 
-const RowOrColumn = function (isColumn, layoutManager, config, parent) {
-  AbstractContentItem.call(this, layoutManager, config, parent);
+export default class RowOrColumn extends AbstractContentItem {
+  isRow: boolean;
+  isColumn: boolean;
+  element: JQuery<HTMLElement>;
+  childElementContainer: JQuery<HTMLElement>;
 
-  this.isRow = !isColumn;
-  this.isColumn = isColumn;
+  constructor(
+    isColumn: boolean,
+    layoutManager: LayoutManager,
+    config: ItemConfigType,
+    parent: AbstractContentItem
+  ) {
+    super(layoutManager, config, parent);
 
-  this.element = $(
-    '<div class="lm_item lm_' + (isColumn ? 'column' : 'row') + '"></div>'
-  );
-  this.childElementContainer = this.element;
-  this._splitterSize = layoutManager.config.dimensions.borderWidth;
-  this._splitterGrabSize = layoutManager.config.dimensions.borderGrabWidth;
-  this._isColumn = isColumn;
-  this._dimension = isColumn ? 'height' : 'width';
-  this._splitter = [];
-  this._splitterPosition = null;
-  this._splitterMinPosition = null;
-  this._splitterMaxPosition = null;
-};
+    this.isRow = !isColumn;
+    this.isColumn = isColumn;
 
-utils.extend(RowOrColumn, AbstractContentItem);
+    this.element = $(
+      '<div class="lm_item lm_' + (isColumn ? 'column' : 'row') + '"></div>'
+    );
+    this.childElementContainer = this.element;
+    this._splitterSize = layoutManager.config.dimensions.borderWidth;
+    this._splitterGrabSize = layoutManager.config.dimensions.borderGrabWidth;
+    this._isColumn = isColumn;
+    this._dimension = isColumn ? 'height' : 'width';
+    this._splitter = [];
+    this._splitterPosition = null;
+    this._splitterMinPosition = null;
+    this._splitterMaxPosition = null;
+  }
 
-utils.copy(RowOrColumn.prototype, {
   /**
    * Add a new contentItem to the Row or Column
    *
@@ -38,7 +48,7 @@ utils.copy(RowOrColumn.prototype, {
    *
    * @returns {void}
    */
-  addChild: function (contentItem, index, _$suspendResize) {
+  addChild(contentItem, index, _$suspendResize) {
     var newItemSize, itemSize, i, splitterElement;
 
     contentItem = this.layoutManager._$normalizeContentItem(contentItem, this);
@@ -82,7 +92,7 @@ utils.copy(RowOrColumn.prototype, {
 
     this.callDownwards('setSize');
     this.emitBubblingEvent('stateChanged');
-  },
+  }
 
   /**
    * Removes a child of this element
@@ -92,7 +102,7 @@ utils.copy(RowOrColumn.prototype, {
    *
    * @returns {void}
    */
-  removeChild: function (contentItem, keepChild) {
+  removeChild(contentItem, keepChild) {
     var removedItemSize = contentItem.config[this._dimension],
       index = utils.indexOf(contentItem, this.contentItems),
       splitterIndex = Math.max(index - 1, 0),
@@ -138,7 +148,7 @@ utils.copy(RowOrColumn.prototype, {
       this.callDownwards('setSize');
       this.emitBubblingEvent('stateChanged');
     }
-  },
+  }
 
   /**
    * Replaces a child of this Row or Column with another contentItem
@@ -148,27 +158,27 @@ utils.copy(RowOrColumn.prototype, {
    *
    * @returns {void}
    */
-  replaceChild: function (oldChild, newChild) {
+  replaceChild(oldChild, newChild) {
     var size = oldChild.config[this._dimension];
     AbstractContentItem.prototype.replaceChild.call(this, oldChild, newChild);
     newChild.config[this._dimension] = size;
     this.callDownwards('setSize');
     this.emitBubblingEvent('stateChanged');
-  },
+  }
 
   /**
    * Called whenever the dimensions of this item or one of its parents change
    *
    * @returns {void}
    */
-  setSize: function () {
+  setSize() {
     if (this.contentItems.length > 0) {
       this._calculateRelativeSizes();
       this._setAbsoluteSizes();
     }
     this.emitBubblingEvent('stateChanged');
     this.emit('resize');
-  },
+  }
 
   /**
    * Invoked recursively by the layout manager. AbstractContentItem.init appends
@@ -179,7 +189,7 @@ utils.copy(RowOrColumn.prototype, {
    * @override AbstractContentItem._$init
    * @returns {void}
    */
-  _$init: function () {
+  _$init() {
     if (this.isInitialised === true) return;
 
     var i;
@@ -189,7 +199,7 @@ utils.copy(RowOrColumn.prototype, {
     for (i = 0; i < this.contentItems.length - 1; i++) {
       this.contentItems[i].element.after(this._createSplitter(i).element);
     }
-  },
+  }
 
   /**
    * Turns the relative sizes calculated by _calculateRelativeSizes into
@@ -200,7 +210,7 @@ utils.copy(RowOrColumn.prototype, {
    * @private
    * @returns {void}
    */
-  _setAbsoluteSizes: function () {
+  _setAbsoluteSizes() {
     var i,
       sizeData = this._calculateAbsoluteSizes();
 
@@ -217,13 +227,13 @@ utils.copy(RowOrColumn.prototype, {
         this.contentItems[i].element.height(sizeData.totalHeight);
       }
     }
-  },
+  }
 
   /**
    * Calculates the absolute sizes of all of the children of this Item.
    * @returns {object} - Set with absolute sizes and additional pixels.
    */
-  _calculateAbsoluteSizes: function () {
+  _calculateAbsoluteSizes() {
     var i,
       totalSplitterSize = (this.contentItems.length - 1) * this._splitterSize,
       totalWidth = this.element.width(),
@@ -264,7 +274,7 @@ utils.copy(RowOrColumn.prototype, {
       totalWidth: totalWidth,
       totalHeight: totalHeight,
     };
-  },
+  }
 
   /**
    * Calculates the relative sizes of all children of this Item. The logic
@@ -287,7 +297,7 @@ utils.copy(RowOrColumn.prototype, {
    * @private
    * @returns {void}
    */
-  _calculateRelativeSizes: function () {
+  _calculateRelativeSizes() {
     var i,
       total = 0,
       itemsWithoutSetDimension = [],
@@ -343,13 +353,13 @@ utils.copy(RowOrColumn.prototype, {
     }
 
     this._respectMinItemWidth();
-  },
+  }
 
   /**
    * Adjusts the column widths to respect the dimensions minItemWidth if set.
    * @returns {}
    */
-  _respectMinItemWidth: function () {
+  _respectMinItemWidth() {
     var minItemWidth = this.layoutManager.config.dimensions
         ? this.layoutManager.config.dimensions.minItemWidth || 0
         : 0,
@@ -423,7 +433,7 @@ utils.copy(RowOrColumn.prototype, {
       this.contentItems[i].config.width =
         (allEntries[i].width / sizeData.totalWidth) * 100;
     }
-  },
+  }
 
   /**
    * Instantiates a new lm.controls.Splitter, binds events to it and adds
@@ -435,7 +445,7 @@ utils.copy(RowOrColumn.prototype, {
    *
    * @returns {lm.controls.Splitter}
    */
-  _createSplitter: function (index) {
+  _createSplitter(index) {
     var splitter;
     splitter = new controls.Splitter(
       this._isColumn,
@@ -459,7 +469,7 @@ utils.copy(RowOrColumn.prototype, {
     );
     this._splitter.splice(index, 0, splitter);
     return splitter;
-  },
+  }
 
   /**
    * Locates the instance of lm.controls.Splitter in the array of
@@ -471,21 +481,21 @@ utils.copy(RowOrColumn.prototype, {
    *
    * @returns {Object} A map of contentItems that the splitter affects
    */
-  _getItemsForSplitter: function (splitter) {
+  _getItemsForSplitter(splitter) {
     var index = utils.indexOf(splitter, this._splitter);
 
     return {
       before: this.contentItems[index],
       after: this.contentItems[index + 1],
     };
-  },
+  }
 
   /**
    * Gets the minimum dimensions for the given item configuration array
    * @param item
    * @private
    */
-  _getMinimumDimensions: function (arr) {
+  _getMinimumDimensions(arr) {
     var minWidth = 0,
       minHeight = 0;
 
@@ -495,7 +505,7 @@ utils.copy(RowOrColumn.prototype, {
     }
 
     return { horizontal: minWidth, vertical: minHeight };
-  },
+  }
 
   /**
    * Invoked when a splitter's dragListener fires dragStart. Calculates the splitters
@@ -505,7 +515,7 @@ utils.copy(RowOrColumn.prototype, {
    *
    * @returns {void}
    */
-  _onSplitterDragStart: function (splitter) {
+  _onSplitterDragStart(splitter) {
     var items = this._getItemsForSplitter(splitter),
       minSize = this.layoutManager.config.dimensions[
         this._isColumn ? 'minItemHeight' : 'minItemWidth'
@@ -527,7 +537,7 @@ utils.copy(RowOrColumn.prototype, {
       (items.before.element[this._dimension]() - (beforeMinSize || minSize));
     this._splitterMaxPosition =
       items.after.element[this._dimension]() - (afterMinSize || minSize);
-  },
+  }
 
   /**
    * Invoked when a splitter's DragListener fires drag. Updates the splitters DOM position,
@@ -539,7 +549,7 @@ utils.copy(RowOrColumn.prototype, {
    *
    * @returns {void}
    */
-  _onSplitterDrag: function (splitter, offsetX, offsetY) {
+  _onSplitterDrag(splitter, offsetX, offsetY) {
     var offset = this._isColumn ? offsetY : offsetX;
 
     if (
@@ -549,7 +559,7 @@ utils.copy(RowOrColumn.prototype, {
       this._splitterPosition = offset;
       splitter.element.css(this._isColumn ? 'top' : 'left', offset);
     }
-  },
+  }
 
   /**
    * Invoked when a splitter's DragListener fires dragStop. Resets the splitters DOM position,
@@ -560,7 +570,7 @@ utils.copy(RowOrColumn.prototype, {
    *
    * @returns {void}
    */
-  _onSplitterDragStop: function (splitter) {
+  _onSplitterDragStop(splitter) {
     var items = this._getItemsForSplitter(splitter),
       sizeBefore = items.before.element[this._dimension](),
       sizeAfter = items.after.element[this._dimension](),
@@ -581,7 +591,5 @@ utils.copy(RowOrColumn.prototype, {
     });
 
     utils.animFrame(utils.fnBind(this.callDownwards, this, ['setSize']));
-  },
-});
-
-export default RowOrColumn;
+  }
+}

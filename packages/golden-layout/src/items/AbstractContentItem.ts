@@ -1,8 +1,28 @@
 import utils from '../utils/index.js';
 import errors from '../errors/index.js';
 import config from '../config/index.js';
+import EventEmitter from '../utils/EventEmitter.js';
+import type { ItemConfig, ItemConfigType } from '../config/ItemConfig.js';
+import type LayoutManager from '../LayoutManager.js';
+import type Tab from '../controls/Tab.js';
+import type Stack from './Stack.js';
+import type BubblingEvent from '../utils/BubblingEvent.js';
 
 const { itemDefaultConfig } = config;
+
+function isStack(item: AbstractContentItem): item is Stack {
+  return item.isStack;
+};
+
+export type ItemArea = {
+  x1: number;
+  x2: number;
+  y1: number;
+  y2: number;
+  surface: number;
+  side: 'x1' | 'x2' | 'y1' | 'y2';
+  contentItem: AbstractContentItem;
+};
 
 /**
  * This is the baseclass that all content items inherit from.
@@ -25,66 +45,75 @@ const { itemDefaultConfig } = config;
  *
  * @constructor
  */
-const AbstractContentItem = function (layoutManager, config, parent) {
-  utils.EventEmitter.call(this);
+export default abstract class AbstractContentItem extends EventEmitter {
+  config: ItemConfigType;
+  type: string;
+  contentItems: AbstractContentItem[];
+  parent: AbstractContentItem | null;
+  layoutManager: LayoutManager;
+  element: JQuery<HTMLElement>;
 
-  this.config = this._extendItemNode(config);
-  this.type = config.type;
-  this.contentItems = [];
-  this.parent = parent;
+  isInitialised = false;
+  isMaximised = false;
+  isRoot = false;
+  isRow = false;
+  isColumn = false;
+  isStack = false;
+  isComponent = false;
 
-  this.isInitialised = false;
-  this.isMaximised = false;
-  this.isRoot = false;
-  this.isRow = false;
-  this.isColumn = false;
-  this.isStack = false;
-  this.isComponent = false;
+  tab?: Tab;
 
-  this.layoutManager = layoutManager;
-  this._pendingEventPropagations = {};
-  this._throttledEvents = ['stateChanged'];
+  private _pendingEventPropagations: Record<string, boolean>;
+  private _throttledEvents: string[];
 
-  this.on(utils.EventEmitter.ALL_EVENT, this._propagateEvent, this);
+  constructor(
+    layoutManager: LayoutManager,
+    config: ItemConfigType & { type: string },
+    parent: AbstractContentItem | null
+  ) {
+    super();
 
-  if (config.content) {
-    this._createContentItems(config);
+    this.config = { ...itemDefaultConfig, ...config };
+    this.type = config.type;
+    this.contentItems = [];
+    this.parent = parent;
+
+    this.layoutManager = layoutManager;
+    this._pendingEventPropagations = {};
+    this._throttledEvents = ['stateChanged'];
+
+    this.on(EventEmitter.ALL_EVENT, this._propagateEvent, this);
+
+    if (config.content) {
+      this._createContentItems(config);
+    }
   }
-};
 
-utils.copy(AbstractContentItem.prototype, {
   /**
    * Set the size of the component and its children, called recursively
    *
    * @abstract
-   * @returns void
    */
-  setSize: function () {
-    throw new Error('Abstract Method');
-  },
+  abstract setSize(): void;
 
   /**
    * Calls a method recursively downwards on the tree
    *
-   * @param   {String} functionName      the name of the function to be called
-   * @param   {[Array]}functionArguments optional arguments that are passed to every function
-   * @param   {[bool]} bottomUp          Call methods from bottom to top, defaults to false
-   * @param   {[bool]} skipSelf          Don't invoke the method on the class that calls it, defaults to false
-   *
-   * @returns {void}
+   * @param functionName the name of the function to be called
+   * @param functionArguments optional arguments that are passed to every function
+   * @param bottomUp Call methods from bottom to top, defaults to false
+   * @param skipSelf Don't invoke the method on the class that calls it, defaults to false
    */
-  callDownwards: function (
-    functionName,
-    functionArguments,
-    bottomUp,
-    skipSelf
+  callDownwards<N extends 'setSize' | '_$destroy' | '_$init' | '_$show'>(
+    functionName: N,
+    functionArguments = [] as Parameters<AbstractContentItem[N]>,
+    bottomUp = false,
+    skipSelf = false
   ) {
-    var i;
-
     if (bottomUp !== true && skipSelf !== true) {
-      this[functionName].apply(this, functionArguments || []);
+      this[functionName].apply(this, functionArguments);
     }
-    for (i = 0; i < this.contentItems.length; i++) {
+    for (let i = 0; i < this.contentItems.length; i++) {
       this.contentItems[i].callDownwards(
         functionName,
         functionArguments,
@@ -92,22 +121,20 @@ utils.copy(AbstractContentItem.prototype, {
       );
     }
     if (bottomUp === true && skipSelf !== true) {
-      this[functionName].apply(this, functionArguments || []);
+      this[functionName].apply(this, functionArguments);
     }
-  },
+  }
 
   /**
    * Removes a child node (and its children) from the tree
    *
-   * @param   {lm.items.ContentItem} contentItem
-   *
-   * @returns {void}
+   * @param contentItem
    */
-  removeChild: function (contentItem, keepChild) {
+  removeChild(contentItem: AbstractContentItem, keepChild = false) {
     /*
      * Get the position of the item that's to be removed within all content items this node contains
      */
-    var index = utils.indexOf(contentItem, this.contentItems);
+    const index = this.contentItems.indexOf(contentItem);
 
     /*
      * Make sure the content item to be removed is actually a child of this item
@@ -131,7 +158,7 @@ utils.copy(AbstractContentItem.prototype, {
     /**
      * Remove the item from the configuration
      */
-    this.config.content.splice(index, 1);
+    this.config.content?.splice(index, 1);
 
     /**
      * If this node still contains other content items, adjust their size
@@ -143,19 +170,19 @@ utils.copy(AbstractContentItem.prototype, {
        * If this was the last content item, remove this node as well
        */
     } else if (this.type !== 'root' && this.config.isClosable) {
-      this.parent.removeChild(this);
+      this.parent?.removeChild(this);
     }
-  },
+  }
 
   /**
    * Sets up the tree structure for the newly added child
    * The responsibility for the actual DOM manipulations lies
    * with the concrete item
    *
-   * @param {lm.items.AbstractContentItem} contentItem
-   * @param {[Int]} index If omitted item will be appended
+   * @param contentItem
+   * @param index If omitted item will be appended
    */
-  addChild: function (contentItem, index) {
+  addChild(contentItem: AbstractContentItem, index?: number) {
     if (index === undefined) {
       index = this.contentItems.length;
     }
@@ -175,7 +202,7 @@ utils.copy(AbstractContentItem.prototype, {
     ) {
       contentItem._$init();
     }
-  },
+  }
 
   /**
    * Replaces oldChild with newChild. This used to use jQuery.replaceWith... which for
@@ -183,20 +210,22 @@ utils.copy(AbstractContentItem.prototype, {
    *
    * @param   {lm.item.AbstractContentItem} oldChild
    * @param   {lm.item.AbstractContentItem} newChild
-   *
-   * @returns {void}
    */
-  replaceChild: function (oldChild, newChild, _$destroyOldChild) {
+  replaceChild(
+    oldChild: AbstractContentItem,
+    newChild: AbstractContentItem,
+    _$destroyOldChild = false
+  ) {
     newChild = this.layoutManager._$normalizeContentItem(newChild);
 
-    var index = utils.indexOf(oldChild, this.contentItems),
-      parentNode = oldChild.element[0].parentNode;
+    const index = this.contentItems.indexOf(oldChild);
+    const parentNode = oldChild.element[0].parentNode;
 
     if (index === -1) {
       throw new Error("Can't replace child. oldChild is not child of this");
     }
 
-    parentNode.replaceChild(newChild.element[0], oldChild.element[0]);
+    parentNode?.replaceChild(newChild.element[0], oldChild.element[0]);
 
     /*
      * Optionally destroy the old content item
@@ -215,7 +244,7 @@ utils.copy(AbstractContentItem.prototype, {
     /*
      * Update tab reference
      */
-    if (this.isStack) {
+    if (isStack(this)) {
       this.header.tabs[index].contentItem = newChild;
     }
 
@@ -228,36 +257,30 @@ utils.copy(AbstractContentItem.prototype, {
     }
 
     this.callDownwards('setSize');
-  },
+  }
 
   /**
    * Convenience method.
    * Shorthand for this.parent.removeChild( this )
-   *
-   * @returns {void}
    */
-  remove: function () {
-    this.parent.removeChild(this);
-  },
+  remove() {
+    this.parent?.removeChild(this);
+  }
 
   /**
    * Removes the component from the layout and creates a new
    * browser window with the component and its children inside
-   *
-   * @returns {lm.controls.BrowserPopout}
    */
-  popout: function () {
+  popout() {
     var browserPopout = this.layoutManager.createPopout(this);
     this.emitBubblingEvent('stateChanged');
     return browserPopout;
-  },
+  }
 
   /**
    * Maximises the Item or minimises it if it is already maximised
-   *
-   * @returns {void}
    */
-  toggleMaximise: function (e) {
+  toggleMaximise(e?: Event) {
     e && e.preventDefault();
     if (this.isMaximised === true) {
       this.layoutManager._$minimiseItem(this);
@@ -267,74 +290,59 @@ utils.copy(AbstractContentItem.prototype, {
 
     this.isMaximised = !this.isMaximised;
     this.emitBubblingEvent('stateChanged');
-  },
+  }
 
   /**
    * Selects the item if it is not already selected
-   *
-   * @returns {void}
    */
-  select: function () {
+  select() {
     if (this.layoutManager.selectedItem !== this) {
       this.layoutManager.selectItem(this, true);
       this.element.addClass('lm_selected');
     }
-  },
+  }
 
   /**
    * De-selects the item if it is selected
-   *
-   * @returns {void}
    */
-  deselect: function () {
+  deselect() {
     if (this.layoutManager.selectedItem === this) {
       this.layoutManager.selectedItem = null;
       this.element.removeClass('lm_selected');
     }
-  },
+  }
 
   /**
    * Set this component's title
-   *
-   * @public
-   * @param {String} title
-   *
-   * @returns {void}
+   * @param title
    */
-  setTitle: function (title) {
+  setTitle(title: string) {
     this.config.title = title;
     this.emit('titleChanged', title);
     this.emitBubblingEvent('stateChanged');
-  },
+  }
 
   /**
    * Checks whether a provided id is present
-   *
-   * @public
-   * @param   {String}  id
-   *
-   * @returns {Boolean} isPresent
+   * @param id
+   * @returns isPresent
    */
-  hasId: function (id) {
+  hasId(id: string) {
     if (!this.config.id) {
       return false;
     } else if (typeof this.config.id === 'string') {
       return this.config.id === id;
     } else if (this.config.id instanceof Array) {
-      return utils.indexOf(id, this.config.id) !== -1;
+      return this.config.id.indexOf(id) !== -1;
     }
-  },
+  }
 
   /**
    * Adds an id. Adds it as a string if the component doesn't
    * have an id yet or creates/uses an array
-   *
-   * @public
-   * @param {String} id
-   *
-   * @returns {void}
+   * @param id
    */
-  addId: function (id) {
+  addId(id: string) {
     if (this.hasId(id)) {
       return;
     }
@@ -346,18 +354,14 @@ utils.copy(AbstractContentItem.prototype, {
     } else if (this.config.id instanceof Array) {
       this.config.id.push(id);
     }
-  },
+  }
 
   /**
    * Removes an existing id. Throws an error
    * if the id is not present
-   *
-   * @public
-   * @param   {String} id
-   *
-   * @returns {void}
+   * @param id
    */
-  removeId: function (id) {
+  removeId(id: string) {
     if (!this.hasId(id)) {
       throw new Error('Id not found');
     }
@@ -365,17 +369,17 @@ utils.copy(AbstractContentItem.prototype, {
     if (typeof this.config.id === 'string') {
       delete this.config.id;
     } else if (this.config.id instanceof Array) {
-      var index = utils.indexOf(id, this.config.id);
+      var index = this.config.id.indexOf(id);
       this.config.id.splice(index, 1);
     }
-  },
+  }
 
   /****************************************
    * SELECTOR
    ****************************************/
-  getItemsByFilter: function (filter) {
-    var result = [],
-      next = function (contentItem) {
+  getItemsByFilter(filter: (item: AbstractContentItem) => boolean) {
+    const result: AbstractContentItem[] = [],
+      next = function (contentItem: AbstractContentItem) {
         for (var i = 0; i < contentItem.contentItems.length; i++) {
           if (filter(contentItem.contentItems[i]) === true) {
             result.push(contentItem.contentItems[i]);
@@ -387,23 +391,23 @@ utils.copy(AbstractContentItem.prototype, {
 
     next(this);
     return result;
-  },
+  }
 
-  getItemsById: function (id) {
+  getItemsById(id: string) {
     return this.getItemsByFilter(function (item) {
       if (item.config.id instanceof Array) {
-        return utils.indexOf(id, item.config.id) !== -1;
+        return item.config.id.indexOf(id) !== -1;
       } else {
         return item.config.id === id;
       }
     });
-  },
+  }
 
-  getItemsByType: function (type) {
+  getItemsByType(type: string) {
     return this._$getItemsByProperty('type', type);
-  },
+  }
 
-  getComponentsByName: function (componentName) {
+  getComponentsByName(componentName: string) {
     var components = this._$getItemsByProperty('componentName', componentName),
       instances = [],
       i;
@@ -413,42 +417,42 @@ utils.copy(AbstractContentItem.prototype, {
     }
 
     return instances;
-  },
+  }
 
   /****************************************
    * PACKAGE PRIVATE
    ****************************************/
-  _$getItemsByProperty: function (key, value) {
+  _$getItemsByProperty(key: keyof AbstractContentItem, value: unknown) {
     return this.getItemsByFilter(function (item) {
       return item[key] === value;
     });
-  },
+  }
 
-  _$setParent: function (parent) {
+  _$setParent(parent: AbstractContentItem | null) {
     this.parent = parent;
-  },
+  }
 
-  _$highlightDropZone: function (x, y, area) {
-    this.layoutManager.dropTargetIndicator.highlightArea(area);
-  },
+  _$highlightDropZone(x: number, y: number, area: ItemArea) {
+    this.layoutManager.dropTargetIndicator?.highlightArea(area);
+  }
 
-  _$onDrop: function (contentItem) {
+  _$onDrop(contentItem: AbstractContentItem, area?: ItemArea) {
     this.addChild(contentItem);
-  },
+  }
 
-  _$hide: function () {
+  _$hide() {
     this._callOnActiveComponents('hide');
     this.element.hide();
     this.layoutManager.updateSize();
-  },
+  }
 
-  _$show: function () {
+  _$show() {
     this._callOnActiveComponents('show');
     this.element.show();
     this.layoutManager.updateSize();
-  },
+  }
 
-  _callOnActiveComponents: function (methodName) {
+  _callOnActiveComponents(methodName) {
     var stacks = this.getItemsByType('stack'),
       activeContentItem,
       i;
@@ -460,37 +464,35 @@ utils.copy(AbstractContentItem.prototype, {
         activeContentItem.container[methodName]();
       }
     }
-  },
+  }
 
   /**
    * Destroys this item ands its children
-   *
-   * @returns {void}
    */
-  _$destroy: function () {
+  _$destroy() {
     this.emitBubblingEvent('beforeItemDestroyed');
     this.callDownwards('_$destroy', [], true, true);
     this.element.remove();
     this.emitBubblingEvent('itemDestroyed');
-  },
+  }
 
   /**
    * Returns the area the component currently occupies in the format
    *
    * {
    *		x1: int
-   *		xy: int
+   *		x2: int
    *		y1: int
    *		y2: int
    *		contentItem: contentItem
    * }
    */
-  _$getArea: function (element) {
+  _$getArea(element: JQuery<HTMLElement>): Omit<ItemArea, 'side'> | null {
     element = element || this.element;
 
-    var offset = element.offset(),
-      width = element.width(),
-      height = element.height();
+    const offset = element.offset() ?? { left: 0, top: 0 };
+    const width = element.width() ?? 0;
+    const height = element.height() ?? 0;
 
     return {
       x1: offset.left,
@@ -500,7 +502,7 @@ utils.copy(AbstractContentItem.prototype, {
       surface: width * height,
       contentItem: this,
     };
-  },
+  }
 
   /**
    * The tree of content items is created in two steps: First all content items are instantiated,
@@ -508,59 +510,49 @@ utils.copy(AbstractContentItem.prototype, {
    * it can be used, extended or overwritten by the content items
    *
    * Its behaviour depends on the content item
-   *
-   * @package private
-   *
-   * @returns {void}
    */
-  _$init: function () {
-    var i;
+  _$init() {
     this.setSize();
 
-    for (i = 0; i < this.contentItems.length; i++) {
+    for (let i = 0; i < this.contentItems.length; i++) {
       this.childElementContainer.append(this.contentItems[i].element);
     }
 
     this.isInitialised = true;
     this.emitBubblingEvent('itemCreated');
     this.emitBubblingEvent(this.type + 'Created');
-  },
+  }
 
   /**
    * Emit an event that bubbles up the item tree.
    *
-   * @param   {String} name The name of the event
-   *
-   * @returns {void}
+   * @param name The name of the event
    */
-  emitBubblingEvent: function (name) {
+  emitBubblingEvent(name: string) {
     var event = new utils.BubblingEvent(name, this);
     this.emit(name, event);
-  },
+  }
 
   /**
    * Private method, creates all content items for this node at initialisation time
    * PLEASE NOTE, please see addChild for adding contentItems add runtime
-   * @private
    * @param   {configuration item node} config
-   *
-   * @returns {void}
    */
-  _createContentItems: function (config) {
-    var oContentItem, i;
+  _createContentItems(config) {
+    var oContentItem;
 
     if (!(config.content instanceof Array)) {
       throw new errors.ConfigurationError('content must be an Array', config);
     }
 
-    for (i = 0; i < config.content.length; i++) {
+    for (let i = 0; i < config.content.length; i++) {
       oContentItem = this.layoutManager.createContentItem(
         config.content[i],
         this
       );
       this.contentItems.push(oContentItem);
     }
-  },
+  }
 
   /**
    * Extends an item configuration node with default settings
@@ -569,7 +561,7 @@ utils.copy(AbstractContentItem.prototype, {
    *
    * @returns {configuration item node} extended config
    */
-  _extendItemNode: function (config) {
+  _extendItemNode(config) {
     for (var key in itemDefaultConfig) {
       if (config[key] === undefined) {
         config[key] = itemDefaultConfig[key];
@@ -577,18 +569,16 @@ utils.copy(AbstractContentItem.prototype, {
     }
 
     return config;
-  },
+  }
 
   /**
    * Called for every event on the item tree. Decides whether the event is a bubbling
    * event and propagates it to its parent
    *
-   * @param    {String} name the name of the event
-   * @param   {lm.utils.BubblingEvent} event
-   *
-   * @returns {void}
+   * @param name the name of the event
+   * @param event
    */
-  _propagateEvent: function (name, event) {
+  _propagateEvent(name: string, event: BubblingEvent) {
     if (
       event instanceof utils.BubblingEvent &&
       event.isPropagationStopped === false &&
@@ -603,49 +593,41 @@ utils.copy(AbstractContentItem.prototype, {
       if (this.isRoot === false && this.parent) {
         this.parent.emit.apply(
           this.parent,
-          Array.prototype.slice.call(arguments, 0)
+          [name, event]
         );
       } else {
         this._scheduleEventPropagationToLayoutManager(name, event);
       }
     }
-  },
+  }
 
   /**
    * All raw events bubble up to the root element. Some events that
    * are propagated to - and emitted by - the layoutManager however are
    * only string-based, batched and sanitized to make them more usable
    *
-   * @param {String} name the name of the event
-   *
-   * @private
-   * @returns {void}
+   * @param name the name of the event
    */
-  _scheduleEventPropagationToLayoutManager: function (name, event) {
-    if (utils.indexOf(name, this._throttledEvents) === -1) {
+  _scheduleEventPropagationToLayoutManager(name: string, event: BubblingEvent) {
+    if (this._throttledEvents.indexOf(name) === -1) {
       this.layoutManager.emit(name, event.origin);
     } else {
       if (this._pendingEventPropagations[name] !== true) {
         this._pendingEventPropagations[name] = true;
         utils.animFrame(
-          utils.fnBind(this._propagateEventToLayoutManager, this, [name, event])
+          this._propagateEventToLayoutManager.bind(this, name, event);
         );
       }
     }
-  },
+  }
 
   /**
    * Callback for events scheduled by _scheduleEventPropagationToLayoutManager
    *
-   * @param {String} name the name of the event
-   *
-   * @private
-   * @returns {void}
+   * @param name the name of the event
    */
-  _propagateEventToLayoutManager: function (name, event) {
+  _propagateEventToLayoutManager(name: string, event: BubblingEvent) {
     this._pendingEventPropagations[name] = false;
     this.layoutManager.emit(name, event);
-  },
-});
-
-export default AbstractContentItem;
+  }
+}

@@ -1,18 +1,30 @@
 import $ from 'jquery';
-import utils from '../utils/index.js';
+import {
+  ItemConfigType,
+  isGLComponentConfig,
+  ComponentConfig,
+} from '../config/ItemConfig.js';
+import type AbstractContentItem from '../items/AbstractContentItem.js';
+import type LayoutManager from '../LayoutManager.js';
+import EventEmitter from '../utils/EventEmitter.js';
 
-const ItemContainer = function (config, parent, layoutManager) {
-  utils.EventEmitter.call(this);
+export default class ItemContainer<
+  C extends ItemConfigType = ComponentConfig
+> extends EventEmitter {
+  width?: number;
+  height?: number;
 
-  this.width = null;
-  this.height = null;
-  this.title = config.componentName;
-  this.parent = parent;
-  this.layoutManager = layoutManager;
-  this.isHidden = false;
+  title?: string;
 
-  this._config = config;
-  this._element = $(
+  parent: AbstractContentItem;
+
+  layoutManager: LayoutManager;
+
+  _config: C;
+
+  isHidden = false;
+
+  _element = $(
     [
       '<div class="lm_item_container">',
       '<div class="lm_content" tabindex="-1"></div>',
@@ -20,41 +32,49 @@ const ItemContainer = function (config, parent, layoutManager) {
     ].join('')
   );
 
-  this._contentElement = this._element.find('.lm_content');
-};
+  _contentElement: JQuery<HTMLElement>;
 
-utils.copy(ItemContainer.prototype, {
+  constructor(
+    config: C,
+    parent: AbstractContentItem,
+    layoutManager: LayoutManager
+  ) {
+    super();
+
+    this.title = isGLComponentConfig(config) ? config.componentName : '';
+    this.parent = parent;
+    this.layoutManager = layoutManager;
+
+    this._config = config;
+
+    this._contentElement = this._element.find('.lm_content');
+  }
+
   /**
    * Get the inner DOM element the container's content
    * is intended to live in
-   *
-   * @returns {DOM element}
    */
-  getElement: function () {
+  getElement() {
     return this._contentElement;
-  },
+  }
 
   /**
    * Hide the container. Notifies the containers content first
    * and then hides the DOM node. If the container is already hidden
    * this should have no effect
-   *
-   * @returns {void}
    */
-  hide: function () {
+  hide() {
     this.emit('hide');
     this.isHidden = true;
     this._element.hide();
-  },
+  }
 
   /**
    * Shows a previously hidden container. Notifies the
    * containers content first and then shows the DOM element.
    * If the container is already visible this has no effect.
-   *
-   * @returns {void}
    */
-  show: function () {
+  show() {
     this.emit('show');
     this.isHidden = false;
     this._element.show();
@@ -62,7 +82,7 @@ utils.copy(ItemContainer.prototype, {
     if (this.height != 0 || this.width != 0) {
       this.emit('shown');
     }
-  },
+  }
 
   /**
    * Set the size from within the container. Traverses up
@@ -72,20 +92,14 @@ utils.copy(ItemContainer.prototype, {
    * If this container isn't a descendant of a row or column
    * it returns false
    * @todo  Rework!!!
-   * @param {Number} width  The new width in pixel
-   * @param {Number} height The new height in pixel
+   * @param width The new width in pixel
+   * @param height The new height in pixel
    *
-   * @returns {Boolean} resizeSuccesful
+   * @returns resizeSuccesful
    */
-  setSize: function (width, height) {
-    var rowOrColumn = this.parent,
-      rowOrColumnChild = this,
-      totalPixel,
-      percentage,
-      direction,
-      newSize,
-      delta,
-      i;
+  setSize(width: number, height: number) {
+    let rowOrColumn = this.parent;
+    let rowOrColumnChild = this;
 
     while (!rowOrColumn.isColumn && !rowOrColumn.isRow) {
       rowOrColumnChild = rowOrColumn;
@@ -99,17 +113,17 @@ utils.copy(ItemContainer.prototype, {
       }
     }
 
-    direction = rowOrColumn.isColumn ? 'height' : 'width';
-    newSize = direction === 'height' ? height : width;
+    const direction = rowOrColumn.isColumn ? 'height' : 'width';
+    const newSize = direction === 'height' ? height : width;
 
-    totalPixel =
+    const totalPixel =
       this[direction] * (1 / (rowOrColumnChild.config[direction] / 100));
-    percentage = (newSize / totalPixel) * 100;
-    delta =
+    const percentage = (newSize / totalPixel) * 100;
+    const delta =
       (rowOrColumnChild.config[direction] - percentage) /
       (rowOrColumn.contentItems.length - 1);
 
-    for (i = 0; i < rowOrColumn.contentItems.length; i++) {
+    for (let i = 0; i < rowOrColumn.contentItems.length; i++) {
       if (rowOrColumn.contentItems[i] === rowOrColumnChild) {
         rowOrColumn.contentItems[i].config[direction] = percentage;
       } else {
@@ -120,72 +134,66 @@ utils.copy(ItemContainer.prototype, {
     rowOrColumn.callDownwards('setSize');
 
     return true;
-  },
+  }
 
   /**
    * Closes the container if it is closable. Can be called by
    * both the component within at as well as the contentItem containing
    * it. Emits a close event before the container itself is closed.
-   *
-   * @returns {void}
    */
-  close: function () {
+  close() {
     if (this._config.isClosable) {
       this.emit('close');
       this.parent.close();
     }
-  },
+  }
 
   /**
    * Returns the current state object
    *
-   * @returns {Object} state
+   * @returns state
    */
-  getState: function () {
+  getState() {
     return this._config.componentState;
-  },
+  }
 
   /**
    * Merges the provided state into the current one
    *
-   * @param   {Object} state
-   *
-   * @returns {void}
+   * @param state
    */
-  extendState: function (state) {
+  extendState(state: string) {
     this.setState($.extend(true, this.getState(), state));
-  },
+  }
 
   /**
    * Notifies the layout manager of a stateupdate
    *
-   * @param {serialisable} state
+   * @param state
    */
-  setState: function (state) {
+  setState(state: string) {
     this._config.componentState = state;
     this.parent.emitBubblingEvent('stateChanged');
-  },
+  }
 
   /**
    * Set's the components title
    *
-   * @param {String} title
+   * @param title
    */
-  setTitle: function (title) {
+  setTitle(title: string) {
     this.parent.setTitle(title);
-  },
+  }
 
   /**
    * Set's the containers size. Called by the container's component.
    * To set the size programmatically from within the container please
    * use the public setSize method
    *
-   * @param {[Int]} width  in px
-   * @param {[Int]} height in px
-   *
-   * @returns {void}
+   * @param width  in px
+   * @param height in px
    */
-  _$setSize: function (width, height) {
+  _$setSize(width = 0, height = 0) {
     if (width !== this.width || height !== this.height) {
       this.width = width;
       this.height = height;
@@ -197,7 +205,5 @@ utils.copy(ItemContainer.prototype, {
         .height(this.height - vdelta);
       this.emit('resize');
     }
-  },
-});
-
-export default ItemContainer;
+  }
+}

@@ -1,4 +1,8 @@
 import $ from 'jquery';
+import type AbstractContentItem from '../items/AbstractContentItem.js';
+import type Stack from '../items/Stack.js';
+import type LayoutManager from '../LayoutManager.js';
+import EventEmitter from '../utils/EventEmitter.js';
 import utils from '../utils/index.js';
 import HeaderButton from './HeaderButton.js';
 import Tab from './Tab.js';
@@ -6,142 +10,157 @@ import Tab from './Tab.js';
 /**
  * This class represents a header above a Stack ContentItem.
  *
- * @param {lm.LayoutManager} layoutManager
- * @param {lm.item.AbstractContentItem} parent
+ * @param layoutManager
+ * @param parent
  */
-const Header = function (layoutManager, parent) {
-  utils.EventEmitter.call(this);
+export default class Header extends EventEmitter {
+  private static _template = [
+    '<div class="lm_header">',
+    '<ul class="lm_tabs"></ul>',
+    '<ul class="lm_controls"></ul>',
+    '<ul class="lm_tabdropdown_list">',
+    '<li class="lm_tabdropdown_search"><input type="text" placeholder="Find tab..."></li>',
+    '</ul>',
+    '</div>',
+  ].join('');
 
-  this.layoutManager = layoutManager;
-  this.element = $(Header._template);
+  private static _previousButtonTemplate = [
+    '<ul class="lm_controls">',
+    '<li class="lm_tabpreviousbutton"></li>',
+    '</ul>',
+  ].join('');
 
-  if (this.layoutManager.config.settings.selectionEnabled === true) {
-    this.element.addClass('lm_selectable');
-    this.element.on('click', utils.fnBind(this._onHeaderClick, this));
-  }
+  private static _nextButtonTemplate = [
+    '<li class="lm_tabnextbutton"></li>',
+  ].join('');
 
-  this.tabsContainer = this.element.find('.lm_tabs');
+  layoutManager: LayoutManager;
+  element = $(Header._template);
 
-  this.tabDropdownContainer = this.element.find('.lm_tabdropdown_list');
-  this.tabDropdownContainer.hide();
-  this.tabDropdownSearch = this.element.find('.lm_tabdropdown_search input');
-  this.tabDropdownList = null;
+  tabsContainer: JQuery<HTMLElement>;
+  tabDropdownContainer: JQuery<HTMLElement>;
+  tabDropdownSearch: JQuery<HTMLElement>;
+  tabDropdownList: JQuery<HTMLElement> | null = null;
 
-  this._handleFilterInput = this._handleFilterInput.bind(this);
-  this._handleFilterKeydown = this._handleFilterKeydown.bind(this);
-  this.tabDropdownSearch.on('input', this._handleFilterInput);
-  this.tabDropdownSearch.on('keydown', this._handleFilterKeydown);
+  controlsContainer: JQuery<HTMLElement>;
 
-  this.controlsContainer = this.element.find('.lm_controls');
-  this.parent = parent;
-  this.parent.on('resize', this._updateTabSizes, this);
-  this.tabs = [];
-  this.activeContentItem = null;
-  this.closeButton = null;
+  parent: Stack;
 
-  this.tabDropdownButton = null;
-  this.tabNextButton = $(Header._nextButtonTemplate);
-  this.tabPreviousButton = $(Header._previousButtonTemplate);
+  tabs: Tab[] = [];
+  activeContentItem: AbstractContentItem | null = null;
+  closeButton: JQuery<HTMLElement> | null = null;
 
-  this._handleItemPickedUp = this._handleItemPickedUp.bind(this);
-  this._handleItemDropped = this._handleItemDropped.bind(this);
-
-  this._handleNextMouseEnter = this._handleNextMouseEnter.bind(this);
-  this._handleNextMouseLeave = this._handleNextMouseLeave.bind(this);
-  this._handlePreviousMouseEnter = this._handlePreviousMouseEnter.bind(this);
-  this._handlePreviousMouseLeave = this._handlePreviousMouseLeave.bind(this);
-  this._handleScrollRepeat = this._handleScrollRepeat.bind(this);
-  this._handleNextButtonMouseDown = this._handleNextButtonMouseDown.bind(this);
-  this._handlePreviousButtonMouseDown = this._handlePreviousButtonMouseDown.bind(
-    this
-  );
-  this._handleScrollButtonMouseDown = this._handleScrollButtonMouseDown.bind(
-    this
-  );
-  this._handleScrollButtonMouseUp = this._handleScrollButtonMouseUp.bind(this);
-  this._handleScrollEvent = this._handleScrollEvent.bind(this);
-
-  this.tabNextButton.on('mousedown', this._handleNextButtonMouseDown);
-  this.tabPreviousButton.on('mousedown', this._handlePreviousButtonMouseDown);
-  this.tabsContainer.on('scroll', this._handleScrollEvent);
+  tabDropdownButton: JQuery<HTMLElement> | null = null;
+  tabNextButton = $(Header._nextButtonTemplate);
+  tabPreviousButton = $(Header._previousButtonTemplate);
 
   // use for scroll repeat
-  this.holdTimer = null;
-  this.rAF = null;
+  holdTimer: number | null = null;
+  rAF: number | null = null;
 
   // mouse hold timeout to act as hold instead of click
-  this.CLICK_TIMEOUT = 500;
+  CLICK_TIMEOUT = 500;
   // mouse hold acceleration
-  this.START_SPEED = 0.01;
-  this.ACCELERATION = 0.0005;
-  this.SCROLL_LEFT = 'left';
-  this.SCROLL_RIGHT = 'right';
+  START_SPEED = 0.01;
+  ACCELERATION = 0.0005;
+  SCROLL_LEFT = 'left' as const;
+  SCROLL_RIGHT = 'right' as const;
 
-  this.layoutManager.on('itemPickedUp', this._handleItemPickedUp);
-  this.layoutManager.on('itemDropped', this._handleItemDropped);
+  isDraggingTab = false;
+  isOverflowing = false;
+  isDropdownShown = false;
+  dropdownKeyIndex = 0;
 
-  this.isDraggingTab = false;
-  this.isOverflowing = false;
-  this.isDropdownShown = false;
-  this.dropdownKeyIndex = 0;
+  private _lastVisibleTabIndex = -1;
+  private _tabControlOffset?: number;
 
-  // append previous button template
-  this.tabsContainer.before(this.tabPreviousButton);
-  // change reference to just the li, not the wrapping ul
-  this.tabPreviousButton = this.tabPreviousButton.find('>:first-child');
-  this.tabPreviousButton.hide();
+  constructor(layoutManager: LayoutManager, parent: Stack) {
+    super();
 
-  this._showAdditionalTabsDropdown = this._showAdditionalTabsDropdown.bind(
-    this
-  );
-  this._hideAdditionalTabsDropdown = this._hideAdditionalTabsDropdown.bind(
-    this
-  );
+    this.layoutManager = layoutManager;
 
-  this._lastVisibleTabIndex = -1;
-  this._tabControlOffset = this.layoutManager.config.settings.tabControlOffset;
-  this._createControls();
-};
+    if (this.layoutManager.config.settings?.selectionEnabled) {
+      this.element.addClass('lm_selectable');
+      this.element.on('click', this._onHeaderClick.bind(this));
+    }
 
-Header._template = [
-  '<div class="lm_header">',
-  '<ul class="lm_tabs"></ul>',
-  '<ul class="lm_controls"></ul>',
-  '<ul class="lm_tabdropdown_list">',
-  '<li class="lm_tabdropdown_search"><input type="text" placeholder="Find tab..."></li>',
-  '</ul>',
-  '</div>',
-].join('');
+    this.tabsContainer = this.element.find('.lm_tabs');
 
-Header._previousButtonTemplate = [
-  '<ul class="lm_controls">',
-  '<li class="lm_tabpreviousbutton"></li>',
-  '</ul>',
-].join('');
+    this.tabDropdownContainer = this.element.find('.lm_tabdropdown_list');
+    this.tabDropdownContainer.hide();
+    this.tabDropdownSearch = this.element.find('.lm_tabdropdown_search input');
 
-Header._nextButtonTemplate = ['<li class="lm_tabnextbutton"></li>'].join('');
+    this._handleFilterInput = this._handleFilterInput.bind(this);
+    this._handleFilterKeydown = this._handleFilterKeydown.bind(this);
+    this.tabDropdownSearch.on('input', this._handleFilterInput);
+    this.tabDropdownSearch.on('keydown', this._handleFilterKeydown);
 
-utils.copy(Header.prototype, {
+    this.controlsContainer = this.element.find('.lm_controls');
+    this.parent = parent;
+    this.parent.on('resize', this._updateTabSizes, this);
+
+    this._handleItemPickedUp = this._handleItemPickedUp.bind(this);
+    this._handleItemDropped = this._handleItemDropped.bind(this);
+
+    this._handleNextMouseEnter = this._handleNextMouseEnter.bind(this);
+    this._handleNextMouseLeave = this._handleNextMouseLeave.bind(this);
+    this._handlePreviousMouseEnter = this._handlePreviousMouseEnter.bind(this);
+    this._handlePreviousMouseLeave = this._handlePreviousMouseLeave.bind(this);
+    this._handleScrollRepeat = this._handleScrollRepeat.bind(this);
+    this._handleNextButtonMouseDown = this._handleNextButtonMouseDown.bind(
+      this
+    );
+    this._handlePreviousButtonMouseDown = this._handlePreviousButtonMouseDown.bind(
+      this
+    );
+    this._handleScrollButtonMouseDown = this._handleScrollButtonMouseDown.bind(
+      this
+    );
+    this._handleScrollButtonMouseUp = this._handleScrollButtonMouseUp.bind(
+      this
+    );
+    this._handleScrollEvent = this._handleScrollEvent.bind(this);
+
+    this.tabNextButton.on('mousedown', this._handleNextButtonMouseDown);
+    this.tabPreviousButton.on('mousedown', this._handlePreviousButtonMouseDown);
+    this.tabsContainer.on('scroll', this._handleScrollEvent);
+
+    this.layoutManager.on('itemPickedUp', this._handleItemPickedUp);
+    this.layoutManager.on('itemDropped', this._handleItemDropped);
+
+    // append previous button template
+    this.tabsContainer.before(this.tabPreviousButton);
+    // change reference to just the li, not the wrapping ul
+    this.tabPreviousButton = this.tabPreviousButton.find('>:first-child');
+    this.tabPreviousButton.hide();
+
+    this._showAdditionalTabsDropdown = this._showAdditionalTabsDropdown.bind(
+      this
+    );
+    this._hideAdditionalTabsDropdown = this._hideAdditionalTabsDropdown.bind(
+      this
+    );
+
+    this._tabControlOffset = this.layoutManager.config.settings?.tabControlOffset;
+    this._createControls();
+  }
+
   /**
    * Creates a new tab and associates it with a contentItem
    *
-   * @param    {lm.item.AbstractContentItem} contentItem
-   * @param    {Integer} index The position of the tab
-   *
-   * @returns {void}
+   * @param contentItem
+   * @param index The position of the tab
    */
-  createTab: function (contentItem, index) {
-    var tab, i;
-
+  createTab(contentItem: AbstractContentItem, index?: number) {
     //If there's already a tab relating to the
     //content item, don't do anything
-    for (i = 0; i < this.tabs.length; i++) {
+    for (let i = 0; i < this.tabs.length; i++) {
       if (this.tabs[i].contentItem === contentItem) {
         return;
       }
     }
 
-    tab = new Tab(this, contentItem);
+    const tab = new Tab(this, contentItem);
 
     if (this.tabs.length === 0) {
       this.tabs.push(tab);
@@ -161,16 +180,14 @@ utils.copy(Header.prototype, {
 
     this.tabs.splice(index, 0, tab);
     this._updateTabSizes();
-  },
+  }
 
   /**
    * Finds a tab based on the contentItem its associated with and removes it.
    *
-   * @param    {lm.item.AbstractContentItem} contentItem
-   *
-   * @returns {void}
+   * @param contentItem
    */
-  removeTab: function (contentItem) {
+  removeTab(contentItem: AbstractContentItem) {
     for (var i = 0; i < this.tabs.length; i++) {
       if (this.tabs[i].contentItem === contentItem) {
         this.tabs[i]._$destroy();
@@ -180,14 +197,14 @@ utils.copy(Header.prototype, {
     }
 
     throw new Error('contentItem is not controlled by this header');
-  },
+  }
 
   /**
    * The programmatical equivalent of clicking a Tab.
    *
-   * @param {lm.item.AbstractContentItem} contentItem
+   * @param contentItem
    */
-  setActiveContentItem: function (contentItem) {
+  setActiveContentItem(contentItem: AbstractContentItem) {
     var isActive;
 
     for (var i = 0; i < this.tabs.length; i++) {
@@ -202,52 +219,56 @@ utils.copy(Header.prototype, {
     // makes sure dropped tabs are scrollintoview, removed any re-ordering
     this.tabs[this.parent.config.activeItemIndex].element
       .get(0)
-      .scrollIntoView({
+      ?.scrollIntoView({
         inline: 'nearest',
       });
 
     this._hideAdditionalTabsDropdown();
     this._updateTabSizes();
     this.parent.emitBubblingEvent('stateChanged');
-  },
+  }
 
   /**
    * Programmatically operate with header position.
    *
-   * @param {string} position one of ('top','left','right','bottom') to set or empty to get it.
+   * @param position one of ('top','left','right','bottom') to set or empty to get it.
    *
-   * @returns {string} previous header position
+   * @returns previous header position
    */
-  position: function (position) {
-    var previous = this.parent._header.show;
+  position(position?: 'top' | 'left' | 'right' | 'bottom') {
+    let previous = this.parent._header.show;
     if (previous && !this.parent._side) previous = 'top';
     if (position !== undefined && this.parent._header.show !== position) {
       this.parent._header.show = position;
       this.parent._setupHeaderPosition();
     }
     return previous;
-  },
+  }
 
   // Manually attaching so wheel can be passive instead of jquery .on
   // _attachWheelListener is called by parent init
-  _attachWheelListener: function () {
+  _attachWheelListener() {
     this.tabsContainer
       .get(0)
-      .addEventListener('wheel', this._handleWheelEvent, { passive: true });
-  },
+      ?.addEventListener('wheel', this._handleWheelEvent, { passive: true });
+  }
 
   // detach called by this.destroy
-  _detachWheelListener: function () {
+  _detachWheelListener() {
     this.tabsContainer
       .get(0)
-      .removeEventListener('wheel', this._handleWheelEvent, { passive: true });
-  },
+      ?.removeEventListener('wheel', this._handleWheelEvent);
+  }
 
-  _handleWheelEvent: function (event) {
-    var target = event.currentTarget;
+  _handleWheelEvent(event: WheelEvent) {
+    const target = event.currentTarget;
+
+    if (!(target instanceof HTMLElement)) {
+      return;
+    }
 
     // we only care about the larger of the two deltas
-    var delta =
+    let delta =
       Math.abs(event.deltaY) > Math.abs(event.deltaX)
         ? event.deltaY
         : event.deltaX;
@@ -257,65 +278,65 @@ utils.copy(Header.prototype, {
     if (event.deltaMode === WheelEvent.DOM_DELTA_PAGE) {
       // Users can set OS to be in deltaMode page
       // scrolly by page units as pixels
-      delta *= this.tabsContainer.innerWidhth();
+      delta *= this.tabsContainer.innerWidth() ?? 1;
     } else if (event.deltaMode === WheelEvent.DOM_DELTA_LINE) {
       // chrome goes 100px per 3 lines, and firefox would go 102 per 3 (17 lineheight * 3 lines * 2)
       delta *= 100 / 3;
     }
     target.scrollLeft += Math.round(delta);
-  },
+  }
 
   // on scroll we need to check if side error might need to be disabled
-  _handleScrollEvent: function () {
+  _handleScrollEvent() {
     this._checkScrollArrows();
-  },
+  }
 
   // when and item is picked up, attach mouse enter listeners to next/previous buttons
-  _handleItemPickedUp: function () {
+  _handleItemPickedUp() {
     this.isDraggingTab = true;
     this.controlsContainer.on('mouseenter', this._handleNextMouseEnter);
     this.tabPreviousButton.on('mouseenter', this._handlePreviousMouseEnter);
-  },
+  }
 
   // when an item is dropped remove listeners and cancel animation
-  _handleItemDropped: function () {
+  _handleItemDropped() {
     this.isDraggingTab = false;
     this.rAF = window.cancelAnimationFrame(this.rAF);
     this.controlsContainer.off('mouseenter', this._handleNextMouseEnter);
     this.controlsContainer.off('mouseleave', this._handleNextMouseLeave);
     this.tabPreviousButton.off('mouseenter', this._handlePreviousMouseEnter);
     this.tabPreviousButton.off('mouseleave', this._handlePreviousMouseLeave);
-  },
+  }
 
   // on next/previous enter start scroll repeat animation loop
   // and attach a listener looking for mouseleave
   // cancel animation on mouse leave, and remove leave listener
-  _handleNextMouseEnter: function () {
+  _handleNextMouseEnter() {
     this.controlsContainer.on('mouseleave', this._handleNextMouseLeave);
     this._handleScrollRepeat(
       this.SCROLL_RIGHT,
       this.tabsContainer.scrollLeft()
     );
-  },
+  }
 
-  _handlePreviousMouseEnter: function () {
+  _handlePreviousMouseEnter() {
     this.tabPreviousButton.on('mouseleave', this._handlePreviousMouseLeave);
     this._handleScrollRepeat(this.SCROLL_LEFT, this.tabsContainer.scrollLeft());
-  },
+  }
 
-  _handleNextMouseLeave: function () {
+  _handleNextMouseLeave() {
     this.rAF = window.cancelAnimationFrame(this.rAF);
     this.controlsContainer.off('mouseleave', this._handleNextMouseLeave);
-  },
+  }
 
-  _handlePreviousMouseLeave: function () {
+  _handlePreviousMouseLeave() {
     this.rAF = window.cancelAnimationFrame(this.rAF);
     this.tabPreviousButton.off('mouseleave', this._handlePreviousMouseLeave);
-  },
+  }
 
   // scroll one tab to the right on mouse down
   // start scrollRepeat if mouse is held down
-  _handleNextButtonMouseDown: function () {
+  _handleNextButtonMouseDown() {
     var rightOffscreenChild;
     for (var i = 0; i < this.tabs.length; i += 1) {
       if (
@@ -338,11 +359,11 @@ utils.copy(Header.prototype, {
         0
       ).scrollWidth;
     }
-  },
+  }
 
   // scroll left by one tab
   // start scrollRepeat if mouse is held down
-  _handlePreviousButtonMouseDown: function () {
+  _handlePreviousButtonMouseDown() {
     var leftOffscreenChild;
     for (var i = this.tabs.length - 1; i >= 0; i -= 1) {
       if (
@@ -361,11 +382,11 @@ utils.copy(Header.prototype, {
     } else {
       this.tabsContainer.get(0).scrollLeft = 0;
     }
-  },
+  }
 
   // when hold timer is reached start scroll repeat anim loop
   // cancel it when mouse up happens anywhere
-  _handleScrollButtonMouseDown: function (direction) {
+  _handleScrollButtonMouseDown(direction) {
     // closure so that scrollLeft is value at end of timer, and not start of timer
     this.holdTimer = setTimeout(
       function () {
@@ -378,17 +399,17 @@ utils.copy(Header.prototype, {
       this.CLICK_TIMEOUT
     );
     window.addEventListener('mouseup', this._handleScrollButtonMouseUp);
-  },
+  }
 
   // cancel scroll repeat
-  _handleScrollButtonMouseUp: function () {
+  _handleScrollButtonMouseUp() {
     this.holdTimer = clearTimeout(this.holdTimer);
     this.rAF = cancelAnimationFrame(this.rAF);
     window.removeEventListener('mouseup', this._handleScrollButtonMouseUp);
-  },
+  }
 
   // disables scroll arrow if at edge of scroll area
-  _checkScrollArrows: function () {
+  _checkScrollArrows() {
     if (this.tabsContainer.scrollLeft() === 0) {
       this.tabPreviousButton.first().attr('disabled', true);
     } else if (
@@ -400,16 +421,24 @@ utils.copy(Header.prototype, {
       this.tabNextButton.attr('disabled', false);
       this.tabPreviousButton.first().attr('disabled', false);
     }
-  },
+  }
 
   // scrolls the tab header container on drag tab over control buttons
   // or on press and hold of scroll arrows at either end
   // called recurisevly in an animation loop until cancelled
   // or directional end is reached
-  _handleScrollRepeat: function (direction, startX, deltaX, prevTimestamp) {
-    if (!deltaX) deltaX = 0;
+  _handleScrollRepeat(
+    direction: 'left' | 'right',
+    startX: number,
+    deltaX = 0,
+    prevTimestamp?: number
+  ) {
+    const tabContainer = this.tabsContainer.get(0);
+    if (!tabContainer) {
+      return;
+    }
 
-    var tabContainerRect = this.tabsContainer.get(0).getBoundingClientRect();
+    const tabContainerRect = tabContainer.getBoundingClientRect();
     if (direction === this.SCROLL_LEFT) {
       this.tabsContainer.scrollLeft(startX - deltaX);
       if (this.isDraggingTab) {
@@ -429,8 +458,9 @@ utils.copy(Header.prototype, {
       }
       // stop loop at right edge
       if (
-        this.tabsContainer.scrollLeft() + this.tabsContainer.innerWidth() ===
-        this.tabsContainer.get(0).scrollWidth
+        (this.tabsContainer.scrollLeft() ?? 0) +
+          (this.tabsContainer.innerWidth() ?? 0) ===
+        tabContainer.scrollWidth
       ) {
         this._checkScrollArrows();
         return;
@@ -450,7 +480,7 @@ utils.copy(Header.prototype, {
         this._handleScrollRepeat(direction, startX, newDeltaX, startTime);
       }.bind(this)
     );
-  },
+  }
 
   /**
    * Programmatically set closability.
@@ -460,14 +490,14 @@ utils.copy(Header.prototype, {
    *
    * @returns {Boolean} Whether the action was successful
    */
-  _$setClosable: function (isClosable) {
+  _$setClosable(isClosable) {
     if (this.closeButton && this._isClosable()) {
       this.closeButton.element[isClosable ? 'show' : 'hide']();
       return true;
     }
 
     return false;
-  },
+  }
 
   /**
    * Destroys the entire header
@@ -476,7 +506,7 @@ utils.copy(Header.prototype, {
    *
    * @returns {void}
    */
-  _$destroy: function () {
+  _$destroy() {
     this.emit('destroy', this);
 
     for (var i = 0; i < this.tabs.length; i++) {
@@ -491,23 +521,23 @@ utils.copy(Header.prototype, {
     this.tabDropdownSearch.off('keydown', this._handleFilterKeydown);
 
     this.element.remove();
-  },
+  }
 
   /**
    * get settings from header
    *
    * @returns {string} when exists
    */
-  _getHeaderSetting: function (name) {
+  _getHeaderSetting(name) {
     if (name in this.parent._header) return this.parent._header[name];
-  },
+  }
 
   /**
    * Creates the popout, maximise and close buttons in the header's top right corner
    *
    * @returns {void}
    */
-  _createControls: function () {
+  _createControls() {
     var closeStack,
       popout,
       label,
@@ -579,14 +609,14 @@ utils.copy(Header.prototype, {
       label = this._getHeaderSetting('close');
       this.closeButton = new HeaderButton(this, label, 'lm_close', closeStack);
     }
-  },
+  }
 
   /**
    * Shows drop down for additional tabs when there are too many to display.
    *
    * @returns {void}
    */
-  _showAdditionalTabsDropdown: function () {
+  _showAdditionalTabsDropdown() {
     if (this.isDropdownShown) {
       this._hideAdditionalTabsDropdown();
       return;
@@ -618,10 +648,10 @@ utils.copy(Header.prototype, {
 
     $(document).on('mousedown', this._hideAdditionalTabsDropdown);
     this._updateAdditionalTabsDropdown();
-  },
+  }
 
   // enables synthetic keyboard navigation of the list
-  _handleFilterKeydown: function (e) {
+  _handleFilterKeydown(e) {
     if (this.dropdownKeyIndex === -1) return;
 
     if (e.key === 'Escape') {
@@ -680,10 +710,10 @@ utils.copy(Header.prototype, {
         .eq(this.dropdownKeyIndex)
         .addClass('lm_keyboard_active');
     }
-  },
+  }
 
   // filters the list
-  _handleFilterInput: function (event) {
+  _handleFilterInput(event) {
     // reset keyboard index
     this.tabDropdownList
       .eq(this.dropdownKeyIndex)
@@ -708,16 +738,14 @@ utils.copy(Header.prototype, {
         .eq(this.dropdownKeyIndex)
         .addClass('lm_keyboard_active');
     }
-  },
+  }
 
   /**
    * Hides drop down for additional tabs when needed. It is called via mousedown
    * event on document when list is open, or programmatically when drag starts,
    * or active tab changes etc.
-   *
-   * @returns {void}
    */
-  _hideAdditionalTabsDropdown: function (event) {
+  _hideAdditionalTabsDropdown(event?: JQuery.Event) {
     // dropdown already closed, do nothing
     if (!this.isDropdownShown) return;
 
@@ -740,14 +768,12 @@ utils.copy(Header.prototype, {
     this.tabDropdownContainer.find('.lm_tabs').remove();
 
     $(document).off('mousedown', this._hideAdditionalTabsDropdown);
-  },
+  }
 
   /**
    * Ensures additional tab drop down doesn't overflow screen, and instead becomes scrollable.
-   *
-   * @returns {void}
    */
-  _updateAdditionalTabsDropdown: function () {
+  _updateAdditionalTabsDropdown() {
     this.tabDropdownContainer.css('max-height', '');
     var h = this.tabDropdownContainer[0].scrollHeight;
     if (h === 0) return; // height can be zero if called on a hidden or empty list
@@ -758,7 +784,7 @@ utils.copy(Header.prototype, {
     if (y + h > $(window).height()) {
       this.tabDropdownContainer.css('max-height', $(window).height() - y - 10); // 10 being a padding value
     }
-  },
+  }
 
   /**
    * Checks whether the header is closable based on the parent config and
@@ -766,20 +792,20 @@ utils.copy(Header.prototype, {
    *
    * @returns {Boolean} Whether the header is closable.
    */
-  _isClosable: function () {
+  _isClosable() {
     return (
       this.parent.config.isClosable &&
       this.layoutManager.config.settings.showCloseIcon
     );
-  },
+  }
 
-  _onPopoutClick: function () {
+  _onPopoutClick() {
     if (this.layoutManager.config.settings.popoutWholeStack === true) {
       this.parent.popout();
     } else {
       this.activeContentItem.popout();
     }
-  },
+  }
 
   /**
    * Invoked when the header's background is clicked (not it's tabs or controls)
@@ -788,18 +814,18 @@ utils.copy(Header.prototype, {
    *
    * @returns {void}
    */
-  _onHeaderClick: function (event) {
+  _onHeaderClick(event) {
     if (event.target === this.element[0]) {
       this.parent.select();
     }
-  },
+  }
 
   /**
    * Pushes the tabs to the tab dropdown if the available space is not sufficient
    *
    * @returns {void}
    */
-  _updateTabSizes: function () {
+  _updateTabSizes() {
     if (this.tabs.length === 0) {
       return;
     }
@@ -825,7 +851,5 @@ utils.copy(Header.prototype, {
     }
 
     if (this.isOverflowing) this._checkScrollArrows();
-  },
-});
-
-export default Header;
+  }
+}

@@ -1,4 +1,4 @@
-import utils from './utils.js';
+import * as utils from './utils.js';
 import EventEmitter from './EventEmitter.js';
 import DragListener from './DragListener.js';
 import ReactComponentHandler from './ReactComponentHandler.js';

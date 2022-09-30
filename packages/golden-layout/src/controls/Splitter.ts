@@ -1,27 +1,37 @@
 import $ from 'jquery';
+import DragListener from '../utils/DragListener.js';
 import utils from '../utils/index.js';
 
-const Splitter = function (isVertical, size, grabSize) {
-  this._isVertical = isVertical;
-  this._size = size;
-  this._grabSize = grabSize < size ? size : grabSize;
+export default class Splitter {
+  private _isVertical: boolean;
 
-  this.element = this._createElement();
-  this._dragListener = new utils.DragListener(this.element);
-};
+  private _size: number;
 
-utils.copy(Splitter.prototype, {
-  on: function (event, callback, context) {
-    this._dragListener.on(event, callback, context);
-  },
+  private _grabSize: number;
 
-  _$destroy: function () {
-    this._dragListener.destroy();
+  private _dragListener: DragListener | null;
+
+  element = this._createElement();
+
+  constructor(isVertical: boolean, size: number, grabSize: number) {
+    this._isVertical = isVertical;
+    this._size = size;
+    this._grabSize = grabSize < size ? size : grabSize;
+
+    this._dragListener = new DragListener(this.element[0]);
+  }
+
+  on(event: string, callback: Function, context?: unknown) {
+    this._dragListener?.on(event, callback, context);
+  }
+
+  _$destroy() {
+    this._dragListener?.destroy();
     this._dragListener = null;
     this.element.remove();
-  },
+  }
 
-  _createElement: function () {
+  _createElement() {
     var dragHandle = $('<div class="lm_drag_handle"></div>');
     var element = $('<div class="lm_splitter"></div>');
     element.append(dragHandle);
@@ -42,7 +52,5 @@ utils.copy(Splitter.prototype, {
     }
 
     return element;
-  },
-});
-
-export default Splitter;
+  }
+}

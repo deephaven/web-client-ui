@@ -1,14 +1,12 @@
-import utils from './utils.js';
+import type { Config } from '../config/Config.js';
 
 /**
  * Minifies and unminifies configs by replacing frequent keys
  * and values with one letter substitutes. Config options must
  * retain array position/index, add new options at the end.
- *
- * @constructor
  */
-const ConfigMinifier = function () {
-  this._keys = [
+class ConfigMinifier {
+  private static _keys = [
     'settings',
     'hasHeaders',
     'constrainDragToContainer',
@@ -43,11 +41,8 @@ const ConfigMinifier = function () {
 
     //Maximum 36 entries, do not cross this line!
   ];
-  if (this._keys.length > 36) {
-    throw new Error('Too many keys in config minifier map');
-  }
 
-  this._values = [
+  private static _values = [
     true,
     false,
     'row',
@@ -59,83 +54,99 @@ const ConfigMinifier = function () {
     'minimise',
     'open in new window',
   ];
-};
 
-utils.copy(ConfigMinifier.prototype, {
+  constructor() {
+    if (ConfigMinifier._keys.length > 36) {
+      throw new Error('Too many keys in config minifier map');
+    }
+  }
+
   /**
    * Takes a GoldenLayout configuration object and
    * replaces its keys and values recursively with
    * one letter counterparts
    *
-   * @param   {Object} config A GoldenLayout config object
+   * @param config A GoldenLayout config object
    *
-   * @returns {Object} minified config
+   * @returns minified config
    */
-  minifyConfig: function (config) {
-    var min = {};
+  minifyConfig(config: Partial<Config>) {
+    const min = {};
     this._nextLevel(config, min, '_min');
     return min;
-  },
+  }
 
   /**
    * Takes a configuration Object that was previously minified
    * using minifyConfig and returns its original version
    *
-   * @param   {Object} minifiedConfig
+   * @param minifiedConfig
    *
-   * @returns {Object} the original configuration
+   * @returns the original configuration
    */
-  unminifyConfig: function (minifiedConfig) {
-    var orig = {};
+  unminifyConfig(minifiedConfig: Record<string, unknown>): Config {
+    const orig = {};
     this._nextLevel(minifiedConfig, orig, '_max');
-    return orig;
-  },
+    return orig as Config;
+  }
 
   /**
    * Recursive function, called for every level of the config structure
    *
-   * @param   {Array|Object} orig
-   * @param   {Array|Object} min
-   * @param    {String} translationFn
-   *
-   * @returns {void}
+   * @param orig
+   * @param min
+   * @param translationFn
    */
-  _nextLevel: function (from, to, translationFn) {
-    var key, minKey;
-
-    for (key in from) {
-      /**
-       * For in returns array indices as keys, so let's cast them to numbers
-       */
-      if (from instanceof Array) key = parseInt(key, 10);
-
+  _nextLevel(
+    from: unknown[] | Record<string, unknown>,
+    to: unknown[] | Record<string, unknown>,
+    translationFn: '_min' | '_max'
+  ) {
+    for (let key in from) {
       /**
        * In case something has extended Object prototypes
        */
       if (!from.hasOwnProperty(key)) continue;
 
-      /**
-       * Translate the key to a one letter substitute
-       */
-      minKey = this[translationFn](key, this._keys);
-
+      const fromItem = Array.isArray(from)
+        ? from[Number.parseInt(key, 10)]
+        : from[key];
       /**
        * For Arrays and Objects, create a new Array/Object
        * on the minified object and recurse into it
        */
-      if (typeof from[key] === 'object') {
-        to[minKey] = from[key] instanceof Array ? [] : {};
-        this._nextLevel(from[key], to[minKey], translationFn);
+      if (typeof fromItem === 'object' && fromItem != null) {
+        const toItem = fromItem instanceof Array ? [] : {};
+
+        if (Array.isArray(to)) {
+          to[Number.parseInt(key, 10)] = toItem;
+        } else {
+          const minKey = this[translationFn](key, ConfigMinifier._keys);
+          to[minKey] = toItem;
+        }
+
+        this._nextLevel(
+          fromItem as Record<string, unknown>,
+          toItem,
+          translationFn
+        );
 
         /**
          * For primitive values (Strings, Numbers, Boolean etc.)
          * minify the value
          */
       } else {
-        to[minKey] = this[translationFn](from[key], this._values);
+        const toItem = this[translationFn](fromItem, ConfigMinifier._values);
+
+        if (Array.isArray(to)) {
+          to[Number.parseInt(key, 10)] = toItem;
+        } else {
+          const minKey = this[translationFn](key, ConfigMinifier._keys);
+          to[minKey] = toItem;
+        }
       }
     }
-  },
+  }
 
   /**
    * Minifies value based on a dictionary
@@ -145,7 +156,7 @@ utils.copy(ConfigMinifier.prototype, {
    *
    * @returns {String} The minified version
    */
-  _min: function (value, dictionary) {
+  _min<T>(value: T, dictionary: T[]): T | string {
     /**
      * If a value actually is a single character, prefix it
      * with ___ to avoid mistaking it for a minification code
@@ -154,7 +165,7 @@ utils.copy(ConfigMinifier.prototype, {
       return '___' + value;
     }
 
-    var index = utils.indexOf(value, dictionary);
+    var index = dictionary.indexOf(value);
 
     /**
      * value not found in the dictionary, return it unmodified
@@ -168,9 +179,9 @@ utils.copy(ConfigMinifier.prototype, {
     } else {
       return index.toString(36);
     }
-  },
+  }
 
-  _max: function (value, dictionary) {
+  _max<T>(value: T, dictionary: T[]): T | string {
     /**
      * value is a single character. Assume that it's a translation
      * and return the original value from the dictionary
@@ -191,7 +202,7 @@ utils.copy(ConfigMinifier.prototype, {
      * value was not minified
      */
     return value;
-  },
-});
+  }
+}
 
 export default ConfigMinifier;
