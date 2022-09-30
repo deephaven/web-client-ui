@@ -21,12 +21,6 @@ import { Language } from './lang/Language';
 
 const log = Log.module('MonacoUtils');
 
-window.MonacoEnvironment = {
-  getWorker(workerId, label) {
-    return editorWorker();
-  },
-};
-
 class MonacoUtils {
   static init(): void {
     log.debug('Initializing Monaco...');
