@@ -63,7 +63,8 @@ export class GrpcFileStorage implements FileStorage {
     const fileContents = dh.storage.FileContents.text(file.content);
     await this.storageService.saveFile(
       this.addRoot(file.filename),
-      fileContents
+      fileContents,
+      true
     );
     this.refreshTables();
     return file;

@@ -991,7 +991,7 @@ export interface StorageService {
   saveFile(
     path: string,
     contents: FileContents,
-    newFile?: boolean
+    allowOverwrite?: boolean
   ): Promise<void>;
   moveItem(path: string, newPath: string, newFile?: boolean): Promise<void>;
   createDirectory(path: string): Promise<void>;

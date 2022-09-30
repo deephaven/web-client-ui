@@ -69,7 +69,7 @@ export class WebdavFileStorage implements FileStorage {
   }
 
   async moveFile(name: string, newName: string): Promise<void> {
-    await this.client.moveFile(name, newName);
+    await this.client.moveFile(name, newName, true);
     this.refreshTables();
   }
 
