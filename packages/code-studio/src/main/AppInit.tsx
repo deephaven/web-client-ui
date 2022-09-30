@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { createClient } from 'webdav/web';
 import {
   LoadingOverlay,
   Shortcut,
@@ -54,8 +53,6 @@ import LayoutStorage from '../storage/LayoutStorage';
 import { isNoConsolesError } from './NoConsolesError';
 import GrpcLayoutStorage from '../storage/grpc/GrpcLayoutStorage';
 import GrpcFileStorage from '../storage/grpc/GrpcFileStorage';
-import WebdavFileStorage from '../storage/webdav/WebdavFileStorage';
-import WebdavLayoutStorage from '../storage/webdav/WebdavLayoutStorage';
 
 const log = Log.module('AppInit');
 
@@ -184,45 +181,20 @@ const AppInit = (props: AppInitProps) => {
         },
       };
 
-      const webdavLayoutClient = createClient(
+      const coreClient = createCoreClient();
+
+      // Just login anonymously for now, use default user values
+      await coreClient.login({ type: dh.CoreClient.LOGIN_TYPE_ANONYMOUS });
+
+      const storageService = coreClient.getStorageService();
+      const layoutStorage = new GrpcLayoutStorage(
+        storageService,
         import.meta.env.VITE_LAYOUTS_URL ?? ''
       );
-      const webdavNotebookClient = createClient(
+      const fileStorage = new GrpcFileStorage(
+        storageService,
         import.meta.env.VITE_NOTEBOOKS_URL ?? ''
       );
-
-      // We need to check if webdav service is available; if it is not, fallback to using grpc storage service
-      let isWebdavAvailable = false;
-      try {
-        isWebdavAvailable = await webdavLayoutClient.exists('/');
-        log.debug('webdav is available', isWebdavAvailable);
-      } catch (e) {
-        log.debug('webdav is unavailable', isWebdavAvailable);
-      }
-
-      let layoutStorage: LayoutStorage;
-      let fileStorage: FileStorage;
-
-      if (isWebdavAvailable) {
-        layoutStorage = new WebdavLayoutStorage(webdavLayoutClient);
-        fileStorage = new WebdavFileStorage(webdavNotebookClient);
-      } else {
-        // Fallback to gRPC
-        const coreClient = createCoreClient();
-
-        // Just login anonymously for now, use default user values
-        await coreClient.login({ type: dh.CoreClient.LOGIN_TYPE_ANONYMOUS });
-
-        const storageService = coreClient.getStorageService();
-        layoutStorage = new GrpcLayoutStorage(
-          storageService,
-          import.meta.env.VITE_LAYOUTS_URL ?? ''
-        );
-        fileStorage = new GrpcFileStorage(
-          storageService,
-          import.meta.env.VITE_NOTEBOOKS_URL ?? ''
-        );
-      }
 
       const workspaceStorage = new LocalWorkspaceStorage(layoutStorage);
       const commandHistoryStorage = new PouchCommandHistoryStorage();
