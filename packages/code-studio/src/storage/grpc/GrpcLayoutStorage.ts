@@ -11,7 +11,7 @@ export class GrpcLayoutStorage implements LayoutStorage {
    * @param storageService The gRPC storage service to use
    * @param root The root path where the layouts are stored
    */
-  constructor(storageService: StorageService, root = '/') {
+  constructor(storageService: StorageService, root = '') {
     this.storageService = storageService;
     this.root = root;
   }
@@ -24,7 +24,7 @@ export class GrpcLayoutStorage implements LayoutStorage {
 
   async getLayout(name: string): Promise<ExportedLayout> {
     const fileContents = await this.storageService.loadFile(
-      `${this.root}${name}`
+      `${this.root}/${name}`
     );
     const content = await fileContents.text();
 
