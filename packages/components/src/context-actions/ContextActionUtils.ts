@@ -49,29 +49,21 @@ class ContextActionUtils {
   }
 
   /**
-   * Compare two  action items. Useful in Array.sort
+   * Compare two action items. Useful in Array.sort
    * @param a First context action to compare
    * @param b Second context action to compare
    */
   static compareActions(a: ContextAction, b: ContextAction): number {
     if (a.group !== b.group) {
-      return (a.group !== undefined ? a.group : 0) >
-        (b.group !== undefined ? b.group : 0)
-        ? 1
-        : -1;
+      return (a.group ?? 0) > (b.group ?? 0) ? 1 : -1;
     }
 
     if (a.order !== b.order) {
-      return (a.order !== undefined ? a.order : 0) >
-        (b.order !== undefined ? b.order : 0)
-        ? 1
-        : -1;
+      return (a.order ?? 0) > (b.order ?? 0) ? 1 : -1;
     }
 
     if (a.title !== b.title) {
-      return (a.title != null ? a.title : '') > (b.title != null ? b.title : '')
-        ? 1
-        : -1;
+      return (a.title ?? '') > (b.title ?? '') ? 1 : -1;
     }
 
     if (a !== b) {

@@ -301,7 +301,7 @@ class CsvInputBar extends Component<CsvInputBarProps, CsvInputBarState> {
       type,
     } = this.state;
     // A blank table name is invalid for pasted values
-    const isNameInvalid = paste !== undefined && paste !== '' && !tableName;
+    const isNameInvalid = Boolean(paste) && !tableName;
     return (
       <div className="csv-input-bar">
         {!showProgress && (

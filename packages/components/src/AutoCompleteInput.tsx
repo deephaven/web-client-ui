@@ -363,7 +363,7 @@ class AutoCompleteInput extends Component<
       menuIsOpen &&
       event.relatedTarget instanceof Element &&
       this.popper.current !== null &&
-      this.popper.current?.element.contains(event.relatedTarget)
+      this.popper.current.element.contains(event.relatedTarget)
     ) {
       return;
     }
@@ -376,7 +376,7 @@ class AutoCompleteInput extends Component<
       event.relatedTarget === this.input.current ||
       (event.relatedTarget instanceof Element &&
         this.popper.current !== null &&
-        this.popper.current?.element.contains(event.relatedTarget))
+        this.popper.current.element.contains(event.relatedTarget))
     ) {
       return;
     }

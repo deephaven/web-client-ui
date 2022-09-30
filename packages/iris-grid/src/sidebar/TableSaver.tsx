@@ -91,8 +91,7 @@ export default class TableSaver extends PureComponent<
     this.cancelableSnapshots = [];
 
     // WritableStream is not supported in Firefox (also IE) yet. use ponyfillWritableStream instead
-    // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
-    this.WritableStream = window.WritableStream || ponyfillWritableStream;
+    this.WritableStream = window.WritableStream ?? ponyfillWritableStream;
 
     // Due to an open issue in Chromium, readableStream.cancel() is never called when a user cancel the stream from Chromium's UI and the stream goes on even it's canceled.
     // Instead, we  monitor the pull() behavior from the readableStream called when the stream wants more data to write.
@@ -168,8 +167,7 @@ export default class TableSaver extends PureComponent<
   // WritableStream is not supported in Firefox (also IE) yet. use ponyfillWritableStream instead
 
   // TODO: Fix type error
-  // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
-  WritableStream = window.WritableStream || ponyfillWritableStream;
+  WritableStream = window.WritableStream ?? ponyfillWritableStream;
   //  WritableStream: typeof window.WritableStream | typeof ponyfillWritableStream;
 
   // Due to an open issue in Chromium, readableStream.cancel() is never called when a user cancel the stream from Chromium's UI and the stream goes on even it's canceled.

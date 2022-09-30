@@ -55,7 +55,7 @@ const BasicModal: React.FC<BasicModalProps> = props => {
   const onConfirmClicked = useCallback(() => {
     if (
       disableModalCheckbox.current !== null &&
-      disableModalCheckbox.current?.checked &&
+      disableModalCheckbox.current.checked &&
       onModalDisable
     ) {
       onModalDisable();

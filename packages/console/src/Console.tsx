@@ -124,9 +124,7 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
    * @param logLevel The LogLevel being checked
    * @returns true if the log level is an error level log
    */
-  static isErrorLevel(
-    logLevel: typeof LogLevel[keyof typeof LogLevel]
-  ): boolean {
+  static isErrorLevel(logLevel: string): boolean {
     return (
       logLevel === LogLevel.STDERR ||
       logLevel === LogLevel.ERROR ||

@@ -2041,14 +2041,10 @@ class IrisGridTableModelTemplate<
         const filter = column.filter().eq(filterValue);
         columnFilters.push(filter);
       }
-      return columnFilters.reduce((agg, curr) =>
-        agg != null ? agg.and(curr) : curr
-      );
+      return columnFilters.reduce((agg, curr) => agg?.and(curr) ?? curr);
     });
 
-    const filter = filters.reduce((agg, curr) =>
-      agg != null ? agg.or(curr) : curr
-    );
+    const filter = filters.reduce((agg, curr) => agg?.or(curr) ?? curr);
     deleteTable.applyFilter([filter]);
 
     // await this.inputTable?.deleteTable(deleteTable);

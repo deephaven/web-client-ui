@@ -237,25 +237,26 @@ const Aggregations = ({
             {DraggableItemList.renderBadge({ text: badgeText })}
             {DraggableItemList.renderHandle()}
           </div>
-          {isClone !== undefined && !isClone && (
-            <>
-              <Button
-                kind="ghost"
-                className="btn-edit"
-                icon={vsEdit}
-                tooltip="Edit Columns"
-                onClick={() => onEdit(item)}
-                disabled={!isEditable}
-              />
-              <Button
-                kind="ghost"
-                className="btn-delete"
-                icon={vsTrash}
-                tooltip="Delete Aggregation"
-                onClick={() => handleDeleteClicked(itemIndex)}
-              />
-            </>
-          )}
+          {isClone === undefined ||
+            (!isClone && (
+              <>
+                <Button
+                  kind="ghost"
+                  className="btn-edit"
+                  icon={vsEdit}
+                  tooltip="Edit Columns"
+                  onClick={() => onEdit(item)}
+                  disabled={!isEditable}
+                />
+                <Button
+                  kind="ghost"
+                  className="btn-delete"
+                  icon={vsTrash}
+                  tooltip="Delete Aggregation"
+                  onClick={() => handleDeleteClicked(itemIndex)}
+                />
+              </>
+            ))}
         </>
       );
     },

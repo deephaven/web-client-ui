@@ -41,7 +41,7 @@ export class CommandHistoryItemTooltip extends Component<
     startTime: string | undefined,
     endTime: string | number
   ): string | null {
-    if (startTime == null || !(endTime !== '' && endTime !== 0)) {
+    if (startTime == null || endTime === '' || endTime === 0) {
       return null;
     }
 
@@ -168,7 +168,7 @@ export class CommandHistoryItemTooltip extends Component<
 
     const timeString = CommandHistoryItemTooltip.getTimeString(
       startTime,
-      endTime != null ? endTime : currentTime
+      endTime ?? currentTime
     );
 
     // colorizing in monaco is mostly a function of the number of lines,
@@ -176,6 +176,7 @@ export class CommandHistoryItemTooltip extends Component<
     // to avoid UI locks. The full command is still inserted.
     const previewText = this.getPreviewText(name);
 
+    const hasTimeString = Boolean(timeString);
     return (
       <div className="command-history-item-tooltip">
         <div className="scroll-container">
@@ -184,21 +185,21 @@ export class CommandHistoryItemTooltip extends Component<
         </div>
         <div className="result-info">
           <div className="d-flex justify-content-between">
-            {errorMessage !== undefined && errorMessage !== '' && (
+            {Boolean(errorMessage) && (
               <div className="text-danger mr-1">
                 <FontAwesomeIcon icon={vsWarning} /> Executed with errors
               </div>
             )}
             <div className="time-wrapper">
               Elapsed time:{' '}
-              {timeString != null ? (
+              {hasTimeString ? (
                 <span className="time-string">{timeString}</span>
               ) : (
                 <LoadingSpinner />
               )}
             </div>
           </div>
-          {errorMessage !== undefined && errorMessage !== '' && (
+          {Boolean(errorMessage) && (
             <div className="error-message">{errorMessage}</div>
           )}
         </div>

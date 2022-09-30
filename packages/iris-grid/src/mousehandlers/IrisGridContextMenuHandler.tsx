@@ -1172,7 +1172,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
           {operator
             ? IrisGridContextMenuHandler.getOperatorAsText(operator)
             : ''}{' '}
-          &quot;{valueText != null ? valueText : 'null'}&quot;
+          &quot;{valueText ?? 'null'}&quot;
         </div>
       ),
       order: 1,

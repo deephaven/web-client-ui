@@ -67,9 +67,11 @@ export const Dashboard = ({
       const config: GoldenLayout.Config = {
         ...LayoutUtils.makeDefaultLayout(),
       };
-      if (config.settings !== undefined) {
-        Object.assign(config.settings, layoutSettings);
+      if (config.settings === undefined) {
+        config.settings = {};
       }
+      Object.assign(config.settings, layoutSettings);
+
       // Load our content later after plugins have registered
       config.content = [];
 

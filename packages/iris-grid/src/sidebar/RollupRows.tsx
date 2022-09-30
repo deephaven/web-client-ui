@@ -78,7 +78,7 @@ class RollupRows extends Component<RollupRowsProps, RollupRowsState> {
     isClone?: boolean;
     selectedCount?: number;
   }): ReactElement {
-    const text = item != null ? item.name : undefined;
+    const text = item?.name;
     const badgeText =
       isClone !== undefined && isClone ? `${selectedCount}` : undefined;
     const className =
@@ -452,16 +452,15 @@ class RollupRows extends Component<RollupRowsProps, RollupRowsState> {
     return (
       <>
         {DraggableItemList.renderTextItem({ text, badgeText, className })}
-        {isClone === undefined ||
-          (!isClone && (
-            <Button
-              kind="ghost"
-              className="btn btn-link btn-link-icon btn-delete-grouping float-right"
-              onClick={() => this.handleDeleteClicked(itemIndex)}
-            >
-              <FontAwesomeIcon icon={vsTrash} />
-            </Button>
-          ))}
+        {(isClone === undefined || !isClone) && (
+          <Button
+            kind="ghost"
+            className="btn btn-link btn-link-icon btn-delete-grouping float-right"
+            onClick={() => this.handleDeleteClicked(itemIndex)}
+          >
+            <FontAwesomeIcon icon={vsTrash} />
+          </Button>
+        )}
       </>
     );
   }

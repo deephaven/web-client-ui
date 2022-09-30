@@ -153,7 +153,11 @@ class CsvOverlay extends Component<CsvOverlayProps, CsvOverlayState> {
       return;
     }
 
-    if (e.dataTransfer == null || e.dataTransfer.items == null) {
+    if (
+      e.dataTransfer == null ||
+      e.dataTransfer.items == null ||
+      e.dataTransfer.items.length === 0
+    ) {
       return;
     }
 
@@ -239,7 +243,7 @@ class CsvOverlay extends Component<CsvOverlayProps, CsvOverlayState> {
   render(): ReactElement {
     const { allowZip, dragError, uploadInProgress } = this.props;
     const { selectedFileName, dropError } = this.state;
-    const error = dragError != null ? dragError : dropError;
+    const error = dragError ?? dropError;
     const contextActions = this.makeContextMenuItems();
     return (
       <div
@@ -299,7 +303,7 @@ class CsvOverlay extends Component<CsvOverlayProps, CsvOverlayState> {
             </div>
           </div>
         )}
-        {(error === undefined || error === '') && (
+        {Boolean(error) && (
           <div className="message-content">
             <div className="message-icon">
               <FontAwesomeIcon icon={vsWarning} />

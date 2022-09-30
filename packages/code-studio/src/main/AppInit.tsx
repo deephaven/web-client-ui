@@ -266,8 +266,7 @@ const AppInit = (props: AppInitProps) => {
     [initClient, initFonts]
   );
 
-  const isLoading =
-    (workspace == null && error == null) || error === '' || isFontLoading;
+  const isLoading = (workspace == null && error == null) || isFontLoading;
   const isLoaded = !isLoading && error == null;
   const errorMessage = error != null ? `${error}` : null;
 

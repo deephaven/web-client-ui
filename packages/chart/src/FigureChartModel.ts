@@ -581,8 +581,10 @@ class FigureChartModel extends ChartModel {
         this.layout[axisLayoutProperty],
         axisFormat
       );
-      if (this.layout[axisLayoutProperty] != null) {
-        Object.assign(this.layout[axisLayoutProperty] ?? {}, axisFormat);
+
+      const props = this.layout[axisLayoutProperty];
+      if (props != null) {
+        Object.assign(props, axisFormat);
       } else {
         log.debug(`Ignoring null layout.${axisLayoutProperty}`);
       }

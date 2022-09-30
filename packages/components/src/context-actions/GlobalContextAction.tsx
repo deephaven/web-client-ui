@@ -60,14 +60,10 @@ class GlobalContextAction extends Component<GlobalContextActionProps> {
     ) {
       log.debug('Global hotkey matched!', e);
 
-      const result = action.action?.(e);
+      action.action?.(e);
 
-      // result can be any, so I can't assert all the ways it can be truthy
-      // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
-      if (result || result === undefined) {
-        e.preventDefault();
-        e.stopPropagation();
-      }
+      e.preventDefault();
+      e.stopPropagation();
     }
   }
 

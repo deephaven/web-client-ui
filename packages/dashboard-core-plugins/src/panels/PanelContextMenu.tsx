@@ -78,8 +78,8 @@ class PanelContextMenu extends PureComponent<
       ) {
         break; // end when we get back to current id
       }
-      const closable = tabs[i]?.contentItem?.config?.isClosable;
-      if (closable !== undefined && closable) {
+      const closable = Boolean(tabs[i]?.contentItem?.config?.isClosable);
+      if (closable) {
         disabled = false;
         break; // end if we find a closeable tab
       }
@@ -92,8 +92,8 @@ class PanelContextMenu extends PureComponent<
 
     let disabled = true;
     for (let i = tabs.length - 1; i > 0; i -= 1) {
-      const closable = tabs[i]?.contentItem?.config?.isClosable;
-      if (closable !== undefined && closable) {
+      const closable = Boolean(tabs[i]?.contentItem?.config?.isClosable);
+      if (closable) {
         disabled = false;
         break;
       }

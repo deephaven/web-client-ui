@@ -213,17 +213,14 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     // Not showing the unsaved indicator for null file id and editor content === '',
     // may need to implement some other indication that this notebook has never been saved
     const hasFileId =
-      fileMetadata != null &&
-      fileMetadata.itemName &&
-      FileUtils.hasPath(fileMetadata.itemName);
+      fileMetadata != null && FileUtils.hasPath(fileMetadata.itemName);
 
     // Unsaved if file id != null and content != null
     // OR file id is null AND content is not null or ''
     const isUnsaved =
       (hasFileId === true && settings.value != null) ||
-      ((hasFileId === '' || hasFileId === false) && settings.value);
-    const changeCount =
-      isUnsaved != null && isUnsaved !== '' && isUnsaved !== false ? 1 : 0;
+      (!hasFileId && settings.value != null && settings.value.length > 0);
+    const changeCount = isUnsaved ? 1 : 0;
 
     this.state = {
       error: undefined,

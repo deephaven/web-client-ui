@@ -57,7 +57,7 @@ export const MarkdownPlugin = (props: MarkdownPluginProps): JSX.Element => {
       );
       const usedTitles = openedMarkdowns.map(markdown => markdown.title ?? '');
       const panelTitle =
-        title != null && title === ''
+        title != null && title !== ''
           ? title
           : MarkdownUtils.getNewMarkdownTitle(usedTitles);
       const content =

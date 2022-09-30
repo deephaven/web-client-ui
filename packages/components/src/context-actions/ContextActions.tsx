@@ -48,7 +48,7 @@ interface ContextActionsState {
  * </div>
  *
  * Right clicking the container will then build the context menu, bubbling up until an element with a ContextMenuRoot is on it.
- * You should generally have a ContextMenuRoot on the root node of your docum ent.
+ * You should generally have a ContextMenuRoot on the root node of your document.
  */
 class ContextActions extends Component<
   ContextActionsProps,
@@ -58,7 +58,7 @@ class ContextActions extends Component<
    * Group you can assign to context menu actions to group them together.
    * Lower group IDs appear at the top of the list.
    * Groups are separated by a separator item.
-   * Items within groups are ordered by their order property, then by their titl e.
+   * Items within groups are ordered by their order property, then by their title.
    */
   static groups = {
     default: null,
@@ -76,14 +76,7 @@ class ContextActions extends Component<
     clientY: number,
     actions: ContextAction[]
   ): void {
-    if (
-      element == null ||
-      clientX == null ||
-      clientX === 0 ||
-      clientY == null ||
-      clientY === 0 ||
-      actions == null
-    ) {
+    if (actions.length === 0) {
       return;
     }
 
@@ -221,13 +214,10 @@ class ContextActions extends Component<
       ) {
         log.debug('Context hotkey matched!', e);
 
-        const result = keyboardAction.action?.(e);
+        keyboardAction.action?.(e);
 
-        if (result !== null || result === undefined) {
-          e.stopPropagation();
-          e.preventDefault();
-          return;
-        }
+        e.stopPropagation();
+        e.preventDefault();
 
         log.debug2('Matched hotkey returned false, key event not consumed');
       }

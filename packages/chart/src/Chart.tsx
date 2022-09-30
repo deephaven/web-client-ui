@@ -208,8 +208,8 @@ export class Chart extends Component<ChartProps, ChartState> {
       isDownsamplingDisabled: boolean
     ) => {
       const customButtons = [];
-      // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
-      if (downsamplingError) {
+      const hasDownsampleError = Boolean(downsamplingError);
+      if (hasDownsampleError) {
         customButtons.push({
           name: `Downsampling failed: ${downsamplingError}`,
           click: () => undefined,
@@ -222,8 +222,7 @@ export class Chart extends Component<ChartProps, ChartState> {
         isDownsampleFinished ||
         isDownsampleInProgress ||
         isDownsamplingDisabled ||
-        // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
-        downsamplingError
+        hasDownsampleError
       ) {
         const name = Chart.downsampleButtonTitle(
           isDownsampleInProgress,
@@ -250,7 +249,7 @@ export class Chart extends Component<ChartProps, ChartState> {
         // Yes, the value is a boolean or the string 'hover': https://github.com/plotly/plotly.js/blob/master/src/plot_api/plot_config.js#L249
         displayModeBar:
           // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
-          isDownsampleInProgress || downsamplingError ? true : 'hover',
+          isDownsampleInProgress || hasDownsampleError ? true : 'hover',
 
         // Each array gets grouped together in the mode bar
         modeBarButtons: [
@@ -382,8 +381,7 @@ export class Chart extends Component<ChartProps, ChartState> {
       }
       case ChartModel.EVENT_DOWNSAMPLENEEDED:
       case ChartModel.EVENT_DOWNSAMPLEFAILED: {
-        const downsamplingError =
-          detail.message !== undefined ? detail.message : detail;
+        const downsamplingError = detail.message ?? detail;
         this.setState({
           isDownsampleFinished: false,
           isDownsampleInProgress: false,

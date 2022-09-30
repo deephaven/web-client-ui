@@ -782,9 +782,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   componentDidMount(): void {
     const { partitionColumn, model } = this.props;
     const column =
-      partitionColumn != null
-        ? partitionColumn
-        : model.columns.find(c => c.isPartitionColumn);
+      partitionColumn ?? model.columns.find(c => c.isPartitionColumn);
     if (
       model.isFilterRequired &&
       model.isValuesTableAvailable &&
@@ -2372,7 +2370,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     if (containsGridCellInputField != null && containsGridCellInputField) {
       if (
         document.activeElement != null &&
-        document.activeElement?.classList.contains('error')
+        document.activeElement.classList.contains('error')
       ) {
         throw new ValidationError('Current input is invalid');
       }

@@ -125,7 +125,7 @@ const ContextMenuItem = React.forwardRef<HTMLDivElement, ContextMenuItemProps>(
           onClick={handleMenuItemClick}
           onMouseMove={handleMenuItemMouseMove}
           onContextMenu={handleMenuItemContextMenu}
-          title={menuItem.description !== undefined ? menuItem.description : ''}
+          title={menuItem.description ?? ''}
         >
           <div className="btn-context-menu-wrapper">
             <span className={classNames('icon', { outline: iconHasOutline })}>

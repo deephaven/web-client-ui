@@ -697,10 +697,13 @@ class ChartUtils {
       // The default histfunc in plotly is 'count', but the data passed up from the API provides explicit x/y values and bins
       // Since it's converted to bar, just set the widths of each bar
       seriesData.width = [];
-      Object.assign(seriesData.marker.line ?? {}, {
-        color: theme.paper_bgcolor,
-        width: 1,
-      });
+
+      if (seriesData.marker.line !== undefined) {
+        Object.assign(seriesData.marker.line, {
+          color: theme.paper_bgcolor,
+          width: 1,
+        });
+      }
     } else if (plotStyle === dh.plot.SeriesPlotStyle.OHLC) {
       (seriesData as Partial<OhclData>).increasing = {
         line: { color: theme.ohlc_increasing },

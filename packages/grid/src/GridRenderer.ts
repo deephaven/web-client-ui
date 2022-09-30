@@ -1824,9 +1824,8 @@ export class GridRenderer {
 
     const { headerHorizontalPadding, columnHeaderHeight } = theme;
     const { fontWidths, width } = metrics;
-    const fontWidth = (fontWidths.get(context.font) != null ||
-      fontWidths.get(context.font) === 0 ||
-      GridRenderer.DEFAULT_FONT_WIDTH) as number;
+    const fontWidth =
+      fontWidths.get(context.font) ?? GridRenderer.DEFAULT_FONT_WIDTH;
 
     const maxWidth = columnWidth - headerHorizontalPadding * 2;
     const maxLength = maxWidth / fontWidth;

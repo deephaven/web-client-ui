@@ -195,9 +195,7 @@ export class ConsolePanel extends PureComponent<
   }
 
   handleTabFocus(): void {
-    if (this.consoleRef != null) {
-      this.consoleRef.current?.focus();
-    }
+    this.consoleRef.current?.focus();
   }
 
   handlePanelMount(panel: {

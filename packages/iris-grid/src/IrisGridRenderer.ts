@@ -456,9 +456,7 @@ class IrisGridRenderer extends GridRenderer {
     }
 
     const fontWidth =
-      fontWidths.get(context.font) !== undefined
-        ? fontWidths.get(context.font)
-        : GridRenderer.DEFAULT_FONT_WIDTH;
+      fontWidths.get(context.font) ?? GridRenderer.DEFAULT_FONT_WIDTH;
     assertNotNull(fontWidth);
     const textWidth = text.length * fontWidth;
     const textRight = gridX + columnX + textWidth + headerHorizontalPadding;

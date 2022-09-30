@@ -103,7 +103,9 @@ class DraggableItemList<T> extends PureComponent<
   }
 
   static renderBadge({ text }: { text?: string }): React.ReactNode {
-    return text != null ? <span className="number-badge">{text}</span> : null;
+    return text != null && text.length > 0 ? (
+      <span className="number-badge">{text}</span>
+    ) : null;
   }
 
   static renderTextItem({
