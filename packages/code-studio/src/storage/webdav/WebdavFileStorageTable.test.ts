@@ -46,7 +46,7 @@ describe('directory expansion tests', () => {
   function makeDirectoryContents(
     path = '/',
     numDirs = 3,
-    numFiles = 3
+    numFiles = 2
   ): Array<FileStat> {
     const results = [] as FileStat[];
 
@@ -55,7 +55,7 @@ describe('directory expansion tests', () => {
       results.push(makeDirectory(name, path));
     }
 
-    for (let i = 0; i < 2; i += 1) {
+    for (let i = 0; i < numFiles; i += 1) {
       const name = `file${i}`;
       results.push(makeFile(name, path));
     }

@@ -3,8 +3,8 @@ import { ItemDetails, StorageService } from '@deephaven/jsapi-shim';
 import GrpcFileStorageTable from './GrpcFileStorageTable';
 
 let storageService: StorageService;
-function makeTable(path = '/'): GrpcFileStorageTable {
-  return new GrpcFileStorageTable(storageService, path);
+function makeTable(baseRoot = '', root = ''): GrpcFileStorageTable {
+  return new GrpcFileStorageTable(storageService, baseRoot, root);
 }
 
 function makeStorageService(): StorageService {
@@ -32,10 +32,10 @@ it('Does not get contents until a viewport is set', () => {
 });
 
 describe('directory expansion tests', () => {
-  function makeFile(name: string, path = '/'): ItemDetails {
+  function makeFile(name: string, path = ''): ItemDetails {
     return {
       basename: name,
-      filename: `${path}${name}`,
+      filename: `${path}/${name}`,
       dirname: path,
       etag: '',
       size: 1,
@@ -43,7 +43,7 @@ describe('directory expansion tests', () => {
     };
   }
 
-  function makeDirectory(name: string, path = '/'): ItemDetails {
+  function makeDirectory(name: string, path = ''): ItemDetails {
     const file = makeFile(name, path);
     file.type = 'directory';
     return file;
@@ -52,7 +52,7 @@ describe('directory expansion tests', () => {
   function makeDirectoryContents(
     path = '/',
     numDirs = 3,
-    numFiles = 3
+    numFiles = 2
   ): Array<ItemDetails> {
     const results = [] as ItemDetails[];
 
@@ -61,7 +61,7 @@ describe('directory expansion tests', () => {
       results.push(makeDirectory(name, path));
     }
 
-    for (let i = 0; i < 2; i += 1) {
+    for (let i = 0; i < numFiles; i += 1) {
       const name = `file${i}`;
       results.push(makeFile(name, path));
     }
@@ -69,10 +69,20 @@ describe('directory expansion tests', () => {
     return results;
   }
 
+  function expectItem(itemDetails: ItemDetails) {
+    return expect.objectContaining({
+      basename: itemDetails.basename,
+      filename: itemDetails.filename,
+      type: itemDetails.type,
+    });
+  }
+
   beforeEach(() => {
     storageService.listItems = jest.fn(async path => {
-      const depth = FileUtils.getDepth(path) + 1;
-      return makeDirectoryContents(path, 5 - depth, 10 - depth);
+      const depth = path.length > 0 ? FileUtils.getDepth(path) + 1 : 1;
+      const dirContents = makeDirectoryContents(path, 5 - depth, 10 - depth);
+      // console.log('dirContents for ', path, dirContents);
+      return dirContents;
     });
   });
 
@@ -85,11 +95,11 @@ describe('directory expansion tests', () => {
     expect(handleUpdate).toHaveBeenCalledWith({
       offset: 0,
       items: [
-        expect.objectContaining(makeDirectory('dir0')),
-        expect.objectContaining(makeDirectory('dir1')),
-        expect.objectContaining(makeDirectory('dir2')),
-        expect.objectContaining(makeDirectory('dir3')),
-        expect.objectContaining(makeFile('file0')),
+        expectItem(makeDirectory('dir0')),
+        expectItem(makeDirectory('dir1')),
+        expectItem(makeDirectory('dir2')),
+        expectItem(makeDirectory('dir3')),
+        expectItem(makeFile('file0')),
       ],
     });
     handleUpdate.mockReset();
@@ -99,11 +109,11 @@ describe('directory expansion tests', () => {
     expect(handleUpdate).toHaveBeenCalledWith({
       offset: 0,
       items: [
-        expect.objectContaining(makeDirectory('dir0')),
-        expect.objectContaining(makeDirectory('dir1')),
-        expect.objectContaining(makeDirectory('dir0', '/dir1/')),
-        expect.objectContaining(makeDirectory('dir1', '/dir1/')),
-        expect.objectContaining(makeDirectory('dir2', '/dir1/')),
+        expectItem(makeDirectory('dir0')),
+        expectItem(makeDirectory('dir1')),
+        expectItem(makeDirectory('dir0', '/dir1')),
+        expectItem(makeDirectory('dir1', '/dir1')),
+        expectItem(makeDirectory('dir2', '/dir1')),
       ],
     });
     handleUpdate.mockReset();
@@ -113,11 +123,11 @@ describe('directory expansion tests', () => {
     expect(handleUpdate).toHaveBeenCalledWith({
       offset: 0,
       items: expect.arrayContaining([
-        expect.objectContaining(makeDirectory('dir0')),
-        expect.objectContaining(makeDirectory('dir1')),
-        expect.objectContaining(makeDirectory('dir0', '/dir1/')),
-        expect.objectContaining(makeDirectory('dir1', '/dir1/')),
-        expect.objectContaining(makeDirectory('dir0', '/dir1/dir1/')),
+        expectItem(makeDirectory('dir0')),
+        expectItem(makeDirectory('dir1')),
+        expectItem(makeDirectory('dir0', '/dir1')),
+        expectItem(makeDirectory('dir1', '/dir1')),
+        expectItem(makeDirectory('dir0', '/dir1/dir1')),
       ]),
     });
     handleUpdate.mockReset();
@@ -128,11 +138,11 @@ describe('directory expansion tests', () => {
     expect(handleUpdate).toHaveBeenCalledWith({
       offset: 0,
       items: expect.arrayContaining([
-        expect.objectContaining(makeDirectory('dir0')),
-        expect.objectContaining(makeDirectory('dir1')),
-        expect.objectContaining(makeDirectory('dir2')),
-        expect.objectContaining(makeDirectory('dir3')),
-        expect.objectContaining(makeFile('file0')),
+        expectItem(makeDirectory('dir0')),
+        expectItem(makeDirectory('dir1')),
+        expectItem(makeDirectory('dir2')),
+        expectItem(makeDirectory('dir3')),
+        expectItem(makeFile('file0')),
       ]),
     });
     handleUpdate.mockReset();

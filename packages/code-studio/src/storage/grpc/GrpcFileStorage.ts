@@ -24,13 +24,26 @@ export class GrpcFileStorage implements FileStorage {
 
   private readonly root: string;
 
-  constructor(storageService: StorageService, root = '/') {
+  /**
+   * FileStorage implementation using gRPC
+   * @param storageService Storage service to use
+   * @param root Root path for this instance. Should not contain trailing slash.
+   */
+  constructor(storageService: StorageService, root = '') {
     this.storageService = storageService;
     this.root = root;
   }
 
+  private removeRoot(filename: string): string {
+    return FileUtils.removeRoot(this.root, filename);
+  }
+
+  private addRoot(path: string): string {
+    return FileUtils.addRoot(this.root, path);
+  }
+
   async createDirectory(path: string): Promise<FileStorageItem> {
-    await this.storageService.createDirectory(`${this.root}${path}`);
+    await this.storageService.createDirectory(this.addRoot(path));
     this.refreshTables();
     return {
       type: 'directory',
@@ -49,7 +62,7 @@ export class GrpcFileStorage implements FileStorage {
   async saveFile(file: File): Promise<File> {
     const fileContents = dh.storage.FileContents.text(file.content);
     await this.storageService.saveFile(
-      `${this.root}${file.filename}`,
+      this.addRoot(file.filename),
       fileContents
     );
     this.refreshTables();
@@ -57,9 +70,7 @@ export class GrpcFileStorage implements FileStorage {
   }
 
   async loadFile(name: string): Promise<File> {
-    const fileContents = await this.storageService.loadFile(
-      `${this.root}${name}`
-    );
+    const fileContents = await this.storageService.loadFile(this.addRoot(name));
     const content = await fileContents.text();
     return {
       filename: name,
@@ -69,21 +80,21 @@ export class GrpcFileStorage implements FileStorage {
   }
 
   async deleteFile(name: string): Promise<void> {
-    await this.storageService.deleteItem(`${this.root}${name}`);
+    await this.storageService.deleteItem(this.addRoot(name));
     this.refreshTables();
   }
 
   async moveFile(name: string, newName: string): Promise<void> {
     await this.storageService.moveItem(
-      `${this.root}${name}`,
-      `${this.root}${newName}`
+      this.addRoot(name),
+      this.addRoot(newName)
     );
     this.refreshTables();
   }
 
   async info(name: string): Promise<FileStorageItem> {
     const allItems = await this.storageService.listItems(
-      `${this.root}${FileUtils.getPath(name)}`,
+      this.addRoot(FileUtils.getPath(name)),
       FileUtils.getBaseName(name)
     );
     if (allItems.length === 0) {
@@ -98,9 +109,9 @@ export class GrpcFileStorage implements FileStorage {
     }
     const itemDetails = allItems[0];
     return {
-      filename: itemDetails.filename,
-      basename: itemDetails.basename,
-      id: itemDetails.filename,
+      filename: this.removeRoot(itemDetails.filename),
+      basename: this.removeRoot(itemDetails.basename),
+      id: this.removeRoot(itemDetails.filename),
       type: itemDetails.type,
     };
   }

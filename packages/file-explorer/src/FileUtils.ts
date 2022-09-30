@@ -220,6 +220,34 @@ export class FileUtils {
         !folders.some(folder => path !== folder && path.startsWith(folder))
     );
   }
+
+  /**
+   * Removes the root path from the provided file name. Throws if the filename does not start with root.
+   * @param root The root to remove
+   * @param filename Filename to remove the root path from
+   * @returns Filename without the root
+   */
+  static removeRoot(root: string, filename: string): string {
+    if (root.length === 0) {
+      return filename;
+    }
+    if (!filename.startsWith(root)) {
+      throw new Error(
+        `Filename ${filename} does not start with expected root ${root}`
+      );
+    }
+
+    return filename.substring(root.length);
+  }
+
+  /**
+   * Add root to the filename as prefix
+   * @param path Filename to prefix root to
+   * @returns Filename with root at the prefix
+   */
+  static addRoot(root: string, path: string): string {
+    return `${root}${path}`;
+  }
 }
 
 export default FileUtils;

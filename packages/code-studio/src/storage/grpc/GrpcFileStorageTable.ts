@@ -10,7 +10,11 @@ import {
   StorageSnapshot,
 } from '@deephaven/storage';
 import { CancelablePromise, PromiseUtils } from '@deephaven/utils';
-import { FileStorageItem, FileStorageTable } from '@deephaven/file-explorer';
+import {
+  FileStorageItem,
+  FileStorageTable,
+  FileUtils,
+} from '@deephaven/file-explorer';
 import { StorageService } from '@deephaven/jsapi-shim';
 
 const log = Log.module('GrpcFileStorageTable');
@@ -20,9 +24,11 @@ const log = Log.module('GrpcFileStorageTable');
  * Takes a path to specify what root this table should start at.
  */
 export class GrpcFileStorageTable implements FileStorageTable {
-  readonly storageService: StorageService;
+  private readonly storageService: StorageService;
 
-  readonly root: string;
+  private readonly baseRoot: string;
+
+  private readonly root: string;
 
   private currentSize = 0;
 
@@ -44,11 +50,17 @@ export class GrpcFileStorageTable implements FileStorageTable {
 
   /**
    * @param storageService The storage service to use
+   * @param baseRoot Base root for the service
    * @param root The root path for this storage table
    */
-  constructor(storageService: StorageService, root = '/') {
+  constructor(storageService: StorageService, baseRoot = '', root = baseRoot) {
     this.storageService = storageService;
+    this.baseRoot = baseRoot;
     this.root = root;
+  }
+
+  private removeBaseRoot(filename: string): string {
+    return FileUtils.removeRoot(this.baseRoot, filename);
   }
 
   getViewportData(): Promise<ViewportData<FileStorageItem>> {
@@ -84,7 +96,8 @@ export class GrpcFileStorageTable implements FileStorageTable {
       if (!this.childTables.has(nextPath)) {
         const childTable = new GrpcFileStorageTable(
           this.storageService,
-          `${this.root}${nextPath}/`
+          this.baseRoot,
+          `${this.root}/${nextPath}`
         );
         this.childTables.set(nextPath, childTable);
       }
@@ -180,9 +193,9 @@ export class GrpcFileStorageTable implements FileStorageTable {
     let items = dirContents
       .map(file => ({
         type: file.type,
-        filename: file.filename,
+        filename: this.removeBaseRoot(file.filename),
         basename: file.basename,
-        id: file.filename,
+        id: this.removeBaseRoot(file.filename),
         isExpanded:
           file.type === 'directory'
             ? this.childTables.has(file.basename)
@@ -199,7 +212,10 @@ export class GrpcFileStorageTable implements FileStorageTable {
     for (let i = 0; i < items.length; i += 1) {
       const item = items[i];
       const { basename, filename } = item;
-      if (filename === `${this.root}${basename}` && item.type === 'directory') {
+      if (
+        filename === this.removeBaseRoot(`${this.root}/${basename}`) &&
+        item.type === 'directory'
+      ) {
         const childTable = this.childTables.get(basename);
         if (childTable != null) {
           childTable.setViewport({ top: 0, bottom: viewport.bottom - i });
