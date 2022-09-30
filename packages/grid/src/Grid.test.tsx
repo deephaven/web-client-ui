@@ -501,17 +501,22 @@ it('handles ctrl+shift click to extend range in both direcitons', () => {
   );
 });
 
-it('handles double clicking a cell to edit', () => {
+it('handles double clicking a cell to edit', async () => {
   const model = new MockGridModel({ isEditable: true });
   const component = makeGridComponent(model);
   const column = 5;
   const row = 7;
   const value = 'TEST';
 
+  expect(component.state.editingCell).toBeNull();
+
   mouseDoubleClick(column, row, component);
 
   expect(component.state.cursorColumn).toBe(column);
   expect(component.state.cursorRow).toBe(row);
+  expect(component.state.editingCell).not.toBeNull();
+  expect(component.state.editingCell?.column).toBe(column);
+  expect(component.state.editingCell?.row).toBe(row);
 
   component.handleEditCellCommit(value);
 
