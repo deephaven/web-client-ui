@@ -16,6 +16,7 @@ import {
   ValidationError,
 } from '@deephaven/utils';
 import Log from '@deephaven/log';
+import { vsHome } from '@deephaven/icons';
 import FileExplorer from './FileExplorer';
 import FileStorage, { FileStorageItem, FileType } from './FileStorage';
 import FileUtils from './FileUtils';
@@ -127,9 +128,17 @@ class NewItemModal extends PureComponent<NewItemModalProps, NewItemModalState> {
     const { value, path } = this.state;
     if (!prevIsOpen && isOpen) {
       this.resetValue();
+      this.isInitialLoad = true;
     }
-    if (path !== prevState.path || value !== prevState.value) {
-      this.updateValidationStatus(path, value);
+
+    if (prevIsOpen && isOpen) {
+      if (
+        !this.isInitialLoad &&
+        (path !== prevState.path || value !== prevState.value)
+      ) {
+        this.updateValidationStatus(path, value);
+      }
+      this.isInitialLoad = false;
     }
   }
 
@@ -152,6 +161,8 @@ class NewItemModal extends PureComponent<NewItemModalProps, NewItemModalState> {
   private pending = new Pending();
 
   private pathMap = new Map();
+
+  private isInitialLoad = true;
 
   resetValue(): void {
     const { defaultValue } = this.props as NewItemModalProps;
@@ -377,12 +388,11 @@ class NewItemModal extends PureComponent<NewItemModalProps, NewItemModalState> {
   }
 
   handleBreadcrumbSelect(directoryPath: string): void {
-    this.setState({ path: directoryPath.slice(4) });
+    this.setState({ path: directoryPath });
   }
 
   renderPathButtons(path: string): React.ReactNode {
     const pathAsList = path.split('/');
-    pathAsList[0] = 'root';
     pathAsList.pop();
     return pathAsList.map((basename, index) => {
       let directoryPath = '';
@@ -397,6 +407,8 @@ class NewItemModal extends PureComponent<NewItemModalProps, NewItemModalState> {
             kind="ghost"
             className="directory-breadcrumbs"
             onClick={() => this.handleBreadcrumbSelect(directoryPath)}
+            aria-label={index === 0 ? 'home' : undefined}
+            icon={index === 0 ? vsHome : undefined}
           >
             {basename}
           </Button>
@@ -469,6 +481,7 @@ class NewItemModal extends PureComponent<NewItemModalProps, NewItemModalState> {
                   <FileExplorer
                     onSelect={this.handleSelect}
                     storage={storage}
+                    focusedPath={path}
                   />
                 </div>
               </div>

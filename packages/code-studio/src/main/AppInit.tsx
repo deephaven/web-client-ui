@@ -16,7 +16,7 @@ import {
   setDashboardSessionWrapper as setDashboardSessionWrapperAction,
   ToolType,
 } from '@deephaven/dashboard-core-plugins';
-import { FileStorage, WebdavFileStorage } from '@deephaven/file-explorer';
+import { FileStorage } from '@deephaven/file-explorer';
 import dh, { IdeConnection } from '@deephaven/jsapi-shim';
 import {
   DecimalColumnFormatter,
@@ -35,46 +35,77 @@ import {
   setUser as setUserAction,
   setWorkspace as setWorkspaceAction,
   setWorkspaceStorage as setWorkspaceStorageAction,
+  User,
   Workspace,
   WorkspaceStorage,
 } from '@deephaven/redux';
-import { createClient } from 'webdav/web';
 import { setLayoutStorage as setLayoutStorageAction } from '../redux/actions';
 import App from './App';
 import PouchCommandHistoryStorage from '../storage/PouchCommandHistoryStorage';
-import LocalWorkspaceStorage, {
-  LAYOUT_STORAGE,
-} from '../storage/LocalWorkspaceStorage';
-import { createConnection, createSessionWrapper } from './SessionUtils';
+import LocalWorkspaceStorage from '../storage/LocalWorkspaceStorage';
+import {
+  createConnection,
+  createCoreClient,
+  createSessionWrapper,
+} from './SessionUtils';
 import { PluginUtils } from '../plugins';
 import LayoutStorage from '../storage/LayoutStorage';
 import { isNoConsolesError } from './NoConsolesError';
+import GrpcLayoutStorage from '../storage/grpc/GrpcLayoutStorage';
+import GrpcFileStorage from '../storage/grpc/GrpcFileStorage';
 
 const log = Log.module('AppInit');
 
-// Default values used
-const NAME = 'user';
-const USER = {
-  name: NAME,
-  operateAs: NAME,
-  groups: [],
-  permissions: {
-    isSuperUser: false,
-    isQueryViewOnly: false,
-    isNonInteractive: false,
-    canUsePanels: true,
-    canCreateDashboard: true,
-    canCreateCodeStudio: true,
-    canCreateQueryMonitor: true,
-    canCopy: true,
-    canDownloadCsv: true,
-  },
-};
-const WORKSPACE_STORAGE = new LocalWorkspaceStorage();
-const COMMAND_HISTORY_STORAGE = new PouchCommandHistoryStorage();
-const FILE_STORAGE = new WebdavFileStorage(
-  createClient(import.meta.env.VITE_NOTEBOOKS_URL ?? '')
-);
+/**
+ * Load all plugin modules available.
+ * @returns A map from the name of the plugin to the plugin module that was loaded
+ */
+async function loadPlugins(): Promise<DeephavenPluginModuleMap> {
+  log.debug('Loading plugins...');
+  try {
+    const manifest = await PluginUtils.loadJson(
+      `${import.meta.env.VITE_MODULE_PLUGINS_URL}/manifest.json`
+    );
+
+    log.debug('Plugin manifest loaded:', manifest);
+    const pluginPromises = [];
+    for (let i = 0; i < manifest.plugins.length; i += 1) {
+      const { name, main } = manifest.plugins[i];
+      const pluginMainUrl = `${
+        import.meta.env.VITE_MODULE_PLUGINS_URL
+      }/${name}/${main}`;
+      pluginPromises.push(PluginUtils.loadModulePlugin(pluginMainUrl));
+    }
+    const pluginModules = await Promise.all(pluginPromises);
+
+    const pluginMap = new Map();
+    for (let i = 0; i < pluginModules.length; i += 1) {
+      const { name } = manifest.plugins[i];
+      pluginMap.set(name, pluginModules[i]);
+    }
+    log.info('Plugins loaded:', pluginMap);
+
+    return pluginMap;
+  } catch (e) {
+    log.error('Unable to load plugins:', e);
+    return new Map();
+  }
+}
+
+async function loadSessionWrapper(
+  connection: IdeConnection
+): Promise<SessionWrapper | undefined> {
+  let sessionWrapper: SessionWrapper | undefined;
+  try {
+    sessionWrapper = await createSessionWrapper(connection);
+  } catch (e) {
+    // Consoles may be disabled on the server, but we should still be able to start up and open existing objects
+    if (!isNoConsolesError(e)) {
+      throw e;
+    }
+  }
+  return sessionWrapper;
+}
 
 interface AppInitProps {
   workspace: Workspace;
@@ -91,7 +122,7 @@ interface AppInitProps {
   setDashboardConnection: (id: string, connection: IdeConnection) => void;
   setDashboardSessionWrapper: (id: string, wrapper: SessionWrapper) => void;
   setPlugins: (map: DeephavenPluginModuleMap) => void;
-  setUser: (user: typeof USER) => void;
+  setUser: (user: User) => void;
   setWorkspace: (workspace: Workspace) => void;
   setWorkspaceStorage: (workspaceStorage: WorkspaceStorage) => void;
 }
@@ -118,55 +149,11 @@ const AppInit = (props: AppInitProps) => {
   const [error, setError] = useState<unknown>();
   const [isFontLoading, setIsFontLoading] = useState(true);
 
-  /**
-   * Load all plugin modules available.
-   * @returns A map from the name of the plugin to the plugin module that was loaded
-   */
-  const loadPlugins = useCallback(async () => {
-    log.debug('Loading plugins...');
-    try {
-      const manifest = await PluginUtils.loadJson(
-        `${import.meta.env.VITE_MODULE_PLUGINS_URL}/manifest.json`
-      );
-
-      log.debug('Plugin manifest loaded:', manifest);
-      const pluginPromises = [];
-      for (let i = 0; i < manifest.plugins.length; i += 1) {
-        const { name, main } = manifest.plugins[i];
-        const pluginMainUrl = `${
-          import.meta.env.VITE_MODULE_PLUGINS_URL
-        }/${name}/${main}`;
-        pluginPromises.push(PluginUtils.loadModulePlugin(pluginMainUrl));
-      }
-      const pluginModules = await Promise.all(pluginPromises);
-
-      const pluginMap = new Map();
-      for (let i = 0; i < pluginModules.length; i += 1) {
-        const { name } = manifest.plugins[i];
-        pluginMap.set(name, pluginModules[i]);
-      }
-      log.info('Plugins loaded:', pluginMap);
-
-      return pluginMap;
-    } catch (e) {
-      log.error('Unable to load plugins:', e);
-      return new Map();
-    }
-  }, []);
-
   const initClient = useCallback(async () => {
     try {
       const newPlugins = await loadPlugins();
       const connection = createConnection();
-      let sessionWrapper: SessionWrapper | undefined;
-      try {
-        sessionWrapper = await createSessionWrapper(connection);
-      } catch (e) {
-        // Consoles may be disabled on the server, but we should still be able to start up and open existing objects
-        if (!isNoConsolesError(e)) {
-          throw e;
-        }
-      }
+      const sessionWrapper = await loadSessionWrapper(connection);
       connection.addEventListener(
         dh.IdeConnection.HACK_CONNECTION_FAILURE,
         event => {
@@ -176,7 +163,43 @@ const AppInit = (props: AppInitProps) => {
         }
       );
 
-      const loadedWorkspace = await WORKSPACE_STORAGE.load({
+      const name = 'user';
+      const user: User = {
+        name,
+        operateAs: name,
+        groups: [],
+        permissions: {
+          isSuperUser: false,
+          isQueryViewOnly: false,
+          isNonInteractive: false,
+          canUsePanels: true,
+          canCreateDashboard: true,
+          canCreateCodeStudio: true,
+          canCreateQueryMonitor: true,
+          canCopy: true,
+          canDownloadCsv: true,
+        },
+      };
+
+      const coreClient = createCoreClient();
+
+      // Just login anonymously for now, use default user values
+      await coreClient.login({ type: dh.CoreClient.LOGIN_TYPE_ANONYMOUS });
+
+      const storageService = coreClient.getStorageService();
+      const layoutStorage = new GrpcLayoutStorage(
+        storageService,
+        import.meta.env.VITE_LAYOUTS_URL ?? ''
+      );
+      const fileStorage = new GrpcFileStorage(
+        storageService,
+        import.meta.env.VITE_NOTEBOOKS_URL ?? ''
+      );
+
+      const workspaceStorage = new LocalWorkspaceStorage(layoutStorage);
+      const commandHistoryStorage = new PouchCommandHistoryStorage();
+
+      const loadedWorkspace = await workspaceStorage.load({
         isConsoleAvailable: sessionWrapper !== undefined,
       });
       const { data } = loadedWorkspace;
@@ -216,24 +239,23 @@ const AppInit = (props: AppInitProps) => {
       };
 
       setActiveTool(ToolType.DEFAULT);
-      setCommandHistoryStorage(COMMAND_HISTORY_STORAGE);
+      setCommandHistoryStorage(commandHistoryStorage);
       setDashboardData(DEFAULT_DASHBOARD_ID, dashboardData);
-      setFileStorage(FILE_STORAGE);
-      setLayoutStorage(LAYOUT_STORAGE);
+      setFileStorage(fileStorage);
+      setLayoutStorage(layoutStorage);
       setDashboardConnection(DEFAULT_DASHBOARD_ID, connection);
       if (sessionWrapper !== undefined) {
         setDashboardSessionWrapper(DEFAULT_DASHBOARD_ID, sessionWrapper);
       }
       setPlugins(newPlugins);
-      setUser(USER);
-      setWorkspaceStorage(WORKSPACE_STORAGE);
+      setUser(user);
+      setWorkspaceStorage(workspaceStorage);
       setWorkspace(loadedWorkspace);
     } catch (e: unknown) {
       log.error(e);
       setError(e);
     }
   }, [
-    loadPlugins,
     setActiveTool,
     setCommandHistoryStorage,
     setDashboardData,
