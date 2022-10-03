@@ -1,3 +1,10 @@
 flag_management:
   default_rules:
     carryforward: true
+coverage:
+  status:
+    project:
+      default:
+        # Allow up to a 1% drop in threshold for codecov
+        # A lot of bug fixes don't change test coverage, and then codecov fails
+        threshold: 1%
