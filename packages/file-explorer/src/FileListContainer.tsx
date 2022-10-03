@@ -16,6 +16,7 @@ export interface FileListContainerProps {
   table: FileStorageTable;
 
   isMultiSelect?: boolean;
+  focusedPath?: string;
 
   onCreateFile?: (path?: string) => void;
   onCreateFolder?: (path?: string) => void;
@@ -39,6 +40,7 @@ export const FileListContainer = (
 ): JSX.Element => {
   const {
     isMultiSelect = false,
+    focusedPath,
     showContextMenu = false,
     onCreateFile,
     onCreateFolder,
@@ -221,6 +223,7 @@ export const FileListContainer = (
           rowHeight={rowHeight}
           table={table}
           isMultiSelect={isMultiSelect}
+          focusedPath={focusedPath}
         />
       )}
       {showContextMenu && <ContextActions actions={actions} />}

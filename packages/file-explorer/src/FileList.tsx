@@ -51,6 +51,7 @@ export interface FileListProps {
   table: FileStorageTable;
 
   isMultiSelect?: boolean;
+  focusedPath?: string;
 
   onFocusChange?: (focusedItem?: FileStorageItem) => void;
   onMove: (files: FileStorageItem[], path: string) => void;
@@ -238,6 +239,7 @@ export const FileList = (props: FileListProps): JSX.Element => {
   const [draggedItems, setDraggedItems] = useState<FileStorageItem[]>();
   const [dragPlaceholder, setDragPlaceholder] = useState<HTMLDivElement>();
   const [selectedRanges, setSelectedRanges] = useState([] as Range[]);
+
   const itemList = useRef<ItemList<FileStorageItem>>(null);
   const fileList = useRef<HTMLDivElement>(null);
 
@@ -484,6 +486,18 @@ export const FileList = (props: FileListProps): JSX.Element => {
       return false;
     }
   }, [draggedItems, dropTargetItem]);
+
+  const { focusedPath } = props;
+  useEffect(() => {
+    if (focusedPath !== undefined) {
+      if (focusedPath === '/') {
+        table.collapseAll();
+      } else {
+        table.setExpanded(focusedPath, false);
+        table.setExpanded(focusedPath, true);
+      }
+    }
+  }, [table, focusedPath]);
 
   useEffect(
     function updateTableViewport() {

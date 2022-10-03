@@ -118,6 +118,14 @@ export class GrpcFileStorageTable implements FileStorageTable {
     }
   }
 
+  async collapseAll(): Promise<void> {
+    this.childTables.clear();
+    if (this.currentViewport) {
+      await this.refreshInternal();
+    }
+  }
+
+  // eslint-disable-next-line class-methods-use-this
   setSearch(search: string): void {
     throw new Error('Method not implemented.');
   }
