@@ -1149,6 +1149,59 @@ Client.EVENT_DISCONNECT = 'disconnect';
 Client.EVENT_RECONNECT = 'reconnect';
 Client.EVENT_RECONNECT_AUTH_FAILED = 'reconnectauthfailed';
 
+class StorageService {
+  listItems() {
+    return Promise.resolve([]);
+  }
+
+  loadFile() {
+    return Promise.resolve({
+      text: () => Promise.resolve(''),
+      arrayBuffer: () => Promise.resolve(new ArrayBuffer()),
+    });
+  }
+
+  deleteItem() {
+    return Promise.resolve();
+  }
+  saveFile() {
+    return Promise.resolve();
+  }
+  moveItem() {
+    return Promise.resolve();
+  }
+  createDirectory() {
+    return Promise.resolve();
+  }
+}
+
+class CoreClient {
+  constructor(serverUrl) {
+    this.storageService = new StorageService();
+  }
+  login() {
+    return Promise.resolve();
+  }
+
+  getStorageService() {
+    return this.storageService;
+  }
+}
+
+class FileContents {
+  static text(...text) {
+    return new FileContents(text.join(''));
+  }
+
+  constructor(contents) {
+    this.contents = contents;
+  }
+
+  text() {
+    return Promise.resolve(this.contents);
+  }
+}
+
 //
 // CONSOLE START
 //
@@ -1780,6 +1833,7 @@ const dh = {
   FilterCondition: FilterCondition,
   FilterValue: FilterValue,
   Client: Client,
+  CoreClient: CoreClient,
   RollupTableConfig: RollupTableConfig,
   Table: Table,
   TotalsTable: TotalsTable,
@@ -1821,6 +1875,9 @@ const dh = {
   DateWrapper: DateWrapper,
   ViewportData,
   VariableType,
+  storage: {
+    FileContents: FileContents,
+  },
 };
 
 // The actual library just sets a global window object, we do the same

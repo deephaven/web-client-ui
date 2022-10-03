@@ -36,26 +36,21 @@ Over time, forks will get out of sync with the upstream repository. To stay up t
 
 ## Creating a Pull Request
 
-Pull requests can be created through the GitHub website or through the GitHub CLI.
-
-### GitHub Web
-
-Follow the directions in [Creating A Pull Request From A Fork](https://docs.github.com/en/github/collaborating-with-issues-and-pull-requests/creating-a-pull-request-from-a-fork).
-
-### GitHub CLI
-
-1. [Install GitHub command line tool](https://github.com/cli/cli).
-2. On the command line, cd into your checked-out fork/branch.
-3. `gh pr create -f -w`
+1) Follow the GitHub instructions for [Creating a Pull Request](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request).
    - Use `deephaven/web-client-ui` as the base repository.
-   - Use `<username>/web-client-ui` as the repository to push to.
-4. Your changes should automatically get pushed, and then a new pull request with your changes should open up in your browser.
-5. Complete the information in the pull request and click `Create pull request`.
+   - Use your own fork, `<username>/web-client-ui` as the repository to push to.
+2) Fill in the information in the Pull Request:
+   - If you know people who should be reviewers, add them as a reviewer
+   - Add yourself as the Assignee
+   - Select one label depending on the change type:
+      - `bug`: Fixing a bug in an existing feature
+      - `enhancement`: Adding a new feature
+      - `internal`: Changes to the project config or build
+      - `documentation`: Documentation change only
+   - **Breaking Changes:** if your change breaks an existing API in such a way that users of the package affected will need to make some changes to migrate to the newer version, add the `breaking` label to the PR and include a section in the description saying `## Breaking Changes` and any migration instructions required.
+   - [Link the PR](https://docs.github.com/en/issues/tracking-your-work-with-issues/linking-a-pull-request-to-an-issue) with any associated issues
+3) Submit the PR
 
-For more information, see:
-
-- [gh pr create](https://cli.github.com/manual/gh_pr_create)
-- [CLI In Use](https://cli.github.com/manual/examples.html)
 
 ## Deephaven Contributor License Agreement (CLA)
 
