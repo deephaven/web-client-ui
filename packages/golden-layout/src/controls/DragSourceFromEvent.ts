@@ -1,26 +1,25 @@
 import $ from 'jquery';
-import type { ItemConfigType } from '../config/ItemConfig.js';
+import type { ItemConfig } from '../config/index.js';
 import type LayoutManager from '../LayoutManager.js';
-import DragListener from '../utils/DragListener.js';
-import utils from '../utils/index.js';
+import { DragListener } from '../utils/index.js';
 import DragProxy from './DragProxy.js';
 
 /**
  * Creates a drag item given a starting mouseevent
  * that can then be dragged into the Layout
  *
- * @param {Object} itemConfig the configuration for the contentItem that will be created
- * @param {LayoutManager} layoutManager
- * @param {MouseEvent} event used to get the starting position
+ * @param itemConfig the configuration for the contentItem that will be created
+ * @param layoutManager
+ * @param event used to get the starting position
  */
 export default class DragSourceFromEvent {
   private _element? = window; // we need something to listen for mousemoves against
-  private _itemConfig?: ItemConfigType | (() => ItemConfigType);
+  private _itemConfig?: ItemConfig | (() => ItemConfig);
   private _layoutManager?: LayoutManager;
   private _dragListener?: DragListener;
 
   constructor(
-    itemConfig: ItemConfigType | (() => ItemConfigType),
+    itemConfig: ItemConfig | (() => ItemConfig),
     layoutManager: LayoutManager,
     event: MouseEvent
   ) {

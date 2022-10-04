@@ -1,13 +1,7 @@
-import AbstractContentItem from './AbstractContentItem.js';
-import Component from './Component.js';
-import Root from './Root.js';
-import RowOrColumn from './RowOrColumn.js';
-import Stack from './Stack.js';
-
-export default {
-  AbstractContentItem,
-  Component,
-  Root,
-  RowOrColumn,
-  Stack,
-};
+export * from './AbstractContentItem';
+export { default as AbstractContentItem } from './AbstractContentItem.js';
+export { default as ContentItem } from './AbstractContentItem.js';
+export { default as Component } from './Component.js';
+export { default as Root } from './Root.js';
+export { default as RowOrColumn } from './RowOrColumn.js';
+export { default as Stack } from './Stack.js';

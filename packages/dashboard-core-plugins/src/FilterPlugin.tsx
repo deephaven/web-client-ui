@@ -149,7 +149,7 @@ export const FilterPlugin = (props: FilterPluginProps): JSX.Element => {
       dragEvent = null,
     }) => {
       const config = {
-        type: 'react-component',
+        type: 'react-component' as const,
         component: DropdownFilterPanel.COMPONENT,
         props: { id, metadata, panelState, localDashboardId },
         title,
@@ -179,7 +179,7 @@ export const FilterPlugin = (props: FilterPluginProps): JSX.Element => {
       dragEvent = null,
     }) => {
       const config = {
-        type: 'react-component',
+        type: 'react-component' as const,
         component: InputFilterPanel.COMPONENT,
         props: { id, metadata, panelState, localDashboardId },
         title,
@@ -209,7 +209,7 @@ export const FilterPlugin = (props: FilterPluginProps): JSX.Element => {
       dragEvent = null,
     }) => {
       const config = {
-        type: 'react-component',
+        type: 'react-component' as const,
         component: FilterSetManagerPanel.COMPONENT,
         props: { id, metadata, panelState, localDashboardId },
         title,

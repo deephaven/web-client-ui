@@ -1,8 +1,8 @@
 import $ from 'jquery';
-import type AbstractContentItem from '../items/AbstractContentItem.js';
-import { isComponent } from '../items/AbstractContentItem.js';
+import type { AbstractContentItem } from '../items/index.js';
+import { isComponent } from '../items/index.js';
 import type LayoutManager from '../LayoutManager.js';
-import DragListener from '../utils/DragListener.js';
+import { DragListener } from '../utils/index.js';
 import DragProxy from './DragProxy.js';
 import type Header from './Header.js';
 

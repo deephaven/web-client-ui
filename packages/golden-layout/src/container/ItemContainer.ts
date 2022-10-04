@@ -1,17 +1,16 @@
 import $ from 'jquery';
 import {
-  ItemConfigType,
+  ReactComponentConfig,
   isGLComponentConfig,
   ComponentConfig,
-} from '../config/ItemConfig.js';
+} from '../config/index.js';
 import type Tab from '../controls/Tab.js';
-import type AbstractContentItem from '../items/AbstractContentItem.js';
-import type Component from '../items/Component.js';
+import type { AbstractContentItem, Component } from '../items/index.js';
 import type LayoutManager from '../LayoutManager.js';
 import EventEmitter from '../utils/EventEmitter.js';
 
 export default class ItemContainer<
-  C extends ItemConfigType = ComponentConfig
+  C extends ComponentConfig | ReactComponentConfig = ComponentConfig
 > extends EventEmitter {
   width: number = 0;
   height: number = 0;
@@ -24,7 +23,7 @@ export default class ItemContainer<
 
   tab?: Tab;
 
-  _config: C;
+  _config: C & { componentState: Record<string, unknown> };
 
   isHidden = false;
 
@@ -45,7 +44,7 @@ export default class ItemContainer<
     this.parent = parent;
     this.layoutManager = layoutManager;
 
-    this._config = config;
+    this._config = { componentState: {} as Record<string, unknown>, ...config };
 
     this._contentElement = this._element.find('.lm_content');
   }
@@ -121,17 +120,18 @@ export default class ItemContainer<
     const newSize = direction === 'height' ? height : width;
 
     const totalPixel =
-      this[direction] * (1 / (rowOrColumnChild.config[direction] / 100));
+      this[direction] * (1 / ((rowOrColumnChild.config[direction] ?? 0) / 100));
     const percentage = (newSize / totalPixel) * 100;
     const delta =
-      (rowOrColumnChild.config[direction] - percentage) /
+      ((rowOrColumnChild.config[direction] ?? 0) - percentage) /
       (rowOrColumn.contentItems.length - 1);
 
     for (let i = 0; i < rowOrColumn.contentItems.length; i++) {
       if (rowOrColumn.contentItems[i] === rowOrColumnChild) {
         rowOrColumn.contentItems[i].config[direction] = percentage;
       } else {
-        rowOrColumn.contentItems[i].config[direction] += delta;
+        rowOrColumn.contentItems[i].config[direction] =
+          (rowOrColumn.contentItems[i].config[direction] ?? 0) + delta;
       }
     }
 

@@ -1,5 +1,5 @@
 import $ from 'jquery';
-import utils from '../utils/index.js';
+import { animFrame } from '../utils/index.js';
 
 export type TransitionDimensions = {
   left?: number;
@@ -68,7 +68,7 @@ export default class TransitionIndicator {
     }
 
     this._element.css(currentFrameStyles);
-    utils.animFrame(this._nextAnimationFrame.bind(this));
+    animFrame(this._nextAnimationFrame.bind(this));
   }
 
   _measure(element: JQuery<HTMLElement>) {

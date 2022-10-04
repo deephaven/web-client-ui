@@ -57,8 +57,9 @@ export default class ReactComponentHandler {
     this._originalComponentWillUpdate =
       this._reactComponent.componentWillUpdate || function () {};
     this._reactComponent.componentWillUpdate = this._onUpdate.bind(this);
-    if (this._container.getState()) {
-      this._reactComponent.setState(this._container.getState());
+    const state = this._container.getState();
+    if (state) {
+      this._reactComponent.setState(state);
     }
   }
 

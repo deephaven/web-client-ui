@@ -1,6 +1,9 @@
 import type { StackHeaderConfig } from '../items/Stack';
 
-export type ItemConfigType = ComponentConfig | ReactComponentConfig;
+export type ItemConfigType =
+  | ItemConfig
+  | ComponentConfig
+  | ReactComponentConfig;
 
 export interface ItemConfig {
   /**
@@ -23,14 +26,14 @@ export interface ItemConfig {
   /**
    * The width of this item, relative to the other children of its parent in percent
    */
-  width: number;
+  width?: number;
 
   minWidth?: number;
 
   /**
    * The height of this item, relative to the other children of its parent in percent
    */
-  height: number;
+  height?: number;
 
   minHeight?: number;
 
@@ -72,7 +75,8 @@ export interface ComponentConfig extends ItemConfig {
   componentState: Record<string, unknown>;
 }
 
-export interface ReactComponentConfig extends ComponentConfig {
+export interface ReactComponentConfig extends ItemConfig {
+  componentName?: string;
   /**
    * The name of the component as specified in layout.registerComponent. Mandatory if type is 'react-component'
    */
@@ -81,7 +85,7 @@ export interface ReactComponentConfig extends ComponentConfig {
   /**
    * Properties that will be passed to the component and accessible using this.props.
    */
-  props?: unknown;
+  props?: any;
 }
 
 export function isGLComponentConfig(

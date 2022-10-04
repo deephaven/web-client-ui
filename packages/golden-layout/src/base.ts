@@ -1,9 +1,9 @@
-import config from './config/index.js';
-import container from './container/index.js';
-import controls from './controls/index.js';
-import errors from './errors/index.js';
-import items from './items/index.js';
-import utils from './utils/index.js';
+import * as config from './config/index.js';
+import * as container from './container/index.js';
+import * as controls from './controls/index.js';
+import * as errors from './errors/index.js';
+import * as items from './items/index.js';
+import * as utils from './utils/index.js';
 
 const lm = {
   config,

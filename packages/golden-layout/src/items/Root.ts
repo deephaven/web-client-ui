@@ -1,5 +1,9 @@
 import $ from 'jquery';
-import type { ComponentConfig, ItemConfigType } from '../config/ItemConfig.js';
+import type {
+  ComponentConfig,
+  ItemConfigType,
+  ItemConfig,
+} from '../config/index.js';
 import LayoutManager from '../LayoutManager.js';
 import AbstractContentItem, {
   isComponent,
@@ -30,7 +34,13 @@ export default class Root extends AbstractContentItem {
     this._containerElement.append(this.element);
   }
 
-  addChild(contentItem: AbstractContentItem | ItemConfigType, index?: number) {
+  addChild(
+    contentItem:
+      | AbstractContentItem
+      | ItemConfigType
+      | { type: ItemConfig['type'] },
+    index?: number
+  ) {
     if (this.contentItems.length > 0) {
       throw new Error('Root node can only have a single child');
     }
@@ -119,7 +129,7 @@ export default class Root extends AbstractContentItem {
             insertBefore ? 0 : column.contentItems.length - 1
           ];
         column.addChild(contentItem, insertBefore ? 0 : undefined, true);
-        sibling.config[dimension] *= 0.5;
+        sibling.config[dimension] = (sibling.config[dimension] ?? 0) * 0.5;
         contentItem.config[dimension] = sibling.config[dimension];
         column.callDownwards('setSize');
       }

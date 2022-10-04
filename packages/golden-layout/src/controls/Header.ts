@@ -1,8 +1,7 @@
 import $ from 'jquery';
-import type AbstractContentItem from '../items/AbstractContentItem.js';
-import type Stack from '../items/Stack.js';
+import type { AbstractContentItem, Stack } from '../items/index.js';
 import type LayoutManager from '../LayoutManager.js';
-import EventEmitter from '../utils/EventEmitter.js';
+import { EventEmitter } from '../utils/index.js';
 import HeaderButton from './HeaderButton.js';
 import Tab from './Tab.js';
 

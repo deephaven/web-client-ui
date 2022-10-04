@@ -3,7 +3,7 @@ import classNames from 'classnames';
 import { ContextActions, GLOBAL_SHORTCUTS } from '@deephaven/components';
 import { LayoutUtils, PanelManager } from '@deephaven/dashboard';
 import Log from '@deephaven/log';
-import type GoldenLayout from '@deephaven/golden-layout';
+import type { Container } from '@deephaven/golden-layout';
 import {
   isLinkableFromPanel,
   Link,
@@ -102,9 +102,7 @@ export class LinkerOverlayContent extends Component<
     if (glContainer == null) {
       throw new Error(`Unable to find panel container for id: ${panelId}`);
     }
-    return LayoutUtils.getTabPoint(
-      (glContainer as unknown) as GoldenLayout.Container
-    ) as LinkerCoordinate;
+    return LayoutUtils.getTabPoint((glContainer as unknown) as Container);
   }
 
   handleMouseMove(event: MouseEvent): void {

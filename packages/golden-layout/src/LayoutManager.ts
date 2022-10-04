@@ -1,35 +1,44 @@
 import $ from 'jquery';
 import React from 'react';
 import lm from './base.js';
-import { Config, defaultConfig } from './config/Config.js';
+import { defaultConfig } from './config/index.js';
 import type {
+  ItemConfig,
+  Config,
   ComponentConfig,
   ItemConfigType,
   ReactComponentConfig,
-} from './config/ItemConfig.js';
-import type ItemContainer from './container/ItemContainer.js';
-import BrowserPopout from './controls/BrowserPopout.js';
-import DragSource from './controls/DragSource.js';
-import DragSourceFromEvent from './controls/DragSourceFromEvent.js';
-import DropTargetIndicator from './controls/DropTargetIndicator.js';
-import TransitionIndicator from './controls/TransitionIndicator.js';
-import ConfigurationError from './errors/ConfigurationError.js';
-import AbstractContentItem, {
+} from './config/index.js';
+import type { ItemContainer } from './container/index.js';
+import {
+  BrowserPopout,
+  DragSource,
+  DragSourceFromEvent,
+  DropTargetIndicator,
+  TransitionIndicator,
+} from './controls/index.js';
+import { ConfigurationError } from './errors/index.js';
+import {
+  AbstractContentItem,
   ItemArea,
   isStack,
-} from './items/AbstractContentItem.js';
-import Component from './items/Component.js';
-import Root from './items/Root.js';
-import RowOrColumn from './items/RowOrColumn.js';
-import Stack from './items/Stack.js';
-import ConfigMinifier from './utils/ConfigMinifier.js';
-import EventEmitter from './utils/EventEmitter.js';
-import EventHub from './utils/EventHub.js';
-import ReactComponentHandler from './utils/ReactComponentHandler.js';
-import { getQueryStringParam, getUniqueId, stripTags } from './utils/utils.js';
+  Component,
+  Root,
+  RowOrColumn,
+  Stack,
+} from './items/index.js';
+import {
+  ConfigMinifier,
+  EventEmitter,
+  EventHub,
+  ReactComponentHandler,
+  getQueryStringParam,
+  getUniqueId,
+  stripTags,
+} from './utils/index.js';
 
 export type ComponentConstructor<
-  C extends ComponentConfig = ComponentConfig
+  C extends ComponentConfig | ReactComponentConfig = ComponentConfig
 > = {
   new (container: ItemContainer<C>, state: unknown): unknown;
 };
@@ -77,10 +86,13 @@ export default class LayoutManager extends EventEmitter {
     [name: string]:
       | ComponentConstructor
       | ComponentConstructor<ReactComponentConfig>
-      | React.Component;
+      | React.Component
+      | React.ForwardRefExoticComponent<any>;
   } = { 'lm-react-component': ReactComponentHandler };
 
-  private _fallbackComponent?: ComponentConstructor;
+  private _fallbackComponent?:
+    | ComponentConstructor
+    | React.ForwardRefExoticComponent<any>;
   private _itemAreas: ItemArea[] = [];
   private _maximisedItem: AbstractContentItem | null = null;
   private _maximisePlaceholder = $('<div class="lm_maximise_place"></div>');
@@ -152,7 +164,10 @@ export default class LayoutManager extends EventEmitter {
    */
   registerComponent(
     name: string,
-    constructor: ComponentConstructor | React.Component
+    constructor:
+      | ComponentConstructor
+      | React.Component
+      | React.ForwardRefExoticComponent<any>
   ) {
     if (
       typeof constructor !== 'function' &&
@@ -184,7 +199,9 @@ export default class LayoutManager extends EventEmitter {
    * Set a fallback component to be rendered in place of unregistered components
    * @param constructor
    */
-  setFallbackComponent(constructor: ComponentConstructor) {
+  setFallbackComponent(
+    constructor: ComponentConstructor | React.ForwardRefExoticComponent<any>
+  ) {
     this._fallbackComponent = constructor;
   }
 
@@ -428,7 +445,7 @@ export default class LayoutManager extends EventEmitter {
    * @returns Created item
    */
   createContentItem(
-    config: Partial<ComponentConfig> & { type: ComponentConfig['type'] },
+    config: Partial<ComponentConfig> & { type: ItemConfig['type'] },
     parent?: AbstractContentItem
   ) {
     var typeErrorMsg, contentItem;
@@ -614,7 +631,7 @@ export default class LayoutManager extends EventEmitter {
    * @param event used as the starting position for the dragProxy
    */
   createDragSourceFromEvent(
-    itemConfig: ComponentConfig | (() => ComponentConfig),
+    itemConfig: ItemConfig | (() => ItemConfig),
     event: MouseEvent
   ) {
     this.config.settings.constrainDragToContainer = false;
@@ -788,6 +805,7 @@ export default class LayoutManager extends EventEmitter {
    */
   _$normalizeContentItem(
     contentItemOrConfig:
+      | { type: ItemConfig['type'] }
       | ItemConfigType
       | AbstractContentItem
       | (() => AbstractContentItem),

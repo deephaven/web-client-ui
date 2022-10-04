@@ -1,8 +1,8 @@
 import $ from 'jquery';
 import AbstractContentItem, { isComponent } from './AbstractContentItem.js';
 import type LayoutManager from '../LayoutManager.js';
-import type { ComponentConfig } from '../config/ItemConfig.js';
-import Header from '../controls/Header.js';
+import type { ComponentConfig, ItemConfigType } from '../config/index.js';
+import { Header } from '../controls/index.js';
 import type RowOrColumn from './RowOrColumn.js';
 
 interface HoverDimensions {
@@ -177,9 +177,9 @@ export default class Stack extends AbstractContentItem {
     return this.header.activeContentItem;
   }
 
-  addChild(contentItem: AbstractContentItem, index?: number) {
+  addChild(contentItem: AbstractContentItem | ItemConfigType, index?: number) {
     contentItem = this.layoutManager._$normalizeContentItem(contentItem, this);
-    AbstractContentItem.prototype.addChild.call(this, contentItem, index);
+    super.addChild(contentItem, index);
     this.childElementContainer.append(contentItem.element);
     this.header.createTab(contentItem, index);
     this.setActiveContentItem(contentItem);
@@ -190,11 +190,7 @@ export default class Stack extends AbstractContentItem {
 
   removeChild(contentItem: AbstractContentItem, keepChild = false) {
     var index = this.contentItems.indexOf(contentItem);
-    AbstractContentItem.prototype.removeChild.call(
-      this,
-      contentItem,
-      keepChild
-    );
+    super.removeChild(contentItem, keepChild);
     this.header.removeTab(contentItem);
     if (this.header.activeContentItem === contentItem) {
       if (this.contentItems.length > 0) {
@@ -309,7 +305,7 @@ export default class Stack extends AbstractContentItem {
     if (hasCorrectParent) {
       const index = this.parent.contentItems.indexOf(this);
       this.parent.addChild(contentItem, insertBefore ? index : index + 1, true);
-      this.config[dimension] *= 0.5;
+      this.config[dimension] = (this.config[dimension] ?? 0) * 0.5;
       contentItem.config[dimension] = this.config[dimension];
       this.parent.callDownwards('setSize');
       /*

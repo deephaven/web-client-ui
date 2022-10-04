@@ -65,7 +65,7 @@ export const Dashboard = ({
         setLayout(undefined);
         return;
       }
-      const config: GoldenLayout.Config = {
+      const config = {
         ...LayoutUtils.makeDefaultLayout(),
       };
       if (config.settings === undefined) {

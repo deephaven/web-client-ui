@@ -1,6 +1,5 @@
 import $ from 'jquery';
-import DragListener from '../utils/DragListener.js';
-import utils from '../utils/index.js';
+import { DragListener } from '../utils/index.js';
 
 export default class Splitter {
   private _isVertical: boolean;

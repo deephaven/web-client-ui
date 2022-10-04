@@ -1,7 +1,7 @@
 import $ from 'jquery';
-import type { ItemConfigType } from '../config/ItemConfig.js';
+import type { ItemConfigType } from '../config/index.js';
 import type LayoutManager from '../LayoutManager.js';
-import DragListener from '../utils/DragListener.js';
+import { DragListener } from '../utils/index.js';
 import DragProxy from './DragProxy.js';
 
 /**

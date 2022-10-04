@@ -1,5 +1,1 @@
-import ConfigurationError from './ConfigurationError.js';
-
-export default {
-  ConfigurationError,
-};
+export { default as ConfigurationError } from './ConfigurationError.js';

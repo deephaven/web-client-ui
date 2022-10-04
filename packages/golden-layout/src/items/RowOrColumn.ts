@@ -1,10 +1,9 @@
 import $ from 'jquery';
 import AbstractContentItem from './AbstractContentItem.js';
-import utils from '../utils/index.js';
-import controls from '../controls/index.js';
+import { animFrame } from '../utils/index.js';
+import { Splitter } from '../controls/index.js';
 import type LayoutManager from '../LayoutManager.js';
-import type { ItemConfigType } from '../config/ItemConfig.js';
-import type Splitter from '../controls/Splitter.js';
+import type { ItemConfig, ItemConfigType } from '../config/index.js';
 
 export default class RowOrColumn extends AbstractContentItem {
   isRow: boolean;
@@ -59,7 +58,7 @@ export default class RowOrColumn extends AbstractContentItem {
    *                           children need to be added in one go and resize is called afterwards
    */
   addChild(
-    contentItem: AbstractContentItem,
+    contentItem: AbstractContentItem | { type: ItemConfig['type'] },
     index?: number,
     _$suspendResize?: boolean
   ) {
@@ -98,8 +97,10 @@ export default class RowOrColumn extends AbstractContentItem {
       if (this.contentItems[i] === contentItem) {
         contentItem.config[this._dimension] = newItemSize;
       } else {
-        itemSize = this.contentItems[i].config[this._dimension] *=
-          (100 - newItemSize) / 100;
+        itemSize =
+          ((this.contentItems[i].config[this._dimension] ?? 0) *
+            (100 - newItemSize)) /
+          100;
         this.contentItems[i].config[this._dimension] = itemSize;
       }
     }
@@ -115,7 +116,7 @@ export default class RowOrColumn extends AbstractContentItem {
    * @param keepChild   If true the child will be removed, but not destroyed
    */
   removeChild(contentItem: AbstractContentItem, keepChild: boolean) {
-    var removedItemSize = contentItem.config[this._dimension],
+    var removedItemSize = contentItem.config[this._dimension] ?? 0,
       index = this.contentItems.indexOf(contentItem),
       splitterIndex = Math.max(index - 1, 0),
       i,
@@ -141,7 +142,8 @@ export default class RowOrColumn extends AbstractContentItem {
      */
     for (i = 0; i < this.contentItems.length; i++) {
       if (this.contentItems[i] !== contentItem) {
-        this.contentItems[i].config[this._dimension] +=
+        this.contentItems[i].config[this._dimension] =
+          (this.contentItems[i].config[this._dimension] ?? 0) +
           removedItemSize / (this.contentItems.length - 1);
       }
     }
@@ -250,8 +252,12 @@ export default class RowOrColumn extends AbstractContentItem {
 
     for (let i = 0; i < this.contentItems.length; i++) {
       const itemSize = this._isColumn
-        ? Math.floor(totalHeight * (this.contentItems[i].config.height / 100))
-        : Math.floor(totalWidth * (this.contentItems[i].config.width / 100));
+        ? Math.floor(
+            totalHeight * ((this.contentItems[i].config.height ?? 0) / 100)
+          )
+        : Math.floor(
+            totalWidth * ((this.contentItems[i].config.width ?? 0) / 100)
+          );
 
       totalAssigned += itemSize;
       itemSizes.push(itemSize);
@@ -294,7 +300,7 @@ export default class RowOrColumn extends AbstractContentItem {
 
     for (let i = 0; i < this.contentItems.length; i++) {
       if (this.contentItems[i].config[dimension] !== undefined) {
-        total += this.contentItems[i].config[dimension];
+        total += this.contentItems[i].config[dimension] ?? 0;
       } else {
         itemsWithoutSetDimension.push(this.contentItems[i]);
       }
@@ -338,7 +344,7 @@ export default class RowOrColumn extends AbstractContentItem {
      */
     for (let i = 0; i < this.contentItems.length; i++) {
       this.contentItems[i].config[dimension] =
-        (this.contentItems[i].config[dimension] / total) * 100;
+        ((this.contentItems[i].config[dimension] ?? 0) / total) * 100;
     }
 
     this._respectMinItemWidth();
@@ -431,7 +437,7 @@ export default class RowOrColumn extends AbstractContentItem {
    */
   _createSplitter(index: number): Splitter {
     var splitter;
-    splitter = new controls.Splitter(
+    splitter = new Splitter(
       this._isColumn,
       this._splitterSize,
       this._splitterGrabSize
@@ -567,8 +573,8 @@ export default class RowOrColumn extends AbstractContentItem {
     const splitterPositionInRange =
       ((this._splitterPosition ?? 0) + sizeBefore) / (sizeBefore + sizeAfter);
     const totalRelativeSize =
-      items.before.config[this._dimension] +
-      items.after.config[this._dimension];
+      (items.before.config[this._dimension] ?? 0) +
+      (items.after.config[this._dimension] ?? 0);
 
     items.before.config[this._dimension] =
       splitterPositionInRange * totalRelativeSize;
@@ -580,7 +586,7 @@ export default class RowOrColumn extends AbstractContentItem {
       left: 0,
     });
 
-    utils.animFrame(
+    animFrame(
       this.callDownwards.bind(this, 'setSize', undefined, undefined, undefined)
     );
   }

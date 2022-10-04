@@ -1,10 +1,9 @@
 import $ from 'jquery';
-import type { Config, PopoutConfig } from '../config/Config.js';
-import type { ItemConfigType } from '../config/ItemConfig.js';
+import type { Config, PopoutConfig, ItemConfigType } from '../config/index.js';
 import type Root from '../items/Root.js';
 import type LayoutManager from '../LayoutManager.js';
-import EventEmitter from '../utils/EventEmitter.js';
-import utils from '../utils/index.js';
+import { getUniqueId, ConfigMinifier, EventEmitter } from '../utils/index.js';
+import { AbstractContentItem } from '../index.js';
 
 type BrowserDimensions = {
   width: number;
@@ -102,7 +101,7 @@ export default class BrowserPopout extends EventEmitter {
   popIn() {
     let index = this._indexInParent;
     let childConfig: ItemConfigType | null = null;
-    let parentItem: Root | null = null;
+    let parentItem: AbstractContentItem | null = null;
 
     if (this._parentId) {
       /*
@@ -126,7 +125,7 @@ export default class BrowserPopout extends EventEmitter {
        */
       if (!parentItem) {
         if ((this._layoutManager.root.contentItems.length ?? 0) > 0) {
-          parentItem = this._layoutManager.root.contentItems[0] as Root;
+          parentItem = this._layoutManager.root.contentItems[0];
         } else {
           parentItem = this._layoutManager.root;
         }
@@ -235,9 +234,9 @@ export default class BrowserPopout extends EventEmitter {
    */
   _createUrl() {
     var config: Partial<Config> = { content: this._config };
-    const storageKey = 'gl-window-config-' + utils.getUniqueId();
+    const storageKey = 'gl-window-config-' + getUniqueId();
 
-    config = new utils.ConfigMinifier().minifyConfig(config);
+    config = new ConfigMinifier().minifyConfig(config);
 
     try {
       localStorage.setItem(storageKey, JSON.stringify(config));

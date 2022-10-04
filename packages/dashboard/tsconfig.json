@@ -4,11 +4,23 @@
     "rootDir": "src/",
     "outDir": "dist/"
   },
-  "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.js", "src/**/*.jsx"],
-  "exclude": ["node_modules", "src/**/*.test.*", "src/**/__mocks__/*"],
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "src/**/*.js",
+    "src/**/*.jsx"
+  ],
+  "exclude": [
+    "node_modules",
+    "src/**/*.test.*",
+    "src/**/__mocks__/*"
+  ],
   "references": [
     {
       "path": "../components"
+    },
+    {
+      "path": "../golden-layout"
     },
     {
       "path": "../log"

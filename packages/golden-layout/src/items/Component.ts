@@ -1,6 +1,6 @@
 import $ from 'jquery';
 import AbstractContentItem from './AbstractContentItem.js';
-import errors from '../errors/index.js';
+import { ConfigurationError } from '../errors/index.js';
 import type LayoutManager from '../LayoutManager.js';
 import type { ComponentConfig } from '../config/ItemConfig.js';
 import ItemContainer from '../container/ItemContainer.js';
@@ -38,7 +38,7 @@ export default class Component extends AbstractContentItem {
       componentConfig = $.extend(true, {}, this.config.componentState || {});
 
     if (ComponentConstructor == null) {
-      throw new errors.ConfigurationError(
+      throw new ConfigurationError(
         'Unknown component "' + this.config.componentName + '"'
       );
     }

@@ -1,23 +1,10 @@
-import BrowserPopout from './BrowserPopout.js';
-import DragProxy from './DragProxy.js';
-import DragSource from './DragSource.js';
-import DragSourceFromEvent from './DragSourceFromEvent.js';
-import DropTargetIndicator from './DropTargetIndicator.js';
-import Header from './Header.js';
-import HeaderButton from './HeaderButton.js';
-import Splitter from './Splitter.js';
-import Tab from './Tab.js';
-import TransitionIndicator from './TransitionIndicator.js';
-
-export default {
-  BrowserPopout,
-  DragProxy,
-  DragSource,
-  DragSourceFromEvent,
-  DropTargetIndicator,
-  Header,
-  HeaderButton,
-  Splitter,
-  Tab,
-  TransitionIndicator,
-};
+export { default as BrowserPopout } from './BrowserPopout.js';
+export { default as DragProxy } from './DragProxy.js';
+export { default as DragSource } from './DragSource.js';
+export { default as DragSourceFromEvent } from './DragSourceFromEvent.js';
+export { default as DropTargetIndicator } from './DropTargetIndicator.js';
+export { default as Header } from './Header.js';
+export { default as HeaderButton } from './HeaderButton.js';
+export { default as Splitter } from './Splitter.js';
+export { default as Tab } from './Tab.js';
+export { default as TransitionIndicator } from './TransitionIndicator.js';

@@ -1,11 +1,8 @@
 import $ from 'jquery';
-import type AbstractContentItem from '../items/AbstractContentItem.js';
-import type { ItemArea } from '../items/AbstractContentItem.js';
-import type Stack from '../items/Stack.js';
+import type { AbstractContentItem, ItemArea, Stack } from '../items/index.js';
 import type LayoutManager from '../LayoutManager.js';
-import type DragListener from '../utils/DragListener.js';
-import EventEmitter from '../utils/EventEmitter.js';
-import utils from '../utils/index.js';
+import type { DragListener } from '../utils/index.js';
+import { stripTags, EventEmitter } from '../utils/index.js';
 
 /**
  * This class creates a temporary container
@@ -91,7 +88,7 @@ export default class DragProxy extends EventEmitter {
     this._proxyTab = this.element.find('.lm_tab');
     this._proxyTab.attr(
       'title',
-      utils.stripTags(this._contentItem.config.title ?? '')
+      stripTags(this._contentItem.config.title ?? '')
     );
     this.element.find('.lm_title').html(this._contentItem.config.title ?? '');
     this.childElementContainer = this.element.find('.lm_content');

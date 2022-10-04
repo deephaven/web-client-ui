@@ -1,26 +1,27 @@
-import utils from '../utils/index.js';
-import errors from '../errors/index.js';
-import config from '../config/index.js';
-import EventEmitter from '../utils/EventEmitter.js';
+import { animFrame, BubblingEvent, EventEmitter } from '../utils/index.js';
+import { ConfigurationError } from '../errors/index.js';
+import { itemDefaultConfig } from '../config/index.js';
 import type {
   ComponentConfig,
   ItemConfig,
   ItemConfigType,
-} from '../config/ItemConfig.js';
+} from '../config/index.js';
 import type LayoutManager from '../LayoutManager.js';
 import type Tab from '../controls/Tab.js';
 import type Stack from './Stack.js';
-import type BubblingEvent from '../utils/BubblingEvent.js';
 import type Component from './Component.js';
-
-const { itemDefaultConfig } = config;
+import type Root from './Root.js';
 
 export function isStack(item: AbstractContentItem): item is Stack {
-  return (item as AbstractContentItem).isStack;
+  return item.isStack;
 }
 
 export function isComponent(item: AbstractContentItem): item is Component {
-  return (item as AbstractContentItem).isComponent;
+  return item.isComponent;
+}
+
+export function isRoot(item: AbstractContentItem): item is Root {
+  return item.isRoot;
 }
 
 export type ItemArea<C = AbstractContentItem> = {
@@ -202,7 +203,14 @@ export default abstract class AbstractContentItem extends EventEmitter {
    * @param contentItem
    * @param index If omitted item will be appended
    */
-  addChild(contentItem: AbstractContentItem, index?: number) {
+  addChild(
+    contentItem:
+      | AbstractContentItem
+      | ItemConfigType
+      | { type: ItemConfig['type'] },
+    index?: number
+  ) {
+    contentItem = this.layoutManager._$normalizeContentItem(contentItem, this);
     if (index === undefined) {
       index = this.contentItems.length;
     }
@@ -551,7 +559,7 @@ export default abstract class AbstractContentItem extends EventEmitter {
    * @param name The name of the event
    */
   emitBubblingEvent(name: string) {
-    var event = new utils.BubblingEvent(name, this);
+    var event = new BubblingEvent(name, this);
     this.emit(name, event);
   }
 
@@ -564,7 +572,7 @@ export default abstract class AbstractContentItem extends EventEmitter {
     var oContentItem;
 
     if (!(config.content instanceof Array)) {
-      throw new errors.ConfigurationError('content must be an Array', config);
+      throw new ConfigurationError('content must be an Array', config);
     }
 
     for (let i = 0; i < config.content.length; i++) {
@@ -597,7 +605,7 @@ export default abstract class AbstractContentItem extends EventEmitter {
    */
   _propagateEvent(name: string, event: BubblingEvent) {
     if (
-      event instanceof utils.BubblingEvent &&
+      event instanceof BubblingEvent &&
       event.isPropagationStopped === false &&
       this.isInitialised === true
     ) {
@@ -628,9 +636,7 @@ export default abstract class AbstractContentItem extends EventEmitter {
     } else {
       if (this._pendingEventPropagations[name] !== true) {
         this._pendingEventPropagations[name] = true;
-        utils.animFrame(
-          this._propagateEventToLayoutManager.bind(this, name, event)
-        );
+        animFrame(this._propagateEventToLayoutManager.bind(this, name, event));
       }
     }
   }

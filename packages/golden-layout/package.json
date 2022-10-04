@@ -5,7 +5,8 @@
   "license": "Apache-2.0",
   "description": "A multi-screen javascript Layout manager",
   "main": "./dist/index.js",
-  "types": "./index.d.ts",
+  "types": "./dist/index.d.ts",
+  "source": "src/index.ts",
   "type": "module",
   "dependencies": {
     "jquery": "^3.6.0"
@@ -20,7 +21,7 @@
     "sass": "sass ./src/scss:./dist/css -s compressed",
     "build:babel": "npm run babel",
     "build:sass": "npm run sass",
-    "babel": "babel ./src --out-dir ./dist --extensions \".js\" --source-maps --root-mode upward",
+    "babel": "babel ./src --out-dir ./dist --extensions \".ts,.js\" --source-maps --root-mode upward",
     "watch": "run-p watch:*",
     "watch:babel": "npm run babel -- -w --skip-initial-build",
     "watch:sass": "npm run sass -- --watch --update",
@@ -52,6 +53,7 @@
     "browserify": "^17.0.0",
     "esmify": "^2.1.1",
     "karma-browserify": "^8.1.0",
+    "tsify": "^5.0.4",
     "watchify": "^4.0.0"
   }
 }

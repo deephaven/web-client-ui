@@ -24,7 +24,7 @@ module.exports = function (config) {
     },
 
     browserify: {
-      plugin: ['esmify'],
+      plugin: ['tsify'],
     },
 
     // test results reporter to use

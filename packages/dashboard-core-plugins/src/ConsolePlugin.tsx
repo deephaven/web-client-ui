@@ -138,7 +138,7 @@ export const ConsolePlugin = (
 
   const renamePanel = useCallback(
     (panelId, newTitle) => {
-      // LayoutUtils.renameComponent(layout.root, { id: panelId }, newTitle);
+      LayoutUtils.renameComponent(layout.root, { id: panelId }, newTitle);
     },
     [layout.root]
   );
@@ -322,7 +322,7 @@ export const ConsolePlugin = (
       };
       const title = getNotebookTitle(fileMetadata);
       return {
-        type: 'react-component',
+        type: 'react-component' as const,
         component: NotebookPanel.COMPONENT,
         isFocusOnShow: false,
         props: {

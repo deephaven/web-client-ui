@@ -1,4 +1,4 @@
-import type { Config } from '../config/Config.js';
+import type { Config } from '../config/index.js';
 
 /**
  * Minifies and unminifies configs by replacing frequent keys
