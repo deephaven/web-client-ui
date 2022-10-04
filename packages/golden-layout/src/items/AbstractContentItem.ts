@@ -2,27 +2,43 @@ import utils from '../utils/index.js';
 import errors from '../errors/index.js';
 import config from '../config/index.js';
 import EventEmitter from '../utils/EventEmitter.js';
-import type { ItemConfig, ItemConfigType } from '../config/ItemConfig.js';
+import type {
+  ComponentConfig,
+  ItemConfig,
+  ItemConfigType,
+} from '../config/ItemConfig.js';
 import type LayoutManager from '../LayoutManager.js';
 import type Tab from '../controls/Tab.js';
 import type Stack from './Stack.js';
 import type BubblingEvent from '../utils/BubblingEvent.js';
+import type Component from './Component.js';
 
 const { itemDefaultConfig } = config;
 
-function isStack(item: AbstractContentItem): item is Stack {
-  return item.isStack;
-};
+export function isStack(item: AbstractContentItem): item is Stack {
+  return (item as AbstractContentItem).isStack;
+}
 
-export type ItemArea = {
+export function isComponent(item: AbstractContentItem): item is Component {
+  return (item as AbstractContentItem).isComponent;
+}
+
+export type ItemArea<C = AbstractContentItem> = {
   x1: number;
   x2: number;
   y1: number;
   y2: number;
   surface: number;
-  side: 'x1' | 'x2' | 'y1' | 'y2';
-  contentItem: AbstractContentItem;
+  side: 'x1' | 'x2' | 'y1' | 'y2' | '';
+  contentItem: C;
 };
+
+type AbstractItemConfig =
+  | ItemConfig
+  | {
+      type: ItemConfig['type'];
+      content: ItemConfigType[];
+    };
 
 /**
  * This is the baseclass that all content items inherit from.
@@ -46,12 +62,14 @@ export type ItemArea = {
  * @constructor
  */
 export default abstract class AbstractContentItem extends EventEmitter {
-  config: ItemConfigType;
+  config: ItemConfig;
   type: string;
   contentItems: AbstractContentItem[];
   parent: AbstractContentItem | null;
   layoutManager: LayoutManager;
   element: JQuery<HTMLElement>;
+  childElementContainer?: JQuery<HTMLElement>;
+  componentName?: string;
 
   isInitialised = false;
   isMaximised = false;
@@ -68,10 +86,12 @@ export default abstract class AbstractContentItem extends EventEmitter {
 
   constructor(
     layoutManager: LayoutManager,
-    config: ItemConfigType & { type: string },
-    parent: AbstractContentItem | null
+    config: AbstractItemConfig,
+    parent: AbstractContentItem | null,
+    element: JQuery<HTMLElement>
   ) {
     super();
+    this.element = element;
 
     this.config = { ...itemDefaultConfig, ...config };
     this.type = config.type;
@@ -94,7 +114,7 @@ export default abstract class AbstractContentItem extends EventEmitter {
    *
    * @abstract
    */
-  abstract setSize(): void;
+  abstract setSize(width?: number, height?: number): void;
 
   /**
    * Calls a method recursively downwards on the tree
@@ -208,8 +228,8 @@ export default abstract class AbstractContentItem extends EventEmitter {
    * Replaces oldChild with newChild. This used to use jQuery.replaceWith... which for
    * some reason removes all event listeners, so isn't really an option.
    *
-   * @param   {lm.item.AbstractContentItem} oldChild
-   * @param   {lm.item.AbstractContentItem} newChild
+   * @param oldChild
+   * @param newChild
    */
   replaceChild(
     oldChild: AbstractContentItem,
@@ -408,11 +428,13 @@ export default abstract class AbstractContentItem extends EventEmitter {
   }
 
   getComponentsByName(componentName: string) {
-    var components = this._$getItemsByProperty('componentName', componentName),
-      instances = [],
-      i;
+    const components = this._$getItemsByProperty(
+      'componentName',
+      componentName
+    ) as Component[];
+    const instances: unknown[] = [];
 
-    for (i = 0; i < components.length; i++) {
+    for (let i = 0; i < components.length; i++) {
       instances.push(components[i].instance);
     }
 
@@ -422,7 +444,7 @@ export default abstract class AbstractContentItem extends EventEmitter {
   /****************************************
    * PACKAGE PRIVATE
    ****************************************/
-  _$getItemsByProperty(key: keyof AbstractContentItem, value: unknown) {
+  _$getItemsByProperty(key: keyof AbstractContentItem, value: string) {
     return this.getItemsByFilter(function (item) {
       return item[key] === value;
     });
@@ -452,15 +474,14 @@ export default abstract class AbstractContentItem extends EventEmitter {
     this.layoutManager.updateSize();
   }
 
-  _callOnActiveComponents(methodName) {
-    var stacks = this.getItemsByType('stack'),
-      activeContentItem,
-      i;
+  _callOnActiveComponents(methodName: 'hide' | 'show') {
+    const stacks = (this.getItemsByType('stack') as unknown) as Stack[];
+    let activeContentItem: AbstractContentItem | null = null;
 
-    for (i = 0; i < stacks.length; i++) {
+    for (let i = 0; i < stacks.length; i++) {
       activeContentItem = stacks[i].getActiveContentItem();
 
-      if (activeContentItem && activeContentItem.isComponent) {
+      if (activeContentItem && isComponent(activeContentItem)) {
         activeContentItem.container[methodName]();
       }
     }
@@ -487,7 +508,7 @@ export default abstract class AbstractContentItem extends EventEmitter {
    *		contentItem: contentItem
    * }
    */
-  _$getArea(element: JQuery<HTMLElement>): Omit<ItemArea, 'side'> | null {
+  _$getArea(element?: JQuery<HTMLElement>): ItemArea<this> | null {
     element = element || this.element;
 
     const offset = element.offset() ?? { left: 0, top: 0 };
@@ -501,6 +522,7 @@ export default abstract class AbstractContentItem extends EventEmitter {
       y2: offset.top + height,
       surface: width * height,
       contentItem: this,
+      side: '',
     };
   }
 
@@ -515,7 +537,7 @@ export default abstract class AbstractContentItem extends EventEmitter {
     this.setSize();
 
     for (let i = 0; i < this.contentItems.length; i++) {
-      this.childElementContainer.append(this.contentItems[i].element);
+      this.childElementContainer?.append(this.contentItems[i].element);
     }
 
     this.isInitialised = true;
@@ -538,7 +560,7 @@ export default abstract class AbstractContentItem extends EventEmitter {
    * PLEASE NOTE, please see addChild for adding contentItems add runtime
    * @param   {configuration item node} config
    */
-  _createContentItems(config) {
+  _createContentItems(config: AbstractItemConfig) {
     var oContentItem;
 
     if (!(config.content instanceof Array)) {
@@ -556,19 +578,14 @@ export default abstract class AbstractContentItem extends EventEmitter {
 
   /**
    * Extends an item configuration node with default settings
-   * @private
-   * @param   {configuration item node} config
-   *
-   * @returns {configuration item node} extended config
+   * @param config
+   * @returns extended config
    */
-  _extendItemNode(config) {
-    for (var key in itemDefaultConfig) {
-      if (config[key] === undefined) {
-        config[key] = itemDefaultConfig[key];
-      }
-    }
-
-    return config;
+  _extendItemNode(config: ComponentConfig) {
+    return {
+      ...itemDefaultConfig,
+      ...config,
+    };
   }
 
   /**
@@ -591,10 +608,7 @@ export default abstract class AbstractContentItem extends EventEmitter {
        * to the layoutManager
        */
       if (this.isRoot === false && this.parent) {
-        this.parent.emit.apply(
-          this.parent,
-          [name, event]
-        );
+        this.parent.emit.apply(this.parent, [name, event]);
       } else {
         this._scheduleEventPropagationToLayoutManager(name, event);
       }
@@ -615,7 +629,7 @@ export default abstract class AbstractContentItem extends EventEmitter {
       if (this._pendingEventPropagations[name] !== true) {
         this._pendingEventPropagations[name] = true;
         utils.animFrame(
-          this._propagateEventToLayoutManager.bind(this, name, event);
+          this._propagateEventToLayoutManager.bind(this, name, event)
         );
       }
     }

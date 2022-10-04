@@ -1,3 +1,5 @@
+import type { StackHeaderConfig } from '../items/Stack';
+
 export type ItemConfigType = ComponentConfig | ReactComponentConfig;
 
 export interface ItemConfig {
@@ -6,6 +8,7 @@ export interface ItemConfig {
    */
   type:
     | 'default'
+    | 'root'
     | 'row'
     | 'column'
     | 'stack'
@@ -15,17 +18,21 @@ export interface ItemConfig {
   /**
    * An array of configurations for items that will be created as children of this item.
    */
-  content?: ItemConfigType[];
+  content?: (ItemConfig | ItemConfigType)[];
 
   /**
    * The width of this item, relative to the other children of its parent in percent
    */
   width: number;
 
+  minWidth?: number;
+
   /**
    * The height of this item, relative to the other children of its parent in percent
    */
   height: number;
+
+  minHeight?: number;
 
   /**
    * A String or an Array of Strings. Used to retrieve the item using item.getItemsById()
@@ -48,6 +55,8 @@ export interface ItemConfig {
   isFocusOnShow?: boolean;
 
   reorderEnabled?: boolean;
+
+  header?: StackHeaderConfig;
 }
 
 export interface ComponentConfig extends ItemConfig {

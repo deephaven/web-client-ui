@@ -3,7 +3,6 @@ import type AbstractContentItem from '../items/AbstractContentItem.js';
 import type Stack from '../items/Stack.js';
 import type LayoutManager from '../LayoutManager.js';
 import EventEmitter from '../utils/EventEmitter.js';
-import utils from '../utils/index.js';
 import HeaderButton from './HeaderButton.js';
 import Tab from './Tab.js';
 
@@ -48,9 +47,9 @@ export default class Header extends EventEmitter {
 
   tabs: Tab[] = [];
   activeContentItem: AbstractContentItem | null = null;
-  closeButton: JQuery<HTMLElement> | null = null;
+  closeButton: HeaderButton | null = null;
 
-  tabDropdownButton: JQuery<HTMLElement> | null = null;
+  tabDropdownButton: HeaderButton | null = null;
   tabNextButton = $(Header._nextButtonTemplate);
   tabPreviousButton = $(Header._previousButtonTemplate);
 
@@ -217,7 +216,7 @@ export default class Header extends EventEmitter {
     }
 
     // makes sure dropped tabs are scrollintoview, removed any re-ordering
-    this.tabs[this.parent.config.activeItemIndex].element
+    this.tabs[this.parent.config.activeItemIndex ?? 0].element
       .get(0)
       ?.scrollIntoView({
         inline: 'nearest',
@@ -301,7 +300,8 @@ export default class Header extends EventEmitter {
   // when an item is dropped remove listeners and cancel animation
   _handleItemDropped() {
     this.isDraggingTab = false;
-    this.rAF = window.cancelAnimationFrame(this.rAF);
+    window.cancelAnimationFrame(this.rAF ?? -1);
+    this.rAF = null;
     this.controlsContainer.off('mouseenter', this._handleNextMouseEnter);
     this.controlsContainer.off('mouseleave', this._handleNextMouseLeave);
     this.tabPreviousButton.off('mouseenter', this._handlePreviousMouseEnter);
@@ -315,22 +315,27 @@ export default class Header extends EventEmitter {
     this.controlsContainer.on('mouseleave', this._handleNextMouseLeave);
     this._handleScrollRepeat(
       this.SCROLL_RIGHT,
-      this.tabsContainer.scrollLeft()
+      this.tabsContainer.scrollLeft() ?? 0
     );
   }
 
   _handlePreviousMouseEnter() {
     this.tabPreviousButton.on('mouseleave', this._handlePreviousMouseLeave);
-    this._handleScrollRepeat(this.SCROLL_LEFT, this.tabsContainer.scrollLeft());
+    this._handleScrollRepeat(
+      this.SCROLL_LEFT,
+      this.tabsContainer.scrollLeft() ?? 0
+    );
   }
 
   _handleNextMouseLeave() {
-    this.rAF = window.cancelAnimationFrame(this.rAF);
+    window.cancelAnimationFrame(this.rAF ?? -1);
+    this.rAF = null;
     this.controlsContainer.off('mouseleave', this._handleNextMouseLeave);
   }
 
   _handlePreviousMouseLeave() {
-    this.rAF = window.cancelAnimationFrame(this.rAF);
+    window.cancelAnimationFrame(this.rAF ?? -1);
+    this.rAF = null;
     this.tabPreviousButton.off('mouseleave', this._handlePreviousMouseLeave);
   }
 
@@ -338,10 +343,11 @@ export default class Header extends EventEmitter {
   // start scrollRepeat if mouse is held down
   _handleNextButtonMouseDown() {
     var rightOffscreenChild;
-    for (var i = 0; i < this.tabs.length; i += 1) {
+    for (let i = 0; i < this.tabs.length; i += 1) {
       if (
-        this.tabs[i].element.get(0).offsetLeft >
-        this.tabsContainer.get(0).offsetWidth + this.tabsContainer.scrollLeft()
+        (this.tabs[i].element.get(0)?.offsetLeft ?? 0) >
+        (this.tabsContainer.get(0)?.offsetWidth ?? 0) +
+          (this.tabsContainer.scrollLeft() ?? 0)
       ) {
         rightOffscreenChild = this.tabs[i].element.get(0);
         break;
@@ -355,9 +361,10 @@ export default class Header extends EventEmitter {
       });
       this._handleScrollButtonMouseDown(this.SCROLL_RIGHT);
     } else {
-      this.tabsContainer.get(0).scrollLeft = this.tabsContainer.get(
-        0
-      ).scrollWidth;
+      const tabsContainer = this.tabsContainer.get(0);
+      if (tabsContainer) {
+        tabsContainer.scrollLeft = this.tabsContainer.get(0)?.scrollWidth ?? 0;
+      }
     }
   }
 
@@ -367,7 +374,8 @@ export default class Header extends EventEmitter {
     var leftOffscreenChild;
     for (var i = this.tabs.length - 1; i >= 0; i -= 1) {
       if (
-        this.tabs[i].element.get(0).offsetLeft < this.tabsContainer.scrollLeft()
+        (this.tabs[i].element.get(0)?.offsetLeft ?? 0) <
+        (this.tabsContainer.scrollLeft() ?? 0)
       ) {
         leftOffscreenChild = this.tabs[i].element.get(0);
         break;
@@ -380,46 +388,49 @@ export default class Header extends EventEmitter {
       });
       this._handleScrollButtonMouseDown(this.SCROLL_LEFT);
     } else {
-      this.tabsContainer.get(0).scrollLeft = 0;
+      const tabsContainer = this.tabsContainer.get(0);
+      if (tabsContainer) {
+        tabsContainer.scrollLeft = 0;
+      }
     }
   }
 
   // when hold timer is reached start scroll repeat anim loop
   // cancel it when mouse up happens anywhere
-  _handleScrollButtonMouseDown(direction) {
+  _handleScrollButtonMouseDown(direction: 'right' | 'left') {
     // closure so that scrollLeft is value at end of timer, and not start of timer
-    this.holdTimer = setTimeout(
-      function () {
-        this._handleScrollRepeat(
-          direction,
-          this.tabsContainer.scrollLeft(),
-          100
-        ); // kickstart deltaX to be faster
-      }.bind(this),
-      this.CLICK_TIMEOUT
-    );
+    this.holdTimer = window.setTimeout(() => {
+      this._handleScrollRepeat(
+        direction,
+        this.tabsContainer.scrollLeft() ?? 0,
+        100
+      ); // kickstart deltaX to be faster
+    }, this.CLICK_TIMEOUT);
     window.addEventListener('mouseup', this._handleScrollButtonMouseUp);
   }
 
   // cancel scroll repeat
   _handleScrollButtonMouseUp() {
-    this.holdTimer = clearTimeout(this.holdTimer);
-    this.rAF = cancelAnimationFrame(this.rAF);
+    clearTimeout(this.holdTimer ?? -1);
+    this.holdTimer = null;
+    cancelAnimationFrame(this.rAF ?? -1);
+    this.rAF = null;
     window.removeEventListener('mouseup', this._handleScrollButtonMouseUp);
   }
 
   // disables scroll arrow if at edge of scroll area
   _checkScrollArrows() {
     if (this.tabsContainer.scrollLeft() === 0) {
-      this.tabPreviousButton.first().attr('disabled', true);
+      this.tabPreviousButton.first().prop('disabled', true);
     } else if (
-      this.tabsContainer.scrollLeft() + this.tabsContainer.innerWidth() ===
-      this.tabsContainer.get(0).scrollWidth
+      (this.tabsContainer.scrollLeft() ?? 0) +
+        (this.tabsContainer.innerWidth() ?? 0) ===
+      this.tabsContainer.get(0)?.scrollWidth
     ) {
-      this.tabNextButton.attr('disabled', true);
+      this.tabNextButton.prop('disabled', true);
     } else {
-      this.tabNextButton.attr('disabled', false);
-      this.tabPreviousButton.first().attr('disabled', false);
+      this.tabNextButton.prop('disabled', false);
+      this.tabPreviousButton.first().prop('disabled', false);
     }
   }
 
@@ -468,29 +479,27 @@ export default class Header extends EventEmitter {
     }
 
     // setup animation loop, scroll with acceleration
-    window.cancelAnimationFrame(this.rAF);
-    this.rAF = window.requestAnimationFrame(
-      function (timestamp) {
-        var startTime = prevTimestamp || timestamp;
-        var deltaTime = timestamp - startTime;
-        var newDeltaX =
-          this.START_SPEED * deltaTime +
-          0.5 * this.ACCELERATION * (deltaTime * deltaTime);
-        newDeltaX = Math.min(newDeltaX, this.tabsContainer.get(0).scrollWidth);
-        this._handleScrollRepeat(direction, startX, newDeltaX, startTime);
-      }.bind(this)
-    );
+    window.cancelAnimationFrame(this.rAF ?? -1);
+    this.rAF = window.requestAnimationFrame((timestamp: number) => {
+      var startTime = prevTimestamp || timestamp;
+      var deltaTime = timestamp - startTime;
+      var newDeltaX =
+        this.START_SPEED * deltaTime +
+        0.5 * this.ACCELERATION * (deltaTime * deltaTime);
+      newDeltaX = Math.min(
+        newDeltaX,
+        this.tabsContainer.get(0)?.scrollWidth ?? Infinity
+      );
+      this._handleScrollRepeat(direction, startX, newDeltaX, startTime);
+    });
   }
 
   /**
    * Programmatically set closability.
-   *
-   * @package private
-   * @param {Boolean} isClosable Whether to enable/disable closability.
-   *
-   * @returns {Boolean} Whether the action was successful
+   * @param isClosable Whether to enable/disable closability.
+   * @returns Whether the action was successful
    */
-  _$setClosable(isClosable) {
+  _$setClosable(isClosable: boolean) {
     if (this.closeButton && this._isClosable()) {
       this.closeButton.element[isClosable ? 'show' : 'hide']();
       return true;
@@ -501,10 +510,6 @@ export default class Header extends EventEmitter {
 
   /**
    * Destroys the entire header
-   *
-   * @package private
-   *
-   * @returns {void}
    */
   _$destroy() {
     this.emit('destroy', this);
@@ -526,25 +531,22 @@ export default class Header extends EventEmitter {
   /**
    * get settings from header
    *
-   * @returns {string} when exists
+   * @returns when exists
    */
-  _getHeaderSetting(name) {
+  _getHeaderSetting(
+    name: 'show' | 'popout' | 'maximise' | 'close' | 'minimise'
+  ) {
     if (name in this.parent._header) return this.parent._header[name];
   }
 
   /**
    * Creates the popout, maximise and close buttons in the header's top right corner
-   *
-   * @returns {void}
    */
   _createControls() {
     var closeStack,
       popout,
       label,
-      maximiseLabel,
-      minimiseLabel,
       maximise,
-      maximiseButton,
       tabDropdownLabel,
       tabOverflowNextLabel,
       tabOverflowPreviousLabel;
@@ -573,7 +575,7 @@ export default class Header extends EventEmitter {
      * Popout control to launch component in new window.
      */
     if (this._getHeaderSetting('popout')) {
-      popout = utils.fnBind(this._onPopoutClick, this);
+      popout = this._onPopoutClick.bind(this);
       label = this._getHeaderSetting('popout');
       new HeaderButton(this, label, 'lm_popout', popout);
     }
@@ -582,10 +584,10 @@ export default class Header extends EventEmitter {
      * Maximise control - set the component to the full size of the layout
      */
     if (this._getHeaderSetting('maximise')) {
-      maximise = utils.fnBind(this.parent.toggleMaximise, this.parent);
-      maximiseLabel = this._getHeaderSetting('maximise');
-      minimiseLabel = this._getHeaderSetting('minimise');
-      maximiseButton = new HeaderButton(
+      maximise = this.parent.toggleMaximise.bind(this.parent);
+      const maximiseLabel = this._getHeaderSetting('maximise');
+      const minimiseLabel = this._getHeaderSetting('minimise');
+      const maximiseButton = new HeaderButton(
         this,
         maximiseLabel,
         'lm_maximise',
@@ -593,11 +595,11 @@ export default class Header extends EventEmitter {
       );
 
       this.parent.on('maximised', function () {
-        maximiseButton.element.attr('title', minimiseLabel);
+        maximiseButton.element.attr('title', minimiseLabel ?? '');
       });
 
       this.parent.on('minimised', function () {
-        maximiseButton.element.attr('title', maximiseLabel);
+        maximiseButton.element.attr('title', maximiseLabel ?? '');
       });
     }
 
@@ -605,7 +607,7 @@ export default class Header extends EventEmitter {
      * Close button
      */
     if (this._isClosable()) {
-      closeStack = utils.fnBind(this.parent.remove, this.parent);
+      closeStack = this.parent.remove.bind(this.parent);
       label = this._getHeaderSetting('close');
       this.closeButton = new HeaderButton(this, label, 'lm_close', closeStack);
     }
@@ -651,7 +653,7 @@ export default class Header extends EventEmitter {
   }
 
   // enables synthetic keyboard navigation of the list
-  _handleFilterKeydown(e) {
+  _handleFilterKeydown(e: JQuery.TriggeredEvent) {
     if (this.dropdownKeyIndex === -1) return;
 
     if (e.key === 'Escape') {
@@ -666,8 +668,12 @@ export default class Header extends EventEmitter {
       return;
     }
 
-    function getNextDropdownIndex(startIndex, delta, tabDropdownList) {
-      if (tabDropdownList.length < 2) {
+    function getNextDropdownIndex(
+      startIndex: number,
+      delta: number,
+      tabDropdownList: JQuery<HTMLElement> | null
+    ) {
+      if (tabDropdownList == null || tabDropdownList.length < 2) {
         return -1;
       }
       var i =
@@ -686,7 +692,7 @@ export default class Header extends EventEmitter {
     if (e.key === 'ArrowDown' || (e.key === 'Tab' && e.shiftKey === false)) {
       e.preventDefault();
       this.tabDropdownList
-        .eq(this.dropdownKeyIndex)
+        ?.eq(this.dropdownKeyIndex)
         .removeClass('lm_keyboard_active');
       this.dropdownKeyIndex = getNextDropdownIndex(
         this.dropdownKeyIndex,
@@ -694,12 +700,12 @@ export default class Header extends EventEmitter {
         this.tabDropdownList
       );
       this.tabDropdownList
-        .eq(this.dropdownKeyIndex)
+        ?.eq(this.dropdownKeyIndex)
         .addClass('lm_keyboard_active');
     } else if (e.key === 'ArrowUp' || e.key === 'Tab') {
       e.preventDefault();
       this.tabDropdownList
-        .eq(this.dropdownKeyIndex)
+        ?.eq(this.dropdownKeyIndex)
         .removeClass('lm_keyboard_active');
       this.dropdownKeyIndex = getNextDropdownIndex(
         this.dropdownKeyIndex,
@@ -707,13 +713,16 @@ export default class Header extends EventEmitter {
         this.tabDropdownList
       );
       this.tabDropdownList
-        .eq(this.dropdownKeyIndex)
+        ?.eq(this.dropdownKeyIndex)
         .addClass('lm_keyboard_active');
     }
   }
 
   // filters the list
-  _handleFilterInput(event) {
+  _handleFilterInput(event: JQuery.TriggeredEvent) {
+    if (this.tabDropdownList == null) {
+      return;
+    }
     // reset keyboard index
     this.tabDropdownList
       .eq(this.dropdownKeyIndex)
@@ -722,9 +731,9 @@ export default class Header extends EventEmitter {
 
     for (var i = 0; i < this.tabDropdownList.length; i++) {
       if (
-        this.tabs[i].contentItem.config.title
-          .toLowerCase()
-          .indexOf(event.target.value.toLowerCase()) !== -1
+        (this.tabs[i].contentItem.config.title
+          ?.toLowerCase()
+          .indexOf(event.target.value.toLowerCase()) ?? -1) !== -1
       ) {
         this.tabDropdownList.eq(i).css('display', '');
         if (this.dropdownKeyIndex === -1) this.dropdownKeyIndex = i;
@@ -745,16 +754,16 @@ export default class Header extends EventEmitter {
    * event on document when list is open, or programmatically when drag starts,
    * or active tab changes etc.
    */
-  _hideAdditionalTabsDropdown(event?: JQuery.Event) {
+  _hideAdditionalTabsDropdown(event?: JQuery.UIEventBase) {
     // dropdown already closed, do nothing
     if (!this.isDropdownShown) return;
 
-    if (event && this.tabDropdownContainer.get(0).contains(event.target)) {
+    if (event && this.tabDropdownContainer.get(0)?.contains(event.target)) {
       // prevent events occuring inside the list from causing a close
       return;
     } else if (
       event &&
-      this.tabDropdownButton.element.get(0) === event.target
+      this.tabDropdownButton?.element.get(0) === event.target
     ) {
       // do nothing on the mouse down so that the click event can close, rather then re-open
       return;
@@ -775,14 +784,19 @@ export default class Header extends EventEmitter {
    */
   _updateAdditionalTabsDropdown() {
     this.tabDropdownContainer.css('max-height', '');
-    var h = this.tabDropdownContainer[0].scrollHeight;
+    const h = this.tabDropdownContainer[0].scrollHeight;
     if (h === 0) return; // height can be zero if called on a hidden or empty list
 
-    var y = this.tabDropdownContainer.offset().top - $(window).scrollTop();
+    const y =
+      (this.tabDropdownContainer.offset()?.top ?? 0) -
+      ($(window).scrollTop() ?? 0);
 
     // set max height of tab dropdown to be less then the viewport height - dropdown offset
-    if (y + h > $(window).height()) {
-      this.tabDropdownContainer.css('max-height', $(window).height() - y - 10); // 10 being a padding value
+    if (y + h > ($(window).height() ?? 0)) {
+      this.tabDropdownContainer.css(
+        'max-height',
+        ($(window).height() ?? 0) - y - 10
+      ); // 10 being a padding value
     }
   }
 
@@ -790,12 +804,12 @@ export default class Header extends EventEmitter {
    * Checks whether the header is closable based on the parent config and
    * the global config.
    *
-   * @returns {Boolean} Whether the header is closable.
+   * @returns Whether the header is closable.
    */
   _isClosable() {
-    return (
+    return Boolean(
       this.parent.config.isClosable &&
-      this.layoutManager.config.settings.showCloseIcon
+        this.layoutManager.config.settings.showCloseIcon
     );
   }
 
@@ -803,18 +817,16 @@ export default class Header extends EventEmitter {
     if (this.layoutManager.config.settings.popoutWholeStack === true) {
       this.parent.popout();
     } else {
-      this.activeContentItem.popout();
+      this.activeContentItem?.popout();
     }
   }
 
   /**
    * Invoked when the header's background is clicked (not it's tabs or controls)
    *
-   * @param    {jQuery DOM event} event
-   *
-   * @returns {void}
+   * @param event
    */
-  _onHeaderClick(event) {
+  _onHeaderClick(event: JQuery.UIEventBase) {
     if (event.target === this.element[0]) {
       this.parent.select();
     }
@@ -822,29 +834,31 @@ export default class Header extends EventEmitter {
 
   /**
    * Pushes the tabs to the tab dropdown if the available space is not sufficient
-   *
-   * @returns {void}
    */
   _updateTabSizes() {
     if (this.tabs.length === 0) {
       return;
     }
 
+    const tabsContainer = this.tabsContainer.get(0);
+
+    if (!tabsContainer) {
+      return;
+    }
+
     if (
       !this.isOverflowing &&
-      this.tabsContainer.get(0).scrollWidth >
-        this.tabsContainer.get(0).clientWidth
+      tabsContainer.scrollWidth > tabsContainer.clientWidth
     ) {
-      this.tabDropdownButton.element.show();
+      this.tabDropdownButton?.element.show();
       this.tabNextButton.show();
       this.tabPreviousButton.show();
       this.isOverflowing = true;
     } else if (
       this.isOverflowing &&
-      this.tabsContainer.get(0).scrollWidth <=
-        this.tabsContainer.get(0).clientWidth
+      tabsContainer.scrollWidth <= tabsContainer.clientWidth
     ) {
-      this.tabDropdownButton.element.hide();
+      this.tabDropdownButton?.element.hide();
       this.tabNextButton.hide();
       this.tabPreviousButton.hide();
       this.isOverflowing = false;

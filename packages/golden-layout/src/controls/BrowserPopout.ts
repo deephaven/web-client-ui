@@ -1,6 +1,7 @@
 import $ from 'jquery';
-import type { Config } from '../config/Config.js';
+import type { Config, PopoutConfig } from '../config/Config.js';
 import type { ItemConfigType } from '../config/ItemConfig.js';
+import type Root from '../items/Root.js';
 import type LayoutManager from '../LayoutManager.js';
 import EventEmitter from '../utils/EventEmitter.js';
 import utils from '../utils/index.js';
@@ -61,9 +62,8 @@ export default class BrowserPopout extends EventEmitter {
   toConfig() {
     if (this.isInitialised === false) {
       throw new Error("Can't create config, layout not yet initialised");
-      return;
     }
-    return {
+    return ({
       dimensions: {
         width: this.getGlInstance()?.width,
         height: this.getGlInstance()?.height,
@@ -74,7 +74,7 @@ export default class BrowserPopout extends EventEmitter {
       content: this.getGlInstance()?.toConfig().content,
       parentId: this._parentId,
       indexInParent: this._indexInParent,
-    };
+    } as unknown) as PopoutConfig;
   }
 
   getGlInstance() {
@@ -100,9 +100,9 @@ export default class BrowserPopout extends EventEmitter {
    * parent isn't available anymore it falls back to the layout's topmost element
    */
   popIn() {
-    var childConfig,
-      parentItem,
-      index = this._indexInParent;
+    let index = this._indexInParent;
+    let childConfig: ItemConfigType | null = null;
+    let parentItem: Root | null = null;
 
     if (this._parentId) {
       /*
@@ -116,7 +116,9 @@ export default class BrowserPopout extends EventEmitter {
        */
       childConfig = $.extend(true, {}, this.getGlInstance()?.toConfig())
         .content[0];
-      parentItem = this._layoutManager.root.getItemsById(this._parentId)[0];
+      parentItem = this._layoutManager.root.getItemsById(
+        this._parentId
+      )[0] as Root;
 
       /*
        * Fallback if parentItem is not available. Either add it to the topmost
@@ -124,12 +126,16 @@ export default class BrowserPopout extends EventEmitter {
        */
       if (!parentItem) {
         if ((this._layoutManager.root.contentItems.length ?? 0) > 0) {
-          parentItem = this._layoutManager.root.contentItems[0];
+          parentItem = this._layoutManager.root.contentItems[0] as Root;
         } else {
           parentItem = this._layoutManager.root;
         }
         index = 0;
       }
+    }
+
+    if (!childConfig) {
+      return;
     }
 
     parentItem?.addChild(childConfig, this._indexInParent);

@@ -4,12 +4,22 @@ import utils from '../utils/index.js';
 import controls from '../controls/index.js';
 import type LayoutManager from '../LayoutManager.js';
 import type { ItemConfigType } from '../config/ItemConfig.js';
+import type Splitter from '../controls/Splitter.js';
 
 export default class RowOrColumn extends AbstractContentItem {
   isRow: boolean;
   isColumn: boolean;
-  element: JQuery<HTMLElement>;
   childElementContainer: JQuery<HTMLElement>;
+  parent: AbstractContentItem;
+
+  private _splitter: Splitter[] = [];
+  private _splitterSize: number;
+  private _splitterGrabSize: number;
+  private _isColumn: boolean;
+  private _dimension: 'height' | 'width';
+  private _splitterPosition: number | null = null;
+  private _splitterMinPosition: number | null = null;
+  private _splitterMaxPosition: number | null = null;
 
   constructor(
     isColumn: boolean,
@@ -17,20 +27,22 @@ export default class RowOrColumn extends AbstractContentItem {
     config: ItemConfigType,
     parent: AbstractContentItem
   ) {
-    super(layoutManager, config, parent);
+    super(
+      layoutManager,
+      config,
+      parent,
+      $('<div class="lm_item lm_' + (isColumn ? 'column' : 'row') + '"></div>')
+    );
+    this.parent = parent;
 
     this.isRow = !isColumn;
     this.isColumn = isColumn;
 
-    this.element = $(
-      '<div class="lm_item lm_' + (isColumn ? 'column' : 'row') + '"></div>'
-    );
     this.childElementContainer = this.element;
     this._splitterSize = layoutManager.config.dimensions.borderWidth;
     this._splitterGrabSize = layoutManager.config.dimensions.borderGrabWidth;
     this._isColumn = isColumn;
     this._dimension = isColumn ? 'height' : 'width';
-    this._splitter = [];
     this._splitterPosition = null;
     this._splitterMinPosition = null;
     this._splitterMaxPosition = null;
@@ -39,16 +51,18 @@ export default class RowOrColumn extends AbstractContentItem {
   /**
    * Add a new contentItem to the Row or Column
    *
-   * @param {lm.item.AbstractContentItem} contentItem
-   * @param {[int]} index The position of the new item within the Row or Column.
-   *                      If no index is provided the item will be added to the end
-   * @param {[bool]} _$suspendResize If true the items won't be resized. This will leave the item in
-   *                                 an inconsistent state and is only intended to be used if multiple
-   *                                 children need to be added in one go and resize is called afterwards
-   *
-   * @returns {void}
+   * @param contentItem
+   * @param index The position of the new item within the Row or Column.
+   *              If no index is provided the item will be added to the end
+   * @param _$suspendResize If true the items won't be resized. This will leave the item in
+   *                           an inconsistent state and is only intended to be used if multiple
+   *                           children need to be added in one go and resize is called afterwards
    */
-  addChild(contentItem, index, _$suspendResize) {
+  addChild(
+    contentItem: AbstractContentItem,
+    index?: number,
+    _$suspendResize?: boolean
+  ) {
     var newItemSize, itemSize, i, splitterElement;
 
     contentItem = this.layoutManager._$normalizeContentItem(contentItem, this);
@@ -97,14 +111,12 @@ export default class RowOrColumn extends AbstractContentItem {
   /**
    * Removes a child of this element
    *
-   * @param   {lm.items.AbstractContentItem} contentItem
-   * @param   {boolean} keepChild   If true the child will be removed, but not destroyed
-   *
-   * @returns {void}
+   * @param contentItem
+   * @param keepChild   If true the child will be removed, but not destroyed
    */
-  removeChild(contentItem, keepChild) {
+  removeChild(contentItem: AbstractContentItem, keepChild: boolean) {
     var removedItemSize = contentItem.config[this._dimension],
-      index = utils.indexOf(contentItem, this.contentItems),
+      index = this.contentItems.indexOf(contentItem),
       splitterIndex = Math.max(index - 1, 0),
       i,
       childItem;
@@ -153,14 +165,12 @@ export default class RowOrColumn extends AbstractContentItem {
   /**
    * Replaces a child of this Row or Column with another contentItem
    *
-   * @param   {lm.items.AbstractContentItem} oldChild
-   * @param   {lm.items.AbstractContentItem} newChild
-   *
-   * @returns {void}
+   * @param oldChild
+   * @param newChild
    */
-  replaceChild(oldChild, newChild) {
+  replaceChild(oldChild: AbstractContentItem, newChild: AbstractContentItem) {
     var size = oldChild.config[this._dimension];
-    AbstractContentItem.prototype.replaceChild.call(this, oldChild, newChild);
+    super.replaceChild(oldChild, newChild);
     newChild.config[this._dimension] = size;
     this.callDownwards('setSize');
     this.emitBubblingEvent('stateChanged');
@@ -168,8 +178,6 @@ export default class RowOrColumn extends AbstractContentItem {
 
   /**
    * Called whenever the dimensions of this item or one of its parents change
-   *
-   * @returns {void}
    */
   setSize() {
     if (this.contentItems.length > 0) {
@@ -184,10 +192,6 @@ export default class RowOrColumn extends AbstractContentItem {
    * Invoked recursively by the layout manager. AbstractContentItem.init appends
    * the contentItem's DOM elements to the container, RowOrColumn init adds splitters
    * in between them
-   *
-   * @package private
-   * @override AbstractContentItem._$init
-   * @returns {void}
    */
   _$init() {
     if (this.isInitialised === true) return;
@@ -206,9 +210,6 @@ export default class RowOrColumn extends AbstractContentItem {
    * absolute pixel values and applies them to the children's DOM elements
    *
    * Assigns additional pixels to counteract Math.floor
-   *
-   * @private
-   * @returns {void}
    */
   _setAbsoluteSizes() {
     var i,
@@ -234,14 +235,12 @@ export default class RowOrColumn extends AbstractContentItem {
    * @returns {object} - Set with absolute sizes and additional pixels.
    */
   _calculateAbsoluteSizes() {
-    var i,
-      totalSplitterSize = (this.contentItems.length - 1) * this._splitterSize,
-      totalWidth = this.element.width(),
-      totalHeight = this.element.height(),
-      totalAssigned = 0,
-      additionalPixel,
-      itemSize,
-      itemSizes = [];
+    const totalSplitterSize =
+      (this.contentItems.length - 1) * this._splitterSize;
+    let totalWidth = this.element.width() ?? 0;
+    let totalHeight = this.element.height() ?? 0;
+    let totalAssigned = 0;
+    const itemSizes: number[] = [];
 
     if (this._isColumn) {
       totalHeight -= totalSplitterSize;
@@ -249,30 +248,24 @@ export default class RowOrColumn extends AbstractContentItem {
       totalWidth -= totalSplitterSize;
     }
 
-    for (i = 0; i < this.contentItems.length; i++) {
-      if (this._isColumn) {
-        itemSize = Math.floor(
-          totalHeight * (this.contentItems[i].config.height / 100)
-        );
-      } else {
-        itemSize = Math.floor(
-          totalWidth * (this.contentItems[i].config.width / 100)
-        );
-      }
+    for (let i = 0; i < this.contentItems.length; i++) {
+      const itemSize = this._isColumn
+        ? Math.floor(totalHeight * (this.contentItems[i].config.height / 100))
+        : Math.floor(totalWidth * (this.contentItems[i].config.width / 100));
 
       totalAssigned += itemSize;
       itemSizes.push(itemSize);
     }
 
-    additionalPixel = Math.floor(
+    const additionalPixel = Math.floor(
       (this._isColumn ? totalHeight : totalWidth) - totalAssigned
     );
 
     return {
-      itemSizes: itemSizes,
-      additionalPixel: additionalPixel,
-      totalWidth: totalWidth,
-      totalHeight: totalHeight,
+      itemSizes,
+      additionalPixel,
+      totalWidth,
+      totalHeight,
     };
   }
 
@@ -293,17 +286,13 @@ export default class RowOrColumn extends AbstractContentItem {
    *        If there are items without set dimensions, distribute the remainder to 100 evenly between them
    *        If there are no items without set dimensions, increase all items sizes relative to
    *        their original size so that they add up to 100
-   *
-   * @private
-   * @returns {void}
    */
   _calculateRelativeSizes() {
-    var i,
-      total = 0,
-      itemsWithoutSetDimension = [],
-      dimension = this._isColumn ? 'height' : 'width';
+    let total = 0;
+    const itemsWithoutSetDimension: AbstractContentItem[] = [];
+    const dimension = this._isColumn ? 'height' : 'width';
 
-    for (i = 0; i < this.contentItems.length; i++) {
+    for (let i = 0; i < this.contentItems.length; i++) {
       if (this.contentItems[i].config[dimension] !== undefined) {
         total += this.contentItems[i].config[dimension];
       } else {
@@ -323,7 +312,7 @@ export default class RowOrColumn extends AbstractContentItem {
      * Allocate the remaining size to the items without a set dimension
      */
     if (Math.round(total) < 100 && itemsWithoutSetDimension.length > 0) {
-      for (i = 0; i < itemsWithoutSetDimension.length; i++) {
+      for (let i = 0; i < itemsWithoutSetDimension.length; i++) {
         itemsWithoutSetDimension[i].config[dimension] =
           (100 - total) / itemsWithoutSetDimension.length;
       }
@@ -338,7 +327,7 @@ export default class RowOrColumn extends AbstractContentItem {
      * This will be reset in the next step
      */
     if (Math.round(total) > 100) {
-      for (i = 0; i < itemsWithoutSetDimension.length; i++) {
+      for (let i = 0; i < itemsWithoutSetDimension.length; i++) {
         itemsWithoutSetDimension[i].config[dimension] = 50;
         total += 50;
       }
@@ -347,7 +336,7 @@ export default class RowOrColumn extends AbstractContentItem {
     /**
      * Set every items size relative to 100 relative to its size to total
      */
-    for (i = 0; i < this.contentItems.length; i++) {
+    for (let i = 0; i < this.contentItems.length; i++) {
       this.contentItems[i].config[dimension] =
         (this.contentItems[i].config[dimension] / total) * 100;
     }
@@ -357,36 +346,30 @@ export default class RowOrColumn extends AbstractContentItem {
 
   /**
    * Adjusts the column widths to respect the dimensions minItemWidth if set.
-   * @returns {}
    */
   _respectMinItemWidth() {
-    var minItemWidth = this.layoutManager.config.dimensions
-        ? this.layoutManager.config.dimensions.minItemWidth || 0
-        : 0,
-      sizeData = null,
-      entriesOverMin = [],
-      totalOverMin = 0,
-      totalUnderMin = 0,
-      remainingWidth = 0,
-      itemSize = 0,
-      contentItem = null,
-      reducePercent,
-      reducedWidth,
-      allEntries = [],
-      entry;
+    const minItemWidth = this.layoutManager.config.dimensions
+      ? this.layoutManager.config.dimensions.minItemWidth || 0
+      : 0;
+    const entriesOverMin = [];
+    let totalOverMin = 0;
+    let totalUnderMin = 0;
+    let remainingWidth = 0;
+    const allEntries = [];
+    let entry;
 
     if (this._isColumn || !minItemWidth || this.contentItems.length <= 1) {
       return;
     }
 
-    sizeData = this._calculateAbsoluteSizes();
+    const sizeData = this._calculateAbsoluteSizes();
 
     /**
      * Figure out how much we are under the min item size total and how much room we have to use.
      */
-    for (var i = 0; i < this.contentItems.length; i++) {
-      contentItem = this.contentItems[i];
-      itemSize = sizeData.itemSizes[i];
+    for (let i = 0; i < this.contentItems.length; i++) {
+      const contentItem = this.contentItems[i];
+      const itemSize = sizeData.itemSizes[i];
 
       if (itemSize < minItemWidth) {
         totalUnderMin += minItemWidth - itemSize;
@@ -410,11 +393,13 @@ export default class RowOrColumn extends AbstractContentItem {
     /**
      * Evenly reduce all columns that are over the min item width to make up the difference.
      */
-    reducePercent = totalUnderMin / totalOverMin;
+    const reducePercent = totalUnderMin / totalOverMin;
     remainingWidth = totalUnderMin;
-    for (i = 0; i < entriesOverMin.length; i++) {
+    for (let i = 0; i < entriesOverMin.length; i++) {
       entry = entriesOverMin[i];
-      reducedWidth = Math.round((entry.width - minItemWidth) * reducePercent);
+      const reducedWidth = Math.round(
+        (entry.width - minItemWidth) * reducePercent
+      );
       remainingWidth -= reducedWidth;
       entry.width -= reducedWidth;
     }
@@ -429,7 +414,7 @@ export default class RowOrColumn extends AbstractContentItem {
     /**
      * Set every items size relative to 100 relative to its size to total
      */
-    for (i = 0; i < this.contentItems.length; i++) {
+    for (let i = 0; i < this.contentItems.length; i++) {
       this.contentItems[i].config.width =
         (allEntries[i].width / sizeData.totalWidth) * 100;
     }
@@ -441,30 +426,25 @@ export default class RowOrColumn extends AbstractContentItem {
    *
    * What it doesn't do though is append the splitter to the DOM
    *
-   * @param   {Int} index The position of the splitter
-   *
-   * @returns {lm.controls.Splitter}
+   * @param index The position of the splitter
+   * @returns The created splitter
    */
-  _createSplitter(index) {
+  _createSplitter(index: number): Splitter {
     var splitter;
     splitter = new controls.Splitter(
       this._isColumn,
       this._splitterSize,
       this._splitterGrabSize
     );
-    splitter.on(
-      'drag',
-      utils.fnBind(this._onSplitterDrag, this, [splitter]),
-      this
-    );
+    splitter.on('drag', this._onSplitterDrag.bind(this, splitter), this);
     splitter.on(
       'dragStop',
-      utils.fnBind(this._onSplitterDragStop, this, [splitter]),
+      this._onSplitterDragStop.bind(this, splitter),
       this
     );
     splitter.on(
       'dragStart',
-      utils.fnBind(this._onSplitterDragStart, this, [splitter]),
+      this._onSplitterDragStart.bind(this, splitter),
       this
     );
     this._splitter.splice(index, 0, splitter);
@@ -477,12 +457,16 @@ export default class RowOrColumn extends AbstractContentItem {
    * before and after the splitters, both of which are affected if the
    * splitter is moved
    *
-   * @param   {lm.controls.Splitter} splitter
+   * @param splitter
    *
-   * @returns {Object} A map of contentItems that the splitter affects
+   * @returns A map of contentItems that the splitter affects
    */
-  _getItemsForSplitter(splitter) {
-    var index = utils.indexOf(splitter, this._splitter);
+  _getItemsForSplitter(splitter: Splitter) {
+    const index = this._splitter.indexOf(splitter);
+
+    if (index < 0) {
+      throw new Error('Splitter not found in RowOrColumn');
+    }
 
     return {
       before: this.contentItems[index],
@@ -495,7 +479,7 @@ export default class RowOrColumn extends AbstractContentItem {
    * @param item
    * @private
    */
-  _getMinimumDimensions(arr) {
+  _getMinimumDimensions(arr: { minWidth?: number; minHeight?: number }[]) {
     var minWidth = 0,
       minHeight = 0;
 
@@ -511,22 +495,24 @@ export default class RowOrColumn extends AbstractContentItem {
    * Invoked when a splitter's dragListener fires dragStart. Calculates the splitters
    * movement area once (so that it doesn't need calculating on every mousemove event)
    *
-   * @param   {lm.controls.Splitter} splitter
-   *
-   * @returns {void}
+   * @param splitter
    */
-  _onSplitterDragStart(splitter) {
-    var items = this._getItemsForSplitter(splitter),
-      minSize = this.layoutManager.config.dimensions[
-        this._isColumn ? 'minItemHeight' : 'minItemWidth'
-      ];
+  _onSplitterDragStart(splitter: Splitter) {
+    const items = this._getItemsForSplitter(splitter);
+    const minSize = this.layoutManager.config.dimensions[
+      this._isColumn ? 'minItemHeight' : 'minItemWidth'
+    ];
 
-    var beforeMinDim = this._getMinimumDimensions(items.before.config.content);
+    var beforeMinDim = this._getMinimumDimensions(
+      items.before.config.content ?? []
+    );
     var beforeMinSize = this._isColumn
       ? beforeMinDim.vertical
       : beforeMinDim.horizontal;
 
-    var afterMinDim = this._getMinimumDimensions(items.after.config.content);
+    var afterMinDim = this._getMinimumDimensions(
+      items.after.config.content ?? []
+    );
     var afterMinSize = this._isColumn
       ? afterMinDim.vertical
       : afterMinDim.horizontal;
@@ -534,23 +520,29 @@ export default class RowOrColumn extends AbstractContentItem {
     this._splitterPosition = 0;
     this._splitterMinPosition =
       -1 *
-      (items.before.element[this._dimension]() - (beforeMinSize || minSize));
+      ((items.before.element[this._dimension]() ?? 0) -
+        (beforeMinSize || minSize));
     this._splitterMaxPosition =
-      items.after.element[this._dimension]() - (afterMinSize || minSize);
+      (items.after.element[this._dimension]() ?? 0) - (afterMinSize || minSize);
   }
 
   /**
    * Invoked when a splitter's DragListener fires drag. Updates the splitters DOM position,
    * but not the sizes of the elements the splitter controls in order to minimize resize events
    *
-   * @param   {lm.controls.Splitter} splitter
-   * @param   {Int} offsetX  Relative pixel values to the splitters original position. Can be negative
-   * @param   {Int} offsetY  Relative pixel values to the splitters original position. Can be negative
-   *
-   * @returns {void}
+   * @param splitter
+   * @param offsetX  Relative pixel values to the splitters original position. Can be negative
+   * @param offsetY  Relative pixel values to the splitters original position. Can be negative
    */
-  _onSplitterDrag(splitter, offsetX, offsetY) {
-    var offset = this._isColumn ? offsetY : offsetX;
+  _onSplitterDrag(splitter: Splitter, offsetX: number, offsetY: number) {
+    const offset = this._isColumn ? offsetY : offsetX;
+
+    if (
+      this._splitterMaxPosition == null ||
+      this._splitterMinPosition == null
+    ) {
+      return;
+    }
 
     if (
       offset > this._splitterMinPosition &&
@@ -567,18 +559,16 @@ export default class RowOrColumn extends AbstractContentItem {
    * on the next animation frame
    *
    * @param   {lm.controls.Splitter} splitter
-   *
-   * @returns {void}
    */
-  _onSplitterDragStop(splitter) {
-    var items = this._getItemsForSplitter(splitter),
-      sizeBefore = items.before.element[this._dimension](),
-      sizeAfter = items.after.element[this._dimension](),
-      splitterPositionInRange =
-        (this._splitterPosition + sizeBefore) / (sizeBefore + sizeAfter),
-      totalRelativeSize =
-        items.before.config[this._dimension] +
-        items.after.config[this._dimension];
+  _onSplitterDragStop(splitter: Splitter) {
+    const items = this._getItemsForSplitter(splitter);
+    const sizeBefore = items.before.element[this._dimension]() ?? 0;
+    const sizeAfter = items.after.element[this._dimension]() ?? 0;
+    const splitterPositionInRange =
+      ((this._splitterPosition ?? 0) + sizeBefore) / (sizeBefore + sizeAfter);
+    const totalRelativeSize =
+      items.before.config[this._dimension] +
+      items.after.config[this._dimension];
 
     items.before.config[this._dimension] =
       splitterPositionInRange * totalRelativeSize;
@@ -590,6 +580,8 @@ export default class RowOrColumn extends AbstractContentItem {
       left: 0,
     });
 
-    utils.animFrame(utils.fnBind(this.callDownwards, this, ['setSize']));
+    utils.animFrame(
+      this.callDownwards.bind(this, 'setSize', undefined, undefined, undefined)
+    );
   }
 }

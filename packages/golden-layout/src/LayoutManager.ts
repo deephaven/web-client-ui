@@ -1,17 +1,32 @@
 import $ from 'jquery';
+import React from 'react';
 import lm from './base.js';
-import type { Config, ConfigOverride } from './config/Config.js';
+import { Config, defaultConfig } from './config/Config.js';
 import type {
   ComponentConfig,
   ItemConfigType,
   ReactComponentConfig,
 } from './config/ItemConfig.js';
 import type ItemContainer from './container/ItemContainer.js';
-import type BrowserPopout from './controls/BrowserPopout.js';
+import BrowserPopout from './controls/BrowserPopout.js';
+import DragSource from './controls/DragSource.js';
+import DragSourceFromEvent from './controls/DragSourceFromEvent.js';
 import DropTargetIndicator from './controls/DropTargetIndicator.js';
 import TransitionIndicator from './controls/TransitionIndicator.js';
-import AbstractContentItem, { ItemArea } from './items/AbstractContentItem.js';
+import ConfigurationError from './errors/ConfigurationError.js';
+import AbstractContentItem, {
+  ItemArea,
+  isStack,
+} from './items/AbstractContentItem.js';
+import Component from './items/Component.js';
+import Root from './items/Root.js';
+import RowOrColumn from './items/RowOrColumn.js';
+import Stack from './items/Stack.js';
+import ConfigMinifier from './utils/ConfigMinifier.js';
 import EventEmitter from './utils/EventEmitter.js';
+import EventHub from './utils/EventHub.js';
+import ReactComponentHandler from './utils/ReactComponentHandler.js';
+import { getQueryStringParam, getUniqueId, stripTags } from './utils/utils.js';
 
 export type ComponentConstructor<
   C extends ComponentConfig = ComponentConfig
@@ -40,7 +55,7 @@ export default class LayoutManager extends EventEmitter {
    * @returns minified config
    */
   static minifyConfig(config: Config): Record<string, unknown> {
-    return new lm.utils.ConfigMinifier().minifyConfig(config);
+    return new ConfigMinifier().minifyConfig(config);
   }
 
   /**
@@ -51,34 +66,37 @@ export default class LayoutManager extends EventEmitter {
    * @returns the original configuration
    */
   static unminifyConfig(config: Record<string, unknown>): Config {
-    return new lm.utils.ConfigMinifier().unminifyConfig(config);
+    return new ConfigMinifier().unminifyConfig(config);
   }
 
   isInitialised = false;
   private _isFullPage = false;
-  private _resizeTimeoutId = null;
+  private _resizeTimeoutId: number | undefined;
 
   private _components: {
-    [name: string]: ComponentConstructor;
-  } = { 'lm-react-component': lm.utils.ReactComponentHandler };
+    [name: string]:
+      | ComponentConstructor
+      | ComponentConstructor<ReactComponentConfig>
+      | React.Component;
+  } = { 'lm-react-component': ReactComponentHandler };
 
   private _fallbackComponent?: ComponentConstructor;
   private _itemAreas: ItemArea[] = [];
-  private _maximisedItem = null;
+  private _maximisedItem: AbstractContentItem | null = null;
   private _maximisePlaceholder = $('<div class="lm_maximise_place"></div>');
   private _creationTimeoutPassed = false;
   private _subWindowsCreated = false;
-  private _dragSources = [];
+  private _dragSources: DragSource[] = [];
   private _updatingColumnsResponsive = false;
   private _firstLoad = true;
 
   width: number | null = null;
   height: number | null = null;
-  root: AbstractContentItem = null;
+  root!: Root; // This will be created after init is called.
   openPopouts: BrowserPopout[] = [];
   selectedItem: AbstractContentItem | null = null;
   isSubWindow = false;
-  eventHub = new lm.utils.EventHub(this);
+  eventHub = new EventHub(this);
   config: Config;
   container: JQuery<HTMLElement>;
   private _originalContainer: JQuery<HTMLElement> | HTMLElement | undefined;
@@ -87,7 +105,7 @@ export default class LayoutManager extends EventEmitter {
   tabDropPlaceholder = $('<div class="lm_drop_tab_placeholder"></div>');
 
   private _typeToItem: {
-    [type: string]: typeof AbstractContentItem;
+    [type: string]: new (...args: any[]) => AbstractContentItem;
   };
 
   constructor(
@@ -110,10 +128,10 @@ export default class LayoutManager extends EventEmitter {
     }
 
     this._typeToItem = {
-      column: lm.items.RowOrColumn.bind(this, true),
-      row: lm.items.RowOrColumn.bind(this, false),
-      stack: lm.items.Stack,
-      component: lm.items.Component,
+      column: RowOrColumn.bind(this, true),
+      row: RowOrColumn.bind(this, false),
+      stack: Stack,
+      component: Component,
     };
   }
 
@@ -132,7 +150,10 @@ export default class LayoutManager extends EventEmitter {
    * @param constructor
    * @returns cleanup function to deregister component
    */
-  registerComponent(name: string, constructor: ComponentConstructor) {
+  registerComponent(
+    name: string,
+    constructor: ComponentConstructor | React.Component
+  ) {
     if (
       typeof constructor !== 'function' &&
       (constructor == null ||
@@ -177,7 +198,7 @@ export default class LayoutManager extends EventEmitter {
       throw new Error("Can't create config, layout not yet initialised");
     }
 
-    if (root && !(root instanceof lm.items.AbstractContentItem)) {
+    if (root && !(root instanceof AbstractContentItem)) {
       throw new Error('Root must be a ContentItem');
     }
 
@@ -188,15 +209,17 @@ export default class LayoutManager extends EventEmitter {
       settings: { ...this.config.settings },
       dimensions: { ...this.config.dimensions },
       labels: { ...this.config.labels },
+      content: [],
     };
 
     /*
      * Content
      */
-    config.content = [];
     const next = function (
-      configNode: ComponentConfig,
-      item: AbstractContentItem
+      configNode: ComponentConfig & { [key: string]: unknown },
+      item: AbstractContentItem & {
+        config: Record<string, unknown>;
+      }
     ) {
       /**
        *
@@ -227,16 +250,31 @@ export default class LayoutManager extends EventEmitter {
         configNode.content = [];
 
         for (let i = 0; i < item.contentItems.length; i++) {
-          configNode.content[i] = {};
-          next(configNode.content[i], item.contentItems[i]);
+          configNode.content[i] = {} as ItemConfigType;
+          next(
+            configNode.content[i] as ComponentConfig & Record<string, unknown>,
+            item.contentItems[i] as AbstractContentItem & {
+              config: Record<string, unknown>;
+            }
+          );
         }
       }
     };
 
     if (root) {
-      next(config, { contentItems: [root] });
+      next(
+        (config as unknown) as ComponentConfig & Record<string, unknown>,
+        { contentItems: [root] } as AbstractContentItem & {
+          config: Record<string, unknown>;
+        }
+      );
     } else {
-      next(config, this.root);
+      next(
+        (config as unknown) as ComponentConfig & Record<string, unknown>,
+        (this.root as unknown) as AbstractContentItem & {
+          config: Record<string, unknown>;
+        }
+      );
     }
 
     /*
@@ -251,7 +289,7 @@ export default class LayoutManager extends EventEmitter {
     /*
      * Add maximised item
      */
-    config.maximisedItemId = this._maximisedItem ? '__glMaximised' : null;
+    config.maximisedItemId = this._maximisedItem ? '__glMaximised' : undefined;
     return config;
   }
 
@@ -297,7 +335,7 @@ export default class LayoutManager extends EventEmitter {
      * If the document isn't ready yet, wait for it.
      */
     if (document.readyState === 'loading' || document.body === null) {
-      $(document).ready(lm.utils.fnBind(this.init, this));
+      $(document).ready(this.init.bind(this));
       return;
     }
 
@@ -307,7 +345,7 @@ export default class LayoutManager extends EventEmitter {
      * with GoldenLayout
      */
     if (this.isSubWindow === true && this._creationTimeoutPassed === false) {
-      setTimeout(lm.utils.fnBind(this.init, this), 7);
+      setTimeout(this.init.bind(this), 7);
       this._creationTimeoutPassed = true;
       return;
     }
@@ -317,7 +355,7 @@ export default class LayoutManager extends EventEmitter {
     }
 
     this._setContainer();
-    this.dropTargetIndicator = new DropTargetIndicator(this.container);
+    this.dropTargetIndicator = new DropTargetIndicator();
     this.transitionIndicator = new TransitionIndicator();
     this.updateSize();
     this._create(this.config);
@@ -345,8 +383,8 @@ export default class LayoutManager extends EventEmitter {
       this.root.callDownwards('setSize', [this.width, this.height]);
 
       if (this._maximisedItem) {
-        this._maximisedItem.element.width(this.container.width());
-        this._maximisedItem.element.height(this.container.height());
+        this._maximisedItem.element.width(this.container.width() ?? 0);
+        this._maximisedItem.element.height(this.container.height() ?? 0);
         this._maximisedItem.callDownwards('setSize');
       }
 
@@ -357,30 +395,24 @@ export default class LayoutManager extends EventEmitter {
   /**
    * Destroys the LayoutManager instance itself as well as every ContentItem
    * within it. After this is called nothing should be left of the LayoutManager.
-   *
-   * @public
-   * @returns {void}
    */
   destroy() {
-    if (this.isInitialised === false) {
+    if (this.isInitialised === false || !this.root) {
       return;
     }
     this._onUnload();
-    $(window).off('resize', this._resizeFunction);
-    $(window).off('unload beforeunload', this._unloadFunction);
+    $(window).off('resize', this._onResize);
+    $(window).off('unload beforeunload', this._onUnload);
     $(window).off('blur.lm').off('focus.lm');
     this.root.callDownwards('_$destroy', [], true);
     this.root.contentItems = [];
     this.tabDropPlaceholder.remove();
-    this.dropTargetIndicator.destroy();
+    this.dropTargetIndicator?.destroy();
     this.transitionIndicator?.destroy();
     this.eventHub.destroy();
 
     this._dragSources.forEach(function (dragSource) {
       dragSource._dragListener.destroy();
-      dragSource._element = null;
-      dragSource._itemConfig = null;
-      dragSource._dragListener = null;
     });
     this._dragSources = [];
   }
@@ -390,19 +422,19 @@ export default class LayoutManager extends EventEmitter {
    * ItemConfiguration object
    *
    * @public
-   * @param   {Object} config ItemConfig
-   * @param   {[ContentItem]} parent The item the newly created item should be a child of
+   * @param config ItemConfig
+   * @param parent The item the newly created item should be a child of
    *
-   * @returns {lm.items.ContentItem}
+   * @returns Created item
    */
-  createContentItem(config, parent) {
+  createContentItem(
+    config: Partial<ComponentConfig> & { type: ComponentConfig['type'] },
+    parent?: AbstractContentItem
+  ) {
     var typeErrorMsg, contentItem;
 
     if (typeof config.type !== 'string') {
-      throw new lm.errors.ConfigurationError(
-        "Missing parameter 'type'",
-        config
-      );
+      throw new ConfigurationError("Missing parameter 'type'", config);
     }
 
     if (config.type === 'react-component') {
@@ -416,9 +448,9 @@ export default class LayoutManager extends EventEmitter {
         config.type +
         "'. " +
         'Valid types are ' +
-        lm.utils.objectKeys(this._typeToItem).join(',');
+        Object.keys(this._typeToItem).join(',');
 
-      throw new lm.errors.ConfigurationError(typeErrorMsg);
+      throw new ConfigurationError(typeErrorMsg);
     }
 
     /**
@@ -428,18 +460,18 @@ export default class LayoutManager extends EventEmitter {
       // If this is a component
       config.type === 'component' &&
       // and it's not already within a stack
-      !(parent instanceof lm.items.Stack) &&
+      !(parent instanceof Stack) &&
       // and we have a parent
       !!parent &&
       // and it's not the topmost item in a new window
-      !(this.isSubWindow === true && parent instanceof lm.items.Root)
+      !(this.isSubWindow === true && parent instanceof Root)
     ) {
       config = {
         type: 'stack',
         width: config.width,
         height: config.height,
         content: [config],
-      };
+      } as ComponentConfig;
     }
 
     contentItem = new this._typeToItem[config.type](this, config, parent);
@@ -449,35 +481,31 @@ export default class LayoutManager extends EventEmitter {
   /**
 	 * Creates a popout window with the specified content and dimensions
 	 *
-	 * @param   {Object|lm.itemsAbstractContentItem} configOrContentItem
+	 * @param configOrContentItem
 	 * @param dimensions A map with width, height, left and top
 	 * @param parentId the id of the element this item will be appended to
 	 *                             when popIn is called
 	 * @param indexInParent The position of this item within its parent element
 
-	 * @returns {lm.controls.BrowserPopout}
+	 * @returns Created popout
 	 */
   createPopout(
-    configOrContentItem,
+    configOrContentItem:
+      | ItemConfigType
+      | AbstractContentItem
+      | ItemConfigType[],
     dimensions?: { width: number; height: number; left: number; top: number },
     parentId?: string,
     indexInParent?: number
-  ) {
-    var config = configOrContentItem,
-      isItem = configOrContentItem instanceof lm.items.AbstractContentItem,
-      self = this,
-      windowLeft,
-      windowTop,
-      offset,
-      parent,
-      child,
-      browserPopout;
-
-    parentId = parentId || null;
+  ): BrowserPopout | undefined {
+    let config = configOrContentItem;
+    let configArray: ItemConfigType[] = [];
+    const isItem = configOrContentItem instanceof AbstractContentItem;
+    const self = this;
 
     if (isItem) {
-      config = this.toConfig(configOrContentItem).content;
-      parentId = lm.utils.getUniqueId();
+      configArray = this.toConfig(configOrContentItem).content;
+      parentId = getUniqueId();
 
       /**
        * If the item is the only component within a stack or for some
@@ -487,33 +515,38 @@ export default class LayoutManager extends EventEmitter {
        * In order to support this we move up the tree until we find something
        * that will remain after the item is being popped out
        */
-      parent = configOrContentItem.parent;
-      child = configOrContentItem;
-      while (parent.contentItems.length === 1 && !parent.isRoot) {
+      let parent = configOrContentItem.parent;
+      let child = configOrContentItem;
+      while (parent?.contentItems.length === 1 && !parent.isRoot) {
+        child = parent;
         parent = parent.parent;
-        child = child.parent;
       }
 
-      parent.addId(parentId);
-      if (isNaN(indexInParent)) {
-        indexInParent = lm.utils.indexOf(child, parent.contentItems);
+      parent?.addId(parentId);
+      if (Number.isNaN(indexInParent)) {
+        indexInParent = parent?.contentItems.indexOf(child);
       }
     } else {
-      if (!(config instanceof Array)) {
-        config = [config];
+      if (!(configOrContentItem instanceof Array)) {
+        configArray = [configOrContentItem];
+      } else {
+        configArray = configOrContentItem;
       }
     }
 
     if (!dimensions && isItem) {
-      windowLeft = window.screenX || window.screenLeft;
-      windowTop = window.screenY || window.screenTop;
-      offset = configOrContentItem.element.offset();
+      const windowLeft = window.screenX || window.screenLeft;
+      const windowTop = window.screenY || window.screenTop;
+      const offset = configOrContentItem.element.offset() ?? {
+        left: 0,
+        top: 0,
+      };
 
       dimensions = {
         left: windowLeft + offset.left,
         top: windowTop + offset.top,
-        width: configOrContentItem.element.width(),
-        height: configOrContentItem.element.height(),
+        width: configOrContentItem.element.width() ?? 0,
+        height: configOrContentItem.element.height() ?? 0,
       };
     }
 
@@ -530,8 +563,12 @@ export default class LayoutManager extends EventEmitter {
       configOrContentItem.remove();
     }
 
-    browserPopout = new lm.controls.BrowserPopout(
-      config,
+    if (!dimensions || !parentId || indexInParent === undefined) {
+      return;
+    }
+
+    const browserPopout = new BrowserPopout(
+      configArray,
       dimensions,
       parentId,
       indexInParent,
@@ -556,14 +593,15 @@ export default class LayoutManager extends EventEmitter {
    * and turns it into a way of creating new ContentItems
    * by 'dragging' the DOM element into the layout
    *
-   * @param   {jQuery DOM element} element
-   * @param   {Object|Function} itemConfig for the new item to be created, or a function which will provide it
-   *
-   * @returns {void}
+   * @param element
+   * @param itemConfig for the new item to be created, or a function which will provide it
    */
-  createDragSource(element, itemConfig) {
+  createDragSource(
+    element: HTMLElement,
+    itemConfig: ComponentConfig | (() => ComponentConfig)
+  ) {
     this.config.settings.constrainDragToContainer = false;
-    var dragSource = new lm.controls.DragSource($(element), itemConfig, this);
+    var dragSource = new DragSource(element, itemConfig, this);
     this._dragSources.push(dragSource);
 
     return dragSource;
@@ -572,14 +610,15 @@ export default class LayoutManager extends EventEmitter {
   /**
    * Create a new item in a dragging state, given a starting mouse event to act as the initial position
    *
-   * @param   {Object|Function} itemConfig for the new item to be created, or a function which will provide it
-   * @param   {MouseEvent} event used as the starting position for the dragProxy
-   *
-   * @returns {void}
+   * @param itemConfig for the new item to be created, or a function which will provide it
+   * @param event used as the starting position for the dragProxy
    */
-  createDragSourceFromEvent(itemConfig, event) {
+  createDragSourceFromEvent(
+    itemConfig: ComponentConfig | (() => ComponentConfig),
+    event: MouseEvent
+  ) {
     this.config.settings.constrainDragToContainer = false;
-    return new lm.controls.DragSourceFromEvent(itemConfig, this, event);
+    return new DragSourceFromEvent(itemConfig, this, event);
   }
 
   /**
@@ -587,13 +626,10 @@ export default class LayoutManager extends EventEmitter {
    * the currently selected item, selects the specified item
    * and emits a selectionChanged event
    *
-   * @param   {lm.item.AbstractContentItem} item#
-   * @param   {[Boolean]} _$silent Wheather to notify the item of its selection
-   * @event    selectionChanged
-   *
-   * @returns {VOID}
+   * @param item
+   * @param _$silent Wheather to notify the item of its selection
    */
-  selectItem(item, _$silent) {
+  selectItem(item: AbstractContentItem, _$silent?: boolean) {
     if (this.config.settings.selectionEnabled !== true) {
       throw new Error(
         'Please set selectionEnabled to true to use this feature'
@@ -620,7 +656,7 @@ export default class LayoutManager extends EventEmitter {
   /*************************
    * PACKAGE PRIVATE
    *************************/
-  _$maximiseItem(contentItem) {
+  _$maximiseItem(contentItem: AbstractContentItem) {
     if (this._maximisedItem !== null) {
       this._$minimiseItem(this._maximisedItem);
     }
@@ -629,19 +665,19 @@ export default class LayoutManager extends EventEmitter {
     contentItem.element.addClass('lm_maximised');
     contentItem.element.after(this._maximisePlaceholder);
     this.root.element.prepend(contentItem.element);
-    contentItem.element.width(this.container.width());
-    contentItem.element.height(this.container.height());
+    contentItem.element.width(this.container.width() ?? 0);
+    contentItem.element.height(this.container.height() ?? 0);
     contentItem.callDownwards('setSize');
     this._maximisedItem.emit('maximised');
     this.emit('stateChanged');
   }
 
-  _$minimiseItem(contentItem) {
+  _$minimiseItem(contentItem: AbstractContentItem) {
     contentItem.element.removeClass('lm_maximised');
     contentItem.removeId('__glMaximised');
     this._maximisePlaceholder.after(contentItem.element);
     this._maximisePlaceholder.remove();
-    contentItem.parent.callDownwards('setSize');
+    contentItem.parent?.callDownwards('setSize');
     this._maximisedItem = null;
     contentItem.emit('minimised');
     this.emit('stateChanged');
@@ -656,10 +692,6 @@ export default class LayoutManager extends EventEmitter {
    * This prevented GoldenLayout popouts from popping in in codepens. The fix is to call
    * _$closeWindow on the child window's gl instance which (after a timeout to disconnect
    * the invoking method from the close call) closes itself.
-   *
-   * @packagePrivate
-   *
-   * @returns {void}
    */
   _$closeWindow() {
     window.setTimeout(function () {
@@ -667,14 +699,12 @@ export default class LayoutManager extends EventEmitter {
     }, 1);
   }
 
-  _$getArea(x: number, y: number): ItemArea {
-    var i,
-      area,
-      smallestSurface = Infinity,
-      mathingArea = null;
+  _$getArea(x: number, y: number) {
+    let smallestSurface = Infinity;
+    let mathingArea = this._itemAreas[0];
 
-    for (i = 0; i < this._itemAreas.length; i++) {
-      area = this._itemAreas[i];
+    for (let i = 0; i < this._itemAreas.length; i++) {
+      const area = this._itemAreas[i];
 
       if (
         x > area.x1 &&
@@ -692,14 +722,15 @@ export default class LayoutManager extends EventEmitter {
   }
 
   _$createRootItemAreas() {
-    var areaSize = 50;
-    var sides = { y2: 'y1', x2: 'x1', y1: 'y2', x1: 'x2' };
-    for (var side in sides) {
-      var area = this.root._$getArea();
-      area.side = side;
-      if (sides[side][1] == '2') area[side] = area[sides[side]] - areaSize;
+    const areaSize = 50;
+    const sides = { y2: 'y1', x2: 'x1', y1: 'y2', x1: 'x2' };
+    for (let key in sides) {
+      const side = key as 'x1' | 'x2' | 'y1' | 'y2';
+      const value = sides[side] as 'x1' | 'x2' | 'y1' | 'y2';
+      const area: ItemArea = { ...this.root._$getArea(), side };
+      if (value[1] == '2') area[side] = area[value] - areaSize;
       else {
-        area[side] = area[sides[side]] + areaSize;
+        area[side] = area[value] + areaSize;
       }
       area.surface = (area.x2 - area.x1) * (area.y2 - area.y1);
       this._itemAreas.push(area);
@@ -707,9 +738,7 @@ export default class LayoutManager extends EventEmitter {
   }
 
   _$calculateItemAreas() {
-    var i,
-      area,
-      allContentItems = this._getAllContentItems();
+    const allContentItems = this._getAllContentItems();
     this._itemAreas = [];
 
     /**
@@ -725,12 +754,13 @@ export default class LayoutManager extends EventEmitter {
     }
     this._$createRootItemAreas();
 
-    for (i = 0; i < allContentItems.length; i++) {
-      if (!allContentItems[i].isStack) {
+    for (let i = 0; i < allContentItems.length; i++) {
+      const item = allContentItems[i];
+      if (!isStack(item)) {
         continue;
       }
 
-      area = allContentItems[i]._$getArea();
+      const area = item._$getArea();
 
       if (area === null) {
         continue;
@@ -738,12 +768,10 @@ export default class LayoutManager extends EventEmitter {
         this._itemAreas = this._itemAreas.concat(area);
       } else {
         this._itemAreas.push(area);
-        var header = {};
-        lm.utils.copy(header, area);
-        lm.utils.copy(
-          header,
-          area.contentItem._contentAreaDimensions.header.highlightArea
-        );
+        let header = {
+          ...area,
+          ...area.contentItem._contentAreaDimensions?.header.highlightArea,
+        };
         header.surface = (header.x2 - header.x1) * (header.y2 - header.y1);
         this._itemAreas.push(header);
       }
@@ -757,8 +785,6 @@ export default class LayoutManager extends EventEmitter {
    *
    * @param contentItemOrConfig
    * @param parent Only necessary when passing in config
-   *
-   * @returns
    */
   _$normalizeContentItem(
     contentItemOrConfig:
@@ -775,7 +801,7 @@ export default class LayoutManager extends EventEmitter {
       contentItemOrConfig = contentItemOrConfig();
     }
 
-    if (contentItemOrConfig instanceof lm.items.AbstractContentItem) {
+    if (contentItemOrConfig instanceof AbstractContentItem) {
       return contentItemOrConfig;
     }
 
@@ -794,11 +820,10 @@ export default class LayoutManager extends EventEmitter {
    * listening for window.close / unload events in a cross browser compatible fashion.
    */
   _$reconcilePopoutWindows() {
-    var openPopouts = [],
-      i;
+    const openPopouts: BrowserPopout[] = [];
 
-    for (i = 0; i < this.openPopouts.length; i++) {
-      if (this.openPopouts[i].getWindow().closed === false) {
+    for (let i = 0; i < this.openPopouts.length; i++) {
+      if (this.openPopouts[i].getWindow()?.closed === false) {
         openPopouts.push(this.openPopouts[i]);
       } else {
         this.emit('windowClosed', this.openPopouts[i]);
@@ -822,7 +847,7 @@ export default class LayoutManager extends EventEmitter {
   _getAllContentItems() {
     const allContentItems: AbstractContentItem[] = [];
 
-    const addChildren = contentItem => {
+    const addChildren = (contentItem: AbstractContentItem) => {
       allContentItems.push(contentItem);
 
       if (contentItem.contentItems instanceof Array) {
@@ -839,17 +864,13 @@ export default class LayoutManager extends EventEmitter {
 
   /**
    * Binds to DOM/BOM events on init
-   *
-   * @private
-   *
-   * @returns {void}
    */
   _bindEvents() {
     if (this._isFullPage) {
-      $(window).resize(this._resizeFunction);
+      $(window).resize(this._onResize);
     }
     $(window)
-      .on('unload beforeunload', this._unloadFunction)
+      .on('unload beforeunload', this._onUnload)
       .on('blur.lm', this._windowBlur)
       .on('focus.lm', this._windowFocus);
   }
@@ -867,17 +888,10 @@ export default class LayoutManager extends EventEmitter {
 
   /**
    * Debounces resize events
-   *
-   * @private
-   *
-   * @returns {void}
    */
   _onResize() {
     clearTimeout(this._resizeTimeoutId);
-    this._resizeTimeoutId = setTimeout(
-      lm.utils.fnBind(this.updateSize, this),
-      100
-    );
+    this._resizeTimeoutId = window.setTimeout(this.updateSize.bind(this), 100);
   }
 
   /**
@@ -885,27 +899,27 @@ export default class LayoutManager extends EventEmitter {
    * derivations. Please note that there's a seperate method (AbstractContentItem._extendItemNode)
    * that deals with the extension of item configs
    *
-   * @param   {Object} config
-   * @static
-   * @returns {Object} config
+   * @param config
+   * @returns config
    */
-  _createConfig(config: ConfigOverride): Config {
-    var windowConfigKey = lm.utils.getQueryStringParam('gl-window');
+  _createConfig(config: Config): Config {
+    var windowConfigKey = getQueryStringParam('gl-window');
 
     if (windowConfigKey) {
       this.isSubWindow = true;
       config = JSON.parse(localStorage.getItem(windowConfigKey) || '{}');
-      config = new lm.utils.ConfigMinifier().unminifyConfig(config);
+      config = new ConfigMinifier().unminifyConfig(config);
       localStorage.removeItem(windowConfigKey);
     }
 
-    config = $.extend(true, {}, lm.config.defaultConfig, config);
+    config = $.extend(true, {}, defaultConfig, config);
 
-    var nextNode = function (node) {
+    var nextNode = function (node: Record<string, unknown>) {
       for (var key in node) {
-        if (key !== 'props' && typeof node[key] === 'object') {
-          nextNode(node[key]);
-        } else if (key === 'type' && node[key] === 'react-component') {
+        const value = node[key];
+        if (key !== 'props' && typeof value === 'object' && value != null) {
+          nextNode(value as Record<string, unknown>);
+        } else if (key === 'type' && value === 'react-component') {
           node.type = 'component';
           node.componentName = 'lm-react-component';
         }
@@ -924,10 +938,6 @@ export default class LayoutManager extends EventEmitter {
   /**
    * This is executed when GoldenLayout detects that it is run
    * within a previously opened popout window.
-   *
-   * @private
-   *
-   * @returns {void}
    */
   _adjustToWindowMode() {
     var popInButton = $(
@@ -939,13 +949,11 @@ export default class LayoutManager extends EventEmitter {
         '</div>'
     );
 
-    popInButton.click(
-      lm.utils.fnBind(function () {
-        this.emit('popIn');
-      }, this)
-    );
+    popInButton.click(() => {
+      this.emit('popIn');
+    });
 
-    document.title = lm.utils.stripTags(this.config.content[0].title);
+    document.title = stripTags(this.config.content[0].title ?? '');
 
     $('head').append($('body link, body style, template, .gl_keep'));
 
@@ -965,20 +973,21 @@ export default class LayoutManager extends EventEmitter {
      * to allow the opening window to interact with
      * it
      */
-    window.__glInstance = this;
+    (window as Window &
+      typeof globalThis & { __glInstance: LayoutManager }).__glInstance = this;
   }
 
   /**
    * Creates Subwindows (if there are any). Throws an error
    * if popouts are blocked.
-   *
-   * @returns {void}
    */
   _createSubWindows() {
-    var i, popout;
+    if (!this.config.openPopouts) {
+      return;
+    }
 
-    for (i = 0; i < this.config.openPopouts.length; i++) {
-      popout = this.config.openPopouts[i];
+    for (let i = 0; i < this.config.openPopouts.length; i++) {
+      const popout = this.config.openPopouts[i];
 
       this.createPopout(
         popout.content,
@@ -1007,10 +1016,6 @@ export default class LayoutManager extends EventEmitter {
 
   /**
    * Determines what element the layout will be created in
-   *
-   * @private
-   *
-   * @returns {void}
    */
   _setContainer() {
     const container = this._getContainer();
@@ -1032,11 +1037,9 @@ export default class LayoutManager extends EventEmitter {
   /**
    * Kicks of the initial, recursive creation chain
    *
-   * @param   {Object} config GoldenLayout Config
-   *
-   * @returns {void}
+   * @param config GoldenLayout Config
    */
-  _create(config) {
+  _create(config: Config) {
     var errorMsg;
 
     if (!(config.content instanceof Array)) {
@@ -1046,19 +1049,15 @@ export default class LayoutManager extends EventEmitter {
         errorMsg = "Configuration parameter 'content' must be an array";
       }
 
-      throw new lm.errors.ConfigurationError(errorMsg, config);
+      throw new ConfigurationError(errorMsg, config);
     }
 
     if (config.content.length > 1) {
       errorMsg = "Top level content can't contain more then one element.";
-      throw new lm.errors.ConfigurationError(errorMsg, config);
+      throw new ConfigurationError(errorMsg, config);
     }
 
-    this.root = new lm.items.Root(
-      this,
-      { content: config.content },
-      this.container
-    );
+    this.root = new Root(this, { content: config.content }, this.container);
     this.root.callDownwards('_$init');
 
     if (config.maximisedItemId === '__glMaximised') {
@@ -1069,8 +1068,6 @@ export default class LayoutManager extends EventEmitter {
   /**
    * Called when the window is closed or the user navigates away
    * from the page
-   *
-   * @returns {void}
    */
   _onUnload() {
     if (this.config.settings.closePopoutsOnUnload === true) {
@@ -1082,8 +1079,6 @@ export default class LayoutManager extends EventEmitter {
 
   /**
    * Adjusts the number of columns to be lower to fit the screen and still maintain minItemWidth.
-   *
-   * @returns {void}
    */
   _adjustColumnsResponsive() {
     // If there is no min width set, or not content items, do nothing.
@@ -1110,7 +1105,7 @@ export default class LayoutManager extends EventEmitter {
     // If they all still fit, do nothing.
     var minItemWidth = this.config.dimensions.minItemWidth;
     var totalMinWidth = columnCount * minItemWidth;
-    if (totalMinWidth <= this.width) {
+    if (this.width == null || totalMinWidth <= this.width) {
       return;
     }
 
@@ -1136,7 +1131,7 @@ export default class LayoutManager extends EventEmitter {
   /**
    * Determines if responsive layout should be used.
    *
-   * @returns {bool} - True if responsive layout should be used; otherwise false.
+   * @returns True if responsive layout should be used; otherwise false.
    */
   _useResponsiveLayout() {
     return (
@@ -1148,31 +1143,31 @@ export default class LayoutManager extends EventEmitter {
 
   /**
    * Adds all children of a node to another container recursively.
-   * @param {object} container - Container to add child content items to.
-   * @param {object} node - Node to search for content items.
-   * @returns {void}
+   * @param container - Container to add child content items to.
+   * @param node - Node to search for content items.
    */
-  _addChildContentItemsToContainer(container, node) {
+  _addChildContentItemsToContainer(
+    container: AbstractContentItem,
+    node: AbstractContentItem
+  ) {
     if (node.type === 'stack') {
       node.contentItems.forEach(function (item) {
         container.addChild(item);
         node.removeChild(item, true);
       });
     } else {
-      node.contentItems.forEach(
-        lm.utils.fnBind(function (item) {
-          this._addChildContentItemsToContainer(container, item);
-        }, this)
-      );
+      node.contentItems.forEach(item => {
+        this._addChildContentItemsToContainer(container, item);
+      });
     }
   }
 
   /**
    * Finds all the stack containers.
-   * @returns {array} - The found stack containers.
+   * @returns The found stack containers.
    */
   _findAllStackContainers() {
-    var stackContainers = [];
+    const stackContainers: Stack[] = [];
     this._findAllStackContainersRecursive(stackContainers, this.root);
 
     return stackContainers;
@@ -1181,20 +1176,19 @@ export default class LayoutManager extends EventEmitter {
   /**
    * Finds all the stack containers.
    *
-   * @param {array} - Set of containers to populate.
-   * @param {object} - Current node to process.
-   *
-   * @returns {void}
+   * @param stackContainers Set of containers to populate.
+   * @param node Current node to process.
    */
-  _findAllStackContainersRecursive(stackContainers, node) {
-    node.contentItems.forEach(
-      lm.utils.fnBind(function (item) {
-        if (item.type == 'stack') {
-          stackContainers.push(item);
-        } else if (!item.isComponent) {
-          this._findAllStackContainersRecursive(stackContainers, item);
-        }
-      }, this)
-    );
+  _findAllStackContainersRecursive(
+    stackContainers: Stack[],
+    node: AbstractContentItem
+  ) {
+    node.contentItems.forEach(item => {
+      if (isStack(item)) {
+        stackContainers.push(item);
+      } else if (!item.isComponent) {
+        this._findAllStackContainersRecursive(stackContainers, item);
+      }
+    });
   }
 }

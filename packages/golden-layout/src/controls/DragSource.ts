@@ -13,10 +13,10 @@ import DragProxy from './DragProxy.js';
  * @param layoutManager
  */
 export default class DragSource {
-  private _element: HTMLElement;
-  private _itemConfig: ItemConfigType | (() => ItemConfigType);
-  private _layoutManager: LayoutManager;
-  private _dragListener: DragListener;
+  _element: HTMLElement;
+  _itemConfig: ItemConfigType | (() => ItemConfigType);
+  _layoutManager: LayoutManager;
+  _dragListener: DragListener;
 
   constructor(
     element: HTMLElement,

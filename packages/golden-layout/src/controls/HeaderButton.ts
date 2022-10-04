@@ -6,13 +6,13 @@ export default class HeaderButton {
 
   private _header: Header;
 
-  private _action: (e: JQuery.Event) => void;
+  private _action: (e: Event) => void;
 
   constructor(
     header: Header,
-    label: string,
+    label: string | undefined,
     cssClass: string,
-    action: (e: JQuery.Event) => void
+    action: (e: Event) => void
   ) {
     this._header = header;
     this.element = $(

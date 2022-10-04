@@ -75,7 +75,7 @@ export default class ReactComponentHandler {
    * Hooks into React's state management and applies the componentstate
    * to GoldenLayout
    */
-  _onUpdate(nextProps: unknown, nextState: string) {
+  _onUpdate(nextProps: unknown, nextState: Record<string, unknown>) {
     this._container.setState(nextState);
     this._originalComponentWillUpdate?.call(
       this._reactComponent,

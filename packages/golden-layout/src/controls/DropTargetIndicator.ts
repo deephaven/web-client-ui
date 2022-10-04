@@ -1,5 +1,4 @@
 import $ from 'jquery';
-import type { ItemArea } from '../items/AbstractContentItem.js';
 
 export default class DropTargetIndicator {
   private static _template =
@@ -15,7 +14,7 @@ export default class DropTargetIndicator {
     this.element.remove();
   }
 
-  highlightArea(area: ItemArea) {
+  highlightArea(area: { x1: number; x2: number; y1: number; y2: number }) {
     this.element
       .css({
         left: area.x1,

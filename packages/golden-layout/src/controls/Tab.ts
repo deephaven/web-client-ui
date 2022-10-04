@@ -1,5 +1,6 @@
 import $ from 'jquery';
 import type AbstractContentItem from '../items/AbstractContentItem.js';
+import { isComponent } from '../items/AbstractContentItem.js';
 import type LayoutManager from '../LayoutManager.js';
 import DragListener from '../utils/DragListener.js';
 import DragProxy from './DragProxy.js';
@@ -80,7 +81,7 @@ export default class Tab {
     this.contentItem.emit('tab', this);
     this.contentItem.layoutManager.emit('tabCreated', this);
 
-    if (this.contentItem.isComponent) {
+    if (isComponent(this.contentItem)) {
       // add focus class to tab when content
       this.contentItem.container._contentElement
         .on('focusin click', this._onTabContentFocusIn)
@@ -131,7 +132,7 @@ export default class Tab {
     this.element[0].removeEventListener('click', this._onTabClick);
     this.element[0].removeEventListener('auxclick', this._onTabClick);
     this.closeElement[0].removeEventListener('click', this._onCloseClick);
-    if (this.contentItem.isComponent) {
+    if (isComponent(this.contentItem)) {
       this.contentItem.container._contentElement.off();
     }
     if (this._dragListener) {
@@ -180,11 +181,10 @@ export default class Tab {
    * assume that the surrogate already propagated from triggering the native event and prevent that from happening
    * again here. This technically gets the ordering wrong w.r.t. to `.trigger()` (in which the bubbling surrogate
    * propagates *after* the non-bubbling base), but that seems less bad than duplication."
-   *
-   * @param event
    */
   _onTabContentFocusIn() {
     if (
+      isComponent(this.contentItem) &&
       !this.contentItem.container._contentElement[0].contains(
         document.activeElement
       )
@@ -206,6 +206,7 @@ export default class Tab {
    */
   _onTabContentFocusOut() {
     if (
+      isComponent(this.contentItem) &&
       !this.contentItem.container._contentElement[0].contains(
         document.activeElement
       )
@@ -219,15 +220,18 @@ export default class Tab {
    *
    * @param event
    */
-  _onTabClick(event: MouseEvent) {
+  _onTabClick(event?: MouseEvent) {
     // left mouse button or tap
     if (!event || event.button === 0) {
       var activeContentItem = this.header.parent.getActiveContentItem();
-      if (this.contentItem !== activeContentItem) {
+      if (
+        this.contentItem !== activeContentItem &&
+        isComponent(this.contentItem)
+      ) {
         this.header.parent.setActiveContentItem(this.contentItem);
         this.contentItem.container.emit('tabClicked');
       } else if (
-        this.contentItem.isComponent &&
+        isComponent(this.contentItem) &&
         !this.contentItem.container._contentElement[0].contains(
           document.activeElement
         )
@@ -265,7 +269,7 @@ export default class Tab {
    */
   _onCloseClick(event: Event) {
     event.stopPropagation();
-    if (this.contentItem.isComponent) {
+    if (isComponent(this.contentItem)) {
       this.contentItem.container.close();
     } else {
       this.header.parent.removeChild(this.contentItem);

@@ -5,12 +5,22 @@ export type Config = {
   dimensions: Dimensions;
   labels: Labels;
   content: ItemConfigType[];
+  maximisedItemId?: string;
+  openPopouts?: PopoutConfig[];
 };
 
-export type ConfigOverride = {
-  settings?: Partial<Settings>;
-  dimensions?: Partial<Dimensions>;
-  labels?: Partial<Labels>;
+export type PopoutConfig = Config & {
+  parentId: string;
+  indexInParent: number;
+  dimensions: Dimensions & {
+    width: number;
+
+    height: number;
+
+    left: number;
+
+    top: number;
+  };
 };
 
 export interface Settings {
@@ -98,6 +108,8 @@ export interface Dimensions {
    */
   borderWidth: number;
 
+  borderGrabWidth: number;
+
   /**
    * The minimum height an item can be resized to (in pixel).
    * Default: 10
@@ -154,6 +166,14 @@ export interface Labels {
    * Default: 'open in new window'
    */
   popout: string;
+
+  tabDropdown: string;
+
+  tabNextLabel: string;
+
+  tabPreviousLabel: string;
+
+  popin: string;
 }
 
 export const defaultConfig: Config = Object.freeze({

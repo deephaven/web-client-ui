@@ -4,21 +4,25 @@ import {
   isGLComponentConfig,
   ComponentConfig,
 } from '../config/ItemConfig.js';
+import type Tab from '../controls/Tab.js';
 import type AbstractContentItem from '../items/AbstractContentItem.js';
+import type Component from '../items/Component.js';
 import type LayoutManager from '../LayoutManager.js';
 import EventEmitter from '../utils/EventEmitter.js';
 
 export default class ItemContainer<
   C extends ItemConfigType = ComponentConfig
 > extends EventEmitter {
-  width?: number;
-  height?: number;
+  width: number = 0;
+  height: number = 0;
 
   title?: string;
 
-  parent: AbstractContentItem;
+  parent: Component;
 
   layoutManager: LayoutManager;
+
+  tab?: Tab;
 
   _config: C;
 
@@ -34,11 +38,7 @@ export default class ItemContainer<
 
   _contentElement: JQuery<HTMLElement>;
 
-  constructor(
-    config: C,
-    parent: AbstractContentItem,
-    layoutManager: LayoutManager
-  ) {
+  constructor(config: C, parent: Component, layoutManager: LayoutManager) {
     super();
 
     this.title = isGLComponentConfig(config) ? config.componentName : '';
@@ -98,19 +98,23 @@ export default class ItemContainer<
    * @returns resizeSuccesful
    */
   setSize(width: number, height: number) {
-    let rowOrColumn = this.parent;
-    let rowOrColumnChild = this;
+    let rowOrColumn: AbstractContentItem | null = this.parent;
+    let rowOrColumnChild: AbstractContentItem | null = null;
 
-    while (!rowOrColumn.isColumn && !rowOrColumn.isRow) {
+    while (rowOrColumn && !rowOrColumn.isColumn && !rowOrColumn.isRow) {
       rowOrColumnChild = rowOrColumn;
       rowOrColumn = rowOrColumn.parent;
 
       /**
        * No row or column has been found
        */
-      if (rowOrColumn.isRoot) {
+      if (rowOrColumn?.isRoot) {
         return false;
       }
+    }
+
+    if (!rowOrColumn || !rowOrColumnChild) {
+      return false;
     }
 
     const direction = rowOrColumn.isColumn ? 'height' : 'width';
@@ -171,7 +175,7 @@ export default class ItemContainer<
    *
    * @param state
    */
-  setState(state: string) {
+  setState(state: Record<string, unknown>) {
     this._config.componentState = state;
     this.parent.emitBubblingEvent('stateChanged');
   }

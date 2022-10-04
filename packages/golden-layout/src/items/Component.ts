@@ -4,6 +4,7 @@ import errors from '../errors/index.js';
 import type LayoutManager from '../LayoutManager.js';
 import type { ComponentConfig } from '../config/ItemConfig.js';
 import ItemContainer from '../container/ItemContainer.js';
+import type { ComponentConstructor } from '../LayoutManager.js';
 
 /**
  * @param layoutManager
@@ -26,13 +27,14 @@ export default class Component extends AbstractContentItem {
     config: ComponentConfig,
     parent: AbstractContentItem
   ) {
-    super(layoutManager, config, parent);
+    super(layoutManager, config, parent, $());
     this.config = config;
     this.parent = parent;
 
-    var ComponentConstructor =
-        layoutManager.getComponent(this.config.componentName) ||
-        layoutManager.getFallbackComponent(),
+    const ComponentConstructor =
+        (layoutManager.getComponent(
+          this.config.componentName
+        ) as ComponentConstructor) || layoutManager.getFallbackComponent(),
       componentConfig = $.extend(true, {}, this.config.componentState || {});
 
     if (ComponentConstructor == null) {
