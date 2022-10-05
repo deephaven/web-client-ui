@@ -8,8 +8,10 @@ import dh, { Table, TableViewportSubscription } from '@deephaven/jsapi-shim';
 import { TimeUtils } from '@deephaven/utils';
 import shortid from 'shortid';
 import './TableCsvExporter.scss';
+import Log from '@deephaven/log';
 import IrisGridModel from '../IrisGridModel';
 
+const log = Log.module('TableCsvExporter');
 interface TableCsvExporterProps {
   model: IrisGridModel;
   name: string;
@@ -164,6 +166,21 @@ class TableCsvExporter extends Component<
     this.setState({ errorMessage: null });
   }
 
+  setDownloadPromiseError(error: unknown): void {
+    log.error('CSV download failed', error);
+
+    const { onCancel } = this.props;
+    this.setState({
+      errorMessage: (
+        <p>
+          <FontAwesomeIcon icon={vsWarning} /> CSV download failed,
+          TableCsvExporter rejected promise.
+        </p>
+      ),
+    });
+    onCancel();
+  }
+
   handleDownloadClick(): void {
     const {
       model,
@@ -184,12 +201,27 @@ class TableCsvExporter extends Component<
     const snapshotRanges = this.getSnapshotRanges();
     if (this.validateOptionInput()) {
       onDownloadStart();
-      model.export().then(frozenTable => {
-        const tableSubscription = frozenTable.setViewport(0, 0);
-        tableSubscription.getViewportData().then(() => {
-          onDownload(fileName, frozenTable, tableSubscription, snapshotRanges);
+      model
+        .export()
+        .then(frozenTable => {
+          const tableSubscription = frozenTable.setViewport(0, 0);
+          tableSubscription
+            .getViewportData()
+            .then(() => {
+              onDownload(
+                fileName,
+                frozenTable,
+                tableSubscription,
+                snapshotRanges
+              );
+            })
+            .catch(error => {
+              this.setDownloadPromiseError(error);
+            });
+        })
+        .catch(error => {
+          this.setDownloadPromiseError(error);
         });
-      });
     }
   }
 
