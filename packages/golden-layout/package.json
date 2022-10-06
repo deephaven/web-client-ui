@@ -4,9 +4,10 @@
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
   "description": "A multi-screen javascript Layout manager",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "source": "./src/index.ts",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "source": "src/index.ts",
   "type": "module",
   "dependencies": {
     "jquery": "^3.6.0"

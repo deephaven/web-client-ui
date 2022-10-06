@@ -87,9 +87,7 @@ export default class ReactComponentHandler {
 
   /**
    * Retrieves the react class from GoldenLayout's registry
-   *
-   * @private
-   * @returns {React.Class}
+   * @returns react class
    */
   _getReactClass() {
     var componentName = this._container._config.component;
