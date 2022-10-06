@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { generateVarName } from './utils';
 
 test('can open a simple table', async ({ page }) => {
   await page.goto('http://localhost:4000/');
@@ -7,8 +8,9 @@ test('can open a simple table', async ({ page }) => {
   await consoleInput.click();
 
   // Enter a command that creates a table with three columns, showing x/y/z
+  const tableName = generateVarName();
   await page.keyboard.type(
-    `from deephaven import empty_table\nt = empty_table(100).update(["x=i", "y=Math.sin(i)", "z=Math.cos(i)"])`
+    `from deephaven import empty_table\n${tableName} = empty_table(100).update(["x=i", "y=Math.sin(i)", "z=Math.cos(i)"])`
   );
   await page.keyboard.press('Enter');
 

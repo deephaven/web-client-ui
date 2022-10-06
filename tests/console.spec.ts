@@ -16,7 +16,9 @@ test('print commands get logged', async ({ page }) => {
   await page.keyboard.press('Enter');
 
   // Expect the output to show up in the log
-  await expect(page.locator('.console-history .log-message')).toHaveText(
-    message
-  );
+  await expect(
+    await page
+      .locator('.console-history .log-message')
+      .filter({ hasText: message })
+  ).not.toBeNull();
 });

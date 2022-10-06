@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { generateVarName } from './utils';
 
 test('can open a simple figure', async ({ page }) => {
   await page.goto('http://localhost:4000/');
@@ -6,15 +7,21 @@ test('can open a simple figure', async ({ page }) => {
   const consoleInput = page.locator('.console-input');
   await consoleInput.click();
 
+  const tableName = generateVarName();
+  const figureName = generateVarName();
+
   // Enter a command that creates a table with three columns, showing x/y/z
   await page.keyboard.type(
-    `from deephaven import empty_table\nt = empty_table(100).update(["x=i", "y=Math.sin(i)", "z=Math.cos(i)"])`
+    `from deephaven import empty_table\n${tableName} = empty_table(100).update(["x=i", "y=Math.sin(i)", "z=Math.cos(i)"])`
   );
   await page.keyboard.press('Enter');
 
   // Create a figure that uses the table we just created
+  await page.keyboard.type(`from deephaven.plot.figure import Figure`);
+  await page.keyboard.press('Escape');
+  await page.keyboard.press('Shift+Enter');
   await page.keyboard.type(
-    `from deephaven.plot.figure import Figure\nf = Figure().plot_xy(series_name="Test", t=t, x="x", y="y").show()`
+    `${figureName} = Figure().plot_xy(series_name="Test", t=${tableName}, x="x", y="y").show()`
   );
   await page.keyboard.press('Enter');
 
