@@ -30,7 +30,7 @@ type ContentAreaDimensions = {
 };
 
 export interface StackHeaderConfig {
-  show?: 'top' | 'left' | 'right' | 'bottom';
+  show?: boolean | 'top' | 'left' | 'right' | 'bottom';
   popout?: string;
   maximise?: string;
   close?: string;
@@ -52,7 +52,7 @@ export default class Stack extends AbstractContentItem {
   private _dropSegment: string | null = null;
   _contentAreaDimensions: ContentAreaDimensions | null = null;
   private _dropIndex: number | undefined;
-  _side: 'top' | 'left' | 'right' | 'bottom';
+  _side: boolean | 'top' | 'left' | 'right' | 'bottom';
   _sided: boolean = false;
 
   config: ComponentConfig & {
@@ -81,19 +81,16 @@ export default class Stack extends AbstractContentItem {
     this.config = config;
 
     const cfg = layoutManager.config;
-    this._side = 'top';
+    this._side = false;
     this._header = {
       // defaults' reconstruction from old configuration style
-      show:
-        cfg.settings?.hasHeaders && config.hasHeaders !== false
-          ? 'top'
-          : undefined,
+      show: cfg.settings?.hasHeaders && config.hasHeaders !== false,
       popout: cfg.settings?.showPopoutIcon ? cfg.labels?.popout : undefined,
       maximise: cfg.settings?.showMaximiseIcon
         ? cfg.labels?.maximise
         : undefined,
       close: cfg.settings?.showCloseIcon ? cfg.labels?.close : undefined,
-      minimise: cfg.labels?.minimise,
+      minimise: cfg.labels?.minimise ?? undefined,
     };
 
     // load simplified version of header configuration (https://github.com/deepstreamIO/golden-layout/pull/245)
@@ -536,8 +533,8 @@ export default class Stack extends AbstractContentItem {
     if (!(placeholderRect.left < x && x < placeholderRect.right)) {
       // which tab is it over ...
       for (var i = 0; i < tabsLength; i++) {
-        const tabElement = this.header.tabs[i].element;
-        const tabRect = tabElement.get(0)?.getBoundingClientRect();
+        tabElement = this.header.tabs[i].element;
+        tabRect = tabElement.get(0)?.getBoundingClientRect();
         if (tabRect && tabRect.left < x && x < tabRect.right) {
           this._dropIndex = i;
           break;
@@ -548,9 +545,9 @@ export default class Stack extends AbstractContentItem {
       if (tabElement && tabRect && x < tabRect.left + tabRect.width * 0.5) {
         // mostly before an element, insert placeholder before
         tabElement.before(this.layoutManager.tabDropPlaceholder);
-      } else if (tabElement && this._dropIndex != null) {
+      } else if (tabElement) {
         // x is likely after the lhe last item, position after and increase drop index
-        this._dropIndex = Math.min(this._dropIndex + 1, tabsLength);
+        this._dropIndex = Math.min((this._dropIndex ?? 0) + 1, tabsLength);
         tabElement.after(this.layoutManager.tabDropPlaceholder);
       }
     }
@@ -595,12 +592,14 @@ export default class Stack extends AbstractContentItem {
 
     this.header.element.toggle(!!this._header.show);
     this._side = side;
-    this._sided = ['right', 'left'].indexOf(this._side) >= 0;
+    this._sided = ['right', 'left'].indexOf(this._side.toString()) >= 0;
     this.element.removeClass('lm_left lm_right lm_bottom');
     if (this._side) this.element.addClass('lm_' + this._side);
     if (this.element.find('.lm_header').length && this.childElementContainer) {
       const headerPosition =
-        ['right', 'bottom'].indexOf(this._side) >= 0 ? 'before' : 'after';
+        ['right', 'bottom'].indexOf(this._side.toString()) >= 0
+          ? 'before'
+          : 'after';
       this.header.element[headerPosition](this.childElementContainer);
       this.callDownwards('setSize');
     }

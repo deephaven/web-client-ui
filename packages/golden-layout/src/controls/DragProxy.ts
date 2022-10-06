@@ -81,7 +81,7 @@ export default class DragProxy extends EventEmitter {
     if (originalParent && originalParent._side) {
       this._sided = originalParent._sided;
       this.element.addClass('lm_' + originalParent._side);
-      if (['right', 'bottom'].indexOf(originalParent._side) >= 0)
+      if (['right', 'bottom'].indexOf(originalParent._side.toString()) >= 0)
         this.element.find('.lm_content').after(this.element.find('.lm_header'));
     }
     this.element.css({ left: x, top: y });

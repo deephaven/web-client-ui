@@ -1,5 +1,6 @@
 import $ from 'jquery';
 import type { AbstractContentItem, Stack } from '../items';
+import type { StackHeaderConfig } from '../items/Stack';
 import type LayoutManager from '../LayoutManager';
 import { EventEmitter } from '../utils';
 import HeaderButton from './HeaderButton';
@@ -532,9 +533,9 @@ export default class Header extends EventEmitter {
    *
    * @returns when exists
    */
-  _getHeaderSetting(
-    name: 'show' | 'popout' | 'maximise' | 'close' | 'minimise'
-  ) {
+  _getHeaderSetting<
+    N extends 'show' | 'popout' | 'maximise' | 'close' | 'minimise'
+  >(name: N): StackHeaderConfig[N] {
     if (name in this.parent._header) return this.parent._header[name];
   }
 
