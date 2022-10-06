@@ -1,5 +1,5 @@
 import $ from 'jquery';
-import { animFrame } from '../utils/index.js';
+import { animFrame } from '../utils';
 
 export type TransitionDimensions = {
   left?: number;

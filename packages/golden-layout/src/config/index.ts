@@ -1,2 +1,2 @@
-export * from './Config.js';
-export * from './ItemConfig.js';
+export * from './Config';
+export * from './ItemConfig';

@@ -3,11 +3,11 @@ import {
   ReactComponentConfig,
   isGLComponentConfig,
   ComponentConfig,
-} from '../config/index.js';
-import type Tab from '../controls/Tab.js';
-import type { AbstractContentItem, Component } from '../items/index.js';
-import type LayoutManager from '../LayoutManager.js';
-import EventEmitter from '../utils/EventEmitter.js';
+} from '../config';
+import type Tab from '../controls/Tab';
+import type { AbstractContentItem, Component } from '../items';
+import type LayoutManager from '../LayoutManager';
+import EventEmitter from '../utils/EventEmitter';
 
 export default class ItemContainer<
   C extends ComponentConfig | ReactComponentConfig = ComponentConfig

@@ -1,7 +1,7 @@
 export * from './AbstractContentItem';
-export { default as AbstractContentItem } from './AbstractContentItem.js';
-export { default as ContentItem } from './AbstractContentItem.js';
-export { default as Component } from './Component.js';
-export { default as Root } from './Root.js';
-export { default as RowOrColumn } from './RowOrColumn.js';
-export { default as Stack } from './Stack.js';
+export { default as AbstractContentItem } from './AbstractContentItem';
+export { default as ContentItem } from './AbstractContentItem';
+export { default as Component } from './Component';
+export { default as Root } from './Root';
+export { default as RowOrColumn } from './RowOrColumn';
+export { default as Stack } from './Stack';

@@ -1,8 +1,8 @@
 import $ from 'jquery';
-import type { AbstractContentItem, ItemArea, Stack } from '../items/index.js';
+import type { AbstractContentItem, ItemArea, Stack } from '../items';
 import type LayoutManager from '../LayoutManager';
-import type { DragListener } from '../utils/index.js';
-import { stripTags, EventEmitter } from '../utils/index.js';
+import type { DragListener } from '../utils';
+import { stripTags, EventEmitter } from '../utils';
 
 /**
  * This class creates a temporary container

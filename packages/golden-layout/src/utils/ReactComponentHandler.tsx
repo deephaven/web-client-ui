@@ -1,8 +1,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import $ from 'jquery';
-import type ItemContainer from '../container/ItemContainer.js';
-import type { ReactComponentConfig } from '../config/ItemConfig.js';
+import type ItemContainer from '../container/ItemContainer';
+import type { ReactComponentConfig } from '../config/ItemConfig';
 
 /**
  * A specialised GoldenLayout component that binds GoldenLayout container

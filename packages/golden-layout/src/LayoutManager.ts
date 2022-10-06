@@ -1,23 +1,23 @@
 import $ from 'jquery';
 import React from 'react';
-import lm from './base.js';
-import { defaultConfig } from './config/index.js';
+import lm from './base';
+import { defaultConfig } from './config';
 import type {
   ItemConfig,
   Config,
   ComponentConfig,
   ItemConfigType,
   ReactComponentConfig,
-} from './config/index.js';
-import type { ItemContainer } from './container/index.js';
+} from './config';
+import type { ItemContainer } from './container';
 import {
   BrowserPopout,
   DragSource,
   DragSourceFromEvent,
   DropTargetIndicator,
   TransitionIndicator,
-} from './controls/index.js';
-import { ConfigurationError } from './errors/index.js';
+} from './controls';
+import { ConfigurationError } from './errors';
 import {
   AbstractContentItem,
   ItemArea,
@@ -26,7 +26,7 @@ import {
   Root,
   RowOrColumn,
   Stack,
-} from './items/index.js';
+} from './items';
 import {
   ConfigMinifier,
   EventEmitter,
@@ -35,7 +35,7 @@ import {
   getQueryStringParam,
   getUniqueId,
   stripTags,
-} from './utils/index.js';
+} from './utils';
 
 export type ComponentConstructor<
   C extends ComponentConfig | ReactComponentConfig = ComponentConfig

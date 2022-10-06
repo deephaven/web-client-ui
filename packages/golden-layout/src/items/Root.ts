@@ -1,15 +1,11 @@
 import $ from 'jquery';
-import type {
-  ComponentConfig,
-  ItemConfigType,
-  ItemConfig,
-} from '../config/index.js';
-import LayoutManager from '../LayoutManager.js';
+import type { ComponentConfig, ItemConfigType, ItemConfig } from '../config';
+import LayoutManager from '../LayoutManager';
 import AbstractContentItem, {
   isComponent,
   ItemArea,
-} from './AbstractContentItem.js';
-import RowOrColumn from './RowOrColumn.js';
+} from './AbstractContentItem';
+import RowOrColumn from './RowOrColumn';
 
 export default class Root extends AbstractContentItem {
   childElementContainer: JQuery<HTMLElement>;

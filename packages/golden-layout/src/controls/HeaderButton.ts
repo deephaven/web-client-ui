@@ -1,5 +1,5 @@
 import $ from 'jquery';
-import type Header from './Header.js';
+import type Header from './Header';
 
 export default class HeaderButton {
   element: JQuery<HTMLLIElement>;

@@ -1,9 +1,9 @@
 import $ from 'jquery';
-import AbstractContentItem from './AbstractContentItem.js';
-import { animFrame } from '../utils/index.js';
-import { Splitter } from '../controls/index.js';
-import type LayoutManager from '../LayoutManager.js';
-import type { ItemConfig, ItemConfigType } from '../config/index.js';
+import AbstractContentItem from './AbstractContentItem';
+import { animFrame } from '../utils';
+import { Splitter } from '../controls';
+import type LayoutManager from '../LayoutManager';
+import type { ItemConfig, ItemConfigType } from '../config';
 
 export default class RowOrColumn extends AbstractContentItem {
   isRow: boolean;

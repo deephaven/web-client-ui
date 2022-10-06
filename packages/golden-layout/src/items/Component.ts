@@ -1,10 +1,10 @@
 import $ from 'jquery';
-import AbstractContentItem from './AbstractContentItem.js';
-import { ConfigurationError } from '../errors/index.js';
-import type LayoutManager from '../LayoutManager.js';
-import type { ComponentConfig } from '../config/ItemConfig.js';
-import ItemContainer from '../container/ItemContainer.js';
-import type { ComponentConstructor } from '../LayoutManager.js';
+import AbstractContentItem from './AbstractContentItem';
+import { ConfigurationError } from '../errors';
+import type LayoutManager from '../LayoutManager';
+import type { ComponentConfig } from '../config/ItemConfig';
+import ItemContainer from '../container/ItemContainer';
+import type { ComponentConstructor } from '../LayoutManager';
 
 /**
  * @param layoutManager

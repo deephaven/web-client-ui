@@ -1,12 +1,12 @@
-import { animFrame, BubblingEvent, EventEmitter } from '../utils/index.js';
-import { ConfigurationError } from '../errors/index.js';
-import { itemDefaultConfig } from '../config/index.js';
-import type { ItemConfig, ItemConfigType } from '../config/index.js';
-import type LayoutManager from '../LayoutManager.js';
-import type Tab from '../controls/Tab.js';
-import type Stack from './Stack.js';
-import type Component from './Component.js';
-import type Root from './Root.js';
+import { animFrame, BubblingEvent, EventEmitter } from '../utils';
+import { ConfigurationError } from '../errors';
+import { itemDefaultConfig } from '../config';
+import type { ItemConfig, ItemConfigType } from '../config';
+import type LayoutManager from '../LayoutManager';
+import type Tab from '../controls/Tab';
+import type Stack from './Stack';
+import type Component from './Component';
+import type Root from './Root';
 
 export function isStack(item: AbstractContentItem): item is Stack {
   return item.isStack;

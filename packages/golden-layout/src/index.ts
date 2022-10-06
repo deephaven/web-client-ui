@@ -1,9 +1,9 @@
-import LayoutManager from './LayoutManager.js';
+import LayoutManager from './LayoutManager';
 
 export default LayoutManager;
-export * from './config/index.js';
-export * from './container/index.js';
-export * from './controls/index.js';
-export * from './errors/index.js';
-export * from './items/index.js';
-export * from './utils/index.js';
+export * from './config';
+export * from './container';
+export * from './controls';
+export * from './errors';
+export * from './items';
+export * from './utils';

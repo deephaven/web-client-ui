@@ -1,9 +1,9 @@
 import $ from 'jquery';
-import type { AbstractContentItem, Stack } from '../items/index.js';
-import type LayoutManager from '../LayoutManager.js';
-import { EventEmitter } from '../utils/index.js';
-import HeaderButton from './HeaderButton.js';
-import Tab from './Tab.js';
+import type { AbstractContentItem, Stack } from '../items';
+import type LayoutManager from '../LayoutManager';
+import { EventEmitter } from '../utils';
+import HeaderButton from './HeaderButton';
+import Tab from './Tab';
 
 /**
  * This class represents a header above a Stack ContentItem.

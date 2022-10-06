@@ -1,1 +1,1 @@
-export { default as ConfigurationError } from './ConfigurationError.js';
+export { default as ConfigurationError } from './ConfigurationError';

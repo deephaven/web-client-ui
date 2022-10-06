@@ -1,9 +1,9 @@
 import $ from 'jquery';
-import type { Config, PopoutConfig, ItemConfigType } from '../config/index.js';
-import type Root from '../items/Root.js';
-import type LayoutManager from '../LayoutManager.js';
-import { getUniqueId, ConfigMinifier, EventEmitter } from '../utils/index.js';
-import { AbstractContentItem } from '../index.js';
+import type { Config, PopoutConfig, ItemConfigType } from '../config';
+import type Root from '../items/Root';
+import type LayoutManager from '../LayoutManager';
+import { getUniqueId, ConfigMinifier, EventEmitter } from '../utils';
+import { AbstractContentItem } from '..';
 
 type BrowserDimensions = {
   width: number;

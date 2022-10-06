@@ -1,8 +1,8 @@
 import $ from 'jquery';
-import type { ItemConfig } from '../config/index.js';
-import type LayoutManager from '../LayoutManager.js';
-import { DragListener } from '../utils/index.js';
-import DragProxy from './DragProxy.js';
+import type { ItemConfig } from '../config';
+import type LayoutManager from '../LayoutManager';
+import { DragListener } from '../utils';
+import DragProxy from './DragProxy';
 
 /**
  * Creates a drag item given a starting mouseevent

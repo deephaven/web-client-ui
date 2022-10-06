@@ -1,5 +1,5 @@
 import $ from 'jquery';
-import EventEmitter from './EventEmitter.js';
+import EventEmitter from './EventEmitter';
 
 class DragListener extends EventEmitter {
   private _eElement: JQuery<HTMLElement> | undefined;

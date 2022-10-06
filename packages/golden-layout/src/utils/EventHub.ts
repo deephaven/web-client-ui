@@ -1,6 +1,6 @@
 import $ from 'jquery';
-import type LayoutManager from '../LayoutManager.js';
-import EventEmitter from './EventEmitter.js';
+import type LayoutManager from '../LayoutManager';
+import EventEmitter from './EventEmitter';
 
 interface GoldenLayoutEvent extends Event {
   __glArgs: [string, ...unknown[]];

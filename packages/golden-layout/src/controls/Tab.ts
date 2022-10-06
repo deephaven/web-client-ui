@@ -1,10 +1,10 @@
 import $ from 'jquery';
-import type { AbstractContentItem } from '../items/index.js';
-import { isComponent } from '../items/index.js';
-import type LayoutManager from '../LayoutManager.js';
-import { DragListener } from '../utils/index.js';
-import DragProxy from './DragProxy.js';
-import type Header from './Header.js';
+import type { AbstractContentItem } from '../items';
+import { isComponent } from '../items';
+import type LayoutManager from '../LayoutManager';
+import { DragListener } from '../utils';
+import DragProxy from './DragProxy';
+import type Header from './Header';
 
 /**
  * Represents an individual tab within a Stack's header

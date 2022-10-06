@@ -1,8 +1,8 @@
 import $ from 'jquery';
-import type { ItemConfigType } from '../config/index.js';
-import type LayoutManager from '../LayoutManager.js';
-import { DragListener } from '../utils/index.js';
-import DragProxy from './DragProxy.js';
+import type { ItemConfigType } from '../config';
+import type LayoutManager from '../LayoutManager';
+import { DragListener } from '../utils';
+import DragProxy from './DragProxy';
 
 /**
  * Allows for any DOM item to create a component on drag

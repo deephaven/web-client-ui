@@ -1,9 +1,9 @@
 import $ from 'jquery';
-import AbstractContentItem, { isComponent } from './AbstractContentItem.js';
-import type LayoutManager from '../LayoutManager.js';
-import type { ComponentConfig, ItemConfigType } from '../config/index.js';
-import { Header } from '../controls/index.js';
-import type RowOrColumn from './RowOrColumn.js';
+import AbstractContentItem, { isComponent } from './AbstractContentItem';
+import type LayoutManager from '../LayoutManager';
+import type { ComponentConfig, ItemConfigType } from '../config';
+import { Header } from '../controls';
+import type RowOrColumn from './RowOrColumn';
 
 interface HoverDimensions {
   hoverArea: {
