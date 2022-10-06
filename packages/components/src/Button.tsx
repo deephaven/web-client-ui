@@ -38,7 +38,7 @@ type ButtonWithChildren = BaseButtonProps & {
   children: React.ReactNode;
 };
 
-type IconOnlyButtoStringTooltip = BaseButtonProps & {
+type IconOnlyButtonStringTooltip = BaseButtonProps & {
   tooltip: string;
   icon: IconDefinition | JSX.Element;
   children?: undefined;
@@ -51,7 +51,7 @@ type IconOnlyButtonJsxTooltip = BaseButtonProps & {
   children?: undefined;
 };
 
-type IconOnlyButton = IconOnlyButtoStringTooltip | IconOnlyButtonJsxTooltip;
+type IconOnlyButton = IconOnlyButtonStringTooltip | IconOnlyButtonJsxTooltip;
 
 type ButtonProps = IconOnlyButton | ButtonWithChildren;
 
