@@ -152,7 +152,7 @@ class LayoutUtils {
       return item;
     }
 
-    if (item.contentItems == null || !isStack(item)) {
+    if (item.contentItems == null) {
       return null;
     }
 
@@ -160,7 +160,7 @@ class LayoutUtils {
       const contentItem = item.contentItems[i];
       if (contentItem.isComponent && contentItem.config != null) {
         if (isMatch(contentItem.config, config)) {
-          return item;
+          return item as Stack;
         }
       }
 
@@ -471,10 +471,7 @@ class LayoutUtils {
     }
 
     if (dragEvent) {
-      root?.layoutManager.createDragSourceFromEvent(
-        config,
-        dragEvent.nativeEvent
-      );
+      root?.layoutManager.createDragSourceFromEvent(config, dragEvent);
       return;
     }
 

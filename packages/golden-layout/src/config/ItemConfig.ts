@@ -101,8 +101,6 @@ export function isReactComponentConfig(
 }
 
 export const itemDefaultConfig: ItemConfig = Object.freeze({
-  width: 0,
-  height: 0,
   type: 'default',
   isClosable: true,
   isFocusOnShow: true,

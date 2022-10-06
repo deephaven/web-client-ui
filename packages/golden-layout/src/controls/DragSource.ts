@@ -13,13 +13,13 @@ import DragProxy from './DragProxy.js';
  * @param layoutManager
  */
 export default class DragSource {
-  _element: HTMLElement;
+  _element: JQuery<HTMLElement>;
   _itemConfig: ItemConfigType | (() => ItemConfigType);
   _layoutManager: LayoutManager;
   _dragListener: DragListener;
 
   constructor(
-    element: HTMLElement,
+    element: JQuery<HTMLElement>,
     itemConfig: ItemConfigType | (() => ItemConfigType),
     layoutManager: LayoutManager
   ) {
@@ -65,7 +65,7 @@ export default class DragSource {
 
     this._layoutManager.transitionIndicator?.transitionElements(
       this._element,
-      dragProxy.element[0]
+      dragProxy.element
     );
   }
 }

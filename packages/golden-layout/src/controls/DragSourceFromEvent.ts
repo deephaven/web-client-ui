@@ -13,7 +13,7 @@ import DragProxy from './DragProxy.js';
  * @param event used to get the starting position
  */
 export default class DragSourceFromEvent {
-  private _element? = window; // we need something to listen for mousemoves against
+  private _element? = ($(window) as unknown) as JQuery<HTMLElement>; // we need something to listen for mousemoves against
   private _itemConfig?: ItemConfig | (() => ItemConfig);
   private _layoutManager?: LayoutManager;
   private _dragListener?: DragListener;
@@ -21,7 +21,7 @@ export default class DragSourceFromEvent {
   constructor(
     itemConfig: ItemConfig | (() => ItemConfig),
     layoutManager: LayoutManager,
-    event: MouseEvent
+    event: JQuery.TriggeredEvent
   ) {
     this._itemConfig = itemConfig;
     this._layoutManager = layoutManager;
@@ -32,7 +32,7 @@ export default class DragSourceFromEvent {
   /**
    * Called initially and after every drag
    */
-  _createDragListener(event: MouseEvent) {
+  _createDragListener(event: JQuery.TriggeredEvent) {
     if (this._dragListener) {
       this._dragListener.destroy();
     }

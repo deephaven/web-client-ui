@@ -9,8 +9,8 @@ import type Header from './Header.js';
 /**
  * Represents an individual tab within a Stack's header
  *
- * @param {lm.controls.Header} header
- * @param {lm.items.AbstractContentItem} contentItem
+ * @param header
+ * @param contentItem
  */
 export default class Tab {
   /**
@@ -50,7 +50,7 @@ export default class Tab {
       this._layoutManager.config.settings?.reorderEnabled &&
       contentItem.config.reorderEnabled
     ) {
-      this._dragListener = new DragListener(this.element[0]);
+      this._dragListener = new DragListener(this.element);
       this._dragListener.on('dragStart', this._onDragStart, this);
       this.contentItem.on(
         'destroy',
@@ -64,15 +64,12 @@ export default class Tab {
     this._onTabContentFocusIn = this._onTabContentFocusIn.bind(this);
     this._onTabContentFocusOut = this._onTabContentFocusOut.bind(this);
 
-    this.element[0].addEventListener('click', this._onTabClick);
-    this.element[0].addEventListener('auxclick', this._onTabClick);
+    this.element.on('click', this._onTabClick);
+    this.element.on('auxclick', this._onTabClick);
 
     if (this.contentItem.config.isClosable) {
-      this.closeElement[0].addEventListener('click', this._onCloseClick);
-      this.closeElement[0].addEventListener(
-        'mousedown',
-        this._onCloseMousedown
-      );
+      this.closeElement.on('click', this._onCloseClick);
+      this.closeElement.on('mousedown', this._onCloseMousedown);
     } else {
       this.closeElement.remove();
     }
@@ -129,9 +126,9 @@ export default class Tab {
    * @returns {void}
    */
   _$destroy() {
-    this.element[0].removeEventListener('click', this._onTabClick);
-    this.element[0].removeEventListener('auxclick', this._onTabClick);
-    this.closeElement[0].removeEventListener('click', this._onCloseClick);
+    this.element.off('click', this._onTabClick);
+    this.element.off('auxclick', this._onTabClick);
+    this.closeElement.off('click', this._onCloseClick);
     if (isComponent(this.contentItem)) {
       this.contentItem.container._contentElement.off();
     }
@@ -220,7 +217,7 @@ export default class Tab {
    *
    * @param event
    */
-  _onTabClick(event?: MouseEvent) {
+  _onTabClick(event?: JQuery.TriggeredEvent) {
     // left mouse button or tap
     if (!event || event.button === 0) {
       var activeContentItem = this.header.parent.getActiveContentItem();
@@ -267,7 +264,7 @@ export default class Tab {
    *
    * @param event
    */
-  _onCloseClick(event: Event) {
+  _onCloseClick(event: JQuery.TriggeredEvent) {
     event.stopPropagation();
     if (isComponent(this.contentItem)) {
       this.contentItem.container.close();

@@ -25,7 +25,10 @@ export default class TransitionIndicator {
     this._element.remove();
   }
 
-  transitionElements(fromElement: HTMLElement, toElement: HTMLElement) {
+  transitionElements(
+    fromElement: JQuery<HTMLElement>,
+    toElement: JQuery<HTMLElement>
+  ) {
     /**
      * TODO - This is not quite as cool as expected. Review.
      */

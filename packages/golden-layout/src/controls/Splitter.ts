@@ -10,14 +10,15 @@ export default class Splitter {
 
   private _dragListener: DragListener | null;
 
-  element = this._createElement();
+  element: JQuery<HTMLElement>;
 
   constructor(isVertical: boolean, size: number, grabSize: number) {
     this._isVertical = isVertical;
     this._size = size;
     this._grabSize = grabSize < size ? size : grabSize;
 
-    this._dragListener = new DragListener(this.element[0]);
+    this.element = this._createElement();
+    this._dragListener = new DragListener(this.element);
   }
 
   on(event: string, callback: Function, context?: unknown) {

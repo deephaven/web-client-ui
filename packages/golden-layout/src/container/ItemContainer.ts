@@ -12,8 +12,8 @@ import EventEmitter from '../utils/EventEmitter.js';
 export default class ItemContainer<
   C extends ComponentConfig | ReactComponentConfig = ComponentConfig
 > extends EventEmitter {
-  width: number = 0;
-  height: number = 0;
+  width?: number;
+  height?: number;
 
   title?: string;
 
@@ -23,6 +23,7 @@ export default class ItemContainer<
 
   tab?: Tab;
 
+  // This type is to make TS happy and allow ReactComponentConfig passed to container generic
   _config: C & { componentState: Record<string, unknown> };
 
   isHidden = false;
@@ -44,7 +45,7 @@ export default class ItemContainer<
     this.parent = parent;
     this.layoutManager = layoutManager;
 
-    this._config = { componentState: {} as Record<string, unknown>, ...config };
+    this._config = config as C & { componentState: Record<string, unknown> };
 
     this._contentElement = this._element.find('.lm_content');
   }
@@ -120,7 +121,8 @@ export default class ItemContainer<
     const newSize = direction === 'height' ? height : width;
 
     const totalPixel =
-      this[direction] * (1 / ((rowOrColumnChild.config[direction] ?? 0) / 100));
+      (this[direction] ?? 0) *
+      (1 / ((rowOrColumnChild.config[direction] ?? 0) / 100));
     const percentage = (newSize / totalPixel) * 100;
     const delta =
       ((rowOrColumnChild.config[direction] ?? 0) - percentage) /

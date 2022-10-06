@@ -1,11 +1,7 @@
 import { animFrame, BubblingEvent, EventEmitter } from '../utils/index.js';
 import { ConfigurationError } from '../errors/index.js';
 import { itemDefaultConfig } from '../config/index.js';
-import type {
-  ComponentConfig,
-  ItemConfig,
-  ItemConfigType,
-} from '../config/index.js';
+import type { ItemConfig, ItemConfigType } from '../config/index.js';
 import type LayoutManager from '../LayoutManager.js';
 import type Tab from '../controls/Tab.js';
 import type Stack from './Stack.js';
@@ -94,7 +90,8 @@ export default abstract class AbstractContentItem extends EventEmitter {
     super();
     this.element = element;
 
-    this.config = { ...itemDefaultConfig, ...config };
+    // Some GL things expect this config to not change
+    this.config = this._extendItemNode(config);
     this.type = config.type;
     this.contentItems = [];
     this.parent = parent;
@@ -406,16 +403,16 @@ export default abstract class AbstractContentItem extends EventEmitter {
    * SELECTOR
    ****************************************/
   getItemsByFilter(filter: (item: AbstractContentItem) => boolean) {
-    const result: AbstractContentItem[] = [],
-      next = function (contentItem: AbstractContentItem) {
-        for (var i = 0; i < contentItem.contentItems.length; i++) {
-          if (filter(contentItem.contentItems[i]) === true) {
-            result.push(contentItem.contentItems[i]);
-          }
-
-          next(contentItem.contentItems[i]);
+    const result: AbstractContentItem[] = [];
+    const next = function (contentItem: AbstractContentItem) {
+      for (let i = 0; i < contentItem.contentItems.length; i++) {
+        if (filter(contentItem.contentItems[i]) === true) {
+          result.push(contentItem.contentItems[i]);
         }
-      };
+
+        next(contentItem.contentItems[i]);
+      }
+    };
 
     next(this);
     return result;
@@ -589,11 +586,16 @@ export default abstract class AbstractContentItem extends EventEmitter {
    * @param config
    * @returns extended config
    */
-  _extendItemNode(config: ComponentConfig) {
-    return {
-      ...itemDefaultConfig,
-      ...config,
-    };
+  _extendItemNode(config: AbstractItemConfig) {
+    for (let [key, value] of Object.entries(itemDefaultConfig)) {
+      // This just appeases TS
+      const k = key as keyof AbstractItemConfig;
+      if (config[k] === undefined) {
+        config[k] = value;
+      }
+    }
+
+    return config;
   }
 
   /**

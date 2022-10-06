@@ -6,7 +6,7 @@
   "description": "A multi-screen javascript Layout manager",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "source": "src/index.ts",
+  "source": "./src/index.ts",
   "type": "module",
   "dependencies": {
     "jquery": "^3.6.0"
@@ -28,7 +28,9 @@
     "clean": "rimraf ./dist",
     "start": "cross-env NODE_ENV=development npm run watch",
     "prestart": "npm run build-dev",
+    "pretest": "npm run build",
     "test": "karma start karma.conf.cjs",
+    "pretest:ci": "npm run pretest",
     "test:ci": "karma start karma.conf.cjs --single-run"
   },
   "repository": {
@@ -53,7 +55,6 @@
     "browserify": "^17.0.0",
     "esmify": "^2.1.1",
     "karma-browserify": "^8.1.0",
-    "tsify": "^5.0.4",
     "watchify": "^4.0.0"
   }
 }

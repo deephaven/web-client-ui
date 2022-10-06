@@ -1,6 +1,6 @@
 import $ from 'jquery';
 import type { AbstractContentItem, ItemArea, Stack } from '../items/index.js';
-import type LayoutManager from '../LayoutManager.js';
+import type LayoutManager from '../LayoutManager';
 import type { DragListener } from '../utils/index.js';
 import { stripTags, EventEmitter } from '../utils/index.js';
 
@@ -133,11 +133,14 @@ export default class DragProxy extends EventEmitter {
    * @param offsetY The difference from the original y position in px
    * @param event
    */
-  _onDrag(offsetX: number, offsetY: number, event: MouseEvent) {
-    const baseEvent = event instanceof TouchEvent ? event.touches[0] : event;
+  _onDrag(offsetX: number, offsetY: number, event: JQuery.TriggeredEvent) {
+    const baseEvent =
+      event.originalEvent instanceof TouchEvent
+        ? event.originalEvent.touches[0]
+        : event;
 
-    const x = baseEvent.pageX;
-    const y = baseEvent.pageY;
+    const x = baseEvent.pageX ?? 0;
+    const y = baseEvent.pageY ?? 0;
     const isWithinContainer =
       x > this._minX && x < this._maxX && y > this._minY && y < this._maxY;
 

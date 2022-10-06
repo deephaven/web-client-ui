@@ -238,20 +238,6 @@ export default class LayoutManager extends EventEmitter {
         config: Record<string, unknown>;
       }
     ) {
-      /**
-       *
-       *
-       *
-       *
-       * The Config type ***MIGHT*** need to also contain the keys of ItemConfig?
-       * THe output of this has items like title, etc, but I'm not sure if they're needed
-       * Also openPopouts is on the config but not in the type from golden-layout originally
-       *
-       *
-       *
-       *
-       */
-
       for (let key in item.config) {
         if (key !== 'content') {
           configNode[key] = item.config[key];
@@ -488,7 +474,7 @@ export default class LayoutManager extends EventEmitter {
         width: config.width,
         height: config.height,
         content: [config],
-      } as ComponentConfig;
+      };
     }
 
     contentItem = new this._typeToItem[config.type](this, config, parent);
@@ -540,7 +526,7 @@ export default class LayoutManager extends EventEmitter {
       }
 
       parent?.addId(parentId);
-      if (Number.isNaN(indexInParent)) {
+      if (indexInParent == undefined || Number.isNaN(indexInParent)) {
         indexInParent = parent?.contentItems.indexOf(child);
       }
     } else {
@@ -614,7 +600,7 @@ export default class LayoutManager extends EventEmitter {
    * @param itemConfig for the new item to be created, or a function which will provide it
    */
   createDragSource(
-    element: HTMLElement,
+    element: JQuery<HTMLElement>,
     itemConfig: ComponentConfig | (() => ComponentConfig)
   ) {
     this.config.settings.constrainDragToContainer = false;
@@ -632,7 +618,7 @@ export default class LayoutManager extends EventEmitter {
    */
   createDragSourceFromEvent(
     itemConfig: ItemConfig | (() => ItemConfig),
-    event: MouseEvent
+    event: JQuery.TriggeredEvent
   ) {
     this.config.settings.constrainDragToContainer = false;
     return new DragSourceFromEvent(itemConfig, this, event);
