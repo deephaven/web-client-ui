@@ -1006,6 +1006,7 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
                   <button
                     type="button"
                     className="btn btn-link btn-link-icon btn-play"
+                    aria-label="Run notebook"
                     onClick={this.handleRunAll}
                     disabled={runButtonsDisabled}
                   >
@@ -1021,9 +1022,10 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
                 <span>
                   <button
                     type="button"
-                    className="btn btn-link btn-link-icon btn-play"
+                    className="btn btn-link btn-link-icon btn-play-selected"
                     onClick={this.handleRunSelected}
                     disabled={runButtonsDisabled}
+                    aria-label="Run selected"
                   >
                     <FontAwesomeIcon icon={dhRunSelection} transform="grow-4" />
                     <Tooltip>
@@ -1037,9 +1039,10 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
                 </span>
                 <button
                   type="button"
-                  className="btn btn-link btn-link-icon mr-auto"
+                  className="btn btn-link btn-link-icon btn-save mr-auto"
                   disabled={toolbarDisabled}
                   onClick={this.handleSave}
+                  aria-label="Save notebook"
                 >
                   <FontAwesomeIcon icon={vsSave} />
                   <Tooltip>Save</Tooltip>
