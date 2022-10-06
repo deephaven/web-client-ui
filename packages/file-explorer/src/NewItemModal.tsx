@@ -8,6 +8,7 @@ import {
   ModalHeader,
   BasicModal,
   Button,
+  Tooltip,
 } from '@deephaven/components';
 import {
   CancelablePromise,
@@ -411,6 +412,7 @@ class NewItemModal extends PureComponent<NewItemModalProps, NewItemModalState> {
             icon={index === 0 ? vsHome : undefined}
           >
             {basename}
+            {index === 0 && <Tooltip>Home</Tooltip>}
           </Button>
           /
         </React.Fragment>
