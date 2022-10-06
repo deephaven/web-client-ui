@@ -1,10 +1,13 @@
 import { ScriptEditor } from '@deephaven/console';
 import {
   assertIsDashboardPluginProps,
+  DashboardPanelProps,
   DashboardPluginComponentProps,
+  DashboardUtils,
   LayoutUtils,
   PanelComponent,
   PanelHydrateFunction,
+  PanelProps,
   useListener,
 } from '@deephaven/dashboard';
 import { FileUtils } from '@deephaven/file-explorer';
@@ -452,6 +455,18 @@ export const ConsolePlugin = (
     [createNotebook, panelManager]
   );
 
+  const hydrateNotebook = useCallback(
+    (panelProps: PanelProps, panelDashboardId: string): DashboardPanelProps =>
+      DashboardUtils.hydrate(
+        {
+          ...panelProps,
+          notebooksUrl,
+        },
+        panelDashboardId
+      ),
+    [notebooksUrl]
+  );
+
   useEffect(
     function registerComponentsAndReturnCleanup() {
       const cleanups = [
@@ -459,14 +474,18 @@ export const ConsolePlugin = (
         registerComponent(CommandHistoryPanel.COMPONENT, CommandHistoryPanel),
         registerComponent(FileExplorerPanel.COMPONENT, FileExplorerPanel),
         registerComponent(LogPanel.COMPONENT, LogPanel),
-        registerComponent(NotebookPanel.COMPONENT, NotebookPanel),
+        registerComponent(
+          NotebookPanel.COMPONENT,
+          NotebookPanel,
+          hydrateNotebook
+        ),
       ];
 
       return () => {
         cleanups.forEach(cleanup => cleanup());
       };
     },
-    [registerComponent, hydrateConsole]
+    [registerComponent, hydrateConsole, hydrateNotebook]
   );
 
   useListener(layout.eventHub, ConsoleEvent.SEND_COMMAND, handleSendCommand);
