@@ -13,12 +13,8 @@ test('test creating a file, saving it, closing it, re-opening it, running it, th
   // Click [aria-label="New notebook"]
   await page.locator('[aria-label="New notebook"]').click();
 
-  // Click .editor-container > div > .overflow-guard > .monaco-scrollable-element > .lines-content > .view-lines
-  await page
-    .locator(
-      '.editor-container > div > .overflow-guard > .monaco-scrollable-element > .lines-content > .view-lines'
-    )
-    .click();
+  // Click console input
+  await page.locator('.console-input').click();
 
   const message = `Hello notebook ${shortid()}!`;
 
