@@ -128,7 +128,12 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     // use tooltip as arial-label for iconOnly buttons only
     // if tooltip is also a string and aria-label is not set
     let ariaLabelString = ariaLabel;
-    if (!ariaLabel && iconOnly && tooltip && typeof tooltip === 'string') {
+    if (
+      ariaLabel === undefined &&
+      iconOnly &&
+      tooltip != null &&
+      typeof tooltip === 'string'
+    ) {
       ariaLabelString = tooltip;
     }
 
