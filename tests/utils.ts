@@ -11,7 +11,7 @@ export function generateVarName(prefix = 'v'): string {
   do {
     id = shortid();
   } while (id.includes('-'));
-  return `${prefix}_id`;
+  return `${prefix}_${id}`;
 }
 
 export default { generateVarName };
