@@ -16,6 +16,7 @@ export interface FileListContainerProps {
   table: FileStorageTable;
 
   isMultiSelect?: boolean;
+  focusedPath?: string;
 
   onCreateFile?: (path?: string) => void;
   onCreateFolder?: (path?: string) => void;
@@ -25,6 +26,7 @@ export interface FileListContainerProps {
   onRename?: (file: FileStorageItem, newName: string) => void;
   onSelect: (file: FileStorageItem, event: React.SyntheticEvent) => void;
   validateRename?: (file: FileStorageItem, newName: string) => Promise<void>;
+  onSelectionChange?: (selectedItems: FileStorageItem[]) => void;
 
   /** Height of each item in the list */
   rowHeight?: number;
@@ -38,6 +40,7 @@ export const FileListContainer = (
 ): JSX.Element => {
   const {
     isMultiSelect = false,
+    focusedPath,
     showContextMenu = false,
     onCreateFile,
     onCreateFolder,
@@ -46,6 +49,7 @@ export const FileListContainer = (
     onMove = () => undefined,
     onRename,
     onSelect,
+    onSelectionChange,
     table,
     rowHeight = DEFAULT_ROW_HEIGHT,
     validateRename = () => Promise.resolve(),
@@ -54,9 +58,13 @@ export const FileListContainer = (
   const [selectedItems, setSelectedItems] = useState([] as FileStorageItem[]);
   const [focusedItem, setFocusedItem] = useState<FileStorageItem>();
 
-  const handleSelectionChange = useCallback(newSelectedItems => {
-    setSelectedItems(newSelectedItems);
-  }, []);
+  const handleSelectionChange = useCallback(
+    newSelectedItems => {
+      setSelectedItems(newSelectedItems);
+      onSelectionChange?.(newSelectedItems);
+    },
+    [onSelectionChange]
+  );
 
   const handleFocusChange = useCallback(newFocusedItem => {
     setFocusedItem(newFocusedItem);
@@ -215,6 +223,7 @@ export const FileListContainer = (
           rowHeight={rowHeight}
           table={table}
           isMultiSelect={isMultiSelect}
+          focusedPath={focusedPath}
         />
       )}
       {showContextMenu && <ContextActions actions={actions} />}

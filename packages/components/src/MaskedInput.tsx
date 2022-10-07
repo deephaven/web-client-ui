@@ -30,6 +30,41 @@ export function DEFAULT_GET_PREFERRED_REPLACEMENT_STRING(
   );
 }
 
+/**
+ * Fill the string on the right side with the example value to the given length
+ * @param checkValue Initial string to pad
+ * @param exampleValue Example value
+ * @param length Target length
+ * @returns String padded with the given example value
+ */
+export function fillToLength(
+  checkValue: string,
+  exampleValue: string,
+  length: number
+): string {
+  return checkValue.length < length
+    ? `${checkValue}${exampleValue.substring(checkValue.length, length)}`
+    : checkValue;
+}
+
+/**
+ * Trim all characters matching the empty mask on the right side of the given value
+ * @param value String to trim
+ * @param emptyMask Empty mask
+ * @returns Trimmed string
+ */
+export function trimTrailingMask(value: string, emptyMask: string): string {
+  let { length } = value;
+  for (let i = value.length - 1; i >= 0; i -= 1) {
+    if (emptyMask[i] === value[i]) {
+      length = i;
+    } else {
+      break;
+    }
+  }
+  return value.substring(0, length);
+}
+
 export type SelectionSegment = {
   selectionStart: number;
   selectionEnd: number;
@@ -41,6 +76,8 @@ type MaskedInputProps = {
   className?: string;
   /** The regex pattern this masked input must match */
   pattern: string;
+  /** Input placeholder */
+  placeholder?: string;
   /** The current value to display */
   value: string;
   /** One or more examples of valid values. Used when deciding if next keystroke is valid (as rest of the current value may be incomplete) */
@@ -88,6 +125,7 @@ const MaskedInput = React.forwardRef<HTMLInputElement, MaskedInputProps>(
       onChange = () => false,
       onSelect = () => false,
       pattern,
+      placeholder,
       selection,
       value,
       onFocus = () => false,
@@ -98,6 +136,10 @@ const MaskedInput = React.forwardRef<HTMLInputElement, MaskedInputProps>(
     const examples = useMemo(
       () => (Array.isArray(example) ? example : [example]),
       [example]
+    );
+    const emptyMask = useMemo(
+      () => examples[0].replace(/[a-zA-Z0-9]/g, FIXED_WIDTH_SPACE),
+      [examples]
     );
 
     useEffect(
@@ -195,7 +237,7 @@ const MaskedInput = React.forwardRef<HTMLInputElement, MaskedInputProps>(
       checkValue: string,
       cursorPosition = checkValue.length
     ): boolean {
-      const patternRegex = new RegExp(pattern);
+      const patternRegex = new RegExp(`^${pattern}$`);
       if (patternRegex.test(checkValue)) {
         return true;
       }
@@ -396,6 +438,27 @@ const MaskedInput = React.forwardRef<HTMLInputElement, MaskedInputProps>(
         event.preventDefault();
         event.stopPropagation();
 
+        // Deleting at the end of the value
+        if (selectionEnd >= trimTrailingMask(value, emptyMask).length) {
+          const newValue = value.substring(
+            0,
+            // Delete whole selection or just the char before the cursor
+            selectionStart === selectionEnd
+              ? selectionStart - 1
+              : selectionStart
+          );
+          const trimmedValue = trimTrailingMask(newValue, emptyMask);
+          if (trimmedValue !== value) {
+            onChange(trimmedValue);
+            onSelect({
+              selectionStart: trimmedValue.length,
+              selectionEnd: trimmedValue.length,
+              selectionDirection: SELECTION_DIRECTION.NONE,
+            });
+          }
+          return;
+        }
+
         if (selectionStart !== selectionEnd) {
           // Replace all non-masked characters with blanks, set selection to start
           const newValue =
@@ -459,15 +522,21 @@ const MaskedInput = React.forwardRef<HTMLInputElement, MaskedInputProps>(
 
         // If they're typing an alphanumeric character, be smart and allow it to jump ahead
         const maxReplaceIndex = /[a-zA-Z0-9]/g.test(newChar)
-          ? value.length - 1
+          ? examples[0].length - 1
           : selectionStart;
         for (
           let replaceIndex = selectionStart;
           replaceIndex <= maxReplaceIndex;
           replaceIndex += 1
         ) {
-          const newValue = getPreferredReplacementString(
+          // Fill with the example chars if necessary
+          const filledValue = fillToLength(
             value,
+            examples[0],
+            replaceIndex + 1
+          );
+          const newValue = getPreferredReplacementString(
+            filledValue,
             replaceIndex,
             newChar,
             selectionStart,
@@ -506,6 +575,7 @@ const MaskedInput = React.forwardRef<HTMLInputElement, MaskedInputProps>(
         className={classNames('form-control masked-input', className)}
         type="text"
         pattern={pattern}
+        placeholder={placeholder}
         value={value}
         onChange={() => undefined}
         onKeyDown={handleKeyDown}
@@ -521,6 +591,7 @@ const MaskedInput = React.forwardRef<HTMLInputElement, MaskedInputProps>(
 
 MaskedInput.defaultProps = {
   className: '',
+  placeholder: undefined,
   onChange(): void {
     // no-op
   },

@@ -20,10 +20,12 @@ export interface FileExplorerProps {
   storage: FileStorage;
 
   isMultiSelect?: boolean;
+  focusedPath?: string;
 
   onDelete?: (files: FileStorageItem[]) => void;
   onRename?: (oldName: string, newName: string) => void;
   onSelect: (file: FileStorageItem, event: React.SyntheticEvent) => void;
+  onSelectionChange?: (selectedItems: FileStorageItem[]) => void;
 
   /** Height of each item in the list */
   rowHeight?: number;
@@ -36,9 +38,11 @@ export const FileExplorer = (props: FileExplorerProps): JSX.Element => {
   const {
     storage,
     isMultiSelect = false,
+    focusedPath,
     onDelete = () => undefined,
     onRename = () => undefined,
     onSelect,
+    onSelectionChange,
     rowHeight = DEFAULT_ROW_HEIGHT,
   } = props;
   const [itemsToDelete, setItemsToDelete] = useState<FileStorageItem[]>([]);
@@ -177,11 +181,13 @@ export const FileExplorer = (props: FileExplorerProps): JSX.Element => {
       {table && (
         <FileListContainer
           isMultiSelect={isMultiSelect}
+          focusedPath={focusedPath}
           showContextMenu
           onMove={handleMove}
           onDelete={handleDelete}
           onRename={handleRename}
           onSelect={onSelect}
+          onSelectionChange={onSelectionChange}
           rowHeight={rowHeight}
           table={table}
           validateRename={handleValidateRename}

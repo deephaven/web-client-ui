@@ -7,6 +7,7 @@ import {
   ModalFooter,
   ModalHeader,
   BasicModal,
+  Button,
 } from '@deephaven/components';
 import {
   CancelablePromise,
@@ -15,6 +16,7 @@ import {
   ValidationError,
 } from '@deephaven/utils';
 import Log from '@deephaven/log';
+import { vsHome } from '@deephaven/icons';
 import FileExplorer from './FileExplorer';
 import FileStorage, { FileStorageItem, FileType } from './FileStorage';
 import FileUtils from './FileUtils';
@@ -99,6 +101,7 @@ class NewItemModal extends PureComponent<NewItemModalProps, NewItemModalState> {
     this.handleExtensionChangeConfirm = this.handleExtensionChangeConfirm.bind(
       this
     );
+    this.handleBreadcrumbSelect = this.handleBreadcrumbSelect.bind(this);
 
     const { defaultValue } = props;
 
@@ -125,9 +128,17 @@ class NewItemModal extends PureComponent<NewItemModalProps, NewItemModalState> {
     const { value, path } = this.state;
     if (!prevIsOpen && isOpen) {
       this.resetValue();
+      this.isInitialLoad = true;
     }
-    if (path !== prevState.path || value !== prevState.value) {
-      this.updateValidationStatus(path, value);
+
+    if (prevIsOpen && isOpen) {
+      if (
+        !this.isInitialLoad &&
+        (path !== prevState.path || value !== prevState.value)
+      ) {
+        this.updateValidationStatus(path, value);
+      }
+      this.isInitialLoad = false;
     }
   }
 
@@ -150,6 +161,8 @@ class NewItemModal extends PureComponent<NewItemModalProps, NewItemModalState> {
   private pending = new Pending();
 
   private pathMap = new Map();
+
+  private isInitialLoad = true;
 
   resetValue(): void {
     const { defaultValue } = this.props as NewItemModalProps;
@@ -374,6 +387,37 @@ class NewItemModal extends PureComponent<NewItemModalProps, NewItemModalState> {
     });
   }
 
+  handleBreadcrumbSelect(directoryPath: string): void {
+    this.setState({ path: directoryPath });
+  }
+
+  renderPathButtons(path: string): React.ReactNode {
+    const pathAsList = path.split('/');
+    pathAsList.pop();
+    return pathAsList.map((basename, index) => {
+      let directoryPath = '';
+      for (let i = 0; i < index; i += 1) {
+        directoryPath += `${pathAsList[i]}/`;
+      }
+      directoryPath += `${basename}/`;
+
+      return (
+        <React.Fragment key={directoryPath}>
+          <Button
+            kind="ghost"
+            className="directory-breadcrumbs"
+            onClick={() => this.handleBreadcrumbSelect(directoryPath)}
+            aria-label={index === 0 ? 'home' : undefined}
+            icon={index === 0 ? vsHome : undefined}
+          >
+            {basename}
+          </Button>
+          /
+        </React.Fragment>
+      );
+    });
+  }
+
   render(): React.ReactNode {
     const { storage, isOpen, onCancel, placeholder, title, type } = this.props;
     const {
@@ -430,14 +474,14 @@ class NewItemModal extends PureComponent<NewItemModalProps, NewItemModalState> {
                   )}
                 </div>
                 <div className="flex-grow-0">
-                  <label>
-                    Directory: <span className="new-item-parentId">{path}</span>
-                  </label>
+                  <label>Directory: /</label>
+                  {this.renderPathButtons(path)}
                 </div>
                 <div className="flex-grow-1 file-explorer-container">
                   <FileExplorer
                     onSelect={this.handleSelect}
                     storage={storage}
+                    focusedPath={path}
                   />
                 </div>
               </div>

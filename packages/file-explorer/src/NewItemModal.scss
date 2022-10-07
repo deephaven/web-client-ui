@@ -16,4 +16,8 @@ $file-list-height: 250px;
     display: flex;
     flex-direction: column;
   }
+
+  .directory-breadcrumbs {
+    color: $primary;
+  }
 }

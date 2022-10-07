@@ -14,7 +14,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { vsTrash } from '@deephaven/icons';
 
 import Log from '@deephaven/log';
-import { ReactComponentConfig } from '@deephaven/golden-layout';
+import type { ReactComponentConfig } from '@deephaven/golden-layout';
 
 const log = Log.module('MarkdownStartPage');
 

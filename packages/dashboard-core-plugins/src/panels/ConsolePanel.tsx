@@ -18,7 +18,7 @@ import {
   getTimeZone,
   RootState,
 } from '@deephaven/redux';
-import { Container, EventEmitter } from '@deephaven/golden-layout';
+import type { Container, EventEmitter } from '@deephaven/golden-layout';
 import { assertNotNull } from '@deephaven/utils';
 import type { JSZipObject } from 'jszip';
 import { ConsoleEvent } from '../events';

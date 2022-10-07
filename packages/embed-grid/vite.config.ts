@@ -79,12 +79,8 @@ export default defineConfig(({ mode }) => {
       },
     },
     optimizeDeps: {
-      // plotly.js requires buffer and vite tries to externalize it
-      // dev mode fails to start if it isn't excluded from being externalized
-      exclude: ['buffer'],
       esbuildOptions: {
-        // Plotly imports has-hover which needs global to exist
-        // Without this, dev mode does not start properly
+        // Some packages need this to start properly if they reference global
         define: {
           global: 'globalThis',
         },

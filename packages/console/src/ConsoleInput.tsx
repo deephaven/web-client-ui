@@ -420,7 +420,12 @@ export class ConsoleInput extends PureComponent<
         this.bufferIndex = null;
       }
       this.history = [
-        ...viewportData?.items.map(({ name }) => name).reverse(),
+        ...viewportData?.items
+          .filter(
+            ({ name }, pos, arr) => pos === 0 || name !== arr[pos - 1].name
+          )
+          .map(({ name }) => name)
+          .reverse(),
         ...this.history,
       ];
 
@@ -444,7 +449,11 @@ export class ConsoleInput extends PureComponent<
 
     const command = this.commandEditor?.getValue().trim();
     assertNotNull(command);
-    if (command !== '') {
+    if (
+      command !== '' &&
+      (this.history.length === 0 ||
+        command !== this.history[this.history.length - 1])
+    ) {
       this.history.push(command);
     }
     this.commandEditor?.setValue('');

@@ -1,5 +1,7 @@
 class ColorUtils {
   /**
+   * THIS HAS POOR PERFORMANCE DUE TO DOM MANIPULATION
+   * DO NOT USE HEAVILY
    * Checks if a background color is dark (i.e. should use a light foreground).
    *
    * @param background the background color

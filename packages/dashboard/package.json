@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/dashboard",
-  "version": "0.17.0",
+  "version": "0.19.0",
   "description": "Deephaven Dashboard",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
@@ -37,7 +37,6 @@
     "@deephaven/redux": "file:../redux",
     "@deephaven/utils": "file:../util",
     "deep-equal": "^2.0.5",
-    "jquery": "^3.6.0",
     "lodash.ismatch": "^4.1.1",
     "lodash.throttle": "^4.1.1",
     "prop-types": "^15.7.2",

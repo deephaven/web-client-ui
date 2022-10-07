@@ -31,17 +31,27 @@ interface BaseButtonProps extends React.ComponentPropsWithRef<'button'> {
   icon?: IconDefinition | JSX.Element;
   active?: boolean;
   'data-testid'?: string;
+  'aria-label'?: string;
 }
 
 type ButtonWithChildren = BaseButtonProps & {
   children: React.ReactNode;
 };
 
-type IconOnlyButton = BaseButtonProps & {
-  tooltip: string | JSX.Element;
+type IconOnlyButtonStringTooltip = BaseButtonProps & {
+  tooltip: string;
   icon: IconDefinition | JSX.Element;
   children?: undefined;
 };
+
+type IconOnlyButtonJsxTooltip = BaseButtonProps & {
+  tooltip: JSX.Element;
+  'aria-label': string;
+  icon: IconDefinition | JSX.Element;
+  children?: undefined;
+};
+
+type IconOnlyButton = IconOnlyButtonStringTooltip | IconOnlyButtonJsxTooltip;
 
 type ButtonProps = IconOnlyButton | ButtonWithChildren;
 
@@ -89,6 +99,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       style,
       children,
       'data-testid': dataTestId,
+      'aria-label': ariaLabel,
     } = props;
 
     const iconOnly = Boolean(icon && children == null);
@@ -114,6 +125,13 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         typeof tooltip === 'string' ? <Tooltip>{tooltip}</Tooltip> : tooltip;
     }
 
+    // use tooltip as arial-label for iconOnly buttons only
+    // if tooltip is also a string and aria-label is not set
+    let ariaLabelString = ariaLabel;
+    if (!ariaLabel && iconOnly && tooltip && typeof tooltip === 'string') {
+      ariaLabelString = tooltip;
+    }
+
     const button = (
       <button
         data-testid={dataTestId}
@@ -130,6 +148,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         onClick={onClick}
         style={style}
         disabled={disabled}
+        aria-label={ariaLabelString}
       >
         {icon && iconElem}
         {children}

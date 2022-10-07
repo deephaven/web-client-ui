@@ -548,9 +548,11 @@ class IrisGridProxyModel extends IrisGridModel {
     return isEditableGridModel(this.model) && this.model.isEditable;
   }
 
-  isEditableRange: IrisGridTableModel['isEditableRange'] = (...args) => {
+  isEditableRange: IrisGridTableModel['isEditableRange'] = (
+    ...args
+  ): boolean => {
     if (isEditableGridModel(this.model)) {
-      this.model.isEditableRange(...args);
+      return this.model.isEditableRange(...args);
     }
     return false;
   };
@@ -593,16 +595,16 @@ class IrisGridProxyModel extends IrisGridModel {
 
   setValueForCell: IrisGridTableModel['setValueForCell'] = (...args) => {
     if (isEditableGridModel(this.model)) {
-      this.model.setValueForCell(...args);
+      return this.model.setValueForCell(...args);
     }
-    return Promise.resolve();
+    return Promise.reject(new Error('Model is not editable'));
   };
 
   setValueForRanges: IrisGridTableModel['setValueForRanges'] = (...args) => {
     if (isEditableGridModel(this.model)) {
-      this.model.setValueForRanges(...args);
+      return this.model.setValueForRanges(...args);
     }
-    return Promise.resolve();
+    return Promise.reject(new Error('Model is not editable'));
   };
 
   setValues: EditableGridModel['setValues'] = (...args) => {

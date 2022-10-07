@@ -82,7 +82,8 @@ import {
   UserPermissions,
 } from '@deephaven/redux';
 import { PromiseUtils } from '@deephaven/utils';
-import GoldenLayout, { ItemConfigType } from '@deephaven/golden-layout';
+import GoldenLayout from '@deephaven/golden-layout';
+import type { ItemConfigType } from '@deephaven/golden-layout';
 import JSZip from 'jszip';
 import SettingsMenu from '../settings/SettingsMenu';
 import AppControlsMenu from './AppControlsMenu';

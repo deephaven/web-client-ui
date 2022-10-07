@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/code-studio",
-  "version": "0.17.0",
+  "version": "0.19.1",
   "description": "Deephaven Code Studio",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
@@ -52,8 +52,7 @@
     "react-transition-group": "^4.4.2",
     "redux": "^4.2.0",
     "redux-thunk": "^2.4.1",
-    "shortid": "^2.2.16",
-    "webdav": "^4.6.1"
+    "shortid": "^2.2.16"
   },
   "dependenciesComments": {
     "@types/jszip": "3.1.7 is the closest to 3.2.2 available. JSZip adds official typings in 3.4.0, so remove if going past JSZip 3.4.0",

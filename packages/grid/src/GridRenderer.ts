@@ -1,4 +1,5 @@
 import clamp from 'lodash.clamp';
+import { ColorUtils } from '@deephaven/utils';
 import memoizeClear from './memoizeClear';
 import GridUtils from './GridUtils';
 import GridColorUtils from './GridColorUtils';
@@ -1377,6 +1378,11 @@ export class GridRenderer {
     { max: 1000 }
   );
 
+  getCachedColorIsDark = memoizeClear(
+    (color: string) => ColorUtils.isDark(color),
+    { max: 1000 }
+  );
+
   drawHeaders(context: CanvasRenderingContext2D, state: GridRenderState): void {
     const { theme } = state;
 
@@ -1615,13 +1621,7 @@ export class GridRenderer {
       visibleColumnWidths,
       movedColumns,
     } = metrics;
-    const {
-      headerBackgroundColor,
-      headerColor,
-      headerSeparatorColor,
-      columnHeaderHeight,
-      columnWidth,
-    } = theme;
+    const { columnHeaderHeight, columnWidth } = theme;
     const { columnHeaderMaxDepth } = model;
     const { minX, maxX } = bounds;
     const visibleWidth = maxX - minX;
@@ -1641,10 +1641,7 @@ export class GridRenderer {
 
     if (depth === 0) {
       // Make sure base column header background always goes to the right edge
-      this.drawColumnHeader(context, state, '', minX, maxX, {
-        backgroundColor: headerBackgroundColor,
-        separatorColor: headerSeparatorColor,
-      });
+      this.drawColumnHeader(context, state, '', minX, maxX);
 
       // Draw base column headers
       for (let i = startIndex; i <= endIndex; i += 1) {
@@ -1745,9 +1742,7 @@ export class GridRenderer {
             x,
             Math.min(columnGroupRight - columnGroupLeft, visibleWidth),
             {
-              backgroundColor: columnGroupColor ?? headerBackgroundColor,
-              textColor: headerColor,
-              separatorColor: headerSeparatorColor,
+              backgroundColor: columnGroupColor ?? undefined,
             },
             bounds
           );
@@ -1771,7 +1766,7 @@ export class GridRenderer {
     index: VisibleIndex,
     bounds: { minX: number; maxX: number }
   ): void {
-    const { metrics, model, theme } = state;
+    const { metrics, model } = state;
     const {
       modelColumns,
       visibleColumnWidths,
@@ -1782,7 +1777,6 @@ export class GridRenderer {
     const x = getOrThrow(visibleColumnXs, index) + gridX;
     const modelColumn = getOrThrow(modelColumns, index);
     const text = model.textForColumnHeader(modelColumn);
-    const { headerBackgroundColor, headerColor, headerSeparatorColor } = theme;
 
     if (text == null) {
       return;
@@ -1795,10 +1789,7 @@ export class GridRenderer {
       x,
       width,
       {
-        backgroundColor:
-          model.colorForColumnHeader(modelColumn) ?? headerBackgroundColor,
-        textColor: headerColor,
-        separatorColor: headerSeparatorColor,
+        backgroundColor: model.colorForColumnHeader(modelColumn) ?? undefined,
       },
       bounds
     );
@@ -1822,7 +1813,15 @@ export class GridRenderer {
     }
     const { metrics, theme } = state;
 
-    const { headerHorizontalPadding, columnHeaderHeight } = theme;
+    const {
+      headerHorizontalPadding,
+      columnHeaderHeight,
+      headerBackgroundColor,
+      headerColor,
+      headerSeparatorColor,
+      black,
+      white,
+    } = theme;
     const { fontWidths, width } = metrics;
     const fontWidth =
       fontWidths.get(context.font) ?? GridRenderer.DEFAULT_FONT_WIDTH;
@@ -1830,8 +1829,26 @@ export class GridRenderer {
     const maxWidth = columnWidth - headerHorizontalPadding * 2;
     const maxLength = maxWidth / fontWidth;
 
-    const { backgroundColor, textColor = '#ffffff', separatorColor } =
-      style ?? {};
+    const {
+      backgroundColor = headerBackgroundColor,
+      separatorColor = headerSeparatorColor,
+    } = style ?? {};
+
+    let { textColor = headerColor } = style ?? {};
+
+    try {
+      const isDarkBackground = this.getCachedColorIsDark(backgroundColor);
+      const isDarkText = this.getCachedColorIsDark(textColor);
+      if (isDarkBackground && isDarkText) {
+        textColor = white;
+      } else if (!isDarkBackground && !isDarkText) {
+        textColor = black;
+      }
+    } catch {
+      // Invalid color provided
+      // no-op since we don't use logging in base grid
+    }
+
     let { minX = 0, maxX = width } = bounds ?? {};
 
     context.save();

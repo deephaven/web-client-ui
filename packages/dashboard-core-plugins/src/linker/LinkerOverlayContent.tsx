@@ -3,7 +3,7 @@ import classNames from 'classnames';
 import { ContextActions, GLOBAL_SHORTCUTS } from '@deephaven/components';
 import { LayoutUtils, PanelManager } from '@deephaven/dashboard';
 import Log from '@deephaven/log';
-import GoldenLayout from '@deephaven/golden-layout';
+import type GoldenLayout from '@deephaven/golden-layout';
 import {
   isLinkableFromPanel,
   Link,

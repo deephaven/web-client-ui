@@ -456,7 +456,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     canCopy: true,
     canDownloadCsv: true,
     frozenColumns: null,
-    theme: {},
+    theme: IrisGridTheme,
     canToggleSearch: true,
   };
 

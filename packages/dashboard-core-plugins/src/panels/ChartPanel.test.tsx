@@ -4,9 +4,9 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import dh from '@deephaven/jsapi-shim';
 import { MockChartModel } from '@deephaven/chart';
-import { Container } from '@deephaven/golden-layout';
+import type { Container } from '@deephaven/golden-layout';
 import { PanelComponent } from '@deephaven/dashboard';
-import { ChartPanel, ChartPanelMetaData } from './ChartPanel';
+import { ChartPanel, ChartPanelMetadata } from './ChartPanel';
 import ChartColumnSelectorOverlay from './ChartColumnSelectorOverlay';
 
 const DASHBOARD_ID = 'TEST_DASHBOARD_ID';
@@ -89,7 +89,7 @@ function makeChartPanelWrapper({
     <ChartPanel
       columnSelectionValidator={columnSelectionValidator}
       makeModel={makeModel}
-      metadata={metadata as ChartPanelMetaData}
+      metadata={metadata as ChartPanelMetadata}
       glContainer={(glContainer as unknown) as Container}
       glEventHub={glEventHub}
       inputFilters={inputFilters}
