@@ -171,7 +171,7 @@ export const ConsolePlugin = (
 
   /**
    * Show the panel for the given file metadata.
-   * If the panel is n ot already open, then it just logs an error and does nothing.
+   * If the panel is not already open, then it just logs an error and does nothing.
    */
   const showFilePanel = useCallback(
     fileMetadata => {

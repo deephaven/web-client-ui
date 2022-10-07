@@ -204,19 +204,16 @@ const Aggregations = ({
     ({
       item,
       itemIndex,
-      isClone,
+      isClone = false,
       selectedCount,
     }: DraggableRenderItemProps<Aggregation>) => {
       const text = item.operation;
-      const badgeText =
-        isClone !== undefined && isClone ? `${selectedCount}` : undefined;
-      const className =
-        isClone !== undefined && isClone ? 'item-list-item-clone' : undefined;
+      const badgeText = isClone ? `${selectedCount}` : undefined;
+      const className = isClone ? 'item-list-item-clone' : undefined;
       const isRollupOperation = AggregationUtils.isRollupOperation(
         item.operation
       );
-      const isEditable =
-        (isClone === undefined || isClone === false) && !isRollupOperation;
+      const isEditable = !isClone && !isRollupOperation;
       return (
         <>
           <div
@@ -237,26 +234,25 @@ const Aggregations = ({
             {DraggableItemList.renderBadge({ text: badgeText })}
             {DraggableItemList.renderHandle()}
           </div>
-          {isClone === undefined ||
-            (!isClone && (
-              <>
-                <Button
-                  kind="ghost"
-                  className="btn-edit"
-                  icon={vsEdit}
-                  tooltip="Edit Columns"
-                  onClick={() => onEdit(item)}
-                  disabled={!isEditable}
-                />
-                <Button
-                  kind="ghost"
-                  className="btn-delete"
-                  icon={vsTrash}
-                  tooltip="Delete Aggregation"
-                  onClick={() => handleDeleteClicked(itemIndex)}
-                />
-              </>
-            ))}
+          {!isClone && (
+            <>
+              <Button
+                kind="ghost"
+                className="btn-edit"
+                icon={vsEdit}
+                tooltip="Edit Columns"
+                onClick={() => onEdit(item)}
+                disabled={!isEditable}
+              />
+              <Button
+                kind="ghost"
+                className="btn-delete"
+                icon={vsTrash}
+                tooltip="Delete Aggregation"
+                onClick={() => handleDeleteClicked(itemIndex)}
+              />
+            </>
+          )}
         </>
       );
     },
