@@ -197,8 +197,7 @@ class TableCsvExporter extends Component<
         this.setState({
           errorMessage: (
             <p>
-              <FontAwesomeIcon icon={vsWarning} /> CSV download failed,
-              TableCsvExporter rejected promise.
+              <FontAwesomeIcon icon={vsWarning} /> {`${error}`}
             </p>
           ),
         });
