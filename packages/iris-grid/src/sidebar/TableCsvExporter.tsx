@@ -8,8 +8,10 @@ import dh, { Table, TableViewportSubscription } from '@deephaven/jsapi-shim';
 import { TimeUtils } from '@deephaven/utils';
 import shortid from 'shortid';
 import './TableCsvExporter.scss';
+import Log from '@deephaven/log';
 import IrisGridModel from '../IrisGridModel';
 
+const log = Log.module('TableCsvExporter');
 interface TableCsvExporterProps {
   model: IrisGridModel;
   name: string;
@@ -164,7 +166,7 @@ class TableCsvExporter extends Component<
     this.setState({ errorMessage: null });
   }
 
-  handleDownloadClick(): void {
+  async handleDownloadClick(): Promise<void> {
     const {
       model,
       isDownloading,
@@ -184,12 +186,23 @@ class TableCsvExporter extends Component<
     const snapshotRanges = this.getSnapshotRanges();
     if (this.validateOptionInput()) {
       onDownloadStart();
-      model.export().then(frozenTable => {
+      try {
+        const frozenTable = await model.export();
         const tableSubscription = frozenTable.setViewport(0, 0);
-        tableSubscription.getViewportData().then(() => {
-          onDownload(fileName, frozenTable, tableSubscription, snapshotRanges);
+        await tableSubscription.getViewportData();
+        onDownload(fileName, frozenTable, tableSubscription, snapshotRanges);
+      } catch (error) {
+        log.error('CSV download failed', error);
+
+        this.setState({
+          errorMessage: (
+            <p>
+              <FontAwesomeIcon icon={vsWarning} /> {`${error}`}
+            </p>
+          ),
         });
-      });
+        onCancel();
+      }
     }
   }
 
