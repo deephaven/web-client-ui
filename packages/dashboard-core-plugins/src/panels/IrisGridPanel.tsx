@@ -598,7 +598,7 @@ export class IrisGridPanel extends PureComponent<
     modelRow: GridRangeIndex;
     modelColumn: GridRangeIndex;
   }): ContextAction {
-    return this.pluginRef.current?.getMenu?.({ data: obj }) ?? [];
+    return this.pluginRef.current?.getMenu?.(obj) ?? [];
   }
 
   isColumnSelectionValid(tableColumn: Column | null): boolean {
