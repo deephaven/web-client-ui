@@ -72,7 +72,7 @@ function getClassName(kind: ButtonKind, iconOnly: boolean): string {
     case 'ghost':
       return classNames('btn-link', {
         'btn-link-icon': iconOnly,
-        'px-2': iconOnly,
+        'btn-link-icon-only': iconOnly,
       });
   }
 }
