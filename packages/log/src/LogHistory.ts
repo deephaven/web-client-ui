@@ -69,7 +69,7 @@ class LogHistory {
       default:
         break;
     }
-    return stringStack ? `\t${stringStack.join('\n\t')}` : '';
+    return stringStack != null ? `\t${stringStack.join('\n\t')}` : '';
   }
 
   constructor(proxy: LogProxy) {
@@ -164,7 +164,9 @@ class LogHistory {
         // eslint-disable-next-line prefer-template
         `${item.time.toISOString()} ${item.type}\t` +
         `${LogHistory.formatMessages(item.messages)}` +
-        (item.stack ? `\n${LogHistory.formatStack(item.stack, item.type)}` : '')
+        (item.stack != null
+          ? `\n${LogHistory.formatStack(item.stack, item.type)}`
+          : '')
     );
 
     return historyString.join('\n');

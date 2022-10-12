@@ -54,7 +54,8 @@ class IrisGridCellOverflowMouseHandler extends GridMouseHandler {
     }
     const { metrics } = state;
     const { model } = props;
-    const { canvasContext: context } = grid || {};
+
+    const { canvasContext: context } = grid;
     const theme = grid.getTheme();
     const rendererState = {
       context,
@@ -88,7 +89,7 @@ class IrisGridCellOverflowMouseHandler extends GridMouseHandler {
     }
     const { metrics } = state;
     const { model } = props;
-    const { canvasContext: context } = grid || {};
+    const { canvasContext: context } = grid;
     const theme = grid.getTheme();
     const rendererState = {
       context,

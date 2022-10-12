@@ -243,7 +243,11 @@ class Grid extends PureComponent<GridProps, GridState> {
 
     // backingStorePixelRatio is deprecated, but check it just in case
     const legacyContext = context as LegacyCanvasRenderingContext2D;
+
     const backingStorePixelRatio =
+      // Not worth converting to a massive if structure
+      // Converting would reduce readability and maintainability
+      // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
       legacyContext.webkitBackingStorePixelRatio ||
       legacyContext.mozBackingStorePixelRatio ||
       legacyContext.msBackingStorePixelRatio ||
@@ -259,7 +263,7 @@ class Grid extends PureComponent<GridProps, GridState> {
    * @returns Class name with the grid-cursor prefix or null if no cursor provided
    */
   static getCursorClassName(cursor: string | null): string | null {
-    return cursor ? `grid-cursor-${cursor}` : null;
+    return cursor != null && cursor !== '' ? `grid-cursor-${cursor}` : null;
   }
 
   // Need to disable react/sort-comp so I can put the fields here
@@ -893,32 +897,37 @@ class Grid extends PureComponent<GridProps, GridState> {
         let right = null;
         let bottom = null;
         if (maximizePreviousRange) {
-          left = autoSelectRow
-            ? null
-            : Math.min(column ?? 0, lastSelectedRange.startColumn ?? 0);
-          top = autoSelectColumn
-            ? null
-            : Math.min(row ?? 0, lastSelectedRange.startRow ?? 0);
-          right = autoSelectRow
-            ? null
-            : Math.max(column ?? 0, lastSelectedRange.endColumn ?? 0);
-          bottom = autoSelectColumn
-            ? null
-            : Math.max(row ?? 0, lastSelectedRange.endRow ?? 0);
+          left =
+            autoSelectRow !== undefined && autoSelectRow
+              ? null
+              : Math.min(column ?? 0, lastSelectedRange.startColumn ?? 0);
+          top =
+            autoSelectColumn !== undefined && autoSelectColumn
+              ? null
+              : Math.min(row ?? 0, lastSelectedRange.startRow ?? 0);
+          right =
+            autoSelectRow !== undefined && autoSelectRow
+              ? null
+              : Math.max(column ?? 0, lastSelectedRange.endColumn ?? 0);
+          bottom =
+            autoSelectColumn !== undefined && autoSelectColumn
+              ? null
+              : Math.max(row ?? 0, lastSelectedRange.endRow ?? 0);
         } else {
           left = lastSelectedRange.startColumn;
           top = lastSelectedRange.startRow;
 
           if (selectionStartColumn != null || selectionStartRow != null) {
-            if (!autoSelectRow) {
+            if (autoSelectRow === undefined || !autoSelectRow) {
               left = selectionStartColumn;
             }
-            if (!autoSelectColumn) {
+            if (autoSelectColumn === undefined || !autoSelectColumn) {
               top = selectionStartRow;
             }
           }
-          right = autoSelectRow ? null : column;
-          bottom = autoSelectColumn ? null : row;
+          right = autoSelectRow !== undefined && autoSelectRow ? null : column;
+          bottom =
+            autoSelectColumn !== undefined && autoSelectColumn ? null : row;
         }
         const selectedRange = GridRange.makeNormalized(
           left,
@@ -940,8 +949,10 @@ class Grid extends PureComponent<GridProps, GridState> {
         };
       }
       const newRanges = [...selectedRanges];
-      const selectedColumn = autoSelectRow ? null : column;
-      const selectedRow = autoSelectColumn ? null : row;
+      const selectedColumn =
+        autoSelectRow !== undefined && autoSelectRow ? null : column;
+      const selectedRow =
+        autoSelectColumn !== undefined && autoSelectColumn ? null : row;
       newRanges.push(
         GridRange.makeNormalized(
           selectedColumn,
@@ -977,7 +988,7 @@ class Grid extends PureComponent<GridProps, GridState> {
 
       if (
         selectedRanges.length === 1 &&
-        (autoSelectRow
+        (autoSelectRow !== undefined && autoSelectRow
           ? GridRange.rowCount(selectedRanges) === 1
           : GridRange.cellCount(selectedRanges) === 1) &&
         GridRange.rangeArraysEqual(selectedRanges, lastSelectedRanges)
@@ -1071,10 +1082,16 @@ class Grid extends PureComponent<GridProps, GridState> {
     const { model, theme } = this.props;
     const { autoSelectRow, autoSelectColumn } = theme;
 
-    const top = autoSelectColumn ? null : 0;
-    const bottom = autoSelectColumn ? null : model.rowCount - 1;
-    const left = autoSelectRow ? null : 0;
-    const right = autoSelectRow ? null : model.columnCount - 1;
+    const top = autoSelectColumn !== undefined && autoSelectColumn ? null : 0;
+    const bottom =
+      autoSelectColumn !== undefined && autoSelectColumn
+        ? null
+        : model.rowCount - 1;
+    const left = autoSelectRow !== undefined && autoSelectRow ? null : 0;
+    const right =
+      autoSelectRow !== undefined && autoSelectRow
+        ? null
+        : model.columnCount - 1;
     this.setSelectedRanges([new GridRange(left, top, right, bottom)]);
   }
 
@@ -1477,18 +1494,18 @@ class Grid extends PureComponent<GridProps, GridState> {
 
   addDocumentCursor(cursor: string | null = null): void {
     if (this.documentCursor === Grid.getCursorClassName(cursor)) return;
-    if (this.documentCursor) {
+    if (this.documentCursor != null) {
       document.documentElement.classList.remove(this.documentCursor);
     }
     this.documentCursor = Grid.getCursorClassName(cursor);
-    if (this.documentCursor) {
+    if (this.documentCursor != null) {
       document.documentElement.classList.add(this.documentCursor);
     }
     document.documentElement.classList.add('grid-block-events');
   }
 
   removeDocumentCursor(): void {
-    if (this.documentCursor) {
+    if (this.documentCursor != null) {
       document.documentElement.classList.remove(this.documentCursor);
       document.documentElement.classList.remove('grid-block-events');
       this.documentCursor = null;
@@ -1605,7 +1622,7 @@ class Grid extends PureComponent<GridProps, GridState> {
     const mouseHandlers = this.getMouseHandlers();
     for (let i = 0; i < mouseHandlers.length; i += 1) {
       const mouseHandler = mouseHandlers[i];
-      if (mouseHandler.onClick(gridPoint, this, event)) {
+      if (mouseHandler.onClick(gridPoint, this, event) !== false) {
         event.stopPropagation();
         event.preventDefault();
         break;
@@ -1625,7 +1642,7 @@ class Grid extends PureComponent<GridProps, GridState> {
     const mouseHandlers = this.getMouseHandlers();
     for (let i = 0; i < mouseHandlers.length; i += 1) {
       const mouseHandler = mouseHandlers[i];
-      if (mouseHandler.onContextMenu(gridPoint, this, event)) {
+      if (mouseHandler.onContextMenu(gridPoint, this, event) != null) {
         event.stopPropagation();
         event.preventDefault();
         break;
@@ -1642,7 +1659,7 @@ class Grid extends PureComponent<GridProps, GridState> {
     for (let i = 0; i < keyHandlers.length; i += 1) {
       const keyHandler = keyHandlers[i];
       const result = keyHandler.onDown(event, this);
-      if (result) {
+      if (result !== false) {
         const options = result as EventHandlerResultOptions;
         if (options?.stopPropagation ?? true) event.stopPropagation();
         if (options?.preventDefault ?? true) event.preventDefault();
@@ -1670,9 +1687,9 @@ class Grid extends PureComponent<GridProps, GridState> {
     for (let i = 0; i < mouseHandlers.length; i += 1) {
       const mouseHandler = mouseHandlers[i];
       const result =
-        mouseHandler[functionName] &&
+        mouseHandler[functionName] != null &&
         mouseHandler[functionName](gridPoint, this, event);
-      if (result) {
+      if (result !== false) {
         if (mouseHandler.cursor != null) {
           ({ cursor } = mouseHandler);
           if (addCursorToDocument) {

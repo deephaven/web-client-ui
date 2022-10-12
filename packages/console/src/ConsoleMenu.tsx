@@ -149,9 +149,7 @@ class ConsoleMenu extends PureComponent<ConsoleMenuProps, ConsoleMenuState> {
   }
 
   handleTableMenuOpened(): void {
-    if (this.tableSearchField && this.tableSearchField.focus) {
-      this.tableSearchField.focus();
-    }
+    this.tableSearchField?.focus();
   }
 
   handleWidgetFilterChange(e: ChangeEvent<HTMLInputElement>): void {
@@ -164,9 +162,7 @@ class ConsoleMenu extends PureComponent<ConsoleMenuProps, ConsoleMenuState> {
   }
 
   handleWidgetMenuOpened(): void {
-    if (this.widgetSearchField && this.widgetSearchField.focus) {
-      this.widgetSearchField.focus();
-    }
+    this.widgetSearchField?.focus();
   }
 
   render(): ReactElement {

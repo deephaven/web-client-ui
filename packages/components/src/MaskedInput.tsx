@@ -372,7 +372,7 @@ const MaskedInput = React.forwardRef<HTMLInputElement, MaskedInputProps>(
           return;
         }
         log.debug('handleSelectCapture', event);
-        const selectionStart = input.current.selectionStart || 0;
+        const selectionStart = input.current.selectionStart ?? 0;
         if (
           selectionStart === value.length &&
           selection != null &&

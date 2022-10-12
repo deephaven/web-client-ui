@@ -63,14 +63,14 @@ class IrisGridMetricCalculator extends GridMetricCalculator {
     if (isFilterBarShown) {
       gridY += theme.filterBarHeight;
     } else if (
-      (quickFilters && quickFilters.size > 0) ||
-      (advancedFilters && advancedFilters.size > 0)
+      (quickFilters != null && quickFilters.size > 0) ||
+      (advancedFilters != null && advancedFilters.size > 0)
     ) {
       gridY += theme.filterBarCollapsedHeight;
     }
     if (
       reverseType !== TableUtils.REVERSE_TYPE.NONE &&
-      sorts &&
+      sorts != null &&
       sorts.length > 0
     ) {
       gridY += theme.reverseHeaderBarHeight;

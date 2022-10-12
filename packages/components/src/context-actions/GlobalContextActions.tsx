@@ -14,7 +14,7 @@ class GlobalContextActions extends Component<GlobalContextActionsProps> {
     for (let i = 0; i < actions.length; i += 1) {
       const action = actions[i];
       const { shortcut } = action;
-      if (action.title || action.menuElement || shortcut) {
+      if (action.title != null || action.menuElement || shortcut) {
         const actionElement = (
           <GlobalContextAction
             key={`${action.title}.${shortcut?.id}`}

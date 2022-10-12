@@ -53,7 +53,11 @@ const BasicModal: React.FC<BasicModalProps> = props => {
   const disableModalCheckbox = useRef<HTMLInputElement>(null);
 
   const onConfirmClicked = useCallback(() => {
-    if (disableModalCheckbox.current?.checked && onModalDisable) {
+    if (
+      disableModalCheckbox.current !== null &&
+      disableModalCheckbox.current.checked &&
+      onModalDisable
+    ) {
       onModalDisable();
     }
     onConfirm();
@@ -84,7 +88,9 @@ const BasicModal: React.FC<BasicModalProps> = props => {
               defaultChecked={false}
               ref={disableModalCheckbox}
               data-testid={
-                dataTestId ? `${dataTestId}-checkbox-confirm` : undefined
+                dataTestId !== undefined
+                  ? `${dataTestId}-checkbox-confirm`
+                  : undefined
               }
             />
             <label
@@ -101,7 +107,9 @@ const BasicModal: React.FC<BasicModalProps> = props => {
             className="btn btn-outline-primary mr-auto"
             data-dismiss="modal"
             onClick={onDiscard}
-            data-testid={dataTestId ? `${dataTestId}-btn-discard` : undefined}
+            data-testid={
+              dataTestId !== undefined ? `${dataTestId}-btn-discard` : undefined
+            }
           >
             {discardButtonText}
           </button>
@@ -112,7 +120,9 @@ const BasicModal: React.FC<BasicModalProps> = props => {
             className="btn btn-outline-primary"
             data-dismiss="modal"
             onClick={onCancel}
-            data-testid={dataTestId ? `${dataTestId}-btn-cancel` : undefined}
+            data-testid={
+              dataTestId !== undefined ? `${dataTestId}-btn-cancel` : undefined
+            }
           >
             {cancelButtonText}
           </button>
@@ -122,7 +132,9 @@ const BasicModal: React.FC<BasicModalProps> = props => {
             kind="primary"
             onClick={onConfirmClicked}
             ref={confirmButton}
-            data-testid={dataTestId ? `${dataTestId}-btn-confirm` : undefined}
+            data-testid={
+              dataTestId !== undefined ? `${dataTestId}-btn-confirm` : undefined
+            }
           >
             {confirmButtonText}
           </Button>

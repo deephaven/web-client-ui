@@ -212,7 +212,7 @@ describe('quick filter tests', () => {
           expect(joinFilters[i - 1][expectedOperator]).toHaveBeenCalledWith(
             nextFilter
           );
-        } else if (nextFilter) {
+        } else if (nextFilter != null) {
           expect(filter[expectedOperator]).toHaveBeenCalledWith(nextFilter);
         } else {
           expect(filter[expectedOperator]).toHaveBeenCalled();

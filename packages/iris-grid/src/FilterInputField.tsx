@@ -137,11 +137,17 @@ class FilterInputField extends PureComponent<
   handleBlur(event: React.FocusEvent<HTMLInputElement>): void {
     const { relatedTarget } = event;
     // handleCommit results in a call that steals focus
-    if (relatedTarget?.classList.contains('context-menu-container')) {
+    if (
+      relatedTarget != null &&
+      relatedTarget.classList.contains('context-menu-container')
+    ) {
       // input blurred by calling context-menu
       // don't set grid focus, but do null column focus
       this.handleCommit(false, true);
-    } else if (relatedTarget?.classList.contains('advanced-filter-button')) {
+    } else if (
+      relatedTarget != null &&
+      relatedTarget.classList.contains('advanced-filter-button')
+    ) {
       // blurred by clicking an advanced filter button
       // don't set grid focus, maintain focusedFilterBarColumn state
       this.handleCommit(false, false);

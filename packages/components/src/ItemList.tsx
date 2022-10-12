@@ -141,7 +141,7 @@ export class ItemList<T> extends PureComponent<
   }: RenderItemProps<P>): JSX.Element {
     return (
       <div className="item-list-item-content">
-        {item && (item.displayValue || item.value || `${item}`)}
+        {item != null && (item.displayValue ?? item.value ?? `${item}`)}
       </div>
     );
   }

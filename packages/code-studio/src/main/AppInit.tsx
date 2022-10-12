@@ -270,7 +270,7 @@ const AppInit = (props: AppInitProps) => {
   ]);
 
   const initFonts = useCallback(() => {
-    if (document.fonts) {
+    if (document.fonts != null) {
       document.fonts.ready.then(() => {
         setIsFontLoading(false);
       });
@@ -288,9 +288,9 @@ const AppInit = (props: AppInitProps) => {
     [initClient, initFonts]
   );
 
-  const isLoading = (!workspace && !error) || isFontLoading;
-  const isLoaded = !isLoading && !error;
-  const errorMessage = error ? `${error}` : null;
+  const isLoading = (workspace == null && error == null) || isFontLoading;
+  const isLoaded = !isLoading && error == null;
+  const errorMessage = error != null ? `${error}` : null;
 
   return (
     <>

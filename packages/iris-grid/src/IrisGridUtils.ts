@@ -418,7 +418,7 @@ class IrisGridUtils {
     return {
       isSelectingPartition,
       partition,
-      partitionColumn: partitionColumn ? partitionColumn.name : null,
+      partitionColumn: partitionColumn != null ? partitionColumn.name : null,
     };
   }
 
@@ -895,7 +895,7 @@ class IrisGridUtils {
 
     let filters = [...quickFilters, ...advancedFilters];
     const { partition, partitionColumn: partitionColumnName } = tableSettings;
-    if (partition && partitionColumnName) {
+    if (partition != null && partitionColumnName != null) {
       const partitionColumn = IrisGridUtils.getColumnByName(
         columns,
         partitionColumnName
@@ -1242,7 +1242,7 @@ class IrisGridUtils {
    * @returns True if the ranges are valid, false otherwise
    */
   static isValidSnapshotRanges(ranges: GridRange[]): boolean {
-    if (!ranges || ranges.length === 0) {
+    if (ranges == null || ranges.length === 0) {
       return false;
     }
 
@@ -1294,7 +1294,7 @@ class IrisGridUtils {
     ranges: GridRange[],
     allColumns: Column[]
   ): Column[] {
-    if (!ranges || ranges.length === 0) {
+    if (ranges == null || ranges.length === 0) {
       return [];
     }
     if (ranges[0].startColumn === null && ranges[0].endColumn === null) {

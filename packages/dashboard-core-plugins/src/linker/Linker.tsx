@@ -296,8 +296,8 @@ export class Linker extends Component<LinkerProps, LinkerState> {
       };
 
       const type = LinkerUtils.getLinkType(
-        isReversed ? end : start,
-        isReversed ? start : end,
+        isReversed !== undefined && isReversed ? end : start,
+        isReversed !== undefined && isReversed ? start : end,
         overrideIsolatedLinkerPanelId ?? isolatedLinkerPanelId
       );
 
@@ -309,7 +309,10 @@ export class Linker extends Component<LinkerProps, LinkerState> {
           // filterSource links have a limit of 1 link per target
           // New link validation passed, delete existing links before adding the new one
           const { links } = this.props;
-          const existingLinkPanelId = isReversed ? start.panelId : end.panelId;
+          const existingLinkPanelId =
+            isReversed !== undefined && isReversed
+              ? start.panelId
+              : end.panelId;
           // In cases with multiple targets per panel (i.e. chart filters)
           // links would have to be filtered by panelId and columnName and columnType
           const linksToDelete = links.filter(
@@ -326,8 +329,8 @@ export class Linker extends Component<LinkerProps, LinkerState> {
 
       // Create a completed link from link in progress
       const newLink = {
-        start: isReversed ? end : start,
-        end: isReversed ? start : end,
+        start: isReversed !== undefined && isReversed ? end : start,
+        end: isReversed !== undefined && isReversed ? start : end,
         id,
         type,
       };
@@ -516,24 +519,30 @@ export class Linker extends Component<LinkerProps, LinkerState> {
     }
   }
 
-  getCachedLinks = memoize((links, linkInProgress, isolateForPanelId) => {
-    const combinedLinks = [...links];
+  getCachedLinks = memoize(
+    (
+      links: Link[],
+      linkInProgress: Link | undefined,
+      isolateForPanelId: string | undefined
+    ) => {
+      const combinedLinks = [...links];
 
-    if (linkInProgress && linkInProgress.start) {
-      combinedLinks.push(linkInProgress);
-    }
+      if (linkInProgress != null && linkInProgress.start != null) {
+        combinedLinks.push(linkInProgress);
+      }
 
-    if (isolateForPanelId !== undefined) {
-      return combinedLinks.filter(
-        link =>
-          link?.start?.panelId === isolateForPanelId ||
-          link?.end?.panelId === isolateForPanelId ||
-          link?.end == null
-      );
+      if (isolateForPanelId !== undefined) {
+        return combinedLinks.filter(
+          link =>
+            link?.start?.panelId === isolateForPanelId ||
+            link?.end?.panelId === isolateForPanelId ||
+            link?.end == null
+        );
+      }
+      // Show all links in regular linker mode -- both isolated and not
+      return combinedLinks;
     }
-    // Show all links in regular linker mode -- both isolated and not
-    return combinedLinks;
-  });
+  );
 
   isOverlayShown(): boolean {
     const { activeTool } = this.props;
@@ -602,9 +611,10 @@ export class Linker extends Component<LinkerProps, LinkerState> {
       columnType: tableColumn.type,
     };
 
-    const type = isReversed
-      ? LinkerUtils.getLinkType(end, start, isolatedLinkerPanelId)
-      : LinkerUtils.getLinkType(start, end, isolatedLinkerPanelId);
+    const type =
+      isReversed !== undefined && isReversed
+        ? LinkerUtils.getLinkType(end, start, isolatedLinkerPanelId)
+        : LinkerUtils.getLinkType(start, end, isolatedLinkerPanelId);
 
     this.updateLinkInProgressType(linkInProgress, type);
 

@@ -202,7 +202,7 @@ class GridColumnMoveMouseHandler extends GridMouseHandler {
 
       const { mouseX, mouseY } = grid.state;
 
-      if (!metrics || mouseX == null || mouseY == null) {
+      if (metrics == null || mouseX == null || mouseY == null) {
         return;
       }
 
@@ -472,7 +472,7 @@ class GridColumnMoveMouseHandler extends GridMouseHandler {
     }
 
     // Check if we should pin to the edge of the parent
-    if (parentGroup) {
+    if (parentGroup !== undefined) {
       const parentVisibleRange = parentGroup.getVisibleRange(movedColumns);
       // Cannot move to this left position, pin to left of parent
       if (swapColumn.visibleIndex < parentVisibleRange[0]) {

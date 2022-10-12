@@ -144,7 +144,7 @@ export class TableUtils {
     sorts: Sort[],
     columnIndex: number
   ): Sort | null {
-    if (!columns || columnIndex < 0 || columnIndex >= columns.length) {
+    if (columns == null || columnIndex < 0 || columnIndex >= columns.length) {
       return null;
     }
 
@@ -164,7 +164,7 @@ export class TableUtils {
     direction: SortDirection,
     isAbs: boolean
   ): Sort | null {
-    if (!columns || columnIndex < 0 || columnIndex >= columns.length) {
+    if (columns == null || columnIndex < 0 || columnIndex >= columns.length) {
       return null;
     }
 
@@ -225,7 +225,7 @@ export class TableUtils {
     isAbs: boolean,
     addToExisting: boolean
   ): Sort[] {
-    if (!sorts || modelColumn < 0 || modelColumn >= columns.length) {
+    if (sorts == null || modelColumn < 0 || modelColumn >= columns.length) {
       return [];
     }
 
@@ -502,7 +502,7 @@ export class TableUtils {
     if (TableUtils.isBooleanType(type)) {
       return this.makeQuickBooleanFilter(column, text);
     }
-    if (timeZone && TableUtils.isDateType(type)) {
+    if (timeZone != null && TableUtils.isDateType(type)) {
       return this.makeQuickDateFilter(column, text, timeZone);
     }
     if (TableUtils.isCharType(type)) {
@@ -773,7 +773,7 @@ export class TableUtils {
 
     try {
       const boolValue = TableUtils.makeBooleanValue(cleanValue);
-      if (boolValue) {
+      if (boolValue != null && boolValue) {
         filter = filter.isTrue();
       } else if (boolValue === null) {
         filter = filter.isNull();
@@ -1484,7 +1484,7 @@ export class TableUtils {
           )
         );
       } else if (TableUtils.isBooleanType(column.type)) {
-        values.push(dh.FilterValue.ofBoolean(!!value));
+        values.push(dh.FilterValue.ofBoolean(Boolean(value)));
       } else {
         values.push(dh.FilterValue.ofNumber(value));
       }

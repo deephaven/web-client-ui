@@ -61,8 +61,8 @@ interface RollupRowsState {
 
 class RollupRows extends Component<RollupRowsProps, RollupRowsState> {
   static SORT = Object.freeze({
-    ASCENDING: 'ASCENDING',
-    DESCENDING: 'DESCENDING',
+    ASCENDING: 'ASC',
+    DESCENDING: 'DESC',
   });
 
   static defaultProps = {
@@ -78,9 +78,11 @@ class RollupRows extends Component<RollupRowsProps, RollupRowsState> {
     isClone?: boolean;
     selectedCount?: number;
   }): ReactElement {
-    const text = item && item.name;
-    const badgeText = isClone ? `${selectedCount}` : undefined;
-    const className = isClone ? 'item-list-item-clone' : '';
+    const text = item?.name;
+    const badgeText =
+      isClone !== undefined && isClone ? `${selectedCount}` : undefined;
+    const className =
+      isClone !== undefined && isClone ? 'item-list-item-clone' : '';
     return DraggableItemList.renderTextItem({ text, badgeText, className });
   }
 
@@ -406,7 +408,7 @@ class RollupRows extends Component<RollupRowsProps, RollupRowsState> {
       columns.filter(
         column =>
           RollupRows.isGroupable(column) &&
-          !groupedColumns.find(name => name === column.name)
+          groupedColumns.find(name => name === column.name) != null
       )
   );
 
@@ -440,14 +442,17 @@ class RollupRows extends Component<RollupRowsProps, RollupRowsState> {
     isClone?: boolean;
     selectedCount?: number;
   }): ReactElement {
-    const indent = isClone ? '' : '\u00A0\u00A0'.repeat(itemIndex);
+    const indent =
+      isClone !== undefined && isClone ? '' : '\u00A0\u00A0'.repeat(itemIndex);
     const text = `${indent}${item}`;
-    const badgeText = isClone ? `${selectedCount}` : undefined;
-    const className = isClone ? 'item-list-item-clone' : '';
+    const badgeText =
+      isClone !== undefined && isClone ? `${selectedCount}` : undefined;
+    const className =
+      isClone !== undefined && isClone ? 'item-list-item-clone' : '';
     return (
       <>
         {DraggableItemList.renderTextItem({ text, badgeText, className })}
-        {!isClone && (
+        {(isClone === undefined || !isClone) && (
           <Button
             kind="ghost"
             className="btn btn-link btn-link-icon btn-delete-grouping float-right"

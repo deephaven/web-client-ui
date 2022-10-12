@@ -150,7 +150,7 @@ export class GridRenderer {
       return str;
     }
 
-    if (truncationChar) {
+    if (truncationChar !== undefined) {
       const charWidth = context.measureText(truncationChar).width;
       return truncationChar.repeat(Math.max(1, Math.floor(width / charWidth)));
     }
@@ -789,7 +789,7 @@ export class GridRenderer {
     if (mouseX == null || mouseY == null) return;
 
     const mouseColumn = GridUtils.getColumnAtX(mouseX, metrics);
-    if (mouseColumn == null || !theme.columnHoverBackgroundColor) {
+    if (mouseColumn == null || theme.columnHoverBackgroundColor == null) {
       return;
     }
 
@@ -813,7 +813,7 @@ export class GridRenderer {
     if (mouseX == null || mouseY == null) return;
 
     const { maxX } = metrics;
-    if (mouseX > maxX || !theme.rowHoverBackgroundColor) {
+    if (mouseX > maxX || theme.rowHoverBackgroundColor == null) {
       return;
     }
 
@@ -841,7 +841,7 @@ export class GridRenderer {
       mouseX == null ||
       mouseY == null ||
       mouseX > maxX + rowFooterWidth ||
-      !theme.rowHoverBackgroundColor
+      theme.rowHoverBackgroundColor == null
     ) {
       return;
     }
@@ -867,7 +867,7 @@ export class GridRenderer {
     const y = getOrThrow(visibleRowYs, row);
     const rowHeight = getOrThrow(visibleRowHeights, row);
 
-    if (theme.rowHoverBackgroundColor) {
+    if (theme.rowHoverBackgroundColor != null) {
       context.fillStyle = theme.rowHoverBackgroundColor;
     }
     for (let i = 0; i < selectedRanges.length; i += 1) {
@@ -878,7 +878,7 @@ export class GridRenderer {
         startRow <= row &&
         endRow >= row
       ) {
-        if (theme.selectedRowHoverBackgroundColor) {
+        if (theme.selectedRowHoverBackgroundColor != null) {
           context.fillStyle = theme.selectedRowHoverBackgroundColor;
         }
         break;
@@ -912,18 +912,18 @@ export class GridRenderer {
     columnColor: NullableGridColor,
     rowColor: NullableGridColor
   ): void {
-    if (!columnColor && !rowColor) {
+    if (columnColor == null && rowColor == null) {
       return;
     }
 
     context.lineWidth = 1;
     context.beginPath();
 
-    if (columnColor) {
+    if (columnColor != null) {
       context.strokeStyle = columnColor;
       this.drawGridLinesForColumns(context, state, columns);
     }
-    if (rowColor) {
+    if (rowColor != null) {
       context.strokeStyle = rowColor;
       this.drawGridLinesForRows(context, state, rows);
     }
@@ -1027,7 +1027,7 @@ export class GridRenderer {
     const hasExpandableRows =
       isExpandableGridModel(model) && model.hasExpandableRows;
 
-    if (backgroundColor) {
+    if (backgroundColor != null) {
       const x = getOrThrow(visibleColumnXs, column) + 1;
       const y = getOrThrow(visibleRowYs, row) + 1;
       const columnWidth = getOrThrow(visibleColumnWidths, column) - 1;
@@ -1824,7 +1824,7 @@ export class GridRenderer {
     } = theme;
     const { fontWidths, width } = metrics;
     const fontWidth =
-      fontWidths.get(context.font) || GridRenderer.DEFAULT_FONT_WIDTH;
+      fontWidths.get(context.font) ?? GridRenderer.DEFAULT_FONT_WIDTH;
 
     const maxWidth = columnWidth - headerHorizontalPadding * 2;
     const maxLength = maxWidth / fontWidth;
@@ -1856,12 +1856,12 @@ export class GridRenderer {
     context.clip();
 
     // Fill background color if specified
-    if (backgroundColor) {
+    if (backgroundColor != null) {
       context.fillStyle = backgroundColor;
       context.fillRect(columnX, 0, columnWidth, columnHeaderHeight);
     }
 
-    if (separatorColor) {
+    if (separatorColor != null) {
       context.strokeStyle = separatorColor;
       context.beginPath();
 

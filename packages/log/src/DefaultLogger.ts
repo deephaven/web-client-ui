@@ -11,7 +11,7 @@ class DefaultLogger extends Logger {
   modules: Record<string, Logger>;
 
   module(name: string): Logger {
-    if (!this.modules[name]) {
+    if (this.modules[name] == null) {
       this.modules[name] = new Logger(name, this.level);
     }
 
@@ -21,7 +21,7 @@ class DefaultLogger extends Logger {
   setLogLevel(level: number): void {
     super.setLogLevel(level);
 
-    if (!this.modules) {
+    if (this.modules == null) {
       return;
     }
 

@@ -78,7 +78,7 @@ export class MarkdownNotebook extends PureComponent<
 
   commands: Map<number, string>;
 
-  codeElements;
+  codeElements: Map<number, React.RefObject<HTMLDivElement>>;
 
   editorScrollView: RefObject<HTMLDivElement>;
 
@@ -123,8 +123,8 @@ export class MarkdownNotebook extends PureComponent<
     const newNextStartLine = this.getNextStartLine(startLine);
     const element = this.codeElements.get(startLine)?.current;
     const nextElement = element?.parentElement?.nextElementSibling;
-    if (nextElement) {
-      const { offsetTop } = nextElement;
+    if (nextElement != null) {
+      const { offsetTop } = nextElement as HTMLElement;
       const top = offsetTop;
       this.editorScrollView.current?.scroll({
         top,
@@ -161,11 +161,12 @@ export class MarkdownNotebook extends PureComponent<
     const isSelected =
       nextStartLine === line ||
       (isFirstBlock && nextStartLine == null && !hasRunCode);
-    const language = className?.startsWith('language-')
-      ? className.substring(9)
-      : 'plaintext';
+    const language =
+      className !== undefined && className.startsWith('language-')
+        ? className.substring(9)
+        : 'plaintext';
 
-    if (inline) {
+    if (inline != null && inline) {
       return <code className={className}>{children}</code>;
     }
 

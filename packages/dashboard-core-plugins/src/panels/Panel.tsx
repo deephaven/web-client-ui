@@ -167,7 +167,7 @@ class Panel extends PureComponent<PanelProps, PanelState> {
   }
 
   handleTab(tab: Tab): void {
-    if (tab) {
+    if (tab != null) {
       this.setState({
         title: LayoutUtils.getTitleFromTab(tab),
       });
@@ -298,16 +298,18 @@ class Panel extends PureComponent<PanelProps, PanelState> {
     };
   }
 
-  getAdditionActions = memoize((actions, isClonable, isRenamable) => {
-    const additionalActions = [];
-    if (isClonable) {
-      additionalActions.push(this.getCloneAction());
+  getAdditionActions = memoize(
+    (actions, isClonable: boolean, isRenamable: boolean) => {
+      const additionalActions = [];
+      if (isClonable) {
+        additionalActions.push(this.getCloneAction());
+      }
+      if (isRenamable) {
+        additionalActions.push(this.getRenameAction());
+      }
+      return [...additionalActions, ...actions];
     }
-    if (isRenamable) {
-      additionalActions.push(this.getRenameAction());
-    }
-    return [...additionalActions, ...actions];
-  });
+  );
 
   render(): ReactElement {
     const {
@@ -337,7 +339,7 @@ class Panel extends PureComponent<PanelProps, PanelState> {
           isLoaded={isLoaded}
           isLoading={isLoading}
         />
-        {glTab &&
+        {glTab != null &&
           ReactDOM.createPortal(
             <>
               <PanelContextMenu
@@ -357,7 +359,7 @@ class Panel extends PureComponent<PanelProps, PanelState> {
                   onSubmit={this.handleRenameSubmit}
                 />
               )}
-              {renderTabTooltip && (
+              {renderTabTooltip != null && (
                 <Tooltip
                   interactive
                   options={{

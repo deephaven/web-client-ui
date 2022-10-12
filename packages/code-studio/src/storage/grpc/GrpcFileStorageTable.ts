@@ -85,10 +85,10 @@ export class GrpcFileStorageTable implements FileStorageTable {
   async setExpanded(path: string, expanded: boolean): Promise<void> {
     const paths = path.split('/');
     let nextPath = paths.shift();
-    if (!nextPath) {
+    if (nextPath === undefined || nextPath === '') {
       nextPath = paths.shift();
     }
-    if (!nextPath) {
+    if (nextPath === undefined || nextPath === '') {
       throw new Error(`Invalid path: ${path}`);
     }
     const remainingPath = paths.join('/');

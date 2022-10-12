@@ -27,9 +27,10 @@ export default class MarkdownEditor extends PureComponent<
 
   renderMarkdown: CodeComponent = props => {
     const { children, className } = props;
-    const language = className?.startsWith('language-')
-      ? className.substring(9)
-      : 'plaintext';
+    const language =
+      className !== undefined && className?.startsWith('language-')
+        ? className.substring(9)
+        : 'plaintext';
     return (
       <pre>
         <code>

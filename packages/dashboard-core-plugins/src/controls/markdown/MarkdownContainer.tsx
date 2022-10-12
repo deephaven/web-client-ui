@@ -32,7 +32,7 @@ export default class MarkdownContainer extends PureComponent<
       >
         <div
           className={classNames('text-muted', 'edit-hint', {
-            viewing: !isEditing,
+            viewing: isEditing === undefined || !isEditing,
           })}
         >
           <span>

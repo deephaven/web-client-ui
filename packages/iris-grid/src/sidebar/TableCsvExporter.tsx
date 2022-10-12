@@ -124,7 +124,7 @@ class TableCsvExporter extends Component<
         break;
       case TableCsvExporter.DOWNLOAD_OPTIONS.SELECTED_ROWS:
         snapshotRanges = [...selectedRanges].sort((rangeA, rangeB) => {
-          if (rangeA.startRow && rangeB.startRow) {
+          if (rangeA.startRow != null && rangeB.startRow != null) {
             return rangeA.startRow - rangeB.startRow;
           }
           return 0;
@@ -367,7 +367,9 @@ class TableCsvExporter extends Component<
           />
         </div>
         <div className="section-footer flex-column">
-          {errorMessage && <div className="error-message">{errorMessage}</div>}
+          {errorMessage != null && (
+            <div className="error-message">{errorMessage}</div>
+          )}
           {tableDownloadStatus && (
             <div className="download-status">
               {(tableDownloadStatus ===

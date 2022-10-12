@@ -198,7 +198,7 @@ class PanelManager {
 
   updatePanel(panel: PanelComponent): void {
     const panelId = LayoutUtils.getIdFromPanel(panel);
-    if (!panelId) {
+    if (panelId == null) {
       log.error('updatePanel Panel did not have an ID', panel);
       return;
     }
@@ -212,7 +212,7 @@ class PanelManager {
 
   removePanel(panel: PanelComponent): void {
     const panelId = LayoutUtils.getIdFromPanel(panel);
-    if (!panelId) {
+    if (panelId == null) {
       log.error('removePanel Panel did not have an ID', panel);
       return;
     }
@@ -237,7 +237,7 @@ class PanelManager {
     const index = this.closed.findIndex(
       closedConfig =>
         closedConfig === panelConfig ||
-        (closedConfig.id &&
+        (closedConfig.id != null &&
           panelConfig.id &&
           closedConfig.id === panelConfig.id)
     );
@@ -320,7 +320,7 @@ class PanelManager {
         config.component,
         config
       );
-      if (dehydratedConfig) {
+      if (dehydratedConfig != null) {
         this.closed.push(dehydratedConfig);
       }
     }

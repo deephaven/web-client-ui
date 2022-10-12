@@ -10,7 +10,7 @@ import type { Environment } from 'monaco-editor';
 // @ts-ignore
 import { KeyCodeUtils } from 'monaco-editor/esm/vs/base/common/keyCodes.js';
 // @ts-ignore
-import editorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker';
+import EditorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker';
 import Log from '@deephaven/log';
 import MonacoTheme from './MonacoTheme.module.scss';
 import PyLang from './lang/python';
@@ -24,13 +24,13 @@ const log = Log.module('MonacoUtils');
 
 declare global {
   interface Window {
-    MonacoEnvironment: Environment;
+    MonacoEnvironment?: Environment;
   }
 }
 
 window.MonacoEnvironment = {
   getWorker() {
-    return editorWorker();
+    return new EditorWorker();
   },
 };
 
@@ -372,7 +372,7 @@ class MonacoUtils {
     editor: monaco.editor.IStandaloneCodeEditor,
     keybinding: string | undefined
   ): void {
-    if (!keybinding) {
+    if (keybinding === undefined) {
       return;
     }
 
@@ -383,7 +383,7 @@ class MonacoUtils {
       ._getResolver()
       ._map.get(keybinding);
 
-    if (keybindings) {
+    if (keybindings != null) {
       keybindings.forEach((elem: { command: unknown }) => {
         log.debug2(
           `Removing Monaco keybinding ${keybinding} for ${elem.command}`

@@ -204,7 +204,7 @@ const Aggregations = ({
     ({
       item,
       itemIndex,
-      isClone,
+      isClone = false,
       selectedCount,
     }: DraggableRenderItemProps<Aggregation>) => {
       const text = item.operation;

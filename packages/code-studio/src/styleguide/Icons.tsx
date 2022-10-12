@@ -31,7 +31,7 @@ const Flash = ({ message, message: { text } }: FlashProps) => {
 
   useEffect(
     function setFlashMessage() {
-      if (!text) return;
+      if (text == null || text === '') return;
       setShow(true);
       const timeout = setTimeout(() => {
         setShow(false);

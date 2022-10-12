@@ -49,6 +49,11 @@ export function assertIsConsolePluginProps(
   assertIsDashboardPluginProps(props);
 }
 
+export interface FileMetadata {
+  id: string | null;
+  itemName: string;
+}
+
 export const ConsolePlugin = (
   props: Partial<ConsolePluginProps>
 ): JSX.Element => {
@@ -104,7 +109,7 @@ export const ConsolePlugin = (
   const getNotebookFileName = useCallback(({ language }) => {
     const extension = language === 'python' ? 'py' : language;
     let title = null;
-    if (!extension) {
+    if (extension == null) {
       log.debug('No extension for language', language);
       title = `Untitled-${notebookIndex.current}`;
     } else {
@@ -115,15 +120,15 @@ export const ConsolePlugin = (
   }, []);
 
   const getPanelIdForFileMetadata = useCallback(
-    (fileMetadata, createIfNecessary = true) => {
+    (fileMetadata: FileMetadata, createIfNecessary = true) => {
       const { id: fileId } = fileMetadata;
-      if (fileId && openFileMap.has(fileId)) {
+      if (fileId != null && openFileMap.has(fileId)) {
         return openFileMap.get(fileId);
       }
-      if (fileId && previewFileMap.has(fileId)) {
+      if (fileId != null && previewFileMap.has(fileId)) {
         return previewFileMap.get(fileId);
       }
-      if (createIfNecessary) {
+      if (createIfNecessary as boolean) {
         return shortid.generate();
       }
       return null;
@@ -157,7 +162,7 @@ export const ConsolePlugin = (
         }
       }
 
-      if (!panelId) {
+      if (panelId === undefined) {
         log.debug2(`File ${oldName} isn't open, no need to rename the tab`);
         return;
       }
@@ -184,9 +189,9 @@ export const ConsolePlugin = (
   );
 
   const registerFilePanel = useCallback(
-    (panelId, fileMetadata, isPreview) => {
+    (panelId, fileMetadata: FileMetadata, isPreview: boolean) => {
       log.debug('registerFilePanel', panelId, fileMetadata, isPreview);
-      if (!fileMetadata || !fileMetadata.id) {
+      if (fileMetadata == null || fileMetadata.id == null) {
         log.debug('Ignore empty file id', fileMetadata);
         return;
       }
@@ -220,14 +225,14 @@ export const ConsolePlugin = (
   );
 
   const unregisterFilePanel = useCallback(
-    (fileMetadata, isPreview) => {
+    (fileMetadata: FileMetadata, isPreview: boolean) => {
       // Note: unregister event is triggered AFTER new register when switching from preview to edit mode
       // due to the LayoutUtils implementation (new tab added before deleting the old one)
       // This doesn't cause any issues because previews and editable files are stored in different maps,
       // but this situation could be completely avoided by sending an event to the tab
       // to make it switch from preview to edit mode without re-mounting and re-registering
       log.debug('unregisterFileTab', fileMetadata, isPreview);
-      if (!fileMetadata || !fileMetadata.id) {
+      if (fileMetadata == null || fileMetadata.id == null) {
         log.debug('Ignore empty file id', fileMetadata);
         return;
       }
@@ -268,10 +273,10 @@ export const ConsolePlugin = (
   }, []);
 
   const fileIsOpen = useCallback(
-    fileMetadata => {
+    (fileMetadata: FileMetadata) => {
       const { id: fileId } = fileMetadata;
       log.debug('fileIsOpen', fileMetadata, fileId, openFileMap);
-      return fileId && openFileMap.has(fileId);
+      return fileId != null && openFileMap.has(fileId);
     },
     [openFileMap]
   );
@@ -280,17 +285,17 @@ export const ConsolePlugin = (
     fileMetadata => {
       const { id: fileId } = fileMetadata;
       log.debug('fileIsOpenAsPreview', fileMetadata, fileId, previewFileMap);
-      return fileId && previewFileMap.has(fileId);
+      return fileId != null && previewFileMap.has(fileId);
     },
     [previewFileMap]
   );
 
-  /**
+  /*
    * Attempts to focus the panel with the provided panelId
    */
   const focusPanelById = useCallback(
     panelId => {
-      if (!panelId) {
+      if (panelId == null) {
         return;
       }
 
@@ -344,7 +349,7 @@ export const ConsolePlugin = (
       fileMetadata = { id: null, itemName: getNotebookFileName(settings) }
     ) => {
       const panelId = getPanelIdForFileMetadata(fileMetadata);
-      if (fileIsOpen(fileMetadata) && panelId) {
+      if (fileIsOpen(fileMetadata) && panelId != null) {
         log.debug('File is already open, focus panel');
         showFilePanel(fileMetadata);
         focusPanelById(panelId);
@@ -376,7 +381,15 @@ export const ConsolePlugin = (
   );
 
   const selectNotebook = useCallback(
-    (session, sessionLanguage, settings, fileMetadata, shouldFocus = false) => {
+    (
+      session,
+      sessionLanguage,
+      settings,
+      fileMetadata,
+      // linter recognizes shouldFocus as any if I don't specify boolean here
+      // eslint-disable-next-line @typescript-eslint/no-inferrable-types
+      shouldFocus: boolean = false
+    ) => {
       log.debug('selectNotebook', fileMetadata, shouldFocus);
       const isFileOpen = fileIsOpen(fileMetadata);
       const isFileOpenAsPreview = fileIsOpenAsPreview(fileMetadata);
@@ -445,10 +458,14 @@ export const ConsolePlugin = (
     (session, sessionLanguage, settings = {}, createIfNecessary = true) => {
       const notebookPanel = panelManager.getLastUsedPanelOfType(NotebookPanel);
       if (notebookPanel && isNotebookPanel(notebookPanel)) {
-        if (settings && settings.value && notebookPanel.notebook) {
+        if (
+          settings != null &&
+          settings.value != null &&
+          notebookPanel.notebook != null
+        ) {
           notebookPanel.notebook.append(settings.value);
         }
-      } else if (createIfNecessary) {
+      } else if (createIfNecessary as boolean) {
         createNotebook(session, sessionLanguage, settings);
       }
     },

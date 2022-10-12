@@ -20,7 +20,7 @@ class ConsoleUtils {
    * @returns string[] of the arguments. Empty if no arguments found.
    */
   static parseArguments(str: unknown): string[] {
-    if (!str || !(typeof str === 'string' || str instanceof String)) {
+    if (str == null || !(typeof str === 'string' || str instanceof String)) {
       return [];
     }
 
@@ -40,7 +40,7 @@ class ConsoleUtils {
   }
 
   static formatTimestamp(date: Date): string | null {
-    if (!date || !(date instanceof Date)) {
+    if (date == null || !(date instanceof Date)) {
       return null;
     }
 

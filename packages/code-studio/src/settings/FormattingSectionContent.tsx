@@ -159,7 +159,11 @@ export class FormattingSectionContent extends PureComponent<
     format: Partial<TableColumnFormat>
   ): boolean {
     // Undefined or empty string formats are always invalid
-    if (!columnType || !format.formatString || !isFormatStringFormat(format)) {
+    if (
+      !columnType ||
+      format.formatString == null ||
+      !isFormatStringFormat(format)
+    ) {
       return false;
     }
     switch (columnType) {
@@ -684,7 +688,7 @@ export class FormattingSectionContent extends PureComponent<
 
     const errorMessages = [];
 
-    if (rule.isNewRule) {
+    if (rule.isNewRule !== undefined && rule.isNewRule) {
       return error;
     }
 
@@ -700,7 +704,7 @@ export class FormattingSectionContent extends PureComponent<
       );
     }
 
-    if (!rule.format) {
+    if (rule.format != null) {
       error.hasFormatError = true;
       errorMessages.push('Empty formatting rule.');
     } else if (
@@ -833,7 +837,7 @@ export class FormattingSectionContent extends PureComponent<
     isInvalid: boolean
   ): ReactElement {
     const { showTimeZone, showTSeparator, timeZone } = this.state;
-    const value = (format && format.formatString) || '';
+    const value = (format != null && format.formatString) || '';
     return (
       <select
         className={classNames('custom-select', { 'is-invalid': isInvalid })}
@@ -866,7 +870,7 @@ export class FormattingSectionContent extends PureComponent<
     format: Partial<TableColumnFormat>,
     isInvalid: boolean
   ): ReactElement {
-    const value = (format && format.formatString) || '';
+    const value = (format != null && format.formatString) || '';
     return (
       <input
         className={classNames('form-control', 'flex-grow-1', {
@@ -896,7 +900,7 @@ export class FormattingSectionContent extends PureComponent<
     format: Partial<TableColumnFormat>,
     isInvalid: boolean
   ): ReactElement {
-    const value = (format && format.formatString) || '';
+    const value = (format != null && format.formatString) || '';
     return (
       <input
         className={classNames('form-control', 'flex-grow-1', {

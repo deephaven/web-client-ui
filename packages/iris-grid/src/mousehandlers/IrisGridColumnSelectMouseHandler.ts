@@ -31,7 +31,7 @@ class IrisGridColumnSelectMouseHandler extends GridMouseHandler {
     }
 
     const { columnSelectionValidator } = this.irisGrid.props;
-    if (columnSelectionValidator) {
+    if (columnSelectionValidator != null) {
       return columnSelectionValidator(tableColumn);
     }
     return true;
@@ -39,7 +39,7 @@ class IrisGridColumnSelectMouseHandler extends GridMouseHandler {
 
   private updateColumnSelectionStatus(): void {
     const { columnSelectionValidator } = this.irisGrid.props;
-    if (columnSelectionValidator) {
+    if (columnSelectionValidator != null) {
       columnSelectionValidator(null);
     }
   }

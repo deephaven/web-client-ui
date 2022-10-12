@@ -21,7 +21,7 @@ describe('trimMap', () => {
     const expectedIter = expectedMap.entries();
     let iterValue = iter.next();
     let expectedIterValue = expectedIter.next();
-    while (!iterValue.done) {
+    while (iterValue.done === undefined) {
       expect(iterValue.value[0]).toEqual(expectedIterValue.value[0]);
       expect(iterValue.value[1]).toEqual(expectedIterValue.value[1]);
       iterValue = iter.next();

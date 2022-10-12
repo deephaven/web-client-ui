@@ -160,7 +160,7 @@ const Navigations = (): JSX.Element => {
         }
 
         let content = null;
-        if (items) {
+        if (items != null) {
           const navMenuItems = items.map(item => {
             const itemTitle = titleForMenuItem(item);
             const icon = iconForMenuItem(item);

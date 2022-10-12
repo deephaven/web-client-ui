@@ -254,7 +254,7 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
       isLoading: false,
       isLoaded: false,
       isLinked:
-        metadata &&
+        metadata != null &&
         isChartPanelTableMetadata(metadata) &&
         metadata.settings &&
         metadata.settings.isLinked,
@@ -428,7 +428,7 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
       const link = links[i];
       let columnName = null;
       if (
-        link.start &&
+        link.start != null &&
         link.start.panelId === panelId &&
         columnMap.has(link.start.columnName)
       ) {
@@ -664,7 +664,7 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
       ) {
         const { inputFilters } = sourcePanel.props;
         const { panelState: sourcePanelState } = sourcePanel.state;
-        if (sourcePanelState) {
+        if (sourcePanelState != null) {
           tableSettings = IrisGridUtils.extractTableSettings(
             sourcePanelState,
             inputFilters
@@ -874,11 +874,11 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
   ): void {
     const deletedInputFilters = prevInputFilters.filter(
       prevInputFilter =>
-        !inputFilters.find(
+        inputFilters.find(
           inputFilter =>
             inputFilter.name === prevInputFilter.name &&
             inputFilter.type === prevInputFilter.type
-        )
+        ) === undefined
     );
     if (deletedInputFilters.length > 0) {
       this.deleteInputFilters(deletedInputFilters);
@@ -1087,7 +1087,8 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
             inputFilterMap
           )
         : new Map();
-    const errorMessage = error ? `Unable to open chart. ${error}` : undefined;
+    const errorMessage =
+      error != null ? `Unable to open chart. ${error}` : undefined;
     const isWaitingForFilter = waitingInputMap.size > 0;
     const isSelectingColumn = columnMap.size > 0 && isLinkerActive;
     return (
@@ -1178,7 +1179,7 @@ const mapStateToProps = (
   const { localDashboardId, metadata } = ownProps;
 
   let sourcePanelId;
-  if (metadata) {
+  if (metadata != null) {
     sourcePanelId = metadata.sourcePanelId;
   }
   const panelTableMap = getTableMapForDashboard(state, localDashboardId);

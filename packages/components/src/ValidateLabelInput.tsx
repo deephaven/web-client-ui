@@ -75,8 +75,10 @@ export function ValidateLabelInput(
           }),
         });
       })}
-      {hintText && <small className="form-text text-muted">{hintText}</small>}
-      {validationError && showValidationError && (
+      {hintText !== undefined && (
+        <small className="form-text text-muted">{hintText}</small>
+      )}
+      {validationError !== undefined && showValidationError && (
         <p className="validate-label-error text-danger">{validationError}</p>
       )}
     </>

@@ -298,7 +298,7 @@ class CustomTimeSelect extends Component<
 
   focusOption(index: number): void {
     const options = this.menuContainer.current?.querySelector('.cs-options');
-    if (options && options.children) {
+    if (options && options.children != null) {
       const option = options.children.item(index);
       if (option instanceof HTMLElement) {
         option.focus();
@@ -367,7 +367,7 @@ class CustomTimeSelect extends Component<
 
   scrollOptionIntoView(index: number): void {
     const options = this.menuContainer.current?.querySelector('.cs-options');
-    if (options && options.children) {
+    if (options && options.children != null) {
       const activeOption = options.children.item(index);
       if (
         activeOption instanceof HTMLElement &&

@@ -28,8 +28,8 @@ class IrisGridFilterMouseHandler extends GridMouseHandler {
       const theme = this.irisGrid.getTheme();
       if (
         isFilterBarShown &&
-        theme.columnHeaderHeight &&
-        theme.filterBarHeight &&
+        theme.columnHeaderHeight != null &&
+        theme.filterBarHeight != null &&
         y > theme.columnHeaderHeight * columnHeaderMaxDepth &&
         y <=
           theme.columnHeaderHeight * columnHeaderMaxDepth +
@@ -57,8 +57,8 @@ class IrisGridFilterMouseHandler extends GridMouseHandler {
     let newHoverAdvancedFilter = null;
     if (
       isFilterBarShown &&
-      theme.columnHeaderHeight &&
-      theme.filterBarHeight &&
+      theme.columnHeaderHeight != null &&
+      theme.filterBarHeight != null &&
       column !== null &&
       y >= theme.columnHeaderHeight * columnHeaderMaxDepth &&
       y <=

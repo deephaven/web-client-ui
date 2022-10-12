@@ -116,7 +116,7 @@ export default class InputEditor extends Component<
   handleContentChanged(): void {
     const { onContentChanged } = this.props;
     const value = this.editor?.getModel()?.getValue();
-    if (value) {
+    if (value !== '' && value !== undefined) {
       this.setState({ isEditorEmpty: value.length === 0 });
     }
     onContentChanged(value);
@@ -128,7 +128,7 @@ export default class InputEditor extends Component<
 
   handleEditorBlur(): void {
     const value = this.editor?.getModel()?.getValue();
-    if (!value) {
+    if (value === undefined || value === '') {
       throw new Error('value is undefined');
     }
     this.setState({

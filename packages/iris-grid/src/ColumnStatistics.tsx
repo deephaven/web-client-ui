@@ -157,7 +157,7 @@ class ColumnStatistics extends Component<
   }
 
   handleError(error: Error): void {
-    if (error && PromiseUtils.isCanceled(error)) {
+    if (error != null && PromiseUtils.isCanceled(error)) {
       log.debug('Called handleError on a cancelled promise result');
       return;
     }
@@ -254,7 +254,7 @@ class ColumnStatistics extends Component<
             Generate Stats
           </button>
         )}
-        {error && <div className="error-message">{`${error}`}</div>}
+        {error != null && <div className="error-message">{`${error}`}</div>}
         {statistics && !loading && (
           <button
             type="button"

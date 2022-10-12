@@ -69,7 +69,7 @@ function App(): JSX.Element {
           // Get the table name from the query param `name`.
           const name = searchParams.get('name');
 
-          if (!name) {
+          if (name == null) {
             throw new Error('No name param provided');
           }
 

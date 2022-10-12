@@ -88,9 +88,6 @@ class CustomColumnBuilder extends Component<
 
   componentWillUnmount(): void {
     this.stopListening();
-    if (this.messageTimer) {
-      clearTimeout(this.messageTimer);
-    }
     if (this.successButtonTimer) {
       clearTimeout(this.successButtonTimer);
     }
@@ -99,8 +96,6 @@ class CustomColumnBuilder extends Component<
   container: HTMLDivElement | null;
 
   successButtonTimer: ReturnType<typeof setTimeout> | null;
-
-  messageTimer: undefined;
 
   getInput = memoize((inputs: Input[], key: string) =>
     inputs.find(input => input.eventKey === key)

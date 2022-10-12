@@ -2,7 +2,11 @@
   "extends": "./packages/tsconfig/tsconfig.json",
   "compilerOptions": {
     "baseUrl": ".",
-    "paths": { "@deephaven/*": ["./packages/*/src"] }
+    "paths": {
+      "@deephaven/*": ["./packages/*/src"]
+    },
+    "skipLibCheck": true,
+    "types": ["vite/client", "jest", "node"]
   },
   "files": [],
   "watchOptions": {

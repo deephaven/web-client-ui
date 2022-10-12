@@ -34,7 +34,7 @@ const RadioGroup = (props: RadioGroupProps): JSX.Element => {
     value = '',
     'data-testid': dataTestId,
   } = props;
-  const [name] = useState(propsName || shortid());
+  const [name] = useState(propsName ?? shortid());
 
   // Need to use "text" type so we can apply a pattern and make selection properly
   return (
@@ -43,9 +43,9 @@ const RadioGroup = (props: RadioGroupProps): JSX.Element => {
         child
           ? React.cloneElement(child, {
               name,
-              onChange: child.props.onChange || onChange,
+              onChange: child.props.onChange ?? onChange,
               checked: value === child.props.value,
-              disabled: child.props.disabled || disabled,
+              disabled: child.props.disabled ?? disabled,
               'data-testid': dataTestId,
             })
           : null

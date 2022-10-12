@@ -1,5 +1,10 @@
 import React, { useCallback } from 'react';
-import { DragDropContext, Draggable, Droppable } from 'react-beautiful-dnd';
+import {
+  DragDropContext,
+  Draggable,
+  Droppable,
+  DropResult,
+} from 'react-beautiful-dnd';
 import classNames from 'classnames';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { dhNewCircleLargeFilled, vsGripper, vsTrash } from '@deephaven/icons';
@@ -121,11 +126,11 @@ const ConditionalFormattingMenu = (
   }, []);
 
   const handleDragEnd = useCallback(
-    result => {
+    (result: DropResult) => {
       DragUtils.stopDragging();
 
       // if dropped outside the list
-      if (!result.destination) {
+      if (result.destination == null) {
         return;
       }
       const sourceIndex = result.source.index;

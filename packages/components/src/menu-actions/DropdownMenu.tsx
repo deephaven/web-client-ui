@@ -100,7 +100,7 @@ class DropdownMenu extends PureComponent<DropdownMenuProps> {
     const { isShown } = this.props;
 
     if (prevProps.isShown !== isShown) {
-      if (isShown) {
+      if (isShown !== null && isShown) {
         // https://github.com/reactjs/react-transition-group/issues/382
         window.requestAnimationFrame(() => {
           this.openMenu();

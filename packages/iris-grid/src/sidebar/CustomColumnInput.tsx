@@ -49,7 +49,7 @@ class CustomColumnInput extends PureComponent<
 
   handleFormulaEditorContentChanged(formulaValue?: string): void {
     const { onChange, eventKey } = this.props;
-    if (formulaValue) {
+    if (formulaValue !== undefined && formulaValue !== '') {
       formulaValue.replace(/(\r\n|\n|\r)/gm, ''); // remove line break
       onChange(
         eventKey,

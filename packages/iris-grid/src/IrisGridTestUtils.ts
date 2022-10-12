@@ -22,7 +22,7 @@ class IrisGridTestUtils {
     formatValue?: boolean
   ): string {
     let value = `${rowIndex},${columnIndex}`;
-    if (formatValue) {
+    if (formatValue !== undefined && formatValue) {
       value = `(${value})`;
     }
     return value;

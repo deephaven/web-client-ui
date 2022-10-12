@@ -243,7 +243,7 @@ class Tooltip extends Component<TooltipProps, TooltipState> {
   }
 
   stopTimer(): void {
-    if (this.timer) {
+    if (this.timer != null) {
       clearTimeout(this.timer);
       this.timer = null;
     }

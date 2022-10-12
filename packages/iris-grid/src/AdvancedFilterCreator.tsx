@@ -601,7 +601,7 @@ class AdvancedFilterCreator extends PureComponent<
             <span className="column-type">({columnType})</span>
           </div>
           {filterItemElements}
-          {isValuesTableAvailable && !valuesTableError && (
+          {isValuesTableAvailable && valuesTableError == null && (
             <>
               {!isBoolean && <hr />}
               <div className="form-group">

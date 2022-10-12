@@ -58,13 +58,13 @@ export const MenuItem = ({
       tabIndex={0}
       role="menuitem"
     >
-      {icon && (
+      {icon !== undefined && (
         <div className="icon">
           <FontAwesomeIcon icon={icon} />
         </div>
       )}
       <div className="title">{title}</div>
-      {subtitle && <div className="shortcut">{subtitle}</div>}
+      {subtitle !== undefined && <div className="shortcut">{subtitle}</div>}
       <div className="accessory" data-testid={dataTestId}>
         {(isSwitchMenuItemType(item) && (
           <UISwitch

@@ -78,7 +78,8 @@ class PanelContextMenu extends PureComponent<
       ) {
         break; // end when we get back to current id
       }
-      if (tabs[i]?.contentItem?.config?.isClosable) {
+      const closable = Boolean(tabs[i]?.contentItem?.config?.isClosable);
+      if (closable) {
         disabled = false;
         break; // end if we find a closeable tab
       }
@@ -91,7 +92,8 @@ class PanelContextMenu extends PureComponent<
 
     let disabled = true;
     for (let i = tabs.length - 1; i > 0; i -= 1) {
-      if (tabs[i]?.contentItem?.config?.isClosable) {
+      const closable = Boolean(tabs[i]?.contentItem?.config?.isClosable);
+      if (closable) {
         disabled = false;
         break;
       }
@@ -106,12 +108,13 @@ class PanelContextMenu extends PureComponent<
       ...additionalActions,
     ];
 
+    const closable = glContainer.tab?.contentItem?.config?.isClosable;
     contextActions.push({
       title: 'Close',
       order: 10,
       group: ContextActions.groups.low,
       action: this.handleCloseTab,
-      disabled: !glContainer.tab?.contentItem?.config?.isClosable,
+      disabled: closable === undefined || !closable,
     });
 
     // pushed as function so the disable check happens on run

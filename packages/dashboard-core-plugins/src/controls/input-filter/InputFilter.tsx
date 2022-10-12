@@ -86,7 +86,11 @@ class InputFilter extends Component<InputFilterProps, InputFilterState> {
       this.setState({ column: propColumn, selectedColumn: propColumn });
     }
 
-    if (isValueShown && isValueShown !== prevState.isValueShown) {
+    if (
+      isValueShown !== undefined &&
+      isValueShown &&
+      isValueShown !== prevState.isValueShown
+    ) {
       this.focusInput();
     }
 
