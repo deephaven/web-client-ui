@@ -1,7 +1,7 @@
 import type { ItemConfigType } from './ItemConfig';
 
 export type Config = {
-  settings: Settings;
+  settings: Partial<Settings>;
   dimensions: Dimensions;
   labels: Labels;
   content: ItemConfigType[];
