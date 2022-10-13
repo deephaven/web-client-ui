@@ -489,21 +489,16 @@ class NewItemModal extends PureComponent<NewItemModalProps, NewItemModalState> {
           </ModalBody>
 
           <ModalFooter>
-            <button
-              className="btn btn-outline-primary"
-              onClick={onCancel}
-              type="button"
-            >
+            <Button kind="secondary" onClick={onCancel}>
               Cancel
-            </button>
-            <button
-              className="btn btn-primary"
+            </Button>
+            <Button
+              kind="primary"
               disabled={isSubmitting}
               onClick={this.handleModalSubmit}
-              type="button"
             >
               {submitBtnLabel}
-            </button>
+            </Button>
           </ModalFooter>
         </Modal>
         <BasicModal
