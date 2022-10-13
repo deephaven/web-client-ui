@@ -151,6 +151,11 @@ const AppInit = (props: AppInitProps) => {
 
   const initClient = useCallback(async () => {
     try {
+      log.info(
+        'Initializing Web UI',
+        import.meta.env.npm_package_version,
+        navigator.userAgent
+      );
       const newPlugins = await loadPlugins();
       const connection = createConnection();
       const sessionWrapper = await loadSessionWrapper(connection);
