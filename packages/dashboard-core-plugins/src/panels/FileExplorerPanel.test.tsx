@@ -140,7 +140,7 @@ describe('selects and expands directory for NewItemModal correctly', () => {
 
     const foundButtons = await findAllByRole(modal, 'button');
     const buttonContent = foundButtons.map(button => button.innerHTML);
-    const homeButton = await findAllByRole(modal, 'button', { name: 'home' });
+    const homeButton = await findAllByRole(modal, 'button', { name: 'Home' });
 
     expect(homeButton).toHaveLength(1);
     expect(buttonContent).toContain('testdir0');
@@ -161,7 +161,7 @@ describe('selects and expands directory for NewItemModal correctly', () => {
 
     const foundButtons = await findAllByRole(modal, 'button');
     const buttonContent = foundButtons.map(button => button.innerHTML);
-    const homeButton = await findAllByRole(modal, 'button', { name: 'home' });
+    const homeButton = await findAllByRole(modal, 'button', { name: 'Home' });
 
     expect(homeButton).toHaveLength(1);
     for (let i = 0; i < dirs.length; i += 1) {
@@ -178,7 +178,7 @@ describe('selects and expands directory for NewItemModal correctly', () => {
 
     const foundButtons = await findAllByRole(modal, 'button');
     const buttonContent = foundButtons.map(button => button.innerHTML);
-    const homeButton = await findAllByRole(modal, 'button', { name: 'home' });
+    const homeButton = await findAllByRole(modal, 'button', { name: 'Home' });
 
     expect(homeButton).toHaveLength(1);
     for (let i = 0; i < dirs.length; i += 1) {
@@ -201,7 +201,7 @@ describe('selects and expands directory for NewItemModal correctly', () => {
 
     const foundButtons = await findAllByRole(modal, 'button');
     const buttonContent = foundButtons.map(button => button.innerHTML);
-    const homeButton = await findAllByRole(modal, 'button', { name: 'home' });
+    const homeButton = await findAllByRole(modal, 'button', { name: 'Home' });
 
     expect(homeButton).toHaveLength(1);
     expect(buttonContent).toContain('testdir2');
@@ -226,7 +226,7 @@ describe('selects and expands directory for NewItemModal correctly', () => {
 
     const foundButtons = await findAllByRole(modal, 'button');
     const buttonContent = foundButtons.map(button => button.innerHTML);
-    const homeButton = await findAllByRole(modal, 'button', { name: 'home' });
+    const homeButton = await findAllByRole(modal, 'button', { name: 'Home' });
 
     expect(homeButton).toHaveLength(1);
     expect(buttonContent).toContain('testdir2');
@@ -271,7 +271,7 @@ describe('selects and expands directory for NewItemModal correctly', () => {
 
     const foundButtons = await findAllByRole(modal, 'button');
     const buttonContent = foundButtons.map(button => button.innerHTML);
-    const homeButton = await findAllByRole(modal, 'button', { name: 'home' });
+    const homeButton = await findAllByRole(modal, 'button', { name: 'Home' });
 
     expect(homeButton).toHaveLength(1);
     expect(buttonContent).toContain('testdir0');
@@ -280,7 +280,7 @@ describe('selects and expands directory for NewItemModal correctly', () => {
     userEvent.click(within(modal).getByRole('button', { name: 'testdir0' }));
     const newFoundButtons = await findAllByRole(modal, 'button');
     const newButtonContent = newFoundButtons.map(button => button.innerHTML);
-    const newFoundHome = await findAllByRole(modal, 'button', { name: 'home' });
+    const newFoundHome = await findAllByRole(modal, 'button', { name: 'Home' });
 
     expect(newFoundHome).toHaveLength(1);
     expect(newButtonContent).toContain('testdir0');
@@ -313,7 +313,7 @@ describe('selects and expands directory for NewItemModal correctly', () => {
     expect(dirs[1].isExpanded).toBe(false);
     expect(dirs[2].isExpanded).toBe(false);
 
-    userEvent.click(within(modal).getByRole('button', { name: 'home' }));
+    userEvent.click(within(modal).getByRole('button', { name: 'Home' }));
     for (let i = 0; i < dirs.length; i += 1) {
       expect(dirs[i].isExpanded).toBe(false);
     }

@@ -8,7 +8,6 @@ import {
   ModalHeader,
   BasicModal,
   Button,
-  Tooltip,
 } from '@deephaven/components';
 import {
   CancelablePromise,
@@ -408,11 +407,11 @@ class NewItemModal extends PureComponent<NewItemModalProps, NewItemModalState> {
             kind="ghost"
             className="directory-breadcrumbs"
             onClick={() => this.handleBreadcrumbSelect(directoryPath)}
-            aria-label={index === 0 ? 'home' : undefined}
+            aria-label={index === 0 ? 'Home' : undefined}
             icon={index === 0 ? vsHome : undefined}
+            tooltip={index === 0 ? 'Home' : undefined}
           >
             {basename}
-            {index === 0 && <Tooltip>Home</Tooltip>}
           </Button>
           /
         </React.Fragment>
