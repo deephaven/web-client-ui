@@ -27,7 +27,7 @@ export default class DragSource {
     this._itemConfig = itemConfig;
     this._layoutManager = layoutManager;
 
-    this._dragListener = this._createDragListener(); // This assignment makes TS happy that this is assigned in the constructor and not undefined
+    this._dragListener = this._createDragListener();
   }
 
   /**

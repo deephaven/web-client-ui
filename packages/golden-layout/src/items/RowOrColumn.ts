@@ -355,7 +355,7 @@ export default class RowOrColumn extends AbstractContentItem {
    */
   _respectMinItemWidth() {
     const minItemWidth = this.layoutManager.config.dimensions
-      ? this.layoutManager.config.dimensions.minItemWidth || 0
+      ? this.layoutManager.config.dimensions.minItemWidth ?? 0
       : 0;
     const entriesOverMin = [];
     let totalOverMin = 0;
@@ -490,8 +490,8 @@ export default class RowOrColumn extends AbstractContentItem {
       minHeight = 0;
 
     for (var i = 0; i < arr.length; ++i) {
-      minWidth = Math.max(arr[i].minWidth || 0, minWidth);
-      minHeight = Math.max(arr[i].minHeight || 0, minHeight);
+      minWidth = Math.max(arr[i].minWidth ?? 0, minWidth);
+      minHeight = Math.max(arr[i].minHeight ?? 0, minHeight);
     }
 
     return { horizontal: minWidth, vertical: minHeight };

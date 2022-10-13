@@ -84,7 +84,7 @@ export default class Root extends AbstractContentItem {
     super._$highlightDropZone(x, y, area);
   }
 
-  _$onDrop(contentItem: AbstractContentItem, area?: ItemArea) {
+  _$onDrop(contentItem: AbstractContentItem, area: ItemArea) {
     var stack;
 
     if (isComponent(contentItem)) {
@@ -103,11 +103,12 @@ export default class Root extends AbstractContentItem {
     if (!this.contentItems.length) {
       this.addChild(contentItem);
     } else {
-      const type = area?.side[0] == 'x' ? 'row' : 'column';
-      const dimension: 'width' | 'height' =
-        area?.side[0] == 'x' ? 'width' : 'height';
-      var insertBefore = area?.side[1] == '2';
-      var column = this.contentItems[0];
+      const { side } = area;
+      const type = side === 'left' || side === 'right' ? 'row' : 'column'; // Should new root be a row or column
+      const dimension =
+        side === 'left' || side === 'right' ? 'width' : 'height';
+      const insertBefore = side === 'left' || side === 'top';
+      const column = this.contentItems[0];
       if (!(column instanceof RowOrColumn) || column.type != type) {
         const rowOrColumn = this.layoutManager.createContentItem(
           { type: type },

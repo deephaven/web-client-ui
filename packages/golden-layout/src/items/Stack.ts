@@ -29,6 +29,8 @@ type ContentAreaDimensions = {
   right?: HoverDimensions;
 };
 
+type BodySegment = keyof ContentAreaDimensions;
+
 export interface StackHeaderConfig {
   show?: boolean | 'top' | 'left' | 'right' | 'bottom';
   popout?: string;
@@ -339,7 +341,7 @@ export default class Stack extends AbstractContentItem {
 
     for (let [segment, dimensions] of Object.entries(
       this._contentAreaDimensions
-    )) {
+    ) as [BodySegment, HoverDimensions][]) {
       const area = dimensions.hoverArea;
 
       if (area.x1 < x && area.x2 > x && area.y1 < y && area.y2 > y) {
@@ -348,7 +350,7 @@ export default class Stack extends AbstractContentItem {
           this._highlightHeaderDropZone(x);
         } else {
           this._resetHeaderDropZone();
-          this._highlightBodyDropZone(segment as 'header'); // TS can't infer this is already 1 of the valid key strings
+          this._highlightBodyDropZone(segment);
         }
 
         return;
@@ -605,9 +607,7 @@ export default class Stack extends AbstractContentItem {
     }
   }
 
-  _highlightBodyDropZone(
-    segment: 'header' | 'body' | 'top' | 'bottom' | 'right' | 'left'
-  ) {
+  _highlightBodyDropZone(segment: BodySegment) {
     const highlightArea = this._contentAreaDimensions?.[segment]?.highlightArea;
     if (highlightArea) {
       this.layoutManager.dropTargetIndicator?.highlightArea(highlightArea);

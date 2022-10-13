@@ -2,7 +2,7 @@ import $ from 'jquery';
 import type { Config, PopoutConfig, ItemConfigType } from '../config';
 import type Root from '../items/Root';
 import type LayoutManager from '../LayoutManager';
-import { getUniqueId, ConfigMinifier, EventEmitter } from '../utils';
+import { getUniqueId, minifyConfig, EventEmitter } from '../utils';
 import { AbstractContentItem } from '..';
 
 type BrowserDimensions = {
@@ -236,7 +236,7 @@ export default class BrowserPopout extends EventEmitter {
     var config: Partial<Config> = { content: this._config };
     const storageKey = 'gl-window-config-' + getUniqueId();
 
-    config = new ConfigMinifier().minifyConfig(config);
+    config = minifyConfig(config);
 
     try {
       localStorage.setItem(storageKey, JSON.stringify(config));

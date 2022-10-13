@@ -9,8 +9,8 @@ import { stripTags, EventEmitter } from '../utils';
  * for the component whilst it is being dragged
  * and handles drag events
  *
- * @param x              The initial x position
- * @param y              The initial y position
+ * @param x The initial x position
+ * @param y The initial y position
  * @param dragListener
  * @param layoutManager
  * @param contentItem
@@ -233,7 +233,7 @@ export default class DragProxy extends EventEmitter {
   }
 
   /**
-   * Updates the Drag Proxie's dimensions
+   * Updates the DragProxy's dimensions
    */
   _setDimensions() {
     const dimensions = this._layoutManager.config.dimensions;

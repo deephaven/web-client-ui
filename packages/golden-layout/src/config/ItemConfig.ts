@@ -7,7 +7,7 @@ export type ItemConfigType =
 
 export interface ItemConfig {
   /**
-   * The type of the item. Possible values are 'row', 'column', 'stack', 'component' and 'react-component'.
+   * The type of the item.
    */
   type:
     | 'default'

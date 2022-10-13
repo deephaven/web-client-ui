@@ -28,7 +28,8 @@ import {
   Stack,
 } from './items';
 import {
-  ConfigMinifier,
+  minifyConfig,
+  unminifyConfig,
   EventEmitter,
   EventHub,
   ReactComponentHandler,
@@ -64,7 +65,7 @@ export default class LayoutManager extends EventEmitter {
    * @returns minified config
    */
   static minifyConfig(config: Config): Record<string, unknown> {
-    return new ConfigMinifier().minifyConfig(config);
+    return minifyConfig(config);
   }
 
   /**
@@ -75,7 +76,7 @@ export default class LayoutManager extends EventEmitter {
    * @returns the original configuration
    */
   static unminifyConfig(config: Record<string, unknown>): Config {
-    return new ConfigMinifier().unminifyConfig(config);
+    return unminifyConfig(config);
   }
 
   isInitialised = false;
@@ -370,17 +371,12 @@ export default class LayoutManager extends EventEmitter {
 
   /**
    * Updates the layout managers size
-   * @param width  height in pixels
-   * @param height width in pixels
+   * @param width width in pixels
+   * @param height height in pixels
    */
-  updateSize(width = 0, height = 0) {
-    if (arguments.length === 2) {
-      this.width = width;
-      this.height = height;
-    } else {
-      this.width = this.container.width() ?? 0;
-      this.height = this.container.height() ?? 0;
-    }
+  updateSize(width?: number, height?: number) {
+    this.width = width ?? this.container.width() ?? 0;
+    this.height = height ?? this.container.height() ?? 0;
 
     if (this.isInitialised === true) {
       this.root.callDownwards('setSize', [this.width, this.height]);
@@ -724,20 +720,41 @@ export default class LayoutManager extends EventEmitter {
     return mathingArea;
   }
 
+  /**
+   * Creates the drop zones at the edges of the screen
+   */
   _$createRootItemAreas() {
     const areaSize = 50;
-    const sides = { y2: 'y1', x2: 'x1', y1: 'y2', x1: 'x2' };
-    for (let key in sides) {
-      const side = key as 'x1' | 'x2' | 'y1' | 'y2';
-      const value = sides[side] as 'x1' | 'x2' | 'y1' | 'y2';
-      const area: ItemArea = { ...this.root._$getArea(), side };
-      if (value[1] == '2') area[side] = area[value] - areaSize;
-      else {
-        area[side] = area[value] + areaSize;
-      }
+    const rootArea = { ...this.root._$getArea() };
+
+    const areas = [
+      {
+        ...rootArea,
+        side: 'left' as const,
+        x2: rootArea.x1 + areaSize,
+      },
+      {
+        ...rootArea,
+        side: 'right' as const,
+        x1: rootArea.x2 - areaSize,
+      },
+      {
+        ...rootArea,
+        side: 'top' as const,
+        y2: rootArea.y1 + areaSize,
+      },
+      {
+        ...rootArea,
+        side: 'bottom' as const,
+        y1: rootArea.y2 - areaSize,
+      },
+    ];
+
+    areas.forEach(area => {
       area.surface = (area.x2 - area.x1) * (area.y2 - area.y1);
-      this._itemAreas.push(area);
-    }
+    });
+
+    this._itemAreas.push(...areas);
   }
 
   _$calculateItemAreas() {
@@ -912,7 +929,7 @@ export default class LayoutManager extends EventEmitter {
     if (windowConfigKey) {
       this.isSubWindow = true;
       config = JSON.parse(localStorage.getItem(windowConfigKey) || '{}');
-      config = new ConfigMinifier().unminifyConfig(config);
+      config = unminifyConfig(config);
       localStorage.removeItem(windowConfigKey);
     }
 

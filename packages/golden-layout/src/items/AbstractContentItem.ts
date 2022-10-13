@@ -26,7 +26,7 @@ export type ItemArea<C = AbstractContentItem> = {
   y1: number;
   y2: number;
   surface: number;
-  side: 'x1' | 'x2' | 'y1' | 'y2' | '';
+  side: 'left' | 'right' | 'top' | 'bottom' | '';
   contentItem: C;
 };
 
@@ -463,7 +463,7 @@ export default abstract class AbstractContentItem extends EventEmitter {
     this.layoutManager.dropTargetIndicator?.highlightArea(area);
   }
 
-  _$onDrop(contentItem: AbstractContentItem, area?: ItemArea) {
+  _$onDrop(contentItem: AbstractContentItem, area: ItemArea) {
     this.addChild(contentItem);
   }
 
