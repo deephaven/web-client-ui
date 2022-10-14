@@ -1,7 +1,12 @@
 import React, { Component, ReactElement } from 'react';
 import ClassNames from 'classnames';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { LoadingSpinner, RadioGroup, RadioItem } from '@deephaven/components';
+import {
+  Button,
+  LoadingSpinner,
+  RadioGroup,
+  RadioItem,
+} from '@deephaven/components';
 import { GridRange } from '@deephaven/grid';
 import { vsWarning } from '@deephaven/icons';
 import dh, { Table, TableViewportSubscription } from '@deephaven/jsapi-shim';
@@ -428,10 +433,10 @@ class TableCsvExporter extends Component<
               )}
             </div>
           )}
-          <button
-            type="button"
+          <Button
+            kind="primary"
             data-testid="btn-csv-exporter-download"
-            className={ClassNames('btn btn-primary btn-downloading', {
+            className={ClassNames('btn-downloading', {
               'btn-spinner btn-cancelable': isDownloading,
             })}
             onClick={this.handleDownloadClick}
@@ -444,7 +449,7 @@ class TableCsvExporter extends Component<
               </span>
             )}
             {!isDownloading && 'Download'}
-          </button>
+          </Button>
         </div>
       </div>
     );
