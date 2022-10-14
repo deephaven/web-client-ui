@@ -15,6 +15,8 @@ import DownloadServiceWorkerUtils from './DownloadServiceWorkerUtils';
 import logInit from './log/LogInit';
 import { unregister } from './serviceWorker';
 
+console.log('renderr');
+
 logInit();
 
 ReactDOM.render(

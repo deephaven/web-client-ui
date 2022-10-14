@@ -2,11 +2,26 @@
 // This include file is simply a wrapper so that it behaves like a module, and can be mocked easily for unit tests
 import type dhType from './dh.types';
 
+// const dhImport = import('http://localhost:10000/jsapi/dh-core.js').then(
+//   module => {
+//     console.log('MJB got module', module);
+//   }
+// );
+
+// const dh = await dhImport;
+
+// import dh from '../dh-core.js';
+
 declare global {
   // eslint-disable-next-line vars-on-top,no-var
   var dh: dhType;
 }
 
-const { dh } = globalThis;
+// eslint-disable-next-line import/no-unresolved, @typescript-eslint/ban-ts-comment
+// @ts-ignore
+// eslint-disable-next-line import/no-unresolved
+const dh = await import('http://localhost:10000/jsapi/dh-core.js');
+
+// const { dh } = globalThis;
 
 export default dh;
