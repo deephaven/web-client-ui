@@ -20,7 +20,13 @@ declare global {
 // eslint-disable-next-line import/no-unresolved, @typescript-eslint/ban-ts-comment
 // @ts-ignore
 // eslint-disable-next-line import/no-unresolved
-const dh = await import('http://localhost:10000/jsapi/dh-core.js');
+const dhModule = await import(
+  `${import.meta.env.VITE_CORE_API_URL}/${import.meta.env.VITE_CORE_API_NAME}`
+);
+
+const dh = dhModule.default;
+
+console.log('MJB got dh', dh);
 
 // const { dh } = globalThis;
 
