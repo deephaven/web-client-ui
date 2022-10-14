@@ -14,10 +14,8 @@ test('can open a simple table', async ({ page }) => {
   );
   await page.keyboard.press('Enter');
 
-  // Expect the panel to be open with a loading spinner first
-  await expect(page.locator('.iris-grid-panel .loading-spinner')).toHaveCount(
-    1
-  );
+  // Wait for the panel to show
+  await expect(page.locator('.iris-grid-panel')).toHaveCount(1);
 
   // Wait until it's done loading
   await expect(page.locator('.iris-grid-panel .loading-spinner')).toHaveCount(

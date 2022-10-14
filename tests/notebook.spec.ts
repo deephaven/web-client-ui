@@ -46,18 +46,10 @@ test('test creating a file, saving it, closing it, re-opening it, running it, th
   // Click close on the notebook file .lm_close_tab
   await page.locator('.lm_close_tab').click();
 
-  // Expect the output to show up in the log
-  // await expect(page.locator('.console-history .log-message')).toHaveText(
-  //   'Hello Playwright!'
-  // );
-
   // Right-click the file to open the menu, then delete it
   await page.locator(`text=${filename}`).click({
     button: 'right',
   });
-
-  // Click button:has-text("DeleteDelete")
-  await page.locator('button:has-text("DeleteDelete")').click();
 
   // Click button:has-text("Delete")
   await page.locator('button:has-text("Delete")').click();
