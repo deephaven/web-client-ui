@@ -98,6 +98,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       className,
       style,
       children,
+      tabIndex,
       'data-testid': dataTestId,
       'aria-label': ariaLabel,
     } = props;
@@ -153,6 +154,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         onClick={onClick}
         style={style}
         disabled={disabled}
+        tabIndex={tabIndex}
         aria-label={ariaLabelString}
       >
         {icon && iconElem}
@@ -220,6 +222,7 @@ Button.propTypes = {
     }
     return null;
   },
+  tabIndex: PropTypes.number,
   children: PropTypes.node,
   className: PropTypes.string,
   style: PropTypes.object,
@@ -234,6 +237,7 @@ Button.defaultProps = {
   icon: undefined,
   disabled: false,
   active: undefined,
+  tabIndex: undefined,
   children: undefined,
   className: undefined,
   style: {},

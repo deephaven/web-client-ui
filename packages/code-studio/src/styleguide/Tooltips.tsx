@@ -2,7 +2,7 @@
 import React from 'react';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { LoadingSpinner, Tooltip } from '@deephaven/components';
+import { Button, LoadingSpinner, Tooltip } from '@deephaven/components';
 import { vsBell, dhFilePrint } from '@deephaven/icons';
 
 const Tooltips = (): React.ReactElement => {
@@ -63,15 +63,14 @@ const Tooltips = (): React.ReactElement => {
         <Tooltip interactive>
           <div>This tooltip is interactive.</div>
           <hr />
-          <button
-            type="button"
-            className="btn btn-primary"
+          <Button
+            kind="primary"
             onClick={() => {
               alert('Button clicked!');
             }}
           >
             Show Alert
-          </button>
+          </Button>
         </Tooltip>
       </div>
     </div>

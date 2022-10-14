@@ -2,7 +2,6 @@
 /* eslint no-console: "off" */
 import React, { Component } from 'react';
 
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   ContextActions,
   DropdownMenu,
@@ -10,6 +9,7 @@ import {
   MODIFIER,
   Shortcut,
   DropdownAction,
+  Button,
 } from '@deephaven/components';
 import {
   vsBell,
@@ -96,13 +96,11 @@ class DropdownMenus extends Component<
           A simple dropdown menu of actions, can open on click of parent
           container, or controlled by prop.
         </p>
-        <button type="button" className="btn btn-inline mx-2">
-          <FontAwesomeIcon icon={vsKebabVertical} />
+        <Button kind="inline" className="mx-2" icon={vsKebabVertical}>
           <DropdownMenu actions={actions} />
-        </button>
-        <button
-          type="button"
-          className="btn btn-primary"
+        </Button>
+        <Button
+          kind="primary"
           style={{
             marginRight: '1rem',
             minWidth: '165px',
@@ -116,7 +114,7 @@ class DropdownMenus extends Component<
           }}
         >
           Menu Shown: {isShown.toString()}
-        </button>
+        </Button>
         <div
           ref={this.button}
           className="btn btn-secondary disabled"

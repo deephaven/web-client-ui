@@ -2,6 +2,7 @@
 /* eslint no-console: "off" */
 import React, { Component } from 'react';
 import {
+  Button,
   ContextActions,
   KEY,
   MODIFIER,
@@ -107,9 +108,8 @@ class ContextMenus extends Component {
     return (
       <div>
         <h2 className="ui-title">Context Menu</h2>
-        <button
-          type="button"
-          className="btn btn-primary"
+        <Button
+          kind="primary"
           style={{
             cursor: 'default',
             marginBottom: '1rem',
@@ -118,10 +118,9 @@ class ContextMenus extends Component {
         >
           Right Click Me
           <ContextActions actions={actions} />
-        </button>
-        <button
-          type="button"
-          className="btn btn-secondary"
+        </Button>
+        <Button
+          kind="tertiary"
           style={{
             cursor: 'default',
             marginBottom: '1rem',
@@ -130,7 +129,7 @@ class ContextMenus extends Component {
         >
           Right Click Me
           <ContextActions actions={delayedActions} />
-        </button>
+        </Button>
       </div>
     );
   }
