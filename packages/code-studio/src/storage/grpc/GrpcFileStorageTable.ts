@@ -174,16 +174,11 @@ export class GrpcFileStorageTable implements FileStorageTable {
     };
   }
 
-  doRefresh(callback: ViewportUpdateCallback<FileStorageItem>): void {
-    log.debug('doRefresh', this.root);
-
-    const viewportDataPromise = this.fetchData();
-
-    viewportDataPromise.then(callback).catch(e => {
-      if (!PromiseUtils.isCanceled(e)) {
-        log.error('Error fetching viewport data', e);
-      }
-    });
+  doRefresh(
+    callback: (fetchPromise: Promise<ViewportData<FileStorageItem>>) => void
+  ): void {
+    log.debug2('doRefresh', this.root);
+    callback(this.fetchData());
   }
 
   refresh(): void {
