@@ -407,8 +407,9 @@ class NewItemModal extends PureComponent<NewItemModalProps, NewItemModalState> {
             kind="ghost"
             className="directory-breadcrumbs"
             onClick={() => this.handleBreadcrumbSelect(directoryPath)}
-            aria-label={index === 0 ? 'home' : undefined}
+            aria-label={index === 0 ? 'Home' : undefined}
             icon={index === 0 ? vsHome : undefined}
+            tooltip={index === 0 ? 'Home' : undefined}
           >
             {basename}
           </Button>

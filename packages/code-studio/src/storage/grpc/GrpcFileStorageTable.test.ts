@@ -22,12 +22,18 @@ function makeStorageService(): StorageService {
 
 beforeEach(() => {
   storageService = makeStorageService();
+  jest.useFakeTimers();
+});
+
+afterEach(() => {
+  jest.useRealTimers();
 });
 
 it('Does not get contents until a viewport is set', () => {
   const table = makeTable();
   expect(storageService.listItems).not.toHaveBeenCalled();
   table.setViewport({ top: 0, bottom: 10 });
+  jest.runOnlyPendingTimers();
   expect(storageService.listItems).toHaveBeenCalled();
 });
 
@@ -91,6 +97,9 @@ describe('directory expansion tests', () => {
     const handleUpdate = jest.fn();
     table.onUpdate(handleUpdate);
     table.setViewport({ top: 0, bottom: 5 });
+
+    jest.runAllTimers();
+
     await table.getViewportData();
     expect(handleUpdate).toHaveBeenCalledWith({
       offset: 0,
@@ -104,7 +113,10 @@ describe('directory expansion tests', () => {
     });
     handleUpdate.mockReset();
 
-    await table.setExpanded('/dir1/', true);
+    table.setExpanded('/dir1/', true);
+
+    jest.runAllTimers();
+
     await table.getViewportData();
     expect(handleUpdate).toHaveBeenCalledWith({
       offset: 0,
@@ -118,7 +130,10 @@ describe('directory expansion tests', () => {
     });
     handleUpdate.mockReset();
 
-    await table.setExpanded('/dir1/dir1/', true);
+    table.setExpanded('/dir1/dir1/', true);
+
+    jest.runAllTimers();
+
     await table.getViewportData();
     expect(handleUpdate).toHaveBeenCalledWith({
       offset: 0,
@@ -133,7 +148,10 @@ describe('directory expansion tests', () => {
     handleUpdate.mockReset();
 
     // Now collapse it all
-    await table.setExpanded('/dir1/', false);
+    table.setExpanded('/dir1/', false);
+
+    jest.runAllTimers();
+
     await table.getViewportData();
     expect(handleUpdate).toHaveBeenCalledWith({
       offset: 0,

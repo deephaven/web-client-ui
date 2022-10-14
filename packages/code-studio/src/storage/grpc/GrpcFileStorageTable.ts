@@ -9,13 +9,18 @@ import {
   IndexRange,
   StorageSnapshot,
 } from '@deephaven/storage';
-import { CancelablePromise, PromiseUtils } from '@deephaven/utils';
+import {
+  CancelablePromise,
+  CanceledPromiseError,
+  PromiseUtils,
+} from '@deephaven/utils';
 import {
   FileStorageItem,
   FileStorageTable,
   FileUtils,
 } from '@deephaven/file-explorer';
 import { StorageService } from '@deephaven/jsapi-shim';
+import debounce from 'lodash.debounce';
 
 const log = Log.module('GrpcFileStorageTable');
 
@@ -24,6 +29,8 @@ const log = Log.module('GrpcFileStorageTable');
  * Takes a path to specify what root this table should start at.
  */
 export class GrpcFileStorageTable implements FileStorageTable {
+  static REFRESH_DEBOUNCE = 50;
+
   private readonly storageService: StorageService;
 
   private readonly baseRoot: string;
@@ -57,6 +64,12 @@ export class GrpcFileStorageTable implements FileStorageTable {
     this.storageService = storageService;
     this.baseRoot = baseRoot;
     this.root = root;
+    if (root === baseRoot) {
+      this.doRefresh = debounce(
+        this.doRefresh.bind(this),
+        GrpcFileStorageTable.REFRESH_DEBOUNCE
+      );
+    }
   }
 
   private removeBaseRoot(filename: string): string {
@@ -82,7 +95,7 @@ export class GrpcFileStorageTable implements FileStorageTable {
     return this.currentSize;
   }
 
-  async setExpanded(path: string, expanded: boolean): Promise<void> {
+  setExpanded(path: string, expanded: boolean): void {
     const paths = path.split('/');
     let nextPath = paths.shift();
     if (nextPath === undefined || nextPath === '') {
@@ -114,14 +127,14 @@ export class GrpcFileStorageTable implements FileStorageTable {
       }
     }
     if (this.currentViewport) {
-      await this.refreshInternal();
+      this.refreshInternal();
     }
   }
 
-  async collapseAll(): Promise<void> {
+  collapseAll(): void {
     this.childTables.clear();
     if (this.currentViewport) {
-      await this.refreshInternal();
+      this.refreshInternal();
     }
   }
 
@@ -161,28 +174,54 @@ export class GrpcFileStorageTable implements FileStorageTable {
     };
   }
 
-  async refresh(): Promise<ViewportData<FileStorageItem>> {
-    log.debug2(this.root, 'refreshData');
+  doRefresh(
+    callback: (fetchPromise: Promise<ViewportData<FileStorageItem>>) => void
+  ): void {
+    log.debug2('doRefresh', this.root);
+    callback(this.fetchData());
+  }
+
+  refresh(): void {
+    log.debug2('refresh', this.root);
 
     this.viewportUpdatePromise?.cancel();
 
-    this.viewportUpdatePromise = PromiseUtils.makeCancelable(this.fetchData());
+    const refreshPromise = new Promise<ViewportData<FileStorageItem>>(
+      resolve => {
+        this.doRefresh(resolve);
+      }
+    );
 
-    const viewportData = await this.viewportUpdatePromise;
+    const viewportUpdatePromise = PromiseUtils.makeCancelable(
+      refreshPromise.then(viewportData => {
+        if (this.viewportUpdatePromise !== viewportUpdatePromise) {
+          throw new CanceledPromiseError();
+        }
 
-    this.currentViewportData = viewportData;
+        this.currentViewportData = viewportData;
 
-    this.sendUpdate();
+        this.sendUpdate();
 
-    return viewportData;
+        return viewportData;
+      })
+    );
+
+    // Add a catch here as we're not catching the promises anywhere else
+    viewportUpdatePromise.catch(e => {
+      if (!PromiseUtils.isCanceled(e)) {
+        log.error('Error updating viewport', e);
+      }
+    });
+
+    this.viewportUpdatePromise = viewportUpdatePromise;
   }
 
   /**
    * Refreshes data, but catches any errors and logs them
    */
-  private async refreshInternal(): Promise<void> {
+  private refreshInternal(): void {
     try {
-      await this.refresh();
+      this.refresh();
     } catch (e) {
       if (!PromiseUtils.isCanceled(e)) {
         log.error('Unable to refresh data', e);
