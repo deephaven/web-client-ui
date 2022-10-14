@@ -23,7 +23,7 @@ import {
   IntegerColumnFormatter,
 } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
-import PouchCommandHistoryStorage from '@deephaven/pouch-storage';
+import { PouchCommandHistoryStorage } from '@deephaven/pouch-storage';
 import {
   DeephavenPluginModuleMap,
   getWorkspace,
