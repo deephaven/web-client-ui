@@ -12,19 +12,20 @@ import type dhType from './dh.types';
 
 // import dh from '../dh-core.js';
 
-declare global {
-  // eslint-disable-next-line vars-on-top,no-var
-  var dh: dhType;
-}
+// declare global {
+//   // eslint-disable-next-line vars-on-top,no-var
+//   var dh: dhType;
+// }
 
 // eslint-disable-next-line import/no-unresolved, @typescript-eslint/ban-ts-comment
 // @ts-ignore
 // eslint-disable-next-line import/no-unresolved
 const dhModule = await import(
+  /* @vite-ignore */
   `${import.meta.env.VITE_CORE_API_URL}/${import.meta.env.VITE_CORE_API_NAME}`
 );
 
-const dh = dhModule.default;
+const dh = dhModule.default as dhType;
 
 console.log('MJB got dh', dh);
 

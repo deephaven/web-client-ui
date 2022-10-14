@@ -1,4 +1,4 @@
-import { Column, CustomColumn } from '@deephaven/jsapi-shim';
+import dh, { Column, CustomColumn } from '@deephaven/jsapi-shim';
 import {
   BaseFormatConfig,
   getConditionDBString,

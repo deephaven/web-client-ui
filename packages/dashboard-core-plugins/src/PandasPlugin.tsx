@@ -8,7 +8,7 @@ import {
   useListener,
 } from '@deephaven/dashboard';
 import { IrisGridModelFactory } from '@deephaven/iris-grid';
-import { Table } from '@deephaven/jsapi-shim';
+import dh, { Table } from '@deephaven/jsapi-shim';
 import shortid from 'shortid';
 import { PandasPanel, PandasPanelProps } from './panels';
 

@@ -8,7 +8,7 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { Column } from '@deephaven/jsapi-shim';
+import dh, { Column } from '@deephaven/jsapi-shim';
 import {
   Type as FilterType,
   TypeValue as FilterTypeValue,

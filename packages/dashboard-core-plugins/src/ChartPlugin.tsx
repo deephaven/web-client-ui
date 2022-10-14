@@ -8,7 +8,7 @@ import {
   PanelHydrateFunction,
   useListener,
 } from '@deephaven/dashboard';
-import { Figure, VariableDefinition } from '@deephaven/jsapi-shim';
+import dh, { Figure, VariableDefinition } from '@deephaven/jsapi-shim';
 import shortid from 'shortid';
 import { ChartPanel, ChartPanelProps } from './panels';
 

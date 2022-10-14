@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Column, Row, Table } from '@deephaven/jsapi-shim';
+import dh, { Column, Row, Table } from '@deephaven/jsapi-shim';
 import Log from '@deephaven/log';
 import useTableListener from './useTableListener';
 import ColumnNameError from './ColumnNameError';
