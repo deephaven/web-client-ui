@@ -260,7 +260,7 @@ function TableInput(props: TableInputProps): JSX.Element {
       {table && (
         <div className="meta-row">
           <div className="d-flex align-items-center text-muted small">
-            {table && table.size > itemCount && (
+            {table != null && table.size > itemCount && (
               <>Table is too large, showing the first {SIZE_LIMIT} items.</>
             )}
           </div>
@@ -285,12 +285,12 @@ function TableInput(props: TableInputProps): JSX.Element {
         </div>
       )}
 
-      {!table ||
+      {table == null ||
         (error && (
           <div className="h-100 w-100 position-absolute">
             <LoadingOverlay
-              isLoaded={!!table}
-              isLoading={!table && !error}
+              isLoaded={table != null}
+              isLoading={table == null && error == null}
               errorMessage={error?.message ?? null}
             />
           </div>
