@@ -17,6 +17,7 @@ import {
 } from '@deephaven/utils';
 import Log from '@deephaven/log';
 import { vsHome } from '@deephaven/icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import FileExplorer from './FileExplorer';
 import FileStorage, { FileStorageItem, FileType } from './FileStorage';
 import FileUtils from './FileUtils';
@@ -408,7 +409,11 @@ class NewItemModal extends PureComponent<NewItemModalProps, NewItemModalState> {
             className="directory-breadcrumbs"
             onClick={() => this.handleBreadcrumbSelect(directoryPath)}
             aria-label={index === 0 ? 'Home' : undefined}
-            icon={index === 0 ? vsHome : undefined}
+            icon={
+              index === 0 ? (
+                <FontAwesomeIcon icon={vsHome} transform="right-1.6" />
+              ) : undefined
+            }
             tooltip={index === 0 ? 'Home' : undefined}
           >
             {basename}
