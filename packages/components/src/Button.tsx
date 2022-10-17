@@ -95,6 +95,8 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       disabled,
       active,
       onClick,
+      onMouseDown,
+      onMouseUp,
       className,
       style,
       children,
@@ -152,6 +154,8 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
           className
         )}
         onClick={onClick}
+        onMouseUp={onMouseUp}
+        onMouseDown={onMouseDown}
         style={style}
         disabled={disabled}
         tabIndex={tabIndex}
@@ -222,6 +226,20 @@ Button.propTypes = {
     }
     return null;
   },
+  onMouseUp(props) {
+    const { onMouseUp } = props;
+    if (onMouseUp !== undefined && typeof onMouseUp !== 'function') {
+      return new Error('onMouseUp must be a function');
+    }
+    return null;
+  },
+  onMouseDown(props) {
+    const { onMouseDown } = props;
+    if (onMouseDown !== undefined && typeof onMouseDown !== 'function') {
+      return new Error('onMouseDown must be a function');
+    }
+    return null;
+  },
   tabIndex: PropTypes.number,
   children: PropTypes.node,
   className: PropTypes.string,
@@ -232,6 +250,8 @@ Button.propTypes = {
 Button.defaultProps = {
   type: 'button',
   onClick: undefined,
+  onMouseUp: undefined,
+  onMouseDown: undefined,
   variant: undefined,
   tooltip: undefined,
   icon: undefined,
