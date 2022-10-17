@@ -336,15 +336,11 @@ class CustomColumnBuilder extends Component<
     const saveText = inputs.length > 1 ? 'Save Columns' : 'Save Column';
 
     return (
-      <button
-        type="button"
-        className={classNames(
-          'btn btn-apply',
-          {
-            'btn-spinner': isCustomColumnApplying,
-          },
-          isSuccessShowing ? 'btn-success' : 'btn-primary'
-        )}
+      <Button
+        kind={isSuccessShowing ? 'success' : 'primary'}
+        className={classNames('btn-apply', {
+          'btn-spinner': isCustomColumnApplying,
+        })}
         disabled={isSuccessShowing || isCustomColumnApplying}
         onClick={this.handleSaveClick}
       >
@@ -361,7 +357,7 @@ class CustomColumnBuilder extends Component<
             <FontAwesomeIcon icon={vsPass} /> Success
           </>
         )}
-      </button>
+      </Button>
     );
   }
 

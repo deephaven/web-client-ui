@@ -3565,18 +3565,15 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       );
       const loader = <DeephavenSpinner show={loadingSpinnerShown} />;
       const cancelButton = (
-        <button
-          type="button"
+        <Button
+          kind="secondary"
           onClick={this.handleCancel}
-          className={classNames(
-            'btn btn-secondary btn-cancelable iris-grid-btn-cancel',
-            {
-              show: loadingSpinnerShown,
-            }
-          )}
+          className={classNames('btn-cancelable iris-grid-btn-cancel', {
+            show: loadingSpinnerShown,
+          })}
         >
           Cancel
-        </button>
+        </Button>
       );
 
       const gridY = metrics ? metrics.gridY : 0;
