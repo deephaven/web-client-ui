@@ -5,6 +5,7 @@ import classNames from 'classnames';
 import Checkbox from './Checkbox';
 import Popper from './popper/Popper';
 import './HierarchicalCheckboxMenu.scss';
+import Button from './Button';
 
 export type HierarchicalCheckboxValueMap = Map<
   string,
@@ -206,9 +207,8 @@ class HierarchicalCheckboxMenu extends Component<
               ))}
           </div>
         ))}
-        <button
-          type="button"
-          className="btn btn-link"
+        <Button
+          kind="ghost"
           onClick={this.selectAll}
           data-testid={
             dataTestId !== undefined
@@ -217,17 +217,16 @@ class HierarchicalCheckboxMenu extends Component<
           }
         >
           Select All
-        </button>
-        <button
-          type="button"
-          className="btn btn-link"
+        </Button>
+        <Button
+          kind="ghost"
           onClick={this.clear}
           data-testid={
             dataTestId !== undefined ? `${dataTestId}-btn-clear` : undefined
           }
         >
           Clear
-        </button>
+        </Button>
       </div>
     );
   }
