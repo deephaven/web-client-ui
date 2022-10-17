@@ -9,6 +9,7 @@ import React, {
 import memoize from 'memoize-one';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
+  Button,
   ContextAction,
   ContextActions,
   GLOBAL_SHORTCUTS,
@@ -272,13 +273,9 @@ class CsvOverlay extends Component<CsvOverlayProps, CsvOverlayState> {
             <div className="message-small">
               <label>or</label>
             </div>
-            <button
-              type="button"
-              className="btn btn-primary"
-              onClick={this.handleSelectFile}
-            >
+            <Button kind="primary" onClick={this.handleSelectFile}>
               Select File...
-            </button>
+            </Button>
           </div>
         )}
         {selectedFileName && (error === undefined || error === '') && (
@@ -291,13 +288,13 @@ class CsvOverlay extends Component<CsvOverlayProps, CsvOverlayState> {
               <label className="selected-name">
                 {selectedFileName}
                 {!uploadInProgress && (
-                  <button
-                    type="button"
-                    className="btn btn-link btn-link-icon ml-2"
+                  <Button
+                    kind="ghost"
+                    className="ml-2"
                     onClick={this.unstageFile}
-                  >
-                    <FontAwesomeIcon icon={vsTrash} />
-                  </button>
+                    icon={vsTrash}
+                    tooltip="Remove"
+                  />
                 )}
               </label>
             </div>

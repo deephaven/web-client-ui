@@ -6,7 +6,7 @@ import React, {
   RefObject,
 } from 'react';
 import classNames from 'classnames';
-import { Popper } from '@deephaven/components';
+import { Button, Popper } from '@deephaven/components';
 
 interface RenameDialogProps {
   isShared: boolean;
@@ -139,16 +139,16 @@ export default class RenameDialog extends PureComponent<
         </div>
 
         <div className="text-right">
-          <button
-            type="button"
-            className="btn btn-outline-primary mr-2"
+          <Button
+            kind="secondary"
+            className="mr-2"
             onClick={this.handleRenameCancel}
           >
             Cancel
-          </button>
-          <button type="submit" className="btn btn-primary">
+          </Button>
+          <Button kind="primary" type="submit">
             Rename
-          </button>
+          </Button>
         </div>
       </form>
     );

@@ -1,6 +1,5 @@
 import React, { PureComponent, ReactElement } from 'react';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { DropdownActions, DropdownMenu, Tooltip } from '@deephaven/components';
+import { Button, DropdownActions, DropdownMenu } from '@deephaven/components';
 import { vsGear, dhTrashUndo } from '@deephaven/icons';
 import { assertNotNull } from '@deephaven/utils';
 import { IdeSession, LogItem } from '@deephaven/jsapi-shim';
@@ -165,20 +164,16 @@ class LogView extends PureComponent<LogViewProps, LogViewState> {
       order: 1000,
       menuElement: (
         <div className="log-level-menu-controls">
-          <button
-            type="button"
-            className="btn btn-link log-level-toggle-all"
+          <Button
+            kind="ghost"
+            className="log-level-toggle-all"
             onClick={this.handleToggleAllClick}
           >
             Toggle All
-          </button>
-          <button
-            type="button"
-            className="btn btn-link"
-            onClick={this.handleResetClick}
-          >
+          </Button>
+          <Button kind="ghost" onClick={this.handleResetClick}>
             Reset
-          </button>
+          </Button>
         </div>
       ),
     });
@@ -538,26 +533,25 @@ class LogView extends PureComponent<LogViewProps, LogViewState> {
     return (
       <div className="log-pane h-100 w-100">
         <div className="log-pane-menu">
-          <button
-            type="button"
-            className="btn btn-link btn-link-icon btn-clear-logs"
+          <Button
+            kind="ghost"
+            className="btn-clear-logs"
             onClick={this.handleClearClick}
+            icon={dhTrashUndo}
+            tooltip="Clear log"
+          />
+          <Button
+            kind="ghost"
+            className="btn-link-icon btn-overflow"
+            icon={vsGear}
+            tooltip="Log Settings"
           >
-            <FontAwesomeIcon icon={dhTrashUndo} />
-            <Tooltip>Clear log</Tooltip>
-          </button>
-          <button
-            type="button"
-            className="btn btn-link btn-link-icon btn-overflow"
-          >
-            <FontAwesomeIcon icon={vsGear} />
-            <Tooltip>Log Settings</Tooltip>
             <DropdownMenu
               actions={actions}
               popperClassName="log-level-menu-popper"
               popperOptions={popperOptions}
             />
-          </button>
+          </Button>
         </div>
         <div
           className="log-pane-editor h-100 w-100"

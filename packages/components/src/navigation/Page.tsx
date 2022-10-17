@@ -2,6 +2,7 @@ import React from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { vsClose, vsChevronLeft } from '@deephaven/icons';
 import './Page.scss';
+import Button from '../Button';
 
 export type PageProps = {
   children: React.ReactNode;
@@ -26,28 +27,28 @@ export const Page = ({
     <div className="navigation-title-bar">
       <div className="navigation-left-buttons">
         {onBack !== undefined && (
-          <button
-            className="btn btn-link btn-back"
+          <Button
+            kind="ghost"
+            className="btn-back"
             data-testid="btn-page-back"
-            type="button"
             onClick={onBack}
+            icon={vsChevronLeft}
           >
-            <FontAwesomeIcon icon={vsChevronLeft} />
             Back
-          </button>
+          </Button>
         )}
       </div>
       <div className="navigation-title">{title}</div>
       <div className="navigation-right-buttons">
         {onClose !== undefined && (
-          <button
-            className="btn btn-link btn-link-icon btn-close px-2 m-1"
+          <Button
+            kind="ghost"
+            className="btn-close px-2 m-1"
             data-testid="btn-page-close"
-            type="button"
             onClick={onClose}
-          >
-            <FontAwesomeIcon icon={vsClose} />
-          </button>
+            icon={vsClose}
+            tooltip="Close"
+          />
         )}
       </div>
     </div>

@@ -10,7 +10,7 @@ import React, {
   KeyboardEvent,
   ReactElement,
 } from 'react';
-import { CardFlip } from '@deephaven/components';
+import { Button, CardFlip } from '@deephaven/components';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { vsGear } from '@deephaven/icons';
 import { Column } from '@deephaven/jsapi-shim';
@@ -270,22 +270,21 @@ class InputFilter extends Component<InputFilterProps, InputFilterState> {
               </div>
             </div>
             <div className="input-filter-settings-buttons">
-              <button
-                type="button"
-                className="btn btn-outline-primary"
+              <Button
+                kind="secondary"
                 onClick={this.handleSettingsCancel}
                 disabled={column == null}
               >
                 Cancel
-              </button>
-              <button
-                type="button"
-                className="btn btn-primary ml-2"
+              </Button>
+              <Button
+                kind="primary"
+                className="ml-2"
                 onClick={this.handleSettingsSave}
                 disabled={selectedColumn == null}
               >
                 Save
-              </button>
+              </Button>
             </div>
           </div>
         </div>
@@ -312,13 +311,13 @@ class InputFilter extends Component<InputFilterProps, InputFilterState> {
             </div>
           </div>
           <div className="input-filter-menu">
-            <button
-              type="button"
-              className="btn btn-link btn-link-icon m-2 px-2"
+            <Button
+              kind="ghost"
+              className="m-2 px-2"
               onClick={this.handleSettingsClick}
-            >
-              <FontAwesomeIcon icon={vsGear} transform="grow-4" />
-            </button>
+              icon={<FontAwesomeIcon icon={vsGear} transform="grow-4" />}
+              tooltip="Input Filter Settings"
+            />
           </div>
         </div>
       </CardFlip>
