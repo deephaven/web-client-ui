@@ -370,7 +370,7 @@ class CsvInputBar extends Component<CsvInputBarProps, CsvInputBarState> {
               />
             </div>
             <label>{progressValue}%</label>
-            <Button kind="secondary" onClick={this.handleCancelInProgress}>
+            <Button kind="primary" onClick={this.handleCancelInProgress}>
               Cancel
             </Button>
           </div>

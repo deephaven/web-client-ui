@@ -1,5 +1,4 @@
 import React from 'react';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { vsClose, vsChevronLeft } from '@deephaven/icons';
 import './Page.scss';
 import Button from '../Button';
