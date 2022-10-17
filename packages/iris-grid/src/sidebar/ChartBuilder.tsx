@@ -393,15 +393,15 @@ class ChartBuilder extends PureComponent<ChartBuilderProps, ChartBuilderState> {
                 ))}
               </select>
               {seriesItems.length > 1 && (
-                <button
-                  type="button"
-                  className="btn btn-link btn-link-icon btn-delete-series ml-2 px-2"
+                <Button
+                  kind="ghost"
+                  className="btn-delete-series ml-2 px-2"
                   data-index={i}
                   data-testid={`delete-series-${i}`}
                   onClick={this.handleSeriesDeleteClick}
-                >
-                  <FontAwesomeIcon icon={vsTrash} />
-                </button>
+                  icon={vsTrash}
+                  tooltip="Delete"
+                />
               )}
             </div>
           ))}

@@ -780,9 +780,9 @@ class VisibilityOrderingBuilder extends Component<
             // eslint-disable-next-line react/jsx-props-no-spreading
             {...provided.draggableProps}
           >
-            <button
-              type="button"
-              className="visibility btn btn-link btn-link-icon"
+            <Button
+              kind="ghost"
+              className="visibility"
               onMouseDown={event => {
                 this.handleVisibilityDraggingStart(
                   modelIndex,
@@ -814,9 +814,9 @@ class VisibilityOrderingBuilder extends Component<
                   event.preventDefault();
                 }
               }}
-            >
-              <FontAwesomeIcon icon={isHidden ? dhEyeSlash : dhEye} />
-            </button>
+              icon={isHidden ? dhEyeSlash : dhEye}
+              tooltip={isHidden ? 'Show' : 'Hide'}
+            />
             <div
               role="menuitem"
               tabIndex={0}

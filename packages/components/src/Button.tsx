@@ -31,6 +31,8 @@ interface BaseButtonProps extends React.ComponentPropsWithRef<'button'> {
   icon?: IconDefinition | JSX.Element;
   active?: boolean;
   'data-testid'?: string;
+  'data-index'?: number;
+  'data-operator'?: string;
   'aria-label'?: string;
 }
 
@@ -95,10 +97,19 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       disabled,
       active,
       onClick,
+      onContextMenu,
+      onMouseDown,
+      onMouseUp,
+      onMouseEnter,
+      onMouseLeave,
+      onKeyDown,
       className,
       style,
       children,
+      tabIndex,
       'data-testid': dataTestId,
+      'data-index': dataIndex,
+      'data-operator': dataOperator,
       'aria-label': ariaLabel,
     } = props;
 
@@ -140,6 +151,8 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     const button = (
       <button
         data-testid={dataTestId}
+        data-index={dataIndex}
+        data-operator={dataOperator}
         ref={ref}
         // eslint-disable-next-line react/button-has-type
         type={type}
@@ -151,8 +164,15 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
           className
         )}
         onClick={onClick}
+        onContextMenu={onContextMenu}
+        onMouseUp={onMouseUp}
+        onMouseDown={onMouseDown}
+        onMouseEnter={onMouseEnter}
+        onMouseLeave={onMouseLeave}
+        onKeyDown={onKeyDown}
         style={style}
         disabled={disabled}
+        tabIndex={tabIndex}
         aria-label={ariaLabelString}
       >
         {icon && iconElem}
@@ -220,24 +240,78 @@ Button.propTypes = {
     }
     return null;
   },
+  onContextMenu(props) {
+    const { onContextMenu } = props;
+    if (onContextMenu !== undefined && typeof onContextMenu !== 'function') {
+      return new Error('onContextMenu must be a function');
+    }
+    return null;
+  },
+  onMouseUp(props) {
+    const { onMouseUp } = props;
+    if (onMouseUp !== undefined && typeof onMouseUp !== 'function') {
+      return new Error('onMouseUp must be a function');
+    }
+    return null;
+  },
+  onMouseDown(props) {
+    const { onMouseDown } = props;
+    if (onMouseDown !== undefined && typeof onMouseDown !== 'function') {
+      return new Error('onMouseDown must be a function');
+    }
+    return null;
+  },
+  onMouseEnter(props) {
+    const { onMouseEnter } = props;
+    if (onMouseEnter !== undefined && typeof onMouseEnter !== 'function') {
+      return new Error('onMouseEnter must be a function');
+    }
+    return null;
+  },
+  onMouseLeave(props) {
+    const { onMouseLeave } = props;
+    if (onMouseLeave !== undefined && typeof onMouseLeave !== 'function') {
+      return new Error('onMouseLeave must be a function');
+    }
+    return null;
+  },
+  onKeyDown(props) {
+    const { onKeyDown } = props;
+    if (onKeyDown !== undefined && typeof onKeyDown !== 'function') {
+      return new Error('onKeyDown must be a function');
+    }
+    return null;
+  },
+  tabIndex: PropTypes.number,
   children: PropTypes.node,
   className: PropTypes.string,
   style: PropTypes.object,
   'data-testid': PropTypes.string,
+  'data-index': PropTypes.number,
+  'data-operator': PropTypes.string,
 };
 
 Button.defaultProps = {
   type: 'button',
   onClick: undefined,
+  onContextMenu: undefined,
+  onMouseUp: undefined,
+  onMouseDown: undefined,
+  onMouseEnter: undefined,
+  onMouseLeave: undefined,
+  onKeyDown: undefined,
   variant: undefined,
   tooltip: undefined,
   icon: undefined,
   disabled: false,
   active: undefined,
+  tabIndex: undefined,
   children: undefined,
   className: undefined,
   style: {},
   'data-testid': undefined,
+  'data-index': undefined,
+  'data-operator': undefined,
 };
 
 export default Button;

@@ -18,7 +18,7 @@ import {
   SortDirection,
   FilterItem,
 } from '@deephaven/jsapi-utils';
-import { Button, ContextActionUtils, Tooltip } from '@deephaven/components';
+import { Button, ContextActionUtils } from '@deephaven/components';
 import Log from '@deephaven/log';
 import {
   CancelablePromise,
@@ -497,9 +497,9 @@ class AdvancedFilterCreator extends PureComponent<
               key={`filterOperator${key}`}
               className="form-row justify-content-end advanced-filter-creator-filter-operator"
             >
-              <button
-                type="button"
-                className={classNames('btn btn-link filter-operator', {
+              <Button
+                kind="ghost"
+                className={classNames('filter-operator', {
                   active: isAndFilter,
                 })}
                 onClick={this.handleChangeFilterOperator}
@@ -507,10 +507,10 @@ class AdvancedFilterCreator extends PureComponent<
                 data-operator={FilterOperator.and}
               >
                 AND
-              </button>
-              <button
-                type="button"
-                className={classNames('btn btn-link filter-operator', {
+              </Button>
+              <Button
+                kind="ghost"
+                className={classNames('filter-operator', {
                   active: !isAndFilter,
                 })}
                 onClick={this.handleChangeFilterOperator}
@@ -518,7 +518,7 @@ class AdvancedFilterCreator extends PureComponent<
                 data-operator={FilterOperator.or}
               >
                 OR
-              </button>
+              </Button>
             </div>
           );
           filterItemElements.push(operatorElement);
