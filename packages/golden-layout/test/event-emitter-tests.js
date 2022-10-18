@@ -1,17 +1,17 @@
 describe('the EventEmitter works', function () {
   var EmitterImplementor = function () {
-    lm.utils.EventEmitter.call(this);
+    return new lm.utils.EventEmitter();
   };
 
   it('is possible to inherit from EventEmitter', function () {
-    var myObject = new EmitterImplementor();
+    var myObject = EmitterImplementor();
     expect(typeof myObject.on).toBe('function');
     expect(typeof myObject.unbind).toBe('function');
     expect(typeof myObject.trigger).toBe('function');
   });
 
   it('notifies callbacks', function () {
-    var myObject = new EmitterImplementor();
+    var myObject = EmitterImplementor();
     var myListener = { callback: function () {} };
     spyOn(myListener, 'callback');
     expect(myListener.callback).not.toHaveBeenCalled();
@@ -23,7 +23,7 @@ describe('the EventEmitter works', function () {
   });
 
   it("triggers an 'all' event", function () {
-    var myObject = new EmitterImplementor();
+    var myObject = EmitterImplementor();
     var myListener = { callback: function () {}, allCallback: function () {} };
     spyOn(myListener, 'callback');
     spyOn(myListener, 'allCallback');
@@ -50,7 +50,7 @@ describe('the EventEmitter works', function () {
   });
 
   it('triggers sets the right context', function () {
-    var myObject = new EmitterImplementor();
+    var myObject = EmitterImplementor();
     var context = null;
     var myListener = {
       callback: function () {
@@ -65,7 +65,7 @@ describe('the EventEmitter works', function () {
   });
 
   it('unbinds events', function () {
-    var myObject = new EmitterImplementor();
+    var myObject = EmitterImplementor();
     var myListener = { callback: function () {} };
     spyOn(myListener, 'callback');
     myObject.on('someEvent', myListener.callback);
@@ -78,7 +78,7 @@ describe('the EventEmitter works', function () {
   });
 
   it('unbinds all events if no context is provided', function () {
-    var myObject = new EmitterImplementor();
+    var myObject = EmitterImplementor();
     var myListener = { callback: function () {} };
     spyOn(myListener, 'callback');
     myObject.on('someEvent', myListener.callback);
@@ -91,7 +91,7 @@ describe('the EventEmitter works', function () {
   });
 
   it('unbinds events for a specific context only', function () {
-    var myObject = new EmitterImplementor();
+    var myObject = EmitterImplementor();
     var myListener = { callback: function () {} };
     var contextA = { name: 'a' };
     var contextB = { name: 'b' };
@@ -110,7 +110,7 @@ describe('the EventEmitter works', function () {
   });
 
   it('throws an exception when trying to unsubscribe for a non existing method', function () {
-    var myObject = new EmitterImplementor();
+    var myObject = EmitterImplementor();
     var myListener = { callback: function () {} };
 
     myObject.on('someEvent', myListener.callback);
@@ -129,7 +129,7 @@ describe('the EventEmitter works', function () {
   });
 
   it('throws an exception when attempting to bind a non-function', function () {
-    var myObject = new EmitterImplementor();
+    var myObject = EmitterImplementor();
 
     expect(function () {
       myObject.on('someEvent', 1);

@@ -31,7 +31,7 @@ export const PandasPlugin = (props: PandasPluginProps): JSX.Element => {
       const makeModel = () =>
         fetch().then((table: Table) => IrisGridModelFactory.makeModel(table));
       const config = {
-        type: 'react-component',
+        type: 'react-component' as const,
         component: PandasPanel.COMPONENT,
         props: {
           localDashboardId: id,

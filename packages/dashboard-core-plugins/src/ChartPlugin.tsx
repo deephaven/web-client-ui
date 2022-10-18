@@ -42,7 +42,7 @@ export const ChartPlugin = (props: ChartPluginProps): JSX.Element => {
           ChartModelFactory.makeModel(undefined, figure)
         );
       const config = {
-        type: 'react-component',
+        type: 'react-component' as const,
         component: ChartPanel.COMPONENT,
         props: {
           localDashboardId: id,

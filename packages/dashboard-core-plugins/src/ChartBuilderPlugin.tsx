@@ -50,7 +50,7 @@ export const ChartBuilderPlugin = (
       const title = ChartUtils.titleFromSettings(settings);
 
       const config = {
-        type: 'react-component',
+        type: 'react-component' as const,
         component: ChartPanel.COMPONENT,
         props: {
           localDashboardId: id,
