@@ -1,7 +1,16 @@
 import '@testing-library/jest-dom';
 import 'jest-canvas-mock';
-import './__mocks__/dh-core';
 import Log from '@deephaven/log';
+
+jest.mock('@deephaven/jsapi-shim', () => {
+  return jest.fn().mockImplementation(() => {
+    return {
+      Client: {
+        connect: jest.fn(),
+      },
+    };
+  });
+});
 
 let logLevel = parseInt(process.env.DH_LOG_LEVEL ?? '', 10);
 if (!Number.isFinite(logLevel)) {
