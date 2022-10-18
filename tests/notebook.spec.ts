@@ -13,8 +13,8 @@ test('test creating a file, saving it, closing it, re-opening it, running it, th
   // Click [aria-label="New notebook"]
   await page.locator('[aria-label="New notebook"]').click();
 
-  // Click console input
-  await page.locator('.console-input').click();
+  // Click editor container
+  await page.locator('.editor-container').click();
 
   const message = `Hello notebook ${shortid()}!`;
 
