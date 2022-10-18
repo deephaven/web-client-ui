@@ -7,12 +7,7 @@
         "./packages/*/src"
       ]
     },
-    "skipLibCheck": true,
-    "types": [
-      "vite/client",
-      "jest",
-      "node"
-    ]
+    "types": ["jest", "node"]
   },
   "files": [],
   "watchOptions": {
