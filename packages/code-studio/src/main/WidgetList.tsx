@@ -150,6 +150,9 @@ export const WidgetList = (props: WidgetListProps): JSX.Element => {
               }
             }}
             disabled={disableDoubleClick}
+            onClick={() => {
+              // no-op: click is handled by onMouseDown and onMouseUp attributes
+            }}
           >
             <ObjectIcon type={widget.type} /> {widget.name ?? ''}
           </Button>

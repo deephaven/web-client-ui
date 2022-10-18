@@ -61,10 +61,16 @@ const Modals = (): React.ReactElement => {
               </Checkbox>
             </div>
             <div className="modal-footer">
-              <Button kind="secondary" data-dismiss="modal">
+              <Button
+                kind="secondary"
+                data-dismiss="modal"
+                onClick={() => undefined}
+              >
                 Close
               </Button>
-              <Button kind="primary">Save changes</Button>
+              <Button kind="primary" onClick={() => undefined}>
+                Save changes
+              </Button>
             </div>
           </div>
         </div>

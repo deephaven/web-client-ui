@@ -115,6 +115,7 @@ class ContextMenus extends Component {
             marginBottom: '1rem',
             marginRight: '1rem',
           }}
+          onClick={() => undefined}
         >
           Right Click Me
           <ContextActions actions={actions} />
@@ -126,6 +127,7 @@ class ContextMenus extends Component {
             marginBottom: '1rem',
             marginRight: '1rem',
           }}
+          onClick={() => undefined}
         >
           Right Click Me
           <ContextActions actions={delayedActions} />

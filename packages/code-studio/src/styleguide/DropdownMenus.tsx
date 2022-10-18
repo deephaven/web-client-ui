@@ -96,7 +96,12 @@ class DropdownMenus extends Component<
           A simple dropdown menu of actions, can open on click of parent
           container, or controlled by prop.
         </p>
-        <Button kind="inline" className="mx-2" icon={vsKebabVertical}>
+        <Button
+          kind="inline"
+          className="mx-2"
+          icon={vsKebabVertical}
+          onClick={() => undefined}
+        >
           <DropdownMenu actions={actions} />
         </Button>
         <Button

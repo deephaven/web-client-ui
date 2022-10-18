@@ -756,7 +756,14 @@ export class AppMainContainer extends Component<
               className="ml-1"
             />
             <div>
-              <Button kind="ghost" className="btn-panels-menu" icon={dhShapes}>
+              <Button
+                kind="ghost"
+                className="btn-panels-menu"
+                icon={dhShapes}
+                onClick={() => {
+                  // no-op: click is handled in `AppControlsMenu` (which uses a `DropdownMenu`)
+                }}
+              >
                 Controls
                 <AppControlsMenu
                   handleControlSelect={this.handleControlSelect}

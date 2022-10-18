@@ -226,20 +226,8 @@ Button.propTypes = {
     }
     return null;
   },
-  onMouseUp(props) {
-    const { onMouseUp } = props;
-    if (onMouseUp !== undefined && typeof onMouseUp !== 'function') {
-      return new Error('onMouseUp must be a function');
-    }
-    return null;
-  },
-  onMouseDown(props) {
-    const { onMouseDown } = props;
-    if (onMouseDown !== undefined && typeof onMouseDown !== 'function') {
-      return new Error('onMouseDown must be a function');
-    }
-    return null;
-  },
+  onMouseUp: PropTypes.func,
+  onMouseDown: PropTypes.func,
   tabIndex: PropTypes.number,
   children: PropTypes.node,
   className: PropTypes.string,

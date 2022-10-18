@@ -39,6 +39,7 @@ const Progress = (): React.ReactElement => (
           kind="primary"
           className="btn-spinner btn-cancelable"
           style={{ minWidth: '10rem' }}
+          onClick={() => undefined}
         >
           <span>
             <LoadingSpinner />
