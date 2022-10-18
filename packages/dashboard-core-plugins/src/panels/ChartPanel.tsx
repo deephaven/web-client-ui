@@ -38,7 +38,7 @@ import {
   PromiseUtils,
   TextUtils,
 } from '@deephaven/utils';
-import GoldenLayout from '@deephaven/golden-layout';
+import type { Container, EventEmitter } from '@deephaven/golden-layout';
 import { ModelIndex } from '@deephaven/grid';
 import { AdvancedFilterOptions, SortDirection } from '@deephaven/jsapi-utils';
 import WidgetPanel from './WidgetPanel';
@@ -137,8 +137,8 @@ export interface GLChartPanelState {
   figure?: string;
 }
 export interface ChartPanelProps {
-  glContainer: GoldenLayout.Container;
-  glEventHub: GoldenLayout.EventEmitter;
+  glContainer: Container;
+  glEventHub: EventEmitter;
 
   metadata: ChartPanelMetadata;
   /** Function to build the ChartModel used by this ChartPanel. Can return a promise. */

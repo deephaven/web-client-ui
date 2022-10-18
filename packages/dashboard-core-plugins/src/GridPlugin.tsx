@@ -56,7 +56,7 @@ export const GridPlugin = (props: GridPluginProps): JSX.Element => {
       const makeModel = () =>
         fetch().then((table: Table) => IrisGridModelFactory.makeModel(table));
       const config = {
-        type: 'react-component',
+        type: 'react-component' as const,
         component: IrisGridPanel.COMPONENT,
         props: {
           getDownloadWorker,

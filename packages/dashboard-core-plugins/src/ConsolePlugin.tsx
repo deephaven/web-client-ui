@@ -322,7 +322,7 @@ export const ConsolePlugin = (
       };
       const title = getNotebookTitle(fileMetadata);
       return {
-        type: 'react-component',
+        type: 'react-component' as const,
         component: NotebookPanel.COMPONENT,
         isFocusOnShow: false,
         props: {

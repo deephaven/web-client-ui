@@ -6,12 +6,12 @@ import { GLPropTypes, LayoutUtils } from '@deephaven/dashboard';
 import Log from '@deephaven/log';
 import './WidgetPanelTooltip.scss';
 import { ReactElement } from 'react-markdown';
-import GoldenLayout from '@deephaven/golden-layout';
+import type { Container } from '@deephaven/golden-layout';
 
 const log = Log.module('WidgetPanelTooltip');
 
 interface WidgetPanelTooltipProps {
-  glContainer: GoldenLayout.Container;
+  glContainer: Container;
   widgetType: string;
   widgetName: string;
   description: string;
