@@ -63,7 +63,7 @@ export const MarkdownPlugin = (props: MarkdownPluginProps): JSX.Element => {
       const content =
         closedMarkdowns.length > 0 ? null : MarkdownUtils.DEFAULT_CONTENT;
       const config = {
-        type: 'react-component',
+        type: 'react-component' as const,
         component: MarkdownPanel.COMPONENT,
         props: {
           id: panelId,
