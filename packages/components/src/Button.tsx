@@ -240,48 +240,12 @@ Button.propTypes = {
     }
     return null;
   },
-  onContextMenu(props) {
-    const { onContextMenu } = props;
-    if (onContextMenu !== undefined && typeof onContextMenu !== 'function') {
-      return new Error('onContextMenu must be a function');
-    }
-    return null;
-  },
-  onMouseUp(props) {
-    const { onMouseUp } = props;
-    if (onMouseUp !== undefined && typeof onMouseUp !== 'function') {
-      return new Error('onMouseUp must be a function');
-    }
-    return null;
-  },
-  onMouseDown(props) {
-    const { onMouseDown } = props;
-    if (onMouseDown !== undefined && typeof onMouseDown !== 'function') {
-      return new Error('onMouseDown must be a function');
-    }
-    return null;
-  },
-  onMouseEnter(props) {
-    const { onMouseEnter } = props;
-    if (onMouseEnter !== undefined && typeof onMouseEnter !== 'function') {
-      return new Error('onMouseEnter must be a function');
-    }
-    return null;
-  },
-  onMouseLeave(props) {
-    const { onMouseLeave } = props;
-    if (onMouseLeave !== undefined && typeof onMouseLeave !== 'function') {
-      return new Error('onMouseLeave must be a function');
-    }
-    return null;
-  },
-  onKeyDown(props) {
-    const { onKeyDown } = props;
-    if (onKeyDown !== undefined && typeof onKeyDown !== 'function') {
-      return new Error('onKeyDown must be a function');
-    }
-    return null;
-  },
+  onContextMenu: PropTypes.func,
+  onMouseUp: PropTypes.func,
+  onMouseDown: PropTypes.func,
+  onMouseEnter: PropTypes.func,
+  onMouseLeave: PropTypes.func,
+  onKeyDown: PropTypes.func,
   tabIndex: PropTypes.number,
   children: PropTypes.node,
   className: PropTypes.string,

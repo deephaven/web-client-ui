@@ -3640,10 +3640,10 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
                 style={style}
               >
                 {isFilterVisible && (
-                  <button
-                    type="button"
+                  <Button
+                    kind="ghost"
                     className={classNames(
-                      'btn btn-link btn-link-icon advanced-filter-button',
+                      'btn-link-icon advanced-filter-button',
                       {
                         'filter-set': isFilterSet,
                       }
@@ -3671,7 +3671,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
                         className="filter-light"
                       />
                     </div>
-                  </button>
+                  </Button>
                 )}
               </div>
             );
