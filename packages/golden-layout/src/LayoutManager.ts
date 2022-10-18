@@ -700,7 +700,7 @@ export default class LayoutManager extends EventEmitter {
 
   _$getArea(x: number, y: number) {
     let smallestSurface = Infinity;
-    let mathingArea = this._itemAreas[0];
+    let mathingArea: ItemArea | null = null;
 
     for (let i = 0; i < this._itemAreas.length; i++) {
       const area = this._itemAreas[i];
