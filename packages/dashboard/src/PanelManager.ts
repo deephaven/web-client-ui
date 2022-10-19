@@ -187,13 +187,20 @@ class PanelManager {
     C extends ComponentType<P> = ComponentType<P>
   >(types: PanelComponentType<P, C>[]): PanelComponent<P> | undefined {
     return this.getLastUsedPanel(panel =>
-      types.some(
-        type =>
-          panel instanceof type ||
+      types.some(type => {
+        let instanceofType;
+        try {
+          instanceofType = panel instanceof type;
+        } catch (e) {
+          instanceofType = false;
+        }
+        return (
+          instanceofType ||
           (isWrappedComponent(type) &&
             type.WrappedComponent &&
             panel instanceof type.WrappedComponent)
-      )
+        );
+      })
     );
   }
 
