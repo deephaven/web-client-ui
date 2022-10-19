@@ -1,5 +1,9 @@
 import React from 'react';
-import { DeephavenSpinner, LoadingSpinner } from '@deephaven/components';
+import {
+  Button,
+  DeephavenSpinner,
+  LoadingSpinner,
+} from '@deephaven/components';
 
 const Progress = (): React.ReactElement => (
   <div>
@@ -31,17 +35,18 @@ const Progress = (): React.ReactElement => (
 
       <div className="col">
         <h5>Button Progress Spinner</h5>
-        <button
-          type="button"
-          className="btn btn-primary btn-spinner btn-cancelable"
+        <Button
+          kind="primary"
+          className="btn-spinner btn-cancelable"
           style={{ minWidth: '10rem' }}
+          onClick={() => undefined}
         >
           <span>
             <LoadingSpinner />
             <span className="btn-normal-content">Connecting</span>
             <span className="btn-hover-content">Cancel</span>
           </span>
-        </button>
+        </Button>
       </div>
     </div>
   </div>

@@ -1,7 +1,6 @@
 import React, { ReactElement, useState } from 'react';
-import { Modal, ModalBody, ModalHeader } from '@deephaven/components';
+import { Button, Modal, ModalBody, ModalHeader } from '@deephaven/components';
 import { vsLaw } from '@deephaven/icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 const LegalNotice = (): ReactElement => {
   const [modal, setModal] = useState(false);
@@ -10,8 +9,7 @@ const LegalNotice = (): ReactElement => {
   };
 
   return (
-    <button type="button" className="btn btn-link" onClick={toggle}>
-      <FontAwesomeIcon icon={vsLaw} />
+    <Button kind="ghost" onClick={toggle} icon={vsLaw}>
       Legal Notices
       <Modal isOpen={modal} toggle={toggle} className="theme-bg-light">
         <ModalHeader toggle={toggle}>Legal Notice</ModalHeader>
@@ -34,7 +32,7 @@ const LegalNotice = (): ReactElement => {
           </p>
         </ModalBody>
       </Modal>
-    </button>
+    </Button>
   );
 };
 
