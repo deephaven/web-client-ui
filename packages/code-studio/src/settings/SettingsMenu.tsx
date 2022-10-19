@@ -1,6 +1,7 @@
 import React, { Component, ReactElement, RefObject } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { vsClose, vsWatch, vsRecordKeys } from '@deephaven/icons';
+import { Button } from '@deephaven/components';
 import Logo from './community-wordmark-app.svg';
 import FormattingSectionContent from './FormattingSectionContent';
 import LegalNotice from './LegalNotice';
@@ -92,13 +93,13 @@ export class SettingsMenu extends Component<
       <div className="app-settings-menu">
         <header className="app-settings-menu-header">
           <div className="flex-spacer" />
-          <button
-            type="button"
-            className="btn btn-link btn-link-icon btn-close-settings-menu"
+          <Button
+            kind="ghost"
+            className="btn-close-settings-menu"
             onClick={this.handleClose}
-          >
-            <FontAwesomeIcon icon={vsClose} transform="grow-4" />
-          </button>
+            icon={<FontAwesomeIcon icon={vsClose} transform="grow-4" />}
+            tooltip="Close"
+          />
         </header>
         <div className="app-settings-menu-content" ref={this.menuContentRef}>
           <h5>Settings</h5>
@@ -156,13 +157,13 @@ export class SettingsMenu extends Component<
                     {supportLink}
                   </a>
                 </div>
-                <button
-                  type="button"
-                  className="btn btn-secondary mt-2 py-2"
+                <Button
+                  kind="tertiary"
+                  className="mt-2 py-2"
                   onClick={SettingsMenu.handleExportSupportLogs}
                 >
                   Export Logs
-                </button>
+                </Button>
               </div>
               <div className="app-settings-footer-item">
                 <div className="font-weight-bold">Documentation</div>

@@ -5,6 +5,7 @@ import {
   HierarchicalCheckboxMenu,
   Popper,
   HierarchicalCheckboxValueMap,
+  Button,
 } from '@deephaven/components';
 
 interface DialogState {
@@ -99,9 +100,8 @@ class Dialog extends Component<DialogProps, DialogState> {
           Popover dialog that can contain interactive elements, can be set to
           self close on blur.
         </p>
-        <button
-          type="button"
-          className="btn btn-primary"
+        <Button
+          kind="primary"
           style={{ marginBottom: '1rem', marginRight: '1rem' }}
           onClick={() => {
             if (isShown) {
@@ -130,7 +130,7 @@ class Dialog extends Component<DialogProps, DialogState> {
           >
             {this.renderChild()}
           </Popper>
-        </button>
+        </Button>
         <p>
           The Hierarchical Checkbox Menu uses a popover dialog to display
           hierarchical groups of checkboxes.

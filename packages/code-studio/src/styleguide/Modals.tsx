@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BasicModal, Checkbox } from '@deephaven/components';
+import { BasicModal, Button, Checkbox } from '@deephaven/components';
 
 const Modals = (): React.ReactElement => {
   const [openModal, setOpenModal] = useState<number>(0);
@@ -11,16 +11,15 @@ const Modals = (): React.ReactElement => {
   function renderBasicModal(buttonCount: number) {
     return (
       <React.Fragment key={buttonCount}>
-        <button
-          type="button"
-          className="btn btn-primary"
+        <Button
+          kind="primary"
           style={{ marginBottom: '1rem', marginRight: '1rem' }}
           onClick={() => {
             setOpenModal(buttonCount);
           }}
         >
           {buttonCount} {buttonCount > 1 ? 'Actions' : 'Action'}
-        </button>
+        </Button>
         <BasicModal
           isOpen={openModal === buttonCount}
           headerText="Header Text"
@@ -62,16 +61,16 @@ const Modals = (): React.ReactElement => {
               </Checkbox>
             </div>
             <div className="modal-footer">
-              <button
-                type="button"
-                className="btn btn-outline-primary"
+              <Button
+                kind="secondary"
                 data-dismiss="modal"
+                onClick={() => undefined}
               >
                 Close
-              </button>
-              <button type="button" className="btn btn-primary">
+              </Button>
+              <Button kind="primary" onClick={() => undefined}>
                 Save changes
-              </button>
+              </Button>
             </div>
           </div>
         </div>

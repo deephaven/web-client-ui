@@ -14,11 +14,11 @@ import { RouteComponentProps, withRouter } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   ContextActions,
-  Tooltip,
   ThemeExport,
   GLOBAL_SHORTCUTS,
   Popper,
   ContextAction,
+  Button,
 } from '@deephaven/components';
 import {
   IrisGridModel,
@@ -756,23 +756,29 @@ export class AppMainContainer extends Component<
               className="ml-1"
             />
             <div>
-              <button type="button" className="btn btn-link btn-panels-menu">
-                <FontAwesomeIcon icon={dhShapes} />
+              <Button
+                kind="ghost"
+                className="btn-panels-menu"
+                icon={dhShapes}
+                onClick={() => {
+                  // no-op: click is handled in `AppControlsMenu` (which uses a `DropdownMenu`)
+                }}
+              >
                 Controls
                 <AppControlsMenu
                   handleControlSelect={this.handleControlSelect}
                   handleToolSelect={this.handleToolSelect}
                   onClearFilter={this.handleClearFilter}
                 />
-              </button>
+              </Button>
               {canUsePanels && (
-                <button
-                  type="button"
-                  className="btn btn-link btn-panels-menu btn-show-panels"
+                <Button
+                  kind="ghost"
+                  className="btn-panels-menu btn-show-panels"
                   data-testid="app-main-panels-button"
                   onClick={this.handleWidgetMenuClick}
+                  icon={dhPanels}
                 >
-                  <FontAwesomeIcon icon={dhPanels} />
                   Panels
                   <Popper
                     isShown={isPanelsMenuShown}
@@ -789,22 +795,22 @@ export class AppMainContainer extends Component<
                       onSelect={this.handleWidgetSelect}
                     />
                   </Popper>
-                </button>
+                </Button>
               )}
-              <button
-                type="button"
-                className={classNames(
-                  'btn btn-link btn-link-icon btn-settings-menu',
-                  { 'text-warning': user.operateAs !== user.name }
-                )}
+              <Button
+                kind="ghost"
+                className={classNames('btn-settings-menu', {
+                  'text-warning': user.operateAs !== user.name,
+                })}
                 onClick={this.handleSettingsMenuShow}
-              >
-                <FontAwesomeIcon
-                  icon={vsGear}
-                  transform="grow-3 right-1 down-1"
-                />
-                <Tooltip>User Settings</Tooltip>
-              </button>
+                icon={
+                  <FontAwesomeIcon
+                    icon={vsGear}
+                    transform="grow-3 right-1 down-1"
+                  />
+                }
+                tooltip="User Settings"
+              />
             </div>
           </div>
         </nav>

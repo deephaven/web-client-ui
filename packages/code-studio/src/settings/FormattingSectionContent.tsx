@@ -5,7 +5,6 @@ import React, {
   RefObject,
 } from 'react';
 import { connect } from 'react-redux';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { dhNewCircleLargeFilled, vsRefresh, vsTrash } from '@deephaven/icons';
 import memoize from 'memoizee';
 import { CSSTransition, TransitionGroup } from 'react-transition-group';
@@ -748,14 +747,14 @@ export class FormattingSectionContent extends PureComponent<
             />
           </div>
           <div className="form-group col mb-2">
-            <button
-              type="button"
-              className="btn btn-link btn-link-icon btn-delete-format-rule float-right"
+            <Button
+              kind="ghost"
+              className="btn-delete-format-rule float-right"
               tabIndex={-1}
               onClick={() => this.handleFormatRuleDelete(i)}
-            >
-              <FontAwesomeIcon icon={vsTrash} />
-            </button>
+              icon={vsTrash}
+              tooltip="Delete"
+            />
 
             <label htmlFor={columnTypeId}>Column Type</label>
             <select
@@ -957,15 +956,15 @@ export class FormattingSectionContent extends PureComponent<
     ));
 
     const addNewRuleButton = (
-      <button
-        type="button"
-        className="btn btn-link mb-3"
+      <Button
+        kind="ghost"
+        className="mb-3"
         onClick={this.handleFormatRuleCreate}
         ref={this.addFormatRuleButtonRef}
+        icon={dhNewCircleLargeFilled}
       >
-        <FontAwesomeIcon icon={dhNewCircleLargeFilled} />
         Add New Rule
-      </button>
+      </Button>
     );
 
     const isTimeZoneDefault = timeZone === defaults.timeZone;

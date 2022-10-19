@@ -1,7 +1,7 @@
 import React, { ReactElement, ReactNode } from 'react';
 import PropTypes from 'prop-types';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { Collapse } from '@deephaven/components';
+import { Button, Collapse } from '@deephaven/components';
 import { vsTriangleDown } from '@deephaven/icons';
 
 interface SettingsMenuSectionProps {
@@ -17,9 +17,9 @@ const SettingsMenuSection = (props: SettingsMenuSectionProps): ReactElement => {
   return (
     <>
       <div>
-        <button
-          type="button"
-          className="btn btn-link btn-collapse-trigger"
+        <Button
+          kind="ghost"
+          className="btn-collapse-trigger"
           onClick={() => onToggle(sectionKey)}
         >
           <div className="flex-grow-1">{title}</div>
@@ -29,7 +29,7 @@ const SettingsMenuSection = (props: SettingsMenuSectionProps): ReactElement => {
               icon={vsTriangleDown}
             />
           </div>
-        </button>
+        </Button>
       </div>
       <Collapse in={isExpanded} autoFocusOnShow>
         {children}
