@@ -188,7 +188,7 @@ class ConsoleMenu extends PureComponent<ConsoleMenuProps, ConsoleMenuState> {
           className="btn-link-icon"
           disabled={tableActions.length === 0}
           onClick={() => {
-            // no-op: click is handled in `AppControlsMenu` (which uses a `DropdownMenu`)
+            // no-op: click is handled in `DropdownMenu`
           }}
         >
           <div className="fa-md fa-layers">
@@ -214,7 +214,7 @@ class ConsoleMenu extends PureComponent<ConsoleMenuProps, ConsoleMenuState> {
           className="btn-link-icon"
           disabled={widgetActions.length === 0}
           onClick={() => {
-            // no-op: click is handled in `AppControlsMenu` (which uses a `DropdownMenu`)
+            // no-op: click is handled in `DropdownMenu'
           }}
         >
           <div className="fa-md fa-layers">
@@ -241,7 +241,7 @@ class ConsoleMenu extends PureComponent<ConsoleMenuProps, ConsoleMenuState> {
           icon={vsKebabVertical}
           tooltip="More Actions..."
           onClick={() => {
-            // no-op: click is handled in `AppControlsMenu` (which uses a `DropdownMenu`)
+            // no-op: click is handled in `DropdownMenu`
           }}
         >
           <DropdownMenu

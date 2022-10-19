@@ -546,7 +546,7 @@ class LogView extends PureComponent<LogViewProps, LogViewState> {
             icon={vsGear}
             tooltip="Log Settings"
             onClick={() => {
-              // no-op: click is handled in `AppControlsMenu` (which uses a `DropdownMenu`)
+              // no-op: click is handled in `DropdownMenu'
             }}
           >
             <DropdownMenu
