@@ -64,9 +64,13 @@ test.describe('tests table operations', () => {
     expect(downloadButton).toHaveCount(1);
 
     // try renaming file before downloading
-    await page.locator('data-testid=input-csv-exporter-file-name').click();
+    const fileNameInputField = page.locator(
+      'data-testid=input-csv-exporter-file-name'
+    );
+    await fileNameInputField.click();
     await page.keyboard.press('Control+a');
     await page.keyboard.type('sin-and-cos.csv');
+    expect(fileNameInputField).toHaveValue('sin-and-cos.csv');
 
     downloadButton.click();
 
@@ -79,61 +83,115 @@ test.describe('tests table operations', () => {
       page.locator('.progress .progress-bar.bg-success')
     ).toHaveCount(1);
 
-    // Check snapshot
-    await expect(
-      page.locator('.iris-grid .navigation-page')
-    ).toHaveScreenshot();
+    // Close the sidebar
+    await page
+      .locator('.iris-grid')
+      .locator('data-testid=btn-page-close')
+      .click();
 
-    // Close the download panel
-    await page.locator('data-testid=btn-page-close').click();
-    await expect(page.locator('.table-sidebar')).toHaveCount(0);
+    await expect(page.locator('.iris-grid .table-sidebar')).toHaveCount(0);
   });
 
-  // test('quick filters', async () => {
-  //   // turn quick filters on
-  //   const quickFiltersItem = page.locator(
-  //     'data-testid=menu-item-Quick Filters'
-  //   );
-  //   await quickFiltersItem.click();
+  test('advanced filters', async () => {
+    // turn quick filters on
+    const quickFiltersItem = page.locator(
+      'data-testid=menu-item-Quick Filters'
+    );
+    await quickFiltersItem.click();
 
-  //   // wait for toggle to switch to 'on'
-  //   await expect(
-  //     quickFiltersItem.locator('.btn.btn-switch.active')
-  //   ).toHaveCount(1);
+    // wait for toggle to switch to 'on'
+    await expect(
+      quickFiltersItem.locator('.btn.btn-switch.active')
+    ).toHaveCount(1);
 
-  //   // Open the quick filters panel from the table (pick the 'y' column)
-  //   // This does not work at the moment, likely due to HTML canvas testing issues
-  //   await page.click('.iris-grid-column .grid-wrapper > div:nth-child(4)', {
-  //     force: true,
-  //   });
+    // Open the Advanced Filters panel from the table (pick the 'y' column)
+    // Note: This may click in the wrong place if the browser size is changed
+    await page
+      .locator('.iris-grid .grid-wrapper')
+      .click({ position: { x: 100, y: 35 } });
 
-  //   // wait for the panel to open
-  //   await expect(quickFiltersItem.locator('button')).toHaveCount(1);
+    // wait for the panel to open
+    await expect(page.locator('.advanced-filter-creator')).toHaveCount(1);
 
-  //   // Apply filter (greater than 0)
-  //   await page.locator('.advanced-filter-creator .form-control').click();
-  //   await page.locator('text=greater than').click();
-  //   await page.locator('placeholder=Enter value').click();
-  //   await page.keyboard.type('0');
+    // Apply filter (greater than 0)
+    const selectionMenu = page
+      .locator('.advanced-filter-creator')
+      .locator('select');
+    await selectionMenu.click();
+    await selectionMenu.selectOption('greaterThan');
+    await page
+      .locator('.advanced-filter-creator')
+      .getByPlaceholder('Enter value')
+      .click();
+    await page.keyboard.type('0');
 
-  //   // wait for filter adding to appear
-  //   await expect(
-  //     page.locator('.advanced-filter-creator .add-filter-item')
-  //   ).toHaveCount(1);
+    // wait for filter adding to appear
+    const addFilterItem = page.locator(
+      '.advanced-filter-creator .add-filter-item'
+    );
+    await expect(addFilterItem).toHaveCount(1);
 
-  //   // Apply additional filter (OR equal to 0)
-  //   await page.locator('button:has-text("OR")').click();
-  //   await page.locator('.advanced-filter-creator .form-control').click();
-  //   await page.locator('text=is equal to').click();
-  //   await page.locator('placeholder=Enter value').click();
-  //   await page.keyboard.type('0');
+    // Apply additional filter (OR equal to 0)
+    const selectionMenu2 = selectionMenu.nth(1);
+    await addFilterItem.locator('button:has-text("OR")').click();
+    await selectionMenu2.click();
+    await selectionMenu2.selectOption('eq');
+    await page
+      .locator('.advanced-filter-creator')
+      .getByPlaceholder('Enter value')
+      .nth(1)
+      .click();
+    await page.keyboard.type('0');
 
-  //   await page.locator('button:has-text("Done")').click();
+    await page
+      .locator('.advanced-filter-creator')
+      .locator('button:has-text("Done")')
+      .click();
 
-  //   // Check snapshot
-  //   await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+    // Wait until it's done loading
+    await expect(page.locator('.iris-grid .iris-grid-loading')).toHaveCount(0);
 
-  //   // Close the download panel
-  //   await page.locator('data-testid=btn-page-close').click();
-  // });
+    // Check snapshot
+    await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+
+    // Close the sidebar
+    await page
+      .locator('.iris-grid')
+      .locator('data-testid=btn-page-close')
+      .click();
+
+    await expect(page.locator('.iris-grid .table-sidebar')).toHaveCount(0);
+  });
+
+  test('quick filters (with the advanced filters in above test applied)', async () => {
+    // check if quick filters are still on
+    await expect(
+      page
+        .locator('data-testid=menu-item-Quick Filters')
+        .locator('.btn.btn-switch.active')
+    ).toHaveCount(1);
+
+    // Click the quick filter box (x column)
+    // Note: This may click in the wrong place if the browser size is changed
+    await page
+      .locator('.iris-grid .grid-wrapper')
+      .click({ position: { x: 20, y: 35 } });
+
+    // Apply filter (greater 37)
+    await page.keyboard.type('>37');
+
+    // Wait until it's done loading
+    await expect(page.locator('.iris-grid .iris-grid-loading')).toHaveCount(0);
+
+    // Check snapshot
+    await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+
+    // Close the sidebar
+    await page
+      .locator('.iris-grid')
+      .locator('data-testid=btn-page-close')
+      .click();
+
+    await expect(page.locator('.iris-grid .table-sidebar')).toHaveCount(0);
+  });
 });
