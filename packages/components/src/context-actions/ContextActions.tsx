@@ -119,8 +119,7 @@ class ContextActions extends Component<
       action =>
         !isPromise(action) &&
         typeof action !== 'function' &&
-        action.isGlobal !== undefined &&
-        !action.isGlobal &&
+        (action.isGlobal === undefined || !action.isGlobal) &&
         action.shortcut != null
     ) as ContextAction[];
 
@@ -190,7 +189,7 @@ class ContextActions extends Component<
             isPromise(action) ||
             typeof action === 'function' ||
             action.isGlobal === undefined ||
-            action.isGlobal
+            !action.isGlobal
         );
       }
 

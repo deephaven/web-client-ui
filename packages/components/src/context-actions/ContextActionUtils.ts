@@ -104,7 +104,7 @@ class ContextActionUtils {
   }
 
   /**
-   * Returns true if the modifier key for the current platform is  down for the event (Ctrl for windows/linux, Command (meta) for mac)
+   * Returns true if the modifier key for the current platform is down for the event (Ctrl for windows/linux, Command (meta) for mac)
    * @param event The event to get the meta key status from
    */
   static isModifierKeyDown(
@@ -115,7 +115,7 @@ class ContextActionUtils {
   }
 
   /**
-   * Copy the p assed in text to the clipboard.
+   * Copy the passed in text to the clipboard.
    * @param text The text to copy
    * @returns Promise Resolved on success, rejected on failure
    */
@@ -155,7 +155,7 @@ class ContextActionUtils {
   }
 
   /**
-   * Returns the menu items for the provided context actions, or empty array if none foun d.
+   * Returns the menu items for the provided context actions, or empty array if none found.
    * @param actionsParam The actions to get menu items for
    * @param includePromises Whether or not to include promises in the returned menu items
    */
