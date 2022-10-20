@@ -782,7 +782,7 @@ class VisibilityOrderingBuilder extends Component<
           >
             <Button
               kind="ghost"
-              className="visibility"
+              className="btn-link-icon visibility"
               onMouseDown={event => {
                 this.handleVisibilityDraggingStart(
                   modelIndex,
@@ -814,9 +814,10 @@ class VisibilityOrderingBuilder extends Component<
                   event.preventDefault();
                 }
               }}
-              icon={isHidden ? dhEyeSlash : dhEye}
               tooltip={isHidden ? 'Show' : 'Hide'}
-            />
+            >
+              <FontAwesomeIcon icon={isHidden ? dhEyeSlash : dhEye} />
+            </Button>
             <div
               role="menuitem"
               tabIndex={0}
@@ -912,69 +913,81 @@ class VisibilityOrderingBuilder extends Component<
             </Button>
             <Button
               kind="ghost"
+              className="btn-link-icon"
               onClick={() => {
                 this.handleSortColumns(
                   VisibilityOrderingBuilder.SORTING_OPTIONS.ASC
                 );
               }}
-              icon={dhSortAlphaDown}
               tooltip="Sort ascending"
-            />
+            >
+              <FontAwesomeIcon icon={dhSortAlphaDown} />
+            </Button>
             <Button
               kind="ghost"
+              className="btn-link-icon"
               onClick={() => {
                 this.handleSortColumns(
                   VisibilityOrderingBuilder.SORTING_OPTIONS.DSC
                 );
               }}
-              icon={dhSortAlphaUp}
               tooltip="Sort descending"
-            />
+            >
+              <FontAwesomeIcon icon={dhSortAlphaUp} />
+            </Button>
             <span className="vertical-divider" />
             <Button
               kind="ghost"
+              className="btn-link-icon"
               onClick={() => {
                 this.handleMoveColumns(
                   VisibilityOrderingBuilder.MOVE_OPTIONS.UP
                 );
               }}
               disabled={noSelection}
-              icon={vsChevronUp}
               tooltip="Move selection up"
-            />
+            >
+              <FontAwesomeIcon icon={vsChevronUp} />
+            </Button>
             <Button
               kind="ghost"
+              className="btn-link-icon"
               onClick={() => {
                 this.handleMoveColumns(
                   VisibilityOrderingBuilder.MOVE_OPTIONS.DOWN
                 );
               }}
               disabled={noSelection}
-              icon={vsChevronDown}
               tooltip="Move selection down"
-            />
+            >
+              <FontAwesomeIcon icon={vsChevronDown} />
+            </Button>
             <Button
               kind="ghost"
+              className="btn-link-icon"
               onClick={() => {
                 this.handleMoveColumns(
                   VisibilityOrderingBuilder.MOVE_OPTIONS.TOP
                 );
               }}
               disabled={noSelection}
-              icon={dhArrowToTop}
               tooltip="Move selection to top"
-            />
+            >
+              <FontAwesomeIcon icon={dhArrowToTop} />
+            </Button>
             <Button
               kind="ghost"
+              className="btn-link-icon"
               onClick={() => {
                 this.handleMoveColumns(
                   VisibilityOrderingBuilder.MOVE_OPTIONS.BOTTOM
                 );
               }}
               disabled={noSelection}
-              icon={dhArrowToBottom}
               tooltip="Move selection to bottom"
-            />
+            >
+              <FontAwesomeIcon icon={dhArrowToBottom} />
+            </Button>
           </div>
         </div>
         <div className="top-menu">

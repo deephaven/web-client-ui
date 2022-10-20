@@ -374,7 +374,6 @@ class CustomColumnBuilder extends Component<
         onClick={this.resetRequestFailed}
         onFocus={this.resetRequestFailed}
       >
-        <div className="section-title">Custom Column Name and Formula</div>
         <hr />
         <DragDropContext
           onDragStart={DragUtils.startDragging}
