@@ -188,6 +188,7 @@ class PanelManager {
   >(types: PanelComponentType<P, C>[]): PanelComponent<P> | undefined {
     return this.getLastUsedPanel(panel =>
       types.some(type => {
+        // try and catch block needed due to weird safari instanceof behaviour
         let instanceofType;
         try {
           instanceofType = panel instanceof type;
