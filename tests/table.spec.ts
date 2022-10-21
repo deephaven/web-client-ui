@@ -54,6 +54,16 @@ test.describe('tests table operations', () => {
     await expect(page.locator('.table-sidebar')).toHaveCount(1);
   });
 
+  test.afterEach(async () => {
+    // Close the table operations sidebar
+    await page
+      .locator('.iris-grid')
+      .locator('data-testid=btn-page-close')
+      .click();
+
+    await expect(page.locator('.iris-grid .table-sidebar')).toHaveCount(0);
+  });
+
   test('can download table successfully', async () => {
     // open Download CSV panel
     await page.locator('data-testid=menu-item-Download CSV').click();
@@ -82,14 +92,38 @@ test.describe('tests table operations', () => {
     await expect(
       page.locator('.progress .progress-bar.bg-success')
     ).toHaveCount(1);
+  });
 
-    // Close the sidebar
-    await page
-      .locator('.iris-grid')
-      .locator('data-testid=btn-page-close')
-      .click();
+  test('go to', async () => {
+    // open with sidepanel button
+    await page.locator('data-testid=menu-item-Go to').click();
 
-    await expect(page.locator('.iris-grid .table-sidebar')).toHaveCount(0);
+    const gotoBar = page.locator('.iris-grid-bottom-bar.goto-row');
+    const gotoBarInputField = gotoBar.getByPlaceholder('Row number');
+
+    // wait for panel to open
+    await expect(gotoBarInputField).toHaveCount(1);
+
+    // test invalid row index
+    await gotoBarInputField.click();
+    await page.keyboard.type('641');
+    await expect(
+      gotoBar.locator('.goto-row-wrapper .goto-row-error')
+    ).toHaveCount(1);
+
+    // test valid row index (row 64)
+    await page.keyboard.press('Backspace');
+    await expect(
+      gotoBar.locator('.goto-row-wrapper .goto-row-error')
+    ).toHaveCount(0);
+
+    // Check snapshot
+    await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+
+    // close go-to bar with shortcut
+    await page.keyboard.press('Control+g');
+
+    await expect(gotoBar).toHaveCount(0);
   });
 
   test('advanced filters', async () => {
@@ -153,14 +187,6 @@ test.describe('tests table operations', () => {
 
     // Check snapshot
     await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
-
-    // Close the sidebar
-    await page
-      .locator('.iris-grid')
-      .locator('data-testid=btn-page-close')
-      .click();
-
-    await expect(page.locator('.iris-grid .table-sidebar')).toHaveCount(0);
   });
 
   test('quick filters (with the advanced filters in above test applied)', async () => {
@@ -185,13 +211,5 @@ test.describe('tests table operations', () => {
 
     // Check snapshot
     await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
-
-    // Close the sidebar
-    await page
-      .locator('.iris-grid')
-      .locator('data-testid=btn-page-close')
-      .click();
-
-    await expect(page.locator('.iris-grid .table-sidebar')).toHaveCount(0);
   });
 });
