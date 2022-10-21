@@ -112,7 +112,7 @@ export class DecimalColumnFormatter extends TableColumnFormatter<number> {
 
   static FORMAT_SCIENTIFIC_NOTATION = DecimalColumnFormatter.makePresetFormat(
     'Scientific Notation',
-    '#.0000E0'
+    '0.0000E0'
   );
 
   static FORMAT_ROUND = DecimalColumnFormatter.makePresetFormat(
