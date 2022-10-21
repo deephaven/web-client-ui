@@ -102,9 +102,9 @@ const BasicModal: React.FC<BasicModalProps> = props => {
           </div>
         )}
         {onDiscard && (
-          <button
-            type="button"
-            className="btn btn-outline-primary mr-auto"
+          <Button
+            kind="secondary"
+            className="mr-auto"
             data-dismiss="modal"
             onClick={onDiscard}
             data-testid={
@@ -112,12 +112,11 @@ const BasicModal: React.FC<BasicModalProps> = props => {
             }
           >
             {discardButtonText}
-          </button>
+          </Button>
         )}
         {onCancel && (
-          <button
-            type="button"
-            className="btn btn-outline-primary"
+          <Button
+            kind="secondary"
             data-dismiss="modal"
             onClick={onCancel}
             data-testid={
@@ -125,7 +124,7 @@ const BasicModal: React.FC<BasicModalProps> = props => {
             }
           >
             {cancelButtonText}
-          </button>
+          </Button>
         )}
         <ButtonGroup>
           <Button

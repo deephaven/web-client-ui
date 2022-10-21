@@ -6,6 +6,7 @@ import React, {
 } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
+  Button,
   DropdownAction,
   DropdownMenu,
   PopperOptions,
@@ -182,10 +183,13 @@ class ConsoleMenu extends PureComponent<ConsoleMenuProps, ConsoleMenuState> {
 
     return (
       <div className="console-pane-menu">
-        <button
-          type="button"
-          className="btn btn-link btn-link-icon"
+        <Button
+          kind="ghost"
+          className="btn-link-icon"
           disabled={tableActions.length === 0}
+          onClick={() => {
+            // no-op: click is handled in `DropdownMenu`
+          }}
         >
           <div className="fa-md fa-layers">
             <FontAwesomeIcon
@@ -204,11 +208,14 @@ class ConsoleMenu extends PureComponent<ConsoleMenuProps, ConsoleMenuState> {
             options={{ initialKeyboardIndex: 1 }}
             popperOptions={popperOptions}
           />
-        </button>
-        <button
-          type="button"
-          className="btn btn-link btn-link-icon"
+        </Button>
+        <Button
+          kind="ghost"
+          className="btn-link-icon"
           disabled={widgetActions.length === 0}
+          onClick={() => {
+            // no-op: click is handled in `DropdownMenu'
+          }}
         >
           <div className="fa-md fa-layers">
             <FontAwesomeIcon
@@ -227,18 +234,21 @@ class ConsoleMenu extends PureComponent<ConsoleMenuProps, ConsoleMenuState> {
             options={{ initialKeyboardIndex: 1 }}
             popperOptions={popperOptions}
           />
-        </button>
-        <button
-          type="button"
-          className="btn btn-link btn-overflow btn-link-icon"
+        </Button>
+        <Button
+          kind="ghost"
+          className="btn-overflow btn-link-icon"
+          icon={vsKebabVertical}
+          tooltip="More Actions..."
+          onClick={() => {
+            // no-op: click is handled in `DropdownMenu`
+          }}
         >
-          <FontAwesomeIcon icon={vsKebabVertical} />
-          <Tooltip>More Actions...</Tooltip>
           <DropdownMenu
             actions={overflowActions}
             popperOptions={popperOptions}
           />
-        </button>
+        </Button>
       </div>
     );
   }

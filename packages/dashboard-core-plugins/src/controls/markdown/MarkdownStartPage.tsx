@@ -5,6 +5,7 @@ import React, {
   ReactElement,
 } from 'react';
 import {
+  Button,
   Modal,
   ModalBody,
   ModalFooter,
@@ -79,26 +80,22 @@ class MarkdownStartPage extends PureComponent<
           <div className="markdown-panel-start-list">
             <h3 className="list-title">Start</h3>
             <div className="list-item">
-              <button
-                className="btn btn-link title"
-                type="button"
-                onClick={onCreate}
-              >
+              <Button kind="ghost" className="title" onClick={onCreate}>
                 New Markdown Note
-              </button>
+              </Button>
             </div>
           </div>
           <div className="markdown-panel-start-list">
             <h3 className="list-title">Recently Closed from Dashboard</h3>
             {closedMarkdowns.map(markdown => (
               <div className="list-item" key={markdown.id as Key}>
-                <button
-                  className="btn btn-link title"
-                  type="button"
+                <Button
+                  kind="ghost"
+                  className="title"
                   onClick={() => onOpen(markdown)}
                 >
                   {markdown.title}
-                </button>
+                </Button>
                 <button
                   className="btn-link icon"
                   type="button"
@@ -120,22 +117,17 @@ class MarkdownStartPage extends PureComponent<
               </ModalHeader>
               <ModalBody>You can&#39;t undo this action.</ModalBody>
               <ModalFooter>
-                <button
-                  className="btn btn-outline-primary"
-                  onClick={this.handleDeleteModalClose}
-                  type="button"
-                >
+                <Button kind="secondary" onClick={this.handleDeleteModalClose}>
                   Cancel
-                </button>
-                <button
-                  className="btn btn-danger"
+                </Button>
+                <Button
+                  kind="danger"
                   onClick={() => {
                     this.handleDeleteMarkdown(toBeDeleted);
                   }}
-                  type="button"
                 >
                   Delete
-                </button>
+                </Button>
               </ModalFooter>
             </Modal>
           </div>

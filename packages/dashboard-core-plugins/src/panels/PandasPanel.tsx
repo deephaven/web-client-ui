@@ -3,7 +3,7 @@
 import React, { Component, ReactElement, RefObject } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { dhRefresh } from '@deephaven/icons';
-import { Tooltip } from '@deephaven/components';
+import { Button } from '@deephaven/components';
 import ConnectedIrisGridPanel, {
   IrisGridPanel,
   IrisGridPanelProps,
@@ -85,11 +85,12 @@ class PandasPanel extends Component<PandasPanelProps, PandasPanelState> {
         onPanelStateUpdate={this.handlePanelStateUpdate}
         {...props}
       >
-        <button
+        <Button
           ref={this.buttonRef}
-          type="button"
-          className="btn btn-primary btn-pandas"
+          kind="primary"
+          className="btn-pandas"
           onClick={this.handleReload}
+          tooltip="Click to refresh pandas dataframe, updates do not occur automatically."
         >
           pandas dataframe
           <span>
@@ -100,11 +101,7 @@ class PandasPanel extends Component<PandasPanelProps, PandasPanelState> {
             />
             Reload
           </span>
-          <Tooltip>
-            Click to refresh pandas dataframe, updates do not occur
-            automatically.
-          </Tooltip>
-        </button>
+        </Button>
       </ConnectedIrisGridPanel>
     );
   }
