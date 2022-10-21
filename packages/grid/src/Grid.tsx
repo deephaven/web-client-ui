@@ -1642,7 +1642,7 @@ class Grid extends PureComponent<GridProps, GridState> {
     const mouseHandlers = this.getMouseHandlers();
     for (let i = 0; i < mouseHandlers.length; i += 1) {
       const mouseHandler = mouseHandlers[i];
-      if (mouseHandler.onContextMenu(gridPoint, this, event) != null) {
+      if (mouseHandler.onContextMenu(gridPoint, this, event) !== false) {
         event.stopPropagation();
         event.preventDefault();
         break;
