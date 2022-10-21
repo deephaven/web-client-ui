@@ -14,7 +14,6 @@ import {
   PanelComponent,
   PanelComponentType,
   PanelProps,
-  WrappedComponentType,
 } from './DashboardPlugin';
 
 const log = Log.module('PanelManager');
