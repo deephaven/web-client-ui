@@ -52,6 +52,11 @@ class FigureChartModel extends ChartModel {
     this.theme = theme;
     this.data = [];
     this.layout = ChartUtils.makeDefaultLayout(theme);
+    this.layout.grid = {
+      rows: figure.rows,
+      columns: figure.cols,
+      pattern: 'independent',
+    };
     this.seriesDataMap = new Map();
     this.pendingSeries = [];
     this.oneClicks = [];
