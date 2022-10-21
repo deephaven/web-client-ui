@@ -14,6 +14,7 @@ import {
   PanelComponent,
   PanelComponentType,
   PanelProps,
+  WrappedComponentType,
 } from './DashboardPlugin';
 
 const log = Log.module('PanelManager');
@@ -187,21 +188,12 @@ class PanelManager {
     C extends ComponentType<P> = ComponentType<P>
   >(types: PanelComponentType<P, C>[]): PanelComponent<P> | undefined {
     return this.getLastUsedPanel(panel =>
-      types.some(type => {
-        // try and catch block needed due to weird safari instanceof behaviour
-        let instanceofType;
-        try {
-          instanceofType = panel instanceof type;
-        } catch (e) {
-          instanceofType = false;
-        }
-        return (
-          instanceofType ||
+      types.some(
+        type =>
           (isWrappedComponent(type) &&
-            type.WrappedComponent &&
-            panel instanceof type.WrappedComponent)
-        );
-      })
+            panel instanceof type.WrappedComponent) ||
+          (!isWrappedComponent(type) && panel instanceof type)
+      )
     );
   }
 
