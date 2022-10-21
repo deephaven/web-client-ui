@@ -1,0 +1,51 @@
+{
+  "name": "@deephaven/pouch-storage",
+  "version": "0.20.0",
+  "description": "Deephaven Storage based on PouchDB",
+  "author": "Deephaven Data Labs LLC",
+  "license": "Apache-2.0",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/deephaven/web-client-ui.git",
+    "directory": "packages/pouch-storage"
+  },
+  "source": "src/index.js",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "engines": {
+    "node": ">=16"
+  },
+  "scripts": {
+    "build": "cross-env NODE_ENV=production run-p build:*",
+    "build-dev": "cross-env NODE_ENV=development run-p build:*",
+    "babel": "babel ./src --out-dir ./dist --extensions \".ts,.tsx,.js,.jsx\" --source-maps --root-mode upward",
+    "build:babel": "npm run babel",
+    "watch": "run-p watch:*",
+    "watch:babel": "npm run babel -- -w --skip-initial-build",
+    "prestart": "npm run build-dev",
+    "start": "cross-env NODE_ENV=development npm run watch"
+  },
+  "dependencies": {
+    "@deephaven/console": "file:../console",
+    "@deephaven/filters": "file:../filters",
+    "@deephaven/log": "file:../log",
+    "@deephaven/storage": "file:../storage",
+    "@deephaven/utils": "file:../utils",
+    "lodash.throttle": "^4.1.1",
+    "pouchdb-browser": "^7.3.0",
+    "pouchdb-find": "^7.3.0"
+  },
+  "peerDependencies": {
+    "react": "^17.0.0"
+  },
+  "devDependencies": {
+    "@deephaven/tsconfig": "file:../tsconfig"
+  },
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
+}
