@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/pouch-storage",
-  "version": "0.13.0",
+  "version": "0.20.0",
   "description": "Deephaven Storage based on PouchDB",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
@@ -27,11 +27,11 @@
     "start": "cross-env NODE_ENV=development npm run watch"
   },
   "dependencies": {
-    "@deephaven/console": "^0.13.0",
-    "@deephaven/filters": "^0.13.0",
-    "@deephaven/log": "^0.13.0",
-    "@deephaven/storage": "^0.13.0",
-    "@deephaven/utils": "^0.13.0",
+    "@deephaven/console": "file:../console",
+    "@deephaven/filters": "file:../filters",
+    "@deephaven/log": "file:../log",
+    "@deephaven/storage": "file:../storage",
+    "@deephaven/utils": "file:../utils",
     "lodash.throttle": "^4.1.1",
     "pouchdb-browser": "^7.3.0",
     "pouchdb-find": "^7.3.0"

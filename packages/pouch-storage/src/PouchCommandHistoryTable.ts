@@ -1,8 +1,8 @@
-import { Type as FilterType } from '@deephaven/filters';
 import {
   CommandHistoryStorageItem,
   CommandHistoryTable,
 } from '@deephaven/console';
+import { Type as FilterType } from '@deephaven/filters';
 import { StorageUtils } from '@deephaven/storage';
 import PouchStorageTable from './PouchStorageTable';
 
