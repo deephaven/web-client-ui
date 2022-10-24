@@ -211,6 +211,7 @@ class LogView extends PureComponent<LogViewProps, LogViewState> {
       fixedOverflowWidgets: true,
       folding: false,
       fontFamily: 'Fira Mono',
+      lineNumbers: 'off',
       glyphMargin: false,
       language: 'log',
       lineDecorationsWidth: 0,
