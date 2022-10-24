@@ -1180,30 +1180,6 @@ class ChartUtils {
             bounds.left + (positionAxes.length - sideIndex + 1) * axisSize;
         }
       }
-    } else if (axis.type === dh.plot.AxisType.X) {
-      const leftAxes = axisPositionMap.get(dh.plot.AxisPosition.LEFT) || [];
-      const rightAxes = axisPositionMap.get(dh.plot.AxisPosition.RIGHT) || [];
-      const left = Math.max(
-        bounds.left,
-        bounds.left + (leftAxes.length - 1) * yAxisSize
-      );
-      const right = Math.min(
-        bounds.right - (rightAxes.length - 1) * yAxisSize,
-        bounds.right
-      );
-      layoutAxis.domain = [left, right];
-    } else if (axis.type === dh.plot.AxisType.Y) {
-      const bottomAxes = axisPositionMap.get(dh.plot.AxisPosition.BOTTOM) || [];
-      const topAxes = axisPositionMap.get(dh.plot.AxisPosition.TOP) || [];
-      const bottom = Math.max(
-        bounds.bottom,
-        bounds.bottom + (bottomAxes.length - 1) * xAxisSize
-      );
-      const top = Math.min(
-        bounds.top - (topAxes.length - 1) * xAxisSize,
-        bounds.top
-      );
-      layoutAxis.domain = [bottom, top];
     }
   }
 
