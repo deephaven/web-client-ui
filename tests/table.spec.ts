@@ -77,9 +77,7 @@ test.describe('tests table operations', () => {
     const fileNameInputField = page.locator(
       'data-testid=input-csv-exporter-file-name'
     );
-    await fileNameInputField.click();
-    await page.keyboard.press('Control+a');
-    await page.keyboard.type('sin-and-cos.csv');
+    await fileNameInputField.fill('sin-and-cos.csv');
     expect(fileNameInputField).toHaveValue('sin-and-cos.csv');
 
     downloadButton.click();

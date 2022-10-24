@@ -1,4 +1,4 @@
-import { test } from '@playwright/test';
+import { test, expect } from '@playwright/test';
 import shortid from 'shortid';
 
 test('test creating a file, saving it, closing it, re-opening it, running it, then deleting it', async ({
@@ -21,15 +21,13 @@ test('test creating a file, saving it, closing it, re-opening it, running it, th
   await page.keyboard.type(`print("${message}")`);
 
   // Click the Save button
-  await page.locator('[aria-label="Save notebook"]').click();
+  await page.locator('[aria-label="Save"]').click();
 
   // Generate a unique filename so it doesn't conflict with any previously created files
   const filename = `__playwright_test${shortid()}.py`;
 
-  // Fill text=Save file asDirectory: // >> input[type="text"]
-  await page
-    .locator('text=Save file asDirectory: // >> input[type="text"]')
-    .fill(filename);
+  // Fill id=file-name-input
+  await page.locator('id=file-name-input').fill(filename);
 
   // Click button:has-text("Save")
   await page.locator('button:has-text("Save")').click();
@@ -37,11 +35,18 @@ test('test creating a file, saving it, closing it, re-opening it, running it, th
   // Click close on the notebook file .lm_close_tab
   await page.locator('.lm_close_tab').click();
 
-  // Click to re-open the file
-  await page.locator(`text=${filename}`).click();
+  // Wait for notebook file to close
+  await expect(page.locator('.notebook-toolbar')).toHaveCount(0);
 
-  // Click the Save button
-  await page.locator('[aria-label="Run notebook"]').click();
+  // Wait for file to appear in file explorer
+  const fileInExplorer = page.locator('.item-list-item', { hasText: filename });
+  await expect(fileInExplorer).toHaveCount(1);
+
+  // Click to re-open the file
+  await fileInExplorer.click();
+
+  // Click the Run button
+  await page.locator('[aria-label="Run Alt+R"]').click();
 
   // Click close on the notebook file .lm_close_tab
   await page.locator('.lm_close_tab').click();
@@ -53,4 +58,12 @@ test('test creating a file, saving it, closing it, re-opening it, running it, th
 
   // Click button:has-text("Delete")
   await page.locator('button:has-text("Delete")').click();
+
+  // Confirm delete
+  await page
+    .locator('.modal-content')
+    .locator('button:has-text("Delete")')
+    .click();
+
+  await expect(fileInExplorer).toHaveCount(0);
 });
