@@ -919,6 +919,17 @@ class ChartUtils {
   }
 
   /**
+   * Get all axes for a given `Figure`. Iterates through all charts axes and concatenates them.
+   * @param figure Figure to get all axes for
+   */
+  static getAllAxes(figure: Figure): Axis[] {
+    return figure.charts.reduce(
+      (axes, chart) => [...axes, ...chart.axes],
+      [] as Axis[]
+    );
+  }
+
+  /**
    * Retrieve the chart that contains the passed in series from the figure
    * @param figure The figure to retrieve the chart from
    * @param series The series to get the chart for

@@ -126,6 +126,7 @@ class FigureChartModel extends ChartModel {
     this.filterColumnMap.clear();
 
     const { charts } = this.figure;
+    const axes = ChartUtils.getAllAxes(this.figure);
     const activeSeriesNames: string[] = [];
     for (let i = 0; i < charts.length; i += 1) {
       const chart = charts[i];
@@ -133,7 +134,7 @@ class FigureChartModel extends ChartModel {
       for (let j = 0; j < chart.series.length; j += 1) {
         const series = chart.series[j];
         activeSeriesNames.push(series.name);
-        this.addSeries(series);
+        this.addSeries(series, axes);
       }
     }
 
@@ -149,14 +150,13 @@ class FigureChartModel extends ChartModel {
     this.seriesToProcess = new Set([...this.seriesDataMap.keys()]);
   }
 
-  addSeries(series: Series): void {
-    const chart = ChartUtils.getChartForSeries(this.figure, series);
-    if (chart == null) {
-      log.error('Unable to find matching chart for series', series);
-      return;
-    }
-
-    const axisTypeMap: AxisTypeMap = ChartUtils.groupArray(chart.axes, 'type');
+  /**
+   * Add a series to the model
+   * @param series Series object to add
+   * @param axes All the axis in this figure
+   */
+  addSeries(series: Series, axes: Axis[]): void {
+    const axisTypeMap: AxisTypeMap = ChartUtils.groupArray(axes, 'type');
 
     const seriesData = ChartUtils.makeSeriesDataFromSeries(
       series,
@@ -194,10 +194,11 @@ class FigureChartModel extends ChartModel {
   // We need to debounce adding series so we subscribe to them all in the same tick
   // This should no longer be necessary after IDS-5049 lands
   addPendingSeries = debounce(() => {
+    const axes = ChartUtils.getAllAxes(this.figure);
     const { pendingSeries } = this;
     for (let i = 0; i < pendingSeries.length; i += 1) {
       const series = pendingSeries[i];
-      this.addSeries(series);
+      this.addSeries(series, axes);
 
       series.subscribe();
       // We'll get an update with the data after subscribing
