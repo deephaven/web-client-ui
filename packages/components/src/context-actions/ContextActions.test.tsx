@@ -49,7 +49,7 @@ function contextMenuMock(
   mock: ContextMenuMock,
   element: JSX.Element
 ): ContextMenuMock | null {
-  if (element.props && element.props.className) {
+  if (element.props != null && element.props.className != null) {
     if (element.props.className.indexOf('context-menu') !== -1) {
       return mock;
     }

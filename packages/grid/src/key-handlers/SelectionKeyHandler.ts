@@ -177,7 +177,7 @@ class SelectionKeyHandler extends KeyHandler {
       if (!grid.metrics) throw new Error('grid.metrics are not set');
 
       const { theme } = grid.props;
-      const { autoSelectRow, autoSelectColumn } = theme;
+      const { autoSelectRow = false, autoSelectColumn = false } = theme;
       if (autoSelectRow && deltaColumn !== 0) {
         const { lastLeft } = grid.metrics;
         let { left } = grid.state;

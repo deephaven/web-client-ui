@@ -55,15 +55,15 @@ class ContextActionUtils {
    */
   static compareActions(a: ContextAction, b: ContextAction): number {
     if (a.group !== b.group) {
-      return (a.group || 0) > (b.group || 0) ? 1 : -1;
+      return (a.group ?? 0) > (b.group ?? 0) ? 1 : -1;
     }
 
     if (a.order !== b.order) {
-      return (a.order || 0) > (b.order || 0) ? 1 : -1;
+      return (a.order ?? 0) > (b.order ?? 0) ? 1 : -1;
     }
 
     if (a.title !== b.title) {
-      return (a.title || '') > (b.title || '') ? 1 : -1;
+      return (a.title ?? '') > (b.title ?? '') ? 1 : -1;
     }
 
     if (a !== b) {
@@ -78,7 +78,7 @@ class ContextActionUtils {
    * @param actions The array of actions to sort
    */
   static sortActions(actions: ContextAction[]): ContextAction[] {
-    if (!actions || !Array.isArray(actions)) {
+    if (actions == null || !Array.isArray(actions)) {
       return [];
     }
 
@@ -207,7 +207,7 @@ class ContextActionUtils {
 
     menuItems = menuItems.filter(
       action =>
-        (action as ContextAction).title ||
+        (action as ContextAction).title !== undefined ||
         (action as Promise<ContextAction[]>).then ||
         (action as ContextAction).menuElement
     );

@@ -24,13 +24,13 @@ export const MarkdownPlugin = (props: MarkdownPluginProps): JSX.Element => {
   const dehydrateMarkdown = useCallback(config => {
     const { title, componentState, props: configProps } = config;
     let { panelState = null }: MarkdownComponentState = configProps;
-    if (componentState) {
+    if (componentState != null) {
       ({ panelState = null } = componentState as MarkdownComponentState);
     }
     if (
-      !title ||
-      !panelState ||
-      !panelState.content ||
+      title == null ||
+      panelState == null ||
+      panelState.content == null ||
       panelState.content.length === 0 ||
       panelState.content === MarkdownUtils.DEFAULT_CONTENT
     ) {
@@ -56,11 +56,14 @@ export const MarkdownPlugin = (props: MarkdownPluginProps): JSX.Element => {
         MarkdownPanel.COMPONENT
       );
       const usedTitles = openedMarkdowns.map(markdown => markdown.title ?? '');
-      const panelTitle = title || MarkdownUtils.getNewMarkdownTitle(usedTitles);
+      const panelTitle =
+        title != null && title !== ''
+          ? title
+          : MarkdownUtils.getNewMarkdownTitle(usedTitles);
       const content =
         closedMarkdowns.length > 0 ? null : MarkdownUtils.DEFAULT_CONTENT;
       const config = {
-        type: 'react-component',
+        type: 'react-component' as const,
         component: MarkdownPanel.COMPONENT,
         props: {
           id: panelId,

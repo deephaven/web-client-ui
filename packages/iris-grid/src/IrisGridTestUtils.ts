@@ -22,7 +22,7 @@ class IrisGridTestUtils {
     formatValue?: boolean
   ): string {
     let value = `${rowIndex},${columnIndex}`;
-    if (formatValue) {
+    if (formatValue !== undefined && formatValue) {
       value = `(${value})`;
     }
     return value;
@@ -87,6 +87,7 @@ class IrisGridTestUtils {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const table = new (dh as any).Table({ columns, size, sort });
     table.copy = jest.fn(() => Promise.resolve(table));
+    table.freeze = jest.fn(() => Promise.resolve(table));
     return table;
   }
 

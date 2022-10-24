@@ -1,6 +1,7 @@
 import { ComponentType } from 'react';
 import GoldenLayout from '@deephaven/golden-layout';
 import type {
+  Container,
   ContentItem,
   ItemConfigType,
   ReactComponentConfig,
@@ -198,7 +199,7 @@ class PanelManager {
 
   updatePanel(panel: PanelComponent): void {
     const panelId = LayoutUtils.getIdFromPanel(panel);
-    if (!panelId) {
+    if (panelId == null) {
       log.error('updatePanel Panel did not have an ID', panel);
       return;
     }
@@ -212,7 +213,7 @@ class PanelManager {
 
   removePanel(panel: PanelComponent): void {
     const panelId = LayoutUtils.getIdFromPanel(panel);
-    if (!panelId) {
+    if (panelId == null) {
       log.error('removePanel Panel did not have an ID', panel);
       return;
     }
@@ -237,7 +238,7 @@ class PanelManager {
     const index = this.closed.findIndex(
       closedConfig =>
         closedConfig === panelConfig ||
-        (closedConfig.id &&
+        (closedConfig.id != null &&
           panelConfig.id &&
           closedConfig.id === panelConfig.id)
     );
@@ -299,7 +300,7 @@ class PanelManager {
     this.sendUpdate();
   }
 
-  handleClosed(panelId: string, glContainer: GoldenLayout.Container): void {
+  handleClosed(panelId: string, glContainer: Container): void {
     // Panel component should be already unmounted at this point
     // so the emitted event sends the container object instead of the panel.
     log.debug2('Closed: ', panelId);
@@ -313,14 +314,14 @@ class PanelManager {
     LayoutUtils.closeComponent(root, config);
   }
 
-  addClosedPanel(glContainer: GoldenLayout.Container): void {
+  addClosedPanel(glContainer: Container): void {
     const config = LayoutUtils.getComponentConfigFromContainer(glContainer);
     if (config && isReactComponentConfig(config)) {
       const dehydratedConfig = this.dehydrateComponent(
         config.component,
         config
       );
-      if (dehydratedConfig) {
+      if (dehydratedConfig != null) {
         this.closed.push(dehydratedConfig);
       }
     }

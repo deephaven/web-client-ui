@@ -11,6 +11,7 @@ import {
   DropdownMenu,
   Tooltip,
   GLOBAL_SHORTCUTS,
+  Button,
 } from '@deephaven/components';
 import { ScriptEditor, ScriptEditorUtils, SHORTCUTS } from '@deephaven/console';
 import {
@@ -202,7 +203,7 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     };
     let fileMetadata = null;
     let { isPreview } = props;
-    if (panelState) {
+    if (panelState != null) {
       ({
         fileMetadata = fileMetadata,
         isPreview = isPreview,
@@ -213,12 +214,13 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     // Not showing the unsaved indicator for null file id and editor content === '',
     // may need to implement some other indication that this notebook has never been saved
     const hasFileId =
-      fileMetadata?.itemName && FileUtils.hasPath(fileMetadata.itemName);
+      fileMetadata != null && FileUtils.hasPath(fileMetadata.itemName);
 
     // Unsaved if file id != null and content != null
     // OR file id is null AND content is not null or ''
     const isUnsaved =
-      (hasFileId && settings.value != null) || (!hasFileId && settings.value);
+      (hasFileId === true && settings.value != null) ||
+      (!hasFileId && settings.value != null && settings.value.length > 0);
     const changeCount = isUnsaved ? 1 : 0;
 
     this.state = {
@@ -255,7 +257,7 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
   componentDidMount() {
     const { glContainer, glEventHub } = this.props;
     const { tab } = glContainer;
-    if (tab) this.initTab(tab);
+    if (tab != null) this.initTab(tab);
     this.initNotebookContent();
     glEventHub.on(NotebookEvent.RENAME_FILE, this.handleRenameFile);
     glContainer.on('tabClicked', this.handlePanelTabClick);
@@ -821,7 +823,7 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     }
 
     let itemName = fileMetadata?.itemName;
-    if (!itemName) {
+    if (itemName === undefined) {
       return src;
     }
     if (itemName.charAt(0) === '/') {
@@ -873,7 +875,7 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
   }
 
   runCommand(command?: string): void {
-    if (!command) {
+    if (command === undefined) {
       log.debug('Ignoring empty command.');
       return;
     }
@@ -1003,62 +1005,57 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
             <>
               <div className="notebook-toolbar">
                 <span>
-                  <button
-                    type="button"
-                    className="btn btn-link btn-link-icon btn-play"
-                    aria-label="Run notebook"
+                  <Button
+                    kind="ghost"
+                    className="btn-play"
                     onClick={this.handleRunAll}
                     disabled={runButtonsDisabled}
-                  >
-                    <FontAwesomeIcon icon={vsPlay} transform="grow-4" />
-                    <Tooltip>
-                      Run {SHORTCUTS.NOTEBOOK.RUN.getDisplayText()}
-                    </Tooltip>
-                  </button>
-                  {disabledRunButtonTooltip && (
+                    icon={<FontAwesomeIcon icon={vsPlay} transform="grow-4" />}
+                    tooltip={`Run ${SHORTCUTS.NOTEBOOK.RUN.getDisplayText()}`}
+                  />
+                  {disabledRunButtonTooltip != null && (
                     <Tooltip>{disabledRunButtonTooltip}</Tooltip>
                   )}
                 </span>
                 <span>
-                  <button
-                    type="button"
-                    className="btn btn-link btn-link-icon btn-play-selected"
+                  <Button
+                    kind="ghost"
+                    className="btn-play"
                     onClick={this.handleRunSelected}
                     disabled={runButtonsDisabled}
-                    aria-label="Run selected"
-                  >
-                    <FontAwesomeIcon icon={dhRunSelection} transform="grow-4" />
-                    <Tooltip>
-                      Run Selected{' '}
-                      {SHORTCUTS.NOTEBOOK.RUN_SELECTED.getDisplayText()}
-                    </Tooltip>
-                  </button>
-                  {disabledRunSelectedButtonTooltip && (
+                    icon={
+                      <FontAwesomeIcon
+                        icon={dhRunSelection}
+                        transform="grow-4"
+                      />
+                    }
+                    tooltip={`Run Selected${' '}
+                    ${SHORTCUTS.NOTEBOOK.RUN_SELECTED.getDisplayText()}`}
+                  />
+                  {disabledRunSelectedButtonTooltip != null && (
                     <Tooltip>{disabledRunSelectedButtonTooltip}</Tooltip>
                   )}
                 </span>
-                <button
-                  type="button"
-                  className="btn btn-link btn-link-icon btn-save mr-auto"
+                <Button
+                  kind="ghost"
+                  className="mr-auto"
                   disabled={toolbarDisabled}
                   onClick={this.handleSave}
-                  aria-label="Save notebook"
-                >
-                  <FontAwesomeIcon icon={vsSave} />
-                  <Tooltip>Save</Tooltip>
-                </button>
-                <button
-                  type="button"
-                  className="btn btn-link btn-overflow btn-link-icon"
+                  icon={vsSave}
+                  tooltip="Save"
+                />
+                <Button
+                  kind="ghost"
+                  className="btn-overflow btn-link-icon"
                   disabled={toolbarDisabled}
+                  icon={vsKebabVertical}
+                  tooltip="More Actions..."
                 >
-                  <FontAwesomeIcon icon={vsKebabVertical} />
-                  <Tooltip>More Actions...</Tooltip>
                   <DropdownMenu
                     actions={overflowActions}
                     popperOptions={NotebookPanel.POPPER_OPTIONS}
                   />
-                </button>
+                </Button>
               </div>
               <ScriptEditor
                 isLoaded={isLoaded}

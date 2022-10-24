@@ -228,7 +228,9 @@ const PopOvers = (props: PopOversProps): JSX.Element => {
           value={firstTime}
           onChange={onFirstTimeChange}
           onSelect={onFirstTimeSelect}
-          data-testid={dataTestId ? `${dataTestId}-input-1` : undefined}
+          data-testid={
+            dataTestId !== undefined ? `${dataTestId}-input-1` : undefined
+          }
         />
       </div>
       <div className="flex-spacer" />
@@ -246,7 +248,9 @@ const PopOvers = (props: PopOversProps): JSX.Element => {
           value={secondTime}
           onChange={onSecondTimeChange}
           onSelect={onSecondTimeSelect}
-          data-testid={dataTestId ? `${dataTestId}-input-2` : undefined}
+          data-testid={
+            dataTestId !== undefined ? `${dataTestId}-input-2` : undefined
+          }
         />
       </div>
       <div

@@ -142,7 +142,9 @@ export default function ShortcutItem({
       <div className="shortcut-item-container">
         <label className="shortcut-item-name">
           {shortcut.name}
-          {shortcut.tooltip && <Tooltip>{shortcut.tooltip}</Tooltip>}
+          {shortcut.tooltip !== undefined && (
+            <Tooltip>{shortcut.tooltip}</Tooltip>
+          )}
         </label>
         <div className="shortcut-item-input-container">
           <input

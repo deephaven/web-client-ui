@@ -105,7 +105,10 @@ class Menu extends PureComponent<MenuProps, MenuState> {
 
   getKeyboardIndex(): number | null {
     const { options } = this.props;
-    if (options.separateKeyboardMouse) {
+    if (
+      options.separateKeyboardMouse !== undefined &&
+      options.separateKeyboardMouse
+    ) {
       const { keyboardIndex } = this.state;
       return keyboardIndex;
     }
@@ -115,7 +118,10 @@ class Menu extends PureComponent<MenuProps, MenuState> {
 
   setKeyboardIndex(index: number): void {
     const { options } = this.props;
-    if (options.separateKeyboardMouse) {
+    if (
+      options.separateKeyboardMouse !== undefined &&
+      options.separateKeyboardMouse
+    ) {
       this.setState({ keyboardIndex: index });
     } else {
       this.setMouseIndex(index);
@@ -217,7 +223,11 @@ class Menu extends PureComponent<MenuProps, MenuState> {
     e.preventDefault();
     e.stopPropagation();
 
-    if (menuItem != null && !menuItem.disabled && menuItem.action != null) {
+    if (
+      menuItem != null &&
+      (menuItem.disabled === undefined || !menuItem.disabled) &&
+      menuItem.action != null
+    ) {
       menuItem.action();
       this.closeMenu(true);
     }

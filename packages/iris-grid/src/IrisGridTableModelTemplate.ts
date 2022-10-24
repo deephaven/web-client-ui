@@ -415,13 +415,13 @@ class IrisGridTableModelTemplate<
   }
 
   get floatingBottomRowCount(): number {
-    return this.totals?.showOnTop
+    return this.totals != null && this.totals.showOnTop
       ? 0
       : this.totals?.operationOrder?.length ?? 0;
   }
 
   get floatingTopRowCount(): number {
-    return this.totals?.showOnTop
+    return this.totals != null && this.totals.showOnTop
       ? this.totals?.operationOrder?.length ?? 0
       : 0;
   }
@@ -762,7 +762,7 @@ class IrisGridTableModelTemplate<
             moveGroup(childName, moveToIndex);
             rightVisibleIndex =
               moveToIndex + childGroup.childIndexes.length - 1;
-          } else if (childColumn) {
+          } else if (childColumn != null) {
             const isBeforeGroup =
               GridUtils.getVisibleIndex(childColumn, movedColumns) <
               rightVisibleIndex;
@@ -1009,7 +1009,7 @@ class IrisGridTableModelTemplate<
   }
 
   copyViewportData(data: ViewportData): void {
-    if (!data) {
+    if (data == null) {
       log.warn('invalid data!');
       return;
     }
@@ -1019,7 +1019,7 @@ class IrisGridTableModelTemplate<
   }
 
   copyTotalsData(totalsData: ViewportData): void {
-    if (!totalsData) {
+    if (totalsData == null) {
       log.warn('invalid data!');
       return;
     }
@@ -2041,10 +2041,10 @@ class IrisGridTableModelTemplate<
         const filter = column.filter().eq(filterValue);
         columnFilters.push(filter);
       }
-      return columnFilters.reduce((agg, curr) => (agg ? agg.and(curr) : curr));
+      return columnFilters.reduce((agg, curr) => agg?.and(curr) ?? curr);
     });
 
-    const filter = filters.reduce((agg, curr) => (agg ? agg.or(curr) : curr));
+    const filter = filters.reduce((agg, curr) => agg?.or(curr) ?? curr);
     deleteTable.applyFilter([filter]);
 
     // await this.inputTable?.deleteTable(deleteTable);

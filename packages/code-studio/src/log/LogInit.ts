@@ -19,7 +19,7 @@ export default function logInit(): void {
     logHistory.enable();
   }
 
-  if (window) {
+  if (window != null) {
     // Expose the default logger so that log level can be changed dynamically
     window.DHLog = Log;
     window.DHLogProxy = logProxy;

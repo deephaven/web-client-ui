@@ -179,7 +179,10 @@ class IrisGridRenderer extends GridRenderer {
     const { metrics, model, theme } = state;
     const { groupedColumns, columns } = model;
     const { maxY, visibleColumnWidths, visibleColumnXs } = metrics;
-    if (groupedColumns.length === 0 || !theme.groupedColumnDividerColor) {
+    if (
+      groupedColumns.length === 0 ||
+      theme.groupedColumnDividerColor == null
+    ) {
       return;
     }
 
@@ -239,7 +242,10 @@ class IrisGridRenderer extends GridRenderer {
     state: IrisGridRenderState
   ): void {
     const { theme, metrics, hoverSelectColumn } = state;
-    if (hoverSelectColumn == null || !theme.linkerColumnHoverBackgroundColor) {
+    if (
+      hoverSelectColumn == null ||
+      theme.linkerColumnHoverBackgroundColor == null
+    ) {
       return;
     }
 
@@ -278,7 +284,7 @@ class IrisGridRenderer extends GridRenderer {
     // Use global composite so we can just change the underlying layer to grayscale
     context.globalCompositeOperation = 'color';
     context.filter = `blur(${scrimBlurSize}px)`;
-    if (scrimColor) {
+    if (scrimColor != null) {
       context.fillStyle = scrimColor;
     }
 
@@ -450,7 +456,8 @@ class IrisGridRenderer extends GridRenderer {
     }
 
     const fontWidth =
-      fontWidths.get(context.font) || GridRenderer.DEFAULT_FONT_WIDTH;
+      fontWidths.get(context.font) ?? GridRenderer.DEFAULT_FONT_WIDTH;
+    assertNotNull(fontWidth);
     const textWidth = text.length * fontWidth;
     const textRight = gridX + columnX + textWidth + headerHorizontalPadding;
     let { maxX } = bounds;
@@ -485,8 +492,8 @@ class IrisGridRenderer extends GridRenderer {
     if (isFilterBarShown) {
       this.drawExpandedFilterHeaders(context, state);
     } else if (
-      (quickFilters && quickFilters.size > 0) ||
-      (advancedFilters && advancedFilters.size > 0)
+      (quickFilters != null && quickFilters.size > 0) ||
+      (advancedFilters != null && advancedFilters.size > 0)
     ) {
       this.drawCollapsedFilterHeaders(context, state);
     }
@@ -521,8 +528,8 @@ class IrisGridRenderer extends GridRenderer {
     context.textAlign = 'left';
 
     if (
-      (quickFilters && quickFilters.size > 0) ||
-      (advancedFilters && advancedFilters.size > 0)
+      (quickFilters != null && quickFilters.size > 0) ||
+      (advancedFilters != null && advancedFilters.size > 0)
     ) {
       // fill style if a fiter is set on any column
       context.fillStyle = theme.filterBarExpandedActiveBackgroundColor;
@@ -604,10 +611,10 @@ class IrisGridRenderer extends GridRenderer {
         text = TableUtils.getFilterText(quickFilter.filter);
       }
 
-      if (text) {
+      if (text != null) {
         const { fontWidths } = metrics;
         let fontWidth = fontWidths.get(context.font);
-        if (!fontWidth) {
+        if (fontWidth == null || fontWidth === 0) {
           fontWidth = context.measureText('8').width;
           if (!fontWidth) {
             fontWidth = 10;
@@ -630,7 +637,7 @@ class IrisGridRenderer extends GridRenderer {
       advancedFilter,
       quickFilter
     );
-    if (isFilterValid && filterBarExpandedActiveCellBackgroundColor) {
+    if (isFilterValid && filterBarExpandedActiveCellBackgroundColor != null) {
       // draw active filter background inside cell
       context.fillStyle = filterBarExpandedActiveCellBackgroundColor;
       context.fillRect(
@@ -639,7 +646,7 @@ class IrisGridRenderer extends GridRenderer {
         columnWidth - 1, // -1 right border
         filterBarHeight - 3 // -3 top, bottom border and bottom casing
       );
-    } else if (filterBarErrorColor) {
+    } else if (filterBarErrorColor != null) {
       // draw error box inside cell
       context.fillStyle = filterBarErrorColor;
       context.lineWidth = 2;
@@ -653,7 +660,7 @@ class IrisGridRenderer extends GridRenderer {
       context.strokeRect(rectLeft, rectTop, rectWidth, rectHeight);
     }
 
-    if (text) {
+    if (text != null && text !== '') {
       const textX = columnX + filterBarHorizontalPadding;
       const textY = columnHeaderHeight + filterBarHeight * 0.5 + 1; // + 1 for border
       context.fillStyle = headerColor;
@@ -738,14 +745,14 @@ class IrisGridRenderer extends GridRenderer {
     );
 
     if (
-      filterBarActiveBackgroundColor &&
+      filterBarActiveBackgroundColor != null &&
       quickFilter == null &&
       advancedFilter == null
     ) {
       context.fillStyle = filterBarActiveBackgroundColor;
-    } else if (filterBarActiveColor && isFilterValid) {
+    } else if (filterBarActiveColor != null && isFilterValid) {
       context.fillStyle = filterBarActiveColor;
-    } else if (filterBarErrorColor) {
+    } else if (filterBarErrorColor != null) {
       context.fillStyle = filterBarErrorColor;
     }
 
@@ -835,11 +842,14 @@ class IrisGridRenderer extends GridRenderer {
     context.fill();
 
     const mouseRow =
-      mouseX && mouseY && mouseX >= gridX && mouseX <= maxX + rowFooterWidth
+      mouseX != null &&
+      mouseY != null &&
+      mouseX >= gridX &&
+      mouseX <= maxX + rowFooterWidth
         ? GridUtils.getRowAtY(mouseY, metrics)
         : null;
     if (
-      rowHoverBackgroundColor &&
+      rowHoverBackgroundColor != null &&
       mouseRow !== null &&
       floatingRows.includes(mouseRow)
     ) {
@@ -852,7 +862,7 @@ class IrisGridRenderer extends GridRenderer {
     }
 
     context.beginPath();
-    if (floatingGridRowColor) {
+    if (floatingGridRowColor != null) {
       context.strokeStyle = floatingGridRowColor;
     }
     if (floatingTopHeight > 0) {
@@ -912,7 +922,7 @@ class IrisGridRenderer extends GridRenderer {
 
     if (column === mouseColumn && row === mouseRow) {
       const { left } = this.getCellOverflowButtonPosition(state);
-      if (this.shouldRenderOverflowButton(state) && left) {
+      if (this.shouldRenderOverflowButton(state) && left != null) {
         textMetrics.width = left - metrics.gridX - textMetrics.x;
       }
     }
@@ -1034,7 +1044,7 @@ class IrisGridRenderer extends GridRenderer {
 
     context.save();
     if (
-      overflowButtonHoverColor &&
+      overflowButtonHoverColor != null &&
       buttonLeft != null &&
       buttonWidth != null &&
       buttonTop != null &&
@@ -1045,7 +1055,7 @@ class IrisGridRenderer extends GridRenderer {
       mouseY <= buttonTop + buttonHeight
     ) {
       context.fillStyle = overflowButtonHoverColor;
-    } else if (overflowButtonColor) {
+    } else if (overflowButtonColor != null) {
       context.fillStyle = overflowButtonColor;
     }
     const icon = this.getIcon(ICON_NAMES.CELL_OVERFLOW);

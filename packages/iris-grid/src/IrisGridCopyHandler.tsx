@@ -304,10 +304,11 @@ class IrisGridCopyHandler extends Component<
     }
 
     // Remove the hidden columns from the snapshot
-    const formatValue = formatValues
-      ? (value: unknown, column: Column) =>
-          model.displayString(value, column.type, column.name)
-      : (value: unknown) => `${value}`;
+    const formatValue =
+      formatValues != null && formatValues
+        ? (value: unknown, column: Column) =>
+            model.displayString(value, column.type, column.name)
+        : (value: unknown) => `${value}`;
 
     this.fetchPromise = PromiseUtils.makeCancelable(
       model.textSnapshot(modelRanges, includeHeaders, formatValue)

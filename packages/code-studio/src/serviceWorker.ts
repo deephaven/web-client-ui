@@ -83,7 +83,7 @@ function registerValidSW(swUrl: string | URL, config: ServiceWorkerConfig) {
               );
 
               // Execute callback
-              if (config && config.onUpdate) {
+              if (config != null && config.onUpdate != null) {
                 config.onUpdate(registration);
               }
             } else {
@@ -93,7 +93,7 @@ function registerValidSW(swUrl: string | URL, config: ServiceWorkerConfig) {
               console.log('Content is cached for offline use.');
 
               // Execute callback
-              if (config && config.onSuccess) {
+              if (config != null && config.onSuccess != null) {
                 config.onSuccess(registration);
               }
             }

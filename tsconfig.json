@@ -2,7 +2,10 @@
   "extends": "./packages/tsconfig/tsconfig.json",
   "compilerOptions": {
     "baseUrl": ".",
-    "paths": { "@deephaven/*": ["./packages/*/src"] }
+    "paths": {
+      "@deephaven/*": ["./packages/*/src"]
+    },
+    "types": ["jest", "node"]
   },
   "files": [],
   "watchOptions": {
@@ -28,6 +31,9 @@
       "path": "./packages/file-explorer"
     },
     {
+      "path": "./packages/golden-layout"
+    },
+    {
       "path": "./packages/grid"
     },
     {
@@ -41,6 +47,9 @@
     },
     {
       "path": "./packages/log"
+    },
+    {
+      "path": "./packages/pouch-storage"
     },
     {
       "path": "./packages/react-hooks"

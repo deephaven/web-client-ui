@@ -462,7 +462,7 @@ export class GridRange {
     ranges: GridRange[],
     subtractRanges: GridRange[]
   ): GridRange[] {
-    if (!subtractRanges || subtractRanges.length === 0) {
+    if (subtractRanges == null || subtractRanges.length === 0) {
       return ranges;
     }
 

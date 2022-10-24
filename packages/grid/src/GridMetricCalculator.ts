@@ -1599,7 +1599,8 @@ export class GridMetricCalculator {
     visibleColumn: VisibleIndex,
     state: GridMetricState
   ): ModelIndex {
-    if (this.modelColumns.has(visibleColumn)) {
+    const hasVisibleColumn = this.modelColumns.has(visibleColumn);
+    if (hasVisibleColumn) {
       return getOrThrow(this.modelColumns, visibleColumn);
     }
     const { movedColumns } = state;
@@ -1693,7 +1694,7 @@ export class GridMetricCalculator {
     const { headerFont, headerHorizontalPadding } = theme;
 
     const headerText = model.textForColumnHeader(modelColumn, 0);
-    if (headerText) {
+    if (headerText !== undefined && headerText !== '') {
       const headerFontWidth = this.getWidthForFont(headerFont, state);
       return headerText.length * headerFontWidth + headerHorizontalPadding * 2;
     }

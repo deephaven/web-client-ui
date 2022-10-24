@@ -1,11 +1,13 @@
 {
   "name": "@deephaven/golden-layout",
-  "version": "0.19.0",
+  "version": "0.20.0",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
   "description": "A multi-screen javascript Layout manager",
-  "main": "./dist/index.js",
-  "types": "./index.d.ts",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "source": "src/index.ts",
   "type": "module",
   "dependencies": {
     "jquery": "^3.6.0"
@@ -20,14 +22,16 @@
     "sass": "sass ./src/scss:./dist/css -s compressed",
     "build:babel": "npm run babel",
     "build:sass": "npm run sass",
-    "babel": "babel ./src --out-dir ./dist --extensions \".js\" --source-maps --root-mode upward",
+    "babel": "babel ./src --out-dir ./dist --extensions \".ts,.js,.tsx,.jsx\" --source-maps --root-mode upward",
     "watch": "run-p watch:*",
     "watch:babel": "npm run babel -- -w --skip-initial-build",
     "watch:sass": "npm run sass -- --watch --update",
     "clean": "rimraf ./dist",
     "start": "cross-env NODE_ENV=development npm run watch",
     "prestart": "npm run build-dev",
+    "pretest": "npm run build",
     "test": "karma start karma.conf.cjs",
+    "pretest:ci": "npm run pretest",
     "test:ci": "karma start karma.conf.cjs --single-run"
   },
   "repository": {

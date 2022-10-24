@@ -124,9 +124,7 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
    * @param logLevel The LogLevel being checked
    * @returns true if the log level is an error level log
    */
-  static isErrorLevel(
-    logLevel: typeof LogLevel[keyof typeof LogLevel]
-  ): boolean {
+  static isErrorLevel(logLevel: string): boolean {
     return (
       logLevel === LogLevel.STDERR ||
       logLevel === LogLevel.ERROR ||
@@ -139,7 +137,9 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
    * @param logLevel The LogLevel being checked
    * @returns true if the log level should be output to the console
    */
-  static isOutputLevel(logLevel: string): boolean {
+  static isOutputLevel(
+    logLevel: typeof LogLevel[keyof typeof LogLevel]
+  ): boolean {
     // We want all errors to be output, in addition to STDOUT.
     // That way the user is more likely to see them.
     return logLevel === LogLevel.STDOUT || Console.isErrorLevel(logLevel);
@@ -398,14 +398,20 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
       return;
     }
 
-    if (Console.isOutputLevel(message.logLevel)) {
+    if (
+      Console.isOutputLevel(
+        message.logLevel as typeof LogLevel[keyof typeof LogLevel]
+      )
+    ) {
       this.queueLogMessage(message.message, message.logLevel);
     }
   }
 
   queueLogMessage(message: string, logLevel: string): void {
     const result: Record<string, string> = {};
-    if (Console.isErrorLevel(logLevel)) {
+    if (
+      Console.isErrorLevel(logLevel as typeof LogLevel[keyof typeof LogLevel])
+    ) {
       result.error = message;
     } else {
       result.message = message;
@@ -438,7 +444,7 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
 
   openUpdatedItems(changes: VariableChanges): void {
     const { isAutoLaunchPanelsEnabled } = this.state;
-    if (!changes || !isAutoLaunchPanelsEnabled) {
+    if (changes == null || !isAutoLaunchPanelsEnabled) {
       return;
     }
 
@@ -449,7 +455,11 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
   }
 
   closeRemovedItems(changes: VariableChanges): void {
-    if (!changes || !changes.removed || changes.removed.length === 0) {
+    if (
+      changes == null ||
+      changes.removed == null ||
+      changes.removed.length === 0
+    ) {
       return;
     }
 
@@ -463,7 +473,7 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
     historyItemParam: ConsoleHistoryActionItem
   ): void {
     const historyItem = historyItemParam;
-    if (!result || !result.changes || !historyItem) {
+    if (result == null || result.changes == null || historyItem == null) {
       return;
     }
 
@@ -485,9 +495,9 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
     }
     if (
       !changes ||
-      ((!changes.created || changes.created.length === 0) &&
-        (!changes.updated || changes.updated.length === 0) &&
-        (!changes.removed || changes.removed.length === 0))
+      ((changes.created == null || changes.created.length === 0) &&
+        (changes.updated == null || changes.updated.length === 0) &&
+        (changes.removed == null || changes.removed.length === 0))
     ) {
       log.debug2('updateKnownObjects no changes');
       return;
@@ -658,8 +668,8 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
 
   handleDragEnter(e: DragEvent<HTMLDivElement>): void {
     if (
-      !e.dataTransfer ||
-      !e.dataTransfer.items ||
+      e.dataTransfer == null ||
+      e.dataTransfer.items == null ||
       e.dataTransfer.items.length === 0 ||
       e.dataTransfer.items[0].kind === 'string'
     ) {
@@ -686,7 +696,7 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
   handleDragLeave(e: DragEvent<HTMLDivElement>): void {
     // DragLeave gets fired for every child element, so make sure we're actually leaving the drop zone
     if (
-      !e.currentTarget ||
+      e.currentTarget == null ||
       (e.currentTarget instanceof Element &&
         e.relatedTarget instanceof Element &&
         e.currentTarget.contains(e.relatedTarget))
@@ -753,7 +763,10 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
   }
 
   handleCsvError(error: unknown): void {
-    this.addConsoleHistoryMessage(undefined, error ? `${error}` : undefined);
+    this.addConsoleHistoryMessage(
+      undefined,
+      error != null ? `${error}` : undefined
+    );
   }
 
   handleCsvInProgress(csvUploadInProgress: boolean): void {

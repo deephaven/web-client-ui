@@ -58,7 +58,12 @@ export const PendingDataBottomBar = ({
 
   useEffect(
     function showSuccessMessage() {
-      if (prevIsSaving && !isSaving && errorMessage == null) {
+      if (
+        prevIsSaving != null &&
+        prevIsSaving &&
+        !isSaving &&
+        errorMessage == null
+      ) {
         setIsSuccessShown(true);
         setWasSuccessShown(true);
         successTimeout.current = setTimeout(() => {
@@ -108,13 +113,13 @@ export const PendingDataBottomBar = ({
         }
       }}
     >
-      {errorMessage && (
+      {errorMessage != null && errorMessage !== '' && (
         <div className="error-message">
           <FontAwesomeIcon icon={vsWarning} />
           <span>{`${errorMessage}`}</span>
         </div>
       )}
-      {!errorMessage && (
+      {(errorMessage == null || errorMessage === '') && (
         <div className="status-message">
           {pendingRowCount > 0 && (
             <span>{`${pendingRowCount} row${

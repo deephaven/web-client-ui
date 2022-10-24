@@ -65,7 +65,7 @@ export const WidgetList = (props: WidgetListProps): JSX.Element => {
    */
   const sendSelect = useCallback(
     (widget: VariableDefinition, event?: WindowMouseEvent) => {
-      if (widget) onSelect(widget, event);
+      if (widget != null) onSelect(widget, event);
     },
     [onSelect]
   );
@@ -135,9 +135,8 @@ export const WidgetList = (props: WidgetListProps): JSX.Element => {
     () =>
       filteredWidgets.map(widget => (
         <li key={widget.name}>
-          <button
-            type="button"
-            className="btn btn-link"
+          <Button
+            kind="ghost"
             data-testid={`panel-list-item-${widget.name ?? ''}-button`}
             onMouseDown={event => {
               handleMouseDown(event, widget);
@@ -151,9 +150,12 @@ export const WidgetList = (props: WidgetListProps): JSX.Element => {
               }
             }}
             disabled={disableDoubleClick}
+            onClick={() => {
+              // no-op: click is handled by onMouseDown and onMouseUp attributes
+            }}
           >
             <ObjectIcon type={widget.type} /> {widget.name ?? ''}
-          </button>
+          </Button>
         </li>
       )),
     [

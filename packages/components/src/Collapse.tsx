@@ -63,12 +63,12 @@ class Collapse extends Component<CollapseProps> {
     elem.style.height = '';
 
     const { autoFocusOnShow } = this.props;
-    if (autoFocusOnShow) {
+    if (autoFocusOnShow !== undefined && autoFocusOnShow) {
       const input = elem.querySelector(
         'input, select, textarea'
       ) as HTMLInputElement;
 
-      if (input) {
+      if (input != null) {
         input.focus();
       }
     }

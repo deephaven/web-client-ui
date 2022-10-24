@@ -91,7 +91,7 @@ export default class TableSaver extends PureComponent<
     this.cancelableSnapshots = [];
 
     // WritableStream is not supported in Firefox (also IE) yet. use ponyfillWritableStream instead
-    this.WritableStream = window.WritableStream || ponyfillWritableStream;
+    this.WritableStream = window.WritableStream ?? ponyfillWritableStream;
 
     // Due to an open issue in Chromium, readableStream.cancel() is never called when a user cancel the stream from Chromium's UI and the stream goes on even it's canceled.
     // Instead, we  monitor the pull() behavior from the readableStream called when the stream wants more data to write.
@@ -165,7 +165,10 @@ export default class TableSaver extends PureComponent<
   cancelableSnapshots: (CancelablePromise<unknown> | null)[];
 
   // WritableStream is not supported in Firefox (also IE) yet. use ponyfillWritableStream instead
-  WritableStream = window.WritableStream || ponyfillWritableStream;
+
+  // TODO: Fix type error
+  WritableStream = window.WritableStream ?? ponyfillWritableStream;
+  //  WritableStream: typeof window.WritableStream | typeof ponyfillWritableStream;
 
   // Due to an open issue in Chromium, readableStream.cancel() is never called when a user cancel the stream from Chromium's UI and the stream goes on even it's canceled.
   // Instead, we  monitor the pull() behavior from the readableStream called when the stream wants more data to write.
@@ -186,7 +189,12 @@ export default class TableSaver extends PureComponent<
     { max: 10000 }
   );
 
-  createWriterStream(port: MessagePort): WritableStream<ServiceWorker> {
+  createWriterStream(
+    port: MessagePort
+  ): WritableStream<{
+    rows?: string | undefined;
+    header?: string | undefined;
+  }> {
     // use blob fall back if it's safari
     const useBlob = this.useBlobFallback;
     const chunks = [] as BlobPart[];
@@ -196,7 +204,10 @@ export default class TableSaver extends PureComponent<
     }
     const { fileName } = this;
 
-    const streamConfig = {} as UnderlyingSink;
+    const streamConfig = {} as UnderlyingSink<{
+      rows?: string | undefined;
+      header?: string | undefined;
+    }>;
     if (useBlob) {
       streamConfig.write = (chunk: { rows?: string; header?: string }) => {
         assertNotNull(encode);
@@ -296,7 +307,7 @@ export default class TableSaver extends PureComponent<
     onDownloadCompleted();
     this.resetTableSaver();
 
-    if (this.downloadStartTime) {
+    if (this.downloadStartTime !== undefined) {
       log.info(
         `download finished, total elapsed time ${
           (Date.now() - this.downloadStartTime) / 1000
@@ -374,7 +385,7 @@ export default class TableSaver extends PureComponent<
   }
 
   startWriteTableBody(): void {
-    if (this.columns && this.gridRanges) {
+    if (this.columns && this.gridRanges != null) {
       this.chunkRows = Math.floor(
         TableSaver.DOWNLOAD_CELL_CHUNK / this.columns.length
       );
@@ -610,11 +621,11 @@ export default class TableSaver extends PureComponent<
     if (this.useBlobFallback) {
       return;
     }
-    if (download) {
+    if (download != null) {
       this.makeIframe(`${download}`);
       this.writeCsvTable();
     }
-    if (readableStreamPulling) {
+    if (readableStreamPulling != null) {
       if (!this.useBlobFallback) {
         if (this.streamTimeout != null) {
           clearTimeout(this.streamTimeout);

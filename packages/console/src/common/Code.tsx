@@ -21,7 +21,7 @@ class Code extends Component<CodeProps, Record<string, never>> {
 
   colorize(): void {
     const { children } = this.props;
-    if (this.container && children) {
+    if (this.container && children != null) {
       monaco.editor.colorizeElement(this.container, {
         theme: 'dh-dark',
       });

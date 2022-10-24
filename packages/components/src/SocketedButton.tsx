@@ -40,7 +40,10 @@ const SocketedButton = React.forwardRef<HTMLButtonElement, SocketedButtonProps>(
         type="button"
         className={classNames(
           'btn-socketed',
-          { 'btn-socketed-linked': isLinked || isLinkedSource },
+          {
+            'btn-socketed-linked':
+              (isLinked !== undefined && isLinked) || isLinkedSource,
+          },
           { 'btn-socketed-linked-source': isLinkedSource },
           { 'is-invalid': isInvalid },
           className

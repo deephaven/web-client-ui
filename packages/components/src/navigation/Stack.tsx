@@ -93,7 +93,11 @@ export const Stack = ({
         classNames="slide-right"
         onEntered={popComplete}
       >
-        <>{poppingView && <div className="popping-view">{poppingView}</div>}</>
+        <>
+          {poppingView != null && (
+            <div className="popping-view">{poppingView}</div>
+          )}
+        </>
       </CSSTransition>
       <CSSTransition
         in={pushingView != null}
@@ -101,7 +105,11 @@ export const Stack = ({
         classNames="slide-left"
         onEntered={pushComplete}
       >
-        <>{pushingView && <div className="pushing-view">{pushingView}</div>}</>
+        <>
+          {pushingView != null && (
+            <div className="pushing-view">{pushingView}</div>
+          )}
+        </>
       </CSSTransition>
     </div>
   );

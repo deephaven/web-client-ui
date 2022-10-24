@@ -89,7 +89,7 @@ const ConditionalFormatEditor = (
   }, []);
 
   const handleRuleChange = useCallback(
-    (ruleConfig, isRuleValid) => {
+    (ruleConfig, isRuleValid: boolean) => {
       log.debug('handleRuleChange', ruleConfig, isRuleValid, selectedFormatter);
       const updatedRule = {
         type: selectedFormatter,

@@ -38,10 +38,15 @@ const ChartFilterOverlay = ({
       columnName => linkedColumnMap.get(columnName) != null
     );
     const columnsText = TextUtils.join(waitingColumns.map(item => `"${item}"`));
-    if (needsInputFilterValue && needsLinkValue) {
+    if (
+      needsInputFilterValue != null &&
+      needsInputFilterValue &&
+      needsLinkValue != null &&
+      needsLinkValue
+    ) {
       return `Use a filter control or linked table to set a value for ${columnsText}`;
     }
-    if (needsInputFilterValue) {
+    if (needsInputFilterValue != null && needsInputFilterValue) {
       return `Set a filter control value for ${columnsText}`;
     }
     return `Double click a row in a linked table to set a value for ${columnsText}`;

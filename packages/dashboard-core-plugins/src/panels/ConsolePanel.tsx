@@ -157,7 +157,7 @@ export class ConsolePanel extends PureComponent<
           const newObjectMap = new Map(objectMap);
           objectsToRemove.forEach(toRemove => {
             const { title } = toRemove;
-            if (title) {
+            if (title !== undefined) {
               newObjectMap.delete(title);
             }
           });
@@ -165,7 +165,7 @@ export class ConsolePanel extends PureComponent<
           // Now add all the modified and updated widgets back in
           const objectsToAdd = [...updated, ...created];
           objectsToAdd.forEach(toAdd => {
-            if (toAdd.title) {
+            if (toAdd.title !== undefined) {
               newObjectMap.set(toAdd.title, toAdd);
             }
           });
@@ -195,9 +195,7 @@ export class ConsolePanel extends PureComponent<
   }
 
   handleTabFocus(): void {
-    if (this.consoleRef) {
-      this.consoleRef.current?.focus();
-    }
+    this.consoleRef.current?.focus();
   }
 
   handlePanelMount(panel: {
@@ -237,7 +235,7 @@ export class ConsolePanel extends PureComponent<
 
   handleCloseObject(object: VariableDefinition): void {
     const { title } = object;
-    if (title) {
+    if (title !== undefined) {
       const id = this.getItemId(title, false);
       const { glEventHub } = this.props;
       glEventHub.emit(PanelEvent.CLOSE, id);
@@ -336,7 +334,7 @@ export class ConsolePanel extends PureComponent<
         errorMessage={error != null ? `${error}` : undefined}
       >
         <>
-          {session && (
+          {session != null && (
             <Console
               ref={this.consoleRef}
               settings={consoleSettings}

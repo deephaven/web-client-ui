@@ -24,7 +24,7 @@ const LoadingOverlay = ({
   'data-testid': dataTestId,
 }: LoadingOverlayProps): JSX.Element => (
   <CSSTransition
-    in={!!errorMessage || !isLoaded || isLoading}
+    in={Boolean(errorMessage) || !isLoaded || isLoading}
     timeout={ThemeExport.transitionMs}
     classNames={isLoaded ? 'fade' : ''}
     mountOnEnter

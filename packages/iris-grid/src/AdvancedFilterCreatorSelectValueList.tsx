@@ -56,9 +56,9 @@ class AdvancedFilterCreatorSelectValueList<T = unknown> extends PureComponent<
       if (
         v === value ||
         (v != null &&
-          v.valueOf &&
+          v.valueOf != null &&
           value != null &&
-          value.valueOf &&
+          value.valueOf != null &&
           v.valueOf() === value.valueOf())
       ) {
         return i;

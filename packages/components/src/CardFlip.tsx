@@ -51,7 +51,7 @@ const CardFlip = ({
 
       const refObj = front.current;
       return function cleanupListener() {
-        if (refObj) {
+        if (refObj != null) {
           return refObj.removeEventListener('transitionstart', transitionStart);
         }
       };

@@ -53,7 +53,11 @@ const BasicModal: React.FC<BasicModalProps> = props => {
   const disableModalCheckbox = useRef<HTMLInputElement>(null);
 
   const onConfirmClicked = useCallback(() => {
-    if (disableModalCheckbox.current?.checked && onModalDisable) {
+    if (
+      disableModalCheckbox.current !== null &&
+      disableModalCheckbox.current.checked &&
+      onModalDisable
+    ) {
       onModalDisable();
     }
     onConfirm();
@@ -84,7 +88,9 @@ const BasicModal: React.FC<BasicModalProps> = props => {
               defaultChecked={false}
               ref={disableModalCheckbox}
               data-testid={
-                dataTestId ? `${dataTestId}-checkbox-confirm` : undefined
+                dataTestId !== undefined
+                  ? `${dataTestId}-checkbox-confirm`
+                  : undefined
               }
             />
             <label
@@ -96,33 +102,38 @@ const BasicModal: React.FC<BasicModalProps> = props => {
           </div>
         )}
         {onDiscard && (
-          <button
-            type="button"
-            className="btn btn-outline-primary mr-auto"
+          <Button
+            kind="secondary"
+            className="mr-auto"
             data-dismiss="modal"
             onClick={onDiscard}
-            data-testid={dataTestId ? `${dataTestId}-btn-discard` : undefined}
+            data-testid={
+              dataTestId !== undefined ? `${dataTestId}-btn-discard` : undefined
+            }
           >
             {discardButtonText}
-          </button>
+          </Button>
         )}
         {onCancel && (
-          <button
-            type="button"
-            className="btn btn-outline-primary"
+          <Button
+            kind="secondary"
             data-dismiss="modal"
             onClick={onCancel}
-            data-testid={dataTestId ? `${dataTestId}-btn-cancel` : undefined}
+            data-testid={
+              dataTestId !== undefined ? `${dataTestId}-btn-cancel` : undefined
+            }
           >
             {cancelButtonText}
-          </button>
+          </Button>
         )}
         <ButtonGroup>
           <Button
             kind="primary"
             onClick={onConfirmClicked}
             ref={confirmButton}
-            data-testid={dataTestId ? `${dataTestId}-btn-confirm` : undefined}
+            data-testid={
+              dataTestId !== undefined ? `${dataTestId}-btn-confirm` : undefined
+            }
           >
             {confirmButtonText}
           </Button>

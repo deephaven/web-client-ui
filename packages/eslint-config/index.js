@@ -81,6 +81,7 @@ module.exports = {
           'error',
           { ignoreFunctionalComponents: true },
         ],
+        '@typescript-eslint/strict-boolean-expressions': ['error'],
       },
     },
   ],

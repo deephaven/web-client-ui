@@ -46,8 +46,6 @@ class FigureChartModel extends ChartModel {
     this.handleDownsampleFail = this.handleDownsampleFail.bind(this);
     this.handleDownsampleNeeded = this.handleDownsampleNeeded.bind(this);
     this.handleRequestFailed = this.handleRequestFailed.bind(this);
-    // We need to debounce adding series so we subscribe to them all in the same tick
-    // This should no longer be necessary after IDS-5049 lands
 
     this.figure = figure;
     this.settings = settings;
@@ -172,7 +170,7 @@ class FigureChartModel extends ChartModel {
     this.layout.showlegend =
       this.data.length > 1 || series.plotStyle === dh.plot.SeriesPlotStyle.PIE;
 
-    if (series.oneClick) {
+    if (series.oneClick != null) {
       const { oneClick } = series;
       const { columns } = oneClick;
       for (let i = 0; i < columns.length; i += 1) {
@@ -185,6 +183,8 @@ class FigureChartModel extends ChartModel {
     this.updateLayoutFormats();
   }
 
+  // We need to debounce adding series so we subscribe to them all in the same tick
+  // This should no longer be necessary after IDS-5049 lands
   addPendingSeries = debounce(() => {
     const { pendingSeries } = this;
     for (let i = 0; i < pendingSeries.length; i += 1) {
@@ -581,8 +581,10 @@ class FigureChartModel extends ChartModel {
         this.layout[axisLayoutProperty],
         axisFormat
       );
-      if (this.layout[axisLayoutProperty] != null) {
-        Object.assign(this.layout[axisLayoutProperty], axisFormat);
+
+      const props = this.layout[axisLayoutProperty];
+      if (props != null) {
+        Object.assign(props, axisFormat);
       } else {
         log.debug(`Ignoring null layout.${axisLayoutProperty}`);
       }

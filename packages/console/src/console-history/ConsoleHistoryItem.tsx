@@ -45,7 +45,7 @@ class ConsoleHistoryItem extends PureComponent<
 
   handleCancelClick(): void {
     const { item } = this.props;
-    if (item && item.cancelResult) {
+    if (item != null && item.cancelResult) {
       log.debug(`Cancelling command: ${item.command}`);
       item.cancelResult();
     }
@@ -56,7 +56,7 @@ class ConsoleHistoryItem extends PureComponent<
     const { disabledObjects, result } = item;
 
     let commandElement = null;
-    if (item.command) {
+    if (item.command != null && item.command !== '') {
       commandElement = (
         <div className="console-history-item-command">
           <div className="console-history-gutter">&gt;</div>
@@ -78,7 +78,9 @@ class ConsoleHistoryItem extends PureComponent<
           const { title } = object;
           const key = `${title}`;
           const btnDisabled =
-            disabled || (disabledObjects ?? []).indexOf(key) >= 0;
+            disabled === undefined ||
+            disabled ||
+            (disabledObjects ?? []).indexOf(key) >= 0;
           const element = (
             <ButtonOld
               key={key}
@@ -94,7 +96,7 @@ class ConsoleHistoryItem extends PureComponent<
       }
 
       // If the error has an associated command, we'll actually get a separate ERROR item printed out, so only print an error if there isn't an associated command
-      if (error && !item.command) {
+      if (error != null && item.command == null) {
         let errorMessage = `${(error as { message: string }).message ?? error}`;
         if (!errorMessage) {
           errorMessage = error as string;
@@ -108,7 +110,7 @@ class ConsoleHistoryItem extends PureComponent<
         resultElements.push(element);
       }
 
-      if (message) {
+      if (message !== undefined && message !== '') {
         const element = (
           <div key="log-message" className="log-message">
             {message}

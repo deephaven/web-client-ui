@@ -231,7 +231,7 @@ class CsvTypeParser {
   handleChunk(result: ParseResult<string[]>, parser: Parser): void {
     let { data } = result;
     if (!this.types) {
-      if (!data || data.length === 0) {
+      if (data == null || data.length === 0) {
         parser.abort();
         this.onError('Error parsing CSV: no data in file.');
         return;
@@ -283,7 +283,7 @@ class CsvTypeParser {
     const { types, onFileCompleted } = this;
     // results is undefined for a succesful parse, but has meta data for an abort
     assertNotNull(types);
-    if (!results || !results.meta.aborted) {
+    if (results == null || !results.meta.aborted) {
       onFileCompleted(
         types.map(type =>
           type === UNKNOWN ? NewTableColumnTypes.STRING : type

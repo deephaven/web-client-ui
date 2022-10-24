@@ -20,7 +20,7 @@ class CommandHistoryActions extends Component<
   }
 
   static renderContent(item: HistoryAction): JSX.Element {
-    if (item.selectionRequired) {
+    if (item.selectionRequired !== undefined && item.selectionRequired) {
       return (
         <div className="fa-md fa-layers">
           <FontAwesomeIcon
@@ -50,7 +50,11 @@ class CommandHistoryActions extends Component<
             key={CommandHistoryActions.itemKey(index, item)}
             onClick={item.action}
             tooltip={item.description}
-            disabled={item.selectionRequired && !hasSelection}
+            disabled={
+              item.selectionRequired !== undefined &&
+              item.selectionRequired &&
+              !hasSelection
+            }
             icon={CommandHistoryActions.renderContent(item)}
           />
         ))}

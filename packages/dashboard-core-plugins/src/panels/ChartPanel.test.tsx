@@ -23,9 +23,13 @@ jest.mock('@deephaven/dashboard', () => ({
 // Disable CSSTransition delays to make testing simpler
 jest.mock('react-transition-group', () => ({
   // eslint-disable-next-line react/display-name, react/prop-types
-  Transition: ({ children, in: inProp }) => <>{inProp ? children : null}</>,
+  Transition: ({ children, in: inProp }) => (
+    <>{inProp !== false ? children : null}</>
+  ),
   // eslint-disable-next-line react/display-name, react/prop-types
-  CSSTransition: ({ children, in: inProp }) => <>{inProp ? children : null}</>,
+  CSSTransition: ({ children, in: inProp }) => (
+    <>{inProp !== false ? children : null}</>
+  ),
 }));
 
 const MockChart = jest.fn(() => null);

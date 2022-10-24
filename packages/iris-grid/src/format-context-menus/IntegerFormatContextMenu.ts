@@ -60,7 +60,7 @@ class IntegerFormatContextMenu {
       IntegerColumnFormatter.DEFAULT_FORMAT_STRING,
       isCustomSelected,
       formatString => {
-        if (formatString) {
+        if (formatString != null) {
           const newCustomFormat = IntegerColumnFormatter.makeCustomFormat(
             formatString
           );

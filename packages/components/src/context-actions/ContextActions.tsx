@@ -76,7 +76,7 @@ class ContextActions extends Component<
     clientY: number,
     actions: ContextAction[]
   ): void {
-    if (!element || !clientX || !clientY || !actions) {
+    if (actions.length === 0) {
       return;
     }
 
@@ -108,7 +108,7 @@ class ContextActions extends Component<
   static getDerivedStateFromProps(
     props: ContextActionsProps
   ): ContextActionsState {
-    if (!props.actions || !Array.isArray(props.actions)) {
+    if (props.actions == null || !Array.isArray(props.actions)) {
       return { globalActions: [], keyboardActions: [] };
     }
     const globalActions = props.actions.filter(
@@ -119,7 +119,7 @@ class ContextActions extends Component<
       action =>
         !isPromise(action) &&
         typeof action !== 'function' &&
-        !action.isGlobal &&
+        (action.isGlobal === undefined || !action.isGlobal) &&
         action.shortcut != null
     ) as ContextAction[];
 
@@ -181,13 +181,14 @@ class ContextActions extends Component<
     }
 
     const { actions } = this.props;
-    if (actions) {
+    if (actions != null) {
       let contextActions = actions;
       if (Array.isArray(contextActions)) {
         contextActions = contextActions.filter(
           action =>
             isPromise(action) ||
             typeof action === 'function' ||
+            action.isGlobal === undefined ||
             !action.isGlobal
         );
       }
@@ -207,17 +208,15 @@ class ContextActions extends Component<
       const keyboardAction = keyboardActions[i];
       if (
         !ContextActionUtils.actionsDisabled &&
-        keyboardAction.shortcut?.matchesEvent(e)
+        keyboardAction.shortcut != null &&
+        keyboardAction.shortcut.matchesEvent(e)
       ) {
         log.debug('Context hotkey matched!', e);
 
-        const result = keyboardAction.action?.(e);
+        keyboardAction.action?.(e);
 
-        if (result || result === undefined) {
-          e.stopPropagation();
-          e.preventDefault();
-          return;
-        }
+        e.stopPropagation();
+        e.preventDefault();
 
         log.debug2('Matched hotkey returned false, key event not consumed');
       }

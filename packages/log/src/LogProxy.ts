@@ -38,7 +38,7 @@ export class LogProxy {
 
   private handleUncaughtError = (event: ErrorEvent) => {
     const messages: string[] = [];
-    if (event.error) {
+    if (event.error != null) {
       messages.push(event.error as string);
     }
     if (event.message) {

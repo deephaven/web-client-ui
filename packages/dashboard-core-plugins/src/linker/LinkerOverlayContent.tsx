@@ -1,9 +1,13 @@
 import React, { Component, ErrorInfo } from 'react';
 import classNames from 'classnames';
-import { ContextActions, GLOBAL_SHORTCUTS } from '@deephaven/components';
+import {
+  Button,
+  ContextActions,
+  GLOBAL_SHORTCUTS,
+} from '@deephaven/components';
 import { LayoutUtils, PanelManager } from '@deephaven/dashboard';
 import Log from '@deephaven/log';
-import type GoldenLayout from '@deephaven/golden-layout';
+import type { Container } from '@deephaven/golden-layout';
 import {
   isLinkableFromPanel,
   Link,
@@ -102,9 +106,7 @@ export class LinkerOverlayContent extends Component<
     if (glContainer == null) {
       throw new Error(`Unable to find panel container for id: ${panelId}`);
     }
-    return LayoutUtils.getTabPoint(
-      (glContainer as unknown) as GoldenLayout.Container
-    ) as LinkerCoordinate;
+    return LayoutUtils.getTabPoint((glContainer as unknown) as Container);
   }
 
   handleMouseMove(event: MouseEvent): void {
@@ -140,7 +142,7 @@ export class LinkerOverlayContent extends Component<
           if (end != null) {
             [x2, y2] = this.getPointFromLinkPoint(end);
           }
-          if (isReversed) {
+          if (isReversed != null && isReversed) {
             const [tmpX, tmpY] = [x1, y1];
             [x1, y1] = [x2, y2];
             [x2, y2] = [tmpX, tmpY];
@@ -179,16 +181,12 @@ export class LinkerOverlayContent extends Component<
         <div className="linker-toast-dialog">
           <div className="toast-body">{messageText}</div>
           <div className="toast-footer">
-            <button
-              className="btn btn-outline-primary"
-              onClick={onAllLinksDeleted}
-              type="button"
-            >
+            <Button kind="secondary" onClick={onAllLinksDeleted}>
               Clear All
-            </button>
-            <button className="btn btn-primary" onClick={onDone} type="button">
+            </Button>
+            <Button kind="primary" onClick={onDone}>
               Done
-            </button>
+            </Button>
           </div>
         </div>
         <ContextActions

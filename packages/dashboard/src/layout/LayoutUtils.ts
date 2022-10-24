@@ -3,7 +3,7 @@ import shortid from 'shortid';
 import isMatch from 'lodash.ismatch';
 import { DragEvent } from 'react';
 import Log from '@deephaven/log';
-import GoldenLayout from '@deephaven/golden-layout';
+import GoldenLayout, { isRoot, isStack } from '@deephaven/golden-layout';
 import type {
   ComponentConfig,
   Config,
@@ -12,6 +12,7 @@ import type {
   ItemConfig,
   ItemConfigType,
   ReactComponentConfig,
+  Stack,
   Tab,
 } from '@deephaven/golden-layout';
 import { assertNotNull } from '@deephaven/utils';
@@ -91,10 +92,10 @@ class LayoutUtils {
    * @param parent A GoldenLayout content item to add the stack to
    * @returns The newly created stack.
    */
-  static addStack(parent: ContentItem, columnPreferred = true): ContentItem {
+  static addStack(parent: ContentItem, columnPreferred = true): Stack {
     const type = columnPreferred ? 'column' : 'row';
-    if (parent.isRoot) {
-      if (!parent.contentItems || parent.contentItems.length === 0) {
+    if (isRoot(parent)) {
+      if (parent.contentItems == null || parent.contentItems.length === 0) {
         parent.addChild({ type });
       }
 
@@ -110,7 +111,7 @@ class LayoutUtils {
         parent.contentItems[0].addChild(child);
         if (
           maintainFocusElement &&
-          (maintainFocusElement as HTMLElement).focus
+          (maintainFocusElement as HTMLElement).focus != null
         ) {
           (maintainFocusElement as HTMLElement).focus();
         }
@@ -121,7 +122,7 @@ class LayoutUtils {
 
     if (parent.contentItems.length < 2) {
       parent.addChild({ type: 'stack' });
-      return parent.contentItems[parent.contentItems.length - 1];
+      return parent.contentItems[parent.contentItems.length - 1] as Stack;
     }
     let newParent = parent.contentItems[parent.contentItems.length - 1];
     const isCorrectType = !columnPreferred
@@ -140,26 +141,26 @@ class LayoutUtils {
   /**
    * Gets the first stack which contains a contentItem with the given config values
    * @param item Golden layout content item to search for the stack
-   * @param  config The item properties to match
+   * @param config The item properties to match
    */
   static getStackForConfig(
     item: ContentItem,
     config: Partial<ItemConfigType> = {},
     allowEmptyStack = false
-  ): ContentItem | null {
-    if (allowEmptyStack && item.isStack && item.contentItems.length === 0) {
+  ): Stack | null {
+    if (allowEmptyStack && isStack(item) && item.contentItems.length === 0) {
       return item;
     }
 
-    if (!item.contentItems) {
+    if (item.contentItems == null) {
       return null;
     }
 
     for (let i = 0; i < item.contentItems.length; i += 1) {
       const contentItem = item.contentItems[i];
-      if (contentItem.isComponent && contentItem.config) {
+      if (contentItem.isComponent && contentItem.config != null) {
         if (isMatch(contentItem.config, config)) {
-          return item;
+          return item as Stack;
         }
       }
 
@@ -190,7 +191,7 @@ class LayoutUtils {
     createIfNecessary = true,
     matchComponentType = true,
     allowEmptyStack = true
-  ): ContentItem | null {
+  ): Stack | null {
     let stack = this.getStackForConfig(root, config);
     if (!stack && matchComponentType) {
       stack = this.getStackForConfig(
@@ -221,7 +222,7 @@ class LayoutUtils {
     createIfNecessary = true,
     matchComponentType = true,
     allowEmptyStack = true
-  ): ContentItem | null {
+  ): Stack | null {
     for (let i = 0; i < types.length; i += 1) {
       const component = types[i];
       const isLastType = i === types.length - 1;
@@ -254,7 +255,7 @@ class LayoutUtils {
     }
     for (let i = 0; i < stack.contentItems.length; i += 1) {
       const contentItem = stack.contentItems[i];
-      if (contentItem.isComponent && contentItem.config) {
+      if (contentItem.isComponent && contentItem.config != null) {
         if (isMatch(contentItem.config, config)) {
           return contentItem;
         }
@@ -275,7 +276,7 @@ class LayoutUtils {
       config: ItemConfigType
     ) => PanelConfig
   ): (PanelConfig | ItemConfig)[] {
-    if (!config || !config.length) {
+    if (config == null || !config.length) {
       return [];
     }
     const dehydratedConfig: (PanelConfig | ItemConfig)[] = [];
@@ -285,7 +286,7 @@ class LayoutUtils {
       const { component, content } = itemConfig as ReactComponentConfig;
       if (component) {
         const dehydratedComponent = dehydrateComponent(component, itemConfig);
-        if (dehydratedComponent) {
+        if (dehydratedComponent != null) {
           dehydratedConfig.push(dehydratedComponent);
         } else {
           log.debug2(
@@ -342,7 +343,7 @@ class LayoutUtils {
         isReactComponentConfig(itemConfig) &&
         itemConfig.component === 'IrisGridPanel'
       ) {
-        if (itemConfig.props.panelState) {
+        if (itemConfig.props.panelState != null) {
           delete itemConfig.id;
           itemConfig.props.panelState.irisGridState.sorts = [];
           itemConfig.props.panelState.irisGridState.quickFilters = [];
@@ -389,7 +390,7 @@ class LayoutUtils {
       config: PanelConfig | ItemConfig
     ) => ReactComponentConfig
   ): DashboardLayoutConfig {
-    if (!config || !config.length) {
+    if (config == null || !config.length) {
       return [];
     }
     const hydratedConfig = [];
@@ -454,7 +455,7 @@ class LayoutUtils {
     dragEvent = undefined,
   }: {
     root?: ContentItem;
-    config?: ReactComponentConfig;
+    config?: Partial<ReactComponentConfig>;
     replaceExisting?: boolean;
     replaceConfig?: Partial<ItemConfigType>;
     createNewStack?: boolean;
@@ -465,7 +466,7 @@ class LayoutUtils {
     const maintainFocusElement = document.activeElement;
     const config = { ...configParam } as ReactComponentConfig;
 
-    if (!config.id) {
+    if (config.id == null) {
       config.id = shortid.generate();
     }
 
@@ -489,7 +490,7 @@ class LayoutUtils {
       searchConfig
     );
 
-    if (focusElement) {
+    if (focusElement != null) {
       // We need to listen for when the stack is created
       const onComponentCreated = (event: {
         origin: { element: Element[] };
@@ -521,7 +522,7 @@ class LayoutUtils {
     }
 
     if (
-      !focusElement &&
+      focusElement == null &&
       maintainFocusElement &&
       isHTMLElement(maintainFocusElement)
     ) {
@@ -537,8 +538,8 @@ class LayoutUtils {
    * @param replaceExisting Whether it should replace the existing one matching component type and id, or open a new one
    */
   static openComponentInStack(
-    stack: ContentItem | null,
-    config: ItemConfigType,
+    stack: Stack | null,
+    config: ItemConfigType & Record<string, unknown>,
     replaceExisting = true
   ): void {
     const maintainFocusElement = document.activeElement; // attempt to retain focus after dom manipulation, which can break focus
@@ -647,7 +648,7 @@ class LayoutUtils {
     const { props = {} } = config;
     const panelState = LayoutUtils.getPanelComponentState(config);
     const cloneConfig = {
-      type: 'react-component',
+      type: 'react-component' as const,
       component: config.component,
       props: {
         ...props,
@@ -706,7 +707,7 @@ class LayoutUtils {
     container?: Container
   ): ItemConfigType | null {
     if (container) {
-      if (container.tab && container.tab.contentItem) {
+      if (container.tab != null && container.tab.contentItem != null) {
         return container.tab.contentItem.config;
       }
 
@@ -723,14 +724,18 @@ class LayoutUtils {
   static getTitleFromContainer(
     container: Container
   ): string | null | undefined {
-    if (container && container.tab && container.tab.contentItem) {
+    if (
+      container != null &&
+      container.tab != null &&
+      container.tab.contentItem != null
+    ) {
       return container.tab.contentItem.config.title;
     }
     return null;
   }
 
   static getTitleFromTab(tab: Tab): string | null | undefined {
-    if (tab && tab.contentItem) {
+    if (tab != null && tab.contentItem != null) {
       return tab.contentItem.config.title;
     }
     return null;
@@ -769,7 +774,7 @@ class LayoutUtils {
    * @returns Component name or null if unable to retrieve name
    */
   static getComponentNameFromPanel(panel: {
-    props: { glContainer: GoldenLayout.Container };
+    props: { glContainer: Container };
   }): string | null {
     const { glContainer } = panel.props;
     const config = LayoutUtils.getComponentConfigFromContainer(glContainer);

@@ -152,7 +152,7 @@ class DropdownFilter extends Component<
 
   getCompatibleColumns = memoize(
     (source: LinkPoint, columns: DropdownFilterColumn[]) =>
-      source
+      source != null
         ? columns.filter(
             ({ type }) =>
               type !== undefined &&
@@ -503,13 +503,13 @@ class DropdownFilter extends Component<
                 )}
               </div>
               <div className="dropdown-filter-menu">
-                <button
-                  type="button"
-                  className="btn btn-link btn-link-icon m-2 px-2"
+                <Button
+                  kind="ghost"
+                  className="m-2 px-2"
                   onClick={this.handleSettingsClick}
-                >
-                  <FontAwesomeIcon icon={vsGear} transform="grow-4" />
-                </button>
+                  icon={<FontAwesomeIcon icon={vsGear} transform="grow-4" />}
+                  tooltip="Dropdown Filter Settings"
+                />
               </div>
             </>
           )}

@@ -90,7 +90,7 @@ class TimeUtils {
    * @param timeString Time string in hh:mm:ss format
    */
   static parseTime(timeString: unknown): TimeInSeconds {
-    if (!timeString || typeof timeString !== 'string') {
+    if (timeString == null || typeof timeString !== 'string') {
       throw new Error(`${timeString} is not a valid string`);
     }
 

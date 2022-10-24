@@ -5,6 +5,7 @@ import classNames from 'classnames';
 import Checkbox from './Checkbox';
 import Popper from './popper/Popper';
 import './HierarchicalCheckboxMenu.scss';
+import Button from './Button';
 
 export type HierarchicalCheckboxValueMap = Map<
   string,
@@ -114,17 +115,18 @@ class HierarchicalCheckboxMenu extends Component<
     if (children instanceof Map) {
       const newChildren = new Map(children);
       if (child != null) {
-        newChildren.set(child, !children.get(child));
+        newChildren.set(child, children.get(child) === undefined);
       } else {
-        const newChildValue = !HierarchicalCheckboxMenu.isParentSelected(
+        const parentSelected = HierarchicalCheckboxMenu.isParentSelected(
           parent,
           map
         );
+        const newChildValue = parentSelected == null || !parentSelected;
         children.forEach((_, key) => newChildren.set(key, newChildValue));
       }
       map.set(parent, newChildren);
     } else {
-      map.set(parent, !children);
+      map.set(parent, children == null || !children);
     }
 
     // The parent was clicked so all children must be toggled
@@ -134,7 +136,11 @@ class HierarchicalCheckboxMenu extends Component<
       currentChildren !== undefined &&
       typeof currentChildren !== 'boolean'
     ) {
-      if (HierarchicalCheckboxMenu.isParentSelected(parent, valueMap)) {
+      const parentSelected = HierarchicalCheckboxMenu.isParentSelected(
+        parent,
+        valueMap
+      );
+      if (parentSelected != null && parentSelected) {
         currentChildren.forEach((_, key) => currentChildren.set(key, false));
       } else {
         // for parent selection of false or null (indeterminate), select everything
@@ -201,22 +207,26 @@ class HierarchicalCheckboxMenu extends Component<
               ))}
           </div>
         ))}
-        <button
-          type="button"
-          className="btn btn-link"
+        <Button
+          kind="ghost"
           onClick={this.selectAll}
-          data-testid={dataTestId ? `${dataTestId}-btn-select-all` : undefined}
+          data-testid={
+            dataTestId !== undefined
+              ? `${dataTestId}-btn-select-all`
+              : undefined
+          }
         >
           Select All
-        </button>
-        <button
-          type="button"
-          className="btn btn-link"
+        </Button>
+        <Button
+          kind="ghost"
           onClick={this.clear}
-          data-testid={dataTestId ? `${dataTestId}-btn-clear` : undefined}
+          data-testid={
+            dataTestId !== undefined ? `${dataTestId}-btn-clear` : undefined
+          }
         >
           Clear
-        </button>
+        </Button>
       </div>
     );
   }

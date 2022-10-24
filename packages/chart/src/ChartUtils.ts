@@ -124,7 +124,8 @@ function isRangedPlotlyAxis(value: unknown): value is { range: Range[] } {
   return (
     value != null &&
     (value as PlotlyAxis).range &&
-    !(value as PlotlyAxis).autorange
+    ((value as PlotlyAxis).autorange === false ||
+      (value as PlotlyAxis).autorange === undefined)
   );
 }
 
@@ -435,8 +436,11 @@ class ChartUtils {
     const isCommaSeparated =
       placeholderDigits.indexOf(',') >= 0 || zeroDigits.indexOf(',') >= 0;
     const comma = isCommaSeparated ? ',' : '';
-    const plotlyNumberType = numberType ? 'e' : 'f';
-    const type = percentSign || plotlyNumberType;
+    const plotlyNumberType =
+      numberType != null && numberType !== '' ? 'e' : 'f';
+
+    const type = percentSign !== '' ? percentSign : plotlyNumberType;
+
     const decimalLength = decimalDigits.length + optionalDecimalDigits.length;
     // IDS-4565 Plotly uses an older version of d3 which doesn't support the trim option or negative brackets
     // If plotly updates it's d3 version, this should be re-enabled
@@ -557,7 +561,11 @@ class ChartUtils {
     name: string,
     settings?: Partial<ChartModelSettings>
   ): boolean | 'legendonly' {
-    if (settings?.hiddenSeries?.includes(name)) {
+    if (
+      settings != null &&
+      settings.hiddenSeries != null &&
+      settings.hiddenSeries.includes(name)
+    ) {
       return 'legendonly';
     }
     return true;
@@ -649,9 +657,8 @@ class ChartUtils {
       );
       set(seriesData, dataAttributeName, []);
 
-      const axisProperty = axis
-        ? ChartUtils.getAxisPropertyName(axis.type)
-        : null;
+      const axisProperty =
+        axis != null ? ChartUtils.getAxisPropertyName(axis.type) : null;
       if (axisProperty != null) {
         const axes = axisTypeMap.get(axis.type);
         if (axes) {
@@ -690,10 +697,13 @@ class ChartUtils {
       // The default histfunc in plotly is 'count', but the data passed up from the API provides explicit x/y values and bins
       // Since it's converted to bar, just set the widths of each bar
       seriesData.width = [];
-      Object.assign(seriesData.marker.line, {
-        color: theme.paper_bgcolor,
-        width: 1,
-      });
+
+      if (seriesData.marker.line !== undefined) {
+        Object.assign(seriesData.marker.line, {
+          color: theme.paper_bgcolor,
+          width: 1,
+        });
+      }
     } else if (plotStyle === dh.plot.SeriesPlotStyle.OHLC) {
       (seriesData as Partial<OhclData>).increasing = {
         line: { color: theme.ohlc_increasing },
@@ -793,7 +803,7 @@ class ChartUtils {
                 axisFormats.set(axisLayoutProperty, axisFormat);
 
                 const { businessCalendar } = axis;
-                if (businessCalendar) {
+                if (businessCalendar != null) {
                   const rangebreaks: Rangebreaks[] = [];
                   const {
                     businessPeriods,
@@ -1056,7 +1066,11 @@ class ChartUtils {
             );
 
             const { range, autorange } = layoutAxis;
-            if (getRangeParser && range && !autorange) {
+            if (
+              getRangeParser != null &&
+              range !== undefined &&
+              (autorange === undefined || autorange === false)
+            ) {
               const rangeParser = getRangeParser(axis);
               const [rangeStart, rangeEnd] = rangeParser(range as Range);
 
@@ -1393,7 +1407,7 @@ class ChartUtils {
   ): Map<T[P], T[]> {
     return array.reduce((result, item) => {
       const key = item[property];
-      const group: T[] = result.get(key) || [];
+      const group: T[] = result.get(key) ?? [];
       group.push(item);
       result.set(key, group);
       return result;

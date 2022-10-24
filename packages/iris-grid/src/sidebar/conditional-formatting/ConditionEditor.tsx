@@ -109,16 +109,19 @@ function isNumberConditionValid(
   }
   if (
     condition === NumberCondition.IS_BETWEEN &&
-    startValue &&
+    startValue != null &&
+    startValue !== '' &&
     !Number.isNaN(Number.parseFloat(startValue)) &&
-    endValue &&
+    endValue != null &&
+    endValue !== '' &&
     !Number.isNaN(Number.parseFloat(endValue))
   ) {
     return true;
   }
   if (
     condition !== NumberCondition.IS_BETWEEN &&
-    value &&
+    value !== undefined &&
+    value !== '' &&
     !Number.isNaN(Number.parseFloat(value))
   ) {
     return true;

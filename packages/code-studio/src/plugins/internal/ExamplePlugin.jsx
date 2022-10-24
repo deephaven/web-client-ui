@@ -122,22 +122,20 @@ class ExamplePlugin extends Component {
           <ModalHeader>Plugin Modal Title</ModalHeader>
           <ModalBody>Plugin Modal Body</ModalBody>
           <ModalFooter>
-            <button
-              type="button"
-              className="btn btn-outline-primary"
+            <Button
+              kind="secondary"
               data-dismiss="modal"
               onClick={this.handleCloseModal}
             >
               Cancel
-            </button>
-            <button
-              type="button"
-              className="btn btn-primary"
+            </Button>
+            <Button
+              kind="primary"
               onClick={this.handleCloseModal}
               ref={this.confirmButton}
             >
               Confirm
-            </button>
+            </Button>
           </ModalFooter>
         </Modal>
       </div>

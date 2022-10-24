@@ -59,11 +59,11 @@ Depending on what your package is, there are a couple of different templates tha
 
 ### Application package
 
-A standalone application with it's own entry point. Recommend using the [create-react-app template](https://github.com/facebook/create-react-app) with TypeScript enabled.
+A standalone application with it's own entry point. Recommend copying the [embed-grid](./packages/embed-grid/) package, removing any dependencies and files not required.
 
 ### Component/library package
 
-Component template is located in `examples/component-template`. Use that template when making new component packages/libraries.
+A component/library package that can be imported into other packages. Recommend copying the [components](./packages/components/) package, removing any dependencies and files not required.
 
 ## Releasing a New Version
 

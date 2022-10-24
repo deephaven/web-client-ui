@@ -1,7 +1,11 @@
 import { Component, ComponentType } from 'react';
 import { ConnectedComponent } from 'react-redux';
 import GoldenLayout from '@deephaven/golden-layout';
-import type { ReactComponentConfig } from '@deephaven/golden-layout';
+import type {
+  ReactComponentConfig,
+  EventEmitter,
+  Container,
+} from '@deephaven/golden-layout';
 import PanelManager from './PanelManager';
 
 export type WrappedComponentType<
@@ -22,8 +26,8 @@ export function isWrappedComponent<
 }
 
 export type PanelProps = {
-  glContainer: GoldenLayout.Container;
-  glEventHub: GoldenLayout.EventEmitter;
+  glContainer: Container;
+  glEventHub: EventEmitter;
 };
 
 export type PanelComponent<T extends PanelProps = PanelProps> = Component<T>;

@@ -38,11 +38,20 @@ type ButtonWithChildren = BaseButtonProps & {
   children: React.ReactNode;
 };
 
-type IconOnlyButton = BaseButtonProps & {
-  tooltip: string | JSX.Element;
+type IconOnlyButtonStringTooltip = BaseButtonProps & {
+  tooltip: string;
   icon: IconDefinition | JSX.Element;
   children?: undefined;
 };
+
+type IconOnlyButtonJsxTooltip = BaseButtonProps & {
+  tooltip: JSX.Element;
+  'aria-label': string;
+  icon: IconDefinition | JSX.Element;
+  children?: undefined;
+};
+
+type IconOnlyButton = IconOnlyButtonStringTooltip | IconOnlyButtonJsxTooltip;
 
 type ButtonProps = IconOnlyButton | ButtonWithChildren;
 
@@ -63,7 +72,7 @@ function getClassName(kind: ButtonKind, iconOnly: boolean): string {
     case 'ghost':
       return classNames('btn-link', {
         'btn-link-icon': iconOnly,
-        'px-2': iconOnly,
+        'btn-link-icon-only': iconOnly,
       });
   }
 }
@@ -86,14 +95,17 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       disabled,
       active,
       onClick,
+      onMouseDown,
+      onMouseUp,
       className,
       style,
       children,
+      tabIndex,
       'data-testid': dataTestId,
       'aria-label': ariaLabel,
     } = props;
 
-    const iconOnly = (icon && !children) as boolean;
+    const iconOnly = Boolean(icon && children == null);
     const btnClassName = getClassName(kind, iconOnly);
 
     let variantClassName;
@@ -111,9 +123,21 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     }
 
     let tooltipElem: JSX.Element | undefined;
-    if (tooltip) {
+    if (tooltip !== undefined) {
       tooltipElem =
         typeof tooltip === 'string' ? <Tooltip>{tooltip}</Tooltip> : tooltip;
+    }
+
+    // use tooltip as arial-label for iconOnly buttons only
+    // if tooltip is also a string and aria-label is not set
+    let ariaLabelString = ariaLabel;
+    if (
+      ariaLabel === undefined &&
+      iconOnly &&
+      tooltip != null &&
+      typeof tooltip === 'string'
+    ) {
+      ariaLabelString = tooltip;
     }
 
     const button = (
@@ -130,23 +154,28 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
           className
         )}
         onClick={onClick}
+        onMouseUp={onMouseUp}
+        onMouseDown={onMouseDown}
         style={style}
         disabled={disabled}
-        aria-label={ariaLabel}
+        tabIndex={tabIndex}
+        aria-label={ariaLabelString}
       >
         {icon && iconElem}
         {children}
-        {tooltip && !disabled && tooltipElem}
+        {tooltip != null &&
+          (disabled === undefined || !disabled) &&
+          tooltipElem}
       </button>
     );
 
     // disabled buttons tooltips need a wrapped element to receive pointer events
     // https://jakearchibald.com/2017/events-and-disabled-form-fields/
 
-    return disabled ? (
+    return disabled !== undefined && disabled ? (
       <span className="btn-disabled-wrapper">
         {button}
-        {tooltip && tooltipElem}
+        {tooltip !== undefined && tooltipElem}
       </span>
     ) : (
       button
@@ -162,18 +191,22 @@ Button.propTypes = {
   type: PropTypes.oneOf<ButtonTypes>(['submit', 'reset', 'button']),
   tooltip(props) {
     const { tooltip, icon, children } = props;
-    if (!tooltip && icon && !children) {
+    if (tooltip === undefined && icon != null && children == null) {
       return new Error('Tooltip is required for icon only buttons');
     }
     return null;
   },
   icon(props) {
     const { children, icon } = props;
-    if (!icon && !children) {
+    if (icon == null && children == null) {
       return new Error('Icon is required if no children are provided');
     }
 
-    if (!children && !React.isValidElement(icon) && !icon?.iconName) {
+    if (
+      children == null &&
+      !React.isValidElement(icon) &&
+      (icon == null || icon.iconName === '' || icon.iconName == null)
+    ) {
       return new Error(
         'Icon must be react element or fontawesome IconDefinition'
       );
@@ -193,6 +226,9 @@ Button.propTypes = {
     }
     return null;
   },
+  onMouseUp: PropTypes.func,
+  onMouseDown: PropTypes.func,
+  tabIndex: PropTypes.number,
   children: PropTypes.node,
   className: PropTypes.string,
   style: PropTypes.object,
@@ -202,11 +238,14 @@ Button.propTypes = {
 Button.defaultProps = {
   type: 'button',
   onClick: undefined,
+  onMouseUp: undefined,
+  onMouseDown: undefined,
   variant: undefined,
   tooltip: undefined,
   icon: undefined,
   disabled: false,
   active: undefined,
+  tabIndex: undefined,
   children: undefined,
   className: undefined,
   style: {},

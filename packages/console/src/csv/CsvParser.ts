@@ -313,7 +313,7 @@ class CsvParser {
 
   handleComplete(results: ParseResult<unknown>): void {
     // results is undefined for a succesful parse, but has meta data for an abort
-    if (!results || !results.meta.aborted) {
+    if (results == null || results.meta.aborted == null) {
       this.isComplete = true;
       // Check if there are any consolidated chunks left over from a zip file
       if (this.consolidatedChunks) {

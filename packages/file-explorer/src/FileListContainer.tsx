@@ -213,7 +213,7 @@ export const FileListContainer = (
 
   return (
     <div className="file-list-container">
-      {table && (
+      {table != null && (
         <FileList
           onMove={onMove}
           onSelect={onSelect}

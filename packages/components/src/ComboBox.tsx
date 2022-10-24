@@ -304,7 +304,8 @@ class ComboBox extends Component<ComboBoxProps, ComboBoxState> {
     // close if menu blurs, unless its an internal option or the toggleButton which triggers close via click
     if (
       (event.relatedTarget instanceof Element &&
-        this.popper.current?.element.contains(event.relatedTarget)) ||
+        this.popper.current != null &&
+        this.popper.current.element.contains(event.relatedTarget)) ||
       event.relatedTarget === this.toggleButton.current
     ) {
       return;
@@ -318,7 +319,8 @@ class ComboBox extends Component<ComboBoxProps, ComboBoxState> {
     if (
       menuIsOpen &&
       event.relatedTarget instanceof Element &&
-      this.popper.current?.element.contains(event.relatedTarget)
+      this.popper.current != null &&
+      this.popper.current.element.contains(event.relatedTarget)
     ) {
       return;
     }
@@ -469,12 +471,17 @@ class ComboBox extends Component<ComboBoxProps, ComboBoxState> {
           className={classNames('form-control', className, 'cb-input')}
           ref={this.input}
           onChange={this.handleInputChange}
-          placeholder={inputPlaceholder || (options[0] && options[0].title)}
+          placeholder={
+            inputPlaceholder ||
+            (options[0] != null ? options[0].title : undefined)
+          }
           disabled={disabled}
           onBlur={this.handleInputBlur}
           onKeyDown={this.handleInputKeyDown}
           spellCheck={spellCheck}
-          data-testid={dataTestId ? `${dataTestId}-input` : undefined}
+          data-testid={
+            dataTestId !== undefined ? `${dataTestId}-input` : undefined
+          }
         />
         <div className="input-group-append cb-dropdown">
           <button
@@ -484,7 +491,9 @@ class ComboBox extends Component<ComboBoxProps, ComboBoxState> {
             onClick={this.toggleMenu}
             onKeyDown={this.handleInputKeyDown}
             disabled={disabled}
-            data-testid={dataTestId ? `${dataTestId}-btn` : undefined}
+            data-testid={
+              dataTestId !== undefined ? `${dataTestId}-btn` : undefined
+            }
           >
             <FontAwesomeIcon icon={vsTriangleDown} />
             <Popper

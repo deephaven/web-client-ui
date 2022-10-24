@@ -577,7 +577,7 @@ class FilterSetManager extends Component<
                         icon={vsCircleSlash}
                       />
                     </div>
-                    {nameInputError && (
+                    {nameInputError !== undefined && (
                       <div className="error-message">{nameInputError}</div>
                     )}
                   </div>

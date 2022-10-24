@@ -243,7 +243,7 @@ class AutoCompleteInput extends Component<
       case 'ArrowRight':
         event.stopPropagation();
         event.preventDefault();
-        if (option) {
+        if (option != null) {
           this.setState({ title: option.title, invalid: false });
           this.fireOnChange(option.value);
         }
@@ -362,7 +362,8 @@ class AutoCompleteInput extends Component<
     if (
       menuIsOpen &&
       event.relatedTarget instanceof Element &&
-      this.popper.current?.element.contains(event.relatedTarget)
+      this.popper.current !== null &&
+      this.popper.current.element.contains(event.relatedTarget)
     ) {
       return;
     }
@@ -374,7 +375,8 @@ class AutoCompleteInput extends Component<
     if (
       event.relatedTarget === this.input.current ||
       (event.relatedTarget instanceof Element &&
-        this.popper.current?.element.contains(event.relatedTarget))
+        this.popper.current !== null &&
+        this.popper.current.element.contains(event.relatedTarget))
     ) {
       return;
     }

@@ -6,7 +6,7 @@ const silent = () => undefined;
 class Logger {
   constructor(name: string | null, level: number) {
     this.name = name;
-    this.prefix = name ? `[${name}]` : ``;
+    this.prefix = name != null ? `[${name}]` : ``;
 
     this.error = silent;
     this.warn = silent;

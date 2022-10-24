@@ -23,6 +23,7 @@ import {
   IntegerColumnFormatter,
 } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
+import { PouchCommandHistoryStorage } from '@deephaven/pouch-storage';
 import {
   DeephavenPluginModuleMap,
   getWorkspace,
@@ -41,7 +42,6 @@ import {
 } from '@deephaven/redux';
 import { setLayoutStorage as setLayoutStorageAction } from '../redux/actions';
 import App from './App';
-import PouchCommandHistoryStorage from '../storage/PouchCommandHistoryStorage';
 import LocalWorkspaceStorage from '../storage/LocalWorkspaceStorage';
 import {
   createConnection,
@@ -151,6 +151,11 @@ const AppInit = (props: AppInitProps) => {
 
   const initClient = useCallback(async () => {
     try {
+      log.info(
+        'Initializing Web UI',
+        import.meta.env.npm_package_version,
+        navigator.userAgent
+      );
       const newPlugins = await loadPlugins();
       const connection = createConnection();
       const sessionWrapper = await loadSessionWrapper(connection);
@@ -270,7 +275,7 @@ const AppInit = (props: AppInitProps) => {
   ]);
 
   const initFonts = useCallback(() => {
-    if (document.fonts) {
+    if (document.fonts != null) {
       document.fonts.ready.then(() => {
         setIsFontLoading(false);
       });
@@ -288,9 +293,9 @@ const AppInit = (props: AppInitProps) => {
     [initClient, initFonts]
   );
 
-  const isLoading = (!workspace && !error) || isFontLoading;
-  const isLoaded = !isLoading && !error;
-  const errorMessage = error ? `${error}` : null;
+  const isLoading = (workspace == null && error == null) || isFontLoading;
+  const isLoaded = !isLoading && error == null;
+  const errorMessage = error != null ? `${error}` : null;
 
   return (
     <>

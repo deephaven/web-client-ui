@@ -83,7 +83,7 @@ class ScriptEditor extends Component<ScriptEditorProps, ScriptEditorState> {
       prevProps.settings?.language === prevProps.sessionLanguage;
     if (
       sessionDisconnected ||
-      (sessionLanguage && prevLanguageMatch && !languageMatch)
+      (sessionLanguage !== undefined && prevLanguageMatch && !languageMatch)
     ) {
       // Session disconnected or language changed from matching the session language to non-matching
       log.debug('De-init completion and context actions');
@@ -95,7 +95,7 @@ class ScriptEditor extends Component<ScriptEditorProps, ScriptEditorState> {
       sessionLanguage != null && prevProps.sessionLanguage == null;
     if (
       (sessionConnected && languageMatch) ||
-      (sessionLanguage && !prevLanguageMatch && languageMatch)
+      (sessionLanguage !== undefined && !prevLanguageMatch && languageMatch)
     ) {
       // Session connected with a matching language or notebook language changed to matching
       log.debug('Init completion and context actions');
@@ -159,13 +159,13 @@ class ScriptEditor extends Component<ScriptEditorProps, ScriptEditorState> {
     MonacoUtils.setEOL(innerEditor);
     MonacoUtils.registerPasteHandler(innerEditor);
 
-    if (session && settings && sessionLanguage === settings.language) {
+    if (session != null && settings && sessionLanguage === settings.language) {
       this.initContextActions();
       this.initCodeCompletion();
     }
 
     innerEditor.onDidChangeModelContent(onChange);
-    if (focusOnMount) {
+    if (focusOnMount != null && focusOnMount) {
       innerEditor.focus();
     }
   }
@@ -259,7 +259,7 @@ class ScriptEditor extends Component<ScriptEditorProps, ScriptEditorState> {
     }
     const { session } = this.props;
     log.debug('initCodeCompletion', this.editor, session);
-    if (this.editor && session) {
+    if (this.editor && session != null) {
       this.completionCleanup = MonacoUtils.openDocument(this.editor, session);
     }
   }
@@ -271,7 +271,7 @@ class ScriptEditor extends Component<ScriptEditorProps, ScriptEditorState> {
       this.completionCleanup.dispose();
       this.completionCleanup = undefined;
     }
-    if (this.editor && session) {
+    if (this.editor && session != null) {
       MonacoUtils.closeDocument(this.editor, session);
     }
   }
@@ -318,7 +318,7 @@ class ScriptEditor extends Component<ScriptEditorProps, ScriptEditorState> {
   }
 
   setLanguage(language?: string): void {
-    if (this.editorComponent.current && language) {
+    if (this.editorComponent.current && language !== undefined) {
       this.editorComponent.current.setLanguage(language);
     }
   }
@@ -360,13 +360,14 @@ class ScriptEditor extends Component<ScriptEditorProps, ScriptEditorState> {
                   onEditorInitialized={this.handleEditorInitialized}
                   onEditorWillDestroy={this.handleEditorWillDestroy}
                 />
-                {completionProviderEnabled && (
-                  <MonacoCompletionProvider
-                    model={model}
-                    language={editorLanguage}
-                    session={session}
-                  />
-                )}
+                {completionProviderEnabled != null &&
+                  completionProviderEnabled && (
+                    <MonacoCompletionProvider
+                      model={model}
+                      language={editorLanguage}
+                      session={session}
+                    />
+                  )}
               </>
             )}
           </div>

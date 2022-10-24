@@ -17,6 +17,7 @@ import {
 } from '@deephaven/utils';
 import Log from '@deephaven/log';
 import { vsHome } from '@deephaven/icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import FileExplorer from './FileExplorer';
 import FileStorage, { FileStorageItem, FileType } from './FileStorage';
 import FileUtils from './FileUtils';
@@ -407,8 +408,13 @@ class NewItemModal extends PureComponent<NewItemModalProps, NewItemModalState> {
             kind="ghost"
             className="directory-breadcrumbs"
             onClick={() => this.handleBreadcrumbSelect(directoryPath)}
-            aria-label={index === 0 ? 'home' : undefined}
-            icon={index === 0 ? vsHome : undefined}
+            aria-label={index === 0 ? 'Home' : undefined}
+            icon={
+              index === 0 ? (
+                <FontAwesomeIcon icon={vsHome} transform="right-1.6" />
+              ) : undefined
+            }
+            tooltip={index === 0 ? 'Home' : undefined}
           >
             {basename}
           </Button>
@@ -489,21 +495,16 @@ class NewItemModal extends PureComponent<NewItemModalProps, NewItemModalState> {
           </ModalBody>
 
           <ModalFooter>
-            <button
-              className="btn btn-outline-primary"
-              onClick={onCancel}
-              type="button"
-            >
+            <Button kind="secondary" onClick={onCancel}>
               Cancel
-            </button>
-            <button
-              className="btn btn-primary"
+            </Button>
+            <Button
+              kind="primary"
               disabled={isSubmitting}
               onClick={this.handleModalSubmit}
-              type="button"
             >
               {submitBtnLabel}
-            </button>
+            </Button>
           </ModalFooter>
         </Modal>
         <BasicModal

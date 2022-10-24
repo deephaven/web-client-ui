@@ -14,11 +14,11 @@ import { RouteComponentProps, withRouter } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   ContextActions,
-  Tooltip,
   ThemeExport,
   GLOBAL_SHORTCUTS,
   Popper,
   ContextAction,
+  Button,
 } from '@deephaven/components';
 import {
   IrisGridModel,
@@ -269,7 +269,7 @@ export class AppMainContainer extends Component<
 
   initWidgets(): void {
     const { connection } = this.props;
-    if (!connection.subscribeToFieldUpdates) {
+    if (connection.subscribeToFieldUpdates == null) {
       log.warn(
         'subscribeToFieldUpdates not supported, not initializing widgets'
       );
@@ -291,7 +291,7 @@ export class AppMainContainer extends Component<
         // Now add all the modified and updated widgets back in
         const widgetsToAdd = [...updated, ...created];
         widgetsToAdd.forEach(toAdd => {
-          if (toAdd.name) {
+          if (toAdd.name != null && toAdd.name !== '') {
             newWidgets.push(toAdd);
           }
         });
@@ -311,7 +311,7 @@ export class AppMainContainer extends Component<
 
     if (notebookPath) {
       const { session, sessionConfig } = this.props;
-      if (!session || !sessionConfig) {
+      if (session == null || sessionConfig == null) {
         log.error('No session available to open notebook URL', notebookPath);
         return;
       }
@@ -619,7 +619,7 @@ export class AppMainContainer extends Component<
     const pluginModule = plugins.get(pluginName);
     if (
       pluginModule != null &&
-      (pluginModule as { TablePlugin: ReactElement }).TablePlugin
+      (pluginModule as { TablePlugin: ReactElement }).TablePlugin != null
     ) {
       return (pluginModule as {
         TablePlugin: ForwardRefExoticComponent<React.RefAttributes<unknown>>;
@@ -637,14 +637,18 @@ export class AppMainContainer extends Component<
   ): DashboardPanelProps & { fetch?: () => Promise<unknown> } {
     const { connection } = this.props;
     const { metadata } = props;
-    if (metadata?.type && (metadata?.id || metadata?.name)) {
+    if (
+      metadata?.type != null &&
+      (metadata?.id != null || metadata?.name != null)
+    ) {
       // Looks like a widget, hydrate it as such
-      const widget: VariableDefinition = metadata.id
-        ? {
-            type: metadata.type,
-            id: metadata.id,
-          }
-        : { type: metadata.type, name: metadata.name, title: metadata.name };
+      const widget: VariableDefinition =
+        metadata.id != null
+          ? {
+              type: metadata.type,
+              id: metadata.id,
+            }
+          : { type: metadata.type, name: metadata.name, title: metadata.name };
       return {
         fetch: () => connection.getObject(widget),
         localDashboardId: id,
@@ -752,23 +756,29 @@ export class AppMainContainer extends Component<
               className="ml-1"
             />
             <div>
-              <button type="button" className="btn btn-link btn-panels-menu">
-                <FontAwesomeIcon icon={dhShapes} />
+              <Button
+                kind="ghost"
+                className="btn-panels-menu"
+                icon={dhShapes}
+                onClick={() => {
+                  // no-op: click is handled in `AppControlsMenu` (which uses a `DropdownMenu`)
+                }}
+              >
                 Controls
                 <AppControlsMenu
                   handleControlSelect={this.handleControlSelect}
                   handleToolSelect={this.handleToolSelect}
                   onClearFilter={this.handleClearFilter}
                 />
-              </button>
+              </Button>
               {canUsePanels && (
-                <button
-                  type="button"
-                  className="btn btn-link btn-panels-menu btn-show-panels"
+                <Button
+                  kind="ghost"
+                  className="btn-panels-menu btn-show-panels"
                   data-testid="app-main-panels-button"
                   onClick={this.handleWidgetMenuClick}
+                  icon={dhPanels}
                 >
-                  <FontAwesomeIcon icon={dhPanels} />
                   Panels
                   <Popper
                     isShown={isPanelsMenuShown}
@@ -785,22 +795,22 @@ export class AppMainContainer extends Component<
                       onSelect={this.handleWidgetSelect}
                     />
                   </Popper>
-                </button>
+                </Button>
               )}
-              <button
-                type="button"
-                className={classNames(
-                  'btn btn-link btn-link-icon btn-settings-menu',
-                  { 'text-warning': user.operateAs !== user.name }
-                )}
+              <Button
+                kind="ghost"
+                className={classNames('btn-settings-menu', {
+                  'text-warning': user.operateAs !== user.name,
+                })}
                 onClick={this.handleSettingsMenuShow}
-              >
-                <FontAwesomeIcon
-                  icon={vsGear}
-                  transform="grow-3 right-1 down-1"
-                />
-                <Tooltip>User Settings</Tooltip>
-              </button>
+                icon={
+                  <FontAwesomeIcon
+                    icon={vsGear}
+                    transform="grow-3 right-1 down-1"
+                  />
+                }
+                tooltip="User Settings"
+              />
             </div>
           </div>
         </nav>

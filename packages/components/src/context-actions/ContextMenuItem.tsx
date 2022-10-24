@@ -79,7 +79,10 @@ const ContextMenuItem = React.forwardRef<HTMLDivElement, ContextMenuItemProps>(
         icon = menuItemIcon;
       } else {
         let style: React.CSSProperties | undefined;
-        if (menuItem.iconColor && !menuItem.disabled) {
+        if (
+          menuItem.iconColor != null &&
+          (menuItem.disabled === undefined || !menuItem.disabled)
+        ) {
           style = { color: menuItem.iconColor };
         }
         icon = <FontAwesomeIcon icon={menuItemIcon} style={style} />;
@@ -87,7 +90,7 @@ const ContextMenuItem = React.forwardRef<HTMLDivElement, ContextMenuItemProps>(
     }
 
     let subMenuIndicator = null;
-    const isSubMenuActive = !!children;
+    const isSubMenuActive = Boolean(children);
     if (menuItem.actions) {
       subMenuIndicator = <FontAwesomeIcon icon={vsChevronRight} />;
     }
@@ -108,21 +111,28 @@ const ContextMenuItem = React.forwardRef<HTMLDivElement, ContextMenuItemProps>(
             'btn-context-menu',
             { disabled: menuItemDisabled },
             {
-              active: (isSubMenuActive || isMouseSelected) && !menuItemDisabled,
+              active:
+                (isSubMenuActive || isMouseSelected) &&
+                (menuItemDisabled === undefined || !menuItemDisabled),
             },
-            { 'keyboard-active': isKeyboardSelected && !menuItemDisabled }
+            {
+              'keyboard-active':
+                isKeyboardSelected !== undefined &&
+                isKeyboardSelected &&
+                (menuItemDisabled === undefined || !menuItemDisabled),
+            }
           )}
           onClick={handleMenuItemClick}
           onMouseMove={handleMenuItemMouseMove}
           onContextMenu={handleMenuItemContextMenu}
-          title={menuItem.description || ''}
+          title={menuItem.description ?? ''}
         >
           <div className="btn-context-menu-wrapper">
             <span className={classNames('icon', { outline: iconHasOutline })}>
               {icon}
             </span>
             <span className="title">{menuItem.title}</span>
-            {displayShortcut && (
+            {displayShortcut !== undefined && (
               <span className="shortcut">{displayShortcut}</span>
             )}
             {subMenuIndicator && (

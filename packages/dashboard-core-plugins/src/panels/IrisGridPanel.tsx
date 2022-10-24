@@ -343,20 +343,21 @@ export class IrisGridPanel extends PureComponent<
           const id = LayoutUtils.getIdFromPanel(this);
           return (
             value != null &&
-            (excludePanelIds == null || (id && !excludePanelIds.includes(id)))
+            (excludePanelIds == null ||
+              (id != null && !excludePanelIds.includes(id)))
           );
         })
       )
   );
 
   getAlwaysFetchColumns = memoize(
-    (dashboardLinks, pluginFetchColumns): string[] => {
+    (dashboardLinks: Link[], pluginFetchColumns): string[] => {
       const id = LayoutUtils.getIdFromPanel(this);
       // Always fetch columns which are the start/source of a link or columns specified by a plugin
       const columnSet = new Set<string>(pluginFetchColumns);
       for (let i = 0; i < dashboardLinks.length; i += 1) {
         const { start } = dashboardLinks[i];
-        if (start && start.panelId === id) {
+        if (start != null && start.panelId === id) {
           columnSet.add(start.columnName);
         }
       }
@@ -598,7 +599,7 @@ export class IrisGridPanel extends PureComponent<
     modelRow: GridRangeIndex;
     modelColumn: GridRangeIndex;
   }): ContextAction {
-    return this.pluginRef.current?.getMenu?.({ data: obj }) ?? [];
+    return this.pluginRef.current?.getMenu?.(obj) ?? [];
   }
 
   isColumnSelectionValid(tableColumn: Column | null): boolean {
@@ -766,8 +767,8 @@ export class IrisGridPanel extends PureComponent<
       const { table } = model;
       const { pluginName } = table;
 
-      if (pluginName) {
-        if (loadPlugin && pluginName) {
+      if (pluginName !== '') {
+        if (loadPlugin != null && pluginName != null) {
           const Plugin = loadPlugin(pluginName);
           this.setState({ Plugin });
         }
@@ -852,8 +853,8 @@ export class IrisGridPanel extends PureComponent<
     const columnIndex = model.getColumnIndexByName(columnName);
     assertNotNull(columnIndex);
     const visibleIndex = irisGrid.getVisibleColumn(columnIndex);
-    const columnX = visibleColumnXs.get(visibleIndex) || 0;
-    const columnWidth = visibleColumnWidths.get(visibleIndex) || 0;
+    const columnX = visibleColumnXs.get(visibleIndex) ?? 0;
+    const columnWidth = visibleColumnWidths.get(visibleIndex) ?? 0;
 
     const x = Math.max(
       rect.left,
@@ -1201,7 +1202,8 @@ export class IrisGridPanel extends PureComponent<
       pendingDataMap,
       frozenColumns,
     } = this.state;
-    const errorMessage = error ? `Unable to open table. ${error}` : undefined;
+    const errorMessage =
+      error != null ? `Unable to open table. ${error}` : undefined;
     const { table: name } = metadata;
     const description = model?.description ?? undefined;
     const pluginState = panelState?.pluginState ?? null;
