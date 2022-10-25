@@ -118,7 +118,7 @@ export class GrpcFileStorage implements FileStorage {
   }
 
   private refreshTables = throttle(() => {
-    this.tables.every(table => table.refresh().catch(() => undefined));
+    this.tables.forEach(table => table.refresh());
   }, GrpcFileStorage.REFRESH_THROTTLE);
 }
 
