@@ -1226,7 +1226,7 @@ export class IrisGridPanel extends PureComponent<
       this.getPluginContent(Plugin, model, user, workspace, pluginState);
     const { permissions } = user;
     const { canCopy, canDownloadCsv } = permissions;
-    const formattedRowCount = model?.displayString(rowCount, 'long');
+    const formattedRowCount = model?.displayString(rowCount ?? 0, 'long');
 
     return (
       <WidgetPanel
