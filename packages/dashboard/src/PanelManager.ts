@@ -189,10 +189,9 @@ class PanelManager {
     return this.getLastUsedPanel(panel =>
       types.some(
         type =>
-          panel instanceof type ||
           (isWrappedComponent(type) &&
-            type.WrappedComponent &&
-            panel instanceof type.WrappedComponent)
+            panel instanceof type.WrappedComponent) ||
+          (!isWrappedComponent(type) && panel instanceof type)
       )
     );
   }

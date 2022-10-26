@@ -11,6 +11,7 @@ import {
   DropdownMenu,
   Tooltip,
   GLOBAL_SHORTCUTS,
+  Button,
 } from '@deephaven/components';
 import { ScriptEditor, ScriptEditorUtils, SHORTCUTS } from '@deephaven/console';
 import {
@@ -1004,59 +1005,60 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
             <>
               <div className="notebook-toolbar">
                 <span>
-                  <button
-                    type="button"
-                    className="btn btn-link btn-link-icon btn-play"
+                  <Button
+                    kind="ghost"
+                    className="btn-play"
                     onClick={this.handleRunAll}
                     disabled={runButtonsDisabled}
-                  >
-                    <FontAwesomeIcon icon={vsPlay} transform="grow-4" />
-                    <Tooltip>
-                      Run {SHORTCUTS.NOTEBOOK.RUN.getDisplayText()}
-                    </Tooltip>
-                  </button>
+                    icon={<FontAwesomeIcon icon={vsPlay} transform="grow-4" />}
+                    tooltip={`Run ${SHORTCUTS.NOTEBOOK.RUN.getDisplayText()}`}
+                  />
                   {disabledRunButtonTooltip != null && (
                     <Tooltip>{disabledRunButtonTooltip}</Tooltip>
                   )}
                 </span>
                 <span>
-                  <button
-                    type="button"
-                    className="btn btn-link btn-link-icon btn-play"
+                  <Button
+                    kind="ghost"
+                    className="btn-play"
                     onClick={this.handleRunSelected}
                     disabled={runButtonsDisabled}
-                  >
-                    <FontAwesomeIcon icon={dhRunSelection} transform="grow-4" />
-                    <Tooltip>
-                      Run Selected{' '}
-                      {SHORTCUTS.NOTEBOOK.RUN_SELECTED.getDisplayText()}
-                    </Tooltip>
-                  </button>
+                    icon={
+                      <FontAwesomeIcon
+                        icon={dhRunSelection}
+                        transform="grow-4"
+                      />
+                    }
+                    tooltip={`Run Selected${' '}
+                    ${SHORTCUTS.NOTEBOOK.RUN_SELECTED.getDisplayText()}`}
+                  />
                   {disabledRunSelectedButtonTooltip != null && (
                     <Tooltip>{disabledRunSelectedButtonTooltip}</Tooltip>
                   )}
                 </span>
-                <button
-                  type="button"
-                  className="btn btn-link btn-link-icon mr-auto"
+                <Button
+                  kind="ghost"
+                  className="mr-auto"
                   disabled={toolbarDisabled}
                   onClick={this.handleSave}
-                >
-                  <FontAwesomeIcon icon={vsSave} />
-                  <Tooltip>Save</Tooltip>
-                </button>
-                <button
-                  type="button"
-                  className="btn btn-link btn-overflow btn-link-icon"
+                  icon={vsSave}
+                  tooltip="Save"
+                />
+                <Button
+                  kind="ghost"
+                  className="btn-overflow btn-link-icon"
                   disabled={toolbarDisabled}
+                  icon={vsKebabVertical}
+                  tooltip="More Actions..."
+                  onClick={() => {
+                    // no-op: click is handled in `DropdownMenu`
+                  }}
                 >
-                  <FontAwesomeIcon icon={vsKebabVertical} />
-                  <Tooltip>More Actions...</Tooltip>
                   <DropdownMenu
                     actions={overflowActions}
                     popperOptions={NotebookPanel.POPPER_OPTIONS}
                   />
-                </button>
+                </Button>
               </div>
               <ScriptEditor
                 isLoaded={isLoaded}

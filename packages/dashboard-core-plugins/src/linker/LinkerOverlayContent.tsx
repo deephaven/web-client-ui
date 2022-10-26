@@ -1,6 +1,10 @@
 import React, { Component, ErrorInfo } from 'react';
 import classNames from 'classnames';
-import { ContextActions, GLOBAL_SHORTCUTS } from '@deephaven/components';
+import {
+  Button,
+  ContextActions,
+  GLOBAL_SHORTCUTS,
+} from '@deephaven/components';
 import { LayoutUtils, PanelManager } from '@deephaven/dashboard';
 import Log from '@deephaven/log';
 import type { Container } from '@deephaven/golden-layout';
@@ -177,16 +181,12 @@ export class LinkerOverlayContent extends Component<
         <div className="linker-toast-dialog">
           <div className="toast-body">{messageText}</div>
           <div className="toast-footer">
-            <button
-              className="btn btn-outline-primary"
-              onClick={onAllLinksDeleted}
-              type="button"
-            >
+            <Button kind="secondary" onClick={onAllLinksDeleted}>
               Clear All
-            </button>
-            <button className="btn btn-primary" onClick={onDone} type="button">
+            </Button>
+            <Button kind="primary" onClick={onDone}>
               Done
-            </button>
+            </Button>
           </div>
         </div>
         <ContextActions
