@@ -150,6 +150,7 @@ export interface IdeSession extends Evented {
   closeDocument(params: unknown): void;
   openDocument(params: unknown): void;
   changeDocument(params: unknown): void;
+  close(): void;
 }
 
 export interface Evented {
