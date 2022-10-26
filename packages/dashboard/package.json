@@ -35,7 +35,7 @@
     "@deephaven/log": "file:../log",
     "@deephaven/react-hooks": "file:../react-hooks",
     "@deephaven/redux": "file:../redux",
-    "@deephaven/utils": "file:../util",
+    "@deephaven/utils": "file:../utils",
     "deep-equal": "^2.0.5",
     "lodash.ismatch": "^4.1.1",
     "lodash.throttle": "^4.1.1",
