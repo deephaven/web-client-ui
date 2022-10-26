@@ -26,6 +26,7 @@ import {
   dhFileSearch,
   vsPlay,
   dhRunSelection,
+  vsCheck,
 } from '@deephaven/icons';
 import { getFileStorage, RootState } from '@deephaven/redux';
 import classNames from 'classnames';
@@ -152,6 +153,8 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     this.handleCopy = this.handleCopy.bind(this);
     this.handleEditorChange = this.handleEditorChange.bind(this);
     this.handleFind = this.handleFind.bind(this);
+    this.handleMinimap = this.handleMinimap.bind(this);
+    this.handleWordWrap = this.handleWordWrap.bind(this);
     this.handleFocus = this.handleFocus.bind(this);
     this.handleLinkClick = this.handleLinkClick.bind(this);
     this.handleLoadSuccess = this.handleLoadSuccess.bind(this);
@@ -194,6 +197,9 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
 
     this.tabInitOnce = false;
     this.shouldPromptClose = true;
+
+    this.isMinimapEnabled = false;
+    this.isWordWrapEnabled = false;
 
     const { isDashboardActive, session, sessionLanguage, panelState } = props;
 
@@ -298,6 +304,10 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
   tabInitOnce: boolean;
 
   shouldPromptClose: boolean;
+
+  isMinimapEnabled: boolean;
+
+  isWordWrapEnabled: boolean;
 
   // Called by TabEvent. Happens once when created, but also each time its moved.
   // when moved, need to re-init the unsaved indicators on title elements
@@ -478,6 +488,22 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
       shortcut: SHORTCUTS.NOTEBOOK.FIND,
       order: 10,
     },
+    {
+      title: 'Show Minimap',
+      icon: this.isMinimapEnabled ? vsCheck : undefined,
+      action: this.handleMinimap,
+      group: ContextActions.groups.medium,
+      shortcut: SHORTCUTS.NOTEBOOK.MINIMAP,
+      order: 20,
+    },
+    {
+      title: 'Word Wrap',
+      icon: this.isWordWrapEnabled ? vsCheck : undefined,
+      action: this.handleWordWrap,
+      group: ContextActions.groups.medium,
+      shortcut: SHORTCUTS.NOTEBOOK.WORDWRAP,
+      order: 30,
+    },
   ]);
 
   savePanelState() {
@@ -575,6 +601,20 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
   handleFind() {
     if (this.notebook) {
       this.notebook.toggleFind();
+    }
+  }
+
+  handleMinimap() {
+    if (this.notebook) {
+      this.isMinimapEnabled = !this.isMinimapEnabled;
+      this.notebook.toggleMinimap();
+    }
+  }
+
+  handleWordWrap() {
+    if (this.notebook) {
+      this.isWordWrapEnabled = !this.isWordWrapEnabled;
+      this.notebook.toggleWordWrap();
     }
   }
 

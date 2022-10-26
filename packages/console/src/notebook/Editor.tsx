@@ -29,6 +29,9 @@ class Editor extends Component<EditorProps, Record<string, never>> {
 
     this.container = null;
     this.state = {};
+
+    this.isMinimapEnabled = false;
+    this.isWordWrapEnabled = false;
   }
 
   componentDidMount(): void {
@@ -46,6 +49,10 @@ class Editor extends Component<EditorProps, Record<string, never>> {
   container: HTMLDivElement | null;
 
   editor?: monaco.editor.IStandaloneCodeEditor;
+
+  isMinimapEnabled: boolean;
+
+  isWordWrapEnabled: boolean;
 
   setLanguage(language: string): void {
     if (this.editor) {
@@ -66,6 +73,24 @@ class Editor extends Component<EditorProps, Record<string, never>> {
       // https://github.com/microsoft/monaco-editor/issues/2355
       this.editor.focus();
       this.editor.trigger('toggleFind', 'actions.find', undefined);
+    }
+  }
+
+  toggleMinimap(): void {
+    if (this.editor) {
+      this.isMinimapEnabled = !this.isMinimapEnabled;
+      this.editor.updateOptions({
+        minimap: { enabled: this.isMinimapEnabled },
+      });
+    }
+  }
+
+  toggleWordWrap(): void {
+    if (this.editor) {
+      this.isWordWrapEnabled = !this.isWordWrapEnabled;
+      this.editor.updateOptions({
+        wordWrap: this.isWordWrapEnabled ? 'on' : 'off',
+      });
     }
   }
 
@@ -107,6 +132,38 @@ class Editor extends Component<EditorProps, Record<string, never>> {
 
       run: () => {
         this.toggleFind();
+      },
+    });
+    this.editor.addAction({
+      id: 'minimap',
+      label: 'Minimap',
+      keybindings: [
+        // eslint-disable-next-line no-bitwise
+        monaco.KeyMod.Alt | monaco.KeyCode.KeyM,
+      ],
+      precondition: undefined,
+      keybindingContext: undefined,
+      contextMenuGroupId: 'navigation',
+      contextMenuOrder: 2.0,
+
+      run: () => {
+        this.toggleMinimap();
+      },
+    });
+    this.editor.addAction({
+      id: 'wordWrap',
+      label: 'Word wrap',
+      keybindings: [
+        // eslint-disable-next-line no-bitwise
+        monaco.KeyMod.Alt | monaco.KeyCode.KeyZ,
+      ],
+      precondition: undefined,
+      keybindingContext: undefined,
+      contextMenuGroupId: 'navigation',
+      contextMenuOrder: 3.0,
+
+      run: () => {
+        this.toggleWordWrap();
       },
     });
     this.editor.layout();

@@ -317,6 +317,18 @@ class ScriptEditor extends Component<ScriptEditorProps, ScriptEditorState> {
     }
   }
 
+  toggleMinimap(): void {
+    if (this.editorComponent.current) {
+      this.editorComponent.current.toggleMinimap();
+    }
+  }
+
+  toggleWordWrap(): void {
+    if (this.editorComponent.current) {
+      this.editorComponent.current.toggleWordWrap();
+    }
+  }
+
   setLanguage(language?: string): void {
     if (this.editorComponent.current && language !== undefined) {
       this.editorComponent.current.setLanguage(language);
