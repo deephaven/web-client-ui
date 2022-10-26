@@ -1050,6 +1050,7 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
                   disabled={toolbarDisabled}
                   icon={vsKebabVertical}
                   tooltip="More Actions..."
+                  onClick={() => undefined}
                 >
                   <DropdownMenu
                     actions={overflowActions}
