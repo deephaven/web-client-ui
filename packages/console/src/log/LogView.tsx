@@ -214,8 +214,7 @@ class LogView extends PureComponent<LogViewProps, LogViewState> {
       glyphMargin: false,
       language: 'log',
       lineDecorationsWidth: 0,
-      // I commented this out since '' is not a valid parameter for line Numbers
-      // lineNumbers: '',
+      lineNumbers: 'off',
       lineNumbersMinChars: 0,
       minimap: { enabled: false },
       readOnly: true,
