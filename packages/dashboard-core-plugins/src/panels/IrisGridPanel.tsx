@@ -181,6 +181,7 @@ interface IrisGridPanelState {
   modelQueue: ModelQueue;
   pendingDataMap?: PendingDataMap<UIRow>;
   frozenColumns?: ColumnName[];
+  rowCount?: number;
 
   // eslint-disable-next-line react/no-unused-state
   panelState: PanelState | null; // Dehydrated panel state that can load this panel
@@ -228,6 +229,7 @@ export class IrisGridPanel extends PureComponent<
     this.handlePluginFilter = this.handlePluginFilter.bind(this);
     this.handlePluginFetchColumns = this.handlePluginFetchColumns.bind(this);
     this.handleClearAllFilters = this.handleClearAllFilters.bind(this);
+    this.handleUpdated = this.handleUpdated.bind(this);
 
     this.irisGrid = React.createRef();
     this.pluginRef = React.createRef();
@@ -272,6 +274,7 @@ export class IrisGridPanel extends PureComponent<
       modelQueue: [],
       pendingDataMap: new Map(),
       frozenColumns: undefined,
+      rowCount: undefined,
 
       // eslint-disable-next-line react/no-unused-state
       panelState, // Dehydrated panel state that can load this panel
@@ -654,6 +657,14 @@ export class IrisGridPanel extends PureComponent<
     glEventHub.emit(InputFilterEvent.TABLE_CHANGED, this, table);
   }
 
+  handleUpdated(event: Event): void {
+    log.debug('handleUpdated', event);
+    const { model, rowCount } = this.state;
+    if (model?.rowCount !== rowCount) {
+      this.setState({ rowCount: model?.rowCount });
+    }
+  }
+
   handlePartitionAppend(column: Column, value: unknown): void {
     const { glEventHub } = this.props;
     const { name } = column;
@@ -807,6 +818,7 @@ export class IrisGridPanel extends PureComponent<
       IrisGridModel.EVENT.TABLE_CHANGED,
       this.handleTableChanged
     );
+    model.addEventListener(IrisGridModel.EVENT.UPDATED, this.handleUpdated);
   }
 
   stopModelListening(model: IrisGridModel): void {
@@ -826,6 +838,7 @@ export class IrisGridPanel extends PureComponent<
       IrisGridModel.EVENT.TABLE_CHANGED,
       this.handleTableChanged
     );
+    model.removeEventListener(IrisGridModel.EVENT.UPDATED, this.handleUpdated);
   }
 
   getCoordinateForColumn(columnName: ColumnName): [number, number] | null {
@@ -1201,6 +1214,7 @@ export class IrisGridPanel extends PureComponent<
       pluginFetchColumns,
       pendingDataMap,
       frozenColumns,
+      rowCount,
     } = this.state;
     const errorMessage =
       error != null ? `Unable to open table. ${error}` : undefined;
@@ -1212,10 +1226,7 @@ export class IrisGridPanel extends PureComponent<
       this.getPluginContent(Plugin, model, user, workspace, pluginState);
     const { permissions } = user;
     const { canCopy, canDownloadCsv } = permissions;
-    const formattedRowCount = model?.displayString(
-      model?.rowCount ?? 0,
-      'long'
-    );
+    const formattedRowCount = model?.displayString(rowCount, 'long');
 
     return (
       <WidgetPanel
