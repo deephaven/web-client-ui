@@ -39,6 +39,10 @@ class DecimalFormatContextMenu {
         group: DecimalFormatContextMenu.presetGroup,
       },
       {
+        format: DecimalColumnFormatter.FORMAT_SCIENTIFIC_NOTATION,
+        group: DecimalFormatContextMenu.presetGroup,
+      },
+      {
         format: DecimalColumnFormatter.FORMAT_ROUND,
         group: DecimalFormatContextMenu.presetRoundGroup,
       },
