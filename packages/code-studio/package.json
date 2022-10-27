@@ -25,6 +25,7 @@
     "@deephaven/jsapi-shim": "file:../jsapi-shim",
     "@deephaven/jsapi-utils": "file:../jsapi-utils",
     "@deephaven/log": "file:../log",
+    "@deephaven/pouch-storage": "file:../pouch-storage",
     "@deephaven/react-hooks": "file:../react-hooks",
     "@deephaven/redux": "file:../redux",
     "@deephaven/storage": "file:../storage",

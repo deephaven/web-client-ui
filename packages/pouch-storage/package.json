@@ -1,16 +1,16 @@
 {
-  "name": "@deephaven/dashboard",
+  "name": "@deephaven/pouch-storage",
   "version": "0.20.0",
-  "description": "Deephaven Dashboard",
+  "description": "Deephaven Storage based on PouchDB",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
   "type": "module",
   "repository": {
     "type": "git",
     "url": "https://github.com/deephaven/web-client-ui.git",
-    "directory": "packages/dashboard"
+    "directory": "packages/pouch-storage"
   },
-  "source": "src/index.ts",
+  "source": "src/index.js",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "engines": {
@@ -20,37 +20,27 @@
     "build": "cross-env NODE_ENV=production run-p build:*",
     "build-dev": "cross-env NODE_ENV=development run-p build:*",
     "babel": "babel ./src --out-dir ./dist --extensions \".ts,.tsx,.js,.jsx\" --source-maps --root-mode upward",
-    "sass": "sass ./src:./dist",
     "build:babel": "npm run babel",
-    "build:sass": "npm run sass",
     "watch": "run-p watch:*",
     "watch:babel": "npm run babel -- -w --skip-initial-build",
-    "watch:sass": "npm run sass -- --watch --update",
     "prestart": "npm run build-dev",
     "start": "cross-env NODE_ENV=development npm run watch"
   },
   "dependencies": {
-    "@deephaven/components": "file:../components",
-    "@deephaven/golden-layout": "file:../golden-layout",
+    "@deephaven/console": "file:../console",
+    "@deephaven/filters": "file:../filters",
     "@deephaven/log": "file:../log",
-    "@deephaven/react-hooks": "file:../react-hooks",
-    "@deephaven/redux": "file:../redux",
+    "@deephaven/storage": "file:../storage",
     "@deephaven/utils": "file:../utils",
-    "deep-equal": "^2.0.5",
-    "lodash.ismatch": "^4.1.1",
     "lodash.throttle": "^4.1.1",
-    "prop-types": "^15.7.2",
-    "shortid": "^2.2.16"
+    "pouchdb-browser": "^7.3.0",
+    "pouchdb-find": "^7.3.0"
   },
   "peerDependencies": {
-    "react": "^17.0.0",
-    "react-dom": "^17.0.0",
-    "react-redux": "^7.2.4"
+    "react": "^17.0.0"
   },
   "devDependencies": {
-    "@deephaven/mocks": "file:../mocks",
-    "@deephaven/tsconfig": "file:../tsconfig",
-    "@types/lodash.ismatch": "^4.4.0"
+    "@deephaven/tsconfig": "file:../tsconfig"
   },
   "files": [
     "dist"
