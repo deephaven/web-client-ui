@@ -1,4 +1,4 @@
-import React, { ReactElement, useEffect, useState } from 'react';
+import React, { ReactElement } from 'react';
 import { GLPropTypes } from '@deephaven/dashboard';
 import type { ComponentConfig, Container } from '@deephaven/golden-layout';
 import { IrisGridModel } from '@deephaven/iris-grid';
