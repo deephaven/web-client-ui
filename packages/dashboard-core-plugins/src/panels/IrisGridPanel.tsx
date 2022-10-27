@@ -181,6 +181,7 @@ interface IrisGridPanelState {
   modelQueue: ModelQueue;
   pendingDataMap?: PendingDataMap<UIRow>;
   frozenColumns?: ColumnName[];
+  rowCount?: number;
 
   // eslint-disable-next-line react/no-unused-state
   panelState: PanelState | null; // Dehydrated panel state that can load this panel
@@ -228,6 +229,7 @@ export class IrisGridPanel extends PureComponent<
     this.handlePluginFilter = this.handlePluginFilter.bind(this);
     this.handlePluginFetchColumns = this.handlePluginFetchColumns.bind(this);
     this.handleClearAllFilters = this.handleClearAllFilters.bind(this);
+    this.handleSizeChanged = this.handleSizeChanged.bind(this);
 
     this.irisGrid = React.createRef();
     this.pluginRef = React.createRef();
@@ -272,6 +274,7 @@ export class IrisGridPanel extends PureComponent<
       modelQueue: [],
       pendingDataMap: new Map(),
       frozenColumns: undefined,
+      rowCount: undefined,
 
       // eslint-disable-next-line react/no-unused-state
       panelState, // Dehydrated panel state that can load this panel
@@ -542,7 +545,7 @@ export class IrisGridPanel extends PureComponent<
       }
     }
 
-    this.setState({ model, modelQueue });
+    this.setState({ model, modelQueue, rowCount: model?.rowCount });
     this.initModelQueue(model, modelQueue);
   }
 
@@ -652,6 +655,14 @@ export class IrisGridPanel extends PureComponent<
     const { glEventHub } = this.props;
     const { detail: table } = event as CustomEvent;
     glEventHub.emit(InputFilterEvent.TABLE_CHANGED, this, table);
+  }
+
+  handleSizeChanged(event: Event): void {
+    log.debug('handleSizeChanged', event);
+    const { model, rowCount } = this.state;
+    if (model?.rowCount !== rowCount) {
+      this.setState({ rowCount: model?.rowCount });
+    }
   }
 
   handlePartitionAppend(column: Column, value: unknown): void {
@@ -807,6 +818,10 @@ export class IrisGridPanel extends PureComponent<
       IrisGridModel.EVENT.TABLE_CHANGED,
       this.handleTableChanged
     );
+    model.addEventListener(
+      IrisGridModel.EVENT.SIZE_CHANGED,
+      this.handleSizeChanged
+    );
   }
 
   stopModelListening(model: IrisGridModel): void {
@@ -825,6 +840,10 @@ export class IrisGridPanel extends PureComponent<
     model.removeEventListener(
       IrisGridModel.EVENT.TABLE_CHANGED,
       this.handleTableChanged
+    );
+    model.removeEventListener(
+      IrisGridModel.EVENT.SIZE_CHANGED,
+      this.handleSizeChanged
     );
   }
 
@@ -1201,6 +1220,7 @@ export class IrisGridPanel extends PureComponent<
       pluginFetchColumns,
       pendingDataMap,
       frozenColumns,
+      rowCount,
     } = this.state;
     const errorMessage =
       error != null ? `Unable to open table. ${error}` : undefined;
@@ -1212,10 +1232,7 @@ export class IrisGridPanel extends PureComponent<
       this.getPluginContent(Plugin, model, user, workspace, pluginState);
     const { permissions } = user;
     const { canCopy, canDownloadCsv } = permissions;
-    const formattedRowCount = model?.displayString(
-      model?.rowCount ?? 0,
-      'long'
-    );
+    const formattedRowCount = model?.displayString(rowCount ?? 0, 'long');
 
     return (
       <WidgetPanel

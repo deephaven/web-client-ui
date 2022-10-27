@@ -192,6 +192,7 @@ class IrisGridTableModelTemplate<
     this.handleCustomColumnsChanged = this.handleCustomColumnsChanged.bind(
       this
     );
+    this.handleSizeChanged = this.handleSizeChanged.bind(this);
 
     this.irisFormatter = formatter;
     this.inputTable = inputTable;
@@ -246,6 +247,10 @@ class IrisGridTableModelTemplate<
       dh.Table.EVENT_CUSTOMCOLUMNSCHANGED,
       this.handleCustomColumnsChanged
     );
+    this.table.addEventListener(
+      dh.Table.EVENT_SIZECHANGED,
+      this.handleSizeChanged
+    );
 
     if (this.totalsTable != null) {
       this.addTotalsListeners(this.totalsTable);
@@ -276,6 +281,10 @@ class IrisGridTableModelTemplate<
     this.table.removeEventListener(
       dh.Table.EVENT_CUSTOMCOLUMNSCHANGED,
       this.handleCustomColumnsChanged
+    );
+    this.table.removeEventListener(
+      dh.Table.EVENT_SIZECHANGED,
+      this.handleSizeChanged
     );
 
     if (this.totalsTable != null) {
@@ -335,6 +344,12 @@ class IrisGridTableModelTemplate<
       new EventShimCustomEvent(IrisGridModel.EVENT.COLUMNS_CHANGED, {
         detail: this.columns,
       })
+    );
+  }
+
+  handleSizeChanged(): void {
+    this.dispatchEvent(
+      new EventShimCustomEvent(IrisGridModel.EVENT.SIZE_CHANGED)
     );
   }
 
