@@ -13,7 +13,8 @@ const DATE_PATTERN = '[12][0-9]{3}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])';
 const TIME_PATTERN =
   '([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]\\.[0-9]{3}\u200B[0-9]{3}\u200B[0-9]{3}';
 const FULL_DATE_PATTERN = `${DATE_PATTERN} ${TIME_PATTERN}`;
-const DEFAULT_VALUE_STRING = '2022-01-01 00:00:00.000000000';
+const DATE_VALUE_STRING = '2022-01-01';
+const DEFAULT_VALUE_STRING = `${DATE_VALUE_STRING} 00:00:00.000000000`;
 const FULL_DATE_FORMAT = 'YYYY-MM-DD HH:MM:SS.SSSSSSSSS';
 
 type DateTimeInputProps = {
@@ -24,6 +25,15 @@ type DateTimeInputProps = {
   onBlur?(): void;
   'data-testid'?: string;
 };
+
+export function fixIncompleteValue(value: string): string {
+  if (value != null && value.length >= DATE_VALUE_STRING.length) {
+    return `${value.substring(0, DATE_VALUE_STRING.length)}${value
+      .substring(DATE_VALUE_STRING.length)
+      .replace(/\u2007/g, '0')}${DEFAULT_VALUE_STRING.substring(value.length)}`;
+  }
+  return value;
+}
 
 export function addSeparators(value: string): string {
   const dateTimeMillis = value.substring(0, 23);
@@ -55,10 +65,21 @@ const DateTimeInput = React.forwardRef<HTMLInputElement, DateTimeInputProps>(
       (newValue: string): void => {
         log.debug('handleChange', newValue);
         setValue(newValue);
-        onChange(removeSeparators(newValue));
+        onChange(fixIncompleteValue(removeSeparators(newValue)));
       },
       [onChange]
     );
+
+    const handleBlur = useCallback((): void => {
+      const prevValue = removeSeparators(value);
+      const fixedValue = fixIncompleteValue(prevValue);
+      // Update the value displayed in the input
+      // onChange with the fixed value already triggered in handleChange
+      if (fixedValue !== prevValue) {
+        setValue(addSeparators(fixedValue));
+      }
+      onBlur();
+    }, [value, onBlur]);
 
     return (
       <div className="d-flex flex-row align-items-center">
@@ -74,7 +95,7 @@ const DateTimeInput = React.forwardRef<HTMLInputElement, DateTimeInputProps>(
           selection={selection}
           value={value}
           onFocus={onFocus}
-          onBlur={onBlur}
+          onBlur={handleBlur}
           data-testid={dataTestId}
         />
       </div>
