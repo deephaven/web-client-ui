@@ -76,9 +76,9 @@ import {
   getColumnSelectionValidatorForDashboard,
 } from '../redux';
 import WidgetPanel from './WidgetPanel';
-import WidgetPanelTooltip from './WidgetPanelTooltip';
 import './IrisGridPanel.scss';
 import { Link, LinkColumn } from '../linker/LinkerUtils';
+import IrisGridPanelTooltip from './IrisGridPanelTooltip';
 
 const log = Log.module('IrisGridPanel');
 
@@ -1212,10 +1212,6 @@ export class IrisGridPanel extends PureComponent<
       this.getPluginContent(Plugin, model, user, workspace, pluginState);
     const { permissions } = user;
     const { canCopy, canDownloadCsv } = permissions;
-    const formattedRowCount = model?.displayString(
-      model?.rowCount ?? 0,
-      'long'
-    );
 
     return (
       <WidgetPanel
@@ -1236,19 +1232,12 @@ export class IrisGridPanel extends PureComponent<
         description={description}
         componentPanel={this}
         renderTabTooltip={() => (
-          <WidgetPanelTooltip
-            widgetType="Table"
+          <IrisGridPanelTooltip
+            model={model}
             widgetName={name}
             glContainer={glContainer}
             description={description}
-          >
-            <div className="column-statistics-grid">
-              <span className="column-statistic-operation">Number of Rows</span>
-              <span className="column-statistic-value">
-                {formattedRowCount}
-              </span>
-            </div>
-          </WidgetPanelTooltip>
+          />
         )}
       >
         {isModelReady && model && (
