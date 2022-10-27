@@ -564,12 +564,19 @@ class FigureChartModel extends ChartModel {
     for (let i = 0; i < this.figure.charts.length; i += 1) {
       const chart = this.figure.charts[i];
       const axisRangeParser = this.getAxisRangeParser(chart, this.formatter);
+      const bounds = ChartUtils.getChartBounds(
+        this.figure,
+        chart,
+        plotWidth,
+        plotHeight
+      );
       ChartUtils.updateLayoutAxes(
         this.layout,
         // TODO: Need to get all axes figured out in here
         chart.axes,
         plotWidth,
         plotHeight,
+        bounds,
         axisRangeParser,
         this.theme
       );

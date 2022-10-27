@@ -391,6 +391,8 @@ export interface AxisPosition {
 export interface Chart extends Evented {
   readonly EVENT_SERIES_ADDED: string;
 
+  readonly row: number;
+  readonly column: number;
   readonly colspan: number;
   readonly rowspan: number;
   readonly chartType: ChartType;

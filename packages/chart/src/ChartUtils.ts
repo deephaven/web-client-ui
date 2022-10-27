@@ -93,6 +93,13 @@ interface RangebreakAxisFormat extends PlotlyAxis {
   rangebreaks: Rangebreaks[];
 }
 
+export type ChartBounds = {
+  left: number;
+  right: number;
+  top: number;
+  bottom: number;
+};
+
 export type AxisTypeMap = Map<AxisType, Axis[]>;
 type AxisPositionMap = Map<AxisPosition, Axis[]>;
 
@@ -971,6 +978,53 @@ class ChartUtils {
     return ranges;
   }
 
+  static getChartBounds(
+    figure: Figure,
+    chart: Chart,
+    plotWidth = 0,
+    plotHeight = 0
+  ): ChartBounds {
+    const { cols, rows } = figure;
+    // TODO: Just use the col/row from the chart
+    // const { colspan, column, row, rowspan } = chart;
+    const chartIndex = figure.charts.indexOf(chart);
+    const column = chartIndex % cols;
+    const row = Math.floor(chartIndex / cols);
+    const { colspan, rowspan } = chart;
+
+    const columnSize = 1 / cols;
+    const rowSize = 1 / rows;
+
+    const bounds: ChartBounds = {
+      left: column * columnSize,
+      bottom: row * rowSize,
+      top: (row + rowspan) * rowSize,
+      right: (column + colspan) * columnSize,
+    };
+
+    // Adjust the bounds based on where the legend is
+    // For now, always assume the legend is shown on the right
+    const axisPositionMap = ChartUtils.groupArray(chart.axes, 'position');
+    const rightAxes = axisPositionMap.get(dh.plot.AxisPosition.RIGHT) || [];
+    if (rightAxes.length > 0) {
+      if (plotWidth > 0) {
+        bounds.right =
+          1 -
+          Math.max(
+            0,
+            Math.min(
+              ChartUtils.LEGEND_WIDTH_PX / plotWidth,
+              ChartUtils.MAX_LEGEND_SIZE
+            )
+          );
+      } else {
+        bounds.right = 1 - ChartUtils.DEFAULT_AXIS_SIZE;
+      }
+    }
+
+    return bounds;
+  }
+
   /**
    * Updates the axes positions and sizes in the layout object provided.
    * If the axis did not exist in the layout previously, it is created and added.
@@ -980,6 +1034,7 @@ class ChartUtils {
    * @param axes The axes to update the layout with
    * @param plotWidth The width of the plot to calculate the axis sizes for
    * @param plotHeight The height of the plot to calculate the axis sizes for
+   * @param bounds The bounds for this set of axes
    * @param getRangeParser A function to retrieve the range parser for a given axis
    */
   static updateLayoutAxes(
@@ -987,6 +1042,7 @@ class ChartUtils {
     axes: Axis[],
     plotWidth = 0,
     plotHeight = 0,
+    bounds: ChartBounds = { left: 0, top: 0, right: 1, bottom: 1 },
     getRangeParser: ((axis: Axis) => (range: Range) => unknown[]) | null = null,
     theme = ChartTheme
   ): void {
@@ -1011,33 +1067,8 @@ class ChartUtils {
           )
         : ChartUtils.DEFAULT_AXIS_SIZE;
 
-    // Adjust the bounds based on where the legend is
-    // For now, always assume the legend is shown on the right
-    const bounds = {
-      left: 0,
-      bottom: 0,
-      top: 1,
-      right: 1,
-    };
-    const axisPositionMap = ChartUtils.groupArray(axes, 'position');
-    const rightAxes = axisPositionMap.get(dh.plot.AxisPosition.RIGHT) || [];
-    if (rightAxes.length > 0) {
-      if (plotWidth > 0) {
-        bounds.right =
-          1 -
-          Math.max(
-            0,
-            Math.min(
-              ChartUtils.LEGEND_WIDTH_PX / plotWidth,
-              ChartUtils.MAX_LEGEND_SIZE
-            )
-          );
-      } else {
-        bounds.right = 1 - ChartUtils.DEFAULT_AXIS_SIZE;
-      }
-    }
-
     const layout = layoutParam;
+    const axisPositionMap = ChartUtils.groupArray(axes, 'position');
     const axisTypeMap = ChartUtils.groupArray(axes, 'type');
     const axisTypes = [...axisTypeMap.keys()];
     for (let j = 0; j < axisTypes.length; j += 1) {
