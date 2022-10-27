@@ -566,6 +566,7 @@ class FigureChartModel extends ChartModel {
       const axisRangeParser = this.getAxisRangeParser(chart, this.formatter);
       ChartUtils.updateLayoutAxes(
         this.layout,
+        // TODO: Need to get all axes figured out in here
         chart.axes,
         plotWidth,
         plotHeight,
