@@ -54,6 +54,12 @@ export interface SeriesData {
   xHigh?: number;
 }
 
+export type RangeParser = (range: Range) => unknown[];
+
+export type AxisRangeParser = (axis: Axis) => RangeParser;
+
+export type ChartAxisRangeParser = (chart: Chart) => AxisRangeParser;
+
 type LayoutAxisKey =
   | 'xaxis'
   | 'xaxis2'
@@ -979,6 +985,49 @@ class ChartUtils {
     return ranges;
   }
 
+  /**
+   * Update the layout with all the axes information for the provided figure
+   * @param figure Figure to update the axes for
+   * @param layoutParam Layout object to update in place
+   * @param chartAxisRangeParser Function to retrieve the axis range parser
+   * @param plotWidth Width of the plot in pixels
+   * @param plotHeight Height of the plot in pixels
+   * @param theme Theme used for displaying the plot
+   */
+  static updateFigureAxes(
+    layoutParam: Partial<Layout>,
+    figure: Figure,
+    chartAxisRangeParser?: ChartAxisRangeParser,
+    plotWidth = 0,
+    plotHeight = 0,
+    theme = ChartTheme
+  ): void {
+    const layout = layoutParam;
+    const figureAxes = ChartUtils.getAllAxes(figure);
+    for (let i = 0; i < figure.charts.length; i += 1) {
+      const chart = figure.charts[i];
+      const axisRangeParser = chartAxisRangeParser?.(chart);
+      const bounds = ChartUtils.getChartBounds(
+        figure,
+        chart,
+        plotWidth,
+        plotHeight
+      );
+      ChartUtils.updateLayoutAxes(
+        layout,
+        chart.axes,
+        figureAxes,
+        plotWidth,
+        plotHeight,
+        bounds,
+        axisRangeParser,
+        theme
+      );
+    }
+
+    ChartUtils.removeStaleAxes(layout, figureAxes);
+  }
+
   static getChartBounds(
     figure: Figure,
     chart: Chart,
@@ -1042,7 +1091,7 @@ class ChartUtils {
    * @param plotWidth The width of the plot to calculate the axis sizes for
    * @param plotHeight The height of the plot to calculate the axis sizes for
    * @param bounds The bounds for this set of axes
-   * @param getRangeParser A function to retrieve the range parser for a given axis
+   * @param axisRangeParser A function to retrieve the range parser for a given axis
    */
   static updateLayoutAxes(
     layoutParam: Partial<Layout>,
@@ -1051,7 +1100,7 @@ class ChartUtils {
     plotWidth = 0,
     plotHeight = 0,
     bounds: ChartBounds = { left: 0, top: 0, right: 1, bottom: 1 },
-    getRangeParser: ((axis: Axis) => (range: Range) => unknown[]) | null = null,
+    axisRangeParser?: AxisRangeParser,
     theme = ChartTheme
   ): void {
     const xAxisSize =
@@ -1124,11 +1173,11 @@ class ChartUtils {
 
             const { range, autorange } = layoutAxis;
             if (
-              getRangeParser != null &&
+              axisRangeParser != null &&
               range !== undefined &&
               (autorange === undefined || autorange === false)
             ) {
-              const rangeParser = getRangeParser(axis);
+              const rangeParser = axisRangeParser(axis);
               const [rangeStart, rangeEnd] = rangeParser(range as Range);
 
               log.debug(
@@ -1143,6 +1192,40 @@ class ChartUtils {
               axis.range(plotSize);
             }
           }
+        }
+      }
+    }
+  }
+
+  /**
+   * Remove any axes from the layout param that no longer belong to any series
+   * @param layoutParam Layout object to remove stale axes from
+   * @param axes All axes in the figure
+   */
+  static removeStaleAxes(layoutParam: Partial<Layout>, axes: Axis[]): void {
+    const layout = layoutParam;
+    const figureAxisTypeMap = ChartUtils.groupArray(axes, 'type');
+    const figureAxisTypes = [...figureAxisTypeMap.keys()];
+    for (let i = 0; i < figureAxisTypes.length; i += 1) {
+      const axisType = figureAxisTypes[i];
+      const typeAxes = figureAxisTypeMap.get(axisType);
+      assertNotNull(typeAxes);
+      let axisIndex = typeAxes.length;
+      // Delete any axes that may no longer exist
+      const axisProperty = ChartUtils.getAxisPropertyName(axisType);
+      if (axisProperty != null) {
+        let axisLayoutProperty = ChartUtils.getAxisLayoutProperty(
+          axisProperty,
+          axisIndex
+        );
+        while (layout[axisLayoutProperty] != null) {
+          delete layout[axisLayoutProperty];
+
+          axisIndex += 1;
+          axisLayoutProperty = ChartUtils.getAxisLayoutProperty(
+            axisProperty,
+            axisIndex
+          );
         }
       }
     }

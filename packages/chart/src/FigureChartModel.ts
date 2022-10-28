@@ -560,42 +560,14 @@ class FigureChartModel extends ChartModel {
   updateAxisPositions(): void {
     const plotWidth = this.getPlotWidth();
     const plotHeight = this.getPlotHeight();
-    const figureAxes = ChartUtils.getAllAxes(this.figure);
-    for (let i = 0; i < this.figure.charts.length; i += 1) {
-      const chart = this.figure.charts[i];
-      const axisRangeParser = this.getAxisRangeParser(chart, this.formatter);
-      const bounds = ChartUtils.getChartBounds(
-        this.figure,
-        chart,
-        plotWidth,
-        plotHeight
-      );
-      ChartUtils.updateLayoutAxes(
-        this.layout,
-        chart.axes,
-        figureAxes,
-        plotWidth,
-        plotHeight,
-        bounds,
-        axisRangeParser,
-        this.theme
-      );
-    }
-
-    // Delete any axes that may no longer exist
-    // let axisLayoutProperty = ChartUtils.getAxisLayoutProperty(
-    //   axisProperty,
-    //   axisIndex
-    // );
-    // while (layout[axisLayoutProperty] != null) {
-    //   delete layout[axisLayoutProperty];
-
-    //   axisIndex += 1;
-    //   axisLayoutProperty = ChartUtils.getAxisLayoutProperty(
-    //     axisProperty,
-    //     axisIndex
-    //   );
-    // }
+    ChartUtils.updateFigureAxes(
+      this.layout,
+      this.figure,
+      chart => this.getAxisRangeParser(chart, this.formatter),
+      plotWidth,
+      plotHeight,
+      this.theme
+    );
   }
 
   /**

@@ -226,7 +226,9 @@ describe('updating layout axes', () => {
   it('removes stale axes', () => {
     const layout = {};
     const axes = makeTwinAxes();
-    ChartUtils.updateLayoutAxes(layout, axes, axes);
+    const chart = ChartTestUtils.makeChart({ axes });
+    const figure = ChartTestUtils.makeFigure({ charts: [chart] });
+    ChartUtils.updateFigureAxes(layout, figure);
     expect(layout).toEqual(
       expect.objectContaining({
         xaxis: expect.objectContaining({}),
@@ -236,7 +238,7 @@ describe('updating layout axes', () => {
     );
 
     axes.pop();
-    ChartUtils.updateLayoutAxes(layout, axes, axes);
+    ChartUtils.updateFigureAxes(layout, figure);
     expect(layout).toEqual(
       expect.objectContaining({
         xaxis: expect.objectContaining({}),
