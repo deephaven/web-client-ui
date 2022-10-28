@@ -1606,12 +1606,16 @@ class Chart {
     axes = [],
     colspan = 1,
     rowspan = 1,
+    column = 0,
+    row = 0,
   }) {
     this.title = title;
     this.series = series;
     this.axes = axes;
     this.rowspan = rowspan;
     this.colspan = colspan;
+    this.column = column;
+    this.row = row;
   }
 }
 

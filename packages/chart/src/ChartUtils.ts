@@ -1035,12 +1035,7 @@ class ChartUtils {
     plotHeight = 0
   ): ChartBounds {
     const { cols, rows } = figure;
-    // TODO: Just use the col/row from the chart
-    // const { colspan, column, row, rowspan } = chart;
-    const chartIndex = figure.charts.indexOf(chart);
-    const column = chartIndex % cols;
-    const row = Math.floor(chartIndex / cols);
-    const { colspan, rowspan } = chart;
+    const { column, colspan, row, rowspan } = chart;
 
     const columnSize = 1 / cols;
     const rowSize = 1 / rows;
