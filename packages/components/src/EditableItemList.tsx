@@ -50,6 +50,9 @@ const EditableItemList = (props: EditableItemListProps): React.ReactElement => {
   }, [items, selectedIndex, onDelete]);
 
   const handleAdd = useCallback(() => {
+    if (value === '') {
+      return;
+    }
     const validationError = validate(value);
     if (validationError == null) {
       onAdd(value);
@@ -63,7 +66,7 @@ const EditableItemList = (props: EditableItemListProps): React.ReactElement => {
     (event: ChangeEvent<HTMLInputElement>) => {
       const { value: inputValue } = event.target;
       setValue(inputValue);
-      setInputError(validate(inputValue));
+      setInputError(inputValue === '' ? null : validate(inputValue));
     },
     [validate]
   );
@@ -127,9 +130,10 @@ const EditableItemList = (props: EditableItemListProps): React.ReactElement => {
           <Button
             kind="ghost"
             onClick={handleAdd}
-            disabled={inputError != null || value == null || value === ''}
+            disabled={inputError != null || value === ''}
             icon={vsAdd}
             tooltip="Add new item"
+            data-testid="add-item-button"
           />
           <Button
             kind="ghost"
@@ -137,6 +141,7 @@ const EditableItemList = (props: EditableItemListProps): React.ReactElement => {
             disabled={selectedIndex === undefined}
             icon={vsTrash}
             tooltip="Delete selected item"
+            data-testid="delete-item-button"
           />
         </div>
       </div>
