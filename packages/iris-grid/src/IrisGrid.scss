@@ -173,11 +173,11 @@ $cell-invalid-box-shadow: 0 0 0 2px $danger, 0 0 0 5px rgba($danger, 0.25);
       background: $primary;
       transform-origin: 0% 50%;
       opacity: 0;
-      animation: 1.5s indeterminateAnimation infinite linear;
     }
 
     &.show::after {
       opacity: 1;
+      animation: 1.5s indeterminateAnimation infinite linear;
     }
   }
 
