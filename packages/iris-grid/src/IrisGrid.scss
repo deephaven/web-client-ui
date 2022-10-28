@@ -162,10 +162,10 @@ $cell-invalid-box-shadow: 0 0 0 2px $danger, 0 0 0 5px rgba($danger, 0.25);
     z-index: 2;
     flex-grow: 1;
 
-    &:after {
+    &::after {
       content: '';
       position: absolute;
-      bottom: 0px;
+      bottom: 0;
       left: 0;
       width: 100%;
       height: 2px;
@@ -176,7 +176,7 @@ $cell-invalid-box-shadow: 0 0 0 2px $danger, 0 0 0 5px rgba($danger, 0.25);
       animation: 1.5s indeterminateAnimation infinite linear;
     }
 
-    &.show:after {
+    &.show::after {
       opacity: 1;
     }
   }
@@ -211,14 +211,14 @@ $cell-invalid-box-shadow: 0 0 0 2px $danger, 0 0 0 5px rgba($danger, 0.25);
       color: $foreground;
       background: $danger;
     }
+    &:focus {
+      outline: 1px solid $primary;
+    }
     &:active {
       background: $danger-hover;
       &:focus {
         outline-color: $danger;
       }
-    }
-    &:focus {
-      outline: 1px solid $primary;
     }
   }
 
