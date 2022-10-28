@@ -560,7 +560,7 @@ class FigureChartModel extends ChartModel {
   updateAxisPositions(): void {
     const plotWidth = this.getPlotWidth();
     const plotHeight = this.getPlotHeight();
-
+    const figureAxes = ChartUtils.getAllAxes(this.figure);
     for (let i = 0; i < this.figure.charts.length; i += 1) {
       const chart = this.figure.charts[i];
       const axisRangeParser = this.getAxisRangeParser(chart, this.formatter);
@@ -572,8 +572,8 @@ class FigureChartModel extends ChartModel {
       );
       ChartUtils.updateLayoutAxes(
         this.layout,
-        // TODO: Need to get all axes figured out in here
         chart.axes,
+        figureAxes,
         plotWidth,
         plotHeight,
         bounds,
@@ -581,6 +581,21 @@ class FigureChartModel extends ChartModel {
         this.theme
       );
     }
+
+    // Delete any axes that may no longer exist
+    // let axisLayoutProperty = ChartUtils.getAxisLayoutProperty(
+    //   axisProperty,
+    //   axisIndex
+    // );
+    // while (layout[axisLayoutProperty] != null) {
+    //   delete layout[axisLayoutProperty];
+
+    //   axisIndex += 1;
+    //   axisLayoutProperty = ChartUtils.getAxisLayoutProperty(
+    //     axisProperty,
+    //     axisIndex
+    //   );
+    // }
   }
 
   /**

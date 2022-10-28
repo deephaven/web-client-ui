@@ -1461,6 +1461,8 @@ class Figure extends DeephavenObject {
     initialUpdateSize = 100,
     updateInterval = UPDATE_INTERVAL,
     updateSize = 10,
+    rows = 1,
+    cols = 1,
   } = {}) {
     super();
 
@@ -1473,6 +1475,8 @@ class Figure extends DeephavenObject {
     this.timer = null;
     this.listenerCount = 0;
     this.rowIndex = 0;
+    this.rows = rows;
+    this.cols = cols;
   }
 
   addEventListener(...args) {
@@ -1596,10 +1600,18 @@ class SeriesDataSource {
 }
 
 class Chart {
-  constructor({ title = '', series = [], axes = [] }) {
+  constructor({
+    title = '',
+    series = [],
+    axes = [],
+    colspan = 1,
+    rowspan = 1,
+  }) {
     this.title = title;
     this.series = series;
     this.axes = axes;
+    this.rowspan = rowspan;
+    this.colspan = colspan;
   }
 }
 

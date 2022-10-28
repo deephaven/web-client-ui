@@ -772,11 +772,12 @@ class ChartUtils {
     const axisFormats = new Map();
     const nullFormat = { tickformat: null, ticksuffix: null };
 
+    const allAxes = ChartUtils.getAllAxes(figure);
+    const axisTypeMap = ChartUtils.groupArray(allAxes, 'type');
     const { charts } = figure;
 
     for (let i = 0; i < charts.length; i += 1) {
       const chart = charts[i];
-      const axisTypeMap = ChartUtils.groupArray(chart.axes, 'type');
 
       for (let j = 0; j < chart.series.length; j += 1) {
         const series = chart.series[j];
@@ -994,22 +995,26 @@ class ChartUtils {
 
     const columnSize = 1 / cols;
     const rowSize = 1 / rows;
+    const xMarginSize = ChartUtils.AXIS_SIZE_PX / plotWidth;
+    const yMarginSize = ChartUtils.AXIS_SIZE_PX / plotHeight;
 
     const bounds: ChartBounds = {
-      left: column * columnSize,
-      bottom: row * rowSize,
-      top: (row + rowspan) * rowSize,
-      right: (column + colspan) * columnSize,
+      left: column * columnSize + (column > 0 ? xMarginSize / 2 : 0),
+      bottom: row * rowSize + (row > 0 ? yMarginSize / 2 : 0),
+      top: (row + rowspan) * rowSize - (row < rows - 1 ? yMarginSize / 2 : 0),
+      right:
+        (column + colspan) * columnSize -
+        (column < cols - 1 ? xMarginSize / 2 : 0),
     };
 
     // Adjust the bounds based on where the legend is
     // For now, always assume the legend is shown on the right
     const axisPositionMap = ChartUtils.groupArray(chart.axes, 'position');
-    const rightAxes = axisPositionMap.get(dh.plot.AxisPosition.RIGHT) || [];
+    const rightAxes = axisPositionMap.get(dh.plot.AxisPosition.RIGHT) ?? [];
     if (rightAxes.length > 0) {
       if (plotWidth > 0) {
-        bounds.right =
-          1 -
+        bounds.right -=
+          (bounds.right - bounds.left) *
           Math.max(
             0,
             Math.min(
@@ -1018,7 +1023,8 @@ class ChartUtils {
             )
           );
       } else {
-        bounds.right = 1 - ChartUtils.DEFAULT_AXIS_SIZE;
+        bounds.right -=
+          (bounds.right - bounds.left) * ChartUtils.DEFAULT_AXIS_SIZE;
       }
     }
 
@@ -1031,7 +1037,8 @@ class ChartUtils {
    * Any axis that no longer exists in axes is removed.
    * With Downsampling enabled, will also update the range on the axis itself as appropriate
    * @param layoutParam The layout object to update
-   * @param axes The axes to update the layout with
+   * @param chartAxes The chart axes to update the layout with
+   * @param figureAxes All figure axes to update the layout with
    * @param plotWidth The width of the plot to calculate the axis sizes for
    * @param plotHeight The height of the plot to calculate the axis sizes for
    * @param bounds The bounds for this set of axes
@@ -1039,7 +1046,8 @@ class ChartUtils {
    */
   static updateLayoutAxes(
     layoutParam: Partial<Layout>,
-    axes: Axis[],
+    chartAxes: Axis[],
+    figureAxes: Axis[],
     plotWidth = 0,
     plotHeight = 0,
     bounds: ChartBounds = { left: 0, top: 0, right: 1, bottom: 1 },
@@ -1068,25 +1076,32 @@ class ChartUtils {
         : ChartUtils.DEFAULT_AXIS_SIZE;
 
     const layout = layoutParam;
-    const axisPositionMap = ChartUtils.groupArray(axes, 'position');
-    const axisTypeMap = ChartUtils.groupArray(axes, 'type');
+    const axisPositionMap = ChartUtils.groupArray(chartAxes, 'position');
+    const axisTypeMap = ChartUtils.groupArray(chartAxes, 'type');
     const axisTypes = [...axisTypeMap.keys()];
+    const figureAxisTypeMap = ChartUtils.groupArray(figureAxes, 'type');
     for (let j = 0; j < axisTypes.length; j += 1) {
       const axisType = axisTypes[j];
       const axisProperty = ChartUtils.getAxisPropertyName(axisType);
       if (axisProperty != null) {
         const typeAxes = axisTypeMap.get(axisType);
+        const figureTypeAxes = figureAxisTypeMap.get(axisType);
         const isYAxis = axisType === dh.plot.AxisType.Y;
         const plotSize = isYAxis ? plotHeight : plotWidth;
 
         assertNotNull(typeAxes);
-        let axisIndex = 0;
-
-        for (axisIndex = 0; axisIndex < typeAxes.length; axisIndex += 1) {
-          const axis = typeAxes[axisIndex];
+        assertNotNull(figureTypeAxes);
+        for (
+          let chartAxisIndex = 0;
+          chartAxisIndex < typeAxes.length;
+          chartAxisIndex += 1
+        ) {
+          // for (axisIndex = 0; axisIndex < typeAxes.length; axisIndex += 1) {
+          const axis = typeAxes[chartAxisIndex];
+          const figureAxisIndex = figureTypeAxes.indexOf(axis);
           const axisLayoutProperty = ChartUtils.getAxisLayoutProperty(
             axisProperty,
-            axisIndex
+            figureAxisIndex
           );
           if (layout[axisLayoutProperty] == null) {
             layout[axisLayoutProperty] = ChartUtils.makeLayoutAxis(
@@ -1100,11 +1115,10 @@ class ChartUtils {
             ChartUtils.updateLayoutAxis(
               layoutAxis,
               axis,
-              axisIndex,
+              chartAxisIndex,
               axisPositionMap,
               xAxisSize,
               yAxisSize,
-              // TODO: Should be figuring out the bounds just for this subplot...
               bounds
             );
 
@@ -1129,20 +1143,6 @@ class ChartUtils {
               axis.range(plotSize);
             }
           }
-        }
-
-        let axisLayoutProperty = ChartUtils.getAxisLayoutProperty(
-          axisProperty,
-          axisIndex
-        );
-        while (layout[axisLayoutProperty] != null) {
-          delete layout[axisLayoutProperty];
-
-          axisIndex += 1;
-          axisLayoutProperty = ChartUtils.getAxisLayoutProperty(
-            axisProperty,
-            axisIndex
-          );
         }
       }
     }
