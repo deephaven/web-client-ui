@@ -1037,6 +1037,8 @@ class ChartUtils {
     const { cols, rows } = figure;
     const { column, colspan, row, rowspan } = chart;
 
+    const endColumn = column + colspan;
+    const endRow = row + rowspan;
     const columnSize = 1 / cols;
     const rowSize = 1 / rows;
     const xMarginSize = ChartUtils.AXIS_SIZE_PX / plotWidth;
@@ -1045,10 +1047,8 @@ class ChartUtils {
     const bounds: ChartBounds = {
       left: column * columnSize + (column > 0 ? xMarginSize / 2 : 0),
       bottom: row * rowSize + (row > 0 ? yMarginSize / 2 : 0),
-      top: (row + rowspan) * rowSize - (row < rows - 1 ? yMarginSize / 2 : 0),
-      right:
-        (column + colspan) * columnSize -
-        (column < cols - 1 ? xMarginSize / 2 : 0),
+      top: endRow * rowSize - (endRow < rows ? yMarginSize / 2 : 0),
+      right: endColumn * columnSize - (endColumn < cols ? xMarginSize / 2 : 0),
     };
 
     // Adjust the bounds based on where the legend is
