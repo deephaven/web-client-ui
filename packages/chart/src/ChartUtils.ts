@@ -1140,7 +1140,6 @@ class ChartUtils {
           chartAxisIndex < typeAxes.length;
           chartAxisIndex += 1
         ) {
-          // for (axisIndex = 0; axisIndex < typeAxes.length; axisIndex += 1) {
           const axis = typeAxes[chartAxisIndex];
           const figureAxisIndex = figureTypeAxes.indexOf(axis);
           const axisLayoutProperty = ChartUtils.getAxisLayoutProperty(
