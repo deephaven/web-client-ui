@@ -1,6 +1,6 @@
 //Import our custom variables and bootstrap
 @import './custom.scss';
-@import '../../../node_modules/bootstrap/scss/bootstrap';
+@import 'bootstrap/scss/bootstrap';
 
 //Various non-variable css overides
 //Overide default size from 16px to 14px. We need density.

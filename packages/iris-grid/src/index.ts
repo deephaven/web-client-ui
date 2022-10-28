@@ -19,3 +19,5 @@ export { default as IrisGridUtils } from './IrisGridUtils';
 export * from './IrisGridUtils';
 export { default } from './IrisGrid';
 export * from './IrisGrid';
+export { default as TableViewportUpdater } from './TableViewportUpdater';
+export { default as TreeTableViewportUpdater } from './TreeTableViewportUpdater';

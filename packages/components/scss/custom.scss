@@ -1,14 +1,15 @@
-// Use this import within OSS for anything that isn't bundled by Webpack
+// Use this import for anything that can resolve 'bootstrap/scss' to '<root>/node_modules/bootstrap/scss'
+// Vite/rollup can resolve this properly. Webpack should use the custom_webpack.scss version
 
 //Make bootstrap functions available for use in overrides
-@import '../../../node_modules/bootstrap/scss/_functions.scss';
+@import 'bootstrap/scss/_functions.scss';
 @import './bootstrap_overrides.scss';
 
 //_variable imports come after bootstrap default overrides,
 // makes all other variables and mixins from bootstrap available
 /// with just importing customer.scss
-@import '../../../node_modules/bootstrap/scss/_variables.scss';
-@import '../../../node_modules/bootstrap/scss/_mixins.scss';
+@import 'bootstrap/scss/_variables.scss';
+@import 'bootstrap/scss/_mixins.scss';
 
 //New variables come after imports
 @import './new_variables.scss';
