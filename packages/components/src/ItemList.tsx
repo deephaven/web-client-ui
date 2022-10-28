@@ -181,18 +181,11 @@ export class ItemList<T> extends PureComponent<
     };
   }
 
-  componentDidMount(): void {
-    const { isStickyBottom } = this.props;
-    if (isStickyBottom && !this.isListAtBottom()) {
-      this.scrollToBottom();
-    }
-  }
-
   componentDidUpdate(
     prevProps: ItemListProps<T>,
     prevState: ItemListState
   ): void {
-    const { selectedRanges: propSelectedRanges } = this.props;
+    const { selectedRanges: propSelectedRanges, itemCount } = this.props;
     const {
       focusIndex,
       isStuckToBottom,
@@ -200,7 +193,7 @@ export class ItemList<T> extends PureComponent<
       height,
       selectedRanges,
     } = this.state;
-    if (isStuckToBottom && !this.isListAtBottom()) {
+    if (isStuckToBottom && !this.isListAtBottom() && itemCount > 0) {
       this.scrollToBottom();
     }
 
@@ -322,6 +315,10 @@ export class ItemList<T> extends PureComponent<
 
   focus(): void {
     this.listContainer.current?.focus();
+  }
+
+  update(): void {
+    this.list.current?.forceUpdate();
   }
 
   getElement(itemIndex: number): Element | null {
@@ -755,7 +752,7 @@ export class ItemList<T> extends PureComponent<
       rowHeight,
       'data-testid': dataTestId,
     } = this.props;
-    const { selectedRanges } = this.state;
+    const { selectedRanges, isStuckToBottom } = this.state;
     return (
       <AutoSizer className="item-list-auto-sizer" onResize={this.handleResize}>
         {({ width, height }) => (
@@ -763,6 +760,7 @@ export class ItemList<T> extends PureComponent<
             className="item-list-scroll-pane"
             height={height}
             width={width}
+            initialScrollOffset={isStuckToBottom ? itemCount * rowHeight : 0}
             itemCount={itemCount}
             itemSize={rowHeight}
             // This prop isn't actually used by us, it is passed to the render function by react-window

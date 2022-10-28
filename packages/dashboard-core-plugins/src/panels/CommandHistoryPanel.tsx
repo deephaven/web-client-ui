@@ -57,6 +57,7 @@ class CommandHistoryPanel extends Component<
     this.handleFocusHistory = this.handleFocusHistory.bind(this);
     this.handleSessionOpened = this.handleSessionOpened.bind(this);
     this.handleSessionClosed = this.handleSessionClosed.bind(this);
+    this.handleShow = this.handleShow.bind(this);
     this.handleSendToConsole = this.handleSendToConsole.bind(this);
     this.handleSendToNotebook = this.handleSendToNotebook.bind(this);
 
@@ -103,6 +104,11 @@ class CommandHistoryPanel extends Component<
     if (this.container.current) {
       this.container.current.focus();
     }
+  }
+
+  handleShow(): void {
+    // virtual list requires a force re-render when picked up and dropped in same place
+    this.container.current?.update();
   }
 
   handleSessionOpened(
@@ -184,6 +190,7 @@ class CommandHistoryPanel extends Component<
         glEventHub={glEventHub}
         onSessionOpen={this.handleSessionOpened}
         onSessionClose={this.handleSessionClosed}
+        onShow={this.handleShow}
       >
         {!table && (
           <div className="command-history-disconnected-message">

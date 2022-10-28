@@ -176,6 +176,7 @@ class CommandHistory extends Component<
 
     this.pending = new Pending();
     this.searchInputRef = React.createRef();
+    this.itemListRef = React.createRef();
 
     const { table } = props;
 
@@ -203,6 +204,8 @@ class CommandHistory extends Component<
   pending: Pending;
 
   searchInputRef: RefObject<SearchInput>;
+
+  itemListRef: React.RefObject<ItemList<CommandHistoryStorageItem>>;
 
   /**
    * Retrieves the selected commands as an array.
@@ -351,6 +354,10 @@ class CommandHistory extends Component<
     }
   }
 
+  update(): void {
+    this.itemListRef.current?.update();
+  }
+
   render(): ReactElement {
     const { language, table } = this.props;
     const {
@@ -382,6 +389,7 @@ class CommandHistory extends Component<
         </div>
         <div className="command-history-list">
           <ItemList
+            ref={this.itemListRef}
             itemCount={itemCount}
             items={items}
             offset={offset}
