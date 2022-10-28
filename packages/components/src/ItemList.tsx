@@ -318,7 +318,12 @@ export class ItemList<T> extends PureComponent<
   }
 
   update(): void {
-    this.list.current?.forceUpdate();
+    const { scrollOffset } = this.state;
+    if (scrollOffset != null) {
+      // manually restore the scroll containers offset
+      // virtual list doesn't restore scrolloffset in a re-render if it's the same
+      this.listContainer.current?.scrollTo(0, scrollOffset);
+    }
   }
 
   getElement(itemIndex: number): Element | null {
