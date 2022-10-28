@@ -11,6 +11,8 @@ interface EditorProps {
   className: string;
   onEditorInitialized: (editor: monaco.editor.IStandaloneCodeEditor) => void;
   onEditorWillDestroy: (editor: monaco.editor.IStandaloneCodeEditor) => void;
+  handleToggleMinimap: () => void;
+  handleToggleWordWrap: () => void;
   settings: Record<string, unknown>;
 }
 
@@ -19,6 +21,8 @@ class Editor extends Component<EditorProps, Record<string, never>> {
     className: 'fill-parent-absolute',
     onEditorInitialized: (): void => undefined,
     onEditorWillDestroy: (): void => undefined,
+    handleToggleMinimap: (): void => undefined,
+    handleToggleWordWrap: (): void => undefined,
     settings: {},
   };
 
@@ -78,7 +82,9 @@ class Editor extends Component<EditorProps, Record<string, never>> {
 
   toggleMinimap(): void {
     if (this.editor) {
+      const { handleToggleMinimap } = this.props;
       this.isMinimapEnabled = !this.isMinimapEnabled;
+      handleToggleMinimap();
       this.editor.updateOptions({
         minimap: { enabled: this.isMinimapEnabled },
       });
@@ -87,7 +93,9 @@ class Editor extends Component<EditorProps, Record<string, never>> {
 
   toggleWordWrap(): void {
     if (this.editor) {
+      const { handleToggleWordWrap } = this.props;
       this.isWordWrapEnabled = !this.isWordWrapEnabled;
+      handleToggleWordWrap();
       this.editor.updateOptions({
         wordWrap: this.isWordWrapEnabled ? 'on' : 'off',
       });

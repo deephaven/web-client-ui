@@ -21,6 +21,8 @@ interface ScriptEditorProps {
   focusOnMount?: boolean;
   onChange: (e: editor.IModelContentChangedEvent) => void;
   onRunCommand: (command: string) => void;
+  handleToggleMinimap: () => void;
+  handleToggleWordWrap: () => void;
   session: IdeSession;
   sessionLanguage?: string;
   settings?: {
@@ -40,6 +42,8 @@ class ScriptEditor extends Component<ScriptEditorProps, ScriptEditorState> {
     isLoaded: false,
     focusOnMount: true,
     onChange: (): void => undefined,
+    handleToggleMinimap: (): void => undefined,
+    handleToggleWordWrap: (): void => undefined,
     session: null,
     sessionLanguage: null,
     settings: null,
@@ -343,6 +347,8 @@ class ScriptEditor extends Component<ScriptEditorProps, ScriptEditorState> {
       session,
       sessionLanguage,
       settings,
+      handleToggleMinimap,
+      handleToggleWordWrap,
     } = this.props;
     const { model } = this.state;
     const errorMessage = error ? `Unable to open document. ${error}` : null;
@@ -371,6 +377,8 @@ class ScriptEditor extends Component<ScriptEditorProps, ScriptEditorState> {
                   settings={settings}
                   onEditorInitialized={this.handleEditorInitialized}
                   onEditorWillDestroy={this.handleEditorWillDestroy}
+                  handleToggleMinimap={handleToggleMinimap}
+                  handleToggleWordWrap={handleToggleWordWrap}
                 />
                 {completionProviderEnabled != null &&
                   completionProviderEnabled && (

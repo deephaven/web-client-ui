@@ -155,6 +155,8 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     this.handleFind = this.handleFind.bind(this);
     this.handleMinimap = this.handleMinimap.bind(this);
     this.handleWordWrap = this.handleWordWrap.bind(this);
+    this.handleToggleMinimap = this.handleToggleMinimap.bind(this);
+    this.handleToggleWordWrap = this.handleToggleWordWrap.bind(this);
     this.handleFocus = this.handleFocus.bind(this);
     this.handleLinkClick = this.handleLinkClick.bind(this);
     this.handleLoadSuccess = this.handleLoadSuccess.bind(this);
@@ -479,32 +481,34 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     }
   }
 
-  getOverflowActions = memoize(() => [
-    {
-      title: 'Find',
-      icon: dhFileSearch,
-      action: this.handleFind,
-      group: ContextActions.groups.high,
-      shortcut: SHORTCUTS.NOTEBOOK.FIND,
-      order: 10,
-    },
-    {
-      title: 'Show Minimap',
-      icon: this.isMinimapEnabled ? vsCheck : undefined,
-      action: this.handleMinimap,
-      group: ContextActions.groups.medium,
-      shortcut: SHORTCUTS.NOTEBOOK.MINIMAP,
-      order: 20,
-    },
-    {
-      title: 'Word Wrap',
-      icon: this.isWordWrapEnabled ? vsCheck : undefined,
-      action: this.handleWordWrap,
-      group: ContextActions.groups.medium,
-      shortcut: SHORTCUTS.NOTEBOOK.WORDWRAP,
-      order: 30,
-    },
-  ]);
+  getOverflowActions = memoize(
+    (isMinimapEnabled: boolean, isWordWrapEnabled: boolean) => [
+      {
+        title: 'Find',
+        icon: dhFileSearch,
+        action: this.handleFind,
+        group: ContextActions.groups.high,
+        shortcut: SHORTCUTS.NOTEBOOK.FIND,
+        order: 10,
+      },
+      {
+        title: 'Show Minimap',
+        icon: isMinimapEnabled ? vsCheck : undefined,
+        action: this.handleMinimap,
+        group: ContextActions.groups.medium,
+        shortcut: SHORTCUTS.NOTEBOOK.MINIMAP,
+        order: 20,
+      },
+      {
+        title: 'Word Wrap',
+        icon: isWordWrapEnabled ? vsCheck : undefined,
+        action: this.handleWordWrap,
+        group: ContextActions.groups.medium,
+        shortcut: SHORTCUTS.NOTEBOOK.WORDWRAP,
+        order: 30,
+      },
+    ]
+  );
 
   savePanelState() {
     this.setState(state => {
@@ -604,16 +608,22 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     }
   }
 
+  handleToggleMinimap() {
+    this.isMinimapEnabled = !this.isMinimapEnabled;
+  }
+
+  handleToggleWordWrap() {
+    this.isWordWrapEnabled = !this.isWordWrapEnabled;
+  }
+
   handleMinimap() {
     if (this.notebook) {
-      this.isMinimapEnabled = !this.isMinimapEnabled;
       this.notebook.toggleMinimap();
     }
   }
 
   handleWordWrap() {
     if (this.notebook) {
-      this.isWordWrapEnabled = !this.isWordWrapEnabled;
       this.notebook.toggleWordWrap();
     }
   }
@@ -967,7 +977,10 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     const itemName = fileMetadata?.itemName ?? NotebookPanel.DEFAULT_NAME;
     const isMarkdown = itemName.endsWith('.md');
     const isExistingItem = fileMetadata?.id != null;
-    const overflowActions = this.getOverflowActions();
+    const overflowActions = this.getOverflowActions(
+      this.isMinimapEnabled,
+      this.isWordWrapEnabled
+    );
     const settings = {
       ...initialSettings,
     };
@@ -1103,6 +1116,8 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
               <ScriptEditor
                 isLoaded={isLoaded}
                 isLoading={isLoading}
+                handleToggleMinimap={this.handleToggleMinimap}
+                handleToggleWordWrap={this.handleToggleWordWrap}
                 error={error}
                 onChange={this.handleEditorChange}
                 onRunCommand={this.handleRunCommand}
