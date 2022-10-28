@@ -9,6 +9,7 @@
 # production
 /build
 /dist
+/css
 
 # misc
 .vscode

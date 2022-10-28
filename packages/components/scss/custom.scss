@@ -1,4 +1,7 @@
-// Use this import within OSS for anything that isn't bundled by Webpack
+// Use this for packages within the monorepo which extend our styles or need theme variables
+// This will not work well when consumed because of the relative paths
+// Sass load-path to make non-relative paths work is bugged and watches thousands of files
+// https://github.com/sass/dart-sass/issues/1377
 
 //Make bootstrap functions available for use in overrides
 @import '../../../node_modules/bootstrap/scss/_functions.scss';
