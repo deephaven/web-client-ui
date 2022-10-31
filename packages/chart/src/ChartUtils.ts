@@ -54,6 +54,12 @@ export interface SeriesData {
   xHigh?: number;
 }
 
+export type RangeParser = (range: Range) => unknown[];
+
+export type AxisRangeParser = (axis: Axis) => RangeParser;
+
+export type ChartAxisRangeParser = (chart: Chart) => AxisRangeParser;
+
 type LayoutAxisKey =
   | 'xaxis'
   | 'xaxis2'
@@ -92,6 +98,13 @@ interface Rangebreaks {
 interface RangebreakAxisFormat extends PlotlyAxis {
   rangebreaks: Rangebreaks[];
 }
+
+export type ChartBounds = {
+  left: number;
+  right: number;
+  top: number;
+  bottom: number;
+};
 
 export type AxisTypeMap = Map<AxisType, Axis[]>;
 type AxisPositionMap = Map<AxisPosition, Axis[]>;
@@ -765,11 +778,12 @@ class ChartUtils {
     const axisFormats = new Map();
     const nullFormat = { tickformat: null, ticksuffix: null };
 
+    const allAxes = ChartUtils.getAllAxes(figure);
+    const axisTypeMap = ChartUtils.groupArray(allAxes, 'type');
     const { charts } = figure;
 
     for (let i = 0; i < charts.length; i += 1) {
       const chart = charts[i];
-      const axisTypeMap = ChartUtils.groupArray(chart.axes, 'type');
 
       for (let j = 0; j < chart.series.length; j += 1) {
         const series = chart.series[j];
@@ -919,6 +933,17 @@ class ChartUtils {
   }
 
   /**
+   * Get all axes for a given `Figure`. Iterates through all charts axes and concatenates them.
+   * @param figure Figure to get all axes for
+   */
+  static getAllAxes(figure: Figure): Axis[] {
+    return figure.charts.reduce(
+      (axes, chart) => [...axes, ...chart.axes],
+      [] as Axis[]
+    );
+  }
+
+  /**
    * Retrieve the chart that contains the passed in series from the figure
    * @param figure The figure to retrieve the chart from
    * @param series The series to get the chart for
@@ -961,22 +986,116 @@ class ChartUtils {
   }
 
   /**
+   * Update the layout with all the axes information for the provided figure
+   * @param figure Figure to update the axes for
+   * @param layoutParam Layout object to update in place
+   * @param chartAxisRangeParser Function to retrieve the axis range parser
+   * @param plotWidth Width of the plot in pixels
+   * @param plotHeight Height of the plot in pixels
+   * @param theme Theme used for displaying the plot
+   */
+  static updateFigureAxes(
+    layoutParam: Partial<Layout>,
+    figure: Figure,
+    chartAxisRangeParser?: ChartAxisRangeParser,
+    plotWidth = 0,
+    plotHeight = 0,
+    theme = ChartTheme
+  ): void {
+    const layout = layoutParam;
+    const figureAxes = ChartUtils.getAllAxes(figure);
+    for (let i = 0; i < figure.charts.length; i += 1) {
+      const chart = figure.charts[i];
+      const axisRangeParser = chartAxisRangeParser?.(chart);
+      const bounds = ChartUtils.getChartBounds(
+        figure,
+        chart,
+        plotWidth,
+        plotHeight
+      );
+      ChartUtils.updateLayoutAxes(
+        layout,
+        chart.axes,
+        figureAxes,
+        plotWidth,
+        plotHeight,
+        bounds,
+        axisRangeParser,
+        theme
+      );
+    }
+
+    ChartUtils.removeStaleAxes(layout, figureAxes);
+  }
+
+  static getChartBounds(
+    figure: Figure,
+    chart: Chart,
+    plotWidth = 0,
+    plotHeight = 0
+  ): ChartBounds {
+    const { cols, rows } = figure;
+    const { column, colspan, row, rowspan } = chart;
+
+    const endColumn = column + colspan;
+    const endRow = row + rowspan;
+    const columnSize = 1 / cols;
+    const rowSize = 1 / rows;
+    const xMarginSize = ChartUtils.AXIS_SIZE_PX / plotWidth;
+    const yMarginSize = ChartUtils.AXIS_SIZE_PX / plotHeight;
+
+    const bounds: ChartBounds = {
+      left: column * columnSize + (column > 0 ? xMarginSize / 2 : 0),
+      bottom: row * rowSize + (row > 0 ? yMarginSize / 2 : 0),
+      top: endRow * rowSize - (endRow < rows ? yMarginSize / 2 : 0),
+      right: endColumn * columnSize - (endColumn < cols ? xMarginSize / 2 : 0),
+    };
+
+    // Adjust the bounds based on where the legend is
+    // For now, always assume the legend is shown on the right
+    const axisPositionMap = ChartUtils.groupArray(chart.axes, 'position');
+    const rightAxes = axisPositionMap.get(dh.plot.AxisPosition.RIGHT) ?? [];
+    if (rightAxes.length > 0) {
+      if (plotWidth > 0) {
+        bounds.right -=
+          (bounds.right - bounds.left) *
+          Math.max(
+            0,
+            Math.min(
+              ChartUtils.LEGEND_WIDTH_PX / plotWidth,
+              ChartUtils.MAX_LEGEND_SIZE
+            )
+          );
+      } else {
+        bounds.right -=
+          (bounds.right - bounds.left) * ChartUtils.DEFAULT_AXIS_SIZE;
+      }
+    }
+
+    return bounds;
+  }
+
+  /**
    * Updates the axes positions and sizes in the layout object provided.
    * If the axis did not exist in the layout previously, it is created and added.
    * Any axis that no longer exists in axes is removed.
    * With Downsampling enabled, will also update the range on the axis itself as appropriate
    * @param layoutParam The layout object to update
-   * @param axes The axes to update the layout with
+   * @param chartAxes The chart axes to update the layout with
+   * @param figureAxes All figure axes to update the layout with
    * @param plotWidth The width of the plot to calculate the axis sizes for
    * @param plotHeight The height of the plot to calculate the axis sizes for
-   * @param getRangeParser A function to retrieve the range parser for a given axis
+   * @param bounds The bounds for this set of axes
+   * @param axisRangeParser A function to retrieve the range parser for a given axis
    */
   static updateLayoutAxes(
     layoutParam: Partial<Layout>,
-    axes: Axis[],
+    chartAxes: Axis[],
+    figureAxes: Axis[],
     plotWidth = 0,
     plotHeight = 0,
-    getRangeParser: ((axis: Axis) => (range: Range) => unknown[]) | null = null,
+    bounds: ChartBounds = { left: 0, top: 0, right: 1, bottom: 1 },
+    axisRangeParser?: AxisRangeParser,
     theme = ChartTheme
   ): void {
     const xAxisSize =
@@ -1000,51 +1119,32 @@ class ChartUtils {
           )
         : ChartUtils.DEFAULT_AXIS_SIZE;
 
-    // Adjust the bounds based on where the legend is
-    // For now, always assume the legend is shown on the right
-    const bounds = {
-      left: 0,
-      bottom: 0,
-      top: 1,
-      right: 1,
-    };
-    const axisPositionMap = ChartUtils.groupArray(axes, 'position');
-    const rightAxes = axisPositionMap.get(dh.plot.AxisPosition.RIGHT) || [];
-    if (rightAxes.length > 0) {
-      if (plotWidth > 0) {
-        bounds.right =
-          1 -
-          Math.max(
-            0,
-            Math.min(
-              ChartUtils.LEGEND_WIDTH_PX / plotWidth,
-              ChartUtils.MAX_LEGEND_SIZE
-            )
-          );
-      } else {
-        bounds.right = 1 - ChartUtils.DEFAULT_AXIS_SIZE;
-      }
-    }
-
     const layout = layoutParam;
-    const axisTypeMap = ChartUtils.groupArray(axes, 'type');
+    const axisPositionMap = ChartUtils.groupArray(chartAxes, 'position');
+    const axisTypeMap = ChartUtils.groupArray(chartAxes, 'type');
     const axisTypes = [...axisTypeMap.keys()];
+    const figureAxisTypeMap = ChartUtils.groupArray(figureAxes, 'type');
     for (let j = 0; j < axisTypes.length; j += 1) {
       const axisType = axisTypes[j];
       const axisProperty = ChartUtils.getAxisPropertyName(axisType);
       if (axisProperty != null) {
         const typeAxes = axisTypeMap.get(axisType);
+        const figureTypeAxes = figureAxisTypeMap.get(axisType);
         const isYAxis = axisType === dh.plot.AxisType.Y;
         const plotSize = isYAxis ? plotHeight : plotWidth;
 
         assertNotNull(typeAxes);
-        let axisIndex = 0;
-
-        for (axisIndex = 0; axisIndex < typeAxes.length; axisIndex += 1) {
-          const axis = typeAxes[axisIndex];
+        assertNotNull(figureTypeAxes);
+        for (
+          let chartAxisIndex = 0;
+          chartAxisIndex < typeAxes.length;
+          chartAxisIndex += 1
+        ) {
+          const axis = typeAxes[chartAxisIndex];
+          const figureAxisIndex = figureTypeAxes.indexOf(axis);
           const axisLayoutProperty = ChartUtils.getAxisLayoutProperty(
             axisProperty,
-            axisIndex
+            figureAxisIndex
           );
           if (layout[axisLayoutProperty] == null) {
             layout[axisLayoutProperty] = ChartUtils.makeLayoutAxis(
@@ -1058,7 +1158,7 @@ class ChartUtils {
             ChartUtils.updateLayoutAxis(
               layoutAxis,
               axis,
-              axisIndex,
+              chartAxisIndex,
               axisPositionMap,
               xAxisSize,
               yAxisSize,
@@ -1067,11 +1167,11 @@ class ChartUtils {
 
             const { range, autorange } = layoutAxis;
             if (
-              getRangeParser != null &&
+              axisRangeParser != null &&
               range !== undefined &&
               (autorange === undefined || autorange === false)
             ) {
-              const rangeParser = getRangeParser(axis);
+              const rangeParser = axisRangeParser(axis);
               const [rangeStart, rangeEnd] = rangeParser(range as Range);
 
               log.debug(
@@ -1087,7 +1187,27 @@ class ChartUtils {
             }
           }
         }
+      }
+    }
+  }
 
+  /**
+   * Remove any axes from the layout param that no longer belong to any series
+   * @param layoutParam Layout object to remove stale axes from
+   * @param axes All axes in the figure
+   */
+  static removeStaleAxes(layoutParam: Partial<Layout>, axes: Axis[]): void {
+    const layout = layoutParam;
+    const figureAxisTypeMap = ChartUtils.groupArray(axes, 'type');
+    const figureAxisTypes = [...figureAxisTypeMap.keys()];
+    for (let i = 0; i < figureAxisTypes.length; i += 1) {
+      const axisType = figureAxisTypes[i];
+      const typeAxes = figureAxisTypeMap.get(axisType);
+      assertNotNull(typeAxes);
+      let axisIndex = typeAxes.length;
+      // Delete any axes that may no longer exist
+      const axisProperty = ChartUtils.getAxisPropertyName(axisType);
+      if (axisProperty != null) {
         let axisLayoutProperty = ChartUtils.getAxisLayoutProperty(
           axisProperty,
           axisIndex

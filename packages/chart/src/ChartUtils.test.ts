@@ -1,5 +1,6 @@
 import dh from '@deephaven/jsapi-shim';
 import { Formatter } from '@deephaven/jsapi-utils';
+import { Layout } from 'plotly.js';
 import ChartUtils from './ChartUtils';
 import ChartTestUtils from './ChartTestUtils';
 import ChartTheme from './ChartTheme';
@@ -190,7 +191,7 @@ describe('updating layout axes', () => {
   it('adds new axes', () => {
     const layout = {};
     const axes = makeTwinAxes();
-    ChartUtils.updateLayoutAxes(layout, axes);
+    ChartUtils.updateLayoutAxes(layout, axes, axes);
     expect(layout).toEqual(
       expect.objectContaining({
         xaxis: expect.objectContaining({
@@ -210,22 +211,24 @@ describe('updating layout axes', () => {
   });
 
   it('keeps the same axis objects, updates domain', () => {
-    const layout = {};
+    const layout: Partial<Layout> = {};
     const axes = makeTwinAxes();
-    ChartUtils.updateLayoutAxes(layout, axes, 10);
+    ChartUtils.updateLayoutAxes(layout, axes, axes, 10);
 
     const { xaxis } = layout;
-    const xDomain = [...xaxis.domain];
-    ChartUtils.updateLayoutAxes(layout, axes, 1000);
+    const xDomain = [...(xaxis?.domain ?? [])];
+    ChartUtils.updateLayoutAxes(layout, axes, axes, 1000);
 
     expect(layout.xaxis).toBe(xaxis);
-    expect(xDomain).not.toBe(xaxis.domain);
+    expect(xDomain).not.toBe(xaxis?.domain);
   });
 
   it('removes stale axes', () => {
     const layout = {};
     const axes = makeTwinAxes();
-    ChartUtils.updateLayoutAxes(layout, axes);
+    const chart = ChartTestUtils.makeChart({ axes });
+    const figure = ChartTestUtils.makeFigure({ charts: [chart] });
+    ChartUtils.updateFigureAxes(layout, figure);
     expect(layout).toEqual(
       expect.objectContaining({
         xaxis: expect.objectContaining({}),
@@ -235,7 +238,7 @@ describe('updating layout axes', () => {
     );
 
     axes.pop();
-    ChartUtils.updateLayoutAxes(layout, axes);
+    ChartUtils.updateFigureAxes(layout, figure);
     expect(layout).toEqual(
       expect.objectContaining({
         xaxis: expect.objectContaining({}),
@@ -249,7 +252,7 @@ describe('updating layout axes', () => {
     );
   });
 
-  it('positions multiple axes on the same side correctly', () => {
+  describe('multiple axes', () => {
     const axes = [
       ChartTestUtils.makeAxis({ label: 'X Axis' }),
       ChartTestUtils.makeAxis({
@@ -268,20 +271,47 @@ describe('updating layout axes', () => {
         position: dh.plot.AxisPosition.RIGHT,
       }),
     ];
-    const layout = {};
+    const chart = ChartTestUtils.makeChart({ axes });
+    const figure = ChartTestUtils.makeFigure({ charts: [chart] });
     const width = 400;
     const height = 1000;
-    ChartUtils.updateLayoutAxes(layout, axes, width, height);
-    expect(layout).toEqual(
-      expect.objectContaining({
-        xaxis: expect.objectContaining({
-          domain: expect.arrayContaining([0, 0.5]),
-        }),
-        yaxis: expect.objectContaining({}),
-        yaxis2: expect.objectContaining({ anchor: 'free', position: 0.6875 }),
-        yaxis3: expect.objectContaining({ anchor: 'free', position: 0.875 }),
-      })
-    );
+    const expectedDomain = [0, 0.5];
+
+    it('gets the chart bounds correctly', () => {
+      const bounds = ChartUtils.getChartBounds(figure, chart, width, height);
+      expect(bounds).toEqual(
+        expect.objectContaining({
+          bottom: 0,
+          left: 0,
+          right: 0.875,
+          top: 1,
+        })
+      );
+    });
+
+    it('positions multiple axes on the same side correctly', () => {
+      const layout = {};
+      const bounds = ChartUtils.getChartBounds(figure, chart, width, height);
+      const figureAxes = ChartUtils.getAllAxes(figure);
+      ChartUtils.updateLayoutAxes(
+        layout,
+        axes,
+        figureAxes,
+        width,
+        height,
+        bounds
+      );
+      expect(layout).toEqual(
+        expect.objectContaining({
+          xaxis: expect.objectContaining({
+            domain: expect.arrayContaining(expectedDomain),
+          }),
+          yaxis: expect.objectContaining({}),
+          yaxis2: expect.objectContaining({ anchor: 'free', position: 0.6875 }),
+          yaxis3: expect.objectContaining({ anchor: 'free', position: 0.875 }),
+        })
+      );
+    });
   });
 });
 
@@ -293,9 +323,7 @@ describe('returns the axis layout ranges properly', () => {
     };
   }
   function testRange(layout, ranges) {
-    expect(ChartUtils.getLayoutRanges(makeLayout(layout), ranges)).toEqual(
-      ranges
-    );
+    expect(ChartUtils.getLayoutRanges(makeLayout(layout))).toEqual(ranges);
   }
 
   const xaxis = ChartUtils.makeLayoutAxis(dh.plot.AxisType.X);
