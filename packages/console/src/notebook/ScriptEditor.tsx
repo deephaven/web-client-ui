@@ -28,6 +28,7 @@ interface ScriptEditorProps {
   settings?: {
     language: string;
     value: string | null;
+    wordWrap: 'on' | 'off';
   };
 }
 

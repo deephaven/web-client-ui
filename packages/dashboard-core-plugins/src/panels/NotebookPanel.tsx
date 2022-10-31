@@ -52,6 +52,7 @@ interface Metadata {
 interface Settings {
   language: string;
   value: string | null;
+  wordWrap: 'on' | 'off';
 }
 
 interface FileMetadata {
@@ -201,13 +202,17 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     this.shouldPromptClose = true;
 
     this.isMinimapEnabled = false;
-    this.isWordWrapEnabled = false;
 
     const { isDashboardActive, session, sessionLanguage, panelState } = props;
 
-    let settings: { value: string | null; language: string } = {
+    let settings: {
+      value: string | null;
+      language: string;
+      wordWrap: 'on' | 'off';
+    } = {
       value: '',
       language: '',
+      wordWrap: 'off',
     };
     let fileMetadata = null;
     let { isPreview } = props;
@@ -275,9 +280,13 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     prevProps: NotebookPanelProps,
     prevState: NotebookPanelState
   ): void {
-    const { isPreview } = this.state;
+    const { isPreview, settings } = this.state;
+    const { wordWrap } = settings;
     if (isPreview !== prevState.isPreview) {
       this.setPreviewStatus();
+    }
+    if (wordWrap !== prevState.settings.wordWrap) {
+      this.debouncedSavePanelState();
     }
   }
 
@@ -308,8 +317,6 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
   shouldPromptClose: boolean;
 
   isMinimapEnabled: boolean;
-
-  isWordWrapEnabled: boolean;
 
   // Called by TabEvent. Happens once when created, but also each time its moved.
   // when moved, need to re-init the unsaved indicators on title elements
@@ -613,7 +620,19 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
   }
 
   handleToggleWordWrap() {
-    this.isWordWrapEnabled = !this.isWordWrapEnabled;
+    const { settings } = this.state;
+    let { wordWrap } = settings;
+    if (wordWrap === 'on') {
+      wordWrap = 'off';
+    } else {
+      wordWrap = 'on';
+    }
+    this.setState(prevState => ({
+      settings: {
+        ...prevState.settings,
+        wordWrap,
+      },
+    }));
   }
 
   handleMinimap() {
@@ -977,13 +996,13 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     const itemName = fileMetadata?.itemName ?? NotebookPanel.DEFAULT_NAME;
     const isMarkdown = itemName.endsWith('.md');
     const isExistingItem = fileMetadata?.id != null;
-    const overflowActions = this.getOverflowActions(
-      this.isMinimapEnabled,
-      this.isWordWrapEnabled
-    );
     const settings = {
       ...initialSettings,
     };
+    const overflowActions = this.getOverflowActions(
+      this.isMinimapEnabled,
+      settings.wordWrap === 'on'
+    );
     const isSessionConnected = session != null;
     const isLanguageMatching = sessionLanguage === settings.language;
     const runButtonsDisabled =
