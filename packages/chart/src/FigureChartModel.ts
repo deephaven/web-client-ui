@@ -51,7 +51,15 @@ class FigureChartModel extends ChartModel {
     this.settings = settings;
     this.theme = theme;
     this.data = [];
-    this.layout = ChartUtils.makeDefaultLayout(theme);
+    const template = { data: {}, layout: ChartUtils.makeDefaultLayout(theme) };
+    this.layout = {
+      grid: {
+        rows: figure.rows,
+        columns: figure.cols,
+        pattern: 'independent',
+      },
+      template,
+    };
     this.seriesDataMap = new Map();
     this.pendingSeries = [];
     this.oneClicks = [];
@@ -118,6 +126,7 @@ class FigureChartModel extends ChartModel {
     this.filterColumnMap.clear();
 
     const { charts } = this.figure;
+    const axes = ChartUtils.getAllAxes(this.figure);
     const activeSeriesNames: string[] = [];
     for (let i = 0; i < charts.length; i += 1) {
       const chart = charts[i];
@@ -125,7 +134,7 @@ class FigureChartModel extends ChartModel {
       for (let j = 0; j < chart.series.length; j += 1) {
         const series = chart.series[j];
         activeSeriesNames.push(series.name);
-        this.addSeries(series);
+        this.addSeries(series, axes);
       }
     }
 
@@ -141,14 +150,13 @@ class FigureChartModel extends ChartModel {
     this.seriesToProcess = new Set([...this.seriesDataMap.keys()]);
   }
 
-  addSeries(series: Series): void {
-    const chart = ChartUtils.getChartForSeries(this.figure, series);
-    if (chart == null) {
-      log.error('Unable to find matching chart for series', series);
-      return;
-    }
-
-    const axisTypeMap: AxisTypeMap = ChartUtils.groupArray(chart.axes, 'type');
+  /**
+   * Add a series to the model
+   * @param series Series object to add
+   * @param axes All the axis in this figure
+   */
+  addSeries(series: Series, axes: Axis[]): void {
+    const axisTypeMap: AxisTypeMap = ChartUtils.groupArray(axes, 'type');
 
     const seriesData = ChartUtils.makeSeriesDataFromSeries(
       series,
@@ -186,10 +194,11 @@ class FigureChartModel extends ChartModel {
   // We need to debounce adding series so we subscribe to them all in the same tick
   // This should no longer be necessary after IDS-5049 lands
   addPendingSeries = debounce(() => {
+    const axes = ChartUtils.getAllAxes(this.figure);
     const { pendingSeries } = this;
     for (let i = 0; i < pendingSeries.length; i += 1) {
       const series = pendingSeries[i];
-      this.addSeries(series);
+      this.addSeries(series, axes);
 
       series.subscribe();
       // We'll get an update with the data after subscribing
@@ -551,19 +560,14 @@ class FigureChartModel extends ChartModel {
   updateAxisPositions(): void {
     const plotWidth = this.getPlotWidth();
     const plotHeight = this.getPlotHeight();
-
-    for (let i = 0; i < this.figure.charts.length; i += 1) {
-      const chart = this.figure.charts[i];
-      const axisRangeParser = this.getAxisRangeParser(chart, this.formatter);
-      ChartUtils.updateLayoutAxes(
-        this.layout,
-        chart.axes,
-        plotWidth,
-        plotHeight,
-        axisRangeParser,
-        this.theme
-      );
-    }
+    ChartUtils.updateFigureAxes(
+      this.layout,
+      this.figure,
+      chart => this.getAxisRangeParser(chart, this.formatter),
+      plotWidth,
+      plotHeight,
+      this.theme
+    );
   }
 
   /**
