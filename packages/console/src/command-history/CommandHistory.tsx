@@ -354,8 +354,8 @@ class CommandHistory extends Component<
     }
   }
 
-  update(): void {
-    this.itemListRef.current?.update();
+  restoreScrollPosition(): void {
+    this.itemListRef.current?.restoreScrollPosition();
   }
 
   render(): ReactElement {

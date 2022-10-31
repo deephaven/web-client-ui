@@ -107,8 +107,8 @@ class CommandHistoryPanel extends Component<
   }
 
   handleShow(): void {
-    // virtual list requires a force re-render when picked up and dropped in same place
-    this.container.current?.update();
+    // virtual list requires a forced reset to scroll position when picked up and dropped in same place
+    this.container.current?.restoreScrollPosition();
   }
 
   handleSessionOpened(

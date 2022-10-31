@@ -317,7 +317,7 @@ export class ItemList<T> extends PureComponent<
     this.listContainer.current?.focus();
   }
 
-  update(): void {
+  restoreScrollPosition(): void {
     const { scrollOffset } = this.state;
     if (scrollOffset != null) {
       // manually restore the scroll containers offset
