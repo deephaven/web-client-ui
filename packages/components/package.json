@@ -21,7 +21,7 @@
     "build": "cross-env NODE_ENV=production run-p build:*",
     "build-dev": "cross-env NODE_ENV=development run-p build:*",
     "babel": "babel ./src --out-dir ./dist --extensions \".ts,.tsx,.js,.jsx\" --source-maps --root-mode upward",
-    "sass": "sass ./src:./dist",
+    "sass": "sass --load-path=../../node_modules ./src:./dist ./scss/BaseStyleSheet.scss:./css/BaseStyleSheet.css",
     "build:babel": "npm run babel",
     "build:sass": "npm run sass",
     "watch": "run-p watch:*",
@@ -62,7 +62,8 @@
   },
   "files": [
     "dist",
-    "scss"
+    "scss",
+    "css"
   ],
   "sideEffects": [
     "*.scss"

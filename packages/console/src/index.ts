@@ -12,5 +12,6 @@ export * from './command-history';
 export * from './console-history';
 export { default as LogView } from './log/LogView';
 export { default as HeapUsage } from './HeapUsage';
+export { default as NewTableColumnTypes } from './csv/NewTableColumnTypes';
 
 export { default } from './Console';
