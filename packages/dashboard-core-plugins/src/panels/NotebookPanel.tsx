@@ -53,6 +53,7 @@ interface Settings {
   language: string;
   value: string | null;
   wordWrap: 'on' | 'off';
+  minimap: boolean;
 }
 
 interface FileMetadata {
@@ -201,18 +202,18 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     this.tabInitOnce = false;
     this.shouldPromptClose = true;
 
-    this.isMinimapEnabled = false;
-
     const { isDashboardActive, session, sessionLanguage, panelState } = props;
 
     let settings: {
       value: string | null;
       language: string;
       wordWrap: 'on' | 'off';
+      minimap: boolean;
     } = {
       value: '',
       language: '',
       wordWrap: 'off',
+      minimap: false,
     };
     let fileMetadata = null;
     let { isPreview } = props;
@@ -281,11 +282,14 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     prevState: NotebookPanelState
   ): void {
     const { isPreview, settings } = this.state;
-    const { wordWrap } = settings;
+    const { wordWrap, minimap } = settings;
     if (isPreview !== prevState.isPreview) {
       this.setPreviewStatus();
     }
-    if (wordWrap !== prevState.settings.wordWrap) {
+    if (
+      wordWrap !== prevState.settings.wordWrap ||
+      minimap !== prevState.settings.minimap
+    ) {
       this.debouncedSavePanelState();
     }
   }
@@ -315,8 +319,6 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
   tabInitOnce: boolean;
 
   shouldPromptClose: boolean;
-
-  isMinimapEnabled: boolean;
 
   // Called by TabEvent. Happens once when created, but also each time its moved.
   // when moved, need to re-init the unsaved indicators on title elements
@@ -426,6 +428,12 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
         };
         if (settings.value == null) {
           updatedSettings.value = loadedFile.content;
+        }
+        if (settings.minimap === undefined) {
+          settings.minimap = false;
+        }
+        if (settings.wordWrap === undefined) {
+          settings.wordWrap = 'off';
         }
         this.setState({
           fileMetadata: { id: itemName, itemName },
@@ -616,7 +624,12 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
   }
 
   handleToggleMinimap() {
-    this.isMinimapEnabled = !this.isMinimapEnabled;
+    this.setState(prevState => ({
+      settings: {
+        ...prevState.settings,
+        minimap: !prevState.settings.minimap,
+      },
+    }));
   }
 
   handleToggleWordWrap() {
@@ -1000,7 +1013,7 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
       ...initialSettings,
     };
     const overflowActions = this.getOverflowActions(
-      this.isMinimapEnabled,
+      settings.minimap,
       settings.wordWrap === 'on'
     );
     const isSessionConnected = session != null;

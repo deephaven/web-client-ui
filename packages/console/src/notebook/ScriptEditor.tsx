@@ -29,6 +29,7 @@ interface ScriptEditorProps {
     language: string;
     value: string | null;
     wordWrap: 'on' | 'off';
+    minimap: boolean;
   };
 }
 

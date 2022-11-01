@@ -109,7 +109,13 @@ class Editor extends Component<EditorProps, Record<string, never>> {
   initEditor(): void {
     const { onEditorInitialized } = this.props;
     let { settings } = this.props;
-    this.isWordWrapEnabled = settings.wordWrap === 'on';
+    if (typeof settings.wordWrap === 'string') {
+      this.isWordWrapEnabled = settings.wordWrap === 'on';
+    }
+    if (typeof settings.minimap === 'boolean') {
+      this.isMinimapEnabled = settings.minimap;
+      settings.minimap = { enabled: settings.minimap };
+    }
     settings = {
       copyWithSyntaxHighlighting: 'false',
       fixedOverflowWidgets: true,
@@ -122,6 +128,7 @@ class Editor extends Component<EditorProps, Record<string, never>> {
       scrollBeyondLastLine: false,
       tabCompletion: 'on',
       value: '',
+      wordWrap: 'off',
       ...settings,
     };
     assertNotNull(this.container);
