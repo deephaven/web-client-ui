@@ -28,7 +28,14 @@ import {
   dhRunSelection,
   vsCheck,
 } from '@deephaven/icons';
-import { getFileStorage, RootState } from '@deephaven/redux';
+import {
+  getFileStorage,
+  getWorkspace,
+  updateWorkspaceData as updateWorkspaceDataAction,
+  RootState,
+  Workspace,
+  WorkspaceData,
+} from '@deephaven/redux';
 import classNames from 'classnames';
 import debounce from 'lodash.debounce';
 import Log from '@deephaven/log';
@@ -53,7 +60,6 @@ interface Settings {
   language: string;
   value: string | null;
   wordWrap: 'on' | 'off';
-  minimap: boolean;
 }
 
 interface FileMetadata {
@@ -78,6 +84,8 @@ interface NotebookPanelProps {
   sessionLanguage: string;
   panelState: PanelState;
   notebooksUrl: string;
+  workspace: Workspace;
+  updateWorkspaceData: (workspaceData: Partial<WorkspaceData>) => void;
 }
 
 interface NotebookPanelState {
@@ -128,6 +136,7 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     isPreview: false,
     session: null,
     sessionLanguage: null,
+    workspace: null,
   };
 
   static languageFromFileName(fileName: string): string | null {
@@ -156,8 +165,8 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     this.handleEditorChange = this.handleEditorChange.bind(this);
     this.handleFind = this.handleFind.bind(this);
     this.handleMinimap = this.handleMinimap.bind(this);
+    this.handleMinimapWrapper = this.handleMinimapWrapper.bind(this);
     this.handleWordWrap = this.handleWordWrap.bind(this);
-    this.handleToggleMinimap = this.handleToggleMinimap.bind(this);
     this.handleToggleWordWrap = this.handleToggleWordWrap.bind(this);
     this.handleFocus = this.handleFocus.bind(this);
     this.handleLinkClick = this.handleLinkClick.bind(this);
@@ -208,12 +217,10 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
       value: string | null;
       language: string;
       wordWrap: 'on' | 'off';
-      minimap: boolean;
     } = {
       value: '',
       language: '',
       wordWrap: 'off',
-      minimap: false,
     };
     let fileMetadata = null;
     let { isPreview } = props;
@@ -282,15 +289,19 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     prevState: NotebookPanelState
   ): void {
     const { isPreview, settings } = this.state;
-    const { wordWrap, minimap } = settings;
+    const { wordWrap } = settings;
+    const { workspace } = this.props;
     if (isPreview !== prevState.isPreview) {
       this.setPreviewStatus();
     }
-    if (
-      wordWrap !== prevState.settings.wordWrap ||
-      minimap !== prevState.settings.minimap
-    ) {
+    if (wordWrap !== prevState.settings.wordWrap) {
       this.debouncedSavePanelState();
+    }
+    if (
+      workspace.data.settings.isMinimapEnabled !==
+      prevProps.workspace.data.settings.isMinimapEnabled
+    ) {
+      this.handleMinimap();
     }
   }
 
@@ -429,9 +440,6 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
         if (settings.value == null) {
           updatedSettings.value = loadedFile.content;
         }
-        if (settings.minimap === undefined) {
-          settings.minimap = false;
-        }
         if (settings.wordWrap === undefined) {
           settings.wordWrap = 'off';
         }
@@ -509,7 +517,7 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
       {
         title: 'Show Minimap',
         icon: isMinimapEnabled ? vsCheck : undefined,
-        action: this.handleMinimap,
+        action: this.handleMinimapWrapper,
         group: ContextActions.groups.medium,
         shortcut: SHORTCUTS.NOTEBOOK.MINIMAP,
         order: 20,
@@ -623,15 +631,6 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     }
   }
 
-  handleToggleMinimap() {
-    this.setState(prevState => ({
-      settings: {
-        ...prevState.settings,
-        minimap: !prevState.settings.minimap,
-      },
-    }));
-  }
-
   handleToggleWordWrap() {
     const { settings } = this.state;
     let { wordWrap } = settings;
@@ -652,6 +651,15 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     if (this.notebook) {
       this.notebook.toggleMinimap();
     }
+  }
+
+  handleMinimapWrapper() {
+    const { workspace, updateWorkspaceData } = this.props;
+    const settings = {
+      ...workspace.data.settings,
+      isMinimapEnabled: !workspace.data.settings.isMinimapEnabled,
+    };
+    updateWorkspaceData({ settings });
   }
 
   handleWordWrap() {
@@ -987,6 +995,7 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
       glContainer,
       glContainer: { tab },
       glEventHub,
+      workspace,
     } = this.props;
     const {
       changeCount,
@@ -1013,7 +1022,7 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
       ...initialSettings,
     };
     const overflowActions = this.getOverflowActions(
-      settings.minimap,
+      workspace.data.settings.isMinimapEnabled,
       settings.wordWrap === 'on'
     );
     const isSessionConnected = session != null;
@@ -1148,13 +1157,14 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
               <ScriptEditor
                 isLoaded={isLoaded}
                 isLoading={isLoading}
-                handleToggleMinimap={this.handleToggleMinimap}
+                isMinimapEnabled={workspace.data.settings.isMinimapEnabled}
                 handleToggleWordWrap={this.handleToggleWordWrap}
                 error={error}
                 onChange={this.handleEditorChange}
                 onRunCommand={this.handleRunCommand}
                 session={session}
                 sessionLanguage={sessionLanguage}
+                handleToggleMinimap={this.handleMinimapWrapper}
                 settings={settings}
                 focusOnMount={focusOnMount}
                 ref={notebook => {
@@ -1204,19 +1214,25 @@ const mapStateToProps = (
   ownProps: { localDashboardId: string }
 ) => {
   const fileStorage = getFileStorage(state);
+  const workspace = getWorkspace(state);
   const sessionWrapper = getDashboardSessionWrapper(
     state,
     ownProps.localDashboardId
   );
+
   const { session, config: sessionConfig } = sessionWrapper ?? {};
   const { type: sessionLanguage } = sessionConfig ?? {};
   return {
     fileStorage,
+    workspace,
     session,
     sessionLanguage,
   };
 };
 
-export default connect(mapStateToProps, null, null, { forwardRef: true })(
-  NotebookPanel
-);
+export default connect(
+  mapStateToProps,
+  { updateWorkspaceData: updateWorkspaceDataAction },
+  null,
+  { forwardRef: true }
+)(NotebookPanel);

@@ -36,6 +36,7 @@
     "@deephaven/icons": "file:../icons",
     "@deephaven/jsapi-shim": "file:../jsapi-shim",
     "@deephaven/log": "file:../log",
+    "@deephaven/redux": "file:../redux",
     "@deephaven/storage": "file:../storage",
     "@deephaven/utils": "file:../utils",
     "@fortawesome/react-fontawesome": "^0.1.18",

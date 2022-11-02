@@ -79,6 +79,10 @@ export const getShortcutOverrides: Selector<
   WorkspaceSettings['shortcutOverrides']
 > = store => getSettings(store).shortcutOverrides;
 
+export const getisMinimapEnabled: Selector<
+  WorkspaceSettings['isMinimapEnabled']
+> = store => getSettings(store).isMinimapEnabled;
+
 export const getActiveTool: Selector<RootState['activeTool']> = store =>
   store.activeTool;
 

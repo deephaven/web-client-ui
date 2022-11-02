@@ -13,6 +13,7 @@ interface EditorProps {
   onEditorWillDestroy: (editor: monaco.editor.IStandaloneCodeEditor) => void;
   handleToggleMinimap: () => void;
   handleToggleWordWrap: () => void;
+  isMinimapEnabled: boolean;
   settings: Record<string, unknown>;
 }
 
@@ -23,6 +24,7 @@ class Editor extends Component<EditorProps, Record<string, never>> {
     onEditorWillDestroy: (): void => undefined,
     handleToggleMinimap: (): void => undefined,
     handleToggleWordWrap: (): void => undefined,
+    isMinimapEnabled: false,
     settings: {},
   };
 
@@ -82,9 +84,7 @@ class Editor extends Component<EditorProps, Record<string, never>> {
 
   toggleMinimap(): void {
     if (this.editor) {
-      const { handleToggleMinimap } = this.props;
       this.isMinimapEnabled = !this.isMinimapEnabled;
-      handleToggleMinimap();
       this.editor.updateOptions({
         minimap: { enabled: this.isMinimapEnabled },
       });
@@ -107,15 +107,18 @@ class Editor extends Component<EditorProps, Record<string, never>> {
   }
 
   initEditor(): void {
-    const { onEditorInitialized } = this.props;
+    const {
+      onEditorInitialized,
+      handleToggleMinimap,
+      isMinimapEnabled,
+    } = this.props;
+
     let { settings } = this.props;
     if (typeof settings.wordWrap === 'string') {
       this.isWordWrapEnabled = settings.wordWrap === 'on';
     }
-    if (typeof settings.minimap === 'boolean') {
-      this.isMinimapEnabled = settings.minimap;
-      settings.minimap = { enabled: settings.minimap };
-    }
+    this.isMinimapEnabled = isMinimapEnabled;
+
     settings = {
       copyWithSyntaxHighlighting: 'false',
       fixedOverflowWidgets: true,
@@ -124,7 +127,7 @@ class Editor extends Component<EditorProps, Record<string, never>> {
       glyphMargin: false,
       language: `python`,
       lineNumbersMinChars: 3,
-      minimap: { enabled: false },
+      minimap: { enabled: this.isMinimapEnabled },
       scrollBeyondLastLine: false,
       tabCompletion: 'on',
       value: '',
@@ -162,7 +165,7 @@ class Editor extends Component<EditorProps, Record<string, never>> {
       contextMenuOrder: 2.0,
 
       run: () => {
-        this.toggleMinimap();
+        handleToggleMinimap();
       },
     });
     this.editor.addAction({

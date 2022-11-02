@@ -23,13 +23,13 @@ interface ScriptEditorProps {
   onRunCommand: (command: string) => void;
   handleToggleMinimap: () => void;
   handleToggleWordWrap: () => void;
+  isMinimapEnabled: boolean;
   session: IdeSession;
   sessionLanguage?: string;
   settings?: {
     language: string;
     value: string | null;
     wordWrap: 'on' | 'off';
-    minimap: boolean;
   };
 }
 
@@ -46,9 +46,11 @@ class ScriptEditor extends Component<ScriptEditorProps, ScriptEditorState> {
     onChange: (): void => undefined,
     handleToggleMinimap: (): void => undefined,
     handleToggleWordWrap: (): void => undefined,
+    updateWorkspaceData: (): void => undefined,
     session: null,
     sessionLanguage: null,
     settings: null,
+    workspace: null,
   };
 
   constructor(props: ScriptEditorProps) {
@@ -346,6 +348,7 @@ class ScriptEditor extends Component<ScriptEditorProps, ScriptEditorState> {
       error,
       isLoaded,
       isLoading,
+      isMinimapEnabled,
       session,
       sessionLanguage,
       settings,
@@ -376,6 +379,7 @@ class ScriptEditor extends Component<ScriptEditorProps, ScriptEditorState> {
               <>
                 <Editor
                   ref={this.editorComponent}
+                  isMinimapEnabled={isMinimapEnabled}
                   settings={settings}
                   onEditorInitialized={this.handleEditorInitialized}
                   onEditorWillDestroy={this.handleEditorWillDestroy}
