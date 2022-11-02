@@ -303,9 +303,6 @@ class IrisGridRenderer extends GridRenderer {
 
     // add an overlay of the scrim color to darken things a bit
     context.globalCompositeOperation = 'overlay';
-    if (scrimColor != null) {
-      context.fillStyle = scrimColor;
-    }
     context.filter = `blur(${scrimBlurSize}px) opacity(15%)`;
     context.fillRect(
       -scrimBlurSize,
