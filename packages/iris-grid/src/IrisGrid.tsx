@@ -15,7 +15,6 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   ContextActionUtils,
   ContextActions,
-  DeephavenSpinner,
   Stack,
   Menu,
   Page,
@@ -48,6 +47,7 @@ import {
   dhFilterFilled,
   dhGraphLineUp,
   dhTriangleDownSquare,
+  vsClose,
   vsCloudDownload,
   vsEdit,
   vsFilter,
@@ -3560,30 +3560,30 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     let loadingElement = null;
     if (loadingText != null) {
       const loadingStatus = (
-        <div className="iris-grid-loading-status">{loadingText}</div>
-      );
-      const loader = <DeephavenSpinner show={loadingSpinnerShown} />;
-      const cancelButton = (
-        <button
-          type="button"
-          onClick={this.handleCancel}
-          className={classNames(
-            'btn btn-secondary btn-cancelable iris-grid-btn-cancel',
-            {
+        <div className="iris-grid-loading-status">
+          <div
+            className={classNames('iris-grid-loading-status-bar', {
               show: loadingSpinnerShown,
-            }
-          )}
-        >
-          Cancel
-        </button>
+            })}
+          >
+            {loadingText}
+          </div>
+          <button
+            type="button"
+            onClick={this.handleCancel}
+            className={classNames('iris-grid-btn-cancel', {
+              show: loadingSpinnerShown,
+            })}
+          >
+            <FontAwesomeIcon icon={vsClose} transform="down-1" />
+            Cancel
+          </button>
+        </div>
       );
-
       const gridY = metrics ? metrics.gridY : 0;
       loadingElement = (
         <div className="iris-grid-loading" style={{ top: gridY }}>
           {loadingStatus}
-          {loader}
-          {cancelButton}
         </div>
       );
     }
