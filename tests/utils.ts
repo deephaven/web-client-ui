@@ -1,3 +1,4 @@
+import { Page } from '@playwright/test';
 import shortid from 'shortid';
 
 /**
@@ -14,4 +15,19 @@ export function generateVarName(prefix = 'v'): string {
   return `${prefix}_${id}`;
 }
 
-export default { generateVarName };
+/**
+ * Types into monaco input and avoids autocomplete suggestions
+ * @param page The Page instance for each test
+ * @param text Text to be typed, with carriage returns
+ */
+export async function typeInMonaco(page: Page, text: string): Promise<void> {
+  const splitByLine = text.split('\r');
+  for (let i = 0; i < splitByLine.length; i += 1) {
+    await page.keyboard.type(splitByLine[i]);
+    await page.keyboard.press(' ');
+    await page.keyboard.press('Backspace');
+    await page.keyboard.press('Shift+Enter');
+  }
+}
+
+export default { generateVarName, typeInMonaco };
