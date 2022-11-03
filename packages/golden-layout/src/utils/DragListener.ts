@@ -132,13 +132,9 @@ class DragListener extends EventEmitter {
   }
 
   _getCoordinates(event: JQuery.TriggeredEvent) {
-    const baseEvent =
-      event.originalEvent instanceof TouchEvent
-        ? event.originalEvent.touches[0]
-        : event;
     return {
-      x: baseEvent.pageX,
-      y: baseEvent.pageY,
+      x: event.pageX ?? 0,
+      y: event.pageY ?? 0,
     };
   }
 }
