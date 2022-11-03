@@ -1012,6 +1012,7 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
                     disabled={runButtonsDisabled}
                     icon={<FontAwesomeIcon icon={vsPlay} transform="grow-4" />}
                     tooltip={`Run ${SHORTCUTS.NOTEBOOK.RUN.getDisplayText()}`}
+                    aria-label="Run"
                   />
                   {disabledRunButtonTooltip != null && (
                     <Tooltip>{disabledRunButtonTooltip}</Tooltip>
@@ -1029,8 +1030,8 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
                         transform="grow-4"
                       />
                     }
-                    tooltip={`Run Selected${' '}
-                    ${SHORTCUTS.NOTEBOOK.RUN_SELECTED.getDisplayText()}`}
+                    tooltip={`Run Selected ${SHORTCUTS.NOTEBOOK.RUN_SELECTED.getDisplayText()}`}
+                    aria-label="Run Selected"
                   />
                   {disabledRunSelectedButtonTooltip != null && (
                     <Tooltip>{disabledRunSelectedButtonTooltip}</Tooltip>
@@ -1042,7 +1043,8 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
                   disabled={toolbarDisabled}
                   onClick={this.handleSave}
                   icon={vsSave}
-                  tooltip="Save"
+                  tooltip={`Save ${GLOBAL_SHORTCUTS.SAVE.getDisplayText()}`}
+                  aria-label="Save"
                 />
                 <Button
                   kind="ghost"

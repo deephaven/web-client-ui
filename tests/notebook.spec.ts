@@ -46,7 +46,7 @@ test('test creating a file, saving it, closing it, re-opening it, running it, th
   await fileInExplorer.click();
 
   // Click the Run button
-  await page.locator('[aria-label="Run Alt+R"]').click();
+  await page.locator('.notebook-toolbar [aria-label="Run"]').click();
 
   // Click close on the notebook file .lm_close_tab
   await page.locator('.lm_close_tab').click();
