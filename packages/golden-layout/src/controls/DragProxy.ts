@@ -134,13 +134,8 @@ export default class DragProxy extends EventEmitter {
    * @param event
    */
   _onDrag(offsetX: number, offsetY: number, event: JQuery.TriggeredEvent) {
-    const baseEvent =
-      event.originalEvent instanceof TouchEvent
-        ? event.originalEvent.touches[0]
-        : event;
-
-    const x = baseEvent.pageX ?? 0;
-    const y = baseEvent.pageY ?? 0;
+    const x = event.pageX ?? 0;
+    const y = event.pageY ?? 0;
     const isWithinContainer =
       x > this._minX && x < this._maxX && y > this._minY && y < this._maxY;
 
