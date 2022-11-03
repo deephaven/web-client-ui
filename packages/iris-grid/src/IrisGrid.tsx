@@ -1994,13 +1994,13 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   }
 
   focusFilterBar(column: VisibleIndex): void {
+    const { movedColumns } = this.state;
     const { model } = this.props;
     const { columnCount } = model;
-    const modelColumn = this.getModelColumn(column);
+    const modelColumn = GridUtils.getModelIndex(column, movedColumns);
 
     if (
       column == null ||
-      modelColumn == null ||
       column < 0 ||
       columnCount <= column ||
       !model.isFilterable(modelColumn)
@@ -2017,7 +2017,11 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     } else if (rightVisible < column) {
       const metricState = this.grid?.getMetricState();
       assertNotNull(metricState);
-      const newLeft = metricCalculator.getLastLeft(metricState, column, gridX);
+      const newLeft = metricCalculator.getLastLeft(
+        metricState,
+        column - 1,
+        gridX
+      );
       this.grid?.setViewState({ left: Math.min(newLeft, lastLeft) }, true);
     }
     this.lastFocusedFilterBarColumn = column;
