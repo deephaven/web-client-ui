@@ -11,9 +11,6 @@ interface EditorProps {
   className: string;
   onEditorInitialized: (editor: monaco.editor.IStandaloneCodeEditor) => void;
   onEditorWillDestroy: (editor: monaco.editor.IStandaloneCodeEditor) => void;
-  handleToggleMinimap: () => void;
-  handleToggleWordWrap: () => void;
-  isMinimapEnabled: boolean;
   settings: Record<string, unknown>;
 }
 
@@ -22,9 +19,6 @@ class Editor extends Component<EditorProps, Record<string, never>> {
     className: 'fill-parent-absolute',
     onEditorInitialized: (): void => undefined,
     onEditorWillDestroy: (): void => undefined,
-    handleToggleMinimap: (): void => undefined,
-    handleToggleWordWrap: (): void => undefined,
-    isMinimapEnabled: false,
     settings: {},
   };
 
@@ -35,9 +29,6 @@ class Editor extends Component<EditorProps, Record<string, never>> {
 
     this.container = null;
     this.state = {};
-
-    this.isMinimapEnabled = false;
-    this.isWordWrapEnabled = false;
   }
 
   componentDidMount(): void {
@@ -55,10 +46,6 @@ class Editor extends Component<EditorProps, Record<string, never>> {
   container: HTMLDivElement | null;
 
   editor?: monaco.editor.IStandaloneCodeEditor;
-
-  isMinimapEnabled: boolean;
-
-  isWordWrapEnabled: boolean;
 
   setLanguage(language: string): void {
     if (this.editor) {
@@ -82,43 +69,13 @@ class Editor extends Component<EditorProps, Record<string, never>> {
     }
   }
 
-  toggleMinimap(): void {
-    if (this.editor) {
-      this.isMinimapEnabled = !this.isMinimapEnabled;
-      this.editor.updateOptions({
-        minimap: { enabled: this.isMinimapEnabled },
-      });
-    }
-  }
-
-  toggleWordWrap(): void {
-    if (this.editor) {
-      const { handleToggleWordWrap } = this.props;
-      this.isWordWrapEnabled = !this.isWordWrapEnabled;
-      handleToggleWordWrap();
-      this.editor.updateOptions({
-        wordWrap: this.isWordWrapEnabled ? 'on' : 'off',
-      });
-    }
-  }
-
   updateDimensions(): void {
     this.editor?.layout();
   }
 
   initEditor(): void {
-    const {
-      onEditorInitialized,
-      handleToggleMinimap,
-      isMinimapEnabled,
-    } = this.props;
-
+    const { onEditorInitialized } = this.props;
     let { settings } = this.props;
-    if (typeof settings.wordWrap === 'string') {
-      this.isWordWrapEnabled = settings.wordWrap === 'on';
-    }
-    this.isMinimapEnabled = isMinimapEnabled;
-
     settings = {
       copyWithSyntaxHighlighting: 'false',
       fixedOverflowWidgets: true,
@@ -127,7 +84,7 @@ class Editor extends Component<EditorProps, Record<string, never>> {
       glyphMargin: false,
       language: `python`,
       lineNumbersMinChars: 3,
-      minimap: { enabled: this.isMinimapEnabled },
+      minimap: { enabled: false },
       scrollBeyondLastLine: false,
       tabCompletion: 'on',
       value: '',
@@ -150,38 +107,6 @@ class Editor extends Component<EditorProps, Record<string, never>> {
 
       run: () => {
         this.toggleFind();
-      },
-    });
-    this.editor.addAction({
-      id: 'minimap',
-      label: 'Minimap',
-      keybindings: [
-        // eslint-disable-next-line no-bitwise
-        monaco.KeyMod.Alt | monaco.KeyCode.KeyM,
-      ],
-      precondition: undefined,
-      keybindingContext: undefined,
-      contextMenuGroupId: 'navigation',
-      contextMenuOrder: 2.0,
-
-      run: () => {
-        handleToggleMinimap();
-      },
-    });
-    this.editor.addAction({
-      id: 'wordWrap',
-      label: 'Word wrap',
-      keybindings: [
-        // eslint-disable-next-line no-bitwise
-        monaco.KeyMod.Alt | monaco.KeyCode.KeyZ,
-      ],
-      precondition: undefined,
-      keybindingContext: undefined,
-      contextMenuGroupId: 'navigation',
-      contextMenuOrder: 3.0,
-
-      run: () => {
-        this.toggleWordWrap();
       },
     });
     this.editor.layout();

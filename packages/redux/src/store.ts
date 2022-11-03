@@ -56,7 +56,9 @@ export interface WorkspaceSettings {
     windows?: { [id: string]: ValidKeyState };
     mac?: { [id: string]: ValidKeyState };
   };
-  isMinimapEnabled: boolean;
+  defaultNotebookSettings: {
+    isMinimapEnabled: boolean;
+  };
 }
 
 export interface WorkspaceData {

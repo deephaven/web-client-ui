@@ -70,14 +70,12 @@ const NOTEBOOK = {
     name: 'Show Minimap',
     shortcut: [MODIFIER.ALT, KEY.M],
     macShortcut: [MODIFIER.OPTION, KEY.M],
-    isEditable: false,
   }),
   WORDWRAP: ShortcutRegistry.createAndAdd({
     id: 'NOTEBOOK.WORDWRAP',
     name: 'Word wrap',
     shortcut: [MODIFIER.ALT, KEY.Z],
     macShortcut: [MODIFIER.OPTION, KEY.Z],
-    isEditable: false,
   }),
 };
 

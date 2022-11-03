@@ -79,9 +79,9 @@ export const getShortcutOverrides: Selector<
   WorkspaceSettings['shortcutOverrides']
 > = store => getSettings(store).shortcutOverrides;
 
-export const getisMinimapEnabled: Selector<
-  WorkspaceSettings['isMinimapEnabled']
-> = store => getSettings(store).isMinimapEnabled;
+export const getDefaultNotebookSettings: Selector<
+  WorkspaceSettings['defaultNotebookSettings']
+> = store => getSettings(store).defaultNotebookSettings ?? EMPTY_OBJECT;
 
 export const getActiveTool: Selector<RootState['activeTool']> = store =>
   store.activeTool;

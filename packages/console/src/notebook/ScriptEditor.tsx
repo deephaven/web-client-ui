@@ -21,15 +21,15 @@ interface ScriptEditorProps {
   focusOnMount?: boolean;
   onChange: (e: editor.IModelContentChangedEvent) => void;
   onRunCommand: (command: string) => void;
-  handleToggleMinimap: () => void;
-  handleToggleWordWrap: () => void;
-  isMinimapEnabled: boolean;
+  onEditorInitialized: (editor: editor.IStandaloneCodeEditor) => void;
+  onEditorWillDestroy: () => void;
   session: IdeSession;
   sessionLanguage?: string;
   settings?: {
     language: string;
     value: string | null;
     wordWrap: 'on' | 'off';
+    minimap: { enabled: boolean };
   };
 }
 
@@ -44,8 +44,8 @@ class ScriptEditor extends Component<ScriptEditorProps, ScriptEditorState> {
     isLoaded: false,
     focusOnMount: true,
     onChange: (): void => undefined,
-    handleToggleMinimap: (): void => undefined,
-    handleToggleWordWrap: (): void => undefined,
+    onEditorInitialized: (): void => undefined,
+    onEditorWillDestroy: (): void => undefined,
     updateWorkspaceData: (): void => undefined,
     session: null,
     sessionLanguage: null,
@@ -154,6 +154,7 @@ class ScriptEditor extends Component<ScriptEditorProps, ScriptEditorState> {
     const {
       focusOnMount,
       onChange,
+      onEditorInitialized,
       settings,
       session,
       sessionLanguage,
@@ -176,10 +177,14 @@ class ScriptEditor extends Component<ScriptEditorProps, ScriptEditorState> {
     if (focusOnMount != null && focusOnMount) {
       innerEditor.focus();
     }
+
+    onEditorInitialized(this.editor);
   }
 
   handleEditorWillDestroy(): void {
     log.debug('handleEditorWillDestroy');
+    const { onEditorWillDestroy } = this.props;
+    onEditorWillDestroy();
     this.deInitContextActions();
     this.deInitCodeCompletion();
     this.setState({ model: null });
@@ -325,18 +330,6 @@ class ScriptEditor extends Component<ScriptEditorProps, ScriptEditorState> {
     }
   }
 
-  toggleMinimap(): void {
-    if (this.editorComponent.current) {
-      this.editorComponent.current.toggleMinimap();
-    }
-  }
-
-  toggleWordWrap(): void {
-    if (this.editorComponent.current) {
-      this.editorComponent.current.toggleWordWrap();
-    }
-  }
-
   setLanguage(language?: string): void {
     if (this.editorComponent.current && language !== undefined) {
       this.editorComponent.current.setLanguage(language);
@@ -348,12 +341,9 @@ class ScriptEditor extends Component<ScriptEditorProps, ScriptEditorState> {
       error,
       isLoaded,
       isLoading,
-      isMinimapEnabled,
       session,
       sessionLanguage,
       settings,
-      handleToggleMinimap,
-      handleToggleWordWrap,
     } = this.props;
     const { model } = this.state;
     const errorMessage = error ? `Unable to open document. ${error}` : null;
@@ -379,12 +369,9 @@ class ScriptEditor extends Component<ScriptEditorProps, ScriptEditorState> {
               <>
                 <Editor
                   ref={this.editorComponent}
-                  isMinimapEnabled={isMinimapEnabled}
                   settings={settings}
                   onEditorInitialized={this.handleEditorInitialized}
                   onEditorWillDestroy={this.handleEditorWillDestroy}
-                  handleToggleMinimap={handleToggleMinimap}
-                  handleToggleWordWrap={handleToggleWordWrap}
                 />
                 {completionProviderEnabled != null &&
                   completionProviderEnabled && (
