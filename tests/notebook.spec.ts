@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { typeInMonaco } from './utils';
 import shortid from 'shortid';
 
 test('test creating a file, saving it, closing it, re-opening it, running it, then deleting it', async ({
@@ -17,8 +18,9 @@ test('test creating a file, saving it, closing it, re-opening it, running it, th
   await page.locator('.editor-container').click();
 
   const message = `Hello notebook ${shortid()}!`;
+  const command = `print("${message}")`;
 
-  await page.keyboard.type(`print("${message}")`);
+  await typeInMonaco(page, command);
 
   // Click the Save button
   await page.locator('[aria-label="Save"]').click();

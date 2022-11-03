@@ -13,6 +13,7 @@ test('can open a simple figure', async ({ page }) => {
   const command = `from deephaven import empty_table
 from deephaven.plot.figure import Figure
 ${figureName} = Figure().plot_xy(series_name="Test", t=empty_table(100).update(["x=i", "y=Math.sin(i)", "z=Math.cos(i)"]), x="x", y="y").show()`;
+
   await typeInMonaco(page, command);
   await page.keyboard.press('Enter');
 

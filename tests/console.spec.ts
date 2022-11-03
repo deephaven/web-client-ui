@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import shortid from 'shortid';
+import { typeInMonaco } from './utils';
 
 test('print commands get logged', async ({ page }) => {
   await page.goto('http://localhost:4000/');
@@ -12,7 +13,9 @@ test('print commands get logged', async ({ page }) => {
   await consoleInput.click();
 
   const message = `Hello ${shortid()}!`;
-  await page.keyboard.type(`print("${message}")\r`);
+  const command = `print("${message}")`;
+
+  await typeInMonaco(page, command);
   await page.keyboard.press('Enter');
 
   // Expect the output to show up in the log
