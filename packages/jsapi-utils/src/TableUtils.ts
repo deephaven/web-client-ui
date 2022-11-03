@@ -392,6 +392,8 @@ export class TableUtils {
   static isStringType(columnType: string): boolean {
     switch (columnType) {
       case 'java.lang.String':
+      case 'com.illumon.iris.db.tables.utils.StringMatchable':
+      case 'com.illumon.iris.db.tables.utils.UUIDStringMatchable':
         return true;
       default:
         return false;
