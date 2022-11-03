@@ -121,8 +121,8 @@ test.describe('tests table operations', () => {
     // Check snapshot
     await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
 
-    // close go-to bar with shortcut
-    await page.keyboard.press('Control+g');
+    // close with sidepanel button
+    await page.locator('data-testid=menu-item-Go to').click();
 
     await expect(gotoBar).toHaveCount(0);
   });
