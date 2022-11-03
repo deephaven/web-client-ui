@@ -21,8 +21,9 @@ test('can open a simple table', async () => {
 
   // Enter a command that creates a table with three columns, showing x/y/z
   const tableName = generateVarName();
+  await page.keyboard.type(`from deephaven import empty_table\r`);
   await page.keyboard.type(
-    `from deephaven import empty_table\n${tableName} = empty_table(100).update(["x=i", "y=Math.sin(i)", "z=Math.cos(i)"])`
+    `${tableName} = empty_table(100).update(["x=i", "y=Math.sin(i)", "z=Math.cos(i)"])\r`
   );
   await page.keyboard.press('Enter');
 

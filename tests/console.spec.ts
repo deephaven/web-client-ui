@@ -12,7 +12,7 @@ test('print commands get logged', async ({ page }) => {
   await consoleInput.click();
 
   const message = `Hello ${shortid()}!`;
-  await page.keyboard.type(`print("${message}")`);
+  await page.keyboard.type(`print("${message}")\r`);
   await page.keyboard.press('Enter');
 
   // Expect the output to show up in the log

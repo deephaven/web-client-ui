@@ -10,14 +10,10 @@ test('can open a simple figure', async ({ page }) => {
   const figureName = generateVarName();
 
   // Create a figure that uses the table we just created
-  await page.keyboard.type(`from deephaven import empty_table`);
-  await page.keyboard.press('Escape');
-  await page.keyboard.press('Shift+Enter');
-  await page.keyboard.type(`from deephaven.plot.figure import Figure`);
-  await page.keyboard.press('Escape');
-  await page.keyboard.press('Shift+Enter');
+  await page.keyboard.type(`from deephaven import empty_table\r`);
+  await page.keyboard.type(`from deephaven.plot.figure import Figure\r`);
   await page.keyboard.type(
-    `${figureName} = Figure().plot_xy(series_name="Test", t=empty_table(100).update(["x=i", "y=Math.sin(i)", "z=Math.cos(i)"]), x="x", y="y").show()`
+    `${figureName} = Figure().plot_xy(series_name="Test", t=empty_table(100).update(["x=i", "y=Math.sin(i)", "z=Math.cos(i)"]), x="x", y="y").show()\r`
   );
   await page.keyboard.press('Enter');
 
