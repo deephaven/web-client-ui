@@ -34,7 +34,9 @@ class MonacoUtils {
    * @param getWorker The getWorker function Monaco should use
    *                  The workers should be provided by the caller and bundled by their build system (e.g. Vite, Webpack)
    */
-  static init({ getWorker }: { getWorker?: Environment['getWorker'] }): void {
+  static init({
+    getWorker,
+  }: { getWorker?: Environment['getWorker'] } = {}): void {
     log.debug('Initializing Monaco...');
 
     if (getWorker !== undefined) {
