@@ -73,7 +73,7 @@ const NOTEBOOK = {
   }),
   WORDWRAP: ShortcutRegistry.createAndAdd({
     id: 'NOTEBOOK.WORDWRAP',
-    name: 'Word wrap',
+    name: 'Word Wrap',
     shortcut: [MODIFIER.ALT, KEY.Z],
     macShortcut: [MODIFIER.OPTION, KEY.Z],
   }),
