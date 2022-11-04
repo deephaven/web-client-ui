@@ -38,9 +38,7 @@ class MonacoUtils {
     log.debug('Initializing Monaco...');
 
     if (getWorker !== undefined) {
-      window.MonacoEnvironment = {
-        getWorker,
-      };
+      MonacoUtils.registerGetWorker(getWorker);
     }
 
     const { registerLanguages, removeHashtag } = MonacoUtils;
@@ -156,6 +154,17 @@ class MonacoUtils {
     registerLanguages([DbLang, PyLang, GroovyLang, LogLang, ScalaLang]);
 
     log.debug('Monaco initialized.');
+  }
+
+  /**
+   * Register the getWorker function for Monaco
+   * @param getWorker The getWorker function for Monaco
+   */
+  static registerGetWorker(getWorker: Environment['getWorker']): void {
+    window.MonacoEnvironment = {
+      ...window.MonacoEnvironment,
+      getWorker,
+    };
   }
 
   /**
