@@ -9,8 +9,6 @@ import * as monaco from 'monaco-editor';
 import type { Environment } from 'monaco-editor';
 // @ts-ignore
 import { KeyCodeUtils } from 'monaco-editor/esm/vs/base/common/keyCodes.js';
-// @ts-ignore
-// import EditorWorker from 'monaco-editor/esm/vs/editor/editor.worker';
 import Log from '@deephaven/log';
 import MonacoTheme from './MonacoTheme.module.scss';
 import PyLang from './lang/python';
