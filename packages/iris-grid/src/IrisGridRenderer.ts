@@ -281,7 +281,7 @@ class IrisGridRenderer extends GridRenderer {
 
     context.save();
 
-    // Use global composite so we can just change the underlying layer to grayscale
+    // Use global composite so we can change the underlying layer to grayscale
     context.globalCompositeOperation = 'color';
     context.filter = `blur(${scrimBlurSize}px)`;
     if (scrimColor != null) {
@@ -294,6 +294,16 @@ class IrisGridRenderer extends GridRenderer {
     context.clip();
 
     // Extend the edges beyond the clip area so they're hard edges
+    context.fillRect(
+      -scrimBlurSize,
+      -scrimBlurSize + gridY,
+      scrimBlurSize * 2 + width,
+      (scrimBlurSize * 2 + (height - gridY)) * loadingScrimProgress
+    );
+
+    // add an overlay of the scrim color to darken things a bit
+    context.globalCompositeOperation = 'overlay';
+    context.filter = `blur(${scrimBlurSize}px) opacity(15%)`;
     context.fillRect(
       -scrimBlurSize,
       -scrimBlurSize + gridY,

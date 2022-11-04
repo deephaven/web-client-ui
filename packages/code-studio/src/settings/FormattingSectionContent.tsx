@@ -703,7 +703,10 @@ export class FormattingSectionContent extends PureComponent<
       );
     }
 
-    if (rule.format != null) {
+    if (
+      rule.format.formatString !== undefined &&
+      rule.format.formatString.length === 0
+    ) {
       error.hasFormatError = true;
       errorMessages.push('Empty formatting rule.');
     } else if (

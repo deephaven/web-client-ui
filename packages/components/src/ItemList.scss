@@ -1,8 +1,8 @@
 @import '../scss/custom.scss';
 .item-list-scroll-pane {
+  // no point in padding, it will be ignored by list scrollToItem(last)
   border: 1px solid $input-border-color;
   border-radius: $input-border-radius;
-  padding: $input-padding-y 0 $input-padding-y;
   &:focus {
     outline: none;
   }

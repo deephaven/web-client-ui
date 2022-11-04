@@ -28,6 +28,10 @@ class IntegerFormatContextMenu {
         format: IntegerColumnFormatter.FORMAT_MILLIONS,
         group: IntegerFormatContextMenu.presetGroup,
       },
+      {
+        format: IntegerColumnFormatter.FORMAT_SCIENTIFIC_NOTATION,
+        group: IntegerFormatContextMenu.presetGroup,
+      },
     ];
 
     const defaultFormatOption = FormatContextMenuUtils.makeOption(

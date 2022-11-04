@@ -1,9 +1,5 @@
 import React from 'react';
-import {
-  Button,
-  DeephavenSpinner,
-  LoadingSpinner,
-} from '@deephaven/components';
+import { Button, LoadingSpinner } from '@deephaven/components';
 
 const Progress = (): React.ReactElement => (
   <div>
@@ -26,11 +22,6 @@ const Progress = (): React.ReactElement => (
       <div className="col">
         <h5>Indeterminate Progress Spinner</h5>
         <LoadingSpinner className="loading-spinner-large" />
-      </div>
-
-      <div className="col">
-        <h5>DH Spinner</h5>
-        <DeephavenSpinner />
       </div>
 
       <div className="col">

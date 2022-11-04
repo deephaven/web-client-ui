@@ -14,7 +14,6 @@ export { default as CustomTimeSelect } from './CustomTimeSelect';
 export { default as DateTimeInput } from './DateTimeInput';
 export { default as DateInput } from './DateInput';
 export { default as DebouncedSearchInput } from './DebouncedSearchInput';
-export { default as DeephavenSpinner } from './DeephavenSpinner';
 export { default as DraggableItemList } from './DraggableItemList';
 export * from './DraggableItemList';
 export { default as DragUtils } from './DragUtils';

@@ -120,6 +120,11 @@ export class IntegerColumnFormatter extends TableColumnFormatter<number> {
     0.000001
   );
 
+  static FORMAT_SCIENTIFIC_NOTATION = IntegerColumnFormatter.makePresetFormat(
+    'Scientific Notation',
+    '0.0000E0'
+  );
+
   defaultFormatString: string;
 
   constructor({
