@@ -503,8 +503,10 @@ class AdvancedFilterCreator extends PureComponent<
                   active: isAndFilter,
                 })}
                 onClick={this.handleChangeFilterOperator}
-                data-index={i}
-                data-operator={FilterOperator.and}
+                dataAttributes={{
+                  'data-index': i,
+                  'data-operator': FilterOperator.and,
+                }}
               >
                 AND
               </Button>
@@ -514,8 +516,10 @@ class AdvancedFilterCreator extends PureComponent<
                   active: !isAndFilter,
                 })}
                 onClick={this.handleChangeFilterOperator}
-                data-index={i}
-                data-operator={FilterOperator.or}
+                dataAttributes={{
+                  'data-index': i,
+                  'data-operator': FilterOperator.or,
+                }}
               >
                 OR
               </Button>

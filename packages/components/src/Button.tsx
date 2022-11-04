@@ -23,6 +23,11 @@ type VariantKind = VariantTuple[number];
 
 type ButtonTypes = 'submit' | 'reset' | 'button';
 
+type AddPrefix<T extends string> = `${T}${string}`;
+type DataAttribute = {
+  [key: AddPrefix<'data-'>]: unknown;
+};
+
 interface BaseButtonProps extends React.ComponentPropsWithRef<'button'> {
   kind: ButtonKind;
   type?: ButtonTypes;
@@ -31,8 +36,7 @@ interface BaseButtonProps extends React.ComponentPropsWithRef<'button'> {
   icon?: IconDefinition | JSX.Element;
   active?: boolean;
   'data-testid'?: string;
-  'data-index'?: number;
-  'data-operator'?: string;
+  dataAttributes?: DataAttribute;
   'aria-label'?: string;
 }
 
@@ -107,9 +111,8 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       style,
       children,
       tabIndex,
+      dataAttributes,
       'data-testid': dataTestId,
-      'data-index': dataIndex,
-      'data-operator': dataOperator,
       'aria-label': ariaLabel,
     } = props;
 
@@ -151,8 +154,8 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     const button = (
       <button
         data-testid={dataTestId}
-        data-index={dataIndex}
-        data-operator={dataOperator}
+        // eslint-disable-next-line react/jsx-props-no-spreading
+        {...dataAttributes}
         ref={ref}
         // eslint-disable-next-line react/button-has-type
         type={type}
@@ -251,8 +254,6 @@ Button.propTypes = {
   className: PropTypes.string,
   style: PropTypes.object,
   'data-testid': PropTypes.string,
-  'data-index': PropTypes.number,
-  'data-operator': PropTypes.string,
 };
 
 Button.defaultProps = {
@@ -274,8 +275,6 @@ Button.defaultProps = {
   className: undefined,
   style: {},
   'data-testid': undefined,
-  'data-index': undefined,
-  'data-operator': undefined,
 };
 
 export default Button;
