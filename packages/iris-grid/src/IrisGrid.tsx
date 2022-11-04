@@ -3735,6 +3735,9 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
                   isShown={shownAdvancedFilter === columnIndex}
                   interactive
                   closeOnBlur
+                  options={{
+                    positionFixed: true,
+                  }}
                 >
                   {this.getCachedAdvancedFilterMenuActions(
                     model,
