@@ -20,11 +20,7 @@ import {
 } from '@deephaven/jsapi-utils';
 import { Button, ContextActionUtils } from '@deephaven/components';
 import Log from '@deephaven/log';
-import {
-  CancelablePromise,
-  PromiseUtils,
-  assertNotNull,
-} from '@deephaven/utils';
+import { CancelablePromise, PromiseUtils } from '@deephaven/utils';
 import { Column, FilterCondition, Table } from '@deephaven/jsapi-shim';
 import shortid from 'shortid';
 import AdvancedFilterCreatorFilterItem from './AdvancedFilterCreatorFilterItem';
@@ -250,13 +246,7 @@ class AdvancedFilterCreator extends PureComponent<
     this.setState({ filterItems, filterOperators });
   }
 
-  handleChangeFilterOperator(event: React.MouseEvent<HTMLButtonElement>): void {
-    const target = event.currentTarget;
-
-    const { operator, index: strIndex } = target.dataset;
-    assertNotNull(strIndex);
-    const index = parseInt(strIndex, 10);
-
+  handleChangeFilterOperator(index: number, operator: string): void {
     let { filterOperators } = this.state;
     filterOperators = [...filterOperators];
 
@@ -502,11 +492,9 @@ class AdvancedFilterCreator extends PureComponent<
                 className={classNames('filter-operator', {
                   active: isAndFilter,
                 })}
-                onClick={this.handleChangeFilterOperator}
-                dataAttributes={{
-                  'data-index': i,
-                  'data-operator': FilterOperator.and,
-                }}
+                onClick={() =>
+                  this.handleChangeFilterOperator(i, FilterOperator.and)
+                }
               >
                 AND
               </Button>
@@ -515,11 +503,9 @@ class AdvancedFilterCreator extends PureComponent<
                 className={classNames('filter-operator', {
                   active: !isAndFilter,
                 })}
-                onClick={this.handleChangeFilterOperator}
-                dataAttributes={{
-                  'data-index': i,
-                  'data-operator': FilterOperator.or,
-                }}
+                onClick={() =>
+                  this.handleChangeFilterOperator(i, FilterOperator.or)
+                }
               >
                 OR
               </Button>

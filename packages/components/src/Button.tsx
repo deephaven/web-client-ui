@@ -23,11 +23,6 @@ type VariantKind = VariantTuple[number];
 
 type ButtonTypes = 'submit' | 'reset' | 'button';
 
-type AddPrefix<T extends string> = `${T}${string}`;
-type DataAttribute = {
-  [key: AddPrefix<'data-'>]: unknown;
-};
-
 interface BaseButtonProps extends React.ComponentPropsWithRef<'button'> {
   kind: ButtonKind;
   type?: ButtonTypes;
@@ -36,8 +31,6 @@ interface BaseButtonProps extends React.ComponentPropsWithRef<'button'> {
   icon?: IconDefinition | JSX.Element;
   active?: boolean;
   'data-testid'?: string;
-  dataAttributes?: DataAttribute;
-  'aria-label'?: string;
 }
 
 type ButtonWithChildren = BaseButtonProps & {
@@ -111,7 +104,6 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       style,
       children,
       tabIndex,
-      dataAttributes,
       'data-testid': dataTestId,
       'aria-label': ariaLabel,
     } = props;
@@ -154,8 +146,6 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     const button = (
       <button
         data-testid={dataTestId}
-        // eslint-disable-next-line react/jsx-props-no-spreading
-        {...dataAttributes}
         ref={ref}
         // eslint-disable-next-line react/button-has-type
         type={type}
