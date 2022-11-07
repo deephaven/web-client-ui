@@ -1,17 +1,14 @@
-// Use this for packages within the monorepo which extend our styles or need theme variables
-// This will not work well when consumed because of the relative paths
-// Sass load-path to make non-relative paths work is bugged and watches thousands of files
-// https://github.com/sass/dart-sass/issues/1377
+// Consumers should be able to resolve bootstrap/ to node_modules/bootstrap
 
 //Make bootstrap functions available for use in overrides
-@import '../../../node_modules/bootstrap/scss/_functions.scss';
+@import 'bootstrap/scss/_functions.scss';
 @import './bootstrap_overrides.scss';
 
 //_variable imports come after bootstrap default overrides,
 // makes all other variables and mixins from bootstrap available
 /// with just importing customer.scss
-@import '../../../node_modules/bootstrap/scss/_variables.scss';
-@import '../../../node_modules/bootstrap/scss/_mixins.scss';
+@import 'bootstrap/scss/_variables.scss';
+@import 'bootstrap/scss/_mixins.scss';
 
 //New variables come after imports
 @import './new_variables.scss';
