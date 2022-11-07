@@ -22,15 +22,10 @@ interface ScriptEditorProps {
   onChange: (e: editor.IModelContentChangedEvent) => void;
   onRunCommand: (command: string) => void;
   onEditorInitialized: (editor: editor.IStandaloneCodeEditor) => void;
-  onEditorWillDestroy: () => void;
+  onEditorWillDestroy: (editor: editor.IStandaloneCodeEditor) => void;
   session: IdeSession;
   sessionLanguage?: string;
-  settings?: {
-    language: string;
-    value: string | null;
-    wordWrap: 'on' | 'off';
-    minimap: { enabled: boolean };
-  };
+  settings?: editor.IStandaloneEditorConstructionOptions;
 }
 
 interface ScriptEditorState {
@@ -46,11 +41,7 @@ class ScriptEditor extends Component<ScriptEditorProps, ScriptEditorState> {
     onChange: (): void => undefined,
     onEditorInitialized: (): void => undefined,
     onEditorWillDestroy: (): void => undefined,
-    updateWorkspaceData: (): void => undefined,
     session: null,
-    sessionLanguage: null,
-    settings: null,
-    workspace: null,
   };
 
   constructor(props: ScriptEditorProps) {
@@ -184,7 +175,8 @@ class ScriptEditor extends Component<ScriptEditorProps, ScriptEditorState> {
   handleEditorWillDestroy(): void {
     log.debug('handleEditorWillDestroy');
     const { onEditorWillDestroy } = this.props;
-    onEditorWillDestroy();
+    assertNotNull(this.editor);
+    onEditorWillDestroy(this.editor);
     this.deInitContextActions();
     this.deInitCodeCompletion();
     this.setState({ model: null });
@@ -347,7 +339,7 @@ class ScriptEditor extends Component<ScriptEditorProps, ScriptEditorState> {
     } = this.props;
     const { model } = this.state;
     const errorMessage = error ? `Unable to open document. ${error}` : null;
-    const editorLanguage = settings ? settings.language : null;
+    const editorLanguage = settings ? settings.language ?? null : null;
     const completionProviderEnabled =
       model && session && editorLanguage === sessionLanguage;
 
