@@ -19,16 +19,8 @@
   },
   "scripts": {
     "build": "cross-env NODE_ENV=production run-p build:*",
-    "build-dev": "cross-env NODE_ENV=development run-p build:*",
-    "babel": "babel ./src --out-dir ./dist --extensions \".ts,.tsx,.js,.jsx\" --source-maps --root-mode upward",
-    "sass": "sass --embed-sources --load-path=../../node_modules ./src:./dist",
-    "build:babel": "npm run babel",
-    "build:sass": "npm run sass",
-    "watch": "run-p watch:*",
-    "watch:babel": "npm run babel -- -w --skip-initial-build",
-    "watch:sass": "npm run sass -- --watch --update",
-    "prestart": "npm run build-dev",
-    "start": "cross-env NODE_ENV=development npm run watch"
+    "build:babel": "babel ./src --out-dir ./dist --extensions \".ts,.tsx,.js,.jsx\" --source-maps --root-mode upward",
+    "build:sass": "sass --embed-sources --load-path=../../node_modules ./src:./dist"
   },
   "dependencies": {
     "@deephaven/components": "file:../components",
