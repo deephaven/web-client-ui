@@ -40,7 +40,8 @@ $toolbar-bg: $interfacegray;
       }
     }
 
-    .btn-play:hover {
+    .btn-play:hover,
+    .btn-play-selected:hover {
       color: $green;
     }
 
