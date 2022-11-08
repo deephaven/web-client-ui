@@ -253,6 +253,10 @@ $nav-space: 4px; // give a gap around some buttons for focus area that are in na
 }
 
 .linker-overlay svg path.link-select {
+  cursor: pointer;
+}
+
+.linker-overlay.alt-pressed svg path.link-select {
   cursor: url('../assets/svg/cursor-unlinker.svg') 8 8, pointer;
 }
 

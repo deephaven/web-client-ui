@@ -21,7 +21,7 @@ export type LinkerLinkProps = {
   y2: number;
   id: string;
   className: string;
-  onClick: (id: string) => void;
+  onClick: (id: string, deleteLink: boolean) => void;
 };
 
 export class LinkerLink extends PureComponent<LinkerLinkProps> {
@@ -56,7 +56,7 @@ export class LinkerLink extends PureComponent<LinkerLinkProps> {
     event.preventDefault();
 
     const { id, onClick } = this.props;
-    onClick(id);
+    onClick(id, event.altKey);
   }
 
   render(): JSX.Element {

@@ -2,8 +2,8 @@
 
 $link-width: 3;
 $selectable-width: 20;
-$dash-color-1: $primary;
-$dash-color-2: $primary-light;
+$dash-color-1: $blue;
+$dash-color-2: mix($blue, $content-bg, 25%);
 $filter-source-dash-color-1: $purple;
 $filter-source-dash-color-2: mix($purple, $content-bg, 25%);
 $invalid-dash-color-1: $gray-300;
@@ -38,6 +38,25 @@ $dash-size: 10;
     stroke: transparent;
     pointer-events: stroke;
     cursor: pointer;
+  }
+
+  .link-is-selected {
+    .link-dot,
+    .link-triangle {
+      fill: $primary;
+    }
+    path {
+      stroke-width: $link-width;
+      stroke: $primary-light;
+      &.link-select {
+        stroke-width: $selectable-width;
+        stroke: transparent;
+      }
+    }
+
+    path.link-foreground {
+      stroke: $primary;
+    }
   }
 
   .link-filter-source {
@@ -83,18 +102,35 @@ $dash-size: 10;
   }
 
   path.link-select:hover ~ path.link-background {
-    stroke: $dash-delete-color-2;
+    stroke: $primary-hover;
   }
 
   path.link-select:hover ~ path.link-foreground,
   path.link-select:hover ~ .link-dot,
   path.link-select:hover ~ .link-triangle {
-    stroke: $dash-delete-color-1;
+    stroke: $primary;
   }
 
   path.link-select:hover ~ .link-dot,
   path.link-select:hover ~ .link-triangle {
-    fill: $dash-delete-color-1;
+    fill: $primary;
+  }
+
+  .alt-pressed {
+    path.link-select:hover ~ path.link-background {
+      stroke: $dash-delete-color-2;
+    }
+
+    path.link-select:hover ~ path.link-foreground,
+    path.link-select:hover ~ .link-dot,
+    path.link-select:hover ~ .link-triangle {
+      stroke: $dash-delete-color-1;
+    }
+
+    path.link-select:hover ~ .link-dot,
+    path.link-select:hover ~ .link-triangle {
+      fill: $dash-delete-color-1;
+    }
   }
 }
 

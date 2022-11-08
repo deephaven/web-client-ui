@@ -104,6 +104,7 @@ export class Linker extends Component<LinkerProps, LinkerState> {
     this.handleUpdateValues = this.handleUpdateValues.bind(this);
     this.handleStateChange = this.handleStateChange.bind(this);
     this.handleExited = this.handleExited.bind(this);
+    this.handleLinkSelected = this.handleLinkSelected.bind(this);
     this.isColumnSelectionValid = this.isColumnSelectionValid.bind(this);
 
     this.state = { linkInProgress: undefined };
@@ -281,6 +282,7 @@ export class Linker extends Component<LinkerProps, LinkerState> {
         // Link starts with type Invalid as linking a source to itself is not allowed
         type: 'invalid',
         isReversed: isAlwaysEndPoint,
+        isSelected: false,
       };
 
       log.debug('starting link', newLink);
@@ -333,6 +335,7 @@ export class Linker extends Component<LinkerProps, LinkerState> {
         end: isReversed !== undefined && isReversed ? start : end,
         id,
         type,
+        isSelected: true,
       };
       log.info('creating link', newLink);
 
@@ -488,6 +491,20 @@ export class Linker extends Component<LinkerProps, LinkerState> {
     // because the panels can get unmounted on errors and we want to keep the links if that happens
     log.debug(`Panel ${panelId} closed, deleting links.`);
     this.deleteLinksForPanelId(panelId);
+  }
+
+  handleLinkSelected(linkId: string, deleteLink = false): void {
+    const { links } = this.props;
+    const link = links.find(l => l.id === linkId);
+    if (link) {
+      if (deleteLink) {
+        this.deleteLinks([link]);
+      } else {
+        link.isSelected = !link.isSelected;
+      }
+    } else {
+      log.error('Unable to find link to select or delete', linkId);
+    }
   }
 
   handleLayoutStateChanged(): void {
@@ -650,7 +667,7 @@ export class Linker extends Component<LinkerProps, LinkerState> {
               isolatedLinkerPanelId
             )}
             messageText={linkerOverlayMessage}
-            onLinkDeleted={this.handleLinkDeleted}
+            onLinkSelected={this.handleLinkSelected}
             onAllLinksDeleted={this.handleAllLinksDeleted}
             onDone={this.handleDone}
             onCancel={this.handleCancel}

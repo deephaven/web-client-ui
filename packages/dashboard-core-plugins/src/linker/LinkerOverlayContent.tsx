@@ -32,7 +32,7 @@ export type LinkerOverlayContentProps = {
   disabled?: boolean;
   links: Link[];
   messageText: string;
-  onLinkDeleted: (linkId: string) => void;
+  onLinkSelected: (linkId: string, deleteLink: boolean) => void;
   onAllLinksDeleted: () => void;
   onCancel: () => void;
   onDone: () => void;
@@ -42,6 +42,7 @@ export type LinkerOverlayContentProps = {
 export type LinkerOverlayContentState = {
   mouseX?: number;
   mouseY?: number;
+  isAltPressed: boolean;
 };
 
 export class LinkerOverlayContent extends Component<
@@ -56,16 +57,21 @@ export class LinkerOverlayContent extends Component<
     super(props);
 
     this.handleMouseMove = this.handleMouseMove.bind(this);
+    this.handleKeyDown = this.handleKeyDown.bind(this);
+    this.handleKeyUp = this.handleKeyUp.bind(this);
     this.handleEscapePressed = this.handleEscapePressed.bind(this);
 
     this.state = {
       mouseX: undefined,
       mouseY: undefined,
+      isAltPressed: false,
     };
   }
 
   componentDidMount(): void {
     window.addEventListener('mousemove', this.handleMouseMove, true);
+    window.addEventListener('keydown', this.handleKeyDown, true);
+    window.addEventListener('keyup', this.handleKeyUp, true);
   }
 
   // eslint-disable-next-line react/sort-comp
@@ -75,6 +81,8 @@ export class LinkerOverlayContent extends Component<
 
   componentWillUnmount(): void {
     window.removeEventListener('mousemove', this.handleMouseMove, true);
+    window.removeEventListener('keydown', this.handleKeyDown, true);
+    window.removeEventListener('keyup', this.handleKeyUp, true);
   }
 
   /** Gets the on screen points for a link start or end spec */
@@ -116,6 +124,22 @@ export class LinkerOverlayContent extends Component<
     });
   }
 
+  handleKeyDown(event: KeyboardEvent): void {
+    if (event.key === 'Alt') {
+      this.setState({
+        isAltPressed: true,
+      });
+    }
+  }
+
+  handleKeyUp(event: KeyboardEvent): void {
+    if (event.key === 'Alt') {
+      this.setState({
+        isAltPressed: false,
+      });
+    }
+  }
+
   handleEscapePressed(): void {
     const { onCancel } = this.props;
     onCancel();
@@ -126,16 +150,16 @@ export class LinkerOverlayContent extends Component<
       disabled,
       links,
       messageText,
-      onLinkDeleted,
+      onLinkSelected,
       onAllLinksDeleted,
       onDone,
     } = this.props;
 
-    const { mouseX, mouseY } = this.state;
+    const { mouseX, mouseY, isAltPressed } = this.state;
     const visibleLinks = links
       .map(link => {
         try {
-          const { id, type, isReversed, start, end } = link;
+          const { id, type, isReversed, isSelected, start, end } = link;
           let [x1, y1] = this.getPointFromLinkPoint(start);
           let x2 = mouseX ?? x1;
           let y2 = mouseY ?? y1;
@@ -152,7 +176,9 @@ export class LinkerOverlayContent extends Component<
             { disabled },
             { 'link-filter-source': type === 'filterSource' },
             { 'link-invalid': type === 'invalid' },
-            { interactive: link.end == null }
+            { interactive: link.end == null },
+            { 'link-is-selected': isSelected },
+            { 'alt-pressed': isAltPressed }
           );
           return { x1, y1, x2, y2, id, className };
         } catch (error) {
@@ -163,7 +189,11 @@ export class LinkerOverlayContent extends Component<
       .filter(item => item != null) as VisibleLink[];
 
     return (
-      <div className="linker-overlay">
+      <div
+        className={classNames('linker-overlay', {
+          'alt-pressed': isAltPressed,
+        })}
+      >
         <svg>
           {visibleLinks.map(({ x1, y1, x2, y2, id, className }) => (
             <LinkerLink
@@ -174,7 +204,7 @@ export class LinkerOverlayContent extends Component<
               x2={x2}
               y2={y2}
               key={id}
-              onClick={onLinkDeleted}
+              onClick={onLinkSelected}
             />
           ))}
         </svg>
