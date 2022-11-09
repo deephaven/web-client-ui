@@ -638,6 +638,59 @@ export class Linker extends Component<LinkerProps, LinkerState> {
     return type !== 'invalid';
   }
 
+  getComparisonOperators = memoize(() => [
+    {
+      title: 'equals',
+      action: () => console.log('equals chosen'),
+      order: 10,
+    },
+    {
+      title: 'not equals',
+      action: () => console.log('equals chosen'),
+      order: 10,
+    },
+    {
+      title: 'less than',
+      action: () => console.log('equals chosen'),
+      order: 10,
+    },
+    {
+      title: 'less than or equal',
+      action: () => console.log('equals chosen'),
+      order: 10,
+    },
+    {
+      title: 'greater than',
+      action: () => console.log('equals chosen'),
+      order: 10,
+    },
+    {
+      title: 'greater than or equal',
+      action: () => console.log('equals chosen'),
+      order: 10,
+    },
+    {
+      title: 'contains',
+      action: () => console.log('equals chosen'),
+      order: 10,
+    },
+    {
+      title: 'does not contain',
+      action: () => console.log('equals chosen'),
+      order: 10,
+    },
+    {
+      title: 'starts with',
+      action: () => console.log('equals chosen'),
+      order: 10,
+    },
+    {
+      title: 'ends with',
+      action: () => console.log('equals chosen'),
+      order: 10,
+    },
+  ]);
+
   render(): JSX.Element {
     const { links, isolatedLinkerPanelId, panelManager } = this.props;
     const { linkInProgress } = this.state;
@@ -648,6 +701,8 @@ export class Linker extends Component<LinkerProps, LinkerState> {
       isolatedLinkerPanelId === undefined
         ? 'Click a column source, then click a column target to create a filter link. Remove a filter link by clicking again to erase. Click done when finished.'
         : 'Create a link between the source column button and a table column by clicking on one, then the other. Remove the link by clicking it directly. Click done when finished.';
+    const comparisonOperators = this.getComparisonOperators();
+
     return (
       <>
         <CSSTransition
@@ -666,6 +721,7 @@ export class Linker extends Component<LinkerProps, LinkerState> {
               linkInProgress,
               isolatedLinkerPanelId
             )}
+            comparisonOperators={comparisonOperators}
             messageText={linkerOverlayMessage}
             onLinkSelected={this.handleLinkSelected}
             onAllLinksDeleted={this.handleAllLinksDeleted}

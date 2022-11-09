@@ -18,6 +18,11 @@ $dash-size: 10;
     fill: $dash-color-1;
   }
 
+  button {
+    fill: $primary;
+    pointer-events: all;
+  }
+
   path {
     stroke-width: $link-width;
     fill: transparent;

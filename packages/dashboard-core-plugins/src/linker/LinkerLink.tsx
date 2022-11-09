@@ -1,3 +1,5 @@
+import { Button, DropdownActions, DropdownMenu } from '@deephaven/components';
+import { vsMenu } from '@deephaven/icons';
 import React, { MouseEvent, PureComponent } from 'react';
 
 import './LinkerLink.scss';
@@ -21,12 +23,15 @@ export type LinkerLinkProps = {
   y2: number;
   id: string;
   className: string;
+  comparisonOperators?: DropdownActions;
+  isSelected: boolean;
   onClick: (id: string, deleteLink: boolean) => void;
 };
 
 export class LinkerLink extends PureComponent<LinkerLinkProps> {
   static defaultProps = {
     className: '',
+    isSelected: false,
     onClick(): void {
       // no-op
     },
@@ -60,7 +65,16 @@ export class LinkerLink extends PureComponent<LinkerLinkProps> {
   }
 
   render(): JSX.Element {
-    const { className, x1, y1, x2, y2, id } = this.props;
+    const {
+      className,
+      comparisonOperators,
+      isSelected,
+      x1,
+      y1,
+      x2,
+      y2,
+      id,
+    } = this.props;
 
     // Path between the two points
     const len = Math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2);
@@ -86,6 +100,8 @@ export class LinkerLink extends PureComponent<LinkerLinkProps> {
       )
     );
     const path = `M ${x1} ${y1} Q ${qx} ${qy} ${x2} ${y2}`;
+    const midX = 0.25 * x1 + 0.5 * qx + 0.25 * x2;
+    const midY = 0.25 * y1 + 0.5 * qy + 0.25 * y2;
 
     // path for a 100%, 100% rect, then two paths for circles at point
     const selectClipPath = `M ${minX} ${minY} L ${minX} ${maxY} L ${maxX} ${maxY} L ${maxX} ${minY} z
@@ -121,6 +137,22 @@ export class LinkerLink extends PureComponent<LinkerLinkProps> {
         <path className="link-foreground" d={path} />
         <circle className="link-dot" cx={x1} cy={y1} r="5" />
         <polygon className="link-triangle" points={points} />
+        {isSelected && (
+          <foreignObject x={midX} y={midY} width="40" height="40">
+            <Button
+              kind="inline"
+              icon={vsMenu}
+              onClick={() => {
+                // no-op: click is handled in `DropdownMenu'
+              }}
+            >
+              <DropdownMenu
+                actions={comparisonOperators ?? []}
+                popperOptions={{ placement: 'bottom-start' }}
+              />
+            </Button>
+          </foreignObject>
+        )}
       </svg>
     );
   }

@@ -3,6 +3,7 @@ import classNames from 'classnames';
 import {
   Button,
   ContextActions,
+  DropdownActions,
   GLOBAL_SHORTCUTS,
 } from '@deephaven/components';
 import { LayoutUtils, PanelManager } from '@deephaven/dashboard';
@@ -26,12 +27,14 @@ export type VisibleLink = {
   y2: number;
   id: string;
   className: string;
+  isSelected: boolean;
 };
 
 export type LinkerOverlayContentProps = {
   disabled?: boolean;
   links: Link[];
   messageText: string;
+  comparisonOperators?: DropdownActions;
   onLinkSelected: (linkId: string, deleteLink: boolean) => void;
   onAllLinksDeleted: () => void;
   onCancel: () => void;
@@ -150,6 +153,7 @@ export class LinkerOverlayContent extends Component<
       disabled,
       links,
       messageText,
+      comparisonOperators,
       onLinkSelected,
       onAllLinksDeleted,
       onDone,
@@ -180,7 +184,7 @@ export class LinkerOverlayContent extends Component<
             { 'link-is-selected': isSelected },
             { 'alt-pressed': isAltPressed }
           );
-          return { x1, y1, x2, y2, id, className };
+          return { x1, y1, x2, y2, id, className, isSelected };
         } catch (error) {
           log.error('Unable to get point for link', link, error);
           return null;
@@ -195,7 +199,7 @@ export class LinkerOverlayContent extends Component<
         })}
       >
         <svg>
-          {visibleLinks.map(({ x1, y1, x2, y2, id, className }) => (
+          {visibleLinks.map(({ x1, y1, x2, y2, id, className, isSelected }) => (
             <LinkerLink
               className={className}
               id={id}
@@ -205,6 +209,8 @@ export class LinkerOverlayContent extends Component<
               y2={y2}
               key={id}
               onClick={onLinkSelected}
+              isSelected={isSelected}
+              comparisonOperators={comparisonOperators}
             />
           ))}
         </svg>
