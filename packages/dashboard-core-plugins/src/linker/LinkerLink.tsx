@@ -23,7 +23,7 @@ export type LinkerLinkProps = {
   y2: number;
   id: string;
   className: string;
-  comparisonOperators?: DropdownActions;
+  comparisonOperators: DropdownActions;
   isSelected: boolean;
   onClick: (id: string, deleteLink: boolean) => void;
 };
@@ -138,7 +138,7 @@ export class LinkerLink extends PureComponent<LinkerLinkProps> {
         <circle className="link-dot" cx={x1} cy={y1} r="5" />
         <polygon className="link-triangle" points={points} />
         {isSelected && (
-          <foreignObject x={midX} y={midY} width="40" height="40">
+          <foreignObject x={midX + 10} y={midY + 10} width="30" height="30">
             <Button
               kind="inline"
               icon={vsMenu}
@@ -147,7 +147,7 @@ export class LinkerLink extends PureComponent<LinkerLinkProps> {
               }}
             >
               <DropdownMenu
-                actions={comparisonOperators ?? []}
+                actions={comparisonOperators}
                 popperOptions={{ placement: 'bottom-start' }}
               />
             </Button>

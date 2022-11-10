@@ -1,6 +1,7 @@
 import shortid from 'shortid';
 import { LayoutUtils, PanelComponent } from '@deephaven/dashboard';
 import { TableUtils } from '@deephaven/jsapi-utils';
+import { TypeValue as FilterTypeValue } from '@deephaven/filters';
 import Log from '@deephaven/log';
 import { ChartPanel, IrisGridPanel, DropdownFilterPanel } from '../panels';
 
@@ -18,8 +19,9 @@ export type Link = {
   end?: LinkPoint;
   id: string;
   isReversed?: boolean;
-  isSelected: boolean;
+  isSelected?: boolean;
   type: LinkType;
+  comparisonOperator?: FilterTypeValue;
 };
 
 export type LinkColumn = {

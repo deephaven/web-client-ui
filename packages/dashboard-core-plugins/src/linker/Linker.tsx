@@ -18,6 +18,10 @@ import {
 } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
 import {
+  Type as FilterType,
+  TypeValue as FilterTypeValue,
+} from '@deephaven/filters';
+import {
   getActiveTool,
   getTimeZone,
   setActiveTool as setActiveToolAction,
@@ -243,6 +247,7 @@ export class Linker extends Component<LinkerProps, LinkerState> {
   }
 
   handleGridColumnSelect(panel: PanelComponent, column: LinkColumn): void {
+    console.log('gridcolumnselect');
     this.columnSelected(panel, column);
   }
 
@@ -282,7 +287,6 @@ export class Linker extends Component<LinkerProps, LinkerState> {
         // Link starts with type Invalid as linking a source to itself is not allowed
         type: 'invalid',
         isReversed: isAlwaysEndPoint,
-        isSelected: false,
       };
 
       log.debug('starting link', newLink);
@@ -336,6 +340,7 @@ export class Linker extends Component<LinkerProps, LinkerState> {
         id,
         type,
         isSelected: true,
+        comparisonOperator: FilterType.eq as FilterTypeValue,
       };
       log.info('creating link', newLink);
 
@@ -373,6 +378,8 @@ export class Linker extends Component<LinkerProps, LinkerState> {
    * @param filterMap Map of column name to column type, text, and value
    */
   setPanelFilterMap(panelId: string, filterMap: LinkFilterMap): void {
+    console.log('setpanelfiltermap');
+
     log.debug('Set filter data for panel:', panelId, filterMap);
     const { panelManager } = this.props;
     const panel = panelManager.getOpenedPanelById(panelId);
@@ -431,6 +438,8 @@ export class Linker extends Component<LinkerProps, LinkerState> {
   }
 
   handleUpdateValues(panel: PanelComponent, dataMap: LinkDataMap): void {
+    console.log('handleupdatevalues', panel, dataMap);
+
     const panelId = LayoutUtils.getIdFromPanel(panel);
     const { links, timeZone } = this.props;
     // Map of panel ID to filterMap
@@ -500,7 +509,7 @@ export class Linker extends Component<LinkerProps, LinkerState> {
       if (deleteLink) {
         this.deleteLinks([link]);
       } else {
-        link.isSelected = !link.isSelected;
+        link.isSelected = link.isSelected !== undefined && !link.isSelected;
       }
     } else {
       log.error('Unable to find link to select or delete', linkId);
@@ -638,59 +647,6 @@ export class Linker extends Component<LinkerProps, LinkerState> {
     return type !== 'invalid';
   }
 
-  getComparisonOperators = memoize(() => [
-    {
-      title: 'equals',
-      action: () => console.log('equals chosen'),
-      order: 10,
-    },
-    {
-      title: 'not equals',
-      action: () => console.log('equals chosen'),
-      order: 10,
-    },
-    {
-      title: 'less than',
-      action: () => console.log('equals chosen'),
-      order: 10,
-    },
-    {
-      title: 'less than or equal',
-      action: () => console.log('equals chosen'),
-      order: 10,
-    },
-    {
-      title: 'greater than',
-      action: () => console.log('equals chosen'),
-      order: 10,
-    },
-    {
-      title: 'greater than or equal',
-      action: () => console.log('equals chosen'),
-      order: 10,
-    },
-    {
-      title: 'contains',
-      action: () => console.log('equals chosen'),
-      order: 10,
-    },
-    {
-      title: 'does not contain',
-      action: () => console.log('equals chosen'),
-      order: 10,
-    },
-    {
-      title: 'starts with',
-      action: () => console.log('equals chosen'),
-      order: 10,
-    },
-    {
-      title: 'ends with',
-      action: () => console.log('equals chosen'),
-      order: 10,
-    },
-  ]);
-
   render(): JSX.Element {
     const { links, isolatedLinkerPanelId, panelManager } = this.props;
     const { linkInProgress } = this.state;
@@ -701,7 +657,6 @@ export class Linker extends Component<LinkerProps, LinkerState> {
       isolatedLinkerPanelId === undefined
         ? 'Click a column source, then click a column target to create a filter link. Remove a filter link by clicking again to erase. Click done when finished.'
         : 'Create a link between the source column button and a table column by clicking on one, then the other. Remove the link by clicking it directly. Click done when finished.';
-    const comparisonOperators = this.getComparisonOperators();
 
     return (
       <>
@@ -721,7 +676,6 @@ export class Linker extends Component<LinkerProps, LinkerState> {
               linkInProgress,
               isolatedLinkerPanelId
             )}
-            comparisonOperators={comparisonOperators}
             messageText={linkerOverlayMessage}
             onLinkSelected={this.handleLinkSelected}
             onAllLinksDeleted={this.handleAllLinksDeleted}

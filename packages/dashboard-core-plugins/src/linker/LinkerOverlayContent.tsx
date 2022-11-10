@@ -6,9 +6,11 @@ import {
   DropdownActions,
   GLOBAL_SHORTCUTS,
 } from '@deephaven/components';
+import memoize from 'memoize-one';
 import { LayoutUtils, PanelManager } from '@deephaven/dashboard';
 import Log from '@deephaven/log';
 import type { Container } from '@deephaven/golden-layout';
+import { TableUtils } from '@deephaven/jsapi-utils';
 import {
   isLinkableFromPanel,
   Link,
@@ -28,13 +30,13 @@ export type VisibleLink = {
   id: string;
   className: string;
   isSelected: boolean;
+  comparisonOperators: DropdownActions;
 };
 
 export type LinkerOverlayContentProps = {
   disabled?: boolean;
   links: Link[];
   messageText: string;
-  comparisonOperators?: DropdownActions;
   onLinkSelected: (linkId: string, deleteLink: boolean) => void;
   onAllLinksDeleted: () => void;
   onCancel: () => void;
@@ -87,6 +89,15 @@ export class LinkerOverlayContent extends Component<
     window.removeEventListener('keydown', this.handleKeyDown, true);
     window.removeEventListener('keyup', this.handleKeyUp, true);
   }
+
+  getComparisonOperators = memoize(
+    (columnType: string): DropdownActions =>
+      TableUtils.getFilterTypes(columnType).map(type => ({
+        title: type,
+        action: () => console.log('test'),
+        order: 10,
+      }))
+  );
 
   /** Gets the on screen points for a link start or end spec */
   getPointFromLinkPoint(linkPoint: LinkPoint): LinkerCoordinate {
@@ -153,7 +164,6 @@ export class LinkerOverlayContent extends Component<
       disabled,
       links,
       messageText,
-      comparisonOperators,
       onLinkSelected,
       onAllLinksDeleted,
       onDone,
@@ -184,7 +194,19 @@ export class LinkerOverlayContent extends Component<
             { 'link-is-selected': isSelected },
             { 'alt-pressed': isAltPressed }
           );
-          return { x1, y1, x2, y2, id, className, isSelected };
+          const comparisonOperators = this.getComparisonOperators(
+            start.columnType ?? ''
+          );
+          return {
+            x1,
+            y1,
+            x2,
+            y2,
+            id,
+            className,
+            isSelected,
+            comparisonOperators,
+          };
         } catch (error) {
           log.error('Unable to get point for link', link, error);
           return null;
@@ -199,20 +221,31 @@ export class LinkerOverlayContent extends Component<
         })}
       >
         <svg>
-          {visibleLinks.map(({ x1, y1, x2, y2, id, className, isSelected }) => (
-            <LinkerLink
-              className={className}
-              id={id}
-              x1={x1}
-              y1={y1}
-              x2={x2}
-              y2={y2}
-              key={id}
-              onClick={onLinkSelected}
-              isSelected={isSelected}
-              comparisonOperators={comparisonOperators}
-            />
-          ))}
+          {visibleLinks.map(
+            ({
+              x1,
+              y1,
+              x2,
+              y2,
+              id,
+              className,
+              isSelected,
+              comparisonOperators,
+            }) => (
+              <LinkerLink
+                className={className}
+                id={id}
+                x1={x1}
+                y1={y1}
+                x2={x2}
+                y2={y2}
+                key={id}
+                onClick={onLinkSelected}
+                isSelected={isSelected}
+                comparisonOperators={comparisonOperators}
+              />
+            )
+          )}
         </svg>
         <div className="linker-toast-dialog">
           <div className="toast-body">{messageText}</div>
