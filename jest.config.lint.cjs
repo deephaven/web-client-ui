@@ -9,7 +9,10 @@ module.exports = {
     {
       displayName: 'stylelint',
       runner: 'jest-runner-stylelint',
-      testMatch: ['<rootDir>/packages/*/src/**/*.scss'],
+      testMatch: [
+        '<rootDir>/packages/*/src/**/*.scss',
+        '<rootDir>/packages/*/scss/**/*.scss',
+      ],
       testPathIgnorePatterns: ['<rootDir>/packages/golden-layout/*'],
       moduleFileExtensions: ['scss'],
     },
