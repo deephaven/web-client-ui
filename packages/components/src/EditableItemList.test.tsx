@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import EditableItemList from './EditableItemList';
 
@@ -18,9 +18,9 @@ function makeWrapper({
   validate = undefined,
 }: {
   items?: string[];
-  onAdd?: (string) => void;
-  onDelete?: (string) => void;
-  validate?: (string) => Error | null;
+  onAdd?: (item: string) => void;
+  onDelete?: (items: string[]) => void;
+  validate?: (item: string) => Error | null;
 } = {}) {
   return render(
     <EditableItemList
@@ -103,4 +103,55 @@ it('ignores empty value on enter', () => {
   expect(onAdd).not.toBeCalled();
   expectAddButton().toBeDisabled();
   unmount();
+});
+
+describe('delete button', () => {
+  const validate = jest.fn(() => null);
+  const onAdd = jest.fn();
+  const onDelete = jest.fn();
+  let unmount;
+  let items: HTMLElement[];
+  beforeEach(() => {
+    jest.resetAllMocks();
+    ({ unmount } = makeWrapper({
+      items: ['0', '1', '2'],
+      validate,
+      onAdd,
+      onDelete,
+    }));
+    items = screen.getAllByRole('listitem');
+  });
+
+  afterEach(() => {
+    unmount();
+  });
+
+  it('disabled by default, enabled on item select', () => {
+    expect(screen.getByTestId('delete-item-button')).toBeDisabled();
+    userEvent.click(items[0]);
+    expect(screen.getByTestId('delete-item-button')).toBeEnabled();
+    userEvent.click(items[0]);
+    expect(screen.getByTestId('delete-item-button')).toBeDisabled();
+  });
+
+  it('enabled on item click and drag', () => {
+    expect(screen.getByTestId('delete-item-button')).toBeDisabled();
+    fireEvent.mouseDown(items[0]);
+    fireEvent.mouseMove(items[0]);
+    expect(screen.getByTestId('delete-item-button')).toBeEnabled();
+    screen.getByTestId('delete-item-button').click();
+    expect(onDelete).toBeCalledWith(expect.arrayContaining(['0']));
+  });
+
+  it('enabled click and drag across multiple items', () => {
+    expect(screen.getByTestId('delete-item-button')).toBeDisabled();
+    fireEvent.mouseDown(items[0]);
+    fireEvent.mouseMove(items[0]);
+    fireEvent.mouseMove(items[1]);
+    fireEvent.mouseMove(items[2]);
+    fireEvent.mouseUp(items[2]);
+    expect(screen.getByTestId('delete-item-button')).toBeEnabled();
+    screen.getByTestId('delete-item-button').click();
+    expect(onDelete).toBeCalledWith(expect.arrayContaining(['0', '1', '2']));
+  });
 });
