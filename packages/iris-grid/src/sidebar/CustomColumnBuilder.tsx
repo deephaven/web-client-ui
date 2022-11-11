@@ -4,7 +4,7 @@ import shortid from 'shortid';
 import memoize from 'memoize-one';
 import { DragDropContext, Droppable, DropResult } from 'react-beautiful-dnd';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { DragUtils, LoadingSpinner } from '@deephaven/components';
+import { Button, DragUtils, LoadingSpinner } from '@deephaven/components';
 import { dhNewCircleLargeFilled, vsWarning, vsPass } from '@deephaven/icons';
 import CustomColumnInput from './CustomColumnInput';
 import './CustomColumnBuilder.scss';
@@ -336,15 +336,11 @@ class CustomColumnBuilder extends Component<
     const saveText = inputs.length > 1 ? 'Save Columns' : 'Save Column';
 
     return (
-      <button
-        type="button"
-        className={classNames(
-          'btn btn-apply',
-          {
-            'btn-spinner': isCustomColumnApplying,
-          },
-          isSuccessShowing ? 'btn-success' : 'btn-primary'
-        )}
+      <Button
+        kind={isSuccessShowing ? 'success' : 'primary'}
+        className={classNames('btn-apply', {
+          'btn-spinner': isCustomColumnApplying,
+        })}
         disabled={isSuccessShowing || isCustomColumnApplying}
         onClick={this.handleSaveClick}
       >
@@ -361,7 +357,7 @@ class CustomColumnBuilder extends Component<
             <FontAwesomeIcon icon={vsPass} /> Success
           </>
         )}
-      </button>
+      </Button>
     );
   }
 
@@ -378,7 +374,6 @@ class CustomColumnBuilder extends Component<
         onClick={this.resetRequestFailed}
         onFocus={this.resetRequestFailed}
       >
-        <div className="section-title">Custom Column Name and Formula</div>
         <hr />
         <DragDropContext
           onDragStart={DragUtils.startDragging}
@@ -402,27 +397,23 @@ class CustomColumnBuilder extends Component<
         </DragDropContext>
 
         <div className="pt-1 px-3">
-          <button
-            type="button"
-            className="btn btn-link btn-add-column"
+          <Button
+            kind="ghost"
+            className="btn-add-column"
             onClick={this.handleAddColumnClick}
+            icon={dhNewCircleLargeFilled}
           >
-            <FontAwesomeIcon icon={dhNewCircleLargeFilled} />
             Add Another Column
-          </button>
+          </Button>
         </div>
 
         <div className="custom-column-builder-footer">
           {errorMessage && <div className="error-message">{errorMessage}</div>}
 
           <div className="d-flex justify-content-end">
-            <button
-              type="button"
-              className="btn btn-outline-primary mr-2"
-              onClick={onCancel}
-            >
+            <Button kind="secondary" className="mr-2" onClick={onCancel}>
               Cancel
-            </button>
+            </Button>
             {this.renderSaveButton()}
           </div>
         </div>

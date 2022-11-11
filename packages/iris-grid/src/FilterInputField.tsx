@@ -5,6 +5,7 @@ import { vsFilter, dhFilterFilled } from '@deephaven/icons';
 import './FilterInputField.scss';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import type { DebouncedFunc } from 'lodash';
+import { Button } from '@deephaven/components';
 
 interface FilterInputFieldProps {
   className: string;
@@ -230,14 +231,11 @@ class FilterInputField extends PureComponent<
           spellCheck="false"
         />
         <div className="advanced-filter-button-container">
-          <button
-            type="button"
-            className={classNames(
-              'btn btn-link btn-link-icon advanced-filter-button',
-              {
-                'filter-set': isAdvancedFilterSet,
-              }
-            )}
+          <Button
+            kind="ghost"
+            className={classNames('btn-link-icon advanced-filter-button', {
+              'filter-set': isAdvancedFilterSet,
+            })}
             onClick={onAdvancedFiltersTriggered}
             onContextMenu={this.handleContextMenu}
           >
@@ -245,7 +243,7 @@ class FilterInputField extends PureComponent<
               <FontAwesomeIcon icon={dhFilterFilled} className="filter-solid" />
               <FontAwesomeIcon icon={vsFilter} className="filter-light" />
             </div>
-          </button>
+          </Button>
         </div>
       </div>
     );

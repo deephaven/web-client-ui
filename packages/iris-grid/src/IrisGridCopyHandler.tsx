@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import classNames from 'classnames';
 import { CSSTransition } from 'react-transition-group';
 import {
+  Button,
   ContextActionUtils,
   LoadingSpinner,
   ThemeExport,
@@ -404,11 +405,9 @@ class IrisGridCopyHandler extends Component<
             >
               Cancel
             </button>
-            <button
-              type="button"
-              className={classNames('btn', 'btn-copy', {
-                'btn-primary': !isFetching,
-                'btn-secondary': isFetching,
+            <Button
+              kind={isFetching ? 'tertiary' : 'primary'}
+              className={classNames('btn-copy', {
                 'btn-spinner': isFetching,
               })}
               onClick={this.handleCopyClick}
@@ -416,7 +415,7 @@ class IrisGridCopyHandler extends Component<
             >
               {isFetching && <LoadingSpinner />}
               {copyButtonText}
-            </button>
+            </Button>
           </div>
         </CSSTransition>
       </IrisGridBottomBar>

@@ -246,24 +246,24 @@ class ColumnStatistics extends Component<
           {statisticElements}
         </div>
         {showGenerateStatistics && (
-          <button
-            type="button"
-            className="btn btn-link px-0"
+          <Button
+            kind="ghost"
+            className="px-0"
             onClick={this.handleGenerateStatistics}
           >
             Generate Stats
-          </button>
+          </Button>
         )}
         {error != null && <div className="error-message">{`${error}`}</div>}
         {statistics && !loading && (
-          <button
-            type="button"
-            className="btn btn-link px-0"
+          <Button
+            kind="ghost"
+            className="px-0"
             onClick={this.handleGenerateStatistics}
+            icon={<FontAwesomeIcon icon={dhRefresh} className="mr-1" />}
           >
-            <FontAwesomeIcon icon={dhRefresh} className="mr-1" />
             Refresh
-          </button>
+          </Button>
         )}
         {loading && (
           <div className="column-statistics-loading">

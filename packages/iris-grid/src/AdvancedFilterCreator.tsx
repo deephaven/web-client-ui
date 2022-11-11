@@ -18,13 +18,9 @@ import {
   SortDirection,
   FilterItem,
 } from '@deephaven/jsapi-utils';
-import { ContextActionUtils, Tooltip } from '@deephaven/components';
+import { Button, ContextActionUtils } from '@deephaven/components';
 import Log from '@deephaven/log';
-import {
-  CancelablePromise,
-  PromiseUtils,
-  assertNotNull,
-} from '@deephaven/utils';
+import { CancelablePromise, PromiseUtils } from '@deephaven/utils';
 import { Column, FilterCondition, Table } from '@deephaven/jsapi-shim';
 import shortid from 'shortid';
 import AdvancedFilterCreatorFilterItem from './AdvancedFilterCreatorFilterItem';
@@ -250,13 +246,7 @@ class AdvancedFilterCreator extends PureComponent<
     this.setState({ filterItems, filterOperators });
   }
 
-  handleChangeFilterOperator(event: React.MouseEvent<HTMLButtonElement>): void {
-    const target = event.currentTarget;
-
-    const { operator, index: strIndex } = target.dataset;
-    assertNotNull(strIndex);
-    const index = parseInt(strIndex, 10);
-
+  handleChangeFilterOperator(index: number, operator: string): void {
     let { filterOperators } = this.state;
     filterOperators = [...filterOperators];
 
@@ -497,28 +487,28 @@ class AdvancedFilterCreator extends PureComponent<
               key={`filterOperator${key}`}
               className="form-row justify-content-end advanced-filter-creator-filter-operator"
             >
-              <button
-                type="button"
-                className={classNames('btn btn-link filter-operator', {
+              <Button
+                kind="ghost"
+                className={classNames('filter-operator', {
                   active: isAndFilter,
                 })}
-                onClick={this.handleChangeFilterOperator}
-                data-index={i}
-                data-operator={FilterOperator.and}
+                onClick={() =>
+                  this.handleChangeFilterOperator(i, FilterOperator.and)
+                }
               >
                 AND
-              </button>
-              <button
-                type="button"
-                className={classNames('btn btn-link filter-operator', {
+              </Button>
+              <Button
+                kind="ghost"
+                className={classNames('filter-operator', {
                   active: !isAndFilter,
                 })}
-                onClick={this.handleChangeFilterOperator}
-                data-index={i}
-                data-operator={FilterOperator.or}
+                onClick={() =>
+                  this.handleChangeFilterOperator(i, FilterOperator.or)
+                }
               >
                 OR
-              </button>
+              </Button>
             </div>
           );
           filterItemElements.push(operatorElement);
@@ -536,24 +526,24 @@ class AdvancedFilterCreator extends PureComponent<
         <span className="text-muted">
           <FontAwesomeIcon icon={dhNewCircleLargeFilled} />
         </span>
-        <button
-          type="button"
-          className="btn btn-link btn-filter-item"
+        <Button
+          kind="ghost"
+          className="btn-filter-item"
           onClick={this.handleAddAnd}
           disabled={!showAddFilterItem}
+          tooltip="Add filter with AND"
         >
           AND
-          <Tooltip>Add filter with AND</Tooltip>
-        </button>
-        <button
-          type="button"
-          className="btn btn-link btn-filter-item"
+        </Button>
+        <Button
+          kind="ghost"
+          className="btn-filter-item"
           onClick={this.handleAddOr}
           disabled={!showAddFilterItem}
+          tooltip="Add filter with OR"
         >
           OR
-          <Tooltip>Add filter with OR</Tooltip>
-        </button>
+        </Button>
       </div>
     );
     filterItemElements.push(addFilterItem);
@@ -565,34 +555,26 @@ class AdvancedFilterCreator extends PureComponent<
           <div className="title-bar">
             <h6 className="advanced-filter-title">Advanced Filters</h6>
             <div className="advanced-filter-menu-buttons">
-              <button
-                type="button"
-                className={classNames(
-                  'btn btn-link btn-link-icon sort-operator',
-                  {
-                    active:
-                      sortDirection === TableUtils.sortDirection.descending,
-                  }
-                )}
+              <Button
+                kind="ghost"
+                className={classNames('sort-operator', {
+                  active: sortDirection === TableUtils.sortDirection.descending,
+                })}
                 onClick={this.handleSortDown}
-              >
-                <FontAwesomeIcon icon={dhSortAmountDown} />
-                <Tooltip>Sort {column.name} Descending</Tooltip>
-              </button>
-              <button
-                type="button"
-                className={classNames(
-                  'btn btn-link btn-link-icon sort-operator',
-                  {
-                    active:
-                      sortDirection === TableUtils.sortDirection.ascending,
-                  }
-                )}
+                icon={dhSortAmountDown}
+                tooltip={`Sort ${column.name} Descending`}
+              />
+              <Button
+                kind="ghost"
+                className={classNames('sort-operator', {
+                  active: sortDirection === TableUtils.sortDirection.ascending,
+                })}
                 onClick={this.handleSortUp}
-              >
-                <FontAwesomeIcon rotation={180} icon={dhSortAmountDown} />
-                <Tooltip>Sort {column.name} Ascending</Tooltip>
-              </button>
+                icon={
+                  <FontAwesomeIcon icon={dhSortAmountDown} rotation={180} />
+                }
+                tooltip={`Sort ${column.name} Ascending`}
+              />
             </div>
           </div>
           <hr />
@@ -618,20 +600,16 @@ class AdvancedFilterCreator extends PureComponent<
             </>
           )}
           <div className="form-row justify-content-end">
-            <button
-              type="button"
-              className="btn btn-outline-primary mr-2"
+            <Button
+              kind="secondary"
+              className="mr-2"
               onClick={this.handleReset}
             >
               Reset
-            </button>
-            <button
-              type="button"
-              className="btn btn-primary"
-              onClick={this.handleDone}
-            >
+            </Button>
+            <Button kind="primary" onClick={this.handleDone}>
               Done
-            </button>
+            </Button>
           </div>
         </form>
         <div tabIndex={0} onFocus={this.handleFocusTrapEnd} />

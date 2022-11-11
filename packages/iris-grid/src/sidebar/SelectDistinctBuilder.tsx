@@ -2,7 +2,7 @@ import React, { Component, ReactElement } from 'react';
 import deepEqual from 'deep-equal';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { dhNewCircleLargeFilled, vsTrash } from '@deephaven/icons';
-import { Tooltip } from '@deephaven/components';
+import { Button } from '@deephaven/components';
 import Log from '@deephaven/log';
 import { Column } from '@deephaven/jsapi-shim';
 import { ModelIndex } from '@deephaven/grid';
@@ -118,16 +118,15 @@ class SelectDistinctBuilder extends Component<
           </select>
 
           {(inputs.length > 1 || value !== '') && (
-            <button
-              type="button"
-              className="btn btn-link btn-link-icon ml-1 px-2"
+            <Button
+              kind="ghost"
+              className="ml-1 px-2"
               onClick={() => {
                 this.handleDeleteColumn(index);
               }}
-            >
-              <Tooltip>Delete column</Tooltip>
-              <FontAwesomeIcon icon={vsTrash} transform="grow-3" />
-            </button>
+              icon={<FontAwesomeIcon icon={vsTrash} transform="grow-3" />}
+              tooltip="Delete column"
+            />
           )}
         </div>
       );
@@ -149,15 +148,15 @@ class SelectDistinctBuilder extends Component<
         <hr />
 
         <div className="pt-1 px-3">
-          <button
-            type="button"
-            className="btn btn-link btn-add-column"
+          <Button
+            kind="ghost"
+            className="btn-add-column"
             onClick={this.handleAddColumnClick}
             disabled={disableAddButton}
+            icon={dhNewCircleLargeFilled}
           >
-            <FontAwesomeIcon icon={dhNewCircleLargeFilled} />
             Add Additional Column
-          </button>
+          </Button>
         </div>
 
         <div className="select-distinct-builder-footer">
