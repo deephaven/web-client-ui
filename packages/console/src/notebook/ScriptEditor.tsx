@@ -172,11 +172,10 @@ class ScriptEditor extends Component<ScriptEditorProps, ScriptEditorState> {
     onEditorInitialized(this.editor);
   }
 
-  handleEditorWillDestroy(): void {
+  handleEditorWillDestroy(innerEditor: editor.IStandaloneCodeEditor): void {
     log.debug('handleEditorWillDestroy');
     const { onEditorWillDestroy } = this.props;
-    assertNotNull(this.editor);
-    onEditorWillDestroy(this.editor);
+    onEditorWillDestroy(innerEditor);
     this.deInitContextActions();
     this.deInitCodeCompletion();
     this.setState({ model: null });

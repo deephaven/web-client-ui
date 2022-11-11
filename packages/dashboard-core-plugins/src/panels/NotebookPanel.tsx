@@ -165,9 +165,7 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     this.handleEditorChange = this.handleEditorChange.bind(this);
     this.handleFind = this.handleFind.bind(this);
     this.handleMinimapChange = this.handleMinimapChange.bind(this);
-    this.updateEditorMinimap = this.updateEditorMinimap.bind(this);
     this.handleWordWrapChange = this.handleWordWrapChange.bind(this);
-    this.updateEditorWordWrap = this.updateEditorWordWrap.bind(this);
     this.handleFocus = this.handleFocus.bind(this);
     this.handleLinkClick = this.handleLinkClick.bind(this);
     this.handleLoadSuccess = this.handleLoadSuccess.bind(this);
@@ -506,10 +504,10 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
   getSettings = memoize(
     (
       initialSettings: editor.IStandaloneEditorConstructionOptions,
-      minimap: editor.IStandaloneEditorConstructionOptions
-    ) => ({
+      isMinimapEnabled: boolean
+    ): editor.IStandaloneEditorConstructionOptions => ({
       ...initialSettings,
-      ...minimap,
+      minimap: { enabled: isMinimapEnabled },
     })
   );
 
@@ -681,20 +679,16 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
 
   handleWordWrapChange() {
     if (this.editor) {
-      const { settings } = this.state;
-      let { wordWrap } = settings;
-
-      if (wordWrap === 'on') {
-        wordWrap = 'off';
-      } else {
-        wordWrap = 'on';
-      }
-      this.setState(prevState => ({
-        settings: {
-          ...prevState.settings,
-          wordWrap,
-        },
-      }));
+      this.setState(prevState => {
+        const { settings } = prevState;
+        const wordWrap = settings.wordWrap === 'on' ? 'off' : 'on';
+        return {
+          settings: {
+            ...settings,
+            wordWrap,
+          },
+        };
+      });
     }
   }
 
@@ -1048,9 +1042,10 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     const itemName = fileMetadata?.itemName ?? NotebookPanel.DEFAULT_NAME;
     const isMarkdown = itemName.endsWith('.md');
     const isExistingItem = fileMetadata?.id != null;
-    const settings = this.getSettings(initialSettings, {
-      minimap: { enabled: defaultNotebookSettings.isMinimapEnabled },
-    });
+    const settings = this.getSettings(
+      initialSettings,
+      defaultNotebookSettings.isMinimapEnabled
+    );
     const overflowActions = this.getOverflowActions(
       defaultNotebookSettings.isMinimapEnabled,
       settings.wordWrap === 'on'
@@ -1202,9 +1197,7 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
                 sessionLanguage={sessionLanguage}
                 onEditorInitialized={this.handleEditorInitialized}
                 onEditorWillDestroy={this.handleEditorWillDestroy}
-                settings={
-                  settings as editor.IStandaloneEditorConstructionOptions
-                }
+                settings={settings}
                 focusOnMount={focusOnMount}
                 ref={notebook => {
                   this.notebook = notebook;
