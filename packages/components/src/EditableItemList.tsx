@@ -128,7 +128,7 @@ const EditableItemList = (props: EditableItemListProps): React.ReactElement => {
             onClick={handleDelete}
             disabled={selectedRanges.length === 0}
             icon={vsTrash}
-            tooltip="Delete selected item"
+            tooltip="Delete selected items"
             data-testid="delete-item-button"
           />
         </div>
