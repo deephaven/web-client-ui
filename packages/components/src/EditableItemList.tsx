@@ -11,7 +11,7 @@ import { vsAdd, vsTrash } from '@deephaven/icons';
 import { Range, RangeUtils } from '@deephaven/utils';
 import { Button, ItemList } from '.';
 
-interface EditableItemListProps {
+export interface EditableItemListProps {
   isInvalid?: boolean;
   items: string[];
   onDelete: (items: string[]) => void;

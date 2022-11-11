@@ -16,12 +16,7 @@ function makeWrapper({
   onAdd = jest.fn(),
   onDelete = jest.fn(),
   validate = undefined,
-}: {
-  items?: string[];
-  onAdd?: (item: string) => void;
-  onDelete?: (items: string[]) => void;
-  validate?: (item: string) => Error | null;
-} = {}) {
+}: Partial<EditableItemListProps> = {}) {
   return render(
     <EditableItemList
       items={items}
