@@ -37,17 +37,7 @@ const EditableItemList = (props: EditableItemListProps): React.ReactElement => {
   }, []);
 
   const handleDelete = useCallback(() => {
-    const itemsToDelete: string[] = selectedRanges.reduce(
-      (acc: string[], range: Range) => {
-        const result = [...acc];
-        for (let i = range[0]; i <= range[1]; i += 1) {
-          result.push(items[i]);
-        }
-        return result;
-      },
-      []
-    );
-    onDelete(itemsToDelete);
+    onDelete(RangeUtils.getItemsInRanges(items, selectedRanges));
     setSelectedRanges([]);
   }, [items, selectedRanges, onDelete]);
 
