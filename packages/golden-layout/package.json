@@ -19,7 +19,7 @@
   "scripts": {
     "build": "cross-env NODE_ENV=production run-p build:*",
     "build-dev": "cross-env NODE_ENV=development run-p build:*",
-    "sass": "sass ./src/scss:./dist/css -s compressed",
+    "sass": "sass ./scss:./css -s compressed",
     "build:babel": "npm run babel",
     "build:sass": "npm run sass",
     "babel": "babel ./src --out-dir ./dist --extensions \".ts,.js,.tsx,.jsx\" --source-maps --root-mode upward",
@@ -47,7 +47,9 @@
     "popouts"
   ],
   "files": [
-    "dist"
+    "dist",
+    "scss",
+    "css"
   ],
   "publishConfig": {
     "access": "public"
