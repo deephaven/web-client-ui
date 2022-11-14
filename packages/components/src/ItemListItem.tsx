@@ -206,7 +206,7 @@ class ItemListItem extends Component<ItemListItemProps, Record<string, never>> {
         onMouseUp={this.handleMouseUp}
         tabIndex={-1}
         ref={this.itemRef}
-        role="presentation"
+        role="listitem"
         style={style}
         onFocus={this.handleFocus}
         onBlur={this.handleBlur}
