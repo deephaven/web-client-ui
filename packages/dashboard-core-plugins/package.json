@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/dashboard-core-plugins",
-  "version": "0.13.8",
+  "version": "0.13.9",
   "description": "Deephaven Dashboard Core Plugins",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
