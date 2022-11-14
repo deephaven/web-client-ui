@@ -97,6 +97,22 @@ class RangeUtils {
   static count(ranges: Range[]): number {
     return ranges.reduce((sum, range) => sum + (range[1] - range[0] + 1), 0);
   }
+
+  /**
+   * Get the items in the ranges provided
+   * @param items List of items
+   * @param ranges The ranges to include in the result
+   * @returns The items in the provided ranges
+   */
+  static getItemsInRanges<T>(items: T[], ranges: Range[]): T[] {
+    return ranges.reduce((acc: T[], range: Range) => {
+      const result = [...acc];
+      for (let i = range[0]; i <= range[1]; i += 1) {
+        result.push(items[i]);
+      }
+      return result;
+    }, []);
+  }
 }
 
 export default RangeUtils;

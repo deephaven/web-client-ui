@@ -24,6 +24,7 @@ import {
   ContextAction,
   PopperOptions,
   ReferenceObject,
+  Button,
 } from '@deephaven/components';
 import {
   Grid,
@@ -3646,10 +3647,10 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
                 style={style}
               >
                 {isFilterVisible && (
-                  <button
-                    type="button"
+                  <Button
+                    kind="ghost"
                     className={classNames(
-                      'btn btn-link btn-link-icon advanced-filter-button',
+                      'btn-link-icon advanced-filter-button',
                       {
                         'filter-set': isFilterSet,
                       }
@@ -3677,7 +3678,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
                         className="filter-light"
                       />
                     </div>
-                  </button>
+                  </Button>
                 )}
               </div>
             );
@@ -3739,6 +3740,9 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
                   isShown={shownAdvancedFilter === columnIndex}
                   interactive
                   closeOnBlur
+                  options={{
+                    positionFixed: true,
+                  }}
                 >
                   {this.getCachedAdvancedFilterMenuActions(
                     model,
@@ -4037,14 +4041,13 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
             )}
             {!isMenuShown && (
               <div className="grid-settings-button">
-                <button
-                  type="button"
+                <Button
+                  kind="ghost"
                   data-testid={`btn-iris-grid-settings-button-${name}`}
-                  className="btn btn-link btn-link-icon"
                   onClick={this.handleMenu}
-                >
-                  <FontAwesomeIcon icon={vsMenu} transform="up-1" />
-                </button>
+                  icon={<FontAwesomeIcon icon={vsMenu} transform="up-1" />}
+                  tooltip="Table Options"
+                />
               </div>
             )}
             {focusField}

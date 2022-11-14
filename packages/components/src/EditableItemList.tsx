@@ -8,13 +8,13 @@ import React, {
 import classNames from 'classnames';
 import clamp from 'lodash.clamp';
 import { vsAdd, vsTrash } from '@deephaven/icons';
-import { Range } from '@deephaven/utils';
+import { Range, RangeUtils } from '@deephaven/utils';
 import { Button, ItemList } from '.';
 
-interface EditableItemListProps {
+export interface EditableItemListProps {
   isInvalid?: boolean;
   items: string[];
-  onDelete: (item: string) => void;
+  onDelete: (items: string[]) => void;
   onAdd: (item: string) => void;
   validate?: (item: string) => Error | null;
 }
@@ -29,25 +29,17 @@ const EditableItemList = (props: EditableItemListProps): React.ReactElement => {
     validate = () => null,
   } = props;
   const [inputError, setInputError] = useState<Error | null>(null);
-  const [selectedIndex, setSelectedIndex] = useState<number | undefined>();
+  const [selectedRanges, setSelectedRanges] = useState<Range[]>([]);
   const [value, setValue] = useState('');
 
-  const handleSelect = useCallback(index => {
-    setSelectedIndex(index);
+  const handleSelectionChange = useCallback((ranges: Range[]) => {
+    setSelectedRanges(ranges);
   }, []);
 
   const handleDelete = useCallback(() => {
-    const newIndex =
-      selectedIndex === items.length - 1 ? items.length - 2 : selectedIndex;
-    if (
-      selectedIndex !== undefined &&
-      selectedIndex >= 0 &&
-      selectedIndex < items.length
-    ) {
-      onDelete(items[selectedIndex]);
-    }
-    setSelectedIndex(newIndex === -1 ? undefined : newIndex);
-  }, [items, selectedIndex, onDelete]);
+    onDelete(RangeUtils.getItemsInRanges(items, selectedRanges));
+    setSelectedRanges([]);
+  }, [items, selectedRanges, onDelete]);
 
   const handleAdd = useCallback(() => {
     if (value === '') {
@@ -72,7 +64,7 @@ const EditableItemList = (props: EditableItemListProps): React.ReactElement => {
   );
 
   const handleInputFocus = useCallback(() => {
-    setSelectedIndex(undefined);
+    setSelectedRanges([]);
   }, []);
 
   const handleInputKeyDown = useCallback(
@@ -84,11 +76,6 @@ const EditableItemList = (props: EditableItemListProps): React.ReactElement => {
     [handleAdd]
   );
 
-  const selectedRanges = useMemo(
-    (): Range[] =>
-      selectedIndex === undefined ? [] : [[selectedIndex, selectedIndex]],
-    [selectedIndex]
-  );
   const containerHeight = useMemo(
     (): number => 14 + clamp(items.length, 1, 6) * ItemList.DEFAULT_ROW_HEIGHT,
     [items.length]
@@ -105,11 +92,12 @@ const EditableItemList = (props: EditableItemListProps): React.ReactElement => {
           itemCount={items.length}
           items={items.map((item, index) => ({
             value: item,
-            isSelected: index === selectedIndex,
+            isSelected: RangeUtils.isSelected(selectedRanges, index),
           }))}
           offset={0}
-          onSelect={handleSelect}
           selectedRanges={selectedRanges}
+          onSelectionChange={handleSelectionChange}
+          isMultiSelect
         />
       </div>
       <div className="d-flex flex-row pt-2">
@@ -138,9 +126,9 @@ const EditableItemList = (props: EditableItemListProps): React.ReactElement => {
           <Button
             kind="ghost"
             onClick={handleDelete}
-            disabled={selectedIndex === undefined}
+            disabled={selectedRanges.length === 0}
             icon={vsTrash}
-            tooltip="Delete selected item"
+            tooltip="Delete selected items"
             data-testid="delete-item-button"
           />
         </div>

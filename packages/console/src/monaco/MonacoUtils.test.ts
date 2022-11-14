@@ -45,6 +45,14 @@ const MULTI_MOD_PARAMS: ConstructorParameters<typeof Shortcut>[0] = {
   macShortcut: [MODIFIER.CMD, MODIFIER.SHIFT, KEY.B],
 };
 
+describe('Register worker', () => {
+  it('Registers the getWorker function', () => {
+    const getWorker = () => ({} as Worker);
+    MonacoUtils.registerGetWorker(getWorker);
+    expect(window.MonacoEnvironment?.getWorker).toBe(getWorker);
+  });
+});
+
 describe('Windows shortcuts', () => {
   beforeAll(() => {
     Shortcut.isMacPlatform = false;

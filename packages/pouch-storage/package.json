@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/pouch-storage",
-  "version": "0.21.0",
+  "version": "0.21.1",
   "description": "Deephaven Storage based on PouchDB",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
@@ -18,13 +18,7 @@
   },
   "scripts": {
     "build": "cross-env NODE_ENV=production run-p build:*",
-    "build-dev": "cross-env NODE_ENV=development run-p build:*",
-    "babel": "babel ./src --out-dir ./dist --extensions \".ts,.tsx,.js,.jsx\" --source-maps --root-mode upward",
-    "build:babel": "npm run babel",
-    "watch": "run-p watch:*",
-    "watch:babel": "npm run babel -- -w --skip-initial-build",
-    "prestart": "npm run build-dev",
-    "start": "cross-env NODE_ENV=development npm run watch"
+    "build:babel": "babel ./src --out-dir ./dist --extensions \".ts,.tsx,.js,.jsx\" --source-maps --root-mode upward"
   },
   "dependencies": {
     "@deephaven/console": "file:../console",

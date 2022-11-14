@@ -78,8 +78,8 @@ export default defineConfig(({ mode }) => {
       dedupe: ['react', 'react-redux', 'redux'],
       alias: [
         {
-          find: /^@deephaven\/components\/scss\/(.*)/,
-          replacement: `${packagesDir}/components/scss/$1`,
+          find: /^@deephaven\/(.*)\/scss\/(.*)/,
+          replacement: `${packagesDir}/$1/scss/$2`,
         },
         {
           find: /^@deephaven\/icons$/,

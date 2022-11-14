@@ -2,7 +2,7 @@ import React, { PureComponent, ReactElement } from 'react';
 import classNames from 'classnames';
 import { Draggable } from 'react-beautiful-dnd';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { Tooltip } from '@deephaven/components';
+import { Button, Tooltip } from '@deephaven/components';
 import { vsTrash, vsGripper } from '@deephaven/icons';
 import InputEditor from './InputEditor';
 import { CustomColumnKey } from './CustomColumnBuilder';
@@ -101,16 +101,15 @@ class CustomColumnInput extends PureComponent<
                     );
                   }}
                 />
-                <button
-                  type="button"
-                  className="btn btn-link btn-link-icon ml-1 px-2"
+                <Button
+                  kind="ghost"
+                  className="ml-1 px-2"
                   onClick={() => {
                     onDeleteColumn(eventKey);
                   }}
-                >
-                  <Tooltip>Delete custom column</Tooltip>
-                  <FontAwesomeIcon icon={vsTrash} />
-                </button>
+                  icon={vsTrash}
+                  tooltip="Delete custom column"
+                />
 
                 <button
                   type="button"
