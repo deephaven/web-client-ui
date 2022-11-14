@@ -1591,6 +1591,8 @@ class Grid extends PureComponent<GridProps, GridState> {
 
     context.save();
 
+    console.log('MJB', renderState);
+
     renderer.drawCanvas(renderState);
 
     context.restore();

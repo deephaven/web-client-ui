@@ -1249,11 +1249,14 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   getCachedTheme = memoize(
     (
       theme: GridThemeType,
-      isEditable: boolean
+      isEditable: boolean,
+      floatingRowCount: number
     ): Partial<IrisGridThemeType> => ({
       ...IrisGridTheme,
       ...theme,
       autoSelectRow: !isEditable,
+      // We only show the row footers when we have floating rows for aggregations
+      rowFooterWidth: floatingRowCount > 0 ? theme.rowFooterWidth : 0,
     }),
     { max: 1 }
   );
@@ -1304,7 +1307,8 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     const { model, theme } = this.props;
     return this.getCachedTheme(
       theme,
-      (isEditableGridModel(model) && model.isEditable) ?? false
+      (isEditableGridModel(model) && model.isEditable) ?? false,
+      model.floatingTopRowCount + model.floatingBottomRowCount
     );
   }
 
@@ -1999,6 +2003,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     const { model } = this.props;
     const { columnCount } = model;
     const modelColumn = GridUtils.getModelIndex(column, movedColumns);
+    console.log('modelcolumn', modelColumn);
 
     if (
       column == null ||
@@ -2006,6 +2011,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       columnCount <= column ||
       !model.isFilterable(modelColumn)
     ) {
+      console.log('fail');
       this.setState({ focusedFilterBarColumn: null });
       return;
     }
@@ -2013,17 +2019,18 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     const { metricCalculator, metrics } = this.state;
     assertNotNull(metrics);
     const { gridX, left, rightVisible, lastLeft } = metrics;
+    console.log(metrics, column);
     if (column < left) {
       this.grid?.setViewState({ left: column }, true);
     } else if (rightVisible < column) {
       const metricState = this.grid?.getMetricState();
       assertNotNull(metricState);
-      const newLeft = metricCalculator.getLastLeft(
-        metricState,
-        column - 1,
-        gridX
+      const newLeft = metricCalculator.getLastLeft(metricState, column);
+      console.log(newLeft, lastLeft);
+      this.grid?.setViewState(
+        { left: Math.min(newLeft, lastLeft), leftOffset: 0 },
+        true
       );
-      this.grid?.setViewState({ left: Math.min(newLeft, lastLeft) }, true);
     }
     this.lastFocusedFilterBarColumn = column;
     this.setState({ focusedFilterBarColumn: column, isFilterBarShown: true });
