@@ -2003,7 +2003,6 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     const { model } = this.props;
     const { columnCount } = model;
     const modelColumn = GridUtils.getModelIndex(column, movedColumns);
-    console.log('modelcolumn', modelColumn);
 
     if (
       column == null ||
@@ -2011,22 +2010,19 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       columnCount <= column ||
       !model.isFilterable(modelColumn)
     ) {
-      console.log('fail');
       this.setState({ focusedFilterBarColumn: null });
       return;
     }
 
     const { metricCalculator, metrics } = this.state;
     assertNotNull(metrics);
-    const { gridX, left, rightVisible, lastLeft } = metrics;
-    console.log(metrics, column);
+    const { left, rightVisible, lastLeft } = metrics;
     if (column < left) {
       this.grid?.setViewState({ left: column }, true);
     } else if (rightVisible < column) {
       const metricState = this.grid?.getMetricState();
       assertNotNull(metricState);
       const newLeft = metricCalculator.getLastLeft(metricState, column);
-      console.log(newLeft, lastLeft);
       this.grid?.setViewState(
         { left: Math.min(newLeft, lastLeft), leftOffset: 0 },
         true
@@ -3518,7 +3514,13 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       : IrisGrid.maxDebounce;
 
     if (isFilterBarShown && focusedFilterBarColumn != null && metrics != null) {
-      const { gridX, gridY, visibleColumnXs, visibleColumnWidths } = metrics;
+      const {
+        gridX,
+        gridY,
+        visibleColumnXs,
+        visibleColumnWidths,
+        width,
+      } = metrics;
       const columnX = visibleColumnXs.get(focusedFilterBarColumn);
       const columnWidth = visibleColumnWidths.get(focusedFilterBarColumn);
       if (columnX != null && columnWidth != null) {
@@ -3529,7 +3531,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
         const style = {
           top: y,
           left: x,
-          minWidth: fieldWidth,
+          minWidth: Math.min(fieldWidth, width - x), // Don't cause overflow
           height: fieldHeight,
         };
         let value = '';
