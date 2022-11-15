@@ -38,6 +38,8 @@ export type LinkDataMapValue = {
   type: string;
   text: string;
   value: string;
+  isExpandable: boolean;
+  isGrouped: boolean;
 };
 
 export type LinkDataMap = Record<string, LinkDataMapValue>;

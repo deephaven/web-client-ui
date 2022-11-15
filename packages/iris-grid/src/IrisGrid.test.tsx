@@ -116,3 +116,47 @@ it('handles copy key handler', () => {
 
   expect(component.copyRanges).toHaveBeenCalled();
 });
+
+it('handles value: undefined in setFilterMap, clears column filter', () => {
+  const component = makeComponent();
+  component.removeQuickFilter = jest.fn();
+  component.setQuickFilter = jest.fn();
+  component.setFilterMap(
+    new Map([
+      [
+        '2',
+        {
+          columnType: IrisGridTestUtils.DEFAULT_TYPE,
+          text: 'any',
+          value: undefined,
+        },
+      ],
+    ])
+  );
+  expect(component.setQuickFilter).not.toHaveBeenCalled();
+  expect(component.removeQuickFilter).toHaveBeenCalledWith(2);
+});
+
+it('handles value: null in setFilterMap', () => {
+  const component = makeComponent();
+  component.removeQuickFilter = jest.fn();
+  component.setQuickFilter = jest.fn();
+  component.setFilterMap(
+    new Map([
+      [
+        '2',
+        {
+          columnType: IrisGridTestUtils.DEFAULT_TYPE,
+          text: 'any',
+          value: null,
+        },
+      ],
+    ])
+  );
+  expect(component.setQuickFilter).toHaveBeenCalledWith(
+    2,
+    expect.anything(),
+    '=null'
+  );
+  expect(component.removeQuickFilter).not.toHaveBeenCalled();
+});
