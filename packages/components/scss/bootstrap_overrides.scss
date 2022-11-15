@@ -120,8 +120,8 @@ $grid-gutter-width: 30px;
 
 //Visual Overrides
 $border-radius: 4px;
-$box-shadow: 0 0.1rem 1rem rgba($black, 0.45); //because our UI is so dark, we need darker default shadows
-$box-shadow-900: 0 0.1rem 1rem rgba(0, 0, 0, 0.45); //darkest shadow for $black popups over $black UI
+$box-shadow: 0 0.1rem 1rem rgba($black, 45%); //because our UI is so dark, we need darker default shadows
+$box-shadow-900: 0 0.1rem 1rem rgba(0, 0, 0, 45%); //darkest shadow for $black popups over $black UI
 
 //Override Btn
 $btn-border-radius: 4rem;
@@ -136,10 +136,10 @@ $input-disabled-bg: $gray-800;
 $input-color: $interfacewhite;
 $input-border-color: $gray-400;
 $input-placeholder-color: $gray-400;
-$input-focus-border-color: rgba($primary, 0.85);
+$input-focus-border-color: rgba($primary, 85%);
 
 $input-btn-focus-width: 0.2rem;
-$input-btn-focus-color: rgba($component-active-bg, 0.35);
+$input-btn-focus-color: rgba($component-active-bg, 35%);
 $input-btn-focus-box-shadow: 0 0 0 $input-btn-focus-width $input-btn-focus-color;
 
 //checkbox
@@ -176,7 +176,7 @@ $toast-error-color: $foreground;
 //tooltips
 $tooltip-bg: $gray-700;
 $tooltip-color: $interfacewhite;
-$tooltip-box-shadow: 0 0.1rem 1.5rem 0.1rem rgba($black, 0.8);
+$tooltip-box-shadow: 0 0.1rem 1.5rem 0.1rem rgba($black, 80%);
 
 //drowdowns
 $dropdown-bg: $gray-600;
@@ -189,7 +189,7 @@ $dropdown-divider-bg: $gray-700;
 $contextmenu-bg: $gray-600;
 $contextmenu-color: $foreground;
 $contextmenu-disabled-color: $text-muted;
-$contextmenu-keyboard-selected-bg: rgba($primary, 0.5);
+$contextmenu-keyboard-selected-bg: rgba($primary, 50%);
 $contextmenu-selected-bg: $primary;
 $contextmenu-selected-color: $foreground;
 

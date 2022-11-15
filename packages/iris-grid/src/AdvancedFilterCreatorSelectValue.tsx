@@ -4,6 +4,7 @@ import { CSSTransition } from 'react-transition-group';
 import classNames from 'classnames';
 import { Formatter, TableUtils } from '@deephaven/jsapi-utils';
 import { FilterCondition, Table } from '@deephaven/jsapi-shim';
+import { Button } from '@deephaven/components';
 import AdvancedFilterCreatorSelectValueList from './AdvancedFilterCreatorSelectValueList';
 import './AdvancedFilterCreatorSelectValue.scss';
 import { ColumnName } from './CommonTypes';
@@ -299,20 +300,12 @@ class AdvancedFilterCreatorSelectValue<T = unknown> extends PureComponent<
         />
         <div className="advanced-filter-creator-select-meta-row">
           <div>
-            <button
-              type="button"
-              className="btn btn-link"
-              onClick={this.handleSelectAllClick}
-            >
+            <Button kind="ghost" onClick={this.handleSelectAllClick}>
               Select All
-            </button>
-            <button
-              type="button"
-              className="btn btn-link"
-              onClick={this.handleClearAllClick}
-            >
+            </Button>
+            <Button kind="ghost" onClick={this.handleClearAllClick}>
               Clear
-            </button>
+            </Button>
           </div>
           <CSSTransition
             in={displayedValuesText != null}

@@ -9,8 +9,6 @@ import * as monaco from 'monaco-editor';
 import type { Environment } from 'monaco-editor';
 // @ts-ignore
 import { KeyCodeUtils } from 'monaco-editor/esm/vs/base/common/keyCodes.js';
-// @ts-ignore
-import EditorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker';
 import Log from '@deephaven/log';
 import MonacoTheme from './MonacoTheme.module.scss';
 import PyLang from './lang/python';
@@ -28,15 +26,20 @@ declare global {
   }
 }
 
-window.MonacoEnvironment = {
-  getWorker() {
-    return new EditorWorker();
-  },
-};
-
 class MonacoUtils {
-  static init(): void {
+  /**
+   * Initializes Monaco for the environment
+   * @param getWorker The getWorker function Monaco should use
+   *                  The workers should be provided by the caller and bundled by their build system (e.g. Vite, Webpack)
+   */
+  static init({
+    getWorker,
+  }: { getWorker?: Environment['getWorker'] } = {}): void {
     log.debug('Initializing Monaco...');
+
+    if (getWorker !== undefined) {
+      MonacoUtils.registerGetWorker(getWorker);
+    }
 
     const { registerLanguages, removeHashtag } = MonacoUtils;
 
@@ -151,6 +154,17 @@ class MonacoUtils {
     registerLanguages([DbLang, PyLang, GroovyLang, LogLang, ScalaLang]);
 
     log.debug('Monaco initialized.');
+  }
+
+  /**
+   * Register the getWorker function for Monaco
+   * @param getWorker The getWorker function for Monaco
+   */
+  static registerGetWorker(getWorker: Environment['getWorker']): void {
+    window.MonacoEnvironment = {
+      ...window.MonacoEnvironment,
+      getWorker,
+    };
   }
 
   /**

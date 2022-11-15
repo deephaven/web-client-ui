@@ -65,6 +65,18 @@ const NOTEBOOK = {
     macShortcut: [MODIFIER.CMD, KEY.F],
     isEditable: false,
   }),
+  MINIMAP: ShortcutRegistry.createAndAdd({
+    id: 'NOTEBOOK.MINIMAP',
+    name: 'Show Minimap',
+    shortcut: [MODIFIER.ALT, KEY.M],
+    macShortcut: [MODIFIER.OPTION, KEY.M],
+  }),
+  WORDWRAP: ShortcutRegistry.createAndAdd({
+    id: 'NOTEBOOK.WORDWRAP',
+    name: 'Word Wrap',
+    shortcut: [MODIFIER.ALT, KEY.Z],
+    macShortcut: [MODIFIER.OPTION, KEY.Z],
+  }),
 };
 
 const SHORTCUTS = {

@@ -1,7 +1,7 @@
 import React, { PureComponent } from 'react';
 import classNames from 'classnames';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { RadioGroup, RadioItem } from '@deephaven/components';
+import { Button, RadioGroup, RadioItem } from '@deephaven/components';
 import {
   vsLink,
   dhUnlink,
@@ -393,29 +393,29 @@ class ChartBuilder extends PureComponent<ChartBuilderProps, ChartBuilderState> {
                 ))}
               </select>
               {seriesItems.length > 1 && (
-                <button
-                  type="button"
-                  className="btn btn-link btn-link-icon btn-delete-series ml-2 px-2"
+                <Button
+                  kind="ghost"
+                  className="btn-delete-series ml-2 px-2"
                   data-index={i}
                   data-testid={`delete-series-${i}`}
                   onClick={this.handleSeriesDeleteClick}
-                >
-                  <FontAwesomeIcon icon={vsTrash} />
-                </button>
+                  icon={vsTrash}
+                  tooltip="Delete"
+                />
               )}
             </div>
           ))}
           {isAddSeriesVisible && (
             <div className="form-row">
               <div className="col-2" />
-              <button
-                type="button"
-                className="btn btn-link btn-add-series mt-1"
+              <Button
+                kind="ghost"
+                className="btn-add-series mt-1"
                 onClick={this.handleAddSeries}
+                icon={dhNewCircleLargeFilled}
               >
-                <FontAwesomeIcon icon={dhNewCircleLargeFilled} />
                 Add Series
-              </button>
+              </Button>
             </div>
           )}
           <div className="form-row chart-builder-link">
@@ -451,16 +451,16 @@ class ChartBuilder extends PureComponent<ChartBuilderProps, ChartBuilderState> {
           <div
             className={classNames('form-row', 'justify-content-end', 'my-3')}
           >
-            <button
-              type="button"
-              className="btn btn-outline-primary btn-reset"
+            <Button
+              kind="secondary"
+              className="btn-reset"
               onClick={this.handleReset}
             >
               Reset
-            </button>
-            <button type="submit" className="btn btn-primary btn-submit">
+            </Button>
+            <Button kind="primary" type="submit" className="btn-submit">
               Create
-            </button>
+            </Button>
           </div>
         </form>
       </div>

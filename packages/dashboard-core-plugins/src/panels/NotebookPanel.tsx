@@ -26,8 +26,16 @@ import {
   dhFileSearch,
   vsPlay,
   dhRunSelection,
+  vsCheck,
 } from '@deephaven/icons';
-import { getFileStorage, RootState } from '@deephaven/redux';
+import {
+  getFileStorage,
+  saveSettings as saveSettingsAction,
+  RootState,
+  getSettings,
+  WorkspaceSettings,
+  getDefaultNotebookSettings,
+} from '@deephaven/redux';
 import classNames from 'classnames';
 import debounce from 'lodash.debounce';
 import Log from '@deephaven/log';
@@ -47,10 +55,8 @@ const DEBOUNCE_PANEL_STATE_UPDATE = 400;
 interface Metadata {
   id: string;
 }
-
-interface Settings {
-  language: string;
-  value: string | null;
+interface NotebookSetting {
+  isMinimapEnabled: boolean;
 }
 
 interface FileMetadata {
@@ -60,7 +66,7 @@ interface FileMetadata {
 
 interface PanelState {
   isPreview?: boolean;
-  settings: Settings;
+  settings: editor.IStandaloneEditorConstructionOptions;
   fileMetadata: FileMetadata | null;
 }
 
@@ -75,6 +81,9 @@ interface NotebookPanelProps {
   sessionLanguage: string;
   panelState: PanelState;
   notebooksUrl: string;
+  defaultNotebookSettings: NotebookSetting;
+  settings: WorkspaceSettings;
+  saveSettings: (settings: WorkspaceSettings) => void;
 }
 
 interface NotebookPanelState {
@@ -90,7 +99,7 @@ interface NotebookPanelState {
   savedChangeCount: number;
   changeCount: number;
   fileMetadata: FileMetadata | null;
-  settings: Settings;
+  settings: editor.IStandaloneEditorConstructionOptions;
 
   session?: IdeSession;
   sessionLanguage?: string;
@@ -125,6 +134,7 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     isPreview: false,
     session: null,
     sessionLanguage: null,
+    defaultNotebookSettings: null,
   };
 
   static languageFromFileName(fileName: string): string | null {
@@ -150,8 +160,12 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     this.handleCloseDiscard = this.handleCloseDiscard.bind(this);
     this.handleCloseSave = this.handleCloseSave.bind(this);
     this.handleCopy = this.handleCopy.bind(this);
+    this.handleEditorInitialized = this.handleEditorInitialized.bind(this);
+    this.handleEditorWillDestroy = this.handleEditorWillDestroy.bind(this);
     this.handleEditorChange = this.handleEditorChange.bind(this);
     this.handleFind = this.handleFind.bind(this);
+    this.handleMinimapChange = this.handleMinimapChange.bind(this);
+    this.handleWordWrapChange = this.handleWordWrapChange.bind(this);
     this.handleFocus = this.handleFocus.bind(this);
     this.handleLinkClick = this.handleLinkClick.bind(this);
     this.handleLoadSuccess = this.handleLoadSuccess.bind(this);
@@ -197,9 +211,10 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
 
     const { isDashboardActive, session, sessionLanguage, panelState } = props;
 
-    let settings: { value: string | null; language: string } = {
+    let settings: editor.IStandaloneEditorConstructionOptions = {
       value: '',
       language: '',
+      wordWrap: 'off',
     };
     let fileMetadata = null;
     let { isPreview } = props;
@@ -267,9 +282,21 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     prevProps: NotebookPanelProps,
     prevState: NotebookPanelState
   ): void {
-    const { isPreview } = this.state;
+    const { isPreview, settings } = this.state;
+    const { wordWrap } = settings;
+    const { defaultNotebookSettings } = this.props;
     if (isPreview !== prevState.isPreview) {
       this.setPreviewStatus();
+    }
+    if (wordWrap !== prevState.settings.wordWrap) {
+      this.updateEditorWordWrap();
+      this.debouncedSavePanelState();
+    }
+    if (
+      defaultNotebookSettings.isMinimapEnabled !==
+      prevProps.defaultNotebookSettings.isMinimapEnabled
+    ) {
+      this.updateEditorMinimap();
     }
   }
 
@@ -298,6 +325,8 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
   tabInitOnce: boolean;
 
   shouldPromptClose: boolean;
+
+  editor?: editor.IStandaloneCodeEditor;
 
   // Called by TabEvent. Happens once when created, but also each time its moved.
   // when moved, need to re-init the unsaved indicators on title elements
@@ -333,7 +362,7 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     this.setPreviewStatus();
   }
 
-  getNotebookValue(): string | null {
+  getNotebookValue(): string | undefined {
     const { changeCount, savedChangeCount, settings } = this.state;
     const { value } = settings;
     if (changeCount !== savedChangeCount && this.notebook) {
@@ -408,6 +437,9 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
         if (settings.value == null) {
           updatedSettings.value = loadedFile.content;
         }
+        if (settings.wordWrap === undefined) {
+          settings.wordWrap = 'off';
+        }
         this.setState({
           fileMetadata: { id: itemName, itemName },
           settings: updatedSettings,
@@ -426,7 +458,7 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     const { fileMetadata } = this.state;
     if (fileMetadata && FileUtils.hasPath(fileMetadata.itemName)) {
       const content = this.getNotebookValue();
-      if (content != null) {
+      if (content !== undefined) {
         this.saveContent(fileMetadata.itemName, content);
         return true;
       }
@@ -469,16 +501,44 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     }
   }
 
-  getOverflowActions = memoize(() => [
-    {
-      title: 'Find',
-      icon: dhFileSearch,
-      action: this.handleFind,
-      group: ContextActions.groups.high,
-      shortcut: SHORTCUTS.NOTEBOOK.FIND,
-      order: 10,
-    },
-  ]);
+  getSettings = memoize(
+    (
+      initialSettings: editor.IStandaloneEditorConstructionOptions,
+      isMinimapEnabled: boolean
+    ): editor.IStandaloneEditorConstructionOptions => ({
+      ...initialSettings,
+      minimap: { enabled: isMinimapEnabled },
+    })
+  );
+
+  getOverflowActions = memoize(
+    (isMinimapEnabled: boolean, isWordWrapEnabled: boolean) => [
+      {
+        title: 'Find',
+        icon: dhFileSearch,
+        action: this.handleFind,
+        group: ContextActions.groups.high,
+        shortcut: SHORTCUTS.NOTEBOOK.FIND,
+        order: 10,
+      },
+      {
+        title: 'Show Minimap',
+        icon: isMinimapEnabled ? vsCheck : undefined,
+        action: this.handleMinimapChange,
+        group: ContextActions.groups.medium,
+        shortcut: SHORTCUTS.NOTEBOOK.MINIMAP,
+        order: 20,
+      },
+      {
+        title: 'Word Wrap',
+        icon: isWordWrapEnabled ? vsCheck : undefined,
+        action: this.handleWordWrapChange,
+        group: ContextActions.groups.medium,
+        shortcut: SHORTCUTS.NOTEBOOK.WORDWRAP,
+        order: 30,
+      },
+    ]
+  );
 
   savePanelState() {
     this.setState(state => {
@@ -492,7 +552,8 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
       const value = this.getNotebookValue();
       // notebooks with no unsaved changes have value === null in dehydrated state
       // content will be loaded from file when hydrating
-      const dehydratedValue = changeCount !== savedChangeCount ? value : null;
+      const dehydratedValue =
+        changeCount !== savedChangeCount ? value : undefined;
       const settings = {
         ...initialSettings,
         value,
@@ -544,7 +605,15 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     const { itemName } = fileMetadata;
     const copyName = FileUtils.getCopyFileName(itemName);
     log.debug('handleCopy', fileMetadata, itemName, copyName);
-    this.createNotebook(copyName, language, content ?? undefined);
+    this.createNotebook(copyName, language, content);
+  }
+
+  handleEditorInitialized(innerEditor: editor.IStandaloneCodeEditor): void {
+    this.editor = innerEditor;
+  }
+
+  handleEditorWillDestroy(): void {
+    this.editor = undefined;
   }
 
   handleEditorChange(e: editor.IModelContentChangedEvent): void {
@@ -575,6 +644,51 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
   handleFind() {
     if (this.notebook) {
       this.notebook.toggleFind();
+    }
+  }
+
+  updateEditorMinimap() {
+    if (this.editor) {
+      const { defaultNotebookSettings } = this.props;
+      this.editor.updateOptions({
+        minimap: { enabled: defaultNotebookSettings.isMinimapEnabled },
+      });
+    }
+  }
+
+  handleMinimapChange() {
+    const { settings, defaultNotebookSettings, saveSettings } = this.props;
+    const newSettings: WorkspaceSettings = {
+      ...settings,
+      defaultNotebookSettings: {
+        isMinimapEnabled: !defaultNotebookSettings.isMinimapEnabled,
+      },
+    };
+    saveSettings(newSettings);
+  }
+
+  updateEditorWordWrap() {
+    if (this.editor) {
+      const { settings } = this.state;
+      const { wordWrap } = settings;
+      this.editor.updateOptions({
+        wordWrap,
+      });
+    }
+  }
+
+  handleWordWrapChange() {
+    if (this.editor) {
+      this.setState(prevState => {
+        const { settings } = prevState;
+        const wordWrap = settings.wordWrap === 'on' ? 'off' : 'on';
+        return {
+          settings: {
+            ...settings,
+            wordWrap,
+          },
+        };
+      });
     }
   }
 
@@ -905,6 +1019,7 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
       glContainer,
       glContainer: { tab },
       glEventHub,
+      defaultNotebookSettings,
     } = this.props;
     const {
       changeCount,
@@ -927,10 +1042,14 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     const itemName = fileMetadata?.itemName ?? NotebookPanel.DEFAULT_NAME;
     const isMarkdown = itemName.endsWith('.md');
     const isExistingItem = fileMetadata?.id != null;
-    const overflowActions = this.getOverflowActions();
-    const settings = {
-      ...initialSettings,
-    };
+    const settings = this.getSettings(
+      initialSettings,
+      defaultNotebookSettings.isMinimapEnabled
+    );
+    const overflowActions = this.getOverflowActions(
+      defaultNotebookSettings.isMinimapEnabled,
+      settings.wordWrap === 'on'
+    );
     const isSessionConnected = session != null;
     const isLanguageMatching = sessionLanguage === settings.language;
     const runButtonsDisabled =
@@ -940,6 +1059,14 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
       {
         action: this.handleSave,
         shortcut: GLOBAL_SHORTCUTS.SAVE,
+      },
+      {
+        action: this.handleMinimapChange,
+        shortcut: SHORTCUTS.NOTEBOOK.MINIMAP,
+      },
+      {
+        action: this.handleWordWrapChange,
+        shortcut: SHORTCUTS.NOTEBOOK.WORDWRAP,
       },
     ];
     const disabledRunButtonTooltip = ScriptEditorUtils.getDisabledRunTooltip(
@@ -1012,6 +1139,7 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
                     disabled={runButtonsDisabled}
                     icon={<FontAwesomeIcon icon={vsPlay} transform="grow-4" />}
                     tooltip={`Run ${SHORTCUTS.NOTEBOOK.RUN.getDisplayText()}`}
+                    aria-label="Run"
                   />
                   {disabledRunButtonTooltip != null && (
                     <Tooltip>{disabledRunButtonTooltip}</Tooltip>
@@ -1029,8 +1157,8 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
                         transform="grow-4"
                       />
                     }
-                    tooltip={`Run Selected${' '}
-                    ${SHORTCUTS.NOTEBOOK.RUN_SELECTED.getDisplayText()}`}
+                    tooltip={`Run Selected ${SHORTCUTS.NOTEBOOK.RUN_SELECTED.getDisplayText()}`}
+                    aria-label="Run Selected"
                   />
                   {disabledRunSelectedButtonTooltip != null && (
                     <Tooltip>{disabledRunSelectedButtonTooltip}</Tooltip>
@@ -1042,7 +1170,8 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
                   disabled={toolbarDisabled}
                   onClick={this.handleSave}
                   icon={vsSave}
-                  tooltip="Save"
+                  tooltip={`Save ${GLOBAL_SHORTCUTS.SAVE.getDisplayText()}`}
+                  aria-label="Save"
                 />
                 <Button
                   kind="ghost"
@@ -1068,6 +1197,8 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
                 onRunCommand={this.handleRunCommand}
                 session={session}
                 sessionLanguage={sessionLanguage}
+                onEditorInitialized={this.handleEditorInitialized}
+                onEditorWillDestroy={this.handleEditorWillDestroy}
                 settings={settings}
                 focusOnMount={focusOnMount}
                 ref={notebook => {
@@ -1117,19 +1248,27 @@ const mapStateToProps = (
   ownProps: { localDashboardId: string }
 ) => {
   const fileStorage = getFileStorage(state);
+  const settings = getSettings(state);
+  const defaultNotebookSettings = getDefaultNotebookSettings(state);
   const sessionWrapper = getDashboardSessionWrapper(
     state,
     ownProps.localDashboardId
   );
+
   const { session, config: sessionConfig } = sessionWrapper ?? {};
   const { type: sessionLanguage } = sessionConfig ?? {};
   return {
     fileStorage,
+    settings,
+    defaultNotebookSettings,
     session,
     sessionLanguage,
   };
 };
 
-export default connect(mapStateToProps, null, null, { forwardRef: true })(
-  NotebookPanel
-);
+export default connect(
+  mapStateToProps,
+  { saveSettings: saveSettingsAction },
+  null,
+  { forwardRef: true }
+)(NotebookPanel);

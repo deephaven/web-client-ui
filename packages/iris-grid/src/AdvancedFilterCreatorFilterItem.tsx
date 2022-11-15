@@ -1,7 +1,6 @@
 /* eslint react/no-did-update-set-state: "off" */
 import React, { PureComponent } from 'react';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { Tooltip } from '@deephaven/components';
+import { Button } from '@deephaven/components';
 import {
   getLabelForBooleanFilter,
   getLabelForDateFilter,
@@ -209,14 +208,13 @@ export class AdvancedFilterCreatorFilterItem extends PureComponent<
             </div>
           )}
           <div className="form-group col-1 px-0">
-            <button
-              type="button"
-              className="btn btn-link btn-link-icon w-100 h-100 p-0 m-0"
+            <Button
+              kind="ghost"
+              className="w-100 h-100 p-0 m-0"
               onClick={this.handleDelete}
-            >
-              <FontAwesomeIcon icon={vsTrash} />
-              <Tooltip>Remove Filter</Tooltip>
-            </button>
+              icon={vsTrash}
+              tooltip="Remove Filter"
+            />
           </div>
         </div>
       </div>

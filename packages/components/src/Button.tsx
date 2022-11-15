@@ -31,7 +31,6 @@ interface BaseButtonProps extends React.ComponentPropsWithRef<'button'> {
   icon?: IconDefinition | JSX.Element;
   active?: boolean;
   'data-testid'?: string;
-  'aria-label'?: string;
 }
 
 type ButtonWithChildren = BaseButtonProps & {
@@ -95,8 +94,12 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       disabled,
       active,
       onClick,
+      onContextMenu,
       onMouseDown,
       onMouseUp,
+      onMouseEnter,
+      onMouseLeave,
+      onKeyDown,
       className,
       style,
       children,
@@ -154,8 +157,12 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
           className
         )}
         onClick={onClick}
+        onContextMenu={onContextMenu}
         onMouseUp={onMouseUp}
         onMouseDown={onMouseDown}
+        onMouseEnter={onMouseEnter}
+        onMouseLeave={onMouseLeave}
+        onKeyDown={onKeyDown}
         style={style}
         disabled={disabled}
         tabIndex={tabIndex}
@@ -226,8 +233,12 @@ Button.propTypes = {
     }
     return null;
   },
+  onContextMenu: PropTypes.func,
   onMouseUp: PropTypes.func,
   onMouseDown: PropTypes.func,
+  onMouseEnter: PropTypes.func,
+  onMouseLeave: PropTypes.func,
+  onKeyDown: PropTypes.func,
   tabIndex: PropTypes.number,
   children: PropTypes.node,
   className: PropTypes.string,
@@ -238,8 +249,12 @@ Button.propTypes = {
 Button.defaultProps = {
   type: 'button',
   onClick: undefined,
+  onContextMenu: undefined,
   onMouseUp: undefined,
   onMouseDown: undefined,
+  onMouseEnter: undefined,
+  onMouseLeave: undefined,
+  onKeyDown: undefined,
   variant: undefined,
   tooltip: undefined,
   icon: undefined,
