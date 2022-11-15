@@ -74,3 +74,43 @@ export function getLabelForBooleanFilter(filterType: TypeValue): string {
       throw new Error(`Unrecognized boolean filter type ${filterType}`);
   }
 }
+
+export function getSymbolForTextFilter(filterType: TypeValue): string {
+  switch (filterType) {
+    case Type.eq:
+    case Type.eqIgnoreCase:
+      return '';
+    case Type.notEq:
+    case Type.notEqIgnoreCase:
+      return '!=';
+    case Type.contains:
+      return '~';
+    case Type.notContains:
+      return '!~';
+    case Type.startsWith:
+    case Type.endsWith:
+      return '*';
+    default:
+      throw new Error(`Unrecognized text filter type ${filterType}`);
+  }
+}
+
+export function getSymbolForNumberOrDateFilter(filterType: TypeValue): string {
+  switch (filterType) {
+    case Type.eq:
+      return '';
+    case Type.notEq:
+      return '!=';
+    case Type.notEqIgnoreCase:
+    case Type.greaterThan:
+      return '>';
+    case Type.greaterThanOrEqualTo:
+      return '>=';
+    case Type.lessThan:
+      return '<';
+    case Type.lessThanOrEqualTo:
+      return '<=';
+    default:
+      throw new Error(`Unrecognized number filter type ${filterType}`);
+  }
+}

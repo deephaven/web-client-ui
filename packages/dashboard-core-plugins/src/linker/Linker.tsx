@@ -18,7 +18,10 @@ import {
 } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
 import {
+  getSymbolForNumberOrDateFilter,
+  getSymbolForTextFilter,
   Type as FilterType,
+  Type,
   TypeValue as FilterTypeValue,
 } from '@deephaven/filters';
 import {
@@ -184,7 +187,10 @@ export class Linker extends Component<LinkerProps, LinkerState> {
   }
 
   handleDone(): void {
-    const { setActiveTool } = this.props;
+    const { setActiveTool, links } = this.props;
+    for (let i = 0; i < links.length; i += 1) {
+      links[i].isSelected = false;
+    }
     setActiveTool(ToolType.DEFAULT);
     this.setState({ linkInProgress: undefined });
   }
@@ -247,7 +253,6 @@ export class Linker extends Component<LinkerProps, LinkerState> {
   }
 
   handleGridColumnSelect(panel: PanelComponent, column: LinkColumn): void {
-    console.log('gridcolumnselect');
     this.columnSelected(panel, column);
   }
 
@@ -339,7 +344,7 @@ export class Linker extends Component<LinkerProps, LinkerState> {
         end: isReversed !== undefined && isReversed ? start : end,
         id,
         type,
-        isSelected: true,
+        isSelected: false,
         comparisonOperator: FilterType.eq as FilterTypeValue,
       };
       log.info('creating link', newLink);
@@ -378,8 +383,6 @@ export class Linker extends Component<LinkerProps, LinkerState> {
    * @param filterMap Map of column name to column type, text, and value
    */
   setPanelFilterMap(panelId: string, filterMap: LinkFilterMap): void {
-    console.log('setpanelfiltermap');
-
     log.debug('Set filter data for panel:', panelId, filterMap);
     const { panelManager } = this.props;
     const panel = panelManager.getOpenedPanelById(panelId);
@@ -438,8 +441,6 @@ export class Linker extends Component<LinkerProps, LinkerState> {
   }
 
   handleUpdateValues(panel: PanelComponent, dataMap: LinkDataMap): void {
-    console.log('handleupdatevalues', panel, dataMap);
-
     const panelId = LayoutUtils.getIdFromPanel(panel);
     const { links, timeZone } = this.props;
     // Map of panel ID to filterMap
@@ -447,7 +448,7 @@ export class Linker extends Component<LinkerProps, LinkerState> {
     // Instead of setting filters one by one for each link,
     // combine them so they could be set in a single call per target panel
     for (let i = 0; i < links.length; i += 1) {
-      const { start, end } = links[i];
+      const { start, end, comparisonOperator } = links[i];
       if (start.panelId === panelId && end != null) {
         const { panelId: endPanelId, columnName, columnType } = end;
         // Map of column name to column type and filter value
@@ -455,7 +456,13 @@ export class Linker extends Component<LinkerProps, LinkerState> {
           ? panelFilterMap.get(endPanelId)
           : new Map();
         const { value } = dataMap[start.columnName];
-        let text = `${value}`;
+        const operator = TableUtils.isTextType(columnType ?? '')
+          ? getSymbolForTextFilter(comparisonOperator ?? Type.eq)
+          : getSymbolForNumberOrDateFilter(comparisonOperator ?? Type.eq);
+        let text = `${operator}${value}`;
+        if (comparisonOperator === 'endsWith') {
+          text = `${value}${operator}`;
+        }
         if (columnType != null && TableUtils.isDateType(columnType)) {
           const dateFilterFormatter = new DateTimeColumnFormatter({
             timeZone,
@@ -508,8 +515,13 @@ export class Linker extends Component<LinkerProps, LinkerState> {
     if (link) {
       if (deleteLink) {
         this.deleteLinks([link]);
+      } else if (link.isSelected !== undefined && link.isSelected) {
+        link.isSelected = false;
       } else {
-        link.isSelected = link.isSelected !== undefined && !link.isSelected;
+        for (let i = 0; i < links.length; i += 1) {
+          links[i].isSelected = false;
+        }
+        link.isSelected = true;
       }
     } else {
       log.error('Unable to find link to select or delete', linkId);
