@@ -439,8 +439,13 @@ export class Linker extends Component<LinkerProps, LinkerState> {
         const filterMap = panelFilterMap.has(endPanelId)
           ? panelFilterMap.get(endPanelId)
           : new Map();
-        const { value } = dataMap[start.columnName];
+        const { isExpandable, isGrouped } = dataMap[start.columnName];
+        let { value } = dataMap[start.columnName];
         let text = `${value}`;
+        if (value === null && isExpandable && isGrouped) {
+          // Clear filter on empty rollup grouping columns
+          (value as string | undefined) = undefined;
+        }
         if (TableUtils.isDateType(columnType)) {
           const dateFilterFormatter = new DateTimeColumnFormatter({
             timeZone,
