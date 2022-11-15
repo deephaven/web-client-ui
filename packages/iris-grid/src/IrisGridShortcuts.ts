@@ -33,7 +33,7 @@ const TABLE = {
   }),
   GOTO_ROW: ShortcutRegistry.createAndAdd({
     id: 'TABLE.GOTO_ROW',
-    name: 'GOTO_ROW',
+    name: 'Go to Row',
     shortcut: [MODIFIER.CTRL, KEY.G],
     macShortcut: [MODIFIER.CMD, KEY.G],
   }),

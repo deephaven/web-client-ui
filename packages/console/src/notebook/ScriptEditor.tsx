@@ -21,12 +21,11 @@ interface ScriptEditorProps {
   focusOnMount?: boolean;
   onChange: (e: editor.IModelContentChangedEvent) => void;
   onRunCommand: (command: string) => void;
+  onEditorInitialized: (editor: editor.IStandaloneCodeEditor) => void;
+  onEditorWillDestroy: (editor: editor.IStandaloneCodeEditor) => void;
   session: IdeSession;
   sessionLanguage?: string;
-  settings?: {
-    language: string;
-    value: string | null;
-  };
+  settings?: editor.IStandaloneEditorConstructionOptions;
 }
 
 interface ScriptEditorState {
@@ -40,9 +39,9 @@ class ScriptEditor extends Component<ScriptEditorProps, ScriptEditorState> {
     isLoaded: false,
     focusOnMount: true,
     onChange: (): void => undefined,
+    onEditorInitialized: (): void => undefined,
+    onEditorWillDestroy: (): void => undefined,
     session: null,
-    sessionLanguage: null,
-    settings: null,
   };
 
   constructor(props: ScriptEditorProps) {
@@ -146,6 +145,7 @@ class ScriptEditor extends Component<ScriptEditorProps, ScriptEditorState> {
     const {
       focusOnMount,
       onChange,
+      onEditorInitialized,
       settings,
       session,
       sessionLanguage,
@@ -168,10 +168,14 @@ class ScriptEditor extends Component<ScriptEditorProps, ScriptEditorState> {
     if (focusOnMount != null && focusOnMount) {
       innerEditor.focus();
     }
+
+    onEditorInitialized(this.editor);
   }
 
-  handleEditorWillDestroy(): void {
+  handleEditorWillDestroy(innerEditor: editor.IStandaloneCodeEditor): void {
     log.debug('handleEditorWillDestroy');
+    const { onEditorWillDestroy } = this.props;
+    onEditorWillDestroy(innerEditor);
     this.deInitContextActions();
     this.deInitCodeCompletion();
     this.setState({ model: null });
@@ -334,7 +338,7 @@ class ScriptEditor extends Component<ScriptEditorProps, ScriptEditorState> {
     } = this.props;
     const { model } = this.state;
     const errorMessage = error ? `Unable to open document. ${error}` : null;
-    const editorLanguage = settings ? settings.language : null;
+    const editorLanguage = settings ? settings.language ?? null : null;
     const completionProviderEnabled =
       model && session && editorLanguage === sessionLanguage;
 

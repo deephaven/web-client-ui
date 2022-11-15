@@ -11,7 +11,7 @@ interface EditorProps {
   className: string;
   onEditorInitialized: (editor: monaco.editor.IStandaloneCodeEditor) => void;
   onEditorWillDestroy: (editor: monaco.editor.IStandaloneCodeEditor) => void;
-  settings: Record<string, unknown>;
+  settings: monaco.editor.IStandaloneEditorConstructionOptions;
 }
 
 class Editor extends Component<EditorProps, Record<string, never>> {
@@ -77,7 +77,7 @@ class Editor extends Component<EditorProps, Record<string, never>> {
     const { onEditorInitialized } = this.props;
     let { settings } = this.props;
     settings = {
-      copyWithSyntaxHighlighting: 'false',
+      copyWithSyntaxHighlighting: false,
       fixedOverflowWidgets: true,
       folding: false,
       fontFamily: 'Fira Mono',
