@@ -1249,11 +1249,14 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   getCachedTheme = memoize(
     (
       theme: GridThemeType,
-      isEditable: boolean
+      isEditable: boolean,
+      floatingRowCount: number
     ): Partial<IrisGridThemeType> => ({
       ...IrisGridTheme,
       ...theme,
       autoSelectRow: !isEditable,
+      // We only show the row footers when we have floating rows for aggregations
+      rowFooterWidth: floatingRowCount > 0 ? theme.rowFooterWidth : 0,
     }),
     { max: 1 }
   );
@@ -1304,7 +1307,8 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     const { model, theme } = this.props;
     return this.getCachedTheme(
       theme,
-      (isEditableGridModel(model) && model.isEditable) ?? false
+      (isEditableGridModel(model) && model.isEditable) ?? false,
+      model.floatingTopRowCount + model.floatingBottomRowCount
     );
   }
 
@@ -1995,13 +1999,13 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   }
 
   focusFilterBar(column: VisibleIndex): void {
+    const { movedColumns } = this.state;
     const { model } = this.props;
     const { columnCount } = model;
-    const modelColumn = this.getModelColumn(column);
+    const modelColumn = GridUtils.getModelIndex(column, movedColumns);
 
     if (
       column == null ||
-      modelColumn == null ||
       column < 0 ||
       columnCount <= column ||
       !model.isFilterable(modelColumn)
@@ -2012,14 +2016,17 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
     const { metricCalculator, metrics } = this.state;
     assertNotNull(metrics);
-    const { gridX, left, rightVisible, lastLeft } = metrics;
+    const { left, rightVisible, lastLeft } = metrics;
     if (column < left) {
       this.grid?.setViewState({ left: column }, true);
     } else if (rightVisible < column) {
       const metricState = this.grid?.getMetricState();
       assertNotNull(metricState);
-      const newLeft = metricCalculator.getLastLeft(metricState, column, gridX);
-      this.grid?.setViewState({ left: Math.min(newLeft, lastLeft) }, true);
+      const newLeft = metricCalculator.getLastLeft(metricState, column);
+      this.grid?.setViewState(
+        { left: Math.min(newLeft, lastLeft), leftOffset: 0 },
+        true
+      );
     }
     this.lastFocusedFilterBarColumn = column;
     this.setState({ focusedFilterBarColumn: column, isFilterBarShown: true });
@@ -3507,7 +3514,13 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       : IrisGrid.maxDebounce;
 
     if (isFilterBarShown && focusedFilterBarColumn != null && metrics != null) {
-      const { gridX, gridY, visibleColumnXs, visibleColumnWidths } = metrics;
+      const {
+        gridX,
+        gridY,
+        visibleColumnXs,
+        visibleColumnWidths,
+        width,
+      } = metrics;
       const columnX = visibleColumnXs.get(focusedFilterBarColumn);
       const columnWidth = visibleColumnWidths.get(focusedFilterBarColumn);
       if (columnX != null && columnWidth != null) {
@@ -3518,7 +3531,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
         const style = {
           top: y,
           left: x,
-          minWidth: fieldWidth,
+          minWidth: Math.min(fieldWidth, width - x), // Don't cause overflow
           height: fieldHeight,
         };
         let value = '';
