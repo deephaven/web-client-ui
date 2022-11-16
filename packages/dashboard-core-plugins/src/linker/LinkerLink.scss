@@ -18,9 +18,40 @@ $dash-size: 10;
     fill: $dash-color-1;
   }
 
-  button {
-    fill: $primary;
+  button.btn-floating-action {
     pointer-events: all;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    background: $primary;
+    border-color: $primary;
+
+    .fa-grip-vertical {
+      color: white;
+    }
+
+    &.active {
+      border-color: $primary;
+      background: $primary;
+      color: $gray-100;
+
+      &:focus {
+        border: 1px solid $input-focus-border-color;
+      }
+
+      &:hover {
+        background: $primary;
+      }
+    }
+
+    &:focus {
+      border: 1px solid $input-focus-border-color;
+    }
+
+    &:hover {
+      border-color: $primary-hover;
+      background-color: $primary-hover;
+    }
   }
 
   path {

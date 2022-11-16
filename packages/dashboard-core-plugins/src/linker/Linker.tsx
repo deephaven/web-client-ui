@@ -456,12 +456,17 @@ export class Linker extends Component<LinkerProps, LinkerState> {
           ? panelFilterMap.get(endPanelId)
           : new Map();
         const { value } = dataMap[start.columnName];
-        const operator = TableUtils.isTextType(columnType ?? '')
-          ? getSymbolForTextFilter(comparisonOperator ?? Type.eq)
-          : getSymbolForNumberOrDateFilter(comparisonOperator ?? Type.eq);
+        const operator =
+          columnType != null && TableUtils.isStringType(columnType)
+            ? getSymbolForTextFilter(comparisonOperator ?? Type.eq)
+            : getSymbolForNumberOrDateFilter(comparisonOperator ?? Type.eq);
+
         let text = `${operator}${value}`;
         if (comparisonOperator === 'endsWith') {
           text = `${value}${operator}`;
+        }
+        if (columnType != null && TableUtils.isCharType(columnType)) {
+          text = `${operator}${String.fromCharCode(parseInt(value, 10))}`;
         }
         if (columnType != null && TableUtils.isDateType(columnType)) {
           const dateFilterFormatter = new DateTimeColumnFormatter({
@@ -471,7 +476,9 @@ export class Linker extends Component<LinkerProps, LinkerState> {
             defaultDateTimeFormatString: DateUtils.FULL_DATE_FORMAT,
           });
           // The values are Dates for dateType values, not string like everything else
-          text = dateFilterFormatter.format((value as unknown) as Date);
+          text = `${operator}${dateFilterFormatter.format(
+            (value as unknown) as Date
+          )}`;
         }
         filterMap.set(columnName, {
           columnType,

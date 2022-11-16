@@ -17,6 +17,8 @@ import {
   getLabelForTextFilter,
   getLabelForDateFilter,
   getLabelForBooleanFilter,
+  getSymbolForNumberOrDateFilter,
+  getSymbolForTextFilter,
 } from '@deephaven/filters';
 import {
   isLinkableFromPanel,
@@ -38,7 +40,7 @@ export type VisibleLink = {
   className: string;
   isSelected: boolean;
   comparisonOperator: FilterTypeValue;
-  comparisonOperators: DropdownActions;
+  comparisonOperators?: DropdownActions;
 };
 
 export type LinkerOverlayContentProps = {
@@ -135,9 +137,16 @@ export class LinkerOverlayContent extends Component<
         if (type === 'eqIgnoreCase' || type === `notEqIgnoreCase`) {
           return [];
         }
+        let symbol = '=';
+        if (type !== 'eq') {
+          symbol = TableUtils.isStringType(columnType)
+            ? getSymbolForTextFilter(type)
+            : getSymbolForNumberOrDateFilter(type);
+        }
         return [
           {
             title: LinkerOverlayContent.getLabelForFilter(columnType, type),
+            icon: <b>{symbol}</b>,
             action: () => this.handleComparisonOperatorChanged(linkId, type),
             order: 10,
           },
@@ -249,10 +258,11 @@ export class LinkerOverlayContent extends Component<
             { 'link-is-selected': isSelected },
             { 'alt-pressed': isAltPressed }
           );
-          const comparisonOperators = this.getComparisonOperators(
-            id,
-            start.columnType ?? ''
-          );
+          const comparisonOperators =
+            start.columnType != null &&
+            !TableUtils.isBooleanType(start.columnType)
+              ? this.getComparisonOperators(id, start.columnType)
+              : undefined;
           return {
             x1,
             y1,

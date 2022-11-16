@@ -1470,9 +1470,14 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
         this.setQuickFilter(columnIndex, column.filter().isNull(), '=null');
       } else {
         const { formatter } = model;
-        const fallbackFilterValue = TableUtils.isTextType(columnType)
-          ? dh.FilterValue.ofString(value)
-          : dh.FilterValue.ofNumber(value);
+        let fallbackFilterValue;
+        if (TableUtils.isTextType(columnType)) {
+          fallbackFilterValue = dh.FilterValue.ofString(value);
+        } else if (TableUtils.isBooleanType(columnType)) {
+          fallbackFilterValue = dh.FilterValue.ofBoolean(value);
+        } else {
+          fallbackFilterValue = dh.FilterValue.ofNumber(value);
+        }
         this.setQuickFilter(
           columnIndex,
           IrisGrid.makeQuickFilter(column, text, formatter.timeZone) ??

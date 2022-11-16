@@ -111,6 +111,6 @@ export function getSymbolForNumberOrDateFilter(filterType: TypeValue): string {
     case Type.lessThanOrEqualTo:
       return '<=';
     default:
-      throw new Error(`Unrecognized number filter type ${filterType}`);
+      throw new Error(`Unrecognized number or date filter type ${filterType}`);
   }
 }

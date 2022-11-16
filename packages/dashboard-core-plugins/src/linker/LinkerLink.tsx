@@ -1,5 +1,5 @@
 import { Button, DropdownActions, DropdownMenu } from '@deephaven/components';
-import { vsMenu } from '@deephaven/icons';
+import { vsGrabber } from '@deephaven/icons';
 import React, { MouseEvent, PureComponent } from 'react';
 
 import './LinkerLink.scss';
@@ -23,7 +23,7 @@ export type LinkerLinkProps = {
   y2: number;
   id: string;
   className: string;
-  comparisonOperators: DropdownActions;
+  comparisonOperators?: DropdownActions;
   isSelected: boolean;
   onClick: (id: string, deleteLink: boolean) => void;
 };
@@ -102,6 +102,9 @@ export class LinkerLink extends PureComponent<LinkerLinkProps> {
     const path = `M ${x1} ${y1} Q ${qx} ${qy} ${x2} ${y2}`;
     const midX = 0.25 * x1 + 0.5 * qx + 0.25 * x2;
     const midY = 0.25 * y1 + 0.5 * qy + 0.25 * y2;
+    const offsetX = -20 * (theta / 1.57);
+    const offsetY =
+      15 * Math.abs(1 - Math.abs(theta) / 1.57) * (theta >= 0 ? 1 : -1);
 
     // path for a 100%, 100% rect, then two paths for circles at point
     const selectClipPath = `M ${minX} ${minY} L ${minX} ${maxY} L ${maxX} ${maxY} L ${maxX} ${minY} z
@@ -137,14 +140,20 @@ export class LinkerLink extends PureComponent<LinkerLinkProps> {
         <path className="link-foreground" d={path} />
         <circle className="link-dot" cx={x1} cy={y1} r="5" />
         <polygon className="link-triangle" points={points} />
-        {isSelected && (
-          <foreignObject x={midX + 10} y={midY + 10} width="30" height="30">
+        {comparisonOperators !== undefined && isSelected && (
+          <foreignObject
+            x={midX + offsetX}
+            y={midY + offsetY}
+            width="30"
+            height="30"
+          >
             <Button
-              kind="inline"
-              icon={vsMenu}
+              kind="ghost"
+              className="btn-floating-action"
               onClick={() => {
                 // no-op: click is handled in `DropdownMenu'
               }}
+              icon={vsGrabber}
             >
               <DropdownMenu
                 actions={comparisonOperators}
