@@ -462,7 +462,7 @@ export class Linker extends Component<LinkerProps, LinkerState> {
             : getSymbolForNumberOrDateFilter(comparisonOperator ?? Type.eq);
 
         let text = `${operator}${value}`;
-        if (comparisonOperator === 'endsWith') {
+        if (comparisonOperator === 'startsWith') {
           text = `${value}${operator}`;
         }
         if (columnType != null && TableUtils.isCharType(columnType)) {
@@ -697,6 +697,7 @@ export class Linker extends Component<LinkerProps, LinkerState> {
             )}
             messageText={linkerOverlayMessage}
             onLinkSelected={this.handleLinkSelected}
+            onSingleLinkDeleted={this.handleLinkDeleted}
             onAllLinksDeleted={this.handleAllLinksDeleted}
             onDone={this.handleDone}
             onCancel={this.handleCancel}

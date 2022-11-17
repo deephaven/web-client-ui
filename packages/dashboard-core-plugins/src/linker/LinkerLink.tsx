@@ -1,5 +1,6 @@
 import { Button, DropdownActions, DropdownMenu } from '@deephaven/components';
-import { vsGrabber } from '@deephaven/icons';
+import { vsTrash, vsTriangleDown } from '@deephaven/icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React, { MouseEvent, PureComponent } from 'react';
 
 import './LinkerLink.scss';
@@ -26,6 +27,7 @@ export type LinkerLinkProps = {
   comparisonOperators?: DropdownActions;
   isSelected: boolean;
   onClick: (id: string, deleteLink: boolean) => void;
+  onDelete: (id: string) => void;
 };
 
 export class LinkerLink extends PureComponent<LinkerLinkProps> {
@@ -33,6 +35,9 @@ export class LinkerLink extends PureComponent<LinkerLinkProps> {
     className: '',
     isSelected: false,
     onClick(): void {
+      // no-op
+    },
+    onDelete(): void {
       // no-op
     },
   };
@@ -54,6 +59,7 @@ export class LinkerLink extends PureComponent<LinkerLinkProps> {
     super(props);
 
     this.handleClick = this.handleClick.bind(this);
+    this.handleDelete = this.handleDelete.bind(this);
   }
 
   handleClick(event: MouseEvent<SVGPathElement>): void {
@@ -62,6 +68,11 @@ export class LinkerLink extends PureComponent<LinkerLinkProps> {
 
     const { id, onClick } = this.props;
     onClick(id, event.altKey);
+  }
+
+  handleDelete(): void {
+    const { id, onDelete } = this.props;
+    onDelete(id);
   }
 
   render(): JSX.Element {
@@ -126,43 +137,70 @@ export class LinkerLink extends PureComponent<LinkerLinkProps> {
     const points = `${tx1},${ty1} ${tx2},${ty2} ${tx3},${ty3}`;
 
     return (
-      <svg className={className}>
-        <clipPath id={clipPathId}>
-          <path d={selectClipPath} clipRule="evenodd" />
-        </clipPath>
-        <path
-          className="link-select"
-          d={path}
-          onClick={this.handleClick}
-          clipPath={`url(#${clipPathId})`}
-        />
-        <path className="link-background" d={path} />
-        <path className="link-foreground" d={path} />
-        <circle className="link-dot" cx={x1} cy={y1} r="5" />
-        <polygon className="link-triangle" points={points} />
+      <>
+        <svg className={className}>
+          <clipPath id={clipPathId}>
+            <path d={selectClipPath} clipRule="evenodd" />
+          </clipPath>
+          <path
+            className="link-select"
+            d={path}
+            onClick={this.handleClick}
+            clipPath={`url(#${clipPathId})`}
+          />
+          <path className="link-background" d={path} />
+          <path className="link-foreground" d={path} />
+          <circle className="link-dot" cx={x1} cy={y1} r="5" />
+          <polygon className="link-triangle" points={points} />
+        </svg>
         {comparisonOperators !== undefined && isSelected && (
-          <foreignObject
-            x={midX + offsetX}
-            y={midY + offsetY}
-            width="30"
-            height="30"
-          >
-            <Button
-              kind="ghost"
-              className="btn-floating-action"
-              onClick={() => {
-                // no-op: click is handled in `DropdownMenu'
-              }}
-              icon={vsGrabber}
+          <>
+            <foreignObject
+              x={midX + offsetX}
+              y={midY + offsetY}
+              width={35}
+              height={35}
             >
-              <DropdownMenu
-                actions={comparisonOperators}
-                popperOptions={{ placement: 'bottom-start' }}
+              <Button
+                kind="primary"
+                className="btn-fla"
+                onClick={() => {
+                  // no-op: click is handled in `DropdownMenu'
+                }}
+                icon={
+                  <div className="fa-md fa-layers">
+                    <b>=</b>
+                    <FontAwesomeIcon
+                      icon={vsTriangleDown}
+                      transform="right-8 down-8 shrink-4"
+                    />
+                  </div>
+                }
+                tooltip="Change comparison operator"
+              >
+                <DropdownMenu
+                  actions={comparisonOperators}
+                  popperOptions={{ placement: 'bottom-start' }}
+                />
+              </Button>
+            </foreignObject>
+            <foreignObject
+              x={midX + offsetX + 30}
+              y={midY + offsetY + 30}
+              width={35}
+              height={35}
+            >
+              <Button
+                kind="primary"
+                className="btn-fla"
+                onClick={this.handleDelete}
+                icon={vsTrash}
+                tooltip="Delete"
               />
-            </Button>
-          </foreignObject>
+            </foreignObject>
+          </>
         )}
-      </svg>
+      </>
     );
   }
 }

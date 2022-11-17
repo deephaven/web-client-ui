@@ -48,6 +48,7 @@ export type LinkerOverlayContentProps = {
   links: Link[];
   messageText: string;
   onLinkSelected: (linkId: string, deleteLink: boolean) => void;
+  onSingleLinkDeleted: (linkId: string) => void;
   onAllLinksDeleted: () => void;
   onCancel: () => void;
   onDone: () => void;
@@ -132,8 +133,8 @@ export class LinkerOverlayContent extends Component<
 
   getComparisonOperators = memoize(
     (linkId: string, columnType: string): DropdownActions =>
-      TableUtils.getFilterTypes(columnType).flatMap(type => {
-        // Remove case-insensitive operators
+      TableUtils.getFilterTypes(columnType).flatMap((type, index) => {
+        // Remove case-insensitive string comparisons
         if (type === 'eqIgnoreCase' || type === `notEqIgnoreCase`) {
           return [];
         }
@@ -142,13 +143,18 @@ export class LinkerOverlayContent extends Component<
           symbol = TableUtils.isStringType(columnType)
             ? getSymbolForTextFilter(type)
             : getSymbolForNumberOrDateFilter(type);
+          if (type === 'startsWith') {
+            symbol = `a${symbol}`;
+          } else if (type === 'endsWith') {
+            symbol += 'z';
+          }
         }
         return [
           {
             title: LinkerOverlayContent.getLabelForFilter(columnType, type),
             icon: <b>{symbol}</b>,
             action: () => this.handleComparisonOperatorChanged(linkId, type),
-            order: 10,
+            order: index,
           },
         ];
       })
@@ -229,6 +235,7 @@ export class LinkerOverlayContent extends Component<
       links,
       messageText,
       onLinkSelected,
+      onSingleLinkDeleted,
       onAllLinksDeleted,
       onDone,
     } = this.props;
@@ -286,7 +293,7 @@ export class LinkerOverlayContent extends Component<
           'alt-pressed': isAltPressed,
         })}
       >
-        <svg>
+        <svg className="outer-linker-svg">
           {visibleLinks.map(
             ({
               x1,
@@ -307,6 +314,7 @@ export class LinkerOverlayContent extends Component<
                 y2={y2}
                 key={id}
                 onClick={onLinkSelected}
+                onDelete={onSingleLinkDeleted}
                 isSelected={isSelected}
                 comparisonOperators={comparisonOperators}
               />

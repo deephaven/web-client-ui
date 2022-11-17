@@ -12,46 +12,17 @@ $dash-delete-color-1: $danger;
 $dash-delete-color-2: mix($danger, $content-bg, 25%);
 $dash-size: 10;
 
-.linker-overlay svg {
+.linker-overlay svg.outer-linker-svg {
   .link-dot,
   .link-triangle {
     fill: $dash-color-1;
   }
 
-  button.btn-floating-action {
+  button.btn-fla {
     pointer-events: all;
-    width: 2rem;
-    height: 2rem;
-    border-radius: 50%;
-    background: $primary;
-    border-color: $primary;
-
-    .fa-grip-vertical {
-      color: white;
-    }
-
-    &.active {
-      border-color: $primary;
-      background: $primary;
-      color: $gray-100;
-
-      &:focus {
-        border: 1px solid $input-focus-border-color;
-      }
-
-      &:hover {
-        background: $primary;
-      }
-    }
-
-    &:focus {
-      border: 1px solid $input-focus-border-color;
-    }
-
-    &:hover {
-      border-color: $primary-hover;
-      background-color: $primary-hover;
-    }
+    min-width: 1rem;
+    min-height: 1rem;
+    padding: 0.25rem 0.5rem;
   }
 
   path {
