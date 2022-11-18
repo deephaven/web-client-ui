@@ -72,8 +72,11 @@ export class LocalWorkspaceStorage implements WorkspaceStorage {
 
   private layoutStorage: LayoutStorage;
 
-  constructor(layoutStorage: LayoutStorage) {
+  private serverVersion?: string;
+
+  constructor(layoutStorage: LayoutStorage, serverVersion?: string) {
     this.layoutStorage = layoutStorage;
+    this.serverVersion = serverVersion;
   }
 
   // eslint-disable-next-line class-methods-use-this

@@ -180,3 +180,17 @@ $settings-menu-z-index: $zindex-modal;
     }
   }
 }
+
+.detailed-server-config {
+  display: inline-block;
+}
+
+.detailed-server-config-info {
+  padding: 10px;
+}
+
+.detailed-server-config-row {
+  display: flex;
+  justify-content: space-between;
+  gap: $spacer-3;
+}
