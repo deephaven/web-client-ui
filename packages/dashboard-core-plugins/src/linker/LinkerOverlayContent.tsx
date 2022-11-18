@@ -263,7 +263,7 @@ export class LinkerOverlayContent extends Component<
             { 'link-invalid': type === 'invalid' },
             { interactive: link.end == null },
             { 'link-is-selected': isSelected },
-            { 'alt-pressed': isAltPressed }
+            { 'danger-delete': isAltPressed }
           );
           const comparisonOperators =
             start.columnType != null &&
@@ -290,37 +290,35 @@ export class LinkerOverlayContent extends Component<
     return (
       <div
         className={classNames('linker-overlay', {
-          'alt-pressed': isAltPressed,
+          'danger-delete': isAltPressed,
         })}
       >
-        <svg className="outer-linker-svg">
-          {visibleLinks.map(
-            ({
-              x1,
-              y1,
-              x2,
-              y2,
-              id,
-              className,
-              isSelected,
-              comparisonOperators,
-            }) => (
-              <LinkerLink
-                className={className}
-                id={id}
-                x1={x1}
-                y1={y1}
-                x2={x2}
-                y2={y2}
-                key={id}
-                onClick={onLinkSelected}
-                onDelete={onSingleLinkDeleted}
-                isSelected={isSelected}
-                comparisonOperators={comparisonOperators}
-              />
-            )
-          )}
-        </svg>
+        {visibleLinks.map(
+          ({
+            x1,
+            y1,
+            x2,
+            y2,
+            id,
+            className,
+            isSelected,
+            comparisonOperators,
+          }) => (
+            <LinkerLink
+              className={className}
+              id={id}
+              x1={x1}
+              y1={y1}
+              x2={x2}
+              y2={y2}
+              key={id}
+              onClick={onLinkSelected}
+              onDelete={onSingleLinkDeleted}
+              isSelected={isSelected}
+              comparisonOperators={comparisonOperators}
+            />
+          )
+        )}
         <div className="linker-toast-dialog">
           <div className="toast-body">{messageText}</div>
           <div className="toast-footer">

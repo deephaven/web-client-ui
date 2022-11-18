@@ -1,6 +1,7 @@
 import { Button, DropdownActions, DropdownMenu } from '@deephaven/components';
 import { vsTrash, vsTriangleDown } from '@deephaven/icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import classNames from 'classnames';
 import React, { MouseEvent, PureComponent } from 'react';
 
 import './LinkerLink.scss';
@@ -113,10 +114,12 @@ export class LinkerLink extends PureComponent<LinkerLinkProps> {
     const path = `M ${x1} ${y1} Q ${qx} ${qy} ${x2} ${y2}`;
     const midX = 0.25 * x1 + 0.5 * qx + 0.25 * x2;
     const midY = 0.25 * y1 + 0.5 * qy + 0.25 * y2;
-    const offsetX = -20 * (theta / 1.57);
-    const offsetY =
-      15 * Math.abs(1 - Math.abs(theta) / 1.57) * (theta >= 0 ? 1 : -1);
-
+    const dMidX = qx - x1 + (x2 - qx);
+    const dMidY = qy - y1 + (y2 - qy);
+    const slopeAtMid = dMidY / dMidX;
+    const offsetX = midX - 10;
+    const offsetY = midY + slopeAtMid * -10;
+    console.log(slopeAtMid, offsetX, offsetY);
     // path for a 100%, 100% rect, then two paths for circles at point
     const selectClipPath = `M ${minX} ${minY} L ${minX} ${maxY} L ${maxX} ${maxY} L ${maxX} ${minY} z
     ${LinkerLink.makeCirclePath(x1, y1, CLIP_RADIUS)}
@@ -135,6 +138,7 @@ export class LinkerLink extends PureComponent<LinkerLinkProps> {
     const tx3 = tx1 + Math.cos(t3theta) * TRIANGLE_HYPOTENUSE;
     const ty3 = ty1 + Math.sin(t3theta) * TRIANGLE_HYPOTENUSE;
     const points = `${tx1},${ty1} ${tx2},${ty2} ${tx3},${ty3}`;
+    console.log(className);
 
     return (
       <>
@@ -155,49 +159,42 @@ export class LinkerLink extends PureComponent<LinkerLinkProps> {
         </svg>
         {comparisonOperators !== undefined && isSelected && (
           <>
-            <foreignObject
-              x={midX + offsetX}
-              y={midY + offsetY}
-              width={35}
-              height={35}
+            <Button
+              kind="primary"
+              className={classNames('btn-fab', {
+                'danger-delete': className.includes('danger-delete'),
+              })}
+              style={{ top: midY, left: midX }}
+              onClick={() => {
+                // no-op: click is handled in `DropdownMenu'
+              }}
+              icon={
+                <div className="fa-md fa-layers">
+                  <b>=</b>
+                  <FontAwesomeIcon
+                    icon={vsTriangleDown}
+                    transform="right-8 down-8 shrink-4"
+                  />
+                </div>
+              }
+              tooltip="Change comparison operator"
             >
-              <Button
-                kind="primary"
-                className="btn-fla"
-                onClick={() => {
-                  // no-op: click is handled in `DropdownMenu'
-                }}
-                icon={
-                  <div className="fa-md fa-layers">
-                    <b>=</b>
-                    <FontAwesomeIcon
-                      icon={vsTriangleDown}
-                      transform="right-8 down-8 shrink-4"
-                    />
-                  </div>
-                }
-                tooltip="Change comparison operator"
-              >
-                <DropdownMenu
-                  actions={comparisonOperators}
-                  popperOptions={{ placement: 'bottom-start' }}
-                />
-              </Button>
-            </foreignObject>
-            <foreignObject
-              x={midX + offsetX + 30}
-              y={midY + offsetY + 30}
-              width={35}
-              height={35}
-            >
-              <Button
-                kind="primary"
-                className="btn-fla"
-                onClick={this.handleDelete}
-                icon={vsTrash}
-                tooltip="Delete"
+              <DropdownMenu
+                actions={comparisonOperators}
+                popperOptions={{ placement: 'bottom-start' }}
               />
-            </foreignObject>
+            </Button>
+
+            <Button
+              kind="primary"
+              className={classNames('btn-fab', 'btn-delete', {
+                'danger-delete': className.includes('danger-delete'),
+              })}
+              style={{ top: midY, left: midX }}
+              onClick={this.handleDelete}
+              icon={vsTrash}
+              tooltip="Delete"
+            />
           </>
         )}
       </>
