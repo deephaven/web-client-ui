@@ -447,7 +447,7 @@ export class Linker extends Component<LinkerProps, LinkerState> {
         let text = `${value}`;
         if (value === null && isExpandable && isGrouped) {
           // Clear filter on empty rollup grouping columns
-          (value as string | undefined) = undefined;
+          value = undefined;
         }
         if (columnType != null && TableUtils.isDateType(columnType)) {
           const dateFilterFormatter = new DateTimeColumnFormatter({
@@ -457,7 +457,7 @@ export class Linker extends Component<LinkerProps, LinkerState> {
             defaultDateTimeFormatString: DateUtils.FULL_DATE_FORMAT,
           });
           // The values are Dates for dateType values, not string like everything else
-          text = dateFilterFormatter.format((value as unknown) as Date);
+          text = dateFilterFormatter.format(value as Date);
         }
         filterMap.set(columnName, {
           columnType,

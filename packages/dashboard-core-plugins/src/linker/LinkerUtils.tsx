@@ -37,7 +37,7 @@ export type LinkFilterMap<T = unknown> = Map<string, LinkFilterMapValue<T>>;
 export type LinkDataMapValue = {
   type: string;
   text: string;
-  value: string;
+  value: unknown;
   isExpandable: boolean;
   isGrouped: boolean;
 };
