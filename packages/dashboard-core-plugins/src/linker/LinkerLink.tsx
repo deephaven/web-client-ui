@@ -1,6 +1,13 @@
 import { Button, DropdownActions, DropdownMenu } from '@deephaven/components';
 import { vsTrash, vsTriangleDown } from '@deephaven/icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import {
+  TypeValue as FilterTypeValue,
+  getSymbolForNumberOrDateFilter,
+  getSymbolForTextFilter,
+} from '@deephaven/filters';
+import { TableUtils } from '@deephaven/jsapi-utils';
+
 import classNames from 'classnames';
 import React, { MouseEvent, PureComponent } from 'react';
 
@@ -25,6 +32,8 @@ export type LinkerLinkProps = {
   y2: number;
   id: string;
   className: string;
+  columnType?: string | null;
+  comparisonOperator: FilterTypeValue;
   comparisonOperators?: DropdownActions;
   isSelected: boolean;
   onClick: (id: string, deleteLink: boolean) => void;
@@ -79,8 +88,10 @@ export class LinkerLink extends PureComponent<LinkerLinkProps> {
   render(): JSX.Element {
     const {
       className,
+      comparisonOperator,
       comparisonOperators,
       isSelected,
+      columnType,
       x1,
       y1,
       x2,
@@ -112,14 +123,7 @@ export class LinkerLink extends PureComponent<LinkerLinkProps> {
       )
     );
     const path = `M ${x1} ${y1} Q ${qx} ${qy} ${x2} ${y2}`;
-    const midX = 0.25 * x1 + 0.5 * qx + 0.25 * x2;
-    const midY = 0.25 * y1 + 0.5 * qy + 0.25 * y2;
-    const dMidX = qx - x1 + (x2 - qx);
-    const dMidY = qy - y1 + (y2 - qy);
-    const slopeAtMid = dMidY / dMidX;
-    const offsetX = midX - 10;
-    const offsetY = midY + slopeAtMid * -10;
-    console.log(slopeAtMid, offsetX, offsetY);
+
     // path for a 100%, 100% rect, then two paths for circles at point
     const selectClipPath = `M ${minX} ${minY} L ${minX} ${maxY} L ${maxX} ${maxY} L ${maxX} ${minY} z
     ${LinkerLink.makeCirclePath(x1, y1, CLIP_RADIUS)}
@@ -138,7 +142,55 @@ export class LinkerLink extends PureComponent<LinkerLinkProps> {
     const tx3 = tx1 + Math.cos(t3theta) * TRIANGLE_HYPOTENUSE;
     const ty3 = ty1 + Math.sin(t3theta) * TRIANGLE_HYPOTENUSE;
     const points = `${tx1},${ty1} ${tx2},${ty2} ${tx3},${ty3}`;
-    console.log(className);
+
+    // Button offset calculations
+    const midX = 0.25 * x1 + 0.5 * qx + 0.25 * x2;
+    const midY = 0.25 * y1 + 0.5 * qy + 0.25 * y2;
+    const dMidX = qx - x1 + (x2 - qx);
+    const dMidY = qy - y1 + (y2 - qy);
+    const slopeAtMid = dMidY / dMidX;
+    const DISTANCE_FROM_MID = 20;
+    let dropdownOffsetX = DISTANCE_FROM_MID / Math.sqrt(1 + slopeAtMid ** 2);
+    let dropdownOffsetY = dropdownOffsetX * slopeAtMid;
+    let deleteOffsetX = dropdownOffsetX * -1;
+    let deleteOffsetY = dropdownOffsetY * -1;
+    if (!Number.isFinite(slopeAtMid)) {
+      deleteOffsetX = 10;
+      deleteOffsetY = 5;
+      dropdownOffsetX = 10;
+      dropdownOffsetY = -35;
+    } else if (slopeAtMid > 0) {
+      dropdownOffsetX *= -1;
+      dropdownOffsetY *= -1;
+      deleteOffsetX *= -1;
+      deleteOffsetY *= -1;
+      deleteOffsetX -= 50 - 10 * (Math.abs(theta) % 1.57);
+      deleteOffsetY += 10 * (Math.abs(theta) % 1.57);
+      dropdownOffsetX -= 50 - 10 * (Math.abs(theta) % 1.57);
+      dropdownOffsetY += 10 * (Math.abs(theta) % 1.57);
+    } else if (slopeAtMid < 0) {
+      deleteOffsetX += 10 * (Math.abs(theta) % 1.57);
+      deleteOffsetY += 10 * (Math.abs(theta) % 1.57);
+      dropdownOffsetX += 10 * (Math.abs(theta) % 1.57);
+      dropdownOffsetY += 10 * (Math.abs(theta) % 1.57);
+    } else {
+      deleteOffsetX = 15;
+      deleteOffsetY = 10;
+      dropdownOffsetX = -25;
+      dropdownOffsetY = 10;
+    }
+
+    let symbol = '=';
+    if (columnType !== undefined && comparisonOperator !== 'eq') {
+      symbol = TableUtils.isStringType(columnType ?? '')
+        ? getSymbolForTextFilter(comparisonOperator)
+        : getSymbolForNumberOrDateFilter(comparisonOperator);
+      if (comparisonOperator === 'startsWith') {
+        symbol = `a${symbol}`;
+      } else if (comparisonOperator === 'endsWith') {
+        symbol += 'z';
+      }
+    }
 
     return (
       <>
@@ -155,6 +207,7 @@ export class LinkerLink extends PureComponent<LinkerLinkProps> {
           <path className="link-background" d={path} />
           <path className="link-foreground" d={path} />
           <circle className="link-dot" cx={x1} cy={y1} r="5" />
+          <circle className="link-dot" cx={midX} cy={midY} r="5" />
           <polygon className="link-triangle" points={points} />
         </svg>
         {comparisonOperators !== undefined && isSelected && (
@@ -164,16 +217,19 @@ export class LinkerLink extends PureComponent<LinkerLinkProps> {
               className={classNames('btn-fab', {
                 'danger-delete': className.includes('danger-delete'),
               })}
-              style={{ top: midY, left: midX }}
+              style={{
+                top: midY + dropdownOffsetY,
+                left: midX + dropdownOffsetX,
+              }}
               onClick={() => {
                 // no-op: click is handled in `DropdownMenu'
               }}
               icon={
                 <div className="fa-md fa-layers">
-                  <b>=</b>
+                  <b>{symbol}</b>
                   <FontAwesomeIcon
                     icon={vsTriangleDown}
-                    transform="right-8 down-8 shrink-4"
+                    transform="right-8 down-10 shrink-6"
                   />
                 </div>
               }
@@ -190,9 +246,9 @@ export class LinkerLink extends PureComponent<LinkerLinkProps> {
               className={classNames('btn-fab', 'btn-delete', {
                 'danger-delete': className.includes('danger-delete'),
               })}
-              style={{ top: midY, left: midX }}
+              style={{ top: midY + deleteOffsetY, left: midX + deleteOffsetX }}
               onClick={this.handleDelete}
-              icon={vsTrash}
+              icon={<FontAwesomeIcon icon={vsTrash} transform=" down-1" />}
               tooltip="Delete"
             />
           </>

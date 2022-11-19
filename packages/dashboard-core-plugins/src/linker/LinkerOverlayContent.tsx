@@ -37,6 +37,7 @@ export type VisibleLink = {
   x2: number;
   y2: number;
   id: string;
+  columnType: string;
   className: string;
   isSelected: boolean;
   comparisonOperator: FilterTypeValue;
@@ -244,7 +245,15 @@ export class LinkerOverlayContent extends Component<
     const visibleLinks = links
       .map(link => {
         try {
-          const { id, type, isReversed, isSelected, start, end } = link;
+          const {
+            id,
+            type,
+            isReversed,
+            isSelected,
+            start,
+            end,
+            comparisonOperator,
+          } = link;
           let [x1, y1] = this.getPointFromLinkPoint(start);
           let x2 = mouseX ?? x1;
           let y2 = mouseY ?? y1;
@@ -270,6 +279,7 @@ export class LinkerOverlayContent extends Component<
             !TableUtils.isBooleanType(start.columnType)
               ? this.getComparisonOperators(id, start.columnType)
               : undefined;
+          const columnType = end?.columnType;
           return {
             x1,
             y1,
@@ -278,6 +288,8 @@ export class LinkerOverlayContent extends Component<
             id,
             className,
             isSelected,
+            columnType,
+            comparisonOperator,
             comparisonOperators,
           };
         } catch (error) {
@@ -302,6 +314,8 @@ export class LinkerOverlayContent extends Component<
             id,
             className,
             isSelected,
+            columnType,
+            comparisonOperator,
             comparisonOperators,
           }) => (
             <LinkerLink
@@ -315,6 +329,8 @@ export class LinkerOverlayContent extends Component<
               onClick={onLinkSelected}
               onDelete={onSingleLinkDeleted}
               isSelected={isSelected}
+              columnType={columnType}
+              comparisonOperator={comparisonOperator}
               comparisonOperators={comparisonOperators}
             />
           )

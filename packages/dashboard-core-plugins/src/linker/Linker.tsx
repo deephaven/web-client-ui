@@ -344,7 +344,7 @@ export class Linker extends Component<LinkerProps, LinkerState> {
         end: isReversed !== undefined && isReversed ? start : end,
         id,
         type,
-        isSelected: false,
+        isSelected: true,
         comparisonOperator: FilterType.eq as FilterTypeValue,
       };
       log.info('creating link', newLink);
