@@ -1,0 +1,30 @@
+{
+    "name": "@types/memoizee",
+    "version": "0.4.7",
+    "description": "TypeScript definitions for memoizee",
+    "homepage": "https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/memoizee",
+    "license": "MIT",
+    "contributors": [
+        {
+            "name": "Juan Picado",
+            "url": "https://github.com/juanpicado",
+            "githubUsername": "juanpicado"
+        },
+        {
+            "name": "Patrick Muff",
+            "url": "https://github.com/dislick",
+            "githubUsername": "dislick"
+        }
+    ],
+    "main": "",
+    "types": "index.d.ts",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/DefinitelyTyped/DefinitelyTyped.git",
+        "directory": "types/memoizee"
+    },
+    "scripts": {},
+    "dependencies": {},
+    "typesPublisherContentHash": "51f922d6bfcbdeaf32082086ad3aec512fc409f01de11925392cc80ca9a6648a",
+    "typeScriptVersion": "3.8"
+}
