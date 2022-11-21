@@ -76,6 +76,7 @@ import {
   TableUtils,
   FormattingRule,
   ReverseType,
+  RowDataMap,
   SortDirection,
   DateTimeColumnFormatterOptions,
   TableColumnFormat,
@@ -2444,16 +2445,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   selectData(columnIndex: ModelIndex, rowIndex: ModelIndex): void {
     const { model } = this.props;
     const { columns, groupedColumns } = model;
-    const dataMap: Record<
-      string,
-      {
-        value: unknown;
-        text: string | null;
-        type: string;
-        isExpandable: boolean;
-        isGrouped: boolean;
-      }
-    > = {};
+    const dataMap: RowDataMap = {};
     for (let i = 0; i < columns.length; i += 1) {
       const column = columns[i];
       const { name, type } = column;

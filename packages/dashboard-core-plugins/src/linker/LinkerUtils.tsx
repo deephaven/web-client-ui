@@ -34,16 +34,6 @@ export type LinkFilterMapValue<T = unknown> = {
 
 export type LinkFilterMap<T = unknown> = Map<string, LinkFilterMapValue<T>>;
 
-export type LinkDataMapValue = {
-  type: string;
-  text: string;
-  value: unknown;
-  isExpandable: boolean;
-  isGrouped: boolean;
-};
-
-export type LinkDataMap = Record<string, LinkDataMapValue>;
-
 // [x,y] screen coordinates used by the Linker
 export type LinkerCoordinate = [number, number];
 

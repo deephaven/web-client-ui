@@ -14,6 +14,7 @@ import type GoldenLayout from '@deephaven/golden-layout';
 import {
   DateTimeColumnFormatter,
   DateUtils,
+  RowDataMap,
   TableUtils,
 } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
@@ -39,7 +40,6 @@ import LinkerUtils, {
   isLinkablePanel,
   Link,
   LinkColumn,
-  LinkDataMap,
   LinkFilterMap,
   LinkType,
 } from './LinkerUtils';
@@ -427,7 +427,7 @@ export class Linker extends Component<LinkerProps, LinkerState> {
     }
   }
 
-  handleUpdateValues(panel: PanelComponent, dataMap: LinkDataMap): void {
+  handleUpdateValues(panel: PanelComponent, dataMap: RowDataMap): void {
     const panelId = LayoutUtils.getIdFromPanel(panel);
     const { links, timeZone } = this.props;
     // Map of panel ID to filterMap

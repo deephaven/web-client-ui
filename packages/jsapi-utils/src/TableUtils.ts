@@ -46,6 +46,16 @@ export type AdvancedFilterOptions = {
   selectedValues: unknown[];
 };
 
+export type RowDataMapValue = {
+  type: string;
+  text: string;
+  value: unknown;
+  isExpandable: boolean;
+  isGrouped: boolean;
+};
+
+export type RowDataMap = Record<string, RowDataMapValue>;
+
 /** Utility class to provide some functions for working with tables */
 export class TableUtils {
   static dataType = {
