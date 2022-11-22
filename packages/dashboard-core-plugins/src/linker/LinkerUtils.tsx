@@ -21,7 +21,7 @@ export type Link = {
   isReversed?: boolean;
   isSelected?: boolean;
   type: LinkType;
-  comparisonOperator?: FilterTypeValue;
+  operator?: FilterTypeValue;
 };
 
 export type LinkColumn = {

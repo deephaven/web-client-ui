@@ -1,15 +1,9 @@
+import React, { MouseEvent, PureComponent } from 'react';
 import { Button, DropdownActions, DropdownMenu } from '@deephaven/components';
 import { vsTrash, vsTriangleDown } from '@deephaven/icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import {
-  TypeValue as FilterTypeValue,
-  getSymbolForNumberOrDateFilter,
-  getSymbolForTextFilter,
-} from '@deephaven/filters';
+import { TypeValue as FilterTypeValue } from '@deephaven/filters';
 import { TableUtils } from '@deephaven/jsapi-utils';
-
-import classNames from 'classnames';
-import React, { MouseEvent, PureComponent } from 'react';
 
 import './LinkerLink.scss';
 
@@ -24,6 +18,7 @@ const TRIANGLE_HYPOTENUSE = Math.sqrt(
 );
 const TRIANGLE_THETA = Math.asin((TRIANGLE_BASE * 0.5) / TRIANGLE_HEIGHT);
 const CLIP_RADIUS = 15;
+const HALF_PI = Math.PI * 0.5;
 
 export type LinkerLinkProps = {
   x1: number;
@@ -32,11 +27,10 @@ export type LinkerLinkProps = {
   y2: number;
   id: string;
   className: string;
-  columnType?: string | null;
-  comparisonOperator: FilterTypeValue;
+  operator: FilterTypeValue;
   comparisonOperators?: DropdownActions;
   isSelected: boolean;
-  onClick: (id: string, deleteLink: boolean) => void;
+  onClick: (id: string) => void;
   onDelete: (id: string) => void;
 };
 
@@ -76,8 +70,12 @@ export class LinkerLink extends PureComponent<LinkerLinkProps> {
     event.stopPropagation();
     event.preventDefault();
 
-    const { id, onClick } = this.props;
-    onClick(id, event.altKey);
+    const { id, onClick, onDelete } = this.props;
+    if (event.altKey) {
+      onDelete(id);
+    } else {
+      onClick(id);
+    }
   }
 
   handleDelete(): void {
@@ -88,10 +86,9 @@ export class LinkerLink extends PureComponent<LinkerLinkProps> {
   render(): JSX.Element {
     const {
       className,
-      comparisonOperator,
+      operator,
       comparisonOperators,
       isSelected,
-      columnType,
       x1,
       y1,
       x2,
@@ -164,15 +161,15 @@ export class LinkerLink extends PureComponent<LinkerLinkProps> {
       dropdownOffsetY *= -1;
       deleteOffsetX *= -1;
       deleteOffsetY *= -1;
-      deleteOffsetX -= 50 - 10 * (Math.abs(theta) % 1.57);
-      deleteOffsetY += 10 * (Math.abs(theta) % 1.57);
-      dropdownOffsetX -= 50 - 10 * (Math.abs(theta) % 1.57);
-      dropdownOffsetY += 10 * (Math.abs(theta) % 1.57);
+      deleteOffsetX -= 50 - 10 * (Math.abs(theta) % HALF_PI);
+      deleteOffsetY += 10 * (Math.abs(theta) % HALF_PI);
+      dropdownOffsetX -= 50 - 10 * (Math.abs(theta) % HALF_PI);
+      dropdownOffsetY += 10 * (Math.abs(theta) % HALF_PI);
     } else if (slopeAtMid < 0) {
-      deleteOffsetX += 10 * (Math.abs(theta) % 1.57);
-      deleteOffsetY += 10 * (Math.abs(theta) % 1.57);
-      dropdownOffsetX += 10 * (Math.abs(theta) % 1.57);
-      dropdownOffsetY += 10 * (Math.abs(theta) % 1.57);
+      deleteOffsetX += 10 * (Math.abs(theta) % HALF_PI);
+      deleteOffsetY += 10 * (Math.abs(theta) % HALF_PI);
+      dropdownOffsetX += 10 * (Math.abs(theta) % HALF_PI);
+      dropdownOffsetY += 10 * (Math.abs(theta) % HALF_PI);
     } else {
       deleteOffsetX = 15;
       deleteOffsetY = 10;
@@ -180,15 +177,14 @@ export class LinkerLink extends PureComponent<LinkerLinkProps> {
       dropdownOffsetY = 10;
     }
 
-    let symbol = '=';
-    if (columnType !== undefined && comparisonOperator !== 'eq') {
-      symbol = TableUtils.isStringType(columnType ?? '')
-        ? getSymbolForTextFilter(comparisonOperator)
-        : getSymbolForNumberOrDateFilter(comparisonOperator);
-      if (comparisonOperator === 'startsWith') {
-        symbol = `a${symbol}`;
-      } else if (comparisonOperator === 'endsWith') {
-        symbol += 'z';
+    let symbol = '';
+    if (operator !== undefined) {
+      if (operator === 'startsWith') {
+        symbol = 'a*';
+      } else if (operator === 'endsWith') {
+        symbol = '*z';
+      } else {
+        symbol = TableUtils.getFilterOperatorString(operator);
       }
     }
 
@@ -214,9 +210,7 @@ export class LinkerLink extends PureComponent<LinkerLinkProps> {
           <>
             <Button
               kind="primary"
-              className={classNames('btn-fab', {
-                'danger-delete': className.includes('danger-delete'),
-              })}
+              className="btn-fab btn-operator"
               style={{
                 top: midY + dropdownOffsetY,
                 left: midX + dropdownOffsetX,
@@ -243,9 +237,7 @@ export class LinkerLink extends PureComponent<LinkerLinkProps> {
 
             <Button
               kind="primary"
-              className={classNames('btn-fab', 'btn-delete', {
-                'danger-delete': className.includes('danger-delete'),
-              })}
+              className="btn-fab btn-delete"
               style={{ top: midY + deleteOffsetY, left: midX + deleteOffsetX }}
               onClick={this.handleDelete}
               icon={<FontAwesomeIcon icon={vsTrash} transform=" down-1" />}

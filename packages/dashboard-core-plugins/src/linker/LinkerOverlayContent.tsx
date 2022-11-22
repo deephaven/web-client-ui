@@ -17,8 +17,6 @@ import {
   getLabelForTextFilter,
   getLabelForDateFilter,
   getLabelForBooleanFilter,
-  getSymbolForNumberOrDateFilter,
-  getSymbolForTextFilter,
 } from '@deephaven/filters';
 import {
   isLinkableFromPanel,
@@ -37,10 +35,9 @@ export type VisibleLink = {
   x2: number;
   y2: number;
   id: string;
-  columnType: string;
   className: string;
   isSelected: boolean;
-  comparisonOperator: FilterTypeValue;
+  operator: FilterTypeValue;
   comparisonOperators?: DropdownActions;
 };
 
@@ -48,7 +45,7 @@ export type LinkerOverlayContentProps = {
   disabled?: boolean;
   links: Link[];
   messageText: string;
-  onLinkSelected: (linkId: string, deleteLink: boolean) => void;
+  onLinkSelected: (linkId: string) => void;
   onSingleLinkDeleted: (linkId: string) => void;
   onAllLinksDeleted: () => void;
   onCancel: () => void;
@@ -59,7 +56,7 @@ export type LinkerOverlayContentProps = {
 export type LinkerOverlayContentState = {
   mouseX?: number;
   mouseY?: number;
-  isAltPressed: boolean;
+  mode: 'select' | 'delete';
 };
 
 export class LinkerOverlayContent extends Component<
@@ -104,14 +101,12 @@ export class LinkerOverlayContent extends Component<
     this.handleKeyDown = this.handleKeyDown.bind(this);
     this.handleKeyUp = this.handleKeyUp.bind(this);
     this.handleEscapePressed = this.handleEscapePressed.bind(this);
-    this.handleComparisonOperatorChanged = this.handleComparisonOperatorChanged.bind(
-      this
-    );
+    this.handleOperatorChanged = this.handleOperatorChanged.bind(this);
 
     this.state = {
       mouseX: undefined,
       mouseY: undefined,
-      isAltPressed: false,
+      mode: 'select',
     };
   }
 
@@ -139,22 +134,22 @@ export class LinkerOverlayContent extends Component<
         if (type === 'eqIgnoreCase' || type === `notEqIgnoreCase`) {
           return [];
         }
-        let symbol = '=';
-        if (type !== 'eq') {
-          symbol = TableUtils.isStringType(columnType)
-            ? getSymbolForTextFilter(type)
-            : getSymbolForNumberOrDateFilter(type);
+        let symbol = '';
+        if (type !== undefined) {
           if (type === 'startsWith') {
-            symbol = `a${symbol}`;
+            symbol = 'a*';
           } else if (type === 'endsWith') {
-            symbol += 'z';
+            symbol = '*z';
+          } else {
+            symbol = TableUtils.getFilterOperatorString(type);
           }
         }
+
         return [
           {
             title: LinkerOverlayContent.getLabelForFilter(columnType, type),
             icon: <b>{symbol}</b>,
-            action: () => this.handleComparisonOperatorChanged(linkId, type),
+            action: () => this.handleOperatorChanged(linkId, type),
             order: index,
           },
         ];
@@ -193,11 +188,11 @@ export class LinkerOverlayContent extends Component<
     return LayoutUtils.getTabPoint((glContainer as unknown) as Container);
   }
 
-  handleComparisonOperatorChanged(linkId: string, type: FilterTypeValue): void {
+  handleOperatorChanged(linkId: string, type: FilterTypeValue): void {
     const { links } = this.props;
     for (let i = 0; i < links.length; i += 1) {
       if (links[i].id === linkId) {
-        links[i].comparisonOperator = type;
+        links[i].operator = type;
       }
     }
   }
@@ -212,7 +207,7 @@ export class LinkerOverlayContent extends Component<
   handleKeyDown(event: KeyboardEvent): void {
     if (event.key === 'Alt') {
       this.setState({
-        isAltPressed: true,
+        mode: 'delete',
       });
     }
   }
@@ -220,7 +215,7 @@ export class LinkerOverlayContent extends Component<
   handleKeyUp(event: KeyboardEvent): void {
     if (event.key === 'Alt') {
       this.setState({
-        isAltPressed: false,
+        mode: 'select',
       });
     }
   }
@@ -241,7 +236,7 @@ export class LinkerOverlayContent extends Component<
       onDone,
     } = this.props;
 
-    const { mouseX, mouseY, isAltPressed } = this.state;
+    const { mouseX, mouseY, mode } = this.state;
     const visibleLinks = links
       .map(link => {
         try {
@@ -252,7 +247,7 @@ export class LinkerOverlayContent extends Component<
             isSelected,
             start,
             end,
-            comparisonOperator,
+            operator,
           } = link;
           let [x1, y1] = this.getPointFromLinkPoint(start);
           let x2 = mouseX ?? x1;
@@ -272,14 +267,13 @@ export class LinkerOverlayContent extends Component<
             { 'link-invalid': type === 'invalid' },
             { interactive: link.end == null },
             { 'link-is-selected': isSelected },
-            { 'danger-delete': isAltPressed }
+            { 'danger-delete': mode === 'delete' }
           );
           const comparisonOperators =
             start.columnType != null &&
             !TableUtils.isBooleanType(start.columnType)
               ? this.getComparisonOperators(id, start.columnType)
               : undefined;
-          const columnType = end?.columnType;
           return {
             x1,
             y1,
@@ -288,8 +282,7 @@ export class LinkerOverlayContent extends Component<
             id,
             className,
             isSelected,
-            columnType,
-            comparisonOperator,
+            operator,
             comparisonOperators,
           };
         } catch (error) {
@@ -302,7 +295,7 @@ export class LinkerOverlayContent extends Component<
     return (
       <div
         className={classNames('linker-overlay', {
-          'danger-delete': isAltPressed,
+          'danger-delete': mode === 'delete',
         })}
       >
         {visibleLinks.map(
@@ -314,8 +307,7 @@ export class LinkerOverlayContent extends Component<
             id,
             className,
             isSelected,
-            columnType,
-            comparisonOperator,
+            operator,
             comparisonOperators,
           }) => (
             <LinkerLink
@@ -329,8 +321,7 @@ export class LinkerOverlayContent extends Component<
               onClick={onLinkSelected}
               onDelete={onSingleLinkDeleted}
               isSelected={isSelected}
-              columnType={columnType}
-              comparisonOperator={comparisonOperator}
+              operator={operator}
               comparisonOperators={comparisonOperators}
             />
           )

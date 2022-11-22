@@ -17,13 +17,7 @@ import {
   TableUtils,
 } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
-import {
-  getSymbolForNumberOrDateFilter,
-  getSymbolForTextFilter,
-  Type as FilterType,
-  Type,
-  TypeValue as FilterTypeValue,
-} from '@deephaven/filters';
+import { Type as FilterType } from '@deephaven/filters';
 import {
   getActiveTool,
   getTimeZone,
@@ -339,13 +333,13 @@ export class Linker extends Component<LinkerProps, LinkerState> {
       }
 
       // Create a completed link from link in progress
-      const newLink = {
+      const newLink: Link = {
         start: isReversed !== undefined && isReversed ? end : start,
         end: isReversed !== undefined && isReversed ? start : end,
         id,
         type,
         isSelected: true,
-        comparisonOperator: FilterType.eq as FilterTypeValue,
+        operator: FilterType.eq,
       };
       log.info('creating link', newLink);
 
@@ -448,7 +442,7 @@ export class Linker extends Component<LinkerProps, LinkerState> {
     // Instead of setting filters one by one for each link,
     // combine them so they could be set in a single call per target panel
     for (let i = 0; i < links.length; i += 1) {
-      const { start, end, comparisonOperator } = links[i];
+      const { start, end, operator } = links[i];
       if (start.panelId === panelId && end != null) {
         const { panelId: endPanelId, columnName, columnType } = end;
         // Map of column name to column type and filter value
@@ -456,17 +450,20 @@ export class Linker extends Component<LinkerProps, LinkerState> {
           ? panelFilterMap.get(endPanelId)
           : new Map();
         const { value } = dataMap[start.columnName];
-        const operator =
-          columnType != null && TableUtils.isStringType(columnType)
-            ? getSymbolForTextFilter(comparisonOperator ?? Type.eq)
-            : getSymbolForNumberOrDateFilter(comparisonOperator ?? Type.eq);
-
-        let text = `${operator}${value}`;
-        if (comparisonOperator === 'startsWith') {
-          text = `${value}${operator}`;
+        let symbol = '';
+        if (operator !== undefined && operator !== 'eq') {
+          if (operator === 'startsWith' || operator === 'endsWith') {
+            symbol = '*';
+          } else {
+            symbol = TableUtils.getFilterOperatorString(operator);
+          }
+        }
+        let text = `${symbol}${value}`;
+        if (operator === 'startsWith') {
+          text = `${value}${symbol}`;
         }
         if (columnType != null && TableUtils.isCharType(columnType)) {
-          text = `${operator}${String.fromCharCode(parseInt(value, 10))}`;
+          text = `${symbol}${String.fromCharCode(parseInt(value, 10))}`;
         }
         if (columnType != null && TableUtils.isDateType(columnType)) {
           const dateFilterFormatter = new DateTimeColumnFormatter({
@@ -476,7 +473,7 @@ export class Linker extends Component<LinkerProps, LinkerState> {
             defaultDateTimeFormatString: DateUtils.FULL_DATE_FORMAT,
           });
           // The values are Dates for dateType values, not string like everything else
-          text = `${operator}${dateFilterFormatter.format(
+          text = `${symbol}${dateFilterFormatter.format(
             (value as unknown) as Date
           )}`;
         }
@@ -516,13 +513,11 @@ export class Linker extends Component<LinkerProps, LinkerState> {
     this.deleteLinksForPanelId(panelId);
   }
 
-  handleLinkSelected(linkId: string, deleteLink = false): void {
+  handleLinkSelected(linkId: string): void {
     const { links } = this.props;
     const link = links.find(l => l.id === linkId);
     if (link) {
-      if (deleteLink) {
-        this.deleteLinks([link]);
-      } else if (link.isSelected !== undefined && link.isSelected) {
+      if (link.isSelected !== undefined && link.isSelected) {
         link.isSelected = false;
       } else {
         for (let i = 0; i < links.length; i += 1) {
@@ -531,7 +526,7 @@ export class Linker extends Component<LinkerProps, LinkerState> {
         link.isSelected = true;
       }
     } else {
-      log.error('Unable to find link to select or delete', linkId);
+      log.error('Unable to find link to select', linkId);
     }
   }
 
