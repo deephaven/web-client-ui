@@ -46,6 +46,8 @@ import { UIRollupConfig } from './sidebar/RollupRows';
 import { AggregationSettings } from './sidebar/aggregations/Aggregations';
 import { FormattingRule as SidebarFormattingRule } from './sidebar/conditional-formatting/ConditionalFormattingUtils';
 import IrisGridModel from './IrisGridModel';
+import type AdvancedSettingsType from './sidebar/AdvancedSettingsType';
+import AdvancedSettings from './sidebar/AdvancedSettings';
 
 const log = Log.module('IrisGridUtils');
 
@@ -401,24 +403,28 @@ class IrisGridUtils {
     irisGridPanelState: {
       // This needs to be changed after IrisGridPanel is done
       isSelectingPartition: boolean;
-      partition: string;
-      partitionColumn: Column;
+      partition: string | undefined;
+      partitionColumn: Column | undefined;
+      advancedSettings: Map<AdvancedSettingsType, boolean>;
     }
   ): {
     isSelectingPartition: boolean;
-    partition: string;
+    partition: string | undefined;
     partitionColumn: ColumnName | null;
+    advancedSettings: [AdvancedSettingsType, boolean][];
   } {
     const {
       isSelectingPartition,
       partition,
       partitionColumn,
+      advancedSettings,
     } = irisGridPanelState;
 
     return {
       isSelectingPartition,
       partition,
       partitionColumn: partitionColumn != null ? partitionColumn.name : null,
+      advancedSettings: [...advancedSettings],
     };
   }
 
@@ -433,18 +439,21 @@ class IrisGridUtils {
     irisGridPanelState: {
       // This needs to be changed after IrisGridPanel is done
       isSelectingPartition: boolean;
-      partition: string;
-      partitionColumn: ColumnName;
+      partition: string | undefined;
+      partitionColumn: ColumnName | undefined;
+      advancedSettings: [AdvancedSettingsType, boolean][];
     }
   ): {
     isSelectingPartition: boolean;
-    partition: string;
+    partition?: string;
     partitionColumn?: Column;
+    advancedSettings: Map<AdvancedSettingsType, boolean>;
   } {
     const {
       isSelectingPartition,
       partition,
       partitionColumn,
+      advancedSettings,
     } = irisGridPanelState;
 
     const { columns } = model;
@@ -455,6 +464,10 @@ class IrisGridUtils {
         partitionColumn != null
           ? IrisGridUtils.getColumnByName(columns, partitionColumn)
           : undefined,
+      advancedSettings: new Map([
+        ...AdvancedSettings.DEFAULTS,
+        ...advancedSettings,
+      ]),
     };
   }
 
@@ -800,13 +813,13 @@ class IrisGridUtils {
     panelState: {
       irisGridState: { advancedFilters: AF; quickFilters: QF; sorts: S };
       irisGridPanelState: {
-        partitionColumn: ColumnName;
-        partition: unknown;
+        partitionColumn?: ColumnName;
+        partition?: unknown;
       };
     },
     inputFilters: InputFilter[] = []
   ): {
-    partitionColumn: ColumnName;
+    partitionColumn: ColumnName | undefined;
     partition: unknown;
     advancedFilters: AF;
     inputFilters: InputFilter[];

@@ -105,9 +105,10 @@ export interface PanelState {
   };
   irisGridState: DehydratedIrisGridState;
   irisGridPanelState: {
-    partitionColumn: ColumnName;
-    partition: string;
+    partitionColumn: ColumnName | undefined;
+    partition: string | undefined;
     isSelectingPartition: boolean;
+    advancedSettings: [AdvancedSettingsType, boolean][];
   };
   pluginState: unknown;
 }
@@ -407,11 +408,18 @@ export class IrisGridPanel extends PureComponent<
   );
 
   getDehydratedIrisGridPanelState = memoize(
-    (model, isSelectingPartition, partition, partitionColumn) =>
+    (
+      model: IrisGridModel,
+      isSelectingPartition: boolean,
+      partition: string | undefined,
+      partitionColumn: Column | undefined,
+      advancedSettings: Map<AdvancedSettingsType, boolean>
+    ) =>
       IrisGridUtils.dehydrateIrisGridPanelState(model, {
         isSelectingPartition,
         partition,
         partitionColumn,
+        advancedSettings,
       })
   );
 
@@ -984,6 +992,7 @@ export class IrisGridPanel extends PureComponent<
         isSelectingPartition,
         partition,
         partitionColumn,
+        advancedSettings,
       } = IrisGridUtils.hydrateIrisGridPanelState(model, irisGridPanelState);
       const {
         advancedFilters,
@@ -1021,6 +1030,7 @@ export class IrisGridPanel extends PureComponent<
       );
       this.setState({
         advancedFilters,
+        advancedSettings,
         conditionalFormats,
         customColumns,
         customColumnFormatMap,
@@ -1062,6 +1072,7 @@ export class IrisGridPanel extends PureComponent<
       isSelectingPartition,
       partition,
       partitionColumn,
+      advancedSettings,
     } = this.state;
     const {
       advancedFilters,
@@ -1083,6 +1094,7 @@ export class IrisGridPanel extends PureComponent<
       frozenColumns,
       conditionalFormats,
     } = irisGridState;
+    assertNotNull(model);
     assertNotNull(metrics);
     const { userColumnWidths, userRowHeights } = metrics;
     assertNotNull(gridState);
@@ -1098,7 +1110,8 @@ export class IrisGridPanel extends PureComponent<
         model,
         isSelectingPartition,
         partition,
-        partitionColumn
+        partitionColumn,
+        advancedSettings
       ),
       this.getDehydratedIrisGridState(
         model,
