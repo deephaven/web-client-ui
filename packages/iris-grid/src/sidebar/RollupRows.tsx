@@ -502,7 +502,7 @@ class RollupRows extends Component<RollupRowsProps, RollupRowsState> {
           <div className="rollup-rows-group-by">
             <div className="section-title">Group By</div>
             {columns.length === 0 && (
-              <Droppable isDropDisabled droppableId="placeholder">
+              <Droppable droppableId="placeholder">
                 {(provided, snapshot) => (
                   <div
                     className={classNames('placeholder', 'text-muted', {
