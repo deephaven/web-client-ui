@@ -1,5 +1,5 @@
 declare namespace memoizee {
-  interface Options<F extends (...args: unknown[]) => unknown> {
+  interface Options<F extends (...args: never[]) => unknown> {
     length?: number | false | undefined;
     maxAge?: number | undefined;
     max?: number | undefined;
@@ -18,7 +18,7 @@ declare namespace memoizee {
   }
 }
 
-declare function memoizee<F extends (...args: unknown[]) => unknown>(
+declare function memoizee<F extends (...args: never[]) => unknown>(
   f: F,
   options?: memoizee.Options<F>
 ): F & memoizee.Memoized<F>;
