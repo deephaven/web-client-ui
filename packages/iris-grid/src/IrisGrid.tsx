@@ -991,7 +991,8 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       showSearchBar: boolean,
       canDownloadCsv: boolean,
       canToggleSearch: boolean,
-      showGotoRow: boolean
+      showGotoRow: boolean,
+      hasAdvancedSettings: boolean
     ) => {
       const optionItems: OptionItem[] = [];
       if (isChartBuilderAvailable) {
@@ -1048,11 +1049,13 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
           icon: vsCloudDownload,
         });
       }
-      optionItems.push({
-        type: OptionType.ADVANCED_SETTINGS,
-        title: 'Advanced Settings',
-        icon: vsTools,
-      });
+      if (hasAdvancedSettings) {
+        optionItems.push({
+          type: OptionType.ADVANCED_SETTINGS,
+          title: 'Advanced Settings',
+          icon: vsTools,
+        });
+      }
       optionItems.push({
         type: OptionType.QUICK_FILTERS,
         title: 'Quick Filters',
@@ -3784,7 +3787,8 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       showSearchBar,
       canDownloadCsv,
       this.isTableSearchAvailable(),
-      isGotoRowShown
+      isGotoRowShown,
+      advancedSettings.size > 0
     );
 
     const openOptionsStack = openOptions.map(option => {
