@@ -42,6 +42,7 @@ import {
   GridState,
   isEditableGridModel,
   BoundedAxisRange,
+  isExpandableGridModel,
 } from '@deephaven/grid';
 import {
   dhEye,
@@ -75,6 +76,7 @@ import {
   TableUtils,
   FormattingRule,
   ReverseType,
+  RowDataMap,
   SortDirection,
   DateTimeColumnFormatterOptions,
   TableColumnFormat,
@@ -1466,7 +1468,9 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       }
       const columnIndex = model.getColumnIndexByName(column.name);
       assertNotNull(columnIndex);
-      if (value === null) {
+      if (value === undefined) {
+        this.removeQuickFilter(columnIndex);
+      } else if (value === null) {
         this.setQuickFilter(columnIndex, column.filter().isNull(), '=null');
       } else {
         const filterValue = TableUtils.isTextType(columnType)
@@ -1501,6 +1505,17 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
         };
       }
     );
+  }
+
+  removeQuickFilter(modelColumn: ModelIndex): void {
+    this.startLoading('Clearing Filter...', true);
+
+    this.setState(({ quickFilters }) => {
+      const newQuickFilters = new Map(quickFilters);
+      newQuickFilters.delete(modelColumn);
+
+      return { quickFilters: newQuickFilters };
+    });
   }
 
   clearAllFilters(): void {
@@ -2429,19 +2444,18 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
    */
   selectData(columnIndex: ModelIndex, rowIndex: ModelIndex): void {
     const { model } = this.props;
-    const { columns } = model;
-    const dataMap: Record<
-      string,
-      { value: unknown; text: string | null; type: string }
-    > = {};
+    const { columns, groupedColumns } = model;
+    const dataMap: RowDataMap = {};
     for (let i = 0; i < columns.length; i += 1) {
       const column = columns[i];
       const { name, type } = column;
       const value = model.valueForCell(i, rowIndex);
       const text = model.textForCell(i, rowIndex);
-      dataMap[name] = { value, text, type };
+      const isExpandable =
+        isExpandableGridModel(model) && model.isRowExpandable(rowIndex);
+      const isGrouped = groupedColumns.find(c => c.name === name) != null;
+      dataMap[name] = { value, text, type, isGrouped, isExpandable };
     }
-
     const { onDataSelected } = this.props;
     onDataSelected(rowIndex, dataMap);
   }
