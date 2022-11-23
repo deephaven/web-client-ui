@@ -86,6 +86,7 @@ import {
   PromiseUtils,
   ValidationError,
 } from '@deephaven/utils';
+import { TypeValue as FilterTypeValue } from '@deephaven/filters';
 import throttle from 'lodash.throttle';
 import debounce from 'lodash.debounce';
 import clamp from 'lodash.clamp';
@@ -217,7 +218,12 @@ function isEmptyConfig({
 
 export type FilterMap = Map<
   ColumnName,
-  { columnType: string; text: string; value: unknown }
+  {
+    columnType: string;
+    operator: FilterTypeValue;
+    text: string;
+    value: unknown;
+  }
 >;
 export interface IrisGridProps {
   children: React.ReactNode;
@@ -1457,7 +1463,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     }
 
     const { model } = this.props;
-    filterMap.forEach(({ columnType, text, value }, columnName) => {
+    filterMap.forEach(({ columnType, operator, text, value }, columnName) => {
       const column = model.columns.find(
         c => c.name === columnName && c.type === columnType
       );
@@ -1470,6 +1476,21 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
         this.setQuickFilter(columnIndex, column.filter().isNull(), '=null');
       } else {
         const { formatter } = model;
+        let symbol = '';
+        if (operator !== undefined && operator !== 'eq') {
+          if (operator === 'startsWith' || operator === 'endsWith') {
+            symbol = '*';
+          } else {
+            symbol = TableUtils.getFilterOperatorString(operator);
+          }
+        }
+        let filterText = `${symbol}${text}`;
+        if (operator === 'startsWith') {
+          filterText = `${text}${symbol}`;
+        }
+        if (columnType != null && TableUtils.isCharType(columnType)) {
+          filterText = `${symbol}${String.fromCharCode(parseInt(text, 10))}`;
+        }
         let fallbackFilterValue;
         if (TableUtils.isTextType(columnType)) {
           fallbackFilterValue = dh.FilterValue.ofString(value);
@@ -1480,9 +1501,9 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
         }
         this.setQuickFilter(
           columnIndex,
-          IrisGrid.makeQuickFilter(column, text, formatter.timeZone) ??
+          IrisGrid.makeQuickFilter(column, filterText, formatter.timeZone) ??
             column.filter().eq(fallbackFilterValue),
-          `${text}`
+          `${filterText}`
         );
       }
     });

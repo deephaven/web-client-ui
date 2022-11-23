@@ -450,21 +450,7 @@ export class Linker extends Component<LinkerProps, LinkerState> {
           ? panelFilterMap.get(endPanelId)
           : new Map();
         const { value } = dataMap[start.columnName];
-        let symbol = '';
-        if (operator !== undefined && operator !== 'eq') {
-          if (operator === 'startsWith' || operator === 'endsWith') {
-            symbol = '*';
-          } else {
-            symbol = TableUtils.getFilterOperatorString(operator);
-          }
-        }
-        let text = `${symbol}${value}`;
-        if (operator === 'startsWith') {
-          text = `${value}${symbol}`;
-        }
-        if (columnType != null && TableUtils.isCharType(columnType)) {
-          text = `${symbol}${String.fromCharCode(parseInt(value, 10))}`;
-        }
+        let text = `${value}`;
         if (columnType != null && TableUtils.isDateType(columnType)) {
           const dateFilterFormatter = new DateTimeColumnFormatter({
             timeZone,
@@ -473,12 +459,11 @@ export class Linker extends Component<LinkerProps, LinkerState> {
             defaultDateTimeFormatString: DateUtils.FULL_DATE_FORMAT,
           });
           // The values are Dates for dateType values, not string like everything else
-          text = `${symbol}${dateFilterFormatter.format(
-            (value as unknown) as Date
-          )}`;
+          text = dateFilterFormatter.format((value as unknown) as Date);
         }
         filterMap.set(columnName, {
           columnType,
+          operator,
           text,
           value,
         });

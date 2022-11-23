@@ -31,6 +31,7 @@ export type LinkColumn = {
 
 export type LinkFilterMapValue<T = unknown> = {
   columnType: string;
+  operator: FilterTypeValue;
   text: string;
   value: T;
 };
