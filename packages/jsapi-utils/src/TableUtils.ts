@@ -34,6 +34,28 @@ export type AdvancedFilterItemType = {
   value: string;
 };
 
+export interface FilterItem {
+  selectedType: FilterTypeValue;
+  value: string;
+}
+
+export type AdvancedFilterOptions = {
+  filterItems: FilterItem[];
+  filterOperators: FilterOperatorValue[];
+  invertSelection: boolean;
+  selectedValues: unknown[];
+};
+
+export type RowDataMapValue = {
+  type: string;
+  text: string;
+  value: unknown;
+  isExpandable: boolean;
+  isGrouped: boolean;
+};
+
+export type RowDataMap = Record<string, RowDataMapValue>;
+
 /** Utility class to provide some functions for working with tables */
 export class TableUtils {
   static dataType = {

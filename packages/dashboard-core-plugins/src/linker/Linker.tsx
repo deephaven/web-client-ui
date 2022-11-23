@@ -14,6 +14,7 @@ import type GoldenLayout from '@deephaven/golden-layout';
 import {
   DateTimeColumnFormatter,
   DateUtils,
+  RowDataMap,
   TableUtils,
 } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
@@ -39,7 +40,6 @@ import LinkerUtils, {
   isLinkablePanel,
   Link,
   LinkColumn,
-  LinkDataMap,
   LinkFilterMap,
   LinkType,
 } from './LinkerUtils';
@@ -424,7 +424,7 @@ export class Linker extends Component<LinkerProps, LinkerState> {
     }
   }
 
-  handleUpdateValues(panel: PanelComponent, dataMap: LinkDataMap): void {
+  handleUpdateValues(panel: PanelComponent, dataMap: RowDataMap): void {
     const panelId = LayoutUtils.getIdFromPanel(panel);
     const { links, timeZone } = this.props;
     // Map of panel ID to filterMap
@@ -439,9 +439,14 @@ export class Linker extends Component<LinkerProps, LinkerState> {
         const filterMap = panelFilterMap.has(endPanelId)
           ? panelFilterMap.get(endPanelId)
           : new Map();
-        const { value } = dataMap[start.columnName];
+        const { isExpandable, isGrouped } = dataMap[start.columnName];
+        let { value } = dataMap[start.columnName];
         let text = `${value}`;
-        if (TableUtils.isDateType(columnType)) {
+        if (value === null && isExpandable && isGrouped) {
+          // Clear filter on empty rollup grouping columns
+          value = undefined;
+        }
+        if (columnType != null && TableUtils.isDateType(columnType)) {
           const dateFilterFormatter = new DateTimeColumnFormatter({
             timeZone,
             showTimeZone: false,
@@ -449,7 +454,7 @@ export class Linker extends Component<LinkerProps, LinkerState> {
             defaultDateTimeFormatString: DateUtils.FULL_DATE_FORMAT,
           });
           // The values are Dates for dateType values, not string like everything else
-          text = dateFilterFormatter.format((value as unknown) as Date);
+          text = dateFilterFormatter.format(value as Date);
         }
         filterMap.set(columnName, {
           columnType,
