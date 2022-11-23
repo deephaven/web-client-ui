@@ -29,11 +29,15 @@ export type LinkColumn = {
   type: string | null;
 };
 
-export type LinkFilterMapValue<T = unknown> = {
-  columnType: string;
+export type LinkDataValue<T = unknown> = {
   operator: FilterTypeValue;
   text: string;
   value: T;
+};
+
+export type LinkFilterMapValue<T = unknown> = {
+  columnType: string;
+  filterList: LinkDataValue<T>[];
 };
 
 export type LinkFilterMap<T = unknown> = Map<string, LinkFilterMapValue<T>>;

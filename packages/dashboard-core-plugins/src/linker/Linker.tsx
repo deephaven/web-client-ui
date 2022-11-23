@@ -449,6 +449,10 @@ export class Linker extends Component<LinkerProps, LinkerState> {
         const filterMap = panelFilterMap.has(endPanelId)
           ? panelFilterMap.get(endPanelId)
           : new Map();
+        const filterList =
+          filterMap.has(columnName) === true
+            ? filterMap.get(columnName).filterList
+            : [];
         const { value } = dataMap[start.columnName];
         let text = `${value}`;
         if (columnType != null && TableUtils.isDateType(columnType)) {
@@ -461,11 +465,15 @@ export class Linker extends Component<LinkerProps, LinkerState> {
           // The values are Dates for dateType values, not string like everything else
           text = dateFilterFormatter.format((value as unknown) as Date);
         }
+        const filter = { operator, text, value };
+        if (operator === 'eq') {
+          filterList.push(filter);
+        } else {
+          filterList.unshift(filter);
+        }
         filterMap.set(columnName, {
           columnType,
-          operator,
-          text,
-          value,
+          filterList,
         });
         panelFilterMap.set(endPanelId, filterMap);
       }
