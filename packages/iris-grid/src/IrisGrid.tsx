@@ -231,7 +231,7 @@ export interface IrisGridProps {
   movedColumns: MoveOperation[];
   movedRows: MoveOperation[];
   inputFilters: InputFilter[];
-  customFilters: unknown[];
+  customFilters: FilterCondition[];
   model: IrisGridModel;
   onCreateChart: (settings: ChartBuilderSettings, model: IrisGridModel) => void;
   onColumnSelected: (column: Column) => void;
@@ -1231,17 +1231,17 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
   getCachedFilter = memoize(
     (
-      customFilters,
-      quickFilters,
-      advancedFilters,
-      partitionFilters,
-      searchFilter
+      customFilters: FilterCondition[],
+      quickFilters: QuickFilterMap,
+      advancedFilters: AdvancedFilterMap,
+      partitionFilters: FilterCondition[],
+      searchFilter: FilterCondition | undefined
     ) => [
       ...(customFilters ?? []),
       ...(partitionFilters ?? []),
       ...IrisGridUtils.getFiltersFromFilterMap(quickFilters),
       ...IrisGridUtils.getFiltersFromFilterMap(advancedFilters),
-      ...(searchFilter ?? []),
+      ...(searchFilter !== undefined ? [searchFilter] : []),
     ],
     { max: 1 }
   );
