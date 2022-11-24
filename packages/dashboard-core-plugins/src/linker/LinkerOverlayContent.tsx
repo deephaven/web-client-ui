@@ -4,10 +4,20 @@ import {
   Button,
   ContextActions,
   GLOBAL_SHORTCUTS,
+  DragUtils,
+  Tooltip,
 } from '@deephaven/components';
 import { LayoutUtils, PanelManager } from '@deephaven/dashboard';
 import Log from '@deephaven/log';
 import type { Container } from '@deephaven/golden-layout';
+import {
+  DragDropContext,
+  Droppable,
+  Draggable,
+  DropResult,
+} from 'react-beautiful-dnd';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { vsGripper } from '@deephaven/icons';
 import {
   isLinkableFromPanel,
   Link,
@@ -42,6 +52,8 @@ export type LinkerOverlayContentProps = {
 export type LinkerOverlayContentState = {
   mouseX?: number;
   mouseY?: number;
+  toastX?: number;
+  toastY?: number;
 };
 
 export class LinkerOverlayContent extends Component<
@@ -57,10 +69,13 @@ export class LinkerOverlayContent extends Component<
 
     this.handleMouseMove = this.handleMouseMove.bind(this);
     this.handleEscapePressed = this.handleEscapePressed.bind(this);
+    this.handleDragEnd = this.handleDragEnd.bind(this);
 
     this.state = {
       mouseX: undefined,
       mouseY: undefined,
+      toastX: undefined,
+      toastY: undefined,
     };
   }
 
@@ -116,6 +131,17 @@ export class LinkerOverlayContent extends Component<
     });
   }
 
+  handleDragEnd(result: DropResult): void {
+    DragUtils.stopDragging();
+    console.log(result);
+    // if dropped outside the list
+    if (!result.destination) {
+      return;
+    }
+    const { mouseX, mouseY } = this.state;
+    this.setState({ toastX: mouseX, toastY: mouseY });
+  }
+
   handleEscapePressed(): void {
     const { onCancel } = this.props;
     onCancel();
@@ -131,7 +157,7 @@ export class LinkerOverlayContent extends Component<
       onDone,
     } = this.props;
 
-    const { mouseX, mouseY } = this.state;
+    const { mouseX, mouseY, toastX, toastY } = this.state;
     const visibleLinks = links
       .map(link => {
         try {
@@ -163,42 +189,89 @@ export class LinkerOverlayContent extends Component<
       .filter(item => item != null) as VisibleLink[];
 
     return (
-      <div className="linker-overlay">
-        <svg>
-          {visibleLinks.map(({ x1, y1, x2, y2, id, className }) => (
-            <LinkerLink
-              className={className}
-              id={id}
-              x1={x1}
-              y1={y1}
-              x2={x2}
-              y2={y2}
-              key={id}
-              onClick={onLinkDeleted}
-            />
-          ))}
-        </svg>
-        <div className="linker-toast-dialog">
-          <div className="toast-body">{messageText}</div>
-          <div className="toast-footer">
-            <Button kind="secondary" onClick={onAllLinksDeleted}>
-              Clear All
-            </Button>
-            <Button kind="primary" onClick={onDone}>
-              Done
-            </Button>
-          </div>
-        </div>
-        <ContextActions
-          actions={[
-            {
-              action: this.handleEscapePressed,
-              shortcut: GLOBAL_SHORTCUTS.LINKER_CLOSE,
-              isGlobal: true,
-            },
-          ]}
-        />
-      </div>
+      <DragDropContext onDragEnd={this.handleDragEnd}>
+        <Droppable droppableId="droppable-linker-toast-dialog">
+          {(provided, snapshot) => (
+            <div
+              ref={provided.innerRef}
+              // eslint-disable-next-line react/jsx-props-no-spreading
+              {...provided.droppableProps}
+              // className={classNames('droppable-container', {
+              //   dragging: snapshot.draggingFromThisWith,
+              // })}
+            >
+              <div className="linker-overlay">
+                <svg>
+                  {visibleLinks.map(({ x1, y1, x2, y2, id, className }) => (
+                    <LinkerLink
+                      className={className}
+                      id={id}
+                      x1={x1}
+                      y1={y1}
+                      x2={x2}
+                      y2={y2}
+                      key={id}
+                      onClick={onLinkDeleted}
+                    />
+                  ))}
+                </svg>
+                <Draggable
+                  draggableId="randomstring"
+                  index={0}
+                  disableInteractiveElementBlocking
+                >
+                  {(dragprovided, dragsnapshot) => (
+                    <div
+                      className={classNames('draggable-container', {
+                        dragging: dragsnapshot.isDragging,
+                      })}
+                      ref={dragprovided.innerRef}
+                      // eslint-disable-next-line react/jsx-props-no-spreading
+                      {...dragprovided.draggableProps}
+                    >
+                      <div
+                        className={classNames('linker-toast-dialog', {
+                          onLoad: toastX === undefined,
+                        })}
+                        style={{ top: toastY, left: toastX }}
+                      >
+                        <button
+                          type="button"
+                          className="btn btn-link btn-drag-handle"
+                          // eslint-disable-next-line react/jsx-props-no-spreading
+                          {...dragprovided.dragHandleProps}
+                        >
+                          <Tooltip>Drag to reposition</Tooltip>
+                          <FontAwesomeIcon icon={vsGripper} />
+                        </button>
+                        <div className="toast-body">{messageText}</div>
+                        <div className="toast-footer">
+                          <Button kind="secondary" onClick={onAllLinksDeleted}>
+                            Clear All
+                          </Button>
+                          <Button kind="primary" onClick={onDone}>
+                            Done
+                          </Button>
+                        </div>
+                      </div>
+                      <ContextActions
+                        actions={[
+                          {
+                            action: this.handleEscapePressed,
+                            shortcut: GLOBAL_SHORTCUTS.LINKER_CLOSE,
+                            isGlobal: true,
+                          },
+                        ]}
+                      />
+                    </div>
+                  )}
+                </Draggable>
+              </div>
+              {provided.placeholder}
+            </div>
+          )}
+        </Droppable>
+      </DragDropContext>
     );
   }
 }
