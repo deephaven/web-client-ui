@@ -15,7 +15,7 @@ jobs:
       cancel-in-progress: true
     steps:
       - name: Get server:${{ env.DOCKER_TAG }} SHA
-        run: docker run --detach ghcr.io/deephaven/server:${{ env.DOCKER_TAG }}
+        run: docker run ghcr.io/deephaven/server:${{ env.DOCKER_TAG }}
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
         with:
