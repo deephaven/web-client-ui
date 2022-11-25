@@ -11,8 +11,8 @@ on:
         required: true
         type: string
         default: 'latest'
-  # push:
-  #   branches: [main]
+  push:
+    branches: [e2e-github-action]
   # pull_request:
   #   branches: [main]
 
