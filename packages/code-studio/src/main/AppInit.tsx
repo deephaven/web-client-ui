@@ -249,19 +249,7 @@ const AppInit = (props: AppInitProps) => {
 
       const configs = await coreClient.getServerConfigValues();
 
-      const serverConfig: ServerConfigValues = {};
-
-      for (let i = 0; i < configs.length; i += 1) {
-        const [config, version] = configs[i];
-
-        if (config === 'java.version') {
-          serverConfig.javaVersion = version;
-        } else if (config === 'deephaven.version') {
-          serverConfig.deephavenVersion = version;
-        } else if (config === 'barrage.version') {
-          serverConfig.barrageVersion = version;
-        }
-      }
+      const serverConfig = new Map(configs);
 
       setActiveTool(ToolType.DEFAULT);
       setServerConfigValues(serverConfig);

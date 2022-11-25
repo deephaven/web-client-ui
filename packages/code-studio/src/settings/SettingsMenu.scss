@@ -177,12 +177,12 @@ $settings-menu-z-index: $zindex-modal;
     border-top: 1px solid $gray-800;
     .app-settings-footer-item:not(:last-child) {
       padding-bottom: $settings-menu-padding;
+
+      .detailed-server-config {
+        display: inline-block;
+      }
     }
   }
-}
-
-.detailed-server-config {
-  display: inline-block;
 }
 
 .detailed-server-config-info {

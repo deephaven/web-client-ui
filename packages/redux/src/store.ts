@@ -32,11 +32,7 @@ export interface User {
   groups: string[];
 }
 
-export type ServerConfigValues = {
-  barrageVersion?: string;
-  javaVersion?: string;
-  deephavenVersion?: string;
-};
+export type ServerConfigValues = Map<string, string>;
 
 export interface Storage {
   commandHistoryStorage: unknown;

@@ -85,7 +85,7 @@ export class SettingsMenu extends Component<
 
   handleExportSupportLogs(): void {
     const { serverConfigValues } = this.props;
-    exportLogs(undefined, serverConfigValues);
+    exportLogs(undefined, Object.fromEntries(serverConfigValues));
   }
 
   render(): ReactElement {
@@ -94,11 +94,9 @@ export class SettingsMenu extends Component<
     const docsLink = import.meta.env.VITE_DOCS_LINK;
 
     const { serverConfigValues } = this.props;
-    const {
-      barrageVersion,
-      javaVersion,
-      deephavenVersion,
-    } = serverConfigValues;
+    const barrageVersion = serverConfigValues.get('barrage.version');
+    const javaVersion = serverConfigValues.get('java.version');
+    const deephavenVersion = serverConfigValues.get('deephaven.version');
 
     const getRow = (text: string, ver?: string) => (
       <div className="detailed-server-config-row">
@@ -202,14 +200,11 @@ export class SettingsMenu extends Component<
                   Engine Version {deephavenVersion}{' '}
                   <div className="detailed-server-config">
                     <FontAwesomeIcon icon={vsInfo} />
-                    <Tooltip>
+                    <Tooltip interactive>
                       <div className="detailed-server-config-info">
-                        {getRow('Deephaven Version     ', deephavenVersion)}
+                        {getRow('Deephaven Version', deephavenVersion)}
                         {getRow('Java Version', javaVersion)}
                         {getRow('Barrage Version', barrageVersion)}
-                        {/* <div>Deephaven Version {deephavenVersion}</div>
-                        <div>Java Version {javaVersion}</div>
-                        <div>Barrage Version {barrageVersion}</div> */}
                       </div>
                     </Tooltip>
                   </div>

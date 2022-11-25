@@ -6,8 +6,6 @@ import LayoutStorage from '../storage/LayoutStorage';
  * @param store The redux store
  * @returns The layout storage instance
  */
-
-// eslint-disable-next-line import/prefer-default-export
 export const getLayoutStorage = (store: RootState): LayoutStorage =>
   store.layoutStorage as LayoutStorage;
 
@@ -16,7 +14,5 @@ export const getLayoutStorage = (store: RootState): LayoutStorage =>
  * @param store The redux store
  * @returns The layout storage instance
  */
-
-// eslint-disable-next-line import/prefer-default-export
 export const getServerConfigValues = (store: RootState): ServerConfigValues =>
   store.serverConfigValues;
