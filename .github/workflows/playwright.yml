@@ -19,7 +19,7 @@ jobs:
         with:
           node-version: 16
       - name: Run server:${{ env.DOCKER_TAG }} SHA
-        run: docker run --detach ghcr.io/deephaven/server:${{ env.DOCKER_TAG }}
+        run: docker run --detach --publish 10000:10000 ghcr.io/deephaven/server:${{ env.DOCKER_TAG }}
       - name: Install dependencies
         run: npm ci
       - name: Install Playwright Browsers
