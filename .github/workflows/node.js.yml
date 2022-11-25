@@ -71,10 +71,10 @@ jobs:
           echo "container_sha=$(cat container_sha.txt)" >> $GITHUB_ENV
 
       - name: Install Playwright browsers
-        run: npx playwright install
+        run: npx playwright install --with-deps
 
       - name: Run e2e tests
-        run: npm run e2e
+        run: npx playwright test
 
       # Run unit tests on all files for accurate code coverage
       # Lint only changed files so linting is faster
