@@ -14,7 +14,7 @@ jobs:
       group: ${{ github.workflow }}-${{ github.ref }}
       cancel-in-progress: true
     steps:
-      - name: Get server:${{ env.DOCKER_TAG }} SHA
+      - name: Run server:${{ env.DOCKER_TAG }} SHA
         run: docker run ghcr.io/deephaven/server:${{ env.DOCKER_TAG }}
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
