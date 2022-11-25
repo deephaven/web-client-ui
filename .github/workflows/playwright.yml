@@ -41,7 +41,8 @@ jobs:
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps
       - name: Run Playwright tests
-        run: DEBUG=pw:server npx playwright test
+        # TODO Run ALL th tests
+        run: DEBUG=pw:server npx playwright test ./tests/console.spec.ts
       - uses: actions/upload-artifact@v3
         if: always()
         with:
