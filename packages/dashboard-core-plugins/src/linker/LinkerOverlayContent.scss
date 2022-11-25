@@ -1,11 +1,5 @@
 @import '@deephaven/components/scss/custom.scss';
 
-//.droppable-container {
-// padding: 1px;
-// &.dragging {
-//   @include ants-base($foreground, $background);
-// }
-
 .linker-overlay {
   z-index: $zindex-fixed;
   position: fixed;
@@ -20,58 +14,51 @@
     height: 100%;
   }
 
-  .draggable-container {
-    background: $background;
+  .linker-toast-dialog {
+    $toast-inner-padding: $spacer-3;
+    $toast-outer-padding: $spacer-3;
 
-    &.dragging {
-      background: $primary-dark;
-      box-shadow: $box-shadow;
+    position: absolute;
+
+    &.isLoading {
+      right: $toast-outer-padding;
+      bottom: $toast-outer-padding;
     }
 
-    .linker-toast-dialog {
-      $toast-inner-padding: $spacer-3;
-      $toast-outer-padding: $spacer-3;
+    background: $modal-content-bg;
+    max-width: 400px;
+    color: $interfaceblack;
+    pointer-events: auto;
+    box-shadow: $tooltip-box-shadow;
+    z-index: $zindex-popover;
 
+    .btn-drag-handle {
+      cursor: grab;
+      border-radius: 0;
+      border: none;
       position: absolute;
+      top: 50%;
+      left: 0;
+      height: 100%;
+      min-width: 1.5rem;
+      max-width: 2rem;
+      transform: translateY(-50%);
+    }
 
-      &.onLoad {
-        right: $toast-outer-padding;
-        bottom: $toast-outer-padding;
-      }
+    .toast-body {
+      padding: $toast-inner-padding;
+      position: relative;
+      word-wrap: break-word;
+      left: 20px;
+    }
 
-      background: $modal-content-bg;
-      max-width: 400px;
-      color: $interfaceblack;
-      pointer-events: auto;
-      box-shadow: $tooltip-box-shadow;
-      z-index: $zindex-popover;
-
-      .btn-drag-handle {
-        cursor: grab;
-        position: absolute;
-        top: 50%;
-        left: 0;
-        height: 100%;
-        max-width: 25px;
-        transform: translateY(-50%);
-      }
-
-      .toast-body {
-        padding: $toast-inner-padding;
-        position: relative;
-        word-wrap: break-word;
-        left: 20px;
-      }
-
-      .toast-footer {
-        padding: $toast-inner-padding;
-        display: flex;
-        justify-content: flex-end;
-        .btn:not(:last-child) {
-          margin-right: $spacer-3;
-        }
+    .toast-footer {
+      padding: $toast-inner-padding;
+      display: flex;
+      justify-content: flex-end;
+      .btn:not(:last-child) {
+        margin-right: $spacer-3;
       }
     }
   }
 }
-//}
