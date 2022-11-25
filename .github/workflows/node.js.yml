@@ -4,19 +4,14 @@
 name: Node.js CI
 
 on:
-  workflow_dispatch:
   push:
-    branches: [e2e-github-action]
-  # pull_request:
-  #   branches: [main]
-
-env:
-  INPUT_REF: ${{ github.event.inputs.ref || inputs.ref || github.ref }}
-  DOCKER_TAG: latest
+    branches: [main]
+  pull_request:
+    branches: [main]
 
 jobs:
   build:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     concurrency:
       group: ${{ github.workflow }}-${{ github.ref }}
       cancel-in-progress: true
@@ -58,46 +53,33 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-lintcache-
 
-      # - name: Install dependencies
-      #   run: npm ci --no-audit
+      - name: Install dependencies
+        run: npm ci --no-audit
 
       - name: Build
         run: npm run build
-
-      # - name: Get server:${{ env.DOCKER_TAG }} SHA
-      #   run: |
-      #     docker pull --quiet ghcr.io/deephaven/server:${{ env.DOCKER_TAG }}
-      #     docker inspect --format='{{index .RepoDigests 0}}' ghcr.io/deephaven/server:${{ env.DOCKER_TAG }} > container_sha.txt
-      #     echo "container_sha=$(cat container_sha.txt)" >> $GITHUB_ENV
-
-      # - name: Install Playwright browsers
-      #   run: npx playwright install --with-deps
-
-      # - name: Run e2e tests
-      #   run: npx playwright test
 
       # Run unit tests on all files for accurate code coverage
       # Lint only changed files so linting is faster
       # Caching with the absolute path b/c Jest will make a folder in each project
       # Then there's caches in all package folders
-      # TODO: Uncomment all this stuff out
-      # - name: Test (Pull Request)
-      #   if: ${{ github.event_name == 'pull_request' }}
-      #   run: |
-      #     npm run test:unit -- --cacheDirectory $PWD/.jest-cache
-      #     npm run test:lint -- --changedSince origin/${{ github.event.pull_request.base.ref }} --cacheDirectory $PWD/.jest-cache
-      #     npm run test:golden-layout
+      - name: Test (Pull Request)
+        if: ${{ github.event_name == 'pull_request' }}
+        run: |
+          npm run test:unit -- --cacheDirectory $PWD/.jest-cache
+          npm run test:lint -- --changedSince origin/${{ github.event.pull_request.base.ref }} --cacheDirectory $PWD/.jest-cache
+          npm run test:golden-layout
 
-      # - name: Test (Push)
-      #   if: ${{ github.event_name == 'push' }}
-      #   run: |
-      #     npm run test:unit -- --cacheDirectory $PWD/.jest-cache
-      #     npm run test:lint -- --lastCommit --cacheDirectory $PWD/.jest-cache
-      #     npm run test:golden-layout
+      - name: Test (Push)
+        if: ${{ github.event_name == 'push' }}
+        run: |
+          npm run test:unit -- --cacheDirectory $PWD/.jest-cache
+          npm run test:lint -- --lastCommit --cacheDirectory $PWD/.jest-cache
+          npm run test:golden-layout
 
-      # - name: Codecov report
-      #   uses: codecov/codecov-action@v2
-      #   with:
-      #     token: ${{ secrets.CODECOV_TOKEN }}
-      #     directory: ./coverage
-      #     flags: unit
+      - name: Codecov report
+        uses: codecov/codecov-action@v2
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          directory: ./coverage
+          flags: unit
