@@ -203,7 +203,6 @@ export class LinkerLink extends PureComponent<LinkerLinkProps> {
           <path className="link-background" d={path} />
           <path className="link-foreground" d={path} />
           <circle className="link-dot" cx={x1} cy={y1} r="5" />
-          <circle className="link-dot" cx={midX} cy={midY} r="5" />
           <polygon className="link-triangle" points={points} />
         </svg>
         {comparisonOperators !== undefined && isSelected && (
