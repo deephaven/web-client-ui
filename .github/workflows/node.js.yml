@@ -5,12 +5,6 @@ name: Node.js CI
 
 on:
   workflow_dispatch:
-    inputs:
-      docker_tag:
-        description: 'The Deephaven core docker tag to run end-to-end tests against (latest/edge/etc.)'
-        required: true
-        type: string
-        default: 'latest'
   push:
     branches: [e2e-github-action]
   # pull_request:
@@ -18,7 +12,7 @@ on:
 
 env:
   INPUT_REF: ${{ github.event.inputs.ref || inputs.ref || github.ref }}
-  DOCKER_TAG: ${{ github.event.inputs.docker_tag || inputs.docker_tag }}
+  DOCKER_TAG: latest
 
 jobs:
   build:
