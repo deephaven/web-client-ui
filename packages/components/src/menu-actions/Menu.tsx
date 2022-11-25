@@ -66,7 +66,7 @@ class Menu extends PureComponent<MenuProps, MenuState> {
 
     const { options } = props;
     const keyboardIndex = options.initialKeyboardIndex ?? -1;
-
+    console.log(this.props.actions);
     this.state = {
       menuItems: [],
       keyboardIndex,

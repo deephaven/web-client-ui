@@ -345,22 +345,22 @@ export class ConsolePanel extends PureComponent<
               commandHistoryStorage={commandHistoryStorage}
               onSettingsChange={this.handleSettingsChange}
               language={language}
-              statusBarChildren={
-                <>
-                  <div>&nbsp;</div>
-                  <div>{ConsoleConstants.LANGUAGE_MAP.get(language)}</div>
-                  <div>&nbsp;</div>
-                  <div>
-                    <HeapUsage
-                      connection={connection}
-                      defaultUpdateInterval={10 * 1000}
-                      hoverUpdateInterval={3 * 1000}
-                      monitorDuration={10 * 60 * 1000}
-                    />
-                  </div>
-                  <div>&nbsp;</div>
-                </>
-              }
+              // statusBarChildren={
+              //   <>
+              //     <div>&nbsp;</div>
+              //     <div>{ConsoleConstants.LANGUAGE_MAP.get(language)}</div>
+              //     <div>&nbsp;</div>
+              //     <div>
+              //       <HeapUsage
+              //         connection={connection}
+              //         defaultUpdateInterval={10 * 1000}
+              //         hoverUpdateInterval={3 * 1000}
+              //         monitorDuration={10 * 60 * 1000}
+              //       />
+              //     </div>
+              //     <div>&nbsp;</div>
+              //   </>
+              // }
               scope={sessionId}
               timeZone={timeZone}
               objectMap={objectMap}
