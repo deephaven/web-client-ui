@@ -70,6 +70,12 @@ jobs:
           docker inspect --format='{{index .RepoDigests 0}}' ghcr.io/deephaven/server:${{ env.DOCKER_TAG }} > container_sha.txt
           echo "container_sha=$(cat container_sha.txt)" >> $GITHUB_ENV
 
+      - name: Run web server
+        run: npm start
+
+      - name: Install Playwright browsers
+        run: npx playwright install
+
       - name: Run e2e tests
         run: npm run e2e
 
