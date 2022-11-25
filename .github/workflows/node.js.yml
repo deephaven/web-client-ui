@@ -58,23 +58,23 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-lintcache-
 
-      - name: Install dependencies
-        run: npm ci --no-audit
+      # - name: Install dependencies
+      #   run: npm ci --no-audit
 
       - name: Build
         run: npm run build
 
-      - name: Get server:${{ env.DOCKER_TAG }} SHA
-        run: |
-          docker pull --quiet ghcr.io/deephaven/server:${{ env.DOCKER_TAG }}
-          docker inspect --format='{{index .RepoDigests 0}}' ghcr.io/deephaven/server:${{ env.DOCKER_TAG }} > container_sha.txt
-          echo "container_sha=$(cat container_sha.txt)" >> $GITHUB_ENV
+      # - name: Get server:${{ env.DOCKER_TAG }} SHA
+      #   run: |
+      #     docker pull --quiet ghcr.io/deephaven/server:${{ env.DOCKER_TAG }}
+      #     docker inspect --format='{{index .RepoDigests 0}}' ghcr.io/deephaven/server:${{ env.DOCKER_TAG }} > container_sha.txt
+      #     echo "container_sha=$(cat container_sha.txt)" >> $GITHUB_ENV
 
-      - name: Install Playwright browsers
-        run: npx playwright install --with-deps
+      # - name: Install Playwright browsers
+      #   run: npx playwright install --with-deps
 
-      - name: Run e2e tests
-        run: npx playwright test
+      # - name: Run e2e tests
+      #   run: npx playwright test
 
       # Run unit tests on all files for accurate code coverage
       # Lint only changed files so linting is faster
