@@ -32,6 +32,7 @@
     "build:necessary": "lerna run build --scope=@deephaven/icons",
     "analyze": "lerna run analyze",
     "preview": "lerna run --scope=@deephaven/{code-studio,embed-chart,embed-grid} preview --stream",
+    "preview:app": "lerna run --scope=@deephaven/code-studio preview --stream",
     "prestart": "npm run build:necessary",
     "start": "run-p watch:types start:*",
     "start:e2e": "run-p start:docker start:app",

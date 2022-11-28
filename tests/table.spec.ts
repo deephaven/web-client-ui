@@ -8,7 +8,7 @@ let page: Page;
 
 test.beforeAll(async ({ browser }) => {
   page = await browser.newPage();
-  await page.goto('/');
+  await page.goto('');
 });
 
 test.afterAll(async () => {

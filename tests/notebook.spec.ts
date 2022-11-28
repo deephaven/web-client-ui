@@ -5,7 +5,7 @@ import shortid from 'shortid';
 test('test creating a file, saving it, closing it, re-opening it, running it, then deleting it', async ({
   page,
 }) => {
-  await page.goto('/');
+  await page.goto('');
 
   // Click text=File Explorer
   await page.locator('text=File Explorer').click();

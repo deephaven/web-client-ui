@@ -3,7 +3,7 @@ import shortid from 'shortid';
 import { typeInMonaco } from './utils';
 
 test('print commands get logged', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('');
 
   // create a locator
   const consoleInput = page.locator('.console-input');
