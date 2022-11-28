@@ -21,15 +21,15 @@ const config: PlaywrightTestConfig = {
      */
     timeout: 10000,
   },
-  /* Run tests in files in parallel */
-  fullyParallel: true,
+  /* We don't want to run tests in parallel because we have the same backend, tests may conflict with eachother */
+  fullyParallel: false,
   /* Fail the build on CI if you accidentally left test.only in the source code. */
   forbidOnly: !!process.env.CI,
   /* Global setup file for initializing before all other tests */
   globalSetup: require.resolve('./tests/globalSetup.ts'),
   /* Retry on CI only */
   retries: process.env.CI ? 2 : 0,
-  /* Opt out of parallel tests on CI. */
+  /* Only have one worker since we don't want tests running in parallel, trampling over each other on the backend */
   workers: 1,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: 'html',
