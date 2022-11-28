@@ -38,7 +38,10 @@ import './DropdownMenu.scss';
 
 export type DropdownAction = ContextAction & { actions?: never };
 
-export type DropdownActions = DropdownAction | DropdownAction[];
+export type DropdownActions =
+  | (() => DropdownAction[])
+  | DropdownAction
+  | DropdownAction[];
 
 type DropdownMenuProps = {
   // Override to prevent nested lists
@@ -126,7 +129,6 @@ class DropdownMenu extends PureComponent<DropdownMenuProps> {
   isOpen: boolean;
 
   closeMenu(): void {
-    console.log('hide popper');
     this.popper.current?.hide();
   }
 

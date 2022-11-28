@@ -11,7 +11,7 @@ export type MenuOptions = {
 };
 
 type MenuProps = {
-  actions: ContextAction | ContextAction[];
+  actions: (() => ContextAction[]) | ContextAction | ContextAction[];
   closeMenu(closeAll: boolean): void;
   onMenuClosed(menu: Menu): void;
   onMenuOpened(menu: Menu): void;
@@ -88,7 +88,6 @@ class Menu extends PureComponent<MenuProps, MenuState> {
   componentDidUpdate(prevProps: MenuProps): void {
     const { actions } = this.props;
     if (prevProps.actions !== actions) {
-      console.log('hi');
       this.initMenu();
     }
   }
