@@ -191,7 +191,7 @@ class DropdownMenu extends PureComponent<DropdownMenuProps> {
         >
           <Menu
             actions={actions}
-            onMenuClosed={this.handleCloseMenu}
+            closeMenu={this.handleCloseMenu}
             onMenuOpened={onMenuOpened}
             options={options}
             menuStyle={menuStyle}
