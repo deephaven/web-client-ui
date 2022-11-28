@@ -219,6 +219,7 @@ export type FilterData = {
   operator: FilterTypeValue;
   text: string;
   value: unknown;
+  startColumnIndex: number;
 };
 
 export type FilterMap = Map<
@@ -1475,6 +1476,16 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       }
       const columnIndex = model.getColumnIndexByName(column.name);
       assertNotNull(columnIndex);
+      filterList.sort((a, b) => {
+        // move all 'equals' comparisons to end of list
+        if (a.operator === 'eq' && b.operator !== 'eq') {
+          return 1;
+        }
+        if (a.operator !== 'eq' && b.operator === 'eq') {
+          return -1;
+        }
+        return a.startColumnIndex - b.startColumnIndex;
+      });
       let combinedText = '';
       for (let i = 0; i < filterList.length; i += 1) {
         const { operator, text, value } = filterList[i];
@@ -2478,14 +2489,14 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     const { columns } = model;
     const dataMap: Record<
       string,
-      { value: unknown; text: string | null; type: string }
+      { value: unknown; text: string | null; type: string; columnIndex: number }
     > = {};
     for (let i = 0; i < columns.length; i += 1) {
       const column = columns[i];
       const { name, type } = column;
       const value = model.valueForCell(i, rowIndex);
       const text = model.textForCell(i, rowIndex);
-      dataMap[name] = { value, text, type };
+      dataMap[name] = { value, text, type, columnIndex: i };
     }
 
     const { onDataSelected } = this.props;

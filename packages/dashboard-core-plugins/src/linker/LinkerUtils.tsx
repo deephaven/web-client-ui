@@ -33,6 +33,7 @@ export type LinkDataValue<T = unknown> = {
   operator: FilterTypeValue;
   text: string;
   value: T;
+  startColumnIndex: number;
 };
 
 export type LinkFilterMapValue<T = unknown> = {
@@ -46,6 +47,7 @@ export type LinkDataMapValue = {
   type: string;
   text: string;
   value: string;
+  columnIndex: number;
 };
 
 export type LinkDataMap = Record<string, LinkDataMapValue>;

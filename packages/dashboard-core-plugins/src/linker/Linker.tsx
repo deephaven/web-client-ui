@@ -453,7 +453,9 @@ export class Linker extends Component<LinkerProps, LinkerState> {
           filterMap.has(columnName) === true
             ? filterMap.get(columnName).filterList
             : [];
-        const { value } = dataMap[start.columnName];
+        const { value, columnIndex: startColumnIndex } = dataMap[
+          start.columnName
+        ];
         let text = `${value}`;
         if (columnType != null && TableUtils.isDateType(columnType)) {
           const dateFilterFormatter = new DateTimeColumnFormatter({
@@ -465,12 +467,8 @@ export class Linker extends Component<LinkerProps, LinkerState> {
           // The values are Dates for dateType values, not string like everything else
           text = dateFilterFormatter.format((value as unknown) as Date);
         }
-        const filter = { operator, text, value };
-        if (operator === 'eq') {
-          filterList.push(filter);
-        } else {
-          filterList.unshift(filter);
-        }
+        const filter = { operator, text, value, startColumnIndex };
+        filterList.push(filter);
         filterMap.set(columnName, {
           columnType,
           filterList,
