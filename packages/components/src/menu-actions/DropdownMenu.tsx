@@ -126,6 +126,7 @@ class DropdownMenu extends PureComponent<DropdownMenuProps> {
   isOpen: boolean;
 
   closeMenu(): void {
+    console.log('hide popper');
     this.popper.current?.hide();
   }
 
@@ -188,7 +189,7 @@ class DropdownMenu extends PureComponent<DropdownMenuProps> {
         >
           <Menu
             actions={actions}
-            closeMenu={this.handleCloseMenu}
+            onMenuClosed={this.handleCloseMenu}
             onMenuOpened={onMenuOpened}
             options={options}
             menuStyle={menuStyle}
