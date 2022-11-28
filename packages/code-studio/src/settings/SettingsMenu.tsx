@@ -99,10 +99,10 @@ export class SettingsMenu extends Component<
     const deephavenVersion = serverConfigValues.get('deephaven.version');
 
     const getRow = (text: string, ver?: string) => (
-      <div className="detailed-server-config-row">
+      <>
         <div>{text}</div>
         <div>{ver}</div>
-      </div>
+      </>
     );
 
     return (
@@ -193,20 +193,18 @@ export class SettingsMenu extends Component<
                 </a>
               </div>
               <div className="app-settings-footer-item">
-                <div className="text-muted">
-                  Engine Version {deephavenVersion}{' '}
-                  <div className="detailed-server-config">
-                    <FontAwesomeIcon icon={vsInfo} />
-                    <Tooltip interactive>
-                      <div className="detailed-server-config-info">
-                        {getRow('UI Version', uiVersion)}
-                        {getRow('Deephaven Version', deephavenVersion)}
-                        {getRow('Java Version', javaVersion)}
-                        {getRow('Barrage Version', barrageVersion)}
-                      </div>
-                    </Tooltip>
-                  </div>
-                </div>
+                <div className="font-weight-bold">Version</div>
+                <span className="d-inline-block text-muted">
+                  {deephavenVersion} <FontAwesomeIcon icon={vsInfo} />
+                  <Tooltip interactive>
+                    <div className="detailed-server-config">
+                      {getRow('Engine Version', deephavenVersion)}
+                      {getRow('Web UI Version', uiVersion)}
+                      {getRow('Java Version', javaVersion)}
+                      {getRow('Barrage Version', barrageVersion)}
+                    </div>
+                  </Tooltip>
+                </span>
               </div>
               <div className="app-settings-footer-item">
                 <LegalNotice />

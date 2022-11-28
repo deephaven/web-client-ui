@@ -177,20 +177,14 @@ $settings-menu-z-index: $zindex-modal;
     border-top: 1px solid $gray-800;
     .app-settings-footer-item:not(:last-child) {
       padding-bottom: $settings-menu-padding;
-
-      .detailed-server-config {
-        display: inline-block;
-      }
     }
   }
 }
 
-.detailed-server-config-info {
-  padding: 10px;
-}
-
-.detailed-server-config-row {
-  display: flex;
-  justify-content: space-between;
-  gap: $spacer-3;
+.detailed-server-config {
+  display: grid;
+  grid-template-columns: auto auto;
+  gap: $spacer-1 $spacer-3;
+  padding: $spacer-2;
+  text-align: left;
 }
