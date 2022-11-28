@@ -89,7 +89,7 @@ export class SettingsMenu extends Component<
   }
 
   render(): ReactElement {
-    const version = import.meta.env.npm_package_version;
+    const uiVersion = import.meta.env.npm_package_version;
     const supportLink = import.meta.env.VITE_SUPPORT_LINK;
     const docsLink = import.meta.env.VITE_DOCS_LINK;
 
@@ -193,15 +193,13 @@ export class SettingsMenu extends Component<
                 </a>
               </div>
               <div className="app-settings-footer-item">
-                <div className="text-muted">UI Version {version}</div>
-              </div>
-              <div className="app-settings-footer-item">
                 <div className="text-muted">
                   Engine Version {deephavenVersion}{' '}
                   <div className="detailed-server-config">
                     <FontAwesomeIcon icon={vsInfo} />
                     <Tooltip interactive>
                       <div className="detailed-server-config-info">
+                        {getRow('UI Version', uiVersion)}
                         {getRow('Deephaven Version', deephavenVersion)}
                         {getRow('Java Version', javaVersion)}
                         {getRow('Barrage Version', barrageVersion)}
