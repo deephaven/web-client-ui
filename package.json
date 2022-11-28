@@ -34,6 +34,8 @@
     "preview": "lerna run --scope=@deephaven/{code-studio,embed-chart,embed-grid} preview --stream",
     "prestart": "npm run build:necessary",
     "start": "run-p watch:types start:*",
+    "start:e2e": "run-p start:docker start:app",
+    "start:docker": "docker run --detach --publish 10000:10000 ghcr.io/deephaven/server:latest",
     "start:app": "lerna run start --scope=@deephaven/code-studio --stream",
     "start:embed-chart": "lerna run start --scope=@deephaven/embed-chart --stream",
     "start:embed-grid": "lerna run start --scope=@deephaven/embed-grid --stream",

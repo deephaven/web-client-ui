@@ -13,7 +13,7 @@ import { devices } from '@playwright/test';
 const config: PlaywrightTestConfig = {
   testDir: './tests',
   /* Maximum time one test can run for. */
-  timeout: 30 * 1000,
+  timeout: 120 * 1000,
   expect: {
     /**
      * Maximum time expect() should wait for the condition to be met.
@@ -38,7 +38,7 @@ const config: PlaywrightTestConfig = {
     /* Maximum time each action such as `click()` can take. Defaults to 0 (no limit). */
     actionTimeout: 0,
     /* Base URL to use in actions like `await page.goto('/')`. */
-    baseURL: 'http://localhost:4000',
+    baseURL: 'http://localhost:4000/',
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
@@ -49,26 +49,26 @@ const config: PlaywrightTestConfig = {
 
   /* Configure projects for major browsers */
   projects: [
+    {
+      name: 'chromium',
+      use: {
+        ...devices['Desktop Chrome'],
+      },
+    },
+
     // {
-    //   name: 'chromium',
+    //   name: 'firefox',
     //   use: {
-    //     ...devices['Desktop Chrome'],
+    //     ...devices['Desktop Firefox'],
     //   },
     // },
 
-    {
-      name: 'firefox',
-      use: {
-        ...devices['Desktop Firefox'],
-      },
-    },
-
-    {
-      name: 'webkit',
-      use: {
-        ...devices['Desktop Safari'],
-      },
-    },
+    // {
+    //   name: 'webkit',
+    //   use: {
+    //     ...devices['Desktop Safari'],
+    //   },
+    // },
 
     /* Test against mobile viewports. */
     // {
@@ -107,7 +107,7 @@ const config: PlaywrightTestConfig = {
     // Only start the main code-studio server right now
     // To test embed-grid and embed-chart, should have an array set for `webServer` and run them all separately as there's a port check
     command: 'npm run start:app',
-    port: 4000,
+    url: 'http://localhost:4000/',
     timeout: 60 * 1000,
     reuseExistingServer: !process.env.CI,
   },
