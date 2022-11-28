@@ -36,9 +36,11 @@ import {
   setUser as setUserAction,
   setWorkspace as setWorkspaceAction,
   setWorkspaceStorage as setWorkspaceStorageAction,
+  setServerConfigValues as setServerConfigValuesAction,
   User,
   Workspace,
   WorkspaceStorage,
+  ServerConfigValues,
 } from '@deephaven/redux';
 import { setLayoutStorage as setLayoutStorageAction } from '../redux/actions';
 import App from './App';
@@ -125,6 +127,7 @@ interface AppInitProps {
   setUser: (user: User) => void;
   setWorkspace: (workspace: Workspace) => void;
   setWorkspaceStorage: (workspaceStorage: WorkspaceStorage) => void;
+  setServerConfigValues: (config: ServerConfigValues) => void;
 }
 
 /**
@@ -144,6 +147,7 @@ const AppInit = (props: AppInitProps) => {
     setUser,
     setWorkspace,
     setWorkspaceStorage,
+    setServerConfigValues,
   } = props;
 
   const [error, setError] = useState<unknown>();
@@ -243,7 +247,12 @@ const AppInit = (props: AppInitProps) => {
         links: data.links,
       };
 
+      const configs = await coreClient.getServerConfigValues();
+
+      const serverConfig = new Map(configs);
+
       setActiveTool(ToolType.DEFAULT);
+      setServerConfigValues(serverConfig);
       setCommandHistoryStorage(commandHistoryStorage);
       setDashboardData(DEFAULT_DASHBOARD_ID, dashboardData);
       setFileStorage(fileStorage);
@@ -272,6 +281,7 @@ const AppInit = (props: AppInitProps) => {
     setUser,
     setWorkspace,
     setWorkspaceStorage,
+    setServerConfigValues,
   ]);
 
   const initFonts = useCallback(() => {
@@ -366,4 +376,5 @@ export default connect(mapStateToProps, {
   setUser: setUserAction,
   setWorkspace: setWorkspaceAction,
   setWorkspaceStorage: setWorkspaceStorageAction,
+  setServerConfigValues: setServerConfigValuesAction,
 })(AppInit);
