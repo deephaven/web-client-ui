@@ -173,22 +173,6 @@ const AppInit = (props: AppInitProps) => {
       );
 
       const name = 'user';
-      const user: User = {
-        name,
-        operateAs: name,
-        groups: [],
-        permissions: {
-          isSuperUser: false,
-          isQueryViewOnly: false,
-          isNonInteractive: false,
-          canUsePanels: true,
-          canCreateDashboard: true,
-          canCreateCodeStudio: true,
-          canCreateQueryMonitor: true,
-          canCopy: true,
-          canDownloadCsv: true,
-        },
-      };
 
       const coreClient = createCoreClient();
 
@@ -248,8 +232,29 @@ const AppInit = (props: AppInitProps) => {
       };
 
       const configs = await coreClient.getServerConfigValues();
-
       const serverConfig = new Map(configs);
+
+      const user: User = {
+        name,
+        operateAs: name,
+        groups: [],
+        permissions: {
+          isSuperUser: false,
+          isQueryViewOnly: false,
+          isNonInteractive: false,
+          canUsePanels: true,
+          canCreateDashboard: true,
+          canCreateCodeStudio: true,
+          canCreateQueryMonitor: true,
+          canCopy: !(
+            serverConfig.get('internal.webClient.appInit.canCopy') === 'false'
+          ),
+          canDownloadCsv: !(
+            serverConfig.get('internal.webClient.appInit.canDownloadCsv') ===
+            'false'
+          ),
+        },
+      };
 
       setActiveTool(ToolType.DEFAULT);
       setServerConfigValues(serverConfig);
