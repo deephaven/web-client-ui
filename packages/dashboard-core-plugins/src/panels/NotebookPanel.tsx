@@ -12,6 +12,7 @@ import {
   Tooltip,
   GLOBAL_SHORTCUTS,
   Button,
+  DropdownAction,
 } from '@deephaven/components';
 import { ScriptEditor, ScriptEditorUtils, SHORTCUTS } from '@deephaven/console';
 import {
@@ -189,7 +190,9 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     this.handleTabFocus = this.handleTabFocus.bind(this);
     this.handleTabBlur = this.handleTabBlur.bind(this);
     this.handleTransformLinkUri = this.handleTransformLinkUri.bind(this);
-
+    this.getDropdownOverflowActions = this.getDropdownOverflowActions.bind(
+      this
+    );
     this.pending = new Pending();
 
     this.debouncedSavePanelState = debounce(
@@ -1013,6 +1016,18 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     });
   }
 
+  getDropdownOverflowActions(): DropdownAction[] {
+    const { defaultNotebookSettings } = this.props;
+    const { settings: initialSettings } = this.state;
+    return this.getOverflowActions(
+      defaultNotebookSettings.isMinimapEnabled,
+      this.getSettings(
+        initialSettings,
+        defaultNotebookSettings.isMinimapEnabled
+      ).wordWrap === 'on'
+    );
+  }
+
   render(): ReactElement {
     const {
       fileStorage,
@@ -1045,10 +1060,6 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     const settings = this.getSettings(
       initialSettings,
       defaultNotebookSettings.isMinimapEnabled
-    );
-    const overflowActions = this.getOverflowActions(
-      defaultNotebookSettings.isMinimapEnabled,
-      settings.wordWrap === 'on'
     );
     const isSessionConnected = session != null;
     const isLanguageMatching = sessionLanguage === settings.language;
@@ -1184,7 +1195,7 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
                   }}
                 >
                   <DropdownMenu
-                    actions={overflowActions}
+                    actions={this.getDropdownOverflowActions}
                     popperOptions={NotebookPanel.POPPER_OPTIONS}
                   />
                 </Button>

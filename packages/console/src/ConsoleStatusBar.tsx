@@ -11,7 +11,7 @@ interface ConsoleStatusBarProps {
   session: IdeSession;
   openObject: (object: VariableDefinition) => void;
   objects: VariableDefinition[];
-  overflowActions: DropdownAction[];
+  overflowActions: () => DropdownAction[];
 }
 
 interface ConsoleStatusBarState {
