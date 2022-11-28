@@ -32,6 +32,8 @@ export interface User {
   groups: string[];
 }
 
+export type ServerConfigValues = Map<string, string>;
+
 export interface Storage {
   commandHistoryStorage: unknown;
   fileStorage: FileStorage;
@@ -91,6 +93,7 @@ export type RootState = {
   workspace: Workspace;
   dashboardData: Record<string, DashboardData>;
   layoutStorage: unknown;
+  serverConfigValues: ServerConfigValues;
 };
 
 Object.entries(reducers).map(([name, reducer]) =>
