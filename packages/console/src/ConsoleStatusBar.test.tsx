@@ -39,9 +39,10 @@ it('renders without crashing', () => {
 
 it('dropdown menu disappears on toggle', () => {
   const mockClick = jest.fn();
+  const title = 'action';
   makeConsoleStatusBarWrapper(() => [
     {
-      title: 'test item',
+      title,
       action: mockClick,
       group: ContextActions.groups.high,
       icon: vsCheck,
@@ -52,11 +53,11 @@ it('dropdown menu disappears on toggle', () => {
     '.btn-overflow.btn-link-icon'
   ) as TargetElement;
   userEvent.click(button);
-  let dropdown: HTMLElement | null = screen.getByText('test item');
+  let dropdown: HTMLElement | null = screen.getByText(title);
   expect(dropdown).toBeTruthy();
   userEvent.click(dropdown);
   expect(mockClick).toBeCalled();
   jest.runAllTimers();
-  dropdown = screen.queryByText('test item');
+  dropdown = screen.queryByText(title);
   expect(dropdown).toBeFalsy();
 });
