@@ -2496,7 +2496,8 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       const { name, type } = column;
       const value = model.valueForCell(i, rowIndex);
       const text = model.textForCell(i, rowIndex);
-      dataMap[name] = { value, text, type, columnIndex: i };
+      const index = this.getVisibleColumn(i);
+      dataMap[name] = { value, text, type, columnIndex: index };
     }
 
     const { onDataSelected } = this.props;
