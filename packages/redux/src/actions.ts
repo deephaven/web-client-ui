@@ -10,10 +10,12 @@ import {
   SET_WORKSPACE_STORAGE,
   SET_ACTIVE_TOOL,
   SET_FILE_STORAGE,
+  SET_SERVER_CONFIG_VALUES,
 } from './actionTypes';
 import type {
   DeephavenPluginModuleMap,
   RootState,
+  ServerConfigValues,
   User,
   Workspace,
   WorkspaceData,
@@ -116,4 +118,9 @@ export const setActiveTool: PayloadActionCreator<string> = payload => ({
 export const setPlugins: PayloadActionCreator<DeephavenPluginModuleMap> = plugins => ({
   type: SET_PLUGINS,
   payload: plugins,
+});
+
+export const setServerConfigValues: PayloadActionCreator<ServerConfigValues> = config => ({
+  type: SET_SERVER_CONFIG_VALUES,
+  payload: config,
 });

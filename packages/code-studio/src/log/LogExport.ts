@@ -70,10 +70,11 @@ function getReduxDataString(): string {
   );
 }
 
-function getMetadata(): string {
+function getMetadata(meta?: Record<string, unknown>): string {
   const metadata = {
     uiVersion: import.meta.env.npm_package_version,
     userAgent: navigator.userAgent,
+    ...meta,
   };
 
   return JSON.stringify(metadata, null, 2);
@@ -87,13 +88,14 @@ export async function exportLogs(
   fileNamePrefix = `${dh.i18n.DateTimeFormat.format(
     FILENAME_DATE_FORMAT,
     new Date()
-  )}_support_logs`
+  )}_support_logs`,
+  metadata?: Record<string, unknown>
 ): Promise<void> {
   const zip = new JSZip();
   const folder = zip.folder(fileNamePrefix) as JSZip;
   folder.file('console.txt', logHistory.getFormattedHistory());
   folder.file('redux.json', getReduxDataString());
-  folder.file('metadata.json', getMetadata());
+  folder.file('metadata.json', getMetadata(metadata));
 
   const blob = await zip.generateAsync({ type: 'blob' });
   const link = document.createElement('a');

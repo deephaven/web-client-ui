@@ -42,6 +42,7 @@ import {
   GridState,
   isEditableGridModel,
   BoundedAxisRange,
+  isExpandableGridModel,
 } from '@deephaven/grid';
 import {
   dhEye,
@@ -75,6 +76,7 @@ import {
   TableUtils,
   FormattingRule,
   ReverseType,
+  RowDataMap,
   SortDirection,
   DateTimeColumnFormatterOptions,
   TableColumnFormat,
@@ -1489,34 +1491,36 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       let combinedText = '';
       for (let i = 0; i < filterList.length; i += 1) {
         const { operator, text, value } = filterList[i];
-        let symbol = '';
-        if (operator !== undefined) {
-          if (value == null && operator !== 'notEq') {
-            symbol = '=';
-          } else if (operator !== 'eq') {
-            if (operator === 'startsWith' || operator === 'endsWith') {
-              symbol = '*';
-            } else {
-              symbol = TableUtils.getFilterOperatorString(operator);
+        if (value !== undefined) {
+          let symbol = '';
+          if (operator !== undefined) {
+            if (value == null && operator !== 'notEq') {
+              symbol = '=';
+            } else if (operator !== 'eq') {
+              if (operator === 'startsWith' || operator === 'endsWith') {
+                symbol = '*';
+              } else {
+                symbol = TableUtils.getFilterOperatorString(operator);
+              }
             }
           }
-        }
 
-        let filterText = `${symbol}${text}`;
-        if (operator === 'startsWith' && value !== null) {
-          filterText = `${text}${symbol}`;
+          let filterText = `${symbol}${text}`;
+          if (operator === 'startsWith' && value !== null) {
+            filterText = `${text}${symbol}`;
+          }
+          if (
+            columnType != null &&
+            value !== null &&
+            TableUtils.isCharType(columnType)
+          ) {
+            filterText = `${symbol}${String.fromCharCode(parseInt(text, 10))}`;
+          }
+          if (i !== 0) {
+            combinedText += operator === 'eq' ? ' || ' : ' && ';
+          }
+          combinedText += filterText;
         }
-        if (
-          columnType != null &&
-          value !== null &&
-          TableUtils.isCharType(columnType)
-        ) {
-          filterText = `${symbol}${String.fromCharCode(parseInt(text, 10))}`;
-        }
-        if (i !== 0) {
-          combinedText += operator === 'eq' ? ' || ' : ' && ';
-        }
-        combinedText += filterText;
       }
       // Fallback value is the last filter in filterList
       let fallbackFilterValue;
@@ -1558,6 +1562,17 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
         };
       }
     );
+  }
+
+  removeQuickFilter(modelColumn: ModelIndex): void {
+    this.startLoading('Clearing Filter...', true);
+
+    this.setState(({ quickFilters }) => {
+      const newQuickFilters = new Map(quickFilters);
+      newQuickFilters.delete(modelColumn);
+
+      return { quickFilters: newQuickFilters };
+    });
   }
 
   clearAllFilters(): void {
@@ -2486,20 +2501,26 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
    */
   selectData(columnIndex: ModelIndex, rowIndex: ModelIndex): void {
     const { model } = this.props;
-    const { columns } = model;
-    const dataMap: Record<
-      string,
-      { value: unknown; text: string | null; type: string; columnIndex: number }
-    > = {};
+    const { columns, groupedColumns } = model;
+    const dataMap: RowDataMap = {};
     for (let i = 0; i < columns.length; i += 1) {
       const column = columns[i];
       const { name, type } = column;
       const value = model.valueForCell(i, rowIndex);
       const text = model.textForCell(i, rowIndex);
-      const index = this.getVisibleColumn(i);
-      dataMap[name] = { value, text, type, columnIndex: index };
+      const visibleIndex = this.getVisibleColumn(i);
+      const isExpandable =
+        isExpandableGridModel(model) && model.isRowExpandable(rowIndex);
+      const isGrouped = groupedColumns.find(c => c.name === name) != null;
+      dataMap[name] = {
+        value,
+        text,
+        type,
+        isGrouped,
+        isExpandable,
+        visibleIndex,
+      };
     }
-
     const { onDataSelected } = this.props;
     onDataSelected(rowIndex, dataMap);
   }

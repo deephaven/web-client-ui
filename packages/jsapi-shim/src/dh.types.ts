@@ -1008,4 +1008,5 @@ export interface CoreClientContructor {
 export interface CoreClient extends CoreClientContructor {
   login(options: LoginOptions): Promise<void>;
   getStorageService(): StorageService;
+  getServerConfigValues(): [string, string][];
 }
