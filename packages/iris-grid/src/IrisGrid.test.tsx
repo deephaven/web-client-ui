@@ -119,7 +119,6 @@ it('handles copy key handler', () => {
 
 it('handles value: undefined in setFilterMap, clears column filter', () => {
   const component = makeComponent();
-  component.removeQuickFilter = jest.fn();
   component.setQuickFilter = jest.fn();
   component.setFilterMap(
     new Map([
@@ -127,19 +126,27 @@ it('handles value: undefined in setFilterMap, clears column filter', () => {
         '2',
         {
           columnType: IrisGridTestUtils.DEFAULT_TYPE,
-          text: 'any',
-          value: undefined,
+          filterList: [
+            {
+              operator: 'eq',
+              text: 'any',
+              value: undefined,
+              startColumnIndex: 0,
+            },
+          ],
         },
       ],
     ])
   );
-  expect(component.setQuickFilter).not.toHaveBeenCalled();
-  expect(component.removeQuickFilter).toHaveBeenCalledWith(2);
+  expect(component.setQuickFilter).toHaveBeenCalledWith(
+    2,
+    expect.anything(),
+    ''
+  );
 });
 
 it('handles value: null in setFilterMap', () => {
   const component = makeComponent();
-  component.removeQuickFilter = jest.fn();
   component.setQuickFilter = jest.fn();
   component.setFilterMap(
     new Map([
@@ -147,8 +154,9 @@ it('handles value: null in setFilterMap', () => {
         '2',
         {
           columnType: IrisGridTestUtils.DEFAULT_TYPE,
-          text: 'any',
-          value: null,
+          filterList: [
+            { operator: 'eq', text: 'null', value: null, startColumnIndex: 0 },
+          ],
         },
       ],
     ])
@@ -158,5 +166,4 @@ it('handles value: null in setFilterMap', () => {
     expect.anything(),
     '=null'
   );
-  expect(component.removeQuickFilter).not.toHaveBeenCalled();
 });

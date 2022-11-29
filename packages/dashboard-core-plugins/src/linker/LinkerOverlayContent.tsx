@@ -3,12 +3,22 @@ import classNames from 'classnames';
 import {
   Button,
   ContextActions,
+  DropdownActions,
   GLOBAL_SHORTCUTS,
 } from '@deephaven/components';
+import memoize from 'memoize-one';
 import { LayoutUtils, PanelManager } from '@deephaven/dashboard';
 import Log from '@deephaven/log';
 import type { Container } from '@deephaven/golden-layout';
 import { vsGripper } from '@deephaven/icons';
+import { TableUtils } from '@deephaven/jsapi-utils';
+import {
+  TypeValue as FilterTypeValue,
+  getLabelForNumberFilter,
+  getLabelForTextFilter,
+  getLabelForDateFilter,
+  getLabelForBooleanFilter,
+} from '@deephaven/filters';
 import {
   isLinkableFromPanel,
   Link,
@@ -27,13 +37,17 @@ export type VisibleLink = {
   y2: number;
   id: string;
   className: string;
+  isSelected: boolean;
+  operator: FilterTypeValue;
+  comparisonOperators?: DropdownActions;
 };
 
 export type LinkerOverlayContentProps = {
   disabled?: boolean;
   links: Link[];
   messageText: string;
-  onLinkDeleted: (linkId: string) => void;
+  onLinkSelected: (linkId: string) => void;
+  onSingleLinkDeleted: (linkId: string) => void;
   onAllLinksDeleted: () => void;
   onCancel: () => void;
   onDone: () => void;
@@ -48,6 +62,7 @@ export type LinkerOverlayContentState = {
   offsetX: number;
   offsetY: number;
   isDragging: boolean;
+  mode: 'select' | 'delete';
 };
 
 export class LinkerOverlayContent extends Component<
@@ -58,15 +73,45 @@ export class LinkerOverlayContent extends Component<
     disabled: 'false',
   };
 
+  static getLabelForFilter(
+    columnType: string,
+    filterType: FilterTypeValue
+  ): string {
+    try {
+      if (
+        TableUtils.isNumberType(columnType) ||
+        TableUtils.isCharType(columnType)
+      ) {
+        return getLabelForNumberFilter(filterType);
+      }
+      if (TableUtils.isTextType(columnType)) {
+        return getLabelForTextFilter(filterType);
+      }
+      if (TableUtils.isDateType(columnType)) {
+        return getLabelForDateFilter(filterType);
+      }
+      if (TableUtils.isBooleanType(columnType)) {
+        return getLabelForBooleanFilter(filterType);
+      }
+      throw new Error(`Unrecognized column type: ${columnType}`);
+    } catch (e) {
+      log.warn(e);
+      return '';
+    }
+  }
+
   constructor(props: LinkerOverlayContentProps) {
     super(props);
 
     this.handleMouseMove = this.handleMouseMove.bind(this);
+    this.handleKeyDown = this.handleKeyDown.bind(this);
+    this.handleKeyUp = this.handleKeyUp.bind(this);
     this.handleEscapePressed = this.handleEscapePressed.bind(this);
     this.handleMouseDown = this.handleMouseDown.bind(this);
     this.handleMouseUp = this.handleMouseUp.bind(this);
 
     this.dialogRef = React.createRef();
+    this.handleOperatorChanged = this.handleOperatorChanged.bind(this);
 
     this.state = {
       mouseX: undefined,
@@ -76,6 +121,7 @@ export class LinkerOverlayContent extends Component<
       offsetX: 0,
       offsetY: 0,
       isDragging: false,
+      mode: 'select',
     };
   }
 
@@ -85,6 +131,8 @@ export class LinkerOverlayContent extends Component<
       toastX: this.dialogRef.current?.getBoundingClientRect().left,
       toastY: this.dialogRef.current?.getBoundingClientRect().top,
     });
+    window.addEventListener('keydown', this.handleKeyDown, true);
+    window.addEventListener('keyup', this.handleKeyUp, true);
   }
 
   // eslint-disable-next-line react/sort-comp
@@ -94,9 +142,40 @@ export class LinkerOverlayContent extends Component<
 
   componentWillUnmount(): void {
     window.removeEventListener('mousemove', this.handleMouseMove, true);
+    window.removeEventListener('keydown', this.handleKeyDown, true);
+    window.removeEventListener('keyup', this.handleKeyUp, true);
   }
 
   dialogRef: React.RefObject<HTMLInputElement>;
+
+  getComparisonOperators = memoize(
+    (linkId: string, columnType: string): DropdownActions =>
+      TableUtils.getFilterTypes(columnType).flatMap((type, index) => {
+        // Remove case-insensitive string comparisons
+        if (type === 'eqIgnoreCase' || type === `notEqIgnoreCase`) {
+          return [];
+        }
+        let symbol = '';
+        if (type !== undefined) {
+          if (type === 'startsWith') {
+            symbol = 'a*';
+          } else if (type === 'endsWith') {
+            symbol = '*z';
+          } else {
+            symbol = TableUtils.getFilterOperatorString(type);
+          }
+        }
+
+        return [
+          {
+            title: LinkerOverlayContent.getLabelForFilter(columnType, type),
+            icon: <b>{symbol}</b>,
+            action: () => this.handleOperatorChanged(linkId, type),
+            order: index,
+          },
+        ];
+      })
+  );
 
   /** Gets the on screen points for a link start or end spec */
   getPointFromLinkPoint(linkPoint: LinkPoint): LinkerCoordinate {
@@ -130,11 +209,36 @@ export class LinkerOverlayContent extends Component<
     return LayoutUtils.getTabPoint((glContainer as unknown) as Container);
   }
 
+  handleOperatorChanged(linkId: string, type: FilterTypeValue): void {
+    const { links } = this.props;
+    for (let i = 0; i < links.length; i += 1) {
+      if (links[i].id === linkId) {
+        links[i].operator = type;
+      }
+    }
+  }
+
   handleMouseMove(event: MouseEvent): void {
     this.setState({
       mouseX: event.clientX,
       mouseY: event.clientY,
     });
+  }
+
+  handleKeyDown(event: KeyboardEvent): void {
+    if (event.key === 'Alt') {
+      this.setState({
+        mode: 'delete',
+      });
+    }
+  }
+
+  handleKeyUp(event: KeyboardEvent): void {
+    if (event.key === 'Alt') {
+      this.setState({
+        mode: 'select',
+      });
+    }
   }
 
   handleEscapePressed(): void {
@@ -176,7 +280,8 @@ export class LinkerOverlayContent extends Component<
       disabled,
       links,
       messageText,
-      onLinkDeleted,
+      onLinkSelected,
+      onSingleLinkDeleted,
       onAllLinksDeleted,
       onDone,
     } = this.props;
@@ -189,11 +294,20 @@ export class LinkerOverlayContent extends Component<
       offsetX,
       offsetY,
       isDragging,
+      mode,
     } = this.state;
     const visibleLinks = links
       .map(link => {
         try {
-          const { id, type, isReversed, start, end } = link;
+          const {
+            id,
+            type,
+            isReversed,
+            isSelected,
+            start,
+            end,
+            operator,
+          } = link;
           let [x1, y1] = this.getPointFromLinkPoint(start);
           let x2 = mouseX ?? x1;
           let y2 = mouseY ?? y1;
@@ -210,9 +324,26 @@ export class LinkerOverlayContent extends Component<
             { disabled },
             { 'link-filter-source': type === 'filterSource' },
             { 'link-invalid': type === 'invalid' },
-            { interactive: link.end == null }
+            { interactive: link.end == null },
+            { 'link-is-selected': isSelected },
+            { 'danger-delete': mode === 'delete' }
           );
-          return { x1, y1, x2, y2, id, className };
+          const comparisonOperators =
+            start.columnType != null &&
+            !TableUtils.isBooleanType(start.columnType)
+              ? this.getComparisonOperators(id, start.columnType)
+              : undefined;
+          return {
+            x1,
+            y1,
+            x2,
+            y2,
+            id,
+            className,
+            isSelected,
+            operator,
+            comparisonOperators,
+          };
         } catch (error) {
           log.error('Unable to get point for link', link, error);
           return null;
@@ -221,9 +352,23 @@ export class LinkerOverlayContent extends Component<
       .filter(item => item != null) as VisibleLink[];
 
     return (
-      <div className="linker-overlay">
-        <svg>
-          {visibleLinks.map(({ x1, y1, x2, y2, id, className }) => (
+      <div
+        className={classNames('linker-overlay', {
+          'danger-delete': mode === 'delete',
+        })}
+      >
+        {visibleLinks.map(
+          ({
+            x1,
+            y1,
+            x2,
+            y2,
+            id,
+            className,
+            isSelected,
+            operator,
+            comparisonOperators,
+          }) => (
             <LinkerLink
               className={className}
               id={id}
@@ -232,10 +377,14 @@ export class LinkerOverlayContent extends Component<
               x2={x2}
               y2={y2}
               key={id}
-              onClick={onLinkDeleted}
+              onClick={onLinkSelected}
+              onDelete={onSingleLinkDeleted}
+              isSelected={isSelected}
+              operator={operator}
+              comparisonOperators={comparisonOperators}
             />
-          ))}
-        </svg>
+          )
+        )}
         <div
           className={classNames('linker-toast-dialog', {
             isLoading: toastX === undefined && isDragging === false,

@@ -18,6 +18,7 @@ import {
   TableUtils,
 } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
+import { Type as FilterType } from '@deephaven/filters';
 import {
   getActiveTool,
   getTimeZone,
@@ -104,6 +105,7 @@ export class Linker extends Component<LinkerProps, LinkerState> {
     this.handleUpdateValues = this.handleUpdateValues.bind(this);
     this.handleStateChange = this.handleStateChange.bind(this);
     this.handleExited = this.handleExited.bind(this);
+    this.handleLinkSelected = this.handleLinkSelected.bind(this);
     this.isColumnSelectionValid = this.isColumnSelectionValid.bind(this);
 
     this.state = { linkInProgress: undefined };
@@ -179,7 +181,10 @@ export class Linker extends Component<LinkerProps, LinkerState> {
   }
 
   handleDone(): void {
-    const { setActiveTool } = this.props;
+    const { setActiveTool, links } = this.props;
+    for (let i = 0; i < links.length; i += 1) {
+      links[i].isSelected = false;
+    }
     setActiveTool(ToolType.DEFAULT);
     this.setState({ linkInProgress: undefined });
   }
@@ -328,11 +333,13 @@ export class Linker extends Component<LinkerProps, LinkerState> {
       }
 
       // Create a completed link from link in progress
-      const newLink = {
+      const newLink: Link = {
         start: isReversed !== undefined && isReversed ? end : start,
         end: isReversed !== undefined && isReversed ? start : end,
         id,
         type,
+        isSelected: true,
+        operator: FilterType.eq,
       };
       log.info('creating link', newLink);
 
@@ -435,14 +442,22 @@ export class Linker extends Component<LinkerProps, LinkerState> {
     // Instead of setting filters one by one for each link,
     // combine them so they could be set in a single call per target panel
     for (let i = 0; i < links.length; i += 1) {
-      const { start, end } = links[i];
+      const { start, end, operator } = links[i];
       if (start.panelId === panelId && end != null) {
         const { panelId: endPanelId, columnName, columnType } = end;
         // Map of column name to column type and filter value
         const filterMap = panelFilterMap.has(endPanelId)
           ? panelFilterMap.get(endPanelId)
           : new Map();
-        const { isExpandable, isGrouped } = dataMap[start.columnName];
+        const filterList =
+          filterMap.has(columnName) === true
+            ? filterMap.get(columnName).filterList
+            : [];
+        const {
+          visibleIndex: startColumnIndex,
+          isExpandable,
+          isGrouped,
+        } = dataMap[start.columnName];
         let { value } = dataMap[start.columnName];
         let text = `${value}`;
         if (value === null && isExpandable && isGrouped) {
@@ -459,10 +474,11 @@ export class Linker extends Component<LinkerProps, LinkerState> {
           // The values are Dates for dateType values, not string like everything else
           text = dateFilterFormatter.format(value as Date);
         }
+        const filter = { operator, text, value, startColumnIndex };
+        filterList.push(filter);
         filterMap.set(columnName, {
           columnType,
-          text,
-          value,
+          filterList,
         });
         panelFilterMap.set(endPanelId, filterMap);
       }
@@ -493,6 +509,23 @@ export class Linker extends Component<LinkerProps, LinkerState> {
     // because the panels can get unmounted on errors and we want to keep the links if that happens
     log.debug(`Panel ${panelId} closed, deleting links.`);
     this.deleteLinksForPanelId(panelId);
+  }
+
+  handleLinkSelected(linkId: string): void {
+    const { links } = this.props;
+    const link = links.find(l => l.id === linkId);
+    if (link) {
+      if (link.isSelected !== undefined && link.isSelected) {
+        link.isSelected = false;
+      } else {
+        for (let i = 0; i < links.length; i += 1) {
+          links[i].isSelected = false;
+        }
+        link.isSelected = true;
+      }
+    } else {
+      log.error('Unable to find link to select', linkId);
+    }
   }
 
   handleLayoutStateChanged(): void {
@@ -636,6 +669,7 @@ export class Linker extends Component<LinkerProps, LinkerState> {
       isolatedLinkerPanelId === undefined
         ? 'Click a column source, then click a column target to create a filter link. Remove a filter link by clicking again to erase. Click done when finished.'
         : 'Create a link between the source column button and a table column by clicking on one, then the other. Remove the link by clicking it directly. Click done when finished.';
+
     return (
       <>
         <CSSTransition
@@ -655,7 +689,8 @@ export class Linker extends Component<LinkerProps, LinkerState> {
               isolatedLinkerPanelId
             )}
             messageText={linkerOverlayMessage}
-            onLinkDeleted={this.handleLinkDeleted}
+            onLinkSelected={this.handleLinkSelected}
+            onSingleLinkDeleted={this.handleLinkDeleted}
             onAllLinksDeleted={this.handleAllLinksDeleted}
             onDone={this.handleDone}
             onCancel={this.handleCancel}

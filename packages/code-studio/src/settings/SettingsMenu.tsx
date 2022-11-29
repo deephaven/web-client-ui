@@ -1,7 +1,8 @@
 import React, { Component, ReactElement, RefObject } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { vsClose, vsWatch, vsRecordKeys } from '@deephaven/icons';
-import { Button } from '@deephaven/components';
+import { vsClose, vsWatch, vsRecordKeys, vsInfo } from '@deephaven/icons';
+import { Button, Tooltip } from '@deephaven/components';
+import { ServerConfigValues } from '@deephaven/redux';
 import Logo from './community-wordmark-app.svg';
 import FormattingSectionContent from './FormattingSectionContent';
 import LegalNotice from './LegalNotice';
@@ -11,6 +12,7 @@ import { exportLogs } from '../log/LogExport';
 import './SettingsMenu.scss';
 
 interface SettingsMenuProps {
+  serverConfigValues: ServerConfigValues;
   onDone: () => void;
 }
 
@@ -39,16 +41,13 @@ export class SettingsMenu extends Component<
     }
   }
 
-  static handleExportSupportLogs(): void {
-    exportLogs();
-  }
-
   constructor(props: SettingsMenuProps) {
     super(props);
 
     this.handleClose = this.handleClose.bind(this);
     this.handleScrollTo = this.handleScrollTo.bind(this);
     this.handleSectionToggle = this.handleSectionToggle.bind(this);
+    this.handleExportSupportLogs = this.handleExportSupportLogs.bind(this);
 
     this.menuContentRef = React.createRef();
 
@@ -84,10 +83,27 @@ export class SettingsMenu extends Component<
     onDone();
   }
 
+  handleExportSupportLogs(): void {
+    const { serverConfigValues } = this.props;
+    exportLogs(undefined, Object.fromEntries(serverConfigValues));
+  }
+
   render(): ReactElement {
-    const version = import.meta.env.npm_package_version;
+    const uiVersion = import.meta.env.npm_package_version;
     const supportLink = import.meta.env.VITE_SUPPORT_LINK;
     const docsLink = import.meta.env.VITE_DOCS_LINK;
+
+    const { serverConfigValues } = this.props;
+    const barrageVersion = serverConfigValues.get('barrage.version');
+    const javaVersion = serverConfigValues.get('java.version');
+    const deephavenVersion = serverConfigValues.get('deephaven.version');
+
+    const getRow = (text: string, ver?: string) => (
+      <>
+        <div>{text}</div>
+        <div>{ver}</div>
+      </>
+    );
 
     return (
       <div className="app-settings-menu">
@@ -160,7 +176,7 @@ export class SettingsMenu extends Component<
                 <Button
                   kind="tertiary"
                   className="mt-2 py-2"
-                  onClick={SettingsMenu.handleExportSupportLogs}
+                  onClick={this.handleExportSupportLogs}
                 >
                   Export Logs
                 </Button>
@@ -177,7 +193,18 @@ export class SettingsMenu extends Component<
                 </a>
               </div>
               <div className="app-settings-footer-item">
-                <div className="text-muted">Version {version}</div>
+                <div className="font-weight-bold">Version</div>
+                <span className="d-inline-block text-muted">
+                  {deephavenVersion} <FontAwesomeIcon icon={vsInfo} />
+                  <Tooltip interactive>
+                    <div className="detailed-server-config">
+                      {getRow('Engine Version', deephavenVersion)}
+                      {getRow('Web UI Version', uiVersion)}
+                      {getRow('Java Version', javaVersion)}
+                      {getRow('Barrage Version', barrageVersion)}
+                    </div>
+                  </Tooltip>
+                </span>
               </div>
               <div className="app-settings-footer-item">
                 <LegalNotice />

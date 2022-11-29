@@ -52,6 +52,7 @@ export type RowDataMapValue = {
   value: unknown;
   isExpandable: boolean;
   isGrouped: boolean;
+  visibleIndex: number;
 };
 
 export type RowDataMap = Record<string, RowDataMapValue>;

@@ -88,6 +88,7 @@ import {
   PromiseUtils,
   ValidationError,
 } from '@deephaven/utils';
+import { TypeValue as FilterTypeValue } from '@deephaven/filters';
 import throttle from 'lodash.throttle';
 import debounce from 'lodash.debounce';
 import clamp from 'lodash.clamp';
@@ -216,10 +217,19 @@ function isEmptyConfig({
     sorts.length === 0
   );
 }
+export type FilterData = {
+  operator: FilterTypeValue;
+  text: string;
+  value: unknown;
+  startColumnIndex: number;
+};
 
 export type FilterMap = Map<
   ColumnName,
-  { columnType: string; text: string; value: unknown }
+  {
+    columnType: string;
+    filterList: FilterData[];
+  }
 >;
 export interface IrisGridProps {
   children: React.ReactNode;
@@ -1459,7 +1469,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     }
 
     const { model } = this.props;
-    filterMap.forEach(({ columnType, text, value }, columnName) => {
+    filterMap.forEach(({ columnType, filterList }, columnName) => {
       const column = model.columns.find(
         c => c.name === columnName && c.type === columnType
       );
@@ -1468,20 +1478,67 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       }
       const columnIndex = model.getColumnIndexByName(column.name);
       assertNotNull(columnIndex);
-      if (value === undefined) {
-        this.removeQuickFilter(columnIndex);
-      } else if (value === null) {
-        this.setQuickFilter(columnIndex, column.filter().isNull(), '=null');
-      } else {
-        const filterValue = TableUtils.isTextType(columnType)
-          ? dh.FilterValue.ofString(value)
-          : dh.FilterValue.ofNumber(value);
-        this.setQuickFilter(
-          columnIndex,
-          column.filter().eq(filterValue),
-          `${text}`
-        );
+      filterList.sort((a, b) => {
+        // move all 'equals' comparisons to end of list
+        if (a.operator === 'eq' && b.operator !== 'eq') {
+          return 1;
+        }
+        if (a.operator !== 'eq' && b.operator === 'eq') {
+          return -1;
+        }
+        return a.startColumnIndex - b.startColumnIndex;
+      });
+      let combinedText = '';
+      for (let i = 0; i < filterList.length; i += 1) {
+        const { operator, text, value } = filterList[i];
+        if (value !== undefined) {
+          let symbol = '';
+          if (operator !== undefined) {
+            if (value == null && operator !== 'notEq') {
+              symbol = '=';
+            } else if (operator !== 'eq') {
+              if (operator === 'startsWith' || operator === 'endsWith') {
+                symbol = '*';
+              } else {
+                symbol = TableUtils.getFilterOperatorString(operator);
+              }
+            }
+          }
+
+          let filterText = `${symbol}${text}`;
+          if (operator === 'startsWith' && value !== null) {
+            filterText = `${text}${symbol}`;
+          }
+          if (
+            columnType != null &&
+            value !== null &&
+            TableUtils.isCharType(columnType)
+          ) {
+            filterText = `${symbol}${String.fromCharCode(parseInt(text, 10))}`;
+          }
+          if (i !== 0) {
+            combinedText += operator === 'eq' ? ' || ' : ' && ';
+          }
+          combinedText += filterText;
+        }
       }
+      // Fallback value is the last filter in filterList
+      let fallbackFilterValue;
+      const { value } = filterList[filterList.length - 1];
+      if (TableUtils.isTextType(columnType)) {
+        fallbackFilterValue = dh.FilterValue.ofString(value ?? '');
+      } else if (TableUtils.isBooleanType(columnType)) {
+        fallbackFilterValue = dh.FilterValue.ofBoolean(value);
+      } else {
+        fallbackFilterValue = dh.FilterValue.ofNumber(value);
+      }
+      const { formatter } = model;
+      this.setQuickFilter(
+        columnIndex,
+        IrisGrid.makeQuickFilter(column, combinedText, formatter.timeZone) ??
+          column.filter().eq(fallbackFilterValue),
+        `${combinedText}`
+      );
     });
   }
 
@@ -2451,10 +2508,18 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       const { name, type } = column;
       const value = model.valueForCell(i, rowIndex);
       const text = model.textForCell(i, rowIndex);
+      const visibleIndex = this.getVisibleColumn(i);
       const isExpandable =
         isExpandableGridModel(model) && model.isRowExpandable(rowIndex);
       const isGrouped = groupedColumns.find(c => c.name === name) != null;
-      dataMap[name] = { value, text, type, isGrouped, isExpandable };
+      dataMap[name] = {
+        value,
+        text,
+        type,
+        isGrouped,
+        isExpandable,
+        visibleIndex,
+      };
     }
     const { onDataSelected } = this.props;
     onDataSelected(rowIndex, dataMap);

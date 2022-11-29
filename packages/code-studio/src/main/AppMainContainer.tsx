@@ -80,6 +80,7 @@ import {
   WorkspaceData,
   RootState,
   UserPermissions,
+  ServerConfigValues,
 } from '@deephaven/redux';
 import { PromiseUtils } from '@deephaven/utils';
 import GoldenLayout from '@deephaven/golden-layout';
@@ -87,7 +88,7 @@ import type { ItemConfigType } from '@deephaven/golden-layout';
 import JSZip from 'jszip';
 import SettingsMenu from '../settings/SettingsMenu';
 import AppControlsMenu from './AppControlsMenu';
-import { getLayoutStorage } from '../redux';
+import { getLayoutStorage, getServerConfigValues } from '../redux';
 import Logo from '../settings/community-wordmark-app.svg';
 import './AppMainContainer.scss';
 import WidgetList, { WindowMouseEvent } from './WidgetList';
@@ -143,6 +144,7 @@ interface AppMainContainerProps {
   user: User;
   workspace: Workspace;
   plugins: DeephavenPluginModuleMap;
+  serverConfigValues: ServerConfigValues;
 }
 
 interface AppMainContainerState {
@@ -481,7 +483,7 @@ export class AppMainContainer extends Component<
         data as {
           filterSets: FilterSet[];
           links: Link[];
-          layoutConfig: GoldenLayout.ItemConfigType[];
+          layoutConfig: ItemConfigType[];
         }
       );
 
@@ -721,7 +723,13 @@ export class AppMainContainer extends Component<
   );
 
   render(): ReactElement {
-    const { activeTool, plugins, user, workspace } = this.props;
+    const {
+      activeTool,
+      plugins,
+      user,
+      workspace,
+      serverConfigValues,
+    } = this.props;
     const { data: workspaceData } = workspace;
     const { layoutConfig } = workspaceData;
     const { permissions } = user;
@@ -854,7 +862,10 @@ export class AppMainContainer extends Component<
           mountOnEnter
           unmountOnExit
         >
-          <SettingsMenu onDone={this.handleSettingsMenuHide} />
+          <SettingsMenu
+            serverConfigValues={serverConfigValues}
+            onDone={this.handleSettingsMenuHide}
+          />
         </CSSTransition>
         <ContextActions actions={contextActions} />
         <input
@@ -883,6 +894,7 @@ const mapStateToProps = (state: RootState) => ({
     ?.config,
   user: getUser(state),
   workspace: getWorkspace(state),
+  serverConfigValues: getServerConfigValues(state),
 });
 
 export default connect(mapStateToProps, {
