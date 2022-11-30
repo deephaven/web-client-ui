@@ -836,9 +836,12 @@ export class GridMetricCalculator {
     visibleHeight: number = this.getVisibleHeight(state)
   ): VisibleIndex {
     const { model } = state;
-    const { rowCount, floatingBottomRowCount } = model;
+    const { rowCount, floatingTopRowCount, floatingBottomRowCount } = model;
 
-    let lastTop = Math.max(0, rowCount - floatingBottomRowCount - 1);
+    let lastTop = Math.max(
+      0,
+      rowCount - floatingTopRowCount - floatingBottomRowCount - 1
+    );
     if (bottom != null) {
       lastTop = bottom;
     }
