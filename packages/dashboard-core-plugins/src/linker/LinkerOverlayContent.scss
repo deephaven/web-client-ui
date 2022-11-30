@@ -14,18 +14,17 @@
     $toast-outer-padding: $spacer-3;
 
     position: absolute;
-
-    &.isLoading {
-      right: $toast-outer-padding;
-      bottom: $toast-outer-padding;
-    }
-
     background: $modal-content-bg;
     max-width: 400px;
     color: $interfaceblack;
     pointer-events: auto;
     box-shadow: $tooltip-box-shadow;
     z-index: $zindex-popover;
+
+    &.isLoading {
+      right: $toast-outer-padding;
+      bottom: $toast-outer-padding;
+    }
 
     .btn-drag-handle {
       cursor: grab;

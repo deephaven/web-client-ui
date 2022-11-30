@@ -350,6 +350,18 @@ export class LinkerOverlayContent extends Component<
         }
       })
       .filter(item => item != null) as VisibleLink[];
+    let top = toastY;
+    let left = toastX;
+    if (isDragging) {
+      top = Math.min(
+        Math.max(0, (mouseY ?? 0) + offsetY),
+        window.innerHeight - (this.dialogRef.current?.offsetHeight ?? 0)
+      );
+      left = Math.min(
+        Math.max(0, (mouseX ?? 0) + offsetX),
+        window.innerWidth - (this.dialogRef.current?.offsetWidth ?? 0)
+      );
+    }
 
     return (
       <div
@@ -390,17 +402,7 @@ export class LinkerOverlayContent extends Component<
             isLoading: toastX === undefined && isDragging === false,
           })}
           ref={this.dialogRef}
-          style={
-            isDragging
-              ? {
-                  top: (mouseY ?? 0) + (offsetY ?? 0),
-                  left: (mouseX ?? 0) + (offsetX ?? 0),
-                }
-              : {
-                  top: toastY,
-                  left: toastX,
-                }
-          }
+          style={{ top, left }}
         >
           <Button
             draggable
