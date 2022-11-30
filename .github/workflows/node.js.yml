@@ -17,7 +17,7 @@ jobs:
       cancel-in-progress: true
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: '0' # This action defaults to only getting the latest commit. Setting to 0 makes it retrieve the full git commit history
 
@@ -32,7 +32,7 @@ jobs:
           cache: 'npm'
 
       - name: Cache jest
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: |
             .jest-cache
@@ -42,7 +42,7 @@ jobs:
             ${{ runner.os }}-jestcache-
 
       - name: Cache linters
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: |
             .eslintcache
@@ -78,7 +78,7 @@ jobs:
           npm run test:golden-layout
 
       - name: Codecov report
-        uses: codecov/codecov-action@v2
+        uses: codecov/codecov-action@v3
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           directory: ./coverage
