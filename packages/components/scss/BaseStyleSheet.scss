@@ -575,16 +575,16 @@ input[type='number']::-webkit-inner-spin-button {
 
 .modal-dialog.theme-bg-dark {
   .modal-title {
-    color: $interfacewhite;
+    color: $foreground;
   }
   .modal-header {
     .close {
-      color: $interfacewhite;
-      text-shadow: 0 1px 0 $interfaceblack;
+      color: $foreground;
+      text-shadow: 0 1px 0 $background;
     }
   }
   .modal-content {
-    background: $interfacegray;
+    background: $content-bg;
   }
 }
 
@@ -731,7 +731,7 @@ input[type='number']::-webkit-inner-spin-button {
   //for crossbrowser consistency this gradient is stacked bellow the svg used to get a caret (indicator) looking the same
   .custom-select {
     background-color: inherit !important;
-    color: $interfacewhite;
+    color: $white;
     background-image: escape-svg($custom-select-indicator),
       linear-gradient(0deg, $input-bg, $input-bg);
     background-size: $custom-select-bg-size, cover;
