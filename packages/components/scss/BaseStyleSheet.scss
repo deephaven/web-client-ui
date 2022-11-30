@@ -480,13 +480,13 @@ input[type='number']::-webkit-inner-spin-button {
   color: $gray-400;
   border: 1px solid $gray-400;
   &:hover {
-    color: $white;
+    color: $foreground;
   }
   &:focus {
     border-color: $input-focus-border-color;
   }
   &:disabled {
-    border-color: $black;
+    border-color: $background;
     cursor: not-allowed;
   }
 }
@@ -731,7 +731,7 @@ input[type='number']::-webkit-inner-spin-button {
   //for crossbrowser consistency this gradient is stacked bellow the svg used to get a caret (indicator) looking the same
   .custom-select {
     background-color: inherit !important;
-    color: $white;
+    color: $foreground;
     background-image: escape-svg($custom-select-indicator),
       linear-gradient(0deg, $input-bg, $input-bg);
     background-size: $custom-select-bg-size, cover;
@@ -740,7 +740,7 @@ input[type='number']::-webkit-inner-spin-button {
     //make the dotted duplicate focus line on firefox go away
     &:-moz-focusring {
       color: rgba(0, 0, 0, 0%);
-      text-shadow: 0 0 0 $white !important;
+      text-shadow: 0 0 0 $foreground !important;
     }
   }
 
@@ -749,7 +749,7 @@ input[type='number']::-webkit-inner-spin-button {
       linear-gradient(0deg, $gray-700, $gray-700);
     &:-moz-focusring {
       color: rgba(0, 0, 0, 0%);
-      text-shadow: 0 0 0 $white !important;
+      text-shadow: 0 0 0 $foreground !important;
     }
   }
 
@@ -758,7 +758,7 @@ input[type='number']::-webkit-inner-spin-button {
       linear-gradient(0deg, $gray-200, $gray-200);
     &:-moz-focusring {
       color: rgba(0, 0, 0, 0%);
-      text-shadow: 0 0 0 $black !important;
+      text-shadow: 0 0 0 $background !important;
     }
   }
 
