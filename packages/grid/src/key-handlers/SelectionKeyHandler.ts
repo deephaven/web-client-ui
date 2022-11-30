@@ -1,12 +1,13 @@
 /* eslint class-methods-use-this: "off" */
 import clamp from 'lodash.clamp';
+import { EventHandlerResult } from '../EventHandlerResult';
 import Grid from '../Grid';
 import GridRange from '../GridRange';
 import GridUtils from '../GridUtils';
 import KeyHandler, { GridKeyboardEvent } from '../KeyHandler';
 
 class SelectionKeyHandler extends KeyHandler {
-  onDown(event: GridKeyboardEvent, grid: Grid): boolean {
+  onDown(event: GridKeyboardEvent, grid: Grid): EventHandlerResult {
     switch (event.key) {
       case 'a':
         if (GridUtils.isModifierKeyDown(event)) {
@@ -96,7 +97,9 @@ class SelectionKeyHandler extends KeyHandler {
       }
       case 'Escape':
         grid.clearSelectedRanges();
-        return true;
+        // Event consumed, but propagation not stopped
+        // so the shortcut could be handled by the global handler
+        return { preventDefault: false, stopPropagation: false };
       case 'Enter':
         if (grid.state.selectedRanges.length > 0) {
           grid.moveCursorInDirection(
