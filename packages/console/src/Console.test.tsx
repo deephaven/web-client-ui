@@ -13,6 +13,18 @@ function makeMockCommandHistoryStorage(): CommandHistoryStorage {
   };
 }
 
+/**
+ * Need to mock out the MonacoTheme as module.scss are not loaded in tests.
+ * scss files are mocked as defined by our `moduleNameMapper` setting in `jest.config.base.cjs
+ */
+
+jest.mock('./monaco', () => ({
+  ...jest.requireActual('./monaco'),
+  MonacoTheme: {
+    'line-height': '19px',
+  },
+}));
+
 jest.mock('./Console', () => ({
   ...(jest.requireActual('./Console') as Record<string, unknown>),
   commandHistory: jest.fn(),
