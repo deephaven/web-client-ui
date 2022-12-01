@@ -31,18 +31,25 @@
       border-radius: 0;
       border: none;
       position: absolute;
+      background: $gray-300;
+      color: $gray-600;
       top: 50%;
       left: 0;
       height: 100%;
       min-width: 1.5rem;
       max-width: 2rem;
       transform: translateY(-50%);
+
+      &:hover {
+        background-color: $gray-400;
+        color: $gray-700;
+      }
     }
 
     .toast-body {
       padding: $toast-inner-padding;
       position: relative;
-      word-wrap: break-word;
+      margin-right: 10px;
       left: 20px;
     }
 
