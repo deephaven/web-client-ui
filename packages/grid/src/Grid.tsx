@@ -696,9 +696,7 @@ class Grid extends PureComponent<GridProps, GridState> {
    */
   scrollToBottom(): void {
     if (!this.metrics) return;
-    const { bottomVisible, rowCount, top } = this.metrics;
-    const metricState = this.getMetricState();
-    const lastTop = this.metricCalculator.getLastTop(metricState);
+    const { bottomVisible, rowCount, top, lastTop } = this.metrics;
     if ((bottomVisible < rowCount - 1 && bottomVisible > 0) || top > lastTop) {
       this.setState({ top: lastTop });
     }
@@ -709,9 +707,7 @@ class Grid extends PureComponent<GridProps, GridState> {
    */
   scrollToRight(): void {
     if (!this.metrics) return;
-    const { rightVisible, columnCount, left } = this.metrics;
-    const metricState = this.getMetricState();
-    const lastLeft = this.metricCalculator.getLastLeft(metricState);
+    const { rightVisible, columnCount, left, lastLeft } = this.metrics;
     if (
       (rightVisible < columnCount - 1 && rightVisible > 0) ||
       left > lastLeft
