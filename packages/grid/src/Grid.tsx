@@ -527,8 +527,8 @@ class Grid extends PureComponent<GridProps, GridState> {
     } = this.prevMetrics;
 
     if (prevRowCount !== rowCount || height !== prevHeight) {
-      const { isStuckToBottom: stuckToBottom } = this.state;
-      if (stuckToBottom) {
+      const { isStuckToBottom } = this.state;
+      if (isStuckToBottom) {
         this.scrollToBottom();
       }
     }
