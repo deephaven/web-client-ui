@@ -64,6 +64,7 @@ import {
 import dh, {
   Column,
   CustomColumn,
+  DateWrapper,
   FilterCondition,
   Sort,
   Table,
@@ -182,6 +183,8 @@ const DEFAULT_AGGREGATION_SETTINGS = Object.freeze({
   aggregations: [],
   showOnTop: false,
 });
+
+const UNFORMATTED_DATE_PATTERN = `yyyy-MM-dd'T'HH:mm:ss.SSSSSSSSS z`;
 
 function isEmptyConfig({
   advancedFilters,
@@ -1275,7 +1278,17 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     const modelColumn = this.getModelColumn(columnIndex);
     const modelRow = this.getModelRow(rowIndex);
     if (rawValue && modelColumn != null && modelRow != null) {
-      return model.valueForCell(modelColumn, modelRow);
+      const value = model.valueForCell(modelColumn, modelRow);
+      if (TableUtils.isDateType(model.columns[modelColumn].type)) {
+        // The returned value is just a long value, we should return the value fromatted as a full date string
+        const { formatter } = model;
+        return dh.i18n.DateTimeFormat.format(
+          UNFORMATTED_DATE_PATTERN,
+          value as number | Date | DateWrapper,
+          dh.i18n.TimeZone.getTimeZone(formatter.timeZone)
+        );
+      }
+      return value;
     }
     if (rawValue) {
       return null;
