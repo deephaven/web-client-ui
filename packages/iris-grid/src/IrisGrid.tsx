@@ -954,17 +954,17 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   contextActions: ContextAction[];
 
   getAdvancedMenuOpenedHandler = memoize(
-    column => this.handleAdvancedMenuOpened.bind(this, column),
+    (column: ModelIndex) => this.handleAdvancedMenuOpened.bind(this, column),
     { max: 100 }
   );
 
   getCachedAdvancedFilterMenuActions = memoize(
     (
-      model,
-      column,
-      advancedFilterOptions,
-      sortDirection?: SortDirection,
-      formatter?
+      model: IrisGridModel,
+      column: Column,
+      advancedFilterOptions: AdvancedFilterOptions | undefined,
+      sortDirection: SortDirection | undefined,
+      formatter: Formatter
     ) => (
       <AdvancedFilterCreator
         model={model}
@@ -989,9 +989,9 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       isTotalsAvailable: boolean,
       isSelectDistinctAvailable: boolean,
       isExportAvailable: boolean,
-      toggleFilterBarAction,
-      toggleSearchBarAction,
-      toggleGotoRowAction,
+      toggleFilterBarAction: Action,
+      toggleSearchBarAction: Action,
+      toggleGotoRowAction: Action,
       isFilterBarShown: boolean,
       showSearchBar: boolean,
       canDownloadCsv: boolean,
@@ -1093,10 +1093,13 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     { max: 1 }
   );
 
-  getCachedHiddenColumns = memoize(hiddenColumns => hiddenColumns, {
-    max: 1,
-    normalizer: ([hiddenColumns]) => hiddenColumns.join(),
-  });
+  getCachedHiddenColumns = memoize(
+    (hiddenColumns: ModelIndex[]) => hiddenColumns,
+    {
+      max: 1,
+      normalizer: ([hiddenColumns]) => hiddenColumns.join(),
+    }
+  );
 
   getAggregationMap = memoize(
     (columns: Column[], aggregations: Aggregation[]): AggregationMap => {
@@ -1144,13 +1147,16 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
         )
   );
 
-  getCachedFormatColumns = memoize((columns, rules) =>
-    getFormatColumns(columns, rules)
+  getCachedFormatColumns = memoize(
+    (columns: Column[], rules: SidebarFormattingRule[]) =>
+      getFormatColumns(columns, rules)
   );
 
   // customColumns arg is needed to invalidate the cache
   // eslint-disable-next-line no-unused-vars
-  getCachedModelColumns = memoize((model, customColumns) => model.columns);
+  getCachedModelColumns = memoize(
+    (model: IrisGridModel, customColumns: ColumnName[]) => model.columns
+  );
 
   /**
    * Builds formatColumns array based on the provided formatting rules with optional preview
@@ -1184,7 +1190,11 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   );
 
   getModelRollupConfig = memoize(
-    (originalColumns, config, aggregationSettings) =>
+    (
+      originalColumns: Column[],
+      config: UIRollupConfig | undefined,
+      aggregationSettings: AggregationSettings
+    ) =>
       IrisGridUtils.getModelRollupConfig(
         originalColumns,
         config,
@@ -1193,7 +1203,11 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   );
 
   getModelTotalsConfig = memoize(
-    (columns, config, aggregationSettings): UITotalsTableConfig | null => {
+    (
+      columns: Column[],
+      config: UIRollupConfig | undefined,
+      aggregationSettings: AggregationSettings
+    ): UITotalsTableConfig | null => {
       const { aggregations, showOnTop } = aggregationSettings;
       // If we've got rollups, then aggregations are applied as part of that...
       if (
@@ -1212,16 +1226,16 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
   getCachedStateOverride = memoize(
     (
-      hoverSelectColumn,
-      isFilterBarShown,
-      isSelectingColumn,
-      loadingScrimProgress,
-      quickFilters,
-      advancedFilters,
-      sorts,
-      reverseType,
-      rollupConfig,
-      isMenuShown
+      hoverSelectColumn: GridRangeIndex,
+      isFilterBarShown: boolean,
+      isSelectingColumn: boolean,
+      loadingScrimProgress: number | null,
+      quickFilters: QuickFilterMap,
+      advancedFilters: AdvancedFilterMap,
+      sorts: Sort[],
+      reverseType: ReverseType,
+      rollupConfig: UIRollupConfig | undefined,
+      isMenuShown: boolean
     ) => ({
       hoverSelectColumn,
       isFilterBarShown,

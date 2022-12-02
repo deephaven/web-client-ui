@@ -985,7 +985,7 @@ class IrisGridUtils {
    * @param  userColumnWidths Map of user column widths
    * @returns Array of hidden column indexes
    */
-  static getHiddenColumns(userColumnWidths: ModelSizeMap): number[] {
+  static getHiddenColumns(userColumnWidths: ModelSizeMap): ModelIndex[] {
     return [...userColumnWidths.entries()]
       .filter(([, value]) => value === 0)
       .map(([key]) => key);
@@ -1361,7 +1361,7 @@ class IrisGridUtils {
    */
   static getModelRollupConfig(
     originalColumns: Column[],
-    config: UIRollupConfig,
+    config: UIRollupConfig | undefined,
     aggregationSettings: AggregationSettings
   ): RollupConfig | null {
     if ((config?.columns?.length ?? 0) === 0) {

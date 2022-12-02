@@ -1374,7 +1374,8 @@ export class GridRenderer {
   );
 
   getCachedColorWithAlpha = memoizeClear(
-    (color, alpha) => GridColorUtils.colorWithAlpha(color, alpha),
+    (color: string, alpha: number) =>
+      GridColorUtils.colorWithAlpha(color, alpha),
     { max: 1000 }
   );
 

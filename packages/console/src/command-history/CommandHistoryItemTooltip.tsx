@@ -152,7 +152,7 @@ export class CommandHistoryItemTooltip extends Component<
   }
 
   getPreviewText = memoize(
-    name => name.split('\n', MAX_NUMBER_OF_LINES).join('\n'),
+    (name: string) => name.split('\n', MAX_NUMBER_OF_LINES).join('\n'),
     { max: 1 }
   );
 
