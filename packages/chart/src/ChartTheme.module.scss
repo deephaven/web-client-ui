@@ -2,7 +2,7 @@
 @import '@deephaven/components/scss/custom.scss';
 
 :export {
-  paper-bgcolor: $interfacegray;
+  paper-bgcolor: $content-bg;
   plot-bgcolor: $gray-850;
   title-color: $white;
   colorway: $blue $green $yellow $purple $orange $red $white;

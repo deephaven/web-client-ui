@@ -3,7 +3,7 @@
 $toolbar-font-size: 18px;
 $toolbar-width: 36px;
 $toolbar-height: 36px;
-$toolbar-bg: $interfacegray;
+$toolbar-bg: $content-bg;
 
 .notebook-title {
   &.is-preview {
@@ -26,7 +26,7 @@ $toolbar-bg: $interfacegray;
     flex-direction: row;
     flex-grow: 0;
     background: $toolbar-bg;
-    border-bottom: 2px solid $interfaceblack;
+    border-bottom: 2px solid $background;
     padding: $spacer-1;
 
     .btn {
