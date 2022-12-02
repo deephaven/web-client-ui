@@ -184,7 +184,7 @@ const DEFAULT_AGGREGATION_SETTINGS = Object.freeze({
   showOnTop: false,
 });
 
-const UNFORMATTED_DATE_PATTERN = 'yyyy-MM-dd HH:mm:ss.SSSSSSSSS z';
+const UNFORMATTED_DATE_PATTERN = `yyyy-MM-dd'T'HH:mm:ss.SSSSSSSSS z`;
 
 function isEmptyConfig({
   advancedFilters,
