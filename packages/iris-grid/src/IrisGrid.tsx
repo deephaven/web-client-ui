@@ -2040,7 +2040,11 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     } else if (rightVisible < column) {
       const metricState = this.grid?.getMetricState();
       assertNotNull(metricState);
-      const newLeft = metricCalculator.getLastLeft(metricState, column);
+      const newLeft = metricCalculator.getLastLeft(
+        metricState,
+        column,
+        metricCalculator.getVisibleWidth(metricState)
+      );
       this.grid?.setViewState(
         { left: Math.min(newLeft, lastLeft), leftOffset: 0 },
         true

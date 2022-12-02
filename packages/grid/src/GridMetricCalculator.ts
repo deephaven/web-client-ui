@@ -792,8 +792,8 @@ export class GridMetricCalculator {
    */
   getLastLeft(
     state: GridMetricState,
-    right: VisibleIndex | null = null,
-    visibleWidth: number = this.getVisibleWidth(state)
+    right: VisibleIndex | null,
+    visibleWidth: number
   ): VisibleIndex {
     const { model } = state;
     const { columnCount, floatingRightColumnCount } = model;
@@ -827,8 +827,8 @@ export class GridMetricCalculator {
    */
   getLastTop(
     state: GridMetricState,
-    bottom: VisibleIndex | null = null,
-    visibleHeight: number = this.getVisibleHeight(state)
+    bottom: VisibleIndex | null,
+    visibleHeight: number
   ): VisibleIndex {
     const { model } = state;
     const { rowCount, floatingBottomRowCount } = model;
