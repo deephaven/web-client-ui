@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/jsapi-utils",
-  "version": "0.13.9",
+  "version": "0.13.10",
   "description": "Deephaven JSAPI Utils",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
