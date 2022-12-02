@@ -167,7 +167,7 @@ const AppInit = (props: AppInitProps) => {
         dh.IdeConnection.HACK_CONNECTION_FAILURE,
         event => {
           const { detail } = event;
-          log.error('Connection failure', `${detail}`);
+          log.error('Connection failure', `${JSON.stringify(detail)}`);
           setError(`Unable to connect:  ${detail.details ?? 'Unknown Error'}`);
         }
       );
