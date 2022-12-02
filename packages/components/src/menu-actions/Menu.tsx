@@ -11,7 +11,7 @@ export type MenuOptions = {
 };
 
 type MenuProps = {
-  actions: ContextAction | ContextAction[];
+  actions: (() => ContextAction[]) | ContextAction | ContextAction[];
   closeMenu(closeAll: boolean): void;
   onMenuClosed(menu: Menu): void;
   onMenuOpened(menu: Menu): void;
@@ -66,7 +66,6 @@ class Menu extends PureComponent<MenuProps, MenuState> {
 
     const { options } = props;
     const keyboardIndex = options.initialKeyboardIndex ?? -1;
-
     this.state = {
       menuItems: [],
       keyboardIndex,

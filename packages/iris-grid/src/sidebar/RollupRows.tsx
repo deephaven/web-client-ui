@@ -116,8 +116,6 @@ class RollupRows extends Component<RollupRowsProps, RollupRowsState> {
   constructor(props: RollupRowsProps) {
     super(props);
 
-    this.search = this.search.bind(this);
-
     this.handleDeleteClicked = this.handleDeleteClicked.bind(this);
     this.handleSearchChange = this.handleSearchChange.bind(this);
     this.handleUngroupedSelect = this.handleUngroupedSelect.bind(this);
@@ -408,7 +406,7 @@ class RollupRows extends Component<RollupRowsProps, RollupRowsState> {
       columns.filter(
         column =>
           RollupRows.isGroupable(column) &&
-          groupedColumns.find(name => name === column.name) != null
+          groupedColumns.find(name => name === column.name) == null
       )
   );
 
@@ -504,7 +502,7 @@ class RollupRows extends Component<RollupRowsProps, RollupRowsState> {
           <div className="rollup-rows-group-by">
             <div className="section-title">Group By</div>
             {columns.length === 0 && (
-              <Droppable isDropDisabled droppableId="placeholder">
+              <Droppable droppableId="placeholder">
                 {(provided, snapshot) => (
                   <div
                     className={classNames('placeholder', 'text-muted', {

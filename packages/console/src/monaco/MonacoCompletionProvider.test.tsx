@@ -10,7 +10,7 @@ function makeCompletionProvider(
   language = DEFAULT_LANGUAGE,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   session = new (dh as any).IdeSession(language),
-  model = { uri: {} }
+  model = { uri: {}, getVersionId: () => 1 }
 ) {
   const wrapper = render(
     <MonacoCompletionProvider
@@ -71,7 +71,7 @@ it('provides completion items properly', () => {
   const session = new (dh as any).IdeSession(language);
   session.getCompletionItems = jest.fn(() => promiseItems);
 
-  const model = { uri: { path: 'test' } };
+  const model = { uri: { path: 'test' }, getVersionId: jest.fn(() => 1) };
   makeCompletionProvider(language, session, model);
   const position = { lineNumber: 1, column: 1 };
   expect(myRegister).toHaveBeenCalledTimes(1);
