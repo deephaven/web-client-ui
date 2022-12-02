@@ -133,7 +133,7 @@ $btn-border-width: 2px;
 //Override Inputs
 $input-bg: $gray-600;
 $input-disabled-bg: $gray-800;
-$input-color: $interfacewhite;
+$input-color: $foreground;
 $input-border-color: $gray-400;
 $input-placeholder-color: $gray-400;
 $input-focus-border-color: rgba($primary, 85%);
@@ -175,13 +175,13 @@ $toast-error-color: $foreground;
 
 //tooltips
 $tooltip-bg: $gray-700;
-$tooltip-color: $interfacewhite;
+$tooltip-color: $foreground;
 $tooltip-box-shadow: 0 0.1rem 1.5rem 0.1rem rgba($black, 80%);
 
 //drowdowns
 $dropdown-bg: $gray-600;
-$dropdown-link-color: $interfacewhite;
-$dropdown-link-hover-color: $interfacewhite;
+$dropdown-link-color: $foreground;
+$dropdown-link-hover-color: $foreground;
 $dropdown-link-hover-bg: $primary;
 $dropdown-divider-bg: $gray-700;
 
@@ -195,7 +195,7 @@ $contextmenu-selected-color: $foreground;
 
 //links
 $link-color: $gray-400;
-$link-hover-color: $interfacewhite;
+$link-hover-color: $foreground;
 
 //progress-bar
 $progress-bg: $gray-600;

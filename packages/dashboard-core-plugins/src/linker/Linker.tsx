@@ -292,6 +292,7 @@ export class Linker extends Component<LinkerProps, LinkerState> {
 
       this.setState({ linkInProgress: newLink });
     } else {
+      const { links } = this.props;
       const { start, id, isReversed } = linkInProgress;
       const end = {
         panelId,
@@ -313,7 +314,6 @@ export class Linker extends Component<LinkerProps, LinkerState> {
         case 'filterSource': {
           // filterSource links have a limit of 1 link per target
           // New link validation passed, delete existing links before adding the new one
-          const { links } = this.props;
           const existingLinkPanelId =
             isReversed !== undefined && isReversed
               ? start.panelId
@@ -342,6 +342,10 @@ export class Linker extends Component<LinkerProps, LinkerState> {
         operator: FilterType.eq,
       };
       log.info('creating link', newLink);
+
+      for (let i = 0; i < links.length; i += 1) {
+        links[i].isSelected = false;
+      }
 
       this.setState({ linkInProgress: undefined }, () => {
         // Adding link after updating state
