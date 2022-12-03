@@ -410,7 +410,7 @@ class IrisGridUtils {
   ): {
     isSelectingPartition: boolean;
     partition: string | undefined;
-    partitionColumn: ColumnName | null;
+    partitionColumn: ColumnName | undefined;
     advancedSettings: [AdvancedSettingsType, boolean][];
   } {
     const {
@@ -423,7 +423,8 @@ class IrisGridUtils {
     return {
       isSelectingPartition,
       partition,
-      partitionColumn: partitionColumn != null ? partitionColumn.name : null,
+      partitionColumn:
+        partitionColumn != null ? partitionColumn.name : undefined,
       advancedSettings: [...advancedSettings],
     };
   }

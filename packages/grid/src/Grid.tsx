@@ -227,11 +227,16 @@ class Grid extends PureComponent<GridProps, GridState> {
 
   static dragTimeout = 1000;
 
-  static getTheme = memoize((contextTheme, userTheme) => ({
-    ...GridTheme,
-    ...contextTheme,
-    ...userTheme,
-  }));
+  static getTheme = memoize(
+    (
+      contextTheme: Partial<GridThemeType>,
+      userTheme: Partial<GridThemeType>
+    ) => ({
+      ...GridTheme,
+      ...contextTheme,
+      ...userTheme,
+    })
+  );
 
   /**
    * On some devices there may be different scaling required for high DPI. Get the scale required for the canvas.

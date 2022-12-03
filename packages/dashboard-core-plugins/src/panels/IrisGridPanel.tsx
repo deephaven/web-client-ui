@@ -100,7 +100,10 @@ export interface PanelState {
   gridState: {
     isStuckToBottom: boolean;
     isStuckToRight: boolean;
-    movedColumns: { from: string | ModelIndex; to: string | ModelIndex }[];
+    movedColumns: {
+      from: string | ModelIndex | [string, string] | [ModelIndex, ModelIndex];
+      to: string | ModelIndex;
+    }[];
     movedRows: MoveOperation[];
   };
   irisGridState: DehydratedIrisGridState;
@@ -178,7 +181,7 @@ interface IrisGridPanelState {
   invertSearchColumns: boolean;
   Plugin?: Plugin;
   pluginFilters: FilterCondition[];
-  pluginFetchColumns: unknown[];
+  pluginFetchColumns: string[];
   modelQueue: ModelQueue;
   pendingDataMap?: PendingDataMap<UIRow>;
   frozenColumns?: ColumnName[];
@@ -352,10 +355,10 @@ export class IrisGridPanel extends PureComponent<
   );
 
   getAlwaysFetchColumns = memoize(
-    (dashboardLinks: Link[], pluginFetchColumns): string[] => {
+    (dashboardLinks: Link[], pluginFetchColumns: string[]): string[] => {
       const id = LayoutUtils.getIdFromPanel(this);
       // Always fetch columns which are the start/source of a link or columns specified by a plugin
-      const columnSet = new Set<string>(pluginFetchColumns);
+      const columnSet = new Set(pluginFetchColumns);
       for (let i = 0; i < dashboardLinks.length; i += 1) {
         const { start } = dashboardLinks[i];
         if (start != null && start.panelId === id) {
@@ -371,9 +374,9 @@ export class IrisGridPanel extends PureComponent<
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       Plugin: any,
       model: IrisGridModel | undefined,
-      user,
-      workspace,
-      pluginState
+      user: User,
+      workspace: Workspace,
+      pluginState: unknown
     ) => {
       if (
         !model ||
@@ -425,26 +428,26 @@ export class IrisGridPanel extends PureComponent<
 
   getDehydratedIrisGridState = memoize(
     (
-      model,
-      sorts,
-      advancedFilters,
-      customColumnFormatMap,
-      isFilterBarShown,
-      quickFilters,
-      customColumns,
-      reverseType,
-      rollupConfig,
-      showSearchBar,
-      searchValue,
-      selectDistinctColumns,
-      selectedSearchColumns,
-      invertSearchColumns,
-      userColumnWidths,
-      userRowHeights,
-      aggregationSettings,
-      pendingDataMap,
-      frozenColumns,
-      conditionalFormats
+      model: IrisGridModel,
+      sorts: Sort[],
+      advancedFilters: AdvancedFilterMap,
+      customColumnFormatMap: Map<ColumnName, FormattingRule>,
+      isFilterBarShown: boolean,
+      quickFilters: QuickFilterMap,
+      customColumns: ColumnName[],
+      reverseType: ReverseType,
+      rollupConfig: UIRollupConfig | undefined,
+      showSearchBar: boolean,
+      searchValue: string,
+      selectDistinctColumns: ColumnName[],
+      selectedSearchColumns: ColumnName[],
+      invertSearchColumns: boolean,
+      userColumnWidths: ModelSizeMap,
+      userRowHeights: ModelSizeMap,
+      aggregationSettings: AggregationSettings,
+      pendingDataMap: PendingDataMap<UIRow>,
+      frozenColumns: ColumnName[],
+      conditionalFormats: SidebarFormattingRule[]
     ) =>
       IrisGridUtils.dehydrateIrisGridState(model, {
         advancedFilters,
@@ -472,7 +475,13 @@ export class IrisGridPanel extends PureComponent<
   );
 
   getDehydratedGridState = memoize(
-    (model, movedColumns, movedRows, isStuckToBottom, isStuckToRight) =>
+    (
+      model: IrisGridModel,
+      movedColumns: MoveOperation[],
+      movedRows: MoveOperation[],
+      isStuckToBottom: boolean,
+      isStuckToRight: boolean
+    ) =>
       IrisGridUtils.dehydrateGridState(model, {
         isStuckToBottom,
         isStuckToRight,
@@ -483,10 +492,10 @@ export class IrisGridPanel extends PureComponent<
 
   getCachedPanelState = memoize(
     (
-      irisGridPanelState,
-      irisGridState,
-      gridState,
-      pluginState
+      irisGridPanelState: PanelState['irisGridPanelState'],
+      irisGridState: PanelState['irisGridState'],
+      gridState: PanelState['gridState'],
+      pluginState: PanelState['pluginState']
     ): PanelState => ({
       irisGridPanelState,
       irisGridState,
@@ -593,7 +602,7 @@ export class IrisGridPanel extends PureComponent<
     this.setState({ pluginFilters });
   }
 
-  handlePluginFetchColumns(pluginFetchColumns: unknown[]): void {
+  handlePluginFetchColumns(pluginFetchColumns: string[]): void {
     this.setState({ pluginFetchColumns });
   }
 
