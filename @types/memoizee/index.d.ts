@@ -1,5 +1,6 @@
 declare namespace memoizee {
-  interface Options<F extends (...args: never[]) => unknown> {
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  interface Options<F extends Function> {
     length?: number | false | undefined;
     maxAge?: number | undefined;
     max?: number | undefined;
@@ -18,7 +19,8 @@ declare namespace memoizee {
   }
 }
 
-declare function memoizee<F extends (...args: never[]) => unknown>(
+// eslint-disable-next-line @typescript-eslint/ban-types
+declare function memoizee<F extends Function>(
   f: F,
   options?: memoizee.Options<F>
 ): F & memoizee.Memoized<F>;
