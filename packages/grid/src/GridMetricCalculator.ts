@@ -792,13 +792,13 @@ export class GridMetricCalculator {
    */
   getLastLeft(
     state: GridMetricState,
-    right: VisibleIndex | null = null,
-    visibleWidth: number = this.getVisibleWidth(state)
+    right: VisibleIndex | null,
+    visibleWidth: number
   ): VisibleIndex {
     const { model } = state;
-    const { columnCount } = model;
+    const { columnCount, floatingRightColumnCount } = model;
 
-    let lastLeft = columnCount - 1;
+    let lastLeft = Math.max(0, columnCount - floatingRightColumnCount - 1);
     if (right != null) {
       lastLeft = right;
     }
@@ -820,20 +820,15 @@ export class GridMetricCalculator {
   /**
    * The last row that can be the top row (e.g. scrolled to the bottom)
    * If no bottom row is provided, then the last row that is not floating is used
-   */
-
-  /**
-   * The last row that can be the top row (e.g. scrolled to the bottom)
-   * If no bottom row is provided, then the last row that is not floating is used
    * @param state The current grid state
    * @param bottom The bottom-most row to be visible, or null to default to last cell
    * @param visibleHeight The height of the "visible" area (excluding floating items)
-   * @returns The index of the last left visible column
+   * @returns The index of the last top visible row
    */
   getLastTop(
     state: GridMetricState,
-    bottom: VisibleIndex | null = null,
-    visibleHeight: number = this.getVisibleHeight(state)
+    bottom: VisibleIndex | null,
+    visibleHeight: number
   ): VisibleIndex {
     const { model } = state;
     const { rowCount, floatingBottomRowCount } = model;
