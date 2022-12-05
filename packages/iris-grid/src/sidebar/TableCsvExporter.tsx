@@ -137,16 +137,18 @@ class TableCsvExporter extends Component<
         snapshotRanges.push(new GridRange(0, 0, columnCount - 1, rowCount - 1));
         break;
       case TableCsvExporter.DOWNLOAD_OPTIONS.SELECTED_ROWS:
-        for (let i = 0; i < selectedRanges.length; i += 1) {
-          selectedRanges[i].startColumn = 0;
-          selectedRanges[i].endColumn = columnCount - 1;
-        }
-        snapshotRanges = [...selectedRanges].sort((rangeA, rangeB) => {
-          if (rangeA.startRow != null && rangeB.startRow != null) {
-            return rangeA.startRow - rangeB.startRow;
-          }
-          return 0;
-        });
+        snapshotRanges = selectedRanges
+          .map(range => ({
+            ...range,
+            startColumn: 0,
+            endColumn: columnCount - 1,
+          }))
+          .sort((rangeA, rangeB) => {
+            if (rangeA.startRow != null && rangeB.startRow != null) {
+              return rangeA.startRow - rangeB.startRow;
+            }
+            return 0;
+          }) as GridRange[];
         break;
       case TableCsvExporter.DOWNLOAD_OPTIONS.CUSTOMIZED_ROWS:
         switch (customizedDownloadOption) {
