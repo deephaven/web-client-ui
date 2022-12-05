@@ -3071,7 +3071,8 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     fileName: string,
     frozenTable: Table,
     tableSubscription: TableViewportSubscription,
-    gridRanges: GridRange[]
+    snapshotRanges: GridRange[],
+    modelRanges: GridRange[]
   ): void {
     const { canDownloadCsv } = this.props;
     if (canDownloadCsv) {
@@ -3080,7 +3081,8 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
         fileName,
         frozenTable,
         tableSubscription,
-        gridRanges
+        snapshotRanges,
+        modelRanges
       );
       this.setState(() => {
         if (this.tableSaver) {
@@ -3088,7 +3090,8 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
             fileName,
             frozenTable,
             tableSubscription,
-            gridRanges
+            snapshotRanges,
+            modelRanges
           );
         }
         return {
@@ -3904,6 +3907,8 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
             <TableCsvExporter
               model={model}
               name={name}
+              userColumnWidths={userColumnWidths}
+              movedColumns={movedColumns}
               isDownloading={isTableDownloading}
               tableDownloadStatus={tableDownloadStatus}
               tableDownloadProgress={tableDownloadProgress}
