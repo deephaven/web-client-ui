@@ -37,18 +37,19 @@ export type VisibleLink = {
   y2: number;
   id: string;
   className: string;
-  isSelected: boolean;
   operator: FilterTypeValue;
-  comparisonOperators?: DropdownActions;
+  operators?: DropdownActions;
 };
 
 export type LinkerOverlayContentProps = {
   disabled?: boolean;
   links: Link[];
+  selectedIds: Set<string>;
   messageText: string;
   onLinkSelected: (linkId: string) => void;
-  onSingleLinkDeleted: (linkId: string) => void;
+  onLinkDeleted: (linkId: string) => void;
   onAllLinksDeleted: () => void;
+  onLinksUpdated: (newLinks: Link[]) => void;
   onCancel: () => void;
   onDone: () => void;
   panelManager: PanelManager;
@@ -148,7 +149,7 @@ export class LinkerOverlayContent extends Component<
 
   dialogRef: React.RefObject<HTMLInputElement>;
 
-  getComparisonOperators = memoize(
+  getoperators = memoize(
     (linkId: string, columnType: string): DropdownActions =>
       TableUtils.getFilterTypes(columnType).flatMap((type, index) => {
         // Remove case-insensitive string comparisons
@@ -156,14 +157,13 @@ export class LinkerOverlayContent extends Component<
           return [];
         }
         let symbol = '';
-        if (type !== undefined) {
-          if (type === 'startsWith') {
-            symbol = 'a*';
-          } else if (type === 'endsWith') {
-            symbol = '*z';
-          } else {
-            symbol = TableUtils.getFilterOperatorString(type);
-          }
+
+        if (type === 'startsWith') {
+          symbol = 'a*';
+        } else if (type === 'endsWith') {
+          symbol = '*z';
+        } else {
+          symbol = TableUtils.getFilterOperatorString(type);
         }
 
         return [
@@ -210,12 +210,11 @@ export class LinkerOverlayContent extends Component<
   }
 
   handleOperatorChanged(linkId: string, type: FilterTypeValue): void {
-    const { links } = this.props;
-    for (let i = 0; i < links.length; i += 1) {
-      if (links[i].id === linkId) {
-        links[i].operator = type;
-      }
-    }
+    const { links, onLinksUpdated } = this.props;
+    const newLinks = links.map(link =>
+      link.id === linkId ? { ...link, operator: type } : link
+    ) as Link[];
+    onLinksUpdated(newLinks);
   }
 
   handleMouseMove(event: MouseEvent): void {
@@ -279,9 +278,10 @@ export class LinkerOverlayContent extends Component<
     const {
       disabled,
       links,
+      selectedIds,
       messageText,
       onLinkSelected,
-      onSingleLinkDeleted,
+      onLinkDeleted,
       onAllLinksDeleted,
       onDone,
     } = this.props;
@@ -299,15 +299,7 @@ export class LinkerOverlayContent extends Component<
     const visibleLinks = links
       .map(link => {
         try {
-          const {
-            id,
-            type,
-            isReversed,
-            isSelected,
-            start,
-            end,
-            operator,
-          } = link;
+          const { id, type, isReversed, start, end, operator } = link;
           let [x1, y1] = this.getPointFromLinkPoint(start);
           let x2 = mouseX ?? x1;
           let y2 = mouseY ?? y1;
@@ -325,13 +317,13 @@ export class LinkerOverlayContent extends Component<
             { 'link-filter-source': type === 'filterSource' },
             { 'link-invalid': type === 'invalid' },
             { interactive: link.end == null },
-            { 'link-is-selected': isSelected },
+            { 'link-is-selected': selectedIds.has(id) },
             { 'danger-delete': mode === 'delete' }
           );
-          const comparisonOperators =
+          const operators =
             start.columnType != null &&
             !TableUtils.isBooleanType(start.columnType)
-              ? this.getComparisonOperators(id, start.columnType)
+              ? this.getoperators(id, start.columnType)
               : undefined;
           return {
             x1,
@@ -340,9 +332,8 @@ export class LinkerOverlayContent extends Component<
             y2,
             id,
             className,
-            isSelected,
             operator,
-            comparisonOperators,
+            operators,
           };
         } catch (error) {
           log.error('Unable to get point for link', link, error);
@@ -370,17 +361,7 @@ export class LinkerOverlayContent extends Component<
         })}
       >
         {visibleLinks.map(
-          ({
-            x1,
-            y1,
-            x2,
-            y2,
-            id,
-            className,
-            isSelected,
-            operator,
-            comparisonOperators,
-          }) => (
+          ({ x1, y1, x2, y2, id, className, operator, operators }) => (
             <LinkerLink
               className={className}
               id={id}
@@ -390,10 +371,10 @@ export class LinkerOverlayContent extends Component<
               y2={y2}
               key={id}
               onClick={onLinkSelected}
-              onDelete={onSingleLinkDeleted}
-              isSelected={isSelected}
+              onDelete={onLinkDeleted}
+              isSelected={selectedIds.has(id)}
               operator={operator}
-              comparisonOperators={comparisonOperators}
+              operators={operators}
             />
           )
         )}

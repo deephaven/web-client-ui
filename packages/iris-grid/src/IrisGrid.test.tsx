@@ -167,3 +167,31 @@ it('handles value: null in setFilterMap', () => {
     '=null'
   );
 });
+
+it('handles undefined operator, should default to eq', () => {
+  const component = makeComponent();
+  component.setQuickFilter = jest.fn();
+  component.setFilterMap(
+    new Map([
+      [
+        '2',
+        {
+          columnType: IrisGridTestUtils.DEFAULT_TYPE,
+          filterList: [
+            {
+              operator: undefined,
+              text: 'any',
+              value: 'any',
+              startColumnIndex: 0,
+            },
+          ],
+        },
+      ],
+    ])
+  );
+  expect(component.setQuickFilter).toHaveBeenCalledWith(
+    2,
+    expect.anything(),
+    'any'
+  );
+});

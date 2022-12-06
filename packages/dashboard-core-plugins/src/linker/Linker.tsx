@@ -85,6 +85,7 @@ export type LinkerProps = OwnProps &
 
 export type LinkerState = {
   linkInProgress?: Link;
+  selectedIds: Set<string>;
 };
 
 export class Linker extends Component<LinkerProps, LinkerState> {
@@ -100,6 +101,7 @@ export class Linker extends Component<LinkerProps, LinkerState> {
     this.handleLayoutStateChanged = this.handleLayoutStateChanged.bind(this);
     this.handleAllLinksDeleted = this.handleAllLinksDeleted.bind(this);
     this.handleLinkDeleted = this.handleLinkDeleted.bind(this);
+    this.handleLinksUpdated = this.handleLinksUpdated.bind(this);
     this.handleChartColumnSelect = this.handleChartColumnSelect.bind(this);
     this.handleGridColumnSelect = this.handleGridColumnSelect.bind(this);
     this.handleUpdateValues = this.handleUpdateValues.bind(this);
@@ -108,7 +110,7 @@ export class Linker extends Component<LinkerProps, LinkerState> {
     this.handleLinkSelected = this.handleLinkSelected.bind(this);
     this.isColumnSelectionValid = this.isColumnSelectionValid.bind(this);
 
-    this.state = { linkInProgress: undefined };
+    this.state = { linkInProgress: undefined, selectedIds: new Set<string>() };
   }
 
   componentDidMount(): void {
@@ -181,12 +183,12 @@ export class Linker extends Component<LinkerProps, LinkerState> {
   }
 
   handleDone(): void {
-    const { setActiveTool, links } = this.props;
-    for (let i = 0; i < links.length; i += 1) {
-      links[i].isSelected = false;
-    }
+    const { setActiveTool } = this.props;
     setActiveTool(ToolType.DEFAULT);
-    this.setState({ linkInProgress: undefined });
+    this.setState({
+      linkInProgress: undefined,
+      selectedIds: new Set<string>(),
+    });
   }
 
   handleChartColumnSelect(panel: PanelComponent, column: LinkColumn): void {
@@ -338,21 +340,19 @@ export class Linker extends Component<LinkerProps, LinkerState> {
         end: isReversed !== undefined && isReversed ? start : end,
         id,
         type,
-        isSelected: true,
         operator: FilterType.eq,
       };
       log.info('creating link', newLink);
 
-      for (let i = 0; i < links.length; i += 1) {
-        links[i].isSelected = false;
-      }
-
-      this.setState({ linkInProgress: undefined }, () => {
-        // Adding link after updating state
-        // otherwise both new link and linkInProgress could be rendered at the same time
-        // resulting in "multiple children with same key" error
-        this.addLinks([newLink]);
-      });
+      this.setState(
+        { linkInProgress: undefined, selectedIds: new Set<string>([id]) },
+        () => {
+          // Adding link after updating state
+          // otherwise both new link and linkInProgress could be rendered at the same time
+          // resulting in "multiple children with same key" error
+          this.addLinks([newLink]);
+        }
+      );
     }
   }
 
@@ -519,17 +519,15 @@ export class Linker extends Component<LinkerProps, LinkerState> {
     const { links } = this.props;
     const link = links.find(l => l.id === linkId);
     if (link) {
-      if (link.isSelected !== undefined && link.isSelected) {
-        link.isSelected = false;
-      } else {
-        for (let i = 0; i < links.length; i += 1) {
-          links[i].isSelected = false;
-        }
-        link.isSelected = true;
-      }
+      this.setState({ selectedIds: new Set<string>([linkId]) });
     } else {
       log.error('Unable to find link to select', linkId);
     }
+  }
+
+  handleLinksUpdated(newLinks: Link[]): void {
+    const { localDashboardId, setDashboardLinks } = this.props;
+    setDashboardLinks(localDashboardId, newLinks);
   }
 
   handleLayoutStateChanged(): void {
@@ -665,7 +663,7 @@ export class Linker extends Component<LinkerProps, LinkerState> {
 
   render(): JSX.Element {
     const { links, isolatedLinkerPanelId, panelManager } = this.props;
-    const { linkInProgress } = this.state;
+    const { linkInProgress, selectedIds } = this.state;
 
     const isLinkOverlayShown = this.isOverlayShown();
     const disabled = linkInProgress != null && linkInProgress.start != null;
@@ -692,10 +690,12 @@ export class Linker extends Component<LinkerProps, LinkerState> {
               linkInProgress,
               isolatedLinkerPanelId
             )}
+            selectedIds={selectedIds}
             messageText={linkerOverlayMessage}
             onLinkSelected={this.handleLinkSelected}
-            onSingleLinkDeleted={this.handleLinkDeleted}
+            onLinkDeleted={this.handleLinkDeleted}
             onAllLinksDeleted={this.handleAllLinksDeleted}
+            onLinksUpdated={this.handleLinksUpdated}
             onDone={this.handleDone}
             onCancel={this.handleCancel}
           />

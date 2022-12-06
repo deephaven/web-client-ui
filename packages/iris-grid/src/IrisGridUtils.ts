@@ -29,7 +29,7 @@ import Log from '@deephaven/log';
 import { assertNotNull } from '@deephaven/utils';
 import AggregationUtils from './sidebar/aggregations/AggregationUtils';
 import AggregationOperation from './sidebar/aggregations/AggregationOperation';
-import { IrisGridProps, IrisGridState } from './IrisGrid';
+import { FilterData, IrisGridProps, IrisGridState } from './IrisGrid';
 import {
   ColumnName,
   AdvancedFilterMap,
@@ -1494,6 +1494,69 @@ class IrisGridUtils {
         return index < 0 ? null : [index, filter];
       })
       .filter(filterConfig => filterConfig != null) as [number, T][];
+  }
+
+  /**
+   * @param columnType The column type that the filters will be applied to.
+   * @param filterList The list of filters to be combined.
+   * @returns The combination of the filters in filterList as text.
+   */
+  static combineFiltersFromList(
+    columnType: string,
+    filterList: FilterData[]
+  ): string {
+    filterList.sort((a, b) => {
+      // move all 'equals' comparisons to end of list
+      const aOperator =
+        a.value == null && a.operator !== 'notEq' ? 'eq' : a.operator;
+      const bOperator =
+        b.value == null && b.operator !== 'notEq' ? 'eq' : b.operator;
+      if (aOperator === 'eq' && bOperator !== 'eq') {
+        return 1;
+      }
+      if (aOperator !== 'eq' && bOperator === 'eq') {
+        return -1;
+      }
+      return a.startColumnIndex - b.startColumnIndex;
+    });
+
+    let combinedText = '';
+    for (let i = 0; i < filterList.length; i += 1) {
+      let { operator } = filterList[i];
+      const { text, value } = filterList[i];
+      if (value !== undefined) {
+        let symbol = '';
+        if (operator !== undefined) {
+          if (value == null && operator !== 'notEq') {
+            symbol = '=';
+            operator = 'eq';
+          } else if (operator !== 'eq') {
+            if (operator === 'startsWith' || operator === 'endsWith') {
+              symbol = '*';
+            } else {
+              symbol = TableUtils.getFilterOperatorString(operator);
+            }
+          }
+        }
+
+        let filterText = `${symbol}${text}`;
+        if (operator === 'startsWith' && value !== null) {
+          filterText = `${text}${symbol}`;
+        }
+        if (
+          columnType != null &&
+          value !== null &&
+          TableUtils.isCharType(columnType)
+        ) {
+          filterText = `${symbol}${String.fromCharCode(parseInt(text, 10))}`;
+        }
+        if (i !== 0) {
+          combinedText += operator === 'eq' ? ' || ' : ' && ';
+        }
+        combinedText += filterText;
+      }
+    }
+    return combinedText;
   }
 }
 

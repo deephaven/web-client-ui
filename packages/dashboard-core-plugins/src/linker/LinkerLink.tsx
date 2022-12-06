@@ -28,7 +28,7 @@ export type LinkerLinkProps = {
   id: string;
   className: string;
   operator: FilterTypeValue;
-  comparisonOperators?: DropdownActions;
+  operators?: DropdownActions;
   isSelected: boolean;
   onClick: (id: string) => void;
   onDelete: (id: string) => void;
@@ -87,7 +87,7 @@ export class LinkerLink extends PureComponent<LinkerLinkProps> {
     const {
       className,
       operator,
-      comparisonOperators,
+      operators,
       isSelected,
       x1,
       y1,
@@ -205,7 +205,7 @@ export class LinkerLink extends PureComponent<LinkerLinkProps> {
           <circle className="link-dot" cx={x1} cy={y1} r="5" />
           <polygon className="link-triangle" points={points} />
         </svg>
-        {comparisonOperators !== undefined && isSelected && (
+        {operators !== undefined && isSelected && (
           <>
             <Button
               kind="primary"
@@ -229,7 +229,7 @@ export class LinkerLink extends PureComponent<LinkerLinkProps> {
               tooltip="Change comparison operator"
             >
               <DropdownMenu
-                actions={comparisonOperators}
+                actions={operators}
                 popperOptions={{ placement: 'bottom-start' }}
               />
             </Button>
