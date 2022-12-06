@@ -1,13 +1,20 @@
+@use '../Console.scss';
 @import '@deephaven/components/scss/custom.scss';
 
+$font-size: Console.$font-size;
+$line-height: Console.$line-height;
 $console-history-gutter-color: $gray-400;
 $console-gutter-width: 30px;
+
+.console-history .console-command-result {
+  padding: 0 0 $spacer-1 0;
+}
 
 .console-history,
 .console-history-footer {
   font-family: $font-family-monospace;
-  font-size: 12px;
-  line-height: 18px;
+  font-size: $font-size;
+  line-height: $line-height;
   padding: 0;
 
   .console-history-gutter,
@@ -16,10 +23,8 @@ $console-gutter-width: 30px;
     flex-grow: 0;
     flex-basis: $console-gutter-width;
     text-align: right;
-    padding-top: 3px;
     padding-right: 8px;
     color: $console-history-gutter-color;
-    vertical-align: top;
     user-select: none;
   }
 
@@ -40,8 +45,4 @@ $console-gutter-width: 30px;
       cursor: default;
     }
   }
-}
-
-.console-history .container-fluid {
-  padding: 0;
 }
