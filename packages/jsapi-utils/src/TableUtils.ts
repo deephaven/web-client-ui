@@ -22,6 +22,7 @@ import {
   TimeoutError,
 } from '@deephaven/utils';
 import DateUtils from './DateUtils';
+import { ColumnName } from './Formatter';
 
 const log = Log.module('TableUtils');
 
@@ -55,7 +56,7 @@ export type RowDataMapValue = {
   visibleIndex: number;
 };
 
-export type RowDataMap = Record<string, RowDataMapValue>;
+export type RowDataMap = Record<ColumnName, RowDataMapValue>;
 
 /** Utility class to provide some functions for working with tables */
 export class TableUtils {

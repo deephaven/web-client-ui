@@ -1494,50 +1494,10 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       }
       const columnIndex = model.getColumnIndexByName(column.name);
       assertNotNull(columnIndex);
-      filterList.sort((a, b) => {
-        // move all 'equals' comparisons to end of list
-        if (a.operator === 'eq' && b.operator !== 'eq') {
-          return 1;
-        }
-        if (a.operator !== 'eq' && b.operator === 'eq') {
-          return -1;
-        }
-        return a.startColumnIndex - b.startColumnIndex;
-      });
-      let combinedText = '';
-      for (let i = 0; i < filterList.length; i += 1) {
-        const { operator, text, value } = filterList[i];
-        if (value !== undefined) {
-          let symbol = '';
-          if (operator !== undefined) {
-            if (value == null && operator !== 'notEq') {
-              symbol = '=';
-            } else if (operator !== 'eq') {
-              if (operator === 'startsWith' || operator === 'endsWith') {
-                symbol = '*';
-              } else {
-                symbol = TableUtils.getFilterOperatorString(operator);
-              }
-            }
-          }
-
-          let filterText = `${symbol}${text}`;
-          if (operator === 'startsWith' && value !== null) {
-            filterText = `${text}${symbol}`;
-          }
-          if (
-            columnType != null &&
-            value !== null &&
-            TableUtils.isCharType(columnType)
-          ) {
-            filterText = `${symbol}${String.fromCharCode(parseInt(text, 10))}`;
-          }
-          if (i !== 0) {
-            combinedText += operator === 'eq' ? ' || ' : ' && ';
-          }
-          combinedText += filterText;
-        }
-      }
+      const combinedText = IrisGridUtils.combineFiltersFromList(
+        columnType,
+        filterList
+      );
       // Fallback value is the last filter in filterList
       let fallbackFilterValue;
       const { value } = filterList[filterList.length - 1];

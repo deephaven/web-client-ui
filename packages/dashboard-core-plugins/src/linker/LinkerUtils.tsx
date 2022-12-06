@@ -19,7 +19,6 @@ export type Link = {
   end?: LinkPoint;
   id: string;
   isReversed?: boolean;
-  isSelected?: boolean;
   type: LinkType;
   operator?: FilterTypeValue;
 };
