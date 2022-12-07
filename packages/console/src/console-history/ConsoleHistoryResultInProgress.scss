@@ -1,10 +1,9 @@
-@use '../Console.scss';
-@use 'ConsoleHistoryItem.scss';
+@use '../ConsoleVariables';
 @import '@deephaven/components/scss/custom.scss';
 
-$font-size: Console.$font-size;
-$button-vert-margin: ConsoleHistoryItem.$button-vert-margin;
-$button-height: ConsoleHistoryItem.$button-height;
+$font-size: ConsoleVariables.$font-size;
+$button-vert-margin: ConsoleVariables.$button-vert-margin;
+$button-height: ConsoleVariables.$button-height;
 
 .console-history-result-in-progress {
   user-select: none;

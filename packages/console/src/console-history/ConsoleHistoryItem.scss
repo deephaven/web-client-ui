@@ -1,12 +1,11 @@
-@use '../Console.scss';
+@use '../ConsoleVariables';
 @import '@deephaven/components/scss/custom.scss';
-
-$font-size: Console.$font-size;
 
 $error-gutter-width: 15px;
 $hover-item-fade: 0.5;
-$button-height: 26px;
-$button-vert-margin: 4px;
+$font-size: ConsoleVariables.$font-size;
+$button-height: ConsoleVariables.$button-height;
+$button-vert-margin: ConsoleVariables.$button-vert-margin;
 
 .console-history-item-command,
 .console-history-item-result {
@@ -32,7 +31,7 @@ $button-vert-margin: 4px;
 
 .console-history-item-result {
   .btn-console-object {
-    display: flex;
+    display: inline-flex;
     align-items: center;
     gap: $spacer-1;
     text-align: left;
