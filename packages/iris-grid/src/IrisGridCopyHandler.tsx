@@ -1,12 +1,7 @@
 import React, { Component } from 'react';
 import classNames from 'classnames';
 import { CSSTransition } from 'react-transition-group';
-import {
-  Button,
-  ContextActionUtils,
-  LoadingSpinner,
-  ThemeExport,
-} from '@deephaven/components';
+import { Button, LoadingSpinner, ThemeExport } from '@deephaven/components';
 import {
   GridRange,
   GridUtils,
@@ -16,6 +11,7 @@ import {
 import {
   CancelablePromise,
   CanceledPromiseError,
+  CopyClipboardUtils,
   PromiseUtils,
 } from '@deephaven/utils';
 import Log from '@deephaven/log';
@@ -261,7 +257,7 @@ class IrisGridCopyHandler extends Component<
 
     this.textData = text;
 
-    ContextActionUtils.copyToClipboard(text).then(
+    CopyClipboardUtils.copyToClipboard(text).then(
       () => {
         this.setState({ copyState: IrisGridCopyHandler.COPY_STATES.DONE });
         this.startHideTimer();

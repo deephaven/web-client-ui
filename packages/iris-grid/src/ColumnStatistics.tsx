@@ -1,18 +1,8 @@
 import React, { Component, Key } from 'react';
 import classNames from 'classnames';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import {
-  Button,
-  ContextActionUtils,
-  LoadingSpinner,
-} from '@deephaven/components';
-import {
-  dhFreeze,
-  dhRefresh,
-  vsCopy,
-  vsLock,
-  vsPassFilled,
-} from '@deephaven/icons';
+import { Button, CopyButton, LoadingSpinner } from '@deephaven/components';
+import { dhFreeze, dhRefresh, vsLock } from '@deephaven/icons';
 import {
   Column,
   ColumnStatistics as APIColumnStatistics,
@@ -45,7 +35,6 @@ interface ColumnStatisticsState {
   loading: boolean;
   statistics: Statistic[] | null;
   numRows: number;
-  copied: boolean;
 }
 
 class ColumnStatistics extends Component<
@@ -71,7 +60,6 @@ class ColumnStatistics extends Component<
     this.handleError = this.handleError.bind(this);
     this.handleGenerateStatistics = this.handleGenerateStatistics.bind(this);
     this.handleStatistics = this.handleStatistics.bind(this);
-    this.handleCopyHeader = this.handleCopyHeader.bind(this);
 
     this.cancelablePromise = null;
 
@@ -80,7 +68,6 @@ class ColumnStatistics extends Component<
       loading: false,
       statistics: null,
       numRows: 0,
-      copied: false,
     };
   }
 
@@ -95,10 +82,6 @@ class ColumnStatistics extends Component<
   }
 
   cancelablePromise: CancelablePromise<APIColumnStatistics> | null;
-
-  handleCopyHeader(): void {
-    this.setState({ copied: true });
-  }
 
   maybeGenerateStatistics(): void {
     const { model } = this.props;
@@ -172,7 +155,7 @@ class ColumnStatistics extends Component<
 
   render(): React.ReactElement {
     const { column, model } = this.props;
-    const { error, loading, statistics, numRows, copied } = this.state;
+    const { error, loading, statistics, numRows } = this.state;
     const showGenerateStatistics =
       !loading &&
       error == null &&
@@ -211,16 +194,10 @@ class ColumnStatistics extends Component<
         <div className="column-statistics-title">
           {column.name}
           <span className="column-statistics-type">&nbsp;({columnType})</span>
-          <Button
-            kind="ghost"
+          <CopyButton
             className="column-statistics-copy"
-            icon={copied ? vsPassFilled : vsCopy}
-            onClick={() => {
-              ContextActionUtils.copyToClipboard(column.name)
-                .then(this.handleCopyHeader)
-                .catch(e => log.error('Unable to column name', e));
-            }}
-            tooltip={copied ? 'Copied text' : 'Copy column name'}
+            tooltip="Copy column name"
+            copy={column.name}
           />
         </div>
         {description != null && (

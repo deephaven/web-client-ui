@@ -1,7 +1,7 @@
 import React, { Component, ReactElement, RefObject } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { vsClose, vsWatch, vsRecordKeys, vsInfo } from '@deephaven/icons';
-import { Button, Tooltip } from '@deephaven/components';
+import { Button, CopyButton, Tooltip } from '@deephaven/components';
 import { ServerConfigValues } from '@deephaven/redux';
 import Logo from './community-wordmark-app.svg';
 import FormattingSectionContent from './FormattingSectionContent';
@@ -203,6 +203,12 @@ export class SettingsMenu extends Component<
                       {getRow('Java Version', javaVersion)}
                       {getRow('Barrage Version', barrageVersion)}
                     </div>
+                    <CopyButton
+                      tooltip="Copy version numbers"
+                      copy={`Engine Version: ${deephavenVersion}\nWeb UI Version: ${uiVersion}\nJava Version: ${javaVersion}\nBarrage Version: ${barrageVersion}`}
+                    >
+                      Copy Versions
+                    </CopyButton>
                   </Tooltip>
                 </span>
               </div>
