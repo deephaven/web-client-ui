@@ -1,5 +1,5 @@
 import React, { MouseEvent, PureComponent } from 'react';
-import { Button, DropdownActions, DropdownMenu } from '@deephaven/components';
+import { Button, DropdownAction, DropdownMenu } from '@deephaven/components';
 import { vsTrash, vsTriangleDown } from '@deephaven/icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { TypeValue as FilterTypeValue } from '@deephaven/filters';
@@ -28,10 +28,11 @@ export type LinkerLinkProps = {
   id: string;
   className: string;
   operator: FilterTypeValue;
-  operators?: DropdownActions;
   isSelected: boolean;
+  startColumnType: string | null;
   onClick: (id: string) => void;
   onDelete: (id: string) => void;
+  getOperators: (id: string, startColumnType: string) => DropdownAction[];
 };
 
 export class LinkerLink extends PureComponent<LinkerLinkProps> {
@@ -64,6 +65,7 @@ export class LinkerLink extends PureComponent<LinkerLinkProps> {
 
     this.handleClick = this.handleClick.bind(this);
     this.handleDelete = this.handleDelete.bind(this);
+    this.getDropdownActions = this.getDropdownActions.bind(this);
   }
 
   handleClick(event: MouseEvent<SVGPathElement>): void {
@@ -83,17 +85,25 @@ export class LinkerLink extends PureComponent<LinkerLinkProps> {
     onDelete(id);
   }
 
+  getDropdownActions(): DropdownAction[] {
+    const { id, startColumnType, getOperators } = this.props;
+    if (startColumnType != null) {
+      return getOperators(id, startColumnType);
+    }
+    return [];
+  }
+
   render(): JSX.Element {
     const {
       className,
       operator,
-      operators,
       isSelected,
       x1,
       y1,
       x2,
       y2,
       id,
+      startColumnType,
     } = this.props;
 
     // Path between the two points
@@ -205,7 +215,7 @@ export class LinkerLink extends PureComponent<LinkerLinkProps> {
           <circle className="link-dot" cx={x1} cy={y1} r="5" />
           <polygon className="link-triangle" points={points} />
         </svg>
-        {operators !== undefined && isSelected && (
+        {startColumnType != null && isSelected && (
           <>
             <Button
               kind="primary"
@@ -229,7 +239,7 @@ export class LinkerLink extends PureComponent<LinkerLinkProps> {
               tooltip="Change comparison operator"
             >
               <DropdownMenu
-                actions={operators}
+                actions={this.getDropdownActions}
                 popperOptions={{ placement: 'bottom-start' }}
               />
             </Button>

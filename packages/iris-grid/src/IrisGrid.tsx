@@ -1501,10 +1501,11 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       // Fallback value is the last filter in filterList
       let fallbackFilterValue;
       const { value } = filterList[filterList.length - 1];
-      if (TableUtils.isTextType(columnType)) {
+      if (
+        TableUtils.isTextType(columnType) ||
+        TableUtils.isBooleanType(columnType)
+      ) {
         fallbackFilterValue = dh.FilterValue.ofString(value ?? '');
-      } else if (TableUtils.isBooleanType(columnType)) {
-        fallbackFilterValue = dh.FilterValue.ofBoolean(value);
       } else {
         fallbackFilterValue = dh.FilterValue.ofNumber(value);
       }
