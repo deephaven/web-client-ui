@@ -3,7 +3,7 @@ import classNames from 'classnames';
 import {
   Button,
   ContextActions,
-  DropdownActions,
+  DropdownAction,
   GLOBAL_SHORTCUTS,
 } from '@deephaven/components';
 import memoize from 'memoize-one';
@@ -13,11 +13,11 @@ import type { Container } from '@deephaven/golden-layout';
 import { vsGripper } from '@deephaven/icons';
 import { TableUtils } from '@deephaven/jsapi-utils';
 import {
+  Type as FilterType,
   TypeValue as FilterTypeValue,
   getLabelForNumberFilter,
   getLabelForTextFilter,
   getLabelForDateFilter,
-  getLabelForBooleanFilter,
 } from '@deephaven/filters';
 import {
   isLinkableFromPanel,
@@ -38,7 +38,7 @@ export type VisibleLink = {
   id: string;
   className: string;
   operator: FilterTypeValue;
-  operators?: DropdownActions;
+  startColumnType: string | null;
 };
 
 export type LinkerOverlayContentProps = {
@@ -74,7 +74,7 @@ export class LinkerOverlayContent extends Component<
     disabled: 'false',
   };
 
-  static getLabelForFilter(
+  static getLabelForLinkFilter(
     columnType: string,
     filterType: FilterTypeValue
   ): string {
@@ -92,7 +92,12 @@ export class LinkerOverlayContent extends Component<
         return getLabelForDateFilter(filterType);
       }
       if (TableUtils.isBooleanType(columnType)) {
-        return getLabelForBooleanFilter(filterType);
+        if (filterType === FilterType.eq) {
+          return 'is equal to';
+        }
+        if (filterType === FilterType.notEq) {
+          return 'is not equal to';
+        }
       }
       throw new Error(`Unrecognized column type: ${columnType}`);
     } catch (e) {
@@ -149,9 +154,13 @@ export class LinkerOverlayContent extends Component<
 
   dialogRef: React.RefObject<HTMLInputElement>;
 
-  getoperators = memoize(
-    (linkId: string, columnType: string): DropdownActions =>
-      TableUtils.getFilterTypes(columnType).flatMap((type, index) => {
+  getOperators = memoize(
+    (linkId: string, columnType: string): DropdownAction[] => {
+      let filterTypes = TableUtils.getFilterTypes(columnType);
+      if (TableUtils.isBooleanType(columnType)) {
+        filterTypes = [FilterType.eq, FilterType.notEq];
+      }
+      return filterTypes.flatMap((type, index) => {
         // Remove case-insensitive string comparisons
         if (type === 'eqIgnoreCase' || type === `notEqIgnoreCase`) {
           return [];
@@ -168,13 +177,14 @@ export class LinkerOverlayContent extends Component<
 
         return [
           {
-            title: LinkerOverlayContent.getLabelForFilter(columnType, type),
+            title: LinkerOverlayContent.getLabelForLinkFilter(columnType, type),
             icon: <b>{symbol}</b>,
             action: () => this.handleOperatorChanged(linkId, type),
             order: index,
           },
         ];
-      })
+      });
+    }
   );
 
   /** Gets the on screen points for a link start or end spec */
@@ -300,6 +310,7 @@ export class LinkerOverlayContent extends Component<
       .map(link => {
         try {
           const { id, type, isReversed, start, end, operator } = link;
+          const startColumnType = start.columnType;
           let [x1, y1] = this.getPointFromLinkPoint(start);
           let x2 = mouseX ?? x1;
           let y2 = mouseY ?? y1;
@@ -320,11 +331,6 @@ export class LinkerOverlayContent extends Component<
             { 'link-is-selected': selectedIds.has(id) },
             { 'danger-delete': mode === 'delete' }
           );
-          const operators =
-            start.columnType != null &&
-            !TableUtils.isBooleanType(start.columnType)
-              ? this.getoperators(id, start.columnType)
-              : undefined;
           return {
             x1,
             y1,
@@ -333,7 +339,7 @@ export class LinkerOverlayContent extends Component<
             id,
             className,
             operator,
-            operators,
+            startColumnType,
           };
         } catch (error) {
           log.error('Unable to get point for link', link, error);
@@ -361,7 +367,7 @@ export class LinkerOverlayContent extends Component<
         })}
       >
         {visibleLinks.map(
-          ({ x1, y1, x2, y2, id, className, operator, operators }) => (
+          ({ x1, y1, x2, y2, id, className, operator, startColumnType }) => (
             <LinkerLink
               className={className}
               id={id}
@@ -374,7 +380,8 @@ export class LinkerOverlayContent extends Component<
               onDelete={onLinkDeleted}
               isSelected={selectedIds.has(id)}
               operator={operator}
-              operators={operators}
+              startColumnType={startColumnType}
+              getOperators={this.getOperators}
             />
           )
         )}
