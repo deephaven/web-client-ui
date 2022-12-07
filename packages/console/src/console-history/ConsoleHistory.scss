@@ -1,4 +1,4 @@
-@use '../ConsoleVariables';
+@use '../common/ConsoleVariables';
 @import '@deephaven/components/scss/custom.scss';
 
 $console-history-gutter-color: $gray-400;
