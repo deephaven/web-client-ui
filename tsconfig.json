@@ -32,55 +32,13 @@
   },
   "references": [
     {
-      "path": "./packages/chart"
+      "path": "./packages/code-studio"
     },
     {
-      "path": "./packages/components"
+      "path": "./packages/embed-grid"
     },
     {
-      "path": "./packages/console"
-    },
-    {
-      "path": "./packages/dashboard"
-    },
-    {
-      "path": "./packages/dashboard-core-plugins"
-    },
-    {
-      "path": "./packages/file-explorer"
-    },
-    {
-      "path": "./packages/golden-layout"
-    },
-    {
-      "path": "./packages/grid"
-    },
-    {
-      "path": "./packages/iris-grid"
-    },
-    {
-      "path": "./packages/jsapi-shim"
-    },
-    {
-      "path": "./packages/jsapi-components"
-    },
-    {
-      "path": "./packages/log"
-    },
-    {
-      "path": "./packages/pouch-storage"
-    },
-    {
-      "path": "./packages/react-hooks"
-    },
-    {
-      "path": "./packages/redux"
-    },
-    {
-      "path": "./packages/storage"
-    },
-    {
-      "path": "./packages/utils"
+      "path": "./packages/embed-chart"
     }
   ]
 }

@@ -10,6 +10,7 @@ import {
 } from '@deephaven/redux';
 import StyleGuide from './StyleGuide';
 import LocalWorkspaceStorage from '../storage/LocalWorkspaceStorage';
+import { ExportedLayout } from '../storage/LayoutStorage';
 
 /**
  * Initialize data needed for the styleguide
@@ -21,7 +22,10 @@ const StyleGuideInit = (props: {
   const { workspace, setWorkspace } = props;
 
   useEffect(() => {
-    LocalWorkspaceStorage.makeDefaultWorkspace().then(setWorkspace);
+    LocalWorkspaceStorage.makeDefaultWorkspace({
+      getLayouts: async () => [] as string[],
+      getLayout: async () => ({} as ExportedLayout),
+    }).then(setWorkspace);
   }, [setWorkspace]);
 
   return <>{workspace != null && <StyleGuide />}</>;
