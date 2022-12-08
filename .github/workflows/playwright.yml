@@ -7,8 +7,26 @@ env:
   INPUT_REF: e2e-github-action
   DOCKER_TAG: latest
 jobs:
+  core_cache:
+    runs-on: ubuntu-22.04
+    outputs:
+      cache-hit: ${{ steps.check_sha.outputs.cache-hit }}
+    steps:
+      - name: Get server:${{ env.DOCKER_TAG }} SHA
+        run: |
+          docker pull --quiet ghcr.io/deephaven/server:${{ env.DOCKER_TAG }}
+          docker inspect --format='{{index .RepoDigests 0}}' ghcr.io/deephaven/server:${{ env.DOCKER_TAG }} > container_sha.txt
+          echo "container_sha=$(cat container_sha.txt)" >> $GITHUB_ENV
+      - name: Check if container has previously been pulled
+        id: check_sha
+        uses: actions/cache@v3
+        with:
+          path: container_sha.txt
+          key: ${{ env.INPUT_REF }}-${{ env.container_sha }}
+
   e2e_test:
     timeout-minutes: 60
+    needs: core_cache
     runs-on: ubuntu-22.04
     concurrency:
       group: ${{ github.workflow }}-${{ github.ref }}
