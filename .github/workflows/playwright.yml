@@ -24,7 +24,7 @@ jobs:
           path: manifest_sha.txt
           key: ${{ env.INPUT_REF }}-${{ env.manifest_sha }}
       - name: Update Image Cache if cache miss
-        if: steps.cache-docker-mysql.outputs.cache-hit != 'true'
+        if: steps.check_sha.outputs.cache-hit != 'true'
         run: docker pull --quiet ghcr.io/deephaven/server:${{ env.DOCKER_TAG }}
 
   e2e_test:
