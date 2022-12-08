@@ -15,7 +15,7 @@ const BUTTON_KINDS = [
   'ghost',
 ] as const;
 type ButtonTuple = typeof BUTTON_KINDS;
-type ButtonKind = ButtonTuple[number];
+export type ButtonKind = ButtonTuple[number];
 
 const VARIANT_KINDS = ['group-end'] as const;
 type VariantTuple = typeof VARIANT_KINDS;

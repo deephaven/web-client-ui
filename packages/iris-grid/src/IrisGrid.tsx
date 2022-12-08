@@ -13,7 +13,6 @@ import deepEqual from 'deep-equal';
 import Log from '@deephaven/log';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
-  ContextActionUtils,
   ContextActions,
   Stack,
   Menu,
@@ -85,6 +84,7 @@ import {
 } from '@deephaven/jsapi-utils';
 import {
   assertNotNull,
+  copyToClipboard,
   Pending,
   PromiseUtils,
   ValidationError,
@@ -1847,9 +1847,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       const value = String(
         this.getValueForCell(columnIndex, rowIndex, rawValue)
       );
-      ContextActionUtils.copyToClipboard(value).catch(e =>
-        log.error('Unable to copy cell', e)
-      );
+      copyToClipboard(value).catch(e => log.error('Unable to copy cell', e));
     } else {
       log.error('Attempted to copyCell for user without copy permission.');
     }

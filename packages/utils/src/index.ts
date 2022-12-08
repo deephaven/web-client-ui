@@ -1,5 +1,6 @@
 export { default as CanceledPromiseError } from './CanceledPromiseError';
 export { default as ColorUtils } from './ColorUtils';
+export * from './ClipboardUtils';
 export { default as DbNameValidator } from './DbNameValidator';
 export { default as DOMUtils } from './DOMUtils';
 export * from './EventTargetShimUtils';
