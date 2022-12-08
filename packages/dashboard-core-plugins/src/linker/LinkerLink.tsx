@@ -1,4 +1,4 @@
-import React, { MouseEvent, PureComponent } from 'react';
+import React, { Component, MouseEvent } from 'react';
 import { Button, DropdownAction, DropdownMenu } from '@deephaven/components';
 import { vsTrash, vsTriangleDown } from '@deephaven/icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -14,6 +14,7 @@ import { TableUtils } from '@deephaven/jsapi-utils';
 import memoize from 'memoize-one';
 
 import './LinkerLink.scss';
+import classNames from 'classnames';
 
 const log = Log.module('LinkerLink');
 
@@ -45,7 +46,11 @@ export type LinkerLinkProps = {
   onOperatorChanged: (id: string, type: FilterTypeValue) => void;
 };
 
-export class LinkerLink extends PureComponent<LinkerLinkProps> {
+export type LinkerLinkState = {
+  isHovering?: boolean;
+};
+
+export class LinkerLink extends Component<LinkerLinkProps, LinkerLinkState> {
   static defaultProps = {
     className: '',
     isSelected: false,
@@ -106,8 +111,14 @@ export class LinkerLink extends PureComponent<LinkerLinkProps> {
     super(props);
 
     this.handleClick = this.handleClick.bind(this);
+    this.handleMouseEnter = this.handleMouseEnter.bind(this);
+    this.handleMouseLeave = this.handleMouseLeave.bind(this);
     this.handleDelete = this.handleDelete.bind(this);
     this.getDropdownActions = this.getDropdownActions.bind(this);
+
+    this.state = {
+      isHovering: undefined,
+    };
   }
 
   getOperators = memoize(
@@ -156,6 +167,18 @@ export class LinkerLink extends PureComponent<LinkerLinkProps> {
     }
   }
 
+  handleMouseEnter(): void {
+    this.setState({
+      isHovering: true,
+    });
+  }
+
+  handleMouseLeave(): void {
+    this.setState({
+      isHovering: false,
+    });
+  }
+
   handleDelete(): void {
     const { id, onDelete } = this.props;
     onDelete(id);
@@ -181,6 +204,7 @@ export class LinkerLink extends PureComponent<LinkerLinkProps> {
       id,
       startColumnType,
     } = this.props;
+    const { isHovering } = this.state;
 
     // Path between the two points
     const len = Math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2);
@@ -276,7 +300,11 @@ export class LinkerLink extends PureComponent<LinkerLinkProps> {
 
     return (
       <>
-        <svg className={className}>
+        <svg
+          className={classNames(className, {
+            hovering: isHovering,
+          })}
+        >
           <clipPath id={clipPathId}>
             <path d={selectClipPath} clipRule="evenodd" />
           </clipPath>
@@ -285,6 +313,8 @@ export class LinkerLink extends PureComponent<LinkerLinkProps> {
             d={path}
             onClick={this.handleClick}
             clipPath={`url(#${clipPathId})`}
+            onMouseEnter={this.handleMouseEnter}
+            onMouseLeave={this.handleMouseLeave}
           />
           <path className="link-background" d={path} />
           <path className="link-foreground" d={path} />

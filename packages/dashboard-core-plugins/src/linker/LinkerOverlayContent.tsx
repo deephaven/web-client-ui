@@ -136,6 +136,7 @@ export class LinkerOverlayContent extends Component<
     this.setState({
       mouseX: event.clientX,
       mouseY: event.clientY,
+      mode: 'select',
     });
   }
 

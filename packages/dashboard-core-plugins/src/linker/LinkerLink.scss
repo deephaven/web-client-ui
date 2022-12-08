@@ -19,6 +19,7 @@ $dash-size: 10;
     min-width: 1rem;
     min-height: 1rem;
     padding: 0.25rem 0.45rem;
+    z-index: 30;
   }
 
   .btn-fab.btn-delete:hover {
@@ -59,6 +60,8 @@ $dash-size: 10;
     }
 
     &.link-is-selected {
+      z-index: 20;
+
       .link-dot,
       .link-triangle {
         fill: $primary;
@@ -117,6 +120,10 @@ $dash-size: 10;
 
     &.disabled path.link-select {
       pointer-events: none;
+    }
+
+    &.hovering {
+      z-index: 10;
     }
 
     path.link-select:hover ~ path.link-background {
