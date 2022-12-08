@@ -6,7 +6,12 @@ import {
   IrisGridModel,
   IrisGridModelFactory,
 } from '@deephaven/iris-grid'; // iris-grid is used to display Deephaven tables
-import dh, { IdeConnection, Sort } from '@deephaven/jsapi-shim'; // Import the shim to use the JS API
+import dh, {
+  IdeConnection,
+  Sort,
+  Table,
+  VariableTypeUnion,
+} from '@deephaven/jsapi-shim'; // Import the shim to use the JS API
 import { TableUtils } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
 import './App.scss'; // Styles for in this app
@@ -32,13 +37,18 @@ export type SortCommandType = {
  * Load an existing Deephaven table with the connection provided
  * @param connection The Deephaven session object
  * @param name Name of the table to load
+ * @param type The type of table to load
  * @returns Deephaven table
  */
-async function loadTable(connection: IdeConnection, name: string) {
+async function loadTable(
+  connection: IdeConnection,
+  name: string,
+  type: VariableTypeUnion = dh.VariableType.TABLE
+): Promise<Table> {
   log.info(`Fetching table ${name}...`);
 
-  const definition = { name, type: dh.VariableType.TABLE };
-  return connection.getObject(definition);
+  const definition = { name, type };
+  return (await connection.getObject(definition)) as Table;
 }
 
 /**
@@ -61,6 +71,8 @@ function App(): JSX.Element {
   );
   const canCopy = searchParams.get('canCopy') != null;
   const canDownloadCsv = searchParams.get('canDownloadCsv') != null;
+  const type = (searchParams.get('type') ??
+    dh.VariableType.TABLE) as VariableTypeUnion;
 
   useEffect(
     function initializeApp() {
@@ -87,7 +99,7 @@ function App(): JSX.Element {
           log.debug('Loading table', name, '...');
 
           // Load the table up.
-          const table = await loadTable(connection, name);
+          const table = await loadTable(connection, name, type);
 
           // Create the `IrisGridModel` for use with the `IrisGrid` component
           log.debug(`Creating model...`);
@@ -105,7 +117,7 @@ function App(): JSX.Element {
       }
       initApp();
     },
-    [searchParams]
+    [searchParams, type]
   );
 
   useEffect(
