@@ -3,21 +3,12 @@ import classNames from 'classnames';
 import {
   Button,
   ContextActions,
-  DropdownAction,
   GLOBAL_SHORTCUTS,
 } from '@deephaven/components';
-import memoize from 'memoize-one';
 import { LayoutUtils, PanelManager } from '@deephaven/dashboard';
 import Log from '@deephaven/log';
 import type { Container } from '@deephaven/golden-layout';
-import { TableUtils } from '@deephaven/jsapi-utils';
-import {
-  Type as FilterType,
-  TypeValue as FilterTypeValue,
-  getLabelForNumberFilter,
-  getLabelForTextFilter,
-  getLabelForDateFilter,
-} from '@deephaven/filters';
+import { TypeValue as FilterTypeValue } from '@deephaven/filters';
 import {
   isLinkableFromPanel,
   Link,
@@ -68,38 +59,6 @@ export class LinkerOverlayContent extends Component<
     disabled: 'false',
   };
 
-  static getLabelForLinkFilter(
-    columnType: string,
-    filterType: FilterTypeValue
-  ): string {
-    try {
-      if (
-        TableUtils.isNumberType(columnType) ||
-        TableUtils.isCharType(columnType)
-      ) {
-        return getLabelForNumberFilter(filterType);
-      }
-      if (TableUtils.isTextType(columnType)) {
-        return getLabelForTextFilter(filterType);
-      }
-      if (TableUtils.isDateType(columnType)) {
-        return getLabelForDateFilter(filterType);
-      }
-      if (TableUtils.isBooleanType(columnType)) {
-        if (filterType === FilterType.eq) {
-          return 'is equal to';
-        }
-        if (filterType === FilterType.notEq) {
-          return 'is not equal to';
-        }
-      }
-      throw new Error(`Unrecognized column type: ${columnType}`);
-    } catch (e) {
-      log.warn(e);
-      return '';
-    }
-  }
-
   constructor(props: LinkerOverlayContentProps) {
     super(props);
 
@@ -132,39 +91,6 @@ export class LinkerOverlayContent extends Component<
     window.removeEventListener('keydown', this.handleKeyDown, true);
     window.removeEventListener('keyup', this.handleKeyUp, true);
   }
-
-  getOperators = memoize(
-    (linkId: string, columnType: string): DropdownAction[] => {
-      let filterTypes = TableUtils.getFilterTypes(columnType);
-      if (TableUtils.isBooleanType(columnType)) {
-        filterTypes = [FilterType.eq, FilterType.notEq];
-      }
-      return filterTypes.flatMap((type, index) => {
-        // Remove case-insensitive string comparisons
-        if (type === 'eqIgnoreCase' || type === `notEqIgnoreCase`) {
-          return [];
-        }
-        let symbol = '';
-
-        if (type === 'startsWith') {
-          symbol = 'a*';
-        } else if (type === 'endsWith') {
-          symbol = '*z';
-        } else {
-          symbol = TableUtils.getFilterOperatorString(type);
-        }
-
-        return [
-          {
-            title: LinkerOverlayContent.getLabelForLinkFilter(columnType, type),
-            icon: <b>{symbol}</b>,
-            action: () => this.handleOperatorChanged(linkId, type),
-            order: index,
-          },
-        ];
-      });
-    }
-  );
 
   /** Gets the on screen points for a link start or end spec */
   getPointFromLinkPoint(linkPoint: LinkPoint): LinkerCoordinate {
@@ -200,9 +126,9 @@ export class LinkerOverlayContent extends Component<
 
   handleOperatorChanged(linkId: string, type: FilterTypeValue): void {
     const { links, onLinksUpdated } = this.props;
-    const newLinks = links.map(link =>
+    const newLinks: Link[] = links.map(link =>
       link.id === linkId ? { ...link, operator: type } : link
-    ) as Link[];
+    );
     onLinksUpdated(newLinks);
   }
 
@@ -310,7 +236,7 @@ export class LinkerOverlayContent extends Component<
               isSelected={selectedIds.has(id)}
               operator={operator}
               startColumnType={startColumnType}
-              getOperators={this.getOperators}
+              onOperatorChanged={this.handleOperatorChanged}
             />
           )
         )}

@@ -516,13 +516,7 @@ export class Linker extends Component<LinkerProps, LinkerState> {
   }
 
   handleLinkSelected(linkId: string): void {
-    const { links } = this.props;
-    const link = links.find(l => l.id === linkId);
-    if (link) {
-      this.setState({ selectedIds: new Set<string>([linkId]) });
-    } else {
-      log.error('Unable to find link to select', linkId);
-    }
+    this.setState({ selectedIds: new Set<string>([linkId]) });
   }
 
   handleLinksUpdated(newLinks: Link[]): void {

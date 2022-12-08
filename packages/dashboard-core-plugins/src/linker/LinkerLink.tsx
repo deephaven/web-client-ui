@@ -2,10 +2,20 @@ import React, { MouseEvent, PureComponent } from 'react';
 import { Button, DropdownAction, DropdownMenu } from '@deephaven/components';
 import { vsTrash, vsTriangleDown } from '@deephaven/icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { TypeValue as FilterTypeValue } from '@deephaven/filters';
+import {
+  Type as FilterType,
+  TypeValue as FilterTypeValue,
+  getLabelForNumberFilter,
+  getLabelForTextFilter,
+  getLabelForDateFilter,
+} from '@deephaven/filters';
+import Log from '@deephaven/log';
 import { TableUtils } from '@deephaven/jsapi-utils';
+import memoize from 'memoize-one';
 
 import './LinkerLink.scss';
+
+const log = Log.module('LinkerLink');
 
 /** The constant for how droopy the links are. Increase for more droopiness. */
 const DROOP = 0.015;
@@ -32,7 +42,7 @@ export type LinkerLinkProps = {
   startColumnType: string | null;
   onClick: (id: string) => void;
   onDelete: (id: string) => void;
-  getOperators: (id: string, startColumnType: string) => DropdownAction[];
+  onOperatorChanged: (id: string, type: FilterTypeValue) => void;
 };
 
 export class LinkerLink extends PureComponent<LinkerLinkProps> {
@@ -60,6 +70,38 @@ export class LinkerLink extends PureComponent<LinkerLinkProps> {
     },0 a ${r},${r} 0 1,0 -${r * 2},0 z`;
   }
 
+  static getLabelForLinkFilter(
+    columnType: string,
+    filterType: FilterTypeValue
+  ): string {
+    try {
+      if (
+        TableUtils.isNumberType(columnType) ||
+        TableUtils.isCharType(columnType)
+      ) {
+        return getLabelForNumberFilter(filterType);
+      }
+      if (TableUtils.isTextType(columnType)) {
+        return getLabelForTextFilter(filterType);
+      }
+      if (TableUtils.isDateType(columnType)) {
+        return getLabelForDateFilter(filterType);
+      }
+      if (TableUtils.isBooleanType(columnType)) {
+        if (filterType === FilterType.eq) {
+          return 'is equal to';
+        }
+        if (filterType === FilterType.notEq) {
+          return 'is not equal to';
+        }
+      }
+      throw new Error(`Unrecognized column type: ${columnType}`);
+    } catch (e) {
+      log.warn(e);
+      return '';
+    }
+  }
+
   constructor(props: LinkerLinkProps) {
     super(props);
 
@@ -67,6 +109,40 @@ export class LinkerLink extends PureComponent<LinkerLinkProps> {
     this.handleDelete = this.handleDelete.bind(this);
     this.getDropdownActions = this.getDropdownActions.bind(this);
   }
+
+  getOperators = memoize(
+    (linkId: string, columnType: string): DropdownAction[] => {
+      const { onOperatorChanged } = this.props;
+      let filterTypes = TableUtils.getFilterTypes(columnType);
+      if (TableUtils.isBooleanType(columnType)) {
+        filterTypes = [FilterType.eq, FilterType.notEq];
+      }
+      return filterTypes.flatMap((type, index) => {
+        // Remove case-insensitive string comparisons
+        if (type === 'eqIgnoreCase' || type === `notEqIgnoreCase`) {
+          return [];
+        }
+        let symbol = '';
+
+        if (type === 'startsWith') {
+          symbol = 'a*';
+        } else if (type === 'endsWith') {
+          symbol = '*z';
+        } else {
+          symbol = TableUtils.getFilterOperatorString(type);
+        }
+
+        return [
+          {
+            title: LinkerLink.getLabelForLinkFilter(columnType, type),
+            icon: <b>{symbol}</b>,
+            action: () => onOperatorChanged(linkId, type),
+            order: index,
+          },
+        ];
+      });
+    }
+  );
 
   handleClick(event: MouseEvent<SVGPathElement>): void {
     event.stopPropagation();
@@ -86,9 +162,9 @@ export class LinkerLink extends PureComponent<LinkerLinkProps> {
   }
 
   getDropdownActions(): DropdownAction[] {
-    const { id, startColumnType, getOperators } = this.props;
+    const { id, startColumnType } = this.props;
     if (startColumnType != null) {
-      return getOperators(id, startColumnType);
+      return this.getOperators(id, startColumnType);
     }
     return [];
   }
