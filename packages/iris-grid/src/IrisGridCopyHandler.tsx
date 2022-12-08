@@ -11,7 +11,7 @@ import {
 import {
   CancelablePromise,
   CanceledPromiseError,
-  CopyClipboardUtils,
+  copyToClipboard,
   PromiseUtils,
 } from '@deephaven/utils';
 import Log from '@deephaven/log';
@@ -257,7 +257,7 @@ class IrisGridCopyHandler extends Component<
 
     this.textData = text;
 
-    CopyClipboardUtils.copyToClipboard(text).then(
+    copyToClipboard(text).then(
       () => {
         this.setState({ copyState: IrisGridCopyHandler.COPY_STATES.DONE });
         this.startHideTimer();

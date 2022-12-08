@@ -1,5 +1,5 @@
-import { useEffect, useState, useRef } from 'react';
-import { CopyClipboardUtils } from '@deephaven/utils';
+import { useEffect, useState, useRef, useCallback } from 'react';
+import { copyToClipboard } from '@deephaven/utils';
 import Log from '@deephaven/log';
 
 const TIMEOUT_DELAY = 3500;
@@ -12,23 +12,25 @@ export default function useCopyToClipboard(): [
   const [copied, setCopied] = useState(false);
   const copiedTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  function copyToClipboard(value: string): void {
-    CopyClipboardUtils.copyToClipboard(value)
+  const copy = useCallback((value: string): void => {
+    copyToClipboard(value)
       .then(() => {
         setCopied(true);
       })
-      .catch(e => log.error(`Unable to copy ${value}`, e));
-  }
+      .catch(e => log.error(`Unable to copy ${value}`, '\n', e));
+  }, []);
 
   useEffect(() => {
     if (copiedTimeout.current) clearTimeout(copiedTimeout.current);
-    copiedTimeout.current = setTimeout(() => {
-      setCopied(false);
-    }, TIMEOUT_DELAY);
+    if (copied) {
+      copiedTimeout.current = setTimeout(() => {
+        setCopied(false);
+      }, TIMEOUT_DELAY);
+    }
     return () => {
       if (copiedTimeout.current) clearTimeout(copiedTimeout.current);
     };
   }, [copied]);
 
-  return [copied, copyToClipboard];
+  return [copied, copy];
 }

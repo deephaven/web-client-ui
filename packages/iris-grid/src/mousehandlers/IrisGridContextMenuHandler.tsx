@@ -40,7 +40,7 @@ import {
 } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
 import type { DebouncedFunc } from 'lodash';
-import { assertNotNull, CopyClipboardUtils } from '@deephaven/utils';
+import { assertNotNull, copyToClipboard } from '@deephaven/utils';
 import {
   DateTimeFormatContextMenu,
   DecimalFormatContextMenu,
@@ -347,9 +347,9 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
       title: 'Copy Column Name',
       group: IrisGridContextMenuHandler.GROUP_COPY,
       action: () => {
-        CopyClipboardUtils.copyToClipboard(
-          model.textForColumnHeader(modelColumn) ?? ''
-        ).catch(e => log.error('Unable to copy header', e));
+        copyToClipboard(model.textForColumnHeader(modelColumn) ?? '').catch(e =>
+          log.error('Unable to copy header', e)
+        );
       },
     });
 

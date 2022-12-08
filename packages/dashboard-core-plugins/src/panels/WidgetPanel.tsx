@@ -8,7 +8,7 @@ import classNames from 'classnames';
 import memoize from 'memoize-one';
 import type { Container, EventEmitter } from '@deephaven/golden-layout';
 import { ContextActions } from '@deephaven/components';
-import { CopyClipboardUtils } from '@deephaven/utils';
+import { copyToClipboard } from '@deephaven/utils';
 import Panel from './Panel';
 import WidgetPanelTooltip from './WidgetPanelTooltip';
 import './WidgetPanel.scss';
@@ -102,7 +102,7 @@ class WidgetPanel extends PureComponent<WidgetPanelProps, WidgetPanelState> {
 
   handleCopyName(): void {
     const { widgetName } = this.props;
-    CopyClipboardUtils.copyToClipboard(widgetName);
+    copyToClipboard(widgetName);
   }
 
   getErrorMessage(): string | undefined {

@@ -84,7 +84,7 @@ import {
 } from '@deephaven/jsapi-utils';
 import {
   assertNotNull,
-  CopyClipboardUtils,
+  copyToClipboard,
   Pending,
   PromiseUtils,
   ValidationError,
@@ -1847,9 +1847,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       const value = String(
         this.getValueForCell(columnIndex, rowIndex, rawValue)
       );
-      CopyClipboardUtils.copyToClipboard(value).catch(e =>
-        log.error('Unable to copy cell', e)
-      );
+      copyToClipboard(value).catch(e => log.error('Unable to copy cell', e));
     } else {
       log.error('Attempted to copyCell for user without copy permission.');
     }
