@@ -14,7 +14,6 @@ jobs:
     steps:
       - name: Get server:${{ env.DOCKER_TAG }} SHA
         run: |
-          docker pull --quiet ghcr.io/deephaven/server:${{ env.DOCKER_TAG }}
           docker inspect --format='{{index .RepoDigests 0}}' ghcr.io/deephaven/server:${{ env.DOCKER_TAG }} > container_sha.txt
           echo "container_sha=$(cat container_sha.txt)" >> $GITHUB_ENV
       - name: Check if container has previously been pulled
@@ -23,6 +22,11 @@ jobs:
         with:
           path: container_sha.txt
           key: ${{ env.INPUT_REF }}-${{ env.container_sha }}
+      - name: Update Image Cache if cache miss
+        if: steps.cache-docker-mysql.outputs.cache-hit != 'true'
+        run: docker pull --quiet ghcr.io/deephaven/server:${{ env.DOCKER_TAG }}
+      - name: Run server:${{ env.DOCKER_TAG }} ${{env.container_sha}}
+        run: docker run --detach --publish 10000:10000 ghcr.io/deephaven/server:${{ env.DOCKER_TAG }}
 
   e2e_test:
     timeout-minutes: 60
@@ -36,8 +40,6 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 16
-      - name: Run server:${{ env.DOCKER_TAG }} SHA
-        run: docker run --detach --publish 10000:10000 ghcr.io/deephaven/server:${{ env.DOCKER_TAG }}
       - name: Install dependencies
         run: npm ci
       - name: Production build
