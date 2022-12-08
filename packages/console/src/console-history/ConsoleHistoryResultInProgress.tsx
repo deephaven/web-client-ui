@@ -1,7 +1,6 @@
 import React, { Component, ReactElement } from 'react';
 import classNames from 'classnames';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { LoadingSpinner, Tooltip } from '@deephaven/components';
+import { Button, LoadingSpinner } from '@deephaven/components';
 import { vsClose } from '@deephaven/icons';
 import { TimeUtils } from '@deephaven/utils';
 import './ConsoleHistoryResultInProgress.scss';
@@ -71,10 +70,14 @@ class ConsoleHistoryResultInProgress extends Component<
         <span className="badge">
           <LoadingSpinner />
           &nbsp;Running... {TimeUtils.formatElapsedTime(elapsed)}&nbsp;
-          <button type="button" onClick={onCancelClick} disabled={disabled}>
-            <FontAwesomeIcon icon={vsClose} />
-            <Tooltip>Cancel</Tooltip>
-          </button>
+          <Button
+            className="console-history-result-in-progress-cancel"
+            kind="ghost"
+            icon={vsClose}
+            tooltip="Cancel"
+            onClick={onCancelClick}
+            disabled={disabled}
+          />
         </span>
       </div>
     );
