@@ -24,6 +24,8 @@ jobs:
       - name: Update Image Cache if cache miss
         if: steps.check_sha.outputs.cache-hit != 'true'
         run: docker pull --quiet ghcr.io/deephaven/server:${{ env.DOCKER_TAG }}
+      - name: Run server:${{ env.DOCKER_TAG }}
+        run: docker run --detach --publish 10000:10000 ghcr.io/deephaven/server:${{ env.DOCKER_TAG }}
 
   e2e_test:
     timeout-minutes: 60
@@ -53,8 +55,6 @@ jobs:
       - name: Install Playwright Browsers
         if: steps.playwright-cache.outputs.cache_hit != 'true'
         run: npx playwright install --with-deps
-      - name: Run server:${{ env.DOCKER_TAG }}
-        run: docker run --detach --publish 10000:10000 ghcr.io/deephaven/server:${{ env.DOCKER_TAG }}
       - name: Run Playwright tests
         run: npx playwright test
       - uses: actions/upload-artifact@v3
