@@ -5,7 +5,7 @@ on:
     branches: [e2e-github-action]
 env:
   INPUT_REF: e2e-github-action
-  DOCKER_TAG: latest
+  DOCKER_TAG: 0.19.0
 jobs:
   core_cache:
     runs-on: ubuntu-22.04
@@ -13,15 +13,15 @@ jobs:
       cache-hit: ${{ steps.check_sha.outputs.cache-hit }}
     steps:
       - name: Get server:${{ env.DOCKER_TAG }} SHA
-        # Just take a SHA of the manifest to see if we need to pull the whole container or can just load from cache
+        # Just take a SHA of the manifest to see if we need to pull the image or can just load from cache
         run: |
           docker manifest inspect ghcr.io/deephaven/server:${{ env.DOCKER_TAG }} | sha256sum > manifest_sha.txt
           echo "manifest_sha=$(cat manifest_sha.txt)" >> $GITHUB_ENV
-      - name: Check if container has previously been pulled
+      - name: Check if image has previously been pulled
         id: check_sha
         uses: actions/cache@v3
         with:
-          path: manifest_sha.txt
+          path: /var/lib/docker
           key: ${{ env.INPUT_REF }}-${{ env.manifest_sha }}
       - name: Update Image Cache if cache miss
         if: steps.check_sha.outputs.cache-hit != 'true'
@@ -39,7 +39,7 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 16
-      - name: Run server:${{ env.DOCKER_TAG }} ${{env.manifest_sha}}
+      - name: Run server:${{ env.DOCKER_TAG }}
         run: docker run --detach --publish 10000:10000 ghcr.io/deephaven/server:${{ env.DOCKER_TAG }}
       - name: Install dependencies
         run: npm ci
