@@ -9,10 +9,8 @@ env:
 jobs:
   core_cache:
     runs-on: ubuntu-22.04
-    outputs:
-      cache-hit: ${{ steps.check_sha.outputs.cache-hit }}
     steps:
-      - name: Get server:${{ env.DOCKER_TAG }} SHA
+      - name: Check server:${{ env.DOCKER_TAG }} manifest SHA
         # Just take a SHA of the manifest to see if we need to pull the image or can just load from cache
         run: |
           docker manifest inspect ghcr.io/deephaven/server:${{ env.DOCKER_TAG }} | sha256sum > manifest_sha.txt
@@ -39,14 +37,24 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 16
-      - name: Run server:${{ env.DOCKER_TAG }}
-        run: docker run --detach --publish 10000:10000 ghcr.io/deephaven/server:${{ env.DOCKER_TAG }}
+          cache: 'npm'
       - name: Install dependencies
         run: npm ci
       - name: Production build
         run: VITE_CORE_API_URL=http://localhost:10000/jsapi npm run build
+      - name: Get installed Playwright version
+        id: playwright-version
+        run: echo playwright_version=$(npm ls @playwright/test | grep @playwright/test | sed 's/.*@//') >> $GITHUB_ENV
+      - uses: actions/cache@v3
+        id: playwright-cache
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ env.playwright_version }}
       - name: Install Playwright Browsers
+        if: steps.playwright-cache.outputs.cache_hit != 'true'
         run: npx playwright install --with-deps
+      - name: Run server:${{ env.DOCKER_TAG }}
+        run: docker run --detach --publish 10000:10000 ghcr.io/deephaven/server:${{ env.DOCKER_TAG }}
       - name: Run Playwright tests
         run: npx playwright test
       - uses: actions/upload-artifact@v3
