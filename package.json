@@ -10,7 +10,6 @@
     "npm": ">=8"
   },
   "scripts": {
-    "postinstall": "run-s build:necessary",
     "clean:build": "rimraf packages/*/dist packages/*/build",
     "postclean:build": "npm run clean:types",
     "clean:cache": "run-s clean:cache:*",
