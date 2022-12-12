@@ -1280,7 +1280,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     if (rawValue && modelColumn != null && modelRow != null) {
       const value = model.valueForCell(modelColumn, modelRow);
       if (TableUtils.isDateType(model.columns[modelColumn].type)) {
-        // The returned value is just a long value, we should return the value fromatted as a full date string
+        // The returned value is just a long value, we should return the value formatted as a full date string
         const { formatter } = model;
         return dh.i18n.DateTimeFormat.format(
           UNFORMATTED_DATE_PATTERN,
@@ -3074,7 +3074,9 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     frozenTable: Table,
     tableSubscription: TableViewportSubscription,
     snapshotRanges: GridRange[],
-    modelRanges: GridRange[]
+    modelRanges: GridRange[],
+    includeColumnHeaders: boolean,
+    useUnformattedValues: boolean
   ): void {
     const { canDownloadCsv } = this.props;
     if (canDownloadCsv) {
@@ -3084,7 +3086,9 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
         frozenTable,
         tableSubscription,
         snapshotRanges,
-        modelRanges
+        modelRanges,
+        includeColumnHeaders,
+        useUnformattedValues
       );
       this.setState(() => {
         if (this.tableSaver) {
@@ -3093,7 +3097,9 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
             frozenTable,
             tableSubscription,
             snapshotRanges,
-            modelRanges
+            modelRanges,
+            includeColumnHeaders,
+            useUnformattedValues
           );
         }
         return {
