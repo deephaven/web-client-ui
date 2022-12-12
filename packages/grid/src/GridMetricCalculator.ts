@@ -803,12 +803,12 @@ export class GridMetricCalculator {
       lastLeft = right;
     }
     let x = 0;
-    while (lastLeft >= 0) {
+    while (lastLeft > 0) {
       const columnWidth = this.getVisibleColumnWidth(lastLeft, state);
       x += columnWidth;
 
       if (x >= visibleWidth) {
-        return clamp(lastLeft + 1, 0, right ?? columnCount - 1);
+        return Math.min(lastLeft + 1, right ?? columnCount - 1);
       }
 
       lastLeft -= 1;
