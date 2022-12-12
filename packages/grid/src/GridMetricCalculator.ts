@@ -803,7 +803,7 @@ export class GridMetricCalculator {
       lastLeft = right;
     }
     let x = 0;
-    while (lastLeft >= 0) {
+    while (lastLeft > 0) {
       const columnWidth = this.getVisibleColumnWidth(lastLeft, state);
       x += columnWidth;
 
