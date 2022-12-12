@@ -6,13 +6,8 @@ import {
   IrisGridModel,
   IrisGridModelFactory,
 } from '@deephaven/iris-grid'; // iris-grid is used to display Deephaven tables
-import dh, {
-  IdeConnection,
-  Sort,
-  Table,
-  VariableTypeUnion,
-} from '@deephaven/jsapi-shim'; // Import the shim to use the JS API
-import { TableUtils } from '@deephaven/jsapi-utils';
+import dh, { IdeConnection, Sort, Table } from '@deephaven/jsapi-shim'; // Import the shim to use the JS API
+import { fetchVariableDefinition, TableUtils } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
 import './App.scss'; // Styles for in this app
 
@@ -42,12 +37,11 @@ export type SortCommandType = {
  */
 async function loadTable(
   connection: IdeConnection,
-  name: string,
-  type: VariableTypeUnion = dh.VariableType.TABLE
+  name: string
 ): Promise<Table> {
   log.info(`Fetching table ${name}...`);
 
-  const definition = { name, type };
+  const definition = await fetchVariableDefinition(connection, name);
   return (await connection.getObject(definition)) as Table;
 }
 
@@ -71,8 +65,6 @@ function App(): JSX.Element {
   );
   const canCopy = searchParams.get('canCopy') != null;
   const canDownloadCsv = searchParams.get('canDownloadCsv') != null;
-  const type = (searchParams.get('type') ??
-    dh.VariableType.TABLE) as VariableTypeUnion;
 
   useEffect(
     function initializeApp() {
@@ -99,7 +91,7 @@ function App(): JSX.Element {
           log.debug('Loading table', name, '...');
 
           // Load the table up.
-          const table = await loadTable(connection, name, type);
+          const table = await loadTable(connection, name);
 
           // Create the `IrisGridModel` for use with the `IrisGrid` component
           log.debug(`Creating model...`);
@@ -117,7 +109,7 @@ function App(): JSX.Element {
       }
       initApp();
     },
-    [searchParams, type]
+    [searchParams]
   );
 
   useEffect(
