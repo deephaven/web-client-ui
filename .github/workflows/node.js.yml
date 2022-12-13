@@ -13,8 +13,11 @@ env:
   INPUT_REF: e2e-github-action
   DOCKER_TAG: 0.19.0
 jobs:
-  core:
+  build:
     runs-on: ubuntu-22.04
+    concurrency:
+      group: ${{ github.workflow }}-build-${{ github.ref }}
+      cancel-in-progress: true
     steps:
       - name: Check server:${{ env.DOCKER_TAG }} manifest SHA
         # Just take a SHA of the manifest to see if we need to pull the image or can just load from cache
@@ -32,13 +35,6 @@ jobs:
         run: docker pull --quiet ghcr.io/deephaven/server:${{ env.DOCKER_TAG }}
       - name: Run server:${{ env.DOCKER_TAG }}
         run: docker run --detach --publish 10000:10000 ghcr.io/deephaven/server:${{ env.DOCKER_TAG }}
-  build:
-    runs-on: ubuntu-22.04
-    concurrency:
-      group: ${{ github.workflow }}-build-${{ github.ref }}
-      cancel-in-progress: true
-
-    steps:
       - uses: actions/checkout@v3
         with:
           fetch-depth: '0' # This action defaults to only getting the latest commit. Setting to 0 makes it retrieve the full git commit history
@@ -80,25 +76,18 @@ jobs:
 
       - name: Build
         run: VITE_CORE_API_URL=http://localhost:10000/jsapi npm run build
-  unit_test:
-    needs: [core, build]
-    runs-on: ubuntu-22.04
-    concurrency:
-      group: ${{ github.workflow }}-unit_test-${{ github.ref }}
-      cancel-in-progress: true
-    steps:
       # Run unit tests on all files for accurate code coverage
       # Lint only changed files so linting is faster
       # Caching with the absolute path b/c Jest will make a folder in each project
       # Then there's caches in all package folders
-      - name: Test (Pull Request)
+      - name: Unit Test (Pull Request)
         if: ${{ github.event_name == 'pull_request' }}
         run: |
           npm run test:unit -- --cacheDirectory $PWD/.jest-cache
           npm run test:lint -- --changedSince origin/${{ github.event.pull_request.base.ref }} --cacheDirectory $PWD/.jest-cache
           npm run test:golden-layout
 
-      - name: Test (Push)
+      - name: Unit Test (Push)
         if: ${{ github.event_name == 'push' }}
         run: |
           npm run test:unit -- --cacheDirectory $PWD/.jest-cache
@@ -111,14 +100,6 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           directory: ./coverage
           flags: unit
-  e2e_test:
-    timeout-minutes: 60
-    needs: [core, build]
-    runs-on: ubuntu-22.04
-    concurrency:
-      group: ${{ github.workflow }}-e2e_test-${{ github.ref }}
-      cancel-in-progress: true
-    steps:
       - name: Get installed Playwright version
         id: playwright-version
         run: echo playwright_version=$(npx playwright --version) >> $GITHUB_ENV
