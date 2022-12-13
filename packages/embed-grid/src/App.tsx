@@ -15,6 +15,12 @@ Log.setLogLevel(parseInt(import.meta.env.VITE_LOG_LEVEL ?? '', 10));
 
 const log = Log.module('EmbedGrid.App');
 
+export const SUPPORTED_TYPES: string[] = [
+  dh.VariableType.TABLE,
+  dh.VariableType.TREETABLE,
+  dh.VariableType.PANDAS,
+];
+
 export type Command = 'filter' | 'sort';
 
 /** Input value for filter commands */
@@ -42,7 +48,13 @@ async function loadTable(
   log.info(`Fetching table ${name}...`);
 
   const definition = await fetchVariableDefinition(connection, name);
-  return (await connection.getObject(definition)) as Table;
+  if (!SUPPORTED_TYPES.includes(definition.type)) {
+    throw new Error(
+      `Unsupported type '${definition.type}' for variable named '${name}'`
+    );
+  }
+  const object = await connection.getObject(definition);
+  return object as Table;
 }
 
 /**
