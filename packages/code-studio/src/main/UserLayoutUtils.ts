@@ -24,6 +24,7 @@ export const DEFAULT_LAYOUT_CONFIG: ExportedLayoutV2 = {
       content: [
         {
           type: 'row',
+          height: 40, // slightly smaller than 50-50 to allow more space for tables below
           content: [
             {
               type: 'stack',

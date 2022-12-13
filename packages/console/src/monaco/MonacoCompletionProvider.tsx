@@ -57,6 +57,7 @@ class MonacoCompletionProvider extends PureComponent<
     const params = {
       textDocument: {
         uri: `${model.uri}`,
+        version: model.getVersionId(),
       },
       // Yes, the Monaco API Position is different than the Position received by the LSP
       // Why? I do not know.

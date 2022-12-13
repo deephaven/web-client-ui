@@ -1,27 +1,28 @@
+@use '../common/ConsoleVariables';
 @import '@deephaven/components/scss/custom.scss';
+
+$font-size: ConsoleVariables.$font-size;
+$button-vert-margin: ConsoleVariables.$button-vert-margin;
+$button-height: ConsoleVariables.$button-height;
 
 .console-history-result-in-progress {
   user-select: none;
 
   .badge {
     background-color: $gray-600;
-    color: $white;
-    font-size: small;
-    font-weight: lighter;
-    height: 2em;
-    border-radius: 1em;
-    padding: 0.5em 0.5em;
-    margin-top: $spacer-1;
-    margin-bottom: $spacer-1;
+    color: $foreground;
+    font-size: $font-size;
+    font-weight: $font-weight-base;
+    margin: $button-vert-margin $button-vert-margin $button-vert-margin 0;
+    height: $button-height;
+    border-radius: $button-height;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    padding-right: 0;
 
-    button {
-      color: $white;
-      cursor: pointer;
-      margin: 0;
-      padding: 0;
-      border: 0;
-      background: transparent;
-      font-size: inherit;
+    .console-history-result-in-progress-cancel::after {
+      border-radius: $button-height;
     }
   }
 
@@ -30,13 +31,6 @@
       color: $gray-300;
       background-color: $gray-700;
       border-color: $gray-700;
-
-      button {
-        color: $gray-300;
-        background-color: $gray-700;
-        border-color: $gray-700;
-        pointer-events: none;
-      }
     }
   }
 }

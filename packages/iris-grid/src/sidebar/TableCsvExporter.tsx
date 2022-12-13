@@ -7,7 +7,12 @@ import {
   RadioGroup,
   RadioItem,
 } from '@deephaven/components';
-import { GridRange } from '@deephaven/grid';
+import {
+  GridRange,
+  GridUtils,
+  ModelSizeMap,
+  MoveOperation,
+} from '@deephaven/grid';
 import { vsWarning } from '@deephaven/icons';
 import dh, { Table, TableViewportSubscription } from '@deephaven/jsapi-shim';
 import { TimeUtils } from '@deephaven/utils';
@@ -15,11 +20,14 @@ import shortid from 'shortid';
 import './TableCsvExporter.scss';
 import Log from '@deephaven/log';
 import IrisGridModel from '../IrisGridModel';
+import IrisGridUtils from '../IrisGridUtils';
 
 const log = Log.module('TableCsvExporter');
 interface TableCsvExporterProps {
   model: IrisGridModel;
   name: string;
+  userColumnWidths: ModelSizeMap;
+  movedColumns: MoveOperation[];
   isDownloading: boolean;
   tableDownloadStatus: string;
   tableDownloadProgress: number;
@@ -29,7 +37,8 @@ interface TableCsvExporterProps {
     fileName: string,
     frozenTable: Table,
     tableSubscription: TableViewportSubscription,
-    snapshotRanges: GridRange[]
+    snapshotRanges: GridRange[],
+    modelRanges: GridRange[]
   ) => void;
   onCancel: () => void;
   selectedRanges: GridRange[];
@@ -121,28 +130,34 @@ class TableCsvExporter extends Component<
       customizedDownloadOption,
       customizedDownloadRows,
     } = this.state;
-    const { rowCount } = model;
+    const { rowCount, columnCount } = model;
     let snapshotRanges = [] as GridRange[];
     switch (downloadOption) {
       case TableCsvExporter.DOWNLOAD_OPTIONS.ALL_ROWS:
-        snapshotRanges.push(new GridRange(null, 0, null, rowCount - 1));
+        snapshotRanges.push(new GridRange(0, 0, columnCount - 1, rowCount - 1));
         break;
       case TableCsvExporter.DOWNLOAD_OPTIONS.SELECTED_ROWS:
-        snapshotRanges = [...selectedRanges].sort((rangeA, rangeB) => {
-          if (rangeA.startRow != null && rangeB.startRow != null) {
-            return rangeA.startRow - rangeB.startRow;
-          }
-          return 0;
-        });
+        snapshotRanges = selectedRanges
+          .map(range => ({
+            ...range,
+            startColumn: 0,
+            endColumn: columnCount - 1,
+          }))
+          .sort((rangeA, rangeB) => {
+            if (rangeA.startRow != null && rangeB.startRow != null) {
+              return rangeA.startRow - rangeB.startRow;
+            }
+            return 0;
+          }) as GridRange[];
         break;
       case TableCsvExporter.DOWNLOAD_OPTIONS.CUSTOMIZED_ROWS:
         switch (customizedDownloadOption) {
           case TableCsvExporter.CUSTOMIZED_ROWS_OPTIONS.FIRST:
             snapshotRanges.push(
               new GridRange(
-                null,
                 0,
-                null,
+                0,
+                columnCount - 1,
                 Math.min(customizedDownloadRows - 1, rowCount - 1)
               )
             );
@@ -150,9 +165,9 @@ class TableCsvExporter extends Component<
           case TableCsvExporter.CUSTOMIZED_ROWS_OPTIONS.LAST:
             snapshotRanges.push(
               new GridRange(
-                null,
+                0,
                 Math.max(0, rowCount - customizedDownloadRows),
-                null,
+                columnCount - 1,
                 rowCount - 1
               )
             );
@@ -165,6 +180,20 @@ class TableCsvExporter extends Component<
         break;
     }
     return snapshotRanges;
+  }
+
+  getModelRanges(ranges: GridRange[]): GridRange[] {
+    const { userColumnWidths, movedColumns } = this.props;
+    const hiddenColumns = IrisGridUtils.getHiddenColumns(userColumnWidths);
+    let modelRanges = GridUtils.getModelRanges(ranges, movedColumns);
+    if (hiddenColumns.length > 0) {
+      const subtractRanges = hiddenColumns.map(GridRange.makeColumn);
+      modelRanges = GridRange.subtractRangesFromRanges(
+        modelRanges,
+        subtractRanges
+      );
+    }
+    return modelRanges;
   }
 
   resetDownloadState(): void {
@@ -189,13 +218,20 @@ class TableCsvExporter extends Component<
     this.resetDownloadState();
 
     const snapshotRanges = this.getSnapshotRanges();
+    const modelRanges = this.getModelRanges(snapshotRanges);
     if (this.validateOptionInput()) {
       onDownloadStart();
       try {
         const frozenTable = await model.export();
         const tableSubscription = frozenTable.setViewport(0, 0);
         await tableSubscription.getViewportData();
-        onDownload(fileName, frozenTable, tableSubscription, snapshotRanges);
+        onDownload(
+          fileName,
+          frozenTable,
+          tableSubscription,
+          snapshotRanges,
+          modelRanges
+        );
       } catch (error) {
         log.error('CSV download failed', error);
 

@@ -64,7 +64,7 @@ $settings-menu-z-index: $zindex-modal;
   color: $settings-menu-header-color;
 
   .btn-close-settings-menu {
-    color: $interfacewhite;
+    color: $foreground;
     font-size: 18px;
     // we want the close button to occupy at least
     // as much space as the triggering button below
@@ -179,4 +179,11 @@ $settings-menu-z-index: $zindex-modal;
       padding-bottom: $settings-menu-padding;
     }
   }
+}
+
+.detailed-server-config {
+  display: grid;
+  grid-template-columns: auto auto;
+  gap: $spacer-1 $spacer-3;
+  text-align: left;
 }

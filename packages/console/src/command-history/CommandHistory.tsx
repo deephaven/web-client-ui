@@ -1,7 +1,6 @@
 import React, { ChangeEvent, Component, ReactElement, RefObject } from 'react';
 import {
   ContextActions,
-  ContextActionUtils,
   ItemList,
   SearchInput,
   GLOBAL_SHORTCUTS,
@@ -15,7 +14,7 @@ import {
   vsPlay,
   vsTerminal,
 } from '@deephaven/icons';
-import { Pending, Range } from '@deephaven/utils';
+import { copyToClipboard, Pending, Range } from '@deephaven/utils';
 import Log from '@deephaven/log';
 import CommandHistoryItem from './CommandHistoryItem';
 import CommandHistoryActions from './CommandHistoryActions';
@@ -260,9 +259,7 @@ class CommandHistory extends Component<
   }
 
   copySelectedCommands(): void {
-    this.getSelectedCommandText()
-      .then(ContextActionUtils.copyToClipboard)
-      .catch(log.error);
+    this.getSelectedCommandText().then(copyToClipboard).catch(log.error);
   }
 
   createNotebook(): void {

@@ -20,6 +20,10 @@
     "build": "cross-env NODE_ENV=production run-p build:*",
     "build:babel": "babel ./src --out-dir ./dist --extensions \".ts,.tsx,.js,.jsx\" --source-maps --root-mode upward"
   },
+  "dependencies": {
+    "@deephaven/log": "file:../log",
+    "@deephaven/utils": "file:../utils"
+  },
   "peerDependencies": {
     "react": "^17.0.0"
   },

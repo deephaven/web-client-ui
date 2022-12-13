@@ -30,7 +30,7 @@ const log = Log.module('ConsoleMenu');
 interface ConsoleMenuProps {
   openObject: (object: VariableDefinition) => void;
   objects: VariableDefinition[];
-  overflowActions: DropdownAction[];
+  overflowActions: () => DropdownAction[];
 }
 
 interface ConsoleMenuState {

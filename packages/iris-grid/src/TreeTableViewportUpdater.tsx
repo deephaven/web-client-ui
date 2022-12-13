@@ -44,7 +44,6 @@ class TreeTableViewportUpdater extends PureComponent<
 
   constructor(props: TreeTableViewportUpdaterProps) {
     super(props);
-    this.updateViewport = this.updateViewport.bind(this);
 
     this.listenerCleanup = null;
   }

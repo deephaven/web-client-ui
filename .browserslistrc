@@ -1,0 +1,4 @@
+# Use the default value for browsers we support https://browsersl.ist/#q=defaults
+# Used by post-css only, JS browser targeting is controlled by Vite https://vitejs.dev/config/build-options.html#build-target
+
+defaults

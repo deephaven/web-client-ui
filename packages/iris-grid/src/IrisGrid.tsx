@@ -13,7 +13,6 @@ import deepEqual from 'deep-equal';
 import Log from '@deephaven/log';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
-  ContextActionUtils,
   ContextActions,
   Stack,
   Menu,
@@ -64,6 +63,7 @@ import {
 import dh, {
   Column,
   CustomColumn,
+  DateWrapper,
   FilterCondition,
   Sort,
   Table,
@@ -84,6 +84,7 @@ import {
 } from '@deephaven/jsapi-utils';
 import {
   assertNotNull,
+  copyToClipboard,
   Pending,
   PromiseUtils,
   ValidationError,
@@ -183,6 +184,8 @@ const DEFAULT_AGGREGATION_SETTINGS = Object.freeze({
   showOnTop: false,
 });
 
+const UNFORMATTED_DATE_PATTERN = `yyyy-MM-dd'T'HH:mm:ss.SSSSSSSSS z`;
+
 function isEmptyConfig({
   advancedFilters,
   aggregationSettings,
@@ -233,7 +236,7 @@ export interface IrisGridProps {
   movedColumns: MoveOperation[];
   movedRows: MoveOperation[];
   inputFilters: InputFilter[];
-  customFilters: unknown[];
+  customFilters: FilterCondition[];
   model: IrisGridModel;
   onCreateChart: (settings: ChartBuilderSettings, model: IrisGridModel) => void;
   onColumnSelected: (column: Column) => void;
@@ -993,7 +996,8 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       showSearchBar: boolean,
       canDownloadCsv: boolean,
       canToggleSearch: boolean,
-      showGotoRow: boolean
+      showGotoRow: boolean,
+      hasAdvancedSettings: boolean
     ) => {
       const optionItems: OptionItem[] = [];
       if (isChartBuilderAvailable) {
@@ -1050,11 +1054,13 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
           icon: vsCloudDownload,
         });
       }
-      optionItems.push({
-        type: OptionType.ADVANCED_SETTINGS,
-        title: 'Advanced Settings',
-        icon: vsTools,
-      });
+      if (hasAdvancedSettings) {
+        optionItems.push({
+          type: OptionType.ADVANCED_SETTINGS,
+          title: 'Advanced Settings',
+          icon: vsTools,
+        });
+      }
       optionItems.push({
         type: OptionType.QUICK_FILTERS,
         title: 'Quick Filters',
@@ -1233,17 +1239,17 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
   getCachedFilter = memoize(
     (
-      customFilters,
-      quickFilters,
-      advancedFilters,
-      partitionFilters,
-      searchFilter
+      customFilters: FilterCondition[],
+      quickFilters: QuickFilterMap,
+      advancedFilters: AdvancedFilterMap,
+      partitionFilters: FilterCondition[],
+      searchFilter: FilterCondition | undefined
     ) => [
       ...(customFilters ?? []),
       ...(partitionFilters ?? []),
       ...IrisGridUtils.getFiltersFromFilterMap(quickFilters),
       ...IrisGridUtils.getFiltersFromFilterMap(advancedFilters),
-      ...(searchFilter ?? []),
+      ...(searchFilter !== undefined ? [searchFilter] : []),
     ],
     { max: 1 }
   );
@@ -1272,7 +1278,17 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     const modelColumn = this.getModelColumn(columnIndex);
     const modelRow = this.getModelRow(rowIndex);
     if (rawValue && modelColumn != null && modelRow != null) {
-      return model.valueForCell(modelColumn, modelRow);
+      const value = model.valueForCell(modelColumn, modelRow);
+      if (TableUtils.isDateType(model.columns[modelColumn].type)) {
+        // The returned value is just a long value, we should return the value fromatted as a full date string
+        const { formatter } = model;
+        return dh.i18n.DateTimeFormat.format(
+          UNFORMATTED_DATE_PATTERN,
+          value as number | Date | DateWrapper,
+          dh.i18n.TimeZone.getTimeZone(formatter.timeZone)
+        );
+      }
+      return value;
     }
     if (rawValue) {
       return null;
@@ -1831,9 +1847,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       const value = String(
         this.getValueForCell(columnIndex, rowIndex, rawValue)
       );
-      ContextActionUtils.copyToClipboard(value).catch(e =>
-        log.error('Unable to copy cell', e)
-      );
+      copyToClipboard(value).catch(e => log.error('Unable to copy cell', e));
     } else {
       log.error('Attempted to copyCell for user without copy permission.');
     }
@@ -2037,7 +2051,11 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     } else if (rightVisible < column) {
       const metricState = this.grid?.getMetricState();
       assertNotNull(metricState);
-      const newLeft = metricCalculator.getLastLeft(metricState, column);
+      const newLeft = metricCalculator.getLastLeft(
+        metricState,
+        column,
+        metricCalculator.getVisibleWidth(metricState)
+      );
       this.grid?.setViewState(
         { left: Math.min(newLeft, lastLeft), leftOffset: 0 },
         true
@@ -3055,7 +3073,8 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     fileName: string,
     frozenTable: Table,
     tableSubscription: TableViewportSubscription,
-    gridRanges: GridRange[]
+    snapshotRanges: GridRange[],
+    modelRanges: GridRange[]
   ): void {
     const { canDownloadCsv } = this.props;
     if (canDownloadCsv) {
@@ -3064,7 +3083,8 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
         fileName,
         frozenTable,
         tableSubscription,
-        gridRanges
+        snapshotRanges,
+        modelRanges
       );
       this.setState(() => {
         if (this.tableSaver) {
@@ -3072,7 +3092,8 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
             fileName,
             frozenTable,
             tableSubscription,
-            gridRanges
+            snapshotRanges,
+            modelRanges
           );
         }
         return {
@@ -3798,7 +3819,8 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       showSearchBar,
       canDownloadCsv,
       this.isTableSearchAvailable(),
-      isGotoRowShown
+      isGotoRowShown,
+      advancedSettings.size > 0
     );
 
     const openOptionsStack = openOptions.map(option => {
@@ -3887,6 +3909,8 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
             <TableCsvExporter
               model={model}
               name={name}
+              userColumnWidths={userColumnWidths}
+              movedColumns={movedColumns}
               isDownloading={isTableDownloading}
               tableDownloadStatus={tableDownloadStatus}
               tableDownloadProgress={tableDownloadProgress}

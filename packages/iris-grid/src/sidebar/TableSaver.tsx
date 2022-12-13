@@ -16,6 +16,7 @@ import {
   PromiseUtils,
   assertNotNull,
 } from '@deephaven/utils';
+import IrisGridUtils from '../IrisGridUtils';
 
 const log = Log.module('TableSaver');
 
@@ -253,7 +254,8 @@ export default class TableSaver extends PureComponent<
     fileName: string,
     frozenTable: Table,
     tableSubscription: TableViewportSubscription,
-    gridRanges: GridRange[]
+    snapshotRanges: GridRange[],
+    modelRanges: GridRange[]
   ): void {
     // don't trigger another download when a download is ongoing
     const { isDownloading } = this.props;
@@ -265,9 +267,12 @@ export default class TableSaver extends PureComponent<
     log.info(`start downloading ${fileName}`);
 
     this.table = frozenTable;
-    this.columns = frozenTable.columns;
+    this.columns = IrisGridUtils.columnsFromRanges(
+      modelRanges,
+      frozenTable.columns
+    );
     this.tableSubscription = tableSubscription;
-    this.gridRanges = gridRanges;
+    this.gridRanges = snapshotRanges;
 
     // Make filename RFC5987 compatible
     const encodedFileName = encodeURIComponent(fileName.replace(/\//g, ':'))

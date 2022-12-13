@@ -1309,13 +1309,16 @@ class IrisGridTableModelTemplate<
   async snapshot(
     ranges: GridRange[],
     includeHeaders = false,
-    formatValue: (value: unknown, column: Column) => unknown = value => value
+    formatValue: (value: unknown, column: Column) => unknown = value => value,
+    consolidateRanges = true
   ): Promise<unknown[][]> {
     if (this.subscription == null) {
       throw new Error('No subscription available');
     }
 
-    const consolidated = GridRange.consolidate(ranges);
+    const consolidated = consolidateRanges
+      ? GridRange.consolidate(ranges)
+      : ranges;
     if (!IrisGridUtils.isValidSnapshotRanges(consolidated)) {
       throw new Error(`Invalid snapshot ranges ${ranges}`);
     }
@@ -1435,7 +1438,12 @@ class IrisGridTableModelTemplate<
   ): Promise<string> {
     log.debug2('textSnapshot', ranges, includeHeaders);
 
-    const data = await this.snapshot(ranges, includeHeaders, formatValue);
+    const data = await this.snapshot(
+      ranges,
+      includeHeaders,
+      formatValue,
+      false
+    );
     return data.map(row => row.join('\t')).join('\n');
   }
 

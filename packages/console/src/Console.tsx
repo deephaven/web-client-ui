@@ -952,7 +952,7 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
         <div className="console-pane" ref={this.consolePane}>
           <ConsoleStatusBar
             session={session}
-            overflowActions={this.handleOverflowActions()}
+            overflowActions={this.handleOverflowActions}
             openObject={openObject}
             objects={consoleMenuObjects}
           >

@@ -116,7 +116,7 @@ $btn-play-color: $success;
 
 @keyframes flash {
   0% {
-    text-shadow: 0 0 5px $interfacegray, 0 0 20px $interfacegray;
+    text-shadow: 0 0 5px $content-bg, 0 0 20px $content-bg;
   }
 
   50% {
@@ -124,6 +124,6 @@ $btn-play-color: $success;
   }
 
   100% {
-    text-shadow: 0 0 5px $interfacegray, 0 0 20px $interfacegray;
+    text-shadow: 0 0 5px $content-bg, 0 0 20px $content-bg;
   }
 }
