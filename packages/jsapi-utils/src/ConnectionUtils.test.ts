@@ -1,4 +1,4 @@
-import dh, { VariableDefinition } from '@deephaven/jsapi-shim';
+import dh from '@deephaven/jsapi-shim';
 import { TimeoutError } from '@deephaven/utils';
 import { fetchVariableDefinition } from './ConnectionUtils';
 
@@ -10,12 +10,12 @@ const mockSubscribeToFieldUpdates = jest.fn(
 const connection = new dh.IdeConnection('http://mockserver');
 connection.subscribeToFieldUpdates = mockSubscribeToFieldUpdates;
 
-const testDefinition1: VariableDefinition = {
+const testDefinition1 = {
   title: 'TEST_DEF',
   type: dh.VariableType.TABLE,
 };
 
-const testDefinition2: VariableDefinition = {
+const testDefinition2 = {
   title: 'ANOTHER_DEF',
   type: dh.VariableType.FIGURE,
 };
@@ -36,7 +36,7 @@ beforeEach(() => {
 it('finds the right definition if variable exists', async () => {
   const fetchPromise = fetchVariableDefinition(
     connection,
-    testDefinition1.title ?? ''
+    testDefinition1.title
   );
 
   expect(mockSubscribeToFieldUpdates).toHaveBeenCalled();
@@ -59,7 +59,7 @@ it('finds the right definition if variable exists', async () => {
 it('finds the definition in the second update if not after the first update', async () => {
   const fetchPromise = fetchVariableDefinition(
     connection,
-    testDefinition2.title ?? ''
+    testDefinition2.title
   );
 
   expect(mockSubscribeToFieldUpdates).toHaveBeenCalled();
@@ -90,7 +90,7 @@ it('finds the definition in the second update if not after the first update', as
 it('throws a TimeoutError if variable not found', async () => {
   const fetchPromise = fetchVariableDefinition(
     connection,
-    testDefinition2.title ?? ''
+    testDefinition2.title
   );
 
   expect(mockSubscribeToFieldUpdates).toHaveBeenCalled();
