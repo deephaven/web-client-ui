@@ -5,15 +5,37 @@ name: Node.js CI
 
 on:
   push:
-    branches: [main]
+    # TODO: Change this back to `main` after stuff is debugged
+    branches: [e2e-github-action]
   pull_request:
     branches: [main]
-
+env:
+  INPUT_REF: e2e-github-action
+  DOCKER_TAG: 0.19.0
 jobs:
+  core:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Check server:${{ env.DOCKER_TAG }} manifest SHA
+        # Just take a SHA of the manifest to see if we need to pull the image or can just load from cache
+        run: |
+          docker manifest inspect ghcr.io/deephaven/server:${{ env.DOCKER_TAG }} | sha256sum > manifest_sha.txt
+          echo "manifest_sha=$(cat manifest_sha.txt)" >> $GITHUB_ENV
+      - name: Check if image has previously been pulled
+        id: check_sha
+        uses: actions/cache@v3
+        with:
+          path: /var/lib/docker
+          key: ${{ env.INPUT_REF }}-${{ env.manifest_sha }}
+      - name: Update Image Cache if cache miss
+        if: steps.check_sha.outputs.cache-hit != 'true'
+        run: docker pull --quiet ghcr.io/deephaven/server:${{ env.DOCKER_TAG }}
+      - name: Run server:${{ env.DOCKER_TAG }}
+        run: docker run --detach --publish 10000:10000 ghcr.io/deephaven/server:${{ env.DOCKER_TAG }}
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     concurrency:
-      group: ${{ github.workflow }}-${{ github.ref }}
+      group: ${{ github.workflow }}-build-${{ github.ref }}
       cancel-in-progress: true
 
     steps:
@@ -57,8 +79,14 @@ jobs:
         run: npm ci --no-audit
 
       - name: Build
-        run: npm run build
-
+        run: VITE_CORE_API_URL=http://localhost:10000/jsapi npm run build
+  unit_test:
+    needs: [core, build]
+    runs-on: ubuntu-22.04
+    concurrency:
+      group: ${{ github.workflow }}-unit_test-${{ github.ref }}
+      cancel-in-progress: true
+    steps:
       # Run unit tests on all files for accurate code coverage
       # Lint only changed files so linting is faster
       # Caching with the absolute path b/c Jest will make a folder in each project
@@ -83,3 +111,31 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           directory: ./coverage
           flags: unit
+  e2e_test:
+    timeout-minutes: 60
+    needs: [core, build]
+    runs-on: ubuntu-22.04
+    concurrency:
+      group: ${{ github.workflow }}-e2e_test-${{ github.ref }}
+      cancel-in-progress: true
+    steps:
+      - name: Get installed Playwright version
+        id: playwright-version
+        run: echo playwright_version=$(npx playwright --version) >> $GITHUB_ENV
+      - name: Check Playwright cache
+        uses: actions/cache@v3
+        id: playwright-cache
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ env.playwright_version }}
+      - name: Install Playwright Browsers
+        if: steps.playwright-cache.outputs.cache_hit != 'true'
+        run: npx playwright install --with-deps
+      - name: Run Playwright tests
+        run: npx playwright test
+      - uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 14
