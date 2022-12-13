@@ -549,7 +549,7 @@ describe('combineFiltersFromList', () => {
     filterList.push(createFilter('eq', 'null', null, 1));
     filterList.push(createFilter('notEq', 'null', null, 2));
     expect(IrisGridUtils.combineFiltersFromList('string', filterList)).toEqual(
-      '!=null || =null || =null'
+      '>null && !=null || =null'
     );
   });
 

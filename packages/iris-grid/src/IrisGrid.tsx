@@ -1454,7 +1454,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
    */
   setQuickFilter(
     modelIndex: ModelIndex,
-    filter: FilterCondition,
+    filter: FilterCondition | null,
     text: string
   ): void {
     log.debug('Setting quick filter', modelIndex, filter, text);
@@ -1498,24 +1498,16 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
         columnType,
         filterList
       );
-      // Fallback value is the last filter in filterList
-      let fallbackFilterValue;
-      const { value } = filterList[filterList.length - 1];
-      if (
-        TableUtils.isTextType(columnType) ||
-        TableUtils.isBooleanType(columnType)
-      ) {
-        fallbackFilterValue = dh.FilterValue.ofString(value ?? '');
+      if (combinedText.length === 0) {
+        this.removeQuickFilter(columnIndex);
       } else {
-        fallbackFilterValue = dh.FilterValue.ofNumber(value);
+        const { formatter } = model;
+        this.setQuickFilter(
+          columnIndex,
+          IrisGrid.makeQuickFilter(column, combinedText, formatter.timeZone),
+          `${combinedText}`
+        );
       }
-      const { formatter } = model;
-      this.setQuickFilter(
-        columnIndex,
-        IrisGrid.makeQuickFilter(column, combinedText, formatter.timeZone) ??
-          column.filter().eq(fallbackFilterValue),
-        `${combinedText}`
-      );
     });
   }
 

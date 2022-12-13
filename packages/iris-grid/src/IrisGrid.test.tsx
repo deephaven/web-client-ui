@@ -120,6 +120,7 @@ it('handles copy key handler', () => {
 it('handles value: undefined in setFilterMap, clears column filter', () => {
   const component = makeComponent();
   component.setQuickFilter = jest.fn();
+  component.removeQuickFilter = jest.fn();
   component.setFilterMap(
     new Map([
       [
@@ -138,11 +139,8 @@ it('handles value: undefined in setFilterMap, clears column filter', () => {
       ],
     ])
   );
-  expect(component.setQuickFilter).toHaveBeenCalledWith(
-    2,
-    expect.anything(),
-    ''
-  );
+  expect(component.setQuickFilter).not.toHaveBeenCalled();
+  expect(component.removeQuickFilter).toHaveBeenCalledWith(2);
 });
 
 it('handles value: null in setFilterMap', () => {

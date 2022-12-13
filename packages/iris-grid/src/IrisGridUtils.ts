@@ -1507,14 +1507,10 @@ class IrisGridUtils {
   ): string {
     filterList.sort((a, b) => {
       // move all 'equals' comparisons to end of list
-      const aOperator =
-        a.value == null && a.operator !== 'notEq' ? 'eq' : a.operator;
-      const bOperator =
-        b.value == null && b.operator !== 'notEq' ? 'eq' : b.operator;
-      if (aOperator === 'eq' && bOperator !== 'eq') {
+      if (a.operator === 'eq' && b.operator !== 'eq') {
         return 1;
       }
-      if (aOperator !== 'eq' && bOperator === 'eq') {
+      if (a.operator !== 'eq' && b.operator === 'eq') {
         return -1;
       }
       return a.startColumnIndex - b.startColumnIndex;
@@ -1522,14 +1518,12 @@ class IrisGridUtils {
 
     let combinedText = '';
     for (let i = 0; i < filterList.length; i += 1) {
-      let { operator } = filterList[i];
-      const { text, value } = filterList[i];
+      const { text, value, operator } = filterList[i];
       if (value !== undefined) {
         let symbol = '';
         if (operator !== undefined) {
-          if (value == null && operator !== 'notEq') {
+          if (value == null && operator === 'eq') {
             symbol = '=';
-            operator = 'eq';
           } else if (operator !== 'eq') {
             if (operator === 'startsWith' || operator === 'endsWith') {
               symbol = '*';
@@ -1540,7 +1534,7 @@ class IrisGridUtils {
         }
 
         let filterText = `${symbol}${text}`;
-        if (operator === 'startsWith' && value !== null) {
+        if (operator === 'startsWith') {
           filterText = `${text}${symbol}`;
         }
         if (

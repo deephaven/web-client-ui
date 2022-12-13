@@ -13,19 +13,6 @@ $dash-delete-color-2: mix($danger, $content-bg, 25%);
 $dash-size: 10;
 
 .linker-overlay {
-  .btn-fab {
-    pointer-events: all;
-    position: absolute;
-    min-width: 1rem;
-    min-height: 1rem;
-    padding: 0.25rem 0.45rem;
-  }
-
-  .btn-fab.btn-delete:hover {
-    background-color: $dash-delete-color-1;
-    border-color: $dash-delete-color-1;
-  }
-
   .linker-link {
     position: absolute;
     width: 100%;
@@ -59,6 +46,8 @@ $dash-size: 10;
     }
 
     &.link-is-selected {
+      z-index: 20;
+
       .link-dot,
       .link-triangle {
         fill: $primary;
@@ -119,6 +108,10 @@ $dash-size: 10;
       pointer-events: none;
     }
 
+    &.hovering {
+      z-index: 10;
+    }
+
     path.link-select:hover ~ path.link-background {
       stroke: $primary-hover;
     }
@@ -150,6 +143,36 @@ $dash-size: 10;
         fill: $dash-delete-color-1;
       }
     }
+  }
+
+  .btn-fab {
+    position: absolute;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    pointer-events: all;
+    min-width: $input-height;
+    min-height: $input-height;
+    height: $input-height;
+    width: $input-height;
+    line-height: $font-size-lg; // vertical centering for text inside fa-layer
+    padding: 0;
+    margin: 0;
+    z-index: 30;
+    box-shadow: $box-shadow;
+    .fa-layers {
+      display: inline-flex;
+      justify-content: center;
+      b {
+        // comparison operator
+        font-size: $font-size-lg;
+      }
+    }
+  }
+
+  .btn-fab.btn-delete:hover {
+    background-color: $dash-delete-color-1;
+    border-color: $dash-delete-color-1;
   }
 }
 
