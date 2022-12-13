@@ -3,6 +3,7 @@ import ClassNames from 'classnames';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   Button,
+  Checkbox,
   LoadingSpinner,
   RadioGroup,
   RadioItem,
@@ -38,7 +39,9 @@ interface TableCsvExporterProps {
     frozenTable: Table,
     tableSubscription: TableViewportSubscription,
     snapshotRanges: GridRange[],
-    modelRanges: GridRange[]
+    modelRanges: GridRange[],
+    includeColumnHeaders: boolean,
+    useUnformattedValues: boolean
   ) => void;
   onCancel: () => void;
   selectedRanges: GridRange[];
@@ -47,9 +50,13 @@ interface TableCsvExporterProps {
 interface TableCsvExporterState {
   fileName: string;
 
-  downloadOption: string;
-  customizedDownloadOption: string;
+  downloadRowOption: string;
+  customizedDownloadRowOption: string;
   customizedDownloadRows: number;
+
+  includeColumnHeaders: boolean;
+  includeHiddenColumns: boolean;
+  useUnformattedValues: boolean;
 
   errorMessage: React.ReactNode;
   id: string;
@@ -67,7 +74,7 @@ class TableCsvExporter extends Component<
     CANCELED: 'CANCELED',
   };
 
-  static DOWNLOAD_OPTIONS = {
+  static DOWNLOAD_ROW_OPTIONS = {
     ALL_ROWS: 'ALL_ROWS',
     SELECTED_ROWS: 'SELECTED_ROWS',
     CUSTOMIZED_ROWS: 'CUSTOMIZED_ROWS',
@@ -100,13 +107,22 @@ class TableCsvExporter extends Component<
     super(props);
 
     this.handleDownloadClick = this.handleDownloadClick.bind(this);
-    this.handleDownloadOptionChanged = this.handleDownloadOptionChanged.bind(
+    this.handleDownloadRowOptionChanged = this.handleDownloadRowOptionChanged.bind(
       this
     );
-    this.handleCustomizedDownloadOptionChanged = this.handleCustomizedDownloadOptionChanged.bind(
+    this.handleCustomizedDownloadRowOptionChanged = this.handleCustomizedDownloadRowOptionChanged.bind(
       this
     );
     this.handleCustomizedDownloadRowsChanged = this.handleCustomizedDownloadRowsChanged.bind(
+      this
+    );
+    this.handleIncludeColumnHeadersChanged = this.handleIncludeColumnHeadersChanged.bind(
+      this
+    );
+    this.handleIncludeHiddenColumnsChanged = this.handleIncludeHiddenColumnsChanged.bind(
+      this
+    );
+    this.handleUseUnformattedValuesChanged = this.handleUseUnformattedValuesChanged.bind(
       this
     );
 
@@ -114,9 +130,14 @@ class TableCsvExporter extends Component<
     this.state = {
       fileName: `${name}-${TableCsvExporter.getDateString()}.csv`,
 
-      downloadOption: TableCsvExporter.DOWNLOAD_OPTIONS.ALL_ROWS,
-      customizedDownloadOption: TableCsvExporter.CUSTOMIZED_ROWS_OPTIONS.FIRST,
+      downloadRowOption: TableCsvExporter.DOWNLOAD_ROW_OPTIONS.ALL_ROWS,
+      customizedDownloadRowOption:
+        TableCsvExporter.CUSTOMIZED_ROWS_OPTIONS.FIRST,
       customizedDownloadRows: TableCsvExporter.DEFAULT_DOWNLOAD_ROWS,
+
+      includeColumnHeaders: true,
+      includeHiddenColumns: false,
+      useUnformattedValues: false,
 
       errorMessage: null,
       id: shortid.generate(),
@@ -126,17 +147,17 @@ class TableCsvExporter extends Component<
   getSnapshotRanges(): GridRange[] {
     const { model, selectedRanges } = this.props;
     const {
-      downloadOption,
-      customizedDownloadOption,
+      downloadRowOption,
+      customizedDownloadRowOption,
       customizedDownloadRows,
     } = this.state;
     const { rowCount, columnCount } = model;
     let snapshotRanges = [] as GridRange[];
-    switch (downloadOption) {
-      case TableCsvExporter.DOWNLOAD_OPTIONS.ALL_ROWS:
+    switch (downloadRowOption) {
+      case TableCsvExporter.DOWNLOAD_ROW_OPTIONS.ALL_ROWS:
         snapshotRanges.push(new GridRange(0, 0, columnCount - 1, rowCount - 1));
         break;
-      case TableCsvExporter.DOWNLOAD_OPTIONS.SELECTED_ROWS:
+      case TableCsvExporter.DOWNLOAD_ROW_OPTIONS.SELECTED_ROWS:
         snapshotRanges = selectedRanges
           .map(range => ({
             ...range,
@@ -150,8 +171,8 @@ class TableCsvExporter extends Component<
             return 0;
           }) as GridRange[];
         break;
-      case TableCsvExporter.DOWNLOAD_OPTIONS.CUSTOMIZED_ROWS:
-        switch (customizedDownloadOption) {
+      case TableCsvExporter.DOWNLOAD_ROW_OPTIONS.CUSTOMIZED_ROWS:
+        switch (customizedDownloadRowOption) {
           case TableCsvExporter.CUSTOMIZED_ROWS_OPTIONS.FIRST:
             snapshotRanges.push(
               new GridRange(
@@ -184,9 +205,10 @@ class TableCsvExporter extends Component<
 
   getModelRanges(ranges: GridRange[]): GridRange[] {
     const { userColumnWidths, movedColumns } = this.props;
+    const { includeHiddenColumns } = this.state;
     const hiddenColumns = IrisGridUtils.getHiddenColumns(userColumnWidths);
     let modelRanges = GridUtils.getModelRanges(ranges, movedColumns);
-    if (hiddenColumns.length > 0) {
+    if (!includeHiddenColumns && hiddenColumns.length > 0) {
       const subtractRanges = hiddenColumns.map(GridRange.makeColumn);
       modelRanges = GridRange.subtractRangesFromRanges(
         modelRanges,
@@ -208,7 +230,7 @@ class TableCsvExporter extends Component<
       onDownload,
       onCancel,
     } = this.props;
-    const { fileName } = this.state;
+    const { fileName, includeColumnHeaders, useUnformattedValues } = this.state;
 
     if (isDownloading) {
       onCancel();
@@ -230,7 +252,9 @@ class TableCsvExporter extends Component<
           frozenTable,
           tableSubscription,
           snapshotRanges,
-          modelRanges
+          modelRanges,
+          includeColumnHeaders,
+          useUnformattedValues
         );
       } catch (error) {
         log.error('CSV download failed', error);
@@ -247,16 +271,16 @@ class TableCsvExporter extends Component<
     }
   }
 
-  handleDownloadOptionChanged(
+  handleDownloadRowOptionChanged(
     event: React.ChangeEvent<HTMLInputElement>
   ): void {
-    this.setState({ downloadOption: event.target.value });
+    this.setState({ downloadRowOption: event.target.value });
   }
 
-  handleCustomizedDownloadOptionChanged(
+  handleCustomizedDownloadRowOptionChanged(
     event: React.ChangeEvent<HTMLSelectElement>
   ): void {
-    this.setState({ customizedDownloadOption: event.target.value });
+    this.setState({ customizedDownloadRowOption: event.target.value });
   }
 
   handleCustomizedDownloadRowsChanged(
@@ -265,12 +289,31 @@ class TableCsvExporter extends Component<
     this.setState({ customizedDownloadRows: parseInt(event.target.value, 10) });
   }
 
+  handleIncludeColumnHeadersChanged(): void {
+    this.setState(({ includeColumnHeaders }) => ({
+      includeColumnHeaders: !includeColumnHeaders,
+    }));
+  }
+
+  handleIncludeHiddenColumnsChanged(): void {
+    this.setState(({ includeHiddenColumns }) => ({
+      includeHiddenColumns: !includeHiddenColumns,
+    }));
+  }
+
+  handleUseUnformattedValuesChanged(): void {
+    this.setState(({ useUnformattedValues }) => ({
+      useUnformattedValues: !useUnformattedValues,
+    }));
+  }
+
   validateOptionInput(): boolean {
     const { selectedRanges } = this.props;
-    const { downloadOption, customizedDownloadRows } = this.state;
+    const { downloadRowOption, customizedDownloadRows } = this.state;
 
     if (
-      downloadOption === TableCsvExporter.DOWNLOAD_OPTIONS.SELECTED_ROWS &&
+      downloadRowOption ===
+        TableCsvExporter.DOWNLOAD_ROW_OPTIONS.SELECTED_ROWS &&
       selectedRanges.length === 0
     ) {
       this.setState({
@@ -285,7 +328,8 @@ class TableCsvExporter extends Component<
     }
 
     if (
-      downloadOption === TableCsvExporter.DOWNLOAD_OPTIONS.CUSTOMIZED_ROWS &&
+      downloadRowOption ===
+        TableCsvExporter.DOWNLOAD_ROW_OPTIONS.CUSTOMIZED_ROWS &&
       customizedDownloadRows <= 0
     ) {
       this.setState({
@@ -312,9 +356,12 @@ class TableCsvExporter extends Component<
     } = this.props;
     const {
       fileName,
-      downloadOption,
-      customizedDownloadOption,
+      downloadRowOption,
+      customizedDownloadRowOption,
       customizedDownloadRows,
+      includeColumnHeaders,
+      includeHiddenColumns,
+      useUnformattedValues,
       errorMessage,
       id,
     } = this.state;
@@ -324,12 +371,12 @@ class TableCsvExporter extends Component<
         <div className="section-title">Download Rows</div>
         <div className="form-group">
           <RadioGroup
-            onChange={this.handleDownloadOptionChanged}
-            value={downloadOption}
+            onChange={this.handleDownloadRowOptionChanged}
+            value={downloadRowOption}
             disabled={isDownloading}
           >
             <RadioItem
-              value={TableCsvExporter.DOWNLOAD_OPTIONS.ALL_ROWS}
+              value={TableCsvExporter.DOWNLOAD_ROW_OPTIONS.ALL_ROWS}
               data-testid="radio-csv-exporter-download-all"
             >
               All Rows
@@ -340,7 +387,7 @@ class TableCsvExporter extends Component<
               </span>
             </RadioItem>
             <RadioItem
-              value={TableCsvExporter.DOWNLOAD_OPTIONS.SELECTED_ROWS}
+              value={TableCsvExporter.DOWNLOAD_ROW_OPTIONS.SELECTED_ROWS}
               data-testid="radio-csv-exporter-only-selected"
             >
               Only Selected Rows
@@ -353,7 +400,7 @@ class TableCsvExporter extends Component<
               </span>
             </RadioItem>
             <RadioItem
-              value={TableCsvExporter.DOWNLOAD_OPTIONS.CUSTOMIZED_ROWS}
+              value={TableCsvExporter.DOWNLOAD_ROW_OPTIONS.CUSTOMIZED_ROWS}
               data-testid="radio-csv-exporter-customized-rows"
             >
               <div
@@ -361,17 +408,17 @@ class TableCsvExporter extends Component<
                 role="presentation"
                 onClick={() => {
                   this.setState({
-                    downloadOption:
-                      TableCsvExporter.DOWNLOAD_OPTIONS.CUSTOMIZED_ROWS,
+                    downloadRowOption:
+                      TableCsvExporter.DOWNLOAD_ROW_OPTIONS.CUSTOMIZED_ROWS,
                   });
                 }}
               >
                 <select
-                  value={customizedDownloadOption}
+                  value={customizedDownloadRowOption}
                   data-testid="select-csv-exporter-customized-rows"
                   className="custom-select"
                   disabled={isDownloading}
-                  onChange={this.handleCustomizedDownloadOptionChanged}
+                  onChange={this.handleCustomizedDownloadRowOptionChanged}
                 >
                   <option value="FIRST">First</option>
                   <option value="LAST">Last</option>
@@ -406,6 +453,26 @@ class TableCsvExporter extends Component<
             }}
             disabled={isDownloading}
           />
+        </div>
+        <div className="checkbox-options">
+          <Checkbox
+            checked={includeColumnHeaders}
+            onChange={this.handleIncludeColumnHeadersChanged}
+          >
+            Include column headers
+          </Checkbox>
+          <Checkbox
+            checked={includeHiddenColumns}
+            onChange={this.handleIncludeHiddenColumnsChanged}
+          >
+            Include hidden columns
+          </Checkbox>
+          <Checkbox
+            checked={useUnformattedValues}
+            onChange={this.handleUseUnformattedValuesChanged}
+          >
+            Use unformatted values
+          </Checkbox>
         </div>
         <div className="section-footer flex-column">
           {errorMessage != null && (
