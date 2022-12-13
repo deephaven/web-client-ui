@@ -1,5 +1,6 @@
 import React, { Component, MouseEvent } from 'react';
 import memoize from 'memoize-one';
+import classNames from 'classnames';
 import { Button, DropdownAction, DropdownMenu } from '@deephaven/components';
 import { vsTrash, vsTriangleDown } from '@deephaven/icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -13,7 +14,6 @@ import {
 import Log from '@deephaven/log';
 import { TableUtils } from '@deephaven/jsapi-utils';
 import './LinkerLink.scss';
-import classNames from 'classnames';
 
 const log = Log.module('LinkerLink');
 
