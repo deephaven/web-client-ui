@@ -28,7 +28,7 @@ export async function typeInMonaco(page: Page, text: string): Promise<void> {
     // Pressing shift+Enter moves the cursor to a new line
     await page.keyboard.press(' ');
     await page.keyboard.press('Backspace');
-    await page.keyboard.press('Shift+Enter');
+    await page.keyboard.press('Shift+Enter', { delay: 50 });
   }
 }
 
