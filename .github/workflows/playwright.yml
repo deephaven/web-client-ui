@@ -46,8 +46,9 @@ jobs:
         run: VITE_CORE_API_URL=http://localhost:10000/jsapi npm run build
       - name: Get installed Playwright version
         id: playwright-version
-        run: echo playwright_version=$(npm ls @playwright/test | grep @playwright/test | sed 's/.*@//') >> $GITHUB_ENV
-      - uses: actions/cache@v3
+        run: echo playwright_version=$(npx playwright --version) >> $GITHUB_ENV
+      - name: Check Playwright cache
+        uses: actions/cache@v3
         id: playwright-cache
         with:
           path: ~/.cache/ms-playwright
