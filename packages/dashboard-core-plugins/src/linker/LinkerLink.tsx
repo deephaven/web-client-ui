@@ -1,4 +1,5 @@
 import React, { Component, MouseEvent } from 'react';
+import memoize from 'memoize-one';
 import { Button, DropdownAction, DropdownMenu } from '@deephaven/components';
 import { vsTrash, vsTriangleDown } from '@deephaven/icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -11,8 +12,6 @@ import {
 } from '@deephaven/filters';
 import Log from '@deephaven/log';
 import { TableUtils } from '@deephaven/jsapi-utils';
-import memoize from 'memoize-one';
-
 import './LinkerLink.scss';
 import classNames from 'classnames';
 
@@ -257,34 +256,34 @@ export class LinkerLink extends Component<LinkerLinkProps, LinkerLinkState> {
     const dMidY = qy - y1 + (y2 - qy);
     const slopeAtMid = dMidY / dMidX;
     const DISTANCE_FROM_MID = 20;
-    let dropdownOffsetX = DISTANCE_FROM_MID / Math.sqrt(1 + slopeAtMid ** 2);
-    let dropdownOffsetY = dropdownOffsetX * slopeAtMid;
-    let deleteOffsetX = dropdownOffsetX * -1;
-    let deleteOffsetY = dropdownOffsetY * -1;
+    let topOffsetX = DISTANCE_FROM_MID / Math.sqrt(1 + slopeAtMid ** 2);
+    let topOffsetY = topOffsetX * slopeAtMid;
+    let bottomOffsetX = topOffsetX * -1;
+    let bottomOffsetY = topOffsetY * -1;
     if (!Number.isFinite(slopeAtMid)) {
-      deleteOffsetX = 10;
-      deleteOffsetY = 5;
-      dropdownOffsetX = 10;
-      dropdownOffsetY = -35;
+      bottomOffsetX = 10;
+      bottomOffsetY = 5;
+      topOffsetX = 10;
+      topOffsetY = -35;
     } else if (slopeAtMid > 0) {
-      dropdownOffsetX *= -1;
-      dropdownOffsetY *= -1;
-      deleteOffsetX *= -1;
-      deleteOffsetY *= -1;
-      deleteOffsetX -= 50 - 10 * (Math.abs(theta) % HALF_PI);
-      deleteOffsetY += 10 * (Math.abs(theta) % HALF_PI);
-      dropdownOffsetX -= 50 - 10 * (Math.abs(theta) % HALF_PI);
-      dropdownOffsetY += 10 * (Math.abs(theta) % HALF_PI);
+      topOffsetX *= -1;
+      topOffsetY *= -1;
+      bottomOffsetX *= -1;
+      bottomOffsetY *= -1;
+      bottomOffsetX -= 50 - 10 * (Math.abs(theta) % HALF_PI);
+      bottomOffsetY += 10 * (Math.abs(theta) % HALF_PI);
+      topOffsetX -= 50 - 10 * (Math.abs(theta) % HALF_PI);
+      topOffsetY += 10 * (Math.abs(theta) % HALF_PI);
     } else if (slopeAtMid < 0) {
-      deleteOffsetX += 10 * (Math.abs(theta) % HALF_PI);
-      deleteOffsetY += 10 * (Math.abs(theta) % HALF_PI);
-      dropdownOffsetX += 10 * (Math.abs(theta) % HALF_PI);
-      dropdownOffsetY += 10 * (Math.abs(theta) % HALF_PI);
+      bottomOffsetX += 10 * (Math.abs(theta) % HALF_PI);
+      bottomOffsetY += 10 * (Math.abs(theta) % HALF_PI);
+      topOffsetX += 10 * (Math.abs(theta) % HALF_PI);
+      topOffsetY += 10 * (Math.abs(theta) % HALF_PI);
     } else {
-      deleteOffsetX = 15;
-      deleteOffsetY = 10;
-      dropdownOffsetX = -25;
-      dropdownOffsetY = 10;
+      bottomOffsetX = 15;
+      bottomOffsetY = 10;
+      topOffsetX = -25;
+      topOffsetY = 10;
     }
 
     let symbol = '';
@@ -312,9 +311,9 @@ export class LinkerLink extends Component<LinkerLinkProps, LinkerLinkState> {
             className="link-select"
             d={path}
             onClick={this.handleClick}
-            clipPath={`url(#${clipPathId})`}
             onMouseEnter={this.handleMouseEnter}
             onMouseLeave={this.handleMouseLeave}
+            clipPath={`url(#${clipPathId})`}
           />
           <path className="link-background" d={path} />
           <path className="link-foreground" d={path} />
@@ -327,8 +326,8 @@ export class LinkerLink extends Component<LinkerLinkProps, LinkerLinkState> {
               kind="primary"
               className="btn-fab btn-operator"
               style={{
-                top: midY + dropdownOffsetY,
-                left: midX + dropdownOffsetX,
+                top: midY + (slopeAtMid >= 0 ? topOffsetY : bottomOffsetY),
+                left: midX + (slopeAtMid >= 0 ? topOffsetX : bottomOffsetX),
               }}
               onClick={() => {
                 // no-op: click is handled in `DropdownMenu'
@@ -338,7 +337,7 @@ export class LinkerLink extends Component<LinkerLinkProps, LinkerLinkState> {
                   <b>{symbol}</b>
                   <FontAwesomeIcon
                     icon={vsTriangleDown}
-                    transform="right-8 down-10 shrink-6"
+                    transform="right-8 down-9 shrink-5"
                   />
                 </div>
               }
@@ -349,13 +348,15 @@ export class LinkerLink extends Component<LinkerLinkProps, LinkerLinkState> {
                 popperOptions={{ placement: 'bottom-start' }}
               />
             </Button>
-
             <Button
               kind="primary"
               className="btn-fab btn-delete"
-              style={{ top: midY + deleteOffsetY, left: midX + deleteOffsetX }}
+              style={{
+                top: midY + (slopeAtMid < 0 ? topOffsetY : bottomOffsetY),
+                left: midX + (slopeAtMid < 0 ? topOffsetX : bottomOffsetX),
+              }}
               onClick={this.handleDelete}
-              icon={<FontAwesomeIcon icon={vsTrash} transform=" down-1" />}
+              icon={vsTrash}
               tooltip="Delete"
             />
           </>

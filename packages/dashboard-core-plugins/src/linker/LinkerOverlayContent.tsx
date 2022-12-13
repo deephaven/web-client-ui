@@ -62,6 +62,7 @@ export class LinkerOverlayContent extends Component<
   constructor(props: LinkerOverlayContentProps) {
     super(props);
 
+    this.handleBlur = this.handleBlur.bind(this);
     this.handleMouseMove = this.handleMouseMove.bind(this);
     this.handleKeyDown = this.handleKeyDown.bind(this);
     this.handleKeyUp = this.handleKeyUp.bind(this);
@@ -76,6 +77,7 @@ export class LinkerOverlayContent extends Component<
   }
 
   componentDidMount(): void {
+    window.addEventListener('blur', this.handleBlur, true);
     window.addEventListener('mousemove', this.handleMouseMove, true);
     window.addEventListener('keydown', this.handleKeyDown, true);
     window.addEventListener('keyup', this.handleKeyUp, true);
@@ -87,6 +89,7 @@ export class LinkerOverlayContent extends Component<
   }
 
   componentWillUnmount(): void {
+    window.removeEventListener('blur', this.handleBlur, true);
     window.removeEventListener('mousemove', this.handleMouseMove, true);
     window.removeEventListener('keydown', this.handleKeyDown, true);
     window.removeEventListener('keyup', this.handleKeyUp, true);
@@ -132,16 +135,20 @@ export class LinkerOverlayContent extends Component<
     onLinksUpdated(newLinks);
   }
 
+  handleBlur(): void {
+    this.setState({ mode: 'select' });
+  }
+
   handleMouseMove(event: MouseEvent): void {
     this.setState({
       mouseX: event.clientX,
       mouseY: event.clientY,
-      mode: 'select',
     });
   }
 
   handleKeyDown(event: KeyboardEvent): void {
     if (event.key === 'Alt') {
+      event.preventDefault();
       this.setState({
         mode: 'delete',
       });
@@ -150,6 +157,7 @@ export class LinkerOverlayContent extends Component<
 
   handleKeyUp(event: KeyboardEvent): void {
     if (event.key === 'Alt') {
+      event.preventDefault();
       this.setState({
         mode: 'select',
       });
