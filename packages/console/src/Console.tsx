@@ -14,11 +14,13 @@ import classNames from 'classnames';
 import memoize from 'memoize-one';
 import throttle from 'lodash.throttle';
 import type { JSZipObject } from 'jszip';
-import dh, {
+import dh from '@deephaven/jsapi-shim';
+import type {
   IdeSession,
   LogItem,
   VariableChanges,
   VariableDefinition,
+  VariableTypeUnion,
 } from '@deephaven/jsapi-shim';
 import Log from '@deephaven/log';
 import { assertNotNull, Pending, PromiseUtils } from '@deephaven/utils';
@@ -851,9 +853,13 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
     });
   }
 
-  getObjects = memoize(objectMap => [...objectMap.values()]);
+  getObjects = memoize(
+    (objectMap: Map<string, VariableDefinition<VariableTypeUnion>>) => [
+      ...objectMap.values(),
+    ]
+  );
 
-  getContextActions = memoize(actions => [
+  getContextActions = memoize((actions: DropdownAction[]) => [
     ...actions,
     {
       action: this.handleClearShortcut,

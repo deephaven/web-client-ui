@@ -125,7 +125,7 @@ class TableViewportUpdater extends PureComponent<
   subscription?: TableViewportSubscription;
 
   // eslint-disable-next-line class-methods-use-this
-  getViewportRowRange = memoize((table, top, bottom) => {
+  getViewportRowRange = memoize((table: Table, top: number, bottom: number) => {
     const viewHeight = bottom - top;
     const viewportTop = Math.max(
       0,
@@ -138,7 +138,12 @@ class TableViewportUpdater extends PureComponent<
 
   // eslint-disable-next-line class-methods-use-this
   getViewportColumns = memoize(
-    (table, left, right, movedColumns: MoveOperation[]) => {
+    (
+      table: Table,
+      left: number,
+      right: number,
+      movedColumns: MoveOperation[]
+    ) => {
       if (left == null || right == null) {
         return null;
       }

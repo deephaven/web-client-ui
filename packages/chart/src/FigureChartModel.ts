@@ -13,7 +13,10 @@ import dh, {
 import Log from '@deephaven/log';
 import { Range } from '@deephaven/utils';
 import { Layout, PlotData } from 'plotly.js';
-import { Formatter } from '@deephaven/jsapi-utils';
+import type {
+  DateTimeColumnFormatter,
+  Formatter,
+} from '@deephaven/jsapi-utils';
 import ChartModel, { ChartEvent, FilterColumnMap } from './ChartModel';
 import ChartUtils, { AxisTypeMap, ChartModelSettings } from './ChartUtils';
 import ChartTheme from './ChartTheme';
@@ -320,27 +323,33 @@ class FigureChartModel extends ChartModel {
     );
   }
 
-  getTimeZone = memoize((columnType, formatter) => {
-    if (formatter != null) {
-      const dataFormatter = formatter.getColumnTypeFormatter(columnType);
-      if (dataFormatter != null) {
-        return dataFormatter.dhTimeZone;
+  getTimeZone = memoize(
+    (columnType: string, formatter: Formatter | undefined) => {
+      if (formatter != null) {
+        const dataFormatter = formatter.getColumnTypeFormatter(columnType);
+        if (dataFormatter != null) {
+          return (dataFormatter as DateTimeColumnFormatter).dhTimeZone;
+        }
       }
+      return undefined;
     }
-    return null;
-  });
+  );
 
-  getValueTranslator = memoize((columnType, formatter) => {
-    const timeZone = this.getTimeZone(columnType, formatter);
-    return (value: unknown) => ChartUtils.unwrapValue(value, timeZone);
-  });
+  getValueTranslator = memoize(
+    (columnType: string, formatter: Formatter | undefined) => {
+      const timeZone = this.getTimeZone(columnType, formatter);
+      return (value: unknown) => ChartUtils.unwrapValue(value, timeZone);
+    }
+  );
 
   /** Gets the parser for a value with the provided column type */
-  getValueParser = memoize((columnType, formatter) => {
-    const timeZone = this.getTimeZone(columnType, formatter);
-    return (value: unknown) =>
-      ChartUtils.wrapValue(value, columnType, timeZone);
-  });
+  getValueParser = memoize(
+    (columnType: string, formatter: Formatter | undefined) => {
+      const timeZone = this.getTimeZone(columnType, formatter);
+      return (value: unknown) =>
+        ChartUtils.wrapValue(value, columnType, timeZone);
+    }
+  );
 
   /**
    * Gets the range parser for a particular column type

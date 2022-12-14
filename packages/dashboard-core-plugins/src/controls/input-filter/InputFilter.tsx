@@ -109,7 +109,7 @@ class InputFilter extends Component<InputFilterProps, InputFilterState> {
 
   inputRef: RefObject<HTMLInputElement>;
 
-  getItemLabel = memoizee((columns, index) => {
+  getItemLabel = memoizee((columns: InputFilterColumn[], index: number) => {
     const { name, type } = columns[index];
 
     if (
