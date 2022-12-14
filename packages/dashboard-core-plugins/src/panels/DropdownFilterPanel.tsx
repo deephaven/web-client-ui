@@ -1,9 +1,9 @@
 import React, { Component, RefObject } from 'react';
-import { connect } from 'react-redux';
+import { connect, ConnectedProps } from 'react-redux';
 import debounce from 'lodash.debounce';
 import deepEqual from 'deep-equal';
 import memoize from 'memoize-one';
-import { LayoutUtils } from '@deephaven/dashboard';
+import { DashboardPanelProps, LayoutUtils } from '@deephaven/dashboard';
 import dh from '@deephaven/jsapi-shim';
 import type { Column, Row, Table, TableTemplate } from '@deephaven/jsapi-shim';
 import {
@@ -16,7 +16,6 @@ import {
 import Log from '@deephaven/log';
 import { getActiveTool, getSettings, RootState } from '@deephaven/redux';
 import { Pending, PromiseUtils } from '@deephaven/utils';
-import type { Container, EventEmitter } from '@deephaven/golden-layout';
 import DropdownFilter, {
   DropdownFilterColumn,
 } from '../controls/dropdown-filter/DropdownFilter';
@@ -46,22 +45,57 @@ interface PanelState {
   timestamp?: number;
 }
 
-interface DropdownFilterPanelProps {
-  glContainer: Container;
-  glEventHub: EventEmitter;
-  panelState?: PanelState;
-  isLinkerActive: boolean;
+type StateProps = {
   columns: Column[];
   columnSelectionValidator?: ColumnSelectionValidator;
-  disableLinking: boolean;
-  settings: {
-    formatter: FormattingRule[];
-  };
-  // eslint-disable-next-line react/no-unused-prop-types
-  panelTableMap: Map<string | string[], TableTemplate>;
-  // eslint-disable-next-line react/no-unused-prop-types
   dashboardLinks: Link[];
-}
+  disableLinking: boolean;
+  isLinkerActive: boolean;
+  panelTableMap: Map<string | string[], TableTemplate>;
+  panelState?: PanelState;
+  settings: { formatter: FormattingRule[] };
+};
+
+type OwnProps = DashboardPanelProps;
+
+const mapStateToProps = (state: RootState, ownProps: OwnProps): StateProps => {
+  const { localDashboardId } = ownProps;
+  const panelId = LayoutUtils.getIdFromPanel({ props: ownProps });
+  const panelTableMap = getTableMapForDashboard(state, localDashboardId);
+  const dashboardLinks = getLinksForDashboard(state, localDashboardId);
+  const activeTool = getActiveTool(state);
+  const isolatedLinkerPanelId = getIsolatedLinkerPanelIdForDashboard(
+    state,
+    localDashboardId
+  );
+  const isLinkerActive =
+    activeTool === ToolType.LINKER &&
+    (isolatedLinkerPanelId === undefined || isolatedLinkerPanelId === panelId);
+  // Disable linking if linker is in isolated mode for a different panel
+  const disableLinking =
+    activeTool === ToolType.LINKER &&
+    isolatedLinkerPanelId !== undefined &&
+    isolatedLinkerPanelId !== panelId;
+
+  return {
+    columns: getColumnsForDashboard(state, localDashboardId),
+    columnSelectionValidator: getColumnSelectionValidatorForDashboard(
+      state,
+      localDashboardId
+    ),
+    isLinkerActive,
+    disableLinking,
+    settings: getSettings(state),
+    panelTableMap,
+    dashboardLinks,
+  };
+};
+
+const connector = connect(mapStateToProps, null, null, { forwardRef: true });
+
+export type DropdownFilterPanelProps = OwnProps &
+  StateProps &
+  ConnectedProps<typeof connector>;
 
 interface DropdownFilterPanelState {
   column?: DropdownFilterColumn;
@@ -84,7 +118,7 @@ interface DropdownFilterPanelState {
   error: unknown | null;
 }
 
-class DropdownFilterPanel extends Component<
+export class DropdownFilterPanel extends Component<
   DropdownFilterPanelProps,
   DropdownFilterPanelState
 > {
@@ -156,7 +190,7 @@ class DropdownFilterPanel extends Component<
     };
   }
 
-  componentDidMount() {
+  componentDidMount(): void {
     this.updateValuesTable();
     const { column, value, timestamp } = this.state;
     const sourceTable = this.getSourceTable();
@@ -172,7 +206,7 @@ class DropdownFilterPanel extends Component<
   componentDidUpdate(
     prevProps: DropdownFilterPanelProps,
     prevState: DropdownFilterPanelState
-  ) {
+  ): void {
     const { valuesTable } = this.state;
     const { settings } = this.props;
     const source = this.getSource();
@@ -333,13 +367,13 @@ class DropdownFilterPanel extends Component<
     }
   );
 
-  getSource(props = this.props) {
+  getSource(props = this.props): LinkPoint | undefined {
     const { dashboardLinks } = props;
     const panelLinks = this.getCachedPanelLinks(dashboardLinks, this);
     return this.getCachedSource(panelLinks);
   }
 
-  getSourceTable(props = this.props) {
+  getSourceTable(props = this.props): TableTemplate | null {
     const { panelTableMap } = props;
     const source = this.getSource(props);
     return this.getCachedSourceTable(panelTableMap, source);
@@ -751,42 +785,4 @@ class DropdownFilterPanel extends Component<
   }
 }
 
-const mapStateToProps = (
-  state: RootState,
-  ownProps: { localDashboardId: string; glContainer: Container }
-) => {
-  const { localDashboardId } = ownProps;
-  const panelId = LayoutUtils.getIdFromPanel({ props: ownProps });
-  const panelTableMap = getTableMapForDashboard(state, localDashboardId);
-  const dashboardLinks = getLinksForDashboard(state, localDashboardId);
-  const activeTool = getActiveTool(state);
-  const isolatedLinkerPanelId = getIsolatedLinkerPanelIdForDashboard(
-    state,
-    localDashboardId
-  );
-  const isLinkerActive =
-    activeTool === ToolType.LINKER &&
-    (isolatedLinkerPanelId === undefined || isolatedLinkerPanelId === panelId);
-  // Disable linking if linker is in isolated mode for a different panel
-  const disableLinking =
-    activeTool === ToolType.LINKER &&
-    isolatedLinkerPanelId !== undefined &&
-    isolatedLinkerPanelId !== panelId;
-
-  return {
-    columns: getColumnsForDashboard(state, localDashboardId),
-    columnSelectionValidator: getColumnSelectionValidatorForDashboard(
-      state,
-      localDashboardId
-    ),
-    isLinkerActive,
-    disableLinking,
-    settings: getSettings(state),
-    panelTableMap,
-    dashboardLinks,
-  };
-};
-
-export default connect(mapStateToProps, null, null, { forwardRef: true })(
-  DropdownFilterPanel
-);
+export default connector(DropdownFilterPanel);
