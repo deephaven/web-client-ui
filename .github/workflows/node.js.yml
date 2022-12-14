@@ -22,16 +22,16 @@ jobs:
       - name: Check server:${{ env.DOCKER_TAG }} manifest SHA
         # Just take a SHA of the manifest to see if we need to pull the image or can just load from cache
         run: |
-          docker manifest inspect ghcr.io/deephaven/server:${{ env.DOCKER_TAG }} | sha256sum > manifest_sha.txt
+          docker manifest inspect ghcr.io/deephaven/server:${{ env.DOCKER_TAG }} | sha256sum | head -c 64 > manifest_sha.txt
           echo "manifest_sha=$(cat manifest_sha.txt)" >> $GITHUB_ENV
       - name: Check if image has previously been pulled
-        id: check_sha
+        id: core_cache
         uses: actions/cache@v3
         with:
           path: /var/lib/docker
-          key: ${{ env.INPUT_REF }}-${{ env.manifest_sha }}
+          key: ${{ runner.os }}-${{ env.manifest_sha }}
       - name: Update Image Cache if cache miss
-        if: steps.check_sha.outputs.cache-hit != 'true'
+        if: steps.core_cache.outputs.cache-hit != 'true'
         run: docker pull --quiet ghcr.io/deephaven/server:${{ env.DOCKER_TAG }}
       - name: Run server:${{ env.DOCKER_TAG }}
         run: docker run --detach --publish 10000:10000 ghcr.io/deephaven/server:${{ env.DOCKER_TAG }}
@@ -110,7 +110,7 @@ jobs:
           path: ~/.cache/ms-playwright
           key: ${{ runner.os }}-playwright-${{ env.playwright_version }}
       - name: Install Playwright Browsers
-        if: steps.playwright-cache.outputs.cache_hit != 'true'
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
         run: npx playwright install --with-deps
       - name: Run Playwright tests
         run: npx playwright test
