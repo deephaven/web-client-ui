@@ -41,6 +41,9 @@ module.exports = {
     'es/no-regexp-lookbehind-assertions': 'error',
     curly: ['error'],
     'prefer-arrow-callback': ['error', { allowNamedFunctions: true }],
+    'react/no-unused-class-component-methods': 'off',
+    'react/default-props-match-prop-types': 'off',
+    'react/require-default-props': 'off',
   },
   parserOptions: {
     ecmaFeatures: {
@@ -82,6 +85,8 @@ module.exports = {
           { ignoreFunctionalComponents: true },
         ],
         '@typescript-eslint/strict-boolean-expressions': ['error'],
+        'default-param-last': 'off',
+        '@typescript-eslint/default-param-last': ['error'],
       },
     },
   ],

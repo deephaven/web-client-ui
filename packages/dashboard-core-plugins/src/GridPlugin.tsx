@@ -24,7 +24,7 @@ export type GridPluginProps = Partial<DashboardPluginComponentProps> & {
   theme?: Partial<IrisGridThemeType>;
 };
 
-export const GridPlugin = (props: GridPluginProps): JSX.Element => {
+export function GridPlugin(props: GridPluginProps): JSX.Element {
   assertIsDashboardPluginProps(props);
   const {
     getDownloadWorker,
@@ -96,6 +96,6 @@ export const GridPlugin = (props: GridPluginProps): JSX.Element => {
   useListener(layout.eventHub, PanelEvent.OPEN, handlePanelOpen);
 
   return <></>;
-};
+}
 
 export default GridPlugin;
