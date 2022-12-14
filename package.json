@@ -48,6 +48,7 @@
     "e2e": "playwright test",
     "e2e:codegen": "playwright codegen http://localhost:4000",
     "e2e:headed": "playwright test --project=chromium --headed --debug",
+    "e2e:update-snapshots": "playwright test --update-snapshots",
     "version-bump": "lerna version --no-git-tag-version --no-push && npm install --package-lock-only",
     "changelog": "lerna-changelog"
   },
