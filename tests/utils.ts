@@ -26,8 +26,8 @@ export async function typeInMonaco(page: Page, text: string): Promise<void> {
     await page.keyboard.type(splitByLine[i]);
     // Pressing space and then backspace escapes any autocomplete suggestions that may appear
     // Pressing shift+Enter moves the cursor to a new line
-    await page.keyboard.press(' ');
-    await page.keyboard.press('Backspace');
+    await page.keyboard.press(' ', { delay: 50 });
+    await page.keyboard.press('Backspace', { delay: 50 });
     await page.keyboard.press('Shift+Enter', { delay: 50 });
   }
 }
