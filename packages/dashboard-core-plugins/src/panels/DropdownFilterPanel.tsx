@@ -440,7 +440,7 @@ export class DropdownFilterPanel extends Component<
     column: Partial<Column> | null;
     isValueShown?: boolean | undefined;
     value?: string | undefined;
-  }) {
+  }): void {
     const { name = undefined, type = undefined } = column ?? {};
     let sendUpdate = true;
     let timestamp: number | undefined = Date.now();
@@ -481,7 +481,7 @@ export class DropdownFilterPanel extends Component<
     );
   }
 
-  handleDisconnect() {
+  handleDisconnect(): void {
     this.setState({
       error: new Error('Table disconnected'),
       isDisconnected: true,
@@ -489,19 +489,19 @@ export class DropdownFilterPanel extends Component<
     });
   }
 
-  handleReconnect() {
+  handleReconnect(): void {
     this.setState({ isDisconnected: false, error: null });
   }
 
-  handleSourceFilterChange() {
+  handleSourceFilterChange(): void {
     this.applySourceFilters();
   }
 
-  handleSourceSortChange() {
+  handleSourceSortChange(): void {
     this.applySourceSorts();
   }
 
-  handleSourceSizeChange({ detail }: { detail: number }) {
+  handleSourceSizeChange({ detail }: { detail: number }): void {
     this.setState({ sourceSize: detail });
   }
 
@@ -617,7 +617,7 @@ export class DropdownFilterPanel extends Component<
       });
   }
 
-  applySourceSorts() {
+  applySourceSorts(): void {
     const { valuesTable } = this.state;
     const sourceTable = this.getSourceTable();
     log.debug('applySourceSorts', sourceTable?.sort);
@@ -676,7 +676,7 @@ export class DropdownFilterPanel extends Component<
 
   updateFormatterSettings(settings: {
     formatter?: FormattingRule[] | undefined;
-  }) {
+  }): void {
     const columnFormats = FormatterUtils.getColumnFormats(settings);
     if (!deepEqual(this.columnFormats, columnFormats)) {
       this.columnFormats = columnFormats;
@@ -684,7 +684,7 @@ export class DropdownFilterPanel extends Component<
     }
   }
 
-  handleValuesTableUpdate({ detail }: { detail: { rows: Row[] } }) {
+  handleValuesTableUpdate({ detail }: { detail: { rows: Row[] } }): void {
     const { rows } = detail;
     const { valuesTable } = this.state;
     if (!valuesTable) {
@@ -700,7 +700,7 @@ export class DropdownFilterPanel extends Component<
     this.setState({ values, isLoading: false, isLoaded: true, valuesColumn });
   }
 
-  handleSourceMouseEnter() {
+  handleSourceMouseEnter(): void {
     const { columnSelectionValidator } = this.props;
     if (!columnSelectionValidator) {
       return;
@@ -708,7 +708,7 @@ export class DropdownFilterPanel extends Component<
     columnSelectionValidator(this, DropdownFilterPanel.SOURCE_COLUMN);
   }
 
-  handleSourceMouseLeave() {
+  handleSourceMouseLeave(): void {
     const { columnSelectionValidator } = this.props;
     if (!columnSelectionValidator) {
       return;
@@ -716,7 +716,7 @@ export class DropdownFilterPanel extends Component<
     columnSelectionValidator(this, undefined);
   }
 
-  render() {
+  render(): React.ReactElement {
     const {
       columns,
       disableLinking,

@@ -1,17 +1,11 @@
 import React from 'react';
-import {
-  findAllByRole,
-  fireEvent,
-  render,
-  screen,
-  within,
-} from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
+import { render, screen } from '@testing-library/react';
 import type { Container, EventHub } from '@deephaven/golden-layout';
 import {
   DropdownFilterPanel,
   DropdownFilterPanelProps,
 } from './DropdownFilterPanel';
+import DropdownFilter from '../controls/dropdown-filter/DropdownFilter';
 
 const eventHub = ({
   emit: jest.fn(),
@@ -52,9 +46,18 @@ function makeContainer({
   );
 }
 
-it('mounts properly and column selection by default', async () => {
+it('mounts properly with no columns correctly', async () => {
   makeContainer();
 
   const comboBoxes = await screen.findAllByRole('combobox');
   expect(comboBoxes).toHaveLength(2);
+
+  const sourceBtn = await screen.getByLabelText('Source Column');
+  expect(sourceBtn.textContent).toBe(DropdownFilter.SOURCE_BUTTON_PLACEHOLDER);
+
+  const filterSelect = await screen.getByLabelText('Filter Column');
+  expect(filterSelect.textContent).toBe(
+    DropdownFilter.SOURCE_BUTTON_PLACEHOLDER
+  );
+  expect(filterSelect).toBeDisabled();
 });

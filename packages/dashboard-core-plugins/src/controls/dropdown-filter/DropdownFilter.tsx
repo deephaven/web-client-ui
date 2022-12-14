@@ -18,6 +18,7 @@ import { TableUtils } from '@deephaven/jsapi-utils';
 import memoizee from 'memoizee';
 import memoize from 'memoize-one';
 import debounce from 'lodash.debounce';
+import shortid from 'shortid';
 import Log from '@deephaven/log';
 import './DropdownFilter.scss';
 import { LinkPoint } from '../../linker/LinkerUtils';
@@ -29,7 +30,8 @@ export interface DropdownFilterColumn {
   name: string;
   type: string;
 }
-interface DropdownFilterProps {
+
+export interface DropdownFilterProps {
   column: DropdownFilterColumn;
   columns: DropdownFilterColumn[];
   onSourceMouseEnter: () => void;
@@ -56,9 +58,10 @@ interface DropdownFilterState {
   disableCancel: boolean;
   isValueShown: boolean;
   value: string | null;
+  id: string;
 }
 
-class DropdownFilter extends Component<
+export class DropdownFilter extends Component<
   DropdownFilterProps,
   DropdownFilterState
 > {
@@ -100,6 +103,7 @@ class DropdownFilter extends Component<
     const { column, isValueShown, value } = props;
     this.state = {
       column,
+      id: shortid(),
       selectedColumn: column,
       disableCancel: !isValueShown,
       isValueShown,
@@ -378,6 +382,7 @@ class DropdownFilter extends Component<
     const {
       column,
       disableCancel,
+      id,
       isValueShown,
       selectedColumn,
       value,
@@ -398,6 +403,9 @@ class DropdownFilter extends Component<
 
     const isFlipped = isValueShown && !isLinkerActive;
 
+    const sourceColumnId = `source-column-btn-${id}`;
+    const filterColumnId = `filter-column-select-${id}`;
+
     return (
       <CardFlip
         className="dropdown-filter fill-parent-absolute"
@@ -406,8 +414,9 @@ class DropdownFilter extends Component<
         <div className="dropdown-filter-settings-card">
           <div className="dropdown-filter-card-content">
             <div className="dropdown-filter-settings-grid">
-              <label>Source Column</label>
+              <label htmlFor={sourceColumnId}>Source Column</label>
               <SocketedButton
+                id={sourceColumnId}
                 isLinked={isLinked}
                 onClick={onColumnSelected}
                 onMouseEnter={onSourceMouseEnter}
@@ -422,8 +431,9 @@ class DropdownFilter extends Component<
                 Select a source column for the list by linking to a table.
               </div>
 
-              <label>Filter Column</label>
+              <label htmlFor={filterColumnId}>Filter Column</label>
               <select
+                id={filterColumnId}
                 value={selectedIndex}
                 className="custom-select"
                 onChange={this.handleColumnChange}
