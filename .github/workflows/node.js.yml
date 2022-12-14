@@ -115,9 +115,9 @@ jobs:
           directory: ./coverage
           flags: unit
 
-      - name: Run Playwright Tests
+      - name: Run Playwright tests
         run: PLAYWRIGHT_BROWSERS_PATH=0 npx playwright test
-      - name: Upload Playwright Report
+      - name: Upload Playwright report
         uses: actions/upload-artifact@v3
         if: always()
         with:
