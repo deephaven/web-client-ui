@@ -9,26 +9,46 @@ function makeContainer({
   column,
   columns = [],
   isLoaded = true,
+  isValueShown = false,
   onChange = jest.fn(),
   source,
+  value,
+  values,
 }: Partial<DropdownFilterProps> = {}) {
-  return render(
+  return (
     <DropdownFilter
       column={column}
       columns={columns}
       isLoaded={isLoaded}
+      isValueShown={isValueShown}
       onChange={onChange}
       source={source}
+      value={value}
+      values={values}
     />
   );
 }
 
-async function getSourceButton() {
+function renderContainer(props: Partial<DropdownFilterProps> = {}) {
+  return render(makeContainer(props));
+}
+
+function getSourceButton() {
   return screen.getByLabelText('Source Column');
 }
 
-async function getFilterSelect() {
+function getFilterSelect() {
   return screen.getByLabelText('Filter Column');
+}
+
+function getValueSelect() {
+  return screen.getByRole('combobox', { name: 'Select Value' });
+}
+
+function getOption(name?: string) {
+  return screen.getByRole('option', {
+    name,
+  }) as HTMLOptionElement;
 }
 
 function makeSource({
@@ -48,12 +68,12 @@ afterAll(() => {
 });
 
 it('mounts properly with no columns correctly', async () => {
-  makeContainer();
+  renderContainer();
 
-  const sourceBtn = await getSourceButton();
+  const sourceBtn = getSourceButton();
   expect(sourceBtn.textContent).toBe(DropdownFilter.SOURCE_BUTTON_PLACEHOLDER);
 
-  const filterSelect = await getFilterSelect();
+  const filterSelect = getFilterSelect();
   expect(filterSelect.textContent).toBe(
     DropdownFilter.SOURCE_BUTTON_PLACEHOLDER
   );
@@ -69,44 +89,98 @@ describe('options when source is selected', () => {
   });
   const onChange = jest.fn();
 
-  beforeEach(() => {
-    makeContainer({ column, columns, onChange, source });
-    onChange.mockClear();
+  describe('state updates correctly', () => {
+    beforeEach(() => {
+      renderContainer({ column, columns, onChange, source });
+      onChange.mockClear();
+    });
+
+    it('has the initial state correct', async () => {
+      const sourceBtn = getSourceButton();
+      expect(sourceBtn.textContent).toBe(source.columnName);
+
+      const filterSelect = getFilterSelect();
+      expect(filterSelect).not.toBeDisabled();
+      expect(getOption(column.name).selected).toBe(true);
+    });
+
+    it('fires a change event when column changed and saved', async () => {
+      const filterSelect = getFilterSelect();
+      userEvent.selectOptions(filterSelect, getOption(columns[2].name));
+      expect(getOption(columns[2].name).selected).toBe(true);
+      expect(onChange).not.toHaveBeenCalled();
+      userEvent.click(screen.getByRole('button', { name: 'Save' }));
+      jest.runOnlyPendingTimers();
+      expect(onChange).toHaveBeenCalledWith(
+        expect.objectContaining({
+          column: columns[2],
+          isValueShown: true,
+          value: '',
+        })
+      );
+    });
+
+    it('fires a change event when column changed and saved', async () => {
+      const filterSelect = getFilterSelect();
+      userEvent.selectOptions(filterSelect, getOption(columns[2].name));
+      expect(getOption(columns[2].name).selected).toBe(true);
+      expect(onChange).not.toHaveBeenCalled();
+      userEvent.click(screen.getByRole('button', { name: 'Save' }));
+      jest.runOnlyPendingTimers();
+      expect(onChange).toHaveBeenCalledWith(
+        expect.objectContaining({
+          column: columns[2],
+          isValueShown: true,
+          value: '',
+        })
+      );
+    });
   });
 
-  it('has the initial state correct', async () => {
-    const sourceBtn = await getSourceButton();
-    expect(sourceBtn.textContent).toBe(source.columnName);
+  describe('selecting a value', () => {
+    const values = ['X', 'Y', 'Z'];
+    const value = values[0];
+    let container;
 
-    const filterSelect = await getFilterSelect();
-    expect(filterSelect).not.toBeDisabled();
-    expect(
-      ((await screen.getByRole('option', {
-        name: column.name,
-      })) as HTMLOptionElement).selected
-    ).toBe(true);
-  });
-
-  it('fires a change event when column changed and saved', async () => {
-    const filterSelect = await getFilterSelect();
-    await userEvent.selectOptions(
-      filterSelect,
-      await screen.getByRole('option', { name: columns[2].name })
-    );
-    expect(
-      ((await screen.getByRole('option', {
-        name: columns[2].name,
-      })) as HTMLOptionElement).selected
-    ).toBe(true);
-    expect(onChange).not.toHaveBeenCalled();
-    await userEvent.click(await screen.getByRole('button', { name: 'Save' }));
-    jest.runOnlyPendingTimers();
-    expect(onChange).toHaveBeenCalledWith(
-      expect.objectContaining({
-        column: columns[2],
+    beforeEach(() => {
+      container = renderContainer({
+        column,
+        columns,
         isValueShown: true,
-        value: '',
-      })
-    );
+        onChange,
+        source,
+        value,
+        values,
+      });
+      onChange.mockClear();
+    });
+
+    it('shows the value correctly', async () => {
+      expect(getOption(value).selected).toBe(true);
+    });
+
+    it('resets the value when no longer in list', () => {
+      const newValues = ['M', 'N', 'O'];
+      container.rerender(
+        makeContainer({
+          values: newValues,
+        })
+      );
+      newValues.forEach(v => {
+        expect(getOption(v).selected).toBe(false);
+      });
+    });
+
+    it('fires a change when selecting a new value', () => {
+      const newValue = values[1];
+      userEvent.selectOptions(getValueSelect(), getOption(newValue));
+      jest.runOnlyPendingTimers();
+      expect(onChange).toHaveBeenCalledWith(
+        expect.objectContaining({
+          isValueShown: true,
+          value: newValue,
+        })
+      );
+    });
   });
 });

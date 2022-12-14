@@ -502,6 +502,7 @@ export class DropdownFilter extends Component<
                     ref={this.dropdownRef}
                     onChange={this.handleValueChange}
                     onKeyPress={this.handleDropdownKeyPress}
+                    title="Select Value"
                   >
                     {valueOptions}
                   </select>
