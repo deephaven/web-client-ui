@@ -128,8 +128,6 @@ npm run clean
 
 Next, start the docker image and open a bash shell inside of it:
 
-<!-- TODO: Should just use node image, like `node:16`, and just use that because having to install nvm and correct version of node is more of a bitch than just installing playwright with deps -->
-
 ```
 docker run --rm --network host -v $(pwd):/work/ -w /work/ -it mcr.microsoft.com/playwright:v1.28.1-focal /bin/bash
 ```
@@ -150,11 +148,11 @@ export NVM_DIR="$HOME/.nvm"
 nvm install
 ```
 
-Install npm dependencies and build the production app:
+Install npm dependencies and build the production app, pointing to an API running on your machine:
 
 ```
 npm ci
-npm run build
+VITE_CORE_API_URL=http://host.docker.internal:10000/jsapi npm run build
 ```
 
 Next, run the tests and update the snapshots:
