@@ -84,10 +84,6 @@ jobs:
         if: steps.cache-node-modules.outputs.cache-hit != 'true'
         run: npm ci --no-audit
 
-      - name: Install Playwright browsers
-        if: steps.cache-node-modules.outputs.cache-hit != 'true'
-        run: PLAYWRIGHT_BROWSERS_PATH=0 npx playwright install --with-deps
-
       - name: Build
         run: VITE_CORE_API_URL=http://localhost:10000/jsapi npm run build
       # Run unit tests on all files for accurate code coverage
@@ -115,6 +111,8 @@ jobs:
           directory: ./coverage
           flags: unit
 
+      - name: Install Playwright depedencies
+        run: PLAYWRIGHT_BROWSERS_PATH=0 npx playwright install --with-deps
       - name: Run Playwright tests
         run: PLAYWRIGHT_BROWSERS_PATH=0 npx playwright test
       - name: Upload Playwright report
