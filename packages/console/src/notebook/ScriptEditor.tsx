@@ -23,7 +23,7 @@ interface ScriptEditorProps {
   onRunCommand: (command: string) => void;
   onEditorInitialized: (editor: editor.IStandaloneCodeEditor) => void;
   onEditorWillDestroy: (editor: editor.IStandaloneCodeEditor) => void;
-  session: IdeSession;
+  session: IdeSession | null;
   sessionLanguage?: string;
   settings?: editor.IStandaloneEditorConstructionOptions;
 }
@@ -340,7 +340,7 @@ class ScriptEditor extends Component<ScriptEditorProps, ScriptEditorState> {
     const errorMessage = error ? `Unable to open document. ${error}` : null;
     const editorLanguage = settings ? settings.language ?? null : null;
     const completionProviderEnabled =
-      model && session != null && editorLanguage === sessionLanguage;
+      model && session && editorLanguage === sessionLanguage;
 
     return (
       <>

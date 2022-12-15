@@ -30,7 +30,7 @@ function Modal({
   onClosed,
   toggle,
   'data-testid': dataTestId,
-}: ModalProps): React.ReactNode {
+}: ModalProps): React.ReactElement | null {
   const element = useRef<HTMLElement>();
 
   const handleKeyDown = useCallback(
