@@ -1,6 +1,8 @@
 import { GridUtils, GridRange, MoveOperation } from '@deephaven/grid';
 import dh, { Column, Table, Sort } from '@deephaven/jsapi-shim';
+import { TypeValue as FilterTypeValue } from '@deephaven/filters';
 import type { AdvancedFilter } from './CommonTypes';
+import { FilterData } from './IrisGrid';
 import IrisGridTestUtils from './IrisGridTestUtils';
 import IrisGridUtils from './IrisGridUtils';
 
@@ -480,5 +482,93 @@ describe('changeFilterColumnNamesToIndexes', () => {
     expect(
       IrisGridUtils.changeFilterColumnNamesToIndexes(columns, filters)
     ).toEqual([[3, DEFAULT_FILTER]]);
+  });
+});
+
+describe('combineFiltersFromList', () => {
+  function createFilter(
+    operator: FilterTypeValue,
+    text: string,
+    value: unknown,
+    startColumnIndex: number
+  ): FilterData {
+    return { operator, text, value, startColumnIndex };
+  }
+
+  it('returns an empty string for an empty list', () => {
+    expect(IrisGridUtils.combineFiltersFromList('int', [])).toEqual('');
+  });
+
+  it('disjunctively combines eq operators', () => {
+    const filterList: FilterData[] = [];
+    for (let i = 0; i < 3; i += 1) {
+      filterList.push(createFilter('eq', `${i}`, `${i}`, i));
+    }
+    expect(IrisGridUtils.combineFiltersFromList('int', filterList)).toEqual(
+      '0 || 1 || 2'
+    );
+  });
+
+  it('conjunctively combines non-eq operators', () => {
+    const filterList: FilterData[] = [];
+    filterList.push(createFilter('notEq', 'foo', 'foo', 0));
+    filterList.push(createFilter('contains', 'bar', 'bar', 1));
+    filterList.push(createFilter('startsWith', 'baz', 'baz', 2));
+    expect(IrisGridUtils.combineFiltersFromList('string', filterList)).toEqual(
+      '!=foo && ~bar && baz*'
+    );
+  });
+
+  it('combines eq and non-eq operators, moving all eq to the end', () => {
+    const filterList: FilterData[] = [];
+    filterList.push(createFilter('greaterThan', '-15', '-15', 0));
+    filterList.push(createFilter('eq', '260', '260', 1));
+    filterList.push(createFilter('eq', '59', '59', 2));
+    filterList.push(createFilter('lessThanOrEqualTo', '0', '0', 3));
+    filterList.push(createFilter('notEq', '-942', '-942', 4));
+    expect(IrisGridUtils.combineFiltersFromList('int', filterList)).toEqual(
+      '>-15 && <=0 && !=-942 || 260 || 59'
+    );
+  });
+
+  it('orders conj. and disj. sections separately based on start column index', () => {
+    const filterList: FilterData[] = [];
+    filterList.push(createFilter('greaterThan', '-15', '-15', 3));
+    filterList.push(createFilter('eq', '260', '260', 2));
+    filterList.push(createFilter('eq', '59', '59', 0));
+    filterList.push(createFilter('lessThanOrEqualTo', '0', '0', 1));
+    filterList.push(createFilter('notEq', '-942', '-942', 4));
+    expect(IrisGridUtils.combineFiltersFromList('int', filterList)).toEqual(
+      '<=0 && >-15 && !=-942 || 59 || 260'
+    );
+  });
+
+  it('handles null values correctly', () => {
+    const filterList: FilterData[] = [];
+    filterList.push(createFilter('greaterThan', 'null', null, 0));
+    filterList.push(createFilter('eq', 'null', null, 1));
+    filterList.push(createFilter('notEq', 'null', null, 2));
+    expect(IrisGridUtils.combineFiltersFromList('string', filterList)).toEqual(
+      '>null && !=null || =null'
+    );
+  });
+
+  it('skips undefined values', () => {
+    const filterList: FilterData[] = [];
+    filterList.push(createFilter('endsWith', '1', '1', 0));
+    filterList.push(createFilter('eq', 'null', null, 1));
+    filterList.push(createFilter('notEq', 'anything', undefined, 2));
+    expect(IrisGridUtils.combineFiltersFromList('string', filterList)).toEqual(
+      '*1 || =null'
+    );
+  });
+
+  it('returns the char character rather than Unicode value', () => {
+    const filterList: FilterData[] = [];
+    filterList.push(createFilter('greaterThanOrEqualTo', '105', 105, 0));
+    filterList.push(createFilter('lessThan', '74', 74, 1));
+    expect(IrisGridUtils.combineFiltersFromList('char', filterList)).toEqual(
+      '>=i && <J'
+    );
   });
 });

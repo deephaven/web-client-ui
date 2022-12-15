@@ -89,6 +89,7 @@ import {
   PromiseUtils,
   ValidationError,
 } from '@deephaven/utils';
+import { TypeValue as FilterTypeValue } from '@deephaven/filters';
 import throttle from 'lodash.throttle';
 import debounce from 'lodash.debounce';
 import clamp from 'lodash.clamp';
@@ -219,10 +220,19 @@ function isEmptyConfig({
     sorts.length === 0
   );
 }
+export type FilterData = {
+  operator: FilterTypeValue;
+  text: string;
+  value: unknown;
+  startColumnIndex: number;
+};
 
 export type FilterMap = Map<
   ColumnName,
-  { columnType: string; text: string; value: unknown }
+  {
+    columnType: string;
+    filterList: FilterData[];
+  }
 >;
 export interface IrisGridProps {
   children: React.ReactNode;
@@ -1458,7 +1468,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
    */
   setQuickFilter(
     modelIndex: ModelIndex,
-    filter: FilterCondition,
+    filter: FilterCondition | null,
     text: string
   ): void {
     log.debug('Setting quick filter', modelIndex, filter, text);
@@ -1489,7 +1499,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     }
 
     const { model } = this.props;
-    filterMap.forEach(({ columnType, text, value }, columnName) => {
+    filterMap.forEach(({ columnType, filterList }, columnName) => {
       const column = model.columns.find(
         c => c.name === columnName && c.type === columnType
       );
@@ -1498,18 +1508,18 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       }
       const columnIndex = model.getColumnIndexByName(column.name);
       assertNotNull(columnIndex);
-      if (value === undefined) {
+      const combinedText = IrisGridUtils.combineFiltersFromList(
+        columnType,
+        filterList
+      );
+      if (combinedText.length === 0) {
         this.removeQuickFilter(columnIndex);
-      } else if (value === null) {
-        this.setQuickFilter(columnIndex, column.filter().isNull(), '=null');
       } else {
-        const filterValue = TableUtils.isTextType(columnType)
-          ? dh.FilterValue.ofString(value)
-          : dh.FilterValue.ofNumber(value);
+        const { formatter } = model;
         this.setQuickFilter(
           columnIndex,
-          column.filter().eq(filterValue),
-          `${text}`
+          IrisGrid.makeQuickFilter(column, combinedText, formatter.timeZone),
+          `${combinedText}`
         );
       }
     });
@@ -2483,10 +2493,18 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       const { name, type } = column;
       const value = model.valueForCell(i, rowIndex);
       const text = model.textForCell(i, rowIndex);
+      const visibleIndex = this.getVisibleColumn(i);
       const isExpandable =
         isExpandableGridModel(model) && model.isRowExpandable(rowIndex);
       const isGrouped = groupedColumns.find(c => c.name === name) != null;
-      dataMap[name] = { value, text, type, isGrouped, isExpandable };
+      dataMap[name] = {
+        value,
+        text,
+        type,
+        isGrouped,
+        isExpandable,
+        visibleIndex,
+      };
     }
     const { onDataSelected } = this.props;
     onDataSelected(rowIndex, dataMap);

@@ -119,16 +119,22 @@ it('handles copy key handler', () => {
 
 it('handles value: undefined in setFilterMap, clears column filter', () => {
   const component = makeComponent();
-  component.removeQuickFilter = jest.fn();
   component.setQuickFilter = jest.fn();
+  component.removeQuickFilter = jest.fn();
   component.setFilterMap(
     new Map([
       [
         '2',
         {
           columnType: IrisGridTestUtils.DEFAULT_TYPE,
-          text: 'any',
-          value: undefined,
+          filterList: [
+            {
+              operator: 'eq',
+              text: 'any',
+              value: undefined,
+              startColumnIndex: 0,
+            },
+          ],
         },
       ],
     ])
@@ -139,7 +145,6 @@ it('handles value: undefined in setFilterMap, clears column filter', () => {
 
 it('handles value: null in setFilterMap', () => {
   const component = makeComponent();
-  component.removeQuickFilter = jest.fn();
   component.setQuickFilter = jest.fn();
   component.setFilterMap(
     new Map([
@@ -147,8 +152,9 @@ it('handles value: null in setFilterMap', () => {
         '2',
         {
           columnType: IrisGridTestUtils.DEFAULT_TYPE,
-          text: 'any',
-          value: null,
+          filterList: [
+            { operator: 'eq', text: 'null', value: null, startColumnIndex: 0 },
+          ],
         },
       ],
     ])
@@ -158,5 +164,32 @@ it('handles value: null in setFilterMap', () => {
     expect.anything(),
     '=null'
   );
-  expect(component.removeQuickFilter).not.toHaveBeenCalled();
+});
+
+it('handles undefined operator, should default to eq', () => {
+  const component = makeComponent();
+  component.setQuickFilter = jest.fn();
+  component.setFilterMap(
+    new Map([
+      [
+        '2',
+        {
+          columnType: IrisGridTestUtils.DEFAULT_TYPE,
+          filterList: [
+            {
+              operator: undefined,
+              text: 'any',
+              value: 'any',
+              startColumnIndex: 0,
+            },
+          ],
+        },
+      ],
+    ])
+  );
+  expect(component.setQuickFilter).toHaveBeenCalledWith(
+    2,
+    expect.anything(),
+    'any'
+  );
 });

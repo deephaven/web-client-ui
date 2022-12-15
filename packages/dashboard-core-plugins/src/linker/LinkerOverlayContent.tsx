@@ -8,6 +8,7 @@ import {
 import { LayoutUtils, PanelManager } from '@deephaven/dashboard';
 import Log from '@deephaven/log';
 import type { Container } from '@deephaven/golden-layout';
+import { TypeValue as FilterTypeValue } from '@deephaven/filters';
 import {
   isLinkableFromPanel,
   Link,
@@ -26,14 +27,19 @@ export type VisibleLink = {
   y2: number;
   id: string;
   className: string;
+  operator: FilterTypeValue;
+  startColumnType: string | null;
 };
 
 export type LinkerOverlayContentProps = {
   disabled?: boolean;
   links: Link[];
+  selectedIds: Set<string>;
   messageText: string;
+  onLinkSelected: (linkId: string) => void;
   onLinkDeleted: (linkId: string) => void;
   onAllLinksDeleted: () => void;
+  onLinksUpdated: (newLinks: Link[]) => void;
   onCancel: () => void;
   onDone: () => void;
   panelManager: PanelManager;
@@ -42,6 +48,7 @@ export type LinkerOverlayContentProps = {
 export type LinkerOverlayContentState = {
   mouseX?: number;
   mouseY?: number;
+  mode: 'select' | 'delete';
 };
 
 export class LinkerOverlayContent extends Component<
@@ -55,17 +62,25 @@ export class LinkerOverlayContent extends Component<
   constructor(props: LinkerOverlayContentProps) {
     super(props);
 
+    this.handleBlur = this.handleBlur.bind(this);
     this.handleMouseMove = this.handleMouseMove.bind(this);
+    this.handleKeyDown = this.handleKeyDown.bind(this);
+    this.handleKeyUp = this.handleKeyUp.bind(this);
     this.handleEscapePressed = this.handleEscapePressed.bind(this);
+    this.handleOperatorChanged = this.handleOperatorChanged.bind(this);
 
     this.state = {
       mouseX: undefined,
       mouseY: undefined,
+      mode: 'select',
     };
   }
 
   componentDidMount(): void {
+    window.addEventListener('blur', this.handleBlur, true);
     window.addEventListener('mousemove', this.handleMouseMove, true);
+    window.addEventListener('keydown', this.handleKeyDown, true);
+    window.addEventListener('keyup', this.handleKeyUp, true);
   }
 
   // eslint-disable-next-line react/sort-comp
@@ -74,7 +89,10 @@ export class LinkerOverlayContent extends Component<
   }
 
   componentWillUnmount(): void {
+    window.removeEventListener('blur', this.handleBlur, true);
     window.removeEventListener('mousemove', this.handleMouseMove, true);
+    window.removeEventListener('keydown', this.handleKeyDown, true);
+    window.removeEventListener('keyup', this.handleKeyUp, true);
   }
 
   /** Gets the on screen points for a link start or end spec */
@@ -109,11 +127,41 @@ export class LinkerOverlayContent extends Component<
     return LayoutUtils.getTabPoint((glContainer as unknown) as Container);
   }
 
+  handleOperatorChanged(linkId: string, type: FilterTypeValue): void {
+    const { links, onLinksUpdated } = this.props;
+    const newLinks: Link[] = links.map(link =>
+      link.id === linkId ? { ...link, operator: type } : link
+    );
+    onLinksUpdated(newLinks);
+  }
+
+  handleBlur(): void {
+    this.setState({ mode: 'select' });
+  }
+
   handleMouseMove(event: MouseEvent): void {
     this.setState({
       mouseX: event.clientX,
       mouseY: event.clientY,
     });
+  }
+
+  handleKeyDown(event: KeyboardEvent): void {
+    if (event.key === 'Alt') {
+      event.preventDefault();
+      this.setState({
+        mode: 'delete',
+      });
+    }
+  }
+
+  handleKeyUp(event: KeyboardEvent): void {
+    if (event.key === 'Alt') {
+      event.preventDefault();
+      this.setState({
+        mode: 'select',
+      });
+    }
   }
 
   handleEscapePressed(): void {
@@ -125,17 +173,20 @@ export class LinkerOverlayContent extends Component<
     const {
       disabled,
       links,
+      selectedIds,
       messageText,
+      onLinkSelected,
       onLinkDeleted,
       onAllLinksDeleted,
       onDone,
     } = this.props;
 
-    const { mouseX, mouseY } = this.state;
+    const { mouseX, mouseY, mode } = this.state;
     const visibleLinks = links
       .map(link => {
         try {
-          const { id, type, isReversed, start, end } = link;
+          const { id, type, isReversed, start, end, operator } = link;
+          const startColumnType = start.columnType;
           let [x1, y1] = this.getPointFromLinkPoint(start);
           let x2 = mouseX ?? x1;
           let y2 = mouseY ?? y1;
@@ -152,9 +203,20 @@ export class LinkerOverlayContent extends Component<
             { disabled },
             { 'link-filter-source': type === 'filterSource' },
             { 'link-invalid': type === 'invalid' },
-            { interactive: link.end == null }
+            { interactive: link.end == null },
+            { 'link-is-selected': selectedIds.has(id) },
+            { 'danger-delete': mode === 'delete' }
           );
-          return { x1, y1, x2, y2, id, className };
+          return {
+            x1,
+            y1,
+            x2,
+            y2,
+            id,
+            className,
+            operator,
+            startColumnType,
+          };
         } catch (error) {
           log.error('Unable to get point for link', link, error);
           return null;
@@ -163,9 +225,13 @@ export class LinkerOverlayContent extends Component<
       .filter(item => item != null) as VisibleLink[];
 
     return (
-      <div className="linker-overlay">
-        <svg>
-          {visibleLinks.map(({ x1, y1, x2, y2, id, className }) => (
+      <div
+        className={classNames('linker-overlay', {
+          'danger-delete': mode === 'delete',
+        })}
+      >
+        {visibleLinks.map(
+          ({ x1, y1, x2, y2, id, className, operator, startColumnType }) => (
             <LinkerLink
               className={className}
               id={id}
@@ -174,10 +240,15 @@ export class LinkerOverlayContent extends Component<
               x2={x2}
               y2={y2}
               key={id}
-              onClick={onLinkDeleted}
+              onClick={onLinkSelected}
+              onDelete={onLinkDeleted}
+              isSelected={selectedIds.has(id)}
+              operator={operator}
+              startColumnType={startColumnType}
+              onOperatorChanged={this.handleOperatorChanged}
             />
-          ))}
-        </svg>
+          )
+        )}
         <div className="linker-toast-dialog">
           <div className="toast-body">{messageText}</div>
           <div className="toast-footer">

@@ -18,6 +18,7 @@ import {
   TableUtils,
 } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
+import { Type as FilterType } from '@deephaven/filters';
 import {
   getActiveTool,
   getTimeZone,
@@ -84,6 +85,7 @@ export type LinkerProps = OwnProps &
 
 export type LinkerState = {
   linkInProgress?: Link;
+  selectedIds: Set<string>;
 };
 
 export class Linker extends Component<LinkerProps, LinkerState> {
@@ -99,14 +101,16 @@ export class Linker extends Component<LinkerProps, LinkerState> {
     this.handleLayoutStateChanged = this.handleLayoutStateChanged.bind(this);
     this.handleAllLinksDeleted = this.handleAllLinksDeleted.bind(this);
     this.handleLinkDeleted = this.handleLinkDeleted.bind(this);
+    this.handleLinksUpdated = this.handleLinksUpdated.bind(this);
     this.handleChartColumnSelect = this.handleChartColumnSelect.bind(this);
     this.handleGridColumnSelect = this.handleGridColumnSelect.bind(this);
     this.handleUpdateValues = this.handleUpdateValues.bind(this);
     this.handleStateChange = this.handleStateChange.bind(this);
     this.handleExited = this.handleExited.bind(this);
+    this.handleLinkSelected = this.handleLinkSelected.bind(this);
     this.isColumnSelectionValid = this.isColumnSelectionValid.bind(this);
 
-    this.state = { linkInProgress: undefined };
+    this.state = { linkInProgress: undefined, selectedIds: new Set<string>() };
   }
 
   componentDidMount(): void {
@@ -181,7 +185,10 @@ export class Linker extends Component<LinkerProps, LinkerState> {
   handleDone(): void {
     const { setActiveTool } = this.props;
     setActiveTool(ToolType.DEFAULT);
-    this.setState({ linkInProgress: undefined });
+    this.setState({
+      linkInProgress: undefined,
+      selectedIds: new Set<string>(),
+    });
   }
 
   handleChartColumnSelect(panel: PanelComponent, column: LinkColumn): void {
@@ -287,6 +294,7 @@ export class Linker extends Component<LinkerProps, LinkerState> {
 
       this.setState({ linkInProgress: newLink });
     } else {
+      const { links } = this.props;
       const { start, id, isReversed } = linkInProgress;
       const end = {
         panelId,
@@ -308,7 +316,6 @@ export class Linker extends Component<LinkerProps, LinkerState> {
         case 'filterSource': {
           // filterSource links have a limit of 1 link per target
           // New link validation passed, delete existing links before adding the new one
-          const { links } = this.props;
           const existingLinkPanelId =
             isReversed !== undefined && isReversed
               ? start.panelId
@@ -328,20 +335,24 @@ export class Linker extends Component<LinkerProps, LinkerState> {
       }
 
       // Create a completed link from link in progress
-      const newLink = {
+      const newLink: Link = {
         start: isReversed !== undefined && isReversed ? end : start,
         end: isReversed !== undefined && isReversed ? start : end,
         id,
         type,
+        operator: FilterType.eq,
       };
       log.info('creating link', newLink);
 
-      this.setState({ linkInProgress: undefined }, () => {
-        // Adding link after updating state
-        // otherwise both new link and linkInProgress could be rendered at the same time
-        // resulting in "multiple children with same key" error
-        this.addLinks([newLink]);
-      });
+      this.setState(
+        { linkInProgress: undefined, selectedIds: new Set<string>([id]) },
+        () => {
+          // Adding link after updating state
+          // otherwise both new link and linkInProgress could be rendered at the same time
+          // resulting in "multiple children with same key" error
+          this.addLinks([newLink]);
+        }
+      );
     }
   }
 
@@ -435,14 +446,22 @@ export class Linker extends Component<LinkerProps, LinkerState> {
     // Instead of setting filters one by one for each link,
     // combine them so they could be set in a single call per target panel
     for (let i = 0; i < links.length; i += 1) {
-      const { start, end } = links[i];
+      const { start, end, operator } = links[i];
       if (start.panelId === panelId && end != null) {
         const { panelId: endPanelId, columnName, columnType } = end;
         // Map of column name to column type and filter value
         const filterMap = panelFilterMap.has(endPanelId)
           ? panelFilterMap.get(endPanelId)
           : new Map();
-        const { isExpandable, isGrouped } = dataMap[start.columnName];
+        const filterList =
+          filterMap.has(columnName) === true
+            ? filterMap.get(columnName).filterList
+            : [];
+        const {
+          visibleIndex: startColumnIndex,
+          isExpandable,
+          isGrouped,
+        } = dataMap[start.columnName];
         let { value } = dataMap[start.columnName];
         let text = `${value}`;
         if (value === null && isExpandable && isGrouped) {
@@ -459,10 +478,11 @@ export class Linker extends Component<LinkerProps, LinkerState> {
           // The values are Dates for dateType values, not string like everything else
           text = dateFilterFormatter.format(value as Date);
         }
+        const filter = { operator, text, value, startColumnIndex };
+        filterList.push(filter);
         filterMap.set(columnName, {
           columnType,
-          text,
-          value,
+          filterList,
         });
         panelFilterMap.set(endPanelId, filterMap);
       }
@@ -493,6 +513,15 @@ export class Linker extends Component<LinkerProps, LinkerState> {
     // because the panels can get unmounted on errors and we want to keep the links if that happens
     log.debug(`Panel ${panelId} closed, deleting links.`);
     this.deleteLinksForPanelId(panelId);
+  }
+
+  handleLinkSelected(linkId: string): void {
+    this.setState({ selectedIds: new Set<string>([linkId]) });
+  }
+
+  handleLinksUpdated(newLinks: Link[]): void {
+    const { localDashboardId, setDashboardLinks } = this.props;
+    setDashboardLinks(localDashboardId, newLinks);
   }
 
   handleLayoutStateChanged(): void {
@@ -628,7 +657,7 @@ export class Linker extends Component<LinkerProps, LinkerState> {
 
   render(): JSX.Element {
     const { links, isolatedLinkerPanelId, panelManager } = this.props;
-    const { linkInProgress } = this.state;
+    const { linkInProgress, selectedIds } = this.state;
 
     const isLinkOverlayShown = this.isOverlayShown();
     const disabled = linkInProgress != null && linkInProgress.start != null;
@@ -636,6 +665,7 @@ export class Linker extends Component<LinkerProps, LinkerState> {
       isolatedLinkerPanelId === undefined
         ? 'Click a column source, then click a column target to create a filter link. Remove a filter link by clicking again to erase. Click done when finished.'
         : 'Create a link between the source column button and a table column by clicking on one, then the other. Remove the link by clicking it directly. Click done when finished.';
+
     return (
       <>
         <CSSTransition
@@ -654,9 +684,12 @@ export class Linker extends Component<LinkerProps, LinkerState> {
               linkInProgress,
               isolatedLinkerPanelId
             )}
+            selectedIds={selectedIds}
             messageText={linkerOverlayMessage}
+            onLinkSelected={this.handleLinkSelected}
             onLinkDeleted={this.handleLinkDeleted}
             onAllLinksDeleted={this.handleAllLinksDeleted}
+            onLinksUpdated={this.handleLinksUpdated}
             onDone={this.handleDone}
             onCancel={this.handleCancel}
           />
