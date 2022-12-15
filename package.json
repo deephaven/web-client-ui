@@ -55,6 +55,7 @@
     "@babel/core": "7.17.7",
     "@deephaven/components": "file:../components",
     "@deephaven/console": "file:../console",
+    "@deephaven/eslint-config": "file:../eslint-config",
     "@deephaven/file-explorer": "file:../file-explorer",
     "@deephaven/iris-grid": "file:../iris-grid",
     "@deephaven/log": "file:../log",

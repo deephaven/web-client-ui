@@ -269,6 +269,7 @@ class DraggableItemList<T> extends PureComponent<
     ): DraggableChildrenFn => (provided, snapshot, rubric) => {
       // eslint-disable-next-line react/no-this-in-sfc
       const { selectedCount } = this.state;
+      const { draggableProps, dragHandleProps, innerRef } = provided;
       const { index: itemIndex } = rubric.source;
       const item = items[itemIndex - offset];
       return (
@@ -277,12 +278,11 @@ class DraggableItemList<T> extends PureComponent<
             'draggable-item-list-dragging-item-container',
             draggingItemClassName
           )}
-          // eslint-disable-next-line react/jsx-props-no-spreading, react/destructuring-assignment
-          {...provided.draggableProps}
-          // eslint-disable-next-line react/jsx-props-no-spreading, react/destructuring-assignment
-          {...provided.dragHandleProps}
-          // eslint-disable-next-line react/destructuring-assignment
-          ref={provided.innerRef}
+          // eslint-disable-next-line react/jsx-props-no-spreading
+          {...draggableProps}
+          // eslint-disable-next-line react/jsx-props-no-spreading
+          {...dragHandleProps}
+          ref={innerRef}
         >
           <div
             className={classNames(
