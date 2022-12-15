@@ -262,13 +262,10 @@ export class DropdownFilter extends Component<
     // Default empty string value for 'clear filter'
     let value: string | null = '';
     const { values } = this.props;
-    if (index === -1) {
-      log.debug2('Selected default item');
-    } else if (index >= 0 && index < values.length) {
+    if (index >= 0 && index < values.length) {
       value = values[index];
-    } else {
-      log.error('Invalid index', index, values);
-      return;
+    } else if (index === -1) {
+      log.debug2('Selected default item');
     }
 
     log.debug2('handleValueChange', value);

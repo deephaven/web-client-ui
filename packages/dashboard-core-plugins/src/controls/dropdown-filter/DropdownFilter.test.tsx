@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { IrisGridTestUtils } from '@deephaven/iris-grid';
 import DropdownFilter, { DropdownFilterProps } from './DropdownFilter';
@@ -173,13 +173,39 @@ describe('options when source is selected', () => {
 
     it('fires a change when selecting a new value', () => {
       const newValue = values[1];
+
       userEvent.selectOptions(getValueSelect(), getOption(newValue));
+
       jest.runOnlyPendingTimers();
+
       expect(onChange).toHaveBeenCalledWith(
-        expect.objectContaining({
-          isValueShown: true,
-          value: newValue,
-        })
+        expect.objectContaining({ value: newValue })
+      );
+
+      onChange.mockClear();
+
+      // Enter key should send event immediately
+      fireEvent.keyPress(getValueSelect(), {
+        key: 'Enter',
+        code: 'Enter',
+        charCode: 13,
+      });
+
+      expect(onChange).toHaveBeenCalledWith(
+        expect.objectContaining({ value: newValue })
+      );
+
+      onChange.mockClear();
+
+      userEvent.selectOptions(
+        getValueSelect(),
+        getOption(DropdownFilter.PLACEHOLDER)
+      );
+
+      jest.runOnlyPendingTimers();
+
+      expect(onChange).toHaveBeenCalledWith(
+        expect.objectContaining({ value: '' })
       );
     });
   });
