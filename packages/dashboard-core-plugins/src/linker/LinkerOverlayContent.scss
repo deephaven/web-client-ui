@@ -21,11 +21,6 @@
     box-shadow: $tooltip-box-shadow;
     z-index: $zindex-popover;
 
-    &.isLoading {
-      right: $toast-outer-padding;
-      bottom: $toast-outer-padding;
-    }
-
     .btn-drag-handle {
       cursor: grab;
       border-radius: 0;
