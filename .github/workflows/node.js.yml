@@ -17,22 +17,10 @@ jobs:
       group: ${{ github.workflow }}-${{ github.ref }}
       cancel-in-progress: true
     steps:
-      - name: Check server:${{ env.DOCKER_TAG }} manifest SHA
-        # Just take a SHA of the manifest to see if we need to pull the image or can just load from cache
-        run: |
-          docker manifest inspect ghcr.io/deephaven/server:${{ env.DOCKER_TAG }} | sha256sum | head -c 64 > manifest_sha.txt
-          echo "manifest_sha=$(cat manifest_sha.txt)" >> $GITHUB_ENV
-      - name: Cache core image
-        id: core-cache
-        uses: actions/cache@v3
-        with:
-          path: /var/lib/docker
-          key: ${{ runner.os }}-${{ env.manifest_sha }}
-      - name: Pull core image
-        if: steps.core-cache.outputs.cache-hit != 'true'
-        run: docker pull --quiet ghcr.io/deephaven/server:${{ env.DOCKER_TAG }}
       - name: Run core server:${{ env.DOCKER_TAG }}
-        run: docker run --detach --publish 10000:10000 ghcr.io/deephaven/server:${{ env.DOCKER_TAG }}
+        run: |
+          docker pull --quiet ghcr.io/deephaven/server:${{ env.DOCKER_TAG }}
+          docker run --detach --publish 10000:10000 ghcr.io/deephaven/server:${{ env.DOCKER_TAG }}
       - uses: actions/checkout@v3
         with:
           fetch-depth: '0' # This action defaults to only getting the latest commit. Setting to 0 makes it retrieve the full git commit history
