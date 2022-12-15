@@ -71,7 +71,7 @@ jobs:
         run: npm ci --no-audit
 
       - name: Build
-        run: VITE_CORE_API_URL=http://localhost:10000/jsapi npm run build
+        run: npm run build
       # Run unit tests on all files for accurate code coverage
       # Lint only changed files so linting is faster
       # Caching with the absolute path b/c Jest will make a folder in each project
