@@ -16,10 +16,10 @@ interface SelectValueListInputState {
 }
 
 class SelectValueListInput extends PureComponent<
-  never,
+  unknown,
   SelectValueListInputState
 > {
-  constructor(props: never) {
+  constructor(props: unknown) {
     super(props);
 
     this.handleSelect = this.handleSelect.bind(this);

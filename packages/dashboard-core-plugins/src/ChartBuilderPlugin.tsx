@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import { useCallback } from 'react';
 import { ChartModelFactory, ChartUtils } from '@deephaven/chart';
 import {
   assertIsDashboardPluginProps,
@@ -19,7 +19,7 @@ export type ChartBuilderPluginProps = Partial<DashboardPluginComponentProps>;
  */
 export function ChartBuilderPlugin(
   props: ChartBuilderPluginProps
-): React.ReactNode {
+): JSX.Element | null {
   assertIsDashboardPluginProps(props);
   const { id, layout } = props;
   const handleCreateChart = useCallback(

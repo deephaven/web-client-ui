@@ -17,8 +17,8 @@ interface Dialog {
   sampleInput: React.RefObject<HTMLInputElement>;
 }
 
-class Dialog extends Component<never, DialogState> {
-  constructor(props: never) {
+class Dialog extends Component<unknown, DialogState> {
+  constructor(props: unknown) {
     super(props);
 
     this.sampleInput = React.createRef();

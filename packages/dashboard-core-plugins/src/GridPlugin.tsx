@@ -24,7 +24,7 @@ export type GridPluginProps = Partial<DashboardPluginComponentProps> & {
   theme?: Partial<IrisGridThemeType>;
 };
 
-export function GridPlugin(props: GridPluginProps): React.ReactNode {
+export function GridPlugin(props: GridPluginProps): JSX.Element | null {
   assertIsDashboardPluginProps(props);
   const {
     getDownloadWorker,

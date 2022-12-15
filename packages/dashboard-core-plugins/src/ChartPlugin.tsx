@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, DragEvent } from 'react';
+import { useCallback, useEffect, DragEvent } from 'react';
 import { ChartModelFactory } from '@deephaven/chart';
 import {
   assertIsDashboardPluginProps,
@@ -16,7 +16,7 @@ export type ChartPluginProps = Partial<DashboardPluginComponentProps> & {
   hydrate: PanelHydrateFunction<ChartPanelProps>;
 };
 
-export function ChartPlugin(props: ChartPluginProps): React.ReactNode {
+export function ChartPlugin(props: ChartPluginProps): JSX.Element | null {
   assertIsDashboardPluginProps(props);
   const { id, layout, registerComponent, hydrate } = props;
   const handlePanelOpen = useCallback(

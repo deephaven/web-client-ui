@@ -1,4 +1,4 @@
-import React, { Component, useCallback, useEffect, useState } from 'react';
+import { Component, useCallback, useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import shortid from 'shortid';
 import {
@@ -37,7 +37,7 @@ function flattenArray<T>(accumulator: T[], currentValue: T | T[]): T[] {
   return accumulator.concat(currentValue);
 }
 
-export function FilterPlugin(props: FilterPluginProps): React.ReactNode {
+export function FilterPlugin(props: FilterPluginProps): JSX.Element | null {
   assertIsDashboardPluginProps(props);
   const { id: localDashboardId, layout, registerComponent } = props;
   const dispatch = useDispatch();
