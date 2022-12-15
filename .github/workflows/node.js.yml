@@ -20,7 +20,7 @@ jobs:
       - name: Run core server:${{ env.DOCKER_TAG }}
         run: |
           docker pull --quiet ghcr.io/deephaven/server:${{ env.DOCKER_TAG }}
-          docker run --detach --publish 10000:10000 ghcr.io/deephaven/server:${{ env.DOCKER_TAG }}
+          docker run --detach --publish 10000:10000 ghcr.io/deephaven/server:${{ env.DOCKER_TAG }} --name dh-core-server
       - uses: actions/checkout@v3
         with:
           fetch-depth: '0' # This action defaults to only getting the latest commit. Setting to 0 makes it retrieve the full git commit history
