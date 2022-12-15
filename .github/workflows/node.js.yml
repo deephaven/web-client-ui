@@ -109,7 +109,7 @@ jobs:
           directory: ./coverage
           flags: unit
 
-      - name: Install Playwright depedencies
+      - name: Install Playwright dependencies
         run: PLAYWRIGHT_BROWSERS_PATH=0 npx playwright install --with-deps
       - name: Run Playwright tests
         run: PLAYWRIGHT_BROWSERS_PATH=0 npx playwright test
