@@ -4,6 +4,7 @@ import {
   Button,
   ContextActions,
   GLOBAL_SHORTCUTS,
+  Tooltip,
 } from '@deephaven/components';
 import { LayoutUtils, PanelManager } from '@deephaven/dashboard';
 import Log from '@deephaven/log';
@@ -266,7 +267,7 @@ export class LinkerOverlayContent extends Component<
       onDone,
     } = this.props;
 
-    const { mouseX, mouseY, dialogX, dialogY, mode } = this.state;
+    const { mouseX, mouseY, dialogX, dialogY, isDragging, mode } = this.state;
     const visibleLinks = links
       .map(link => {
         try {
@@ -343,13 +344,14 @@ export class LinkerOverlayContent extends Component<
             draggable
             kind="inline"
             className="btn-drag-handle"
-            tooltip="Drag to reposition"
             icon={vsGripper}
             onClick={() => {
               // no-op
             }}
             onMouseDown={this.handleMouseDown}
-          />
+          >
+            {!isDragging && <Tooltip>Drag to reposition</Tooltip>}
+          </Button>
           <div className="toast-body">{messageText}</div>
           <div className="toast-footer">
             <Button kind="secondary" onClick={onAllLinksDeleted}>
