@@ -576,7 +576,7 @@ export default class TableSaver extends PureComponent<
           }
         }
         csvString += TableSaver.csvEscapeString(cellData);
-        csvString += j === this.columns?.length - 1 ? '\n' : ',';
+        csvString += j === this.columns.length - 1 ? '\n' : ',';
       }
     }
 

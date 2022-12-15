@@ -43,7 +43,7 @@ export interface WidgetListProps {
  * @param props The widgets and handlers to use for this list
  * @returns A JSX element for the list of widgets, along with search
  */
-export const WidgetList = (props: WidgetListProps): JSX.Element => {
+export function WidgetList(props: WidgetListProps): JSX.Element {
   const {
     onExportLayout,
     onImportLayout,
@@ -229,6 +229,6 @@ export const WidgetList = (props: WidgetListProps): JSX.Element => {
       </div>
     </div>
   );
-};
+}
 
 export default WidgetList;

@@ -141,11 +141,16 @@ export class IntegerColumnFormatter extends TableColumnFormatter<number> {
    * @param format Format object
    * @returns Formatted string
    */
-  format(valueParam: number, format?: Partial<IntegerColumnFormat>): string {
+  format(
+    valueParam: number,
+    format: Partial<IntegerColumnFormat> = {}
+  ): string {
     const formatString =
-      (format && format.formatString) || this.defaultFormatString;
+      format.formatString != null && format.formatString !== ''
+        ? format.formatString
+        : this.defaultFormatString;
     const value =
-      format && format.multiplier !== undefined && format.multiplier !== 0
+      format.multiplier !== undefined && format.multiplier !== 0
         ? valueParam * format.multiplier
         : valueParam;
     try {

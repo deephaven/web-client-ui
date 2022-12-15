@@ -1,1 +1,3 @@
-export { ReactVirtualizedAutoSizer as default } from '@deephaven/mocks';
+import { ReactVirtualizedAutoSizer } from '@deephaven/mocks';
+
+export default ReactVirtualizedAutoSizer;

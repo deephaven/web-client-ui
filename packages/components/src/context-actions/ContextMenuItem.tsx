@@ -66,8 +66,8 @@ const ContextMenuItem = React.forwardRef<HTMLDivElement, ContextMenuItemProps>(
     const {
       children,
       menuItem,
-      isKeyboardSelected,
-      isMouseSelected,
+      isKeyboardSelected = false,
+      isMouseSelected = false,
       'data-testid': dataTestId,
     } = props;
 
@@ -117,7 +117,6 @@ const ContextMenuItem = React.forwardRef<HTMLDivElement, ContextMenuItemProps>(
             },
             {
               'keyboard-active':
-                isKeyboardSelected !== undefined &&
                 isKeyboardSelected &&
                 (menuItemDisabled === undefined || !menuItemDisabled),
             }

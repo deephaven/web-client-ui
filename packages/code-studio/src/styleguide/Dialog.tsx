@@ -13,17 +13,12 @@ interface DialogState {
   checkBoxMap: HierarchicalCheckboxValueMap;
 }
 
-interface DialogProps {
-  isShown?: boolean;
-  checkBoxMap?: Map<string, Map<string, boolean> | boolean>;
-}
-
 interface Dialog {
   sampleInput: React.RefObject<HTMLInputElement>;
 }
 
-class Dialog extends Component<DialogProps, DialogState> {
-  constructor(props: DialogProps) {
+class Dialog extends Component<never, DialogState> {
+  constructor(props: never) {
     super(props);
 
     this.sampleInput = React.createRef();

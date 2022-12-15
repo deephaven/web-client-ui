@@ -340,7 +340,7 @@ class ScriptEditor extends Component<ScriptEditorProps, ScriptEditorState> {
     const errorMessage = error ? `Unable to open document. ${error}` : null;
     const editorLanguage = settings ? settings.language ?? null : null;
     const completionProviderEnabled =
-      model && session && editorLanguage === sessionLanguage;
+      model && session != null && editorLanguage === sessionLanguage;
 
     return (
       <>

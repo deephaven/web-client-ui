@@ -35,9 +35,7 @@ export interface FileListContainerProps {
 /**
  * Component that displays and allows interaction with the file system in the provided FileStorage.
  */
-export const FileListContainer = (
-  props: FileListContainerProps
-): JSX.Element => {
+export function FileListContainer(props: FileListContainerProps): JSX.Element {
   const {
     isMultiSelect = false,
     focusedPath,
@@ -229,7 +227,7 @@ export const FileListContainer = (
       {showContextMenu && <ContextActions actions={actions} />}
     </div>
   );
-};
+}
 
 FileListContainer.displayName = 'FileListContainer';
 

@@ -178,10 +178,12 @@ export class DateTimeColumnFormatter extends TableColumnFormatter<
 
   format(
     value: Date | DateWrapper | number,
-    format?: Partial<TableColumnFormat>
+    format: Partial<TableColumnFormat> = {}
   ): string {
     const baseFormatString =
-      (format && format.formatString) || this.defaultDateTimeFormatString;
+      format.formatString != null && format.formatString !== ''
+        ? format.formatString
+        : this.defaultDateTimeFormatString;
     const formatString = this.getEffectiveFormatString(baseFormatString);
     try {
       return dh.i18n.DateTimeFormat.format(

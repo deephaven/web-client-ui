@@ -54,9 +54,9 @@ export interface FileMetadata {
   itemName: string;
 }
 
-export const ConsolePlugin = (
+export function ConsolePlugin(
   props: Partial<ConsolePluginProps>
-): JSX.Element => {
+): React.ReactNode {
   assertIsConsolePluginProps(props);
   const {
     id,
@@ -524,7 +524,7 @@ export const ConsolePlugin = (
     unregisterFilePanel
   );
 
-  return <></>;
-};
+  return null;
+}
 
 export default ConsolePlugin;

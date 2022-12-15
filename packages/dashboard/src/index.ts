@@ -1,3 +1,7 @@
+import Dashboard from './Dashboard';
+
+export default Dashboard;
+
 export * from './Dashboard';
 export * from './DashboardConstants';
 export * from './DashboardPlugin';
@@ -10,5 +14,3 @@ export * from './PanelManager';
 export { default as PanelEvent } from './PanelEvent';
 export { default as PanelErrorBoundary } from './PanelErrorBoundary';
 export { default as PanelManager } from './PanelManager';
-
-export { default } from './Dashboard';

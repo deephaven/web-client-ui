@@ -1321,8 +1321,6 @@ export class IrisGridPanel extends PureComponent<
             {childrenContent}
           </IrisGrid>
         )}
-
-        {!isModelReady && <></>}
       </WidgetPanel>
     );
   }

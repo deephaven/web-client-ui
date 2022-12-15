@@ -32,7 +32,7 @@ interface BasicModalProps {
  * @param confirmButtonText optional text for the confirm button, defaults to 'Okay'
  * @param discardButtonText optional text for the discard button, defaults to 'Discard'
  */
-const BasicModal: React.FC<BasicModalProps> = props => {
+function BasicModal(props: BasicModalProps) {
   const {
     isOpen,
     headerText,
@@ -142,7 +142,7 @@ const BasicModal: React.FC<BasicModalProps> = props => {
       </ModalFooter>
     </Modal>
   );
-};
+}
 
 BasicModal.propTypes = {
   isOpen: PropTypes.bool.isRequired,

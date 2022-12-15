@@ -28,11 +28,11 @@ enum SortType {
 
 const DEFAULT_ROW_HEIGHT = 30;
 
-const AggregationEdit = ({
+function AggregationEdit({
   aggregation,
   columns,
   onChange,
-}: AggregationEditProps): JSX.Element => {
+}: AggregationEditProps): JSX.Element {
   const [top, setTop] = useState(-1);
   const [bottom, setBottom] = useState(-1);
   const [sort, setSort] = useState(SortType.NONE);
@@ -171,6 +171,6 @@ const AggregationEdit = ({
       </div>
     </div>
   );
-};
+}
 
 export default AggregationEdit;

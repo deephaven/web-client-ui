@@ -265,7 +265,9 @@ class DraggableItemList<T> extends PureComponent<
       items: T[],
       offset: number,
       renderItem: DraggableRenderItemFn<T>
+      // eslint-disable-next-line react/no-unstable-nested-components, react/display-name, react/function-component-definition
     ): DraggableChildrenFn => (provided, snapshot, rubric) => {
+      // eslint-disable-next-line react/no-this-in-sfc
       const { selectedCount } = this.state;
       const { index: itemIndex } = rubric.source;
       const item = items[itemIndex - offset];
@@ -275,10 +277,11 @@ class DraggableItemList<T> extends PureComponent<
             'draggable-item-list-dragging-item-container',
             draggingItemClassName
           )}
-          // eslint-disable-next-line react/jsx-props-no-spreading
+          // eslint-disable-next-line react/jsx-props-no-spreading, react/destructuring-assignment
           {...provided.draggableProps}
-          // eslint-disable-next-line react/jsx-props-no-spreading
+          // eslint-disable-next-line react/jsx-props-no-spreading, react/destructuring-assignment
           {...provided.dragHandleProps}
+          // eslint-disable-next-line react/destructuring-assignment
           ref={provided.innerRef}
         >
           <div

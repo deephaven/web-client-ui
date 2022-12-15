@@ -34,7 +34,7 @@ export interface FileExplorerProps {
 /**
  * Component that displays and allows interaction with the file system in the provided FileStorage.
  */
-export const FileExplorer = (props: FileExplorerProps): JSX.Element => {
+export function FileExplorer(props: FileExplorerProps): JSX.Element {
   const {
     storage,
     isMultiSelect = false,
@@ -203,7 +203,7 @@ export const FileExplorer = (props: FileExplorerProps): JSX.Element => {
       />
     </div>
   );
-};
+}
 
 FileExplorer.displayName = 'FileExplorer';
 

@@ -9,6 +9,25 @@ interface MarkdownEditorProps {
   content: string;
   onEditorInitialized: (editor: monaco.editor.IStandaloneCodeEditor) => void;
 }
+
+const renderMarkdown: CodeComponent = props => {
+  const { children, className } = props;
+  const language =
+    className !== undefined && className?.startsWith('language-')
+      ? className.substring(9)
+      : 'plaintext';
+  return (
+    <pre>
+      <code>
+        <Code language={language}>
+          {React.Children.map(children, child =>
+            typeof child === 'string' ? child.trim() : child
+          )}
+        </Code>
+      </code>
+    </pre>
+  );
+};
 export default class MarkdownEditor extends PureComponent<
   MarkdownEditorProps,
   Record<string, never>
@@ -24,25 +43,6 @@ export default class MarkdownEditor extends PureComponent<
   }
 
   container: HTMLDivElement | null;
-
-  renderMarkdown: CodeComponent = props => {
-    const { children, className } = props;
-    const language =
-      className !== undefined && className?.startsWith('language-')
-        ? className.substring(9)
-        : 'plaintext';
-    return (
-      <pre>
-        <code>
-          <Code language={language}>
-            {React.Children.map(children, child =>
-              typeof child === 'string' ? child.trim() : child
-            )}
-          </Code>
-        </code>
-      </pre>
-    );
-  };
 
   render(): ReactElement {
     const { isEditing, content, onEditorInitialized } = this.props;
@@ -63,9 +63,7 @@ export default class MarkdownEditor extends PureComponent<
             onEditorInitialized={onEditorInitialized}
           />
         ) : (
-          <Markdown components={{ code: this.renderMarkdown }}>
-            {content}
-          </Markdown>
+          <Markdown components={{ code: renderMarkdown }}>{content}</Markdown>
         )}
       </div>
     );

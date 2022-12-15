@@ -1,1 +1,3 @@
-export { PouchDbBrowser as default } from '@deephaven/mocks';
+import { PouchDbBrowser } from '@deephaven/mocks';
+
+export default PouchDbBrowser;

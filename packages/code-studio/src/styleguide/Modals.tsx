@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { BasicModal, Button, Checkbox } from '@deephaven/components';
 
-const Modals = (): React.ReactElement => {
+function Modals(): React.ReactElement {
   const [openModal, setOpenModal] = useState<number>(0);
   const [check1, setCheck1] = useState<boolean>(true);
   const closeModals = () => {
@@ -77,6 +77,6 @@ const Modals = (): React.ReactElement => {
       </div>
     </div>
   );
-};
+}
 
 export default Modals;

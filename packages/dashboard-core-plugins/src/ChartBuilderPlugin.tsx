@@ -17,9 +17,9 @@ export type ChartBuilderPluginProps = Partial<DashboardPluginComponentProps>;
  * Listens for IrisGridEvent.CREATE_CHART and creates a chart from the settings provided
  * Requires the GridPlugin and ChartPlugin plugins to be loaded as well
  */
-export const ChartBuilderPlugin = (
+export function ChartBuilderPlugin(
   props: ChartBuilderPluginProps
-): JSX.Element => {
+): React.ReactNode {
   assertIsDashboardPluginProps(props);
   const { id, layout } = props;
   const handleCreateChart = useCallback(
@@ -70,7 +70,7 @@ export const ChartBuilderPlugin = (
 
   useListener(layout.eventHub, IrisGridEvent.CREATE_CHART, handleCreateChart);
 
-  return <></>;
-};
+  return null;
+}
 
 export default ChartBuilderPlugin;

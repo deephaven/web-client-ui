@@ -427,7 +427,7 @@ export class ConsoleInput extends PureComponent<
         this.bufferIndex = null;
       }
       this.history = [
-        ...viewportData?.items
+        ...viewportData.items
           .filter(
             ({ name }, pos, arr) => pos === 0 || name !== arr[pos - 1].name
           )

@@ -867,7 +867,7 @@ export class TableUtils {
   static makeQuickDateFilterWithOperation(
     column: Column,
     text: string,
-    operation: FilterTypeValue = FilterType.eq,
+    operation: FilterTypeValue,
     timeZone: string
   ): FilterCondition {
     if (column == null) {

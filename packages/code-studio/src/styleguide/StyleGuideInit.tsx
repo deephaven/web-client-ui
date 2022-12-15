@@ -15,10 +15,10 @@ import { ExportedLayout } from '../storage/LayoutStorage';
 /**
  * Initialize data needed for the styleguide
  */
-const StyleGuideInit = (props: {
+function StyleGuideInit(props: {
   workspace: Workspace;
   setWorkspace: PayloadActionCreator<Workspace>;
-}) => {
+}) {
   const { workspace, setWorkspace } = props;
 
   useEffect(() => {
@@ -28,8 +28,8 @@ const StyleGuideInit = (props: {
     }).then(setWorkspace);
   }, [setWorkspace]);
 
-  return <>{workspace != null && <StyleGuide />}</>;
-};
+  return workspace != null ? <StyleGuide /> : null;
+}
 
 StyleGuideInit.propTypes = {
   workspace: PropTypes.shape({}),

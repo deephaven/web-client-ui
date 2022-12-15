@@ -678,53 +678,49 @@ class FilterSetManager extends Component<
             key="back"
             onClick={this.handleBackgroundClick}
           >
-            <>
-              <div className="filter-set-manager-column">
-                <div className="filter-set-manager-column-title">
-                  Filter sets
+            <div className="filter-set-manager-column">
+              <div className="filter-set-manager-column-title">Filter sets</div>
+            </div>
+            <div className="filter-set-manager-card-content">
+              <div className="filter-set-manager-value-input">
+                <div className="filter-select-container">
+                  <select
+                    data-testid="value-card-filter-select"
+                    ref={this.dropdownRef}
+                    value={selectedId}
+                    className="custom-select filter-value-select"
+                    onChange={this.handleFilterChange}
+                  >
+                    {filterSets.length === 0 && (
+                      <option value="-1" disabled>
+                        {EMPTY_LIST_PLACEHOLDER}
+                      </option>
+                    )}
+                    {filterSets.map(({ id, title }) => (
+                      <option key={id} value={id}>
+                        {title}
+                      </option>
+                    ))}
+                  </select>
+                  <Button
+                    data-testid="filter-apply-button"
+                    kind="ghost"
+                    onClick={this.handleFilterApply}
+                    icon={dhRefresh}
+                    tooltip="Apply Filter Set"
+                  />
                 </div>
               </div>
-              <div className="filter-set-manager-card-content">
-                <div className="filter-set-manager-value-input">
-                  <div className="filter-select-container">
-                    <select
-                      data-testid="value-card-filter-select"
-                      ref={this.dropdownRef}
-                      value={selectedId}
-                      className="custom-select filter-value-select"
-                      onChange={this.handleFilterChange}
-                    >
-                      {filterSets.length === 0 && (
-                        <option value="-1" disabled>
-                          {EMPTY_LIST_PLACEHOLDER}
-                        </option>
-                      )}
-                      {filterSets.map(({ id, title }) => (
-                        <option key={id} value={id}>
-                          {title}
-                        </option>
-                      ))}
-                    </select>
-                    <Button
-                      data-testid="filter-apply-button"
-                      kind="ghost"
-                      onClick={this.handleFilterApply}
-                      icon={dhRefresh}
-                      tooltip="Apply Filter Set"
-                    />
-                  </div>
-                </div>
-              </div>
-              <div className="filter-set-manager-menu">
-                <Button
-                  kind="ghost"
-                  className="btn btn-link btn-link-icon m-2 px-2"
-                  onClick={this.handleSettingsClick}
-                  tooltip="Settings"
-                  icon={<FontAwesomeIcon icon={vsGear} transform="grow-4" />}
-                />
-              </div>
-            </>
+            </div>
+            <div className="filter-set-manager-menu">
+              <Button
+                kind="ghost"
+                className="btn btn-link btn-link-icon m-2 px-2"
+                onClick={this.handleSettingsClick}
+                tooltip="Settings"
+                icon={<FontAwesomeIcon icon={vsGear} transform="grow-4" />}
+              />
+            </div>
           </div>
         </CardFlip>
       </div>

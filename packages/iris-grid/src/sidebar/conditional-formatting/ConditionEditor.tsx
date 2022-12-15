@@ -250,7 +250,7 @@ function getCharInputs(
   }
 }
 
-const ConditionEditor = (props: ConditionEditorProps): JSX.Element => {
+function ConditionEditor(props: ConditionEditorProps): JSX.Element {
   const { column, config, onChange = DEFAULT_CALLBACK } = props;
   const selectedColumnType = column.type;
   const [prevColumnType, setPrevColumnType] = useState(selectedColumnType);
@@ -423,6 +423,6 @@ const ConditionEditor = (props: ConditionEditorProps): JSX.Element => {
       {conditionInputs}
     </div>
   );
-};
+}
 
 export default ConditionEditor;

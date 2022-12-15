@@ -5,10 +5,6 @@ interface SelectValueListInput {
   selectedItems: number[];
 }
 
-interface SelectValueListInputProps {
-  isMultiSelect?: boolean;
-}
-
 interface Item {
   value: string;
   isSelected: boolean;
@@ -20,10 +16,10 @@ interface SelectValueListInputState {
 }
 
 class SelectValueListInput extends PureComponent<
-  SelectValueListInputProps,
+  never,
   SelectValueListInputState
 > {
-  constructor(props: SelectValueListInputProps) {
+  constructor(props: never) {
     super(props);
 
     this.handleSelect = this.handleSelect.bind(this);

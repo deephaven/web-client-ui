@@ -11,7 +11,7 @@ export default function replaceByIdReducer<S extends Record<string, unknown>>(
   initialState: S = {} as never,
   checkIfChanged = true
 ): Reducer<S> {
-  return (state = initialState, action) => {
+  return (state = initialState, action?) => {
     switch (action.type) {
       case type: {
         const { id, payload } = action;

@@ -33,7 +33,7 @@ function makeDefaultConfig(columns: ModelColumn[]): BaseFormatConfig {
   return config;
 }
 
-const ColumnFormatEditor = (props: ColumnFormatEditorProps): JSX.Element => {
+function ColumnFormatEditor(props: ColumnFormatEditorProps): JSX.Element {
   const {
     columns,
     config = makeDefaultConfig(columns),
@@ -136,6 +136,6 @@ const ColumnFormatEditor = (props: ColumnFormatEditorProps): JSX.Element => {
       )}
     </div>
   );
-};
+}
 
 export default ColumnFormatEditor;

@@ -13,10 +13,10 @@ export type StackProps = {
  * Pass a full navigation stack of children, and then automatically does a sliding animation when the stack changes.
  * Adding items to the stack will do a "push" animation, and removing items from the stack will do a "pop" animation.
  */
-export const Stack = ({
+export function Stack({
   children,
   'data-testid': dataTestId,
-}: StackProps): JSX.Element => {
+}: StackProps): JSX.Element {
   const childrenArray = useMemo(() => React.Children.toArray(children), [
     children,
   ]);
@@ -93,11 +93,9 @@ export const Stack = ({
         classNames="slide-right"
         onEntered={popComplete}
       >
-        <>
-          {poppingView != null && (
-            <div className="popping-view">{poppingView}</div>
-          )}
-        </>
+        {poppingView != null && (
+          <div className="popping-view">{poppingView}</div>
+        )}
       </CSSTransition>
       <CSSTransition
         in={pushingView != null}
@@ -105,14 +103,12 @@ export const Stack = ({
         classNames="slide-left"
         onEntered={pushComplete}
       >
-        <>
-          {pushingView != null && (
-            <div className="pushing-view">{pushingView}</div>
-          )}
-        </>
+        {pushingView != null && (
+          <div className="pushing-view">{pushingView}</div>
+        )}
       </CSSTransition>
     </div>
   );
-};
+}
 
 export default Stack;

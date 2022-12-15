@@ -136,7 +136,7 @@ function isDateTimeColumnFormatter(
 function isRangedPlotlyAxis(value: unknown): value is { range: Range[] } {
   return (
     value != null &&
-    (value as PlotlyAxis).range &&
+    (value as PlotlyAxis).range != null &&
     ((value as PlotlyAxis).autorange === false ||
       (value as PlotlyAxis).autorange === undefined)
   );

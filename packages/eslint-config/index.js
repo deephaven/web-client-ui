@@ -44,6 +44,7 @@ module.exports = {
     'react/no-unused-class-component-methods': 'off',
     'react/default-props-match-prop-types': 'off',
     'react/require-default-props': 'off',
+    'react/jsx-no-bind': 'off',
   },
   parserOptions: {
     ecmaFeatures: {
@@ -80,10 +81,6 @@ module.exports = {
         '@typescript-eslint/no-use-before-define': 'error',
         'no-useless-constructor': 'off',
         'react/static-property-placement': ['error', 'static public field'],
-        'react/require-default-props': [
-          'error',
-          { ignoreFunctionalComponents: true },
-        ],
         '@typescript-eslint/strict-boolean-expressions': ['error'],
         'default-param-last': 'off',
         '@typescript-eslint/default-param-last': ['error'],

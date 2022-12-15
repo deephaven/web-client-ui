@@ -78,7 +78,7 @@ function iconForMenuItem({ type }: MenuItem): IconProp {
   }
 }
 
-const Navigations = (): JSX.Element => {
+function Navigations(): JSX.Element {
   // The menu items on each part of the stack
   const [stackItems, setStackItems] = useState([] as StackItem[]);
 
@@ -201,6 +201,6 @@ const Navigations = (): JSX.Element => {
       </div>
     </div>
   );
-};
+}
 
 export default Navigations;

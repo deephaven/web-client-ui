@@ -9,7 +9,7 @@ interface ButtonGroupProps {
   'data-testid'?: string;
 }
 
-const ButtonGroup = (props: ButtonGroupProps): JSX.Element => {
+function ButtonGroup(props: ButtonGroupProps): JSX.Element {
   const { children, className, style, 'data-testid': dataTestId } = props;
 
   return (
@@ -22,7 +22,7 @@ const ButtonGroup = (props: ButtonGroupProps): JSX.Element => {
       {children}
     </div>
   );
-};
+}
 
 ButtonGroup.displayName = 'ButtonGroup';
 

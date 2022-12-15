@@ -13,7 +13,7 @@ interface WidgetPanelTooltipProps {
   description: string;
   children: ReactNode;
 }
-const WidgetPanelTooltip = (props: WidgetPanelTooltipProps): ReactElement => {
+function WidgetPanelTooltip(props: WidgetPanelTooltipProps): ReactElement {
   const { widgetType, widgetName, glContainer, description, children } = props;
   const panelTitle = LayoutUtils.getTitleFromContainer(glContainer);
 
@@ -46,7 +46,7 @@ const WidgetPanelTooltip = (props: WidgetPanelTooltipProps): ReactElement => {
       {children}
     </div>
   );
-};
+}
 
 WidgetPanelTooltip.propTypes = {
   glContainer: GLPropTypes.Container.isRequired,

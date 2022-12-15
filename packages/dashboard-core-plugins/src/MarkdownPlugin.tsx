@@ -18,7 +18,7 @@ export type MarkdownComponentState = {
   panelState?: { content: string } | null;
 };
 
-export const MarkdownPlugin = (props: MarkdownPluginProps): JSX.Element => {
+export function MarkdownPlugin(props: MarkdownPluginProps): React.ReactNode {
   assertIsDashboardPluginProps(props);
   const { id, layout, panelManager, registerComponent } = props;
   const dehydrateMarkdown = useCallback(config => {
@@ -107,7 +107,7 @@ export const MarkdownPlugin = (props: MarkdownPluginProps): JSX.Element => {
 
   useListener(layout.eventHub, MarkdownEvent.OPEN, handleOpen);
 
-  return <></>;
-};
+  return null;
+}
 
 export default MarkdownPlugin;
