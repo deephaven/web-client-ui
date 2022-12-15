@@ -31,6 +31,7 @@ import {
 import memoize from 'memoizee';
 import debounce from 'lodash.debounce';
 import { Button, SearchInput, Tooltip } from '@deephaven/components';
+import type { Column } from '@deephaven/jsapi-shim';
 import Log from '@deephaven/log';
 import './VisibilityOrderingBuilder.scss';
 import IrisGridModel from '../IrisGridModel';
@@ -726,7 +727,7 @@ class VisibilityOrderingBuilder extends Component<
     return elements;
   }
 
-  getFirstMovableIndex = memoize((model: IrisGridModel, columns) => {
+  getFirstMovableIndex = memoize((model: IrisGridModel, columns: Column[]) => {
     for (let i = 0; i < columns.length; i += 1) {
       if (model.isColumnMovable(i)) {
         return i;
@@ -736,7 +737,7 @@ class VisibilityOrderingBuilder extends Component<
     return null;
   });
 
-  getLastMovableIndex = memoize((model: IrisGridModel, columns) => {
+  getLastMovableIndex = memoize((model: IrisGridModel, columns: Column[]) => {
     for (let i = columns.length - 1; i >= 0; i -= 1) {
       if (model.isColumnMovable(i)) {
         return i;

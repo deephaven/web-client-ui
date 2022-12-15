@@ -2,6 +2,7 @@ import { PureComponent } from 'react';
 import { WritableStream as ponyfillWritableStream } from 'web-streams-polyfill/ponyfill';
 import dh, {
   Column,
+  DateWrapper,
   Table,
   TableData,
   TableViewportSubscription,
@@ -10,14 +11,17 @@ import dh, {
 import Log from '@deephaven/log';
 import { GridRange, GridRangeIndex, memoizeClear } from '@deephaven/grid';
 
-import { Formatter, FormatterUtils } from '@deephaven/jsapi-utils';
+import { Formatter, FormatterUtils, TableUtils } from '@deephaven/jsapi-utils';
 import {
   CancelablePromise,
   PromiseUtils,
   assertNotNull,
 } from '@deephaven/utils';
+import IrisGridUtils from '../IrisGridUtils';
 
 const log = Log.module('TableSaver');
+
+const UNFORMATTED_DATE_PATTERN = `yyyy-MM-dd'T'HH:mm:ss.SSSSSSSSS z`;
 
 interface TableSaverProps {
   getDownloadWorker: () => Promise<ServiceWorker>;
@@ -82,6 +86,9 @@ export default class TableSaver extends PureComponent<
     this.rangedSnapshotsTotal = [];
     this.rangedSnapshotCounter = 0;
 
+    this.includeColumnHeaders = true;
+    this.useUnformattedValues = false;
+
     this.snapshotsTotal = 0;
     this.snapshotCounter = 0;
     this.snapshotsBuffer = new Map();
@@ -141,6 +148,10 @@ export default class TableSaver extends PureComponent<
   columns?: Column[];
 
   fileName?: string;
+
+  includeColumnHeaders: boolean;
+
+  useUnformattedValues: boolean;
 
   chunkRows?: number;
 
@@ -253,7 +264,10 @@ export default class TableSaver extends PureComponent<
     fileName: string,
     frozenTable: Table,
     tableSubscription: TableViewportSubscription,
-    gridRanges: GridRange[]
+    snapshotRanges: GridRange[],
+    modelRanges: GridRange[],
+    includeColumnHeaders: boolean,
+    useUnformattedValues: boolean
   ): void {
     // don't trigger another download when a download is ongoing
     const { isDownloading } = this.props;
@@ -265,9 +279,14 @@ export default class TableSaver extends PureComponent<
     log.info(`start downloading ${fileName}`);
 
     this.table = frozenTable;
-    this.columns = frozenTable.columns;
+    this.columns = IrisGridUtils.columnsFromRanges(
+      modelRanges,
+      frozenTable.columns
+    );
     this.tableSubscription = tableSubscription;
-    this.gridRanges = gridRanges;
+    this.gridRanges = snapshotRanges;
+    this.includeColumnHeaders = includeColumnHeaders;
+    this.useUnformattedValues = useUnformattedValues;
 
     // Make filename RFC5987 compatible
     const encodedFileName = encodeURIComponent(fileName.replace(/\//g, ':'))
@@ -281,7 +300,7 @@ export default class TableSaver extends PureComponent<
 
     // if the browser doesn't support stream or there's no active service worker, use blobs for table download
     if (this.useBlobFallback) {
-      this.writeCsvTable();
+      this.writeCsvTable(includeColumnHeaders);
       return;
     }
 
@@ -349,6 +368,9 @@ export default class TableSaver extends PureComponent<
     this.rangedSnapshotsTotal = [];
     this.rangedSnapshotCounter = 0;
 
+    this.includeColumnHeaders = true;
+    this.useUnformattedValues = false;
+
     this.snapshotsTotal = 0;
     this.snapshotCounter = 0;
     this.snapshotsBuffer = new Map();
@@ -409,8 +431,10 @@ export default class TableSaver extends PureComponent<
     }
   }
 
-  writeCsvTable(): void {
-    this.writeTableHeader();
+  writeCsvTable(includeColumnHeaders: boolean): void {
+    if (includeColumnHeaders) {
+      this.writeTableHeader();
+    }
     this.startWriteTableBody();
   }
 
@@ -507,34 +531,49 @@ export default class TableSaver extends PureComponent<
 
     assertNotNull(this.columns);
 
+    const { useUnformattedValues } = this;
     for (let i = 0; i < rows.length; i += 1) {
       const rowIdx = rows[i];
       for (let j = 0; j < this.columns.length; j += 1) {
         const { type, name } = this.columns[j];
-        const hasCustomColumnFormat = this.getCachedCustomColumnFormatFlag(
-          formatter,
-          name,
-          type
-        );
-        let formatOverride = null;
-        if (!hasCustomColumnFormat) {
-          const cellFormat = snapshot.getFormat(rowIdx, this.columns[j]);
-          formatOverride = cellFormat?.formatString != null ? cellFormat : null;
-        }
         let cellData = null;
-        if (formatOverride) {
-          cellData = formatter.getFormattedString(
-            snapshot.getData(rowIdx, this.columns[j]),
-            type,
-            name,
-            formatOverride
-          );
+        if (useUnformattedValues) {
+          let value = snapshot.getData(rowIdx, this.columns[j]) ?? '';
+          if (value !== '' && TableUtils.isDateType(type)) {
+            // value is just a long value, we should return the value formatted as a full date string
+            value = dh.i18n.DateTimeFormat.format(
+              UNFORMATTED_DATE_PATTERN,
+              value as number | Date | DateWrapper,
+              dh.i18n.TimeZone.getTimeZone(formatter.timeZone)
+            );
+          }
+          cellData = value.toString();
         } else {
-          cellData = formatter.getFormattedString(
-            snapshot.getData(rowIdx, this.columns[j]),
-            type,
-            name
+          const hasCustomColumnFormat = this.getCachedCustomColumnFormatFlag(
+            formatter,
+            name,
+            type
           );
+          let formatOverride = null;
+          if (!hasCustomColumnFormat) {
+            const cellFormat = snapshot.getFormat(rowIdx, this.columns[j]);
+            formatOverride =
+              cellFormat?.formatString != null ? cellFormat : null;
+          }
+          if (formatOverride) {
+            cellData = formatter.getFormattedString(
+              snapshot.getData(rowIdx, this.columns[j]),
+              type,
+              name,
+              formatOverride
+            );
+          } else {
+            cellData = formatter.getFormattedString(
+              snapshot.getData(rowIdx, this.columns[j]),
+              type,
+              name
+            );
+          }
         }
         csvString += TableSaver.csvEscapeString(cellData);
         csvString += j === this.columns?.length - 1 ? '\n' : ',';
@@ -622,8 +661,9 @@ export default class TableSaver extends PureComponent<
       return;
     }
     if (download != null) {
+      const { includeColumnHeaders } = this;
       this.makeIframe(`${download}`);
-      this.writeCsvTable();
+      this.writeCsvTable(includeColumnHeaders);
     }
     if (readableStreamPulling != null) {
       if (!this.useBlobFallback) {

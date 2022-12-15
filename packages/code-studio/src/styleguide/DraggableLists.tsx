@@ -154,7 +154,7 @@ class DraggableLists extends Component<
     });
   }
 
-  getSelectionChangeHandler = memoize(listIndex =>
+  getSelectionChangeHandler = memoize((listIndex: number) =>
     this.handleSelectionChange.bind(this, listIndex)
   );
 

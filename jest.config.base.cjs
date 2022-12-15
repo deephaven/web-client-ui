@@ -1,6 +1,4 @@
 const path = require('path');
-const { pathsToModuleNameMapper } = require('ts-jest/utils');
-const { compilerOptions } = require('./tsconfig.json');
 
 module.exports = {
   transform: {
@@ -25,7 +23,7 @@ module.exports = {
       __dirname,
       './packages/icons/dist/index.js'
     ),
-    ...pathsToModuleNameMapper(compilerOptions.paths, { prefix: __dirname }),
+    '^@deephaven/(.*)$': path.join(__dirname, './packages/$1/src'),
   },
   setupFilesAfterEnv: [path.join(__dirname, './jest.setup.ts')],
 };

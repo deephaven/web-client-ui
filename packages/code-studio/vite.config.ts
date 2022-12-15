@@ -40,6 +40,18 @@ export default defineConfig(({ mode }) => {
       target: `http://localhost:${port}/src/styleguide/index.html`,
       rewrite: () => '',
     },
+
+    // proxy the websocket requests, allows tunneling to work with a single port
+    '^/arrow\\.*': {
+      target: env.VITE_PROXY_URL,
+      changeOrigin: true,
+      ws: true,
+    },
+    '^/io\\.deephaven\\..*': {
+      target: env.VITE_PROXY_URL,
+      changeOrigin: true,
+      ws: true,
+    },
   };
 
   // Some paths need to proxy to the engine server

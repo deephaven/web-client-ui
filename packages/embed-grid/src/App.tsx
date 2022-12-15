@@ -6,14 +6,20 @@ import {
   IrisGridModel,
   IrisGridModelFactory,
 } from '@deephaven/iris-grid'; // iris-grid is used to display Deephaven tables
-import dh, { IdeConnection, Sort } from '@deephaven/jsapi-shim'; // Import the shim to use the JS API
-import { TableUtils } from '@deephaven/jsapi-utils';
+import dh, { IdeConnection, Sort, Table } from '@deephaven/jsapi-shim'; // Import the shim to use the JS API
+import { fetchVariableDefinition, TableUtils } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
 import './App.scss'; // Styles for in this app
 
 Log.setLogLevel(parseInt(import.meta.env.VITE_LOG_LEVEL ?? '', 10));
 
 const log = Log.module('EmbedGrid.App');
+
+export const SUPPORTED_TYPES: string[] = [
+  dh.VariableType.TABLE,
+  dh.VariableType.TREETABLE,
+  dh.VariableType.PANDAS,
+];
 
 export type Command = 'filter' | 'sort';
 
@@ -32,13 +38,23 @@ export type SortCommandType = {
  * Load an existing Deephaven table with the connection provided
  * @param connection The Deephaven session object
  * @param name Name of the table to load
+ * @param type The type of table to load
  * @returns Deephaven table
  */
-async function loadTable(connection: IdeConnection, name: string) {
+async function loadTable(
+  connection: IdeConnection,
+  name: string
+): Promise<Table> {
   log.info(`Fetching table ${name}...`);
 
-  const definition = { name, type: dh.VariableType.TABLE };
-  return connection.getObject(definition);
+  const definition = await fetchVariableDefinition(connection, name);
+  if (!SUPPORTED_TYPES.includes(definition.type)) {
+    throw new Error(
+      `Unsupported type '${definition.type}' for variable named '${name}'`
+    );
+  }
+  const object = await connection.getObject(definition);
+  return object as Table;
 }
 
 /**

@@ -22,8 +22,6 @@ import IrisGridTableModelTemplate from './IrisGridTableModelTemplate';
 
 const log = Log.module('IrisGridTableModel');
 
-const EMPTY_ARRAY = Object.freeze([]);
-
 /**
  * Model for a grid showing an iris data table
  */
@@ -80,7 +78,8 @@ class IrisGridTableModel extends IrisGridTableModelTemplate<Table, UIRow> {
   }
 
   getMemoizedFrontColumns = memoize(
-    layoutHintsFrontColumns => layoutHintsFrontColumns ?? EMPTY_ARRAY
+    (layoutHintsFrontColumns: ColumnName[] | undefined) =>
+      layoutHintsFrontColumns ?? []
   );
 
   get frontColumns(): ColumnName[] {
@@ -88,7 +87,8 @@ class IrisGridTableModel extends IrisGridTableModelTemplate<Table, UIRow> {
   }
 
   getMemoizedBackColumns = memoize(
-    layoutHintsBackColumns => layoutHintsBackColumns ?? EMPTY_ARRAY
+    (layoutHintsBackColumns: ColumnName[] | undefined) =>
+      layoutHintsBackColumns ?? []
   );
 
   get backColumns(): ColumnName[] {
@@ -99,8 +99,7 @@ class IrisGridTableModel extends IrisGridTableModelTemplate<Table, UIRow> {
     (
       layoutHintsFrozenColumns: ColumnName[],
       userFrozenColumns?: ColumnName[]
-    ): ColumnName[] =>
-      userFrozenColumns ?? layoutHintsFrozenColumns ?? EMPTY_ARRAY
+    ): ColumnName[] => userFrozenColumns ?? layoutHintsFrozenColumns ?? []
   );
 
   get frozenColumns(): ColumnName[] {

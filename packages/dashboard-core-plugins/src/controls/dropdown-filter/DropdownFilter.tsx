@@ -27,7 +27,7 @@ const UPDATE_DEBOUNCE = 150;
 
 export interface DropdownFilterColumn {
   name: string;
-  type?: string;
+  type: string;
 }
 interface DropdownFilterProps {
   column: DropdownFilterColumn;
@@ -210,7 +210,7 @@ class DropdownFilter extends Component<
     )),
   ]);
 
-  getItemLabel = memoizee((columns, index) => {
+  getItemLabel = memoizee((columns: DropdownFilterColumn[], index: number) => {
     const { name, type } = columns[index];
 
     if (

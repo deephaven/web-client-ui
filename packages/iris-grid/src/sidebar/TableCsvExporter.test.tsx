@@ -23,6 +23,8 @@ function makeTableCsvExporterWrapper({
   onDownload = jest.fn(),
   onCancel = jest.fn(),
   selectedRanges = [],
+  userColumnWidths = IrisGridTestUtils.makeUserColumnWidths(),
+  movedColumns = [],
   model = IrisGridTestUtils.makeModel(TABLE),
 } = {}) {
   return render(
@@ -36,6 +38,8 @@ function makeTableCsvExporterWrapper({
       onDownload={onDownload}
       onCancel={onCancel}
       selectedRanges={selectedRanges}
+      userColumnWidths={userColumnWidths}
+      movedColumns={movedColumns}
       model={model}
     />
   );

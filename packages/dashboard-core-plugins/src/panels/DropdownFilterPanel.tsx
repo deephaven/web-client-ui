@@ -4,7 +4,8 @@ import debounce from 'lodash.debounce';
 import deepEqual from 'deep-equal';
 import memoize from 'memoize-one';
 import { LayoutUtils } from '@deephaven/dashboard';
-import dh, { Column, Row, TableTemplate } from '@deephaven/jsapi-shim';
+import dh from '@deephaven/jsapi-shim';
+import type { Column, Row, Table, TableTemplate } from '@deephaven/jsapi-shim';
 import {
   DateTimeColumnFormatter,
   Formatter,
@@ -30,7 +31,7 @@ import {
 import './DropdownFilterPanel.scss';
 import ToolType from '../linker/ToolType';
 import WidgetPanel from './WidgetPanel';
-import { Link } from '../linker/LinkerUtils';
+import type { Link, LinkPoint } from '../linker/LinkerUtils';
 import { ColumnSelectionValidator } from '../linker/ColumnSelectionValidator';
 
 const log = Log.module('DropdownFilterPanel');
@@ -282,15 +283,17 @@ class DropdownFilterPanel extends Component<
     return error != null ? `${error}` : undefined;
   }
 
-  getCachedPanelLinks = memoize((dashboardLinks: Link[], panel) => {
-    const panelId = LayoutUtils.getIdFromPanel(panel);
-    log.debug('getCachedPanelLinks', dashboardLinks, panelId);
-    return dashboardLinks.filter(link => link.end?.panelId === panelId);
-  });
+  getCachedPanelLinks = memoize(
+    (dashboardLinks: Link[], panel: DropdownFilterPanel) => {
+      const panelId = LayoutUtils.getIdFromPanel(panel);
+      log.debug('getCachedPanelLinks', dashboardLinks, panelId);
+      return dashboardLinks.filter(link => link.end?.panelId === panelId);
+    }
+  );
 
-  getCachedSource = memoize(links => {
+  getCachedSource = memoize((links: Link[]) => {
     log.debug('getCachedSource', links);
-    let source = null;
+    let source: LinkPoint | undefined;
     if (links.length > 0) {
       const [link] = links;
       source = link.start;
@@ -301,27 +304,34 @@ class DropdownFilterPanel extends Component<
     return source;
   });
 
-  getCachedSourceTable = memoize((panelTableMap, source) => {
-    log.debug('getCachedSourceTable', panelTableMap, source);
-    if (source == null) {
-      return null;
+  getCachedSourceTable = memoize(
+    (
+      panelTableMap: Map<string | string[], TableTemplate<Table>>,
+      source: LinkPoint | undefined
+    ) => {
+      log.debug('getCachedSourceTable', panelTableMap, source);
+      if (source == null) {
+        return null;
+      }
+      const { panelId } = source;
+      return panelTableMap.get(panelId) ?? null;
     }
-    const { panelId } = source;
-    return panelTableMap.get(panelId) ?? null;
-  });
+  );
 
-  getCachedSourceColumn = memoize((table: TableTemplate, source) => {
-    log.debug('getCachedSourceColumn', table, source);
-    if (table == null || source == null) {
-      return null;
+  getCachedSourceColumn = memoize(
+    (table: TableTemplate, source: LinkPoint | undefined) => {
+      log.debug('getCachedSourceColumn', table, source);
+      if (table == null || source == null) {
+        return null;
+      }
+      return (
+        table.columns.find(
+          ({ name, type }) =>
+            name === source.columnName && type === source.columnType
+        ) ?? null
+      );
     }
-    return (
-      table.columns.find(
-        ({ name, type }) =>
-          name === source.columnName && type === source.columnType
-      ) ?? null
-    );
-  });
+  );
 
   getSource(props = this.props) {
     const { dashboardLinks } = props;
@@ -576,8 +586,8 @@ class DropdownFilterPanel extends Component<
   applySourceSorts() {
     const { valuesTable } = this.state;
     const sourceTable = this.getSourceTable();
-    log.debug('applySourceSorts', sourceTable.sort);
-    if (valuesTable == null) {
+    log.debug('applySourceSorts', sourceTable?.sort);
+    if (valuesTable == null || sourceTable == null) {
       log.debug('Table not initialized');
       return;
     }
@@ -589,8 +599,8 @@ class DropdownFilterPanel extends Component<
   applySourceFilters(): void {
     const { valuesTable } = this.state;
     const sourceTable = this.getSourceTable();
-    log.debug('applySourceFilters', sourceTable.filter);
-    if (valuesTable == null) {
+    log.debug('applySourceFilters', sourceTable?.filter);
+    if (valuesTable == null || sourceTable == null) {
       log.debug('Table not initialized');
       return;
     }

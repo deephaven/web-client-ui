@@ -235,7 +235,7 @@ export class FormattingSectionContent extends PureComponent<
     showTimeZone: boolean,
     showTSeparator: boolean,
     isGlobalOptions: boolean,
-    legacyGlobalFormat: string
+    legacyGlobalFormat?: string
   ): ReactElement[] {
     const formatter = new Formatter([], {
       timeZone,
@@ -246,7 +246,7 @@ export class FormattingSectionContent extends PureComponent<
       ? DateTimeColumnFormatter.getGlobalFormats(showTimeZone, showTSeparator)
       : DateTimeColumnFormatter.getFormats(showTimeZone, showTSeparator);
 
-    if (legacyGlobalFormat && !formats.includes(legacyGlobalFormat)) {
+    if (legacyGlobalFormat != null && !formats.includes(legacyGlobalFormat)) {
       formats.unshift(legacyGlobalFormat);
     }
 
@@ -380,11 +380,11 @@ export class FormattingSectionContent extends PureComponent<
 
   getCachedDateTimeFormatOptions = memoize(
     (
-      timeZone,
-      showTimeZone,
-      showTSeparator,
+      timeZone: string,
+      showTimeZone: boolean,
+      showTSeparator: boolean,
       isGlobalOptions = false,
-      legacyGlobalFormat = null
+      legacyGlobalFormat?: string
     ) => {
       const { timestampAtMenuOpen } = this.state;
       return FormattingSectionContent.renderDateTimeOptions(

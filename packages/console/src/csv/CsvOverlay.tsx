@@ -233,11 +233,11 @@ class CsvOverlay extends Component<CsvOverlayProps, CsvOverlayState> {
     allowZip ? [...VALID_EXTENSIONS, ...ZIP_EXTENSIONS] : [...VALID_EXTENSIONS]
   );
 
-  getAcceptString = memoize(allowZip =>
+  getAcceptString = memoize((allowZip: boolean) =>
     this.getValidExtensions(allowZip).join(', ')
   );
 
-  getFileTypeErrorString = memoize(allowZip =>
+  getFileTypeErrorString = memoize((allowZip: boolean) =>
     TextUtils.join(this.getValidExtensions(allowZip), 'or')
   );
 

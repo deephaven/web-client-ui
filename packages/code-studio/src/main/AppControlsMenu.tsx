@@ -151,7 +151,7 @@ const AppControlsMenu = (props: AppControlsMenuProps): ReactElement => {
         title: 'Input Filter',
         icon: dhInput,
         menuElement: <DragSourceMenuItem />,
-        action: (dragEvent?) => {
+        action: (dragEvent?: KeyboardEvent) => {
           handleControlSelect(ControlType.INPUT_FILTER, dragEvent);
         },
         order: 10,
@@ -160,7 +160,7 @@ const AppControlsMenu = (props: AppControlsMenuProps): ReactElement => {
         title: 'Dropdown Filter',
         icon: dhTriangleDownSquare,
         menuElement: <DragSourceMenuItem />,
-        action: (dragEvent?) => {
+        action: (dragEvent?: KeyboardEvent) => {
           handleControlSelect(ControlType.DROPDOWN_FILTER, dragEvent);
         },
         order: 15,
@@ -169,7 +169,7 @@ const AppControlsMenu = (props: AppControlsMenuProps): ReactElement => {
         title: 'Markdown Widget',
         icon: vsMarkdown,
         menuElement: <DragSourceMenuItem />,
-        action: (dragEvent?) => {
+        action: (dragEvent?: KeyboardEvent) => {
           handleControlSelect(ControlType.MARKDOWN, dragEvent);
         },
         order: 20,
@@ -178,7 +178,7 @@ const AppControlsMenu = (props: AppControlsMenuProps): ReactElement => {
         title: 'Filter Sets',
         icon: vsDeviceCamera,
         menuElement: <DragSourceMenuItem />,
-        action: (dragEvent?) => {
+        action: (dragEvent?: KeyboardEvent) => {
           handleControlSelect(ControlType.FILTER_SET_MANAGER, dragEvent);
         },
         order: 25,

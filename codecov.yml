@@ -8,3 +8,4 @@ coverage:
         # Allow up to a 0.05% drop in project threshold for codecov
         # A lot of bug fixes don't change test coverage, and then codecov fails
         threshold: 0.05%
+    patch: off

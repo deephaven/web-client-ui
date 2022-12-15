@@ -4,17 +4,8 @@
     "rootDir": "src/",
     "outDir": "dist/"
   },
-  "include": [
-    "src/**/*.ts",
-    "src/**/*.tsx",
-    "src/**/*.js",
-    "src/**/*.jsx"
-  ],
-  "exclude": [
-    "node_modules",
-    "src/**/*.test.*",
-    "src/**/__mocks__/*"
-  ],
+  "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.js", "src/**/*.jsx"],
+  "exclude": ["node_modules", "src/**/*.test.*", "src/**/__mocks__/*"],
   "references": [
     {
       "path": "../chart"
@@ -45,6 +36,9 @@
     },
     {
       "path": "../log"
+    },
+    {
+      "path": "../react-hooks"
     },
     {
       "path": "../redux"
