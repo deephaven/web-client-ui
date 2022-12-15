@@ -33,6 +33,14 @@ function renderContainer(props: Partial<DropdownFilterProps> = {}) {
   return render(makeContainer(props));
 }
 
+function getCancelButton() {
+  return screen.getByRole('button', { name: 'Cancel' });
+}
+
+function getSaveButton() {
+  return screen.getByRole('button', { name: 'Save' });
+}
+
 function getSourceButton() {
   return screen.getByLabelText('Source Column');
 }
@@ -67,7 +75,7 @@ afterAll(() => {
   jest.useRealTimers();
 });
 
-it('mounts properly with no columns correctly', async () => {
+it('mounts properly with no columns correctly', () => {
   renderContainer();
 
   const sourceBtn = getSourceButton();
@@ -95,7 +103,7 @@ describe('options when source is selected', () => {
       onChange.mockClear();
     });
 
-    it('has the initial state correct', async () => {
+    it('has the initial state correct', () => {
       const sourceBtn = getSourceButton();
       expect(sourceBtn.textContent).toBe(source.columnName);
 
@@ -104,7 +112,7 @@ describe('options when source is selected', () => {
       expect(getOption(column.name).selected).toBe(true);
     });
 
-    it('fires a change event when column changed and saved', async () => {
+    it('fires a change event when column changed and saved', () => {
       const filterSelect = getFilterSelect();
       userEvent.selectOptions(filterSelect, getOption(columns[2].name));
       expect(getOption(columns[2].name).selected).toBe(true);
@@ -120,12 +128,12 @@ describe('options when source is selected', () => {
       );
     });
 
-    it('fires a change event when column changed and saved', async () => {
+    it('fires a change event when column changed and saved', () => {
       const filterSelect = getFilterSelect();
       userEvent.selectOptions(filterSelect, getOption(columns[2].name));
       expect(getOption(columns[2].name).selected).toBe(true);
       expect(onChange).not.toHaveBeenCalled();
-      userEvent.click(screen.getByRole('button', { name: 'Save' }));
+      userEvent.click(getSaveButton());
       jest.runOnlyPendingTimers();
       expect(onChange).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -134,6 +142,30 @@ describe('options when source is selected', () => {
           value: '',
         })
       );
+    });
+
+    it('disables save button when column deselected', () => {
+      const filterSelect = getFilterSelect();
+      userEvent.selectOptions(
+        filterSelect,
+        getOption(DropdownFilter.SOURCE_BUTTON_PLACEHOLDER)
+      );
+      jest.runOnlyPendingTimers();
+      expect(getOption(DropdownFilter.SOURCE_BUTTON_PLACEHOLDER).selected).toBe(
+        true
+      );
+      expect(onChange).not.toHaveBeenCalled();
+      expect(getSaveButton()).toBeDisabled();
+    });
+
+    it('cancels a change in selected column correctly', () => {
+      const filterSelect = getFilterSelect();
+      userEvent.selectOptions(filterSelect, getOption(columns[2].name));
+      jest.runOnlyPendingTimers();
+      expect(getOption(columns[2].name).selected).toBe(true);
+      userEvent.click(getCancelButton());
+      expect(getOption(column.name).selected).toBe(true);
+      expect(getOption(columns[2].name).selected).not.toBe(true);
     });
   });
 
@@ -155,7 +187,7 @@ describe('options when source is selected', () => {
       onChange.mockClear();
     });
 
-    it('shows the value correctly', async () => {
+    it('shows the value correctly', () => {
       expect(getOption(value).selected).toBe(true);
     });
 
