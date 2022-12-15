@@ -1,26 +1,19 @@
-# This workflow will do a clean install of node dependencies, build the source code and run tests across different versions of node
-# For more information see: https://help.github.com/actions/language-and-framework-guides/using-nodejs-with-github-actions
+# This workflow will perform unit tests of the web application and update code coverage reports
 
-name: Node.js CI
+name: Unit Tests
 
 on:
   push:
     branches: [main]
   pull_request:
     branches: [main]
-env:
-  DOCKER_TAG: latest
 jobs:
-  build:
+  unit:
     runs-on: ubuntu-22.04
     concurrency:
       group: ${{ github.workflow }}-${{ github.ref }}
       cancel-in-progress: true
     steps:
-      - name: Run core server:${{ env.DOCKER_TAG }}
-        run: |
-          docker pull --quiet ghcr.io/deephaven/server:${{ env.DOCKER_TAG }}
-          docker run --detach --publish 10000:10000 ghcr.io/deephaven/server:${{ env.DOCKER_TAG }} --name dh-core-server
       - uses: actions/checkout@v3
         with:
           fetch-depth: '0' # This action defaults to only getting the latest commit. Setting to 0 makes it retrieve the full git commit history
@@ -70,8 +63,6 @@ jobs:
         if: steps.cache-node-modules.outputs.cache-hit != 'true'
         run: npm ci --no-audit
 
-      - name: Build
-        run: npm run build
       # Run unit tests on all files for accurate code coverage
       # Lint only changed files so linting is faster
       # Caching with the absolute path b/c Jest will make a folder in each project
@@ -96,15 +87,3 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           directory: ./coverage
           flags: unit
-
-      - name: Install Playwright dependencies
-        run: PLAYWRIGHT_BROWSERS_PATH=0 npx playwright install --with-deps
-      - name: Run Playwright tests
-        run: PLAYWRIGHT_BROWSERS_PATH=0 npx playwright test
-      - name: Upload Playwright report
-        uses: actions/upload-artifact@v3
-        if: always()
-        with:
-          name: playwright-report
-          path: playwright-report/
-          retention-days: 14
