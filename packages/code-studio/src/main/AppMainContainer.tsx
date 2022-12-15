@@ -716,10 +716,14 @@ export class AppMainContainer extends Component<
     });
   }
 
-  getDashboardPlugins = memoize(plugins =>
-    [...plugins.entries()]
-      .filter(([, { DashboardPlugin }]) => DashboardPlugin)
-      .map(([name, { DashboardPlugin }]) => <DashboardPlugin key={name} />)
+  getDashboardPlugins = memoize((plugins: DeephavenPluginModuleMap) =>
+    ([...plugins.entries()].filter(
+      ([, plugin]: [string, { DashboardPlugin?: typeof React.Component }]) =>
+        plugin.DashboardPlugin != null
+    ) as [
+      string,
+      { DashboardPlugin: typeof React.Component }
+    ][]).map(([name, { DashboardPlugin }]) => <DashboardPlugin key={name} />)
   );
 
   render(): ReactElement {
