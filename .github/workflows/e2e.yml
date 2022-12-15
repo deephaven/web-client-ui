@@ -8,7 +8,7 @@ on:
   pull_request:
     branches: [main]
 env:
-  DOCKER_TAG: latest
+  DOCKER_TAG: 0.19.1
 jobs:
   e2e:
     runs-on: ubuntu-22.04
@@ -19,7 +19,7 @@ jobs:
       - name: Run core server:${{ env.DOCKER_TAG }}
         run: |
           docker pull --quiet ghcr.io/deephaven/server:${{ env.DOCKER_TAG }}
-          docker run --detach --publish 10000:10000 ghcr.io/deephaven/server:${{ env.DOCKER_TAG }} --name dh-core-server
+          docker run --detach --publish 10000:10000 ghcr.io/deephaven/server:${{ env.DOCKER_TAG }}
 
       - uses: actions/checkout@v3
 
