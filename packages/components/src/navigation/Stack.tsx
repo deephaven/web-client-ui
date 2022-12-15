@@ -93,9 +93,13 @@ export function Stack({
         classNames="slide-right"
         onEntered={popComplete}
       >
-        {poppingView != null && (
-          <div className="popping-view">{poppingView}</div>
-        )}
+        {/* Without the fragment, the transition doesn't work. Without the conditional render, the stack is blank */}
+        {/* eslint-disable-next-line react/jsx-no-useless-fragment */}
+        <>
+          {poppingView != null && (
+            <div className="popping-view">{poppingView}</div>
+          )}
+        </>
       </CSSTransition>
       <CSSTransition
         in={pushingView != null}
@@ -103,9 +107,12 @@ export function Stack({
         classNames="slide-left"
         onEntered={pushComplete}
       >
-        {pushingView != null && (
-          <div className="pushing-view">{pushingView}</div>
-        )}
+        {/* eslint-disable-next-line react/jsx-no-useless-fragment */}
+        <>
+          {pushingView != null && (
+            <div className="pushing-view">{pushingView}</div>
+          )}
+        </>
       </CSSTransition>
     </div>
   );
