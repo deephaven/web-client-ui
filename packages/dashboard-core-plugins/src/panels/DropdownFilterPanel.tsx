@@ -32,6 +32,7 @@ import ToolType from '../linker/ToolType';
 import WidgetPanel from './WidgetPanel';
 import type { Link, LinkPoint } from '../linker/LinkerUtils';
 import { ColumnSelectionValidator } from '../linker/ColumnSelectionValidator';
+import { PanelState as InputFilterPanelState } from './InputFilterPanel';
 
 const log = Log.module('DropdownFilterPanel');
 
@@ -524,15 +525,7 @@ export class DropdownFilterPanel extends Component<
    * @param state Filter state to set
    * @param sendUpdate Emit filters changed event if true
    */
-  setPanelState(
-    state: {
-      name: string;
-      type: string;
-      value: string;
-      isValueShown: boolean;
-    },
-    sendUpdate = false
-  ): void {
+  setPanelState(state: InputFilterPanelState, sendUpdate = false): void {
     if (this.getSource() == null) {
       log.debug('Ignore state update for unlinked filter', state);
       return;

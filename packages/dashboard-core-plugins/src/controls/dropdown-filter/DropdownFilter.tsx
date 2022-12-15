@@ -42,7 +42,7 @@ export interface DropdownFilterProps {
   isValueShown: boolean;
   settingsError: string;
   source: LinkPoint;
-  value: string;
+  value: string | null;
   values: (string | null)[];
   onChange: (change: {
     column: Partial<Column> | null;
@@ -209,7 +209,7 @@ export class DropdownFilter extends Component<
         // eslint-disable-next-line react/no-array-index-key
         key={`${index}/${val}`}
       >
-        {val}
+        {val ?? '(null)'}
       </option>
     )),
   ]);
@@ -264,7 +264,7 @@ export class DropdownFilter extends Component<
     const { values } = this.props;
     if (index >= 0 && index < values.length) {
       value = values[index];
-    } else if (index === -1) {
+    } else {
       log.debug2('Selected default item');
     }
 
@@ -302,16 +302,6 @@ export class DropdownFilter extends Component<
     }
   }
 
-  handleMouseEnter(): void {
-    const { onSourceMouseEnter } = this.props;
-    onSourceMouseEnter();
-  }
-
-  handleMouseLeave(): void {
-    const { onSourceMouseLeave } = this.props;
-    onSourceMouseLeave();
-  }
-
   sourceUpdated(): void {
     this.setState({
       column: null,
@@ -328,9 +318,7 @@ export class DropdownFilter extends Component<
   }
 
   focusInput(): void {
-    if (this.dropdownRef.current !== null) {
-      this.dropdownRef.current.focus();
-    }
+    this.dropdownRef.current?.focus();
   }
 
   resetValue(): void {
@@ -342,19 +330,24 @@ export class DropdownFilter extends Component<
     this.resetValue();
   }
 
+  // Called by the parent component via ref
   setFilterState({
     name,
     type,
     value,
     isValueShown,
   }: {
-    name: string;
-    type: string;
-    value: string;
-    isValueShown: boolean;
+    name?: string;
+    type?: string;
+    value?: string;
+    isValueShown?: boolean;
   }): void {
     const column = name != null && type != null ? { name, type } : null;
-    this.setState({ column, value, isValueShown });
+    this.setState(({ value: oldValue, isValueShown: oldIsValueShown }) => ({
+      column,
+      value: value ?? oldValue,
+      isValueShown: isValueShown ?? oldIsValueShown,
+    }));
   }
 
   sendUpdate = debounce(() => {
@@ -483,6 +476,7 @@ export class DropdownFilter extends Component<
         <div
           className="dropdown-filter-value-card"
           onClick={this.handleBackgroundClick}
+          data-testid="dropdown-filter-value-background"
         >
           {isLoaded && (
             <>
