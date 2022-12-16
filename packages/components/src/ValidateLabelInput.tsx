@@ -64,25 +64,17 @@ export function ValidateLabelInput(
         {labelText}
       </label>
       {React.Children.toArray(children).map(child => {
-        if (!React.isValidElement(child)) {
+        if (!React.isValidElement<React.HTMLAttributes<HTMLElement>>(child)) {
           // eslint-disable-next-line react/jsx-key
           return <div className={classNames(className)}>{child}</div>;
         }
 
         // toArray strips null children
-        return React.cloneElement(
-          child as
-            | React.ReactPortal
-            | React.ReactElement<
-                { className: string },
-                string | React.JSXElementConstructor<{ className: string }>
-              >,
-          {
-            className: classNames(child.props.className, {
-              'is-invalid': validationError,
-            }),
-          }
-        );
+        return React.cloneElement(child, {
+          className: classNames(child.props.className, {
+            'is-invalid': validationError,
+          }),
+        });
       })}
       {hintText !== undefined && (
         <small className="form-text text-muted">{hintText}</small>
