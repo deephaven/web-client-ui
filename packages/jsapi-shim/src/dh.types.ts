@@ -691,6 +691,16 @@ export interface Table extends TableTemplate<Table>, TableStatic {
   byExternal(keys: string[], dropKeys?: boolean): Promise<TableMap>;
 
   fireViewportUpdate(): void;
+
+  seekRow(
+    startRow: number,
+    column: Column,
+    valueType: string,
+    value: unknown,
+    insensitive?: boolean,
+    contains?: boolean,
+    isBackwards?: boolean
+  ): Promise<number>;
 }
 
 export interface TableViewportSubscription extends Evented {

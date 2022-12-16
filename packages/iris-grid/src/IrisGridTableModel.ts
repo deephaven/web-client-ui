@@ -46,7 +46,6 @@ class IrisGridTableModel extends IrisGridTableModelTemplate<Table, UIRow> {
     inputTable: InputTable | null = null
   ) {
     super(table, formatter, inputTable);
-
     this.customColumnList = [];
     this.formatColumnList = [];
   }

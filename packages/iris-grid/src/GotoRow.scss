@@ -20,6 +20,10 @@
     flex-wrap: wrap;
   }
 
+  .goto-row-close {
+    display: flex;
+  }
+
   input {
     max-width: calc($input-padding-x + 12ch + $input-padding-x);
   }
