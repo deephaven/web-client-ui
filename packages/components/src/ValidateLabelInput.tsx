@@ -70,11 +70,19 @@ export function ValidateLabelInput(
         }
 
         // toArray strips null children
-        return React.cloneElement(child, {
-          className: classNames(child.props.className, {
-            'is-invalid': validationError,
-          }),
-        });
+        return React.cloneElement(
+          child as
+            | React.ReactPortal
+            | React.ReactElement<
+                { className: string },
+                string | React.JSXElementConstructor<{ className: string }>
+              >,
+          {
+            className: classNames(child.props.className, {
+              'is-invalid': validationError,
+            }),
+          }
+        );
       })}
       {hintText !== undefined && (
         <small className="form-text text-muted">{hintText}</small>

@@ -185,7 +185,9 @@ class LogView extends PureComponent<LogViewProps, LogViewState> {
     const shownLogLevels: Record<string, boolean> = {};
     for (let i = 0; i < LogView.AllLogLevels.length; i += 1) {
       const logLevel = LogView.AllLogLevels[i];
-      const isEnabled = LogView.DefaultLogLevels.indexOf(logLevel) >= 0;
+      const isEnabled = LogView.DefaultLogLevels.some(
+        level => level === logLevel
+      );
       shownLogLevels[logLevel] = isEnabled;
     }
 

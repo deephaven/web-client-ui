@@ -189,7 +189,7 @@ export const defaultConfig: Config = Object.freeze({
     showPopoutIcon: true,
     showMaximiseIcon: true,
     showCloseIcon: true,
-    responsiveMode: 'onload', // Can be onload, always, or none.
+    responsiveMode: 'onload' as const, // Can be onload, always, or none.
     tabOverlapAllowance: 0, // maximum pixel overlap per tab
     // reorderOnTabMenuClick: true, // Deephaven disabled
     tabControlOffset: 10,
