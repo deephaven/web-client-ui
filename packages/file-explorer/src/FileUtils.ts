@@ -194,16 +194,19 @@ export class FileUtils {
     }
     if (invalidCharsRegex.test(name)) {
       throw new ValidationError(
-        `Invalid characters in name: "${(name.match(invalidCharsRegex) ?? [])
-          // Filter out duplicates
-          .reduce(
-            (acc, next) => (acc.includes(next) ? acc : [...acc, next]),
-            [] as string[]
-          )
-          .map(char =>
-            invalidCharLabels.has(char) ? invalidCharLabels.get(char) : char
-          )
-          .join('", "')}"`
+        `Invalid characters in name: "${
+          name
+            .match(invalidCharsRegex)
+            // Filter out duplicates
+            ?.reduce(
+              (acc, next) => (acc.includes(next) ? acc : [...acc, next]),
+              [] as string[]
+            )
+            .map(char =>
+              invalidCharLabels.has(char) ? invalidCharLabels.get(char) : char
+            )
+            .join('", "') ?? ''
+        }"`
       );
     }
   }

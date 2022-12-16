@@ -64,7 +64,7 @@ export function ValidateLabelInput(
         {labelText}
       </label>
       {React.Children.toArray(children).map(child => {
-        if (!React.isValidElement(child)) {
+        if (!React.isValidElement<React.HTMLAttributes<HTMLElement>>(child)) {
           // eslint-disable-next-line react/jsx-key
           return <div className={classNames(className)}>{child}</div>;
         }
