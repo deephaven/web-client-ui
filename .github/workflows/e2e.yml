@@ -1,6 +1,6 @@
 # This workflow will do a production build of the application, and test it end-to-end with the latest Deephaven Core server.
 
-name: End-to-end Tests
+name: Build and End-to-end Tests
 
 on:
   push:
@@ -10,7 +10,7 @@ on:
 env:
   DOCKER_TAG: latest
 jobs:
-  e2e:
+  build:
     runs-on: ubuntu-22.04
     concurrency:
       group: ${{ github.workflow }}-${{ github.ref }}
