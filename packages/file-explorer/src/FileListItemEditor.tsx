@@ -22,11 +22,13 @@ export interface FileListItemEditorProps {
   validate?: (newName: string) => Promise<void>;
 }
 
+const DEFAULT_VALIDATE = () => Promise.resolve();
+
 export function FileListItemEditor({
   item,
   onCancel,
   onSubmit,
-  validate = () => Promise.resolve(),
+  validate = DEFAULT_VALIDATE,
 }: FileListItemEditorProps): JSX.Element {
   const input = useRef<HTMLInputElement>(null);
   const [value, setValue] = useState(item.basename);
