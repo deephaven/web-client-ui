@@ -2,7 +2,7 @@ import React, { ReactElement, useState } from 'react';
 import { Button, Modal, ModalBody, ModalHeader } from '@deephaven/components';
 import { vsLaw } from '@deephaven/icons';
 
-const LegalNotice = (): ReactElement => {
+function LegalNotice(): ReactElement {
   const [modal, setModal] = useState(false);
   const toggle = () => {
     setModal(!modal);
@@ -34,6 +34,6 @@ const LegalNotice = (): ReactElement => {
       </Modal>
     </Button>
   );
-};
+}
 
 export default LegalNotice;

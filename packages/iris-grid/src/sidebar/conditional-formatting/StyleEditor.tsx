@@ -37,7 +37,7 @@ export interface ConditionEditorProps {
 
 const DEFAULT_CALLBACK = () => undefined;
 
-const StyleEditor = (props: ConditionEditorProps): JSX.Element => {
+function StyleEditor(props: ConditionEditorProps): JSX.Element {
   const { config, onChange = DEFAULT_CALLBACK } = props;
   const [styleType, setStyleType] = useState(config.type);
   const [background, setBackground] = useState(
@@ -188,6 +188,6 @@ const StyleEditor = (props: ConditionEditorProps): JSX.Element => {
       )}
     </div>
   );
-};
+}
 
 export default StyleEditor;

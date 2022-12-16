@@ -49,7 +49,7 @@ interface DragSourceMenuItemProps {
  * for dragging panels directly from menu
  */
 
-const DragSourceMenuItem = (props: DragSourceMenuItemProps) => {
+function DragSourceMenuItem(props: DragSourceMenuItemProps) {
   const {
     forwardedProps: {
       menuItem: { action, title, disabled: menuItemDisabled },
@@ -135,7 +135,7 @@ const DragSourceMenuItem = (props: DragSourceMenuItemProps) => {
       <span className="shortcut">{displayShortcut}</span>
     </button>
   );
-};
+}
 
 interface AppControlsMenuProps {
   handleControlSelect: (type: string, event?: KeyboardEvent) => void;
@@ -143,7 +143,7 @@ interface AppControlsMenuProps {
   onClearFilter: () => void;
 }
 
-const AppControlsMenu = (props: AppControlsMenuProps): ReactElement => {
+function AppControlsMenu(props: AppControlsMenuProps): ReactElement {
   const { handleControlSelect, handleToolSelect, onClearFilter } = props;
   const controlMenuActions: DropdownAction[] = useMemo(
     () => [
@@ -221,7 +221,7 @@ const AppControlsMenu = (props: AppControlsMenuProps): ReactElement => {
       actions={controlMenuActions}
     />
   );
-};
+}
 
 AppControlsMenu.propTypes = {
   handleControlSelect: PropTypes.func,

@@ -17,12 +17,12 @@ type CardFlipProps = {
  * @param children Expects exactly two children
  * @returns
  */
-const CardFlip = ({
+function CardFlip({
   className,
   isFlipped,
   children,
   'data-testid': dataTestId,
-}: CardFlipProps): JSX.Element => {
+}: CardFlipProps): JSX.Element {
   const getComponent = (key: 0 | 1) => {
     if (children.length !== 2) {
       throw new Error('CardFlip requires 2 children to function');
@@ -77,6 +77,6 @@ const CardFlip = ({
       </div>
     </div>
   );
-};
+}
 
 export default CardFlip;

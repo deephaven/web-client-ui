@@ -20,7 +20,7 @@ type ToastNotificationProps = {
   onDismiss?: React.MouseEventHandler<HTMLButtonElement>;
 };
 
-const ToastNotification = ({
+function ToastNotification({
   buttons,
   isShown = false,
   classNames: classNamesProp,
@@ -29,7 +29,7 @@ const ToastNotification = ({
   onClick,
   onDismiss,
   'data-testid': dataTestId,
-}: ToastNotificationProps): JSX.Element => {
+}: ToastNotificationProps): JSX.Element {
   const hasButtons = buttons && buttons.length !== 0;
 
   return (
@@ -71,7 +71,7 @@ const ToastNotification = ({
       </div>
     </CSSTransition>
   );
-};
+}
 
 ToastNotification.TYPE = Object.freeze({
   ERROR: 'error',

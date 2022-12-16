@@ -12,9 +12,7 @@ interface IrisGridPanelTooltipProps {
   description?: string;
 }
 
-const IrisGridPanelTooltip = (
-  props: IrisGridPanelTooltipProps
-): ReactElement => {
+function IrisGridPanelTooltip(props: IrisGridPanelTooltipProps): ReactElement {
   const { model, widgetName, glContainer, description } = props;
 
   const rowCount = (model?.rowCount ?? 0) - (model?.pendingRowCount ?? 0);
@@ -33,7 +31,7 @@ const IrisGridPanelTooltip = (
       </div>
     </WidgetPanelTooltip>
   );
-};
+}
 
 IrisGridPanelTooltip.propTypes = {
   glContainer: GLPropTypes.Container.isRequired,

@@ -68,7 +68,7 @@ interface DashboardLayoutProps {
 /**
  * DashboardLayout component. Handles hydrating, dehydrating components, listening for dragging panels.
  */
-export const DashboardLayout = ({
+export function DashboardLayout({
   id,
   children,
   emptyDashboard = <div>Dashboard is empty.</div>,
@@ -78,7 +78,7 @@ export const DashboardLayout = ({
   onLayoutInitialized = DEFAULT_CALLBACK,
   hydrate = hydrateDefault,
   dehydrate = dehydrateDefault,
-}: DashboardLayoutProps): JSX.Element => {
+}: DashboardLayoutProps): JSX.Element {
   const dispatch = useDispatch();
   const data =
     useSelector<RootState>(state => getDashboardData(state, id)) ??
@@ -304,7 +304,7 @@ export const DashboardLayout = ({
       )}
     </>
   );
-};
+}
 
 DashboardLayout.propTypes = {
   id: PropTypes.string.isRequired,

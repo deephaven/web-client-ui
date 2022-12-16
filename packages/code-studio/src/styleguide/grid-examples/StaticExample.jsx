@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Grid, StaticDataGridModel } from '@deephaven/grid';
 
-const StaticExample = () => {
+function StaticExample() {
   const [model] = useState(
     () =>
       new StaticDataGridModel(
@@ -16,6 +16,6 @@ const StaticExample = () => {
   );
 
   return <Grid model={model} />;
-};
+}
 
 export default StaticExample;

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
 import {
   assertIsDashboardPluginProps,
   DashboardPluginComponentProps,
@@ -16,7 +16,7 @@ export type PandasPluginProps = Partial<DashboardPluginComponentProps> & {
   hydrate: PanelHydrateFunction<PandasPanelProps>;
 };
 
-export const PandasPlugin = (props: PandasPluginProps): JSX.Element => {
+export function PandasPlugin(props: PandasPluginProps): JSX.Element | null {
   assertIsDashboardPluginProps(props);
   const { hydrate, id, layout, registerComponent } = props;
 
@@ -64,7 +64,7 @@ export const PandasPlugin = (props: PandasPluginProps): JSX.Element => {
 
   useListener(layout.eventHub, PanelEvent.OPEN, handlePanelOpen);
 
-  return <></>;
-};
+  return null;
+}
 
 export default PandasPlugin;

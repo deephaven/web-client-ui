@@ -4,7 +4,7 @@ import { Grid, ViewportDataGridModel } from '@deephaven/grid';
 /**
  * An example showing data loading asnychronously for a grid.
  */
-const AsyncExample = () => {
+function AsyncExample() {
   // Use a Viewport data model that we update asynchronously to display the data
   const [model] = useState(
     () => new ViewportDataGridModel(1_000_000_000, 1_000_000)
@@ -60,6 +60,6 @@ const AsyncExample = () => {
   );
 
   return <Grid model={model} onViewChanged={handleViewChanged} ref={grid} />;
-};
+}
 
 export default AsyncExample;

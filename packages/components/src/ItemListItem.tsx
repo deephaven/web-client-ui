@@ -10,6 +10,7 @@ interface ItemListItemProps {
   isFocused: boolean;
   isSelected: boolean;
   itemIndex: number;
+  // eslint-disable-next-line react/no-unused-prop-types
   disableSelect: boolean;
   onBlur(index: number, e: React.FocusEvent<HTMLDivElement>): void;
   onClick(index: number, e: React.MouseEvent<HTMLDivElement>): void;
@@ -36,7 +37,6 @@ class ItemListItem extends Component<ItemListItemProps, Record<string, never>> {
     isFocused: false,
     isSelected: false,
     itemIndex: 0,
-    disableSelect: false,
     'data-testid': undefined,
 
     onBlur(): void {

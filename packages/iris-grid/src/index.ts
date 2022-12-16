@@ -1,7 +1,10 @@
+import IrisGrid from './IrisGrid';
+
+export default IrisGrid;
+export { IrisGrid };
 export * from './sidebar';
 export * from './AdvancedFilterCreator';
 export * from './CommonTypes';
-export { default as IrisGrid } from './IrisGrid';
 export * from './IrisGrid';
 export { default as SHORTCUTS } from './IrisGridShortcuts';
 export { default as IrisGridModel } from './IrisGridModel';
@@ -17,7 +20,5 @@ export type { IrisGridThemeType } from './IrisGridTheme';
 export { default as IrisGridTestUtils } from './IrisGridTestUtils';
 export { default as IrisGridUtils } from './IrisGridUtils';
 export * from './IrisGridUtils';
-export { default } from './IrisGrid';
-export * from './IrisGrid';
 export { default as TableViewportUpdater } from './TableViewportUpdater';
 export { default as TreeTableViewportUpdater } from './TreeTableViewportUpdater';

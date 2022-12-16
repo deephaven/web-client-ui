@@ -1,4 +1,7 @@
-export { default as Console } from './Console';
+import Console from './Console';
+
+export default Console;
+export { Console };
 export { default as ConsoleInput } from './ConsoleInput';
 export { default as ConsoleMenu } from './ConsoleMenu';
 export { default as SHORTCUTS } from './ConsoleShortcuts';
@@ -13,5 +16,3 @@ export * from './console-history';
 export { default as LogView } from './log/LogView';
 export { default as HeapUsage } from './HeapUsage';
 export { default as NewTableColumnTypes } from './csv/NewTableColumnTypes';
-
-export { default } from './Console';

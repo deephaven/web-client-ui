@@ -22,52 +22,54 @@ import './StyleGuide.scss';
 import DraggableLists from './DraggableLists';
 import Navigations from './Navigations';
 
-const StyleGuide = (): React.ReactElement => (
-  <div className="container style-guide-container">
-    <div style={{ marginTop: '2rem', paddingBottom: '1rem' }}>
-      <h1 style={{ paddingTop: '2rem' }}>Deephaven UI Components</h1>
+function StyleGuide(): React.ReactElement {
+  return (
+    <div className="container style-guide-container">
+      <div style={{ marginTop: '2rem', paddingBottom: '1rem' }}>
+        <h1 style={{ paddingTop: '2rem' }}>Deephaven UI Components</h1>
+      </div>
+
+      <Typograpy />
+
+      <Colors />
+
+      <Buttons />
+
+      <Progress />
+
+      <Alerts />
+
+      <Inputs />
+
+      <ItemListInputs />
+
+      <DraggableLists />
+
+      <TimeSliderInputs />
+
+      <Dialog />
+
+      <Modals />
+
+      <ContextMenus />
+
+      <DropdownMenus />
+
+      <Navigations />
+
+      <Tooltips />
+
+      <Icons />
+
+      <Editors />
+
+      <Grids />
+
+      <Charts />
+
+      <ContextMenuRoot />
     </div>
-
-    <Typograpy />
-
-    <Colors />
-
-    <Buttons />
-
-    <Progress />
-
-    <Alerts />
-
-    <Inputs />
-
-    <ItemListInputs />
-
-    <DraggableLists />
-
-    <TimeSliderInputs />
-
-    <Dialog />
-
-    <Modals />
-
-    <ContextMenus />
-
-    <DropdownMenus />
-
-    <Navigations />
-
-    <Tooltips />
-
-    <Icons />
-
-    <Editors />
-
-    <Grids />
-
-    <Charts />
-
-    <ContextMenuRoot />
-  </div>
-);
+  );
+}
 
 export default StyleGuide;

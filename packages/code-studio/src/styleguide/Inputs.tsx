@@ -207,6 +207,7 @@ function Inputs(): React.ReactElement {
               <RadioItem value="4" isInvalid>
                 Invalid radio
               </RadioItem>
+              {/* eslint-disable-next-line react/jsx-no-useless-fragment */}
               <>{check4 && <RadioItem value="5">Extra radio item</RadioItem>}</>
             </RadioGroup>
           </form>

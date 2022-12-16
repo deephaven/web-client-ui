@@ -49,11 +49,13 @@ describe('menuElement', () => {
       closeMenu;
     }
 
-    const PropComponent = ({ closeMenu }: PropComponentProp) => (
-      <button type="button" onClick={closeMenu}>
-        close menu
-      </button>
-    );
+    function PropComponent({ closeMenu }: PropComponentProp) {
+      return (
+        <button type="button" onClick={closeMenu}>
+          close menu
+        </button>
+      );
+    }
 
     mountContextMenuItem({
       menuItem: {
@@ -67,18 +69,18 @@ describe('menuElement', () => {
   });
 
   it('passes contextMenuItem props in forwardedProps', () => {
-    const PropComponent = ({
+    function PropComponent({
       forwardedProps,
     }: {
       forwardedProps?: ForwardedProps;
-    }) => {
+    }) {
       const { closeMenu } = forwardedProps;
       return (
         <button type="button" onClick={closeMenu}>
           close menu
         </button>
       );
-    };
+    }
     const contextMenuItemCloseMenuProp = jest.fn(() => false);
 
     mountContextMenuItem({

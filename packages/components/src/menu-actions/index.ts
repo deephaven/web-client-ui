@@ -1,3 +1,4 @@
-// Note this exports as the default for this module
-export { default } from './DropdownMenu';
+import DropdownMenu from './DropdownMenu';
+
+export default DropdownMenu;
 export * from './DropdownMenu';

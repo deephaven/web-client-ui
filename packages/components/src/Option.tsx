@@ -7,15 +7,17 @@ export type OptionProps = {
   'data-testid'?: string;
 };
 
-const Option = ({
+function Option({
   children,
   disabled,
   value,
   'data-testid': dataTestId,
-}: OptionProps): JSX.Element => (
-  <option value={value} disabled={disabled} data-testid={dataTestId}>
-    {children}
-  </option>
-);
+}: OptionProps): JSX.Element {
+  return (
+    <option value={value} disabled={disabled} data-testid={dataTestId}>
+      {children}
+    </option>
+  );
+}
 
 export default Option;

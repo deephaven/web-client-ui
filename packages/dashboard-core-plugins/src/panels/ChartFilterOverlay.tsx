@@ -20,7 +20,7 @@ interface ChartFilterOverlayProps {
   waitingInputMap: Map<ColumnName, unknown>;
 }
 
-const ChartFilterOverlay = ({
+function ChartFilterOverlay({
   columnMap,
   inputFilterMap,
   linkedColumnMap,
@@ -28,7 +28,7 @@ const ChartFilterOverlay = ({
   onOpenLinker,
   waitingFilterMap,
   waitingInputMap,
-}: ChartFilterOverlayProps): ReactElement => {
+}: ChartFilterOverlayProps): ReactElement {
   const inputMessage = useMemo(() => {
     const waitingColumns = Array.from(waitingInputMap.keys());
     const needsInputFilterValue = waitingColumns.find(
@@ -128,7 +128,7 @@ const ChartFilterOverlay = ({
       </div>
     </div>
   );
-};
+}
 
 ChartFilterOverlay.propTypes = {
   columnMap: PropTypes.instanceOf(Map).isRequired,

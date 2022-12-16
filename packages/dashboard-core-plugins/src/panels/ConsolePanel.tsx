@@ -333,41 +333,39 @@ export class ConsolePanel extends PureComponent<
         onTabFocus={this.handleTabFocus}
         errorMessage={error != null ? `${error}` : undefined}
       >
-        <>
-          {session != null && (
-            <Console
-              ref={this.consoleRef}
-              settings={consoleSettings}
-              session={session}
-              focusCommandHistory={this.handleFocusCommandHistory}
-              openObject={this.handleOpenObject}
-              closeObject={this.handleCloseObject}
-              commandHistoryStorage={commandHistoryStorage}
-              onSettingsChange={this.handleSettingsChange}
-              language={language}
-              statusBarChildren={
-                <>
-                  <div>&nbsp;</div>
-                  <div>{ConsoleConstants.LANGUAGE_MAP.get(language)}</div>
-                  <div>&nbsp;</div>
-                  <div>
-                    <HeapUsage
-                      connection={connection}
-                      defaultUpdateInterval={10 * 1000}
-                      hoverUpdateInterval={3 * 1000}
-                      monitorDuration={10 * 60 * 1000}
-                    />
-                  </div>
-                  <div>&nbsp;</div>
-                </>
-              }
-              scope={sessionId}
-              timeZone={timeZone}
-              objectMap={objectMap}
-              unzip={unzip}
-            />
-          )}
-        </>
+        {session != null && (
+          <Console
+            ref={this.consoleRef}
+            settings={consoleSettings}
+            session={session}
+            focusCommandHistory={this.handleFocusCommandHistory}
+            openObject={this.handleOpenObject}
+            closeObject={this.handleCloseObject}
+            commandHistoryStorage={commandHistoryStorage}
+            onSettingsChange={this.handleSettingsChange}
+            language={language}
+            statusBarChildren={
+              <>
+                <div>&nbsp;</div>
+                <div>{ConsoleConstants.LANGUAGE_MAP.get(language)}</div>
+                <div>&nbsp;</div>
+                <div>
+                  <HeapUsage
+                    connection={connection}
+                    defaultUpdateInterval={10 * 1000}
+                    hoverUpdateInterval={3 * 1000}
+                    monitorDuration={10 * 60 * 1000}
+                  />
+                </div>
+                <div>&nbsp;</div>
+              </>
+            }
+            scope={sessionId}
+            timeZone={timeZone}
+            objectMap={objectMap}
+            unzip={unzip}
+          />
+        )}
       </Panel>
     );
   }

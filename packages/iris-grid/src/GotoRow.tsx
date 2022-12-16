@@ -30,7 +30,7 @@ interface GotoRowProps {
   onExited: () => void;
 }
 
-const GotoRow = ({
+function GotoRow({
   gotoRow,
   gotoRowError,
   onSubmit,
@@ -42,7 +42,7 @@ const GotoRow = ({
   model,
   onGotoRowNumberChanged,
   onClose,
-}: GotoRowProps): ReactElement => {
+}: GotoRowProps): ReactElement {
   const inputRef = useRef<HTMLInputElement>(null);
 
   const res = 'Row number';
@@ -107,6 +107,6 @@ const GotoRow = ({
       </>
     </IrisGridBottomBar>
   );
-};
+}
 
 export default GotoRow;

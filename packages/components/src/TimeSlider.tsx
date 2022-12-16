@@ -31,14 +31,14 @@ type TimeSliderProps = {
  * Creates a time slider for setting a start and end time, that can also run overnight
  * @param props takes times in seconds 0 - 86399 and a callback
  */
-const TimeSlider = ({
+function TimeSlider({
   startTime: propStartTime,
   endTime: propEndTime,
   onChange,
   isStartModified = false,
   isEndModified = false,
   'data-testid': dataTestId,
-}: TimeSliderProps): JSX.Element => {
+}: TimeSliderProps): JSX.Element {
   const [startTime, setStartTime] = useState(propStartTime);
   const [endTime, setEndTime] = useState(propEndTime);
 
@@ -125,7 +125,7 @@ const TimeSlider = ({
       </div>
     </div>
   );
-};
+}
 
 type PopOversProps = {
   startTime: number;
@@ -137,7 +137,7 @@ type PopOversProps = {
   'data-testid'?: string;
 };
 
-const PopOvers = (props: PopOversProps): JSX.Element => {
+function PopOvers(props: PopOversProps): JSX.Element {
   const {
     startTime,
     endTime,
@@ -263,7 +263,7 @@ const PopOvers = (props: PopOversProps): JSX.Element => {
       />
     </div>
   );
-};
+}
 
 type TrackFillsProps = {
   startTime: number;
@@ -274,7 +274,7 @@ type TrackFillsProps = {
 /**
  * Shades the area between or outside of handles according to if start or endtime is greater.
  */
-const TrackFills = (props: TrackFillsProps): JSX.Element => {
+function TrackFills(props: TrackFillsProps): JSX.Element {
   const { startTime, endTime, 'data-testid': dataTestId } = props;
   return (
     <div className="track-fills" data-testid={dataTestId}>
@@ -306,7 +306,7 @@ const TrackFills = (props: TrackFillsProps): JSX.Element => {
       )}
     </div>
   );
-};
+}
 
 type HandleProps = {
   track: React.RefObject<HTMLDivElement>;
@@ -318,7 +318,7 @@ type HandleProps = {
 /**
  * Creates a draggable handle the sets the time
  */
-const Handle = (props: HandleProps): JSX.Element => {
+function Handle(props: HandleProps): JSX.Element {
   const { track, time, setTime, 'data-testid': dataTestId } = props;
 
   /**
@@ -419,6 +419,6 @@ const Handle = (props: HandleProps): JSX.Element => {
       />
     </div>
   );
-};
+}
 
 export default TimeSlider;

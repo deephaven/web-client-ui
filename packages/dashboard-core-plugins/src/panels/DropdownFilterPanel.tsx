@@ -400,7 +400,7 @@ class DropdownFilterPanel extends Component<
 
   handleChange({
     column,
-    isValueShown,
+    isValueShown = false,
     value,
   }: {
     column: Partial<Column> | null;

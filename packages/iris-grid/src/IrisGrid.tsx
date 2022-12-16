@@ -288,6 +288,7 @@ export interface IrisGridProps {
   selectedSearchColumns: ColumnName[];
   invertSearchColumns: boolean;
 
+  // eslint-disable-next-line react/no-unused-prop-types
   onContextMenu: (obj: {
     model: IrisGridModel;
     value: unknown;
@@ -321,8 +322,8 @@ export interface IrisGridState {
   keyHandlers: KeyHandler[];
   mouseHandlers: GridMouseHandler[];
 
-  partition: string;
-  partitionColumn: Column;
+  partition: string | null;
+  partitionColumn: Column | null;
   partitionTable: Table | null;
   partitionFilters: FilterCondition[];
   // setAdvancedFilter and setQuickFilter mutate the arguments
@@ -2239,11 +2240,17 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   handlePartitionAppend(value: string): void {
     const { onPartitionAppend } = this.props;
     const { partitionColumn } = this.state;
+    if (!partitionColumn) {
+      return;
+    }
     onPartitionAppend(partitionColumn, value);
   }
 
   handlePartitionChange(partition: string): void {
     const { partitionColumn } = this.state;
+    if (!partitionColumn) {
+      return;
+    }
     this.updatePartition(partition, partitionColumn);
   }
 
@@ -4003,7 +4010,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
             unmountOnExit
           >
             <div className="iris-grid-partition-selector-wrapper iris-grid-bar iris-grid-bar-primary">
-              {partitionTable && partitionColumn && (
+              {partitionTable && partitionColumn && partition != null && (
                 <IrisGridPartitionSelector
                   table={partitionTable}
                   getFormattedString={(

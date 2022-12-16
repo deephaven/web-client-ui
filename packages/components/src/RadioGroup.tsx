@@ -25,7 +25,7 @@ type RadioGroupProps = {
  *   <RadioItem .../>
  * </RadioGroup>
  */
-const RadioGroup = (props: RadioGroupProps): JSX.Element => {
+function RadioGroup(props: RadioGroupProps): JSX.Element {
   const {
     children,
     disabled = false,
@@ -52,6 +52,6 @@ const RadioGroup = (props: RadioGroupProps): JSX.Element => {
       )}
     </>
   );
-};
+}
 
 export default RadioGroup;

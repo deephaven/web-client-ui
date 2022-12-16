@@ -26,7 +26,7 @@ export type PendingDataBottomBarProps = {
   onExited?: () => void;
 };
 
-export const PendingDataBottomBar = ({
+export function PendingDataBottomBar({
   isSaving = false,
   onSave,
   onDiscard,
@@ -39,7 +39,7 @@ export const PendingDataBottomBar = ({
   onEntered,
   onExiting,
   onExited,
-}: PendingDataBottomBarProps): JSX.Element => {
+}: PendingDataBottomBarProps): JSX.Element {
   const [isSuccessShown, setIsSuccessShown] = useState(false);
   const [wasSuccessShown, setWasSuccessShown] = useState(false);
   const successTimeout = useRef<ReturnType<typeof setTimeout>>();
@@ -148,6 +148,6 @@ export const PendingDataBottomBar = ({
       </div>
     </IrisGridBottomBar>
   );
-};
+}
 
 export default PendingDataBottomBar;

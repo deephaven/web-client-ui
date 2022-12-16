@@ -29,17 +29,15 @@ const conf: monaco.languages.LanguageConfiguration = {
   ],
   onEnterRules: [
     {
-      beforeText: new RegExp(
-        '^\\s*(?:def|class|for|if|elif|else|while|try|with|finally|except|async).*?:\\s*$'
-      ),
+      beforeText: /^\s*(?:def|class|for|if|elif|else|while|try|with|finally|except|async).*?:\s*$/,
       action: { indentAction: 1 }, // see monaco.languages.IndentAction.Indent
     },
   ],
   folding: {
     offSide: true,
     markers: {
-      start: new RegExp('^\\s*#region\\b'),
-      end: new RegExp('^\\s*#endregion\\b'),
+      start: /^\s*#region\b/,
+      end: /^\s*#endregion\b/,
     },
   },
 };

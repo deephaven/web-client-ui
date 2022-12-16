@@ -22,7 +22,7 @@ interface AutoResizeTextareaProps {
  * then the field will also "explode" the value by the delimiter over new lines
  * on focus, and implode on blur. By default, it doesn't word wrap.
  */
-const AutoResizeTextarea = ({
+function AutoResizeTextarea({
   className = '',
   value: propsValue,
   onChange,
@@ -32,7 +32,7 @@ const AutoResizeTextarea = ({
   delimiter = '',
   id = '',
   'data-testid': dataTestId,
-}: AutoResizeTextareaProps): JSX.Element => {
+}: AutoResizeTextareaProps): JSX.Element {
   const [value, setValue] = useState(propsValue);
   const [isPastedChange, setIsPastedChange] = useState(false);
   const element = useRef<HTMLTextAreaElement>(null);
@@ -142,7 +142,7 @@ const AutoResizeTextarea = ({
       data-testid={dataTestId}
     />
   );
-};
+}
 
 AutoResizeTextarea.propTypes = {
   value: PropTypes.string.isRequired,

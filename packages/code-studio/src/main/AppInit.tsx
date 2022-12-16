@@ -133,7 +133,7 @@ interface AppInitProps {
 /**
  * Component that sets some default values needed
  */
-const AppInit = (props: AppInitProps) => {
+function AppInit(props: AppInitProps) {
   const {
     workspace,
     setActiveTool,
@@ -340,7 +340,7 @@ const AppInit = (props: AppInitProps) => {
       </div>
     </>
   );
-};
+}
 
 AppInit.propTypes = {
   workspace: PropTypes.shape({}),

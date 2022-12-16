@@ -270,6 +270,7 @@ class Popper extends Component<PopperProps, PopperState> {
         >
           <div className="popper-content">
             {children}
+            {/* eslint-disable-next-line react/no-unknown-property */}
             <div className="popper-arrow" x-arrow="" />
           </div>
         </div>
