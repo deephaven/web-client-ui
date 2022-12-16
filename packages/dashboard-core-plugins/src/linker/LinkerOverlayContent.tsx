@@ -22,6 +22,8 @@ import './LinkerOverlayContent.scss';
 
 const log = Log.module('LinkerOverlayContent');
 
+const DIALOG_MARGIN = 16;
+
 export type VisibleLink = {
   x1: number;
   y1: number;
@@ -47,13 +49,12 @@ export type LinkerOverlayContentProps = {
   panelManager: PanelManager;
 };
 
+type Point = { x: number; y: number };
+
 export type LinkerOverlayContentState = {
-  mouseX?: number;
-  mouseY?: number;
-  dialogX?: number;
-  dialogY?: number;
-  offsetX: number;
-  offsetY: number;
+  mouse?: Point;
+  dialog?: Point;
+  offset?: Point;
   isDragging: boolean;
   mode: 'select' | 'delete';
 };
@@ -82,12 +83,9 @@ export class LinkerOverlayContent extends Component<
     this.dialogRef = React.createRef();
 
     this.state = {
-      mouseX: undefined,
-      mouseY: undefined,
-      dialogX: undefined,
-      dialogY: undefined,
-      offsetX: 0,
-      offsetY: 0,
+      mouse: undefined,
+      dialog: undefined,
+      offset: undefined,
       isDragging: false,
       mode: 'select',
     };
@@ -101,10 +99,16 @@ export class LinkerOverlayContent extends Component<
     window.addEventListener('keyup', this.handleKeyUp, true);
     window.addEventListener('resize', this.handleResize, true);
     this.setState({
-      dialogX:
-        window.innerWidth - (this.dialogRef.current?.offsetWidth ?? 0) - 16,
-      dialogY:
-        window.innerHeight - (this.dialogRef.current?.offsetHeight ?? 0) - 16,
+      dialog: {
+        x:
+          window.innerWidth -
+          (this.dialogRef.current?.offsetWidth ?? 0) -
+          DIALOG_MARGIN,
+        y:
+          window.innerHeight -
+          (this.dialogRef.current?.offsetHeight ?? 0) -
+          DIALOG_MARGIN,
+      },
     });
   }
 
@@ -169,60 +173,50 @@ export class LinkerOverlayContent extends Component<
   }
 
   handleResize(): void {
-    const { dialogX, dialogY } = this.state;
+    const { dialog } = this.state;
     const boundedDialogX = Math.min(
-      Math.max(0, dialogX ?? 0),
+      Math.max(0, dialog?.x ?? 0),
       window.innerWidth - (this.dialogRef.current?.offsetWidth ?? 0)
     );
     const boundedDialogY = Math.min(
-      Math.max(0, dialogY ?? 0),
+      Math.max(0, dialog?.y ?? 0),
       window.innerHeight - (this.dialogRef.current?.offsetHeight ?? 0)
     );
     this.setState({
-      dialogX: boundedDialogX,
-      dialogY: boundedDialogY,
+      dialog: { x: boundedDialogX, y: boundedDialogY },
     });
   }
 
   handleMouseMove(event: MouseEvent): void {
-    const { offsetX, offsetY, isDragging } = this.state;
+    const { offset, isDragging } = this.state;
     this.setState({
-      mouseX: event.clientX,
-      mouseY: event.clientY,
+      mouse: { x: event.clientX, y: event.clientY },
     });
     if (isDragging) {
       const dialogX = Math.min(
-        Math.max(0, event.clientX + offsetX),
+        Math.max(0, event.clientX + (offset?.x ?? 0)),
         window.innerWidth - (this.dialogRef.current?.offsetWidth ?? 0)
       );
       const dialogY = Math.min(
-        Math.max(0, event.clientY + offsetY),
+        Math.max(0, event.clientY + (offset?.y ?? 0)),
         window.innerHeight - (this.dialogRef.current?.offsetHeight ?? 0)
       );
       this.setState({
-        dialogX,
-        dialogY,
+        dialog: { x: dialogX, y: dialogY },
       });
     }
   }
 
   handleMouseDown(): void {
-    const { mouseX, mouseY, dialogX, dialogY } = this.state;
-    let offsetX = 0;
-    let offsetY = 0;
-    if (
-      mouseX !== undefined &&
-      mouseY !== undefined &&
-      dialogX !== undefined &&
-      dialogY !== undefined
-    ) {
-      offsetX = dialogX - mouseX;
-      offsetY = dialogY - mouseY;
+    const { mouse, dialog } = this.state;
+    const offset: Point = { x: 0, y: 0 };
+    if (mouse !== undefined && dialog !== undefined) {
+      offset.x = dialog.x - mouse.x;
+      offset.y = dialog.y - mouse.y;
     }
     this.setState({
       isDragging: true,
-      offsetX,
-      offsetY,
+      offset,
     });
   }
 
@@ -267,15 +261,15 @@ export class LinkerOverlayContent extends Component<
       onDone,
     } = this.props;
 
-    const { mouseX, mouseY, dialogX, dialogY, isDragging, mode } = this.state;
+    const { mouse, dialog, isDragging, mode } = this.state;
     const visibleLinks = links
       .map(link => {
         try {
           const { id, type, isReversed, start, end, operator } = link;
           const startColumnType = start.columnType;
           let [x1, y1] = this.getPointFromLinkPoint(start);
-          let x2 = mouseX ?? x1;
-          let y2 = mouseY ?? y1;
+          let x2 = mouse?.x ?? x1;
+          let y2 = mouse?.y ?? y1;
           if (end != null) {
             [x2, y2] = this.getPointFromLinkPoint(end);
           }
@@ -338,7 +332,7 @@ export class LinkerOverlayContent extends Component<
         <div
           className="linker-toast-dialog"
           ref={this.dialogRef}
-          style={{ top: dialogY, left: dialogX }}
+          style={{ top: dialog?.y, left: dialog?.x }}
         >
           <Button
             draggable
