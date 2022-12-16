@@ -11,6 +11,7 @@ import Log from '@deephaven/log';
 import type { Container } from '@deephaven/golden-layout';
 import { vsGripper } from '@deephaven/icons';
 import { TypeValue as FilterTypeValue } from '@deephaven/filters';
+import clamp from 'lodash.clamp';
 import {
   isLinkableFromPanel,
   Link,
@@ -21,8 +22,6 @@ import LinkerLink from './LinkerLink';
 import './LinkerOverlayContent.scss';
 
 const log = Log.module('LinkerOverlayContent');
-
-const DIALOG_MARGIN = 16;
 
 export type VisibleLink = {
   x1: number;
@@ -54,7 +53,7 @@ type Point = { x: number; y: number };
 export type LinkerOverlayContentState = {
   mouse?: Point;
   dialog?: Point;
-  offset?: Point;
+  offset: Point;
   isDragging: boolean;
   mode: 'select' | 'delete';
 };
@@ -78,14 +77,14 @@ export class LinkerOverlayContent extends Component<
     this.handleKeyUp = this.handleKeyUp.bind(this);
     this.handleEscapePressed = this.handleEscapePressed.bind(this);
     this.handleOperatorChanged = this.handleOperatorChanged.bind(this);
-    this.handleResize = this.handleResize.bind(this);
+    // this.handleResize = this.handleResize.bind(this);
 
     this.dialogRef = React.createRef();
 
     this.state = {
       mouse: undefined,
       dialog: undefined,
-      offset: undefined,
+      offset: { x: 0, y: 0 },
       isDragging: false,
       mode: 'select',
     };
@@ -97,19 +96,7 @@ export class LinkerOverlayContent extends Component<
     window.addEventListener('mouseup', this.handleMouseUp, true);
     window.addEventListener('keydown', this.handleKeyDown, true);
     window.addEventListener('keyup', this.handleKeyUp, true);
-    window.addEventListener('resize', this.handleResize, true);
-    this.setState({
-      dialog: {
-        x:
-          window.innerWidth -
-          (this.dialogRef.current?.offsetWidth ?? 0) -
-          DIALOG_MARGIN,
-        y:
-          window.innerHeight -
-          (this.dialogRef.current?.offsetHeight ?? 0) -
-          DIALOG_MARGIN,
-      },
-    });
+    // window.addEventListener('resize', this.handleResize, true);
   }
 
   // eslint-disable-next-line react/sort-comp
@@ -123,7 +110,7 @@ export class LinkerOverlayContent extends Component<
     window.removeEventListener('mouseup', this.handleMouseUp, true);
     window.removeEventListener('keydown', this.handleKeyDown, true);
     window.removeEventListener('keyup', this.handleKeyUp, true);
-    window.removeEventListener('resize', this.handleResize, true);
+    // window.removeEventListener('resize', this.handleResize, true);
   }
 
   dialogRef: React.RefObject<HTMLInputElement>;
@@ -172,47 +159,55 @@ export class LinkerOverlayContent extends Component<
     this.setState({ mode: 'select' });
   }
 
-  handleResize(): void {
-    const { dialog } = this.state;
-    const boundedDialogX = Math.min(
-      Math.max(0, dialog?.x ?? 0),
-      window.innerWidth - (this.dialogRef.current?.offsetWidth ?? 0)
-    );
-    const boundedDialogY = Math.min(
-      Math.max(0, dialog?.y ?? 0),
-      window.innerHeight - (this.dialogRef.current?.offsetHeight ?? 0)
-    );
-    this.setState({
-      dialog: { x: boundedDialogX, y: boundedDialogY },
-    });
-  }
+  // handleResize(): void {
+  //   const { dialog } = this.state;
+  //   const boundedDialogX = Math.min(
+  //     Math.max(0, dialog?.x ?? 0),
+  //     window.innerWidth - (this.dialogRef.current?.offsetWidth ?? 0)
+  //   );
+  //   const boundedDialogY = Math.min(
+  //     Math.max(0, dialog?.y ?? 0),
+  //     window.innerHeight - (this.dialogRef.current?.offsetHeight ?? 0)
+  //   );
+  //   this.setState({
+  //     dialog: { x: boundedDialogX, y: boundedDialogY },
+  //   });
+  // }
 
   handleMouseMove(event: MouseEvent): void {
     const { offset, isDragging } = this.state;
     this.setState({
       mouse: { x: event.clientX, y: event.clientY },
     });
-    if (isDragging) {
-      const dialogX = Math.min(
-        Math.max(0, event.clientX + (offset?.x ?? 0)),
-        window.innerWidth - (this.dialogRef.current?.offsetWidth ?? 0)
+
+    // these is either rihgt or wrong +/- offset?
+    if (isDragging && this.dialogRef.current) {
+      const rect = this.dialogRef.current.getBoundingClientRect();
+      const dialogX = clamp(
+        window.innerWidth - (event.clientX + rect.width - offset.x),
+        0,
+        window.innerWidth - rect.width
       );
-      const dialogY = Math.min(
-        Math.max(0, event.clientY + (offset?.y ?? 0)),
-        window.innerHeight - (this.dialogRef.current?.offsetHeight ?? 0)
+
+      const dialogY = clamp(
+        window.innerHeight - (event.clientY + rect.height - offset.y),
+        0,
+        window.innerHeight - rect.height
       );
+
       this.setState({
         dialog: { x: dialogX, y: dialogY },
       });
     }
   }
 
-  handleMouseDown(): void {
-    const { mouse, dialog } = this.state;
+  handleMouseDown(event: React.MouseEvent): void {
     const offset: Point = { x: 0, y: 0 };
-    if (mouse !== undefined && dialog !== undefined) {
-      offset.x = dialog.x - mouse.x;
-      offset.y = dialog.y - mouse.y;
+    if (this.dialogRef.current) {
+      // this is definately wrong
+      const rect = this.dialogRef.current.getBoundingClientRect();
+      offset.x = rect.right - event.clientX;
+      offset.y = rect.bottom - event.clientY;
     }
     this.setState({
       isDragging: true,
@@ -332,12 +327,12 @@ export class LinkerOverlayContent extends Component<
         <div
           className="linker-toast-dialog"
           ref={this.dialogRef}
-          style={{ top: dialog?.y, left: dialog?.x }}
+          style={{ bottom: dialog?.y, right: dialog?.x }}
         >
           <Button
             draggable
             kind="inline"
-            className="btn-drag-handle"
+            className={classNames('btn-drag-handle', { dragging: isDragging })}
             icon={vsGripper}
             onClick={() => {
               // no-op
