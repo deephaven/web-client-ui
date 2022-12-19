@@ -13,32 +13,36 @@ import { devices } from '@playwright/test';
 const config: PlaywrightTestConfig = {
   testDir: './tests',
   /* Maximum time one test can run for. */
-  timeout: 30 * 1000,
+  timeout: 120 * 1000,
   expect: {
     /**
      * Maximum time expect() should wait for the condition to be met.
      * For example in `await expect(locator).toHaveText();`
      */
-    timeout: 10000,
+    timeout: 15000,
   },
-  /* Run tests in files in parallel */
-  fullyParallel: true,
+  /* We don't want to run tests in parallel because we have the same backend, tests may conflict with eachother */
+  fullyParallel: false,
   /* Fail the build on CI if you accidentally left test.only in the source code. */
   forbidOnly: !!process.env.CI,
   /* Global setup file for initializing before all other tests */
   globalSetup: require.resolve('./tests/globalSetup.ts'),
   /* Retry on CI only */
-  retries: process.env.CI ? 2 : 0,
-  /* Opt out of parallel tests on CI. */
-  workers: process.env.CI ? 1 : undefined,
+  retries: process.env.CI ? 1 : 0,
+  /* Only have one worker since we don't want tests running in parallel, trampling over each other on the backend */
+  workers: 1,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: 'html',
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Maximum time each action such as `click()` can take. Defaults to 0 (no limit). */
     actionTimeout: 0,
-    /* Base URL to use in actions like `await page.goto('/')`. */
-    // baseURL: 'http://localhost:3000',
+
+    /* Navigation timeout for how long it takes to navigate to a page */
+    navigationTimeout: 60 * 1000,
+
+    /* Base URL to use in actions like `await page.goto('')`. */
+    baseURL: 'http://localhost:4000/ide/',
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
@@ -103,10 +107,14 @@ const config: PlaywrightTestConfig = {
   // outputDir: 'test-results/',
 
   /* Run your local dev server before starting the tests */
-  // webServer: {
-  //   command: 'npm run start',
-  //   port: 4000,
-  // },
+  webServer: {
+    // Only start the main code-studio server right now
+    // To test embed-grid and embed-chart, should have an array set for `webServer` and run them all separately as there's a port check
+    command: 'npm run preview:app',
+    port: 4000,
+    timeout: 60 * 1000,
+    reuseExistingServer: !process.env.CI,
+  },
 };
 
 export default config;

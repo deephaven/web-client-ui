@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import { generateVarName, typeInMonaco } from './utils';
 
 test('can open a simple figure', async ({ page }) => {
-  await page.goto('http://localhost:4000/');
+  await page.goto('');
 
   const consoleInput = page.locator('.console-input');
   await consoleInput.click();
