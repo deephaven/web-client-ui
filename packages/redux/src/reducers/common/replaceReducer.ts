@@ -10,7 +10,7 @@ export default function replaceReducer<S>(
   type: string,
   initialState: S
 ): Reducer<S> {
-  return (state = initialState, action) => {
+  return (state = initialState, action?) => {
     switch (action.type) {
       case type: {
         return action.payload;

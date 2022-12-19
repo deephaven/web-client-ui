@@ -8,21 +8,23 @@ export interface EmptyDashboardProps {
   onAutoFillClick?: (event: MouseEvent) => void;
 }
 
-export const EmptyDashboard = ({
+export function EmptyDashboard({
   onAutoFillClick = () => undefined,
-}: EmptyDashboardProps): JSX.Element => (
-  <div className="empty-dashboard-container">
-    <div className="hint-container">
-      <FontAwesomeIcon icon={vsArrowUp} /> <br />
-      Use the panel list to add objects from a query.
+}: EmptyDashboardProps): JSX.Element {
+  return (
+    <div className="empty-dashboard-container">
+      <div className="hint-container">
+        <FontAwesomeIcon icon={vsArrowUp} /> <br />
+        Use the panel list to add objects from a query.
+      </div>
+      <div className="empty-dashboard">
+        <div className="add-panels-hint">Drag Panels Here</div>
+        <Button kind="tertiary" onClick={onAutoFillClick}>
+          Auto fill objects
+        </Button>
+      </div>
     </div>
-    <div className="empty-dashboard">
-      <div className="add-panels-hint">Drag Panels Here</div>
-      <Button kind="tertiary" onClick={onAutoFillClick}>
-        Auto fill objects
-      </Button>
-    </div>
-  </div>
-);
+  );
+}
 
 export default EmptyDashboard;

@@ -6,14 +6,16 @@ interface ModalFooterProps {
   'data-testid'?: string;
 }
 
-const ModalFooter = ({
+function ModalFooter({
   className = 'modal-footer',
   children,
   'data-testid': dataTestId,
-}: ModalFooterProps): ReactElement => (
-  <div className={className} data-testid={dataTestId}>
-    {children}
-  </div>
-);
+}: ModalFooterProps): ReactElement {
+  return (
+    <div className={className} data-testid={dataTestId}>
+      {children}
+    </div>
+  );
+}
 
 export default ModalFooter;

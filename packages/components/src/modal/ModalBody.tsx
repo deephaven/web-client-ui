@@ -7,15 +7,17 @@ interface ModalBodyProps {
   'data-testid'?: string;
 }
 
-const ModalBody = ({
+function ModalBody({
   className = 'modal-body',
   style,
   children,
   'data-testid': dataTestId,
-}: ModalBodyProps): ReactElement => (
-  <div className={className} data-testid={dataTestId} style={style}>
-    {children}
-  </div>
-);
+}: ModalBodyProps): ReactElement {
+  return (
+    <div className={className} data-testid={dataTestId} style={style}>
+      {children}
+    </div>
+  );
+}
 
 export default ModalBody;

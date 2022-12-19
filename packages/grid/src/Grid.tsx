@@ -253,11 +253,11 @@ class Grid extends PureComponent<GridProps, GridState> {
       // Not worth converting to a massive if structure
       // Converting would reduce readability and maintainability
       // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
-      legacyContext.webkitBackingStorePixelRatio ||
-      legacyContext.mozBackingStorePixelRatio ||
-      legacyContext.msBackingStorePixelRatio ||
-      legacyContext.oBackingStorePixelRatio ||
-      legacyContext.backingStorePixelRatio ||
+      legacyContext.webkitBackingStorePixelRatio ??
+      legacyContext.mozBackingStorePixelRatio ??
+      legacyContext.msBackingStorePixelRatio ??
+      legacyContext.oBackingStorePixelRatio ??
+      legacyContext.backingStorePixelRatio ??
       1;
     return devicePixelRatio / backingStorePixelRatio;
   }

@@ -17,7 +17,7 @@ interface CommandHistoryItemProps {
 
 const MAX_TRUNCATE_LENGTH = 512;
 
-const CommandHistoryItem = (props: CommandHistoryItemProps): ReactElement => {
+function CommandHistoryItem(props: CommandHistoryItemProps): ReactElement {
   const { item, language, isSelected, commandHistoryStorage } = props;
   const previewText = item.name.substring(0, MAX_TRUNCATE_LENGTH);
   const tooltip = useRef<Tooltip>(null);
@@ -56,7 +56,7 @@ const CommandHistoryItem = (props: CommandHistoryItemProps): ReactElement => {
       </Tooltip>
     </div>
   );
-};
+}
 
 CommandHistoryItem.defaultProps = {
   isSelected: false,

@@ -213,7 +213,7 @@ export function getMoveOperation(
 /**
  * Component that displays and allows interaction with the file system in the provided FileStorageTable.
  */
-export const FileList = (props: FileListProps): JSX.Element => {
+export function FileList(props: FileListProps): JSX.Element {
   const {
     isMultiSelect = false,
     table,
@@ -603,6 +603,6 @@ export const FileList = (props: FileListProps): JSX.Element => {
       />
     </div>
   );
-};
+}
 
 export default FileList;

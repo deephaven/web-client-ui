@@ -168,7 +168,7 @@ class ContextActionUtils {
     menuItems = menuItems.filter(
       action =>
         (action as ContextAction).title !== undefined ||
-        (action as Promise<ContextAction[]>).then ||
+        (action as Promise<ContextAction[]>).then != null ||
         (action as ContextAction).menuElement
     );
 

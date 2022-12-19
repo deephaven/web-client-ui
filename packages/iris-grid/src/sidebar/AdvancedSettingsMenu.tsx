@@ -12,20 +12,22 @@ export type AdvancedSettingsMenuProps = {
   onChange?: AdvancedSettingsMenuCallback;
 };
 
-const AdvancedSettingsMenu = ({
+function AdvancedSettingsMenu({
   items,
   onChange = () => undefined,
-}: AdvancedSettingsMenuProps): JSX.Element => (
-  <Menu
-    items={Array.from(items.entries()).map(
-      ([key, isOn]): SwitchMenuItemDef => ({
-        title: AdvancedSettingsMenu.getAdvancedSettingsTitleForKey(key),
-        isOn,
-        onChange: (value: boolean) => onChange(key, value),
-      })
-    )}
-  />
-);
+}: AdvancedSettingsMenuProps): JSX.Element {
+  return (
+    <Menu
+      items={Array.from(items.entries()).map(
+        ([key, isOn]): SwitchMenuItemDef => ({
+          title: AdvancedSettingsMenu.getAdvancedSettingsTitleForKey(key),
+          isOn,
+          onChange: (value: boolean) => onChange(key, value),
+        })
+      )}
+    />
+  );
+}
 
 AdvancedSettingsMenu.getAdvancedSettingsTitleForKey = (
   key: AdvancedSettingsType

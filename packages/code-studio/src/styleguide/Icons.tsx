@@ -26,7 +26,7 @@ interface FlashProps {
   message: { text: React.ReactNode };
 }
 
-const Flash = ({ message, message: { text } }: FlashProps) => {
+function Flash({ message, message: { text } }: FlashProps) {
   const [show, setShow] = useState(false);
 
   useEffect(
@@ -45,7 +45,7 @@ const Flash = ({ message, message: { text } }: FlashProps) => {
   );
 
   return <p className={show ? 'flash in' : 'flash out'}>{text}</p>;
-};
+}
 
 Flash.propTypes = {
   message: PropTypes.shape({
@@ -53,7 +53,7 @@ Flash.propTypes = {
   }).isRequired,
 };
 
-const Icons = (): React.ReactElement => {
+function Icons(): React.ReactElement {
   const [dhFilter, setDhFilter] = useState<boolean>(true);
   const [vsFilter, setVsFilter] = useState<boolean>(true);
   const [search, setSearch] = useState<string>('');
@@ -154,6 +154,6 @@ const Icons = (): React.ReactElement => {
       </div>
     </div>
   );
-};
+}
 
 export default Icons;

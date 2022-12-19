@@ -47,10 +47,7 @@ class AdvancedFilterCreatorSelectValueList<T = unknown> extends PureComponent<
    * @param value The value to search for
    * @param values The array of values to search within
    */
-  static indexOf(
-    value: { valueof?: unknown },
-    values: { valueof?: unknown }[]
-  ): number {
+  static indexOf(value: unknown, values: unknown[]): number {
     for (let i = 0; i < values.length; i += 1) {
       const v = values[i];
       if (

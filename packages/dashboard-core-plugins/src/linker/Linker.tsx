@@ -667,34 +667,32 @@ export class Linker extends Component<LinkerProps, LinkerState> {
         : 'Create a link between the source column button and a table column by clicking on one, then the other. Remove the link by clicking it directly. Click done when finished.';
 
     return (
-      <>
-        <CSSTransition
-          in={isLinkOverlayShown}
-          timeout={ThemeExport.transitionMs}
-          classNames="fade"
-          mountOnEnter
-          unmountOnExit
-          onExited={this.handleExited}
-        >
-          <LinkerOverlayContent
-            disabled={disabled}
-            panelManager={panelManager}
-            links={this.getCachedLinks(
-              links,
-              linkInProgress,
-              isolatedLinkerPanelId
-            )}
-            selectedIds={selectedIds}
-            messageText={linkerOverlayMessage}
-            onLinkSelected={this.handleLinkSelected}
-            onLinkDeleted={this.handleLinkDeleted}
-            onAllLinksDeleted={this.handleAllLinksDeleted}
-            onLinksUpdated={this.handleLinksUpdated}
-            onDone={this.handleDone}
-            onCancel={this.handleCancel}
-          />
-        </CSSTransition>
-      </>
+      <CSSTransition
+        in={isLinkOverlayShown}
+        timeout={ThemeExport.transitionMs}
+        classNames="fade"
+        mountOnEnter
+        unmountOnExit
+        onExited={this.handleExited}
+      >
+        <LinkerOverlayContent
+          disabled={disabled}
+          panelManager={panelManager}
+          links={this.getCachedLinks(
+            links,
+            linkInProgress,
+            isolatedLinkerPanelId
+          )}
+          selectedIds={selectedIds}
+          messageText={linkerOverlayMessage}
+          onLinkSelected={this.handleLinkSelected}
+          onLinkDeleted={this.handleLinkDeleted}
+          onAllLinksDeleted={this.handleAllLinksDeleted}
+          onLinksUpdated={this.handleLinksUpdated}
+          onDone={this.handleDone}
+          onCancel={this.handleCancel}
+        />
+      </CSSTransition>
     );
   }
 }

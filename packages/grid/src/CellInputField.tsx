@@ -41,7 +41,7 @@ export const directionForKey = (
   }
 };
 
-export const CellInputField = ({
+export function CellInputField({
   selectionRange = undefined,
   className = '',
   disabled = false,
@@ -52,7 +52,7 @@ export const CellInputField = ({
   onDone = () => undefined,
   onContextMenu = () => undefined,
   style = {},
-}: CellInputFieldProps): JSX.Element => {
+}: CellInputFieldProps): JSX.Element {
   const inputField = useRef<HTMLTextAreaElement>(null);
   // Use a ref for `isCancelled` as we need to know when it's cancelled after it's called by the event handlers as well
   const isCancelled = useRef<boolean>(false);
@@ -206,7 +206,7 @@ export const CellInputField = ({
       style={style}
     />
   );
-};
+}
 
 CellInputField.propTypes = {
   selectionRange: PropTypes.arrayOf(PropTypes.number),

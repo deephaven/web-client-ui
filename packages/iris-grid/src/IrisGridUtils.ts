@@ -942,7 +942,7 @@ class IrisGridUtils {
   static getFiltersFromInputFilters(
     columns: Column[],
     inputFilters: InputFilter[] = [],
-    timeZone: string
+    timeZone?: string
   ): FilterCondition[] {
     return inputFilters
       .map(({ name, type, value }) => {

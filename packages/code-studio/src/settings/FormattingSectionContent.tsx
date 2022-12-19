@@ -839,7 +839,7 @@ export class FormattingSectionContent extends PureComponent<
     isInvalid: boolean
   ): ReactElement {
     const { showTimeZone, showTSeparator, timeZone } = this.state;
-    const value = (format != null && format.formatString) || '';
+    const value = format.formatString ?? '';
     return (
       <select
         className={classNames('custom-select', { 'is-invalid': isInvalid })}
@@ -872,7 +872,7 @@ export class FormattingSectionContent extends PureComponent<
     format: Partial<TableColumnFormat>,
     isInvalid: boolean
   ): ReactElement {
-    const value = (format != null && format.formatString) || '';
+    const value = format.formatString ?? '';
     return (
       <input
         className={classNames('form-control', 'flex-grow-1', {
@@ -902,7 +902,7 @@ export class FormattingSectionContent extends PureComponent<
     format: Partial<TableColumnFormat>,
     isInvalid: boolean
   ): ReactElement {
-    const value = (format != null && format.formatString) || '';
+    const value = format.formatString ?? '';
     return (
       <input
         className={classNames('form-control', 'flex-grow-1', {

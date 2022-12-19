@@ -23,6 +23,7 @@ const log = Log.module('CommandHistoryPanel');
 interface CommandHistoryPanelProps {
   glContainer: Container;
   glEventHub: EventEmitter;
+  // eslint-disable-next-line react/no-unused-prop-types
   panelState?: Record<string, never>;
   session?: IdeSession;
   sessionId?: string;
@@ -197,7 +198,7 @@ class CommandHistoryPanel extends Component<
             Waiting for console connection
           </div>
         )}
-        {table && language && (
+        {table && language != null && (
           <>
             <CommandHistory
               ref={this.container}

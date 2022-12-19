@@ -10,39 +10,41 @@ type FileExplorerToolbarProps = {
   defaultSearchText?: string;
 };
 
-export const FileExplorerToolbar = ({
+export function FileExplorerToolbar({
   createFile,
   createFolder,
   onSearchChange,
   defaultSearchText = '',
-}: FileExplorerToolbarProps): JSX.Element => (
-  <div className="file-explorer-toolbar">
-    <div className="file-explorer-toolbar-buttons">
-      <Button
-        kind="ghost"
-        icon={vsNewFile}
-        tooltip="New notebook"
-        onClick={createFile}
-        aria-label="New notebook"
-      />
-      <Button
-        kind="ghost"
-        icon={vsNewFolder}
-        tooltip="New folder"
-        onClick={createFolder}
-        aria-label="New folder"
-      />
-    </div>
-    {onSearchChange && (
-      <div className="file-explorer-toolbar-search">
-        <DebouncedSearchInput
-          value={defaultSearchText}
-          onChange={onSearchChange}
-          placeholder="Search by name"
+}: FileExplorerToolbarProps): JSX.Element {
+  return (
+    <div className="file-explorer-toolbar">
+      <div className="file-explorer-toolbar-buttons">
+        <Button
+          kind="ghost"
+          icon={vsNewFile}
+          tooltip="New notebook"
+          onClick={createFile}
+          aria-label="New notebook"
+        />
+        <Button
+          kind="ghost"
+          icon={vsNewFolder}
+          tooltip="New folder"
+          onClick={createFolder}
+          aria-label="New folder"
         />
       </div>
-    )}
-  </div>
-);
+      {onSearchChange && (
+        <div className="file-explorer-toolbar-search">
+          <DebouncedSearchInput
+            value={defaultSearchText}
+            onChange={onSearchChange}
+            placeholder="Search by name"
+          />
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default FileExplorerToolbar;

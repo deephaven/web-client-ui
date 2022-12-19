@@ -21,14 +21,14 @@ type CopyButtonProps = {
 /**
  * Button that has a copy icon, and copies text to a clipboard when clicked.
  */
-const CopyButton = ({
+function CopyButton({
   copy,
   kind = 'ghost',
   tooltip = 'Copy',
   className,
   'data-testid': dataTestId,
   children,
-}: CopyButtonProps): JSX.Element => {
+}: CopyButtonProps): JSX.Element {
   const [copied, copyToClipboard] = useCopyToClipboard();
   return (
     <Button
@@ -44,6 +44,6 @@ const CopyButton = ({
       {children}
     </Button>
   );
-};
+}
 
 export default CopyButton;

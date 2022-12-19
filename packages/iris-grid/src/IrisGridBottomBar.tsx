@@ -16,7 +16,7 @@ export type IrisGridBottomBarProps = {
   className?: string;
 };
 
-export const IrisGridBottomBar = ({
+export function IrisGridBottomBar({
   animation = 'iris-grid-bottom-bar-slide-up',
   children,
   className,
@@ -26,27 +26,29 @@ export const IrisGridBottomBar = ({
   onEntered,
   onExiting,
   onExited,
-}: IrisGridBottomBarProps): JSX.Element => (
-  <CSSTransition
-    in={isShown}
-    timeout={ThemeExport.transitionMs}
-    classNames={animation}
-    onEntering={onEntering}
-    onEntered={onEntered}
-    onExiting={onExiting}
-    onExited={onExited}
-    mountOnEnter
-    unmountOnExit
-  >
-    <div
-      className={classNames('iris-grid-bottom-bar', className)}
-      role="presentation"
-      onClick={onClick}
-      onKeyPress={onClick}
+}: IrisGridBottomBarProps): JSX.Element {
+  return (
+    <CSSTransition
+      in={isShown}
+      timeout={ThemeExport.transitionMs}
+      classNames={animation}
+      onEntering={onEntering}
+      onEntered={onEntered}
+      onExiting={onExiting}
+      onExited={onExited}
+      mountOnEnter
+      unmountOnExit
     >
-      {children}
-    </div>
-  </CSSTransition>
-);
+      <div
+        className={classNames('iris-grid-bottom-bar', className)}
+        role="presentation"
+        onClick={onClick}
+        onKeyPress={onClick}
+      >
+        {children}
+      </div>
+    </CSSTransition>
+  );
+}
 
 export default IrisGridBottomBar;

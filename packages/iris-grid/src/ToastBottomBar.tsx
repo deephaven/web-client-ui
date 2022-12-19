@@ -13,13 +13,13 @@ export type ToastBottomBarProps = {
   onExited?: () => void;
 };
 
-export const ToastBottomBar = ({
+export function ToastBottomBar({
   children = null,
   onEntering,
   onEntered,
   onExiting,
   onExited,
-}: ToastBottomBarProps): JSX.Element => {
+}: ToastBottomBarProps): JSX.Element {
   const [isShown, setIsShown] = useState(false);
   const timeout = useRef<ReturnType<typeof setTimeout>>();
   const prevChildren = usePrevious(children);
@@ -57,6 +57,6 @@ export const ToastBottomBar = ({
       {children}
     </IrisGridBottomBar>
   );
-};
+}
 
 export default ToastBottomBar;

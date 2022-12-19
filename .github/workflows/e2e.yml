@@ -1,0 +1,60 @@
+# This workflow will do a production build of the application, and test it end-to-end with the latest Deephaven Core server.
+
+name: Build and End-to-end Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+env:
+  DOCKER_TAG: latest
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}
+      cancel-in-progress: true
+    steps:
+      - name: Run core server:${{ env.DOCKER_TAG }}
+        run: |
+          docker pull --quiet ghcr.io/deephaven/server:${{ env.DOCKER_TAG }}
+          docker run --detach --publish 10000:10000 --name dh-core-server ghcr.io/deephaven/server:${{ env.DOCKER_TAG }}
+
+      - uses: actions/checkout@v3
+
+      - name: Use Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16.x'
+          cache: 'npm'
+
+      - name: Cache node modules
+        id: cache-node-modules
+        uses: actions/cache@v3
+        with:
+          path: |
+            node_modules
+            packages/*/node_modules
+          key: e2e-node-modules-${{ hashFiles('package-lock.json')}}
+
+      - name: Install dependencies
+        if: steps.cache-node-modules.outputs.cache-hit != 'true'
+        run: npm ci --no-audit
+
+      - name: Build
+        run: VITE_CORE_API_URL=http://localhost:10000/jsapi npm run build
+
+      - name: Install Playwright dependencies
+        run: PLAYWRIGHT_BROWSERS_PATH=0 npx playwright install --with-deps
+
+      - name: Run Playwright tests
+        run: PLAYWRIGHT_BROWSERS_PATH=0 npx playwright test
+
+      - name: Upload Playwright report
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 90

@@ -31,11 +31,11 @@ export type MenuItemProps = {
  * @param props.item The menu item to set. Set a SwitchMenuItemDef to show a switch.
  * @param props.onSelect Called when the menu item is selected
  */
-export const MenuItem = ({
+export function MenuItem({
   item,
   onSelect = () => undefined,
   'data-testid': dataTestId,
-}: MenuItemProps): JSX.Element => {
+}: MenuItemProps): JSX.Element {
   const { icon, subtitle, title } = item;
   const handleSelect = useMemo(() => {
     if (isSwitchMenuItemType(item)) {
@@ -66,7 +66,7 @@ export const MenuItem = ({
       <div className="title">{title}</div>
       {subtitle !== undefined && <div className="shortcut">{subtitle}</div>}
       <div className="accessory" data-testid={dataTestId}>
-        {(isSwitchMenuItemType(item) && (
+        {isSwitchMenuItemType(item) ? (
           <UISwitch
             on={item.isOn}
             onClick={event => {
@@ -74,10 +74,12 @@ export const MenuItem = ({
               handleSelect();
             }}
           />
-        )) || <FontAwesomeIcon icon={vsChevronRight} />}
+        ) : (
+          <FontAwesomeIcon icon={vsChevronRight} />
+        )}
       </div>
     </div>
   );
-};
+}
 
 export default MenuItem;

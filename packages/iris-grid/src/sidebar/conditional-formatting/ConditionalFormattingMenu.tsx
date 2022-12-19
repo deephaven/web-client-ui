@@ -91,9 +91,9 @@ function getRuleTitle(config: BaseFormatConfig): string {
     ${getRuleValue(config as BaseFormatConfig)}`;
 }
 
-const ConditionalFormattingMenu = (
+function ConditionalFormattingMenu(
   props: ConditionalFormattingMenuProps
-): JSX.Element => {
+): JSX.Element {
   const {
     rules = [],
     onChange = DEFAULT_CALLBACK,
@@ -245,6 +245,6 @@ const ConditionalFormattingMenu = (
       </Button>
     </div>
   );
-};
+}
 
 export default ConditionalFormattingMenu;

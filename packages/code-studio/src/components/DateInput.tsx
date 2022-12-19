@@ -41,11 +41,11 @@ interface DateInputProps {
   onChange?: (value: string) => void;
 }
 
-const DateInput = ({
+function DateInput({
   className = '',
   defaultValue = parseDateString(DEFAULT_VALUE_STRING),
   onChange = (): void => undefined,
-}: DateInputProps): ReactElement => {
+}: DateInputProps): ReactElement {
   const [value, setValue] = useState(formatDateAsString(defaultValue));
   const [selection, setSelection] = useState<SelectionSegment | undefined>(
     undefined
@@ -124,6 +124,6 @@ const DateInput = ({
       selection={selection}
     />
   );
-};
+}
 
 export default DateInput;

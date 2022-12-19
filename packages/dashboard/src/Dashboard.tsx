@@ -42,7 +42,7 @@ export type DashboardProps = {
   dehydrate?: PanelDehydrateFunction;
 };
 
-export const Dashboard = ({
+export function Dashboard({
   id = 'default',
   children,
   emptyDashboard,
@@ -54,7 +54,7 @@ export const Dashboard = ({
   fallbackComponent = PanelPlaceholder,
   hydrate,
   dehydrate,
-}: DashboardProps): JSX.Element => {
+}: DashboardProps): JSX.Element {
   const layoutElement = useRef<HTMLDivElement>(null);
   const [isInitialized, setIsInitialized] = useState(false);
   const [layout, setLayout] = useState<GoldenLayout>();
@@ -146,6 +146,6 @@ export const Dashboard = ({
       )}
     </div>
   );
-};
+}
 
 export default Dashboard;

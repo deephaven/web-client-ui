@@ -1,3 +1,4 @@
+/* eslint-disable react/no-unused-prop-types */
 /* eslint-disable react/prop-types */
 /* eslint react/prefer-stateless-function: "off" */
 /* eslint react/no-multi-comp: "off" */

@@ -12,7 +12,7 @@ export type UISwitchProps = {
   'data-testid'?: string;
 };
 
-const UISwitch = ({
+function UISwitch({
   on,
   id,
   className,
@@ -20,23 +20,25 @@ const UISwitch = ({
   disabled = false,
   onClick,
   'data-testid': dataTestId,
-}: UISwitchProps): JSX.Element => (
-  <button
-    type="button"
-    className={classNames(
-      'btn',
-      'btn-switch',
-      className,
-      { active: on },
-      { 'is-invalid': isInvalid }
-    )}
-    id={id}
-    onClick={onClick}
-    disabled={disabled}
-    data-testid={dataTestId}
-  >
-    <div className="handle" />
-  </button>
-);
+}: UISwitchProps): JSX.Element {
+  return (
+    <button
+      type="button"
+      className={classNames(
+        'btn',
+        'btn-switch',
+        className,
+        { active: on },
+        { 'is-invalid': isInvalid }
+      )}
+      id={id}
+      onClick={onClick}
+      disabled={disabled}
+      data-testid={dataTestId}
+    >
+      <div className="handle" />
+    </button>
+  );
+}
 
 export default UISwitch;

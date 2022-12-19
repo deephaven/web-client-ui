@@ -49,7 +49,7 @@ class LogHistory {
    * @param stack - Stack trace generated in the console
    * @param type - Log type (e.g. log, warn, error)
    */
-  static formatStack(stack = '', type: LOG_PROXY_TYPE): string {
+  static formatStack(stack: string, type: LOG_PROXY_TYPE): string {
     if (stack === '') {
       return '';
     }

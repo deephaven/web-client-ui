@@ -102,19 +102,19 @@ describe('table parsing', () => {
   });
 
   it('parses out a basic div table', () => {
-    testTable(<>{TEXT_TABLE_CHROME}</>, SMALL_DATA);
+    testTable(TEXT_TABLE_CHROME, SMALL_DATA);
   });
 
   it('parses out a basic text table', () => {
-    testTable(<>{TEXT_TABLE_FIREFOX}</>, SMALL_DATA);
+    testTable(TEXT_TABLE_FIREFOX, SMALL_DATA);
   });
 
   it('parses out a single row in Chrome', () => {
-    testTable(<>{SINGLE_ROW_CHROME}</>, SINGLE_ROW_DATA);
+    testTable(SINGLE_ROW_CHROME, SINGLE_ROW_DATA);
   });
 
   it('parses out a single row in Firefox', () => {
-    testTable(<>{SINGLE_ROW_FIREFOX}</>, SINGLE_ROW_DATA);
+    testTable(SINGLE_ROW_FIREFOX, SINGLE_ROW_DATA);
   });
 });
 
