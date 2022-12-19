@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { TestUtils } from '@deephaven/utils';
 import {
@@ -7,6 +7,10 @@ import {
   FileListItemEditorProps,
 } from './FileListItemEditor';
 import { FileStorageItem } from './FileStorage';
+
+async function flushPromises() {
+  return act(() => TestUtils.flushPromises());
+}
 
 function makeItem(name = 'DEFAULT_NAME'): FileStorageItem {
   return {
@@ -73,7 +77,7 @@ describe('FileListItemEditor', () => {
     const input: HTMLInputElement = screen.getByRole('textbox');
     userEvent.type(input, '123{enter}');
     // Wait to resolve the validation promise
-    await TestUtils.flushPromises();
+    await flushPromises();
     unmount();
     expect(validate).toBeCalled();
     expect(onSubmit).toBeCalledWith(`${itemName}123`);
@@ -96,7 +100,7 @@ describe('FileListItemEditor', () => {
     userEvent.type(input, '123');
     expect(input).toHaveFocus();
     userEvent.tab();
-    await TestUtils.flushPromises();
+    await flushPromises();
     unmount();
     expect(validate).toBeCalled();
     expect(onSubmit).toBeCalledWith(`${itemName}123`);
@@ -113,7 +117,7 @@ describe('FileListItemEditor', () => {
     });
     const input: HTMLInputElement = screen.getByRole('textbox');
     userEvent.type(input, '123{esc}');
-    await TestUtils.flushPromises();
+    await flushPromises();
     unmount();
     expect(onSubmit).not.toBeCalled();
     expect(onCancel).toBeCalled();
@@ -131,7 +135,7 @@ describe('FileListItemEditor', () => {
     });
     const input: HTMLInputElement = screen.getByRole('textbox');
     userEvent.type(input, '{enter}');
-    await TestUtils.flushPromises();
+    await flushPromises();
     expect(screen.getByText(errorMessage, { exact: false })).not.toBeNull();
     expect(onSubmit).not.toBeCalled();
     unmount();
