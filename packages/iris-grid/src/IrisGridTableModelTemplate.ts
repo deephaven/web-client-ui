@@ -6,7 +6,6 @@ import {
   EditOperation,
   GridRange,
   GridUtils,
-  IColumnHeaderGroup,
   memoizeClear,
   ModelIndex,
   MoveOperation,
@@ -170,7 +169,9 @@ class IrisGridTableModelTemplate<
 
   private _columnHeaderMaxDepth: number | null = null;
 
-  private _columnHeaderGroups: ColumnGroup[] = [];
+  private _columnHeaderGroups: ColumnHeaderGroup[] = [];
+
+  private _movedColumns: MoveOperation[] | null = null;
 
   /**
    * @param table Iris data table to be used in the model
@@ -214,6 +215,8 @@ class IrisGridTableModelTemplate<
     this.pendingNewDataMap = new Map();
     this.pendingNewDataErrors = null;
     this.pendingNewRowCount = 0;
+
+    this.setColumnHeaderGroups(this.layoutHints?.columnGroups);
   }
 
   close(): void {
@@ -600,7 +603,7 @@ class IrisGridTableModelTemplate<
   getColumnHeaderGroup(
     modelIndex: ModelIndex,
     depth: number
-  ): IColumnHeaderGroup | undefined {
+  ): ColumnHeaderGroup | undefined {
     const group = this.columnAtDepth(modelIndex, depth);
     if (isColumnHeaderGroup(group)) {
       return group;
@@ -611,7 +614,7 @@ class IrisGridTableModelTemplate<
   getColumnHeaderParentGroup(
     modelIndex: ModelIndex,
     depth: number
-  ): IColumnHeaderGroup | undefined {
+  ): ColumnHeaderGroup | undefined {
     return this.columnHeaderParentMap.get(
       this.columnAtDepth(modelIndex, depth)?.name ?? ''
     );
@@ -656,10 +659,18 @@ class IrisGridTableModelTemplate<
     return '';
   }
 
+  reset(): void {
+    this._movedColumns = null;
+    this._movedColumns = this.movedColumns;
+  }
+
   /**
    * Used to get the initial moved columns based on layout hints
    */
   get movedColumns(): MoveOperation[] {
+    if (this._movedColumns != null) {
+      return this._movedColumns;
+    }
     let movedColumns: MoveOperation[] = [];
 
     const moveColumn = (name: string, toIndex: VisibleIndex) => {
@@ -715,8 +726,6 @@ class IrisGridTableModelTemplate<
 
     const layoutHintColumnGroups = this.layoutHints?.columnGroups;
     if (layoutHintColumnGroups) {
-      this.setColumnHeaderGroups(layoutHintColumnGroups);
-
       const columnGroups = [...this.columnHeaderGroupMap.values()];
       columnGroups.sort((a, b) => a.depth - b.depth);
 
@@ -777,6 +786,7 @@ class IrisGridTableModelTemplate<
       });
     }
 
+    this._movedColumns = movedColumns;
     return movedColumns;
   }
 
@@ -799,8 +809,16 @@ class IrisGridTableModelTemplate<
     return this._columnHeaderMaxDepth ?? 1;
   }
 
-  set columnHeaderMaxDepth(depth: number) {
+  private set columnHeaderMaxDepth(depth: number) {
     this._columnHeaderMaxDepth = depth;
+  }
+
+  getColumnHeaderGroups(): ColumnHeaderGroup[] {
+    return this._columnHeaderGroups;
+  }
+
+  getColumnHeaderGroupMap(): Map<string, ColumnHeaderGroup> {
+    return this.columnHeaderGroupMap;
   }
 
   setColumnHeaderGroups(groups: ColumnGroup[] | undefined): void {
@@ -808,7 +826,7 @@ class IrisGridTableModelTemplate<
       return;
     }
 
-    this._columnHeaderGroups = groups ?? [];
+    this._columnHeaderGroups = [];
     this.columnHeaderMaxDepth = 1;
     this.columnHeaderParentMap = new Map();
     this.columnHeaderGroupMap = new Map();
@@ -888,6 +906,12 @@ class IrisGridTableModelTemplate<
       groupNames.add(name);
       addGroup(group);
     });
+
+    this.columnHeaderGroupMap.forEach(group => {
+      group.setParent(this.columnHeaderParentMap.get(group.name));
+    });
+
+    this._columnHeaderGroups = [...this.columnHeaderGroupMap.values()];
   }
 
   get groupedColumns(): Column[] {

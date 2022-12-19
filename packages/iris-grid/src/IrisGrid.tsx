@@ -62,6 +62,7 @@ import {
 } from '@deephaven/icons';
 import dh, {
   Column,
+  ColumnGroup,
   CustomColumn,
   DateWrapper,
   FilterCondition,
@@ -171,6 +172,7 @@ import {
   PendingDataMap,
   AdvancedFilterOptions,
 } from './CommonTypes';
+import ColumnHeaderGroup from './ColumnHeaderGroup';
 
 const log = Log.module('IrisGrid');
 
@@ -311,6 +313,8 @@ export interface IrisGridProps {
   theme: GridThemeType;
 
   canToggleSearch: boolean;
+
+  columnHeaderGroups: ColumnHeaderGroup[] | null;
 }
 
 export interface IrisGridState {
@@ -399,6 +403,8 @@ export interface IrisGridState {
   gotoRow: string;
   gotoRowError: string;
   isGotoRowShown: boolean;
+
+  columnHeaderGroups: ColumnHeaderGroup[] | null;
 }
 
 export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
@@ -475,6 +481,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     frozenColumns: null,
     theme: IrisGridTheme,
     canToggleSearch: true,
+    columnHeaderGroups: null,
   };
 
   static makeQuickFilter(
@@ -524,6 +531,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     this.handleRequestFailed = this.handleRequestFailed.bind(this);
     this.handleSelectionChanged = this.handleSelectionChanged.bind(this);
     this.handleMovedColumnsChanged = this.handleMovedColumnsChanged.bind(this);
+    this.handleHeaderGroupsChanged = this.handleHeaderGroupsChanged.bind(this);
     this.handleUpdate = this.handleUpdate.bind(this);
     this.handleTooltipRef = this.handleTooltipRef.bind(this);
     this.handleViewChanged = this.handleViewChanged.bind(this);
@@ -671,6 +679,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       pendingDataMap,
       canCopy,
       frozenColumns,
+      columnHeaderGroups,
     } = props;
 
     const keyHandlers: KeyHandler[] = [
@@ -793,6 +802,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       isGotoRowShown: false,
       gotoRow: '',
       gotoRowError: '',
+      columnHeaderGroups,
     };
   }
 
@@ -2799,6 +2809,11 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     this.setState({ movedColumns }, onChangeApplied);
   }
 
+  handleHeaderGroupsChanged(columnHeaderGroups: ColumnHeaderGroup[]): void {
+    this.setState({ columnHeaderGroups });
+    this.grid?.forceUpdate();
+  }
+
   handleTooltipRef(tooltip: Tooltip): void {
     // Need to start the timer right away, since we're creating the tooltip when we want the timer to start
     if (tooltip != null) {
@@ -3887,6 +3902,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
               userColumnWidths={userColumnWidths}
               onColumnVisibilityChanged={this.handleColumnVisibilityChanged}
               onMovedColumnsChanged={this.handleMovedColumnsChanged}
+              onColumnHeaderGroupChanged={this.handleHeaderGroupsChanged}
               key={OptionType.VISIBILITY_ORDERING_BUILDER}
             />
           );

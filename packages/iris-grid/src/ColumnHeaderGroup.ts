@@ -21,6 +21,8 @@ export default class ColumnHeaderGroup implements IColumnHeaderGroup {
 
   depth: number;
 
+  parent?: ColumnHeaderGroup;
+
   color?: string;
 
   childIndexes: (ModelIndex | ModelIndex[])[];
@@ -63,4 +65,19 @@ export default class ColumnHeaderGroup implements IColumnHeaderGroup {
       return [start, end];
     }
   );
+
+  setParent(parent: ColumnHeaderGroup | undefined): void {
+    this.parent = parent;
+  }
+
+  addChildren(children: string[]): void {
+    const newChildren = new Set(this.children.concat(children));
+    this.children = [...newChildren];
+  }
+
+  removeChildren(children: string[]): void {
+    const newChildren = new Set(this.children);
+    children.forEach(name => newChildren.delete(name));
+    this.children = [...newChildren];
+  }
 }

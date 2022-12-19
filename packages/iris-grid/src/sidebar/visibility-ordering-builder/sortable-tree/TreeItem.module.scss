@@ -1,0 +1,162 @@
+@import '@deephaven/components/scss/custom.scss';
+
+.Wrapper {
+  list-style: none;
+  box-sizing: border-box;
+  padding-left: var(--spacing);
+  margin-bottom: -1px;
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+
+  &:first-child {
+    padding-top: $spacer-1;
+  }
+
+  &.clone {
+    // display: inline-block;
+    pointer-events: none;
+    padding: 0;
+
+    .TreeItem {
+      opacity: 1;
+      color: $foreground;
+      background-color: $primary;
+      box-shadow: $box-shadow;
+    }
+  }
+
+  &.ghost {
+    &.indicator {
+      opacity: 1;
+      position: relative;
+      z-index: 1;
+      margin-bottom: -1px;
+
+      .TreeItem {
+        position: relative;
+        padding: 0;
+        height: 8px;
+        border-color: #2389ff;
+        background-color: #56a1f8;
+
+        &:before {
+          position: absolute;
+          left: -8px;
+          top: -4px;
+          display: block;
+          content: '';
+          width: 12px;
+          height: 12px;
+          border-radius: 50%;
+          border: 1px solid #2389ff;
+          // background-color: #ffffff;
+        }
+
+        > * {
+          /* Items are hidden using height and opacity to retain focus */
+          opacity: 0;
+          height: 0;
+        }
+      }
+    }
+
+    &:not(.indicator) {
+      opacity: 0.5;
+    }
+
+    .TreeItem > * {
+      box-shadow: none;
+      background-color: transparent;
+    }
+  }
+}
+
+.TreeItem {
+  position: relative;
+  display: flex;
+  gap: $spacer-1;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: flex-start;
+  align-items: center;
+  margin-right: $spacer-1;
+  margin-left: $spacer-1;
+  flex-grow: 1;
+
+  border-radius: $border-radius;
+
+  // margin-bottom: 2px;
+  padding: 0 $spacer-1; // space for focus border
+
+  &:hover {
+    background: $gray-500;
+    cursor: grab;
+    .fa-grip-vertical {
+      color: $gray-200;
+    }
+  }
+
+  &.isSelected {
+    background-color: rgba($primary, 0.4);
+
+    &:hover {
+      background-color: $primary;
+    }
+  }
+}
+
+.Text {
+  flex-grow: 1;
+  padding-left: 0.5rem;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+.Count {
+  padding: 0 $spacer-2;
+  border-radius: 1rem;
+  background-color: rgba($white, 0.25);
+  margin-right: $spacer-1;
+}
+
+.disableInteraction {
+  pointer-events: none;
+}
+
+.disableSelection,
+.clone {
+  .Text,
+  .Count {
+    user-select: none;
+    -webkit-user-select: none;
+  }
+}
+
+.Collapse {
+  svg {
+    transition: transform 250ms ease;
+  }
+
+  &.collapsed svg {
+    transform: rotate(-90deg);
+  }
+}
+
+.MarchingAnts {
+  @include ants-base($foreground, $background);
+  animation-name: march;
+}
+
+$depth-line-color: $gray-600;
+$depth-margin: 18px;
+
+.DepthLine {
+  margin-left: $depth-margin;
+  padding-bottom: 2px;
+  height: 28px;
+  border-left: 1px solid $depth-line-color;
+  box-sizing: content-box;
+}

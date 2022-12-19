@@ -9,6 +9,7 @@ import {
 } from '@deephaven/grid';
 import dh, {
   Column,
+  ColumnGroup,
   DateWrapper,
   FilterCondition,
   LongWrapper,
@@ -48,6 +49,7 @@ import { FormattingRule as SidebarFormattingRule } from './sidebar/conditional-f
 import IrisGridModel from './IrisGridModel';
 import type AdvancedSettingsType from './sidebar/AdvancedSettingsType';
 import AdvancedSettings from './sidebar/AdvancedSettings';
+import ColumnHeaderGroup from './ColumnHeaderGroup';
 
 const log = Log.module('IrisGridUtils');
 
@@ -70,6 +72,7 @@ type HydratedIrisGridState = Pick<
   | 'pendingDataMap'
   | 'frozenColumns'
   | 'conditionalFormats'
+  | 'columnHeaderGroups'
 > & {
   metrics: Pick<GridMetrics, 'userColumnWidths' | 'userRowHeights'>;
 };
@@ -108,6 +111,7 @@ export interface DehydratedIrisGridState {
   invertSearchColumns: boolean;
   pendingDataMap: DehydratedPendingDataMap<string | CellData | null>;
   frozenColumns: ColumnName[];
+  columnHeaderGroups: ColumnGroup[] | null;
 }
 
 type DehydratedPendingDataMap<T> = [number, { data: [string, T][] }][];
@@ -266,6 +270,7 @@ class IrisGridUtils {
       invertSearchColumns,
       pendingDataMap = new Map(),
       frozenColumns,
+      columnHeaderGroups,
     } = irisGridState;
     assertNotNull(metrics);
     const { userColumnWidths, userRowHeights } = metrics;
@@ -303,6 +308,12 @@ class IrisGridUtils {
         pendingDataMap
       ),
       frozenColumns,
+      columnHeaderGroups:
+        columnHeaderGroups?.map(item => ({
+          name: item.name,
+          children: item.children,
+          color: item.color,
+        })) ?? null,
     };
   }
 
@@ -338,8 +349,16 @@ class IrisGridUtils {
       invertSearchColumns = true,
       pendingDataMap = [],
       frozenColumns,
+      columnHeaderGroups,
     } = irisGridState;
     const { columns, formatter } = model;
+
+    let hydratedColumnHeaderGroups: ColumnHeaderGroup[] | null = null;
+
+    if (columnHeaderGroups) {
+      model.setColumnHeaderGroups(columnHeaderGroups);
+      hydratedColumnHeaderGroups = model.getColumnHeaderGroups();
+    }
     return {
       advancedFilters: IrisGridUtils.hydrateAdvancedFilters(
         columns,
@@ -389,6 +408,7 @@ class IrisGridUtils {
         pendingDataMap
       ) as PendingDataMap<UIRow>,
       frozenColumns,
+      columnHeaderGroups: hydratedColumnHeaderGroups,
     };
   }
 

@@ -381,9 +381,19 @@ class IrisGridProxyModel extends IrisGridModel {
   getColumnHeaderGroup: IrisGridModel['getColumnHeaderGroup'] = (...args) =>
     this.model.getColumnHeaderGroup(...args);
 
+  getColumnHeaderGroups: IrisGridModel['getColumnHeaderGroups'] = (...args) =>
+    this.model.getColumnHeaderGroups(...args);
+
+  setColumnHeaderGroups: IrisGridModel['setColumnHeaderGroups'] = (...args) =>
+    this.model.setColumnHeaderGroups(...args);
+
   getColumnHeaderParentGroup: IrisGridModel['getColumnHeaderParentGroup'] = (
     ...args
   ) => this.model.getColumnHeaderParentGroup(...args);
+
+  getColumnHeaderGroupMap: IrisGridModel['getColumnHeaderGroupMap'] = (
+    ...args
+  ) => this.model.getColumnHeaderGroupMap();
 
   get columnHeaderMaxDepth(): number {
     return this.model.columnHeaderMaxDepth;

@@ -9,6 +9,7 @@ import {
 } from '@deephaven/grid';
 import type {
   Column,
+  ColumnGroup,
   ColumnStatistics,
   CustomColumn,
   FilterCondition,
@@ -21,6 +22,7 @@ import type {
 } from '@deephaven/jsapi-shim';
 import { Formatter } from '@deephaven/jsapi-utils';
 import { ColumnName, UITotalsTableConfig, PendingDataMap } from './CommonTypes';
+import ColumnHeaderGroup from './ColumnHeaderGroup';
 
 type RowIndex = ModelIndex;
 
@@ -487,6 +489,25 @@ abstract class IrisGridModel<
    * @returns A promise that resolves successfully when the operation is complete or rejects if there's an error
    */
   abstract delete(ranges: GridRange[]): Promise<void>;
+
+  getColumnHeaderGroups(): ColumnHeaderGroup[] {
+    return [];
+  }
+
+  getColumnHeaderGroupMap(): Map<string, ColumnHeaderGroup> {
+    return new Map();
+  }
+
+  setColumnHeaderGroups(groups: ColumnGroup[] | undefined): void {
+    // no-op
+  }
+
+  getColumnHeaderParentGroup(
+    modelIndex: ModelIndex,
+    depth: number
+  ): ColumnHeaderGroup | undefined {
+    return undefined;
+  }
 }
 
 export default IrisGridModel;

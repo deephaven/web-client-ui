@@ -787,11 +787,18 @@ export class GridUtils {
    */
   static moveRange(
     from: BoundedAxisRange,
-    to: VisibleIndex,
-    oldMovedItems: MoveOperation[]
+    toParam: VisibleIndex,
+    oldMovedItems: MoveOperation[],
+    isPreMoveTo = false
   ): MoveOperation[] {
-    if (from[0] === to) {
+    if (from[0] === toParam) {
       return oldMovedItems;
+    }
+
+    let to = toParam;
+
+    if (isPreMoveTo && from[0] < toParam) {
+      to -= from[1] - from[0];
     }
 
     const movedItems: MoveOperation[] = [...oldMovedItems];
