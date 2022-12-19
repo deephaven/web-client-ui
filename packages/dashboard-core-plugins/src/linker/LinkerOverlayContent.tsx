@@ -70,6 +70,7 @@ export class LinkerOverlayContent extends Component<
     super(props);
 
     this.handleBlur = this.handleBlur.bind(this);
+    this.handleResize = this.handleResize.bind(this);
     this.handleMouseMove = this.handleMouseMove.bind(this);
     this.handleMouseDown = this.handleMouseDown.bind(this);
     this.handleMouseUp = this.handleMouseUp.bind(this);
@@ -95,6 +96,7 @@ export class LinkerOverlayContent extends Component<
     window.addEventListener('mouseup', this.handleMouseUp, true);
     window.addEventListener('keydown', this.handleKeyDown, true);
     window.addEventListener('keyup', this.handleKeyUp, true);
+    window.addEventListener('resize', this.handleResize, true);
   }
 
   // eslint-disable-next-line react/sort-comp
@@ -108,6 +110,7 @@ export class LinkerOverlayContent extends Component<
     window.removeEventListener('mouseup', this.handleMouseUp, true);
     window.removeEventListener('keydown', this.handleKeyDown, true);
     window.removeEventListener('keyup', this.handleKeyUp, true);
+    window.removeEventListener('resize', this.handleResize, true);
   }
 
   dialogRef: React.RefObject<HTMLInputElement>;
@@ -154,6 +157,18 @@ export class LinkerOverlayContent extends Component<
 
   handleBlur(): void {
     this.setState({ mode: 'select' });
+  }
+
+  handleResize(): void {
+    const { dialog } = this.state;
+    if (dialog && this.dialogRef.current) {
+      const rect = this.dialogRef.current.getBoundingClientRect();
+      const dialogX = clamp(dialog.x, 0, window.innerWidth - rect.width);
+      const dialogY = clamp(dialog.y, 0, window.innerHeight - rect.height);
+      this.setState({
+        dialog: { x: dialogX, y: dialogY },
+      });
+    }
   }
 
   handleMouseMove(event: MouseEvent): void {
@@ -305,14 +320,16 @@ export class LinkerOverlayContent extends Component<
           )
         )}
         <div
-          className="linker-toast-dialog"
+          className={classNames('linker-toast-dialog', {
+            dragging: isDragging,
+          })}
           ref={this.dialogRef}
           style={{ bottom: dialog?.y, right: dialog?.x }}
         >
           <Button
             draggable
             kind="inline"
-            className={classNames('btn-drag-handle', { dragging: isDragging })}
+            className="btn-drag-handle"
             icon={vsGripper}
             onClick={() => {
               // no-op

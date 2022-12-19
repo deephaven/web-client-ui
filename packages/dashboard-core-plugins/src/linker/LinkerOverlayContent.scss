@@ -1,6 +1,8 @@
 @import '@deephaven/components/scss/custom.scss';
 
 $dialog-width: 400px;
+$toast-inner-padding: $spacer-3;
+$toast-outer-padding: $spacer-3;
 
 .linker-overlay {
   z-index: $zindex-fixed;
@@ -12,9 +14,6 @@ $dialog-width: 400px;
   pointer-events: none;
 
   .linker-toast-dialog {
-    $toast-inner-padding: $spacer-3;
-    $toast-outer-padding: $spacer-3;
-
     display: grid;
     grid-template-areas: 'drag-handle body' 'drag-handle footer';
     position: absolute;
@@ -40,8 +39,16 @@ $dialog-width: 400px;
       color: $gray-600;
       min-width: unset;
 
-      &:hover,
-      &.dragging {
+      &:hover {
+        background-color: $gray-400;
+        color: $gray-700;
+      }
+    }
+
+    &.dragging {
+      cursor: grabbing;
+      .btn-drag-handle {
+        cursor: grabbing;
         background-color: $gray-400;
         color: $gray-700;
       }
