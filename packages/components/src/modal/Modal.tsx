@@ -38,7 +38,8 @@ function Modal({
   'data-testid': dataTestId,
 }: ModalProps): React.ReactElement | null {
   const element = useRef<HTMLElement>();
-  const [contentClicked, setContentClicked] = useState(false);
+  const background = useRef<HTMLDivElement>(null);
+  const [backgroundClicked, setBackgroundClicked] = useState(false);
 
   const handleKeyDown = useCallback(
     (event: KeyboardEvent): void => {
@@ -130,10 +131,21 @@ function Modal({
             onExited={onExited}
           >
             <div
+              ref={background}
               className="modal fade"
-              onMouseDown={() => setContentClicked(false)}
-              onMouseUp={() => {
-                if (!contentClicked && toggle !== undefined) {
+              onMouseDown={e => {
+                if (e.target === background.current) {
+                  setBackgroundClicked(true);
+                } else {
+                  setBackgroundClicked(false);
+                }
+              }}
+              onMouseUp={e => {
+                if (
+                  backgroundClicked &&
+                  e.target === background.current &&
+                  toggle !== undefined
+                ) {
                   toggle();
                 }
               }}
@@ -151,11 +163,6 @@ function Modal({
               >
                 <div
                   className="modal-content"
-                  onMouseDown={e => {
-                    e.stopPropagation();
-                    setContentClicked(true);
-                  }}
-                  onMouseUp={e => e.stopPropagation()}
                   role="presentation"
                   data-testid={dataTestId}
                 >
