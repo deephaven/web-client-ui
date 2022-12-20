@@ -1,5 +1,11 @@
 import classNames from 'classnames';
-import React, { ReactNode, useCallback, useEffect, useRef } from 'react';
+import React, {
+  ReactNode,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
 import ReactDOM from 'react-dom';
 import { CSSTransition } from 'react-transition-group';
 import ThemeExport from '../ThemeExport';
@@ -32,6 +38,8 @@ function Modal({
   'data-testid': dataTestId,
 }: ModalProps): React.ReactElement | null {
   const element = useRef<HTMLElement>();
+  const background = useRef<HTMLDivElement>(null);
+  const [backgroundClicked, setBackgroundClicked] = useState(false);
 
   const handleKeyDown = useCallback(
     (event: KeyboardEvent): void => {
@@ -123,8 +131,24 @@ function Modal({
             onExited={onExited}
           >
             <div
+              ref={background}
               className="modal fade"
-              onClick={toggle}
+              onMouseDown={e => {
+                if (e.target === background.current) {
+                  setBackgroundClicked(true);
+                } else {
+                  setBackgroundClicked(false);
+                }
+              }}
+              onMouseUp={e => {
+                if (
+                  backgroundClicked &&
+                  e.target === background.current &&
+                  toggle !== undefined
+                ) {
+                  toggle();
+                }
+              }}
               role="dialog"
               style={{ display: 'block' }}
             >
@@ -139,7 +163,6 @@ function Modal({
               >
                 <div
                   className="modal-content"
-                  onClick={e => e.stopPropagation()}
                   role="presentation"
                   data-testid={dataTestId}
                 >
