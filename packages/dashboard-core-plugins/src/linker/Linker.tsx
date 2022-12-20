@@ -665,8 +665,8 @@ export class Linker extends Component<LinkerProps, LinkerState> {
     const disabled = linkInProgress != null && linkInProgress.start != null;
     const linkerOverlayMessage =
       isolatedLinkerPanelId === undefined
-        ? 'Click a column source, then click a column target to create a filter link. Change its comparison operator by clicking on the link and then the dropdown menu button. Delete a filter link by clicking the delete button or with alt+click. Click done when finished.'
-        : 'Create a link between the source column button and a table column by clicking on one, then the other. Change its comparison operator by clicking on the link and then the dropdown menu button. Delete a filter link by clicking the delete button or with alt+click. Click done when finished.';
+        ? 'Click a column source, then click a column target to create a filter link. The filter comparison operator used by a selected link can be changed. Delete a filter link by clicking the delete button or with alt+click. Click done when finished.'
+        : 'Create a link between the source column button and a table column by clicking on one, then the other. Delete a filter link by clicking the delete button or with alt+click. Click done when finished.';
 
     return (
       <CSSTransition
