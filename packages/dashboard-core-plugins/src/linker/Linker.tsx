@@ -615,7 +615,8 @@ export class Linker extends Component<LinkerProps, LinkerState> {
 
   isOverlayShown(): boolean {
     const { activeTool } = this.props;
-    return activeTool === ToolType.LINKER;
+    const { showOverlay } = this.state;
+    return showOverlay && activeTool === ToolType.LINKER;
   }
 
   updateSelectionValidators(): void {
@@ -690,9 +691,9 @@ export class Linker extends Component<LinkerProps, LinkerState> {
     return type !== 'invalid';
   }
 
-  render(): JSX.Element {
+  render(): JSX.Element | null {
     const { links, isolatedLinkerPanelId, panelManager } = this.props;
-    const { linkInProgress, selectedIds, showOverlay } = this.state;
+    const { linkInProgress, selectedIds } = this.state;
 
     const isLinkOverlayShown = this.isOverlayShown();
     const disabled = linkInProgress != null && linkInProgress.start != null;
@@ -701,7 +702,7 @@ export class Linker extends Component<LinkerProps, LinkerState> {
         ? 'Click a column source, then click a column target to create a filter link. Remove a filter link by clicking again to erase. Click done when finished.'
         : 'Create a link between the source column button and a table column by clicking on one, then the other. Remove the link by clicking it directly. Click done when finished.';
 
-    return (
+    return isLinkOverlayShown ? (
       <CSSTransition
         in={isLinkOverlayShown}
         timeout={ThemeExport.transitionMs}
@@ -710,27 +711,25 @@ export class Linker extends Component<LinkerProps, LinkerState> {
         unmountOnExit
         onExited={this.handleExited}
       >
-        {showOverlay && (
-          <LinkerOverlayContent
-            disabled={disabled}
-            panelManager={panelManager}
-            links={this.getCachedLinks(
-              links,
-              linkInProgress,
-              isolatedLinkerPanelId
-            )}
-            selectedIds={selectedIds}
-            messageText={linkerOverlayMessage}
-            onLinkSelected={this.handleLinkSelected}
-            onLinkDeleted={this.handleLinkDeleted}
-            onAllLinksDeleted={this.handleAllLinksDeleted}
-            onLinksUpdated={this.handleLinksUpdated}
-            onDone={this.handleDone}
-            onCancel={this.handleCancel}
-          />
-        )}
+        <LinkerOverlayContent
+          disabled={disabled}
+          panelManager={panelManager}
+          links={this.getCachedLinks(
+            links,
+            linkInProgress,
+            isolatedLinkerPanelId
+          )}
+          selectedIds={selectedIds}
+          messageText={linkerOverlayMessage}
+          onLinkSelected={this.handleLinkSelected}
+          onLinkDeleted={this.handleLinkDeleted}
+          onAllLinksDeleted={this.handleAllLinksDeleted}
+          onLinksUpdated={this.handleLinksUpdated}
+          onDone={this.handleDone}
+          onCancel={this.handleCancel}
+        />
       </CSSTransition>
-    );
+    ) : null;
   }
 }
 
