@@ -86,7 +86,7 @@ export type LinkerProps = OwnProps &
 export type LinkerState = {
   linkInProgress?: Link;
   selectedIds: Set<string>;
-  showOverlay: boolean;
+  isDraggingPanel: boolean;
 };
 
 export class Linker extends Component<LinkerProps, LinkerState> {
@@ -116,7 +116,7 @@ export class Linker extends Component<LinkerProps, LinkerState> {
     this.state = {
       linkInProgress: undefined,
       selectedIds: new Set<string>(),
-      showOverlay: true,
+      isDraggingPanel: true,
     };
   }
 
@@ -525,7 +525,7 @@ export class Linker extends Component<LinkerProps, LinkerState> {
       const link = links[i];
       const { start, end } = link;
       if (start.panelId === componentId || end?.panelId === componentId) {
-        this.setState({ showOverlay: false });
+        this.setState({ isDraggingPanel: false });
         return;
       }
     }
@@ -537,7 +537,7 @@ export class Linker extends Component<LinkerProps, LinkerState> {
       const link = links[i];
       const { start, end } = link;
       if (start.panelId === componentId || end?.panelId === componentId) {
-        this.setState({ showOverlay: true });
+        this.setState({ isDraggingPanel: true });
         return;
       }
     }
@@ -615,8 +615,8 @@ export class Linker extends Component<LinkerProps, LinkerState> {
 
   isOverlayShown(): boolean {
     const { activeTool } = this.props;
-    const { showOverlay } = this.state;
-    return showOverlay && activeTool === ToolType.LINKER;
+    const { isDraggingPanel } = this.state;
+    return isDraggingPanel && activeTool === ToolType.LINKER;
   }
 
   updateSelectionValidators(): void {
