@@ -86,6 +86,7 @@ export type LinkerProps = OwnProps &
 export type LinkerState = {
   linkInProgress?: Link;
   selectedIds: Set<string>;
+  showOverlay: boolean;
 };
 
 export class Linker extends Component<LinkerProps, LinkerState> {
@@ -109,9 +110,14 @@ export class Linker extends Component<LinkerProps, LinkerState> {
     this.handleExited = this.handleExited.bind(this);
     this.handleLinkSelected = this.handleLinkSelected.bind(this);
     this.handlePanelDragging = this.handlePanelDragging.bind(this);
+    this.handlePanelDropped = this.handlePanelDropped.bind(this);
     this.isColumnSelectionValid = this.isColumnSelectionValid.bind(this);
 
-    this.state = { linkInProgress: undefined, selectedIds: new Set<string>() };
+    this.state = {
+      linkInProgress: undefined,
+      selectedIds: new Set<string>(),
+      showOverlay: true,
+    };
   }
 
   componentDidMount(): void {
@@ -156,6 +162,7 @@ export class Linker extends Component<LinkerProps, LinkerState> {
     eventHub.on(InputFilterEvent.COLUMNS_CHANGED, this.handleColumnsChanged);
     eventHub.on(PanelEvent.CLOSED, this.handlePanelClosed);
     eventHub.on(PanelEvent.DRAGGING, this.handlePanelDragging);
+    eventHub.on(PanelEvent.DROPPED, this.handlePanelDropped);
   }
 
   stopListening(layout: GoldenLayout): void {
@@ -174,6 +181,7 @@ export class Linker extends Component<LinkerProps, LinkerState> {
     eventHub.off(InputFilterEvent.COLUMNS_CHANGED, this.handleColumnsChanged);
     eventHub.off(PanelEvent.CLOSED, this.handlePanelClosed);
     eventHub.off(PanelEvent.DRAGGING, this.handlePanelDragging);
+    eventHub.off(PanelEvent.DROPPED, this.handlePanelDropped);
   }
 
   handleCancel(): void {
@@ -517,7 +525,19 @@ export class Linker extends Component<LinkerProps, LinkerState> {
       const link = links[i];
       const { start, end } = link;
       if (start.panelId === componentId || end?.panelId === componentId) {
-        this.handleDone();
+        this.setState({ showOverlay: false });
+        return;
+      }
+    }
+  }
+
+  handlePanelDropped(componentId: string): void {
+    const { links } = this.props;
+    for (let i = 0; i < links.length; i += 1) {
+      const link = links[i];
+      const { start, end } = link;
+      if (start.panelId === componentId || end?.panelId === componentId) {
+        this.setState({ showOverlay: true });
         return;
       }
     }
@@ -672,7 +692,7 @@ export class Linker extends Component<LinkerProps, LinkerState> {
 
   render(): JSX.Element {
     const { links, isolatedLinkerPanelId, panelManager } = this.props;
-    const { linkInProgress, selectedIds } = this.state;
+    const { linkInProgress, selectedIds, showOverlay } = this.state;
 
     const isLinkOverlayShown = this.isOverlayShown();
     const disabled = linkInProgress != null && linkInProgress.start != null;
@@ -690,23 +710,25 @@ export class Linker extends Component<LinkerProps, LinkerState> {
         unmountOnExit
         onExited={this.handleExited}
       >
-        <LinkerOverlayContent
-          disabled={disabled}
-          panelManager={panelManager}
-          links={this.getCachedLinks(
-            links,
-            linkInProgress,
-            isolatedLinkerPanelId
-          )}
-          selectedIds={selectedIds}
-          messageText={linkerOverlayMessage}
-          onLinkSelected={this.handleLinkSelected}
-          onLinkDeleted={this.handleLinkDeleted}
-          onAllLinksDeleted={this.handleAllLinksDeleted}
-          onLinksUpdated={this.handleLinksUpdated}
-          onDone={this.handleDone}
-          onCancel={this.handleCancel}
-        />
+        {showOverlay && (
+          <LinkerOverlayContent
+            disabled={disabled}
+            panelManager={panelManager}
+            links={this.getCachedLinks(
+              links,
+              linkInProgress,
+              isolatedLinkerPanelId
+            )}
+            selectedIds={selectedIds}
+            messageText={linkerOverlayMessage}
+            onLinkSelected={this.handleLinkSelected}
+            onLinkDeleted={this.handleLinkDeleted}
+            onAllLinksDeleted={this.handleAllLinksDeleted}
+            onLinksUpdated={this.handleLinksUpdated}
+            onDone={this.handleDone}
+            onCancel={this.handleCancel}
+          />
+        )}
       </CSSTransition>
     );
   }

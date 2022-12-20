@@ -226,9 +226,14 @@ export function DashboardLayout({
     [layout.eventHub]
   );
 
-  const handleLayoutItemDropped = useCallback(() => {
-    setIsItemDragging(false);
-  }, []);
+  const handleLayoutItemDropped = useCallback(
+    (component: Container) => {
+      const componentId = LayoutUtils.getIdFromContainer(component);
+      layout.eventHub.emit(PanelEvent.DROPPED, componentId);
+      setIsItemDragging(false);
+    },
+    [layout.eventHub]
+  );
 
   const handleComponentCreated = useCallback(item => {
     log.debug2('handleComponentCreated', item);
