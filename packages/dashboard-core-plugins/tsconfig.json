@@ -23,6 +23,9 @@
       "path": "../file-explorer"
     },
     {
+      "path": "../filters"
+    },
+    {
       "path": "../golden-layout"
     },
     {
