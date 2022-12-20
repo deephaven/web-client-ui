@@ -108,6 +108,7 @@ export class Linker extends Component<LinkerProps, LinkerState> {
     this.handleStateChange = this.handleStateChange.bind(this);
     this.handleExited = this.handleExited.bind(this);
     this.handleLinkSelected = this.handleLinkSelected.bind(this);
+    this.handlePanelDragging = this.handlePanelDragging.bind(this);
     this.isColumnSelectionValid = this.isColumnSelectionValid.bind(this);
 
     this.state = { linkInProgress: undefined, selectedIds: new Set<string>() };
@@ -154,6 +155,7 @@ export class Linker extends Component<LinkerProps, LinkerState> {
     );
     eventHub.on(InputFilterEvent.COLUMNS_CHANGED, this.handleColumnsChanged);
     eventHub.on(PanelEvent.CLOSED, this.handlePanelClosed);
+    eventHub.on(PanelEvent.DRAGGING, this.handlePanelDragging);
   }
 
   stopListening(layout: GoldenLayout): void {
@@ -171,6 +173,7 @@ export class Linker extends Component<LinkerProps, LinkerState> {
     );
     eventHub.off(InputFilterEvent.COLUMNS_CHANGED, this.handleColumnsChanged);
     eventHub.off(PanelEvent.CLOSED, this.handlePanelClosed);
+    eventHub.off(PanelEvent.DRAGGING, this.handlePanelDragging);
   }
 
   handleCancel(): void {
@@ -505,6 +508,18 @@ export class Linker extends Component<LinkerProps, LinkerState> {
         cloneId
       );
       this.addLinks(linksToAdd);
+    }
+  }
+
+  handlePanelDragging(componentId: string): void {
+    const { links } = this.props;
+    for (let i = 0; i < links.length; i += 1) {
+      const link = links[i];
+      const { start, end } = link;
+      if (start.panelId === componentId || end?.panelId === componentId) {
+        this.handleDone();
+        return;
+      }
     }
   }
 

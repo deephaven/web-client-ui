@@ -33,4 +33,7 @@ export default Object.freeze({
 
   // Event to close a panel that's currently open
   CLOSE: 'PanelEvent.CLOSE',
+
+  // Event to close a panel that's currently open
+  DRAGGING: 'PanelEvent.DRAGGING',
 });

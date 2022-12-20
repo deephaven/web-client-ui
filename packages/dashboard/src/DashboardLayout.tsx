@@ -217,9 +217,14 @@ export function DashboardLayout({
     onLayoutInitialized,
   ]);
 
-  const handleLayoutItemPickedUp = useCallback(() => {
-    setIsItemDragging(true);
-  }, []);
+  const handleLayoutItemPickedUp = useCallback(
+    (component: Container) => {
+      const componentId = LayoutUtils.getIdFromContainer(component);
+      layout.eventHub.emit(PanelEvent.DRAGGING, componentId);
+      setIsItemDragging(true);
+    },
+    [layout.eventHub]
+  );
 
   const handleLayoutItemDropped = useCallback(() => {
     setIsItemDragging(false);
