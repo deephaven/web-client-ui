@@ -5,20 +5,27 @@
 }
 
 .goto-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
   background-color: $content-bg;
-  padding: $spacer-2;
   border-top: $border-width solid black;
-  gap: $spacer-2;
+  display: block;
+
+  .goto-row-row {
+    display: flex;
+    padding: $spacer-2;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: $spacer-2;
+  }
 
   .goto-row-wrapper {
     display: flex;
     align-items: center;
     gap: $spacer-2;
     flex-wrap: wrap;
-    padding: $spacer-1;
+  }
+
+  .goto-row-text {
+    width: 10ch;
   }
 
   .goto-row-close {

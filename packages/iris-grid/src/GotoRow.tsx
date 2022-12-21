@@ -1,5 +1,5 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { vsClose } from '@deephaven/icons';
+import { vsClose, vsArrowUp, vsArrowDown } from '@deephaven/icons';
 import React, {
   ChangeEvent,
   ReactElement,
@@ -42,7 +42,7 @@ interface GotoRowProps {
   gotoValue: string;
   onGotoValueSelectedColumnChanged: (column: Column) => void;
   onGotoValueSelectedFilterChanged: (filter: number) => void;
-  onGotoValueChanged: (input: string) => void;
+  onGotoValueChanged: (input: string, isBackward?: boolean) => void;
 }
 
 const GotoRow = ({
@@ -96,8 +96,8 @@ const GotoRow = ({
       onExiting={onExiting}
       onExited={onExited}
     >
-      <div style={{ width: '100%' }}>
-        <div>
+      <>
+        <div className="goto-row-row">
           <div
             className={classNames('goto-row-wrapper', {
               'is-inactive': !isGotoRowActive,
@@ -141,68 +141,91 @@ const GotoRow = ({
           </div>
         </div>
         {isIrisGridTableModelTemplate(model) && (
-          <div
-            className={classNames('goto-row-wrapper', {
-              'is-inactive': isGotoRowActive,
-            })}
-            onClick={() => setIsGotoRowActive(false)}
-            role="group"
-          >
-            <div className="goto-row-text">Go to value</div>
-            <div className="goto-row-input">
-              <select
-                className="custom-select"
-                onChange={event => {
-                  onGotoValueSelectedColumnChanged(
-                    columns[parseInt(event.target.value, 10)]
-                  );
-                }}
-              >
-                {columns.map((column, index) => (
-                  <option key={column.index} value={index}>
-                    {column.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-            {gotoValueSelectedColumn !== undefined &&
-              gotoValueSelectedColumn.type === 'java.lang.String' && (
-                <div className="goto-row-input">
-                  <select
-                    className="custom-select"
-                    onChange={event => {
-                      onGotoValueSelectedFilterChanged(
-                        event.target.value === 'Equals' ? 0 : 1
-                      );
+          <div className="goto-row-row">
+            <div
+              className={classNames('goto-row-wrapper', {
+                'is-inactive': isGotoRowActive,
+              })}
+              onClick={() => setIsGotoRowActive(false)}
+              role="group"
+            >
+              <div className="goto-row-text">Go to value</div>
+              <div className="goto-row-input">
+                <select
+                  className="custom-select"
+                  onChange={event => {
+                    onGotoValueSelectedColumnChanged(
+                      columns[parseInt(event.target.value, 10)]
+                    );
+                  }}
+                >
+                  {columns.map((column, index) => (
+                    <option key={column.index} value={index}>
+                      {column.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              {gotoValueSelectedColumn !== undefined &&
+                gotoValueSelectedColumn.type === 'java.lang.String' && (
+                  <div className="goto-row-input">
+                    <select
+                      className="custom-select"
+                      onChange={event => {
+                        onGotoValueSelectedFilterChanged(
+                          event.target.value === 'Equals' ? 0 : 1
+                        );
+                      }}
+                    >
+                      {['Equals', 'Contains'].map(filter => (
+                        <option key={filter} value={filter}>
+                          {filter}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+              <div className="goto-row-input">
+                <input
+                  className="form-control"
+                  onKeyDown={e => {
+                    if (e.key === 'Enter') {
+                      e.stopPropagation();
+                      e.preventDefault();
+                      onGotoValueChanged(gotoValue);
+                    }
+                  }}
+                  placeholder="value"
+                  onChange={event => {
+                    onGotoValueChanged(event.target.value);
+                  }}
+                  value={gotoValue}
+                />
+              </div>
+              {gotoValue !== '' && (
+                <div>
+                  <Button
+                    kind="ghost"
+                    onClick={() => {
+                      onGotoValueChanged(gotoValue, true);
                     }}
                   >
-                    {['Equals', 'Contains'].map(filter => (
-                      <option key={filter} value={filter}>
-                        {filter}
-                      </option>
-                    ))}
-                  </select>
+                    <FontAwesomeIcon icon={vsArrowUp} />
+                  </Button>
+                  <Button
+                    kind="ghost"
+                    onClick={() => {
+                      onGotoValueChanged(gotoValue, false);
+                    }}
+                  >
+                    <FontAwesomeIcon icon={vsArrowDown} />
+                  </Button>
                 </div>
               )}
-            <div className="goto-row-input">
-              <input
-                className="form-control"
-                onKeyDown={e => {
-                  if (e.key === 'Enter') {
-                    e.stopPropagation();
-                    e.preventDefault();
-                  }
-                }}
-                placeholder="value"
-                onChange={event => {
-                  onGotoValueChanged(event.target.value);
-                }}
-                value={gotoValue}
-              />
             </div>
           </div>
         )}
-      </div>
+      </>
     </IrisGridBottomBar>
   );
 };

@@ -389,6 +389,7 @@ export interface IrisGridState {
   gotoValueSelectedColumn?: Column;
   gotoValueSelectedFilter: number;
   gotoValue: string;
+  lastSeekedRow: number;
 }
 
 export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
@@ -787,6 +788,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       gotoValueSelectedColumn: model.columns[0],
       gotoValueSelectedFilter: 0,
       gotoValue: '',
+      lastSeekedRow: 0,
     };
   }
 
@@ -3097,12 +3099,12 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     }
   }
 
-  async seekRow(inputString: string): Promise<void> {
+  async seekRow(inputString: string, isBackwards = false): Promise<void> {
     const {
       gotoValueSelectedColumn: selectedColumn,
       gotoValueSelectedFilter,
+      lastSeekedRow,
     } = this.state;
-
     const { model } = this.props;
     if (selectedColumn && isIrisGridProxyModel(model)) {
       const { table } = model;
@@ -3111,21 +3113,27 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
           // is string column,
           const isContains = gotoValueSelectedFilter === 1;
           const rowIndex = await table.seekRow(
-            0,
+            isBackwards ? lastSeekedRow - 1 : lastSeekedRow + 1,
             selectedColumn,
             'String',
             inputString,
             false,
-            isContains
+            isContains,
+            isBackwards ?? false
           );
+          this.setState({ lastSeekedRow: rowIndex });
           this.grid?.setFocusRow(rowIndex);
         } else if (inputString !== '') {
           const rowIndex = await table.seekRow(
-            0,
+            lastSeekedRow,
             selectedColumn,
             'String',
-            inputString
+            inputString,
+            undefined,
+            undefined,
+            isBackwards ?? false
           );
+          this.setState({ lastSeekedRow: rowIndex });
           this.grid?.setFocusRow(rowIndex);
         }
       }
@@ -4155,9 +4163,9 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
             onGotoValueSelectedFilterChanged={(index: number) => {
               this.setState({ gotoValueSelectedFilter: index });
             }}
-            onGotoValueChanged={(input: string) => {
+            onGotoValueChanged={(input: string, isBackwards?: boolean) => {
               this.setState({ gotoValue: input });
-              this.seekRow(input);
+              this.seekRow(input, isBackwards);
             }}
           />
 
