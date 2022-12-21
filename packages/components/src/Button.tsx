@@ -91,7 +91,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       type,
       tooltip,
       icon,
-      disabled,
+      disabled = false,
       active,
       onClick,
       onContextMenu,
@@ -170,16 +170,14 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       >
         {icon && iconElem}
         {children}
-        {tooltip != null &&
-          (disabled === undefined || !disabled) &&
-          tooltipElem}
+        {tooltip != null && !disabled && tooltipElem}
       </button>
     );
 
     // disabled buttons tooltips need a wrapped element to receive pointer events
     // https://jakearchibald.com/2017/events-and-disabled-form-fields/
 
-    return disabled !== undefined && disabled ? (
+    return disabled ? (
       <span className="btn-disabled-wrapper">
         {button}
         {tooltip !== undefined && tooltipElem}

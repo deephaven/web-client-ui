@@ -3,7 +3,6 @@ import type { MutableRefObject } from 'react';
 export type TreeItem<T = undefined> = {
   id: string;
   children: TreeItem<T>[];
-  collapsed?: boolean;
 } & (T extends undefined
   ? // eslint-disable-next-line @typescript-eslint/ban-types
     {}

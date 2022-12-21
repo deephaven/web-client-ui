@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import classNames from 'classnames';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { Button } from '@deephaven/components';
+import { Button, ThemeExport } from '@deephaven/components';
 import {
   dhSquareFilled,
   vsCheck,
@@ -11,6 +11,7 @@ import {
   vsTrash,
 } from '@deephaven/icons';
 import type ColumnHeaderGroup from '../../ColumnHeaderGroup';
+import './VisibilityOrderingGroup.scss';
 
 interface VisibilityOrderingGroupProps {
   group: ColumnHeaderGroup;
@@ -34,9 +35,11 @@ export default function VisibilityOrderingGroup(
   } = props;
   const nameInputRef = useRef<HTMLInputElement>(null);
   const colorInputRef = useRef<HTMLInputElement>(null);
-  const [name, setName] = useState(group.name);
+  const [name, setName] = useState(isNew ? '' : group.name);
   const [isEditing, setIsEditing] = useState(isNew);
+  const [hasTyped, setHasTyped] = useState(false);
   const isValid =
+    (isNew && !hasTyped) ||
     (isEditing && name === group.name) ||
     (name !== group.name && validateName(name));
 
@@ -49,57 +52,60 @@ export default function VisibilityOrderingGroup(
     [isEditing]
   );
 
-  if (isEditing) {
-    const handleConfirm = () => {
-      if (isValid) {
-        onNameChange(group, name);
-        setIsEditing(false);
-      }
-    };
-
-    const handleCancel = () => {
-      setName(group.name);
+  const handleConfirm = () => {
+    if (isValid) {
+      onNameChange(group, name);
       setIsEditing(false);
-    };
+    }
+  };
 
-    const handleEditKeyDown = (e: React.KeyboardEvent): void => {
-      if (e.key === 'Enter') {
-        e.stopPropagation();
-        handleConfirm();
-      }
+  const handleCancel = () => {
+    // Can't cancel editing the new group name
+    if (isNew) {
+      return;
+    }
+    setName(group.name);
+    setIsEditing(false);
+  };
 
-      if (e.key === ' ') {
-        e.stopPropagation();
-      }
+  const handleEditKeyDown = (e: React.KeyboardEvent): void => {
+    setHasTyped(true);
+    if (e.key === 'Enter') {
+      e.stopPropagation();
+      handleConfirm();
+    }
 
-      if (e.key === 'Escape') {
-        handleCancel();
-      }
-    };
+    if (e.key === ' ') {
+      e.stopPropagation();
+    }
 
+    if (e.key === 'Escape') {
+      handleCancel();
+    }
+  };
+
+  if (isEditing) {
     return (
-      <div className="group-editing py-1">
-        <div style={{ display: 'flex', alignItems: 'center', flexGrow: 1 }}>
+      <>
+        <div className="editing-container">
           <input
             ref={nameInputRef}
-            className={classNames('form-control', 'mr-1', {
+            className={classNames('form-control', {
               'is-invalid': !isValid,
             })}
-            style={{ flexGrow: 1 }}
             value={name}
+            placeholder="Group Name"
             onChange={e => setName(e.target.value)}
             onKeyDown={handleEditKeyDown}
           />
           <Button
             kind="ghost"
-            className="p-1"
             icon={vsCheck}
             tooltip="Confirm"
             onClick={handleConfirm}
           />
           <Button
             kind="ghost"
-            className="p-1"
             icon={vsChromeClose}
             tooltip="Cancel"
             onClick={handleCancel}
@@ -110,13 +116,13 @@ export default function VisibilityOrderingGroup(
             Invalid or duplicate name
           </p>
         )}
-      </div>
+      </>
     );
   }
 
   return (
-    <>
-      {name}
+    <div className="group-name-wrapper">
+      <span className="column-name">{name}</span>
       <Button
         className="p-1 mx-1"
         kind="ghost"
@@ -126,16 +132,15 @@ export default function VisibilityOrderingGroup(
           setIsEditing(true);
         }}
       />
-      <span style={{ float: 'right' }}>
+
+      <span className="right-buttons">
         <Button
-          className="p-1"
           kind="ghost"
           icon={vsTrash}
           tooltip="Delete group"
           onClick={() => onDelete(group)}
         />
         <Button
-          className="p-1"
           kind="ghost"
           icon={
             group.color !== undefined ? (
@@ -152,7 +157,7 @@ export default function VisibilityOrderingGroup(
         <input
           ref={colorInputRef}
           type="color"
-          value={group.color}
+          value={group.color ?? ThemeExport['content-bg']}
           style={{
             visibility: 'hidden',
             width: 0,
@@ -166,6 +171,6 @@ export default function VisibilityOrderingGroup(
           }}
         />
       </span>
-    </>
+    </div>
   );
 }

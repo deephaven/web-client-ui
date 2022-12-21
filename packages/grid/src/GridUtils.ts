@@ -836,6 +836,17 @@ export class GridUtils {
     return movedItems;
   }
 
+  static moveItemOrRange(
+    from: VisibleIndex | BoundedAxisRange,
+    to: VisibleIndex,
+    oldMovedItems: MoveOperation[],
+    isPreMoveTo = false
+  ): MoveOperation[] {
+    return Array.isArray(from)
+      ? GridUtils.moveRange(from, to, oldMovedItems, isPreMoveTo)
+      : GridUtils.moveItem(from, to, oldMovedItems);
+  }
+
   /**
    * Applies the items moves to the AxisRange
    * @param start The start index of the range

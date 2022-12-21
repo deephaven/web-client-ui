@@ -1,13 +1,11 @@
 /* eslint-disable import/prefer-default-export */
-import React, { CSSProperties } from 'react';
-import type { UniqueIdentifier } from '@dnd-kit/core';
+import React, { CSSProperties, useMemo } from 'react';
 import { AnimateLayoutChanges, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { TreeItem, Props as TreeItemProps } from './TreeItem';
-import { iOS } from './utilities';
 
-export interface Props extends TreeItemProps {
-  id: UniqueIdentifier;
+export interface Props<T> extends Omit<TreeItemProps<T>, 'style'> {
+  id: string;
 }
 
 const animateLayoutChanges: AnimateLayoutChanges = ({
@@ -15,7 +13,11 @@ const animateLayoutChanges: AnimateLayoutChanges = ({
   wasDragging,
 }) => !(isSorting || wasDragging);
 
-export function SortableTreeItem({ id, depth, ...props }: Props): JSX.Element {
+export function SortableTreeItem<T>({
+  id,
+  depth,
+  ...props
+}: Props<T>): JSX.Element {
   const {
     attributes,
     isDragging,
@@ -29,24 +31,34 @@ export function SortableTreeItem({ id, depth, ...props }: Props): JSX.Element {
     id,
     animateLayoutChanges,
   });
-  const style: CSSProperties = {
-    transform: CSS.Translate.toString(transform),
-    transition,
-  };
+
+  const transformString = CSS.Translate.toString(transform);
+
+  const style: CSSProperties = useMemo(
+    () => ({
+      transform: transformString,
+      transition,
+    }),
+    [transformString, transition]
+  );
+
+  const handleProps = useMemo(
+    () => ({
+      ...attributes,
+      ...listeners,
+      style,
+    }),
+    [attributes, listeners, style]
+  );
 
   return (
     <TreeItem
-      ref={setDraggableNodeRef}
+      dragRef={setDraggableNodeRef}
       wrapperRef={setDroppableNodeRef}
-      style={style}
       depth={depth}
       ghost={isDragging}
-      disableSelection={iOS}
       disableInteraction={isSorting}
-      handleProps={{
-        ...attributes,
-        ...listeners,
-      }}
+      handleProps={handleProps}
       // eslint-disable-next-line react/jsx-props-no-spreading
       {...props}
     />

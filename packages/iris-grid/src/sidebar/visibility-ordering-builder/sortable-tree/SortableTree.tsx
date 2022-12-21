@@ -20,7 +20,6 @@ import {
   DropAnimation,
   Modifier,
   defaultDropAnimation,
-  UniqueIdentifier,
 } from '@dnd-kit/core';
 import {
   SortableContext,
@@ -33,15 +32,11 @@ import {
   flattenTree,
   getProjection,
   getChildCount,
-  removeItem,
   removeChildrenOf,
-  setProperty,
 } from './utilities';
 import type { FlattenedItem, SensorContext, TreeItem } from './types';
 import { sortableTreeKeyboardCoordinates } from './keyboardCoordinates';
 import { SortableTreeItem } from './SortableTreeItem';
-import type { Props as SortableTreeItemProps } from './SortableTreeItem';
-import styles from './TreeItem.module.scss';
 
 /**
  * An extended "PointerSensor" that prevent some
@@ -66,36 +61,18 @@ class PointerWithInteraction extends PointerSensor {
   ];
 }
 
-class KeyboardWithInteraction extends KeyboardSensor {
-  static activators = [
-    {
-      eventName: 'onPointerDown' as const,
-      handler: ({ nativeEvent: event }: PointerEvent) => {
-        if (
-          !event.isPrimary ||
-          event.button !== 0 ||
-          isInteractiveElement(event.target as Element)
-        ) {
-          return false;
-        }
-
-        return true;
-      },
-    },
-  ];
-}
+const INTERACTIVE_ELEMENTS = [
+  'button',
+  'input',
+  'textarea',
+  'select',
+  'option',
+];
 
 function isInteractiveElement(element: Element | null) {
-  const interactiveElements = [
-    'button',
-    'input',
-    'textarea',
-    'select',
-    'option',
-  ];
   if (
     element?.tagName != null &&
-    interactiveElements.includes(element.tagName.toLowerCase())
+    INTERACTIVE_ELEMENTS.includes(element.tagName.toLowerCase())
   ) {
     return true;
   }
@@ -103,9 +80,15 @@ function isInteractiveElement(element: Element | null) {
   return false;
 }
 
-const measuring = {
+const MEASURING = {
   droppable: {
     strategy: MeasuringStrategy.Always,
+  },
+};
+
+const CONSTRAINT = {
+  activationConstraint: {
+    distance: 5,
   },
 };
 
@@ -133,33 +116,28 @@ const dropAnimationConfig: DropAnimation = {
 };
 
 interface Props<T> {
-  collapsible?: boolean;
-  defaultItems?: TreeItem<T>[];
+  defaultItems: TreeItem<T>[];
   indentationWidth?: number;
   indicator?: boolean;
-  removable?: boolean;
   onChange?(from: FlattenedItem<T>, to: FlattenedItem<T>): void;
-  onRemove?(item: FlattenedItem<T>): void;
-  renderItem(
-    props: Required<Omit<SortableTreeItemProps, 'renderItem'>> & {
-      item: TreeItem<T>;
-    }
-  ): React.ReactNode;
+  renderItem(props: {
+    clone: boolean;
+    childCount?: number;
+    value: string;
+    item: FlattenedItem<T>;
+  }): JSX.Element;
 }
 
-export function SortableTree<T = undefined>({
-  collapsible = false,
-  defaultItems = [] as TreeItem<T>[],
+export function SortableTree<T>({
+  defaultItems,
   indicator = false,
   indentationWidth = 30,
-  removable = false,
   onChange,
-  onRemove,
   renderItem,
 }: Props<T>): JSX.Element {
   const [items, setItems] = useState(() => defaultItems);
-  const [activeId, setActiveId] = useState<UniqueIdentifier | null>(null);
-  const [overId, setOverId] = useState<UniqueIdentifier | null>(null);
+  const [activeId, setActiveId] = useState<string | null>(null);
+  const [overId, setOverId] = useState<string | null>(null);
   const [offsetLeft, setOffsetLeft] = useState(0);
 
   useEffect(() => {
@@ -168,16 +146,8 @@ export function SortableTree<T = undefined>({
 
   const flattenedItems = useMemo(() => {
     const flattenedTree = flattenTree(items);
-    const collapsedItems = flattenedTree.reduce<UniqueIdentifier[]>(
-      (acc, { children, collapsed, id }) =>
-        collapsed && children.length ? [...acc, id] : acc,
-      []
-    );
 
-    return removeChildrenOf(
-      flattenedTree,
-      activeId != null ? [activeId, ...collapsedItems] : collapsedItems
-    );
+    return removeChildrenOf(flattenedTree, [activeId ?? '']);
   }, [activeId, items]);
   const projected =
     activeId != null && overId != null
@@ -193,18 +163,20 @@ export function SortableTree<T = undefined>({
     items: flattenedItems,
     offset: offsetLeft,
   });
-  const [coordinateGetter] = useState(() =>
-    sortableTreeKeyboardCoordinates(sensorContext, indicator, indentationWidth)
+  const keyboardOptions = useMemo(
+    () => ({
+      coordinateGetter: sortableTreeKeyboardCoordinates(
+        sensorContext,
+        indicator,
+        indentationWidth
+      ),
+    }),
+    [indentationWidth, indicator]
   );
+
   const sensors = useSensors(
-    useSensor(PointerWithInteraction, {
-      activationConstraint: {
-        distance: 5,
-      },
-    })
-    // useSensor(KeyboardSensor, {
-    //   coordinateGetter,
-    // })
+    useSensor(PointerWithInteraction, CONSTRAINT),
+    useSensor(KeyboardSensor, keyboardOptions)
   );
 
   const sortedIds = useMemo(() => flattenedItems.map(({ id }) => id), [
@@ -224,7 +196,7 @@ export function SortableTree<T = undefined>({
     <DndContext
       sensors={sensors}
       collisionDetection={closestCenter}
-      measuring={measuring}
+      measuring={MEASURING}
       onDragStart={handleDragStart}
       onDragMove={handleDragMove}
       onDragOver={handleDragOver}
@@ -232,26 +204,20 @@ export function SortableTree<T = undefined>({
       onDragCancel={handleDragCancel}
     >
       <SortableContext items={sortedIds} strategy={verticalListSortingStrategy}>
-        <div className={classNames(activeId != null && styles.MarchingAnts)}>
+        <div
+          className={classNames(
+            'tree-container',
+            activeId != null && 'marching-ants'
+          )}
+        >
           {flattenedItems.map(item => {
-            const { id, children, collapsed, depth } = item;
+            const { id, depth } = item;
             return (
               <SortableTreeItem
                 key={id}
                 id={id}
                 value={id}
                 depth={id === activeId && projected ? projected.depth : depth}
-                indentationWidth={indentationWidth}
-                indicator={indicator}
-                collapsed={Boolean(collapsed && children.length)}
-                onCollapse={
-                  collapsible && children.length
-                    ? () => handleCollapse(id)
-                    : undefined
-                }
-                onRemove={
-                  removable && onRemove ? () => handleRemove(id) : undefined
-                }
                 item={item}
                 renderItem={renderItem}
               />
@@ -262,15 +228,15 @@ export function SortableTree<T = undefined>({
           <DragOverlay
             dropAnimation={dropAnimationConfig}
             modifiers={indicator ? [adjustTranslate] : undefined}
+            className="visibility-ordering-list"
           >
-            {activeId && activeItem ? (
+            {activeId != null && activeItem ? (
               <SortableTreeItem
                 id={activeId}
                 depth={activeItem.depth}
                 clone
                 childCount={getChildCount(items, activeId) + 1}
                 value={activeId.toString()}
-                indentationWidth={indentationWidth}
                 renderItem={renderItem}
                 item={activeItem}
               />
@@ -283,8 +249,8 @@ export function SortableTree<T = undefined>({
   );
 
   function handleDragStart({ active: { id: newActiveId } }: DragStartEvent) {
-    setActiveId(newActiveId);
-    setOverId(newActiveId);
+    setActiveId(newActiveId as string);
+    setOverId(newActiveId as string);
 
     document.body.style.setProperty('cursor', 'grabbing');
   }
@@ -294,7 +260,7 @@ export function SortableTree<T = undefined>({
   }
 
   function handleDragOver({ over }: DragOverEvent) {
-    setOverId(over?.id ?? null);
+    setOverId((over?.id as string) ?? null);
   }
 
   function handleDragEnd({ active, over }: DragEndEvent) {
@@ -334,17 +300,9 @@ export function SortableTree<T = undefined>({
 
     document.body.style.setProperty('cursor', '');
   }
-
-  function handleCollapse(id: UniqueIdentifier) {
-    setItems(oldItems =>
-      setProperty(oldItems, id, 'collapsed', value => !value)
-    );
-  }
 }
 
-const adjustTranslate: Modifier = ({ transform }) => {
-  return {
-    ...transform,
-    y: transform.y - 25,
-  };
-};
+const adjustTranslate: Modifier = ({ transform }) => ({
+  ...transform,
+  y: transform.y - 25,
+});

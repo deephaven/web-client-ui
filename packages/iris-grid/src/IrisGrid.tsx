@@ -62,7 +62,6 @@ import {
 } from '@deephaven/icons';
 import dh, {
   Column,
-  ColumnGroup,
   CustomColumn,
   DateWrapper,
   FilterCondition,
@@ -158,7 +157,6 @@ import {
 import { ChartBuilderSettings } from './sidebar/ChartBuilder';
 import AggregationOperation from './sidebar/aggregations/AggregationOperation';
 import { UIRollupConfig } from './sidebar/RollupRows';
-import { VisibilityOptionType } from './sidebar/VisibilityOrderingBuilder';
 import {
   AdvancedFilterMap,
   ColumnName,
@@ -2168,12 +2166,10 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
   handleColumnVisibilityChanged(
     modelIndexes: ModelIndex[],
-    visibilityOption?: VisibilityOptionType
+    isVisible: boolean
   ): void {
     const { metricCalculator } = this.state;
-    if (
-      visibilityOption === VisibilityOrderingBuilder.VISIBILITY_OPTIONS.SHOW
-    ) {
+    if (isVisible) {
       modelIndexes.forEach(modelIndex => {
         metricCalculator.resetColumnWidth(modelIndex);
       });
@@ -2811,6 +2807,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
   handleHeaderGroupsChanged(columnHeaderGroups: ColumnHeaderGroup[]): void {
     this.setState({ columnHeaderGroups });
+    this.props.model.setColumnHeaderGroups(columnHeaderGroups);
     this.grid?.forceUpdate();
   }
 

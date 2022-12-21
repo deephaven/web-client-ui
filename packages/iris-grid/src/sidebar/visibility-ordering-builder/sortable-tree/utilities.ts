@@ -1,16 +1,8 @@
-import type { UniqueIdentifier } from '@dnd-kit/core';
 import { arrayMove } from '@dnd-kit/sortable';
-import {
-  GridUtils,
-  ModelSizeMap,
-  MoveOperation,
-  ModelIndex,
-} from '@deephaven/grid';
+import { GridUtils, ModelSizeMap, MoveOperation } from '@deephaven/grid';
 import type IrisGridModel from '../../../IrisGridModel';
 import type ColumnHeaderGroup from '../../../ColumnHeaderGroup';
 import type { FlattenedItem, TreeItem, TreeItems } from './types';
-
-export const iOS = /iPad|iPhone|iPod/.test(navigator.platform);
 
 function getDragDepth(offset: number, indentationWidth: number) {
   return Math.round(offset / indentationWidth);
@@ -19,7 +11,7 @@ function getDragDepth(offset: number, indentationWidth: number) {
 export type IrisGridTreeItem = TreeItem<{
   modelIndex: number | number[];
   visibleIndex: number | [number, number];
-  hidden: boolean;
+  isVisible: boolean;
   selected: boolean;
   group?: ColumnHeaderGroup;
 }>;
@@ -27,7 +19,7 @@ export type IrisGridTreeItem = TreeItem<{
 export type FlattenedIrisGridTreeItem = FlattenedItem<{
   modelIndex: number | number[];
   visibleIndex: number | [number, number];
-  hidden: boolean;
+  isVisible: boolean;
   selected: boolean;
   group?: ColumnHeaderGroup;
 }>;
@@ -36,8 +28,8 @@ function getTreeItem(
   model: IrisGridModel,
   movedColumns: MoveOperation[],
   name: string,
-  columnWidths: ModelSizeMap,
-  selectedItems: Set<ModelIndex>
+  userColumnWidths: ModelSizeMap,
+  selectedItems: Set<string>
 ): IrisGridTreeItem {
   const modelIndex = model.getColumnIndexByName(name);
   if (modelIndex === undefined) {
@@ -57,7 +49,7 @@ function getTreeItem(
             model,
             movedColumns,
             childName,
-            columnWidths,
+            userColumnWidths,
             selectedItems
           )
         )
@@ -74,8 +66,11 @@ function getTreeItem(
         modelIndex: modelIndexes,
         visibleIndex: group.getVisibleRange(movedColumns),
         group,
-        hidden: modelIndexes.every(index => columnWidths.get(index) === 0),
-        selected: modelIndexes.every(index => selectedItems.has(index)),
+        isVisible: modelIndexes.some(
+          // If no user set width, assume it's visible
+          index => (userColumnWidths.get(index) ?? 1) > 0
+        ),
+        selected: selectedItems.has(name),
       },
     };
   }
@@ -86,8 +81,9 @@ function getTreeItem(
     data: {
       modelIndex,
       visibleIndex: GridUtils.getVisibleIndex(modelIndex, movedColumns),
-      hidden: columnWidths.get(modelIndex) === 0,
-      selected: selectedItems.has(modelIndex),
+      // If no user set width, assume it's visible
+      isVisible: (userColumnWidths.get(modelIndex) ?? 1) > 0,
+      selected: selectedItems.has(name),
     },
   };
 }
@@ -95,8 +91,8 @@ function getTreeItem(
 export function getTreeItems(
   model: IrisGridModel,
   movedColumns: MoveOperation[],
-  columnWidths: ModelSizeMap,
-  selectedItems: ModelIndex[]
+  userColumnWidths: ModelSizeMap,
+  selectedItems: string[]
 ): IrisGridTreeItem[] {
   const items: IrisGridTreeItem[] = [];
   const selectedItemsSet = new Set(selectedItems);
@@ -114,7 +110,7 @@ export function getTreeItems(
       model,
       movedColumns,
       group ? group.name : model.columns[modelIndex].name,
-      columnWidths,
+      userColumnWidths,
       selectedItemsSet
     );
 
@@ -134,8 +130,8 @@ export function getTreeItems(
 
 export function getProjection(
   items: FlattenedItem[],
-  activeId: UniqueIdentifier,
-  overId: UniqueIdentifier,
+  activeId: string,
+  overId: string,
   dragOffset: number,
   indentationWidth: number
 ) {
@@ -143,7 +139,7 @@ export function getProjection(
   const activeItemIndex = items.findIndex(({ id }) => id === activeId);
   const activeItem = items[activeItemIndex];
   const newItems = arrayMove(items, activeItemIndex, overItemIndex);
-  const previousItem = newItems[overItemIndex - 1];
+  const previousItem: FlattenedItem | undefined = newItems[overItemIndex - 1];
   const nextItem = newItems[overItemIndex + 1];
   const dragDepth = getDragDepth(dragOffset, indentationWidth);
   const projectedDepth = activeItem.depth + dragDepth;
@@ -194,7 +190,7 @@ function getMaxDepth({
   return Math.max(previousItem?.depth ?? 0, nextItem?.depth ?? 0);
 }
 
-function getMinDepth({ nextItem }: { nextItem: FlattenedItem }) {
+function getMinDepth({ nextItem }: { nextItem: FlattenedItem | undefined }) {
   if (nextItem) {
     return nextItem.depth;
   }
@@ -202,12 +198,12 @@ function getMinDepth({ nextItem }: { nextItem: FlattenedItem }) {
   return 0;
 }
 
-function flatten(
-  items: TreeItems,
-  parentId: UniqueIdentifier | null = null,
+function flatten<T>(
+  items: TreeItems<T>,
+  parentId: string | null = null,
   depth = 0
-): FlattenedItem[] {
-  return items.reduce<FlattenedItem[]>(
+): FlattenedItem<T>[] {
+  return items.reduce<FlattenedItem<T>[]>(
     (acc, item, index) => [
       ...acc,
       { ...item, parentId, depth, index },
@@ -217,12 +213,15 @@ function flatten(
   );
 }
 
-export function flattenTree(items: TreeItems): FlattenedItem[] {
+export function flattenTree<T>(items: TreeItems<T>): FlattenedItem<T>[] {
   return flatten(items);
 }
 
 export function buildTree<T>(flattenedItems: FlattenedItem<T>[]): TreeItems<T> {
-  const root: TreeItem<T> = { id: 'root', children: [] };
+  const root: TreeItem & { children: TreeItems<T> } = {
+    id: 'root',
+    children: [],
+  };
   const nodes: Record<string, TreeItem> = { [root.id]: root };
   const items = flattenedItems.map(item => ({ ...item, children: [] }));
 
@@ -241,14 +240,14 @@ export function buildTree<T>(flattenedItems: FlattenedItem<T>[]): TreeItems<T> {
 
 export function findItem(
   items: TreeItem[],
-  itemId: UniqueIdentifier
+  itemId: string
 ): TreeItem | undefined {
   return items.find(({ id }) => id === itemId);
 }
 
 export function findItemDeep(
   items: TreeItems,
-  itemId: UniqueIdentifier
+  itemId: string
 ): TreeItem | undefined {
   for (let i = 0; i < items.length; i += 1) {
     const item = items[i];
@@ -270,44 +269,21 @@ export function findItemDeep(
   return undefined;
 }
 
-export function removeItem(items: TreeItems, id: UniqueIdentifier): TreeItem[] {
+export function removeItem(items: TreeItems, id: string): TreeItem[] {
   const newItems = [];
 
   for (let i = 0; i < items.length; i += 1) {
     const item = items[i];
-    if (item.id === id) {
-      continue;
-    }
+    if (item.id !== id) {
+      if (item.children.length) {
+        item.children = removeItem(item.children, id);
+      }
 
-    if (item.children.length) {
-      item.children = removeItem(item.children, id);
+      newItems.push(item);
     }
-
-    newItems.push(item);
   }
 
   return newItems;
-}
-
-export function setProperty<T extends keyof TreeItem>(
-  items: TreeItems,
-  id: UniqueIdentifier,
-  property: T,
-  setter: (value: TreeItem[T]) => TreeItem[T]
-): TreeItem[] {
-  for (let i = 0; i < items.length; i += 1) {
-    const item = items[i];
-    if (item.id === id) {
-      item[property] = setter(item[property]);
-      continue;
-    }
-
-    if (item.children.length) {
-      item.children = setProperty(item.children, id, property, setter);
-    }
-  }
-
-  return [...items];
 }
 
 function countChildren(items: TreeItem[], count = 0): number {
@@ -320,20 +296,20 @@ function countChildren(items: TreeItem[], count = 0): number {
   }, count);
 }
 
-export function getChildCount(items: TreeItems, id: UniqueIdentifier): number {
+export function getChildCount(items: TreeItems, id: string): number {
   const item = findItemDeep(items, id);
 
   return item ? countChildren(item.children) : 0;
 }
 
-export function removeChildrenOf(
-  items: FlattenedItem[],
-  ids: UniqueIdentifier[]
-): FlattenedItem[] {
+export function removeChildrenOf<T>(
+  items: FlattenedItem<T>[],
+  ids: string[]
+): FlattenedItem<T>[] {
   const excludeParentIds = [...ids];
 
   return items.filter(item => {
-    if (item.parentId && excludeParentIds.includes(item.parentId)) {
+    if (item.parentId != null && excludeParentIds.includes(item.parentId)) {
       if (item.children.length) {
         excludeParentIds.push(item.id);
       }

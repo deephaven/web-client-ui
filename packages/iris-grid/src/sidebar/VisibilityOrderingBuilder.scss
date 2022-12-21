@@ -17,8 +17,8 @@
     z-index: 2;
 
     .btn-link-icon {
-      padding-left: $spacer-1 !important;
-      padding-right: $spacer-1 !important;
+      padding-left: $spacer-1;
+      padding-right: $spacer-1;
     }
   }
 
@@ -159,7 +159,7 @@
     border-left: 1px solid $black;
     padding-right: $spacer-1;
     margin-left: $spacer-1;
-    height: 70%;
+    height: 1rem;
   }
 
   .list {

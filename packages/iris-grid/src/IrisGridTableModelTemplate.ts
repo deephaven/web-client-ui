@@ -161,8 +161,6 @@ class IrisGridTableModelTemplate<
 
   private pendingNewRowCount = 0;
 
-  private pendingNewDataErrors: Map<unknown, unknown> | null;
-
   private columnHeaderGroupMap: Map<string, ColumnHeaderGroup> = new Map();
 
   private columnHeaderParentMap: Map<string, ColumnHeaderGroup> = new Map();
@@ -213,7 +211,6 @@ class IrisGridTableModelTemplate<
     // The index of these rows start at 0, and they are appended at the end of the regular table data.
     // These rows can be sparse, so using a map instead of an array.
     this.pendingNewDataMap = new Map();
-    this.pendingNewDataErrors = null;
     this.pendingNewRowCount = 0;
 
     this.setColumnHeaderGroups(this.layoutHints?.columnGroups);
@@ -657,11 +654,6 @@ class IrisGridTableModelTemplate<
       return this.totals.operationOrder[totalsRow];
     }
     return '';
-  }
-
-  reset(): void {
-    this._movedColumns = null;
-    this._movedColumns = this.movedColumns;
   }
 
   /**
@@ -1975,7 +1967,6 @@ class IrisGridTableModelTemplate<
       log.debug('commitPending()', this.pendingNewDataMap, 'result', result);
 
       this.pendingNewDataMap = new Map();
-      this.pendingNewDataErrors = new Map();
       this.pendingNewRowCount = Math.max(
         0,
         (this.viewport?.bottom ?? 0) - this.table.size

@@ -1,87 +1,85 @@
 /* eslint-disable react/jsx-props-no-spreading */
-/* eslint-disable react/prop-types */
-import React, { forwardRef, HTMLAttributes } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import classNames from 'classnames';
-import styles from './TreeItem.module.scss';
-import { IrisGridTreeItem } from './utilities';
+import type { FlattenedItem } from './types';
+import './TreeItem.scss';
 
-export interface Props extends Omit<HTMLAttributes<HTMLLIElement>, 'id'> {
+export interface Props<T> {
   childCount?: number;
-  clone: boolean;
-  collapsed?: boolean;
+  clone?: boolean;
   depth: number;
   disableInteraction?: boolean;
-  disableSelection?: boolean;
   ghost?: boolean;
-  handleProps?: any;
-  indicator?: boolean;
-  indentationWidth: number;
+  handleProps?: unknown;
   value: string;
-  item: IrisGridTreeItem;
-  onCollapse?(): void;
-  onRemove?(): void;
-  wrapperRef?(node: HTMLLIElement): void;
+  item: FlattenedItem<T>;
+  dragRef?: React.Ref<HTMLDivElement> | null;
+  wrapperRef?: React.Ref<HTMLLIElement> | null;
   renderItem(props: {
+    ref: React.Ref<HTMLDivElement> | null;
     clone: boolean;
-    childCount: number;
+    childCount?: number;
     value: string;
-    item: IrisGridTreeItem;
-  }): React.ReactNode;
+    item: FlattenedItem<T>;
+    handleProps: unknown;
+  }): JSX.Element;
 }
 
-export const TreeItem = forwardRef<HTMLDivElement, Props>((props, ref) => {
+export type TreeItemRenderFn<T> = (props: {
+  ref: React.Ref<HTMLDivElement> | null;
+  clone: boolean;
+  childCount?: number;
+  value: string;
+  item: FlattenedItem<T>;
+  handleProps: unknown;
+}) => JSX.Element;
+
+export function TreeItem<T>(props: Props<T>) {
   const {
-    childCount = 0,
     clone = false,
     depth,
-    disableSelection = false,
     disableInteraction = false,
     ghost = false,
     handleProps,
-    indentationWidth,
-    indicator = false,
-    collapsed,
-    onCollapse,
-    onRemove,
-    style,
     value,
-    wrapperRef,
+    dragRef = null,
+    wrapperRef = null,
     renderItem,
     item,
-    ...rest
+    childCount,
   } = props;
 
-  const DepthMarker = <span className={styles.DepthLine} />;
-  const depthMarkers = Array(depth).fill(DepthMarker);
+  const depthMarkers = useMemo(() => {
+    const DepthMarker = <span className="depth-line" />;
+    return Array(depth).fill(DepthMarker);
+  }, [depth]);
+
+  const renderItemProps = useMemo(
+    () => ({
+      ref: dragRef,
+      clone,
+      value,
+      item,
+      childCount,
+      handleProps,
+    }),
+    [dragRef, clone, value, item, childCount, handleProps]
+  );
 
   return (
     <li
       key={value}
-      className={classNames(
-        styles.Wrapper,
-        clone && styles.clone,
-        ghost && styles.ghost,
-        indicator && styles.indicator,
-        disableSelection && styles.disableSelection,
-        disableInteraction && styles.disableInteraction
-      )}
+      className={classNames('item-wrapper', {
+        clone,
+        ghost,
+        disableInteraction,
+      })}
       ref={wrapperRef}
-      {...rest}
     >
       {!clone && depthMarkers}
-      <div
-        ref={ref}
-        className={classNames(
-          styles.TreeItem,
-          item.data.selected && styles.isSelected
-        )}
-        style={style}
-        {...handleProps}
-      >
-        {renderItem(props)}
-      </div>
+      {renderItem(renderItemProps)}
     </li>
   );
-});
+}
 
 TreeItem.displayName = 'TreeItem';
