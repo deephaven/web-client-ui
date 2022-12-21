@@ -23,7 +23,9 @@ export const indexjs = files => {
   var ${file.prefixedName} = {
     prefix: "${file.prefix}",
     iconName: "${file.name}",
-    icon: [${file.width}, ${file.height}, [], "f000", "${file.path}"]
+    icon: [${file.width}, ${file.height}, [], "f000", ${
+        file.path ? `"${file.path}"` : file.path
+      }]
   };`
     )
     .join('');
@@ -64,7 +66,9 @@ export const indexesjs = files => {
 var ${file.prefixedName} = {
   prefix: "${file.prefix}",
   iconName: "${file.name}",
-  icon: [${file.width}, ${file.height}, [], "f000", "${file.path}"]
+  icon: [${file.width}, ${file.height}, [], "f000", ${
+        file.path ? `"${file.path}"` : file.path
+      }]
 };`
     )
     .join('');

@@ -1,3 +1,5 @@
+/* eslint-disable import/no-extraneous-dependencies */
+/* eslint-disable no-console */
 import { promises as fs } from 'fs';
 import path from 'path';
 import parser from 'svg-parser';
@@ -97,31 +99,39 @@ async function createDefinition(file) {
 
 async function getSVGFiles(src) {
   const files = await getFiles(src);
-  files.forEach(file => {
-    if (!file && !file.content) return;
-
+  return files.map(f => {
+    if (!f && !f.content) return null;
+    const file = f;
     // set svg property on file object
     file.svg = parseSvg(file.content);
 
     if (!file.svg) {
       console.error(`failed to parse ${file.name}`);
-      return;
+      return null;
     }
 
-    const {
-      children: [
-        {
-          tagName,
-          properties: { viewBox, width, height },
-          children: [
-            {
-              tagName: childTagName,
-              properties: { d: svgPath },
-            },
-          ],
-        },
-      ],
-    } = file.svg;
+    let tagName;
+    let viewBox;
+    let width;
+    let height;
+    let childTagName;
+    let svgPath;
+    try {
+      ({
+        children: [
+          {
+            tagName,
+            properties: { viewBox, width, height },
+            children: [
+              // handles vsBlank https://github.com/microsoft/vscode-codicons/issues/110, which has no children
+              { tagName: childTagName, properties: { d: svgPath } = {} } = {},
+            ],
+          },
+        ],
+      } = file.svg);
+    } catch {
+      console.error(`failed to parse ${file.name}`, file.svg);
+    }
 
     // if no width and height, fall back to viewbox
     if (
@@ -159,20 +169,27 @@ async function getSVGFiles(src) {
 
     if (
       tagName !== 'svg' ||
-      childTagName !== 'path' ||
+      (childTagName !== undefined && childTagName !== 'path') ||
       Number.isNaN(Number.parseFloat(file.width)) ||
       width <= 0 ||
       Number.isNaN(Number.parseFloat(file.height)) ||
       height <= 0 ||
-      svgPath === undefined
+      (childTagName === 'path' && svgPath === undefined)
     ) {
-      console.error(file.name, tagName, childTagName, width, height, svgPath);
+      console.error(
+        file.name,
+        tagName,
+        childTagName,
+        width,
+        height,
+        svgPath,
+        JSON.stringify(file.svg, null, 2)
+      );
       console.error('SVG data not in expected shape');
-      file = null;
+      return null;
     }
+    return file;
   });
-
-  return files;
 }
 
 async function build(buildSources) {
