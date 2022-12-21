@@ -64,7 +64,8 @@ const GotoRow = ({
   onGotoValueSelectedFilterChanged,
   onGotoValueChanged,
 }: GotoRowProps): ReactElement => {
-  const inputRef = useRef<HTMLInputElement>(null);
+  const gotoRowInputRef = useRef<HTMLInputElement>(null);
+  const gotoValueInputRef = useRef<HTMLInputElement>(null);
 
   const [isGotoRowActive, setIsGotoRowActive] = useState(true);
   let columns: Column[] = [];
@@ -77,12 +78,18 @@ const GotoRow = ({
 
   const { rowCount } = model;
 
-  useEffect(() => {
+  const selectInput = () => {
     // when row changes without focus (i.e. via context menu), re-select input
-    if (document.activeElement !== inputRef.current) {
-      inputRef.current?.select();
+    if (isGotoRowActive && document.activeElement !== gotoRowInputRef.current) {
+      gotoRowInputRef.current?.select();
+    } else if (
+      !isGotoRowActive &&
+      document.activeElement !== gotoValueInputRef.current
+    ) {
+      gotoValueInputRef.current?.select();
     }
-  }, [gotoRow]);
+  };
+  useEffect(selectInput, [isGotoRowActive, gotoRow, gotoValue]);
 
   return (
     <IrisGridBottomBar
@@ -91,7 +98,7 @@ const GotoRow = ({
       onEntering={onEntering}
       onEntered={() => {
         onEntered();
-        inputRef.current?.select();
+        selectInput();
       }}
       onExiting={onExiting}
       onExited={onExited}
@@ -108,7 +115,7 @@ const GotoRow = ({
             <div className="goto-row-text">Go to row</div>
             <div className="goto-row-input">
               <input
-                ref={inputRef}
+                ref={gotoRowInputRef}
                 type="number"
                 onKeyDown={e => {
                   if (e.key === 'Enter') {
@@ -187,6 +194,7 @@ const GotoRow = ({
                 )}
               <div className="goto-row-input">
                 <input
+                  ref={gotoValueInputRef}
                   className="form-control"
                   onKeyDown={e => {
                     if (e.key === 'Enter') {

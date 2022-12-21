@@ -571,6 +571,13 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     this.handleGotoRowSelectedRowNumberChanged = this.handleGotoRowSelectedRowNumberChanged.bind(
       this
     );
+    this.onGotoValueSelectedColumnChanged = this.onGotoValueSelectedColumnChanged.bind(
+      this
+    );
+    this.onGotoValueSelectedFilterChanged = this.onGotoValueSelectedFilterChanged.bind(
+      this
+    );
+    this.onGotoValueChanged = this.onGotoValueChanged.bind(this);
 
     this.grid = null;
     this.gridWrapper = null;
@@ -3448,6 +3455,27 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     );
   }
 
+  onGotoValueSelectedColumnChanged(column: Column): void {
+    const { gotoValueSelectedColumn } = this.state;
+    if (column.type !== gotoValueSelectedColumn?.type) {
+      this.setState({
+        gotoValueSelectedColumn: column,
+        gotoValueSelectedFilter: 0,
+      });
+    } else {
+      this.setState({ gotoValueSelectedColumn: column });
+    }
+  }
+
+  onGotoValueSelectedFilterChanged(index: number): void {
+    this.setState({ gotoValueSelectedFilter: index });
+  }
+
+  onGotoValueChanged(input: string, isBackwards?: boolean): void {
+    this.setState({ gotoValue: input });
+    this.seekRow(input, isBackwards);
+  }
+
   render(): ReactElement | null {
     const {
       children,
@@ -4157,16 +4185,13 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
             gotoValueSelectedColumn={gotoValueSelectedColumn}
             gotoValueSelectedFilter={gotoValueSelectedFilter}
             gotoValue={gotoValue}
-            onGotoValueSelectedColumnChanged={(column: Column) => {
-              this.setState({ gotoValueSelectedColumn: column });
-            }}
-            onGotoValueSelectedFilterChanged={(index: number) => {
-              this.setState({ gotoValueSelectedFilter: index });
-            }}
-            onGotoValueChanged={(input: string, isBackwards?: boolean) => {
-              this.setState({ gotoValue: input });
-              this.seekRow(input, isBackwards);
-            }}
+            onGotoValueSelectedColumnChanged={
+              this.onGotoValueSelectedColumnChanged
+            }
+            onGotoValueSelectedFilterChanged={
+              this.onGotoValueSelectedFilterChanged
+            }
+            onGotoValueChanged={this.onGotoValueChanged}
           />
 
           <PendingDataBottomBar
