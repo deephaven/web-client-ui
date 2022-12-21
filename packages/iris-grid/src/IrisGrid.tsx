@@ -147,7 +147,7 @@ import ConditionalFormattingMenu from './sidebar/conditional-formatting/Conditio
 
 import ConditionalFormatEditor from './sidebar/conditional-formatting/ConditionalFormatEditor';
 import IrisGridCellOverflowModal from './IrisGridCellOverflowModal';
-import GotoRow from './GotoRow';
+import GotoRow, { isIrisGridProxyModel } from './GotoRow';
 import {
   Aggregation,
   AggregationSettings,
@@ -384,7 +384,11 @@ export interface IrisGridState {
 
   gotoRow: string;
   gotoRowError: string;
-  isGotoRowShown: boolean;
+  isGotoShown: boolean;
+
+  gotoValueSelectedColumn?: Column;
+  gotoValueSelectedFilter: number;
+  gotoValue: string;
 }
 
 export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
@@ -776,9 +780,13 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       showOverflowModal: false,
       overflowText: '',
       overflowButtonTooltipProps: null,
-      isGotoRowShown: false,
+      isGotoShown: false,
       gotoRow: '',
       gotoRowError: '',
+
+      gotoValueSelectedColumn: model.columns[0],
+      gotoValueSelectedFilter: 0,
+      gotoValue: '',
     };
   }
 
@@ -2362,18 +2370,18 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   }
 
   toggleGotoRow(row = ''): void {
-    const { isGotoRowShown } = this.state;
+    const { isGotoShown } = this.state;
     if (row) {
       // if invoked with a row, keep open instead of toggle
       this.setState({
-        isGotoRowShown: true,
+        isGotoShown: true,
         gotoRow: row,
         gotoRowError: '',
       });
       return;
     }
     this.setState({
-      isGotoRowShown: !isGotoRowShown,
+      isGotoShown: !isGotoShown,
       gotoRow: '',
       gotoRowError: '',
     });
@@ -2516,11 +2524,11 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   }
 
   handleGotoRowOpened(): void {
-    this.setState({ isGotoRowShown: true });
+    this.setState({ isGotoShown: true });
   }
 
   handleGotoRowClosed(): void {
-    this.setState({ isGotoRowShown: false });
+    this.setState({ isGotoShown: false });
   }
 
   handleAdvancedMenuClosed(columnIndex: number): void {
@@ -3089,6 +3097,41 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     }
   }
 
+  async seekRow(inputString: string): Promise<void> {
+    const {
+      gotoValueSelectedColumn: selectedColumn,
+      gotoValueSelectedFilter,
+    } = this.state;
+
+    const { model } = this.props;
+    if (selectedColumn && isIrisGridProxyModel(model)) {
+      const { table } = model;
+      if (table !== undefined && !TableUtils.isTreeTable(table)) {
+        if (selectedColumn.type === 'java.lang.String') {
+          // is string column,
+          const isContains = gotoValueSelectedFilter === 1;
+          const rowIndex = await table.seekRow(
+            0,
+            selectedColumn,
+            'String',
+            inputString,
+            false,
+            isContains
+          );
+          this.grid?.setFocusRow(rowIndex);
+        } else if (inputString !== '') {
+          const rowIndex = await table.seekRow(
+            0,
+            selectedColumn,
+            'String',
+            inputString
+          );
+          this.grid?.setFocusRow(rowIndex);
+        }
+      }
+    }
+  }
+
   handleCancelDownloadTable(): void {
     this.tableSaver?.cancelDownload();
     this.setState({ isTableDownloading: false });
@@ -3478,9 +3521,12 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       showOverflowModal,
       overflowText,
       overflowButtonTooltipProps,
-      isGotoRowShown,
+      isGotoShown,
       gotoRow,
       gotoRowError,
+      gotoValueSelectedColumn,
+      gotoValueSelectedFilter,
+      gotoValue,
     } = this.state;
     if (!isReady) {
       return null;
@@ -3801,7 +3847,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       showSearchBar,
       canDownloadCsv,
       this.isTableSearchAvailable(),
-      isGotoRowShown,
+      isGotoShown,
       advancedSettings.size > 0
     );
 
@@ -4087,7 +4133,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
           </div>
           <GotoRow
             model={model}
-            isShown={isGotoRowShown}
+            isShown={isGotoShown}
             gotoRow={gotoRow}
             gotoRowError={gotoRowError}
             onSubmit={this.handleGotoRowSelectedRowNumberSubmit}
@@ -4100,6 +4146,19 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
               this.focus();
             }}
             onExited={this.handleAnimationEnd}
+            gotoValueSelectedColumn={gotoValueSelectedColumn}
+            gotoValueSelectedFilter={gotoValueSelectedFilter}
+            gotoValue={gotoValue}
+            onGotoValueSelectedColumnChanged={(column: Column) => {
+              this.setState({ gotoValueSelectedColumn: column });
+            }}
+            onGotoValueSelectedFilterChanged={(index: number) => {
+              this.setState({ gotoValueSelectedFilter: index });
+            }}
+            onGotoValueChanged={(input: string) => {
+              this.setState({ gotoValue: input });
+              this.seekRow(input);
+            }}
           />
 
           <PendingDataBottomBar

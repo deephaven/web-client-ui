@@ -36,6 +36,13 @@ interface GotoRowProps {
   onEntered: () => void;
   onExiting: () => void;
   onExited: () => void;
+
+  gotoValueSelectedColumn?: Column;
+  gotoValueSelectedFilter: number;
+  gotoValue: string;
+  onGotoValueSelectedColumnChanged: (column: Column) => void;
+  onGotoValueSelectedFilterChanged: (filter: number) => void;
+  onGotoValueChanged: (input: string) => void;
 }
 
 const GotoRow = ({
@@ -50,47 +57,21 @@ const GotoRow = ({
   model,
   onGotoRowNumberChanged,
   onClose,
+  gotoValueSelectedColumn,
+  gotoValueSelectedFilter,
+  gotoValue,
+  onGotoValueSelectedColumnChanged,
+  onGotoValueSelectedFilterChanged,
+  onGotoValueChanged,
 }: GotoRowProps): ReactElement => {
-  const [strColumns, setStrColumns] = useState<Column[]>([]);
-  const [selectedColumn, setSelectedColumn] = useState<Column>();
-  const [gotoValueInput, setGotoValueInput] = useState<string>('');
   const inputRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
-    if (isIrisGridTableModelTemplate(model)) {
-      const { table } = model;
-      const columns = table?.columns;
+  const [isGotoRowActive, setIsGotoRowActive] = useState(true);
+  let columns: Column[] = [];
 
-      const stringColumns: Column[] = [];
-
-      for (let i = 0; i < columns.length; i += 1) {
-        const column = columns?.[i];
-        if (column !== undefined && column.type === 'java.lang.String') {
-          stringColumns.push(column);
-        }
-      }
-      setStrColumns(stringColumns);
-      setSelectedColumn(stringColumns[0]);
-    }
-  }, [model]);
-
-  const seekRow = async () => {
-    if (isIrisGridTableModelTemplate(model) && selectedColumn !== undefined) {
-      console.log('seek');
-      const { table } = model;
-      let { seekRow: seekRowFunction } = table;
-      seekRowFunction = seekRowFunction.bind(table);
-      console.log(selectedColumn);
-      console.log(gotoValueInput);
-      const row = await table.seekRow(
-        0,
-        selectedColumn,
-        'String',
-        gotoValueInput
-      );
-      console.log('row', row);
-    }
-  };
+  if (isIrisGridProxyModel(model) && model.table !== undefined) {
+    ({ columns } = model.table);
+  }
 
   const res = 'Row number';
 
@@ -116,8 +97,14 @@ const GotoRow = ({
       onExited={onExited}
     >
       <div style={{ width: '100%' }}>
-        <div style={{ display: 'inline-block' }}>
-          <div className="goto-row-wrapper">
+        <div>
+          <div
+            className={classNames('goto-row-wrapper', {
+              'is-inactive': !isGotoRowActive,
+            })}
+            onClick={() => setIsGotoRowActive(true)}
+            role="group"
+          >
             <div className="goto-row-text">Go to row</div>
             <div className="goto-row-input">
               <input
@@ -147,47 +134,70 @@ const GotoRow = ({
               <div className="goto-row-error text-danger">{gotoRowError}</div>
             )}
           </div>
-          <span className="goto-row-close">
+          <div className="goto-row-close">
             <Button kind="ghost" onClick={onClose}>
               <FontAwesomeIcon icon={vsClose} style={{ marginRight: '0' }} />
             </Button>
-          </span>
+          </div>
         </div>
         {isIrisGridTableModelTemplate(model) && (
-          <div className="goto-row-text">
+          <div
+            className={classNames('goto-row-wrapper', {
+              'is-inactive': isGotoRowActive,
+            })}
+            onClick={() => setIsGotoRowActive(false)}
+            role="group"
+          >
             <div className="goto-row-text">Go to value</div>
             <div className="goto-row-input">
               <select
                 className="custom-select"
                 onChange={event => {
-                  setSelectedColumn(
-                    strColumns[parseInt(event.target.value, 10)]
+                  onGotoValueSelectedColumnChanged(
+                    columns[parseInt(event.target.value, 10)]
                   );
                 }}
               >
-                {strColumns.map((column, index) => (
+                {columns.map((column, index) => (
                   <option key={column.index} value={index}>
                     {column.name}
                   </option>
                 ))}
               </select>
             </div>
+            {gotoValueSelectedColumn !== undefined &&
+              gotoValueSelectedColumn.type === 'java.lang.String' && (
+                <div className="goto-row-input">
+                  <select
+                    className="custom-select"
+                    onChange={event => {
+                      onGotoValueSelectedFilterChanged(
+                        event.target.value === 'Equals' ? 0 : 1
+                      );
+                    }}
+                  >
+                    {['Equals', 'Contains'].map(filter => (
+                      <option key={filter} value={filter}>
+                        {filter}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
             <div className="goto-row-input">
               <input
-                ref={inputRef}
+                className="form-control"
                 onKeyDown={e => {
                   if (e.key === 'Enter') {
                     e.stopPropagation();
                     e.preventDefault();
-                    seekRow();
                   }
                 }}
                 placeholder="value"
                 onChange={event => {
-                  setGotoValueInput(event.target.value);
-                  seekRow();
+                  onGotoValueChanged(event.target.value);
                 }}
-                value={gotoValueInput}
+                value={gotoValue}
               />
             </div>
           </div>
