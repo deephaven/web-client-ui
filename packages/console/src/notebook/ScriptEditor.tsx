@@ -274,9 +274,9 @@ class ScriptEditor extends Component<ScriptEditorProps, ScriptEditorState> {
     if (this.completionCleanup) {
       this.completionCleanup.dispose();
       this.completionCleanup = undefined;
-    }
-    if (this.editor && session != null) {
-      MonacoUtils.closeDocument(this.editor, session);
+      if (this.editor && session != null) {
+        MonacoUtils.closeDocument(this.editor, session);
+      }
     }
   }
 
