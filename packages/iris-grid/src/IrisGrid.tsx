@@ -1033,7 +1033,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       if (isCustomColumnsAvailable) {
         optionItems.push({
           type: OptionType.CUSTOM_COLUMN_BUILDER,
-          title: 'Manage Custom Columns',
+          title: 'Custom Columns',
           icon: vsSplitHorizontal,
         });
       }
