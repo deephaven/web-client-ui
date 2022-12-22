@@ -35,11 +35,11 @@
   "devDependencies": {
     "svg-parser": "^2.0.4",
     "svg-path-tools": "^1.0.0",
-    "svgo": "^2.8.0"
+    "svgo": "^3.0.2"
   },
   "peerDependencies": {
-    "@fortawesome/fontawesome-svg-core": "^6.1.1",
-    "@fortawesome/react-fontawesome": "^0.1.18"
+    "@fortawesome/fontawesome-svg-core": "^6.2.1",
+    "@fortawesome/react-fontawesome": "^0.2.0"
   },
   "publishConfig": {
     "access": "public"

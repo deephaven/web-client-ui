@@ -34,7 +34,7 @@
     "@deephaven/react-hooks": "file:../react-hooks",
     "@deephaven/storage": "file:../storage",
     "@deephaven/utils": "file:../utils",
-    "@fortawesome/react-fontawesome": "^0.1.18",
+    "@fortawesome/react-fontawesome": "^0.2.0",
     "classnames": "^2.3.1",
     "deep-equal": "^2.0.5",
     "lodash.clamp": "^4.0.3",
