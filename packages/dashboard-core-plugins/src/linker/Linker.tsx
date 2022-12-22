@@ -186,7 +186,6 @@ export class Linker extends Component<LinkerProps, LinkerState> {
     if (linkInProgress == null) {
       const { setActiveTool } = this.props;
       setActiveTool(ToolType.DEFAULT);
-      this.setState({ selectedIds: new Set<string>() });
     }
     this.setState({ linkInProgress: undefined });
   }
@@ -194,10 +193,6 @@ export class Linker extends Component<LinkerProps, LinkerState> {
   handleDone(): void {
     const { setActiveTool } = this.props;
     setActiveTool(ToolType.DEFAULT);
-    this.setState({
-      linkInProgress: undefined,
-      selectedIds: new Set<string>(),
-    });
   }
 
   handleChartColumnSelect(panel: PanelComponent, column: LinkColumn): void {
