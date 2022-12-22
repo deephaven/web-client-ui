@@ -116,7 +116,7 @@ export class Linker extends Component<LinkerProps, LinkerState> {
     this.state = {
       linkInProgress: undefined,
       selectedIds: new Set<string>(),
-      isDraggingPanel: true,
+      isDraggingPanel: false,
     };
   }
 
@@ -527,7 +527,7 @@ export class Linker extends Component<LinkerProps, LinkerState> {
       const link = links[i];
       const { start, end } = link;
       if (start.panelId === componentId || end?.panelId === componentId) {
-        this.setState({ isDraggingPanel: false });
+        this.setState({ isDraggingPanel: true });
         return;
       }
     }
@@ -539,7 +539,7 @@ export class Linker extends Component<LinkerProps, LinkerState> {
       const link = links[i];
       const { start, end } = link;
       if (start.panelId === componentId || end?.panelId === componentId) {
-        this.setState({ isDraggingPanel: true });
+        this.setState({ isDraggingPanel: false });
         return;
       }
     }
@@ -617,8 +617,7 @@ export class Linker extends Component<LinkerProps, LinkerState> {
 
   isOverlayShown(): boolean {
     const { activeTool } = this.props;
-    const { isDraggingPanel } = this.state;
-    return isDraggingPanel && activeTool === ToolType.LINKER;
+    return activeTool === ToolType.LINKER;
   }
 
   updateSelectionValidators(): void {
@@ -695,7 +694,7 @@ export class Linker extends Component<LinkerProps, LinkerState> {
 
   render(): JSX.Element | null {
     const { links, isolatedLinkerPanelId, panelManager } = this.props;
-    const { linkInProgress, selectedIds } = this.state;
+    const { linkInProgress, selectedIds, isDraggingPanel } = this.state;
 
     const isLinkOverlayShown = this.isOverlayShown();
     const disabled = linkInProgress != null && linkInProgress.start != null;
@@ -704,7 +703,7 @@ export class Linker extends Component<LinkerProps, LinkerState> {
         ? 'Click a column source, then click a column target to create a filter link. The filter comparison operator used by a selected link can be changed. Delete a filter link by clicking the delete button or with alt+click. Click done when finished.'
         : 'Create a link between the source column button and a table column by clicking on one, then the other. Delete a filter link by clicking the delete button or with alt+click. Click done when finished.';
 
-    return isLinkOverlayShown ? (
+    return !isDraggingPanel ? (
       <CSSTransition
         in={isLinkOverlayShown}
         timeout={ThemeExport.transitionMs}

@@ -292,7 +292,7 @@ export class LinkerOverlayContent extends Component<
             startColumnType,
           };
         } catch (error) {
-          log.error('Unable to get point for link', link, error);
+          log.warn('Unable to get point for link', link, error);
           return null;
         }
       })
