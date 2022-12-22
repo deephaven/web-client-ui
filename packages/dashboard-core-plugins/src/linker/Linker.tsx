@@ -533,16 +533,8 @@ export class Linker extends Component<LinkerProps, LinkerState> {
     }
   }
 
-  handlePanelDropped(componentId: string): void {
-    const { links } = this.props;
-    for (let i = 0; i < links.length; i += 1) {
-      const link = links[i];
-      const { start, end } = link;
-      if (start.panelId === componentId || end?.panelId === componentId) {
-        this.setState({ isDraggingPanel: false });
-        return;
-      }
-    }
+  handlePanelDropped(): void {
+    this.setState({ isDraggingPanel: false });
   }
 
   handlePanelClosed(panelId: string): void {
