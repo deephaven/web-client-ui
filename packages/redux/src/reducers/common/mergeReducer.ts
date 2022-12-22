@@ -10,7 +10,7 @@ export default function mergeReducer<S>(
   type: string,
   initialState: S
 ): Reducer<S> {
-  return (state = initialState, action) => {
+  return (state = initialState, action?) => {
     switch (action.type) {
       case type: {
         const newState = action.payload;

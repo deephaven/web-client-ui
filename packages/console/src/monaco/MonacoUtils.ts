@@ -306,17 +306,23 @@ class MonacoUtils {
   ): void {
     editor.onDidPaste(pasteEvent => {
       const smartQuotes = /“|”/g;
-      const invalidChars = /\u200b/g;
+      const invalidChars = /\u200b/g; // zero width space
+      const invalidSpaces = /\u00A0/g; // non-breaking space
       const editorModel = editor.getModel();
       assertNotNull(editorModel);
       const pastedText = editorModel.getValueInRange(pasteEvent.range);
-      if (smartQuotes.test(pastedText) || invalidChars.test(pastedText)) {
+      if (
+        smartQuotes.test(pastedText) ||
+        invalidChars.test(pastedText) ||
+        invalidSpaces.test(pastedText)
+      ) {
         editorModel.applyEdits([
           {
             range: pasteEvent.range,
             text: pastedText
               .replace(smartQuotes, '"')
-              .replace(invalidChars, ''),
+              .replace(invalidChars, '')
+              .replace(invalidSpaces, ' '),
           },
         ]);
       }

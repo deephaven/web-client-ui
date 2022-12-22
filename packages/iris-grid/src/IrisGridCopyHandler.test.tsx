@@ -2,10 +2,17 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { GridTestUtils } from '@deephaven/grid';
-import { TestUtils } from '@deephaven/utils';
-import { ContextActionUtils } from '@deephaven/components';
+import { copyToClipboard, TestUtils } from '@deephaven/utils';
 import IrisGridTestUtils from './IrisGridTestUtils';
 import IrisGridCopyHandler, { CopyOperation } from './IrisGridCopyHandler';
+
+jest.mock('@deephaven/utils', () => ({
+  ...jest.requireActual('@deephaven/utils'),
+  copyToClipboard: jest.fn(() => Promise.resolve()),
+}));
+const mockedCopyToClipboard = copyToClipboard as jest.MockedFunction<
+  (text: string) => Promise<void>
+>;
 
 jest.useFakeTimers();
 
@@ -48,17 +55,8 @@ function mountCopySelection({
   );
 }
 
-let copyToClipboard = null;
-let copyPromise = null;
-
 beforeEach(() => {
-  ({ copyToClipboard } = ContextActionUtils);
-  copyPromise = Promise.resolve(DEFAULT_EXPECTED_TEXT);
-  ContextActionUtils.copyToClipboard = jest.fn(() => copyPromise);
-});
-
-afterEach(() => {
-  ContextActionUtils.copyToClipboard = copyToClipboard;
+  mockedCopyToClipboard.mockClear();
 });
 
 it('renders without crashing', () => {
@@ -77,9 +75,7 @@ it('copies immediately if less than 10,000 rows of data', async () => {
 
   await TestUtils.flushPromises();
 
-  expect(ContextActionUtils.copyToClipboard).toHaveBeenCalledWith(
-    DEFAULT_EXPECTED_TEXT
-  );
+  expect(copyToClipboard).toHaveBeenCalledWith(DEFAULT_EXPECTED_TEXT);
 });
 
 it('prompts to copy if more than 10,000 rows of data', async () => {
@@ -95,7 +91,7 @@ it('prompts to copy if more than 10,000 rows of data', async () => {
     )
   );
   expect(model.textSnapshot).not.toHaveBeenCalled();
-  expect(ContextActionUtils.copyToClipboard).not.toHaveBeenCalled();
+  expect(copyToClipboard).not.toHaveBeenCalled();
 
   userEvent.click(copyBtn);
 
@@ -104,15 +100,12 @@ it('prompts to copy if more than 10,000 rows of data', async () => {
 
   await TestUtils.flushPromises();
 
-  expect(ContextActionUtils.copyToClipboard).toHaveBeenCalledWith(
-    DEFAULT_EXPECTED_TEXT
-  );
+  expect(copyToClipboard).toHaveBeenCalledWith(DEFAULT_EXPECTED_TEXT);
 });
 
 it('shows click to copy if async copy fails', async () => {
   const error = new Error('Test copy error');
-  copyPromise = Promise.reject(error);
-  ContextActionUtils.copyToClipboard = jest.fn(() => copyPromise);
+  mockedCopyToClipboard.mockReturnValueOnce(Promise.reject(error));
 
   const ranges = GridTestUtils.makeRanges();
   const copyOperation = makeCopyOperation(ranges);
@@ -120,25 +113,20 @@ it('shows click to copy if async copy fails', async () => {
 
   await TestUtils.flushPromises();
 
-  expect(ContextActionUtils.copyToClipboard).toHaveBeenCalledWith(
-    DEFAULT_EXPECTED_TEXT
-  );
+  expect(copyToClipboard).toHaveBeenCalledWith(DEFAULT_EXPECTED_TEXT);
 
   expect(screen.getByText('Fetched 50 rows!')).toBeTruthy();
 
+  mockedCopyToClipboard.mockClear();
+
   const btn = screen.getByText('Click to Copy');
   expect(btn).toBeTruthy();
-
-  copyPromise = Promise.resolve(DEFAULT_EXPECTED_TEXT);
-  ContextActionUtils.copyToClipboard = jest.fn(() => copyPromise);
 
   userEvent.click(btn);
 
   await TestUtils.flushPromises();
 
-  expect(ContextActionUtils.copyToClipboard).toHaveBeenCalledWith(
-    DEFAULT_EXPECTED_TEXT
-  );
+  expect(copyToClipboard).toHaveBeenCalledWith(DEFAULT_EXPECTED_TEXT);
 
   expect(screen.getByText('Copied to Clipboard!')).toBeTruthy();
 });
@@ -152,7 +140,7 @@ it('retry option available if fetching fails', async () => {
   mountCopySelection({ copyOperation, model });
 
   expect(model.textSnapshot).toHaveBeenCalled();
-  expect(ContextActionUtils.copyToClipboard).not.toHaveBeenCalled();
+  expect(copyToClipboard).not.toHaveBeenCalled();
 
   await TestUtils.flushPromises();
 
@@ -167,6 +155,6 @@ it('retry option available if fetching fails', async () => {
   await TestUtils.flushPromises();
 
   expect(model.textSnapshot).toHaveBeenCalled();
-  expect(ContextActionUtils.copyToClipboard).toHaveBeenCalled();
+  expect(copyToClipboard).toHaveBeenCalled();
   expect(screen.getByText('Copied to Clipboard!')).toBeTruthy();
 });

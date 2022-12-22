@@ -102,7 +102,7 @@ class InputFilterPanel extends Component<
 
   handleChange({
     column,
-    isValueShown,
+    isValueShown = false,
     value,
   }: {
     column?: InputFilterColumn;

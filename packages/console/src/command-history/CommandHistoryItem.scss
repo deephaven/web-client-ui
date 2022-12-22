@@ -3,12 +3,12 @@
 $shade: $primary;
 
 $command-history-bg: $gray-700;
-$selection-color: $interfacewhite;
+$selection-color: $foreground;
 $selection-bg: mix($shade, $command-history-bg, 35%);
 $selection-hover-bg: $shade;
 $selection-nofocus-bg: mix($shade, $command-history-bg, 12%);
 $selection-border-color: mix($shade, $command-history-bg, 55%);
-$selection-hover-color: $interfacewhite;
+$selection-hover-color: $foreground;
 
 .command-history {
   .command-history-item {

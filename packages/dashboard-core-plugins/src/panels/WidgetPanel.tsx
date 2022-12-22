@@ -7,7 +7,8 @@ import React, {
 import classNames from 'classnames';
 import memoize from 'memoize-one';
 import type { Container, EventEmitter } from '@deephaven/golden-layout';
-import { ContextActions, ContextActionUtils } from '@deephaven/components';
+import { ContextActions } from '@deephaven/components';
+import { copyToClipboard } from '@deephaven/utils';
 import Panel from './Panel';
 import WidgetPanelTooltip from './WidgetPanelTooltip';
 import './WidgetPanel.scss';
@@ -101,7 +102,7 @@ class WidgetPanel extends PureComponent<WidgetPanelProps, WidgetPanelState> {
 
   handleCopyName(): void {
     const { widgetName } = this.props;
-    ContextActionUtils.copyToClipboard(widgetName);
+    copyToClipboard(widgetName);
   }
 
   getErrorMessage(): string | undefined {

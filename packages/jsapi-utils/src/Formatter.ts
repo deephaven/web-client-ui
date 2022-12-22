@@ -11,7 +11,7 @@ import {
   TableColumnFormatter,
 } from './formatters';
 
-type ColumnName = string;
+export type ColumnName = string;
 
 export interface FormattingRule {
   columnType: string;

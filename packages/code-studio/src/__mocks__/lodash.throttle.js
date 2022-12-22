@@ -1,1 +1,3 @@
-export { LodashThrottle as default } from '@deephaven/mocks';
+import { LodashThrottle } from '@deephaven/mocks';
+
+export default LodashThrottle;

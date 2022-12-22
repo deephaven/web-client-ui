@@ -1,10 +1,10 @@
 import classNames from 'classnames';
 import React, {
-  ReactElement,
   ReactNode,
   useCallback,
   useEffect,
   useRef,
+  useState,
 } from 'react';
 import ReactDOM from 'react-dom';
 import { CSSTransition } from 'react-transition-group';
@@ -24,7 +24,7 @@ interface ModalProps {
   'data-testid'?: string;
 }
 
-const Modal = ({
+function Modal({
   className = 'theme-bg-light',
   children,
   role = 'role',
@@ -36,8 +36,10 @@ const Modal = ({
   onClosed,
   toggle,
   'data-testid': dataTestId,
-}: ModalProps): ReactElement => {
+}: ModalProps): React.ReactElement | null {
   const element = useRef<HTMLElement>();
+  const background = useRef<HTMLDivElement>(null);
+  const [backgroundClicked, setBackgroundClicked] = useState(false);
 
   const handleKeyDown = useCallback(
     (event: KeyboardEvent): void => {
@@ -97,69 +99,82 @@ const Modal = ({
     }
   };
 
-  return element.current ? (
-    ReactDOM.createPortal(
-      <>
-        <CSSTransition
-          appear
-          mountOnEnter
-          unmountOnExit
-          in={isOpen}
-          classNames={{
-            appearActive: 'show',
-            appearDone: 'show',
-          }}
-          timeout={ThemeExport.transitionMs}
-          onExited={onExited}
-        >
-          <div
-            className={classNames('modal-backdrop fade')}
-            style={{ zIndex: 1050 }}
-          />
-        </CSSTransition>
-        <CSSTransition
-          appear
-          mountOnEnter
-          unmountOnExit
-          in={isOpen}
-          classNames={{
-            appearDone: 'show',
-          }}
-          timeout={ThemeExport.transitionMs}
-          onExited={onExited}
-        >
-          <div
-            className="modal fade"
-            onClick={toggle}
-            role="dialog"
-            style={{ display: 'block' }}
+  return element.current
+    ? ReactDOM.createPortal(
+        <>
+          <CSSTransition
+            appear
+            mountOnEnter
+            unmountOnExit
+            in={isOpen}
+            classNames={{
+              appearActive: 'show',
+              appearDone: 'show',
+            }}
+            timeout={ThemeExport.transitionMs}
+            onExited={onExited}
           >
             <div
-              className={classNames(`modal-dialog ${className}`, {
-                'modal-lg': size === 'lg',
-                'modal-sm': size === 'sm',
-                'modal-xl': size === 'xl',
-                'modal-dialog-centered': centered,
-              })}
-              style={{ zIndex: 1040 }}
+              className={classNames('modal-backdrop fade')}
+              style={{ zIndex: 1050 }}
+            />
+          </CSSTransition>
+          <CSSTransition
+            appear
+            mountOnEnter
+            unmountOnExit
+            in={isOpen}
+            classNames={{
+              appearDone: 'show',
+            }}
+            timeout={ThemeExport.transitionMs}
+            onExited={onExited}
+          >
+            <div
+              ref={background}
+              className="modal fade"
+              onMouseDown={e => {
+                if (e.target === background.current) {
+                  setBackgroundClicked(true);
+                } else {
+                  setBackgroundClicked(false);
+                }
+              }}
+              onMouseUp={e => {
+                if (
+                  backgroundClicked &&
+                  e.target === background.current &&
+                  toggle !== undefined
+                ) {
+                  toggle();
+                }
+              }}
+              role="dialog"
+              style={{ display: 'block' }}
             >
               <div
-                className="modal-content"
-                onClick={e => e.stopPropagation()}
-                role="presentation"
-                data-testid={dataTestId}
+                className={classNames(`modal-dialog ${className}`, {
+                  'modal-lg': size === 'lg',
+                  'modal-sm': size === 'sm',
+                  'modal-xl': size === 'xl',
+                  'modal-dialog-centered': centered,
+                })}
+                style={{ zIndex: 1040 }}
               >
-                {children}
+                <div
+                  className="modal-content"
+                  role="presentation"
+                  data-testid={dataTestId}
+                >
+                  {children}
+                </div>
               </div>
             </div>
-          </div>
-        </CSSTransition>
-      </>,
-      element.current
-    )
-  ) : (
-    <></>
-  );
-};
+          </CSSTransition>
+        </>,
+        element.current
+      )
+    : null;
+}
 
 export default Modal;

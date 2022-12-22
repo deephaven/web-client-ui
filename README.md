@@ -67,6 +67,12 @@ A standalone application with it's own entry point. Recommend copying the [embed
 
 A component/library package that can be imported into other packages. Recommend copying the [components](./packages/components/) package, removing any dependencies and files not required.
 
+## Browser Support
+
+Support is best for [Google Chrome](https://www.google.com/intl/en_ca/chrome/) and Chromium based browsers (such as [Microsoft Edge based on Chromium](https://www.microsoft.com/en-us/edge)). We try and maintain compatibility with [Mozilla Firefox](https://www.mozilla.org/en-CA/firefox/new/) and [Apple Safari](https://www.apple.com/ca/safari/) as well.
+
+If you encounter an issue specific to a browser, check that your browser is up to date, then check issues labeled with [firefox](https://github.com/deephaven/web-client-ui/labels/firefox) or [safari](https://github.com/deephaven/web-client-ui/labels/safari) for a list of known browser compatibility issues before reporting the issue.
+
 ## Releasing a New Version
 
 When releasing a new version, you need to commit a version bump, then tag and create the release. By creating the release, the [publish-packages action](.github/workflows/publish-packages.yml) will be triggered, and will automatically publish the packages. Some of these steps below also make use of the [GitHub CLI](https://github.com/cli/cli)
@@ -84,12 +90,6 @@ When releasing a new version, you need to commit a version bump, then tag and cr
 5. Create the release: `gh release create <version> --notes-file /tmp/changelog_<version>.md --title <version>`
 
 After the release is created, you can go to the [actions page](https://github.com/deephaven/web-client-ui/actions) to see the publish action being kicked off.
-
-## Browser Support
-
-Support is best for [Google Chrome](https://www.google.com/intl/en_ca/chrome/) and Chromium based browsers (such as [Microsoft Edge based on Chromium](https://www.microsoft.com/en-us/edge)). We try and maintain compatibility with [Mozilla Firefox](https://www.mozilla.org/en-CA/firefox/new/) and [Apple Safari](https://www.apple.com/ca/safari/) as well.
-
-If you encounter an issue specific to a browser, check that your browser is up to date, then check issues labeled with [firefox](https://github.com/deephaven/web-client-ui/labels/firefox) or [safari](https://github.com/deephaven/web-client-ui/labels/safari) for a list of known browser compatibility issues before reporting the issue.
 
 ## Release Strategy
 
@@ -114,4 +114,49 @@ When adding new features, it can be useful to analyze the final package size to 
 ```
 npm run build
 npx source-map-explorer 'packages/code-studio/build/static/js/*.js'
+```
+
+## Updating Snapshots
+
+Snapshots are used by end-to-end tests to visually verify the output. Sometimes changes are made requiring snapshots to be updated. Since snapshots are platform dependent, you may need to use a docker image to [update snapshots for CI](https://playwright.dev/docs/test-snapshots). You mount the current directory into a docker image and re-run the tests from there.
+
+First start with a clean repo. `node_modules` and some other build output is platform dependent.
+
+```
+npm run clean
+```
+
+Next, start the docker image and open a bash shell inside of it:
+
+```
+docker run --rm --network host -v $(pwd):/work/ -w /work/ -it mcr.microsoft.com/playwright:v1.28.1-focal /bin/bash
+```
+
+Within the docker image shell, install some build tools that are not included with the image:
+
+```
+apt-get update
+apt-get install build-essential --yes
+```
+
+Next, use nvm to install and use the correct version of node:
+
+```
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.2/install.sh | bash
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+nvm install
+```
+
+Install npm dependencies and build the production app, pointing to an API running on your machine:
+
+```
+npm ci
+VITE_CORE_API_URL=http://host.docker.internal:10000/jsapi npm run build
+```
+
+Next, run the tests and update the snapshots:
+
+```
+npm run e2e:update-snapshots
 ```

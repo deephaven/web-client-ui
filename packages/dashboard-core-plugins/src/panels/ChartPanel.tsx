@@ -256,7 +256,6 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
       isLinked:
         metadata != null &&
         isChartPanelTableMetadata(metadata) &&
-        metadata.settings &&
         metadata.settings.isLinked,
 
       // Map of all non-empty filters applied to the chart.

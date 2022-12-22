@@ -20,7 +20,7 @@ export interface EditableItemListProps {
 }
 
 // Display a list of items with an input for adding new items, and Add/Delete buttons
-const EditableItemList = (props: EditableItemListProps): React.ReactElement => {
+function EditableItemList(props: EditableItemListProps): React.ReactElement {
   const {
     isInvalid = false,
     items,
@@ -135,6 +135,6 @@ const EditableItemList = (props: EditableItemListProps): React.ReactElement => {
       </div>
     </div>
   );
-};
+}
 
 export default EditableItemList;

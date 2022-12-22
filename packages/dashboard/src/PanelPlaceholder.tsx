@@ -17,4 +17,6 @@ const PanelPlaceholder = React.forwardRef(
   }
 );
 
+PanelPlaceholder.displayName = 'PanelPlaceholder';
+
 export default PanelPlaceholder;

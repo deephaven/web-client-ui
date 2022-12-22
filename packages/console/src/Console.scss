@@ -1,3 +1,4 @@
+@use 'common/ConsoleVariables';
 @import '@deephaven/components/scss/custom.scss';
 
 .iris-console {
@@ -41,30 +42,12 @@
     }
   }
 
-  .btn-console {
-    user-select: none;
-    font-size: small;
-    padding: 0 1em;
-    margin-right: 0.5em;
-    height: 2em;
-    border-radius: 1em;
-    text-align: left;
-    margin-top: $spacer-1;
-    margin-bottom: $spacer-1;
-
-    &[disabled] {
-      background-color: $gray-700;
-      border-color: $gray-700;
-      pointer-events: none;
-    }
-  }
-
   .console-disconnected-info {
     padding-top: $spacer-1;
     .console-disconnected-info-message {
       font-family: $font-family-monospace;
       color: $danger;
-      font-size: 12px;
+      font-size: ConsoleVariables.$font-size;
     }
   }
 }

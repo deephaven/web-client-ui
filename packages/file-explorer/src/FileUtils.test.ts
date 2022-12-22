@@ -15,6 +15,48 @@ function testInvalidFileNameMessage(name: string, message: string): void {
   );
 }
 
+describe('fileExtensionToString', () => {
+  it('handles empty extension', () => {
+    expect(FileUtils.fileExtensionToString()).toBe('');
+    expect(FileUtils.fileExtensionToString('')).toBe('');
+  });
+  it('prepends "." to a non-empty argument', () => {
+    expect(FileUtils.fileExtensionToString('test')).toBe('.test');
+  });
+});
+
+describe('getCopyFileName', () => {
+  it('appends -copy to name', () => {
+    expect(FileUtils.getCopyFileName('test.ext')).toBe('test-copy.ext');
+  });
+
+  it('handles name without extension', () => {
+    expect(FileUtils.getCopyFileName('test')).toBe('test-copy');
+  });
+
+  it('handles empty name with extension', () => {
+    expect(FileUtils.getCopyFileName('.test')).toBe('Copy.test');
+  });
+});
+
+describe('replaceExtension', () => {
+  it('replaces extension', () => {
+    expect(FileUtils.replaceExtension('test.ext', 'replaced')).toBe(
+      'test.replaced'
+    );
+  });
+
+  it('handles name without extension', () => {
+    expect(FileUtils.replaceExtension('test', 'appended')).toBe(
+      'test.appended'
+    );
+  });
+
+  it('handles empty name with extension', () => {
+    expect(FileUtils.replaceExtension('.ext', 'replaced')).toBe('.replaced');
+  });
+});
+
 it('gets extension', () => {
   function testName(name: string, expectedExtension: string) {
     expect(FileUtils.getExtension(name)).toBe(expectedExtension);
@@ -47,6 +89,13 @@ it('gets the path', () => {
   testError('nopath.txt');
   testError('nopath');
   testError('invalid/path');
+});
+
+it('makePath handles names with or without trailing slash', () => {
+  const DEFAULT_DIR = 'DEFAULT_DIR';
+  const DEFAULT_PATH = `${DEFAULT_DIR}/`;
+  expect(FileUtils.makePath(DEFAULT_DIR)).toBe(DEFAULT_PATH);
+  expect(FileUtils.makePath(DEFAULT_PATH)).toBe(DEFAULT_PATH);
 });
 
 it('gets the parent', () => {
@@ -157,4 +206,23 @@ it('reduces a selection', () => {
     ['/foo/baz.txt', '/foo/bar.txt'],
     ['/foo/baz.txt', '/foo/bar.txt']
   );
+});
+
+describe('removeRoot', () => {
+  const DEFAULT_FILENAME = 'DEFAULT_FILENAME';
+  it('handles empty root argument', () => {
+    expect(FileUtils.removeRoot('', DEFAULT_FILENAME)).toBe(DEFAULT_FILENAME);
+  });
+
+  it(`throws error if filename doesn't start with root`, () => {
+    expect(() =>
+      FileUtils.removeRoot('INVALID_ROOT', DEFAULT_FILENAME)
+    ).toThrowError();
+  });
+
+  it('returns filename without the root', () => {
+    expect(
+      FileUtils.removeRoot('ROOT', FileUtils.addRoot('ROOT', DEFAULT_FILENAME))
+    ).toBe(DEFAULT_FILENAME);
+  });
 });

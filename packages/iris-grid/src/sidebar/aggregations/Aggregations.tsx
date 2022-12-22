@@ -66,12 +66,12 @@ export const SELECTABLE_OPTIONS = [
   AggregationOperation.UNIQUE,
 ];
 
-const Aggregations = ({
+function Aggregations({
   isRollup,
   settings,
   onChange,
   onEdit,
-}: AggregationsProps): JSX.Element => {
+}: AggregationsProps): JSX.Element {
   const { aggregations, showOnTop } = settings;
   const options = useMemo(
     () =>
@@ -318,6 +318,6 @@ const Aggregations = ({
       )}
     </div>
   );
-};
+}
 
 export default Aggregations;

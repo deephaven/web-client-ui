@@ -44,7 +44,7 @@ describe('TableInput', () => {
 
   it('mounts and unmounts with an unresolved promise properly', async () => {
     const tablePromiseWrapper = makeTableInput({
-      table: new Promise(() => undefined),
+      table: new Promise(jest.fn()),
     });
     tablePromiseWrapper.unmount();
   });

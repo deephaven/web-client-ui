@@ -50,6 +50,9 @@ export class LocalWorkspaceStorage implements WorkspaceStorage {
           defaultFormatString: IntegerColumnFormatter.DEFAULT_FORMAT_STRING,
         },
         truncateNumbersWithPound: false,
+        defaultNotebookSettings: {
+          isMinimapEnabled: false,
+        },
       },
       layoutConfig,
       closed: [{}],

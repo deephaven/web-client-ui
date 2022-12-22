@@ -146,7 +146,7 @@ class MockIrisGridTreeModel
     return EMPTY_ARRAY;
   }
 
-  getCachedColumns = memoize(count => {
+  getCachedColumns = memoize((count: number) => {
     const columns = [];
     for (let i = 0; i < count; i += 1) {
       columns.push({

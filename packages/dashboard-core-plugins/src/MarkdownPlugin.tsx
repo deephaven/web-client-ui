@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
 import shortid from 'shortid';
 import {
   assertIsDashboardPluginProps,
@@ -18,7 +18,7 @@ export type MarkdownComponentState = {
   panelState?: { content: string } | null;
 };
 
-export const MarkdownPlugin = (props: MarkdownPluginProps): JSX.Element => {
+export function MarkdownPlugin(props: MarkdownPluginProps): JSX.Element | null {
   assertIsDashboardPluginProps(props);
   const { id, layout, panelManager, registerComponent } = props;
   const dehydrateMarkdown = useCallback(config => {
@@ -107,7 +107,7 @@ export const MarkdownPlugin = (props: MarkdownPluginProps): JSX.Element => {
 
   useListener(layout.eventHub, MarkdownEvent.OPEN, handleOpen);
 
-  return <></>;
-};
+  return null;
+}
 
 export default MarkdownPlugin;

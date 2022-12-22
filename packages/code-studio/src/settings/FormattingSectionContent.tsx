@@ -235,7 +235,7 @@ export class FormattingSectionContent extends PureComponent<
     showTimeZone: boolean,
     showTSeparator: boolean,
     isGlobalOptions: boolean,
-    legacyGlobalFormat: string
+    legacyGlobalFormat?: string
   ): ReactElement[] {
     const formatter = new Formatter([], {
       timeZone,
@@ -246,7 +246,7 @@ export class FormattingSectionContent extends PureComponent<
       ? DateTimeColumnFormatter.getGlobalFormats(showTimeZone, showTSeparator)
       : DateTimeColumnFormatter.getFormats(showTimeZone, showTSeparator);
 
-    if (legacyGlobalFormat && !formats.includes(legacyGlobalFormat)) {
+    if (legacyGlobalFormat != null && !formats.includes(legacyGlobalFormat)) {
       formats.unshift(legacyGlobalFormat);
     }
 
@@ -380,11 +380,11 @@ export class FormattingSectionContent extends PureComponent<
 
   getCachedDateTimeFormatOptions = memoize(
     (
-      timeZone,
-      showTimeZone,
-      showTSeparator,
+      timeZone: string,
+      showTimeZone: boolean,
+      showTSeparator: boolean,
       isGlobalOptions = false,
-      legacyGlobalFormat = null
+      legacyGlobalFormat?: string
     ) => {
       const { timestampAtMenuOpen } = this.state;
       return FormattingSectionContent.renderDateTimeOptions(
@@ -839,7 +839,7 @@ export class FormattingSectionContent extends PureComponent<
     isInvalid: boolean
   ): ReactElement {
     const { showTimeZone, showTSeparator, timeZone } = this.state;
-    const value = (format != null && format.formatString) || '';
+    const value = format.formatString ?? '';
     return (
       <select
         className={classNames('custom-select', { 'is-invalid': isInvalid })}
@@ -872,7 +872,7 @@ export class FormattingSectionContent extends PureComponent<
     format: Partial<TableColumnFormat>,
     isInvalid: boolean
   ): ReactElement {
-    const value = (format != null && format.formatString) || '';
+    const value = format.formatString ?? '';
     return (
       <input
         className={classNames('form-control', 'flex-grow-1', {
@@ -902,7 +902,7 @@ export class FormattingSectionContent extends PureComponent<
     format: Partial<TableColumnFormat>,
     isInvalid: boolean
   ): ReactElement {
-    const value = (format != null && format.formatString) || '';
+    const value = format.formatString ?? '';
     return (
       <input
         className={classNames('form-control', 'flex-grow-1', {

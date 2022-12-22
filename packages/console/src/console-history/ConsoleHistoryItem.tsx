@@ -2,9 +2,10 @@
  * Console display for use in the Iris environment.
  */
 import React, { PureComponent, ReactElement } from 'react';
-import { ButtonOld } from '@deephaven/components';
+import { Button } from '@deephaven/components';
 import Log from '@deephaven/log';
 import { VariableDefinition } from '@deephaven/jsapi-shim';
+import classNames from 'classnames';
 import { Code, ObjectIcon } from '../common';
 import ConsoleHistoryItemResult from './ConsoleHistoryItemResult';
 import ConsoleHistoryResultInProgress from './ConsoleHistoryResultInProgress';
@@ -68,6 +69,7 @@ class ConsoleHistoryItem extends PureComponent<
     }
 
     const resultElements = [];
+    let hasButtons = false;
 
     if (result) {
       const { error, message, changes } = result;
@@ -75,6 +77,7 @@ class ConsoleHistoryItem extends PureComponent<
       if (changes) {
         const { created, updated } = changes;
         [...created, ...updated].forEach(object => {
+          hasButtons = true;
           const { title } = object;
           const key = `${title}`;
           const btnDisabled =
@@ -82,14 +85,16 @@ class ConsoleHistoryItem extends PureComponent<
             disabled ||
             (disabledObjects ?? []).indexOf(key) >= 0;
           const element = (
-            <ButtonOld
+            <Button
               key={key}
+              kind="primary"
               onClick={() => this.handleObjectClick(object)}
-              className="btn-primary btn-console btn-console-object"
+              className="btn-console-object"
               disabled={btnDisabled}
+              icon={<ObjectIcon type={object.type} />}
             >
-              <ObjectIcon type={object.type} /> {title}
-            </ButtonOld>
+              {title}
+            </Button>
           );
           resultElements.push(element);
         });
@@ -119,6 +124,7 @@ class ConsoleHistoryItem extends PureComponent<
         resultElements.push(element);
       }
     } else {
+      hasButtons = true;
       const element = (
         <ConsoleHistoryResultInProgress
           key="in_progress"
@@ -137,7 +143,11 @@ class ConsoleHistoryItem extends PureComponent<
     }
 
     return (
-      <div className="container-fluid">
+      <div
+        className={classNames('console-command-result', {
+          'console-result-buttons': hasButtons,
+        })}
+      >
         {commandElement}
         {resultElement}
       </div>

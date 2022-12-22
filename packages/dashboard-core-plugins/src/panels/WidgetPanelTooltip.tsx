@@ -1,14 +1,10 @@
-import React, { ReactNode, useState } from 'react';
+import React, { ReactNode } from 'react';
 import PropTypes from 'prop-types';
-import { Button, ContextActionUtils } from '@deephaven/components';
-import { vsCopy, vsPassFilled } from '@deephaven/icons';
+import { CopyButton } from '@deephaven/components';
 import { GLPropTypes, LayoutUtils } from '@deephaven/dashboard';
-import Log from '@deephaven/log';
 import './WidgetPanelTooltip.scss';
 import { ReactElement } from 'react-markdown';
 import type { Container } from '@deephaven/golden-layout';
-
-const log = Log.module('WidgetPanelTooltip');
 
 interface WidgetPanelTooltipProps {
   glContainer: Container;
@@ -17,10 +13,9 @@ interface WidgetPanelTooltipProps {
   description: string;
   children: ReactNode;
 }
-const WidgetPanelTooltip = (props: WidgetPanelTooltipProps): ReactElement => {
+function WidgetPanelTooltip(props: WidgetPanelTooltipProps): ReactElement {
   const { widgetType, widgetName, glContainer, description, children } = props;
   const panelTitle = LayoutUtils.getTitleFromContainer(glContainer);
-  const [copied, setCopied] = useState(false);
 
   return (
     <div className="tab-tooltip-container">
@@ -29,17 +24,10 @@ const WidgetPanelTooltip = (props: WidgetPanelTooltipProps): ReactElement => {
           <b>{widgetType} Name </b>
         </span>
         <span className="tab-tooltip-name">{widgetName}</span>
-
-        <Button
-          kind="ghost"
+        <CopyButton
           className="tab-tooltip-copy"
-          icon={copied ? vsPassFilled : vsCopy}
-          onClick={() => {
-            ContextActionUtils.copyToClipboard(widgetName)
-              .then(() => setCopied(true))
-              .catch(e => log.error('Unable to column name', e));
-          }}
-          tooltip={copied ? 'Copied text' : 'Copy name'}
+          tooltip="Copy name"
+          copy={widgetName}
         />
       </div>
       {widgetName !== panelTitle && (
@@ -58,7 +46,7 @@ const WidgetPanelTooltip = (props: WidgetPanelTooltipProps): ReactElement => {
       {children}
     </div>
   );
-};
+}
 
 WidgetPanelTooltip.propTypes = {
   glContainer: GLPropTypes.Container.isRequired,

@@ -17,15 +17,15 @@ interface ChartColumnSelectorOverlayProps {
   onMouseLeave?: MouseEventHandler<HTMLButtonElement>;
 }
 
-const ChartColumnSelectorOverlay = ({
+function ChartColumnSelectorOverlay({
   columns,
   onColumnSelected,
   onMouseEnter,
   onMouseLeave,
-}: ChartColumnSelectorOverlayProps): ReactElement => (
-  <div className="chart-panel-overlay chart-column-selector-overlay">
-    <div className={classNames('chart-panel-overlay-content')}>
-      <>
+}: ChartColumnSelectorOverlayProps): ReactElement {
+  return (
+    <div className="chart-panel-overlay chart-column-selector-overlay">
+      <div className={classNames('chart-panel-overlay-content')}>
         <div className="info-message">
           This plot requires a filter control to be added to the layout or a
           table link to be created on the following columns:
@@ -50,10 +50,10 @@ const ChartColumnSelectorOverlay = ({
             </SocketedButton>
           ))}
         </div>
-      </>
+      </div>
     </div>
-  </div>
-);
+  );
+}
 
 ChartColumnSelectorOverlay.makeButtonClassName = (columnName: string) =>
   `btn-chart-column-selector-${columnName}`;

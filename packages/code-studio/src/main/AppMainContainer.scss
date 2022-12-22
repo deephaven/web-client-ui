@@ -252,7 +252,11 @@ $nav-space: 4px; // give a gap around some buttons for focus area that are in na
   cursor: url('../assets/svg/cursor-linker.svg') 8 8, crosshair;
 }
 
-.linker-overlay svg path.link-select {
+.linker-overlay path.link-select {
+  cursor: pointer;
+}
+
+.linker-overlay.danger-delete path.link-select {
   cursor: url('../assets/svg/cursor-unlinker.svg') 8 8, pointer;
 }
 

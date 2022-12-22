@@ -13,7 +13,7 @@ export type SelectProps = {
   'data-testid'?: string;
 };
 
-const Select = ({
+function Select({
   children,
   onBlur,
   onChange,
@@ -23,7 +23,7 @@ const Select = ({
   value,
   disabled,
   'data-testid': dataTestId,
-}: SelectProps): JSX.Element => {
+}: SelectProps): JSX.Element {
   const handleChange = useCallback(
     event => {
       onChange(event.target.value);
@@ -45,6 +45,6 @@ const Select = ({
       {children}
     </select>
   );
-};
+}
 
 export default Select;

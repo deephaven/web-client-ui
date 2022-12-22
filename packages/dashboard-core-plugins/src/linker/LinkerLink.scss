@@ -2,8 +2,8 @@
 
 $link-width: 3;
 $selectable-width: 20;
-$dash-color-1: $primary;
-$dash-color-2: $primary-light;
+$dash-color-1: $blue;
+$dash-color-2: mix($blue, $content-bg, 25%);
 $filter-source-dash-color-1: $purple;
 $filter-source-dash-color-2: mix($purple, $content-bg, 25%);
 $invalid-dash-color-1: $gray-300;
@@ -12,89 +12,167 @@ $dash-delete-color-1: $danger;
 $dash-delete-color-2: mix($danger, $content-bg, 25%);
 $dash-size: 10;
 
-.linker-overlay svg {
-  .link-dot,
-  .link-triangle {
-    fill: $dash-color-1;
-  }
+.linker-overlay {
+  .linker-link {
+    position: absolute;
+    width: 100%;
+    height: 100%;
 
-  path {
-    stroke-width: $link-width;
-    fill: transparent;
-    stroke: $dash-color-2;
-    pointer-events: none;
-    transition: stroke $transition ease-out;
-  }
-
-  path.link-foreground {
-    stroke: $dash-color-1;
-    stroke-dasharray: $dash-size;
-    animation: dash-forward 1.5s linear infinite;
-  }
-
-  path.link-select {
-    stroke-width: $selectable-width;
-    fill: transparent;
-    stroke: transparent;
-    pointer-events: stroke;
-    cursor: pointer;
-  }
-
-  .link-filter-source {
     .link-dot,
     .link-triangle {
-      fill: $filter-source-dash-color-1;
+      fill: $dash-color-1;
     }
+
     path {
       stroke-width: $link-width;
-      stroke: $filter-source-dash-color-2;
-      &.link-select {
-        stroke-width: $selectable-width;
-        stroke: transparent;
-      }
+      fill: transparent;
+      stroke: $dash-color-2;
+      pointer-events: none;
+      transition: stroke $transition ease-out;
     }
 
     path.link-foreground {
-      stroke: $filter-source-dash-color-1;
+      stroke: $dash-color-1;
+      stroke-dasharray: $dash-size;
+      animation: dash-forward 1.5s linear infinite;
     }
-  }
 
-  .link-invalid {
-    .link-dot,
-    .link-triangle {
-      fill: $invalid-dash-color-1;
+    path.link-select {
+      stroke-width: $selectable-width;
+      fill: transparent;
+      stroke: transparent;
+      pointer-events: stroke;
+      cursor: pointer;
     }
-    path {
-      stroke-width: $link-width;
-      stroke: $invalid-dash-color-2;
-      &.link-select {
-        stroke-width: $selectable-width;
-        stroke: transparent;
+
+    &.link-is-selected {
+      z-index: 20;
+
+      .link-dot,
+      .link-triangle {
+        fill: $primary;
+      }
+      path {
+        stroke-width: $link-width;
+        stroke: $primary-light;
+        &.link-select {
+          stroke-width: $selectable-width;
+          stroke: transparent;
+        }
+      }
+
+      path.link-foreground {
+        stroke: $primary;
       }
     }
 
-    path.link-foreground {
-      stroke: $invalid-dash-color-1;
+    &.link-filter-source {
+      .link-dot,
+      .link-triangle {
+        fill: $filter-source-dash-color-1;
+      }
+      path {
+        stroke-width: $link-width;
+        stroke: $filter-source-dash-color-2;
+        &.link-select {
+          stroke-width: $selectable-width;
+          stroke: transparent;
+        }
+      }
+
+      path.link-foreground {
+        stroke: $filter-source-dash-color-1;
+      }
+    }
+
+    &.link-invalid {
+      .link-dot,
+      .link-triangle {
+        fill: $invalid-dash-color-1;
+      }
+      path {
+        stroke-width: $link-width;
+        stroke: $invalid-dash-color-2;
+        &.link-select {
+          stroke-width: $selectable-width;
+          stroke: transparent;
+        }
+      }
+
+      path.link-foreground {
+        stroke: $invalid-dash-color-1;
+      }
+    }
+
+    &.disabled path.link-select {
+      pointer-events: none;
+    }
+
+    &.hovering {
+      z-index: 10;
+    }
+
+    path.link-select:hover ~ path.link-background {
+      stroke: $primary-hover;
+    }
+
+    path.link-select:hover ~ path.link-foreground,
+    path.link-select:hover ~ .link-dot,
+    path.link-select:hover ~ .link-triangle {
+      stroke: $primary;
+    }
+
+    path.link-select:hover ~ .link-dot,
+    path.link-select:hover ~ .link-triangle {
+      fill: $primary;
+    }
+
+    &.danger-delete {
+      path.link-select:hover ~ path.link-background {
+        stroke: $dash-delete-color-2;
+      }
+
+      path.link-select:hover ~ path.link-foreground,
+      path.link-select:hover ~ .link-dot,
+      path.link-select:hover ~ .link-triangle {
+        stroke: $dash-delete-color-1;
+      }
+
+      path.link-select:hover ~ .link-dot,
+      path.link-select:hover ~ .link-triangle {
+        fill: $dash-delete-color-1;
+      }
     }
   }
 
-  .disabled path.link-select {
-    pointer-events: none;
+  .btn-fab {
+    position: absolute;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    pointer-events: all;
+    min-width: $input-height;
+    min-height: $input-height;
+    height: $input-height;
+    width: $input-height;
+    line-height: $font-size-lg; // vertical centering for text inside fa-layer
+    padding: 0;
+    margin: 0;
+    z-index: 30;
+    box-shadow: $box-shadow;
+    .fa-layers {
+      display: inline-flex;
+      justify-content: center;
+      b {
+        // comparison operator
+        font-size: $font-size-lg;
+      }
+    }
   }
 
-  path.link-select:hover ~ path.link-background {
-    stroke: $dash-delete-color-2;
-  }
-
-  path.link-select:hover ~ path.link-foreground,
-  path.link-select:hover ~ .link-dot,
-  path.link-select:hover ~ .link-triangle {
-    stroke: $dash-delete-color-1;
-  }
-
-  path.link-select:hover ~ .link-dot,
-  path.link-select:hover ~ .link-triangle {
-    fill: $dash-delete-color-1;
+  .btn-fab.btn-delete:hover {
+    background-color: $dash-delete-color-1;
+    border-color: $dash-delete-color-1;
   }
 }
 

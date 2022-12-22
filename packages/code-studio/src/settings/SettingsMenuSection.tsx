@@ -12,7 +12,7 @@ interface SettingsMenuSectionProps {
   onToggle: (sectionkey: string) => void;
 }
 
-const SettingsMenuSection = (props: SettingsMenuSectionProps): ReactElement => {
+function SettingsMenuSection(props: SettingsMenuSectionProps): ReactElement {
   const { children, isExpanded, sectionKey, title, onToggle } = props;
   return (
     <>
@@ -36,7 +36,7 @@ const SettingsMenuSection = (props: SettingsMenuSectionProps): ReactElement => {
       </Collapse>
     </>
   );
-};
+}
 
 SettingsMenuSection.propTypes = {
   children: PropTypes.node,

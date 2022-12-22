@@ -1,5 +1,9 @@
 @import '@deephaven/components/scss/custom.scss';
 
+$dialog-width: 400px;
+$toast-inner-padding: $spacer-3;
+$toast-outer-padding: $spacer-3;
+
 .linker-overlay {
   z-index: $zindex-fixed;
   position: fixed;
@@ -9,30 +13,54 @@
   bottom: 0;
   pointer-events: none;
 
-  svg {
-    width: 100%;
-    height: 100%;
-  }
-
   .linker-toast-dialog {
-    $toast-inner-padding: $spacer-3;
-    $toast-outer-padding: $spacer-3;
-
+    display: grid;
+    grid-template-areas: 'drag-handle body' 'drag-handle footer';
     position: absolute;
     right: $toast-outer-padding;
     bottom: $toast-outer-padding;
     background: $modal-content-bg;
-    max-width: 400px;
-    color: $interfaceblack;
+    width: $dialog-width;
+    color: $background;
     pointer-events: auto;
     box-shadow: $tooltip-box-shadow;
     z-index: $zindex-popover;
 
+    .btn-drag-handle {
+      grid-area: drag-handle;
+      cursor: grab;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      border: none;
+      border-radius: 0;
+      height: 100%;
+      background: $gray-300;
+      color: $gray-600;
+      min-width: unset;
+
+      &:hover {
+        background-color: $gray-400;
+        color: $gray-700;
+      }
+    }
+
+    &.dragging {
+      cursor: grabbing;
+      .btn-drag-handle {
+        cursor: grabbing;
+        background-color: $gray-400;
+        color: $gray-700;
+      }
+    }
+
     .toast-body {
+      grid-area: body;
       padding: $toast-inner-padding;
     }
 
     .toast-footer {
+      grid-area: footer;
       padding: $toast-inner-padding;
       display: flex;
       justify-content: flex-end;

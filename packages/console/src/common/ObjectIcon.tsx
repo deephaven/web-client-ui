@@ -7,7 +7,7 @@ export type ObjectIconProps = {
   type: string;
 };
 
-const ObjectIcon = ({ type }: ObjectIconProps): JSX.Element => {
+function ObjectIcon({ type }: ObjectIconProps): JSX.Element {
   switch (type) {
     case dh.VariableType.TABLE:
     case dh.VariableType.TABLEMAP:
@@ -20,6 +20,6 @@ const ObjectIcon = ({ type }: ObjectIconProps): JSX.Element => {
     default:
       return <FontAwesomeIcon icon={vsPreview} />;
   }
-};
+}
 
 export default ObjectIcon;

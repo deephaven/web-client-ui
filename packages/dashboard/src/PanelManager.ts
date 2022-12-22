@@ -238,7 +238,7 @@ class PanelManager {
       closedConfig =>
         closedConfig === panelConfig ||
         (closedConfig.id != null &&
-          panelConfig.id &&
+          panelConfig.id != null &&
           closedConfig.id === panelConfig.id)
     );
     if (index >= 0) {

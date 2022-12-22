@@ -1,23 +1,20 @@
-# This workflow will do a clean install of node dependencies, build the source code and run tests across different versions of node
-# For more information see: https://help.github.com/actions/language-and-framework-guides/using-nodejs-with-github-actions
+# This workflow will perform unit tests of the web application and update code coverage reports
 
-name: Node.js CI
+name: Unit Tests
 
 on:
   push:
     branches: [main]
   pull_request:
     branches: [main]
-
 jobs:
-  build:
-    runs-on: ubuntu-latest
+  unit:
+    runs-on: ubuntu-22.04
     concurrency:
       group: ${{ github.workflow }}-${{ github.ref }}
       cancel-in-progress: true
-
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: '0' # This action defaults to only getting the latest commit. Setting to 0 makes it retrieve the full git commit history
 
@@ -32,7 +29,7 @@ jobs:
           cache: 'npm'
 
       - name: Cache jest
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: |
             .jest-cache
@@ -42,7 +39,7 @@ jobs:
             ${{ runner.os }}-jestcache-
 
       - name: Cache linters
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: |
             .eslintcache
@@ -53,24 +50,31 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-lintcache-
 
-      - name: Install dependencies
-        run: npm ci --no-audit
+      - name: Cache node modules
+        id: cache-node-modules
+        uses: actions/cache@v3
+        with:
+          path: |
+            node_modules
+            packages/*/node_modules
+          key: unit-node-modules-${{ hashFiles('package-lock.json')}}
 
-      - name: Build
-        run: npm run build
+      - name: Install dependencies
+        if: steps.cache-node-modules.outputs.cache-hit != 'true'
+        run: npm ci --no-audit
 
       # Run unit tests on all files for accurate code coverage
       # Lint only changed files so linting is faster
       # Caching with the absolute path b/c Jest will make a folder in each project
       # Then there's caches in all package folders
-      - name: Test (Pull Request)
+      - name: Unit Test (Pull Request)
         if: ${{ github.event_name == 'pull_request' }}
         run: |
           npm run test:unit -- --cacheDirectory $PWD/.jest-cache
           npm run test:lint -- --changedSince origin/${{ github.event.pull_request.base.ref }} --cacheDirectory $PWD/.jest-cache
           npm run test:golden-layout
 
-      - name: Test (Push)
+      - name: Unit Test (Push)
         if: ${{ github.event_name == 'push' }}
         run: |
           npm run test:unit -- --cacheDirectory $PWD/.jest-cache
@@ -78,7 +82,7 @@ jobs:
           npm run test:golden-layout
 
       - name: Codecov report
-        uses: codecov/codecov-action@v2
+        uses: codecov/codecov-action@v3
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           directory: ./coverage

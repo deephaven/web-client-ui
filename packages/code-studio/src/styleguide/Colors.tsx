@@ -1,7 +1,7 @@
 import React from 'react';
 import classNames from 'classnames';
 
-const Colors = (): React.ReactElement => {
+function Colors(): React.ReactElement {
   const graySwatches = [
     '100',
     '200',
@@ -80,6 +80,6 @@ $danger: $red;
       </div>
     </div>
   );
-};
+}
 
 export default Colors;

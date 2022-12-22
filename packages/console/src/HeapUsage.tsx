@@ -15,13 +15,13 @@ interface HeapUsageProps {
   monitorDuration: number;
 }
 
-const HeapUsage = ({
+function HeapUsage({
   connection,
   defaultUpdateInterval,
   hoverUpdateInterval,
   bgMonitoring = true,
   monitorDuration,
-}: HeapUsageProps): ReactElement => {
+}: HeapUsageProps): ReactElement {
   const [memoryUsage, setMemoryUsage] = useState({
     freeMemory: 0,
     maximumHeapSize: 999,
@@ -197,6 +197,6 @@ const HeapUsage = ({
       </Tooltip>
     </>
   );
-};
+}
 
 export default HeapUsage;

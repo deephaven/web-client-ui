@@ -227,11 +227,16 @@ class Grid extends PureComponent<GridProps, GridState> {
 
   static dragTimeout = 1000;
 
-  static getTheme = memoize((contextTheme, userTheme) => ({
-    ...GridTheme,
-    ...contextTheme,
-    ...userTheme,
-  }));
+  static getTheme = memoize(
+    (
+      contextTheme: Partial<GridThemeType>,
+      userTheme: Partial<GridThemeType>
+    ) => ({
+      ...GridTheme,
+      ...contextTheme,
+      ...userTheme,
+    })
+  );
 
   /**
    * On some devices there may be different scaling required for high DPI. Get the scale required for the canvas.
@@ -248,11 +253,11 @@ class Grid extends PureComponent<GridProps, GridState> {
       // Not worth converting to a massive if structure
       // Converting would reduce readability and maintainability
       // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
-      legacyContext.webkitBackingStorePixelRatio ||
-      legacyContext.mozBackingStorePixelRatio ||
-      legacyContext.msBackingStorePixelRatio ||
-      legacyContext.oBackingStorePixelRatio ||
-      legacyContext.backingStorePixelRatio ||
+      legacyContext.webkitBackingStorePixelRatio ??
+      legacyContext.mozBackingStorePixelRatio ??
+      legacyContext.msBackingStorePixelRatio ??
+      legacyContext.oBackingStorePixelRatio ??
+      legacyContext.backingStorePixelRatio ??
       1;
     return devicePixelRatio / backingStorePixelRatio;
   }
@@ -437,6 +442,16 @@ class Grid extends PureComponent<GridProps, GridState> {
 
     this.updateCanvasScale();
     this.updateCanvas();
+
+    // apply on mount, so that it works with a static model
+    // https://github.com/deephaven/web-client-ui/issues/581
+    const { isStuckToBottom, isStuckToRight } = this.props;
+    if (isStuckToBottom) {
+      this.scrollToBottom();
+    }
+    if (isStuckToRight) {
+      this.scrollToRight();
+    }
   }
 
   componentDidUpdate(prevProps: GridProps, prevState: GridState): void {
@@ -450,6 +465,7 @@ class Grid extends PureComponent<GridProps, GridState> {
       onMovedRowsChanged,
       onMoveRowComplete,
     } = this.props;
+
     const {
       isStickyBottom: prevIsStickyBottom,
       isStickyRight: prevIsStickyRight,
@@ -507,47 +523,25 @@ class Grid extends PureComponent<GridProps, GridState> {
       return;
     }
 
-    const {
-      bottomVisible,
-      rightVisible,
-      rowCount,
-      columnCount,
-      top,
-      left,
-      height,
-      width,
-    } = this.metrics;
+    const { rowCount, columnCount, height, width } = this.metrics;
     const {
       rowCount: prevRowCount,
       columnCount: prevColumnCount,
       height: prevHeight,
       width: prevWidth,
     } = this.prevMetrics;
-    const metricState = this.getMetricState();
 
     if (prevRowCount !== rowCount || height !== prevHeight) {
-      const lastTop = this.metricCalculator.getLastTop(metricState);
       const { isStuckToBottom } = this.state;
-      if (
-        (isStuckToBottom &&
-          bottomVisible < rowCount - 1 &&
-          bottomVisible > 0) ||
-        top > lastTop
-      ) {
-        this.setState({ top: lastTop });
+      if (isStuckToBottom) {
+        this.scrollToBottom();
       }
     }
 
     if (prevColumnCount !== columnCount || width !== prevWidth) {
-      const lastLeft = this.metricCalculator.getLastLeft(metricState);
       const { isStuckToRight } = this.state;
-      if (
-        (isStuckToRight &&
-          rightVisible < columnCount - 1 &&
-          rightVisible > 0) ||
-        left > lastLeft
-      ) {
-        this.setState({ left: lastLeft });
+      if (isStuckToRight) {
+        this.scrollToRight();
       }
     }
 
@@ -700,6 +694,31 @@ class Grid extends PureComponent<GridProps, GridState> {
     this.commitSelection();
 
     this.setState({ isStuckToBottom: false });
+  }
+
+  /**
+   * Scrolls to bottom, if not already at bottom
+   */
+  scrollToBottom(): void {
+    if (!this.metrics) return;
+    const { bottomVisible, rowCount, top, lastTop } = this.metrics;
+    if ((bottomVisible < rowCount - 1 && bottomVisible > 0) || top > lastTop) {
+      this.setState({ top: lastTop });
+    }
+  }
+
+  /**
+   * Scrolls to right, if not already at right
+   */
+  scrollToRight(): void {
+    if (!this.metrics) return;
+    const { rightVisible, columnCount, left, lastLeft } = this.metrics;
+    if (
+      (rightVisible < columnCount - 1 && rightVisible > 0) ||
+      left > lastLeft
+    ) {
+      this.setState({ left: lastLeft });
+    }
   }
 
   /**

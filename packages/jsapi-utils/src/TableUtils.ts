@@ -22,6 +22,7 @@ import {
   TimeoutError,
 } from '@deephaven/utils';
 import DateUtils from './DateUtils';
+import { ColumnName } from './Formatter';
 
 const log = Log.module('TableUtils');
 
@@ -52,9 +53,10 @@ export type RowDataMapValue = {
   value: unknown;
   isExpandable: boolean;
   isGrouped: boolean;
+  visibleIndex: number;
 };
 
-export type RowDataMap = Record<string, RowDataMapValue>;
+export type RowDataMap = Record<ColumnName, RowDataMapValue>;
 
 /** Utility class to provide some functions for working with tables */
 export class TableUtils {
@@ -865,7 +867,7 @@ export class TableUtils {
   static makeQuickDateFilterWithOperation(
     column: Column,
     text: string,
-    operation: FilterTypeValue = FilterType.eq,
+    operation: FilterTypeValue,
     timeZone: string
   ): FilterCondition {
     if (column == null) {

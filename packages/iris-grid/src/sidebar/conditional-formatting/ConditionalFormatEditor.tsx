@@ -52,9 +52,9 @@ function getFormatterTypeLabel(option: FormatterType): string {
 
 const formatterTypes = [FormatterType.CONDITIONAL, FormatterType.ROWS];
 
-const ConditionalFormatEditor = (
+function ConditionalFormatEditor(
   props: ConditionalFormatEditorProps
-): JSX.Element => {
+): JSX.Element {
   const {
     columns: originalColumns,
     onSave = DEFAULT_CALLBACK,
@@ -156,6 +156,6 @@ const ConditionalFormatEditor = (
       </div>
     </div>
   );
-};
+}
 
 export default ConditionalFormatEditor;

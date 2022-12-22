@@ -45,7 +45,7 @@ interface GotoRowProps {
   onGotoValueChanged: (input: string, isBackward?: boolean) => void;
 }
 
-const GotoRow = ({
+function GotoRow({
   gotoRow,
   gotoRowError,
   onSubmit,
@@ -63,7 +63,7 @@ const GotoRow = ({
   onGotoValueSelectedColumnChanged,
   onGotoValueSelectedFilterChanged,
   onGotoValueChanged,
-}: GotoRowProps): ReactElement => {
+}: GotoRowProps): ReactElement {
   const gotoRowInputRef = useRef<HTMLInputElement>(null);
   const gotoValueInputRef = useRef<HTMLInputElement>(null);
 
@@ -236,6 +236,6 @@ const GotoRow = ({
       </>
     </IrisGridBottomBar>
   );
-};
+}
 
 export default GotoRow;

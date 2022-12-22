@@ -136,10 +136,13 @@ export class ConsoleInput extends PureComponent<
 
     log.debug('Command received: ', text);
 
-    // Need to set commandHistoryIndex before value
-    // On value change, modified commands map updates
-    this.commandHistoryIndex = null;
-    this.commandEditor?.setValue(text);
+    // Only set the console text if we're not running this command
+    if (!execute) {
+      // Need to set commandHistoryIndex before value
+      // On value change, modified commands map updates
+      this.commandHistoryIndex = null;
+      this.commandEditor?.setValue(text);
+    }
 
     if (focus) {
       this.focusEnd();
@@ -148,7 +151,7 @@ export class ConsoleInput extends PureComponent<
     this.updateDimensions();
 
     if (execute) {
-      this.processCommand();
+      this.processCommand(text);
     }
   }
 
@@ -256,7 +259,11 @@ export class ConsoleInput extends PureComponent<
             keyEvent.stopPropagation();
             keyEvent.preventDefault();
 
-            this.processCommand();
+            const command = this.commandEditor?.getValue().trim();
+            if (command !== undefined) {
+              this.processCommand(command);
+              this.commandEditor?.setValue('');
+            }
           }
         } else if (keyEvent.keyCode === monaco.KeyCode.Tab) {
           if (!this.isSuggestionMenuActive()) {
@@ -420,7 +427,7 @@ export class ConsoleInput extends PureComponent<
         this.bufferIndex = null;
       }
       this.history = [
-        ...viewportData?.items
+        ...viewportData.items
           .filter(
             ({ name }, pos, arr) => pos === 0 || name !== arr[pos - 1].name
           )
@@ -443,11 +450,10 @@ export class ConsoleInput extends PureComponent<
     }
   }
 
-  processCommand(): void {
+  processCommand(command: string): void {
     this.commandHistoryIndex = null;
     this.modifiedCommands.clear();
 
-    const command = this.commandEditor?.getValue().trim();
     assertNotNull(command);
     if (
       command !== '' &&
@@ -456,7 +462,6 @@ export class ConsoleInput extends PureComponent<
     ) {
       this.history.push(command);
     }
-    this.commandEditor?.setValue('');
     this.updateDimensions();
 
     const { onSubmit } = this.props;

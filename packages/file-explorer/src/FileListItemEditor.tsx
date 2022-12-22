@@ -22,12 +22,14 @@ export interface FileListItemEditorProps {
   validate?: (newName: string) => Promise<void>;
 }
 
-export const FileListItemEditor = ({
+const DEFAULT_VALIDATE = () => Promise.resolve();
+
+export function FileListItemEditor({
   item,
   onCancel,
   onSubmit,
-  validate = () => Promise.resolve(),
-}: FileListItemEditorProps): JSX.Element => {
+  validate = DEFAULT_VALIDATE,
+}: FileListItemEditorProps): JSX.Element {
   const input = useRef<HTMLInputElement>(null);
   const [value, setValue] = useState(item.basename);
   const [validationError, setValidationError] = useState<Error>();
@@ -128,6 +130,6 @@ export const FileListItemEditor = ({
       )}
     </div>
   );
-};
+}
 
 export default FileListItemEditor;

@@ -9,17 +9,19 @@ type LoadingSpinnerProps = {
   'data-testid'?: string;
 };
 
-const LoadingSpinner = ({
+function LoadingSpinner({
   className = '',
   'data-testid': dataTestId,
-}: LoadingSpinnerProps): JSX.Element => (
-  <div
-    className={classNames('loading-spinner fa-layers', className)}
-    data-testid={dataTestId}
-  >
-    <FontAwesomeIcon icon={vsCircleLargeOutline} className="text-white-50" />
-    <FontAwesomeIcon icon={vsLoading} className="text-primary" spin />
-  </div>
-);
+}: LoadingSpinnerProps): JSX.Element {
+  return (
+    <div
+      className={classNames('loading-spinner fa-layers', className)}
+      data-testid={dataTestId}
+    >
+      <FontAwesomeIcon icon={vsCircleLargeOutline} className="text-white-50" />
+      <FontAwesomeIcon icon={vsLoading} className="text-primary" spin />
+    </div>
+  );
+}
 
 export default LoadingSpinner;

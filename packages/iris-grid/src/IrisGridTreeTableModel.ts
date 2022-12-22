@@ -66,7 +66,7 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
       0,
       this.viewportData?.offset,
       columns.length,
-      this.viewportData?.offset + this.viewportData?.rows.length
+      this.viewportData.offset + this.viewportData.rows.length
     );
 
     for (let i = 0; i < ranges.length; i += 1) {

@@ -11,6 +11,7 @@ import {
 } from '@deephaven/filters';
 import TableUtils from './TableUtils';
 import DateUtils from './DateUtils';
+// eslint-disable-next-line import/no-relative-packages
 import IrisGridTestUtils from '../../iris-grid/src/IrisGridTestUtils';
 
 const DEFAULT_TIME_ZONE_ID = 'America/New_York';

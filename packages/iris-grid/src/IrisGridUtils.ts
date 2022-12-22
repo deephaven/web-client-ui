@@ -29,7 +29,7 @@ import Log from '@deephaven/log';
 import { assertNotNull } from '@deephaven/utils';
 import AggregationUtils from './sidebar/aggregations/AggregationUtils';
 import AggregationOperation from './sidebar/aggregations/AggregationOperation';
-import { IrisGridProps, IrisGridState } from './IrisGrid';
+import { FilterData, IrisGridProps, IrisGridState } from './IrisGrid';
 import {
   ColumnName,
   AdvancedFilterMap,
@@ -410,7 +410,7 @@ class IrisGridUtils {
   ): {
     isSelectingPartition: boolean;
     partition: string | undefined;
-    partitionColumn: ColumnName | null;
+    partitionColumn: ColumnName | undefined;
     advancedSettings: [AdvancedSettingsType, boolean][];
   } {
     const {
@@ -423,7 +423,8 @@ class IrisGridUtils {
     return {
       isSelectingPartition,
       partition,
-      partitionColumn: partitionColumn != null ? partitionColumn.name : null,
+      partitionColumn:
+        partitionColumn != null ? partitionColumn.name : undefined,
       advancedSettings: [...advancedSettings],
     };
   }
@@ -941,7 +942,7 @@ class IrisGridUtils {
   static getFiltersFromInputFilters(
     columns: Column[],
     inputFilters: InputFilter[] = [],
-    timeZone: string
+    timeZone?: string
   ): FilterCondition[] {
     return inputFilters
       .map(({ name, type, value }) => {
@@ -985,7 +986,7 @@ class IrisGridUtils {
    * @param  userColumnWidths Map of user column widths
    * @returns Array of hidden column indexes
    */
-  static getHiddenColumns(userColumnWidths: ModelSizeMap): number[] {
+  static getHiddenColumns(userColumnWidths: ModelSizeMap): ModelIndex[] {
     return [...userColumnWidths.entries()]
       .filter(([, value]) => value === 0)
       .map(([key]) => key);
@@ -1361,7 +1362,7 @@ class IrisGridUtils {
    */
   static getModelRollupConfig(
     originalColumns: Column[],
-    config: UIRollupConfig,
+    config: UIRollupConfig | undefined,
     aggregationSettings: AggregationSettings
   ): RollupConfig | null {
     if ((config?.columns?.length ?? 0) === 0) {
@@ -1494,6 +1495,63 @@ class IrisGridUtils {
         return index < 0 ? null : [index, filter];
       })
       .filter(filterConfig => filterConfig != null) as [number, T][];
+  }
+
+  /**
+   * @param columnType The column type that the filters will be applied to.
+   * @param filterList The list of filters to be combined.
+   * @returns The combination of the filters in filterList as text.
+   */
+  static combineFiltersFromList(
+    columnType: string,
+    filterList: FilterData[]
+  ): string {
+    filterList.sort((a, b) => {
+      // move all 'equals' comparisons to end of list
+      if (a.operator === 'eq' && b.operator !== 'eq') {
+        return 1;
+      }
+      if (a.operator !== 'eq' && b.operator === 'eq') {
+        return -1;
+      }
+      return a.startColumnIndex - b.startColumnIndex;
+    });
+
+    let combinedText = '';
+    for (let i = 0; i < filterList.length; i += 1) {
+      const { text, value, operator } = filterList[i];
+      if (value !== undefined) {
+        let symbol = '';
+        if (operator !== undefined) {
+          if (value == null && operator === 'eq') {
+            symbol = '=';
+          } else if (operator !== 'eq') {
+            if (operator === 'startsWith' || operator === 'endsWith') {
+              symbol = '*';
+            } else {
+              symbol = TableUtils.getFilterOperatorString(operator);
+            }
+          }
+        }
+
+        let filterText = `${symbol}${text}`;
+        if (operator === 'startsWith') {
+          filterText = `${text}${symbol}`;
+        }
+        if (
+          columnType != null &&
+          value !== null &&
+          TableUtils.isCharType(columnType)
+        ) {
+          filterText = `${symbol}${String.fromCharCode(parseInt(text, 10))}`;
+        }
+        if (i !== 0) {
+          combinedText += operator === 'eq' ? ' || ' : ' && ';
+        }
+        combinedText += filterText;
+      }
+    }
+    return combinedText;
   }
 }
 

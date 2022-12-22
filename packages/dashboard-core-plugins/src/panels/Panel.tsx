@@ -299,7 +299,7 @@ class Panel extends PureComponent<PanelProps, PanelState> {
   }
 
   getAdditionActions = memoize(
-    (actions, isClonable: boolean, isRenamable: boolean) => {
+    (actions: ContextAction[], isClonable: boolean, isRenamable: boolean) => {
       const additionalActions = [];
       if (isClonable) {
         additionalActions.push(this.getCloneAction());

@@ -12,7 +12,7 @@ import {
 } from '@deephaven/dashboard';
 import { FileUtils } from '@deephaven/file-explorer';
 import Log from '@deephaven/log';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import shortid from 'shortid';
 import { ConsoleEvent, NotebookEvent } from './events';
@@ -54,9 +54,9 @@ export interface FileMetadata {
   itemName: string;
 }
 
-export const ConsolePlugin = (
+export function ConsolePlugin(
   props: Partial<ConsolePluginProps>
-): JSX.Element => {
+): JSX.Element | null {
   assertIsConsolePluginProps(props);
   const {
     id,
@@ -524,7 +524,7 @@ export const ConsolePlugin = (
     unregisterFilePanel
   );
 
-  return <></>;
-};
+  return null;
+}
 
 export default ConsolePlugin;
