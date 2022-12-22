@@ -222,6 +222,10 @@ export class LinkerOverlayContent extends Component<
       this.setState({
         mode: 'delete',
       });
+    } else if (event.key === 'Delete' || event.key === 'Backspace') {
+      const { selectedIds, onLinkDeleted } = this.props;
+      event.preventDefault();
+      selectedIds.forEach(id => onLinkDeleted(id));
     }
   }
 
