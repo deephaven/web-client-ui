@@ -400,7 +400,7 @@ export interface IrisGridState {
   gotoRowError: string;
   isGotoShown: boolean;
 
-  gotoValueSelectedColumn?: Column;
+  gotoValueSelectedColumn: Column;
   gotoValueSelectedFilter: number;
   gotoValue: string;
   lastSeekedRow: number;
@@ -3176,7 +3176,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       lastSeekedRow,
     } = this.state;
     const { model } = this.props;
-    if (selectedColumn && isIrisGridProxyModel(model)) {
+    if (isIrisGridProxyModel(model)) {
       const { table } = model;
       if (table !== undefined && !TableUtils.isTreeTable(table)) {
         if (selectedColumn.type === 'java.lang.String') {

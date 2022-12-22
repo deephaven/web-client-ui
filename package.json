@@ -34,7 +34,7 @@
     "preview": "lerna run --scope=@deephaven/{code-studio,embed-chart,embed-grid} preview --stream",
     "preview:app": "lerna run --scope=@deephaven/code-studio preview --stream",
     "prestart": "npm run build:necessary",
-    "start": "run-p watch:types start:*",
+    "start": "run-p start:*",
     "start:app": "lerna run start --scope=@deephaven/code-studio --stream",
     "start:embed-chart": "lerna run start --scope=@deephaven/embed-chart --stream",
     "start:embed-grid": "lerna run start --scope=@deephaven/embed-grid --stream",

@@ -2,13 +2,14 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { vsClose, vsArrowUp, vsArrowDown } from '@deephaven/icons';
 import React, {
   ChangeEvent,
+  KeyboardEvent,
   ReactElement,
   useEffect,
   useRef,
   useState,
 } from 'react';
 import { Column } from '@deephaven/jsapi-shim';
-import { Button } from '@deephaven/components';
+import { Button, DateTimeInput } from '@deephaven/components';
 import classNames from 'classnames';
 import './GotoRow.scss';
 import IrisGridModel from './IrisGridModel';
@@ -37,7 +38,7 @@ interface GotoRowProps {
   onExiting: () => void;
   onExited: () => void;
 
-  gotoValueSelectedColumn?: Column;
+  gotoValueSelectedColumn: Column;
   gotoValueSelectedFilter: number;
   gotoValue: string;
   onGotoValueSelectedColumnChanged: (column: Column) => void;
@@ -77,7 +78,27 @@ function GotoRow({
   const res = 'Row number';
 
   const { rowCount } = model;
+  const onGotoValueKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.stopPropagation();
+      e.preventDefault();
+      onGotoValueChanged(gotoValue);
+    }
+  };
 
+  const { type: columnType } = gotoValueSelectedColumn;
+
+  const isNumberType =
+    columnType === 'int' ||
+    columnType === 'long' ||
+    columnType === 'float' ||
+    columnType === 'java.math.BigDecimal' ||
+    columnType === 'java.math.BigInteger';
+
+  const isDateTime = columnType === 'io.deephaven.time.DateTime';
+  const onGotoValueInputChanged = (value?: string) => {
+    onGotoValueChanged(value ?? '');
+  };
   const selectInput = () => {
     // when row changes without focus (i.e. via context menu), re-select input
     if (isGotoRowActive && document.activeElement !== gotoRowInputRef.current) {
@@ -192,24 +213,40 @@ function GotoRow({
                     </select>
                   </div>
                 )}
-              <div className="goto-row-input">
-                <input
-                  ref={gotoValueInputRef}
-                  className="form-control"
-                  onKeyDown={e => {
-                    if (e.key === 'Enter') {
-                      e.stopPropagation();
-                      e.preventDefault();
-                      onGotoValueChanged(gotoValue);
-                    }
-                  }}
-                  placeholder="value"
-                  onChange={event => {
-                    onGotoValueChanged(event.target.value);
-                  }}
-                  value={gotoValue}
-                />
-              </div>
+
+              {isNumberType && (
+                <div className="goto-row-input">
+                  <input
+                    ref={gotoValueInputRef}
+                    type="number"
+                    className="form-control"
+                    onKeyDown={onGotoValueKeyDown}
+                    placeholder="value"
+                    onChange={e => onGotoValueInputChanged(e.target.value)}
+                    value={gotoValue}
+                  />
+                </div>
+              )}
+              {isDateTime && (
+                <div className="goto-value-date-time-input">
+                  <DateTimeInput
+                    className="goto-value-date-time-input"
+                    onChange={onGotoValueInputChanged}
+                  />
+                </div>
+              )}
+              {!isDateTime && !isNumberType && (
+                <div className="goto-row-input">
+                  <input
+                    ref={gotoValueInputRef}
+                    className="form-control"
+                    onKeyDown={onGotoValueKeyDown}
+                    placeholder="value"
+                    onChange={e => onGotoValueInputChanged(e.target.value)}
+                    value={gotoValue}
+                  />
+                </div>
+              )}
               {gotoValue !== '' && (
                 <div>
                   <Button
