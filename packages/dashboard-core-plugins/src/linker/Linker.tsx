@@ -109,6 +109,7 @@ export class Linker extends Component<LinkerProps, LinkerState> {
     this.handleExited = this.handleExited.bind(this);
     this.handleLinkSelected = this.handleLinkSelected.bind(this);
     this.isColumnSelectionValid = this.isColumnSelectionValid.bind(this);
+    this.reset = this.reset.bind(this);
 
     this.state = { linkInProgress: undefined, selectedIds: new Set<string>() };
   }
@@ -128,10 +129,7 @@ export class Linker extends Component<LinkerProps, LinkerState> {
     if (activeTool !== prevProps.activeTool) {
       this.updateSelectionValidators();
       if (activeTool === ToolType.DEFAULT) {
-        this.setState({
-          linkInProgress: undefined,
-          selectedIds: new Set<string>(),
-        });
+        this.reset();
       }
     }
   }
@@ -179,6 +177,13 @@ export class Linker extends Component<LinkerProps, LinkerState> {
     eventHub.off(InputFilterEvent.COLUMNS_CHANGED, this.handleColumnsChanged);
     eventHub.off(PanelEvent.CLOSE, this.handlePanelClosed);
     eventHub.off(PanelEvent.CLOSED, this.handlePanelClosed);
+  }
+
+  reset(): void {
+    this.setState({
+      linkInProgress: undefined,
+      selectedIds: new Set<string>(),
+    });
   }
 
   handleCancel(): void {
@@ -429,7 +434,7 @@ export class Linker extends Component<LinkerProps, LinkerState> {
       );
       this.deleteLinks(isolatedLinks);
     }
-    this.setState({ linkInProgress: undefined });
+    this.reset();
   }
 
   handleLinkDeleted(linkId: string): void {
