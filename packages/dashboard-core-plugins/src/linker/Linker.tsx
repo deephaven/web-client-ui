@@ -109,7 +109,6 @@ export class Linker extends Component<LinkerProps, LinkerState> {
     this.handleExited = this.handleExited.bind(this);
     this.handleLinkSelected = this.handleLinkSelected.bind(this);
     this.isColumnSelectionValid = this.isColumnSelectionValid.bind(this);
-    this.reset = this.reset.bind(this);
 
     this.state = { linkInProgress: undefined, selectedIds: new Set<string>() };
   }
