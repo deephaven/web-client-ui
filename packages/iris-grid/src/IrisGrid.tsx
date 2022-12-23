@@ -62,6 +62,7 @@ import {
 } from '@deephaven/icons';
 import dh, {
   Column,
+  ColumnGroup,
   CustomColumn,
   DateWrapper,
   FilterCondition,
@@ -312,7 +313,7 @@ export interface IrisGridProps {
 
   canToggleSearch: boolean;
 
-  columnHeaderGroups: ColumnHeaderGroup[] | null;
+  columnHeaderGroups: ColumnGroup[] | ColumnHeaderGroup[] | undefined;
 }
 
 export interface IrisGridState {
@@ -402,7 +403,7 @@ export interface IrisGridState {
   gotoRowError: string;
   isGotoRowShown: boolean;
 
-  columnHeaderGroups: ColumnHeaderGroup[] | null;
+  columnHeaderGroups: ColumnGroup[] | ColumnHeaderGroup[] | undefined;
 }
 
 export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
@@ -479,7 +480,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     frozenColumns: null,
     theme: IrisGridTheme,
     canToggleSearch: true,
-    columnHeaderGroups: null,
+    columnHeaderGroups: undefined,
   };
 
   static makeQuickFilter(
@@ -1028,7 +1029,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       }
       optionItems.push({
         type: OptionType.VISIBILITY_ORDERING_BUILDER,
-        title: 'Column Visibility & Ordering',
+        title: 'Hide, Group, and Order Columns',
         icon: dhEye,
       });
       if (isFormatColumnsAvailable) {
@@ -2805,10 +2806,10 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     this.setState({ movedColumns }, onChangeApplied);
   }
 
-  handleHeaderGroupsChanged(columnHeaderGroups: ColumnHeaderGroup[]): void {
-    this.setState({ columnHeaderGroups });
-    this.props.model.setColumnHeaderGroups(columnHeaderGroups);
-    this.grid?.forceUpdate();
+  handleHeaderGroupsChanged(
+    columnHeaderGroups: ColumnGroup[] | undefined
+  ): void {
+    this.setState({ columnHeaderGroups }, () => this.grid?.forceUpdate());
   }
 
   handleTooltipRef(tooltip: Tooltip): void {
@@ -3550,6 +3551,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       pendingDataMap,
       toastMessage,
       frozenColumns,
+      columnHeaderGroups,
       showOverflowModal,
       overflowText,
       overflowButtonTooltipProps,
@@ -3897,6 +3899,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
               model={model}
               movedColumns={movedColumns}
               userColumnWidths={userColumnWidths}
+              columnHeaderGroups={model.getColumnHeaderGroups()}
               onColumnVisibilityChanged={this.handleColumnVisibilityChanged}
               onMovedColumnsChanged={this.handleMovedColumnsChanged}
               onColumnHeaderGroupChanged={this.handleHeaderGroupsChanged}
@@ -4142,6 +4145,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
                 pendingRowCount={pendingRowCount}
                 pendingDataMap={pendingDataMap}
                 frozenColumns={frozenColumns}
+                columnHeaderGroups={columnHeaderGroups}
               />
             )}
             {!isMenuShown && (

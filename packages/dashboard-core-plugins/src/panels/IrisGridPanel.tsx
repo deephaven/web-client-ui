@@ -61,7 +61,12 @@ import {
   PromiseUtils,
 } from '@deephaven/utils';
 import { ContextAction, ContextMenuRoot } from '@deephaven/components';
-import { Column, FilterCondition, Sort } from '@deephaven/jsapi-shim';
+import {
+  Column,
+  ColumnGroup,
+  FilterCondition,
+  Sort,
+} from '@deephaven/jsapi-shim';
 import {
   GridRangeIndex,
   GridState,
@@ -186,7 +191,7 @@ interface IrisGridPanelState {
   modelQueue: ModelQueue;
   pendingDataMap?: PendingDataMap<UIRow>;
   frozenColumns?: ColumnName[];
-  columnHeaderGroups?: ColumnHeaderGroup[] | null;
+  columnHeaderGroups?: ColumnHeaderGroup[] | ColumnGroup[];
 
   // eslint-disable-next-line react/no-unused-state
   panelState: PanelState | null; // Dehydrated panel state that can load this panel
@@ -450,7 +455,7 @@ export class IrisGridPanel extends PureComponent<
       pendingDataMap: PendingDataMap<UIRow>,
       frozenColumns: ColumnName[],
       conditionalFormats: SidebarFormattingRule[],
-      columnHeaderGroups: ColumnHeaderGroup[] | null
+      columnHeaderGroups: ColumnHeaderGroup[] | ColumnGroup[] | undefined
     ) =>
       IrisGridUtils.dehydrateIrisGridState(model, {
         advancedFilters,

@@ -586,7 +586,11 @@ class IrisGridTableModelTemplate<
   }
 
   textForColumnHeader(x: ModelIndex, depth = 0): string | undefined {
-    return this.columnAtDepth(x, depth)?.name ?? undefined;
+    const header = this.columnAtDepth(x, depth);
+    if (isColumnHeaderGroup(header)) {
+      return header.isNew ? '' : header.name;
+    }
+    return header?.name;
   }
 
   colorForColumnHeader(x: ModelIndex, depth = 0): string | null {
@@ -664,6 +668,9 @@ class IrisGridTableModelTemplate<
       return this._movedColumns;
     }
     let movedColumns: MoveOperation[] = [];
+    const { groupMap } = this.parseColumnHeaderGroups(
+      this.layoutHints?.columnGroups
+    );
 
     const moveColumn = (name: string, toIndex: VisibleIndex) => {
       const modelIndex = this.getColumnIndexByName(name);
@@ -675,7 +682,7 @@ class IrisGridTableModelTemplate<
     };
 
     const moveGroup = (name: string, toIndex: VisibleIndex) => {
-      const group = this.columnHeaderGroupMap.get(name);
+      const group = groupMap.get(name);
       if (!group) {
         throw new Error(`Unknown layout hint group: ${name}`);
       }
@@ -718,7 +725,7 @@ class IrisGridTableModelTemplate<
 
     const layoutHintColumnGroups = this.layoutHints?.columnGroups;
     if (layoutHintColumnGroups) {
-      const columnGroups = [...this.columnHeaderGroupMap.values()];
+      const columnGroups = [...groupMap.values()];
       columnGroups.sort((a, b) => a.depth - b.depth);
 
       columnGroups.forEach(group => {
@@ -733,7 +740,7 @@ class IrisGridTableModelTemplate<
             movedColumns
           );
         } else {
-          const firstChildGroup = this.columnHeaderGroupMap.get(firstChildName);
+          const firstChildGroup = groupMap.get(firstChildName);
           if (!firstChildGroup) {
             throw new Error(
               `Unknown column ${firstChildName} in group ${group.name}`
@@ -747,7 +754,7 @@ class IrisGridTableModelTemplate<
 
         for (let i = 1; i < group.children.length; i += 1) {
           const childName = group.children[i];
-          const childGroup = this.columnHeaderGroupMap.get(childName);
+          const childGroup = groupMap.get(childName);
           const childColumn = this.getColumnIndexByName(childName);
 
           if (childGroup) {
@@ -813,18 +820,25 @@ class IrisGridTableModelTemplate<
     return this.columnHeaderGroupMap;
   }
 
-  setColumnHeaderGroups(groups: ColumnGroup[] | undefined): void {
-    if (groups === this._columnHeaderGroups) {
-      return;
-    }
+  private parseColumnHeaderGroups(
+    originalGroups: ColumnGroup[] | undefined
+  ): {
+    groups: ColumnHeaderGroup[];
+    maxDepth: number;
+    parentMap: Map<string, ColumnHeaderGroup>;
+    groupMap: Map<string, ColumnHeaderGroup>;
+  } {
+    let maxDepth = 1;
+    const parentMap: Map<string, ColumnHeaderGroup> = new Map();
+    const groupMap: Map<string, ColumnHeaderGroup> = new Map();
 
-    this._columnHeaderGroups = [];
-    this.columnHeaderMaxDepth = 1;
-    this.columnHeaderParentMap = new Map();
-    this.columnHeaderGroupMap = new Map();
+    // Remove any empty groups before parsing
+    const groups = originalGroups?.filter(
+      ({ children }) => children.length > 0
+    );
 
     if (!groups || groups.length === 0) {
-      return;
+      return { groups: [], maxDepth, parentMap, groupMap };
     }
 
     const originalGroupMap = new Map(groups.map(group => [group.name, group]));
@@ -837,7 +851,7 @@ class IrisGridTableModelTemplate<
         throw new Error(`Column header group has same name as column: ${name}`);
       }
 
-      const existingGroup = this.columnHeaderGroupMap.get(name);
+      const existingGroup = groupMap.get(name);
 
       if (existingGroup) {
         return existingGroup;
@@ -876,15 +890,12 @@ class IrisGridTableModelTemplate<
         childIndexes,
       });
 
-      this.columnHeaderGroupMap.set(name, columnHeaderGroup);
+      groupMap.set(name, columnHeaderGroup);
       group.children.forEach(childName =>
-        this.columnHeaderParentMap.set(childName, columnHeaderGroup)
+        parentMap.set(childName, columnHeaderGroup)
       );
 
-      this.columnHeaderMaxDepth = Math.max(
-        this.columnHeaderMaxDepth,
-        columnHeaderGroup.depth + 1
-      );
+      maxDepth = Math.max(maxDepth, columnHeaderGroup.depth + 1);
       return columnHeaderGroup;
     };
 
@@ -899,11 +910,29 @@ class IrisGridTableModelTemplate<
       addGroup(group);
     });
 
-    this.columnHeaderGroupMap.forEach(group => {
-      group.setParent(this.columnHeaderParentMap.get(group.name));
+    groupMap.forEach(group => {
+      group.setParent(parentMap.get(group.name));
     });
 
-    this._columnHeaderGroups = [...this.columnHeaderGroupMap.values()];
+    return { groups: [...groupMap.values()], maxDepth, groupMap, parentMap };
+  }
+
+  setColumnHeaderGroups(groups: ColumnGroup[] | undefined): void {
+    if (groups === this._columnHeaderGroups) {
+      return;
+    }
+
+    const {
+      groups: newGroups,
+      maxDepth,
+      parentMap,
+      groupMap,
+    } = this.parseColumnHeaderGroups(groups);
+
+    this._columnHeaderGroups = newGroups;
+    this.columnHeaderMaxDepth = maxDepth;
+    this.columnHeaderParentMap = parentMap;
+    this.columnHeaderGroupMap = groupMap;
   }
 
   get groupedColumns(): Column[] {

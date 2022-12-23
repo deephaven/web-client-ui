@@ -8,21 +8,17 @@ function getDragDepth(offset: number, indentationWidth: number) {
   return Math.round(offset / indentationWidth);
 }
 
-export type IrisGridTreeItem = TreeItem<{
+interface IrisGridTreeItemData {
   modelIndex: number | number[];
   visibleIndex: number | [number, number];
   isVisible: boolean;
   selected: boolean;
   group?: ColumnHeaderGroup;
-}>;
+}
 
-export type FlattenedIrisGridTreeItem = FlattenedItem<{
-  modelIndex: number | number[];
-  visibleIndex: number | [number, number];
-  isVisible: boolean;
-  selected: boolean;
-  group?: ColumnHeaderGroup;
-}>;
+export type IrisGridTreeItem = TreeItem<IrisGridTreeItemData>;
+
+export type FlattenedIrisGridTreeItem = FlattenedItem<IrisGridTreeItemData>;
 
 function getTreeItem(
   model: IrisGridModel,
@@ -217,27 +213,6 @@ export function flattenTree<T>(items: TreeItems<T>): FlattenedItem<T>[] {
   return flatten(items);
 }
 
-export function buildTree<T>(flattenedItems: FlattenedItem<T>[]): TreeItems<T> {
-  const root: TreeItem & { children: TreeItems<T> } = {
-    id: 'root',
-    children: [],
-  };
-  const nodes: Record<string, TreeItem> = { [root.id]: root };
-  const items = flattenedItems.map(item => ({ ...item, children: [] }));
-
-  for (let i = 0; i < items.length; i += 1) {
-    const item = items[i];
-    const { id, children } = item;
-    const parentId = item.parentId ?? root.id;
-    const parent = nodes[parentId] ?? findItem(items, parentId);
-
-    nodes[id] = { id, children };
-    parent.children.push(item);
-  }
-
-  return root.children;
-}
-
 export function findItem(
   items: TreeItem[],
   itemId: string
@@ -269,23 +244,6 @@ export function findItemDeep(
   return undefined;
 }
 
-export function removeItem(items: TreeItems, id: string): TreeItem[] {
-  const newItems = [];
-
-  for (let i = 0; i < items.length; i += 1) {
-    const item = items[i];
-    if (item.id !== id) {
-      if (item.children.length) {
-        item.children = removeItem(item.children, id);
-      }
-
-      newItems.push(item);
-    }
-  }
-
-  return newItems;
-}
-
 function countChildren(items: TreeItem[], count = 0): number {
   return items.reduce((acc, { children }) => {
     if (children.length) {
@@ -306,12 +264,12 @@ export function removeChildrenOf<T>(
   items: FlattenedItem<T>[],
   ids: string[]
 ): FlattenedItem<T>[] {
-  const excludeParentIds = [...ids];
+  const excludeParentIds = new Set(ids);
 
   return items.filter(item => {
-    if (item.parentId != null && excludeParentIds.includes(item.parentId)) {
+    if (item.parentId != null && excludeParentIds.has(item.parentId)) {
       if (item.children.length) {
-        excludeParentIds.push(item.id);
+        excludeParentIds.add(item.id);
       }
       return false;
     }

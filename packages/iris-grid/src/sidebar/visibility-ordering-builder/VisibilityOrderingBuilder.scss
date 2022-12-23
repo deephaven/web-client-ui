@@ -1,0 +1,77 @@
+@import '@deephaven/components/scss/custom.scss';
+
+.visibility-ordering-builder {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  max-height: 100%;
+  outline: 0;
+
+  .top-menu {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    background-color: $content-bg;
+    padding: $spacer-1 $spacer-2;
+    z-index: 2;
+
+    .btn-link-icon {
+      padding-left: $spacer-1;
+      padding-right: $spacer-1;
+    }
+  }
+
+  .toggle-visibility-btn {
+    flex-shrink: 0;
+    margin-right: $spacer-2;
+  }
+
+  .visibility-search {
+    flex-grow: 1;
+    flex-shrink: 1;
+  }
+
+  .visibility-ordering-list {
+    overflow-y: auto;
+    flex-grow: 1;
+
+    hr {
+      margin: $spacer-2 0;
+      background-color: $content-bg;
+    }
+  }
+
+  .visibility-ordering-list-item {
+    padding-left: $spacer-1; // space for focus border
+
+    &.immovable {
+      &:first-child {
+        padding-top: $spacer-1;
+      }
+
+      .column-item {
+        user-select: none;
+        border: $input-border-width solid transparent;
+        color: $text-muted;
+        padding-left: 32px;
+        &:hover {
+          background: transparent;
+        }
+      }
+
+      .column-name {
+        overflow-x: hidden;
+        text-overflow: ellipsis;
+        padding-right: 2px;
+      }
+    }
+  }
+
+  .vertical-divider {
+    border-left: 1px solid $black;
+    padding-right: $spacer-1;
+    margin-left: $spacer-1;
+    height: 1rem;
+  }
+}

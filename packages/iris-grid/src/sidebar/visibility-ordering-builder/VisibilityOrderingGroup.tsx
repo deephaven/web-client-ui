@@ -19,20 +19,14 @@ interface VisibilityOrderingGroupProps {
   onColorChange(group: ColumnHeaderGroup, color: string | undefined): void;
   onNameChange(group: ColumnHeaderGroup, name: string): void;
   validateName(name: string): boolean;
-  isNew: boolean;
 }
 
 export default function VisibilityOrderingGroup(
   props: VisibilityOrderingGroupProps
 ): JSX.Element {
-  const {
-    group,
-    onDelete,
-    onColorChange,
-    onNameChange,
-    validateName,
-    isNew,
-  } = props;
+  const { group, onDelete, onColorChange, onNameChange, validateName } = props;
+  const { isNew } = group;
+  const groupRef = useRef(group);
   const nameInputRef = useRef<HTMLInputElement>(null);
   const colorInputRef = useRef<HTMLInputElement>(null);
   const [name, setName] = useState(isNew ? '' : group.name);
@@ -52,6 +46,18 @@ export default function VisibilityOrderingGroup(
     [isEditing]
   );
 
+  useEffect(
+    function deleteNewOnUnmount() {
+      return () => {
+        if (groupRef.current.isNew) {
+          // eslint-disable-next-line react-hooks/exhaustive-deps
+          onDelete(groupRef.current);
+        }
+      };
+    },
+    [onDelete]
+  );
+
   const handleConfirm = () => {
     if (isValid) {
       onNameChange(group, name);
@@ -60,8 +66,8 @@ export default function VisibilityOrderingGroup(
   };
 
   const handleCancel = () => {
-    // Can't cancel editing the new group name
     if (isNew) {
+      onDelete(group);
       return;
     }
     setName(group.name);
@@ -142,9 +148,22 @@ export default function VisibilityOrderingGroup(
         />
         <Button
           kind="ghost"
+          className="color-swatch mr-1"
           icon={
             group.color !== undefined ? (
-              <FontAwesomeIcon icon={dhSquareFilled} color={group.color} />
+              <span className="fa-layers">
+                <FontAwesomeIcon
+                  className="color-swatch"
+                  icon={dhSquareFilled}
+                  color={ThemeExport.white}
+                />
+                <FontAwesomeIcon
+                  className="color-swatch"
+                  icon={dhSquareFilled}
+                  color={group.color}
+                  transform="shrink-2"
+                />
+              </span>
             ) : (
               vsPaintcan
             )
@@ -157,6 +176,7 @@ export default function VisibilityOrderingGroup(
         <input
           ref={colorInputRef}
           type="color"
+          list="presetColors"
           value={group.color ?? ThemeExport['content-bg']}
           style={{
             visibility: 'hidden',
@@ -170,6 +190,18 @@ export default function VisibilityOrderingGroup(
             onColorChange(group, e.target.value);
           }}
         />
+        <datalist id="presetColors">
+          <option>{ThemeExport['content-bg']}</option>
+          <option>{ThemeExport.primary}</option>
+          <option>{ThemeExport.foreground}</option>
+          <option>{ThemeExport.green}</option>
+          <option>{ThemeExport.yellow}</option>
+          <option>{ThemeExport.orange}</option>
+          <option>{ThemeExport.red}</option>
+          <option>{ThemeExport.purple}</option>
+          <option>{ThemeExport.blue}</option>
+          <option>{ThemeExport['gray-400']}</option>
+        </datalist>
       </span>
     </div>
   );

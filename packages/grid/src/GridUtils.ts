@@ -1081,7 +1081,7 @@ export class GridUtils {
   }
 
   /**
-   * Translate the provided UI start/end indexes to the model start/end indexes by applying the `movedItems` transformations.
+   * Translate the provided UI start/end indexes to the visible start/end indexes by applying the `movedItems` transformations.
    * Since moved items can split apart a range, multiple pairs of indexes are returned
    *
    * @param start Start item in one dimension

@@ -1,7 +1,7 @@
 /* eslint-disable react/jsx-props-no-spreading */
-import React, { useEffect, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import classNames from 'classnames';
-import type { FlattenedItem } from './types';
+import type { FlattenedItem, TreeItem as TreeItemType } from './types';
 import './TreeItem.scss';
 
 export interface Props<T> {
@@ -30,7 +30,7 @@ export type TreeItemRenderFn<T> = (props: {
   clone: boolean;
   childCount?: number;
   value: string;
-  item: FlattenedItem<T>;
+  item: T extends TreeItemType<infer D> ? FlattenedItem<D> : FlattenedItem<T>;
   handleProps: unknown;
 }) => JSX.Element;
 
@@ -49,10 +49,14 @@ export function TreeItem<T>(props: Props<T>) {
     childCount,
   } = props;
 
-  const depthMarkers = useMemo(() => {
-    const DepthMarker = <span className="depth-line" />;
-    return Array(depth).fill(DepthMarker);
-  }, [depth]);
+  const depthMarkers = useMemo(
+    () =>
+      Array(depth)
+        .fill(0)
+        // eslint-disable-next-line react/no-array-index-key
+        .map((_, i) => <span key={`depth-line-${i}`} className="depth-line" />),
+    [depth]
+  );
 
   const renderItemProps = useMemo(
     () => ({

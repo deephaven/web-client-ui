@@ -353,7 +353,7 @@ class IrisGridUtils {
     } = irisGridState;
     const { columns, formatter } = model;
 
-    let hydratedColumnHeaderGroups: ColumnHeaderGroup[] | null = null;
+    let hydratedColumnHeaderGroups: ColumnHeaderGroup[] | undefined;
 
     if (columnHeaderGroups) {
       model.setColumnHeaderGroups(columnHeaderGroups);

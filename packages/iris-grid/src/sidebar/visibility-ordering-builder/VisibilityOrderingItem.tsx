@@ -1,18 +1,18 @@
 /* eslint-disable react/prop-types */
-import React, { forwardRef, useCallback } from 'react';
+import React, { forwardRef, useCallback, useRef } from 'react';
 import classNames from 'classnames';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { dhEye, dhEyeSlash, vsGripper } from '@deephaven/icons';
 import { Button, Tooltip } from '@deephaven/components';
 import VisibilityOrderingGroup from './VisibilityOrderingGroup';
-import { IrisGridTreeItem } from './sortable-tree/utilities';
+import { FlattenedIrisGridTreeItem } from './sortable-tree/utilities';
 import type ColumnHeaderGroup from '../../ColumnHeaderGroup';
 
 type VisibilityOrderingItemProps = {
   value: string;
   clone: boolean;
   childCount?: number;
-  item: IrisGridTreeItem;
+  item: FlattenedIrisGridTreeItem;
   onVisibilityChange(modelIndexes: number[], isVisible: boolean): void;
   onClick(name: string, event: React.MouseEvent): void;
   onGroupDelete(group: ColumnHeaderGroup): void;
@@ -21,6 +21,10 @@ type VisibilityOrderingItemProps = {
   validateGroupName(name: string): boolean;
   handleProps: unknown;
 };
+
+function emptyOnClick() {
+  // no-op
+}
 
 const VisibilityOrderingItem = forwardRef<
   HTMLDivElement,
@@ -40,10 +44,17 @@ const VisibilityOrderingItem = forwardRef<
     handleProps,
   } = props;
   const { group, modelIndex, isVisible } = item.data;
+  const buttonRef = useRef<HTMLButtonElement>(null);
 
-  const handleVisibilityChange = useCallback(() => {
-    onVisibilityChange([modelIndex].flat(), !isVisible);
-  }, [onVisibilityChange, modelIndex, isVisible]);
+  const handleVisibilityChange = useCallback(
+    (e: React.MouseEvent) => {
+      if (e.buttons === 1) {
+        onVisibilityChange([modelIndex].flat(), !isVisible);
+        buttonRef.current?.focus();
+      }
+    },
+    [onVisibilityChange, modelIndex, isVisible]
+  );
 
   const handleClick = useCallback(
     (event: React.MouseEvent) => {
@@ -56,15 +67,23 @@ const VisibilityOrderingItem = forwardRef<
     // eslint-disable-next-line jsx-a11y/no-static-element-interactions
     <div
       ref={ref}
-      className={classNames('tree-item', item.data.selected && 'isSelected')}
+      className={classNames('tree-item', {
+        isSelected: item.data.selected,
+        'two-dragged': childCount === 2,
+        'multiple-dragged': childCount > 2,
+      })}
       onClick={handleClick}
       // eslint-disable-next-line react/jsx-props-no-spreading
       {...handleProps}
     >
       <Button
+        ref={buttonRef}
         kind="ghost"
         className="px-1"
-        onClick={handleVisibilityChange}
+        // We PropType validate onClick for Button
+        onClick={emptyOnClick}
+        onMouseDown={handleVisibilityChange}
+        onMouseEnter={handleVisibilityChange}
         icon={isVisible ? dhEye : dhEyeSlash}
         tooltip="Toggle visibility"
       />
@@ -76,7 +95,6 @@ const VisibilityOrderingItem = forwardRef<
             onColorChange={onGroupColorChange}
             onNameChange={onGroupNameChange}
             validateName={validateGroupName}
-            isNew={group.name.startsWith(':newGroup')}
           />
         ) : (
           value

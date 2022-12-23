@@ -15,6 +15,8 @@ export function isColumnHeaderGroup(x: unknown): x is ColumnHeaderGroup {
 }
 
 export default class ColumnHeaderGroup implements IColumnHeaderGroup {
+  static NEW_GROUP_PREFIX = ':newGroup';
+
   name: string;
 
   children: string[];
@@ -79,5 +81,9 @@ export default class ColumnHeaderGroup implements IColumnHeaderGroup {
     const newChildren = new Set(this.children);
     children.forEach(name => newChildren.delete(name));
     this.children = [...newChildren];
+  }
+
+  get isNew(): boolean {
+    return this.name.startsWith(ColumnHeaderGroup.NEW_GROUP_PREFIX);
   }
 }

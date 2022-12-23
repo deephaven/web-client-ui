@@ -21,12 +21,13 @@ $depth-margin: 19px;
     border-radius: $border-radius;
     padding: 0 $spacer-1; // space for focus border
 
+    svg:not(.color-swatch) {
+      color: $text-muted;
+    }
+
     &:hover {
       background: $gray-500;
       cursor: grab;
-      .fa-grip-vertical {
-        color: $gray-200;
-      }
     }
 
     &.isSelected {
@@ -34,6 +35,10 @@ $depth-margin: 19px;
 
       &:hover {
         background-color: $primary;
+
+        svg:not(.color-swatch) {
+          color: $foreground;
+        }
       }
     }
 
@@ -53,7 +58,7 @@ $depth-margin: 19px;
     .item-count {
       padding: 0 $spacer-2;
       border-radius: 1rem;
-      background-color: rgba($white, 0.25);
+      background-color: rgba($foreground, 0.25);
       margin-right: $spacer-1;
     }
   }
@@ -75,15 +80,46 @@ $depth-margin: 19px;
       padding-top: $spacer-1;
     }
 
+    &:last-child {
+      padding-bottom: $spacer-1;
+    }
+
     &.clone {
       pointer-events: none;
       padding: 0;
 
       .tree-item {
         opacity: 1;
-        color: $foreground;
         background-color: $primary;
         box-shadow: $box-shadow;
+
+        svg:not(.color-swatch) {
+          color: $foreground;
+        }
+
+        &.two-dragged {
+          @include drag-stack(before) {
+            top: 4px;
+            left: 2px;
+            opacity: 0.8;
+            z-index: -1;
+          }
+        }
+
+        &.multiple-dragged {
+          @include drag-stack(before) {
+            top: 4px;
+            left: 2px;
+            opacity: 0.8;
+            z-index: -1;
+          }
+          @include drag-stack(after) {
+            top: 8px;
+            left: 4px;
+            opacity: 0.6;
+            z-index: -2;
+          }
+        }
       }
     }
 
@@ -98,12 +134,16 @@ $depth-margin: 19px;
 
     &.disableInteraction {
       pointer-events: none;
+
+      &:not(.ghost) .tree-item.isSelected {
+        opacity: 0.3;
+      }
     }
 
     .depth-line {
       margin-left: $depth-margin;
       padding-bottom: 2px;
-      height: 28px;
+      height: 27px;
       border-left: 1px solid $depth-line-color;
       box-sizing: content-box;
     }
