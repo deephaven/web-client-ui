@@ -31,6 +31,7 @@ import {
   LayoutAxis,
   AxisType as PlotlyAxisType,
   OhclData,
+  MarkerSymbol,
 } from 'plotly.js';
 import { assertNotNull, Range } from '@deephaven/utils';
 import ChartTheme from './ChartTheme';
@@ -210,14 +211,19 @@ class ChartUtils {
   /**
    * Converts the Iris plot style into a plotly chart mode
    * @param plotStyle The plotStyle to use, see dh.plot.SeriesPlotStyle.*
+   * @param shape The shape of the markers to use
    */
   static getPlotlyChartMode(
-    plotStyle: SeriesPlotStyle
+    plotStyle: SeriesPlotStyle,
+    shape: string | null = null
   ): PlotData['mode'] | undefined {
     switch (plotStyle) {
       case dh.plot.SeriesPlotStyle.SCATTER:
         return 'markers';
       case dh.plot.SeriesPlotStyle.LINE:
+        if (shape != null) {
+          return 'lines+markers';
+        }
         return 'lines';
       default:
         return undefined;
@@ -623,13 +629,13 @@ class ChartUtils {
     seriesVisibility: boolean | 'legendonly',
     theme = ChartTheme
   ): Partial<PlotData> {
-    const { name, plotStyle, lineColor, shapeColor, sources } = series;
+    const { name, plotStyle, lineColor, shapeColor, sources, shape } = series;
 
     const isBusinessTime = sources.some(
       source => source.axis?.businessCalendar
     );
     const type = ChartUtils.getChartType(plotStyle, isBusinessTime);
-    const mode = ChartUtils.getPlotlyChartMode(plotStyle);
+    const mode = ChartUtils.getPlotlyChartMode(plotStyle, shape);
     const orientation = ChartUtils.getPlotlySeriesOrientation(series);
 
     const seriesData = ChartUtils.makeSeriesData(type, mode, name, orientation);
@@ -647,6 +653,7 @@ class ChartUtils {
       theme,
       lineColor,
       shapeColor,
+      shape,
       seriesVisibility
     );
 
@@ -691,6 +698,7 @@ class ChartUtils {
     theme: typeof ChartTheme = ChartTheme,
     lineColor: string | null = null,
     shapeColor: string | null = null,
+    shape: string | null = null,
     seriesVisibility: 'legendonly' | boolean | null = null
   ): void {
     const seriesData = seriesDataParam;
@@ -757,10 +765,53 @@ class ChartUtils {
       seriesData.marker.color = shapeColor;
     }
 
+    if (shape != null) {
+      try {
+        seriesData.marker.symbol = ChartUtils.getMarkerSymbol(shape);
+      } catch (e) {
+        log.warn('Unable to handle shape', shape, ':', e);
+      }
+    }
+
     // Skipping pie charts
     // Pie slice visibility is configured in chart layout instead of series data
     if (seriesVisibility != null && plotStyle !== dh.plot.SeriesPlotStyle.PIE) {
       seriesData.visible = seriesVisibility;
+    }
+  }
+
+  /**
+   * Get the marker symbol for the provided Deephaven shape
+   * Deephaven shapes: https://deephaven.io/enterprise/docs/plotting/visual-formatting/#point-formatting
+   * Plotly shapes: https://plotly.com/javascript/reference/scattergl/#scattergl-marker-symbol
+   * Table of plotly shapes: https://plotly.com/python/marker-style/
+   * @param shape Shape to get the marker symbol for
+   */
+  static getMarkerSymbol(shape: string): MarkerSymbol {
+    switch (shape) {
+      case 'SQUARE':
+        return 'square';
+      case 'CIRCLE':
+        return 'circle';
+      case 'DIAMOND':
+        return 'diamond';
+      case 'UP_TRIANGLE':
+        return 'triangle-up';
+      case 'DOWN_TRIANGLE':
+        return 'triangle-down';
+      case 'RIGHT_TRIANGLE':
+        return 'triangle-right';
+      case 'LEFT_TRIANGLE':
+        return 'triangle-left';
+      // There don't seem to be any plotly equivalents for ellipse or rectangles
+      // Rectangles could be `line-ew`, `line-ns`, or `hourglass` and `bowtie` instead?
+      // Ellipse could be `asterisk` or `diamond-wide` instead?
+      // Just throw an error for now, we've already got a bunch of types.
+      case 'ELLIPSE':
+      case 'HORIZONTAL_RECTANGLE':
+      case 'VERTICAL_RECTANGLE':
+      default:
+        throw new Error(`Unrecognized shape ${shape}`);
     }
   }
 
