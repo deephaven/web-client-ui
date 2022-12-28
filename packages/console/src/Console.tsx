@@ -331,21 +331,34 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
           changes: VariableChanges;
         }
       | undefined,
-    historyItemParam: ConsoleHistoryActionItem,
+    historyItem: ConsoleHistoryActionItem,
     workspaceItemPromise: Promise<CommandHistoryStorageItem>
   ): void {
-    const historyItem = historyItemParam;
-    historyItem.wrappedResult = undefined;
-    historyItem.cancelResult = undefined;
+    const newHistoryItem = {
+      ...historyItem,
+      wrappedResult: undefined,
+      cancelResult: undefined,
+      result: result ?? historyItem.result,
+    };
+
+    this.setState(({ consoleHistory }) => {
+      const itemIndex = consoleHistory.lastIndexOf(historyItem);
+      if (itemIndex < 0) {
+        log.error(`historyItem not found in consoleHistory`);
+        return { consoleHistory };
+      }
+      const newHistory = consoleHistory.concat();
+      newHistory[itemIndex] = newHistoryItem;
+
+      return { consoleHistory: newHistory };
+    });
 
     if (!result) {
       return;
     }
 
-    historyItem.result = result;
-
-    this.updateHistory(result, historyItem);
-    this.updateKnownObjects(historyItem);
+    this.updateHistory(result, newHistoryItem);
+    this.updateKnownObjects(newHistoryItem);
     this.updateWorkspaceHistoryItem(
       { error: result.error },
       workspaceItemPromise
@@ -357,13 +370,9 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
 
   handleCommandError(
     error: unknown,
-    historyItemParam: ConsoleHistoryActionItem,
+    historyItem: ConsoleHistoryActionItem,
     workspaceItemPromise: Promise<CommandHistoryStorageItem>
   ): void {
-    const historyItem = historyItemParam;
-    historyItem.wrappedResult = undefined;
-    historyItem.cancelResult = undefined;
-
     if (PromiseUtils.isCanceled(error)) {
       log.debug('Called handleCommandError on a cancelled promise result');
       return;
@@ -377,12 +386,13 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
     this.setState(state => {
       const history = state.consoleHistory.concat();
       const index = history.lastIndexOf(historyItem);
-      historyItem.endTime = Date.now();
-      historyItem.result = { error };
-      history[index] = { ...historyItem };
-      return {
-        consoleHistory: history,
-      };
+      const newHistoryItem = { ...historyItem };
+      newHistoryItem.wrappedResult = undefined;
+      newHistoryItem.cancelResult = undefined;
+      newHistoryItem.endTime = Date.now();
+      newHistoryItem.result = { error };
+      history[index] = newHistoryItem;
+      return { consoleHistory: history };
     });
   }
 
@@ -506,8 +516,8 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
     }
 
     this.setState(state => {
-      const history = state.consoleHistory.concat();
-      const itemIndex = history.lastIndexOf(historyItem);
+      let { consoleHistory } = state;
+      const itemIndex = consoleHistory.lastIndexOf(historyItem);
       if (itemIndex < 0) {
         log.error(`historyItem not found in state.consoleHistory`);
         return null;
@@ -528,10 +538,18 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
 
         if (oldIndex != null && oldIndex >= 0) {
           // disable outdated object variable in the old consoleHistory item
-          history[oldIndex].disabledObjects = [
-            ...(history[oldIndex].disabledObjects ?? []),
-            title,
-          ];
+          if (consoleHistory === state.consoleHistory) {
+            // First item in the history being updated,
+            consoleHistory = consoleHistory.concat();
+          }
+          const newHistoryItem = {
+            ...consoleHistory[oldIndex],
+            disabledObjects: [
+              ...(consoleHistory[oldIndex].disabledObjects ?? []),
+              title,
+            ],
+          };
+          consoleHistory[oldIndex] = newHistoryItem;
         }
         objectHistoryMap.set(title, itemIndex);
         if (isRemoved) {
@@ -553,7 +571,7 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
         objectMap.set(title, object);
       });
 
-      return { objectHistoryMap, objectMap, consoleHistory: history };
+      return { objectHistoryMap, objectMap, consoleHistory };
     });
   }
 
@@ -732,10 +750,9 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
         },
       },
     };
+
     const history = consoleHistory.concat(historyItem);
-    this.setState({
-      consoleHistory: history,
-    });
+    this.setState({ consoleHistory: history });
     this.scrollConsoleHistoryToBottom(true);
     this.updateKnownObjects(historyItem);
     openObject({ name: title, title, type: dh.VariableType.TABLE });
