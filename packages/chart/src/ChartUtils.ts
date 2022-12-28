@@ -169,6 +169,8 @@ class ChartUtils {
 
   static SUBTITLE_LINE_HEIGHT = 25;
 
+  static DEFAULT_MARKER_SIZE = 6;
+
   /**
    * Converts the Iris plot style into a plotly chart type
    * @param plotStyle The plotStyle to use, see dh.plot.SeriesPlotStyle
@@ -629,7 +631,15 @@ class ChartUtils {
     seriesVisibility: boolean | 'legendonly',
     theme = ChartTheme
   ): Partial<PlotData> {
-    const { name, plotStyle, lineColor, shapeColor, sources, shape } = series;
+    const {
+      name,
+      plotStyle,
+      lineColor,
+      shapeColor,
+      sources,
+      shape,
+      shapeSize,
+    } = series;
 
     const isBusinessTime = sources.some(
       source => source.axis?.businessCalendar
@@ -654,6 +664,7 @@ class ChartUtils {
       lineColor,
       shapeColor,
       shape,
+      shapeSize,
       seriesVisibility
     );
 
@@ -699,6 +710,7 @@ class ChartUtils {
     lineColor: string | null = null,
     shapeColor: string | null = null,
     shape: string | null = null,
+    shapeSize: number | null = null,
     seriesVisibility: 'legendonly' | boolean | null = null
   ): void {
     const seriesData = seriesDataParam;
@@ -771,6 +783,10 @@ class ChartUtils {
       } catch (e) {
         log.warn('Unable to handle shape', shape, ':', e);
       }
+    }
+
+    if (shapeSize != null) {
+      seriesData.marker.size = shapeSize * ChartUtils.DEFAULT_MARKER_SIZE;
     }
 
     // Skipping pie charts
