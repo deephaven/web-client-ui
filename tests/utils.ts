@@ -29,6 +29,10 @@ export async function typeInMonaco(page: Page, text: string): Promise<void> {
     await page.keyboard.press(' ', { delay: 50 });
     await page.keyboard.press('Backspace', { delay: 50 });
     await page.keyboard.press('Shift+Enter', { delay: 50 });
+
+    // Automatic indenting can screw up some of our commands, so delete any automatic indent - we'll put our own indent there with the copied command
+    await page.keyboard.press('Shift+Home', { delay: 50 });
+    await page.keyboard.press('Delete', { delay: 50 });
   }
 }
 
