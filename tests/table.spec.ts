@@ -1,5 +1,5 @@
 import { test, expect, Page } from '@playwright/test';
-import { generateVarName, typeInMonaco } from './utils';
+import { generateVarName, makeTableCommand, typeInMonaco } from './utils';
 
 // Run tests serially since they all use the same table
 test.describe.configure({ mode: 'serial' });
@@ -19,10 +19,7 @@ test('can open a simple table', async () => {
   const consoleInput = page.locator('.console-input');
   await consoleInput.click();
 
-  // Enter a command that creates a table with three columns, showing x/y/z
-  const tableName = generateVarName();
-  const command = `from deephaven import empty_table
-${tableName} = empty_table(100).update(["x=i", "y=Math.sin(i)", "z=Math.cos(i)"])`;
+  const command = makeTableCommand();
 
   await typeInMonaco(page, command);
   await page.keyboard.press('Enter');
