@@ -223,7 +223,7 @@ class ChartUtils {
       case dh.plot.SeriesPlotStyle.SCATTER:
         return 'markers';
       case dh.plot.SeriesPlotStyle.LINE:
-        if (shape != null) {
+        if (shape != null && shape.length > 0) {
           return 'lines+markers';
         }
         return 'lines';
@@ -777,7 +777,7 @@ class ChartUtils {
       seriesData.marker.color = shapeColor;
     }
 
-    if (shape != null) {
+    if (shape != null && shape.length > 0) {
       try {
         seriesData.marker.symbol = ChartUtils.getMarkerSymbol(shape);
       } catch (e) {
