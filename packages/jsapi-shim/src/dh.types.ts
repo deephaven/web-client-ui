@@ -400,7 +400,7 @@ export interface Chart extends Evented {
   readonly title: string;
   readonly titleFont: string;
   readonly titleColor: string;
-  readonly isShowLegend: boolean;
+  readonly showLegend: boolean;
   readonly legendFont: string;
   readonly legendColor: string;
   readonly is3d: boolean;

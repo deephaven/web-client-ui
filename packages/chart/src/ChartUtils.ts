@@ -621,6 +621,7 @@ class ChartUtils {
     series: Series,
     axisTypeMap: AxisTypeMap,
     seriesVisibility: boolean | 'legendonly',
+    showLegend: boolean | null = null,
     theme = ChartTheme
   ): Partial<PlotData> {
     const { name, plotStyle, lineColor, shapeColor, sources } = series;
@@ -631,8 +632,10 @@ class ChartUtils {
     const type = ChartUtils.getChartType(plotStyle, isBusinessTime);
     const mode = ChartUtils.getPlotlyChartMode(plotStyle);
     const orientation = ChartUtils.getPlotlySeriesOrientation(series);
-
     const seriesData = ChartUtils.makeSeriesData(type, mode, name, orientation);
+    if (showLegend != null) {
+      seriesData.showlegend = showLegend;
+    }
 
     ChartUtils.addSourcesToSeriesData(
       seriesData,

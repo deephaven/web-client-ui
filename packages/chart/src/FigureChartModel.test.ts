@@ -1,4 +1,5 @@
 import dh from '@deephaven/jsapi-shim';
+import { PlotData } from 'plotly.js';
 import ChartTestUtils from './ChartTestUtils';
 import FigureChartModel from './FigureChartModel';
 
@@ -453,4 +454,42 @@ it('adds new series', () => {
       name: 'S2',
     }),
   ]);
+});
+
+describe('legend visibility', () => {
+  function testLegend(showLegend: boolean | null): Partial<PlotData>[] {
+    const series1 = ChartTestUtils.makeSeries({ name: 'S1' });
+    const chart = ChartTestUtils.makeChart({ series: [series1], showLegend });
+    const figure = ChartTestUtils.makeFigure({
+      charts: [chart],
+    });
+    const model = new FigureChartModel(figure);
+    model.subscribe(jest.fn(), jest.fn());
+
+    return model.getData();
+  }
+
+  it('shows legend when set to true', () => {
+    expect(testLegend(true)).toEqual([
+      expect.objectContaining({
+        showlegend: true,
+      }),
+    ]);
+  });
+
+  it('hides legend when set to false', () => {
+    expect(testLegend(false)).toEqual([
+      expect.objectContaining({
+        showlegend: false,
+      }),
+    ]);
+  });
+
+  it('does not set property when not provided', () => {
+    expect(testLegend(null)).not.toEqual([
+      expect.objectContaining({
+        showlegend: expect.any,
+      }),
+    ]);
+  });
 });

@@ -1608,6 +1608,7 @@ class Chart {
     rowspan = 1,
     column = 0,
     row = 0,
+    showLegend = null,
   }) {
     this.title = title;
     this.series = series;
@@ -1616,6 +1617,7 @@ class Chart {
     this.colspan = colspan;
     this.column = column;
     this.row = row;
+    this.showLegend = showLegend;
   }
 }
 
