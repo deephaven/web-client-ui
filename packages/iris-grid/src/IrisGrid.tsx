@@ -1105,11 +1105,9 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   );
 
   getCachedHiddenColumns = memoize(
-    (hiddenColumns: ModelIndex[]) => hiddenColumns,
-    {
-      max: 1,
-      normalizer: ([hiddenColumns]) => hiddenColumns.join(),
-    }
+    (userColumnWidths: ModelSizeMap) =>
+      IrisGridUtils.getHiddenColumns(userColumnWidths),
+    { max: 1 }
   );
 
   getAggregationMap = memoize(
@@ -3990,9 +3988,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       }
     });
 
-    const hiddenColumns = this.getCachedHiddenColumns(
-      IrisGridUtils.getHiddenColumns(userColumnWidths)
-    );
+    const hiddenColumns = this.getCachedHiddenColumns(userColumnWidths);
 
     return (
       <div className="iris-grid" role="presentation">

@@ -16,6 +16,8 @@ import IrisGridModel from './IrisGridModel';
 
 const COLUMN_BUFFER_PAGES = 1;
 
+const EMPTY_ARRAY: ColumnName[] = [];
+
 interface IrisGridModelUpdaterProps {
   model: IrisGridModel;
   modelColumns: Column[];
@@ -61,7 +63,7 @@ const IrisGridModelUpdater = React.memo(
     alwaysFetchColumns,
     rollupConfig = null,
     totalsConfig = null,
-    selectDistinctColumns = [],
+    selectDistinctColumns = EMPTY_ARRAY,
     pendingRowCount = 0,
     pendingDataMap = new Map(),
     frozenColumns,
