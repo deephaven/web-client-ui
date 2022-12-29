@@ -118,16 +118,16 @@ export type GridMetrics = {
   scrollableViewportHeight: number;
 
   // Array of visible rows/columns, by grid index
-  visibleRows: VisibleIndex[];
-  visibleColumns: VisibleIndex[];
+  visibleRows: readonly VisibleIndex[];
+  visibleColumns: readonly VisibleIndex[];
 
   // Array of floating rows/columns, by grid index
-  floatingRows: VisibleIndex[];
-  floatingColumns: VisibleIndex[];
+  floatingRows: readonly VisibleIndex[];
+  floatingColumns: readonly VisibleIndex[];
 
   // Array of all rows/columns, visible and floating, by grid index
-  allRows: VisibleIndex[];
-  allColumns: VisibleIndex[];
+  allRows: readonly VisibleIndex[];
+  allColumns: readonly VisibleIndex[];
 
   // Map of the height/width of visible rows/columns
   visibleRowHeights: SizeMap;
@@ -150,8 +150,8 @@ export type GridMetrics = {
   modelRows: VisibleToModelMap;
   modelColumns: VisibleToModelMap;
 
-  movedRows: MoveOperation[];
-  movedColumns: MoveOperation[];
+  movedRows: readonly MoveOperation[];
+  movedColumns: readonly MoveOperation[];
 
   // Map of the width of the fonts
   fontWidths: Map<string, number>;

@@ -28,10 +28,10 @@ type Values<T> = T[keyof T];
 type ButtonStateType = Values<typeof IrisGridCopyHandler.BUTTON_STATES>;
 
 export type CopyOperation = {
-  ranges: GridRange[];
+  ranges: readonly GridRange[];
   includeHeaders: boolean;
   formatValues?: boolean;
-  movedColumns: MoveOperation[];
+  movedColumns: readonly MoveOperation[];
   userColumnWidths: ModelSizeMap;
   error?: string;
 };

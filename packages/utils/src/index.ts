@@ -1,3 +1,4 @@
+export * from './DataUtils';
 export { default as CanceledPromiseError } from './CanceledPromiseError';
 export { default as ColorUtils } from './ColorUtils';
 export * from './ClipboardUtils';

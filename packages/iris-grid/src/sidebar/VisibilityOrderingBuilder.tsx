@@ -42,18 +42,21 @@ const DEBOUNCE_SEARCH_COLUMN = 150;
 
 interface VisibilityOrderingBuilderProps {
   model: IrisGridModel;
-  movedColumns: MoveOperation[];
+  movedColumns: readonly MoveOperation[];
   userColumnWidths: ModelSizeMap;
   onColumnVisibilityChanged: (
     columns: VisibleIndex[],
     options?: VisibilityOptionType
   ) => void;
-  onMovedColumnsChanged: (operations: MoveOperation[], cb?: () => void) => void;
+  onMovedColumnsChanged: (
+    operations: readonly MoveOperation[],
+    cb?: () => void
+  ) => void;
 }
 
 interface VisibilityOrderingBuilderState {
-  selectedColumns: ModelIndex[]; // model index of selected column(s)
-  lastSelectedColumns: ModelIndex[];
+  selectedColumns: readonly ModelIndex[]; // model index of selected column(s)
+  lastSelectedColumns: readonly ModelIndex[];
   isDraggingVisibility: boolean;
   visibilityDraggingOption?: VisibilityOptionType;
   visibilityDraggingStartColumn: number | null;
@@ -291,7 +294,7 @@ class VisibilityOrderingBuilder extends Component<
         GridUtils.getVisibleIndex(columnB, movedColumns)
     );
 
-    let newMoves = [...movedColumns];
+    let newMoves: readonly MoveOperation[] = [...movedColumns];
     assertNotNull(orderDraggingColumn);
     const draggingVisibleIndex = GridUtils.getVisibleIndex(
       orderDraggingColumn,
@@ -444,7 +447,7 @@ class VisibilityOrderingBuilder extends Component<
           GridUtils.getVisibleIndex(columnA, movedColumns)
     );
 
-    let newMoves = [] as MoveOperation[];
+    let newMoves: readonly MoveOperation[] = [];
     let scrollListAfterMove: () => void = () => undefined;
 
     switch (option) {
@@ -568,7 +571,7 @@ class VisibilityOrderingBuilder extends Component<
       modelIndexAlphaSorted[insertIndex] = movableColumnsSorted[i];
     }
 
-    let newMoves = [] as MoveOperation[];
+    let newMoves: readonly MoveOperation[] = [];
     modelIndexAlphaSorted.forEach((modelIndex, index) => {
       const visibleIndex = GridUtils.getVisibleIndex(modelIndex, newMoves);
       newMoves = GridUtils.moveItem(visibleIndex, index, newMoves);

@@ -17,7 +17,14 @@ import {
   PanelComponent,
   PanelProps,
 } from '@deephaven/dashboard';
-import { IrisGridUtils, InputFilter, ColumnName } from '@deephaven/iris-grid';
+import {
+  IrisGridUtils,
+  InputFilter,
+  ColumnName,
+  DehydratedSort,
+  DehydratedAdvancedFilter,
+  DehydratedQuickFilter,
+} from '@deephaven/iris-grid';
 import dh, {
   FigureDescriptor,
   SeriesPlotStyle,
@@ -39,8 +46,6 @@ import {
   TextUtils,
 } from '@deephaven/utils';
 import type { Container, EventEmitter } from '@deephaven/golden-layout';
-import { ModelIndex } from '@deephaven/grid';
-import { AdvancedFilterOptions, SortDirection } from '@deephaven/jsapi-utils';
 import WidgetPanel from './WidgetPanel';
 import ToolType from '../linker/ToolType';
 import { InputFilterEvent, ChartEvent } from '../events';
@@ -99,24 +104,10 @@ export type ChartPanelMetadata =
 type Settings = Record<string, unknown>;
 
 export interface ChartPanelTableSettings {
-  quickFilters?: [
-    ModelIndex,
-    {
-      text: string;
-    }
-  ][];
-  advancedFilters?: [
-    ModelIndex,
-    {
-      options: AdvancedFilterOptions;
-    }
-  ][];
-  inputFilters?: InputFilter[];
-  sorts?: {
-    column: ModelIndex;
-    isAbs: boolean;
-    direction: SortDirection;
-  }[];
+  quickFilters?: readonly DehydratedQuickFilter[];
+  advancedFilters?: readonly DehydratedAdvancedFilter[];
+  inputFilters?: readonly InputFilter[];
+  sorts?: readonly DehydratedSort[];
   partition?: unknown;
   partitionColumn?: string;
 }

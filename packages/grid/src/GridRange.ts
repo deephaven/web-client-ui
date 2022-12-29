@@ -150,7 +150,7 @@ export class GridRange {
    * @param ranges The ranges to consolidate
    * @returns Consolidated ranges
    */
-  static consolidate(ranges: GridRange[]): GridRange[] {
+  static consolidate(ranges: readonly GridRange[]): GridRange[] {
     const result = ranges.slice();
 
     let wasModified = true;
@@ -288,7 +288,10 @@ export class GridRange {
    * @param ranges2 Second array of ranges
    * @returns True if the arrays contain the same ranges in the same order
    */
-  static rangeArraysEqual(ranges1: GridRange[], ranges2: GridRange[]): boolean {
+  static rangeArraysEqual(
+    ranges1: readonly GridRange[],
+    ranges2: readonly GridRange[]
+  ): boolean {
     if (ranges1 === ranges2) {
       return true;
     }
@@ -441,7 +444,7 @@ export class GridRange {
    * @returns The ranges needed to represent the remaining
    */
   static subtractFromRanges(
-    ranges: GridRange[],
+    ranges: readonly GridRange[],
     subtractRange: GridRange
   ): GridRange[] {
     const result: GridRange[] = [];
@@ -459,9 +462,9 @@ export class GridRange {
    * @returns The ranges needed to represent the remaining
    */
   static subtractRangesFromRanges(
-    ranges: GridRange[],
-    subtractRanges: GridRange[]
-  ): GridRange[] {
+    ranges: readonly GridRange[],
+    subtractRanges: readonly GridRange[]
+  ): readonly GridRange[] {
     if (subtractRanges == null || subtractRanges.length === 0) {
       return ranges;
     }
@@ -523,7 +526,7 @@ export class GridRange {
    * @returns The passed in GridRange with any null values filled in
    */
   static boundedRanges(
-    ranges: GridRange[],
+    ranges: readonly GridRange[],
     columnCount: number,
     rowCount: number
   ): GridRange[] {
@@ -560,7 +563,7 @@ export class GridRange {
    * @returns The next cell to focus, or null if there should be no more focus
    */
   static nextCell(
-    ranges: GridRange[],
+    ranges: readonly GridRange[],
     column: GridRangeIndex = null,
     row: GridRangeIndex = null,
     direction = GridRange.SELECTION_DIRECTION.DOWN
@@ -608,7 +611,7 @@ export class GridRange {
    * @param ranges The ranges to count the rows of
    * @returns The number of cells in the ranges, or `NaN` if any of the ranges were unbounded
    */
-  static cellCount(ranges: GridRange[]): number {
+  static cellCount(ranges: readonly GridRange[]): number {
     return ranges.reduce(
       (cellCount, range) =>
         cellCount +
@@ -623,7 +626,7 @@ export class GridRange {
    * @param ranges The ranges to count the rows of
    * @returns The number of rows in the ranges, or `NaN` if any of the ranges were unbounded
    */
-  static rowCount(ranges: GridRange[]): number {
+  static rowCount(ranges: readonly GridRange[]): number {
     return ranges.reduce(
       (rowCount, range) =>
         rowCount + (range.endRow ?? NaN) - (range.startRow ?? NaN) + 1,
@@ -636,7 +639,7 @@ export class GridRange {
    * @param ranges The ranges to count the columns of
    * @returns The number of columns in the ranges, or `NaN` if any of the ranges were unbounded
    */
-  static columnCount(ranges: GridRange[]): number {
+  static columnCount(ranges: readonly GridRange[]): number {
     return ranges.reduce(
       (columnCount, range) =>
         columnCount + (range.endColumn ?? NaN) - (range.startColumn ?? NaN) + 1,
@@ -652,7 +655,7 @@ export class GridRange {
    * @returns True if the cell is within the provided ranges, false otherwise.
    */
   static containsCell(
-    ranges: GridRange[],
+    ranges: readonly GridRange[],
     column: GridRangeIndex,
     row: GridRangeIndex
   ): boolean {
@@ -672,7 +675,7 @@ export class GridRange {
    * @param {GridRange.SELECTION_DIRECTION} direction The direction to iterate in
    */
   static forEachCell(
-    ranges: GridRange[],
+    ranges: readonly GridRange[],
     callback: (column: number, row: number, index: number) => void,
     direction = GridRange.SELECTION_DIRECTION.RIGHT
   ): void {

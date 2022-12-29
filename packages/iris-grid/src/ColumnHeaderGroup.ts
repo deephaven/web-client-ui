@@ -46,7 +46,7 @@ export default class ColumnHeaderGroup implements IColumnHeaderGroup {
   }
 
   getVisibleRange = memoizeOne(
-    (movedItems: MoveOperation[]): BoundedAxisRange => {
+    (movedItems: readonly MoveOperation[]): BoundedAxisRange => {
       const flattenedIndexes = this.childIndexes.flat();
       const visibleIndexes = GridUtils.getVisibleIndexes(
         flattenedIndexes,

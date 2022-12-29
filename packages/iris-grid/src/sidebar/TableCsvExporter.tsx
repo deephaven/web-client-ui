@@ -28,7 +28,7 @@ interface TableCsvExporterProps {
   model: IrisGridModel;
   name: string;
   userColumnWidths: ModelSizeMap;
-  movedColumns: MoveOperation[];
+  movedColumns: readonly MoveOperation[];
   isDownloading: boolean;
   tableDownloadStatus: string;
   tableDownloadProgress: number;
@@ -38,13 +38,13 @@ interface TableCsvExporterProps {
     fileName: string,
     frozenTable: Table,
     tableSubscription: TableViewportSubscription,
-    snapshotRanges: GridRange[],
-    modelRanges: GridRange[],
+    snapshotRanges: readonly GridRange[],
+    modelRanges: readonly GridRange[],
     includeColumnHeaders: boolean,
     useUnformattedValues: boolean
   ) => void;
   onCancel: () => void;
-  selectedRanges: GridRange[];
+  selectedRanges: readonly GridRange[];
 }
 
 interface TableCsvExporterState {
@@ -203,7 +203,7 @@ class TableCsvExporter extends Component<
     return snapshotRanges;
   }
 
-  getModelRanges(ranges: GridRange[]): GridRange[] {
+  getModelRanges(ranges: readonly GridRange[]): readonly GridRange[] {
     const { userColumnWidths, movedColumns } = this.props;
     const { includeHiddenColumns } = this.state;
     const hiddenColumns = IrisGridUtils.getHiddenColumns(userColumnWidths);

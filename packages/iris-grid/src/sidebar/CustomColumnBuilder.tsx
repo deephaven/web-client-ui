@@ -19,13 +19,13 @@ type Input = {
 };
 interface CustomColumnBuilderProps {
   model: IrisGridModel;
-  customColumns: string[];
-  onSave: (columns: string[]) => void;
+  customColumns: readonly string[];
+  onSave: (columns: readonly string[]) => void;
   onCancel: () => void;
 }
 
 interface CustomColumnBuilderState {
-  inputs: Input[];
+  inputs: readonly Input[];
   isCustomColumnApplying: boolean;
   errorMessage: ReactElement | null;
   hasRequestFailed: boolean;
@@ -97,11 +97,11 @@ class CustomColumnBuilder extends Component<
 
   successButtonTimer: ReturnType<typeof setTimeout> | null;
 
-  getInput = memoize((inputs: Input[], key: string) =>
+  getInput = memoize((inputs: readonly Input[], key: string) =>
     inputs.find(input => input.eventKey === key)
   );
 
-  getInputIndex = memoize((inputs: Input[], key: string) =>
+  getInputIndex = memoize((inputs: readonly Input[], key: string) =>
     inputs.findIndex(input => input.eventKey === key)
   );
 
@@ -141,7 +141,7 @@ class CustomColumnBuilder extends Component<
     );
   }
 
-  parseCustomColumns(customColumns: string[]): void {
+  parseCustomColumns(customColumns: readonly string[]): void {
     if (customColumns.length > 0) {
       const customColumnInputs = customColumns.map(customColumn => {
         const input = customColumn.split(/=(.+)/, 2);

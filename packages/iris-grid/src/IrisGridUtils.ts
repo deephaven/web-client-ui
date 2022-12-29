@@ -26,7 +26,7 @@ import {
   FormattingRule,
 } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
-import { assertNotNull } from '@deephaven/utils';
+import { assertNotNull, EMPTY_ARRAY, EMPTY_MAP } from '@deephaven/utils';
 import AggregationUtils from './sidebar/aggregations/AggregationUtils';
 import AggregationOperation from './sidebar/aggregations/AggregationOperation';
 import { FilterData, IrisGridProps, IrisGridState } from './IrisGrid';
@@ -34,9 +34,7 @@ import {
   ColumnName,
   AdvancedFilterMap,
   QuickFilterMap,
-  AdvancedFilter,
   InputFilter,
-  QuickFilter,
   CellData,
   PendingDataMap,
   UIRow,
@@ -74,43 +72,55 @@ type HydratedIrisGridState = Pick<
   metrics: Pick<GridMetrics, 'userColumnWidths' | 'userRowHeights'>;
 };
 
+export type DehydratedPendingDataMap<T> = [number, { data: [string, T][] }][];
+
+export type DehydratedAdvancedFilter = [
+  number,
+  {
+    options: AdvancedFilterOptions;
+  }
+];
+
+export type DehydratedQuickFilter = [
+  number,
+  {
+    text: string;
+  }
+];
+
+export type DehydratedCustomColumnFormat = [string, FormattingRule];
+
+export type DehydratedUserColumnWidth = [ColumnName, number];
+
+export type DehydratedUserRowHeight = [number, number];
+
+export type DehydratedSort = {
+  column: ModelIndex;
+  isAbs: boolean;
+  direction: SortDirection;
+};
+
 export interface DehydratedIrisGridState {
-  advancedFilters: [
-    number,
-    {
-      options: AdvancedFilterOptions;
-    }
-  ][];
+  advancedFilters: readonly DehydratedAdvancedFilter[];
   aggregationSettings: AggregationSettings;
-  customColumnFormatMap: [string, FormattingRule][];
+  customColumnFormatMap: readonly DehydratedCustomColumnFormat[];
   isFilterBarShown: boolean;
-  quickFilters: [
-    number,
-    {
-      text: string;
-    }
-  ][];
-  sorts: {
-    column: ModelIndex;
-    isAbs: boolean;
-    direction: SortDirection;
-  }[];
-  userColumnWidths: [ColumnName, number][];
-  userRowHeights: [number, number][];
-  customColumns: ColumnName[];
-  conditionalFormats: SidebarFormattingRule[];
+  quickFilters: readonly DehydratedQuickFilter[];
+  sorts: readonly DehydratedSort[];
+  userColumnWidths: readonly DehydratedUserColumnWidth[];
+  userRowHeights: readonly DehydratedUserRowHeight[];
+  customColumns: readonly ColumnName[];
+  conditionalFormats: readonly SidebarFormattingRule[];
   reverseType: ReverseType;
   rollupConfig?: UIRollupConfig;
   showSearchBar: boolean;
   searchValue: string;
-  selectDistinctColumns: ColumnName[];
-  selectedSearchColumns: ColumnName[];
+  selectDistinctColumns: readonly ColumnName[];
+  selectedSearchColumns: readonly ColumnName[];
   invertSearchColumns: boolean;
   pendingDataMap: DehydratedPendingDataMap<string | CellData | null>;
-  frozenColumns: ColumnName[];
+  frozenColumns: readonly ColumnName[];
 }
-
-type DehydratedPendingDataMap<T> = [number, { data: [string, T][] }][];
 
 /**
  * Checks if an index is valid for the given array
@@ -183,13 +193,13 @@ class IrisGridUtils {
     gridState: {
       isStuckToBottom: boolean;
       isStuckToRight: boolean;
-      movedColumns: {
+      movedColumns: readonly {
         from: string | [string, string] | ModelIndex | [ModelIndex, ModelIndex];
         to: string | ModelIndex;
       }[];
-      movedRows: MoveOperation[];
+      movedRows: readonly MoveOperation[];
     },
-    customColumns: string[] = []
+    customColumns: readonly string[] = []
   ): Pick<
     IrisGridProps,
     'isStuckToBottom' | 'isStuckToRight' | 'movedColumns' | 'movedRows'
@@ -248,23 +258,23 @@ class IrisGridUtils {
     irisGridState: HydratedIrisGridState
   ): DehydratedIrisGridState {
     const {
-      aggregationSettings = { aggregations: [], showOnTop: false },
+      aggregationSettings = { aggregations: EMPTY_ARRAY, showOnTop: false },
       advancedFilters,
       customColumnFormatMap,
       isFilterBarShown,
       metrics,
       quickFilters,
       customColumns,
-      conditionalFormats = [],
+      conditionalFormats = EMPTY_ARRAY,
       reverseType,
       rollupConfig = undefined,
       showSearchBar,
       searchValue,
-      selectDistinctColumns = [],
+      selectDistinctColumns = EMPTY_ARRAY,
       selectedSearchColumns,
       sorts,
       invertSearchColumns,
-      pendingDataMap = new Map(),
+      pendingDataMap = EMPTY_MAP,
       frozenColumns,
     } = irisGridState;
     assertNotNull(metrics);
@@ -479,7 +489,7 @@ class IrisGridUtils {
    */
   static dehydrateQuickFilters(
     quickFilters: QuickFilterMap
-  ): [number, { text: string }][] {
+  ): DehydratedQuickFilter[] {
     return [...quickFilters].map(([columnIndex, quickFilter]) => {
       const { text } = quickFilter;
       return [columnIndex, { text }];
@@ -494,12 +504,12 @@ class IrisGridUtils {
    * @returns The quick filters to apply to the columns
    */
   static hydrateQuickFilters(
-    columns: Column[],
-    savedQuickFilters: [number, { text: string }][],
+    columns: readonly Column[],
+    savedQuickFilters: readonly DehydratedQuickFilter[],
     timeZone?: string
   ): QuickFilterMap {
     const importedFilters = savedQuickFilters.map(
-      ([columnIndex, quickFilter]: [number, { text: string }]): [
+      ([columnIndex, quickFilter]: DehydratedQuickFilter): [
         number,
         { text: string; filter: FilterCondition | null }
       ] => {
@@ -531,7 +541,7 @@ class IrisGridUtils {
   static dehydrateAdvancedFilters(
     columns: Column[],
     advancedFilters: AdvancedFilterMap
-  ): [number, { options: AdvancedFilterOptions }][] {
+  ): readonly DehydratedAdvancedFilter[] {
     return [...advancedFilters].map(([columnIndex, advancedFilter]) => {
       const column = IrisGridUtils.getColumn(columns, columnIndex);
       assertNotNull(column);
@@ -551,15 +561,12 @@ class IrisGridUtils {
    * @returns The advanced filters to apply to the columns
    */
   static hydrateAdvancedFilters(
-    columns: Column[],
-    savedAdvancedFilters: [number, { options: AdvancedFilterOptions }][],
+    columns: readonly Column[],
+    savedAdvancedFilters: readonly DehydratedAdvancedFilter[],
     timeZone: string
   ): AdvancedFilterMap {
     const importedFilters = savedAdvancedFilters.map(
-      ([columnIndex, advancedFilter]: [
-        number,
-        { options: AdvancedFilterOptions }
-      ]): [
+      ([columnIndex, advancedFilter]: DehydratedAdvancedFilter): [
         number,
         { options: AdvancedFilterOptions; filter: FilterCondition | null }
       ] => {
@@ -615,7 +622,7 @@ class IrisGridUtils {
 
   static dehydratePendingDataMap(
     columns: Column[],
-    pendingDataMap: Map<
+    pendingDataMap: ReadonlyMap<
       number,
       | UIRow
       | {
@@ -745,13 +752,7 @@ class IrisGridUtils {
    * @param  sorts The table sorts
    * @returns The dehydrated sorts
    */
-  static dehydrateSort(
-    sorts: Sort[]
-  ): {
-    column: ModelIndex;
-    isAbs: boolean;
-    direction: SortDirection;
-  }[] {
+  static dehydrateSort(sorts: readonly Sort[]): readonly DehydratedSort[] {
     return sorts.map(sort => {
       const { column, isAbs, direction } = sort;
       return {
@@ -769,8 +770,8 @@ class IrisGridUtils {
    * @returns The sorts to apply to the table
    */
   static hydrateSort(
-    columns: Column[],
-    sorts: { column: number; isAbs: boolean; direction: SortDirection }[]
+    columns: readonly Column[],
+    sorts: readonly DehydratedSort[]
   ): Sort[] {
     return (
       sorts
@@ -850,24 +851,10 @@ class IrisGridUtils {
   static applyTableSettings(
     table: Table,
     tableSettings: {
-      quickFilters?: [
-        number,
-        {
-          text: string;
-        }
-      ][];
-      advancedFilters?: [
-        number,
-        {
-          options: AdvancedFilterOptions;
-        }
-      ][];
-      inputFilters?: InputFilter[];
-      sorts?: {
-        column: ModelIndex;
-        isAbs: boolean;
-        direction: SortDirection;
-      }[];
+      quickFilters?: readonly DehydratedQuickFilter[];
+      advancedFilters?: readonly DehydratedAdvancedFilter[];
+      inputFilters?: readonly InputFilter[];
+      sorts?: readonly DehydratedSort[];
       partition?: unknown;
       partitionColumn?: ColumnName;
     },
@@ -928,8 +915,8 @@ class IrisGridUtils {
   }
 
   static getInputFiltersForColumns(
-    columns: Column[],
-    inputFilters: InputFilter[] = []
+    columns: readonly Column[],
+    inputFilters: readonly InputFilter[] = []
   ): InputFilter[] {
     return inputFilters.filter(({ name, type }) =>
       columns.find(
@@ -940,8 +927,8 @@ class IrisGridUtils {
   }
 
   static getFiltersFromInputFilters(
-    columns: Column[],
-    inputFilters: InputFilter[] = [],
+    columns: readonly Column[],
+    inputFilters: readonly InputFilter[] = [],
     timeZone?: string
   ): FilterCondition[] {
     return inputFilters
@@ -965,7 +952,7 @@ class IrisGridUtils {
   }
 
   static getFiltersFromFilterMap(
-    filterMap: Map<ModelIndex, QuickFilter | AdvancedFilter | null>
+    filterMap: AdvancedFilterMap | QuickFilterMap
   ): FilterCondition[] {
     const filters = [];
 
@@ -992,14 +979,16 @@ class IrisGridUtils {
       .map(([key]) => key);
   }
 
-  static parseCustomColumnNames(customColumns: ColumnName[]): ColumnName[] {
+  static parseCustomColumnNames(
+    customColumns: readonly ColumnName[]
+  ): ColumnName[] {
     return customColumns.map(customColumn => customColumn.split('=')[0]);
   }
 
   static getRemovedCustomColumnNames(
-    oldCustomColumns: ColumnName[],
-    customColumns: ColumnName[]
-  ): ColumnName[] {
+    oldCustomColumns: readonly ColumnName[],
+    customColumns: readonly ColumnName[]
+  ): readonly ColumnName[] {
     const oldCustomColumnsNames = IrisGridUtils.parseCustomColumnNames(
       oldCustomColumns
     );
@@ -1011,14 +1000,17 @@ class IrisGridUtils {
     );
   }
 
-  static removeSortsInColumns(sorts: Sort[], columnNames: string[]): Sort[] {
+  static removeSortsInColumns(
+    sorts: readonly Sort[],
+    columnNames: readonly string[]
+  ): Sort[] {
     return sorts.filter(sort => !columnNames.includes(sort.column.name));
   }
 
   static removeFiltersInColumns<T>(
-    columns: Column[],
-    filters: Map<number, T>,
-    removedColumnNames: ColumnName[]
+    columns: readonly Column[],
+    filters: ReadonlyMap<number, T>,
+    removedColumnNames: readonly ColumnName[]
   ): Map<number, T> {
     const columnNames = columns.map(({ name }) => name);
     const newFilter = new Map(filters);
@@ -1029,9 +1021,9 @@ class IrisGridUtils {
   }
 
   static removeColumnFromMovedColumns(
-    columns: Column[],
-    movedColumns: MoveOperation[],
-    removedColumnNames: ColumnName[]
+    columns: readonly Column[],
+    movedColumns: readonly MoveOperation[],
+    removedColumnNames: readonly ColumnName[]
   ): MoveOperation[] {
     const columnNames = columns.map(({ name }) => name);
     let newMoves = [...movedColumns];
@@ -1089,8 +1081,8 @@ class IrisGridUtils {
   }
 
   static removeColumnsFromSelectDistinctColumns(
-    selectDistinctColumns: ColumnName[],
-    removedColumnNames: ColumnName[]
+    selectDistinctColumns: readonly ColumnName[],
+    removedColumnNames: readonly ColumnName[]
   ): ColumnName[] {
     return selectDistinctColumns.filter(
       columnName => !removedColumnNames.includes(columnName)
@@ -1098,11 +1090,11 @@ class IrisGridUtils {
   }
 
   static getVisibleColumnsInRange(
-    tableColumns: Column[],
+    tableColumns: readonly Column[],
     left: number,
     right: number,
-    movedColumns: MoveOperation[],
-    hiddenColumns: number[]
+    movedColumns: readonly MoveOperation[],
+    hiddenColumns: readonly number[]
   ): Column[] {
     const columns: Column[] = [];
     for (let i = left; i <= right; i += 1) {
@@ -1119,11 +1111,11 @@ class IrisGridUtils {
   }
 
   static getPrevVisibleColumns(
-    tableColumns: Column[],
+    tableColumns: readonly Column[],
     startIndex: VisibleIndex,
     count: number,
-    movedColumns: MoveOperation[],
-    hiddenColumns: VisibleIndex[]
+    movedColumns: readonly MoveOperation[],
+    hiddenColumns: readonly VisibleIndex[]
   ): Column[] {
     const columns = [];
     let i = startIndex;
@@ -1142,11 +1134,11 @@ class IrisGridUtils {
   }
 
   static getNextVisibleColumns(
-    tableColumns: Column[],
+    tableColumns: readonly Column[],
     startIndex: VisibleIndex,
     count: number,
-    movedColumns: MoveOperation[],
-    hiddenColumns: VisibleIndex[]
+    movedColumns: readonly MoveOperation[],
+    hiddenColumns: readonly VisibleIndex[]
   ): Column[] {
     const columns = [];
     let i = startIndex;
@@ -1165,9 +1157,9 @@ class IrisGridUtils {
   }
 
   static getColumnsToFetch(
-    tableColumns: Column[],
-    viewportColumns: Column[],
-    alwaysFetchColumnNames: ColumnName[]
+    tableColumns: readonly Column[],
+    viewportColumns: readonly Column[],
+    alwaysFetchColumnNames: readonly ColumnName[]
   ): Column[] {
     const columnsToFetch = [...viewportColumns];
     alwaysFetchColumnNames.forEach(columnName => {
@@ -1180,12 +1172,12 @@ class IrisGridUtils {
   }
 
   static getModelViewportColumns(
-    columns: Column[],
+    columns: readonly Column[],
     left: number | null,
     right: number | null,
-    movedColumns: MoveOperation[],
-    hiddenColumns: VisibleIndex[] = [],
-    alwaysFetchColumnNames: ColumnName[] = [],
+    movedColumns: readonly MoveOperation[],
+    hiddenColumns: readonly VisibleIndex[] = [],
+    alwaysFetchColumnNames: readonly ColumnName[] = [],
     bufferPages = 0
   ): Column[] | null {
     if (left == null || right == null) {
@@ -1231,7 +1223,7 @@ class IrisGridUtils {
    * @param  ranges The ranges to get the range set for
    * @returns The rangeset for the provided ranges
    */
-  static rangeSetFromRanges(ranges: GridRange[]): RangeSet {
+  static rangeSetFromRanges(ranges: readonly GridRange[]): RangeSet {
     const rangeSets = ranges
       .slice()
       .sort((a, b): number => {
@@ -1255,7 +1247,7 @@ class IrisGridUtils {
    * @param ranges The ranges to validate
    * @returns True if the ranges are valid, false otherwise
    */
-  static isValidSnapshotRanges(ranges: GridRange[]): boolean {
+  static isValidSnapshotRanges(ranges: readonly GridRange[]): boolean {
     if (ranges == null || ranges.length === 0) {
       return false;
     }
@@ -1305,9 +1297,9 @@ class IrisGridUtils {
    * @returns The columns selected in the range
    */
   static columnsFromRanges(
-    ranges: GridRange[],
-    allColumns: Column[]
-  ): Column[] {
+    ranges: readonly GridRange[],
+    allColumns: readonly Column[]
+  ): readonly Column[] {
     if (ranges == null || ranges.length === 0) {
       return [];
     }
@@ -1448,7 +1440,10 @@ class IrisGridUtils {
    * @param  columns The columns to get the column from
    * @param  columnIndex The column index to get
    */
-  static getColumn(columns: Column[], columnIndex: ModelIndex): Column | null {
+  static getColumn(
+    columns: readonly Column[],
+    columnIndex: ModelIndex
+  ): Column | null {
     if (columnIndex < columns.length) {
       return columns[columnIndex];
     }

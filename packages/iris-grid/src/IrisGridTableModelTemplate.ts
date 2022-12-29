@@ -48,6 +48,7 @@ import {
   PendingDataMap,
   CellData,
   UIViewportData,
+  PendingDataErrorMap,
 } from './CommonTypes';
 import { IrisGridThemeType } from './IrisGridTheme';
 import ColumnHeaderGroup, { isColumnHeaderGroup } from './ColumnHeaderGroup';
@@ -346,7 +347,7 @@ class IrisGridTableModelTemplate<
     );
   }
 
-  get pendingDataErrors(): Map<number, Error[]> {
+  get pendingDataErrors(): PendingDataErrorMap {
     return this.getCachedPendingErrors(
       this.pendingNewDataMap,
       this.columns,
@@ -659,8 +660,8 @@ class IrisGridTableModelTemplate<
   /**
    * Used to get the initial moved columns based on layout hints
    */
-  get movedColumns(): MoveOperation[] {
-    let movedColumns: MoveOperation[] = [];
+  get movedColumns(): readonly MoveOperation[] {
+    let movedColumns: readonly MoveOperation[] = [];
 
     const moveColumn = (name: string, toIndex: VisibleIndex) => {
       const modelIndex = this.getColumnIndexByName(name);

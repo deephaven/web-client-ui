@@ -12,10 +12,15 @@ import { OptionType } from './sidebar';
 
 export type { AdvancedFilterOptions };
 export type ColumnName = string;
-export type AdvancedFilterMap = Map<ModelIndex, AdvancedFilter>;
-export type QuickFilterMap = Map<ModelIndex, QuickFilter>;
-export type AggregationMap = Record<AggregationOperation, ColumnName[]>;
-export type OperationMap = Record<ColumnName, AggregationOperation[]>;
+export type AdvancedFilterMap = ReadonlyMap<ModelIndex, AdvancedFilter>;
+export type QuickFilterMap = ReadonlyMap<ModelIndex, QuickFilter>;
+export type MutableAdvancedFilterMap = Map<ModelIndex, AdvancedFilter>;
+export type MutableQuickFilterMap = Map<ModelIndex, QuickFilter>;
+export type AggregationMap = Record<
+  AggregationOperation,
+  readonly ColumnName[]
+>;
+export type OperationMap = Record<ColumnName, readonly AggregationOperation[]>;
 
 export type QuickFilter = {
   text: string;
@@ -67,4 +72,13 @@ export type CellData = {
   value: unknown;
   format?: Format;
 };
-export type PendingDataMap<R extends UIRow = UIRow> = Map<ModelIndex, R>;
+export type PendingDataMap<R extends UIRow = UIRow> = ReadonlyMap<
+  ModelIndex,
+  R
+>;
+
+/** Maps from a row index to the errors for that row */
+export type PendingDataErrorMap<T extends Error = Error> = ReadonlyMap<
+  ModelIndex,
+  readonly T[]
+>;

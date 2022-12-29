@@ -43,8 +43,8 @@ export interface GridMetricState {
   model: GridModel;
 
   // Moved columns/rows in the grid
-  movedColumns: MoveOperation[];
-  movedRows: MoveOperation[];
+  movedColumns: readonly MoveOperation[];
+  movedRows: readonly MoveOperation[];
 
   // Whether the scrollbars are currently being dragged
   isDraggingHorizontalScrollBar: boolean;
@@ -159,10 +159,10 @@ export class GridMetricCalculator {
   protected modelColumns: VisibleToModelMap;
 
   /** List of moved row operations. Need to track the previous value so we know if modelRows needs to be cleared. */
-  protected movedRows: MoveOperation[];
+  protected movedRows: readonly MoveOperation[];
 
   /** List of moved column operations. Need to track the previous value so we know if modelColumns needs to be cleared. */
-  protected movedColumns: MoveOperation[];
+  protected movedColumns: readonly MoveOperation[];
 
   constructor({
     userColumnWidths = new Map(),
@@ -172,8 +172,8 @@ export class GridMetricCalculator {
     fontWidths = new Map(),
     modelRows = new Map(),
     modelColumns = new Map(),
-    movedRows = [] as MoveOperation[],
-    movedColumns = [] as MoveOperation[],
+    movedRows = [] as readonly MoveOperation[],
+    movedColumns = [] as readonly MoveOperation[],
   } = {}) {
     this.userColumnWidths = userColumnWidths;
     this.userRowHeights = userRowHeights;

@@ -625,7 +625,7 @@ class GridColumnMoveMouseHandler extends GridMouseHandler {
       maxSwapDepth -= 1;
     }
 
-    let newMovedColumns: MoveOperation[] | undefined;
+    let newMovedColumns: readonly MoveOperation[] | undefined;
 
     if (
       isDraggingLeft &&
@@ -682,8 +682,8 @@ class GridColumnMoveMouseHandler extends GridMouseHandler {
   moveColumn(
     draggingColumn: ColumnInfo,
     to: number,
-    movedColumns: MoveOperation[]
-  ): MoveOperation[] {
+    movedColumns: readonly MoveOperation[]
+  ): readonly MoveOperation[] {
     const newMovedColumns = draggingColumn.isColumnGroup
       ? GridUtils.moveRange(draggingColumn.range, to, movedColumns)
       : GridUtils.moveItem(draggingColumn.visibleIndex, to, movedColumns);

@@ -5,7 +5,7 @@ import './Menu.scss';
 export type MenuSelectCallback = (itemIndex: number) => void;
 
 export type MenuProps = {
-  items: MenuItemDef[];
+  items: readonly MenuItemDef[];
   onSelect?: MenuSelectCallback;
   'data-testid'?: string;
 };

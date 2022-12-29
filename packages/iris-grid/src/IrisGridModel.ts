@@ -20,15 +20,20 @@ import type {
   Table,
 } from '@deephaven/jsapi-shim';
 import { Formatter } from '@deephaven/jsapi-utils';
-import { ColumnName, UITotalsTableConfig, PendingDataMap } from './CommonTypes';
-
-type RowIndex = ModelIndex;
+import {
+  ColumnName,
+  UITotalsTableConfig,
+  PendingDataMap,
+  PendingDataErrorMap,
+} from './CommonTypes';
 
 type IrisGridModelEventNames = typeof IrisGridModel.EVENT[keyof typeof IrisGridModel.EVENT];
 
 type IrisGridModelEventMap = {
   [E in IrisGridModelEventNames]: Event<E>;
 };
+
+const EMPTY_ARRAY: never[] = [];
 
 /**
  * Abstract class that extends the GridModel to have more functionality, like filtering and sorting.
@@ -133,13 +138,13 @@ abstract class IrisGridModel<
   }
 
   /** List of column movements defined by the model. Used as initial movements for IrisGrid */
-  get movedColumns(): MoveOperation[] {
-    return [];
+  get movedColumns(): readonly MoveOperation[] {
+    return EMPTY_ARRAY;
   }
 
   /** List of row movements defined by the model. Used as initial movements for IrisGrid */
-  get movedRows(): MoveOperation[] {
-    return [];
+  get movedRows(): readonly MoveOperation[] {
+    return EMPTY_ARRAY;
   }
 
   /**
@@ -168,12 +173,12 @@ abstract class IrisGridModel<
   /**
    * @returns The filters set on this model
    */
-  abstract get filter(): FilterCondition[];
+  abstract get filter(): readonly FilterCondition[];
 
   /**
    * @param filter The filters to set
    */
-  abstract set filter(filter: FilterCondition[]);
+  abstract set filter(filter: readonly FilterCondition[]);
 
   /**
    * @returns The formatter used when formatting data
@@ -199,38 +204,38 @@ abstract class IrisGridModel<
   /**
    * @returns The sorts used on this model
    */
-  abstract get sort(): Sort[];
+  abstract get sort(): readonly Sort[];
 
   /**
    * @param sort The sorts to use on this model
    */
-  abstract set sort(sort: Sort[]);
+  abstract set sort(sort: readonly Sort[]);
 
   /**
   /**
    * @returns The custom columns on this model
    */
-  abstract get customColumns(): ColumnName[];
+  abstract get customColumns(): readonly ColumnName[];
 
   /**
    * @param customColumns The custom columns to use
    */
-  abstract set customColumns(customColumns: ColumnName[]);
+  abstract set customColumns(customColumns: readonly ColumnName[]);
 
   /**
    * @returns The format columns on this model
    */
-  abstract get formatColumns(): CustomColumn[];
+  abstract get formatColumns(): readonly CustomColumn[];
 
   /**
    * @param formatColumns The format columns to use
    */
-  abstract set formatColumns(formatColumns: CustomColumn[]);
+  abstract set formatColumns(formatColumns: readonly CustomColumn[]);
 
   /**
    * @param columns The columns to treat as frozen
    */
-  abstract updateFrozenColumns(columns: ColumnName[]): void;
+  abstract updateFrozenColumns(columns: readonly ColumnName[]): void;
 
   /**
    * @returns The config to use for rolling up this table
@@ -256,22 +261,22 @@ abstract class IrisGridModel<
   /**
    * @returns Names of columns which should be locked to the front, but not floating
    */
-  get frontColumns(): ColumnName[] {
-    return [];
+  get frontColumns(): readonly ColumnName[] {
+    return EMPTY_ARRAY;
   }
 
   /**
    * @returns Names of columns which should be locked to the back, but not floating
    */
-  get backColumns(): ColumnName[] {
-    return [];
+  get backColumns(): readonly ColumnName[] {
+    return EMPTY_ARRAY;
   }
 
   /**
    * @returns Names of columns which should be frozen to the front and floating
    */
-  get frozenColumns(): ColumnName[] {
-    return [];
+  get frozenColumns(): readonly ColumnName[] {
+    return EMPTY_ARRAY;
   }
 
   /**
@@ -379,13 +384,13 @@ abstract class IrisGridModel<
    * The names of columns with select distinct enabled
    * @returns An array of column names
    */
-  abstract get selectDistinctColumns(): ColumnName[];
+  abstract get selectDistinctColumns(): readonly ColumnName[];
 
   /**
    * Set the columns with select distinct enabled
    * @param names The array of column names to enable select distinct on
    */
-  abstract set selectDistinctColumns(names: ColumnName[]);
+  abstract set selectDistinctColumns(names: readonly ColumnName[]);
 
   /**
    * The pending data for this model
@@ -414,7 +419,7 @@ abstract class IrisGridModel<
    * Errors for the pending data
    * @returns Map from row number to the error
    */
-  abstract get pendingDataErrors(): Map<RowIndex, Error[]>;
+  abstract get pendingDataErrors(): PendingDataErrorMap;
 
   /**
    * Commit pending data and save all data to the table
@@ -447,7 +452,9 @@ abstract class IrisGridModel<
    * @param ranges The model ranges to take the snapshot of
    * @returns Returns the data in a row/column matrix
    */
-  abstract snapshot(ranges: GridRange[]): Promise<unknown[][]>;
+  abstract snapshot(
+    ranges: readonly GridRange[]
+  ): Promise<readonly unknown[][]>;
 
   /**
    * @param ranges The ranges to take a snapshot of
@@ -456,7 +463,7 @@ abstract class IrisGridModel<
    * @returns A text formatted snapshot of the data for the specified range set
    */
   abstract textSnapshot(
-    ranges: GridRange[],
+    ranges: readonly GridRange[],
     includeHeaders?: boolean,
     formatValue?: (value: unknown, column: Column, row?: Row) => string
   ): Promise<string>;
@@ -486,7 +493,7 @@ abstract class IrisGridModel<
    * @param ranges The ranges to delete
    * @returns A promise that resolves successfully when the operation is complete or rejects if there's an error
    */
-  abstract delete(ranges: GridRange[]): Promise<void>;
+  abstract delete(ranges: readonly GridRange[]): Promise<void>;
 }
 
 export default IrisGridModel;
