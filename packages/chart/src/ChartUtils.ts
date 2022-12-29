@@ -825,7 +825,7 @@ class ChartUtils {
   }
 
   /**
-   * Get the marker symbol for the provided Deephaven shape
+   * Get the Plotly marker symbol for the provided Deephaven shape
    * Deephaven shapes: https://deephaven.io/enterprise/docs/plotting/visual-formatting/#point-formatting
    * Plotly shapes: https://plotly.com/javascript/reference/scattergl/#scattergl-marker-symbol
    * Table of plotly shapes: https://plotly.com/python/marker-style/
