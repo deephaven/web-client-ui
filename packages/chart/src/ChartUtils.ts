@@ -171,6 +171,10 @@ class ChartUtils {
 
   static DEFAULT_MARKER_SIZE = 6;
 
+  static MODE_MARKERS: PlotData['mode'] = 'markers';
+
+  static MODE_LINES: PlotData['mode'] = 'lines';
+
   /**
    * Converts the Iris plot style into a plotly chart type
    * @param plotStyle The plotStyle to use, see dh.plot.SeriesPlotStyle
@@ -217,19 +221,37 @@ class ChartUtils {
    */
   static getPlotlyChartMode(
     plotStyle: SeriesPlotStyle,
-    shape: string | null = null
+    isLinesVisible: boolean | null,
+    isShapesVisible: boolean | null
   ): PlotData['mode'] | undefined {
+    const modes = new Set<PlotData['mode']>();
+
     switch (plotStyle) {
       case dh.plot.SeriesPlotStyle.SCATTER:
-        return 'markers';
-      case dh.plot.SeriesPlotStyle.LINE:
-        if (shape != null && shape.length > 0) {
-          return 'lines+markers';
+        // Default to only showing shapes in scatter plots
+        if (isLinesVisible ?? false) {
+          modes.add(ChartUtils.MODE_LINES);
         }
-        return 'lines';
+        if (isShapesVisible ?? true) {
+          modes.add(ChartUtils.MODE_MARKERS);
+        }
+        break;
+      case dh.plot.SeriesPlotStyle.LINE:
+        // Default to only showing lines in line series
+        if (isLinesVisible ?? true) {
+          modes.add(ChartUtils.MODE_LINES);
+        }
+        if (isShapesVisible ?? false) {
+          modes.add(ChartUtils.MODE_MARKERS);
+        }
+        break;
       default:
-        return undefined;
+        break;
     }
+
+    return modes.size > 0
+      ? ([...modes].join('+') as PlotData['mode'])
+      : undefined;
   }
 
   /**
@@ -633,6 +655,8 @@ class ChartUtils {
   ): Partial<PlotData> {
     const {
       name,
+      isLinesVisible,
+      isShapesVisible,
       plotStyle,
       lineColor,
       shapeColor,
@@ -645,7 +669,11 @@ class ChartUtils {
       source => source.axis?.businessCalendar
     );
     const type = ChartUtils.getChartType(plotStyle, isBusinessTime);
-    const mode = ChartUtils.getPlotlyChartMode(plotStyle, shape);
+    const mode = ChartUtils.getPlotlyChartMode(
+      plotStyle,
+      isLinesVisible,
+      isShapesVisible
+    );
     const orientation = ChartUtils.getPlotlySeriesOrientation(series);
 
     const seriesData = ChartUtils.makeSeriesData(type, mode, name, orientation);

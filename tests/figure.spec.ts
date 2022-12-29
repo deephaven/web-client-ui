@@ -60,7 +60,7 @@ for i in range(len(shapes)):
 # Generate the table and figure based on the shapes created
 ${figureName} = Figure()
 for i in range(len(shapes)):
-    ${figureName} = ${figureName}.plot_xy(series_name=shapes[i], t=${tableName}, x="x", y=f"y{i}").point(shape=shapes[i], size=len(shapes) - i)
+    ${figureName} = ${figureName}.plot_xy(series_name=shapes[i], t=${tableName}, x="x", y=f"y{i}").point(shape=shapes[i], size=len(shapes) - i, visible=True)
 
 ${figureName} = ${figureName}.show();`;
 

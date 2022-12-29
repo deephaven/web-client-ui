@@ -474,3 +474,54 @@ describe('axis property name', () => {
     expect(ChartUtils.getAxisPropertyName(dh.plot.AxisType.Z)).toBe(null);
   });
 });
+
+describe('getPlotlyChartMode', () => {
+  const { LINE, SCATTER } = dh.plot.SeriesPlotStyle;
+  const { getPlotlyChartMode } = ChartUtils;
+  test('scatter plots', () => {
+    expect(getPlotlyChartMode(SCATTER, null, null)).toBe('markers');
+    expect(getPlotlyChartMode(SCATTER, null, false)).toBe(undefined);
+    expect(getPlotlyChartMode(SCATTER, null, true)).toBe('markers');
+    expect(getPlotlyChartMode(SCATTER, false, null)).toBe('markers');
+    expect(getPlotlyChartMode(SCATTER, false, false)).toBe(undefined);
+    expect(getPlotlyChartMode(SCATTER, false, true)).toBe('markers');
+    expect(getPlotlyChartMode(SCATTER, true, null)).toBe('lines+markers');
+    expect(getPlotlyChartMode(SCATTER, true, false)).toBe('lines');
+    expect(getPlotlyChartMode(SCATTER, true, true)).toBe('lines+markers');
+  });
+
+  test('line plots', () => {
+    expect(getPlotlyChartMode(LINE, null, null)).toBe('lines');
+    expect(getPlotlyChartMode(LINE, null, false)).toBe('lines');
+    expect(getPlotlyChartMode(LINE, null, true)).toBe('lines+markers');
+    expect(getPlotlyChartMode(LINE, false, null)).toBe(undefined);
+    expect(getPlotlyChartMode(LINE, false, false)).toBe(undefined);
+    expect(getPlotlyChartMode(LINE, false, true)).toBe('markers');
+    expect(getPlotlyChartMode(LINE, true, null)).toBe('lines');
+    expect(getPlotlyChartMode(LINE, true, false)).toBe('lines');
+    expect(getPlotlyChartMode(LINE, true, true)).toBe('lines+markers');
+  });
+});
+
+describe('getMarkerSymbol', () => {
+  const { getMarkerSymbol } = ChartUtils;
+  it('returns valid shapes', () => {
+    expect(getMarkerSymbol('SQUARE')).toBe('square');
+    expect(getMarkerSymbol('CIRCLE')).toBe('circle');
+    expect(getMarkerSymbol('DIAMOND')).toBe('diamond');
+    expect(getMarkerSymbol('UP_TRIANGLE')).toBe('triangle-up');
+    expect(getMarkerSymbol('DOWN_TRIANGLE')).toBe('triangle-down');
+    expect(getMarkerSymbol('RIGHT_TRIANGLE')).toBe('triangle-right');
+    expect(getMarkerSymbol('DOWN_TRIANGLE')).toBe('triangle-down');
+  });
+
+  it('throws on invalid shapes', () => {
+    expect(() => getMarkerSymbol('ELLIPSE')).toThrow();
+    expect(() => getMarkerSymbol('HORIZONTAL_RECTANGLE')).toThrow();
+    expect(() => getMarkerSymbol('VERTICAL_RECTANGLE')).toThrow();
+    expect(() => getMarkerSymbol('GARBAGE')).toThrow();
+    expect(() => getMarkerSymbol('')).toThrow();
+    expect(() => getMarkerSymbol('S')).toThrow();
+    expect(() => getMarkerSymbol('&$*(#@&')).toThrow();
+  });
+});
