@@ -486,10 +486,8 @@ describe('legend visibility', () => {
   });
 
   it('does not set property when not provided', () => {
-    expect(testLegend(null)).not.toEqual([
-      expect.objectContaining({
-        showlegend: expect.any,
-      }),
+    expect(testLegend(null)).toEqual([
+      expect.objectContaining({ showlegend: undefined }),
     ]);
   });
 });

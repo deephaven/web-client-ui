@@ -604,9 +604,16 @@ class ChartUtils {
     type: PlotType | undefined,
     mode: PlotData['mode'] | undefined,
     name: string,
+    showLegend: boolean | null,
     orientation: 'h' | 'v' = ChartUtils.ORIENTATION.VERTICAL
   ): Partial<PlotData> {
-    return { type, mode, name, orientation };
+    return {
+      type,
+      mode,
+      name,
+      orientation,
+      showlegend: showLegend ?? undefined,
+    };
   }
 
   /**
@@ -632,10 +639,13 @@ class ChartUtils {
     const type = ChartUtils.getChartType(plotStyle, isBusinessTime);
     const mode = ChartUtils.getPlotlyChartMode(plotStyle);
     const orientation = ChartUtils.getPlotlySeriesOrientation(series);
-    const seriesData = ChartUtils.makeSeriesData(type, mode, name, orientation);
-    if (showLegend != null) {
-      seriesData.showlegend = showLegend;
-    }
+    const seriesData = ChartUtils.makeSeriesData(
+      type,
+      mode,
+      name,
+      showLegend,
+      orientation
+    );
 
     ChartUtils.addSourcesToSeriesData(
       seriesData,
