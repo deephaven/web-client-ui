@@ -180,6 +180,14 @@ class FigureChartModel extends ChartModel {
       this.layout.hiddenlabels = ChartUtils.getHiddenLabels(this.settings);
     }
 
+    // We only want to force hide the legend if there is only one series that is not a PIE
+    // Right now this means that if the user only has one series, they cannot explicitly show the legend until deephaven-core#3254 is implemented
+    // TODO: deephaven-core#3254, once done, this can be removed.
+    this.layout.showlegend =
+      this.data.length > 1 || series.plotStyle === dh.plot.SeriesPlotStyle.PIE
+        ? undefined
+        : false;
+
     if (series.oneClick != null) {
       const { oneClick } = series;
       const { columns } = oneClick;
