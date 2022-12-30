@@ -1,4 +1,4 @@
-import { Page } from '@playwright/test';
+import { Locator, Page } from '@playwright/test';
 import shortid from 'shortid';
 
 /**
@@ -33,6 +33,31 @@ export async function typeInMonaco(page: Page, text: string): Promise<void> {
     // Automatic indenting can screw up some of our commands, so delete any automatic indent - we'll put our own indent there with the copied command
     await page.keyboard.press('Shift+Home', { delay: 50 });
     await page.keyboard.press('Delete', { delay: 50 });
+  }
+}
+
+/**
+ * Pastes text into a monaco input
+ * @param locator Locator to use for monaco editor
+ * @param text Text to be pasted
+ * @param browserName Name of the browser being tested. Pasting is not available in firefox, so it will fall back to typing.
+ */
+export async function pasteInMonaco(
+  locator: Locator,
+  text: string,
+  browserName: string
+): Promise<void> {
+  if (browserName === 'firefox') {
+    await typeInMonaco(locator.page(), text);
+  } else {
+    await locator.locator('textarea').evaluate(async (element, evalText) => {
+      const clipboardData = new DataTransfer();
+      clipboardData.setData('text/plain', evalText);
+      const clipboardEvent = new ClipboardEvent('paste', {
+        clipboardData,
+      });
+      element.dispatchEvent(clipboardEvent);
+    }, text);
   }
 }
 

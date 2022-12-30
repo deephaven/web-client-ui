@@ -1,13 +1,14 @@
-import { test, expect, Page } from '@playwright/test';
-import { generateVarName, typeInMonaco } from './utils';
+import { test, expect, Page, Locator } from '@playwright/test';
+import { generateVarName, pasteInMonaco, typeInMonaco } from './utils';
 
 let page: Page;
+let consoleInput: Locator;
 
 test.beforeEach(async ({ browser }) => {
   page = await browser.newPage();
   await page.goto('');
 
-  const consoleInput = page.locator('.console-input');
+  consoleInput = page.locator('.console-input');
   await consoleInput.click();
 });
 
@@ -15,7 +16,7 @@ test.afterEach(async () => {
   await page.close();
 });
 
-test('can open a simple figure', async () => {
+test('can open a simple figure', async ({ browserName }) => {
   const figureName = generateVarName();
 
   // Create a figure that uses the table we just created
@@ -23,7 +24,8 @@ test('can open a simple figure', async () => {
 from deephaven.plot.figure import Figure
 ${figureName} = Figure().plot_xy(series_name="Test", t=empty_table(100).update(["x=i", "y=Math.sin(i)", "z=Math.cos(i)"]), x="x", y="y").show()`;
 
-  await typeInMonaco(page, command);
+  await pasteInMonaco(consoleInput, command, browserName);
+
   await page.keyboard.press('Enter');
 
   // Expect the panel to be open with a loading spinner first
@@ -40,7 +42,7 @@ ${figureName} = Figure().plot_xy(series_name="Test", t=empty_table(100).update([
   ).toHaveScreenshot();
 });
 
-test('can set point shape and size', async () => {
+test('can set point shape and size', async ({ browserName }) => {
   const tableName = generateVarName();
   const figureName = generateVarName();
   const command = `from deephaven import empty_table
@@ -64,7 +66,7 @@ for i in range(len(shapes)):
 
 ${figureName} = ${figureName}.show();`;
 
-  await typeInMonaco(page, command);
+  await pasteInMonaco(consoleInput, command, browserName);
   await page.keyboard.press('Enter');
 
   // Expect the panel to be open with a loading spinner first

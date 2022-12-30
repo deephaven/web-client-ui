@@ -1,5 +1,5 @@
 import { test, expect, Page } from '@playwright/test';
-import { generateVarName, typeInMonaco } from './utils';
+import { generateVarName, pasteInMonaco } from './utils';
 
 // Run tests serially since they all use the same table
 test.describe.configure({ mode: 'serial' });
@@ -15,7 +15,7 @@ test.afterAll(async () => {
   await page.close();
 });
 
-test('can open a simple table', async () => {
+test('can open a simple table', async ({ browserName }) => {
   const consoleInput = page.locator('.console-input');
   await consoleInput.click();
 
@@ -24,7 +24,7 @@ test('can open a simple table', async () => {
   const command = `from deephaven import empty_table
 ${tableName} = empty_table(100).update(["x=i", "y=Math.sin(i)", "z=Math.cos(i)"])`;
 
-  await typeInMonaco(page, command);
+  await pasteInMonaco(consoleInput, command, browserName);
   await page.keyboard.press('Enter');
 
   // Wait for the panel to show
