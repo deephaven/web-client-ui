@@ -217,31 +217,32 @@ class ChartUtils {
   /**
    * Converts the Iris plot style into a plotly chart mode
    * @param plotStyle The plotStyle to use, see dh.plot.SeriesPlotStyle.*
-   * @param shape The shape of the markers to use
+   * @param areLinesVisible Whether lines are visible or not
+   * @param areShapesVisible Whether shapes are visible or not
    */
   static getPlotlyChartMode(
     plotStyle: SeriesPlotStyle,
-    isLinesVisible: boolean | null,
-    isShapesVisible: boolean | null
+    areLinesVisible?: boolean,
+    areShapesVisible?: boolean
   ): PlotData['mode'] | undefined {
     const modes = new Set<PlotData['mode']>();
 
     switch (plotStyle) {
       case dh.plot.SeriesPlotStyle.SCATTER:
         // Default to only showing shapes in scatter plots
-        if (isLinesVisible ?? false) {
+        if (areLinesVisible ?? false) {
           modes.add(ChartUtils.MODE_LINES);
         }
-        if (isShapesVisible ?? true) {
+        if (areShapesVisible ?? true) {
           modes.add(ChartUtils.MODE_MARKERS);
         }
         break;
       case dh.plot.SeriesPlotStyle.LINE:
         // Default to only showing lines in line series
-        if (isLinesVisible ?? true) {
+        if (areLinesVisible ?? true) {
           modes.add(ChartUtils.MODE_LINES);
         }
-        if (isShapesVisible ?? false) {
+        if (areShapesVisible ?? false) {
           modes.add(ChartUtils.MODE_MARKERS);
         }
         break;
@@ -671,8 +672,8 @@ class ChartUtils {
     const type = ChartUtils.getChartType(plotStyle, isBusinessTime);
     const mode = ChartUtils.getPlotlyChartMode(
       plotStyle,
-      isLinesVisible,
-      isShapesVisible
+      isLinesVisible ?? undefined,
+      isShapesVisible ?? undefined
     );
     const orientation = ChartUtils.getPlotlySeriesOrientation(series);
 
@@ -828,11 +829,11 @@ class ChartUtils {
    * Get the Plotly marker symbol for the provided Deephaven shape
    * Deephaven shapes: https://deephaven.io/enterprise/docs/plotting/visual-formatting/#point-formatting
    * Plotly shapes: https://plotly.com/javascript/reference/scattergl/#scattergl-marker-symbol
-   * Table of plotly shapes: https://plotly.com/python/marker-style/
-   * @param shape Shape to get the marker symbol for
+   * Table of plotly shapes: https://plotly.com/python/marker-style/#custom-marker-symbols
+   * @param deephavenShape Deephaven shape to get the marker symbol for
    */
-  static getMarkerSymbol(shape: string): MarkerSymbol {
-    switch (shape) {
+  static getMarkerSymbol(deephavenShape: string): MarkerSymbol {
+    switch (deephavenShape) {
       case 'SQUARE':
         return 'square';
       case 'CIRCLE':
@@ -850,12 +851,12 @@ class ChartUtils {
       // There don't seem to be any plotly equivalents for ellipse or rectangles
       // Rectangles could be `line-ew`, `line-ns`, or `hourglass` and `bowtie` instead?
       // Ellipse could be `asterisk` or `diamond-wide` instead?
-      // Just throw an error for now, we've already got a bunch of types.
+      // Just throw an error, we've already got a bunch of types.
       case 'ELLIPSE':
       case 'HORIZONTAL_RECTANGLE':
       case 'VERTICAL_RECTANGLE':
       default:
-        throw new Error(`Unrecognized shape ${shape}`);
+        throw new Error(`Unrecognized shape ${deephavenShape}`);
     }
   }
 
