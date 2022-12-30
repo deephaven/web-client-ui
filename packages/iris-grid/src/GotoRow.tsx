@@ -9,13 +9,20 @@ import React, {
   useState,
 } from 'react';
 import { Column } from '@deephaven/jsapi-shim';
+import {
+  Type as FilterType,
+  TypeValue as FilterTypeValue,
+} from '@deephaven/filters';
 import { Button, DateTimeInput } from '@deephaven/components';
+import { TableUtils } from '@deephaven/jsapi-utils';
+import { assertNotNull } from '@deephaven/utils';
 import classNames from 'classnames';
 import './GotoRow.scss';
 import IrisGridModel from './IrisGridModel';
 import IrisGridProxyModel from './IrisGridProxyModel';
 import IrisGridBottomBar from './IrisGridBottomBar';
 import { isIrisGridTableModelTemplate } from './IrisGridTableModelTemplate';
+import { ColumnName } from './CommonTypes';
 
 export function isIrisGridProxyModel(
   model: IrisGridModel
@@ -38,11 +45,10 @@ interface GotoRowProps {
   onExiting: () => void;
   onExited: () => void;
 
-  gotoValueSelectedColumn: Column;
-  gotoValueSelectedFilter: number;
+  gotoValueSelectedColumnName: ColumnName;
   gotoValue: string;
-  onGotoValueSelectedColumnChanged: (column: Column) => void;
-  onGotoValueSelectedFilterChanged: (filter: number) => void;
+  onGotoValueSelectedColumnNameChanged: (columnName: ColumnName) => void;
+  onGotoValueSelectedFilterChanged: (filter: FilterTypeValue) => void;
   onGotoValueChanged: (input: string, isBackward?: boolean) => void;
 }
 
@@ -58,10 +64,9 @@ function GotoRow({
   model,
   onGotoRowNumberChanged,
   onClose,
-  gotoValueSelectedColumn,
-  gotoValueSelectedFilter,
+  gotoValueSelectedColumnName,
   gotoValue,
-  onGotoValueSelectedColumnChanged,
+  onGotoValueSelectedColumnNameChanged,
   onGotoValueSelectedFilterChanged,
   onGotoValueChanged,
 }: GotoRowProps): ReactElement {
@@ -78,7 +83,7 @@ function GotoRow({
   const res = 'Row number';
 
   const { rowCount } = model;
-  const onGotoValueKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+  const handleGotoValueKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       e.stopPropagation();
       e.preventDefault();
@@ -86,16 +91,13 @@ function GotoRow({
     }
   };
 
-  const { type: columnType } = gotoValueSelectedColumn;
+  const index = model.getColumnIndexByName(gotoValueSelectedColumnName);
 
-  const isNumberType =
-    columnType === 'int' ||
-    columnType === 'long' ||
-    columnType === 'float' ||
-    columnType === 'java.math.BigDecimal' ||
-    columnType === 'java.math.BigInteger';
+  assertNotNull(index);
+  const selectedColumn = columns[index];
+  const { type: columnType } = selectedColumn;
 
-  const isDateTime = columnType === 'io.deephaven.time.DateTime';
+  const normalizedType = TableUtils.getNormalizedType(columnType);
   const onGotoValueInputChanged = (value?: string) => {
     onGotoValueChanged(value ?? '');
   };
@@ -112,6 +114,93 @@ function GotoRow({
   };
   useEffect(selectInput, [isGotoRowActive, gotoRow, gotoValue]);
 
+  const renderValueInput = () => {
+    switch (normalizedType) {
+      case TableUtils.dataType.DECIMAL:
+      case TableUtils.dataType.INT:
+        return (
+          <div className="goto-row-input">
+            <input
+              ref={gotoValueInputRef}
+              type="number"
+              className="form-control"
+              onKeyDown={handleGotoValueKeyDown}
+              placeholder="value"
+              onChange={e => onGotoValueInputChanged(e.target.value)}
+              value={gotoValue}
+            />
+          </div>
+        );
+      case TableUtils.dataType.DATETIME:
+        return (
+          <div className="goto-value-date-time-input">
+            <DateTimeInput
+              className="goto-value-date-time-input"
+              onChange={onGotoValueInputChanged}
+            />
+          </div>
+        );
+      case TableUtils.dataType.STRING:
+        return (
+          <>
+            <div className="goto-row-input">
+              <select
+                className="custom-select"
+                onChange={event => {
+                  switch (event.target.value) {
+                    case FilterType.contains:
+                      onGotoValueSelectedFilterChanged(FilterType.contains);
+                      break;
+                    case FilterType.eqIgnoreCase:
+                      onGotoValueSelectedFilterChanged(FilterType.eqIgnoreCase);
+                      break;
+
+                    default:
+                      onGotoValueSelectedFilterChanged(FilterType.eq);
+                  }
+                }}
+              >
+                <option key={FilterType.eq} value={FilterType.eq}>
+                  Equals
+                </option>
+                <option key={FilterType.contains} value={FilterType.contains}>
+                  Contains
+                </option>
+                <option
+                  key={FilterType.eqIgnoreCase}
+                  value={FilterType.eqIgnoreCase}
+                >
+                  EqIgnoreCase
+                </option>
+              </select>
+            </div>
+            <div className="goto-row-input">
+              <input
+                ref={gotoValueInputRef}
+                className="form-control"
+                onKeyDown={handleGotoValueKeyDown}
+                placeholder="value"
+                onChange={e => onGotoValueInputChanged(e.target.value)}
+                value={gotoValue}
+              />
+            </div>
+          </>
+        );
+      default:
+        return (
+          <div className="goto-row-input">
+            <input
+              ref={gotoValueInputRef}
+              className="form-control"
+              onKeyDown={handleGotoValueKeyDown}
+              placeholder="value"
+              onChange={e => onGotoValueInputChanged(e.target.value)}
+              value={gotoValue}
+            />
+          </div>
+        );
+    }
+  };
   return (
     <IrisGridBottomBar
       isShown={isShown}
@@ -182,91 +271,40 @@ function GotoRow({
                 <select
                   className="custom-select"
                   onChange={event => {
-                    onGotoValueSelectedColumnChanged(
-                      columns[parseInt(event.target.value, 10)]
-                    );
+                    const columnName = event.target.value;
+                    onGotoValueSelectedColumnNameChanged(columnName);
                   }}
                 >
-                  {columns.map((column, index) => (
-                    <option key={column.index} value={index}>
+                  {columns.map(column => (
+                    <option key={column.name} value={column.name}>
                       {column.name}
                     </option>
                   ))}
                 </select>
               </div>
-              {gotoValueSelectedColumn !== undefined &&
-                gotoValueSelectedColumn.type === 'java.lang.String' && (
-                  <div className="goto-row-input">
-                    <select
-                      className="custom-select"
-                      onChange={event => {
-                        onGotoValueSelectedFilterChanged(
-                          event.target.value === 'Equals' ? 0 : 1
-                        );
-                      }}
-                    >
-                      {['Equals', 'Contains'].map(filter => (
-                        <option key={filter} value={filter}>
-                          {filter}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                )}
 
-              {isNumberType && (
-                <div className="goto-row-input">
-                  <input
-                    ref={gotoValueInputRef}
-                    type="number"
-                    className="form-control"
-                    onKeyDown={onGotoValueKeyDown}
-                    placeholder="value"
-                    onChange={e => onGotoValueInputChanged(e.target.value)}
-                    value={gotoValue}
-                  />
-                </div>
-              )}
-              {isDateTime && (
-                <div className="goto-value-date-time-input">
-                  <DateTimeInput
-                    className="goto-value-date-time-input"
-                    onChange={onGotoValueInputChanged}
-                  />
-                </div>
-              )}
-              {!isDateTime && !isNumberType && (
-                <div className="goto-row-input">
-                  <input
-                    ref={gotoValueInputRef}
-                    className="form-control"
-                    onKeyDown={onGotoValueKeyDown}
-                    placeholder="value"
-                    onChange={e => onGotoValueInputChanged(e.target.value)}
-                    value={gotoValue}
-                  />
-                </div>
-              )}
-              {gotoValue !== '' && (
-                <div>
-                  <Button
-                    kind="ghost"
-                    onClick={() => {
-                      onGotoValueChanged(gotoValue, true);
-                    }}
-                  >
-                    <FontAwesomeIcon icon={vsArrowUp} />
-                  </Button>
-                  <Button
-                    kind="ghost"
-                    onClick={() => {
-                      onGotoValueChanged(gotoValue, false);
-                    }}
-                  >
-                    <FontAwesomeIcon icon={vsArrowDown} />
-                  </Button>
-                </div>
-              )}
+              {renderValueInput()}
+
+              <div>
+                <Button
+                  kind="ghost"
+                  active={gotoValue !== ''}
+                  onClick={() => {
+                    onGotoValueChanged(gotoValue, true);
+                  }}
+                >
+                  <FontAwesomeIcon icon={vsArrowUp} />
+                </Button>
+                <Button
+                  kind="ghost"
+                  active={gotoValue !== ''}
+                  onClick={() => {
+                    onGotoValueChanged(gotoValue, false);
+                  }}
+                >
+                  <FontAwesomeIcon icon={vsArrowDown} />
+                </Button>
+              </div>
             </div>
           </div>
         )}

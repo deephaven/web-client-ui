@@ -89,7 +89,10 @@ import {
   PromiseUtils,
   ValidationError,
 } from '@deephaven/utils';
-import { TypeValue as FilterTypeValue } from '@deephaven/filters';
+import {
+  Type as FilterType,
+  TypeValue as FilterTypeValue,
+} from '@deephaven/filters';
 import throttle from 'lodash.throttle';
 import debounce from 'lodash.debounce';
 import clamp from 'lodash.clamp';
@@ -400,8 +403,8 @@ export interface IrisGridState {
   gotoRowError: string;
   isGotoShown: boolean;
 
-  gotoValueSelectedColumn: Column;
-  gotoValueSelectedFilter: number;
+  gotoValueSelectedColumnName: ColumnName;
+  gotoValueSelectedFilter: FilterTypeValue;
   gotoValue: string;
   lastSeekedRow: number;
 }
@@ -585,13 +588,13 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     this.handleGotoRowSelectedRowNumberChanged = this.handleGotoRowSelectedRowNumberChanged.bind(
       this
     );
-    this.onGotoValueSelectedColumnChanged = this.onGotoValueSelectedColumnChanged.bind(
+    this.handleGotoValueSelectedColumnNameChanged = this.handleGotoValueSelectedColumnNameChanged.bind(
       this
     );
-    this.onGotoValueSelectedFilterChanged = this.onGotoValueSelectedFilterChanged.bind(
+    this.handleGotoValueSelectedFilterChanged = this.handleGotoValueSelectedFilterChanged.bind(
       this
     );
-    this.onGotoValueChanged = this.onGotoValueChanged.bind(this);
+    this.handleGotoValueChanged = this.handleGotoValueChanged.bind(this);
 
     this.grid = null;
     this.gridWrapper = null;
@@ -806,8 +809,8 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       gotoRow: '',
       gotoRowError: '',
 
-      gotoValueSelectedColumn: model.columns[0],
-      gotoValueSelectedFilter: 0,
+      gotoValueSelectedColumnName: model.columns[0].name,
+      gotoValueSelectedFilter: FilterType.eq,
       gotoValue: '',
       lastSeekedRow: 0,
     };
@@ -3171,42 +3174,56 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
   async seekRow(inputString: string, isBackwards = false): Promise<void> {
     const {
-      gotoValueSelectedColumn: selectedColumn,
+      gotoValueSelectedColumnName: selectedColumnName,
       gotoValueSelectedFilter,
       lastSeekedRow,
     } = this.state;
     const { model } = this.props;
-    if (isIrisGridProxyModel(model)) {
-      const { table } = model;
-      if (table !== undefined && !TableUtils.isTreeTable(table)) {
-        if (selectedColumn.type === 'java.lang.String') {
-          // is string column,
-          const isContains = gotoValueSelectedFilter === 1;
-          const rowIndex = await table.seekRow(
-            isBackwards ? lastSeekedRow - 1 : lastSeekedRow + 1,
-            selectedColumn,
-            'String',
-            inputString,
-            false,
-            isContains,
-            isBackwards ?? false
-          );
-          this.setState({ lastSeekedRow: rowIndex });
-          this.grid?.setFocusRow(rowIndex);
-        } else if (inputString !== '') {
-          const rowIndex = await table.seekRow(
-            lastSeekedRow,
-            selectedColumn,
-            'String',
-            inputString,
-            undefined,
-            undefined,
-            isBackwards ?? false
-          );
-          this.setState({ lastSeekedRow: rowIndex });
-          this.grid?.setFocusRow(rowIndex);
-        }
-      }
+    const columnIndex = model.getColumnIndexByName(selectedColumnName);
+    if (columnIndex === undefined) {
+      return;
+    }
+
+    const selectedColumn = model.columns[columnIndex];
+
+    if (
+      !isIrisGridProxyModel(model) ||
+      model.table === undefined ||
+      TableUtils.isTreeTable(model.table)
+    ) {
+      return;
+    }
+
+    const { table } = model;
+    const isContains = gotoValueSelectedFilter === FilterType.contains;
+    const isEquals =
+      gotoValueSelectedFilter === FilterType.eq ||
+      gotoValueSelectedFilter === FilterType.eqIgnoreCase;
+    if (selectedColumn.type === 'java.lang.String') {
+      // is string column,
+      const rowIndex = await table.seekRow(
+        isBackwards ? lastSeekedRow - 1 : lastSeekedRow + 1,
+        selectedColumn,
+        'String',
+        inputString,
+        isEquals,
+        isContains,
+        isBackwards ?? false
+      );
+      this.setState({ lastSeekedRow: rowIndex });
+      this.grid?.setFocusRow(rowIndex);
+    } else if (inputString !== '') {
+      const rowIndex = await table.seekRow(
+        lastSeekedRow,
+        selectedColumn,
+        'String',
+        inputString,
+        undefined,
+        undefined,
+        isBackwards ?? false
+      );
+      this.setState({ lastSeekedRow: rowIndex });
+      this.grid?.setFocusRow(rowIndex);
     }
   }
 
@@ -3518,23 +3535,17 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     );
   }
 
-  onGotoValueSelectedColumnChanged(column: Column): void {
-    const { gotoValueSelectedColumn } = this.state;
-    if (column.type !== gotoValueSelectedColumn?.type) {
-      this.setState({
-        gotoValueSelectedColumn: column,
-        gotoValueSelectedFilter: 0,
-      });
-    } else {
-      this.setState({ gotoValueSelectedColumn: column });
-    }
+  handleGotoValueSelectedColumnNameChanged(columnName: ColumnName): void {
+    this.setState({
+      gotoValueSelectedColumnName: columnName,
+    });
   }
 
-  onGotoValueSelectedFilterChanged(index: number): void {
-    this.setState({ gotoValueSelectedFilter: index });
+  handleGotoValueSelectedFilterChanged(value: FilterTypeValue): void {
+    this.setState({ gotoValueSelectedFilter: value });
   }
 
-  onGotoValueChanged(input: string, isBackwards?: boolean): void {
+  handleGotoValueChanged(input: string, isBackwards?: boolean): void {
     this.setState({ gotoValue: input });
     this.seekRow(input, isBackwards);
   }
@@ -3623,8 +3634,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       isGotoShown,
       gotoRow,
       gotoRowError,
-      gotoValueSelectedColumn,
-      gotoValueSelectedFilter,
+      gotoValueSelectedColumnName,
       gotoValue,
     } = this.state;
     if (!isReady) {
@@ -4247,16 +4257,15 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
               this.focus();
             }}
             onExited={this.handleAnimationEnd}
-            gotoValueSelectedColumn={gotoValueSelectedColumn}
-            gotoValueSelectedFilter={gotoValueSelectedFilter}
+            gotoValueSelectedColumnName={gotoValueSelectedColumnName}
             gotoValue={gotoValue}
-            onGotoValueSelectedColumnChanged={
-              this.onGotoValueSelectedColumnChanged
+            onGotoValueSelectedColumnNameChanged={
+              this.handleGotoValueSelectedColumnNameChanged
             }
             onGotoValueSelectedFilterChanged={
-              this.onGotoValueSelectedFilterChanged
+              this.handleGotoValueSelectedFilterChanged
             }
-            onGotoValueChanged={this.onGotoValueChanged}
+            onGotoValueChanged={this.handleGotoValueChanged}
           />
 
           <PendingDataBottomBar
