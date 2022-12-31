@@ -49,7 +49,6 @@ import { FormattingRule as SidebarFormattingRule } from './sidebar/conditional-f
 import IrisGridModel from './IrisGridModel';
 import type AdvancedSettingsType from './sidebar/AdvancedSettingsType';
 import AdvancedSettings from './sidebar/AdvancedSettings';
-import ColumnHeaderGroup from './ColumnHeaderGroup';
 
 const log = Log.module('IrisGridUtils');
 
@@ -111,7 +110,7 @@ export interface DehydratedIrisGridState {
   invertSearchColumns: boolean;
   pendingDataMap: DehydratedPendingDataMap<string | CellData | null>;
   frozenColumns: ColumnName[];
-  columnHeaderGroups: ColumnGroup[] | null;
+  columnHeaderGroups?: ColumnGroup[];
 }
 
 type DehydratedPendingDataMap<T> = [number, { data: [string, T][] }][];
@@ -308,12 +307,11 @@ class IrisGridUtils {
         pendingDataMap
       ),
       frozenColumns,
-      columnHeaderGroups:
-        columnHeaderGroups?.map(item => ({
-          name: item.name,
-          children: item.children,
-          color: item.color,
-        })) ?? null,
+      columnHeaderGroups: columnHeaderGroups?.map(item => ({
+        name: item.name,
+        children: item.children,
+        color: item.color,
+      })),
     };
   }
 
@@ -353,12 +351,6 @@ class IrisGridUtils {
     } = irisGridState;
     const { columns, formatter } = model;
 
-    let hydratedColumnHeaderGroups: ColumnHeaderGroup[] | undefined;
-
-    if (columnHeaderGroups) {
-      model.setColumnHeaderGroups(columnHeaderGroups);
-      hydratedColumnHeaderGroups = model.getColumnHeaderGroups();
-    }
     return {
       advancedFilters: IrisGridUtils.hydrateAdvancedFilters(
         columns,
@@ -408,7 +400,7 @@ class IrisGridUtils {
         pendingDataMap
       ) as PendingDataMap<UIRow>,
       frozenColumns,
-      columnHeaderGroups: hydratedColumnHeaderGroups,
+      columnHeaderGroups: columnHeaderGroups ?? undefined,
     };
   }
 

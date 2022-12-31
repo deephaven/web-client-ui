@@ -783,6 +783,12 @@ export class GridUtils {
    * @param from The visible axis range to move
    * @param to The visible index to move the start of the range to
    * @param oldMovedItems The old reordered items
+   * @param isPreMoveTo If toParam is the index before the movement
+   *                    If true, this will account for the shift when moving
+   *                    a range before the drop positin
+   *                    E.g. Move range [0, 2] 1 item down (after element 3)
+   *                    The move is [0, 2] -> 1 if this is false. [0, 2] -> 3 if this is true
+   *                    Both will result in [0, 2] -> 1
    * @returns The new reordered items
    */
   static moveRange(
@@ -791,14 +797,18 @@ export class GridUtils {
     oldMovedItems: MoveOperation[],
     isPreMoveTo = false
   ): MoveOperation[] {
-    if (from[0] === toParam) {
-      return oldMovedItems;
+    if (from[0] === from[1]) {
+      return GridUtils.moveItem(from[0], toParam, oldMovedItems);
     }
 
     let to = toParam;
 
     if (isPreMoveTo && from[0] < toParam) {
       to -= from[1] - from[0];
+    }
+
+    if (from[0] === to) {
+      return oldMovedItems;
     }
 
     const movedItems: MoveOperation[] = [...oldMovedItems];

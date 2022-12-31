@@ -181,9 +181,7 @@ const IrisGridModelUpdater = React.memo(
     );
     useEffect(
       function updateColumnHeaderGroups() {
-        if (columnHeaderGroups) {
-          model.setColumnHeaderGroups(columnHeaderGroups);
-        }
+        model.setColumnHeaderGroups(columnHeaderGroups);
       },
       [model, columnHeaderGroups]
     );

@@ -19,7 +19,7 @@ type VisibilityOrderingItemProps = {
   onGroupColorChange(group: ColumnHeaderGroup, color: string | undefined): void;
   onGroupNameChange(group: ColumnHeaderGroup, name: string): void;
   validateGroupName(name: string): boolean;
-  handleProps: unknown;
+  handleProps: Record<string, unknown>;
 };
 
 function emptyOnClick() {
@@ -68,7 +68,7 @@ const VisibilityOrderingItem = forwardRef<
     <div
       ref={ref}
       className={classNames('tree-item', {
-        isSelected: item.data.selected,
+        isSelected: item.selected,
         'two-dragged': childCount === 2,
         'multiple-dragged': childCount > 2,
       })}
@@ -88,7 +88,8 @@ const VisibilityOrderingItem = forwardRef<
         tooltip="Toggle visibility"
       />
       <span className={classNames('column-name', group && 'column-group')}>
-        {group ? (
+        {/* Display a normal item if this is the drag overlay clone, even if it's a group */}
+        {group && !clone ? (
           <VisibilityOrderingGroup
             group={group}
             onDelete={onGroupDelete}

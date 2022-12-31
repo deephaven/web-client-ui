@@ -2801,7 +2801,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
   handleMovedColumnsChanged(
     movedColumns: MoveOperation[],
-    onChangeApplied: (() => void) | undefined = () => null
+    onChangeApplied?: (() => void) | undefined
   ): void {
     this.setState({ movedColumns }, onChangeApplied);
   }

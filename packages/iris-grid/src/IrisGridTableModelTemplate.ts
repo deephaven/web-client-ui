@@ -927,7 +927,7 @@ class IrisGridTableModelTemplate<
       maxDepth,
       parentMap,
       groupMap,
-    } = this.parseColumnHeaderGroups(groups);
+    } = this.parseColumnHeaderGroups(groups ?? this.layoutHints?.columnGroups);
 
     this._columnHeaderGroups = newGroups;
     this.columnHeaderMaxDepth = maxDepth;

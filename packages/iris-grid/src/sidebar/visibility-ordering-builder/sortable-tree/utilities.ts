@@ -2,8 +2,16 @@ import { arrayMove } from '@dnd-kit/sortable';
 import { GridUtils, ModelSizeMap, MoveOperation } from '@deephaven/grid';
 import type IrisGridModel from '../../../IrisGridModel';
 import type ColumnHeaderGroup from '../../../ColumnHeaderGroup';
+import { isFlattenedTreeItem } from './types';
 import type { FlattenedItem, TreeItem, TreeItems } from './types';
 
+/**
+ * Gets the depth of an item dragged with a given x-axis offset
+ *
+ * @param offset x-axis offset of the dragging item
+ * @param indentationWidth Width of indentation for each depth
+ * @returns The drag depth for the given offset
+ */
 function getDragDepth(offset: number, indentationWidth: number) {
   return Math.round(offset / indentationWidth);
 }
@@ -12,7 +20,6 @@ interface IrisGridTreeItemData {
   modelIndex: number | number[];
   visibleIndex: number | [number, number];
   isVisible: boolean;
-  selected: boolean;
   group?: ColumnHeaderGroup;
 }
 
@@ -39,6 +46,7 @@ function getTreeItem(
 
     return {
       id: name,
+      selected: selectedItems.has(name),
       children: group.children
         .map(childName =>
           getTreeItem(
@@ -66,7 +74,6 @@ function getTreeItem(
           // If no user set width, assume it's visible
           index => (userColumnWidths.get(index) ?? 1) > 0
         ),
-        selected: selectedItems.has(name),
       },
     };
   }
@@ -74,12 +81,12 @@ function getTreeItem(
   return {
     id: name,
     children: [],
+    selected: selectedItems.has(name),
     data: {
       modelIndex,
       visibleIndex: GridUtils.getVisibleIndex(modelIndex, movedColumns),
       // If no user set width, assume it's visible
       isVisible: (userColumnWidths.get(modelIndex) ?? 1) > 0,
-      selected: selectedItems.has(name),
     },
   };
 }
@@ -124,6 +131,16 @@ export function getTreeItems(
   return items;
 }
 
+/**
+ * Gets the projected drop position and depth of the dragged item
+ *
+ * @param items List of flattened items
+ * @param activeId ID of the actively dragged item
+ * @param overId ID of the item currently being dragged over
+ * @param dragOffset The x-axis offset of the dragged item
+ * @param indentationWidth The width for each level of the tree
+ * @returns The projected position and depth if the item were to be dropped
+ */
 export function getProjection(
   items: FlattenedItem[],
   activeId: string,
@@ -194,6 +211,14 @@ function getMinDepth({ nextItem }: { nextItem: FlattenedItem | undefined }) {
   return 0;
 }
 
+/**
+ * Helper function to recursively flatten a tree
+ *
+ * @param items Items to flatten
+ * @param parentId The current parentId of the items
+ * @param depth The current depth of the items
+ * @returns Flattened items
+ */
 function flatten<T>(
   items: TreeItems<T>,
   parentId: string | null = null,
@@ -209,17 +234,27 @@ function flatten<T>(
   );
 }
 
+/**
+ * Flattens a tree into a 1D array given the items
+ * @param items The tree items to flatten
+ * @returns The flattened tree items list
+ */
 export function flattenTree<T>(items: TreeItems<T>): FlattenedItem<T>[] {
+  // Should help prevent double flattening since FlattenedItems are valid TreeItems
+  if (items.every(isFlattenedTreeItem)) {
+    return items;
+  }
   return flatten(items);
 }
 
-export function findItem(
-  items: TreeItem[],
-  itemId: string
-): TreeItem | undefined {
-  return items.find(({ id }) => id === itemId);
-}
-
+/**
+ * Recursively checks for the item in a list of items.
+ * The list does not have to be flattened prior to searching.
+ *
+ * @param items Items to search
+ * @param itemId Item to find
+ * @returns The item if found
+ */
 export function findItemDeep(
   items: TreeItems,
   itemId: string
@@ -260,6 +295,13 @@ export function getChildCount(items: TreeItems, id: string): number {
   return item ? countChildren(item.children) : 0;
 }
 
+/**
+ * Removes the children of the list of parents from the list of flattened items
+ *
+ * @param items The flattened items to remove from
+ * @param ids The parents we want to remove the children of
+ * @returns The flattened items without the children of the parents
+ */
 export function removeChildrenOf<T>(
   items: FlattenedItem<T>[],
   ids: string[]

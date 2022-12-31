@@ -21,7 +21,7 @@ import {
   SortableContext,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
-import { flattenTree, getProjection, removeChildrenOf } from './utilities';
+import { flattenTree, getProjection } from './utilities';
 import type { FlattenedItem, SensorContext, TreeItem } from './types';
 import { sortableTreeKeyboardCoordinates } from './keyboardCoordinates';
 import PointerSensorWithInteraction from './PointerSensorWithInteraction';
@@ -68,8 +68,15 @@ export default function SortableTree<T>({
   const flattenedItems = useMemo(() => {
     const flattenedTree = flattenTree(items);
 
-    return removeChildrenOf(flattenedTree, [activeId ?? '']);
+    if (activeId != null) {
+      return flattenedTree.filter(
+        ({ id, selected }) => id === activeId || !selected
+      );
+    }
+
+    return flattenedTree;
   }, [activeId, items]);
+
   const projected =
     activeId != null && overId != null
       ? getProjection(

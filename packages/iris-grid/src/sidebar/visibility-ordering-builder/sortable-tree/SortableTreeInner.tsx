@@ -36,10 +36,29 @@ const dropAnimationConfig: DropAnimation = {
   },
 };
 
-const adjustTranslate: Modifier = ({ transform }) => ({
-  ...transform,
-  y: transform.y - 25,
-});
+/**
+ * This adjusts the transform to move to the cursor if it gets shifted due to multi-select.
+ * With multi-select, the selected items (except dragged) are removed on drag.
+ * This can cause the overlay item to disconnect from the cursor in some cases.
+ * E.g. select first 3 items, start dragging from 3rd item.
+ * Without this modifier, the drag overlay will be shifted 60px up from the cursor after the items are removed.
+ *
+ * This assumes all items are the same height as the dragged item
+ * @param args Modifier args from dnd-kit
+ * @returns Transform so that the dragged item stays on the cursor
+ */
+const adjustToCursor: Modifier = args => {
+  let offsetY = 0;
+  if (args.activeNodeRect && args.activatorEvent instanceof PointerEvent) {
+    offsetY =
+      Math.floor(
+        (args.activatorEvent.clientY - args.activeNodeRect.top) /
+          args.activeNodeRect.height
+      ) * args.activeNodeRect.height;
+  }
+
+  return { ...args.transform, y: args.transform.y + offsetY };
+};
 
 interface Props<T> {
   items: FlattenedItem<T>[];
@@ -81,9 +100,7 @@ export default function SortableTreeInner<T>({
   // Using the context ref allows this to trigger properly on only items changes
   useEffect(
     function remeasureContainers() {
-      contextRef.current?.measureDroppableContainers([
-        ...contextRef.current.droppableContainers.keys(),
-      ]);
+      contextRef.current.measureDroppableContainers(items.map(({ id }) => id));
     },
     [items]
   );
@@ -132,7 +149,7 @@ export default function SortableTreeInner<T>({
       {createPortal(
         <DragOverlay
           dropAnimation={dropAnimationConfig}
-          modifiers={indicator ? [adjustTranslate] : undefined}
+          modifiers={[adjustToCursor]}
           className="visibility-ordering-list"
         >
           {activeId != null && activeItem ? (

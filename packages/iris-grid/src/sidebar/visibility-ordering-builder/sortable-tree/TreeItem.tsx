@@ -31,7 +31,7 @@ export type TreeItemRenderFn<T> = (props: {
   childCount?: number;
   value: string;
   item: T extends TreeItemType<infer D> ? FlattenedItem<D> : FlattenedItem<T>;
-  handleProps: unknown;
+  handleProps: Record<string, unknown>;
 }) => JSX.Element;
 
 export function TreeItem<T>(props: Props<T>) {
