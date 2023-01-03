@@ -185,7 +185,7 @@ class FigureChartModel extends ChartModel {
     // TODO: deephaven-core#3254, once done, this can be removed.
     this.layout.showlegend =
       this.data.length > 1 || series.plotStyle === dh.plot.SeriesPlotStyle.PIE
-        ? undefined
+        ? showLegend ?? undefined
         : false;
 
     if (series.oneClick != null) {
