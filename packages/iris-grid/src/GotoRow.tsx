@@ -252,9 +252,7 @@ function GotoRow({
             <div className="goto-row-text">
               of {dh.i18n.NumberFormat.format(DEFAULT_FORMAT_STRING, rowCount)}
             </div>
-            {gotoRowError && (
-              <div className="goto-row-error text-danger">{gotoRowError}</div>
-            )}
+            {gotoRowError && <div className="text-danger">{gotoRowError}</div>}
           </div>
           <div className="goto-row-close">
             <Button kind="ghost" onClick={onClose}>
@@ -311,9 +309,7 @@ function GotoRow({
                 </Button>
               </div>
               {gotoValueError && (
-                <div className="goto-row-error text-danger">
-                  {gotoValueError}
-                </div>
+                <div className="text-danger">{gotoValueError}</div>
               )}
             </div>
           </div>

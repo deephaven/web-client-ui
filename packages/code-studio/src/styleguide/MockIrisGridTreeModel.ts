@@ -296,6 +296,18 @@ class MockIrisGridTreeModel
   valuesTable(column: Column): Promise<never> {
     throw new Error('Not defined in mock');
   }
+
+  seekRow(
+    startRow: number,
+    column: Column,
+    valueType: string,
+    value: unknown,
+    insensitive?: boolean | undefined,
+    contains?: boolean | undefined,
+    isBackwards?: boolean | undefined
+  ): Promise<number> {
+    throw new Error('Method not implemented.');
+  }
 }
 
 export default MockIrisGridTreeModel;

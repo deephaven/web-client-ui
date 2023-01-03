@@ -650,6 +650,30 @@ class IrisGridProxyModel extends IrisGridModel {
   getColumnIndexByName(name: ColumnName): number | undefined {
     return this.model.getColumnIndexByName(name);
   }
+
+  async seekRow(
+    startRow: number,
+    column: Column,
+    valueType: string,
+    value: unknown,
+    insensitive?: boolean,
+    contains?: boolean,
+    isBackwards?: boolean
+  ): Promise<number> {
+    return this.model.seekRow(
+      startRow,
+      column,
+      valueType,
+      value,
+      insensitive,
+      contains,
+      isBackwards
+    );
+  }
+
+  get isSeekRowAvailable(): boolean {
+    return this.model.isSeekRowAvailable;
+  }
 }
 
 export default IrisGridProxyModel;

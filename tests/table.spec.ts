@@ -108,15 +108,15 @@ test.describe('tests table operations', () => {
     // test invalid row index
     await gotoBarInputField.click();
     await page.keyboard.type('641');
-    await expect(
-      gotoBar.locator('.goto-row-wrapper .goto-row-error')
-    ).toHaveCount(1);
+    await expect(gotoBar.locator('.goto-row-wrapper .text-danger')).toHaveCount(
+      1
+    );
 
     // test valid row index (row 64)
     await page.keyboard.press('Backspace');
-    await expect(
-      gotoBar.locator('.goto-row-wrapper .goto-row-error')
-    ).toHaveCount(0);
+    await expect(gotoBar.locator('.goto-row-wrapper .text-danger')).toHaveCount(
+      0
+    );
 
     // Check snapshot
     await expect(page.locator('.iris-grid-column')).toHaveScreenshot();

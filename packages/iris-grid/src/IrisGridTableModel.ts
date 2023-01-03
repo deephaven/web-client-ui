@@ -354,6 +354,30 @@ class IrisGridTableModel extends IrisGridTableModelTemplate<Table, UIRow> {
     await this.inputTable?.deleteTable(deleteTable);
     deleteTable.close();
   }
+
+  async seekRow(
+    startRow: number,
+    column: Column,
+    valueType: string,
+    value: unknown,
+    insensitive?: boolean,
+    contains?: boolean,
+    isBackwards?: boolean
+  ): Promise<number> {
+    return this.table.seekRow(
+      startRow,
+      column,
+      valueType,
+      value,
+      insensitive,
+      contains,
+      isBackwards
+    );
+  }
+
+  get isSeekRowAvailable(): boolean {
+    return this.table.seekRow != null;
+  }
 }
 
 export default IrisGridTableModel;

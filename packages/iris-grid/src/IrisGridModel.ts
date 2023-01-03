@@ -487,6 +487,20 @@ abstract class IrisGridModel<
    * @returns A promise that resolves successfully when the operation is complete or rejects if there's an error
    */
   abstract delete(ranges: GridRange[]): Promise<void>;
+
+  abstract seekRow(
+    startRow: number,
+    column: Column,
+    valueType: string,
+    value: unknown,
+    insensitive?: boolean,
+    contains?: boolean,
+    isBackwards?: boolean
+  ): Promise<number>;
+
+  get isSeekRowAvailable(): boolean {
+    return false;
+  }
 }
 
 export default IrisGridModel;

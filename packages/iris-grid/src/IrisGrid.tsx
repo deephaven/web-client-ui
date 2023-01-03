@@ -152,7 +152,7 @@ import ConditionalFormattingMenu from './sidebar/conditional-formatting/Conditio
 
 import ConditionalFormatEditor from './sidebar/conditional-formatting/ConditionalFormatEditor';
 import IrisGridCellOverflowModal from './IrisGridCellOverflowModal';
-import GotoRow, { isIrisGridProxyModel } from './GotoRow';
+import GotoRow from './GotoRow';
 import {
   Aggregation,
   AggregationSettings,
@@ -3180,20 +3180,16 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       gotoValueSelectedFilter,
     } = this.state;
     const { model } = this.props;
+    if (!model.isSeekRowAvailable) {
+      return;
+    }
+
     const columnIndex = model.getColumnIndexByName(selectedColumnName);
     if (columnIndex === undefined) {
       return;
     }
 
     const selectedColumn = model.columns[columnIndex];
-
-    if (
-      !isIrisGridProxyModel(model) ||
-      model.table === undefined ||
-      TableUtils.isTreeTable(model.table)
-    ) {
-      return;
-    }
 
     let searchFromRow;
 
@@ -3205,7 +3201,6 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       searchFromRow = 0;
     }
 
-    const { table } = model;
     const isContains = gotoValueSelectedFilter === FilterType.contains;
     const isEquals =
       gotoValueSelectedFilter === FilterType.eq ||
@@ -3214,7 +3209,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     try {
       if (selectedColumn.type === 'java.lang.String') {
         // is string column,
-        const rowIndex = await table.seekRow(
+        const rowIndex = await model.seekRow(
           isBackwards ? searchFromRow - 1 : searchFromRow + 1,
           selectedColumn,
           'String',
@@ -3233,7 +3228,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
             inputString,
             formatter.timeZone
           );
-          rowIndex = await table.seekRow(
+          rowIndex = await model.seekRow(
             isBackwards ? searchFromRow - 1 : searchFromRow + 1,
             selectedColumn,
             columnDataType,
@@ -3243,7 +3238,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
             isBackwards ?? false
           );
         } else {
-          rowIndex = await table.seekRow(
+          rowIndex = await model.seekRow(
             searchFromRow,
             selectedColumn,
             columnDataType,
@@ -3257,7 +3252,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
         this.setState({ gotoValueError: '' });
       }
     } catch (e: unknown) {
-      this.setState({ gotoValueError: 'unknown error' });
+      this.setState({ gotoValueError: 'invalid input' });
     }
   }
 
