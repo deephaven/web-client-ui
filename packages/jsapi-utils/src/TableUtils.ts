@@ -1547,6 +1547,23 @@ export class TableUtils {
       return TextUtils.sort(aName, bName, isAscending);
     });
   }
+
+  static getSeekRowColumnType(column: Column): string {
+    const { type } = column;
+    if (TableUtils.isStringType(type)) {
+      return 'String';
+    }
+    if (TableUtils.isBooleanType(type)) {
+      return 'Boolean';
+    }
+    if (TableUtils.isDateType(type)) {
+      return 'DateTime';
+    }
+    if (TableUtils.isNumberType(type)) {
+      return 'Number';
+    }
+    return 'String';
+  }
 }
 
 export default TableUtils;

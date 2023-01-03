@@ -35,6 +35,7 @@ const DEFAULT_FORMAT_STRING = '###,##0';
 interface GotoRowProps {
   gotoRow: string;
   gotoRowError: string;
+  gotoValueError: string;
   onSubmit: () => void;
   model: IrisGridModel;
   onGotoRowNumberChanged: (event: ChangeEvent<HTMLInputElement>) => void;
@@ -55,6 +56,7 @@ interface GotoRowProps {
 function GotoRow({
   gotoRow,
   gotoRowError,
+  gotoValueError,
   onSubmit,
   isShown,
   onEntering,
@@ -95,7 +97,8 @@ function GotoRow({
 
   assertNotNull(index);
   const selectedColumn = columns[index];
-  const { type: columnType } = selectedColumn;
+
+  const columnType = selectedColumn?.type;
 
   const normalizedType = TableUtils.getNormalizedType(columnType);
   const onGotoValueInputChanged = (value?: string) => {
@@ -123,7 +126,9 @@ function GotoRow({
             <input
               ref={gotoValueInputRef}
               type="number"
-              className="form-control"
+              className={classNames('form-control', {
+                'is-invalid': gotoValueError !== '',
+              })}
               onKeyDown={handleGotoValueKeyDown}
               placeholder="value"
               onChange={e => onGotoValueInputChanged(e.target.value)}
@@ -135,7 +140,13 @@ function GotoRow({
         return (
           <div className="goto-value-date-time-input">
             <DateTimeInput
-              className="goto-value-date-time-input"
+              className={classNames(
+                'form-control',
+                'goto-value-date-time-input',
+                {
+                  'is-invalid': gotoValueError !== '',
+                }
+              )}
               onChange={onGotoValueInputChanged}
             />
           </div>
@@ -147,17 +158,9 @@ function GotoRow({
               <select
                 className="custom-select"
                 onChange={event => {
-                  switch (event.target.value) {
-                    case FilterType.contains:
-                      onGotoValueSelectedFilterChanged(FilterType.contains);
-                      break;
-                    case FilterType.eqIgnoreCase:
-                      onGotoValueSelectedFilterChanged(FilterType.eqIgnoreCase);
-                      break;
-
-                    default:
-                      onGotoValueSelectedFilterChanged(FilterType.eq);
-                  }
+                  onGotoValueSelectedFilterChanged(
+                    event.target.value as FilterTypeValue
+                  );
                 }}
               >
                 <option key={FilterType.eq} value={FilterType.eq}>
@@ -177,7 +180,9 @@ function GotoRow({
             <div className="goto-row-input">
               <input
                 ref={gotoValueInputRef}
-                className="form-control"
+                className={classNames('form-control', {
+                  'is-invalid': gotoValueError !== '',
+                })}
                 onKeyDown={handleGotoValueKeyDown}
                 placeholder="value"
                 onChange={e => onGotoValueInputChanged(e.target.value)}
@@ -288,7 +293,7 @@ function GotoRow({
               <div>
                 <Button
                   kind="ghost"
-                  active={gotoValue !== ''}
+                  disabled={gotoValue === ''}
                   onClick={() => {
                     onGotoValueChanged(gotoValue, true);
                   }}
@@ -297,7 +302,7 @@ function GotoRow({
                 </Button>
                 <Button
                   kind="ghost"
-                  active={gotoValue !== ''}
+                  disabled={gotoValue === ''}
                   onClick={() => {
                     onGotoValueChanged(gotoValue, false);
                   }}
@@ -305,6 +310,11 @@ function GotoRow({
                   <FontAwesomeIcon icon={vsArrowDown} />
                 </Button>
               </div>
+              {gotoValueError && (
+                <div className="goto-row-error text-danger">
+                  {gotoValueError}
+                </div>
+              )}
             </div>
           </div>
         )}

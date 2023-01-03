@@ -401,12 +401,12 @@ export interface IrisGridState {
 
   gotoRow: string;
   gotoRowError: string;
+  gotoValueError: string;
   isGotoShown: boolean;
 
   gotoValueSelectedColumnName: ColumnName;
   gotoValueSelectedFilter: FilterTypeValue;
   gotoValue: string;
-  lastSeekedRow: number;
 }
 
 export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
@@ -808,11 +808,11 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       isGotoShown: false,
       gotoRow: '',
       gotoRowError: '',
+      gotoValueError: '',
 
       gotoValueSelectedColumnName: model.columns[0].name,
       gotoValueSelectedFilter: FilterType.eq,
       gotoValue: '',
-      lastSeekedRow: 0,
     };
   }
 
@@ -2435,6 +2435,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
         isGotoShown: true,
         gotoRow: row,
         gotoRowError: '',
+        gotoValueError: '',
       });
       return;
     }
@@ -2442,6 +2443,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       isGotoShown: !isGotoShown,
       gotoRow: '',
       gotoRowError: '',
+      gotoValueError: '',
     });
   }
 
@@ -3176,7 +3178,6 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     const {
       gotoValueSelectedColumnName: selectedColumnName,
       gotoValueSelectedFilter,
-      lastSeekedRow,
     } = this.state;
     const { model } = this.props;
     const columnIndex = model.getColumnIndexByName(selectedColumnName);
@@ -3194,36 +3195,70 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       return;
     }
 
+    let searchFromRow;
+
+    if (this.grid) {
+      ({ selectionEndRow: searchFromRow } = this.grid.state);
+    }
+
+    if (searchFromRow == null) {
+      searchFromRow = 0;
+    }
+
     const { table } = model;
     const isContains = gotoValueSelectedFilter === FilterType.contains;
     const isEquals =
       gotoValueSelectedFilter === FilterType.eq ||
       gotoValueSelectedFilter === FilterType.eqIgnoreCase;
-    if (selectedColumn.type === 'java.lang.String') {
-      // is string column,
-      const rowIndex = await table.seekRow(
-        isBackwards ? lastSeekedRow - 1 : lastSeekedRow + 1,
-        selectedColumn,
-        'String',
-        inputString,
-        isEquals,
-        isContains,
-        isBackwards ?? false
-      );
-      this.setState({ lastSeekedRow: rowIndex });
-      this.grid?.setFocusRow(rowIndex);
-    } else if (inputString !== '') {
-      const rowIndex = await table.seekRow(
-        lastSeekedRow,
-        selectedColumn,
-        'String',
-        inputString,
-        undefined,
-        undefined,
-        isBackwards ?? false
-      );
-      this.setState({ lastSeekedRow: rowIndex });
-      this.grid?.setFocusRow(rowIndex);
+
+    try {
+      if (selectedColumn.type === 'java.lang.String') {
+        // is string column,
+        const rowIndex = await table.seekRow(
+          isBackwards ? searchFromRow - 1 : searchFromRow + 1,
+          selectedColumn,
+          'String',
+          inputString,
+          isEquals,
+          isContains,
+          isBackwards ?? false
+        );
+        this.grid?.setFocusRow(rowIndex);
+      } else if (inputString !== '') {
+        const columnDataType = TableUtils.getSeekRowColumnType(selectedColumn);
+        let rowIndex;
+        if (columnDataType === 'DateTime') {
+          const { formatter } = model;
+          const [startDate] = DateUtils.parseDateRange(
+            inputString,
+            formatter.timeZone
+          );
+          rowIndex = await table.seekRow(
+            isBackwards ? searchFromRow - 1 : searchFromRow + 1,
+            selectedColumn,
+            columnDataType,
+            startDate,
+            undefined,
+            undefined,
+            isBackwards ?? false
+          );
+          console.log(rowIndex);
+        } else {
+          rowIndex = await table.seekRow(
+            searchFromRow,
+            selectedColumn,
+            columnDataType,
+            inputString,
+            undefined,
+            undefined,
+            isBackwards ?? false
+          );
+        }
+        this.grid?.setFocusRow(rowIndex);
+        this.setState({ gotoValueError: '' });
+      }
+    } catch (e: unknown) {
+      this.setState({ gotoValueError: 'unknown error' });
     }
   }
 
@@ -3411,21 +3446,21 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     const { rowCount } = model;
     this.setState({ gotoRow: rowNumber });
     if (rowNumber === '') {
-      this.setState({ gotoRowError: '' });
+      this.setState({ gotoRowError: '', gotoValueError: '' });
       return;
     }
     const rowInt = parseInt(rowNumber, 10);
     if (rowInt > rowCount || rowInt < -rowCount) {
       this.setState({ gotoRowError: 'Invalid row index' });
     } else if (rowInt === 0) {
-      this.setState({ gotoRowError: '' });
+      this.setState({ gotoRowError: '', gotoValueError: '' });
       this.grid?.setFocusRow(0);
     } else if (rowInt < 0) {
-      this.setState({ gotoRowError: '' });
+      this.setState({ gotoRowError: '', gotoValueError: '' });
       this.grid?.setFocusRow(rowInt + rowCount);
     } else {
       this.grid?.setFocusRow(rowInt - 1);
-      this.setState({ gotoRowError: '' });
+      this.setState({ gotoRowError: '', gotoValueError: '' });
     }
   }
 
@@ -3538,11 +3573,12 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   handleGotoValueSelectedColumnNameChanged(columnName: ColumnName): void {
     this.setState({
       gotoValueSelectedColumnName: columnName,
+      gotoValueError: '',
     });
   }
 
   handleGotoValueSelectedFilterChanged(value: FilterTypeValue): void {
-    this.setState({ gotoValueSelectedFilter: value });
+    this.setState({ gotoValueSelectedFilter: value, gotoValueError: '' });
   }
 
   handleGotoValueChanged(input: string, isBackwards?: boolean): void {
@@ -3634,6 +3670,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       isGotoShown,
       gotoRow,
       gotoRowError,
+      gotoValueError,
       gotoValueSelectedColumnName,
       gotoValue,
     } = this.state;
@@ -4247,6 +4284,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
             isShown={isGotoShown}
             gotoRow={gotoRow}
             gotoRowError={gotoRowError}
+            gotoValueError={gotoValueError}
             onSubmit={this.handleGotoRowSelectedRowNumberSubmit}
             onGotoRowNumberChanged={this.handleGotoRowSelectedRowNumberChanged}
             onClose={this.handleGotoRowClosed}
