@@ -29,6 +29,6 @@ jobs:
       - run: npm run build
       # Need the --no-verify-access access flag since we use an automation token. Otherwise publish step fails
       # https://github.com/lerna/lerna/issues/2788
-      - run: ./node_modules/.bin/lerna publish --no-verify-access --canary --force-publish=\* --preid ${{ github.event.inputs.preid }} --yes
+      - run: ./node_modules/.bin/lerna publish --no-verify-access --canary --force-publish=\* --preid ${{ github.event.inputs.preid }} --pre-dist-tag ${{ github.event.inputs.preid }} --yes
         env:
           NODE_AUTH_TOKEN: ${{ secrets.DEEPHAVENBOT_NPM_TOKEN }}
