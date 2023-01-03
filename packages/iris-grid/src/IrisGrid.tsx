@@ -3242,7 +3242,6 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
             undefined,
             isBackwards ?? false
           );
-          console.log(rowIndex);
         } else {
           rowIndex = await table.seekRow(
             searchFromRow,
