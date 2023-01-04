@@ -114,7 +114,7 @@ npx source-map-explorer 'packages/code-studio/build/static/js/*.js'
 
 ## Updating Snapshots
 
-Snapshots are used by end-to-end tests to visually verify the output. Sometimes changes are made requiring snapshots to be updated. Since snapshots are platform dependent, you may need to use a docker image to [update snapshots for CI](https://playwright.dev/docs/test-snapshots). You mount the current directory into a docker image and re-run the tests from there.
+Snapshots are used by end-to-end tests to visually verify the output. Sometimes changes are made requiring snapshots to be updated. Since snapshots are platform dependent, you may need to use a docker image to [update snapshots for CI](https://playwright.dev/docs/test-snapshots). You mount the current directory into a docker image and re-run the tests from there. This is all conveniently captured in the `e2e:update-ci-snapshots` action, so you can just run `npm run e2e:update-ci-snapshots` to update the snapshots. Note you must have [Docker installed](https://docs.docker.com/get-docker/).
 
 First start with a clean repo. `node_modules` and some other build output is platform dependent.
 
