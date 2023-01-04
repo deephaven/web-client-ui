@@ -21,7 +21,6 @@ import './GotoRow.scss';
 import IrisGridModel from './IrisGridModel';
 import IrisGridProxyModel from './IrisGridProxyModel';
 import IrisGridBottomBar from './IrisGridBottomBar';
-import { isIrisGridTableModelTemplate } from './IrisGridTableModelTemplate';
 import { ColumnName } from './CommonTypes';
 
 export function isIrisGridProxyModel(
@@ -260,7 +259,7 @@ function GotoRow({
             </Button>
           </div>
         </div>
-        {isIrisGridTableModelTemplate(model) && (
+        {model.isSeekRowAvailable && (
           <div className="goto-row-row">
             <div
               className={classNames('goto-row-wrapper', {
