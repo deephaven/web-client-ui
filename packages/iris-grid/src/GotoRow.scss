@@ -6,7 +6,7 @@
 
 .goto-row {
   background-color: $content-bg;
-  border-top: $border-width solid black;
+  border-top: $border-width solid $black;
   display: block;
 
   .goto-row-row {

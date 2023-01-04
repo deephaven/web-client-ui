@@ -74,7 +74,7 @@ function GotoRow({
   const gotoRowInputRef = useRef<HTMLInputElement>(null);
   const gotoValueInputRef = useRef<HTMLInputElement>(null);
 
-  const [isGotoRowActive, setIsGotoRowActive] = useState(true);
+  const [isGotoRowActive, setIsGotoRowActive] = useState(false);
   let columns: Column[] = [];
 
   if (isIrisGridProxyModel(model) && model.table !== undefined) {
@@ -224,6 +224,7 @@ function GotoRow({
               'is-inactive': !isGotoRowActive,
             })}
             onClick={() => setIsGotoRowActive(true)}
+            onFocus={() => setIsGotoRowActive(true)}
             role="group"
           >
             <div className="goto-row-text">Go to row</div>
@@ -266,6 +267,7 @@ function GotoRow({
                 'is-inactive': isGotoRowActive,
               })}
               onClick={() => setIsGotoRowActive(false)}
+              onFocus={() => setIsGotoRowActive(false)}
               role="group"
             >
               <div className="goto-row-text">Go to value</div>
@@ -276,6 +278,7 @@ function GotoRow({
                     const columnName = event.target.value;
                     onGotoValueSelectedColumnNameChanged(columnName);
                   }}
+                  value={gotoValueSelectedColumnName}
                 >
                   {columns.map(column => (
                     <option key={column.name} value={column.name}>

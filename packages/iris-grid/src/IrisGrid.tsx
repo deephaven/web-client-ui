@@ -2427,13 +2427,15 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     );
   }
 
-  toggleGotoRow(row = ''): void {
+  toggleGotoRow(row = '', value = '', columnName = ''): void {
     const { isGotoShown } = this.state;
-    if (row) {
+    if (row || value) {
       // if invoked with a row, keep open instead of toggle
       this.setState({
         isGotoShown: true,
         gotoRow: row,
+        gotoValue: value,
+        gotoValueSelectedColumnName: columnName,
         gotoRowError: '',
         gotoValueError: '',
       });
@@ -2442,6 +2444,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     this.setState({
       isGotoShown: !isGotoShown,
       gotoRow: '',
+      gotoValue: '',
       gotoRowError: '',
       gotoValueError: '',
     });
