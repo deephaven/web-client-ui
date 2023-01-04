@@ -36,6 +36,10 @@ const dropAnimationConfig: DropAnimation = {
   },
 };
 
+// Used to track the offset for adjustToCursor
+// Once drag starts, set this. Once it ends, null this
+let offsetY: number | null = null;
+
 /**
  * This adjusts the transform to move to the cursor if it gets shifted due to multi-select.
  * With multi-select, the selected items (except dragged) are removed on drag.
@@ -47,17 +51,25 @@ const dropAnimationConfig: DropAnimation = {
  * @param args Modifier args from dnd-kit
  * @returns Transform so that the dragged item stays on the cursor
  */
-const adjustToCursor: Modifier = args => {
-  let offsetY = 0;
-  if (args.draggingNodeRect && args.activatorEvent instanceof PointerEvent) {
+function adjustToCursor(args: Parameters<Modifier>[0]) {
+  if (
+    offsetY == null &&
+    args.activeNodeRect &&
+    args.activatorEvent instanceof PointerEvent
+  ) {
     offsetY =
       Math.floor(
-        (args.activatorEvent.clientY - args.draggingNodeRect.top) /
-          args.draggingNodeRect.height
-      ) * args.draggingNodeRect.height;
+        (args.activatorEvent.clientY - args.activeNodeRect.top) /
+          args.activeNodeRect.height
+      ) * args.activeNodeRect.height;
   }
-  return { ...args.transform, y: args.transform.y + offsetY };
-};
+
+  if (!args.activeNodeRect) {
+    offsetY = null;
+  }
+
+  return { ...args.transform, y: args.transform.y + (offsetY ?? 0) };
+}
 
 interface Props<T> {
   items: FlattenedItem<T>[];

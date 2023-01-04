@@ -787,11 +787,14 @@ class VisibilityOrderingBuilder extends Component<
       dropIndex -= 1;
     }
 
+    if (selectedRange[0] < dropIndex) {
+      dropIndex -= selectedRange[1] - selectedRange[0];
+    }
+
     newMoves = GridUtils.moveItemOrRange(
       selectedRange,
-      dropIndex,
-      newMoves,
-      true
+      clamp(dropIndex, firstMovableIndex, lastMovableIndex),
+      newMoves
     );
 
     onColumnHeaderGroupChanged(newGroups);
@@ -834,9 +837,11 @@ class VisibilityOrderingBuilder extends Component<
       onColumnHeaderGroupChanged,
     } = this.props;
 
-    const { newMoves, groups: newGroups } = this.moveSelectedColumns(
+    const { newMoves, groups } = this.moveSelectedColumns(
       VisibilityOrderingBuilder.MOVE_OPTIONS.TOP
     );
+
+    const newGroups = groups.filter(group => !group.isNew);
 
     const selectedItems = this.getSelectedParentItems();
 

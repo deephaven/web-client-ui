@@ -151,98 +151,106 @@ abstract class IrisGridModel<
    *
    * @returns Object containing groups array, max depth, map of name to parent group, and map of name to group
    */
-  parseColumnHeaderGroups = memoize((groupsParam: ColumnGroup[] | undefined): {
-    groups: ColumnHeaderGroup[];
-    maxDepth: number;
-    parentMap: Map<string, ColumnHeaderGroup>;
-    groupMap: Map<string, ColumnHeaderGroup>;
-  } => {
-    let maxDepth = 1;
-    const parentMap: Map<string, ColumnHeaderGroup> = new Map();
-    const groupMap: Map<string, ColumnHeaderGroup> = new Map();
+  parseColumnHeaderGroups = memoize(
+    (
+      groupsParam = this.layoutHints?.columnGroups
+    ): {
+      groups: ColumnHeaderGroup[];
+      maxDepth: number;
+      parentMap: Map<string, ColumnHeaderGroup>;
+      groupMap: Map<string, ColumnHeaderGroup>;
+    } => {
+      let maxDepth = 1;
+      const parentMap: Map<string, ColumnHeaderGroup> = new Map();
+      const groupMap: Map<string, ColumnHeaderGroup> = new Map();
 
-    // Remove any empty groups before parsing
-    const groups = groupsParam?.filter(({ children }) => children.length > 0);
+      // Remove any empty groups before parsing
+      const groups = groupsParam?.filter(({ children }) => children.length > 0);
 
-    if (!groups || groups.length === 0) {
-      return { groups: [], maxDepth, parentMap, groupMap };
-    }
-
-    const originalGroupMap = new Map(groups.map(group => [group.name, group]));
-    const seenChildren = new Set<string>();
-
-    const addGroup = (group: ColumnGroup): ColumnHeaderGroup => {
-      const { name } = group;
-
-      if (this.getColumnIndexByName(name) != null) {
-        throw new Error(`Column header group has same name as column: ${name}`);
+      if (!groups || groups.length === 0) {
+        return { groups: [], maxDepth, parentMap, groupMap };
       }
 
-      const existingGroup = groupMap.get(name);
+      const originalGroupMap = new Map(
+        groups.map(group => [group.name, group])
+      );
+      const seenChildren = new Set<string>();
 
-      if (existingGroup) {
-        return existingGroup;
-      }
+      const addGroup = (group: ColumnGroup): ColumnHeaderGroup => {
+        const { name } = group;
 
-      const childIndexes: ColumnHeaderGroup['childIndexes'] = [];
-      let depth = 1;
-
-      group.children.forEach(childName => {
-        if (seenChildren.has(childName)) {
+        if (this.getColumnIndexByName(name) != null) {
           throw new Error(
-            `Column group child ${childName} specified in multiple groups`
+            `Column header group has same name as column: ${name}`
           );
         }
-        seenChildren.add(childName);
 
-        const childGroup = originalGroupMap.get(childName);
-        const childIndex = this.getColumnIndexByName(childName);
-        if (childGroup) {
-          // Adding another column header group
-          const addedGroup = addGroup(childGroup);
-          childIndexes.push(addedGroup.childIndexes.flat());
-          depth = Math.max(depth, addedGroup.depth + 1);
-        } else if (childIndex != null) {
-          // Adding a base column
-          childIndexes.push(childIndex);
-          depth = Math.max(depth, 1);
-        } else {
-          throw new Error(`Unknown child ${childName} in group ${name}`);
+        const existingGroup = groupMap.get(name);
+
+        if (existingGroup) {
+          return existingGroup;
         }
+
+        const childIndexes: ColumnHeaderGroup['childIndexes'] = [];
+        let depth = 1;
+
+        group.children.forEach(childName => {
+          if (seenChildren.has(childName)) {
+            throw new Error(
+              `Column group child ${childName} specified in multiple groups`
+            );
+          }
+          seenChildren.add(childName);
+
+          const childGroup = originalGroupMap.get(childName);
+          const childIndex = this.getColumnIndexByName(childName);
+          if (childGroup) {
+            // Adding another column header group
+            const addedGroup = addGroup(childGroup);
+            childIndexes.push(addedGroup.childIndexes.flat());
+            depth = Math.max(depth, addedGroup.depth + 1);
+          } else if (childIndex != null) {
+            // Adding a base column
+            childIndexes.push(childIndex);
+            depth = Math.max(depth, 1);
+          } else {
+            throw new Error(`Unknown child ${childName} in group ${name}`);
+          }
+        });
+
+        const columnHeaderGroup = new ColumnHeaderGroup({
+          ...group,
+          depth,
+          childIndexes,
+        });
+
+        groupMap.set(name, columnHeaderGroup);
+        group.children.forEach(childName =>
+          parentMap.set(childName, columnHeaderGroup)
+        );
+
+        maxDepth = Math.max(maxDepth, columnHeaderGroup.depth + 1);
+        return columnHeaderGroup;
+      };
+
+      const groupNames = new Set();
+
+      groups.forEach(group => {
+        const { name } = group;
+        if (groupNames.has(name)) {
+          throw new Error(`Duplicate column group name: ${name}`);
+        }
+        groupNames.add(name);
+        addGroup(group);
       });
 
-      const columnHeaderGroup = new ColumnHeaderGroup({
-        ...group,
-        depth,
-        childIndexes,
+      groupMap.forEach(group => {
+        group.setParent(parentMap.get(group.name));
       });
 
-      groupMap.set(name, columnHeaderGroup);
-      group.children.forEach(childName =>
-        parentMap.set(childName, columnHeaderGroup)
-      );
-
-      maxDepth = Math.max(maxDepth, columnHeaderGroup.depth + 1);
-      return columnHeaderGroup;
-    };
-
-    const groupNames = new Set();
-
-    groups.forEach(group => {
-      const { name } = group;
-      if (groupNames.has(name)) {
-        throw new Error(`Duplicate column group name: ${name}`);
-      }
-      groupNames.add(name);
-      addGroup(group);
-    });
-
-    groupMap.forEach(group => {
-      group.setParent(parentMap.get(group.name));
-    });
-
-    return { groups: [...groupMap.values()], maxDepth, groupMap, parentMap };
-  });
+      return { groups: [...groupMap.values()], maxDepth, groupMap, parentMap };
+    }
+  );
 
   /**
    * Retrieve the grouped columns for this model
