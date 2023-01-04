@@ -11,9 +11,15 @@ import {
   MockTreeGridModel,
   ModelIndex,
 } from '@deephaven/grid';
-import { IrisGridModel, PendingDataMap, UITreeRow } from '@deephaven/iris-grid';
+import {
+  IrisGridModel,
+  PendingDataMap,
+  UITreeRow,
+  ColumnHeaderGroup,
+} from '@deephaven/iris-grid';
 import type { Column, CustomColumn } from '@deephaven/jsapi-shim';
 import { Formatter } from '@deephaven/jsapi-utils';
+import { ColumnGroup } from '@deephaven/jsapi-shim';
 
 // We need to cast our CustomEvent so it's happy with event-target-shim
 type CustomEventType = EventTarget.EventData<
@@ -295,6 +301,22 @@ class MockIrisGridTreeModel
 
   valuesTable(column: Column): Promise<never> {
     throw new Error('Not defined in mock');
+  }
+
+  get columnHeaderGroups(): ColumnHeaderGroup[] {
+    return [];
+  }
+
+  set columnHeaderGroups(groups: ColumnGroup[] | undefined) {
+    // no-op
+  }
+
+  get columnHeaderGroupMap() {
+    return new Map();
+  }
+
+  getColumnHeaderParentGroup() {
+    return undefined;
   }
 }
 
