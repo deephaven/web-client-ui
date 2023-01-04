@@ -1,7 +1,9 @@
 @import '@deephaven/components/scss/custom.scss';
 
 $depth-line-color: $gray-600;
-$depth-margin: 19px;
+$depth-margin: calc(
+  0.5rem + 8px + 0.5px
+); // Tree item 0.25rem padding, Icon button 0.25rem, half of icon size, and half pixel to offset 1px border
 
 .visibility-ordering-list {
   .tree-item {
@@ -12,8 +14,6 @@ $depth-margin: 19px;
     flex-wrap: nowrap;
     justify-content: flex-start;
     align-items: center;
-    margin-right: $spacer-1;
-    margin-left: $spacer-1;
     flex-grow: 1;
     min-width: 0; // Needed so column names don't grow past the edge
     border: $input-border-width solid transparent;
@@ -76,14 +76,6 @@ $depth-margin: 19px;
     flex-direction: row;
     flex-wrap: nowrap;
 
-    &:first-child {
-      padding-top: $spacer-1;
-    }
-
-    &:last-child {
-      padding-bottom: $spacer-1;
-    }
-
     &.clone {
       pointer-events: none;
       padding: 0;
@@ -142,10 +134,9 @@ $depth-margin: 19px;
 
     .depth-line {
       margin-left: $depth-margin;
+      margin-right: $spacer-1; // Gives breathing room to the item boxes
       padding-bottom: 2px;
-      height: 27px;
       border-left: 1px solid $depth-line-color;
-      box-sizing: content-box;
     }
   }
 }

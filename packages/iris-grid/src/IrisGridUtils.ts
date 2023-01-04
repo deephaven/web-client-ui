@@ -400,7 +400,8 @@ class IrisGridUtils {
         pendingDataMap
       ) as PendingDataMap<UIRow>,
       frozenColumns,
-      columnHeaderGroups: columnHeaderGroups ?? undefined,
+      columnHeaderGroups: model.parseColumnHeaderGroups(columnHeaderGroups)
+        .groups,
     };
   }
 

@@ -49,14 +49,13 @@ const dropAnimationConfig: DropAnimation = {
  */
 const adjustToCursor: Modifier = args => {
   let offsetY = 0;
-  if (args.activeNodeRect && args.activatorEvent instanceof PointerEvent) {
+  if (args.draggingNodeRect && args.activatorEvent instanceof PointerEvent) {
     offsetY =
       Math.floor(
-        (args.activatorEvent.clientY - args.activeNodeRect.top) /
-          args.activeNodeRect.height
-      ) * args.activeNodeRect.height;
+        (args.activatorEvent.clientY - args.draggingNodeRect.top) /
+          args.draggingNodeRect.height
+      ) * args.draggingNodeRect.height;
   }
-
   return { ...args.transform, y: args.transform.y + offsetY };
 };
 

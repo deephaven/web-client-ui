@@ -11,6 +11,7 @@ import dh, {
   TreeTable,
 } from '@deephaven/jsapi-shim';
 import { Formatter } from '@deephaven/jsapi-utils';
+import type { LayoutHints } from '@deephaven/jsapi-shim';
 import IrisGridProxyModel from './IrisGridProxyModel';
 
 class IrisGridTestUtils {
@@ -42,10 +43,12 @@ class IrisGridTestUtils {
     return new (dh as any).RollupTableConfig();
   }
 
-  static makeColumns(count = 5): Column[] {
+  static makeColumns(count = 5, prefix = ''): Column[] {
     const columns = [];
     for (let i = 0; i < count; i += 1) {
-      columns.push(this.makeColumn(`${i}`, IrisGridTestUtils.DEFAULT_TYPE, i));
+      columns.push(
+        this.makeColumn(`${prefix}${i}`, IrisGridTestUtils.DEFAULT_TYPE, i)
+      );
     }
     return columns;
   }
@@ -79,15 +82,17 @@ class IrisGridTestUtils {
     return new (dh as any).Sort();
   }
 
-  static makeTable(
+  static makeTable({
     columns = IrisGridTestUtils.makeColumns(),
     size = 1000000000,
-    sort = []
-  ): Table {
+    sort = [],
+    layoutHints = {} as LayoutHints,
+  } = {}): Table {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const table = new (dh as any).Table({ columns, size, sort });
     table.copy = jest.fn(() => Promise.resolve(table));
     table.freeze = jest.fn(() => Promise.resolve(table));
+    table.layoutHints = layoutHints;
     return table;
   }
 

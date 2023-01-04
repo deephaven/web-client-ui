@@ -9,6 +9,7 @@ import {
 } from '@deephaven/utils';
 import {
   Column,
+  ColumnGroup,
   ColumnStatistics,
   CustomColumn,
   FilterCondition,
@@ -36,6 +37,7 @@ import {
   UIRow,
 } from './CommonTypes';
 import { isIrisGridTableModelTemplate } from './IrisGridTableModelTemplate';
+import type ColumnHeaderGroup from './ColumnHeaderGroup';
 
 const log = Log.module('IrisGridProxyModel');
 
@@ -354,8 +356,8 @@ class IrisGridProxyModel extends IrisGridModel {
     return this.model.columns;
   }
 
-  get movedColumns(): MoveOperation[] {
-    return this.model.movedColumns;
+  get initialMovedColumns(): MoveOperation[] {
+    return this.model.initialMovedColumns;
   }
 
   get movedRows(): MoveOperation[] {
@@ -381,19 +383,21 @@ class IrisGridProxyModel extends IrisGridModel {
   getColumnHeaderGroup: IrisGridModel['getColumnHeaderGroup'] = (...args) =>
     this.model.getColumnHeaderGroup(...args);
 
-  getColumnHeaderGroups: IrisGridModel['getColumnHeaderGroups'] = (...args) =>
-    this.model.getColumnHeaderGroups(...args);
+  get columnHeaderGroups(): ColumnHeaderGroup[] {
+    return this.model.columnHeaderGroups;
+  }
 
-  setColumnHeaderGroups: IrisGridModel['setColumnHeaderGroups'] = (...args) =>
-    this.model.setColumnHeaderGroups(...args);
+  set columnHeaderGroups(groups: ColumnGroup[] | undefined) {
+    this.model.columnHeaderGroups = groups;
+  }
 
   getColumnHeaderParentGroup: IrisGridModel['getColumnHeaderParentGroup'] = (
     ...args
   ) => this.model.getColumnHeaderParentGroup(...args);
 
-  getColumnHeaderGroupMap: IrisGridModel['getColumnHeaderGroupMap'] = (
-    ...args
-  ) => this.model.getColumnHeaderGroupMap();
+  get columnHeaderGroupMap(): Map<string, ColumnHeaderGroup> {
+    return this.model.columnHeaderGroupMap;
+  }
 
   get columnHeaderMaxDepth(): number {
     return this.model.columnHeaderMaxDepth;

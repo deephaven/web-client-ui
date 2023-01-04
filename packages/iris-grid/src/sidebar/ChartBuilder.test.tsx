@@ -10,9 +10,9 @@ function makeChartBuilderWrapper({
   onChange = () => null,
   onSubmit = () => null,
   model = IrisGridTestUtils.makeModel(
-    IrisGridTestUtils.makeTable(
-      COLUMN_NAMES.map(name => IrisGridTestUtils.makeColumn(name))
-    )
+    IrisGridTestUtils.makeTable({
+      columns: COLUMN_NAMES.map(name => IrisGridTestUtils.makeColumn(name)),
+    })
   ),
 } = {}) {
   return render(

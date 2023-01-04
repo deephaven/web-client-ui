@@ -62,7 +62,6 @@ import {
 } from '@deephaven/icons';
 import dh, {
   Column,
-  ColumnGroup,
   CustomColumn,
   DateWrapper,
   FilterCondition,
@@ -313,7 +312,7 @@ export interface IrisGridProps {
 
   canToggleSearch: boolean;
 
-  columnHeaderGroups: ColumnGroup[] | ColumnHeaderGroup[] | undefined;
+  columnHeaderGroups: ColumnHeaderGroup[] | undefined;
 }
 
 export interface IrisGridState {
@@ -403,7 +402,7 @@ export interface IrisGridState {
   gotoRowError: string;
   isGotoRowShown: boolean;
 
-  columnHeaderGroups: ColumnGroup[] | ColumnHeaderGroup[] | undefined;
+  columnHeaderGroups: ColumnHeaderGroup[] | undefined;
 }
 
 export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
@@ -700,7 +699,9 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     ];
 
     const movedColumns =
-      movedColumnsProp.length > 0 ? movedColumnsProp : model.movedColumns;
+      movedColumnsProp.length > 0
+        ? movedColumnsProp
+        : model.initialMovedColumns;
     const movedRows =
       movedRowsProp.length > 0 ? movedRowsProp : model.movedRows;
 
@@ -2807,7 +2808,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   }
 
   handleHeaderGroupsChanged(
-    columnHeaderGroups: ColumnGroup[] | undefined
+    columnHeaderGroups: ColumnHeaderGroup[] | undefined
   ): void {
     this.setState({ columnHeaderGroups }, () => this.grid?.forceUpdate());
   }
@@ -3899,7 +3900,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
               model={model}
               movedColumns={movedColumns}
               userColumnWidths={userColumnWidths}
-              columnHeaderGroups={model.getColumnHeaderGroups()}
+              columnHeaderGroups={model.columnHeaderGroups}
               onColumnVisibilityChanged={this.handleColumnVisibilityChanged}
               onMovedColumnsChanged={this.handleMovedColumnsChanged}
               onColumnHeaderGroupChanged={this.handleHeaderGroupsChanged}

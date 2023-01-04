@@ -36,7 +36,7 @@ function getTreeItem(
 ): IrisGridTreeItem {
   const modelIndex = model.getColumnIndexByName(name);
   if (modelIndex === undefined) {
-    const group = model.getColumnHeaderGroupMap().get(name);
+    const group = model.columnHeaderGroupMap.get(name);
 
     if (group == null) {
       throw new Error(`Column or header group not found: ${name}`);

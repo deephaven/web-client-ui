@@ -18,7 +18,7 @@ interface VisibilityOrderingGroupProps {
   onDelete(group: ColumnHeaderGroup): void;
   onColorChange(group: ColumnHeaderGroup, color: string | undefined): void;
   onNameChange(group: ColumnHeaderGroup, name: string): void;
-  validateName(name: string): boolean;
+  validateName(name: string): string;
 }
 
 export default function VisibilityOrderingGroup(
@@ -32,14 +32,15 @@ export default function VisibilityOrderingGroup(
   const [name, setName] = useState(isNew ? '' : group.name);
   const [isEditing, setIsEditing] = useState(isNew);
   const [hasTyped, setHasTyped] = useState(false);
-  const isValid =
-    (isNew && !hasTyped) ||
-    (isEditing && name === group.name) ||
-    (name !== group.name && validateName(name));
+  const nameValidationError = name !== group.name ? validateName(name) : '';
+  const isValid = (isNew && !hasTyped) || nameValidationError === '';
 
   useEffect(
     function focusEditInput() {
       if (isEditing && nameInputRef.current) {
+        // This is solely b/c RTL doesn't count select as focusing the element
+        // Might be fixed in v13+ of RTL
+        nameInputRef.current.focus();
         nameInputRef.current.select();
       }
     },
@@ -119,7 +120,7 @@ export default function VisibilityOrderingGroup(
         </div>
         {!isValid && (
           <p className="mb-0 validate-label-error text-danger">
-            Invalid or duplicate name
+            {nameValidationError}
           </p>
         )}
       </>

@@ -18,7 +18,7 @@ type VisibilityOrderingItemProps = {
   onGroupDelete(group: ColumnHeaderGroup): void;
   onGroupColorChange(group: ColumnHeaderGroup, color: string | undefined): void;
   onGroupNameChange(group: ColumnHeaderGroup, name: string): void;
-  validateGroupName(name: string): boolean;
+  validateGroupName(name: string): string;
   handleProps: Record<string, unknown>;
 };
 

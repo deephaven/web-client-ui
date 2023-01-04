@@ -24,7 +24,6 @@ import {
   vsCircleLargeFilled,
   vsAdd,
 } from '@deephaven/icons';
-import type { ColumnGroup } from '@deephaven/jsapi-shim';
 import memoize from 'memoizee';
 import debounce from 'lodash.debounce';
 import { Button, SearchInput } from '@deephaven/components';
@@ -56,7 +55,7 @@ interface VisibilityOrderingBuilderProps {
     isVisible: boolean
   ) => void;
   onMovedColumnsChanged: (operations: MoveOperation[], cb?: () => void) => void;
-  onColumnHeaderGroupChanged: (groups: ColumnGroup[] | undefined) => void;
+  onColumnHeaderGroupChanged: (groups: ColumnHeaderGroup[] | undefined) => void;
 }
 
 interface VisibilityOrderingBuilderState {
@@ -124,12 +123,6 @@ class VisibilityOrderingBuilder extends Component<
     return newGroups;
   }
 
-  static defaultProps = {
-    movedColumns: [],
-    onColumnVisibilityChanged: (): void => undefined,
-    onMovedColumnsChanged: (): void => undefined,
-  };
-
   constructor(props: VisibilityOrderingBuilderProps) {
     super(props);
 
@@ -184,8 +177,8 @@ class VisibilityOrderingBuilder extends Component<
       searchFilter: '',
     });
 
-    onColumnHeaderGroupChanged(undefined);
-    onMovedColumnsChanged(model.movedColumns);
+    onColumnHeaderGroupChanged(model.parseColumnHeaderGroups(undefined).groups);
+    onMovedColumnsChanged(model.initialMovedColumns);
   }
 
   resetSelection(): void {
@@ -542,7 +535,7 @@ class VisibilityOrderingBuilder extends Component<
     const newMoves = this.getSortMoves(
       this.getTreeItems(),
       option,
-      model.movedColumns
+      model.initialMovedColumns
     );
     onMovedColumnsChanged(newMoves);
   }
@@ -877,16 +870,24 @@ class VisibilityOrderingBuilder extends Component<
   /**
    * Validates if a header group name is valid and not in use by any header groups or columns
    * @param groupName The name to validate
-   * @returns True if the name is valid and not in use
+   * @returns Error message if invalid
    */
-  validateGroupName(groupName: string): boolean {
+  validateGroupName(groupName: string): string {
     const { model, columnHeaderGroups } = this.props;
     const { columns } = model;
-    return (
-      DbNameValidator.isValidColumnName(groupName) &&
-      columns.every(({ name }) => name !== groupName) &&
-      columnHeaderGroups.every(({ name }) => name !== groupName)
-    );
+
+    if (!DbNameValidator.isValidColumnName(groupName)) {
+      return 'Invalid name';
+    }
+
+    if (
+      columns.some(({ name }) => name === groupName) ||
+      columnHeaderGroups.some(({ name }) => name === groupName)
+    ) {
+      return 'Duplicate name';
+    }
+
+    return '';
   }
 
   renderItem = memoize<TreeItemRenderFn<IrisGridTreeItem>>(
