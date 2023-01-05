@@ -312,7 +312,7 @@ export interface IrisGridProps {
 
   canToggleSearch: boolean;
 
-  columnHeaderGroups: ColumnHeaderGroup[] | undefined;
+  columnHeaderGroups?: ColumnHeaderGroup[];
 }
 
 export interface IrisGridState {
@@ -402,7 +402,7 @@ export interface IrisGridState {
   gotoRowError: string;
   isGotoRowShown: boolean;
 
-  columnHeaderGroups: ColumnHeaderGroup[] | undefined;
+  columnHeaderGroups: ColumnHeaderGroup[];
 }
 
 export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
@@ -479,7 +479,6 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     frozenColumns: null,
     theme: IrisGridTheme,
     canToggleSearch: true,
-    columnHeaderGroups: undefined,
   };
 
   static makeQuickFilter(
@@ -703,7 +702,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
         ? movedColumnsProp
         : model.initialMovedColumns;
     const movedRows =
-      movedRowsProp.length > 0 ? movedRowsProp : model.movedRows;
+      movedRowsProp.length > 0 ? movedRowsProp : model.initialMovedRows;
 
     const metricCalculator = new IrisGridMetricCalculator({
       userColumnWidths: new Map(userColumnWidths),
@@ -802,7 +801,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       isGotoRowShown: false,
       gotoRow: '',
       gotoRowError: '',
-      columnHeaderGroups,
+      columnHeaderGroups: columnHeaderGroups ?? model.initialColumnHeaderGroups,
     };
   }
 
@@ -2807,10 +2806,17 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     this.setState({ movedColumns }, onChangeApplied);
   }
 
-  handleHeaderGroupsChanged(
-    columnHeaderGroups: ColumnHeaderGroup[] | undefined
-  ): void {
-    this.setState({ columnHeaderGroups }, () => this.grid?.forceUpdate());
+  handleHeaderGroupsChanged(columnHeaderGroups: ColumnHeaderGroup[]): void {
+    const { model } = this.props;
+    this.setState(
+      {
+        columnHeaderGroups: IrisGridUtils.parseColumnHeaderGroups(
+          model,
+          columnHeaderGroups
+        ).groups,
+      },
+      () => this.grid?.forceUpdate()
+    );
   }
 
   handleTooltipRef(tooltip: Tooltip): void {
@@ -3900,7 +3906,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
               model={model}
               movedColumns={movedColumns}
               userColumnWidths={userColumnWidths}
-              columnHeaderGroups={model.columnHeaderGroups}
+              columnHeaderGroups={columnHeaderGroups}
               onColumnVisibilityChanged={this.handleColumnVisibilityChanged}
               onMovedColumnsChanged={this.handleMovedColumnsChanged}
               onColumnHeaderGroupChanged={this.handleHeaderGroupsChanged}

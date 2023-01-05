@@ -19,7 +19,6 @@ import {
 } from '@deephaven/iris-grid';
 import type { Column, CustomColumn } from '@deephaven/jsapi-shim';
 import { Formatter } from '@deephaven/jsapi-utils';
-import { ColumnGroup } from '@deephaven/jsapi-shim';
 
 // We need to cast our CustomEvent so it's happy with event-target-shim
 type CustomEventType = EventTarget.EventData<
@@ -307,7 +306,7 @@ class MockIrisGridTreeModel
     return [];
   }
 
-  set columnHeaderGroups(groups: ColumnGroup[] | undefined) {
+  set columnHeaderGroups(groups: ColumnHeaderGroup[]) {
     // no-op
   }
 
@@ -317,6 +316,18 @@ class MockIrisGridTreeModel
 
   getColumnHeaderParentGroup() {
     return undefined;
+  }
+
+  get initialMovedColumns() {
+    return [];
+  }
+
+  get initialMovedRows() {
+    return [];
+  }
+
+  get initialColumnHeaderGroups() {
+    return [];
   }
 }
 

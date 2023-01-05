@@ -3,7 +3,6 @@
 import React, { useEffect, useMemo } from 'react';
 import dh, {
   Column,
-  ColumnGroup,
   CustomColumn,
   FilterCondition,
   RollupConfig,
@@ -14,6 +13,7 @@ import { Formatter, ReverseType, TableUtils } from '@deephaven/jsapi-utils';
 import IrisGridUtils from './IrisGridUtils';
 import { ColumnName, UITotalsTableConfig, UIRow } from './CommonTypes';
 import IrisGridModel from './IrisGridModel';
+import type ColumnHeaderGroup from './ColumnHeaderGroup';
 
 const COLUMN_BUFFER_PAGES = 1;
 
@@ -31,7 +31,7 @@ interface IrisGridModelUpdaterProps {
   movedColumns: MoveOperation[];
   hiddenColumns: ModelIndex[];
   frozenColumns?: ColumnName[];
-  columnHeaderGroups?: ColumnGroup[];
+  columnHeaderGroups: ColumnHeaderGroup[];
   formatColumns: CustomColumn[];
   alwaysFetchColumns: ColumnName[];
   formatter: Formatter;

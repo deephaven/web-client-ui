@@ -3,7 +3,6 @@ import React, { ChangeEvent, Component, ReactElement } from 'react';
 import classNames from 'classnames';
 import {
   GridUtils,
-  ModelIndex,
   ModelSizeMap,
   MoveOperation,
   VisibleIndex,
@@ -24,6 +23,7 @@ import {
   vsCircleLargeFilled,
   vsAdd,
 } from '@deephaven/icons';
+import type { Column } from '@deephaven/jsapi-shim';
 import memoize from 'memoizee';
 import debounce from 'lodash.debounce';
 import { Button, SearchInput } from '@deephaven/components';
@@ -55,7 +55,7 @@ interface VisibilityOrderingBuilderProps {
     isVisible: boolean
   ) => void;
   onMovedColumnsChanged: (operations: MoveOperation[], cb?: () => void) => void;
-  onColumnHeaderGroupChanged: (groups: ColumnHeaderGroup[] | undefined) => void;
+  onColumnHeaderGroupChanged: (groups: ColumnHeaderGroup[]) => void;
 }
 
 interface VisibilityOrderingBuilderState {
@@ -89,9 +89,11 @@ class VisibilityOrderingBuilder extends Component<
       return columnGroups;
     }
 
-    let newGroups = [...columnGroups];
+    let newGroups = columnGroups.map(group => new ColumnHeaderGroup(group));
+    const newGroupMap = new Map(newGroups.map(group => [group.name, group]));
     const fromGroup = newGroups.find(g => g.name === item.parentId);
     const toGroup = newGroups.find(g => g.name === toName);
+    const movedGroup = newGroups.find(g => g.name === item.id);
 
     if (fromGroup != null) {
       // Moved out of a group
@@ -100,14 +102,16 @@ class VisibilityOrderingBuilder extends Component<
       // Moved all children out of a group
       if (fromGroup.children.length === 0) {
         const deleteNames = new Set([fromGroup.name]);
-        let { parent } = fromGroup;
+        let { parent: parentName = '' } = fromGroup;
+        let parent = newGroupMap.get(parentName);
         parent?.removeChildren([fromGroup.name]);
 
         // Might need to delete parents if their only child is the now empty group
-        while (parent && parent.children.length === 0) {
-          deleteNames.add(parent.name);
-          parent.parent?.removeChildren([parent.name]);
-          parent = parent.parent;
+        while (parent && parentName !== '' && parent.children.length === 0) {
+          deleteNames.add(parentName);
+          parent = newGroupMap.get(parentName);
+          parent?.removeChildren([parentName]);
+          parentName = parent?.name ?? '';
         }
 
         // Delete all groups that are now empty
@@ -119,6 +123,8 @@ class VisibilityOrderingBuilder extends Component<
       // Moved into a group
       toGroup.addChildren([item.id]);
     }
+
+    movedGroup?.setParent(toName ?? undefined);
 
     return newGroups;
   }
@@ -177,7 +183,7 @@ class VisibilityOrderingBuilder extends Component<
       searchFilter: '',
     });
 
-    onColumnHeaderGroupChanged(model.parseColumnHeaderGroups(undefined).groups);
+    onColumnHeaderGroupChanged(model.initialColumnHeaderGroups);
     onMovedColumnsChanged(model.initialMovedColumns);
   }
 
@@ -685,12 +691,23 @@ class VisibilityOrderingBuilder extends Component<
     const newGroups = [...columnHeaderGroups];
 
     const oldName = group.name;
-    const newGroup = newGroups.find(({ name }) => name === oldName);
+    const groupIndex = newGroups.findIndex(({ name }) => name === oldName);
 
-    if (newGroup) {
+    if (groupIndex >= 0) {
+      const newGroup = new ColumnHeaderGroup(newGroups[groupIndex]);
       newGroup.name = newName;
-      newGroup.parent?.removeChildren([oldName]);
-      newGroup.parent?.addChildren([newName]);
+      newGroups.splice(groupIndex, 1, newGroup);
+
+      const parentIndex = newGroups.findIndex(
+        ({ name }) => name === newGroup.parent
+      );
+
+      if (parentIndex >= 0) {
+        const newParent = new ColumnHeaderGroup(newGroups[parentIndex]);
+        newParent.removeChildren([oldName]);
+        newParent.addChildren([newName]);
+        newGroups.splice(parentIndex, 1, newParent);
+      }
     }
 
     onColumnHeaderGroupChanged(newGroups);
@@ -805,14 +822,13 @@ class VisibilityOrderingBuilder extends Component<
     (group: ColumnHeaderGroup, color: string | undefined): void => {
       const { columnHeaderGroups, onColumnHeaderGroupChanged } = this.props;
       const newGroups = [...columnHeaderGroups];
-      const newGroup = newGroups.find(({ name }) => name === group.name);
-      if (!newGroup) {
-        throw new Error(
-          `Changed the color group that does not exist: ${group.name}`
-        );
-      }
+      const newGroup = new ColumnHeaderGroup({ ...group, color });
 
-      newGroup.color = color;
+      newGroups.splice(
+        newGroups.findIndex(({ name }) => name === group.name),
+        1,
+        newGroup
+      );
 
       onColumnHeaderGroupChanged(newGroups);
     },
@@ -822,10 +838,12 @@ class VisibilityOrderingBuilder extends Component<
   handleGroupDelete(group: ColumnHeaderGroup): void {
     const { columnHeaderGroups, onColumnHeaderGroupChanged } = this.props;
     const newGroups = columnHeaderGroups.filter(g => g.name !== group.name);
-    const newParent = newGroups.find(g => g.name === group.parent?.name);
-    if (newParent !== undefined) {
+    const parentIndex = newGroups.findIndex(g => g.name === group.parent);
+    if (parentIndex >= 0) {
+      const newParent = new ColumnHeaderGroup(newGroups[parentIndex]);
       newParent.addChildren(group.children);
       newParent.removeChildren([group.name]);
+      newGroups.splice(parentIndex, 1, newParent);
     }
     onColumnHeaderGroupChanged(newGroups);
   }
@@ -929,45 +947,77 @@ class VisibilityOrderingBuilder extends Component<
     }
   );
 
+  getMemoizedFirstMovableIndex = memoize(
+    (
+      model: IrisGridModel,
+      columns: Column[],
+      movedColumns: MoveOperation[]
+    ) => {
+      for (let i = 0; i < columns.length; i += 1) {
+        const modelIndex = GridUtils.getModelIndex(i, movedColumns);
+
+        if (model.isColumnMovable(modelIndex)) {
+          return i;
+        }
+      }
+
+      return null;
+    }
+  );
+
   /**
    * Gets the first movable visible index
    */
-  getFirstMovableIndex(): ModelIndex | null {
-    const { data } = this.getTreeItems()[0];
-    if (data == null) {
+  getFirstMovableIndex() {
+    const { model, movedColumns } = this.props;
+    return this.getMemoizedFirstMovableIndex(
+      model,
+      model.columns,
+      movedColumns
+    );
+  }
+
+  getMemoizedLastMovableIndex = memoize(
+    (
+      model: IrisGridModel,
+      columns: Column[],
+      movedColumns: MoveOperation[]
+    ) => {
+      for (let i = columns.length - 1; i >= 0; i -= 1) {
+        const modelIndex = GridUtils.getModelIndex(i, movedColumns);
+
+        if (model.isColumnMovable(modelIndex)) {
+          return i;
+        }
+      }
+
       return null;
     }
-    return Array.isArray(data.visibleIndex)
-      ? data.visibleIndex[0]
-      : data.visibleIndex;
-  }
+  );
 
   /**
-   * Gets the first movable visible index
+   * Gets the last movable visible index
    */
-  getLastMovableIndex(): ModelIndex | null {
-    const items = this.getTreeItems();
-    const { data } = items[items.length - 1];
-
-    if (data == null) {
-      return null;
-    }
-    return Array.isArray(data.visibleIndex)
-      ? data.visibleIndex[1]
-      : data.visibleIndex;
+  getLastMovableIndex() {
+    const { model, movedColumns } = this.props;
+    return this.getMemoizedLastMovableIndex(model, model.columns, movedColumns);
   }
 
-  memoizedGetTreeItems = memoize((
-    model: IrisGridModel,
-    movedColumns: MoveOperation[],
-    // Unused here, but changes to groups should bust cache
-    columnHeaderGroups: ColumnHeaderGroup[],
-    userColumnWidths: ModelSizeMap,
-    selectedColumns: Set<string>
-  ) =>
-    getTreeItems(model, movedColumns, userColumnWidths, [
-      ...selectedColumns.values(),
-    ])
+  memoizedGetTreeItems = memoize(
+    (
+      columns: Column[],
+      movedColumns: MoveOperation[],
+      columnHeaderGroups: ColumnHeaderGroup[],
+      userColumnWidths: ModelSizeMap,
+      selectedColumns: Set<string>
+    ) =>
+      getTreeItems(
+        columns,
+        movedColumns,
+        columnHeaderGroups,
+        userColumnWidths,
+        [...selectedColumns.values()]
+      )
   );
 
   /**
@@ -985,7 +1035,7 @@ class VisibilityOrderingBuilder extends Component<
     const { selectedColumns } = this.state;
 
     return this.memoizedGetTreeItems(
-      model,
+      model.columns,
       movedColumns,
       columnHeaderGroups,
       userColumnWidths,
@@ -1011,44 +1061,91 @@ class VisibilityOrderingBuilder extends Component<
     );
   }
 
-  makeVisibilityOrderingList = memoize((movableItems: IrisGridTreeItem[]) => {
-    const { model, movedColumns } = this.props;
-    const { columns } = model;
+  makeVisibilityOrderingList = memoize(
+    (columns: Column[], treeItems: IrisGridTreeItem[]) => {
+      const { movedColumns } = this.props;
 
-    const elements = [];
+      const elements = [];
+      const firstMovableIndex = this.getFirstMovableIndex();
+      const lastMovableIndex = this.getLastMovableIndex();
 
-    let wasMovable = false;
-    for (
-      let visibleIndex = 0;
-      visibleIndex < columns.length;
-      visibleIndex += 1
-    ) {
-      const modelIndex = GridUtils.getModelIndex(visibleIndex, movedColumns);
-      const column = columns[modelIndex];
-      const isMovable = model.isColumnMovable(modelIndex);
-      if (visibleIndex > 0 && isMovable !== wasMovable) {
-        elements.push(<hr key={column.name} />);
+      const firstMovableTreeIndex = treeItems.findIndex(({ data }) =>
+        Array.isArray(data.visibleIndex)
+          ? data.visibleIndex[0] === firstMovableIndex
+          : data.visibleIndex === firstMovableIndex
+      );
+
+      const lastMovableTreeIndex = treeItems.findIndex(({ data }) =>
+        Array.isArray(data.visibleIndex)
+          ? data.visibleIndex[1] === lastMovableIndex
+          : data.visibleIndex === lastMovableIndex
+      );
+
+      const movableItems = treeItems.slice(
+        firstMovableTreeIndex,
+        lastMovableTreeIndex + 1
+      );
+
+      // No movable items. Render all as immovable
+      if (firstMovableIndex == null || lastMovableIndex === null) {
+        for (
+          let visibleIndex = 0;
+          visibleIndex < columns.length;
+          visibleIndex += 1
+        ) {
+          const modelIndex = GridUtils.getModelIndex(
+            visibleIndex,
+            movedColumns
+          );
+          const column = columns[modelIndex];
+          elements.push(this.renderImmovableItem(column.name));
+        }
+
+        return elements;
       }
 
-      if (isMovable && isMovable !== wasMovable) {
-        elements.push(
-          <SortableTree
-            key="movable-items"
-            items={movableItems}
-            renderItem={this.renderItem}
-            onDragStart={this.handleDragStart}
-            onDragEnd={this.handleDragEnd}
-          />
-        );
-      } else if (!isMovable) {
+      // Currently immovable groups are not supported
+      for (
+        let visibleIndex = 0;
+        visibleIndex < firstMovableIndex;
+        visibleIndex += 1
+      ) {
+        const modelIndex = GridUtils.getModelIndex(visibleIndex, movedColumns);
+        const column = columns[modelIndex];
         elements.push(this.renderImmovableItem(column.name));
       }
 
-      wasMovable = isMovable;
-    }
+      if (firstMovableIndex !== null && firstMovableIndex > 0) {
+        elements.push(<hr key="top-horizontal-divider" />);
+      }
 
-    return elements;
-  });
+      elements.push(
+        <SortableTree
+          key="movable-items"
+          items={movableItems}
+          renderItem={this.renderItem}
+          onDragStart={this.handleDragStart}
+          onDragEnd={this.handleDragEnd}
+        />
+      );
+
+      if (lastMovableIndex != null && lastMovableIndex < columns.length - 1) {
+        elements.push(<hr key="bottom-horizontal-divider" />);
+      }
+
+      for (
+        let visibleIndex = lastMovableIndex + 1;
+        visibleIndex < columns.length;
+        visibleIndex += 1
+      ) {
+        const modelIndex = GridUtils.getModelIndex(visibleIndex, movedColumns);
+        const column = columns[modelIndex];
+        elements.push(this.renderImmovableItem(column.name));
+      }
+
+      return elements;
+    }
+  );
 
   renderImmovableItem = memoize(
     (columnName: ColumnName): ReactElement => (
@@ -1061,7 +1158,7 @@ class VisibilityOrderingBuilder extends Component<
   );
 
   render(): ReactElement {
-    const { userColumnWidths, onColumnVisibilityChanged } = this.props;
+    const { model, userColumnWidths, onColumnVisibilityChanged } = this.props;
     const { selectedColumns, searchFilter } = this.state;
     const hasSelection = selectedColumns.size > 0;
     const treeItems = this.getTreeItems();
@@ -1091,7 +1188,10 @@ class VisibilityOrderingBuilder extends Component<
       ? 'Hide Selected'
       : 'Show Selected';
 
-    const visibilityOrderingList = this.makeVisibilityOrderingList(treeItems);
+    const visibilityOrderingList = this.makeVisibilityOrderingList(
+      model.columns,
+      treeItems
+    );
 
     return (
       <div role="menu" className="visibility-ordering-builder" tabIndex={0}>

@@ -9,7 +9,6 @@ import {
 } from '@deephaven/utils';
 import {
   Column,
-  ColumnGroup,
   ColumnStatistics,
   CustomColumn,
   FilterCondition,
@@ -360,8 +359,8 @@ class IrisGridProxyModel extends IrisGridModel {
     return this.model.initialMovedColumns;
   }
 
-  get movedRows(): MoveOperation[] {
-    return this.model.movedRows;
+  get initialMovedRows(): MoveOperation[] {
+    return this.model.initialMovedRows;
   }
 
   get layoutHints(): LayoutHints | null {
@@ -387,8 +386,12 @@ class IrisGridProxyModel extends IrisGridModel {
     return this.model.columnHeaderGroups;
   }
 
-  set columnHeaderGroups(groups: ColumnGroup[] | undefined) {
+  set columnHeaderGroups(groups: ColumnHeaderGroup[]) {
     this.model.columnHeaderGroups = groups;
+  }
+
+  get initialColumnHeaderGroups(): ColumnHeaderGroup[] {
+    return this.model.initialColumnHeaderGroups;
   }
 
   getColumnHeaderParentGroup: IrisGridModel['getColumnHeaderParentGroup'] = (

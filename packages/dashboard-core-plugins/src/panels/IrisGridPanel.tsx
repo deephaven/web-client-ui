@@ -450,7 +450,7 @@ export class IrisGridPanel extends PureComponent<
       pendingDataMap: PendingDataMap<UIRow>,
       frozenColumns: ColumnName[],
       conditionalFormats: SidebarFormattingRule[],
-      columnHeaderGroups: ColumnHeaderGroup[] | undefined
+      columnHeaderGroups: ColumnHeaderGroup[]
     ) =>
       IrisGridUtils.dehydrateIrisGridState(model, {
         advancedFilters,

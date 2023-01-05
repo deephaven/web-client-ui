@@ -23,11 +23,11 @@ export default class ColumnHeaderGroup implements IColumnHeaderGroup {
 
   depth: number;
 
-  parent?: ColumnHeaderGroup;
+  parent?: string;
 
   color?: string;
 
-  childIndexes: (ModelIndex | ModelIndex[])[];
+  childIndexes: ModelIndex[];
 
   constructor({
     name,
@@ -35,18 +35,21 @@ export default class ColumnHeaderGroup implements IColumnHeaderGroup {
     color,
     depth,
     childIndexes,
+    parent,
   }: {
     name: string;
     children: string[];
     color?: string;
     depth: number;
-    childIndexes: (ModelIndex | ModelIndex[])[];
+    childIndexes: ModelIndex[];
+    parent?: string;
   }) {
     this.name = name;
     this.children = children;
     this.color = color;
     this.depth = depth;
     this.childIndexes = childIndexes;
+    this.parent = parent;
   }
 
   getVisibleRange = memoizeOne(
@@ -68,7 +71,7 @@ export default class ColumnHeaderGroup implements IColumnHeaderGroup {
     }
   );
 
-  setParent(parent: ColumnHeaderGroup | undefined): void {
+  setParent(parent: string | undefined): void {
     this.parent = parent;
   }
 

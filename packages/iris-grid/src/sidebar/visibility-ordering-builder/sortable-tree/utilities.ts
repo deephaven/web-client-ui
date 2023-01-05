@@ -1,6 +1,6 @@
 import { arrayMove } from '@dnd-kit/sortable';
+import type { Column } from '@deephaven/jsapi-shim';
 import { GridUtils, ModelSizeMap, MoveOperation } from '@deephaven/grid';
-import type IrisGridModel from '../../../IrisGridModel';
 import type ColumnHeaderGroup from '../../../ColumnHeaderGroup';
 import { isFlattenedTreeItem } from './types';
 import type { FlattenedItem, TreeItem, TreeItems } from './types';
@@ -28,15 +28,16 @@ export type IrisGridTreeItem = TreeItem<IrisGridTreeItemData>;
 export type FlattenedIrisGridTreeItem = FlattenedItem<IrisGridTreeItemData>;
 
 function getTreeItem(
-  model: IrisGridModel,
+  columns: Column[],
   movedColumns: MoveOperation[],
+  columnHeaderGroupMap: Map<string, ColumnHeaderGroup>,
   name: string,
   userColumnWidths: ModelSizeMap,
   selectedItems: Set<string>
 ): IrisGridTreeItem {
-  const modelIndex = model.getColumnIndexByName(name);
-  if (modelIndex === undefined) {
-    const group = model.columnHeaderGroupMap.get(name);
+  const modelIndex = columns.findIndex(col => col.name === name);
+  if (modelIndex === -1) {
+    const group = columnHeaderGroupMap.get(name);
 
     if (group == null) {
       throw new Error(`Column or header group not found: ${name}`);
@@ -50,8 +51,9 @@ function getTreeItem(
       children: group.children
         .map(childName =>
           getTreeItem(
-            model,
+            columns,
             movedColumns,
+            columnHeaderGroupMap,
             childName,
             userColumnWidths,
             selectedItems
@@ -92,34 +94,40 @@ function getTreeItem(
 }
 
 export function getTreeItems(
-  model: IrisGridModel,
+  columns: Column[],
   movedColumns: MoveOperation[],
+  columnHeaderGroups: ColumnHeaderGroup[],
   userColumnWidths: ModelSizeMap,
   selectedItems: string[]
 ): IrisGridTreeItem[] {
   const items: IrisGridTreeItem[] = [];
   const selectedItemsSet = new Set(selectedItems);
+  const groupMap = new Map(
+    columnHeaderGroups.map(group => [group.name, group])
+  );
 
   let visibleIndex = 0;
-  while (visibleIndex < model.columnCount) {
+  while (visibleIndex < columns.length) {
     const modelIndex = GridUtils.getModelIndex(visibleIndex, movedColumns);
+    const columnName = columns[modelIndex].name;
 
-    let group = model.getColumnHeaderParentGroup(modelIndex, 0);
+    let group = columnHeaderGroups.find(({ children }) =>
+      children.includes(columnName)
+    );
     while (group !== undefined && group.parent !== undefined) {
-      group = group.parent;
+      group = groupMap.get(group.parent);
     }
 
     const item = getTreeItem(
-      model,
+      columns,
       movedColumns,
-      group ? group.name : model.columns[modelIndex].name,
+      groupMap,
+      group ? group.name : columnName,
       userColumnWidths,
       selectedItemsSet
     );
 
-    if (model.isColumnMovable(modelIndex)) {
-      items.push(item);
-    }
+    items.push(item);
 
     if (Array.isArray(item.data.visibleIndex)) {
       visibleIndex += item.data.visibleIndex[1] - item.data.visibleIndex[0] + 1;
