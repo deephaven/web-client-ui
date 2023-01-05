@@ -137,7 +137,7 @@ class FigureChartModel extends ChartModel {
       for (let j = 0; j < chart.series.length; j += 1) {
         const series = chart.series[j];
         activeSeriesNames.push(series.name);
-        this.addSeries(series, axes);
+        this.addSeries(series, axes, chart.showLegend);
       }
     }
 
@@ -157,14 +157,16 @@ class FigureChartModel extends ChartModel {
    * Add a series to the model
    * @param series Series object to add
    * @param axes All the axis in this figure
+   * @param showLegend Whether this series should show the legend or not
    */
-  addSeries(series: Series, axes: Axis[]): void {
+  addSeries(series: Series, axes: Axis[], showLegend: boolean | null): void {
     const axisTypeMap: AxisTypeMap = ChartUtils.groupArray(axes, 'type');
 
     const seriesData = ChartUtils.makeSeriesDataFromSeries(
       series,
       axisTypeMap,
       ChartUtils.getSeriesVisibility(series.name, this.settings),
+      showLegend,
       this.theme
     );
 
@@ -178,8 +180,13 @@ class FigureChartModel extends ChartModel {
       this.layout.hiddenlabels = ChartUtils.getHiddenLabels(this.settings);
     }
 
+    // We only want to force hide the legend if there is only one series that is not a PIE
+    // Right now this means that if the user only has one series, they cannot explicitly show the legend until deephaven-core#3254 is implemented
+    // TODO: deephaven-core#3254, once done, this can be removed.
     this.layout.showlegend =
-      this.data.length > 1 || series.plotStyle === dh.plot.SeriesPlotStyle.PIE;
+      this.data.length > 1 || series.plotStyle === dh.plot.SeriesPlotStyle.PIE
+        ? showLegend ?? undefined
+        : false;
 
     if (series.oneClick != null) {
       const { oneClick } = series;
@@ -201,7 +208,8 @@ class FigureChartModel extends ChartModel {
     const { pendingSeries } = this;
     for (let i = 0; i < pendingSeries.length; i += 1) {
       const series = pendingSeries[i];
-      this.addSeries(series, axes);
+      const chart = this.figure.charts.find(c => c.series.includes(series));
+      this.addSeries(series, axes, chart?.showLegend ?? null);
 
       series.subscribe();
       // We'll get an update with the data after subscribing
