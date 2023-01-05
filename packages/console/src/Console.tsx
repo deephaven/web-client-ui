@@ -345,7 +345,7 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
       const itemIndex = consoleHistory.lastIndexOf(historyItem);
       if (itemIndex < 0) {
         log.error(`historyItem not found in consoleHistory`);
-        return { consoleHistory };
+        return null;
       }
       const newHistory = consoleHistory.concat();
       newHistory[itemIndex] = newHistoryItem;
