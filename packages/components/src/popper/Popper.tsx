@@ -150,6 +150,7 @@ class Popper extends Component<PopperProps, PopperState> {
     let { options } = this.props;
     options = {
       placement: 'auto',
+      modifiers: { preventOverflow: { boundariesElement: 'viewport' } },
       ...options,
     };
     document.body.appendChild(this.element);
