@@ -1,9 +1,9 @@
 import React, { Component, RefObject } from 'react';
-import { connect } from 'react-redux';
+import { connect, ConnectedProps } from 'react-redux';
 import debounce from 'lodash.debounce';
 import deepEqual from 'deep-equal';
-import memoize from 'memoize-one';
-import { LayoutUtils } from '@deephaven/dashboard';
+import memoize from 'memoizee';
+import { DashboardPanelProps, LayoutUtils } from '@deephaven/dashboard';
 import dh from '@deephaven/jsapi-shim';
 import type { Column, Row, Table, TableTemplate } from '@deephaven/jsapi-shim';
 import {
@@ -16,7 +16,6 @@ import {
 import Log from '@deephaven/log';
 import { getActiveTool, getSettings, RootState } from '@deephaven/redux';
 import { Pending, PromiseUtils } from '@deephaven/utils';
-import type { Container, EventEmitter } from '@deephaven/golden-layout';
 import DropdownFilter, {
   DropdownFilterColumn,
 } from '../controls/dropdown-filter/DropdownFilter';
@@ -33,6 +32,7 @@ import ToolType from '../linker/ToolType';
 import WidgetPanel from './WidgetPanel';
 import type { Link, LinkPoint } from '../linker/LinkerUtils';
 import { ColumnSelectionValidator } from '../linker/ColumnSelectionValidator';
+import { PanelState as InputFilterPanelState } from './InputFilterPanel';
 
 const log = Log.module('DropdownFilterPanel');
 
@@ -46,22 +46,59 @@ interface PanelState {
   timestamp?: number;
 }
 
-interface DropdownFilterPanelProps {
-  glContainer: Container;
-  glEventHub: EventEmitter;
-  panelState?: PanelState;
-  isLinkerActive: boolean;
+type PanelTableMap = Map<string | string[], TableTemplate>;
+
+type StateProps = {
   columns: Column[];
   columnSelectionValidator?: ColumnSelectionValidator;
-  disableLinking: boolean;
-  settings: {
-    formatter: FormattingRule[];
-  };
-  // eslint-disable-next-line react/no-unused-prop-types
-  panelTableMap: Map<string | string[], TableTemplate>;
-  // eslint-disable-next-line react/no-unused-prop-types
   dashboardLinks: Link[];
-}
+  disableLinking: boolean;
+  isLinkerActive: boolean;
+  panelTableMap: PanelTableMap;
+  panelState?: PanelState;
+  settings: { formatter: FormattingRule[] };
+};
+
+type OwnProps = DashboardPanelProps;
+
+const mapStateToProps = (state: RootState, ownProps: OwnProps): StateProps => {
+  const { localDashboardId } = ownProps;
+  const panelId = LayoutUtils.getIdFromPanel({ props: ownProps });
+  const panelTableMap = getTableMapForDashboard(state, localDashboardId);
+  const dashboardLinks = getLinksForDashboard(state, localDashboardId);
+  const activeTool = getActiveTool(state);
+  const isolatedLinkerPanelId = getIsolatedLinkerPanelIdForDashboard(
+    state,
+    localDashboardId
+  );
+  const isLinkerActive =
+    activeTool === ToolType.LINKER &&
+    (isolatedLinkerPanelId === undefined || isolatedLinkerPanelId === panelId);
+  // Disable linking if linker is in isolated mode for a different panel
+  const disableLinking =
+    activeTool === ToolType.LINKER &&
+    isolatedLinkerPanelId !== undefined &&
+    isolatedLinkerPanelId !== panelId;
+
+  return {
+    columns: getColumnsForDashboard(state, localDashboardId),
+    columnSelectionValidator: getColumnSelectionValidatorForDashboard(
+      state,
+      localDashboardId
+    ),
+    isLinkerActive,
+    disableLinking,
+    settings: getSettings(state),
+    panelTableMap,
+    dashboardLinks,
+  };
+};
+
+const connector = connect(mapStateToProps, null, null, { forwardRef: true });
+
+export type DropdownFilterPanelProps = OwnProps &
+  StateProps &
+  ConnectedProps<typeof connector>;
 
 interface DropdownFilterPanelState {
   column?: DropdownFilterColumn;
@@ -84,7 +121,7 @@ interface DropdownFilterPanelState {
   error: unknown | null;
 }
 
-class DropdownFilterPanel extends Component<
+export class DropdownFilterPanel extends Component<
   DropdownFilterPanelProps,
   DropdownFilterPanelState
 > {
@@ -156,10 +193,11 @@ class DropdownFilterPanel extends Component<
     };
   }
 
-  componentDidMount() {
+  componentDidMount(): void {
     this.updateValuesTable();
+    const { dashboardLinks, panelTableMap } = this.props;
     const { column, value, timestamp } = this.state;
-    const sourceTable = this.getSourceTable();
+    const sourceTable = this.getSourceTable(panelTableMap, dashboardLinks);
     if (sourceTable !== null) {
       this.startListeningToSource(sourceTable);
     }
@@ -172,13 +210,17 @@ class DropdownFilterPanel extends Component<
   componentDidUpdate(
     prevProps: DropdownFilterPanelProps,
     prevState: DropdownFilterPanelState
-  ) {
+  ): void {
+    const { dashboardLinks, panelTableMap, settings } = this.props;
     const { valuesTable } = this.state;
-    const { settings } = this.props;
-    const source = this.getSource();
-    const sourceTable = this.getSourceTable();
-    const prevSource = this.getSource(prevProps);
-    const prevSourceTable = this.getSourceTable(prevProps);
+    const source = this.getSource(dashboardLinks);
+    const sourceTable = this.getSourceTable(panelTableMap, dashboardLinks);
+
+    const prevSource = this.getSource(prevProps.dashboardLinks);
+    const prevSourceTable = this.getSourceTable(
+      prevProps.panelTableMap,
+      prevProps.dashboardLinks
+    );
 
     if (settings !== prevProps.settings && settings !== undefined) {
       this.updateFormatterSettings(settings);
@@ -209,8 +251,9 @@ class DropdownFilterPanel extends Component<
   }
 
   componentWillUnmount(): void {
+    const { dashboardLinks, panelTableMap } = this.props;
     const { valuesTable } = this.state;
-    const sourceTable = this.getSourceTable();
+    const sourceTable = this.getSourceTable(panelTableMap, dashboardLinks);
     this.pending.cancel();
     if (sourceTable !== null) {
       this.stopListeningToSource(sourceTable);
@@ -333,20 +376,21 @@ class DropdownFilterPanel extends Component<
     }
   );
 
-  getSource(props = this.props) {
-    const { dashboardLinks } = props;
-    const panelLinks = this.getCachedPanelLinks(dashboardLinks, this);
+  getSource(links: Link[]): LinkPoint | undefined {
+    const panelLinks = this.getCachedPanelLinks(links, this);
     return this.getCachedSource(panelLinks);
   }
 
-  getSourceTable(props = this.props) {
-    const { panelTableMap } = props;
-    const source = this.getSource(props);
+  getSourceTable(
+    panelTableMap: PanelTableMap,
+    links: Link[]
+  ): TableTemplate | null {
+    const source = this.getSource(links);
     return this.getCachedSourceTable(panelTableMap, source);
   }
 
-  getValuesColumn(valuesTable: TableTemplate): Column | null {
-    const source = this.getSource();
+  getValuesColumn(valuesTable: TableTemplate, links: Link[]): Column | null {
+    const source = this.getSource(links);
     return this.getCachedSourceColumn(valuesTable, source);
   }
 
@@ -406,7 +450,7 @@ class DropdownFilterPanel extends Component<
     column: Partial<Column> | null;
     isValueShown?: boolean | undefined;
     value?: string | undefined;
-  }) {
+  }): void {
     const { name = undefined, type = undefined } = column ?? {};
     let sendUpdate = true;
     let timestamp: number | undefined = Date.now();
@@ -447,7 +491,7 @@ class DropdownFilterPanel extends Component<
     );
   }
 
-  handleDisconnect() {
+  handleDisconnect(): void {
     this.setState({
       error: new Error('Table disconnected'),
       isDisconnected: true,
@@ -455,19 +499,19 @@ class DropdownFilterPanel extends Component<
     });
   }
 
-  handleReconnect() {
+  handleReconnect(): void {
     this.setState({ isDisconnected: false, error: null });
   }
 
-  handleSourceFilterChange() {
+  handleSourceFilterChange(): void {
     this.applySourceFilters();
   }
 
-  handleSourceSortChange() {
+  handleSourceSortChange(): void {
     this.applySourceSorts();
   }
 
-  handleSourceSizeChange({ detail }: { detail: number }) {
+  handleSourceSizeChange({ detail }: { detail: number }): void {
     this.setState({ sourceSize: detail });
   }
 
@@ -490,16 +534,9 @@ class DropdownFilterPanel extends Component<
    * @param state Filter state to set
    * @param sendUpdate Emit filters changed event if true
    */
-  setPanelState(
-    state: {
-      name: string;
-      type: string;
-      value: string;
-      isValueShown: boolean;
-    },
-    sendUpdate = false
-  ): void {
-    if (this.getSource() == null) {
+  setPanelState(state: InputFilterPanelState, sendUpdate = false): void {
+    const { dashboardLinks } = this.props;
+    if (this.getSource(dashboardLinks) == null) {
       log.debug('Ignore state update for unlinked filter', state);
       return;
     }
@@ -517,8 +554,8 @@ class DropdownFilterPanel extends Component<
     value: string | undefined,
     timestamp?: number
   ): void {
-    const { glEventHub } = this.props;
-    const sourcePanelId = this.getSource()?.panelId;
+    const { dashboardLinks, glEventHub } = this.props;
+    const sourcePanelId = this.getSource(dashboardLinks)?.panelId;
     const excludePanelIds = sourcePanelId === null ? [] : [sourcePanelId];
     log.debug('sendUpdate', {
       name,
@@ -538,8 +575,9 @@ class DropdownFilterPanel extends Component<
   }
 
   updateValuesTable(): void {
-    const source = this.getSource();
-    const sourceTable = this.getSourceTable();
+    const { dashboardLinks, panelTableMap } = this.props;
+    const source = this.getSource(dashboardLinks);
+    const sourceTable = this.getSourceTable(panelTableMap, dashboardLinks);
     log.debug('updateValuesTable', source, sourceTable);
 
     this.setState({
@@ -583,9 +621,10 @@ class DropdownFilterPanel extends Component<
       });
   }
 
-  applySourceSorts() {
+  applySourceSorts(): void {
+    const { dashboardLinks, panelTableMap } = this.props;
     const { valuesTable } = this.state;
-    const sourceTable = this.getSourceTable();
+    const sourceTable = this.getSourceTable(panelTableMap, dashboardLinks);
     log.debug('applySourceSorts', sourceTable?.sort);
     if (valuesTable == null || sourceTable == null) {
       log.debug('Table not initialized');
@@ -597,8 +636,9 @@ class DropdownFilterPanel extends Component<
   }
 
   applySourceFilters(): void {
+    const { dashboardLinks, panelTableMap } = this.props;
     const { valuesTable } = this.state;
-    const sourceTable = this.getSourceTable();
+    const sourceTable = this.getSourceTable(panelTableMap, dashboardLinks);
     log.debug('applySourceFilters', sourceTable?.filter);
     if (valuesTable == null || sourceTable == null) {
       log.debug('Table not initialized');
@@ -630,7 +670,8 @@ class DropdownFilterPanel extends Component<
   }
 
   setViewport(valuesTable: TableTemplate): void {
-    const valuesColumn = this.getValuesColumn(valuesTable);
+    const { dashboardLinks } = this.props;
+    const valuesColumn = this.getValuesColumn(valuesTable, dashboardLinks);
     if (!valuesColumn) {
       log.error('values column is null');
       return;
@@ -642,7 +683,7 @@ class DropdownFilterPanel extends Component<
 
   updateFormatterSettings(settings: {
     formatter?: FormattingRule[] | undefined;
-  }) {
+  }): void {
     const columnFormats = FormatterUtils.getColumnFormats(settings);
     if (!deepEqual(this.columnFormats, columnFormats)) {
       this.columnFormats = columnFormats;
@@ -650,14 +691,15 @@ class DropdownFilterPanel extends Component<
     }
   }
 
-  handleValuesTableUpdate({ detail }: { detail: { rows: Row[] } }) {
+  handleValuesTableUpdate({ detail }: { detail: { rows: Row[] } }): void {
     const { rows } = detail;
+    const { dashboardLinks } = this.props;
     const { valuesTable } = this.state;
     if (!valuesTable) {
       log.error('valuesTable is null');
       return;
     }
-    const valuesColumn = this.getValuesColumn(valuesTable);
+    const valuesColumn = this.getValuesColumn(valuesTable, dashboardLinks);
     if (!valuesColumn) {
       log.error('Values column not found');
       return;
@@ -666,7 +708,7 @@ class DropdownFilterPanel extends Component<
     this.setState({ values, isLoading: false, isLoaded: true, valuesColumn });
   }
 
-  handleSourceMouseEnter() {
+  handleSourceMouseEnter(): void {
     const { columnSelectionValidator } = this.props;
     if (!columnSelectionValidator) {
       return;
@@ -674,7 +716,7 @@ class DropdownFilterPanel extends Component<
     columnSelectionValidator(this, DropdownFilterPanel.SOURCE_COLUMN);
   }
 
-  handleSourceMouseLeave() {
+  handleSourceMouseLeave(): void {
     const { columnSelectionValidator } = this.props;
     if (!columnSelectionValidator) {
       return;
@@ -682,9 +724,10 @@ class DropdownFilterPanel extends Component<
     columnSelectionValidator(this, undefined);
   }
 
-  render() {
+  render(): React.ReactElement {
     const {
       columns,
+      dashboardLinks,
       disableLinking,
       glContainer,
       glEventHub,
@@ -701,8 +744,7 @@ class DropdownFilterPanel extends Component<
       isLoading,
       isLoaded,
     } = this.state;
-
-    const source = this.getSource();
+    const source = this.getSource(dashboardLinks);
     const settingsErrorMessage = this.getSettingsErrorMessage();
     const panelErrorMessage = this.getPanelErrorMessage();
     const formattedValues =
@@ -751,42 +793,4 @@ class DropdownFilterPanel extends Component<
   }
 }
 
-const mapStateToProps = (
-  state: RootState,
-  ownProps: { localDashboardId: string; glContainer: Container }
-) => {
-  const { localDashboardId } = ownProps;
-  const panelId = LayoutUtils.getIdFromPanel({ props: ownProps });
-  const panelTableMap = getTableMapForDashboard(state, localDashboardId);
-  const dashboardLinks = getLinksForDashboard(state, localDashboardId);
-  const activeTool = getActiveTool(state);
-  const isolatedLinkerPanelId = getIsolatedLinkerPanelIdForDashboard(
-    state,
-    localDashboardId
-  );
-  const isLinkerActive =
-    activeTool === ToolType.LINKER &&
-    (isolatedLinkerPanelId === undefined || isolatedLinkerPanelId === panelId);
-  // Disable linking if linker is in isolated mode for a different panel
-  const disableLinking =
-    activeTool === ToolType.LINKER &&
-    isolatedLinkerPanelId !== undefined &&
-    isolatedLinkerPanelId !== panelId;
-
-  return {
-    columns: getColumnsForDashboard(state, localDashboardId),
-    columnSelectionValidator: getColumnSelectionValidatorForDashboard(
-      state,
-      localDashboardId
-    ),
-    isLinkerActive,
-    disableLinking,
-    settings: getSettings(state),
-    panelTableMap,
-    dashboardLinks,
-  };
-};
-
-export default connect(mapStateToProps, null, null, { forwardRef: true })(
-  DropdownFilterPanel
-);
+export default connector(DropdownFilterPanel);

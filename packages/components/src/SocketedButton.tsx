@@ -9,6 +9,7 @@ type SocketedButtonProps = {
   children?: React.ReactNode;
   className?: string;
   disabled?: boolean;
+  id?: string;
   isLinked?: boolean;
   isLinkedSource?: boolean;
   isInvalid?: boolean;
@@ -25,6 +26,7 @@ const SocketedButton = React.forwardRef<HTMLButtonElement, SocketedButtonProps>(
       children,
       className,
       disabled,
+      id,
       isLinked,
       isLinkedSource,
       isInvalid,
@@ -48,6 +50,7 @@ const SocketedButton = React.forwardRef<HTMLButtonElement, SocketedButtonProps>(
           { 'is-invalid': isInvalid },
           className
         )}
+        id={id}
         onClick={onClick}
         onMouseEnter={onMouseEnter}
         onMouseLeave={onMouseLeave}
@@ -76,6 +79,7 @@ SocketedButton.defaultProps = {
   children: undefined,
   className: '',
   disabled: false,
+  id: undefined,
   isLinked: false,
   isLinkedSource: false,
   isInvalid: false,
