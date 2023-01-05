@@ -11,7 +11,6 @@ import {
   DropdownMenu,
   PopperOptions,
   SearchInput,
-  Tooltip,
 } from '@deephaven/components';
 import {
   dhTable,
