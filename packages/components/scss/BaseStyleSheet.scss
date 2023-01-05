@@ -109,6 +109,7 @@ button:focus {
 }
 
 span.btn-disabled-wrapper {
+  display: inline-block;
   .btn.disabled,
   .btn:disabled {
     pointer-events: none;

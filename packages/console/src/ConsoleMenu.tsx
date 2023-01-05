@@ -181,15 +181,19 @@ class ConsoleMenu extends PureComponent<ConsoleMenuProps, ConsoleMenuState> {
     );
     const popperOptions: PopperOptions = { placement: 'bottom-end' };
 
+    const disableTableActions = tableActions.length === 0;
+    const disableWidgetActions = widgetActions.length === 0;
+
     return (
       <div className="console-pane-menu">
         <Button
           kind="ghost"
           className="btn-link-icon"
-          disabled={tableActions.length === 0}
+          disabled={disableTableActions}
           onClick={() => {
             // no-op: click is handled in `DropdownMenu`
           }}
+          tooltip={disableTableActions ? 'No tables available' : 'Tables'}
         >
           <div className="fa-md fa-layers">
             <FontAwesomeIcon
@@ -199,7 +203,6 @@ class ConsoleMenu extends PureComponent<ConsoleMenuProps, ConsoleMenuState> {
             />
             <FontAwesomeIcon icon={vsTriangleDown} transform="right-8 down-6" />
           </div>
-          <Tooltip>Tables</Tooltip>
           <DropdownMenu
             key="table-actions "
             actions={tableActions}
@@ -216,6 +219,7 @@ class ConsoleMenu extends PureComponent<ConsoleMenuProps, ConsoleMenuState> {
           onClick={() => {
             // no-op: click is handled in `DropdownMenu'
           }}
+          tooltip={disableWidgetActions ? 'No widgets available' : 'Widgets'}
         >
           <div className="fa-md fa-layers">
             <FontAwesomeIcon
@@ -225,7 +229,6 @@ class ConsoleMenu extends PureComponent<ConsoleMenuProps, ConsoleMenuState> {
             />
             <FontAwesomeIcon icon={vsTriangleDown} transform="right-8 down-6" />
           </div>
-          <Tooltip>Widgets</Tooltip>
           <DropdownMenu
             key="table-actions"
             actions={widgetActions}
