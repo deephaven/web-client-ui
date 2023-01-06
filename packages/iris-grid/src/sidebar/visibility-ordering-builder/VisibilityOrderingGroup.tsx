@@ -157,12 +157,13 @@ export default function VisibilityOrderingGroup(
                   className="color-swatch"
                   icon={dhSquareFilled}
                   color={ThemeExport.white}
+                  transform="down-1"
                 />
                 <FontAwesomeIcon
                   className="color-swatch"
                   icon={dhSquareFilled}
                   color={group.color}
-                  transform="shrink-2"
+                  transform="shrink-2 down-1"
                 />
               </span>
             ) : (

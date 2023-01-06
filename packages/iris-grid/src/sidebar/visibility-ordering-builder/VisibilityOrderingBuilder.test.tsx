@@ -476,7 +476,7 @@ test('Moves items in and out of groups with down button', () => {
     VisibilityOrderingBuilder['props']['onColumnHeaderGroupChanged']
   >;
   const getDownButton = () => screen.getByLabelText('Move selection down');
-  const model = makeModelWithGroups(NESTED_COLUMN_HEADER_GROUPS);
+  let model = makeModelWithGroups(NESTED_COLUMN_HEADER_GROUPS);
   const { rerender } = render(
     <BuilderWithGroups
       model={model}
@@ -528,6 +528,7 @@ test('Moves items in and out of groups with down button', () => {
   model.columnHeaderGroups = mockGroupHandler.mock.calls[0][0];
   rerender(
     <BuilderWithGroups
+      model={model}
       onMovedColumnsChanged={mockMoveHandler}
       onColumnHeaderGroupChanged={mockGroupHandler}
       columnHeaderGroups={model.columnHeaderGroups}
@@ -547,6 +548,29 @@ test('Moves items in and out of groups with down button', () => {
       }),
     ])
   );
+
+  model = makeModelWithGroups(COLUMN_HEADER_GROUPS);
+  rerender(
+    <BuilderWithGroups
+      model={model}
+      onMovedColumnsChanged={mockMoveHandler}
+      onColumnHeaderGroupChanged={mockGroupHandler}
+      // Move 1st group to the bottom
+      movedColumns={model.initialMovedColumns.concat([{ from: [1, 2], to: 8 }])}
+    />
+  );
+  mockGroupHandler.mockReset();
+
+  selectItems([11]); // Last item. In the 1st group and at the bottom
+  userEvent.click(getDownButton());
+  expect(mockMoveHandler).not.toBeCalled();
+  expect(mockGroupHandler).toBeCalledWith([
+    expect.objectContaining({
+      ...COLUMN_HEADER_GROUPS[0],
+      children: COLUMN_HEADER_GROUPS[0].children.slice(0, -1),
+    }),
+    expect.objectContaining(COLUMN_HEADER_GROUPS[1]),
+  ]);
 });
 
 test('Moves items to top with button', () => {

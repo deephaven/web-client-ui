@@ -319,27 +319,25 @@ class VisibilityOrderingBuilder extends Component<
             (item, idx) => idx > itemIndex && !selectedColumns.has(item.id)
           );
 
-          if (nextItem) {
-            if (nextItem?.parentId !== parentId) {
-              // Moving out of our group
-              // Move to the parent of our parent
-              // That way we only ever move 1 level at a time
-              const parentItem = treeItems.find(item => item.id === parentId);
-              updatedGroups = moveToGroup(
-                selectedItems[i],
-                parentItem?.parentId ?? null,
-                updatedGroups
-              );
-              break;
-            } else if (nextItem?.children.length > 0) {
-              // Moving into a group as 1st item
-              updatedGroups = moveToGroup(
-                selectedItems[i],
-                nextItem.id,
-                updatedGroups
-              );
-              break;
-            }
+          if (nextItem?.parentId !== parentId) {
+            // Moving out of our group
+            // Move to the parent of our parent
+            // That way we only ever move 1 level at a time
+            const parentItem = treeItems.find(item => item.id === parentId);
+            updatedGroups = moveToGroup(
+              selectedItems[i],
+              parentItem?.parentId ?? null,
+              updatedGroups
+            );
+            break;
+          } else if (nextItem?.children.length > 0) {
+            // Moving into a group as 1st item
+            updatedGroups = moveToGroup(
+              selectedItems[i],
+              nextItem.id,
+              updatedGroups
+            );
+            break;
           }
 
           const toIndex = clamp(
