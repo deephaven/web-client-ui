@@ -325,17 +325,6 @@ export class GridMetricCalculator {
     const maxX = columnWidthValues.reduce((x, w) => x + w, 0) - leftOffset;
     const maxY = rowHeightValues.reduce((y, h) => y + h, 0) - topOffset;
 
-    const lastLeft = this.getLastLeft(
-      state,
-      null,
-      width - gridX - scrollBarSize - rowFooterWidth
-    );
-    const lastTop = this.getLastTop(
-      state,
-      null,
-      height - gridY - scrollBarSize - floatingBottomHeight
-    );
-
     // How much total space the content will take
     const scrollableContentWidth = leftOffset + maxX + rowFooterWidth;
     const scrollableContentHeight = topOffset + maxY;
@@ -344,13 +333,40 @@ export class GridMetricCalculator {
     const scrollableViewportWidth = width - gridX;
     const scrollableViewportHeight = height - gridY;
 
+    const lastLeftWithoutScroll = this.getLastLeft(
+      state,
+      null,
+      scrollableViewportWidth - rowFooterWidth
+    );
+    const lastLeftWithScroll = this.getLastLeft(
+      state,
+      null,
+      scrollableViewportWidth - rowFooterWidth - scrollBarSize
+    );
+
+    const lastTopWithoutScroll = this.getLastTop(
+      state,
+      null,
+      scrollableViewportHeight - floatingBottomHeight
+    );
+    const lastTopWithScroll = this.getLastTop(
+      state,
+      null,
+      scrollableViewportHeight - floatingBottomHeight - scrollBarSize
+    );
+
+    let lastLeft = lastLeftWithScroll;
+    let lastTop = lastTopWithScroll;
+    if (lastLeftWithoutScroll === 0 && lastTopWithoutScroll === 0) {
+      // Fully visible without any scroll bars
+      lastLeft = 0;
+      lastTop = 0;
+    }
+
     // Calculate some metrics for the scroll bars
-    const hasHorizontalBar =
-      lastLeft > 0 || scrollableContentWidth > scrollableViewportWidth;
+    const hasHorizontalBar = lastLeft > 0;
     const horizontalBarHeight = hasHorizontalBar ? scrollBarSize : 0;
-    const hasVerticalBar =
-      lastTop > 0 ||
-      scrollableContentHeight > scrollableViewportHeight - horizontalBarHeight;
+    const hasVerticalBar = lastTop > 0;
     const verticalBarWidth = hasVerticalBar ? scrollBarSize : 0;
     const barWidth = width - rowHeaderWidth - verticalBarWidth;
     const barHeight = height - columnHeaderHeight - horizontalBarHeight;
@@ -803,7 +819,7 @@ export class GridMetricCalculator {
       lastLeft = right;
     }
     let x = 0;
-    while (lastLeft > 0) {
+    while (lastLeft >= 0) {
       const columnWidth = this.getVisibleColumnWidth(lastLeft, state);
       x += columnWidth;
 
@@ -838,7 +854,7 @@ export class GridMetricCalculator {
       lastTop = bottom;
     }
     let y = 0;
-    while (lastTop > 0) {
+    while (lastTop >= 0) {
       const rowHeight = this.getVisibleRowHeight(lastTop, state);
       y += rowHeight;
 
