@@ -824,7 +824,7 @@ export class GridMetricCalculator {
       x += columnWidth;
 
       if (x >= visibleWidth) {
-        return Math.min(lastLeft + 1, right ?? columnCount - 1);
+        return clamp(lastLeft + 1, 0, right ?? columnCount - 1);
       }
 
       lastLeft -= 1;
@@ -859,7 +859,7 @@ export class GridMetricCalculator {
       y += rowHeight;
 
       if (y >= visibleHeight) {
-        return Math.min(lastTop + 1, rowCount - 1);
+        return clamp(lastTop + 1, 0, rowCount - 1);
       }
 
       lastTop -= 1;
