@@ -34,6 +34,9 @@
     "@deephaven/react-hooks": "file:../react-hooks",
     "@deephaven/storage": "file:../storage",
     "@deephaven/utils": "file:../utils",
+    "@dnd-kit/core": "^6.0.5",
+    "@dnd-kit/sortable": "^7.0.0",
+    "@dnd-kit/utilities": "^3.2.0",
     "@fortawesome/react-fontawesome": "^0.2.0",
     "classnames": "^2.3.1",
     "deep-equal": "^2.0.5",
@@ -50,7 +53,8 @@
     "web-streams-polyfill": "^2.1.0"
   },
   "peerDependencies": {
-    "react": "^17.x"
+    "react": "^17.x",
+    "react-dom": "^17.x"
   },
   "devDependencies": {
     "@deephaven/mocks": "file:../mocks",

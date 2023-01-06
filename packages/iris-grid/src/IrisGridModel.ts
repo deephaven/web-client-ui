@@ -21,6 +21,7 @@ import type {
 } from '@deephaven/jsapi-shim';
 import { Formatter } from '@deephaven/jsapi-utils';
 import { ColumnName, UITotalsTableConfig, PendingDataMap } from './CommonTypes';
+import ColumnHeaderGroup from './ColumnHeaderGroup';
 
 type RowIndex = ModelIndex;
 
@@ -133,14 +134,13 @@ abstract class IrisGridModel<
   }
 
   /** List of column movements defined by the model. Used as initial movements for IrisGrid */
-  get movedColumns(): MoveOperation[] {
-    return [];
-  }
+  abstract get initialMovedColumns(): MoveOperation[];
 
   /** List of row movements defined by the model. Used as initial movements for IrisGrid */
-  get movedRows(): MoveOperation[] {
-    return [];
-  }
+  abstract get initialMovedRows(): MoveOperation[];
+
+  /** List of column header groups defined by the model */
+  abstract get initialColumnHeaderGroups(): ColumnHeaderGroup[];
 
   /**
    * Retrieve the grouped columns for this model
@@ -487,6 +487,17 @@ abstract class IrisGridModel<
    * @returns A promise that resolves successfully when the operation is complete or rejects if there's an error
    */
   abstract delete(ranges: GridRange[]): Promise<void>;
+
+  abstract get columnHeaderGroups(): ColumnHeaderGroup[];
+
+  abstract get columnHeaderGroupMap(): Map<string, ColumnHeaderGroup>;
+
+  abstract set columnHeaderGroups(groups: ColumnHeaderGroup[]);
+
+  abstract getColumnHeaderParentGroup(
+    modelIndex: ModelIndex,
+    depth: number
+  ): ColumnHeaderGroup | undefined;
 }
 
 export default IrisGridModel;

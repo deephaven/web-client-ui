@@ -214,10 +214,10 @@ describe('pending new rows tests', () => {
   let model = null;
 
   beforeEach(() => {
-    table = IrisGridTestUtils.makeTable(
-      IrisGridTestUtils.makeColumns(),
-      TABLE_SIZE
-    );
+    table = IrisGridTestUtils.makeTable({
+      columns: IrisGridTestUtils.makeColumns(),
+      size: TABLE_SIZE,
+    });
     table.close = jest.fn();
 
     inputTable = IrisGridTestUtils.makeInputTable(table.columns.slice(0, 3));

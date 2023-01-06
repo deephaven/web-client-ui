@@ -6,10 +6,10 @@ import TableCsvExporter from './TableCsvExporter';
 import IrisGridTestUtils from '../IrisGridTestUtils';
 
 const COLUMN_NAMES = ['A', 'B', 'C', 'D'];
-const TABLE = IrisGridTestUtils.makeTable(
-  COLUMN_NAMES.map(name => IrisGridTestUtils.makeColumn(name)),
-  100
-);
+const TABLE = IrisGridTestUtils.makeTable({
+  columns: COLUMN_NAMES.map(name => IrisGridTestUtils.makeColumn(name)),
+  size: 100,
+});
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const BAD_TABLE = new (dh as any).Table({});
 

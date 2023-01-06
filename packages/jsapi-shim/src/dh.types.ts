@@ -607,12 +607,12 @@ export interface ColumnGroup {
 }
 
 export interface LayoutHints {
-  areSavedLayoutsAllowed: boolean;
-  frontColumns: string[];
-  backColumns: string[];
-  hiddenColumns: string[];
-  frozenColumns: string[];
-  columnGroups: ColumnGroup[];
+  areSavedLayoutsAllowed?: boolean;
+  frontColumns?: string[];
+  backColumns?: string[];
+  hiddenColumns?: string[];
+  frozenColumns?: string[];
+  columnGroups?: ColumnGroup[];
   searchDisplayMode?: keyof SearchDisplayModeStatic;
 }
 

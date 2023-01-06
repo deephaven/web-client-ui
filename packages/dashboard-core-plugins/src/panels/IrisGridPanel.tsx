@@ -38,6 +38,7 @@ import {
   IrisGridState,
   ChartBuilderSettings,
   DehydratedIrisGridState,
+  ColumnHeaderGroup,
 } from '@deephaven/iris-grid';
 import {
   AdvancedFilterOptions,
@@ -185,6 +186,7 @@ interface IrisGridPanelState {
   modelQueue: ModelQueue;
   pendingDataMap?: PendingDataMap<UIRow>;
   frozenColumns?: ColumnName[];
+  columnHeaderGroups?: ColumnHeaderGroup[];
 
   // eslint-disable-next-line react/no-unused-state
   panelState: PanelState | null; // Dehydrated panel state that can load this panel
@@ -447,7 +449,8 @@ export class IrisGridPanel extends PureComponent<
       aggregationSettings: AggregationSettings,
       pendingDataMap: PendingDataMap<UIRow>,
       frozenColumns: ColumnName[],
-      conditionalFormats: SidebarFormattingRule[]
+      conditionalFormats: SidebarFormattingRule[],
+      columnHeaderGroups: ColumnHeaderGroup[]
     ) =>
       IrisGridUtils.dehydrateIrisGridState(model, {
         advancedFilters,
@@ -471,6 +474,7 @@ export class IrisGridPanel extends PureComponent<
         pendingDataMap,
         frozenColumns,
         conditionalFormats,
+        columnHeaderGroups,
       })
   );
 
@@ -1023,6 +1027,7 @@ export class IrisGridPanel extends PureComponent<
         pendingDataMap,
         frozenColumns,
         conditionalFormats,
+        columnHeaderGroups,
       } = IrisGridUtils.hydrateIrisGridState(model, {
         ...irisGridState,
         ...irisGridStateOverrides,
@@ -1065,6 +1070,7 @@ export class IrisGridPanel extends PureComponent<
         frozenColumns,
         isStuckToBottom,
         isStuckToRight,
+        columnHeaderGroups,
       });
     } catch (error) {
       log.error('loadPanelState failed to load panelState', panelState, error);
@@ -1102,6 +1108,7 @@ export class IrisGridPanel extends PureComponent<
       pendingDataMap,
       frozenColumns,
       conditionalFormats,
+      columnHeaderGroups,
     } = irisGridState;
     assertNotNull(model);
     assertNotNull(metrics);
@@ -1142,7 +1149,8 @@ export class IrisGridPanel extends PureComponent<
         aggregationSettings,
         pendingDataMap,
         frozenColumns,
-        conditionalFormats
+        conditionalFormats,
+        columnHeaderGroups
       ),
       this.getDehydratedGridState(
         model,
@@ -1223,6 +1231,7 @@ export class IrisGridPanel extends PureComponent<
       pluginFetchColumns,
       pendingDataMap,
       frozenColumns,
+      columnHeaderGroups,
     } = this.state;
     const errorMessage =
       error != null ? `Unable to open table. ${error}` : undefined;
@@ -1317,6 +1326,7 @@ export class IrisGridPanel extends PureComponent<
             getDownloadWorker={getDownloadWorker}
             frozenColumns={frozenColumns}
             theme={theme}
+            columnHeaderGroups={columnHeaderGroups}
           >
             {childrenContent}
           </IrisGrid>

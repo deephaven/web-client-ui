@@ -1,0 +1,142 @@
+@import '@deephaven/components/scss/custom.scss';
+
+$depth-line-color: $gray-600;
+$depth-margin: calc(
+  0.5rem + 8px + 0.5px
+); // Tree item 0.25rem padding, Icon button 0.25rem, half of icon size, and half pixel to offset 1px border
+
+.visibility-ordering-list {
+  .tree-item {
+    position: relative;
+    display: flex;
+    gap: $spacer-1;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    align-items: center;
+    flex-grow: 1;
+    min-width: 0; // Needed so column names don't grow past the edge
+    border: $input-border-width solid transparent;
+    user-select: none;
+    border-radius: $border-radius;
+    padding: 0 $spacer-1; // space for focus border
+
+    svg:not(.color-swatch) {
+      color: $text-muted;
+    }
+
+    &:hover {
+      background: $gray-500;
+      cursor: grab;
+    }
+
+    &.isSelected {
+      background-color: rgba($primary, 0.4);
+
+      &:hover {
+        background-color: $primary;
+
+        svg:not(.color-swatch) {
+          color: $foreground;
+        }
+      }
+    }
+
+    &:focus {
+      outline: 0;
+      border: $input-border-width solid $input-focus-border-color;
+      box-shadow: $input-focus-box-shadow;
+    }
+
+    .column-name {
+      flex-grow: 1;
+      flex-shrink: 1;
+      overflow-x: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .item-count {
+      padding: 0 $spacer-2;
+      border-radius: 1rem;
+      background-color: rgba($foreground, 0.25);
+      margin-right: $spacer-1;
+    }
+  }
+
+  .marching-ants {
+    @include ants-base($foreground, $background);
+  }
+
+  .item-wrapper {
+    list-style: none;
+    box-sizing: border-box;
+    margin-bottom: -1px;
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+
+    &.clone {
+      pointer-events: none;
+      padding: 0;
+
+      .tree-item {
+        opacity: 1;
+        background-color: $primary;
+        box-shadow: $box-shadow;
+
+        svg:not(.color-swatch) {
+          color: $foreground;
+        }
+
+        &.two-dragged {
+          @include drag-stack(before) {
+            top: 4px;
+            left: 2px;
+            opacity: 0.8;
+            z-index: -1;
+          }
+        }
+
+        &.multiple-dragged {
+          @include drag-stack(before) {
+            top: 4px;
+            left: 2px;
+            opacity: 0.8;
+            z-index: -1;
+          }
+          @include drag-stack(after) {
+            top: 8px;
+            left: 4px;
+            opacity: 0.6;
+            z-index: -2;
+          }
+        }
+      }
+    }
+
+    &.ghost {
+      opacity: 0.5;
+
+      .tree-item > * {
+        box-shadow: none;
+        background-color: transparent;
+      }
+    }
+
+    &.disableInteraction {
+      pointer-events: none;
+
+      &:not(.ghost) .tree-item.isSelected {
+        opacity: 0.3;
+      }
+    }
+
+    .depth-line {
+      margin-left: $depth-margin;
+      margin-right: $spacer-1; // Gives breathing room to the item boxes
+      padding-bottom: 2px;
+      border-left: 1px solid $depth-line-color;
+    }
+  }
+}
