@@ -172,9 +172,13 @@ export default function VisibilityOrderingGroup(
           tooltip="Set color"
           onClick={() => {
             colorInputRef.current?.click();
+            // Mostly for testing. Chrome seems to not give the hidden input focus
+            // Really would only affect screen readers
+            colorInputRef.current?.focus();
           }}
         />
         <input
+          aria-label="Color input"
           ref={colorInputRef}
           type="color"
           list="presetColors"

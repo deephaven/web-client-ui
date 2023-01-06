@@ -62,6 +62,7 @@ import {
 } from '@deephaven/icons';
 import dh, {
   Column,
+  ColumnGroup,
   CustomColumn,
   DateWrapper,
   FilterCondition,
@@ -2806,7 +2807,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     this.setState({ movedColumns }, onChangeApplied);
   }
 
-  handleHeaderGroupsChanged(columnHeaderGroups: ColumnHeaderGroup[]): void {
+  handleHeaderGroupsChanged(columnHeaderGroups: ColumnGroup[]): void {
     const { model } = this.props;
     this.setState(
       {

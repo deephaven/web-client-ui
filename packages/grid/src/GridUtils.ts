@@ -822,23 +822,19 @@ export class GridUtils {
       lastMovedItem.from[1] - lastMovedItem.from[0] === from[1] - from[0] &&
       lastMovedItem.to === from[0]
     ) {
-      // Remove the move if it is now a no-op
-      if (lastMovedItem.from[0] === to) {
-        movedItems.pop();
-      } else {
-        movedItems[movedItems.length - 1] = {
-          ...lastMovedItem,
-          to,
-        };
-      }
+      movedItems[movedItems.length - 1] = {
+        ...lastMovedItem,
+        to,
+      };
     } else {
       movedItems.push({ from, to });
     }
 
+    const newLastMovedItem = movedItems[movedItems.length - 1];
     // Remove the move if it is now a no-op
     if (
-      movedItems[movedItems.length - 1].from ===
-      movedItems[movedItems.length - 1].to
+      isBoundedAxisRange(newLastMovedItem.from) &&
+      newLastMovedItem.from[0] === newLastMovedItem.to
     ) {
       movedItems.pop();
     }

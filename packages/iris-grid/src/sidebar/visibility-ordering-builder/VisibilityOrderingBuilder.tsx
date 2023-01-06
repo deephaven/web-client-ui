@@ -1,4 +1,3 @@
-/* eslint-disable jsx-a11y/click-events-have-key-events */
 import React, { ChangeEvent, Component, ReactElement } from 'react';
 import classNames from 'classnames';
 import {
@@ -42,6 +41,10 @@ import {
 } from './sortable-tree/utilities';
 import SortableTree from './sortable-tree/SortableTree';
 import { TreeItemRenderFn } from './sortable-tree/TreeItem';
+import {
+  moveItemsFromDrop,
+  moveToGroup,
+} from './VisibilityOrderingBuilderUtils';
 
 const DEBOUNCE_SEARCH_COLUMN = 150;
 
@@ -68,66 +71,14 @@ class VisibilityOrderingBuilder extends Component<
   VisibilityOrderingBuilderProps,
   VisibilityOrderingBuilderState
 > {
-  static SORTING_OPTIONS = { DSC: 'DSC', ASC: 'ASC' };
+  static SORTING_OPTIONS = { DSC: 'DSC', ASC: 'ASC' } as const;
 
   static MOVE_OPTIONS = {
     TOP: 'TOP',
     BOTTOM: 'BOTTOM',
     UP: 'UP',
     DOWN: 'DOWN',
-  };
-
-  static COLUMN_CHANGE_OPTIONS = { ALL: 'ALL', SELECTION: 'SELECTION' };
-
-  static moveToGroup(
-    item: FlattenedIrisGridTreeItem,
-    toName: string | null,
-    columnGroups: ColumnHeaderGroup[]
-  ): ColumnHeaderGroup[] {
-    if (item.parentId === toName) {
-      // Can't move a group into itself
-      return columnGroups;
-    }
-
-    let newGroups = columnGroups.map(group => new ColumnHeaderGroup(group));
-    const newGroupMap = new Map(newGroups.map(group => [group.name, group]));
-    const fromGroup = newGroups.find(g => g.name === item.parentId);
-    const toGroup = newGroups.find(g => g.name === toName);
-    const movedGroup = newGroups.find(g => g.name === item.id);
-
-    if (fromGroup != null) {
-      // Moved out of a group
-      fromGroup.children = fromGroup.children.filter(name => name !== item.id);
-
-      // Moved all children out of a group
-      if (fromGroup.children.length === 0) {
-        const deleteNames = new Set([fromGroup.name]);
-        let { parent: parentName = '' } = fromGroup;
-        let parent = newGroupMap.get(parentName);
-        parent?.removeChildren([fromGroup.name]);
-
-        // Might need to delete parents if their only child is the now empty group
-        while (parent && parentName !== '' && parent.children.length === 0) {
-          deleteNames.add(parentName);
-          parent = newGroupMap.get(parentName);
-          parent?.removeChildren([parentName]);
-          parentName = parent?.name ?? '';
-        }
-
-        // Delete all groups that are now empty
-        newGroups = newGroups.filter(({ name }) => !deleteNames.has(name));
-      }
-    }
-
-    if (toGroup != null) {
-      // Moved into a group
-      toGroup.addChildren([item.id]);
-    }
-
-    movedGroup?.setParent(toName ?? undefined);
-
-    return newGroups;
-  }
+  } as const;
 
   constructor(props: VisibilityOrderingBuilderProps) {
     super(props);
@@ -170,11 +121,7 @@ class VisibilityOrderingBuilder extends Component<
     const { columns } = model;
 
     onColumnVisibilityChanged(
-      columns.map(column => {
-        const index = model.getColumnIndexByName(column.name);
-        assertNotNull(index);
-        return index;
-      }),
+      columns.map((_, i) => i),
       true
     );
     this.setState({
@@ -248,21 +195,16 @@ class VisibilityOrderingBuilder extends Component<
    *
    */
   moveSelectedColumns(
-    option: string
+    option: keyof typeof VisibilityOrderingBuilder.MOVE_OPTIONS
   ): { newMoves: MoveOperation[]; groups: ColumnHeaderGroup[] } {
     const { columnHeaderGroups } = this.props;
     const { selectedColumns } = this.state;
-    if (selectedColumns.size === 0) {
-      return { newMoves: [], groups: columnHeaderGroups };
-    }
 
     const treeItems = flattenTree(this.getTreeItems());
     let firstMovableIndex = this.getFirstMovableIndex();
     let lastMovableIndex = this.getLastMovableIndex();
-
-    if (firstMovableIndex == null || lastMovableIndex == null) {
-      return { newMoves: [], groups: columnHeaderGroups };
-    }
+    assertNotNull(firstMovableIndex);
+    assertNotNull(lastMovableIndex);
 
     const selectedItems = this.getSelectedParentItems();
 
@@ -300,11 +242,7 @@ class VisibilityOrderingBuilder extends Component<
             : 1;
           firstMovableIndex += size;
           // Moving items to top should move out of any groups
-          updatedGroups = VisibilityOrderingBuilder.moveToGroup(
-            selectedItems[i],
-            null,
-            updatedGroups
-          );
+          updatedGroups = moveToGroup(selectedItems[i], null, updatedGroups);
           break;
         }
         case VisibilityOrderingBuilder.MOVE_OPTIONS.BOTTOM: {
@@ -319,11 +257,7 @@ class VisibilityOrderingBuilder extends Component<
             : 1;
           lastMovableIndex -= size;
           // Moving items to bottom should move out of any groups
-          updatedGroups = VisibilityOrderingBuilder.moveToGroup(
-            selectedItems[i],
-            null,
-            updatedGroups
-          );
+          updatedGroups = moveToGroup(selectedItems[i], null, updatedGroups);
           break;
         }
         case VisibilityOrderingBuilder.MOVE_OPTIONS.UP: {
@@ -346,13 +280,13 @@ class VisibilityOrderingBuilder extends Component<
                 .map((item, idx) => idx < prevItemIndex && item.depth === depth)
                 .lastIndexOf(true);
               const newParentItem = treeItems[newParentItemIndex];
-              updatedGroups = VisibilityOrderingBuilder.moveToGroup(
+              updatedGroups = moveToGroup(
                 selectedItems[i],
                 newParentItem.id,
                 updatedGroups
               );
             } else {
-              updatedGroups = VisibilityOrderingBuilder.moveToGroup(
+              updatedGroups = moveToGroup(
                 selectedItems[i],
                 prevItem.parentId,
                 updatedGroups
@@ -391,7 +325,7 @@ class VisibilityOrderingBuilder extends Component<
               // Move to the parent of our parent
               // That way we only ever move 1 level at a time
               const parentItem = treeItems.find(item => item.id === parentId);
-              updatedGroups = VisibilityOrderingBuilder.moveToGroup(
+              updatedGroups = moveToGroup(
                 selectedItems[i],
                 parentItem?.parentId ?? null,
                 updatedGroups
@@ -399,7 +333,7 @@ class VisibilityOrderingBuilder extends Component<
               break;
             } else if (nextItem?.children.length > 0) {
               // Moving into a group as 1st item
-              updatedGroups = VisibilityOrderingBuilder.moveToGroup(
+              updatedGroups = moveToGroup(
                 selectedItems[i],
                 nextItem.id,
                 updatedGroups
@@ -428,9 +362,6 @@ class VisibilityOrderingBuilder extends Component<
 
           break;
         }
-        default: {
-          break;
-        }
       }
     }
 
@@ -443,7 +374,9 @@ class VisibilityOrderingBuilder extends Component<
    *
    * @param option The move operation
    */
-  handleMoveColumns(option: string): void {
+  handleMoveColumns(
+    option: keyof typeof VisibilityOrderingBuilder.MOVE_OPTIONS
+  ): void {
     const {
       onMovedColumnsChanged,
       movedColumns,
@@ -486,10 +419,11 @@ class VisibilityOrderingBuilder extends Component<
    * @returns The moves required to sort the grid. Includes the starting movedColumns in the array
    */
   getSortMoves(
-    items: IrisGridTreeItem[],
-    option: string,
+    itemsParam: IrisGridTreeItem[],
+    option: keyof typeof VisibilityOrderingBuilder.SORTING_OPTIONS,
     movedColumns: MoveOperation[]
   ): MoveOperation[] {
+    const items = [...itemsParam];
     // Sort all the movable columns
     const isAscending =
       option === VisibilityOrderingBuilder.SORTING_OPTIONS.ASC;
@@ -535,7 +469,9 @@ class VisibilityOrderingBuilder extends Component<
     return newMoves;
   }
 
-  handleSortColumns(option: string): void {
+  handleSortColumns(
+    option: keyof typeof VisibilityOrderingBuilder.SORTING_OPTIONS
+  ): void {
     const { model, onMovedColumnsChanged } = this.props;
 
     const newMoves = this.getSortMoves(
@@ -543,6 +479,7 @@ class VisibilityOrderingBuilder extends Component<
       option,
       model.initialMovedColumns
     );
+
     onMovedColumnsChanged(newMoves);
   }
 
@@ -577,7 +514,8 @@ class VisibilityOrderingBuilder extends Component<
 
     if (isSelected && !isShiftKeyDown && lastSelectedColumn === name) {
       const selectedItem = movableItems.find(({ id }) => id === name);
-      const childCount = flattenTree(selectedItem?.children ?? []).length;
+      assertNotNull(selectedItem);
+      const childCount = flattenTree(selectedItem.children).length;
       // If clicking on an item and it's the only thing selected, deselect it
       if (childCount + 1 === selectedColumns.size) {
         this.resetSelection();
@@ -618,7 +556,10 @@ class VisibilityOrderingBuilder extends Component<
    * @param columnsToBeAdded Array of column or group names to add
    * @param addToExisting If these should be added to the existing selection or overwrite it
    */
-  addColumnToSelected(columnsToBeAdded: string[], addToExisting = false): void {
+  addColumnToSelected(
+    columnsToBeAdded: string[],
+    addToExisting: boolean
+  ): void {
     const { selectedColumns } = this.state;
     const newSelectedColumns = new Set(
       addToExisting
@@ -658,10 +599,11 @@ class VisibilityOrderingBuilder extends Component<
     const flattenedItems = flattenTree(this.getTreeItems());
 
     const item = flattenedItems.find(({ id }) => id === name);
-    let parentItem = flattenedItems.find(({ id }) => id === item?.parentId);
+    assertNotNull(item);
+    let parentItem = flattenedItems.find(({ id }) => id === item.parentId);
 
     // Remove all children of deselected groups
-    flattenTree(item?.children ?? []).forEach(child =>
+    flattenTree(item?.children).forEach(child =>
       selectedColumns.delete(child.id)
     );
 
@@ -682,35 +624,8 @@ class VisibilityOrderingBuilder extends Component<
   handleDragStart(id: string): void {
     const { selectedColumns } = this.state;
     if (!selectedColumns.has(id)) {
-      this.addColumnToSelected([id]);
+      this.addColumnToSelected([id], false);
     }
-  }
-
-  handleGroupNameChange(group: ColumnHeaderGroup, newName: string): void {
-    const { columnHeaderGroups, onColumnHeaderGroupChanged } = this.props;
-    const newGroups = [...columnHeaderGroups];
-
-    const oldName = group.name;
-    const groupIndex = newGroups.findIndex(({ name }) => name === oldName);
-
-    if (groupIndex >= 0) {
-      const newGroup = new ColumnHeaderGroup(newGroups[groupIndex]);
-      newGroup.name = newName;
-      newGroups.splice(groupIndex, 1, newGroup);
-
-      const parentIndex = newGroups.findIndex(
-        ({ name }) => name === newGroup.parent
-      );
-
-      if (parentIndex >= 0) {
-        const newParent = new ColumnHeaderGroup(newGroups[parentIndex]);
-        newParent.removeChildren([oldName]);
-        newParent.addChildren([newName]);
-        newGroups.splice(parentIndex, 1, newParent);
-      }
-    }
-
-    onColumnHeaderGroupChanged(newGroups);
   }
 
   handleDragEnd(
@@ -725,97 +640,56 @@ class VisibilityOrderingBuilder extends Component<
     } = this.props;
 
     const selectedParentItems = this.getSelectedParentItems();
-    const treeItems = flattenTree(this.getTreeItems()).map((item, i) => ({
+    const flattenedItems = flattenTree(this.getTreeItems()).map((item, i) => ({
       ...item,
       index: i,
     }));
     const firstMovableIndex = this.getFirstMovableIndex();
     const lastMovableIndex = this.getLastMovableIndex();
-    if (firstMovableIndex == null || lastMovableIndex == null) {
-      return;
-    }
 
-    let newMoves: MoveOperation[] = [];
-    let newGroups = columnHeaderGroups;
+    assertNotNull(firstMovableIndex);
+    assertNotNull(lastMovableIndex);
 
-    const firstVisibleIndex = selectedParentItems[0].data.visibleIndex;
-
-    const fromIndex = treeItems.findIndex(({ id }) => id === from.id);
-
-    let toIndex = Array.isArray(firstVisibleIndex)
-      ? firstVisibleIndex[1] + 1
-      : firstVisibleIndex + 1;
-
-    newGroups = VisibilityOrderingBuilder.moveToGroup(
-      selectedParentItems[0],
-      to.parentId,
-      newGroups
-    );
-
-    // Move the items after to all after the first selected item
-    for (let i = 1; i < selectedParentItems.length; i += 1) {
-      const {
-        data: { visibleIndex },
-      } = selectedParentItems[i];
-
-      newMoves = GridUtils.moveItemOrRange(
-        visibleIndex,
-        toIndex,
-        newMoves,
-        true
-      );
-
-      toIndex += Array.isArray(visibleIndex)
-        ? visibleIndex[1] - visibleIndex[0] + 1
-        : 1;
-
-      newGroups = VisibilityOrderingBuilder.moveToGroup(
-        selectedParentItems[i],
-        to.parentId,
-        newGroups
-      );
-    }
-
-    const selectedRange = [
-      Array.isArray(firstVisibleIndex)
-        ? firstVisibleIndex[0]
-        : firstVisibleIndex,
-      toIndex - 1,
-    ] as [number, number];
-
-    const originalDropIndex = Array.isArray(to.data.visibleIndex)
-      ? to.data.visibleIndex[0]
-      : to.data.visibleIndex;
-    let dropIndex = GridUtils.getVisibleIndex(originalDropIndex, newMoves);
-
-    // When moving up from multi-select
-    // And the items caused the drop index to shift (disjoint multi-select)
-    // The drop index will be off by 1
-    if (from.index > to.index && dropIndex > originalDropIndex) {
-      dropIndex -= 1;
-    }
-
-    // Dropping as first item in a group
-    // Need to adjust visible index if dragging from before this group or it is off by 1
-    if (
-      to.children.length > 0 &&
-      (Array.isArray(fromIndex) ? fromIndex[0] : fromIndex) < toIndex
-    ) {
-      dropIndex -= 1;
-    }
-
-    if (selectedRange[0] < dropIndex) {
-      dropIndex -= selectedRange[1] - selectedRange[0];
-    }
-
-    newMoves = GridUtils.moveItemOrRange(
-      selectedRange,
-      clamp(dropIndex, firstMovableIndex, lastMovableIndex),
-      newMoves
+    const { groups: newGroups, movedColumns: newMoves } = moveItemsFromDrop(
+      from,
+      to,
+      movedColumns,
+      columnHeaderGroups,
+      flattenedItems,
+      selectedParentItems,
+      firstMovableIndex,
+      lastMovableIndex
     );
 
     onColumnHeaderGroupChanged(newGroups);
-    onMovedColumnsChanged(movedColumns.concat(newMoves));
+    onMovedColumnsChanged(newMoves);
+  }
+
+  handleGroupNameChange(group: ColumnHeaderGroup, newName: string): void {
+    const { columnHeaderGroups, onColumnHeaderGroupChanged } = this.props;
+    const newGroups = [...columnHeaderGroups];
+
+    const oldName = group.name;
+    const groupIndex = newGroups.findIndex(({ name }) => name === oldName);
+    const oldGroup = newGroups[groupIndex];
+    assertNotNull(oldGroup); // Also means groupIndex >= 0
+
+    const newGroup = new ColumnHeaderGroup(oldGroup);
+    newGroup.name = newName;
+    newGroups.splice(groupIndex, 1, newGroup);
+
+    const parentIndex = newGroups.findIndex(
+      ({ name }) => name === newGroup.parent
+    );
+
+    if (parentIndex >= 0) {
+      const newParent = new ColumnHeaderGroup(newGroups[parentIndex]);
+      newParent.removeChildren([oldName]);
+      newParent.addChildren([newName]);
+      newGroups.splice(parentIndex, 1, newParent);
+    }
+
+    onColumnHeaderGroupChanged(newGroups);
   }
 
   handleGroupColorChange = throttle(
@@ -879,11 +753,9 @@ class VisibilityOrderingBuilder extends Component<
       childIndexes: [...new Set(childIndexes)], // Remove any duplicates
     });
 
-    if (newMoves.length > 0) {
-      onMovedColumnsChanged(movedColumns.concat(newMoves), () => {
-        this.list?.parentElement?.scroll({ top: 0 });
-      });
-    }
+    onMovedColumnsChanged(movedColumns.concat(newMoves), () => {
+      this.list?.parentElement?.scroll({ top: 0 });
+    });
 
     onColumnHeaderGroupChanged(newGroups.concat([newGroup]));
 
@@ -1051,13 +923,12 @@ class VisibilityOrderingBuilder extends Component<
    */
   getSelectedParentItems(): FlattenedIrisGridTreeItem[] {
     const { selectedColumns } = this.state;
-    const selectedColumnsSet = new Set(selectedColumns);
     const treeItems = flattenTree(this.getTreeItems());
 
     return treeItems.filter(
       ({ id, parentId }) =>
         // All items whose parents are not selected
-        selectedColumnsSet.has(id) && !selectedColumnsSet.has(parentId ?? '')
+        selectedColumns.has(id) && !selectedColumns.has(parentId ?? '')
     );
   }
 

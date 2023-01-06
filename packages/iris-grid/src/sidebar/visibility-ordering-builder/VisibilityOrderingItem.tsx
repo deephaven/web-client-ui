@@ -11,7 +11,7 @@ import type ColumnHeaderGroup from '../../ColumnHeaderGroup';
 type VisibilityOrderingItemProps = {
   value: string;
   clone: boolean;
-  childCount?: number;
+  childCount: number;
   item: FlattenedIrisGridTreeItem;
   onVisibilityChange(modelIndexes: number[], isVisible: boolean): void;
   onClick(name: string, event: React.MouseEvent): void;
@@ -33,7 +33,7 @@ const VisibilityOrderingItem = forwardRef<
   const {
     value,
     clone,
-    childCount = 0,
+    childCount,
     item,
     onVisibilityChange,
     onClick,
