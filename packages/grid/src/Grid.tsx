@@ -1582,6 +1582,18 @@ class Grid extends PureComponent<GridProps, GridState> {
     const theme = this.getTheme();
     const width = this.canvas.clientWidth;
     const height = this.canvas.clientHeight;
+    const { lastLeft, lastTop } = metrics;
+
+    // Fix for https://github.com/deephaven/web-client-ui/issues/936
+    // The metrics rely on left to calculate visibleColumnWidths which is needed to calculate lastLeft
+    // But lastLeft is needed to determine the actual value of left
+    // visibleColumnWidths is part of what determines what to draw
+    // So without reworking metrics algorithms, we can't fix this in metrics due to the cyclic dependency
+    this.setState({
+      left: Math.min(left, lastLeft),
+      top: Math.min(top, lastTop),
+    });
+
     const renderState = {
       left,
       top,
