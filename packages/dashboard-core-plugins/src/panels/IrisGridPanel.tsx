@@ -866,16 +866,16 @@ export class IrisGridPanel extends PureComponent<
     assertNotNull(metrics);
     const {
       columnHeaderHeight,
-      visibleColumnXs,
-      visibleColumnWidths,
+      allColumnXs,
+      allColumnWidths,
       right,
       columnHeaderMaxDepth,
     } = metrics;
     const columnIndex = model.getColumnIndexByName(columnName);
     assertNotNull(columnIndex);
     const visibleIndex = irisGrid.getVisibleColumn(columnIndex);
-    const columnX = visibleColumnXs.get(visibleIndex) ?? 0;
-    const columnWidth = visibleColumnWidths.get(visibleIndex) ?? 0;
+    const columnX = allColumnXs.get(visibleIndex) ?? 0;
+    const columnWidth = allColumnWidths.get(visibleIndex) ?? 0;
 
     const x = Math.max(
       rect.left,

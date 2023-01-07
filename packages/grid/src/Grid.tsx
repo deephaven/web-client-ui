@@ -1874,7 +1874,7 @@ class Grid extends PureComponent<GridProps, GridState> {
 
         // get width of next column
         const columnWidth =
-          metrics.visibleColumnWidths.get(left) ??
+          metrics.allColumnWidths.get(left) ??
           metricCalculator.getVisibleColumnWidth(left, metricState);
 
         if (leftOffset >= columnWidth) {
@@ -1892,7 +1892,7 @@ class Grid extends PureComponent<GridProps, GridState> {
 
         // get width of next column
         const columnWidth =
-          metrics.visibleColumnWidths.get(left - 1) ??
+          metrics.allColumnWidths.get(left - 1) ??
           metricCalculator.getVisibleColumnWidth(left - 1, metricState);
 
         if (
@@ -1943,7 +1943,7 @@ class Grid extends PureComponent<GridProps, GridState> {
 
         // get height of next row
         const rowHeight =
-          metrics.visibleRowHeights.get(top) ??
+          metrics.allRowHeights.get(top) ??
           metricCalculator.getVisibleRowHeight(top, metricState);
 
         if (topOffset >= rowHeight) {
@@ -1961,7 +1961,7 @@ class Grid extends PureComponent<GridProps, GridState> {
 
         // get height of next row
         const rowHeight =
-          metrics.visibleRowHeights.get(top - 1) ??
+          metrics.allRowHeights.get(top - 1) ??
           metricCalculator.getVisibleRowHeight(top - 1, metricState);
 
         if (
@@ -2068,16 +2068,16 @@ class Grid extends PureComponent<GridProps, GridState> {
     const {
       gridX,
       gridY,
-      visibleColumnXs,
-      visibleRowYs,
-      visibleColumnWidths,
-      visibleRowHeights,
+      allColumnXs,
+      allRowYs,
+      allColumnWidths,
+      allRowHeights,
     } = metrics;
 
-    const x = visibleColumnXs.get(column);
-    const y = visibleRowYs.get(row);
-    const w = visibleColumnWidths.get(column);
-    const h = visibleRowHeights.get(row);
+    const x = allColumnXs.get(column);
+    const y = allRowYs.get(row);
+    const w = allColumnWidths.get(column);
+    const h = allRowHeights.get(row);
 
     // If the cell isn't visible, we still need to display an invisible cell for focus purposes
     const wrapperStyle: CSSProperties =
