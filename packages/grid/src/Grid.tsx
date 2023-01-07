@@ -817,6 +817,19 @@ class Grid extends PureComponent<GridProps, GridState> {
     const metricState = this.getMetricState(state);
     this.metrics = metricCalculator.getMetrics(metricState);
 
+    // Fix for https://github.com/deephaven/web-client-ui/issues/936
+    // If metrics update from something like visibility panel, the lastLeft
+    // Can change due to hidden columns. Left should always be <= lastLeft
+    // Same for top
+    const { left, top } = state;
+    const { lastLeft, lastTop } = this.metrics;
+    if (left > lastLeft) {
+      this.setState({ left: lastLeft });
+    }
+    if (top > lastTop) {
+      this.setState({ top: lastTop });
+    }
+
     return this.metrics;
   }
 
@@ -1559,8 +1572,6 @@ class Grid extends PureComponent<GridProps, GridState> {
     if (!this.canvasContext) throw new Error('context not set');
 
     const {
-      left,
-      top,
       cursorColumn,
       cursorRow,
       draggingColumn,
@@ -1582,21 +1593,8 @@ class Grid extends PureComponent<GridProps, GridState> {
     const theme = this.getTheme();
     const width = this.canvas.clientWidth;
     const height = this.canvas.clientHeight;
-    const { lastLeft, lastTop } = metrics;
-
-    // Fix for https://github.com/deephaven/web-client-ui/issues/936
-    // The metrics rely on left to calculate visibleColumnWidths which is needed to calculate lastLeft
-    // But lastLeft is needed to determine the actual value of left
-    // visibleColumnWidths is part of what determines what to draw
-    // So without reworking metrics algorithms, we can't fix this in metrics due to the cyclic dependency
-    this.setState({
-      left: Math.min(left, lastLeft),
-      top: Math.min(top, lastTop),
-    });
 
     const renderState = {
-      left,
-      top,
       width,
       height,
       context,

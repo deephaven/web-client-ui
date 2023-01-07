@@ -46,10 +46,6 @@ export type EditingCell = {
 };
 
 export type GridRenderState = {
-  // The top/left cell of the scrolled viewport
-  left: VisibleIndex;
-  top: VisibleIndex;
-
   // Width and height of the total canvas area
   width: number;
   height: number;
