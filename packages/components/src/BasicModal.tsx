@@ -4,7 +4,7 @@ import ButtonGroup from './ButtonGroup';
 import Button from './Button';
 import { Modal, ModalBody, ModalFooter, ModalHeader } from './modal';
 
-interface BasicModalProps {
+export interface BasicModalProps {
   isOpen: boolean;
   headerText: string;
   bodyText: string | (() => string);
@@ -63,19 +63,17 @@ function BasicModal(props: BasicModalProps) {
     onConfirm();
   }, [onConfirm, onModalDisable]);
 
+  const onOpened = useCallback(() => {
+    confirmButton.current?.focus();
+  }, []);
+
   let modalBody = '';
   if (isOpen) {
     modalBody = typeof bodyText === 'function' ? bodyText() : bodyText;
   }
 
   return (
-    <Modal
-      isOpen={isOpen}
-      className="theme-bg-light"
-      onOpened={() => {
-        confirmButton.current?.focus();
-      }}
-    >
+    <Modal isOpen={isOpen} className="theme-bg-light" onOpened={onOpened}>
       <ModalHeader closeButton={false}>{headerText}</ModalHeader>
       <ModalBody>{modalBody}</ModalBody>
       <ModalFooter>
