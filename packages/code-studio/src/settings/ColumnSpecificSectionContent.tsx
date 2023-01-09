@@ -1,71 +1,3 @@
-// import React from 'react';
-// import { CSSTransition, TransitionGroup } from 'react-transition-group';
-// import { ThemeExport } from '@deephaven/components';
-
-// const ColumnSpecificSectionContent = props => {
-//   const addFormatRuleButtonRef = React.createRef();
-//   const { formatter } = props;
-//   const formatSettings = formatter.map((item, i) => ({
-//     ...item,
-//     id: i,
-//   }));
-//   const formatRules = formatSettings.map((rule, index) => (
-//     <CSSTransition
-//       key={rule.id}
-//       classNames="fade"
-//       timeout={ThemeExport.transitionMs}
-//       onEnter={this.handleFormatRuleEntered}
-//     >
-//       {this.renderFormatRule(index, rule)}
-//     </CSSTransition>
-//   ));
-
-//   const handleFormatRuleEntered = (elem: HTMLElement): void => {
-//     this.scrollToFormatBlockBottom();
-//     FormattingSectionContent.focusFirstInputInContainer(elem);
-//   }
-
-//   scrollToFormatBlockBottom(): void {
-//     const { scrollTo } = this.props;
-//     scrollTo(
-//       0,
-//       (this.addFormatRuleButtonRef.current?.offsetHeight ?? 0) +
-//         (this.addFormatRuleButtonRef.current?.offsetTop ?? 0)
-//     );
-//   }
-
-//   static focusFirstInputInContainer(container: HTMLElement | null): void {
-//     const input: HTMLElement | null | undefined = container?.querySelector(
-//       'input, select, textarea'
-//     );
-//     if (input) {
-//       input.focus();
-//     }
-//   }
-
-//   return (
-//     <div>
-//       <div>Default formatting for matched column names</div>
-//       <div className="app-settings-menu-description mb-3">
-//         Applies a formatting rule to all columns that match a specified name and
-//         type.
-//       </div>
-
-//       <TransitionGroup
-//         appear={formatRulesChanged}
-//         enter={formatRulesChanged}
-//         exit={formatRulesChanged}
-//       >
-//         {formatRules}
-//       </TransitionGroup>
-
-//       {addNewRuleButton}
-//     </div>
-//   );
-// };
-
-// export default ColumnSpecificSectionContent;
-
 import React, {
   ChangeEvent,
   PureComponent,
@@ -73,7 +5,7 @@ import React, {
   RefObject,
 } from 'react';
 import { connect } from 'react-redux';
-import { dhNewCircleLargeFilled, vsRefresh, vsTrash } from '@deephaven/icons';
+import { dhNewCircleLargeFilled, vsTrash } from '@deephaven/icons';
 import memoize from 'memoizee';
 import { CSSTransition, TransitionGroup } from 'react-transition-group';
 import debounce from 'lodash.debounce';
@@ -107,7 +39,7 @@ import { assertNotNull, DbNameValidator, TimeUtils } from '@deephaven/utils';
 import './FormattingSectionContent.scss';
 import type { DebouncedFunc } from 'lodash';
 
-const log = Log.module('FormattingSectionContent');
+const log = Log.module('ColumnSpecificSectionContent');
 
 type FormatterItem = {
   columnType: string;
@@ -129,7 +61,7 @@ function isFormatStringFormat(
   );
 }
 
-interface FormattingSectionContentProps {
+interface ColumnSpecificSectionContentProps {
   formatter: FormatterItem[];
   defaultDateTimeFormat: string;
   showTimeZone: boolean;
@@ -141,17 +73,9 @@ interface FormattingSectionContentProps {
   scrollTo: (x: number, y: number) => void;
   defaultDecimalFormatOptions: FormatOption;
   defaultIntegerFormatOptions: FormatOption;
-  defaults: {
-    defaultDateTimeFormat: string;
-    defaultDecimalFormatOptions: FormatOption;
-    defaultIntegerFormatOptions: FormatOption;
-    showTimeZone: boolean;
-    showTSeparator: boolean;
-    timeZone: string;
-  };
 }
 
-interface FormattingSectionContentState {
+interface ColumnSpecificSectionContentState {
   formatSettings: FormatterItem[];
   formatRulesChanged: boolean;
   showTimeZone: boolean;
@@ -164,9 +88,9 @@ interface FormattingSectionContentState {
   timestampAtMenuOpen: Date;
 }
 
-export class FormattingSectionContent extends PureComponent<
-  FormattingSectionContentProps,
-  FormattingSectionContentState
+export class ColumnSpecificSectionContent extends PureComponent<
+  ColumnSpecificSectionContentProps,
+  ColumnSpecificSectionContentState
 > {
   static defaultProps = {
     scrollTo: (): void => undefined,
@@ -207,14 +131,14 @@ export class FormattingSectionContent extends PureComponent<
     options1: FormatOption,
     options2: FormatOption
   ): boolean {
-    return FormattingSectionContent.isSameOptions(options1, options2);
+    return ColumnSpecificSectionContent.isSameOptions(options1, options2);
   }
 
   static isSameIntegerOptions(
     options1: FormatOption,
     options2: FormatOption
   ): boolean {
-    return FormattingSectionContent.isSameOptions(options1, options2);
+    return ColumnSpecificSectionContent.isSameOptions(options1, options2);
   }
 
   static isValidColumnName(name: string): boolean {
@@ -256,8 +180,8 @@ export class FormattingSectionContent extends PureComponent<
 
   static isFormatRuleValidForSave(rule: FormatterItem): boolean {
     return (
-      FormattingSectionContent.isValidColumnName(rule.columnName) &&
-      FormattingSectionContent.isValidFormat(rule.columnType, rule.format)
+      ColumnSpecificSectionContent.isValidColumnName(rule.columnName) &&
+      ColumnSpecificSectionContent.isValidFormat(rule.columnType, rule.format)
     );
   }
 
@@ -337,39 +261,18 @@ export class FormattingSectionContent extends PureComponent<
     });
   }
 
-  constructor(props: FormattingSectionContentProps) {
+  constructor(props: ColumnSpecificSectionContentProps) {
     super(props);
 
     this.debouncedCommitChanges = debounce(
       this.commitChanges.bind(this),
-      FormattingSectionContent.inputDebounceTime
+      ColumnSpecificSectionContent.inputDebounceTime
     );
 
-    this.handleDefaultDateTimeFormatChange = this.handleDefaultDateTimeFormatChange.bind(
-      this
-    );
-    this.handleDefaultDecimalFormatChange = this.handleDefaultDecimalFormatChange.bind(
-      this
-    );
-    this.handleDefaultIntegerFormatChange = this.handleDefaultIntegerFormatChange.bind(
-      this
-    );
     this.handleFormatRuleEntered = this.handleFormatRuleEntered.bind(this);
     this.handleFormatRuleChange = this.handleFormatRuleChange.bind(this);
     this.handleFormatRuleCreate = this.handleFormatRuleCreate.bind(this);
     this.handleFormatRuleDelete = this.handleFormatRuleDelete.bind(this);
-    this.handleShowTimeZoneChange = this.handleShowTimeZoneChange.bind(this);
-    this.handleShowTSeparatorChange = this.handleShowTSeparatorChange.bind(
-      this
-    );
-    this.handleTimeZoneChange = this.handleTimeZoneChange.bind(this);
-    this.handleResetDateTimeFormat = this.handleResetDateTimeFormat.bind(this);
-    this.handleResetDecimalFormat = this.handleResetDecimalFormat.bind(this);
-    this.handleResetIntegerFormat = this.handleResetIntegerFormat.bind(this);
-    this.handleResetTimeZone = this.handleResetTimeZone.bind(this);
-    this.handleTruncateNumbersWithPoundChange = this.handleTruncateNumbersWithPoundChange.bind(
-      this
-    );
 
     const {
       formatter,
@@ -407,7 +310,7 @@ export class FormattingSectionContent extends PureComponent<
   }
 
   componentDidMount(): void {
-    FormattingSectionContent.focusFirstInputInContainer(
+    ColumnSpecificSectionContent.focusFirstInputInContainer(
       this.containerRef.current
     );
   }
@@ -443,7 +346,7 @@ export class FormattingSectionContent extends PureComponent<
   }
 
   getCachedColumnTypeOptions = memoize(() =>
-    FormattingSectionContent.renderColumnTypeOptions()
+    ColumnSpecificSectionContent.renderColumnTypeOptions()
   );
 
   getCachedDateTimeFormatOptions = memoize(
@@ -455,7 +358,7 @@ export class FormattingSectionContent extends PureComponent<
       legacyGlobalFormat?: string
     ) => {
       const { timestampAtMenuOpen } = this.state;
-      return FormattingSectionContent.renderDateTimeOptions(
+      return ColumnSpecificSectionContent.renderDateTimeOptions(
         timestampAtMenuOpen,
         timeZone,
         showTimeZone,
@@ -465,48 +368,6 @@ export class FormattingSectionContent extends PureComponent<
       );
     }
   );
-
-  handleDefaultDateTimeFormatChange(
-    event: ChangeEvent<HTMLSelectElement>
-  ): void {
-    log.debug('handleDefaultDateTimeFormatChange', event.target.value);
-    this.setState(
-      {
-        defaultDateTimeFormat: event.target.value,
-      },
-      () => {
-        this.debouncedCommitChanges();
-      }
-    );
-  }
-
-  handleDefaultDecimalFormatChange(event: ChangeEvent<HTMLInputElement>): void {
-    log.debug('handleDefaultDecimalFormatChange', event.target.value);
-    this.setState(
-      {
-        defaultDecimalFormatOptions: {
-          defaultFormatString: event.target.value,
-        },
-      },
-      () => {
-        this.debouncedCommitChanges();
-      }
-    );
-  }
-
-  handleDefaultIntegerFormatChange(event: ChangeEvent<HTMLInputElement>): void {
-    log.debug('handleDefaultIntegerFormatChange', event.target.value);
-    this.setState(
-      {
-        defaultIntegerFormatOptions: {
-          defaultFormatString: event.target.value,
-        },
-      },
-      () => {
-        this.debouncedCommitChanges();
-      }
-    );
-  }
 
   handleFormatRuleChange(
     index: number,
@@ -578,111 +439,9 @@ export class FormattingSectionContent extends PureComponent<
     );
   }
 
-  handleShowTimeZoneChange(): void {
-    this.setState(
-      state => ({
-        showTimeZone: !state.showTimeZone,
-      }),
-      () => {
-        this.debouncedCommitChanges();
-      }
-    );
-  }
-
-  handleShowTSeparatorChange(): void {
-    this.setState(
-      state => ({
-        showTSeparator: !state.showTSeparator,
-      }),
-      () => {
-        this.debouncedCommitChanges();
-      }
-    );
-  }
-
-  handleTimeZoneChange(event: ChangeEvent<HTMLSelectElement>): void {
-    this.setState(
-      {
-        timeZone: event.target.value,
-      },
-      () => {
-        this.debouncedCommitChanges();
-      }
-    );
-  }
-
-  handleResetDateTimeFormat(): void {
-    const { defaults } = this.props;
-    const { defaultDateTimeFormat, showTimeZone, showTSeparator } = defaults;
-    log.debug('handleResetDateTimeFormat');
-    this.setState(
-      {
-        defaultDateTimeFormat,
-        showTimeZone,
-        showTSeparator,
-      },
-      () => {
-        this.debouncedCommitChanges();
-      }
-    );
-  }
-
-  handleResetTimeZone(): void {
-    const { defaults } = this.props;
-    const { timeZone } = defaults;
-    log.debug('handleResetTimeZone');
-    this.setState(
-      {
-        timeZone,
-      },
-      () => {
-        this.debouncedCommitChanges();
-      }
-    );
-  }
-
-  handleResetDecimalFormat(): void {
-    const { defaults } = this.props;
-    const { defaultDecimalFormatOptions } = defaults;
-    log.debug('handleResetDecimalFormat');
-    this.setState(
-      {
-        defaultDecimalFormatOptions,
-      },
-      () => {
-        this.debouncedCommitChanges();
-      }
-    );
-  }
-
-  handleResetIntegerFormat(): void {
-    const { defaults } = this.props;
-    const { defaultIntegerFormatOptions } = defaults;
-    log.debug('handleResetIntegerFormat');
-    this.setState(
-      {
-        defaultIntegerFormatOptions,
-      },
-      () => {
-        this.debouncedCommitChanges();
-      }
-    );
-  }
-
-  handleTruncateNumbersWithPoundChange(): void {
-    this.setState(
-      state => ({
-        truncateNumbersWithPound: !state.truncateNumbersWithPound,
-      }),
-      () => {
-        this.debouncedCommitChanges();
-      }
-    );
-  }
-
   handleFormatRuleEntered(elem: HTMLElement): void {
     this.scrollToFormatBlockBottom();
-    FormattingSectionContent.focusFirstInputInContainer(elem);
+    ColumnSpecificSectionContent.focusFirstInputInContainer(elem);
   }
 
   commitChanges(): void {
@@ -699,8 +458,8 @@ export class FormattingSectionContent extends PureComponent<
 
     const formatter =
       formatSettings
-        .filter(FormattingSectionContent.isFormatRuleValidForSave)
-        .map(FormattingSectionContent.removeFormatRuleExtraProps) ?? [];
+        .filter(ColumnSpecificSectionContent.isFormatRuleValidForSave)
+        .map(ColumnSpecificSectionContent.removeFormatRuleExtraProps) ?? [];
 
     const { settings, saveSettings } = this.props;
     const newSettings: WorkspaceSettings = {
@@ -713,7 +472,7 @@ export class FormattingSectionContent extends PureComponent<
       truncateNumbersWithPound,
     };
     if (
-      FormattingSectionContent.isValidFormat(
+      ColumnSpecificSectionContent.isValidFormat(
         TableUtils.dataType.DECIMAL,
         DecimalColumnFormatter.makeCustomFormat(
           defaultDecimalFormatOptions.defaultFormatString
@@ -723,7 +482,7 @@ export class FormattingSectionContent extends PureComponent<
       newSettings.defaultDecimalFormatOptions = defaultDecimalFormatOptions;
     }
     if (
-      FormattingSectionContent.isValidFormat(
+      ColumnSpecificSectionContent.isValidFormat(
         TableUtils.dataType.INT,
         IntegerColumnFormatter.makeCustomFormat(
           defaultIntegerFormatOptions.defaultFormatString
@@ -764,7 +523,7 @@ export class FormattingSectionContent extends PureComponent<
       errorMessages.push('Duplicate column name/type combo.');
     }
 
-    if (!FormattingSectionContent.isValidColumnName(rule.columnName)) {
+    if (!ColumnSpecificSectionContent.isValidColumnName(rule.columnName)) {
       error.hasColumnNameError = true;
       errorMessages.push(
         'Column names must start with a letter or underscore and contain only alphanumeric characters or underscores.'
@@ -778,7 +537,7 @@ export class FormattingSectionContent extends PureComponent<
       error.hasFormatError = true;
       errorMessages.push('Empty formatting rule.');
     } else if (
-      !FormattingSectionContent.isValidFormat(rule.columnType, rule.format)
+      !ColumnSpecificSectionContent.isValidFormat(rule.columnType, rule.format)
     ) {
       error.hasFormatError = true;
       errorMessages.push('Invalid formatting rule.');
@@ -995,12 +754,7 @@ export class FormattingSectionContent extends PureComponent<
   }
 
   render(): ReactElement {
-    const {
-      formatRulesChanged,
-      formatSettings,
-      defaultDecimalFormatOptions,
-      defaultIntegerFormatOptions,
-    } = this.state;
+    const { formatRulesChanged, formatSettings } = this.state;
 
     const formatRules = formatSettings.map((rule, index) => (
       <CSSTransition
@@ -1060,5 +814,5 @@ const mapStateToProps = (state: RootState) => ({
 });
 
 export default connect(mapStateToProps, { saveSettings: saveSettingsAction })(
-  FormattingSectionContent
+  ColumnSpecificSectionContent
 );

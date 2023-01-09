@@ -1,6 +1,12 @@
 import React, { Component, ReactElement, RefObject } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { vsClose, vsWatch, vsRecordKeys, vsInfo } from '@deephaven/icons';
+import {
+  vsClose,
+  vsWatch,
+  vsRecordKeys,
+  vsInfo,
+  vsLayers,
+} from '@deephaven/icons';
 import { Button, CopyButton, Tooltip } from '@deephaven/components';
 import { ServerConfigValues } from '@deephaven/redux';
 import Logo from './community-wordmark-app.svg';
@@ -137,12 +143,12 @@ export class SettingsMenu extends Component<
                   transform="grow-4"
                   className="mr-2"
                 />
-                Formatting &amp; Time zone
+                Default Formatting &amp; Time zone
               </>
             }
             onToggle={this.handleSectionToggle}
           >
-            <FormattingSectionContent scrollTo={this.handleScrollTo} />
+            <FormattingSectionContent />
           </SettingsMenuSection>
 
           <SettingsMenuSection
@@ -153,7 +159,7 @@ export class SettingsMenu extends Component<
             title={
               <>
                 <FontAwesomeIcon
-                  icon={vsWatch}
+                  icon={vsLayers}
                   transform="grow-4"
                   className="mr-2"
                 />

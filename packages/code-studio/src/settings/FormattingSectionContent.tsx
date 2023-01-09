@@ -5,7 +5,7 @@ import React, {
   RefObject,
 } from 'react';
 import { connect } from 'react-redux';
-import { vsRefresh, vsTrash } from '@deephaven/icons';
+import { vsRefresh } from '@deephaven/icons';
 import memoize from 'memoizee';
 import debounce from 'lodash.debounce';
 import classNames from 'classnames';
@@ -34,7 +34,7 @@ import {
   RootState,
   WorkspaceSettings,
 } from '@deephaven/redux';
-import { assertNotNull, DbNameValidator, TimeUtils } from '@deephaven/utils';
+import { DbNameValidator, TimeUtils } from '@deephaven/utils';
 import './FormattingSectionContent.scss';
 import type { DebouncedFunc } from 'lodash';
 
@@ -69,7 +69,6 @@ interface FormattingSectionContentProps {
   truncateNumbersWithPound: boolean;
   settings: WorkspaceSettings;
   saveSettings: (settings: WorkspaceSettings) => void;
-  scrollTo: (x: number, y: number) => void;
   defaultDecimalFormatOptions: FormatOption;
   defaultIntegerFormatOptions: FormatOption;
   defaults: {
@@ -84,7 +83,6 @@ interface FormattingSectionContentProps {
 
 interface FormattingSectionContentState {
   formatSettings: FormatterItem[];
-  formatRulesChanged: boolean;
   showTimeZone: boolean;
   showTSeparator: boolean;
   timeZone: string;
@@ -285,10 +283,6 @@ export class FormattingSectionContent extends PureComponent<
     this.handleDefaultIntegerFormatChange = this.handleDefaultIntegerFormatChange.bind(
       this
     );
-    this.handleFormatRuleEntered = this.handleFormatRuleEntered.bind(this);
-    this.handleFormatRuleChange = this.handleFormatRuleChange.bind(this);
-    this.handleFormatRuleCreate = this.handleFormatRuleCreate.bind(this);
-    this.handleFormatRuleDelete = this.handleFormatRuleDelete.bind(this);
     this.handleShowTimeZoneChange = this.handleShowTimeZoneChange.bind(this);
     this.handleShowTSeparatorChange = this.handleShowTSeparatorChange.bind(
       this
@@ -319,13 +313,9 @@ export class FormattingSectionContent extends PureComponent<
     }));
 
     this.containerRef = React.createRef();
-    this.addFormatRuleButtonRef = React.createRef();
-
-    this.lastFormatRuleIndex = formatSettings.length;
 
     this.state = {
       formatSettings,
-      formatRulesChanged: false,
       showTimeZone,
       showTSeparator,
       timeZone,
@@ -350,32 +340,6 @@ export class FormattingSectionContent extends PureComponent<
   debouncedCommitChanges: DebouncedFunc<() => void>;
 
   containerRef: RefObject<HTMLDivElement>;
-
-  addFormatRuleButtonRef: RefObject<HTMLButtonElement>;
-
-  lastFormatRuleIndex: number;
-
-  isDuplicateRule(rule: FormatterItem): boolean {
-    const { formatSettings } = this.state;
-    return (
-      formatSettings.some(
-        item =>
-          item.id !== rule.id &&
-          item.columnName === rule.columnName &&
-          item.columnType === rule.columnType
-      ) ?? false
-    );
-  }
-
-  getAutoIncrementFormatRuleIndex(): number {
-    const { lastFormatRuleIndex } = this;
-    this.lastFormatRuleIndex += 1;
-    return lastFormatRuleIndex;
-  }
-
-  getCachedColumnTypeOptions = memoize(() =>
-    FormattingSectionContent.renderColumnTypeOptions()
-  );
 
   getCachedDateTimeFormatOptions = memoize(
     (
@@ -432,76 +396,6 @@ export class FormattingSectionContent extends PureComponent<
         defaultIntegerFormatOptions: {
           defaultFormatString: event.target.value,
         },
-      },
-      () => {
-        this.debouncedCommitChanges();
-      }
-    );
-  }
-
-  handleFormatRuleChange(
-    index: number,
-    key: string,
-    value: TableColumnFormat | string | boolean
-  ): void {
-    this.setState(
-      state => {
-        const { formatSettings: oldFormatSettings } = state;
-        assertNotNull(oldFormatSettings);
-        const formatSettings = [...oldFormatSettings];
-        // Reset format string on type change
-        let resetKeys = {};
-        if (key === 'columnType') {
-          resetKeys = {
-            format: '',
-          };
-        }
-        const newEntry = {
-          ...formatSettings[index],
-          ...resetKeys,
-          [key]: value,
-        };
-
-        formatSettings[index] = newEntry;
-        return {
-          formatSettings,
-        };
-      },
-      () => {
-        this.debouncedCommitChanges();
-      }
-    );
-  }
-
-  handleFormatRuleCreate(): void {
-    this.setState(state => {
-      const { formatSettings } = state;
-      const newFormat = {
-        columnType: TableUtils.dataType.DATETIME,
-        columnName: '',
-        format: {},
-        id: this.getAutoIncrementFormatRuleIndex(),
-        isNewRule: true,
-      };
-      return {
-        formatSettings:
-          formatSettings != null ? [...formatSettings, newFormat] : [newFormat],
-        formatRulesChanged: true,
-      };
-    });
-  }
-
-  handleFormatRuleDelete(index: number): void {
-    this.setState(
-      state => {
-        const { formatSettings: oldFormatSettings } = state;
-        const formatSettings = oldFormatSettings.filter(
-          (item, i) => i !== index
-        );
-        return {
-          formatSettings,
-          formatRulesChanged: true,
-        };
       },
       () => {
         this.debouncedCommitChanges();
@@ -611,11 +505,6 @@ export class FormattingSectionContent extends PureComponent<
     );
   }
 
-  handleFormatRuleEntered(elem: HTMLElement): void {
-    this.scrollToFormatBlockBottom();
-    FormattingSectionContent.focusFirstInputInContainer(elem);
-  }
-
   commitChanges(): void {
     const {
       formatSettings,
@@ -664,265 +553,6 @@ export class FormattingSectionContent extends PureComponent<
       newSettings.defaultIntegerFormatOptions = defaultIntegerFormatOptions;
     }
     saveSettings(newSettings);
-  }
-
-  scrollToFormatBlockBottom(): void {
-    const { scrollTo } = this.props;
-    scrollTo(
-      0,
-      (this.addFormatRuleButtonRef.current?.offsetHeight ?? 0) +
-        (this.addFormatRuleButtonRef.current?.offsetTop ?? 0)
-    );
-  }
-
-  getRuleError(
-    rule: FormatterItem
-  ): { hasColumnNameError: boolean; hasFormatError: boolean; message: string } {
-    const error = {
-      hasColumnNameError: false,
-      hasFormatError: false,
-      message: '',
-    };
-
-    const errorMessages = [];
-
-    if (rule.isNewRule !== undefined && rule.isNewRule) {
-      return error;
-    }
-
-    if (this.isDuplicateRule(rule)) {
-      error.hasColumnNameError = true;
-      errorMessages.push('Duplicate column name/type combo.');
-    }
-
-    if (!FormattingSectionContent.isValidColumnName(rule.columnName)) {
-      error.hasColumnNameError = true;
-      errorMessages.push(
-        'Column names must start with a letter or underscore and contain only alphanumeric characters or underscores.'
-      );
-    }
-
-    if (
-      rule.format.formatString !== undefined &&
-      rule.format.formatString.length === 0
-    ) {
-      error.hasFormatError = true;
-      errorMessages.push('Empty formatting rule.');
-    } else if (
-      !FormattingSectionContent.isValidFormat(rule.columnType, rule.format)
-    ) {
-      error.hasFormatError = true;
-      errorMessages.push('Invalid formatting rule.');
-    }
-
-    error.message = errorMessages.join('\n');
-    return error;
-  }
-
-  renderFormatRule(i: number, rule: FormatterItem): ReactElement {
-    const columnNameId = `input-${i}-columnName`;
-    const columnTypeId = `input-${i}-columnType`;
-    const formatId = `input-${i}-format`;
-    const columnTypeOptions = this.getCachedColumnTypeOptions();
-    const onNameChange = (e: ChangeEvent<HTMLInputElement>) =>
-      this.handleFormatRuleChange(i, 'columnName', e.target.value);
-    const onNameBlur = () => this.handleFormatRuleChange(i, 'isNewRule', false);
-    const onTypeChange = (e: ChangeEvent<HTMLSelectElement>) =>
-      this.handleFormatRuleChange(i, 'columnType', e.target.value);
-    const ruleError = this.getRuleError(rule);
-
-    return (
-      <fieldset key={i} className="container-fluid format-rule-container">
-        <div className="form-row">
-          <div className="form-group col-7 mb-2">
-            <label htmlFor={columnNameId}>Column Name</label>
-            <input
-              id={columnNameId}
-              className={classNames('form-control', {
-                'is-invalid': ruleError.hasColumnNameError,
-              })}
-              data-lpignore
-              type="text"
-              value={rule.columnName}
-              onChange={onNameChange}
-              onBlur={onNameBlur}
-            />
-          </div>
-          <div className="form-group col mb-2">
-            <Button
-              kind="ghost"
-              className="btn-delete-format-rule float-right"
-              tabIndex={-1}
-              onClick={() => this.handleFormatRuleDelete(i)}
-              icon={vsTrash}
-              tooltip="Delete"
-            />
-
-            <label htmlFor={columnTypeId}>Column Type</label>
-            <select
-              id={columnTypeId}
-              className="custom-select"
-              value={rule.columnType}
-              onChange={onTypeChange}
-            >
-              {columnTypeOptions}
-            </select>
-          </div>
-        </div>
-        <div className="form-row">
-          <div className="form-group col-12 d-flex mb-2">
-            <label
-              className="flex-shrink-0 col-form-label mr-3"
-              htmlFor={formatId}
-            >
-              Formatting Rule
-            </label>
-            {this.renderFormatRuleInput(
-              i,
-              rule.columnType,
-              formatId,
-              rule.format,
-              ruleError.hasFormatError
-            )}
-          </div>
-        </div>
-        <div className="form-row">
-          <div className="form-group col-12 d-flex mb-2">
-            {ruleError.message && (
-              <p className="text-danger">{ruleError.message}</p>
-            )}
-          </div>
-        </div>
-      </fieldset>
-    );
-  }
-
-  renderFormatRuleInput(
-    i: number,
-    columnType: string,
-    formatId: string,
-    format: Partial<TableColumnFormat>,
-    isInvalid: boolean
-  ): ReactElement | null {
-    switch (TableUtils.getNormalizedType(columnType)) {
-      case TableUtils.dataType.DATETIME:
-        return this.renderDateTimeFormatRuleInput(
-          i,
-          formatId,
-          format,
-          isInvalid
-        );
-      case TableUtils.dataType.DECIMAL:
-        return this.renderDecimalFormatRuleInput(
-          i,
-          formatId,
-          format,
-          isInvalid
-        );
-      case TableUtils.dataType.INT:
-        return this.renderIntegerFormatRuleInput(
-          i,
-          formatId,
-          format,
-          isInvalid
-        );
-      default:
-        return null;
-    }
-  }
-
-  renderDateTimeFormatRuleInput(
-    i: number,
-    formatId: string,
-    format: Partial<TableColumnFormat>,
-    isInvalid: boolean
-  ): ReactElement {
-    const { showTimeZone, showTSeparator, timeZone } = this.state;
-    const value = format.formatString ?? '';
-    return (
-      <select
-        className={classNames('custom-select', { 'is-invalid': isInvalid })}
-        value={value}
-        id={formatId}
-        onChange={e => {
-          const selectedFormat = DateTimeColumnFormatter.makeFormat(
-            '',
-            e.target.value,
-            DateTimeColumnFormatter.TYPE_GLOBAL
-          );
-          this.handleFormatRuleChange(i, 'format', selectedFormat);
-        }}
-      >
-        <option key="default" value="" disabled>
-          Select format
-        </option>
-        {this.getCachedDateTimeFormatOptions(
-          timeZone,
-          showTimeZone,
-          showTSeparator
-        )}
-      </select>
-    );
-  }
-
-  renderIntegerFormatRuleInput(
-    i: number,
-    formatId: string,
-    format: Partial<TableColumnFormat>,
-    isInvalid: boolean
-  ): ReactElement {
-    const value = format.formatString ?? '';
-    return (
-      <input
-        className={classNames('form-control', 'flex-grow-1', {
-          'is-invalid': isInvalid,
-        })}
-        data-lpignore
-        id={formatId}
-        placeholder={IntegerColumnFormatter.DEFAULT_FORMAT_STRING}
-        type="text"
-        value={value}
-        onChange={e => {
-          const selectedFormat = IntegerColumnFormatter.makeFormat(
-            '',
-            e.target.value,
-            IntegerColumnFormatter.TYPE_GLOBAL,
-            undefined
-          );
-          this.handleFormatRuleChange(i, 'format', selectedFormat);
-        }}
-      />
-    );
-  }
-
-  renderDecimalFormatRuleInput(
-    i: number,
-    formatId: string,
-    format: Partial<TableColumnFormat>,
-    isInvalid: boolean
-  ): ReactElement {
-    const value = format.formatString ?? '';
-    return (
-      <input
-        className={classNames('form-control', 'flex-grow-1', {
-          'is-invalid': isInvalid,
-        })}
-        data-lpignore
-        id={formatId}
-        placeholder={DecimalColumnFormatter.DEFAULT_FORMAT_STRING}
-        type="text"
-        value={value}
-        onChange={e => {
-          const selectedFormat = DecimalColumnFormatter.makeFormat(
-            '',
-            e.target.value,
-            DecimalColumnFormatter.TYPE_GLOBAL,
-            undefined
-          );
-          this.handleFormatRuleChange(i, 'format', selectedFormat);
-        }}
-      />
-    );
   }
 
   render(): ReactElement {
@@ -1147,22 +777,6 @@ export class FormattingSectionContent extends PureComponent<
             </div>
           </div>
         </div>
-
-        {/* <div>Default formatting for matched column names</div>
-        <div className="app-settings-menu-description mb-3">
-          Applies a formatting rule to all columns that match a specified name
-          and type.
-        </div>
-
-        <TransitionGroup
-          appear={formatRulesChanged}
-          enter={formatRulesChanged}
-          exit={formatRulesChanged}
-        >
-          {formatRules}
-        </TransitionGroup>
-
-        {addNewRuleButton} */}
       </div>
     );
   }
