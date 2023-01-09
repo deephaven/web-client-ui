@@ -10,6 +10,7 @@ import SettingsMenuSection from './SettingsMenuSection';
 import ShortcutSectionContent from './ShortcutsSectionContent';
 import { exportLogs } from '../log/LogExport';
 import './SettingsMenu.scss';
+import ColumnSpecificSectionContent from './ColumnSpecificSectionContent';
 
 interface SettingsMenuProps {
   serverConfigValues: ServerConfigValues;
@@ -29,6 +30,8 @@ export class SettingsMenu extends Component<
   };
 
   static FORMATTING_SECTION_KEY = 'SettingsMenu.formatting';
+
+  static COLUMN_SPECIFIC_SECTION_KEY = 'SettingsMenu.columnFormatting';
 
   static APPLICATION_SECTION_KEY = 'ApplicationMenu.settings';
 
@@ -140,6 +143,26 @@ export class SettingsMenu extends Component<
             onToggle={this.handleSectionToggle}
           >
             <FormattingSectionContent scrollTo={this.handleScrollTo} />
+          </SettingsMenuSection>
+
+          <SettingsMenuSection
+            sectionKey={SettingsMenu.COLUMN_SPECIFIC_SECTION_KEY}
+            isExpanded={this.isSectionExpanded(
+              SettingsMenu.COLUMN_SPECIFIC_SECTION_KEY
+            )}
+            title={
+              <>
+                <FontAwesomeIcon
+                  icon={vsWatch}
+                  transform="grow-4"
+                  className="mr-2"
+                />
+                Column Specific Formatting Rules
+              </>
+            }
+            onToggle={this.handleSectionToggle}
+          >
+            <ColumnSpecificSectionContent scrollTo={this.handleScrollTo} />
           </SettingsMenuSection>
 
           <SettingsMenuSection

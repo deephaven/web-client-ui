@@ -1,3 +1,71 @@
+// import React from 'react';
+// import { CSSTransition, TransitionGroup } from 'react-transition-group';
+// import { ThemeExport } from '@deephaven/components';
+
+// const ColumnSpecificSectionContent = props => {
+//   const addFormatRuleButtonRef = React.createRef();
+//   const { formatter } = props;
+//   const formatSettings = formatter.map((item, i) => ({
+//     ...item,
+//     id: i,
+//   }));
+//   const formatRules = formatSettings.map((rule, index) => (
+//     <CSSTransition
+//       key={rule.id}
+//       classNames="fade"
+//       timeout={ThemeExport.transitionMs}
+//       onEnter={this.handleFormatRuleEntered}
+//     >
+//       {this.renderFormatRule(index, rule)}
+//     </CSSTransition>
+//   ));
+
+//   const handleFormatRuleEntered = (elem: HTMLElement): void => {
+//     this.scrollToFormatBlockBottom();
+//     FormattingSectionContent.focusFirstInputInContainer(elem);
+//   }
+
+//   scrollToFormatBlockBottom(): void {
+//     const { scrollTo } = this.props;
+//     scrollTo(
+//       0,
+//       (this.addFormatRuleButtonRef.current?.offsetHeight ?? 0) +
+//         (this.addFormatRuleButtonRef.current?.offsetTop ?? 0)
+//     );
+//   }
+
+//   static focusFirstInputInContainer(container: HTMLElement | null): void {
+//     const input: HTMLElement | null | undefined = container?.querySelector(
+//       'input, select, textarea'
+//     );
+//     if (input) {
+//       input.focus();
+//     }
+//   }
+
+//   return (
+//     <div>
+//       <div>Default formatting for matched column names</div>
+//       <div className="app-settings-menu-description mb-3">
+//         Applies a formatting rule to all columns that match a specified name and
+//         type.
+//       </div>
+
+//       <TransitionGroup
+//         appear={formatRulesChanged}
+//         enter={formatRulesChanged}
+//         exit={formatRulesChanged}
+//       >
+//         {formatRules}
+//       </TransitionGroup>
+
+//       {addNewRuleButton}
+//     </div>
+//   );
+// };
+
+// export default ColumnSpecificSectionContent;
+
 import React, {
   ChangeEvent,
   PureComponent,
@@ -5,11 +73,12 @@ import React, {
   RefObject,
 } from 'react';
 import { connect } from 'react-redux';
-import { vsRefresh, vsTrash } from '@deephaven/icons';
+import { dhNewCircleLargeFilled, vsRefresh, vsTrash } from '@deephaven/icons';
 import memoize from 'memoizee';
+import { CSSTransition, TransitionGroup } from 'react-transition-group';
 import debounce from 'lodash.debounce';
 import classNames from 'classnames';
-import { Button, Checkbox } from '@deephaven/components';
+import { Button, ThemeExport } from '@deephaven/components';
 import {
   DateTimeColumnFormatter,
   IntegerColumnFormatter,
@@ -926,229 +995,39 @@ export class FormattingSectionContent extends PureComponent<
   }
 
   render(): ReactElement {
-    const { defaults } = this.props;
     const {
-      defaultDateTimeFormat,
+      formatRulesChanged,
+      formatSettings,
       defaultDecimalFormatOptions,
       defaultIntegerFormatOptions,
-      timeZone,
-      showTimeZone,
-      showTSeparator,
-      truncateNumbersWithPound,
     } = this.state;
 
-    const {
-      defaultFormatString: defaultDecimalFormatString = DecimalColumnFormatter.DEFAULT_FORMAT_STRING,
-    } = defaultDecimalFormatOptions ?? {};
-    const {
-      defaultFormatString: defaultIntegerFormatString = IntegerColumnFormatter.DEFAULT_FORMAT_STRING,
-    } = defaultIntegerFormatOptions ?? {};
+    const formatRules = formatSettings.map((rule, index) => (
+      <CSSTransition
+        key={rule.id}
+        classNames="fade"
+        timeout={ThemeExport.transitionMs}
+        onEnter={this.handleFormatRuleEntered}
+      >
+        {this.renderFormatRule(index, rule)}
+      </CSSTransition>
+    ));
 
-    const isTimeZoneDefault = timeZone === defaults.timeZone;
-    const isDateTimeOptionsDefault =
-      showTSeparator === defaults.showTSeparator &&
-      showTimeZone === defaults.showTimeZone &&
-      defaultDateTimeFormat === defaults.defaultDateTimeFormat;
-    const isDecimalOptionsDefault = FormattingSectionContent.isSameDecimalOptions(
-      defaultDecimalFormatOptions,
-      defaults.defaultDecimalFormatOptions
-    );
-    const isIntegerOptionsDefault = FormattingSectionContent.isSameIntegerOptions(
-      defaultIntegerFormatOptions,
-      defaults.defaultIntegerFormatOptions
+    const addNewRuleButton = (
+      <Button
+        kind="ghost"
+        className="mb-3"
+        onClick={this.handleFormatRuleCreate}
+        ref={this.addFormatRuleButtonRef}
+        icon={dhNewCircleLargeFilled}
+      >
+        Add New Rule
+      </Button>
     );
 
     return (
       <div className="app-settings-formatting-section" ref={this.containerRef}>
-        <div className="container-fluid p-0">
-          <div>Default formatting for column types</div>
-          <div className="app-settings-menu-description mb-3">
-            Applies a formatting rule to all columns of a set type.
-          </div>
-          <div className="form-row mb-2">
-            <label
-              className="col-form-label col-3"
-              htmlFor="select-reset-timezone"
-            >
-              Time zone
-            </label>
-            <div className="col pr-0">
-              <select
-                className="custom-select"
-                value={timeZone}
-                onChange={this.handleTimeZoneChange}
-                id="select-reset-timezone"
-              >
-                {FormattingSectionContent.renderTimeZoneOptions()}
-              </select>
-            </div>
-            <div className="col-1 btn-col">
-              <Button
-                kind="ghost"
-                icon={vsRefresh}
-                onClick={this.handleResetTimeZone}
-                tooltip="Reset Time Zone"
-                className={classNames('btn-reset', 'btn-reset-time-zone', {
-                  hidden: isTimeZoneDefault,
-                })}
-              />
-            </div>
-          </div>
-          <div className="form-row mb-2">
-            <label
-              className="col-form-label col-3"
-              htmlFor="select-default-time-format"
-            >
-              DateTime
-            </label>
-            <div className="col pr-0">
-              <select
-                className="custom-select"
-                value={defaultDateTimeFormat}
-                onChange={this.handleDefaultDateTimeFormatChange}
-                id="select-default-time-format"
-              >
-                {this.getCachedDateTimeFormatOptions(
-                  timeZone,
-                  showTimeZone,
-                  showTSeparator,
-                  true,
-                  defaultDateTimeFormat
-                )}
-              </select>
-            </div>
-            <div className="col-1 btn-col">
-              <Button
-                kind="ghost"
-                icon={vsRefresh}
-                onClick={this.handleResetDateTimeFormat}
-                tooltip="Reset DateTime Options"
-                className={classNames('btn-reset', 'btn-reset-date-time', {
-                  hidden: isDateTimeOptionsDefault,
-                })}
-              />
-            </div>
-          </div>
-          <div className="form-row">
-            <div className="offset-3 col-9">
-              <Checkbox
-                checked={showTimeZone ?? null}
-                onChange={this.handleShowTimeZoneChange}
-              >
-                Show time zone in dates
-              </Checkbox>
-            </div>
-          </div>
-
-          <div className="form-row mb-3">
-            <div className="offset-3 col-9">
-              <Checkbox
-                checked={showTSeparator ?? null}
-                onChange={this.handleShowTSeparatorChange}
-              >
-                Show &#39;T&#39; separator
-              </Checkbox>
-            </div>
-          </div>
-          <div className="form-row mb-2">
-            <label
-              className="col-form-label col-3"
-              htmlFor="default-decimal-format-input"
-            >
-              Decimal
-            </label>
-            <div className="col pr-0">
-              <input
-                className={classNames(
-                  'form-control',
-                  'flex-grow-1',
-                  'default-decimal-format-input',
-                  {
-                    'is-invalid': !FormattingSectionContent.isValidFormat(
-                      TableUtils.dataType.DECIMAL,
-                      DecimalColumnFormatter.makeCustomFormat(
-                        defaultDecimalFormatString
-                      )
-                    ),
-                  }
-                )}
-                data-lpignore
-                placeholder={DecimalColumnFormatter.DEFAULT_FORMAT_STRING}
-                type="text"
-                id="default-decimal-format-input"
-                value={defaultDecimalFormatString}
-                onChange={this.handleDefaultDecimalFormatChange}
-              />
-            </div>
-            <div className="col-1 btn-col">
-              <Button
-                kind="ghost"
-                icon={vsRefresh}
-                onClick={this.handleResetDecimalFormat}
-                tooltip="Reset Decimal Formatting"
-                className={classNames('btn-reset', 'btn-reset-decimal', {
-                  hidden: isDecimalOptionsDefault,
-                })}
-                data-testid="btn-reset-decimal"
-              />
-            </div>
-          </div>
-          <div className="form-row mb-2">
-            <label
-              className="col-form-label col-3"
-              htmlFor="default-integer-format-input"
-            >
-              Integer
-            </label>
-            <div className="col pr-0">
-              <input
-                className={classNames(
-                  'form-control',
-                  'flex-grow-1',
-                  'default-integer-format-input',
-                  {
-                    'is-invalid': !FormattingSectionContent.isValidFormat(
-                      TableUtils.dataType.INT,
-                      IntegerColumnFormatter.makeCustomFormat(
-                        defaultIntegerFormatString
-                      )
-                    ),
-                  }
-                )}
-                data-lpignore
-                placeholder={IntegerColumnFormatter.DEFAULT_FORMAT_STRING}
-                type="text"
-                id="default-integer-format-input"
-                value={defaultIntegerFormatString}
-                onChange={this.handleDefaultIntegerFormatChange}
-              />
-            </div>
-            <div className="col-1 btn-col">
-              <Button
-                kind="ghost"
-                icon={vsRefresh}
-                onClick={this.handleResetIntegerFormat}
-                tooltip="Reset Integer Formatting"
-                className={classNames('btn-reset', 'btn-reset-integer', {
-                  hidden: isIntegerOptionsDefault,
-                })}
-                data-testid="btn-reset-integer"
-              />
-            </div>
-          </div>
-          <div className="form-row mb-3">
-            <div className="offset-3 col-9">
-              <Checkbox
-                checked={truncateNumbersWithPound ?? null}
-                onChange={this.handleTruncateNumbersWithPoundChange}
-              >
-                Truncate numbers with #
-              </Checkbox>
-            </div>
-          </div>
-        </div>
-
-        {/* <div>Default formatting for matched column names</div>
+        <div>Default formatting for matched column names</div>
         <div className="app-settings-menu-description mb-3">
           Applies a formatting rule to all columns that match a specified name
           and type.
@@ -1162,7 +1041,7 @@ export class FormattingSectionContent extends PureComponent<
           {formatRules}
         </TransitionGroup>
 
-        {addNewRuleButton} */}
+        {addNewRuleButton}
       </div>
     );
   }
