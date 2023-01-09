@@ -49,10 +49,6 @@ class TestUtils {
     };
   }
 
-  static async flushPromises(): Promise<void> {
-    await new Promise(setImmediate);
-  }
-
   static REGULAR_USER = {
     name: 'test',
     operateAs: 'test',

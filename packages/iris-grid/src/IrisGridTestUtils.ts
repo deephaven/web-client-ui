@@ -107,7 +107,7 @@ class IrisGridTestUtils {
     return table;
   }
 
-  static makeInputTable(keyColumns = []): InputTable {
+  static makeInputTable(keyColumns: Column[] = []): InputTable {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return new (dh as any).InputTable(keyColumns);
   }
@@ -122,7 +122,7 @@ class IrisGridTestUtils {
   static makeModel(
     table = IrisGridTestUtils.makeTable(),
     formatter = new Formatter(),
-    inputTable = null
+    inputTable: InputTable | null = null
   ): IrisGridProxyModel {
     return new IrisGridProxyModel(table, formatter, inputTable);
   }

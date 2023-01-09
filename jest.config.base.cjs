@@ -25,5 +25,6 @@ module.exports = {
     ),
     '^@deephaven/(.*)$': path.join(__dirname, './packages/$1/src'),
   },
+  testEnvironment: 'jsdom',
   setupFilesAfterEnv: [path.join(__dirname, './jest.setup.ts')],
 };

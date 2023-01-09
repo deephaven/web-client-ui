@@ -1,7 +1,6 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { TestUtils } from '@deephaven/utils';
 import TableCsvExporter from './TableCsvExporter';
 import IrisGridTestUtils from '../IrisGridTestUtils';
 
@@ -57,8 +56,7 @@ it('downloads properly with default settings', async () => {
 
   userEvent.click(screen.getByRole('button', { name: 'Download' }));
   expect(onDownloadStart).toHaveBeenCalledTimes(1);
-  await TestUtils.flushPromises();
-  expect(onDownload).toHaveBeenCalledTimes(1);
+  await waitFor(() => expect(onDownload).toHaveBeenCalledTimes(1));
   expect(onCancel).not.toHaveBeenCalled();
 });
 
@@ -76,7 +74,6 @@ it('cancels download when something goes wrong', async () => {
 
   userEvent.click(screen.getByRole('button', { name: 'Download' }));
   expect(onDownloadStart).toHaveBeenCalled();
-  await TestUtils.flushPromises();
   expect(onDownload).not.toHaveBeenCalled();
-  expect(onCancel).toHaveBeenCalled();
+  await waitFor(() => expect(onCancel).toHaveBeenCalled());
 });

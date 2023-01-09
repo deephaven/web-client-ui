@@ -1,16 +1,11 @@
 import React from 'react';
-import { act, render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { TestUtils } from '@deephaven/utils';
 import {
   FileListItemEditor,
   FileListItemEditorProps,
 } from './FileListItemEditor';
 import { FileStorageItem } from './FileStorage';
-
-async function flushPromises() {
-  return act(() => TestUtils.flushPromises());
-}
 
 function makeItem(name = 'DEFAULT_NAME'): FileStorageItem {
   return {
@@ -43,32 +38,30 @@ describe('FileListItemEditor', () => {
     unmount();
   });
 
-  it('validates on mount', () => {
+  it('validates on mount', async () => {
     const validate = jest.fn(() => Promise.resolve());
     const itemName = 'test';
-    const { unmount } = makeWrapper({ item: makeItem(itemName), validate });
-    unmount();
-    expect(validate).toBeCalledWith(itemName);
+    makeWrapper({ item: makeItem(itemName), validate });
+    await waitFor(() => expect(validate).toBeCalledWith(itemName));
   });
 
-  it('validates on input changes', () => {
+  it('validates on input changes', async () => {
     const validate = jest.fn(() => Promise.resolve());
     const itemName = 'test';
-    const { unmount } = makeWrapper({ item: makeItem(itemName), validate });
+    makeWrapper({ item: makeItem(itemName), validate });
     const input: HTMLInputElement = screen.getByRole('textbox');
     userEvent.type(input, '123');
-    unmount();
-    expect(validate).toBeCalledWith(`${itemName}1`);
-    expect(validate).toBeCalledWith(`${itemName}12`);
-    expect(validate).toBeCalledWith(`${itemName}123`);
+    await waitFor(() => expect(validate).toBeCalledWith(`${itemName}1`));
+    await waitFor(() => expect(validate).toBeCalledWith(`${itemName}12`));
+    await waitFor(() => expect(validate).toBeCalledWith(`${itemName}123`));
   });
 
   it('validates and submits on enter', async () => {
     const itemName = 'test';
-    const validate = jest.fn(() => Promise.resolve());
+    const validate = jest.fn();
     const onSubmit = jest.fn();
     const onCancel = jest.fn();
-    const { unmount } = makeWrapper({
+    makeWrapper({
       item: makeItem(itemName),
       onCancel,
       onSubmit,
@@ -76,10 +69,7 @@ describe('FileListItemEditor', () => {
     });
     const input: HTMLInputElement = screen.getByRole('textbox');
     userEvent.type(input, '123{enter}');
-    // Wait to resolve the validation promise
-    await flushPromises();
-    unmount();
-    expect(validate).toBeCalled();
+    await waitFor(() => expect(validate).toBeCalled());
     expect(onSubmit).toBeCalledWith(`${itemName}123`);
     expect(onSubmit).toBeCalledTimes(1);
     expect(onCancel).not.toBeCalled();
@@ -90,7 +80,7 @@ describe('FileListItemEditor', () => {
     const validate = jest.fn(() => Promise.resolve());
     const onSubmit = jest.fn();
     const onCancel = jest.fn();
-    const { unmount } = makeWrapper({
+    makeWrapper({
       item: makeItem(itemName),
       onCancel,
       onSubmit,
@@ -100,9 +90,7 @@ describe('FileListItemEditor', () => {
     userEvent.type(input, '123');
     expect(input).toHaveFocus();
     userEvent.tab();
-    await flushPromises();
-    unmount();
-    expect(validate).toBeCalled();
+    await waitFor(() => expect(validate).toBeCalled());
     expect(onSubmit).toBeCalledWith(`${itemName}123`);
   });
 
@@ -110,17 +98,15 @@ describe('FileListItemEditor', () => {
     const validate = jest.fn(() => Promise.resolve());
     const onSubmit = jest.fn();
     const onCancel = jest.fn();
-    const { unmount } = makeWrapper({
+    makeWrapper({
       onCancel,
       onSubmit,
       validate,
     });
     const input: HTMLInputElement = screen.getByRole('textbox');
     userEvent.type(input, '123{esc}');
-    await flushPromises();
-    unmount();
+    await waitFor(() => expect(onCancel).toBeCalled());
     expect(onSubmit).not.toBeCalled();
-    expect(onCancel).toBeCalled();
   });
 
   it('displays validation error, blocks submit', async () => {
@@ -128,16 +114,16 @@ describe('FileListItemEditor', () => {
     const validate = jest.fn(() => Promise.reject(new Error(errorMessage)));
     const onSubmit = jest.fn();
     const onCancel = jest.fn();
-    const { unmount } = makeWrapper({
+    makeWrapper({
       onCancel,
       onSubmit,
       validate,
     });
     const input: HTMLInputElement = screen.getByRole('textbox');
     userEvent.type(input, '{enter}');
-    await flushPromises();
-    expect(screen.getByText(errorMessage, { exact: false })).not.toBeNull();
+    await waitFor(() =>
+      expect(screen.getByText(errorMessage, { exact: false })).not.toBeNull()
+    );
     expect(onSubmit).not.toBeCalled();
-    unmount();
   });
 });
