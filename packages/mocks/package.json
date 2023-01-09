@@ -12,7 +12,7 @@
   "type": "module",
   "main": "./src/index.js",
   "peerDependencies": {
-    "jest": "27.x"
+    "jest": "28.x"
   },
   "publishConfig": {
     "access": "public"

@@ -2,7 +2,7 @@ const path = require('path');
 
 module.exports = {
   transform: {
-    '.(ts|tsx|js|jsx)': 'babel-jest',
+    '.(ts|tsx|js|jsx)': ['babel-jest', { rootMode: 'upward' }],
   },
   // Makes jest transform monaco, but continue ignoring other node_modules. Used for MonacoUtils test
   transformIgnorePatterns: ['node_modules/(?!(monaco-editor)/)'],
