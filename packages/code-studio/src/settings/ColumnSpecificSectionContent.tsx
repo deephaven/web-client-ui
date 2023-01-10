@@ -15,12 +15,10 @@ import {
   DateTimeColumnFormatter,
   IntegerColumnFormatter,
   DecimalColumnFormatter,
-  Formatter,
   TableUtils,
   TableColumnFormat,
   FormattingRule,
 } from '@deephaven/jsapi-utils';
-import Log from '@deephaven/log';
 import {
   getDefaultDateTimeFormat,
   getDefaultDecimalFormatOptions,
@@ -35,31 +33,11 @@ import {
   RootState,
   WorkspaceSettings,
 } from '@deephaven/redux';
-import { assertNotNull, DbNameValidator, TimeUtils } from '@deephaven/utils';
+import { assertNotNull } from '@deephaven/utils';
 import './FormattingSectionContent.scss';
 import type { DebouncedFunc } from 'lodash';
-
-const log = Log.module('ColumnSpecificSectionContent');
-
-type FormatterItem = {
-  columnType: string;
-  columnName: string;
-  format: Partial<TableColumnFormat>;
-  id?: number;
-  isNewRule?: boolean;
-};
-
-type FormatOption = {
-  defaultFormatString?: string;
-};
-
-function isFormatStringFormat(
-  format: Partial<TableColumnFormat>
-): format is Pick<TableColumnFormat, 'formatString'> {
-  return (
-    (format as Pick<TableColumnFormat, 'formatString'>).formatString != null
-  );
-}
+import SettingsUtils from './SettingsUtils';
+import type { FormatterItem, FormatOption } from './SettingsUtils';
 
 interface ColumnSpecificSectionContentProps {
   formatter: FormatterItem[];
@@ -111,156 +89,6 @@ export class ColumnSpecificSectionContent extends PureComponent<
 
   static inputDebounceTime = 250;
 
-  static focusFirstInputInContainer(container: HTMLElement | null): void {
-    const input: HTMLElement | null | undefined = container?.querySelector(
-      'input, select, textarea'
-    );
-    if (input) {
-      input.focus();
-    }
-  }
-
-  static isSameOptions(
-    options1: FormatOption,
-    options2: FormatOption
-  ): boolean {
-    return options1.defaultFormatString === options2.defaultFormatString;
-  }
-
-  static isSameDecimalOptions(
-    options1: FormatOption,
-    options2: FormatOption
-  ): boolean {
-    return ColumnSpecificSectionContent.isSameOptions(options1, options2);
-  }
-
-  static isSameIntegerOptions(
-    options1: FormatOption,
-    options2: FormatOption
-  ): boolean {
-    return ColumnSpecificSectionContent.isSameOptions(options1, options2);
-  }
-
-  static isValidColumnName(name: string): boolean {
-    return name !== '' && DbNameValidator.isValidColumnName(name);
-  }
-
-  static isValidFormat(
-    columnType: string,
-    format: Partial<TableColumnFormat>
-  ): boolean {
-    // Undefined or empty string formats are always invalid
-    if (
-      !columnType ||
-      format.formatString == null ||
-      !isFormatStringFormat(format)
-    ) {
-      return false;
-    }
-    switch (columnType) {
-      case 'datetime':
-        return DateTimeColumnFormatter.isValid(format);
-      case 'decimal':
-        return DecimalColumnFormatter.isValid(format);
-      case 'int':
-        return IntegerColumnFormatter.isValid(format);
-      default: {
-        log.warn('Trying to validate format of unknown type');
-        return true;
-      }
-    }
-  }
-
-  static removeFormatRuleExtraProps(
-    item: FormatterItem
-  ): Omit<FormatterItem, 'id' | 'isNewRule'> {
-    const { id, isNewRule, ...rest } = item;
-    return rest;
-  }
-
-  static isFormatRuleValidForSave(rule: FormatterItem): boolean {
-    return (
-      ColumnSpecificSectionContent.isValidColumnName(rule.columnName) &&
-      ColumnSpecificSectionContent.isValidFormat(rule.columnType, rule.format)
-    );
-  }
-
-  static renderTimeZoneOptions(): JSX.Element[] {
-    const options = TimeUtils.TIME_ZONES.map(timeZone => {
-      const { label, value } = timeZone;
-      return (
-        <option value={value} key={value}>
-          {label}
-        </option>
-      );
-    });
-
-    return options;
-  }
-
-  static renderColumnTypeOptions(): ReactElement {
-    const columnTypesArray = [
-      { value: TableUtils.dataType.DATETIME, label: 'DateTime' },
-      { value: TableUtils.dataType.DECIMAL, label: 'Decimal' },
-      { value: TableUtils.dataType.INT, label: 'Integer' },
-    ];
-
-    const columnTypeOptions = columnTypesArray.map(item => (
-      <option key={`key-columnType-${item.value}`} value={item.value}>
-        {item.label}
-      </option>
-    ));
-
-    return (
-      <>
-        <option key="key-columnType-placeholder" disabled value="">
-          Select Type
-        </option>
-        {columnTypeOptions}
-      </>
-    );
-  }
-
-  static renderDateTimeOptions(
-    timestamp: Date,
-    timeZone: string,
-    showTimeZone: boolean,
-    showTSeparator: boolean,
-    isGlobalOptions: boolean,
-    legacyGlobalFormat?: string
-  ): ReactElement[] {
-    const formatter = new Formatter([], {
-      timeZone,
-      showTimeZone,
-      showTSeparator,
-    });
-    const formats = isGlobalOptions
-      ? DateTimeColumnFormatter.getGlobalFormats(showTimeZone, showTSeparator)
-      : DateTimeColumnFormatter.getFormats(showTimeZone, showTSeparator);
-
-    if (legacyGlobalFormat != null && !formats.includes(legacyGlobalFormat)) {
-      formats.unshift(legacyGlobalFormat);
-    }
-
-    return formats.map(formatString => {
-      const format = DateTimeColumnFormatter.makeFormat(
-        '',
-        formatString,
-        DateTimeColumnFormatter.TYPE_GLOBAL
-      );
-      return (
-        <option value={formatString} key={formatString}>
-          {formatter.getFormattedString(
-            timestamp,
-            TableUtils.dataType.DATETIME,
-            '',
-            format
-          )}
-        </option>
-      );
-    });
-  }
-
   constructor(props: ColumnSpecificSectionContentProps) {
     super(props);
 
@@ -310,9 +138,7 @@ export class ColumnSpecificSectionContent extends PureComponent<
   }
 
   componentDidMount(): void {
-    ColumnSpecificSectionContent.focusFirstInputInContainer(
-      this.containerRef.current
-    );
+    SettingsUtils.focusFirstInputInContainer(this.containerRef.current);
   }
 
   componentWillUnmount(): void {
@@ -346,7 +172,7 @@ export class ColumnSpecificSectionContent extends PureComponent<
   }
 
   getCachedColumnTypeOptions = memoize(() =>
-    ColumnSpecificSectionContent.renderColumnTypeOptions()
+    SettingsUtils.renderColumnTypeOptions()
   );
 
   getCachedDateTimeFormatOptions = memoize(
@@ -358,7 +184,7 @@ export class ColumnSpecificSectionContent extends PureComponent<
       legacyGlobalFormat?: string
     ) => {
       const { timestampAtMenuOpen } = this.state;
-      return ColumnSpecificSectionContent.renderDateTimeOptions(
+      return SettingsUtils.renderDateTimeOptions(
         timestampAtMenuOpen,
         timeZone,
         showTimeZone,
@@ -441,7 +267,7 @@ export class ColumnSpecificSectionContent extends PureComponent<
 
   handleFormatRuleEntered(elem: HTMLElement): void {
     this.scrollToFormatBlockBottom();
-    ColumnSpecificSectionContent.focusFirstInputInContainer(elem);
+    SettingsUtils.focusFirstInputInContainer(elem);
   }
 
   commitChanges(): void {
@@ -458,8 +284,8 @@ export class ColumnSpecificSectionContent extends PureComponent<
 
     const formatter =
       formatSettings
-        .filter(ColumnSpecificSectionContent.isFormatRuleValidForSave)
-        .map(ColumnSpecificSectionContent.removeFormatRuleExtraProps) ?? [];
+        .filter(SettingsUtils.isFormatRuleValidForSave)
+        .map(SettingsUtils.removeFormatRuleExtraProps) ?? [];
 
     const { settings, saveSettings } = this.props;
     const newSettings: WorkspaceSettings = {
@@ -472,7 +298,7 @@ export class ColumnSpecificSectionContent extends PureComponent<
       truncateNumbersWithPound,
     };
     if (
-      ColumnSpecificSectionContent.isValidFormat(
+      SettingsUtils.isValidFormat(
         TableUtils.dataType.DECIMAL,
         DecimalColumnFormatter.makeCustomFormat(
           defaultDecimalFormatOptions.defaultFormatString
@@ -482,7 +308,7 @@ export class ColumnSpecificSectionContent extends PureComponent<
       newSettings.defaultDecimalFormatOptions = defaultDecimalFormatOptions;
     }
     if (
-      ColumnSpecificSectionContent.isValidFormat(
+      SettingsUtils.isValidFormat(
         TableUtils.dataType.INT,
         IntegerColumnFormatter.makeCustomFormat(
           defaultIntegerFormatOptions.defaultFormatString
@@ -523,7 +349,7 @@ export class ColumnSpecificSectionContent extends PureComponent<
       errorMessages.push('Duplicate column name/type combo.');
     }
 
-    if (!ColumnSpecificSectionContent.isValidColumnName(rule.columnName)) {
+    if (!SettingsUtils.isValidColumnName(rule.columnName)) {
       error.hasColumnNameError = true;
       errorMessages.push(
         'Column names must start with a letter or underscore and contain only alphanumeric characters or underscores.'
@@ -536,9 +362,7 @@ export class ColumnSpecificSectionContent extends PureComponent<
     ) {
       error.hasFormatError = true;
       errorMessages.push('Empty formatting rule.');
-    } else if (
-      !ColumnSpecificSectionContent.isValidFormat(rule.columnType, rule.format)
-    ) {
+    } else if (!SettingsUtils.isValidFormat(rule.columnType, rule.format)) {
       error.hasFormatError = true;
       errorMessages.push('Invalid formatting rule.');
     }
