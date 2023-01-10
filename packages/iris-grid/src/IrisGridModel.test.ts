@@ -159,9 +159,11 @@ it('closes the table correctly when the model is closed', () => {
 });
 
 describe('totals table tests', () => {
-  const TOTALS_CONFIG = ({
+  const TOTALS_CONFIG: UITotalsTableConfig = {
     operationMap: { 1: ['Max', 'Min'] },
-  } as unknown) as UITotalsTableConfig;
+    operationOrder: [],
+    showOnTop: true,
+  };
 
   let table: Table;
   let totalsTable: TotalsTable;

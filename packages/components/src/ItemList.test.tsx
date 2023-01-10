@@ -1,5 +1,5 @@
 import React from 'react';
-import { Range, TestUtils } from '@deephaven/utils';
+import { Range, TestUtils, ClickOptions } from '@deephaven/utils';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import ItemList from './ItemList';
@@ -48,11 +48,7 @@ describe('mouse', () => {
   async function clickItem(
     user: ReturnType<typeof userEvent.setup>,
     itemIndex: number,
-    options: {
-      ctrlKey?: boolean;
-      shiftKey?: boolean;
-      dblClick?: boolean;
-    } = {}
+    options: ClickOptions = {}
   ) {
     const item = screen.getByText(`${itemIndex}`);
     await TestUtils.click(user, item, options);
@@ -69,11 +65,7 @@ describe('mouse', () => {
   async function rightClickItem(
     user: ReturnType<typeof userEvent.setup>,
     itemIndex: number,
-    options: {
-      ctrlKey?: boolean;
-      shiftKey?: boolean;
-      dblClick?: boolean;
-    } = {}
+    options: ClickOptions = {}
   ) {
     const item = screen.getByText(`${itemIndex}`);
     await TestUtils.click(user, item, { ...options, rightClick: true });
@@ -160,7 +152,7 @@ describe('mouse', () => {
       firstIndex: number,
       secondIndex: number,
       expectedSelectionChange: Range[] | null = [[secondIndex, secondIndex]],
-      mouseOptions: { ctrlKey?: boolean; shiftKey?: boolean } = {}
+      mouseOptions: ClickOptions = {}
     ) {
       const onSelect = jest.fn();
       const onSelectionChange = jest.fn();

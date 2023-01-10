@@ -23,6 +23,13 @@ interface MockContext {
   createPattern: jest.Mock<void>;
 }
 
+export interface ClickOptions {
+  ctrlKey?: boolean;
+  shiftKey?: boolean;
+  dblClick?: boolean;
+  rightClick?: boolean;
+}
+
 class TestUtils {
   static makeMockContext(): MockContext {
     return {
@@ -71,12 +78,7 @@ class TestUtils {
   static async click(
     user: ReturnType<typeof userEvent.setup>,
     element: Element,
-    options: {
-      ctrlKey?: boolean;
-      shiftKey?: boolean;
-      dblClick?: boolean;
-      rightClick?: boolean;
-    } = {}
+    options: ClickOptions = {}
   ): Promise<void> {
     const {
       ctrlKey = false,
