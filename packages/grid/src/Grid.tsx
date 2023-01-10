@@ -1803,7 +1803,6 @@ class Grid extends PureComponent<GridProps, GridState> {
 
     if (!this.metrics) throw new Error('metrics not set');
 
-    this.updateScrollBounds();
     this.forceUpdate();
   }
 
