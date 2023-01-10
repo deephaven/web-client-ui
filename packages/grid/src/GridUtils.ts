@@ -75,21 +75,20 @@ export class GridUtils {
     const { row, column } = GridUtils.getGridPointFromXY(x, y, metrics);
 
     const {
-      visibleColumnWidths,
-      visibleRowHeights,
-      visibleColumnXs,
-      visibleRowYs,
+      allColumnWidths,
+      allRowHeights,
+      allColumnXs,
+      allRowYs,
       modelColumns,
       modelRows,
     } = metrics;
 
     const modelRow = row !== null ? modelRows.get(row) : null;
     const modelColumn = column !== null ? modelColumns.get(column) : null;
-    const left = column !== null ? visibleColumnXs.get(column) : null;
-    const top = row !== null ? visibleRowYs.get(row) : null;
-    const columnWidth =
-      column !== null ? visibleColumnWidths.get(column) : null;
-    const rowHeight = row !== null ? visibleRowHeights.get(row) : null;
+    const left = column !== null ? allColumnXs.get(column) : null;
+    const top = row !== null ? allRowYs.get(row) : null;
+    const columnWidth = column !== null ? allColumnWidths.get(column) : null;
+    const rowHeight = row !== null ? allRowHeights.get(row) : null;
 
     return {
       row,
@@ -312,8 +311,8 @@ export class GridUtils {
       floatingLeftColumnCount,
       floatingRightColumnCount,
       visibleColumns,
-      visibleColumnXs,
-      visibleColumnWidths,
+      allColumnXs,
+      allColumnWidths,
       gridX,
     } = metrics;
 
@@ -327,8 +326,8 @@ export class GridUtils {
       floatingLeftColumnCount,
       floatingRightColumnCount,
       visibleColumns,
-      visibleColumnXs,
-      visibleColumnWidths,
+      allColumnXs,
+      allColumnWidths,
       ignoreFloating
     );
   }
@@ -345,8 +344,8 @@ export class GridUtils {
       floatingBottomRowCount,
       rowCount,
       visibleRows,
-      visibleRowYs,
-      visibleRowHeights,
+      allRowYs,
+      allRowHeights,
       gridY,
     } = metrics;
 
@@ -360,8 +359,8 @@ export class GridUtils {
       floatingTopRowCount,
       floatingBottomRowCount,
       visibleRows,
-      visibleRowYs,
-      visibleRowHeights
+      allRowYs,
+      allRowHeights
     );
   }
 
@@ -453,8 +452,8 @@ export class GridUtils {
       floatingColumns,
       floatingLeftWidth,
       visibleColumns,
-      visibleColumnXs,
-      visibleColumnWidths,
+      allColumnXs,
+      allColumnWidths,
       columnHeaderMaxDepth,
     } = metrics;
     const { allowColumnResize, headerSeparatorHandleSize } = theme;
@@ -474,8 +473,8 @@ export class GridUtils {
     let isPreviousColumnHidden = false;
     for (let i = floatingColumns.length - 1; i >= 0; i -= 1) {
       const column = floatingColumns[i];
-      const columnX = visibleColumnXs.get(column) ?? 0;
-      const columnWidth = visibleColumnWidths.get(column) ?? 0;
+      const columnX = allColumnXs.get(column) ?? 0;
+      const columnWidth = allColumnWidths.get(column) ?? 0;
       const isColumnHidden = columnWidth === 0;
       if (!isPreviousColumnHidden || !isColumnHidden) {
         let midX = columnX + columnWidth;
@@ -499,8 +498,8 @@ export class GridUtils {
     isPreviousColumnHidden = false;
     for (let i = visibleColumns.length - 1; i >= 0; i -= 1) {
       const column = visibleColumns[i];
-      const columnX = visibleColumnXs.get(column) ?? 0;
-      const columnWidth = visibleColumnWidths.get(column) ?? 0;
+      const columnX = allColumnXs.get(column) ?? 0;
+      const columnWidth = allColumnWidths.get(column) ?? 0;
       const isColumnHidden = columnWidth === 0;
 
       // If this column is under the floating columns "layer". Terminate early.
@@ -549,8 +548,8 @@ export class GridUtils {
     columnIndex: VisibleIndex,
     metrics: GridMetrics
   ): boolean {
-    const { visibleColumnWidths } = metrics;
-    return GridUtils.isItemHidden(columnIndex, visibleColumnWidths);
+    const { allColumnWidths } = metrics;
+    return GridUtils.isItemHidden(columnIndex, allColumnWidths);
   }
 
   /**
@@ -635,10 +634,10 @@ export class GridUtils {
     columnIndex: VisibleIndex,
     metrics: GridMetrics
   ): VisibleIndex[] {
-    const { visibleColumns, visibleColumnWidths } = metrics;
+    const { visibleColumns, allColumnWidths } = metrics;
     return GridUtils.getHiddenItems(
       columnIndex,
-      visibleColumnWidths,
+      allColumnWidths,
       visibleColumns
     );
   }
@@ -661,8 +660,8 @@ export class GridUtils {
       rowHeaderWidth,
       columnHeaderHeight,
       visibleRows,
-      visibleRowYs,
-      visibleRowHeights,
+      allRowYs,
+      allRowHeights,
     } = metrics;
     const { allowRowResize, headerSeparatorHandleSize } = theme;
 
@@ -681,8 +680,8 @@ export class GridUtils {
     let isPreviousRowHidden = false;
     for (let i = visibleRows.length - 1; i >= 0; i -= 1) {
       const row = visibleRows[i];
-      const rowY = visibleRowYs.get(row) ?? 0;
-      const rowHeight = visibleRowHeights.get(row) ?? 0;
+      const rowY = allRowYs.get(row) ?? 0;
+      const rowHeight = allRowHeights.get(row) ?? 0;
       const isRowHidden = rowHeight === 0;
       if (!isPreviousRowHidden || !isRowHidden) {
         let midY = rowY + rowHeight;
@@ -713,8 +712,8 @@ export class GridUtils {
    * @returns True if the row is hidden, false otherwise
    */
   static isRowHidden(rowIndex: VisibleIndex, metrics: GridMetrics): boolean {
-    const { visibleRowHeights } = metrics;
-    return GridUtils.isItemHidden(rowIndex, visibleRowHeights);
+    const { allRowHeights } = metrics;
+    return GridUtils.isItemHidden(rowIndex, allRowHeights);
   }
 
   /**
@@ -727,8 +726,8 @@ export class GridUtils {
     rowIndex: VisibleIndex,
     metrics: GridMetrics
   ): VisibleIndex[] {
-    const { visibleRows, visibleRowHeights } = metrics;
-    return GridUtils.getHiddenItems(rowIndex, visibleRowHeights, visibleRows);
+    const { visibleRows, allRowHeights } = metrics;
+    return GridUtils.getHiddenItems(rowIndex, allRowHeights, visibleRows);
   }
 
   /**

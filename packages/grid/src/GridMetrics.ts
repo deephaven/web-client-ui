@@ -121,6 +121,10 @@ export type GridMetrics = {
   visibleRows: VisibleIndex[];
   visibleColumns: VisibleIndex[];
 
+  // Map of the height/width of visible rows/columns
+  visibleRowHeights: SizeMap;
+  visibleColumnWidths: SizeMap;
+
   // Array of floating rows/columns, by grid index
   floatingRows: VisibleIndex[];
   floatingColumns: VisibleIndex[];
@@ -129,9 +133,9 @@ export type GridMetrics = {
   allRows: VisibleIndex[];
   allColumns: VisibleIndex[];
 
-  // Map of the height/width of visible rows/columns
-  visibleRowHeights: SizeMap;
-  visibleColumnWidths: SizeMap;
+  // Map of the height/width of all rows/columns, visible and floating
+  allRowHeights: SizeMap;
+  allColumnWidths: SizeMap;
 
   // Floating metrics
   floatingTopHeight: number;
@@ -139,9 +143,13 @@ export type GridMetrics = {
   floatingLeftWidth: number;
   floatingRightWidth: number;
 
-  // Map of the X/Y coordinates of the rows/columns, from the top left of the grid
+  // Map of the X/Y coordinates of the visible rows/columns, from the top left of the grid
   visibleRowYs: CoordinateMap;
   visibleColumnXs: CoordinateMap;
+
+  // Map of the X/Y coordinates of all rows/columns, visible and floating, from the top left of the grid
+  allRowYs: CoordinateMap;
+  allColumnXs: CoordinateMap;
 
   // The boxes user can click on for expanding/collapsing tree rows
   visibleRowTreeBoxes: Map<VisibleIndex, BoxCoordinates>;
