@@ -810,25 +810,25 @@ class Grid extends PureComponent<GridProps, GridState> {
     canvasContext.scale(scale, scale);
   }
 
+  updateScrollBounds(): void {
+    if (!this.metrics) throw new Error('metrics not set');
+    const { left, top } = this.state;
+    const { lastLeft, lastTop } = this.metrics;
+    if (left > lastLeft) {
+      this.setState({ left: lastLeft, leftOffset: 0 });
+    }
+    if (top > lastTop) {
+      this.setState({ top: lastTop, topOffset: 0 });
+    }
+  }
+
   updateMetrics(state = this.state): GridMetrics {
     this.prevMetrics = this.metrics;
 
     const { metricCalculator } = this;
     const metricState = this.getMetricState(state);
     this.metrics = metricCalculator.getMetrics(metricState);
-
-    // Fix for https://github.com/deephaven/web-client-ui/issues/936
-    // If metrics update from something like visibility panel, the lastLeft
-    // Can change due to hidden columns. Left should always be <= lastLeft
-    // Same for top
-    const { left, top } = state;
-    const { lastLeft, lastTop } = this.metrics;
-    if (left > lastLeft) {
-      this.setState({ left: lastLeft });
-    }
-    if (top > lastTop) {
-      this.setState({ top: lastTop });
-    }
+    this.updateScrollBounds();
 
     return this.metrics;
   }
@@ -1803,14 +1803,7 @@ class Grid extends PureComponent<GridProps, GridState> {
 
     if (!this.metrics) throw new Error('metrics not set');
 
-    const { left, top } = this.state;
-    const { lastLeft, lastTop } = this.metrics;
-    if (left > lastLeft) {
-      this.setState({ left: lastLeft, leftOffset: 0 });
-    }
-    if (top > lastTop) {
-      this.setState({ top: lastTop, topOffset: 0 });
-    }
+    this.updateScrollBounds();
     this.forceUpdate();
   }
 
