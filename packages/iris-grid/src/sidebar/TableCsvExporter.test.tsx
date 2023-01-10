@@ -49,18 +49,20 @@ it('renders without crashing', () => {
 });
 
 it('downloads properly with default settings', async () => {
+  const user = userEvent.setup();
   const onDownloadStart = jest.fn();
   const onDownload = jest.fn();
   const onCancel = jest.fn();
   makeTableCsvExporterWrapper({ onDownloadStart, onDownload, onCancel });
 
-  userEvent.click(screen.getByRole('button', { name: 'Download' }));
+  await user.click(screen.getByRole('button', { name: 'Download' }));
   expect(onDownloadStart).toHaveBeenCalledTimes(1);
   await waitFor(() => expect(onDownload).toHaveBeenCalledTimes(1));
   expect(onCancel).not.toHaveBeenCalled();
 });
 
 it('cancels download when something goes wrong', async () => {
+  const user = userEvent.setup();
   const onDownloadStart = jest.fn();
   const onDownload = jest.fn();
   const onCancel = jest.fn();
@@ -72,7 +74,7 @@ it('cancels download when something goes wrong', async () => {
     model,
   });
 
-  userEvent.click(screen.getByRole('button', { name: 'Download' }));
+  await user.click(screen.getByRole('button', { name: 'Download' }));
   expect(onDownloadStart).toHaveBeenCalled();
   expect(onDownload).not.toHaveBeenCalled();
   await waitFor(() => expect(onCancel).toHaveBeenCalled());

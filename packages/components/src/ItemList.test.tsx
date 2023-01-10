@@ -1,11 +1,11 @@
 import React from 'react';
-import { Range } from '@deephaven/utils';
-import { fireEvent, render, screen } from '@testing-library/react';
+import { Range, TestUtils } from '@deephaven/utils';
+import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import ItemList from './ItemList';
 
 function makeItems(count = 20) {
-  const items = [];
+  const items: { value: number; displayValue: string }[] = [];
 
   for (let i = 0; i < count; i += 1) {
     items.push({ value: i, displayValue: `${i}` });
@@ -45,44 +45,66 @@ it('mounts and unmounts properly', () => {
 });
 
 describe('mouse', () => {
-  function clickItem(itemIndex: number, options = {}): void {
+  async function clickItem(
+    user: ReturnType<typeof userEvent.setup>,
+    itemIndex: number,
+    options: {
+      ctrlKey?: boolean;
+      shiftKey?: boolean;
+      dblClick?: boolean;
+    } = {}
+  ) {
     const item = screen.getByText(`${itemIndex}`);
-    userEvent.click(item, options);
+    await TestUtils.click(user, item, options);
   }
 
-  function doubleClickItem(itemIndex: number, options = {}): void {
+  async function doubleClickItem(
+    user: ReturnType<typeof userEvent.setup>,
+    itemIndex: number
+  ) {
     const item = screen.getByText(`${itemIndex}`);
-    userEvent.dblClick(item, options);
+    await user.dblClick(item);
   }
 
-  function rightClickItem(itemIndex: number, options = {}): void {
+  async function rightClickItem(
+    user: ReturnType<typeof userEvent.setup>,
+    itemIndex: number,
+    options: {
+      ctrlKey?: boolean;
+      shiftKey?: boolean;
+      dblClick?: boolean;
+    } = {}
+  ) {
     const item = screen.getByText(`${itemIndex}`);
-    fireEvent.contextMenu(item, options);
+    await TestUtils.click(user, item, { ...options, rightClick: true });
   }
 
-  it('sends onSelect when an item is clicked', () => {
+  it('sends onSelect when an item is clicked', async () => {
+    const user = userEvent.setup();
     const onSelect = jest.fn();
     makeItemList({ onSelect });
 
-    clickItem(3);
+    await clickItem(user, 3);
 
     expect(onSelect).toHaveBeenCalledWith(3, expect.anything());
   });
 
-  it('sends onSelect only when double clicked if isDoubleClickSelect is true', () => {
+  it('sends onSelect only when double clicked if isDoubleClickSelect is true', async () => {
+    const user = userEvent.setup();
     const onSelect = jest.fn();
     makeItemList({ onSelect, isDoubleClickSelect: true });
 
-    clickItem(3);
+    await clickItem(user, 3);
 
     expect(onSelect).not.toHaveBeenCalled();
 
-    doubleClickItem(3);
+    await doubleClickItem(user, 3);
 
     expect(onSelect).toHaveBeenCalledWith(3, expect.anything());
   });
 
-  it('extends the selection when shift clicked', () => {
+  it('extends the selection when shift clicked', async () => {
+    const user = userEvent.setup();
     const onSelect = jest.fn();
     const onSelectionChange = jest.fn();
     makeItemList({
@@ -91,7 +113,7 @@ describe('mouse', () => {
       onSelectionChange,
     });
 
-    clickItem(3);
+    await clickItem(user, 3);
 
     expect(onSelect).toHaveBeenCalledWith(3, expect.anything());
     expect(onSelectionChange).toHaveBeenCalledWith([[3, 3]]);
@@ -99,13 +121,14 @@ describe('mouse', () => {
     onSelectionChange.mockClear();
     onSelect.mockClear();
 
-    clickItem(6, { shiftKey: true });
+    await clickItem(user, 6, { shiftKey: true });
 
     expect(onSelect).not.toHaveBeenCalled();
     expect(onSelectionChange).toHaveBeenCalledWith([[3, 6]]);
   });
 
-  it('selects multiple items with Ctrl+Click', () => {
+  it('selects multiple items with Ctrl+Click', async () => {
+    const user = userEvent.setup();
     const onSelect = jest.fn();
     const onSelectionChange = jest.fn();
     makeItemList({
@@ -114,7 +137,7 @@ describe('mouse', () => {
       onSelectionChange,
     });
 
-    clickItem(3);
+    await clickItem(user, 3);
 
     expect(onSelect).toHaveBeenCalledWith(3, expect.anything());
     expect(onSelectionChange).toHaveBeenCalledWith([[3, 3]]);
@@ -122,7 +145,7 @@ describe('mouse', () => {
     onSelectionChange.mockClear();
     onSelect.mockClear();
 
-    clickItem(6, { ctrlKey: true });
+    await clickItem(user, 6, { ctrlKey: true });
 
     expect(onSelect).not.toHaveBeenCalled();
     expect(onSelectionChange).toHaveBeenCalledWith([
@@ -132,11 +155,12 @@ describe('mouse', () => {
   });
 
   describe('context menu', () => {
-    function testContextMenu(
+    async function testContextMenu(
+      user: ReturnType<typeof userEvent.setup>,
       firstIndex: number,
       secondIndex: number,
       expectedSelectionChange: Range[] | null = [[secondIndex, secondIndex]],
-      mouseOptions = {}
+      mouseOptions: { ctrlKey?: boolean; shiftKey?: boolean } = {}
     ) {
       const onSelect = jest.fn();
       const onSelectionChange = jest.fn();
@@ -146,7 +170,7 @@ describe('mouse', () => {
         onSelectionChange,
       });
 
-      clickItem(firstIndex);
+      await clickItem(user, firstIndex);
 
       expect(onSelect).toHaveBeenCalledWith(firstIndex, expect.anything());
       expect(onSelectionChange).toHaveBeenCalledWith([
@@ -156,7 +180,7 @@ describe('mouse', () => {
       onSelectionChange.mockClear();
       onSelect.mockClear();
 
-      rightClickItem(secondIndex, mouseOptions);
+      await rightClickItem(user, secondIndex, mouseOptions);
 
       expect(onSelect).not.toHaveBeenCalled();
       if (expectedSelectionChange != null) {
@@ -168,16 +192,20 @@ describe('mouse', () => {
       itemList.unmount();
     }
 
-    it('keeps selection when right-click in current selection', () => {
-      testContextMenu(3, 3, null);
+    it('keeps selection when right-click in current selection', async () => {
+      const user = userEvent.setup();
+      await testContextMenu(user, 3, 3, null);
     });
 
-    it('updates selection when right-click outside current selection', () => {
-      testContextMenu(3, 6);
+    it('updates selection when right-click outside current selection', async () => {
+      const user = userEvent.setup();
+      await testContextMenu(user, 3, 6);
     });
 
-    it('adds selection when ctrl+right-click outside current selection', () => {
-      testContextMenu(
+    it('adds selection when ctrl+right-click outside current selection', async () => {
+      const user = userEvent.setup();
+      await testContextMenu(
+        user,
         3,
         6,
         [
@@ -188,11 +216,13 @@ describe('mouse', () => {
       );
     });
 
-    it('extends selection when shift+right-click outside current selection', () => {
-      testContextMenu(3, 6, [[3, 6]], { shiftKey: true });
+    it('extends selection when shift+right-click outside current selection', async () => {
+      const user = userEvent.setup();
+      await testContextMenu(user, 3, 6, [[3, 6]], { shiftKey: true });
     });
 
-    it('maintains selection if right-clicked item is selected', () => {
+    it('maintains selection if right-clicked item is selected', async () => {
+      const user = userEvent.setup();
       const onSelect = jest.fn();
       const onSelectionChange = jest.fn();
       makeItemList({
@@ -201,7 +231,7 @@ describe('mouse', () => {
         onSelectionChange,
       });
 
-      clickItem(3);
+      await clickItem(user, 3);
 
       expect(onSelect).toHaveBeenCalledWith(3, expect.anything());
       expect(onSelectionChange).toHaveBeenCalledWith([[3, 3]]);
@@ -209,7 +239,7 @@ describe('mouse', () => {
       onSelectionChange.mockClear();
       onSelect.mockClear();
 
-      clickItem(5, { ctrlKey: true });
+      await clickItem(user, 5, { ctrlKey: true });
 
       expect(onSelect).not.toHaveBeenCalled();
       expect(onSelectionChange).toHaveBeenCalledWith([
@@ -220,7 +250,7 @@ describe('mouse', () => {
       onSelectionChange.mockClear();
       onSelect.mockClear();
 
-      rightClickItem(5);
+      await rightClickItem(user, 5);
 
       expect(onSelect).not.toHaveBeenCalled();
       expect(onSelectionChange).not.toHaveBeenCalled();
@@ -237,7 +267,8 @@ function checkFocus(elementList, index) {
     }
   }
 }
-it('handles keyboard up and down properly', () => {
+it('handles keyboard up and down properly', async () => {
+  const user = userEvent.setup();
   const { container } = makeItemList();
 
   const correctList = container.querySelector(
@@ -247,20 +278,19 @@ it('handles keyboard up and down properly', () => {
 
   checkFocus(items, -1);
 
-  fireEvent.keyDown(correctList, {
-    key: 'ArrowDown',
-  });
+  correctList.focus();
+  await user.keyboard('[ArrowDown]');
 
   checkFocus(items, 0);
 
-  fireEvent.keyDown(correctList, { key: 'ArrowDown' });
-  fireEvent.keyDown(correctList, { key: 'ArrowDown' });
-  fireEvent.keyDown(correctList, { key: 'ArrowDown' });
+  await user.keyboard('[ArrowDown]');
+  await user.keyboard('[ArrowDown]');
+  await user.keyboard('[ArrowDown]');
 
   checkFocus(items, 3);
 
-  fireEvent.keyDown(correctList, { key: 'ArrowUp' });
-  fireEvent.keyDown(correctList, { key: 'ArrowUp' });
+  await user.keyboard('[ArrowUp]');
+  await user.keyboard('[ArrowUp]');
 
   checkFocus(items, 1);
 });

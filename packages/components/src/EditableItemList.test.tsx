@@ -32,41 +32,44 @@ it('mounts and unmounts without failing', () => {
   unmount();
 });
 
-it('adds invalid class for invalid input', () => {
+it('adds invalid class for invalid input', async () => {
+  const user = userEvent.setup();
   const validate = jest.fn(() => new Error());
   const { unmount } = makeWrapper({ validate });
   const input: HTMLInputElement = screen.getByRole('textbox');
-  userEvent.type(input, '123');
+  await user.type(input, '123');
   expect(validate).toBeCalledWith('123');
   expect(input).toHaveClass(INVALID_INPUT_CLASS);
   expectAddButton().toBeDisabled();
   unmount();
 });
 
-it('removes invalid class for empty input', () => {
+it('removes invalid class for empty input', async () => {
+  const user = userEvent.setup();
   const validate = jest.fn(() => new Error());
   const { unmount } = makeWrapper({ validate });
   const input: HTMLInputElement = screen.getByRole('textbox');
   expect(input).not.toHaveClass(INVALID_INPUT_CLASS);
-  userEvent.type(input, '123');
+  await user.type(input, '123');
   expect(input).toHaveClass(INVALID_INPUT_CLASS);
   expectAddButton().toBeDisabled();
-  userEvent.type(input, '{backspace}{backspace}{backspace}');
+  await user.type(input, '{Backspace}{Backspace}{Backspace}');
   expect(input.value).toBe('');
   expect(input).not.toHaveClass(INVALID_INPUT_CLASS);
   expectAddButton().toBeDisabled();
   unmount();
 });
 
-it('adds valid value on enter and clears input', () => {
+it('adds valid value on enter and clears input', async () => {
+  const user = userEvent.setup();
   const validate = jest.fn(() => null);
   const onAdd = jest.fn();
   const { unmount } = makeWrapper({ validate, onAdd });
   const input: HTMLInputElement = screen.getByRole('textbox');
-  userEvent.type(input, '123');
+  await user.type(input, '123');
   expectAddButton().toBeEnabled();
   validate.mockClear();
-  userEvent.type(input, '{enter}');
+  await user.type(input, '{Enter}');
   expect(validate).toBeCalledWith('123');
   expect(onAdd).toBeCalledWith('123');
   expect(input.value).toBe('');
@@ -74,26 +77,28 @@ it('adds valid value on enter and clears input', () => {
   unmount();
 });
 
-it('ignores invalid value on enter', () => {
+it('ignores invalid value on enter', async () => {
+  const user = userEvent.setup();
   const validate = jest.fn(() => new Error());
   const onAdd = jest.fn();
   const { unmount } = makeWrapper({ validate, onAdd });
   const input: HTMLInputElement = screen.getByRole('textbox');
-  userEvent.type(input, '123');
+  await user.type(input, '123');
   validate.mockClear();
-  userEvent.type(input, '{enter}');
+  await user.type(input, '{Enter}');
   expect(validate).toBeCalledWith('123');
   expect(onAdd).not.toBeCalled();
   expect(input.value).toBe('123');
   unmount();
 });
 
-it('ignores empty value on enter', () => {
+it('ignores empty value on enter', async () => {
+  const user = userEvent.setup();
   const validate = jest.fn(() => null);
   const onAdd = jest.fn();
   const { unmount } = makeWrapper({ validate, onAdd });
   const input: HTMLInputElement = screen.getByRole('textbox');
-  userEvent.type(input, '{enter}');
+  await user.type(input, '{Enter}');
   expect(validate).not.toBeCalled();
   expect(onAdd).not.toBeCalled();
   expectAddButton().toBeDisabled();
@@ -121,11 +126,12 @@ describe('delete button', () => {
     unmount();
   });
 
-  it('disabled by default, enabled on item select', () => {
+  it('disabled by default, enabled on item select', async () => {
+    const user = userEvent.setup();
     expect(screen.getByTestId('delete-item-button')).toBeDisabled();
-    userEvent.click(items[0]);
+    await user.click(items[0]);
     expect(screen.getByTestId('delete-item-button')).toBeEnabled();
-    userEvent.click(items[0]);
+    await user.click(items[0]);
     expect(screen.getByTestId('delete-item-button')).toBeDisabled();
   });
 

@@ -43,7 +43,8 @@ function mountAggregationEdit({
   );
 }
 
-it('resets select when reset button is pressed', () => {
+it('resets select when reset button is pressed', async () => {
+  const user = userEvent.setup();
   const onChange = jest.fn();
   const wrapper = mountAggregationEdit({
     aggregation: makeAggregation({ selected: [makeColumnName(1)] }),
@@ -51,7 +52,7 @@ it('resets select when reset button is pressed', () => {
   });
 
   const btn = screen.getByText('Reset');
-  userEvent.click(btn);
+  await user.click(btn);
 
   expect(onChange).toHaveBeenCalledWith(
     expect.objectContaining(makeAggregation())

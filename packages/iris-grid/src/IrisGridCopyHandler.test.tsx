@@ -79,6 +79,7 @@ it('copies immediately if less than 10,000 rows of data', async () => {
 });
 
 it('prompts to copy if more than 10,000 rows of data', async () => {
+  const user = userEvent.setup({ delay: null });
   const model = makeModel();
   const ranges = GridTestUtils.makeRanges(1, 10001);
   const copyOperation = makeCopyOperation(ranges);
@@ -93,9 +94,9 @@ it('prompts to copy if more than 10,000 rows of data', async () => {
   expect(model.textSnapshot).not.toHaveBeenCalled();
   expect(copyToClipboard).not.toHaveBeenCalled();
 
-  userEvent.click(copyBtn);
+  user.click(copyBtn); // If this is awaited, the expect below fails b/c it copies too fast
 
-  expect(screen.getByText('Fetching 10,001 rows for clipboard...'));
+  expect(await screen.findByText('Fetching 10,001 rows for clipboard...'));
   expect(model.textSnapshot).toHaveBeenCalled();
 
   await waitFor(() =>
@@ -104,6 +105,7 @@ it('prompts to copy if more than 10,000 rows of data', async () => {
 });
 
 it('shows click to copy if async copy fails', async () => {
+  const user = userEvent.setup({ delay: null });
   const error = new Error('Test copy error');
   mockedCopyToClipboard.mockReturnValueOnce(Promise.reject(error));
 
@@ -122,7 +124,7 @@ it('shows click to copy if async copy fails', async () => {
   const btn = screen.getByText('Click to Copy');
   expect(btn).toBeTruthy();
 
-  userEvent.click(btn);
+  await user.click(btn);
 
   await waitFor(() =>
     expect(copyToClipboard).toHaveBeenCalledWith(DEFAULT_EXPECTED_TEXT)
@@ -132,6 +134,7 @@ it('shows click to copy if async copy fails', async () => {
 });
 
 it('retry option available if fetching fails', async () => {
+  const user = userEvent.setup({ delay: null });
   const ranges = GridTestUtils.makeRanges();
   const copyOperation = makeCopyOperation(ranges);
   const model = makeModel();
@@ -148,7 +151,7 @@ it('retry option available if fetching fails', async () => {
 
   model.textSnapshot = makeSnapshotFn();
 
-  userEvent.click(btn);
+  await user.click(btn);
 
   await waitFor(() => expect(model.textSnapshot).toHaveBeenCalled());
   expect(copyToClipboard).toHaveBeenCalled();

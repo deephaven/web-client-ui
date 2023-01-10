@@ -34,12 +34,13 @@ it('renders', () => {
   makeModalHeader({});
 });
 
-it('renders a functional close button', () => {
+it('renders a functional close button', async () => {
+  const user = userEvent.setup();
   const toggle = jest.fn();
   makeModalHeader({ closeButton: true, toggle });
   const closeButton = screen.getByRole('button');
   expect(closeButton).toBeInTheDocument();
-  userEvent.click(closeButton);
+  await user.click(closeButton);
   expect(toggle).toBeCalledTimes(1);
 });
 
