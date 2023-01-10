@@ -810,12 +810,25 @@ class Grid extends PureComponent<GridProps, GridState> {
     canvasContext.scale(scale, scale);
   }
 
+  updateScrollBounds(): void {
+    if (!this.metrics) throw new Error('metrics not set');
+    const { left, top } = this.state;
+    const { lastLeft, lastTop } = this.metrics;
+    if (left > lastLeft) {
+      this.setState({ left: lastLeft, leftOffset: 0 });
+    }
+    if (top > lastTop) {
+      this.setState({ top: lastTop, topOffset: 0 });
+    }
+  }
+
   updateMetrics(state = this.state): GridMetrics {
     this.prevMetrics = this.metrics;
 
     const { metricCalculator } = this;
     const metricState = this.getMetricState(state);
     this.metrics = metricCalculator.getMetrics(metricState);
+    this.updateScrollBounds();
 
     return this.metrics;
   }
@@ -1559,8 +1572,6 @@ class Grid extends PureComponent<GridProps, GridState> {
     if (!this.canvasContext) throw new Error('context not set');
 
     const {
-      left,
-      top,
       cursorColumn,
       cursorRow,
       draggingColumn,
@@ -1582,9 +1593,8 @@ class Grid extends PureComponent<GridProps, GridState> {
     const theme = this.getTheme();
     const width = this.canvas.clientWidth;
     const height = this.canvas.clientHeight;
+
     const renderState = {
-      left,
-      top,
       width,
       height,
       context,
@@ -1793,14 +1803,6 @@ class Grid extends PureComponent<GridProps, GridState> {
 
     if (!this.metrics) throw new Error('metrics not set');
 
-    const { left, top } = this.state;
-    const { lastLeft, lastTop } = this.metrics;
-    if (left > lastLeft) {
-      this.setState({ left: lastLeft, leftOffset: 0 });
-    }
-    if (top > lastTop) {
-      this.setState({ top: lastTop, topOffset: 0 });
-    }
     this.forceUpdate();
   }
 
