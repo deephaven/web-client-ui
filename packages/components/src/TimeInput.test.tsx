@@ -17,7 +17,7 @@ function makeTimeInput({
   ref = undefined,
 }: {
   value?: number;
-  onChange?: Function;
+  onChange?: (timeInSec: number) => void;
   ref?: React.Ref<TimeInputElement>;
 } = {}) {
   return render(<TimeInput value={value} onChange={onChange} ref={ref} />);
