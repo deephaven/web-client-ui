@@ -55,9 +55,9 @@ function getColumnInfo(
   const {
     modelColumns,
     movedColumns,
-    visibleColumnXs,
+    allColumnXs,
     columnCount,
-    visibleColumnWidths,
+    allColumnWidths,
     userColumnWidths,
     calculatedColumnWidths,
     floatingLeftWidth,
@@ -89,13 +89,13 @@ function getColumnInfo(
       movedColumns
     );
 
-    left = visibleColumnXs.get(startVisibleIndex) ?? floatingLeftWidth;
+    left = allColumnXs.get(startVisibleIndex) ?? floatingLeftWidth;
     right =
-      (visibleColumnXs.get(endVisibleIndex) ?? maxX) +
-      (visibleColumnWidths.get(endVisibleIndex) ?? 0);
+      (allColumnXs.get(endVisibleIndex) ?? maxX) +
+      (allColumnWidths.get(endVisibleIndex) ?? 0);
     range = [startVisibleIndex, endVisibleIndex];
   } else {
-    const possibleLeft = visibleColumnXs.get(visibleIndex);
+    const possibleLeft = allColumnXs.get(visibleIndex);
     if (possibleLeft == null) {
       return null;
     }
@@ -103,7 +103,7 @@ function getColumnInfo(
     left = possibleLeft;
     right =
       left +
-      (visibleColumnWidths.get(visibleIndex) ??
+      (allColumnWidths.get(visibleIndex) ??
         userColumnWidths.get(modelIndex) ??
         calculatedColumnWidths.get(modelIndex) ??
         0);
@@ -159,7 +159,7 @@ class GridColumnMoveMouseHandler extends GridMouseHandler {
         userColumnWidths,
         calculatedColumnWidths,
         movedColumns,
-        visibleColumnWidths,
+        allColumnWidths,
       } = metrics;
 
       let nextLeft = left;
@@ -184,7 +184,7 @@ class GridColumnMoveMouseHandler extends GridMouseHandler {
         }
       } else {
         nextOffset += SCROLL_DELTA;
-        let leftColumnWidth = visibleColumnWidths.get(left);
+        let leftColumnWidth = allColumnWidths.get(left);
         while (leftColumnWidth !== undefined && nextOffset > leftColumnWidth) {
           nextLeft += 1;
           nextOffset -= leftColumnWidth;
@@ -418,7 +418,7 @@ class GridColumnMoveMouseHandler extends GridMouseHandler {
       floatingLeftWidth,
       width,
       columnHeaderMaxDepth,
-      visibleColumnXs,
+      allColumnXs,
     } = metrics;
 
     const isDraggingLeft = deltaX < 0;
@@ -483,7 +483,7 @@ class GridColumnMoveMouseHandler extends GridMouseHandler {
         );
 
         this.draggingOffset =
-          mouseX - (visibleColumnXs.get(parentVisibleRange[0]) ?? 0);
+          mouseX - (allColumnXs.get(parentVisibleRange[0]) ?? 0);
         this.draggingColumn = {
           ...this.draggingColumn,
           left: mouseX - this.draggingOffset,

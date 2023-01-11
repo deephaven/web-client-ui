@@ -162,10 +162,11 @@ describe('options when source is selected', () => {
       onChange.mockClear();
     });
 
-    it('triggers all default handlers without error', () => {
-      userEvent.click(getSourceButton());
-      fireEvent.mouseEnter(getSourceButton());
-      fireEvent.mouseLeave(getSourceButton());
+    it('triggers all default handlers without error', async () => {
+      const user = userEvent.setup({ delay: null });
+      await user.click(getSourceButton());
+      await user.hover(getSourceButton());
+      await user.unhover(getSourceButton());
     });
 
     it('has the initial state correct', () => {
@@ -177,12 +178,13 @@ describe('options when source is selected', () => {
       expect(getOption(column.name).selected).toBe(true);
     });
 
-    it('fires a change event when column changed and saved', () => {
+    it('fires a change event when column changed and saved', async () => {
+      const user = userEvent.setup({ delay: null });
       const filterSelect = getFilterSelect();
-      userEvent.selectOptions(filterSelect, getOption(columns[2].name));
+      await user.selectOptions(filterSelect, getOption(columns[2].name));
       expect(getOption(columns[2].name).selected).toBe(true);
       expect(onChange).not.toHaveBeenCalled();
-      userEvent.click(screen.getByRole('button', { name: 'Save' }));
+      await user.click(screen.getByRole('button', { name: 'Save' }));
       jest.runOnlyPendingTimers();
       expect(onChange).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -194,9 +196,10 @@ describe('options when source is selected', () => {
       expect(getValueSelect()).toHaveFocus();
     });
 
-    it('disables save button when column deselected', () => {
+    it('disables save button when column deselected', async () => {
+      const user = userEvent.setup({ delay: null });
       const filterSelect = getFilterSelect();
-      userEvent.selectOptions(
+      await user.selectOptions(
         filterSelect,
         getOption(DropdownFilter.SOURCE_BUTTON_PLACEHOLDER)
       );
@@ -245,7 +248,8 @@ describe('options when source is selected', () => {
       });
     });
 
-    it('handles selecting `null` value', () => {
+    it('handles selecting `null` value', async () => {
+      const user = userEvent.setup({ delay: null });
       const newValues = [...values, null];
       container.rerender(
         makeContainer({
@@ -259,7 +263,7 @@ describe('options when source is selected', () => {
           values: newValues,
         })
       );
-      userEvent.selectOptions(getValueSelect(), getOption('(null)'));
+      await user.selectOptions(getValueSelect(), getOption('(null)'));
       expect(getOption('(null)').selected).toBe(true);
       jest.runOnlyPendingTimers();
       expect(onChange).toHaveBeenCalledWith(
@@ -269,14 +273,15 @@ describe('options when source is selected', () => {
       );
     });
 
-    it('resets value fires a change event when column changed and saved', () => {
-      userEvent.click(getSettingsButton());
+    it('resets value fires a change event when column changed and saved', async () => {
+      const user = userEvent.setup({ delay: null });
+      await user.click(getSettingsButton());
       onChange.mockClear();
       const filterSelect = getFilterSelect();
-      userEvent.selectOptions(filterSelect, getOption(columns[2].name));
+      await user.selectOptions(filterSelect, getOption(columns[2].name));
       expect(getOption(columns[2].name).selected).toBe(true);
       expect(onChange).not.toHaveBeenCalled();
-      userEvent.click(getSaveButton());
+      await user.click(getSaveButton());
       jest.runOnlyPendingTimers();
       expect(getOption(DropdownFilter.PLACEHOLDER).selected).toBe(true);
       expect(onChange).toHaveBeenCalledWith(
@@ -288,14 +293,15 @@ describe('options when source is selected', () => {
       );
     });
 
-    it('does not reset value but fires a change event when column not changed and saved', () => {
-      userEvent.click(getSettingsButton());
+    it('does not reset value but fires a change event when column not changed and saved', async () => {
+      const user = userEvent.setup({ delay: null });
+      await user.click(getSettingsButton());
       onChange.mockClear();
       const filterSelect = getFilterSelect();
-      userEvent.selectOptions(filterSelect, getOption(column.name));
+      await user.selectOptions(filterSelect, getOption(column.name));
       expect(getOption(column.name).selected).toBe(true);
       expect(onChange).not.toHaveBeenCalled();
-      userEvent.click(getSaveButton());
+      await user.click(getSaveButton());
       jest.runOnlyPendingTimers();
       expect(getOption(DropdownFilter.PLACEHOLDER).selected).not.toBe(true);
       expect(getOption(value).selected).toBe(true);
@@ -308,10 +314,11 @@ describe('options when source is selected', () => {
       );
     });
 
-    it('fires a change when selecting a new value', () => {
+    it('fires a change when selecting a new value', async () => {
+      const user = userEvent.setup({ delay: null });
       const newValue = values[1];
 
-      userEvent.selectOptions(getValueSelect(), getOption(newValue));
+      await user.selectOptions(getValueSelect(), getOption(newValue));
 
       jest.runOnlyPendingTimers();
 
@@ -334,7 +341,7 @@ describe('options when source is selected', () => {
 
       onChange.mockClear();
 
-      userEvent.selectOptions(
+      await user.selectOptions(
         getValueSelect(),
         getOption(DropdownFilter.PLACEHOLDER)
       );
@@ -355,23 +362,25 @@ describe('options when source is selected', () => {
       expect(onChange).not.toHaveBeenCalled();
     });
 
-    it('cancels a change in selected column correctly', () => {
-      userEvent.click(getSettingsButton());
+    it('cancels a change in selected column correctly', async () => {
+      const user = userEvent.setup({ delay: null });
+      await user.click(getSettingsButton());
 
       const filterSelect = getFilterSelect();
-      userEvent.selectOptions(filterSelect, getOption(columns[2].name));
+      await user.selectOptions(filterSelect, getOption(columns[2].name));
 
       jest.runOnlyPendingTimers();
       expect(getOption(columns[2].name).selected).toBe(true);
-      userEvent.click(getCancelButton());
+      await user.click(getCancelButton());
 
       expect(getOption(column.name).selected).toBe(true);
       expect(getOption(columns[2].name).selected).not.toBe(true);
     });
 
-    it('focuses the dropdown when clicking the background', () => {
+    it('focuses the dropdown when clicking the background', async () => {
+      const user = userEvent.setup({ delay: null });
       expect(getValueSelect()).not.toHaveFocus();
-      userEvent.click(screen.getByTestId('dropdown-filter-value-background'));
+      await user.click(screen.getByTestId('dropdown-filter-value-background'));
       expect(getValueSelect()).toHaveFocus();
     });
 

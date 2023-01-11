@@ -63,12 +63,6 @@ module.exports = {
   },
   overrides: [
     {
-      files: ['**/*.test.@(js|jsx|ts|tsx)'],
-      rules: {
-        'import/no-extraneous-dependencies': 'off',
-      },
-    },
-    {
       files: ['**/*.@(ts|tsx)'],
       plugins: ['@typescript-eslint'],
       extends: ['plugin:@typescript-eslint/recommended'],
@@ -84,6 +78,14 @@ module.exports = {
         '@typescript-eslint/strict-boolean-expressions': ['error'],
         'default-param-last': 'off',
         '@typescript-eslint/default-param-last': ['error'],
+      },
+    },
+    {
+      files: ['**/*.test.@(js|jsx|ts|tsx)'],
+      plugins: ['@typescript-eslint'],
+      rules: {
+        'import/no-extraneous-dependencies': 'off',
+        '@typescript-eslint/no-non-null-assertion': 'off',
       },
     },
   ],

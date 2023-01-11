@@ -32,9 +32,10 @@ it('focuses default button on first render after opening', () => {
   expect(getByTestId(`${DEFAULT_TEST_ID}-btn-confirm`)).toHaveFocus();
 });
 
-it('does not re-focus default button on re-render', () => {
+it('does not re-focus default button on re-render', async () => {
+  const user = userEvent.setup();
   const { getByTestId, rerender } = makeWrapper();
-  userEvent.tab();
+  await user.tab();
   expect(getByTestId(`${DEFAULT_TEST_ID}-btn-confirm`)).not.toHaveFocus();
   rerender(
     <BasicModal

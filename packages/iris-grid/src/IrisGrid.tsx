@@ -3277,13 +3277,13 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     assertNotNull(gridRect);
     const {
       columnHeaderHeight,
-      visibleColumnXs,
-      visibleColumnWidths,
+      allColumnXs,
+      allColumnWidths,
       width,
       columnHeaderMaxDepth,
     } = metrics;
-    const columnX = visibleColumnXs.get(shownColumnTooltip);
-    const columnWidth = visibleColumnWidths.get(shownColumnTooltip);
+    const columnX = allColumnXs.get(shownColumnTooltip);
+    const columnWidth = allColumnWidths.get(shownColumnTooltip);
 
     assertNotNull(columnX);
     assertNotNull(columnWidth);
@@ -3390,12 +3390,12 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     const {
       columnHeaderHeight,
       columnHeaderMaxDepth,
-      visibleColumnXs,
-      visibleColumnWidths,
+      allColumnXs,
+      allColumnWidths,
       width,
     } = metrics;
-    const columnX = visibleColumnXs.get(visibleIndex);
-    const columnWidth = visibleColumnWidths.get(visibleIndex);
+    const columnX = allColumnXs.get(visibleIndex);
+    const columnWidth = allColumnWidths.get(visibleIndex);
 
     if (columnX == null || columnWidth == null) {
       return null;
@@ -3616,15 +3616,9 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       : IrisGrid.maxDebounce;
 
     if (isFilterBarShown && focusedFilterBarColumn != null && metrics != null) {
-      const {
-        gridX,
-        gridY,
-        visibleColumnXs,
-        visibleColumnWidths,
-        width,
-      } = metrics;
-      const columnX = visibleColumnXs.get(focusedFilterBarColumn);
-      const columnWidth = visibleColumnWidths.get(focusedFilterBarColumn);
+      const { gridX, gridY, allColumnXs, allColumnWidths, width } = metrics;
+      const columnX = allColumnXs.get(focusedFilterBarColumn);
+      const columnWidth = allColumnWidths.get(focusedFilterBarColumn);
       if (columnX != null && columnWidth != null) {
         const x = gridX + columnX;
         const y = gridY - (theme.filterBarHeight ?? 0);
@@ -3717,16 +3711,16 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
         gridX,
         gridY,
         visibleColumns,
-        visibleColumnXs,
-        visibleColumnWidths,
+        allColumnXs,
+        allColumnWidths,
       } = metrics;
       const { filterBarHeight } = theme;
 
       for (let i = 0; i < visibleColumns.length; i += 1) {
         const columnIndex = visibleColumns[i];
 
-        const columnX = visibleColumnXs.get(columnIndex);
-        const columnWidth = visibleColumnWidths.get(columnIndex);
+        const columnX = allColumnXs.get(columnIndex);
+        const columnWidth = allColumnWidths.get(columnIndex);
         const modelColumn = this.getModelColumn(columnIndex);
         if (modelColumn != null) {
           const isFilterable = model.isFilterable(modelColumn);
@@ -3803,14 +3797,14 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       const {
         gridX,
         visibleColumns,
-        visibleColumnXs,
-        visibleColumnWidths,
+        allColumnXs,
+        allColumnWidths,
         columnHeaderHeight,
       } = metrics;
       for (let i = 0; i < visibleColumns.length; i += 1) {
         const columnIndex = visibleColumns[i];
-        const columnX = visibleColumnXs.get(columnIndex);
-        const columnWidth = visibleColumnWidths.get(columnIndex);
+        const columnX = allColumnXs.get(columnIndex);
+        const columnWidth = allColumnWidths.get(columnIndex);
         if (columnX != null && columnWidth != null && columnWidth > 0) {
           const xColumnHeader = gridX + columnX;
           const xFilterBar = gridX + columnX + columnWidth - 20;

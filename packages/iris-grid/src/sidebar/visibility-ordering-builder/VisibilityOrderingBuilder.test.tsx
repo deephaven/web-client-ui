@@ -1,9 +1,9 @@
 import React from 'react';
-import { fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { GridUtils } from '@deephaven/grid';
 import type { MoveOperation } from '@deephaven/grid';
-import { assertNotNull } from '@deephaven/utils';
+import { assertNotNull, TestUtils } from '@deephaven/utils';
 import type { ColumnGroup } from '@deephaven/jsapi-shim';
 import VisibilityOrderingBuilder from './VisibilityOrderingBuilder';
 import IrisGridTestUtils from '../../IrisGridTestUtils';
@@ -100,35 +100,35 @@ function makeModelWithGroups(groups = COLUMN_HEADER_GROUPS) {
   );
 }
 
-function controlClick(element: HTMLElement) {
-  userEvent.click(element, { ctrlKey: true });
-}
-
-function shiftClick(element: HTMLElement) {
-  userEvent.click(element, { shiftKey: true });
-}
-
-function clickItem(index: number, addToExisting = false) {
+async function clickItem(
+  user: ReturnType<typeof userEvent.setup>,
+  index: number,
+  addToExisting = false
+) {
   const elements = screen.getAllByText(ALL_PREFIX, { exact: false });
   if (addToExisting) {
-    controlClick(elements[index]);
+    await TestUtils.controlClick(user, elements[index]);
   } else {
-    userEvent.click(elements[index]);
+    await user.click(elements[index]);
   }
 }
 
-function selectItems(indexes: number[]) {
-  clearSelection();
+async function selectItems(
+  user: ReturnType<typeof userEvent.setup>,
+  indexes: number[]
+) {
+  await clearSelection(user);
   for (let i = 0; i < indexes.length; i += 1) {
-    clickItem(indexes[i], true);
+    // eslint-disable-next-line no-await-in-loop
+    await clickItem(user, indexes[i], true);
   }
 }
 
-function clearSelection() {
+async function clearSelection(user: ReturnType<typeof userEvent.setup>) {
   const elements = screen.getAllByText(ALL_PREFIX, { exact: false });
-  clickItem(0);
+  await clickItem(user, 0);
   if (elements[0].closest(`.${SELECTED_CLASS}`) != null) {
-    clickItem(0);
+    await clickItem(user, 0);
   }
 }
 
@@ -191,69 +191,72 @@ test('Renders a grid of only immovable items', () => {
   expect(elements.length).toBe(1);
 });
 
-test('Select and deselects items', () => {
+test('Select and deselects items', async () => {
+  const user = userEvent.setup({ delay: null });
   render(<Builder />);
   const elements = screen.getAllByText(ALL_PREFIX, { exact: false });
-  clickItem(0);
+  await clickItem(user, 0);
   expectSelection([0]);
-  clickItem(1);
+  await clickItem(user, 1);
   expectSelection([1]);
 
-  controlClick(elements[2]);
+  await TestUtils.controlClick(user, elements[2]);
   expectSelection([1, 2]);
 
-  shiftClick(elements[4]);
+  await TestUtils.shiftClick(user, elements[4]);
   expectSelection([1, 2, 3, 4]);
 
-  controlClick(elements[2]);
+  await TestUtils.controlClick(user, elements[2]);
   expectSelection([1, 3, 4]);
 
-  clickItem(2);
+  await clickItem(user, 2);
   expectSelection([2]);
-  controlClick(elements[3]);
+  await TestUtils.controlClick(user, elements[3]);
   expectSelection([2, 3]);
-  clickItem(3);
+  await clickItem(user, 3);
   expectSelection([3]);
 });
 
-test('Select and deselects groups', () => {
+test('Select and deselects groups', async () => {
+  const user = userEvent.setup({ delay: null });
   render(<BuilderWithGroups />);
   const elements = screen.getAllByText(ALL_PREFIX, { exact: false });
 
-  clickItem(1); // Select group
+  await clickItem(user, 1); // Select group
   expectSelection([1, 2, 3]);
 
-  clickItem(4); // Select the other group
+  await clickItem(user, 4); // Select the other group
   expectSelection([4, 5, 6]);
 
-  controlClick(elements[7]); // Add element to selection
+  await TestUtils.controlClick(user, elements[7]); // Add element to selection
   expectSelection([4, 5, 6, 7]);
 
-  shiftClick(elements[9]); // Add 2 more to selection via range select
+  await TestUtils.shiftClick(user, elements[9]); // Add 2 more to selection via range select
   expectSelection([4, 5, 6, 7, 8, 9]);
 
-  controlClick(elements[1]); // Add 1st group to selection
+  await TestUtils.controlClick(user, elements[1]); // Add 1st group to selection
   expectSelection([1, 2, 3, 4, 5, 6, 7, 8, 9]);
 
-  controlClick(elements[1]); // Remove 1st group from selection
+  await TestUtils.controlClick(user, elements[1]); // Remove 1st group from selection
   expectSelection([4, 5, 6, 7, 8, 9]);
 
-  controlClick(elements[5]); // Remove child of 2nd group from selection
+  await TestUtils.controlClick(user, elements[5]); // Remove child of 2nd group from selection
   expectSelection([6, 7, 8, 9]);
 
-  clickItem(2); // Select item in 1st group alone
+  await clickItem(user, 2); // Select item in 1st group alone
   expectSelection([2]);
 });
 
-test('Moves items up with button', () => {
+test('Moves items up with button', async () => {
+  const user = userEvent.setup({ delay: null });
   const mockHandler = jest.fn();
   const getUpButton = () => screen.getByLabelText('Move selection up');
   const { rerender } = render(<Builder onMovedColumnsChanged={mockHandler} />);
 
-  selectItems([1]);
+  await selectItems(user, [1]);
   // Must get after an item is selected
   // Disabled buttons render in a wrapper and the element changes after selection
-  userEvent.click(getUpButton());
+  await user.click(getUpButton());
   let newMoves = [{ from: 1, to: 0 }];
   expect(mockHandler).toBeCalledWith(newMoves, undefined);
 
@@ -262,15 +265,15 @@ test('Moves items up with button', () => {
     <Builder onMovedColumnsChanged={mockHandler} movedColumns={newMoves} />
   );
   mockHandler.mockReset();
-  userEvent.click(getUpButton());
+  await user.click(getUpButton());
   expect(mockHandler).not.toBeCalled();
 
-  clearSelection();
+  await clearSelection(user);
 
   // Multi select
   rerender(<Builder onMovedColumnsChanged={mockHandler} movedColumns={[]} />);
-  selectItems([1, 3]);
-  userEvent.click(getUpButton());
+  await selectItems(user, [1, 3]);
+  await user.click(getUpButton());
   newMoves = [
     { from: 1, to: 0 },
     { from: 3, to: 2 },
@@ -280,7 +283,7 @@ test('Moves items up with button', () => {
   rerender(
     <Builder onMovedColumnsChanged={mockHandler} movedColumns={newMoves} />
   );
-  userEvent.click(getUpButton());
+  await user.click(getUpButton());
   newMoves = newMoves.concat({ from: 2, to: 1 });
   expect(mockHandler).toBeCalledWith(newMoves, undefined);
 
@@ -289,11 +292,12 @@ test('Moves items up with button', () => {
     <Builder onMovedColumnsChanged={mockHandler} movedColumns={newMoves} />
   );
   mockHandler.mockReset();
-  userEvent.click(getUpButton());
+  await user.click(getUpButton());
   expect(mockHandler).not.toBeCalled();
 });
 
-test('Moves groups up with button', () => {
+test('Moves groups up with button', async () => {
+  const user = userEvent.setup({ delay: null });
   const mockHandler = jest.fn();
   const getUpButton = () => screen.getByLabelText('Move selection up');
   const model = makeModelWithGroups();
@@ -301,8 +305,8 @@ test('Moves groups up with button', () => {
     <BuilderWithGroups model={model} onMovedColumnsChanged={mockHandler} />
   );
 
-  selectItems([1]);
-  userEvent.click(getUpButton());
+  await selectItems(user, [1]);
+  await user.click(getUpButton());
   const newMoves: MoveOperation[] = model.initialMovedColumns.concat([
     { from: [1, 2], to: 0 },
   ]);
@@ -313,11 +317,12 @@ test('Moves groups up with button', () => {
     <Builder onMovedColumnsChanged={mockHandler} movedColumns={newMoves} />
   );
   mockHandler.mockReset();
-  userEvent.click(getUpButton());
+  await user.click(getUpButton());
   expect(mockHandler).not.toBeCalled();
 });
 
-test('Moves items in and out of groups with up button', () => {
+test('Moves items in and out of groups with up button', async () => {
+  const user = userEvent.setup({ delay: null });
   const mockMoveHandler = jest.fn();
   const mockGroupHandler = jest.fn() as jest.MockedFunction<
     VisibilityOrderingBuilder['props']['onColumnHeaderGroupChanged']
@@ -332,8 +337,8 @@ test('Moves items in and out of groups with up button', () => {
     />
   );
 
-  selectItems([2]); // First child in outer group
-  userEvent.click(getUpButton());
+  await selectItems(user, [2]); // First child in outer group
+  await user.click(getUpButton());
   expect(mockMoveHandler).not.toBeCalled();
   expect(mockGroupHandler).toBeCalledWith(
     expect.arrayContaining([
@@ -349,8 +354,8 @@ test('Moves items in and out of groups with up button', () => {
 
   mockGroupHandler.mockReset();
 
-  selectItems([7]); // First item after the nested groups, col5
-  userEvent.click(getUpButton());
+  await selectItems(user, [7]); // First item after the nested groups, col5
+  await user.click(getUpButton());
   expect(mockMoveHandler).not.toBeCalled();
   expect(mockGroupHandler).toBeCalledWith(
     expect.arrayContaining([
@@ -376,7 +381,7 @@ test('Moves items in and out of groups with up button', () => {
     />
   );
   mockGroupHandler.mockReset();
-  userEvent.click(getUpButton());
+  await user.click(getUpButton());
   expect(mockMoveHandler).not.toBeCalled();
   expect(mockGroupHandler).toBeCalledWith(
     expect.arrayContaining([
@@ -391,20 +396,21 @@ test('Moves items in and out of groups with up button', () => {
   );
 });
 
-test('Moves items down with button', () => {
+test('Moves items down with button', async () => {
+  const user = userEvent.setup({ delay: null });
   const mockHandler = jest.fn();
   const getDownButton = () => screen.getByLabelText('Move selection down');
   const { rerender } = render(<Builder onMovedColumnsChanged={mockHandler} />);
 
-  clickItem(1);
-  userEvent.click(getDownButton());
+  await clickItem(user, 1);
+  await user.click(getDownButton());
   let newMoves = [{ from: 1, to: 2 }];
   expect(mockHandler).toBeCalledWith(newMoves, undefined);
 
   rerender(
     <Builder onMovedColumnsChanged={mockHandler} movedColumns={newMoves} />
   );
-  userEvent.click(getDownButton());
+  await user.click(getDownButton());
   newMoves = [
     { from: 1, to: 2 },
     { from: 2, to: 3 },
@@ -414,8 +420,8 @@ test('Moves items down with button', () => {
   // Multi-select
   rerender(<Builder onMovedColumnsChanged={mockHandler} />);
 
-  selectItems([6, 8]);
-  userEvent.click(getDownButton());
+  await selectItems(user, [6, 8]);
+  await user.click(getDownButton());
   newMoves = [
     { from: 8, to: 9 },
     { from: 6, to: 7 },
@@ -425,7 +431,7 @@ test('Moves items down with button', () => {
   rerender(
     <Builder onMovedColumnsChanged={mockHandler} movedColumns={newMoves} />
   );
-  userEvent.click(getDownButton());
+  await user.click(getDownButton());
   newMoves = newMoves.concat({ from: 7, to: 8 });
   expect(mockHandler).toBeCalledWith(newMoves, undefined);
 
@@ -434,11 +440,12 @@ test('Moves items down with button', () => {
   rerender(
     <Builder onMovedColumnsChanged={mockHandler} movedColumns={newMoves} />
   );
-  userEvent.click(getDownButton());
+  await user.click(getDownButton());
   expect(mockHandler).not.toBeCalled();
 });
 
-test('Moves groups down with button', () => {
+test('Moves groups down with button', async () => {
+  const user = userEvent.setup({ delay: null });
   const mockHandler = jest.fn();
   const getDownButton = () => screen.getByLabelText('Move selection down');
   const model = makeModelWithGroups();
@@ -454,8 +461,8 @@ test('Moves groups down with button', () => {
     />
   );
 
-  selectItems([8]); // 2nd group, 1 item above the bottom
-  userEvent.click(getDownButton());
+  await selectItems(user, [8]); // 2nd group, 1 item above the bottom
+  await user.click(getDownButton());
   const newMoves: MoveOperation[] = movedColumns.concat([
     { from: [7, 8], to: 8 },
   ]);
@@ -466,11 +473,12 @@ test('Moves groups down with button', () => {
     <Builder onMovedColumnsChanged={mockHandler} movedColumns={newMoves} />
   );
   mockHandler.mockReset();
-  userEvent.click(getDownButton());
+  await user.click(getDownButton());
   expect(mockHandler).not.toBeCalled();
 });
 
-test('Moves items in and out of groups with down button', () => {
+test('Moves items in and out of groups with down button', async () => {
+  const user = userEvent.setup({ delay: null });
   const mockMoveHandler = jest.fn();
   const mockGroupHandler = jest.fn() as jest.MockedFunction<
     VisibilityOrderingBuilder['props']['onColumnHeaderGroupChanged']
@@ -485,8 +493,8 @@ test('Moves items in and out of groups with down button', () => {
     />
   );
 
-  selectItems([0]); // First item above groups
-  userEvent.click(getDownButton());
+  await selectItems(user, [0]); // First item above groups
+  await user.click(getDownButton());
   expect(mockMoveHandler).not.toBeCalled();
   expect(mockGroupHandler).toBeCalledWith(
     expect.arrayContaining([
@@ -502,8 +510,8 @@ test('Moves items in and out of groups with down button', () => {
 
   mockGroupHandler.mockReset();
 
-  selectItems([6]); // Last item of the nested groups, col4
-  userEvent.click(getDownButton());
+  await selectItems(user, [6]); // Last item of the nested groups, col4
+  await user.click(getDownButton());
   expect(mockMoveHandler).not.toBeCalled();
   expect(mockGroupHandler).toBeCalledWith(
     expect.arrayContaining([
@@ -535,7 +543,7 @@ test('Moves items in and out of groups with down button', () => {
     />
   );
   mockGroupHandler.mockReset();
-  userEvent.click(getDownButton());
+  await user.click(getDownButton());
   expect(mockMoveHandler).not.toBeCalled();
   expect(mockGroupHandler).toBeCalledWith(
     expect.arrayContaining([
@@ -561,8 +569,8 @@ test('Moves items in and out of groups with down button', () => {
   );
   mockGroupHandler.mockReset();
 
-  selectItems([11]); // Last item. In the 1st group and at the bottom
-  userEvent.click(getDownButton());
+  await selectItems(user, [11]); // Last item. In the 1st group and at the bottom
+  await user.click(getDownButton());
   expect(mockMoveHandler).not.toBeCalled();
   expect(mockGroupHandler).toBeCalledWith([
     expect.objectContaining({
@@ -573,14 +581,15 @@ test('Moves items in and out of groups with down button', () => {
   ]);
 });
 
-test('Moves items to top with button', () => {
+test('Moves items to top with button', async () => {
+  const user = userEvent.setup({ delay: null });
   const mockHandler = jest.fn((_, cb) => cb());
   const getTopButton = () => screen.getByLabelText('Move selection to top');
   const { rerender } = render(<Builder onMovedColumnsChanged={mockHandler} />);
 
-  selectItems([1]);
+  await selectItems(user, [1]);
   // Must get after an item is selected. Disabled buttons render in a wrapper
-  userEvent.click(getTopButton());
+  await user.click(getTopButton());
   let newMoves = [{ from: 1, to: 0 }];
   expect(mockHandler).toBeCalledWith(newMoves, expect.anything());
 
@@ -589,15 +598,15 @@ test('Moves items to top with button', () => {
     <Builder onMovedColumnsChanged={mockHandler} movedColumns={newMoves} />
   );
   mockHandler.mockReset();
-  userEvent.click(getTopButton());
+  await user.click(getTopButton());
   expect(mockHandler).not.toBeCalled();
 
-  clearSelection();
+  await clearSelection(user);
 
   // Multi select
   rerender(<Builder onMovedColumnsChanged={mockHandler} movedColumns={[]} />);
-  selectItems([0, 2, 4]);
-  userEvent.click(getTopButton());
+  await selectItems(user, [0, 2, 4]);
+  await user.click(getTopButton());
   newMoves = [
     { from: 2, to: 1 },
     { from: 4, to: 2 },
@@ -608,11 +617,12 @@ test('Moves items to top with button', () => {
     <Builder onMovedColumnsChanged={mockHandler} movedColumns={newMoves} />
   );
   mockHandler.mockReset();
-  userEvent.click(getTopButton());
+  await user.click(getTopButton());
   expect(mockHandler).not.toBeCalled();
 });
 
-test('Moves groups to top with button', () => {
+test('Moves groups to top with button', async () => {
+  const user = userEvent.setup({ delay: null });
   const mockHandler = jest.fn((_, cb) => cb());
   const getTopButton = () => screen.getByLabelText('Move selection to top');
   const model = makeModelWithGroups();
@@ -620,9 +630,9 @@ test('Moves groups to top with button', () => {
     <BuilderWithGroups model={model} onMovedColumnsChanged={mockHandler} />
   );
 
-  selectItems([1]);
+  await selectItems(user, [1]);
   // Must get after an item is selected. Disabled buttons render in a wrapper
-  userEvent.click(getTopButton());
+  await user.click(getTopButton());
   const newMoves = model.initialMovedColumns.concat([{ from: [1, 2], to: 0 }]);
   expect(mockHandler).toBeCalledWith(newMoves, expect.anything());
 
@@ -635,19 +645,20 @@ test('Moves groups to top with button', () => {
     />
   );
   mockHandler.mockReset();
-  userEvent.click(getTopButton());
+  await user.click(getTopButton());
   expect(mockHandler).not.toBeCalled();
 });
 
-test('Moves items to bottom with button', () => {
+test('Moves items to bottom with button', async () => {
+  const user = userEvent.setup({ delay: null });
   const mockHandler = jest.fn((_, cb) => cb());
   const getBottomButton = () =>
     screen.getByLabelText('Move selection to bottom');
   const { rerender } = render(<Builder onMovedColumnsChanged={mockHandler} />);
 
-  selectItems([1]);
+  await selectItems(user, [1]);
   // Must get after an item is selected. Disabled buttons render in a wrapper
-  userEvent.click(getBottomButton());
+  await user.click(getBottomButton());
   let newMoves = [{ from: 1, to: 9 }];
   expect(mockHandler).toBeCalledWith(newMoves, expect.anything());
 
@@ -656,15 +667,15 @@ test('Moves items to bottom with button', () => {
     <Builder onMovedColumnsChanged={mockHandler} movedColumns={newMoves} />
   );
   mockHandler.mockReset();
-  userEvent.click(getBottomButton());
+  await user.click(getBottomButton());
   expect(mockHandler).not.toBeCalled();
 
-  clearSelection();
+  await clearSelection(user);
 
   // Multi select
   rerender(<Builder onMovedColumnsChanged={mockHandler} movedColumns={[]} />);
-  selectItems([0, 2, 4, 9]);
-  userEvent.click(getBottomButton());
+  await selectItems(user, [0, 2, 4, 9]);
+  await user.click(getBottomButton());
   newMoves = [
     { from: 4, to: 8 },
     { from: 2, to: 7 },
@@ -676,11 +687,12 @@ test('Moves items to bottom with button', () => {
     <Builder onMovedColumnsChanged={mockHandler} movedColumns={newMoves} />
   );
   mockHandler.mockReset();
-  userEvent.click(getBottomButton());
+  await user.click(getBottomButton());
   expect(mockHandler).not.toBeCalled();
 });
 
-test('Moves groups to bottom with button', () => {
+test('Moves groups to bottom with button', async () => {
+  const user = userEvent.setup({ delay: null });
   const mockHandler = jest.fn((_, cb) => cb());
   const getBottomButton = () =>
     screen.getByLabelText('Move selection to bottom');
@@ -689,9 +701,9 @@ test('Moves groups to bottom with button', () => {
     <BuilderWithGroups model={model} onMovedColumnsChanged={mockHandler} />
   );
 
-  selectItems([1]);
+  await selectItems(user, [1]);
   // Must get after an item is selected. Disabled buttons render in a wrapper
-  userEvent.click(getBottomButton());
+  await user.click(getBottomButton());
   const newMoves = model.initialMovedColumns.concat([{ from: [1, 2], to: 8 }]);
   expect(mockHandler).toBeCalledWith(newMoves, expect.anything());
 
@@ -704,18 +716,19 @@ test('Moves groups to bottom with button', () => {
     />
   );
   mockHandler.mockReset();
-  userEvent.click(getBottomButton());
+  await user.click(getBottomButton());
   expect(mockHandler).not.toBeCalled();
 });
 
-test('Sorts items', () => {
+test('Sorts items', async () => {
+  const user = userEvent.setup({ delay: null });
   const mockHandler = jest.fn();
   const { rerender } = render(
     <BuilderWithGroups onMovedColumnsChanged={mockHandler} />
   );
   const sortDescendingBtn = screen.getByLabelText('Sort descending');
 
-  userEvent.click(sortDescendingBtn);
+  await user.click(sortDescendingBtn);
   let movedColumns = mockHandler.mock.calls[0][0];
 
   // TestGroups at the end after sort
@@ -736,7 +749,7 @@ test('Sorts items', () => {
   );
 
   const sortAscendingBtn = screen.getByLabelText('Sort ascending');
-  userEvent.click(sortAscendingBtn);
+  await user.click(sortAscendingBtn);
   // No idea why this is a prefer destructuring issue
   // eslint-disable-next-line prefer-destructuring
   movedColumns = mockHandler.mock.calls[0][0];
@@ -745,7 +758,8 @@ test('Sorts items', () => {
   );
 });
 
-test('Creates groups', () => {
+test('Creates groups', async () => {
+  const user = userEvent.setup({ delay: null });
   const model = makeModel();
   const mockGroupHandler = jest.fn() as jest.MockedFunction<
     VisibilityOrderingBuilder['props']['onColumnHeaderGroupChanged']
@@ -759,10 +773,10 @@ test('Creates groups', () => {
     />
   );
 
-  selectItems([1, 3]);
+  await selectItems(user, [1, 3]);
 
   const createGroupBtn = screen.getByText('Group');
-  userEvent.click(createGroupBtn);
+  await user.click(createGroupBtn);
 
   const groupObject = {
     children: [`${COLUMN_PREFIX}1`, `${COLUMN_PREFIX}3`],
@@ -793,12 +807,13 @@ test('Creates groups', () => {
   mockMoveHandler.mockReset();
 
   const cancelButton = screen.getByLabelText('Cancel');
-  userEvent.click(cancelButton);
+  await user.click(cancelButton);
   expect(mockGroupHandler).toBeCalledWith([]);
   expect(mockMoveHandler).not.toBeCalled();
 });
 
-test('Only allows 1 new group at a time', () => {
+test('Only allows 1 new group at a time', async () => {
+  const user = userEvent.setup({ delay: null });
   const model = makeModelWithGroups([
     {
       children: [`${COLUMN_PREFIX}0`, `${COLUMN_PREFIX}1`],
@@ -816,85 +831,95 @@ test('Only allows 1 new group at a time', () => {
     />
   );
 
-  selectItems([2, 3]);
+  await selectItems(user, [2, 3]);
   const groupObject = {
     children: [`${COLUMN_PREFIX}2`, `${COLUMN_PREFIX}3`],
     name: expect.stringContaining(`${ColumnHeaderGroup.NEW_GROUP_PREFIX}`),
   };
 
   const createGroupBtn = screen.getByText('Group');
-  userEvent.click(createGroupBtn);
+  await user.click(createGroupBtn);
   expect(mockGroupHandler).toBeCalledWith([
     expect.objectContaining(groupObject),
   ]);
 });
 
-test('Search columns', () => {
+test('Search columns', async () => {
+  const user = userEvent.setup({ delay: null });
   render(<BuilderWithGroups />);
 
   const searchInput = screen.getByPlaceholderText('Search');
 
-  userEvent.type(searchInput, GROUP_PREFIX);
-  jest.advanceTimersByTime(500); // Advance past debounce timeout
+  await user.type(searchInput, GROUP_PREFIX);
+  act(() => {
+    jest.advanceTimersByTime(500); // Advance past debounce timeout.
+  }); // Not sure why only this call needs act to silence the test warnings
 
   // 1 is first group, 2 and 3 are children. 4 is 2nd group, 5 and 6 are children
   expectSelection([1, 2, 3, 4, 5, 6]);
 
-  userEvent.type(searchInput, 'One');
+  await user.type(searchInput, 'One');
+
   jest.advanceTimersByTime(500);
+
   expectSelection([1, 2, 3]);
 
-  userEvent.clear(searchInput);
+  await user.clear(searchInput);
+
   jest.advanceTimersByTime(500);
+
   expectSelection([]);
 
-  userEvent.type(searchInput, 'asdf');
+  await user.type(searchInput, 'asdf');
+
   jest.advanceTimersByTime(500);
   expectSelection([]);
 });
 
-test('Edit group name', () => {
+test('Edit group name', async () => {
+  const user = userEvent.setup({ delay: null });
   const mockHandler = jest.fn();
   const getEditButton = () => screen.getAllByLabelText('Edit')[1]; // Edit the nested group
   const originalName = NESTED_COLUMN_HEADER_GROUPS[1].name;
   render(<BuilderWithNestedGroups onColumnHeaderGroupChanged={mockHandler} />);
 
-  userEvent.click(getEditButton());
+  await user.click(getEditButton());
 
   let nameInput = screen.getByDisplayValue(originalName);
   expect(nameInput).toHaveFocus();
-  userEvent.type(nameInput, 'abc');
+  await user.type(nameInput, 'abc');
 
   const cancelButton = screen.getByLabelText('Cancel');
-  userEvent.click(cancelButton);
+  await user.click(cancelButton);
   expect(mockHandler).toHaveBeenCalledTimes(0);
 
-  userEvent.click(getEditButton());
+  await user.click(getEditButton());
   nameInput = screen.getByDisplayValue(originalName);
-  userEvent.type(nameInput, 'abc{esc}');
+  await user.type(nameInput, 'abc{Escape}');
   expect(mockHandler).toHaveBeenCalledTimes(0);
 
-  userEvent.click(getEditButton());
+  await user.click(getEditButton());
 
   nameInput = screen.getByDisplayValue(originalName);
-  userEvent.type(nameInput, NESTED_COLUMN_HEADER_GROUPS[0].name);
+  await user.clear(nameInput);
+  await user.type(nameInput, NESTED_COLUMN_HEADER_GROUPS[0].name);
   expect(screen.queryAllByText('Duplicate name').length).toBe(1);
 
-  userEvent.clear(nameInput);
+  await user.clear(nameInput);
   expect(screen.queryAllByText('Duplicate name').length).toBe(0);
 
-  userEvent.type(nameInput, 'abc{space}');
+  await user.type(nameInput, 'abc ');
   expect(screen.queryAllByText('Invalid name').length).toBe(1);
 
   // Test hitting enter w/ an invalid name
-  userEvent.type(nameInput, '{enter}');
+  await user.type(nameInput, '{Enter}');
   expect(mockHandler).not.toBeCalled();
 
-  userEvent.type(nameInput, '{backspace}');
+  await user.type(nameInput, '{Backspace}');
   expect(screen.queryAllByText('Invalid name').length).toBe(0);
 
   const confirmButton = screen.getByLabelText('Confirm');
-  userEvent.click(confirmButton);
+  await user.click(confirmButton);
   expect(mockHandler).toBeCalledWith([
     expect.objectContaining({ ...NESTED_COLUMN_HEADER_GROUPS[1], name: 'abc' }),
     expect.objectContaining({
@@ -906,9 +931,10 @@ test('Edit group name', () => {
   ]);
 
   mockHandler.mockReset();
-  userEvent.click(screen.getAllByLabelText('Edit')[0]);
+  await user.click(screen.getAllByLabelText('Edit')[0]);
   nameInput = screen.getByDisplayValue(COLUMN_HEADER_GROUPS[0].name);
-  userEvent.type(nameInput, 'abcd{enter}');
+  await user.clear(nameInput);
+  await user.type(nameInput, 'abcd{Enter}');
   expect(mockHandler).toBeCalledWith([
     // Didn't rerender, so the nested column will keep its original name for mock calls
     expect.objectContaining(NESTED_COLUMN_HEADER_GROUPS[1]),
@@ -919,13 +945,14 @@ test('Edit group name', () => {
   ]);
 });
 
-test('Delete group', () => {
+test('Delete group', async () => {
+  const user = userEvent.setup({ delay: null });
   const mockHandler = jest.fn();
   const { rerender } = render(
     <BuilderWithNestedGroups onColumnHeaderGroupChanged={mockHandler} />
   );
 
-  userEvent.click(screen.getAllByLabelText('Delete group')[1]); // Nested group delete
+  await user.click(screen.getAllByLabelText('Delete group')[1]); // Nested group delete
 
   expect(mockHandler).toBeCalledWith([
     expect.objectContaining({
@@ -945,17 +972,18 @@ test('Delete group', () => {
     />
   );
 
-  userEvent.click(screen.getAllByLabelText('Delete group')[0]);
+  await user.click(screen.getAllByLabelText('Delete group')[0]);
 
   expect(mockHandler).toBeCalledWith([]);
 });
 
-test('Change group color', () => {
+test('Change group color', async () => {
+  const user = userEvent.setup({ delay: null });
   const mockHandler = jest.fn();
   const getColorButton = () => screen.getAllByLabelText('Set color')[0];
   render(<BuilderWithGroups onColumnHeaderGroupChanged={mockHandler} />);
 
-  userEvent.click(getColorButton());
+  await user.click(getColorButton());
   const colorInput = screen.getAllByLabelText('Color input')[0];
   expect(colorInput).toHaveFocus();
 
@@ -972,7 +1000,8 @@ test('Change group color', () => {
   ]);
 });
 
-test('Toggles all visibility', () => {
+test('Toggles all visibility', async () => {
+  const user = userEvent.setup({ delay: null });
   const mockHandler = jest.fn();
   const { rerender } = render(
     <Builder onColumnVisibilityChanged={mockHandler} />
@@ -983,7 +1012,7 @@ test('Toggles all visibility', () => {
     .map((_, i) => i);
 
   const hideButton = screen.getByText('Hide All');
-  userEvent.click(hideButton);
+  await user.click(hideButton);
   expect(mockHandler).toBeCalledWith(indexes, false);
 
   rerender(
@@ -993,21 +1022,22 @@ test('Toggles all visibility', () => {
     />
   );
   const showButton = screen.getByText('Show All');
-  userEvent.click(showButton);
+  await user.click(showButton);
   expect(mockHandler).toBeCalledWith(indexes, true);
 });
 
-test('Toggles selected visibility', () => {
+test('Toggles selected visibility', async () => {
+  const user = userEvent.setup({ delay: null });
   const mockHandler = jest.fn();
   const { rerender } = render(
     <BuilderWithGroups onColumnVisibilityChanged={mockHandler} />
   );
 
-  selectItems([1, 11]); // GroupOneAndThree, last column
+  await selectItems(user, [1, 11]); // GroupOneAndThree, last column
   const indexes = [1, 3, 9]; // model indexes of selected
 
   const hideButton = screen.getByText('Hide Selected');
-  userEvent.click(hideButton);
+  await user.click(hideButton);
   expect(mockHandler).toBeCalledWith(indexes, false);
 
   rerender(
@@ -1017,22 +1047,24 @@ test('Toggles selected visibility', () => {
     />
   );
   const showButton = screen.getByText('Show Selected');
-  userEvent.click(showButton);
+  await user.click(showButton);
   expect(mockHandler).toBeCalledWith(indexes, true);
 });
 
-test('Toggles individual visibility', () => {
+test('Toggles individual visibility', async () => {
+  const user = userEvent.setup({ delay: null });
   const mockHandler = jest.fn();
   render(<BuilderWithGroups onColumnVisibilityChanged={mockHandler} />);
 
   const hideButtons = screen.getAllByLabelText('Toggle visibility');
-  userEvent.click(hideButtons[0]);
+  await user.click(hideButtons[0]);
   expect(mockHandler).toBeCalledWith([0], false);
-  userEvent.click(hideButtons[1]); // Hide group
+  await user.click(hideButtons[1]); // Hide group
   expect(mockHandler).toBeCalledWith([1, 3], false);
 });
 
-test('Resets state', () => {
+test('Resets state', async () => {
+  const user = userEvent.setup({ delay: null });
   const mockGroupHandler = jest.fn();
   const mockMoveHandler = jest.fn();
   const mockVisibilityHandler = jest.fn();
@@ -1047,7 +1079,7 @@ test('Resets state', () => {
   );
 
   const resetBtn = screen.getByText('Reset');
-  userEvent.click(resetBtn);
+  await user.click(resetBtn);
 
   expect(mockGroupHandler).toBeCalledWith(model.initialColumnHeaderGroups);
   expect(mockMoveHandler).toBeCalledWith(model.initialMovedColumns);
@@ -1059,10 +1091,11 @@ test('Resets state', () => {
   );
 });
 
-test('Sets drag item display string on multi-select', () => {
+test('Sets drag item display string on multi-select', async () => {
   // This is a hacky test and calls the method directly
   // RTL can't simulate drag and drop (in jsdom at least)
   // So this is the best option for now
+  const user = userEvent.setup({ delay: null });
   const builder = React.createRef<VisibilityOrderingBuilder>();
   render(<Builder builderRef={builder} />);
 
@@ -1074,7 +1107,7 @@ test('Sets drag item display string on multi-select', () => {
   );
 
   const itemRef = React.createRef<HTMLDivElement>();
-  selectItems([0, 1]);
+  await selectItems(user, [0, 1]);
 
   assertNotNull(builder.current);
 

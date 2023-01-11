@@ -250,8 +250,8 @@ export class GridMetricCalculator {
         : 0;
     const treePaddingY = 0; // We don't support trees on columns (at least not yet)
 
-    let visibleRowHeights = this.getVisibleRowHeights(state);
-    let visibleColumnWidths = this.getVisibleColumnWidths(
+    const visibleRowHeights = this.getVisibleRowHeights(state);
+    const visibleColumnWidths = this.getVisibleColumnWidths(
       state,
       firstColumn,
       treePaddingX
@@ -262,23 +262,22 @@ export class GridMetricCalculator {
     const visibleColumns = Array.from(visibleColumnWidths.keys());
 
     // Add the floating row heights/column widths
-    // TODO #316: Create an allRowHeights/allColumnWidths maps
-    visibleRowHeights = new Map([
+    const allRowHeights = new Map([
       ...visibleRowHeights,
       ...this.getFloatingRowHeights(state),
     ]);
-    visibleColumnWidths = new Map([
+    const allColumnWidths = new Map([
       ...visibleColumnWidths,
       ...this.getFloatingColumnWidths(state),
     ]);
 
-    let visibleColumnXs = this.getVisibleColumnXs(
-      visibleColumnWidths,
+    const visibleColumnXs = this.getVisibleColumnXs(
+      allColumnWidths,
       visibleColumns,
       leftOffset
     );
-    let visibleRowYs = this.getVisibleRowYs(
-      visibleRowHeights,
+    const visibleRowYs = this.getVisibleRowYs(
+      allRowHeights,
       visibleRows,
       topOffset
     );
@@ -294,34 +293,28 @@ export class GridMetricCalculator {
       state,
       visibleRows,
       visibleRowYs,
-      visibleRowHeights
+      allRowHeights
     );
     const rightViewport = this.getRightViewport(
       state,
       visibleColumns,
       visibleColumnXs,
-      visibleColumnWidths
+      allColumnWidths
     );
 
-    const floatingTopHeight = this.getFloatingTopHeight(
-      state,
-      visibleRowHeights
-    );
+    const floatingTopHeight = this.getFloatingTopHeight(state, allRowHeights);
     const floatingBottomHeight = this.getFloatingBottomHeight(
       state,
-      visibleRowHeights
+      allRowHeights
     );
-    const floatingLeftWidth = this.getFloatingLeftWidth(
-      state,
-      visibleColumnWidths
-    );
+    const floatingLeftWidth = this.getFloatingLeftWidth(state, allColumnWidths);
     const floatingRightWidth = this.getFloatingRightWidth(
       state,
-      visibleColumnWidths
+      allColumnWidths
     );
 
-    const columnWidthValues = Array.from(visibleColumnWidths.values());
-    const rowHeightValues = Array.from(visibleRowHeights.values());
+    const columnWidthValues = Array.from(allColumnWidths.values());
+    const rowHeightValues = Array.from(allRowHeights.values());
     const maxX = columnWidthValues.reduce((x, w) => x + w, 0) - leftOffset;
     const maxY = rowHeightValues.reduce((y, h) => y + h, 0) - topOffset;
 
@@ -399,8 +392,8 @@ export class GridMetricCalculator {
         )
       : 0;
 
-    const leftColumnWidth = getOrThrow(visibleColumnWidths, left, 0);
-    const topRowHeight = getOrThrow(visibleRowHeights, top, 0);
+    const leftColumnWidth = getOrThrow(allColumnWidths, left, 0);
+    const topRowHeight = getOrThrow(allRowHeights, top, 0);
     const leftOffsetPercent =
       leftColumnWidth > 0 ? leftOffset / leftColumnWidth : 0;
     const topOffsetPercent = topRowHeight > 0 ? topOffset / topRowHeight : 0;
@@ -423,39 +416,34 @@ export class GridMetricCalculator {
       : 0;
 
     // Now add the floating sections positions
-    let floatingRows: ModelIndex[] = [];
-    if (floatingTopRowCount > 0 || floatingBottomRowCount > 0) {
-      floatingRows = [
-        ...Array(floatingTopRowCount).keys(),
-        ...[...Array(floatingBottomRowCount).keys()].map(i => rowCount - i - 1),
-      ];
-      visibleRowYs = new Map([
-        ...visibleRowYs,
-        ...this.getFloatingRowYs(
-          state,
-          visibleRowHeights,
-          Math.floor(height - gridY - horizontalBarHeight)
-        ),
-      ]);
-    }
+    const floatingRows: ModelIndex[] = [
+      ...Array(floatingTopRowCount).keys(),
+      ...[...Array(floatingBottomRowCount).keys()].map(i => rowCount - i - 1),
+    ];
+    const allRowYs = new Map([
+      ...visibleRowYs,
+      ...this.getFloatingRowYs(
+        state,
+        allRowHeights,
+        Math.floor(height - gridY - horizontalBarHeight)
+      ),
+    ]);
 
-    let floatingColumns: ModelIndex[] = [];
-    if (floatingLeftColumnCount > 0 || floatingRightColumnCount > 0) {
-      floatingColumns = [
-        ...Array(floatingLeftColumnCount).keys(),
-        ...[...Array(floatingRightColumnCount).keys()].map(
-          i => columnCount - i - 1
-        ),
-      ];
-      visibleColumnXs = new Map([
-        ...visibleColumnXs,
-        ...this.getFloatingColumnXs(
-          state,
-          visibleColumnWidths,
-          Math.floor(width - gridX - verticalBarWidth)
-        ),
-      ]);
-    }
+    const floatingColumns: ModelIndex[] = [
+      ...Array(floatingLeftColumnCount).keys(),
+      ...[...Array(floatingRightColumnCount).keys()].map(
+        i => columnCount - i - 1
+      ),
+    ];
+
+    const allColumnXs = new Map([
+      ...visibleColumnXs,
+      ...this.getFloatingColumnXs(
+        state,
+        allColumnWidths,
+        Math.floor(width - gridX - verticalBarWidth)
+      ),
+    ]);
 
     const draggingColumns: VisibleIndex[] = [];
     if (draggingColumn) {
@@ -465,12 +453,12 @@ export class GridMetricCalculator {
         i += 1
       ) {
         draggingColumns.push(i);
-        if (!visibleColumnWidths.has(i)) {
-          visibleColumnWidths.set(i, this.getVisibleColumnWidth(i, state));
+        if (!allColumnWidths.has(i)) {
+          allColumnWidths.set(i, this.getVisibleColumnWidth(i, state));
         }
 
-        if (!visibleColumnXs.has(i)) {
-          visibleColumnXs.set(i, 0);
+        if (!allColumnXs.has(i)) {
+          allColumnXs.set(i, 0);
         }
       }
     }
@@ -483,7 +471,7 @@ export class GridMetricCalculator {
     const modelColumns = this.getModelColumns(allColumns, state);
 
     const visibleRowTreeBoxes = this.getVisibleRowTreeBoxes(
-      visibleRowHeights,
+      allRowHeights,
       modelRows,
       state
     );
@@ -491,22 +479,22 @@ export class GridMetricCalculator {
     // Calculate the visible viewport based on scroll position and floating sections
     const topVisible = this.getTopVisible(
       state,
-      visibleRowYs,
-      visibleRowHeights,
+      allRowYs,
+      allRowHeights,
       visibleRows
     );
     const leftVisible = this.getLeftVisible(
       state,
-      visibleColumnXs,
-      visibleColumnWidths,
+      allColumnXs,
+      allColumnWidths,
       visibleColumns
     );
     const bottomVisible =
       lastTop > 0
         ? this.getBottomVisible(
             state,
-            visibleRowYs,
-            visibleRowHeights,
+            allRowYs,
+            allRowHeights,
             visibleRows,
             gridY
           )
@@ -515,8 +503,8 @@ export class GridMetricCalculator {
       lastLeft > 0
         ? this.getRightVisible(
             state,
-            visibleColumnXs,
-            visibleColumnWidths,
+            allColumnXs,
+            allColumnWidths,
             visibleColumns,
             gridX
           )
@@ -614,6 +602,10 @@ export class GridMetricCalculator {
       visibleRows,
       visibleColumns,
 
+      // Map of the height/width of visible rows/columns
+      visibleRowHeights,
+      visibleColumnWidths,
+
       // Array of floating rows/columns, by grid index
       floatingRows,
       floatingColumns,
@@ -623,9 +615,8 @@ export class GridMetricCalculator {
       allColumns,
 
       // Map of the height/width of visible rows/columns
-      // TODO #316: This should be split into allRowHeights/visibleRowHeights/floatingRowHeights ideally
-      visibleRowHeights,
-      visibleColumnWidths,
+      allRowHeights,
+      allColumnWidths,
 
       // Floating metrics
       floatingTopHeight,
@@ -633,9 +624,13 @@ export class GridMetricCalculator {
       floatingLeftWidth,
       floatingRightWidth,
 
-      // Map of the X/Y coordinates of the rows/columns, from the top left of the grid
+      // Map of the X/Y coordinates of the visible rows/columns, from the top left of the grid
       visibleRowYs,
       visibleColumnXs,
+
+      // Map of the X/Y coordinates of all rows/columns, visible and floating, from the top left of the grid
+      allRowYs,
+      allColumnXs,
 
       // The boxes user can click on for expanding/collapsing tree rows
       visibleRowTreeBoxes,

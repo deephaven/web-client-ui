@@ -1,4 +1,3 @@
-import 'regenerator-runtime/runtime';
 import '@testing-library/jest-dom';
 import 'jest-canvas-mock';
 import './__mocks__/dh-core';
@@ -12,7 +11,7 @@ Log.setLogLevel(logLevel);
 
 // disable annoying dnd-react warnings
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-window['__react-beautiful-dnd-disable-dev-warnings' as any] = true;
+window['__react-beautiful-dnd-disable-dev-warnings'] = true;
 
 // Define the matchMedia property so we can mock out monaco properly
 // https://jestjs.io/docs/manual-mocks#mocking-methods-which-are-not-implemented-in-jsdom

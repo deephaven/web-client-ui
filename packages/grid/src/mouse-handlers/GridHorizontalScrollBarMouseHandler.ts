@@ -23,7 +23,7 @@ class GridHorizontalScrollBarMouseHandler extends GridMouseHandler {
     }
     const left = Math.floor(rawLeft);
     const leftOffsetPercent = rawLeft - left;
-    let columnWidth = metrics.visibleColumnWidths.get(left);
+    let columnWidth = metrics.allColumnWidths.get(left);
     if (columnWidth == null) {
       const metricState = grid.getMetricState();
       columnWidth = metricCalculator.getVisibleColumnWidth(left, metricState);

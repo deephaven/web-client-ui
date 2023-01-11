@@ -15,6 +15,7 @@ import { IrisGridPanel, IrisGridPanelProps } from './panels';
 export const SUPPORTED_TYPES: string[] = [
   dh.VariableType.TABLE,
   dh.VariableType.TREETABLE,
+  dh.VariableType.HIERARCHICALTABLE,
 ];
 
 export type GridPluginProps = Partial<DashboardPluginComponentProps> & {
