@@ -21,12 +21,12 @@ $plotly-color-btn-active: rgba(255, 255, 255, 70%);
   overflow-wrap: normal !important;
   hyphens: unset !important;
   margin-bottom: $spacer-2 !important;
-  box-shadow: $box-shadow;
+  box-shadow: $box-shadow !important;
 }
 
 .plotly-notifier .notifier-close {
   color: $gray-400 !important;
-  transition: $transition-base;
+  transition: $transition-base !important;
   &:hover {
     color: $foreground !important;
   }
