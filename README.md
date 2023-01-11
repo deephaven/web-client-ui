@@ -156,3 +156,84 @@ Next, run the tests and update the snapshots:
 ```
 npm run e2e:update-snapshots
 ```
+
+## Using node:16 docker image (uses Debian)
+
+Run node:16 image:
+
+```
+docker run --rm --network host -v $(pwd):/work/ -w /work/ -it node:16 /bin/bash
+```
+
+Then:
+
+```
+apt-get update
+apt-get install build-essential --yes
+apt-get install -y --no-install-recommends fonts-liberation libasound2 libatk-bridge2.0-0 libatk1.0-0 libatspi2.0-0 libcairo2 libcups2 libdbus-1-3 libdrm2 libegl1 libgbm1 libglib2.0-0 libgtk-3-0 libnspr4 libnss3 libpango-1.0-0 libx11-6 libx11-xcb1 libxcb1 libxcomposite1 libxdamage1 libxext6 libxfixes3 libxrandr2 libxshmfence1 xvfb fonts-noto-color-emoji ttf-unifont libfontconfig libfreetype6 xfonts-cyrillic xfonts-scalable fonts-ipafont-gothic fonts-wqy-zenhei fonts-tlwg-loma-otf tt
+```
+
+```
+npm ci
+```
+
+Running the playwright install has errors though:
+
+```
+PLAYWRIGHT_BROWSERS_PATH=0 npx playwright install --with-deps
+```
+
+Errors with:
+
+```
+BEWARE: your OS is not officially supported by Playwright; installing dependencies for Ubuntu as a fallback.
+Installing dependencies...
+Hit:1 http://deb.debian.org/debian buster InRelease
+Hit:2 http://deb.debian.org/debian-security buster/updates InRelease
+Hit:3 http://deb.debian.org/debian buster-updates InRelease
+Reading package lists... Done
+Reading package lists... Done
+Building dependency tree
+Reading state information... Done
+Note, selecting 'libfontconfig1' instead of 'libfontconfig'
+Package ttf-ubuntu-font-family is not available, but is referred to by another package.
+This may mean that the package is missing, has been obsoleted, or
+is only available from another source
+
+Package libjpeg-turbo8 is not available, but is referred to by another package.
+This may mean that the package is missing, has been obsoleted, or
+is only available from another source
+
+E: Package 'ttf-ubuntu-font-family' has no installation candidate
+E: Unable to locate package libenchant-2-2
+E: Unable to locate package libicu66
+E: Package 'libjpeg-turbo8' has no installation candidate
+E: Unable to locate package libvpx6
+E: Unable to locate package libevent-2.1-7
+E: Couldn't find any package by glob 'libevent-2.1-7'
+E: Couldn't find any package by regex 'libevent-2.1-7'
+Failed to install browsers
+Error: Installation process exited with code: 100
+```
+
+## Using Ubuntu docker image
+
+Run the image:
+
+```
+docker run --rm --network host -v $(pwd):/work/ -w /work/ -it ubuntu:22.04 /bin/bash
+```
+
+install packages:
+
+```
+apt-get update
+apt-get install --yes curl gnupg
+```
+
+Install node/npm:
+
+```
+curl -sL https://deb.nodesource.com/setup_16.x  | bash -
+apt-get install --yes nodejs
+```
