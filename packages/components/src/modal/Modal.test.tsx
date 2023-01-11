@@ -65,6 +65,7 @@ it('renders when isOpen changes', async () => {
   // It will fade out, so it will still be visible until the animation is complete
   expect(screen.queryByRole('dialog')).toBeInTheDocument();
   jest.runAllTimers();
+  jest.useRealTimers(); // Reset so other tests don't use fake timers
   expect(screen.queryByRole('dialog')).toBeNull();
 });
 
@@ -87,17 +88,18 @@ it('does not calls toggle when esc key is pressed when keyboard is false', () =>
   expect(toggle).toBeCalledTimes(0);
 });
 
-it('closes only when clicking outside the modal', () => {
+it('closes only when clicking outside the modal', async () => {
+  const user = userEvent.setup();
   const toggle = jest.fn();
   render(makeModal({ isOpen: true, toggle }));
 
   // note that outer div covers the entire screen
-  userEvent.click(screen.getByRole('dialog'));
+  await user.click(screen.getByRole('dialog'));
   expect(toggle).toBeCalledTimes(1);
 
   jest.clearAllMocks();
-  const modalContent = document.querySelector('.modal-content');
-  userEvent.click(modalContent);
+  const modalContent = document.querySelector('.modal-content')!;
+  await user.click(modalContent);
   expect(toggle).toBeCalledTimes(0);
 });
 

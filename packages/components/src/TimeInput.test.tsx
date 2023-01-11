@@ -1,9 +1,9 @@
 import React from 'react';
-import { fireEvent, render, screen } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { TimeUtils } from '@deephaven/utils';
 import type { SelectionSegment } from './MaskedInput';
-import TimeInput from './TimeInput';
+import TimeInput, { TimeInputElement } from './TimeInput';
 
 type SelectionDirection = SelectionSegment['selectionDirection'];
 
@@ -11,8 +11,16 @@ const DEFAULT_VALUE = TimeUtils.parseTime('12:34:56');
 
 const FIXED_WIDTH_SPACE = '\u2007';
 
-function makeTimeInput({ value = DEFAULT_VALUE, onChange = jest.fn() } = {}) {
-  return render(<TimeInput value={value} onChange={onChange} />);
+function makeTimeInput({
+  value = DEFAULT_VALUE,
+  onChange = jest.fn(),
+  ref = undefined,
+}: {
+  value?: number;
+  onChange?: (timeInSec: number) => void;
+  ref?: React.Ref<TimeInputElement>;
+} = {}) {
+  return render(<TimeInput value={value} onChange={onChange} ref={ref} />);
 }
 
 function makeSelection(
@@ -28,40 +36,49 @@ it('mounts and unmounts properly', () => {
 });
 
 describe('typing in matches mask', () => {
-  function testInput(text: string, expectedResult = text) {
+  async function testInput(
+    user: ReturnType<typeof userEvent.setup>,
+    text: string,
+    expectedResult = text
+  ) {
     const { unmount } = makeTimeInput();
     const input: HTMLInputElement = screen.getByRole('textbox');
-    input.setSelectionRange(0, 0);
 
     input.focus();
-    userEvent.type(input, text, {
+    await user.type(input, '{Shift}', {
+      skipClick: true,
       initialSelectionStart: 0,
-      initialSelectionEnd: 0,
+      initialSelectionEnd: 2,
     });
+    await user.keyboard(text);
 
     expect(input.value).toEqual(expectedResult);
     unmount();
   }
-  it('handles typing in exactly the right characters', () => {
-    testInput('12:34:56');
-    testInput('09:11:00');
-    testInput('00:00:00');
+  it('handles typing in exactly the right characters', async () => {
+    const user = userEvent.setup();
+    await testInput(user, '12:34:56');
+    await testInput(user, '09:11:00');
+    await testInput(user, '00:00:00');
   });
 
-  it('handles skipping punctuation', () => {
-    testInput('120456', '12:04:56');
-    testInput('091100', '09:11:00');
-    testInput('000000', '00:00:00');
+  it('handles skipping punctuation', async () => {
+    const user = userEvent.setup();
+    await testInput(user, '120456', '12:04:56');
+    await testInput(user, '091100', '09:11:00');
+    await testInput(user, '000000', '00:00:00');
   });
 
-  it('handles skipping the first hour', () => {
-    testInput('34511', '03:45:11');
-    testInput('90210', '09:02:10');
+  it('handles skipping the first hour', async () => {
+    const user = userEvent.setup();
+    await testInput(user, '34511', '03:45:11');
+    await testInput(user, '90210', '09:02:10');
   });
 });
 
 describe('selection', () => {
-  function testSelectSegment(
+  async function testSelectSegment(
+    user: ReturnType<typeof userEvent.setup>,
     cursorPosition: number,
     expectedStart: number,
     expectedEnd: number,
@@ -72,8 +89,12 @@ describe('selection', () => {
     const input: HTMLInputElement = screen.getByRole('textbox');
 
     input.focus();
-    input.setSelectionRange(cursorPosition, cursorPosition);
-    userEvent.type(input, '');
+    // user-event requires you type something, not an empty string
+    await user.type(input, '{Shift}', {
+      skipClick: true,
+      initialSelectionStart: cursorPosition,
+      initialSelectionEnd: cursorPosition,
+    });
 
     expect(input).toBeInstanceOf(HTMLInputElement);
     expect(input.selectionStart).toEqual(expectedStart);
@@ -82,7 +103,8 @@ describe('selection', () => {
     unmount();
   }
 
-  function testSelectRange(
+  async function testSelectRange(
+    user: ReturnType<typeof userEvent.setup>,
     selectionStart: number,
     selectionEnd: number,
     selectionDirection: SelectionDirection = 'forward'
@@ -92,7 +114,11 @@ describe('selection', () => {
 
     input.focus();
     input.setSelectionRange(selectionStart, selectionEnd, selectionDirection);
-    userEvent.type(input, '');
+    user.type(input, '{Shift}', {
+      skipClick: true,
+      initialSelectionStart: selectionStart,
+      initialSelectionEnd: selectionEnd,
+    });
 
     expect(input).toBeInstanceOf(HTMLInputElement);
     expect(input.selectionStart).toEqual(selectionStart);
@@ -101,111 +127,138 @@ describe('selection', () => {
     unmount();
   }
 
-  it('automatically selects the correct segment when no range selected', () => {
-    testSelectSegment(0, 0, 2);
-    testSelectSegment(1, 0, 2);
-    testSelectSegment(2, 0, 2);
-    testSelectSegment(3, 3, 5);
-    testSelectSegment(4, 3, 5);
-    testSelectSegment(5, 3, 5);
-    testSelectSegment(6, 6, 8);
-    testSelectSegment(7, 6, 8);
-    testSelectSegment(8, 6, 8);
+  it('automatically selects the correct segment when no range selected', async () => {
+    const user = userEvent.setup();
+    await testSelectSegment(user, 0, 0, 2);
+    await testSelectSegment(user, 1, 0, 2);
+    await testSelectSegment(user, 2, 0, 2);
+    await testSelectSegment(user, 3, 3, 5);
+    await testSelectSegment(user, 4, 3, 5);
+    await testSelectSegment(user, 5, 3, 5);
+    await testSelectSegment(user, 6, 6, 8);
+    await testSelectSegment(user, 7, 6, 8);
+    await testSelectSegment(user, 8, 6, 8);
   });
 
-  it('does not affect a range if selected', () => {
-    testSelectRange(0, 1);
-    testSelectRange(0, 8);
-    testSelectRange(5, 7);
-    testSelectRange(5, 6, 'backward');
+  it('does not affect a range if selected', async () => {
+    const user = userEvent.setup();
+    await testSelectRange(user, 0, 1);
+    await testSelectRange(user, 0, 8);
+    await testSelectRange(user, 5, 7);
+    await testSelectRange(user, 5, 6, 'backward');
   });
 });
 
 describe('select and type', () => {
-  function testSelectAndType(
+  async function testSelectAndType(
+    user: ReturnType<typeof userEvent.setup>,
     cursorPosition: number,
     str: string,
     expectedResult: string
   ) {
-    const { unmount } = makeTimeInput();
+    const elementRef = React.createRef<TimeInputElement>();
+    const { unmount } = makeTimeInput({ ref: elementRef });
     const input: HTMLInputElement = screen.getByRole('textbox');
 
-    input.setSelectionRange(cursorPosition, cursorPosition);
-
-    userEvent.type(input, str);
+    input.focus();
+    // This triggers our selection logic so the segment gets selected
+    // Just setting the selection and typing does not seem to work
+    await user.type(input, '{Shift}', {
+      skipClick: true,
+      initialSelectionStart: cursorPosition,
+      initialSelectionEnd: cursorPosition,
+    });
+    await user.keyboard(str);
 
     expect(input.value).toEqual(expectedResult);
     unmount();
   }
-  it('handles typing after autoselecting a segment', () => {
-    testSelectAndType(0, '0', '02:34:56');
-    testSelectAndType(1, '0', '02:34:56');
-    testSelectAndType(0, '00', '00:34:56');
-    testSelectAndType(1, '00', '00:34:56');
+  it('handles typing after autoselecting a segment', async () => {
+    const user = userEvent.setup();
+    await testSelectAndType(user, 0, '0', '02:34:56');
+    await testSelectAndType(user, 1, '0', '02:34:56');
+    await testSelectAndType(user, 0, '00', '00:34:56');
+    await testSelectAndType(user, 1, '00', '00:34:56');
 
-    testSelectAndType(0, '3', '03:34:56');
-    testSelectAndType(1, '3', '03:34:56');
+    await testSelectAndType(user, 0, '3', '03:34:56');
+    await testSelectAndType(user, 1, '3', '03:34:56');
 
-    testSelectAndType(4, '5', '12:54:56');
-    testSelectAndType(4, '55', '12:55:56');
+    await testSelectAndType(user, 4, '5', '12:54:56');
+    await testSelectAndType(user, 4, '55', '12:55:56');
 
-    testSelectAndType(1, '000000', '00:00:00');
+    await testSelectAndType(user, 1, '000000', '00:00:00');
 
     // Jumps to the next section if the previous section is complete
-    testSelectAndType(0, '35', `03:54:56`);
+    await testSelectAndType(user, 0, '35', `03:54:56`);
 
     // Validates the whole value, not just a substring
-    testSelectAndType(9, '11`"();', `12:34:11`);
+    await testSelectAndType(user, 9, '11`"();', `12:34:11`);
   });
-  it('handles backspace', () => {
+  it('handles backspace', async () => {
+    const user = userEvent.setup();
     // Replace selected section with fixed-width spaces
-    testSelectAndType(
+    await testSelectAndType(
+      user,
       0,
-      '{backspace}',
+      '{Backspace}',
       `${FIXED_WIDTH_SPACE}${FIXED_WIDTH_SPACE}:34:56`
     );
-    testSelectAndType(
+    await testSelectAndType(
+      user,
       3,
-      '{backspace}',
+      '{Backspace}',
       `12:${FIXED_WIDTH_SPACE}${FIXED_WIDTH_SPACE}:56`
     );
 
     // Allow deleting digits from the end
-    testSelectAndType(9, '{backspace}', `12:34`);
+    await testSelectAndType(user, 9, '{Backspace}', `12:34`);
 
     // Add missing mask chars
-    testSelectAndType(9, '{backspace}{backspace}12', `12:31:2`);
+    await testSelectAndType(user, 9, '{Backspace}{Backspace}12', `12:31:2`);
   });
 
-  it('trims trailing mask and spaces', () => {
+  it('trims trailing mask and spaces', async () => {
+    const user = userEvent.setup();
     const { unmount } = makeTimeInput();
     const input: HTMLInputElement = screen.getByRole('textbox');
 
-    input.setSelectionRange(3, 3);
+    // input.setSelectionRange(3, 3);
+    input.focus();
+    await user.type(input, '{Shift}{Backspace}', {
+      skipClick: true,
+      initialSelectionStart: 3,
+      initialSelectionEnd: 3,
+    });
 
-    userEvent.type(input, '{backspace}');
-
-    input.setSelectionRange(9, 9);
-
-    userEvent.type(input, '{backspace}');
+    await user.type(input, '{Shift}{Backspace}', {
+      initialSelectionStart: 6,
+      initialSelectionEnd: 6,
+    });
 
     expect(input.value).toEqual(`12`);
 
-    input.setSelectionRange(1, 1);
-
-    userEvent.type(input, '{backspace}');
+    await user.type(input, '{Shift}{Backspace}', {
+      initialSelectionStart: 1,
+      initialSelectionEnd: 1,
+    });
 
     expect(input.value).toEqual(``);
 
     unmount();
   });
 
-  it('existing edge cases', () => {
+  it('existing edge cases', async () => {
+    const user = userEvent.setup();
     // Ideally it should change the first section to 20, i.e. '20:34:56'
-    testSelectAndType(1, '5{arrowleft}2', `25:34:56`);
+    await testSelectAndType(user, 1, '5{arrowleft}2', `25:34:56`);
 
     // Ideally it should fill in with zeros when skipping positions, i.e. '03:34:56'
-    testSelectAndType(0, '{backspace}3', `${FIXED_WIDTH_SPACE}3:34:56`);
+    await testSelectAndType(
+      user,
+      0,
+      '{backspace}3',
+      `${FIXED_WIDTH_SPACE}3:34:56`
+    );
   });
 });
 
@@ -216,7 +269,8 @@ describe('arrow left and right jumps segments', () => {
    * @param movement Keyboard movement to simulate, positive for right, negative for left. Eg. 2 means 2 right arrow presses, -3 means 3 left arrow presses
    * @param expectedSelection The selection to expect
    */
-  function testArrowNavigation(
+  async function testArrowNavigation(
+    user: ReturnType<typeof userEvent.setup>,
     cursorPosition: number,
     movement: number | number[],
     expectedSelection: SelectionSegment
@@ -224,8 +278,8 @@ describe('arrow left and right jumps segments', () => {
     const { unmount } = makeTimeInput();
     const input: HTMLInputElement = screen.getByRole('textbox');
     input.focus();
-    input.setSelectionRange(cursorPosition, cursorPosition);
-    userEvent.type(input, '', {
+    await user.type(input, '{Shift}', {
+      skipClick: true,
       initialSelectionStart: cursorPosition,
       initialSelectionEnd: cursorPosition,
     });
@@ -236,15 +290,13 @@ describe('arrow left and right jumps segments', () => {
       const arrowMovement = movements[i];
 
       for (let j = 0; j < arrowMovement; j += 1) {
-        fireEvent.keyDown(input, { key: 'ArrowRight' });
-        fireEvent.keyPress(input, { key: 'ArrowRight' });
-        fireEvent.keyUp(input, { key: 'ArrowRight' });
+        // eslint-disable-next-line no-await-in-loop
+        await user.keyboard('[ArrowRight]');
       }
 
       for (let j = 0; j > arrowMovement; j -= 1) {
-        fireEvent.keyDown(input, { key: 'ArrowLeft' });
-        fireEvent.keyPress(input, { key: 'ArrowLeft' });
-        fireEvent.keyUp(input, { key: 'ArrowLeft' });
+        // eslint-disable-next-line no-await-in-loop
+        await user.keyboard('[ArrowLeft]');
       }
     }
 
@@ -261,33 +313,52 @@ describe('arrow left and right jumps segments', () => {
 
     unmount();
   }
-  it('handles going left', () => {
-    testArrowNavigation(0, -1, makeSelection(0, 2, 'backward'));
-    testArrowNavigation(0, -10, makeSelection(0, 2, 'backward'));
-    testArrowNavigation(8, -2, makeSelection(0, 2, 'backward'));
-    testArrowNavigation(8, -1, makeSelection(3, 5, 'backward'));
-    testArrowNavigation(8, -10, makeSelection(0, 2, 'backward'));
-    testArrowNavigation(5, -1, makeSelection(0, 2, 'backward'));
+  it('handles going left', async () => {
+    const user = userEvent.setup();
+    await testArrowNavigation(user, 0, -1, makeSelection(0, 2, 'backward'));
+    await testArrowNavigation(user, 0, -10, makeSelection(0, 2, 'backward'));
+    await testArrowNavigation(user, 8, -2, makeSelection(0, 2, 'backward'));
+    await testArrowNavigation(user, 8, -1, makeSelection(3, 5, 'backward'));
+    await testArrowNavigation(user, 8, -10, makeSelection(0, 2, 'backward'));
+    await testArrowNavigation(user, 5, -1, makeSelection(0, 2, 'backward'));
   });
 
-  it('handles going right', () => {
-    testArrowNavigation(0, 1, makeSelection(3, 5, 'backward'));
-    testArrowNavigation(0, 2, makeSelection(6, 8, 'backward'));
-    testArrowNavigation(0, 10, makeSelection(6, 8, 'backward'));
-    testArrowNavigation(8, 1, makeSelection(6, 8, 'backward'));
-    testArrowNavigation(8, 10, makeSelection(6, 8, 'backward'));
-    testArrowNavigation(5, 1, makeSelection(6, 8, 'backward'));
+  it('handles going right', async () => {
+    const user = userEvent.setup();
+    await testArrowNavigation(user, 0, 1, makeSelection(3, 5, 'backward'));
+    await testArrowNavigation(user, 0, 2, makeSelection(6, 8, 'backward'));
+    await testArrowNavigation(user, 0, 10, makeSelection(6, 8, 'backward'));
+    await testArrowNavigation(user, 8, 1, makeSelection(6, 8, 'backward'));
+    await testArrowNavigation(user, 8, 10, makeSelection(6, 8, 'backward'));
+    await testArrowNavigation(user, 5, 1, makeSelection(6, 8, 'backward'));
   });
 
-  it('handles a mix of left/right', () => {
-    testArrowNavigation(0, [2, -1], makeSelection(3, 5, 'backward'));
-    testArrowNavigation(0, [3, -3], makeSelection(0, 2, 'backward'));
-    testArrowNavigation(8, [3, -1], makeSelection(3, 5, 'backward'));
+  it('handles a mix of left/right', async () => {
+    const user = userEvent.setup();
+    await testArrowNavigation(
+      user,
+      0,
+      [2, -1],
+      makeSelection(3, 5, 'backward')
+    );
+    await testArrowNavigation(
+      user,
+      0,
+      [3, -3],
+      makeSelection(0, 2, 'backward')
+    );
+    await testArrowNavigation(
+      user,
+      8,
+      [3, -1],
+      makeSelection(3, 5, 'backward')
+    );
   });
 });
 
 describe('arrow up and down updates values in segments', () => {
-  function testArrowValue(
+  async function testArrowValue(
+    user: ReturnType<typeof userEvent.setup>,
     cursorPosition: number,
     movement: number | number[],
     expectedValue: string,
@@ -297,9 +368,9 @@ describe('arrow up and down updates values in segments', () => {
 
     const input: HTMLInputElement = screen.getByRole('textbox');
 
-    input.setSelectionRange(cursorPosition, cursorPosition);
-
-    userEvent.type(input, '', {
+    input.focus();
+    await user.type(input, '{Shift}', {
+      skipClick: true,
       initialSelectionStart: cursorPosition,
       initialSelectionEnd: cursorPosition,
     });
@@ -309,11 +380,13 @@ describe('arrow up and down updates values in segments', () => {
     for (let i = 0; i < movements.length; i += 1) {
       const arrowMovement = movements[i];
       for (let j = 0; j < arrowMovement; j += 1) {
-        userEvent.type(input, '{arrowdown}');
+        // eslint-disable-next-line no-await-in-loop
+        await user.keyboard('[ArrowDown]');
       }
 
       for (let j = 0; j > arrowMovement; j -= 1) {
-        userEvent.type(input, '{arrowup}');
+        // eslint-disable-next-line no-await-in-loop
+        await user.keyboard('[ArrowUp]');
       }
     }
 
@@ -322,22 +395,42 @@ describe('arrow up and down updates values in segments', () => {
     unmount();
   }
 
-  it('handles down arrow', () => {
-    testArrowValue(0, 1, '11:34:56');
-    testArrowValue(0, 3, '09:34:56');
-    testArrowValue(0, 1, '23:00:00', 0);
-    testArrowValue(3, 1, '00:59:00', 0);
-    testArrowValue(6, 1, '00:00:59', 0);
-    testArrowValue(6, 3, '12:34:53');
+  it('handles down arrow', async () => {
+    const user = userEvent.setup();
+    await testArrowValue(user, 0, 1, '11:34:56');
+    await testArrowValue(user, 0, 3, '09:34:56');
+    await testArrowValue(user, 0, 1, '23:00:00', 0);
+    await testArrowValue(user, 3, 1, '00:59:00', 0);
+    await testArrowValue(user, 6, 1, '00:00:59', 0);
+    await testArrowValue(user, 6, 3, '12:34:53');
   });
 
-  it('handles up arrow', () => {
-    testArrowValue(0, -1, '13:34:56');
-    testArrowValue(0, -3, '15:34:56');
-    testArrowValue(0, -1, '00:00:00', TimeUtils.parseTime('23:00:00'));
-    testArrowValue(3, -1, '00:00:00', TimeUtils.parseTime('00:59:00'));
-    testArrowValue(6, -1, '00:00:00', TimeUtils.parseTime('00:00:59'));
-    testArrowValue(6, -3, '12:34:59');
+  it('handles up arrow', async () => {
+    const user = userEvent.setup();
+    await testArrowValue(user, 0, -1, '13:34:56');
+    await testArrowValue(user, 0, -3, '15:34:56');
+    await testArrowValue(
+      user,
+      0,
+      -1,
+      '00:00:00',
+      TimeUtils.parseTime('23:00:00')
+    );
+    await testArrowValue(
+      user,
+      3,
+      -1,
+      '00:00:00',
+      TimeUtils.parseTime('00:59:00')
+    );
+    await testArrowValue(
+      user,
+      6,
+      -1,
+      '00:00:00',
+      TimeUtils.parseTime('00:00:59')
+    );
+    await testArrowValue(user, 6, -3, '12:34:59');
   });
 });
 it('updates properly when the value prop is updated', () => {

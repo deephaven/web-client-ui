@@ -32,7 +32,8 @@ it('renders a button for each action', () => {
   expect(screen.getAllByRole('button').length).toBe(historyActions.length);
 });
 
-it('calls action callback on button click', () => {
+it('calls action callback on button click', async () => {
+  const user = userEvent.setup({ delay: null });
   const historyActions = makeHistoryActionsMock();
   mountHistoryActions(historyActions);
   const buttonIndexToClick = 0;
@@ -41,6 +42,6 @@ it('calls action callback on button click', () => {
 
   const button = screen.getAllByRole('button')[buttonIndexToClick];
   expect(toBeClicked).toHaveBeenCalledTimes(0);
-  userEvent.click(button);
+  await user.click(button);
   expect(toBeClicked).toHaveBeenCalledTimes(1);
 });

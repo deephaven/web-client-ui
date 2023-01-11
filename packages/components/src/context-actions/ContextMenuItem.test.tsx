@@ -41,7 +41,8 @@ describe('menuElement', () => {
     );
   });
 
-  it('does not override props with conflicting names', () => {
+  it('does not override props with conflicting names', async () => {
+    const user = userEvent.setup();
     const menuElementCloseMenuProp = jest.fn(() => false);
     const contextMenuItemCloseMenuProp = jest.fn(() => false);
 
@@ -63,12 +64,13 @@ describe('menuElement', () => {
       },
       closeMenu: contextMenuItemCloseMenuProp,
     });
-    userEvent.click(screen.getByText('close menu'));
+    await user.click(screen.getByText('close menu'));
     expect(menuElementCloseMenuProp).toHaveBeenCalledTimes(1);
     expect(contextMenuItemCloseMenuProp).toHaveBeenCalledTimes(0);
   });
 
-  it('passes contextMenuItem props in forwardedProps', () => {
+  it('passes contextMenuItem props in forwardedProps', async () => {
+    const user = userEvent.setup();
     function PropComponent({
       forwardedProps,
     }: {
@@ -89,7 +91,7 @@ describe('menuElement', () => {
       },
       closeMenu: contextMenuItemCloseMenuProp,
     });
-    userEvent.click(screen.getByText('close menu'));
+    await user.click(screen.getByText('close menu'));
     expect(contextMenuItemCloseMenuProp).toHaveBeenCalledTimes(1);
   });
 });
