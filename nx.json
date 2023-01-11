@@ -7,7 +7,6 @@
           "build",
           "build:babel",
           "build:sass",
-          "types",
           "pretest",
           "test",
           "pretest:ci",
@@ -25,7 +24,7 @@
       "{projectRoot}/**/*",
       "!{projectRoot}/dist",
       "!{projectRoot}/build",
-      "!{projectRoot}/css"
+      "!{projectRoot}/tsconfig.tsbuildinfo"
     ],
     "production": [
       "default",
@@ -37,56 +36,41 @@
   },
   "targetDefaults": {
     "build": {
-      "dependsOn": ["^build"],
       "inputs": ["production", "^production"],
-      "outputs": [
-        "{projectRoot}/dist",
-        "{projectRoot}/build",
-        "{projectRoot}/css"
-      ]
+      "dependsOn": ["^build"],
+      "outputs": ["{projectRoot}/build"]
     },
     "build:babel": {
       "inputs": ["production", "!{projectRoot}/**/*.scss"],
-      "outputs": [
-        "{projectRoot}/dist/**/*.js",
-        "{projectRoot}/dist/**/*.js.map"
-      ]
+      "outputs": ["{projectRoot}/dist"]
     },
     "build:sass": {
-      "inputs": ["{projectRoot}/**/*.scss", "{projectRoot}/scss"],
-      "outputs": [
-        "{projectRoot}/dist/**/*.css",
-        "{projectRoot}/dist/**/*.css.map",
-        "{projectRoot}/css/**/*"
-      ]
-    },
-    "types": {
-      "inputs": ["production"],
-      "outputs": [
-        "{projectRoot}/dist/**/*.d.ts",
-        "{projectRoot}/build/**/*.d.ts",
-        "{projectRoot}/tsconfig.tsbuildinfo"
-      ]
+      "inputs": ["{projectRoot}/**/*.scss"],
+      "outputs": ["{projectRoot}/css"]
     },
     "pretest": {
-      "inputs": ["production"],
       "outputs": ["{projectRoot}/dist"]
+    },
+    "test": {
+      "outputs": ["{projectRoot}/coverage"]
     },
     "pretest:ci": {
-      "inputs": ["production"],
       "outputs": ["{projectRoot}/dist"]
     },
+    "test:ci": {
+      "outputs": ["{projectRoot}/coverage"]
+    },
     "svgo-dh": {
-      "outputs": ["{projectRoot}/dist/svg/dh"]
+      "outputs": ["{projectRoot}/dist"]
     },
     "svgo-vs": {
-      "outputs": ["{projectRoot}/dist/svg/vs"]
+      "outputs": ["{projectRoot}/dist"]
     },
     "build:icons": {
-      "outputs": ["{projectRoot}/dist/svg"]
+      "outputs": ["{projectRoot}/dist"]
     },
     "build:js": {
-      "outputs": ["{projectRoot}/dist", "!{projectRoot}/dist/svg"]
+      "outputs": ["{projectRoot}/dist"]
     }
   }
 }
