@@ -36,8 +36,16 @@ import {
 import { assertNotNull } from '@deephaven/utils';
 import './FormattingSectionContent.scss';
 import type { DebouncedFunc } from 'lodash';
-import SettingsUtils from './SettingsUtils';
+import {
+  focusFirstInputInContainer,
+  isValidColumnName,
+  isValidFormat,
+  removeFormatRuleExtraProps,
+  isFormatRuleValidForSave,
+} from './SettingsUtils';
 import type { FormatterItem, FormatOption } from './SettingsUtils';
+import renderDateTimeOptions from './DateTimeOptions';
+import ColumnTypeOptions from './ColumnTypeOptions';
 
 interface ColumnSpecificSectionContentProps {
   formatter: FormatterItem[];
@@ -138,7 +146,7 @@ export class ColumnSpecificSectionContent extends PureComponent<
   }
 
   componentDidMount(): void {
-    SettingsUtils.focusFirstInputInContainer(this.containerRef.current);
+    focusFirstInputInContainer(this.containerRef.current);
   }
 
   componentWillUnmount(): void {
@@ -171,9 +179,7 @@ export class ColumnSpecificSectionContent extends PureComponent<
     return lastFormatRuleIndex;
   }
 
-  getCachedColumnTypeOptions = memoize(() =>
-    SettingsUtils.renderColumnTypeOptions()
-  );
+  getCachedColumnTypeOptions = memoize(() => <ColumnTypeOptions />);
 
   getCachedDateTimeFormatOptions = memoize(
     (
@@ -184,7 +190,7 @@ export class ColumnSpecificSectionContent extends PureComponent<
       legacyGlobalFormat?: string
     ) => {
       const { timestampAtMenuOpen } = this.state;
-      return SettingsUtils.renderDateTimeOptions(
+      return renderDateTimeOptions(
         timestampAtMenuOpen,
         timeZone,
         showTimeZone,
@@ -267,7 +273,7 @@ export class ColumnSpecificSectionContent extends PureComponent<
 
   handleFormatRuleEntered(elem: HTMLElement): void {
     this.scrollToFormatBlockBottom();
-    SettingsUtils.focusFirstInputInContainer(elem);
+    focusFirstInputInContainer(elem);
   }
 
   commitChanges(): void {
@@ -284,8 +290,8 @@ export class ColumnSpecificSectionContent extends PureComponent<
 
     const formatter =
       formatSettings
-        .filter(SettingsUtils.isFormatRuleValidForSave)
-        .map(SettingsUtils.removeFormatRuleExtraProps) ?? [];
+        .filter(isFormatRuleValidForSave)
+        .map(removeFormatRuleExtraProps) ?? [];
 
     const { settings, saveSettings } = this.props;
     const newSettings: WorkspaceSettings = {
@@ -298,7 +304,7 @@ export class ColumnSpecificSectionContent extends PureComponent<
       truncateNumbersWithPound,
     };
     if (
-      SettingsUtils.isValidFormat(
+      isValidFormat(
         TableUtils.dataType.DECIMAL,
         DecimalColumnFormatter.makeCustomFormat(
           defaultDecimalFormatOptions.defaultFormatString
@@ -308,7 +314,7 @@ export class ColumnSpecificSectionContent extends PureComponent<
       newSettings.defaultDecimalFormatOptions = defaultDecimalFormatOptions;
     }
     if (
-      SettingsUtils.isValidFormat(
+      isValidFormat(
         TableUtils.dataType.INT,
         IntegerColumnFormatter.makeCustomFormat(
           defaultIntegerFormatOptions.defaultFormatString
@@ -349,7 +355,7 @@ export class ColumnSpecificSectionContent extends PureComponent<
       errorMessages.push('Duplicate column name/type combo.');
     }
 
-    if (!SettingsUtils.isValidColumnName(rule.columnName)) {
+    if (!isValidColumnName(rule.columnName)) {
       error.hasColumnNameError = true;
       errorMessages.push(
         'Column names must start with a letter or underscore and contain only alphanumeric characters or underscores.'
@@ -362,7 +368,7 @@ export class ColumnSpecificSectionContent extends PureComponent<
     ) {
       error.hasFormatError = true;
       errorMessages.push('Empty formatting rule.');
-    } else if (!SettingsUtils.isValidFormat(rule.columnType, rule.format)) {
+    } else if (!isValidFormat(rule.columnType, rule.format)) {
       error.hasFormatError = true;
       errorMessages.push('Invalid formatting rule.');
     }

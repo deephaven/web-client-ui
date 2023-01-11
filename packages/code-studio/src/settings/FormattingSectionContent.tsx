@@ -34,8 +34,17 @@ import {
 } from '@deephaven/redux';
 import './FormattingSectionContent.scss';
 import type { DebouncedFunc } from 'lodash';
-import SettingsUtils from './SettingsUtils';
+import {
+  focusFirstInputInContainer,
+  isSameDecimalOptions,
+  isSameIntegerOptions,
+  isValidFormat,
+  removeFormatRuleExtraProps,
+  isFormatRuleValidForSave,
+} from './SettingsUtils';
 import type { FormatterItem, FormatOption } from './SettingsUtils';
+import renderDateTimeOptions from './DateTimeOptions';
+import renderTimeZoneOptions from './TimeZoneOptions';
 
 const log = Log.module('FormattingSectionContent');
 
@@ -157,7 +166,7 @@ export class FormattingSectionContent extends PureComponent<
   }
 
   componentDidMount(): void {
-    SettingsUtils.focusFirstInputInContainer(this.containerRef.current);
+    focusFirstInputInContainer(this.containerRef.current);
   }
 
   componentWillUnmount(): void {
@@ -177,7 +186,7 @@ export class FormattingSectionContent extends PureComponent<
       legacyGlobalFormat?: string
     ) => {
       const { timestampAtMenuOpen } = this.state;
-      return SettingsUtils.renderDateTimeOptions(
+      return renderDateTimeOptions(
         timestampAtMenuOpen,
         timeZone,
         showTimeZone,
@@ -346,8 +355,8 @@ export class FormattingSectionContent extends PureComponent<
 
     const formatter =
       formatSettings
-        .filter(SettingsUtils.isFormatRuleValidForSave)
-        .map(SettingsUtils.removeFormatRuleExtraProps) ?? [];
+        .filter(isFormatRuleValidForSave)
+        .map(removeFormatRuleExtraProps) ?? [];
 
     const { settings, saveSettings } = this.props;
     const newSettings: WorkspaceSettings = {
@@ -360,7 +369,7 @@ export class FormattingSectionContent extends PureComponent<
       truncateNumbersWithPound,
     };
     if (
-      SettingsUtils.isValidFormat(
+      isValidFormat(
         TableUtils.dataType.DECIMAL,
         DecimalColumnFormatter.makeCustomFormat(
           defaultDecimalFormatOptions.defaultFormatString
@@ -370,7 +379,7 @@ export class FormattingSectionContent extends PureComponent<
       newSettings.defaultDecimalFormatOptions = defaultDecimalFormatOptions;
     }
     if (
-      SettingsUtils.isValidFormat(
+      isValidFormat(
         TableUtils.dataType.INT,
         IntegerColumnFormatter.makeCustomFormat(
           defaultIntegerFormatOptions.defaultFormatString
@@ -406,11 +415,11 @@ export class FormattingSectionContent extends PureComponent<
       showTSeparator === defaults.showTSeparator &&
       showTimeZone === defaults.showTimeZone &&
       defaultDateTimeFormat === defaults.defaultDateTimeFormat;
-    const isDecimalOptionsDefault = SettingsUtils.isSameDecimalOptions(
+    const isDecimalOptionsDefault = isSameDecimalOptions(
       defaultDecimalFormatOptions,
       defaults.defaultDecimalFormatOptions
     );
-    const isIntegerOptionsDefault = SettingsUtils.isSameIntegerOptions(
+    const isIntegerOptionsDefault = isSameIntegerOptions(
       defaultIntegerFormatOptions,
       defaults.defaultIntegerFormatOptions
     );
@@ -436,7 +445,7 @@ export class FormattingSectionContent extends PureComponent<
                 onChange={this.handleTimeZoneChange}
                 id="select-reset-timezone"
               >
-                {SettingsUtils.renderTimeZoneOptions()}
+                {renderTimeZoneOptions()}
               </select>
             </div>
             <div className="col-1 btn-col">
@@ -521,7 +530,7 @@ export class FormattingSectionContent extends PureComponent<
                   'flex-grow-1',
                   'default-decimal-format-input',
                   {
-                    'is-invalid': !SettingsUtils.isValidFormat(
+                    'is-invalid': !isValidFormat(
                       TableUtils.dataType.DECIMAL,
                       DecimalColumnFormatter.makeCustomFormat(
                         defaultDecimalFormatString
@@ -564,7 +573,7 @@ export class FormattingSectionContent extends PureComponent<
                   'flex-grow-1',
                   'default-integer-format-input',
                   {
-                    'is-invalid': !SettingsUtils.isValidFormat(
+                    'is-invalid': !isValidFormat(
                       TableUtils.dataType.INT,
                       IntegerColumnFormatter.makeCustomFormat(
                         defaultIntegerFormatString
