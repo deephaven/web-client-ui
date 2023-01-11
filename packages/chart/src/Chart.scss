@@ -14,9 +14,22 @@ $plotly-color-btn-active: rgba(255, 255, 255, 70%);
   // Mark these properties as !important because plotly css can be loaded in a different order in production
   // See comments on IDS-4808
   // https://illumon.aha.io/comments/6737799632463662636
+  color: $foreground !important;
   border: 0 !important;
   border-radius: $plotly-notifier-note-border-radius !important;
   background: $plotly-notifier-note-bg !important;
+  overflow-wrap: normal !important;
+  hyphens: unset !important;
+  margin-bottom: $spacer-2 !important;
+  box-shadow: $box-shadow;
+}
+
+.plotly-notifier .notifier-close {
+  color: $gray-400 !important;
+  transition: $transition-base;
+  &:hover {
+    color: $foreground !important;
+  }
 }
 
 .chart-wrapper {
