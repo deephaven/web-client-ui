@@ -416,6 +416,7 @@ export class ColumnSpecificSectionContent extends PureComponent<
               onClick={() => this.handleFormatRuleDelete(i)}
               icon={vsTrash}
               tooltip="Delete"
+              aria-label="Delete Format Rule"
             />
 
             <label htmlFor={columnTypeId}>Column Type</label>
@@ -487,7 +488,7 @@ export class ColumnSpecificSectionContent extends PureComponent<
           isInvalid
         );
       default:
-        return null;
+        throw new Error(`Unrecognized column type: ${columnType}`);
     }
   }
 
