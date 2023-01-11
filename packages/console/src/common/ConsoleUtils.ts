@@ -53,7 +53,11 @@ class ConsoleUtils {
   }
 
   static isTableType(type: VariableTypeUnion): boolean {
-    return type === dh.VariableType.TABLE || type === dh.VariableType.TREETABLE;
+    return (
+      type === dh.VariableType.TABLE ||
+      type === dh.VariableType.TREETABLE ||
+      type === dh.VariableType.HIERARCHICALTABLE
+    );
   }
 
   static isWidgetType(type: VariableTypeUnion): boolean {

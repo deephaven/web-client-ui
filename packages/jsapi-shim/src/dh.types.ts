@@ -43,6 +43,8 @@ const VariableType = {
   TABLE: 'Table',
   TABLEMAP: 'TableMap',
   TREETABLE: 'TreeTable',
+  HIERARCHICALTABLE: 'HierarchicalTable',
+  PARTITIONEDTABLE: 'PartitionedTable',
 } as const;
 
 export interface CalendarStatic {
@@ -134,6 +136,9 @@ export interface IdeSession extends Evented {
   ): Promise<Figure>;
   getObject(
     definition: VariableDefinition<typeof VariableType.TREETABLE>
+  ): Promise<TreeTable>;
+  getObject(
+    definition: VariableDefinition<typeof VariableType.HIERARCHICALTABLE>
   ): Promise<TreeTable>;
   getObject(definition: VariableDefinition): Promise<unknown>;
   onLogMessage(logHandler: (logItem: LogItem) => void): () => void;
@@ -955,6 +960,9 @@ export interface IdeConnection
   ): Promise<Figure>;
   getObject(
     definition: VariableDefinition<typeof VariableType.TREETABLE>
+  ): Promise<TreeTable>;
+  getObject(
+    definition: VariableDefinition<typeof VariableType.HIERARCHICALTABLE>
   ): Promise<TreeTable>;
   getObject(definition: VariableDefinition): Promise<unknown>;
   subscribeToFieldUpdates(
