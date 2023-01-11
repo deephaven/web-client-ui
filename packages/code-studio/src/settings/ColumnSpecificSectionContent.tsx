@@ -47,7 +47,7 @@ import type { FormatterItem, FormatOption } from './SettingsUtils';
 import ColumnTypeOptions from './ColumnTypeOptions';
 import DateTimeOptions from './DateTimeOptions';
 
-interface ColumnSpecificSectionContentProps {
+export interface ColumnSpecificSectionContentProps {
   formatter: FormatterItem[];
   defaultDateTimeFormat: string;
   showTimeZone: boolean;
