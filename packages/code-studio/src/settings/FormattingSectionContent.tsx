@@ -43,8 +43,8 @@ import {
   isFormatRuleValidForSave,
 } from './SettingsUtils';
 import type { FormatterItem, FormatOption } from './SettingsUtils';
-import renderDateTimeOptions from './DateTimeOptions';
-import renderTimeZoneOptions from './TimeZoneOptions';
+import DateTimeOptions from './DateTimeOptions';
+import TimeZoneOptions from './TimeZoneOptions';
 
 const log = Log.module('FormattingSectionContent');
 
@@ -186,13 +186,15 @@ export class FormattingSectionContent extends PureComponent<
       legacyGlobalFormat?: string
     ) => {
       const { timestampAtMenuOpen } = this.state;
-      return renderDateTimeOptions(
-        timestampAtMenuOpen,
-        timeZone,
-        showTimeZone,
-        showTSeparator,
-        isGlobalOptions,
-        legacyGlobalFormat
+      return (
+        <DateTimeOptions
+          timestamp={timestampAtMenuOpen}
+          timeZone={timeZone}
+          showTimeZone={showTimeZone}
+          showTSeparator={showTSeparator}
+          isGlobalOptions={isGlobalOptions}
+          legacyGlobalFormat={legacyGlobalFormat}
+        />
       );
     }
   );
@@ -445,7 +447,7 @@ export class FormattingSectionContent extends PureComponent<
                 onChange={this.handleTimeZoneChange}
                 id="select-reset-timezone"
               >
-                {renderTimeZoneOptions()}
+                <TimeZoneOptions />
               </select>
             </div>
             <div className="col-1 btn-col">

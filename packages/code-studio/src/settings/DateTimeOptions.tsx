@@ -5,14 +5,27 @@ import {
   TableUtils,
 } from '@deephaven/jsapi-utils';
 
-export default function renderDateTimeOptions(
-  timestamp: Date,
-  timeZone: string,
-  showTimeZone: boolean,
-  showTSeparator: boolean,
-  isGlobalOptions: boolean,
-  legacyGlobalFormat?: string
-): ReactElement[] {
+interface DateTimeOptionProps {
+  timestamp: Date;
+  timeZone: string;
+  showTimeZone: boolean;
+  showTSeparator: boolean;
+  isGlobalOptions: boolean;
+  legacyGlobalFormat?: string;
+}
+
+export default function DateTimeOptions(
+  props: DateTimeOptionProps
+): ReactElement {
+  const {
+    timestamp,
+    timeZone,
+    showTimeZone,
+    showTSeparator,
+    isGlobalOptions,
+    legacyGlobalFormat,
+  } = props;
+
   const formatter = new Formatter([], {
     timeZone,
     showTimeZone,
@@ -26,21 +39,25 @@ export default function renderDateTimeOptions(
     formats.unshift(legacyGlobalFormat);
   }
 
-  return formats.map(formatString => {
-    const format = DateTimeColumnFormatter.makeFormat(
-      '',
-      formatString,
-      DateTimeColumnFormatter.TYPE_GLOBAL
-    );
-    return (
-      <option value={formatString} key={formatString}>
-        {formatter.getFormattedString(
-          timestamp,
-          TableUtils.dataType.DATETIME,
+  return (
+    <>
+      {formats.map(formatString => {
+        const format = DateTimeColumnFormatter.makeFormat(
           '',
-          format
-        )}
-      </option>
-    );
-  });
+          formatString,
+          DateTimeColumnFormatter.TYPE_GLOBAL
+        );
+        return (
+          <option value={formatString} key={formatString}>
+            {formatter.getFormattedString(
+              timestamp,
+              TableUtils.dataType.DATETIME,
+              '',
+              format
+            )}
+          </option>
+        );
+      })}
+    </>
+  );
 }

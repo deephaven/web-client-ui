@@ -44,8 +44,8 @@ import {
   isFormatRuleValidForSave,
 } from './SettingsUtils';
 import type { FormatterItem, FormatOption } from './SettingsUtils';
-import renderDateTimeOptions from './DateTimeOptions';
 import ColumnTypeOptions from './ColumnTypeOptions';
+import DateTimeOptions from './DateTimeOptions';
 
 interface ColumnSpecificSectionContentProps {
   formatter: FormatterItem[];
@@ -190,13 +190,15 @@ export class ColumnSpecificSectionContent extends PureComponent<
       legacyGlobalFormat?: string
     ) => {
       const { timestampAtMenuOpen } = this.state;
-      return renderDateTimeOptions(
-        timestampAtMenuOpen,
-        timeZone,
-        showTimeZone,
-        showTSeparator,
-        isGlobalOptions,
-        legacyGlobalFormat
+      return (
+        <DateTimeOptions
+          timestamp={timestampAtMenuOpen}
+          timeZone={timeZone}
+          showTimeZone={showTimeZone}
+          showTSeparator={showTSeparator}
+          isGlobalOptions={isGlobalOptions}
+          legacyGlobalFormat={legacyGlobalFormat}
+        />
       );
     }
   );
