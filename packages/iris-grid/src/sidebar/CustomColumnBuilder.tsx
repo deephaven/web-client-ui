@@ -18,7 +18,7 @@ type Input = {
   name: string;
   formula: string;
 };
-interface CustomColumnBuilderProps {
+export interface CustomColumnBuilderProps {
   model: IrisGridModel;
   customColumns: string[];
   onSave: (columns: string[]) => void;
@@ -37,12 +37,6 @@ class CustomColumnBuilder extends Component<
   CustomColumnBuilderState
 > {
   static SUCCESS_SHOW_DURATION = 750;
-
-  static defaultProps = {
-    customColumns: [],
-    onSave: (): void => undefined,
-    onCancel: (): void => undefined,
-  };
 
   static makeCustomColumnInputEventKey(): string {
     return shortid.generate();
@@ -266,15 +260,15 @@ class CustomColumnBuilder extends Component<
     const { inputs } = this.state;
     // focus on drag handle
     if (shiftKey) {
-      (this.container?.querySelectorAll(`.btn-drag-handle`)[
+      (this.container?.querySelectorAll('.btn-drag-handle')[
         focusEditorIndex
       ] as HTMLButtonElement).focus();
       return;
     }
     if (focusEditorIndex === inputs.length - 1) {
-      (this.container?.querySelectorAll(`.btn-add-column`)[
-        focusEditorIndex
-      ] as HTMLButtonElement).focus();
+      (this.container?.querySelector(
+        '.btn-add-column'
+      ) as HTMLButtonElement)?.focus();
     } else {
       // focus on next column name input
       const nextFocusIndex = focusEditorIndex + 1;
@@ -364,7 +358,6 @@ class CustomColumnBuilder extends Component<
           <span>
             <LoadingSpinner />
             <span className="btn-normal-content">Applying</span>
-            <span className="btn-hover-content">Applying</span>
           </span>
         )}
         {!isSuccessShowing && !isCustomColumnApplying && saveText}
@@ -377,7 +370,7 @@ class CustomColumnBuilder extends Component<
     );
   }
 
-  render(): ReactElement {
+  render(): JSX.Element {
     const { onCancel } = this.props;
     const { errorMessage } = this.state;
     return (

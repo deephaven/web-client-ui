@@ -1,14 +1,13 @@
 import React, { useCallback } from 'react';
 import classNames from 'classnames';
 import { Draggable } from 'react-beautiful-dnd';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { Button, Tooltip } from '@deephaven/components';
+import { Button } from '@deephaven/components';
 import { vsTrash, vsGripper } from '@deephaven/icons';
 import { DbNameValidator } from '@deephaven/utils';
 import InputEditor from './InputEditor';
 import { CustomColumnKey } from './CustomColumnBuilder';
 
-interface CustomColumnInputProps {
+export interface CustomColumnInputProps {
   eventKey: string;
   inputIndex: number;
   name: string;
@@ -28,6 +27,10 @@ const INPUT_TYPE = Object.freeze({
   NAME: 'name',
   FORMULA: 'formula',
 });
+
+const EMPTY_FN = () => {
+  // no-op
+};
 
 function CustomColumnInput({
   eventKey,
@@ -89,19 +92,19 @@ function CustomColumnInput({
                   tooltip="Delete custom column"
                 />
 
-                <button
-                  type="button"
-                  className="btn btn-link btn-link-icon px-2 btn-drag-handle"
+                <Button
+                  kind="ghost"
+                  className="btn-drag-handle"
+                  onClick={EMPTY_FN}
                   // eslint-disable-next-line react/jsx-props-no-spreading
                   {...provided.dragHandleProps}
-                >
-                  <Tooltip>Drag column to re-order</Tooltip>
-                  <FontAwesomeIcon icon={vsGripper} />
-                </button>
+                  icon={vsGripper}
+                  tooltip="Drag column to re-order"
+                />
               </div>
               {(!isValidName || isDuplicate) && (
                 <p className="validate-label-error text-danger mb-0 mt-2 pl-1">
-                  {!isValidName ? 'Invalid column name' : 'Duplicate name'}
+                  {!isValidName ? 'Invalid name' : 'Duplicate name'}
                 </p>
               )}
             </div>

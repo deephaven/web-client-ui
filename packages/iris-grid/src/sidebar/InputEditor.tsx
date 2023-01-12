@@ -103,6 +103,9 @@ export default class InputEditor extends Component<
     // disable tab to spaces in this editor to improve tab navigation
     this.editor.getModel()?.updateOptions({ tabSize: 0 });
 
+    // monaco does not propagate tab or enter events
+    this.editor.onKeyDown(this.handleKeyDown);
+
     this.editor.onDidChangeModelContent(this.handleContentChanged);
     this.editor.onDidFocusEditorText(this.handleEditorFocus);
     this.editor.onDidBlurEditorText(this.handleEditorBlur);
@@ -127,10 +130,7 @@ export default class InputEditor extends Component<
   }
 
   handleEditorBlur(): void {
-    const value = this.editor?.getModel()?.getValue();
-    if (value === undefined || value === '') {
-      throw new Error('value is undefined');
-    }
+    const value = this.editor?.getModel()?.getValue() ?? '';
     this.setState({
       isEditorEmpty: value.length === 0,
       isEditorFocused: false,
@@ -146,9 +146,11 @@ export default class InputEditor extends Component<
     this.editor?.focus();
   }
 
-  handleKeyDown(event: React.KeyboardEvent<HTMLDivElement>): void {
+  handleKeyDown(event: monaco.IKeyboardEvent): void {
     const { onTab, editorIndex } = this.props;
-    if (event.key === 'Tab') {
+    if (event.code === 'Tab') {
+      event.stopPropagation();
+      event.preventDefault();
       onTab(editorIndex, event.shiftKey);
     }
   }
@@ -162,7 +164,6 @@ export default class InputEditor extends Component<
           focused: isEditorFocused,
           invalid,
         })}
-        onKeyDown={this.handleKeyDown}
         role="presentation"
         onClick={this.handleContainerClick}
       >
