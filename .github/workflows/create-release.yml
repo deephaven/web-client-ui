@@ -12,20 +12,21 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         with:
-          fetch-depth: '0' # This action defaults to only getting the latest commit. Setting to 0 makes it retrieve the full git commit history
+          # This action defaults to only getting the latest commit. Setting to 0 makes it retrieve the full git commit history
+          fetch-depth: '0'
       - run: |
           git config --global user.email "ci@deephaven.io"
           git config --global user.name "GitHub CI"
       - uses: actions/setup-node@v3
         with:
           node-version: '16.x'
-        # Get the changelog and write it out to a file so it can be used by the create-release step later
       - name: Get changelog
+        # Get the changelog and write it out to a file so it can be used by the create-release step later
         env:
           GITHUB_AUTH: ${{ secrets.GITHUB_TOKEN }}
         run: npx lerna-changelog --next-version=${{ github.event.inputs.version }} > /tmp/changelog.md
-        # lerna version will bump the version, tag it and push the branch
-      - name: Bump version
+      - name: Version bump
+        # lerna version will bump the version, tag it, and push
         run: npx lerna version ${{ github.event.inputs.version }} --yes
       - name: Create Release
         id: create_release
