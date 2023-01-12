@@ -70,7 +70,7 @@ $depth-margin: calc(
   .item-wrapper {
     list-style: none;
     box-sizing: border-box;
-    margin-bottom: -1px;
+    margin-bottom: 1px;
     width: 100%;
     display: flex;
     flex-direction: row;
@@ -135,7 +135,7 @@ $depth-margin: calc(
     .depth-line {
       margin-left: $depth-margin;
       margin-right: $spacer-1; // Gives breathing room to the item boxes
-      padding-bottom: 2px;
+      margin-top: -1px; // removes gaps between depth lines caused by item's margin-bottom
       border-left: 1px solid $depth-line-color;
     }
   }
