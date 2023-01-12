@@ -7,10 +7,6 @@
           "build",
           "build:babel",
           "build:sass",
-          "pretest",
-          "test",
-          "pretest:ci",
-          "test:ci",
           "svgo-dh",
           "svgo-vs",
           "build:icons",
@@ -22,55 +18,54 @@
   "namedInputs": {
     "default": [
       "{projectRoot}/**/*",
-      "!{projectRoot}/dist",
-      "!{projectRoot}/build",
+      "!{projectRoot}/dist/**/*",
+      "!{projectRoot}/build/**/*",
+      "!{projectRoot}/css/**/*",
       "!{projectRoot}/tsconfig.tsbuildinfo"
     ],
-    "production": [
+    "build": [
       "default",
       "!{projectRoot}/**/*.test.*",
       "!{projectRoot}/test/**/*",
-      "!{projectRoot}/tsconfig.tsbuildinfo",
-      "!{projectRoot}/css"
+      "!{projectRoot}/**/__mocks__/**/*"
     ]
   },
   "targetDefaults": {
     "build": {
-      "inputs": ["production", "^production"],
+      "inputs": ["build", "^build", "{workspaceRoot}/babel.config.js"],
       "dependsOn": ["^build"],
-      "outputs": ["{projectRoot}/build"]
+      "outputs": ["{projectRoot}/build", "{projectRoot}/dist"]
     },
     "build:babel": {
-      "inputs": ["production", "!{projectRoot}/**/*.scss"],
-      "outputs": ["{projectRoot}/dist"]
+      "inputs": [
+        "build",
+        "!{projectRoot}/**/*.scss",
+        "{workspaceRoot}/babel.config.js"
+      ],
+      "outputs": [
+        "{projectRoot}/dist/**/*.js",
+        "{projectRoot}/dist/**/*.js.map"
+      ]
     },
     "build:sass": {
       "inputs": ["{projectRoot}/**/*.scss"],
-      "outputs": ["{projectRoot}/css"]
-    },
-    "pretest": {
-      "outputs": ["{projectRoot}/dist"]
-    },
-    "test": {
-      "outputs": ["{projectRoot}/coverage"]
-    },
-    "pretest:ci": {
-      "outputs": ["{projectRoot}/dist"]
-    },
-    "test:ci": {
-      "outputs": ["{projectRoot}/coverage"]
+      "outputs": [
+        "{projectRoot}/css",
+        "{projectRoot}/dist/**/*.css",
+        "{projectRoot}/dist/**/*.css.map"
+      ]
     },
     "svgo-dh": {
-      "outputs": ["{projectRoot}/dist"]
+      "outputs": ["{projectRoot}/dist/svg/dh"]
     },
     "svgo-vs": {
-      "outputs": ["{projectRoot}/dist"]
+      "outputs": ["{projectRoot}/dist/svg/vs"]
     },
     "build:icons": {
-      "outputs": ["{projectRoot}/dist"]
+      "outputs": ["{projectRoot}/dist/svg"]
     },
     "build:js": {
-      "outputs": ["{projectRoot}/dist"]
+      "outputs": ["{projectRoot}/dist", "!{projectRoot}/dist/svg"]
     }
   }
 }

@@ -16,6 +16,7 @@
     "clean:cache": "run-s clean:cache:*",
     "clean:cache:eslint": "rimraf .eslintcache",
     "clean:cache:jest": "jest --clearCache",
+    "clean:cache:nx": "nx clear-cache",
     "clean:modules": "lerna clean --yes",
     "clean:types": "tsc --build --clean",
     "clean:root": "rimraf ./node_modules",
