@@ -6,6 +6,7 @@ import { Button, Tooltip } from '@deephaven/components';
 import { vsTrash, vsGripper } from '@deephaven/icons';
 import InputEditor from './InputEditor';
 import { CustomColumnKey } from './CustomColumnBuilder';
+import { DbNameValidator } from '@deephaven/utils';
 
 interface CustomColumnInputProps {
   eventKey: string;
@@ -70,6 +71,9 @@ class CustomColumnInput extends PureComponent<
       onTabInEditor,
       invalid,
     } = this.props;
+
+    const isValidName = DbNameValidator.isValidColumnName(name);
+
     return (
       <Draggable
         draggableId={eventKey}
@@ -86,40 +90,47 @@ class CustomColumnInput extends PureComponent<
             {...provided.draggableProps}
           >
             <div className="custom-column-input-container">
-              <div className="d-flex flex-row pb-3 custom-column-name">
-                <input
-                  className={classNames('form-control custom-column-input', {
-                    'is-invalid': invalid,
-                  })}
-                  placeholder="Column Name"
-                  value={name}
-                  onChange={event => {
-                    onChange(
-                      eventKey,
-                      CustomColumnInput.INPUT_TYPE.NAME as CustomColumnKey,
-                      event.target.value
-                    );
-                  }}
-                />
-                <Button
-                  kind="ghost"
-                  className="ml-1 px-2"
-                  onClick={() => {
-                    onDeleteColumn(eventKey);
-                  }}
-                  icon={vsTrash}
-                  tooltip="Delete custom column"
-                />
+              <div className="pb-3">
+                <div className="d-flex flex-row custom-column-name">
+                  <input
+                    className={classNames('form-control custom-column-input', {
+                      'is-invalid': invalid || !isValidName,
+                    })}
+                    placeholder="Column Name"
+                    value={name}
+                    onChange={event => {
+                      onChange(
+                        eventKey,
+                        CustomColumnInput.INPUT_TYPE.NAME as CustomColumnKey,
+                        event.target.value
+                      );
+                    }}
+                  />
+                  <Button
+                    kind="ghost"
+                    className="ml-1 px-2"
+                    onClick={() => {
+                      onDeleteColumn(eventKey);
+                    }}
+                    icon={vsTrash}
+                    tooltip="Delete custom column"
+                  />
 
-                <button
-                  type="button"
-                  className="btn btn-link btn-link-icon px-2 btn-drag-handle"
-                  // eslint-disable-next-line react/jsx-props-no-spreading
-                  {...provided.dragHandleProps}
-                >
-                  <Tooltip>Drag column to re-order</Tooltip>
-                  <FontAwesomeIcon icon={vsGripper} />
-                </button>
+                  <button
+                    type="button"
+                    className="btn btn-link btn-link-icon px-2 btn-drag-handle"
+                    // eslint-disable-next-line react/jsx-props-no-spreading
+                    {...provided.dragHandleProps}
+                  >
+                    <Tooltip>Drag column to re-order</Tooltip>
+                    <FontAwesomeIcon icon={vsGripper} />
+                  </button>
+                </div>
+                {!isValidName && (
+                  <p className="validate-label-error text-danger mb-0 mt-2 pl-1">
+                    Invalid column name
+                  </p>
+                )}
               </div>
               <InputEditor
                 editorSettings={{ language: 'deephavenDb' }}

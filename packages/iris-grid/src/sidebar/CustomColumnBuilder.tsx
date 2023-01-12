@@ -9,6 +9,7 @@ import { dhNewCircleLargeFilled, vsWarning, vsPass } from '@deephaven/icons';
 import CustomColumnInput from './CustomColumnInput';
 import './CustomColumnBuilder.scss';
 import IrisGridModel from '../IrisGridModel';
+import { DbNameValidator } from '@deephaven/utils';
 
 export type CustomColumnKey = 'eventKey' | 'name' | 'formula';
 
@@ -334,6 +335,9 @@ class CustomColumnBuilder extends Component<
   renderSaveButton(): ReactElement {
     const { inputs, isCustomColumnApplying, isSuccessShowing } = this.state;
     const saveText = inputs.length > 1 ? 'Save Columns' : 'Save Column';
+    const areNamesValid = inputs.every(({ name }) =>
+      DbNameValidator.isValidColumnName(name)
+    );
 
     return (
       <Button
@@ -341,7 +345,7 @@ class CustomColumnBuilder extends Component<
         className={classNames('btn-apply', {
           'btn-spinner': isCustomColumnApplying,
         })}
-        disabled={isSuccessShowing || isCustomColumnApplying}
+        disabled={isSuccessShowing || isCustomColumnApplying || !areNamesValid}
         onClick={this.handleSaveClick}
       >
         {isCustomColumnApplying && (
