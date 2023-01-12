@@ -6,10 +6,10 @@ import { DragDropContext, Droppable, DropResult } from 'react-beautiful-dnd';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Button, DragUtils, LoadingSpinner } from '@deephaven/components';
 import { dhNewCircleLargeFilled, vsWarning, vsPass } from '@deephaven/icons';
+import { DbNameValidator } from '@deephaven/utils';
 import CustomColumnInput from './CustomColumnInput';
 import './CustomColumnBuilder.scss';
 import IrisGridModel from '../IrisGridModel';
-import { DbNameValidator } from '@deephaven/utils';
 
 export type CustomColumnKey = 'eventKey' | 'name' | 'formula';
 
@@ -314,8 +314,12 @@ class CustomColumnBuilder extends Component<
   renderInputs(): ReactElement[] {
     const { inputs, hasRequestFailed } = this.state;
 
+    const nameSet = new Set();
+
     return inputs.map((input, index) => {
       const { eventKey, name, formula } = input;
+      const isDuplicate = nameSet.has(name);
+      nameSet.add(name);
       return (
         <CustomColumnInput
           key={eventKey}
@@ -327,6 +331,7 @@ class CustomColumnBuilder extends Component<
           onDeleteColumn={this.handleDeleteColumn}
           onTabInEditor={this.handleEditorTabNavigation}
           invalid={hasRequestFailed}
+          isDuplicate={isDuplicate}
         />
       );
     });
@@ -338,6 +343,8 @@ class CustomColumnBuilder extends Component<
     const areNamesValid = inputs.every(({ name }) =>
       DbNameValidator.isValidColumnName(name)
     );
+    const areNamesUnique =
+      new Set(inputs.map(({ name }) => name)).size === inputs.length;
 
     return (
       <Button
@@ -345,7 +352,12 @@ class CustomColumnBuilder extends Component<
         className={classNames('btn-apply', {
           'btn-spinner': isCustomColumnApplying,
         })}
-        disabled={isSuccessShowing || isCustomColumnApplying || !areNamesValid}
+        disabled={
+          isSuccessShowing ||
+          isCustomColumnApplying ||
+          !areNamesValid ||
+          !areNamesUnique
+        }
         onClick={this.handleSaveClick}
       >
         {isCustomColumnApplying && (
