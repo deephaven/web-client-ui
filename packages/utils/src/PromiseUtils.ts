@@ -17,6 +17,7 @@ export class PromiseUtils {
     cleanup?: (val: T) => void | null
   ): CancelablePromise<T> {
     let resolved: T | undefined;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let rejectFn: (val?: any) => void;
 
     const wrappedPromise = new Promise((resolve, reject) => {
