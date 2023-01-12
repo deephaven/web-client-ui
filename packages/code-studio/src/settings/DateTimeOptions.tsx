@@ -48,7 +48,11 @@ export default function DateTimeOptions(
           DateTimeColumnFormatter.TYPE_GLOBAL
         );
         return (
-          <option value={formatString} key={formatString}>
+          <option
+            value={formatString}
+            key={formatString}
+            data-testid="time-format"
+          >
             {formatter.getFormattedString(
               timestamp,
               TableUtils.dataType.DATETIME,

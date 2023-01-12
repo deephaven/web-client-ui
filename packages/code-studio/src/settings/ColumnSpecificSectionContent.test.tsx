@@ -50,6 +50,10 @@ function renderContent({
   );
 }
 
+afterEach(() => {
+  jest.useRealTimers();
+});
+
 it('should mount with the default values correctly', async () => {
   renderContent();
 
@@ -57,41 +61,45 @@ it('should mount with the default values correctly', async () => {
 });
 
 it('can add a blank format rule', async () => {
+  const user = userEvent.setup();
   renderContent();
 
   const btn = screen.getByRole('button');
   expect(btn).not.toBeNull();
-  userEvent.click(btn);
+  await user.click(btn);
 
   expect(await screen.findByRole('textbox')).toBeInTheDocument();
 });
 
 it('can delete a format rule', async () => {
+  const user = userEvent.setup();
   renderContent();
 
   const addBtn = screen.getByRole('button');
   expect(addBtn).not.toBeNull();
-  userEvent.click(addBtn);
+  await user.click(addBtn);
 
   const delBtn = screen.getByRole('button', { name: /Delete Format Rule/g });
   expect(delBtn).not.toBeNull();
-  userEvent.click(delBtn);
+  await user.click(delBtn);
 
   await waitForElementToBeRemoved(screen.queryByRole('textbox'));
   expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
 });
 
-it('can edit a format rule', () => {
+it('can edit a format rule', async () => {
+  const user = userEvent.setup();
+
   renderContent();
 
   const addBtn = screen.getByRole('button');
   expect(addBtn).not.toBeNull();
-  userEvent.click(addBtn);
+  await user.click(addBtn);
 
-  userEvent.type(screen.getByLabelText('Column Name'), 'test');
+  await user.type(screen.getByLabelText('Column Name'), 'test');
   expect(screen.getByDisplayValue('test')).toBeInTheDocument();
 
-  userEvent.selectOptions(screen.getByLabelText('Column Type'), 'DateTime');
+  await user.selectOptions(screen.getByLabelText('Column Type'), 'DateTime');
   expect(
     (screen.getByText('DateTime') as HTMLOptionElement).selected
   ).toBeTruthy();
@@ -102,7 +110,7 @@ it('can edit a format rule', () => {
     (screen.getByText('Integer') as HTMLOptionElement).selected
   ).toBeFalsy();
 
-  userEvent.selectOptions(screen.getByLabelText('Column Type'), 'Integer');
+  await user.selectOptions(screen.getByLabelText('Column Type'), 'Integer');
   expect(
     (screen.getByText('DateTime') as HTMLOptionElement).selected
   ).toBeFalsy();
@@ -114,68 +122,94 @@ it('can edit a format rule', () => {
   ).toBeTruthy();
 });
 
-it('displays an error when the formatting rule is empty', () => {
+it('displays an error when the formatting rule is empty', async () => {
+  const user = userEvent.setup();
   renderContent();
 
   const addBtn = screen.getByRole('button');
   expect(addBtn).not.toBeNull();
-  userEvent.click(addBtn);
+  await user.click(addBtn);
 
-  userEvent.type(screen.getByLabelText('Column Name'), 'test');
+  await user.type(screen.getByLabelText('Column Name'), 'test');
   expect(screen.getByDisplayValue('test')).toBeInTheDocument();
 
-  userEvent.selectOptions(screen.getByLabelText('Column Type'), 'Decimal');
-  userEvent.type(screen.getByLabelText('Formatting Rule'), ' {backspace}');
+  await user.selectOptions(screen.getByLabelText('Column Type'), 'Decimal');
+  await user.type(screen.getByLabelText('Formatting Rule'), ' {backspace}');
   expect(screen.queryByText(/Empty formatting rule\./)).toBeInTheDocument();
 });
 
-it('displays an error when two rules have the same name and type', () => {
+it('displays an error when two rules have the same name and type', async () => {
+  const user = userEvent.setup();
   renderContent();
 
   const addBtn = screen.getByRole('button');
   expect(addBtn).not.toBeNull();
-  userEvent.click(addBtn);
-  userEvent.click(addBtn);
+  await user.click(addBtn);
+  await user.click(addBtn);
 
   const columnNameTextboxes = screen.getAllByLabelText('Column Name');
-  userEvent.type(columnNameTextboxes[0], 'test');
-  userEvent.type(columnNameTextboxes[1], 'test');
+  await user.type(columnNameTextboxes[0], 'test');
+  await user.type(columnNameTextboxes[1], 'test');
 
   const columnTypeSelects = screen.getAllByLabelText('Column Type');
-  userEvent.selectOptions(columnTypeSelects[0], 'Decimal');
-  userEvent.selectOptions(columnTypeSelects[1], 'Decimal');
+  await user.selectOptions(columnTypeSelects[0], 'Decimal');
+  await user.selectOptions(columnTypeSelects[1], 'Decimal');
 
   expect(
     screen.queryAllByText(/Duplicate column name\/type combo\./)
   ).not.toBeNull();
 });
 
-it('should render a select menu when the column type is DateTime', () => {
+it('should render a select menu when the column type is DateTime', async () => {
+  const user = userEvent.setup();
+  jest
+    .useFakeTimers({
+      doNotFake: [
+        'nextTick',
+        'setImmediate',
+        'clearImmediate',
+        'setInterval',
+        'clearInterval',
+        'setTimeout',
+        'clearTimeout',
+      ],
+    })
+    .setSystemTime(new Date(2022, 0, 10, 3, 37, 22));
   renderContent();
 
   const addBtn = screen.getByRole('button');
   expect(addBtn).not.toBeNull();
-  userEvent.click(addBtn);
+  await user.click(addBtn);
 
-  // const selectFormat = screen.getByLabelText('Formatting Rule');
+  const selectFormat = screen.getByLabelText('Formatting Rule');
+  const timeFormatOptions = await screen.findAllByTestId('time-format');
 
-  // const formats = isGlobalOptions
-  //   ? DateTimeColumnFormatter.getGlobalFormats(showTimeZone, showTSeparator)
-  //   : DateTimeColumnFormatter.getFormats(showTimeZone, showTSeparator);
+  expect((timeFormatOptions[0] as HTMLOptionElement).selected).toBeFalsy();
+  await user.selectOptions(selectFormat, timeFormatOptions[0]);
+  expect((timeFormatOptions[0] as HTMLOptionElement).selected).toBeTruthy();
 
-  // userEvent.selectOptions(selectFormat, 'Decimal');
+  await user.selectOptions(
+    selectFormat,
+    timeFormatOptions[timeFormatOptions.length - 1]
+  );
+  expect((timeFormatOptions[0] as HTMLOptionElement).selected).toBeFalsy();
+  expect(
+    (timeFormatOptions[timeFormatOptions.length - 1] as HTMLOptionElement)
+      .selected
+  ).toBeTruthy();
 });
 
-it('should change the input value when column type is Integer', () => {
+it('should change the input value when column type is Integer', async () => {
+  const user = userEvent.setup();
   renderContent();
   const newFormat = '0.00';
 
   const addBtn = screen.getByRole('button');
   expect(addBtn).not.toBeNull();
-  userEvent.click(addBtn);
+  await user.click(addBtn);
 
-  userEvent.selectOptions(screen.getByLabelText('Column Type'), 'Integer');
-  userEvent.type(
+  await user.selectOptions(screen.getByLabelText('Column Type'), 'Integer');
+  await user.type(
     screen.getByLabelText('Formatting Rule'),
     `{selectall}${newFormat}`
   );
