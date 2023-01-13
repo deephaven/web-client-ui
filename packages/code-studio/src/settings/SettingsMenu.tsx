@@ -94,7 +94,7 @@ export class SettingsMenu extends Component<
 
   handleExportSupportLogs(): void {
     const { serverConfigValues } = this.props;
-    exportLogs(undefined, Object.fromEntries(serverConfigValues));
+    exportLogs(undefined, serverConfigValues);
   }
 
   render(): ReactElement {
@@ -103,9 +103,11 @@ export class SettingsMenu extends Component<
     const docsLink = import.meta.env.VITE_DOCS_LINK;
 
     const { serverConfigValues } = this.props;
-    const barrageVersion = serverConfigValues.get('barrage.version');
-    const javaVersion = serverConfigValues.get('java.version');
-    const deephavenVersion = serverConfigValues.get('deephaven.version');
+    const {
+      barrageVersion,
+      javaVersion,
+      deephavenVersion,
+    } = serverConfigValues;
 
     const getRow = (text: string, ver?: string) => (
       <>

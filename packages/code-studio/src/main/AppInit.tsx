@@ -255,9 +255,14 @@ function AppInit(props: AppInitProps) {
           ),
         },
       };
+      const serverConfigValues = {
+        barrageVersion: serverConfig.get('barrage.version'),
+        javaVersion: serverConfig.get('java.version'),
+        deephavenVersion: serverConfig.get('deephaven.version'),
+      };
 
       setActiveTool(ToolType.DEFAULT);
-      setServerConfigValues(serverConfig);
+      setServerConfigValues(serverConfigValues);
       setCommandHistoryStorage(commandHistoryStorage);
       setDashboardData(DEFAULT_DASHBOARD_ID, dashboardData);
       setFileStorage(fileStorage);
