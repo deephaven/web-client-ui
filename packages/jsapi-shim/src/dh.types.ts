@@ -850,6 +850,7 @@ export interface TableTemplate<T = Table> extends Evented {
 
 export interface TreeTable extends TableTemplate<TreeTable>, TreeTableStatic {
   readonly isIncludeConstituents: boolean;
+  readonly groupedColumns: Column[];
 
   expand(row: number): void;
   expand(row: TreeRow): void;
