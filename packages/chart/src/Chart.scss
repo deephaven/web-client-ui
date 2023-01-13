@@ -8,10 +8,6 @@ $plotly-color-btn-active: rgba(255, 255, 255, 70%);
 
 .plotly-notifier {
   margin-right: $plotly-notifier-margin-right;
-
-  // Needed to specify in order to override the plotly styles
-  // max-width: 325px;
-  // width: 325px;
 }
 
 .plotly-notifier .notifier-note {
