@@ -16,6 +16,7 @@ export class PromiseUtils {
     promise: Promise<T> | T,
     cleanup?: (val: T) => void | null
   ): CancelablePromise<T> {
+    let hasCanceled = false;
     let resolved: T | undefined;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let rejectFn: (val?: any) => void;
@@ -24,14 +25,24 @@ export class PromiseUtils {
       rejectFn = reject;
       Promise.resolve(promise)
         .then(val => {
-          resolved = val;
-          resolve(val);
+          if (hasCanceled) {
+            if (cleanup) {
+              cleanup(val);
+            }
+            reject(new CanceledPromiseError());
+          } else {
+            resolved = val;
+            resolve(val);
+          }
         })
-        .catch(error => reject(error));
+        .catch(error =>
+          hasCanceled ? reject(new CanceledPromiseError()) : reject(error)
+        );
     });
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (wrappedPromise as any).cancel = () => {
+      hasCanceled = true;
       rejectFn(new CanceledPromiseError());
 
       if (resolved != null && cleanup) {
