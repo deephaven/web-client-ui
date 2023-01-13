@@ -308,12 +308,14 @@ class CustomColumnBuilder extends Component<
   renderInputs(): ReactElement[] {
     const { inputs, hasRequestFailed } = this.state;
 
-    const nameSet = new Set();
+    const nameCount = new Map();
+    inputs.forEach(({ name }) =>
+      nameCount.set(name, (nameCount.get(name) ?? 0) + 1)
+    );
 
     return inputs.map((input, index) => {
       const { eventKey, name, formula } = input;
-      const isDuplicate = nameSet.has(name);
-      nameSet.add(name);
+      const isDuplicate = (nameCount.get(name) ?? 0) > 1;
       return (
         <CustomColumnInput
           key={eventKey}
