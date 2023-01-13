@@ -190,6 +190,25 @@ function GotoRow({
             </div>
           </>
         );
+      case TableUtils.dataType.BOOLEAN:
+        return (
+          <div className="goto-row-input">
+            <select
+              className="custom-select"
+              onChange={event => {
+                onGotoValueInputChanged(event.target.value);
+              }}
+              value={gotoValue}
+            >
+              <option key="true" value="true">
+                true
+              </option>
+              <option key="false" value="false">
+                false
+              </option>
+            </select>
+          </div>
+        );
       default:
         return (
           <div className="goto-row-input">
