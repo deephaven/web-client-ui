@@ -18,7 +18,8 @@ To get started quickly:
 1. Navigate to [https://github.com/deephaven/web-client-ui](https://github.com/deephaven/web-client-ui).
 2. Click `Fork` in the top right corner.
 3. `git clone git@github.com:<username>/web-client-ui.git`
-4. Commit changes to your own branches in your forked repository.
+4. In order to use the UI, you must also be running a [deephaven-core](https://github.com/deephaven/deephaven-core) server on port 10000. The server provides APIs that the web-client-ui depends upon. An easy way to get started is to follow the steps for [Launch Python](https://github.com/deephaven/deephaven-core#launch-python).
+5. Commit changes to your own branches in your forked repository.
 
 For details on working with git on GitHub, see:
 
