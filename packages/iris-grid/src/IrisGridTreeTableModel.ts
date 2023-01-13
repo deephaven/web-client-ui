@@ -100,8 +100,8 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
     return result;
   }
 
-  get groupedColumns(): [] {
-    return [];
+  get groupedColumns(): Column[] {
+    return this.table.groupedColumns;
   }
 
   get hasExpandableRows(): boolean {
