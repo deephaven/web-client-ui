@@ -1089,6 +1089,7 @@ class Grid extends PureComponent<GridProps, GridState> {
     this.setState({
       top: Math.min(lastTop, newTop),
       selectedRanges: [new GridRange(null, focusedRow, null, focusedRow)],
+      isStuckToBottom: false,
     });
     const { cursorColumn } = this.state;
     this.moveCursorToPosition(cursorColumn, focusedRow, false, false);
