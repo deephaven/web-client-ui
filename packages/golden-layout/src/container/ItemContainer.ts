@@ -31,7 +31,7 @@ export default class ItemContainer<
   _element = $(
     [
       '<div class="lm_item_container">',
-      '<div class="lm_content" tabindex="-1"></div>',
+      '<div class="lm_content"></div>',
       '</div>',
     ].join('')
   );
