@@ -193,7 +193,7 @@ class ItemListItem extends Component<ItemListItemProps, Record<string, never>> {
           { 'is-draggable': isDraggable }
         )}
         onKeyDown={ItemListItem.handleKeyDown}
-        onContextMenu={this.handleContextMenu}
+        onContextMenuCapture={this.handleContextMenu}
         onClick={this.handleClick}
         onDrag={this.handleDrag}
         onDragStart={this.handleDragStart}
