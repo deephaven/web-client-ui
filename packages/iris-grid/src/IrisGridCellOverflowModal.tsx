@@ -107,6 +107,7 @@ export default function IrisGridCellOverflowModal({
 
   function onEditorInitialized(editor: monaco.editor.IStandaloneCodeEditor) {
     editorRef.current = editor;
+    setHeight(editor.getContentHeight());
     editor.onDidContentSizeChange(({ contentHeight }) =>
       setHeight(contentHeight)
     );
