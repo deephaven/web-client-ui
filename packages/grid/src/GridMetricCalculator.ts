@@ -362,7 +362,7 @@ export class GridMetricCalculator {
     const hasVerticalBar = lastTop > 0;
     const verticalBarWidth = hasVerticalBar ? scrollBarSize : 0;
     const barLeft = gridX;
-    const barTop = gridY;
+    const barTop = columnHeaderMaxDepth * columnHeaderHeight;
     const barWidth = width - barLeft - verticalBarWidth;
     const barHeight = height - barTop - horizontalBarHeight;
 

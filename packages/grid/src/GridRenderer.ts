@@ -2714,8 +2714,8 @@ export class GridRenderer {
       hasVerticalBar,
       barWidth,
       barHeight,
-      gridX,
-      gridY,
+      barLeft,
+      barTop,
     } = metrics;
     const {
       scrollBarBackgroundColor,
@@ -2746,7 +2746,7 @@ export class GridRenderer {
         mouseX != null &&
         mouseY != null &&
         mouseX >= width - scrollBarHoverSize &&
-        mouseY >= gridY &&
+        mouseY >= barTop &&
         isInbounds);
 
     const isHorizontalBarHover =
@@ -2758,7 +2758,7 @@ export class GridRenderer {
         mouseX != null &&
         mouseY != null &&
         mouseY >= height - scrollBarHoverSize &&
-        mouseX >= gridX &&
+        mouseX >= barLeft &&
         isInbounds);
 
     const hScrollBarSize = isHorizontalBarHover
@@ -2768,21 +2768,21 @@ export class GridRenderer {
       ? scrollBarHoverSize
       : scrollBarSize;
 
-    context.translate(gridX, gridY);
+    context.translate(barLeft, barTop);
 
     if (hasHorizontalBar && hasVerticalBar) {
       // That little corner in the bottom right
       context.fillStyle = scrollBarCasingColor;
       context.fillRect(
-        width - gridX - scrollBarSize,
-        height - gridY - scrollBarSize,
+        width - barLeft - scrollBarSize,
+        height - barTop - scrollBarSize,
         scrollBarSize,
         scrollBarSize
       );
       context.fillStyle = scrollBarCornerColor;
       context.fillRect(
-        width - gridX - scrollBarSize + scrollBarCasingWidth,
-        height - gridY - scrollBarSize + scrollBarCasingWidth,
+        width - barLeft - scrollBarSize + scrollBarCasingWidth,
+        height - barTop - scrollBarSize + scrollBarCasingWidth,
         scrollBarSize - scrollBarCasingWidth,
         scrollBarSize - scrollBarCasingWidth
       );
@@ -2790,7 +2790,7 @@ export class GridRenderer {
 
     if (hasHorizontalBar) {
       const x = scrollX;
-      const y = height - gridY - hScrollBarSize;
+      const y = height - barTop - hScrollBarSize;
 
       // scrollbar casing
       context.fillStyle = scrollBarCasingColor;
@@ -2898,7 +2898,7 @@ export class GridRenderer {
     }
 
     if (hasVerticalBar) {
-      const x = width - gridX - vScrollBarSize;
+      const x = width - barLeft - vScrollBarSize;
       const y = scrollY;
 
       // scrollbar casing
@@ -3007,7 +3007,7 @@ export class GridRenderer {
       }
     }
 
-    context.translate(-gridX, -gridY);
+    context.translate(-barLeft, -barTop);
   }
 }
 
