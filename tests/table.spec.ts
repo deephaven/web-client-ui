@@ -46,12 +46,8 @@ test('can open a table with column header groups', async () => {
   await consoleInput.click();
 
   const command = `${makeTableCommand('column_header_group')}
-column_header_group = column_header_group.layout_hints(
-  column_groups=[
-    { 'name': 'YandZ', 'children': ['y', 'z'] },
-    { 'name': 'All', 'children': ['x', 'YandZ'], 'color': 'white' }
-  ]
-)`;
+column_groups = [{ 'name': 'YandZ', 'children': ['y', 'z'] }, { 'name': 'All', 'children': ['x', 'YandZ'], 'color': 'white' }]
+column_header_group = column_header_group.layout_hints(column_groups=column_groups)`;
 
   await typeInMonaco(page, command);
   await page.keyboard.press('Enter');
