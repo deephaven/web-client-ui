@@ -1,21 +1,10 @@
 import { test, expect, Page } from '@playwright/test';
-import { generateVarName, makeTableCommand, typeInMonaco } from './utils';
+import { makeTableCommand, typeInMonaco } from './utils';
 
 // Run tests serially since they all use the same table
 test.describe.configure({ mode: 'serial' });
 
-let page: Page;
-
-test.beforeAll(async ({ browser }) => {
-  page = await browser.newPage();
-  await page.goto('');
-});
-
-test.afterAll(async () => {
-  await page.close();
-});
-
-test('can open a simple table', async () => {
+async function openSimpleTable(page: Page) {
   const consoleInput = page.locator('.console-input');
   await consoleInput.click();
 
@@ -36,12 +25,18 @@ test('can open a simple table', async () => {
   await expect(
     page.locator('.iris-grid .iris-grid-loading-status')
   ).toHaveCount(0);
+}
+
+test('can open a simple table', async ({ page }) => {
+  await page.goto('');
+  await openSimpleTable(page);
 
   // Now we should be able to check the snapshot
   await expect(page.locator('.iris-grid-panel .iris-grid')).toHaveScreenshot();
 });
 
-test('can open a table with column header groups', async () => {
+test('can open a table with column header groups', async ({ page }) => {
+  await page.goto('');
   const consoleInput = page.locator('.console-input');
   await consoleInput.click();
 
@@ -70,6 +65,13 @@ column_header_group = column_header_group.layout_hints(column_groups=column_grou
 });
 
 test.describe('tests table operations', () => {
+  let page: Page;
+
+  test.beforeAll(async ({ browser }) => {
+    page = await browser.newPage();
+    await page.goto('');
+    await openSimpleTable(page);
+  });
   test.beforeEach(async () => {
     const tableOperationsMenu = page.locator(
       'data-testid=btn-iris-grid-settings-button-table'
