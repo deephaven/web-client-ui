@@ -329,7 +329,8 @@ class NewItemModal extends PureComponent<NewItemModalProps, NewItemModalState> {
       const { value } = input;
       const selectionEnd =
         type === 'directory' ? value.length : value.lastIndexOf('.');
-      setTimeout(() => input.focus(), 100);
+      // setTimeout(() => input.focus(), 100);
+      input.focus();
       input.setSelectionRange(
         0,
         selectionEnd > 0 ? selectionEnd : value.length
