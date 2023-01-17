@@ -41,6 +41,38 @@ test('can open a simple table', async () => {
   await expect(page.locator('.iris-grid-panel .iris-grid')).toHaveScreenshot();
 });
 
+test('can open a table with column header groups', async () => {
+  const consoleInput = page.locator('.console-input');
+  await consoleInput.click();
+
+  const command = `${makeTableCommand('column_header_group')}
+column_header_group = column_header_group.layout_hints(
+  column_groups=[
+    { 'name': 'YandZ', 'children': ['y', 'z'] },
+    { 'name': 'All', 'children': ['x', 'YandZ'], 'color': 'white' }
+  ]
+)`;
+
+  await typeInMonaco(page, command);
+  await page.keyboard.press('Enter');
+
+  // Wait for the panel to show
+  await expect(page.locator('.iris-grid-panel')).toHaveCount(1);
+
+  // Wait until it's done loading
+  await expect(page.locator('.iris-grid-panel .loading-spinner')).toHaveCount(
+    0
+  );
+
+  // Model is loaded, need to make sure table data is also loaded
+  await expect(
+    page.locator('.iris-grid .iris-grid-loading-status')
+  ).toHaveCount(0);
+
+  // Now we should be able to check the snapshot
+  await expect(page.locator('.iris-grid-panel .iris-grid')).toHaveScreenshot();
+});
+
 test.describe('tests table operations', () => {
   test.beforeEach(async () => {
     const tableOperationsMenu = page.locator(
