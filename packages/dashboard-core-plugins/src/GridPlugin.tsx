@@ -53,7 +53,7 @@ export function GridPlugin(props: GridPluginProps): JSX.Element | null {
         return;
       }
 
-      const metadata = { name, table: name };
+      const metadata = { name, table: name, type: widget.type };
       const makeModel = () =>
         fetch().then((table: Table) => IrisGridModelFactory.makeModel(table));
       const config = {
