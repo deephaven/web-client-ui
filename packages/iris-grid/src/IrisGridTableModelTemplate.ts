@@ -1542,22 +1542,40 @@ class IrisGridTableModelTemplate<
   }
 
   isEditableRange(range: GridRange): boolean {
-    return (
-      this.inputTable != null &&
-      GridRange.isBounded(range) &&
-      ((this.isPendingRow(range.startRow) && this.isPendingRow(range.endRow)) ||
-        (range.startColumn >= this.inputTable.keyColumns.length &&
-          range.endColumn >= this.inputTable.keyColumns.length)) &&
-      range.startRow >= this.floatingTopRowCount &&
-      range.startRow <
-        this.floatingTopRowCount + this.table.size + this.pendingRowCount &&
-      range.endRow <
-        this.floatingTopRowCount + this.table.size + this.pendingRowCount &&
-      (this.inputTable.keyColumns.length !== 0 ||
-        (this.inputTable.keyColumns.length === 0 &&
-          this.isPendingRow(range.startRow) &&
-          this.isPendingRow(range.endRow)))
-    );
+    // Make sure we have an input table and a valid range
+    if (this.inputTable == null || !GridRange.isBounded(range)) {
+      return false;
+    }
+
+    // Check that the edit is in the editable range
+    // If an input table has keyed columns, the non-key columns are always editable
+    // If an input table does not have key columns, it is append only and existing rows cannot be editable
+    // Pending rows are always editable
+    const isPendingRange =
+      this.isPendingRow(range.startRow) && this.isPendingRow(range.endRow);
+    if (
+      !(
+        isPendingRange ||
+        (this.inputTable.keyColumns.length !== 0 &&
+          range.startColumn >= this.inputTable.keyColumns.length &&
+          range.endColumn >= this.inputTable.keyColumns.length)
+      )
+    ) {
+      return false;
+    }
+
+    // Editing the aggregations/totals which are floating above/below is not allowed
+    if (
+      range.startRow < this.floatingTopRowCount ||
+      range.startRow >=
+        this.floatingTopRowCount + this.table.size + this.pendingRowCount ||
+      range.endRow >=
+        this.floatingTopRowCount + this.table.size + this.pendingRowCount
+    ) {
+      return false;
+    }
+
+    return true;
   }
 
   isDeletableRange(range: GridRange): boolean {
