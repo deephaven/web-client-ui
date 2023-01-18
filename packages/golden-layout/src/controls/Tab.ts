@@ -81,8 +81,13 @@ export default class Tab {
     if (isComponent(this.contentItem)) {
       // add focus class to tab when content
       this.contentItem.container._contentElement
-        .on('focusin click', this._onTabContentFocusIn)
+        .on('focusin', this._onTabContentFocusIn)
         .on('focusout', this._onTabContentFocusOut);
+      this.contentItem.container._contentElement[0].addEventListener(
+        'click',
+        this._onTabContentFocusIn,
+        true // capture, so it occurs before onClick from react events
+      );
 
       this.contentItem.container.tab = this;
       this.contentItem.container.emit('tab', this);
@@ -131,6 +136,11 @@ export default class Tab {
     this.closeElement.off('click', this._onCloseClick);
     if (isComponent(this.contentItem)) {
       this.contentItem.container._contentElement.off();
+      this.contentItem.container._contentElement[0].removeEventListener(
+        'click',
+        this._onTabContentFocusIn,
+        true
+      );
     }
     if (this._dragListener) {
       this.contentItem.off(
