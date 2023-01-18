@@ -661,7 +661,11 @@ export class AppMainContainer extends Component<
   }
 
   hydrateGrid(props: IrisGridPanelProps, id: string): IrisGridPanelProps {
-    return this.hydrateTable(props, id, dh.VariableType.TABLE);
+    return this.hydrateTable(
+      props,
+      id,
+      props.metadata.type ?? dh.VariableType.TABLE
+    );
   }
 
   hydratePandas(props: PandasPanelProps, id: string): PandasPanelProps {
