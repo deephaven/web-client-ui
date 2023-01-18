@@ -136,6 +136,11 @@ export default class Tab {
     this.closeElement.off('click', this._onCloseClick);
     if (isComponent(this.contentItem)) {
       this.contentItem.container._contentElement.off();
+      this.contentItem.container._contentElement[0].removeEventListener(
+        'click',
+        this._onTabContentFocusIn,
+        true
+      );
     }
     if (this._dragListener) {
       this.contentItem.off(
