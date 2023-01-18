@@ -1552,7 +1552,11 @@ class IrisGridTableModelTemplate<
       range.startRow <
         this.floatingTopRowCount + this.table.size + this.pendingRowCount &&
       range.endRow <
-        this.floatingTopRowCount + this.table.size + this.pendingRowCount
+        this.floatingTopRowCount + this.table.size + this.pendingRowCount &&
+      (this.inputTable.keyColumns.length !== 0 ||
+        (this.inputTable.keyColumns.length === 0 &&
+          this.isPendingRow(range.startRow) &&
+          this.isPendingRow(range.endRow)))
     );
   }
 
