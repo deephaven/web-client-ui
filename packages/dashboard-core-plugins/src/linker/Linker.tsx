@@ -25,7 +25,7 @@ import {
   setActiveTool as setActiveToolAction,
   RootState,
 } from '@deephaven/redux';
-import { IrisGridTreeTableModel } from '@deephaven/iris-grid';
+import { IrisGridModel } from '@deephaven/iris-grid';
 import {
   getIsolatedLinkerPanelIdForDashboard,
   getLinksForDashboard,
@@ -270,7 +270,7 @@ export class Linker extends Component<LinkerProps, LinkerState> {
 
   handleGridColumnSelect(
     panel: PanelComponent,
-    model: IrisGridTreeTableModel,
+    model: IrisGridModel,
     column: LinkColumn
   ): void {
     const { index } = column;
@@ -662,7 +662,7 @@ export class Linker extends Component<LinkerProps, LinkerState> {
   isColumnSelectionValid(
     panel: PanelComponent,
     tableColumn?: LinkColumn,
-    model?: IrisGridTreeTableModel
+    model?: IrisGridModel
   ): boolean {
     const { linkInProgress } = this.state;
     const { isolatedLinkerPanelId } = this.props;
