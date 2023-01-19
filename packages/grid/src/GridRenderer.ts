@@ -2704,8 +2704,6 @@ export class GridRenderer {
     }
 
     const {
-      rowHeaderWidth,
-      columnHeaderHeight,
       width,
       height,
       handleHeight,
@@ -2716,6 +2714,8 @@ export class GridRenderer {
       hasVerticalBar,
       barWidth,
       barHeight,
+      barLeft,
+      barTop,
     } = metrics;
     const {
       scrollBarBackgroundColor,
@@ -2746,7 +2746,7 @@ export class GridRenderer {
         mouseX != null &&
         mouseY != null &&
         mouseX >= width - scrollBarHoverSize &&
-        mouseY <= barHeight + columnHeaderHeight &&
+        mouseY >= barTop &&
         isInbounds);
 
     const isHorizontalBarHover =
@@ -2758,7 +2758,7 @@ export class GridRenderer {
         mouseX != null &&
         mouseY != null &&
         mouseY >= height - scrollBarHoverSize &&
-        mouseX <= barWidth - rowHeaderWidth &&
+        mouseX >= barLeft &&
         isInbounds);
 
     const hScrollBarSize = isHorizontalBarHover
@@ -2768,21 +2768,21 @@ export class GridRenderer {
       ? scrollBarHoverSize
       : scrollBarSize;
 
-    context.translate(rowHeaderWidth, columnHeaderHeight);
+    context.translate(barLeft, barTop);
 
     if (hasHorizontalBar && hasVerticalBar) {
       // That little corner in the bottom right
       context.fillStyle = scrollBarCasingColor;
       context.fillRect(
-        width - rowHeaderWidth - scrollBarSize,
-        height - columnHeaderHeight - scrollBarSize,
+        width - barLeft - scrollBarSize,
+        height - barTop - scrollBarSize,
         scrollBarSize,
         scrollBarSize
       );
       context.fillStyle = scrollBarCornerColor;
       context.fillRect(
-        width - rowHeaderWidth - scrollBarSize + scrollBarCasingWidth,
-        height - columnHeaderHeight - scrollBarSize + scrollBarCasingWidth,
+        width - barLeft - scrollBarSize + scrollBarCasingWidth,
+        height - barTop - scrollBarSize + scrollBarCasingWidth,
         scrollBarSize - scrollBarCasingWidth,
         scrollBarSize - scrollBarCasingWidth
       );
@@ -2790,7 +2790,7 @@ export class GridRenderer {
 
     if (hasHorizontalBar) {
       const x = scrollX;
-      const y = height - columnHeaderHeight - hScrollBarSize;
+      const y = height - barTop - hScrollBarSize;
 
       // scrollbar casing
       context.fillStyle = scrollBarCasingColor;
@@ -2898,7 +2898,7 @@ export class GridRenderer {
     }
 
     if (hasVerticalBar) {
-      const x = width - rowHeaderWidth - vScrollBarSize;
+      const x = width - barLeft - vScrollBarSize;
       const y = scrollY;
 
       // scrollbar casing
@@ -3007,7 +3007,7 @@ export class GridRenderer {
       }
     }
 
-    context.translate(-rowHeaderWidth, -columnHeaderHeight);
+    context.translate(-barLeft, -barTop);
   }
 }
 

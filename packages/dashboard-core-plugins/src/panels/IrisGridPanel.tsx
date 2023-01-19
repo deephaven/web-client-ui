@@ -61,7 +61,12 @@ import {
   PromiseUtils,
 } from '@deephaven/utils';
 import { ContextAction, ContextMenuRoot } from '@deephaven/components';
-import { Column, FilterCondition, Sort } from '@deephaven/jsapi-shim';
+import {
+  Column,
+  FilterCondition,
+  Sort,
+  VariableTypeUnion,
+} from '@deephaven/jsapi-shim';
 import {
   GridRangeIndex,
   GridState,
@@ -93,6 +98,7 @@ type ModelQueue = ModelQueueFunction[];
 
 interface Metadata {
   table: string;
+  type?: VariableTypeUnion;
   query?: string;
   querySerial?: string;
 }
