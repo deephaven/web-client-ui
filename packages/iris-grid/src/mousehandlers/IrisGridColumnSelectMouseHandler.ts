@@ -26,7 +26,8 @@ class IrisGridColumnSelectMouseHandler extends GridMouseHandler {
   }
 
   private isValidColumn(tableColumn: Column | null): boolean {
-    if (tableColumn == null) {
+    const { model } = this.irisGrid.props;
+    if (tableColumn == null || !model.isFilterable(tableColumn.index)) {
       return false;
     }
 

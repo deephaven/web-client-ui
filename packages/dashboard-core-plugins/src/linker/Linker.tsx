@@ -25,6 +25,7 @@ import {
   setActiveTool as setActiveToolAction,
   RootState,
 } from '@deephaven/redux';
+import { IrisGridTreeTableModel } from '@deephaven/iris-grid';
 import {
   getIsolatedLinkerPanelIdForDashboard,
   getLinksForDashboard,
@@ -267,7 +268,16 @@ export class Linker extends Component<LinkerProps, LinkerState> {
     this.deleteLinks(linksToDelete);
   }
 
-  handleGridColumnSelect(panel: PanelComponent, column: LinkColumn): void {
+  handleGridColumnSelect(
+    panel: PanelComponent,
+    model: IrisGridTreeTableModel,
+    column: LinkColumn
+  ): void {
+    const { index } = column;
+    if (index !== undefined && !model.isFilterable(index)) {
+      log.debug2('Column is not filterable');
+      return;
+    }
     this.columnSelected(panel, column);
   }
 
@@ -651,7 +661,8 @@ export class Linker extends Component<LinkerProps, LinkerState> {
 
   isColumnSelectionValid(
     panel: PanelComponent,
-    tableColumn?: LinkColumn
+    tableColumn?: LinkColumn,
+    model?: IrisGridTreeTableModel
   ): boolean {
     const { linkInProgress } = this.state;
     const { isolatedLinkerPanelId } = this.props;
@@ -670,6 +681,17 @@ export class Linker extends Component<LinkerProps, LinkerState> {
     const { isReversed, start } = linkInProgress;
     const panelId = LayoutUtils.getIdFromPanel(panel);
     if (panelId == null) {
+      return false;
+    }
+
+    const { index } = tableColumn;
+    if (
+      model !== undefined &&
+      index !== undefined &&
+      !model.isFilterable(index)
+    ) {
+      log.debug2('Column is not filterable');
+      this.updateLinkInProgressType(linkInProgress, 'invalid');
       return false;
     }
 
