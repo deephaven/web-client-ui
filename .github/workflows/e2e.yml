@@ -8,7 +8,7 @@ on:
   pull_request:
     branches: [main]
 env:
-  DOCKER_TAG: latest
+  DOCKER_TAG: edge
 jobs:
   build:
     runs-on: ubuntu-22.04
