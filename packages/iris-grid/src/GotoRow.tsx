@@ -35,7 +35,7 @@ interface GotoRowProps {
   gotoRow: string;
   gotoRowError: string;
   gotoValueError: string;
-  onSubmit: () => void;
+  onGotoRowSubmit: () => void;
   model: IrisGridModel;
   onGotoRowNumberChanged: (event: ChangeEvent<HTMLInputElement>) => void;
   onClose: () => void;
@@ -49,14 +49,15 @@ interface GotoRowProps {
   gotoValue: string;
   onGotoValueSelectedColumnNameChanged: (columnName: ColumnName) => void;
   onGotoValueSelectedFilterChanged: (filter: FilterTypeValue) => void;
-  onGotoValueChanged: (input: string, isBackward?: boolean) => void;
+  onGotoValueChanged: (input: string) => void;
+  onGotoValueSubmit: (isBackward?: boolean) => void;
 }
 
 function GotoRow({
   gotoRow,
   gotoRowError,
   gotoValueError,
-  onSubmit,
+  onGotoRowSubmit,
   isShown,
   onEntering,
   onEntered,
@@ -70,6 +71,7 @@ function GotoRow({
   onGotoValueSelectedColumnNameChanged,
   onGotoValueSelectedFilterChanged,
   onGotoValueChanged,
+  onGotoValueSubmit,
 }: GotoRowProps): ReactElement {
   const gotoRowInputRef = useRef<HTMLInputElement>(null);
   const gotoValueInputRef = useRef<HTMLInputElement>(null);
@@ -88,7 +90,7 @@ function GotoRow({
     if (e.key === 'Enter') {
       e.stopPropagation();
       e.preventDefault();
-      onGotoValueChanged(gotoValue);
+      onGotoValueSubmit();
     }
   };
 
@@ -255,7 +257,7 @@ function GotoRow({
                   if (e.key === 'Enter') {
                     e.stopPropagation();
                     e.preventDefault();
-                    onSubmit();
+                    onGotoRowSubmit();
                   }
                 }}
                 className={classNames('form-control', {
@@ -314,7 +316,7 @@ function GotoRow({
                   kind="ghost"
                   disabled={gotoValue === ''}
                   onClick={() => {
-                    onGotoValueChanged(gotoValue, true);
+                    onGotoValueSubmit(true);
                   }}
                 >
                   <FontAwesomeIcon icon={vsArrowUp} />
@@ -323,7 +325,7 @@ function GotoRow({
                   kind="ghost"
                   disabled={gotoValue === ''}
                   onClick={() => {
-                    onGotoValueChanged(gotoValue, false);
+                    onGotoValueSubmit(false);
                   }}
                 >
                   <FontAwesomeIcon icon={vsArrowDown} />

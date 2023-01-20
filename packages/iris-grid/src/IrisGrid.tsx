@@ -182,7 +182,7 @@ const UPDATE_DOWNLOAD_THROTTLE = 500;
 
 const SET_FILTER_DEBOUNCE = 250;
 
-const SEEK_ROW_DEBOUNCE = 50;
+const SEEK_ROW_DEBOUNCE = 250;
 
 const SET_CONDITIONAL_FORMAT_DEBOUNCE = 250;
 
@@ -603,6 +603,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       this
     );
     this.handleGotoValueChanged = this.handleGotoValueChanged.bind(this);
+    this.handleGotoValueSubmitted = this.handleGotoValueSubmitted.bind(this);
 
     this.grid = null;
     this.gridWrapper = null;
@@ -2449,6 +2450,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
         gotoRowError: '',
         gotoValueError: '',
       });
+      this.focusRowInGrid(row);
       return;
     }
     this.setState({
@@ -3200,110 +3202,94 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     }
   }
 
-  seekRow = debounce(
-    async (inputString: string, isBackwards = false): Promise<void> => {
-      const {
-        gotoValueSelectedColumnName: selectedColumnName,
-        gotoValueSelectedFilter,
-      } = this.state;
-      const { model } = this.props;
-      if (!model.isSeekRowAvailable) {
-        return;
-      }
+  async seekRow(inputString: string, isBackwards = false): Promise<void> {
+    const {
+      gotoValueSelectedColumnName: selectedColumnName,
+      gotoValueSelectedFilter,
+    } = this.state;
+    const { model } = this.props;
+    if (!model.isSeekRowAvailable) {
+      return;
+    }
 
-      if (inputString === '') {
-        return;
-      }
+    if (inputString === '') {
+      return;
+    }
 
-      const columnIndex = model.getColumnIndexByName(selectedColumnName);
-      if (columnIndex === undefined) {
-        return;
-      }
+    const columnIndex = model.getColumnIndexByName(selectedColumnName);
+    if (columnIndex === undefined) {
+      return;
+    }
 
-      const selectedColumn = model.columns[columnIndex];
+    const selectedColumn = model.columns[columnIndex];
 
-      let searchFromRow;
+    let searchFromRow;
 
-      if (this.grid) {
-        ({ selectionEndRow: searchFromRow } = this.grid.state);
-      }
+    if (this.grid) {
+      ({ selectionEndRow: searchFromRow } = this.grid.state);
+    }
 
-      if (searchFromRow == null) {
-        searchFromRow = 0;
-      }
+    if (searchFromRow == null) {
+      searchFromRow = 0;
+    }
 
-      const isContains = gotoValueSelectedFilter === FilterType.contains;
-      const isEquals =
-        gotoValueSelectedFilter === FilterType.eq ||
-        gotoValueSelectedFilter === FilterType.eqIgnoreCase;
+    const isContains = gotoValueSelectedFilter === FilterType.contains;
+    const isEquals =
+      gotoValueSelectedFilter === FilterType.eq ||
+      gotoValueSelectedFilter === FilterType.eqIgnoreCase;
 
-      try {
-        const columnDataType = TableUtils.getNormalizedType(
-          selectedColumn.type
-        );
+    try {
+      const columnDataType = TableUtils.getNormalizedType(selectedColumn.type);
 
-        let rowIndex;
+      let rowIndex;
 
-        switch (columnDataType) {
-          case TableUtils.dataType.STRING: {
+      switch (columnDataType) {
+        case TableUtils.dataType.STRING: {
+          rowIndex = await model.seekRow(
+            isBackwards === true ? searchFromRow - 1 : searchFromRow + 1,
+            selectedColumn,
+            'String',
+            inputString,
+            isEquals,
+            isContains,
+            isBackwards ?? false
+          );
+          break;
+        }
+        case TableUtils.dataType.DATETIME: {
+          const { formatter } = model;
+          const [startDate] = DateUtils.parseDateRange(
+            inputString,
+            formatter.timeZone
+          );
+          rowIndex = await model.seekRow(
+            isBackwards === true ? searchFromRow - 1 : searchFromRow + 1,
+            selectedColumn,
+            selectedColumn.type,
+            startDate,
+            undefined,
+            undefined,
+            isBackwards ?? false
+          );
+          break;
+        }
+        case TableUtils.dataType.DECIMAL:
+        case TableUtils.dataType.INT: {
+          if (
+            !TableUtils.isBigDecimalType(selectedColumn.type) &&
+            !TableUtils.isBigIntegerType(selectedColumn.type)
+          ) {
+            const inputValue = parseInt(inputString, 10);
             rowIndex = await model.seekRow(
-              isBackwards === true ? searchFromRow - 1 : searchFromRow + 1,
+              searchFromRow,
               selectedColumn,
-              'String',
-              inputString,
-              isEquals,
-              isContains,
-              isBackwards ?? false
-            );
-            break;
-          }
-          case TableUtils.dataType.DATETIME: {
-            const { formatter } = model;
-            const [startDate] = DateUtils.parseDateRange(
-              inputString,
-              formatter.timeZone
-            );
-            rowIndex = await model.seekRow(
-              isBackwards === true ? searchFromRow - 1 : searchFromRow + 1,
-              selectedColumn,
-              selectedColumn.type,
-              startDate,
+              'number',
+              inputValue,
               undefined,
               undefined,
               isBackwards ?? false
             );
-            break;
-          }
-          case TableUtils.dataType.DECIMAL:
-          case TableUtils.dataType.INT: {
-            if (
-              !TableUtils.isBigDecimalType(selectedColumn.type) &&
-              !TableUtils.isBigIntegerType(selectedColumn.type)
-            ) {
-              const inputValue = parseInt(inputString, 10);
-              rowIndex = await model.seekRow(
-                searchFromRow,
-                selectedColumn,
-                'number',
-                inputValue,
-                undefined,
-                undefined,
-                isBackwards ?? false
-              );
-            } else {
-              rowIndex = await model.seekRow(
-                searchFromRow,
-                selectedColumn,
-                'String',
-                inputString,
-                undefined,
-                undefined,
-                isBackwards ?? false
-              );
-            }
-            break;
-          }
-          default: {
+          } else {
             rowIndex = await model.seekRow(
               searchFromRow,
               selectedColumn,
@@ -3314,16 +3300,27 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
               isBackwards ?? false
             );
           }
+          break;
         }
-
-        this.grid?.setFocusRow(rowIndex);
-        this.setState({ gotoValueError: '' });
-      } catch (e: unknown) {
-        this.setState({ gotoValueError: 'invalid input' });
+        default: {
+          rowIndex = await model.seekRow(
+            searchFromRow,
+            selectedColumn,
+            'String',
+            inputString,
+            undefined,
+            undefined,
+            isBackwards ?? false
+          );
+        }
       }
-    },
-    SEEK_ROW_DEBOUNCE
-  );
+
+      this.grid?.setFocusRow(rowIndex);
+      this.setState({ gotoValueError: '' });
+    } catch (e: unknown) {
+      this.setState({ gotoValueError: 'invalid input' });
+    }
+  }
 
   handleCancelDownloadTable(): void {
     this.tableSaver?.cancelDownload();
@@ -3644,9 +3641,18 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     this.setState({ gotoValueSelectedFilter: value, gotoValueError: '' });
   }
 
-  handleGotoValueChanged(input: string, isBackwards?: boolean): void {
+  handleGotoValueChanged = (input: string): void => {
     this.setState({ gotoValue: input });
-    this.seekRow(input, isBackwards);
+    this.debouncedSeekRow(input);
+  };
+
+  debouncedSeekRow = debounce((input: string): void => {
+    this.seekRow(input);
+  }, SEEK_ROW_DEBOUNCE);
+
+  handleGotoValueSubmitted(isBackwards?: boolean): void {
+    const { gotoValue } = this.state;
+    this.seekRow(gotoValue, isBackwards);
   }
 
   render(): ReactElement | null {
@@ -4346,7 +4352,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
             gotoRow={gotoRow}
             gotoRowError={gotoRowError}
             gotoValueError={gotoValueError}
-            onSubmit={this.handleGotoRowSelectedRowNumberSubmit}
+            onGotoRowSubmit={this.handleGotoRowSelectedRowNumberSubmit}
             onGotoRowNumberChanged={this.handleGotoRowSelectedRowNumberChanged}
             onClose={this.handleGotoRowClosed}
             onEntering={this.handleAnimationStart}
@@ -4365,6 +4371,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
               this.handleGotoValueSelectedFilterChanged
             }
             onGotoValueChanged={this.handleGotoValueChanged}
+            onGotoValueSubmit={this.handleGotoValueSubmitted}
           />
 
           <PendingDataBottomBar
