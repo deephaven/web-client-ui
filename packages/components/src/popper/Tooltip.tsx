@@ -291,13 +291,19 @@ class Tooltip extends Component<TooltipProps, TooltipState> {
     const {
       interactive,
       children,
-      options,
       referenceObject,
       popperClassName,
       'data-testid': dataTestId,
       onEntered,
     } = this.props;
     const { isShown } = this.state;
+
+    let { options } = this.props;
+    options = {
+      placement: 'bottom',
+      ...options,
+    };
+
     return (
       <div
         ref={this.container}

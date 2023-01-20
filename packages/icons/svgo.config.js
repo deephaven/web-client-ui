@@ -3,6 +3,7 @@ export default {
   multipass: true,
   plugins: [
     'preset-default',
+    { name: 'convertShapeToPath', params: { convertArcs: true } },
     {
       name: 'removeAttrs',
       params: {

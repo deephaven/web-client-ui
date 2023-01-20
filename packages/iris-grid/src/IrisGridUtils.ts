@@ -9,6 +9,7 @@ import {
 } from '@deephaven/grid';
 import dh, {
   Column,
+  ColumnGroup,
   DateWrapper,
   FilterCondition,
   LongWrapper,
@@ -48,6 +49,7 @@ import { FormattingRule as SidebarFormattingRule } from './sidebar/conditional-f
 import IrisGridModel from './IrisGridModel';
 import type AdvancedSettingsType from './sidebar/AdvancedSettingsType';
 import AdvancedSettings from './sidebar/AdvancedSettings';
+import ColumnHeaderGroup from './ColumnHeaderGroup';
 
 const log = Log.module('IrisGridUtils');
 
@@ -70,6 +72,7 @@ type HydratedIrisGridState = Pick<
   | 'pendingDataMap'
   | 'frozenColumns'
   | 'conditionalFormats'
+  | 'columnHeaderGroups'
 > & {
   metrics: Pick<GridMetrics, 'userColumnWidths' | 'userRowHeights'>;
 };
@@ -108,6 +111,7 @@ export interface DehydratedIrisGridState {
   invertSearchColumns: boolean;
   pendingDataMap: DehydratedPendingDataMap<string | CellData | null>;
   frozenColumns: ColumnName[];
+  columnHeaderGroups?: ColumnGroup[];
 }
 
 type DehydratedPendingDataMap<T> = [number, { data: [string, T][] }][];
@@ -266,6 +270,7 @@ class IrisGridUtils {
       invertSearchColumns,
       pendingDataMap = new Map(),
       frozenColumns,
+      columnHeaderGroups,
     } = irisGridState;
     assertNotNull(metrics);
     const { userColumnWidths, userRowHeights } = metrics;
@@ -303,6 +308,11 @@ class IrisGridUtils {
         pendingDataMap
       ),
       frozenColumns,
+      columnHeaderGroups: columnHeaderGroups?.map(item => ({
+        name: item.name,
+        children: item.children,
+        color: item.color,
+      })),
     };
   }
 
@@ -338,8 +348,10 @@ class IrisGridUtils {
       invertSearchColumns = true,
       pendingDataMap = [],
       frozenColumns,
+      columnHeaderGroups,
     } = irisGridState;
     const { columns, formatter } = model;
+
     return {
       advancedFilters: IrisGridUtils.hydrateAdvancedFilters(
         columns,
@@ -389,6 +401,10 @@ class IrisGridUtils {
         pendingDataMap
       ) as PendingDataMap<UIRow>,
       frozenColumns,
+      columnHeaderGroups: IrisGridUtils.parseColumnHeaderGroups(
+        model,
+        columnHeaderGroups ?? model.layoutHints?.columnGroups ?? []
+      ).groups,
     };
   }
 
@@ -1552,6 +1568,108 @@ class IrisGridUtils {
       }
     }
     return combinedText;
+  }
+
+  /**
+   * Parses the column header groups provided.
+   * If undefined, should provide default groups such as from layoutHints
+   *
+   * @returns Object containing groups array, max depth, map of name to parent group, and map of name to group
+   */
+  static parseColumnHeaderGroups(
+    model: IrisGridModel,
+    groupsParam: ColumnGroup[]
+  ): {
+    groups: ColumnHeaderGroup[];
+    maxDepth: number;
+    parentMap: Map<string, ColumnHeaderGroup>;
+    groupMap: Map<string, ColumnHeaderGroup>;
+  } {
+    let maxDepth = 1;
+    const parentMap: Map<string, ColumnHeaderGroup> = new Map();
+    const groupMap: Map<string, ColumnHeaderGroup> = new Map();
+
+    // Remove any empty groups before parsing
+    const groups = groupsParam?.filter(({ children }) => children.length > 0);
+
+    if (groups.length === 0) {
+      return { groups: [], maxDepth, parentMap, groupMap };
+    }
+
+    const originalGroupMap = new Map(groups.map(group => [group.name, group]));
+    const seenChildren = new Set<string>();
+
+    const addGroup = (group: ColumnGroup): ColumnHeaderGroup => {
+      const { name } = group;
+
+      if (model.getColumnIndexByName(name) != null) {
+        throw new Error(`Column header group has same name as column: ${name}`);
+      }
+
+      const existingGroup = groupMap.get(name);
+
+      if (existingGroup) {
+        return existingGroup;
+      }
+
+      const childIndexes: ColumnHeaderGroup['childIndexes'] = [];
+      let depth = 1;
+
+      group.children.forEach(childName => {
+        if (seenChildren.has(childName)) {
+          throw new Error(
+            `Column group child ${childName} specified in multiple groups`
+          );
+        }
+        seenChildren.add(childName);
+
+        const childGroup = originalGroupMap.get(childName);
+        const childIndex = model.getColumnIndexByName(childName);
+        if (childGroup) {
+          // Adding another column header group
+          const addedGroup = addGroup(childGroup);
+          childIndexes.push(...addedGroup.childIndexes);
+          depth = Math.max(depth, addedGroup.depth + 1);
+        } else if (childIndex != null) {
+          // Adding a base column
+          childIndexes.push(childIndex);
+          depth = Math.max(depth, 1);
+        } else {
+          throw new Error(`Unknown child ${childName} in group ${name}`);
+        }
+      });
+
+      const columnHeaderGroup = new ColumnHeaderGroup({
+        ...group,
+        depth,
+        childIndexes: childIndexes.flat(),
+      });
+
+      groupMap.set(name, columnHeaderGroup);
+      group.children.forEach(childName =>
+        parentMap.set(childName, columnHeaderGroup)
+      );
+
+      maxDepth = Math.max(maxDepth, columnHeaderGroup.depth + 1);
+      return columnHeaderGroup;
+    };
+
+    const groupNames = new Set();
+
+    groups.forEach(group => {
+      const { name } = group;
+      if (groupNames.has(name)) {
+        throw new Error(`Duplicate column group name: ${name}`);
+      }
+      groupNames.add(name);
+      addGroup(group);
+    });
+
+    groupMap.forEach(group => {
+      group.setParent(parentMap.get(group.name)?.name);
+    });
+
+    return { groups: [...groupMap.values()], maxDepth, groupMap, parentMap };
   }
 }
 

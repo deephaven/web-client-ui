@@ -1,8 +1,9 @@
 // lodash debounce needs mocking: https://github.com/facebook/jest/issues/3465#issuecomment-539496798
 
-const debounce = jest.fn().mockImplementation((callback, delay) => {
+const debounce = jest.fn((callback, delay) => {
   let timer = null;
   let pendingArgs = null;
+  let lastThis = this;
 
   const cancel = jest.fn(() => {
     if (timer) {
@@ -14,17 +15,18 @@ const debounce = jest.fn().mockImplementation((callback, delay) => {
 
   const flush = jest.fn(() => {
     if (timer) {
-      callback(...pendingArgs);
+      callback.apply(lastThis, pendingArgs);
       cancel();
     }
   });
 
-  const wrapped = (...args) => {
+  function wrapped(...args) {
     cancel();
 
+    lastThis = this;
     pendingArgs = args;
     timer = setTimeout(flush, wrapped.delay);
-  };
+  }
 
   wrapped.cancel = cancel;
   wrapped.flush = flush;

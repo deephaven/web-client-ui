@@ -96,7 +96,7 @@ class IrisGridTableModel extends IrisGridTableModelTemplate<Table, UIRow> {
 
   getMemoizedFrozenColumns = memoize(
     (
-      layoutHintsFrozenColumns: ColumnName[],
+      layoutHintsFrozenColumns?: ColumnName[],
       userFrozenColumns?: ColumnName[]
     ): ColumnName[] => userFrozenColumns ?? layoutHintsFrozenColumns ?? []
   );

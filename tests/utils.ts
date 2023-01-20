@@ -16,7 +16,18 @@ export function generateVarName(prefix = 'v'): string {
 }
 
 /**
- * Types into monaco input and avoids autocomplete suggestions
+ * Create a command that creates a table with three columns, x/y/z
+ * @param tableName Name of the variable to assign the table to
+ * @returns String of the command to create a table
+ */
+export function makeTableCommand(tableName = generateVarName('t')): string {
+  return `from deephaven import empty_table
+${tableName} = empty_table(100).update(["x=i", "y=Math.sin(i)", "z=Math.cos(i)"])`;
+}
+
+/**
+ * Types into monaco input and avoids autocomplete suggestions.
+ * Assumes correct monaco input already has focus.
  * @param page The Page instance for each test
  * @param text Text to be typed, with carriage returns
  */

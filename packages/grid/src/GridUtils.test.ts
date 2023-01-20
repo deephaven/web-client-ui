@@ -1,7 +1,8 @@
 import { AxisRange } from './GridAxisRange';
 import GridMetrics, { ModelIndex, MoveOperation } from './GridMetrics';
 import GridRange, { GridRangeIndex } from './GridRange';
-import GridUtils, { BoundedAxisRange } from './GridUtils';
+import GridUtils from './GridUtils';
+import type { BoundedAxisRange } from './GridAxisRange';
 
 function expectModelIndexes(
   movedItems: MoveOperation[],
@@ -70,6 +71,10 @@ describe('move items', () => {
     expect(movedItems.length).toBe(1);
     expectModelIndexes(movedItems, [1, 2, 3, 0, 4, 5]);
     expectVisibleIndexes(movedItems, [3, 0, 1, 2, 4, 5]);
+
+    // Move back to start should result in no moves
+    movedItems = GridUtils.moveItem(3, 0, movedItems);
+    expect(movedItems.length).toBe(0);
   });
 
   it('skips moving an item to its original position', () => {
@@ -83,10 +88,26 @@ describe('move items', () => {
 
 describe('move ranges', () => {
   it('returns the proper model/visible index when one range is moved', () => {
-    const movedItems = GridUtils.moveRange([3, 5], 1, []);
+    let movedItems = GridUtils.moveRange([3, 5], 1, []);
 
     expectModelIndexes(movedItems, [0, 3, 4, 5, 1, 2]);
     expectVisibleIndexes(movedItems, [0, 4, 5, 1, 2, 3]);
+
+    movedItems = GridUtils.moveRange([3, 5], 1, [], true);
+
+    expectModelIndexes(movedItems, [0, 3, 4, 5, 1, 2]);
+    expectVisibleIndexes(movedItems, [0, 4, 5, 1, 2, 3]);
+
+    movedItems = GridUtils.moveRange([2, 4], 3, [], false);
+
+    expectModelIndexes(movedItems, [0, 1, 5, 2, 3, 4]);
+    expectVisibleIndexes(movedItems, [0, 1, 3, 4, 5, 2]);
+
+    // Pick up [2, 4] and drop on 5 is equivalent to above
+    movedItems = GridUtils.moveRange([2, 4], 5, [], true);
+
+    expectModelIndexes(movedItems, [0, 1, 5, 2, 3, 4]);
+    expectVisibleIndexes(movedItems, [0, 1, 3, 4, 5, 2]);
   });
 
   it('returns the proper model/visible index when two ranges are moved', () => {
@@ -105,6 +126,10 @@ describe('move ranges', () => {
     expect(movedItems.length).toBe(1);
     expectModelIndexes(movedItems, [3, 4, 5, 0, 1, 2, 6]);
     expectVisibleIndexes(movedItems, [3, 4, 5, 0, 1, 2, 6]);
+
+    // Move back to start should result in no moves
+    movedItems = GridUtils.moveRange([3, 5], 0, movedItems);
+    expect(movedItems.length).toBe(0);
   });
 
   it('skips moving an item to its original position', () => {
@@ -113,6 +138,32 @@ describe('move ranges', () => {
     expect(movedItems.length).toBe(0);
     expectModelIndexes(movedItems, [0, 1, 2, 3]);
     expectVisibleIndexes(movedItems, [0, 1, 2, 3]);
+  });
+
+  it('converts a move range of 1 item to a move item', () => {
+    const movedItems = GridUtils.moveRange([0, 0], 1, []);
+
+    expectModelIndexes(movedItems, [1, 0, 2, 3]);
+    expectVisibleIndexes(movedItems, [1, 0, 2, 3]);
+  });
+});
+
+describe('move item or range', () => {
+  it('returns the proper model/visible index when one item or range is moved', () => {
+    let movedItems = GridUtils.moveItemOrRange([3, 5], 1, []);
+
+    expectModelIndexes(movedItems, [0, 3, 4, 5, 1, 2]);
+    expectVisibleIndexes(movedItems, [0, 4, 5, 1, 2, 3]);
+
+    movedItems = GridUtils.moveItemOrRange([3, 5], 1, [], true);
+
+    expectModelIndexes(movedItems, [0, 3, 4, 5, 1, 2]);
+    expectVisibleIndexes(movedItems, [0, 4, 5, 1, 2, 3]);
+
+    movedItems = GridUtils.moveItemOrRange(0, 1, []);
+
+    expectModelIndexes(movedItems, [1, 0, 2, 3, 4, 5]);
+    expectVisibleIndexes(movedItems, [1, 0, 2, 3, 4, 5]);
   });
 });
 

@@ -1,6 +1,6 @@
 import React from 'react';
 import TestRenderer from 'react-test-renderer';
-import { TestUtils } from '@deephaven/utils';
+import { waitFor } from '@testing-library/react';
 import ContextActionUtils from './ContextActionUtils';
 import ContextMenuRoot from './ContextMenuRoot';
 
@@ -155,9 +155,10 @@ it('renders a promise returning menu items properly', async () => {
   const handleContextMenu =
     mock.parentElement?.addEventListener.mock.calls[0][1];
   handleContextMenu(mockEvent);
-  await TestUtils.flushPromises();
 
-  expect(tree.root.findAllByType('button').length).toBe(TEST_MENU_1.length);
+  await waitFor(() =>
+    expect(tree.root.findAllByType('button').length).toBe(TEST_MENU_1.length)
+  );
   expect(tree).toMatchSnapshot();
 });
 

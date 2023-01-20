@@ -8,7 +8,7 @@ import OptionType from './OptionType';
 import RollupRows from './RollupRows';
 import TableCsvExporter from './TableCsvExporter';
 import TableSaver from './TableSaver';
-import VisibilityOrderingBuilder from './VisibilityOrderingBuilder';
+import VisibilityOrderingBuilder from './visibility-ordering-builder/VisibilityOrderingBuilder';
 import { FormattingRule } from './conditional-formatting/ConditionalFormattingUtils';
 import AdvancedSettingsType from './AdvancedSettingsType';
 

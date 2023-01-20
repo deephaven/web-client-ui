@@ -1,5 +1,4 @@
 import Pending from './Pending';
-import TestUtils from './TestUtils';
 
 it('wraps added promises and returns a cancelable promise', async () => {
   const item = 'item';
@@ -26,7 +25,7 @@ it('cancels pending promises properly', () => {
   expect(promise.cancel).toHaveBeenCalled();
 });
 
-// TODO: This behaviour should change in IDS-6806
+// TODO: This behaviour should change in DH-9464
 it('cancels resolved and rejected promises properly', async () => {
   const resolved = Promise.resolve();
   const rejected = Promise.reject();
@@ -38,8 +37,6 @@ it('cancels resolved and rejected promises properly', async () => {
 
   expect(spy1).not.toHaveBeenCalled();
   expect(spy2).not.toHaveBeenCalled();
-
-  await TestUtils.flushPromises();
 
   pending.cancel();
 
@@ -71,7 +68,8 @@ it('cleanup is called if promise is cancelled while pending', async () => {
   pending.add(Promise.resolve(item), cleanup);
   pending.cancel();
 
-  await TestUtils.flushPromises();
+  // Cleanup in DH-9464
+  await Promise.all(pending.pending);
 
   expect(cleanup).toHaveBeenCalledWith(item);
 });

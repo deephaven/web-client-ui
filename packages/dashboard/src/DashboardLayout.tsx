@@ -217,13 +217,23 @@ export function DashboardLayout({
     onLayoutInitialized,
   ]);
 
-  const handleLayoutItemPickedUp = useCallback(() => {
-    setIsItemDragging(true);
-  }, []);
+  const handleLayoutItemPickedUp = useCallback(
+    (component: Container) => {
+      const componentId = LayoutUtils.getIdFromContainer(component);
+      layout.eventHub.emit(PanelEvent.DRAGGING, componentId);
+      setIsItemDragging(true);
+    },
+    [layout.eventHub]
+  );
 
-  const handleLayoutItemDropped = useCallback(() => {
-    setIsItemDragging(false);
-  }, []);
+  const handleLayoutItemDropped = useCallback(
+    (component: Container) => {
+      const componentId = LayoutUtils.getIdFromContainer(component);
+      layout.eventHub.emit(PanelEvent.DROPPED, componentId);
+      setIsItemDragging(false);
+    },
+    [layout.eventHub]
+  );
 
   const handleComponentCreated = useCallback(item => {
     log.debug2('handleComponentCreated', item);

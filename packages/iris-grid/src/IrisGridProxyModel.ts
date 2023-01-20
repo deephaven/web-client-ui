@@ -36,6 +36,7 @@ import {
   UIRow,
 } from './CommonTypes';
 import { isIrisGridTableModelTemplate } from './IrisGridTableModelTemplate';
+import type ColumnHeaderGroup from './ColumnHeaderGroup';
 
 const log = Log.module('IrisGridProxyModel');
 
@@ -354,12 +355,12 @@ class IrisGridProxyModel extends IrisGridModel {
     return this.model.columns;
   }
 
-  get movedColumns(): MoveOperation[] {
-    return this.model.movedColumns;
+  get initialMovedColumns(): MoveOperation[] {
+    return this.model.initialMovedColumns;
   }
 
-  get movedRows(): MoveOperation[] {
-    return this.model.movedRows;
+  get initialMovedRows(): MoveOperation[] {
+    return this.model.initialMovedRows;
   }
 
   get layoutHints(): LayoutHints | null {
@@ -381,9 +382,25 @@ class IrisGridProxyModel extends IrisGridModel {
   getColumnHeaderGroup: IrisGridModel['getColumnHeaderGroup'] = (...args) =>
     this.model.getColumnHeaderGroup(...args);
 
+  get columnHeaderGroups(): ColumnHeaderGroup[] {
+    return this.model.columnHeaderGroups;
+  }
+
+  set columnHeaderGroups(groups: ColumnHeaderGroup[]) {
+    this.model.columnHeaderGroups = groups;
+  }
+
+  get initialColumnHeaderGroups(): ColumnHeaderGroup[] {
+    return this.model.initialColumnHeaderGroups;
+  }
+
   getColumnHeaderParentGroup: IrisGridModel['getColumnHeaderParentGroup'] = (
     ...args
   ) => this.model.getColumnHeaderParentGroup(...args);
+
+  get columnHeaderGroupMap(): Map<string, ColumnHeaderGroup> {
+    return this.model.columnHeaderGroupMap;
+  }
 
   get columnHeaderMaxDepth(): number {
     return this.model.columnHeaderMaxDepth;

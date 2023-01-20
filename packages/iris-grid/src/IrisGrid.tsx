@@ -62,6 +62,7 @@ import {
 } from '@deephaven/icons';
 import dh, {
   Column,
+  ColumnGroup,
   CustomColumn,
   DateWrapper,
   FilterCondition,
@@ -160,7 +161,6 @@ import {
 import { ChartBuilderSettings } from './sidebar/ChartBuilder';
 import AggregationOperation from './sidebar/aggregations/AggregationOperation';
 import { UIRollupConfig } from './sidebar/RollupRows';
-import { VisibilityOptionType } from './sidebar/VisibilityOrderingBuilder';
 import {
   AdvancedFilterMap,
   ColumnName,
@@ -174,6 +174,7 @@ import {
   PendingDataMap,
   AdvancedFilterOptions,
 } from './CommonTypes';
+import ColumnHeaderGroup from './ColumnHeaderGroup';
 
 const log = Log.module('IrisGrid');
 
@@ -316,6 +317,8 @@ export interface IrisGridProps {
   theme: GridThemeType;
 
   canToggleSearch: boolean;
+
+  columnHeaderGroups?: ColumnHeaderGroup[];
 }
 
 export interface IrisGridState {
@@ -409,6 +412,8 @@ export interface IrisGridState {
   gotoValueSelectedColumnName: ColumnName;
   gotoValueSelectedFilter: FilterTypeValue;
   gotoValue: string;
+
+  columnHeaderGroups: ColumnHeaderGroup[];
 }
 
 export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
@@ -534,6 +539,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     this.handleRequestFailed = this.handleRequestFailed.bind(this);
     this.handleSelectionChanged = this.handleSelectionChanged.bind(this);
     this.handleMovedColumnsChanged = this.handleMovedColumnsChanged.bind(this);
+    this.handleHeaderGroupsChanged = this.handleHeaderGroupsChanged.bind(this);
     this.handleUpdate = this.handleUpdate.bind(this);
     this.handleTooltipRef = this.handleTooltipRef.bind(this);
     this.handleViewChanged = this.handleViewChanged.bind(this);
@@ -688,6 +694,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       pendingDataMap,
       canCopy,
       frozenColumns,
+      columnHeaderGroups,
     } = props;
 
     const keyHandlers: KeyHandler[] = [
@@ -709,9 +716,11 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     ];
 
     const movedColumns =
-      movedColumnsProp.length > 0 ? movedColumnsProp : model.movedColumns;
+      movedColumnsProp.length > 0
+        ? movedColumnsProp
+        : model.initialMovedColumns;
     const movedRows =
-      movedRowsProp.length > 0 ? movedRowsProp : model.movedRows;
+      movedRowsProp.length > 0 ? movedRowsProp : model.initialMovedRows;
 
     const metricCalculator = new IrisGridMetricCalculator({
       userColumnWidths: new Map(userColumnWidths),
@@ -815,6 +824,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       gotoValueSelectedColumnName: model.columns[0].name,
       gotoValueSelectedFilter: FilterType.eq,
       gotoValue: '',
+      columnHeaderGroups: columnHeaderGroups ?? model.initialColumnHeaderGroups,
     };
   }
 
@@ -1042,7 +1052,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       }
       optionItems.push({
         type: OptionType.VISIBILITY_ORDERING_BUILDER,
-        title: 'Column Visibility & Ordering',
+        title: 'Hide, Group, and Order Columns',
         icon: dhEye,
       });
       if (isFormatColumnsAvailable) {
@@ -1055,7 +1065,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       if (isCustomColumnsAvailable) {
         optionItems.push({
           type: OptionType.CUSTOM_COLUMN_BUILDER,
-          title: 'Manage Custom Columns',
+          title: 'Custom Columns',
           icon: vsSplitHorizontal,
         });
       }
@@ -2180,12 +2190,10 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
   handleColumnVisibilityChanged(
     modelIndexes: ModelIndex[],
-    visibilityOption?: VisibilityOptionType
+    isVisible: boolean
   ): void {
     const { metricCalculator } = this.state;
-    if (
-      visibilityOption === VisibilityOrderingBuilder.VISIBILITY_OPTIONS.SHOW
-    ) {
+    if (isVisible) {
       modelIndexes.forEach(modelIndex => {
         metricCalculator.resetColumnWidth(modelIndex);
       });
@@ -2821,9 +2829,22 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
   handleMovedColumnsChanged(
     movedColumns: MoveOperation[],
-    onChangeApplied: (() => void) | undefined = () => null
+    onChangeApplied?: (() => void) | undefined
   ): void {
     this.setState({ movedColumns }, onChangeApplied);
+  }
+
+  handleHeaderGroupsChanged(columnHeaderGroups: ColumnGroup[]): void {
+    const { model } = this.props;
+    this.setState(
+      {
+        columnHeaderGroups: IrisGridUtils.parseColumnHeaderGroups(
+          model,
+          columnHeaderGroups
+        ).groups,
+      },
+      () => this.grid?.forceUpdate()
+    );
   }
 
   handleTooltipRef(tooltip: Tooltip): void {
@@ -3408,13 +3429,13 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     assertNotNull(gridRect);
     const {
       columnHeaderHeight,
-      visibleColumnXs,
-      visibleColumnWidths,
+      allColumnXs,
+      allColumnWidths,
       width,
       columnHeaderMaxDepth,
     } = metrics;
-    const columnX = visibleColumnXs.get(shownColumnTooltip);
-    const columnWidth = visibleColumnWidths.get(shownColumnTooltip);
+    const columnX = allColumnXs.get(shownColumnTooltip);
+    const columnWidth = allColumnWidths.get(shownColumnTooltip);
 
     assertNotNull(columnX);
     assertNotNull(columnWidth);
@@ -3521,12 +3542,12 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     const {
       columnHeaderHeight,
       columnHeaderMaxDepth,
-      visibleColumnXs,
-      visibleColumnWidths,
+      allColumnXs,
+      allColumnWidths,
       width,
     } = metrics;
-    const columnX = visibleColumnXs.get(visibleIndex);
-    const columnWidth = visibleColumnWidths.get(visibleIndex);
+    const columnX = allColumnXs.get(visibleIndex);
+    const columnWidth = allColumnWidths.get(visibleIndex);
 
     if (columnX == null || columnWidth == null) {
       return null;
@@ -3706,6 +3727,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       pendingDataMap,
       toastMessage,
       frozenColumns,
+      columnHeaderGroups,
       showOverflowModal,
       overflowText,
       overflowButtonTooltipProps,
@@ -3765,15 +3787,9 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       : IrisGrid.maxDebounce;
 
     if (isFilterBarShown && focusedFilterBarColumn != null && metrics != null) {
-      const {
-        gridX,
-        gridY,
-        visibleColumnXs,
-        visibleColumnWidths,
-        width,
-      } = metrics;
-      const columnX = visibleColumnXs.get(focusedFilterBarColumn);
-      const columnWidth = visibleColumnWidths.get(focusedFilterBarColumn);
+      const { gridX, gridY, allColumnXs, allColumnWidths, width } = metrics;
+      const columnX = allColumnXs.get(focusedFilterBarColumn);
+      const columnWidth = allColumnWidths.get(focusedFilterBarColumn);
       if (columnX != null && columnWidth != null) {
         const x = gridX + columnX;
         const y = gridY - (theme.filterBarHeight ?? 0);
@@ -3866,16 +3882,16 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
         gridX,
         gridY,
         visibleColumns,
-        visibleColumnXs,
-        visibleColumnWidths,
+        allColumnXs,
+        allColumnWidths,
       } = metrics;
       const { filterBarHeight } = theme;
 
       for (let i = 0; i < visibleColumns.length; i += 1) {
         const columnIndex = visibleColumns[i];
 
-        const columnX = visibleColumnXs.get(columnIndex);
-        const columnWidth = visibleColumnWidths.get(columnIndex);
+        const columnX = allColumnXs.get(columnIndex);
+        const columnWidth = allColumnWidths.get(columnIndex);
         const modelColumn = this.getModelColumn(columnIndex);
         if (modelColumn != null) {
           const isFilterable = model.isFilterable(modelColumn);
@@ -3952,14 +3968,14 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       const {
         gridX,
         visibleColumns,
-        visibleColumnXs,
-        visibleColumnWidths,
+        allColumnXs,
+        allColumnWidths,
         columnHeaderHeight,
       } = metrics;
       for (let i = 0; i < visibleColumns.length; i += 1) {
         const columnIndex = visibleColumns[i];
-        const columnX = visibleColumnXs.get(columnIndex);
-        const columnWidth = visibleColumnWidths.get(columnIndex);
+        const columnX = allColumnXs.get(columnIndex);
+        const columnWidth = allColumnWidths.get(columnIndex);
         if (columnX != null && columnWidth != null && columnWidth > 0) {
           const xColumnHeader = gridX + columnX;
           const xFilterBar = gridX + columnX + columnWidth - 20;
@@ -4056,8 +4072,10 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
               model={model}
               movedColumns={movedColumns}
               userColumnWidths={userColumnWidths}
+              columnHeaderGroups={columnHeaderGroups}
               onColumnVisibilityChanged={this.handleColumnVisibilityChanged}
               onMovedColumnsChanged={this.handleMovedColumnsChanged}
+              onColumnHeaderGroupChanged={this.handleHeaderGroupsChanged}
               key={OptionType.VISIBILITY_ORDERING_BUILDER}
             />
           );
@@ -4300,6 +4318,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
                 pendingRowCount={pendingRowCount}
                 pendingDataMap={pendingDataMap}
                 frozenColumns={frozenColumns}
+                columnHeaderGroups={columnHeaderGroups}
               />
             )}
             {!isMenuShown && (

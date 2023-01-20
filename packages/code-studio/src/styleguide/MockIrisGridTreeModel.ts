@@ -11,7 +11,12 @@ import {
   MockTreeGridModel,
   ModelIndex,
 } from '@deephaven/grid';
-import { IrisGridModel, PendingDataMap, UITreeRow } from '@deephaven/iris-grid';
+import {
+  IrisGridModel,
+  PendingDataMap,
+  UITreeRow,
+  ColumnHeaderGroup,
+} from '@deephaven/iris-grid';
 import type { Column, CustomColumn } from '@deephaven/jsapi-shim';
 import { Formatter } from '@deephaven/jsapi-utils';
 
@@ -306,8 +311,35 @@ class MockIrisGridTreeModel
     contains?: boolean | undefined,
     isBackwards?: boolean | undefined
   ): Promise<number> {
-    throw new Error('Method not implemented.');
+    throw new Error('Method not implemented.');}
+    
+  get columnHeaderGroups(): ColumnHeaderGroup[] {
+    return [];
   }
-}
+
+  set columnHeaderGroups(groups: ColumnHeaderGroup[]) {
+    // no-op
+  }
+
+  get columnHeaderGroupMap() {
+    return new Map();
+  }
+
+  getColumnHeaderParentGroup() {
+    return undefined;
+  }
+
+  get initialMovedColumns() {
+    return [];
+  }
+
+  get initialMovedRows() {
+    return [];
+  }
+
+  get initialColumnHeaderGroups() {
+    return [];
+  }
+
 
 export default MockIrisGridTreeModel;

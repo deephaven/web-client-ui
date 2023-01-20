@@ -1,8 +1,8 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { GridTestUtils } from '@deephaven/grid';
-import { copyToClipboard, TestUtils } from '@deephaven/utils';
+import { copyToClipboard } from '@deephaven/utils';
 import IrisGridTestUtils from './IrisGridTestUtils';
 import IrisGridCopyHandler, { CopyOperation } from './IrisGridCopyHandler';
 
@@ -73,12 +73,13 @@ it('copies immediately if less than 10,000 rows of data', async () => {
   expect(screen.getByText('Fetching 10,000 rows for clipboard...'));
   expect(model.textSnapshot).toHaveBeenCalled();
 
-  await TestUtils.flushPromises();
-
-  expect(copyToClipboard).toHaveBeenCalledWith(DEFAULT_EXPECTED_TEXT);
+  await waitFor(() =>
+    expect(copyToClipboard).toHaveBeenCalledWith(DEFAULT_EXPECTED_TEXT)
+  );
 });
 
 it('prompts to copy if more than 10,000 rows of data', async () => {
+  const user = userEvent.setup({ delay: null });
   const model = makeModel();
   const ranges = GridTestUtils.makeRanges(1, 10001);
   const copyOperation = makeCopyOperation(ranges);
@@ -93,17 +94,18 @@ it('prompts to copy if more than 10,000 rows of data', async () => {
   expect(model.textSnapshot).not.toHaveBeenCalled();
   expect(copyToClipboard).not.toHaveBeenCalled();
 
-  userEvent.click(copyBtn);
+  user.click(copyBtn); // If this is awaited, the expect below fails b/c it copies too fast
 
-  expect(screen.getByText('Fetching 10,001 rows for clipboard...'));
+  expect(await screen.findByText('Fetching 10,001 rows for clipboard...'));
   expect(model.textSnapshot).toHaveBeenCalled();
 
-  await TestUtils.flushPromises();
-
-  expect(copyToClipboard).toHaveBeenCalledWith(DEFAULT_EXPECTED_TEXT);
+  await waitFor(() =>
+    expect(copyToClipboard).toHaveBeenCalledWith(DEFAULT_EXPECTED_TEXT)
+  );
 });
 
 it('shows click to copy if async copy fails', async () => {
+  const user = userEvent.setup({ delay: null });
   const error = new Error('Test copy error');
   mockedCopyToClipboard.mockReturnValueOnce(Promise.reject(error));
 
@@ -111,9 +113,9 @@ it('shows click to copy if async copy fails', async () => {
   const copyOperation = makeCopyOperation(ranges);
   mountCopySelection({ copyOperation });
 
-  await TestUtils.flushPromises();
-
-  expect(copyToClipboard).toHaveBeenCalledWith(DEFAULT_EXPECTED_TEXT);
+  await waitFor(() =>
+    expect(copyToClipboard).toHaveBeenCalledWith(DEFAULT_EXPECTED_TEXT)
+  );
 
   expect(screen.getByText('Fetched 50 rows!')).toBeTruthy();
 
@@ -122,16 +124,17 @@ it('shows click to copy if async copy fails', async () => {
   const btn = screen.getByText('Click to Copy');
   expect(btn).toBeTruthy();
 
-  userEvent.click(btn);
+  await user.click(btn);
 
-  await TestUtils.flushPromises();
-
-  expect(copyToClipboard).toHaveBeenCalledWith(DEFAULT_EXPECTED_TEXT);
+  await waitFor(() =>
+    expect(copyToClipboard).toHaveBeenCalledWith(DEFAULT_EXPECTED_TEXT)
+  );
 
   expect(screen.getByText('Copied to Clipboard!')).toBeTruthy();
 });
 
 it('retry option available if fetching fails', async () => {
+  const user = userEvent.setup({ delay: null });
   const ranges = GridTestUtils.makeRanges();
   const copyOperation = makeCopyOperation(ranges);
   const model = makeModel();
@@ -142,19 +145,15 @@ it('retry option available if fetching fails', async () => {
   expect(model.textSnapshot).toHaveBeenCalled();
   expect(copyToClipboard).not.toHaveBeenCalled();
 
-  await TestUtils.flushPromises();
-
-  const btn = screen.getByRole('button', { name: 'Retry' });
+  const btn = await screen.findByRole('button', { name: 'Retry' });
   expect(btn).toBeTruthy();
   expect(screen.getByText('Unable to copy data.')).toBeTruthy();
 
   model.textSnapshot = makeSnapshotFn();
 
-  userEvent.click(btn);
+  await user.click(btn);
 
-  await TestUtils.flushPromises();
-
-  expect(model.textSnapshot).toHaveBeenCalled();
+  await waitFor(() => expect(model.textSnapshot).toHaveBeenCalled());
   expect(copyToClipboard).toHaveBeenCalled();
   expect(screen.getByText('Copied to Clipboard!')).toBeTruthy();
 });

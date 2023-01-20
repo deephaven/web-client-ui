@@ -43,6 +43,8 @@ const VariableType = {
   TABLE: 'Table',
   TABLEMAP: 'TableMap',
   TREETABLE: 'TreeTable',
+  HIERARCHICALTABLE: 'HierarchicalTable',
+  PARTITIONEDTABLE: 'PartitionedTable',
 } as const;
 
 export interface CalendarStatic {
@@ -134,6 +136,9 @@ export interface IdeSession extends Evented {
   ): Promise<Figure>;
   getObject(
     definition: VariableDefinition<typeof VariableType.TREETABLE>
+  ): Promise<TreeTable>;
+  getObject(
+    definition: VariableDefinition<typeof VariableType.HIERARCHICALTABLE>
   ): Promise<TreeTable>;
   getObject(definition: VariableDefinition): Promise<unknown>;
   onLogMessage(logHandler: (logItem: LogItem) => void): () => void;
@@ -400,7 +405,7 @@ export interface Chart extends Evented {
   readonly title: string;
   readonly titleFont: string;
   readonly titleColor: string;
-  readonly isShowLegend: boolean;
+  readonly showLegend: boolean;
   readonly legendFont: string;
   readonly legendColor: string;
   readonly is3d: boolean;
@@ -607,12 +612,12 @@ export interface ColumnGroup {
 }
 
 export interface LayoutHints {
-  areSavedLayoutsAllowed: boolean;
-  frontColumns: string[];
-  backColumns: string[];
-  hiddenColumns: string[];
-  frozenColumns: string[];
-  columnGroups: ColumnGroup[];
+  areSavedLayoutsAllowed?: boolean;
+  frontColumns?: string[];
+  backColumns?: string[];
+  hiddenColumns?: string[];
+  frozenColumns?: string[];
+  columnGroups?: ColumnGroup[];
   searchDisplayMode?: keyof SearchDisplayModeStatic;
 }
 
@@ -855,6 +860,7 @@ export interface TableTemplate<T = Table> extends Evented {
 
 export interface TreeTable extends TableTemplate<TreeTable>, TreeTableStatic {
   readonly isIncludeConstituents: boolean;
+  readonly groupedColumns: Column[];
 
   expand(row: number): void;
   expand(row: TreeRow): void;
@@ -965,6 +971,9 @@ export interface IdeConnection
   ): Promise<Figure>;
   getObject(
     definition: VariableDefinition<typeof VariableType.TREETABLE>
+  ): Promise<TreeTable>;
+  getObject(
+    definition: VariableDefinition<typeof VariableType.HIERARCHICALTABLE>
   ): Promise<TreeTable>;
   getObject(definition: VariableDefinition): Promise<unknown>;
   subscribeToFieldUpdates(

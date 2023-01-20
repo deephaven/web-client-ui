@@ -75,21 +75,20 @@ export class GridUtils {
     const { row, column } = GridUtils.getGridPointFromXY(x, y, metrics);
 
     const {
-      visibleColumnWidths,
-      visibleRowHeights,
-      visibleColumnXs,
-      visibleRowYs,
+      allColumnWidths,
+      allRowHeights,
+      allColumnXs,
+      allRowYs,
       modelColumns,
       modelRows,
     } = metrics;
 
     const modelRow = row !== null ? modelRows.get(row) : null;
     const modelColumn = column !== null ? modelColumns.get(column) : null;
-    const left = column !== null ? visibleColumnXs.get(column) : null;
-    const top = row !== null ? visibleRowYs.get(row) : null;
-    const columnWidth =
-      column !== null ? visibleColumnWidths.get(column) : null;
-    const rowHeight = row !== null ? visibleRowHeights.get(row) : null;
+    const left = column !== null ? allColumnXs.get(column) : null;
+    const top = row !== null ? allRowYs.get(row) : null;
+    const columnWidth = column !== null ? allColumnWidths.get(column) : null;
+    const rowHeight = row !== null ? allRowHeights.get(row) : null;
 
     return {
       row,
@@ -312,8 +311,8 @@ export class GridUtils {
       floatingLeftColumnCount,
       floatingRightColumnCount,
       visibleColumns,
-      visibleColumnXs,
-      visibleColumnWidths,
+      allColumnXs,
+      allColumnWidths,
       gridX,
     } = metrics;
 
@@ -327,8 +326,8 @@ export class GridUtils {
       floatingLeftColumnCount,
       floatingRightColumnCount,
       visibleColumns,
-      visibleColumnXs,
-      visibleColumnWidths,
+      allColumnXs,
+      allColumnWidths,
       ignoreFloating
     );
   }
@@ -345,8 +344,8 @@ export class GridUtils {
       floatingBottomRowCount,
       rowCount,
       visibleRows,
-      visibleRowYs,
-      visibleRowHeights,
+      allRowYs,
+      allRowHeights,
       gridY,
     } = metrics;
 
@@ -360,8 +359,8 @@ export class GridUtils {
       floatingTopRowCount,
       floatingBottomRowCount,
       visibleRows,
-      visibleRowYs,
-      visibleRowHeights
+      allRowYs,
+      allRowHeights
     );
   }
 
@@ -453,8 +452,8 @@ export class GridUtils {
       floatingColumns,
       floatingLeftWidth,
       visibleColumns,
-      visibleColumnXs,
-      visibleColumnWidths,
+      allColumnXs,
+      allColumnWidths,
       columnHeaderMaxDepth,
     } = metrics;
     const { allowColumnResize, headerSeparatorHandleSize } = theme;
@@ -474,8 +473,8 @@ export class GridUtils {
     let isPreviousColumnHidden = false;
     for (let i = floatingColumns.length - 1; i >= 0; i -= 1) {
       const column = floatingColumns[i];
-      const columnX = visibleColumnXs.get(column) ?? 0;
-      const columnWidth = visibleColumnWidths.get(column) ?? 0;
+      const columnX = allColumnXs.get(column) ?? 0;
+      const columnWidth = allColumnWidths.get(column) ?? 0;
       const isColumnHidden = columnWidth === 0;
       if (!isPreviousColumnHidden || !isColumnHidden) {
         let midX = columnX + columnWidth;
@@ -499,8 +498,8 @@ export class GridUtils {
     isPreviousColumnHidden = false;
     for (let i = visibleColumns.length - 1; i >= 0; i -= 1) {
       const column = visibleColumns[i];
-      const columnX = visibleColumnXs.get(column) ?? 0;
-      const columnWidth = visibleColumnWidths.get(column) ?? 0;
+      const columnX = allColumnXs.get(column) ?? 0;
+      const columnWidth = allColumnWidths.get(column) ?? 0;
       const isColumnHidden = columnWidth === 0;
 
       // If this column is under the floating columns "layer". Terminate early.
@@ -549,8 +548,8 @@ export class GridUtils {
     columnIndex: VisibleIndex,
     metrics: GridMetrics
   ): boolean {
-    const { visibleColumnWidths } = metrics;
-    return GridUtils.isItemHidden(columnIndex, visibleColumnWidths);
+    const { allColumnWidths } = metrics;
+    return GridUtils.isItemHidden(columnIndex, allColumnWidths);
   }
 
   /**
@@ -635,10 +634,10 @@ export class GridUtils {
     columnIndex: VisibleIndex,
     metrics: GridMetrics
   ): VisibleIndex[] {
-    const { visibleColumns, visibleColumnWidths } = metrics;
+    const { visibleColumns, allColumnWidths } = metrics;
     return GridUtils.getHiddenItems(
       columnIndex,
-      visibleColumnWidths,
+      allColumnWidths,
       visibleColumns
     );
   }
@@ -661,8 +660,8 @@ export class GridUtils {
       rowHeaderWidth,
       columnHeaderHeight,
       visibleRows,
-      visibleRowYs,
-      visibleRowHeights,
+      allRowYs,
+      allRowHeights,
     } = metrics;
     const { allowRowResize, headerSeparatorHandleSize } = theme;
 
@@ -681,8 +680,8 @@ export class GridUtils {
     let isPreviousRowHidden = false;
     for (let i = visibleRows.length - 1; i >= 0; i -= 1) {
       const row = visibleRows[i];
-      const rowY = visibleRowYs.get(row) ?? 0;
-      const rowHeight = visibleRowHeights.get(row) ?? 0;
+      const rowY = allRowYs.get(row) ?? 0;
+      const rowHeight = allRowHeights.get(row) ?? 0;
       const isRowHidden = rowHeight === 0;
       if (!isPreviousRowHidden || !isRowHidden) {
         let midY = rowY + rowHeight;
@@ -713,8 +712,8 @@ export class GridUtils {
    * @returns True if the row is hidden, false otherwise
    */
   static isRowHidden(rowIndex: VisibleIndex, metrics: GridMetrics): boolean {
-    const { visibleRowHeights } = metrics;
-    return GridUtils.isItemHidden(rowIndex, visibleRowHeights);
+    const { allRowHeights } = metrics;
+    return GridUtils.isItemHidden(rowIndex, allRowHeights);
   }
 
   /**
@@ -727,8 +726,8 @@ export class GridUtils {
     rowIndex: VisibleIndex,
     metrics: GridMetrics
   ): VisibleIndex[] {
-    const { visibleRows, visibleRowHeights } = metrics;
-    return GridUtils.getHiddenItems(rowIndex, visibleRowHeights, visibleRows);
+    const { visibleRows, allRowHeights } = metrics;
+    return GridUtils.getHiddenItems(rowIndex, allRowHeights, visibleRows);
   }
 
   /**
@@ -783,13 +782,30 @@ export class GridUtils {
    * @param from The visible axis range to move
    * @param to The visible index to move the start of the range to
    * @param oldMovedItems The old reordered items
+   * @param isPreMoveTo If toParam is the index before the movement
+   *                    If true, this will account for the shift when moving
+   *                    a range before the drop positin
+   *                    E.g. Move range [0, 2] 1 item down (after element 3)
+   *                    The move is [0, 2] -> 1 if this is false. [0, 2] -> 3 if this is true
+   *                    Both will result in [0, 2] -> 1
    * @returns The new reordered items
    */
   static moveRange(
     from: BoundedAxisRange,
-    to: VisibleIndex,
-    oldMovedItems: MoveOperation[]
+    toParam: VisibleIndex,
+    oldMovedItems: MoveOperation[],
+    isPreMoveTo = false
   ): MoveOperation[] {
+    if (from[0] === from[1]) {
+      return GridUtils.moveItem(from[0], toParam, oldMovedItems);
+    }
+
+    let to = toParam;
+
+    if (isPreMoveTo && from[0] < toParam) {
+      to -= from[1] - from[0];
+    }
+
     if (from[0] === to) {
       return oldMovedItems;
     }
@@ -805,28 +821,35 @@ export class GridUtils {
       lastMovedItem.from[1] - lastMovedItem.from[0] === from[1] - from[0] &&
       lastMovedItem.to === from[0]
     ) {
-      // Remove the move if it is now a no-op
-      if (lastMovedItem.from[0] === to) {
-        movedItems.pop();
-      } else {
-        movedItems[movedItems.length - 1] = {
-          ...lastMovedItem,
-          to,
-        };
-      }
+      movedItems[movedItems.length - 1] = {
+        ...lastMovedItem,
+        to,
+      };
     } else {
       movedItems.push({ from, to });
     }
 
+    const newLastMovedItem = movedItems[movedItems.length - 1];
     // Remove the move if it is now a no-op
     if (
-      movedItems[movedItems.length - 1].from ===
-      movedItems[movedItems.length - 1].to
+      isBoundedAxisRange(newLastMovedItem.from) &&
+      newLastMovedItem.from[0] === newLastMovedItem.to
     ) {
       movedItems.pop();
     }
 
     return movedItems;
+  }
+
+  static moveItemOrRange(
+    from: VisibleIndex | BoundedAxisRange,
+    to: VisibleIndex,
+    oldMovedItems: MoveOperation[],
+    isPreMoveTo = false
+  ): MoveOperation[] {
+    return Array.isArray(from)
+      ? GridUtils.moveRange(from, to, oldMovedItems, isPreMoveTo)
+      : GridUtils.moveItem(from, to, oldMovedItems);
   }
 
   /**
@@ -1063,7 +1086,7 @@ export class GridUtils {
   }
 
   /**
-   * Translate the provided UI start/end indexes to the model start/end indexes by applying the `movedItems` transformations.
+   * Translate the provided UI start/end indexes to the visible start/end indexes by applying the `movedItems` transformations.
    * Since moved items can split apart a range, multiple pairs of indexes are returned
    *
    * @param start Start item in one dimension

@@ -12,6 +12,7 @@ function ObjectIcon({ type }: ObjectIconProps): JSX.Element {
     case dh.VariableType.TABLE:
     case dh.VariableType.TABLEMAP:
     case dh.VariableType.TREETABLE:
+    case dh.VariableType.HIERARCHICALTABLE:
       return <FontAwesomeIcon icon={dhTable} />;
     case dh.VariableType.FIGURE:
       return <FontAwesomeIcon icon={vsGraph} />;
