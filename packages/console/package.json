@@ -37,7 +37,7 @@
     "memoize-one": "^5.1.1",
     "memoizee": "^0.4.15",
     "monaco-editor": "^0.31.1",
-    "papaparse": "^5.3.2",
+    "papaparse": "5.3.2",
     "popper.js": "^1.16.1",
     "prop-types": "^15.7.2",
     "shell-quote": "^1.7.2"
