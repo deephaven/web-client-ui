@@ -311,8 +311,9 @@ class MockIrisGridTreeModel
     contains?: boolean | undefined,
     isBackwards?: boolean | undefined
   ): Promise<number> {
-    throw new Error('Method not implemented.');}
-    
+    throw new Error('Method not implemented.');
+  }
+
   get columnHeaderGroups(): ColumnHeaderGroup[] {
     return [];
   }
@@ -340,6 +341,6 @@ class MockIrisGridTreeModel
   get initialColumnHeaderGroups() {
     return [];
   }
-
+}
 
 export default MockIrisGridTreeModel;
