@@ -389,6 +389,24 @@ export class TableUtils {
     }
   }
 
+  static isBigDecimalType(columnType: string): boolean {
+    switch (columnType) {
+      case 'java.math.BigDecimal':
+        return true;
+      default:
+        return false;
+    }
+  }
+
+  static isBigIntegerType(columnType: string): boolean {
+    switch (columnType) {
+      case 'java.math.BigInteger':
+        return true;
+      default:
+        return false;
+    }
+  }
+
   static isBooleanType(columnType: string): boolean {
     switch (columnType) {
       case 'boolean':

@@ -181,6 +181,8 @@ const UPDATE_DOWNLOAD_THROTTLE = 500;
 
 const SET_FILTER_DEBOUNCE = 250;
 
+const SEEK_ROW_DEBOUNCE = 50;
+
 const SET_CONDITIONAL_FORMAT_DEBOUNCE = 250;
 
 const DEFAULT_AGGREGATION_SETTINGS = Object.freeze({
@@ -3177,87 +3179,130 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     }
   }
 
-  async seekRow(inputString: string, isBackwards = false): Promise<void> {
-    const {
-      gotoValueSelectedColumnName: selectedColumnName,
-      gotoValueSelectedFilter,
-    } = this.state;
-    const { model } = this.props;
-    if (!model.isSeekRowAvailable) {
-      return;
-    }
+  seekRow = debounce(
+    async (inputString: string, isBackwards = false): Promise<void> => {
+      const {
+        gotoValueSelectedColumnName: selectedColumnName,
+        gotoValueSelectedFilter,
+      } = this.state;
+      const { model } = this.props;
+      if (!model.isSeekRowAvailable) {
+        return;
+      }
 
-    const columnIndex = model.getColumnIndexByName(selectedColumnName);
-    if (columnIndex === undefined) {
-      return;
-    }
+      if (inputString === '') {
+        return;
+      }
 
-    const selectedColumn = model.columns[columnIndex];
+      const columnIndex = model.getColumnIndexByName(selectedColumnName);
+      if (columnIndex === undefined) {
+        return;
+      }
 
-    let searchFromRow;
+      const selectedColumn = model.columns[columnIndex];
 
-    if (this.grid) {
-      ({ selectionEndRow: searchFromRow } = this.grid.state);
-    }
+      let searchFromRow;
 
-    if (searchFromRow == null) {
-      searchFromRow = 0;
-    }
+      if (this.grid) {
+        ({ selectionEndRow: searchFromRow } = this.grid.state);
+      }
 
-    const isContains = gotoValueSelectedFilter === FilterType.contains;
-    const isEquals =
-      gotoValueSelectedFilter === FilterType.eq ||
-      gotoValueSelectedFilter === FilterType.eqIgnoreCase;
+      if (searchFromRow == null) {
+        searchFromRow = 0;
+      }
 
-    try {
-      if (selectedColumn.type === 'java.lang.String') {
-        // is string column,
-        const rowIndex = await model.seekRow(
-          isBackwards ? searchFromRow - 1 : searchFromRow + 1,
-          selectedColumn,
-          'String',
-          inputString,
-          isEquals,
-          isContains,
-          isBackwards ?? false
+      const isContains = gotoValueSelectedFilter === FilterType.contains;
+      const isEquals =
+        gotoValueSelectedFilter === FilterType.eq ||
+        gotoValueSelectedFilter === FilterType.eqIgnoreCase;
+
+      try {
+        const columnDataType = TableUtils.getNormalizedType(
+          selectedColumn.type
         );
-        this.grid?.setFocusRow(rowIndex);
-      } else if (inputString !== '') {
-        const columnDataType = TableUtils.getSeekRowColumnType(selectedColumn);
+
         let rowIndex;
-        if (columnDataType === 'DateTime') {
-          const { formatter } = model;
-          const [startDate] = DateUtils.parseDateRange(
-            inputString,
-            formatter.timeZone
-          );
-          rowIndex = await model.seekRow(
-            isBackwards ? searchFromRow - 1 : searchFromRow + 1,
-            selectedColumn,
-            columnDataType,
-            startDate,
-            undefined,
-            undefined,
-            isBackwards ?? false
-          );
-        } else {
-          rowIndex = await model.seekRow(
-            searchFromRow,
-            selectedColumn,
-            columnDataType,
-            inputString,
-            undefined,
-            undefined,
-            isBackwards ?? false
-          );
+
+        switch (columnDataType) {
+          case TableUtils.dataType.STRING: {
+            rowIndex = await model.seekRow(
+              isBackwards === true ? searchFromRow - 1 : searchFromRow + 1,
+              selectedColumn,
+              'String',
+              inputString,
+              isEquals,
+              isContains,
+              isBackwards ?? false
+            );
+            break;
+          }
+          case TableUtils.dataType.DATETIME: {
+            const { formatter } = model;
+            const [startDate] = DateUtils.parseDateRange(
+              inputString,
+              formatter.timeZone
+            );
+            rowIndex = await model.seekRow(
+              isBackwards === true ? searchFromRow - 1 : searchFromRow + 1,
+              selectedColumn,
+              selectedColumn.type,
+              startDate,
+              undefined,
+              undefined,
+              isBackwards ?? false
+            );
+            break;
+          }
+          case TableUtils.dataType.DECIMAL:
+          case TableUtils.dataType.INT: {
+            if (
+              !TableUtils.isBigDecimalType(selectedColumn.type) &&
+              !TableUtils.isBigIntegerType(selectedColumn.type)
+            ) {
+              const inputValue = parseInt(inputString, 10);
+              rowIndex = await model.seekRow(
+                searchFromRow,
+                selectedColumn,
+                'number',
+                inputValue,
+                undefined,
+                undefined,
+                isBackwards ?? false
+              );
+            } else {
+              rowIndex = await model.seekRow(
+                searchFromRow,
+                selectedColumn,
+                'String',
+                inputString,
+                undefined,
+                undefined,
+                isBackwards ?? false
+              );
+            }
+            break;
+          }
+          default: {
+            rowIndex = await model.seekRow(
+              searchFromRow,
+              selectedColumn,
+              'String',
+              inputString,
+              undefined,
+              undefined,
+              isBackwards ?? false
+            );
+          }
         }
+
         this.grid?.setFocusRow(rowIndex);
         this.setState({ gotoValueError: '' });
+      } catch (e: unknown) {
+        this.setState({ gotoValueError: 'invalid input' });
       }
-    } catch (e: unknown) {
-      this.setState({ gotoValueError: 'invalid input' });
-    }
-  }
+    },
+    SEEK_ROW_DEBOUNCE
+  );
 
   handleCancelDownloadTable(): void {
     this.tableSaver?.cancelDownload();
