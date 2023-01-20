@@ -35,6 +35,7 @@ export type NewItemModalProps = typeof NewItemModal.defaultProps & {
   type: FileType;
   onSubmit: (name: string) => void;
   onCancel: () => void;
+  onOverwrite?: (fileName: string) => void;
   placeholder: string;
   storage: FileStorage;
   notifyOnExtensionChange?: boolean;
@@ -294,9 +295,13 @@ class NewItemModal extends PureComponent<NewItemModalProps, NewItemModalState> {
 
   handleOverwriteConfirm(): void {
     this.setState({ showOverwriteModal: false });
-    const { onSubmit } = this.props;
+    const { onSubmit, onOverwrite } = this.props;
     const { path, value } = this.state;
     log.debug('handleOverwriteConfirm', path, value);
+
+    if (onOverwrite) {
+      onOverwrite(value);
+    }
     onSubmit(`${path}${value}`);
   }
 

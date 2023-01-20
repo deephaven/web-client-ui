@@ -41,7 +41,13 @@ import classNames from 'classnames';
 import debounce from 'lodash.debounce';
 import Log from '@deephaven/log';
 import { assertNotNull, Pending, PromiseUtils } from '@deephaven/utils';
-import type { Container, EventEmitter, Tab } from '@deephaven/golden-layout';
+import type {
+  Container,
+  EventEmitter,
+  Tab,
+  Component as glComponent,
+} from '@deephaven/golden-layout';
+import { isComponent } from '@deephaven/golden-layout';
 import { IdeSession } from '@deephaven/jsapi-shim';
 import { ConsoleEvent, NotebookEvent } from '../events';
 import { getDashboardSessionWrapper } from '../redux';
@@ -190,6 +196,7 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     this.handleTabFocus = this.handleTabFocus.bind(this);
     this.handleTabBlur = this.handleTabBlur.bind(this);
     this.handleTransformLinkUri = this.handleTransformLinkUri.bind(this);
+    this.handleOverwrite = this.handleOverwrite.bind(this);
     this.getDropdownOverflowActions = this.getDropdownOverflowActions.bind(
       this
     );
@@ -598,6 +605,41 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
   handleCloseCancel(): void {
     this.shouldPromptClose = true;
     this.setState({ showCloseModal: false });
+  }
+
+  /**
+   * Close overwritten tabs
+   * @params {string} fileName = The name of the file to be overwritten
+   */
+  handleOverwrite(fileName: string): void {
+    const { glContainer, glEventHub } = this.props;
+    const { fileMetadata } = this.state;
+    const tabs = glContainer.tab?.header.tabs;
+    const tabsToBeRemoved = tabs?.filter(
+      (tab: Tab) =>
+        tab.contentItem.config.title === fileName && tab.isActive === false
+    );
+
+    // Close old overwritten tabs
+    if (tabsToBeRemoved && tabsToBeRemoved.length > 0) {
+      for (let i = 0; i < tabsToBeRemoved?.length; i += 1) {
+        if (isComponent(tabsToBeRemoved[i].contentItem)) {
+          (tabsToBeRemoved[i].contentItem as glComponent).container.close();
+        } else {
+          tabsToBeRemoved[i].header.parent.removeChild(
+            tabsToBeRemoved[i].contentItem
+          );
+        }
+      }
+    }
+
+    if (fileMetadata) {
+      glEventHub.emit(NotebookEvent.CLOSE_FILE, {
+        id: fileMetadata.itemName,
+        itemName: fileMetadata.itemName,
+      });
+    }
+    this.focus();
   }
 
   handleCopy(): void {
@@ -1234,6 +1276,7 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
             title={isExistingItem ? 'Rename' : 'Save file as'}
             onSubmit={this.handleSaveAsSubmit}
             onCancel={this.handleSaveAsCancel}
+            onOverwrite={this.handleOverwrite}
             notifyOnExtensionChange
             storage={fileStorage}
           />
