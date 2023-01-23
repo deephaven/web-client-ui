@@ -985,6 +985,7 @@ class Grid extends PureComponent<GridProps, GridState> {
         autoSelectRow !== undefined && autoSelectRow ? null : column;
       const selectedRow =
         autoSelectColumn !== undefined && autoSelectColumn ? null : row;
+
       newRanges.push(
         GridRange.makeNormalized(
           selectedColumn,
@@ -1030,8 +1031,8 @@ class Grid extends PureComponent<GridProps, GridState> {
         return {
           selectedRanges: [],
           lastSelectedRanges: [],
-          cursorColumn,
-          cursorRow,
+          cursorColumn: null,
+          cursorRow: null,
         };
       }
 
@@ -1071,6 +1072,12 @@ class Grid extends PureComponent<GridProps, GridState> {
           newCursorRow = null;
         }
       }
+
+      if (newSelectedRanges.length === 0) {
+        newCursorColumn = null;
+        newCursorRow = null;
+      }
+
       return {
         cursorRow: newCursorRow,
         cursorColumn: newCursorColumn,

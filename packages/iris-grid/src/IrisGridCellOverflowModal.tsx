@@ -107,6 +107,7 @@ export default function IrisGridCellOverflowModal({
 
   function onEditorInitialized(editor: monaco.editor.IStandaloneCodeEditor) {
     editorRef.current = editor;
+    setHeight(editor.getContentHeight());
     editor.onDidContentSizeChange(({ contentHeight }) =>
       setHeight(contentHeight)
     );
@@ -129,6 +130,7 @@ export default function IrisGridCellOverflowModal({
         setHeight(0);
       }}
       className="theme-bg-dark cell-overflow-modal"
+      size="xl"
     >
       <ModalHeader toggle={onClose}>
         <h5 className="overflow-modal-title">Cell Contents</h5>
