@@ -41,13 +41,7 @@ import classNames from 'classnames';
 import debounce from 'lodash.debounce';
 import Log from '@deephaven/log';
 import { assertNotNull, Pending, PromiseUtils } from '@deephaven/utils';
-import type {
-  Container,
-  EventEmitter,
-  Tab,
-  Component as glComponent,
-} from '@deephaven/golden-layout';
-import { isComponent } from '@deephaven/golden-layout';
+import type { Container, EventEmitter, Tab } from '@deephaven/golden-layout';
 import { IdeSession } from '@deephaven/jsapi-shim';
 import { ConsoleEvent, NotebookEvent } from '../events';
 import { getDashboardSessionWrapper } from '../redux';
@@ -608,8 +602,8 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
   }
 
   /**
-   * Close overwritten tabs
-   * @params {string} fileName = The name of the file to be overwritten
+   * Closes overwritten tabs
+   * @param fileName The name of the file to be overwritten
    */
   handleOverwrite(fileName: string): void {
     const { glEventHub } = this.props;
