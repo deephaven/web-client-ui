@@ -612,33 +612,10 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
    * @params {string} fileName = The name of the file to be overwritten
    */
   handleOverwrite(fileName: string): void {
-    const { glContainer, glEventHub } = this.props;
-    const { fileMetadata } = this.state;
-    const tabs = glContainer.tab?.header.tabs;
-    const tabsToBeRemoved = tabs?.filter(
-      (tab: Tab) =>
-        tab.contentItem.config.title === fileName && tab.isActive === false
-    );
+    const { glEventHub } = this.props;
+    const { panelState } = this.state;
 
-    // Close old overwritten tabs
-    if (tabsToBeRemoved && tabsToBeRemoved.length > 0) {
-      for (let i = 0; i < tabsToBeRemoved?.length; i += 1) {
-        if (isComponent(tabsToBeRemoved[i].contentItem)) {
-          (tabsToBeRemoved[i].contentItem as glComponent).container.close();
-        } else {
-          tabsToBeRemoved[i].header.parent.removeChild(
-            tabsToBeRemoved[i].contentItem
-          );
-        }
-      }
-    }
-
-    if (fileMetadata) {
-      glEventHub.emit(NotebookEvent.CLOSE_FILE, {
-        id: fileMetadata.itemName,
-        itemName: fileMetadata.itemName,
-      });
-    }
+    glEventHub.emit(NotebookEvent.RENAME_FILE, fileName, fileName, panelState);
     this.focus();
   }
 
@@ -878,8 +855,19 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     this.saveContent(name, content);
   }
 
-  handleRenameFile(oldName: string, newName: string) {
-    const { fileMetadata } = this.state;
+  handleRenameFile(oldName: string, newName: string, panelState?: PanelState) {
+    const { fileMetadata, panelState: curPanelState } = this.state;
+    const { glContainer } = this.props;
+
+    if (
+      fileMetadata?.itemName === `/${newName}` &&
+      panelState &&
+      JSON.stringify(curPanelState) !== JSON.stringify(panelState)
+    ) {
+      glContainer.close();
+      return;
+    }
+
     if (fileMetadata && fileMetadata.id === oldName) {
       this.setState({ fileMetadata: { id: newName, itemName: newName } });
       this.debouncedSavePanelState();
