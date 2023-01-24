@@ -68,14 +68,50 @@ export function ConsolePlugin(
   } = props;
   const notebookIndex = useRef(0);
   // Map from file ID to panel ID
-  const [openFileMap] = useState(new Map<string, string>());
-  const [previewFileMap] = useState(new Map<string, string>());
+  const [openFileMap, setOpenFileMap] = useState(new Map<string, string>());
+  const [previewFileMap, setPreviewFileMap] = useState(
+    new Map<string, string>()
+  );
 
   const dispatch = useDispatch();
 
   const getConsolePanel = useCallback(
     () => panelManager.getLastUsedPanelOfType(ConsolePanel),
     [panelManager]
+  );
+
+  const addOpenFileMapEntry = useCallback(
+    (key: string, value: string) => {
+      setOpenFileMap(map => new Map(map.set(key, value)));
+    },
+    [setOpenFileMap]
+  );
+
+  const deleteOpenFileMapEntry = useCallback(
+    (key: string) => {
+      setOpenFileMap(map => {
+        map.delete(key);
+        return new Map(map);
+      });
+    },
+    [setOpenFileMap]
+  );
+
+  const addPreviewFileMapEntry = useCallback(
+    (key: string, value: string) => {
+      setPreviewFileMap(map => new Map(map.set(key, value)));
+    },
+    [setPreviewFileMap]
+  );
+
+  const deletePreviewFileMapEntry = useCallback(
+    (key: string) => {
+      setPreviewFileMap(map => {
+        map.delete(key);
+        return new Map(map);
+      });
+    },
+    [setPreviewFileMap]
   );
 
   const handleSendCommand = useCallback(
@@ -149,16 +185,16 @@ export function ConsolePlugin(
       let panelId;
       if (openFileMap.has(oldName)) {
         panelId = openFileMap.get(oldName);
-        openFileMap.delete(oldName);
+        deleteOpenFileMapEntry(oldName);
         if (panelId != null) {
-          openFileMap.set(newName, panelId);
+          addOpenFileMapEntry(newName, panelId);
         }
       }
       if (previewFileMap.has(oldName)) {
         panelId = previewFileMap.get(oldName);
-        previewFileMap.delete(oldName);
+        deletePreviewFileMapEntry(oldName);
         if (panelId != null) {
-          previewFileMap.set(newName, panelId);
+          addPreviewFileMapEntry(newName, panelId);
         }
       }
 
@@ -169,7 +205,15 @@ export function ConsolePlugin(
 
       renamePanel(panelId, FileUtils.getBaseName(newName));
     },
-    [openFileMap, previewFileMap, renamePanel]
+    [
+      openFileMap,
+      previewFileMap,
+      renamePanel,
+      addOpenFileMapEntry,
+      addPreviewFileMapEntry,
+      deleteOpenFileMapEntry,
+      deletePreviewFileMapEntry,
+    ]
   );
 
   /**
@@ -197,7 +241,7 @@ export function ConsolePlugin(
       }
       const { id: fileId } = fileMetadata;
       if (isPreview) {
-        previewFileMap.set(fileId, panelId);
+        addPreviewFileMapEntry(fileId, panelId);
         return;
       }
       if (openFileMap.has(fileId)) {
@@ -214,14 +258,21 @@ export function ConsolePlugin(
         return;
       }
 
-      openFileMap.set(fileId, panelId);
+      addOpenFileMapEntry(fileId, panelId);
 
       // De-register preview tab
       if (previewFileMap.has(fileId)) {
-        previewFileMap.delete(fileId);
+        deletePreviewFileMapEntry(fileId);
       }
     },
-    [openFileMap, previewFileMap, renameFilePanel]
+    [
+      openFileMap,
+      previewFileMap,
+      renameFilePanel,
+      addOpenFileMapEntry,
+      addPreviewFileMapEntry,
+      deletePreviewFileMapEntry,
+    ]
   );
 
   const unregisterFilePanel = useCallback(
@@ -238,12 +289,12 @@ export function ConsolePlugin(
       }
       const { id: fileId } = fileMetadata;
       if (isPreview) {
-        previewFileMap.delete(fileId);
+        deletePreviewFileMapEntry(fileId);
         return;
       }
-      openFileMap.delete(fileId);
+      deleteOpenFileMapEntry(fileId);
     },
-    [openFileMap, previewFileMap]
+    [deleteOpenFileMapEntry, deletePreviewFileMapEntry]
   );
 
   const closeFilePanel = useCallback(

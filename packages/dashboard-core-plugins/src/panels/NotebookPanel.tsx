@@ -607,9 +607,11 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
    */
   handleOverwrite(fileName: string): void {
     const { glEventHub } = this.props;
-    const { panelState } = this.state;
 
-    glEventHub.emit(NotebookEvent.RENAME_FILE, fileName, fileName, panelState);
+    glEventHub.emit(NotebookEvent.CLOSE_FILE, {
+      id: fileName,
+      itemName: fileName,
+    });
     this.focus();
   }
 
@@ -828,7 +830,11 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     this.setState({ showSaveAsModal: false });
   }
 
-  handleSaveAsSubmit(name: string): void {
+  handleSaveAsSubmit(name: string, isOverwrite = false): void {
+    if (isOverwrite) {
+      this.handleOverwrite(name);
+    }
+
     log.debug('handleSaveAsSubmit', name);
     const { fileMetadata } = this.state;
     if (!fileMetadata) {
@@ -1258,7 +1264,6 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
             title={isExistingItem ? 'Rename' : 'Save file as'}
             onSubmit={this.handleSaveAsSubmit}
             onCancel={this.handleSaveAsCancel}
-            onOverwrite={this.handleOverwrite}
             notifyOnExtensionChange
             storage={fileStorage}
           />
