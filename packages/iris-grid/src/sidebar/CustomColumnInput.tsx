@@ -46,7 +46,7 @@ function CustomColumnInput({
   const isValidName = name === '' || DbNameValidator.isValidColumnName(name);
   const handleFormulaEditorContentChanged = useCallback(
     (formulaValue?: string) => {
-      if (formulaValue !== undefined && formulaValue !== '') {
+      if (formulaValue !== undefined) {
         formulaValue.replace(/(\r\n|\n|\r)/gm, ''); // remove line break
         onChange(eventKey, INPUT_TYPE.FORMULA, formulaValue);
       }
