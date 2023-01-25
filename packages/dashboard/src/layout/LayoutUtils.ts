@@ -574,7 +574,11 @@ class LayoutUtils {
    * @param root The GoldenLayout root to search and close the component in
    * @param config The GoldenLayout component config definition to close, eg. { component: 'IrisGridPanel', id: 'table-t' }
    */
-  static closeComponent(root: ContentItem, config: LayoutConfig): void {
+  static closeComponent(
+    root: ContentItem,
+    config: LayoutConfig,
+    isOverwrite = false
+  ): void {
     const stack = LayoutUtils.getStackForRoot(
       root,
       config,
@@ -597,8 +601,8 @@ class LayoutUtils {
         // container property exists on a contentItem if contentItem is a component,
         // however, this is not included in the types for a contentitem, thus the casting
         ((oldContentItem as unknown) as {
-          container: { close: () => void };
-        }).container.close();
+          container: { close: (isOverwrite?: boolean) => void };
+        }).container.close(isOverwrite);
       } else {
         stack.removeChild(oldContentItem);
       }

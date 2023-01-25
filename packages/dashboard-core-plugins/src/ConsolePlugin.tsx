@@ -249,7 +249,7 @@ export function ConsolePlugin(
         if (panelId === existingPanelId) {
           log.debug(`Update tab title for file ${fileId}`);
           const { itemName } = fileMetadata;
-          renameFilePanel(fileId, FileUtils.getBaseName(itemName));
+          renameFilePanel(fileId, itemName);
         } else {
           log.error(
             `File ${fileId} already associated with a different tab ${existingPanelId}`
@@ -298,7 +298,7 @@ export function ConsolePlugin(
   );
 
   const closeFilePanel = useCallback(
-    fileMetadata => {
+    (fileMetadata, isOverwrite = false) => {
       log.debug('closeFilePanel', fileMetadata);
       const { id: fileId } = fileMetadata;
       let panelId = null;
@@ -313,7 +313,7 @@ export function ConsolePlugin(
         return;
       }
       unregisterFilePanel(fileMetadata, isPreview);
-      LayoutUtils.closeComponent(layout.root, { id: panelId });
+      LayoutUtils.closeComponent(layout.root, { id: panelId }, isOverwrite);
     },
     [layout.root, openFileMap, previewFileMap, unregisterFilePanel]
   );

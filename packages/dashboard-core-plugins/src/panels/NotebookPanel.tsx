@@ -114,6 +114,8 @@ interface NotebookPanelState {
   scriptCode: string;
 
   itemName?: string;
+
+  shouldPromptClose: boolean;
 }
 
 class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
@@ -211,7 +213,6 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     this.tabTitleElement = null;
 
     this.tabInitOnce = false;
-    this.shouldPromptClose = true;
 
     const { isDashboardActive, session, sessionLanguage, panelState } = props;
 
@@ -268,6 +269,8 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
       showSaveAsModal: false,
 
       scriptCode: '',
+
+      shouldPromptClose: true,
     };
 
     log.debug('constructor', props, this.state);
@@ -328,8 +331,6 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
 
   tabInitOnce: boolean;
 
-  shouldPromptClose: boolean;
-
   editor?: editor.IStandaloneCodeEditor;
 
   // Called by TabEvent. Happens once when created, but also each time its moved.
@@ -346,9 +347,14 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
   initTabCloseOverride() {
     const { glContainer } = this.props;
     const close = glContainer.close.bind(glContainer);
-    glContainer.close = () => {
-      const { changeCount, savedChangeCount } = this.state;
-      if (changeCount !== savedChangeCount && this.shouldPromptClose) {
+    glContainer.close = (isOverwrite = false) => {
+      if (isOverwrite) {
+        close();
+        return true;
+      }
+
+      const { changeCount, savedChangeCount, shouldPromptClose } = this.state;
+      if (changeCount !== savedChangeCount && shouldPromptClose) {
         this.setState({ showCloseModal: true });
       } else {
         close();
@@ -581,15 +587,13 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
   }
 
   handleCloseDiscard(): void {
-    this.shouldPromptClose = false;
-    this.setState({ showCloseModal: false });
+    this.setState({ shouldPromptClose: false, showCloseModal: false });
     const { glContainer } = this.props;
     glContainer.close();
   }
 
   handleCloseSave(): void {
-    this.shouldPromptClose = false;
-    this.setState({ showCloseModal: false });
+    this.setState({ shouldPromptClose: false, showCloseModal: false });
     if (this.save()) {
       const { glContainer } = this.props;
       glContainer.close();
@@ -597,8 +601,7 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
   }
 
   handleCloseCancel(): void {
-    this.shouldPromptClose = true;
-    this.setState({ showCloseModal: false });
+    this.setState({ shouldPromptClose: true, showCloseModal: false });
   }
 
   /**
@@ -608,10 +611,15 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
   handleOverwrite(fileName: string): void {
     const { glEventHub } = this.props;
 
-    glEventHub.emit(NotebookEvent.CLOSE_FILE, {
-      id: fileName,
-      itemName: fileName,
-    });
+    glEventHub.emit(
+      NotebookEvent.CLOSE_FILE,
+      {
+        id: fileName,
+        itemName: fileName,
+      },
+      true
+    );
+
     this.focus();
   }
 
