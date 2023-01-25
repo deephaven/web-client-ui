@@ -279,7 +279,7 @@ class CustomColumnBuilder extends Component<
   }
 
   handleSaveClick(): void {
-    const { onSave } = this.props;
+    const { onSave, customColumns: originalCustomColumns } = this.props;
     const { inputs, isCustomColumnApplying } = this.state;
     if (isCustomColumnApplying) {
       return;
@@ -292,7 +292,11 @@ class CustomColumnBuilder extends Component<
       }
     });
     this.resetErrorMessage();
-    this.setState({ isCustomColumnApplying: true });
+    this.setState({
+      // If both are 0, then moving from no custom to no custom. The parent won't re-render to cancel the loading state
+      isCustomColumnApplying:
+        customColumns.length > 0 || originalCustomColumns.length > 0,
+    });
     onSave(customColumns);
   }
 
@@ -336,11 +340,13 @@ class CustomColumnBuilder extends Component<
   renderSaveButton(): ReactElement {
     const { inputs, isCustomColumnApplying, isSuccessShowing } = this.state;
     const saveText = inputs.length > 1 ? 'Save Columns' : 'Save Column';
-    const areNamesValid = inputs.every(({ name }) =>
-      DbNameValidator.isValidColumnName(name)
+    const areNamesValid = inputs.every(
+      ({ name }) => name === '' || DbNameValidator.isValidColumnName(name)
     );
-    const areNamesUnique =
-      new Set(inputs.map(({ name }) => name)).size === inputs.length;
+    const filteredNames = inputs
+      .filter(({ name }) => name !== '')
+      .map(({ name }) => name);
+    const areNamesUnique = new Set(filteredNames).size === filteredNames.length;
 
     return (
       <Button
