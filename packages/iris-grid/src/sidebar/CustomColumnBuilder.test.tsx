@@ -93,6 +93,43 @@ test('Ignores empty names or formulas on save', async () => {
   expect(mockSave).toBeCalledWith(customColumns);
 });
 
+test('Ignores deleted formulas on save', async () => {
+  // There is an issue with populating the custom columns and then editing the existing column
+  // RTL/monaco aren't playing nicely and it won't edit the existing text
+  // This test instead creates the new text, saves, then removes it to test the same behavior
+  jest.useFakeTimers();
+  const user = userEvent.setup({ delay: null });
+  const model = IrisGridTestUtils.makeModel();
+  const mockSave = jest.fn(() =>
+    setTimeout(() => {
+      model.dispatchEvent(
+        new EventShimCustomEvent(IrisGridModel.EVENT.COLUMNS_CHANGED)
+      );
+    }, 50)
+  );
+
+  const { container } = render(<Builder model={model} onSave={mockSave} />);
+
+  await user.type(screen.getByPlaceholderText('Column Name'), 'foo');
+  await user.click(container.querySelectorAll('.input-editor-wrapper')[0]);
+  await user.keyboard('bar');
+
+  await user.click(screen.getByText(/Save/));
+  jest.advanceTimersByTime(50); // Applying duration
+  jest.advanceTimersByTime(CustomColumnBuilder.SUCCESS_SHOW_DURATION);
+
+  expect(mockSave).toBeCalledWith(['foo=bar']);
+
+  mockSave.mockClear();
+
+  await user.click(container.querySelectorAll('.input-editor-wrapper')[0]);
+  await user.keyboard('{Control>}a{/Control}{Backspace}');
+  await user.click(screen.getByText(/Save/));
+  expect(mockSave).toBeCalledWith([]);
+
+  jest.useRealTimers();
+});
+
 test('Deletes columns', async () => {
   const user = userEvent.setup();
   const customColumns = ['abc=def', 'foo=bar'];
