@@ -555,7 +555,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
     // Expand/Collapse options
     if (isExpandableGridModel(model) && model.isRowExpandable(modelRow)) {
       actions.push({
-        title: 'Expand Row / Collapse Row',
+        title: model.isRowExpanded(modelRow) ? 'Collapse Row' : 'Expand Row',
         group: IrisGridContextMenuHandler.GROUP_EXPAND_COLLAPSE,
         order: 10,
         action: () => {
@@ -573,25 +573,26 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
         },
       });
 
+      let expandAll = false;
+      // If there is a row that isn't expanded, expand all from root
+      for (let i = 0; i < rowCount; i += 1) {
+        if (model.isRowExpandable(i)) {
+          if (!model.isRowExpanded(i)) {
+            expandAll = true;
+            break;
+          }
+        }
+      }
       actions.push({
-        title: 'Expand All / Collapse All',
+        title: expandAll ? 'Expand All' : 'Collapse All',
         group: IrisGridContextMenuHandler.GROUP_EXPAND_COLLAPSE,
         order: 30,
         action: () => {
-          let expandAll = false;
-          // If there is a row that isn't expanded, expand all from root
-          for (let i = 0; i < rowCount; i += 1) {
-            if (model.isRowExpandable(i)) {
-              if (!model.isRowExpanded(i)) {
-                expandAll = true;
-                break;
-              }
-            }
-          }
           model.setRowExpanded(0, expandAll, expandAll);
         },
       });
     }
+
     const gotoRow = {
       title: 'Go to',
       iconColor: filterIconColor,
