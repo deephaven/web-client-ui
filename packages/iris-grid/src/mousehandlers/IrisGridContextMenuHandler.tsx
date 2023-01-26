@@ -230,20 +230,19 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
         this.irisGrid.hideColumnByVisibleIndex(visibleIndex);
       },
     });
-    if (isColumnFreezable) {
-      actions.push({
-        title: isColumnFrozen ? 'Unfreeze Column' : 'Freeze Column',
-        group: IrisGridContextMenuHandler.GROUP_HIDE_COLUMNS,
-        action: () => {
-          if (isColumnFrozen) {
-            this.irisGrid.unFreezeColumnByColumnName(column.name);
-          } else {
-            this.irisGrid.freezeColumnByColumnName(column.name);
-          }
-        },
-        order: 10,
-      });
-    }
+    actions.push({
+      title: isColumnFrozen ? 'Unfreeze Column' : 'Freeze Column',
+      group: IrisGridContextMenuHandler.GROUP_HIDE_COLUMNS,
+      disabled: !isColumnFreezable,
+      action: () => {
+        if (isColumnFrozen) {
+          this.irisGrid.unFreezeColumnByColumnName(column.name);
+        } else {
+          this.irisGrid.freezeColumnByColumnName(column.name);
+        }
+      },
+      order: 10,
+    });
     actions.push({
       title: 'Show All Columns',
       group: IrisGridContextMenuHandler.GROUP_HIDE_COLUMNS,
