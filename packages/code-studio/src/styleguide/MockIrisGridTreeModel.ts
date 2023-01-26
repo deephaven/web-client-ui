@@ -134,8 +134,12 @@ class MockIrisGridTreeModel
     return this.model.isRowExpanded(row);
   }
 
-  setRowExpanded(row: ModelIndex, isExpanded: boolean): void {
-    this.model.setRowExpanded(row, isExpanded);
+  setRowExpanded(
+    row: ModelIndex,
+    isExpanded: boolean,
+    expandAll = false
+  ): void {
+    this.model.setRowExpanded(row, isExpanded, expandAll);
   }
 
   depthForRow(row: ModelIndex): number {

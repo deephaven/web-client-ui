@@ -52,11 +52,19 @@ class GridRowTreeMouseHandler extends GridMouseHandler {
     return GridRowTreeMouseHandler.isInTreeBox(gridPoint, grid);
   }
 
-  onClick(gridPoint: GridPoint, grid: Grid): EventHandlerResult {
+  onClick(
+    gridPoint: GridPoint,
+    grid: Grid,
+    event: React.MouseEvent
+  ): EventHandlerResult {
     if (GridRowTreeMouseHandler.isInTreeBox(gridPoint, grid)) {
       const { row } = gridPoint;
       if (row !== null) {
-        grid.toggleRowExpanded(row);
+        if (event.ctrlKey || event.metaKey) {
+          grid.toggleRowExpanded(row, true);
+        } else {
+          grid.toggleRowExpanded(row, false);
+        }
         return true;
       }
     }

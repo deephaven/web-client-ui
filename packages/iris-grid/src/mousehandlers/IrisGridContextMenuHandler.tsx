@@ -21,6 +21,7 @@ import {
   GridMouseHandler,
   GridPoint,
   isEditableGridModel,
+  isExpandableGridModel,
   ModelIndex,
   VisibleIndex,
 } from '@deephaven/grid';
@@ -66,7 +67,9 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
 
   static GROUP_FILTER = ContextActions.groups.high + 50;
 
-  static GROUP_GOTO = ContextActions.groups.high + 51;
+  static GROUP_EXPAND_COLLAPSE = ContextActions.groups.high + 51;
+
+  static GROUP_GOTO = ContextActions.groups.high + 52;
 
   static GROUP_SORT = ContextActions.groups.high + 75;
 
@@ -388,10 +391,13 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
 
     const actions = [] as ContextAction[];
 
-    const { quickFilters } = irisGrid.state;
+    const { quickFilters, metrics } = irisGrid.state;
     const theme = irisGrid.getTheme();
     const { filterIconColor } = theme;
     const { settings } = irisGrid.props;
+
+    assertNotNull(metrics);
+    const { rowCount } = metrics;
 
     const dateFilterFormatter = new DateTimeColumnFormatter({
       timeZone: settings?.timeZone,
@@ -546,6 +552,46 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
       }
     }
 
+    // Expand/Collapse options
+    if (isExpandableGridModel(model) && model.isRowExpandable(modelRow)) {
+      actions.push({
+        title: 'Expand Row / Collapse Row',
+        group: IrisGridContextMenuHandler.GROUP_EXPAND_COLLAPSE,
+        order: 10,
+        action: () => {
+          model.setRowExpanded(modelRow, !model.isRowExpanded(modelRow));
+        },
+      });
+
+      actions.push({
+        title: 'Expand Rows Below',
+        shortcut: SHORTCUTS.TABLE.EXPAND_ROWS_BELOW,
+        group: IrisGridContextMenuHandler.GROUP_EXPAND_COLLAPSE,
+        order: 20,
+        action: () => {
+          model.setRowExpanded(modelRow, true, true);
+        },
+      });
+
+      actions.push({
+        title: 'Expand All / Collapse All',
+        group: IrisGridContextMenuHandler.GROUP_EXPAND_COLLAPSE,
+        order: 30,
+        action: () => {
+          let expandAll = false;
+          // If there is a row that isn't expanded, expand all from root
+          for (let i = 0; i < rowCount; i += 1) {
+            if (model.isRowExpandable(i)) {
+              if (!model.isRowExpanded(i)) {
+                expandAll = true;
+                break;
+              }
+            }
+          }
+          model.setRowExpanded(0, expandAll, expandAll);
+        },
+      });
+    }
     const gotoRow = {
       title: 'Go to',
       iconColor: filterIconColor,
