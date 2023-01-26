@@ -173,7 +173,6 @@ function AppInit(props: AppInitProps) {
           token,
         });
       } else {
-        // Just login anonymously for now, use default user values
         log.info('Login anonymously...');
         await coreClient.login({ type: dh.CoreClient.LOGIN_TYPE_ANONYMOUS });
       }
