@@ -9,6 +9,7 @@ import type { AbstractContentItem, Component } from '../items';
 import type LayoutManager from '../LayoutManager';
 import EventEmitter from '../utils/EventEmitter';
 
+export type CloseOptions = { force?: boolean };
 export default class ItemContainer<
   C extends ComponentConfig | ReactComponentConfig = ComponentConfig
 > extends EventEmitter {
@@ -27,6 +28,8 @@ export default class ItemContainer<
   _config: C & { componentState: Record<string, unknown> };
 
   isHidden = false;
+
+  beforeCloseHandler: ((options?: CloseOptions) => boolean) | null;
 
   _element = $(
     [
@@ -48,6 +51,8 @@ export default class ItemContainer<
     this._config = config as C & { componentState: Record<string, unknown> };
 
     this._contentElement = this._element.find('.lm_content');
+
+    this.beforeCloseHandler = null;
   }
 
   /**
@@ -146,12 +151,30 @@ export default class ItemContainer<
    * Closes the container if it is closable. Can be called by
    * both the component within at as well as the contentItem containing
    * it. Emits a close event before the container itself is closed.
+   * @param options Options to pass into the beforeClose handler
    */
-  close() {
-    if (this._config.isClosable) {
+  close(options?: CloseOptions) {
+    if (this.beforeCloseHandler) {
+      // Only close if the beforeCloseHandler returns true
+      if (this.beforeCloseHandler(options)) {
+        if (this._config.isClosable) {
+          this.emit('close');
+          this.parent.close();
+        }
+      }
+    } else if (this._config.isClosable) {
+      // If there is no handler, proceed as normal and close if the container is closable
       this.emit('close');
       this.parent.close();
     }
+  }
+
+  /**
+   * Sets the beforeCloseHandler to callback
+   * @param callback Callback function to call before closing
+   */
+  beforeClose(callback: (options?: CloseOptions) => boolean) {
+    this.beforeCloseHandler = callback;
   }
 
   /**

@@ -3,7 +3,11 @@ import shortid from 'shortid';
 import isMatch from 'lodash.ismatch';
 import { DragEvent } from 'react';
 import Log from '@deephaven/log';
-import GoldenLayout, { isRoot, isStack } from '@deephaven/golden-layout';
+import GoldenLayout, {
+  isComponent,
+  isRoot,
+  isStack,
+} from '@deephaven/golden-layout';
 import type {
   ComponentConfig,
   Config,
@@ -14,6 +18,7 @@ import type {
   ReactComponentConfig,
   Stack,
   Tab,
+  CloseOptions,
 } from '@deephaven/golden-layout';
 import { assertNotNull } from '@deephaven/utils';
 import GoldenLayoutThemeExport from './GoldenLayoutThemeExport';
@@ -577,7 +582,7 @@ class LayoutUtils {
   static closeComponent(
     root: ContentItem,
     config: LayoutConfig,
-    isOverwrite = false
+    closeOptions?: CloseOptions
   ): void {
     const stack = LayoutUtils.getStackForRoot(
       root,
@@ -597,12 +602,8 @@ class LayoutUtils {
     const oldContentItem = LayoutUtils.getContentItemInStack(stack, config);
     const maintainFocusElement = document.activeElement; // attempt to retain focus after dom manipulation, which can break focus
     if (oldContentItem) {
-      if (oldContentItem.isComponent) {
-        // container property exists on a contentItem if contentItem is a component,
-        // however, this is not included in the types for a contentitem, thus the casting
-        ((oldContentItem as unknown) as {
-          container: { close: (isOverwrite?: boolean) => void };
-        }).container.close(isOverwrite);
+      if (isComponent(oldContentItem)) {
+        oldContentItem.container.close(closeOptions ?? undefined);
       } else {
         stack.removeChild(oldContentItem);
       }

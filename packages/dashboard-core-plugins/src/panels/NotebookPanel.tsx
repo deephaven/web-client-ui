@@ -41,7 +41,12 @@ import classNames from 'classnames';
 import debounce from 'lodash.debounce';
 import Log from '@deephaven/log';
 import { assertNotNull, Pending, PromiseUtils } from '@deephaven/utils';
-import type { Container, EventEmitter, Tab } from '@deephaven/golden-layout';
+import type {
+  Container,
+  EventEmitter,
+  Tab,
+  CloseOptions,
+} from '@deephaven/golden-layout';
 import { IdeSession } from '@deephaven/jsapi-shim';
 import { ConsoleEvent, NotebookEvent } from '../events';
 import { getDashboardSessionWrapper } from '../redux';
@@ -343,24 +348,21 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     this.initTabClasses(tab);
   }
 
-  // override glContainer.close() with a custom closure that checks if needs saving
   initTabCloseOverride() {
     const { glContainer } = this.props;
-    const close = glContainer.close.bind(glContainer);
-    glContainer.close = (isOverwrite = false) => {
-      if (isOverwrite) {
-        close();
+    glContainer.beforeClose((options?: CloseOptions) => {
+      if (options !== undefined && options.force === true) {
         return true;
       }
 
       const { changeCount, savedChangeCount, shouldPromptClose } = this.state;
       if (changeCount !== savedChangeCount && shouldPromptClose) {
         this.setState({ showCloseModal: true });
-      } else {
-        close();
+        return false;
       }
+
       return true;
-    };
+    });
   }
 
   initTabClasses(tab: Tab) {
@@ -617,7 +619,7 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
         id: fileName,
         itemName: fileName,
       },
-      true
+      { force: true }
     );
 
     this.focus();

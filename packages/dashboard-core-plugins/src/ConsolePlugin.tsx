@@ -11,6 +11,7 @@ import {
   useListener,
 } from '@deephaven/dashboard';
 import { FileUtils } from '@deephaven/file-explorer';
+import { CloseOptions } from '@deephaven/golden-layout';
 import Log from '@deephaven/log';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useDispatch } from 'react-redux';
@@ -298,7 +299,7 @@ export function ConsolePlugin(
   );
 
   const closeFilePanel = useCallback(
-    (fileMetadata, isOverwrite = false) => {
+    (fileMetadata, options?: CloseOptions) => {
       log.debug('closeFilePanel', fileMetadata);
       const { id: fileId } = fileMetadata;
       let panelId = null;
@@ -313,7 +314,7 @@ export function ConsolePlugin(
         return;
       }
       unregisterFilePanel(fileMetadata, isPreview);
-      LayoutUtils.closeComponent(layout.root, { id: panelId }, isOverwrite);
+      LayoutUtils.closeComponent(layout.root, { id: panelId }, options);
     },
     [layout.root, openFileMap, previewFileMap, unregisterFilePanel]
   );
