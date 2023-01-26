@@ -15,6 +15,11 @@ export function getWebsocketUrl(): string {
   return `${baseUrl.protocol}//${baseUrl.host}`;
 }
 
+export function isAuthRequired(): boolean {
+  const searchParams = new URLSearchParams(window.location.search);
+  return searchParams.get('authRequired') != null;
+}
+
 /**
  * @returns New connection to the server
  */
@@ -62,6 +67,26 @@ export function createCoreClient(): CoreClient {
   log.info('createCoreClient', websocketUrl);
 
   return new dh.CoreClient(websocketUrl);
+}
+
+export async function requestAuthToken(): Promise<string> {
+  if (window.opener == null) {
+    throw new Error('window.opener is null, unable to send auth request.');
+  }
+  return new Promise(resolve => {
+    const listener = (event: MessageEvent<{ token: string }>) => {
+      const { data } = event;
+      log.info('Received message', data);
+      if (data?.token == null) {
+        log.info('Ignore received message', data);
+        return;
+      }
+      window.removeEventListener('message', listener);
+      resolve(data.token);
+    };
+    window.addEventListener('message', listener);
+    window.opener.postMessage('requestAuthToken', '*');
+  });
 }
 
 export default { createSessionWrapper };

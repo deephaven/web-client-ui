@@ -994,6 +994,7 @@ export interface FileContents {
 
 export interface LoginOptions {
   type: string;
+  token?: string;
 }
 
 export interface StorageService {
@@ -1016,6 +1017,7 @@ export interface CoreClientContructor {
 
 export interface CoreClient extends CoreClientContructor {
   login(options: LoginOptions): Promise<void>;
+  getAsIdeConnection(): Promise<IdeConnection>;
   getStorageService(): StorageService;
   getServerConfigValues(): [string, string][];
 }

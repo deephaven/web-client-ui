@@ -46,9 +46,10 @@ import { setLayoutStorage as setLayoutStorageAction } from '../redux/actions';
 import App from './App';
 import LocalWorkspaceStorage from '../storage/LocalWorkspaceStorage';
 import {
-  createConnection,
   createCoreClient,
   createSessionWrapper,
+  isAuthRequired,
+  requestAuthToken,
 } from './SessionUtils';
 import { PluginUtils } from '../plugins';
 import LayoutStorage from '../storage/LayoutStorage';
@@ -160,9 +161,25 @@ function AppInit(props: AppInitProps) {
         import.meta.env.npm_package_version,
         navigator.userAgent
       );
+
+      const coreClient = createCoreClient();
+
+      if (isAuthRequired() === true) {
+        log.info('Requesting auth token...');
+        const token = await requestAuthToken();
+        log.info('Login using auth token...', token);
+        await coreClient.login({
+          type: 'io.deephaven.proto.auth.Token',
+          token,
+        });
+      } else {
+        // Just login anonymously for now, use default user values
+        log.info('Login anonymously...');
+        await coreClient.login({ type: dh.CoreClient.LOGIN_TYPE_ANONYMOUS });
+      }
+
       const newPlugins = await loadPlugins();
-      const connection = createConnection();
-      const sessionWrapper = await loadSessionWrapper(connection);
+      const connection = await coreClient.getAsIdeConnection();
       connection.addEventListener(
         dh.IdeConnection.HACK_CONNECTION_FAILURE,
         event => {
@@ -172,12 +189,8 @@ function AppInit(props: AppInitProps) {
         }
       );
 
+      const sessionWrapper = await loadSessionWrapper(connection);
       const name = 'user';
-
-      const coreClient = createCoreClient();
-
-      // Just login anonymously for now, use default user values
-      await coreClient.login({ type: dh.CoreClient.LOGIN_TYPE_ANONYMOUS });
 
       const storageService = coreClient.getStorageService();
       const layoutStorage = new GrpcLayoutStorage(
