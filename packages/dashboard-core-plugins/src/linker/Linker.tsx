@@ -25,7 +25,6 @@ import {
   setActiveTool as setActiveToolAction,
   RootState,
 } from '@deephaven/redux';
-import { IrisGridModel } from '@deephaven/iris-grid';
 import {
   getIsolatedLinkerPanelIdForDashboard,
   getLinksForDashboard,
@@ -268,13 +267,11 @@ export class Linker extends Component<LinkerProps, LinkerState> {
     this.deleteLinks(linksToDelete);
   }
 
-  handleGridColumnSelect(
-    panel: PanelComponent,
-    model: IrisGridModel,
-    column: LinkColumn
-  ): void {
-    const { index } = column;
-    if (index !== undefined && !model.isFilterable(index)) {
+  handleGridColumnSelect(panel: PanelComponent, column: LinkColumn): void {
+    if (
+      column.description !== undefined &&
+      column.description.startsWith('Preview of type: ')
+    ) {
       log.debug2('Column is not filterable');
       return;
     }
@@ -661,37 +658,39 @@ export class Linker extends Component<LinkerProps, LinkerState> {
 
   isColumnSelectionValid(
     panel: PanelComponent,
-    tableColumn?: LinkColumn,
-    model?: IrisGridModel
+    tableColumn?: LinkColumn
   ): boolean {
     const { linkInProgress } = this.state;
     const { isolatedLinkerPanelId } = this.props;
+
+    if (tableColumn == null) {
+      if (linkInProgress?.start != null) {
+        // Link started, end point is not a valid target
+        this.updateLinkInProgressType(linkInProgress);
+      }
+      return false;
+    }
+
+    // TODO: Use preview/original type property when core/#3358 is completed
+    if (
+      tableColumn.description !== undefined &&
+      tableColumn.description?.startsWith('Preview of type: ')
+    ) {
+      log.debug2('Column is not filterable', tableColumn.description);
+      if (linkInProgress?.start != null) {
+        this.updateLinkInProgressType(linkInProgress, 'invalid');
+      }
+      return false;
+    }
 
     // Link not started yet - no need to update type
     if (linkInProgress?.start == null) {
       return true;
     }
 
-    if (tableColumn == null) {
-      // Link started, end point is not a valid target
-      this.updateLinkInProgressType(linkInProgress);
-      return false;
-    }
-
     const { isReversed, start } = linkInProgress;
     const panelId = LayoutUtils.getIdFromPanel(panel);
     if (panelId == null) {
-      return false;
-    }
-
-    const { index } = tableColumn;
-    if (
-      model !== undefined &&
-      index !== undefined &&
-      !model.isFilterable(index)
-    ) {
-      log.debug2('Column is not filterable');
-      this.updateLinkInProgressType(linkInProgress, 'invalid');
       return false;
     }
 

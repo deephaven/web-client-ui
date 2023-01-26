@@ -134,8 +134,7 @@ export interface IrisGridPanelProps {
   links: Link[];
   columnSelectionValidator?: (
     panel: PanelComponent,
-    tableColumn?: LinkColumn,
-    model?: IrisGridModel
+    tableColumn?: LinkColumn
   ) => boolean;
   onStateChange?: (irisGridState: IrisGridState, gridState: GridState) => void;
   onPanelStateUpdate?: (panelState: PanelState) => void;
@@ -632,9 +631,8 @@ export class IrisGridPanel extends PureComponent<
 
   isColumnSelectionValid(tableColumn: Column | null): boolean {
     const { columnSelectionValidator } = this.props;
-    const { model } = this.state;
-    if (columnSelectionValidator && model && tableColumn) {
-      return columnSelectionValidator(this, tableColumn, model);
+    if (columnSelectionValidator && tableColumn) {
+      return columnSelectionValidator(this, tableColumn);
     }
     return false;
   }
@@ -735,8 +733,7 @@ export class IrisGridPanel extends PureComponent<
 
   handleColumnSelected(column: Column): void {
     const { glEventHub } = this.props;
-    const { model } = this.state;
-    glEventHub.emit(IrisGridEvent.COLUMN_SELECTED, this, model, column);
+    glEventHub.emit(IrisGridEvent.COLUMN_SELECTED, this, column);
   }
 
   handleDataSelected(row: ModelIndex, dataMap: Record<string, unknown>): void {
