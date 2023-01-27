@@ -1,6 +1,6 @@
 import { arrayMove } from '@dnd-kit/sortable';
 import type { Column } from '@deephaven/jsapi-shim';
-import { GridUtils, ModelSizeMap, MoveOperation } from '@deephaven/grid';
+import { GridUtils, ModelIndex, MoveOperation } from '@deephaven/grid';
 import type ColumnHeaderGroup from '../../../ColumnHeaderGroup';
 import { isFlattenedTreeItem } from './types';
 import type { FlattenedItem, TreeItem, TreeItems } from './types';
@@ -32,7 +32,7 @@ function getTreeItem(
   movedColumns: MoveOperation[],
   columnHeaderGroupMap: Map<string, ColumnHeaderGroup>,
   name: string,
-  userColumnWidths: ModelSizeMap,
+  hiddenColumnSet: Set<ModelIndex>,
   selectedItems: Set<string>
 ): IrisGridTreeItem {
   const modelIndex = columns.findIndex(col => col.name === name);
@@ -55,7 +55,7 @@ function getTreeItem(
             movedColumns,
             columnHeaderGroupMap,
             childName,
-            userColumnWidths,
+            hiddenColumnSet,
             selectedItems
           )
         )
@@ -72,10 +72,7 @@ function getTreeItem(
         modelIndex: modelIndexes,
         visibleIndex: group.getVisibleRange(movedColumns),
         group,
-        isVisible: modelIndexes.some(
-          // If no user set width, assume it's visible
-          index => (userColumnWidths.get(index) ?? 1) > 0
-        ),
+        isVisible: modelIndexes.some(index => !hiddenColumnSet.has(index)),
       },
     };
   }
@@ -87,8 +84,7 @@ function getTreeItem(
     data: {
       modelIndex,
       visibleIndex: GridUtils.getVisibleIndex(modelIndex, movedColumns),
-      // If no user set width, assume it's visible
-      isVisible: (userColumnWidths.get(modelIndex) ?? 1) > 0,
+      isVisible: !hiddenColumnSet.has(modelIndex),
     },
   };
 }
@@ -97,7 +93,7 @@ export function getTreeItems(
   columns: Column[],
   movedColumns: MoveOperation[],
   columnHeaderGroups: ColumnHeaderGroup[],
-  userColumnWidths: ModelSizeMap,
+  hiddenColumns: ModelIndex[],
   selectedItems: string[]
 ): IrisGridTreeItem[] {
   const items: IrisGridTreeItem[] = [];
@@ -105,6 +101,7 @@ export function getTreeItems(
   const groupMap = new Map(
     columnHeaderGroups.map(group => [group.name, group])
   );
+  const hiddenColumnSet = new Set(hiddenColumns);
 
   let visibleIndex = 0;
   while (visibleIndex < columns.length) {
@@ -123,7 +120,7 @@ export function getTreeItems(
       movedColumns,
       groupMap,
       group ? group.name : columnName,
-      userColumnWidths,
+      hiddenColumnSet,
       selectedItemsSet
     );
 

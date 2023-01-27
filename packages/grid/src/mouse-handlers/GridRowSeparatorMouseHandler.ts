@@ -43,6 +43,8 @@ class GridRowSeparatorMouseHandler extends GridSeparatorMouseHandler {
 
   calculatedSizesProperty = 'calculatedRowHeights' as const;
 
+  initialSizesProperty = 'initialRowHeights' as const;
+
   modelIndexesProperty = 'modelRows' as const;
 
   firstIndexProperty = 'firstRow' as const;
