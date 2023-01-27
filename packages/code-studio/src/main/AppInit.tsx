@@ -46,10 +46,12 @@ import { setLayoutStorage as setLayoutStorageAction } from '../redux/actions';
 import App from './App';
 import LocalWorkspaceStorage from '../storage/LocalWorkspaceStorage';
 import {
+  AUTH_TYPE,
+  createConnection,
   createCoreClient,
   createSessionWrapper,
-  isAuthRequired,
-  requestAuthToken,
+  getAuthType,
+  getLoginOptions,
 } from './SessionUtils';
 import { PluginUtils } from '../plugins';
 import LayoutStorage from '../storage/LayoutStorage';
@@ -163,22 +165,16 @@ function AppInit(props: AppInitProps) {
       );
 
       const coreClient = createCoreClient();
-
-      if (isAuthRequired() === true) {
-        log.info('Requesting auth token...');
-        const token = await requestAuthToken();
-        log.info('Login using auth token...', token);
-        await coreClient.login({
-          type: 'io.deephaven.proto.auth.Token',
-          token,
-        });
-      } else {
-        log.info('Login anonymously...');
-        await coreClient.login({ type: dh.CoreClient.LOGIN_TYPE_ANONYMOUS });
-      }
+      const authType = getAuthType();
+      log.info(`Login using auth type ${authType}...`);
+      await coreClient.login(await getLoginOptions(authType));
 
       const newPlugins = await loadPlugins();
-      const connection = await coreClient.getAsIdeConnection();
+      const connection = await (authType === AUTH_TYPE.ANONYMOUS &&
+      coreClient.getAsIdeConnection == null
+        ? // Fall back to the old API for anonymous auth if the new API is not supported
+          createConnection()
+        : coreClient.getAsIdeConnection());
       connection.addEventListener(
         dh.IdeConnection.HACK_CONNECTION_FAILURE,
         event => {

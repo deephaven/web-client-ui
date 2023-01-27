@@ -1,10 +1,19 @@
 import { SessionWrapper } from '@deephaven/dashboard-core-plugins';
-import dh, { CoreClient, IdeConnection } from '@deephaven/jsapi-shim';
+import dh, {
+  CoreClient,
+  IdeConnection,
+  LoginOptions,
+} from '@deephaven/jsapi-shim';
 import Log from '@deephaven/log';
 import shortid from 'shortid';
 import NoConsolesError from './NoConsolesError';
 
 const log = Log.module('SessionUtils');
+
+export enum AUTH_TYPE {
+  ANONYMOUS = 'anonymous',
+  PARENT = 'parent',
+}
 
 export function getBaseUrl(): URL {
   return new URL(import.meta.env.VITE_CORE_API_URL ?? '', `${window.location}`);
@@ -15,9 +24,14 @@ export function getWebsocketUrl(): string {
   return `${baseUrl.protocol}//${baseUrl.host}`;
 }
 
-export function isAuthRequired(): boolean {
+export function getAuthType(): AUTH_TYPE {
   const searchParams = new URLSearchParams(window.location.search);
-  return searchParams.get('authRequired') != null;
+  switch (searchParams.get('authProvider')) {
+    case 'parent':
+      return AUTH_TYPE.PARENT;
+    default:
+      return AUTH_TYPE.ANONYMOUS;
+  }
 }
 
 /**
@@ -69,24 +83,42 @@ export function createCoreClient(): CoreClient {
   return new dh.CoreClient(websocketUrl);
 }
 
-export async function requestAuthToken(): Promise<string> {
+export async function requestParentLoginOptions(): Promise<LoginOptions> {
   if (window.opener == null) {
     throw new Error('window.opener is null, unable to send auth request.');
   }
   return new Promise(resolve => {
-    const listener = (event: MessageEvent<{ token: string }>) => {
+    const listener = (
+      event: MessageEvent<{
+        message: string;
+        payload: LoginOptions;
+      }>
+    ) => {
       const { data } = event;
       log.info('Received message', data);
-      if (data?.token == null) {
+      if (data?.message !== 'loginOptions') {
         log.info('Ignore received message', data);
         return;
       }
       window.removeEventListener('message', listener);
-      resolve(data.token);
+      resolve(data.payload);
     };
     window.addEventListener('message', listener);
-    window.opener.postMessage('requestAuthToken', '*');
+    window.opener.postMessage('requestLoginOptionsFromParent', '*');
   });
+}
+
+export async function getLoginOptions(
+  authType: AUTH_TYPE
+): Promise<LoginOptions> {
+  switch (authType) {
+    case AUTH_TYPE.PARENT:
+      return requestParentLoginOptions();
+    case AUTH_TYPE.ANONYMOUS:
+      return { type: dh.CoreClient.LOGIN_TYPE_ANONYMOUS };
+    default:
+      throw new Error(`Unknown auth type: ${authType}`);
+  }
 }
 
 export default { createSessionWrapper };
