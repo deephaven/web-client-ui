@@ -18,6 +18,7 @@ import type {
   Row,
   Sort,
   Table,
+  ValueTypeUnion,
 } from '@deephaven/jsapi-shim';
 import { Formatter } from '@deephaven/jsapi-utils';
 import { ColumnName, UITotalsTableConfig, PendingDataMap } from './CommonTypes';
@@ -491,7 +492,7 @@ abstract class IrisGridModel<
   abstract seekRow(
     startRow: number,
     column: Column,
-    valueType: string,
+    valueType: ValueTypeUnion,
     value: unknown,
     insensitive?: boolean,
     contains?: boolean,

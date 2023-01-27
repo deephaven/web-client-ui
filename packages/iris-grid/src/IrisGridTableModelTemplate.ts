@@ -26,6 +26,7 @@ import dh, {
   TableTemplate,
   TableViewportSubscription,
   TotalsTable,
+  ValueTypeUnion,
   ViewportData,
 } from '@deephaven/jsapi-shim';
 import Log from '@deephaven/log';
@@ -77,7 +78,7 @@ class IrisGridTableModelTemplate<
   seekRow(
     startRow: number,
     column: Column,
-    valueType: string,
+    valueType: ValueTypeUnion,
     value: unknown,
     insensitive?: boolean | undefined,
     contains?: boolean | undefined,

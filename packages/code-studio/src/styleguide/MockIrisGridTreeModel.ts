@@ -17,7 +17,11 @@ import {
   UITreeRow,
   ColumnHeaderGroup,
 } from '@deephaven/iris-grid';
-import type { Column, CustomColumn } from '@deephaven/jsapi-shim';
+import type {
+  Column,
+  CustomColumn,
+  ValueTypeUnion,
+} from '@deephaven/jsapi-shim';
 import { Formatter } from '@deephaven/jsapi-utils';
 
 // We need to cast our CustomEvent so it's happy with event-target-shim
@@ -305,7 +309,7 @@ class MockIrisGridTreeModel
   seekRow(
     startRow: number,
     column: Column,
-    valueType: string,
+    valueType: ValueTypeUnion,
     value: unknown,
     insensitive?: boolean | undefined,
     contains?: boolean | undefined,

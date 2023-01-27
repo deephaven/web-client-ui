@@ -8,6 +8,7 @@ import {
   InputTable,
   LayoutHints,
   Table,
+  ValueTypeUnion,
 } from '@deephaven/jsapi-shim';
 import Log from '@deephaven/log';
 import { Formatter, TableUtils } from '@deephaven/jsapi-utils';
@@ -358,7 +359,7 @@ class IrisGridTableModel extends IrisGridTableModelTemplate<Table, UIRow> {
   async seekRow(
     startRow: number,
     column: Column,
-    valueType: string,
+    valueType: ValueTypeUnion,
     value: unknown,
     insensitive?: boolean,
     contains?: boolean,

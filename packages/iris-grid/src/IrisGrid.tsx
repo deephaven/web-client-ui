@@ -3248,7 +3248,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
           rowIndex = await model.seekRow(
             isBackwards === true ? searchFromRow - 1 : searchFromRow + 1,
             selectedColumn,
-            'String',
+            dh.ValueType.STRING,
             inputString,
             isEquals,
             isContains,
@@ -3265,7 +3265,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
           rowIndex = await model.seekRow(
             isBackwards === true ? searchFromRow - 1 : searchFromRow + 1,
             selectedColumn,
-            selectedColumn.type,
+            dh.ValueType.DATETIME,
             startDate,
             undefined,
             undefined,
@@ -3283,7 +3283,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
             rowIndex = await model.seekRow(
               searchFromRow,
               selectedColumn,
-              'number',
+              dh.ValueType.NUMBER,
               inputValue,
               undefined,
               undefined,
@@ -3293,7 +3293,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
             rowIndex = await model.seekRow(
               searchFromRow,
               selectedColumn,
-              'String',
+              dh.ValueType.STRING,
               inputString,
               undefined,
               undefined,
@@ -3306,7 +3306,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
           rowIndex = await model.seekRow(
             searchFromRow,
             selectedColumn,
-            'String',
+            dh.ValueType.STRING,
             inputString,
             undefined,
             undefined,

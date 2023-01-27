@@ -34,6 +34,7 @@ export interface dh {
   storage: {
     FileContents: FileContentsStatic;
   };
+  ValueType: ValueTypeStatic;
 }
 
 const VariableType = {
@@ -46,6 +47,17 @@ const VariableType = {
   HIERARCHICALTABLE: 'HierarchicalTable',
   PARTITIONEDTABLE: 'PartitionedTable',
 } as const;
+
+export interface ValueTypeStatic {
+  STRING: 'String';
+  NUMBER: 'Number';
+  DOUBLE: 'Double';
+  LONG: 'Long';
+  DATETIME: 'Datetime';
+  BOOLEAN: 'Boolean';
+}
+
+export type ValueTypeUnion = typeof dh.ValueType[keyof typeof dh.ValueType];
 
 export interface CalendarStatic {
   DayOfWeek: { values: () => string[] };
@@ -700,7 +712,7 @@ export interface Table extends TableTemplate<Table>, TableStatic {
   seekRow(
     startRow: number,
     column: Column,
-    valueType: string,
+    valueType: ValueTypeUnion,
     value: unknown,
     insensitive?: boolean,
     contains?: boolean,
