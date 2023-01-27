@@ -351,7 +351,7 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
   initTabCloseOverride() {
     const { glContainer } = this.props;
     glContainer.beforeClose((options?: CloseOptions) => {
-      if (options !== undefined && options.force === true) {
+      if (options?.force === true) {
         return true;
       }
 

@@ -10,6 +10,7 @@ import type LayoutManager from '../LayoutManager';
 import EventEmitter from '../utils/EventEmitter';
 
 export type CloseOptions = { force?: boolean };
+
 export default class ItemContainer<
   C extends ComponentConfig | ReactComponentConfig = ComponentConfig
 > extends EventEmitter {
@@ -154,16 +155,11 @@ export default class ItemContainer<
    * @param options Options to pass into the beforeClose handler
    */
   close(options?: CloseOptions) {
-    if (this.beforeCloseHandler) {
-      // Only close if the beforeCloseHandler returns true
-      if (this.beforeCloseHandler(options)) {
-        if (this._config.isClosable) {
-          this.emit('close');
-          this.parent.close();
-        }
-      }
-    } else if (this._config.isClosable) {
-      // If there is no handler, proceed as normal and close if the container is closable
+    // Not closable, don't do anything
+    if (!this._config.isClosable) return;
+
+    // If beforeCloseHandler returns true or if the handler doesn't exist, close
+    if (this.beforeCloseHandler?.(options) ?? true) {
       this.emit('close');
       this.parent.close();
     }
@@ -173,7 +169,7 @@ export default class ItemContainer<
    * Sets the beforeCloseHandler to callback
    * @param callback Callback function to call before closing
    */
-  beforeClose(callback: (options?: CloseOptions) => boolean) {
+  beforeClose(callback: ((options?: CloseOptions) => boolean) | null) {
     this.beforeCloseHandler = callback;
   }
 

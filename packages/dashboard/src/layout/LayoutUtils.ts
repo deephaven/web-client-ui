@@ -603,7 +603,7 @@ class LayoutUtils {
     const maintainFocusElement = document.activeElement; // attempt to retain focus after dom manipulation, which can break focus
     if (oldContentItem) {
       if (isComponent(oldContentItem)) {
-        oldContentItem.container.close(closeOptions ?? undefined);
+        oldContentItem.container.close(closeOptions);
       } else {
         stack.removeChild(oldContentItem);
       }
