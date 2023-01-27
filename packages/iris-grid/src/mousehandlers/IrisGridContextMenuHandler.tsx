@@ -67,9 +67,9 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
 
   static GROUP_FILTER = ContextActions.groups.high + 50;
 
-  static GROUP_EXPAND_COLLAPSE = ContextActions.groups.high + 51;
+  static GROUP_EXPAND_COLLAPSE = ContextActions.groups.high + 55;
 
-  static GROUP_GOTO = ContextActions.groups.high + 52;
+  static GROUP_GOTO = ContextActions.groups.high + 60;
 
   static GROUP_SORT = ContextActions.groups.high + 75;
 

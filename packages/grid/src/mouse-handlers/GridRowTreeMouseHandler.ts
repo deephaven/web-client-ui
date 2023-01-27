@@ -60,11 +60,7 @@ class GridRowTreeMouseHandler extends GridMouseHandler {
     if (GridRowTreeMouseHandler.isInTreeBox(gridPoint, grid)) {
       const { row } = gridPoint;
       if (row !== null) {
-        if (event.ctrlKey || event.metaKey) {
-          grid.toggleRowExpanded(row, true);
-        } else {
-          grid.toggleRowExpanded(row, false);
-        }
+        grid.toggleRowExpanded(row, event.ctrlKey || event.metaKey);
         return true;
       }
     }
