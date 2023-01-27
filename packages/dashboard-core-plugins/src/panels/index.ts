@@ -18,3 +18,4 @@ export * from './PandasPanel';
 export { default as Panel } from './Panel';
 export { default as WidgetPanel } from './WidgetPanel';
 export { default as WidgetPanelTooltip } from './WidgetPanelTooltip';
+export { default as MockFileStorage } from './MockFileStorage';
