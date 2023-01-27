@@ -43,6 +43,7 @@ import LinkerUtils, {
   LinkColumn,
   LinkFilterMap,
   LinkType,
+  isLinkableColumn,
 } from './LinkerUtils';
 
 const log = Log.module('Linker');
@@ -268,6 +269,10 @@ export class Linker extends Component<LinkerProps, LinkerState> {
   }
 
   handleGridColumnSelect(panel: PanelComponent, column: LinkColumn): void {
+    if (!isLinkableColumn(column)) {
+      log.debug2('Column is not filterable');
+      return;
+    }
     this.columnSelected(panel, column);
   }
 
@@ -656,15 +661,26 @@ export class Linker extends Component<LinkerProps, LinkerState> {
     const { linkInProgress } = this.state;
     const { isolatedLinkerPanelId } = this.props;
 
+    if (tableColumn == null) {
+      if (linkInProgress?.start != null) {
+        // Link started, end point is not a valid target
+        this.updateLinkInProgressType(linkInProgress);
+      }
+      return false;
+    }
+
+    // TODO: Use preview/original type property when core/#3358 is completed
+    if (!isLinkableColumn(tableColumn)) {
+      log.debug2('Column is not filterable', tableColumn.description);
+      if (linkInProgress?.start != null) {
+        this.updateLinkInProgressType(linkInProgress, 'invalid');
+      }
+      return false;
+    }
+
     // Link not started yet - no need to update type
     if (linkInProgress?.start == null) {
       return true;
-    }
-
-    if (tableColumn == null) {
-      // Link started, end point is not a valid target
-      this.updateLinkInProgressType(linkInProgress);
-      return false;
     }
 
     const { isReversed, start } = linkInProgress;
