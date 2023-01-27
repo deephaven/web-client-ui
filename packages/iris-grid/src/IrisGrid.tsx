@@ -2979,7 +2979,11 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     }
 
     this.setState({ customColumns });
-    this.startLoading('Applying custom columns...');
+    if (customColumns.length > 0) {
+      // If there are no custom columns, the change handler never fires
+      // This causes the loader to stay until canceled by the user
+      this.startLoading('Applying custom columns...');
+    }
   }
 
   handleCustomColumnsChanged(): void {
