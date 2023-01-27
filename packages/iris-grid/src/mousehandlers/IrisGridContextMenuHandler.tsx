@@ -22,7 +22,6 @@ import {
   GridPoint,
   isEditableGridModel,
   ModelIndex,
-  VisibleIndex,
 } from '@deephaven/grid';
 import dh, {
   Column,
@@ -185,13 +184,16 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
     this.debouncedUpdateCustomFormat.flush();
   }
 
-  getHeaderActions(modelColumn: number, gridPoint: GridPoint): ContextAction[] {
+  getHeaderActions(
+    modelIndex: ModelIndex,
+    gridPoint: GridPoint
+  ): ContextAction[] {
     const { irisGrid } = this;
-    const { column: columnIndex } = gridPoint;
-    assertNotNull(columnIndex);
+    const { column: visibleIndex } = gridPoint;
+    assertNotNull(visibleIndex);
     const { model } = irisGrid.props;
     const { columns } = model;
-    const column = columns[modelColumn];
+    const column = columns[modelIndex];
 
     const actions = [] as ContextAction[];
 
@@ -212,23 +214,26 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
     } = theme;
 
     const modelSort = model.sort;
-    const columnSort = TableUtils.getSortForColumn(modelSort, modelColumn);
+    const columnSort = TableUtils.getSortForColumn(modelSort, modelIndex);
     const hasReverse = reverseType !== TableUtils.REVERSE_TYPE.NONE;
     const { userColumnWidths } = metrics;
     const isColumnHidden = [...userColumnWidths.values()].some(
       columnWidth => columnWidth === 0
     );
-    const isColumnFrozen = model.isColumnFrozen(columnIndex as VisibleIndex);
+    const isColumnFreezable =
+      model.getColumnHeaderParentGroup(modelIndex, 0) === undefined;
+    const isColumnFrozen = model.isColumnFrozen(modelIndex);
     actions.push({
       title: 'Hide Column',
       group: IrisGridContextMenuHandler.GROUP_HIDE_COLUMNS,
       action: () => {
-        this.irisGrid.hideColumnByVisibleIndex(columnIndex as VisibleIndex);
+        this.irisGrid.hideColumnByVisibleIndex(visibleIndex);
       },
     });
     actions.push({
       title: isColumnFrozen ? 'Unfreeze Column' : 'Freeze Column',
       group: IrisGridContextMenuHandler.GROUP_HIDE_COLUMNS,
+      disabled: !isColumnFreezable,
       action: () => {
         if (isColumnFrozen) {
           this.irisGrid.unFreezeColumnByColumnName(column.name);
@@ -254,17 +259,17 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
       group: IrisGridContextMenuHandler.GROUP_FILTER,
       order: 10,
       action: () => {
-        this.irisGrid.toggleFilterBar(columnIndex);
+        this.irisGrid.toggleFilterBar(visibleIndex);
       },
     });
     actions.push({
       title: 'Advanced Filters',
-      icon: advancedFilters.get(modelColumn) ? dhFilterFilled : vsFilter,
+      icon: advancedFilters.get(modelIndex) ? dhFilterFilled : vsFilter,
       iconColor: filterIconColor,
       group: IrisGridContextMenuHandler.GROUP_FILTER,
       order: 20,
       action: () => {
-        this.irisGrid.handleAdvancedMenuOpened(columnIndex);
+        this.irisGrid.handleAdvancedMenuOpened(visibleIndex);
       },
     });
     actions.push({
@@ -288,7 +293,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
       iconColor: contextMenuSortIconColor,
       group: IrisGridContextMenuHandler.GROUP_SORT,
       order: 10,
-      actions: this.sortByActions(column, modelColumn, columnSort),
+      actions: this.sortByActions(column, modelIndex, columnSort),
     });
     actions.push({
       title: 'Add Additional Sort',
@@ -307,7 +312,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
         modelSort.length === 0,
       group: IrisGridContextMenuHandler.GROUP_SORT,
       order: 20,
-      actions: this.additionalSortActions(column, modelColumn),
+      actions: this.additionalSortActions(column, modelIndex),
     });
     actions.push({
       title: 'Clear Table Sorting',
@@ -317,7 +322,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
       group: IrisGridContextMenuHandler.GROUP_SORT,
       action: () => {
         this.irisGrid.sortColumn(
-          columnIndex,
+          visibleIndex,
           IrisGridContextMenuHandler.COLUMN_SORT_DIRECTION.none
         );
       },
@@ -347,7 +352,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
       title: 'Copy Column Name',
       group: IrisGridContextMenuHandler.GROUP_COPY,
       action: () => {
-        copyToClipboard(model.textForColumnHeader(modelColumn) ?? '').catch(e =>
+        copyToClipboard(model.textForColumnHeader(modelIndex) ?? '').catch(e =>
           log.error('Unable to copy header', e)
         );
       },
