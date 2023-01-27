@@ -18,6 +18,7 @@ import {
   Sort,
   Table,
   TreeTable,
+  ValueTypeUnion,
 } from '@deephaven/jsapi-shim';
 import {
   EditableGridModel,
@@ -666,6 +667,30 @@ class IrisGridProxyModel extends IrisGridModel {
 
   getColumnIndexByName(name: ColumnName): number | undefined {
     return this.model.getColumnIndexByName(name);
+  }
+
+  async seekRow(
+    startRow: number,
+    column: Column,
+    valueType: ValueTypeUnion,
+    value: unknown,
+    insensitive?: boolean,
+    contains?: boolean,
+    isBackwards?: boolean
+  ): Promise<number> {
+    return this.model.seekRow(
+      startRow,
+      column,
+      valueType,
+      value,
+      insensitive,
+      contains,
+      isBackwards
+    );
+  }
+
+  get isSeekRowAvailable(): boolean {
+    return this.model.isSeekRowAvailable;
   }
 }
 

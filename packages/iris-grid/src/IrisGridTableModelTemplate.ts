@@ -26,6 +26,7 @@ import dh, {
   TableTemplate,
   TableViewportSubscription,
   TotalsTable,
+  ValueTypeUnion,
   ViewportData,
 } from '@deephaven/jsapi-shim';
 import Log from '@deephaven/log';
@@ -73,6 +74,18 @@ class IrisGridTableModelTemplate<
   R extends UIRow = UIRow
 > extends IrisGridModel {
   static ROW_BUFFER_PAGES = 1;
+
+  seekRow(
+    startRow: number,
+    column: Column,
+    valueType: ValueTypeUnion,
+    value: unknown,
+    insensitive?: boolean | undefined,
+    contains?: boolean | undefined,
+    isBackwards?: boolean | undefined
+  ): Promise<number> {
+    throw new Error('Method not implemented.');
+  }
 
   export(): Promise<Table> {
     throw new Error('Method not implemented.');

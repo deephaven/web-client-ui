@@ -18,6 +18,7 @@ import type {
   Row,
   Sort,
   Table,
+  ValueTypeUnion,
 } from '@deephaven/jsapi-shim';
 import { Formatter } from '@deephaven/jsapi-utils';
 import { ColumnName, UITotalsTableConfig, PendingDataMap } from './CommonTypes';
@@ -487,6 +488,20 @@ abstract class IrisGridModel<
    * @returns A promise that resolves successfully when the operation is complete or rejects if there's an error
    */
   abstract delete(ranges: GridRange[]): Promise<void>;
+
+  abstract seekRow(
+    startRow: number,
+    column: Column,
+    valueType: ValueTypeUnion,
+    value: unknown,
+    insensitive?: boolean,
+    contains?: boolean,
+    isBackwards?: boolean
+  ): Promise<number>;
+
+  get isSeekRowAvailable(): boolean {
+    return false;
+  }
 
   abstract get columnHeaderGroups(): ColumnHeaderGroup[];
 

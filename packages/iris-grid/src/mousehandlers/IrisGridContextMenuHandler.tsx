@@ -557,7 +557,8 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
       shortcut: SHORTCUTS.TABLE.GOTO_ROW,
       group: IrisGridContextMenuHandler.GROUP_GOTO,
       order: 10,
-      action: () => this.irisGrid.toggleGotoRow(`${rowIndex + 1}`),
+      action: () =>
+        this.irisGrid.toggleGotoRow(`${rowIndex + 1}`, `${value}`, column.name),
     };
     actions.push(gotoRow);
 
