@@ -95,9 +95,9 @@ export async function requestParentLoginOptions(): Promise<LoginOptions> {
       }>
     ) => {
       const { data } = event;
-      log.info('Received message', data);
+      log.debug('Received message', data);
       if (data?.message !== 'loginOptions') {
-        log.info('Ignore received message', data);
+        log.debug('Ignore received message', data);
         return;
       }
       window.removeEventListener('message', listener);
