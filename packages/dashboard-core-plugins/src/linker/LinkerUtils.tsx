@@ -71,6 +71,14 @@ export function isLinkablePanel(panel: PanelComponent): panel is LinkablePanel {
   );
 }
 
+export function isLinkableColumn(column: LinkColumn): boolean {
+  // TODO: core/#3358 Use preview/original type property instead of checking description
+  return (
+    column.description === undefined ||
+    !column.description?.startsWith('Preview of type: ')
+  );
+}
+
 const log = Log.module('LinkerUtils');
 
 /**

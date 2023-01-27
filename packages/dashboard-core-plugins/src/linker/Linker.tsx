@@ -43,6 +43,7 @@ import LinkerUtils, {
   LinkColumn,
   LinkFilterMap,
   LinkType,
+  isLinkableColumn,
 } from './LinkerUtils';
 
 const log = Log.module('Linker');
@@ -268,10 +269,7 @@ export class Linker extends Component<LinkerProps, LinkerState> {
   }
 
   handleGridColumnSelect(panel: PanelComponent, column: LinkColumn): void {
-    if (
-      column.description !== undefined &&
-      column.description.startsWith('Preview of type: ')
-    ) {
+    if (!isLinkableColumn(column)) {
       log.debug2('Column is not filterable');
       return;
     }
@@ -672,10 +670,7 @@ export class Linker extends Component<LinkerProps, LinkerState> {
     }
 
     // TODO: Use preview/original type property when core/#3358 is completed
-    if (
-      tableColumn.description !== undefined &&
-      tableColumn.description?.startsWith('Preview of type: ')
-    ) {
+    if (!isLinkableColumn(tableColumn)) {
       log.debug2('Column is not filterable', tableColumn.description);
       if (linkInProgress?.start != null) {
         this.updateLinkInProgressType(linkInProgress, 'invalid');
