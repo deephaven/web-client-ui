@@ -78,7 +78,7 @@ class ChartModelFactory {
    * This causes TS issues in 1 or 2 spots. Once this is TS it can be returned to just FigureChartModel
    */
   static async makeModel(
-    settings: Record<string, unknown> | undefined,
+    settings: ChartModelSettings | undefined,
     figure: Figure,
     theme = ChartTheme
   ): Promise<ChartModel> {

@@ -77,6 +77,28 @@ type HydratedIrisGridState = Pick<
   metrics: Pick<GridMetrics, 'userColumnWidths' | 'userRowHeights'>;
 };
 
+export interface TableSettings {
+  quickFilters?: [
+    number,
+    {
+      text: string;
+    }
+  ][];
+  advancedFilters?: [
+    number,
+    {
+      options: AdvancedFilterOptions;
+    }
+  ][];
+  inputFilters?: InputFilter[];
+  sorts?: {
+    column: ModelIndex;
+    isAbs: boolean;
+    direction: SortDirection;
+  }[];
+  partition?: unknown;
+  partitionColumn?: ColumnName;
+}
 export interface DehydratedIrisGridState {
   advancedFilters: [
     number,
@@ -865,28 +887,7 @@ class IrisGridUtils {
    */
   static applyTableSettings(
     table: Table,
-    tableSettings: {
-      quickFilters?: [
-        number,
-        {
-          text: string;
-        }
-      ][];
-      advancedFilters?: [
-        number,
-        {
-          options: AdvancedFilterOptions;
-        }
-      ][];
-      inputFilters?: InputFilter[];
-      sorts?: {
-        column: ModelIndex;
-        isAbs: boolean;
-        direction: SortDirection;
-      }[];
-      partition?: unknown;
-      partitionColumn?: ColumnName;
-    },
+    tableSettings: TableSettings,
     timeZone: string
   ): void {
     const { columns } = table;

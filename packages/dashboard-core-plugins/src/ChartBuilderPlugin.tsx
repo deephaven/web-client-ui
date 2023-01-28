@@ -45,8 +45,7 @@ export function ChartBuilderPlugin(
     }) => {
       const { settings } = metadata;
       const makeModel = () =>
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        ChartModelFactory.makeModelFromSettings(settings as any, table);
+        ChartModelFactory.makeModelFromSettings(settings, table);
       const title = ChartUtils.titleFromSettings(settings);
 
       const config = {

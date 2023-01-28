@@ -67,8 +67,7 @@ export const createChartModel = async (
     };
     const figure = await connection.getObject(definition);
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return ChartModelFactory.makeModel(settings as any, figure);
+    return ChartModelFactory.makeModel(settings, figure);
   }
 
   const definition = {
