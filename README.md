@@ -77,7 +77,12 @@ If you encounter an issue specific to a browser, check that your browser is up t
 
 We use [lerna](https://github.com/lerna/lerna) and [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) to automatically handle incrementing the version, generate the changelog, and create the release.
 
-1. Generate a [GitHub Personal access token](https://github.com/settings/tokens) with the `public_repo` scope. Copy this token and replace `<token>` with it below.
+1. Generate a [GitHub Personal access token](https://github.com/settings/tokens):
+
+- Under `Repository Access`, select `Only select repositories` and add `deephaven/web-client-ui`.
+- Under `Repository Permissions`, set `Access: Read and write` for `Contents`. This will be necessary to push your version bump and create the release.
+- Copy the token created and replace `<token>` with it in the next step.
+
 2. Bump the version, update the changelog, and create a release: `GH_TOKEN=<token> npm run version-bump`
 
 After the release is created, you can go to the [actions page](https://github.com/deephaven/web-client-ui/actions) to see the publish action being kicked off.
