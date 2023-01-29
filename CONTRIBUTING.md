@@ -37,21 +37,22 @@ Over time, forks will get out of sync with the upstream repository. To stay up t
 
 ## Creating a Pull Request
 
-1) Follow the GitHub instructions for [Creating a Pull Request](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request).
+1. Follow the GitHub instructions for [Creating a Pull Request](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request).
    - Use `deephaven/web-client-ui` as the base repository.
    - Use your own fork, `<username>/web-client-ui` as the repository to push to.
-2) Fill in the information in the Pull Request:
+2. Fill in the information in the Pull Request:
    - If you know people who should be reviewers, add them as a reviewer
    - Add yourself as the Assignee
-   - Select one label depending on the change type:
-      - `bug`: Fixing a bug in an existing feature
-      - `enhancement`: Adding a new feature
-      - `internal`: Changes to the project config or build
-      - `documentation`: Documentation change only
-   - **Breaking Changes:** if your change breaks an existing API in such a way that users of the package affected will need to make some changes to migrate to the newer version, add the `breaking` label to the PR and include a section in the description saying `## Breaking Changes` and any migration instructions required.
+   - PR titles must follow the [Conventional Commits specification](https://www.conventionalcommits.org/en/v1.0.0/).
+     - The `type` provided must be one of [commitizen conventional commit types](https://github.com/commitizen/conventional-commit-types).
+     - The `scope` is not required.
+   - **BREAKING CHANGE:** if your change breaks an existing API in such a way that users of the package affected will need to make some changes to migrate to the newer version, add the `BREAKING CHANGE:` footer to the PR description, detailing the breakage and any migration instructions necessary, e.g.:
+   ```
+   BREAKING CHANGE: The API now takes a new parameter that must be provided.
+   ```
+   - **NOTE:** Do _not_ use the `!` notation for marking a breaking change - you must use the `BREAKING CHANGE:` footer and include details of the breakage/migration.
    - [Link the PR](https://docs.github.com/en/issues/tracking-your-work-with-issues/linking-a-pull-request-to-an-issue) with any associated issues
-3) Submit the PR
-
+3. Submit the PR
 
 ## Deephaven Contributor License Agreement (CLA)
 
