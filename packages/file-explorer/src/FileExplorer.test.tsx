@@ -1,5 +1,5 @@
 import React from 'react';
-import { act, render, screen } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { MockFileStorage } from '@deephaven/dashboard-core-plugins';
 import FileStorage, { FileStorageItem } from './FileStorage';
 import FileExplorer from './FileExplorer';
@@ -51,17 +51,29 @@ it('mounts and unmounts successfully without crashing', () => {
   renderFileExplorer(makeMockFileStorage());
 });
 
-it('should cancel when pressing cancel on the context menu for a file', async () => {
+// it('should cancel when pressing cancel on the context menu for a file', async () => {
+//   const files = makeFiles();
+//   let fileStorage;
+
+//   // act(() => {
+//   //   fileStorage = new MockFileStorage(files);
+//   // });
+
+//   fileStorage = new MockFileStorage(files);
+
+//   await renderFileExplorer(fileStorage);
+//   const foundItems = await screen.findAllByRole('listitem');
+//   expect(foundItems).toHaveLength(files.length);
+// });
+
+it('mounts properly and shows file list', async () => {
   const files = makeFiles();
-  let fileStorage;
 
-  act(() => {
-    fileStorage = new MockFileStorage(files);
-  });
+  const fileStorage = new MockFileStorage(files);
 
-  console.log(fileStorage);
+  renderFileExplorer(fileStorage);
 
-  await renderFileExplorer(fileStorage);
   const foundItems = await screen.findAllByRole('listitem');
+  screen.debug();
   expect(foundItems).toHaveLength(files.length);
 });
