@@ -44,7 +44,6 @@ function renderSectionContent({
   defaults = makeDefaults(),
   truncateNumbersWithPound = false,
 } = {}) {
-  // eslint-disable-next-line react/jsx-props-no-spreading
   return render(
     <FormattingSectionContent
       settings={settings as WorkspaceSettings}
@@ -84,12 +83,14 @@ describe('default decimal formatting', () => {
     unmount();
   });
 
-  it('updates settings when value is changed', () => {
+  it('updates settings when value is changed', async () => {
+    const user = userEvent.setup({ delay: null });
     const saveSettings = jest.fn();
     const { getByLabelText, unmount } = renderSectionContent({ saveSettings });
     const newFormat = '00.0';
-    // {selectall} to overwrite existing input value, otherwise appends
-    userEvent.type(getByLabelText('Decimal'), `{selectall}${newFormat}`);
+    const input = getByLabelText('Decimal');
+    await user.clear(input);
+    await user.type(input, newFormat);
 
     jest.runOnlyPendingTimers();
 
@@ -102,7 +103,8 @@ describe('default decimal formatting', () => {
     unmount();
   });
 
-  it('resets to default', () => {
+  it('resets to default', async () => {
+    const user = userEvent.setup({ delay: null });
     const saveSettings = jest.fn();
     const defaultFormatOptions = {
       defaultFormatString: DEFAULT_DECIMAL_STRING,
@@ -120,7 +122,7 @@ describe('default decimal formatting', () => {
     const element = screen.getByTestId('btn-reset-decimal');
     expect(element).not.toBeNull();
     assertNotNull(element);
-    userEvent.click(element);
+    await user.click(element);
 
     jest.runOnlyPendingTimers();
 
@@ -141,12 +143,15 @@ describe('default integer formatting', () => {
     unmount();
   });
 
-  it('updates settings when value is changed', () => {
+  it('updates settings when value is changed', async () => {
+    const user = userEvent.setup({ delay: null });
     const saveSettings = jest.fn();
     const { getByLabelText, unmount } = renderSectionContent({ saveSettings });
     const newFormat = '000,000';
 
-    userEvent.type(getByLabelText('Integer'), `{selectall}${newFormat}`);
+    const input = getByLabelText('Integer');
+    await user.clear(input);
+    await user.type(input, newFormat);
 
     jest.runOnlyPendingTimers();
 
@@ -159,7 +164,8 @@ describe('default integer formatting', () => {
     unmount();
   });
 
-  it('resets to default', () => {
+  it('resets to default', async () => {
+    const user = userEvent.setup({ delay: null });
     const saveSettings = jest.fn();
     const defaultFormatOptions = {
       defaultFormatString: DEFAULT_INTEGER_STRING,
@@ -177,7 +183,7 @@ describe('default integer formatting', () => {
     const element = screen.getByTestId('btn-reset-integer');
     expect(element).not.toBeNull();
     assertNotNull(element);
-    userEvent.click(element);
+    await user.click(element);
 
     jest.runOnlyPendingTimers();
 

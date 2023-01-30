@@ -3,7 +3,11 @@ import shortid from 'shortid';
 import isMatch from 'lodash.ismatch';
 import { DragEvent } from 'react';
 import Log from '@deephaven/log';
-import GoldenLayout, { isRoot, isStack } from '@deephaven/golden-layout';
+import GoldenLayout, {
+  isComponent,
+  isRoot,
+  isStack,
+} from '@deephaven/golden-layout';
 import type {
   ComponentConfig,
   Config,
@@ -14,6 +18,7 @@ import type {
   ReactComponentConfig,
   Stack,
   Tab,
+  CloseOptions,
 } from '@deephaven/golden-layout';
 import { assertNotNull } from '@deephaven/utils';
 import GoldenLayoutThemeExport from './GoldenLayoutThemeExport';
@@ -574,7 +579,11 @@ class LayoutUtils {
    * @param root The GoldenLayout root to search and close the component in
    * @param config The GoldenLayout component config definition to close, eg. { component: 'IrisGridPanel', id: 'table-t' }
    */
-  static closeComponent(root: ContentItem, config: LayoutConfig): void {
+  static closeComponent(
+    root: ContentItem,
+    config: LayoutConfig,
+    closeOptions?: CloseOptions
+  ): void {
     const stack = LayoutUtils.getStackForRoot(
       root,
       config,
@@ -593,12 +602,8 @@ class LayoutUtils {
     const oldContentItem = LayoutUtils.getContentItemInStack(stack, config);
     const maintainFocusElement = document.activeElement; // attempt to retain focus after dom manipulation, which can break focus
     if (oldContentItem) {
-      if (oldContentItem.isComponent) {
-        // container property exists on a contentItem if contentItem is a component,
-        // however, this is not included in the types for a contentitem, thus the casting
-        ((oldContentItem as unknown) as {
-          container: { close: () => void };
-        }).container.close();
+      if (isComponent(oldContentItem)) {
+        oldContentItem.container.close(closeOptions);
       } else {
         stack.removeChild(oldContentItem);
       }

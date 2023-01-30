@@ -34,6 +34,7 @@ export interface dh {
   storage: {
     FileContents: FileContentsStatic;
   };
+  ValueType: ValueTypeStatic;
 }
 
 const VariableType = {
@@ -43,7 +44,20 @@ const VariableType = {
   TABLE: 'Table',
   TABLEMAP: 'TableMap',
   TREETABLE: 'TreeTable',
+  HIERARCHICALTABLE: 'HierarchicalTable',
+  PARTITIONEDTABLE: 'PartitionedTable',
 } as const;
+
+export interface ValueTypeStatic {
+  STRING: 'String';
+  NUMBER: 'Number';
+  DOUBLE: 'Double';
+  LONG: 'Long';
+  DATETIME: 'Datetime';
+  BOOLEAN: 'Boolean';
+}
+
+export type ValueTypeUnion = typeof dh.ValueType[keyof typeof dh.ValueType];
 
 export interface CalendarStatic {
   DayOfWeek: { values: () => string[] };
@@ -134,6 +148,9 @@ export interface IdeSession extends Evented {
   ): Promise<Figure>;
   getObject(
     definition: VariableDefinition<typeof VariableType.TREETABLE>
+  ): Promise<TreeTable>;
+  getObject(
+    definition: VariableDefinition<typeof VariableType.HIERARCHICALTABLE>
   ): Promise<TreeTable>;
   getObject(definition: VariableDefinition): Promise<unknown>;
   onLogMessage(logHandler: (logItem: LogItem) => void): () => void;
@@ -400,7 +417,7 @@ export interface Chart extends Evented {
   readonly title: string;
   readonly titleFont: string;
   readonly titleColor: string;
-  readonly isShowLegend: boolean;
+  readonly showLegend: boolean;
   readonly legendFont: string;
   readonly legendColor: string;
   readonly is3d: boolean;
@@ -607,12 +624,12 @@ export interface ColumnGroup {
 }
 
 export interface LayoutHints {
-  areSavedLayoutsAllowed: boolean;
-  frontColumns: string[];
-  backColumns: string[];
-  hiddenColumns: string[];
-  frozenColumns: string[];
-  columnGroups: ColumnGroup[];
+  areSavedLayoutsAllowed?: boolean;
+  frontColumns?: string[];
+  backColumns?: string[];
+  hiddenColumns?: string[];
+  frozenColumns?: string[];
+  columnGroups?: ColumnGroup[];
   searchDisplayMode?: keyof SearchDisplayModeStatic;
 }
 
@@ -691,6 +708,16 @@ export interface Table extends TableTemplate<Table>, TableStatic {
   byExternal(keys: string[], dropKeys?: boolean): Promise<TableMap>;
 
   fireViewportUpdate(): void;
+
+  seekRow(
+    startRow: number,
+    column: Column,
+    valueType: ValueTypeUnion,
+    value: unknown,
+    insensitive?: boolean,
+    contains?: boolean,
+    isBackwards?: boolean
+  ): Promise<number>;
 }
 
 export interface TableViewportSubscription extends Evented {
@@ -845,6 +872,7 @@ export interface TableTemplate<T = Table> extends Evented {
 
 export interface TreeTable extends TableTemplate<TreeTable>, TreeTableStatic {
   readonly isIncludeConstituents: boolean;
+  readonly groupedColumns: Column[];
 
   expand(row: number): void;
   expand(row: TreeRow): void;
@@ -956,6 +984,9 @@ export interface IdeConnection
   getObject(
     definition: VariableDefinition<typeof VariableType.TREETABLE>
   ): Promise<TreeTable>;
+  getObject(
+    definition: VariableDefinition<typeof VariableType.HIERARCHICALTABLE>
+  ): Promise<TreeTable>;
   getObject(definition: VariableDefinition): Promise<unknown>;
   subscribeToFieldUpdates(
     param: (changes: VariableChanges) => void
@@ -985,6 +1016,7 @@ export interface FileContents {
 
 export interface LoginOptions {
   type: string;
+  token?: string;
 }
 
 export interface StorageService {
@@ -1007,6 +1039,7 @@ export interface CoreClientContructor {
 
 export interface CoreClient extends CoreClientContructor {
   login(options: LoginOptions): Promise<void>;
+  getAsIdeConnection(): Promise<IdeConnection>;
   getStorageService(): StorageService;
   getServerConfigValues(): [string, string][];
 }

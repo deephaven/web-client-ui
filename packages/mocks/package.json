@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/mocks",
-  "version": "0.23.0",
+  "version": "0.27.0",
   "description": "Deephaven Mocks for common libraries",
   "repository": {
     "type": "git",
@@ -12,7 +12,7 @@
   "type": "module",
   "main": "./src/index.js",
   "peerDependencies": {
-    "jest": "26.x"
+    "jest": "29.x"
   },
   "publishConfig": {
     "access": "public"

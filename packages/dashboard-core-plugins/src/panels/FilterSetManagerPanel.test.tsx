@@ -13,7 +13,7 @@ function makeGlComponent() {
 }
 
 function makeColumns(count = 30) {
-  const columns = [];
+  const columns: { index: number; name: string }[] = [];
   for (let i = 0; i < count; i += 1) {
     const column = { index: i, name: `${i}` };
     columns.push(column);
@@ -52,19 +52,21 @@ describe('FilterSetManagerPanel', () => {
   });
 
   it('Rejects empty filter set name', async () => {
+    const user = userEvent.setup();
     const {
       getAllByRole,
       getByPlaceholderText,
       getByText,
     } = renderFilterSetManagerPanel();
-    await userEvent.click(getByText('Capture filter set'));
+    await user.click(getByText('Capture filter set'));
     expect(getByText('Name captured set')).toBeVisible();
-    await userEvent.type(getByPlaceholderText('Enter name...'), '');
-    await userEvent.click(getAllByRole('button')[0]);
+    await user.clear(getByPlaceholderText('Enter name...'));
+    await user.click(getAllByRole('button')[0]);
     expect(getByText('Name cannot be empty')).toBeVisible();
   });
 
   it('Captures filter set correctly', async () => {
+    const user = userEvent.setup();
     const title = 'TEST SET';
     const setFilterSets = jest.fn();
     const {
@@ -72,20 +74,21 @@ describe('FilterSetManagerPanel', () => {
       getByPlaceholderText,
       getByText,
     } = renderFilterSetManagerPanel({ setFilterSets });
-    await userEvent.click(getByText('Capture filter set'));
+    await user.click(getByText('Capture filter set'));
     expect(getByText('Name captured set')).toBeVisible();
-    await userEvent.type(getByPlaceholderText('Enter name...'), title);
-    await userEvent.click(getAllByRole('button')[0]);
+    await user.type(getByPlaceholderText('Enter name...'), title);
+    await user.click(getAllByRole('button')[0]);
     expect(getByText('Edit filter sets')).toBeVisible();
     // Save and flip to the main screen
     expect(setFilterSets).not.toBeCalled();
-    await userEvent.click(getByText('Save'));
+    await user.click(getByText('Save'));
     expect(setFilterSets).toBeCalledWith(expect.anything(), [
       expect.objectContaining({ title, restoreFullState: false }),
     ]);
   });
 
   it('Captures filter set with Restore Full State checked', async () => {
+    const user = userEvent.setup();
     const title = 'TEST SET';
     const setFilterSets = jest.fn();
     const {
@@ -94,21 +97,22 @@ describe('FilterSetManagerPanel', () => {
       getByPlaceholderText,
       getByText,
     } = renderFilterSetManagerPanel({ setFilterSets });
-    await userEvent.click(getByText('Capture filter set'));
+    await user.click(getByText('Capture filter set'));
     expect(getByText('Name captured set')).toBeVisible();
-    await userEvent.type(getByPlaceholderText('Enter name...'), title);
-    await userEvent.click(getByLabelText('Restore full table state'));
-    await userEvent.click(getByTestId('rename-confirm-button'));
+    await user.type(getByPlaceholderText('Enter name...'), title);
+    await user.click(getByLabelText('Restore full table state'));
+    await user.click(getByTestId('rename-confirm-button'));
     expect(getByText('Edit filter sets')).toBeVisible();
     // Save and flip to the main screen
     expect(setFilterSets).not.toBeCalled();
-    await userEvent.click(getByText('Save'));
+    await user.click(getByText('Save'));
     expect(setFilterSets).toBeCalledWith(expect.anything(), [
       expect.objectContaining({ title, restoreFullState: true }),
     ]);
   });
 
   it('Applies filter set on button click and dropdown select', async () => {
+    const user = userEvent.setup();
     const filterSets = [
       {
         id: 'ID 1',
@@ -167,16 +171,16 @@ describe('FilterSetManagerPanel', () => {
     expect(dropdown).toHaveValue('ID 1');
 
     expect(setPanelStateMock).not.toBeCalled();
-    await userEvent.click(getByTestId('filter-apply-button'));
+    await user.click(getByTestId('filter-apply-button'));
     expect(setPanelStateMock).toBeCalled();
 
     expect(setStateOverridesMock).not.toBeCalled();
-    await userEvent.selectOptions(dropdown, 'ID 2');
+    await user.selectOptions(dropdown, 'ID 2');
     expect(dropdown).toHaveValue('ID 2');
     expect(setStateOverridesMock).toBeCalled();
 
     expect(setFiltersMock).not.toBeCalled();
-    await userEvent.selectOptions(dropdown, 'ID 3');
+    await user.selectOptions(dropdown, 'ID 3');
     expect(dropdown).toHaveValue('ID 3');
     expect(setFiltersMock).toBeCalled();
   });

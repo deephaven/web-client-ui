@@ -23,7 +23,7 @@ class GridVerticalScrollBarMouseHandler extends GridMouseHandler {
     }
     const top = Math.floor(rawTop);
     const topOffsetPercent = rawTop - top;
-    let rowHeight = metrics.visibleRowHeights.get(top);
+    let rowHeight = metrics.allRowHeights.get(top);
     if (rowHeight == null) {
       const metricState = grid.getMetricState();
       rowHeight = metricCalculator.getVisibleRowHeight(top, metricState);

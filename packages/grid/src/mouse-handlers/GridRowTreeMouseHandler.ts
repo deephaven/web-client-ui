@@ -18,10 +18,10 @@ class GridRowTreeMouseHandler extends GridMouseHandler {
       gridX,
       gridY,
       firstColumn,
-      visibleColumnXs,
-      visibleColumnWidths,
-      visibleRowHeights,
-      visibleRowYs,
+      allColumnXs,
+      allColumnWidths,
+      allRowHeights,
+      allRowYs,
       visibleRowTreeBoxes,
     } = metrics;
 
@@ -32,10 +32,10 @@ class GridRowTreeMouseHandler extends GridMouseHandler {
       x > gridX &&
       y > gridY
     ) {
-      const columnX = getOrThrow(visibleColumnXs, column);
-      const width = getOrThrow(visibleColumnWidths, column);
-      const rowY = getOrThrow(visibleRowYs, row);
-      const height = getOrThrow(visibleRowHeights, row);
+      const columnX = getOrThrow(allColumnXs, column);
+      const width = getOrThrow(allColumnWidths, column);
+      const rowY = getOrThrow(allRowYs, row);
+      const height = getOrThrow(allRowHeights, row);
       if (
         x >= gridX + columnX &&
         x <= gridX + columnX + width &&

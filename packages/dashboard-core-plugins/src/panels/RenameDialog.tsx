@@ -163,7 +163,6 @@ export default class RenameDialog extends PureComponent<
         onExited={onCancel}
         options={{
           placement: 'bottom',
-          modifiers: { preventOverflow: { boundariesElement: 'viewport' } },
         }}
         interactive
         closeOnBlur

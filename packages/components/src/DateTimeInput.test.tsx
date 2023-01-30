@@ -21,27 +21,38 @@ it('mounts and unmounts properly', () => {
   unmount();
 });
 
-it('trims trailing mask and spaces in the input', () => {
+it('trims trailing mask and spaces in the input', async () => {
+  const user = userEvent.setup();
   const onChange = jest.fn();
   const { unmount } = makeDateTimeInput({ onChange });
   const input: HTMLInputElement = screen.getByRole('textbox');
 
-  input.setSelectionRange(22, 22);
-  userEvent.type(input, '{backspace}');
-  input.setSelectionRange(25, 25);
-  userEvent.type(input, '{backspace}');
+  input.focus();
+  await user.type(input, '{Backspace}', {
+    skipClick: true,
+    initialSelectionStart: 20,
+    initialSelectionEnd: 23,
+  });
+
+  await user.type(input, '{Backspace}', {
+    initialSelectionStart: 24,
+    initialSelectionEnd: 27,
+  });
   expect(input.value).toEqual(
     `2022-02-22 00:00:00.${F}${F}${F}${Z}${F}${F}${F}${Z}000`
   );
 
-  input.setSelectionRange(29, 29);
-  userEvent.type(input, '{backspace}');
+  await user.type(input, '{Backspace}', {
+    initialSelectionStart: 28,
+    initialSelectionEnd: 31,
+  });
   expect(input.value).toEqual(`2022-02-22 00:00:00`);
 
   unmount();
 });
 
-it('adds missing trailing zeros', () => {
+it('adds missing trailing zeros', async () => {
+  const user = userEvent.setup();
   const onChange = jest.fn();
   const { unmount } = makeDateTimeInput({
     onChange,
@@ -49,19 +60,23 @@ it('adds missing trailing zeros', () => {
   });
   const input: HTMLInputElement = screen.getByRole('textbox');
 
-  input.setSelectionRange(22, 22);
-  userEvent.type(input, '1');
+  input.focus();
+  await user.type(input, '1', {
+    initialSelectionStart: 21,
+    initialSelectionEnd: 21,
+  });
   expect(input.value).toEqual(`2022-02-22 00:00:00.100`);
   expect(onChange).toBeCalledWith(`2022-02-22 00:00:00.100000000`);
 
-  userEvent.type(input, '{backspace}');
+  await user.keyboard('{Backspace}');
   expect(input.value).toEqual(`2022-02-22 00:00:00.${F}00`);
   expect(onChange).toBeCalledWith(`2022-02-22 00:00:00.000000000`);
 
   unmount();
 });
 
-it('fills missing time digits with zeros, strips zero-width spaces in onChange', () => {
+it('fills missing time digits with zeros, strips zero-width spaces in onChange', async () => {
+  const user = userEvent.setup();
   const onChange = jest.fn();
   const { unmount } = makeDateTimeInput({
     onChange,
@@ -69,11 +84,17 @@ it('fills missing time digits with zeros, strips zero-width spaces in onChange',
   });
   const input: HTMLInputElement = screen.getByRole('textbox');
 
-  input.setSelectionRange(22, 22);
-  userEvent.type(input, '{backspace}');
+  input.focus();
+  await user.type(input, '{Backspace}', {
+    skipClick: true,
+    initialSelectionStart: 20,
+    initialSelectionEnd: 23,
+  });
   onChange.mockClear();
-  input.setSelectionRange(15, 15);
-  userEvent.type(input, '{backspace}');
+  await user.type(input, '{Backspace}', {
+    initialSelectionStart: 14,
+    initialSelectionEnd: 16,
+  });
   expect(input.value).toEqual(
     `2022-02-22 11:${F}${F}:11.${F}${F}${F}${Z}111${Z}111`
   );
@@ -82,7 +103,8 @@ it('fills missing time digits with zeros, strips zero-width spaces in onChange',
   unmount();
 });
 
-it('does not fill in missing date digits', () => {
+it('does not fill in missing date digits', async () => {
+  const user = userEvent.setup();
   const onChange = jest.fn();
   const { unmount } = makeDateTimeInput({
     onChange,
@@ -90,8 +112,12 @@ it('does not fill in missing date digits', () => {
   });
   const input: HTMLInputElement = screen.getByRole('textbox');
 
-  input.setSelectionRange(5, 5);
-  userEvent.type(input, '{backspace}');
+  input.focus();
+  await user.type(input, '{Backspace}', {
+    skipClick: true,
+    initialSelectionStart: 5,
+    initialSelectionEnd: 7,
+  });
   expect(input.value).toEqual(`2022-${F}${F}-22 00:00:00.000`);
   expect(onChange).toBeCalledWith(`2022-${F}${F}-22 00:00:00.000000000`);
 

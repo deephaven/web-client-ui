@@ -37,7 +37,8 @@ it('renders without crashing', () => {
   makeConsoleStatusBarWrapper();
 });
 
-it('dropdown menu disappears on toggle', () => {
+it('dropdown menu disappears on toggle', async () => {
+  const user = userEvent.setup({ delay: null });
   const mockClick = jest.fn();
   const title = 'action';
   makeConsoleStatusBarWrapper(() => [
@@ -52,10 +53,10 @@ it('dropdown menu disappears on toggle', () => {
   const button = document.querySelector(
     '.btn-overflow.btn-link-icon'
   ) as TargetElement;
-  userEvent.click(button);
+  await user.click(button);
   let dropdown: HTMLElement | null = screen.getByText(title);
   expect(dropdown).toBeTruthy();
-  userEvent.click(dropdown);
+  await user.click(dropdown);
   expect(mockClick).toBeCalled();
   jest.runAllTimers();
   dropdown = screen.queryByText(title);

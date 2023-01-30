@@ -15,15 +15,19 @@ export function isColumnHeaderGroup(x: unknown): x is ColumnHeaderGroup {
 }
 
 export default class ColumnHeaderGroup implements IColumnHeaderGroup {
+  static NEW_GROUP_PREFIX = ':newGroup';
+
   name: string;
 
   children: string[];
 
   depth: number;
 
+  parent?: string;
+
   color?: string;
 
-  childIndexes: (ModelIndex | ModelIndex[])[];
+  childIndexes: ModelIndex[];
 
   constructor({
     name,
@@ -31,18 +35,21 @@ export default class ColumnHeaderGroup implements IColumnHeaderGroup {
     color,
     depth,
     childIndexes,
+    parent,
   }: {
     name: string;
     children: string[];
     color?: string;
     depth: number;
-    childIndexes: (ModelIndex | ModelIndex[])[];
+    childIndexes: ModelIndex[];
+    parent?: string;
   }) {
     this.name = name;
     this.children = children;
     this.color = color;
     this.depth = depth;
     this.childIndexes = childIndexes;
+    this.parent = parent;
   }
 
   getVisibleRange = memoizeOne(
@@ -63,4 +70,23 @@ export default class ColumnHeaderGroup implements IColumnHeaderGroup {
       return [start, end];
     }
   );
+
+  setParent(parent: string | undefined): void {
+    this.parent = parent;
+  }
+
+  addChildren(children: string[]): void {
+    const newChildren = new Set(this.children.concat(children));
+    this.children = [...newChildren];
+  }
+
+  removeChildren(children: string[]): void {
+    const newChildren = new Set(this.children);
+    children.forEach(name => newChildren.delete(name));
+    this.children = [...newChildren];
+  }
+
+  get isNew(): boolean {
+    return this.name.startsWith(ColumnHeaderGroup.NEW_GROUP_PREFIX);
+  }
 }

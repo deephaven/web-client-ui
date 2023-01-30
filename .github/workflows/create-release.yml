@@ -18,7 +18,7 @@ jobs:
           git config --global user.name "GitHub CI"
       - uses: actions/setup-node@v3
         with:
-          node-version: '16.x'
+          node-version: '18.x'
         # Get the changelog and write it out to a file so it can be used by the create-release step later
       - name: Get changelog
         env:

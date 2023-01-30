@@ -635,9 +635,16 @@ class ChartUtils {
     type: PlotType | undefined,
     mode: PlotData['mode'] | undefined,
     name: string,
+    showLegend: boolean | null,
     orientation: 'h' | 'v' = ChartUtils.ORIENTATION.VERTICAL
   ): Partial<PlotData> {
-    return { type, mode, name, orientation };
+    return {
+      type,
+      mode,
+      name,
+      orientation,
+      showlegend: showLegend ?? undefined,
+    };
   }
 
   /**
@@ -652,6 +659,7 @@ class ChartUtils {
     series: Series,
     axisTypeMap: AxisTypeMap,
     seriesVisibility: boolean | 'legendonly',
+    showLegend: boolean | null = null,
     theme = ChartTheme
   ): Partial<PlotData> {
     const {
@@ -676,8 +684,13 @@ class ChartUtils {
       isShapesVisible ?? undefined
     );
     const orientation = ChartUtils.getPlotlySeriesOrientation(series);
-
-    const seriesData = ChartUtils.makeSeriesData(type, mode, name, orientation);
+    const seriesData = ChartUtils.makeSeriesData(
+      type,
+      mode,
+      name,
+      showLegend,
+      orientation
+    );
 
     ChartUtils.addSourcesToSeriesData(
       seriesData,

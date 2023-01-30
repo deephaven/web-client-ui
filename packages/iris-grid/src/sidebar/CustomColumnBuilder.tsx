@@ -6,6 +6,7 @@ import { DragDropContext, Droppable, DropResult } from 'react-beautiful-dnd';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Button, DragUtils, LoadingSpinner } from '@deephaven/components';
 import { dhNewCircleLargeFilled, vsWarning, vsPass } from '@deephaven/icons';
+import { DbNameValidator } from '@deephaven/utils';
 import CustomColumnInput from './CustomColumnInput';
 import './CustomColumnBuilder.scss';
 import IrisGridModel from '../IrisGridModel';
@@ -17,7 +18,7 @@ type Input = {
   name: string;
   formula: string;
 };
-interface CustomColumnBuilderProps {
+export interface CustomColumnBuilderProps {
   model: IrisGridModel;
   customColumns: string[];
   onSave: (columns: string[]) => void;
@@ -36,12 +37,6 @@ class CustomColumnBuilder extends Component<
   CustomColumnBuilderState
 > {
   static SUCCESS_SHOW_DURATION = 750;
-
-  static defaultProps = {
-    customColumns: [],
-    onSave: (): void => undefined,
-    onCancel: (): void => undefined,
-  };
 
   static makeCustomColumnInputEventKey(): string {
     return shortid.generate();
@@ -265,15 +260,15 @@ class CustomColumnBuilder extends Component<
     const { inputs } = this.state;
     // focus on drag handle
     if (shiftKey) {
-      (this.container?.querySelectorAll(`.btn-drag-handle`)[
+      (this.container?.querySelectorAll('.btn-drag-handle')[
         focusEditorIndex
       ] as HTMLButtonElement).focus();
       return;
     }
     if (focusEditorIndex === inputs.length - 1) {
-      (this.container?.querySelectorAll(`.btn-add-column`)[
-        focusEditorIndex
-      ] as HTMLButtonElement).focus();
+      (this.container?.querySelector(
+        '.btn-add-column'
+      ) as HTMLButtonElement)?.focus();
     } else {
       // focus on next column name input
       const nextFocusIndex = focusEditorIndex + 1;
@@ -284,7 +279,7 @@ class CustomColumnBuilder extends Component<
   }
 
   handleSaveClick(): void {
-    const { onSave } = this.props;
+    const { onSave, customColumns: originalCustomColumns } = this.props;
     const { inputs, isCustomColumnApplying } = this.state;
     if (isCustomColumnApplying) {
       return;
@@ -297,7 +292,11 @@ class CustomColumnBuilder extends Component<
       }
     });
     this.resetErrorMessage();
-    this.setState({ isCustomColumnApplying: true });
+    this.setState({
+      // If both are 0, then moving from no custom to no custom. The parent won't re-render to cancel the loading state
+      isCustomColumnApplying:
+        customColumns.length > 0 || originalCustomColumns.length > 0,
+    });
     onSave(customColumns);
   }
 
@@ -313,8 +312,14 @@ class CustomColumnBuilder extends Component<
   renderInputs(): ReactElement[] {
     const { inputs, hasRequestFailed } = this.state;
 
+    const nameCount = new Map();
+    inputs.forEach(({ name }) =>
+      nameCount.set(name, (nameCount.get(name) ?? 0) + 1)
+    );
+
     return inputs.map((input, index) => {
       const { eventKey, name, formula } = input;
+      const isDuplicate = (nameCount.get(name) ?? 0) > 1;
       return (
         <CustomColumnInput
           key={eventKey}
@@ -326,6 +331,7 @@ class CustomColumnBuilder extends Component<
           onDeleteColumn={this.handleDeleteColumn}
           onTabInEditor={this.handleEditorTabNavigation}
           invalid={hasRequestFailed}
+          isDuplicate={isDuplicate}
         />
       );
     });
@@ -334,6 +340,13 @@ class CustomColumnBuilder extends Component<
   renderSaveButton(): ReactElement {
     const { inputs, isCustomColumnApplying, isSuccessShowing } = this.state;
     const saveText = inputs.length > 1 ? 'Save Columns' : 'Save Column';
+    const areNamesValid = inputs.every(
+      ({ name }) => name === '' || DbNameValidator.isValidColumnName(name)
+    );
+    const filteredNames = inputs
+      .filter(({ name }) => name !== '')
+      .map(({ name }) => name);
+    const areNamesUnique = new Set(filteredNames).size === filteredNames.length;
 
     return (
       <Button
@@ -341,14 +354,18 @@ class CustomColumnBuilder extends Component<
         className={classNames('btn-apply', {
           'btn-spinner': isCustomColumnApplying,
         })}
-        disabled={isSuccessShowing || isCustomColumnApplying}
+        disabled={
+          isSuccessShowing ||
+          isCustomColumnApplying ||
+          !areNamesValid ||
+          !areNamesUnique
+        }
         onClick={this.handleSaveClick}
       >
         {isCustomColumnApplying && (
           <span>
             <LoadingSpinner />
             <span className="btn-normal-content">Applying</span>
-            <span className="btn-hover-content">Applying</span>
           </span>
         )}
         {!isSuccessShowing && !isCustomColumnApplying && saveText}
@@ -361,7 +378,7 @@ class CustomColumnBuilder extends Component<
     );
   }
 
-  render(): ReactElement {
+  render(): JSX.Element {
     const { onCancel } = this.props;
     const { errorMessage } = this.state;
     return (

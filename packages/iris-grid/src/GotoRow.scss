@@ -5,13 +5,17 @@
 }
 
 .goto-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
   background-color: $content-bg;
-  padding: $spacer-2;
-  border-top: $border-width solid black;
-  gap: $spacer-2;
+  border-top: $border-width solid $black;
+  display: block;
+
+  .goto-row-row {
+    display: flex;
+    padding: $spacer-2;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: $spacer-2;
+  }
 
   .goto-row-wrapper {
     display: flex;
@@ -20,7 +24,24 @@
     flex-wrap: wrap;
   }
 
+  .goto-row-text {
+    width: 10ch;
+  }
+
+  .goto-row-close {
+    display: flex;
+  }
+
   input {
     max-width: calc($input-padding-x + 12ch + $input-padding-x);
+  }
+  select {
+    max-width: calc($input-padding-x + 20ch + $input-padding-x);
+  }
+  .is-inactive {
+    color: $gray-400;
+  }
+  .goto-value-date-time-input {
+    min-width: 30ch;
   }
 }

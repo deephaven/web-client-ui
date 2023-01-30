@@ -111,7 +111,7 @@ export class GrpcFileStorage implements FileStorage {
     const itemDetails = allItems[0];
     return {
       filename: this.removeRoot(itemDetails.filename),
-      basename: this.removeRoot(itemDetails.basename),
+      basename: itemDetails.basename,
       id: this.removeRoot(itemDetails.filename),
       type: itemDetails.type,
     };

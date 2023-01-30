@@ -1,15 +1,22 @@
-import { TestUtils } from '@deephaven/utils';
-import { TreeTable } from '@deephaven/jsapi-shim';
+import { waitFor } from '@testing-library/react';
+import {
+  InputTable,
+  Table,
+  TableViewportSubscription,
+  TotalsTable,
+  TreeTable,
+} from '@deephaven/jsapi-shim';
 import { Formatter } from '@deephaven/jsapi-utils';
 import IrisGridModel from './IrisGridModel';
 import IrisGridTestUtils from './IrisGridTestUtils';
+import { UITotalsTableConfig } from './CommonTypes';
 
 jest.useFakeTimers();
 
 describe('viewport and subscription tests', () => {
-  let table = null;
-  let subscription = null;
-  let model = null;
+  let table: Table;
+  let subscription: TableViewportSubscription;
+  let model: IrisGridModel;
 
   beforeEach(() => {
     table = IrisGridTestUtils.makeTable();
@@ -17,7 +24,7 @@ describe('viewport and subscription tests', () => {
     table.setViewport = jest.fn(() => subscription);
     table.applyFilter = jest.fn(val => val);
     table.applySort = jest.fn(val => val);
-    table.applyCustomColumns = jest.fn(val => val);
+    table.applyCustomColumns = jest.fn(val => val as string[]);
     subscription.setViewport = jest.fn();
     subscription.close = jest.fn();
     model = IrisGridTestUtils.makeModel(table);
@@ -131,14 +138,12 @@ it('updates the model correctly when adding and removing a rollup config', async
   expect(mock).not.toHaveBeenCalled();
 
   model.rollupConfig = rollupConfig;
-  await TestUtils.flushPromises();
 
   expect(mock).toHaveBeenCalledWith(rollupConfig);
 
   mock.mockClear();
 
   model.rollupConfig = null;
-  await TestUtils.flushPromises();
 
   expect(table.rollup).not.toHaveBeenCalled();
 });
@@ -154,11 +159,15 @@ it('closes the table correctly when the model is closed', () => {
 });
 
 describe('totals table tests', () => {
-  const TOTALS_CONFIG = { operationMap: { 1: ['Max', 'Min'] } };
+  const TOTALS_CONFIG: UITotalsTableConfig = {
+    operationMap: { 1: ['Max', 'Min'] },
+    operationOrder: [],
+    showOnTop: true,
+  };
 
-  let table = null;
-  let totalsTable = null;
-  let model = null;
+  let table: Table;
+  let totalsTable: TotalsTable;
+  let model: IrisGridModel;
 
   beforeEach(() => {
     table = IrisGridTestUtils.makeTable();
@@ -174,21 +183,19 @@ describe('totals table tests', () => {
   it('opens a totals table correctly and closes it when done', async () => {
     model.totalsConfig = TOTALS_CONFIG;
     expect(table.getTotalsTable).toHaveBeenCalledWith(TOTALS_CONFIG);
-    await TestUtils.flushPromises();
 
     model.close();
 
-    expect(table.close).toHaveBeenCalled();
+    await waitFor(() => expect(table.close).toHaveBeenCalled());
     expect(totalsTable.close).toHaveBeenCalled();
   });
 
   it('closes the totals table correctly after nulling the config', async () => {
     model.totalsConfig = TOTALS_CONFIG;
-    await TestUtils.flushPromises();
 
     model.totalsConfig = null;
 
-    expect(table.close).not.toHaveBeenCalled();
+    await waitFor(() => expect(table.close).not.toHaveBeenCalled());
     expect(totalsTable.close).toHaveBeenCalled();
   });
 
@@ -200,24 +207,23 @@ describe('totals table tests', () => {
     );
 
     model.totalsConfig = TOTALS_CONFIG;
-    await TestUtils.flushPromises();
 
-    expect(listener).toHaveBeenCalled();
+    await waitFor(() => expect(listener).toHaveBeenCalled());
   });
 });
 
 describe('pending new rows tests', () => {
   const TABLE_SIZE = 100;
   const PENDING_ROW_COUNT = 50;
-  let table = null;
-  let inputTable = null;
-  let model = null;
+  let table: Table;
+  let inputTable: InputTable;
+  let model: IrisGridModel;
 
   beforeEach(() => {
-    table = IrisGridTestUtils.makeTable(
-      IrisGridTestUtils.makeColumns(),
-      TABLE_SIZE
-    );
+    table = IrisGridTestUtils.makeTable({
+      columns: IrisGridTestUtils.makeColumns(),
+      size: TABLE_SIZE,
+    });
     table.close = jest.fn();
 
     inputTable = IrisGridTestUtils.makeInputTable(table.columns.slice(0, 3));

@@ -1,13 +1,13 @@
-import React, { PureComponent, ReactElement } from 'react';
+import React, { useCallback } from 'react';
 import classNames from 'classnames';
 import { Draggable } from 'react-beautiful-dnd';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { Button, Tooltip } from '@deephaven/components';
+import { Button } from '@deephaven/components';
 import { vsTrash, vsGripper } from '@deephaven/icons';
+import { DbNameValidator } from '@deephaven/utils';
 import InputEditor from './InputEditor';
 import { CustomColumnKey } from './CustomColumnBuilder';
 
-interface CustomColumnInputProps {
+export interface CustomColumnInputProps {
   eventKey: string;
   inputIndex: number;
   name: string;
@@ -20,85 +20,66 @@ interface CustomColumnInputProps {
   onDeleteColumn: (eventKey: string) => void;
   onTabInEditor: (editorIndex: number, shiftKey: boolean) => void;
   invalid: boolean;
+  isDuplicate: boolean;
 }
-class CustomColumnInput extends PureComponent<
-  CustomColumnInputProps,
-  Record<string, never>
-> {
-  static INPUT_TYPE = {
-    NAME: 'name',
-    FORMULA: 'formula',
-  };
 
-  static defaultProps = {
-    name: '',
-    inputIndex: 0,
-    formula: '',
-    onChange: (): void => undefined,
-    onDeleteColumn: (): void => undefined,
-    onTabInEditor: (): void => undefined,
-    invalid: false,
-  };
+const INPUT_TYPE = Object.freeze({
+  NAME: 'name',
+  FORMULA: 'formula',
+});
 
-  constructor(props: CustomColumnInputProps) {
-    super(props);
-    this.handleFormulaEditorContentChanged = this.handleFormulaEditorContentChanged.bind(
-      this
-    );
-  }
+const EMPTY_FN = () => {
+  // no-op
+};
 
-  handleFormulaEditorContentChanged(formulaValue?: string): void {
-    const { onChange, eventKey } = this.props;
-    if (formulaValue !== undefined && formulaValue !== '') {
-      formulaValue.replace(/(\r\n|\n|\r)/gm, ''); // remove line break
-      onChange(
-        eventKey,
-        CustomColumnInput.INPUT_TYPE.FORMULA as CustomColumnKey,
-        formulaValue
-      );
-    }
-  }
+function CustomColumnInput({
+  eventKey,
+  name,
+  inputIndex,
+  formula,
+  onChange,
+  onDeleteColumn,
+  onTabInEditor,
+  invalid,
+  isDuplicate,
+}: CustomColumnInputProps): JSX.Element {
+  const isValidName = name === '' || DbNameValidator.isValidColumnName(name);
+  const handleFormulaEditorContentChanged = useCallback(
+    (formulaValue?: string) => {
+      if (formulaValue !== undefined) {
+        formulaValue.replace(/(\r\n|\n|\r)/gm, ''); // remove line break
+        onChange(eventKey, INPUT_TYPE.FORMULA, formulaValue);
+      }
+    },
+    [onChange, eventKey]
+  );
 
-  render(): ReactElement {
-    const {
-      eventKey,
-      name,
-      formula,
-      onChange,
-      onDeleteColumn,
-      inputIndex,
-      onTabInEditor,
-      invalid,
-    } = this.props;
-    return (
-      <Draggable
-        draggableId={eventKey}
-        index={inputIndex}
-        disableInteractiveElementBlocking
-      >
-        {(provided, snapshot) => (
-          <div
-            className={classNames('draggable-container', {
-              dragging: snapshot.isDragging,
-            })}
-            ref={provided.innerRef}
-            // eslint-disable-next-line react/jsx-props-no-spreading
-            {...provided.draggableProps}
-          >
-            <div className="custom-column-input-container">
-              <div className="d-flex flex-row pb-3 custom-column-name">
+  return (
+    <Draggable
+      draggableId={eventKey}
+      index={inputIndex}
+      disableInteractiveElementBlocking
+    >
+      {(provided, snapshot) => (
+        <div
+          className={classNames('draggable-container', {
+            dragging: snapshot.isDragging,
+          })}
+          ref={provided.innerRef}
+          // eslint-disable-next-line react/jsx-props-no-spreading
+          {...provided.draggableProps}
+        >
+          <div className="custom-column-input-container">
+            <div className="pb-3">
+              <div className="d-flex flex-row custom-column-name">
                 <input
                   className={classNames('form-control custom-column-input', {
-                    'is-invalid': invalid,
+                    'is-invalid': invalid || !isValidName || isDuplicate,
                   })}
                   placeholder="Column Name"
                   value={name}
                   onChange={event => {
-                    onChange(
-                      eventKey,
-                      CustomColumnInput.INPUT_TYPE.NAME as CustomColumnKey,
-                      event.target.value
-                    );
+                    onChange(eventKey, INPUT_TYPE.NAME, event.target.value);
                   }}
                 />
                 <Button
@@ -111,31 +92,36 @@ class CustomColumnInput extends PureComponent<
                   tooltip="Delete custom column"
                 />
 
-                <button
-                  type="button"
-                  className="btn btn-link btn-link-icon px-2 btn-drag-handle"
+                <Button
+                  kind="ghost"
+                  className="btn-drag-handle"
+                  onClick={EMPTY_FN}
                   // eslint-disable-next-line react/jsx-props-no-spreading
                   {...provided.dragHandleProps}
-                >
-                  <Tooltip>Drag column to re-order</Tooltip>
-                  <FontAwesomeIcon icon={vsGripper} />
-                </button>
+                  icon={vsGripper}
+                  tooltip="Drag column to re-order"
+                />
               </div>
-              <InputEditor
-                editorSettings={{ language: 'deephavenDb' }}
-                editorIndex={inputIndex}
-                value={formula}
-                onContentChanged={this.handleFormulaEditorContentChanged}
-                onTab={onTabInEditor}
-                invalid={invalid}
-              />
+              {(!isValidName || isDuplicate) && (
+                <p className="validate-label-error text-danger mb-0 mt-2 pl-1">
+                  {!isValidName ? 'Invalid name' : 'Duplicate name'}
+                </p>
+              )}
             </div>
-            <hr />
+            <InputEditor
+              editorSettings={{ language: 'deephavenDb' }}
+              editorIndex={inputIndex}
+              value={formula}
+              onContentChanged={handleFormulaEditorContentChanged}
+              onTab={onTabInEditor}
+              invalid={invalid}
+            />
           </div>
-        )}
-      </Draggable>
-    );
-  }
+          <hr />
+        </div>
+      )}
+    </Draggable>
+  );
 }
 
 export default CustomColumnInput;

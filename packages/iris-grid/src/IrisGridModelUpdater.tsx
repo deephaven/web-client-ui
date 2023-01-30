@@ -13,6 +13,7 @@ import { Formatter, ReverseType, TableUtils } from '@deephaven/jsapi-utils';
 import IrisGridUtils from './IrisGridUtils';
 import { ColumnName, UITotalsTableConfig, UIRow } from './CommonTypes';
 import IrisGridModel from './IrisGridModel';
+import type ColumnHeaderGroup from './ColumnHeaderGroup';
 
 const COLUMN_BUFFER_PAGES = 1;
 
@@ -30,6 +31,7 @@ interface IrisGridModelUpdaterProps {
   movedColumns: MoveOperation[];
   hiddenColumns: ModelIndex[];
   frozenColumns?: ColumnName[];
+  columnHeaderGroups: ColumnHeaderGroup[];
   formatColumns: CustomColumn[];
   alwaysFetchColumns: ColumnName[];
   formatter: Formatter;
@@ -66,6 +68,7 @@ const IrisGridModelUpdater = React.memo(
     pendingDataMap = new Map(),
     frozenColumns,
     formatColumns,
+    columnHeaderGroups,
   }: IrisGridModelUpdaterProps) => {
     const columns = useMemo(
       () =>
@@ -175,6 +178,12 @@ const IrisGridModelUpdater = React.memo(
         }
       },
       [model, frozenColumns]
+    );
+    useEffect(
+      function updateColumnHeaderGroups() {
+        model.columnHeaderGroups = columnHeaderGroups;
+      },
+      [model, columnHeaderGroups]
     );
 
     return null;

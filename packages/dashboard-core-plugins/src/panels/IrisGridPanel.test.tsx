@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint func-names: "off" */
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import { IrisGridModelFactory } from '@deephaven/iris-grid';
 import dh from '@deephaven/jsapi-shim';
 import { TestUtils } from '@deephaven/utils';
@@ -78,17 +78,21 @@ function makeIrisGridPanelWrapper(
   );
 }
 
-function expectLoading(container) {
-  expect(
-    container.querySelector("[data-icon='circle-large-outline']")
-  ).toBeInTheDocument();
+async function expectLoading(container) {
+  await waitFor(() =>
+    expect(
+      container.querySelector("[data-icon='circle-large-outline']")
+    ).toBeInTheDocument()
+  );
   expect(container.querySelector("[data-icon='loading']")).toBeInTheDocument();
 }
 
-function expectNotLoading(container) {
-  expect(
-    container.querySelector("[data-icon='outline']")
-  ).not.toBeInTheDocument();
+async function expectNotLoading(container) {
+  await waitFor(() =>
+    expect(
+      container.querySelector("[data-icon='outline']")
+    ).not.toBeInTheDocument()
+  );
   expect(
     container.querySelector("[data-icon='loading']")
   ).not.toBeInTheDocument();
@@ -96,7 +100,6 @@ function expectNotLoading(container) {
 
 it('mounts and unmounts without crashing', async () => {
   makeIrisGridPanelWrapper();
-  await TestUtils.flushPromises();
 });
 
 it('unmounts while still resolving a table successfully', async () => {
@@ -114,8 +117,6 @@ it('unmounts while still resolving a table successfully', async () => {
   tableResolve(table);
   expect(spy).toHaveBeenCalledTimes(0);
   expect.assertions(1);
-
-  await TestUtils.flushPromises();
 });
 
 it('shows the loading spinner until grid is ready', async () => {
@@ -126,11 +127,9 @@ it('shows the loading spinner until grid is ready', async () => {
   expect.assertions(6);
   const { container } = makeIrisGridPanelWrapper(makeModel);
 
-  expectLoading(container);
+  await expectLoading(container);
 
-  await TestUtils.flushPromises();
-
-  expectLoading(container);
+  await expectLoading(container);
   const params = ((MockIrisGrid.mock.calls[
     MockIrisGrid.mock.calls.length - 1
   ] as unknown) as {
@@ -138,7 +137,7 @@ it('shows the loading spinner until grid is ready', async () => {
   }[])[0];
   params.onStateChange({}, {});
 
-  expectNotLoading(container);
+  await expectNotLoading(container);
 });
 
 it('shows an error properly if table loading fails', async () => {
@@ -146,8 +145,7 @@ it('shows an error properly if table loading fails', async () => {
   const tablePromise = Promise.reject(error);
   const makeModel = makeMakeModel(tablePromise);
   const { container } = makeIrisGridPanelWrapper(makeModel);
-  await TestUtils.flushPromises();
-  expectNotLoading(container);
+  await expectNotLoading(container);
   const msg = screen.getByText(
     'Unable to open table. Error: TEST ERROR MESSAGE'
   );

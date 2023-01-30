@@ -208,7 +208,7 @@ it('shows an error properly if model loading fails', async () => {
   await expect(modelPromise).rejects.toThrow(error);
 
   expect(
-    screen.getByText('Unable to open chart. Error: TEST ERROR MESSAGE')
+    await screen.findByText('Unable to open chart. Error: TEST ERROR MESSAGE')
   ).toBeTruthy();
   const warning = screen.getByRole('img', { hidden: true });
   expect(warning).toBeTruthy();

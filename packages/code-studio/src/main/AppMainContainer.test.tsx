@@ -125,7 +125,8 @@ it('mounts and unmounts AppMainContainer without crashing', () => {
   renderAppMainContainer();
 });
 
-it('listens for widgets properly', () => {
+it('listens for widgets properly', async () => {
+  const user = userEvent.setup();
   const TABLE_A = { name: 'a', type: 'Table' };
   const TABLE_B = { name: 'b', type: 'Table' };
   let callback: (obj: VariableChanges) => void = (null as unknown) as (
@@ -142,7 +143,7 @@ it('listens for widgets properly', () => {
   expect(connection.subscribeToFieldUpdates).toHaveBeenCalled();
 
   const panelsButton = screen.getByRole('button', { name: 'Panels' });
-  userEvent.click(panelsButton);
+  await user.click(panelsButton);
 
   expect(screen.getByText('No bound variables found.')).toBeTruthy();
 

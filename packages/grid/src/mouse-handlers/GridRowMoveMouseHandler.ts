@@ -15,10 +15,10 @@ class GridRowMoveMouseHandler extends GridMouseHandler {
     const { metrics } = grid;
     if (!metrics) throw new Error('metrics not set');
 
-    const { columnHeaderHeight, rowHeaderWidth, visibleRowYs } = metrics;
+    const { columnHeaderHeight, rowHeaderWidth, allRowYs } = metrics;
 
     if (x <= rowHeaderWidth && row !== null && model.isRowMovable(row)) {
-      const rowY = getOrThrow(visibleRowYs, row);
+      const rowY = getOrThrow(allRowYs, row);
       this.draggingOffset = y - rowY - columnHeaderHeight;
       grid.setState({ draggingRowOffset: this.draggingOffset });
     }
@@ -62,16 +62,16 @@ class GridRowMoveMouseHandler extends GridMouseHandler {
       bottomVisible,
       rowCount,
       columnHeaderHeight,
-      visibleRowHeights,
-      visibleRowYs,
+      allRowHeights,
+      allRowYs,
       height,
     } = metrics;
     let minY = columnHeaderHeight;
     if (top < draggingRow) {
       const topRow = draggingRow - 1;
       minY =
-        getOrThrow(visibleRowYs, topRow) +
-        getOrThrow(visibleRowHeights, topRow) * 0.5 +
+        getOrThrow(allRowYs, topRow) +
+        getOrThrow(allRowHeights, topRow) * 0.5 +
         columnHeaderHeight;
     }
 
@@ -79,8 +79,8 @@ class GridRowMoveMouseHandler extends GridMouseHandler {
     if (draggingRow < bottom) {
       const bottomRow = draggingRow + 1;
       maxY =
-        getOrThrow(visibleRowYs, bottomRow) +
-        getOrThrow(visibleRowHeights, bottomRow) * 0.5 +
+        getOrThrow(allRowYs, bottomRow) +
+        getOrThrow(allRowHeights, bottomRow) * 0.5 +
         columnHeaderHeight;
     }
 
@@ -102,12 +102,11 @@ class GridRowMoveMouseHandler extends GridMouseHandler {
     }
     grid.setState({ movedRows, draggingRow });
 
-    const minMoveY =
-      columnHeaderHeight + getOrThrow(visibleRowHeights, top) * 0.5;
+    const minMoveY = columnHeaderHeight + getOrThrow(allRowHeights, top) * 0.5;
     const maxMoveY =
       columnHeaderHeight +
-      getOrThrow(visibleRowYs, bottomVisible) +
-      getOrThrow(visibleRowHeights, bottomVisible) * 0.5;
+      getOrThrow(allRowYs, bottomVisible) +
+      getOrThrow(allRowHeights, bottomVisible) * 0.5;
     if (mouseY < minMoveY && top > 0) {
       grid.setState({ top: top - 1 });
     } else if (mouseY > maxMoveY && top < lastTop) {

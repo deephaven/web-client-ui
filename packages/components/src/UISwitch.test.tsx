@@ -17,7 +17,8 @@ it('mounts and unmounts properly', () => {
   makeUISwitch();
 });
 
-it('get element by data-testid works', () => {
+it('get element by data-testid works', async () => {
+  const user = userEvent.setup();
   const onClick = jest.fn();
   const testId = 'test id for UISwitch';
   const testSwitch = makeUISwitch({ 'data-testid': testId, onClick });
@@ -26,6 +27,6 @@ it('get element by data-testid works', () => {
   const button = elements[0];
   expect(button instanceof HTMLButtonElement).toBe(true);
   expect(onClick).not.toHaveBeenCalled();
-  userEvent.click(button);
+  await user.click(button);
   expect(onClick).toHaveBeenCalledTimes(1);
 });

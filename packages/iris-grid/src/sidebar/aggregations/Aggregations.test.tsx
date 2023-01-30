@@ -46,11 +46,14 @@ it('shows all operations in select when no aggregations selected yet', () => {
   expect(screen.getAllByRole('option').length).toBe(SELECTABLE_OPTIONS.length);
 });
 
-it('adds an aggregation when clicking the add button', () => {
+it('adds an aggregation when clicking the add button', async () => {
+  const user = userEvent.setup();
   const onChange = jest.fn();
   mountAggregations({ onChange });
 
-  userEvent.click(screen.getByText('Add Aggregation').closest('button'));
+  await user.click(
+    screen.getByText('Add Aggregation').closest('button') as HTMLElement
+  );
 
   expect(onChange).toHaveBeenCalledWith(
     expect.objectContaining({
@@ -61,7 +64,8 @@ it('adds an aggregation when clicking the add button', () => {
   );
 });
 
-it('deletes an aggregation when clicking the trash can', () => {
+it('deletes an aggregation when clicking the trash can', async () => {
+  const user = userEvent.setup();
   const aggregations = [
     makeAggregation({ operation: AggregationOperation.SUM }),
   ];
@@ -72,14 +76,15 @@ it('deletes an aggregation when clicking the trash can', () => {
   });
 
   const buttons = screen.getAllByRole('button');
-  userEvent.click(buttons[buttons.length - 1]);
+  await user.click(buttons[buttons.length - 1]);
 
   expect(onChange).toHaveBeenCalledWith(
     expect.objectContaining({ aggregations: [], showOnTop: false })
   );
 });
 
-it('triggers an edit when pen is pressed', () => {
+it('triggers an edit when pen is pressed', async () => {
+  const user = userEvent.setup();
   const aggregations = [
     makeAggregation({ operation: AggregationOperation.MIN }),
     makeAggregation({ operation: AggregationOperation.SUM }),
@@ -91,7 +96,7 @@ it('triggers an edit when pen is pressed', () => {
   });
 
   const buttons = screen.getAllByRole('button');
-  userEvent.click(buttons[buttons.length - 2]);
+  await user.click(buttons[buttons.length - 2]);
 
   expect(onEdit).toHaveBeenCalledWith(aggregations[1]);
 });
