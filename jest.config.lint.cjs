@@ -6,6 +6,7 @@ module.exports = {
       runner: 'jest-runner-eslint',
       testMatch: ['<rootDir>/packages/*/src/**/*.{js,jsx,ts,tsx}'],
       testPathIgnorePatterns: ['<rootDir>/packages/golden-layout/*'],
+      testEnvironment: 'node',
     },
     {
       displayName: 'stylelint',
@@ -16,6 +17,7 @@ module.exports = {
       ],
       testPathIgnorePatterns: ['<rootDir>/packages/golden-layout/*'],
       moduleFileExtensions: ['scss'],
+      testEnvironment: 'node',
     },
   ],
 };

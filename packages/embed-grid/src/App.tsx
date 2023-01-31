@@ -18,6 +18,7 @@ const log = Log.module('EmbedGrid.App');
 export const SUPPORTED_TYPES: string[] = [
   dh.VariableType.TABLE,
   dh.VariableType.TREETABLE,
+  dh.VariableType.HIERARCHICALTABLE,
   dh.VariableType.PANDAS,
 ];
 

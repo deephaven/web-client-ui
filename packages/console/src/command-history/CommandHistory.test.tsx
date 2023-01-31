@@ -7,7 +7,7 @@ import { CommandHistoryTable } from './CommandHistoryStorage';
 jest.mock('pouchdb-browser');
 
 function makeItems(count = 10) {
-  const items = [];
+  const items: { id: string; name: string }[] = [];
 
   for (let i = 0; i < count; i += 1) {
     items.push({ id: `${i}`, name: `Command ${i}` });
@@ -116,15 +116,16 @@ it('handles selecting an item on click', () => {
   expectSelected(0);
 });
 
-it('handles selecting and deselecting an item on click', () => {
+it('handles selecting and deselecting an item on click', async () => {
+  const user = userEvent.setup();
   mountItems(10);
 
-  userEvent.click(getCommandItem(0));
+  await user.click(getCommandItem(0));
 
   expectSelected(0);
   expectNotSelected(1);
 
-  userEvent.click(getCommandItem(0));
+  await user.click(getCommandItem(0));
 
   expectNotSelected(0);
   expectNotSelected(1);

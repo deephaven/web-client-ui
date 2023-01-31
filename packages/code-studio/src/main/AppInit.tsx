@@ -46,9 +46,12 @@ import { setLayoutStorage as setLayoutStorageAction } from '../redux/actions';
 import App from './App';
 import LocalWorkspaceStorage from '../storage/LocalWorkspaceStorage';
 import {
+  AUTH_TYPE,
   createConnection,
   createCoreClient,
   createSessionWrapper,
+  getAuthType,
+  getLoginOptions,
 } from './SessionUtils';
 import { PluginUtils } from '../plugins';
 import LayoutStorage from '../storage/LayoutStorage';
@@ -160,9 +163,18 @@ function AppInit(props: AppInitProps) {
         import.meta.env.npm_package_version,
         navigator.userAgent
       );
+
+      const coreClient = createCoreClient();
+      const authType = getAuthType();
+      log.info(`Login using auth type ${authType}...`);
+      await coreClient.login(await getLoginOptions(authType));
+
       const newPlugins = await loadPlugins();
-      const connection = createConnection();
-      const sessionWrapper = await loadSessionWrapper(connection);
+      const connection = await (authType === AUTH_TYPE.ANONYMOUS &&
+      coreClient.getAsIdeConnection == null
+        ? // Fall back to the old API for anonymous auth if the new API is not supported
+          createConnection()
+        : coreClient.getAsIdeConnection());
       connection.addEventListener(
         dh.IdeConnection.HACK_CONNECTION_FAILURE,
         event => {
@@ -172,12 +184,8 @@ function AppInit(props: AppInitProps) {
         }
       );
 
+      const sessionWrapper = await loadSessionWrapper(connection);
       const name = 'user';
-
-      const coreClient = createCoreClient();
-
-      // Just login anonymously for now, use default user values
-      await coreClient.login({ type: dh.CoreClient.LOGIN_TYPE_ANONYMOUS });
 
       const storageService = coreClient.getStorageService();
       const layoutStorage = new GrpcLayoutStorage(

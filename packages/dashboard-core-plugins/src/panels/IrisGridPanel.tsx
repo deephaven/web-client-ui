@@ -38,6 +38,7 @@ import {
   IrisGridState,
   ChartBuilderSettings,
   DehydratedIrisGridState,
+  ColumnHeaderGroup,
 } from '@deephaven/iris-grid';
 import {
   AdvancedFilterOptions,
@@ -60,7 +61,12 @@ import {
   PromiseUtils,
 } from '@deephaven/utils';
 import { ContextAction, ContextMenuRoot } from '@deephaven/components';
-import { Column, FilterCondition, Sort } from '@deephaven/jsapi-shim';
+import {
+  Column,
+  FilterCondition,
+  Sort,
+  VariableTypeUnion,
+} from '@deephaven/jsapi-shim';
 import {
   GridRangeIndex,
   GridState,
@@ -92,6 +98,7 @@ type ModelQueue = ModelQueueFunction[];
 
 interface Metadata {
   table: string;
+  type?: VariableTypeUnion;
   query?: string;
   querySerial?: string;
 }
@@ -185,6 +192,7 @@ interface IrisGridPanelState {
   modelQueue: ModelQueue;
   pendingDataMap?: PendingDataMap<UIRow>;
   frozenColumns?: readonly ColumnName[];
+  columnHeaderGroups?: readonly ColumnHeaderGroup[];
 
   // eslint-disable-next-line react/no-unused-state
   panelState: PanelState | null; // Dehydrated panel state that can load this panel
@@ -450,7 +458,8 @@ export class IrisGridPanel extends PureComponent<
       aggregationSettings: AggregationSettings,
       pendingDataMap: PendingDataMap<UIRow>,
       frozenColumns: readonly ColumnName[],
-      conditionalFormats: readonly SidebarFormattingRule[]
+      conditionalFormats: readonly SidebarFormattingRule[],
+      columnHeaderGroups: readonly ColumnHeaderGroup[]
     ) =>
       IrisGridUtils.dehydrateIrisGridState(model, {
         advancedFilters,
@@ -474,6 +483,7 @@ export class IrisGridPanel extends PureComponent<
         pendingDataMap,
         frozenColumns,
         conditionalFormats,
+        columnHeaderGroups,
       })
   );
 
@@ -865,16 +875,16 @@ export class IrisGridPanel extends PureComponent<
     assertNotNull(metrics);
     const {
       columnHeaderHeight,
-      visibleColumnXs,
-      visibleColumnWidths,
+      allColumnXs,
+      allColumnWidths,
       right,
       columnHeaderMaxDepth,
     } = metrics;
     const columnIndex = model.getColumnIndexByName(columnName);
     assertNotNull(columnIndex);
     const visibleIndex = irisGrid.getVisibleColumn(columnIndex);
-    const columnX = visibleColumnXs.get(visibleIndex) ?? 0;
-    const columnWidth = visibleColumnWidths.get(visibleIndex) ?? 0;
+    const columnX = allColumnXs.get(visibleIndex) ?? 0;
+    const columnWidth = allColumnWidths.get(visibleIndex) ?? 0;
 
     const x = Math.max(
       rect.left,
@@ -1026,6 +1036,7 @@ export class IrisGridPanel extends PureComponent<
         pendingDataMap,
         frozenColumns,
         conditionalFormats,
+        columnHeaderGroups,
       } = IrisGridUtils.hydrateIrisGridState(model, {
         ...irisGridState,
         ...irisGridStateOverrides,
@@ -1068,6 +1079,7 @@ export class IrisGridPanel extends PureComponent<
         frozenColumns,
         isStuckToBottom,
         isStuckToRight,
+        columnHeaderGroups,
       });
     } catch (error) {
       log.error('loadPanelState failed to load panelState', panelState, error);
@@ -1105,6 +1117,7 @@ export class IrisGridPanel extends PureComponent<
       pendingDataMap,
       frozenColumns,
       conditionalFormats,
+      columnHeaderGroups,
     } = irisGridState;
     assertNotNull(model);
     assertNotNull(metrics);
@@ -1145,7 +1158,8 @@ export class IrisGridPanel extends PureComponent<
         aggregationSettings,
         pendingDataMap,
         frozenColumns,
-        conditionalFormats
+        conditionalFormats,
+        columnHeaderGroups
       ),
       this.getDehydratedGridState(
         model,
@@ -1226,6 +1240,7 @@ export class IrisGridPanel extends PureComponent<
       pluginFetchColumns,
       pendingDataMap,
       frozenColumns,
+      columnHeaderGroups,
     } = this.state;
     const errorMessage =
       error != null ? `Unable to open table. ${error}` : undefined;
@@ -1320,6 +1335,7 @@ export class IrisGridPanel extends PureComponent<
             getDownloadWorker={getDownloadWorker}
             frozenColumns={frozenColumns}
             theme={theme}
+            columnHeaderGroups={columnHeaderGroups}
           >
             {childrenContent}
           </IrisGrid>

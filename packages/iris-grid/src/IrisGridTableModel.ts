@@ -8,6 +8,7 @@ import {
   InputTable,
   LayoutHints,
   Table,
+  ValueTypeUnion,
 } from '@deephaven/jsapi-shim';
 import Log from '@deephaven/log';
 import { Formatter, TableUtils } from '@deephaven/jsapi-utils';
@@ -44,7 +45,6 @@ class IrisGridTableModel extends IrisGridTableModelTemplate<Table, UIRow> {
     inputTable: InputTable | null = null
   ) {
     super(table, formatter, inputTable);
-
     this.customColumnList = [];
     this.formatColumnList = [];
   }
@@ -97,7 +97,7 @@ class IrisGridTableModel extends IrisGridTableModelTemplate<Table, UIRow> {
 
   getMemoizedFrozenColumns = memoize(
     (
-      layoutHintsFrozenColumns: ColumnName[],
+      layoutHintsFrozenColumns?: ColumnName[],
       userFrozenColumns?: ColumnName[]
     ): ColumnName[] => userFrozenColumns ?? layoutHintsFrozenColumns ?? []
   );
@@ -354,6 +354,30 @@ class IrisGridTableModel extends IrisGridTableModelTemplate<Table, UIRow> {
 
     await this.inputTable?.deleteTable(deleteTable);
     deleteTable.close();
+  }
+
+  async seekRow(
+    startRow: number,
+    column: Column,
+    valueType: ValueTypeUnion,
+    value: unknown,
+    insensitive?: boolean,
+    contains?: boolean,
+    isBackwards?: boolean
+  ): Promise<number> {
+    return this.table.seekRow(
+      startRow,
+      column,
+      valueType,
+      value,
+      insensitive,
+      contains,
+      isBackwards
+    );
+  }
+
+  get isSeekRowAvailable(): boolean {
+    return this.table.seekRow != null;
   }
 }
 

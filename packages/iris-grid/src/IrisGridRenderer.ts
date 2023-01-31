@@ -178,7 +178,7 @@ class IrisGridRenderer extends GridRenderer {
   ): void {
     const { metrics, model, theme } = state;
     const { groupedColumns, columns } = model;
-    const { maxY, visibleColumnWidths, visibleColumnXs } = metrics;
+    const { maxY, allColumnWidths, allColumnXs } = metrics;
     if (
       groupedColumns.length === 0 ||
       theme.groupedColumnDividerColor == null
@@ -190,8 +190,8 @@ class IrisGridRenderer extends GridRenderer {
     const modelIndex = columns.findIndex(
       c => c.name === lastGroupedColumn.name
     );
-    const columnX = visibleColumnXs.get(modelIndex);
-    const columnWidth = visibleColumnWidths.get(modelIndex);
+    const columnX = allColumnXs.get(modelIndex);
+    const columnWidth = allColumnWidths.get(modelIndex);
     if (columnX == null || columnWidth == null) {
       return;
     }
@@ -211,7 +211,7 @@ class IrisGridRenderer extends GridRenderer {
     state: IrisGridRenderState
   ): void {
     const { metrics, model, theme } = state;
-    const { visibleRowYs, maxX } = metrics;
+    const { allRowYs, maxX } = metrics;
     const { pendingRowCount } = model;
     if (pendingRowCount <= 0) {
       return;
@@ -219,7 +219,7 @@ class IrisGridRenderer extends GridRenderer {
 
     const firstPendingRow =
       model.rowCount - model.pendingRowCount - model.floatingBottomRowCount;
-    let y = visibleRowYs.get(firstPendingRow);
+    let y = allRowYs.get(firstPendingRow);
     if (y == null) {
       return;
     }
@@ -249,10 +249,10 @@ class IrisGridRenderer extends GridRenderer {
       return;
     }
 
-    const { visibleColumnWidths, visibleColumnXs, maxY } = metrics;
+    const { allColumnWidths, allColumnXs, maxY } = metrics;
 
-    const x = visibleColumnXs.get(hoverSelectColumn);
-    const columnWidth = visibleColumnWidths.get(hoverSelectColumn);
+    const x = allColumnXs.get(hoverSelectColumn);
+    const columnWidth = allColumnWidths.get(hoverSelectColumn);
     assertNotNull(x);
     assertNotNull(columnWidth);
 
@@ -433,16 +433,16 @@ class IrisGridRenderer extends GridRenderer {
     const { metrics, model, theme } = state;
     const {
       modelColumns,
-      visibleColumnWidths,
-      visibleColumnXs,
+      allColumnWidths,
+      allColumnXs,
       gridX,
       columnHeaderHeight,
       fontWidths,
     } = metrics;
 
     const { headerHorizontalPadding } = theme;
-    const columnWidth = getOrThrow(visibleColumnWidths, index, 0);
-    const columnX = getOrThrow(visibleColumnXs, index) + gridX;
+    const columnWidth = getOrThrow(allColumnWidths, index, 0);
+    const columnX = getOrThrow(allColumnXs, index) + gridX;
     const modelColumn = modelColumns.get(index);
 
     if (modelColumn == null) {
@@ -526,8 +526,8 @@ class IrisGridRenderer extends GridRenderer {
       maxX,
       modelColumns,
       visibleColumns,
-      visibleColumnWidths,
-      visibleColumnXs,
+      allColumnWidths,
+      allColumnXs,
     } = metrics;
 
     const columnHeaderHeight = gridY - filterBarHeight;
@@ -564,8 +564,8 @@ class IrisGridRenderer extends GridRenderer {
     for (let i = 0; i < visibleColumns.length; i += 1) {
       const column = visibleColumns[i];
       const modelColumn = getOrThrow(modelColumns, column);
-      const columnX = getOrThrow(visibleColumnXs, column);
-      const columnWidth = getOrThrow(visibleColumnWidths, column);
+      const columnX = getOrThrow(allColumnXs, column);
+      const columnWidth = getOrThrow(allColumnWidths, column);
       if (model.isFilterable(modelColumn) && columnWidth > 0) {
         const x1 = gridX + (columnX ?? 0);
         context.rect(x1 + 0.5, y1 + 0.5, columnWidth, filterBarHeight - 2); // 1 for the border, 1 for the casing
@@ -575,8 +575,8 @@ class IrisGridRenderer extends GridRenderer {
 
     for (let i = 0; i < visibleColumns.length; i += 1) {
       const column = visibleColumns[i];
-      const columnWidth = getOrThrow(visibleColumnWidths, column);
-      const columnX = getOrThrow(visibleColumnXs, column);
+      const columnWidth = getOrThrow(allColumnWidths, column);
+      const columnX = getOrThrow(allColumnXs, column);
       const x = columnX + gridX;
       this.drawExpandedFilterHeader(context, state, column, x, columnWidth);
     }
@@ -696,8 +696,8 @@ class IrisGridRenderer extends GridRenderer {
       gridY,
       maxX,
       visibleColumns,
-      visibleColumnWidths,
-      visibleColumnXs,
+      allColumnWidths,
+      allColumnXs,
     } = metrics;
     const columnHeaderHeight = gridY - filterBarCollapsedHeight;
 
@@ -709,8 +709,8 @@ class IrisGridRenderer extends GridRenderer {
 
     for (let i = 0; i < visibleColumns.length; i += 1) {
       const column = visibleColumns[i];
-      const columnWidth = visibleColumnWidths.get(column);
-      const columnX = visibleColumnXs.get(column);
+      const columnWidth = allColumnWidths.get(column);
+      const columnX = allColumnXs.get(column);
       if (columnX != null && columnWidth != null) {
         const x = columnX + gridX;
         // draw the collapsed cells
@@ -816,8 +816,8 @@ class IrisGridRenderer extends GridRenderer {
       height,
       horizontalBarHeight,
       verticalBarWidth,
-      visibleRowHeights,
-      visibleRowYs,
+      allRowHeights,
+      allRowYs,
       width,
     } = metrics;
     // Only draw the footers on the floating rows
@@ -864,8 +864,8 @@ class IrisGridRenderer extends GridRenderer {
       floatingRows.includes(mouseRow)
     ) {
       context.fillStyle = rowHoverBackgroundColor;
-      const y = visibleRowYs.get(mouseRow);
-      const rowHeight = visibleRowHeights.get(mouseRow);
+      const y = allRowYs.get(mouseRow);
+      const rowHeight = allRowHeights.get(mouseRow);
       assertNotNull(y);
       assertNotNull(rowHeight);
       context.fillRect(x, y, rowFooterWidth, rowHeight);
@@ -892,8 +892,8 @@ class IrisGridRenderer extends GridRenderer {
     const textX = x + cellHorizontalPadding;
     for (let i = 0; i < floatingRows.length; i += 1) {
       const row = floatingRows[i];
-      const rowHeight = visibleRowHeights.get(row);
-      const rowY = visibleRowYs.get(row);
+      const rowHeight = allRowHeights.get(row);
+      const rowY = allRowYs.get(row);
       const modelRow = modelRows.get(row);
       if (rowY != null && rowHeight != null && modelRow != null) {
         const textY = rowY + rowHeight * 0.5;

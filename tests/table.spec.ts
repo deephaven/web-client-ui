@@ -1,28 +1,48 @@
 import { test, expect, Page } from '@playwright/test';
-import { generateVarName, typeInMonaco } from './utils';
+import { makeTableCommand, typeInMonaco } from './utils';
 
 // Run tests serially since they all use the same table
 test.describe.configure({ mode: 'serial' });
 
-let page: Page;
-
-test.beforeAll(async ({ browser }) => {
-  page = await browser.newPage();
-  await page.goto('');
-});
-
-test.afterAll(async () => {
-  await page.close();
-});
-
-test('can open a simple table', async () => {
+async function openSimpleTable(page: Page) {
   const consoleInput = page.locator('.console-input');
   await consoleInput.click();
 
-  // Enter a command that creates a table with three columns, showing x/y/z
-  const tableName = generateVarName();
-  const command = `from deephaven import empty_table
-${tableName} = empty_table(100).update(["x=i", "y=Math.sin(i)", "z=Math.cos(i)"])`;
+  const command = makeTableCommand();
+
+  await typeInMonaco(page, command);
+  await page.keyboard.press('Enter');
+
+  // Wait for the panel to show
+  await expect(page.locator('.iris-grid-panel')).toHaveCount(1);
+
+  // Wait until it's done loading
+  await expect(page.locator('.iris-grid-panel .loading-spinner')).toHaveCount(
+    0
+  );
+
+  // Model is loaded, need to make sure table data is also loaded
+  await expect(
+    page.locator('.iris-grid .iris-grid-loading-status')
+  ).toHaveCount(0);
+}
+
+test('can open a simple table', async ({ page }) => {
+  await page.goto('');
+  await openSimpleTable(page);
+
+  // Now we should be able to check the snapshot
+  await expect(page.locator('.iris-grid-panel .iris-grid')).toHaveScreenshot();
+});
+
+test('can open a table with column header groups', async ({ page }) => {
+  await page.goto('');
+  const consoleInput = page.locator('.console-input');
+  await consoleInput.click();
+
+  const command = `${makeTableCommand('column_header_group')}
+column_groups = [{ 'name': 'YandZ', 'children': ['y', 'z'] }, { 'name': 'All', 'children': ['x', 'YandZ'], 'color': 'white' }]
+column_header_group = column_header_group.layout_hints(column_groups=column_groups)`;
 
   await typeInMonaco(page, command);
   await page.keyboard.press('Enter');
@@ -45,6 +65,13 @@ ${tableName} = empty_table(100).update(["x=i", "y=Math.sin(i)", "z=Math.cos(i)"]
 });
 
 test.describe('tests table operations', () => {
+  let page: Page;
+
+  test.beforeAll(async ({ browser }) => {
+    page = await browser.newPage();
+    await page.goto('');
+    await openSimpleTable(page);
+  });
   test.beforeEach(async () => {
     const tableOperationsMenu = page.locator(
       'data-testid=btn-iris-grid-settings-button-table'
@@ -108,15 +135,15 @@ test.describe('tests table operations', () => {
     // test invalid row index
     await gotoBarInputField.click();
     await page.keyboard.type('641');
-    await expect(
-      gotoBar.locator('.goto-row-wrapper .goto-row-error')
-    ).toHaveCount(1);
+    await expect(gotoBar.locator('.goto-row-wrapper .text-danger')).toHaveCount(
+      1
+    );
 
     // test valid row index (row 64)
     await page.keyboard.press('Backspace');
-    await expect(
-      gotoBar.locator('.goto-row-wrapper .goto-row-error')
-    ).toHaveCount(0);
+    await expect(gotoBar.locator('.goto-row-wrapper .text-danger')).toHaveCount(
+      0
+    );
 
     // Check snapshot
     await expect(page.locator('.iris-grid-column')).toHaveScreenshot();

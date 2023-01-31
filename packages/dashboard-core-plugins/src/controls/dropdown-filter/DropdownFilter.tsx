@@ -18,6 +18,7 @@ import { TableUtils } from '@deephaven/jsapi-utils';
 import memoizee from 'memoizee';
 import memoize from 'memoize-one';
 import debounce from 'lodash.debounce';
+import shortid from 'shortid';
 import Log from '@deephaven/log';
 import './DropdownFilter.scss';
 import { LinkPoint } from '../../linker/LinkerUtils';
@@ -29,7 +30,8 @@ export interface DropdownFilterColumn {
   name: string;
   type: string;
 }
-interface DropdownFilterProps {
+
+export interface DropdownFilterProps {
   column: DropdownFilterColumn;
   columns: DropdownFilterColumn[];
   onSourceMouseEnter: () => void;
@@ -40,7 +42,7 @@ interface DropdownFilterProps {
   isValueShown: boolean;
   settingsError: string;
   source: LinkPoint;
-  value: string;
+  value: string | null;
   values: (string | null)[];
   onChange: (change: {
     column: Partial<Column> | null;
@@ -56,9 +58,10 @@ interface DropdownFilterState {
   disableCancel: boolean;
   isValueShown: boolean;
   value: string | null;
+  id: string;
 }
 
-class DropdownFilter extends Component<
+export class DropdownFilter extends Component<
   DropdownFilterProps,
   DropdownFilterState
 > {
@@ -100,6 +103,7 @@ class DropdownFilter extends Component<
     const { column, isValueShown, value } = props;
     this.state = {
       column,
+      id: shortid(),
       selectedColumn: column,
       disableCancel: !isValueShown,
       isValueShown,
@@ -205,7 +209,7 @@ class DropdownFilter extends Component<
         // eslint-disable-next-line react/no-array-index-key
         key={`${index}/${val}`}
       >
-        {val}
+        {val ?? '(null)'}
       </option>
     )),
   ]);
@@ -258,13 +262,10 @@ class DropdownFilter extends Component<
     // Default empty string value for 'clear filter'
     let value: string | null = '';
     const { values } = this.props;
-    if (index === -1) {
-      log.debug2('Selected default item');
-    } else if (index >= 0 && index < values.length) {
+    if (index >= 0 && index < values.length) {
       value = values[index];
     } else {
-      log.error('Invalid index', index, values);
-      return;
+      log.debug2('Selected default item');
     }
 
     log.debug2('handleValueChange', value);
@@ -301,16 +302,6 @@ class DropdownFilter extends Component<
     }
   }
 
-  handleMouseEnter(): void {
-    const { onSourceMouseEnter } = this.props;
-    onSourceMouseEnter();
-  }
-
-  handleMouseLeave(): void {
-    const { onSourceMouseLeave } = this.props;
-    onSourceMouseLeave();
-  }
-
   sourceUpdated(): void {
     this.setState({
       column: null,
@@ -327,9 +318,7 @@ class DropdownFilter extends Component<
   }
 
   focusInput(): void {
-    if (this.dropdownRef.current !== null) {
-      this.dropdownRef.current.focus();
-    }
+    this.dropdownRef.current?.focus();
   }
 
   resetValue(): void {
@@ -341,19 +330,24 @@ class DropdownFilter extends Component<
     this.resetValue();
   }
 
+  // Called by the parent component via ref
   setFilterState({
     name,
     type,
     value,
     isValueShown,
   }: {
-    name: string;
-    type: string;
-    value: string;
-    isValueShown: boolean;
+    name?: string;
+    type?: string;
+    value?: string;
+    isValueShown?: boolean;
   }): void {
     const column = name != null && type != null ? { name, type } : null;
-    this.setState({ column, value, isValueShown });
+    this.setState(({ value: oldValue, isValueShown: oldIsValueShown }) => ({
+      column,
+      value: value ?? oldValue,
+      isValueShown: isValueShown ?? oldIsValueShown,
+    }));
   }
 
   sendUpdate = debounce(() => {
@@ -378,6 +372,7 @@ class DropdownFilter extends Component<
     const {
       column,
       disableCancel,
+      id,
       isValueShown,
       selectedColumn,
       value,
@@ -398,6 +393,9 @@ class DropdownFilter extends Component<
 
     const isFlipped = isValueShown && !isLinkerActive;
 
+    const sourceColumnId = `source-column-btn-${id}`;
+    const filterColumnId = `filter-column-select-${id}`;
+
     return (
       <CardFlip
         className="dropdown-filter fill-parent-absolute"
@@ -406,8 +404,9 @@ class DropdownFilter extends Component<
         <div className="dropdown-filter-settings-card">
           <div className="dropdown-filter-card-content">
             <div className="dropdown-filter-settings-grid">
-              <label>Source Column</label>
+              <label htmlFor={sourceColumnId}>Source Column</label>
               <SocketedButton
+                id={sourceColumnId}
                 isLinked={isLinked}
                 onClick={onColumnSelected}
                 onMouseEnter={onSourceMouseEnter}
@@ -422,8 +421,9 @@ class DropdownFilter extends Component<
                 Select a source column for the list by linking to a table.
               </div>
 
-              <label>Filter Column</label>
+              <label htmlFor={filterColumnId}>Filter Column</label>
               <select
+                id={filterColumnId}
                 value={selectedIndex}
                 className="custom-select"
                 onChange={this.handleColumnChange}
@@ -476,6 +476,7 @@ class DropdownFilter extends Component<
         <div
           className="dropdown-filter-value-card"
           onClick={this.handleBackgroundClick}
+          data-testid="dropdown-filter-value-background"
         >
           {isLoaded && (
             <>
@@ -492,6 +493,7 @@ class DropdownFilter extends Component<
                     ref={this.dropdownRef}
                     onChange={this.handleValueChange}
                     onKeyPress={this.handleDropdownKeyPress}
+                    title="Select Value"
                   >
                     {valueOptions}
                   </select>

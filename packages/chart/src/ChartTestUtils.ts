@@ -82,9 +82,15 @@ class ChartTestUtils {
     title = ChartTestUtils.DEFAULT_CHART_TITLE,
     series = [ChartTestUtils.makeSeries()],
     axes = ChartTestUtils.makeDefaultAxes(),
+    showLegend = null,
+  }: {
+    title?: string;
+    series?: Series[];
+    axes?: Axis[];
+    showLegend?: boolean | null;
   } = {}): Chart {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return new (dh as any).Chart({ title, series, axes });
+    return new (dh as any).Chart({ title, series, axes, showLegend });
   }
 
   static makeFigure({

@@ -583,13 +583,12 @@ export class AppMainContainer extends Component<
 
   // eslint-disable-next-line class-methods-use-this
   handlePaste(event: ClipboardEvent<HTMLDivElement>): void {
-    let element = event.currentTarget.parentElement;
-
-    while (element != null) {
-      if (element.classList.contains('monaco-editor')) {
-        return;
-      }
-      element = element.parentElement;
+    if (
+      event.target instanceof HTMLElement &&
+      event.target.closest('.monaco-editor')
+    ) {
+      // Skip if this is inside a monaco editor
+      return;
     }
 
     const { clipboardData } = event;
@@ -661,7 +660,11 @@ export class AppMainContainer extends Component<
   }
 
   hydrateGrid(props: IrisGridPanelProps, id: string): IrisGridPanelProps {
-    return this.hydrateTable(props, id, dh.VariableType.TABLE);
+    return this.hydrateTable(
+      props,
+      id,
+      props.metadata.type ?? dh.VariableType.TABLE
+    );
   }
 
   hydratePandas(props: PandasPanelProps, id: string): PandasPanelProps {

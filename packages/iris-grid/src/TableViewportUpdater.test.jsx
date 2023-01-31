@@ -49,7 +49,6 @@ describe('verify updates', () => {
     expect(table.setViewport).toHaveBeenCalledTimes(1);
     expect(subscriptionSetViewport).not.toHaveBeenCalled();
     table.setViewport.mockClear();
-    setTimeout.mockClear();
   });
 
   it('updates when props are updated', () => {

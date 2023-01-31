@@ -11,8 +11,17 @@ import {
   MockTreeGridModel,
   ModelIndex,
 } from '@deephaven/grid';
-import { IrisGridModel, PendingDataMap, UITreeRow } from '@deephaven/iris-grid';
-import type { Column, CustomColumn } from '@deephaven/jsapi-shim';
+import {
+  IrisGridModel,
+  PendingDataMap,
+  UITreeRow,
+  ColumnHeaderGroup,
+} from '@deephaven/iris-grid';
+import type {
+  Column,
+  CustomColumn,
+  ValueTypeUnion,
+} from '@deephaven/jsapi-shim';
 import { Formatter } from '@deephaven/jsapi-utils';
 
 // We need to cast our CustomEvent so it's happy with event-target-shim
@@ -295,6 +304,46 @@ class MockIrisGridTreeModel
 
   valuesTable(column: Column): Promise<never> {
     throw new Error('Not defined in mock');
+  }
+
+  seekRow(
+    startRow: number,
+    column: Column,
+    valueType: ValueTypeUnion,
+    value: unknown,
+    insensitive?: boolean | undefined,
+    contains?: boolean | undefined,
+    isBackwards?: boolean | undefined
+  ): Promise<number> {
+    throw new Error('Method not implemented.');
+  }
+
+  get columnHeaderGroups(): ColumnHeaderGroup[] {
+    return [];
+  }
+
+  set columnHeaderGroups(groups: ColumnHeaderGroup[]) {
+    // no-op
+  }
+
+  get columnHeaderGroupMap() {
+    return new Map();
+  }
+
+  getColumnHeaderParentGroup() {
+    return undefined;
+  }
+
+  get initialMovedColumns() {
+    return [];
+  }
+
+  get initialMovedRows() {
+    return [];
+  }
+
+  get initialColumnHeaderGroups() {
+    return [];
   }
 }
 

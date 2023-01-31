@@ -2,8 +2,8 @@ import { PromiseUtils, CancelablePromise } from './PromiseUtils';
 
 /**
  * Helper class for managing pending promises.
- * IDS-6391 When cancel is called, it calls cancel on ALL promises, including ones that have already resolved.
- * This behaviour may change when IDS-6806 is implemented.
+ * DH-6167 When cancel is called, it calls cancel on ALL promises, including ones that have already resolved.
+ * This behaviour may change when DH-9464 is implemented.
  */
 class Pending {
   pending: Array<CancelablePromise<unknown>> = [];

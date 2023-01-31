@@ -18,6 +18,7 @@ import type {
   Row,
   Sort,
   Table,
+  ValueTypeUnion,
 } from '@deephaven/jsapi-shim';
 import { Formatter } from '@deephaven/jsapi-utils';
 import {
@@ -26,6 +27,9 @@ import {
   PendingDataMap,
   PendingDataErrorMap,
 } from './CommonTypes';
+import ColumnHeaderGroup from './ColumnHeaderGroup';
+
+type RowIndex = ModelIndex;
 
 type IrisGridModelEventNames = typeof IrisGridModel.EVENT[keyof typeof IrisGridModel.EVENT];
 
@@ -120,7 +124,7 @@ abstract class IrisGridModel<
    * Gets the columns for this model
    * @returns All columns in the model
    */
-  abstract get columns(): Column[];
+  abstract get columns(): readonly Column[];
 
   /**
    * Gets the column index for this model
@@ -133,25 +137,23 @@ abstract class IrisGridModel<
    * Gets the columns for the model before any transformations (such as rollups) are applied.
    * @returns All original columns in the model.
    */
-  get originalColumns(): Column[] {
+  get originalColumns(): readonly Column[] {
     return this.columns;
   }
 
-  /** List of column movements defined by the model. Used as initial movements for IrisGrid */
-  get movedColumns(): readonly MoveOperation[] {
-    return EMPTY_ARRAY;
-  }
+  abstract get initialMovedColumns(): readonly MoveOperation[];
 
   /** List of row movements defined by the model. Used as initial movements for IrisGrid */
-  get movedRows(): readonly MoveOperation[] {
-    return EMPTY_ARRAY;
-  }
+  abstract get initialMovedRows(): readonly MoveOperation[];
+
+  /** List of column header groups defined by the model */
+  abstract get initialColumnHeaderGroups(): readonly ColumnHeaderGroup[];
 
   /**
    * Retrieve the grouped columns for this model
    * @returns The columns that are groupe
    */
-  abstract get groupedColumns(): Column[];
+  abstract get groupedColumns(): readonly Column[];
 
   /**
    * @param column The model column index
@@ -494,6 +496,31 @@ abstract class IrisGridModel<
    * @returns A promise that resolves successfully when the operation is complete or rejects if there's an error
    */
   abstract delete(ranges: readonly GridRange[]): Promise<void>;
+
+  abstract seekRow(
+    startRow: number,
+    column: Column,
+    valueType: ValueTypeUnion,
+    value: unknown,
+    insensitive?: boolean,
+    contains?: boolean,
+    isBackwards?: boolean
+  ): Promise<number>;
+
+  get isSeekRowAvailable(): boolean {
+    return false;
+  }
+
+  abstract get columnHeaderGroups(): readonly ColumnHeaderGroup[];
+
+  abstract get columnHeaderGroupMap(): ReadonlyMap<string, ColumnHeaderGroup>;
+
+  abstract set columnHeaderGroups(groups: readonly ColumnHeaderGroup[]);
+
+  abstract getColumnHeaderParentGroup(
+    modelIndex: ModelIndex,
+    depth: number
+  ): ColumnHeaderGroup | undefined;
 }
 
 export default IrisGridModel;

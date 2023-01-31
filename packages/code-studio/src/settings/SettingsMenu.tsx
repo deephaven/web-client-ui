@@ -1,6 +1,12 @@
 import React, { Component, ReactElement, RefObject } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { vsClose, vsWatch, vsRecordKeys, vsInfo } from '@deephaven/icons';
+import {
+  vsClose,
+  vsWatch,
+  vsRecordKeys,
+  vsInfo,
+  vsLayers,
+} from '@deephaven/icons';
 import { Button, CopyButton, Tooltip } from '@deephaven/components';
 import { ServerConfigValues } from '@deephaven/redux';
 import Logo from './community-wordmark-app.svg';
@@ -10,6 +16,7 @@ import SettingsMenuSection from './SettingsMenuSection';
 import ShortcutSectionContent from './ShortcutsSectionContent';
 import { exportLogs } from '../log/LogExport';
 import './SettingsMenu.scss';
+import ColumnSpecificSectionContent from './ColumnSpecificSectionContent';
 
 interface SettingsMenuProps {
   serverConfigValues: ServerConfigValues;
@@ -29,6 +36,8 @@ export class SettingsMenu extends Component<
   };
 
   static FORMATTING_SECTION_KEY = 'SettingsMenu.formatting';
+
+  static COLUMN_SPECIFIC_SECTION_KEY = 'SettingsMenu.columnFormatting';
 
   static APPLICATION_SECTION_KEY = 'ApplicationMenu.settings';
 
@@ -134,12 +143,32 @@ export class SettingsMenu extends Component<
                   transform="grow-4"
                   className="mr-2"
                 />
-                Formatting &amp; Time zone
+                Default Formatting &amp; Time zone
               </>
             }
             onToggle={this.handleSectionToggle}
           >
-            <FormattingSectionContent scrollTo={this.handleScrollTo} />
+            <FormattingSectionContent />
+          </SettingsMenuSection>
+
+          <SettingsMenuSection
+            sectionKey={SettingsMenu.COLUMN_SPECIFIC_SECTION_KEY}
+            isExpanded={this.isSectionExpanded(
+              SettingsMenu.COLUMN_SPECIFIC_SECTION_KEY
+            )}
+            title={
+              <>
+                <FontAwesomeIcon
+                  icon={vsLayers}
+                  transform="grow-4"
+                  className="mr-2"
+                />
+                Column Specific Formatting Rules
+              </>
+            }
+            onToggle={this.handleSectionToggle}
+          >
+            <ColumnSpecificSectionContent scrollTo={this.handleScrollTo} />
           </SettingsMenuSection>
 
           <SettingsMenuSection

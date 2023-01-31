@@ -18,6 +18,7 @@ import {
   Sort,
   Table,
   TreeTable,
+  ValueTypeUnion,
 } from '@deephaven/jsapi-shim';
 import {
   EditableGridModel,
@@ -37,6 +38,7 @@ import {
   PendingDataErrorMap,
 } from './CommonTypes';
 import { isIrisGridTableModelTemplate } from './IrisGridTableModelTemplate';
+import type ColumnHeaderGroup from './ColumnHeaderGroup';
 
 const log = Log.module('IrisGridProxyModel');
 
@@ -351,16 +353,16 @@ class IrisGridProxyModel extends IrisGridModel {
     return this.model.isReversible;
   }
 
-  get columns(): Column[] {
+  get columns(): readonly Column[] {
     return this.model.columns;
   }
 
-  get movedColumns(): readonly MoveOperation[] {
-    return this.model.movedColumns;
+  get initialMovedColumns(): readonly MoveOperation[] {
+    return this.model.initialMovedColumns;
   }
 
-  get movedRows(): readonly MoveOperation[] {
-    return this.model.movedRows;
+  get initialMovedRows(): readonly MoveOperation[] {
+    return this.model.initialMovedRows;
   }
 
   get layoutHints(): LayoutHints | null {
@@ -382,23 +384,39 @@ class IrisGridProxyModel extends IrisGridModel {
   getColumnHeaderGroup: IrisGridModel['getColumnHeaderGroup'] = (...args) =>
     this.model.getColumnHeaderGroup(...args);
 
+  get columnHeaderGroups(): readonly ColumnHeaderGroup[] {
+    return this.model.columnHeaderGroups;
+  }
+
+  set columnHeaderGroups(groups: readonly ColumnHeaderGroup[]) {
+    this.model.columnHeaderGroups = groups;
+  }
+
+  get initialColumnHeaderGroups(): readonly ColumnHeaderGroup[] {
+    return this.model.initialColumnHeaderGroups;
+  }
+
   getColumnHeaderParentGroup: IrisGridModel['getColumnHeaderParentGroup'] = (
     ...args
   ) => this.model.getColumnHeaderParentGroup(...args);
+
+  get columnHeaderGroupMap(): ReadonlyMap<string, ColumnHeaderGroup> {
+    return this.model.columnHeaderGroupMap;
+  }
 
   get columnHeaderMaxDepth(): number {
     return this.model.columnHeaderMaxDepth;
   }
 
-  updateFrozenColumns(columns: ColumnName[]): void {
+  updateFrozenColumns(columns: readonly ColumnName[]): void {
     return this.model.updateFrozenColumns(columns);
   }
 
-  get originalColumns(): Column[] {
+  get originalColumns(): readonly Column[] {
     return this.originalModel.columns;
   }
 
-  get groupedColumns(): Column[] {
+  get groupedColumns(): readonly Column[] {
     return this.model.groupedColumns;
   }
 
@@ -650,6 +668,30 @@ class IrisGridProxyModel extends IrisGridModel {
 
   getColumnIndexByName(name: ColumnName): number | undefined {
     return this.model.getColumnIndexByName(name);
+  }
+
+  async seekRow(
+    startRow: number,
+    column: Column,
+    valueType: ValueTypeUnion,
+    value: unknown,
+    insensitive?: boolean,
+    contains?: boolean,
+    isBackwards?: boolean
+  ): Promise<number> {
+    return this.model.seekRow(
+      startRow,
+      column,
+      valueType,
+      value,
+      insensitive,
+      contains,
+      isBackwards
+    );
+  }
+
+  get isSeekRowAvailable(): boolean {
+    return this.model.isSeekRowAvailable;
   }
 }
 

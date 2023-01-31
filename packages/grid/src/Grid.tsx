@@ -815,12 +815,25 @@ class Grid extends PureComponent<GridProps, GridState> {
     canvasContext.scale(scale, scale);
   }
 
+  updateScrollBounds(): void {
+    if (!this.metrics) throw new Error('metrics not set');
+    const { left, top } = this.state;
+    const { lastLeft, lastTop } = this.metrics;
+    if (left > lastLeft) {
+      this.setState({ left: lastLeft, leftOffset: 0 });
+    }
+    if (top > lastTop) {
+      this.setState({ top: lastTop, topOffset: 0 });
+    }
+  }
+
   updateMetrics(state = this.state): GridMetrics {
     this.prevMetrics = this.metrics;
 
     const { metricCalculator } = this;
     const metricState = this.getMetricState(state);
     this.metrics = metricCalculator.getMetrics(metricState);
+    this.updateScrollBounds();
 
     return this.metrics;
   }
@@ -977,6 +990,7 @@ class Grid extends PureComponent<GridProps, GridState> {
         autoSelectRow !== undefined && autoSelectRow ? null : column;
       const selectedRow =
         autoSelectColumn !== undefined && autoSelectColumn ? null : row;
+
       newRanges.push(
         GridRange.makeNormalized(
           selectedColumn,
@@ -1022,8 +1036,8 @@ class Grid extends PureComponent<GridProps, GridState> {
         return {
           selectedRanges: [],
           lastSelectedRanges: [],
-          cursorColumn,
-          cursorRow,
+          cursorColumn: null,
+          cursorRow: null,
         };
       }
 
@@ -1063,6 +1077,12 @@ class Grid extends PureComponent<GridProps, GridState> {
           newCursorRow = null;
         }
       }
+
+      if (newSelectedRanges.length === 0) {
+        newCursorColumn = null;
+        newCursorRow = null;
+      }
+
       return {
         cursorRow: newCursorRow,
         cursorColumn: newCursorColumn,
@@ -1094,6 +1114,7 @@ class Grid extends PureComponent<GridProps, GridState> {
     this.setState({
       top: Math.min(lastTop, newTop),
       selectedRanges: [new GridRange(null, focusedRow, null, focusedRow)],
+      isStuckToBottom: false,
     });
     const { cursorColumn } = this.state;
     this.moveCursorToPosition(cursorColumn, focusedRow, false, false);
@@ -1564,8 +1585,6 @@ class Grid extends PureComponent<GridProps, GridState> {
     if (!this.canvasContext) throw new Error('context not set');
 
     const {
-      left,
-      top,
       cursorColumn,
       cursorRow,
       draggingColumn,
@@ -1587,9 +1606,8 @@ class Grid extends PureComponent<GridProps, GridState> {
     const theme = this.getTheme();
     const width = this.canvas.clientWidth;
     const height = this.canvas.clientHeight;
+
     const renderState = {
-      left,
-      top,
       width,
       height,
       context,
@@ -1798,14 +1816,6 @@ class Grid extends PureComponent<GridProps, GridState> {
 
     if (!this.metrics) throw new Error('metrics not set');
 
-    const { left, top } = this.state;
-    const { lastLeft, lastTop } = this.metrics;
-    if (left > lastLeft) {
-      this.setState({ left: lastLeft, leftOffset: 0 });
-    }
-    if (top > lastTop) {
-      this.setState({ top: lastTop, topOffset: 0 });
-    }
     this.forceUpdate();
   }
 
@@ -1879,7 +1889,7 @@ class Grid extends PureComponent<GridProps, GridState> {
 
         // get width of next column
         const columnWidth =
-          metrics.visibleColumnWidths.get(left) ??
+          metrics.allColumnWidths.get(left) ??
           metricCalculator.getVisibleColumnWidth(left, metricState);
 
         if (leftOffset >= columnWidth) {
@@ -1897,7 +1907,7 @@ class Grid extends PureComponent<GridProps, GridState> {
 
         // get width of next column
         const columnWidth =
-          metrics.visibleColumnWidths.get(left - 1) ??
+          metrics.allColumnWidths.get(left - 1) ??
           metricCalculator.getVisibleColumnWidth(left - 1, metricState);
 
         if (
@@ -1948,7 +1958,7 @@ class Grid extends PureComponent<GridProps, GridState> {
 
         // get height of next row
         const rowHeight =
-          metrics.visibleRowHeights.get(top) ??
+          metrics.allRowHeights.get(top) ??
           metricCalculator.getVisibleRowHeight(top, metricState);
 
         if (topOffset >= rowHeight) {
@@ -1966,7 +1976,7 @@ class Grid extends PureComponent<GridProps, GridState> {
 
         // get height of next row
         const rowHeight =
-          metrics.visibleRowHeights.get(top - 1) ??
+          metrics.allRowHeights.get(top - 1) ??
           metricCalculator.getVisibleRowHeight(top - 1, metricState);
 
         if (
@@ -2073,16 +2083,16 @@ class Grid extends PureComponent<GridProps, GridState> {
     const {
       gridX,
       gridY,
-      visibleColumnXs,
-      visibleRowYs,
-      visibleColumnWidths,
-      visibleRowHeights,
+      allColumnXs,
+      allRowYs,
+      allColumnWidths,
+      allRowHeights,
     } = metrics;
 
-    const x = visibleColumnXs.get(column);
-    const y = visibleRowYs.get(row);
-    const w = visibleColumnWidths.get(column);
-    const h = visibleRowHeights.get(row);
+    const x = allColumnXs.get(column);
+    const y = allRowYs.get(row);
+    const w = allColumnWidths.get(column);
+    const h = allRowHeights.get(row);
 
     // If the cell isn't visible, we still need to display an invisible cell for focus purposes
     const wrapperStyle: CSSProperties =

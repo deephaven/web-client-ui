@@ -148,7 +148,6 @@ export const renderFileListItem = (
         {children ?? item.basename}
         <Tooltip
           options={{
-            modifiers: { preventOverflow: { boundariesElement: 'window' } },
             placement: 'left',
           }}
         >
