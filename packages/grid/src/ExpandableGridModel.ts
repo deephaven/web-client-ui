@@ -4,7 +4,10 @@ import { ModelIndex } from './GridMetrics';
 export function isExpandableGridModel(
   model: GridModel
 ): model is ExpandableGridModel {
-  return (model as ExpandableGridModel)?.hasExpandableRows !== undefined;
+  return (
+    (model as ExpandableGridModel)?.hasExpandableRows !== undefined &&
+    (model as ExpandableGridModel)?.hasExpandableRows
+  );
 }
 
 /**

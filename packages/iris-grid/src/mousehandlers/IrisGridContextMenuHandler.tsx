@@ -551,10 +551,33 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
 
     // Expand/Collapse options
     if (isExpandableGridModel(model) && model.isRowExpandable(modelRow)) {
+      // If there are grouped columns, then it is a rollup
+      // For rollups, the column number will be the depth minus one
+      let cellValue =
+        model.groupedColumns.length > 0
+          ? model.textForCell(model.depthForRow(modelRow) - 1, modelRow)
+          : model.textForCell(0, modelRow);
+
+      if (cellValue === '') {
+        cellValue = 'null';
+      }
+
+      const getRowOptionFormatted = (
+        command: string,
+        cellVal: string,
+        len: number
+      ) => {
+        let newCellVal = cellVal;
+        if (command.length + cellVal.length + 3 > len) {
+          newCellVal = `${cellVal.substring(0, len - command.length - 6)}...`;
+        }
+        return `${command} "${newCellVal}"`;
+      };
+
       actions.push({
         title: model.isRowExpanded(modelRow)
-          ? `Collapse "${valueText}"`
-          : `Expand "${valueText}"`,
+          ? getRowOptionFormatted('Collapse', cellValue, 30)
+          : getRowOptionFormatted('Expand', cellValue, 30),
         group: IrisGridContextMenuHandler.GROUP_EXPAND_COLLAPSE,
         order: 10,
         action: () => {
@@ -563,7 +586,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
       });
 
       actions.push({
-        title: `Expand All in "${valueText}"`,
+        title: getRowOptionFormatted('Expand All in', cellValue, 30),
         group: IrisGridContextMenuHandler.GROUP_EXPAND_COLLAPSE,
         order: 20,
         action: () => {
