@@ -116,6 +116,16 @@ class MockTreeGridModel extends MockGridModel implements ExpandableGridModel {
     this.children = children;
   }
 
+  setExpandAll(): void {
+    const model = this.children.get(0);
+    model?.setExpandAll();
+  }
+
+  setCollapseAll(): void {
+    const model = this.children.get(0);
+    model?.setCollapseAll();
+  }
+
   depthForRow(row: ModelIndex): number {
     return this.getCachedDepthForRow(this.children, row);
   }
