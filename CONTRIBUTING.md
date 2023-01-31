@@ -44,7 +44,18 @@ Over time, forks will get out of sync with the upstream repository. To stay up t
    - If you know people who should be reviewers, add them as a reviewer
    - Add yourself as the Assignee
    - PR titles must follow the [Conventional Commits specification](https://www.conventionalcommits.org/en/v1.0.0/).
-     - The `type` provided must be one of [commitizen conventional commit types](https://github.com/commitizen/conventional-commit-types).
+     - The `type` provided must be one of [commitizen conventional commit types](https://github.com/commitizen/conventional-commit-types):
+       - **feat**: A new feature
+       - **fix**: A bug fix
+       - **docs**: Documentation only changes
+       - **style**: Changes that do not affect the meaning of the code (white-space, formatting, missing semi-colons, etc)
+       - **refactor**: A code change that neither fixes a bug nor adds a feature
+       - **perf**: A code change that improves performance
+       - **test**: Adding missing tests or correcting existing tests
+       - **build**: Changes that affect the build system or external dependencies (example scopes: gulp, broccoli, npm)
+       - **ci**: Changes to our CI configuration files and scripts (example scopes: Travis, Circle, BrowserStack, SauceLabs)
+       - **chore**: Other changes that don't modify src or test files
+       - **revert**: Reverts a previous commit
      - The `scope` is not required.
    - **BREAKING CHANGE:** if your change breaks an existing API in such a way that users of the package affected will need to make some changes to migrate to the newer version, add the `BREAKING CHANGE:` footer to the PR description, detailing the breakage and any migration instructions necessary, e.g.:
    ```
