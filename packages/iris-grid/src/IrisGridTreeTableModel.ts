@@ -141,8 +141,20 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
     return row?.isExpanded ?? false;
   }
 
-  setRowExpanded(y: ModelIndex, isExpanded: boolean, expandAll = false): void {
-    this.table.setExpanded(y, isExpanded, expandAll);
+  setRowExpanded(
+    y: ModelIndex,
+    isExpanded: boolean,
+    expandDescendants = false
+  ): void {
+    this.table.setExpanded(y, isExpanded, expandDescendants);
+  }
+
+  setExpandAll(): void {
+    this.table.expandAll();
+  }
+
+  setCollapseAll(): void {
+    this.table.collapseAll();
   }
 
   depthForRow(y: ModelIndex): ModelIndex {

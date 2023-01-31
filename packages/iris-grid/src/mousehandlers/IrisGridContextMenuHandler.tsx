@@ -391,13 +391,10 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
 
     const actions = [] as ContextAction[];
 
-    const { quickFilters, metrics } = irisGrid.state;
+    const { quickFilters } = irisGrid.state;
     const theme = irisGrid.getTheme();
     const { filterIconColor } = theme;
     const { settings } = irisGrid.props;
-
-    assertNotNull(metrics);
-    const { rowCount } = metrics;
 
     const dateFilterFormatter = new DateTimeColumnFormatter({
       timeZone: settings?.timeZone,
@@ -555,7 +552,9 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
     // Expand/Collapse options
     if (isExpandableGridModel(model) && model.isRowExpandable(modelRow)) {
       actions.push({
-        title: model.isRowExpanded(modelRow) ? 'Collapse Row' : 'Expand Row',
+        title: model.isRowExpanded(modelRow)
+          ? `Collapse "${valueText}"`
+          : `Expand "${valueText}"`,
         group: IrisGridContextMenuHandler.GROUP_EXPAND_COLLAPSE,
         order: 10,
         action: () => {
@@ -564,31 +563,31 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
       });
 
       actions.push({
-        title: 'Expand Rows Below',
-        shortcut: SHORTCUTS.TABLE.EXPAND_ROWS_BELOW,
+        title: `Expand All in "${valueText}"`,
         group: IrisGridContextMenuHandler.GROUP_EXPAND_COLLAPSE,
         order: 20,
         action: () => {
           model.setRowExpanded(modelRow, true, true);
         },
       });
+    }
 
-      let expandAll = false;
-      // If there is a row that isn't expanded, expand all from root
-      for (let i = 0; i < rowCount; i += 1) {
-        if (model.isRowExpandable(i)) {
-          if (!model.isRowExpanded(i)) {
-            expandAll = true;
-            break;
-          }
-        }
-      }
+    if (isExpandableGridModel(model)) {
       actions.push({
-        title: expandAll ? 'Expand All' : 'Collapse All',
+        title: 'Expand Entire Table',
         group: IrisGridContextMenuHandler.GROUP_EXPAND_COLLAPSE,
         order: 30,
         action: () => {
-          model.setRowExpanded(0, expandAll, expandAll);
+          model.setExpandAll();
+        },
+      });
+
+      actions.push({
+        title: 'Collapse Entire Table',
+        group: IrisGridContextMenuHandler.GROUP_EXPAND_COLLAPSE,
+        order: 40,
+        action: () => {
+          model.setCollapseAll();
         },
       });
     }

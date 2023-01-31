@@ -92,7 +92,6 @@ export enum KEY {
   F10 = 'F10',
   F11 = 'F11',
   F12 = 'F12',
-  LEFT_CLICK = 'Left Click',
 }
 
 const ALLOWED_SINGLE_KEY_SET: Set<KEY> = new Set([

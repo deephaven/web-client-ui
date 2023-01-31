@@ -292,6 +292,20 @@ class IrisGridProxyModel extends IrisGridModel {
     throw Error('Function setRowExpanded does not exist on IrisGridTableModel');
   };
 
+  setExpandAll: IrisGridTreeTableModel['setExpandAll'] = () => {
+    if (isExpandableGridModel(this.model)) {
+      return this.model.setExpandAll();
+    }
+    throw Error('Function setExpandAll does not exist on IrisGridTableModel');
+  };
+
+  setCollapseAll: IrisGridTreeTableModel['setCollapseAll'] = () => {
+    if (isExpandableGridModel(this.model)) {
+      return this.model.setCollapseAll();
+    }
+    throw Error('Function setCollapseAll does not exist on IrisGridTableModel');
+  };
+
   depthForRow: IrisGridTreeTableModel['depthForRow'] = (...args) => {
     if (isExpandableGridModel(this.model)) {
       return this.model.depthForRow(...args);

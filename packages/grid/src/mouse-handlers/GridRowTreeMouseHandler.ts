@@ -3,7 +3,7 @@ import { EventHandlerResult } from '../EventHandlerResult';
 import Grid from '../Grid';
 import { getOrThrow } from '../GridMetricCalculator';
 import GridMouseHandler from '../GridMouseHandler';
-import { GridPoint } from '../GridUtils';
+import GridUtils, { GridPoint } from '../GridUtils';
 
 /**
  * Detect when the tree expand/collapse button is clicked
@@ -60,7 +60,7 @@ class GridRowTreeMouseHandler extends GridMouseHandler {
     if (GridRowTreeMouseHandler.isInTreeBox(gridPoint, grid)) {
       const { row } = gridPoint;
       if (row !== null) {
-        grid.toggleRowExpanded(row, event.ctrlKey || event.metaKey);
+        grid.toggleRowExpanded(row, GridUtils.isModifierKeyDown(event));
         return true;
       }
     }

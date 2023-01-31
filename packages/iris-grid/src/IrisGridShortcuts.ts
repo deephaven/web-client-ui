@@ -37,12 +37,6 @@ const TABLE = {
     shortcut: [MODIFIER.CTRL, KEY.G],
     macShortcut: [MODIFIER.CMD, KEY.G],
   }),
-  EXPAND_ROWS_BELOW: ShortcutRegistry.createAndAdd({
-    id: 'TABLE.EXPAND_ROWS_BELOW',
-    name: 'Expand Rows Below',
-    shortcut: [MODIFIER.CTRL, KEY.LEFT_CLICK],
-    macShortcut: [MODIFIER.CMD, KEY.LEFT_CLICK],
-  }),
 };
 
 const INPUT_TABLE = {

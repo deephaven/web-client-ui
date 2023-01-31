@@ -856,8 +856,18 @@ export interface TreeTable extends TableTemplate<TreeTable>, TreeTableStatic {
   expand(row: TreeRow): void;
   collapse(row: number): void;
   collapse(row: TreeRow): void;
-  setExpanded(row: number, isExpanded: boolean, expandAll?: boolean): void;
-  setExpanded(row: TreeRow, isExpanded: boolean, expandAll?: boolean): void;
+  setExpanded(
+    row: number,
+    isExpanded: boolean,
+    expandDescendants?: boolean
+  ): void;
+  setExpanded(
+    row: TreeRow,
+    isExpanded: boolean,
+    expandDescendants?: boolean
+  ): void;
+  expandAll(): void;
+  collapseAll(): void;
   isExpanded(row: number): boolean;
   isExpanded(row: TreeRow): boolean;
 

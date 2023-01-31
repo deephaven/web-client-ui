@@ -85,7 +85,7 @@ class MockTreeGridModel extends MockGridModel implements ExpandableGridModel {
   setRowExpanded(
     row: ModelIndex,
     isExpanded: boolean,
-    expandAll = false
+    expandDescendants = false
   ): void {
     const { key, offsetRow } = this.getCachedModelRowOffset(this.children, row);
 
@@ -95,7 +95,7 @@ class MockTreeGridModel extends MockGridModel implements ExpandableGridModel {
       const model = this.children.get(key);
       if (model !== undefined) {
         const { rowCount: originalChildRowCount } = model;
-        model.setRowExpanded(offsetRow, isExpanded, expandAll);
+        model.setRowExpanded(offsetRow, isExpanded, expandDescendants);
         this.numRows += model.rowCount - originalChildRowCount;
       }
     } else if (!isExpanded) {
