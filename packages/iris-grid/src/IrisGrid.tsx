@@ -323,7 +323,7 @@ export interface IrisGridProps {
 
   canToggleSearch: boolean;
 
-  columnHeaderGroups?: ColumnHeaderGroup[];
+  columnHeaderGroups?: readonly ColumnHeaderGroup[];
 }
 
 export interface IrisGridState {
@@ -1150,7 +1150,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
   getAggregationMap = memoize(
     (
-      columns: Column[],
+      columns: readonly Column[],
       aggregations: readonly Aggregation[]
     ): ReadonlyAggregationMap => {
       const aggregationMap = {} as Record<AggregationOperation, string[]>;
@@ -1168,7 +1168,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
   getOperationMap = memoize(
     (
-      columns: Column[],
+      columns: readonly Column[],
       aggregations: readonly Aggregation[]
     ): ReadonlyOperationMap => {
       const operationMap: OperationMap = {};
@@ -1245,7 +1245,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
   getModelRollupConfig = memoize(
     (
-      originalColumns: Column[],
+      originalColumns: readonly Column[],
       config: UIRollupConfig | undefined,
       aggregationSettings: AggregationSettings
     ) =>
@@ -1258,7 +1258,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
   getModelTotalsConfig = memoize(
     (
-      columns: Column[],
+      columns: readonly Column[],
       config: UIRollupConfig | undefined,
       aggregationSettings: AggregationSettings
     ): UITotalsTableConfig | null => {
@@ -2200,7 +2200,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   }
 
   handleColumnVisibilityChanged(
-    modelIndexes: ModelIndex[],
+    modelIndexes: readonly ModelIndex[],
     isVisible: boolean
   ): void {
     const { metricCalculator } = this.state;
@@ -2846,7 +2846,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     this.setState({ movedColumns }, onChangeApplied);
   }
 
-  handleHeaderGroupsChanged(columnHeaderGroups: ColumnGroup[]): void {
+  handleHeaderGroupsChanged(columnHeaderGroups: readonly ColumnGroup[]): void {
     const { model } = this.props;
     this.setState(
       {

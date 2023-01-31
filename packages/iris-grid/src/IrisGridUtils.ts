@@ -132,7 +132,7 @@ export interface DehydratedIrisGridState {
  * @param array The array
  * @returns True if the index if valid within the array
  */
-function isValidIndex(x: number, array: unknown[]): boolean {
+function isValidIndex(x: number, array: readonly unknown[]): boolean {
   return x >= 0 && x < array.length;
 }
 
@@ -555,7 +555,7 @@ class IrisGridUtils {
    * @returns The dehydrated advanced filters
    */
   static dehydrateAdvancedFilters(
-    columns: Column[],
+    columns: readonly Column[],
     advancedFilters: ReadonlyAdvancedFilterMap
   ): DehydratedAdvancedFilter[] {
     return [...advancedFilters].map(([columnIndex, advancedFilter]) => {
@@ -637,7 +637,7 @@ class IrisGridUtils {
   }
 
   static dehydratePendingDataMap(
-    columns: Column[],
+    columns: readonly Column[],
     pendingDataMap: ReadonlyMap<
       ModelIndex,
       {
@@ -657,7 +657,7 @@ class IrisGridUtils {
   }
 
   static hydratePendingDataMap(
-    columns: Column[],
+    columns: readonly Column[],
     pendingDataMap: DehydratedPendingDataMap<CellData | string | null>
   ): Map<
     number,
@@ -1363,7 +1363,7 @@ class IrisGridUtils {
    * @returns Rollup config for the model
    */
   static getModelRollupConfig(
-    originalColumns: Column[],
+    originalColumns: readonly Column[],
     config: UIRollupConfig | undefined,
     aggregationSettings: AggregationSettings
   ): RollupConfig | null {
@@ -1469,7 +1469,7 @@ class IrisGridUtils {
    * @param  columnName The column name to retrieve
    */
   static getColumnByName(
-    columns: Column[],
+    columns: readonly Column[],
     columnName: ColumnName
   ): Column | undefined {
     const column = columns.find(({ name }) => name === columnName);
@@ -1491,7 +1491,7 @@ class IrisGridUtils {
    * @returns Updated filter configs with column names changed to indexes
    */
   static changeFilterColumnNamesToIndexes<T>(
-    columns: Column[],
+    columns: readonly Column[],
     filters: { name: ColumnName; filter: T }[]
   ): [number, T][] {
     return filters
@@ -1567,7 +1567,7 @@ class IrisGridUtils {
    */
   static parseColumnHeaderGroups(
     model: IrisGridModel,
-    groupsParam: ColumnGroup[]
+    groupsParam: readonly ColumnGroup[]
   ): {
     groups: ColumnHeaderGroup[];
     maxDepth: number;

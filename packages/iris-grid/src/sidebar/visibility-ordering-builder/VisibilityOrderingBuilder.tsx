@@ -934,7 +934,7 @@ class VisibilityOrderingBuilder extends Component<
   }
 
   makeVisibilityOrderingList = memoize(
-    (columns: Column[], treeItems: IrisGridTreeItem[]) => {
+    (columns: readonly Column[], treeItems: readonly IrisGridTreeItem[]) => {
       const { movedColumns } = this.props;
 
       const elements = [];

@@ -820,7 +820,7 @@ class IrisGridTableModelTemplate<
   /**
    * Used to get the initial moved columns based on layout hints
    */
-  get initialMovedColumns(): MoveOperation[] {
+  get initialMovedColumns(): readonly MoveOperation[] {
     return this.getMemoizedInitialMovedColumns(this.layoutHints ?? undefined);
   }
 

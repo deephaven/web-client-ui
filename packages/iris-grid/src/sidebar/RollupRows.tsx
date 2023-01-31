@@ -402,7 +402,10 @@ class RollupRows extends Component<RollupRowsProps, RollupRowsState> {
   }
 
   getCachedUngroupedColumns = memoize(
-    (columns: Column[], groupedColumns: ColumnName[]): Column[] =>
+    (
+      columns: readonly Column[],
+      groupedColumns: readonly ColumnName[]
+    ): readonly Column[] =>
       columns.filter(
         column =>
           RollupRows.isGroupable(column) &&
@@ -411,13 +414,13 @@ class RollupRows extends Component<RollupRowsProps, RollupRowsState> {
   );
 
   getCachedSortedColumns = memoize(
-    (columns: Column[], sort?: SortDirection): Column[] =>
+    (columns: readonly Column[], sort?: SortDirection): readonly Column[] =>
       sort == null
         ? [...columns]
         : TableUtils.sortColumns(columns, sort === RollupRows.SORT.ASCENDING)
   );
 
-  getUngroupedColumns(): Column[] {
+  getUngroupedColumns(): readonly Column[] {
     const { model } = this.props;
     const { columns } = this.state;
     const { originalColumns } = model;
@@ -425,7 +428,7 @@ class RollupRows extends Component<RollupRowsProps, RollupRowsState> {
     return this.getCachedUngroupedColumns(originalColumns, columns);
   }
 
-  getSortedUngroupedColumns(): Column[] {
+  getSortedUngroupedColumns(): readonly Column[] {
     const { sort } = this.state;
     const columns = this.getUngroupedColumns();
     return this.getCachedSortedColumns(columns, sort);

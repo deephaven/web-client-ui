@@ -29,8 +29,6 @@ import {
 } from './CommonTypes';
 import ColumnHeaderGroup from './ColumnHeaderGroup';
 
-type RowIndex = ModelIndex;
-
 type IrisGridModelEventNames = typeof IrisGridModel.EVENT[keyof typeof IrisGridModel.EVENT];
 
 type IrisGridModelEventMap = {

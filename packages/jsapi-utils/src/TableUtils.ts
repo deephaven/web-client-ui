@@ -1564,7 +1564,7 @@ export class TableUtils {
    * @param columns The columns to sort
    * @param isAscending Whether to sort ascending
    */
-  static sortColumns(columns: Column[], isAscending = true): Column[] {
+  static sortColumns(columns: readonly Column[], isAscending = true): Column[] {
     return [...columns].sort((a, b) => {
       const aName = a.name.toUpperCase();
       const bName = b.name.toUpperCase();
