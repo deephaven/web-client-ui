@@ -710,15 +710,17 @@ class IrisGridTableModelTemplate<
         movedColumns = GridUtils.moveRange(visibleRange, toIndex, movedColumns);
       };
 
-      if (
-        this.frontColumns.length ||
-        this.backColumns.length ||
-        this.frozenColumns.length
-      ) {
+      const {
+        frontColumns = [],
+        backColumns = [],
+        frozenColumns = [],
+      } = layoutHints;
+
+      if (frontColumns.length || backColumns.length || frozenColumns.length) {
         const usedColumns = new Set();
 
         let frontIndex = 0;
-        this.frozenColumns.forEach(name => {
+        frozenColumns.forEach(name => {
           if (usedColumns.has(name)) {
             throw new Error(
               `Column specified in multiple layout hints: ${name}`
@@ -727,7 +729,7 @@ class IrisGridTableModelTemplate<
           moveColumn(name, frontIndex);
           frontIndex += 1;
         });
-        this.frontColumns.forEach(name => {
+        frontColumns.forEach(name => {
           if (usedColumns.has(name)) {
             throw new Error(
               `Column specified in multiple layout hints: ${name}`
@@ -738,7 +740,7 @@ class IrisGridTableModelTemplate<
         });
 
         let backIndex = this.columnMap.size - 1;
-        this.backColumns.forEach(name => {
+        backColumns.forEach(name => {
           if (usedColumns.has(name)) {
             throw new Error(
               `Column specified in multiple layout hints: ${name}`

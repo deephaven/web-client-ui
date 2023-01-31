@@ -17,6 +17,7 @@ export type MarginProperty = 'columnHeaderHeight' | 'rowHeaderWidth';
 export type CalculatedSizeProperty =
   | 'calculatedRowHeights'
   | 'calculatedColumnWidths';
+export type InitialSizeProperty = 'initialRowHeights' | 'initialColumnWidths';
 export type ModelIndexesProperty = 'modelRows' | 'modelColumns';
 export type FirstIndexProperty = 'firstRow' | 'firstColumn';
 export type TreePaddingProperty = 'treePaddingX' | 'treePaddingY';
@@ -60,6 +61,8 @@ abstract class GridSeparatorMouseHandler extends GridMouseHandler {
   abstract marginProperty: MarginProperty;
 
   abstract calculatedSizesProperty: CalculatedSizeProperty;
+
+  abstract initialSizesProperty: InitialSizeProperty;
 
   abstract modelIndexesProperty: ModelIndexesProperty;
 
@@ -159,7 +162,7 @@ abstract class GridSeparatorMouseHandler extends GridMouseHandler {
     const treePadding = metrics[this.treePaddingProperty];
 
     // New sizes are batched and applied after the loop to avoid updating state while calculating next step
-    const newSizes: Map<ModelIndex, number | null> = new Map();
+    const newSizes: Map<ModelIndex, number> = new Map();
 
     // Use a loop as we may need to resize multiple items if they drag quickly
     let resizeIndex: number | null = this.resizingItems[
@@ -176,12 +179,12 @@ abstract class GridSeparatorMouseHandler extends GridMouseHandler {
       if (resizeIndex === firstIndex) {
         calculatedSize += treePadding;
       }
-      let newSize: number | null = itemSize;
+      let newSize = itemSize;
       if (
         Math.abs(itemSize - calculatedSize) <= theme.headerResizeSnapThreshold
       ) {
         // Snapping behaviour to "natural" width
-        newSize = null;
+        newSize = calculatedSize;
       } else if (
         targetSize !== undefined &&
         itemSize > targetSize &&
@@ -193,11 +196,7 @@ abstract class GridSeparatorMouseHandler extends GridMouseHandler {
         newSize = 0;
       }
 
-      if (newSize !== calculatedSize) {
-        newSizes.set(modelIndex, newSize);
-      } else {
-        newSizes.set(modelIndex, null);
-      }
+      newSizes.set(modelIndex, newSize);
 
       if (itemSize < -theme.headerResizeSnapThreshold && newSize === 0) {
         if (hiddenIndex >= 0 && isResizingMultiple) {
@@ -236,10 +235,14 @@ abstract class GridSeparatorMouseHandler extends GridMouseHandler {
     }
 
     newSizes.forEach((newSize, modelIndex) => {
-      if (newSize !== null) {
-        this.setSize(metricCalculator, modelIndex, newSize);
-      } else {
+      const defaultSize =
+        metricCalculator[this.initialSizesProperty].get(modelIndex) ??
+        calculatedSizes.get(modelIndex);
+
+      if (newSize === defaultSize) {
         this.resetSize(metricCalculator, modelIndex);
+      } else {
+        this.setSize(metricCalculator, modelIndex, newSize);
       }
     });
 
@@ -273,7 +276,19 @@ abstract class GridSeparatorMouseHandler extends GridMouseHandler {
       const modelIndexes = metrics[this.modelIndexesProperty];
       const modelIndex = getOrThrow(modelIndexes, separator.index);
 
-      this.resetSize(metricCalculator, modelIndex);
+      const calculatedSize = getOrThrow(
+        metrics[this.calculatedSizesProperty],
+        modelIndex
+      );
+      const defaultSize = metricCalculator[this.initialSizesProperty].get(
+        modelIndex
+      );
+
+      if (calculatedSize === defaultSize) {
+        this.resetSize(metricCalculator, modelIndex);
+      } else {
+        this.setSize(metricCalculator, modelIndex, calculatedSize);
+      }
 
       grid.forceUpdate();
 

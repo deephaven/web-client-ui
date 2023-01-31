@@ -2,7 +2,7 @@ import React, { ChangeEvent, Component, ReactElement } from 'react';
 import classNames from 'classnames';
 import {
   GridUtils,
-  ModelSizeMap,
+  ModelIndex,
   MoveOperation,
   VisibleIndex,
 } from '@deephaven/grid';
@@ -51,12 +51,13 @@ const DEBOUNCE_SEARCH_COLUMN = 150;
 interface VisibilityOrderingBuilderProps {
   model: IrisGridModel;
   movedColumns: MoveOperation[];
-  userColumnWidths: ModelSizeMap;
+  hiddenColumns: ModelIndex[];
   columnHeaderGroups: ColumnHeaderGroup[];
   onColumnVisibilityChanged: (
     columns: VisibleIndex[],
     isVisible: boolean
   ) => void;
+  onReset: () => void;
   onMovedColumnsChanged: (operations: MoveOperation[], cb?: () => void) => void;
   onColumnHeaderGroupChanged: (groups: ColumnHeaderGroup[]) => void;
 }
@@ -114,22 +115,18 @@ class VisibilityOrderingBuilder extends Component<
   resetVisibilityOrdering(): void {
     const {
       model,
-      onColumnVisibilityChanged,
+      onReset,
       onMovedColumnsChanged,
       onColumnHeaderGroupChanged,
     } = this.props;
-    const { columns } = model;
 
-    onColumnVisibilityChanged(
-      columns.map((_, i) => i),
-      true
-    );
     this.setState({
       selectedColumns: new Set(),
       lastSelectedColumn: '',
       searchFilter: '',
     });
 
+    onReset();
     onColumnHeaderGroupChanged(model.initialColumnHeaderGroups);
     onMovedColumnsChanged(model.initialMovedColumns);
   }
@@ -878,16 +875,12 @@ class VisibilityOrderingBuilder extends Component<
       columns: Column[],
       movedColumns: MoveOperation[],
       columnHeaderGroups: ColumnHeaderGroup[],
-      userColumnWidths: ModelSizeMap,
+      hiddenColumns: ModelIndex[],
       selectedColumns: Set<string>
     ) =>
-      getTreeItems(
-        columns,
-        movedColumns,
-        columnHeaderGroups,
-        userColumnWidths,
-        [...selectedColumns.values()]
-      )
+      getTreeItems(columns, movedColumns, columnHeaderGroups, hiddenColumns, [
+        ...selectedColumns.values(),
+      ])
   );
 
   /**
@@ -899,7 +892,7 @@ class VisibilityOrderingBuilder extends Component<
     const {
       model,
       movedColumns,
-      userColumnWidths,
+      hiddenColumns,
       columnHeaderGroups,
     } = this.props;
     const { selectedColumns } = this.state;
@@ -908,7 +901,7 @@ class VisibilityOrderingBuilder extends Component<
       model.columns,
       movedColumns,
       columnHeaderGroups,
-      userColumnWidths,
+      hiddenColumns,
       selectedColumns
     );
   }
@@ -1027,13 +1020,14 @@ class VisibilityOrderingBuilder extends Component<
   );
 
   render(): ReactElement {
-    const { model, userColumnWidths, onColumnVisibilityChanged } = this.props;
+    const { model, hiddenColumns, onColumnVisibilityChanged } = this.props;
     const { selectedColumns, searchFilter } = this.state;
     const hasSelection = selectedColumns.size > 0;
     const treeItems = this.getTreeItems();
     const nameToIndexes = new Map(
       flattenTree(treeItems).map(item => [item.id, item.data.modelIndex])
     );
+    const hiddenColumnsSet = new Set(hiddenColumns);
 
     const columnsToToggle = [
       // Pass through Set to dedupe model indexes
@@ -1046,9 +1040,8 @@ class VisibilityOrderingBuilder extends Component<
           : treeItems.map(item => item.data.modelIndex).flat()
       ),
     ];
-    const areSomeVisible = !GridUtils.checkAllColumnsHidden(
-      columnsToToggle,
-      userColumnWidths
+    const areSomeVisible = columnsToToggle.some(
+      column => !hiddenColumnsSet.has(column)
     );
 
     const allToggleText = areSomeVisible ? 'Hide All' : 'Show All';
