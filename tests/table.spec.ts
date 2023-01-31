@@ -1,5 +1,5 @@
 import { test, expect, Page } from '@playwright/test';
-import { makeTableCommand, typeInMonaco } from './utils';
+import { makeTableCommand, pasteInMonaco } from './utils';
 
 // Run tests serially since they all use the same table
 test.describe.configure({ mode: 'serial' });
@@ -10,7 +10,7 @@ async function openSimpleTable(page: Page) {
 
   const command = makeTableCommand();
 
-  await typeInMonaco(page, command);
+  await pasteInMonaco(consoleInput, command);
   await page.keyboard.press('Enter');
 
   // Wait for the panel to show
@@ -44,7 +44,7 @@ test('can open a table with column header groups', async ({ page }) => {
 column_groups = [{ 'name': 'YandZ', 'children': ['y', 'z'] }, { 'name': 'All', 'children': ['x', 'YandZ'], 'color': 'white' }]
 column_header_group = column_header_group.layout_hints(column_groups=column_groups)`;
 
-  await typeInMonaco(page, command);
+  await pasteInMonaco(consoleInput, command);
   await page.keyboard.press('Enter');
 
   // Wait for the panel to show

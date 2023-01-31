@@ -429,8 +429,8 @@ export interface Chart extends Evented {
 export interface Series {
   readonly plotStyle: SeriesPlotStyle;
   readonly name: string;
-  readonly isLinesVisible: boolean;
-  readonly isShapesVisible: boolean;
+  readonly isLinesVisible: boolean | null;
+  readonly isShapesVisible: boolean | null;
   readonly isGradientVisible: boolean;
   readonly lineColor: string;
   readonly pointLabelFormat: string;
