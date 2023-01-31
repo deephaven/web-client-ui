@@ -12,15 +12,17 @@ import { OptionType } from './sidebar';
 
 export type { AdvancedFilterOptions };
 export type ColumnName = string;
-export type AdvancedFilterMap = ReadonlyMap<ModelIndex, AdvancedFilter>;
-export type QuickFilterMap = ReadonlyMap<ModelIndex, QuickFilter>;
-export type MutableAdvancedFilterMap = Map<ModelIndex, AdvancedFilter>;
-export type MutableQuickFilterMap = Map<ModelIndex, QuickFilter>;
-export type AggregationMap = Record<
-  AggregationOperation,
-  readonly ColumnName[]
+export type AdvancedFilterMap = Map<ModelIndex, AdvancedFilter>;
+export type QuickFilterMap = Map<ModelIndex, QuickFilter>;
+export type ReadonlyAdvancedFilterMap = ReadonlyMap<ModelIndex, AdvancedFilter>;
+export type ReadonlyQuickFilterMap = ReadonlyMap<ModelIndex, QuickFilter>;
+export type ReadonlyAggregationMap = Readonly<
+  Record<AggregationOperation, readonly ColumnName[]>
 >;
 export type OperationMap = Record<ColumnName, readonly AggregationOperation[]>;
+export type ReadonlyOperationMap = Readonly<
+  Record<ColumnName, readonly AggregationOperation[]>
+>;
 
 export type QuickFilter = {
   text: string;

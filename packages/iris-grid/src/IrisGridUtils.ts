@@ -32,8 +32,8 @@ import AggregationOperation from './sidebar/aggregations/AggregationOperation';
 import { FilterData, IrisGridProps, IrisGridState } from './IrisGrid';
 import {
   ColumnName,
-  AdvancedFilterMap,
-  QuickFilterMap,
+  ReadonlyAdvancedFilterMap,
+  ReadonlyQuickFilterMap,
   InputFilter,
   CellData,
   PendingDataMap,
@@ -488,7 +488,7 @@ class IrisGridUtils {
    * @returns The dehydrated quick filters
    */
   static dehydrateQuickFilters(
-    quickFilters: QuickFilterMap
+    quickFilters: ReadonlyQuickFilterMap
   ): DehydratedQuickFilter[] {
     return [...quickFilters].map(([columnIndex, quickFilter]) => {
       const { text } = quickFilter;
@@ -507,7 +507,7 @@ class IrisGridUtils {
     columns: readonly Column[],
     savedQuickFilters: readonly DehydratedQuickFilter[],
     timeZone?: string
-  ): QuickFilterMap {
+  ): ReadonlyQuickFilterMap {
     const importedFilters = savedQuickFilters.map(
       ([columnIndex, quickFilter]: DehydratedQuickFilter): [
         number,
@@ -540,8 +540,8 @@ class IrisGridUtils {
    */
   static dehydrateAdvancedFilters(
     columns: Column[],
-    advancedFilters: AdvancedFilterMap
-  ): readonly DehydratedAdvancedFilter[] {
+    advancedFilters: ReadonlyAdvancedFilterMap
+  ): DehydratedAdvancedFilter[] {
     return [...advancedFilters].map(([columnIndex, advancedFilter]) => {
       const column = IrisGridUtils.getColumn(columns, columnIndex);
       assertNotNull(column);
@@ -564,7 +564,7 @@ class IrisGridUtils {
     columns: readonly Column[],
     savedAdvancedFilters: readonly DehydratedAdvancedFilter[],
     timeZone: string
-  ): AdvancedFilterMap {
+  ): ReadonlyAdvancedFilterMap {
     const importedFilters = savedAdvancedFilters.map(
       ([columnIndex, advancedFilter]: DehydratedAdvancedFilter): [
         number,
@@ -623,27 +623,21 @@ class IrisGridUtils {
   static dehydratePendingDataMap(
     columns: Column[],
     pendingDataMap: ReadonlyMap<
-      number,
-      | UIRow
-      | {
-          data: Map<ModelIndex, string>;
-        }
+      ModelIndex,
+      {
+        data: Map<ModelIndex, CellData | string>;
+      }
     >
   ): DehydratedPendingDataMap<CellData | string | null> {
-    return [...pendingDataMap].map(
-      ([rowIndex, { data }]: [
-        number,
-        { data: Map<ModelIndex, CellData | string> }
-      ]) => [
-        rowIndex,
-        {
-          data: [...data].map(([c, value]) => [
-            columns[c].name,
-            IrisGridUtils.dehydrateValue(value, columns[c].type),
-          ]),
-        },
-      ]
-    );
+    return [...pendingDataMap].map(([rowIndex, { data }]) => [
+      rowIndex,
+      {
+        data: [...data].map(([c, value]) => [
+          columns[c].name,
+          IrisGridUtils.dehydrateValue(value, columns[c].type),
+        ]),
+      },
+    ]);
   }
 
   static hydratePendingDataMap(
@@ -752,7 +746,7 @@ class IrisGridUtils {
    * @param  sorts The table sorts
    * @returns The dehydrated sorts
    */
-  static dehydrateSort(sorts: readonly Sort[]): readonly DehydratedSort[] {
+  static dehydrateSort(sorts: readonly Sort[]): DehydratedSort[] {
     return sorts.map(sort => {
       const { column, isAbs, direction } = sort;
       return {
@@ -952,7 +946,7 @@ class IrisGridUtils {
   }
 
   static getFiltersFromFilterMap(
-    filterMap: AdvancedFilterMap | QuickFilterMap
+    filterMap: ReadonlyAdvancedFilterMap | ReadonlyQuickFilterMap
   ): FilterCondition[] {
     const filters = [];
 
@@ -960,7 +954,7 @@ class IrisGridUtils {
     for (let i = 0; i < keys.length; i += 1) {
       const key = keys[i];
       const item = filterMap.get(key);
-      if (item && item.filter != null) {
+      if (item?.filter != null) {
         filters.push(item.filter);
       }
     }
@@ -988,7 +982,7 @@ class IrisGridUtils {
   static getRemovedCustomColumnNames(
     oldCustomColumns: readonly ColumnName[],
     customColumns: readonly ColumnName[]
-  ): readonly ColumnName[] {
+  ): ColumnName[] {
     const oldCustomColumnsNames = IrisGridUtils.parseCustomColumnNames(
       oldCustomColumns
     );
@@ -1299,13 +1293,13 @@ class IrisGridUtils {
   static columnsFromRanges(
     ranges: readonly GridRange[],
     allColumns: readonly Column[]
-  ): readonly Column[] {
+  ): Column[] {
     if (ranges == null || ranges.length === 0) {
       return [];
     }
     if (ranges[0].startColumn === null && ranges[0].endColumn === null) {
       // Snapshot of all the columns
-      return allColumns;
+      return [...allColumns];
     }
 
     const columnSet = new Set<ModelIndex>();

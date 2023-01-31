@@ -242,7 +242,7 @@ export class TableUtils {
     direction: SortDirection,
     isAbs: boolean,
     addToExisting: boolean
-  ): readonly Sort[] {
+  ): Sort[] {
     if (sorts == null || modelColumn < 0 || modelColumn >= columns.length) {
       return [];
     }

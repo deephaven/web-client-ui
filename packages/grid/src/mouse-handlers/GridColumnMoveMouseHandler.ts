@@ -683,7 +683,7 @@ class GridColumnMoveMouseHandler extends GridMouseHandler {
     draggingColumn: ColumnInfo,
     to: number,
     movedColumns: readonly MoveOperation[]
-  ): readonly MoveOperation[] {
+  ): MoveOperation[] {
     const newMovedColumns = draggingColumn.isColumnGroup
       ? GridUtils.moveRange(draggingColumn.range, to, movedColumns)
       : GridUtils.moveItem(draggingColumn.visibleIndex, to, movedColumns);

@@ -25,12 +25,12 @@ import {
   PendingDataMap,
   InputFilter,
   IrisGridThemeType,
-  AdvancedFilterMap,
+  ReadonlyAdvancedFilterMap,
   AggregationSettings,
   AdvancedSettingsType,
   UIRollupConfig,
   UIRow,
-  QuickFilterMap,
+  ReadonlyQuickFilterMap,
   FilterMap,
   QuickFilter,
   AdvancedFilter,
@@ -158,13 +158,13 @@ interface IrisGridPanelState {
   // State is hydrated from panel state when table is loaded
   conditionalFormats: readonly SidebarFormattingRule[];
   selectDistinctColumns: readonly ColumnName[];
-  advancedFilters: AdvancedFilterMap;
+  advancedFilters: ReadonlyAdvancedFilterMap;
   aggregationSettings: AggregationSettings;
   advancedSettings: Map<AdvancedSettingsType, boolean>;
   customColumns: readonly ColumnName[];
   customColumnFormatMap: Map<string, FormattingRule>;
   isFilterBarShown: boolean;
-  quickFilters: QuickFilterMap;
+  quickFilters: ReadonlyQuickFilterMap;
   sorts: readonly Sort[];
   userColumnWidths: ModelSizeMap;
   userRowHeights: ModelSizeMap;
@@ -433,10 +433,10 @@ export class IrisGridPanel extends PureComponent<
     (
       model: IrisGridModel,
       sorts: readonly Sort[],
-      advancedFilters: AdvancedFilterMap,
+      advancedFilters: ReadonlyAdvancedFilterMap,
       customColumnFormatMap: Map<ColumnName, FormattingRule>,
       isFilterBarShown: boolean,
-      quickFilters: QuickFilterMap,
+      quickFilters: ReadonlyQuickFilterMap,
       customColumns: readonly ColumnName[],
       reverseType: ReverseType,
       rollupConfig: UIRollupConfig | undefined,
@@ -897,7 +897,7 @@ export class IrisGridPanel extends PureComponent<
     }
   }
 
-  setAdvancedFilterMap(filterMap: AdvancedFilterMap): void {
+  setAdvancedFilterMap(filterMap: ReadonlyAdvancedFilterMap): void {
     const irisGrid = this.irisGrid.current;
     if (irisGrid != null) {
       irisGrid.setAdvancedFilterMap(filterMap);

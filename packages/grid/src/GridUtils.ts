@@ -743,9 +743,9 @@ export class GridUtils {
     from: VisibleIndex,
     to: VisibleIndex,
     oldMovedItems: readonly MoveOperation[]
-  ): readonly MoveOperation[] {
+  ): MoveOperation[] {
     if (from === to) {
-      return oldMovedItems;
+      return [...oldMovedItems];
     }
 
     const movedItems: MoveOperation[] = [...oldMovedItems];
@@ -790,9 +790,9 @@ export class GridUtils {
     from: BoundedAxisRange,
     to: VisibleIndex,
     oldMovedItems: readonly MoveOperation[]
-  ): readonly MoveOperation[] {
+  ): MoveOperation[] {
     if (from[0] === to) {
-      return oldMovedItems;
+      return [...oldMovedItems];
     }
 
     const movedItems: MoveOperation[] = [...oldMovedItems];
@@ -1053,7 +1053,7 @@ export class GridUtils {
     uiRanges: readonly GridRange[],
     movedColumns: readonly MoveOperation[] = EMPTY_ARRAY,
     movedRows: readonly MoveOperation[] = EMPTY_ARRAY
-  ): readonly GridRange[] {
+  ): GridRange[] {
     const modelRanges = [];
     for (let i = 0; i < uiRanges.length; i += 1) {
       modelRanges.push(

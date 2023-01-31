@@ -86,7 +86,6 @@ import {
   assertNotNull,
   copyToClipboard,
   EMPTY_ARRAY,
-  EMPTY_FUNCTION,
   EMPTY_MAP,
   Pending,
   PromiseUtils,
@@ -162,11 +161,11 @@ import AggregationOperation from './sidebar/aggregations/AggregationOperation';
 import { UIRollupConfig } from './sidebar/RollupRows';
 import { VisibilityOptionType } from './sidebar/VisibilityOrderingBuilder';
 import {
-  AdvancedFilterMap,
+  ReadonlyAdvancedFilterMap,
   ColumnName,
-  QuickFilterMap,
-  AggregationMap,
-  OperationMap,
+  ReadonlyQuickFilterMap,
+  ReadonlyAggregationMap,
+  ReadonlyOperationMap,
   Action,
   OptionItem,
   UITotalsTableConfig,
@@ -174,7 +173,8 @@ import {
   PendingDataMap,
   AdvancedFilterOptions,
   PendingDataErrorMap,
-  MutableQuickFilterMap,
+  QuickFilterMap,
+  OperationMap,
 } from './CommonTypes';
 
 const log = Log.module('IrisGrid');
@@ -203,10 +203,10 @@ function isEmptyConfig({
   selectDistinctColumns,
   sorts,
 }: {
-  advancedFilters: AdvancedFilterMap;
+  advancedFilters: ReadonlyAdvancedFilterMap;
   aggregationSettings: AggregationSettings;
   customColumns: readonly ColumnName[];
-  quickFilters: QuickFilterMap;
+  quickFilters: ReadonlyQuickFilterMap;
   reverseType: ReverseType;
   rollupConfig?: UIRollupConfig;
   searchFilter?: FilterCondition;
@@ -241,7 +241,7 @@ export type FilterMap = Map<
 >;
 export interface IrisGridProps {
   children: React.ReactNode;
-  advancedFilters: AdvancedFilterMap;
+  advancedFilters: ReadonlyAdvancedFilterMap;
   advancedSettings: Map<AdvancedSettingsType, boolean>;
   alwaysFetchColumns: readonly ColumnName[];
   isFilterBarShown: boolean;
@@ -264,7 +264,7 @@ export interface IrisGridProps {
   partitionColumn: Column;
   sorts: readonly Sort[];
   reverseType: ReverseType;
-  quickFilters: QuickFilterMap | null;
+  quickFilters: ReadonlyQuickFilterMap | null;
   customColumns: readonly ColumnName[];
   selectDistinctColumns: readonly ColumnName[];
   settings?: Settings;
@@ -333,8 +333,8 @@ export interface IrisGridState {
   partitionFilters: readonly FilterCondition[];
   // setAdvancedFilter and setQuickFilter mutate the arguments
   // so we want to always use map copies from the state instead of props
-  quickFilters: QuickFilterMap;
-  advancedFilters: AdvancedFilterMap;
+  quickFilters: ReadonlyQuickFilterMap;
+  advancedFilters: ReadonlyAdvancedFilterMap;
   shownAdvancedFilter: number | null;
   hoverAdvancedFilter: number | null;
 
@@ -1110,7 +1110,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   );
 
   getCachedHiddenColumns = memoize(
-    (userColumnWidths: ModelSizeMap) =>
+    (userColumnWidths: ModelSizeMap): readonly ModelIndex[] =>
       IrisGridUtils.getHiddenColumns(userColumnWidths),
     { max: 1 }
   );
@@ -1119,7 +1119,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     (
       columns: Column[],
       aggregations: readonly Aggregation[]
-    ): AggregationMap => {
+    ): ReadonlyAggregationMap => {
       const aggregationMap = {} as Record<AggregationOperation, string[]>;
       aggregations.forEach(({ operation, selected, invert }) => {
         aggregationMap[operation] = AggregationUtils.getOperationColumnNames(
@@ -1134,7 +1134,10 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   );
 
   getOperationMap = memoize(
-    (columns: Column[], aggregations: readonly Aggregation[]): OperationMap => {
+    (
+      columns: Column[],
+      aggregations: readonly Aggregation[]
+    ): ReadonlyOperationMap => {
       const operationMap: OperationMap = {};
       aggregations
         .filter(
@@ -1248,8 +1251,8 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       isFilterBarShown: boolean,
       isSelectingColumn: boolean,
       loadingScrimProgress: number | null,
-      quickFilters: QuickFilterMap,
-      advancedFilters: AdvancedFilterMap,
+      quickFilters: ReadonlyQuickFilterMap,
+      advancedFilters: ReadonlyAdvancedFilterMap,
       sorts: readonly Sort[],
       reverseType: ReverseType,
       rollupConfig: UIRollupConfig | undefined,
@@ -1272,8 +1275,8 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   getCachedFilter = memoize(
     (
       customFilters: readonly FilterCondition[],
-      quickFilters: QuickFilterMap,
-      advancedFilters: AdvancedFilterMap,
+      quickFilters: ReadonlyQuickFilterMap,
+      advancedFilters: ReadonlyAdvancedFilterMap,
       partitionFilters: readonly FilterCondition[],
       searchFilter: FilterCondition | undefined
     ) => [
@@ -1417,7 +1420,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   applyQuickFilter(
     modelIndex: ModelIndex,
     value: string | null,
-    quickFilters: MutableQuickFilterMap
+    quickFilters: QuickFilterMap
   ): boolean {
     const { model } = this.props;
     const { formatter } = model;
@@ -1441,7 +1444,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     return quickFilters.delete(modelIndex);
   }
 
-  setAdvancedFilterMap(advancedFilters: AdvancedFilterMap): void {
+  setAdvancedFilterMap(advancedFilters: ReadonlyAdvancedFilterMap): void {
     this.setState({ advancedFilters });
   }
 
@@ -2247,7 +2250,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   handlePartitionAppend(value: string): void {
     const { onPartitionAppend } = this.props;
     const { partitionColumn } = this.state;
-    if (!partitionColumn) {
+    if (partitionColumn == null) {
       return;
     }
     onPartitionAppend(partitionColumn, value);
@@ -2255,7 +2258,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
   handlePartitionChange(partition: string): void {
     const { partitionColumn } = this.state;
-    if (!partitionColumn) {
+    if (partitionColumn == null) {
       return;
     }
     this.updatePartition(partition, partitionColumn);
@@ -2801,7 +2804,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
   handleMovedColumnsChanged(
     movedColumns: readonly MoveOperation[],
-    onChangeApplied: () => void = EMPTY_FUNCTION
+    onChangeApplied?: () => void
   ): void {
     this.setState({ movedColumns }, onChangeApplied);
   }

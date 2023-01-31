@@ -661,7 +661,7 @@ class IrisGridTableModelTemplate<
    * Used to get the initial moved columns based on layout hints
    */
   get movedColumns(): readonly MoveOperation[] {
-    let movedColumns: readonly MoveOperation[] = [];
+    let movedColumns: MoveOperation[] = [];
 
     const moveColumn = (name: string, toIndex: VisibleIndex) => {
       const modelIndex = this.getColumnIndexByName(name);

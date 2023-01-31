@@ -464,11 +464,7 @@ export class GridRange {
   static subtractRangesFromRanges(
     ranges: readonly GridRange[],
     subtractRanges: readonly GridRange[]
-  ): readonly GridRange[] {
-    if (subtractRanges == null || subtractRanges.length === 0) {
-      return ranges;
-    }
-
+  ): GridRange[] {
     let result = [...ranges];
     for (let i = 0; i < subtractRanges.length; i += 1) {
       result = GridRange.subtractFromRanges(result, subtractRanges[i]);

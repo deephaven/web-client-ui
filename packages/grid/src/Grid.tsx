@@ -644,7 +644,7 @@ class Grid extends PureComponent<GridProps, GridState> {
   }
 
   getCachedMouseHandlers = memoize(
-    (mouseHandlers: readonly GridMouseHandler[]) =>
+    (mouseHandlers: readonly GridMouseHandler[]): readonly GridMouseHandler[] =>
       [...mouseHandlers, ...this.mouseHandlers].sort(
         (a, b) => a.order - b.order
       )

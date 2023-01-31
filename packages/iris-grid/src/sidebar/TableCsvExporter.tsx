@@ -203,7 +203,7 @@ class TableCsvExporter extends Component<
     return snapshotRanges;
   }
 
-  getModelRanges(ranges: readonly GridRange[]): readonly GridRange[] {
+  getModelRanges(ranges: readonly GridRange[]): GridRange[] {
     const { userColumnWidths, movedColumns } = this.props;
     const { includeHiddenColumns } = this.state;
     const hiddenColumns = IrisGridUtils.getHiddenColumns(userColumnWidths);
