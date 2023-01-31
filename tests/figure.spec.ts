@@ -16,7 +16,7 @@ test.afterEach(async () => {
   await page.close();
 });
 
-test('can open a simple figure', async ({ browserName }) => {
+test('can open a simple figure', async () => {
   const figureName = generateVarName();
 
   // Create a figure that uses the table we just created
@@ -24,7 +24,7 @@ test('can open a simple figure', async ({ browserName }) => {
 from deephaven.plot.figure import Figure
 ${figureName} = Figure().plot_xy(series_name="Test", t=empty_table(100).update(["x=i", "y=Math.sin(i)", "z=Math.cos(i)"]), x="x", y="y").show()`;
 
-  await pasteInMonaco(consoleInput, command, browserName);
+  await pasteInMonaco(consoleInput, command);
 
   await page.keyboard.press('Enter');
 
@@ -42,7 +42,7 @@ ${figureName} = Figure().plot_xy(series_name="Test", t=empty_table(100).update([
   ).toHaveScreenshot();
 });
 
-test('can set point shape and size', async ({ browserName }) => {
+test('can set point shape and size', async () => {
   const tableName = generateVarName();
   const figureName = generateVarName();
   const command = `from deephaven import empty_table
@@ -66,7 +66,7 @@ for i in range(len(shapes)):
 
 ${figureName} = ${figureName}.show();`;
 
-  await pasteInMonaco(consoleInput, command, browserName);
+  await pasteInMonaco(consoleInput, command);
   await page.keyboard.press('Enter');
 
   // Expect the panel to be open with a loading spinner first

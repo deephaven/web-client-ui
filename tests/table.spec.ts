@@ -4,13 +4,13 @@ import { makeTableCommand, pasteInMonaco } from './utils';
 // Run tests serially since they all use the same table
 test.describe.configure({ mode: 'serial' });
 
-async function openSimpleTable(browserName: string, page: Page) {
+async function openSimpleTable(page: Page) {
   const consoleInput = page.locator('.console-input');
   await consoleInput.click();
 
   const command = makeTableCommand();
 
-  await pasteInMonaco(consoleInput, command, browserName);
+  await pasteInMonaco(consoleInput, command);
   await page.keyboard.press('Enter');
 
   // Wait for the panel to show
@@ -27,18 +27,15 @@ async function openSimpleTable(browserName: string, page: Page) {
   ).toHaveCount(0);
 }
 
-test('can open a simple table', async ({ browserName, page }) => {
+test('can open a simple table', async ({ page }) => {
   await page.goto('');
-  await openSimpleTable(browserName, page);
+  await openSimpleTable(page);
 
   // Now we should be able to check the snapshot
   await expect(page.locator('.iris-grid-panel .iris-grid')).toHaveScreenshot();
 });
 
-test('can open a table with column header groups', async ({
-  browserName,
-  page,
-}) => {
+test('can open a table with column header groups', async ({ page }) => {
   await page.goto('');
   const consoleInput = page.locator('.console-input');
   await consoleInput.click();
@@ -47,7 +44,7 @@ test('can open a table with column header groups', async ({
 column_groups = [{ 'name': 'YandZ', 'children': ['y', 'z'] }, { 'name': 'All', 'children': ['x', 'YandZ'], 'color': 'white' }]
 column_header_group = column_header_group.layout_hints(column_groups=column_groups)`;
 
-  await pasteInMonaco(consoleInput, command, browserName);
+  await pasteInMonaco(consoleInput, command);
   await page.keyboard.press('Enter');
 
   // Wait for the panel to show
@@ -70,10 +67,10 @@ column_header_group = column_header_group.layout_hints(column_groups=column_grou
 test.describe('tests table operations', () => {
   let page: Page;
 
-  test.beforeAll(async ({ browser, browserName }) => {
+  test.beforeAll(async ({ browser }) => {
     page = await browser.newPage();
     await page.goto('');
-    await openSimpleTable(browserName, page);
+    await openSimpleTable(page);
   });
   test.beforeEach(async () => {
     const tableOperationsMenu = page.locator(

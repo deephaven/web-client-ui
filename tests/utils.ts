@@ -51,13 +51,12 @@ export async function typeInMonaco(page: Page, text: string): Promise<void> {
  * Pastes text into a monaco input
  * @param locator Locator to use for monaco editor
  * @param text Text to be pasted
- * @param browserName Name of the browser being tested. Pasting is not available in firefox, so it will fall back to typing.
  */
 export async function pasteInMonaco(
   locator: Locator,
-  text: string,
-  browserName: string
+  text: string
 ): Promise<void> {
+  const browserName = locator.page().context().browser()?.browserType().name();
   if (browserName === 'firefox') {
     await typeInMonaco(locator.page(), text);
   } else {
