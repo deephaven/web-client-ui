@@ -1,5 +1,5 @@
 import { test, expect, Page, Locator } from '@playwright/test';
-import { generateVarName, pasteInMonaco, typeInMonaco } from './utils';
+import { generateVarName, pasteInMonaco } from './utils';
 
 let page: Page;
 let consoleInput: Locator;
@@ -9,7 +9,6 @@ test.beforeEach(async ({ browser }) => {
   await page.goto('');
 
   consoleInput = page.locator('.console-input');
-  await consoleInput.click();
 });
 
 test.afterEach(async () => {

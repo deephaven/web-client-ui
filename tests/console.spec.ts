@@ -1,4 +1,4 @@
-import { test, expect, Page } from '@playwright/test';
+import { test, expect, Page, Locator } from '@playwright/test';
 import shortid from 'shortid';
 import { generateVarName, makeTableCommand, pasteInMonaco } from './utils';
 
@@ -10,7 +10,6 @@ test.beforeAll(async ({ browser }) => {
   await page.goto('');
 
   consoleInput = page.locator('.console-input');
-  await consoleInput.click();
 });
 
 test.afterAll(async () => {

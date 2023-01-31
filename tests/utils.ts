@@ -58,6 +58,7 @@ export async function pasteInMonaco(
 ): Promise<void> {
   const browserName = locator.page().context().browser()?.browserType().name();
   if (browserName === 'firefox') {
+    await locator.click();
     await typeInMonaco(locator.page(), text);
   } else {
     await locator.locator('textarea').evaluate(async (element, evalText) => {
