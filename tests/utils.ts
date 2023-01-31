@@ -27,12 +27,19 @@ ${tableName} = empty_table(100).update(["x=i", "y=Math.sin(i)", "z=Math.cos(i)"]
 
 /**
  * Types into monaco input and avoids autocomplete suggestions.
- * Assumes correct monaco input already has focus.
- * @param page The Page instance for each test
+ * Clicks the monaco input provided to give it focus to start.
+ * @param locator Locator to use for monaco editor
  * @param text Text to be typed, with carriage returns
  */
-export async function typeInMonaco(page: Page, text: string): Promise<void> {
+export async function typeInMonaco(
+  locator: Locator,
+  text: string
+): Promise<void> {
+  const page = locator.page();
   const splitByLine = text.split('\n');
+
+  // Give the monaco editor focus so we can start typing
+  await locator.click();
   for (let i = 0; i < splitByLine.length; i += 1) {
     await page.keyboard.type(splitByLine[i]);
     // Pressing space and then backspace escapes any autocomplete suggestions that may appear
@@ -58,8 +65,7 @@ export async function pasteInMonaco(
 ): Promise<void> {
   const browserName = locator.page().context().browser()?.browserType().name();
   if (browserName === 'firefox') {
-    await locator.click();
-    await typeInMonaco(locator.page(), text);
+    await typeInMonaco(locator, text);
   } else {
     await locator.locator('textarea').evaluate(async (element, evalText) => {
       const clipboardData = new DataTransfer();
@@ -72,4 +78,4 @@ export async function pasteInMonaco(
   }
 }
 
-export default { generateVarName, typeInMonaco };
+export default { generateVarName, pasteInMonaco, typeInMonaco };
