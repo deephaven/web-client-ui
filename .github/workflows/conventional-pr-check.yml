@@ -8,7 +8,7 @@ on:
       - synchronize
 
 jobs:
-  doc-labels:
+  pr-check:
     name: Validate PR title
     runs-on: ubuntu-22.04
     steps:
