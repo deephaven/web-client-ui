@@ -585,20 +585,22 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
         },
       });
 
-      actions.push({
-        title: getRowOptionFormatted('Expand All in', cellValue, 30),
-        group: IrisGridContextMenuHandler.GROUP_EXPAND_COLLAPSE,
-        order: 20,
-        action: () => {
-          model.setRowExpanded(modelRow, true, true);
-        },
-      });
+      if (model.isExpandAllAvailable === true) {
+        actions.push({
+          title: getRowOptionFormatted('Expand All in', cellValue, 30),
+          group: IrisGridContextMenuHandler.GROUP_EXPAND_COLLAPSE,
+          order: 20,
+          action: () => {
+            model.setRowExpanded(modelRow, true, true);
+          },
+        });
+      }
     }
 
     if (
       isExpandableGridModel(model) &&
-      model.isExpandAllAvailable !== undefined &&
-      model.isExpandAllAvailable
+      model.hasExpandableRows &&
+      model.isExpandAllAvailable === true
     ) {
       actions.push({
         title: 'Expand Entire Table',

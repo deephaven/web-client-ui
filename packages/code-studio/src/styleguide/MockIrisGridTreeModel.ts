@@ -126,6 +126,10 @@ class MockIrisGridTreeModel
     return this.model.hasExpandableRows;
   }
 
+  get isExpandAllAvailable(): boolean {
+    return false;
+  }
+
   isRowExpandable(row: ModelIndex): boolean {
     return this.model.isRowExpandable(row);
   }
@@ -143,11 +147,11 @@ class MockIrisGridTreeModel
   }
 
   expandAll(): void {
-    this.model.expandAll();
+    throw new Error('Expand all not implemented.');
   }
 
   collapseAll(): void {
-    this.model.collapseAll();
+    throw new Error('Collapse all not implemented.');
   }
 
   depthForRow(row: ModelIndex): number {

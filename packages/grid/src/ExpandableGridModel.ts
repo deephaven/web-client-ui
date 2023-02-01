@@ -4,10 +4,7 @@ import { ModelIndex } from './GridMetrics';
 export function isExpandableGridModel(
   model: GridModel
 ): model is ExpandableGridModel {
-  return (
-    (model as ExpandableGridModel)?.hasExpandableRows !== undefined &&
-    (model as ExpandableGridModel)?.hasExpandableRows
-  );
+  return (model as ExpandableGridModel)?.hasExpandableRows !== undefined;
 }
 
 /**
@@ -18,7 +15,7 @@ export interface ExpandableGridModel extends GridModel {
   hasExpandableRows: boolean;
 
   /** Whether the grid can expand all */
-  isExpandAllAvailable?: boolean;
+  isExpandAllAvailable: boolean;
 
   /**
    * @param row Row to check

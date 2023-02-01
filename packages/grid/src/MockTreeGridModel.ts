@@ -70,6 +70,10 @@ class MockTreeGridModel extends MockGridModel implements ExpandableGridModel {
     return true;
   }
 
+  get isExpandAllAvailable(): boolean {
+    return false;
+  }
+
   get floatingBottomRowCount(): number {
     return 0;
   }
@@ -117,13 +121,11 @@ class MockTreeGridModel extends MockGridModel implements ExpandableGridModel {
   }
 
   expandAll(): void {
-    const model = this.children.get(0);
-    model?.expandAll();
+    throw new Error('Expand all not implemented.');
   }
 
   collapseAll(): void {
-    const model = this.children.get(0);
-    model?.collapseAll();
+    throw new Error('Collapse all not implemented.');
   }
 
   depthForRow(row: ModelIndex): number {
