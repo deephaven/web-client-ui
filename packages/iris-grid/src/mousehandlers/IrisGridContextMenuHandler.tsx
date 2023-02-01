@@ -17,7 +17,6 @@ import {
 } from '@deephaven/components';
 import {
   EventHandlerResult,
-  ExpandableGridModel,
   Grid,
   GridMouseHandler,
   GridPoint,
