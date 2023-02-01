@@ -417,7 +417,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
     if (model.isFilterable(modelColumn)) {
       // cell data area contextmenu options
       const filterMenu = {
-        title: 'Filter By Value',
+        title: 'Filter by Value',
         icon: vsRemove,
         iconColor: filterIconColor,
         group: IrisGridContextMenuHandler.GROUP_FILTER,

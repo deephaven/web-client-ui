@@ -45,12 +45,13 @@ window.HTMLElement.prototype.scrollIntoView = jest.fn();
 
 function Builder({
   model = makeModel(),
-  userColumnWidths = new Map(),
+  hiddenColumns = [],
   movedColumns = model.initialMovedColumns,
   columnHeaderGroups = model.columnHeaderGroups,
   onColumnHeaderGroupChanged = jest.fn(),
   onColumnVisibilityChanged = jest.fn(),
   onMovedColumnsChanged = jest.fn(),
+  onReset = jest.fn(),
   builderRef = React.createRef(),
 }: Partial<VisibilityOrderingBuilder['props']> & {
   builderRef?: React.RefObject<VisibilityOrderingBuilder>;
@@ -58,12 +59,13 @@ function Builder({
   return (
     <VisibilityOrderingBuilder
       model={model}
-      userColumnWidths={userColumnWidths}
+      hiddenColumns={hiddenColumns}
       movedColumns={movedColumns}
       columnHeaderGroups={columnHeaderGroups}
       onColumnHeaderGroupChanged={onColumnHeaderGroupChanged}
       onColumnVisibilityChanged={onColumnVisibilityChanged}
       onMovedColumnsChanged={onMovedColumnsChanged}
+      onReset={onReset}
       ref={builderRef}
     />
   );
@@ -1016,10 +1018,7 @@ test('Toggles all visibility', async () => {
   expect(mockHandler).toBeCalledWith(indexes, false);
 
   rerender(
-    <Builder
-      onColumnVisibilityChanged={mockHandler}
-      userColumnWidths={new Map(indexes.map(i => [i, 0]))}
-    />
+    <Builder onColumnVisibilityChanged={mockHandler} hiddenColumns={indexes} />
   );
   const showButton = screen.getByText('Show All');
   await user.click(showButton);
@@ -1043,7 +1042,7 @@ test('Toggles selected visibility', async () => {
   rerender(
     <BuilderWithGroups
       onColumnVisibilityChanged={mockHandler}
-      userColumnWidths={new Map(indexes.map(i => [i, 0]))}
+      hiddenColumns={indexes}
     />
   );
   const showButton = screen.getByText('Show Selected');
@@ -1065,30 +1064,14 @@ test('Toggles individual visibility', async () => {
 
 test('Resets state', async () => {
   const user = userEvent.setup({ delay: null });
-  const mockGroupHandler = jest.fn();
-  const mockMoveHandler = jest.fn();
-  const mockVisibilityHandler = jest.fn();
+  const mockReset = jest.fn();
   const model = makeModelWithGroups();
-  render(
-    <Builder
-      model={model}
-      onColumnHeaderGroupChanged={mockGroupHandler}
-      onColumnVisibilityChanged={mockVisibilityHandler}
-      onMovedColumnsChanged={mockMoveHandler}
-    />
-  );
+  render(<Builder model={model} onReset={mockReset} />);
 
   const resetBtn = screen.getByText('Reset');
   await user.click(resetBtn);
 
-  expect(mockGroupHandler).toBeCalledWith(model.initialColumnHeaderGroups);
-  expect(mockMoveHandler).toBeCalledWith(model.initialMovedColumns);
-  expect(mockVisibilityHandler).toBeCalledWith(
-    Array(COLUMNS.length)
-      .fill(0)
-      .map((_, i) => i),
-    true
-  );
+  expect(mockReset).toBeCalledTimes(1);
 });
 
 test('Sets drag item display string on multi-select', async () => {
@@ -1100,10 +1083,13 @@ test('Sets drag item display string on multi-select', async () => {
   render(<Builder builderRef={builder} />);
 
   const items = flattenTree(
-    getTreeItems(COLUMNS, [], [], new Map(), [
-      `${COLUMN_PREFIX}0`,
-      `${COLUMN_PREFIX}1`,
-    ])
+    getTreeItems(
+      COLUMNS,
+      [],
+      [],
+      [],
+      [`${COLUMN_PREFIX}0`, `${COLUMN_PREFIX}1`]
+    )
   );
 
   const itemRef = React.createRef<HTMLDivElement>();
@@ -1142,7 +1128,7 @@ test('On drag start/end', () => {
   );
 
   const items = flattenTree(
-    getTreeItems(COLUMNS, [], [], new Map(), [`${COLUMN_PREFIX}0`])
+    getTreeItems(COLUMNS, [], [], [], [`${COLUMN_PREFIX}0`])
   );
 
   builder.current?.handleDragStart(`${COLUMN_PREFIX}0`);

@@ -64,6 +64,8 @@ class GridColumnSeparatorMouseHandler extends GridSeparatorMouseHandler {
 
   calculatedSizesProperty = 'calculatedColumnWidths' as const;
 
+  initialSizesProperty = 'initialColumnWidths' as const;
+
   modelIndexesProperty = 'modelColumns' as const;
 
   firstIndexProperty = 'firstColumn' as const;

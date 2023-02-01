@@ -1290,7 +1290,7 @@ export class IrisGridPanel extends PureComponent<
               pluginFetchColumns
             )}
             columnAllowedCursor="linker"
-            columnNotAllowedCursor="not-allowed"
+            columnNotAllowedCursor="linker-not-allowed"
             customColumns={customColumns}
             customColumnFormatMap={customColumnFormatMap}
             columnSelectionValidator={this.isColumnSelectionValid}

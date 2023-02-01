@@ -42,6 +42,7 @@ import {
   isEditableGridModel,
   BoundedAxisRange,
   isExpandableGridModel,
+  getOrThrow,
 } from '@deephaven/grid';
 import {
   dhEye,
@@ -594,6 +595,9 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     this.handleColumnVisibilityChanged = this.handleColumnVisibilityChanged.bind(
       this
     );
+    this.handleColumnVisibilityReset = this.handleColumnVisibilityReset.bind(
+      this
+    );
     this.handleCrossColumnSearch = this.handleCrossColumnSearch.bind(this);
     this.handleRollupChange = this.handleRollupChange.bind(this);
     this.handleOverflowClose = this.handleOverflowClose.bind(this);
@@ -732,6 +736,12 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       userColumnWidths: new Map(userColumnWidths),
       userRowHeights: new Map(userRowHeights),
       movedColumns,
+      initialColumnWidths: new Map(
+        model?.layoutHints?.hiddenColumns?.map(name => [
+          model.getColumnIndexByName(name),
+          0,
+        ])
+      ),
     });
     const searchColumns = selectedSearchColumns ?? [];
     const searchFilter = CrossColumnSearch.createSearchFilter(
@@ -1143,8 +1153,13 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   );
 
   getCachedHiddenColumns = memoize(
-    (userColumnWidths: ModelSizeMap): readonly ModelIndex[] =>
-      IrisGridUtils.getHiddenColumns(userColumnWidths),
+    (
+      metricCalculator: IrisGridMetricCalculator,
+      userColumnWidths: ModelSizeMap
+    ): readonly ModelIndex[] =>
+      IrisGridUtils.getHiddenColumns(
+        new Map([...metricCalculator.initialColumnWidths, ...userColumnWidths])
+      ),
     { max: 1 }
   );
 
@@ -2203,10 +2218,23 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     modelIndexes: readonly ModelIndex[],
     isVisible: boolean
   ): void {
-    const { metricCalculator } = this.state;
+    const { metricCalculator, metrics } = this.state;
+    assertNotNull(metrics);
     if (isVisible) {
       modelIndexes.forEach(modelIndex => {
-        metricCalculator.resetColumnWidth(modelIndex);
+        const defaultWidth = metricCalculator.initialColumnWidths.get(
+          modelIndex
+        );
+        const calculatedWidth = getOrThrow(
+          metrics.calculatedColumnWidths,
+          modelIndex
+        );
+
+        if (defaultWidth !== calculatedWidth) {
+          metricCalculator.setColumnWidth(modelIndex, calculatedWidth);
+        } else {
+          metricCalculator.resetColumnWidth(modelIndex);
+        }
       });
     } else {
       modelIndexes.forEach(modelIndex => {
@@ -2214,6 +2242,20 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       });
     }
     this.grid?.forceUpdate();
+  }
+
+  handleColumnVisibilityReset(): void {
+    const { metricCalculator, metrics } = this.state;
+    const { model } = this.props;
+    assertNotNull(metrics);
+    for (let i = 0; i < metrics.columnCount; i += 1) {
+      metricCalculator.resetColumnWidth(i);
+    }
+    this.handleMovedColumnsChanged(model.initialMovedColumns);
+    this.handleHeaderGroupsChanged(model.initialColumnHeaderGroups);
+    this.setState({
+      frozenColumns: model.layoutHints?.frozenColumns ?? [],
+    });
   }
 
   handleCrossColumnSearch(
@@ -4075,6 +4117,11 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       advancedSettings.size > 0
     );
 
+    const hiddenColumns = this.getCachedHiddenColumns(
+      metricCalculator,
+      userColumnWidths
+    );
+
     const openOptionsStack = openOptions.map(option => {
       switch (option.type) {
         case OptionType.CHART_BUILDER:
@@ -4091,9 +4138,10 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
             <VisibilityOrderingBuilder
               model={model}
               movedColumns={movedColumns}
-              userColumnWidths={userColumnWidths}
+              hiddenColumns={hiddenColumns}
               columnHeaderGroups={columnHeaderGroups}
               onColumnVisibilityChanged={this.handleColumnVisibilityChanged}
+              onReset={this.handleColumnVisibilityReset}
               onMovedColumnsChanged={this.handleMovedColumnsChanged}
               onColumnHeaderGroupChanged={this.handleHeaderGroupsChanged}
               key={OptionType.VISIBILITY_ORDERING_BUILDER}
@@ -4198,8 +4246,6 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
           throw Error(`Unexpected option type ${option.type}`);
       }
     });
-
-    const hiddenColumns = this.getCachedHiddenColumns(userColumnWidths);
 
     return (
       <div className="iris-grid" role="presentation">

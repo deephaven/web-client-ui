@@ -1,0 +1,11 @@
+<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <g id="Not-Allowed-Cursor">
+    <path id="Combined Shape Copy 10" fill-rule="evenodd" clip-rule="evenodd"
+      d="M10 0H6V6H0V10H6V16H10V10H16V6H10V0Z" fill="white" />
+    <path id="Combined Shape Copy 11" fill-rule="evenodd" clip-rule="evenodd"
+      d="M9 1H7V7H1V9H7V15H9V9H15V7H9V1Z" fill="black" />
+    <path id="Union"
+      d="M15.3579 17.6559L23.3441 25.6421C22.5017 26.1091 21.5325 26.375 20.5 26.375C17.2553 26.375 14.625 23.7447 14.625 20.5C14.625 19.4675 14.8909 18.4983 15.3579 17.6559ZM26.375 20.5C26.375 21.5324 26.1092 22.5015 25.6422 23.3439L17.6561 15.3578C18.4985 14.8908 19.4676 14.625 20.5 14.625C23.7447 14.625 26.375 17.2553 26.375 20.5ZM20.5 29.625C25.5396 29.625 29.625 25.5396 29.625 20.5C29.625 15.4604 25.5396 11.375 20.5 11.375C15.4604 11.375 11.375 15.4604 11.375 20.5C11.375 25.5396 15.4604 29.625 20.5 29.625Z"
+      fill="black" stroke="white" stroke-width="1.25" />
+  </g>
+</svg>
