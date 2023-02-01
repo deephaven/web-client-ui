@@ -20,6 +20,7 @@ import {
   Grid,
   GridMouseHandler,
   GridPoint,
+  GridRenderer,
   isEditableGridModel,
   isExpandableGridModel,
   ModelIndex,
@@ -165,6 +166,17 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
     return TableUtils.isCharType(columnType)
       ? dh.FilterValue.ofString(String.fromCharCode(value as number))
       : dh.FilterValue.ofNumber(value);
+  }
+
+  static getRowOptionFormatted(
+    command: string,
+    cellValue: string,
+    len = 30
+  ): string {
+    return `${command} "${GridRenderer.truncate(
+      cellValue,
+      len - command.length - 3
+    )}"`;
   }
 
   irisGrid: IrisGrid;
@@ -553,31 +565,32 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
     if (isExpandableGridModel(model) && model.isRowExpandable(modelRow)) {
       // If there are grouped columns, then it is a rollup
       // For rollups, the column number will be the depth minus one
-      let cellValue =
-        model.groupedColumns.length > 0
-          ? model.textForCell(model.depthForRow(modelRow) - 1, modelRow)
-          : model.textForCell(0, modelRow);
-
-      if (cellValue === '') {
-        cellValue = 'null';
-      }
-
-      const getRowOptionFormatted = (
-        command: string,
-        cellVal: string,
-        len: number
-      ) => {
-        let newCellVal = cellVal;
-        if (command.length + cellVal.length + 3 > len) {
-          newCellVal = `${cellVal.substring(0, len - command.length - 6)}...`;
+      let cellValue;
+      const colForRollUp = model.depthForRow(modelRow) - 1;
+      const valForRollUp = model.valueForCell(colForRollUp, modelRow);
+      const valForTreeTable = model.valueForCell(0, modelRow);
+      if (model.groupedColumns.length > 0) {
+        if (valForRollUp === null || valForRollUp === undefined) {
+          cellValue = 'null';
+        } else {
+          cellValue = model.textForCell(colForRollUp, modelRow);
         }
-        return `${command} "${newCellVal}"`;
-      };
+      } else if (valForTreeTable === null || valForTreeTable === undefined) {
+        cellValue = 'null';
+      } else {
+        cellValue = model.textForCell(0, modelRow);
+      }
 
       actions.push({
         title: model.isRowExpanded(modelRow)
-          ? getRowOptionFormatted('Collapse', cellValue, 30)
-          : getRowOptionFormatted('Expand', cellValue, 30),
+          ? IrisGridContextMenuHandler.getRowOptionFormatted(
+              'Collapse',
+              cellValue
+            )
+          : IrisGridContextMenuHandler.getRowOptionFormatted(
+              'Expand',
+              cellValue
+            ),
         group: IrisGridContextMenuHandler.GROUP_EXPAND_COLLAPSE,
         order: 10,
         action: () => {
@@ -587,7 +600,10 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
 
       if (model.isExpandAllAvailable === true) {
         actions.push({
-          title: getRowOptionFormatted('Expand All in', cellValue, 30),
+          title: IrisGridContextMenuHandler.getRowOptionFormatted(
+            'Expand All in',
+            cellValue
+          ),
           group: IrisGridContextMenuHandler.GROUP_EXPAND_COLLAPSE,
           order: 20,
           action: () => {
