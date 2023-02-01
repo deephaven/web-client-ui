@@ -158,11 +158,15 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
   }
 
   expandAll(): void {
-    this.table.expandAll();
+    if (this.table.expandAll) {
+      this.table.expandAll();
+    }
   }
 
   collapseAll(): void {
-    this.table.collapseAll();
+    if (this.table.collapseAll) {
+      this.table.collapseAll();
+    }
   }
 
   depthForRow(y: ModelIndex): ModelIndex {
