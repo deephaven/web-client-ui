@@ -565,32 +565,19 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
     if (isExpandableGridModel(model) && model.isRowExpandable(modelRow)) {
       // If there are grouped columns, then it is a rollup
       // For rollups, the column number will be the depth minus one
-      let cellValue;
-      const colForRollUp = model.depthForRow(modelRow) - 1;
-      const valForRollUp = model.valueForCell(colForRollUp, modelRow);
-      const valForTreeTable = model.valueForCell(0, modelRow);
-      if (model.groupedColumns.length > 0) {
-        if (valForRollUp === null || valForRollUp === undefined) {
-          cellValue = 'null';
-        } else {
-          cellValue = model.textForCell(colForRollUp, modelRow);
-        }
-      } else if (valForTreeTable === null || valForTreeTable === undefined) {
-        cellValue = 'null';
-      } else {
-        cellValue = model.textForCell(0, modelRow);
-      }
+      const expandingColumn =
+        model.groupedColumns.length > 0 ? model.depthForRow(modelRow) - 1 : 0;
+      const cellValue = model.valueForCell(expandingColumn, modelRow);
+      const cellText =
+        cellValue == null
+          ? 'null'
+          : model.textForCell(expandingColumn, modelRow);
 
       actions.push({
-        title: model.isRowExpanded(modelRow)
-          ? IrisGridContextMenuHandler.getRowOptionFormatted(
-              'Collapse',
-              cellValue
-            )
-          : IrisGridContextMenuHandler.getRowOptionFormatted(
-              'Expand',
-              cellValue
-            ),
+        title: IrisGridContextMenuHandler.getRowOptionFormatted(
+          model.isRowExpanded(modelRow) ? 'Collapse' : 'Expand',
+          cellText
+        ),
         group: IrisGridContextMenuHandler.GROUP_EXPAND_COLLAPSE,
         order: 10,
         action: () => {
@@ -602,7 +589,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
         actions.push({
           title: IrisGridContextMenuHandler.getRowOptionFormatted(
             'Expand All in',
-            cellValue
+            cellText
           ),
           group: IrisGridContextMenuHandler.GROUP_EXPAND_COLLAPSE,
           order: 20,
