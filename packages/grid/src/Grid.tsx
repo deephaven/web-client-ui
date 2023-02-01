@@ -679,14 +679,19 @@ class Grid extends PureComponent<GridProps, GridState> {
   /**
    * Toggle a row between expanded and collapsed states
    * @param row The row to toggle expansion for
+   * @param expandDescendants True if nested rows should be expanded, false otherwise
    */
-  toggleRowExpanded(row: VisibleIndex): void {
+  toggleRowExpanded(row: VisibleIndex, expandDescendants = false): void {
     const modelRow = this.getModelRow(row);
     const { model } = this.props;
     // We only want to set expansion if the row is expandable
     // If it's not, still move the cursor to that position, as it may be outside of the current viewport and we don't know if it's expandable yet
     if (isExpandableGridModel(model) && model.isRowExpandable(modelRow)) {
-      model.setRowExpanded(modelRow, !model.isRowExpanded(modelRow));
+      model.setRowExpanded(
+        modelRow,
+        !model.isRowExpanded(modelRow),
+        expandDescendants
+      );
     }
     this.clearSelectedRanges();
     this.commitSelection(); // Need to commit before moving in case we're selecting same row again

@@ -272,6 +272,13 @@ class IrisGridProxyModel extends IrisGridModel {
     return false;
   }
 
+  get isExpandAllAvailable(): boolean {
+    if (isExpandableGridModel(this.model)) {
+      return this.model.isExpandAllAvailable ?? false;
+    }
+    return false;
+  }
+
   isRowExpandable: IrisGridTreeTableModel['isRowExpandable'] = (...args) => {
     if (isExpandableGridModel(this.model)) {
       return this.model.isRowExpandable(...args);
@@ -291,6 +298,20 @@ class IrisGridProxyModel extends IrisGridModel {
       return this.model.setRowExpanded(...args);
     }
     throw Error('Function setRowExpanded does not exist on IrisGridTableModel');
+  };
+
+  expandAll: IrisGridTreeTableModel['expandAll'] = () => {
+    if (isExpandableGridModel(this.model)) {
+      return this.model.expandAll();
+    }
+    throw Error('Function expandAll does not exist on IrisGridTableModel');
+  };
+
+  collapseAll: IrisGridTreeTableModel['collapseAll'] = () => {
+    if (isExpandableGridModel(this.model)) {
+      return this.model.collapseAll();
+    }
+    throw Error('Function collapseAll does not exist on IrisGridTableModel');
   };
 
   depthForRow: IrisGridTreeTableModel['depthForRow'] = (...args) => {

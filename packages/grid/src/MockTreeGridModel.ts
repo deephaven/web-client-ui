@@ -70,6 +70,10 @@ class MockTreeGridModel extends MockGridModel implements ExpandableGridModel {
     return true;
   }
 
+  get isExpandAllAvailable(): boolean {
+    return false;
+  }
+
   get floatingBottomRowCount(): number {
     return 0;
   }
@@ -82,7 +86,11 @@ class MockTreeGridModel extends MockGridModel implements ExpandableGridModel {
     return this.getCachedIsRowExpanded(this.children, row);
   }
 
-  setRowExpanded(row: ModelIndex, isExpanded: boolean): void {
+  setRowExpanded(
+    row: ModelIndex,
+    isExpanded: boolean,
+    expandDescendants = false
+  ): void {
     const { key, offsetRow } = this.getCachedModelRowOffset(this.children, row);
 
     // We always set a new map so that our memoize functions work properly
@@ -91,7 +99,7 @@ class MockTreeGridModel extends MockGridModel implements ExpandableGridModel {
       const model = this.children.get(key);
       if (model !== undefined) {
         const { rowCount: originalChildRowCount } = model;
-        model.setRowExpanded(offsetRow, isExpanded);
+        model.setRowExpanded(offsetRow, isExpanded, expandDescendants);
         this.numRows += model.rowCount - originalChildRowCount;
       }
     } else if (!isExpanded) {
@@ -110,6 +118,14 @@ class MockTreeGridModel extends MockGridModel implements ExpandableGridModel {
     }
 
     this.children = children;
+  }
+
+  expandAll(): void {
+    throw new Error('Expand all not implemented.');
+  }
+
+  collapseAll(): void {
+    throw new Error('Collapse all not implemented.');
   }
 
   depthForRow(row: ModelIndex): number {
