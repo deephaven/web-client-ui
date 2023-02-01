@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/chart",
-  "version": "0.26.0",
+  "version": "0.28.0",
   "description": "Deephaven Chart",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
@@ -32,9 +32,9 @@
     "lodash.set": "^4.3.2",
     "memoize-one": "^5.1.1",
     "memoizee": "^0.4.15",
-    "plotly.js": "^2.2.1",
+    "plotly.js": "^2.18.0",
     "prop-types": "^15.7.2",
-    "react-plotly.js": "^2.4.0"
+    "react-plotly.js": "^2.6.0"
   },
   "peerDependencies": {
     "react": "^17.x"
@@ -42,7 +42,7 @@
   "devDependencies": {
     "@deephaven/mocks": "file:../mocks",
     "@deephaven/tsconfig": "file:../tsconfig",
-    "@types/plotly.js": "^2.12.2"
+    "@types/plotly.js": "^2.12.11"
   },
   "files": [
     "dist"

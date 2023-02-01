@@ -17,7 +17,11 @@ import {
   UITreeRow,
   ColumnHeaderGroup,
 } from '@deephaven/iris-grid';
-import type { Column, CustomColumn } from '@deephaven/jsapi-shim';
+import type {
+  Column,
+  CustomColumn,
+  ValueTypeUnion,
+} from '@deephaven/jsapi-shim';
 import { Formatter } from '@deephaven/jsapi-utils';
 
 // We need to cast our CustomEvent so it's happy with event-target-shim
@@ -126,6 +130,10 @@ class MockIrisGridTreeModel
     return this.model.hasExpandableRows;
   }
 
+  get isExpandAllAvailable(): boolean {
+    return false;
+  }
+
   isRowExpandable(row: ModelIndex): boolean {
     return this.model.isRowExpandable(row);
   }
@@ -134,8 +142,20 @@ class MockIrisGridTreeModel
     return this.model.isRowExpanded(row);
   }
 
-  setRowExpanded(row: ModelIndex, isExpanded: boolean): void {
-    this.model.setRowExpanded(row, isExpanded);
+  setRowExpanded(
+    row: ModelIndex,
+    isExpanded: boolean,
+    expandDescendants = false
+  ): void {
+    this.model.setRowExpanded(row, isExpanded, expandDescendants);
+  }
+
+  expandAll(): void {
+    throw new Error('Expand all not implemented.');
+  }
+
+  collapseAll(): void {
+    throw new Error('Collapse all not implemented.');
   }
 
   depthForRow(row: ModelIndex): number {
@@ -300,6 +320,18 @@ class MockIrisGridTreeModel
 
   valuesTable(column: Column): Promise<never> {
     throw new Error('Not defined in mock');
+  }
+
+  seekRow(
+    startRow: number,
+    column: Column,
+    valueType: ValueTypeUnion,
+    value: unknown,
+    insensitive?: boolean | undefined,
+    contains?: boolean | undefined,
+    isBackwards?: boolean | undefined
+  ): Promise<number> {
+    throw new Error('Method not implemented.');
   }
 
   get columnHeaderGroups(): ColumnHeaderGroup[] {

@@ -1,12 +1,15 @@
-import { test, expect, Page } from '@playwright/test';
+import { test, expect, Page, Locator } from '@playwright/test';
 import shortid from 'shortid';
-import { generateVarName, makeTableCommand, typeInMonaco } from './utils';
+import { generateVarName, makeTableCommand, pasteInMonaco } from './utils';
 
 let page: Page;
+let consoleInput: Locator;
 
 test.beforeAll(async ({ browser }) => {
   page = await browser.newPage();
   await page.goto('');
+
+  consoleInput = page.locator('.console-input');
 });
 
 test.afterAll(async () => {
@@ -27,7 +30,7 @@ test.describe('console input tests', () => {
     const message = `Hello ${shortid()}!`;
     const command = `print("${message}")`;
 
-    await typeInMonaco(page, command);
+    await pasteInMonaco(consoleInput, command);
     await page.keyboard.press('Enter');
 
     // Expect the output to show up in the log
@@ -40,7 +43,7 @@ test.describe('console input tests', () => {
     const tableName = generateVarName('t');
     const command = makeTableCommand(tableName);
 
-    await typeInMonaco(page, command);
+    await pasteInMonaco(consoleInput, command);
     await page.keyboard.press('Enter');
 
     // Expect a button to show up in the console history
@@ -51,7 +54,7 @@ test.describe('console input tests', () => {
     expect(await btnLocator.nth(0).isDisabled()).toBe(false);
 
     // Enter the same command again; the old button should be disabled
-    await typeInMonaco(page, command);
+    await pasteInMonaco(consoleInput, command);
     await page.keyboard.press('Enter');
     await expect(btnLocator).toHaveCount(2);
     await expect(btnLocator.nth(0)).toBeDisabled();
