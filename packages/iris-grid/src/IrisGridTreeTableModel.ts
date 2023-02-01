@@ -108,6 +108,10 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
     return true;
   }
 
+  get isExpandAllAvailable(): boolean {
+    return this.table.expandAll !== undefined;
+  }
+
   get isChartBuilderAvailable(): boolean {
     return false;
   }
@@ -146,14 +150,18 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
     isExpanded: boolean,
     expandDescendants = false
   ): void {
-    this.table.setExpanded(y, isExpanded, expandDescendants);
+    if (this.isExpandAllAvailable) {
+      this.table.setExpanded(y, isExpanded, expandDescendants);
+    } else {
+      this.table.setExpanded(y, isExpanded);
+    }
   }
 
-  setExpandAll(): void {
+  expandAll(): void {
     this.table.expandAll();
   }
 
-  setCollapseAll(): void {
+  collapseAll(): void {
     this.table.collapseAll();
   }
 

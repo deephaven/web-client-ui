@@ -17,6 +17,7 @@ import {
 } from '@deephaven/components';
 import {
   EventHandlerResult,
+  ExpandableGridModel,
   Grid,
   GridMouseHandler,
   GridPoint,
@@ -595,13 +596,17 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
       });
     }
 
-    if (isExpandableGridModel(model)) {
+    if (
+      isExpandableGridModel(model) &&
+      model.isExpandAllAvailable !== undefined &&
+      model.isExpandAllAvailable
+    ) {
       actions.push({
         title: 'Expand Entire Table',
         group: IrisGridContextMenuHandler.GROUP_EXPAND_COLLAPSE,
         order: 30,
         action: () => {
-          model.setExpandAll();
+          model.expandAll();
         },
       });
 
@@ -610,7 +615,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
         group: IrisGridContextMenuHandler.GROUP_EXPAND_COLLAPSE,
         order: 40,
         action: () => {
-          model.setCollapseAll();
+          model.collapseAll();
         },
       });
     }
