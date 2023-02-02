@@ -75,19 +75,15 @@ If you encounter an issue specific to a browser, check that your browser is up t
 
 ## Releasing a New Version
 
-When releasing a new version, you need to commit a version bump, then tag and create the release. By creating the release, the [publish-packages action](.github/workflows/publish-packages.yml) will be triggered, and will automatically publish the packages. Some of these steps below also make use of the [GitHub CLI](https://github.com/cli/cli)
+We use [lerna](https://github.com/lerna/lerna) and [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) to automatically handle incrementing the version, generate the changelog, and create the release.
 
-1. Bump the version:
-   - Run `npm run version-bump`. Select the type of version bump ([patch, minor, or major version](https://semver.org/)). Remember the version for the next steps, and fill it in instead of `<version>` (should be in semver format with `v` prefix, e.g. `v0.7.1`).
-   - Commit your changes. `git commit --all --message="Version Bump <version>"`
-   - Create a pull request. `gh pr create --fill --web`
-   - Approve the pull request and merge to `main`.
-2. Generate the changelog:
-   - Generate a [GitHub Personal access token](https://github.com/settings/tokens) with the `public_repo` scope. Copy this token and replace `<token>` with it below.
-   - Generate the changelog: `GITHUB_AUTH=<token> npm run changelog --silent -- --next-version=<version> > /tmp/changelog_<version>.md`
-3. Create the tag. Use the command line to create an annotated tag (lightweight tags will not work correctly with lerna-changelog): `git tag --annotate <version> --file /tmp/changelog_<version>.md`
-4. Push the tag: `git push origin <version>`
-5. Create the release: `gh release create <version> --notes-file /tmp/changelog_<version>.md --title <version>`
+1. Generate a [GitHub Personal access token](https://github.com/settings/tokens):
+
+- Under `Repository Access`, select `Only select repositories` and add `deephaven/web-client-ui`.
+- Under `Repository Permissions`, set `Access: Read and write` for `Contents`. This will be necessary to push your version bump and create the release.
+- Copy the token created and replace `<token>` with it in the next step.
+
+2. Bump the version, update the changelog, and create a release: `GH_TOKEN=<token> npm run version-bump`
 
 After the release is created, you can go to the [actions page](https://github.com/deephaven/web-client-ui/actions) to see the publish action being kicked off.
 
