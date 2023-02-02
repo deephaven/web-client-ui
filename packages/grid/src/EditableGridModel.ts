@@ -78,14 +78,14 @@ export interface EditableGridModel extends GridModel {
    * @param value The value to set
    * @returns A promise that resolves successfully when the operation is complete, or rejects if there's an error
    */
-  setValueForRanges(ranges: GridRange[], value: string): Promise<void>;
+  setValueForRanges(ranges: readonly GridRange[], value: string): Promise<void>;
 
   /**
    * Apply edits to the model
    * @param edits Edits to apply to the model
    * @returns A promise that resolves successfully when the operation is complete or rejects if there's an error
    */
-  setValues(edits: EditOperation[]): Promise<void>;
+  setValues(edits: readonly EditOperation[]): Promise<void>;
 
   /**
    * Check if a text value is a valid edit for a cell

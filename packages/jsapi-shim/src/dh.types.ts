@@ -723,7 +723,7 @@ export interface Table extends TableTemplate<Table>, TableStatic {
 export interface TableViewportSubscription extends Evented {
   setViewport(firstRow: number, lastRow: number, columns?: Column[]): void;
   getViewportData(): Promise<TableData>;
-  snapshot(rows: RangeSet, columns: Column[]): Promise<TableData>;
+  snapshot(rows: RangeSet, columns: readonly Column[]): Promise<TableData>;
   close(): void;
 }
 
@@ -909,7 +909,7 @@ export interface TreeRow extends Row {
 
 export interface RollupConfig {
   groupingColumns: string[] | null;
-  aggregations: Record<string, string[]> | null;
+  aggregations: Record<string, readonly string[]> | null;
   includeConstituents: boolean;
   includeOriginalColumns?: boolean;
   includeDescriptions: boolean;
@@ -921,8 +921,8 @@ export interface TotalsTableConfig {
   showTotalsByDefault?: boolean;
   showGrandTotalsByDefault?: boolean;
   defaultOperation?: string;
-  groupBy?: string[];
-  operationMap: Record<string, string[]>;
+  groupBy?: readonly string[];
+  operationMap: Record<string, readonly string[]>;
 }
 
 export interface TotalsTable extends Evented {

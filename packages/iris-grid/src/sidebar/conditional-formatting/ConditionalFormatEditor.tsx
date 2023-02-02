@@ -23,7 +23,7 @@ export type UpdateCallback = (rule?: FormattingRule) => void;
 export type CancelCallback = () => void;
 
 export interface ConditionalFormatEditorProps {
-  columns: ModelColumn[];
+  columns: readonly ModelColumn[];
   rule?: FormattingRule;
   onCancel?: CancelCallback;
   onSave?: SaveCallback;

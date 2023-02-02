@@ -25,12 +25,12 @@ import {
   PendingDataMap,
   InputFilter,
   IrisGridThemeType,
-  AdvancedFilterMap,
+  ReadonlyAdvancedFilterMap,
   AggregationSettings,
   AdvancedSettingsType,
   UIRollupConfig,
   UIRow,
-  QuickFilterMap,
+  ReadonlyQuickFilterMap,
   FilterMap,
   QuickFilter,
   AdvancedFilter,
@@ -163,36 +163,36 @@ interface IrisGridPanelState {
   isStuckToRight: boolean;
 
   // State is hydrated from panel state when table is loaded
-  conditionalFormats: SidebarFormattingRule[];
-  selectDistinctColumns: ColumnName[];
-  advancedFilters: AdvancedFilterMap;
+  conditionalFormats: readonly SidebarFormattingRule[];
+  selectDistinctColumns: readonly ColumnName[];
+  advancedFilters: ReadonlyAdvancedFilterMap;
   aggregationSettings: AggregationSettings;
   advancedSettings: Map<AdvancedSettingsType, boolean>;
-  customColumns: ColumnName[];
+  customColumns: readonly ColumnName[];
   customColumnFormatMap: Map<string, FormattingRule>;
   isFilterBarShown: boolean;
-  quickFilters: QuickFilterMap;
-  sorts: Sort[];
+  quickFilters: ReadonlyQuickFilterMap;
+  sorts: readonly Sort[];
   userColumnWidths: ModelSizeMap;
   userRowHeights: ModelSizeMap;
   reverseType: ReverseType;
-  movedColumns: MoveOperation[];
-  movedRows: MoveOperation[];
+  movedColumns: readonly MoveOperation[];
+  movedRows: readonly MoveOperation[];
   isSelectingPartition: boolean;
   partition?: string;
   partitionColumn?: Column;
   rollupConfig?: UIRollupConfig;
   showSearchBar: boolean;
   searchValue: string;
-  selectedSearchColumns?: string[];
+  selectedSearchColumns?: readonly string[];
   invertSearchColumns: boolean;
   Plugin?: Plugin;
-  pluginFilters: FilterCondition[];
-  pluginFetchColumns: string[];
+  pluginFilters: readonly FilterCondition[];
+  pluginFetchColumns: readonly string[];
   modelQueue: ModelQueue;
   pendingDataMap?: PendingDataMap<UIRow>;
-  frozenColumns?: ColumnName[];
-  columnHeaderGroups?: ColumnHeaderGroup[];
+  frozenColumns?: readonly ColumnName[];
+  columnHeaderGroups?: readonly ColumnHeaderGroup[];
 
   // eslint-disable-next-line react/no-unused-state
   panelState: PanelState | null; // Dehydrated panel state that can load this panel
@@ -347,7 +347,7 @@ export class IrisGridPanel extends PureComponent<
   }
 
   getGridInputFilters = memoize(
-    (columns: Column[], inputFilters: InputFilter[]) =>
+    (columns: readonly Column[], inputFilters: readonly InputFilter[]) =>
       IrisGridUtils.getInputFiltersForColumns(
         columns,
         // They may have picked a column, but not actually entered a value yet. In that case, don't need to update.
@@ -363,7 +363,10 @@ export class IrisGridPanel extends PureComponent<
   );
 
   getAlwaysFetchColumns = memoize(
-    (dashboardLinks: Link[], pluginFetchColumns: string[]): string[] => {
+    (
+      dashboardLinks: readonly Link[],
+      pluginFetchColumns: readonly string[]
+    ): string[] => {
       const id = LayoutUtils.getIdFromPanel(this);
       // Always fetch columns which are the start/source of a link or columns specified by a plugin
       const columnSet = new Set(pluginFetchColumns);
@@ -437,26 +440,26 @@ export class IrisGridPanel extends PureComponent<
   getDehydratedIrisGridState = memoize(
     (
       model: IrisGridModel,
-      sorts: Sort[],
-      advancedFilters: AdvancedFilterMap,
+      sorts: readonly Sort[],
+      advancedFilters: ReadonlyAdvancedFilterMap,
       customColumnFormatMap: Map<ColumnName, FormattingRule>,
       isFilterBarShown: boolean,
-      quickFilters: QuickFilterMap,
-      customColumns: ColumnName[],
+      quickFilters: ReadonlyQuickFilterMap,
+      customColumns: readonly ColumnName[],
       reverseType: ReverseType,
       rollupConfig: UIRollupConfig | undefined,
       showSearchBar: boolean,
       searchValue: string,
-      selectDistinctColumns: ColumnName[],
-      selectedSearchColumns: ColumnName[],
+      selectDistinctColumns: readonly ColumnName[],
+      selectedSearchColumns: readonly ColumnName[],
       invertSearchColumns: boolean,
       userColumnWidths: ModelSizeMap,
       userRowHeights: ModelSizeMap,
       aggregationSettings: AggregationSettings,
       pendingDataMap: PendingDataMap<UIRow>,
-      frozenColumns: ColumnName[],
-      conditionalFormats: SidebarFormattingRule[],
-      columnHeaderGroups: ColumnHeaderGroup[]
+      frozenColumns: readonly ColumnName[],
+      conditionalFormats: readonly SidebarFormattingRule[],
+      columnHeaderGroups: readonly ColumnHeaderGroup[]
     ) =>
       IrisGridUtils.dehydrateIrisGridState(model, {
         advancedFilters,
@@ -487,8 +490,8 @@ export class IrisGridPanel extends PureComponent<
   getDehydratedGridState = memoize(
     (
       model: IrisGridModel,
-      movedColumns: MoveOperation[],
-      movedRows: MoveOperation[],
+      movedColumns: readonly MoveOperation[],
+      movedRows: readonly MoveOperation[],
       isStuckToBottom: boolean,
       isStuckToRight: boolean
     ) =>
@@ -814,7 +817,7 @@ export class IrisGridPanel extends PureComponent<
     }
   }
 
-  sendColumnsChange(columns: Column[]): void {
+  sendColumnsChange(columns: readonly Column[]): void {
     log.debug2('sendColumnsChange', columns);
     const { glEventHub } = this.props;
     glEventHub.emit(InputFilterEvent.COLUMNS_CHANGED, this, columns);
@@ -904,7 +907,7 @@ export class IrisGridPanel extends PureComponent<
     }
   }
 
-  setAdvancedFilterMap(filterMap: AdvancedFilterMap): void {
+  setAdvancedFilterMap(filterMap: ReadonlyAdvancedFilterMap): void {
     const irisGrid = this.irisGrid.current;
     if (irisGrid != null) {
       irisGrid.setAdvancedFilterMap(filterMap);

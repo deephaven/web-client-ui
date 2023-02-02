@@ -48,6 +48,7 @@ import {
   PendingDataMap,
   CellData,
   UIViewportData,
+  PendingDataErrorMap,
 } from './CommonTypes';
 import { IrisGridThemeType } from './IrisGridTheme';
 import ColumnHeaderGroup, { isColumnHeaderGroup } from './ColumnHeaderGroup';
@@ -364,7 +365,7 @@ class IrisGridTableModelTemplate<
     );
   }
 
-  get pendingDataErrors(): Map<number, Error[]> {
+  get pendingDataErrors(): PendingDataErrorMap {
     return this.getCachedPendingErrors(
       this.pendingNewDataMap,
       this.columns,
@@ -679,7 +680,7 @@ class IrisGridTableModelTemplate<
   }
 
   private getMemoizedInitialMovedColumns = memoize(
-    (layoutHints?: LayoutHints) => {
+    (layoutHints?: LayoutHints): readonly MoveOperation[] => {
       if (!layoutHints) {
         return [];
       }
@@ -821,7 +822,7 @@ class IrisGridTableModelTemplate<
   /**
    * Used to get the initial moved columns based on layout hints
    */
-  get initialMovedColumns(): MoveOperation[] {
+  get initialMovedColumns(): readonly MoveOperation[] {
     return this.getMemoizedInitialMovedColumns(this.layoutHints ?? undefined);
   }
 

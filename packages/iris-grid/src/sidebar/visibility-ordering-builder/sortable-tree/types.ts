@@ -12,6 +12,7 @@ export type TreeItem<T = undefined> = {
     });
 
 export type TreeItems<T = undefined> = TreeItem<T>[];
+export type ReadonlyTreeItems<T = undefined> = readonly TreeItem<T>[];
 
 export type FlattenedItem<T = undefined> = TreeItem<T> & {
   parentId: string | null;

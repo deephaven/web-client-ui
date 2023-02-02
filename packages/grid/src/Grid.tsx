@@ -3,6 +3,7 @@ import React, { CSSProperties, PureComponent, ReactNode } from 'react';
 import classNames from 'classnames';
 import memoize from 'memoize-one';
 import clamp from 'lodash.clamp';
+import { EMPTY_ARRAY } from '@deephaven/utils';
 import GridMetricCalculator, { GridMetricState } from './GridMetricCalculator';
 import GridModel from './GridModel';
 import GridMouseHandler, {
@@ -84,26 +85,26 @@ export type GridProps = typeof Grid.defaultProps & {
   model: GridModel;
 
   // Optional key and mouse handlers
-  keyHandlers?: KeyHandler[];
-  mouseHandlers?: GridMouseHandler[];
+  keyHandlers?: readonly KeyHandler[];
+  mouseHandlers?: readonly GridMouseHandler[];
 
   // Initial state of moved columns or rows
-  movedColumns?: MoveOperation[];
-  movedRows?: MoveOperation[];
+  movedColumns?: readonly MoveOperation[];
+  movedRows?: readonly MoveOperation[];
 
   // Callback for if an error occurs
   onError?: (e: Error) => void;
 
   // Callback when the selection within the grid changes
-  onSelectionChanged?: (ranges: GridRange[]) => void;
+  onSelectionChanged?: (ranges: readonly GridRange[]) => void;
 
   // Callback when the moved columns or rows have changed
-  onMovedColumnsChanged?: (movedColumns: MoveOperation[]) => void;
-  onMovedRowsChanged?: (movedRows: MoveOperation[]) => void;
+  onMovedColumnsChanged?: (movedColumns: readonly MoveOperation[]) => void;
+  onMovedRowsChanged?: (movedRows: readonly MoveOperation[]) => void;
 
   // Callback when a move operation is completed
-  onMoveColumnComplete?: (movedColumns: MoveOperation[]) => void;
-  onMoveRowComplete?: (movedRows: MoveOperation[]) => void;
+  onMoveColumnComplete?: (movedColumns: readonly MoveOperation[]) => void;
+  onMoveRowComplete?: (movedRows: readonly MoveOperation[]) => void;
 
   // Callback when the viewport has scrolled or changed
   onViewChanged?: (metrics: GridMetrics) => void;
@@ -151,8 +152,8 @@ export type GridState = {
   mouseY: number | null;
 
   // Move operations the user has performed on this grids columns/rows
-  movedColumns: MoveOperation[];
-  movedRows: MoveOperation[];
+  movedColumns: readonly MoveOperation[];
+  movedRows: readonly MoveOperation[];
 
   // Cursor (highlighted cell) location and active selected range
   cursorRow: VisibleIndex | null;
@@ -165,8 +166,8 @@ export type GridState = {
   // Currently selected ranges and previously selected ranges
   // Store the previously selected ranges to determine if the new selection should
   // deselect again (if it's the same range)
-  selectedRanges: GridRange[];
-  lastSelectedRanges: GridRange[];
+  selectedRanges: readonly GridRange[];
+  lastSelectedRanges: readonly GridRange[];
 
   // The mouse cursor style to use when hovering over the grid element
   cursor: string | null;
@@ -203,13 +204,14 @@ class Grid extends PureComponent<GridProps, GridState> {
     isStickyRight: false,
     isStuckToBottom: false,
     isStuckToRight: false,
-    keyHandlers: [] as KeyHandler[],
-    mouseHandlers: [] as GridMouseHandler[],
-    movedColumns: [] as MoveOperation[],
-    movedRows: [] as MoveOperation[],
+    keyHandlers: EMPTY_ARRAY as readonly KeyHandler[],
+    mouseHandlers: EMPTY_ARRAY as readonly GridMouseHandler[],
+    movedColumns: EMPTY_ARRAY as readonly MoveOperation[],
+    movedRows: EMPTY_ARRAY as readonly MoveOperation[],
     onError: (): void => undefined,
     onSelectionChanged: (): void => undefined,
-    onMovedColumnsChanged: (moveOperations: MoveOperation[]): void => undefined,
+    onMovedColumnsChanged: (moveOperations: readonly MoveOperation[]): void =>
+      undefined,
     onMoveColumnComplete: (): void => undefined,
     onMovedRowsChanged: (): void => undefined,
     onMoveRowComplete: (): void => undefined,
@@ -297,9 +299,9 @@ class Grid extends PureComponent<GridProps, GridState> {
 
   dragTimer: ReturnType<typeof setTimeout> | null;
 
-  keyHandlers: KeyHandler[];
+  keyHandlers: readonly KeyHandler[];
 
-  mouseHandlers: GridMouseHandler[];
+  mouseHandlers: readonly GridMouseHandler[];
 
   /* eslint-enable react/sort-comp */
 
@@ -414,8 +416,8 @@ class Grid extends PureComponent<GridProps, GridState> {
       // Currently selected ranges and previously selected ranges
       // Store the previously selected ranges to determine if the new selection should
       // deselect again (if it's the same range)
-      selectedRanges: [],
-      lastSelectedRanges: [],
+      selectedRanges: EMPTY_ARRAY,
+      lastSelectedRanges: EMPTY_ARRAY,
 
       // The mouse cursor style to use when hovering over the grid element
       cursor: null,
@@ -632,20 +634,23 @@ class Grid extends PureComponent<GridProps, GridState> {
     };
   }
 
-  getCachedKeyHandlers = memoize((keyHandlers: KeyHandler[]) =>
+  getCachedKeyHandlers = memoize((keyHandlers: readonly KeyHandler[]) =>
     [...keyHandlers, ...this.keyHandlers].sort((a, b) => a.order - b.order)
   );
 
-  getKeyHandlers(): KeyHandler[] {
+  getKeyHandlers(): readonly KeyHandler[] {
     const { keyHandlers } = this.props;
     return this.getCachedKeyHandlers(keyHandlers);
   }
 
-  getCachedMouseHandlers = memoize((mouseHandlers: GridMouseHandler[]) =>
-    [...mouseHandlers, ...this.mouseHandlers].sort((a, b) => a.order - b.order)
+  getCachedMouseHandlers = memoize(
+    (mouseHandlers: readonly GridMouseHandler[]): readonly GridMouseHandler[] =>
+      [...mouseHandlers, ...this.mouseHandlers].sort(
+        (a, b) => a.order - b.order
+      )
   );
 
-  getMouseHandlers(): GridMouseHandler[] {
+  getMouseHandlers(): readonly GridMouseHandler[] {
     const { mouseHandlers } = this.props;
     return this.getCachedMouseHandlers(mouseHandlers);
   }
@@ -731,7 +736,7 @@ class Grid extends PureComponent<GridProps, GridState> {
    * Will update the cursor and selection start/end based on the new ranges
    * @param gridRanges The new selected ranges to set
    */
-  setSelectedRanges(gridRanges: GridRange[]): void {
+  setSelectedRanges(gridRanges: readonly GridRange[]): void {
     const { model } = this.props;
     const { columnCount, rowCount } = model;
     const { cursorRow, cursorColumn, selectedRanges } = this.state;
@@ -1497,7 +1502,7 @@ class Grid extends PureComponent<GridProps, GridState> {
    * @param ranges Ranges to set
    * @param value The value to set on all the ranges
    */
-  setValueForRanges(ranges: GridRange[], value: string): void {
+  setValueForRanges(ranges: readonly GridRange[], value: string): void {
     const { model } = this.props;
     const { movedColumns, movedRows } = this.state;
 

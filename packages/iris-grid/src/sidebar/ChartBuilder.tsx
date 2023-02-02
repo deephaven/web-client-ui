@@ -46,7 +46,7 @@ interface ChartBuilderState {
   type: SeriesPlotStyle;
 
   /** Array of column names of the series to display */
-  seriesItems: SeriesItem[];
+  seriesItems: readonly SeriesItem[];
 
   /** The column name to use as the x-axis */
   xAxis: string;
@@ -142,7 +142,7 @@ class ChartBuilder extends PureComponent<ChartBuilderProps, ChartBuilderState> {
 
   static makeDefaultSeriesItems(
     type: SeriesPlotStyle,
-    columns: Column[]
+    columns: readonly Column[]
   ): SeriesItem[] {
     const maxSeriesCount = ChartBuilder.getMaxSeriesCount(type);
     if (maxSeriesCount === 0 || columns == null || columns.length === 0) {
@@ -155,7 +155,7 @@ class ChartBuilder extends PureComponent<ChartBuilderProps, ChartBuilderState> {
 
   static getDefaultXAxis(
     type: SeriesPlotStyle,
-    columns: Column[]
+    columns: readonly Column[]
   ): string | null {
     if (columns != null && columns.length > 0) {
       return columns[0].name;
@@ -201,17 +201,17 @@ class ChartBuilder extends PureComponent<ChartBuilderProps, ChartBuilderState> {
 
   handleAddSeries(): void {
     this.setState(state => {
-      let { seriesItems } = state;
-      seriesItems = [...seriesItems];
+      const { seriesItems } = state;
+      const newSeriesItems = [...seriesItems];
 
       const { model } = this.props;
       const { columns } = model;
-      seriesItems.push({
+      newSeriesItems.push({
         id: shortid.generate(),
         value: columns[0].name,
       });
 
-      return { seriesItems };
+      return { seriesItems: newSeriesItems };
     }, this.sendChange);
   }
 
@@ -252,12 +252,12 @@ class ChartBuilder extends PureComponent<ChartBuilderProps, ChartBuilderState> {
     const intIndex = parseInt(index, 10);
 
     this.setState(state => {
-      let { seriesItems } = state;
+      const { seriesItems } = state;
+      const newSeriesItems = [...seriesItems];
 
-      seriesItems = [...seriesItems];
-      seriesItems.splice(intIndex, 1);
+      newSeriesItems.splice(intIndex, 1);
 
-      return { seriesItems };
+      return { seriesItems: newSeriesItems };
     }, this.sendChange);
   }
 
