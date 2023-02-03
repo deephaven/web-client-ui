@@ -125,7 +125,7 @@ npm run clean
 Next, start the docker image and open a bash shell inside of it:
 
 ```
-docker run --rm --network host -v $(pwd):/work/ -w /work/ -it mcr.microsoft.com/playwright:v1.28.1-focal /bin/bash
+docker run --rm --network host -v $(pwd):/work/ -w /work/ -it mcr.microsoft.com/playwright:v1.30.0-focal /bin/bash
 ```
 
 Within the docker image shell, install some build tools that are not included with the image:
