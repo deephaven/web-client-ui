@@ -145,7 +145,7 @@ export default class TableSaver extends PureComponent<
 
   tableSubscription?: TableViewportSubscription;
 
-  columns?: Column[];
+  columns?: readonly Column[];
 
   fileName?: string;
 
@@ -155,11 +155,11 @@ export default class TableSaver extends PureComponent<
 
   chunkRows?: number;
 
-  gridRanges: GridRange[];
+  gridRanges: readonly GridRange[];
 
   gridRangeCounter?: number;
 
-  rangedSnapshotsTotal: number[];
+  rangedSnapshotsTotal: readonly number[];
 
   rangedSnapshotCounter?: number;
 
@@ -264,8 +264,8 @@ export default class TableSaver extends PureComponent<
     fileName: string,
     frozenTable: Table,
     tableSubscription: TableViewportSubscription,
-    snapshotRanges: GridRange[],
-    modelRanges: GridRange[],
+    snapshotRanges: readonly GridRange[],
+    modelRanges: readonly GridRange[],
     includeColumnHeaders: boolean,
     useUnformattedValues: boolean
   ): void {

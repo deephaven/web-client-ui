@@ -429,8 +429,8 @@ export interface Chart extends Evented {
 export interface Series {
   readonly plotStyle: SeriesPlotStyle;
   readonly name: string;
-  readonly isLinesVisible: boolean;
-  readonly isShapesVisible: boolean;
+  readonly isLinesVisible: boolean | null;
+  readonly isShapesVisible: boolean | null;
   readonly isGradientVisible: boolean;
   readonly lineColor: string;
   readonly pointLabelFormat: string;
@@ -723,7 +723,7 @@ export interface Table extends TableTemplate<Table>, TableStatic {
 export interface TableViewportSubscription extends Evented {
   setViewport(firstRow: number, lastRow: number, columns?: Column[]): void;
   getViewportData(): Promise<TableData>;
-  snapshot(rows: RangeSet, columns: Column[]): Promise<TableData>;
+  snapshot(rows: RangeSet, columns: readonly Column[]): Promise<TableData>;
   close(): void;
 }
 
@@ -878,8 +878,18 @@ export interface TreeTable extends TableTemplate<TreeTable>, TreeTableStatic {
   expand(row: TreeRow): void;
   collapse(row: number): void;
   collapse(row: TreeRow): void;
-  setExpanded(row: number, isExpanded: boolean): void;
-  setExpanded(row: TreeRow, isExpanded: boolean): void;
+  setExpanded(
+    row: number,
+    isExpanded: boolean,
+    expandDescendants?: boolean
+  ): void;
+  setExpanded(
+    row: TreeRow,
+    isExpanded: boolean,
+    expandDescendants?: boolean
+  ): void;
+  expandAll?(): void;
+  collapseAll?(): void;
   isExpanded(row: number): boolean;
   isExpanded(row: TreeRow): boolean;
 
@@ -899,7 +909,7 @@ export interface TreeRow extends Row {
 
 export interface RollupConfig {
   groupingColumns: string[] | null;
-  aggregations: Record<string, string[]> | null;
+  aggregations: Record<string, readonly string[]> | null;
   includeConstituents: boolean;
   includeOriginalColumns?: boolean;
   includeDescriptions: boolean;
@@ -911,8 +921,8 @@ export interface TotalsTableConfig {
   showTotalsByDefault?: boolean;
   showGrandTotalsByDefault?: boolean;
   defaultOperation?: string;
-  groupBy?: string[];
-  operationMap: Record<string, string[]>;
+  groupBy?: readonly string[];
+  operationMap: Record<string, readonly string[]>;
 }
 
 export interface TotalsTable extends Evented {

@@ -26,8 +26,8 @@ import { Sort } from '@deephaven/jsapi-shim';
 import { TableUtils, ReverseType } from '@deephaven/jsapi-utils';
 import { assertNotNull } from '@deephaven/utils';
 import {
-  AdvancedFilterMap,
-  QuickFilterMap,
+  ReadonlyAdvancedFilterMap,
+  ReadonlyQuickFilterMap,
   AdvancedFilter,
   QuickFilter,
 } from './CommonTypes';
@@ -53,8 +53,8 @@ export type IrisGridRenderState = GridRenderState & {
   loadingScrimProgress: number;
   reverseType: ReverseType;
   isFilterBarShown: boolean;
-  advancedFilters: AdvancedFilterMap;
-  quickFilters: QuickFilterMap;
+  advancedFilters: ReadonlyAdvancedFilterMap;
+  quickFilters: ReadonlyQuickFilterMap;
   isMenuShown: boolean;
 };
 /**

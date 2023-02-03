@@ -15,12 +15,12 @@ const log = Log.module('SelectDistinctBuilder');
 
 interface SelectDistinctBuilderProps {
   model: IrisGridModel;
-  selectDistinctColumns: ColumnName[];
-  onChange: (newStr: string[]) => void;
+  selectDistinctColumns: readonly ColumnName[];
+  onChange: (newStr: readonly string[]) => void;
 }
 interface SelectDistinctBuilderState {
-  inputs: string[];
-  columns: Column[];
+  inputs: readonly string[];
+  columns: readonly Column[];
 }
 class SelectDistinctBuilder extends Component<
   SelectDistinctBuilderProps,

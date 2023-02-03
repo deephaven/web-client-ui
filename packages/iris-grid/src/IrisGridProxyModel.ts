@@ -35,6 +35,7 @@ import {
   UITotalsTableConfig,
   PendingDataMap,
   UIRow,
+  PendingDataErrorMap,
 } from './CommonTypes';
 import { isIrisGridTableModelTemplate } from './IrisGridTableModelTemplate';
 import type ColumnHeaderGroup from './ColumnHeaderGroup';
@@ -272,6 +273,13 @@ class IrisGridProxyModel extends IrisGridModel {
     return false;
   }
 
+  get isExpandAllAvailable(): boolean {
+    if (isExpandableGridModel(this.model)) {
+      return this.model.isExpandAllAvailable ?? false;
+    }
+    return false;
+  }
+
   isRowExpandable: IrisGridTreeTableModel['isRowExpandable'] = (...args) => {
     if (isExpandableGridModel(this.model)) {
       return this.model.isRowExpandable(...args);
@@ -291,6 +299,20 @@ class IrisGridProxyModel extends IrisGridModel {
       return this.model.setRowExpanded(...args);
     }
     throw Error('Function setRowExpanded does not exist on IrisGridTableModel');
+  };
+
+  expandAll: IrisGridTreeTableModel['expandAll'] = () => {
+    if (isExpandableGridModel(this.model)) {
+      return this.model.expandAll();
+    }
+    throw Error('Function expandAll does not exist on IrisGridTableModel');
+  };
+
+  collapseAll: IrisGridTreeTableModel['collapseAll'] = () => {
+    if (isExpandableGridModel(this.model)) {
+      return this.model.collapseAll();
+    }
+    throw Error('Function collapseAll does not exist on IrisGridTableModel');
   };
 
   depthForRow: IrisGridTreeTableModel['depthForRow'] = (...args) => {
@@ -352,15 +374,15 @@ class IrisGridProxyModel extends IrisGridModel {
     return this.model.isReversible;
   }
 
-  get columns(): Column[] {
+  get columns(): readonly Column[] {
     return this.model.columns;
   }
 
-  get initialMovedColumns(): MoveOperation[] {
+  get initialMovedColumns(): readonly MoveOperation[] {
     return this.model.initialMovedColumns;
   }
 
-  get initialMovedRows(): MoveOperation[] {
+  get initialMovedRows(): readonly MoveOperation[] {
     return this.model.initialMovedRows;
   }
 
@@ -368,30 +390,30 @@ class IrisGridProxyModel extends IrisGridModel {
     return this.model.layoutHints;
   }
 
-  get frontColumns(): ColumnName[] {
+  get frontColumns(): readonly ColumnName[] {
     return this.model.frontColumns;
   }
 
-  get backColumns(): ColumnName[] {
+  get backColumns(): readonly ColumnName[] {
     return this.model.backColumns;
   }
 
-  get frozenColumns(): ColumnName[] {
+  get frozenColumns(): readonly ColumnName[] {
     return this.model.frozenColumns;
   }
 
   getColumnHeaderGroup: IrisGridModel['getColumnHeaderGroup'] = (...args) =>
     this.model.getColumnHeaderGroup(...args);
 
-  get columnHeaderGroups(): ColumnHeaderGroup[] {
+  get columnHeaderGroups(): readonly ColumnHeaderGroup[] {
     return this.model.columnHeaderGroups;
   }
 
-  set columnHeaderGroups(groups: ColumnHeaderGroup[]) {
+  set columnHeaderGroups(groups: readonly ColumnHeaderGroup[]) {
     this.model.columnHeaderGroups = groups;
   }
 
-  get initialColumnHeaderGroups(): ColumnHeaderGroup[] {
+  get initialColumnHeaderGroups(): readonly ColumnHeaderGroup[] {
     return this.model.initialColumnHeaderGroups;
   }
 
@@ -399,7 +421,7 @@ class IrisGridProxyModel extends IrisGridModel {
     ...args
   ) => this.model.getColumnHeaderParentGroup(...args);
 
-  get columnHeaderGroupMap(): Map<string, ColumnHeaderGroup> {
+  get columnHeaderGroupMap(): ReadonlyMap<string, ColumnHeaderGroup> {
     return this.model.columnHeaderGroupMap;
   }
 
@@ -407,15 +429,15 @@ class IrisGridProxyModel extends IrisGridModel {
     return this.model.columnHeaderMaxDepth;
   }
 
-  updateFrozenColumns(columns: ColumnName[]): void {
+  updateFrozenColumns(columns: readonly ColumnName[]): void {
     return this.model.updateFrozenColumns(columns);
   }
 
-  get originalColumns(): Column[] {
+  get originalColumns(): readonly Column[] {
     return this.originalModel.columns;
   }
 
-  get groupedColumns(): Column[] {
+  get groupedColumns(): readonly Column[] {
     return this.model.groupedColumns;
   }
 
@@ -429,11 +451,11 @@ class IrisGridProxyModel extends IrisGridModel {
   valueForCell: IrisGridModel['valueForCell'] = (...args) =>
     this.model.valueForCell(...args);
 
-  get filter(): FilterCondition[] {
+  get filter(): readonly FilterCondition[] {
     return this.model.filter;
   }
 
-  set filter(filter: FilterCondition[]) {
+  set filter(filter: readonly FilterCondition[]) {
     this.model.filter = filter;
   }
 
@@ -448,27 +470,27 @@ class IrisGridProxyModel extends IrisGridModel {
   displayString: IrisGridModel['displayString'] = (...args) =>
     this.model.displayString(...args);
 
-  get sort(): Sort[] {
+  get sort(): readonly Sort[] {
     return this.model.sort;
   }
 
-  set sort(sort: Sort[]) {
+  set sort(sort: readonly Sort[]) {
     this.model.sort = sort;
   }
 
-  get customColumns(): ColumnName[] {
+  get customColumns(): readonly ColumnName[] {
     return this.model.customColumns;
   }
 
-  set customColumns(customColumns: ColumnName[]) {
+  set customColumns(customColumns: readonly ColumnName[]) {
     this.model.customColumns = customColumns;
   }
 
-  get formatColumns(): CustomColumn[] {
+  get formatColumns(): readonly CustomColumn[] {
     return this.model.formatColumns;
   }
 
-  set formatColumns(formatColumns: CustomColumn[]) {
+  set formatColumns(formatColumns: readonly CustomColumn[]) {
     this.model.formatColumns = formatColumns;
   }
 
@@ -658,7 +680,7 @@ class IrisGridProxyModel extends IrisGridModel {
     this.model.pendingRowCount = count;
   }
 
-  get pendingDataErrors(): Map<number, Error[]> {
+  get pendingDataErrors(): PendingDataErrorMap {
     return this.model.pendingDataErrors;
   }
 

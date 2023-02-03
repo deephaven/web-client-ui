@@ -2,8 +2,8 @@ import { arrayMove } from '@dnd-kit/sortable';
 import type { Column } from '@deephaven/jsapi-shim';
 import { GridUtils, ModelIndex, MoveOperation } from '@deephaven/grid';
 import type ColumnHeaderGroup from '../../../ColumnHeaderGroup';
-import { isFlattenedTreeItem } from './types';
-import type { FlattenedItem, TreeItem, TreeItems } from './types';
+import { isFlattenedTreeItem, ReadonlyTreeItems } from './types';
+import type { FlattenedItem, TreeItem } from './types';
 
 /**
  * Gets the depth of an item dragged with a given x-axis offset
@@ -28,8 +28,8 @@ export type IrisGridTreeItem = TreeItem<IrisGridTreeItemData>;
 export type FlattenedIrisGridTreeItem = FlattenedItem<IrisGridTreeItemData>;
 
 function getTreeItem(
-  columns: Column[],
-  movedColumns: MoveOperation[],
+  columns: readonly Column[],
+  movedColumns: readonly MoveOperation[],
   columnHeaderGroupMap: Map<string, ColumnHeaderGroup>,
   name: string,
   hiddenColumnSet: Set<ModelIndex>,
@@ -90,11 +90,11 @@ function getTreeItem(
 }
 
 export function getTreeItems(
-  columns: Column[],
-  movedColumns: MoveOperation[],
-  columnHeaderGroups: ColumnHeaderGroup[],
-  hiddenColumns: ModelIndex[],
-  selectedItems: string[]
+  columns: readonly Column[],
+  movedColumns: readonly MoveOperation[],
+  columnHeaderGroups: readonly ColumnHeaderGroup[],
+  hiddenColumns: readonly ModelIndex[],
+  selectedItems: readonly string[]
 ): IrisGridTreeItem[] {
   const items: IrisGridTreeItem[] = [];
   const selectedItemsSet = new Set(selectedItems);
@@ -225,7 +225,7 @@ function getMinDepth({ nextItem }: { nextItem: FlattenedItem | undefined }) {
  * @returns Flattened items
  */
 function flatten<T>(
-  items: TreeItems<T>,
+  items: ReadonlyTreeItems<T>,
   parentId: string | null = null,
   depth = 0
 ): FlattenedItem<T>[] {
@@ -244,10 +244,12 @@ function flatten<T>(
  * @param items The tree items to flatten
  * @returns The flattened tree items list
  */
-export function flattenTree<T>(items: TreeItems<T>): FlattenedItem<T>[] {
+export function flattenTree<T>(
+  items: ReadonlyTreeItems<T>
+): FlattenedItem<T>[] {
   // Should help prevent double flattening since FlattenedItems are valid TreeItems
   if (items.every(isFlattenedTreeItem)) {
-    return items;
+    return [...items];
   }
   return flatten(items);
 }
@@ -261,7 +263,7 @@ export function flattenTree<T>(items: TreeItems<T>): FlattenedItem<T>[] {
  * @returns The item if found
  */
 export function findItemDeep(
-  items: TreeItems,
+  items: ReadonlyTreeItems,
   itemId: string
 ): TreeItem | undefined {
   for (let i = 0; i < items.length; i += 1) {
@@ -294,7 +296,7 @@ function countChildren(items: TreeItem[], count = 0): number {
   }, count);
 }
 
-export function getChildCount(items: TreeItems, id: string): number {
+export function getChildCount(items: ReadonlyTreeItems, id: string): number {
   const item = findItemDeep(items, id);
 
   return item ? countChildren(item.children) : 0;

@@ -650,8 +650,8 @@ export function getShortLabelForConditionType(
  * @returns Array of format columns
  */
 export function getFormatColumns(
-  columns: Column[],
-  rules: FormattingRule[]
+  columns: readonly Column[],
+  rules: readonly FormattingRule[]
 ): CustomColumn[] {
   if (rules === undefined) {
     log.debug(`no rules passed.`);

@@ -27,14 +27,14 @@ import { ColumnName } from '../../CommonTypes';
 
 const log = Log.module('ConditionalFormattingMenu');
 
-export type ChangeCallback = (rules: FormattingRule[]) => void;
+export type ChangeCallback = (rules: readonly FormattingRule[]) => void;
 
 export type SelectCallback = (index: number) => void;
 
 export type CreateCallback = () => void;
 
 export type ConditionalFormattingMenuProps = {
-  rules: FormattingRule[];
+  rules: readonly FormattingRule[];
   selectedColumn?: ColumnName;
   onChange?: ChangeCallback;
   onCreate?: CreateCallback;

@@ -16,14 +16,14 @@ import { ColumnName } from './CommonTypes';
 
 interface CrossColumnSearchProps {
   value: string;
-  selectedColumns: ColumnName[];
+  selectedColumns: readonly ColumnName[];
   invertSelection: boolean;
   onChange: (
     value: string,
-    selectedColumns: ColumnName[],
+    selectedColumns: readonly ColumnName[],
     invertSelection: boolean
   ) => void;
-  columns: Column[];
+  columns: readonly Column[];
 }
 
 interface CrossColumnSearchState {
@@ -35,8 +35,8 @@ class CrossColumnSearch extends PureComponent<
 > {
   static createSearchFilter(
     searchValue: string,
-    selectedColumns: ColumnName[],
-    columns: Column[],
+    selectedColumns: readonly ColumnName[],
+    columns: readonly Column[],
     invertSelection: boolean
   ): FilterCondition | undefined {
     const filterColumns = invertSelection
@@ -87,7 +87,7 @@ class CrossColumnSearch extends PureComponent<
   }
 
   sendColumnChange(
-    selectedColumns: ColumnName[],
+    selectedColumns: readonly ColumnName[],
     invertSelection: boolean
   ): void {
     const { onChange, value } = this.props;

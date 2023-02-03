@@ -10,8 +10,9 @@ import dh, {
 } from '@deephaven/jsapi-shim';
 import { ModelIndex, MoveOperation } from '@deephaven/grid';
 import { Formatter, ReverseType, TableUtils } from '@deephaven/jsapi-utils';
+import { EMPTY_ARRAY, EMPTY_MAP } from '@deephaven/utils';
 import IrisGridUtils from './IrisGridUtils';
-import { ColumnName, UITotalsTableConfig, UIRow } from './CommonTypes';
+import { ColumnName, UITotalsTableConfig, PendingDataMap } from './CommonTypes';
 import IrisGridModel from './IrisGridModel';
 import type ColumnHeaderGroup from './ColumnHeaderGroup';
 
@@ -19,27 +20,27 @@ const COLUMN_BUFFER_PAGES = 1;
 
 interface IrisGridModelUpdaterProps {
   model: IrisGridModel;
-  modelColumns: Column[];
+  modelColumns: readonly Column[];
   top: number;
   bottom: number;
   left: number | null;
   right: number | null;
-  filter: FilterCondition[];
-  sorts: Sort[];
+  filter: readonly FilterCondition[];
+  sorts: readonly Sort[];
   reverseType?: ReverseType;
-  customColumns: ColumnName[];
-  movedColumns: MoveOperation[];
-  hiddenColumns: ModelIndex[];
-  frozenColumns?: ColumnName[];
-  columnHeaderGroups: ColumnHeaderGroup[];
-  formatColumns: CustomColumn[];
-  alwaysFetchColumns: ColumnName[];
+  customColumns: readonly ColumnName[];
+  movedColumns: readonly MoveOperation[];
+  hiddenColumns: readonly ModelIndex[];
+  frozenColumns?: readonly ColumnName[];
+  columnHeaderGroups: readonly ColumnHeaderGroup[];
+  formatColumns: readonly CustomColumn[];
+  alwaysFetchColumns: readonly ColumnName[];
   formatter: Formatter;
   rollupConfig?: RollupConfig | null;
   totalsConfig?: UITotalsTableConfig | null;
-  selectDistinctColumns?: ColumnName[];
+  selectDistinctColumns?: readonly ColumnName[];
   pendingRowCount?: number;
-  pendingDataMap?: Map<ModelIndex, UIRow>;
+  pendingDataMap?: PendingDataMap;
 }
 
 /**
@@ -63,9 +64,9 @@ const IrisGridModelUpdater = React.memo(
     alwaysFetchColumns,
     rollupConfig = null,
     totalsConfig = null,
-    selectDistinctColumns = [],
+    selectDistinctColumns = EMPTY_ARRAY,
     pendingRowCount = 0,
-    pendingDataMap = new Map(),
+    pendingDataMap = EMPTY_MAP,
     frozenColumns,
     formatColumns,
     columnHeaderGroups,
