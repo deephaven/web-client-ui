@@ -24,6 +24,7 @@ import {
   PopperOptions,
   ReferenceObject,
   Button,
+  ContextActionUtils,
 } from '@deephaven/components';
 import {
   Grid,
@@ -117,6 +118,7 @@ import {
   IrisGridContextMenuHandler,
   IrisGridDataSelectMouseHandler,
   IrisGridFilterMouseHandler,
+  IrisGridRowTreeMouseHandler,
   IrisGridSortMouseHandler,
   PendingMouseHandler,
 } from './mousehandlers';
@@ -404,6 +406,7 @@ export interface IrisGridState {
   showOverflowModal: boolean;
   overflowText: string;
   overflowButtonTooltipProps: CSSProperties | null;
+  expandCellTooltipProps: CSSProperties | null;
 
   gotoRow: string;
   gotoRowError: string;
@@ -711,6 +714,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     }
     const mouseHandlers = [
       new IrisGridCellOverflowMouseHandler(this),
+      new IrisGridRowTreeMouseHandler(this),
       new IrisGridColumnSelectMouseHandler(this),
       new IrisGridColumnTooltipMouseHandler(this),
       new IrisGridSortMouseHandler(this),
@@ -827,6 +831,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       showOverflowModal: false,
       overflowText: '',
       overflowButtonTooltipProps: null,
+      expandCellTooltipProps: null,
       isGotoShown: false,
       gotoRow: '',
       gotoRowError: '',
@@ -3542,6 +3547,41 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     }
   );
 
+  getExpandCellTooltip = memoize(
+    (expandCellTooltipProps: CSSProperties): ReactNode => {
+      if (expandCellTooltipProps == null) {
+        return null;
+      }
+
+      const wrapperStyle: CSSProperties = {
+        position: 'absolute',
+        ...expandCellTooltipProps,
+        pointerEvents: 'none',
+      };
+
+      const popperOptions: PopperOptions = {
+        placement: 'bottom-start',
+      };
+
+      return (
+        <div style={wrapperStyle}>
+          <Tooltip
+            key={Date.now()}
+            options={popperOptions}
+            ref={this.handleTooltipRef}
+          >
+            <div style={{ textAlign: 'left' }}>
+              Click to expand row
+              <br />
+              {ContextActionUtils.isMacPlatform() ? 'Cmd' : 'Ctrl'} + Click to
+              expand row and all children
+            </div>
+          </Tooltip>
+        </div>
+      );
+    }
+  );
+
   handleGotoRowSelectedRowNumberSubmit(): void {
     const { gotoRow: rowNumber } = this.state;
     this.focusRowInGrid(rowNumber);
@@ -3783,6 +3823,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       showOverflowModal,
       overflowText,
       overflowButtonTooltipProps,
+      expandCellTooltipProps,
       isGotoShown,
       gotoRow,
       gotoRowError,
@@ -4393,6 +4434,8 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
             {advancedFilterMenus}
             {overflowButtonTooltipProps &&
               this.getOverflowButtonTooltip(overflowButtonTooltipProps)}
+            {expandCellTooltipProps &&
+              this.getExpandCellTooltip(expandCellTooltipProps)}
           </div>
           <GotoRow
             model={model}

@@ -42,6 +42,7 @@ const ICON_NAMES = Object.freeze({
   CELL_OVERFLOW: 'cellOverflow',
 });
 
+const EXPAND_ICON_SIZE = 10;
 const ICON_SIZE = 16;
 
 export type IrisGridRenderState = GridRenderState & {
@@ -1075,6 +1076,53 @@ class IrisGridRenderer extends GridRenderer {
     context.fill(icon);
 
     context.restore();
+  }
+
+  getExpandButtonPosition(
+    {
+      mouseX,
+      mouseY,
+      metrics,
+      theme,
+    }: {
+      mouseX: Coordinate | null;
+      mouseY: Coordinate | null;
+      metrics: GridMetrics | undefined;
+      theme: GridThemeType;
+    },
+    depth: number | null
+  ): {
+    left: Coordinate | null;
+    top: Coordinate | null;
+    width: number | null;
+    height: number | null;
+  } {
+    const NULL_POSITION = { left: null, top: null, width: null, height: null };
+    if (mouseX == null || mouseY == null || depth == null || !metrics) {
+      return NULL_POSITION;
+    }
+    const { rowHeight, left, top } = GridUtils.getCellInfoFromXY(
+      mouseX,
+      mouseY,
+      metrics
+    );
+
+    assertNotNull(left);
+    assertNotNull(rowHeight);
+    assertNotNull(top);
+    const { cellHorizontalPadding } = theme;
+
+    const width = EXPAND_ICON_SIZE + 2 * cellHorizontalPadding;
+
+    const buttonLeft = left + EXPAND_ICON_SIZE * depth;
+    const buttonTop = metrics.gridY + top;
+
+    return {
+      left: buttonLeft,
+      top: buttonTop,
+      width,
+      height: rowHeight,
+    };
   }
 }
 

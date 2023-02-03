@@ -4,5 +4,6 @@ export { default as IrisGridColumnTooltipMouseHandler } from './IrisGridColumnTo
 export { default as IrisGridContextMenuHandler } from './IrisGridContextMenuHandler';
 export { default as IrisGridDataSelectMouseHandler } from './IrisGridDataSelectMouseHandler';
 export { default as IrisGridFilterMouseHandler } from './IrisGridFilterMouseHandler';
+export { default as IrisGridRowTreeMouseHandler } from './IrisGridRowTreeMouseHandler';
 export { default as IrisGridSortMouseHandler } from './IrisGridSortMouseHandler';
 export { default as PendingMouseHandler } from './PendingMouseHandler';
