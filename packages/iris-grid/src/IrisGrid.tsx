@@ -412,6 +412,7 @@ export interface IrisGridState {
   overflowText: string;
   overflowButtonTooltipProps: CSSProperties | null;
   expandCellTooltipProps: CSSProperties | null;
+  expandTooltipDisplayValue: string;
 
   gotoRow: string;
   gotoRowError: string;
@@ -837,6 +838,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       overflowText: '',
       overflowButtonTooltipProps: null,
       expandCellTooltipProps: null,
+      expandTooltipDisplayValue: 'expand',
       isGotoShown: false,
       gotoRow: '',
       gotoRowError: '',
@@ -3563,6 +3565,8 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
         return null;
       }
 
+      const { expandTooltipDisplayValue } = this.state;
+
       const wrapperStyle: CSSProperties = {
         position: 'absolute',
         ...expandCellTooltipProps,
@@ -3581,9 +3585,9 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
             ref={this.handleTooltipRef}
           >
             <div style={{ textAlign: 'left' }}>
-              Click to expand row
+              Click to {expandTooltipDisplayValue} row
               <br />
-              {ContextActionUtils.isMacPlatform() ? 'Cmd' : 'Ctrl'} + Click to
+              {ContextActionUtils.isMacPlatform() ? '⌘' : 'Ctrl+'}Click to
               expand row and all children
             </div>
           </Tooltip>

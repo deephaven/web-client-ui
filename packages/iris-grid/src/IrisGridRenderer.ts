@@ -1114,7 +1114,7 @@ class IrisGridRenderer extends GridRenderer {
 
     const width = EXPAND_ICON_SIZE + 2 * cellHorizontalPadding;
 
-    const buttonLeft = left + EXPAND_ICON_SIZE * depth;
+    const buttonLeft = Math.max(left + EXPAND_ICON_SIZE * depth, metrics.gridX);
     const buttonTop = metrics.gridY + top;
 
     return {

@@ -6,6 +6,7 @@ import {
   GridRowTreeMouseHandler,
   isExpandableGridModel,
 } from '@deephaven/grid';
+import { assertNotNull } from '@deephaven/utils';
 import deepEqual from 'deep-equal';
 import type IrisGrid from '../IrisGrid';
 
@@ -80,9 +81,17 @@ class IrisGridRowTreeMouseHandler extends GridMouseHandler {
   onMove(gridPoint: GridPoint, grid: Grid): EventHandlerResult {
     if (GridRowTreeMouseHandler.isInTreeBox(gridPoint, grid)) {
       const { expandCellTooltipProps } = this.irisGrid.state;
+      const { model } = this.irisGrid.props;
       const newProps = this.getButtonPosition(gridPoint);
+      const { row } = gridPoint;
+      assertNotNull(row);
+      const isRowExpanded =
+        isExpandableGridModel(model) && model.isRowExpanded(row);
       if (!deepEqual(expandCellTooltipProps, newProps)) {
-        this.irisGrid.setState({ expandCellTooltipProps: newProps });
+        this.irisGrid.setState({
+          expandCellTooltipProps: newProps,
+          expandTooltipDisplayValue: isRowExpanded ? 'collapse' : 'expand',
+        });
       }
     } else {
       this.destroyTooltip();
