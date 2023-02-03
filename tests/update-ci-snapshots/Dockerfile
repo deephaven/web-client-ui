@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 # Dockerfile for updating the snapshots.
 # Expects to be run with `web-client-ui` root dir mounted in the `/work/` directory, and with the `--network host` flag
-FROM mcr.microsoft.com/playwright:v1.28.1-focal
+FROM mcr.microsoft.com/playwright:v1.30.0-focal
 WORKDIR /work/
 
 # Update packages list and install some build tools
