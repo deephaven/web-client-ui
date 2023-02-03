@@ -1707,7 +1707,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
             </span>
             <span className="title">Add Additional Sort</span>
             <span className="shortcut">
-              {ContextActionUtils.isMacPlatform() ? '⌘Click' : '^Click'}
+              {ContextActionUtils.isMacPlatform() ? '⌘Click' : 'Ctrl+Click'}
             </span>
           </div>
         ),
