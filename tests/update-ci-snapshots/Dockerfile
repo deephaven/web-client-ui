@@ -9,24 +9,6 @@ RUN set -eux; \
     apt-get update; \
     apt-get install build-essential --yes;
 
-# Use nvm to install and use the correct version of node
+# Download nvm so that we can install the correct version of node/npm
 RUN set -eux; \
     curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.2/install.sh | bash;
-
-# # Running this exits with code 3 even though it succeeds...
-# RUN export NVM_DIR="$HOME/.nvm"; \
-#     [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh";
-
-# # # Install npm depdendencies and build the production app, pointing to an API server running on your machine
-# RUN set -eux; \
-#     rm -rf node_modules; \
-#     npm ci; \
-#     VITE_CORE_API_URL=http://host.docker.internal:10000/jsapi npm run build;
-
-# # # Run the tests and update the snapshots
-# RUN set -eux; \
-#     npm run e2e:update-snapshots;
-
-# # # Clean up after ourselves so we don't leave `node_modules` in a state not suitable for the host platform
-# RUN set -eux; \
-#     npm run clean;
