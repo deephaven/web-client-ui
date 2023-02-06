@@ -2,7 +2,7 @@
 # Dockerfile for updating the snapshots.
 # Expects to be run with `web-client-ui` root dir mounted in the `/work/` directory, and with the `--network host` flag
 FROM mcr.microsoft.com/playwright:v1.30.0-focal
-# WORKDIR /work/
+WORKDIR /work/
 
 # Update packages list and install some build tools
 RUN set -eux; \
@@ -14,8 +14,8 @@ RUN set -eux; \
     curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.2/install.sh | bash;
 
 # # Running this exits with code 3 even though it succeeds...
-RUN export NVM_DIR="$HOME/.nvm"; \
-    [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh";
+# RUN export NVM_DIR="$HOME/.nvm"; \
+#     [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh";
 
 # # # Install npm depdendencies and build the production app, pointing to an API server running on your machine
 # RUN set -eux; \
