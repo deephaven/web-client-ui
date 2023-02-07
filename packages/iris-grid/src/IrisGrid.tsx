@@ -3351,7 +3351,6 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       this.grid?.setFocusRow(rowIndex);
       this.setState({ gotoValueError: '' });
     } catch (e: unknown) {
-      console.error(e);
       this.setState({ gotoValueError: 'invalid input' });
     }
   }
