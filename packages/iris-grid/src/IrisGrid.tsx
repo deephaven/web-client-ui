@@ -69,6 +69,7 @@ import dh, {
   Sort,
   Table,
   TableViewportSubscription,
+  ValueTypeUnion,
 } from '@deephaven/jsapi-shim';
 import {
   DateUtils,
@@ -3308,7 +3309,13 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
             !TableUtils.isBigDecimalType(selectedColumn.type) &&
             !TableUtils.isBigIntegerType(selectedColumn.type)
           ) {
-            const inputValue = parseInt(inputString, 10);
+            let inputValue = parseInt(inputString, 10);
+            if (inputString === '-Infinity') {
+              inputValue = Number.NEGATIVE_INFINITY;
+            } else if (inputString === 'Infinity') {
+              inputValue = Number.POSITIVE_INFINITY;
+            }
+
             rowIndex = await model.seekRow(
               searchFromRow,
               selectedColumn,
@@ -3323,7 +3330,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
               searchFromRow,
               selectedColumn,
               dh.ValueType.STRING,
-              TableUtils.makeNumberValue(inputString),
+              inputString,
               undefined,
               undefined,
               isBackwards ?? false
@@ -3351,6 +3358,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       this.grid?.setFocusRow(rowIndex);
       this.setState({ gotoValueError: '' });
     } catch (e: unknown) {
+      console.log(e);
       this.setState({ gotoValueError: 'invalid input' });
     }
   }

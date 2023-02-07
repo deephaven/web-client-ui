@@ -138,11 +138,12 @@ function GotoRow({
               onKeyDown={handleGotoValueKeyDown}
               placeholder="value"
               onChange={e => {
-                if (/^-?[0-9]*\.?[0-9]*e?[0-9]*$/.test(e.target.value)) {
+                const value = e.target.value.toLowerCase();
+                if (/^-?[0-9]*\.?[0-9]*$/.test(e.target.value)) {
                   onGotoValueInputChanged(e.target.value);
-                } else if (e.target.value.toLowerCase() === '-i') {
+                } else if (value === '-i' || value === '-infinity') {
                   onGotoValueInputChanged(`${Number.NEGATIVE_INFINITY}`);
-                } else if (e.target.value.toLowerCase() === 'i') {
+                } else if (value === 'i' || value === 'infinity') {
                   onGotoValueInputChanged(`${Number.POSITIVE_INFINITY}`);
                 }
               }}
