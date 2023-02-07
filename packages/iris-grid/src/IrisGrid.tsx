@@ -69,7 +69,6 @@ import dh, {
   Sort,
   Table,
   TableViewportSubscription,
-  ValueTypeUnion,
 } from '@deephaven/jsapi-shim';
 import {
   DateUtils,
@@ -3358,7 +3357,6 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       this.grid?.setFocusRow(rowIndex);
       this.setState({ gotoValueError: '' });
     } catch (e: unknown) {
-      console.log(e);
       this.setState({ gotoValueError: 'invalid input' });
     }
   }
