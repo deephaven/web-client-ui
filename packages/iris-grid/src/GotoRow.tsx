@@ -91,6 +91,12 @@ function GotoRow({
       e.stopPropagation();
       e.preventDefault();
       onGotoValueSubmit();
+    } else if (
+      e.key === 'Backspace' &&
+      (gotoValue === `${Number.POSITIVE_INFINITY}` ||
+        gotoValue === `${Number.NEGATIVE_INFINITY}`)
+    ) {
+      onGotoValueInputChanged('');
     }
   };
 
@@ -126,13 +132,20 @@ function GotoRow({
           <div className="goto-row-input">
             <input
               ref={gotoValueInputRef}
-              type="number"
               className={classNames('form-control', {
                 'is-invalid': gotoValueError !== '',
               })}
               onKeyDown={handleGotoValueKeyDown}
               placeholder="value"
-              onChange={e => onGotoValueInputChanged(e.target.value)}
+              onChange={e => {
+                if (/^-?[0-9]*\.?[0-9]*e?[0-9]*$/.test(e.target.value)) {
+                  onGotoValueInputChanged(e.target.value);
+                } else if (e.target.value.toLowerCase() === '-i') {
+                  onGotoValueInputChanged(`${Number.NEGATIVE_INFINITY}`);
+                } else if (e.target.value.toLowerCase() === 'i') {
+                  onGotoValueInputChanged(`${Number.POSITIVE_INFINITY}`);
+                }
+              }}
               value={gotoValue}
             />
           </div>
@@ -202,6 +215,7 @@ function GotoRow({
               }}
               value={gotoValue}
             >
+              <option aria-label="null value" key="null" value="" />
               <option key="true" value="true">
                 true
               </option>

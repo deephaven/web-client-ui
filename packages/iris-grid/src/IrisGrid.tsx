@@ -2453,6 +2453,29 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       this.focusRowInGrid(row);
       return;
     }
+
+    let cursorRow;
+    let cursorColumn;
+    if (this.grid) {
+      ({ cursorRow, cursorColumn } = this.grid.state);
+    }
+    if (cursorRow != null && cursorColumn != null) {
+      // if a row is selected
+      const { model } = this.props;
+      const { name, type } = model.columns[cursorColumn];
+
+      const cellValue = model.valueForCell(cursorColumn, cursorRow);
+      const text = IrisGridUtils.convertValueToText(cellValue, type);
+      this.setState({
+        isGotoShown: !isGotoShown,
+        gotoRow: `${cursorRow}`,
+        gotoValue: `${text}`,
+        gotoValueSelectedColumnName: name,
+        gotoRowError: '',
+        gotoValueError: '',
+      });
+      return;
+    }
     this.setState({
       isGotoShown: !isGotoShown,
       gotoRow: '',
@@ -3219,18 +3242,19 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     if (inputString === '') {
       return;
     }
+    const selectedColumn = IrisGridUtils.getColumnByName(
+      model.columns,
+      selectedColumnName
+    );
 
-    const columnIndex = model.getColumnIndexByName(selectedColumnName);
-    if (columnIndex === undefined) {
+    if (selectedColumn === undefined) {
       return;
     }
-
-    const selectedColumn = model.columns[columnIndex];
 
     let searchFromRow;
 
     if (this.grid) {
-      ({ selectionEndRow: searchFromRow } = this.grid.state);
+      ({ cursorRow: searchFromRow } = this.grid.state);
     }
 
     if (searchFromRow == null) {
@@ -3243,11 +3267,13 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       gotoValueSelectedFilter === FilterType.eqIgnoreCase;
 
     try {
+      const { formatter } = model;
       const columnDataType = TableUtils.getNormalizedType(selectedColumn.type);
 
       let rowIndex;
 
       switch (columnDataType) {
+        case TableUtils.dataType.CHAR:
         case TableUtils.dataType.STRING: {
           rowIndex = await model.seekRow(
             isBackwards === true ? searchFromRow - 1 : searchFromRow + 1,
@@ -3261,7 +3287,6 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
           break;
         }
         case TableUtils.dataType.DATETIME: {
-          const { formatter } = model;
           const [startDate] = DateUtils.parseDateRange(
             inputString,
             formatter.timeZone
@@ -3298,7 +3323,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
               searchFromRow,
               selectedColumn,
               dh.ValueType.STRING,
-              inputString,
+              TableUtils.makeNumberValue(inputString),
               undefined,
               undefined,
               isBackwards ?? false
@@ -3311,7 +3336,11 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
             searchFromRow,
             selectedColumn,
             dh.ValueType.STRING,
-            inputString,
+            TableUtils.makeValue(
+              selectedColumn.type,
+              inputString,
+              formatter.timeZone
+            ),
             undefined,
             undefined,
             isBackwards ?? false
@@ -3322,6 +3351,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       this.grid?.setFocusRow(rowIndex);
       this.setState({ gotoValueError: '' });
     } catch (e: unknown) {
+      console.error(e);
       this.setState({ gotoValueError: 'invalid input' });
     }
   }
@@ -3635,6 +3665,23 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   }
 
   handleGotoValueSelectedColumnNameChanged(columnName: ColumnName): void {
+    const { model } = this.props;
+    let cursorRow;
+    if (this.grid) {
+      ({ cursorRow } = this.grid.state);
+    }
+    if (cursorRow != null) {
+      const index = model.getColumnIndexByName(columnName);
+      const column = IrisGridUtils.getColumnByName(model.columns, columnName);
+      assertNotNull(index);
+      const value = model.valueForCell(index, cursorRow);
+      const text = IrisGridUtils.convertValueToText(value, column?.type);
+      this.setState({
+        gotoValueSelectedColumnName: columnName,
+        gotoValue: `${text}`,
+        gotoValueError: '',
+      });
+    }
     this.setState({
       gotoValueSelectedColumnName: columnName,
       gotoValueError: '',

@@ -1671,6 +1671,20 @@ class IrisGridUtils {
 
     return { groups: [...groupMap.values()], maxDepth, groupMap, parentMap };
   }
+
+  static convertValueToText(value: unknown, columnName?: string): unknown {
+    if (
+      columnName != null &&
+      TableUtils.isCharType(columnName) &&
+      value != null
+    ) {
+      return String.fromCharCode(parseInt(value as string, 10));
+    }
+    if (value == null) {
+      return '';
+    }
+    return value;
+  }
 }
 
 export default IrisGridUtils;
