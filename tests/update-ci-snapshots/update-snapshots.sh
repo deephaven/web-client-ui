@@ -12,4 +12,5 @@ npm ci
 VITE_CORE_API_URL=http://host.docker.internal:10000/jsapi npm run build
 
 # Update the snapshots
-npm run e2e:update-snapshots
+# npx playwright test --update-snapshots --config=tests/update-ci-snapshots/ci-snapshots.config
+npm run e2e:update-snapshots -- --config=playwright-ci.config.ts
