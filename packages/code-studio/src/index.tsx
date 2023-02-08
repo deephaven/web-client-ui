@@ -1,7 +1,3 @@
-// // Need to import the API first...
-// import('http://localhost:10000/jsapi/dh-core.js').then(module => {
-//   console.log('MJB got module', module);
-// });
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
@@ -14,8 +10,6 @@ import AppRouter from './main/AppRouter';
 import DownloadServiceWorkerUtils from './DownloadServiceWorkerUtils';
 import logInit from './log/LogInit';
 import { unregister } from './serviceWorker';
-
-console.log('renderr');
 
 logInit();
 
