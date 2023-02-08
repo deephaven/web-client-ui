@@ -9,7 +9,7 @@ import {
   FileStorageTable,
   FileUtils,
 } from '@deephaven/file-explorer';
-import { StorageService } from '@deephaven/jsapi-shim';
+import dh, { StorageService } from '@deephaven/jsapi-shim';
 import Log from '@deephaven/log';
 import GrpcFileStorageTable from './GrpcFileStorageTable';
 
