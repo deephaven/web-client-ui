@@ -26,6 +26,7 @@ import dh, {
   TableTemplate,
   TableViewportSubscription,
   TotalsTable,
+  ValueTypeUnion,
   ViewportData,
 } from '@deephaven/jsapi-shim';
 import Log from '@deephaven/log';
@@ -47,6 +48,7 @@ import {
   PendingDataMap,
   CellData,
   UIViewportData,
+  PendingDataErrorMap,
 } from './CommonTypes';
 import { IrisGridThemeType } from './IrisGridTheme';
 import ColumnHeaderGroup, { isColumnHeaderGroup } from './ColumnHeaderGroup';
@@ -73,6 +75,18 @@ class IrisGridTableModelTemplate<
   R extends UIRow = UIRow
 > extends IrisGridModel {
   static ROW_BUFFER_PAGES = 1;
+
+  seekRow(
+    startRow: number,
+    column: Column,
+    valueType: ValueTypeUnion,
+    value: unknown,
+    insensitive?: boolean | undefined,
+    contains?: boolean | undefined,
+    isBackwards?: boolean | undefined
+  ): Promise<number> {
+    throw new Error('Method not implemented.');
+  }
 
   export(): Promise<Table> {
     throw new Error('Method not implemented.');
@@ -351,7 +365,7 @@ class IrisGridTableModelTemplate<
     );
   }
 
-  get pendingDataErrors(): Map<number, Error[]> {
+  get pendingDataErrors(): PendingDataErrorMap {
     return this.getCachedPendingErrors(
       this.pendingNewDataMap,
       this.columns,
@@ -666,7 +680,7 @@ class IrisGridTableModelTemplate<
   }
 
   private getMemoizedInitialMovedColumns = memoize(
-    (layoutHints?: LayoutHints) => {
+    (layoutHints?: LayoutHints): readonly MoveOperation[] => {
       if (!layoutHints) {
         return [];
       }
@@ -697,15 +711,17 @@ class IrisGridTableModelTemplate<
         movedColumns = GridUtils.moveRange(visibleRange, toIndex, movedColumns);
       };
 
-      if (
-        this.frontColumns.length ||
-        this.backColumns.length ||
-        this.frozenColumns.length
-      ) {
+      const {
+        frontColumns = [],
+        backColumns = [],
+        frozenColumns = [],
+      } = layoutHints;
+
+      if (frontColumns.length || backColumns.length || frozenColumns.length) {
         const usedColumns = new Set();
 
         let frontIndex = 0;
-        this.frozenColumns.forEach(name => {
+        frozenColumns.forEach(name => {
           if (usedColumns.has(name)) {
             throw new Error(
               `Column specified in multiple layout hints: ${name}`
@@ -714,7 +730,7 @@ class IrisGridTableModelTemplate<
           moveColumn(name, frontIndex);
           frontIndex += 1;
         });
-        this.frontColumns.forEach(name => {
+        frontColumns.forEach(name => {
           if (usedColumns.has(name)) {
             throw new Error(
               `Column specified in multiple layout hints: ${name}`
@@ -725,7 +741,7 @@ class IrisGridTableModelTemplate<
         });
 
         let backIndex = this.columnMap.size - 1;
-        this.backColumns.forEach(name => {
+        backColumns.forEach(name => {
           if (usedColumns.has(name)) {
             throw new Error(
               `Column specified in multiple layout hints: ${name}`
@@ -806,7 +822,7 @@ class IrisGridTableModelTemplate<
   /**
    * Used to get the initial moved columns based on layout hints
    */
-  get initialMovedColumns(): MoveOperation[] {
+  get initialMovedColumns(): readonly MoveOperation[] {
     return this.getMemoizedInitialMovedColumns(this.layoutHints ?? undefined);
   }
 

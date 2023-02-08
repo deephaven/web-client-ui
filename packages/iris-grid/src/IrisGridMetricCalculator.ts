@@ -1,5 +1,5 @@
 import { GridMetricCalculator, ModelSizeMap } from '@deephaven/grid';
-import type { VisibleIndex, GridMetricState } from '@deephaven/grid';
+import type { GridMetricState } from '@deephaven/grid';
 import type { FilterCondition, Sort } from '@deephaven/jsapi-shim';
 import { TableUtils } from '@deephaven/jsapi-utils';
 import type IrisGridModel from './IrisGridModel';
@@ -23,33 +23,6 @@ export interface IrisGridMetricState extends GridMetricState {
  * Call getMetrics() with the state to get metrics
  */
 class IrisGridMetricCalculator extends GridMetricCalculator {
-  getVisibleColumnWidth(
-    column: VisibleIndex,
-    state: IrisGridMetricState,
-    firstColumn: VisibleIndex = this.getFirstColumn(state),
-    treePaddingX = this.calculateTreePaddingX(state)
-  ): number {
-    const { model } = state;
-    const hiddenColumns = model.layoutHints?.hiddenColumns ?? [];
-    const modelColumn = this.getModelColumn(column, state);
-
-    // Need to make sure super is called so column width is always re-calculated correctly
-    const columnWidth = super.getVisibleColumnWidth(
-      column,
-      state,
-      firstColumn,
-      treePaddingX
-    );
-    const hasUserSetWidth = this.userColumnWidths.has(modelColumn);
-    if (
-      !hasUserSetWidth &&
-      hiddenColumns.includes(model.columns[modelColumn]?.name)
-    ) {
-      return 0;
-    }
-    return columnWidth;
-  }
-
   getGridY(state: IrisGridMetricState): number {
     let gridY = super.getGridY(state);
     const {

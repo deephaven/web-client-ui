@@ -262,7 +262,7 @@ class DraggableItemList<T> extends PureComponent<
   getCachedRenderClone = memoize(
     (
       draggingItemClassName: string,
-      items: T[],
+      items: readonly T[],
       offset: number,
       renderItem: DraggableRenderItemFn<T>
       // eslint-disable-next-line react/no-unstable-nested-components, react/display-name, react/function-component-definition

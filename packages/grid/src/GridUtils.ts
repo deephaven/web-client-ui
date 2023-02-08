@@ -1,5 +1,6 @@
 import React from 'react';
 import clamp from 'lodash.clamp';
+import { EMPTY_ARRAY } from '@deephaven/utils';
 import GridRange, { GridRangeIndex } from './GridRange';
 import {
   BoxCoordinates,
@@ -263,7 +264,7 @@ export class GridUtils {
     itemCount: number,
     floatingStart: number,
     floatingEnd: number,
-    items: VisibleIndex[],
+    items: readonly VisibleIndex[],
     itemCoordinates: CoordinateMap,
     itemSizes: SizeMap,
     ignoreFloating = false
@@ -375,7 +376,7 @@ export class GridUtils {
   static getNextShownItem(
     startIndex: VisibleIndex,
     modelIndexes: VisibleToModelMap,
-    visibleItems: VisibleIndex[],
+    visibleItems: readonly VisibleIndex[],
     userSizes: ModelSizeMap
   ): VisibleIndex | null {
     let visibleItemIndex =
@@ -602,7 +603,7 @@ export class GridUtils {
   static getHiddenItems(
     itemIndex: VisibleIndex,
     visibleSizes: SizeMap,
-    visibleItems: VisibleIndex[]
+    visibleItems: readonly VisibleIndex[]
   ): VisibleIndex[] {
     if (!GridUtils.isItemHidden(itemIndex, visibleSizes)) {
       return [];
@@ -740,10 +741,10 @@ export class GridUtils {
   static moveItem(
     from: VisibleIndex,
     to: VisibleIndex,
-    oldMovedItems: MoveOperation[]
+    oldMovedItems: readonly MoveOperation[]
   ): MoveOperation[] {
     if (from === to) {
-      return oldMovedItems;
+      return [...oldMovedItems];
     }
 
     const movedItems: MoveOperation[] = [...oldMovedItems];
@@ -793,7 +794,7 @@ export class GridUtils {
   static moveRange(
     from: BoundedAxisRange,
     toParam: VisibleIndex,
-    oldMovedItems: MoveOperation[],
+    oldMovedItems: readonly MoveOperation[],
     isPreMoveTo = false
   ): MoveOperation[] {
     if (from[0] === from[1]) {
@@ -807,7 +808,7 @@ export class GridUtils {
     }
 
     if (from[0] === to) {
-      return oldMovedItems;
+      return [...oldMovedItems];
     }
 
     const movedItems: MoveOperation[] = [...oldMovedItems];
@@ -863,7 +864,7 @@ export class GridUtils {
   static applyItemMoves<T extends number | GridRangeIndex>(
     start: T,
     end: T,
-    movedItems: MoveOperation[],
+    movedItems: readonly MoveOperation[],
     reverse = false
   ): Range<T>[] {
     let result: Range<T>[] = [[start, end]];
@@ -968,8 +969,8 @@ export class GridUtils {
    */
   static translateRange(
     range: GridRange,
-    movedColumns: MoveOperation[],
-    movedRows: MoveOperation[],
+    movedColumns: readonly MoveOperation[],
+    movedRows: readonly MoveOperation[],
     reverse: boolean
   ): GridRange[] {
     const columnRanges = GridUtils.applyItemMoves(
@@ -1003,7 +1004,7 @@ export class GridUtils {
    */
   static getModelIndex(
     visibleIndex: VisibleIndex,
-    movedItems: MoveOperation[]
+    movedItems: readonly MoveOperation[]
   ): ModelIndex {
     const modelIndex = GridUtils.applyItemMoves(
       visibleIndex,
@@ -1040,7 +1041,7 @@ export class GridUtils {
   static getModelRangeIndexes(
     start: GridRangeIndex,
     end: GridRangeIndex,
-    movedItems: MoveOperation[]
+    movedItems: readonly MoveOperation[]
   ): AxisRange[] {
     return GridUtils.applyItemMoves(start, end, movedItems, true);
   }
@@ -1056,8 +1057,8 @@ export class GridUtils {
    */
   static getModelRange(
     uiRange: GridRange,
-    movedColumns: MoveOperation[] = [],
-    movedRows: MoveOperation[] = []
+    movedColumns: readonly MoveOperation[] = EMPTY_ARRAY,
+    movedRows: readonly MoveOperation[] = EMPTY_ARRAY
   ): GridRange[] {
     return GridUtils.translateRange(uiRange, movedColumns, movedRows, true);
   }
@@ -1072,9 +1073,9 @@ export class GridUtils {
    * @returns The model ranges after translation.
    */
   static getModelRanges(
-    uiRanges: GridRange[],
-    movedColumns: MoveOperation[] = [],
-    movedRows: MoveOperation[] = []
+    uiRanges: readonly GridRange[],
+    movedColumns: readonly MoveOperation[] = EMPTY_ARRAY,
+    movedRows: readonly MoveOperation[] = EMPTY_ARRAY
   ): GridRange[] {
     const modelRanges = [];
     for (let i = 0; i < uiRanges.length; i += 1) {
@@ -1097,7 +1098,7 @@ export class GridUtils {
   static getVisibleRangeIndexes(
     start: GridRangeIndex,
     end: GridRangeIndex,
-    movedItems: MoveOperation[]
+    movedItems: readonly MoveOperation[]
   ): AxisRange[] {
     return GridUtils.applyItemMoves(start, end, movedItems, false);
   }
@@ -1113,8 +1114,8 @@ export class GridUtils {
    */
   static getVisibleRange(
     modelRange: GridRange,
-    movedColumns: MoveOperation[] = [],
-    movedRows: MoveOperation[] = []
+    movedColumns: readonly MoveOperation[] = EMPTY_ARRAY,
+    movedRows: readonly MoveOperation[] = EMPTY_ARRAY
   ): GridRange[] {
     return this.translateRange(modelRange, movedColumns, movedRows, false);
   }
@@ -1129,9 +1130,9 @@ export class GridUtils {
    * @returns The model ranges after translation.
    */
   static getVisibleRanges(
-    modelRanges: GridRange[],
-    movedColumns: MoveOperation[] = [],
-    movedRows: MoveOperation[] = []
+    modelRanges: readonly GridRange[],
+    movedColumns: readonly MoveOperation[] = EMPTY_ARRAY,
+    movedRows: readonly MoveOperation[] = EMPTY_ARRAY
   ): GridRange[] {
     const visibleRanges = [];
     for (let i = 0; i < modelRanges.length; i += 1) {
@@ -1150,7 +1151,7 @@ export class GridUtils {
    */
   static getVisibleIndex(
     modelIndex: ModelIndex,
-    movedItems: MoveOperation[]
+    movedItems: readonly MoveOperation[]
   ): VisibleIndex {
     const visibleIndex = GridUtils.applyItemMoves(
       modelIndex,
@@ -1168,8 +1169,8 @@ export class GridUtils {
    * @returns The visible indexes of the item
    */
   static getVisibleIndexes(
-    modelIndexes: ModelIndex[],
-    movedItems: MoveOperation[]
+    modelIndexes: readonly ModelIndex[],
+    movedItems: readonly MoveOperation[]
   ): VisibleIndex[] {
     return modelIndexes.map(i => GridUtils.getVisibleIndex(i, movedItems));
   }
@@ -1227,7 +1228,7 @@ export class GridUtils {
    * @returns True if the user has hidden all of the columns
    */
   static checkAllColumnsHidden(
-    columns: ModelIndex[],
+    columns: readonly ModelIndex[],
     userColumnWidths: ModelSizeMap
   ): boolean {
     if (userColumnWidths.size === 0) {

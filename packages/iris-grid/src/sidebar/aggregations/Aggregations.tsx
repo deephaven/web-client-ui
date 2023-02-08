@@ -34,12 +34,12 @@ const log = Log.module('Aggregations');
 
 export type Aggregation = {
   operation: AggregationOperation;
-  selected: string[];
+  selected: readonly string[];
   invert: boolean;
 };
 
 export type AggregationSettings = {
-  aggregations: Aggregation[];
+  aggregations: readonly Aggregation[];
   showOnTop: boolean;
 };
 

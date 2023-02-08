@@ -16,7 +16,7 @@ interface AggregationEditItem {
 
 export type AggregationEditProps = {
   aggregation: Aggregation;
-  columns: Column[];
+  columns: readonly Column[];
   onChange: (aggregation: Aggregation) => void;
 };
 

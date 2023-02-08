@@ -23,15 +23,15 @@ import { FlattenedIrisGridTreeItem } from './sortable-tree/utilities';
 export function moveItemsFromDrop(
   from: FlattenedIrisGridTreeItem,
   to: FlattenedIrisGridTreeItem,
-  movedColumns: MoveOperation[],
-  columnHeaderGroups: ColumnHeaderGroup[],
-  flattenedItems: FlattenedIrisGridTreeItem[],
-  selectedParentItems: FlattenedIrisGridTreeItem[],
+  movedColumns: readonly MoveOperation[],
+  columnHeaderGroups: readonly ColumnHeaderGroup[],
+  flattenedItems: readonly FlattenedIrisGridTreeItem[],
+  selectedParentItems: readonly FlattenedIrisGridTreeItem[],
   firstMovableIndex: number,
   lastMovableIndex: number
 ): {
-  groups: ColumnHeaderGroup[];
-  movedColumns: MoveOperation[];
+  groups: readonly ColumnHeaderGroup[];
+  movedColumns: readonly MoveOperation[];
 } {
   const treeItems = flattenedItems.map((item, i) => ({
     ...item,
@@ -110,11 +110,11 @@ export function moveItemsFromDrop(
 export function moveToGroup<T>(
   item: FlattenedItem<T>,
   toName: string | null,
-  columnGroups: ColumnHeaderGroup[]
+  columnGroups: readonly ColumnHeaderGroup[]
 ): ColumnHeaderGroup[] {
   if (item.parentId === toName) {
     // Don't need to move an item if it is already in the group
-    return columnGroups;
+    return [...columnGroups];
   }
 
   let newGroups = columnGroups.map(group => new ColumnHeaderGroup(group));

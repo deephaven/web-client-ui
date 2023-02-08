@@ -18,7 +18,7 @@ class RangeUtils {
     }
   }
 
-  static isSelected(selectedRanges: Range[], index: number): boolean {
+  static isSelected(selectedRanges: readonly Range[], index: number): boolean {
     for (let i = 0; i < selectedRanges.length; i += 1) {
       const range = selectedRanges[i];
       const start = range[0];
@@ -31,7 +31,7 @@ class RangeUtils {
     return false;
   }
 
-  static selectRange(selectedRanges: Range[], range: Range): Range[] {
+  static selectRange(selectedRanges: readonly Range[], range: Range): Range[] {
     let [start, end] = range;
     const ranges = [...selectedRanges];
 
@@ -59,7 +59,10 @@ class RangeUtils {
     return ranges;
   }
 
-  static deselectRange(selectedRanges: Range[], range: Range): Range[] {
+  static deselectRange(
+    selectedRanges: readonly Range[],
+    range: Range
+  ): Range[] {
     const [start, end] = range;
     const ranges = [...selectedRanges];
     // Need to consolidate the range with previous ranges
@@ -94,7 +97,7 @@ class RangeUtils {
    *
    * @param ranges The ranges to count
    */
-  static count(ranges: Range[]): number {
+  static count(ranges: readonly Range[]): number {
     return ranges.reduce((sum, range) => sum + (range[1] - range[0] + 1), 0);
   }
 
@@ -104,7 +107,10 @@ class RangeUtils {
    * @param ranges The ranges to include in the result
    * @returns The items in the provided ranges
    */
-  static getItemsInRanges<T>(items: T[], ranges: Range[]): T[] {
+  static getItemsInRanges<T>(
+    items: readonly T[],
+    ranges: readonly Range[]
+  ): T[] {
     return ranges.reduce((acc: T[], range: Range) => {
       const result = [...acc];
       for (let i = range[0]; i <= range[1]; i += 1) {
