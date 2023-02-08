@@ -1,4 +1,5 @@
 import { ContextAction, ContextActions } from '@deephaven/components';
+import { assertNotNull } from '@deephaven/utils';
 import React, { useCallback, useMemo, useState } from 'react';
 import FileList, {
   renderFileListItem,
@@ -44,7 +45,7 @@ export function FileListContainer(props: FileListContainerProps): JSX.Element {
     onCreateFolder,
     onCopy,
     onDelete,
-    onMove = () => undefined,
+    onMove,
     onRename,
     onSelect,
     onSelectionChange,
@@ -180,10 +181,8 @@ export function FileListContainer(props: FileListContainerProps): JSX.Element {
 
   const validateRenameItem = useCallback(
     (newName: string): Promise<void> => {
-      if (renameItem) {
-        return validateRename(renameItem, newName);
-      }
-      return Promise.reject(new Error('No rename item'));
+      assertNotNull(renameItem);
+      return validateRename(renameItem, newName);
     },
     [renameItem, validateRename]
   );

@@ -6,27 +6,7 @@ import { TestUtils } from '@deephaven/utils';
 import { ContextMenuRoot } from '@deephaven/components';
 import { FileStorageItem, FileStorageTable } from './FileStorage';
 import FileListContainer, { FileListContainerProps } from './FileListContainer';
-
-function makeFileName(index = 0): string {
-  return `testfile${index}`;
-}
-function makeFile(basename: string, path = '/'): FileStorageItem {
-  const filename = `${path}${basename}`;
-  return {
-    basename,
-    filename,
-    type: 'file',
-    id: filename,
-  };
-}
-
-function makeFiles(count = 5) {
-  const result: FileStorageItem[] = [];
-  for (let i = 0; i < count; i += 1) {
-    result.push(makeFile(makeFileName(i)));
-  }
-  return result;
-}
+import FileTestUtils from './FileTestUtils';
 
 const renderFileListContainer = async ({
   table = {} as FileStorageTable,
@@ -55,7 +35,7 @@ const renderFileListContainer = async ({
   );
 
 it('mounts properly and shows file list', async () => {
-  const files = makeFiles();
+  const files = FileTestUtils.makeFiles();
   const fileStorage = new MockFileStorage(files);
   const table = await fileStorage.getTable();
   renderFileListContainer({ table });
@@ -70,10 +50,20 @@ describe('renders correct context menu actions', () => {
   let table: FileStorageTable;
 
   /* eslint-disable @typescript-eslint/no-explicit-any */
+  /**
+   * Tests that a button's function is called with expected parameters
+   * @param functionName Name of the function as a string (should match the prop name e.g. onDelete)
+   * @param title Display name of the button
+   * @param expectedValue The parameters the function is expected to receive. If there are multiple, pass them in an array and set multipleExpectedValues to true
+   * @param keyboardText Text you may want to enter after clicking the button
+   * @param multipleExpectedValues True if the function expects multiple parameters
+   */
   const testContextMenuAction = async (
     functionName: string,
     title: RegExp,
-    expectedValue: any
+    expectedValue: any,
+    keyboardText?: string,
+    multipleExpectedValues = false
   ) => {
     const actionFunction = jest.fn();
     const props = { table, showContextMenu: true };
@@ -88,7 +78,16 @@ describe('renders correct context menu actions', () => {
     expect(button).toBeInTheDocument();
 
     await TestUtils.click(user, button);
-    if (expectedValue !== undefined) {
+
+    if (keyboardText !== undefined) {
+      await user.keyboard(keyboardText);
+    }
+
+    if (expectedValue !== undefined && multipleExpectedValues) {
+      expect(actionFunction).toHaveBeenCalledWith(...expectedValue);
+    } else if (expectedValue === null) {
+      expect(actionFunction).not.toHaveBeenCalled();
+    } else if (expectedValue !== undefined) {
       expect(actionFunction).toHaveBeenCalledWith(expectedValue);
     } else {
       expect(actionFunction).toHaveBeenCalled();
@@ -97,7 +96,7 @@ describe('renders correct context menu actions', () => {
 
   beforeEach(async () => {
     user = userEvent.setup();
-    files = makeFiles();
+    files = FileTestUtils.makeFiles();
     const fileStorage = new MockFileStorage(files);
     table = await fileStorage.getTable();
   });
@@ -137,46 +136,33 @@ describe('renders correct context menu actions', () => {
   });
 
   it('renders an option to rename a file', async () => {
-    const onRename = jest.fn();
-    const props = { table, onRename, showContextMenu: true };
-    renderFileListContainer(props);
-
-    const file = await screen.findByText('testfile1');
-    await TestUtils.rightClick(user, file);
-
-    const button = await screen.findByRole('button', { name: /rename/i });
-
-    expect(button).toBeInTheDocument();
-    await TestUtils.click(user, button);
-
-    await user.keyboard('{Backspace}{7}{Enter}');
-    expect(onRename).toHaveBeenCalledWith(
-      expect.objectContaining({
-        basename: 'testfile1',
-        filename: '/testfile1',
-        id: '/testfile1',
-        itemName: 'testfile1',
-        type: 'file',
-      }),
-      'testfile7'
+    await testContextMenuAction(
+      'onRename',
+      /rename/i,
+      [
+        expect.objectContaining({
+          basename: 'testfile1',
+          filename: '/testfile1',
+          id: '/testfile1',
+          itemName: 'testfile1',
+          type: 'file',
+        }),
+        'testfile7',
+      ],
+      '{Backspace}{7}{Enter}',
+      true
     );
   });
 
   it('it should cancel when pressing escape while renaming a file', async () => {
-    const onRename = jest.fn();
-    const props = { table, onRename, showContextMenu: true };
-    renderFileListContainer(props);
+    await testContextMenuAction(
+      'onRename',
+      /rename/i,
+      null,
+      'blahblah243087{Escape}'
+    );
 
     const file = await screen.findByText('testfile1');
-    await TestUtils.rightClick(user, file);
-
-    const button = await screen.findByRole('button', { name: /rename/i });
-
-    expect(button).toBeInTheDocument();
-    await TestUtils.click(user, button);
-
-    await user.keyboard('blahblah243087{Escape}');
-    expect(onRename).not.toHaveBeenCalled();
     expect(file).toBeInTheDocument();
   });
 });
