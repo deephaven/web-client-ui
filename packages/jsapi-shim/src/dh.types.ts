@@ -34,7 +34,7 @@ export interface dh {
   storage: {
     FileContents: FileContentsStatic;
   };
-  ValueType: ValueTypeStatic;
+  ValueType: typeof ValueType;
 }
 
 const VariableType = {
@@ -48,16 +48,16 @@ const VariableType = {
   PARTITIONEDTABLE: 'PartitionedTable',
 } as const;
 
-export interface ValueTypeStatic {
-  STRING: 'String';
-  NUMBER: 'Number';
-  DOUBLE: 'Double';
-  LONG: 'Long';
-  DATETIME: 'Datetime';
-  BOOLEAN: 'Boolean';
-}
+const ValueType = {
+  STRING: 'String',
+  NUMBER: 'Number',
+  DOUBLE: 'Double',
+  LONG: 'Long',
+  DATETIME: 'Datetime',
+  BOOLEAN: 'Boolean',
+} as const;
 
-export type ValueTypeUnion = typeof dh.ValueType[keyof typeof dh.ValueType];
+export type ValueTypeUnion = typeof ValueType[keyof typeof ValueType];
 
 export interface CalendarStatic {
   DayOfWeek: { values: () => string[] };
