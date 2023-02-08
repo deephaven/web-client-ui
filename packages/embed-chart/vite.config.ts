@@ -51,6 +51,7 @@ export default defineConfig(({ mode }) => {
       outDir: env.VITE_BUILD_PATH,
       emptyOutDir: true,
       sourcemap: true,
+      target: 'esnext',
       rollupOptions: {
         output: {
           manualChunks: id => {
