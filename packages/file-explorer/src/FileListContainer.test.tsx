@@ -6,7 +6,7 @@ import { TestUtils } from '@deephaven/utils';
 import { ContextMenuRoot } from '@deephaven/components';
 import { FileStorageItem, FileStorageTable } from './FileStorage';
 import FileListContainer, { FileListContainerProps } from './FileListContainer';
-import FileTestUtils from './FileTestUtils';
+import { makeFiles } from './FileTestUtils';
 
 const renderFileListContainer = async ({
   table = {} as FileStorageTable,
@@ -35,7 +35,7 @@ const renderFileListContainer = async ({
   );
 
 it('mounts properly and shows file list', async () => {
-  const files = FileTestUtils.makeFiles();
+  const files = makeFiles();
   const fileStorage = new MockFileStorage(files);
   const table = await fileStorage.getTable();
   renderFileListContainer({ table });
@@ -49,7 +49,6 @@ describe('renders correct context menu actions', () => {
   let files: FileStorageItem[] = [];
   let table: FileStorageTable;
 
-  /* eslint-disable @typescript-eslint/no-explicit-any */
   /**
    * Tests that a button's function is called with expected parameters
    * @param functionName Name of the function as a string (should match the prop name e.g. onDelete)
@@ -61,13 +60,16 @@ describe('renders correct context menu actions', () => {
   const testContextMenuAction = async (
     functionName: string,
     title: RegExp,
-    expectedValue: any,
+    expectedValue: unknown,
     keyboardText?: string,
     multipleExpectedValues = false
   ) => {
     const actionFunction = jest.fn();
-    const props = { table, showContextMenu: true };
-    props[functionName] = actionFunction;
+    const props = {
+      table,
+      showContextMenu: true,
+      [functionName]: actionFunction,
+    };
     renderFileListContainer(props);
 
     const file = await screen.findByText('testfile1');
@@ -83,20 +85,20 @@ describe('renders correct context menu actions', () => {
       await user.keyboard(keyboardText);
     }
 
-    if (expectedValue !== undefined && multipleExpectedValues) {
-      expect(actionFunction).toHaveBeenCalledWith(...expectedValue);
-    } else if (expectedValue === null) {
+    if (expectedValue === null) {
       expect(actionFunction).not.toHaveBeenCalled();
-    } else if (expectedValue !== undefined) {
-      expect(actionFunction).toHaveBeenCalledWith(expectedValue);
-    } else {
+    } else if (expectedValue === undefined) {
       expect(actionFunction).toHaveBeenCalled();
+    } else if (Array.isArray(expectedValue) && multipleExpectedValues) {
+      expect(actionFunction).toHaveBeenCalledWith(...expectedValue);
+    } else {
+      expect(actionFunction).toHaveBeenCalledWith(expectedValue);
     }
   };
 
   beforeEach(async () => {
     user = userEvent.setup();
-    files = FileTestUtils.makeFiles();
+    files = makeFiles();
     const fileStorage = new MockFileStorage(files);
     table = await fileStorage.getTable();
   });

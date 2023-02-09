@@ -13,7 +13,7 @@ import FileStorage, {
   FileStorageItem,
 } from './FileStorage';
 import FileExplorer, { FileExplorerProps } from './FileExplorer';
-import FileTestUtils from './FileTestUtils';
+import { makeDirectories, makeFiles, makeNested } from './FileTestUtils';
 
 function makeMockFileStorage(): FileStorage {
   return {
@@ -32,20 +32,18 @@ function renderFileExplorer({
   onSelect = jest.fn(),
   onRename = jest.fn(),
   onDelete = jest.fn(),
-}: Partial<FileExplorerProps>) {
-  if (storage !== undefined) {
-    return render(
-      <>
-        <FileExplorer
-          storage={storage}
-          onSelect={onSelect}
-          onRename={onRename}
-          onDelete={onDelete}
-        />
-        <ContextMenuRoot />
-      </>
-    );
-  }
+}: Partial<FileExplorerProps> & Pick<FileExplorerProps, 'storage'>) {
+  return render(
+    <>
+      <FileExplorer
+        storage={storage}
+        onSelect={onSelect}
+        onRename={onRename}
+        onDelete={onDelete}
+      />
+      <ContextMenuRoot />
+    </>
+  );
 }
 
 it('mounts and unmounts successfully without crashing', () => {
@@ -53,11 +51,11 @@ it('mounts and unmounts successfully without crashing', () => {
 });
 
 it('mounts properly and shows file list', async () => {
-  const files = FileTestUtils.makeFiles();
+  const files = makeFiles();
 
-  const fileStorage = new MockFileStorage(files);
+  const storage = new MockFileStorage(files);
 
-  renderFileExplorer({ storage: fileStorage as FileStorage });
+  renderFileExplorer({ storage });
 
   const foundItems = await screen.findAllByRole('listitem');
   expect(foundItems).toHaveLength(files.length);
@@ -72,8 +70,8 @@ describe('context menu actions work properly', () => {
   const onDelete = jest.fn();
 
   const clickContextMenuButton = async (
-    itemName: RegExp,
-    buttonName: RegExp
+    itemName: RegExp | string,
+    buttonName: RegExp | string
   ) => {
     const item = await screen.findByText(itemName);
     await TestUtils.rightClick(user, item);
@@ -86,10 +84,10 @@ describe('context menu actions work properly', () => {
 
   beforeEach(async () => {
     user = userEvent.setup();
-    dirs = FileTestUtils.makeDirectories();
-    files = FileTestUtils.makeFiles();
-    files.push(FileTestUtils.makeNested([2], 2));
-    files.push(FileTestUtils.makeNested([0, 3], 4));
+    dirs = makeDirectories();
+    files = makeFiles();
+    files.push(makeNested([2], 2));
+    files.push(makeNested([0, 3], 4));
     items = dirs.concat(files);
 
     const fileStorage = new MockFileStorage(items);
@@ -150,44 +148,16 @@ describe('context menu actions work properly', () => {
     });
     await user.click(modalDeleteButton);
     await waitForElementToBeRemoved(modalDeleteButton);
-    expect(onDelete).toBeCalledTimes(1);
+    expect(onDelete).toBeCalledWith([
+      expect.objectContaining({
+        basename: 'testfile0',
+        filename: '/testfile0',
+        id: '/testfile0',
+        itemName: 'testfile0',
+        type: 'file',
+      }),
+    ]);
   });
 });
 
-// Need to implement tests for drag and drop
-
-/* describe('drag and drop works properly', () => {
-  let user: ReturnType<typeof userEvent.setup>;
-  let dirs: DirectoryStorageItem[] = [];
-  let files: FileStorageItem[] = [];
-  let items: FileStorageItem[] = [];
-  const onRename = jest.fn();
-  const onDelete = jest.fn();
-
-  beforeEach(async () => {
-    user = userEvent.setup();
-    dirs = makeDirectories();
-    files = makeFiles();
-    files.push(makeNested([2], 2));
-    files.push(makeNested([0, 3], 4));
-    items = dirs.concat(files);
-
-    const fileStorage = new MockFileStorage(items);
-    renderFileExplorer({ storage: fileStorage, onRename, onDelete });
-    const foundItems = await screen.findAllByRole('listitem');
-    expect(foundItems).toHaveLength(items.length);
-  });
-
-  it('should drag a file into a directory', async () => {
-    const file = await screen.findByText('testfile0');
-    const directory = await screen.findByText('testdir0');
-    // await user.pointer({ keys: '[MouseLeft>]', target: file });
-    fireEvent.mouseDown(file);
-    fireEvent.mouseMove(directory);
-    fireEvent.mouseUp(directory);
-    // await user.pointer({ keys: '[/MouseLeft]' });
-
-    // expect(file).not.toBeInTheDocument();
-  });
-});
- */
+// TODO: #1081

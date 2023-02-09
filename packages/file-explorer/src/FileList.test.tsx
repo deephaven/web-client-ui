@@ -10,7 +10,13 @@ import {
   FileStorageTable,
 } from './FileStorage';
 import FileList, { FileListProps, getMoveOperation } from './FileList';
-import FileTestUtils from './FileTestUtils';
+import {
+  makeDirectories,
+  makeDirectory,
+  makeFile,
+  makeFiles,
+  makeNested,
+} from './FileTestUtils';
 
 const renderFileList = ({
   table = {} as FileStorageTable,
@@ -26,12 +32,9 @@ const renderFileList = ({
 describe('getMoveOperation', () => {
   it('succeeds if moving files from root to within a directory', () => {
     const targetPath = '/target/';
-    const targetDirectory = FileTestUtils.makeDirectory('target');
-    const targetItem = FileTestUtils.makeFile('targetItem', targetPath);
-    const draggedItems = [
-      FileTestUtils.makeFile('foo.txt'),
-      FileTestUtils.makeFile('bar.txt'),
-    ];
+    const targetDirectory = makeDirectory('target');
+    const targetItem = makeFile('targetItem', targetPath);
+    const draggedItems = [makeFile('foo.txt'), makeFile('bar.txt')];
     expect(getMoveOperation(draggedItems, targetItem)).toEqual({
       files: draggedItems,
       targetPath,
@@ -44,12 +47,9 @@ describe('getMoveOperation', () => {
 
   it('succeeds moving files from directory into root', () => {
     const targetPath = '/';
-    const targetItem = FileTestUtils.makeFile('targetItem', targetPath);
+    const targetItem = makeFile('targetItem', targetPath);
     const path = '/baz/';
-    const draggedItems = [
-      FileTestUtils.makeFile('foo.txt', path),
-      FileTestUtils.makeFile('bar.txt', path),
-    ];
+    const draggedItems = [makeFile('foo.txt', path), makeFile('bar.txt', path)];
     expect(getMoveOperation(draggedItems, targetItem)).toEqual({
       files: draggedItems,
       targetPath,
@@ -57,33 +57,25 @@ describe('getMoveOperation', () => {
   });
 
   it('fails if no items selected to move', () => {
-    expect(() =>
-      getMoveOperation([], FileTestUtils.makeFile('foo.txt'))
-    ).toThrow();
+    expect(() => getMoveOperation([], makeFile('foo.txt'))).toThrow();
   });
 
   it('fails if trying to move files within same directory', () => {
     const path = '/baz/';
-    const targetItem = FileTestUtils.makeFile('targetItem', path);
-    const draggedItems = [
-      FileTestUtils.makeFile('foo.txt', path),
-      FileTestUtils.makeFile('bar.txt'),
-    ];
+    const targetItem = makeFile('targetItem', path);
+    const draggedItems = [makeFile('foo.txt', path), makeFile('bar.txt')];
     expect(() => getMoveOperation(draggedItems, targetItem)).toThrow();
   });
 
   it('fails to move a directory into a child directory', () => {
     expect(() =>
-      getMoveOperation(
-        [FileTestUtils.makeDirectory('foo')],
-        FileTestUtils.makeDirectory('bar', '/foo/')
-      )
+      getMoveOperation([makeDirectory('foo')], makeDirectory('bar', '/foo/'))
     ).toThrow();
   });
 });
 
 it('mounts properly and shows file list', async () => {
-  const files = FileTestUtils.makeFiles();
+  const files = makeFiles();
   const fileStorage = new MockFileStorage(files);
   const table = await fileStorage.getTable();
   renderFileList({ table });
@@ -100,10 +92,10 @@ describe('mouse actions', () => {
 
   beforeEach(async () => {
     user = userEvent.setup();
-    dirs = FileTestUtils.makeDirectories();
-    files = FileTestUtils.makeFiles();
-    files.push(FileTestUtils.makeNested([2], 2));
-    files.push(FileTestUtils.makeNested([0, 3], 4));
+    dirs = makeDirectories();
+    files = makeFiles();
+    files.push(makeNested([2], 2));
+    files.push(makeNested([0, 3], 4));
     items = dirs.concat(files);
   });
 
@@ -146,5 +138,5 @@ describe('mouse actions', () => {
     );
   });
 
-  // Need to implement drag and drop tests
+  // TODO #1081
 });
