@@ -50,7 +50,7 @@
     "e2e:headed": "playwright test --project=chromium --headed --debug",
     "e2e:update-snapshots": "playwright test --update-snapshots",
     "version-bump": "lerna version --conventional-commits --create-release github",
-    "e2e:update-ci-snapshots": "docker build --tag web-client-ui-ci-snapshots --file ./tests/update-ci-snapshots/Dockerfile . && docker run --rm --network host --volume $(pwd)/tests:/tests/ web-client-ui-ci-snapshots npm run e2e:update-snapshots -- --config=playwright-ci.config.ts"
+    "e2e:update-ci-snapshots": "docker build --tag web-client-ui-ci-snapshots --file ./tests/update-ci-snapshots/Dockerfile . && docker run --rm --network host --volume $(pwd)/tests:/work/tests/ web-client-ui-ci-snapshots npm run e2e:update-snapshots -- --config=playwright-ci.config.ts"
   },
   "repository": "https://github.com/deephaven/web-client-ui",
   "devDependencies": {
