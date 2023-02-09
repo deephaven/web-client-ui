@@ -160,4 +160,4 @@ describe('context menu actions work properly', () => {
   });
 });
 
-// TODO: #1081
+// TODO: #1081 Implement drag and drop tests

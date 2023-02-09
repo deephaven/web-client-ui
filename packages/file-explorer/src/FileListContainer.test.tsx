@@ -53,16 +53,14 @@ describe('renders correct context menu actions', () => {
    * Tests that a button's function is called with expected parameters
    * @param functionName Name of the function as a string (should match the prop name e.g. onDelete)
    * @param title Display name of the button
-   * @param expectedValue The parameters the function is expected to receive. If there are multiple, pass them in an array and set multipleExpectedValues to true
+   * @param expectedValue The parameters the function is expected to receive. If there are multiple, pass them in an array. If the expected value is an array, wrap that in an array.
    * @param keyboardText Text you may want to enter after clicking the button
-   * @param multipleExpectedValues True if the function expects multiple parameters
    */
   const testContextMenuAction = async (
     functionName: string,
     title: RegExp,
     expectedValue: unknown,
-    keyboardText?: string,
-    multipleExpectedValues = false
+    keyboardText?: string
   ) => {
     const actionFunction = jest.fn();
     const props = {
@@ -89,7 +87,7 @@ describe('renders correct context menu actions', () => {
       expect(actionFunction).not.toHaveBeenCalled();
     } else if (expectedValue === undefined) {
       expect(actionFunction).toHaveBeenCalled();
-    } else if (Array.isArray(expectedValue) && multipleExpectedValues) {
+    } else if (Array.isArray(expectedValue)) {
       expect(actionFunction).toHaveBeenCalledWith(...expectedValue);
     } else {
       expect(actionFunction).toHaveBeenCalledWith(expectedValue);
@@ -119,13 +117,15 @@ describe('renders correct context menu actions', () => {
 
   it('renders delete in the context menu', async () => {
     await testContextMenuAction('onDelete', /delete/i, [
-      expect.objectContaining({
-        basename: 'testfile1',
-        filename: '/testfile1',
-        id: '/testfile1',
-        itemName: 'testfile1',
-        type: 'file',
-      }),
+      [
+        expect.objectContaining({
+          basename: 'testfile1',
+          filename: '/testfile1',
+          id: '/testfile1',
+          itemName: 'testfile1',
+          type: 'file',
+        }),
+      ],
     ]);
   });
 
@@ -151,8 +151,7 @@ describe('renders correct context menu actions', () => {
         }),
         'testfile7',
       ],
-      '{Backspace}{7}{Enter}',
-      true
+      '{Backspace}{7}{Enter}'
     );
   });
 
