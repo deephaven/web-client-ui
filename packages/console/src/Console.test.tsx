@@ -1,6 +1,7 @@
 import React from 'react';
 import dh from '@deephaven/jsapi-shim';
-import { render } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { Console } from './Console';
 import { CommandHistoryStorage } from './command-history';
 
@@ -30,12 +31,13 @@ jest.mock('./Console', () => ({
   commandHistory: jest.fn(),
 }));
 
-function makeConsoleWrapper() {
+function makeConsoleWrapper(consoleRef = React.createRef<Console>()) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const session = new (dh as any).IdeSession('test');
   const commandHistoryStorage = makeMockCommandHistoryStorage();
   return render(
     <Console
+      ref={consoleRef}
       commandHistoryStorage={commandHistoryStorage}
       focusCommandHistory={() => undefined}
       openObject={() => undefined}
@@ -48,4 +50,20 @@ function makeConsoleWrapper() {
 
 it('renders without crashing', () => {
   makeConsoleWrapper();
+});
+
+it('Handles arrow to prev item and back to blank', async () => {
+  const user = userEvent.setup();
+  const consoleRef = React.createRef<Console>();
+  makeConsoleWrapper(consoleRef);
+
+  const consoleInput = consoleRef.current?.consoleInput.current;
+  consoleInput!.history = ['A']; // monaco splits the text into separate tags if this is multiple characters
+
+  consoleInput?.focus();
+  await user.keyboard('[ArrowUp]');
+  expect(screen.queryByText('A')).toBeInTheDocument();
+
+  await user.keyboard('[ArrowDown]');
+  expect(screen.queryByText('A')).not.toBeInTheDocument();
 });
