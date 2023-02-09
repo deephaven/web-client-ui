@@ -10,7 +10,7 @@
     "npm": ">=8"
   },
   "scripts": {
-    "postinstall": "run-s build:necessary",
+    "postinstall": "node ./skip.js || run-s build:necessary",
     "clean:build": "rimraf packages/*/dist packages/*/build",
     "postclean:build": "npm run clean:types",
     "clean:cache": "run-s clean:cache:*",
@@ -49,7 +49,8 @@
     "e2e:codegen": "playwright codegen http://localhost:4000",
     "e2e:headed": "playwright test --project=chromium --headed --debug",
     "e2e:update-snapshots": "playwright test --update-snapshots",
-    "version-bump": "lerna version --conventional-commits --create-release github"
+    "version-bump": "lerna version --conventional-commits --create-release github",
+    "e2e:update-ci-snapshots": "docker build --tag web-client-ui-ci-snapshots --file ./tests/update-ci-snapshots/Dockerfile . && docker run --rm --network host --volume $(pwd)/tests:/work/tests/ web-client-ui-ci-snapshots npm run e2e:update-snapshots -- --config=playwright-ci.config.ts"
   },
   "repository": "https://github.com/deephaven/web-client-ui",
   "devDependencies": {
@@ -67,7 +68,7 @@
     "@deephaven/stylelint-config": "file:../stylelint-config",
     "@deephaven/tsconfig": "file:../tsconfig",
     "@fortawesome/fontawesome-common-types": "^6.1.1",
-    "@playwright/test": "^1.28.1",
+    "@playwright/test": "^1.30.0",
     "@testing-library/jest-dom": "^5.16.4",
     "@testing-library/react": "^12.1.3",
     "@testing-library/user-event": "^14.4.3",
@@ -119,7 +120,7 @@
     "karma-jasmine": "~0.1.5",
     "lerna": "^6.4.1",
     "npm-run-all": "^4.1.5",
-    "playwright": "^1.28.1",
+    "playwright": "^1.30.0",
     "prettier": "2.2.1",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
