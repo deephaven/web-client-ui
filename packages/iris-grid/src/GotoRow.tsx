@@ -92,7 +92,7 @@ function GotoRow({
       e.preventDefault();
       onGotoValueSubmit();
     } else if (
-      e.key === 'Backspace' &&
+      (e.key === 'Backspace' || e.key === 'Delete') &&
       (gotoValue === `${Number.POSITIVE_INFINITY}` ||
         gotoValue === `${Number.NEGATIVE_INFINITY}`)
     ) {
