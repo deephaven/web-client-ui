@@ -54,7 +54,7 @@ export interface FileListProps {
   focusedPath?: string;
 
   onFocusChange?: (focusedItem?: FileStorageItem) => void;
-  onMove: (files: FileStorageItem[], path: string) => void;
+  onMove?: (files: FileStorageItem[], path: string) => void;
   onSelect: (file: FileStorageItem, event: React.SyntheticEvent) => void;
   onSelectionChange?: (selectedItems: FileStorageItem[]) => void;
 
@@ -311,7 +311,7 @@ export function FileList(props: FileListProps): JSX.Element {
           draggedItems,
           dropTargetItem
         );
-        onMove(files, targetPath);
+        onMove?.(files, targetPath);
         if (itemIndex != null) {
           setSelectedRanges([[itemIndex, itemIndex]]);
           itemList.current?.focusItem(itemIndex);
