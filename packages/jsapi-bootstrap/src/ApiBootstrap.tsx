@@ -5,11 +5,12 @@ import {
   ModalBody,
   ModalHeader,
 } from '@deephaven/components';
+import type DhType from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
 
 const log = Log.module('@deephaven/code-studio');
 
-export const ApiContext = createContext<unknown>(null);
+export const ApiContext = createContext<DhType | null>(null);
 
 export type ApiBootstrapProps = {
   apiUrl: string;
@@ -25,21 +26,20 @@ export function ApiBootstrap({
   setGlobally = false,
 }: ApiBootstrapProps) {
   const [isLoading, setIsLoading] = useState(true);
-  const [api, setApi] = useState();
-  const [error, setError] = useState<unknown>();
+  const [api, setApi] = useState<DhType>();
   useEffect(() => {
     async function loadApi() {
       try {
-        const dhModule = await import(/* @vite-ignore */ apiUrl);
+        const dh: DhType = (await import(/* @vite-ignore */ apiUrl)).default;
         log.info('API bootstrapped from', apiUrl);
-        setApi(dhModule.default);
+        setApi(dh);
         if (setGlobally) {
           log.debug('API set globally');
-          globalThis.dh = dhModule.default;
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (globalThis as any).dh = dh;
         }
       } catch (e) {
         log.error('Unable to bootstrap API', e);
-        setError(e);
       }
       setIsLoading(false);
     }
@@ -49,7 +49,7 @@ export function ApiBootstrap({
   if (isLoading) {
     return <LoadingOverlay />;
   }
-  if (error != null) {
+  if (api == null) {
     return (
       failureElement ?? (
         <Modal isOpen className="modal-dialog-centered theme-bg-light">

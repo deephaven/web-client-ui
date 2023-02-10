@@ -27,33 +27,35 @@ SHELL ["/bin/bash", "--login", "-c"]
 COPY package.json package-lock.json skip.js .
 COPY packages/babel-preset/package.json packages/babel-preset/
 COPY packages/chart/package.json packages/chart/
+COPY packages/code-studio/package.json packages/code-studio/
+COPY packages/components/package.json packages/components/
+COPY packages/console/package.json packages/console/
+COPY packages/dashboard/package.json packages/dashboard/
+COPY packages/dashboard-core-plugins/package.json packages/dashboard-core-plugins/
 COPY packages/embed-chart/package.json packages/embed-chart/
 COPY packages/embed-grid/package.json packages/embed-grid/
+COPY packages/eslint-config/package.json packages/eslint-config/
+COPY packages/file-explorer/package.json packages/file-explorer/
 COPY packages/filters/package.json packages/filters/
 COPY packages/golden-layout/package.json packages/golden-layout/
+COPY packages/grid/package.json packages/grid/
+COPY packages/icons/package.json packages/icons/
+COPY packages/iris-grid/package.json packages/iris-grid/
+COPY packages/jsapi-bootstrap/package.json packages/jsapi-bootstrap/
+COPY packages/jsapi-components/package.json packages/jsapi-components/
+COPY packages/jsapi-shim/package.json packages/jsapi-shim/
+COPY packages/jsapi-types/package.json packages/jsapi-types/
+COPY packages/jsapi-utils/package.json packages/jsapi-utils/
+COPY packages/log/package.json packages/log/
 COPY packages/mocks/package.json packages/mocks/
+COPY packages/pouch-storage/package.json packages/pouch-storage/
 COPY packages/prettier-config/package.json packages/prettier-config/
 COPY packages/react-hooks/package.json packages/react-hooks/
+COPY packages/redux/package.json packages/redux/
+COPY packages/storage/package.json packages/storage/
+COPY packages/stylelint-config/package.json packages/stylelint-config/
 COPY packages/tsconfig/package.json packages/tsconfig/
 COPY packages/utils/package.json packages/utils/
-COPY packages/storage/package.json packages/storage/
-COPY packages/dashboard/package.json packages/dashboard/
-COPY packages/stylelint-config/package.json packages/stylelint-config/
-COPY packages/components/package.json packages/components/
-COPY packages/dashboard-core-plugins/package.json packages/dashboard-core-plugins/
-COPY packages/eslint-config/package.json packages/eslint-config/
-COPY packages/jsapi-shim/package.json packages/jsapi-shim/
-COPY packages/iris-grid/package.json packages/iris-grid/
-COPY packages/icons/package.json packages/icons/
-COPY packages/log/package.json packages/log/
-COPY packages/pouch-storage/package.json packages/pouch-storage/
-COPY packages/file-explorer/package.json packages/file-explorer/
-COPY packages/redux/package.json packages/redux/
-COPY packages/jsapi-components/package.json packages/jsapi-components/
-COPY packages/code-studio/package.json packages/code-studio/
-COPY packages/jsapi-utils/package.json packages/jsapi-utils/
-COPY packages/console/package.json packages/console/
-COPY packages/grid/package.json packages/grid/
 
 # Disable the postinstall script, or npm ci will try and build and the files won't be there
 # We don't need the postinstall since we're going to rebuild right after

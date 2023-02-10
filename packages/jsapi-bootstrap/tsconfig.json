@@ -8,7 +8,16 @@
   "exclude": ["node_modules", "src/**/*.test.*", "src/**/__mocks__/*"],
   "references": [
     {
-      "path": "../jsapi-types"
+      "path": "../components"
+    },
+    {
+      "path": "../jsapi-shim"
+    },
+    {
+      "path": "../jsapi-utils"
+    },
+    {
+      "path": "../log"
     }
   ]
 }

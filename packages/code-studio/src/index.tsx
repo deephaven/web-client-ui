@@ -3,8 +3,8 @@ import ReactDOM from 'react-dom';
 import 'fira';
 import '@deephaven/components/scss/BaseStyleSheet.scss';
 import { LoadingOverlay } from '@deephaven/components';
+import { ApiBootstrap } from '@deephaven/jsapi-bootstrap';
 import logInit from './log/LogInit';
-import ApiBootstrap from './ApiBootstrap';
 
 logInit();
 
