@@ -22,7 +22,7 @@ function isSwitchMenuItemType(item: MenuItemDef): item is SwitchMenuItemDef {
 }
 
 export type MenuItemProps = {
-  item: MenuItemDef;
+  item: MenuItemDef | SwitchMenuItemDef;
   onSelect?: () => void;
   'data-testid'?: string;
 };
