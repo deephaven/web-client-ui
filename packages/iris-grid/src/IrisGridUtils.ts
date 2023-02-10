@@ -1672,18 +1672,24 @@ class IrisGridUtils {
     return { groups: [...groupMap.values()], maxDepth, groupMap, parentMap };
   }
 
-  static convertValueToText(value: unknown, columnName?: string): unknown {
+  /**
+   * @param value The value of the cell in a column
+   * @param columnType The type of the column
+   * @returns The value of the cell converted to text
+   */
+  static convertValueToText(value: unknown, columnType?: string): string {
     if (
-      columnName != null &&
-      TableUtils.isCharType(columnName) &&
-      value != null
+      columnType != null &&
+      TableUtils.isCharType(columnType) &&
+      value != null &&
+      !Number.isNaN(parseInt(value as string, 10))
     ) {
       return String.fromCharCode(parseInt(value as string, 10));
     }
     if (value == null) {
       return '';
     }
-    return value;
+    return `${value}`;
   }
 }
 

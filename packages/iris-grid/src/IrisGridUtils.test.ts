@@ -572,3 +572,18 @@ describe('combineFiltersFromList', () => {
     );
   });
 });
+
+describe('convert value to text', () => {
+  it('converts null to empty string', () => {
+    expect(IrisGridUtils.convertValueToText(null, 'string')).toEqual('');
+  });
+  it('converts ascii to char on char column', () => {
+    expect(IrisGridUtils.convertValueToText('65', 'char')).toEqual('A');
+  });
+  it('converts null to empty char on char column', () => {
+    expect(IrisGridUtils.convertValueToText(null, 'char')).toEqual('');
+  });
+  it('converts number to string on number column', () => {
+    expect(IrisGridUtils.convertValueToText(123, 'number')).toEqual('123');
+  });
+});

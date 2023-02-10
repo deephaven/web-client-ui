@@ -2469,7 +2469,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       this.setState({
         isGotoShown: !isGotoShown,
         gotoRow: `${cursorRow}`,
-        gotoValue: `${text}`,
+        gotoValue: text,
         gotoValueSelectedColumnName: name,
         gotoRowError: '',
         gotoValueError: '',
@@ -3671,10 +3671,8 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
   handleGotoValueSelectedColumnNameChanged(columnName: ColumnName): void {
     const { model } = this.props;
-    let cursorRow;
-    if (this.grid) {
-      ({ cursorRow } = this.grid.state);
-    }
+    const cursorRow = this.grid?.state.cursorRow;
+
     if (cursorRow != null) {
       const index = model.getColumnIndexByName(columnName);
       const column = IrisGridUtils.getColumnByName(model.columns, columnName);
@@ -3683,7 +3681,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       const text = IrisGridUtils.convertValueToText(value, column?.type);
       this.setState({
         gotoValueSelectedColumnName: columnName,
-        gotoValue: `${text}`,
+        gotoValue: text,
         gotoValueError: '',
       });
     }
