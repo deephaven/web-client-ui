@@ -43,7 +43,7 @@ jobs:
         run: npm ci --no-audit
 
       - name: Build
-        run: VITE_CORE_API_URL=http://localhost:10000/jsapi npm run build
+        run: npm run build
 
       - name: Install Playwright dependencies
         run: PLAYWRIGHT_BROWSERS_PATH=0 npx playwright install --with-deps
