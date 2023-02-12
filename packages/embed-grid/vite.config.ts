@@ -22,14 +22,44 @@ export default defineConfig(({ mode }) => {
     port = 4010;
   }
 
+  // These are paths which should be proxied to the core server
+  // https://vitejs.dev/config/server-options.html#server-proxy
+  const proxy = {
+    // proxy the websocket requests, allows tunneling to work with a single port
+    '^/arrow\\.*': {
+      target: env.VITE_PROXY_URL,
+      changeOrigin: true,
+      ws: true,
+    },
+    '^/io\\.deephaven\\..*': {
+      target: env.VITE_PROXY_URL,
+      changeOrigin: true,
+      ws: true,
+    },
+  };
+
+  // Some paths need to proxy to the engine server
+  // Vite does not have a "any unknown fallback to proxy" like CRA
+  // It is possible to add one with a custom middleware though if this list grows
+  if (env.VITE_PROXY_URL) {
+    [env.VITE_CORE_API_URL].forEach(p => {
+      proxy[p] = {
+        target: env.VITE_PROXY_URL,
+        changeOrigin: true,
+      };
+    });
+  }
+
   return {
     base: './', // Vite defaults to absolute URLs, but embed-grid is an embedded deployment so all assets are relative paths
     envPrefix: ['VITE_', 'npm_'], // Needed to use $npm_package_version
     server: {
       port,
+      proxy,
     },
     preview: {
       port,
+      proxy,
     },
     resolve: {
       alias: [

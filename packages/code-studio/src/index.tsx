@@ -1,29 +1,25 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import ReactDOM from 'react-dom';
-import { Provider } from 'react-redux';
 import 'fira';
 import '@deephaven/components/scss/BaseStyleSheet.scss';
-import { MonacoUtils } from '@deephaven/console';
-import { store } from '@deephaven/redux';
-import MonacoWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker';
-import AppRouter from './main/AppRouter';
-import DownloadServiceWorkerUtils from './DownloadServiceWorkerUtils';
+import { LoadingOverlay } from '@deephaven/components';
+import { ApiBootstrap } from '@deephaven/jsapi-bootstrap';
 import logInit from './log/LogInit';
-import { unregister } from './serviceWorker';
 
 logInit();
 
+const AppRoot = React.lazy(() => import('./AppRoot'));
+
 ReactDOM.render(
-  <Provider store={store}>
-    <AppRouter />
-  </Provider>,
+  <ApiBootstrap
+    apiUrl={`${import.meta.env.VITE_CORE_API_URL}/${
+      import.meta.env.VITE_CORE_API_NAME
+    }`}
+    setGlobally
+  >
+    <Suspense fallback={<LoadingOverlay />}>
+      <AppRoot />
+    </Suspense>
+  </ApiBootstrap>,
   document.getElementById('root')
 );
-unregister();
-DownloadServiceWorkerUtils.registerOnLoaded();
-MonacoUtils.init({ getWorker: () => new MonacoWorker() });
-
-// disable annoying dnd-react warnings
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
-window['__react-beautiful-dnd-disable-dev-warnings'] = true;

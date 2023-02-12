@@ -5,10 +5,5 @@
     "outDir": "dist/"
   },
   "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.js", "src/**/*.jsx"],
-  "exclude": ["node_modules", "src/**/*.test.*", "src/**/__mocks__/*"],
-  "references": [
-    {
-      "path": "../jsapi-types"
-    }
-  ]
+  "exclude": ["node_modules", "src/**/*.test.*", "src/**/__mocks__/*"]
 }

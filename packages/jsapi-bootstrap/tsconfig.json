@@ -2,20 +2,13 @@
   "extends": "../../tsconfig.json",
   "compilerOptions": {
     "rootDir": "src/",
-    "outDir": "dist/",
-    "noEmit": true,
-    "emitDeclarationOnly": false
+    "outDir": "dist/"
   },
-  "include": ["src"],
+  "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.js", "src/**/*.jsx"],
+  "exclude": ["node_modules", "src/**/*.test.*", "src/**/__mocks__/*"],
   "references": [
     {
-      "path": "../chart"
-    },
-    {
       "path": "../components"
-    },
-    {
-      "path": "../jsapi-bootstrap"
     },
     {
       "path": "../jsapi-shim"
