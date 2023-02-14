@@ -171,6 +171,8 @@
     "@deephaven/storage": "file:packages/storage",
     "@deephaven/stylelint-config": "file:packages/stylelint-config",
     "@deephaven/tsconfig": "file:packages/tsconfig",
-    "@deephaven/utils": "file:packages/utils"
+    "@deephaven/utils": "file:packages/utils",
+    "linkify-html": "^4.1.0",
+    "linkifyjs": "^4.1.0"
   }
 }

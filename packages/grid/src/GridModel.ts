@@ -1,4 +1,5 @@
 import { EventTarget, Event } from 'event-target-shim';
+import * as linkify from 'linkifyjs';
 import type { IColumnHeaderGroup } from './ColumnHeaderGroup';
 import { ModelIndex } from './GridMetrics';
 import { GridColor, GridTheme, NullableGridColor } from './GridTheme';
@@ -182,6 +183,10 @@ abstract class GridModel<
     depth: number
   ): IColumnHeaderGroup | undefined {
     return undefined;
+  }
+
+  tokensForCell(value: string): linkify.MultiToken[] {
+    return linkify.tokenize(value);
   }
 }
 

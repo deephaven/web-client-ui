@@ -1178,8 +1178,31 @@ export class GridRenderer {
         fontWidth,
         truncationChar
       );
+      // console.log(truncatedText);
+      const tokenizedText = model.tokensForCell(truncatedText);
+      const textMetrics = context.measureText(truncatedText);
+      const textHeight =
+        textMetrics.actualBoundingBoxAscent +
+        textMetrics.actualBoundingBoxDescent;
+
       if (truncatedText) {
-        context.fillText(truncatedText, textX, textY);
+        let startX = textX;
+        for (let i = 0; i < tokenizedText.length; i += 1) {
+          if (tokenizedText[i].t === 'url') {
+            context.fillStyle = '#4878ea';
+            context.fillText(tokenizedText[i].v, startX, textY);
+            context.fillRect(
+              textX,
+              textY + textHeight / 2,
+              context.measureText(tokenizedText[i].v).width,
+              1
+            );
+          } else {
+            context.fillStyle = color;
+            context.fillText(tokenizedText[i].v, startX, textY);
+          }
+          startX += context.measureText(tokenizedText[i].v).width;
+        }
       }
     }
 

@@ -3,7 +3,7 @@ import React, { CSSProperties, PureComponent, ReactNode } from 'react';
 import classNames from 'classnames';
 import memoize from 'memoize-one';
 import clamp from 'lodash.clamp';
-import { EMPTY_ARRAY } from '@deephaven/utils';
+import { assertNotNull, EMPTY_ARRAY } from '@deephaven/utils';
 import GridMetricCalculator, { GridMetricState } from './GridMetricCalculator';
 import GridModel from './GridModel';
 import GridMouseHandler, {
@@ -15,6 +15,7 @@ import GridRange, { GridRangeIndex, SELECTION_DIRECTION } from './GridRange';
 import GridRenderer, {
   EditingCell,
   EditingCellTextSelectionRange,
+  GridRenderState,
 } from './GridRenderer';
 import GridUtils, { GridPoint } from './GridUtils';
 import {
@@ -29,6 +30,7 @@ import {
   GridVerticalScrollBarMouseHandler,
   EditMouseHandler,
   GridSeparator,
+  GridLinkMouseHandler,
 } from './mouse-handlers';
 import './Grid.scss';
 import KeyHandler, { GridKeyboardEvent } from './KeyHandler';
@@ -358,6 +360,7 @@ class Grid extends PureComponent<GridProps, GridState> {
       new TreeKeyHandler(900),
     ];
     this.mouseHandlers = [
+      new GridLinkMouseHandler(50),
       new GridRowSeparatorMouseHandler(100),
       new GridColumnSeparatorMouseHandler(200),
       new GridRowMoveMouseHandler(300),
@@ -2136,6 +2139,60 @@ class Grid extends PureComponent<GridProps, GridState> {
         />
       </div>
     );
+  }
+
+  getRenderState(): GridRenderState {
+    if (!this.canvas) throw new Error('canvas is not set');
+    if (!this.canvasContext) throw new Error('context not set');
+
+    const {
+      cursorColumn,
+      cursorRow,
+      draggingColumn,
+      draggingColumnSeparator,
+      draggingRow,
+      draggingRowOffset,
+      draggingRowSeparator,
+      editingCell,
+      isDraggingHorizontalScrollBar,
+      isDraggingVerticalScrollBar,
+      isDragging,
+      mouseX,
+      mouseY,
+      selectedRanges,
+    } = this.state;
+    const { model, stateOverride } = this.props;
+    const { metrics } = this;
+    const context = this.canvasContext;
+    const theme = this.getTheme();
+    const width = this.canvas.clientWidth;
+    const height = this.canvas.clientHeight;
+
+    assertNotNull(metrics);
+
+    return {
+      width,
+      height,
+      context,
+      theme,
+      model,
+      metrics,
+      mouseX,
+      mouseY,
+      selectedRanges,
+      draggingColumn,
+      draggingColumnSeparator,
+      draggingRow,
+      draggingRowOffset,
+      draggingRowSeparator,
+      editingCell,
+      isDraggingHorizontalScrollBar,
+      isDraggingVerticalScrollBar,
+      isDragging,
+      cursorColumn,
+      cursorRow,
+      ...stateOverride,
+    };
   }
 
   render(): ReactNode {

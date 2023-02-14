@@ -8,4 +8,5 @@ export { default as GridRowTreeMouseHandler } from './GridRowTreeMouseHandler';
 export { default as GridScrollBarCornerMouseHandler } from './GridScrollBarCornerMouseHandler';
 export { default as GridVerticalScrollBarMouseHandler } from './GridVerticalScrollBarMouseHandler';
 export { default as EditMouseHandler } from './EditMouseHandler';
+export { default as GridLinkMouseHandler } from './GridLinkMouseHandler';
 export * from './GridSeparatorMouseHandler';
