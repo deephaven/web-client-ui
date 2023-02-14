@@ -588,11 +588,12 @@ export default class Stack extends AbstractContentItem {
       ? this._header.show
       : undefined;
 
+    this.header.element.toggle(!!this._header.show);
+
     if (!side) {
       return;
     }
 
-    this.header.element.toggle(!!this._header.show);
     this._side = side;
     this._sided = ['right', 'left'].indexOf(this._side.toString()) >= 0;
     this.element.removeClass('lm_left lm_right lm_bottom');
