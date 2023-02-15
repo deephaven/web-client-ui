@@ -32,6 +32,7 @@ export type GridTheme = {
   // Black and white to use if needed
   black: GridColor;
   white: GridColor;
+  primary: GridColor;
 
   // Amount of padding within a cell and header
   cellHorizontalPadding: number;
@@ -146,6 +147,7 @@ const defaultTheme: GridTheme = Object.freeze({
   backgroundColor: '#000000',
   black: '#000000',
   white: '#ffffff',
+  primary: '#4878ea',
   cellHorizontalPadding: 5,
   headerHorizontalPadding: 5,
   font: '12px Arial, sans serif',

@@ -43,6 +43,7 @@ const theme: Partial<IrisGridThemeType> = Object.freeze({
   backgroundColor: IrisGridTheme['grid-bg'],
   white: IrisGridTheme.white,
   black: IrisGridTheme.black,
+  primary: IrisGridTheme.primary,
   font: IrisGridTheme.font,
   headerBackgroundColor: IrisGridTheme['header-bg'],
   headerColor: IrisGridTheme['header-color'],
