@@ -8,9 +8,9 @@ import LoadingSpinner from './LoadingSpinner';
 import './LoadingOverlay.scss';
 
 type LoadingOverlayProps = {
-  isLoaded: boolean;
-  isLoading: boolean;
-  errorMessage: string | null;
+  isLoaded?: boolean;
+  isLoading?: boolean;
+  errorMessage?: string | null;
   'data-testid'?: string;
 };
 

@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/embed-grid",
-  "version": "0.29.0",
+  "version": "0.30.0",
   "description": "Deephaven Embedded Grid",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
@@ -18,6 +18,7 @@
   "dependencies": {
     "@deephaven/components": "file:../components",
     "@deephaven/iris-grid": "file:../iris-grid",
+    "@deephaven/jsapi-bootstrap": "file:../jsapi-bootstrap",
     "@deephaven/jsapi-shim": "file:../jsapi-shim",
     "@deephaven/jsapi-utils": "file:../jsapi-utils",
     "@deephaven/log": "file:../log",

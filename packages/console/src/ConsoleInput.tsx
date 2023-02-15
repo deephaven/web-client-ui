@@ -218,7 +218,7 @@ export class ConsoleInput extends PureComponent<
       const { lineNumber } = position;
       const model = commandEditor?.getModel();
       if (
-        keyEvent.keyCode === monaco.KeyCode.UpArrow &&
+        keyEvent.code === 'ArrowUp' &&
         !this.isSuggestionMenuPopulated() &&
         lineNumber === 1
       ) {
@@ -236,7 +236,7 @@ export class ConsoleInput extends PureComponent<
       }
 
       if (
-        keyEvent.keyCode === monaco.KeyCode.DownArrow &&
+        keyEvent.code === 'ArrowDown' &&
         !this.isSuggestionMenuPopulated() &&
         lineNumber === model?.getLineCount()
       ) {
@@ -380,7 +380,7 @@ export class ConsoleInput extends PureComponent<
    * @param index The index to load. Null to load command started in the editor and not in the history
    */
   loadCommand(index: number | null): void {
-    if (index === null || index >= this.history.length) {
+    if (index !== null && index >= this.history.length) {
       return;
     }
 
