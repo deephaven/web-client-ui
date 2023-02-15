@@ -1185,11 +1185,16 @@ export class GridRenderer {
         textMetrics.actualBoundingBoxDescent;
 
       if (truncatedText) {
+        // X position of current word
         let startX = textX;
+
+        // Loop through tokenized text and display differently depending on if it's a url
         for (let i = 0; i < tokenizedText.length; i += 1) {
           const { v: value } = tokenizedText[i];
           if (tokenizedText[i].t === 'url') {
             let { width: linkWidth } = context.measureText(value);
+
+            // Adjust width of line if truncated
             if (value.endsWith('…')) {
               linkWidth = context.measureText(
                 value.substring(0, value.length - 1)
@@ -1200,8 +1205,10 @@ export class GridRenderer {
             context.fillRect(startX, textY + textHeight / 2, linkWidth, 1);
           } else {
             context.fillStyle = color;
-            context.fillText(tokenizedText[i].v, startX, textY);
+            context.fillText(value, startX, textY);
           }
+
+          // Increase the starting x position
           startX += context.measureText(value).width;
         }
       }

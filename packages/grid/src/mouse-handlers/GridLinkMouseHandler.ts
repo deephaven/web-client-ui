@@ -25,6 +25,12 @@ class GridLinkMouseHandler extends GridMouseHandler {
 
   isDown = false;
 
+  /**
+   * Checks if mouse is currently over a link and returns its information if so
+   * @param gridPoint Mouse position information
+   * @param grid The grid
+   * @returns A LinkInformation object if it exists and null otherwise
+   */
   static isHoveringLink(
     gridPoint: GridPoint,
     grid: Grid
@@ -59,8 +65,11 @@ class GridLinkMouseHandler extends GridMouseHandler {
       verticalBarWidth,
       horizontalBarHeight,
     } = metrics;
+
+    // Set the font and change it back after
     const prevFont = context.font;
     context.font = theme.font;
+
     const fontWidth =
       fontWidths.get(context.font) ?? GridRenderer.DEFAULT_FONT_WIDTH;
     const truncationChar = model.truncationCharForCell(modelColumn, modelRow);
@@ -72,6 +81,7 @@ class GridLinkMouseHandler extends GridMouseHandler {
       truncationChar
     );
 
+    // Check if the truncated text contains a link
     if (linkify.find(truncatedText, 'url').length !== 0) {
       const tokenizedText = model.tokensForCell(truncatedText);
       const {
@@ -79,19 +89,24 @@ class GridLinkMouseHandler extends GridMouseHandler {
         actualBoundingBoxDescent,
       } = context.measureText(truncatedText);
       const linkHeight = actualBoundingBoxAscent + actualBoundingBoxDescent;
+      // The x position of the word
       let startX = textX;
-      // check these values
-      const top = Math.max(gridY, gridY + textY - linkHeight / 2);
+
+      // Consider edge cases
+      const top = Math.max(gridY, textY - linkHeight / 2);
       const bottom = Math.min(
         top + linkHeight,
         gridHeight - horizontalBarHeight
       );
 
+      // Loop through the blocks of text
       for (let i = 0; i < tokenizedText.length; i += 1) {
         const { v: value } = tokenizedText[i];
         let { width: linkWidth } = context.measureText(value);
+        // Check if the x position is less than the grid x, then textX will be negative so the linkWidth should be shifted
         linkWidth += textX < gridX ? textX : 0;
 
+        // If the block is not a url, continue
         if (tokenizedText[i].t !== 'url') {
           startX += linkWidth;
 
@@ -103,12 +118,14 @@ class GridLinkMouseHandler extends GridMouseHandler {
         const right = Math.min(left + linkWidth, gridWidth - verticalBarWidth);
 
         if (x >= left && x <= right && y >= top && y <= bottom) {
-          // debugger;
+          // Reset font
           context.font = prevFont;
           let fullLink = value;
+
+          // If the link ends with ellipses, need to find the entire link in the original text otherwise it is truncated
           if (value.endsWith('…')) {
-            const linkWithoutElipses = value.substring(0, value.length - 1);
-            const startIndexOfLink = text.indexOf(linkWithoutElipses);
+            const linkWithoutEllipses = value.substring(0, value.length - 1);
+            const startIndexOfLink = text.indexOf(linkWithoutEllipses);
             const endIndexOfLink =
               text.indexOf(' ', startIndexOfLink) === -1
                 ? text.length
@@ -120,7 +137,7 @@ class GridLinkMouseHandler extends GridMouseHandler {
             top,
             width: linkWidth,
             height: linkHeight,
-            value: tokenizedText[i].v,
+            value,
             href: linkify.find(fullLink)[0].href,
           };
         }
@@ -133,6 +150,12 @@ class GridLinkMouseHandler extends GridMouseHandler {
     return null;
   }
 
+  /**
+   * Set the cursor to pointer when hovering of a link
+   * @param gridPoint Mouse position information
+   * @param grid The grid
+   * @returns False
+   */
   private setCursor(gridPoint: GridPoint, grid: Grid): EventHandlerResult {
     if (GridLinkMouseHandler.isHoveringLink(gridPoint, grid) != null) {
       this.cursor = 'pointer';
@@ -151,6 +174,7 @@ class GridLinkMouseHandler extends GridMouseHandler {
     grid: Grid,
     event: GridMouseEvent
   ): EventHandlerResult {
+    // If a modifier key or shift is down, we don't want to handle it and set isDown to false so onUp won't handle it either
     if (GridUtils.isModifierKeyDown(event) || event.shiftKey) {
       this.isDown = false;
       return false;
@@ -167,6 +191,8 @@ class GridLinkMouseHandler extends GridMouseHandler {
         this.isHold = true;
         const { column, row } = gridPoint;
         const { model } = grid.props;
+
+        // After 1 second, select the row and if it is an input table, start editing
         grid.clearSelectedRanges();
         grid.focus();
         grid.moveCursorToPosition(column, row);
@@ -189,9 +215,12 @@ class GridLinkMouseHandler extends GridMouseHandler {
     const link = GridLinkMouseHandler.isHoveringLink(gridPoint, grid);
     if (link != null && this.isDown) {
       this.isDown = false;
+
+      // If isHold is true, then the select already happened so onUp shouldn't do anything
       if (this.isHold) {
         this.isHold = false;
       } else {
+        // Cancel the timeout and open a new tab with the link
         if (this.timeoutId != null) {
           clearTimeout(this.timeoutId);
         }

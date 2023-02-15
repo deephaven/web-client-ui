@@ -186,6 +186,11 @@ abstract class GridModel<
     return undefined;
   }
 
+  /**
+   * Gets the string split into tokens
+   * @param value The string to tokenize
+   * @returns The string split into an array, separated by their types (e.g. url, hashtag, etc)
+   */
   tokensForCell(value: string): linkify.MultiToken[] {
     return this.getTokenizedString(value);
   }

@@ -2141,6 +2141,10 @@ class Grid extends PureComponent<GridProps, GridState> {
     );
   }
 
+  /**
+   * Gets the render state
+   * @returns The render state
+   */
   getRenderState(): GridRenderState {
     if (!this.canvas) throw new Error('canvas is not set');
     if (!this.canvasContext) throw new Error('context not set');
