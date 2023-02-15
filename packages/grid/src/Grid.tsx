@@ -360,7 +360,6 @@ class Grid extends PureComponent<GridProps, GridState> {
       new TreeKeyHandler(900),
     ];
     this.mouseHandlers = [
-      new GridLinkMouseHandler(50),
       new GridRowSeparatorMouseHandler(100),
       new GridColumnSeparatorMouseHandler(200),
       new GridRowMoveMouseHandler(300),
@@ -370,6 +369,7 @@ class Grid extends PureComponent<GridProps, GridState> {
       new GridHorizontalScrollBarMouseHandler(600),
       new GridScrollBarCornerMouseHandler(700),
       new GridRowTreeMouseHandler(800),
+      new GridLinkMouseHandler(825),
       new GridSelectionMouseHandler(900),
     ];
 

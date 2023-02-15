@@ -1,18 +1,34 @@
 /* eslint class-methods-use-this: "off" */
 import { assertNotNull } from '@deephaven/utils';
 import * as linkify from 'linkifyjs';
+import { isEditableGridModel } from '../EditableGridModel';
 import { EventHandlerResult } from '../EventHandlerResult';
 import Grid from '../Grid';
 import GridMouseHandler, { GridMouseEvent } from '../GridMouseHandler';
+import GridRange from '../GridRange';
 import GridRenderer from '../GridRenderer';
-import { GridPoint } from '../GridUtils';
+import GridUtils, { GridPoint } from '../GridUtils';
+
+export interface LinkInformation {
+  left: number;
+  top: number;
+  width: number;
+  height: number;
+  value: string;
+  href: string;
+}
 
 class GridLinkMouseHandler extends GridMouseHandler {
   timeoutId: undefined | ReturnType<typeof setTimeout> = undefined;
 
   isHold = false;
 
-  static isHoveringLink(gridPoint: GridPoint, grid: Grid): string | null {
+  isDown = false;
+
+  static isHoveringLink(
+    gridPoint: GridPoint,
+    grid: Grid
+  ): LinkInformation | null {
     const { column, row, x, y } = gridPoint;
     const { props, canvasContext: context, renderer, metrics } = grid;
     const { model } = props;
@@ -43,6 +59,8 @@ class GridLinkMouseHandler extends GridMouseHandler {
       verticalBarWidth,
       horizontalBarHeight,
     } = metrics;
+    const prevFont = context.font;
+    context.font = theme.font;
     const fontWidth =
       fontWidths.get(context.font) ?? GridRenderer.DEFAULT_FONT_WIDTH;
     const truncationChar = model.truncationCharForCell(modelColumn, modelRow);
@@ -53,46 +71,64 @@ class GridLinkMouseHandler extends GridMouseHandler {
       fontWidth,
       truncationChar
     );
-    const prevFont = context.font;
 
     if (linkify.find(truncatedText, 'url').length !== 0) {
       const tokenizedText = model.tokensForCell(truncatedText);
-      context.font = theme.font;
       const {
         actualBoundingBoxAscent,
         actualBoundingBoxDescent,
       } = context.measureText(truncatedText);
       const linkHeight = actualBoundingBoxAscent + actualBoundingBoxDescent;
+      let startX = textX;
       // check these values
-      const left = Math.max(gridX, textX);
       const top = Math.max(gridY, gridY + textY - linkHeight / 2);
+      const bottom = Math.min(
+        top + linkHeight,
+        gridHeight - horizontalBarHeight
+      );
+
       for (let i = 0; i < tokenizedText.length; i += 1) {
-        let { width: linkWidth } = context.measureText(tokenizedText[i].v);
+        const { v: value } = tokenizedText[i];
+        let { width: linkWidth } = context.measureText(value);
         linkWidth += textX < gridX ? textX : 0;
 
-        const right = Math.min(left + linkWidth, gridWidth - verticalBarWidth);
-        const bottom = Math.min(
-          top + linkHeight,
-          gridHeight - horizontalBarHeight
-        );
+        if (tokenizedText[i].t !== 'url') {
+          startX += linkWidth;
 
-        // if (tokenizedText[i].t === 'url') {
-        //   // console.log(tokenizedText[i].v);
-        //   // console.log('gridX: ', gridX);
-        //   // console.log('gridY: ', gridY);
-        //   // console.log(context);
-        //   console.log('x y', x, y);
-        //   console.log('textX: ', textX);
-        //   console.log('linkWidth: ', linkWidth);
-        //   console.log('left top right bottom', left, top, right, bottom);
-        // }
+          // eslint-disable-next-line no-continue
+          continue;
+        }
+
+        const left = Math.max(gridX, startX);
+        const right = Math.min(left + linkWidth, gridWidth - verticalBarWidth);
 
         if (x >= left && x <= right && y >= top && y <= bottom) {
-          return tokenizedText[i].v;
+          // debugger;
+          context.font = prevFont;
+          let fullLink = value;
+          if (value.endsWith('…')) {
+            const linkWithoutElipses = value.substring(0, value.length - 1);
+            const startIndexOfLink = text.indexOf(linkWithoutElipses);
+            const endIndexOfLink =
+              text.indexOf(' ', startIndexOfLink) === -1
+                ? text.length
+                : text.indexOf(' ', startIndexOfLink);
+            fullLink = text.substring(startIndexOfLink, endIndexOfLink);
+          }
+          return {
+            left,
+            top,
+            width: linkWidth,
+            height: linkHeight,
+            value: tokenizedText[i].v,
+            href: linkify.find(fullLink)[0].href,
+          };
         }
+
+        startX += linkWidth;
       }
-      context.font = prevFont;
     }
+    context.font = prevFont;
 
     return null;
   }
@@ -100,9 +136,9 @@ class GridLinkMouseHandler extends GridMouseHandler {
   private setCursor(gridPoint: GridPoint, grid: Grid): EventHandlerResult {
     if (GridLinkMouseHandler.isHoveringLink(gridPoint, grid) != null) {
       this.cursor = 'pointer';
-      return { stopPropagation: false, preventDefault: false };
+    } else {
+      this.cursor = null;
     }
-    this.cursor = null;
     return false;
   }
 
@@ -115,8 +151,14 @@ class GridLinkMouseHandler extends GridMouseHandler {
     grid: Grid,
     event: GridMouseEvent
   ): EventHandlerResult {
+    if (GridUtils.isModifierKeyDown(event) || event.shiftKey) {
+      this.isDown = false;
+      return false;
+    }
+
     const link = GridLinkMouseHandler.isHoveringLink(gridPoint, grid);
     if (link != null) {
+      this.isDown = true;
       if (this.timeoutId) {
         clearTimeout(this.timeoutId);
       }
@@ -124,31 +166,42 @@ class GridLinkMouseHandler extends GridMouseHandler {
       this.timeoutId = setTimeout(() => {
         this.isHold = true;
         const { column, row } = gridPoint;
+        const { model } = grid.props;
         grid.clearSelectedRanges();
         grid.focus();
         grid.moveCursorToPosition(column, row);
-        this.setCursor(gridPoint, grid);
+        if (
+          isEditableGridModel(model) &&
+          column != null &&
+          row != null &&
+          model.isEditableRange(GridRange.makeCell(column, row))
+        ) {
+          grid.startEditing(column, row);
+        }
       }, 1000);
       return true;
     }
+    this.isDown = false;
     return false;
   }
 
   onUp(gridPoint: GridPoint, grid: Grid): EventHandlerResult {
     const link = GridLinkMouseHandler.isHoveringLink(gridPoint, grid);
-    if (link != null) {
+    if (link != null && this.isDown) {
+      this.isDown = false;
       if (this.isHold) {
         this.isHold = false;
       } else {
-        assertNotNull(this.timeoutId);
-        clearTimeout(this.timeoutId);
+        if (this.timeoutId != null) {
+          clearTimeout(this.timeoutId);
+        }
         this.timeoutId = undefined;
-        const { href } = linkify.find(link)[0];
-
-        window.open(href, '_blank');
+        window.open(link.href, '_blank');
       }
       return true;
     }
+
+    this.isDown = false;
     return false;
   }
 }

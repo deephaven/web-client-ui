@@ -1178,7 +1178,6 @@ export class GridRenderer {
         fontWidth,
         truncationChar
       );
-      // console.log(truncatedText);
       const tokenizedText = model.tokensForCell(truncatedText);
       const textMetrics = context.measureText(truncatedText);
       const textHeight =
@@ -1188,20 +1187,22 @@ export class GridRenderer {
       if (truncatedText) {
         let startX = textX;
         for (let i = 0; i < tokenizedText.length; i += 1) {
+          const { v: value } = tokenizedText[i];
           if (tokenizedText[i].t === 'url') {
+            let { width: linkWidth } = context.measureText(value);
+            if (value.endsWith('…')) {
+              linkWidth = context.measureText(
+                value.substring(0, value.length - 1)
+              ).width;
+            }
             context.fillStyle = '#4878ea';
-            context.fillText(tokenizedText[i].v, startX, textY);
-            context.fillRect(
-              textX,
-              textY + textHeight / 2,
-              context.measureText(tokenizedText[i].v).width,
-              1
-            );
+            context.fillText(value, startX, textY);
+            context.fillRect(startX, textY + textHeight / 2, linkWidth, 1);
           } else {
             context.fillStyle = color;
             context.fillText(tokenizedText[i].v, startX, textY);
           }
-          startX += context.measureText(tokenizedText[i].v).width;
+          startX += context.measureText(value).width;
         }
       }
     }

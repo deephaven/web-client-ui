@@ -3,6 +3,7 @@ import * as linkify from 'linkifyjs';
 import type { IColumnHeaderGroup } from './ColumnHeaderGroup';
 import { ModelIndex } from './GridMetrics';
 import { GridColor, GridTheme, NullableGridColor } from './GridTheme';
+import memoizeClear from './memoizeClear';
 
 /* eslint class-methods-use-this: "off" */
 /* eslint no-unused-vars: "off" */
@@ -186,8 +187,13 @@ abstract class GridModel<
   }
 
   tokensForCell(value: string): linkify.MultiToken[] {
-    return linkify.tokenize(value);
+    return this.getTokenizedString(value);
   }
+
+  getTokenizedString = memoizeClear(
+    (value: string): linkify.MultiToken[] => linkify.tokenize(value),
+    { max: 10000 }
+  );
 }
 
 export default GridModel;
