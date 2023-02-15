@@ -93,7 +93,7 @@ class GridLinkMouseHandler extends GridMouseHandler {
       let startX = textX;
 
       // Consider edge cases
-      const top = Math.max(gridY, textY - linkHeight / 2);
+      const top = Math.max(gridY, gridY + textY - linkHeight / 2);
       const bottom = Math.min(
         top + linkHeight,
         gridHeight - horizontalBarHeight
@@ -103,19 +103,28 @@ class GridLinkMouseHandler extends GridMouseHandler {
       for (let i = 0; i < tokenizedText.length; i += 1) {
         const { v: value } = tokenizedText[i];
         let { width: linkWidth } = context.measureText(value);
-        // Check if the x position is less than the grid x, then textX will be negative so the linkWidth should be shifted
-        linkWidth += textX < gridX ? textX : 0;
 
-        // If the block is not a url, continue
-        if (tokenizedText[i].t !== 'url') {
+        // If the text is not visible (right side is less than gridX)
+        if (startX + linkWidth < gridX) {
           startX += linkWidth;
 
           // eslint-disable-next-line no-continue
           continue;
         }
 
-        const left = Math.max(gridX, startX);
+        // Check if the x position is less than the grid x, then startX will be negative so the linkWidth should be shifted
+        linkWidth += startX < gridX ? startX : 0;
+
+        const left = Math.max(gridX, gridX + startX);
         const right = Math.min(left + linkWidth, gridWidth - verticalBarWidth);
+
+        // If the block is not a url, continue
+        if (tokenizedText[i].t !== 'url') {
+          startX = right;
+
+          // eslint-disable-next-line no-continue
+          continue;
+        }
 
         if (x >= left && x <= right && y >= top && y <= bottom) {
           // Reset font
@@ -142,7 +151,7 @@ class GridLinkMouseHandler extends GridMouseHandler {
           };
         }
 
-        startX += linkWidth;
+        startX = right;
       }
     }
     context.font = prevFont;

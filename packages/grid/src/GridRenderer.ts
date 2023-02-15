@@ -1,4 +1,5 @@
 import clamp from 'lodash.clamp';
+import { ThemeExport } from '@deephaven/components';
 import { ColorUtils } from '@deephaven/utils';
 import memoizeClear from './memoizeClear';
 import GridUtils from './GridUtils';
@@ -1200,7 +1201,7 @@ export class GridRenderer {
                 value.substring(0, value.length - 1)
               ).width;
             }
-            context.fillStyle = '#4878ea';
+            context.fillStyle = ThemeExport.primary;
             context.fillText(value, startX, textY);
             context.fillRect(startX, textY + textHeight / 2, linkWidth, 1);
           } else {
