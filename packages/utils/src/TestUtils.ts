@@ -118,7 +118,7 @@ class TestUtils {
   ): Promise<void> {
     await user.keyboard('{Control>}');
     if (dblClick) {
-      user.dblClick(element);
+      await user.dblClick(element);
     } else if (rightClick) {
       await TestUtils.rightClick(user, element);
     } else {
@@ -135,7 +135,7 @@ class TestUtils {
   ): Promise<void> {
     await user.keyboard('{Shift>}');
     if (dblClick) {
-      user.dblClick(element);
+      await user.dblClick(element);
     } else if (rightClick) {
       await TestUtils.rightClick(user, element);
     } else {
