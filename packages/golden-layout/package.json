@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/golden-layout",
-  "version": "0.30.0",
+  "version": "0.30.1",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
   "description": "A multi-screen javascript Layout manager",
