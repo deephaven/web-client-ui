@@ -43,7 +43,6 @@ const theme: Partial<IrisGridThemeType> = Object.freeze({
   backgroundColor: IrisGridTheme['grid-bg'],
   white: IrisGridTheme.white,
   black: IrisGridTheme.black,
-  primary: IrisGridTheme.primary,
   font: IrisGridTheme.font,
   headerBackgroundColor: IrisGridTheme['header-bg'],
   headerColor: IrisGridTheme['header-color'],
@@ -72,6 +71,7 @@ const theme: Partial<IrisGridThemeType> = Object.freeze({
   scrollBarActiveSelectionTickColor:
     IrisGridTheme['scroll-bar-active-selection-tick-color'],
   textColor: IrisGridTheme['text-color'],
+  textHyperLinkColor: IrisGridTheme['text-hyper-link-color'],
   positiveNumberColor: IrisGridTheme['positive-number-color'],
   negativeNumberColor: IrisGridTheme['negative-number-color'],
   zeroNumberColor: IrisGridTheme['zero-number-color'],

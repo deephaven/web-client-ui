@@ -1200,7 +1200,7 @@ export class GridRenderer {
                 value.substring(0, value.length - 1)
               ).width;
             }
-            context.fillStyle = theme.primary;
+            context.fillStyle = theme.textHyperLinkColor;
             context.fillText(value, startX, textY);
             context.fillRect(startX, textY + textHeight / 2, linkWidth, 1);
           } else {
