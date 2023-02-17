@@ -628,7 +628,7 @@ class IrisGridProxyModel extends IrisGridModel {
 
   editValueForCell: IrisGridTableModel['editValueForCell'] = (...args) => {
     if (isEditableGridModel(this.model)) {
-      this.model.editValueForCell(...args);
+      return this.model.editValueForCell(...args);
     }
     return '';
   };
