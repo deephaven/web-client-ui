@@ -1,4 +1,5 @@
 import clamp from 'lodash.clamp';
+import { find } from 'linkifyjs';
 import { ColorUtils } from '@deephaven/utils';
 import memoizeClear from './memoizeClear';
 import GridUtils from './GridUtils';
@@ -1132,6 +1133,86 @@ export class GridRenderer {
     };
   }
 
+  /**
+   * Draws a cell with link styling
+   * Should only be called when links is nonempty
+   * @param context Canvas context
+   * @param state GridRenderState to get the text metrics for
+   * @param truncatedText The text that is visible in the cell
+   * @param links The links in the text (last element value could be longer than the truncated value)
+   * @param textX The x value of where the text should be drawn
+   * @param textY The y value of where the text should be drawn
+   * @param color The color of the text
+   */
+  drawLinkCellContent(
+    context: CanvasRenderingContext2D,
+    state: GridRenderState,
+    truncatedText: string,
+    links: ReturnType<typeof find>,
+    textX: number,
+    textY: number,
+    color: string
+  ): void {
+    const { theme } = state;
+
+    const textMetrics = context.measureText(truncatedText);
+    const textHeight =
+      textMetrics.actualBoundingBoxAscent +
+      textMetrics.actualBoundingBoxDescent;
+
+    // Check if there is normal text before the first link
+    if (links[0].start > 0) {
+      const value = truncatedText.substring(0, links[0].start);
+      context.fillText(value, textX, textY);
+    }
+
+    // Loop through the links
+    // Renders a link and normal text proceeding each iteration
+    for (let i = 0; i < links.length; i += 1) {
+      let { value, end } = links[i];
+      const { start } = links[i];
+
+      // The last link value may be longer than the truncated value so check if the end index is greater than the length of truncatedText
+      if (end > truncatedText.length) {
+        // Trim the value
+        value = truncatedText.substring(start);
+        end = truncatedText.length;
+      }
+      // Measure the width of the substring before the link
+      const startX =
+        context.measureText(truncatedText.substring(0, start)).width + textX;
+      const fullLinkWidth = context.measureText(value).width;
+      const truncatedLinkWidth = value.endsWith('…')
+        ? context.measureText(value.substring(0, value.length - 1)).width
+        : fullLinkWidth;
+
+      // Render link styling
+      context.fillStyle = theme.textHyperLinkColor;
+
+      context.fillText(value, startX, textY);
+      context.fillRect(startX, textY + textHeight / 2, truncatedLinkWidth, 1);
+
+      // Render normal text proceeding text
+      context.fillStyle = color;
+
+      // If the current index is not the last element then there should be text in between the current link and the next link
+      if (i + 1 < links.length && end < links[i + 1].start) {
+        context.fillText(
+          truncatedText.substring(end, links[i + 1].start),
+          startX + fullLinkWidth,
+          textY
+        );
+      } else if (end < truncatedText.length) {
+        // The current index is the last element and there is text between the last link and the end of the truncated string
+        context.fillText(
+          truncatedText.substring(end),
+          startX + fullLinkWidth,
+          textY
+        );
+      }
+    }
+  }
+
   drawCellContent(
     context: CanvasRenderingContext2D,
     state: GridRenderState,
@@ -1178,38 +1259,34 @@ export class GridRenderer {
         fontWidth,
         truncationChar
       );
-      const tokenizedText = model.tokensForCell(truncatedText);
-      const textMetrics = context.measureText(truncatedText);
-      const textHeight =
-        textMetrics.actualBoundingBoxAscent +
-        textMetrics.actualBoundingBoxDescent;
+
+      // To check for links, we should check to the first space after the truncatedText lengh
+      let lengthOfContent = text.indexOf(' ', truncatedText.length);
+      // If it doesn't exist, set lengthOfContent to the minimum between length of the original text and 5000
+      if (lengthOfContent === -1) {
+        lengthOfContent = Math.min(5000, text.length);
+      } else if (lengthOfContent > 5000) {
+        // If the index is greater than 5000, limit it to 5000
+        lengthOfContent = 5000;
+      }
+      const contentToCheckForLinks = text.substring(0, lengthOfContent);
+
+      const links = model.findLinksInText(contentToCheckForLinks);
 
       if (truncatedText) {
-        // X position of current word
-        let startX = textX;
-
-        // Loop through tokenized text and display differently depending on if it's a url
-        for (let i = 0; i < tokenizedText.length; i += 1) {
-          const { v: value } = tokenizedText[i];
-          if (tokenizedText[i].t === 'url') {
-            let { width: linkWidth } = context.measureText(value);
-
-            // Adjust width of line if truncated
-            if (value.endsWith('…')) {
-              linkWidth = context.measureText(
-                value.substring(0, value.length - 1)
-              ).width;
-            }
-            context.fillStyle = theme.textHyperLinkColor;
-            context.fillText(value, startX, textY);
-            context.fillRect(startX, textY + textHeight / 2, linkWidth, 1);
-          } else {
-            context.fillStyle = color;
-            context.fillText(value, startX, textY);
-          }
-
-          // Increase the starting x position
-          startX += context.measureText(value).width;
+        // No links, render as normal
+        if (links.length === 0) {
+          context.fillText(truncatedText, textX, textY);
+        } else {
+          this.drawLinkCellContent(
+            context,
+            state,
+            truncatedText,
+            links,
+            textX,
+            textY,
+            color
+          );
         }
       }
     }

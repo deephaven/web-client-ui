@@ -1,6 +1,7 @@
 /* eslint class-methods-use-this: "off" */
+
+import clamp from 'lodash.clamp';
 import { assertNotNull } from '@deephaven/utils';
-import * as linkify from 'linkifyjs';
 import { isEditableGridModel } from '../EditableGridModel';
 import { EventHandlerResult } from '../EventHandlerResult';
 import Grid from '../Grid';
@@ -12,6 +13,8 @@ import GridUtils, { GridPoint } from '../GridUtils';
 export interface LinkInformation {
   left: number;
   top: number;
+  right: number;
+  bottom: number;
   width: number;
   height: number;
   value: string;
@@ -19,11 +22,13 @@ export interface LinkInformation {
 }
 
 class GridLinkMouseHandler extends GridMouseHandler {
-  timeoutId: undefined | ReturnType<typeof setTimeout> = undefined;
+  timeoutId?: ReturnType<typeof setTimeout>;
 
-  isHold = false;
+  private isHold = false;
 
-  isDown = false;
+  private isDown = false;
+
+  private static currentLinkBox?: LinkInformation;
 
   /**
    * Checks if mouse is currently over a link and returns its information if so
@@ -41,6 +46,14 @@ class GridLinkMouseHandler extends GridMouseHandler {
 
     if (row == null || column == null) {
       return null;
+    }
+
+    // If cursor was already previously on a link, check saved link boundaries
+    if (this.currentLinkBox) {
+      const { left, top, right, bottom } = this.currentLinkBox;
+      if (x >= left && x <= right && y >= top && y <= bottom) {
+        return this.currentLinkBox;
+      }
     }
 
     assertNotNull(context);
@@ -67,7 +80,7 @@ class GridLinkMouseHandler extends GridMouseHandler {
     } = metrics;
 
     // Set the font and change it back after
-    const prevFont = context.font;
+    context.save();
     context.font = theme.font;
 
     const fontWidth =
@@ -81,80 +94,87 @@ class GridLinkMouseHandler extends GridMouseHandler {
       truncationChar
     );
 
+    let lengthOfContent = text.indexOf(' ', truncatedText.length);
+    if (lengthOfContent === -1) {
+      lengthOfContent = Math.min(5000, text.length);
+    } else if (lengthOfContent > 5000) {
+      lengthOfContent = 5000;
+    }
+
+    const contentToCheckForLinks = text.substring(0, lengthOfContent);
+
+    const links = model.findLinksInText(contentToCheckForLinks);
+
     // Check if the truncated text contains a link
-    if (linkify.find(truncatedText, 'url').length !== 0) {
-      const tokenizedText = model.tokensForCell(truncatedText);
+    if (links.length > 0) {
       const {
         actualBoundingBoxAscent,
         actualBoundingBoxDescent,
       } = context.measureText(truncatedText);
       const linkHeight = actualBoundingBoxAscent + actualBoundingBoxDescent;
-      // The x position of the word
-      let startX = textX;
 
       // Consider edge cases
       const top = Math.max(gridY, gridY + textY - linkHeight / 2);
-      const bottom = Math.min(
+      const bottom = clamp(
         top + linkHeight,
+        top,
         gridHeight - horizontalBarHeight
       );
 
       // Loop through the blocks of text
-      for (let i = 0; i < tokenizedText.length; i += 1) {
-        const { v: value } = tokenizedText[i];
+      for (let i = 0; i < links.length; i += 1) {
+        const { end, start, href } = links[i];
+        let { value } = links[i];
+
+        if (end > truncatedText.length) {
+          value = truncatedText.substring(start);
+        }
+
         let { width: linkWidth } = context.measureText(value);
+        // Measure the width of the substring before the link
+        const startX =
+          context.measureText(truncatedText.substring(0, start)).width + textX;
+        // Right side is greater than gridX
+        const textIsVisible = startX + linkWidth >= gridX;
 
-        // If the text is not visible (right side is less than gridX)
-        if (startX + linkWidth < gridX) {
-          startX += linkWidth;
+        if (textIsVisible) {
+          // Check if the x position is less than the grid x, then linkWidth should be shifted by gridX - startX
+          linkWidth -= startX < gridX ? gridX - startX : 0;
 
-          // eslint-disable-next-line no-continue
-          continue;
-        }
-
-        // Check if the x position is less than the grid x, then startX will be negative so the linkWidth should be shifted
-        linkWidth += startX < gridX ? startX : 0;
-
-        const left = Math.max(gridX, gridX + startX);
-        const right = Math.min(left + linkWidth, gridWidth - verticalBarWidth);
-
-        // If the block is not a url, continue
-        if (tokenizedText[i].t !== 'url') {
-          startX = right;
-
-          // eslint-disable-next-line no-continue
-          continue;
-        }
-
-        if (x >= left && x <= right && y >= top && y <= bottom) {
-          // Reset font
-          context.font = prevFont;
-          let fullLink = value;
-
-          // If the link ends with ellipses, need to find the entire link in the original text otherwise it is truncated
-          if (value.endsWith('…')) {
-            const linkWithoutEllipses = value.substring(0, value.length - 1);
-            const startIndexOfLink = text.indexOf(linkWithoutEllipses);
-            const endIndexOfLink =
-              text.indexOf(' ', startIndexOfLink) === -1
-                ? text.length
-                : text.indexOf(' ', startIndexOfLink);
-            fullLink = text.substring(startIndexOfLink, endIndexOfLink);
-          }
-          return {
+          const left = Math.max(gridX, gridX + startX);
+          const right = clamp(
+            left + linkWidth,
             left,
-            top,
-            width: linkWidth,
-            height: linkHeight,
-            value,
-            href: linkify.find(fullLink)[0].href,
-          };
-        }
+            gridWidth - verticalBarWidth
+          );
 
-        startX = right;
+          const cursorIsInBounds =
+            x >= left && x <= right && y >= top && y <= bottom;
+
+          if (cursorIsInBounds) {
+            // Reset font
+            context.restore();
+
+            this.currentLinkBox = {
+              left,
+              top,
+              right,
+              bottom,
+              width: linkWidth,
+              height: linkHeight,
+              value,
+              href,
+            };
+
+            return this.currentLinkBox;
+          }
+        }
       }
     }
-    context.font = prevFont;
+
+    // There are no links or the mouse is not on a link, restore context and currentLinkBox
+    context.restore();
+    this.currentLinkBox = undefined;
 
     return null;
   }
@@ -183,64 +203,64 @@ class GridLinkMouseHandler extends GridMouseHandler {
     grid: Grid,
     event: GridMouseEvent
   ): EventHandlerResult {
+    this.isDown = true;
+    const link = GridLinkMouseHandler.isHoveringLink(gridPoint, grid);
+
     // If a modifier key or shift is down, we don't want to handle it and set isDown to false so onUp won't handle it either
-    if (GridUtils.isModifierKeyDown(event) || event.shiftKey) {
+    if (GridUtils.isModifierKeyDown(event) || event.shiftKey || link == null) {
       this.isDown = false;
       return false;
     }
 
-    const link = GridLinkMouseHandler.isHoveringLink(gridPoint, grid);
-    if (link != null) {
-      this.isDown = true;
-      if (this.timeoutId) {
-        clearTimeout(this.timeoutId);
-      }
-      this.isHold = false;
-      this.timeoutId = setTimeout(() => {
-        this.isHold = true;
-        const { column, row } = gridPoint;
-        const { model } = grid.props;
-
-        // After 1 second, select the row and if it is an input table, start editing
-        grid.clearSelectedRanges();
-        grid.focus();
-        grid.moveCursorToPosition(column, row);
-        if (
-          isEditableGridModel(model) &&
-          column != null &&
-          row != null &&
-          model.isEditableRange(GridRange.makeCell(column, row))
-        ) {
-          grid.startEditing(column, row);
-        }
-      }, 1000);
-      return true;
+    if (this.timeoutId) {
+      clearTimeout(this.timeoutId);
     }
-    this.isDown = false;
-    return false;
+    this.isHold = false;
+    this.timeoutId = setTimeout(() => {
+      this.isHold = true;
+      const { column, row } = gridPoint;
+      const { model } = grid.props;
+
+      // After 1 second, select the row and if it is an input table, start editing
+      grid.clearSelectedRanges();
+      grid.focus();
+      grid.moveCursorToPosition(column, row);
+      if (
+        isEditableGridModel(model) &&
+        column != null &&
+        row != null &&
+        model.isEditableRange(GridRange.makeCell(column, row))
+      ) {
+        grid.startEditing(column, row);
+      }
+    }, 1000);
+
+    return true;
   }
 
   onUp(gridPoint: GridPoint, grid: Grid): EventHandlerResult {
     const link = GridLinkMouseHandler.isHoveringLink(gridPoint, grid);
-    if (link != null && this.isDown) {
+    if (link == null || !this.isDown) {
       this.isDown = false;
-
-      // If isHold is true, then the select already happened so onUp shouldn't do anything
-      if (this.isHold) {
-        this.isHold = false;
-      } else {
-        // Cancel the timeout and open a new tab with the link
-        if (this.timeoutId != null) {
-          clearTimeout(this.timeoutId);
-        }
-        this.timeoutId = undefined;
-        window.open(link.href, '_blank');
-      }
-      return true;
+      this.isHold = false;
+      return false;
     }
 
+    // Link is not null, isDown is true
+    // If isHold is true, then the select already happened so onUp shouldn't do anything
+    if (!this.isHold) {
+      // Cancel the timeout and open a new tab with the link
+      if (this.timeoutId != null) {
+        clearTimeout(this.timeoutId);
+      }
+      this.timeoutId = undefined;
+      window.open(link.href, '_blank');
+    }
+
+    this.isHold = false;
     this.isDown = false;
-    return false;
+
+    return true;
   }
 }
 

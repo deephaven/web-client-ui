@@ -1592,52 +1592,9 @@ class Grid extends PureComponent<GridProps, GridState> {
     if (!this.canvas) throw new Error('canvas is not set');
     if (!this.canvasContext) throw new Error('context not set');
 
-    const {
-      cursorColumn,
-      cursorRow,
-      draggingColumn,
-      draggingColumnSeparator,
-      draggingRow,
-      draggingRowOffset,
-      draggingRowSeparator,
-      editingCell,
-      isDraggingHorizontalScrollBar,
-      isDraggingVerticalScrollBar,
-      isDragging,
-      mouseX,
-      mouseY,
-      selectedRanges,
-    } = this.state;
-    const { model, stateOverride } = this.props;
+    const renderState = this.getRenderState();
     const { renderer } = this;
     const context = this.canvasContext;
-    const theme = this.getTheme();
-    const width = this.canvas.clientWidth;
-    const height = this.canvas.clientHeight;
-
-    const renderState = {
-      width,
-      height,
-      context,
-      theme,
-      model,
-      metrics,
-      mouseX,
-      mouseY,
-      selectedRanges,
-      draggingColumn,
-      draggingColumnSeparator,
-      draggingRow,
-      draggingRowOffset,
-      draggingRowSeparator,
-      editingCell,
-      isDraggingHorizontalScrollBar,
-      isDraggingVerticalScrollBar,
-      isDragging,
-      cursorColumn,
-      cursorRow,
-      ...stateOverride,
-    };
 
     context.save();
 

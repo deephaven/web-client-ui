@@ -1,5 +1,5 @@
 import { EventTarget, Event } from 'event-target-shim';
-import * as linkify from 'linkifyjs';
+import { find } from 'linkifyjs';
 import type { IColumnHeaderGroup } from './ColumnHeaderGroup';
 import { ModelIndex } from './GridMetrics';
 import { GridColor, GridTheme, NullableGridColor } from './GridTheme';
@@ -187,17 +187,19 @@ abstract class GridModel<
   }
 
   /**
-   * Gets the string split into tokens
-   * @param value The string to tokenize
-   * @returns The string split into an array, separated by their types (e.g. url, hashtag, etc)
+   * Gets links in the value
+   * @param value The string to search in
+   * @returns The string split into an array of link information
    */
-  tokensForCell(value: string): linkify.MultiToken[] {
-    return this.getTokenizedString(value);
+  findLinksInText(value: string): ReturnType<typeof find> {
+    return this.getCachedLinksInText(value);
   }
 
-  getTokenizedString = memoizeClear(
-    (value: string): linkify.MultiToken[] => linkify.tokenize(value),
-    { max: 10000 }
+  getCachedLinksInText = memoizeClear(
+    (value: string): ReturnType<typeof find> => find(value, 'url'),
+    {
+      max: 10000,
+    }
   );
 }
 
