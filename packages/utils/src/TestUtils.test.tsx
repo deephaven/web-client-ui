@@ -37,8 +37,9 @@ describe('click', () => {
   const doubleClickHandler = jest.fn();
   const rightClickHandler = jest.fn();
 
-  beforeEach(() =>
-    render(
+  beforeEach(() => {
+    jest.clearAllMocks();
+    return render(
       <button
         type="button"
         onClick={clickHandler}
@@ -47,8 +48,8 @@ describe('click', () => {
       >
         button
       </button>
-    )
-  );
+    );
+  });
 
   it('should left click', async () => {
     const button = screen.getByRole('button');
@@ -59,15 +60,15 @@ describe('click', () => {
   it('should left click with control key down', async () => {
     const button = screen.getByRole('button');
     await TestUtils.click(user, button, { ctrlKey: true });
-    expect(clickHandler).toHaveBeenCalledTimes(2);
-    expect(clickHandler.mock.calls[1][0].ctrlKey).toBeTruthy();
+    expect(clickHandler).toHaveBeenCalledTimes(1);
+    expect(clickHandler.mock.calls[0][0].ctrlKey).toBeTruthy();
   });
 
   it('should left click with shift key down', async () => {
     const button = screen.getByRole('button');
     await TestUtils.click(user, button, { shiftKey: true });
-    expect(clickHandler).toHaveBeenCalledTimes(3);
-    expect(clickHandler.mock.calls[2][0].shiftKey).toBeTruthy();
+    expect(clickHandler).toHaveBeenCalledTimes(1);
+    expect(clickHandler.mock.calls[0][0].shiftKey).toBeTruthy();
   });
 
   it('should double left click', async () => {
@@ -85,28 +86,28 @@ describe('click', () => {
   it('should double left click with control key down', async () => {
     const button = screen.getByRole('button');
     await TestUtils.click(user, button, { dblClick: true, ctrlKey: true });
-    expect(doubleClickHandler).toHaveBeenCalledTimes(2);
-    expect(doubleClickHandler.mock.calls[1][0].ctrlKey).toBeTruthy();
+    expect(doubleClickHandler).toHaveBeenCalledTimes(1);
+    expect(doubleClickHandler.mock.calls[0][0].ctrlKey).toBeTruthy();
   });
 
   it('should right click with control key down', async () => {
     const button = screen.getByRole('button');
     await TestUtils.click(user, button, { rightClick: true, ctrlKey: true });
-    expect(rightClickHandler).toHaveBeenCalledTimes(2);
-    expect(rightClickHandler.mock.calls[1][0].ctrlKey).toBeTruthy();
+    expect(rightClickHandler).toHaveBeenCalledTimes(1);
+    expect(rightClickHandler.mock.calls[0][0].ctrlKey).toBeTruthy();
   });
 
   it('should double left click with shift key down', async () => {
     const button = screen.getByRole('button');
     await TestUtils.click(user, button, { dblClick: true, shiftKey: true });
-    expect(doubleClickHandler).toHaveBeenCalledTimes(3);
-    expect(doubleClickHandler.mock.calls[2][0].shiftKey).toBeTruthy();
+    expect(doubleClickHandler).toHaveBeenCalledTimes(1);
+    expect(doubleClickHandler.mock.calls[0][0].shiftKey).toBeTruthy();
   });
 
   it('should right click with shift key down', async () => {
     const button = screen.getByRole('button');
     await TestUtils.click(user, button, { rightClick: true, shiftKey: true });
-    expect(rightClickHandler).toHaveBeenCalledTimes(3);
-    expect(rightClickHandler.mock.calls[2][0].shiftKey).toBeTruthy();
+    expect(rightClickHandler).toHaveBeenCalledTimes(1);
+    expect(rightClickHandler.mock.calls[0][0].shiftKey).toBeTruthy();
   });
 });

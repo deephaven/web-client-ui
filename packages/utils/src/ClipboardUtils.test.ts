@@ -4,6 +4,8 @@ document.execCommand = jest.fn();
 
 describe('Clipboard', () => {
   describe('writeText', () => {
+    beforeEach(() => jest.resetAllMocks());
+
     it('should call clipboard.writeText', async () => {
       Object.assign(navigator, {
         clipboard: {
@@ -36,14 +38,24 @@ describe('Clipboard', () => {
       expect(document.execCommand).toHaveBeenCalledWith('copy');
     });
 
-    it('calls copyToClipboardExecCommand if clipboard is undefined', async () => {
+    it('calls copyToClipboardExecCommand if clipboard is undefined and throws', async () => {
       Object.assign(navigator, {
         clipboard: undefined,
       });
+      document.execCommand = jest.fn(() => false);
 
       await expect(copyToClipboard('test')).rejects.toThrowError(
         'Unable to execute copy command'
       );
+    });
+
+    it('calls copyToClipboardExecCommand if clipboard is undefined but does not throw', async () => {
+      Object.assign(navigator, {
+        clipboard: undefined,
+      });
+      document.execCommand = jest.fn(() => true);
+
+      await expect(copyToClipboard('test')).resolves.toBeUndefined();
     });
   });
 });
