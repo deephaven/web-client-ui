@@ -1,5 +1,6 @@
 import dh, { TimeZone } from '@deephaven/jsapi-shim';
 import DateTimeColumnFormatter from './DateTimeColumnFormatter';
+import { TableColumnFormat } from './TableColumnFormatter';
 
 function makeFormatter({
   timeZone,
@@ -181,3 +182,176 @@ describe('calls to iris format and time zone functions', () => {
     expect(formatMock.mock.calls[1][2]).toMatchObject(defaultTimeZone);
   });
 });
+
+describe('isValid', () => {
+  it('should return true if a format is valid', () => {
+    expect(
+      DateTimeColumnFormatter.isValid({
+        formatString: DEFAULT_DATETIME_FORMAT_STRING,
+      })
+    ).toBe(true);
+    expect(
+      DateTimeColumnFormatter.isValid({
+        formatString: 'yyyy-MM-dd HH:mm:ss',
+      })
+    ).toBe(true);
+    expect(
+      DateTimeColumnFormatter.isValid({
+        formatString: 'yyyy-MM-dd HH:mm:ss.SSSSSSSSS',
+      })
+    ).toBe(true);
+    expect(
+      DateTimeColumnFormatter.isValid({
+        formatString: 'yyyy-MM-dd',
+      })
+    ).toBe(true);
+    expect(
+      DateTimeColumnFormatter.isValid({
+        formatString: 'MM-dd-yyyy',
+      })
+    ).toBe(true);
+    expect(
+      DateTimeColumnFormatter.isValid({
+        formatString: 'HH:mm:ss',
+      })
+    ).toBe(true);
+    expect(
+      DateTimeColumnFormatter.isValid({
+        formatString: 'HH:mm:ss.SSS',
+      })
+    ).toBe(true);
+    expect(
+      DateTimeColumnFormatter.isValid({
+        formatString: 'HH:mm:ss.SSSSSSSSS',
+      })
+    ).toBe(true);
+  });
+
+  // it('should return false if a format is invalid', () => {
+  //   expect(DateTimeColumnFormatter.isValid({ formatString: '' })).toBe(false);
+  // });
+});
+
+describe('isSameFormat', () => {
+  it('should return true if two formats are the same excluding label', () => {
+    const format1: TableColumnFormat = {
+      label: 'format1',
+      formatString: 'yyyy-MM-dd HH:mm:ss',
+      type: 'type-context-custom',
+    };
+    const format2: TableColumnFormat = {
+      label: 'format2',
+      formatString: 'yyyy-MM-dd HH:mm:ss',
+      type: 'type-context-custom',
+    };
+
+    expect(DateTimeColumnFormatter.isSameFormat(format1, format2)).toBe(true);
+  });
+
+  it('should return false if two formats are different excluding label', () => {
+    const format1: TableColumnFormat = {
+      label: 'format1',
+      formatString: 'yyyy-MM-dd HH:mm:ss',
+      type: 'type-context-preset',
+    };
+    const format2: TableColumnFormat = {
+      label: 'format2',
+      formatString: 'yyyy-MM-dd HH:mm:ss',
+      type: 'type-context-custom',
+    };
+
+    expect(DateTimeColumnFormatter.isSameFormat(format1, format2)).toBe(false);
+  });
+});
+
+describe('makeGlobalFormatStringMap', () => {
+  const mapsAreEqual = (m1, m2) =>
+    m1.size === m2.size &&
+    Array.from(m1.keys()).every(key => m1.get(key) === m2.get(key));
+
+  it('should return a global format string map without showing Timezone or Tseparator', () => {
+    const expectedMap = new Map([
+      ['yyyy-MM-dd HH:mm:ss', `yyyy-MM-dd HH:mm:ss`],
+      ['yyyy-MM-dd HH:mm:ss.SSS', `yyyy-MM-dd HH:mm:ss.SSS`],
+      ['yyyy-MM-dd HH:mm:ss.SSSSSSSSS', `yyyy-MM-dd HH:mm:ss.SSSSSSSSS`],
+    ]);
+
+    expect(
+      mapsAreEqual(
+        DateTimeColumnFormatter.makeGlobalFormatStringMap(false, false),
+        expectedMap
+      )
+    ).toBe(true);
+  });
+
+  it('should return a global format string map showing Timezone but not Tseparator', () => {
+    const expectedMap = new Map([
+      ['yyyy-MM-dd HH:mm:ss', `yyyy-MM-dd HH:mm:ss z`],
+      ['yyyy-MM-dd HH:mm:ss.SSS', `yyyy-MM-dd HH:mm:ss.SSS z`],
+      ['yyyy-MM-dd HH:mm:ss.SSSSSSSSS', `yyyy-MM-dd HH:mm:ss.SSSSSSSSS z`],
+    ]);
+
+    expect(
+      mapsAreEqual(
+        DateTimeColumnFormatter.makeGlobalFormatStringMap(true, false),
+        expectedMap
+      )
+    ).toBe(true);
+  });
+
+  it('should return a global format string map showing Tseparator but not Timezone', () => {
+    const expectedMap = new Map([
+      ['yyyy-MM-dd HH:mm:ss', `yyyy-MM-dd'T'HH:mm:ss`],
+      ['yyyy-MM-dd HH:mm:ss.SSS', `yyyy-MM-dd'T'HH:mm:ss.SSS`],
+      ['yyyy-MM-dd HH:mm:ss.SSSSSSSSS', `yyyy-MM-dd'T'HH:mm:ss.SSSSSSSSS`],
+    ]);
+
+    expect(
+      mapsAreEqual(
+        DateTimeColumnFormatter.makeGlobalFormatStringMap(false, true),
+        expectedMap
+      )
+    ).toBe(true);
+  });
+
+  it('should return a global format string map show Tseparator and Timezone', () => {
+    const expectedMap = new Map([
+      ['yyyy-MM-dd HH:mm:ss', `yyyy-MM-dd'T'HH:mm:ss z`],
+      ['yyyy-MM-dd HH:mm:ss.SSS', `yyyy-MM-dd'T'HH:mm:ss.SSS z`],
+      ['yyyy-MM-dd HH:mm:ss.SSSSSSSSS', `yyyy-MM-dd'T'HH:mm:ss.SSSSSSSSS z`],
+    ]);
+
+    expect(
+      mapsAreEqual(
+        DateTimeColumnFormatter.makeGlobalFormatStringMap(true, true),
+        expectedMap
+      )
+    ).toBe(true);
+  });
+});
+
+describe('getGlobalFormats', () => {
+  it('should get global formats', () => {
+    const expectedArray = [
+      'yyyy-MM-dd HH:mm:ss',
+      'yyyy-MM-dd HH:mm:ss.SSS',
+      'yyyy-MM-dd HH:mm:ss.SSSSSSSSS',
+    ];
+
+    expect(DateTimeColumnFormatter.getGlobalFormats(false, false)).toEqual(
+      expectedArray
+    );
+    expect(DateTimeColumnFormatter.getGlobalFormats(true, false)).toEqual(
+      expectedArray
+    );
+    expect(DateTimeColumnFormatter.getGlobalFormats(false, true)).toEqual(
+      expectedArray
+    );
+    expect(DateTimeColumnFormatter.getGlobalFormats(true, true)).toEqual(
+      expectedArray
+    );
+  });
+});
+
+// getGlobalFormats parameters doesn't change anything
+// Not sure how to test the catch statements
