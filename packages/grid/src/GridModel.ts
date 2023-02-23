@@ -202,13 +202,13 @@ abstract class GridModel<
   getCachedLinksInVisibleText = memoizeClear(
     (text: string, truncatedText: string): ReturnType<typeof find> => {
       // To check for links, we should check to the first space after the truncatedText length
-      let lengthOfContent = text.indexOf(' ', truncatedText.length);
+      let lengthOfContent = text
+        .slice(truncatedText.length - 1, 5000)
+        .search(/\s/); // index or -1 if not found
+
       // If it doesn't exist, set lengthOfContent to the minimum between length of the original text and 5000
       if (lengthOfContent === -1) {
         lengthOfContent = Math.min(5000, text.length);
-      } else if (lengthOfContent > 5000) {
-        // If the index is greater than 5000, limit it to 5000
-        lengthOfContent = 5000;
       }
       const contentToCheckForLinks = text.substring(0, lengthOfContent);
       return find(contentToCheckForLinks, 'url');

@@ -97,73 +97,71 @@ class GridLinkMouseHandler extends GridMouseHandler {
     const links = model.findLinksInVisibleText(text, truncatedText);
 
     // Check if the truncated text contains a link
-    if (links.length > 0) {
-      const {
-        actualBoundingBoxAscent,
-        actualBoundingBoxDescent,
-      } = context.measureText(truncatedText);
-      const linkHeight = actualBoundingBoxAscent + actualBoundingBoxDescent;
+    if (links.length === 0) {
+      context.restore();
+      this.currentLinkBox = undefined;
 
-      // Consider edge cases
-      const top = Math.max(gridY, gridY + textY - linkHeight / 2);
-      const bottom = clamp(
-        top + linkHeight,
-        top,
-        gridHeight - horizontalBarHeight
-      );
+      return null;
+    }
 
-      // Loop through the blocks of text
-      for (let i = 0; i < links.length; i += 1) {
-        const { end, start, href } = links[i];
-        let { value } = links[i];
+    const {
+      actualBoundingBoxAscent,
+      actualBoundingBoxDescent,
+    } = context.measureText(truncatedText);
+    const linkHeight = actualBoundingBoxAscent + actualBoundingBoxDescent;
 
-        if (end > truncatedText.length) {
-          value = truncatedText.substring(start);
-        }
+    // Consider edge cases
+    const top = Math.max(gridY, gridY + textY - linkHeight / 2);
+    const bottom = clamp(
+      top + linkHeight,
+      top,
+      gridHeight - horizontalBarHeight
+    );
 
-        let { width: linkWidth } = context.measureText(value);
-        // Measure the width of the substring before the link
-        const startX =
-          context.measureText(truncatedText.substring(0, start)).width + textX;
-        // Right side is greater than gridX
-        const textIsVisible = startX + linkWidth >= gridX;
+    // Loop through the blocks of text
+    for (let i = 0; i < links.length; i += 1) {
+      const { end, start, href } = links[i];
+      let { value } = links[i];
 
-        if (textIsVisible) {
-          // Check if the x position is less than the grid x, then linkWidth should be shifted by gridX - startX
-          linkWidth -= startX < gridX ? gridX - startX : 0;
+      if (end > truncatedText.length) {
+        value = truncatedText.substring(start);
+      }
 
-          const left = Math.max(gridX, gridX + startX);
-          const right = clamp(
-            left + linkWidth,
-            left,
-            gridWidth - verticalBarWidth
-          );
+      let { width: linkWidth } = context.measureText(value);
+      // Measure the width of the substring before the link
+      const startX =
+        context.measureText(truncatedText.substring(0, start)).width + textX;
+      // Right side is greater than gridX
 
-          const cursorIsInBounds =
-            x >= left && x <= right && y >= top && y <= bottom;
+      // Check if the x position is less than the grid x, then linkWidth should be shifted by gridX - startX
+      linkWidth -= startX < gridX ? gridX - startX : 0;
 
-          if (cursorIsInBounds) {
-            // Reset font
-            context.restore();
+      const left = Math.max(gridX, gridX + startX);
+      const right = clamp(left + linkWidth, left, gridWidth - verticalBarWidth);
 
-            this.currentLinkBox = {
-              left,
-              top,
-              right,
-              bottom,
-              width: linkWidth,
-              height: linkHeight,
-              value,
-              href,
-            };
+      const cursorIsInBounds =
+        x >= left && x <= right && y >= top && y <= bottom;
 
-            return this.currentLinkBox;
-          }
-        }
+      if (cursorIsInBounds) {
+        // Reset font
+        context.restore();
+
+        this.currentLinkBox = {
+          left,
+          top,
+          right,
+          bottom,
+          width: linkWidth,
+          height: linkHeight,
+          value,
+          href,
+        };
+
+        return this.currentLinkBox;
       }
     }
 
-    // There are no links or the mouse is not on a link, restore context and currentLinkBox
+    // If it reaches this point, then the mouse is not hovering a link so restore context and currentLinkBox
     context.restore();
     this.currentLinkBox = undefined;
 
