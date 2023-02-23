@@ -15,7 +15,6 @@ import {
 } from '@deephaven/filters';
 import { Button, DateTimeInput } from '@deephaven/components';
 import { TableUtils } from '@deephaven/jsapi-utils';
-import { assertNotNull } from '@deephaven/utils';
 import classNames from 'classnames';
 import './GotoRow.scss';
 import IrisGridModel from './IrisGridModel';
