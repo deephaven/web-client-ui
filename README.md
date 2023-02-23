@@ -37,7 +37,7 @@ We are still using node 16.x and npm 8.x. If you are [using nvm](https://github.
 Edit `.env.local` in each package to contain the following pointing to your local DHC address. These are needed for the session websocket and for things like notebooks to be proxied correctly by Vite.
 
 ```
-VITE_CORE_API_URL=http://localhost:10000/jsapi
+VITE_CORE_API_URL=/jsapi
 VITE_PROXY_URL=http://localhost:10000
 ```
 
