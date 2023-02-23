@@ -22,7 +22,7 @@ class IrisGridLinkMouseHandler extends GridMouseHandler {
   }
 
   private setCursor(gridPoint: GridPoint, grid: Grid): EventHandlerResult {
-    if (GridLinkMouseHandler.isHoveringLink(gridPoint, grid) != null) {
+    if (GridLinkMouseHandler.getHoveringLinkInfo(gridPoint, grid) != null) {
       this.cursor = 'pointer';
       return { stopPropagation: false, preventDefault: false };
     }
@@ -31,7 +31,7 @@ class IrisGridLinkMouseHandler extends GridMouseHandler {
   }
 
   onMove(gridPoint: GridPoint, grid: Grid): EventHandlerResult {
-    const linkInformation = GridLinkMouseHandler.isHoveringLink(
+    const linkInformation = GridLinkMouseHandler.getHoveringLinkInfo(
       gridPoint,
       grid
     );

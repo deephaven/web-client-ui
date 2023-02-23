@@ -1260,18 +1260,7 @@ export class GridRenderer {
         truncationChar
       );
 
-      // To check for links, we should check to the first space after the truncatedText lengh
-      let lengthOfContent = text.indexOf(' ', truncatedText.length);
-      // If it doesn't exist, set lengthOfContent to the minimum between length of the original text and 5000
-      if (lengthOfContent === -1) {
-        lengthOfContent = Math.min(5000, text.length);
-      } else if (lengthOfContent > 5000) {
-        // If the index is greater than 5000, limit it to 5000
-        lengthOfContent = 5000;
-      }
-      const contentToCheckForLinks = text.substring(0, lengthOfContent);
-
-      const links = model.findLinksInText(contentToCheckForLinks);
+      const links = model.findLinksInVisibleText(text, truncatedText);
 
       if (truncatedText) {
         // No links, render as normal

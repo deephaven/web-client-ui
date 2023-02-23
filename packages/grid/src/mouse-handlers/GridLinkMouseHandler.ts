@@ -36,7 +36,7 @@ class GridLinkMouseHandler extends GridMouseHandler {
    * @param grid The grid
    * @returns A LinkInformation object if it exists and null otherwise
    */
-  static isHoveringLink(
+  static getHoveringLinkInfo(
     gridPoint: GridPoint,
     grid: Grid
   ): LinkInformation | null {
@@ -94,16 +94,7 @@ class GridLinkMouseHandler extends GridMouseHandler {
       truncationChar
     );
 
-    let lengthOfContent = text.indexOf(' ', truncatedText.length);
-    if (lengthOfContent === -1) {
-      lengthOfContent = Math.min(5000, text.length);
-    } else if (lengthOfContent > 5000) {
-      lengthOfContent = 5000;
-    }
-
-    const contentToCheckForLinks = text.substring(0, lengthOfContent);
-
-    const links = model.findLinksInText(contentToCheckForLinks);
+    const links = model.findLinksInVisibleText(text, truncatedText);
 
     // Check if the truncated text contains a link
     if (links.length > 0) {
@@ -186,7 +177,7 @@ class GridLinkMouseHandler extends GridMouseHandler {
    * @returns False
    */
   private setCursor(gridPoint: GridPoint, grid: Grid): EventHandlerResult {
-    if (GridLinkMouseHandler.isHoveringLink(gridPoint, grid) != null) {
+    if (GridLinkMouseHandler.getHoveringLinkInfo(gridPoint, grid) != null) {
       this.cursor = 'pointer';
     } else {
       this.cursor = null;
@@ -204,7 +195,7 @@ class GridLinkMouseHandler extends GridMouseHandler {
     event: GridMouseEvent
   ): EventHandlerResult {
     this.isDown = true;
-    const link = GridLinkMouseHandler.isHoveringLink(gridPoint, grid);
+    const link = GridLinkMouseHandler.getHoveringLinkInfo(gridPoint, grid);
 
     // If a modifier key or shift is down, we don't want to handle it and set isDown to false so onUp won't handle it either
     if (GridUtils.isModifierKeyDown(event) || event.shiftKey || link == null) {
@@ -239,7 +230,7 @@ class GridLinkMouseHandler extends GridMouseHandler {
   }
 
   onUp(gridPoint: GridPoint, grid: Grid): EventHandlerResult {
-    const link = GridLinkMouseHandler.isHoveringLink(gridPoint, grid);
+    const link = GridLinkMouseHandler.getHoveringLinkInfo(gridPoint, grid);
     if (link == null || !this.isDown) {
       this.isDown = false;
       this.isHold = false;

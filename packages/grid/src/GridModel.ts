@@ -187,16 +187,32 @@ abstract class GridModel<
   }
 
   /**
-   * Gets links in the value
-   * @param value The string to search in
-   * @returns The string split into an array of link information
+   * Find the links in the truncatedText including any links that may be truncated
+   * @param text The text in the cell
+   * @param truncatedText The truncated text in the cell (what is visible)
+   * @returns An array with link information
    */
-  findLinksInText(value: string): ReturnType<typeof find> {
-    return this.getCachedLinksInText(value);
+  findLinksInVisibleText(
+    text: string,
+    truncatedText: string
+  ): ReturnType<typeof find> {
+    return this.getCachedLinksInVisibleText(text, truncatedText);
   }
 
-  getCachedLinksInText = memoizeClear(
-    (value: string): ReturnType<typeof find> => find(value, 'url'),
+  getCachedLinksInVisibleText = memoizeClear(
+    (text: string, truncatedText: string): ReturnType<typeof find> => {
+      // To check for links, we should check to the first space after the truncatedText length
+      let lengthOfContent = text.indexOf(' ', truncatedText.length);
+      // If it doesn't exist, set lengthOfContent to the minimum between length of the original text and 5000
+      if (lengthOfContent === -1) {
+        lengthOfContent = Math.min(5000, text.length);
+      } else if (lengthOfContent > 5000) {
+        // If the index is greater than 5000, limit it to 5000
+        lengthOfContent = 5000;
+      }
+      const contentToCheckForLinks = text.substring(0, lengthOfContent);
+      return find(contentToCheckForLinks, 'url');
+    },
     {
       max: 10000,
     }
