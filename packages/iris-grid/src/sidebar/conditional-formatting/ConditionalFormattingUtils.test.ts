@@ -1,10 +1,12 @@
 import { Column } from '@deephaven/jsapi-shim';
 import IrisGridTestUtils from '../../IrisGridTestUtils';
 import {
+  DateCondition,
   FormatStyleType,
   FormatterType,
   FormattingRule,
   getFormatColumns,
+  isDateConditionValid,
   StringCondition,
 } from './ConditionalFormattingUtils';
 
@@ -214,4 +216,47 @@ describe('getFormatColumns', () => {
       `[row] 1 - ${FormatStyleType.WARN} : 0 - ${FormatStyleType.POSITIVE} : null`,
     ]);
   });
+});
+
+describe('isDateConditionValid', () => {
+  const values = {
+    valid: '2023-02-23T11:46:31.000000000 NY',
+    invalid: 'blah',
+    empty: '',
+    undefined,
+  };
+
+  it.each([DateCondition.IS_NULL, DateCondition.IS_NOT_NULL])(
+    'should return true for null check conditions: %s',
+    condition => {
+      const testValues = [
+        values.valid,
+        values.invalid,
+        values.empty,
+        values.undefined,
+      ];
+
+      testValues.forEach(value => {
+        expect(isDateConditionValid(condition, value)).toBeTruthy();
+      });
+    }
+  );
+
+  it.each([
+    DateCondition.IS_AFTER,
+    DateCondition.IS_AFTER_OR_EQUAL,
+    DateCondition.IS_BEFORE_OR_EQUAL,
+    DateCondition.IS_BEFORE,
+    DateCondition.IS_EXACTLY,
+    DateCondition.IS_NOT_EXACTLY,
+  ])(
+    'should return false for empty value when condition requires it: %s',
+    condition => {
+      const testValues = [values.empty, values.undefined];
+
+      testValues.forEach(value => {
+        expect(isDateConditionValid(condition, value)).toBeFalsy();
+      });
+    }
+  );
 });

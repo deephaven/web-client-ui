@@ -15,6 +15,7 @@ import {
   BooleanCondition,
   CharCondition,
   getLabelForCharCondition,
+  isDateConditionValid,
 } from './ConditionalFormattingUtils';
 
 const log = Log.module('ConditionEditor');
@@ -322,9 +323,7 @@ function ConditionEditor(props: ConditionEditorProps): JSX.Element {
           'Unable to create formatting rule. Condition is not selected.'
         );
         isValid = false;
-      }
-
-      if (
+      } else if (
         TableUtils.isNumberType(column.type) &&
         !isNumberConditionValid(
           selectedCondition as NumberCondition,
@@ -338,7 +337,20 @@ function ConditionEditor(props: ConditionEditorProps): JSX.Element {
           conditionValue
         );
         isValid = false;
+      } else if (
+        TableUtils.isDateType(column.type) &&
+        !isDateConditionValid(
+          selectedCondition as DateCondition,
+          conditionValue
+        )
+      ) {
+        log.debug(
+          'Unable to create formatting rule. Invalid date condition',
+          conditionValue
+        );
+        isValid = false;
       }
+
       onChange(
         {
           condition: selectedCondition,

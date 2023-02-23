@@ -706,6 +706,23 @@ export function getFormatColumns(
   return result;
 }
 
+/**
+ * Validate that a given date condition + value pair is valid.
+ * @param condition
+ * @param value
+ */
+export function isDateConditionValid(condition: DateCondition, value?: string) {
+  switch (condition) {
+    case DateCondition.IS_NULL:
+    case DateCondition.IS_NOT_NULL:
+      return true;
+
+    default:
+      // TODO: we need to validate whether a given string can be parsed as a date
+      return value != null && value !== '';
+  }
+}
+
 export function isSupportedColumn({ type }: ModelColumn): boolean {
   return (
     TableUtils.isNumberType(type) ||
