@@ -34,11 +34,11 @@ We are still using node 16.x and npm 8.x. If you are [using nvm](https://github.
 - `npm run e2e`: Runs the Playwright end-to-end tests locally.
 - `npm run e2e:headed`: Runs end-to-end tests in headed mode debug mode. Useful if you need to debug why a particular test isn't work. For example, to debug the `table.spec.ts` test directly, you could run `npm run e2e:headed -- ./tests/table.spec.ts`.
 
-Edit `.env.local` in each package to contain the following pointing to your local DHC address. These are needed for the session websocket and for things like notebooks to be proxied correctly by Vite.
+If your DHC address is different from the default `http://localhost:10000`, edit `.env.local` in each package to contain the following pointing to your local DHC. These are needed for the session websocket and for things like notebooks to be proxied correctly by Vite.
 
 ```
-VITE_CORE_API_URL=/jsapi
-VITE_PROXY_URL=http://localhost:10000
+VITE_CORE_API_URL=<jsapi-path>
+VITE_PROXY_URL=http://<dhc-host>:<port>
 ```
 
 ## Package Overview
