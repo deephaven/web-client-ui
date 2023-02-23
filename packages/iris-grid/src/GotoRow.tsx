@@ -102,8 +102,7 @@ function GotoRow({
 
   const index = model.getColumnIndexByName(gotoValueSelectedColumnName);
 
-  assertNotNull(index);
-  const selectedColumn = columns[index];
+  const selectedColumn = columns[index ?? 0];
 
   const columnType = selectedColumn?.type;
 
