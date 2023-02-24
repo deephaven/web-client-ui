@@ -16,6 +16,7 @@ import {
   CharCondition,
   getLabelForCharCondition,
   isDateConditionValid,
+  getDefaultValueForType,
 } from './ConditionalFormattingUtils';
 
 const log = Log.module('ConditionEditor');
@@ -263,7 +264,7 @@ function ConditionEditor(props: ConditionEditorProps): JSX.Element {
   if (selectedColumnType !== prevColumnType) {
     // Column type changed, reset condition and value fields
     setCondition(getDefaultConditionForType(selectedColumnType));
-    setValue(undefined);
+    setValue(getDefaultValueForType(selectedColumnType));
     setStartValue(undefined);
     setEndValue(undefined);
     setPrevColumnType(selectedColumnType);
