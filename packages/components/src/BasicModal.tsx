@@ -15,6 +15,7 @@ export interface BasicModalProps {
   cancelButtonText?: string;
   confirmButtonText?: string;
   discardButtonText?: string;
+  isConfirmDanger?: boolean;
   children?: React.ReactNode;
   'data-testid'?: string;
 }
@@ -44,10 +45,12 @@ function BasicModal(props: BasicModalProps) {
     cancelButtonText = 'Cancel',
     confirmButtonText = 'Okay',
     discardButtonText = 'Discard',
+    isConfirmDanger = false,
     children,
     'data-testid': dataTestId,
   } = props;
 
+  const cancelButton = useRef<HTMLButtonElement>(null);
   const confirmButton = useRef<HTMLButtonElement>(null);
 
   const disableModalCheckbox = useRef<HTMLInputElement>(null);
@@ -64,8 +67,12 @@ function BasicModal(props: BasicModalProps) {
   }, [onConfirm, onModalDisable]);
 
   const onOpened = useCallback(() => {
-    confirmButton.current?.focus();
-  }, []);
+    if (isConfirmDanger) {
+      cancelButton.current?.focus();
+    } else {
+      confirmButton.current?.focus();
+    }
+  }, [isConfirmDanger]);
 
   let modalBody = '';
   if (isOpen) {
@@ -117,6 +124,7 @@ function BasicModal(props: BasicModalProps) {
             kind="secondary"
             data-dismiss="modal"
             onClick={onCancel}
+            ref={cancelButton}
             data-testid={
               dataTestId !== undefined ? `${dataTestId}-btn-cancel` : undefined
             }
@@ -126,7 +134,7 @@ function BasicModal(props: BasicModalProps) {
         )}
         <ButtonGroup>
           <Button
-            kind="primary"
+            kind={isConfirmDanger ? 'danger' : 'primary'}
             onClick={onConfirmClicked}
             ref={confirmButton}
             data-testid={
