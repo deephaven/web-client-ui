@@ -15,7 +15,6 @@ import {
 } from '@deephaven/filters';
 import { Button, DateTimeInput } from '@deephaven/components';
 import { TableUtils } from '@deephaven/jsapi-utils';
-import { assertNotNull } from '@deephaven/utils';
 import classNames from 'classnames';
 import './GotoRow.scss';
 import IrisGridModel from './IrisGridModel';
@@ -96,8 +95,7 @@ function GotoRow({
 
   const index = model.getColumnIndexByName(gotoValueSelectedColumnName);
 
-  assertNotNull(index);
-  const selectedColumn = columns[index];
+  const selectedColumn = columns[index ?? 0];
 
   const columnType = selectedColumn?.type;
 
