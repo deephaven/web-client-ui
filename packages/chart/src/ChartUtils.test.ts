@@ -315,6 +315,79 @@ describe('updating layout axes', () => {
   });
 });
 
+describe('handles subplots and columns/rows correctly', () => {
+  const width = ChartUtils.AXIS_SIZE_PX * 5;
+  const height = ChartUtils.AXIS_SIZE_PX * 10;
+
+  it('handles row location correctly', () => {
+    const axes = ChartTestUtils.makeDefaultAxes();
+    const charts = [
+      ChartTestUtils.makeChart({ axes, row: 0 }),
+      ChartTestUtils.makeChart({ axes, row: 1 }),
+    ];
+    const figure = ChartTestUtils.makeFigure({ charts, rows: 2 });
+    expect(
+      ChartUtils.getChartBounds(figure, charts[0], width, height)
+    ).toEqual({ bottom: 0.55, top: 1, left: 0, right: 1 });
+    expect(
+      ChartUtils.getChartBounds(figure, charts[1], width, height)
+    ).toEqual({ bottom: 0, top: 0.45, left: 0, right: 1 });
+  });
+
+  it('handles column location correctly', () => {
+    const axes = ChartTestUtils.makeDefaultAxes();
+    const charts = [
+      ChartTestUtils.makeChart({ axes, column: 0 }),
+      ChartTestUtils.makeChart({ axes, column: 1 }),
+    ];
+    const figure = ChartTestUtils.makeFigure({ charts, cols: 2 });
+    expect(
+      ChartUtils.getChartBounds(figure, charts[0], width, height)
+    ).toEqual({ bottom: 0, top: 1, left: 0, right: 0.4 });
+    expect(
+      ChartUtils.getChartBounds(figure, charts[1], width, height)
+    ).toEqual({ bottom: 0, top: 1, left: 0.6, right: 1 });
+  });
+
+  it('handles colspan', () => {
+    const axes = ChartTestUtils.makeDefaultAxes();
+    const charts = [
+      ChartTestUtils.makeChart({ axes, column: 0 }),
+      ChartTestUtils.makeChart({ axes, column: 1 }),
+      ChartTestUtils.makeChart({ axes, row: 1, colspan: 2 }),
+    ];
+    const figure = ChartTestUtils.makeFigure({ charts, cols: 2, rows: 2 });
+    expect(
+      ChartUtils.getChartBounds(figure, charts[0], width, height)
+    ).toEqual({ bottom: 0.55, top: 1, left: 0, right: 0.4 });
+    expect(
+      ChartUtils.getChartBounds(figure, charts[1], width, height)
+    ).toEqual({ bottom: 0.55, top: 1, left: 0.6, right: 1 });
+    expect(
+      ChartUtils.getChartBounds(figure, charts[2], width, height)
+    ).toEqual({ bottom: 0, top: 0.45, left: 0, right: 1 });
+  });
+
+  it('handles rowspan', () => {
+    const axes = ChartTestUtils.makeDefaultAxes();
+    const charts = [
+      ChartTestUtils.makeChart({ axes, row: 0 }),
+      ChartTestUtils.makeChart({ axes, row: 1 }),
+      ChartTestUtils.makeChart({ axes, column: 1, rowspan: 2 }),
+    ];
+    const figure = ChartTestUtils.makeFigure({ charts, cols: 2, rows: 2 });
+    expect(
+      ChartUtils.getChartBounds(figure, charts[0], width, height)
+    ).toEqual({ bottom: 0.55, top: 1, left: 0, right: 0.4 });
+    expect(
+      ChartUtils.getChartBounds(figure, charts[1], width, height)
+    ).toEqual({ bottom: 0, top: 0.45, left: 0, right: 0.4 });
+    expect(
+      ChartUtils.getChartBounds(figure, charts[2], width, height)
+    ).toEqual({ bottom: 0, top: 1, left: 0.6, right: 1 });
+  });
+});
+
 describe('returns the axis layout ranges properly', () => {
   function makeLayout(layout) {
     return {
