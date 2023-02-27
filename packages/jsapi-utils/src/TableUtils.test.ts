@@ -1,15 +1,19 @@
 import dh, {
   Column,
   DateWrapper,
+  FilterCondition,
   FilterValue,
+  LongWrapper,
+  Sort,
   Table,
+  TreeTable,
 } from '@deephaven/jsapi-shim';
 import {
   Operator as FilterOperator,
   Type as FilterType,
   TypeValue as FilterTypeValue,
 } from '@deephaven/filters';
-import TableUtils from './TableUtils';
+import TableUtils, { SortDirection } from './TableUtils';
 import DateUtils from './DateUtils';
 // eslint-disable-next-line import/no-relative-packages
 import IrisGridTestUtils from '../../iris-grid/src/IrisGridTestUtils';
@@ -20,7 +24,7 @@ const EXPECT_TIME_ZONE_PARAM = expect.objectContaining({
 });
 
 function makeColumns(count = 5): Column[] {
-  const columns = [];
+  const columns: Column[] = [];
 
   for (let i = 0; i < count; i += 1) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -31,64 +35,77 @@ function makeColumns(count = 5): Column[] {
   return columns;
 }
 
-it('toggles sort properly', () => {
-  const columns = makeColumns();
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const table: Table = new (dh as any).Table({ columns });
-  let tableSorts = [];
+function makeFilterCondition(type = ''): Partial<FilterCondition> {
+  return {
+    not: jest.fn(
+      () => makeFilterCondition(`${type}.${FilterType.eq}`) as FilterCondition
+    ),
+    and: jest.fn(
+      () => makeFilterCondition(`${type}.${FilterType.eq}`) as FilterCondition
+    ),
+    or: jest.fn(
+      () => makeFilterCondition(`${type}.${FilterType.eq}`) as FilterCondition
+    ),
+  };
+}
 
-  expect(table).not.toBe(null);
-  expect(table.sort.length).toBe(0);
+describe('toggleSortForColumn', () => {
+  it('toggles sort properly', () => {
+    const columns = makeColumns();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const table: Table = new (dh as any).Table({ columns });
+    let tableSorts: Sort[] = [];
 
-  tableSorts = TableUtils.toggleSortForColumn(tableSorts, columns, 0, true);
-  table.applySort(tableSorts);
-  expect(table.sort.length).toBe(1);
-  expect(table.sort[0].column).toBe(columns[0]);
-  expect(table.sort[0].direction).toBe(TableUtils.sortDirection.ascending);
+    expect(table).not.toBe(null);
+    expect(table.sort.length).toBe(0);
 
-  tableSorts = TableUtils.toggleSortForColumn(tableSorts, columns, 3, true);
-  table.applySort(tableSorts);
-  expect(table.sort.length).toBe(2);
-  expect(table.sort[0].column).toBe(columns[0]);
-  expect(table.sort[0].direction).toBe(TableUtils.sortDirection.ascending);
-  expect(table.sort[1].column).toBe(columns[3]);
-  expect(table.sort[1].direction).toBe(TableUtils.sortDirection.ascending);
+    tableSorts = TableUtils.toggleSortForColumn(tableSorts, columns, 0, true);
+    table.applySort(tableSorts);
+    expect(table.sort.length).toBe(1);
+    expect(table.sort[0].column).toBe(columns[0]);
+    expect(table.sort[0].direction).toBe(TableUtils.sortDirection.ascending);
 
-  tableSorts = TableUtils.toggleSortForColumn(tableSorts, columns, 0, true);
-  table.applySort(tableSorts);
-  expect(table.sort.length).toBe(2);
-  expect(table.sort[0].column).toBe(columns[3]);
-  expect(table.sort[0].direction).toBe(TableUtils.sortDirection.ascending);
-  expect(table.sort[1].column).toBe(columns[0]);
-  expect(table.sort[1].direction).toBe(TableUtils.sortDirection.descending);
+    tableSorts = TableUtils.toggleSortForColumn(tableSorts, columns, 3, true);
+    table.applySort(tableSorts);
+    expect(table.sort.length).toBe(2);
+    expect(table.sort[0].column).toBe(columns[0]);
+    expect(table.sort[0].direction).toBe(TableUtils.sortDirection.ascending);
+    expect(table.sort[1].column).toBe(columns[3]);
+    expect(table.sort[1].direction).toBe(TableUtils.sortDirection.ascending);
 
-  tableSorts = TableUtils.toggleSortForColumn(tableSorts, columns, 0, true);
-  table.applySort(tableSorts);
-  expect(table.sort.length).toBe(1);
-  expect(table.sort[0].column).toBe(columns[3]);
-  expect(table.sort[0].direction).toBe(TableUtils.sortDirection.ascending);
+    tableSorts = TableUtils.toggleSortForColumn(tableSorts, columns, 0, true);
+    table.applySort(tableSorts);
+    expect(table.sort.length).toBe(2);
+    expect(table.sort[0].column).toBe(columns[3]);
+    expect(table.sort[0].direction).toBe(TableUtils.sortDirection.ascending);
+    expect(table.sort[1].column).toBe(columns[0]);
+    expect(table.sort[1].direction).toBe(TableUtils.sortDirection.descending);
 
-  tableSorts = TableUtils.toggleSortForColumn(tableSorts, columns, 3, true);
-  table.applySort(tableSorts);
-  expect(table.sort.length).toBe(1);
-  expect(table.sort[0].column).toBe(columns[3]);
-  expect(table.sort[0].direction).toBe(TableUtils.sortDirection.descending);
+    tableSorts = TableUtils.toggleSortForColumn(tableSorts, columns, 0, true);
+    table.applySort(tableSorts);
+    expect(table.sort.length).toBe(1);
+    expect(table.sort[0].column).toBe(columns[3]);
+    expect(table.sort[0].direction).toBe(TableUtils.sortDirection.ascending);
 
-  tableSorts = TableUtils.toggleSortForColumn(tableSorts, columns, 3, true);
-  table.applySort(tableSorts);
+    tableSorts = TableUtils.toggleSortForColumn(tableSorts, columns, 3, true);
+    table.applySort(tableSorts);
+    expect(table.sort.length).toBe(1);
+    expect(table.sort[0].column).toBe(columns[3]);
+    expect(table.sort[0].direction).toBe(TableUtils.sortDirection.descending);
 
-  expect(table.sort.length).toBe(0);
+    tableSorts = TableUtils.toggleSortForColumn(tableSorts, columns, 3, true);
+    table.applySort(tableSorts);
+
+    expect(table.sort.length).toBe(0);
+  });
+
+  it('should return an empty array if columnIndex is out of range', () => {
+    const columns = makeColumns();
+    expect(TableUtils.toggleSortForColumn([], columns, -1)).toEqual([]);
+  });
 });
 
 describe('quick filter tests', () => {
-  function makeFilterCondition(type = '') {
-    return {
-      not: jest.fn(() => makeFilterCondition(`${type}.${FilterType.eq}`)),
-      and: jest.fn(() => makeFilterCondition(`${type}.${FilterType.eq}`)),
-      or: jest.fn(() => makeFilterCondition(`${type}.${FilterType.eq}`)),
-    };
-  }
-
   type MockFilter = ReturnType<typeof makeFilter>;
 
   function makeFilter(type = '') {
@@ -181,8 +198,8 @@ describe('quick filter tests', () => {
     const column = makeFilterColumn(columnType);
 
     const columnFilter = column.filter();
-    const filters = [];
-    const joinFilters = [];
+    const filters: Partial<FilterCondition>[] = [];
+    const joinFilters: Partial<FilterCondition>[] = [];
     for (let i = 0; i < expectedFilters.length; i += 1) {
       const [expectedFn, expectedOperator] = expectedFilters[i];
       const filter = makeFilterCondition();
@@ -275,7 +292,9 @@ describe('quick filter tests', () => {
     it('handles empty cases', () => {
       const column = makeFilterColumn();
 
+      // @ts-expect-error text is generally a string
       expect(TableUtils.makeQuickNumberFilter(column, null)).toBe(null);
+      // @ts-expect-error text is generally a string
       expect(TableUtils.makeQuickNumberFilter(column, undefined)).toBe(null);
       expect(TableUtils.makeQuickNumberFilter(column, '')).toBe(null);
     });
@@ -411,8 +430,8 @@ describe('quick filter tests', () => {
       const column = makeFilterColumn();
       const columnFilter = column.filter();
 
-      let expectFilterCondition = null;
-      let expectAndFilterCondition = null;
+      let expectFilterCondition: Partial<FilterCondition> | null = null;
+      let expectAndFilterCondition: Partial<FilterCondition> | null = null;
 
       expectFilterCondition = mockFilterConditionReturnValue(
         dh.FilterCondition.invoke
@@ -503,7 +522,9 @@ describe('quick filter tests', () => {
     it('handles empty cases', () => {
       const column = makeFilterColumn();
 
+      // @ts-expect-error text is generally a string
       expect(TableUtils.makeQuickBooleanFilter(column, null)).toBe(null);
+      // @ts-expect-error text is generally a string
       expect(TableUtils.makeQuickBooleanFilter(column, undefined)).toBe(null);
       expect(TableUtils.makeQuickBooleanFilter(column, '')).toBe(null);
     });
@@ -611,8 +632,10 @@ describe('quick filter tests', () => {
     it('handles invalid cases', () => {
       const column = makeFilterColumn();
 
+      // @ts-expect-error text is generally a string
       expect(() => TableUtils.makeQuickDateFilter(column, null, '')).toThrow();
       expect(() =>
+        // @ts-expect-error text is generally a string
         TableUtils.makeQuickDateFilter(column, undefined, '')
       ).toThrow();
       expect(() => TableUtils.makeQuickDateFilter(column, '', '')).toThrow();
@@ -1164,11 +1187,11 @@ describe('quick filter tests', () => {
 
       filter.isNull.mockReturnValueOnce(nullResult);
 
-      nullResult.not.mockReturnValueOnce(notResult);
+      (nullResult.not as jest.Mock).mockReturnValueOnce(notResult);
 
       filter.invoke.mockReturnValueOnce(invokeResult);
 
-      notResult.and.mockReturnValueOnce(expectedResult);
+      (notResult.and as jest.Mock).mockReturnValueOnce(expectedResult);
 
       const result = TableUtils.makeQuickTextFilter(column, text);
 
@@ -1188,6 +1211,7 @@ describe('quick filter tests', () => {
       const column = makeFilterColumn();
 
       expect(TableUtils.makeQuickTextFilter(column, null)).toBe(null);
+      // @ts-expect-error text is generally a string
       expect(TableUtils.makeQuickTextFilter(column, undefined)).toBe(null);
       expect(TableUtils.makeQuickTextFilter(column, '')).toBe(null);
     });
@@ -1207,7 +1231,9 @@ describe('quick filter tests', () => {
       filter.isNull.mockReturnValueOnce(expectedNullFilter);
 
       const expectedNotFilter = makeFilterCondition();
-      expectedNullFilter.not.mockReturnValueOnce(expectedNotFilter);
+      (expectedNullFilter.not as jest.Mock).mockReturnValueOnce(
+        expectedNotFilter
+      );
 
       const result = TableUtils.makeQuickTextFilter(column, '!null');
       expect(filter.isNull).toHaveBeenCalled();
@@ -1306,7 +1332,9 @@ describe('quick filter tests', () => {
     it('handles empty cases', () => {
       const column = makeFilterColumn();
 
+      // @ts-expect-error text is generally a string
       expect(TableUtils.makeQuickCharFilter(column, null)).toBe(null);
+      // @ts-expect-error text is generally a string
       expect(TableUtils.makeQuickCharFilter(column, undefined)).toBe(null);
       expect(TableUtils.makeQuickCharFilter(column, '')).toBe(null);
     });
@@ -1484,5 +1512,350 @@ describe('range operations', () => {
     testIsRangeOperation('', false);
     testIsRangeOperation('!~', false);
     testIsRangeOperation('~', false);
+  });
+});
+
+describe('isTreeTable', () => {
+  it('should return true if table is a TreeTable', () => {
+    const table: TreeTable = ({
+      expand: jest.fn(),
+      collapse: jest.fn(),
+    } as unknown) as TreeTable;
+
+    expect(TableUtils.isTreeTable(table)).toBe(true);
+  });
+
+  it('should return false if table is not a TreeTable', () => {
+    const table = null;
+    expect(TableUtils.isTreeTable(table)).toBe(false);
+  });
+});
+
+describe('makeNumberValue', () => {
+  it('should return null if text is null, "null", or ""', () => {
+    // @ts-expect-error text is generally a string
+    expect(TableUtils.makeNumberValue(null)).toBeNull();
+    expect(TableUtils.makeNumberValue('null')).toBeNull();
+    expect(TableUtils.makeNumberValue('')).toBeNull();
+  });
+
+  it('should return positive infinity if text is ∞, infinity, or inf', () => {
+    expect(TableUtils.makeNumberValue('∞')).toBe(Number.POSITIVE_INFINITY);
+    expect(TableUtils.makeNumberValue('infinity')).toBe(
+      Number.POSITIVE_INFINITY
+    );
+    expect(TableUtils.makeNumberValue('inf')).toBe(Number.POSITIVE_INFINITY);
+  });
+
+  it('should return positive infinity if text is -∞, -infinity, or -inf', () => {
+    expect(TableUtils.makeNumberValue('-∞')).toBe(Number.NEGATIVE_INFINITY);
+    expect(TableUtils.makeNumberValue('-infinity')).toBe(
+      Number.NEGATIVE_INFINITY
+    );
+    expect(TableUtils.makeNumberValue('-inf')).toBe(Number.NEGATIVE_INFINITY);
+  });
+
+  it('should return a number if text is a number', () => {
+    expect(TableUtils.makeNumberValue('123')).toBe(123);
+  });
+
+  it('should throw an error if the text is not a number of any of the special values', () => {
+    expect(() => TableUtils.makeNumberValue('test')).toThrowError(
+      `Invalid number 'test'`
+    );
+  });
+});
+
+describe('makeBooleanValue', () => {
+  const testMakeBooleanValue = (
+    text: string,
+    expectedValue: boolean | null,
+    allowEmpty = false
+  ) => {
+    expect(TableUtils.makeBooleanValue(text, allowEmpty)).toBe(expectedValue);
+  };
+
+  it('should return null if text is empty and allowEmpty is true', () => {
+    testMakeBooleanValue('', null, true);
+  });
+
+  it('should return null if text is "null"', () => {
+    testMakeBooleanValue('null', null);
+  });
+
+  it('shouhld return false for different variations of false', () => {
+    testMakeBooleanValue('0', false);
+    testMakeBooleanValue('f', false);
+    testMakeBooleanValue('fa', false);
+    testMakeBooleanValue('fal', false);
+    testMakeBooleanValue('fals', false);
+    testMakeBooleanValue('false', false);
+    testMakeBooleanValue('n', false);
+    testMakeBooleanValue('no', false);
+  });
+
+  it('should return false for different variations of false', () => {
+    testMakeBooleanValue('1', true);
+    testMakeBooleanValue('t', true);
+    testMakeBooleanValue('tr', true);
+    testMakeBooleanValue('tru', true);
+    testMakeBooleanValue('true', true);
+    testMakeBooleanValue('y', true);
+    testMakeBooleanValue('ye', true);
+    testMakeBooleanValue('yes', true);
+  });
+
+  it('should throw an error if text is not one of the above listed values', () => {
+    expect(() => TableUtils.makeBooleanValue('test')).toThrowError(
+      `Invalid boolean 'test'`
+    );
+  });
+});
+
+describe('makeValue', () => {
+  const testMakeValue = (
+    columnType: string,
+    text: string | null,
+    expectedValue: unknown,
+    timeZone = 'America/New_York'
+  ) => {
+    // @ts-expect-error text is generally a string
+    expect(TableUtils.makeValue(columnType, text, timeZone)).toEqual(
+      expectedValue
+    );
+  };
+  it('should return null if text is null or "null"', () => {
+    testMakeValue('decimal', null, null);
+    testMakeValue('decimal', 'null', null);
+  });
+
+  it('should return text if columnType is string or char', () => {
+    testMakeValue('char', 'test', 'test');
+    testMakeValue('java.lang.Character', 'test', 'test');
+    testMakeValue('java.lang.String', 'test', 'test');
+  });
+
+  it('should return a LongWrapper if columnType is long', () => {
+    const expectedLongWrapper = {
+      asNumber: expect.any(Function),
+      valueOf: expect.any(Function),
+      toString: expect.any(Function),
+      ofString: expect.any(Function),
+    };
+    dh.LongWrapper = {
+      asNumber: jest.fn(),
+      valueOf: jest.fn(),
+      toString: jest.fn(),
+      ofString: jest.fn(
+        (str: string): LongWrapper => ({
+          asNumber: jest.fn(),
+          valueOf: jest.fn(),
+          toString: jest.fn(),
+          ofString: jest.fn(),
+        })
+      ),
+    };
+    expect(
+      TableUtils.makeValue('long', 'test', 'America/New_York')
+    ).toMatchObject(expectedLongWrapper);
+    expect(
+      TableUtils.makeValue('java.lang.Long', 'test', 'America/New_York')
+    ).toMatchObject(expectedLongWrapper);
+  });
+
+  it('should return a boolean value if columnType is boolean', () => {
+    testMakeValue('boolean', '', null);
+    testMakeValue('java.lang.Boolean', 'null', null);
+    testMakeValue('boolean', 'true', true);
+    testMakeValue('boolean', 'false', false);
+  });
+
+  it('should return a DateWrapper object if columnType is date', () => {
+    const now = new Date(Date.now());
+    const currentDate = DateUtils.makeDateWrapper(
+      'America/New_York',
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate()
+    );
+    const yesterdayDate = DateUtils.makeDateWrapper(
+      'America/New_York',
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate() - 1
+    );
+    testMakeValue(
+      'io.deephaven.db.tables.utils.DBDateTime',
+      'today',
+      currentDate
+    );
+    testMakeValue('io.deephaven.time.DateTime', 'null', null);
+    testMakeValue(
+      'com.illumon.iris.db.tables.utils.DBDateTime',
+      'yesterday',
+      yesterdayDate
+    );
+  });
+
+  it('should return a number if columnType is number', () => {
+    testMakeValue('int', '2', 2);
+    testMakeValue('java.lang.Integer', '2', 2);
+    testMakeValue('java.math.BigInteger', '2222222222222222', 2222222222222222);
+    testMakeValue('short', '32767', 32767);
+    testMakeValue('java.lang.Short', '32767', 32767);
+    testMakeValue('byte', '127', 127);
+    testMakeValue('java.lang.Byte', '127', 127);
+
+    testMakeValue('double', '1.1111111111', 1.1111111111);
+    testMakeValue('java.lang.Double', '1.1111111111', 1.1111111111);
+    testMakeValue(
+      'java.math.BigDecimal',
+      '123.11111111111111',
+      123.11111111111111
+    );
+    testMakeValue('float', '1.111111111', 1.111111111);
+    testMakeValue('java.lang.Float', '1.111111111', 1.111111111);
+  });
+
+  it('returns null if the column type does not match any of the types', () => {
+    testMakeValue('invalid_type', 'test', null);
+  });
+});
+
+describe('getFilterText', () => {
+  it('should return the filter text', () => {
+    const filter = makeFilterCondition();
+    filter.toString = jest.fn(() => 'text');
+    expect(TableUtils.getFilterText(filter as FilterCondition)).toBe('text');
+  });
+
+  it('should return null if filter is null', () => {
+    expect(TableUtils.getFilterText()).toBeNull();
+    expect(TableUtils.getFilterText(null)).toBeNull();
+  });
+});
+
+describe('getFilterTypes', () => {
+  const testGetFilterTypes = (
+    columnTypes: string[],
+    expectedArray: FilterTypeValue[]
+  ) => {
+    columnTypes.forEach(element => {
+      expect(TableUtils.getFilterTypes(element)).toEqual(expectedArray);
+    });
+  };
+
+  it('should return the valid filter types for boolean column type', () => {
+    const columnTypes = ['boolean', 'java.lang.Boolean'];
+    testGetFilterTypes(columnTypes, ['isTrue', 'isFalse', 'isNull']);
+  });
+
+  it('should return the valid filter types for char, number, or date column type', () => {
+    const columnTypes = [
+      'char',
+      'java.lang.Character',
+      'int',
+      'java.lang.Integer',
+      'java.math.BigInteger',
+      'long',
+      'java.lang.Long',
+      'short',
+      'java.lang.Short',
+      'byte',
+      'java.lang.Byte',
+      'double',
+      'java.lang.Double',
+      'java.math.BigDecimal',
+      'float',
+      'java.lang.Float',
+      'io.deephaven.db.tables.utils.DBDateTime',
+      'io.deephaven.time.DateTime',
+      'com.illumon.iris.db.tables.utils.DBDateTime',
+    ];
+    const expectedArray: FilterTypeValue[] = [
+      'eq',
+      'notEq',
+      'greaterThan',
+      'greaterThanOrEqualTo',
+      'lessThan',
+      'lessThanOrEqualTo',
+    ];
+    testGetFilterTypes(columnTypes, expectedArray);
+  });
+
+  it('should return the valid filter types for text column type', () => {
+    const columnTypes = ['java.lang.String'];
+    const expectedArray: FilterTypeValue[] = [
+      'eq',
+      'eqIgnoreCase',
+      'notEq',
+      'notEqIgnoreCase',
+      'contains',
+      'notContains',
+      'startsWith',
+      'endsWith',
+    ];
+    testGetFilterTypes(columnTypes, expectedArray);
+  });
+
+  it('should return an empty array if the column type is not one of the types listed above', () => {
+    testGetFilterTypes(['test'], []);
+  });
+});
+
+describe('makeColumnSort', () => {
+  const testMakeColumnSort = (
+    columns: readonly Column[],
+    columnIndex: number,
+    direction: SortDirection,
+    isAbs: boolean,
+    expectedValue: Partial<Sort> | null
+  ) => {
+    expect(
+      TableUtils.makeColumnSort(columns, columnIndex, direction, isAbs)
+    ).toEqual(expectedValue);
+  };
+
+  it('should return null if columns is null, columnIndex is less than 0, or columnIndex is greater than or equal to columns.length', () => {
+    const columns = makeColumns();
+    // @ts-expect-error test null columns array
+    testMakeColumnSort(null, 0, 'ASC', true, null);
+    testMakeColumnSort(columns, -1, 'ASC', true, null);
+    testMakeColumnSort(columns, 6, 'ASC', true, null);
+  });
+
+  it('should return null if direction is null', () => {
+    const columns = makeColumns();
+    testMakeColumnSort(columns, 0, null, true, null);
+  });
+
+  it('should return an ascending sort if direction is ASC', () => {
+    const columns = makeColumns();
+    const expectedValue: Partial<Sort> = {
+      column: columns[0],
+      direction: 'ASC',
+      isAbs: true,
+    };
+    testMakeColumnSort(columns, 0, 'ASC', true, expectedValue);
+  });
+
+  it('should return an descending sort if direction is DESC', () => {
+    const columns = makeColumns();
+    const expectedValue: Partial<Sort> = {
+      column: columns[1],
+      direction: 'DESC',
+      isAbs: false,
+    };
+    testMakeColumnSort(columns, 1, 'DESC', false, expectedValue);
+  });
+
+  it('should return the default sort if direction is REVERSE', () => {
+    const columns = makeColumns();
+    const expectedValue: Partial<Sort> = {
+      column: columns[2],
+      direction: 'ASC',
+      isAbs: true,
+    };
+    testMakeColumnSort(columns, 2, 'REVERSE', true, expectedValue);
   });
 });

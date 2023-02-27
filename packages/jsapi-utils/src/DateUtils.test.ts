@@ -173,3 +173,80 @@ describe('dateTimeString parsing tests', () => {
     testDateTimeStringThrows('2012-04-20 12:13:14.321Overflow');
   });
 });
+
+describe('makeDateWrapper', () => {
+  it('should use default values if not given arguments', () => {
+    const expectedDate = new Date(2022, 0, 1, 0, 0, 0, 0);
+
+    expect(
+      DateUtils.makeDateWrapper('Asia/Dubai', 2022).valueOf()
+    ).toStrictEqual(expectedDate.valueOf().toString());
+  });
+});
+
+describe('parseDateValues', () => {
+  it('should return null if any value is invalid', () => {
+    expect(
+      DateUtils.parseDateValues(
+        'test',
+        'test',
+        'test',
+        'test',
+        'test',
+        'test',
+        'test'
+      )
+    ).toBe(null);
+  });
+});
+
+describe('parseDateRange', () => {
+  it('should throw an error if the text is empty', () => {
+    expect(() => DateUtils.parseDateRange('', 'America/New_York')).toThrowError(
+      'Cannot parse date range from empty string'
+    );
+  });
+
+  it('should return a range of null values if text is "null"', () => {
+    expect(DateUtils.parseDateRange('null', 'America/New_York')).toEqual([
+      null,
+      null,
+    ]);
+  });
+
+  it('should return a range from today to tomorrow if text is "today"', () => {
+    const range = DateUtils.parseDateRange('today', 'America/New_York');
+    const start = range[0];
+    const end = range[1];
+    if (start && end) {
+      const startDate = start?.asDate();
+      const endDate = end?.asDate();
+      expect(startDate.getDate()).toBe(endDate.getDate() - 1);
+      expect(startDate.getMonth()).toBe(endDate.getMonth());
+      expect(startDate.getFullYear()).toBe(endDate.getFullYear());
+    }
+  });
+
+  it('should return null as the end range if text is "now"', () => {
+    const range = DateUtils.parseDateRange('now', 'America/New_York');
+    expect(range[1]).toBeNull();
+  });
+
+  it('should throw an error if a value in text is invalid', () => {
+    expect(() =>
+      DateUtils.parseDateRange('9999-99-99', 'America/New_York')
+    ).toThrowError(/Unable to extract date values from/i);
+  });
+});
+
+describe('getJsDate', () => {
+  it('returns a date object given that input is a number', () => {
+    const expectedDate = new Date(10000);
+    expect(DateUtils.getJsDate(10000)).toEqual(expectedDate);
+  });
+
+  it('returns a date object given a DateWrapper', () => {
+    const dateWrapper = DateUtils.makeDateWrapper('America/New_York', 2022);
+    expect(DateUtils.getJsDate(dateWrapper)).toEqual(dateWrapper.asDate());
+  });
+});

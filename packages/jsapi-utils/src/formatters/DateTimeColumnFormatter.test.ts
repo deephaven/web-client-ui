@@ -226,10 +226,6 @@ describe('isValid', () => {
       })
     ).toBe(true);
   });
-
-  // it('should return false if a format is invalid', () => {
-  //   expect(DateTimeColumnFormatter.isValid({ formatString: '' })).toBe(false);
-  // });
 });
 
 describe('isSameFormat', () => {
