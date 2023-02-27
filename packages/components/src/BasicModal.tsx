@@ -15,6 +15,7 @@ export interface BasicModalProps {
   cancelButtonText?: string;
   confirmButtonText?: string;
   discardButtonText?: string;
+  isConfirmDanger?: boolean;
   children?: React.ReactNode;
   'data-testid'?: string;
 }
@@ -44,6 +45,7 @@ function BasicModal(props: BasicModalProps) {
     cancelButtonText = 'Cancel',
     confirmButtonText = 'Okay',
     discardButtonText = 'Discard',
+    isConfirmDanger = false,
     children,
     'data-testid': dataTestId,
   } = props;
@@ -126,7 +128,7 @@ function BasicModal(props: BasicModalProps) {
         )}
         <ButtonGroup>
           <Button
-            kind="primary"
+            kind={isConfirmDanger ? 'danger' : 'primary'}
             onClick={onConfirmClicked}
             ref={confirmButton}
             data-testid={
