@@ -718,7 +718,7 @@ export function isDateConditionValid(condition: DateCondition, value?: string) {
       return true;
 
     default:
-      // TODO: we need to validate whether a given string can be parsed as a date
+      // Proper date validation will be addressed by Issue #1108
       return value != null && value !== '';
   }
 }
