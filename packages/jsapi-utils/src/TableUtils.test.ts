@@ -280,6 +280,19 @@ describe('quick filter tests', () => {
       (Date.parse(dateString) as unknown) as DateWrapper;
   });
 
+  // describe('makeQuickFilterFromComponent', () => {
+  //   const testComponentFilter = (text: string, expectedFn, ...args) => {
+  //     testFilter('makeQuickFilterFromComponent', text, expectedFn, ...args);
+  //   };
+
+  //   it('should return a number filter if column type is number', () => {
+  //     const column = makeFilterColumn('number');
+  //     expect(TableUtils.makeQuickFilterFromComponent(column, 'test')).toBe(
+  //       null
+  //     );
+  //   });
+  // });
+
   describe('quick number filters', () => {
     function testNumberFilter(text, expectedFn, ...args) {
       testFilter('makeQuickNumberFilter', text, expectedFn, ...args);
@@ -501,6 +514,11 @@ describe('quick filter tests', () => {
       );
       TableUtils.makeQuickNumberFilter(column, '!= null');
       expect(expectFilterCondition.not).toHaveBeenCalledTimes(1);
+    });
+
+    it('should return null if it is an abnormal value with unsupported operations', () => {
+      const column = makeFilterColumn();
+      expect(TableUtils.makeQuickNumberFilter(column, '>=NaN')).toBeNull();
     });
   });
 
