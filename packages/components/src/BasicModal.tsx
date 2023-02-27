@@ -50,7 +50,6 @@ function BasicModal(props: BasicModalProps) {
     'data-testid': dataTestId,
   } = props;
 
-  const cancelButton = useRef<HTMLButtonElement>(null);
   const confirmButton = useRef<HTMLButtonElement>(null);
 
   const disableModalCheckbox = useRef<HTMLInputElement>(null);
@@ -67,12 +66,8 @@ function BasicModal(props: BasicModalProps) {
   }, [onConfirm, onModalDisable]);
 
   const onOpened = useCallback(() => {
-    if (isConfirmDanger) {
-      cancelButton.current?.focus();
-    } else {
-      confirmButton.current?.focus();
-    }
-  }, [isConfirmDanger]);
+    confirmButton.current?.focus();
+  }, []);
 
   let modalBody = '';
   if (isOpen) {
@@ -124,7 +119,6 @@ function BasicModal(props: BasicModalProps) {
             kind="secondary"
             data-dismiss="modal"
             onClick={onCancel}
-            ref={cancelButton}
             data-testid={
               dataTestId !== undefined ? `${dataTestId}-btn-cancel` : undefined
             }

@@ -31,10 +31,15 @@ it('focuses default button on first render after opening', () => {
   expect(getByTestId(`${DEFAULT_TEST_ID}-btn-confirm`)).toHaveFocus();
 });
 
-it('focuses cancel button on first render if isConfirmDanger is true', () => {
-  const { getByTestId } = makeWrapper({ isConfirmDanger: true });
-  expect(getByTestId(`${DEFAULT_TEST_ID}-btn-cancel`)).toHaveFocus();
-});
+it.each([true, false])(
+  'sets button style based on isConfirmDanger value: %s',
+  isConfirmDanger => {
+    const { getByTestId } = makeWrapper({ isConfirmDanger });
+    expect(getByTestId(`${DEFAULT_TEST_ID}-btn-confirm`)).toHaveClass(
+      isConfirmDanger ? 'btn-danger' : 'btn-primary'
+    );
+  }
+);
 
 it('does not re-focus default button on re-render', async () => {
   const user = userEvent.setup();
