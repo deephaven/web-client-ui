@@ -19,7 +19,7 @@ describe('Clipboard', () => {
       expect(navigator.clipboard.writeText).toHaveBeenCalledWith('test');
     });
 
-    it('should throw an error when writeText fails and call copyToClipboardExecCommand', async () => {
+    it('should call copyToClipboardExecCommand if writeText fails', async () => {
       Object.assign(navigator, {
         clipboard: {
           writeText: () => {
@@ -27,14 +27,10 @@ describe('Clipboard', () => {
           },
         },
       });
+      document.execCommand = jest.fn(() => true);
       jest.spyOn(navigator.clipboard, 'writeText');
 
-      await expect(copyToClipboard('test')).rejects.toThrowError(
-        'Unable to execute copy command'
-      );
-      expect(navigator.clipboard.writeText).toThrowError(
-        'Could not write text'
-      );
+      await expect(copyToClipboard('test')).resolves.toBeUndefined();
       expect(document.execCommand).toHaveBeenCalledWith('copy');
     });
 
@@ -56,6 +52,7 @@ describe('Clipboard', () => {
       document.execCommand = jest.fn(() => true);
 
       await expect(copyToClipboard('test')).resolves.toBeUndefined();
+      await expect(document.execCommand).toHaveBeenCalledWith('copy');
     });
   });
 });
