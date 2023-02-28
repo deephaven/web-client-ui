@@ -30,7 +30,7 @@ import {
   ErrorBar,
   LayoutAxis,
   AxisType as PlotlyAxisType,
-  OhclData,
+  OhlcData,
   MarkerSymbol,
 } from 'plotly.js';
 import { assertNotNull, Range } from '@deephaven/utils';
@@ -780,10 +780,10 @@ class ChartUtils {
         });
       }
     } else if (plotStyle === dh.plot.SeriesPlotStyle.OHLC) {
-      (seriesData as Partial<OhclData>).increasing = {
+      (seriesData as Partial<OhlcData>).increasing = {
         line: { color: theme.ohlc_increasing },
       };
-      (seriesData as Partial<OhclData>).decreasing = {
+      (seriesData as Partial<OhlcData>).decreasing = {
         line: { color: theme.ohlc_decreasing },
       };
     } else if (plotStyle === dh.plot.SeriesPlotStyle.PIE) {
