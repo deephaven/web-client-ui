@@ -19,7 +19,7 @@ import {
   DateTimeFormatSettings,
 } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
-import { Layout, Icon, PlotData } from 'plotly.js';
+import { Layout, Icon, Data, PlotData } from 'plotly.js';
 import Plotly from './plotly/Plotly';
 import Plot from './plotly/Plot';
 import ChartModel from './ChartModel';
@@ -46,7 +46,7 @@ interface ChartProps {
 }
 
 interface ChartState {
-  data: Partial<PlotData>[] | null;
+  data: Partial<Data>[] | null;
   downsamplingError: unknown;
   isDownsampleFinished: boolean;
   isDownsampleInProgress: boolean;
@@ -436,7 +436,7 @@ export class Chart extends Component<ChartProps, ChartState> {
       const { data } = this.state;
       const { onSettingsChanged } = this.props;
       if (data != null) {
-        const hiddenSeries = data.reduce(
+        const hiddenSeries = (data as Partial<PlotData>[]).reduce(
           (acc: string[], { name, visible }) =>
             name != null && visible === 'legendonly' ? [...acc, name] : acc,
           []

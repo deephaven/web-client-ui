@@ -3,7 +3,7 @@
 
 import type { dh as DhType } from '@deephaven/jsapi-types';
 import { Formatter } from '@deephaven/jsapi-utils';
-import { Layout, PlotData } from 'plotly.js';
+import { Layout, Data } from 'plotly.js';
 import { FilterColumnMap, FilterMap } from './ChartUtils';
 
 export type ChartEvent = CustomEvent;
@@ -47,7 +47,7 @@ class ChartModel {
 
   title?: string;
 
-  getData(): Partial<PlotData>[] {
+  getData(): Partial<Data>[] {
     return [];
   }
 

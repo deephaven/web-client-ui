@@ -1,5 +1,9 @@
 import { useCallback } from 'react';
-import { ChartModelFactory, ChartUtils } from '@deephaven/chart';
+import {
+  ChartModelFactory,
+  ChartModelSettings,
+  ChartUtils,
+} from '@deephaven/chart';
 import {
   assertIsDashboardPluginProps,
   DashboardPluginComponentProps,
@@ -7,7 +11,7 @@ import {
   useListener,
 } from '@deephaven/dashboard';
 import { useApi } from '@deephaven/jsapi-bootstrap';
-import type { SeriesPlotStyle, Table } from '@deephaven/jsapi-types';
+import type { Table } from '@deephaven/jsapi-types';
 import shortid from 'shortid';
 import { IrisGridEvent } from './events';
 import { ChartPanel } from './panels';
@@ -31,16 +35,9 @@ export function ChartBuilderPlugin(
       table,
     }: {
       metadata: {
-        settings: {
-          type: keyof SeriesPlotStyle;
-          series: string[];
-          xAxis: string;
-          isLinked: boolean;
-          hiddenSeries?: string[];
-        };
+        settings: ChartModelSettings;
         sourcePanelId: string;
         table: string;
-        tableSettings: Record<string, unknown>;
       };
       panelId?: string;
       table: Table;
