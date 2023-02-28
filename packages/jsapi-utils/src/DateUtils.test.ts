@@ -201,6 +201,16 @@ describe('parseDateValues', () => {
 });
 
 describe('parseDateRange', () => {
+  const MS_PER_DAY = 1000 * 60 * 60 * 24;
+
+  function dateDiffInMillisseconds(a: Date, b: Date) {
+    // Discard the time and time-zone information.
+    const utc1 = Date.UTC(a.getFullYear(), a.getMonth(), a.getDate());
+    const utc2 = Date.UTC(b.getFullYear(), b.getMonth(), b.getDate());
+
+    return Math.floor(utc2 - utc1);
+  }
+
   it('should throw an error if the text is empty', () => {
     expect(() => DateUtils.parseDateRange('', 'America/New_York')).toThrowError(
       'Cannot parse date range from empty string'
@@ -221,9 +231,7 @@ describe('parseDateRange', () => {
     if (start && end) {
       const startDate = start?.asDate();
       const endDate = end?.asDate();
-      expect(startDate.getDate()).toBe(endDate.getDate() - 1);
-      expect(startDate.getMonth()).toBe(endDate.getMonth());
-      expect(startDate.getFullYear()).toBe(endDate.getFullYear());
+      expect(dateDiffInMillisseconds(startDate, endDate)).toBe(MS_PER_DAY);
     }
   });
 

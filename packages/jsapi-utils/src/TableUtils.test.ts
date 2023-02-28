@@ -13,7 +13,7 @@ import {
   Type as FilterType,
   TypeValue as FilterTypeValue,
 } from '@deephaven/filters';
-import TableUtils, { SortDirection } from './TableUtils';
+import TableUtils, { DataType, SortDirection } from './TableUtils';
 import DateUtils from './DateUtils';
 // eslint-disable-next-line import/no-relative-packages
 import IrisGridTestUtils from '../../iris-grid/src/IrisGridTestUtils';
@@ -1336,6 +1336,13 @@ describe('quick filter tests', () => {
         ]
       );
     });
+
+    it('throws an error if filter for andCoomponent is null', () => {
+      const column = makeFilterColumn('char');
+      expect(() =>
+        TableUtils.makeQuickFilter(column, '12a && 13 || 12')
+      ).toThrowError('Unable to parse quick filter from text 12a && 13 || 12');
+    });
   });
 
   describe('quick char filters', () => {
@@ -1875,5 +1882,249 @@ describe('makeColumnSort', () => {
       isAbs: true,
     };
     testMakeColumnSort(columns, 2, 'REVERSE', true, expectedValue);
+  });
+});
+
+describe('sortColumns', () => {
+  it('should sort the columns in ascending order based on column name', () => {
+    const columns = makeColumns();
+    expect(TableUtils.sortColumns(columns, true)).toEqual(columns);
+  });
+
+  it('should sort the columns in descending order based on column name', () => {
+    const columns = makeColumns();
+    const reversed = columns.reverse();
+
+    expect(TableUtils.sortColumns(columns, false)).toEqual(reversed);
+  });
+});
+
+describe('getNextSort', () => {
+  const testGetNextSort = (
+    columns: readonly Column[] | null,
+    sorts: readonly Sort[],
+    columnIndex: number,
+    expectedValue
+  ) => {
+    // @ts-expect-error test what happens when columns is null
+    expect(TableUtils.getNextSort(columns, sorts, columnIndex)).toEqual(
+      expectedValue
+    );
+  };
+  it('should return null if columns is null or columnIndex is out of range', () => {
+    const columns = makeColumns();
+    testGetNextSort(null, [], 0, null);
+    testGetNextSort(columns, [], -1, null);
+    testGetNextSort(columns, [], 10, null);
+  });
+});
+
+describe('sortColumn', () => {
+  const testSortColumn = (
+    sorts: readonly Sort[] | null,
+    columns: readonly Column[],
+    modelColumn: number,
+    direction: SortDirection,
+    isAbs: boolean,
+    addToExisting: boolean,
+    expectedValue
+  ) => {
+    expect(
+      TableUtils.sortColumn(
+        // @ts-expect-error test what happens when columns is null
+        sorts,
+        columns,
+        modelColumn,
+        direction,
+        isAbs,
+        addToExisting
+      )
+    ).toEqual(expectedValue);
+  };
+
+  it('should return an empty array if sorts is null or columnIndex is out of range', () => {
+    const columns = makeColumns();
+    testSortColumn(null, [], 0, 'ASC', true, true, []);
+    testSortColumn([], columns, -1, 'ASC', true, true, []);
+    testSortColumn([], columns, 10, 'ASC', true, true, []);
+  });
+
+  it('toggles sort properly', () => {
+    const columns = makeColumns();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const table: Table = new (dh as any).Table({ columns });
+    let tableSorts: Sort[] = [];
+
+    expect(table).not.toBe(null);
+    expect(table.sort.length).toBe(0);
+
+    tableSorts = TableUtils.sortColumn(
+      tableSorts,
+      columns,
+      0,
+      'ASC',
+      true,
+      true
+    );
+    table.applySort(tableSorts);
+    expect(table.sort.length).toBe(1);
+    expect(table.sort[0].column).toBe(columns[0]);
+    expect(table.sort[0].direction).toBe(TableUtils.sortDirection.ascending);
+    expect(table.sort[0].isAbs).toBe(true);
+
+    tableSorts = TableUtils.sortColumn(
+      tableSorts,
+      columns,
+      3,
+      'ASC',
+      false,
+      true
+    );
+    table.applySort(tableSorts);
+    expect(table.sort.length).toBe(2);
+    expect(table.sort[0].column).toBe(columns[0]);
+    expect(table.sort[0].direction).toBe(TableUtils.sortDirection.ascending);
+    expect(table.sort[0].isAbs).toBe(true);
+    expect(table.sort[1].column).toBe(columns[3]);
+    expect(table.sort[1].direction).toBe(TableUtils.sortDirection.ascending);
+    expect(table.sort[1].isAbs).toBe(false);
+
+    tableSorts = TableUtils.sortColumn(
+      tableSorts,
+      columns,
+      0,
+      'DESC',
+      false,
+      true
+    );
+    table.applySort(tableSorts);
+    expect(table.sort.length).toBe(2);
+    expect(table.sort[0].column).toBe(columns[3]);
+    expect(table.sort[0].direction).toBe(TableUtils.sortDirection.ascending);
+    expect(table.sort[0].isAbs).toBe(false);
+    expect(table.sort[1].column).toBe(columns[0]);
+    expect(table.sort[1].direction).toBe(TableUtils.sortDirection.descending);
+    expect(table.sort[1].isAbs).toBe(false);
+
+    tableSorts = TableUtils.sortColumn(
+      tableSorts,
+      columns,
+      3,
+      'DESC',
+      false,
+      false
+    );
+    table.applySort(tableSorts);
+    expect(table.sort.length).toBe(1);
+    expect(table.sort[0].column).toBe(columns[3]);
+    expect(table.sort[0].direction).toBe(TableUtils.sortDirection.descending);
+    expect(table.sort[0].isAbs).toBe(false);
+  });
+});
+
+describe('getNormalizedType', () => {
+  const testGetNormalizedType = (
+    columnType: string | null,
+    expectedValue: DataType
+  ) => {
+    expect(TableUtils.getNormalizedType(columnType)).toBe(expectedValue);
+  };
+
+  it('returns the boolean data type for boolean column type', () => {
+    testGetNormalizedType('boolean', 'boolean');
+    testGetNormalizedType('java.lang.Boolean', 'boolean');
+  });
+
+  it('returns the character data type for character column type', () => {
+    testGetNormalizedType('char', 'char');
+    testGetNormalizedType('java.lang.Character', 'char');
+  });
+
+  it('returns the string data type for string column type', () => {
+    testGetNormalizedType('string', 'string');
+    testGetNormalizedType('java.lang.String', 'string');
+  });
+
+  it('returns the date time data type for date time column type', () => {
+    testGetNormalizedType(
+      'io.deephaven.db.tables.utils.DBDateTime',
+      'datetime'
+    );
+    testGetNormalizedType('io.deephaven.time.DateTime', 'datetime');
+    testGetNormalizedType(
+      'com.illumon.iris.db.tables.utils.DBDateTime',
+      'datetime'
+    );
+    testGetNormalizedType('datetime', 'datetime');
+  });
+
+  it('returns the decimal data type for double, float, and bigdecimal column type', () => {
+    testGetNormalizedType('double', 'decimal');
+    testGetNormalizedType('java.lang.Double', 'decimal');
+    testGetNormalizedType('float', 'decimal');
+    testGetNormalizedType('java.lang.Float', 'decimal');
+    testGetNormalizedType('java.math.BigDecimal', 'decimal');
+    testGetNormalizedType('decimal', 'decimal');
+  });
+
+  it('returns the int data type for int, long, short, byte, and biginteger column type', () => {
+    testGetNormalizedType('int', 'int');
+    testGetNormalizedType('java.lang.Integer', 'int');
+    testGetNormalizedType('long', 'int');
+    testGetNormalizedType('java.lang.Long', 'int');
+    testGetNormalizedType('short', 'int');
+    testGetNormalizedType('java.lang.Short', 'int');
+    testGetNormalizedType('byte', 'int');
+    testGetNormalizedType('java.lang.Byte', 'int');
+    testGetNormalizedType('java.math.BigInteger', 'int');
+  });
+
+  it('returns unknown for any unknown column type', () => {
+    testGetNormalizedType('test', 'unknown');
+    testGetNormalizedType('unknown', 'unknown');
+    testGetNormalizedType(null, 'unknown');
+  });
+});
+
+describe('isBigDecimalType', () => {
+  it('should return true if the column type is big decimal', () => {
+    expect(TableUtils.isBigDecimalType('java.math.BigDecimal')).toBe(true);
+  });
+
+  it('should return false if column type is not big decimal', () => {
+    expect(TableUtils.isBigDecimalType('test')).toBe(false);
+  });
+});
+
+describe('isBigIntegerType', () => {
+  it('should return true if the column type is big integer', () => {
+    expect(TableUtils.isBigIntegerType('java.math.BigInteger')).toBe(true);
+  });
+
+  it('should return false if column type is not big integer', () => {
+    expect(TableUtils.isBigIntegerType('test')).toBe(false);
+  });
+});
+
+describe('getBaseType', () => {
+  it('should return the base column type', () => {
+    expect(TableUtils.getBaseType('test')).toBe('test');
+    expect(TableUtils.getBaseType('test1[]test2')).toBe('test1');
+  });
+});
+
+describe('isCompatibleType', () => {
+  it('should return true if two types are compatible', () => {
+    expect(TableUtils.isCompatibleType('boolean', 'java.lang.Boolean')).toBe(
+      true
+    );
+    expect(TableUtils.isCompatibleType()).toBe(true);
+    expect(TableUtils.isCompatibleType('int', 'long')).toBe(true);
+  });
+
+  it('should return false if two types are not compatible', () => {
+    expect(TableUtils.isCompatibleType('boolean', 'int')).toBe(false);
+    expect(TableUtils.isCompatibleType('boolean')).toBe(false);
+    expect(TableUtils.isCompatibleType('int', 'double')).toBe(false);
   });
 });
