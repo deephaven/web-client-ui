@@ -36,7 +36,7 @@ AdvancedSettingsMenu.getAdvancedSettingsTitleForKey = (
     case AdvancedSettingsType.FILTER_CONTROL_CHANGE_CLEARS_ALL_FILTERS:
       return 'Clear current table filters before applying new filters from a control';
     case AdvancedSettingsType.LINK_CHANGE_CLEARS_ALL_FILTERS:
-      return 'Clear current table filters before applying new filters from a incoming link filter';
+      return 'Clear current table filters before applying new filters from an incoming link filter';
   }
 };
 
