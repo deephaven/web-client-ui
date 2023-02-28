@@ -86,7 +86,7 @@ class GridLinkMouseHandler extends GridMouseHandler {
     const fontWidth =
       fontWidths.get(context.font) ?? GridRenderer.DEFAULT_FONT_WIDTH;
     const truncationChar = model.truncationCharForCell(modelColumn, modelRow);
-    const truncatedText = GridRenderer.truncateToWidth(
+    const truncatedText = renderer.getCachedTruncatedString(
       context,
       text,
       textWidth,
