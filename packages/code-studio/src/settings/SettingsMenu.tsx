@@ -163,7 +163,7 @@ export class SettingsMenu extends Component<
                   transform="grow-4"
                   className="mr-2"
                 />
-                Format by Column Name & Type
+                Format by Column Name &amp; Type
               </>
             }
             onToggle={this.handleSectionToggle}
