@@ -312,6 +312,8 @@ export class TableUtils {
       case 'io.deephaven.db.tables.utils.DBDateTime':
       case 'io.deephaven.time.DateTime':
       case 'com.illumon.iris.db.tables.utils.DBDateTime':
+      case 'java.time.Instant':
+      case 'java.time.ZonedDateTime':
       case TableUtils.dataType.DATETIME:
         return TableUtils.dataType.DATETIME;
       case 'double':
@@ -351,6 +353,8 @@ export class TableUtils {
     switch (columnType) {
       case 'io.deephaven.db.tables.utils.DBDateTime':
       case 'io.deephaven.time.DateTime':
+      case 'java.time.Instant':
+      case 'java.time.ZonedDateTime':
       case 'com.illumon.iris.db.tables.utils.DBDateTime':
         return true;
       default:
