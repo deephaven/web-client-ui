@@ -34,9 +34,9 @@ AdvancedSettingsMenu.getAdvancedSettingsTitleForKey = (
 ): string => {
   switch (key) {
     case AdvancedSettingsType.FILTER_CONTROL_CHANGE_CLEARS_ALL_FILTERS:
-      return 'Control filters clear existing table filters';
+      return 'Clear current table filters before applying new filters from a control';
     case AdvancedSettingsType.LINK_CHANGE_CLEARS_ALL_FILTERS:
-      return 'Inbound links clear existing table filters';
+      return 'Clear current table filters before applying new filters from a incoming link filter';
   }
 };
 

@@ -143,7 +143,7 @@ export class SettingsMenu extends Component<
                   transform="grow-4"
                   className="mr-2"
                 />
-                Default Formatting &amp; Time zone
+                Default Format &amp; Time zone
               </>
             }
             onToggle={this.handleSectionToggle}
@@ -163,7 +163,7 @@ export class SettingsMenu extends Component<
                   transform="grow-4"
                   className="mr-2"
                 />
-                Column Specific Formatting Rules
+                Format by Column Name & Type
               </>
             }
             onToggle={this.handleSectionToggle}
