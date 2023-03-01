@@ -13,40 +13,7 @@
       homescreen on Android. See https://developers.google.com/web/fundamentals/engage-and-retain/web-app-manifest/
     -->
     <link rel="manifest" href="/manifest.json" />
-
     <link rel="icon" href="#VITE_FAVICON#" />
-
-    <!-- The script is currently tightly coupled with the server -->
-    <script
-      src="#VITE_CORE_API_URL#/#VITE_OPEN_API_NAME#"
-      type="text/javascript"
-    ></script>
-    <script
-      src="#VITE_CORE_API_URL#/#VITE_CORE_API_NAME#"
-      type="text/javascript"
-    ></script>
-    <script>
-      (function () {
-        document.addEventListener('DOMContentLoaded', function () {
-          // If for some reason the API doesn't load, our app will not work. Write out a message to help the user.
-          if (!window.dh) {
-            document.getElementById('root').insertAdjacentHTML(
-              'afterbegin',
-              `<div class="modal  d-block">
-                <div class="modal-dialog modal-dialog-centered theme-bg-light">
-                  <div class="modal-content">
-                    <div class="modal-body">
-                      <h5 class="modal-title">Error: Unable to load API</h5>
-                      <p class="text-break">Ensure the server is running and you are able to reach #VITE_CORE_API_URL#/#VITE_CORE_API_NAME#, then refresh the page.</p>
-                    </div>
-                  </div>
-                </div>
-              </div>`
-            );
-          }
-        });
-      })();
-    </script>
     <title>Deephaven Styleguide</title>
   </head>
   <body>
