@@ -220,43 +220,58 @@ describe('getFormatColumns', () => {
 
 describe('isDateConditionValid', () => {
   const values = {
-    valid: '2023-02-23T11:46:31.000000000 NY',
-    invalid: 'blah',
+    valid: [
+      '2023-02-23T11:46:31.000000000 NY',
+      '2023-02-23T00:00:00 NY',
+      '2023-02-23 NY',
+    ],
+    invalid: ['blah', '2023-02-23'],
     empty: '',
     undefined,
   };
 
-  it.each([DateCondition.IS_NULL, DateCondition.IS_NOT_NULL])(
-    'should return true for null check conditions: %s',
+  const conditions = {
+    valueNotRequired: [DateCondition.IS_NULL, DateCondition.IS_NOT_NULL],
+    valueRequired: [
+      DateCondition.IS_AFTER,
+      DateCondition.IS_AFTER_OR_EQUAL,
+      DateCondition.IS_BEFORE_OR_EQUAL,
+      DateCondition.IS_BEFORE,
+      DateCondition.IS_EXACTLY,
+      DateCondition.IS_NOT_EXACTLY,
+    ],
+  };
+
+  describe.each(conditions.valueNotRequired)(
+    'Not-Required condition: %s',
     condition => {
-      const testValues = [
-        values.valid,
-        values.invalid,
+      it.each([
+        ...values.valid,
+        ...values.invalid,
         values.empty,
         values.undefined,
-      ];
-
-      testValues.forEach(value => {
-        expect(isDateConditionValid(condition, value)).toBeTruthy();
+      ])('should ignore value when not required: %s', testValue => {
+        expect(isDateConditionValid(condition, testValue)).toBeTruthy();
       });
     }
   );
 
-  it.each([
-    DateCondition.IS_AFTER,
-    DateCondition.IS_AFTER_OR_EQUAL,
-    DateCondition.IS_BEFORE_OR_EQUAL,
-    DateCondition.IS_BEFORE,
-    DateCondition.IS_EXACTLY,
-    DateCondition.IS_NOT_EXACTLY,
-  ])(
-    'should return false for empty value when condition requires it: %s',
+  describe.each(conditions.valueRequired)(
+    'Required condition: %s',
     condition => {
-      const testValues = [values.empty, values.undefined];
-
-      testValues.forEach(value => {
-        expect(isDateConditionValid(condition, value)).toBeFalsy();
-      });
+      it.each([
+        [values.empty, false],
+        [values.undefined, false],
+        [values.invalid, false],
+        [values.valid, true],
+      ] as const)(
+        'should return true only if value is valid date format: %s, %s',
+        (testValues, expected) => {
+          [testValues].flat().forEach(value => {
+            expect(isDateConditionValid(condition, value)).toEqual(expected);
+          });
+        }
+      );
     }
   );
 });

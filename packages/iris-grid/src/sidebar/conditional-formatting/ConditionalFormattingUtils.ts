@@ -1,6 +1,6 @@
 import Log from '@deephaven/log';
 import { Column, CustomColumn } from '@deephaven/jsapi-shim';
-import { TableUtils } from '@deephaven/jsapi-utils';
+import { DateUtils, TableUtils } from '@deephaven/jsapi-utils';
 import {
   makeColumnFormatColumn,
   makeRowFormatColumn,
@@ -717,9 +717,25 @@ export function isDateConditionValid(condition: DateCondition, value?: string) {
     case DateCondition.IS_NOT_NULL:
       return true;
 
-    default:
-      // Proper date validation will be addressed by Issue #1108
-      return value != null && value !== '';
+    default: {
+      const [dt, tz] = (value ?? '').split(' ');
+
+      try {
+        DateUtils.parseDateTimeString(dt);
+      } catch (e) {
+        log.debug('Invalid datetime string', dt);
+        return false;
+      }
+
+      try {
+        dh.i18n.TimeZone.getTimeZone(tz);
+      } catch (e) {
+        log.debug('Invalid timezone string', tz);
+        return false;
+      }
+
+      return true;
+    }
   }
 }
 
