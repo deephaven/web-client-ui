@@ -204,6 +204,9 @@ const UNFORMATTED_DATE_PATTERN = `yyyy-MM-dd'T'HH:mm:ss.SSSSSSSSS z`;
 function isEmptyConfig({
   advancedFilters,
   aggregationSettings,
+  conditionalFormatEditIndex,
+  conditionalFormatPreview,
+  conditionalFormats,
   customColumns,
   quickFilters,
   reverseType,
@@ -214,6 +217,9 @@ function isEmptyConfig({
 }: {
   advancedFilters: ReadonlyAdvancedFilterMap;
   aggregationSettings: AggregationSettings;
+  conditionalFormatEditIndex: number | null;
+  conditionalFormatPreview?: SidebarFormattingRule;
+  conditionalFormats: readonly SidebarFormattingRule[];
   customColumns: readonly ColumnName[];
   quickFilters: ReadonlyQuickFilterMap;
   reverseType: ReverseType;
@@ -225,6 +231,9 @@ function isEmptyConfig({
   return (
     advancedFilters.size === 0 &&
     aggregationSettings.aggregations.length === 0 &&
+    conditionalFormatEditIndex == null &&
+    conditionalFormatPreview == null &&
+    conditionalFormats.length === 0 &&
     customColumns.length === 0 &&
     quickFilters.size === 0 &&
     reverseType === TableUtils.REVERSE_TYPE.NONE &&
@@ -965,6 +974,9 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     IrisGridState,
     | 'advancedFilters'
     | 'aggregationSettings'
+    | 'conditionalFormatEditIndex'
+    | 'conditionalFormatPreview'
+    | 'conditionalFormats'
     | 'customColumns'
     | 'quickFilters'
     | 'reverseType'
@@ -2033,10 +2045,13 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
    */
   rollback(): void {
     if (this.lastLoadedConfig) {
-      log.debug('loading last loading config', this.lastLoadedConfig);
+      log.debug('loading last loaded config', this.lastLoadedConfig);
       const {
         advancedFilters,
         aggregationSettings,
+        conditionalFormatEditIndex,
+        conditionalFormatPreview,
+        conditionalFormats,
         customColumns,
         quickFilters,
         reverseType,
@@ -2050,6 +2065,9 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       this.setState({
         advancedFilters,
         aggregationSettings,
+        conditionalFormatEditIndex,
+        conditionalFormatPreview,
+        conditionalFormats,
         customColumns,
         quickFilters,
         reverseType,
@@ -2059,11 +2077,16 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
         sorts,
       });
     } else {
-      log.debug('remove all sorts, filters, and custom columns');
+      log.debug(
+        'remove all sorts, filters, custom columns, and conditional formatting'
+      );
       this.setState({
         advancedFilters: new Map(),
         aggregationSettings: DEFAULT_AGGREGATION_SETTINGS,
         customColumns: [],
+        conditionalFormatEditIndex: null,
+        conditionalFormatPreview: undefined,
+        conditionalFormats: [],
         quickFilters: new Map(),
         reverseType: TableUtils.REVERSE_TYPE.NONE,
         rollupConfig: undefined,
@@ -2814,6 +2837,9 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     const {
       advancedFilters,
       aggregationSettings,
+      conditionalFormatEditIndex,
+      conditionalFormatPreview,
+      conditionalFormats,
       customColumns,
       quickFilters,
       reverseType,
@@ -2826,6 +2852,9 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     const config = {
       advancedFilters,
       aggregationSettings,
+      conditionalFormatEditIndex,
+      conditionalFormatPreview,
+      conditionalFormats,
       customColumns,
       quickFilters,
       reverseType,
@@ -2836,6 +2865,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     };
 
     if (!isEmptyConfig(config)) {
+      log.debug('Tracking last loaded config', config);
       this.lastLoadedConfig = config;
     } else {
       this.lastLoadedConfig = null;
