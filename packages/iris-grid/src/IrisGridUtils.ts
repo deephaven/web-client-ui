@@ -1692,8 +1692,10 @@ class IrisGridUtils {
     }
     if (TableUtils.isDateType(columnType) && isDateWrapper(value)) {
       const date = new Date(value.asDate());
-      const dateText = date.toISOString();
-      const formattedText = dateText.replace(/[A-Z]/g, ' ');
+      const offset = date.getTimezoneOffset();
+      const offsetDate = new Date(date.getTime() - offset * 60 * 1000);
+      const dateText = offsetDate.toISOString();
+      const formattedText = dateText.replace('T', ' ').substring(0, 23);
       return formattedText;
     }
     if (value == null) {

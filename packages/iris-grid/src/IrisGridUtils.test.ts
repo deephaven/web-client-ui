@@ -608,7 +608,7 @@ describe('convert other column types to text', () => {
   it('converts null to empty string on number column', () => {
     expect(IrisGridUtils.convertValueToText(null, 'number')).toEqual('');
   });
-  it('converts null to empty string on number column', () => {
+  it('converts time correctly on datetime column', () => {
     expect(
       IrisGridUtils.convertValueToText(
         dh.i18n.DateTimeFormat.parse(
@@ -616,8 +616,8 @@ describe('convert other column types to text', () => {
           '2022-02-03 02:14:59.000000000',
           dh.i18n.TimeZone.getTimeZone('NY')
         ),
-        'datetime'
+        'io.deephaven.time.DateTime'
       )
-    ).toEqual(1643872499000);
+    ).toEqual('2022-02-03 02:14:59.000');
   });
 });
