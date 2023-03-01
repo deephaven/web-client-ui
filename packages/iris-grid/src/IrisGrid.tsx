@@ -2454,32 +2454,31 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       return;
     }
 
-    let cursorRow;
-    let cursorColumn;
-    if (this.grid) {
-      ({ cursorRow, cursorColumn } = this.grid.state);
-    }
-    if (cursorRow != null && cursorColumn != null) {
-      // if a row is selected
-      const { model } = this.props;
-      const { name, type } = model.columns[cursorColumn];
+    const cursorRow = this.grid?.state.cursorRow;
+    const cursorColumn = this.grid?.state.cursorColumn;
 
-      const cellValue = model.valueForCell(cursorColumn, cursorRow);
-      const text = IrisGridUtils.convertValueToText(cellValue, type);
+    if (cursorRow == null || cursorColumn == null) {
+      // if a cell is not selected / grid is not rendered
       this.setState({
         isGotoShown: !isGotoShown,
-        gotoRow: `${cursorRow}`,
-        gotoValue: text,
-        gotoValueSelectedColumnName: name,
+        gotoRow: '',
+        gotoValue: '',
         gotoRowError: '',
         gotoValueError: '',
       });
       return;
     }
+    // if a row is selected
+    const { model } = this.props;
+    const { name, type } = model.columns[cursorColumn];
+
+    const cellValue = model.valueForCell(cursorColumn, cursorRow);
+    const text = IrisGridUtils.convertValueToText(cellValue, type);
     this.setState({
       isGotoShown: !isGotoShown,
-      gotoRow: '',
-      gotoValue: '',
+      gotoRow: `${cursorRow}`,
+      gotoValue: text,
+      gotoValueSelectedColumnName: name,
       gotoRowError: '',
       gotoValueError: '',
     });
@@ -3251,11 +3250,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       return;
     }
 
-    let searchFromRow;
-
-    if (this.grid) {
-      ({ cursorRow: searchFromRow } = this.grid.state);
-    }
+    let searchFromRow = this.grid?.state.cursorRow;
 
     if (searchFromRow == null) {
       searchFromRow = 0;
@@ -3676,9 +3671,11 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     if (cursorRow != null) {
       const index = model.getColumnIndexByName(columnName);
       const column = IrisGridUtils.getColumnByName(model.columns, columnName);
-      assertNotNull(index);
+      if (index == null || column == null) {
+        return;
+      }
       const value = model.valueForCell(index, cursorRow);
-      const text = IrisGridUtils.convertValueToText(value, column?.type);
+      const text = IrisGridUtils.convertValueToText(value, column.type);
       this.setState({
         gotoValueSelectedColumnName: columnName,
         gotoValue: text,

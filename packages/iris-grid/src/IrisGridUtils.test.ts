@@ -1,6 +1,7 @@
 import { GridUtils, GridRange, MoveOperation } from '@deephaven/grid';
 import dh, { Column, Table, Sort } from '@deephaven/jsapi-shim';
 import { TypeValue as FilterTypeValue } from '@deephaven/filters';
+import { DateUtils } from '@deephaven/jsapi-utils';
 import type { AdvancedFilter } from './CommonTypes';
 import { FilterData } from './IrisGrid';
 import IrisGridTestUtils from './IrisGridTestUtils';
@@ -573,17 +574,50 @@ describe('combineFiltersFromList', () => {
   });
 });
 
-describe('convert value to text', () => {
+describe('convert string to text', () => {
   it('converts null to empty string', () => {
     expect(IrisGridUtils.convertValueToText(null, 'string')).toEqual('');
   });
-  it('converts ascii to char on char column', () => {
-    expect(IrisGridUtils.convertValueToText('65', 'char')).toEqual('A');
+  it('converts empty string', () => {
+    expect(IrisGridUtils.convertValueToText('', 'string')).toEqual('');
   });
-  it('converts null to empty char on char column', () => {
+  it('converts string to stri', () => {
+    expect(IrisGridUtils.convertValueToText('test', 'string')).toEqual('test');
+  });
+  it('converts length 1 string to stri', () => {
+    expect(IrisGridUtils.convertValueToText('t', 'string')).toEqual('t');
+  });
+  it('converts number to strin', () => {
+    expect(IrisGridUtils.convertValueToText(65, 'string')).toEqual('65');
+  });
+});
+
+describe('convert char to text', () => {
+  it('converts number to ascii', () => {
+    expect(IrisGridUtils.convertValueToText(65, 'char')).toEqual('A');
+  });
+  it('converts null to empty char', () => {
     expect(IrisGridUtils.convertValueToText(null, 'char')).toEqual('');
   });
+});
+
+describe('convert other column types to text', () => {
   it('converts number to string on number column', () => {
-    expect(IrisGridUtils.convertValueToText(123, 'number')).toEqual('123');
+    expect(IrisGridUtils.convertValueToText(65, 'number')).toEqual('65');
+  });
+  it('converts null to empty string on number column', () => {
+    expect(IrisGridUtils.convertValueToText(null, 'number')).toEqual('');
+  });
+  it('converts null to empty string on number column', () => {
+    expect(
+      IrisGridUtils.convertValueToText(
+        dh.i18n.DateTimeFormat.parse(
+          DateUtils.FULL_DATE_FORMAT,
+          '2022-02-03 02:14:59.000000000',
+          dh.i18n.TimeZone.getTimeZone('NY')
+        ),
+        'datetime'
+      )
+    ).toEqual(1643872499000);
   });
 });

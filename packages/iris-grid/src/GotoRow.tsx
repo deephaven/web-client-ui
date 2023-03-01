@@ -85,7 +85,8 @@ function GotoRow({
   const res = 'Row number';
 
   const { rowCount } = model;
-  const handleGotoValueKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+
+  const handleGotoValueNumberKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       e.stopPropagation();
       e.preventDefault();
@@ -96,6 +97,14 @@ function GotoRow({
         gotoValue === `${Number.NEGATIVE_INFINITY}`)
     ) {
       onGotoValueInputChanged('');
+    }
+  };
+
+  const handleGotoValueKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.stopPropagation();
+      e.preventDefault();
+      onGotoValueSubmit();
     }
   };
 
@@ -133,10 +142,11 @@ function GotoRow({
               className={classNames('form-control', {
                 'is-invalid': gotoValueError !== '',
               })}
-              onKeyDown={handleGotoValueKeyDown}
+              onKeyDown={handleGotoValueNumberKeyDown}
               placeholder="value"
               onChange={e => {
                 const value = e.target.value.toLowerCase();
+                // regex tests for
                 if (/^-?[0-9]*\.?[0-9]*$/.test(e.target.value)) {
                   onGotoValueInputChanged(e.target.value);
                 } else if (value === '-i' || value === '-infinity') {
@@ -160,6 +170,7 @@ function GotoRow({
                   'is-invalid': gotoValueError !== '',
                 }
               )}
+              defaultValue={gotoValue}
               onChange={onGotoValueInputChanged}
             />
           </div>

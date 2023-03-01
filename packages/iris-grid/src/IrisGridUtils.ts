@@ -126,6 +126,10 @@ function isValidIndex(x: number, array: unknown[]): boolean {
   return x >= 0 && x < array.length;
 }
 
+function isDateWrapper(value: unknown): value is DateWrapper {
+  return (value as DateWrapper).asDate != null;
+}
+
 class IrisGridUtils {
   /**
    * Exports the state from Grid component to a JSON stringifiable object
@@ -1677,14 +1681,20 @@ class IrisGridUtils {
    * @param columnType The type of the column
    * @returns The value of the cell converted to text
    */
-  static convertValueToText(value: unknown, columnType?: string): string {
+  static convertValueToText(value: unknown, columnType: string): string {
     if (
       columnType != null &&
       TableUtils.isCharType(columnType) &&
       value != null &&
-      !Number.isNaN(parseInt(value as string, 10))
+      typeof value === 'number'
     ) {
-      return String.fromCharCode(parseInt(value as string, 10));
+      return String.fromCharCode(value);
+    }
+    if (TableUtils.isDateType(columnType) && isDateWrapper(value)) {
+      const date = new Date(value.asDate());
+      const dateText = date.toISOString();
+      const formattedText = dateText.replace(/[A-Z]/g, ' ');
+      return formattedText;
     }
     if (value == null) {
       return '';
