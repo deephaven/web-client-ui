@@ -718,19 +718,19 @@ export function isDateConditionValid(condition: DateCondition, value?: string) {
       return true;
 
     default: {
-      const [dt, tz] = (value ?? '').split(' ');
+      const [dateTimeString, tzCode] = (value ?? '').split(' ');
 
       try {
-        DateUtils.parseDateTimeString(dt);
+        DateUtils.parseDateTimeString(dateTimeString);
       } catch (e) {
-        log.debug('Invalid datetime string', dt);
+        log.debug('Invalid datetime string', dateTimeString);
         return false;
       }
 
       try {
-        dh.i18n.TimeZone.getTimeZone(tz);
+        dh.i18n.TimeZone.getTimeZone(tzCode);
       } catch (e) {
-        log.debug('Invalid timezone string', tz);
+        log.debug('Invalid timezone string', tzCode);
         return false;
       }
 
