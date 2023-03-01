@@ -188,6 +188,30 @@ describe('quick filter tests', () => {
     expect(result).toBe(expectedResult);
   }
 
+  function testFilterWithType(
+    functionName: string,
+    text,
+    expectedFn,
+    type,
+    ...args
+  ) {
+    const column = makeFilterColumn(type);
+    const filter = column.filter();
+
+    const expectedResult = makeFilterCondition();
+
+    filter[expectedFn].mockReturnValueOnce(expectedResult);
+
+    const result = TableUtils[functionName](column, text);
+
+    if (args.length > 0) {
+      expect(filter[expectedFn]).toHaveBeenCalledWith(...args);
+    } else {
+      expect(filter[expectedFn]).toHaveBeenCalled();
+    }
+    expect(result).toBe(expectedResult);
+  }
+
   function testMultiFilter(
     columnType,
     testFunction,
@@ -256,7 +280,7 @@ describe('quick filter tests', () => {
     };
 
     dh.FilterCondition = {
-      invoke: jest.fn(type => makeFilterCondition(type)),
+      invoke: jest.fn(type => makeFilterCondition(type) as FilterCondition),
       search: jest.fn(),
     };
 
@@ -280,18 +304,80 @@ describe('quick filter tests', () => {
       (Date.parse(dateString) as unknown) as DateWrapper;
   });
 
-  // describe('makeQuickFilterFromComponent', () => {
-  //   const testComponentFilter = (text: string, expectedFn, ...args) => {
-  //     testFilter('makeQuickFilterFromComponent', text, expectedFn, ...args);
-  //   };
+  describe('makeQuickFilterFromComponent', () => {
+    const testComponentFilter = (
+      text: string | boolean | number,
+      expectedFn,
+      type,
+      ...args
+    ) => {
+      testFilterWithType(
+        'makeQuickFilterFromComponent',
+        text,
+        expectedFn,
+        type,
+        ...args
+      );
+    };
 
-  //   it('should return a number filter if column type is number', () => {
-  //     const column = makeFilterColumn('number');
-  //     expect(TableUtils.makeQuickFilterFromComponent(column, 'test')).toBe(
-  //       null
-  //     );
-  //   });
-  // });
+    it('should return a number filter if column type is number', () => {
+      testComponentFilter('52', FilterType.eq, 'int', 52);
+      testComponentFilter('>-9', FilterType.greaterThan, 'short', -9);
+    });
+
+    it('should return a boolean filter if column type is boolean', () => {
+      testComponentFilter('true', FilterType.isTrue, 'boolean');
+      testComponentFilter(false, FilterType.isFalse, 'boolean');
+      testComponentFilter(1, FilterType.isTrue, 'boolean');
+      testComponentFilter('null', FilterType.isNull, 'java.lang.Boolean');
+    });
+
+    it('should return a date filter if column type is date', () => {
+      testMultiFilter(
+        'io.deephaven.time.DateTime',
+        'makeQuickFilterFromComponent',
+        '>2018',
+        'America/New_York',
+        [[FilterType.greaterThanOrEqualTo, null, new Date(2019, 0).getTime()]]
+      );
+      testMultiFilter(
+        'io.deephaven.db.tables.utils.DBDateTime',
+        'makeQuickFilterFromComponent',
+        '2018-9-7',
+        'America/New_York',
+        [
+          [
+            FilterType.greaterThanOrEqualTo,
+            FilterOperator.and,
+            new Date(2018, 8, 7).getTime(),
+          ],
+          [FilterType.lessThan, null, new Date(2018, 8, 8).getTime()],
+        ]
+      );
+    });
+
+    it('should return a char filter if column type is char', () => {
+      testComponentFilter('d', FilterType.eq, 'char', 'd');
+      testComponentFilter('!c', FilterType.notEq, 'java.lang.Character', 'c');
+      testComponentFilter(
+        '>=c',
+        FilterType.greaterThanOrEqualTo,
+        'char',
+        '"c"'
+      );
+      testComponentFilter('null', FilterType.isNull, 'char');
+    });
+
+    it('should return a text filter for any other column type', () => {
+      testComponentFilter(
+        '\\*foo',
+        FilterType.eqIgnoreCase,
+        'notatype',
+        '*foo'
+      );
+      testComponentFilter('foo', FilterType.eqIgnoreCase, 'string', 'foo');
+    });
+  });
 
   describe('quick number filters', () => {
     function testNumberFilter(text, expectedFn, ...args) {
@@ -520,6 +606,10 @@ describe('quick filter tests', () => {
       const column = makeFilterColumn();
       expect(TableUtils.makeQuickNumberFilter(column, '>=NaN')).toBeNull();
     });
+
+    // it('should handle long type', () => {
+    //   const column = makeFilterColumn('long');
+    // });
   });
 
   describe('quick boolean filters', () => {

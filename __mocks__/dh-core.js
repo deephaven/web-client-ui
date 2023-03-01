@@ -466,17 +466,22 @@ class Format {
 }
 
 class FilterCondition {
+  constructor(type, parent) {
+    this.type = type;
+    this.parent = parent;
+  }
+
   not() {
-    return new FilterCondition();
+    return new FilterCondition('not', this);
   }
   and(...condition) {
-    return new FilterCondition();
+    return new FilterCondition('and', this);
   }
   or(...condition) {
-    return new FilterCondition();
+    return new FilterCondition('or', this);
   }
   toString() {
-    return 'MockFilterCondition';
+    return 'MockFilterCondition' + this.type;
   }
 }
 
