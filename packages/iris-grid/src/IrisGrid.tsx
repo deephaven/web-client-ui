@@ -1075,7 +1075,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       }
       optionItems.push({
         type: OptionType.VISIBILITY_ORDERING_BUILDER,
-        title: 'Hide, Group, and Order Columns',
+        title: 'Organize Columns',
         icon: dhEye,
       });
       if (isFormatColumnsAvailable) {

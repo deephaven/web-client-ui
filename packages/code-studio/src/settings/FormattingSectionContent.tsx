@@ -429,9 +429,9 @@ export class FormattingSectionContent extends PureComponent<
     return (
       <div className="app-settings-formatting-section" ref={this.containerRef}>
         <div className="container-fluid p-0">
-          <div>Default formatting for column types</div>
           <div className="app-settings-menu-description mb-3">
-            Applies a formatting rule to all columns of a set type.
+            Choose the default formatting rule to apply to all table columns
+            based on their type.
           </div>
           <div className="form-row mb-2">
             <label
