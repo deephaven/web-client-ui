@@ -27,9 +27,11 @@ jobs:
       - name: Get latest web versions
         id: package_versions
         run: |
+          cd web-client-ui
           echo npm pkg get version --ws
           echo "`npm pkg get version --ws`"
           echo "::set-output name=versions::`npm pkg get version --ws`"
       - name: Update deephaven-core
         run: |
+          echo "`pwd`"
           echo "${{steps.package_versions.outputs.versions}}"
