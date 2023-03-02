@@ -187,14 +187,14 @@ class IrisGridRenderer extends GridRenderer {
       return;
     }
 
-    // The `groupedColumns` array contains 2 items for each grouped column name.
-    // The first half of the array contains 1 copy of each column in display order.
-    // The second half is not sorted in display order. To get the last displayed
-    // group column, we can use the last column in the first half of the array.
-    const modelIndex = groupedColumns.length / 2 - 1;
+    // There seem to be duplicate columns with the same name, so determine the
+    // count of distinct names.
+    const numUniqueNames = new Set(groupedColumns.map(({ name }) => name)).size;
 
-    const columnX = allColumnXs.get(modelIndex);
-    const columnWidth = allColumnWidths.get(modelIndex);
+    const lastVisibleGroupColumnIndex = numUniqueNames - 1;
+
+    const columnX = allColumnXs.get(lastVisibleGroupColumnIndex);
+    const columnWidth = allColumnWidths.get(lastVisibleGroupColumnIndex);
     if (columnX == null || columnWidth == null) {
       return;
     }
