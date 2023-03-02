@@ -117,3 +117,13 @@ npx source-map-explorer 'packages/code-studio/build/static/js/*.js'
 Snapshots are used by end-to-end tests to visually verify the output. Sometimes changes are made requiring snapshots to be updated. Run snapshots locally to update first, by running `npm run e2e:update-snapshots`.
 
 Once you are satisfied with the snapshots and everything is passing locally, you need to use a docker image to [update snapshots for CI](https://playwright.dev/docs/test-snapshots) (unless you are running the same platform as CI (Ubuntu)). Run `npm run e2e:update-ci-snapshots` to mount the current directory into a docker image and re-run the tests from there. **Note:** You must have [Docker installed](https://docs.docker.com/get-docker/), and `deephaven-core` must already be running on port 10000 on your local machine.
+
+## Updating Dependencies
+
+Periodically dependencies should be updated such that we're using the latest and greatest.
+
+- Security updates: Run `npm audit fix` weekly to ensure any known security vulnerabilities are updated.
+- Dependency updates: At the beginning of a release cycle, run `npm update` to update the `package-lock.json` with the latest version of dependencies. Afterwards, run `npm outdated` to see if there are any dependencies with major version changes that can be updated. There are two ways you can upgrade a dependency:
+  - Run a tool like [lerna-update-wizard](https://github.com/Anifacted/lerna-update-wizard) by running `npx lerna-update-wizard` to go through steps to automatically update all child packages, OR
+  - Manually update the `package.json` of all packages with that dependency to the latest version.
+- When updating the major version of dependencies, be sure to check the release notes for any breaking changes/migration notes. After updating dependencies, run an `npm install` and `npm test` to make sure all tests pass.
