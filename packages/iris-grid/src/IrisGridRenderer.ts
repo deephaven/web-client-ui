@@ -178,7 +178,7 @@ class IrisGridRenderer extends GridRenderer {
     state: IrisGridRenderState
   ): void {
     const { metrics, model, theme } = state;
-    const { groupedColumns, columns } = model;
+    const { groupedColumns } = model;
     const { maxY, allColumnWidths, allColumnXs } = metrics;
     if (
       groupedColumns.length === 0 ||
@@ -187,10 +187,12 @@ class IrisGridRenderer extends GridRenderer {
       return;
     }
 
-    const lastGroupedColumn = groupedColumns[groupedColumns.length - 1];
-    const modelIndex = columns.findIndex(
-      c => c.name === lastGroupedColumn.name
-    );
+    // The `groupedColumns` array contains 2 items for each grouped column name.
+    // The first half of the array contains 1 copy of each column in display order.
+    // The second half is not sorted in display order. To get the last displayed
+    // group column, we can use the last column in the first half of the array.
+    const modelIndex = groupedColumns.length / 2 - 1;
+
     const columnX = allColumnXs.get(modelIndex);
     const columnWidth = allColumnWidths.get(modelIndex);
     if (columnX == null || columnWidth == null) {
