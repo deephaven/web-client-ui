@@ -31,7 +31,6 @@ jobs:
           # Selecting a random character for EOF https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions#example-of-a-multiline-string
           EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
           echo npm pkg get version --ws
-          echo "`npm pkg get version --ws`"
           echo "VERSIONS<<$EOF" >> $GITHUB_OUTPUT
           npm pkg get version --ws >> $GITHUB_OUTPUT
           echo "$EOF" >> $GITHUB_OUTPUT
