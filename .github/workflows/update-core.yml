@@ -25,4 +25,4 @@ jobs:
         run: echo "::set-output name=versions::`npm pkg get version --ws`"
       - name: Update deephaven-core
         run: |
-          echo "${{fromJson(steps.package_versions.outputs.versions)[@deephaven/code-studio]}}"
+          echo "${{fromJson(steps.package_versions.outputs.versions)["@deephaven/code-studio"]}}"
