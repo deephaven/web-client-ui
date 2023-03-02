@@ -13,8 +13,8 @@ jobs:
       - name: Checkout latest web-client-ui
         uses: actions/checkout@v3
         with:
-          ref: web-client-ui
-          path: main
+          ref: main
+          path: web-client-ui
       - name: Checkout latest deephaven-core
         uses: actions/checkout@v3
         with:
