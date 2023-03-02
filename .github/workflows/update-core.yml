@@ -1,0 +1,27 @@
+# This workflow will automatically create a PR in deephaven-core to update the WEB_VERSION when a new web version is published
+name: Update deephaven-core web version
+
+on:
+  workflow_dispatch:
+  release:
+    types: [published]
+jobs:
+  update-core:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout latest web-client-ui
+        uses: actions/checkout@v3
+        with:
+          ref: web-client-ui
+          path: main
+      - name: Checkout latest deephaven-core
+        uses: actions/checkout@v3
+        with:
+          ref: main
+          path: deephaven-core
+      - name: Get latest web versions
+        id: package_versions
+        run: echo "::set-output name=versions::`npm pkg get version --ws`"
+      - name: Update deephaven-core
+        run: |
+          echo "${{fromJson(steps.package_versions.outputs.versions)[@deephaven/code-studio]}}"
