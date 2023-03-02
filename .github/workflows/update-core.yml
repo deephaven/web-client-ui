@@ -32,10 +32,10 @@ jobs:
           EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
           echo npm pkg get version --ws
           echo "`npm pkg get version --ws`"
-          echo "versions=$EOF" >> $GITHUB_OUTPUT
+          echo "VERSIONS<<$EOF" >> $GITHUB_OUTPUT
           npm pkg get version --ws >> $GITHUB_OUTPUT
           echo "$EOF" >> $GITHUB_OUTPUT
       - name: Update deephaven-core
         run: |
           echo "`pwd`"
-          echo "${{fromJson(steps.package_versions.outputs.versions)}}"
+          echo "${{fromJson(steps.package_versions.outputs.VERSIONS)}}"
