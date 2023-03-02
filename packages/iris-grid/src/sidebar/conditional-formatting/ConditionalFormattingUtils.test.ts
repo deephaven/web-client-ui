@@ -225,7 +225,7 @@ describe('isDateConditionValid', () => {
       '2023-02-23T00:00:00 NY',
       '2023-02-23 NY',
     ],
-    invalid: ['blah', '2023-02-23'],
+    invalid: ['blah', '2023-02-23', '2023-02-23T00:00:00 NY blah'],
     empty: '',
     undefined,
   };

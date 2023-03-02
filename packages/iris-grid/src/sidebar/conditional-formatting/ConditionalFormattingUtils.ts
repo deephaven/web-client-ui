@@ -718,7 +718,10 @@ export function isDateConditionValid(condition: DateCondition, value?: string) {
       return true;
 
     default: {
-      const [dateTimeString, tzCode] = (value ?? '').split(' ');
+      const [dateTimeString, ...rest] = (value ?? '').split(' ');
+      // Reconstitute all tokens after the first ' ' in case the user included garbage data at the end
+      // e.g. '2020-01-01 NY blah'
+      const tzCode = rest.join(' ');
 
       try {
         DateUtils.parseDateTimeString(dateTimeString);
