@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Provider } from 'react-redux';
 import { MonacoUtils } from '@deephaven/console';
 import { store } from '@deephaven/redux';
@@ -8,16 +8,14 @@ import DownloadServiceWorkerUtils from './DownloadServiceWorkerUtils';
 import { unregister } from './serviceWorker';
 
 export function AppRoot() {
-  useEffect(() => {
-    unregister();
-    DownloadServiceWorkerUtils.registerOnLoaded();
-    MonacoUtils.init({ getWorker: () => new MonacoWorker() });
+  unregister();
+  DownloadServiceWorkerUtils.registerOnLoaded();
+  MonacoUtils.init({ getWorker: () => new MonacoWorker() });
 
-    // disable annoying dnd-react warnings
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    window['__react-beautiful-dnd-disable-dev-warnings'] = true;
-  }, []);
+  // disable annoying dnd-react warnings
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
+  window['__react-beautiful-dnd-disable-dev-warnings'] = true;
 
   return (
     <Provider store={store}>
