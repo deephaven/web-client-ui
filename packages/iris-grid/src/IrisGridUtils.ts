@@ -76,20 +76,20 @@ type HydratedIrisGridState = Pick<
 };
 
 export interface TableSettings {
-  quickFilters?: [
+  quickFilters?: readonly [
     number,
     {
       text: string;
     }
   ][];
-  advancedFilters?: [
+  advancedFilters?: readonly [
     number,
     {
       options: AdvancedFilterOptions;
     }
   ][];
-  inputFilters?: InputFilter[];
-  sorts?: {
+  inputFilters?: readonly InputFilter[];
+  sorts?: readonly {
     column: ModelIndex;
     isAbs: boolean;
     direction: SortDirection;
