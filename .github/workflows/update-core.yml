@@ -20,6 +20,11 @@ jobs:
         with:
           ref: main
           path: deephaven-core
+      - name: Use Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18.x'
+          cache: 'npm'
       - name: Get latest web versions
         id: package_versions
         run: echo "::set-output name=versions::`npm pkg get version --ws`"
