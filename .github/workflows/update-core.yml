@@ -26,11 +26,15 @@ jobs:
           node-version: '18.x'
       - name: Get latest web versions
         id: package_versions
+        working-directory: ./web-client-ui
         run: |
-          cd web-client-ui
+          # Selecting a random character for EOF https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions#example-of-a-multiline-string
+          EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
           echo npm pkg get version --ws
           echo "`npm pkg get version --ws`"
-          echo "versions=\"`npm pkg get version --ws`\"" >> $GITHUB_OUTPUT
+          echo "versions=$EOF" >> $GITHUB_OUTPUT
+          npm pkg get version --ws >> $GITHUB_OUTPUT
+          echo "$EOF" >> $GITHUB_OUTPUT
       - name: Update deephaven-core
         run: |
           echo "`pwd`"
