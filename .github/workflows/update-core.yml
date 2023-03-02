@@ -30,7 +30,7 @@ jobs:
           cd web-client-ui
           echo npm pkg get version --ws
           echo "`npm pkg get version --ws`"
-          echo "versions=`npm pkg get version --ws`" >> $GITHUB_OUTPUT
+          echo "versions=\"`npm pkg get version --ws`\"" >> $GITHUB_OUTPUT
       - name: Update deephaven-core
         run: |
           echo "`pwd`"
